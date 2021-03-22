@@ -108,9 +108,81 @@ package object grpc {
       } yield CreateInstitutionGroup(name, contactIdsSet)
     }
 
-  implicit val getGroupsConverter: ProtoConverter[GetGroupsRequest, GetInstitutionGroups] =
+  def toInstitutionGroupsResultOrdering(
+      sortBy: GetGroupsRequest.SortBy
+  ): Try[ResultOrdering[InstitutionGroup.SortBy]] = {
+    def unsafeField = {
+      sortBy.field match {
+        case GetGroupsRequest.SortBy.Field.UNKNOWN => InstitutionGroup.SortBy.Name
+        case GetGroupsRequest.SortBy.Field.NAME => InstitutionGroup.SortBy.Name
+        case GetGroupsRequest.SortBy.Field.CREATED_AT => InstitutionGroup.SortBy.CreatedAt
+        case GetGroupsRequest.SortBy.Field.NUMBER_OF_CONTACTS => InstitutionGroup.SortBy.NumberOfContacts
+        case GetGroupsRequest.SortBy.Field.Unrecognized(x) =>
+          throw new RuntimeException(s"Unrecognized SortBy Field: $x")
+      }
+    }
+
+    for {
+      field <- Try(unsafeField)
+      direction <- toSortByDirection(sortBy.direction)
+    } yield ResultOrdering(field, direction)
+  }
+
+  implicit val getGroupsConverter: ProtoConverter[GetGroupsRequest, InstitutionGroup.PaginatedQuery] =
     (request: GetGroupsRequest) => {
-      maybeEmpty(request.contactId, Contact.Id.from).map(GetInstitutionGroups)
+      val createdAfterTry = Try {
+        request.filterBy
+          .flatMap(_.createdAfter)
+          .map(proto2DateTransformer.transform)
+      }
+
+      val createdBeforeTry = Try {
+        request.filterBy
+          .flatMap(_.createdBefore)
+          .map(proto2DateTransformer.transform)
+      }
+
+      val contactIdTry = request.filterBy.map(_.contactId).map(Contact.Id.optional).getOrElse(Try(None))
+      val name = request.filterBy.map(_.name).flatMap(InstitutionGroup.Name.optional)
+
+      val defaultSortBy = ResultOrdering[InstitutionGroup.SortBy](InstitutionGroup.SortBy.CreatedAt)
+      val sortByT: Try[ResultOrdering[InstitutionGroup.SortBy]] =
+        request.sortBy.map(toInstitutionGroupsResultOrdering).getOrElse(Try(defaultSortBy))
+      val allowedLimit = 0 to 100
+      val defaultLimit = 10
+      val limitT = Try {
+        if (allowedLimit contains request.limit) request.limit
+        else throw new RuntimeException(s"Invalid limit, allowed values are $allowedLimit")
+      }.map {
+        case 0 => defaultLimit
+        case x => x
+      }
+
+      val offsetT =
+        if (request.offset >= 0) Success(request.offset)
+        else Failure(new IllegalArgumentException("offset cannot be negative number"))
+
+      for {
+        createdAfter <- createdAfterTry
+        createdBefore <- createdBeforeTry
+        sortBy <- sortByT
+        limit <- limitT
+        contactId <- contactIdTry
+        offset <- offsetT
+      } yield PaginatedQueryConstraints(
+        limit = limit,
+        offset = offset,
+        ordering = sortBy,
+        scrollId = None,
+        filters = Some(
+          InstitutionGroup.FilterBy(
+            name = name,
+            createdAfter = createdAfter,
+            createdBefore = createdBefore,
+            contactId = contactId
+          )
+        )
+      )
     }
 
   implicit val updateGroupConverter: ProtoConverter[UpdateGroupRequest, UpdateInstitutionGroup] =

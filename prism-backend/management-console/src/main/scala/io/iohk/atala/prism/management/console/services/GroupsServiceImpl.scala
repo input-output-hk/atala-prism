@@ -8,7 +8,7 @@ import io.iohk.atala.prism.management.console.models.{
   CopyInstitutionGroup,
   CreateInstitutionGroup,
   DeleteInstitutionGroup,
-  GetInstitutionGroups,
+  InstitutionGroup,
   ParticipantId,
   UpdateInstitutionGroup
 }
@@ -54,12 +54,13 @@ class GroupsServiceImpl(
     }
 
   override def getGroups(request: console_api.GetGroupsRequest): Future[console_api.GetGroupsResponse] =
-    auth[GetInstitutionGroups]("getGroups", request) { (institutionId, request) =>
+    auth[InstitutionGroup.PaginatedQuery]("getGroups", request) { (institutionId, query) =>
       for {
-        groups <- institutionGroupsRepository.getBy(institutionId, request.contactId)
+        result <- institutionGroupsRepository.getBy(institutionId, query)
+        (groups, totalNumberOfRecords) = result
       } yield {
-        val proto = groups.map(ProtoCodecs.groupWithContactCountToProto)
-        console_api.GetGroupsResponse(proto)
+        val groupsProto = groups.map(ProtoCodecs.groupWithContactCountToProto)
+        console_api.GetGroupsResponse(groups = groupsProto, totalNumberOfGroups = totalNumberOfRecords)
       }
     }
 

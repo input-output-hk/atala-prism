@@ -8,6 +8,8 @@ package object queries {
 
   def limitFr(limit: Int): Fragment = fr"""LIMIT $limit"""
 
+  def offsetFr(offset: Int): Fragment = fr"""OFFSET $offset"""
+
   def toWhereCondition(
       left: Fragment,
       right: Fragment,

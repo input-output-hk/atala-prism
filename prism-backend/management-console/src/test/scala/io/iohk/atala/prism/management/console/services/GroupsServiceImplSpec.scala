@@ -8,7 +8,9 @@ import io.iohk.atala.prism.auth.SignedRpcRequest
 import io.iohk.atala.prism.auth.grpc.GrpcAuthenticationHeaderParser
 import io.iohk.atala.prism.crypto.EC
 import io.iohk.atala.prism.identity.DID
+import io.iohk.atala.prism.management.console.models.PaginatedQueryConstraints.ResultOrdering
 import io.iohk.atala.prism.management.console.models._
+import io.iohk.atala.prism.protos.common_models
 import io.iohk.atala.prism.management.console.repositories.daos.ParticipantsDAO
 import io.iohk.atala.prism.management.console.repositories.{
   InstitutionGroupsRepository,
@@ -20,6 +22,7 @@ import io.iohk.atala.prism.protos.console_api
 import io.iohk.atala.prism.{DIDGenerator, RpcSpecBase}
 import org.mockito.MockitoSugar._
 import org.scalatest.OptionValues._
+
 import java.util.UUID
 
 class GroupsServiceImplSpec extends RpcSpecBase with DIDGenerator {
@@ -43,6 +46,9 @@ class GroupsServiceImplSpec extends RpcSpecBase with DIDGenerator {
         .bindService(new GroupsServiceImpl(institutionGroupsRepository, authenticator), executionContext)
     )
 
+  private val getGroupsQuery: InstitutionGroup.PaginatedQuery =
+    PaginatedQueryConstraints(ordering = ResultOrdering(InstitutionGroup.SortBy.Name))
+
   "createGroup" should {
     "create a group" in {
       val keyPair = EC.generateKeyPair()
@@ -63,7 +69,8 @@ class GroupsServiceImplSpec extends RpcSpecBase with DIDGenerator {
         response.group.value.numberOfContacts must be(0)
 
         // the new group needs to exist
-        val groups = institutionGroupsRepository.getBy(institutionId, None).value.futureValue.toOption.value
+        val (groups, _) =
+          institutionGroupsRepository.getBy(institutionId, getGroupsQuery).value.futureValue.toOption.value
         groups.map(_.value.name) must contain(newGroup)
       }
     }
@@ -92,7 +99,8 @@ class GroupsServiceImplSpec extends RpcSpecBase with DIDGenerator {
         response.group.value.numberOfContacts must be(2)
 
         // the new group needs to exist
-        val groups = institutionGroupsRepository.getBy(institutionId, None).value.futureValue.toOption.value
+        val (groups, _) =
+          institutionGroupsRepository.getBy(institutionId, getGroupsQuery).value.futureValue.toOption.value
         val result = groups.find(_.value.name == newGroup).value
         result.value.name must be(newGroup)
         result.numberOfContacts must be(2)
@@ -148,23 +156,7 @@ class GroupsServiceImplSpec extends RpcSpecBase with DIDGenerator {
 
   "getGroups" should {
     "return available groups" in {
-      val keyPair = EC.generateKeyPair()
-      val publicKey = keyPair.publicKey
-      val did = generateDid(publicKey)
-      val institutionId = createParticipant(did)
-
-      val groups = List("Blockchain 2020", "Finance 2020").map(InstitutionGroup.Name.apply)
-      groups.foreach { group =>
-        institutionGroupsRepository.create(institutionId, group, Set()).value.futureValue.toOption.value
-      }
-
-      val request = console_api.GetGroupsRequest()
-      val rpcRequest = SignedRpcRequest.generate(keyPair, did, request)
-
-      usingApiAs(rpcRequest) { serviceStub =>
-        val result = serviceStub.getGroups(request)
-        result.groups.map(_.name).map(InstitutionGroup.Name.apply) must be(groups)
-      }
+      assertGetGroupsResult(console_api.GetGroupsRequest(), List("Group 1", "Group 2", "Group 3"))
     }
 
     "return the contact count on each group" in {
@@ -205,7 +197,9 @@ class GroupsServiceImplSpec extends RpcSpecBase with DIDGenerator {
       val contact = DataPreparation.createContact(issuerId, groupName = Some(groups(0)))
       DataPreparation.createContact(issuerId, groupName = Some(groups(1)))
 
-      val request = console_api.GetGroupsRequest().withContactId(contact.contactId.toString)
+      val request = console_api
+        .GetGroupsRequest()
+        .withFilterBy(console_api.GetGroupsRequest.FilterBy(contactId = contact.contactId.toString))
       val rpcRequest = SignedRpcRequest.generate(keyPair, did, request)
 
       usingApiAs(rpcRequest) { serviceStub =>
@@ -220,13 +214,103 @@ class GroupsServiceImplSpec extends RpcSpecBase with DIDGenerator {
       }
     }
 
+    "allows filtering by created after" in {
+      val request = console_api
+        .GetGroupsRequest()
+        .withFilterBy(console_api.GetGroupsRequest.FilterBy(createdAfter = Some(common_models.Date(2021, 3, 15))))
+      assertGetGroupsResult(request, List("Group 1", "Group 2", "Group 3"))
+    }
+
+    "allows filtering by created before" in {
+      val request = console_api
+        .GetGroupsRequest()
+        .withFilterBy(console_api.GetGroupsRequest.FilterBy(createdBefore = Some(common_models.Date(2021, 3, 15))))
+      assertGetGroupsResult(request, List.empty)
+    }
+
+    "allows filtering by name" in {
+      val request = console_api.GetGroupsRequest().withFilterBy(console_api.GetGroupsRequest.FilterBy(name = "Up 3"))
+      assertGetGroupsResult(request, List("Group 3"))
+    }
+
+    "allows sorting by created name desc" in {
+      val request = console_api
+        .GetGroupsRequest()
+        .withSortBy(
+          console_api.GetGroupsRequest.SortBy(
+            field = console_api.GetGroupsRequest.SortBy.Field.NAME,
+            direction = common_models.SortByDirection.SORT_BY_DIRECTION_DESCENDING
+          )
+        )
+      assertGetGroupsResult(request, List("Group 3", "Group 2", "Group 1"))
+    }
+
+    "respect limit and offset" in {
+      val request = console_api
+        .GetGroupsRequest()
+        .withLimit(1)
+        .withOffset(1)
+
+      assertGetGroupsResult(request, List("Group 2"))
+    }
+
+    def assertGetGroupsResult(request: console_api.GetGroupsRequest, expectedResult: List[String]) = {
+      val keyPair = EC.generateKeyPair()
+      val publicKey = keyPair.publicKey
+      val did = generateDid(publicKey)
+      val institutionId = createParticipant(did)
+
+      val groups = List("Group 1", "Group 2", "Group 3").map(InstitutionGroup.Name.apply)
+      groups.foreach { group =>
+        institutionGroupsRepository.create(institutionId, group, Set()).value.futureValue.toOption.value
+      }
+
+      val rpcRequest = SignedRpcRequest.generate(keyPair, did, request)
+
+      usingApiAs(rpcRequest) { serviceStub =>
+        val result = serviceStub.getGroups(request)
+        result.groups.map(_.name) mustBe expectedResult
+      }
+    }
+
     "fails to filter by contact when the value is invalid" in {
+      val request =
+        console_api.GetGroupsRequest().withFilterBy(console_api.GetGroupsRequest.FilterBy(contactId = "xyz"))
+      assertRequestFails(request)
+    }
+
+    "fails to filter by created after date when the value is invalid" in {
+      val request = console_api
+        .GetGroupsRequest()
+        .withFilterBy(console_api.GetGroupsRequest.FilterBy(createdAfter = Some(common_models.Date(2021, 3, day = 40))))
+      assertRequestFails(request)
+    }
+
+    "fails to filter by created before date when the value is invalid" in {
+      val request = console_api
+        .GetGroupsRequest()
+        .withFilterBy(
+          console_api.GetGroupsRequest.FilterBy(createdBefore = Some(common_models.Date(2021, 3, day = 40)))
+        )
+      assertRequestFails(request)
+    }
+
+    "fails to respect limit when limit value is invalid" in {
+      val request = console_api.GetGroupsRequest().withLimit(101)
+      assertRequestFails(request)
+    }
+
+    "fails to respect offset when offset value is negative" in {
+      val request = console_api.GetGroupsRequest().withOffset(-5)
+      assertRequestFails(request)
+    }
+
+    def assertRequestFails(request: console_api.GetGroupsRequest) = {
       val keyPair = EC.generateKeyPair()
       val publicKey = keyPair.publicKey
       val did = generateDid(publicKey)
       createParticipant(did)
 
-      val request = console_api.GetGroupsRequest().withContactId("xyz")
       val rpcRequest = SignedRpcRequest.generate(keyPair, did, request)
 
       usingApiAs(rpcRequest) { serviceStub =>
@@ -470,8 +554,8 @@ class GroupsServiceImplSpec extends RpcSpecBase with DIDGenerator {
         serviceStub.updateGroup(request)
 
         // Check that the group was indeed renamed
-        val groups =
-          institutionGroupsRepository.getBy(institutionId, None).value.futureValue.toOption.value
+        val (groups, _) =
+          institutionGroupsRepository.getBy(institutionId, getGroupsQuery).value.futureValue.toOption.value
         groups.map(_.value.name.value) must contain(newName)
       }
     }
@@ -711,14 +795,16 @@ class GroupsServiceImplSpec extends RpcSpecBase with DIDGenerator {
     id
   }
 
-  private def getInstitutionGroups(institutionId: ParticipantId): List[InstitutionGroup.WithContactCount] =
-    institutionGroupsRepository
-      .getBy(institutionId, None)
+  private def getInstitutionGroups(institutionId: ParticipantId): List[InstitutionGroup.WithContactCount] = {
+    val (groups, _) = institutionGroupsRepository
+      .getBy(institutionId, getGroupsQuery)
       .value
       .futureValue
       .toOption
       .sequence
-      .flatten
+
+    groups
+  }
 
   private def createGroup(
       institutionId: ParticipantId,

@@ -1,7 +1,8 @@
 package io.iohk.atala.prism.management.console.models
 
 case class PaginatedQueryConstraints[ScrollId, SortBy, FilterBy](
-    limit: Int,
+    limit: Int = 10,
+    offset: Int = 0,
     ordering: PaginatedQueryConstraints.ResultOrdering[SortBy],
     scrollId: Option[ScrollId] = None,
     filters: Option[FilterBy] = None

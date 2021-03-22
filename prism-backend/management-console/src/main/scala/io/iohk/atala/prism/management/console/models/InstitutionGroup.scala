@@ -2,16 +2,12 @@ package io.iohk.atala.prism.management.console.models
 
 import io.iohk.atala.prism.models.UUIDValue
 
-import java.time.Instant
+import java.time.{Instant, LocalDate}
 import java.util.UUID
 
 final case class CreateInstitutionGroup(
     name: InstitutionGroup.Name,
     contactIds: Set[Contact.Id]
-)
-
-final case class GetInstitutionGroups(
-    contactId: Option[Contact.Id]
 )
 
 final case class UpdateInstitutionGroup(
@@ -53,4 +49,23 @@ object InstitutionGroup {
       }
     }
   }
+
+  // Used to sort the results by the given field
+  sealed trait SortBy extends Product with Serializable
+  object SortBy {
+    final case object Name extends SortBy
+    final case object CreatedAt extends SortBy
+    final case object NumberOfContacts extends SortBy
+  }
+
+  case class FilterBy(
+      name: Option[InstitutionGroup.Name] = None,
+      createdAfter: Option[LocalDate] = None,
+      createdBefore: Option[LocalDate] = None,
+      contactId: Option[Contact.Id] = None
+  )
+
+  type PaginatedQuery =
+    PaginatedQueryConstraints[InstitutionGroup.Id, InstitutionGroup.SortBy, InstitutionGroup.FilterBy]
+
 }

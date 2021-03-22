@@ -10,6 +10,7 @@ import doobie.free.connection.{ConnectionIO, unit}
 import doobie.implicits._
 import doobie.implicits.legacy.instant._
 import io.iohk.atala.prism.management.console.models.{Contact, InstitutionGroup, ParticipantId}
+import io.iohk.atala.prism.management.console.repositories.daos.queries.FindGroupsQueryBuilder
 
 import java.time.Instant
 
@@ -59,6 +60,26 @@ object InstitutionGroupsDAO {
          |WHERE institution_id = $institutionId AND contact_id = $contactId
          |ORDER BY name
        """.stripMargin.query[InstitutionGroup.WithContactCount].to[List]
+  }
+
+  def getBy(
+      institutionId: ParticipantId,
+      query: InstitutionGroup.PaginatedQuery
+  ): ConnectionIO[List[InstitutionGroup.WithContactCount]] = {
+    FindGroupsQueryBuilder
+      .build(institutionId, query)
+      .query[InstitutionGroup.WithContactCount]
+      .to[List]
+  }
+
+  def getTotalNumberOfRecords(
+      institutionId: ParticipantId,
+      query: InstitutionGroup.PaginatedQuery
+  ): ConnectionIO[Int] = {
+    FindGroupsQueryBuilder
+      .buildTotalNumberOfRecordsQuery(institutionId, query)
+      .query[Int]
+      .unique
   }
 
   def find(groupId: InstitutionGroup.Id): ConnectionIO[Option[InstitutionGroup]] = {

@@ -44,14 +44,13 @@ class InstitutionGroupsRepository(xa: Transactor[IO])(implicit ec: ExecutionCont
 
   def getBy(
       institutionId: ParticipantId,
-      filterByContact: Option[Contact.Id]
-  ): FutureEither[Nothing, List[InstitutionGroup.WithContactCount]] = {
-    val tx = filterByContact match {
-      case Some(contactId) => InstitutionGroupsDAO.getBy(institutionId, contactId)
-      case None => InstitutionGroupsDAO.getBy(institutionId)
-    }
-
-    tx.transact(xa)
+      query: InstitutionGroup.PaginatedQuery
+  ): FutureEither[Nothing, (List[InstitutionGroup.WithContactCount], Int)] = {
+    (for {
+      groups <- InstitutionGroupsDAO.getBy(institutionId, query)
+      totalNumberOfRecords <- InstitutionGroupsDAO.getTotalNumberOfRecords(institutionId, query)
+    } yield groups -> totalNumberOfRecords)
+      .transact(xa)
       .unsafeToFuture()
       .map(Right(_))
       .toFutureEither

@@ -5,8 +5,12 @@ import cats.scalatest.EitherMatchers._
 import io.iohk.atala.prism.AtalaWithPostgresSpec
 import io.iohk.atala.prism.management.console.DataPreparation._
 import io.iohk.atala.prism.management.console.errors.{GroupNameIsNotFree, GroupsInstitutionDoNotMatch}
-import io.iohk.atala.prism.management.console.models.InstitutionGroup
+import io.iohk.atala.prism.management.console.models.PaginatedQueryConstraints.ResultOrdering
+import io.iohk.atala.prism.management.console.models.{InstitutionGroup, PaginatedQueryConstraints}
 import org.scalatest.OptionValues._
+
+import java.time.LocalDate
+import java.time.temporal.ChronoUnit
 import java.util.UUID
 
 class InstitutionGroupsRepositorySpec extends AtalaWithPostgresSpec {
@@ -90,7 +94,10 @@ class InstitutionGroupsRepositorySpec extends AtalaWithPostgresSpec {
   }
 
   "getBy" should {
-    "get the available groups for an institution" in {
+    val beforeDate = LocalDate.now().minus(5, ChronoUnit.DAYS)
+    val afterDate = LocalDate.now().plus(5, ChronoUnit.DAYS)
+
+    "get the available groups for an institution with total number of groups" in {
       val groups = List("Group 1", "Group 2").map(InstitutionGroup.Name.apply)
       val institutionId1 = createParticipant("Institution-1")
       createInstitutionGroup(institutionId1, groups(0))
@@ -99,8 +106,12 @@ class InstitutionGroupsRepositorySpec extends AtalaWithPostgresSpec {
       val institutionId2 = createParticipant("Institution-2")
       createInstitutionGroup(institutionId2, InstitutionGroup.Name("Other"))
 
-      val result = repository.getBy(institutionId1, None).value.futureValue.toOption.value
+      val query: InstitutionGroup.PaginatedQuery =
+        PaginatedQueryConstraints(ordering = ResultOrdering(InstitutionGroup.SortBy.Name))
+
+      val (result, totalNumberOfGroups) = repository.getBy(institutionId1, query).value.futureValue.toOption.value
       result.map(_.value.name) must be(groups)
+      totalNumberOfGroups mustBe groups.size
     }
 
     "includes the contact count" in {
@@ -112,7 +123,10 @@ class InstitutionGroupsRepositorySpec extends AtalaWithPostgresSpec {
       createContact(institutionId, "test-contact-2", groups.headOption)
       createContact(institutionId, "test-contact-3", groups.lift(1))
 
-      val result = repository.getBy(institutionId, None).value.futureValue
+      val query: InstitutionGroup.PaginatedQuery =
+        PaginatedQueryConstraints(ordering = ResultOrdering(InstitutionGroup.SortBy.Name))
+
+      val result = repository.getBy(institutionId, query).value.futureValue.map { case (groups, _) => groups }
       result.map(_.map(_.numberOfContacts)) must beRight(List(2, 1))
     }
 
@@ -124,12 +138,175 @@ class InstitutionGroupsRepositorySpec extends AtalaWithPostgresSpec {
       val contact = createContact(issuerId, "test-contact-2", groups.headOption)
       createContact(issuerId, "test-contact-3", groups.lift(1))
 
-      val result = repository.getBy(issuerId, Some(contact.contactId)).value.futureValue.toOption.value
+      val query: InstitutionGroup.PaginatedQuery =
+        PaginatedQueryConstraints(
+          ordering = ResultOrdering(InstitutionGroup.SortBy.Name),
+          filters = Some(InstitutionGroup.FilterBy(contactId = Some(contact.contactId)))
+        )
+
+      val (result, _) = repository.getBy(issuerId, query).value.futureValue.toOption.value
       result.size must be(1)
 
       val resultGroup = result.head
       resultGroup.value.name must be(groups(0))
       resultGroup.numberOfContacts must be(2)
+    }
+
+    "allow filtering by name" in {
+      val groupName = "nAme 3"
+      val groups = List("Group 1", "Group 2", groupName).map(InstitutionGroup.Name.apply)
+      val institutionId = createParticipant("Institution-1")
+      groups.foreach { g => createInstitutionGroup(institutionId, g) }
+
+      def testName(name: String) = {
+        val query: InstitutionGroup.PaginatedQuery =
+          PaginatedQueryConstraints(
+            ordering = ResultOrdering(InstitutionGroup.SortBy.Name),
+            filters = Some(InstitutionGroup.FilterBy(name = Some(InstitutionGroup.Name(name))))
+          )
+
+        val (result, _) = repository.getBy(institutionId, query).value.futureValue.toOption.value
+        result.size mustBe 1
+        result.head.value.name.value mustBe groupName
+      }
+
+      testName("am")
+      testName("Am")
+      testName("Me")
+    }
+
+    "allow filtering by created after" in {
+      val groups = List("Group 1", "Group 2").map(InstitutionGroup.Name.apply)
+      val institutionId = createParticipant("Institution-1")
+      groups.foreach { g => createInstitutionGroup(institutionId, g) }
+
+      def testDate(date: LocalDate, expectedCount: Int) = {
+        val query: InstitutionGroup.PaginatedQuery =
+          PaginatedQueryConstraints(
+            ordering = ResultOrdering(InstitutionGroup.SortBy.Name),
+            filters = Some(InstitutionGroup.FilterBy(createdAfter = Some(date)))
+          )
+
+        val (result, _) = repository.getBy(institutionId, query).value.futureValue.toOption.value
+        result.size mustBe expectedCount
+      }
+
+      testDate(beforeDate, expectedCount = 2)
+      testDate(afterDate, expectedCount = 0)
+    }
+
+    "allow filtering by created before" in {
+      val groups = List("Group 1", "Group 2").map(InstitutionGroup.Name.apply)
+      val institutionId = createParticipant("Institution-1")
+      groups.foreach { g => createInstitutionGroup(institutionId, g) }
+
+      def testDate(date: LocalDate, expectedCount: Int) = {
+        val query: InstitutionGroup.PaginatedQuery =
+          PaginatedQueryConstraints(
+            ordering = ResultOrdering(InstitutionGroup.SortBy.Name),
+            filters = Some(InstitutionGroup.FilterBy(createdBefore = Some(date)))
+          )
+
+        val (result, _) = repository.getBy(institutionId, query).value.futureValue.toOption.value
+        result.size mustBe expectedCount
+      }
+
+      testDate(beforeDate, expectedCount = 0)
+      testDate(afterDate, expectedCount = 2)
+    }
+
+    "sort results by name" in {
+      val query: InstitutionGroup.PaginatedQuery =
+        PaginatedQueryConstraints(ordering =
+          ResultOrdering(InstitutionGroup.SortBy.Name, PaginatedQueryConstraints.ResultOrdering.Direction.Descending)
+        )
+
+      assertGetByResult(query, List("Group 3", "Group 2", "Group 1"))
+    }
+
+    "sort results by created date" in {
+      val groups = List("Group 1", "Group 2").map(InstitutionGroup.Name.apply)
+      val institutionId = createParticipant("Institution-1")
+      createInstitutionGroup(institutionId, groups.head)
+      // Sleep 1 ms to ensure DB queries sorting by creation time are deterministic (this only happens during testing)
+      Thread.sleep(1)
+      createInstitutionGroup(institutionId, groups(1))
+
+      val query: InstitutionGroup.PaginatedQuery =
+        PaginatedQueryConstraints(ordering =
+          ResultOrdering(
+            InstitutionGroup.SortBy.CreatedAt,
+            PaginatedQueryConstraints.ResultOrdering.Direction.Descending
+          )
+        )
+
+      val (result, _) = repository.getBy(institutionId, query).value.futureValue.toOption.value
+      result.map(_.value.name.value) must be(List("Group 2", "Group 1"))
+    }
+
+    "sort results by contact count" in {
+      val groups = List("Group 1", "Group 2").map(InstitutionGroup.Name.apply)
+      val institutionId = createParticipant("Institution-1")
+      groups.foreach { g => createInstitutionGroup(institutionId, g) }
+      createContact(institutionId, "test-contact-1", groups.headOption)
+      createContact(institutionId, "test-contact-2", groups.headOption)
+      createContact(institutionId, "test-contact-3", groups.lift(1))
+
+      val query: InstitutionGroup.PaginatedQuery =
+        PaginatedQueryConstraints(ordering = ResultOrdering(InstitutionGroup.SortBy.NumberOfContacts))
+
+      val (result, _) = repository.getBy(institutionId, query).value.futureValue.toOption.value
+      result.map(_.value.name) must be(groups.reverse)
+    }
+
+    "respect limit" in {
+      val limit = 2
+
+      val query: InstitutionGroup.PaginatedQuery =
+        PaginatedQueryConstraints(
+          limit = limit,
+          ordering = ResultOrdering(InstitutionGroup.SortBy.Name)
+        )
+
+      assertGetByResult(query, List("Group 1", "Group 2"))
+    }
+
+    "respect offset" in {
+      val offset = 1
+
+      val query: InstitutionGroup.PaginatedQuery =
+        PaginatedQueryConstraints(
+          offset = offset,
+          ordering = ResultOrdering(InstitutionGroup.SortBy.Name)
+        )
+
+      assertGetByResult(query, List("Group 2", "Group 3"))
+    }
+
+    "return correct number of groups" in {
+      val groups = List("Group 1", "Group 2", "Group 3").map(InstitutionGroup.Name.apply)
+      val institutionId = createParticipant("Institution-1")
+      groups.foreach { g => createInstitutionGroup(institutionId, g) }
+
+      val query: InstitutionGroup.PaginatedQuery =
+        PaginatedQueryConstraints(
+          limit = 1,
+          ordering = ResultOrdering(InstitutionGroup.SortBy.Name)
+        )
+
+      val (result, totalNumberOfGroups) = repository.getBy(institutionId, query).value.futureValue.toOption.value
+      result.size mustBe 1
+      result.head.value.name mustBe groups.head
+      totalNumberOfGroups mustBe groups.size
+    }
+
+    def assertGetByResult(query: InstitutionGroup.PaginatedQuery, expectedResult: List[String]) = {
+      val groups = List("Group 1", "Group 2", "Group 3").map(InstitutionGroup.Name.apply)
+      val institutionId = createParticipant("Institution-1")
+      groups.foreach { g => createInstitutionGroup(institutionId, g) }
+
+      val (result, _) = repository.getBy(institutionId, query).value.futureValue.toOption.value
+      result.map(_.value.name.value) must be(expectedResult)
     }
   }
 
@@ -259,7 +436,11 @@ class InstitutionGroupsRepositorySpec extends AtalaWithPostgresSpec {
       repository.listContacts(institutionId, groupName).value.futureValue.map(_.size) mustBe Right(2)
 
       repository.deleteGroup(institutionId, groupId).value.futureValue.isRight mustBe true
-      repository.getBy(institutionId, None).value.futureValue mustBe Right(Nil)
+
+      val query: InstitutionGroup.PaginatedQuery =
+        PaginatedQueryConstraints(ordering = ResultOrdering(InstitutionGroup.SortBy.Name))
+
+      repository.getBy(institutionId, query).value.futureValue.map { case (groups, _) => groups } mustBe Right(Nil)
       //Guarantee that we removed contacts and group
       intercept[RuntimeException](repository.listContacts(institutionId, groupName).value.futureValue)
       succeed

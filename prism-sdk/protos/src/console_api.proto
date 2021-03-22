@@ -491,11 +491,45 @@ message CreateGroupResponse {
 
 // Request to retrieve the available groups on the authenticated institution
 message GetGroupsRequest {
-  string contactId = 1; // optional, when provided, only groups related to the given contact are included
+  // optional, when provided, only groups related to the given contact are included
+  // TODO: Remove when the connector integration is removed
+  string contactId = 1;
+  // the max amount of groups to return (optional, default value is 10)
+  int32 limit = 2;
+  // the offset for pagination (optional, default is 0)
+  int32 offset = 3;
+  // when provided, filter the results based on the given criteria, just for the management console
+  FilterBy filterBy = 4;
+  // when provided, sort the results by the given criteria (optional, sort by name ascending by default)
+  SortBy sortBy = 5;
+  // The possible ways to filter the results from GetGroupsRequest
+  message FilterBy {
+    string name = 1; // if provided, groups with name which contains given name (case insensitive) are returned
+    Date createdAfter = 2; // if provided, groups created after or at the given date are returned
+    Date createdBefore = 3; // if provided, groups created before or at the given date are returned
+    string contactId = 4; // if provided, only groups related to the given contact are returned
+  }
+  // The possible ways to sort the results
+  message SortBy {
+    Field field = 1; // the field used to sort the results by
+    SortByDirection direction = 2; // whether the results are in ascending/descending order, ascending order by default
+
+    // The possible fields to sort the results by
+    enum Field {
+      UNKNOWN = 0; // in case of the value being missing, where we take the default one: NAME
+      NAME = 1; // the name field
+      CREATED_AT = 2; // the createdAt field
+      NUMBER_OF_CONTACTS = 3; // Number of contacts
+    }
+  }
 }
 // Response with the available groups
 message GetGroupsResponse {
-  repeated Group groups = 1; // the groups available
+  // the groups available
+  repeated Group groups = 1;
+  // total number of groups which matches filterBy criteria supplied in request,
+  // used for offset based pagination in order to compute number of pages available
+  int32 totalNumberOfGroups = 2;
 }
 
 // Request to update a group
