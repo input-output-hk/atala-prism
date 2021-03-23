@@ -1,6 +1,6 @@
-# Verify Credential
+# Verifying the Credential
 
-Once you have issued a credential, you can proceed to verify its validity.
+This section explains how to verify a credential's validity.
 
 ## Recap
 This is what we have done from previous versions:
@@ -42,9 +42,9 @@ val (merkleRoot, merkleProof) = CredentialBatches.batch(List(signedCredential)) 
 ```
 
 
-## Mock the network data
+## Mocking Network Data
 
-For the sake of simplicity, in this tutorial we are not interacting with the Cardano network. In a real implementation, there would be some details that we would need to retrieve from it. In order to verify a credential in this tutorial, we will mock those values:
+For simplicity, this tutorial does not interact with the Cardano network. A real implementation would require the retrieval of some data from the network, so in this tutorial, we will mock that data.
 
 ```scala mdoc
   // assume there is a block in Cardano that includes the DID, and the credential, which was confirmed 1 minute ago
@@ -66,9 +66,9 @@ For the sake of simplicity, in this tutorial we are not interacting with the Car
   val batchData = BatchData(issuedOn = batchBlockInfo, revokedOn = None)
 ```
 
-## Verify the credential
+## Verifying the Credential
 
-Taking the data from the previous steps, we can verify the credential. As you see, no errors are returned, which means that the credential is valid:
+Taking the data from the previous steps, we can now verify the credential. The code returns no errors, so the credential is valid:
 
 ```scala mdoc
   PrismCredentialVerification
@@ -81,7 +81,3 @@ Taking the data from the previous steps, we can verify the credential. As you se
       signedCredential = signedCredential
     )(EC)
 ```
-
-## Next
-
-Congratulations! You were able to complete the tutorial. By now, you should have an idea on how the PRISM SDK can be used to generate identifiers (DIDs), and deal with verifiable credentials.
