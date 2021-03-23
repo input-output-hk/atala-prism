@@ -1,16 +1,16 @@
-# Atala PRISM SDK - Credentials
+# Credentials
 
-To install the module:
+Use this code to install the Credentials module:
 
 ```scala
 libraryDependencies += "io.iohk" %% "prism-credentials" % "@VERSION@"
 ```
 
-## Verifiable Credentials
+## Verifiable Credentials (VCs)
 
-Atala PRISM Credentials module provides the necessary tools to work with Verifiable Credentials (VC).
+This module provides the necessary tools to work with Verifiable Credentials (VCs).
 
-To run the following examples, first you will need to add some imports:
+Add these imports to run the examples listed on this module:
 
 ```scala mdoc
 import io.iohk.atala.prism.credentials.content._
@@ -19,8 +19,9 @@ import io.iohk.atala.prism.credentials._
 import io.iohk.atala.prism.crypto._ // necessary to sign a credential
 
 ```
+Follow these steps to create, sign, and verify a credential.
 
-Define the content for a credential:
+1. Define the credential's content:
 
 ```scala mdoc
   val credentialContent: CredentialContent = CredentialContent(
@@ -33,20 +34,20 @@ Define the content for a credential:
   )
 ```
 
-Create the `Credential` object:
+2. Create the `Credential` object:
 
 ```scala mdoc
   val credential: Credential = Credential.fromCredentialContent(credentialContent)
 ```
 
-By using the crypto module, you can sign a credential:
+3. You can sign a credential by using the Crypto module:
 
 ```scala mdoc
   val masterKeyPair = EC.generateKeyPair()
   val signedCredential = credential.sign(masterKeyPair.privateKey)(EC)
 ```
 
-Embed the credential in a batch, leaving you with a proof of inclusion:
+4. Embed the credential in a batch, which leaves you with a proof of inclusion:
 
 ```scala mdoc
   val (merkleRoot, merkleProof) = CredentialBatches.batch(List(signedCredential)) match {
@@ -54,7 +55,7 @@ Embed the credential in a batch, leaving you with a proof of inclusion:
   }
 ```
 
-At last, you can verify that a credential is valid:
+5. Verify that a credential is valid:
 
 ```scala
   PrismCredentialVerification
