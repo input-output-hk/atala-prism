@@ -1,6 +1,6 @@
-# Issue Credential
+# Issuing a Credential
 
-Once you have generated an identifier, we can proceed to issue a credential. By the end of this section, we will have issued a credential.
+This section explains how to issue a credential.
 
 
 ## Recap
@@ -29,8 +29,9 @@ val firstPublicKey = didDocument.didData
   .getOrElse(throw new RuntimeException("Impossible as we used a key to create the DID"))
 ```
 
-## Define the credential claims
-First, let's define the credential contents:
+## Defining the Credential Claims
+
+Before issuing a credential, we need to define its contents:
 
 ```scala mdoc
   val credentialContent: CredentialContent = CredentialContent(
@@ -45,19 +46,18 @@ First, let's define the credential contents:
   )
 ```
 
-In this case, `CredentialSubject` represents the claims involved in the credential, while the other fields are metadata specifying who is issuing the credential.
+In this case, `CredentialSubject` represents the claims involved in the credential, while the other fields are metadata specifying *who* is issuing the credential.
 
 
-## Derive a Credential from its claims
+## Deriving a Credential From its Claims
 
 We can use the previous claims to derive a `Credential` object:
-
 
 ```scala mdoc
   val credential: Credential = Credential.fromCredentialContent(credentialContent)
 ```
 
-## Sign the credential
+## Signing the Credential
 
 Having the `Credential` model allows to easily sign it, which results in a signed credential:
 
@@ -65,12 +65,12 @@ Having the `Credential` model allows to easily sign it, which results in a signe
   val signedCredential = credential.sign(masterKeyPair.privateKey)(EC)
 ```
 
-Note that we are using the keys related to the identifier generated in previous sections.
+**Note:** These are the keys related to the DID generated in the previous section.
 
 
-## Issue the credential
+## Issuing the Credential
 
-Issuing a credential in our protocol, consists of taking many signed credentials to create a batch (so that you pay a single Cardano fee). The batch is timestamped in the Cardano blockchain. For the sake of simplicity, we'll just get the relevant data without touching the Cardano network:
+In our protocol, issuing a credential involves creating batches of signed credentials (so that you only pay one Cardano fee). Batches are timestamped in the Cardano blockchain. For simplicity, we'll get the relevant data without touching the Cardano network:
 
 ```scala mdoc
   val (merkleRoot, merkleProof) = CredentialBatches.batch(List(signedCredential)) match {
@@ -79,8 +79,3 @@ Issuing a credential in our protocol, consists of taking many signed credentials
 ```
 
 The `merkleRoot` and `merkleProof` are necessary to verify the credential validity.
-
-
-## Next
-
-You have successfully issued your first credential with the PRISM SDK, now, continue to verify it.
