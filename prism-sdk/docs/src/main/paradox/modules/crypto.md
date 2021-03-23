@@ -1,13 +1,14 @@
-# Atala PRISM SDK - Crypto
+# Crypto
 
-To install the module:
+Use this code to install the Crypto module:
+
 ```scala
 libraryDependencies += "io.iohk" %% "prism-crypto" % "@VERSION@"
 ```
 
 ## SHA256 Hash
 
-Atala PRISM Crypto module provides SHA256 hash function that can be used as follows:
+The Crypto module provides a SHA256 hash function that can be used as follows:
 ```scala mdoc:to-string
 import io.iohk.atala.prism.crypto.SHA256Digest
 
@@ -16,7 +17,7 @@ SHA256Digest.compute(Array(0.toByte))
 
 ## Elliptic-curve Cryptography
 
-Crypto module contains low-level tools to work with public-key cryptography based on elliptic curves.
+This module includes low-level tools to work with public-key cryptography based on elliptic curves.
 
 Some helpful globals can be found in `ECConfig`:
 ```scala mdoc
@@ -57,7 +58,7 @@ EC.toPublicKey(publicKeyEncoded) == publicKey
 
 ## Key Derivation
 
-Atala PRISM Crypto module provides the means to derive keys from a given seed.
+You can use this module to derive keys from a given seed.
 
 First, there are some utilities to work with mnemonic codes:
 ```scala mdoc
@@ -68,7 +69,7 @@ KeyDerivation.getValidMnemonicWords().take(10)
 KeyDerivation.isValidMnemonicWord("airport")
 ```
 
-After you have a mnemonic code, you can generate a mnemonic seed and, subsequently, a root key:
+After obtaining a mnemonic code, you can generate a mnemonic seed and a root key:
 ```scala mdoc:to-string
 val seed = KeyDerivation.binarySeed(mnemonicCode, "my_secret_password")
 val extendedKey = KeyDerivation.derivationRoot(seed)
@@ -81,7 +82,7 @@ extendedKey.publicKey
 extendedKey.path
 ```
 
-Crypto module also supports derivation paths, so you can derive children keys as follows:
+This module also supports derivation paths, so you can derive children keys:
 ```scala mdoc:to-string
 import io.iohk.atala.prism.crypto.DerivationPath
 
@@ -91,7 +92,7 @@ KeyDerivation.deriveKey(seed, path)
 
 ## Merkle Tree
 
-It is possible to build Merkle tree proofs of inclusion and verify them by using `MerkleTree`:
+It is possible to build and verify Merkle tree proofs of inclusion by using `MerkleTree`:
 ```scala mdoc:to-string
 import io.iohk.atala.prism.crypto.MerkleTree
 
