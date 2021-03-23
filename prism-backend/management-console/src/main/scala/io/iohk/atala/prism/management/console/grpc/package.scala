@@ -145,7 +145,7 @@ package object grpc {
       val contactIdTry = request.filterBy.map(_.contactId).map(Contact.Id.optional).getOrElse(Try(None))
       val name = request.filterBy.map(_.name).flatMap(InstitutionGroup.Name.optional)
 
-      val defaultSortBy = ResultOrdering[InstitutionGroup.SortBy](InstitutionGroup.SortBy.CreatedAt)
+      val defaultSortBy = ResultOrdering[InstitutionGroup.SortBy](InstitutionGroup.SortBy.Name)
       val sortByT: Try[ResultOrdering[InstitutionGroup.SortBy]] =
         request.sortBy.map(toInstitutionGroupsResultOrdering).getOrElse(Try(defaultSortBy))
       val allowedLimit = 0 to 100
