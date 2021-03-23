@@ -1,10 +1,12 @@
 package io.iohk.atala.prism.kycbridge.services
 
+import cats.syntax.functor._
 import doobie.util.transactor.Transactor
 import fs2.Stream
 import io.iohk.atala.prism.kycbridge.db.ConnectionDao
 import io.iohk.atala.prism.models.{ConnectionId, ConnectionState, ConnectionToken}
 import io.iohk.atala.prism.services.ConnectorClientService
+import io.iohk.atala.prism.utils.syntax.DBConnectionOps
 import monix.eval.Task
 import org.slf4j.LoggerFactory
 import doobie.implicits._
@@ -21,7 +23,9 @@ class ConnectionService(tx: Transactor[Task], connectorService: ConnectorClientS
   val connectionUpdateStream: Stream[Task, Unit] = {
     Stream
       .eval(
-        ConnectionDao.findLastSeenConnectionId.transact(tx)
+        ConnectionDao.findLastSeenConnectionId
+          .logSQLErrors("finding last seen connection id", logger)
+          .transact(tx)
       )
       .flatMap(lastSeenConnectionId =>
         connectorService
@@ -43,8 +47,9 @@ class ConnectionService(tx: Transactor[Task], connectorService: ConnectorClientS
 
             ConnectionDao
               .update(connection)
+              .logSQLErrors("updating connection", logger)
               .transact(tx)
-              .map(_ => connection)
+              .as(connection)
           })
           .drain
       )

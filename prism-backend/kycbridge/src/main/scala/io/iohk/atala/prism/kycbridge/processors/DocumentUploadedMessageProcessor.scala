@@ -21,6 +21,7 @@ import io.iohk.atala.prism.services.MessageProcessor.MessageProcessorException
 import io.iohk.atala.prism.kycbridge.models.{Connection, faceId}
 import doobie.implicits._
 import io.iohk.atala.prism.kycbridge.models.assureId.implicits._
+import io.iohk.atala.prism.utils.syntax.DBConnectionOps
 import org.slf4j.LoggerFactory
 
 class DocumentUploadedMessageProcessor(
@@ -40,7 +41,12 @@ class DocumentUploadedMessageProcessor(
         logger.info(s"Processing message with document instance id: ${message.documentInstanceId}")
         (for {
           // get required informations
-          connection <- EitherT(Connection.fromReceivedMessage(receivedMessage).transact(tx))
+          connection <- EitherT(
+            Connection
+              .fromReceivedMessage(receivedMessage)
+              .logSQLErrors("getting connection from received message", logger)
+              .transact(tx)
+          )
           documentStatus <- EitherT(assureIdService.getDocumentStatus(message.documentInstanceId))
             .leftMap(MessageProcessorException.apply)
           document <-
@@ -48,7 +54,10 @@ class DocumentUploadedMessageProcessor(
 
           // update connection with new document status
           _ <- EitherT.right[MessageProcessorException](
-            ConnectionDao.update(connection.copy(acuantDocumentStatus = Some(documentStatus))).transact(tx)
+            ConnectionDao
+              .update(connection.copy(acuantDocumentStatus = Some(documentStatus)))
+              .logSQLErrors("updating connection", logger)
+              .transact(tx)
           )
 
           frontScannedImage <- EitherT(assureIdService.getFrontImageFromDocument(document.instanceId)).leftMap(e =>

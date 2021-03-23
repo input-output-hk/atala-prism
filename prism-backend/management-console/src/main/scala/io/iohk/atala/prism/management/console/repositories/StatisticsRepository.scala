@@ -7,8 +7,12 @@ import io.iohk.atala.prism.management.console.models.{ParticipantId, Statistics,
 import io.iohk.atala.prism.management.console.repositories.daos.StatisticsDAO
 import io.iohk.atala.prism.utils.FutureEither
 import io.iohk.atala.prism.utils.FutureEither.FutureEitherOps
+import io.iohk.atala.prism.utils.syntax.DBConnectionOps
+import org.slf4j.{Logger, LoggerFactory}
 
 class StatisticsRepository(xa: Transactor[IO]) {
+
+  val logger: Logger = LoggerFactory.getLogger(getClass)
 
   def query(
       participantId: ParticipantId,
@@ -16,6 +20,7 @@ class StatisticsRepository(xa: Transactor[IO]) {
   ): FutureEither[Nothing, Statistics] = {
     StatisticsDAO
       .query(participantId, timeIntervalMaybe)
+      .logSQLErrors(s"getting statistics, participant id - $participantId", logger)
       .transact(xa)
       .map(Right(_))
       .unsafeToFuture()

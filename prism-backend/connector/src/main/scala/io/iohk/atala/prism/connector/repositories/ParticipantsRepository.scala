@@ -14,6 +14,7 @@ import io.iohk.atala.prism.identity.DID
 import io.iohk.atala.prism.models.{ParticipantId, TransactionInfo}
 import io.iohk.atala.prism.utils.FutureEither
 import io.iohk.atala.prism.utils.FutureEither.FutureEitherOps
+import io.iohk.atala.prism.utils.syntax.DBConnectionOps
 import org.postgresql.util.PSQLException
 import org.slf4j.{Logger, LoggerFactory}
 
@@ -39,6 +40,7 @@ class ParticipantsRepository(xa: Transactor[IO]) extends ConnectorErrorSupport {
 
     ParticipantsDAO
       .insert(info)
+      .logSQLErrors("inserting participants", logger)
       .transact(xa)
       .map(_.asRight)
       .handleErrorWith {
@@ -57,8 +59,9 @@ class ParticipantsRepository(xa: Transactor[IO]) extends ConnectorErrorSupport {
       .toRight(
         UnknownValueError("id", id.uuid.toString).logWarn
       )
-      .transact(xa)
       .value
+      .logSQLErrors(s"finding, participant id - $id", logger)
+      .transact(xa)
       .unsafeToFuture()
       .toFutureEither
   }
@@ -75,8 +78,9 @@ class ParticipantsRepository(xa: Transactor[IO]) extends ConnectorErrorSupport {
           encodedPublicKey
         ).logWarn
       )
-      .transact(xa)
       .value
+      .logSQLErrors("finding by public key", logger)
+      .transact(xa)
       .unsafeToFuture()
       .toFutureEither
   }
@@ -89,8 +93,9 @@ class ParticipantsRepository(xa: Transactor[IO]) extends ConnectorErrorSupport {
       .toRight(
         UnknownValueError("did", did.value).logWarn
       )
-      .transact(xa)
       .value
+      .logSQLErrors(s"finding, did - $did", logger)
+      .transact(xa)
       .unsafeToFuture()
       .toFutureEither
   }

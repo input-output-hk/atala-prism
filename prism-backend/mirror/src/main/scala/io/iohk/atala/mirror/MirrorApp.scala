@@ -33,6 +33,7 @@ import doobie.implicits._
 import io.iohk.atala.mirror.protos.trisa.TrisaPeer2PeerGrpc
 import io.iohk.atala.prism.protos.connector_api.ConnectorServiceGrpc
 import io.iohk.atala.prism.protos.node_api.NodeServiceGrpc
+import io.iohk.atala.prism.utils.syntax.DBConnectionOps
 
 object MirrorApp extends TaskApp {
 
@@ -110,8 +111,16 @@ object MirrorApp extends TaskApp {
           cardanoAddressInfoService.payIdMessageProcessor,
           cardanoAddressInfoService.payIdNameRegistrationMessageProcessor
         ),
-        findLastMessageOffset = ConnectorMessageOffsetDao.findLastMessageOffset().transact(tx),
-        saveMessageOffset = messageId => ConnectorMessageOffsetDao.updateLastMessageOffset(messageId).transact(tx).void
+        findLastMessageOffset = ConnectorMessageOffsetDao
+          .findLastMessageOffset()
+          .logSQLErrors("finding last message offset", logger)
+          .transact(tx),
+        saveMessageOffset = messageId =>
+          ConnectorMessageOffsetDao
+            .updateLastMessageOffset(messageId)
+            .logSQLErrors("updating last message offset", logger)
+            .transact(tx)
+            .void
       )
       trisaPeer2PeerService = new TrisaPeer2PeerService()
 

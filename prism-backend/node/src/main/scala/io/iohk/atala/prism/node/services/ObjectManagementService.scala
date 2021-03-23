@@ -30,6 +30,7 @@ import io.iohk.atala.prism.node.services.ObjectManagementService.{
 import io.iohk.atala.prism.node.services.models.AtalaObjectNotification
 import io.iohk.atala.prism.protos.node_internal.AtalaObject.Block
 import io.iohk.atala.prism.protos.{node_internal, node_models}
+import io.iohk.atala.prism.utils.syntax.DBConnectionOps
 import monix.execution.Scheduler
 import org.slf4j.LoggerFactory
 
@@ -81,6 +82,7 @@ class ObjectManagementService private (
     } yield obj
 
     query
+      .logSQLErrors("setting object transaction details", logger)
       .transact(xa)
       .unsafeToFuture()
       .recover {
@@ -94,7 +96,7 @@ class ObjectManagementService private (
       .flatMap {
         case Some(obj) =>
           processObject(obj).flatMap { transaction =>
-            transaction.transact(xa).unsafeToFuture().map(_ => ())
+            transaction.logSQLErrors("saving object", logger).transact(xa).unsafeToFuture().map(_ => ())
           } recover {
             case error => logger.warn(s"Could not process object $obj", error)
           }
@@ -137,7 +139,7 @@ class ObjectManagementService private (
 
     for {
       // Insert object into DB
-      _ <- insertObject.transact(xa).unsafeToFuture()
+      _ <- insertObject.logSQLErrors("inserting object", logger).transact(xa).unsafeToFuture()
       // If the ledger does not support data on-chain, then store it off-chain
       _ <- storeDataOffChain()
       // Publish object to the blockchain
@@ -164,6 +166,7 @@ class ObjectManagementService private (
               toAtalaObjectTransactionSubmissionStatus(publication.status)
             )
           )
+          .logSQLErrors("publishing and record transaction", logger)
           .transact(xa)
           .unsafeToFuture()
     } yield publication.transaction
@@ -237,6 +240,7 @@ class ObjectManagementService private (
             status = AtalaObjectTransactionSubmissionStatus.Pending,
             ledger = atalaReferenceLedger.getType
           )
+          .logSQLErrors("retry old pending transactions", logger)
           .transact(xa)
           .unsafeToFuture()
       // Process each pending transaction
@@ -258,6 +262,7 @@ class ObjectManagementService private (
                 transaction.transactionId,
                 AtalaObjectTransactionSubmissionStatus.InLedger
               )
+              .logSQLErrors("retry transaction if pending", logger)
               .transact(xa)
               .unsafeToFuture()
 
@@ -279,10 +284,16 @@ class ObjectManagementService private (
             transaction.transactionId,
             AtalaObjectTransactionSubmissionStatus.Deleted
           )
+          .logSQLErrors("updating status", logger)
           .transact(xa)
           .unsafeToFuture()
       // Retrieve and parse object from the DB
-      maybeAtalaObject <- AtalaObjectsDAO.get(transaction.atalaObjectId).transact(xa).unsafeToFuture()
+      maybeAtalaObject <-
+        AtalaObjectsDAO
+          .get(transaction.atalaObjectId)
+          .logSQLErrors("getting object", logger)
+          .transact(xa)
+          .unsafeToFuture()
       atalaObject =
         maybeAtalaObject
           .map(_.byteContent)
@@ -301,6 +312,7 @@ class ObjectManagementService private (
       maybeLatestSubmission <-
         AtalaObjectTransactionSubmissionsDAO
           .getLatest(transaction.ledger, transaction.transactionId)
+          .logSQLErrors("getting latest transaction and status", logger)
           .transact(xa)
           .unsafeToFuture()
       maybeTransactionAndStatus <- getLatestTransactionAndStatus(maybeLatestSubmission)
@@ -316,6 +328,7 @@ class ObjectManagementService private (
           maybeAtalaObject <-
             AtalaObjectsDAO
               .get(latestSubmission.atalaObjectId)
+              .logSQLErrors("getting object while getting latest transaction and status", logger)
               .transact(xa)
               .unsafeToFuture()
           // This is not expected to fail because if a submission exists, the object must too

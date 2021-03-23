@@ -7,11 +7,15 @@ import doobie.{Get, Read}
 import io.iohk.atala.prism.utils.DoobieImplicits._
 import io.iohk.atala.prism.utils.FutureEither
 import io.iohk.atala.prism.utils.FutureEither.{FutureEitherOps, FutureOptionOps}
+import io.iohk.atala.prism.utils.syntax.DBConnectionOps
 import io.iohk.atala.prism.node.bitcoin.models.{BlockError, BlockHeader, Blockhash}
+import org.slf4j.{Logger, LoggerFactory}
 
 import scala.concurrent.ExecutionContext
 
 class BlocksRepository(xa: Transactor[IO])(implicit ec: ExecutionContext) {
+
+  val logger: Logger = LoggerFactory.getLogger(getClass)
 
   import BlocksRepository._
 
@@ -20,6 +24,7 @@ class BlocksRepository(xa: Transactor[IO])(implicit ec: ExecutionContext) {
          |INSERT INTO blocks (blockhash, height, time, previous_blockhash)
          |VALUES (${block.hash.value}, ${block.height}, ${block.time}, ${block.previous.map(_.value)})
      """.stripMargin.update.run
+      .logSQLErrors("creating", logger)
       .transact(xa)
       .unsafeToFuture()
       .map(_ => Right(()))
@@ -35,6 +40,7 @@ class BlocksRepository(xa: Transactor[IO])(implicit ec: ExecutionContext) {
        """.stripMargin.query[BlockHeader].option
 
     program
+      .logSQLErrors("finding", logger)
       .transact(xa)
       .unsafeToFuture()
       .toFutureEither(BlockError.NotFound(blockhash))
@@ -50,6 +56,7 @@ class BlocksRepository(xa: Transactor[IO])(implicit ec: ExecutionContext) {
        """.stripMargin.query[BlockHeader].option
 
     program
+      .logSQLErrors("getting latest", logger)
       .transact(xa)
       .unsafeToFuture()
       .toFutureEither(BlockError.NoneAvailable)
@@ -71,6 +78,7 @@ class BlocksRepository(xa: Transactor[IO])(implicit ec: ExecutionContext) {
        """.stripMargin.query[BlockHeader].option
 
     program
+      .logSQLErrors("removing latest", logger)
       .transact(xa)
       .unsafeToFuture()
       .toFutureEither(BlockError.NoneAvailable)

@@ -15,10 +15,15 @@ import io.iohk.atala.prism.console.repositories.daos.{ContactsDAO, IssuerGroupsD
 import io.iohk.atala.prism.models.ParticipantId
 import io.iohk.atala.prism.utils.FutureEither
 import io.iohk.atala.prism.utils.FutureEither.FutureEitherOps
+import io.iohk.atala.prism.utils.syntax.DBConnectionOps
+import org.slf4j.{Logger, LoggerFactory}
 
 import scala.concurrent.ExecutionContext
 
 class ContactsRepository(xa: Transactor[IO])(implicit ec: ExecutionContext) {
+
+  val logger: Logger = LoggerFactory.getLogger(getClass)
+
   def create(
       contactData: CreateContact,
       maybeGroupName: Option[IssuerGroup.Name]
@@ -44,6 +49,7 @@ class ContactsRepository(xa: Transactor[IO])(implicit ec: ExecutionContext) {
     }
 
     query
+      .logSQLErrors("creating contact", logger)
       .transact(xa)
       .unsafeToFuture()
       .toFutureEither
@@ -52,6 +58,7 @@ class ContactsRepository(xa: Transactor[IO])(implicit ec: ExecutionContext) {
   def find(issuerId: Institution.Id, subjectId: Contact.Id): FutureEither[Nothing, Option[Contact]] = {
     ContactsDAO
       .findContact(issuerId, subjectId)
+      .logSQLErrors(s"finding contact,subject id - $issuerId", logger)
       .transact(xa)
       .map(Right(_))
       .unsafeToFuture()
@@ -61,6 +68,7 @@ class ContactsRepository(xa: Transactor[IO])(implicit ec: ExecutionContext) {
   def find(issuerId: Institution.Id, externalId: Contact.ExternalId): FutureEither[Nothing, Option[Contact]] = {
     ContactsDAO
       .findContact(issuerId, externalId)
+      .logSQLErrors(s"finding, external id - $externalId", logger)
       .transact(xa)
       .map(Right(_))
       .unsafeToFuture()
@@ -75,6 +83,7 @@ class ContactsRepository(xa: Transactor[IO])(implicit ec: ExecutionContext) {
   ): FutureEither[ConnectorError, Seq[Contact]] = {
     ContactsDAO
       .getBy(createdBy, lastSeen, limit, groupName)
+      .logSQLErrors(s"getting, created by - $createdBy", logger)
       .transact(xa)
       .unsafeToFuture()
       .map(Right(_))
@@ -89,7 +98,8 @@ class ContactsRepository(xa: Transactor[IO])(implicit ec: ExecutionContext) {
       _ <- ContactsDAO.setConnectionToken(issuerId, contactId, token)
     } yield ()
 
-    tx.transact(xa)
+    tx.logSQLErrors(s"generating token, contact id - $contactId", logger)
+      .transact(xa)
       .unsafeToFuture()
       .map(_ => Right(token))
       .toFutureEither

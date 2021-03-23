@@ -1,7 +1,6 @@
 package io.iohk.atala.mirror.services
 
 import java.time.Instant
-
 import cats.data.OptionT
 import monix.eval.Task
 import doobie.util.transactor.Transactor
@@ -35,8 +34,12 @@ import io.iohk.atala.prism.credentials.Credential
 import io.circe.generic.auto._
 import io.iohk.atala.prism.models.{ConnectionState, ConnectionToken}
 import io.iohk.atala.prism.services.ConnectorClientService
+import io.iohk.atala.prism.utils.syntax.DBConnectionOps
+import org.slf4j.{Logger, LoggerFactory}
 
 class MirrorService(tx: Transactor[Task], connectorService: ConnectorClientService) {
+
+  val logger: Logger = LoggerFactory.getLogger(getClass)
 
   def createAccount: Task[CreateAccountResponse] = {
     connectorService.generateConnectionToken
@@ -47,6 +50,7 @@ class MirrorService(tx: Transactor[Task], connectorService: ConnectorClientServi
 
             ConnectionDao
               .insert(Connection(newToken, None, ConnectionState.Invited, Instant.now(), None, None))
+              .logSQLErrors("inserting connection", logger)
               .transact(tx)
               .map(_ => CreateAccountResponse(newToken.token))
           }
@@ -62,7 +66,7 @@ class MirrorService(tx: Transactor[Task], connectorService: ConnectorClientServi
     val credentialsOption = (for {
       address <- OptionT(CardanoAddressInfoDao.findBy(CardanoAddress(request.address)))
       credentials <- OptionT.liftF(UserCredentialDao.findBy(address.connectionToken))
-    } yield credentials).transact(tx).value
+    } yield credentials).value.logSQLErrors("finding credentials", logger).transact(tx)
 
     credentialsOption.map {
       case Some(credentials) =>
@@ -103,7 +107,7 @@ class MirrorService(tx: Transactor[Task], connectorService: ConnectorClientServi
           .lastOption
           .toOptionT[ConnectionIO]
 
-    } yield redlandCredential).transact(tx).value
+    } yield redlandCredential).value.logSQLErrors("finding credentials", logger).transact(tx)
 
     redlandCredentialOption.map {
       case Some(redlandIdCredential) =>

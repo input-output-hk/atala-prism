@@ -9,6 +9,7 @@ import io.iohk.atala.prism.crypto.ECPublicKey
 import io.iohk.atala.prism.models.ParticipantId
 import io.iohk.atala.prism.utils.FutureEither
 import io.iohk.atala.prism.utils.FutureEither._
+import io.iohk.atala.prism.utils.syntax.DBConnectionOps
 import io.iohk.atala.prism.connector.errors._
 import io.iohk.atala.prism.connector.model._
 import io.iohk.atala.prism.connector.repositories.daos.{
@@ -67,6 +68,7 @@ object ConnectionsRepository {
     ): FutureEither[Nothing, List[TokenString]] = {
       ConnectionTokensDAO
         .insert(initiator, tokens)
+        .logSQLErrors("inserting tokens", logger)
         .transact(xa)
         .unsafeToFuture()
         .map(_ => Right(tokens))
@@ -79,8 +81,9 @@ object ConnectionsRepository {
       ParticipantsDAO
         .findBy(token)
         .toRight(UnknownValueError("token", token.token).logWarn)
-        .transact(xa)
         .value
+        .logSQLErrors("getting token info", logger)
+        .transact(xa)
         .unsafeToFuture()
         .toFutureEither
     }
@@ -142,9 +145,9 @@ object ConnectionsRepository {
         ConnectionStatus.ConnectionAccepted
       )
 
-      query
+      query.value
+        .logSQLErrors("adding connection from token", logger)
         .transact(xa)
-        .value
         .unsafeToFuture()
         .toFutureEither
     }
@@ -197,9 +200,9 @@ object ConnectionsRepository {
         }
       } yield ()
 
-      query
+      query.value
+        .logSQLErrors(s"revoke connection, connection id - $connectionId", logger)
         .transact(xa)
-        .value
         .unsafeToFuture()
         .toFutureEither
     }
@@ -216,6 +219,7 @@ object ConnectionsRepository {
       } else {
         ConnectionsDAO
           .getConnectionsPaginated(participant, limit, lastSeenConnectionId)
+          .logSQLErrors("getting connection paginated", logger)
           .transact(xa)
           .unsafeToFuture()
           .map(seq => Right(seq))
@@ -233,6 +237,7 @@ object ConnectionsRepository {
       } yield participantInfo
 
       query.value
+        .logSQLErrors(s"getting other side info, connection id - $id", logger)
         .transact(xa)
         .unsafeToFuture()
         .map(Right(_))
@@ -242,6 +247,7 @@ object ConnectionsRepository {
     override def getConnectionByToken(token: TokenString): FutureEither[ConnectorError, Option[Connection]] = {
       ConnectionsDAO
         .getConnectionByToken(token)
+        .logSQLErrors("getting connection by token", logger)
         .transact(xa)
         .unsafeToFuture()
         .map(Right(_))
@@ -253,6 +259,7 @@ object ConnectionsRepository {
     ): FutureEither[ConnectorError, List[ContactConnection]] = {
       ConnectionsDAO
         .getConnectionsByConnectionTokens(connectionTokens)
+        .logSQLErrors("getting by connection tokens", logger)
         .transact(xa)
         .unsafeToFuture()
         .map(Right(_))

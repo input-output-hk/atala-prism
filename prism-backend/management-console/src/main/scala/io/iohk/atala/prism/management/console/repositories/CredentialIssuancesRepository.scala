@@ -35,14 +35,18 @@ import io.iohk.atala.prism.management.console.repositories.daos.{
 }
 import io.iohk.atala.prism.utils.FutureEither
 import io.iohk.atala.prism.utils.FutureEither.FutureEitherOps
+import io.iohk.atala.prism.utils.syntax.DBConnectionOps
 import io.scalaland.chimney.dsl._
 import io.iohk.atala.prism.management.console.models.CredentialTypeWithRequiredFields
 import io.iohk.atala.prism.management.console.validations.CredentialDataValidator
+import org.slf4j.{Logger, LoggerFactory}
 
 import scala.concurrent.ExecutionContext
 
 class CredentialIssuancesRepository(xa: Transactor[IO])(implicit ec: ExecutionContext) {
   import CredentialIssuancesRepository._
+
+  val logger: Logger = LoggerFactory.getLogger(getClass)
 
   private def createContacts(
       createCredentialIssuance: CreateCredentialIssuance,
@@ -210,6 +214,7 @@ class CredentialIssuancesRepository(xa: Transactor[IO])(implicit ec: ExecutionCo
       createCredentialIssuance: CreateCredentialIssuance
   ): FutureEither[ManagementConsoleError, CredentialIssuance.Id] = {
     createQuery(participantId, createCredentialIssuance)
+      .logSQLErrors(s"creating credential issuance, participant id - $participantId", logger)
       .transact(xa)
       .unsafeToFuture()
       .toFutureEither
@@ -257,9 +262,9 @@ class CredentialIssuancesRepository(xa: Transactor[IO])(implicit ec: ExecutionCo
       credentialId <- EitherT(createQuery(participantId, createCredentialIssuance))
     } yield credentialId
 
-    query
+    query.value
+      .logSQLErrors(s"creating bulk credential issuance, participant id - $participantId", logger)
       .transact(xa)
-      .value
       .unsafeToFuture()
       .toFutureEither
   }
@@ -284,6 +289,7 @@ class CredentialIssuancesRepository(xa: Transactor[IO])(implicit ec: ExecutionCo
     } yield issuance
 
     query
+      .logSQLErrors(s"getting credential, issuance id - $credentialIssuanceId", logger)
       .transact(xa)
       .unsafeToFuture()
       .map(Right(_))

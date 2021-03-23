@@ -11,13 +11,19 @@ import io.iohk.atala.prism.console.models.{Contact, Institution, IssuerGroup}
 import io.iohk.atala.prism.console.repositories.daos.{ContactsDAO, IssuerGroupsDAO}
 import io.iohk.atala.prism.utils.FutureEither
 import io.iohk.atala.prism.utils.FutureEither.FutureEitherOps
+import io.iohk.atala.prism.utils.syntax.DBConnectionOps
+import org.slf4j.{Logger, LoggerFactory}
 
 import scala.concurrent.ExecutionContext
 
 class GroupsRepository(xa: Transactor[IO])(implicit ec: ExecutionContext) {
+
+  val logger: Logger = LoggerFactory.getLogger(getClass)
+
   def create(issuer: Institution.Id, name: IssuerGroup.Name): FutureEither[Nothing, IssuerGroup] = {
     IssuerGroupsDAO
       .create(issuer, name)
+      .logSQLErrors(s"creating issuer, issuer id - $issuer", logger)
       .transact(xa)
       .unsafeToFuture()
       .map(Right(_))
@@ -33,7 +39,8 @@ class GroupsRepository(xa: Transactor[IO])(implicit ec: ExecutionContext) {
       case None => IssuerGroupsDAO.getBy(issuer)
     }
 
-    tx.transact(xa)
+    tx.logSQLErrors(s"getting, issuer id - $issuer", logger)
+      .transact(xa)
       .unsafeToFuture()
       .map(Right(_))
       .toFutureEither
@@ -49,7 +56,12 @@ class GroupsRepository(xa: Transactor[IO])(implicit ec: ExecutionContext) {
       contacts <- IssuerGroupsDAO.listContacts(group.id)
     } yield contacts
 
-    connectionIo.transact(xa).unsafeToFuture().map(Right(_)).toFutureEither
+    connectionIo
+      .logSQLErrors(s"listing contacts, issuer id - $issuer", logger)
+      .transact(xa)
+      .unsafeToFuture()
+      .map(Right(_))
+      .toFutureEither
   }
 
   def updateGroup(
@@ -94,6 +106,10 @@ class GroupsRepository(xa: Transactor[IO])(implicit ec: ExecutionContext) {
       }
     } yield result
 
-    connectionIo.transact(xa).unsafeToFuture().toFutureEither
+    connectionIo
+      .logSQLErrors(s"updating group, group id - $groupId", logger)
+      .transact(xa)
+      .unsafeToFuture()
+      .toFutureEither
   }
 }

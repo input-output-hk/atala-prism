@@ -7,9 +7,13 @@ import io.iohk.atala.prism.kycbridge.db.ConnectionDao
 import io.iohk.atala.prism.models.{ConnectionState, ConnectionToken}
 import io.iohk.atala.prism.services.ConnectorClientService
 import io.iohk.atala.prism.kycbridge.models.Connection
+import io.iohk.atala.prism.utils.syntax.DBConnectionOps
 import doobie.implicits._
+import org.slf4j.{Logger, LoggerFactory}
 
 class KycBridgeService(tx: Transactor[Task], connectorService: ConnectorClientService) {
+
+  val logger: Logger = LoggerFactory.getLogger(getClass)
 
   def createAccount: Task[CreateAccountResponse] = {
     connectorService.generateConnectionToken
@@ -28,6 +32,7 @@ class KycBridgeService(tx: Transactor[Task], connectorService: ConnectorClientSe
                   acuantDocumentStatus = None
                 )
               )
+              .logSQLErrors("creating account", logger)
               .transact(tx)
               .map(_ => CreateAccountResponse(newToken.token))
           }

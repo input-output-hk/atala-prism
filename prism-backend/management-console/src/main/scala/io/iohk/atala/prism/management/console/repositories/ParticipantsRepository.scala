@@ -24,6 +24,7 @@ import io.iohk.atala.prism.management.console.models.{
 import io.iohk.atala.prism.management.console.repositories.daos.{CredentialTypeDao, ParticipantsDAO}
 import io.iohk.atala.prism.utils.FutureEither
 import io.iohk.atala.prism.utils.FutureEither.FutureEitherOps
+import io.iohk.atala.prism.utils.syntax.DBConnectionOps
 import org.postgresql.util.PSQLException
 import org.slf4j.{Logger, LoggerFactory}
 
@@ -47,6 +48,7 @@ class ParticipantsRepository(
       _ <- ParticipantsDAO.insert(info)
       _ <- CredentialTypeDao.insertDefaultCredentialTypes(request.id, defaultCredentialTypeConfig)
     } yield ())
+      .logSQLErrors("creating", logger)
       .transact(xa)
       .map(_.asRight)
       .handleErrorWith {
@@ -67,6 +69,7 @@ class ParticipantsRepository(
           UnknownValueError("id", id.uuid.toString).logWarn
         )
       )
+      .logSQLErrors(s"finding, participant id - $id", logger)
       .transact(xa)
       .unsafeToFuture()
       .toFutureEither
@@ -82,6 +85,7 @@ class ParticipantsRepository(
           UnknownValueError("did", did.value).logWarn
         )
       )
+      .logSQLErrors(s"finding, did - $did", logger)
       .transact(xa)
       .unsafeToFuture()
       .toFutureEither

@@ -29,10 +29,14 @@ import io.iohk.atala.prism.management.console.validations.CredentialDataValidato
 import io.iohk.atala.prism.models.TransactionInfo
 import io.iohk.atala.prism.utils.FutureEither
 import io.iohk.atala.prism.utils.FutureEither.{FutureEitherFOps, FutureEitherOps}
+import io.iohk.atala.prism.utils.syntax.DBConnectionOps
+import org.slf4j.{Logger, LoggerFactory}
 
 import scala.concurrent.ExecutionContext
 
 class CredentialsRepository(xa: Transactor[IO])(implicit ec: ExecutionContext) {
+
+  val logger: Logger = LoggerFactory.getLogger(getClass)
 
   def create(
       participantId: ParticipantId,
@@ -93,9 +97,9 @@ class CredentialsRepository(xa: Transactor[IO])(implicit ec: ExecutionContext) {
         )
       } yield credential
 
-    transaction
+    transaction.value
+      .logSQLErrors(s"creating credential, participant id - $participantId", logger)
       .transact(xa)
-      .value
       .unsafeToFuture()
       .toFutureEither
   }
@@ -103,6 +107,7 @@ class CredentialsRepository(xa: Transactor[IO])(implicit ec: ExecutionContext) {
   def getBy(credentialId: GenericCredential.Id): FutureEither[Nothing, Option[GenericCredential]] = {
     CredentialsDAO
       .getBy(credentialId)
+      .logSQLErrors(s"getting, credential id - $credentialId", logger)
       .transact(xa)
       .unsafeToFuture()
       .map(Right(_))
@@ -116,6 +121,7 @@ class CredentialsRepository(xa: Transactor[IO])(implicit ec: ExecutionContext) {
   ): FutureEither[Nothing, List[GenericCredential]] = {
     CredentialsDAO
       .getBy(issuedBy, limit, lastSeenCredential)
+      .logSQLErrors(s"getting, issued id - $issuedBy", logger)
       .transact(xa)
       .unsafeToFuture()
       .map(Right(_))
@@ -125,6 +131,7 @@ class CredentialsRepository(xa: Transactor[IO])(implicit ec: ExecutionContext) {
   def getBy(issuedBy: ParticipantId, subjectId: Contact.Id): FutureEither[Nothing, List[GenericCredential]] = {
     CredentialsDAO
       .getBy(issuedBy, subjectId)
+      .logSQLErrors(s"getting, subject id - $subjectId", logger)
       .transact(xa)
       .unsafeToFuture()
       .map(Right(_))
@@ -134,6 +141,7 @@ class CredentialsRepository(xa: Transactor[IO])(implicit ec: ExecutionContext) {
   def storePublicationData(issuerId: ParticipantId, credentialData: PublishCredential): FutureEither[Nothing, Int] = {
     CredentialsDAO
       .storePublicationData(issuerId, credentialData)
+      .logSQLErrors(s"store publication data, issuer id - $issuerId", logger)
       .transact(xa)
       .unsafeToFuture()
       .lift
@@ -145,6 +153,7 @@ class CredentialsRepository(xa: Transactor[IO])(implicit ec: ExecutionContext) {
   ): FutureEither[Nothing, Unit] = {
     CredentialsDAO
       .markAsShared(issuerId, credentialsIds)
+      .logSQLErrors(s"marking as shared, issuer id - $issuerId", logger)
       .transact(xa)
       .unsafeToFuture()
       .map(Right(_))
@@ -157,6 +166,7 @@ class CredentialsRepository(xa: Transactor[IO])(implicit ec: ExecutionContext) {
   ): FutureEither[ManagementConsoleError, Unit] = {
     CredentialsDAO
       .verifyPublishedCredentialsExist(issuerId, credentialsIds)
+      .logSQLErrors(s"verifying published credentials exists, issuer id - $issuerId", logger)
       .transact(xa)
       .unsafeToFuture()
       .map { existingCredentialIds =>
@@ -174,6 +184,7 @@ class CredentialsRepository(xa: Transactor[IO])(implicit ec: ExecutionContext) {
   ): FutureEither[Nothing, Int] = {
     CredentialsDAO
       .storeBatchData(batchId, issuanceTransactionInfo, issuanceOperationHash)
+      .logSQLErrors(s"storing batch data, batch id - $batchId", logger)
       .transact(xa)
       .unsafeToFuture()
       .lift

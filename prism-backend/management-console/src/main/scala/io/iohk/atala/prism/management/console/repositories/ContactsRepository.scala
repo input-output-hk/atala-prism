@@ -24,11 +24,16 @@ import io.iohk.atala.prism.management.console.repositories.daos.{
 import io.iohk.atala.prism.models.ConnectionToken
 import io.iohk.atala.prism.utils.FutureEither
 import io.iohk.atala.prism.utils.FutureEither.FutureEitherOps
+import io.iohk.atala.prism.utils.syntax.DBConnectionOps
+import org.slf4j.{Logger, LoggerFactory}
 
 import java.time.Instant
 import scala.concurrent.ExecutionContext
 
 class ContactsRepository(xa: Transactor[IO])(implicit ec: ExecutionContext) {
+
+  val logger: Logger = LoggerFactory.getLogger(getClass)
+
   def create(
       participantId: ParticipantId,
       contactData: CreateContact,
@@ -49,6 +54,7 @@ class ContactsRepository(xa: Transactor[IO])(implicit ec: ExecutionContext) {
     }
 
     query
+      .logSQLErrors(s"creating contact, participant id - $participantId", logger)
       .transact(xa)
       .unsafeToFuture()
       .map(Right(_))
@@ -76,6 +82,7 @@ class ContactsRepository(xa: Transactor[IO])(implicit ec: ExecutionContext) {
     } yield result
 
     connectionIO
+      .logSQLErrors(s"creating contacts by batch, institution id - $institutionId", logger)
       .transact(xa)
       .unsafeToFuture()
       .toFutureEither
@@ -84,6 +91,7 @@ class ContactsRepository(xa: Transactor[IO])(implicit ec: ExecutionContext) {
   def updateContact(institutionId: ParticipantId, request: UpdateContact): FutureEither[Nothing, Unit] = {
     ContactsDAO
       .updateContact(institutionId, request)
+      .logSQLErrors(s"updating contact, institution id - $institutionId", logger)
       .transact(xa)
       .map(Right(_))
       .unsafeToFuture()
@@ -97,6 +105,7 @@ class ContactsRepository(xa: Transactor[IO])(implicit ec: ExecutionContext) {
       receivedCredentials <- OptionT.liftF(ReceivedCredentialsDAO.getReceivedCredentialsFor(institutionId, contactId))
       issuedCredentials <- OptionT.liftF(CredentialsDAO.getIssuedCredentialsBy(institutionId, contactId))
     } yield Contact.WithDetails(contact, institutionsInvolved, receivedCredentials, issuedCredentials)).value
+      .logSQLErrors(s"finding contact with details, contact id - $contactId", logger)
       .transact(xa)
       .map(Right(_))
       .unsafeToFuture()
@@ -106,6 +115,7 @@ class ContactsRepository(xa: Transactor[IO])(implicit ec: ExecutionContext) {
   def find(institutionId: ParticipantId, externalId: Contact.ExternalId): FutureEither[Nothing, Option[Contact]] = {
     ContactsDAO
       .findContact(institutionId, externalId)
+      .logSQLErrors(s"finding contact, institution id - $institutionId", logger)
       .transact(xa)
       .map(Right(_))
       .unsafeToFuture()
@@ -115,6 +125,7 @@ class ContactsRepository(xa: Transactor[IO])(implicit ec: ExecutionContext) {
   def findContacts(institutionId: ParticipantId, contactIds: List[Contact.Id]): FutureEither[Nothing, List[Contact]] = {
     ContactsDAO
       .findContacts(institutionId, contactIds)
+      .logSQLErrors(s"finding contacts, institution id - $institutionId", logger)
       .transact(xa)
       .map(Right(_))
       .unsafeToFuture()
@@ -127,6 +138,7 @@ class ContactsRepository(xa: Transactor[IO])(implicit ec: ExecutionContext) {
   ): FutureEither[ManagementConsoleError, Seq[Contact.WithCredentialCounts]] = {
     ContactsDAO
       .getBy(createdBy, constraints)
+      .logSQLErrors(s"getting by some constraint, created by - $createdBy", logger)
       .transact(xa)
       .unsafeToFuture()
       .map(Right(_))
@@ -170,6 +182,7 @@ class ContactsRepository(xa: Transactor[IO])(implicit ec: ExecutionContext) {
     } yield result
 
     connectionIO.value
+      .logSQLErrors(s"deleting contact, institution id - $institutionId", logger)
       .transact(xa)
       .unsafeToFuture()
       .toFutureEither

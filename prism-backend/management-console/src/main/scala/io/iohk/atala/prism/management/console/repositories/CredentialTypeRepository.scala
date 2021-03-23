@@ -25,10 +25,15 @@ import io.iohk.atala.prism.management.console.models.{
 import io.iohk.atala.prism.management.console.repositories.daos.CredentialTypeDao
 import io.iohk.atala.prism.utils.FutureEither
 import io.iohk.atala.prism.utils.FutureEither.FutureEitherOps
+import io.iohk.atala.prism.utils.syntax.DBConnectionOps
 import doobie.free.connection
 import io.iohk.atala.prism.credentials.utils.Mustache
+import org.slf4j.{Logger, LoggerFactory}
 
 class CredentialTypeRepository(xa: Transactor[IO]) {
+
+  val logger: Logger = LoggerFactory.getLogger(getClass)
+
   def create(
       participantId: ParticipantId,
       createCredentialType: CreateCredentialType
@@ -41,6 +46,7 @@ class CredentialTypeRepository(xa: Transactor[IO]) {
           ),
         _ => CredentialTypeDao.create(participantId, createCredentialType).map(Right(_))
       )
+      .logSQLErrors(s"creating credential type, participant id - $participantId", logger)
       .transact(xa)
       .unsafeToFuture()
       .toFutureEither
@@ -115,6 +121,7 @@ class CredentialTypeRepository(xa: Transactor[IO]) {
             callback(credentialType)
       }
     } yield result)
+      .logSQLErrors(s"getting something with credential type id - $credentialTypeId", logger)
       .transact(xa)
       .unsafeToFuture()
       .toFutureEither
@@ -148,6 +155,7 @@ class CredentialTypeRepository(xa: Transactor[IO]) {
   def findByInstitution(institution: ParticipantId): FutureEither[Nothing, List[CredentialType]] = {
     CredentialTypeDao
       .findCredentialTypes(institution)
+      .logSQLErrors(s"finding, institution id - $institution", logger)
       .transact(xa)
       .map(Right(_))
       .unsafeToFuture()
@@ -159,6 +167,7 @@ class CredentialTypeRepository(xa: Transactor[IO]) {
   ): FutureEither[Nothing, Option[CredentialTypeWithRequiredFields]] = {
     CredentialTypeDao
       .withRequiredFields(credentialTypeQuery)
+      .logSQLErrors("getting with required field", logger)
       .transact(xa)
       .map(Right(_))
       .unsafeToFuture()

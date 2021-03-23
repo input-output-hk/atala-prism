@@ -13,6 +13,7 @@ import org.slf4j.LoggerFactory
 import io.iohk.atala.prism.protos.credential_models.StartAcuantProcess
 import io.iohk.atala.prism.kycbridge.models.Connection.AcuantDocumentInstanceId
 import io.iohk.atala.prism.protos.connector_api.SendMessageResponse
+import io.iohk.atala.prism.utils.syntax.DBConnectionOps
 
 import scala.concurrent.duration.DurationInt
 
@@ -60,7 +61,12 @@ class AcuantService(
         acuantDocumentInstanceId = Some(AcuantDocumentInstanceId(documentInstanceResponseBody.documentId))
       )
 
-      _ <- EitherT.liftF[Task, Unit, Int](ConnectionDao.update(updatedConnection).transact(tx))
+      _ <- EitherT.liftF[Task, Unit, Int](
+        ConnectionDao
+          .update(updatedConnection)
+          .logSQLErrors("updating connection", logger)
+          .transact(tx)
+      )
     } yield ()).value
   }
 
@@ -70,7 +76,10 @@ class AcuantService(
       .unfoldEval[Task, Boolean, Option[Connection]](initialAwakeDelay) { shouldApplyAwakeDelay =>
         for {
           _ <- if (shouldApplyAwakeDelay) Task.sleep(AWAKE_DELAY) else Task.unit
-          connectionOption <- ConnectionDao.findConnectionWithoutDocumentId.transact(tx)
+          connectionOption <-
+            ConnectionDao.findConnectionWithoutDocumentId
+              .logSQLErrors("finding connection without document id", logger)
+              .transact(tx)
           _ <- connectionOption.fold(Task.unit)(connection => updateConnection(connection).map(_ => ()))
           applyAwakeDelay = connectionOption.isEmpty
         } yield Some(connectionOption -> applyAwakeDelay)

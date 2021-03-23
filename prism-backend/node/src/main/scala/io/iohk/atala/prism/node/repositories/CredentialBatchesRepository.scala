@@ -11,13 +11,19 @@ import io.iohk.atala.prism.node.models.nodeState.{CredentialBatchState, LedgerDa
 import io.iohk.atala.prism.node.repositories.daos.CredentialBatchesDAO
 import io.iohk.atala.prism.utils.FutureEither
 import io.iohk.atala.prism.utils.FutureEither.FutureEitherOps
+import io.iohk.atala.prism.utils.syntax.DBConnectionOps
+import org.slf4j.{Logger, LoggerFactory}
 
 class CredentialBatchesRepository(xa: Transactor[IO]) {
+
+  val logger: Logger = LoggerFactory.getLogger(getClass)
+
   def getBatchState(batchId: CredentialBatchId): FutureEither[NodeError, Option[CredentialBatchState]] = {
     EitherT
       .right[NodeError](CredentialBatchesDAO.findBatch(batchId))
-      .transact(xa)
       .value
+      .logSQLErrors("getting batch state", logger)
+      .transact(xa)
       .unsafeToFuture()
       .toFutureEither
   }
@@ -28,8 +34,9 @@ class CredentialBatchesRepository(xa: Transactor[IO]) {
   ): FutureEither[NodeError, Option[LedgerData]] = {
     EitherT
       .right[NodeError](CredentialBatchesDAO.findRevokedCredentialLedgerData(batchId, credentialHash))
-      .transact(xa)
       .value
+      .logSQLErrors("getting credential revocation time", logger)
+      .transact(xa)
       .unsafeToFuture()
       .toFutureEither
   }

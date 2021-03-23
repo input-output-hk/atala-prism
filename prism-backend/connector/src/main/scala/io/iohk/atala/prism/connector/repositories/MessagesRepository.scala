@@ -19,6 +19,7 @@ import io.iohk.atala.prism.models.ParticipantId
 import io.iohk.atala.prism.protos.connector_models.MessageToSendByConnectionToken
 import io.iohk.atala.prism.utils.FutureEither
 import io.iohk.atala.prism.utils.FutureEither._
+import io.iohk.atala.prism.utils.syntax.DBConnectionOps
 import org.slf4j.{Logger, LoggerFactory}
 
 import java.time.Instant
@@ -46,6 +47,7 @@ class MessagesRepository(xa: Transactor[IO])(implicit ec: ExecutionContext) exte
     } yield messageId
 
     query
+      .logSQLErrors(s"insert messages, connection id - $connection", logger)
       .transact(xa)
       .unsafeToFuture()
       .map(_ => Right(messageId))
@@ -112,6 +114,7 @@ class MessagesRepository(xa: Transactor[IO])(implicit ec: ExecutionContext) exte
     } else {
       MessagesDAO
         .getMessagesPaginated(recipientId, limit, lastSeenMessageId)
+        .logSQLErrors(s"getting messages paginated, recipient id - $recipientId", logger)
         .transact(xa)
         .unsafeToFuture()
         .map(Right(_))
@@ -132,6 +135,7 @@ class MessagesRepository(xa: Transactor[IO])(implicit ec: ExecutionContext) exte
   ): FutureEither[ConnectorError, Seq[Message]] = {
     MessagesDAO
       .getConnectionMessages(recipientId, connectionId)
+      .logSQLErrors(s"getting connection messages, connection id - $connectionId", logger)
       .transact(xa)
       .unsafeToFuture()
       .map(Right(_))

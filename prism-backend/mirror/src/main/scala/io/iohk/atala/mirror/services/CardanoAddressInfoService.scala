@@ -32,6 +32,7 @@ import io.iohk.atala.prism.identity.DID
 import io.iohk.atala.prism.models.ConnectorMessageId
 import io.iohk.atala.prism.services.{NodeClientService, MessageProcessor}
 import io.iohk.atala.prism.services.MessageProcessor.{MessageProcessorResult, MessageProcessorException}
+import io.iohk.atala.prism.utils.syntax.DBConnectionOps
 
 import scala.util.Try
 
@@ -56,7 +57,12 @@ class CardanoAddressInfoService(tx: Transactor[Task], httpConfig: HttpConfig, no
   ): MessageProcessorResult = {
 
     (for {
-      connection <- EitherT(Connection.fromReceivedMessage(receivedMessage).transact(tx))
+      connection <- EitherT(
+        Connection
+          .fromReceivedMessage(receivedMessage)
+          .logSQLErrors("getting connection from received message", logger)
+          .transact(tx)
+      )
       cardanoAddress = CardanoAddressInfo(
         cardanoAddress = CardanoAddressInfo.CardanoAddress(addressMessage.cardanoAddress),
         payidVerifiedAddress = None,
@@ -65,7 +71,11 @@ class CardanoAddressInfoService(tx: Transactor[Task], httpConfig: HttpConfig, no
         registrationDate = CardanoAddressInfo.RegistrationDate(Instant.now()),
         messageId = ConnectorMessageId(receivedMessage.id)
       )
-      _ <- EitherT.right[MessageProcessorException](saveCardanoAddress(cardanoAddress).transact(tx))
+      _ <- EitherT.right[MessageProcessorException](
+        saveCardanoAddress(cardanoAddress)
+          .logSQLErrors("saving cardano address", logger)
+          .transact(tx)
+      )
     } yield ()).value
   }
 
@@ -82,7 +92,9 @@ class CardanoAddressInfoService(tx: Transactor[Task], httpConfig: HttpConfig, no
     (for {
       connection <- OptionT(ConnectionDao.findByHolderDID(did))
       cardanoAddressesInfo <- OptionT.liftF(CardanoAddressInfoDao.findBy(connection.token, cardanoNetwork))
-    } yield (connection, cardanoAddressesInfo)).value.transact(tx)
+    } yield (connection, cardanoAddressesInfo)).value
+      .logSQLErrors(s"finding payment info, holder did - $did", logger)
+      .transact(tx)
   }
 
   def findPaymentInfoByPayIdName(
@@ -92,7 +104,9 @@ class CardanoAddressInfoService(tx: Transactor[Task], httpConfig: HttpConfig, no
     (for {
       connection <- OptionT(ConnectionDao.findByPayIdName(payIdName))
       cardanoAddressesInfo <- OptionT.liftF(CardanoAddressInfoDao.findBy(connection.token, cardanoNetwork))
-    } yield (connection, cardanoAddressesInfo)).value.transact(tx)
+    } yield (connection, cardanoAddressesInfo)).value
+      .logSQLErrors(s"finding payment info, pay id name - $payIdName", logger)
+      .transact(tx)
   }
 
   val payIdMessageProcessor: MessageProcessor = { receivedMessage =>
@@ -120,7 +134,12 @@ class CardanoAddressInfoService(tx: Transactor[Task], httpConfig: HttpConfig, no
         )
       )
 
-      connection <- EitherT(Connection.fromReceivedMessage(receivedMessage).transact(tx))
+      connection <- EitherT(
+        Connection
+          .fromReceivedMessage(receivedMessage)
+          .logSQLErrors("getting connection by received message", logger)
+          .transact(tx)
+      )
 
       splittedPayId <- EitherT.fromOption[Task](
         paymentInformation.payId.flatMap(splitPayId),
@@ -178,7 +197,10 @@ class CardanoAddressInfoService(tx: Transactor[Task], httpConfig: HttpConfig, no
       _ <-
         EitherT
           .liftF(
-            (cardanoAddresses ++ cardanoAddressesWithVerifiedSignature).toList.traverse(saveCardanoAddress).transact(tx)
+            (cardanoAddresses ++ cardanoAddressesWithVerifiedSignature).toList
+              .traverse(saveCardanoAddress)
+              .logSQLErrors("saving cardano address", logger)
+              .transact(tx)
           )
           .leftMap(MessageProcessorException.apply)
 
@@ -320,7 +342,7 @@ class CardanoAddressInfoService(tx: Transactor[Task], httpConfig: HttpConfig, no
         EitherT
           .liftF(ConnectionDao.update(connection.copy(payIdName = Some(payIdName))))
           .leftMap(MessageProcessorException.apply)
-    } yield ()).value.transact(tx)
+    } yield ()).value.logSQLErrors("processing pay id name registration message", logger).transact(tx)
   }
 
   private def verifyPayIdString(payIdName: String): Either[MessageProcessorException, Boolean] = {

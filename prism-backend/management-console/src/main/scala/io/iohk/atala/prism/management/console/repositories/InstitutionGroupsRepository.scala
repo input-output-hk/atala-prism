@@ -14,10 +14,15 @@ import io.iohk.atala.prism.management.console.models.{Contact, InstitutionGroup,
 import io.iohk.atala.prism.management.console.repositories.daos.InstitutionGroupsDAO
 import io.iohk.atala.prism.utils.FutureEither
 import io.iohk.atala.prism.utils.FutureEither.FutureEitherOps
+import io.iohk.atala.prism.utils.syntax.DBConnectionOps
+import org.slf4j.{Logger, LoggerFactory}
 
 import scala.concurrent.ExecutionContext
 
 class InstitutionGroupsRepository(xa: Transactor[IO])(implicit ec: ExecutionContext) {
+
+  val logger: Logger = LoggerFactory.getLogger(getClass)
+
   def create(
       institutionId: ParticipantId,
       name: InstitutionGroup.Name,
@@ -35,9 +40,9 @@ class InstitutionGroupsRepository(xa: Transactor[IO])(implicit ec: ExecutionCont
       )
     } yield institutionGroup
 
-    transaction
+    transaction.value
+      .logSQLErrors(s"creating, institution id - $institutionId", logger)
       .transact(xa)
-      .value
       .unsafeToFuture()
       .toFutureEither
   }
@@ -50,6 +55,7 @@ class InstitutionGroupsRepository(xa: Transactor[IO])(implicit ec: ExecutionCont
       groups <- InstitutionGroupsDAO.getBy(institutionId, query)
       totalNumberOfRecords <- InstitutionGroupsDAO.getTotalNumberOfRecords(institutionId, query)
     } yield groups -> totalNumberOfRecords)
+      .logSQLErrors(s"getting, institution id - $institutionId", logger)
       .transact(xa)
       .unsafeToFuture()
       .map(Right(_))
@@ -66,7 +72,12 @@ class InstitutionGroupsRepository(xa: Transactor[IO])(implicit ec: ExecutionCont
       contacts <- InstitutionGroupsDAO.listContacts(group.id)
     } yield contacts
 
-    connectionIo.transact(xa).unsafeToFuture().map(Right(_)).toFutureEither
+    connectionIo
+      .logSQLErrors(s"list contacts, institution id - $institutionId", logger)
+      .transact(xa)
+      .unsafeToFuture()
+      .map(Right(_))
+      .toFutureEither
   }
 
   def updateGroup(
@@ -102,7 +113,11 @@ class InstitutionGroupsRepository(xa: Transactor[IO])(implicit ec: ExecutionCont
       )
     } yield ()
 
-    transaction.transact(xa).value.unsafeToFuture().toFutureEither
+    transaction.value
+      .logSQLErrors(s"updating, group id - $groupId", logger)
+      .transact(xa)
+      .unsafeToFuture()
+      .toFutureEither
   }
 
   def copyGroup(
@@ -119,7 +134,11 @@ class InstitutionGroupsRepository(xa: Transactor[IO])(implicit ec: ExecutionCont
       _ <- EitherT.right[ManagementConsoleError](InstitutionGroupsDAO.copyContacts(originalGroupId, createdGroup.id))
     } yield createdGroup
 
-    connectionIo.transact(xa).value.unsafeToFuture().toFutureEither
+    connectionIo.value
+      .logSQLErrors(s"copying group, institution id - $institutionId", logger)
+      .transact(xa)
+      .unsafeToFuture()
+      .toFutureEither
   }
 
   def deleteGroup(
@@ -145,6 +164,10 @@ class InstitutionGroupsRepository(xa: Transactor[IO])(implicit ec: ExecutionCont
       )
     } yield ()
 
-    connectionIo.transact(xa).value.unsafeToFuture().toFutureEither
+    connectionIo.value
+      .logSQLErrors(s"deleting, group id - $groupId", logger)
+      .transact(xa)
+      .unsafeToFuture()
+      .toFutureEither
   }
 }

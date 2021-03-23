@@ -60,7 +60,7 @@ class CredentialService(
   def connectionUpdatesStream(immediatelyRequestedCredential: CredentialProofRequestType): Stream[Task, Unit] = {
     Stream
       .eval(
-        ConnectionDao.findLastSeenConnectionId.transact(tx)
+        ConnectionDao.findLastSeenConnectionId.logSQLErrors(s"finding last connection id", logger).transact(tx)
       )
       .flatMap(lastSeenConnectionId =>
         connectorService
@@ -80,8 +80,9 @@ class CredentialService(
 
             ConnectionDao
               .update(connection)
+              .logSQLErrors("updating connection", logger)
               .transact(tx)
-              .map(_ => connection)
+              .as(connection)
           })
           .evalMap(connection => {
             for {
@@ -113,14 +114,21 @@ class CredentialService(
       plainTextCredential: PlainTextCredential
   ): MessageProcessorResult = {
     (for {
-      connection <- EitherT(Connection.fromReceivedMessage(receivedMessage).transact(tx))
+      connection <- EitherT(
+        Connection
+          .fromReceivedMessage(receivedMessage)
+          .logSQLErrors("getting connection from received message", logger)
+          .transact(tx)
+      )
       userCredentials <-
         EitherT
           .liftF(createUserCredential(receivedMessage, connection.token, plainTextCredential))
           .leftMap(MessageProcessorException.apply)
       _ <-
         EitherT
-          .liftF(UserCredentialDao.insert(userCredentials).transact(tx))
+          .liftF(
+            UserCredentialDao.insert(userCredentials).logSQLErrors("inserting user credentials", logger).transact(tx)
+          )
           .leftMap(MessageProcessorException.apply)
     } yield ()).value
   }

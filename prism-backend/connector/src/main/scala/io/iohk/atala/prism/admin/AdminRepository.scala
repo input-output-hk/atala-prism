@@ -11,6 +11,7 @@ import io.iohk.atala.prism.admin.Splitter.sqlSplit
 import io.iohk.atala.prism.utils.FutureEither
 import io.iohk.atala.prism.utils.FutureEither._
 import io.iohk.atala.prism.utils.Using.using
+import io.iohk.atala.prism.utils.syntax.DBConnectionOps
 import org.slf4j.LoggerFactory
 
 import scala.concurrent.ExecutionContext
@@ -21,6 +22,7 @@ class AdminRepository(xa: Transactor[IO])(implicit ec: ExecutionContext) {
   def insertDemoDataset(): FutureEither[DatabaseError, List[Int]] = {
     (deletes ++ inserts)
       .traverse(update => dbUpdate(update))
+      .logSQLErrors("inserting demo dataset", log)
       .transact(xa)
       .attempt
       .unsafeToFuture()
