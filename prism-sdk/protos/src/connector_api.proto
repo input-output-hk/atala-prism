@@ -17,25 +17,25 @@ service ConnectorService {
   // Retrieves a connection for a given connection token.
   rpc GetConnectionByToken (GetConnectionByTokenRequest) returns (GetConnectionByTokenResponse) {}
 
-  // Get active connections for the authenticated user
+  // Gets active connections for the authenticated user
   rpc GetConnectionsPaginated (GetConnectionsPaginatedRequest) returns (GetConnectionsPaginatedResponse) {}
 
-  // Return info about connection token such as creator info.
-  // This is commonly used to verify if you want to accept the connection or not.
+  // Returns info about the connection token (creator info, for example).
+  // This is commonly used to check whether you want to accept the connection or not.
   rpc GetConnectionTokenInfo (GetConnectionTokenInfoRequest) returns (GetConnectionTokenInfoResponse) {}
 
-  // Instantiate connection from connection token.
+  // Instantiates a connection from its connection token.
   rpc AddConnectionFromToken (AddConnectionFromTokenRequest) returns (AddConnectionFromTokenResponse) {}
 
-  // Revoke an active connection. Which can be done from any of the sides involved in the connection.
+  // Revokes an active connection (this can be done from either side).
   // Once the connection is revoked:
   // - No messages will be accepted
   // - The existing messages are deleted (the table is supposed to be eventually emptied anyway)
   // - The related contact connection status gets updated
   rpc RevokeConnection (RevokeConnectionRequest) returns (RevokeConnectionResponse) {}
 
-  // Bind DID to institution.
-  // This is commonly expected for institutions that need to use a public DID, the method
+  // Binds DID to institution.
+  // This is commonly expected for institutions that require a public DID. The method
   // invokes the node to publish the DID to the blockchain.
   // TODO: Delete method, we should not register the DID but receive the registered one.
   // Errors:
@@ -44,43 +44,42 @@ service ConnectorService {
   // DID Document does not match DID (INVALID_ARGUMENT).
   rpc RegisterDID (RegisterDIDRequest) returns (RegisterDIDResponse) {}
 
-  // Generate connection tokens that can be used to instantiate connection.
+  // Generates connection tokens that can be used to instantiate a connection.
   // Errors:
-  // Billing plan doesn't allow token generation (PERMISSION_DENIED).
   rpc GenerateConnectionToken (GenerateConnectionTokenRequest) returns (GenerateConnectionTokenResponse) {}
 
-  // Return messages received after given time moment, sorted in ascending order by receive time
+  // Returns messages received after a specific timepoint, sorted by reception time in ascending order
   rpc GetMessagesPaginated (GetMessagesPaginatedRequest) returns (GetMessagesPaginatedResponse) {}
 
-  // Stream the messages received after the given optional message
+  // Streams the messages received after the given optional message
   rpc GetMessageStream (GetMessageStreamRequest) returns (stream GetMessageStreamResponse) {}
 
-  // Return messages received on the given connection, the number is supposed to be small, so, no pagination is required.
+  // Returns messages received on the given connection. The amount of messages is typically small, so no pagination is required.
   rpc GetMessagesForConnection (GetMessagesForConnectionRequest) returns (GetMessagesForConnectionResponse) {}
 
-  // Returns public keys that can be used for secure communication with the other end of connection
+  // Returns public keys that can be used for secure communication
   rpc GetConnectionCommunicationKeys (GetConnectionCommunicationKeysRequest) returns (GetConnectionCommunicationKeysResponse) {}
 
-  // Send message over a connection.
+  // Sends message over a connection.
   // Errors:
   // Unknown connection (UNKNOWN).
   // Connection closed (FAILED_PRECONDITION).
   rpc SendMessage (SendMessageRequest) returns (SendMessageResponse) {}
 
-  // Send many messages atomically, if one message can't be send (unknown connection for example),
-  // then rest of the messages is also not send. This method uses connection tokens instead of connections ids.
+  // Sends multiple messages atomically. If one message cannot be sent (because unknown connection, for example),
+  // the rest of the messages will also remain unsent. This method uses connection tokens instead of connections IDs.
   // Errors:
   // Unknown connections (UNKNOWN).
   // Connections closed (FAILED_PRECONDITION).
   rpc SendMessages (SendMessagesRequest) returns (SendMessagesResponse) {}
 
-  // Return the information about the Connector and Node builds
+  // Returns information about the Connector and Node builds
   rpc GetBuildInfo (GetBuildInfoRequest) returns (GetBuildInfoResponse);
 
-  // Return the details for the authenticated user
+  // Returns the details for the authenticated user
   rpc GetCurrentUser (GetCurrentUserRequest) returns (GetCurrentUserResponse);
 
-   // Updates an existing participants profile
+   // Updates an existing participant's profile
    rpc updateParticipantProfile (UpdateProfileRequest) returns (UpdateProfileResponse) {}
 }
 
@@ -97,9 +96,9 @@ message GetConnectionByTokenResponse {
 	io.iohk.atala.prism.protos.Connection connection = 1;
 }
 
-// Request connections instantiated by us / with us possibly after a known connection.
+// Requests connections instantiated by or with us (possibly after a known connection).
 //
-// The results are sorted by the time the connection was created in ascending order.
+// The results are sorted in ascending order by the time the connection was created.
 message GetConnectionsPaginatedRequest {
   string lastSeenConnectionId = 1; // returned connections will have been created after the last seen connection (optional field)
   int32 limit = 2; // maximum number of connections to return; must be > 0
@@ -110,12 +109,12 @@ message GetConnectionsPaginatedResponse {
   repeated io.iohk.atala.prism.protos.ConnectionInfo connections = 1; // connections sorted in ascending order by instantiation time
 }
 
-// Request to obtain information of connection token
+// Request to obtain information of connection token.
 message GetConnectionTokenInfoRequest {
   string token = 1; // token value to get information for
 }
 
-// Result with information on connection token
+// Result with information on connection token.
 message GetConnectionTokenInfoResponse {
   io.iohk.atala.prism.protos.ParticipantInfo creator = 1; // [Will be deprecated] participant who generated the code
   string creatorName = 2; // same value as the one contained in `creator`
@@ -123,13 +122,13 @@ message GetConnectionTokenInfoResponse {
   string creatorDID = 4; // same value as the one contained in `creator` (if any)
 }
 
-// Request to instantiate a connection using token
+// Requests to instantiate a connection using a token
 message AddConnectionFromTokenRequest {
-  // this used to allow the holder public key as (x, y), it was replaced by the holderEncodedPublicKey field
+  // this used to allow the holder public key as (x, y), which was replaced by the holderEncodedPublicKey field.
   reserved 2;
   reserved "holderPublicKey";
 
-  // this was used to allow taking payments while creating connections which is not required anymore
+  // this was used to allow taking payments while creating connections, which is no longer required.
   reserved 3;
   reserved "paymentNonce";
 
@@ -142,53 +141,53 @@ message AddConnectionFromTokenResponse {
   io.iohk.atala.prism.protos.ConnectionInfo connection = 1; // instantiated connection info
   // your generated user id
   // @exclude
-  // TODO: Remove useless field, we are replacing user ids by DIDs
+  // TODO: Remove useless field, we are replacing user IDs with DIDs
   string userId = 2;
 }
 
-// Request to revoke a connection
+// Request to revoke a connection.
 message RevokeConnectionRequest {
   string connectionId = 1; // id of connection to delete
 }
 
-// Confirmation of connection revocation
+// Confirmation of connection revocation.
 message RevokeConnectionResponse {
 }
 
-// Request to generate a connection token
+// Request to generate a connection token.
 message GenerateConnectionTokenRequest {
   int32 count = 1; // how many tokens to generate (optional, default value is 1)
 }
 
-// Result with generated token
+// Result with generated token.
 message GenerateConnectionTokenResponse {
   repeated string tokens = 1; // generated tokens
 }
 
-// Request to return messages for us after the given known message (if any)
+// Request to return messages for us after the given known message (if any).
 // Sorted in ascending order by receiving time.
 message GetMessagesPaginatedRequest {
   string lastSeenMessageId = 1; // returned messages will have been received after the given message (if any)
   int32 limit = 2; // maximum number of messages to return, must be > 0
 }
 
-// Response with messages
+// Response with messages.
 message GetMessagesPaginatedResponse {
-  repeated io.iohk.atala.prism.protos.ReceivedMessage messages = 1; // messages sorted in ascending order by receiving time
+  repeated io.iohk.atala.prism.protos.ReceivedMessage messages = 1; // messages sorted in ascending order by reception time.
 }
 
 // Request to stream new messages, which starts the stream from messages that where received after the given lastSeenMessageId
 message GetMessageStreamRequest {
-  // Last message seen by the client, so only newer messages are returned
+  // Last message seen by the client, so only newer messages are returned.
   string lastSeenMessageId = 1;
 }
 
-// Response for the new messages stream
+// Response for the new messages stream.
 message GetMessageStreamResponse {
   io.iohk.atala.prism.protos.ReceivedMessage message = 1; // the received message
 }
 
-// Finds the available messages from the given connection
+// Finds the available messages from the given connection.
 // @exclude
 // TODO: Remove unnecessary method, it was used before to parse received credentials but this is not required anymore
 message GetMessagesForConnectionRequest {
@@ -198,34 +197,34 @@ message GetMessagesForConnectionResponse {
   repeated io.iohk.atala.prism.protos.ReceivedMessage messages = 1;
 }
 
-// Finds the available keys to send end-to-end encrypted messages
+// Finds the available keys to send end-to-end encrypted messages.
 message GetConnectionCommunicationKeysRequest {
   string connectionId = 1; // the connection we are interested in sending a message to
 }
 
 message GetConnectionCommunicationKeysResponse {
-  // keys that can be used for communication with the other end of connection with their ids.
-  // keyId inside might be empty if there is just one key in the collection.
+  // keys that can be used for communicating with the other end of connection with their IDs.
+  // keyId inside might be empty, if there is just one key in the collection.
   repeated io.iohk.atala.prism.protos.ConnectionKey keys = 1;
 }
 
-// Request to send message
+// Request to send message.
 message SendMessageRequest {
-  string connectionId = 1; // id of the connection
-  bytes message = 2; // raw message
+  string connectionId = 1; // ID of the connection.
+  bytes message = 2; // raw message.
 }
 
-// Confirmation of message sending
+// Confirmation of message sending.
 message SendMessageResponse {
 }
 
-// Request to send many messages
+// Request to send many messages.
 message SendMessagesRequest {
-  // messages to send, can be empty, no messages will be send in that case
+  // Messages to send. This can be empty, in which case no messages will be sent.
   repeated MessageToSendByConnectionToken messagesByConnectionToken = 1;
 }
 
-// Confirmation of messages sending
+// Confirmation of messages sending.
 message SendMessagesResponse {
 }
 
@@ -236,7 +235,7 @@ message SendMessagesResponse {
 // @exclude
 // TODO: Use the method to not register the DID on the blockchain.
 message RegisterDIDRequest {
-  // The necessary operation to publish the DID to the blockchain
+  // The necessary operation to publish the DID to the blockchain.
   io.iohk.atala.prism.protos.SignedAtalaOperation createDIDOperation = 1;
 
   // The user's role.
@@ -244,7 +243,7 @@ message RegisterDIDRequest {
   // TODO: Remove, we don't use roles anymore.
   Role role = 2;
 
-  // The way to identify the institution
+  // The way to identify the institution.
   string name = 3;
 
   // The logo linked to the institution
@@ -256,10 +255,10 @@ message RegisterDIDRequest {
   }
 }
 
-// Request to get the authenticated user details
+// Request to get the authenticated user details.
 message GetCurrentUserRequest {}
 
-// The authenticated user details
+// The authenticated user details.
 message GetCurrentUserResponse {
   Role role = 1;
   string name = 2;
@@ -271,23 +270,23 @@ message GetCurrentUserResponse {
   }
 }
 
-// Confirmation of DID registration
+// Confirmation of DID registration.
 message RegisterDIDResponse {
   string did = 1;
   TransactionInfo transactionInfo = 2;
 }
 
-// Request to get information about this service
+// Request to get information about this service.
 message GetBuildInfoRequest {}
 
-// The actual service's information
+// The actual service's information.
 message GetBuildInfoResponse {
   reserved 4; // buildTime
 
-  string version = 1; // the service's version
-  string scalaVersion = 2; // the scala's version used by the service
-  string sbtVersion = 3; // the sbt's version used to compile the service
-  string nodeVersion = 5; // the node service version
+  string version = 1; // The service's version.
+  string scalaVersion = 2; // The Scala version used by the service.
+  string sbtVersion = 3; // The SBT version used to compile the service.
+  string nodeVersion = 5; // The node service version.
 }
 
 message ConnectionsStatusRequest {
@@ -298,14 +297,14 @@ message ConnectionsStatusResponse {
   repeated ContactConnection connections = 1;
 }
 
-// Request to Update participant profile name amd logo
+// Request to update participant's profile name and logo.
 message UpdateProfileRequest {
-  // The way to identify the institution
+  // The way to identify the institution.
   string name = 1;
-  // The logo linked to the institution (optional field)
-  // when logo is missing, it will be set to an empty
+  // The logo linked to the institution (optional field).
+  // When logo is missing, it will be set to 'empty'.
   bytes logo = 2;
 }
 
-// Confirmation of participants profile updated
+// Confirmation of participants profile updated.
 message UpdateProfileResponse {}
