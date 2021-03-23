@@ -5,8 +5,8 @@
 * @ref:[Verify Credential](verify-credential.md)
 @@@
 
-# Usage Tutorial
+# Tutorial
 
-This tutorial walks you through the necessary steps to do the basic operations with the PRISM SDK, you will learn how to generate identities, as well as how to deal with credentials (issuance/verification).
+This tutorial walks you through the necessary steps to work with the Atala PRISM SDK. For example, you will learn how to generate identities and how to deal with credentials issuance and verification.
 
-For simplicity reasons, we are using code that doesn't involve any network calls. The only resulting limitation is inability to revoke a credential because that's an event which needs to be posted to the Cardano network.
+**Note:** For simplicity, this tutorial uses sample code that does *not* involve any network calls. The only limitation is the inability to revoke a credential, because that requires posting to the Cardano network.
