@@ -1,14 +1,15 @@
-# Preparation steps
-These preparation steps are necessary to complete the usage tutorial.
+# Integrating the Atala PRISM SDK Into a Scala Project Using SBT
 
-This section gives you the necessary steps to integrate the PRISM SDK in a Scala project, you are expected to know how to set up an [sbt](https://www.scala-sbt.org/) project.
+## Prerequisites
 
-Proceed by creating a new project, or opening an existing one.
+This section explains how to integrate the Atala PRISM SDK into a Scala project using the Scala Build Tool (SBT). 
+
+**Note:** This tutorial assumes that you are proficient in setting up/working with [SBT](https://www.scala-sbt.org/) projects. You can create your own project or open an existing one.
 
 
-## Dependencies
+## Adding Dependencies
 
-Once you have created the sbt project, add the necessary dependencies to your `build.sbt`:
+After creating (or opening) the SBT project, add the necessary dependencies to your `build.sbt`:
 
 ```scala
 libraryDependencies += "io.iohk" %% "prism-protos" % "@VERSION@" // needed for the credential payloads defined in protobuf
@@ -17,10 +18,11 @@ libraryDependencies += "io.iohk" %% "prism-identity" % "@VERSION@" // needed to 
 libraryDependencies += "io.iohk" %% "prism-credentials" % "@VERSION@" // needed to deal with credentials
 ```
 
-## Imports
-For the rest of the tutorial, you can use the Scala REPL to try every change (`sbt console`), or take the code snippets into a proper file.
+## Importing Atala PRISM Modules
 
-Let's import the PRISM modules which are required to complete the next steps:
+For the rest of the tutorial, you can use the Scala Read-Evaluate-Print-Loop (REPL) tool to test changes (`sbt console`), or take the code snippets into a proper file.
+
+Let's import the Atala PRISM modules required to complete the next steps:
 
 ```scala mdoc
 import io.iohk.atala.prism.credentials.content.CredentialContent
@@ -29,8 +31,3 @@ import io.iohk.atala.prism.credentials._
 import io.iohk.atala.prism.crypto._
 import io.iohk.atala.prism.identity._
 ```
-
-
-## Next
-
-By now, you have setup a Scala project with SBT that includes the PRISM SDK, you are ready to proceed to the next section.
