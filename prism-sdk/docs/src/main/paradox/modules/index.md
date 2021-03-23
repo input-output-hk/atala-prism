@@ -8,9 +8,9 @@
 
 # Modules
 
-The PRISM SDK is composed by several modules, in these sections you will find details for those:
+The Atala PRISM SDK includes several modules. Browse each module for more information:
 
 * @ref:[Crypto](crypto.md) provides the cryptographic primitives used by the SDK.
-* @ref:[Identity](identity.md) lets you deal with Decentralized Identifiers.
-* @ref:[Credentials](credentials.md) allows you to do operations in Verifiable Credentials.
-* @ref:[Connector](connector.md) has utility functions for invoking the connector backend service.
+* @ref:[Identity](identity.md) enables you to work with Decentralized Identifiers (DIDs).
+* @ref:[Credentials](credentials.md) allows you to interact with Verifiable Credentials (VCs).
+* @ref:[Connector](connector.md) includes utility functions for invoking the connector backend service.
