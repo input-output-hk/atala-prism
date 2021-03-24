@@ -7,10 +7,10 @@ package io.iohk.atala.prism.protos;
 
 import "google/protobuf/timestamp.proto";
 
-// Represents a stored payload on the authenticated user's vault
+// Represents a payload stored on the authenticated user's vault.
 message Payload {
-    string id = 1; // unique uuid identifying the payload
-    bytes hash = 2; // content hash
-    bytes content = 3; // content of the payload encrypted by the user
-    google.protobuf.Timestamp createdAt = 4; // timestamp of when the payload was registered by the vault
+    string id = 1; // A unique UUID identifying the payload.
+    bytes hash = 2; // Content hash.
+    bytes content = 3; // The content of the payload encrypted by the user.
+    google.protobuf.Timestamp createdAt = 4; // The timestamp of when the payload was registered by the vault.
 }
