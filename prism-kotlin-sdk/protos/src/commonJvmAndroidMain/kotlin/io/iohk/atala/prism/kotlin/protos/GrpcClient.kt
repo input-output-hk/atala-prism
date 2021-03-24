@@ -82,12 +82,12 @@ actual class GrpcClient actual constructor(
 
     companion object {
         val DID_HEADER: Metadata.Key<String> =
-            Metadata.Key.of("did", Metadata.ASCII_STRING_MARSHALLER)
+            Metadata.Key.of(DID, Metadata.ASCII_STRING_MARSHALLER)
         val DID_KEY_ID_HEADER: Metadata.Key<String> =
-            Metadata.Key.of("didKeyId", Metadata.ASCII_STRING_MARSHALLER)
+            Metadata.Key.of(DID_KEY_ID, Metadata.ASCII_STRING_MARSHALLER)
         val DID_SIGNATURE_HEADER: Metadata.Key<String> =
-            Metadata.Key.of("didSignature", Metadata.ASCII_STRING_MARSHALLER)
+            Metadata.Key.of(DID_SIGNATURE, Metadata.ASCII_STRING_MARSHALLER)
         val REQUEST_NONCE_HEADER: Metadata.Key<String> =
-            Metadata.Key.of("requestNonce", Metadata.ASCII_STRING_MARSHALLER)
+            Metadata.Key.of(REQUEST_NONCE, Metadata.ASCII_STRING_MARSHALLER)
     }
 }

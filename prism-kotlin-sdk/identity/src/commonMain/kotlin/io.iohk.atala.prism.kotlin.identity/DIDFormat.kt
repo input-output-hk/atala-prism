@@ -1,8 +1,8 @@
 package io.iohk.atala.prism.kotlin.identity
 
 import io.iohk.atala.prism.kotlin.crypto.SHA256Digest
-import io.iohk.atala.prism.kotlin.identity.util.Base64Utils
 import io.iohk.atala.prism.kotlin.protos.AtalaOperation
+import io.iohk.atala.prism.kotlin.protos.util.Base64Utils
 import pbandk.decodeFromByteArray
 
 data class ValidatedLongForm(val stateHash: String, val encodedState: String, val initialState: AtalaOperation) {

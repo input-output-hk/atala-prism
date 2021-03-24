@@ -2,9 +2,9 @@ package io.iohk.atala.prism.kotlin.identity
 
 import io.iohk.atala.prism.kotlin.crypto.SHA256Digest
 import io.iohk.atala.prism.kotlin.crypto.keys.ECPublicKey
-import io.iohk.atala.prism.kotlin.identity.util.Base64Utils
 import io.iohk.atala.prism.kotlin.identity.util.toProto
 import io.iohk.atala.prism.kotlin.protos.*
+import io.iohk.atala.prism.kotlin.protos.util.Base64Utils
 import pbandk.encodeToByteArray
 import kotlin.jvm.JvmStatic
 

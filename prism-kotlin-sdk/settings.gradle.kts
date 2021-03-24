@@ -5,6 +5,7 @@ include(":identity")
 include(":credentials")
 include(":docs")
 include(":generator")
+include(":integration-tests")
 
 pluginManagement {
     repositories {

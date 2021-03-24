@@ -413,7 +413,8 @@ jobs:
       - image: circleci/android:api-29
     resource_class: medium+
     environment:
-      JVM_OPTS: -Xmx5120m
+      _JAVA_OPTIONS: -Xmx5g
+      GRADLE_OPTS: -Dkotlin.compiler.execution.strategy=in-process
     steps:
       - checkout
       - halt-step-if-not-changed:
@@ -426,23 +427,23 @@ jobs:
       - install-sbt
       - run:
           name: Download Dependencies
-          command: cd prism-android-wallet && ./gradlew androidDependencies
+          command: cd prism-android-wallet && ./gradlew --no-daemon --max-workers=2 androidDependencies
       - save_cache:
           paths:
             - ~/.gradle
           key: jars-{{ checksum "prism-android-wallet/build.gradle" }}-{{ checksum  "prism-android-wallet/app/build.gradle" }}
       - run:
           name: Run Lint Tests
-          command: cd prism-android-wallet && ./gradlew lint test
+          command: cd prism-android-wallet && ./gradlew --no-daemon --max-workers=2 lint test
       - run:
           name: Check Kotlin code is properly formatted
-          command: cd prism-android-wallet && ./gradlew ktlintCheck
+          command: cd prism-android-wallet && ./gradlew --no-daemon --max-workers=2 ktlintCheck
       - run:
           name: Run Unit Tests
-          command: cd prism-android-wallet && ./gradlew test
+          command: cd prism-android-wallet && ./gradlew --no-daemon --max-workers=2 test
       - run:
           name: Assemble APK
-          command: cd prism-android-wallet && ./gradlew assembleDebug
+          command: cd prism-android-wallet && ./gradlew --no-daemon --max-workers=2 assembleDebug
 
       - store_test_results:
           path: prism-android-wallet/app/build/test-results

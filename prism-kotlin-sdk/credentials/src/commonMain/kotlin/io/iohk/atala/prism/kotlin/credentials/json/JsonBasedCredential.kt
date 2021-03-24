@@ -6,7 +6,7 @@ import io.iohk.atala.prism.kotlin.credentials.content.CredentialContent
 import io.iohk.atala.prism.kotlin.crypto.EC
 import io.iohk.atala.prism.kotlin.crypto.keys.ECPrivateKey
 import io.iohk.atala.prism.kotlin.crypto.signature.ECSignature
-import io.iohk.atala.prism.kotlin.identity.util.Base64Utils
+import io.iohk.atala.prism.kotlin.protos.util.Base64Utils
 
 data class JsonBasedCredential constructor(
     override val content: CredentialContent,

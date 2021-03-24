@@ -12,6 +12,11 @@ class PrismMetadata(
     val requestNonce: ByteArray
 )
 
+const val DID = "did"
+const val DID_KEY_ID = "didKeyId"
+const val DID_SIGNATURE = "didSignature"
+const val REQUEST_NONCE = "requestNonce"
+
 expect class GrpcClient(serverOptions: GrpcServerOptions, envoyOptions: GrpcEnvoyOptions) {
     suspend fun <Req : Message, Resp : Message> call(
         request: Req,

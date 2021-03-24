@@ -67,6 +67,7 @@ kotlin {
             dependencies {
                 api("pro.streem.pbandk:pbandk-runtime:$pbandkVersion")
                 api("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.4.2")
+                api("com.benasher44:uuid:0.2.3")
             }
         }
         val commonTest by getting {
