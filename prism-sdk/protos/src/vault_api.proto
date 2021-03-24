@@ -10,7 +10,7 @@ import "common_models.proto";
 
 // The Vault API
 service EncryptedDataVaultService {
-    // Checks if the service is healthy
+    // Checks if the service is healthy.
     rpc HealthCheck(HealthCheckRequest) returns (HealthCheckResponse) {}
 
     // Stores a given encrypted payload, associating it with the authenticated user.
@@ -20,27 +20,27 @@ service EncryptedDataVaultService {
     rpc GetPaginatedData (GetPaginatedDataRequest) returns (GetPaginatedDataResponse) {}
 }
 
-// Request to store data on the authenticated user
+// Request to store data on the authenticated user.
 message StoreDataRequest {
-    string externalId = 1; // client-generated UUID; should be unique for semantically different requests 
-    bytes payloadHash = 2; // content hash
-    bytes payload = 3; // content of the payload encrypted by the user
+    string externalId = 1; // Client-generated UUID; should be unique for semantically different requests.
+    bytes payloadHash = 2; // Content hash.
+    bytes payload = 3; // The content of the payload encrypted by the user.
 }
 
-// The response for storing data
+// The response for storing data.
 message StoreDataResponse {
-    // server-generated UUID representing the actual id of the payload.
-    // it is different from the client-supplied externalId.
+    // Server-generated UUID representing the actual payload ID.
+    // It is different from the client-supplied externalId.
     string payloadId = 1;
 }
 
-// Request to get the store data from the authenticated user
+// Request to get the stored data from the authenticated user.
 message GetPaginatedDataRequest {
-    string lastSeenId = 1; // returned payloads will have been created after the last seen payload (optional field)
-    int32 limit = 2; // maximum number of payloads to return; must be > 0
+    string lastSeenId = 1; // Returned payloads will have been created after the last seen payload (optional field).
+    int32 limit = 2; // The maximum number of payloads to return; must be greater than zero.
 }
 
-// Response when getting stored data from the authenticated user
+// Response when getting stored data from the authenticated user.
 message GetPaginatedDataResponse {
-    repeated Payload payloads = 1; // the retrieved data
+    repeated Payload payloads = 1; // The retrieved data.
 }
