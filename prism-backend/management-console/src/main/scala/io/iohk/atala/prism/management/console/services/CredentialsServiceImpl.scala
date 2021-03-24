@@ -162,6 +162,14 @@ class CredentialsServiceImpl(
     ???
   }
 
+  override def deleteCredentials(request: DeleteCredentialsRequest): Future[DeleteCredentialsResponse] = {
+    auth[DeleteCredentials]("deleteCredentials", request) { (participantId, query) =>
+      credentialsRepository
+        .deleteCredentials(participantId, query.credentialsIds)
+        .map(_ => DeleteCredentialsResponse())
+    }
+  }
+
   override def storePublishedCredential(
       request: StorePublishedCredentialRequest
   ): Future[StorePublishedCredentialResponse] = {

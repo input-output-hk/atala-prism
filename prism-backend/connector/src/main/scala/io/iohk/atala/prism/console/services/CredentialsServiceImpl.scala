@@ -340,6 +340,9 @@ class CredentialsServiceImpl(
   }
 
   // Do not implement, this is implemented in the management console
+  override def deleteCredentials(request: DeleteCredentialsRequest): Future[DeleteCredentialsResponse] = ???
+
+  // Do not implement, this is implemented in the management console
   override def getLedgerData(request: GetLedgerDataRequest): Future[GetLedgerDataResponse] = ???
 
   // Do not implement, this is implemented in the management console

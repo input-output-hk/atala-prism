@@ -41,6 +41,10 @@ final case class ShareCredentials(
     sendMessagesRequestMetadata: ConnectorAuthenticatedRequestMetadata
 )
 
+final case class DeleteCredentials(
+    credentialsIds: NonEmptyList[GenericCredential.Id]
+)
+
 final case class StoreCredential(
     connectionId: Contact.Id,
     encodedSignedCredential: String,

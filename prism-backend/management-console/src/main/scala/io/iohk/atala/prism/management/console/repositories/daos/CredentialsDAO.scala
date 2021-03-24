@@ -230,6 +230,20 @@ object CredentialsDAO {
       .to[List]
   }
 
+  def getIdsOfPublishedNotRevokedCredentials(
+      institutionId: ParticipantId,
+      credentialsIds: NonEmptyList[GenericCredential.Id]
+  ): doobie.ConnectionIO[List[GenericCredential.Id]] = {
+    (fr"""
+         |SELECT pc.credential_id
+         |FROM published_credentials pc
+         |JOIN draft_credentials c USING(credential_id)
+         |WHERE c.issuer_id = $institutionId AND pc.revoked_on_transaction_id IS NULL AND""".stripMargin ++
+      Fragments.in(fr"pc.credential_id", credentialsIds))
+      .query[GenericCredential.Id]
+      .to[List]
+  }
+
   def deleteBy(contactId: Contact.Id): doobie.ConnectionIO[Int] = {
     sql"""
          |DELETE FROM draft_credentials
@@ -244,5 +258,34 @@ object CredentialsDAO {
          |WHERE published_credentials.credential_id = draft_credentials.credential_id AND
          |      draft_credentials.contact_id = $contactId
          |""".stripMargin.update.run
+  }
+
+  def deleteBy(
+      institutionId: ParticipantId,
+      credentialsIds: NonEmptyList[GenericCredential.Id]
+  ): doobie.ConnectionIO[Unit] = {
+    (fr"""
+         |DELETE FROM draft_credentials
+         |WHERE issuer_id = $institutionId AND
+         |""".stripMargin ++
+      Fragments.in(fr"credential_id", credentialsIds)).update.run.flatTap { n =>
+      FC.raiseError(
+          new RuntimeException(s"Cannot delete credentials. Updated rows: $n expected ${credentialsIds.size}")
+        )
+        .whenA(n != credentialsIds.size)
+    }.void
+  }
+
+  def deletePublishedCredentialsBy(
+      institutionId: ParticipantId,
+      credentialsIds: NonEmptyList[GenericCredential.Id]
+  ): doobie.ConnectionIO[Unit] = {
+    (fr"""
+         |DELETE FROM published_credentials pc
+         |USING draft_credentials dc
+         |WHERE pc.credential_id = dc.credential_id AND
+         |      dc.issuer_id = ${institutionId} AND
+         |""".stripMargin ++
+      Fragments.in(fr"pc.credential_id", credentialsIds)).update.run.void
   }
 }

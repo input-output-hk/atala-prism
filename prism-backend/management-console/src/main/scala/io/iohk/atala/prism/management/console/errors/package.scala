@@ -63,6 +63,14 @@ package object errors {
       )
   }
 
+  case class PublishedCredentialsNotRevoked(credentialsIds: List[GenericCredential.Id]) extends ManagementConsoleError {
+    def toStatus: Status =
+      Status.INVALID_ARGUMENT.withDescription(
+        s"Cannot delete published, not revoked credentials: " +
+          s"${credentialsIds.map(_.uuid.toString).mkString(", ")}"
+      )
+  }
+
   case class UnknownValueError(tpe: String, value: String) extends ManagementConsoleError {
     override def toStatus: Status = {
       Status.UNKNOWN.withDescription(s"Unknown $tpe: $value")

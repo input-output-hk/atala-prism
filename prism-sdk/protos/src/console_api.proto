@@ -114,6 +114,11 @@ service CredentialsService {
   // Make sure to send the CredentialRevoked wrapped in an AtalaMessage to the contact to notify that the credential
   // was revoked.
   rpc RevokePublishedCredential (RevokePublishedCredentialRequest) returns (RevokePublishedCredentialResponse) {}
+
+  // Deletes completely from the database draft and published (only revoked) credentials.
+  // Returns error when trying to delete published, not revoked credentials.
+  // When deletion of one credential fails, then deletion of other credentials also fail.
+  rpc DeleteCredentials (DeleteCredentialsRequest) returns (DeleteCredentialsResponse) {}
 }
 
 // The Credential Types API
@@ -708,6 +713,14 @@ message RevokePublishedCredentialRequest {
 message RevokePublishedCredentialResponse {
   TransactionInfo transactionInfo = 1; // the blockchain transaction details for the revocation
 }
+
+// Request to delete many credentials
+message DeleteCredentialsRequest {
+  repeated string credentialsIds = 1; // Ids of credentials to delete (non empty)
+}
+
+// Confirmation of deletion of credentials
+message DeleteCredentialsResponse {}
 
 // Request ledger data recorded by the node for a specific batch and credential
 message GetLedgerDataRequest {

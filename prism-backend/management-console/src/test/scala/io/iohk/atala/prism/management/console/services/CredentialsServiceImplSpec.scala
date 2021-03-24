@@ -651,4 +651,95 @@ class CredentialsServiceImplSpec extends ManagementConsoleRpcSpecBase with DIDGe
       }
     }
   }
+
+  "deleteCredentials" should {
+    "delete draft and published, revoked credentials" in {
+      val issuerId = createParticipant("Issuer X", did)
+      val subjectId = createContact(issuerId, "IOHK Student", None).contactId
+
+      val credential1 = createGenericCredential(issuerId, subjectId, "A")
+      val credential2 = createGenericCredential(issuerId, subjectId, "B")
+
+      val request = console_api.DeleteCredentialsRequest(
+        credentialsIds = List(credential1.credentialId.uuid.toString, credential2.credentialId.uuid.toString)
+      )
+      val rpcRequest = SignedRpcRequest.generate(keyPair, did, request)
+
+      usingApiAsCredentials(rpcRequest) { serviceStub =>
+        serviceStub.deleteCredentials(request)
+        credentialsRepository.getBy(credential1.credentialId).toFuture.futureValue mustBe None
+        credentialsRepository.getBy(credential2.credentialId).toFuture.futureValue mustBe None
+      }
+
+    }
+
+    "do not delete credentials when one of them is published and not revoked" in {
+      val issuerId = createParticipant("Issuer X", did)
+      val subjectId = createContact(issuerId, "IOHK Student", None).contactId
+
+      val credential1 = createGenericCredential(issuerId, subjectId, "A")
+      val credential2 = createGenericCredential(issuerId, subjectId, "B")
+
+      publishCredential(issuerId, credential1)
+
+      val request = console_api.DeleteCredentialsRequest(
+        credentialsIds = List(credential1.credentialId.uuid.toString, credential2.credentialId.uuid.toString)
+      )
+      val rpcRequest = SignedRpcRequest.generate(keyPair, did, request)
+
+      usingApiAsCredentials(rpcRequest) { serviceStub =>
+        intercept[RuntimeException](
+          serviceStub.deleteCredentials(request)
+        )
+
+        credentialsRepository.getBy(credential1.credentialId).toFuture.futureValue mustBe a[Some[_]]
+        credentialsRepository.getBy(credential2.credentialId).toFuture.futureValue mustBe a[Some[_]]
+      }
+    }
+
+    "do not delete credentials when invalid uuid is supplied as credential id" in {
+      val issuerId = createParticipant("Issuer X", did)
+      val subjectId = createContact(issuerId, "IOHK Student", None).contactId
+
+      val credential1 = createGenericCredential(issuerId, subjectId, "A")
+      val credential2 = createGenericCredential(issuerId, subjectId, "B")
+
+      val request = console_api.DeleteCredentialsRequest(
+        credentialsIds = List(credential1.credentialId.uuid.toString, "invalidUUIdzzzz")
+      )
+      val rpcRequest = SignedRpcRequest.generate(keyPair, did, request)
+
+      usingApiAsCredentials(rpcRequest) { serviceStub =>
+        intercept[RuntimeException](
+          serviceStub.deleteCredentials(request)
+        )
+
+        credentialsRepository.getBy(credential1.credentialId).toFuture.futureValue mustBe a[Some[_]]
+        credentialsRepository.getBy(credential2.credentialId).toFuture.futureValue mustBe a[Some[_]]
+      }
+    }
+
+    "do not delete credentials when one of them has incorrect id" in {
+      val issuerId = createParticipant("Issuer X", did)
+      val subjectId = createContact(issuerId, "IOHK Student", None).contactId
+
+      val credential1 = createGenericCredential(issuerId, subjectId, "A")
+      val credential2 = createGenericCredential(issuerId, subjectId, "B")
+
+      val request = console_api.DeleteCredentialsRequest(
+        credentialsIds = List(credential1.credentialId.uuid.toString, UUID.randomUUID().toString)
+      )
+      val rpcRequest = SignedRpcRequest.generate(keyPair, did, request)
+
+      usingApiAsCredentials(rpcRequest) { serviceStub =>
+        intercept[RuntimeException](
+          serviceStub.deleteCredentials(request)
+        )
+
+        credentialsRepository.getBy(credential1.credentialId).toFuture.futureValue mustBe a[Some[_]]
+        credentialsRepository.getBy(credential2.credentialId).toFuture.futureValue mustBe a[Some[_]]
+      }
+    }
+  }
+
 }

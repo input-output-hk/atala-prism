@@ -3,6 +3,7 @@ package io.iohk.atala.prism.management.console.repositories
 import cats.data.NonEmptyList
 import cats.effect.IO
 import doobie.util.transactor
+import doobie.implicits._
 import io.circe.Json
 import io.circe.syntax._
 import io.iohk.atala.prism.AtalaWithPostgresSpec
@@ -11,7 +12,11 @@ import io.iohk.atala.prism.crypto.MerkleTree.MerkleInclusionProof
 import io.iohk.atala.prism.crypto.SHA256Digest
 import io.iohk.atala.prism.management.console.DataPreparation
 import io.iohk.atala.prism.management.console.DataPreparation._
-import io.iohk.atala.prism.management.console.errors.{CredentialDataValidationFailed, PublishedCredentialsNotExist}
+import io.iohk.atala.prism.management.console.errors.{
+  CredentialDataValidationFailed,
+  PublishedCredentialsNotExist,
+  PublishedCredentialsNotRevoked
+}
 import io.iohk.atala.prism.management.console.models._
 import io.iohk.atala.prism.models.{Ledger, TransactionId, TransactionInfo}
 import org.scalatest.OptionValues._
@@ -551,6 +556,56 @@ class CredentialsRepositorySpec extends AtalaWithPostgresSpec {
       transactionId mustBe mockTransactionId
       ledger mustBe mockLedger
       hash mustBe mockHash
+    }
+  }
+
+  "deleteCredentials" should {
+    "delete draft and published, revoked credentials" in {
+      val issuerId = createParticipant("Issuer X")
+      val subjectId = createContact(issuerId, "IOHK Student", None).contactId
+
+      val credential1 = createGenericCredential(issuerId, subjectId, "A")
+      val credential2 = createGenericCredential(issuerId, subjectId, "B")
+
+      publishCredential(issuerId, credential1)
+      markAsRevoked(credential1.credentialId)
+
+      val result = credentialsRepository
+        .deleteCredentials(issuerId, NonEmptyList.of(credential1.credentialId, credential2.credentialId))
+        .value
+        .futureValue
+
+      result mustBe a[Right[_, _]]
+      credentialsRepository.getBy(credential1.credentialId).toFuture.futureValue mustBe None
+      credentialsRepository.getBy(credential2.credentialId).toFuture.futureValue mustBe None
+    }
+
+    "do not delete credentials when one of them is published and not revoked" in {
+      val issuerId = createParticipant("Issuer X")
+      val subjectId = createContact(issuerId, "IOHK Student", None).contactId
+
+      val credential1 = createGenericCredential(issuerId, subjectId, "A")
+      val credential2 = createGenericCredential(issuerId, subjectId, "B")
+
+      publishCredential(issuerId, credential1)
+
+      val result = credentialsRepository
+        .deleteCredentials(issuerId, NonEmptyList.of(credential1.credentialId, credential2.credentialId))
+        .value
+        .futureValue
+
+      result mustBe Left(PublishedCredentialsNotRevoked(List(credential1.credentialId)))
+      credentialsRepository.getBy(credential1.credentialId).toFuture.futureValue mustBe a[Some[_]]
+      credentialsRepository.getBy(credential2.credentialId).toFuture.futureValue mustBe a[Some[_]]
+    }
+
+    def markAsRevoked(credentialId: GenericCredential.Id): Unit = {
+      val transactionId = 1.to(64).map(_ => "a").mkString("")
+      (sql"""
+           |UPDATE published_credentials
+           |SET revoked_on_transaction_id = decode(${transactionId}, 'hex')
+           |WHERE credential_id = ${credentialId.uuid.toString}::uuid
+       """.stripMargin.update.run.map(_ => ())).transact(database).unsafeRunSync()
     }
   }
 }

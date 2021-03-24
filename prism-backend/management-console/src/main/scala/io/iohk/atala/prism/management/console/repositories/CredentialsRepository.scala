@@ -3,7 +3,7 @@ package io.iohk.atala.prism.management.console.repositories
 import cats.data.{EitherT, NonEmptyList}
 import cats.data.Validated.{Invalid, Valid}
 import cats.effect.IO
-import doobie.ConnectionIO
+import doobie.{ConnectionIO, FC}
 import doobie.util.transactor.Transactor
 import doobie.implicits._
 import io.iohk.atala.prism.credentials.CredentialBatchId
@@ -14,7 +14,8 @@ import io.iohk.atala.prism.management.console.errors.{
   ExternalIdsWereNotFound,
   ManagementConsoleError,
   MissingContactIdAndExternalId,
-  PublishedCredentialsNotExist
+  PublishedCredentialsNotExist,
+  PublishedCredentialsNotRevoked
 }
 import io.iohk.atala.prism.management.console.models.{
   Contact,
@@ -188,5 +189,30 @@ class CredentialsRepository(xa: Transactor[IO])(implicit ec: ExecutionContext) {
       .transact(xa)
       .unsafeToFuture()
       .lift
+  }
+
+  def deleteCredentials(
+      institutionId: ParticipantId,
+      credentialsIds: NonEmptyList[GenericCredential.Id]
+  ): FutureEither[ManagementConsoleError, Unit] = {
+    val deleteIO: ConnectionIO[Either[ManagementConsoleError, Unit]] = for {
+      _ <- CredentialsDAO.deletePublishedCredentialsBy(institutionId, credentialsIds)
+      _ <- CredentialsDAO.deleteBy(institutionId, credentialsIds)
+    } yield Right(())
+
+    (CredentialsDAO
+      .getIdsOfPublishedNotRevokedCredentials(institutionId, credentialsIds)
+      .flatMap { publishNotRevokedCredentials =>
+        if (publishNotRevokedCredentials.nonEmpty)
+          FC.pure[Either[ManagementConsoleError, Unit]](
+            Left(PublishedCredentialsNotRevoked(publishNotRevokedCredentials))
+          )
+        else
+          deleteIO
+      })
+      .logSQLErrors(s"deleting credentials, institutionId = $institutionId", logger)
+      .transact(xa)
+      .unsafeToFuture()
+      .toFutureEither
   }
 }

@@ -468,6 +468,15 @@ package object grpc {
       )
     }
 
+  implicit val deleteCredentialsConverter: ProtoConverter[DeleteCredentialsRequest, DeleteCredentials] =
+    (request: DeleteCredentialsRequest) => {
+      for {
+        idsNonEmptyList <- toCredentialsIds(request.credentialsIds)
+      } yield DeleteCredentials(
+        idsNonEmptyList
+      )
+    }
+
   private def toConnectorRequestMetadata(
       connectorRequestMetadata: Option[console_models.ConnectorRequestMetadata]
   ): Try[ConnectorAuthenticatedRequestMetadata] = {
