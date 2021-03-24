@@ -652,7 +652,7 @@ jobs:
       # Update the document title
       - run:
           name: Store docs
-          command: sed -i "1s/.*/# Grpc API reference/" grpc-docs/grpc-api.md
+          command: sed -i "1s/.*/# gRPC API Reference/" grpc-docs/grpc-api.md
 
       # required to persist data, otherwise, we get this error: x509: certificate signed by unknown authority
       - run:
