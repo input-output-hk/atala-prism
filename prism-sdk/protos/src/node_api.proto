@@ -10,146 +10,146 @@ import "node_models.proto";
 
 // The Node API
 service NodeService {
-    // Checks if the service is healthy
+    // Checks if the service is healthy.
     rpc HealthCheck(HealthCheckRequest) returns (HealthCheckResponse) {}
 
-    // Retrieves a DID Document
+    // Retrieves a DID Document.
     rpc GetDidDocument(GetDidDocumentRequest) returns (GetDidDocumentResponse) {}
 
-    // Creates a public DID
+    // Creates a public DID.
     rpc CreateDID(CreateDIDRequest) returns (CreateDIDResponse) {}
 
-    // Updates an existing public DID
+    // Updates an existing public DID.
     rpc UpdateDID(UpdateDIDRequest) returns (UpdateDIDResponse) {}
 
-    // Issues a batch of credentials
+    // Issues a batch of credentials.
     rpc IssueCredentialBatch(IssueCredentialBatchRequest) returns (IssueCredentialBatchResponse) {}
 
-    // Revokes credentials from a batch, either all or a subset
+    // Revokes credentials from a batch (all, or just a subset).
     rpc RevokeCredentials(RevokeCredentialsRequest) returns (RevokeCredentialsResponse) {}
 
-    // Finds the details about a transaction
+    // Finds a transaction's details.
     rpc GetTransactionStatus(GetTransactionStatusRequest) returns (GetTransactionStatusResponse) {}
 
-    // Retrieves the Node version info
+    // Retrieves the Node version info.
     rpc GetNodeBuildInfo(GetNodeBuildInfoRequest) returns (GetNodeBuildInfoResponse) {}
 
-    // Finds the state for a given credential's batch
+    // Finds the state for a given credential's batch.
     rpc GetBatchState(GetBatchStateRequest) returns (GetBatchStateResponse) {}
 
-    // Finds the time when a credential was revoked
+    // Finds the time when a credential was revoked.
     rpc GetCredentialRevocationTime(GetCredentialRevocationTimeRequest) returns (GetCredentialRevocationTimeResponse) {}
 
-    // Publishes a sequence of signed operations in a single underlying transaction
-    // The sequence of operations has a size limit to fit in the metadata of the transaction(approx 15KB)
+    // Publishes a sequence of signed operations in a single underlying transaction.
+    // The sequence of operations has a size limit to fit in the metadata of the transaction (approx. 15KB).
     rpc PublishAsABlock(PublishAsABlockRequest) returns (PublishAsABlockResponse) {}
 }
 
 
-// Request to find a DID Document
+// Request to find a DID Document.
 message GetDidDocumentRequest {
-    string did = 1; // the DID suffix
+    string did = 1; // The DID suffix.
 }
-// Response when finding a DID document
+// Response when finding a DID Document.
 message GetDidDocumentResponse {
-    DIDData document = 1; // The DID Document
+    DIDData document = 1; // The DID Document.
 }
 
-// Request to create a public DID
+// Request to create a public DID.
 message CreateDIDRequest {
-    SignedAtalaOperation signed_operation = 1; // the signed operation
+    SignedAtalaOperation signed_operation = 1; // The signed operation.
 }
-// Response after creating a public DID
+// Response after creating a public DID.
 message CreateDIDResponse {
     string id = 1; // DID suffix, where DID is in form did:prism.atala:[DID suffix]
-    TransactionInfo transactionInfo = 2; // the on-chain transaction info where the DID is going to be created
+    TransactionInfo transactionInfo = 2; // The on-chain transaction info where the DID is going to be created.
 }
 
-// Request to update a public DID Document
+// Request to update a public DID Document.
 message UpdateDIDRequest {
-    SignedAtalaOperation signed_operation = 1; // the signed operation
+    SignedAtalaOperation signed_operation = 1; // The signed operation.
 }
-// Response after updating a DID Document
+// Response after updating a DID Document.
 message UpdateDIDResponse {
-    TransactionInfo transactionInfo = 1; // the on-chain transaction info where the operation is going to be applied
+    TransactionInfo transactionInfo = 1; // The on-chain transaction info where the operation is going to be applied.
 }
 
-// Request to issue a batch of credentials
+// Request to issue a batch of credentials.
 message IssueCredentialBatchRequest {
-    SignedAtalaOperation signed_operation = 1; // the signed operation
+    SignedAtalaOperation signed_operation = 1; // The signed operation.
 }
-// Response after issuing a batch of credentials
+// Response after issuing a batch of credentials.
 message IssueCredentialBatchResponse {
-    string batchId = 1; // id of the batch posted
-    TransactionInfo transactionInfo = 2; // the on-chain transaction info where the operation is going to be applied
+    string batchId = 1; // The ID of the batch posted.
+    TransactionInfo transactionInfo = 2; // The on-chain transaction info where the operation is going to be applied.
 }
 
-// Request to revoke credentials from a batch
+// Request to revoke credentials from a batch.
 message RevokeCredentialsRequest {
-    SignedAtalaOperation signed_operation = 1; // the signed operation
+    SignedAtalaOperation signed_operation = 1; // The signed operation.
 }
-// Response after revoking credentials from a batch
+// Response after revoking credentials from a batch.
 message RevokeCredentialsResponse {
-    TransactionInfo transactionInfo = 1; // the on-chain transaction info where the operation is going to be applied
+    TransactionInfo transactionInfo = 1; // The on-chain transaction info where the operation is going to be applied.
 }
 
-// Request to get the Node version info
+// Request to get the Node version info.
 message GetNodeBuildInfoRequest {
 }
-// Response with the Node version info
+// Response with the Node version info.
 message GetNodeBuildInfoResponse {
     reserved 4; // buildTime
 
-    string version = 1; // the actual version
-    string scalaVersion = 2; // the scala version used to compile the app
-    string sbtVersion = 3; // the sbt version used to compile the app
+    string version = 1; // The actual version.
+    string scalaVersion = 2; // The Scala version used to compile the app.
+    string sbtVersion = 3; // The SBT version used to compile the app.
 }
 
-// Request to get the credential's batch state
+// Request to get the credential's batch state.
 message GetBatchStateRequest {
-    string batchId = 1; // id of the batch
+    string batchId = 1; // The batch ID.
 }
-// Response with the credential's batch state
+// Response with the credential's batch state.
 message GetBatchStateResponse {
-    string issuerDID = 1; // DID suffix used to sign the IssueCredentialBatch operation
-    bytes merkleRoot = 2; // merkle root used IssueCredential operation
+    string issuerDID = 1; // DID suffix used to sign the IssueCredentialBatch operation.
+    bytes merkleRoot = 2; // The Merkle root used for the IssueCredential operation.
 
     // If present: underlying blockchain data that refers to the transaction that
-    // contains the IssueCredential operation associated to the credential
+    // contains the IssueCredential operation associated with the credential.
     LedgerData publicationLedgerData = 3;
 
-    // If present: underlying blockchain data that refers to the transaction that RevokeCredential operation associated to the credential
+    // If present: underlying blockchain data that refers to the transaction that contains the RevokeCredential operation associated with the credential.
     LedgerData revocationLedgerData = 4;
 }
 
-// Request to get the credential's revocation time
+// Request to get the credential's revocation time.
 message GetCredentialRevocationTimeRequest {
-    string batchId = 1; // the id corresponding to the credential to query about
-    bytes credentialHash = 2; // the hash of the credential to query about
+    string batchId = 1; // The ID corresponding to the credential to query about.
+    bytes credentialHash = 2; // The hash of the credential to query about.
 }
-// Response with the credential's revocation time
+// Response with the credential's revocation time.
 message GetCredentialRevocationTimeResponse {
-    LedgerData revocationLedgerData = 1; // if present, the ledger data when the credential was revoked
+    LedgerData revocationLedgerData = 1; // If present, the ledger data when the credential was revoked.
 }
 
-// Request to get the on-chain transaction status
+// Request to get the on-chain transaction status.
 message GetTransactionStatusRequest {
-    TransactionInfo transactionInfo = 1; // the on-chain transaction info
+    TransactionInfo transactionInfo = 1; // The on-chain transaction info.
 }
-// Response with the transaction status
+// Response with the transaction status.
 message GetTransactionStatusResponse {
-    TransactionInfo transactionInfo = 1; // the on-chain transaction info
-    TransactionStatus status = 2; // whether the transaction has been applied
+    TransactionInfo transactionInfo = 1; // The on-chain transaction info.
+    TransactionStatus status = 2; // Whether or not the transaction has been applied.
 }
 
 message PublishAsABlockRequest {
-    // the sequence of operations to apply. They will be applied in the order provided here
+    // The sequence of operations to apply. The operations will be applied in the order specified here.
     repeated SignedAtalaOperation signed_operations = 1; // two or more signed operations
 }
-// Response with the transaction info and operations outputs
+// Response with the transaction info and operations outputs.
 message PublishAsABlockResponse {
-    // the on-chain transaction info where the block of operations is going to be attached to
+    // The on-chain transaction info where the block of operations is going to be attached to.
     TransactionInfo transactionInfo = 1;
-    // the responses of every operation in the block, they are ordered in the same order of the operations sent in PublishAsABlockRequest
+    // The responses of every operation in the block, ordered the same as the operations sent in PublishAsABlockRequest.
     repeated OperationOutput outputs = 2;
 }
