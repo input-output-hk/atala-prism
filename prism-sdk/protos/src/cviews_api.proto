@@ -7,15 +7,15 @@ package io.iohk.atala.prism.protos;
 
 import "cviews_models.proto";
 
-// The API for the credential views
+// The API for the credential views.
 service CredentialViewsService {
-    // Get the available view templates
+    // Gets the available view templates.
     rpc GetCredentialViewTemplates (GetCredentialViewTemplatesRequest) returns (GetCredentialViewTemplatesResponse) {}
 }
 
-// Request to get the available view templates
+// Request to get the available view templates.
 message GetCredentialViewTemplatesRequest {}
-// Response with the available view templates
+// Response with the available view templates.
 message GetCredentialViewTemplatesResponse {
     repeated CredentialViewTemplate templates = 1; // the available templates
 }
