@@ -9,7 +9,7 @@ package io.iohk.atala.prism.protos;
 
 // @exclude
 // These models are intended for internal usage inside
-// the AtalaNode (not to be publicly accessible from the gRPC API)
+// the AtalaNode (not to be publicly accessible from the gRPC API).
 
 message AtalaBlock {
   string version = 1;
