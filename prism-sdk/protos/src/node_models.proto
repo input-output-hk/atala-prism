@@ -12,158 +12,158 @@ import "google/protobuf/timestamp.proto";
 //
 // TODO: Consider renaming to BlockTimestampInfo.
 message TimestampInfo {
-    uint64 blockTimestamp_deprecated = 1 [deprecated = true]; // timestamp provided from the underlying blockchain
-    uint32 blockSequenceNumber = 2; // transaction index inside the underlying blockchain block
-    uint32 operationSequenceNumber = 3; // operation index inside the AtalaBlock
-    google.protobuf.Timestamp blockTimestamp = 4; // timestamp provided from the underlying blockchain
+    uint64 blockTimestamp_deprecated = 1 [deprecated = true]; // The timestamp provided from the underlying blockchain.
+    uint32 blockSequenceNumber = 2; // The transaction index inside the underlying block.
+    uint32 operationSequenceNumber = 3; // The operation index inside the AtalaBlock.
+    google.protobuf.Timestamp blockTimestamp = 4; // The timestamp provided from the underlying blockchain.
 }
 
-// Every key has a single purpose, these are the available ones
+// Every key has a single purpose:
 enum KeyUsage {
-    // UNKNOWN_KEY is an invalid value - Protobuf uses 0 if no value is provided and we want user to explicitly choose the usage
+    // UNKNOWN_KEY is an invalid value - Protobuf uses 0 if no value is provided and we want the user to explicitly choose the usage.
     UNKNOWN_KEY = 0;
 
-    // This is the most privileged key-type, when any other key is lost, you could use this to recover the others
+    // This is the most privileged key-type, when any other key is lost, you could use this to recover the others.
     MASTER_KEY = 1;
 
     // This key-type is used for issuing credentials only, it should be kept in a safe place
     // to avoid malicious credentials being issued.
     ISSUING_KEY = 2;
 
-    // This key-type is used for end to end encrypted communication, whoever wants to send a message should
+    // This key-type is used for end-to-end encrypted communication, whoever wants to send a message should
     // use this key-type to encrypt the content.
     COMMUNICATION_KEY = 3;
 
-    // This key-type is used to authenticate requests, or logging into services.
+    // This key-type is used to authenticate requests or logging into services.
     AUTHENTICATION_KEY = 4;
 }
 
-// Holds the necessary data to recover an Elliptic Curve's public key.
+// Holds the necessary data to recover an Elliptic Curve (EC)'s public key.
 //
 // TODO: Consider renaming this to ECPublicKeyData.
 message ECKeyData {
-    string curve = 1; // the curve name, like secp256k1
-    bytes x = 2; // the x coordinate represented as bytes
-    bytes y = 3; // the y coordinate represented as bytes
+    string curve = 1; // The curve name, like secp256k1.
+    bytes x = 2; // The x coordinate, represented as bytes.
+    bytes y = 3; // The y coordinate, represented as bytes.
 }
 
 // Represents a public key with metadata, necessary for a DID document.
 //
 // TODO: Consider renaming this to something more specific, like DIDPublicKey.
 message PublicKey {
-    string id = 1; // the key identifier within the DID Document
-    KeyUsage usage = 2; // the key purpose
-    TimestampInfo addedOn = 3; // the time when the key was added to the DID Document
-    TimestampInfo revokedOn = 4; // the time when the key was revoked from the DID Document
+    string id = 1; // The key identifier within the DID Document.
+    KeyUsage usage = 2; // The key's purpose.
+    TimestampInfo addedOn = 3; // The time when the key was added to the DID Document.
+    TimestampInfo revokedOn = 4; // The time when the key was revoked from the DID Document.
 
-    // The key representation
+    // The key's representation.
     oneof keyData {
-        ECKeyData ecKeyData = 8; // the Elliptic Curve key
+        ECKeyData ecKeyData = 8; // The Elliptic Curve (EC) key.
     };
 }
 
-// The DID document's data
+// The DID Document's data.
 message DIDData {
-    string id = 1; // DID suffix, where DID is in form did:prism.atala:[DID suffix]
-    repeated PublicKey publicKeys = 2; // the keys that belong to this DID Document
+    string id = 1; // The DID suffix, where DID is in form did:prism.atala:[DID suffix]
+    repeated PublicKey publicKeys = 2; // The keys that belong to this DID Document.
 }
 
-// The operation to create a public DID
+// The operation to create a public DID.
 message CreateDIDOperation {
     DIDData didData = 1; // DIDData with did empty id field
 }
 
-// The necessary data to add a key to a DID
+// The necessary data to add a key to a DID.
 message AddKeyAction {
-    PublicKey key = 1; // the key to include
+    PublicKey key = 1; // The key to include.
 }
 
-// The necessary data to remove a key from a DID
+// The necessary data to remove a key from a DID.
 message RemoveKeyAction {
     string keyId = 1; // the key id to remove
 }
 
-// The potential details that can be updated in a DID
+// The potential details that can be updated in a DID.
 message UpdateDIDAction {
 
-    // the action to perform
+    // The action to perform.
     oneof action {
-        AddKeyAction addKey = 1; // used to add a new key to the DID
-        RemoveKeyAction removeKey = 2; // used to remove a key from the DID
+        AddKeyAction addKey = 1; // Used to add a new key to the DID.
+        RemoveKeyAction removeKey = 2; // Used to remove a key from the DID.
     }
 }
 
-// Specifies the necessary data to update a public DID
+// Specifies the necessary data to update a public DID.
 message UpdateDIDOperation {
-    bytes previousOperationHash = 1; // the hash of the operation that issued the DID
-    string id = 2; // TODO: To be redefined after we start using this operation
-    repeated UpdateDIDAction actions = 3; // the actual updates to perform on the DID
+    bytes previousOperationHash = 1; // The hash of the operation that issued the DID.
+    string id = 2; // TODO: To be redefined after we start using this operation.
+    repeated UpdateDIDAction actions = 3; // The actual updates to perform on the DID.
 }
 
 // Represents a credential's batch.
 //
 // Check the protocol docs to understand it.
 message CredentialBatchData {
-    string issuerDID = 1; // The DID suffix that issues the credential's batch
-    bytes merkleRoot = 2; // The merkle root for the credential's batch
+    string issuerDID = 1; // The DID suffix that issues the credential's batch.
+    bytes merkleRoot = 2; // The Merkle root for the credential's batch.
 }
 
-// Specifies the data to issue a credential batch
+// Specifies the data to issue a credential batch.
 message IssueCredentialBatchOperation {
-    CredentialBatchData credentialBatchData = 1; // the actual credential batch data
+    CredentialBatchData credentialBatchData = 1; // The actual credential batch data.
 }
 
-// Specifies the credentials to revoke, being the whole batch, or a subset of it
+// Specifies the credentials to revoke (the whole batch, or just a subset of it).
 message RevokeCredentialsOperation {
-    bytes previousOperationHash = 1; // the hash of the operation that issued the batch
-    string credentialBatchId = 2; // the corresponding batch id, as returned in IssueCredentialBatchResponse
-    repeated bytes credentialsToRevoke = 3; // hashes of the credentials to revoke. If empty, the full batch is revoked
+    bytes previousOperationHash = 1; // The hash of the operation that issued the batch.
+    string credentialBatchId = 2; // The corresponding batch ID, as returned in IssueCredentialBatchResponse.
+    repeated bytes credentialsToRevoke = 3; // The hashes of the credentials to revoke. If empty, the full batch is revoked.
 }
 
-// The possible operations affecting the blockchain
+// The possible operations affecting the blockchain.
 message AtalaOperation {
-    // the actual operation
+    // The actual operation.
     oneof operation {
-        // Used to create a public DID
+        // Used to create a public DID.
         CreateDIDOperation createDid = 1;
 
-        // Used to update an existing public DID
+        // Used to update an existing public DID.
         UpdateDIDOperation updateDid = 2;
 
-        // Used to issue a batch of credentials
+        // Used to issue a batch of credentials.
         IssueCredentialBatchOperation issueCredentialBatch = 3;
 
-        // Used to revoke a credential batch
+        // Used to revoke a credential batch.
         RevokeCredentialsOperation revokeCredentials = 4;
     };
 }
 
-// A signed operation, necessary to post anything on the blockchain
+// A signed operation, necessary to post anything on the blockchain.
 message SignedAtalaOperation {
-    string signedWith = 1; // the key id used to sign the operation, it must belong to the DID that signs the operation
-    bytes signature = 2; // the actual signature
-    AtalaOperation operation = 3; // the operation that was signed
+    string signedWith = 1; // The key ID used to sign the operation, it must belong to the DID that signs the operation.
+    bytes signature = 2; // The actual signature.
+    AtalaOperation operation = 3; // The operation that was signed.
 }
 
-// Ledger data associated to a protocol event
+// Ledger data associated to a protocol event.
 // Note that the difference with TransactionInfo is that this message contains a full
-// timestamp, and there is not expectation for it to be optional
+// timestamp, and there is no expectation for it to be optional.
 message LedgerData {
-    string transactionId = 1; // ID of the transaction
-    Ledger ledger = 2; // Ledger the transaction was published to
-    TimestampInfo timestampInfo = 3; // timestamp of the protocol event
+    string transactionId = 1; // ID of the transaction.
+    Ledger ledger = 2; // Ledger the transaction was published to.
+    TimestampInfo timestampInfo = 3; // The timestamp of the protocol event.
 }
 
-// Used to encode the responses of the operations issued in an AtalaBlock
+// Used to encode the responses of the operations issued in an AtalaBlock.
 message OperationOutput {
     oneof result {
-        // Represents the response provided by IssueCredentialBatchOperation
+        // Represents the response provided by IssueCredentialBatchOperation.
         IssueCredentialBatchOutput batchOutput = 1;
-        // Represents the response provided by CreateDIDOperation
+        // Represents the response provided by CreateDIDOperation.
         CreateDIDOutput createDIDOutput = 2;
-        // Represents the response provided by UpdateDIDOperation
+        // Represents the response provided by UpdateDIDOperation.
         UpdateDIDOutput updateDIDOutput = 3;
-        // Represents the response provided by RevokeCredentialOperation
+        // Represents the response provided by RevokeCredentialOperation.
         RevokeCredentialsOutput revokeCredentialsOutput = 4;
     }
 }
