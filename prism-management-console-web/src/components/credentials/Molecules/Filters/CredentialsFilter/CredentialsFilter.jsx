@@ -7,10 +7,10 @@ import CustomDatePicker from '../../../../common/Atoms/CustomDatePicker/CustomDa
 import CustomInputGroup from '../../../../common/Atoms/CustomInputGroup/CustomInputGroup';
 import {
   NORMALIZED_CONNECTION_STATUSES,
-  VALID_CREDENTIAL_STATUSES
+  CREDENTIAL_STATUSES
 } from '../../../../../helpers/constants';
 
-const credentialStatuses = Object.keys(VALID_CREDENTIAL_STATUSES);
+const credentialStatuses = Object.keys(CREDENTIAL_STATUSES);
 
 const CredentialsFilter = ({ credentialsTypes, filterProps, isIssued }) => {
   const { t } = useTranslation();
@@ -71,8 +71,8 @@ const CredentialsFilter = ({ credentialsTypes, filterProps, isIssued }) => {
         >
           {credentialStatuses.map(aCredentialStatus => (
             <Select.Option
-              key={VALID_CREDENTIAL_STATUSES[aCredentialStatus]}
-              value={VALID_CREDENTIAL_STATUSES[aCredentialStatus]}
+              key={CREDENTIAL_STATUSES[aCredentialStatus]}
+              value={CREDENTIAL_STATUSES[aCredentialStatus]}
             >
               {t(`credentials.filters.types.credentialStatus.${aCredentialStatus}`)}
             </Select.Option>

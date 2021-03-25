@@ -24,9 +24,17 @@ const translationKeyPrefix = 'credentials.table.columns';
 
 const tp = chain => i18n.t(`${translationKeyPrefix}.${chain}`);
 
+const shouldShowRevokeButton = status =>
+  status === CREDENTIAL_STATUSES.credentialSigned || status === CREDENTIAL_STATUSES.credentialSent;
+
+const shouldShowSignButton = status => status === CREDENTIAL_STATUSES.credentialDraft;
+
+const shouldShowSendButton = status => status === CREDENTIAL_STATUSES.credentialSigned;
+
 const commonColumns = [
   {
     key: 'icon',
+    // eslint-disable-next-line react/prop-types
     render: ({ credentialType }) => (
       <img
         style={{ width: '40px', height: '40px' }}
@@ -37,20 +45,23 @@ const commonColumns = [
   },
   {
     key: 'credentialType',
+    // eslint-disable-next-line react/prop-types
     render: ({ credentialType }) => (
       <CellRenderer title={tp('credentialType')} value={i18n.t(credentialType?.name)} />
     )
   },
   {
     key: 'contactName',
-    render: ({ contactData }) => (
-      <CellRenderer title={tp('contactName')} value={contactData.contactName} />
+    // eslint-disable-next-line react/prop-types
+    render: ({ contactData: { contactName } }) => (
+      <CellRenderer title={tp('contactName')} value={contactName} />
     )
   },
   {
     key: 'externalId',
-    render: ({ contactData }) => (
-      <CellRenderer title={tp('externalId')} value={contactData.externalid} />
+    // eslint-disable-next-line react/prop-types
+    render: ({ contactData: { externalid } }) => (
+      <CellRenderer title={tp('externalId')} value={externalid} />
     )
   }
 ];
@@ -67,6 +78,7 @@ const getCredentialsIssuedColumns = (
   ...commonColumns,
   {
     key: 'dateSigned',
+    // eslint-disable-next-line react/prop-types
     render: ({ publicationstoredat }) => (
       <CellRenderer
         title={tp('dateSigned')}
@@ -80,6 +92,7 @@ const getCredentialsIssuedColumns = (
   },
   {
     key: 'contactStatus',
+    // eslint-disable-next-line react/prop-types
     render: ({ contactData: { status } }) => (
       <CellRenderer title={tp('contactStatus')}>
         <StatusBadge status={status} useCase={CONTACT_STATUS} />
@@ -88,6 +101,7 @@ const getCredentialsIssuedColumns = (
   },
   {
     key: 'credentialStatus',
+    // eslint-disable-next-line react/prop-types
     render: ({ status }) => (
       <CellRenderer title={tp('credentialStatus')}>
         <StatusBadge status={status} useCase={CREDENTIAL_STATUS} />
@@ -101,7 +115,7 @@ const getCredentialsIssuedColumns = (
       const loadingProps = { size: 3, color: '#F83633' };
       const actionButtons = (
         <div>
-          {status === CREDENTIAL_STATUSES.credentialSigned && (
+          {shouldShowRevokeButton(status) && (
             <CustomButton
               buttonProps={{
                 className: 'theme-link',
@@ -112,7 +126,7 @@ const getCredentialsIssuedColumns = (
               loadingProps={loadingProps}
             />
           )}
-          {status === CREDENTIAL_STATUSES.credentialDraft && (
+          {shouldShowSignButton(status) && (
             <CustomButton
               buttonProps={{
                 className: 'theme-link',
@@ -123,7 +137,7 @@ const getCredentialsIssuedColumns = (
               loadingProps={{ size: 3, color: '#F83633' }}
             />
           )}
-          {status === CREDENTIAL_STATUSES.credentialSigned && (
+          {shouldShowSendButton(status) && (
             <CustomButton
               buttonProps={{
                 className: 'theme-link',
@@ -153,6 +167,7 @@ const getCredentialsReceivedColumns = (viewText, onView) => [
   ...commonColumns,
   {
     key: 'dateReceived',
+    // eslint-disable-next-line react/prop-types
     render: ({ storedat }) => (
       <CellRenderer title={tp('dateReceived')} value={backendDateFormat(storedat?.seconds)} />
     )

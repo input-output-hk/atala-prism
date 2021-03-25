@@ -337,7 +337,7 @@
       "notImplementedYet": "This functionality is not implemented yet"
     },
     "success": {
-      "successRevoke": "Successfully revoked credential(s)",
+      "successRevoke": "Successfully sent credential(s) to the wallet",
       "successSign": "Successfully sent credential(s) to the wallet",
       "successSend": "Successfully sent credential(s) to the contact"
     },
