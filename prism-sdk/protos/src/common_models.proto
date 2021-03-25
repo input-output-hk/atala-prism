@@ -7,68 +7,68 @@ package io.iohk.atala.prism.protos;
 
 import "google/protobuf/timestamp.proto";
 
-// Request to check the service's health
+// Request to check the service's health.
 message HealthCheckRequest {}
-// Response after checking the service's health
+// Response after checking the service's health.
 message HealthCheckResponse {}
 
-// Represents a date broken by its pieces, used to avoid format issues on different languages
+// Represents a date by its parts (day, month, year). This avoids date formatting issues in different languages.
 message Date {
-    int32 year = 1; // positive value
-    int32 month = 2; // value in the [1, 12] interval
-    int32 day = 3; // value in the [1, 31] interval (depending on the month, the max value might be 28
+    int32 year = 1; // A positive value.
+    int32 month = 2; // A value in the [1, 12] range.
+    int32 day = 3; // A value in the [1, 31] range (depending on the month, the maximum value might be 28).
 }
 
-// Represents a time interval between two given timestamps
+// Represents a time interval between two given timestamps.
 message TimeInterval {
-    // the starting inclusive timestamp
-    // cannot be missing (i.e. the interval cannot be open-ended)
-    // has to be before or equal to endTimestamp
+    // The starting inclusive timestamp
+    // cannot be missing (i.e., the interval cannot be open-ended).
+    // startTimestamp must be before or equal to endTimestamp.
     google.protobuf.Timestamp startTimestamp = 1;
-    // the ending inclusive timestamp
-    // cannot be missing (i.e. the interval cannot be open-ended)
-    // has to be after or equal to endTimestamp
+    // The ending inclusive timestamp
+    // cannot be missing (i.e., the interval cannot be open-ended).
+    // endTimestamp must be after or equal to endTimestamp.
     google.protobuf.Timestamp endTimestamp = 2;
 }
 
-// When returning results, this is how you specify the direction on how those get sorted
+// Specifies the direction in which to sort results.
 enum SortByDirection {
-    SORT_BY_DIRECTION_UNKNOWN = 0; // Nothing provided, each API may define whether to fail or take a default value (commonly ASCENDING)
-    SORT_BY_DIRECTION_ASCENDING = 1; // Sort the results in ascending order
-    SORT_BY_DIRECTION_DESCENDING = 2; // Sort the results in descending order
+    SORT_BY_DIRECTION_UNKNOWN = 0; // Nothing provided, each API can define whether to fail or take a default value (commonly ASCENDING).
+    SORT_BY_DIRECTION_ASCENDING = 1; // Sort the results in ascending order.
+    SORT_BY_DIRECTION_DESCENDING = 2; // Sort the results in descending order.
 }
 
-// The supported ledger types, commonly used for linking on-chain transactions
+// The supported ledger types, commonly used for linking on-chain transactions.
 enum Ledger {
-    UNKNOWN_LEDGER = 0; // Invalid default value
-    IN_MEMORY = 1; // This is used only for development
-    BITCOIN_TESTNET = 2; // Bitcoin testnet (used for testing, deprecated)
-    BITCOIN_MAINNET = 3; // Bitcoin mainnet (deprecated)
-    CARDANO_TESTNET = 4; // Cardano testnet (used for testing)
-    CARDANO_MAINNET = 5; // Cardano mainnet, used in production
+    UNKNOWN_LEDGER = 0; // Invalid default value.
+    IN_MEMORY = 1; // This is used only for development.
+    BITCOIN_TESTNET = 2; // Bitcoin testnet (used for testing, deprecated).
+    BITCOIN_MAINNET = 3; // Bitcoin mainnet (deprecated).
+    CARDANO_TESTNET = 4; // Cardano testnet (used for testing).
+    CARDANO_MAINNET = 5; // Cardano mainnet, used in production.
 }
 
 // Information about a ledger block.
 //
 // TODO: Consider renaming to TransactionInBlockInfo given that it includes information about the transaction.
 message BlockInfo {
-    int32 number = 1; // Number of the block in the ledger
-    int64 timestamp_deprecated = 2 [deprecated = true]; // Millis since epoch when the block was created
-    int32 index = 3; // Index of the transaction within the block
-    google.protobuf.Timestamp timestamp = 4; // Timestamp when the block was created
+    int32 number = 1; // Number of the block in the ledger.
+    int64 timestamp_deprecated = 2 [deprecated = true]; // Millis since the epoch when the block was created.
+    int32 index = 3; // Index of the transaction within the block.
+    google.protobuf.Timestamp timestamp = 4; // Timestamp when the block was created.
 }
 
-// Information about a ledger transaction, as well as the block it is inclded in
+// Information about a ledger transaction and the block that the transaction is included in.
 message TransactionInfo {
-    string transactionId = 1; // ID of the transaction
-    Ledger ledger = 2; // Ledger the transaction was published to
-    BlockInfo block = 3; // Block the transaction was included in
+    string transactionId = 1; // Transaction ID.
+    Ledger ledger = 2; // Ledger the transaction was published to.
+    BlockInfo block = 3; // Block the transaction was included in.
 }
 
-// The status for a PRISM transaction
+// The status of a PRISM transaction.
 enum TransactionStatus {
-    UNKNOWN = 0; // The transaction is not an Atala PRISM transaction
-    PENDING = 1; // The transaction is pending to be accepted by the blockchain
-    IN_LEDGER = 2; // The transaction has been accepted by the blockchain, but is pending confirmation from Atala PRISM
-    CONFIRMED = 3; // The transaction has been confirmed by Atala PRISM and is now considered immutable
+    UNKNOWN = 0; // The transaction is not an Atala PRISM transaction.
+    PENDING = 1; // The transaction is pending to be accepted by the blockchain.
+    IN_LEDGER = 2; // The transaction has been accepted by the blockchain, but is pending confirmation from Atala PRISM.
+    CONFIRMED = 3; // The transaction has been confirmed by Atala PRISM and is now considered immutable.
 }
