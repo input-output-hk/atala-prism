@@ -55,10 +55,10 @@ const GroupEditingContainer = ({ api }) => {
     }
   };
 
-  const handleRemoveContacts = async contactsToRemove => {
+  const handleRemoveContacts = async contactsIdsToRemove => {
     try {
       setIsSaving(true);
-      await api.groupsManager.updateGroup(id, [], contactsToRemove);
+      await api.groupsManager.updateGroup(id, { contactsIdsToRemove });
       getGroupContacts(true);
     } catch (e) {
       message.error(t('groupEditing.errors.grpc'));
@@ -68,10 +68,23 @@ const GroupEditingContainer = ({ api }) => {
     }
   };
 
-  const handleAddContacts = async aContactsList => {
+  const handleAddContacts = async contactIdsToAdd => {
     try {
       setIsSaving(true);
-      await api.groupsManager.updateGroup(id, aContactsList);
+      await api.groupsManager.updateGroup(id, { contactIdsToAdd });
+      getGroupContacts(true);
+    } catch (e) {
+      message.error(t('groupEditing.errors.grpc'));
+      Logger.error('groupEditing.errors.grpc', e);
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
+  const handleGroupRename = async newName => {
+    try {
+      setIsSaving(true);
+      await api.groupsManager.updateGroup(id, { newName });
       getGroupContacts(true);
     } catch (e) {
       message.error(t('groupEditing.errors.grpc'));
@@ -87,6 +100,7 @@ const GroupEditingContainer = ({ api }) => {
       filterProps={filterProps}
       contacts={filteredContacts}
       handleContactsRequest={handleContactsRequest}
+      onGroupRename={handleGroupRename}
       onRemoveContacts={handleRemoveContacts}
       onAddContacts={handleAddContacts}
       loading={loading}

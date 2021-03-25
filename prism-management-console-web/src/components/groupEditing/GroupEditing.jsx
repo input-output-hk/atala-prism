@@ -22,6 +22,7 @@ const GroupEditing = ({
   filterProps,
   handleContactsRequest,
   contacts,
+  onGroupRename,
   onRemoveContacts,
   onAddContacts,
   hasMore,
@@ -77,10 +78,11 @@ const GroupEditing = ({
     setModalDeletionVisible(true);
   };
 
+  const handleSaveGroupName = () =>
+    groupName && onGroupRename(groupName).finally(() => setEditing(false));
+
   const editButtonProps = {
     type: 'link',
-    // TODO: remove disabled when name edition is enabled from backend
-    disabled: true,
     style: { color: '#FF2D3B' },
     onClick: () => setEditing(!editing)
   };
@@ -153,9 +155,14 @@ const GroupEditing = ({
           <Col {...firstColProps} className="GroupName">
             {renderNameSection()}
             {editing ? (
-              <Button {...editButtonProps} onClick={handleCancelClick}>
-                {t('groupEditing.buttons.cancel')}
-              </Button>
+              <>
+                <Button {...editButtonProps} disabled={!groupName} onClick={handleSaveGroupName}>
+                  {t('groupEditing.buttons.save')}
+                </Button>
+                <Button {...editButtonProps} onClick={handleCancelClick}>
+                  {t('groupEditing.buttons.cancel')}
+                </Button>
+              </>
             ) : (
               <Button {...editButtonProps}>{t('groupEditing.buttons.edit')}</Button>
             )}
@@ -224,6 +231,7 @@ GroupEditing.propTypes = {
     })
   }).isRequired,
   handleContactsRequest: PropTypes.func.isRequired,
+  onGroupRename: PropTypes.func.isRequired,
   onRemoveContacts: PropTypes.func.isRequired,
   onAddContacts: PropTypes.func.isRequired,
   hasMore: PropTypes.bool.isRequired,

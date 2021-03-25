@@ -37,10 +37,11 @@ async function createGroup(groupName) {
   return response.getGroup().toObject();
 }
 
-async function updateGroup(groupId, contactIdsToAdd, contactIdsToRemove) {
+async function updateGroup(groupId, { contactIdsToAdd, contactIdsToRemove, newName }) {
   const request = new UpdateGroupRequest();
 
   request.setGroupid(groupId);
+  if (newName) request.setName(newName);
   request.setContactidstoaddList(contactIdsToAdd || []);
   request.setContactidstoremoveList(contactIdsToRemove || []);
 
