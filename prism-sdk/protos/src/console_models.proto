@@ -8,186 +8,186 @@ package io.iohk.atala.prism.protos;
 import "common_models.proto";
 import "google/protobuf/timestamp.proto";
 
-// Indicates the status on the contact's connection
+// Indicates the status of the contact's connection.
 enum ContactConnectionStatus {
-  STATUS_MISSING = 0; // default value, represents the lack of status
+  STATUS_MISSING = 0; // Default value, represents the lack of status.
   //TODO remove after removing console functionality from connector
-  // There is no connection token generated yet, kept for compatibility with connector
-  // as the console backend generates the tokens while creating contacts
+  // No connection token is generated yet, kept for compatibility with connector
+  // as the console backend generates the tokens while creating contacts.
   STATUS_INVITATION_MISSING = 1;
-  STATUS_CONNECTION_MISSING = 2; // the contact has been invited and the connection token has been generated
-  STATUS_CONNECTION_ACCEPTED = 3; // the contact accepted the connection
-  STATUS_CONNECTION_REVOKED = 4; // the contact rejected the connection
+  STATUS_CONNECTION_MISSING = 2; // The contact has been invited and the connection token has been generated.
+  STATUS_CONNECTION_ACCEPTED = 3; // The contact accepted the connection.
+  STATUS_CONNECTION_REVOKED = 4; // The contact rejected the connection.
 }
 
-// Represents a contact
+// Represents a contact.
 message Contact {
-  string contactId = 1; // the internal id to identify the contact
-  string externalId = 2; // the id provided by the institution at contact creation time, commonly used to match the institution's record keeping system, for example, it could be the student id for a university
-  string jsonData = 3; // arbitrary data for the contact, should be a valid json, when missing, "{}" will be used
-  ContactConnectionStatus connectionStatus = 4; // the connection status for this contact
-  string connectionToken = 5; // the connection token used to get this contact connected, present when the status is ConnectionMissing
-  string connectionId = 6; // the connection id necessary to send messages to this contact, present when the status is ConnectionAccepted
-  int64 createdAt_deprecated = 7 [deprecated = true]; // the timestamp when the contact was created
-  string name = 8; // the contact's name, only used by management console, empty on the connector
-  google.protobuf.Timestamp createdAt = 9; // the timestamp when the contact was created
+  string contactId = 1; // The internal ID to identify the contact.
+  string externalId = 2; // the ID provided by the institution when the contact was created. It is commonly used to match the institution's record keeping system, for example, it could be the student ID for a university.
+  string jsonData = 3; // Arbitrary data for the contact. Should be a valid JSON. If missing, "{}" will be used.
+  ContactConnectionStatus connectionStatus = 4; // The connection status for this contact.
+  string connectionToken = 5; // The connection token used to get this contact connected, present when the status is ConnectionMissing.
+  string connectionId = 6; // The necessary connection ID to send messages to this contact, present when the status is ConnectionAccepted.
+  int64 createdAt_deprecated = 7 [deprecated = true]; // The timestamp when the contact was created.
+  string name = 8; // The contact's name, only used by the Management Console (empty on the connector).
+  google.protobuf.Timestamp createdAt = 9; // The timestamp when the contact was created.
 }
 
 message CredentialIssuanceContact {
-  string contactId = 1; // ID of the contact the credential data is about
-  string credentialData = 2; // Actual credential data of the contact, in JSON format
-  repeated string groupIds = 3; // IDs of the groups the contact was taken from, empty if added directly
+  string contactId = 1; // ID of the contact the credential data is about.
+  string credentialData = 2; // Actual credential data of the contact, in JSON format.
+  repeated string groupIds = 3; // IDs of the groups the contact was taken from, empty if added directly.
 }
 
 enum CredentialIssuanceStatus {
-  CREDENTIAL_ISSUANCE_STATUS_UNKNOWN = 0; // Invalid value, should not happen
-  DRAFT = 1; // The credential issuance is still being defined and is not final
-  READY = 2; // The credential issuance has been defined but not all credentials have been issued
-  COMPLETED = 3; // All the credentials from the credential issuance have been issued
+  CREDENTIAL_ISSUANCE_STATUS_UNKNOWN = 0; // Invalid value, should not happen.
+  DRAFT = 1; // The credential issuance is still being defined and is not final.
+  READY = 2; // The credential issuance has been defined but not all credentials have been issued.
+  COMPLETED = 3; // All the credentials from the credential issuance have been issued.
 }
 
-// Indicates the state of the credential type
+// Indicates the state of the credential type.
 enum CredentialTypeState {
-  CREDENTIAL_TYPE_UNKNOWN = 0; // Invalid value, should not happen
-  CREDENTIAL_TYPE_DRAFT = 1; // The credential type is still being defined and is not final, it cannot be used to create a new credential
-  CREDENTIAL_TYPE_READY = 2; // The credential type is ready to use, it can be used to create a new credential
-  CREDENTIAL_TYPE_ARCHIVED = 3; // The credential type is archived, it cannot be used to create a new credential
+  CREDENTIAL_TYPE_UNKNOWN = 0; // Invalid value, should not happen.
+  CREDENTIAL_TYPE_DRAFT = 1; // The credential type is still being defined and is not final, it cannot be used to create a new credential.
+  CREDENTIAL_TYPE_READY = 2; // The credential type is ready to use, it can be used to create a new credential.
+  CREDENTIAL_TYPE_ARCHIVED = 3; // The credential type is archived, it cannot be used to create a new credential.
 }
 
-// Indicates the type of data which credential type field can have
+// Indicates the type of data which credential type field can have.
 enum CredentialTypeFieldType {
-  CREDENTIAL_TYPE_FIELD_UNKNOWN = 0; // invalid value, should not happen
-  CREDENTIAL_TYPE_FIELD_STRING = 1; // any string
-  CREDENTIAL_TYPE_FIELD_INT = 2; // positive and negative integer numbers
-  CREDENTIAL_TYPE_FIELD_BOOLEAN = 3; // only true or false
-  CREDENTIAL_TYPE_FIELD_DATE = 4; // date as string in DD/MM/YY or DD/MM/YYYY format
+  CREDENTIAL_TYPE_FIELD_UNKNOWN = 0; // Invalid value, should not happen.
+  CREDENTIAL_TYPE_FIELD_STRING = 1; // Any string.
+  CREDENTIAL_TYPE_FIELD_INT = 2; // Positive and negative integer numbers.
+  CREDENTIAL_TYPE_FIELD_BOOLEAN = 3; // True/False only.
+  CREDENTIAL_TYPE_FIELD_DATE = 4; // The date as string in DD/MM/YY or DD/MM/YYYY format.
 }
 
-// Part of the credential type
+// Part of the credential type.
 message CredentialTypeField {
   string id = 1; // UUID
-  string credentialTypeId = 2; // Parent credenital type
-  string name = 3; // The credential type field name
-  string description = 4; // The credential type field description
-  CredentialTypeFieldType type = 5; // Type of the data for this field
+  string credentialTypeId = 2; // Parent credenital type.
+  string name = 3; // The credential type field name.
+  string description = 4; // The credential type field description.
+  CredentialTypeFieldType type = 5; // Type of the data for this field.
 }
 
-// Create new credential type field
+// Create new credential type field.
 message CreateCredentialTypeField {
-  string name = 1; // The credential type field name
-  string description = 2; // The credential type field description
-  CredentialTypeFieldType type = 3; // Type of the data for this field
+  string name = 1; // The credential type field name.
+  string description = 2; // The credential type field description.
+  CredentialTypeFieldType type = 3; // Type of the data for this field.
 }
 
-// Credential type entity
+// Credential type entity.
 message CredentialType {
   string id = 1; // UUID
-  string name = 2; // The credential type name
-  CredentialTypeState state = 3; // The credential type state, can be: draft, ready and archived
-  string template = 4; // The credential type template
-  google.protobuf.Timestamp createdAt = 5; // the timestamp when the credential type was created
-  bytes icon = 6; // icon of the credential type (optional)
+  string name = 2; // The credential type name.
+  CredentialTypeState state = 3; // The credential type state, can be: draft, ready, or archived.
+  string template = 4; // The credential type template.
+  google.protobuf.Timestamp createdAt = 5; // The timestamp when the credential type was created.
+  bytes icon = 6; // Icon of the credential type (optional).
 }
 
-// Credential type entity needed to create a new record, all fields are required
+// Credential type entity needed to create a new record, all fields required.
 message CreateCredentialType {
-  string name = 1; // The credential type name, required field
-  string template = 2; // The credential type template, HTML with optional mustache syntax variables
-  bytes icon = 3; // icon of the credential type (optional)
-  repeated CreateCredentialTypeField fields = 4; // List of the credential type fields
+  string name = 1; // The credential type name -required field.
+  string template = 2; // The credential type template, HTML with optional mustache syntax variables.
+  bytes icon = 3; // Icon of the credential type (optional).
+  repeated CreateCredentialTypeField fields = 4; // List of the credential type fields.
 }
 
-// Credential type entity needed for the update
+// Credential type entity needed for the update.
 message UpdateCredentialType {
-  string id = 1; // UUID, required field
-  string name = 2; // The credential type name, optional field
-  string template = 3; // The credential type template, optional field
-  bytes icon = 4; // icon of the credential type (optional)
-  repeated CreateCredentialTypeField fields = 5; // List of the credential type fields, optional field, if present then the fields will be overwritten
+  string id = 1; // UUID, required field.
+  string name = 2; // The credential type name, optional field.
+  string template = 3; // The credential type template, optional field.
+  bytes icon = 4; // The icon of the credential type (optional).
+  repeated CreateCredentialTypeField fields = 5; // List of the credential type fields. This field is optional. If present, the fields will be overwritten.
 }
 
-// Credential type with required fields
+// Credential type with required fields.
 message CredentialTypeWithRequiredFields {
-  CredentialType credentialType = 1; // Credential type
-  repeated CredentialTypeField requiredFields = 2; // List of the credential type fields
+  CredentialType credentialType = 1; // Credential type.
+  repeated CredentialTypeField requiredFields = 2; // List of the credential type fields.
 }
 
-// Represents a group, where contacts can be assigned to.
+// Represents a group that contacts can be assigned to.
 //
 // A group is generally used to collect the contacts related to the same issuance event,
-// for a university, it can be a graduation group.
+// for a university, it can be a graduation group, for example.
 message Group {
-  string name = 1; // the group name
-  string id = 2; // the unique id for the group, generated by the server
-  uint64 createdAt_deprecated = 3 [deprecated = true]; // the time when the group was created
-  int32 numberOfContacts = 4; // the number of contacts associated with the group
-  google.protobuf.Timestamp createdAt = 5; // the time when the group was created
+  string name = 1; // The group name.
+  string id = 2; // The unique ID for the group, generated by the server.
+  uint64 createdAt_deprecated = 3 [deprecated = true]; // The time when the group was created.
+  int32 numberOfContacts = 4; // The number of contacts associated with the group.
+  google.protobuf.Timestamp createdAt = 5; // The time when the group was created.
 }
 
-// Represents a credential with arbitrary data
+// Represents a credential with arbitrary data.
 message CManagerGenericCredential {
-  // Credential identifier internal to the cmanager
+  // Credential identifier internal to the cmanager.
   string credentialId = 1;
 
-  // institution identifier internal to the cmanager/connector
-  // TODO: Rename to institutionId
+  // Institution identifier internal to the cmanager/connector.
+  // TODO: Rename to institutionId.
   string issuerId = 2;
 
-  string contactId = 3; // contact identifier internal to cmanager/connector
+  string contactId = 3; // Contact identifier internal to cmanager/connector.
 
-  // The arbitrary JSON data involved in the credential (claims)
+  // The arbitrary JSON data involved in the credential (claims).
   string credentialData = 4;
 
-  // The name of the institution according to the cmanager/connector internal data
+  // The name of the institution according to the cmanager/connector internal data.
   string issuerName = 5;
 
-  // Group name associated to the credential in the cmanager internal data
+  // Group name associated with the credential in the cmanager internal data.
   // TODO: Remove legacy field, it is not required anymore.
   string groupName = 6;
 
-  // The arbitrary JSON data related to the contact
+  // The arbitrary JSON data related to the contact.
   string contactData = 7;
 
   // @exclude
-  // the fields below will only be populated after the credential is published in the blockchain
+  // The fields below will only be populated after the credential is published to the blockchain.
 
-  string nodeCredentialId = 8; // DEPRECATED - will be removed after it is not used anymore
-  bytes issuanceOperationHash = 9; // the hash of the associated issuance operation
-  string encodedSignedCredential = 10; // the actual published credential
-  uint64 publicationStoredAt_deprecated = 11 [deprecated = true]; // the time when the publication data was stored in the database
-  string externalId = 12; // the id provided by the institution at contact creation time
-  ContactConnectionStatus connectionStatus = 13; // used to know if contact has accepted the connection
-  uint64 sharedAt_deprecated = 14 [deprecated = true]; // the last time when the credential was sent to the related contact
-  TransactionInfo issuanceProof = 15; // underlying transaction information related to the credential issuance
-  string batchInclusionProof = 16; // inclusion proof that shows that encodedSignedCredential is a member of a batch
-  string batchId = 17; // the batch id defined by protocol, representing the batch that contains the encodedSignedCredential
-  TransactionInfo revocationProof = 18; // underlying transaction information related to the credential revocation
-  google.protobuf.Timestamp publicationStoredAt = 19; // the timestamp when the publication data was stored in the database
-  google.protobuf.Timestamp sharedAt = 20; // the last time when the credential was sent to the related contact
+  string nodeCredentialId = 8; // DEPRECATED - Will be removed when no longer used.
+  bytes issuanceOperationHash = 9; // The hash of the associated issuance operation.
+  string encodedSignedCredential = 10; // The actual published credential.
+  uint64 publicationStoredAt_deprecated = 11 [deprecated = true]; // The time when the publication data was stored in the database.
+  string externalId = 12; // The ID provided by the institution when the contact was created.
+  ContactConnectionStatus connectionStatus = 13; // Checks if a contact has accepted the connection request.
+  uint64 sharedAt_deprecated = 14 [deprecated = true]; // The last time when the credential was sent to the related contact.
+  TransactionInfo issuanceProof = 15; // Underlying transaction information related to the credential issuance.
+  string batchInclusionProof = 16; // Inclusion proof that shows that encodedSignedCredential is a member of a batch.
+  string batchId = 17; // The batch ID defined by protocol, representing the batch that contains the encodedSignedCredential.
+  TransactionInfo revocationProof = 18; // Underlying transaction information related to the credential revocation.
+  google.protobuf.Timestamp publicationStoredAt = 19; // The timestamp when the publication data was stored in the database.
+  google.protobuf.Timestamp sharedAt = 20; // The last time the credential was sent to the related contact.
 }
 
-// Represents a received credential
+// Represents a received credential.
 message StoredSignedCredential {
   // The contact that sent the credential.
-  // TODO: Rename to contactId
+  // TODO: Rename to contactId.
   string individualId = 1;
 
-  string encodedSignedCredential = 2; // The signed credential encoded as a string
-  int64 storedAt_deprecated = 3 [deprecated = true]; // the time when the credential was stored in the database
-  string externalId = 4; // the external id associated to the contact that sent the credential
-  string batchInclusionProof = 5; // the inclusion proof associated to the encodedSignedCredential
-  google.protobuf.Timestamp storedAt = 6; // the timestamp when the credential was stored in the database
+  string encodedSignedCredential = 2; // The signed credential encoded as a string.
+  int64 storedAt_deprecated = 3 [deprecated = true]; // The time when the credential was stored in the database.
+  string externalId = 4; // The external ID associated with the contact that sent the credential.
+  string batchInclusionProof = 5; // The inclusion proof associated with the encodedSignedCredential.
+  google.protobuf.Timestamp storedAt = 6; // The timestamp when the credential was stored in the database.
 }
 
-// Metadata used to authenticate some request to connector.
+// Metadata used to authenticate some request to the connector.
 // All fields of this message are required.
 message ConnectorRequestMetadata {
   // value of did
   string did = 1;
   // id of did key
   string didKeyId = 2;
-  // Base64 encoded signature of request and request nonce signed with institution private key
+  // Base64-encoded signature of request and request nonce signed with the institution's private key.
   string didSignature = 3;
-  // Base64 encoded request nonce
+  // Base64-encoded request nonce.
   string requestNonce = 4;
 }
