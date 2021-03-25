@@ -76,6 +76,11 @@ object ProtoCodecs {
   }
 
   def genericCredentialToProto(credential: GenericCredential): console_models.CManagerGenericCredential = {
+    val revocationProofMaybe = for {
+      revocationTxid <- credential.revokedOnTransactionId
+      publicationData <- credential.publicationData
+    } yield CommonProtoCodecs.toTransactionInfo(TransactionInfo(revocationTxid, publicationData.ledger))
+
     val model = console_models
       .CManagerGenericCredential()
       .withCredentialId(credential.credentialId.toString)
@@ -87,8 +92,7 @@ object ProtoCodecs {
       .withExternalId(credential.externalId.value)
       .withSharedAtDeprecated(credential.sharedAt.map(_.toEpochMilli).getOrElse(0))
       .withSharedAt(credential.sharedAt.map(_.toProtoTimestamp).getOrElse(Timestamp()))
-
-    credential.publicationData.fold(model) { data =>
+    val withPublicationData = credential.publicationData.fold(model) { data =>
       model
         .withNodeCredentialId("") // deprecated
         .withBatchId(data.credentialBatchId.id)
@@ -99,6 +103,8 @@ object ProtoCodecs {
         .withPublicationStoredAt(data.storedAt.toProtoTimestamp)
         .withIssuanceProof(CommonProtoCodecs.toTransactionInfo(TransactionInfo(data.transactionId, data.ledger)))
     }
+
+    revocationProofMaybe.fold(withPublicationData)(withPublicationData.withRevocationProof)
   }
 
   def toContactProto(contact: Contact, connection: connector_models.ContactConnection): console_models.Contact = {

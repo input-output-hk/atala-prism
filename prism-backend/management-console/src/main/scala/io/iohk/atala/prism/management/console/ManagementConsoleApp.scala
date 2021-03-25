@@ -7,7 +7,11 @@ import io.iohk.atala.prism.auth.grpc.{GrpcAuthenticationHeaderParser, GrpcAuthen
 import io.iohk.atala.prism.config.NodeConfig
 import io.iohk.atala.prism.management.console.clients.ConnectorClient
 import io.iohk.atala.prism.management.console.config.DefaultCredentialTypeConfig
-import io.iohk.atala.prism.management.console.integrations.{ContactsIntegrationService, ParticipantsIntegrationService}
+import io.iohk.atala.prism.management.console.integrations.{
+  ContactsIntegrationService,
+  CredentialsIntegrationService,
+  ParticipantsIntegrationService
+}
 import io.iohk.atala.prism.management.console.repositories._
 import io.iohk.atala.prism.management.console.services._
 import io.iohk.atala.prism.protos.console_api
@@ -83,6 +87,7 @@ object ManagementConsoleApp extends IOApp {
 
       credentialsService = new CredentialsServiceImpl(
         credentialsRepository,
+        new CredentialsIntegrationService(credentialsRepository, node),
         authenticator,
         node,
         connector

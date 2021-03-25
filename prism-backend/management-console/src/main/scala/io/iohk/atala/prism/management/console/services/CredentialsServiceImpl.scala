@@ -13,6 +13,7 @@ import io.iohk.atala.prism.management.console.clients.ConnectorClient
 import io.iohk.atala.prism.management.console.errors.{ManagementConsoleError, ManagementConsoleErrorSupport}
 import io.iohk.atala.prism.management.console.grpc.ProtoCodecs.genericCredentialToProto
 import io.iohk.atala.prism.management.console.grpc._
+import io.iohk.atala.prism.management.console.integrations.CredentialsIntegrationService
 import io.iohk.atala.prism.management.console.models._
 import io.iohk.atala.prism.management.console.repositories.CredentialsRepository
 import io.iohk.atala.prism.models.{TransactionInfo, ProtoCodecs => CommonProtoCodecs}
@@ -33,6 +34,7 @@ import scala.util.Try
 
 class CredentialsServiceImpl(
     credentialsRepository: CredentialsRepository,
+    credentialsIntegrationService: CredentialsIntegrationService,
     val authenticator: ManagementConsoleAuthenticator,
     nodeService: NodeServiceGrpc.NodeService,
     connectorClient: ConnectorClient
@@ -159,7 +161,11 @@ class CredentialsServiceImpl(
   override def revokePublishedCredential(
       request: RevokePublishedCredentialRequest
   ): Future[RevokePublishedCredentialResponse] = {
-    ???
+    auth[RevokePublishedCredential]("revokePublishedCredential", request) { (participantId, query) =>
+      credentialsIntegrationService
+        .revokePublishedCredential(participantId, query)
+        .map(RevokePublishedCredentialResponse().withTransactionInfo)
+    }
   }
 
   override def deleteCredentials(request: DeleteCredentialsRequest): Future[DeleteCredentialsResponse] = {

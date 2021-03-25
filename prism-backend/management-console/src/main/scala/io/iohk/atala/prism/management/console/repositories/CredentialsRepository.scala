@@ -27,7 +27,7 @@ import io.iohk.atala.prism.management.console.models.{
 }
 import io.iohk.atala.prism.management.console.repositories.daos.{ContactsDAO, CredentialTypeDao, CredentialsDAO}
 import io.iohk.atala.prism.management.console.validations.CredentialDataValidator
-import io.iohk.atala.prism.models.TransactionInfo
+import io.iohk.atala.prism.models.{TransactionId, TransactionInfo}
 import io.iohk.atala.prism.utils.FutureEither
 import io.iohk.atala.prism.utils.FutureEither.{FutureEitherFOps, FutureEitherOps}
 import io.iohk.atala.prism.utils.syntax.DBConnectionOps
@@ -214,5 +214,18 @@ class CredentialsRepository(xa: Transactor[IO])(implicit ec: ExecutionContext) {
       .transact(xa)
       .unsafeToFuture()
       .toFutureEither
+  }
+
+  def storeRevocationData(
+      institutionId: ParticipantId,
+      credentialId: GenericCredential.Id,
+      transactionId: TransactionId
+  ): FutureEither[Nothing, Unit] = {
+    CredentialsDAO
+      .revokeCredential(institutionId, credentialId, transactionId)
+      .logSQLErrors(s"storing revocation data, institution id - $institutionId", logger)
+      .transact(xa)
+      .unsafeToFuture()
+      .lift
   }
 }

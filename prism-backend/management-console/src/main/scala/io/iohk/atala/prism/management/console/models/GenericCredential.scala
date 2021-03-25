@@ -79,7 +79,8 @@ final case class GenericCredential(
     issuerName: String,
     subjectData: Json,
     publicationData: Option[PublicationData],
-    sharedAt: Option[Instant]
+    sharedAt: Option[Instant],
+    revokedOnTransactionId: Option[TransactionId]
 )
 
 object GenericCredential {

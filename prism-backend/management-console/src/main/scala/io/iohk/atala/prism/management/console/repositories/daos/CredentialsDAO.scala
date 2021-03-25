@@ -1,7 +1,6 @@
 package io.iohk.atala.prism.management.console.repositories.daos
 
 import cats.data.NonEmptyList
-
 import java.time.Instant
 
 import cats.implicits._
@@ -11,7 +10,7 @@ import doobie.implicits.legacy.instant._
 import io.iohk.atala.prism.credentials.CredentialBatchId
 import io.iohk.atala.prism.crypto.SHA256Digest
 import io.iohk.atala.prism.management.console.models._
-import io.iohk.atala.prism.models.TransactionInfo
+import io.iohk.atala.prism.models.{TransactionId, TransactionInfo}
 
 object CredentialsDAO {
 
@@ -27,7 +26,7 @@ object CredentialsDAO {
         |SELECT credential_id, c.issuer_id, c.contact_id, credential_data, c.created_on, c.credential_type_id,
         |       c.credential_issuance_contact_id, external_id, PTS.name AS issuer_name, contact_data,
         |       PC.batch_id, PC.issuance_operation_hash, PC.encoded_signed_credential, PC.inclusion_proof,
-        |       PC.stored_at, PC.issued_on_transaction_id, PC.ledger, PC.shared_at
+        |       PC.stored_at, PC.issued_on_transaction_id, PC.ledger, PC.shared_at, PC.revoked_on_transaction_id
       """.stripMargin
 
   private def withPublishedCredentialsPC(maybeCredentialId: Option[GenericCredential.Id] = None) =
@@ -36,7 +35,7 @@ object CredentialsDAO {
         fr"""
            |PC AS (
            |  SELECT credential_id, batch_id, issuance_operation_hash, encoded_signed_credential, inclusion_proof,
-           |         stored_at, issued_on_transaction_id, ledger, shared_at
+           |         stored_at, issued_on_transaction_id, ledger, shared_at, revoked_on_transaction_id
            |  FROM published_credentials JOIN published_batches USING (batch_id)
            |  WHERE credential_id = $credentialId
            |)
@@ -45,7 +44,7 @@ object CredentialsDAO {
         fr"""
           |PC AS (
           |  SELECT credential_id, batch_id, issuance_operation_hash, encoded_signed_credential, inclusion_proof,
-          |         stored_at, issued_on_transaction_id, ledger, shared_at
+          |         stored_at, issued_on_transaction_id, ledger, shared_at, revoked_on_transaction_id
           |  FROM published_credentials JOIN published_batches USING (batch_id)
           |)
           """.stripMargin
@@ -69,7 +68,7 @@ object CredentialsDAO {
          |),""".stripMargin ++ withParticipantsPTS ++ withPublishedCredentialsPC(Some(id)) ++
       fr"""|SELECT inserted.*, contacts.external_id, PTS.name AS issuer_name, contacts.contact_data,
            |       PC.batch_id, PC.issuance_operation_hash, PC.encoded_signed_credential, PC.inclusion_proof,
-           |       PC.stored_at, PC.issued_on_transaction_id, PC.ledger, PC.shared_at
+           |       PC.stored_at, PC.issued_on_transaction_id, PC.ledger, PC.shared_at, PC.revoked_on_transaction_id
          |FROM inserted
          |     JOIN PTS USING (issuer_id)
          |     JOIN contacts ON (inserted.contact_id = contacts.contact_id)
@@ -196,6 +195,28 @@ object CredentialsDAO {
          |        ${Instant.now()}
          |)
          |""".stripMargin.update.run
+  }
+
+  def revokeCredential(
+      institutionId: ParticipantId,
+      credentialId: GenericCredential.Id,
+      transactionId: TransactionId
+  ): doobie.ConnectionIO[Unit] = {
+    sql"""
+         |WITH institution_credentials AS (
+         |  SELECT credential_id
+         |  FROM draft_credentials
+         |  WHERE credential_id = $credentialId AND
+         |        issuer_id = $institutionId
+         |)
+         |UPDATE published_credentials
+         |SET revoked_on_transaction_id = $transactionId
+         |WHERE credential_id = $credentialId AND
+         |      credential_id IN (SELECT * FROM institution_credentials)
+         |""".stripMargin.update.run.flatTap { n =>
+      FC.raiseError(new RuntimeException(s"The credential wasn't found or it hasn't been published yet"))
+        .whenA(n != 1)
+    }.void
   }
 
   def markAsShared(

@@ -21,11 +21,12 @@ import io.iohk.atala.prism.protos.common_models.SortByDirection
 import io.iohk.atala.prism.protos.console_api._
 import io.scalaland.chimney.dsl._
 import io.scalaland.chimney.Transformer
-
 import java.time.LocalDate
+
 import io.iohk.atala.prism.credentials.CredentialBatchId
 import io.iohk.atala.prism.crypto.MerkleTree.MerkleInclusionProof
 import io.iohk.atala.prism.crypto.SHA256Digest
+import io.iohk.atala.prism.models.TransactionId
 import io.iohk.atala.prism.protos.connector_api.SendMessagesRequest
 
 import scala.util.{Failure, Success, Try}
@@ -543,6 +544,48 @@ package object grpc {
         batchId = batchId,
         inclusionProof = proof
       )
+    }
+
+  implicit val revokePublishedCredentialConverter
+      : ProtoConverter[RevokePublishedCredentialRequest, RevokePublishedCredential] =
+    (request: RevokePublishedCredentialRequest) => {
+      for {
+        credentialId <- GenericCredential.Id.from(request.credentialId)
+        operation =
+          request.revokeCredentialsOperation
+            .getOrElse(throw new RuntimeException("Missing revokeCredentialsOperation"))
+        _ = if (!operation.operation.exists(_.operation.isRevokeCredentials))
+          throw new RuntimeException("Invalid revokeCredentialsOperation, it is a different operation")
+
+        credentialHashes =
+          operation.operation
+            .flatMap(_.operation.revokeCredentials)
+            .map(_.credentialsToRevoke)
+            .getOrElse(Seq.empty)
+        _ = if (credentialHashes.isEmpty)
+          throw new RuntimeException(
+            "Invalid revokeCredentialsOperation, a single credential is expected but the whole batch was found"
+          )
+        _ = if (credentialHashes.size > 1)
+          throw new RuntimeException(
+            s"Invalid revokeCredentialsOperation, a single credential is expected but ${credentialHashes.size} credentials found"
+          )
+      } yield RevokePublishedCredential(credentialId, operation)
+    }
+
+  implicit val nodeRevocationResponse: ProtoConverter[node_api.RevokeCredentialsResponse, NodeRevocationResponse] =
+    (response: node_api.RevokeCredentialsResponse) => {
+      for {
+        transactionInfo <- Try {
+          response.transactionInfo
+            .getOrElse(throw new RuntimeException("We could not generate a transaction"))
+        }
+        transactionId =
+          response.transactionInfo
+            .map(_.transactionId)
+            .flatMap(TransactionId.from)
+            .getOrElse(throw new RuntimeException("The node wasn't able to generate a transaction"))
+      } yield NodeRevocationResponse(transactionInfo, transactionId)
     }
 
   implicit val issueCredentialBatchResponseConverter
