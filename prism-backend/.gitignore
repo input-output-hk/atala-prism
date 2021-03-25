@@ -10,3 +10,10 @@ out
 mill
 client-storage.txt
 .bsp
+.metals
+.vscode
+.DS_Store
+.ammonite/
+.bloop/
+*.worksheet.sc
+**/metals.sbt
