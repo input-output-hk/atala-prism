@@ -5,3 +5,5 @@ local.properties
 .DS_STORE
 *.iml
 *.podspec
+docs/src/docs/grpc/grpc-api.md
+

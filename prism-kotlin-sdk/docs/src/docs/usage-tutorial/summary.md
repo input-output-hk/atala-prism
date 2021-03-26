@@ -1,11 +1,10 @@
-- [Basic Usage](basic-usage.md)
 - [Preparation](preparation.md)
+- [Generate an identity](generate-identity.md)
 - [Issue Credential](issue-credential.md)
 - [Verify Credential](verify-credential.md)
-- [Revoke Credential](revoke-credential.md)
 
-# Usage Tutorial
+# Tutorial
 
-This tutorial gives you the necessary steps to build a project uses PRISM, you will find how to deal with identities, create credentials, and more.
+This tutorial walks you through the necessary steps to work with the Atala PRISM SDK. For example, you will learn how to generate identities and how to deal with credentials issuance and verification.
 
-Initially, you can look into the Basic Usage to get an idea on how it works, then, you can move to a more complete integration.
+**Note:** For simplicity, this tutorial uses sample code that does *not* involve any network calls. The only limitation is the inability to revoke a credential, because that requires posting to the Cardano network.

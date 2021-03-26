@@ -64,12 +64,26 @@ At last, make sure to run some Kotlin code in the Main thread to avoid memory le
 SHA256Digest.Companion().compute(bytes: [0, 1, 2])
 ```
 
-## How to serve Orchid docs
+## Docs
 
-Run the following command from the SDK root directory:
+### Grpc API
+First, make sure to generate the docs for our grpc API, which is done by running this command:
 
+```shell script
+docker run --rm \
+  -v $(pwd)/docs/src/docs/grpc:/out \
+  -v $(pwd)/../prism-sdk/protos/src:/protos \
+  pseudomuto/protoc-gen-doc --doc_opt=markdown,grpc-api.md
+
+sed -i "1s/.*/# gRPC API Reference/" docs/src/docs/grpc/grpc-api.md
 ```
-$ ./gradlew :docs:orchidServe
-```
 
-Wait until Orchid is done generating HTML files and open http://localhost:8080 in your browser of choice.
+Then, you can proceed to generate the website.
+
+### Website
+
+The [docs](docs) are type-checked by [arrow-ank](https://github.com/arrow-kt/arrow-ank), and compiled to a website by [orchid](https://orchid.run/), while updating them.
+
+Run:
+- `./gradlew :docs:orchidServe` to launch the preview at [localhost:8080](https://localhost:8080).
+- `./gradlew :docs:orchidBuild` to build the website at `docs/build/docs/orchid`
