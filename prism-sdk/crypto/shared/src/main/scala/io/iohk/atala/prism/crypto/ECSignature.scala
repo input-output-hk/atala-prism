@@ -1,6 +1,6 @@
 package io.iohk.atala.prism.crypto
 
-import io.iohk.atala.prism.util.{BytesOps, BigIntOps}
+import io.iohk.atala.prism.util.BytesOps
 import io.iohk.atala.prism.util.ArrayOps._
 
 case class ECSignature(data: Array[Byte]) {
@@ -23,6 +23,11 @@ case class ECSignature(data: Array[Byte]) {
   override def hashCode = data.toIndexedSeq.hashCode
 
   /**
+    * P1363 signature size in bytes
+    */
+  val P1363_SIGNATURE_BYTE_SIZE = 64
+
+  /**
     * Conversion form ASN.1/DER to P1363
     *
     * P1363 contains two integer wothout separator, ASN.1 signature format looks like:
@@ -34,27 +39,25 @@ case class ECSignature(data: Array[Byte]) {
     *   }
     * }}}
     *
-    * The solution is taken from: https://github.com/google/wycheproof/blob/e91db8abc22df105a2bce5be452d49acd2804525/java/com/google/security/wycheproof/testcases/EcdsaTest.java#L68-L84
+    * The solution is inspired on: https://github.com/google/wycheproof/blob/e91db8abc22df105a2bce5be452d49acd2804525/java/com/google/security/wycheproof/testcases/EcdsaTest.java#L68-L84
     */
   def toP1363: ECSignature = {
-    def extractR(signature: Array[Byte]) = {
-      val startR = if ((signature(1) & 0x80) != 0) 3 else 2
-      val lengthR = signature(startR + 1)
-      BigInt(signature.safeCopyOfRange(startR + 2, startR + 2 + lengthR))
-    }
+    val startR = if ((data(1) & 0x80) != 0) 3 else 2
+    val sizeR = data(startR + 1)
+    val startS = startR + 2 + sizeR
+    val sizeS = data(startS + 1)
 
-    def extractS(signature: Array[Byte]) = {
-      val startR = if ((signature(1) & 0x80) != 0) 3 else 2
-      val lengthR = signature(startR + 1)
-      val startS = startR + 2 + lengthR
-      val lengthS = signature(startS + 1)
-      BigInt(signature.safeCopyOfRange(startS + 2, startS + 2 + lengthS))
-    }
+    val rawRb = data.safeCopyOfRange(startR + 2, startR + 2 + sizeR).dropWhile(_ == 0)
+    val rawSb = data.safeCopyOfRange(startS + 2, startS + 2 + sizeS).dropWhile(_ == 0)
 
-    ECSignature(
-      BigIntOps.toUnsignedByteArray(extractR(data.toArray)) safeAppendedAll
-        BigIntOps.toUnsignedByteArray(extractS(data.toArray))
-    )
+    // pad values
+    val fieldSize = P1363_SIGNATURE_BYTE_SIZE / 2
+    val rb =
+      if (rawRb.size < fieldSize) Array.fill[Byte](fieldSize - rawRb.size)(0x0) safeAppendedAll rawRb else rawRb
+    val sb =
+      if (rawSb.size < fieldSize) Array.fill[Byte](fieldSize - rawSb.size)(0x0) safeAppendedAll rawSb else rawSb
+
+    ECSignature(rb safeAppendedAll sb)
   }
 
   /**
