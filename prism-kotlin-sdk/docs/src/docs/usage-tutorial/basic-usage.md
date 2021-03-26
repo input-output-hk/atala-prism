@@ -21,7 +21,7 @@ import io.iohk.atala.prism.kotlin.credentials.Credential
 import io.iohk.atala.prism.kotlin.credentials.content.*
 import io.iohk.atala.prism.kotlin.credentials.json.*
 import io.iohk.atala.prism.kotlin.crypto.*
-import io.iohk.atala.prism.kotlin.identity.*
+import io.iohk.atala.prism.kotlin.identity.DID
 import io.iohk.atala.prism.kotlin.protos.*
 ```
 

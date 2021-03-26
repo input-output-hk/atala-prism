@@ -199,8 +199,8 @@ jobs:
       - run:
           name: Build and push prism-docs-website
           command: |
-            mv workspace/site prism-sdk/infra/docs-website/website
-            docker build -f prism-sdk/infra/docs-website/Dockerfile -t 895947072537.dkr.ecr.us-east-2.amazonaws.com/prism-docs-website:${TAG} prism-sdk/infra/docs-website
+            mv workspace/orchid prism-kotlin-sdk/infra/docs-website/website
+            docker build -f prism-kotlin-sdk/infra/docs-website/Dockerfile -t 895947072537.dkr.ecr.us-east-2.amazonaws.com/prism-docs-website:${TAG} prism-kotlin-sdk/infra/docs-website
             docker push 895947072537.dkr.ecr.us-east-2.amazonaws.com/prism-docs-website:${TAG}
 
       - run:
@@ -538,10 +538,6 @@ jobs:
       - attach_workspace:
           at: ./workspace
 
-      - run:
-          name: Grab the grpc docs
-          command: cp ./workspace/grpc-api.md prism-sdk/docs/src/main/paradox
-
       # Download and cache dependencies
       - restore_cache:
           keys:
@@ -555,18 +551,6 @@ jobs:
 
       - scalafmt-test
 
-      # generating docs takes a short time, if this fails, it makes no sense to run the tests
-      - run:
-          name: Generate documentation
-          command: cd prism-sdk && sbt prismDocs/makeSite
-
-      # persist docs so that another job can deploy it
-      - persist_to_workspace:
-          root: prism-sdk/docs/target
-          paths:
-            - site
-
-      # This is done after the docs have compiled so that *.md files aren't ignored
       - halt-step-if-not-changed:
           directories: "prism-sdk"
 
@@ -731,6 +715,21 @@ jobs:
             cd prism-kotlin-sdk
             ./gradlew build
 
+      - run:
+          name: Grab the grpc docs
+          command: cp ./workspace/grpc-api.md prism-kotlin-sdk/docs/src/docs/grpc
+
+      # generating docs takes a short time, if this fails, it makes no sense to run the tests
+      - run:
+          name: Generate documentation
+          command: cd prism-kotlin-sdk && ./gradlew :docs:orchidBuild
+
+      # persist docs so that another job can deploy it
+      - persist_to_workspace:
+          root: prism-kotlin-sdk/docs/build/docs
+          paths:
+            - orchid
+
       - save_cache:
           paths:
             - ~/.m2
@@ -791,11 +790,11 @@ workflows:
   version: 2.1
   build-and-deploy:
     jobs:
-      - build-prism-kotlin-sdk
       - build-prism-sdk-proto-docs
-      - build-prism-sdk:
+      - build-prism-kotlin-sdk:
           requires:
             - build-prism-sdk-proto-docs
+      - build-prism-sdk
       - build-prism-backend:
           requires:
             - build-prism-sdk
@@ -829,6 +828,7 @@ workflows:
             - build-prism-interactive-demo-web
             - build-prism-backend
             - build-prism-sdk
+            - build-prism-kotlin-sdk
             - build-prism-web-wallet
 
       - slack/approval-notification:

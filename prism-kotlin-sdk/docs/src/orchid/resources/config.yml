@@ -6,8 +6,9 @@ site:
 
 wiki:
   sections:
-    - 'usage-tutorial'
+    - 'grpc'
     - 'modules'
+    - 'usage-tutorial'
 
 allPages:
   metaComponents:

@@ -94,14 +94,14 @@ keyDerivation.deriveKey(seed, path)
 
 It is possible to build and verify Merkle tree proofs of inclusion by using `MerkleTree`:
 ```kotlin:ank
-import io.iohk.atala.prism.kotlin.crypto.MerkleTree
+import io.iohk.atala.prism.kotlin.crypto.*
 
 val hash1 = SHA256Digest.compute(listOf(0))
 val hash2 = SHA256Digest.compute(listOf(1))
 
-val (root, proofs) = MerkleTree.generateProofs(listOf(hash1, hash2))
+val (root, proofs) = generateProofs(listOf(hash1, hash2))
 val (proof1, proof2) = proofs
 
-MerkleTree.verifyProof(root, proof1)
-MerkleTree.verifyProof(root, proof2)
+verifyProof(root, proof1)
+verifyProof(root, proof2)
 ```

@@ -1,9 +1,12 @@
+import com.palantir.gradle.gitversion.VersionDetails
+
 plugins {
+    kotlin("jvm")
     id("com.eden.orchidPlugin") version "0.21.1"
     id("ank-gradle-plugin")
-    kotlin("jvm")
+    id("com.palantir.git-version")
 }
-
+val versionDetails: groovy.lang.Closure<VersionDetails> by extra
 val pbandkVersion: String by rootProject.extra
 
 repositories {
@@ -32,7 +35,7 @@ repositories {
 orchid {
     theme = "Editorial"
     version = project.version.toString()
-    baseUrl = "http://docs-develop.atalaprism.io/"
+    baseUrl = "http://docs-${versionDetails().branchName}.atalaprism.io/"
 }
 
 ank {
