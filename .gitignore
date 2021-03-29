@@ -14,3 +14,9 @@ target/
 *.iml
 *.log
 out/
+.metals
+.vscode
+.ammonite/
+.bloop/
+*.worksheet.sc
+**/metals.sbt
