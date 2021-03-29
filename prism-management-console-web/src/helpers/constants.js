@@ -171,6 +171,8 @@ export const GROUP_NAME_STATES = {
 // error codes
 export const UNKNOWN_DID_SUFFIX_ERROR_CODE = 2;
 
+export const DEFAULT_WIDTH_INPUT = 300;
+
 // Usefull css classes
 export const MAIN_CONTAINER_CLASS = 'MainContainer';
 

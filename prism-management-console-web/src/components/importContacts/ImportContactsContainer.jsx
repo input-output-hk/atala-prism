@@ -10,6 +10,7 @@ import { withApi } from '../providers/withApi';
 import Logger from '../../helpers/Logger';
 import { validateContactsBulk } from '../../helpers/contactValidations';
 import { useAllContacts } from '../../hooks/useContacts';
+import { DynamicFormProvider } from '../../providers/DynamicFormProvider';
 
 import './_style.scss';
 
@@ -77,14 +78,16 @@ const ImportContactsContainer = ({ api, redirector: { redirectToContacts } }) =>
   }));
 
   return (
-    <ImportDataContainer
-      bulkValidator={args => validateContactsBulk({ ...args, preExistingContacts: allContacts })}
-      onFinish={handleRequests}
-      onCancel={redirectToContacts}
-      headersMapping={headersMapping}
-      useCase={IMPORT_CONTACTS}
-      loading={loading}
-    />
+    <DynamicFormProvider formName={IMPORT_CONTACTS}>
+      <ImportDataContainer
+        bulkValidator={args => validateContactsBulk({ ...args, preExistingContacts: allContacts })}
+        onFinish={handleRequests}
+        onCancel={redirectToContacts}
+        headersMapping={headersMapping}
+        useCase={IMPORT_CONTACTS}
+        loading={loading}
+      />
+    </DynamicFormProvider>
   );
 };
 

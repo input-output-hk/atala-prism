@@ -1,37 +1,29 @@
-import React from 'react';
+import React, { useContext } from 'react';
 import PropTypes from 'prop-types';
-import { useTranslation } from 'react-i18next';
 import EditableTable from '../../../common/Organisms/Tables/EditableTable';
 import { useAllContacts } from '../../../../hooks/useContacts';
 import { withApi } from '../../../providers/withApi';
+import { IMPORT_CONTACTS } from '../../../../helpers/constants';
+import {
+  CONTACT_FORM,
+  CONTACT_FORM_COLUMNS,
+  CONTACT_INITIAL_VALUE
+} from '../../../../helpers/formDefinitions/contacts';
+import { DynamicFormContext } from '../../../../providers/DynamicFormProvider';
 
 const ContactCreationTable = ({ api, tableProps, setDisableSave }) => {
-  const { t } = useTranslation();
   const { allContacts } = useAllContacts(api.contactsManager);
-
-  const columns = [
-    {
-      title: t('contacts.table.columns.contactName'),
-      dataIndex: 'contactName',
-      editable: true,
-      type: 'string',
-      validations: ['required']
-    },
-    {
-      title: t('contacts.table.columns.externalid'),
-      dataIndex: 'externalid',
-      editable: true,
-      type: 'string',
-      validations: ['required', 'unique', 'checkPreexisting']
-    }
-  ];
+  const { form } = useContext(DynamicFormContext);
 
   return (
     <EditableTable
       {...tableProps}
-      columns={columns}
+      columns={CONTACT_FORM_COLUMNS()}
+      skeleton={CONTACT_FORM(allContacts, form)}
+      initialValues={CONTACT_INITIAL_VALUE}
       setDisableSave={setDisableSave}
       preExistingEntries={allContacts}
+      useCase={IMPORT_CONTACTS}
     />
   );
 };

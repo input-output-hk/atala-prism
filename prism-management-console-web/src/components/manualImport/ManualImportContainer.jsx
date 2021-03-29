@@ -1,18 +1,20 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useContext } from 'react';
 import PropTypes from 'prop-types';
 import _ from 'lodash';
 import { message } from 'antd';
 import { useTranslation } from 'react-i18next';
 import { withApi } from '../providers/withApi';
+import { DynamicFormContext } from '../../providers/DynamicFormProvider';
+import ManualImport from './ManualImport';
+import Logger from '../../helpers/Logger';
+import { contactShape, credentialTypeShape } from '../../helpers/propShapes';
 import {
   COMMON_CONTACT_HEADERS,
   IMPORT_CONTACTS,
   IMPORT_CREDENTIALS_DATA
 } from '../../helpers/constants';
 import { dateFormat } from '../../helpers/formatters';
-import Logger from '../../helpers/Logger';
-import ManualImport from './ManualImport';
-import { contactShape, credentialTypeShape } from '../../helpers/propShapes';
+import { getFirstError } from '../../helpers/formHelpers';
 
 const blankContact = {
   externalid: '',
@@ -32,23 +34,18 @@ const ManualImportContainer = ({
   const { t } = useTranslation();
   const { useCase, showGroupSelection } = useCaseProps;
 
-  const createBlankContact = key => ({
-    ...blankContact,
-    key
-  });
-
   const createBlankCredential = key => ({
     ...blankContact,
     ...credentialType?.fields.map(f => ({ [f.key]: '' })),
     key
   });
 
-  const [contacts, setContacts] = useState([createBlankContact(0)]);
   const [selectedGroups, setSelectedGroups] = useState([]);
   const [groups, setGroups] = useState([]);
   const [credentialsData, setCredentialsData] = useState(
     hasSelectedRecipients ? recipients : [createBlankCredential(0)]
   );
+  const { form } = useContext(DynamicFormContext);
 
   useEffect(() => {
     if (showGroupSelection) {
@@ -61,26 +58,6 @@ const ManualImportContainer = ({
         });
     }
   }, []);
-
-  const handleAddNewContact = () => {
-    const { key = 0 } = _.last(contacts) || {};
-
-    const newContact = createBlankContact(key + 1);
-    const newContactList = contacts.concat(newContact);
-
-    setContacts(newContactList);
-  };
-
-  const handleDeleteContact = key => {
-    const filteredContacts = contacts.filter(({ key: contactKey }) => key !== contactKey);
-    const last = _.last(contacts) || {};
-
-    const contactsToSave = filteredContacts.length
-      ? filteredContacts
-      : [createBlankContact(last.key + 1)];
-
-    setContacts(contactsToSave);
-  };
 
   const handleAddNewCredential = () => {
     const { key = 0 } = _.last(credentialsData) || {};
@@ -105,12 +82,8 @@ const ManualImportContainer = ({
   };
 
   const tableProps = {
-    [IMPORT_CONTACTS]: {
-      dataSource: contacts,
-      updateDataSource: setContacts,
-      deleteRow: handleDeleteContact,
-      addRow: handleAddNewContact
-    },
+    // backward compatibility
+    [IMPORT_CONTACTS]: {},
     [IMPORT_CREDENTIALS_DATA]: {
       dataSource: credentialsData,
       updateDataSource: setCredentialsData,
@@ -138,8 +111,20 @@ const ManualImportContainer = ({
     return parsedCredentials;
   };
 
+  const handleSaveContacts = async () => {
+    try {
+      const data = form.getFieldValue(IMPORT_CONTACTS);
+      const parsedData = data.map((item, key) => ({ ...item, key }));
+      await form.validateFields();
+      onSave({ contacts: parsedData, groups: selectedGroups });
+    } catch (error) {
+      Logger.error('An error occurred while saving contacts', error);
+      message.error(getFirstError(error));
+    }
+  };
+
   const handleSave = {
-    [IMPORT_CONTACTS]: () => onSave({ contacts, groups: selectedGroups }),
+    [IMPORT_CONTACTS]: handleSaveContacts,
     [IMPORT_CREDENTIALS_DATA]: () => onSave({ credentials: processCredentials(credentialsData) })
   };
 

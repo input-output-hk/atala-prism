@@ -57,6 +57,7 @@
     },
     "table": {
       "columns": {
+        "actions": "Actions",
         "studentname": "Student Name",
         "identityNumber": "Identity Number",
         "admissionDate": "Admission Date",
@@ -866,7 +867,7 @@
   "errors": {
     "routeDidNotMatch": "The route {{pathnameToShow}} did not match any page",
     "errorGetting": "An error occurred while getting {{model}}",
-    "errorSaving": "An error occurred while saving, {{model}}",
+    "errorSaving": "An error occurred while saving {{model}}",
     "errorInvitingHolder": "An error occurred while inviting the holder",
     "errorDeletingGroup": "An error occurred while deleting the group {{groupName}}",
     "issueCredential": "Failed issuing the Credential",

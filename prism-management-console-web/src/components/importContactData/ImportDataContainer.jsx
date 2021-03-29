@@ -5,6 +5,7 @@ import { contactShape, credentialTypeShape } from '../../helpers/propShapes';
 import ImportTypeSelectionContainer from '../ImportTypeSelection/ImportTypeSelectionContainer';
 import BulkImport from '../bulkImport/BulkImport';
 import ManualImportContainer from '../manualImport/ManualImportContainer';
+import { ImportResults } from './Molecules/ImportResults';
 import { translateBackSpreadsheetNamesToContactKeys } from '../../helpers/contactValidations';
 import {
   BULK_IMPORT,
@@ -12,7 +13,6 @@ import {
   IMPORT_CONTACTS,
   IMPORT_CREDENTIALS_DATA
 } from '../../helpers/constants';
-import { ImportResults } from './Molecules/ImportResults';
 
 const showGroupSelection = {
   [IMPORT_CONTACTS]: true,

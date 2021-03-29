@@ -1,6 +1,14 @@
 import moment from 'moment';
 import i18n from 'i18next';
 
+export const isValueInListByKey = (list, value, field) =>
+  !!value && list?.some(item => item[field] === value);
+
+export const isValueUniqueInObjectListByKey = (list, value, field) => {
+  const filteredList = list?.filter(item => item[field] === value);
+  return !value || filteredList.length <= 1;
+};
+
 export const pastDate = (value, cb, compareTo) => {
   if (!value) return cb('error');
   const isAfter = moment(value).isSameOrAfter(compareTo);
@@ -98,3 +106,14 @@ export const generateRequiredRule = (isDate, dataIndex) =>
       })
     }
   );
+
+export const expectValueNotExist = (list, value, field, callback) => {
+  if (isValueInListByKey(list, value, field)) throw new Error(`${field} already exists`);
+  callback();
+};
+
+export const expectUniqueValue = (list, value, field, callback) => {
+  if (!isValueUniqueInObjectListByKey(list, value, field))
+    throw new Error(`${field} must be unique`);
+  callback();
+};

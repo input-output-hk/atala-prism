@@ -1,4 +1,4 @@
-@import "../../css/general_styling";
+@import '../../css/general_styling';
 
 .ManualImportWrapper {
   display: flex;
@@ -30,15 +30,21 @@
     height: 100%;
     width: 100%;
     overflow-y: auto;
-    padding: 2em;
+    padding: 0 2em 11em;
     .ant-col {
       margin: 7px;
     }
     .ant-table-container {
       width: 100%;
     }
-    .ant-table.ant-table-bordered > .ant-table-container > .ant-table-content > table > tbody > tr > td:last-child{
-      width: 200px!important;
+    .ant-table.ant-table-bordered
+      > .ant-table-container
+      > .ant-table-content
+      > table
+      > tbody
+      > tr
+      > td:last-child {
+      width: 200px !important;
     }
     .ant-table-wrapper {
       height: 100%;

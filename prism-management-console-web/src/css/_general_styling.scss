@@ -93,6 +93,11 @@ $height-sizes: (
   font-variant: normal;
 }
 
+@mixin horizontal-scroll() {
+  white-space: nowrap;
+  overflow: auto;
+}
+
 @mixin highlighted-text($font-color: $primary-color, $font-size: 18px) {
   font-family: 'Circular-bold';
   color: $primary-color;

@@ -5,6 +5,9 @@ import { Table } from 'antd';
 import EditableRow from '../../Molecules/TableUtils/EditableRow';
 import EditableCell from '../../Molecules/TableUtils/EditableCell';
 import CustomButton from '../../Atoms/CustomButton/CustomButton';
+import DynamicForm from '../../../dynamicForm/DynamicForm';
+import { IMPORT_CONTACTS } from '../../../../helpers/constants';
+import { skeletonShape } from '../../../../helpers/propShapes';
 import './_style.scss';
 
 const X_SCROLL_THRESHOLD = 6;
@@ -23,9 +26,20 @@ class EditableTable extends Component {
   };
 
   render() {
-    const { t, deleteRow, dataSource, columns, preExistingEntries } = this.props;
+    const {
+      t,
+      deleteRow,
+      dataSource,
+      columns,
+      skeleton,
+      preExistingEntries,
+      useCase,
+      initialValues
+    } = this.props;
     const components = {
-      body: {
+      // Backward compatibility: <DynamicForm /> isn't used yet for credentials creation
+      // when it's done, feel free to remove this and her components
+      body: useCase !== IMPORT_CONTACTS && {
         row: props => <EditableRow {...props} EditableContext={EditableContext} />,
         cell: props => (
           <EditableCell
@@ -74,7 +88,11 @@ class EditableTable extends Component {
         })
       : realColumns;
 
-    return (
+    // Backward compatibility: when using <DynamicForm /> for credential creation,
+    // feel free to remove condition and component <Table />
+    return useCase === IMPORT_CONTACTS ? (
+      <DynamicForm skeleton={skeleton} columns={columns} initialValues={initialValues} />
+    ) : (
       <Table
         components={components}
         rowClassName={() => 'editable-row'}
@@ -92,16 +110,21 @@ class EditableTable extends Component {
 }
 
 EditableTable.defaultProps = {
-  preExistingEntries: []
+  preExistingEntries: [],
+  initialValues: []
 };
 
 EditableTable.propTypes = {
+  api: PropTypes.shape().isRequired,
   t: PropTypes.func.isRequired,
   updateDataSource: PropTypes.func.isRequired,
   dataSource: PropTypes.shape({}).isRequired,
   deleteRow: PropTypes.func.isRequired,
+  useCase: PropTypes.string.isRequired,
   columns: PropTypes.arrayOf(PropTypes.shape({})).isRequired,
-  preExistingEntries: PropTypes.arrayOf(PropTypes.shape({}))
+  skeleton: skeletonShape.isRequired,
+  preExistingEntries: PropTypes.arrayOf(PropTypes.shape({})),
+  initialValues: PropTypes.arrayOf(PropTypes.shape({}))
 };
 
 export default withTranslation()(EditableTable);

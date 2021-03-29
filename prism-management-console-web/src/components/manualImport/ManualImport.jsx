@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useContext } from 'react';
 import PropTypes from 'prop-types';
 import { useTranslation } from 'react-i18next';
 import { PlusOutlined } from '@ant-design/icons';
@@ -11,6 +11,7 @@ import ContactCreationTable from './Organisms/Tables/ContactCreationTable';
 import CredentialCreationTable from './Organisms/Tables/CredentialCreationTable';
 import { IMPORT_CONTACTS, IMPORT_CREDENTIALS_DATA } from '../../helpers/constants';
 import { contactCreationShape, credentialTypeShape, groupShape } from '../../helpers/propShapes';
+import { DynamicFormContext } from '../../providers/DynamicFormProvider';
 
 import './_style.scss';
 
@@ -29,23 +30,28 @@ const ManualImport = ({
 
   const { t } = useTranslation();
   const { Option } = Select;
-  const { dataSource, addRow } = tableProps;
+  const { dataSource } = tableProps;
   const { groups, selectedGroups, setSelectedGroups } = groupsProps;
+  const { saveFormProviderAvailable, addEntity } = useContext(DynamicFormContext);
 
   const shouldDisableNext = () => {
-    const emptyEntries = dataSource.filter(
+    const emptyEntries = dataSource?.filter(
       useCase === IMPORT_CONTACTS
         ? isEmptyContact
         : dataRow => isEmptyCredential(dataRow, credentialType.fields)
     );
-    const errors = dataSource.filter(c => c.errorFields);
+    const errors = dataSource?.filter(c => c.errorFields);
 
-    return emptyEntries.length || errors.length;
+    return emptyEntries?.length || errors?.length;
   };
 
   useEffect(() => {
     setDisableNext(shouldDisableNext());
   }, [dataSource]);
+
+  // Leave const for backward compatibility, when all forms uses DynamicForm, feel free for remove this and it's use
+  const isContactCreation = useCase === IMPORT_CONTACTS;
+  const isSaveEnabled = isContactCreation ? saveFormProviderAvailable : !disableNext;
 
   return (
     <div className="ManualImportWrapper">
@@ -70,9 +76,9 @@ const ManualImport = ({
           ) : (
             <p>{t(`${useCase}.manualImport.info`)}</p>
           )}
-          {addRow && (
+          {isContactCreation && (
             <CustomButton
-              buttonProps={{ onClick: addRow, className: 'theme-secondary' }}
+              buttonProps={{ onClick: addEntity, className: 'theme-secondary' }}
               buttonText={t(`${useCase}.manualImport.newContact`)}
               icon={<PlusOutlined />}
             />
@@ -93,7 +99,8 @@ const ManualImport = ({
       <GenericFooter
         previous={cancelImport}
         next={onSave}
-        disableNext={disableNext}
+        // backward compatibility
+        disableNext={!isSaveEnabled}
         labels={{ previous: t('actions.back'), next: t('actions.save') }}
         loading={loading}
       />
@@ -107,10 +114,7 @@ ManualImport.defaultProps = {
 
 ManualImport.propTypes = {
   tableProps: PropTypes.shape({
-    dataSource: PropTypes.shape(contactCreationShape).isRequired,
-    updateDataSource: PropTypes.func.isRequired,
-    deleteRow: PropTypes.func.isRequired,
-    addRow: PropTypes.func.isRequired
+    dataSource: PropTypes.shape(contactCreationShape)
   }).isRequired,
   groupsProps: PropTypes.shape({
     groups: PropTypes.shape(groupShape).isRequired,

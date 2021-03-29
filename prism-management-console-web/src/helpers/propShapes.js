@@ -146,3 +146,16 @@ export const credentialTypesShape = {
   proofOfEmployment: shape(credentialTypeShape),
   healthIsurance: shape(credentialTypeShape)
 };
+
+export const columnShape = arrayOf({
+  label: string,
+  fieldKey: string,
+  width: oneOf([number, string])
+});
+
+export const skeletonShape = arrayOf({
+  name: string,
+  placeholder: string,
+  fieldKey: string,
+  rules: arrayOf(shape({ message: string }))
+});

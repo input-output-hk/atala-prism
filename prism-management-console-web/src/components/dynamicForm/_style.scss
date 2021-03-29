@@ -1,0 +1,53 @@
+@import '../../css/general_styling';
+
+$cell-padding: 1.5rem;
+$radius: 5px;
+$last-col-width: 200px;
+
+.DynamicFormContainer {
+  min-width: 100%;
+  .DynamicFormHeader {
+    margin: 0 0 1.5rem !important;
+    .ant-col {
+      margin-left: 0 !important;
+      margin-right: 0 !important;
+      .ant-btn {
+        position: fixed;
+        top: 128px;
+        right: 30px;
+      }
+    }
+  }
+  .DynamicForm {
+    width: 100%;
+    border: 1px solid $medium-grey;
+    border-radius: $radius;
+    margin-bottom: 6rem;
+    @include horizontal-scroll();
+    .HeaderRow {
+      display: inline-block;
+      min-width: 100%;
+      width: fit-content;
+      background-color: $light-grey;
+      color: $dark-grey;
+      border-radius: $radius 0;
+      .HeaderCol {
+        display: inline-block;
+        padding: 1rem $cell-padding;
+        margin: 0 !important;
+        &:last-child {
+          width: fit-content;
+          min-width: $last-col-width;
+        }
+      }
+    }
+    .IndividualFormRow {
+      .IndividualFormCol {
+        padding: $cell-padding;
+        &:last-child {
+          min-width: $last-col-width;
+        }
+      }
+    }
+  }
+}
