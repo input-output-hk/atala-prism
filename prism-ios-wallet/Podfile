@@ -37,6 +37,19 @@ target 'prism-ios-wallet' do
   pod 'SwiftLint'
   # PRISM SDK
   pod 'crypto', :path => '../prism-kotlin-sdk/crypto'
+  # Acuant
+  pod 'AcuantiOSSDKV11', '~> 11.4.7' 
+  pod 'AcuantiOSSDKV11/AcuantCamera'
+   
+  post_install do |installer|
+     installer.pods_project.targets.each do |target|
+       if ['AcuantiOSSDKV11', 'KeychainAccess', 'Socket.IO-Client-Swift', 'Starscream' 'SwiftyJSON'].include? target.name
+         target.build_configurations.each do |config|
+           config.build_settings['BUILD_LIBRARY_FOR_DISTRIBUTION'] = 'YES'
+         end
+       end
+     end
+   end
   
   target 'prism-ios-walletTests' do
     inherit! :search_paths
@@ -47,5 +60,6 @@ target 'prism-ios-wallet' do
     inherit! :search_paths
     # Pods for testing
   end
+  
 
 end

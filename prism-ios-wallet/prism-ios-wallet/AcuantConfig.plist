@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>acuant_username</key>
+	<string>dev@IOHK</string>
+	<key>acuant_password</key>
+	<string>4MVmhjrbFcd!9y</string>
+	<key>acuant_subscription</key>
+	<string>856845dc-d78e-4b7e-92bc-1f592f827190</string>
+	<key>frm_endpoint</key>
+	<string>https://preview.face.acuant.net</string>
+	<key>med_endpoint</key>
+	<string>https://preview.medicscan.acuant.net</string>
+	<key>assureid_endpoint</key>
+	<string>https://preview.assureid.acuant.net</string>
+	<key>acas_endpoint</key>
+	<string>https://preview.acas.acuant.net</string>
+	<key>ozone_endpoiint</key>
+	<string>https://preview.ozone.acuant.net</string>
+	<key>passive_liveness_endpoint</key>
+	<string>>https://preview.passlive.acuant.net</string>
+</dict>
+</plist>

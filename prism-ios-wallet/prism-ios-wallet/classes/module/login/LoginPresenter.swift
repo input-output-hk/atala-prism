@@ -136,6 +136,6 @@ class LoginPresenter: ListingBasePresenter, ListingBaseTableUtilsPresenterDelega
     }
 
     lazy var actionSuccessContinue = SelectorAction(action: { [weak self] in
-        self?.viewImpl?.goToMainScreen()
+        self?.viewImpl?.changeScreenToVerifyIdTutorial()
     })
 }

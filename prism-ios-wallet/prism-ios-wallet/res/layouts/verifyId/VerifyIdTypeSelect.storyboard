@@ -1,0 +1,136 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="17701" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES">
+    <device id="retina6_1" orientation="portrait" appearance="light"/>
+    <dependencies>
+        <deployment identifier="iOS"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="17703"/>
+        <capability name="Safe area layout guides" minToolsVersion="9.0"/>
+        <capability name="System colors in document resources" minToolsVersion="11.0"/>
+        <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
+    </dependencies>
+    <scenes>
+        <!--Verify Id Type Select View Controller-->
+        <scene sceneID="J1k-Sw-2ND">
+            <objects>
+                <viewController storyboardIdentifier="VerifyIdTypeSelect" id="jgj-jP-Cm4" customClass="VerifyIdTypeSelectViewController" customModule="Atala_PRISM" customModuleProvider="target" sceneMemberID="viewController">
+                    <view key="view" contentMode="scaleToFill" id="L9j-MO-Fy2">
+                        <rect key="frame" x="0.0" y="0.0" width="414" height="896"/>
+                        <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+                        <subviews>
+                            <tableView clipsSubviews="YES" contentMode="scaleToFill" alwaysBounceVertical="YES" dataMode="prototypes" style="plain" separatorStyle="none" rowHeight="-1" estimatedRowHeight="-1" sectionHeaderHeight="28" sectionFooterHeight="28" translatesAutoresizingMaskIntoConstraints="NO" id="4Iz-rW-LFa">
+                                <rect key="frame" x="0.0" y="253.5" width="414" height="501.5"/>
+                                <color key="separatorColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                <inset key="separatorInset" minX="15" minY="0.0" maxX="0.0" maxY="0.0"/>
+                                <color key="sectionIndexBackgroundColor" red="0.97254901959999995" green="0.97647058819999999" blue="0.97647058819999999" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                                <userDefinedRuntimeAttributes>
+                                    <userDefinedRuntimeAttribute type="string" keyPath="backgroundColorIB" value="appWhite"/>
+                                </userDefinedRuntimeAttributes>
+                            </tableView>
+                            <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="xo5-iB-sUv">
+                                <rect key="frame" x="0.0" y="116" width="414" height="1"/>
+                                <color key="backgroundColor" systemColor="systemBackgroundColor"/>
+                                <constraints>
+                                    <constraint firstAttribute="height" constant="1" id="hsh-ah-Pp4"/>
+                                </constraints>
+                                <userDefinedRuntimeAttributes>
+                                    <userDefinedRuntimeAttribute type="string" keyPath="backgroundColorIB" value="appGreyMid"/>
+                                </userDefinedRuntimeAttributes>
+                            </view>
+                            <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="vgi-tD-Tc7">
+                                <rect key="frame" x="30" y="768" width="354" height="44"/>
+                                <color key="backgroundColor" red="1" green="0.1764705882" blue="0.23137254900000001" alpha="1" colorSpace="calibratedRGB"/>
+                                <fontDescription key="fontDescription" type="system" weight="semibold" pointSize="16"/>
+                                <inset key="contentEdgeInsets" minX="0.0" minY="12" maxX="0.0" maxY="12"/>
+                                <state key="normal" title="Button"/>
+                                <state key="disabled">
+                                    <color key="titleColor" red="0.62745098040000002" green="0.66666666669999997" blue="0.73333333329999995" alpha="1" colorSpace="custom" customColorSpace="displayP3"/>
+                                </state>
+                                <userDefinedRuntimeAttributes>
+                                    <userDefinedRuntimeAttribute type="string" keyPath="backgroundColorIB" value="appRed"/>
+                                    <userDefinedRuntimeAttribute type="string" keyPath="localized" value="next"/>
+                                    <userDefinedRuntimeAttribute type="string" keyPath="textColorIB" value="appWhite"/>
+                                </userDefinedRuntimeAttributes>
+                                <connections>
+                                    <action selector="continueTapped:" destination="jgj-jP-Cm4" eventType="touchUpInside" id="9vC-yt-Ibw"/>
+                                </connections>
+                            </button>
+                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Label" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="2ar-Bm-BuA">
+                                <rect key="frame" x="30" y="147" width="42.5" height="19.5"/>
+                                <fontDescription key="fontDescription" type="boldSystem" pointSize="16"/>
+                                <nil key="textColor"/>
+                                <nil key="highlightedColor"/>
+                                <userDefinedRuntimeAttributes>
+                                    <userDefinedRuntimeAttribute type="string" keyPath="localized" value="verifyid_typeselect_step"/>
+                                    <userDefinedRuntimeAttribute type="string" keyPath="textColorIB" value="appRed"/>
+                                </userDefinedRuntimeAttributes>
+                            </label>
+                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Label" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="fD4-qJ-83N">
+                                <rect key="frame" x="30" y="172.5" width="53.5" height="26.5"/>
+                                <fontDescription key="fontDescription" type="system" weight="medium" pointSize="22"/>
+                                <nil key="textColor"/>
+                                <nil key="highlightedColor"/>
+                                <userDefinedRuntimeAttributes>
+                                    <userDefinedRuntimeAttribute type="string" keyPath="localized" value="verifyid_typeselect_title"/>
+                                    <userDefinedRuntimeAttribute type="string" keyPath="textColorIB" value="appBlack"/>
+                                </userDefinedRuntimeAttributes>
+                            </label>
+                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Label" textAlignment="natural" lineBreakMode="tailTruncation" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="V6I-il-NAJ">
+                                <rect key="frame" x="30" y="221" width="354" height="19.5"/>
+                                <fontDescription key="fontDescription" type="system" pointSize="16"/>
+                                <nil key="textColor"/>
+                                <nil key="highlightedColor"/>
+                                <userDefinedRuntimeAttributes>
+                                    <userDefinedRuntimeAttribute type="string" keyPath="localized" value="verifyid_typeselect_desc"/>
+                                    <userDefinedRuntimeAttribute type="string" keyPath="textColorIB" value="textGrey"/>
+                                </userDefinedRuntimeAttributes>
+                            </label>
+                        </subviews>
+                        <viewLayoutGuide key="safeArea" id="tw2-UQ-KnS"/>
+                        <color key="backgroundColor" systemColor="systemBackgroundColor"/>
+                        <constraints>
+                            <constraint firstItem="2ar-Bm-BuA" firstAttribute="leading" secondItem="tw2-UQ-KnS" secondAttribute="leading" constant="30" id="6Tc-PY-yZR"/>
+                            <constraint firstItem="tw2-UQ-KnS" firstAttribute="trailing" secondItem="V6I-il-NAJ" secondAttribute="trailing" constant="30" id="6VP-T6-gvE"/>
+                            <constraint firstItem="4Iz-rW-LFa" firstAttribute="top" secondItem="V6I-il-NAJ" secondAttribute="bottom" constant="13" id="A6i-1l-8Rd"/>
+                            <constraint firstItem="fD4-qJ-83N" firstAttribute="top" secondItem="2ar-Bm-BuA" secondAttribute="bottom" constant="6" id="CtP-dE-CNF"/>
+                            <constraint firstItem="xo5-iB-sUv" firstAttribute="top" secondItem="tw2-UQ-KnS" secondAttribute="top" constant="72" id="Hfg-34-BVF"/>
+                            <constraint firstItem="4Iz-rW-LFa" firstAttribute="leading" secondItem="tw2-UQ-KnS" secondAttribute="leading" id="IDS-mP-mS7"/>
+                            <constraint firstItem="vgi-tD-Tc7" firstAttribute="top" secondItem="4Iz-rW-LFa" secondAttribute="bottom" constant="13" id="L5Y-rJ-nRu"/>
+                            <constraint firstItem="fD4-qJ-83N" firstAttribute="leading" secondItem="tw2-UQ-KnS" secondAttribute="leading" constant="30" id="TS3-Xc-Jqu"/>
+                            <constraint firstItem="4Iz-rW-LFa" firstAttribute="trailing" secondItem="tw2-UQ-KnS" secondAttribute="trailing" id="Y2P-rZ-6En"/>
+                            <constraint firstItem="tw2-UQ-KnS" firstAttribute="trailing" secondItem="vgi-tD-Tc7" secondAttribute="trailing" constant="30" id="bSl-eV-bNi"/>
+                            <constraint firstAttribute="trailing" secondItem="xo5-iB-sUv" secondAttribute="trailing" id="dAt-qH-fL2"/>
+                            <constraint firstItem="2ar-Bm-BuA" firstAttribute="top" secondItem="xo5-iB-sUv" secondAttribute="bottom" constant="30" id="fMD-zr-Usb"/>
+                            <constraint firstItem="tw2-UQ-KnS" firstAttribute="bottom" secondItem="vgi-tD-Tc7" secondAttribute="bottom" constant="50" id="fcP-Pv-7hn"/>
+                            <constraint firstItem="xo5-iB-sUv" firstAttribute="leading" secondItem="L9j-MO-Fy2" secondAttribute="leading" id="gnU-WO-8SP"/>
+                            <constraint firstItem="V6I-il-NAJ" firstAttribute="top" secondItem="fD4-qJ-83N" secondAttribute="bottom" constant="22" id="jMr-9X-WqR"/>
+                            <constraint firstItem="vgi-tD-Tc7" firstAttribute="leading" secondItem="L9j-MO-Fy2" secondAttribute="leading" constant="30" id="s7y-u4-8tO"/>
+                            <constraint firstItem="V6I-il-NAJ" firstAttribute="leading" secondItem="tw2-UQ-KnS" secondAttribute="leading" constant="30" id="u9o-4T-PBv"/>
+                        </constraints>
+                    </view>
+                    <connections>
+                        <outlet property="nextBttn" destination="vgi-tD-Tc7" id="QJI-l9-cFa"/>
+                        <outlet property="table" destination="4Iz-rW-LFa" id="Fp0-bZ-1p5"/>
+                        <segue destination="YIJ-EH-24H" kind="show" identifier="VerifyIdScanSegue" id="aqc-0K-eqy"/>
+                    </connections>
+                </viewController>
+                <placeholder placeholderIdentifier="IBFirstResponder" id="Ee8-jd-Yn5" userLabel="First Responder" customClass="UIResponder" sceneMemberID="firstResponder"/>
+            </objects>
+            <point key="canvasLocation" x="-691.304347826087" y="-271.20535714285711"/>
+        </scene>
+        <!--VerifyIdScan-->
+        <scene sceneID="BDQ-zk-bE7">
+            <objects>
+                <viewControllerPlaceholder storyboardName="VerifyIdScan" referencedIdentifier="VerifyIdScan" id="YIJ-EH-24H" sceneMemberID="viewController">
+                    <navigationItem key="navigationItem" id="dqx-69-DOp"/>
+                </viewControllerPlaceholder>
+                <placeholder placeholderIdentifier="IBFirstResponder" id="eU1-Jn-h9F" userLabel="First Responder" customClass="UIResponder" sceneMemberID="firstResponder"/>
+            </objects>
+            <point key="canvasLocation" x="-73" y="-271"/>
+        </scene>
+    </scenes>
+    <resources>
+        <systemColor name="systemBackgroundColor">
+            <color white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+        </systemColor>
+    </resources>
+</document>

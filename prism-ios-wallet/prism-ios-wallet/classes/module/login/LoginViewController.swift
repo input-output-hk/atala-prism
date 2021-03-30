@@ -103,8 +103,10 @@ class LoginViewController: BaseViewController {
         ViewControllerUtils.changeScreenSegued(caller: self, segue: "SuccessSegue", params: params)
     }
 
-    func goToMainScreen() {
-        MainNavViewController.openThisView()
+    // MARK: Screens
+
+    func changeScreenToVerifyIdTutorial() {
+        _ = app_mayPerformSegue(withIdentifier: "VerifyIdTutorialSegue", sender: self)
     }
 }
 

@@ -1,4 +1,51 @@
 PODS:
+  - AcuantiOSSDKV11 (11.4.7):
+    - AcuantiOSSDKV11/AcuantCamera (= 11.4.7)
+    - AcuantiOSSDKV11/AcuantCommon (= 11.4.7)
+    - AcuantiOSSDKV11/AcuantDocumentProcessing (= 11.4.7)
+    - AcuantiOSSDKV11/AcuantEchipReader (= 11.4.7)
+    - AcuantiOSSDKV11/AcuantFaceCapture (= 11.4.7)
+    - AcuantiOSSDKV11/AcuantFaceMatch (= 11.4.7)
+    - AcuantiOSSDKV11/AcuantHGLiveness (= 11.4.7)
+    - AcuantiOSSDKV11/AcuantImagePreparation (= 11.4.7)
+    - AcuantiOSSDKV11/AcuantIPLiveness (= 11.4.7)
+    - AcuantiOSSDKV11/AcuantPassiveLiveness (= 11.4.7)
+  - AcuantiOSSDKV11/AcuantCamera (11.4.7):
+    - AcuantiOSSDKV11/AcuantCamera/Common (= 11.4.7)
+    - AcuantiOSSDKV11/AcuantCamera/Document (= 11.4.7)
+    - AcuantiOSSDKV11/AcuantCamera/Mrz (= 11.4.7)
+    - AcuantiOSSDKV11/AcuantCommon
+    - AcuantiOSSDKV11/AcuantImagePreparation
+  - AcuantiOSSDKV11/AcuantCamera/Common (11.4.7):
+    - AcuantiOSSDKV11/AcuantCommon
+    - AcuantiOSSDKV11/AcuantImagePreparation
+  - AcuantiOSSDKV11/AcuantCamera/Document (11.4.7):
+    - AcuantiOSSDKV11/AcuantCamera/Common
+    - AcuantiOSSDKV11/AcuantCommon
+    - AcuantiOSSDKV11/AcuantImagePreparation
+  - AcuantiOSSDKV11/AcuantCamera/Mrz (11.4.7):
+    - AcuantiOSSDKV11/AcuantCamera/Common
+    - AcuantiOSSDKV11/AcuantCommon
+    - AcuantiOSSDKV11/AcuantImagePreparation
+  - AcuantiOSSDKV11/AcuantCommon (11.4.7)
+  - AcuantiOSSDKV11/AcuantDocumentProcessing (11.4.7):
+    - AcuantiOSSDKV11/AcuantCommon
+  - AcuantiOSSDKV11/AcuantEchipReader (11.4.7):
+    - AcuantiOSSDKV11/AcuantCommon
+  - AcuantiOSSDKV11/AcuantFaceCapture (11.4.7):
+    - AcuantiOSSDKV11/AcuantCommon
+    - AcuantiOSSDKV11/AcuantImagePreparation
+  - AcuantiOSSDKV11/AcuantFaceMatch (11.4.7):
+    - AcuantiOSSDKV11/AcuantCommon
+  - AcuantiOSSDKV11/AcuantHGLiveness (11.4.7):
+    - AcuantiOSSDKV11/AcuantCommon
+  - AcuantiOSSDKV11/AcuantImagePreparation (11.4.7):
+    - AcuantiOSSDKV11/AcuantCommon
+  - AcuantiOSSDKV11/AcuantIPLiveness (11.4.7):
+    - AcuantiOSSDKV11/AcuantCommon
+    - iProov (~> 7.5.0)
+  - AcuantiOSSDKV11/AcuantPassiveLiveness (11.4.7):
+    - AcuantiOSSDKV11/AcuantCommon
   - Alamofire (4.8.2)
   - AlamofireImage (3.5.2):
     - Alamofire (~> 4.8)
@@ -160,6 +207,11 @@ PODS:
     - nanopb (~> 0.3)
   - gRPC-Core/Interface (1.23.1)
   - GTMSessionFetcher/Core (1.4.0)
+  - iProov (7.5.0):
+    - KeychainAccess (~> 4.1)
+    - Socket.IO-Client-Swift (~> 15.2)
+    - SwiftyJSON (~> 5.0)
+  - KeychainAccess (4.2.1)
   - MaterialComponents/AnimationTiming (117.0.0)
   - MaterialComponents/Availability (117.0.0)
   - MaterialComponents/Buttons (117.0.0):
@@ -240,17 +292,23 @@ PODS:
   - PromisesObjC (1.2.8)
   - Protobuf (3.11.4)
   - Secp256k1Kit.swift (1.1)
+  - Socket.IO-Client-Swift (15.2.0):
+    - Starscream (~> 3.1)
+  - Starscream (3.1.1)
   - SwiftGRPC (0.10.0):
     - gRPC-Core (~> 1.23.0)
     - SwiftProtobuf (~> 1.7.0)
   - SwiftLint (0.39.2)
   - SwiftProtobuf (1.7.0)
   - SwiftyBeaver (1.7.1)
+  - SwiftyJSON (5.0.0)
   - Tabman (2.9.0):
     - Pageboy (~> 3.6.0)
   - Toast-Swift (5.0.1)
 
 DEPENDENCIES:
+  - AcuantiOSSDKV11 (~> 11.4.7)
+  - AcuantiOSSDKV11/AcuantCamera
   - Alamofire (~> 4.8.2)
   - AlamofireImage (~> 3.5)
   - AlamofireObjectMapper (~> 5.2)
@@ -273,6 +331,7 @@ DEPENDENCIES:
 
 SPEC REPOS:
   trunk:
+    - AcuantiOSSDKV11
     - Alamofire
     - AlamofireImage
     - AlamofireObjectMapper
@@ -298,6 +357,8 @@ SPEC REPOS:
     - GoogleUtilities
     - gRPC-Core
     - GTMSessionFetcher
+    - iProov
+    - KeychainAccess
     - MaterialComponents
     - MBProgressHUD
     - MDFInternationalization
@@ -309,10 +370,13 @@ SPEC REPOS:
     - PromisesObjC
     - Protobuf
     - Secp256k1Kit.swift
+    - Socket.IO-Client-Swift
+    - Starscream
     - SwiftGRPC
     - SwiftLint
     - SwiftProtobuf
     - SwiftyBeaver
+    - SwiftyJSON
     - Tabman
     - Toast-Swift
 
@@ -321,6 +385,7 @@ EXTERNAL SOURCES:
     :path: "../prism-kotlin-sdk/crypto"
 
 SPEC CHECKSUMS:
+  AcuantiOSSDKV11: e04cbffcb78cab3f22dd8c370a3802a4275c94e4
   Alamofire: ae5c501addb7afdbb13687d7f2f722c78734c2d3
   AlamofireImage: 63cfe3baf1370be6c498149687cf6db3e3b00999
   AlamofireObjectMapper: 1989f690e982b71921b9253f53a4f33a9bc00d88
@@ -347,6 +412,8 @@ SPEC CHECKSUMS:
   GoogleUtilities: 39530bc0ad980530298e9c4af8549e991fd033b1
   gRPC-Core: 4b1148eb8596225178e5a154e40e35141a3cdf0f
   GTMSessionFetcher: 6f5c8abbab8a9bce4bb3f057e317728ec6182b10
+  iProov: 16de51166c50a08ec0d2a32334687c7d0e5236e3
+  KeychainAccess: 9b07f665298d13c3a85881bd3171f6f49b8151c1
   MaterialComponents: 29320b6a89c4c90e41c7a41fc70e91127ac34161
   MBProgressHUD: 4890f671c94e8a0f3cf959aa731e9de2f036d71a
   MDFInternationalization: 010097556d6b09d2c4ea38e0820ea6d37be6a314
@@ -358,13 +425,16 @@ SPEC CHECKSUMS:
   PromisesObjC: c119f3cd559f50b7ae681fa59dc1acd19173b7e6
   Protobuf: 176220c526ad8bd09ab1fb40a978eac3fef665f7
   Secp256k1Kit.swift: 322a66c4b3e95e96a397d73d45ad4d79af991bab
+  Socket.IO-Client-Swift: 1e3e3a1f09f3312a167f0d781eb2f383d477357c
+  Starscream: 4bb2f9942274833f7b4d296a55504dcfc7edb7b0
   SwiftGRPC: f8fcfecb547c96cc6913de619f95fa3cd09838ee
   SwiftLint: 22ccbbe3b8008684be5955693bab135e0ed6a447
   SwiftProtobuf: 4fd9645e69b72cbae6ec8da5be0cdd20ca6565dd
   SwiftyBeaver: da5e573ad583586c18236324c36900990afe1733
+  SwiftyJSON: 36413e04c44ee145039d332b4f4e2d3e8d6c4db7
   Tabman: 55d3d18f393ce5119515cd0349c841a07774c895
   Toast-Swift: 9b6a70f28b3bf0b96c40d46c0c4b9d6639846711
 
-PODFILE CHECKSUM: 02431932722983b18357a60d5f63d8777d80cb23
+PODFILE CHECKSUM: 6afb7502d7613575dbba454a6a9e69b7a079a261
 
 COCOAPODS: 1.10.0

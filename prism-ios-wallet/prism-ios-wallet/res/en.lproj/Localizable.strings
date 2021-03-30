@@ -332,8 +332,143 @@
 "home_promotional_share_desc" = "Atala PRISM lorem ipsum\ndolor sit amtet";
 "home_promotional_send_invite" = "Send Invite";
 
+// <!-- Verify Identity -->
+"verifyid_tutorial_title" = "Verify your identity";
+"verifyid_tutorial_subtitle" = "How does it work?";
+"verifyid_tutorial_step_1" = "Step 1";
+"verifyid_tutorial_step_1_desc" = "Scan your selected Document";
+"verifyid_tutorial_step_2" = "Step 2";
+"verifyid_tutorial_step_2_desc" = "Take a Selfie";
+"verifyid_tutorial_step_3" = "Step 3";
+"verifyid_tutorial_step_3_desc" = "Confirm your Data";
+"verifyid_tutorial_step_4" = "Final Step";
+"verifyid_tutorial_step_4_desc" = "Get your Acuant ID";
+"verifyid_tutorial_skip" = "Skip and do later";
+"verifyid_title" = "Identity Verification";
+"verifyid_typeselect_step" = "Step 1";
+"verifyid_typeselect_title" = "Select ID type";
+"verifyid_typeselect_desc" = "Select the type of document to start the verification process and follow the instructions";
+"verifyid_typeselect_national_id" = "National Identity Card";
+"verifyid_typeselect_passport" = "Passport";
+"verifyid_typeselect_drivers_license" = "Driver's License";
+"verifyid_scanfront_" = "Activity";
+"verifyid_scanfront_title" = "Scan your National ID";
+"verifyid_scanfront_desc" = "Make sure the document fits within the outlined area, is well lit, and is clearly legible";
+"verifyid_scanfront_front" = "Front of National ID";
+"verifyid_scanfront_helper" = "Position the front of your\nID in the frame.";
+"verifyid_scanfront_button" = "Take a picture";
+"verifyid_scanback_back" = "Back of National ID";
+"verifyid_scanback_helper" = "Position the back of your\nID in the frame.";
+"verifyid_results_step" = "Step 3";
+"verifyid_results_title" = "Confirm your data";
+"verifyid_results_desc" = "Check that the scanned information is correct.";
+"verifyid_results_retry" = "Scan Again";
+"verifyid_results_confirm" = "Confirm";
 
-// <!-- Home -->
+// ACUANT
+
+/* AcuantCamera */
+"acuant_camera_align" = "ALIGN";
+"acuant_camera_manual_capture" = "ALIGN & TAP";
+"acuant_camera_move_closer" = "MOVE CLOSER";
+"acuant_camera_hold_steady" = "HOLD STEADY";
+"acuant_camera_capturing" = "CAPTURING";
+"acuant_camera_outside_view" = "TOO CLOSE!";
+
+/* AcuantFaceCapture/AcuantPassiveLiveness */
+"acuant_face_camera_initial" = "Align face to start capture";
+"acuant_face_camera_face_too_close" = "Too Close! Move Away";
+"acuant_face_camera_face_too_far" = "Move Closer";
+"acuant_face_camera_face_has_angle" =  "Face has Angle. Do not tilt";
+"acuant_face_camera_face_not_in_frame" =  "Move in Frame";
+"acuant_face_camera_face_moved" = "Hold Steady";
+"acuant_face_camera_capturing_2" = "Capturing\n2...";
+"acuant_face_camera_capturing_1" = "Capturing\n1...";
+
+/* AcuantHGLiveness */
+"hg_too_close" = "Too Close! Move Away";
+"hg_too_far_away" = "Move Closer";
+"hg_move_in_frame" = "Move in Frame";
+"hg_blink" = "Blink!";
+"hg_hold_steady" = "Hold Steady";
+"hg_align_face_and_blink" = "Align face to begin";
+
+/* AcuantIPLiveness */
+"IProov_LanguageFile" = "en";
+"IProov_AppName" = "iProov";
+"IProov_Error" = "Error";
+"IProov_PromptHoldStill" = "Put your face in the oval";
+"IProov_PromptLoading" = "Please wait…";
+"IProov_PromptLoadingSlow" = "Connecting, network is slow…";
+"IProov_PromptConnecting" = "Connecting…";
+"IProov_PromptConnectingSlow" = "Connecting, network is slow…";
+"IProov_PromptTapToBegin" = "Tap the screen to begin";
+"IProov_PromptTooFar" = "Move closer";
+"IProov_PromptTooBright" = "Go somewhere shadier";
+"IProov_ProgressStreaming" = "Streaming…";
+"IProov_ProgressStreamingSlow" = "Streaming, network is slow…";
+"IProov_ProgressProcessing" = "Processing…";
+"IProov_IProovSuccess" = "You have iProoved successfully";
+"IProov_PromptScanning" = "Scanning…";
+"IProov_UnknownError" = "Unknown Error";
+"IProov_StartingDetector" = "Starting detector…";
+"IProov_ErrorSSLException" = "SSL Exception";
+"IProov_ProgressIdentifyingFace" = "Identifying face…";
+"IProov_ProgressConfirmingIdentity" = "Confirming identity…";
+"IProov_ProgressAssessingGenuinePresence" = "Assessing genuine presence…";
+"IProov_ProgressLoading" = "Loading…";
+"IProov_ProgressCreatingIdentity" = "Creating identity…";
+"IProov_ProgressFindingFace" = "Finding face…";
+"IProov_Authenticate" = "Authenticate";
+"IProov_Enrol" = "Enrol";
+"IProov_MessageFormat" = "%@ to %@";
+"IProov_PromptTooClose" = "Too close";
+"IProov_FailureMotionTooMuchMovement" = "Please do not move while iProoving";
+"IProov_FailureLightingFlashReflectionTooLow" = "Ambient light too strong or screen brightness too low";
+"IProov_FailureLightingBacklit" = "Strong light source detected behind you";
+"IProov_FailureLightingTooDark" = "Your environment appears too dark";
+"IProov_FailureLightingFaceTooBright" = "Too much light detected on your face";
+"IProov_FailureMotionTooMuchMouthMovement" = "Please do not talk while iProoving";
+"IProov_MessageFormatWithUsername" = "%@ as %@ to %@";
+"IProov_PromptRollTooHigh" = "Avoid tilting your head";
+"IProov_PromptRollTooLow" = "Avoid tilting your head";
+"IProov_PromptYawTooLow" = "Turn slightly to your right";
+"IProov_PromptYawTooHigh" = "Turn slightly to your left";
+"IProov_PromptPitchTooHigh" = "Hold the device at eye level";
+"IProov_PromptPitchTooLow" = "Hold the device at eye level";
+"IProov_ErrorStreaming" = "Streaming error";
+"IProov_ErrorEncoder" = "Encoder error";
+"IProov_ErrorCamera" = "Camera error";
+"IProov_ErrorCameraPermissionDenied" = "Camera permission denied";
+"IProov_ErrorCameraPermissionDeniedMessageIos" = "Please allow camera access for this app in iOS Settings";
+"IProov_ErrorServerAbort" = "Server abort";
+"IProov_ErrorServer" = "Server error";
+"IProov_ErrorLightingModel" = "Lighting model error";
+"IProov_ErrorEncoderUnknownMessage" = "Unknown encoder error";
+"IProov_ErrorEncoderCodeMessage" = "Error code %@";
+"IProov_ErrorCaptureAlreadyActive" = "An existing capture is already in progress";
+"IProov_PromptGetReady" = "Get ready…";
+"IProov_PromptTooRight" = "Move left";
+"IProov_PromptTooLeft" = "Move right";
+"IProov_PromptTooHigh" = "Move down";
+"IProov_PromptTooLow" = "Move up";
+"IProov_PromptBeginningIn" = "Starting in…";
+"IProov_PromptGrantPermission" = "Grant Camera Access";
+"IProov_PromptGrantPermissionMessage" = "Camera access must be granted to use iProov";
+"IProov_Passed" = "Passed";
+"IProov_Failed" = "Failed";
+"IProov_FailureUserTimeout" = "Sorry, your session has timed out";
+"IProov_FailureNetworkProblem" = "Sorry, network problem";
+"IProov_FailureAmbiguousOutcome" = "Sorry, ambiguous outcome";
+"IProov_ErrorNotSupported" = "Unsupported";
+"IProov_ErrorNotSupportedMessage" = "Your device is not supported";
+"IProov_ErrorFullscreenChange" = "Exited full-screen without completing iProov";
+"IProov_ErrorNoCamera" = "No Camera Detected";
+"IProov_ErrorNoCameraMessage" = "A camera must be available to use iProov";
+"IProov_ErrorCameraPermissionDeniedMessage" = "Permission to access the camera has been denied. Please allow camera access to use iProov. If you have already allowed access, please reload the page.";
+"IProov_ErrorUserTimeout" = "Your session has expired";
+
+// <!-- Interactive Demo Tutorial -->
 "intdemotutorial_step_1_title" = "Become a Citizen\nof Metropol City";
 "intdemotutorial_step_1_subtitle" = "Metropol city has announced that all residents will be issued with a new digital ID. This forward thinking initiative will give citizens fast and friction-free access to many government and municipal services, making it easier than ever before to take public transport, pay city taxes and vote on local issues, straight from your phone.";
 "intdemotutorial_step_2_title" = "Connect with an\nOrganization";
