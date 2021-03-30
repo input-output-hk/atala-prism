@@ -70,7 +70,7 @@ class ContactDAO: BaseDAO {
         if connectionInfo.hasParticipantInfo {
             // Issuers
             if connectionInfo.participantInfo.issuer.name.count > 0 {
-                return createContact(dateCreated: Date(fromMillis: connectionInfo.created),
+                return createContact(dateCreated: Date(timeIntervalSince1970: connectionInfo.created.timeIntervalSince1970),
                                      connectionId: connectionInfo.connectionID,
                                      did: connectionInfo.participantInfo.issuer.did,
                                      name: connectionInfo.participantInfo.issuer.name,
@@ -80,7 +80,7 @@ class ContactDAO: BaseDAO {
             }
             // Verifiers
             if connectionInfo.participantInfo.verifier.name.count > 0 {
-                return createContact(dateCreated: Date(fromMillis: connectionInfo.created),
+                return createContact(dateCreated: Date(timeIntervalSince1970: connectionInfo.created.timeIntervalSince1970),
                                      connectionId: connectionInfo.connectionID,
                                      did: connectionInfo.participantInfo.verifier.did,
                                      name: connectionInfo.participantInfo.verifier.name,
