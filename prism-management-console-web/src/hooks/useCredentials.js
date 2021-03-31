@@ -1,7 +1,11 @@
 import { useState, useEffect } from 'react';
 import { message } from 'antd';
 import { useTranslation } from 'react-i18next';
-import { CREDENTIAL_PAGE_SIZE, UNKNOWN_DID_SUFFIX_ERROR_CODE } from '../helpers/constants';
+import {
+  CREDENTIAL_PAGE_SIZE,
+  MAX_CREDENTIALS,
+  UNKNOWN_DID_SUFFIX_ERROR_CODE
+} from '../helpers/constants';
 import Logger from '../helpers/Logger';
 import { getLastArrayElementOrEmpty } from '../helpers/genericHelpers';
 import {
@@ -102,12 +106,12 @@ export const useCredentialsIssuedListWithFilters = (
       );
     });
 
-  const getCredentials = async () => {
+  const getCredentials = async ({ isFetchAll } = {}) => {
     try {
       const { credentialid } = getLastArrayElementOrEmpty(credentials);
 
       const newlyFetchedCredentials = await credentialsManager.getCredentials(
-        CREDENTIAL_PAGE_SIZE,
+        isFetchAll ? MAX_CREDENTIALS : CREDENTIAL_PAGE_SIZE,
         credentialid
       );
 
@@ -124,6 +128,10 @@ export const useCredentialsIssuedListWithFilters = (
       setCredentials(updatedCredentials);
       setFilteredCredentials(newFilteredCredentials);
       removeUnconfirmedAccountError();
+      return {
+        credentials: updatedCredentials,
+        filteredCredentials: newFilteredCredentials
+      };
     } catch (error) {
       Logger.error(
         '[CredentialContainer.getCredentialsRecieved] Error while getting Credentials',
@@ -140,8 +148,11 @@ export const useCredentialsIssuedListWithFilters = (
     }
   };
 
-  // leave as async function for backward compatibility, so promise callbacks can be used when this function is called
+  // leave as async function for backward compatibility,
+  // so promise callbacks can be used when this function is called
   const handleGetCredentials = async () => hasMore && getCredentials();
+
+  const fetchAll = () => getCredentials({ isFetchAll: true });
 
   return {
     fetchCredentialsIssued: handleGetCredentials,
@@ -153,7 +164,8 @@ export const useCredentialsIssuedListWithFilters = (
     },
     filteredCredentialsIssued: filteredCredentials,
     noIssuedCredentials: noCredentials,
-    hasMoreIssued: hasMore
+    hasMoreIssued: hasMore,
+    fetchAll
   };
 };
 

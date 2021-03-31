@@ -114,6 +114,8 @@ export const ASSIGN_TO_GROUPS = 1;
 export const CONTACT_NAME_KEY = 'contactName';
 export const EXTERNAL_ID_KEY = 'externalid';
 export const GROUP_NAME_KEY = 'name';
+export const CONTACT_ID_KEY = 'contactid';
+export const CREDENTIAL_ID_KEY = 'credentialid';
 
 // Bulk import data
 export const COMMON_CONTACT_HEADERS = [CONTACT_NAME_KEY, EXTERNAL_ID_KEY];

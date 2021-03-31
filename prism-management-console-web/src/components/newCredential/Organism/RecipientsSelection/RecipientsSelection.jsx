@@ -3,10 +3,15 @@ import PropTypes from 'prop-types';
 import { SearchOutlined, WarningOutlined } from '@ant-design/icons';
 import { Tabs, Input, Checkbox } from 'antd';
 import { useTranslation } from 'react-i18next';
+import { PulseLoader } from 'react-spinners';
 import GroupsTable from '../../../groups/Organisms/Tables/GroupsTable';
 import ConnectionsTable from '../../../connections/Organisms/table/ConnectionsTable';
 import { withApi } from '../../../providers/withApi';
-import { useSelectAllContacts, useSelectAllGroups } from '../../../../hooks/useSelectAll';
+import {
+  getCheckedAndIndeterminateProps,
+  handleSelectAll
+} from '../../../../helpers/selectionHelpers';
+import { CONTACT_ID_KEY } from '../../../../helpers/constants';
 
 import './_style.scss';
 
@@ -16,38 +21,53 @@ const GROUPS_KEY = 'groups';
 const SUBJECTS_KEY = 'subjects';
 
 const RecipientsSelection = ({
-  api,
-  groups,
-  selectedGroups,
-  setSelectedGroups,
-  setGroupsFilter,
-  subjects,
-  selectedSubjects,
-  setSelectedSubjects,
-  setSubjectsFilter,
-  getSubjects,
+  groupsProps,
+  contactsProps,
   toggleShouldSelectRecipients,
   shouldSelectRecipients
 }) => {
+  const { groups, selectedGroups, setSelectedGroups, setGroupsFilter } = groupsProps;
+  const {
+    contacts,
+    setSelectedContacts,
+    selectedContacts,
+    setContactsFilter,
+    hasMore,
+    fetchAll
+  } = contactsProps;
+
   const { t } = useTranslation();
-  const handleSelectAllContacts = useSelectAllContacts(api.contactsManager, setSelectedSubjects);
-  const handleSelectAllGroups = useSelectAllGroups(api.groupsManager, setSelectedGroups);
+  const [loadingSelection, setLoadingSelection] = useState(false);
+
+  const handleSelectAllContacts = ev =>
+    handleSelectAll({
+      ev,
+      setSelected: setSelectedContacts,
+      entities: contacts,
+      hasMore,
+      idKey: CONTACT_ID_KEY,
+      fetchAll,
+      setLoading: setLoadingSelection
+    });
+
+  const handleSelectAllGroups = ev => {
+    const { checked } = ev.target;
+    setSelectedGroups(checked ? groups.map(g => g.name) : []);
+  };
 
   // This allows to only render the table that's currently visible
   // to have the infinite scroll work on the correct table
   const [activeKey, setActiveKey] = useState(GROUPS_KEY);
 
   const selectAllGroupsProps = {
-    checked: groups.length && selectedGroups.length === groups.length,
-    indeterminate: selectedGroups.length && selectedGroups.length !== groups.length,
-    disabled: !groups.length || !shouldSelectRecipients,
+    ...getCheckedAndIndeterminateProps(groups, selectedGroups),
+    disabled: !shouldSelectRecipients,
     onChange: handleSelectAllGroups
   };
 
-  const selectAllSubjectsProps = {
-    checked: subjects.length && selectedSubjects.length === subjects.length,
-    indeterminate: selectedSubjects.length && selectedSubjects.length !== subjects.length,
-    disabled: !subjects.length || !shouldSelectRecipients,
+  const selectAllContactsProps = {
+    ...getCheckedAndIndeterminateProps(contacts, selectedContacts),
+    disabled: !shouldSelectRecipients,
     onChange: handleSelectAllContacts
   };
 
@@ -58,16 +78,19 @@ const RecipientsSelection = ({
           <div className="selectGroupSubtitle">
             <span>{t('newCredential.targetsSelection.selectGroup')}</span>
           </div>
-          <div className="selectionGroupsContainer">
+          <div className="selectionContainer">
             <Input
               className="selectionGroups"
               placeholder={t('groups.filters.search')}
               prefix={<SearchOutlined />}
               onChange={({ target: { value } }) => setGroupsFilter(value)}
             />
-            <div className="selectGroupCheckbox">
-              <Checkbox className="checkboxReverse" {...selectAllGroupsProps}>
-                {`${t('newCredential.targetsSelection.selectAll')} (${selectedGroups.length})`}
+            <div className="selectGroupsCheckbox">
+              <Checkbox className="groupsCheckbox" {...selectAllGroupsProps}>
+                <span>
+                  {t('newCredential.targetsSelection.selectAll')}
+                  {selectedGroups.length ? `  (${selectedGroups.length})  ` : null}
+                </span>
               </Checkbox>
             </div>
             <div className="selectGroupCheckbox noRecipientsCheckbox">
@@ -84,9 +107,7 @@ const RecipientsSelection = ({
           {activeKey === GROUPS_KEY && (
             <div className="groupsTableContainer">
               <GroupsTable
-                groups={groups}
-                selectedGroups={selectedGroups}
-                setSelectedGroups={setSelectedGroups}
+                {...groupsProps}
                 shouldSelectRecipients={shouldSelectRecipients}
                 size="xs"
               />
@@ -97,19 +118,29 @@ const RecipientsSelection = ({
           <div className="selectGroupSubtitle">
             <span>{t('newCredential.targetsSelection.selectGroup')}</span>
           </div>
-          <div className="selectionGroupsContainer">
+          <div className="selectionContainer">
             <Input
               className="selectionGroups"
+              setSelectedSubjects
               placeholder={t('groups.filters.search')}
               prefix={<SearchOutlined />}
-              onChange={({ target: { value } }) => setSubjectsFilter(value)}
+              onChange={({ target: { value } }) => setContactsFilter(value)}
             />
-            <div className="selectGroupCheckbox">
-              <Checkbox className="checkboxReverse" {...selectAllSubjectsProps}>
-                {`${t('newCredential.targetsSelection.selectAll')} (${selectedSubjects.length})`}
+            <div className="selectContactsCheckbox">
+              <Checkbox className="contactsCheckbox" {...selectAllContactsProps}>
+                {loadingSelection ? (
+                  <div className="loadingSelection">
+                    <PulseLoader size={3} color="#FFAEB3" />
+                  </div>
+                ) : (
+                  <span>
+                    {t('newCredential.targetsSelection.selectAll')}
+                    {selectedContacts.length ? `  (${selectedContacts.length})  ` : null}
+                  </span>
+                )}
               </Checkbox>
             </div>
-            <div className="selectGroupCheckbox noRecipientsCheckbox">
+            <div className="selectContactsCheckbox noRecipientsCheckbox">
               <Checkbox
                 className="checkboxReverse"
                 onChange={toggleShouldSelectRecipients}
@@ -122,10 +153,7 @@ const RecipientsSelection = ({
           </div>
           {activeKey === SUBJECTS_KEY && (
             <ConnectionsTable
-              contacts={subjects}
-              selectedContacts={selectedSubjects}
-              setSelectedContacts={setSelectedSubjects}
-              handleContactsRequest={getSubjects}
+              {...contactsProps}
               shouldSelectRecipients={shouldSelectRecipients}
               size="xs"
             />
@@ -137,23 +165,21 @@ const RecipientsSelection = ({
 };
 
 RecipientsSelection.propTypes = {
-  api: PropTypes.shape({
-    groupsManager: PropTypes.shape({
-      getGroups: PropTypes.func
-    }).isRequired,
-    contactsManager: PropTypes.shape({
-      getContacts: PropTypes.func
-    }).isRequired
+  groupsProps: PropTypes.shape({
+    groups: PropTypes.arrayOf(PropTypes.shape({})).isRequired,
+    selectedGroups: PropTypes.arrayOf(PropTypes.string).isRequired,
+    setSelectedGroups: PropTypes.func.isRequired,
+    setGroupsFilter: PropTypes.func.isRequired
   }).isRequired,
-  groups: PropTypes.arrayOf(PropTypes.shape({})).isRequired,
-  selectedGroups: PropTypes.arrayOf(PropTypes.string).isRequired,
-  setSelectedGroups: PropTypes.func.isRequired,
-  setGroupsFilter: PropTypes.func.isRequired,
-  subjects: PropTypes.arrayOf(PropTypes.shape({})).isRequired,
-  selectedSubjects: PropTypes.arrayOf(PropTypes.string).isRequired,
-  setSelectedSubjects: PropTypes.func.isRequired,
-  setSubjectsFilter: PropTypes.func.isRequired,
-  getSubjects: PropTypes.func.isRequired,
+  contactsProps: PropTypes.shape({
+    contacts: PropTypes.arrayOf(PropTypes.shape({})).isRequired,
+    selectedContacts: PropTypes.arrayOf(PropTypes.string).isRequired,
+    setSelectedContacts: PropTypes.func.isRequired,
+    setContactsFilter: PropTypes.func.isRequired,
+    handleContactsRequest: PropTypes.func.isRequired,
+    hasMore: PropTypes.bool.isRequired,
+    fetchAll: PropTypes.func.isRequired
+  }).isRequired,
   toggleShouldSelectRecipients: PropTypes.func.isRequired,
   shouldSelectRecipients: PropTypes.bool.isRequired
 };

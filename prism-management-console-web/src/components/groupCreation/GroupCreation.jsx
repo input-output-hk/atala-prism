@@ -1,17 +1,20 @@
 import React, { useState, useEffect } from 'react';
 import PropTypes from 'prop-types';
 import { useTranslation } from 'react-i18next';
+import { PulseLoader } from 'react-spinners';
 import { Checkbox, Row, Col } from 'antd';
 import { withApi } from '../providers/withApi';
 import { useContactsWithFilteredList } from '../../hooks/useContacts';
 import { withRedirector } from '../providers/withRedirector';
 import CustomButton from '../common/Atoms/CustomButton/CustomButton';
-import { MAX_CONTACTS, GROUP_NAME_STATES } from '../../helpers/constants';
+import { CONTACT_ID_KEY, GROUP_NAME_STATES } from '../../helpers/constants';
 import ConnectionsTable from '../connections/Organisms/table/ConnectionsTable';
-import './_style.scss';
 import SimpleLoading from '../common/Atoms/SimpleLoading/SimpleLoading';
 import ConnectionsFilter from '../connections/Molecules/filter/ConnectionsFilter';
 import GroupName from '../common/Molecules/GroupForm/GroupFormContainer';
+import { getCheckedAndIndeterminateProps, handleSelectAll } from '../../helpers/selectionHelpers';
+
+import './_style.scss';
 
 const GroupCreation = ({
   api,
@@ -27,34 +30,43 @@ const GroupCreation = ({
   const [searching, setSearching] = useState(true);
   const [nameState, setNameState] = useState(GROUP_NAME_STATES.initial);
 
+  const [loadingSelection, setLoadingSelection] = useState(false);
+
   const {
     contacts,
     filteredContacts,
     filterProps,
     handleContactsRequest,
-    hasMore
+    hasMore,
+    fetchAll
   } = useContactsWithFilteredList(api.contactsManager, setLoadingContacts, setSearching);
 
   const { groupName } = formValues;
   const { t } = useTranslation();
 
   useEffect(() => {
-    setLoadingContacts(true);
-    if (!contacts.length) handleContactsRequest();
-  }, []);
-
-  useEffect(() => {
     updateMembers(selectedContacts);
   }, [selectedContacts]);
 
-  const handleSelectAll = async e => {
-    const { checked } = e.target;
-    if (checked) {
-      const allContacts = await api.contactsManager.getContacts(null, MAX_CONTACTS);
-      setSelectedContacts(allContacts.map(contact => contact.contactid));
-    } else {
-      setSelectedContacts([]);
-    }
+  const handleSelectAllContacts = ev =>
+    handleSelectAll({
+      ev,
+      setSelected: setSelectedContacts,
+      entities: filteredContacts,
+      hasMore,
+      idKey: CONTACT_ID_KEY,
+      fetchAll,
+      setLoading: setLoadingSelection
+    });
+
+  useEffect(() => {
+    if (!contacts.length) handleContactsRequest();
+  }, [handleContactsRequest]);
+
+  const selectAllProps = {
+    ...getCheckedAndIndeterminateProps(filteredContacts, selectedContacts),
+    disabled: loadingSelection,
+    onChange: handleSelectAllContacts
   };
 
   return (
@@ -77,8 +89,16 @@ const GroupCreation = ({
           <h3>{t('groupCreation.addContacts')}</h3>
           <Row className="UtilsContainer mb-0">
             <Col span={3}>
-              <Checkbox onChange={handleSelectAll}>{t('groupCreation.selectAll')}</Checkbox>
-              {selectedContacts.length ? `(${selectedContacts.length})` : null}
+              <Checkbox className="groupsCheckbox" {...selectAllProps}>
+                {loadingSelection ? (
+                  <PulseLoader size={3} color="#FFAEB3" />
+                ) : (
+                  <span>
+                    {t('groupCreation.selectAll')}
+                    {selectedContacts.length ? `  (${selectedContacts.length})  ` : null}
+                  </span>
+                )}
+              </Checkbox>
             </Col>
             <Col span={19}>
               <ConnectionsFilter {...filterProps} withStatus={false} />

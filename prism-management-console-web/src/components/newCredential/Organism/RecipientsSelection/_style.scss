@@ -1,4 +1,4 @@
-@import '../../../../css/general_styling';
+@import "../../../../css/general_styling";
 
   .TypeSelectionContainer {
     padding: 1em 1.5em;
@@ -73,11 +73,21 @@
       }
     }
 
-    .selectionGroupsContainer {
+    .selectionContainer {
       display: flex;
       justify-content: flex-start;
       align-items: center;
       margin-top: 1em;
+      .selectContactsCheckbox, .selectGroupsCheckbox {
+        margin-left: 1em;
+        .loadingSelection {
+          width: 4em;
+        }
+        .ant-checkbox-wrapper {
+          display: flex !important;
+          align-items: center !important;
+        }
+      }
       .checkboxReverse {
         display: flex;
         flex-direction: row-reverse;
@@ -97,6 +107,7 @@
         }
       }
       .noRecipientsCheckbox {
+        margin-left: 1em;
         background-color: $light-grey;
         border: 1px solid $medium-grey;
         padding: 0.5em 1.5em 0.5em 1em;

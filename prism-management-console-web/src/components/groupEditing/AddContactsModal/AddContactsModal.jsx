@@ -2,12 +2,18 @@ import React, { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import PropTypes from 'prop-types';
 import { Modal, Row, Col, Checkbox } from 'antd';
+import { PulseLoader } from 'react-spinners';
 import { withApi } from '../../providers/withApi';
 import { useContactsWithFilteredListAndNotInGroup } from '../../../hooks/useContacts';
 import ConnectionsTable from '../../connections/Organisms/table/ConnectionsTable';
 import ConnectionsFilter from '../../connections/Molecules/filter/ConnectionsFilter';
 import SimpleLoading from '../../common/Atoms/SimpleLoading/SimpleLoading';
 import CustomButton from '../../common/Atoms/CustomButton/CustomButton';
+import {
+  getCheckedAndIndeterminateProps,
+  handleSelectAll
+} from '../../../helpers/selectionHelpers';
+import { CONTACT_ID_KEY } from '../../../helpers/constants';
 
 import './_style.scss';
 
@@ -16,13 +22,15 @@ const AddContactsModal = ({ api, groupName, visible, onCancel, onConfirm }) => {
   const [selectedContacts, setSelectedContacts] = useState([]);
   const [loading, setLoading] = useState(false);
   const [searching, setSearching] = useState(false);
+  const [loadingSelection, setLoadingSelection] = useState(false);
 
   const {
     contacts,
     filteredContacts,
     filterProps,
     handleContactsRequest,
-    hasMore
+    hasMore,
+    fetchAll
   } = useContactsWithFilteredListAndNotInGroup(api.contactsManager, setLoading, setSearching);
 
   useEffect(() => {
@@ -40,13 +48,21 @@ const AddContactsModal = ({ api, groupName, visible, onCancel, onConfirm }) => {
     }
   };
 
-  const handleSelectAll = async e => {
-    const { checked } = e.target;
-    if (checked) {
-      setSelectedContacts(contacts.map(contact => contact.contactid));
-    } else {
-      setSelectedContacts([]);
-    }
+  const handleSelectAllContacts = ev =>
+    handleSelectAll({
+      ev,
+      setSelected: setSelectedContacts,
+      entities: filteredContacts,
+      hasMore,
+      idKey: CONTACT_ID_KEY,
+      fetchAll,
+      setLoading: setLoadingSelection
+    });
+
+  const selectAllProps = {
+    ...getCheckedAndIndeterminateProps(filteredContacts, selectedContacts),
+    disabled: loadingSelection,
+    onChange: handleSelectAllContacts
   };
 
   const handleConfirm = () => {
@@ -81,8 +97,16 @@ const AddContactsModal = ({ api, groupName, visible, onCancel, onConfirm }) => {
       <Row type="flex" align="middle" className="mb-2">
         <Col span={5}>
           <div>
-            <Checkbox onChange={handleSelectAll}>{t('groupEditing.selectAll')}</Checkbox>
-            {selectedContacts.length ? `(${selectedContacts.length})` : null}
+            <Checkbox className="groupsCheckbox" {...selectAllProps}>
+              {loadingSelection ? (
+                <PulseLoader size={3} color="#FFAEB3" />
+              ) : (
+                <span>
+                  {t('groupEditing.selectAll')}
+                  {selectedContacts.length ? `  (${selectedContacts.length})  ` : null}
+                </span>
+              )}
+            </Checkbox>
           </div>
         </Col>
         <Col span={17}>

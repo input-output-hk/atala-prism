@@ -23,7 +23,8 @@ const GroupEditingContainer = ({ api }) => {
     filteredContacts,
     filterProps,
     handleContactsRequest,
-    hasMore
+    hasMore,
+    fetchAll
   } = useContactsWithFilteredList(api.contactsManager, setLoadingContacts, setSearching);
 
   useEffect(() => {
@@ -107,6 +108,7 @@ const GroupEditingContainer = ({ api }) => {
       loadingContacts={loadingContacts}
       isSaving={isSaving}
       hasMore={hasMore}
+      fetchAll={fetchAll}
     />
   );
 };

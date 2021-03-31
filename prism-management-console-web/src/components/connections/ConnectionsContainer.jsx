@@ -22,7 +22,7 @@ const ConnectionsContainer = ({ api }) => {
 
   useEffect(() => {
     if (!contacts.length) handleContactsRequest();
-  }, []);
+  }, [handleContactsRequest]);
 
   const tableProps = {
     contacts: filteredContacts,

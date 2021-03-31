@@ -3,21 +3,21 @@ import PropTypes from 'prop-types';
 import { useTranslation } from 'react-i18next';
 import { PlusOutlined } from '@ant-design/icons';
 import { Checkbox, Col, Row, Button } from 'antd';
+import { PulseLoader } from 'react-spinners';
 import ConnectionsFilter from '../connections/Molecules/filter/ConnectionsFilter';
 import SimpleLoading from '../common/Atoms/SimpleLoading/SimpleLoading';
 import CustomButton from '../common/Atoms/CustomButton/CustomButton';
 import GroupName from '../common/Molecules/GroupForm/GroupFormContainer';
-import { withApi } from '../providers/withApi';
-import { GROUP_NAME_STATES, MAX_CONTACTS } from '../../helpers/constants';
+import { CONTACT_ID_KEY, GROUP_NAME_STATES } from '../../helpers/constants';
 import GroupContacts from './GroupContacts';
 import AddContactsModal from './AddContactsModal/AddContactsModal';
 import ConfirmDeletionModal from './ConfirmDeletionModal/ConfirmDeletionModal';
 import { contactShape, groupShape } from '../../helpers/propShapes';
+import { getCheckedAndIndeterminateProps, handleSelectAll } from '../../helpers/selectionHelpers';
 
 import './_style.scss';
 
 const GroupEditing = ({
-  api,
   group,
   filterProps,
   handleContactsRequest,
@@ -28,7 +28,8 @@ const GroupEditing = ({
   hasMore,
   isSaving,
   loading,
-  loadingContacts
+  loadingContacts,
+  fetchAll
 }) => {
   const { t } = useTranslation();
   const formRef = React.createRef();
@@ -39,6 +40,7 @@ const GroupEditing = ({
   const [selectedGroupContacts, setSelectedGroupContacts] = useState([]);
   const [editing, setEditing] = useState(false);
   const [nameState, setNameState] = useState(GROUP_NAME_STATES.initial);
+  const [loadingSelection, setLoadingSelection] = useState(false);
   const formValues = { groupName };
 
   useEffect(() => {
@@ -47,16 +49,21 @@ const GroupEditing = ({
     }
   }, [group.name]);
 
-  const contactidMapper = contact => contact.contactid;
+  const handleSelectAllContacts = ev =>
+    handleSelectAll({
+      ev,
+      setSelected: setSelectedGroupContacts,
+      entities: contacts,
+      hasMore,
+      idKey: CONTACT_ID_KEY,
+      fetchAll,
+      setLoading: setLoadingSelection
+    });
 
-  const handleSelectAll = async e => {
-    const { checked } = e.target;
-    if (checked) {
-      const allContacts = await api.contactsManager.getContacts(null, MAX_CONTACTS, groupName);
-      setSelectedGroupContacts(allContacts.map(contactidMapper));
-    } else {
-      setSelectedGroupContacts([]);
-    }
+  const selectAllProps = {
+    ...getCheckedAndIndeterminateProps(contacts, selectedGroupContacts),
+    disabled: loadingSelection,
+    onChange: handleSelectAllContacts
   };
 
   const handleCancelClick = () => {
@@ -186,14 +193,16 @@ const GroupEditing = ({
             <ConnectionsFilter {...filterProps} withStatus={false} />
           </div>
           <div>
-            {loading ? (
-              <SimpleLoading size="xs" />
-            ) : (
-              <>
-                <Checkbox onChange={handleSelectAll}>{t('groupEditing.selectAll')}</Checkbox>
-                {selectedGroupContacts.length ? `(${selectedGroupContacts.length})` : null}
-              </>
-            )}
+            <Checkbox className="groupsCheckbox" {...selectAllProps}>
+              {loadingSelection ? (
+                <PulseLoader size={3} color="#FFAEB3" />
+              ) : (
+                <span>
+                  {t('groupEditing.selectAll')}
+                  {!!selectedGroupContacts.length && `  (${selectedGroupContacts.length})  `}{' '}
+                </span>
+              )}
+            </Checkbox>
           </div>
         </div>
         <Row gutter={10} align="bottom" type="flex" className="ContactsContainer">
@@ -225,11 +234,6 @@ GroupEditing.defaultProps = {
 };
 
 GroupEditing.propTypes = {
-  api: PropTypes.shape({
-    contactsManager: PropTypes.shape({
-      getContacts: PropTypes.func
-    })
-  }).isRequired,
   handleContactsRequest: PropTypes.func.isRequired,
   onGroupRename: PropTypes.func.isRequired,
   onRemoveContacts: PropTypes.func.isRequired,
@@ -240,7 +244,8 @@ GroupEditing.propTypes = {
   loading: PropTypes.bool,
   loadingContacts: PropTypes.bool,
   isSaving: PropTypes.bool,
-  contacts: PropTypes.arrayOf(PropTypes.shape(contactShape))
+  contacts: PropTypes.arrayOf(PropTypes.shape(contactShape)),
+  fetchAll: PropTypes.func.isRequired
 };
 
-export default withApi(GroupEditing);
+export default GroupEditing;

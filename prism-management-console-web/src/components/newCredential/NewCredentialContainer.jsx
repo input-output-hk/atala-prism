@@ -15,8 +15,6 @@ import {
   SELECT_RECIPIENTS_STEP,
   IMPORT_CREDENTIAL_DATA_STEP,
   PREVIEW_AND_SIGN_CREDENTIAL_STEP,
-  CONTACT_NAME_KEY,
-  EXTERNAL_ID_KEY,
   GROUP_NAME_KEY,
   SUCCESS,
   FAILED
@@ -24,9 +22,9 @@ import {
 import Logger from '../../helpers/Logger';
 import { contactMapper } from '../../APIs/helpers/contactHelpers';
 import ImportCredentialsData from '../importCredentialsData/ImportCredentialsData';
-import { filterByManyFields } from '../../helpers/filterHelpers';
 import { useSession } from '../providers/SessionContext';
 import { fillHTMLCredential } from '../../helpers/credentialView';
+import { useContactsWithFilteredList } from '../../hooks/useContacts';
 
 const NewCredentialContainer = ({ api, redirector: { redirectToCredentials } }) => {
   const { t } = useTranslation();
@@ -42,19 +40,29 @@ const NewCredentialContainer = ({ api, redirector: { redirectToCredentials } }) 
   const [groupsFilter, setGroupsFilter] = useState('');
   const [filteredGroups, setFilteredGroups] = useState([]);
 
-  const [subjects, setSubjects] = useState([]);
-  const [selectedSubjects, setSelectedSubjects] = useState([]);
-  const [subjectsFilter, setSubjectsFilter] = useState('');
-  const [filteredSubjects, setFilteredSubjects] = useState([]);
+  const [loadingContacts, setLoadingContacts] = useState(false);
+  const [selectedContacts, setSelectedContacts] = useState([]);
+  const [searching, setSearching] = useState(true);
+  const {
+    contacts,
+    filteredContacts,
+    filterProps: subjectFilterProps,
+    handleContactsRequest,
+    hasMore,
+    fetchAll
+  } = useContactsWithFilteredList(api.contactsManager, setLoadingContacts, setSearching);
 
   const [shouldSelectRecipients, setShouldSelectRecipients] = useState(true);
-
   const [recipients, setRecipients] = useState([]);
-
   const [importedData, setImportedData] = useState([]);
-
   const [credentialViewTemplates, setCredentialViewTemplates] = useState([]);
   const [credentialViews, setCredentialViews] = useState([]);
+
+  useEffect(() => {
+    setLoadingContacts(true);
+    if (!groups.length) getGroups();
+    if (!contacts.length) handleContactsRequest();
+  }, []);
 
   const handleGetGroups = allGroups => {
     const parsedGroups = allGroups.map(group => ({ ...group, groupName: group.name }));
@@ -80,29 +88,11 @@ const NewCredentialContainer = ({ api, redirector: { redirectToCredentials } }) 
         Logger.error('[NewCredentailContainer.getGroups] Error: ', error);
         message.error(message.error(t('errors.errorGetting', { model: 'groups' })));
       });
-
-  const getSubjects = async () => {
-    try {
-      const allContacts = await api.contactsManager.getContacts(null, MAX_CONTACTS);
-      const allContactsMapped = allContacts.map(contactMapper);
-
-      setSubjects(allContactsMapped);
-    } catch (error) {
-      Logger.error('[NewCredentailContainer.getSubjects] Error while getting connections', error);
-      message.error(t('errors.errorGetting', { model: 'Holders' }));
-    }
-  };
-
   useEffect(() => {
-    if (!groups.length) getGroups();
-    if (!subjects.length) getSubjects();
     if (!credentialViewTemplates.length) getCredentialViewTemplates();
   }, []);
 
   const filterGroups = filter => setFilteredGroups(filterBy(groups, filter, GROUP_NAME_KEY));
-
-  const filterSubjects = filter =>
-    setFilteredSubjects(filterByManyFields(subjects, filter, [CONTACT_NAME_KEY, EXTERNAL_ID_KEY]));
 
   const filterBy = (toFilter, filter, key) =>
     toFilter.filter(({ [key]: name }) => name.toLowerCase().includes(filter.toLowerCase()));
@@ -112,13 +102,9 @@ const NewCredentialContainer = ({ api, redirector: { redirectToCredentials } }) 
   }, [groupsFilter, groups]);
 
   useEffect(() => {
-    filterSubjects(subjectsFilter);
-  }, [subjectsFilter, subjects]);
-
-  useEffect(() => {
     if (!shouldSelectRecipients) {
       setSelectedGroups([]);
-      setSelectedSubjects([]);
+      setSelectedContacts([]);
     }
   }, [shouldSelectRecipients]);
 
@@ -129,8 +115,8 @@ const NewCredentialContainer = ({ api, redirector: { redirectToCredentials } }) 
     const targetsFromGroups = (await Promise.all(groupContactsPromises)).flat();
     const targetsFromGroupsWithKeys = targetsFromGroups.map(contactMapper);
 
-    const cherryPickedSubjects = subjects.filter(({ contactid }) =>
-      selectedSubjects.includes(contactid)
+    const cherryPickedSubjects = contacts.filter(({ contactid }) =>
+      selectedContacts.includes(contactid)
     );
 
     const targetSubjects = [...targetsFromGroupsWithKeys, ...cherryPickedSubjects];
@@ -195,8 +181,9 @@ const NewCredentialContainer = ({ api, redirector: { redirectToCredentials } }) 
   const signCredentials = async () => {
     try {
       setIsLoading(true);
+      const allContacts = await fetchAll();
       const credentialsData = importedData.map((data, index) => {
-        const { contactid } = subjects.find(({ externalid }) => externalid === data.externalid);
+        const { contactid } = allContacts.find(({ externalid }) => externalid === data.externalid);
         const html = _.escape(credentialViews[index]);
         return Object.assign(_.omit(data, 'originalArray'), {
           credentialType,
@@ -245,6 +232,30 @@ const NewCredentialContainer = ({ api, redirector: { redirectToCredentials } }) 
       .finally(() => setIsLoading(false));
   };
 
+  const groupsProps = {
+    groups: filteredGroups,
+    selectedGroups,
+    setSelectedGroups,
+    setGroupsFilter
+  };
+
+  const contactsProps = {
+    contacts: filteredContacts,
+    setSelectedContacts,
+    selectedContacts,
+    setContactsFilter: subjectFilterProps.setSearchText,
+    handleContactsRequest,
+    hasMore,
+    fetchAll,
+    loadingContacts,
+    searching
+  };
+
+  const handleToggleShouldSelectRecipients = ev => {
+    const { checked } = ev.target;
+    setShouldSelectRecipients(!checked);
+  };
+
   const renderStep = () => {
     switch (currentStep) {
       case SELECT_CREDENTIAL_TYPE_STEP:
@@ -258,18 +269,9 @@ const NewCredentialContainer = ({ api, redirector: { redirectToCredentials } }) 
       case SELECT_RECIPIENTS_STEP:
         return (
           <RecipientsSelection
-            groups={filteredGroups}
-            selectedGroups={selectedGroups}
-            setSelectedGroups={setSelectedGroups}
-            setGroupsFilter={setGroupsFilter}
-            subjects={filteredSubjects}
-            setSelectedSubjects={setSelectedSubjects}
-            selectedSubjects={selectedSubjects}
-            setSubjectsFilter={setSubjectsFilter}
-            getSubjects={getSubjects}
-            toggleShouldSelectRecipients={({ target: { checked } }) =>
-              setShouldSelectRecipients(!checked)
-            }
+            groupsProps={groupsProps}
+            contactsProps={contactsProps}
+            toggleShouldSelectRecipients={handleToggleShouldSelectRecipients}
             shouldSelectRecipients={shouldSelectRecipients}
           />
         );
@@ -277,7 +279,7 @@ const NewCredentialContainer = ({ api, redirector: { redirectToCredentials } }) 
         return (
           <ImportCredentialsData
             recipients={recipients}
-            contacts={subjects}
+            contacts={contacts}
             credentialType={credentialTypes[credentialType]}
             onCancel={() => setCurrentStep(currentStep - 1)}
             onFinish={handleImportedData}
@@ -291,7 +293,7 @@ const NewCredentialContainer = ({ api, redirector: { redirectToCredentials } }) 
         return (
           <CredentialsPreview
             groups={groups.filter(({ name }) => selectedGroups.includes(name))}
-            subjects={subjects.filter(({ contactid }) => selectedSubjects.includes(contactid))}
+            subjects={contacts.filter(({ contactid }) => selectedContacts.includes(contactid))}
             credentialViews={credentialViews}
           />
         );
@@ -299,7 +301,7 @@ const NewCredentialContainer = ({ api, redirector: { redirectToCredentials } }) 
   };
 
   const hasSelectedRecipients =
-    !shouldSelectRecipients || selectedGroups.length || selectedSubjects.length;
+    !shouldSelectRecipients || selectedGroups.length || selectedContacts.length;
 
   return (
     <NewCredential

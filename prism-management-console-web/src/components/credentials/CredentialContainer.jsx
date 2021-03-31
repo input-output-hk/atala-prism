@@ -8,11 +8,11 @@ import CredentialActionConfirmationModal from './Molecules/Modals/CredentialActi
 import { withApi } from '../providers/withApi';
 import { credentialMapper } from '../../APIs/helpers/credentialHelpers';
 import {
-  MAX_CREDENTIALS,
   CREDENTIALS_ISSUED,
   CREDENTIALS_RECEIVED,
   UNKNOWN_DID_SUFFIX_ERROR_CODE,
-  DEFAULT_CREDENTIAL_VERIFICATION_RESULT
+  DEFAULT_CREDENTIAL_VERIFICATION_RESULT,
+  CREDENTIAL_ID_KEY
 } from '../../helpers/constants';
 import {
   useCredentialsIssuedListWithFilters,
@@ -21,6 +21,7 @@ import {
 import { useSession } from '../providers/SessionContext';
 import { getTargetCredentials } from '../../helpers/credentialActions';
 import { useCredentialActions } from '../../hooks/useCredentialActions';
+import { getCheckedAndIndeterminateProps, handleSelectAll } from '../../helpers/selectionHelpers';
 
 const CredentialContainer = ({ api }) => {
   const { t } = useTranslation();
@@ -30,8 +31,6 @@ const CredentialContainer = ({ api }) => {
   const [loading, setLoading] = useState({ issued: true, received: true });
   const [searching, setSearching] = useState({ issued: false, received: false });
 
-  const [selectAll, setSelectAll] = useState(null);
-  const [indeterminateSelectAll, setIndeterminateSelectAll] = useState(false);
   const [loadingSelection, setLoadingSelection] = useState(false);
   const [activeTab, setActiveTab] = useState(CREDENTIALS_ISSUED);
 
@@ -44,7 +43,8 @@ const CredentialContainer = ({ api }) => {
     filteredCredentialsIssued,
     filtersIssued,
     hasMoreIssued,
-    noIssuedCredentials
+    noIssuedCredentials,
+    fetchAll
   } = useCredentialsIssuedListWithFilters(api.credentialsManager, setLoading, setSearching);
 
   const {
@@ -105,34 +105,16 @@ const CredentialContainer = ({ api }) => {
     if (activeTab === CREDENTIALS_RECEIVED) fetchCredentialsReceived();
   }, [activeTab]);
 
-  const getAllCredentialsIssued = async () => {
-    const allCredentials = await api.credentialsManager.getCredentials(MAX_CREDENTIALS, null);
-    const credentialTypes = api.credentialsManager.getCredentialTypes();
-    const mappedCredentials = allCredentials.map(cred => credentialMapper(cred, credentialTypes));
-    setCredentialsIssued(mappedCredentials);
-    return mappedCredentials;
-  };
-
-  const toggleSelectAll = async ev => {
-    setLoadingSelection(true);
-    const { checked } = ev.target;
-    setIndeterminateSelectAll(false);
-    setSelectAll(checked);
-    setSelectedCredentials(checked ? credentialsIssued.map(c => c.credentialid) : []);
-    if (checked && hasMoreIssued) {
-      const allCredentials = await getAllCredentialsIssued();
-      setSelectedCredentials(allCredentials.map(c => c.credentialid));
-    }
-    setLoadingSelection(false);
-  };
-
-  const handleSelectionChange = selectedRowKeys => {
-    setSelectedCredentials(selectedRowKeys);
-    setIndeterminateSelectAll(
-      !!selectedRowKeys.length && selectedRowKeys.length < credentialsIssued.length
-    );
-    setSelectAll(!hasMoreIssued && selectedRowKeys.length === credentialsIssued.length);
-  };
+  const handleSelectAllCredentials = ev =>
+    handleSelectAll({
+      ev,
+      setSelected: setSelectedCredentials,
+      entities: filteredCredentialsIssued,
+      hasMore: hasMoreIssued,
+      idKey: CREDENTIAL_ID_KEY,
+      fetchAll,
+      setLoading: setLoadingSelection
+    });
 
   const verifyCredential = ({ encodedsignedcredential, batchinclusionproof }) =>
     api.wallet.verifyCredential(encodedsignedcredential, batchinclusionproof).catch(error => {
@@ -143,6 +125,12 @@ const CredentialContainer = ({ api }) => {
       );
       return DEFAULT_CREDENTIAL_VERIFICATION_RESULT;
     });
+
+  const selectAllProps = {
+    ...getCheckedAndIndeterminateProps(filteredCredentialsIssued, selectedCredentials),
+    disabled: loadingSelection,
+    onChange: handleSelectAllCredentials
+  };
 
   const tabProps = {
     [CREDENTIALS_ISSUED]: {
@@ -156,7 +144,7 @@ const CredentialContainer = ({ api }) => {
         selectionType: {
           selectedRowKeys: selectedCredentials,
           type: 'checkbox',
-          onChange: handleSelectionChange
+          onChange: setSelectedCredentials
         }
       },
       fetchCredentials: fetchCredentialsIssued,
@@ -165,9 +153,7 @@ const CredentialContainer = ({ api }) => {
         revokeSelectedCredentials,
         signSelectedCredentials,
         sendSelectedCredentials,
-        selectAll,
-        indeterminateSelectAll,
-        toggleSelectAll
+        selectAllProps
       },
       filterProps: filtersIssued,
       showEmpty: noIssuedCredentials,

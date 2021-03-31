@@ -38,6 +38,7 @@ const useGetContacts = (contactsManager, setContacts, setLoading, setSearching) 
 
         setContacts(updatedContacts);
         removeUnconfirmedAccountError();
+        return updatedContacts;
       })
       .catch(error => {
         if (error.code === UNKNOWN_DID_SUFFIX_ERROR_CODE) {
@@ -88,6 +89,7 @@ const useGetContactsNotInGroup = (contactsManager, setContacts, setLoading, setS
       );
 
       setContacts(contactsNotInGroup);
+      return contactsNotInGroup;
     } catch (error) {
       Logger.error('[Contacts.getContacts] Error while getting contacts', error);
       message.error(i18n.t('errors.errorGetting', { model: 'Contacts' }));
@@ -142,7 +144,7 @@ export const useContactsWithFilteredList = (contactsManager, setLoading, setSear
   };
 
   useEffect(() => {
-    const newFilteredContacts = applyFilters();
+    const newFilteredContacts = applyFilters(contacts);
     setFilteredContacts(newFilteredContacts);
   }, [contacts, searchText, status]);
 
@@ -154,8 +156,8 @@ export const useContactsWithFilteredList = (contactsManager, setLoading, setSear
     }
   }, [filteredContacts, searchText, status]);
 
-  const applyFilters = () =>
-    contacts.filter(it => {
+  const applyFilters = contactList =>
+    contactList.filter(it => {
       const matchesName = filterByInclusion(searchText, it.contactName);
       const matchesExternalId = filterByInclusion(searchText, it.externalid);
       const matchesStatus = statusMatch(it.status, status);
@@ -183,6 +185,14 @@ export const useContactsWithFilteredList = (contactsManager, setLoading, setSear
     setStatus
   };
 
+  const fetchAll = async () => {
+    const allContacts = await getContacts({
+      pageSize: MAX_CONTACTS,
+      lastId: null
+    });
+    return applyFilters(allContacts);
+  };
+
   return {
     contacts,
     filteredContacts,
@@ -190,7 +200,8 @@ export const useContactsWithFilteredList = (contactsManager, setLoading, setSear
     filterProps,
     getContacts,
     handleContactsRequest,
-    hasMore
+    hasMore,
+    fetchAll
   };
 };
 
@@ -211,7 +222,7 @@ export const useContactsWithFilteredListAndNotInGroup = (
   const [filteredContacts, setFilteredContacts] = useState([]);
 
   useEffect(() => {
-    const newFilteredContacts = applyFilters();
+    const newFilteredContacts = applyFilters(contacts);
     setFilteredContacts(newFilteredContacts);
   }, [contacts, searchText]);
 
@@ -223,8 +234,8 @@ export const useContactsWithFilteredListAndNotInGroup = (
     }
   }, [filteredContacts, searchText]);
 
-  const applyFilters = () =>
-    contacts.filter(it => {
+  const applyFilters = contactList =>
+    contactList.filter(it => {
       const matchesName = filterByInclusion(searchText, it.contactName);
       const matchesExternalId = filterByInclusion(searchText, it.externalid);
       return matchesName || matchesExternalId;
@@ -249,13 +260,24 @@ export const useContactsWithFilteredListAndNotInGroup = (
     setSearchText
   };
 
+  const fetchAll = async () => {
+    const allContacts = await getContacts({
+      pageSize: MAX_CONTACTS,
+      lastId: null,
+      groupName
+    });
+
+    return applyFilters(allContacts);
+  };
+
   return {
     contacts,
     filteredContacts,
     filterProps,
     getContacts,
     handleContactsRequest,
-    hasMore
+    hasMore,
+    fetchAll
   };
 };
 

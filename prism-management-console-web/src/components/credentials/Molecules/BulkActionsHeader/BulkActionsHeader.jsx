@@ -12,18 +12,12 @@ const BulkActionsHeader = ({
   selectedRowKeys
 }) => {
   const { t } = useTranslation();
-  const { selectAll, indeterminateSelectAll, toggleSelectAll } = bulkActionsProps;
+  const { selectAllProps } = bulkActionsProps;
   const disableActions = !selectedRowKeys?.length || loadingSelection;
 
   return (
     <div className="BulkActionsRow">
-      <Checkbox
-        indeterminate={indeterminateSelectAll}
-        className="checkboxCredential"
-        onChange={toggleSelectAll}
-        checked={selectAll}
-        disabled={loadingSelection}
-      >
+      <Checkbox className="checkboxCredential" {...selectAllProps}>
         {loadingSelection ? (
           <PulseLoader size={3} color="#FFAEB3" />
         ) : (
@@ -53,9 +47,12 @@ BulkActionsHeader.propTypes = {
   bulkActionsProps: PropTypes.shape({
     signSelectedCredentials: PropTypes.func,
     sendSelectedCredentials: PropTypes.func,
-    toggleSelectAll: PropTypes.func,
-    selectAll: PropTypes.bool,
-    indeterminateSelectAll: PropTypes.bool
+    selectAllProps: PropTypes.shape({
+      checked: PropTypes.bool,
+      indeterminate: PropTypes.bool,
+      disabled: PropTypes.bool,
+      onChange: PropTypes.func
+    })
   }).isRequired,
   loadingSelection: PropTypes.bool,
   selectedLength: PropTypes.number,

@@ -13,6 +13,11 @@ $description-height: 124px;
     .filterContainer {
       display: flex;
       align-items: center;
+      .groupsCheckbox {
+        display: flex;
+        align-items: flex-end;
+        margin-right: 20px;
+      }
       .connectionFilter {
         .FilterControls {
           margin: 0 !important;
