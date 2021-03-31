@@ -30,6 +30,7 @@ object PrismBuild {
         ),
         javacOptions ++= Seq("-source", "1.8", "-target", "1.8"),
         libraryDependencies ++= scalatestDependencies ++ silencerDependencies,
+        addCompilerPlugin("org.typelevel" % "kind-projector" % "0.11.3" cross CrossVersion.full),
         coverageScalacPluginVersion := "1.4.1",
         Test / fork := true,
         Test / parallelExecution := false,

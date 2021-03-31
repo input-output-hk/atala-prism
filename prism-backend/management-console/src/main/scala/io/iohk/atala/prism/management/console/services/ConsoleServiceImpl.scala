@@ -1,6 +1,7 @@
 package io.iohk.atala.prism.management.console.services
 
 import com.google.protobuf.ByteString
+import cats.syntax.functor._
 import io.iohk.atala.prism.auth.AuthSupport
 import io.iohk.atala.prism.errors.LoggingContext
 import io.iohk.atala.prism.grpc.ProtoConverter
@@ -87,9 +88,7 @@ class ConsoleServiceImpl(
       val participantProfile = UpdateParticipantProfile(request.name, Option(logo))
       participantsIntegrationService
         .update(participantId, participantProfile)
-        .map { _ =>
-          ConsoleUpdateProfileResponse()
-        }
+        .as(ConsoleUpdateProfileResponse())
     }
   }
 }

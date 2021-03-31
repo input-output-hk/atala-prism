@@ -1,5 +1,7 @@
 package io.iohk.atala.prism.utils
 
+import cats.Functor
+
 import scala.concurrent.{ExecutionContext, Future}
 import scala.util.{Failure, Success, Try}
 
@@ -144,4 +146,10 @@ object FutureEither {
       Future.successful(value).toFutureEither
     }
   }
+
+  implicit def futureEitherFunctor[L](implicit ec: ExecutionContext): Functor[FutureEither[L, *]] =
+    new Functor[FutureEither[L, *]] {
+      override def map[A, B](fa: FutureEither[L, A])(f: A => B): FutureEither[L, B] = fa.map(f)
+    }
+
 }

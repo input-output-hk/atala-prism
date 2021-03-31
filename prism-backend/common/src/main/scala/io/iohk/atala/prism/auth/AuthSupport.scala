@@ -24,20 +24,53 @@ trait AuthSupport[Err <: PrismError, Id] {
     ): Future[Result] = {
       authenticator
         .authenticated(methodName, request) { participantId =>
-          protoConverter.fromProto(request) match {
-            case Failure(exception) =>
-              val response = invalidRequest(exception.getMessage)
-              respondWith(request, response)
-            case Success(query) =>
-              // Assemble LoggingContext out of the case class fields and the resolved participantId
-              implicit val lc: LoggingContext = LoggingContext(
-                (0 until query.productArity)
-                  .map(i => query.productElementName(i) -> query.productElement(i).toString)
-                  .toMap + ("participantId" -> participantId.toString)
-              )
-              f(participantId, query).wrapExceptions.flatten
+          convertFromRequest[Proto, Result, Query](request).flatMap { query =>
+            implicit val lc: LoggingContext = LoggingContext(
+              (0 until query.productArity)
+                .map(i => query.productElementName(i) -> query.productElement(i).toString)
+                .toMap + ("participantId" -> participantId.toString)
+            )
+            f(participantId, query).wrapExceptions.flatten
           }
         }
+    }
+  }
+
+  final class WithoutAuthPartiallyApplied[Query <: Product] {
+    def apply[Proto <: GeneratedMessage, Result](
+        methodName: String,
+        request: Proto
+    )(f: Query => FutureEither[Err, Result])(implicit
+        ec: ExecutionContext,
+        protoConverter: ProtoConverter[Proto, Query]
+    ): Future[Result] = {
+      authenticator.public(methodName, request) {
+        convertFromRequest[Proto, Result, Query](request).flatMap { query =>
+          // Assemble LoggingContext out of the case class fields
+          implicit val lc: LoggingContext = LoggingContext(
+            (0 until query.productArity)
+              .map(i => query.productElementName(i) -> query.productElement(i).toString)
+              .toMap
+          )
+          f(query).wrapExceptions.flatten
+        }
+      }
+    }
+  }
+
+  // Just converts query from proto in our representation, on failure, responds with a thrown error
+  private def convertFromRequest[Proto <: GeneratedMessage, Result, Query <: Product](
+      request: Proto
+  )(implicit
+      ec: ExecutionContext,
+      protoConverter: ProtoConverter[Proto, Query]
+  ): Future[Query] = {
+    protoConverter.fromProto(request) match {
+      case Failure(exception) =>
+        val response = invalidRequest(exception.getMessage)
+        respondWith(request, response)
+      case Success(query) =>
+        Future.successful(query)
     }
   }
 
@@ -47,7 +80,15 @@ trait AuthSupport[Err <: PrismError, Id] {
   def auth[Query <: Product]: AuthPartiallyApplied[Query] =
     new AuthPartiallyApplied[Query]()
 
+  // Query needs to be a Product (which all case class instances are) for easy access to its fields.
+  // Partial application helps with Scala type inference. You can specify just a single type
+  // parameter Query and all other type parameters can usually be inferred by Scala.
+  def public[Query <: Product]: WithoutAuthPartiallyApplied[Query] =
+    new WithoutAuthPartiallyApplied[Query]()
+
   def unitAuth: AuthPartiallyApplied[EmptyQuery.type] = auth[EmptyQuery.type]
+
+  def unitPublic: WithoutAuthPartiallyApplied[EmptyQuery.type] = public[EmptyQuery.type]
 }
 
 object AuthSupport {

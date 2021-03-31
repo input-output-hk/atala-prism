@@ -1,30 +1,38 @@
 package io.iohk.atala.prism.console.services
 
+import cats.implicits.catsSyntaxApplicativeId
+import cats.syntax.either._
+import cats.syntax.functor._
 import io.iohk.atala.prism.auth.AuthSupport
 import io.iohk.atala.prism.connector.ConnectorAuthenticator
-import io.iohk.atala.prism.connector.errors.{ConnectorError, ConnectorErrorSupport}
+import io.iohk.atala.prism.connector.errors.{ConnectorError, ConnectorErrorSupport, InternalServerError, InvalidRequest}
 import io.iohk.atala.prism.console.grpc.ProtoCodecs._
 import io.iohk.atala.prism.console.grpc._
 import io.iohk.atala.prism.console.integrations.CredentialsIntegrationService
 import io.iohk.atala.prism.console.models._
+import io.iohk.atala.prism.console.models.actions.{
+  CreateGenericCredentialRequest,
+  GetBlockchainDataRequest,
+  GetContactCredentialsRequest,
+  GetGenericCredentialsRequest,
+  PublishBatchRequest,
+  ShareCredentialRequest,
+  StorePublishedCredentialRequest
+}
 import io.iohk.atala.prism.console.repositories.{ContactsRepository, CredentialsRepository}
 import io.iohk.atala.prism.credentials.CredentialBatchId
-import io.iohk.atala.prism.credentials.json.JsonBasedCredential
-import io.iohk.atala.prism.crypto.MerkleTree.{MerkleInclusionProof, MerkleRoot}
+import io.iohk.atala.prism.crypto.MerkleTree.MerkleRoot
 import io.iohk.atala.prism.crypto.SHA256Digest
 import io.iohk.atala.prism.identity.DID
 import io.iohk.atala.prism.models.{ParticipantId, TransactionId, TransactionInfo, ProtoCodecs => CommonProtoCodecs}
-import io.iohk.atala.prism.protos.console_api._
 import io.iohk.atala.prism.protos.node_api.NodeServiceGrpc
 import io.iohk.atala.prism.protos.node_models.SignedAtalaOperation
 import io.iohk.atala.prism.protos.{common_models, console_api, node_api}
 import io.iohk.atala.prism.utils.FutureEither
-import io.iohk.atala.prism.utils.FutureEither.FutureOptionOps
-import io.iohk.atala.prism.utils.syntax._
+import io.iohk.atala.prism.utils.FutureEither.{FutureEitherFOps, FutureEitherOps, FutureOptionOps}
 import io.scalaland.chimney.dsl._
 import org.slf4j.{Logger, LoggerFactory}
 
-import java.util.UUID
 import scala.concurrent.{ExecutionContext, Future}
 
 class CredentialsServiceImpl(
@@ -42,58 +50,47 @@ class CredentialsServiceImpl(
   override val logger: Logger = LoggerFactory.getLogger(this.getClass)
 
   override def createGenericCredential(
-      request: CreateGenericCredentialRequest
-  ): Future[CreateGenericCredentialResponse] =
-    authenticatedHandler("createGenericCredential", request) { issuerId =>
+      request: console_api.CreateGenericCredentialRequest
+  ): Future[console_api.CreateGenericCredentialResponse] =
+    auth[CreateGenericCredentialRequest]("createGenericCredential", request) { (participantId, createCredRequest) =>
+      val institutionId = Institution.Id(participantId.uuid)
       // get the subjectId from the externalId
       // TODO: Avoid doing this when we stop accepting the subjectId
-      val subjectIdF = Option(request.externalId)
-        .filter(_.nonEmpty)
-        .map(Contact.ExternalId.apply) match {
-        case Some(externalId) =>
-          contactsRepository
-            .find(Institution.Id(issuerId), externalId)
-            .map(_.getOrElse(throw new RuntimeException("The given externalId doesn't exists")))
-            .map(_.contactId)
+      val subjectIdF = createCredRequest.maybeExternalId.fold(
+        createCredRequest.maybeContactId
+          .pure[Future]
+          .toFutureEither(InvalidRequest("The contactId is required, if it was provided, it's an invalid value"))
+      )(externalId =>
+        contactsRepository
+          .find(institutionId, externalId)
+          .flatMap(_.pure[Future].toFutureEither(InvalidRequest("The given externalId doesn't exists")))
+          .map(_.contactId)
+      )
 
-        case None =>
-          Future
-            .successful(Contact.Id.from(request.contactId).toOption)
-            .toFutureEither(
-              new RuntimeException("The contactId is required, if it was provided, it's an invalid value")
-            )
-      }
-
-      lazy val json =
-        io.circe.parser.parse(request.credentialData).getOrElse(throw new RuntimeException("Invalid json"))
-
-      val result = for {
+      for {
         contactId <- subjectIdF
         model =
           request
             .into[CreateGenericCredential]
-            .withFieldConst(_.issuedBy, Institution.Id(issuerId))
+            .withFieldConst(_.issuedBy, institutionId)
             .withFieldConst(_.subjectId, contactId)
-            .withFieldConst(_.credentialData, json)
+            .withFieldConst(_.credentialData, createCredRequest.credentialData)
             .enableUnsafeOption
             .transform
-
         created <-
           credentialsRepository
             .create(model)
             .map(genericCredentialToProto)
       } yield console_api.CreateGenericCredentialResponse().withGenericCredential(created)
-
-      result.failOnLeft(identity)
     }
 
   override def getGenericCredentials(
-      request: GetGenericCredentialsRequest
-  ): Future[GetGenericCredentialsResponse] =
-    authenticatedHandler("getGenericCredentials", request) { issuerId =>
-      val lastSeenCredential = GenericCredential.Id.from(request.lastSeenCredentialId).toOption
+      request: console_api.GetGenericCredentialsRequest
+  ): Future[console_api.GetGenericCredentialsResponse] =
+    auth[GetGenericCredentialsRequest]("getGenericCredentials", request) { (issuerId, getGenericCredsRequest) =>
+      val institutionId = Institution.Id(issuerId.uuid)
       credentialsRepository
-        .getBy(Institution.Id(issuerId), request.limit, lastSeenCredential)
+        .getBy(institutionId, getGenericCredsRequest.limit, getGenericCredsRequest.lastSeenCredential)
         .map { list =>
           console_api.GetGenericCredentialsResponse(list.map(genericCredentialToProto))
         }
@@ -111,121 +108,72 @@ class CredentialsServiceImpl(
     maybePair.getOrElse(throw new RuntimeException("Failed to extract content hash and issuer DID"))
   }
 
-  private def authenticatedHandler[Request <: scalapb.GeneratedMessage, Response <: scalapb.GeneratedMessage](
-      methodName: String,
-      request: Request
-  )(
-      block: UUID => FutureEither[Nothing, Response]
-  ): Future[Response] = {
-    authenticator.authenticated(methodName, request) { participantId =>
-      block(participantId.uuid).value
-        .map {
-          case Right(x) => x
-          case Left(e) => throw new RuntimeException(s"FAILED: $e")
+  override def getContactCredentials(
+      request: console_api.GetContactCredentialsRequest
+  ): Future[console_api.GetContactCredentialsResponse] =
+    auth[GetContactCredentialsRequest]("getSubjectCredentials", request) { (participantId, getContactCredsRequest) =>
+      val institutionId = Institution.Id(participantId.uuid)
+      credentialsRepository
+        .getBy(institutionId, getContactCredsRequest.contactId)
+        .map { list =>
+          console_api.GetContactCredentialsResponse(list.map(genericCredentialToProto))
         }
     }
-  }
 
-  override def getContactCredentials(request: GetContactCredentialsRequest): Future[GetContactCredentialsResponse] = {
-    def f(institutionId: Institution.Id): Future[GetContactCredentialsResponse] = {
-      for {
-        contactId <- Future.fromTry(Contact.Id.from(request.contactId))
-        response <-
-          credentialsRepository
-            .getBy(institutionId, contactId)
-            .map { list =>
-              console_api.GetContactCredentialsResponse(list.map(genericCredentialToProto))
-            }
-            .value
-            .map {
-              case Right(x) => x
-              case Left(e) => throw new RuntimeException(s"FAILED: $e")
-            }
-      } yield response
+  override def shareCredential(
+      request: console_api.ShareCredentialRequest
+  ): Future[console_api.ShareCredentialResponse] =
+    auth[ShareCredentialRequest]("shareCredential", request) { (participantId, shareCredentialRequest) =>
+      val institutionId = Institution.Id(participantId.uuid)
+      credentialsRepository
+        .markAsShared(institutionId, shareCredentialRequest.cmanagerCredentialId)
+        .as(console_api.ShareCredentialResponse())
     }
-
-    authenticator.authenticated("getSubjectCredentials", request) { participantId =>
-      f(Institution.Id(participantId.uuid))
-    }
-  }
-
-  override def shareCredential(request: ShareCredentialRequest): Future[ShareCredentialResponse] = {
-    def f(institutionId: Institution.Id): Future[ShareCredentialResponse] = {
-      for {
-        credentialId <- Future.fromTry(GenericCredential.Id.from(request.cmanagerCredentialId))
-        response <-
-          credentialsRepository
-            .markAsShared(institutionId, credentialId)
-            .map { _ =>
-              console_api.ShareCredentialResponse()
-            }
-            .value
-            .map {
-              case Right(x) => x
-              case Left(e) => throw new RuntimeException(s"FAILED: $e")
-            }
-      } yield response
-    }
-
-    authenticator.authenticated("shareCredential", request) { participantId =>
-      f(Institution.Id(participantId.uuid))
-    }
-  }
 
   /** Retrieves node information associated to a credential
     */
-  override def getBlockchainData(request: GetBlockchainDataRequest): Future[GetBlockchainDataResponse] = {
-    authenticator.authenticated("getBlockchainData", request) { _ =>
-      // NOTE: Until we implement proper batching in the wallet, we will assume that the credential
-      //       was published with a batch that contained the hash of the encodedSignedCredential
-      //       as MerkleRoot in the IssueCredentialBatch operation. This allows us to compute the
-      //       credential batch id without requesting the merkle root to the client.
-      val batchIdF = Future.fromTry {
-        val either = for {
-          credential <- JsonBasedCredential.fromString(request.encodedSignedCredential)
-          credentialHash = credential.hash
-          issuerDID <- credential.content.issuerDid
-        } yield CredentialBatchId.fromBatchData(issuerDID.suffix, MerkleRoot(credentialHash))
-        either.toTry
-      }
-
-      for {
-        batchId <- batchIdF
+  override def getBlockchainData(
+      request: console_api.GetBlockchainDataRequest
+  ): Future[console_api.GetBlockchainDataResponse] =
+    auth[GetBlockchainDataRequest]("getBlockchainData", request) { (_, getBlockchainDataRequest) =>
+      val result = for {
         response <-
           nodeService
             .getBatchState(
               node_api
                 .GetBatchStateRequest()
-                .withBatchId(batchId.id)
+                .withBatchId(getBlockchainDataRequest.batchId.id)
             )
-      } yield response.publicationLedgerData.fold(GetBlockchainDataResponse())(ledgerData =>
-        GetBlockchainDataResponse().withIssuanceProof(
-          common_models
-            .TransactionInfo()
-            .withTransactionId(ledgerData.transactionId)
-            .withLedger(ledgerData.ledger)
-        )
+      } yield response.publicationLedgerData.fold(console_api.GetBlockchainDataResponse())(ledgerData =>
+        console_api
+          .GetBlockchainDataResponse()
+          .withIssuanceProof(
+            common_models
+              .TransactionInfo()
+              .withTransactionId(ledgerData.transactionId)
+              .withLedger(ledgerData.ledger)
+          )
       )
+      result.lift
     }
-  }
 
   /** Publishes a credential batch to the blockchain.
     * This method stores the published credentials on the database, and invokes the necessary
     * methods to get it published to the blockchain.
     */
-  override def publishBatch(request: PublishBatchRequest): Future[PublishBatchResponse] = {
+  override def publishBatch(request: console_api.PublishBatchRequest): Future[console_api.PublishBatchResponse] = {
     def storeBatch(
         batchId: CredentialBatchId,
         signedIssueCredentialBatchOp: SignedAtalaOperation,
         transactionInfo: common_models.TransactionInfo
-    ): Future[Unit] = {
+    ): FutureEither[ConnectorError, Unit] = {
       for {
-        ledger <- CommonProtoCodecs.fromLedger(transactionInfo.ledger).tryF
+        ledger <- CommonProtoCodecs.fromLedger(transactionInfo.ledger).asRight.pure[Future].toFutureEither
         transactionId <-
           TransactionId
             .from(transactionInfo.transactionId)
-            .getOrElse(throw new RuntimeException("Corrupted transaction ID"))
-            .tryF
+            .pure[Future]
+            .toFutureEither(InternalServerError(new RuntimeException("Corrupted transaction ID")))
         (merkleRoot, did, operationHash) = extractValues(signedIssueCredentialBatchOp)
         computedBatchId = CredentialBatchId.fromBatchData(did.suffix, merkleRoot)
         // validation for sanity check
@@ -233,7 +181,13 @@ class CredentialsServiceImpl(
         // We make this check to be sure that the node and the console are
         // using the same id (if this fails, they are using different versions
         // of the protocol)
-        _ = assert(batchId == computedBatchId, "The batch id provided by the node does not match the one computed")
+        _ <-
+          if (batchId == computedBatchId) ().asRight[ConnectorError].pure[Future].toFutureEither
+          else
+            InvalidRequest("The batch id provided by the node does not match the one computed")
+              .asLeft[Unit]
+              .pure[Future]
+              .toFutureEither
         _ <-
           credentialsRepository
             .storeBatchData(
@@ -247,35 +201,28 @@ class CredentialsServiceImpl(
                 )
               )
             )
-            .value
-            .map {
-              case Right(x) => x
-              case Left(e) => throw new RuntimeException(s"FAILED: $e")
-            }
       } yield ()
     }
 
-    authenticator.authenticated("publishBatch", request) { _ =>
+    auth[PublishBatchRequest]("publishBatch", request) { (_, publishBatchRequest) =>
       for {
-        signedIssueCredentialBatchOp <-
-          request.issueCredentialBatchOperation
-            .getOrElse(throw new RuntimeException("Missing IssueCredentialBatch operation"))
-            .tryF
         // Issue the batch in the Node
         credentialIssued <- nodeService.issueCredentialBatch {
           node_api
             .IssueCredentialBatchRequest()
-            .withSignedOperation(signedIssueCredentialBatchOp)
-        }
-        returnedBatchId =
+            .withSignedOperation(publishBatchRequest.signedIssueCredentialBatchOp)
+        }.lift
+        returnedBatchId <-
           CredentialBatchId
             .fromString(credentialIssued.batchId)
-            .getOrElse(throw new RuntimeException("Node returned an invalid batch id"))
-        transactionInfo =
+            .pure[Future]
+            .toFutureEither(InternalServerError(new RuntimeException("Node returned an invalid batch id")))
+        transactionInfo <-
           credentialIssued.transactionInfo
-            .getOrElse(throw new RuntimeException("We could not generate a transaction"))
+            .pure[Future]
+            .toFutureEither(InternalServerError(new RuntimeException("We could not generate a transaction")))
         // Update the database
-        _ <- storeBatch(returnedBatchId, signedIssueCredentialBatchOp, transactionInfo)
+        _ <- storeBatch(returnedBatchId, publishBatchRequest.signedIssueCredentialBatchOp, transactionInfo)
       } yield console_api
         .PublishBatchResponse()
         .withTransactionInfo(transactionInfo)
@@ -286,48 +233,39 @@ class CredentialsServiceImpl(
   // This request stores in the console database the information associated to a credential. The endpoint assumes that
   // the credential has been publish in a batch though the PublishBatch endpoint
   override def storePublishedCredential(
-      request: StorePublishedCredentialRequest
-  ): Future[StorePublishedCredentialResponse] = {
-    authenticator.authenticated("storePublishedCredential", request) { participantId =>
+      request: console_api.StorePublishedCredentialRequest
+  ): Future[console_api.StorePublishedCredentialResponse] =
+    auth[StorePublishedCredentialRequest]("storePublishedCredential", request) { (participantId, storeCredsRequest) =>
       for {
-        issuerId <- Institution.Id(participantId.uuid).tryF
-        encodedSignedCredential = request.encodedSignedCredential
-        consoleCredentialId <- GenericCredential.Id(UUID.fromString(request.consoleCredentialId)).tryF
-        _ = require(encodedSignedCredential.nonEmpty, "Empty encoded credential")
-        maybeCredential <- credentialsRepository.getBy(consoleCredentialId).toFuture
-        credential = maybeCredential.getOrElse(
-          throw new RuntimeException(s"Credential with ID $consoleCredentialId does not exist")
-        )
+        maybeCredential <- credentialsRepository.getBy(storeCredsRequest.consoleCredentialId)
+        credential <-
+          maybeCredential
+            .pure[Future]
+            .toFutureEither(
+              InvalidRequest(s"Credential with ID ${storeCredsRequest.consoleCredentialId} does not exist")
+            )
+        issuerId = Institution.Id(participantId.uuid)
         // Verify issuer
-        _ = require(credential.issuedBy == issuerId, "The credential was not issued by the specified issuer")
-        batchId <- CredentialBatchId.fromString(request.batchId).get.tryF
-        proof =
-          MerkleInclusionProof
-            .decode(request.encodedInclusionProof)
-            .getOrElse(throw new RuntimeException("Empty inclusion proof"))
+        _ <-
+          if (credential.issuedBy == issuerId) FutureEither.right(())
+          else FutureEither.left(InvalidRequest("The credential was not issued by the specified issuer"))
         _ <-
           credentialsRepository
             .storeCredentialPublicationData(
               issuerId,
               CredentialPublicationData(
-                consoleCredentialId = consoleCredentialId,
-                credentialBatchId = batchId,
-                encodedSignedCredential = encodedSignedCredential,
-                proofOfInclusion = proof
+                consoleCredentialId = storeCredsRequest.consoleCredentialId,
+                credentialBatchId = storeCredsRequest.batchId,
+                encodedSignedCredential = storeCredsRequest.encodedSignedCredential,
+                proofOfInclusion = storeCredsRequest.encodedInclusionProof
               )
             )
-            .value
-            .map {
-              case Right(x) => x
-              case Left(e) => throw new RuntimeException(s"FAILED: $e")
-            }
-      } yield StorePublishedCredentialResponse()
+      } yield console_api.StorePublishedCredentialResponse()
     }
-  }
 
   override def revokePublishedCredential(
-      request: RevokePublishedCredentialRequest
-  ): Future[RevokePublishedCredentialResponse] = {
+      request: console_api.RevokePublishedCredentialRequest
+  ): Future[console_api.RevokePublishedCredentialResponse] = {
     auth[RevokePublishedCredential]("revokePublishedCredential", request) { (participantId, query) =>
       credentialsIntegration
         .revokePublishedCredential(Institution.Id(participantId.uuid), query)
@@ -340,10 +278,12 @@ class CredentialsServiceImpl(
   }
 
   // Do not implement, this is implemented in the management console
-  override def deleteCredentials(request: DeleteCredentialsRequest): Future[DeleteCredentialsResponse] = ???
+  override def deleteCredentials(
+      request: console_api.DeleteCredentialsRequest
+  ): Future[console_api.DeleteCredentialsResponse] = ???
 
   // Do not implement, this is implemented in the management console
-  override def getLedgerData(request: GetLedgerDataRequest): Future[GetLedgerDataResponse] = ???
+  override def getLedgerData(request: console_api.GetLedgerDataRequest): Future[console_api.GetLedgerDataResponse] = ???
 
   // Do not implement, this is implemented in the management console
   override def shareCredentials(
