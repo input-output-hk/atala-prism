@@ -7,7 +7,11 @@ case class HttpConfig(payIdPort: Int, payIdHostAddress: String)
 
 case class TrisaConfig(enabled: Boolean, grpcConfig: GrpcConfig, sslConfig: SslConfig)
 
-case class MirrorConfig(grpcConfig: GrpcConfig, httpConfig: HttpConfig, trisaConfig: TrisaConfig)
+case class MirrorConfig(
+    grpcConfig: GrpcConfig,
+    httpConfig: HttpConfig,
+    trisaConfig: TrisaConfig
+)
 
 object MirrorConfig {
 
@@ -22,7 +26,11 @@ object MirrorConfig {
 
     val trisa = globalConfig.getConfig("trisa")
 
-    MirrorConfig(grpcConfig, httpConfig, TrisaConfig(trisa.getBoolean("enabled"), GrpcConfig(trisa), SslConfig(trisa)))
+    MirrorConfig(
+      grpcConfig,
+      httpConfig,
+      TrisaConfig(trisa.getBoolean("enabled"), GrpcConfig(trisa), SslConfig(trisa))
+    )
   }
 
 }

@@ -12,6 +12,7 @@ import io.iohk.atala.mirror.config.MirrorConfig
 import io.iohk.atala.mirror.http.ApiServer
 import io.iohk.atala.mirror.http.endpoints.PaymentEndpoints
 import io.iohk.atala.mirror.services.{
+  CardanoAddressService,
   CardanoAddressInfoService,
   CredentialService,
   MirrorService,
@@ -102,6 +103,7 @@ object MirrorApp extends TaskApp {
       credentialService = new CredentialService(tx, connectorService, nodeService)
       cardanoAddressInfoService = new CardanoAddressInfoService(tx, mirrorConfig.httpConfig, nodeService)
       mirrorGrpcService = new MirrorGrpcService(mirrorService)(scheduler)
+      cardanoAddressService = new CardanoAddressService()
 
       connectorMessageService = new ConnectorMessagesService(
         connectorService = connectorService,

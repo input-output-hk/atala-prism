@@ -176,14 +176,54 @@ object PrismBuild {
       )
       .dependsOn(common)
 
-  lazy val mirror =
+  lazy val mirror = {
+    import java.nio.file.Files
+    import scala.sys.process._
+
+    def downloadCardanoAddressBinary(): Unit = {
+      val path = "target/mirror-binaries/cardano-address"
+
+      def isLinux: Boolean = {
+        val os = System.getProperty("os.name").toLowerCase
+        os.contains("nix") || os.contains("nux") || os.contains("aix")
+      }
+
+      def checksumMatch() = {
+        (("echo" :: Dependencies.cardanoAddressBinaryChecksum :: path :: Nil) #| ("sha512sum" :: "-c" :: "-" :: Nil))
+          .!(ProcessLogger(_ => ())) == 0
+      }
+
+      if (isLinux && !checksumMatch()) {
+        println("Downloading mirror binary dependency: cardano-address library")
+        Files.createDirectories(Path("target/mirror-binaries/").asPath)
+
+        (("curl" :: "-L" :: Dependencies.cardanoAddressBinaryUrl :: Nil) #|
+          ("tar" :: "zxO" :: "bin/cardano-address" :: Nil)
+          #> file(path)).!
+
+        ("chmod" :: "777" :: path :: Nil).!
+
+        if (!checksumMatch()) {
+          throw new RuntimeException("Checksum of downloaded binary does not match")
+        }
+
+        println("Mirror binary dependency: cardano-address library downloaded successfully")
+      }
+    }
+
+    lazy val cardanoAddressBinary = taskKey[Unit]("Downloads cardano address binary dependency for mirror")
     commonServerProject("mirror")
       .settings(
         name := "mirror",
         mainClass in (Compile, run) := Some("io.iohk.atala.mirror.MirrorApp"),
-        libraryDependencies ++= http4sDependencies
+        libraryDependencies ++= http4sDependencies,
+        cardanoAddressBinary := { downloadCardanoAddressBinary() },
+        compile in Compile := {
+          (compile in Compile).dependsOn(cardanoAddressBinary).value
+        }
       )
       .dependsOn(common % "compile->compile;test->test", connectorLib, mirrorLib)
+  }
 
   lazy val vault =
     commonServerProject("vault")

@@ -107,4 +107,12 @@ object Dependencies {
   val silencerDependencies = Seq(silencer, silencerPlugin)
   val sttpDependencies = Seq(sttpCore, sttpFuture)
   val http4sDependencies = Seq(http4sCirce, http4sDsl, http4sBlazeServer, http4sBlazeClient)
+
+  // cardano-address library binary
+  val cardanoAddressBinaryUrl =
+    "https://github.com/input-output-hk/cardano-addresses/releases/download/3.2.0/cardano-addresses-3.2.0-linux64.tar.gz"
+
+  // sha512 checksum of untarred binary file,
+  val cardanoAddressBinaryChecksum =
+    "fc45eeb026ef3e6fda8fdb792c83bb5bd25946b011b75e6364931206b4b6037e5d8e6f1a78b92b17062b28ae2b6bbd617a8fe50831a00f6fc8758234d36e2db9"
 }
