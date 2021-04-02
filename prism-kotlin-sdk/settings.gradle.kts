@@ -1,3 +1,4 @@
+include(":SwiftCryptoKit")
 include(":protos")
 include(":protosLib")
 include(":crypto")

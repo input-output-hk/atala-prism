@@ -6,6 +6,10 @@ plugins {
     id("com.android.library")
 }
 
+dependencies {
+    commonMainImplementation("com.soywiz.korlibs.krypto:krypto:2.0.6")
+}
+
 kotlin {
     android {
         publishAllLibraryVariants()
@@ -41,6 +45,21 @@ kotlin {
             // Linker options required to link to libsecp256k1.
             linkerOpts("-L$rootDir/crypto/build/cocoapods/synthetic/IOS/crypto/Pods/Secp256k1Kit.swift/Secp256k1Kit/Libraries/lib", "-lsecp256k1")
         }
+
+        // Facade to SwiftCryptoKit
+        val platform = when (name) {
+            "ios" -> "iphonesimulator"
+            "iosX64" -> "iphonesimulator"
+            "iosArm64" -> "iphoneos"
+            else -> error("Unsupported target $name.")
+        }
+        compilations.getByName("main") {
+            cinterops.create("SwiftCryptoKit") {
+                val interopTask = tasks[interopProcessingTaskName]
+                interopTask.dependsOn(":SwiftCryptoKit:build${platform.capitalize()}")
+                includeDirs.headerFilterOnly("$rootDir/SwiftCryptoKit/build/Release-$platform/include")
+            }
+        }
     }
 
     sourceSets {
@@ -48,6 +67,7 @@ kotlin {
             dependencies {
                 api("com.ionspin.kotlin:bignum:0.2.3")
                 api("org.jetbrains.kotlinx:kotlinx-serialization-json:1.0.1")
+                api("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.4.2")
             }
         }
         val commonTest by getting {

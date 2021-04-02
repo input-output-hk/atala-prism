@@ -15,13 +15,14 @@ import scala.util.Success
   * Can be used with:
   *   - string password (encryption key is derived using salt)
   *   - own key with provided IV
+  *   - own key with auto-generated IV
   */
 object Aes {
 
   /**
     * Encrypted AES256-GCM data.
     *
-    * @param encrypted Encrypted data
+    * @param data Encrypted data
     * @param iv Initialization vector
     * @param salt Salt used to derive key from password string
     */
@@ -29,14 +30,34 @@ object Aes {
       data: IndexedSeq[Byte],
       iv: IndexedSeq[Byte],
       salt: Option[IndexedSeq[Byte]]
-  )
+  ) {
+
+    /**
+      * Return encrypted data prepended with the IV.
+      * It isn't necessary to keep the IV secret in most cases.
+      */
+    def combined: Array[Byte] = (iv ++ data).toArray
+  }
+  object AesEncryptedData {
+
+    /**
+      * Create a [[AesEncryptedData]] from combined bytes,
+      * by spliting the data and the IV.
+      */
+    def fromCombined(bytes: Array[Byte]): AesEncryptedData =
+      AesEncryptedData(
+        data = bytes.takeRight(bytes.size - IV_SIZE).toIndexedSeq,
+        iv = bytes.take(IV_SIZE).toIndexedSeq,
+        salt = None
+      )
+  }
 
   case class AesException(
       message: String,
       cause: Option[Throwable] = None
   ) extends Exception(message, cause.orNull)
 
-  // AES configuration
+  // AES configuration, sizes in bits
   val IV_SIZE = 64
   val KEY_SIZE = 256
   val AUTH_TAG_SIZE = 128
@@ -48,7 +69,7 @@ object Aes {
   private val random = new SecureRandom
 
   /**
-    * Encrypt data with a key derived from a password string.
+    * Encrypt data with the key derived from a password string.
     */
   def encrypt(data: Array[Byte], password: String): Either[AesException, AesEncryptedData] = {
     val salt = randomBytes(SALT_SIZE)
@@ -59,7 +80,16 @@ object Aes {
   }
 
   /**
-    * Encrypt data with key and IV.
+    * Encrypt data with a key. The IV is created randomly.
+    */
+  def encrypt(data: Array[Byte], key: Array[Byte]): Either[AesException, AesEncryptedData] = {
+    val iv = randomBytes(IV_SIZE)
+
+    encrypt(data, key, iv)
+  }
+
+  /**
+    * Encrypt data with a key and IV.
     */
   def encrypt(data: Array[Byte], key: Array[Byte], iv: Array[Byte]): Either[AesException, AesEncryptedData] = {
     val cipher = createCipher(Cipher.ENCRYPT_MODE, key, iv)
