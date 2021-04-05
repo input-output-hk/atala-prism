@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import PropTypes from 'prop-types';
 import { message } from 'antd';
 import { useTranslation } from 'react-i18next';
@@ -27,46 +27,49 @@ const SessionProviderComponent = props => {
   const [acceptedModal, setAcceptedModal] = useState(false);
   const [modalVisible, setModalVisible] = useState(false);
 
+  const login = useCallback(
+    () =>
+      wallet.getSessionFromExtension({ timeout: 5000 }).then(({ sessionData, error }) => {
+        if (error) {
+          setSession({ sessionState: LOCKED });
+          message.error(t(error.message));
+        } else setSession(sessionData);
+      }),
+    [t, wallet]
+  );
+
+  const logout = useCallback(() => {
+    setSession({ sessionState: LOCKED });
+    setAcceptedModal(false);
+  }, []);
+
   useEffect(() => {
+    const handleSessionError = () => {
+      message.error(t('errors.walletLockedOrRemoved'));
+      logout();
+    };
+
     wallet.setSessionErrorHandler(handleSessionError);
     const storedSession = JSON.parse(localStorage.getItem(SESSION));
     if (storedSession?.sessionState === UNLOCKED) login();
     else setSession({ sessionState: LOCKED });
-  }, []);
+  }, [login, t, wallet, logout]);
 
   useEffect(() => {
     localStorage.setItem(SESSION, JSON.stringify(session));
     wallet.setSessionState(session);
-  }, [session]);
-
-  const login = () =>
-    wallet.getSessionFromExtension({ timeout: 5000 }).then(({ sessionData, error }) => {
-      if (error) {
-        setSession({ sessionState: LOCKED });
-        message.error(t(error.message));
-      } else setSession(sessionData);
-    });
-
-  const logout = () => {
-    setSession({ sessionState: LOCKED });
-    setAcceptedModal(false);
-  };
-
-  const handleSessionError = () => {
-    message.error(t('errors.walletLockedOrRemoved'));
-    logout();
-  };
+  }, [session, wallet]);
 
   const verifyRegistration = () => wallet.verifyRegistration({ timeout: 5000 });
 
-  const removeUnconfirmedAccountError = () => setAccountStatus(CONFIRMED);
+  const removeUnconfirmedAccountError = useCallback(() => setAccountStatus(CONFIRMED), []);
 
-  const showUnconfirmedAccountError = () => {
+  const showUnconfirmedAccountError = useCallback(() => {
     setAccountStatus(UNCONFIRMED);
     if (!acceptedModal) {
       setModalVisible(true);
     }
-  };
+  }, [acceptedModal]);
 
   const hideModal = () => {
     setAcceptedModal(true);

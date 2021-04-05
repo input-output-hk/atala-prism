@@ -1,7 +1,6 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import { LeftOutlined, RightOutlined } from '@ant-design/icons';
-import { useTranslation } from 'react-i18next';
 import CustomButton from '../../Atoms/CustomButton/CustomButton';
 import './_style.scss';
 
@@ -11,15 +10,12 @@ const StepFooter = ({
   previousStep,
   nextStep,
   renderExtraOptions,
-  finishText,
   disablePrevious,
   disableNext,
   onCancel,
   onFinish,
   loading
 }) => {
-  const { t } = useTranslation();
-
   const firstStep = currentStep === 0;
   const lastStep = currentStep + 1 === stepCount;
 
@@ -53,7 +49,6 @@ const StepFooter = ({
 
 StepFooter.defaultProps = {
   renderExtraOptions: () => {},
-  finishText: 'actions.done',
   disablePrevious: false,
   disableNext: false,
   loading: false
@@ -65,7 +60,6 @@ StepFooter.propTypes = {
   previousStep: PropTypes.func.isRequired,
   nextStep: PropTypes.func.isRequired,
   renderExtraOptions: PropTypes.func,
-  finishText: PropTypes.string,
   disablePrevious: PropTypes.bool,
   disableNext: PropTypes.bool,
   loading: PropTypes.bool,

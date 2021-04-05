@@ -19,7 +19,7 @@ const CopyGroupModal = ({ open, closeModal, group, onSave }) => {
   useEffect(() => {
     setCopyName(t('groups.copy.copyOf', { name: group?.name }));
     setNameState(GROUP_NAME_STATES.initial);
-  }, [group]);
+  }, [group, t]);
 
   return (
     <Modal destroyOnClose visible={open} footer={null} onCancel={closeModal}>

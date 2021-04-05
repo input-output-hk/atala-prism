@@ -6,11 +6,9 @@ import Logger from '../../helpers/Logger';
 import Credentials from './Credentials';
 import CredentialActionConfirmationModal from './Molecules/Modals/CredentialActionConfirmationModal';
 import { withApi } from '../providers/withApi';
-import { credentialMapper } from '../../APIs/helpers/credentialHelpers';
 import {
   CREDENTIALS_ISSUED,
   CREDENTIALS_RECEIVED,
-  UNKNOWN_DID_SUFFIX_ERROR_CODE,
   DEFAULT_CREDENTIAL_VERIFICATION_RESULT,
   CREDENTIAL_ID_KEY
 } from '../../helpers/constants';
@@ -18,75 +16,37 @@ import {
   useCredentialsIssuedListWithFilters,
   useCredentialsReceivedListWithFilters
 } from '../../hooks/useCredentials';
-import { useSession } from '../providers/SessionContext';
 import { getTargetCredentials } from '../../helpers/credentialActions';
 import { useCredentialActions } from '../../hooks/useCredentialActions';
 import { getCheckedAndIndeterminateProps, handleSelectAll } from '../../helpers/selectionHelpers';
 
 const CredentialContainer = ({ api }) => {
   const { t } = useTranslation();
-  // This field is used to know if there are no credentials on
-  // the database, independently of the filters
-
-  const [loading, setLoading] = useState({ issued: true, received: true });
-  const [searching, setSearching] = useState({ issued: false, received: false });
 
   const [loadingSelection, setLoadingSelection] = useState(false);
   const [activeTab, setActiveTab] = useState(CREDENTIALS_ISSUED);
 
-  const { showUnconfirmedAccountError, removeUnconfirmedAccountError } = useSession();
-
   const {
     credentialsIssued,
     fetchCredentialsIssued,
-    setCredentialsIssued,
+    refreshCredentialsIssued,
     filteredCredentialsIssued,
     filtersIssued,
     hasMoreIssued,
     noIssuedCredentials,
+    isLoading: isLoadingIssued,
+    isSearching: isSearchingIssued,
     fetchAll
-  } = useCredentialsIssuedListWithFilters(api.credentialsManager, setLoading, setSearching);
+  } = useCredentialsIssuedListWithFilters(api.credentialsManager);
 
   const {
     fetchCredentialsReceived,
     filteredCredentialsReceived,
     filtersReceived,
-    noReceivedCredentials
-  } = useCredentialsReceivedListWithFilters(api, setLoading);
-
-  const setLoadingByKey = (key, value) =>
-    setLoading(previousLoading => ({ ...previousLoading, [key]: value }));
-
-  const refreshCredentialsIssued = async () => {
-    try {
-      setLoadingByKey('issued', true);
-      const refreshedCredentials = await api.credentialsManager.getCredentials(
-        credentialsIssued.length,
-        null
-      );
-
-      const credentialTypes = api.credentialsManager.getCredentialTypes();
-      const mappedCredentials = refreshedCredentials.map(cred =>
-        credentialMapper(cred, credentialTypes)
-      );
-
-      setCredentialsIssued(mappedCredentials);
-      removeUnconfirmedAccountError();
-    } catch (error) {
-      Logger.error(
-        '[CredentialContainer.refreshCredentialsIssued] Error while getting Credentials',
-        error
-      );
-      if (error.code === UNKNOWN_DID_SUFFIX_ERROR_CODE) {
-        showUnconfirmedAccountError();
-      } else {
-        removeUnconfirmedAccountError();
-        message.error(t('errors.errorGetting', { model: 'Credentials' }));
-      }
-    } finally {
-      setLoadingByKey('issued', false);
-    }
-  };
+    noReceivedCredentials,
+    isLoading: isLoadingReceived,
+    hasMoreReceived
+  } = useCredentialsReceivedListWithFilters(api);
 
   const {
     revokeSingleCredential,
@@ -102,8 +62,8 @@ const CredentialContainer = ({ api }) => {
   } = useCredentialActions(api, credentialsIssued, refreshCredentialsIssued);
 
   useEffect(() => {
-    if (activeTab === CREDENTIALS_RECEIVED) fetchCredentialsReceived();
-  }, [activeTab]);
+    if (activeTab === CREDENTIALS_RECEIVED && hasMoreReceived) fetchCredentialsReceived();
+  }, [activeTab, fetchCredentialsReceived, hasMoreReceived]);
 
   const handleSelectAllCredentials = ev =>
     handleSelectAll({
@@ -137,7 +97,7 @@ const CredentialContainer = ({ api }) => {
       tableProps: {
         credentials: filteredCredentialsIssued,
         hasMore: hasMoreIssued,
-        searching: searching.issued,
+        searching: isSearchingIssued,
         revokeSingleCredential,
         signSingleCredential,
         sendSingleCredential,
@@ -190,7 +150,7 @@ const CredentialContainer = ({ api }) => {
       <Credentials
         tabProps={tabProps}
         setActiveTab={setActiveTab}
-        loading={loading}
+        loading={{ issued: isLoadingIssued, received: isLoadingReceived }}
         verifyCredential={verifyCredential}
       />
     </>

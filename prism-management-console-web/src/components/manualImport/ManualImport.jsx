@@ -30,24 +30,24 @@ const ManualImport = ({
 
   const { t } = useTranslation();
   const { Option } = Select;
-  const { dataSource } = tableProps;
+  const { dataSource = [] } = tableProps;
   const { groups, selectedGroups, setSelectedGroups } = groupsProps;
   const { saveFormProviderAvailable, addEntity } = useContext(DynamicFormContext);
 
-  const shouldDisableNext = () => {
-    const emptyEntries = dataSource?.filter(
-      useCase === IMPORT_CONTACTS
-        ? isEmptyContact
-        : dataRow => isEmptyCredential(dataRow, credentialType.fields)
-    );
-    const errors = dataSource?.filter(c => c.errorFields);
-
-    return emptyEntries?.length || errors?.length;
-  };
-
   useEffect(() => {
+    const shouldDisableNext = () => {
+      const emptyEntries = dataSource.filter(
+        useCase === IMPORT_CONTACTS
+          ? isEmptyContact
+          : dataRow => isEmptyCredential(dataRow, credentialType.fields)
+      );
+      const errors = dataSource.filter(c => c.errorFields);
+
+      return emptyEntries.length || errors.length;
+    };
+
     setDisableNext(shouldDisableNext());
-  }, [dataSource]);
+  }, [dataSource, credentialType.fields, useCase]);
 
   // Leave const for backward compatibility, when all forms uses DynamicForm, feel free for remove this and it's use
   const isContactCreation = useCase === IMPORT_CONTACTS;
@@ -109,7 +109,7 @@ const ManualImport = ({
 };
 
 ManualImport.defaultProps = {
-  credentialType: null
+  credentialType: {}
 };
 
 ManualImport.propTypes = {

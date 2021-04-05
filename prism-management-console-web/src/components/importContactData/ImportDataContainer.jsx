@@ -150,7 +150,7 @@ const ImportDataContainer = ({
 
 ImportDataContainer.defaultProps = {
   recipients: null,
-  credentialType: null,
+  credentialType: {},
   bulkValidator: null,
   loading: false,
   useCase: IMPORT_CONTACTS

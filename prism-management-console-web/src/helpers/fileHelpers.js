@@ -21,7 +21,7 @@ const generateCsvFromInputData = ({ contacts }, headersMapping) => {
 };
 
 const getFilename = ({ credentialType }) =>
-  credentialType
+  credentialType?.name
     ? `${i18n.t(credentialType.name)}.csv`
     : `${i18n.t('generic.contactsTemplate')}.csv`;
 

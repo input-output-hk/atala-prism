@@ -62,6 +62,13 @@ const Groups = ({
   const closeCopyModal = () => setIsCopyModalOpen(false);
 
   useEffect(() => {
+    const filterGroups = () =>
+      groups.filter(
+        group =>
+          filterByInclusion(name, group.name) &&
+          (!date || backendDateFormat(group.createdat?.seconds) === date)
+      );
+
     setFilteredGroups(filterGroups());
   }, [groups, name, date]);
 
@@ -69,13 +76,6 @@ const Groups = ({
     const hasValues = Object.keys(groupToDelete).length !== 0;
     setIsDeleteModalOpen(hasValues);
   }, [groupToDelete]);
-
-  const filterGroups = () =>
-    groups.filter(
-      group =>
-        filterByInclusion(name, group.name) &&
-        (!date || backendDateFormat(group.createdat?.seconds) === date)
-    );
 
   const handleUpdateGroups = (oldGroups, newDate, newName) => {
     setName(newName);

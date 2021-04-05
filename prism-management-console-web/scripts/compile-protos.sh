@@ -5,11 +5,14 @@ OUT_DIR="./src/protos"
 
 PROTOS_DIR="../prism-sdk/protos/src"
 
+DEPENDENCIES_DIR="/usr/local/include"
+
 # clean protos directory first to avoid keeping dust
 rm -rf $OUT_DIR
 mkdir -p $OUT_DIR
 
 protoc -I=$OUT_DIR \
+    -I=$DEPENDENCIES_DIR \
     --js_out=import_style=commonjs:$OUT_DIR \
     --grpc-web_out=import_style=commonjs,mode=grpcwebtext:${OUT_DIR} \
     --proto_path=$PROTOS_DIR \

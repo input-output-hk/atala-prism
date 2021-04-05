@@ -26,27 +26,26 @@ const GroupCreation = ({
   isSaving
 }) => {
   const [selectedContacts, setSelectedContacts] = useState([]);
-  const [loadingContacts, setLoadingContacts] = useState(false);
-  const [searching, setSearching] = useState(true);
   const [nameState, setNameState] = useState(GROUP_NAME_STATES.initial);
 
   const [loadingSelection, setLoadingSelection] = useState(false);
 
   const {
-    contacts,
     filteredContacts,
     filterProps,
     handleContactsRequest,
     hasMore,
+    isLoading,
+    isSearching,
     fetchAll
-  } = useContactsWithFilteredList(api.contactsManager, setLoadingContacts, setSearching);
+  } = useContactsWithFilteredList(api.contactsManager);
 
   const { groupName } = formValues;
   const { t } = useTranslation();
 
   useEffect(() => {
     updateMembers(selectedContacts);
-  }, [selectedContacts]);
+  }, [selectedContacts, updateMembers]);
 
   const handleSelectAllContacts = ev =>
     handleSelectAll({
@@ -58,10 +57,6 @@ const GroupCreation = ({
       fetchAll,
       setLoading: setLoadingSelection
     });
-
-  useEffect(() => {
-    if (!contacts.length) handleContactsRequest();
-  }, [handleContactsRequest]);
 
   const selectAllProps = {
     ...getCheckedAndIndeterminateProps(filteredContacts, selectedContacts),
@@ -107,7 +102,7 @@ const GroupCreation = ({
           <Row gutter={10} align="bottom" type="flex">
             <Col sm={24} md={20}>
               <div className="addContactsContainer">
-                {(searching && !filteredContacts.length) || loadingContacts ? (
+                {(isSearching && !filteredContacts.length) || isLoading ? (
                   <SimpleLoading />
                 ) : (
                   <ConnectionsTable
@@ -115,7 +110,7 @@ const GroupCreation = ({
                     selectedContacts={selectedContacts}
                     setSelectedContacts={setSelectedContacts}
                     handleContactsRequest={handleContactsRequest}
-                    searching={searching}
+                    searching={isSearching}
                     hasMore={hasMore}
                     size="md"
                   />

@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { MAIN_CONTAINER_CLASS } from '../helpers/constants';
 
-export const useScrolledToBottom = (toBeListened, containerClass = MAIN_CONTAINER_CLASS) => {
+export const useScrolledToBottom = (hasMore, loading, containerClass = MAIN_CONTAINER_CLASS) => {
   const [timesScrolledToBottom, setTimesScrolledToBottom] = useState(0);
 
   useEffect(() => {
@@ -9,14 +9,14 @@ export const useScrolledToBottom = (toBeListened, containerClass = MAIN_CONTAINE
 
     const scrollListener = ({ target: { scrollHeight, clientHeight, scrollTop } }) => {
       const maxScroll = scrollHeight - clientHeight;
-      if (scrollTop === maxScroll) setTimesScrolledToBottom(timesScrolledToBottom + 1);
+      if (scrollTop === maxScroll) setTimesScrolledToBottom(t => t + 1);
     };
 
     Container.addEventListener('scroll', scrollListener);
 
     return () => Container.removeEventListener('scroll', scrollListener);
-  }, [...toBeListened]);
-  // toBeListened[] is necessary to retrigger effect hook
+  }, [hasMore, loading, containerClass]);
+  // hasMore and loading are necessary to retrigger effect hook
   // Other way the hook is triggered only first time
 
   return { timesScrolledToBottom };

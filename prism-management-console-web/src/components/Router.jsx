@@ -6,7 +6,6 @@ import Contacts from './connections/ConnectionsContainer';
 import Groups from './groups/GroupsContainer';
 import Credential from './credentials/CredentialContainer';
 import NewCredential from './newCredential/NewCredentialContainer';
-import Payment from './payments/PaymentContainer';
 import Admin from './admin/AdminContainer';
 import { withSideBar } from './providers/withSideBar';
 import { withLoggedValidation } from './providers/withLoggedValidation';
@@ -47,12 +46,6 @@ const newCredential = {
   path: '/credentials/create',
   key: '/credentials/create',
   component: withLoggedValidation(withSideBar(NewCredential))
-};
-const payment = {
-  exact: true,
-  path: '/payment',
-  key: 'payment',
-  component: withLoggedValidation(withSideBar(Payment))
 };
 const dashboardRoute = {
   path: '/',
@@ -101,7 +94,6 @@ const routes = [
   groups,
   credential,
   newCredential,
-  payment,
   instructions,
   dashboardRoute
 ];

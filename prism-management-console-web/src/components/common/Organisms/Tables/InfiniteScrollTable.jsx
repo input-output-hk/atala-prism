@@ -19,7 +19,6 @@ const InfiniteScrollTable = ({
   // the scroll reaches the end
   useEffect(() => {
     const tableContent = document.querySelector('.InfiniteScrollTableContainer');
-
     const scrollListener = ({ target: { scrollHeight, clientHeight, scrollTop } }) => {
       const maxScroll = scrollHeight - clientHeight;
       if (hasMore && !loading && scrollTop === maxScroll) getMoreData();
@@ -29,7 +28,7 @@ const InfiniteScrollTable = ({
     tableContent.addEventListener('scroll', scrollListener);
 
     return () => tableContent.removeEventListener('scroll', scrollListener);
-  }, [hasMore, loading]);
+  }, [hasMore, loading, getMoreData]);
 
   return (
     <div className={`InfiniteScrollTableContainer ${handleSort ? '' : 'PaginatedTable'}`}>

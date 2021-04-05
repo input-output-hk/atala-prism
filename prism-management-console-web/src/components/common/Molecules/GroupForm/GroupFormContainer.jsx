@@ -24,23 +24,6 @@ const GroupName = ({
 }) => {
   const { t } = useTranslation();
 
-  useEffect(() => {
-    if (nameState === GROUP_NAME_STATES.initial && formValues?.groupName) {
-      setNameState(GROUP_NAME_STATES.loading);
-      checkIfGroupExists(formValues.groupName);
-    }
-  }, [nameState]);
-
-  const handleUpdateForm = value => {
-    updateForm(value);
-    if (value) {
-      setNameState(GROUP_NAME_STATES.loading);
-      checkIfGroupExists(value);
-    } else {
-      setNameState(GROUP_NAME_STATES.initial);
-    }
-  };
-
   const groupExists = async value => {
     try {
       const groups = await api.groupsManager.getGroups();
@@ -56,6 +39,25 @@ const GroupName = ({
     }
   };
 
+  const checkIfGroupExists = useDebounce(groupExists);
+
+  useEffect(() => {
+    if (nameState === GROUP_NAME_STATES.initial && formValues?.groupName) {
+      setNameState(GROUP_NAME_STATES.loading);
+      checkIfGroupExists(formValues.groupName);
+    }
+  }, [nameState, checkIfGroupExists, formValues, setNameState]);
+
+  const handleUpdateForm = value => {
+    updateForm(value);
+    if (value) {
+      setNameState(GROUP_NAME_STATES.loading);
+      checkIfGroupExists(value);
+    } else {
+      setNameState(GROUP_NAME_STATES.initial);
+    }
+  };
+
   const renderNameState = () => {
     switch (nameState) {
       case GROUP_NAME_STATES.loading:
@@ -68,8 +70,6 @@ const GroupName = ({
         return null;
     }
   };
-
-  const checkIfGroupExists = useDebounce(groupExists);
 
   return (
     <Row type="flex" gutter={12} className={`ai-center mb-3 ${className}`}>

@@ -37,29 +37,29 @@ const Dashboard = ({ api, name, bundle }) => {
   } = useSession();
 
   useEffect(() => {
-    getStatistics();
-  }, []);
-
-  const getStatistics = async () => {
-    setLoading(true);
-    try {
-      const statistics = await api.summaryManager.getStatistics();
-      setContactsStats(statistics.contacts);
-      setGroupsStats(statistics.groups);
-      setCredentialsStats(statistics.credentials);
-      removeUnconfirmedAccountError();
-    } catch (error) {
-      Logger.error('Error getting statistics: ', error);
-      if (error.code === UNKNOWN_DID_SUFFIX_ERROR_CODE) {
-        showUnconfirmedAccountError();
-      } else {
+    const getStatistics = async () => {
+      setLoading(true);
+      try {
+        const statistics = await api.summaryManager.getStatistics();
+        setContactsStats(statistics.contacts);
+        setGroupsStats(statistics.groups);
+        setCredentialsStats(statistics.credentials);
         removeUnconfirmedAccountError();
-        message.error(t('errors.errorGetting', { model: 'statistics' }));
+      } catch (error) {
+        Logger.error('Error getting statistics: ', error);
+        if (error.code === UNKNOWN_DID_SUFFIX_ERROR_CODE) {
+          showUnconfirmedAccountError();
+        } else {
+          removeUnconfirmedAccountError();
+          message.error(t('errors.errorGetting', { model: 'statistics' }));
+        }
+      } finally {
+        setLoading(false);
       }
-    } finally {
-      setLoading(false);
-    }
-  };
+    };
+
+    getStatistics();
+  }, [api.summaryManager, removeUnconfirmedAccountError, showUnconfirmedAccountError, t]);
 
   return (
     <div className="DashboardContainer Wrapper">

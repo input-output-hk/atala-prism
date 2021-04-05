@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 import CreateCredentialsButton from '../../Atoms/Buttons/CreateCredentialsButton';
 import EmptyComponent from '../../../common/Atoms/EmptyComponent/EmptyComponent';
@@ -24,29 +24,33 @@ const CredentialsIssued = ({
   const { t } = useTranslation();
   const [loading, setLoading] = useState(false);
   const [selectedLength, setSelectedLength] = useState();
-  const { timesScrolledToBottom } = useScrolledToBottom([tableProps.hasMore, loading]);
+  const { timesScrolledToBottom } = useScrolledToBottom(tableProps.hasMore, loading);
+  const [lastUpdated, setLastUpdated] = useState(timesScrolledToBottom);
 
   const { accountStatus } = useSession();
+
+  const { credentials, selectionType, searching } = tableProps;
+  const { selectedRowKeys } = selectionType || {};
 
   useEffect(() => {
     const keys = Object.keys(selectedRowKeys);
     setSelectedLength(keys.length);
-  }, [tableProps.selectionType.selectedRowKeys]);
+  }, [selectedRowKeys]);
 
-  const getMoreData = () => {
+  const getMoreData = useCallback(() => {
     setLoading(true);
-    return fetchCredentials().finally(() => setLoading(false));
-  };
+    return fetchCredentials({ onFinish: () => setLoading(false) });
+  }, [fetchCredentials]);
 
   useEffect(() => {
-    if (searchDueGeneralScroll) getMoreData();
-  }, [timesScrolledToBottom]);
+    if (timesScrolledToBottom !== lastUpdated && searchDueGeneralScroll) {
+      setLastUpdated(timesScrolledToBottom);
+      getMoreData();
+    }
+  }, [timesScrolledToBottom, lastUpdated, searchDueGeneralScroll, getMoreData]);
 
   // leave this trigger for backward compatibility, when all tables uses useScrolledToBottom remove searchDueGeneralScroll
   const handleGetMoreData = () => !searchDueGeneralScroll && getMoreData();
-
-  const { credentials, selectionType, searching } = tableProps;
-  const { selectedRowKeys } = selectionType || {};
 
   const expandedTableProps = {
     ...tableProps,

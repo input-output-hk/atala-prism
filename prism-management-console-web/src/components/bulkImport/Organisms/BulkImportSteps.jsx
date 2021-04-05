@@ -1,6 +1,5 @@
 import React, { useState } from 'react';
 import PropTypes from 'prop-types';
-import { useTranslation } from 'react-i18next';
 import CompleteSpreadSheetStep from '../Molecules/Steps/CompleteSpreadSheetStep';
 import AssignToGroupsStep from '../Molecules/Steps/AssignToGroupsStep';
 import StepsFooter from '../../common/Molecules/StepFooter/StepFooter';
@@ -30,8 +29,6 @@ const BulkImportSteps = ({
   loading
 }) => {
   const [currentStep, setCurrentStep] = useState(COMPLETE_SPREADSHEET_STEP);
-
-  const { t } = useTranslation();
 
   const handlePreviousStep = () => setCurrentStep(currentStep - 1);
 

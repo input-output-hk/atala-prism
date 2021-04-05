@@ -33,7 +33,7 @@ const AssignToGroupsStep = ({
           message.error(t('errors.errorGetting', { model: t('groups.title') }));
         });
     }
-  }, []);
+  }, [showGroupSelection, api.groupsManager, t]);
 
   const toggleSkipStep = e => setSkipGroupsAssignment(e.target.checked);
 

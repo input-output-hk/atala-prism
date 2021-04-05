@@ -19,34 +19,27 @@ import './_style.scss';
 
 const AddContactsModal = ({ api, groupName, visible, onCancel, onConfirm }) => {
   const { t } = useTranslation();
+  const [isNewModal, setIsNewModal] = useState(true);
   const [selectedContacts, setSelectedContacts] = useState([]);
-  const [loading, setLoading] = useState(false);
-  const [searching, setSearching] = useState(false);
   const [loadingSelection, setLoadingSelection] = useState(false);
 
   const {
-    contacts,
     filteredContacts,
     filterProps,
     handleContactsRequest,
     hasMore,
+    isLoading,
+    isSearching,
     fetchAll
-  } = useContactsWithFilteredListAndNotInGroup(api.contactsManager, setLoading, setSearching);
+  } = useContactsWithFilteredListAndNotInGroup(api.contactsManager);
 
   useEffect(() => {
-    if (!contacts.length) handleGetContacts();
-  }, [groupName]);
-
-  useEffect(() => {
-    if (visible) handleGetContacts();
-  }, [visible]);
-
-  const handleGetContacts = () => {
-    if (groupName) {
-      setLoading(true);
-      handleContactsRequest(groupName, true);
+    if (!visible) setIsNewModal(true);
+    if (visible && isNewModal) {
+      setIsNewModal(false);
+      handleContactsRequest({ groupNameParam: groupName, isRefresh: true });
     }
-  };
+  }, [visible, isNewModal, groupName, handleContactsRequest]);
 
   const handleSelectAllContacts = ev =>
     handleSelectAll({
@@ -66,9 +59,8 @@ const AddContactsModal = ({ api, groupName, visible, onCancel, onConfirm }) => {
   };
 
   const handleConfirm = () => {
-    setLoading(true);
     onConfirm(selectedContacts);
-    handleGetContacts();
+    handleContactsRequest({ groupNameParam: groupName, isRefresh: true });
     setSelectedContacts([]);
   };
 
@@ -115,14 +107,14 @@ const AddContactsModal = ({ api, groupName, visible, onCancel, onConfirm }) => {
       </Row>
       <Row className="ModalContactsContainer">
         <Col span={24}>
-          {loading ? (
+          {isLoading ? (
             <SimpleLoading />
           ) : (
             <ConnectionsTable
               contacts={filteredContacts}
               selectedContacts={selectedContacts}
               setSelectedContacts={setSelectedContacts}
-              searching={searching}
+              searching={isSearching}
               hasMore={hasMore}
               size="md"
             />

@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useParams } from 'react-router-dom';
 import PropTypes from 'prop-types';
@@ -13,8 +13,6 @@ const GroupEditingContainer = ({ api }) => {
   const { id } = useParams();
 
   const [loading, setLoading] = useState(true);
-  const [loadingContacts, setLoadingContacts] = useState(false);
-  const [searching, setSearching] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
   const [group, setGroup] = useState();
 
@@ -24,37 +22,36 @@ const GroupEditingContainer = ({ api }) => {
     filterProps,
     handleContactsRequest,
     hasMore,
+    isLoading: loadingContacts,
     fetchAll
-  } = useContactsWithFilteredList(api.contactsManager, setLoadingContacts, setSearching);
+  } = useContactsWithFilteredList(api.contactsManager, false);
 
   useEffect(() => {
-    getGroup();
-  }, []);
+    if (!group) {
+      api.groupsManager
+        .getGroups()
+        .then(groups => {
+          const result = groups.find(item => item.id === id);
+          setGroup(result);
+        })
+        .catch(error => {
+          Logger.error('[Groups.getGroups] Error while getting groups', error);
+          message.error(t('errors.errorGetting', { model: 'Group' }));
+        })
+        .finally(() => setLoading(false));
+    }
+  }, [group, api.groupsManager, id, t]);
+
+  const getGroupContacts = useCallback(
+    (refreshAllContacts = false) => {
+      handleContactsRequest({ groupNameParam: group.name, isRefresh: refreshAllContacts });
+    },
+    [group, handleContactsRequest]
+  );
 
   useEffect(() => {
-    if (!contacts.length) getGroupContacts();
-  }, [group]);
-
-  const getGroup = async () => {
-    try {
-      setLoading(true);
-      const groups = await api.groupsManager.getGroups();
-      const result = groups.find(item => item.id === id);
-      setGroup(result);
-    } catch (error) {
-      Logger.error('[Groups.getGroups] Error while getting groups', error);
-      message.error(t('errors.errorGetting', { model: 'Group' }));
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const getGroupContacts = (refreshAllContacts = false) => {
-    if (group?.name) {
-      setLoadingContacts(true);
-      handleContactsRequest(group.name, refreshAllContacts);
-    }
-  };
+    if (group && !contacts.length && hasMore) getGroupContacts();
+  }, [group, contacts, getGroupContacts, hasMore]);
 
   const handleRemoveContacts = async contactsIdsToRemove => {
     try {

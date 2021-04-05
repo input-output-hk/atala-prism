@@ -45,9 +45,6 @@ export const hardcodedApi = {
   getTotalCredentials: mockApi.getTotalCredentials,
   savePictureInS3: mockApi.savePictureInS3,
   saveDraft: mockApi.saveDraft,
-  getPayments: mockApi.getPayments,
-  getCurrencies: mockApi.getCurrencies,
-  getAmounts: mockApi.getAmounts,
   getSettings: mockApi.getSettings,
   editSettings: mockApi.editSettings,
   importBulk

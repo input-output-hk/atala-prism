@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import _ from 'lodash';
 import { message } from 'antd';
 import { useTranslation } from 'react-i18next';
@@ -20,42 +20,51 @@ const GroupsContainer = ({ api }) => {
 
   const { showUnconfirmedAccountError, removeUnconfirmedAccountError } = useSession();
 
-  const updateGroups = (oldGroups = groups, date, name) => {
-    if (!hasMore) return;
+  const updateGroups = useCallback(
+    (oldGroups = groups, date, name) => {
+      if (loading || !hasMore) return;
 
-    const filterDateAsUnix = dateAsUnix(date);
+      const filterDateAsUnix = dateAsUnix(date);
 
-    const { groupId } = getLastArrayElementOrEmpty(oldGroups);
+      const { groupId } = getLastArrayElementOrEmpty(oldGroups);
 
-    setLoading(true);
-    return api.groupsManager
-      .getGroups({ name, date: filterDateAsUnix, pageSize: GROUP_PAGE_SIZE, lastId: groupId })
-      .then(filteredGroups => {
-        if (!filteredGroups.length) {
-          setHasMore(false);
-          return;
-        }
-        const newGroups = _.uniqBy(oldGroups.concat(filteredGroups), 'id');
-        setGroups(newGroups);
-        removeUnconfirmedAccountError();
-      })
-      .catch(error => {
-        Logger.error('[GroupsContainer.updateGroups] Error: ', error);
-        if (error.code === UNKNOWN_DID_SUFFIX_ERROR_CODE) {
-          showUnconfirmedAccountError();
-        } else {
+      setLoading(true);
+      return api.groupsManager
+        .getGroups({ name, date: filterDateAsUnix, pageSize: GROUP_PAGE_SIZE, lastId: groupId })
+        .then(filteredGroups => {
+          if (!filteredGroups.length) {
+            setHasMore(false);
+            return;
+          }
+          const newGroups = _.uniqBy(oldGroups.concat(filteredGroups), 'id');
+          setGroups(newGroups);
           removeUnconfirmedAccountError();
-          message.error(t('errors.errorGetting', { model: 'groups' }));
-        }
-      })
-      .finally(() => setLoading(false));
-  };
+        })
+        .catch(error => {
+          Logger.error('[GroupsContainer.updateGroups] Error: ', error);
+          if (error.code === UNKNOWN_DID_SUFFIX_ERROR_CODE) {
+            showUnconfirmedAccountError();
+          } else {
+            removeUnconfirmedAccountError();
+            message.error(t('errors.errorGetting', { model: 'groups' }));
+          }
+        })
+        .finally(() => setLoading(false));
+    },
+    [
+      api.groupsManager,
+      groups,
+      hasMore,
+      loading,
+      removeUnconfirmedAccountError,
+      showUnconfirmedAccountError,
+      t
+    ]
+  );
 
   useEffect(() => {
-    if (!groups.length) {
-      updateGroups();
-    }
-  }, [groups]);
+    if (!groups.length) updateGroups();
+  }, [groups, updateGroups]);
 
   const handleGroupDeletion = group =>
     api.groupsManager

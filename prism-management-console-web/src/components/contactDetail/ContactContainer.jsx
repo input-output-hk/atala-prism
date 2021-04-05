@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useParams } from 'react-router-dom';
 import PropTypes from 'prop-types';
@@ -17,12 +17,16 @@ const ContactContainer = ({ api }) => {
   const [receivedCredentials, setReceivedCredentials] = useState();
 
   const [loading, setLoading] = useState({});
-  const setLoadingByKey = (key, value) =>
-    setLoading(previousLoading => ({ ...previousLoading, [key]: value }));
+  const setLoadingByKey = useCallback(
+    (key, value) => setLoading(previousLoading => ({ ...previousLoading, [key]: value })),
+    []
+  );
 
   const credentialTypes = api.credentialsManager.getCredentialTypes();
 
-  const getContact = () =>
+  const getContact = useCallback(() => {
+    if (loading.contact) return;
+    setLoadingByKey('contact', true);
     api.contactsManager
       .getContact(id)
       .then(({ jsondata, ...rest }) => {
@@ -34,8 +38,11 @@ const ContactContainer = ({ api }) => {
         message.error(t('errors.errorGetting', { model: 'contact' }));
       })
       .finally(() => setLoadingByKey('contact', false));
+  }, [loading.contact, api.contactsManager, id, t, setLoadingByKey]);
 
-  const getGroups = () =>
+  const getGroups = useCallback(() => {
+    if (loading.groups) return;
+    setLoadingByKey('groups', true);
     api.groupsManager
       .getGroups(id)
       .then(setGroups)
@@ -47,8 +54,11 @@ const ContactContainer = ({ api }) => {
         message.error(t('errors.errorGetting', { model: 'groups' }));
       })
       .finally(() => setLoadingByKey('groups', false));
+  }, [loading.groups, api.groupsManager, id, t, setLoadingByKey]);
 
-  const getIssuedCredentials = () =>
+  const getIssuedCredentials = useCallback(() => {
+    if (loading.issuedCredentials) return;
+    setLoadingByKey('issuedCredentials', true);
     api.credentialsManager
       .getContactCredentials(id)
       .then(setIssuedCredentials)
@@ -60,8 +70,17 @@ const ContactContainer = ({ api }) => {
         message.error(t('errors.errorGetting', { model: 'issued credentials' }));
       })
       .finally(() => setLoadingByKey('issuedCredentials', false));
+  }, [loading.issuedCredentials, api.credentialsManager, id, t, setLoadingByKey]);
 
-  const getReceivedCredentials = () =>
+  useEffect(() => {
+    if (!contact) getContact();
+    if (!groups) getGroups();
+    if (!issuedCredentials) getIssuedCredentials();
+  }, [contact, groups, issuedCredentials, getContact, getGroups, getIssuedCredentials]);
+
+  const getReceivedCredentials = useCallback(() => {
+    if (loading.receivedCredentials) return;
+    setLoadingByKey('receivedCredentials', true);
     api.credentialsReceivedManager
       .getReceivedCredentials(id)
       .then(credentials => {
@@ -81,18 +100,20 @@ const ContactContainer = ({ api }) => {
         message.error(t('errors.errorGetting', { model: 'received credentials' }));
       })
       .finally(() => setLoadingByKey('receivedCredentials', false));
+  }, [
+    loading.receivedCredentials,
+    api.credentialsReceivedManager,
+    api.credentialsManager,
+    id,
+    t,
+    setLoadingByKey
+  ]);
 
   useEffect(() => {
-    setLoading({ contact: true, groups: true, issuedCredentials: true, receivedCredentials: true });
-    getContact();
-    getGroups();
-    getIssuedCredentials();
-  }, []);
-
-  useEffect(() => {
-    if (contact?.connectionid) getReceivedCredentials();
+    if (!contact) return;
+    if (contact.connectionid) getReceivedCredentials();
     else setLoadingByKey('receivedCredentials', false);
-  }, [contact]);
+  }, [contact, getReceivedCredentials, setLoadingByKey]);
 
   return (
     <Contact

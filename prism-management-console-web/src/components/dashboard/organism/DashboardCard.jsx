@@ -1,5 +1,4 @@
-import React, { useState, useEffect } from 'react';
-import { isNumber } from 'lodash';
+import React from 'react';
 import { Divider } from 'antd';
 import PropTypes from 'prop-types';
 import imgCard from '../../../images/contactIcon.svg';

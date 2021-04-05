@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import PropTypes from 'prop-types';
 import { contactShape } from '../../../../helpers/propShapes';
 import InfiniteScrollTable from '../../../common/Organisms/Tables/InfiniteScrollTable';
@@ -21,19 +21,24 @@ const ConnectionsTable = ({
   searchDueGeneralScroll
 }) => {
   const [loading, setLoading] = useState(false);
-  const { timesScrolledToBottom } = useScrolledToBottom([hasMore, loading]);
+  const { timesScrolledToBottom } = useScrolledToBottom(hasMore, loading);
+  const [lastUpdated, setLastUpdated] = useState(timesScrolledToBottom);
 
   // leave this trigger for backward compatibility, when all tables uses useScrolledToBottom remove searchDueGeneralScroll
   const handleGetMoreData = () => !searchDueGeneralScroll && getMoreData();
 
-  const getMoreData = () => {
+  const getMoreData = useCallback(() => {
+    if (loading) return;
     setLoading(true);
-    return handleContactsRequest().finally(() => setLoading(false));
-  };
+    handleContactsRequest({ onFinish: () => setLoading(false) });
+  }, [loading, handleContactsRequest]);
 
   useEffect(() => {
-    if (searchDueGeneralScroll) getMoreData();
-  }, [timesScrolledToBottom]);
+    if (timesScrolledToBottom !== lastUpdated && searchDueGeneralScroll) {
+      setLastUpdated(timesScrolledToBottom);
+      getMoreData();
+    }
+  }, [timesScrolledToBottom, lastUpdated, searchDueGeneralScroll, getMoreData]);
 
   return (
     <div className="ConnectionsTable">

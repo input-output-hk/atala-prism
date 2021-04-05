@@ -45,21 +45,6 @@ export const credentialSummaryShape = {
   totalCredentials: number
 };
 
-export const paymentShape = {
-  id: string,
-  // Not returning from the backend
-  user: shape({
-    avatar: string,
-    name: string
-  }),
-  date: number,
-  amount: number,
-  // Not returning from the backend
-  currency: string,
-  status: string,
-  failureReason: string
-};
-
 export const refShape = oneOfType([
   func,
   shape({

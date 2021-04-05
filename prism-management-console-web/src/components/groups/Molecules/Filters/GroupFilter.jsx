@@ -14,7 +14,7 @@ const GroupFilters = ({ updateGroups }) => {
 
   useEffect(() => {
     updateGroups([], date, name);
-  }, [date, name]);
+  }, [date, name, updateGroups]);
 
   const datePickerProps = {
     placeholder: t('groups.filters.date'),

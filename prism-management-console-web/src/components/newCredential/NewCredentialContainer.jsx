@@ -58,46 +58,43 @@ const NewCredentialContainer = ({ api, redirector: { redirectToCredentials } }) 
   const [credentialViewTemplates, setCredentialViewTemplates] = useState([]);
   const [credentialViews, setCredentialViews] = useState([]);
 
-  useEffect(() => {
-    setLoadingContacts(true);
-    if (!groups.length) getGroups();
-    if (!contacts.length) handleContactsRequest();
-  }, []);
-
-  const handleGetGroups = allGroups => {
-    const parsedGroups = allGroups.map(group => ({ ...group, groupName: group.name }));
-    setGroups(parsedGroups);
-  };
-
-  const getCredentialViewTemplates = () =>
-    api.credentialsViewManager
-      .getCredentialViewTemplates()
-      .then(setCredentialViewTemplates)
-      .catch(error => {
-        Logger.error('[NewCredentailContainer.getCredentialViewTemplates] Error: ', error);
-        message.error(t('errors.errorGettingCredentialViewTemplates'));
-      });
-
   const credentialTypes = api.credentialsManager.getCredentialTypes();
 
-  const getGroups = () =>
-    api.groupsManager
-      .getGroups()
-      .then(handleGetGroups)
-      .catch(error => {
-        Logger.error('[NewCredentailContainer.getGroups] Error: ', error);
-        message.error(message.error(t('errors.errorGetting', { model: 'groups' })));
-      });
   useEffect(() => {
-    if (!credentialViewTemplates.length) getCredentialViewTemplates();
-  }, []);
+    if (!groups.length)
+      api.groupsManager
+        .getGroups()
+        .then(allGroups => {
+          const parsedGroups = allGroups.map(group => ({ ...group, groupName: group.name }));
+          setGroups(parsedGroups);
+        })
+        .catch(error => {
+          Logger.error('[NewCredentailContainer.getGroups] Error: ', error);
+          message.error(message.error(t('errors.errorGetting', { model: 'groups' })));
+        });
 
-  const filterGroups = filter => setFilteredGroups(filterBy(groups, filter, GROUP_NAME_KEY));
+    if (!credentialViewTemplates.length)
+      api.credentialsViewManager
+        .getCredentialViewTemplates()
+        .then(setCredentialViewTemplates)
+        .catch(error => {
+          Logger.error('[NewCredentailContainer.getCredentialViewTemplates] Error: ', error);
+          message.error(t('errors.errorGettingCredentialViewTemplates'));
+        });
+  }, [
+    credentialViewTemplates.length,
+    groups.length,
+    api.credentialsViewManager,
+    api.groupsManager,
+    t
+  ]);
 
   const filterBy = (toFilter, filter, key) =>
     toFilter.filter(({ [key]: name }) => name.toLowerCase().includes(filter.toLowerCase()));
 
   useEffect(() => {
+    const filterGroups = filter => setFilteredGroups(filterBy(groups, filter, GROUP_NAME_KEY));
+
     filterGroups(groupsFilter);
   }, [groupsFilter, groups]);
 

@@ -36,7 +36,7 @@ const ManualImportContainer = ({
 
   const createBlankCredential = key => ({
     ...blankContact,
-    ...credentialType?.fields.map(f => ({ [f.key]: '' })),
+    ...credentialType?.fields?.map(f => ({ [f.key]: '' })),
     key
   });
 
@@ -57,7 +57,7 @@ const ManualImportContainer = ({
           message.error(t('errors.errorGetting', { model: t('groups.title') }));
         });
     }
-  }, []);
+  }, [groupsManager, showGroupSelection, t]);
 
   const handleAddNewCredential = () => {
     const { key = 0 } = _.last(credentialsData) || {};
@@ -145,7 +145,7 @@ const ManualImportContainer = ({
 };
 
 ManualImportContainer.defaultProps = {
-  credentialType: null,
+  credentialType: {},
   recipients: []
 };
 
