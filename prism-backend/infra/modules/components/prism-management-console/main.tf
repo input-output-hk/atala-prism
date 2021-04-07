@@ -49,6 +49,8 @@ module "management_console_container_definition" {
     { name = "MANAGEMENT_CONSOLE_CONNECTOR_PORT", value = var.connector_port },
   ]
 
+  ulimits = [{ name = "nofile", softLimit = 10240, hardLimit = 20480 }]
+
   logConfiguration = {
     logDriver = "awslogs"
     options = {
