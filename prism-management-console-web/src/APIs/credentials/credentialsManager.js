@@ -70,16 +70,22 @@ async function createBatchOfCredentials(credentialsData) {
 }
 
 function getCredentialBinary(credential) {
-  const { encodedsignedcredential } = credential;
+  const { encodedsignedcredential, batchinclusionproof } = credential;
   if (!encodedsignedcredential) {
     Logger.error('Could not get encoded credential', credential);
     throw new Error('No encoded credential');
+  }
+
+  if (!batchinclusionproof) {
+    Logger.error('Could not get batch inclusion proof', credential);
+    throw new Error('No inclusion proof');
   }
 
   const atalaMessage = new AtalaMessage();
   const plainTextCredential = new PlainTextCredential();
 
   plainTextCredential.setEncodedcredential(encodedsignedcredential);
+  plainTextCredential.setEncodedmerkleproof(batchinclusionproof);
 
   atalaMessage.setPlaincredential(plainTextCredential);
   return atalaMessage.serializeBinary();
@@ -123,14 +129,11 @@ async function getBlockchainData(credential) {
   const getBlockchainDataRequest = new GetBlockchainDataRequest();
   getBlockchainDataRequest.setEncodedsignedcredential(credential);
 
-  const { metadata, sessionError } = await this.auth.getMetadata(
-    getBlockchainDataRequest,
-    REQUEST_AUTH_TIMEOUT_MS
-  );
+  const { metadata, sessionError } = await this.auth.getMetadata(getBlockchainDataRequest);
   if (sessionError) return {};
 
   const res = await this.client.getBlockchainData(getBlockchainDataRequest, metadata);
-  const issuanceProof = res.getIssuanceproof().toObject();
+  const issuanceProof = res.getIssuanceproof()?.toObject();
   Logger.info('Got issuance proof:', issuanceProof);
   return issuanceProof;
 }
