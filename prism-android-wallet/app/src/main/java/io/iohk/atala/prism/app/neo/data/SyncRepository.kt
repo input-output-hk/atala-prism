@@ -7,6 +7,7 @@ import io.iohk.atala.prism.app.data.local.db.model.Contact
 import io.iohk.atala.prism.app.data.local.db.model.Credential
 import io.iohk.atala.prism.app.data.local.db.model.ProofRequest
 import io.iohk.atala.prism.app.data.local.db.model.ProofRequestWithContactAndCredentials
+import io.iohk.atala.prism.app.neo.common.extensions.toMilliseconds
 import io.iohk.atala.prism.app.neo.data.local.PreferencesLocalDataSourceInterface
 import io.iohk.atala.prism.app.neo.data.local.SessionLocalDataSourceInterface
 import io.iohk.atala.prism.app.neo.data.local.SyncLocalDataSourceInterface
@@ -81,7 +82,7 @@ class SyncRepository(
             syncLocalDataSource.getContactByConnectionId(connectionId)?.let { contact ->
                 val atalaMessage = AtalaMessage.parseFrom(receivedMessage.message)
                 if (CredentialMapper.isACredentialMessage(atalaMessage)) {
-                    val credential = CredentialMapper.mapToCredential(atalaMessage, receivedMessage.id, receivedMessage.connectionId, receivedMessage.received, contact)
+                    val credential = CredentialMapper.mapToCredential(receivedMessage, receivedMessage.id, receivedMessage.connectionId, receivedMessage.received.toMilliseconds(), contact)
                     contact.lastMessageId = receivedMessage.id
                     syncLocalDataSource.updateContact(contact, listOf(credential))
                 } else if (atalaMessage.messageCase == AtalaMessage.MessageCase.PROOFREQUEST) {
@@ -122,7 +123,8 @@ class SyncRepository(
 
     suspend fun acceptProofRequest(id: Long) {
         getProofRequestById(id)?.let { proofRequestData ->
-            remoteDataSource.sendCredentialsToContact(proofRequestData.contact!!, proofRequestData.credentials)
+            val encodedCredentials = syncLocalDataSource.loadEncodedCredentials(proofRequestData.credentials)
+            remoteDataSource.sendCredentialsToContact(proofRequestData.contact!!, encodedCredentials)
             // store activity log
             syncLocalDataSource.insertRequestedCredentialActivities(proofRequestData.contact!!, proofRequestData.credentials)
             removeProofRequest(proofRequestData.proofRequest)

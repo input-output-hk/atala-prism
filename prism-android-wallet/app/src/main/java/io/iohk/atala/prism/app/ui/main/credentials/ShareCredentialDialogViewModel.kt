@@ -7,7 +7,7 @@ import androidx.lifecycle.Transformations
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import io.iohk.atala.prism.app.data.local.db.model.Contact
-import io.iohk.atala.prism.app.data.local.db.model.Credential
+import io.iohk.atala.prism.app.data.local.db.model.CredentialWithEncodedCredential
 import io.iohk.atala.prism.app.neo.common.EventWrapper
 import io.iohk.atala.prism.app.neo.common.model.CheckableData
 import io.iohk.atala.prism.app.neo.data.CredentialsRepository
@@ -51,14 +51,14 @@ class ShareCredentialDialogViewModel @Inject constructor(
         return@map it.find { contact -> contact.isChecked } != null
     }
 
-    private lateinit var credential: Credential
+    private lateinit var credentialData: CredentialWithEncodedCredential
 
     fun fetchData(credentialId: String) {
         viewModelScope.launch {
             try {
                 _contactsAreLoading.postValue(true)
-                credential = repository.getCredentialByCredentialId(credentialId)!!
-                val checkableContacts = repository.contactsToShareCredential(credential).map {
+                credentialData = repository.getCredentialWithEncodedCredentialByCredentialId(credentialId)!!
+                val checkableContacts = repository.contactsToShareCredential().map {
                     CheckableData(it)
                 }
                 _contacts.postValue(checkableContacts)
@@ -94,7 +94,7 @@ class ShareCredentialDialogViewModel @Inject constructor(
             if (selectedCheckableContacts?.isNotEmpty() == true) {
                 try {
                     _credentialSharingIsInProcess.postValue(true)
-                    repository.shareCredential(credential, selectedCheckableContacts.map { it.data })
+                    repository.shareCredential(credentialData, selectedCheckableContacts.map { it.data })
                     _credentialHasBeenShared.postValue(EventWrapper(true))
                 } catch (ex: Exception) {
                     _error.postValue(EventWrapper(ErrorType.CantShareCredentialError))

@@ -6,6 +6,8 @@ import io.iohk.atala.prism.app.data.local.db.dao.CredentialDao
 import io.iohk.atala.prism.app.data.local.db.dao.ProofRequestDao
 import io.iohk.atala.prism.app.data.local.db.model.Contact
 import io.iohk.atala.prism.app.data.local.db.model.Credential
+import io.iohk.atala.prism.app.data.local.db.model.CredentialWithEncodedCredential
+import io.iohk.atala.prism.app.data.local.db.model.EncodedCredential
 import io.iohk.atala.prism.app.data.local.db.model.ProofRequest
 import io.iohk.atala.prism.app.data.local.db.model.ProofRequestWithContactAndCredentials
 import kotlinx.coroutines.Dispatchers
@@ -29,7 +31,7 @@ class SyncLocalDataSource(private val proofRequestDao: ProofRequestDao, private 
         contactDao.getContactByConnectionId(connectionId)
     }
 
-    override suspend fun updateContact(contact: Contact, issuedCredentials: List<Credential>) = withContext(Dispatchers.IO) {
+    override suspend fun updateContact(contact: Contact, issuedCredentials: List<CredentialWithEncodedCredential>) = withContext(Dispatchers.IO) {
         contactDao.updateContactSync(contact, issuedCredentials)
     }
 
@@ -39,5 +41,12 @@ class SyncLocalDataSource(private val proofRequestDao: ProofRequestDao, private 
 
     override suspend fun insertProofRequest(proofRequest: ProofRequest, credentials: List<Credential>): Long = withContext(Dispatchers.IO) {
         proofRequestDao.insertSync(proofRequest, credentials)
+    }
+
+    override suspend fun loadEncodedCredentials(credentials: List<Credential>): List<EncodedCredential> = withContext(Dispatchers.IO) {
+        // Encoded credentials must be obtained one by one due to the limit of data that exists for a SQLite query
+        return@withContext credentials.map {
+            credentialDao.getEncodedCredentialByCredentialId(it.credentialId)!!
+        }
     }
 }

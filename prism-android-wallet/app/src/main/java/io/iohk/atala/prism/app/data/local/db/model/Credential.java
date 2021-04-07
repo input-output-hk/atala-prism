@@ -7,8 +7,6 @@ import androidx.room.ForeignKey;
 import androidx.room.Index;
 import androidx.room.PrimaryKey;
 
-import com.google.protobuf.ByteString;
-
 @Entity(tableName = "credentials",
         indices = {@Index("connection_id"), @Index(value = "credential_id", unique = true)},
         foreignKeys = {
@@ -31,12 +29,6 @@ public class Credential {
     @ColumnInfo(name = "date_received")
     public Long dateReceived;
 
-    @ColumnInfo(name = "credential_encoded", typeAffinity = ColumnInfo.BLOB)
-    public ByteString credentialEncoded;
-
-    @ColumnInfo(name = "html_view")
-    public String htmlView;
-
     @ColumnInfo(name = "issuer_id")
     public String issuerId;
 
@@ -49,9 +41,6 @@ public class Credential {
     @ColumnInfo(name = "connection_id")
     @NonNull
     public String connectionId;
-
-    @ColumnInfo(name = "credentials_document")
-    public String credentialDocument;
 
     @ColumnInfo(name = "deleted", defaultValue = "false")
     public Boolean deleted = false;

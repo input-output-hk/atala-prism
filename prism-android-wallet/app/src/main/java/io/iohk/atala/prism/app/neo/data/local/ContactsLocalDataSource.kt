@@ -5,12 +5,13 @@ import io.iohk.atala.prism.app.data.local.db.dao.ContactDao
 import io.iohk.atala.prism.app.data.local.db.model.ActivityHistoryWithCredential
 import io.iohk.atala.prism.app.data.local.db.model.Contact
 import io.iohk.atala.prism.app.data.local.db.model.Credential
+import io.iohk.atala.prism.app.data.local.db.model.CredentialWithEncodedCredential
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 
 class ContactsLocalDataSource(private val contactDao: ContactDao) : ContactsLocalDataSourceInterface {
     override suspend fun storeContactsWithIssuedCredentials(
-        contactsWithIssuedCredentials: Map<Contact, List<Credential>>
+        contactsWithIssuedCredentials: Map<Contact, List<CredentialWithEncodedCredential>>
     ) {
         contactDao.insertAll(contactsWithIssuedCredentials)
     }
