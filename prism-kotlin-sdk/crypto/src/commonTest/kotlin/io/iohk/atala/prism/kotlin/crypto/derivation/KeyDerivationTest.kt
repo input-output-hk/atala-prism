@@ -1,6 +1,5 @@
 package io.iohk.atala.prism.kotlin.crypto.derivation
 
-import io.iohk.atala.prism.kotlin.crypto.IgnoreJs
 import io.iohk.atala.prism.kotlin.crypto.util.BytesOps
 import kotlinx.serialization.*
 import kotlinx.serialization.json.*
@@ -8,7 +7,6 @@ import kotlinx.serialization.modules.SerializersModule
 import kotlinx.serialization.modules.polymorphic
 import kotlin.test.*
 
-@IgnoreJs
 class KeyDerivationTest {
 
     @Test

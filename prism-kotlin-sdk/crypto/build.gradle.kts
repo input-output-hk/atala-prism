@@ -112,8 +112,12 @@ kotlin {
         }
         val jsMain by getting {
             dependencies {
+                implementation("org.jetbrains.kotlinx:kotlinx-nodejs:0.0.7")
+
                 implementation(npm("hash.js", "1.1.7", generateExternals = true))
                 implementation(npm("elliptic", "6.5.3"))
+                implementation(npm("bip32", "2.0.6"))
+                implementation(npm("bip39", "3.0.3"))
             }
         }
         val jsTest by getting {
