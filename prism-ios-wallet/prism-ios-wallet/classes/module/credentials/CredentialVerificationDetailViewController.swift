@@ -89,9 +89,8 @@ class CredentialVerificationDetailViewController: UIViewController {
         fileTv.text = credential?.json
 
         if let plainJsonData = credential?.json.data(using: .utf8) {
-            let hash = CryptoUtils.sha256.compute(bytes: toKotlinBytes(data: plainJsonData))
-            let data = Data(bytes: Array(hash), count: hash.count)
-            fileHashLbl.text = "#\(data.hex)"
+            let digest = CryptoUtils.sha256Digest.compute(bytes: toKotlinBytes(data: plainJsonData))
+            fileHashLbl.text = "#\(digest.hexValue())"
         }
     }
 

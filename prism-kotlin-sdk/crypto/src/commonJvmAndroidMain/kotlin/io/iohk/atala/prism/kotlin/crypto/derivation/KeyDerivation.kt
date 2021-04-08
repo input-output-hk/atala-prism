@@ -5,7 +5,7 @@ import org.bitcoinj.wallet.DeterministicSeed
 import java.io.ByteArrayInputStream
 import java.security.SecureRandom
 
-object JvmKeyDerivation : KeyDerivation {
+actual object KeyDerivation {
     private fun mnemonicCodeEnglishInputStream(): ByteArrayInputStream {
         val wordsText = MnemonicCodeEnglish.wordList.joinToString("\n", "", "\n")
         return wordsText.byteInputStream()
@@ -14,20 +14,20 @@ object JvmKeyDerivation : KeyDerivation {
     private val bitcoinjMnemonic =
         org.bitcoinj.crypto.MnemonicCode(mnemonicCodeEnglishInputStream(), null)
 
-    override fun randomMnemonicCode(): MnemonicCode {
+    actual fun randomMnemonicCode(): MnemonicCode {
         val entropyBytes = SecureRandom.getSeed(DeterministicSeed.DEFAULT_SEED_ENTROPY_BITS / 8)
         val mnemonicWords = JvmMnemonic.bitcoinjMnemonic.toMnemonic(entropyBytes)
 
         return MnemonicCode(mnemonicWords)
     }
 
-    override fun isValidMnemonicWord(word: String): Boolean =
+    actual fun isValidMnemonicWord(word: String): Boolean =
         MnemonicCodeEnglish.wordList.contains(word)
 
-    override fun getValidMnemonicWords(): List<String> =
+    actual fun getValidMnemonicWords(): List<String> =
         MnemonicCodeEnglish.wordList
 
-    override fun binarySeed(seed: MnemonicCode, passphrase: String): List<Byte> {
+    actual fun binarySeed(seed: MnemonicCode, passphrase: String): List<Byte> {
         val javaWords = seed.words
 
         try {
@@ -45,6 +45,9 @@ object JvmKeyDerivation : KeyDerivation {
         return org.bitcoinj.crypto.MnemonicCode.toSeed(javaWords, passphrase).toList()
     }
 
-    override fun derivationRoot(seed: List<Byte>): ExtendedKey =
-        JvmExtendedKey(HDKeyDerivation.createMasterPrivateKey(seed.toByteArray()))
+    actual fun derivationRoot(seed: List<Byte>): ExtendedKey =
+        ExtendedKey(HDKeyDerivation.createMasterPrivateKey(seed.toByteArray()))
+
+    actual fun deriveKey(seed: List<Byte>, path: DerivationPath): ExtendedKey =
+        path.axes.fold(derivationRoot(seed)) { key, axis -> key.derive(axis) }
 }

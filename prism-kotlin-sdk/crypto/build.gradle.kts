@@ -121,7 +121,11 @@ kotlin {
                 implementation(kotlin("test-js"))
             }
         }
-        val iosMain by getting
+        val iosMain by getting {
+            dependencies {
+                api("fr.acinq.bitcoin:bitcoin-kmp:0.7.0")
+            }
+        }
         val iosTest by getting
 
         all {

@@ -9,13 +9,13 @@ import org.bitcoinj.crypto.ChildNumber
 import org.bitcoinj.crypto.DeterministicKey
 import org.bitcoinj.crypto.HDKeyDerivation
 
-class JvmExtendedKey(val key: DeterministicKey) : ExtendedKey {
+actual class ExtendedKey(val key: DeterministicKey) {
     /** Derivation path used to obtain such key */
-    override fun path(): DerivationPath =
+    actual fun path(): DerivationPath =
         DerivationPath(key.path.map { axis -> DerivationAxis(axis.i) })
 
     /** Public key for this extended key */
-    override fun publicKey(): ECPublicKey {
+    actual fun publicKey(): ECPublicKey {
         val ecPoint = key.pubKeyPoint
         return EC.toPublicKey(
             ecPoint.xCoord.toBigInteger().toKotlinBigInteger(),
@@ -24,14 +24,14 @@ class JvmExtendedKey(val key: DeterministicKey) : ExtendedKey {
     }
 
     /** Private key for this extended key */
-    override fun privateKey(): ECPrivateKey =
+    actual fun privateKey(): ECPrivateKey =
         EC.toPrivateKey(key.privKey.toKotlinBigInteger())
 
     /** KeyPair for this extended key */
-    override fun keyPair(): ECKeyPair =
+    actual fun keyPair(): ECKeyPair =
         ECKeyPair(publicKey(), privateKey())
 
     /** Generates child extended key for given index */
-    override fun derive(axis: DerivationAxis): JvmExtendedKey =
-        JvmExtendedKey(HDKeyDerivation.deriveChildKey(key, ChildNumber(axis.i)))
+    actual fun derive(axis: DerivationAxis): ExtendedKey =
+        ExtendedKey(HDKeyDerivation.deriveChildKey(key, ChildNumber(axis.i)))
 }

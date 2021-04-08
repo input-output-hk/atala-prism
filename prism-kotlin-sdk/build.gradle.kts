@@ -1,9 +1,9 @@
 import com.palantir.gradle.gitversion.VersionDetails
 
 plugins {
-    kotlin("multiplatform") version "1.4.30" apply false
-    kotlin("plugin.serialization") version "1.4.30" apply false
-    kotlin("native.cocoapods") version "1.4.30" apply false
+    kotlin("multiplatform") version "1.4.31" apply false
+    kotlin("plugin.serialization") version "1.4.31" apply false
+    kotlin("native.cocoapods") version "1.4.31" apply false
     id("com.android.library") version "4.0.2" apply false
     id("com.google.protobuf") version "0.8.14" apply false
     id("com.palantir.git-version") version "0.12.3"
@@ -41,6 +41,7 @@ allprojects {
         maven("https://plugins.gradle.org/m2/")
         maven("https://dl.bintray.com/itegulov/maven")
         maven("https://kotlin.bintray.com/kotlinx/")
+        maven("https://dl.bintray.com/acinq/libs")
     }
 
     apply(plugin = "org.jlleitschuh.gradle.ktlint")
