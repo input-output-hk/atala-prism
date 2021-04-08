@@ -27,7 +27,7 @@
 
  // <!-- Default errors and loadings -->
 "coming_soon_btn" = "COMING SOON";
-"coming_soon_title" = "Coming soon...";
+"coming_soon_title" = "Coming soon";
 "error_generic_title" = "Error";
 "error_generic_error" = "An error occurred. Try again.";
 "error_connection_error" = "No connection found. Try again.";
@@ -331,6 +331,14 @@
 "home_promotional_share" = "Share with your Friends!";
 "home_promotional_share_desc" = "Atala PRISM lorem ipsum\ndolor sit amtet";
 "home_promotional_send_invite" = "Send Invite";
+"home_payid_title" = "Get your Pay ID now!";
+"home_payid_subtitle_first" = "You can start now or do it later by goint to the ";
+"home_payid_subtitle_bold" = "Settings";
+"home_payid_subtitle_second" = " option on the bottom menu.";
+"home_payid" = "Pay ID";
+"home_get_now" = "Get it Now !";
+"home_verified_title" = "Get your Verified Credential!";
+"home_verified" = "Verified Credential";
 
 // <!-- Verify Identity -->
 "verifyid_tutorial_title" = "Verify your identity";

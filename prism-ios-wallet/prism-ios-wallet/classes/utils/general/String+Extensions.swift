@@ -5,7 +5,7 @@
 //
 extension String {
 
-    func localize() -> String! {
+    func localize() -> String {
         return NSLocalizedString(self, comment: "")
     }
 

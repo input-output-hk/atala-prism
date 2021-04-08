@@ -88,8 +88,8 @@ class DateFormatPresenter: ListingBasePresenter, ListingBaseTableUtilsPresenterD
     }
 
     func setup(for cell: DateFormatInfoTableViewCell) {
-        let title = NSMutableAttributedString(attributedString: "dateformat_info_bold".localize()!.bold)
-        title.append("dateformat_info".localize()!.regular)
+        let title = NSMutableAttributedString(attributedString: "dateformat_info_bold".localize().bold)
+        title.append("dateformat_info".localize().regular)
         cell.config(title: title, delegate: self)
     }
 

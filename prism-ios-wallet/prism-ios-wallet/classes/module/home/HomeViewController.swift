@@ -17,7 +17,7 @@ class HomeViewController: ListingBaseViewController {
     override func navBarCustomStyle() -> NavBarCustomStyle {
         return navBar
     }
-    
+
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
         self.presenterImpl.actionPullToRefresh()
@@ -42,10 +42,12 @@ class HomeViewController: ListingBaseViewController {
         if indexPath.row == 0 {
             return HomeProfileTableViewCell.reuseIdentifier
         } else if indexPath.row == 1 {
+            return HomeCardsTableViewCell.reuseIdentifier
+        } else if indexPath.row == 2 {
             return HomeActivityLogHeaderTableViewCell.reuseIdentifier
-        } else if indexPath.row > 1 && indexPath.row < presenterImpl.activities.count + 2 {
+        } else if indexPath.row > 2 && indexPath.row < presenterImpl.activities.count + 3 {
             return HomeActivityLogTableViewCell.reuseIdentifier
-        } else if indexPath.row == presenterImpl.activities.count + 2 {
+        } else if indexPath.row == presenterImpl.activities.count + 3 {
             return HomePromotionalTableViewCell.reuseIdentifier
         }
         return super.getCellIdentifier(for: indexPath)
@@ -56,10 +58,12 @@ class HomeViewController: ListingBaseViewController {
         if indexPath.row == 0 {
             return HomeProfileTableViewCell.nibName
         } else if indexPath.row == 1 {
+            return HomeCardsTableViewCell.nibName
+        } else if indexPath.row == 2 {
             return HomeActivityLogHeaderTableViewCell.nibName
-        } else if indexPath.row > 1 && indexPath.row < presenterImpl.activities.count + 2 {
+        } else if indexPath.row > 2 && indexPath.row < presenterImpl.activities.count + 3 {
             return HomeActivityLogTableViewCell.nibName
-        } else if indexPath.row == presenterImpl.activities.count + 2 {
+        } else if indexPath.row == presenterImpl.activities.count + 3 {
             return HomePromotionalTableViewCell.nibName
         }
         return super.getCellNib(for: indexPath)

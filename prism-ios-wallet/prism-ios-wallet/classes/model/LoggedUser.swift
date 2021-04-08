@@ -30,6 +30,9 @@ class LoggedUser: Mappable {
 
     var dateFormat: String?
 
+    var payIdCardDismissed: Bool?
+    var verifyIdCardDismissed: Bool?
+
     init() {}
 
     required init?(map: Map) {}
@@ -63,5 +66,8 @@ class LoggedUser: Mappable {
         appBiometrics <- map["appBiometrics"]
 
         dateFormat <- map["dateFormat"]
+
+        payIdCardDismissed <- map["payIdCardDismissed"]
+        verifyIdCardDismissed <- map["verifyIdCardDismissed"]
     }
 }

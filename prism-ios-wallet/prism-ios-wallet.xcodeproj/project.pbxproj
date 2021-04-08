@@ -18,6 +18,8 @@
 		B30255062449E61900C8E9C0 /* Notifications.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = B30255052449E61900C8E9C0 /* Notifications.storyboard */; };
 		B3025508244A4FE900C8E9C0 /* ConnectionsWorker.swift in Sources */ = {isa = PBXBuildFile; fileRef = B3025507244A4FE900C8E9C0 /* ConnectionsWorker.swift */; };
 		B3045F1E2512B338004FAC50 /* NotificationHeaderViewCell.xib in Resources */ = {isa = PBXBuildFile; fileRef = B3045F1D2512B338004FAC50 /* NotificationHeaderViewCell.xib */; };
+		B3062026260A238700240643 /* HomeCardsTableViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = B3062024260A238700240643 /* HomeCardsTableViewCell.swift */; };
+		B3062027260A238700240643 /* HomeCardsTableViewCell.xib in Resources */ = {isa = PBXBuildFile; fileRef = B3062025260A238700240643 /* HomeCardsTableViewCell.xib */; };
 		B309A99D250FEACC00C62B50 /* CredentialHistoryHeaderViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = B309A99B250FEACC00C62B50 /* CredentialHistoryHeaderViewCell.swift */; };
 		B309A99E250FEACC00C62B50 /* CredentialHistoryHeaderViewCell.xib in Resources */ = {isa = PBXBuildFile; fileRef = B309A99C250FEACC00C62B50 /* CredentialHistoryHeaderViewCell.xib */; };
 		B309A9A3250FF0A500C62B50 /* CredentialSharedViewCellViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = B309A9A1250FF0A500C62B50 /* CredentialSharedViewCellViewCell.swift */; };
@@ -318,6 +320,8 @@
 		B30255052449E61900C8E9C0 /* Notifications.storyboard */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; path = Notifications.storyboard; sourceTree = "<group>"; };
 		B3025507244A4FE900C8E9C0 /* ConnectionsWorker.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ConnectionsWorker.swift; sourceTree = "<group>"; };
 		B3045F1D2512B338004FAC50 /* NotificationHeaderViewCell.xib */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.xib; path = NotificationHeaderViewCell.xib; sourceTree = "<group>"; };
+		B3062024260A238700240643 /* HomeCardsTableViewCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HomeCardsTableViewCell.swift; sourceTree = "<group>"; };
+		B3062025260A238700240643 /* HomeCardsTableViewCell.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = HomeCardsTableViewCell.xib; sourceTree = "<group>"; };
 		B309A99B250FEACC00C62B50 /* CredentialHistoryHeaderViewCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CredentialHistoryHeaderViewCell.swift; sourceTree = "<group>"; };
 		B309A99C250FEACC00C62B50 /* CredentialHistoryHeaderViewCell.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = CredentialHistoryHeaderViewCell.xib; sourceTree = "<group>"; };
 		B309A9A1250FF0A500C62B50 /* CredentialSharedViewCellViewCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CredentialSharedViewCellViewCell.swift; sourceTree = "<group>"; };
@@ -834,6 +838,7 @@
 				B35CEEF025E5382400DA2BF9 /* HomeActivityLogHeaderTableViewCell.xib */,
 				B35CEEFA25E581E800DA2BF9 /* HomeActivityLogTableViewCell.xib */,
 				B35CEF0425E68B6600DA2BF9 /* HomePromotionalTableViewCell.xib */,
+				B3062025260A238700240643 /* HomeCardsTableViewCell.xib */,
 			);
 			path = cells;
 			sourceTree = "<group>";
@@ -869,6 +874,7 @@
 				B35CEEEF25E5382400DA2BF9 /* HomeActivityLogHeaderTableViewCell.swift */,
 				B35CEEF925E581E800DA2BF9 /* HomeActivityLogTableViewCell.swift */,
 				B35CEF0325E68B6600DA2BF9 /* HomePromotionalTableViewCell.swift */,
+				B3062024260A238700240643 /* HomeCardsTableViewCell.swift */,
 			);
 			path = cells;
 			sourceTree = "<group>";
@@ -1751,6 +1757,7 @@
 				EE71855E23835EB000C58F62 /* ShareItemViewCell.xib in Resources */,
 				EE7185752384D5EE00C58F62 /* TabsViewCell.xib in Resources */,
 				B352434424FFDA080053A804 /* DateFormatViewCell.xib in Resources */,
+				B3062027260A238700240643 /* HomeCardsTableViewCell.xib in Resources */,
 				B35470FA24E4252D009F4844 /* DeleteContact.storyboard in Resources */,
 				EE7D4CC52366B9C5007C31A8 /* SteradianRegular.otf in Resources */,
 				B36F27BD2406E2C400FF751B /* About.storyboard in Resources */,
@@ -1989,6 +1996,7 @@
 				EE8FD4E423726A4000EFF62E /* SettingsViewController.swift in Sources */,
 				EE904F062373AAD200EE6344 /* NotificationViewCell.swift in Sources */,
 				EE7D4C422366B9C4007C31A8 /* ErrorUtils.swift in Sources */,
+				B3062026260A238700240643 /* HomeCardsTableViewCell.swift in Sources */,
 				EE718550237DBF5400C58F62 /* WelcomeViewController.swift in Sources */,
 				EE7D4D042367622F007C31A8 /* CredentialsPresenter.swift in Sources */,
 				B367AEA925D1843A00A1BF15 /* VerifyIdResultsPresenter.swift in Sources */,
