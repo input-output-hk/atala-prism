@@ -32,6 +32,11 @@
 		B309C16C24BF7DBA00AF70DF /* CredentialDAO.swift in Sources */ = {isa = PBXBuildFile; fileRef = B309C16B24BF7DBA00AF70DF /* CredentialDAO.swift */; };
 		B309C17024BF89F100AF70DF /* ContactDAO.swift in Sources */ = {isa = PBXBuildFile; fileRef = B309C16F24BF89F100AF70DF /* ContactDAO.swift */; };
 		B309C17324BF8F0B00AF70DF /* ActivityHistoryDAO.swift in Sources */ = {isa = PBXBuildFile; fileRef = B309C17224BF8F0B00AF70DF /* ActivityHistoryDAO.swift */; };
+		B313877525ED6EF9007A67C8 /* IntdemoTutorial.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = B313877425ED6EF9007A67C8 /* IntdemoTutorial.storyboard */; };
+		B313877A25ED7088007A67C8 /* IntdemoTutorialPageView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B313877925ED7088007A67C8 /* IntdemoTutorialPageView.swift */; };
+		B313877F25ED70AA007A67C8 /* IntdemoTutorialPageView.xib in Resources */ = {isa = PBXBuildFile; fileRef = B313877E25ED70AA007A67C8 /* IntdemoTutorialPageView.xib */; };
+		B313878425ED72BA007A67C8 /* IntdemoTutorialPresenter.swift in Sources */ = {isa = PBXBuildFile; fileRef = B313878325ED72BA007A67C8 /* IntdemoTutorialPresenter.swift */; };
+		B313878925ED72DE007A67C8 /* IntdemoTutorialViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = B313878825ED72DE007A67C8 /* IntdemoTutorialViewController.swift */; };
 		B31EB69725C844FE00BDE34A /* VerifyIdTypeSelect.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = B31EB69625C844FD00BDE34A /* VerifyIdTypeSelect.storyboard */; };
 		B31EB69C25C856FC00BDE34A /* VerifyIdTypeSelectViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = B31EB69B25C856FC00BDE34A /* VerifyIdTypeSelectViewController.swift */; };
 		B31EB6A125C8571000BDE34A /* VerifyIdTypeSelectPresenter.swift in Sources */ = {isa = PBXBuildFile; fileRef = B31EB6A025C8571000BDE34A /* VerifyIdTypeSelectPresenter.swift */; };
@@ -43,11 +48,6 @@
 		B31EB71625C9D64A00BDE34A /* AcuantConfig.plist in Resources */ = {isa = PBXBuildFile; fileRef = B31EB71525C9D64A00BDE34A /* AcuantConfig.plist */; };
 		B31EB7C025C9E41000BDE34A /* AcuantTokenService.swift in Sources */ = {isa = PBXBuildFile; fileRef = B31EB7BF25C9E41000BDE34A /* AcuantTokenService.swift */; };
 		B31EB83225CB374B00BDE34A /* AcuantUtils.swift in Sources */ = {isa = PBXBuildFile; fileRef = B31EB83125CB374B00BDE34A /* AcuantUtils.swift */; };
-		B313877525ED6EF9007A67C8 /* IntdemoTutorial.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = B313877425ED6EF9007A67C8 /* IntdemoTutorial.storyboard */; };
-		B313877A25ED7088007A67C8 /* IntdemoTutorialPageView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B313877925ED7088007A67C8 /* IntdemoTutorialPageView.swift */; };
-		B313877F25ED70AA007A67C8 /* IntdemoTutorialPageView.xib in Resources */ = {isa = PBXBuildFile; fileRef = B313877E25ED70AA007A67C8 /* IntdemoTutorialPageView.xib */; };
-		B313878425ED72BA007A67C8 /* IntdemoTutorialPresenter.swift in Sources */ = {isa = PBXBuildFile; fileRef = B313878325ED72BA007A67C8 /* IntdemoTutorialPresenter.swift */; };
-		B313878925ED72DE007A67C8 /* IntdemoTutorialViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = B313878825ED72DE007A67C8 /* IntdemoTutorialViewController.swift */; };
 		B31F0923257AB98800BCA71C /* AtomicProperty.swift in Sources */ = {isa = PBXBuildFile; fileRef = B31F0922257AB98800BCA71C /* AtomicProperty.swift */; };
 		B322A28A25C4590800A4A0B6 /* VerifyIdTutorial.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = B322A28925C4590800A4A0B6 /* VerifyIdTutorial.storyboard */; };
 		B322A29025C4802700A4A0B6 /* VerifyIdTutorialViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = B322A28F25C4802700A4A0B6 /* VerifyIdTutorialViewController.swift */; };
@@ -332,6 +332,11 @@
 		B309C16B24BF7DBA00AF70DF /* CredentialDAO.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CredentialDAO.swift; sourceTree = "<group>"; };
 		B309C16F24BF89F100AF70DF /* ContactDAO.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContactDAO.swift; sourceTree = "<group>"; };
 		B309C17224BF8F0B00AF70DF /* ActivityHistoryDAO.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ActivityHistoryDAO.swift; sourceTree = "<group>"; };
+		B313877425ED6EF9007A67C8 /* IntdemoTutorial.storyboard */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; path = IntdemoTutorial.storyboard; sourceTree = "<group>"; };
+		B313877925ED7088007A67C8 /* IntdemoTutorialPageView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = IntdemoTutorialPageView.swift; sourceTree = "<group>"; };
+		B313877E25ED70AA007A67C8 /* IntdemoTutorialPageView.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = IntdemoTutorialPageView.xib; sourceTree = "<group>"; };
+		B313878325ED72BA007A67C8 /* IntdemoTutorialPresenter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = IntdemoTutorialPresenter.swift; sourceTree = "<group>"; };
+		B313878825ED72DE007A67C8 /* IntdemoTutorialViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = IntdemoTutorialViewController.swift; sourceTree = "<group>"; };
 		B31EB69625C844FD00BDE34A /* VerifyIdTypeSelect.storyboard */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; path = VerifyIdTypeSelect.storyboard; sourceTree = "<group>"; };
 		B31EB69B25C856FC00BDE34A /* VerifyIdTypeSelectViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VerifyIdTypeSelectViewController.swift; sourceTree = "<group>"; };
 		B31EB6A025C8571000BDE34A /* VerifyIdTypeSelectPresenter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VerifyIdTypeSelectPresenter.swift; sourceTree = "<group>"; };
@@ -343,11 +348,6 @@
 		B31EB71525C9D64A00BDE34A /* AcuantConfig.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = AcuantConfig.plist; sourceTree = "<group>"; };
 		B31EB7BF25C9E41000BDE34A /* AcuantTokenService.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = AcuantTokenService.swift; sourceTree = "<group>"; };
 		B31EB83125CB374B00BDE34A /* AcuantUtils.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = AcuantUtils.swift; sourceTree = "<group>"; };
-		B313877425ED6EF9007A67C8 /* IntdemoTutorial.storyboard */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; path = IntdemoTutorial.storyboard; sourceTree = "<group>"; };
-		B313877925ED7088007A67C8 /* IntdemoTutorialPageView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = IntdemoTutorialPageView.swift; sourceTree = "<group>"; };
-		B313877E25ED70AA007A67C8 /* IntdemoTutorialPageView.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = IntdemoTutorialPageView.xib; sourceTree = "<group>"; };
-		B313878325ED72BA007A67C8 /* IntdemoTutorialPresenter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = IntdemoTutorialPresenter.swift; sourceTree = "<group>"; };
-		B313878825ED72DE007A67C8 /* IntdemoTutorialViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = IntdemoTutorialViewController.swift; sourceTree = "<group>"; };
 		B31F0922257AB98800BCA71C /* AtomicProperty.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AtomicProperty.swift; sourceTree = "<group>"; };
 		B322A28925C4590800A4A0B6 /* VerifyIdTutorial.storyboard */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; path = VerifyIdTutorial.storyboard; sourceTree = "<group>"; };
 		B322A28F25C4802700A4A0B6 /* VerifyIdTutorialViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VerifyIdTutorialViewController.swift; sourceTree = "<group>"; };
@@ -2099,7 +2099,6 @@
 				B32B6354250BAC2900162A49 /* CredentialDetailView.swift in Sources */,
 				EE7D4CF423673C39007C31A8 /* UIViewController+Extensions.swift in Sources */,
 				B31EB6C025C89AB800BDE34A /* VerifyIdScanViewController.swift in Sources */,
-				B35181AD24195CAD007CA8F1 /* node_models.proto in Sources */,
 				B3025508244A4FE900C8E9C0 /* ConnectionsWorker.swift in Sources */,
 				EE48AC092377540500C0A441 /* TutorialPresenter.swift in Sources */,
 				EE7D4CEE23673C39007C31A8 /* UIImageView+Extensions.swift in Sources */,
@@ -2355,8 +2354,7 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 148;
-				CURRENT_PROJECT_VERSION = 153;
+				CURRENT_PROJECT_VERSION = 158;
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
 				DEVELOPMENT_TEAM = 556N44M7XA;
 				ENABLE_BITCODE = NO;
@@ -2383,7 +2381,7 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 153;
+				CURRENT_PROJECT_VERSION = 158;
 				DEVELOPMENT_TEAM = 556N44M7XA;
 				ENABLE_BITCODE = NO;
 				INFOPLIST_FILE = "prism-ios-wallet/Info.plist";

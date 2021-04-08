@@ -67,29 +67,13 @@ class ContactDAO: BaseDAO {
 
     @discardableResult
     func createContact(connectionInfo: Io_Iohk_Atala_Prism_Protos_ConnectionInfo, keyPath: String) -> Contact? {
-        if connectionInfo.hasParticipantInfo {
-            // Issuers
-            if connectionInfo.participantInfo.issuer.name.count > 0 {
-                return createContact(dateCreated: Date(timeIntervalSince1970: connectionInfo.created.timeIntervalSince1970),
-                                     connectionId: connectionInfo.connectionID,
-                                     did: connectionInfo.participantInfo.issuer.did,
-                                     name: connectionInfo.participantInfo.issuer.name,
-                                     token: connectionInfo.token,
-                                     logo: connectionInfo.participantInfo.issuer.logo,
-                                     keyPath: keyPath)
-            }
-            // Verifiers
-            if connectionInfo.participantInfo.verifier.name.count > 0 {
-                return createContact(dateCreated: Date(timeIntervalSince1970: connectionInfo.created.timeIntervalSince1970),
-                                     connectionId: connectionInfo.connectionID,
-                                     did: connectionInfo.participantInfo.verifier.did,
-                                     name: connectionInfo.participantInfo.verifier.name,
-                                     token: connectionInfo.token,
-                                     logo: connectionInfo.participantInfo.verifier.logo,
-                                     keyPath: keyPath)
-            }
-        }
-        return nil
+        return createContact(dateCreated: Date(timeIntervalSince1970: connectionInfo.created.timeIntervalSince1970),
+                             connectionId: connectionInfo.connectionID,
+                             did: connectionInfo.participantDid,
+                             name: connectionInfo.participantName,
+                             token: connectionInfo.token,
+                             logo: connectionInfo.participantLogo,
+                             keyPath: keyPath)
     }
 
     func createContact(dateCreated: Date, connectionId: String, did: String, name: String,

@@ -43,13 +43,12 @@ class ConnectionsWorker: NSObject {
                 Logger.d("getConnectionTokenInfo response: \(response)")
 
                 // Parse data
-                guard let connection = ConnectionMaker.build(response.creator) else {
+                guard let connection = ConnectionMaker.build(response) else {
                     return SimpleLocalizedError("Can't parse response")
                 }
                 let conn = ConnectionRequest()
                 conn.info = connection
                 conn.token = str
-                conn.type = connection.type
 
                 self.connectionRequest = conn
             } catch {
