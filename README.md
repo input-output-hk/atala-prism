@@ -51,6 +51,80 @@ As a consequence of the above, we may want to look into ways to make:
 These could bring more QA automation into `develop`, could ease testing the Pull Requests, and probably bridge the gap between `develop` and `master`.
 
 
+
+## How to run
+
+### Front-end
+
+See the instructions on how to set up all the necessary dependencies to run the frontend management console in dedicated [readme](prism-management-console-web/README.md)
+
+### Database
+
+Run the Postgres server inside docker container
+
+```bash
+docker run -it --rm -e POSTGRES_DB=connector_db -e POSTGRES_HOST_AUTH_METHOD=trust -p 5432:5432 postgres
+```
+
+This command will start the Postgres service on port 5432. It will also create a database "connector_db" if does not exist.
+
+the `--rm` command line option will remove the container when you stop it, this means that once you stop the database service all the data you had there will be lost. In case you want stay persistent you need to run the database like this:
+
+```bash
+docker run \
+    --name prism-db \
+    -e POSTGRES_HOST_AUTH_METHOD=trust \
+    -it \
+    --rm \
+    -p 5432:5432 \
+    -v $PWD/.docker-volumes/postgres/data:/var/lib/postgresql/data \
+    postgres
+```
+
+This command will bind volume to `.docker-volumes/postgres/data`, so all your database date will be stored there.
+
+You will also need to create another database with the name "node_db", you can connect to the database through your favorite RDBMS, like DataGrip for example, and create it, or use command line tool `psql` if you prefer this way 
+
+
+```bash
+$ psql connector_db \
+      -U postgres \
+      -h localhost \
+      -p 5432
+```
+
+and then
+
+```
+connector_db=# CREATE DATABASE node_db;
+```
+
+### Back-end
+
+See the instructions on how to set up all the necessary dependencies to run the backend in dedicated [readme](prism-backend/README.md)
+
+### Envoy
+
+You need to have envoy proxy server running to proxy the grpc-web calls to the backend services, if you don't have it set up, refer to [Install Envoy](prism-management-console-web/README.md#Install-Envoy)
+
+### Chrome extension
+
+A chrome extension wallet which is necessary to log into web management console.
+
+Compile the chrome extension
+```bash
+atala$ cd prism-web-wallet
+prism-web-wallet$ sbt chromeUnpackedFast
+```
+
+In order to install the wallet on chrome. Open chrome and go to [chrome://extensions/](chrome://extensions/)
+
+Activate the developer mode (top right corner of the page) and click on `Load unpacked` (top left visible in developer
+mode), in the dialog opened go to `atala/prism-web-wallet/target/chrome`, select `unpacked-fast`
+folder and click `Open`. Now the wallet should be found in your extensions.
+
+At this point, you have all the needed components up to run the wallet locally.
+
 ## Working with the codebase
 
 This is a monorepo and each of the `prism-XYZ` folders refers to a different part of the platform. Check the specific READMEs for more details.
@@ -59,127 +133,15 @@ Be sure to follow our [contributing guidelines](CONTRIBUTING.md).
 
 In order to keep the code format consistent, we use scalafmt and git hooks, follow these steps to configure it accordingly (otherwise, your changes are going to be rejected by CircleCI):
 
-- Install [coursier](https://github.com/coursier/coursier#command-line), the `coursier` command must work.
-- `./install-scalafmt.sh` (might require sudo).
+- Install [coursier](prism-backend/README.md#Install-coursier), the `cs` command must work.
+- install `scalafmt`
+
+   ```bash
+   cs install scalafmt
+   ```
 - `cp pre-commit .git/hooks/pre-commit`
 
 ## More docs
 
 * Documentation about operational aspects of the team and the services we use can be found in [Confluence](https://input-output.atlassian.net/wiki/spaces/CE/pages/606371843/Code+and+Infrastructure+Setup).
 * The general guideline and ultimate goal is to have the [repository](prism-backend/docs/README.md) as the source of truth for all technical documentation.
-
-## How to run
-
-### Front-end
-
-We use [nvm](https://github.com/nvm-sh/nvm) to handle the node versions.
-
-To ensure the node version standardized:
-
-```
-$ cd prism-management-console-web
-```
-
-and run 
-
-```
-prism-management-console-web$ nvm use
-```
-
-which will set the node version to 10.16.3, if installed, otherwise install it and then run the command again.
-
-If the file `.env.local` is not present, copy `.env` file to `.env.local` (it should work without further modifications).
-Then, install dependencies with 
-
-```
-prism-management-console-web$ npm install
-```
-
-and run the front-end with
-
-```
-prism-management-console-web$ npm start
-```
-
-### Back-end and PRISM wallet
-
-We need now to run the different backend services
-
-The steps in this document were replicated in an Ubuntu environment with the following versions
-
-- Postgres version: 12.2
-- psql version: 12.3
-- envoy: 1.12.1
-
-Steps
-
-1. First, we will start the Postgres server. If you already have this up and running, you can skip this step.
-   ``` 
-   $ docker run -it --rm -e POSTGRES_DB=connector_db -e POSTGRES_HOST_AUTH_METHOD=trust -p 5432:5432 postgres
-   ```
-
-   The above command will start a docker Postgres container with a database necessary for the connector.
-   Given that we will also need a database for the node, open a postgres client and create the needed database as follows:
-
-   ``` 
-   $ psql connector_db \
-       -U postgres \
-       -h localhost \
-       -p 5432
-   ```
-   This will open an sql shell connected to the docker container.
-   Execute the query:
-
-   ```
-   connector_db=# CREATE DATABASE node_db;
-   ```
-   and keep the sql shell open because we will need it for next steps.
-
-2. Now, we should run the node, connector and envoy locally.
-
-   You will need three more terminals/tabs to run this.
-   Run the commands in sequence (i.e. wait for each one to finish before running the next one).
-
-   **NOTE:** If you are a *linux* user, you could alternatively go to `prism-web-wallet`, and run
-   `$ ./run_local.sh`, and move directly to step 4.
-
-   Connector
-   ```
-   [terminal 1]
-   atala$ cd prism-backend
-   prism-backend$ sbt "connector/run"
-   ```
-
-   Node
-   ```
-   [terminal 2]
-   atala$ cd prism-backend
-   prism-backend$ sbt "node/run"
-   ```
-
-   Envoy
-
-   **NOTE FOR MAC USERS:** There seems to be a problem to run envoy on docker.
-   There is an `envoy.yaml` file in `prism-management-console-web/envoy` that instruct in comments an attempt to
-   fix the problem. Some Mac users suggested to install envoy locally and avoid docker completely.
-   ```
-   [terminal 3]
-   atala$ cd prism-management-console-web/envoy
-   envoy$ docker run --rm -ti --net=host -v $PWD/envoy.yaml:/etc/envoy/envoy.yaml envoyproxy/envoy:v1.16-latest
-   ```
-
-3. Now it is time to compile the web extension (the wallet)
-
-   ``` 
-   atala$ cd prism-web-wallet
-   prism-web-wallet$ sbt chromeUnpackedFast
-   ```
-
-4. Now let's install the wallet on chrome. Open chrome and go to [chrome://extensions/](chrome://extensions/)
-
-Activate the developer mode (top right corner of the page) and click on `Load unpacked` (top left visible in developer
-mode), in the dialog opened go to `atala/prism-web-wallet/target/chrome`, select `unpacked-fast`
-folder and click `Open`. Now the wallet should be found in your plugins. Do not open the wallet yet.
-
-At this point, you have all the needed components up to run the wallet locally.
-

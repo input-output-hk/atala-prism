@@ -14,9 +14,11 @@ target/
 *.iml
 *.log
 out/
+.docker-volumes
 .metals
 .vscode
 .ammonite/
 .bloop/
 *.worksheet.sc
 **/metals.sbt
+
