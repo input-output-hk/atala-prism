@@ -3,11 +3,19 @@ package io.iohk.atala.prism.kotlin.credentials.exposed
 import io.iohk.atala.prism.kotlin.credentials.TimestampInfo
 
 @JsExport
-data class TimestampInfoJS internal constructor(internal val internal: TimestampInfo) {
+class TimestampInfoJS internal constructor(internal val internal: TimestampInfo) {
+    @JsName("create")
+    constructor(
+        atalaBlockTimestamp: String,
+        atalaBlockSequenceNumber: Int,
+        operationSequenceNumber: Int
+    ) : this(TimestampInfo(atalaBlockTimestamp.toLong(), atalaBlockSequenceNumber, operationSequenceNumber))
+
     val atalaBlockTimestamp: String = internal.atalaBlockTimestamp.toString()
     val atalaBlockSequenceNumber: Int = internal.atalaBlockSequenceNumber
     val operationSequenceNumber: Int = internal.operationSequenceNumber
 
+    @JsName("occurredBefore")
     fun occurredBefore(later: TimestampInfoJS): Boolean =
         internal.occurredBefore(later.internal)
 }
