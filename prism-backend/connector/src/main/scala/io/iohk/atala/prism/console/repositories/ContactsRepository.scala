@@ -101,7 +101,7 @@ class ContactsRepository(xa: Transactor[IO])(implicit ec: ExecutionContext) {
     tx.logSQLErrors(s"generating token, contact id - $contactId", logger)
       .transact(xa)
       .unsafeToFuture()
-      .as(Right(token))
+      .map(_ => Right(token))
       .toFutureEither
   }
 }

@@ -1,6 +1,5 @@
 package io.iohk.atala.prism.management.console.repositories.daos
 
-import cats.syntax.functor._
 import doobie.free.connection.ConnectionIO
 import doobie.implicits._
 import doobie.implicits.legacy.instant._
@@ -81,7 +80,7 @@ object CredentialIssuancesDAO {
     sql"""
          |INSERT INTO contacts_per_credential_issuance (credential_issuance_id, credential_issuance_contact_id)
          |VALUES ($credentialIssuanceId, $contactId)
-         |""".stripMargin.update.run.void
+         |""".stripMargin.update.run.map(_ => ())
   }
 
   def addContactToGroup(
@@ -91,7 +90,7 @@ object CredentialIssuancesDAO {
     sql"""
          |INSERT INTO contacts_per_credential_issuance_group (credential_issuance_group_id, credential_issuance_contact_id)
          |VALUES ($contactGroupId, $contactId)
-         |""".stripMargin.update.run.void
+         |""".stripMargin.update.run.map(_ => ())
   }
 
   def listGroupsPerContact(

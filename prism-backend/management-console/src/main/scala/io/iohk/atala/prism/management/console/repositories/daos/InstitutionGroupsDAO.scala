@@ -22,7 +22,7 @@ object InstitutionGroupsDAO {
     sql"""
          |INSERT INTO institution_groups (group_id, institution_id, name, created_at)
          |VALUES ($groupId, $institutionId, $name, $now)
-       """.stripMargin.update.run.as(InstitutionGroup(groupId, name, institutionId, now))
+       """.stripMargin.update.run.map(_ => InstitutionGroup(groupId, name, institutionId, now))
   }
 
   def update(groupId: InstitutionGroup.Id, newName: InstitutionGroup.Name): ConnectionIO[Boolean] = {
@@ -118,7 +118,7 @@ object InstitutionGroupsDAO {
   def addContact(groupId: InstitutionGroup.Id, contactId: Contact.Id): ConnectionIO[Unit] = {
     sql"""INSERT INTO contacts_per_group (group_id, contact_id, added_at)
          |VALUES ($groupId, $contactId, ${Instant.now()})
-         |""".stripMargin.update.run.void
+         |""".stripMargin.update.run.map(_ => ())
   }
 
   def addContacts(groupIds: Set[InstitutionGroup.Id], contactIds: Set[Contact.Id]): ConnectionIO[Unit] = {
@@ -134,7 +134,7 @@ object InstitutionGroupsDAO {
                 |""".stripMargin
     Update[(InstitutionGroup.Id, Contact.Id, Instant)](sql)
       .updateMany(data.toList)
-      .void
+      .map(_ => ())
   }
 
   def copyContacts(originalGroupId: InstitutionGroup.Id, newGroupId: InstitutionGroup.Id): ConnectionIO[Unit] = {
@@ -150,7 +150,7 @@ object InstitutionGroupsDAO {
       case Some(contactIdsNonEmpty) =>
         val fragment = fr"DELETE FROM contacts_per_group" ++
           whereAnd(fr"group_id = $groupId", in(fr"contact_id", contactIdsNonEmpty))
-        fragment.update.run.void
+        fragment.update.run.map(_ => ())
       case None =>
         unit
     }
@@ -159,11 +159,11 @@ object InstitutionGroupsDAO {
   def removeAllGroupContacts(groupId: InstitutionGroup.Id): ConnectionIO[Unit] = {
     sql"""DELETE FROM contacts_per_group
          |WHERE group_id = $groupId
-         |""".stripMargin.update.run.void
+         |""".stripMargin.update.run.map(_ => ())
   }
 
   def removeContact(contactId: Contact.Id): ConnectionIO[Unit] =
-    sql"DELETE FROM contacts_per_group WHERE contact_id = $contactId".update.run.void
+    sql"DELETE FROM contacts_per_group WHERE contact_id = $contactId".update.run.map(_ => ())
 
   def findGroups(
       institutionId: ParticipantId,

@@ -92,7 +92,7 @@ object CredentialDataValidator {
           )(jsonValue => validateFieldType(credentialTypeField, jsonValue))
         }
         .sequence
-        .void
+        .map(_ => ())
     }
 
     credentialData.asObject

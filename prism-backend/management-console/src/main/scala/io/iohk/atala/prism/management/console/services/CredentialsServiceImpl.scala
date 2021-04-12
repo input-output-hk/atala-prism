@@ -1,7 +1,6 @@
 package io.iohk.atala.prism.management.console.services
 
 import cats.data.NonEmptyList
-import cats.syntax.functor._
 import com.google.protobuf.ByteString
 import io.iohk.atala.prism.auth.AuthSupport
 import io.iohk.atala.prism.credentials.CredentialBatchId
@@ -173,7 +172,7 @@ class CredentialsServiceImpl(
     auth[DeleteCredentials]("deleteCredentials", request) { (participantId, query) =>
       credentialsRepository
         .deleteCredentials(participantId, query.credentialsIds)
-        .as(DeleteCredentialsResponse())
+        .map(_ => DeleteCredentialsResponse())
     }
   }
 

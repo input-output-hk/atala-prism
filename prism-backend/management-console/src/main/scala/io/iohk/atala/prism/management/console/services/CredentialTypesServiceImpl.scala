@@ -2,7 +2,6 @@ package io.iohk.atala.prism.management.console.services
 
 import io.iohk.atala.prism.auth.AuthSupport
 
-import cats.syntax.functor._
 import scala.concurrent.{ExecutionContext, Future}
 import org.slf4j.{Logger, LoggerFactory}
 import io.iohk.atala.prism.protos.console_api
@@ -68,7 +67,7 @@ class CredentialTypesServiceImpl(
     auth[UpdateCredentialType]("updateCredentialType", request) { (participantId, query) =>
       credentialTypeRepository
         .update(query, participantId)
-        .as(console_api.UpdateCredentialTypeResponse())
+        .map(_ => console_api.UpdateCredentialTypeResponse())
     }
 
   override def markAsReadyCredentialType(
@@ -77,7 +76,7 @@ class CredentialTypesServiceImpl(
     auth[MarkAsReadyCredentialType]("markAsReadyCredentialType", request) { (participantId, query) =>
       credentialTypeRepository
         .markAsReady(query.credentialTypeId, participantId)
-        .as(console_api.MarkAsReadyCredentialTypeResponse())
+        .map(_ => console_api.MarkAsReadyCredentialTypeResponse())
     }
 
   override def markAsArchivedCredentialType(
@@ -86,6 +85,6 @@ class CredentialTypesServiceImpl(
     auth[MarkAsArchivedCredentialType]("markAsArchivedCredentialType", request) { (participantId, _) =>
       credentialTypeRepository
         .markAsArchived(CredentialTypeId.unsafeFrom(request.credentialTypeId), participantId)
-        .as(console_api.MarkAsArchivedCredentialTypeResponse())
+        .map(_ => console_api.MarkAsArchivedCredentialTypeResponse())
     }
 }

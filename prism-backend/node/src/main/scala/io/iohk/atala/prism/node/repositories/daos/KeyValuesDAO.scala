@@ -1,6 +1,5 @@
 package io.iohk.atala.prism.node.repositories.daos
 
-import cats.syntax.functor._
 import doobie.free.connection.ConnectionIO
 import doobie.implicits._
 
@@ -13,7 +12,7 @@ object KeyValuesDAO {
          |VALUES (${keyValue.key}, ${keyValue.value})
          |ON CONFLICT (key)
          |DO UPDATE SET value = ${keyValue.value}
-      """.stripMargin.update.run.void
+      """.stripMargin.update.run.map(_ => ())
   }
 
   def get(key: String): ConnectionIO[Option[KeyValue]] = {

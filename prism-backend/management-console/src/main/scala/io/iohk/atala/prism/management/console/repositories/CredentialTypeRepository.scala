@@ -1,7 +1,6 @@
 package io.iohk.atala.prism.management.console.repositories
 
 import cats.effect.IO
-import cats.syntax.functor._
 import doobie.ConnectionIO
 import doobie.implicits._
 import doobie.util.transactor.Transactor
@@ -84,7 +83,7 @@ class CredentialTypeRepository(xa: Transactor[IO]) {
     withCredentialType(credentialTypeId, institutionId) { _ =>
       CredentialTypeDao
         .markAsArchived(credentialTypeId)
-        .as(Right(())): ConnectionIO[Either[ManagementConsoleError, Unit]]
+        .map(_ => Right(())): ConnectionIO[Either[ManagementConsoleError, Unit]]
     }
   }
 
@@ -100,7 +99,7 @@ class CredentialTypeRepository(xa: Transactor[IO]) {
       } else {
         CredentialTypeDao
           .markAsReady(credentialTypeId)
-          .as(Right(())): ConnectionIO[Either[ManagementConsoleError, Unit]]
+          .map(_ => Right(())): ConnectionIO[Either[ManagementConsoleError, Unit]]
       }
     }
   }

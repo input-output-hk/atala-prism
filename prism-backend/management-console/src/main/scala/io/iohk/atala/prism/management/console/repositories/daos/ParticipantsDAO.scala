@@ -16,7 +16,7 @@ object ParticipantsDAO {
     sql"""
          |INSERT INTO participants (participant_id, name, did, logo, created_at)
          |VALUES ($id, $name, $did, $logo, $createdAt)
-       """.stripMargin.update.run.void
+       """.stripMargin.update.run.map(_ => ())
   }
 
   def findBy(id: ParticipantId): ConnectionIO[Option[ParticipantInfo]] = {

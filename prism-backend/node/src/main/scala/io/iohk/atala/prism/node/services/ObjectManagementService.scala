@@ -3,7 +3,6 @@ package io.iohk.atala.prism.node.services
 import java.time.{Duration, Instant}
 
 import cats.effect.IO
-import cats.syntax.functor._
 import com.google.protobuf.ByteString
 import doobie.free.connection
 import doobie.free.connection.ConnectionIO
@@ -97,7 +96,7 @@ class ObjectManagementService private (
       .flatMap {
         case Some(obj) =>
           processObject(obj).flatMap { transaction =>
-            transaction.logSQLErrors("saving object", logger).transact(xa).unsafeToFuture().void
+            transaction.logSQLErrors("saving object", logger).transact(xa).unsafeToFuture().map(_ => ())
           } recover {
             case error => logger.warn(s"Could not process object $obj", error)
           }

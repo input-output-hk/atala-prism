@@ -1,6 +1,5 @@
 package io.iohk.atala.prism.intdemo
 
-import cats.syntax.functor._
 import io.grpc.stub.StreamObserver
 import io.iohk.atala.prism.connector.model.{Connection, ConnectionId, MessageId, TokenString}
 import IntDemoServiceSpec._
@@ -271,7 +270,7 @@ object IntDemoServiceSpec {
     when(repository.findSubjectStatus(token)).thenReturn(Future(Some(subjectStatus)))
 
     val proofRequestIssuer: Connection => Future[Unit] = { connection =>
-      connectorIntegration.sendProofRequest(issuerId, connection.connectionId, proofRequest).void
+      connectorIntegration.sendProofRequest(issuerId, connection.connectionId, proofRequest).map(_ => ())
     }
 
     val service = new IntDemoService[String](

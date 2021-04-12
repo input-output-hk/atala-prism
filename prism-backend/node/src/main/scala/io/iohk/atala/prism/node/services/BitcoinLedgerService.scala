@@ -2,7 +2,6 @@ package io.iohk.atala.prism.node.services
 
 import java.time.Instant
 
-import cats.syntax.functor._
 import enumeratum.{Enum, EnumEntry}
 import io.iohk.atala.prism.models.{
   BlockInfo,
@@ -127,7 +126,7 @@ class BitcoinLedgerServiceImpl(
 
         Future
           .traverse(notifications) { onAtalaObject(_) }
-          .as(Right(()))
+          .map(_ => Right(()))
           .toFutureEither
       }
       .recoverLeft(_ => ())

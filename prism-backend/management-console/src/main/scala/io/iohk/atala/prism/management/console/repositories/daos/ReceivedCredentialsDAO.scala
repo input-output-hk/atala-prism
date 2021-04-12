@@ -3,7 +3,6 @@ package io.iohk.atala.prism.management.console.repositories.daos
 import java.time.Instant
 import java.util.UUID
 
-import cats.syntax.functor._
 import doobie.free.connection.ConnectionIO
 import doobie.implicits._
 import doobie.implicits.legacy.instant._
@@ -27,7 +26,7 @@ object ReceivedCredentialsDAO {
     sql"""INSERT INTO received_credentials (received_id, contact_id, encoded_signed_credential, credential_external_id, received_at)
          |VALUES ($receivedId, ${data.contactId}, ${data.encodedSignedCredential}, ${data.credentialExternalId}, $receivedAt)
          |ON CONFLICT (credential_external_id) DO NOTHING
-       """.stripMargin.update.run.void
+       """.stripMargin.update.run.map(_ => ())
   }
 
   def getReceivedCredentialsFor(

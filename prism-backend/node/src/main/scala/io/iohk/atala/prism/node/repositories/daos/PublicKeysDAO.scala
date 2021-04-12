@@ -1,6 +1,5 @@
 package io.iohk.atala.prism.node.repositories.daos
 
-import cats.syntax.functor._
 import doobie.free.connection.ConnectionIO
 import doobie.implicits._
 import doobie.implicits.legacy.instant._
@@ -26,7 +25,7 @@ object PublicKeysDAO {
          |VALUES (${key.didSuffix}, ${key.keyId}, ${key.keyUsage}, $curveName, $xBytes, $yBytes,
          |   ${addedOn.atalaBlockTimestamp}, ${addedOn.atalaBlockSequenceNumber}, ${addedOn.operationSequenceNumber},
          |   ${ledgerData.transactionId}, ${ledgerData.ledger})
-       """.stripMargin.update.run.void
+       """.stripMargin.update.run.map(_ => ())
   }
 
   def find(didSuffix: DIDSuffix, keyId: String): ConnectionIO[Option[DIDPublicKeyState]] = {

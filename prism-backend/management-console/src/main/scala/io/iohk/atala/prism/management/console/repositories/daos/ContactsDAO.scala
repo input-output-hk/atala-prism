@@ -59,7 +59,7 @@ object ContactsDAO {
         FC.raiseError(new RuntimeException(s"Unknown error while inserting ${contacts.size} contacts"))
           .whenA(contacts.size != affectedRows)
       }
-      .as(contactIds)
+      .map(_ => contactIds)
   }
 
   def updateContact(institutionId: ParticipantId, data: UpdateContact): ConnectionIO[Unit] = {
@@ -70,10 +70,12 @@ object ContactsDAO {
          |    contact_data = ${data.newData}
          |WHERE contact_id = ${data.id} AND
          |      created_by = $institutionId
-         |""".stripMargin.update.run.flatTap { affectedRows =>
-      FC.raiseError(new RuntimeException(s"Unable to update contact, it is likely that it doesn't exist"))
-        .whenA(1 != affectedRows)
-    }.void
+         |""".stripMargin.update.run
+      .flatTap { affectedRows =>
+        FC.raiseError(new RuntimeException(s"Unable to update contact, it is likely that it doesn't exist"))
+          .whenA(1 != affectedRows)
+      }
+      .map(_ => ())
   }
 
   def findContact(participantId: ParticipantId, contactId: Contact.Id): doobie.ConnectionIO[Option[Contact]] = {

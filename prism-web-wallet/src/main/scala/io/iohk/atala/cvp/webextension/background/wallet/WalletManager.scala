@@ -446,7 +446,7 @@ private[background] class WalletManager(
     val t = Try {
       state.sessions
         .find(_ == (sessionID -> origin))
-        .void
+        .map(_ => ())
         .getOrElse(throw new RuntimeException("You need a valid session"))
     }
     Future.fromTry(t)

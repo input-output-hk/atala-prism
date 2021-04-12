@@ -6,7 +6,6 @@ import java.time.Instant
 import doobie.free.connection.ConnectionIO
 import doobie.implicits._
 import doobie.implicits.legacy.instant._
-import cats.syntax.functor._
 import io.iohk.atala.prism.connector.model.ConnectionId
 import io.iohk.atala.prism.console.models.{Contact, CredentialExternalId, Institution, ReceivedSignedCredential}
 import io.iohk.atala.prism.crypto.MerkleTree.MerkleInclusionProof
@@ -25,7 +24,7 @@ object ReceivedCredentialsDAO {
     sql"""INSERT INTO stored_credentials (storage_id, connection_id, encoded_signed_credential, inclusion_proof, credential_external_id, stored_at)
          |VALUES ($storageId, ${data.connectionId}, ${data.encodedSignedCredential}, ${data.merkleInclusionProof}, ${data.credentialExternalId}, $storedAt)
          |ON CONFLICT (credential_external_id) DO NOTHING
-       """.stripMargin.update.run.void
+       """.stripMargin.update.run.map(_ => ())
   }
 
   def getReceivedCredentialsFor(

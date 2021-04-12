@@ -1,7 +1,6 @@
 package io.iohk.atala.prism.console
 
 import cats.effect.IO
-import cats.syntax.functor._
 import doobie.implicits._
 import doobie.util.transactor.Transactor
 import io.circe.Json
@@ -156,7 +155,8 @@ object DataPreparation extends BaseDAO {
          |SET connection_status = ${ConnectionStatus.ConnectionAccepted: ConnectionStatus}::CONTACT_CONNECTION_STATUS_TYPE
          |WHERE connection_token = $token AND
          |      created_by = $issuerId
-         |""".stripMargin.update.run.void
+         |""".stripMargin.update.run
+      .map(_ => ())
       .transact(database)
       .unsafeRunSync()
   }

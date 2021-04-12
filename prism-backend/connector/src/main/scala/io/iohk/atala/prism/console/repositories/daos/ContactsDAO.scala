@@ -3,7 +3,6 @@ package io.iohk.atala.prism.console.repositories.daos
 import java.time.Instant
 
 import cats.data.NonEmptyList
-import cats.syntax.functor._
 import doobie.free.connection.ConnectionIO
 import doobie.free.connection
 import doobie.implicits.toSqlInterpolator
@@ -136,7 +135,7 @@ object ContactsDAO {
          |SET connection_token = $token,
          |    connection_status = ${ConnectionStatus.ConnectionMissing: ConnectionStatus}::CONTACT_CONNECTION_STATUS_TYPE
          |WHERE created_by = $institutionId AND contact_id = $contactId
-         |""".stripMargin.update.run.void
+         |""".stripMargin.update.run.map(_ => ())
   }
 
   def setConnectionAsAccepted(
@@ -150,7 +149,7 @@ object ContactsDAO {
          |    connection_status = ${ConnectionStatus.ConnectionAccepted: ConnectionStatus}::CONTACT_CONNECTION_STATUS_TYPE
          |WHERE connection_token = $connectionToken AND
          |      created_by = $createdBy
-         |""".stripMargin.update.run.void
+         |""".stripMargin.update.run.map(_ => ())
   }
 
   def setConnectionAsRevoked(connectionId: ConnectionId): ConnectionIO[Unit] = {
@@ -158,6 +157,6 @@ object ContactsDAO {
          |UPDATE contacts
          |SET connection_status = ${ConnectionStatus.ConnectionRevoked: ConnectionStatus}::CONTACT_CONNECTION_STATUS_TYPE
          |WHERE connection_id = $connectionId
-         |""".stripMargin.update.run.void
+         |""".stripMargin.update.run.map(_ => ())
   }
 }

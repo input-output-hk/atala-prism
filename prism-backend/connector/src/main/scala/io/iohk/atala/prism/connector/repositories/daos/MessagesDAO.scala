@@ -21,7 +21,9 @@ object MessagesDAO {
   ): doobie.ConnectionIO[Unit] = {
     sql"""
          |INSERT INTO messages (id, connection, sender, recipient, received_at, content)
-         |VALUES ($id, $connection, $sender, $recipient, ${Instant.now()}, $content)""".stripMargin.update.run.void
+         |VALUES ($id, $connection, $sender, $recipient, ${Instant.now()}, $content)""".stripMargin.update.run.map(_ =>
+      ()
+    )
   }
 
   def insert(
@@ -101,7 +103,7 @@ object MessagesDAO {
     sql"""
          |DELETE FROM messages
          |WHERE connection = $connectionId
-       """.stripMargin.update.run.void
+       """.stripMargin.update.run.map(_ => ())
   }
 
   def getMessageStream(

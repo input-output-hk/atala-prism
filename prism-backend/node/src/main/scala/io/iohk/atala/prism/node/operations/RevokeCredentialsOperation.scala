@@ -3,7 +3,6 @@ package io.iohk.atala.prism.node.operations
 import cats.data.EitherT
 import cats.free.Free
 import cats.implicits.catsSyntaxEitherId
-import cats.syntax.functor._
 import doobie.free.connection.ConnectionIO
 import doobie.implicits._
 import io.iohk.atala.prism.credentials.CredentialBatchId
@@ -68,7 +67,7 @@ case class RevokeCredentialsOperation(
         } else {
           CredentialBatchesDAO
             .revokeCredentials(credentialBatchId, credentialsToRevoke, ledgerData)
-            .as(().asRight[StateError])
+            .map(_ => ().asRight[StateError])
         }
       }
     }

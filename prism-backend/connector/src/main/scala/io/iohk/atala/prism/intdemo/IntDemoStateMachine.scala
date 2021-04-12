@@ -1,6 +1,5 @@
 package io.iohk.atala.prism.intdemo
 
-import cats.syntax.functor._
 import io.grpc.stub.StreamObserver
 import io.iohk.atala.prism.intdemo.IntDemoStateMachine.log
 import io.iohk.atala.prism.connector.model.{Connection, ConnectionId, TokenString}
@@ -154,7 +153,7 @@ class IntDemoStateMachine[D](
     val emitCredentialAndStop: Action = (maybeRequiredData, maybeConnection) => {
       val requiredData = maybeRequiredData.get
       val connection = maybeConnection.get
-      emitCredential(connection.connectionId, requiredData).as(intdemo_models.SubjectStatus.CREDENTIAL_SENT)
+      emitCredential(connection.connectionId, requiredData).map(_ => intdemo_models.SubjectStatus.CREDENTIAL_SENT)
     }
 
     private def emitCredential(connectionId: ConnectionId, requiredData: D): Future[intdemo_models.SubjectStatus] = {
@@ -162,7 +161,7 @@ class IntDemoStateMachine[D](
       log.info(s"Issuer ${issuerId.uuid} emitting credential to connection with id $connectionId.")
       connectorIntegration
         .sendCredential(issuerId, connectionId, credential)
-        .as(intdemo_models.SubjectStatus.CREDENTIAL_SENT)
+        .map(_ => intdemo_models.SubjectStatus.CREDENTIAL_SENT)
     }
   }
 

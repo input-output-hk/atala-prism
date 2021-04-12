@@ -3,7 +3,6 @@ package io.iohk.atala.prism.node.repositories.daos
 import doobie.free.connection.ConnectionIO
 import doobie.implicits._
 import doobie.implicits.legacy.instant._
-import cats.syntax.functor._
 import io.iohk.atala.prism.crypto.SHA256Digest
 import io.iohk.atala.prism.daos.BaseDAO.{ledgerMeta, transactionIdMeta}
 import io.iohk.atala.prism.identity.DIDSuffix
@@ -21,14 +20,14 @@ object DIDDataDAO {
          |VALUES ($didSuffix, $lastOperation, ${publishedOn.atalaBlockTimestamp},
          |  ${publishedOn.atalaBlockSequenceNumber}, ${publishedOn.operationSequenceNumber},
          |  ${ledgerData.transactionId}, ${ledgerData.ledger})
-       """.stripMargin.update.run.void
+       """.stripMargin.update.run.map(_ => ())
   }
 
   def findByDidSuffix(didSuffix: DIDSuffix): ConnectionIO[Option[DIDSuffix]] = {
     sql"""
          |SELECT 1 FROM did_data
          |WHERE did_suffix = $didSuffix
-       """.stripMargin.query[Int].option.map(_.as(didSuffix))
+       """.stripMargin.query[Int].option.map(_.map(_ => didSuffix))
   }
 
   def getLastOperation(didSuffix: DIDSuffix): ConnectionIO[Option[SHA256Digest]] = {
