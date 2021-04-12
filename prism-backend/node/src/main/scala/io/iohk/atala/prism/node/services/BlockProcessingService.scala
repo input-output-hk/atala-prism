@@ -89,7 +89,7 @@ class BlockProcessingServiceImpl extends BlockProcessingService {
               } yield ()
               result
           }
-          .map(_ => true)
+          .as(true)
     }
   }
 

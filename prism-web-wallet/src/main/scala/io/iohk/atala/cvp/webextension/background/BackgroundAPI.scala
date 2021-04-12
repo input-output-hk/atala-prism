@@ -1,5 +1,6 @@
 package io.iohk.atala.cvp.webextension.background
 
+import cats.syntax.functor._
 import io.circe.Decoder
 import io.circe.generic.auto._
 import io.circe.parser.parse
@@ -92,7 +93,7 @@ class BackgroundAPI()(implicit ec: ExecutionContext) {
       password: String,
       mnemonic: Mnemonic
   ): Future[Unit] = {
-    process(Command.RecoverWallet(password, mnemonic)).map(_ => ())
+    process(Command.RecoverWallet(password, mnemonic)).void
   }
 
   def createWallet(
@@ -102,7 +103,7 @@ class BackgroundAPI()(implicit ec: ExecutionContext) {
       organisationName: String,
       logo: Array[Byte]
   ): Future[Unit] = {
-    process(Command.CreateWallet(password, mnemonic, role, organisationName, logo)).map(_ => ())
+    process(Command.CreateWallet(password, mnemonic, role, organisationName, logo)).void
   }
 
   def unlockWallet(password: String): Future[Unit] = {

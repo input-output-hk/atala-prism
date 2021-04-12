@@ -1,5 +1,6 @@
 package io.iohk.atala.prism.auth
 
+import cats.syntax.functor._
 import io.grpc.Context
 import io.iohk.atala.prism.auth.errors.{
   AuthError,
@@ -341,7 +342,7 @@ abstract class SignedRequestsAuthenticatorBase[Id](
               )
             } yield did
           }
-          .map(_ => f(did))
+          .as(f(did))
           .successMap(identity)
           .flatten
 

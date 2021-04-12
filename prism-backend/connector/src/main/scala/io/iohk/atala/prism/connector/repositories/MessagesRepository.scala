@@ -50,7 +50,7 @@ class MessagesRepository(xa: Transactor[IO])(implicit ec: ExecutionContext) exte
       .logSQLErrors(s"insert messages, connection id - $connection", logger)
       .transact(xa)
       .unsafeToFuture()
-      .map(_ => Right(messageId))
+      .as(Right(messageId))
       .toFutureEither
   }
 

@@ -3,6 +3,7 @@ package io.iohk.atala.prism.node.repositories.daos
 import java.time.Instant
 
 import cats.implicits.catsStdInstancesForList
+import cats.syntax.functor._
 import doobie.Update
 import doobie.free.connection.ConnectionIO
 import doobie.implicits._
@@ -32,7 +33,7 @@ object CredentialBatchesDAO {
          |INSERT INTO credential_batches (batch_id, last_operation, issuer_did_suffix, merkle_root, issued_on, issued_on_absn, issued_on_osn, ledger, issued_on_transaction_id)
          |VALUES (${data.batchId}, ${data.lastOperation}, ${data.issuerDIDSuffix}, ${data.merkleRoot}, ${issuedOn.atalaBlockTimestamp},
          | ${issuedOn.atalaBlockSequenceNumber}, ${issuedOn.operationSequenceNumber}, ${data.ledgerData.ledger}, ${data.ledgerData.transactionId})
-       """.stripMargin.update.run.map(_ => ())
+       """.stripMargin.update.run.void
   }
 
   def findBatch(credentialBatchId: CredentialBatchId): ConnectionIO[Option[CredentialBatchState]] = {
@@ -86,7 +87,7 @@ object CredentialBatchesDAO {
           )
         )
       )
-      .map(_ => ())
+      .void
   }
 
   def findRevokedCredentialLedgerData(

@@ -1,5 +1,6 @@
 package io.iohk.atala.prism.node.repositories.daos
 
+import cats.syntax.functor._
 import doobie.free.connection
 import doobie.free.connection.ConnectionIO
 import doobie.implicits._
@@ -17,7 +18,7 @@ object AtalaObjectsDAO {
     sql"""
          |INSERT INTO atala_objects (atala_object_id, object_content)
          |VALUES (${data.objectId}, ${data.byteContent})
-       """.stripMargin.update.run.map(_ => ())
+       """.stripMargin.update.run.void
   }
 
   def setTransactionInfo(data: AtalaObjectSetTransactionInfo): ConnectionIO[Unit] = {
@@ -27,7 +28,7 @@ object AtalaObjectsDAO {
         sql"""
              |INSERT INTO atala_object_txs (atala_object_id, ledger, block_number, block_index, block_timestamp, transaction_id)
              |VALUES (${data.objectId}, ${transaction.ledger}, ${block.number}, ${block.index}, ${block.timestamp}, ${transaction.transactionId})
-           """.stripMargin.update.run.map(_ => ())
+           """.stripMargin.update.run.void
       case _ => connection.raiseError(new IllegalArgumentException("Transaction has bo block"))
     }
   }
@@ -48,7 +49,6 @@ object AtalaObjectsDAO {
     sql"""
          |UPDATE atala_objects
          |SET processed = $processed
-         |WHERE atala_object_id = $objectId""".stripMargin.update.run
-      .map(_ => ())
+         |WHERE atala_object_id = $objectId""".stripMargin.update.run.void
   }
 }
