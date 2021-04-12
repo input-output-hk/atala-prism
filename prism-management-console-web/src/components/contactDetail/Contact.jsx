@@ -25,6 +25,7 @@ const Contact = ({
   issuedCredentials,
   receivedCredentials,
   credentialTypes,
+  verifyCredential,
   redirector: { redirectToContacts }
 }) => {
   const { t } = useTranslation();
@@ -70,6 +71,7 @@ const Contact = ({
                     credential={credential}
                     credentialTypes={credentialTypes}
                     isCredentialIssued
+                    verifyCredential={verifyCredential}
                   />
                 ))
               )}
@@ -82,7 +84,11 @@ const Contact = ({
                 <SimpleLoading size="xs" />
               ) : (
                 receivedCredentials.map(credential => (
-                  <CredentialDetail credential={credential} credentialTypes={credentialTypes} />
+                  <CredentialDetail
+                    credential={credential}
+                    credentialTypes={credentialTypes}
+                    verifyCredential={verifyCredential}
+                  />
                 ))
               )}
             </div>
@@ -142,6 +148,7 @@ Contact.propTypes = {
   issuedCredentials: PropTypes.arrayOf(PropTypes.shape(credentialShape)),
   receivedCredentials: PropTypes.arrayOf(PropTypes.shape(credentialShape)),
   credentialTypes: PropTypes.shape(credentialTypesShape).isRequired,
+  verifyCredential: PropTypes.func.isRequired,
   redirector: PropTypes.shape({ redirectToContacts: PropTypes.func }).isRequired
 };
 

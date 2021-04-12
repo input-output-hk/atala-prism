@@ -289,7 +289,6 @@
     },
     "detail": {
       "title": "Credential Detail",
-      "noStudent": "You can't view the details of a credential that doesn't have a student",
       "delete": "Delete",
       "resend": "Resend",
       "verify": "Verify",
@@ -301,9 +300,11 @@
       "dateCreated": "Date Created",
       "dateSigned": "Date Signed",
       "notPublished": "Not Signed",
-      "validity": "Validity: ",
       "valid": "Valid",
       "invalid": "Invalid",
+      "draft": "Draft",
+      "pendingPublication": "Pending publication",
+      "revoked": "Revoked",
       "source": "Source:",
       "integrity": {
         "title": "Integrity: ",

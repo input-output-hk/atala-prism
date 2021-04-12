@@ -7,6 +7,7 @@ import CustomButton from '../../Atoms/CustomButton/CustomButton';
 import { CREDENTIAL_STATUSES, drawerWidth } from '../../../../helpers/constants';
 import verifiedIcon from '../../../../images/verified.svg';
 import invalidIcon from '../../../../images/redCross.svg';
+import pendingIcon from '../../../../images/pendingIcon.svg';
 import cardanoLogo from '../../../../images/cardanoLogo.svg';
 import hashedFile from '../../../../images/hashedFile.svg';
 import CardDetail from './DetailCard';
@@ -34,6 +35,8 @@ const CredentialSummaryDetail = ({ drawerInfo, credentialData }) => {
 
   const {
     verificationResult: {
+      credentialSigned,
+      credentialPublished,
       credentialRevoked,
       batchRevoked,
       invalidMerkleProof,
@@ -42,15 +45,6 @@ const CredentialSummaryDetail = ({ drawerInfo, credentialData }) => {
       invalidSignature
     } = {}
   } = credentialData;
-
-  const credentialIsValid = !(
-    credentialRevoked ||
-    batchRevoked ||
-    invalidMerkleProof ||
-    invalidKey ||
-    keyRevoked ||
-    invalidSignature
-  );
 
   const tabs = {
     summary: {
@@ -81,11 +75,21 @@ const CredentialSummaryDetail = ({ drawerInfo, credentialData }) => {
     </div>
   );
 
+  const getCredentialStatusBadge = () => {
+    if (!credentialSigned) return ['draft', pendingIcon, 'PendingButton'];
+    if (!credentialPublished) return ['pendingPublication', pendingIcon, 'PendingButton'];
+    if (credentialRevoked || batchRevoked) return ['revoked', invalidIcon, 'InvalidButton'];
+    if (invalidMerkleProof || invalidKey || keyRevoked || invalidSignature)
+      return ['invalid', invalidIcon, 'InvalidButton'];
+    return ['valid', verifiedIcon, 'ValidButton'];
+  };
+
+  const [credentialStatus, validityIcon, badgeClassName] = getCredentialStatusBadge();
+
   const extraJsx = (
-    <div className={credentialIsValid ? 'ValidButton' : 'InvalidButton'}>
-      <img src={credentialIsValid ? verifiedIcon : invalidIcon} alt="verifiedIcon" />
-      <span>{t('credentials.detail.validity')}</span>
-      <p>{t(`credentials.detail.${credentialIsValid ? 'valid' : 'invalid'}`)}</p>
+    <div className={badgeClassName}>
+      <img src={validityIcon} alt="verifiedIcon" />
+      <p>{t(`credentials.detail.${credentialStatus}`)}</p>
     </div>
   );
 
