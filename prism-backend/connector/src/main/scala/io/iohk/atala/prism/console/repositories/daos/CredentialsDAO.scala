@@ -218,12 +218,10 @@ object CredentialsDAO extends BaseDAO {
          |WHERE c.credential_id = pc.credential_id AND
          |      pc.credential_id = $credentialId AND
          |      issuer_id = $institutionId
-         |""".stripMargin.update.run
-      .flatTap { n =>
-        FC.raiseError(new RuntimeException(s"The credential wasn't found or it hasn't been published yet"))
-          .whenA(n != 1)
-      }
-      .map(_ => ())
+         |""".stripMargin.update.run.flatTap { n =>
+      FC.raiseError(new RuntimeException(s"The credential wasn't found or it hasn't been published yet"))
+        .whenA(n != 1)
+    }.void
   }
 
   // TODO: Remove once the node can provide this data

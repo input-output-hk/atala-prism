@@ -1,6 +1,7 @@
 package io.iohk.atala.prism.node.repositories.blocks
 
 import cats.effect.IO
+import cats.syntax.functor._
 import doobie.implicits._
 import doobie.util.transactor.Transactor
 import doobie.{Get, Read}
@@ -27,7 +28,7 @@ class BlocksRepository(xa: Transactor[IO])(implicit ec: ExecutionContext) {
       .logSQLErrors("creating", logger)
       .transact(xa)
       .unsafeToFuture()
-      .map(_ => Right(()))
+      .as(Right(()))
       .toFutureEither
   }
 

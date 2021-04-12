@@ -15,7 +15,7 @@ object ParticipantsDAO {
     sql"""
          |INSERT INTO participants (id, tpe, public_key, name, did, logo, transaction_id, ledger)
          |VALUES ($id, $tpe, $publicKey, $name, $did, $logo, $transactionId, $ledger)
-       """.stripMargin.update.run.map(_ => ())
+       """.stripMargin.update.run.void
   }
 
   def findBy(id: ParticipantId): OptionT[doobie.ConnectionIO, ParticipantInfo] =

@@ -3,6 +3,7 @@ package io.iohk.atala.prism.connector.repositories
 import cats.data.{EitherT, OptionT}
 import cats.effect.IO
 import cats.implicits.catsSyntaxEitherId
+import cats.syntax.functor._
 import doobie.implicits._
 import doobie.util.transactor.Transactor
 import io.iohk.atala.prism.crypto.ECPublicKey
@@ -71,7 +72,7 @@ object ConnectionsRepository {
         .logSQLErrors("inserting tokens", logger)
         .transact(xa)
         .unsafeToFuture()
-        .map(_ => Right(tokens))
+        .as(Right(tokens))
         .toFutureEither
     }
 

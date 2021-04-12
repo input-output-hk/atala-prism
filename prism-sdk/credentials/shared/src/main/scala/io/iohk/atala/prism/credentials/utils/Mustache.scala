@@ -130,15 +130,13 @@ object Mustache {
       * Validate template with the given context, and return all errors or self.
       */
     def isValid(context: TemplateContext): MustacheProcessingResult[Unit] = {
-      tags.toList
-        .traverse {
-          case variable @ Variable(name, _) =>
-            Either
-              .cond(context(name).isDefined, variable, MustacheValidationError(s"Variable not found: $name"))
-              .toValidatedNel
-          case other => other.validNel
-        }
-        .map(_ => ())
+      tags.toList.traverse {
+        case variable @ Variable(name, _) =>
+          Either
+            .cond(context(name).isDefined, variable, MustacheValidationError(s"Variable not found: $name"))
+            .toValidatedNel
+        case other => other.validNel
+      }.void
     }
   }
 

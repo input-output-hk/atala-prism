@@ -1,5 +1,6 @@
 package io.iohk.atala.prism.kycbridge.services
 
+import cats.syntax.functor._
 import monix.eval.Task
 import doobie.util.transactor.Transactor
 import io.iohk.atala.kycbridge.protos.kycbridge_api.CreateAccountResponse
@@ -34,7 +35,7 @@ class KycBridgeService(tx: Transactor[Task], connectorService: ConnectorClientSe
               )
               .logSQLErrors("creating account", logger)
               .transact(tx)
-              .map(_ => CreateAccountResponse(newToken.token))
+              .as(CreateAccountResponse(newToken.token))
           }
           .getOrElse(
             Task.raiseError(

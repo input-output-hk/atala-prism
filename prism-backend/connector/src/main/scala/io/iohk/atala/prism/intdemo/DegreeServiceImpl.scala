@@ -2,6 +2,7 @@ package io.iohk.atala.prism.intdemo
 
 import java.time.LocalDate
 
+import cats.syntax.functor._
 import io.circe.Json.fromString
 import io.circe._
 import io.grpc.stub.StreamObserver
@@ -81,7 +82,7 @@ object DegreeServiceImpl {
         connection.connectionId,
         credential_models.ProofRequest(Seq(IdServiceImpl.credentialTypeId), connection.connectionToken.token)
       )
-      .map(_ => ())
+      .as(())
   }
 
   private def getSharedIdCredential(connectorIntegration: ConnectorIntegration)(implicit

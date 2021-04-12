@@ -53,7 +53,7 @@ class ConnectorMessageServiceSpec extends PostgresRepositorySpec[Task] {
         connectorService = connectorClientService,
         messageProcessors = List(spyMessageProcessor),
         findLastMessageOffset = ConnectorMessageOffsetDao.findLastMessageOffset().transact(database),
-        saveMessageOffset = ConnectorMessageOffsetDao.updateLastMessageOffset(_).transact(database).map(_ => ())
+        saveMessageOffset = ConnectorMessageOffsetDao.updateLastMessageOffset(_).transact(database).void
       )
 
       // when

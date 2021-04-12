@@ -52,7 +52,7 @@ class MirrorService(tx: Transactor[Task], connectorService: ConnectorClientServi
               .insert(Connection(newToken, None, ConnectionState.Invited, Instant.now(), None, None))
               .logSQLErrors("inserting connection", logger)
               .transact(tx)
-              .map(_ => CreateAccountResponse(newToken.token))
+              .as(CreateAccountResponse(newToken.token))
           }
           .getOrElse(
             Task.raiseError(

@@ -2,6 +2,7 @@ package io.iohk.atala.prism.management.console.repositories
 
 import cats.data.NonEmptyList
 import cats.effect.IO
+import cats.syntax.functor._
 import doobie.util.transactor
 import doobie.implicits._
 import io.circe.Json
@@ -601,11 +602,11 @@ class CredentialsRepositorySpec extends AtalaWithPostgresSpec {
 
     def markAsRevoked(credentialId: GenericCredential.Id): Unit = {
       val transactionId = 1.to(64).map(_ => "a").mkString("")
-      (sql"""
+      sql"""
             |UPDATE published_credentials
             |SET revoked_on_transaction_id = decode(${transactionId}, 'hex')
             |WHERE credential_id = ${credentialId.uuid.toString}::uuid
-       """.stripMargin.update.run.map(_ => ())).transact(database).unsafeRunSync()
+       """.stripMargin.update.run.void.transact(database).unsafeRunSync()
     }
   }
 
