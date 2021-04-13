@@ -1,5 +1,8 @@
 package io.iohk.atala.prism.mirror.trisa
 
+import com.google.protobuf.ByteString
+import io.iohk.atala.mirror.protos.trisa.{Transaction, TransactionData}
+
 import java.security.SecureRandom
 
 import org.bouncycastle.crypto.macs.HMac
@@ -49,6 +52,22 @@ object TrisaAesGcm {
   private val random = new SecureRandom
 
   /**
+    * Encrypt transaction data and create an HMAC signature with a randomly generated key.
+    */
+  def encryptTransactionData(transactionData: TransactionData): Either[TrisaAesGcmException, Transaction] = {
+    encrypt(transactionData.toByteArray).map { encryptedData =>
+      Transaction(
+        transaction = ByteString.copyFrom(encryptedData.data.toArray),
+        encryptionKey = ByteString.copyFrom(encryptedData.cipherSecret.toArray),
+        encryptionAlgorithm = "AES256_GCM",
+        hmac = ByteString.copyFrom(encryptedData.hmac.toArray),
+        hmacSecret = ByteString.copyFrom(encryptedData.hmacSecret.toArray),
+        hmacAlgorithm = "HMAC_SHA256"
+      )
+    }
+  }
+
+  /**
     * Encrypt data and create an HMAC signature with a randomly generated key.
     */
   def encrypt(plainText: Array[Byte]): Either[TrisaAesGcmException, TrisaAesGcmEncryptedData] = {
@@ -63,6 +82,20 @@ object TrisaAesGcm {
       cipherSecret = key.toIndexedSeq,
       hmac = hmac.toIndexedSeq,
       hmacSecret = key.toIndexedSeq
+    )
+  }
+
+  /**
+    * Decrypt trisa transaction and validate an HMAC signature.
+    */
+  def decrypt(value: Transaction): Either[TrisaAesGcmException, Array[Byte]] = {
+    TrisaAesGcm.decrypt(
+      TrisaAesGcm.TrisaAesGcmEncryptedData(
+        data = value.transaction.toByteArray.toIndexedSeq,
+        cipherSecret = value.encryptionKey.toByteArray.toIndexedSeq,
+        hmac = value.hmac.toByteArray.toIndexedSeq,
+        hmacSecret = value.hmacSecret.toByteArray.toIndexedSeq
+      )
     )
   }
 

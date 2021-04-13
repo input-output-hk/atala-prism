@@ -7,14 +7,11 @@ import doobie.util.transactor.Transactor
 import io.iohk.atala.mirror.protos.mirror_api.{
   CreateAccountResponse,
   GetCredentialForAddressRequest,
-  GetCredentialForAddressResponse,
-  GetIdentityInfoForAddressRequest,
-  GetIdentityInfoForAddressResponse
+  GetCredentialForAddressResponse
 }
 import io.iohk.atala.mirror.db.{CardanoAddressInfoDao, ConnectionDao, UserCredentialDao}
-import io.iohk.atala.mirror.models.{Connection, RedlandIdCredential}
+import io.iohk.atala.mirror.models.{CardanoAddress, Connection, RedlandIdCredential}
 import doobie.implicits._
-import io.iohk.atala.mirror.models.CardanoAddressInfo.CardanoAddress
 import io.iohk.atala.mirror.protos.ivms101.{
   DateAndPlaceOfBirth,
   NationalIdentification,
@@ -37,11 +34,19 @@ import io.iohk.atala.prism.services.ConnectorClientService
 import io.iohk.atala.prism.utils.syntax.DBConnectionOps
 import org.slf4j.{Logger, LoggerFactory}
 
-class MirrorService(tx: Transactor[Task], connectorService: ConnectorClientService) {
+trait MirrorService {
+  def createAccount: Task[CreateAccountResponse]
+
+  def getCredentialForAddress(request: GetCredentialForAddressRequest): Task[GetCredentialForAddressResponse]
+
+  def getIdentityInfoForAddress(cardanoAddress: CardanoAddress): Task[Option[Person]]
+}
+
+class MirrorServiceImpl(tx: Transactor[Task], connectorService: ConnectorClientService) extends MirrorService {
 
   val logger: Logger = LoggerFactory.getLogger(getClass)
 
-  def createAccount: Task[CreateAccountResponse] = {
+  override def createAccount: Task[CreateAccountResponse] = {
     connectorService.generateConnectionToken
       .flatMap(response => {
         response.tokens.headOption
@@ -62,7 +67,9 @@ class MirrorService(tx: Transactor[Task], connectorService: ConnectorClientServi
       })
   }
 
-  def getCredentialForAddress(request: GetCredentialForAddressRequest): Task[GetCredentialForAddressResponse] = {
+  override def getCredentialForAddress(
+      request: GetCredentialForAddressRequest
+  ): Task[GetCredentialForAddressResponse] = {
     val credentialsOption = (for {
       address <- OptionT(CardanoAddressInfoDao.findBy(CardanoAddress(request.address)))
       credentials <- OptionT.liftF(UserCredentialDao.findBy(address.connectionToken))
@@ -91,9 +98,9 @@ class MirrorService(tx: Transactor[Task], connectorService: ConnectorClientServi
 
   }
 
-  def getIdentityInfoForAddress(request: GetIdentityInfoForAddressRequest): Task[GetIdentityInfoForAddressResponse] = {
-    val redlandCredentialOption = (for {
-      address <- OptionT(CardanoAddressInfoDao.findBy(CardanoAddress(request.address)))
+  override def getIdentityInfoForAddress(cardanoAddress: CardanoAddress): Task[Option[Person]] = {
+    (for {
+      address <- OptionT(CardanoAddressInfoDao.findBy(cardanoAddress))
       credentials <- OptionT.liftF(UserCredentialDao.findBy(address.connectionToken))
       redlandCredential <-
         credentials
@@ -106,22 +113,8 @@ class MirrorService(tx: Transactor[Task], connectorService: ConnectorClientServi
           .flatMap(credential => RedlandIdCredential.fromCredentialContent(credential.content).toOption)
           .lastOption
           .toOptionT[ConnectionIO]
-
-    } yield redlandCredential).value.logSQLErrors("finding credentials", logger).transact(tx)
-
-    redlandCredentialOption.map {
-      case Some(redlandIdCredential) =>
-        val person = redlandIdCredentialToPerson(redlandIdCredential)
-
-        GetIdentityInfoForAddressResponse(
-          GetIdentityInfoForAddressResponse.Response.Person(person)
-        )
-
-      case None =>
-        GetIdentityInfoForAddressResponse(
-          GetIdentityInfoForAddressResponse.Response.Error(ADDRESS_NOT_FOUND)
-        )
-    }
+      person = redlandIdCredentialToPerson(redlandCredential)
+    } yield person).value.logSQLErrors("finding credentials", logger).transact(tx)
   }
 
   private def redlandIdCredentialToPerson(redlandIdCredential: RedlandIdCredential): Person = {

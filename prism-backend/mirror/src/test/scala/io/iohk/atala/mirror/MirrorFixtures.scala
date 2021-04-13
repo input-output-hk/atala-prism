@@ -14,7 +14,7 @@ import io.iohk.atala.mirror.models.Connection._
 import io.iohk.atala.mirror.models.UserCredential._
 import io.iohk.atala.mirror.models._
 import io.iohk.atala.prism.crypto.EC
-import io.iohk.atala.mirror.models.CardanoAddressInfo.{CardanoAddress, CardanoNetwork, RegistrationDate}
+import io.iohk.atala.mirror.models.CardanoAddressInfo.{CardanoNetwork, RegistrationDate}
 import io.iohk.atala.prism.mirror.payid._
 import io.iohk.atala.prism.mirror.payid.implicits._
 import io.iohk.atala.prism.protos.connector_models.ReceivedMessage

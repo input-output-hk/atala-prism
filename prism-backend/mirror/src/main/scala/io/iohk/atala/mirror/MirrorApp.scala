@@ -12,10 +12,10 @@ import io.iohk.atala.mirror.config.MirrorConfig
 import io.iohk.atala.mirror.http.ApiServer
 import io.iohk.atala.mirror.http.endpoints.PaymentEndpoints
 import io.iohk.atala.mirror.services.{
-  CardanoAddressService,
   CardanoAddressInfoService,
+  CardanoAddressService,
   CredentialService,
-  MirrorService,
+  MirrorServiceImpl,
   TrisaPeer2PeerService,
   TrisaService
 }
@@ -99,10 +99,10 @@ object MirrorApp extends TaskApp {
       // services
       connectorService = new ConnectorClientServiceImpl(connector, new RequestAuthenticator(EC), authConfig)
       nodeService = new NodeClientServiceImpl(node, authConfig)
-      mirrorService = new MirrorService(tx, connectorService)
+      mirrorServiceImpl = new MirrorServiceImpl(tx, connectorService)
       credentialService = new CredentialService(tx, connectorService, nodeService)
       cardanoAddressInfoService = new CardanoAddressInfoService(tx, mirrorConfig.httpConfig, nodeService)
-      mirrorGrpcService = new MirrorGrpcService(mirrorService)(scheduler)
+      mirrorGrpcService = new MirrorGrpcService(mirrorServiceImpl)(scheduler)
       cardanoAddressService = new CardanoAddressService()
 
       connectorMessageService = new ConnectorMessagesService(
@@ -124,7 +124,7 @@ object MirrorApp extends TaskApp {
             .transact(tx)
             .void
       )
-      trisaPeer2PeerService = new TrisaPeer2PeerService()
+      trisaPeer2PeerService = new TrisaPeer2PeerService(mirrorServiceImpl)
 
       // background streams
       _ <- Resource.liftF(

@@ -612,3 +612,17 @@ message PayloadMetadata {
   // Zero or More
   repeated TransliterationMethodCode transliteration_method = 1;
 }
+
+/***************************************************************************
+ * Top Level Model (not formally described in IVMS101, only examples)
+ ***************************************************************************/
+
+message IdentityPayload {
+  Originator originator = 1;
+  Beneficiary beneficiary = 2;
+  OriginatingVasp originating_vasp =3;
+  BeneficiaryVasp beneficiary_vasp = 4;
+  TransferPath transfer_path = 5;
+  PayloadMetadata payload_metadata = 6;
+}
+

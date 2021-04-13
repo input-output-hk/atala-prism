@@ -4,7 +4,7 @@ import monix.eval.Task
 import io.iohk.atala.prism.repositories.PostgresRepositorySpec
 import doobie.implicits._
 import io.iohk.atala.mirror.MirrorFixtures
-import io.iohk.atala.mirror.models.CardanoAddressInfo.CardanoAddress
+import io.iohk.atala.mirror.models.CardanoAddress
 import io.iohk.atala.prism.models.ConnectorMessageId
 
 import monix.execution.Scheduler.Implicits.global
