@@ -1,12 +1,12 @@
+package io.iohk.atala.prism.example
+
 import io.iohk.atala.prism.kotlin.credentials.*
 import io.iohk.atala.prism.kotlin.credentials.content.*
 import io.iohk.atala.prism.kotlin.credentials.json.*
 import io.iohk.atala.prism.kotlin.crypto.*
 import io.iohk.atala.prism.kotlin.identity.*
 import kotlinx.datetime.*
-import kotlinx.serialization.json.JsonObject
-import kotlinx.serialization.json.JsonPrimitive
-import kotlin.test.Test
+import kotlinx.serialization.json.*
 
 /**
  * This reflects the snippets that are in the markdown docs, allowing us to get autocompletion
@@ -15,8 +15,7 @@ import kotlin.test.Test
  * See /src/docs/usage-tutorial
  */
 class BasicUsageTutorial {
-    @Test
-    fun testExample() {
+    fun run() {
         val masterKeyPair = EC.generateKeyPair()
         val did = DID.createUnpublishedDID(masterKeyPair.publicKey)
 
