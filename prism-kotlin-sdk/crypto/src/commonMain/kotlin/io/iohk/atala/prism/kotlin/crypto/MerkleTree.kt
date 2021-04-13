@@ -1,5 +1,7 @@
 package io.iohk.atala.prism.kotlin.crypto
 
+import kotlinx.serialization.json.*
+
 typealias Hash = SHA256Digest
 // Bitmask index representing leaf position in a tree where unset i-th bit means that the leaf is
 // located in the left branch of the i-th node starting from the root and vice-versa
@@ -43,16 +45,47 @@ data class MerkleInclusionProof(
     fun derivedRoot(): MerkleRoot {
         val n = siblings.size
         val root = siblings.indices.fold(
-            prefixHash(hash),
-            { currentHash, i ->
-                if (index and (1 shl (n - i - 1)) == 0)
-                    combineHashes(currentHash, siblings[i])
-                else
-                    combineHashes(siblings[i], currentHash)
-            }
-        )
+            prefixHash(hash)
+        ) { currentHash, i ->
+            if (index and (1 shl (n - i - 1)) == 0)
+                combineHashes(currentHash, siblings[i])
+            else
+                combineHashes(siblings[i], currentHash)
+        }
 
         return MerkleRoot(root)
+    }
+
+    fun encode(): String {
+        return JsonObject(
+            mapOf(
+                Pair(hashField, JsonPrimitive(hash.hexValue())),
+                Pair(indexField, JsonPrimitive(index)),
+                Pair(siblingsField, JsonArray(siblings.map { JsonPrimitive(it.hexValue()) })),
+            )
+        ).toString()
+    }
+
+    companion object {
+        const val hashField = "hash"
+        const val indexField = "index"
+        const val siblingsField = "siblings"
+
+        fun decode(encoded: String): MerkleInclusionProof {
+            val json = Json.parseToJsonElement(encoded).jsonObject
+            val hash = json[hashField]?.jsonPrimitive?.content
+            val index = json[indexField]?.jsonPrimitive?.int
+            val siblings =
+                json[siblingsField]
+                    ?.jsonArray
+                    ?.map { it.jsonPrimitive.content }
+                    ?.map { Hash.fromHex(it) }
+            return MerkleInclusionProof(
+                Hash.fromHex(hash!!),
+                index!!,
+                siblings!!
+            )
+        }
     }
 }
 
