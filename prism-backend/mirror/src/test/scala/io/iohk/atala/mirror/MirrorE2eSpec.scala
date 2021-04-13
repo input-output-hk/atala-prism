@@ -42,7 +42,7 @@ class MirrorE2eSpec extends PostgresRepositorySpec[Task] with Matchers with Mirr
 
   /**
     * This is a E2E test for the Mirror. By default, the test is ignored, because it
-    * uses real node and connetor. It simulates mobile app flow, but with signed credential.
+    * uses real node and connector. It simulates mobile app flow, but with signed credential.
     */
   "Mirror" should {
     "generate user credential with validated status" ignore new E2eFixtures {

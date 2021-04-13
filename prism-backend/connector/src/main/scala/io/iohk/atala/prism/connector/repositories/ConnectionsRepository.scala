@@ -21,6 +21,7 @@ import io.iohk.atala.prism.connector.repositories.daos.{
 import io.iohk.atala.prism.console.models.Institution
 import io.iohk.atala.prism.console.repositories.daos.ContactsDAO
 import io.iohk.atala.prism.errors.LoggingContext
+import io.iohk.atala.prism.identity.DID
 import org.slf4j.{Logger, LoggerFactory}
 
 import scala.concurrent.ExecutionContext
@@ -33,7 +34,7 @@ trait ConnectionsRepository {
 
   def addConnectionFromToken(
       token: TokenString,
-      publicKey: ECPublicKey
+      didOrPublicKey: Either[DID, ECPublicKey]
   ): FutureEither[ConnectorError, (ParticipantId, ConnectionInfo)]
 
   def revokeConnection(participantId: ParticipantId, connectionId: ConnectionId): FutureEither[ConnectorError, Unit]
@@ -90,10 +91,14 @@ object ConnectionsRepository {
 
     override def addConnectionFromToken(
         token: TokenString,
-        publicKey: ECPublicKey
+        didOrPublicKey: Either[DID, ECPublicKey]
     ): FutureEither[ConnectorError, (ParticipantId, ConnectionInfo)] = {
 
-      implicit val loggingContext = LoggingContext("token" -> token)
+      val maybeDid = didOrPublicKey.left.toOption
+      val maybePublicKey = didOrPublicKey.toOption
+
+      implicit val loggingContext: LoggingContext =
+        LoggingContext("token" -> token, "did" -> maybeDid, "publicKey" -> maybePublicKey)
 
       val query = for {
         initiator <-
@@ -101,13 +106,13 @@ object ConnectionsRepository {
             .findByAvailableToken(token)
             .toRight(UnknownValueError("token", token.token).logWarn)
 
-        // Create a holder, which has no name nor did, instead it has a public key
+        // Create a holder, which has no name, instead it has did or a public key
         acceptorInfo = ParticipantInfo(
           id = ParticipantId.random(),
           tpe = ParticipantType.Holder,
-          publicKey = Some(publicKey),
+          publicKey = maybePublicKey,
           name = "",
-          did = None,
+          did = maybeDid,
           logo = None,
           transactionId = None,
           ledger = None

@@ -11,6 +11,7 @@ import io.iohk.atala.prism.connector.model.ParticipantType.Holder
 import io.iohk.atala.prism.connector.model._
 import io.iohk.atala.prism.connector.repositories.daos.{ConnectionTokensDAO, ConnectionsDAO, ParticipantsDAO}
 import io.iohk.atala.prism.crypto.{EC, ECConfig}
+import io.iohk.atala.prism.identity.DID
 import io.iohk.atala.prism.models.ParticipantId
 import io.iohk.atala.prism.protos.node_api.GetDidDocumentRequest
 import io.iohk.atala.prism.protos.{connector_api, connector_models, node_api, node_models}
@@ -155,6 +156,47 @@ class ConnectionsRpcSpec extends ConnectorRpcSpecBase with MockitoSugar {
       }
     }
 
+    "add connection from token using unpublished did auth" in {
+      val issuerId = createIssuer("Issuer")
+      val token = createToken(issuerId)
+      val keys = EC.generateKeyPair()
+      val unpublishedDID = DID.createUnpublishedDID(keys.publicKey)
+      val request = connector_api
+        .AddConnectionFromTokenRequest(token.token)
+      val rpcRequest = SignedRpcRequest.generate(keys, unpublishedDID, request)
+      usingApiAs(rpcRequest) { blockingStub =>
+        val response = blockingStub.addConnectionFromToken(request)
+        val holderId = response.userId
+        holderId mustNot be(empty)
+        response.connection.value.participantInfo.value.getIssuer.name mustBe "Issuer"
+        response.connection.value.participantName mustBe response.connection.value.participantInfo.value.getIssuer.name
+        val connectionId = ConnectionId.unsafeFrom(response.connection.value.connectionId)
+
+        val participantInfo = io.iohk.atala.prism.connector.model.ParticipantInfo(
+          ParticipantId.unsafeFrom(holderId),
+          Holder,
+          None,
+          "",
+          unpublishedDID.canonical,
+          None,
+          None,
+          None
+        )
+        ConnectionsDAO
+          .exists(connectionId)
+          .transact(database)
+          .unsafeToFuture()
+          .futureValue mustBe true
+
+        ParticipantsDAO
+          .findByDID(unpublishedDID)
+          .transact(database)
+          .value
+          .unsafeToFuture()
+          .futureValue mustBe Some(participantInfo)
+      }
+    }
+
     "fails to add connection when signature missing" in {
       val issuerId = createIssuer("Issuer")
       val token = createToken(issuerId)
@@ -167,7 +209,7 @@ class ConnectionsRpcSpec extends ConnectorRpcSpecBase with MockitoSugar {
         val ex = intercept[StatusRuntimeException] {
           blockingStub.addConnectionFromToken(request)
         }
-        ex.getStatus.getCode mustBe Status.Code.UNAUTHENTICATED
+        ex.getStatus.getCode mustBe Status.Code.INVALID_ARGUMENT
       }
     }
 
