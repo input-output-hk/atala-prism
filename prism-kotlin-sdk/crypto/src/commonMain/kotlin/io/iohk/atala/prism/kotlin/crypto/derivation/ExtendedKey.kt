@@ -4,7 +4,7 @@ import io.iohk.atala.prism.kotlin.crypto.keys.ECKeyPair
 import io.iohk.atala.prism.kotlin.crypto.keys.ECPrivateKey
 import io.iohk.atala.prism.kotlin.crypto.keys.ECPublicKey
 
-interface ExtendedKey {
+expect class ExtendedKey {
     /** Derivation path used to obtain such key */
     fun path(): DerivationPath
 

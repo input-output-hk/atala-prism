@@ -5,6 +5,7 @@ import io.iohk.atala.prism.app.data.local.db.dao.CredentialDao
 import io.iohk.atala.prism.app.data.local.db.model.ActivityHistoryWithContact
 import io.iohk.atala.prism.app.data.local.db.model.Contact
 import io.iohk.atala.prism.app.data.local.db.model.Credential
+import io.iohk.atala.prism.app.data.local.db.model.CredentialWithEncodedCredential
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 
@@ -24,6 +25,10 @@ class CredentialsLocalDataSource(private val credentialDao: CredentialDao) : Cre
         }
     }
 
+    override suspend fun getCredentialWithEncodedCredentialByCredentialId(credentialId: String): CredentialWithEncodedCredential? = withContext(Dispatchers.IO) {
+        return@withContext credentialDao.getCredentialWithEncodedCredentialByCredentialId(credentialId)
+    }
+
     override suspend fun getContactsActivityHistoriesByCredentialId(credentialId: String): List<ActivityHistoryWithContact> {
         return withContext(Dispatchers.IO) {
             return@withContext credentialDao.getContactsActivityHistoriesByCredentialId(credentialId)
@@ -36,9 +41,9 @@ class CredentialsLocalDataSource(private val credentialDao: CredentialDao) : Cre
         }
     }
 
-    override suspend fun contactsToShareCredential(credential: Credential): List<Contact> {
+    override suspend fun contactsToShareCredential(): List<Contact> {
         return withContext(Dispatchers.IO) {
-            return@withContext credentialDao.contactsToShareCredential(credential.connectionId)
+            return@withContext credentialDao.contactsToShareCredential()
         }
     }
 

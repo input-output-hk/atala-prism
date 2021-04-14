@@ -37,6 +37,8 @@ module "envoy_container_definition" {
     { name = "PROMETHEUS_ENDPOINT", value = "15s:/stats/prometheus" },
   ])
 
+  ulimits = [{ name = "nofile", softLimit = 20480, hardLimit = 40960 }]
+
   logConfiguration = {
     logDriver = "awslogs"
     options = {

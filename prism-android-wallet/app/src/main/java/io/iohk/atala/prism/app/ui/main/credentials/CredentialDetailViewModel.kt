@@ -5,7 +5,7 @@ import androidx.lifecycle.MediatorLiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import io.iohk.atala.prism.app.data.local.db.model.Credential
+import io.iohk.atala.prism.app.data.local.db.model.CredentialWithEncodedCredential
 import io.iohk.atala.prism.app.data.local.preferences.models.CustomDateFormat
 import io.iohk.atala.prism.app.neo.data.CredentialsRepository
 import kotlinx.coroutines.launch
@@ -15,9 +15,9 @@ class CredentialDetailViewModel @Inject constructor(
     private val credentialsRepository: CredentialsRepository
 ) : ViewModel() {
 
-    private val _credential = MutableLiveData<Credential>()
+    private val _credentialData = MutableLiveData<CredentialWithEncodedCredential>()
 
-    val credential: LiveData<Credential> = _credential
+    val credentialData: LiveData<CredentialWithEncodedCredential> = _credentialData
 
     private val customDateFormat = MutableLiveData<CustomDateFormat>().apply {
         viewModelScope.launch {
@@ -28,22 +28,22 @@ class CredentialDetailViewModel @Inject constructor(
     val receivedDate = MediatorLiveData<String>().apply {
         value = ""
         addSource(customDateFormat) { value = computeCredentialDate() }
-        addSource(_credential) { value = computeCredentialDate() }
+        addSource(_credentialData) { value = computeCredentialDate() }
     }
 
     fun fetchCredentialInfo(credentialId: String) {
         viewModelScope.launch {
-            credentialsRepository.getCredentialByCredentialId(credentialId)?.let {
-                _credential.postValue(it)
-                credentialsRepository.clearCredentialNotifications(it.credentialId)
+            credentialsRepository.getCredentialWithEncodedCredentialByCredentialId(credentialId)?.let {
+                _credentialData.postValue(it)
+                credentialsRepository.clearCredentialNotifications(it.credential.credentialId)
             }
         }
     }
 
     private fun computeCredentialDate(): String {
-        if (_credential.value == null || customDateFormat.value == null) {
+        if (_credentialData.value == null || customDateFormat.value == null) {
             return ""
         }
-        return customDateFormat.value!!.dateFormat.format(_credential.value!!.dateReceived)
+        return customDateFormat.value!!.dateFormat.format(_credentialData.value!!.credential.dateReceived)
     }
 }

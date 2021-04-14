@@ -57,6 +57,8 @@ module "node_container_definition" {
     { name = "NODE_CARDANO_PAYMENT_ADDRESS", value = var.cardano_payment_address },
   ]
 
+  ulimits = [{ name = "nofile", softLimit = 10240, hardLimit = 20480 }]
+
   logConfiguration = {
     logDriver = "awslogs"
     options = {

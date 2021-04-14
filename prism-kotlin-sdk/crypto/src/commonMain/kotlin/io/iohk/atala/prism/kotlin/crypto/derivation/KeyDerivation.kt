@@ -6,7 +6,7 @@ package io.iohk.atala.prism.kotlin.crypto.derivation
  *
  * The goal is to be able to use it on the Android app, and on the Browser Wallet.
  */
-interface KeyDerivation {
+expect object KeyDerivation {
     /**
      * Generates a random mnemonic code, usually used when a new wallet is being created.
      */
@@ -31,6 +31,5 @@ interface KeyDerivation {
     fun derivationRoot(seed: List<Byte>): ExtendedKey
 
     /** Computes key in derivation tree from seed bytes, according to BIP 32 protocol*/
-    fun deriveKey(seed: List<Byte>, path: DerivationPath): ExtendedKey =
-        path.axes.fold(derivationRoot(seed)) { key, axis -> key.derive(axis) }
+    fun deriveKey(seed: List<Byte>, path: DerivationPath): ExtendedKey
 }

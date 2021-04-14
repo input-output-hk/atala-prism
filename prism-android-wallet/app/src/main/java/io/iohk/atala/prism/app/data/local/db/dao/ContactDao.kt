@@ -11,6 +11,8 @@ import io.iohk.atala.prism.app.data.local.db.model.ActivityHistory
 import io.iohk.atala.prism.app.data.local.db.model.ActivityHistoryWithCredential
 import io.iohk.atala.prism.app.data.local.db.model.Contact
 import io.iohk.atala.prism.app.data.local.db.model.Credential
+import io.iohk.atala.prism.app.data.local.db.model.CredentialWithEncodedCredential
+import io.iohk.atala.prism.app.data.local.db.model.EncodedCredential
 import java.io.InvalidObjectException
 import java.util.Date
 
@@ -147,16 +149,19 @@ abstract class ContactDao : ActivityHistoryDao() {
      * @return returns the generated id [Long] of the created contact.
      */
     @Transaction
-    open fun updateContactSync(contact: Contact, issuedCredentials: List<Credential>) {
+    open fun updateContactSync(contact: Contact, issuedCredentials: List<CredentialWithEncodedCredential>) {
         issuedCredentials.find {
-            it.connectionId != contact.connectionId
+            it.credential.connectionId != contact.connectionId
         }?.let {
             throw InvalidObjectException("The contact and the credential issued must have the same connectionId")
         }
         val contactId = updateContactSync(contact)
-        insertCredentialsSync(issuedCredentials)
+        val credentials = issuedCredentials.map { it.credential }
+        val encodedCredentials = issuedCredentials.map { it.encodedCredential }
+        insertCredentialsSync(credentials)
+        insertEncodedCredentialsSync(encodedCredentials)
         val activityHistories: List<ActivityHistory> = issuedCredentials.map {
-            ActivityHistory(contact.connectionId, it.credentialId, it.dateReceived, ActivityHistory.Type.CredentialIssued, needsToBeNotified = true)
+            ActivityHistory(contact.connectionId, it.credential.credentialId, it.credential.dateReceived, ActivityHistory.Type.CredentialIssued, needsToBeNotified = true)
         }
         insertActivityHistoriesSync(activityHistories)
         return contactId
@@ -215,16 +220,20 @@ abstract class ContactDao : ActivityHistoryDao() {
      * @return returns the generated id [Long] of the created contact.
      */
     @Transaction
-    open suspend fun insert(contact: Contact, issuedCredentials: List<Credential>): Long {
+    open suspend fun insert(contact: Contact, issuedCredentials: List<CredentialWithEncodedCredential>): Long {
         issuedCredentials.find {
-            it.connectionId != contact.connectionId
+            it.credential.connectionId != contact.connectionId
         }?.let {
             throw InvalidObjectException("The contact and the credential issued must have the same connectionId")
         }
         val contactId = insert(contact)
-        insertCredentials(issuedCredentials)
+        val credentials = issuedCredentials.map { it.credential }
+        val encodedCredentials = issuedCredentials.map { it.encodedCredential }
+        insertCredentials(credentials)
+        insertEncodedCredentials(encodedCredentials)
+
         val activityHistories: List<ActivityHistory> = issuedCredentials.map {
-            ActivityHistory(contact.connectionId, it.credentialId, it.dateReceived, ActivityHistory.Type.CredentialIssued, needsToBeNotified = true)
+            ActivityHistory(contact.connectionId, it.credential.credentialId, it.credential.dateReceived, ActivityHistory.Type.CredentialIssued, needsToBeNotified = true)
         }
         insertActivityHistories(activityHistories)
         return contactId
@@ -240,17 +249,20 @@ abstract class ContactDao : ActivityHistoryDao() {
     @Transaction
     open suspend fun insertIssuedCredentialsToAContact(
         contactId: Long,
-        issuedCredentials: List<Credential>
+        issuedCredentials: List<CredentialWithEncodedCredential>
     ) {
         val contact = contactById(contactId.toInt())!!
         issuedCredentials.find {
-            it.connectionId != contact.connectionId
+            it.credential.connectionId != contact.connectionId
         }?.let {
             throw InvalidObjectException("The contact and the credential issued must have the same connectionId")
         }
-        insertCredentials(issuedCredentials)
+        val credentials = issuedCredentials.map { it.credential }
+        val encodedCredentials = issuedCredentials.map { it.encodedCredential }
+        insertCredentials(credentials)
+        insertEncodedCredentials(encodedCredentials)
         val activityHistories: List<ActivityHistory> = issuedCredentials.map {
-            ActivityHistory(contact.connectionId, it.credentialId, it.dateReceived, ActivityHistory.Type.CredentialIssued, needsToBeNotified = true)
+            ActivityHistory(contact.connectionId, it.credential.credentialId, it.credential.dateReceived, ActivityHistory.Type.CredentialIssued, needsToBeNotified = true)
         }
         insertActivityHistories(activityHistories)
     }
@@ -262,7 +274,7 @@ abstract class ContactDao : ActivityHistoryDao() {
      * @param contactsWithIssuedCredentials [Map<Contact, List<Credential>>]
      */
     @Transaction
-    open suspend fun insertAll(contactsWithIssuedCredentials: Map<Contact, List<Credential>>) {
+    open suspend fun insertAll(contactsWithIssuedCredentials: Map<Contact, List<CredentialWithEncodedCredential>>) {
         contactsWithIssuedCredentials.forEach { (contact, credentials) ->
             insert(contact, credentials)
         }
@@ -291,6 +303,12 @@ abstract class ContactDao : ActivityHistoryDao() {
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     abstract fun insertCredentialsSync(credentials: List<Credential>): List<Long>
+
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    abstract suspend fun insertEncodedCredentials(credentials: List<EncodedCredential>): List<Long>
+
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    abstract fun insertEncodedCredentialsSync(credentials: List<EncodedCredential>): List<Long>
 
     @Query("SELECT COUNT(*) FROM contacts ORDER BY id")
     abstract fun totalOfContacts(): LiveData<Int>

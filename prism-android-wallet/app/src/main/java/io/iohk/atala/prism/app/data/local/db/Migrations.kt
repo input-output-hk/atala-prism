@@ -141,3 +141,57 @@ val MIGRATION_4_5 = object : Migration(4, 5) {
         database.execSQL("CREATE INDEX IF NOT EXISTS index_proofRequestCredential_proof_request_id ON proofRequestCredential (proof_request_id)")
     }
 }
+
+/*
+* Added encodedCredentials table and removed "credential_encoded", "html_view" and "credentials_document" fields from "credentials" table
+* */
+val MIGRATION_5_6 = object : Migration(5, 6) {
+    override fun migrate(database: SupportSQLiteDatabase) {
+        // Added encodedCredentials table
+        database.execSQL(
+            "CREATE TABLE IF NOT EXISTS encodedCredentials (" +
+                "id INTEGER PRIMARY KEY AUTOINCREMENT, " +
+                "credential_id TEXT, " +
+                "credential_encoded BLOB, " +
+                "FOREIGN KEY(credential_id) " +
+                "REFERENCES credentials(credential_id) " +
+                "ON UPDATE NO ACTION ON DELETE CASCADE )"
+        )
+        database.execSQL("CREATE UNIQUE INDEX IF NOT EXISTS index_encodedCredentials_credential_id ON encodedCredentials (credential_id)")
+
+        // Insert current encoded data from "credentials" table to "encodedCredentials" table
+        database.execSQL(
+            """
+                INSERT INTO encodedCredentials (credential_id, credential_encoded)
+                SELECT credential_id, credential_encoded FROM credentials
+            """.trimIndent()
+        )
+        /*
+        * Removed "credential_encoded", "html_view" and "credentials_document" fields from "credentials" table.
+        * We must recreate the "credentials" table due to limitations of SQlite info: https://www.sqlite.org/faq.html#q11
+        * */
+        database.execSQL(
+            "CREATE TABLE IF NOT EXISTS credentials_backup (" +
+                "id INTEGER PRIMARY KEY AUTOINCREMENT, " +
+                "credential_id TEXT, " +
+                "date_received INTEGER, " +
+                "issuer_id TEXT, " +
+                "issuer_name TEXT, " +
+                "credential_type TEXT, " +
+                "connection_id TEXT NOT NULL, " +
+                "deleted INTEGER DEFAULT false, " +
+                "FOREIGN KEY(connection_id) REFERENCES contacts(connection_id) ON UPDATE NO ACTION ON DELETE CASCADE )"
+        )
+        database.execSQL(
+            """
+                INSERT INTO credentials_backup (id, credential_id, date_received, issuer_id, issuer_name, credential_type, connection_id, deleted)
+                SELECT id, credential_id, date_received, issuer_id, issuer_name, credential_type, connection_id, deleted FROM credentials
+            """.trimIndent()
+        )
+
+        database.execSQL("DROP TABLE credentials")
+        database.execSQL("ALTER TABLE credentials_backup RENAME TO credentials")
+        database.execSQL("CREATE INDEX IF NOT EXISTS index_credentials_connection_id ON credentials (connection_id)")
+        database.execSQL("CREATE UNIQUE INDEX IF NOT EXISTS index_credentials_credential_id ON credentials (credential_id)")
+    }
+}

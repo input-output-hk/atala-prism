@@ -1,5 +1,6 @@
 package io.iohk.atala.prism.kotlin.crypto
 
+import kotlinx.serialization.json.*
 import kotlin.math.ceil
 import kotlin.math.log2
 import kotlin.random.Random
@@ -82,5 +83,60 @@ class MerkleTreeTest {
         val (root, proofs) = generateProofs(hashes)
 
         proofs.forEach { assertEquals(it.derivedRoot(), root) }
+    }
+
+    @Test
+    fun encodingHasTheNecessaryFields() {
+        val (_, proofs) = generateProofs(hashes)
+        val encoded = proofs[0].encode()
+        val json = Json.parseToJsonElement(encoded).jsonObject
+
+        assertNotNull(
+            json[MerkleInclusionProof.hashField]?.jsonPrimitive?.contentOrNull,
+            "Hash must be present and represented by a string"
+        )
+        assertNotNull(
+            json[MerkleInclusionProof.indexField]?.jsonPrimitive?.int,
+            "Index must be present and represented by an integer"
+        )
+        assertNotNull(
+            json[MerkleInclusionProof.siblingsField]?.jsonArray,
+            "Siblings must be present and represented by an array"
+        )
+    }
+
+    @Test
+    fun decodingCanHandleSpecifiedJson() {
+        val hash = "a665a45920422f9d417e4867efdc4fb8a04a1f3fff1fa07e998e86f7f7a27ae3"
+        val index = 10
+        val siblings = listOf(
+            "8d969eef6ecad3c29a3a629280e686cf0c3f5d5a86aff3ca12020c923adc6c92",
+            "15e2b0d3c33891ebb0f1ef609ec419420c20e320ce94c65fbc8c3312448eb225",
+            "c775e7b757ede630cd0aa1113bd102661ab38829ca52a6422ab782862f268646"
+        )
+        val decoded = MerkleInclusionProof.decode(
+            """
+                {
+                    "${MerkleInclusionProof.hashField}": "$hash",
+                    "${MerkleInclusionProof.indexField}": $index,
+                    "${MerkleInclusionProof.siblingsField}": [
+                        ${siblings.joinToString(",")}
+                    ]
+                }
+            """.trimIndent()
+        )
+
+        assertEquals(hash, decoded.hash.hexValue())
+        assertEquals(index, decoded.index)
+        assertEquals(siblings, decoded.siblings.map { it.hexValue() })
+    }
+
+    @Test
+    fun encodingIsReversibleByDecoding() {
+        val (_, proofs) = generateProofs(hashes)
+
+        proofs.forEach {
+            assertEquals(it, MerkleInclusionProof.decode(it.encode()))
+        }
     }
 }

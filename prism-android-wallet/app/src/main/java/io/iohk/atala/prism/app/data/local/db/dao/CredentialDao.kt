@@ -9,6 +9,8 @@ import io.iohk.atala.prism.app.data.local.db.model.ActivityHistory
 import io.iohk.atala.prism.app.data.local.db.model.ActivityHistoryWithContact
 import io.iohk.atala.prism.app.data.local.db.model.Contact
 import io.iohk.atala.prism.app.data.local.db.model.Credential
+import io.iohk.atala.prism.app.data.local.db.model.CredentialWithEncodedCredential
+import io.iohk.atala.prism.app.data.local.db.model.EncodedCredential
 import java.util.Date
 
 @Dao
@@ -25,6 +27,12 @@ abstract class CredentialDao : ActivityHistoryDao() {
 
     @Query("SELECT * FROM credentials where credential_id = :credentialId order by id asc")
     abstract suspend fun getCredentialByCredentialId(credentialId: String): Credential?
+
+    @Query("SELECT * FROM credentials where credential_id = :credentialId order by id asc")
+    abstract suspend fun getCredentialWithEncodedCredentialByCredentialId(credentialId: String): CredentialWithEncodedCredential?
+
+    @Query("SELECT * FROM encodedCredentials where credential_id = :credentialId order by id asc")
+    abstract suspend fun getEncodedCredentialByCredentialId(credentialId: String): EncodedCredential?
 
     @Query("SELECT * FROM credentials WHERE credential_id IN (:credentialsIds)")
     abstract suspend fun getCredentialsByCredentialsIds(credentialsIds: List<String>): List<Credential>
@@ -66,9 +74,12 @@ abstract class CredentialDao : ActivityHistoryDao() {
      * @param credentialConnectionId [String] connectionId of the Credential
      * @return a [List] of [Contact]
      */
-    @Query("SELECT * FROM contacts WHERE connection_id != :credentialConnectionId AND deleted = 0 order by id asc")
-    abstract suspend fun contactsToShareCredential(credentialConnectionId: String): List<Contact>
+    @Query("SELECT * FROM contacts WHERE deleted = 0 order by id asc")
+    abstract suspend fun contactsToShareCredential(): List<Contact>
 
     @Query("SELECT * FROM credentials WHERE credential_type IN (:credentialTypes) order by id asc")
     abstract suspend fun getCredentialsByTypes(credentialTypes: List<String>): List<Credential>
+
+    @Query("SELECT COUNT(*) FROM encodedCredentials ORDER BY id asc")
+    abstract suspend fun totalOfEncodedCredentials(): Int
 }

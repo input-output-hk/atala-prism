@@ -5,9 +5,10 @@ import io.grpc.StatusRuntimeException
 import io.iohk.atala.prism.app.data.local.db.mappers.ContactMapper
 import io.iohk.atala.prism.app.data.local.db.mappers.CredentialMapper
 import io.iohk.atala.prism.app.data.local.db.model.Contact
-import io.iohk.atala.prism.app.data.local.db.model.Credential
+import io.iohk.atala.prism.app.data.local.db.model.CredentialWithEncodedCredential
 import io.iohk.atala.prism.app.neo.common.exceptions.InvalidSecurityWord
 import io.iohk.atala.prism.app.neo.common.exceptions.InvalidSecurityWordsLength
+import io.iohk.atala.prism.app.neo.common.extensions.toMilliseconds
 import io.iohk.atala.prism.app.neo.data.local.ContactsLocalDataSourceInterface
 import io.iohk.atala.prism.app.neo.data.local.PreferencesLocalDataSourceInterface
 import io.iohk.atala.prism.app.neo.data.local.SessionLocalDataSourceInterface
@@ -37,7 +38,7 @@ class AccountRecoveryRepository(
             var currentIndex = 0
             var lastIndex = 0
             var done = false
-            val loadedContactsAndCredentials = mutableMapOf<Contact, List<Credential>>()
+            val loadedContactsAndCredentials = mutableMapOf<Contact, List<CredentialWithEncodedCredential>>()
             while (!done) {
                 try {
                     val contacts = loadContactsAt(currentIndex, words)
@@ -96,13 +97,13 @@ class AccountRecoveryRepository(
         return map
     }
 
-    private fun loadCredentialsFromContact(contact: Contact, keyPair: ECKeyPair): List<Credential> {
+    private fun loadCredentialsFromContact(contact: Contact, keyPair: ECKeyPair): List<CredentialWithEncodedCredential> {
         val paginatedMessagesResponse = connectorApi.getAllMessages(keyPair, contact.lastMessageId)
         return paginatedMessagesResponse.messagesList.map { receivedMessage ->
             val atalaMessage = AtalaMessage.parseFrom(receivedMessage.message)
             contact.lastMessageId = receivedMessage.id
             return@map if (CredentialMapper.isACredentialMessage(atalaMessage))
-                CredentialMapper.mapToCredential(atalaMessage, receivedMessage.id, receivedMessage.connectionId, receivedMessage.received, contact)
+                CredentialMapper.mapToCredential(receivedMessage, receivedMessage.id, receivedMessage.connectionId, receivedMessage.received.toMilliseconds(), contact)
             else
                 null
         }.filterNotNull()

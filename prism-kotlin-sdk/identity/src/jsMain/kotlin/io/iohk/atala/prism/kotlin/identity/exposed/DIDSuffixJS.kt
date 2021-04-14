@@ -5,9 +5,11 @@ import io.iohk.atala.prism.kotlin.identity.DIDSuffix
 
 @JsExport
 object DIDSuffixJSCompanion {
+    @JsName("fromString")
     fun fromString(suffix: String): DIDSuffixJS =
         DIDSuffixJS(DIDSuffix.fromString(suffix))
 
+    @JsName("fromDigest")
     fun fromDigest(hex: String): DIDSuffixJS =
         DIDSuffixJS(DIDSuffix.fromDigest(SHA256Digest.fromHex(hex)))
 }

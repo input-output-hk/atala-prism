@@ -6,7 +6,8 @@ import com.google.protobuf.ByteString
 import io.grpc.stub.StreamObserver
 import io.iohk.atala.prism.BuildInfo
 import io.iohk.atala.prism.auth.AuthSupport
-import io.iohk.atala.prism.auth.grpc.{GrpcAuthenticationHeader, SignedRequestsHelper}
+import io.iohk.atala.prism.auth.grpc.SignedRequestsHelper
+import io.iohk.atala.prism.auth.utils.DIDUtils
 import io.iohk.atala.prism.connector.errors._
 import io.iohk.atala.prism.connector.grpc._
 import io.iohk.atala.prism.connector.model._
@@ -117,36 +118,46 @@ class ConnectorService(
       request: connector_api.AddConnectionFromTokenRequest
   ): Future[connector_api.AddConnectionFromTokenResponse] = {
 
-    def verifyRequestSignature(
-        publicKey: ECPublicKey,
-        maybeAuthHeader: Option[GrpcAuthenticationHeader]
-    ): FutureEither[ConnectorError, Unit] =
-      maybeAuthHeader match {
-        case Some(GrpcAuthenticationHeader.PublicKeyBased(requestNonce, headerPublicKey, signature)) =>
-          val payload = SignedRequestsHelper.merge(requestNonce, request.toByteArray).toArray
-
+    def verifyRequestSignature(in: AddConnectionRequest): FutureEither[ConnectorError, Unit] =
+      in.basedOn match {
+        case Right(PublicKeyBasedAddConnectionRequest(_, publicKey, authHeader)) =>
+          val payload = SignedRequestsHelper.merge(authHeader.requestNonce, request.toByteArray).toArray
           val resultEither = for {
             _ <- Either.cond(
-              headerPublicKey == publicKey,
+              authHeader.publicKey == publicKey,
               (),
               InvalidArgumentError("publicKey", "key matching one in GRPC header", "different key")
             )
             _ <- Either.cond(
-              EC.verify(payload, publicKey, signature),
+              EC.verify(payload, publicKey, authHeader.signature),
               (),
               SignatureVerificationError()
             )
           } yield ()
           Future.successful(resultEither).toFutureEither
-        case _ =>
-          Future.successful(Left(SignatureMissingError())).toFutureEither
+        case Left(UnpublishedDidBasedAddConnectionRequest(_, authHeader)) =>
+          val payload = SignedRequestsHelper.merge(authHeader.requestNonce, request.toByteArray).toArray
+          for {
+            didData <-
+              DIDUtils
+                .validateDid(authHeader.did)
+                .mapLeft(_ => InvalidArgumentError("did", "valid unpublished did", "invalid"))
+            publicKey <-
+              DIDUtils
+                .findPublicKey(didData, authHeader.keyId)
+                .mapLeft(_ => InvalidArgumentError("did", "unpublished did with public key", "invalid"))
+            _ <-
+              Either
+                .cond(EC.verify(payload, publicKey, authHeader.signature), (), SignatureVerificationError())
+                .toFutureEither
+          } yield ()
       }
 
     public[AddConnectionRequest]("addConnectionFromToken", request) { addConnectionRequest =>
       val result = for {
-        _ <- verifyRequestSignature(addConnectionRequest.publicKey, addConnectionRequest.authHeader)
+        _ <- verifyRequestSignature(addConnectionRequest)
         connectionCreationResult <-
-          connections.addConnectionFromToken(addConnectionRequest.token, addConnectionRequest.publicKey)
+          connections.addConnectionFromToken(addConnectionRequest.token, addConnectionRequest.didOrPublicKey)
       } yield connectionCreationResult
 
       result.map {

@@ -5,28 +5,30 @@ import io.iohk.atala.prism.kotlin.crypto.EC
 import io.iohk.atala.prism.kotlin.crypto.util.BytesOps.hexToBytes
 
 @JsExport
-class CredentialJS internal constructor(internal val internal: Credential) {
-    val contentBytes: ByteArray = internal.contentBytes.toByteArray()
+abstract class CredentialJS internal constructor(internal val credential: Credential) {
+    abstract val contentBytes: ByteArray
 
-    val content: CredentialContentJS = CredentialContentJS(internal.content)
+    abstract val content: CredentialContentJS
 
-    val signature: String? = internal.signature?.getHexEncoded()
+    abstract val signature: String?
 
-    val canonicalForm: String = internal.canonicalForm
+    abstract val canonicalForm: String
 
-    fun isSigned(): Boolean = internal.isSigned()
+    @JsName("isSigned")
+    fun isSigned(): Boolean = credential.isSigned()
 
-    fun isUnverifiable(): Boolean = internal.isUnverifiable()
+    @JsName("isUnverifiable")
+    fun isUnverifiable(): Boolean = credential.isUnverifiable()
 
-    fun hash(): String = internal.hash().hexValue()
+    @JsName("hash")
+    fun hash(): String = credential.hash().hexValue()
 
-    fun sign(privateKey: String): CredentialJS {
-        val key = EC.toPrivateKey(hexToBytes(privateKey).map { it.toByte() })
-        return CredentialJS(internal.sign(key))
-    }
+    @JsName("sign")
+    abstract fun sign(privateKey: String): CredentialJS
 
+    @JsName("isValidSignature")
     fun isValidSignature(publicKey: String): Boolean {
         val key = EC.toPublicKey(hexToBytes(publicKey).map { it.toByte() })
-        return internal.isValidSignature(key)
+        return credential.isValidSignature(key)
     }
 }

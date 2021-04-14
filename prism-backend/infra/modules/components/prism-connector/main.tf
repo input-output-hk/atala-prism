@@ -47,6 +47,8 @@ module "connector_container_definition" {
     { name = "CONNECTOR_NODE_PORT", value = var.node_port },
   ]
 
+  ulimits = [{ name = "nofile", softLimit = 10240, hardLimit = 20480 }]
+
   logConfiguration = {
     logDriver = "awslogs"
     options = {

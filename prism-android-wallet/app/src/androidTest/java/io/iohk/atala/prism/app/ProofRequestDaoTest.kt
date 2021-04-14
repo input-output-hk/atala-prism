@@ -3,6 +3,7 @@ package io.iohk.atala.prism.app
 import android.content.Context
 import androidx.room.Room
 import androidx.test.core.app.ApplicationProvider
+import com.google.common.base.Charsets
 import com.google.protobuf.ByteString
 import io.iohk.atala.prism.app.data.local.db.AppDatabase
 import io.iohk.atala.prism.app.data.local.db.dao.ContactDao
@@ -10,6 +11,8 @@ import io.iohk.atala.prism.app.data.local.db.dao.CredentialDao
 import io.iohk.atala.prism.app.data.local.db.dao.ProofRequestDao
 import io.iohk.atala.prism.app.data.local.db.model.Contact
 import io.iohk.atala.prism.app.data.local.db.model.Credential
+import io.iohk.atala.prism.app.data.local.db.model.CredentialWithEncodedCredential
+import io.iohk.atala.prism.app.data.local.db.model.EncodedCredential
 import io.iohk.atala.prism.app.data.local.db.model.ProofRequest
 import kotlinx.coroutines.asExecutor
 import kotlinx.coroutines.runBlocking
@@ -62,9 +65,9 @@ class ProofRequestDaoTest {
         contactDao.insert(
             buildSimpleContact("connection1", "Contact 1"),
             listOf(
-                buildSimpleCredential("connection1", "Contact 1", "credential1"),
-                buildSimpleCredential("connection1", "Contact 1", "credential2"),
-                buildSimpleCredential("connection1", "Contact 1", "credential3")
+                buildSimpleCredential("connection1", "Contact 1", "credential1", "encodedData1".toByteStringUTF8()),
+                buildSimpleCredential("connection1", "Contact 1", "credential2", "encodedData2".toByteStringUTF8()),
+                buildSimpleCredential("connection1", "Contact 1", "credential3", "encodedData3".toByteStringUTF8())
             )
         )
         contactDao.insert(buildSimpleContact("connection2", "Contact 2"))
@@ -99,14 +102,19 @@ class ProofRequestDaoTest {
     private fun buildSimpleCredential(
         connectionId: String,
         issuerName: String,
-        credentialId: String
-    ): Credential {
+        credentialId: String,
+        encodedCredentialData: ByteString
+    ): CredentialWithEncodedCredential {
         val credential = Credential()
         credential.issuerName = issuerName
         credential.credentialId = credentialId
         credential.connectionId = connectionId
         credential.dateReceived = Date().time
-        credential.credentialEncoded = ByteString.EMPTY
-        return credential
+        val encodedCredential = EncodedCredential()
+        encodedCredential.credentialEncoded = encodedCredentialData
+        encodedCredential.credentialId = credentialId
+        return CredentialWithEncodedCredential(credential, encodedCredential)
     }
+
+    private fun String.toByteStringUTF8(): ByteString = ByteString.copyFrom(this, Charsets.UTF_8)
 }

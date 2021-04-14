@@ -9,13 +9,15 @@ import io.iohk.atala.prism.kotlin.crypto.exposed.MerkleRootJS
 
 @JsExport
 object CredentialVerificationJS {
+    @JsName("verify")
     fun verify(
         keyData: KeyDataJS,
         credentialData: CredentialDataJS,
         credential: CredentialJS
     ) =
-        CredentialVerification.verify(keyData.toKeyData(), credentialData.toCredentialData(), credential.internal)
+        CredentialVerification.verify(keyData.toKeyData(), credentialData.toCredentialData(), credential.credential)
 
+    @JsName("verifyMerkle")
     fun verifyMerkle(
         keyData: KeyDataJS,
         batchData: BatchDataJS,
@@ -34,6 +36,6 @@ object CredentialVerificationJS {
                 inclusionProof.index,
                 inclusionProof.siblings.map { SHA256Digest.fromHex(it) }
             ),
-            signedCredential.internal
+            signedCredential.credential
         )
 }

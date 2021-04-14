@@ -2,22 +2,13 @@ package io.iohk.atala.prism.auth
 
 import cats.syntax.functor._
 import io.grpc.Context
-import io.iohk.atala.prism.auth.errors.{
-  AuthError,
-  AuthErrorSupport,
-  CanonicalSuffixMatchStateError,
-  InvalidAtalaOperationError,
-  NoCreateDidOperationError,
-  SignatureVerificationError,
-  UnknownPublicKeyId
-}
+import io.iohk.atala.prism.auth.errors.{AuthError, AuthErrorSupport, SignatureVerificationError}
 import io.iohk.atala.prism.auth.grpc.{GrpcAuthenticationHeader, GrpcAuthenticationHeaderParser, SignedRequestsHelper}
 import io.iohk.atala.prism.auth.model.RequestNonce
+import io.iohk.atala.prism.auth.utils.DIDUtils
 import io.iohk.atala.prism.crypto.{EC, ECPublicKey, ECSignature}
 import io.iohk.atala.prism.identity.DID
-import io.iohk.atala.prism.identity.DID.DIDFormat
-import io.iohk.atala.prism.protos.node_models.{CreateDIDOperation, DIDData}
-import io.iohk.atala.prism.protos.{node_api, node_models}
+import io.iohk.atala.prism.protos.node_api
 import io.iohk.atala.prism.utils.FutureEither
 import io.iohk.atala.prism.utils.FutureEither._
 import org.slf4j.{Logger, LoggerFactory}
@@ -201,23 +192,6 @@ abstract class SignedRequestsAuthenticatorBase[Id](
     } yield id
   }
 
-  private def findPublicKey(didData: node_models.DIDData, keyId: String)(implicit
-      ec: ExecutionContext
-  ): FutureEither[AuthError, ECPublicKey] = {
-    Future {
-      // TODO: Validate keyUsage and revocation
-      // we haven't defined which keys can sign requests, and the model doesn't specify when a key is revoked
-      val publicKeyOpt = didData.publicKeys
-        .find(_.id == keyId)
-        .flatMap(_.keyData.ecKeyData)
-        .map { data =>
-          // TODO: Validate curve, right now we support a single curve
-          EC.toPublicKey(x = data.x.toByteArray, y = data.y.toByteArray)
-        }
-      publicKeyOpt.toRight(UnknownPublicKeyId())
-    }.toFutureEither
-  }
-
   private def authenticate(request: Array[Byte], authenticationHeader: GrpcAuthenticationHeader.PublishedDIDBased)(
       implicit ec: ExecutionContext
   ): FutureEither[AuthError, Id] = {
@@ -232,7 +206,7 @@ abstract class SignedRequestsAuthenticatorBase[Id](
           .toFutureEither
 
       didDocument = didDocumentResponse.document.getOrElse(throw new RuntimeException("Unknown DID"))
-      publicKey <- findPublicKey(didDocument, authenticationHeader.keyId)
+      publicKey <- DIDUtils.findPublicKey(didDocument, authenticationHeader.keyId)
 
       // Verify the actual signature
       _ <- verifyRequestSignature(
@@ -245,32 +219,12 @@ abstract class SignedRequestsAuthenticatorBase[Id](
     } yield id
   }
 
-  def validateDid(did: DID): FutureEither[AuthError, DIDData] = {
-    did.getFormat match {
-      case longFormDid: DIDFormat.LongForm =>
-        longFormDid.validate match {
-          case Left(DIDFormat.CanonicalSuffixMatchStateError) =>
-            Future.successful(Left(CanonicalSuffixMatchStateError)).toFutureEither
-          case Left(DIDFormat.InvalidAtalaOperationError) =>
-            Future.successful(Left(InvalidAtalaOperationError)).toFutureEither
-          case Right(validatedLongForm) =>
-            validatedLongForm.initialState.operation.createDid match {
-              case Some(CreateDIDOperation(Some(didData), _)) =>
-                Future.successful(Right(didData)).toFutureEither
-              case _ =>
-                Future.successful(Left(NoCreateDidOperationError)).toFutureEither
-            }
-        }
-      case _ => throw new IllegalStateException("Unreachable state")
-    }
-  }
-
   private def authenticate(request: Array[Byte], authenticationHeader: GrpcAuthenticationHeader.UnpublishedDIDBased)(
       implicit ec: ExecutionContext
   ): FutureEither[AuthError, Id] = {
-    validateDid(authenticationHeader.did).flatMap { didData =>
+    DIDUtils.validateDid(authenticationHeader.did).flatMap { didData =>
       for {
-        publicKey <- findPublicKey(didData, authenticationHeader.keyId)
+        publicKey <- DIDUtils.findPublicKey(didData, authenticationHeader.keyId)
         id <- findByDid(authenticationHeader.did)
         _ <- verifyRequestSignature(
           id = id,
@@ -329,10 +283,11 @@ abstract class SignedRequestsAuthenticatorBase[Id](
     result match {
       case Some(GrpcAuthenticationHeader.UnpublishedDIDBased(requestNonce, did, keyId, signature))
           if whitelist.contains(did) =>
-        val result = validateDid(did)
+        val result = DIDUtils
+          .validateDid(did)
           .flatMap { didData =>
             for {
-              publicKey <- findPublicKey(didData, keyId)
+              publicKey <- DIDUtils.findPublicKey(didData, keyId)
               _ <- verifyRequestSignature(
                 did = did,
                 publicKey = publicKey,

@@ -674,7 +674,9 @@ jobs:
 
       - run:
           name: Install dependencies
-          command: brew install automake libtool google-chrome
+          command: |
+            brew update # Remove once CircleCI updates its macOS machines to use the new homebrew
+            brew install automake libtool google-chrome
 
       - run:
           name: Install Android SDK

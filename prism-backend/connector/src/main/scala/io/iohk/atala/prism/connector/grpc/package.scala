@@ -1,8 +1,9 @@
 package io.iohk.atala.prism.connector
 
 import cats.data.NonEmptyList
+import cats.syntax.either._
 import io.grpc.Context
-import io.iohk.atala.prism.auth.grpc.GrpcAuthenticationHeaderParser
+import io.iohk.atala.prism.auth.grpc.{GrpcAuthenticationHeader, GrpcAuthenticationHeaderParser}
 import io.iohk.atala.prism.connector.model.actions._
 import io.iohk.atala.prism.connector.model.{
   ParticipantLogo,
@@ -66,17 +67,25 @@ package object grpc {
 
   implicit val addConnectionFromTokenRequestConverter
       : ProtoConverter[connector_api.AddConnectionFromTokenRequest, AddConnectionRequest] =
-    (in: connector_api.AddConnectionFromTokenRequest) =>
-      Try(
-        in.holderEncodedPublicKey
-          .map { encodedKey =>
-            EC.toPublicKey(encodedKey.publicKey.toByteArray)
-          }
-          .getOrElse(throw new RuntimeException("The encoded public key is required to accept a connection"))
-      ).map { publicKey =>
-        val maybeHeader = GrpcAuthenticationHeaderParser.parse(Context.current())
-        AddConnectionRequest(TokenString(in.token), publicKey, maybeHeader)
-      }
+    (in: connector_api.AddConnectionFromTokenRequest) => {
+      lazy val publicKeyIsMissing = Failure(
+        new RuntimeException("The encoded public key is required to accept a connection")
+      )
+      for {
+        parsedKey <- Try(in.holderEncodedPublicKey.map(encodedKey => EC.toPublicKey(encodedKey.publicKey.toByteArray)))
+        token = TokenString(in.token)
+        maybeHeader = GrpcAuthenticationHeaderParser.parse(Context.current())
+        basedOn <- maybeHeader match {
+          case Some(header @ GrpcAuthenticationHeader.UnpublishedDIDBased(_, _, _, _)) =>
+            Success(UnpublishedDidBasedAddConnectionRequest(token, header).asLeft)
+          case Some(header @ GrpcAuthenticationHeader.PublicKeyBased(_, _, _)) =>
+            parsedKey.fold[Try[Either[UnpublishedDidBasedAddConnectionRequest, PublicKeyBasedAddConnectionRequest]]](
+              publicKeyIsMissing
+            )(publicKey => Success(PublicKeyBasedAddConnectionRequest(token, publicKey, header).asRight))
+          case _ => publicKeyIsMissing
+        }
+      } yield AddConnectionRequest(token, basedOn)
+    }
 
   implicit val registerDIDRequestConverter: ProtoConverter[connector_api.RegisterDIDRequest, RegisterDIDRequest] =
     (in: connector_api.RegisterDIDRequest) =>
