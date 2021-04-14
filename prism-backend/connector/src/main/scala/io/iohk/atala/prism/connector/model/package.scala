@@ -44,39 +44,7 @@ case class ParticipantInfo(
     logo: Option[ParticipantLogo],
     transactionId: Option[TransactionId],
     ledger: Option[Ledger]
-) {
-
-  def toProto: connector_models.ParticipantInfo = {
-    tpe match {
-      case ParticipantType.Holder =>
-        connector_models.ParticipantInfo(
-          connector_models.ParticipantInfo.Participant.Holder(
-            connector_models.HolderInfo(did.map(_.value).getOrElse(""), name)
-          )
-        )
-      case ParticipantType.Issuer =>
-        connector_models.ParticipantInfo(
-          connector_models.ParticipantInfo.Participant.Issuer(
-            connector_models.IssuerInfo(
-              dID = did.map(_.value).getOrElse(""),
-              name = name,
-              logo = ByteString.copyFrom(logo.map(_.bytes).getOrElse(Vector.empty).toArray)
-            )
-          )
-        )
-      case ParticipantType.Verifier =>
-        connector_models.ParticipantInfo(
-          connector_models.ParticipantInfo.Participant.Verifier(
-            connector_models.VerifierInfo(
-              dID = did.map(_.value).getOrElse(""),
-              name = name,
-              logo = ByteString.copyFrom(logo.map(_.bytes).getOrElse(Vector.empty).toArray)
-            )
-          )
-        )
-    }
-  }
-}
+)
 
 sealed abstract class ConnectionStatus(value: String) extends EnumEntry {
   override def entryName: String = value
@@ -102,7 +70,6 @@ case class ConnectionInfo(
       id.toString,
       createdDeprecated = instantiatedAt.toEpochMilli,
       created = instantiatedAt.toProtoTimestamp.some,
-      participantInfo = Some(participantInfo.toProto),
       token = token.token,
       participantName = participantInfo.name,
       participantLogo = ByteString.copyFrom(participantInfo.logo.map(_.bytes).getOrElse(Vector.empty).toArray),

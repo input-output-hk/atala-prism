@@ -85,11 +85,9 @@ class ConnectionsRpcSpec extends ConnectorRpcSpecBase with MockitoSugar {
 
       usingApiAs(rpcRequest) { blockingStub =>
         val response = blockingStub.getConnectionTokenInfo(request)
-        response.creator.value.getIssuer.name mustBe "Issuer"
-        response.creator.value.getIssuer.logo.size() must be > 0 // the issuer has a logo
-        response.creatorName must be(response.creator.value.getIssuer.name)
-        response.creatorLogo must be(response.creator.value.getIssuer.logo)
-        response.creatorDID must be(response.creator.value.getIssuer.dID)
+        response.creatorName mustBe "Issuer"
+        response.creatorLogo.size() must be > 0 // the issuer has a logo
+        response.creatorDID mustBe did.toString
       }
     }
 
@@ -126,8 +124,7 @@ class ConnectionsRpcSpec extends ConnectorRpcSpecBase with MockitoSugar {
         val response = blockingStub.addConnectionFromToken(request)
         val holderId = response.userId
         holderId mustNot be(empty)
-        response.connection.value.participantInfo.value.getIssuer.name mustBe "Issuer"
-        response.connection.value.participantName mustBe response.connection.value.participantInfo.value.getIssuer.name
+        response.connection.value.participantName mustBe "Issuer"
         val connectionId = ConnectionId.unsafeFrom(response.connection.value.connectionId)
 
         val participantInfo = io.iohk.atala.prism.connector.model.ParticipantInfo(
