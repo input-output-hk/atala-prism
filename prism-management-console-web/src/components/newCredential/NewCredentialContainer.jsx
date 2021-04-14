@@ -40,17 +40,17 @@ const NewCredentialContainer = ({ api, redirector: { redirectToCredentials } }) 
   const [groupsFilter, setGroupsFilter] = useState('');
   const [filteredGroups, setFilteredGroups] = useState([]);
 
-  const [loadingContacts, setLoadingContacts] = useState(false);
   const [selectedContacts, setSelectedContacts] = useState([]);
-  const [searching, setSearching] = useState(true);
   const {
     contacts,
     filteredContacts,
     filterProps: subjectFilterProps,
     handleContactsRequest,
     hasMore,
-    fetchAll
-  } = useContactsWithFilteredList(api.contactsManager, setLoadingContacts, setSearching);
+    fetchAll,
+    isLoading: loadingContacts,
+    isSearching: searching
+  } = useContactsWithFilteredList(api.contactsManager);
 
   const [shouldSelectRecipients, setShouldSelectRecipients] = useState(true);
   const [recipients, setRecipients] = useState([]);
@@ -175,49 +175,57 @@ const NewCredentialContainer = ({ api, redirector: { redirectToCredentials } }) 
     return Promise.all(groupContactsromises);
   };
 
-  const signCredentials = async () => {
-    try {
-      setIsLoading(true);
-      const allContacts = await fetchAll();
-      const credentialsData = importedData.map((data, index) => {
-        const { contactid } = allContacts.find(({ externalid }) => externalid === data.externalid);
-        const html = _.escape(credentialViews[index]);
-        return Object.assign(_.omit(data, 'originalArray'), {
-          credentialType,
-          contactid,
-          html,
-          issuer: session.organisationName
-        });
-      });
-      const createCredentialsResponse = await api.credentialsManager.createBatchOfCredentials(
-        credentialsData
-      );
-      Logger.debug('Created credentials:', createCredentialsResponse);
+  const signCredentials = () => {
+    setIsLoading(true);
 
-      const failedCredentials = createCredentialsResponse.filter(({ status }) => status === FAILED);
-      if (failedCredentials.length)
-        message.error(
-          t('newCredential.messages.creationError', { amount: failedCredentials.length })
+    const onFinish = async allContacts => {
+      try {
+        const credentialsData = importedData.map((data, index) => {
+          const { contactid } = allContacts.find(
+            ({ externalid }) => externalid === data.externalid
+          );
+          const html = _.escape(credentialViews[index]);
+          return Object.assign(_.omit(data, 'originalArray'), {
+            credentialType,
+            contactid,
+            html,
+            issuer: session.organisationName
+          });
+        });
+        const createCredentialsResponse = await api.credentialsManager.createBatchOfCredentials(
+          credentialsData
+        );
+        Logger.debug('Created credentials:', createCredentialsResponse);
+
+        const failedCredentials = createCredentialsResponse.filter(
+          ({ status }) => status === FAILED
+        );
+        if (failedCredentials.length)
+          message.error(
+            t('newCredential.messages.creationError', { amount: failedCredentials.length })
+          );
+
+        const credentials = createCredentialsResponse
+          .filter(({ status }) => status === SUCCESS)
+          .map(({ response }) => response.getGenericcredential().toObject());
+
+        await api.wallet.signCredentials(credentials);
+
+        Logger.info('Successfully created the credential(s)');
+        message.success(
+          t('newCredential.messages.creationSuccess', { amount: credentialsData.length })
         );
 
-      const credentials = createCredentialsResponse
-        .filter(({ status }) => status === SUCCESS)
-        .map(({ response }) => response.getGenericcredential().toObject());
+        redirectToCredentials();
+      } catch (error) {
+        Logger.error(error);
+        message.error(t('errors.errorSaving', { model: t('credentials.title') }));
+      } finally {
+        setIsLoading(false);
+      }
+    };
 
-      await api.wallet.signCredentials(credentials);
-
-      Logger.info('Successfully created the credential(s)');
-      message.success(
-        t('newCredential.messages.creationSuccess', { amount: credentialsData.length })
-      );
-
-      redirectToCredentials();
-    } catch (error) {
-      Logger.error(error);
-      message.error(t('errors.errorSaving', { model: t('credentials.title') }));
-    } finally {
-      setIsLoading(false);
-    }
+    fetchAll(onFinish);
   };
 
   const changeStep = nextStep => {
