@@ -1,3 +1,20 @@
+// Flex
+.flex {
+  display: flex;
+}
+
+.spaceBetween {
+  justify-content: space-between;
+}
+
+.justifyCenter {
+  justify-content: center;
+}
+
+.fullWidth {
+  width: 100%;
+}
+
 // Colors
 $background: #f1f3f8;
 $surface: #fff;

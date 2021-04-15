@@ -8,15 +8,13 @@ const BulkImportResult = ({
   fileData,
   validationErrors,
   contactCreations,
-  returnToUploadStep,
   credentialDataImported,
   continueCallback,
   useCase
 }) => {
   const errorProps = {
     fileData,
-    validationErrors,
-    returnToUploadStep
+    validationErrors
   };
 
   const successfulUpdates = {
@@ -49,7 +47,6 @@ BulkImportResult.propTypes = {
     PropTypes.arrayOf(PropTypes.shape({ error: PropTypes.string }))
   ),
   contactCreations: PropTypes.number,
-  returnToUploadStep: PropTypes.func.isRequired,
   credentialDataImported: PropTypes.number,
   continueCallback: PropTypes.func,
   useCase: PropTypes.oneOf([IMPORT_CONTACTS, IMPORT_CREDENTIALS_DATA]).isRequired

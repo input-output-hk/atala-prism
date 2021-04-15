@@ -1,117 +1,117 @@
-@import "../../../../css/general_styling";
+@import '../../../../css/general_styling';
 
-  .TypeSelectionContainer {
-    padding: 1em 1.5em;
-    .TypeSelection {
-      display: flex;
-      justify-content: space-around;
-      margin-top: 2em;
+.TypeSelectionContainer {
+  padding: 1em 1.5em;
+  .TypeSelection {
+    display: flex;
+    justify-content: space-around;
+    margin-top: 2em;
+  }
+}
+
+.RecipientsSelection {
+  .ant-tabs {
+    height: 100%;
+  }
+  .ant-tabs-content {
+    height: calc(100% - 6.5em);
+  }
+  .groupsTableContainer {
+    height: 100%;
+  }
+  .GroupTableContainer {
+    height: 100%;
+  }
+  .ant-tabs-nav-wrap,
+  .ant-tabs-nav .ant-tabs-tab {
+    @include primary-text($body, $dark-grey);
+    font-weight: 800;
+    margin: 0 1.5em;
+  }
+  .ant-tabs-tab-active {
+    .ant-tabs-tab-btn {
+      @include primary-text($body, $black);
+      font-weight: 800;
+    }
+  }
+  .selectionGroups {
+    width: 15%;
+  }
+  .selectionGroups {
+    .ant-input:focus {
+      border-color: $primary-color;
+      box-shadow: 0 0 0 2px rgba(0, 0, 0, 0.0523656);
+    }
+    .ant-input:hover {
+      border-color: $primary-color;
+    }
+  }
+  .ant-tabs-ink-bar {
+    background-color: $primary-color;
+  }
+  .ant-tabs-nav .ant-tabs-tab:active {
+    color: $primary-color;
+  }
+  .ant-tabs-tab:hover {
+    color: $primary-color;
+  }
+  .ant-tabs-content-holder {
+    padding: 1em 3em;
+  }
+  .selectGroupSubtitle {
+    span {
+      @include body-text($body, #728099, 400);
+    }
+  }
+  .selectGroupCheckbox {
+    margin-right: 3em;
+    display: flex;
+    flex-direction: row-reverse;
+    span {
+      @include primary-text($label, $black);
     }
   }
 
-  .RecipientsSelection {
-    height: 100%;
-    .ant-tabs {
-      height: 100%;
-    }
-    .ant-tabs-content {
-      height: calc(100% - 6.5em);
-    }
-    .groupsTableContainer {
-      height: 100%;
-    }
-    .GroupTableContainer {
-      height: 100%;
-    }
-    .ant-tabs-nav-wrap,
-    .ant-tabs-nav .ant-tabs-tab {
-      @include primary-text($body, $dark-grey);
-      font-weight: 800;
-      margin: 0 1.5em;
-    }
-    .ant-tabs-tab-active {
-      .ant-tabs-tab-btn {
-        @include primary-text($body, $black);
-        font-weight: 800;
+  .selectionContainer {
+    display: flex;
+    justify-content: flex-start;
+    align-items: center;
+    margin-top: 1em;
+    .selectContactsCheckbox,
+    .selectGroupsCheckbox {
+      margin-left: 1em;
+      .loadingSelection {
+        width: 4em;
+      }
+      .ant-checkbox-wrapper {
+        display: flex !important;
+        align-items: center !important;
       }
     }
-    .selectionGroups {
-      width: 15%;
-    }
-    .selectionGroups {
-      .ant-input:focus {
-        border-color: $primary-color;
-        box-shadow: 0 0 0 2px rgba(0, 0, 0, 0.0523656);
-      }
-      .ant-input:hover {
-        border-color: $primary-color;
-      }
-    }
-    .ant-tabs-ink-bar {
-      background-color: $primary-color;
-    }
-    .ant-tabs-nav .ant-tabs-tab:active {
-      color: $primary-color;
-    }
-    .ant-tabs-tab:hover {
-      color: $primary-color;
-    }
-    .ant-tabs-content-holder {
-      padding: 1em 3em;
-    }
-    .selectGroupSubtitle {
-      span {
-        @include body-text($body, #728099, 400);
-      }
-    }
-    .selectGroupCheckbox {
-      margin-right: 3em;
+    .checkboxReverse {
       display: flex;
       flex-direction: row-reverse;
+      align-items: center !important;
+      .icon {
+        margin-right: 0.5em;
+      }
+      .ant-checkbox-wrapper {
+        display: flex !important;
+        align-items: center !important;
+        flex-direction: row-reverse !important;
+      }
       span {
-        @include primary-text($label, $black);
+        display: flex !important;
+        align-items: center;
+        top: 0;
       }
     }
-
-    .selectionContainer {
-      display: flex;
-      justify-content: flex-start;
-      align-items: center;
-      margin-top: 1em;
-      .selectContactsCheckbox, .selectGroupsCheckbox {
-        margin-left: 1em;
-        .loadingSelection {
-          width: 4em;
-        }
-        .ant-checkbox-wrapper {
-          display: flex !important;
-          align-items: center !important;
-        }
-      }
-      .checkboxReverse {
-        display: flex;
-        flex-direction: row-reverse;
-        align-items: center !important;
-        .icon {
-          margin-right: 0.5em;
-        }
-        .ant-checkbox-wrapper {
-          display: flex !important;
-          align-items: center !important;
-          flex-direction: row-reverse !important;
-        }
-        span {
-          display: flex !important;
-          align-items: center;
-          top: 0;
-        }
-      }
-      .noRecipientsCheckbox {
-        margin-left: 1em;
-        background-color: $light-grey;
-        border: 1px solid $medium-grey;
-        padding: 0.5em 1.5em 0.5em 1em;
-        border-radius: 2em;
-      }
+    .noRecipientsCheckbox {
+      margin-left: 1em;
+      background-color: $light-grey;
+      border: 1px solid $medium-grey;
+      padding: 0.5em 1.5em 0.5em 1em;
+      border-radius: 2em;
     }
   }
+}

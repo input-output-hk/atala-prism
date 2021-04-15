@@ -1,9 +1,25 @@
 @import '../../css/general_styling';
 
 .ConnectionsContainer {
+  .ContentHeader {
+    width: 100%;
+    display: flex;
+    flex-wrap: wrap;
+    border-bottom: 1px solid $light-grey;
+    .title {
+      width: 100%;
+    }
+  }
   .ConnectionsTable {
-    .InfiniteScrollTableContainer {
-      height: auto;
+    height: 75vh;
+    overflow-y: scroll;
+  }
+  .FilterControls {
+    .ContactFilters {
+      display: flex;
+      .ant-input-affix-wrapper {
+        margin-right: 1em;
+      }
     }
   }
 }
@@ -16,14 +32,7 @@
   }
 }
 
-.flexCenter {
-  display: flex;
-  justify-content: center;
-  margin-top: 2em;
-}
-
 .ButtonControls {
-
   display: flex;
   justify-content: center;
 

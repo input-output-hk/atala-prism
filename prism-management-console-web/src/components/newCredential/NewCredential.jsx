@@ -50,14 +50,21 @@ const NewCredential = ({
   return (
     <React.Fragment>
       <div className="CredentialMainContent">
-        <GenericStepsButtons
-          steps={steps}
-          currentStep={currentStep}
-          disableBack={isLoading}
-          disableNext={isLoading}
-          loading={isLoading && isLastStep}
-        />
-        <WizardTitle title="New Credential" subtitle={t('newCredential.typeSelection')} />
+        <div className="TitleContainer">
+          {currentStep !== IMPORT_CREDENTIAL_DATA_STEP && [
+            <GenericStepsButtons
+              steps={steps}
+              currentStep={currentStep}
+              disableBack={isLoading}
+              disableNext={isLoading}
+              loading={isLoading && isLastStep}
+            />,
+            <WizardTitle
+              title={t(`newCredential.title.step${currentStep + 1}`)}
+              subtitle={t(`newCredential.subtitle.step${currentStep + 1}`)}
+            />
+          ]}
+        </div>
         <div className="WizardContentContainer">{renderStep()}</div>
       </div>
     </React.Fragment>
