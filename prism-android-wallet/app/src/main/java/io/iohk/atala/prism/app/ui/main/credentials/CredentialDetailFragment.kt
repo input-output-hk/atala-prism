@@ -16,11 +16,14 @@ import androidx.lifecycle.ViewModelProviders
 import androidx.navigation.fragment.findNavController
 import androidx.navigation.fragment.navArgs
 import dagger.android.support.DaggerFragment
-import io.iohk.atala.prism.app.data.local.db.model.Credential
+import io.iohk.atala.prism.app.data.local.db.model.CredentialWithEncodedCredential
 import io.iohk.atala.prism.app.neo.common.extensions.KEY_RESULT
 import io.iohk.atala.prism.app.neo.common.extensions.supportActionBar
 import io.iohk.cvp.R
 import io.iohk.cvp.databinding.FragmentCredentialDetailBinding
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 class CredentialDetailFragment : DaggerFragment() {
@@ -86,17 +89,20 @@ class CredentialDetailFragment : DaggerFragment() {
     }
 
     private fun setObservers() {
-        viewModel.credential.observe(viewLifecycleOwner) { credential ->
-            fillWebView(credential)
-            val title = getString(CredentialUtil.getNameResource(credential))
+        viewModel.credentialData.observe(viewLifecycleOwner) { credentialData ->
+            fillWebView(credentialData)
+            val title = getString(CredentialUtil.getNameResource(credentialData.credential))
             findNavController().currentDestination?.label = title
             supportActionBar?.title = title
         }
     }
 
-    private fun fillWebView(credential: Credential) {
-        val credentialHtmlString = CredentialUtil.getHtml(credential)
-        val encodedHtml = Base64.encodeToString(credentialHtmlString.toByteArray(), Base64.NO_PADDING)
-        binding.webView.loadData(encodedHtml, "text/html", "base64")
+    private fun fillWebView(credentialData: CredentialWithEncodedCredential) {
+        CoroutineScope(Dispatchers.Main).launch {
+            CredentialUtil.getHtmlString(credentialData)?.let { credentialHtmlString ->
+                val encodedHtml = Base64.encodeToString(credentialHtmlString.toByteArray(), Base64.NO_PADDING)
+                binding.webView.loadData(encodedHtml, "text/html", "base64")
+            }
+        }
     }
 }

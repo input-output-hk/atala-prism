@@ -1,5 +1,4 @@
 //
-import BitcoinKit
 import JavaScriptCore
 import WebKit
 import CommonCrypto
@@ -7,7 +6,10 @@ import crypto
 
 class CryptoUtils: NSObject {
 
-    public static let sha256 = SHA256()
+    public static let ec = EC()
+    public static let sha256Digest = SHA256Digest.Companion()
+    public static let keyDerivation = KeyDerivation()
+    public static let derivationPath = DerivationPath.Companion()
 
     static let global = CryptoUtils()
 
@@ -29,14 +31,14 @@ class CryptoUtils: NSObject {
     }
 
     func setupMnemonics() {
-        let mnemonics = SwiftKeyDerivation.global.randomMnemonicCode()
+        let mnemonics = CryptoUtils.keyDerivation.randomMnemonicCode()
         usedMnemonics = mnemonics.words
 
         generateSeed(mnemonics: mnemonics)
     }
 
     func generateSeed(mnemonics: MnemonicCode) {
-        seed = SwiftKeyDerivation.global.binarySeed(seed: mnemonics, passphrase: "")
+        seed = CryptoUtils.keyDerivation.binarySeed(seed: mnemonics, passphrase: "")
     }
 
     func getNextPublicKeyPath() -> String {
@@ -56,23 +58,11 @@ class CryptoUtils: NSObject {
 
     func encodedPublicKey(keyPath: String) -> Io_Iohk_Atala_Prism_Protos_EncodedPublicKey {
         let derivationPath = DerivationPath.Companion.init().fromPath(path: keyPath)
-        let key = SwiftKeyDerivation.global.deriveKey(seed: seed!, path: derivationPath)
+        let key = CryptoUtils.keyDerivation.deriveKey(seed: seed!, path: derivationPath)
         let pointData = key.publicKey().getEncoded()
         var protoPublicKey: Io_Iohk_Atala_Prism_Protos_EncodedPublicKey = Io_Iohk_Atala_Prism_Protos_EncodedPublicKey()
         protoPublicKey.publicKey = fromKotlinBytes(bytes: pointData)
         return protoPublicKey
-    }
-
-    func getUncompressedKey(publicKey: PublicKey) -> Data {
-        let publicPoint = try? PointOnCurve.decodePointFromPublicKey(publicKey)
-        if let pointData = NSMutableData(capacity: 65) {
-            pointData.append(Data(repeating: 0x04, count: 1))
-            pointData.append((publicPoint?.x.data)!)
-            pointData.append((publicPoint?.y.data)!)
-            return pointData as Data
-        }
-
-        return Data()
     }
 
     /// Returns a tuple (Signature, PublicKey, Nonce) all three fields as URL safe base 64 encoded strings
@@ -84,18 +74,15 @@ class CryptoUtils: NSObject {
         }
         let nonceBase64 = nonceData.base64urlEncodedString()
         nonceData.append(data)
-        let nonceSHA256 = Data(CryptoUtils.sha256.compute(bytes: toKotlinBytes(data: nonceData)).map { $0.uint8Value })
-        let seedData = fromKotlinBytes(bytes: seed!)
-        let keychain = HDKeychain(seed: seedData, network: .testnetBTC)
-        let derived = try? keychain.derivedKey(path: keyPath)
-        if let privateKey = derived?.privateKey() {
-            let signedData = privateKey.sign(nonceSHA256)
-            let publicKey = getUncompressedKey(publicKey: privateKey.publicKey())
-            signSemaphore.signal()
-            return (signedData.base64urlEncodedString(), publicKey.base64urlEncodedString(), nonceBase64)
-        }
+        let path = CryptoUtils.derivationPath.fromPath(path: keyPath)
+        let derived = CryptoUtils.keyDerivation.deriveKey(seed: seed!, path: path)
+        let privateKey = derived.privateKey()
+        let publicKey = derived.publicKey()
+        let publicKeyData = fromKotlinBytes(bytes: publicKey.getEncoded())
+        let signature = CryptoUtils.ec.sign(data: toKotlinBytes(data: nonceData), privateKey: privateKey)
+        let signedData = fromKotlinBytes(bytes: signature.getEncoded())
         signSemaphore.signal()
-        return nil
+        return (signedData.base64urlEncodedString(), publicKeyData.base64urlEncodedString(), nonceBase64)
     }
 
     func getUsedRandomIndexes(count: Int) -> [Int] {

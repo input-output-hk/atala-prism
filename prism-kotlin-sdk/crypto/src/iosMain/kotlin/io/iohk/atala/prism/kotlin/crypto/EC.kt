@@ -2,6 +2,8 @@ package io.iohk.atala.prism.kotlin.crypto
 
 import cocoapods.Secp256k1Kit.*
 import com.ionspin.kotlin.bignum.integer.BigInteger
+import fr.acinq.bitcoin.*
+import fr.acinq.secp256k1.Secp256k1
 import io.iohk.atala.prism.kotlin.crypto.keys.ECKeyPair
 import io.iohk.atala.prism.kotlin.crypto.keys.ECPrivateKey
 import io.iohk.atala.prism.kotlin.crypto.keys.ECPublicKey
@@ -109,16 +111,11 @@ actual object EC {
     }
 
     actual fun toSignature(encoded: List<Byte>): ECSignature {
-        return memScoped {
-            val context = createContext(this, SECP256K1_CONTEXT_SIGN)
-            val sig = alloc<secp256k1_ecdsa_signature>()
-            val data = encoded.toUByteArray().toCArrayPointer(this)
-            val result = secp256k1_ecdsa_signature_parse_der(context, sig.ptr, data, encoded.size.convert())
-            if (result != 1) {
-                error("Could not parse signature from DER format")
-            }
-            ECSignature(sig.data.toUByteArray(ECConfig.SIGNATURE_BYTE_SIZE).toList())
-        }
+        // TODO: There seems to be a bug with the method below, we need to wait for a fix
+//        if (!Crypto.checkSignatureEncoding(encoded.toByteArray(), ScriptFlags.SCRIPT_VERIFY_DERSIG)) {
+//            error("Could not parse signature from DER format")
+//        }
+        return ECSignature(encoded.map { it.toUByte() })
     }
 
     actual fun sign(text: String, privateKey: ECPrivateKey): ECSignature {
@@ -126,20 +123,11 @@ actual object EC {
     }
 
     actual fun sign(data: List<Byte>, privateKey: ECPrivateKey): ECSignature {
-        return memScoped {
-            val context = createContext(this, SECP256K1_CONTEXT_SIGN)
+        val data32 = Crypto.sha256(data.toByteArray())
+        val compressedBytes = Secp256k1.sign(data32, privateKey.getEncoded().toByteArray())
+        val signatureBytes = Secp256k1.compact2der(compressedBytes)
 
-            val sig = alloc<secp256k1_ecdsa_signature>()
-            val data32 = SHA256.compute(data).map { it.toUByte() }.toUByteArray().toCArrayPointer(this)
-            val privateKeyPtr = privateKey.key.toCArrayPointer(this)
-
-            val result = secp256k1_ecdsa_sign(context, sig.ptr, data32, privateKeyPtr, null, null)
-            if (result != 1) {
-                error("Could not sign data")
-            }
-
-            ECSignature(sig.data.toUByteArray(ECConfig.SIGNATURE_BYTE_SIZE).toList())
-        }
+        return ECSignature(signatureBytes.toUByteArray().toList())
     }
 
     actual fun verify(text: String, publicKey: ECPublicKey, signature: ECSignature): Boolean {
@@ -147,20 +135,11 @@ actual object EC {
     }
 
     actual fun verify(data: List<Byte>, publicKey: ECPublicKey, signature: ECSignature): Boolean {
-        return memScoped {
-            val context = createContext(this, SECP256K1_CONTEXT_VERIFY)
-
-            val sigBytes = signature.data.toUByteArray().toCArrayPointer(this)
-            val sig = alloc<secp256k1_ecdsa_signature>()
-            for (i in 0 until ECConfig.SIGNATURE_BYTE_SIZE) sig.data[i] = sigBytes[i]
-
-            val data32 = SHA256.compute(data).map { it.toUByte() }.toUByteArray().toCArrayPointer(this)
-
-            val pubkey = publicKey.toSecpPubkey(this)
-
-            val result = secp256k1_ecdsa_verify(context, sig.ptr, data32, pubkey.ptr)
-
-            result == 1
-        }
+        val data32 = Crypto.sha256(data.toByteArray())
+        return Secp256k1.verify(
+            signature.getEncoded().toByteArray(),
+            data32,
+            publicKey.getEncoded().toByteArray()
+        )
     }
 }

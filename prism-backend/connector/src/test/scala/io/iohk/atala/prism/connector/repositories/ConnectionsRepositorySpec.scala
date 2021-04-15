@@ -1,5 +1,6 @@
 package io.iohk.atala.prism.connector.repositories
 
+import cats.syntax.either._
 import com.softwaremill.diffx.scalatest.DiffMatcher._
 import doobie.implicits._
 import io.circe.Json
@@ -9,8 +10,10 @@ import io.iohk.atala.prism.console.DataPreparation
 import io.iohk.atala.prism.console.models.{Contact, CreateContact, Institution}
 import io.iohk.atala.prism.console.repositories.ContactsRepository
 import io.iohk.atala.prism.crypto.EC
+import io.iohk.atala.prism.identity.DID
 import io.iohk.atala.prism.models.ParticipantId
 import io.iohk.atala.prism.repositories.ops.SqlTestOps._
+import org.scalatest.Assertion
 import org.scalatest.OptionValues._
 
 import java.time.{Instant, LocalDateTime, ZoneOffset}
@@ -18,6 +21,18 @@ import java.time.{Instant, LocalDateTime, ZoneOffset}
 class ConnectionsRepositorySpec extends ConnectorRepositorySpecBase {
   lazy val connectionsRepository = new ConnectionsRepository.PostgresImpl(database)
   lazy val contactsRepository = new ContactsRepository(database)
+
+  private def checkConnection(connectionId: ConnectionId, token: TokenString): Assertion = {
+    sql"""SELECT COUNT(1) FROM connections WHERE id=$connectionId""".runUnique[Int]() mustBe 1
+    //verify that instantiated_at field is set correctly, to avoid conversion or timezone errors
+    sql"""SELECT COUNT(1) FROM connections
+         |WHERE id = $connectionId
+         |AND instantiated_at > now() - '10 seconds'::interval AND instantiated_at < now()""".stripMargin
+      .runUnique[Int]() mustBe 1
+    sql"""SELECT COUNT(1) FROM connection_tokens WHERE token=$token AND used_at IS NOT NULL"""
+      .runUnique[Int]() mustBe 1
+    sql"""SELECT COUNT(1) FROM connection_tokens WHERE token=$token AND used_at IS NULL""".runUnique[Int]() mustBe 0
+  }
 
   "insertToken" should {
     "correctly generate tokens" in {
@@ -55,25 +70,41 @@ class ConnectionsRepositorySpec extends ConnectorRepositorySpecBase {
   }
 
   "addConnectionFromToken" should {
-    "add connection from existing token" in {
+    "add connection from existing token using public key auth" in {
       val issuerId = createIssuer()
       val publicKey = EC.generateKeyPair().publicKey
 
       val token = new TokenString("t0k3nc0de")
       sql"""INSERT INTO connection_tokens(token, initiator) VALUES ($token, $issuerId)""".runUpdate()
 
-      val result = connectionsRepository.addConnectionFromToken(token, publicKey).value.futureValue
+      val result = connectionsRepository.addConnectionFromToken(token, publicKey.asRight).value.futureValue
       val connectionId = result.toOption.value._2.id
 
-      sql"""SELECT COUNT(1) FROM connections WHERE id=$connectionId""".runUnique[Int]() mustBe 1
-      //verify that instantiated_at field is set correctly, to avoid conversion or timezone errors
-      sql"""SELECT COUNT(1) FROM connections
-           |WHERE id = $connectionId
-           |AND instantiated_at > now() - '10 seconds'::interval AND instantiated_at < now()""".stripMargin
-        .runUnique[Int]() mustBe 1
-      sql"""SELECT COUNT(1) FROM connection_tokens WHERE token=$token AND used_at IS NOT NULL"""
-        .runUnique[Int]() mustBe 1
-      sql"""SELECT COUNT(1) FROM connection_tokens WHERE token=$token AND used_at IS NULL""".runUnique[Int]() mustBe 0
+      checkConnection(connectionId, token)
+
+      val maybeAcceptorId = ConnectionsDAO.getRawConnection(connectionId).unsafeRun().map(_.acceptor)
+      maybeAcceptorId.isDefined mustBe true
+      val acceptor = ParticipantsDAO.findByPublicKey(publicKey).value.unsafeRun()
+      acceptor.isDefined mustBe true
+    }
+
+    "add connection from existing token using unpublished did auth" in {
+      val issuerId = createIssuer()
+      val publicKey = EC.generateKeyPair().publicKey
+      val did = DID.createUnpublishedDID(publicKey)
+
+      val token = new TokenString("t0k3nc0de")
+      sql"""INSERT INTO connection_tokens(token, initiator) VALUES ($token, $issuerId)""".runUpdate()
+
+      val result = connectionsRepository.addConnectionFromToken(token, did.asLeft).value.futureValue
+      val connectionId = result.toOption.value._2.id
+
+      checkConnection(connectionId, token)
+
+      val maybeAcceptorId = ConnectionsDAO.getRawConnection(connectionId).unsafeRun().map(_.acceptor)
+      maybeAcceptorId.isDefined mustBe true
+      val acceptor = ParticipantsDAO.findByDID(did).value.unsafeRun()
+      acceptor.isDefined mustBe true
     }
   }
 
@@ -100,7 +131,7 @@ class ConnectionsRepositorySpec extends ConnectorRepositorySpecBase {
         .value
 
       val (acceptor, connection) = connectionsRepository
-        .addConnectionFromToken(token, publicKey)
+        .addConnectionFromToken(token, publicKey.asRight)
         .value
         .futureValue
         .toOption

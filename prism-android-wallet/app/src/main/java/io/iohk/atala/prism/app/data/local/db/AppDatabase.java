@@ -17,12 +17,13 @@ import io.iohk.atala.prism.app.data.local.db.dao.ProofRequestDao;
 import io.iohk.atala.prism.app.data.local.db.model.ActivityHistory;
 import io.iohk.atala.prism.app.data.local.db.model.Contact;
 import io.iohk.atala.prism.app.data.local.db.model.Credential;
+import io.iohk.atala.prism.app.data.local.db.model.EncodedCredential;
 import io.iohk.atala.prism.app.data.local.db.model.ProofRequest;
 import io.iohk.atala.prism.app.data.local.db.model.ProofRequestCredential;
 import io.iohk.atala.prism.app.utils.Constants;
 import kotlin.jvm.Volatile;
 
-@Database(entities = {Credential.class, Contact.class, ActivityHistory.class, ProofRequest.class, ProofRequestCredential.class}, version = 5)
+@Database(entities = {Credential.class, Contact.class, ActivityHistory.class, ProofRequest.class, ProofRequestCredential.class, EncodedCredential.class}, version = 6)
 @TypeConverters({ByteStringConverter.class, ActivityHistoryTypeConverter.class})
 public abstract class AppDatabase extends RoomDatabase {
     public abstract CredentialDao credentialDao();
@@ -46,7 +47,8 @@ public abstract class AppDatabase extends RoomDatabase {
                                     MigrationsKt.getMIGRATION_1_2(),
                                     MigrationsKt.getMIGRATION_2_3(),
                                     MigrationsKt.getMIGRATION_3_4(),
-                                    MigrationsKt.getMIGRATION_4_5()
+                                    MigrationsKt.getMIGRATION_4_5(),
+                                    MigrationsKt.getMIGRATION_5_6()
                             )
                             .build();
                 }

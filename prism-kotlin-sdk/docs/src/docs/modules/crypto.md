@@ -61,18 +61,16 @@ You can use this module to derive keys from a given seed.
 First, there are some utilities to work with mnemonic codes:
 ```kotlin:ank
 import io.iohk.atala.prism.kotlin.crypto.derivation.KeyDerivation
-import io.iohk.atala.prism.kotlin.crypto.derivation.JvmKeyDerivation
 
-val keyDerivation: KeyDerivation = JvmKeyDerivation // Pick the appropriate one for your platform (e.g. JvmKeyDerivation for JVM)
-val mnemonicCode = keyDerivation.randomMnemonicCode()
-keyDerivation.getValidMnemonicWords().take(10)
-keyDerivation.isValidMnemonicWord("airport")
+val mnemonicCode = KeyDerivation.randomMnemonicCode()
+KeyDerivation.getValidMnemonicWords().take(10)
+KeyDerivation.isValidMnemonicWord("airport")
 ```
 
 After obtaining a mnemonic code, you can generate a mnemonic seed and a root key:
 ```kotlin:ank
-val seed = keyDerivation.binarySeed(mnemonicCode, "my_secret_password")
-val extendedKey = keyDerivation.derivationRoot(seed)
+val seed = KeyDerivation.binarySeed(mnemonicCode, "my_secret_password")
+val extendedKey = KeyDerivation.derivationRoot(seed)
 
 // An extended key contains the private and public keys inside as well as the
 // derivation path used to obtain the key
@@ -87,7 +85,7 @@ This module also supports derivation paths, so you can derive children keys:
 import io.iohk.atala.prism.kotlin.crypto.derivation.DerivationPath
 
 val path = DerivationPath.fromPath("m/0'/0'/1'")
-keyDerivation.deriveKey(seed, path)
+KeyDerivation.deriveKey(seed, path)
 ```
 
 ## Merkle Tree

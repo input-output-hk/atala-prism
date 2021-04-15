@@ -4,7 +4,7 @@ import android.util.Base64
 import io.grpc.Metadata
 import io.iohk.atala.prism.kotlin.crypto.EC
 import io.iohk.atala.prism.kotlin.crypto.derivation.DerivationPath
-import io.iohk.atala.prism.kotlin.crypto.derivation.JvmKeyDerivation
+import io.iohk.atala.prism.kotlin.crypto.derivation.KeyDerivation
 import io.iohk.atala.prism.kotlin.crypto.derivation.MnemonicCode
 import io.iohk.atala.prism.kotlin.crypto.keys.ECKeyPair
 import java.util.UUID
@@ -39,18 +39,18 @@ class CryptoUtils {
         fun getKeyPairFromPath(keyDerivationPath: String, phrases: List<String>): ECKeyPair {
             val derivationPath = DerivationPath.fromPath(keyDerivationPath)
             val mnemonicCode = MnemonicCode(phrases)
-            val seed = JvmKeyDerivation.binarySeed(mnemonicCode, "")
-            return JvmKeyDerivation.deriveKey(seed, derivationPath).keyPair()
+            val seed = KeyDerivation.binarySeed(mnemonicCode, "")
+            return KeyDerivation.deriveKey(seed, derivationPath).keyPair()
         }
 
         fun isValidMnemonicList(phrases: List<String>): Boolean {
             val mnemonicCode = MnemonicCode(phrases)
-            JvmKeyDerivation.binarySeed(mnemonicCode, "")
-            return phrases.all { word: String -> JvmKeyDerivation.isValidMnemonicWord(word) }
+            KeyDerivation.binarySeed(mnemonicCode, "")
+            return phrases.all { word: String -> KeyDerivation.isValidMnemonicWord(word) }
         }
 
         fun generateMnemonicList(): MutableList<String> {
-            return JvmKeyDerivation.randomMnemonicCode().words.toMutableList()
+            return KeyDerivation.randomMnemonicCode().words.toMutableList()
         }
     }
 }

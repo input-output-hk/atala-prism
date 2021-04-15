@@ -10,7 +10,10 @@ public enum CredentialType {
     DEMO_INSURANCE_CREDENTIAL(4, "VerifiableCredential/AtalaCertificateOfInsurance"),
     GEORGIA_EDUCATIONAL_DEGREE(5, "GeorgiaEducationalDegree"),
     GEORGIA_EDUCATIONAL_DEGREE_TRANSCRIPT(6, "GeorgiaEducationalDegreeTranscript"),
-    GEORGIA_NATIONAL_ID(7, "GeorgiaNationalID");
+    GEORGIA_NATIONAL_ID(7, "GeorgiaNationalID"),
+    ETHIOPIA_EDUCATIONAL_DEGREE(8, "EthiopiaEducationalDegree"),
+    ETHIOPIA_EDUCATIONAL_DEGREE_TRANSCRIPT(9, "EthiopiaEducationalDegreeTranscript"),
+    ETHIOPIA_NATIONAL_ID(10, "EthiopiaNationalID");
 
     private String value;
 

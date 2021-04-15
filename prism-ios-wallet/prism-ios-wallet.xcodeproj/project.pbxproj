@@ -8,8 +8,6 @@
 
 /* Begin PBXBuildFile section */
 		00F4C2DF099BD95A448855B6 /* Pods_prism_ios_walletTests.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 2FB5FDF9E49B150E74CDBBEC /* Pods_prism_ios_walletTests.framework */; };
-		05BDBA7B25A6D15F00D56D03 /* SwiftExtendedKey.swift in Sources */ = {isa = PBXBuildFile; fileRef = 05BDBA7A25A6D15F00D56D03 /* SwiftExtendedKey.swift */; };
-		05BDBA8025A6D16900D56D03 /* SwiftKeyDerivation.swift in Sources */ = {isa = PBXBuildFile; fileRef = 05BDBA7F25A6D16900D56D03 /* SwiftKeyDerivation.swift */; };
 		05BDBB1B25A6D44300D56D03 /* KotlinConverters.swift in Sources */ = {isa = PBXBuildFile; fileRef = 05BDBB1A25A6D44300D56D03 /* KotlinConverters.swift */; };
 		18D49A93E2B346D69BADCCD9 /* Pods_prism_ios_walletUITests.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 18216D1862661E5E125E24C5 /* Pods_prism_ios_walletUITests.framework */; };
 		7398A4DF0BF3735A9E3EB8C3 /* Pods_prism_ios_wallet.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 4736AE3C362010F15EA7E9E0 /* Pods_prism_ios_wallet.framework */; };
@@ -305,8 +303,6 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
-		05BDBA7A25A6D15F00D56D03 /* SwiftExtendedKey.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SwiftExtendedKey.swift; sourceTree = "<group>"; };
-		05BDBA7F25A6D16900D56D03 /* SwiftKeyDerivation.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SwiftKeyDerivation.swift; sourceTree = "<group>"; };
 		05BDBB1A25A6D44300D56D03 /* KotlinConverters.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KotlinConverters.swift; sourceTree = "<group>"; };
 		065A1B71B0289AB649F6988C /* Pods-prism-ios-wallet.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-prism-ios-wallet.release.xcconfig"; path = "Pods/Target Support Files/Pods-prism-ios-wallet/Pods-prism-ios-wallet.release.xcconfig"; sourceTree = "<group>"; };
 		1735CF30DECD966AEF4E4026 /* Pods-prism-ios-walletTests.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-prism-ios-walletTests.debug.xcconfig"; path = "Pods/Target Support Files/Pods-prism-ios-walletTests/Pods-prism-ios-walletTests.debug.xcconfig"; sourceTree = "<group>"; };
@@ -1263,8 +1259,6 @@
 				EE7E752F23C29D0600BE9AD1 /* PaymentUtils.swift */,
 				B3C760172489777C00AC46DC /* Env.swift */,
 				B31F0922257AB98800BCA71C /* AtomicProperty.swift */,
-				05BDBA7A25A6D15F00D56D03 /* SwiftExtendedKey.swift */,
-				05BDBA7F25A6D16900D56D03 /* SwiftKeyDerivation.swift */,
 				05BDBB1A25A6D44300D56D03 /* KotlinConverters.swift */,
 			);
 			path = general;
@@ -2017,7 +2011,7 @@
 				EE7D4BFF2366B9C4007C31A8 /* BaseTabViewController.swift in Sources */,
 				B3C760182489777C00AC46DC /* Env.swift in Sources */,
 				EE48AC2723791B3000C0A441 /* SwitchCustomView.swift in Sources */,
-				05BDBA8025A6D16900D56D03 /* SwiftKeyDerivation.swift in Sources */,
+				EE22F1ED23A486FA003C4F87 /* wallet.proto in Sources */,
 				B309C17324BF8F0B00AF70DF /* ActivityHistoryDAO.swift in Sources */,
 				EE48AC1E23775E0700C0A441 /* SuccessViewController.swift in Sources */,
 				EE71855C2383563100C58F62 /* ShareDialogViewController.swift in Sources */,
@@ -2161,7 +2155,6 @@
 				EE7D4CEC23673C39007C31A8 /* UITextField+Extensions2.swift in Sources */,
 				EE8FD4F02372864900EFF62E /* FakeData.swift in Sources */,
 				EE7D4CE723673C39007C31A8 /* UIColor+Extensions.swift in Sources */,
-				05BDBA7B25A6D15F00D56D03 /* SwiftExtendedKey.swift in Sources */,
 				EE48AC0D2377542600C0A441 /* RegisterPresenter.swift in Sources */,
 				EEEFB91023ADBAE2005BA755 /* CredentialsDtos.swift in Sources */,
 				EE7185692384D09800C58F62 /* ProfileViewCell.swift in Sources */,

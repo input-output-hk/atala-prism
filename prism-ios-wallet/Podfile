@@ -31,8 +31,6 @@ target 'prism-ios-wallet' do
   pod 'Firebase/Performance'
   # Payments
   pod 'BraintreeDropIn', '~> 7.5.0'
-  # Mnemonics
-  pod 'BitcoinKit', '~> 1.1.0'
   # Linter
   pod 'SwiftLint'
   # PRISM SDK

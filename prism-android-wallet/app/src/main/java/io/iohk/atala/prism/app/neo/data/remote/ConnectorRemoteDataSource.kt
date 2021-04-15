@@ -5,6 +5,7 @@ import io.grpc.stub.MetadataUtils
 import io.grpc.stub.StreamObserver
 import io.iohk.atala.prism.app.data.local.db.model.Contact
 import io.iohk.atala.prism.app.data.local.db.model.Credential
+import io.iohk.atala.prism.app.data.local.db.model.EncodedCredential
 import io.iohk.atala.prism.app.neo.data.local.PreferencesLocalDataSourceInterface
 import io.iohk.atala.prism.app.neo.data.local.SessionLocalDataSourceInterface
 import io.iohk.atala.prism.app.utils.CryptoUtils
@@ -65,16 +66,15 @@ class ConnectorRemoteDataSource(preferencesLocalDataSource: PreferencesLocalData
      * Sends a credential to multiple contacts
      *
      * @param contacts [List] of [Contact]
-     * @param credential [Credential]
+     * @param encodedCredential [Credential]
      */
-    suspend fun sendCredentialToMultipleContacts(credential: Credential, contacts: List<Contact>) {
+    suspend fun sendCredentialToMultipleContacts(encodedCredential: EncodedCredential, contacts: List<Contact>) {
         return withContext(Dispatchers.IO) {
-            val credentialByteArray = ByteString.copyFrom(credential.credentialEncoded.toByteArray())
             val phrases = sessionLocalDataSource.getSessionData()
             contacts.forEach { contact ->
                 val keyPair = CryptoUtils.getKeyPairFromPath(contact.keyDerivationPath, phrases!!)
                 val request = SendMessageRequest.newBuilder()
-                    .setConnectionId(contact.connectionId).setMessage(credentialByteArray).build()
+                    .setConnectionId(contact.connectionId).setMessage(encodedCredential.credentialEncoded).build()
                 val channel = getChannel(keyPair, request.toByteArray())
                 channel.sendMessage(request).get()
             }
@@ -89,10 +89,9 @@ class ConnectorRemoteDataSource(preferencesLocalDataSource: PreferencesLocalData
         return@withContext getChannel(null, request.toByteArray()).getConnectionTokenInfo(request).get()
     }
 
-    suspend fun addConnection(ecKeyPair: ECKeyPair, token: String, nonce: String): AddConnectionFromTokenResponse = withContext(Dispatchers.IO) {
+    suspend fun addConnection(ecKeyPair: ECKeyPair, token: String): AddConnectionFromTokenResponse = withContext(Dispatchers.IO) {
         val request = AddConnectionFromTokenRequest.newBuilder()
             .setToken(token)
-            .setPaymentNonce(nonce)
             .setHolderEncodedPublicKey(GrpcUtils.getPublicKeyEncoded(ecKeyPair))
             .build()
         return@withContext getChannel(ecKeyPair, request.toByteArray()).addConnectionFromToken(request).get()
@@ -106,10 +105,10 @@ class ConnectorRemoteDataSource(preferencesLocalDataSource: PreferencesLocalData
         }
     }
 
-    suspend fun sendCredentialsToContact(contact: Contact, credentials: List<Credential>) = withContext(Dispatchers.IO) {
+    suspend fun sendCredentialsToContact(contact: Contact, encodedCredentials: List<EncodedCredential>) = withContext(Dispatchers.IO) {
         val mnemonicList = sessionLocalDataSource.getSessionData()!!
         val keyPair = CryptoUtils.getKeyPairFromPath(contact.keyDerivationPath, mnemonicList)
-        val messages: List<ByteString> = credentials.stream().map {
+        val messages: List<ByteString> = encodedCredentials.stream().map {
             it.credentialEncoded
         }.collect(Collectors.toList())
         sendMultipleMessage(keyPair, contact.connectionId, messages)

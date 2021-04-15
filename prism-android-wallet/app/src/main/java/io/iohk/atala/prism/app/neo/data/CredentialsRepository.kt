@@ -4,6 +4,7 @@ import androidx.lifecycle.LiveData
 import io.iohk.atala.prism.app.data.local.db.model.ActivityHistoryWithContact
 import io.iohk.atala.prism.app.data.local.db.model.Contact
 import io.iohk.atala.prism.app.data.local.db.model.Credential
+import io.iohk.atala.prism.app.data.local.db.model.CredentialWithEncodedCredential
 import io.iohk.atala.prism.app.neo.data.local.CredentialsLocalDataSourceInterface
 import io.iohk.atala.prism.app.neo.data.local.PreferencesLocalDataSourceInterface
 import io.iohk.atala.prism.app.neo.data.local.SessionLocalDataSourceInterface
@@ -26,16 +27,20 @@ class CredentialsRepository(
 
     suspend fun getCredentialByCredentialId(credentialId: String): Credential? = credentialsLocalDataSource.getCredentialByCredentialId(credentialId)
 
+    suspend fun getCredentialWithEncodedCredentialByCredentialId(
+        credentialId: String
+    ): CredentialWithEncodedCredential? = credentialsLocalDataSource.getCredentialWithEncodedCredentialByCredentialId(credentialId)
+
     suspend fun getContactsActivityHistoriesByCredentialId(credentialId: String): List<ActivityHistoryWithContact> = credentialsLocalDataSource.getContactsActivityHistoriesByCredentialId(credentialId)
 
     suspend fun deleteCredential(credential: Credential) = credentialsLocalDataSource.deleteCredential(credential)
 
-    suspend fun contactsToShareCredential(credential: Credential): List<Contact> {
-        return credentialsLocalDataSource.contactsToShareCredential(credential)
+    suspend fun contactsToShareCredential(): List<Contact> {
+        return credentialsLocalDataSource.contactsToShareCredential()
     }
 
-    suspend fun shareCredential(credential: Credential, contacts: List<Contact>) {
-        remoteDataSource.sendCredentialToMultipleContacts(credential, contacts)
-        credentialsLocalDataSource.insertShareCredentialActivityHistories(credential, contacts)
+    suspend fun shareCredential(data: CredentialWithEncodedCredential, contacts: List<Contact>) {
+        remoteDataSource.sendCredentialToMultipleContacts(data.encodedCredential, contacts)
+        credentialsLocalDataSource.insertShareCredentialActivityHistories(data.credential, contacts)
     }
 }

@@ -47,7 +47,7 @@ class ContactsRepository(
         val newPath = CryptoUtils.getNextPathFromIndex(currentIndex)
         val mnemonicList = sessionLocalDataSource.getSessionData()!!
         val keypair = CryptoUtils.getKeyPairFromPath(newPath, mnemonicList)
-        val response = remoteDataSource.addConnection(keypair, token, "")
+        val response = remoteDataSource.addConnection(keypair, token)
         val contact = ContactMapper.mapToContact(response.connection, newPath)
         contactsLocalDataSource.storeContact(contact)
         sessionLocalDataSource.increaseSyncedIndex()

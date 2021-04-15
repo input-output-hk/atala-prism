@@ -174,11 +174,11 @@ Add this to your `.gitconfig-iohk`
 
 ```
 [user]
-	name = Firstname Lastname
-	email = firstname.lastname@iohk.io
-    signingkey = <your key id here>
+  name = Firstname Lastname
+  email = firstname.lastname@iohk.io
+  signingkey = <your key id here>
 [commit]
-	gpgsign = true
+  gpgsign = true
 [pull]
-	rebase = true
+  rebase = true
 ```
