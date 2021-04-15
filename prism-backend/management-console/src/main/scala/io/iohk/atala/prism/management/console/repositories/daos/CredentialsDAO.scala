@@ -129,7 +129,7 @@ object CredentialsDAO {
     query.query[GenericCredential].to[List]
   }
 
-  def getBy(issuedBy: ParticipantId, subjectId: Contact.Id): doobie.ConnectionIO[List[GenericCredential]] = {
+  def getBy(issuedBy: ParticipantId, contactId: Contact.Id): doobie.ConnectionIO[List[GenericCredential]] = {
     (fr"WITH" ++ withParticipantsPTS ++ withPublishedCredentialsPC() ++ selectGenericCredential ++
       fr"""
          |FROM draft_credentials c
@@ -137,7 +137,7 @@ object CredentialsDAO {
          |     JOIN contacts ON (c.contact_id = contacts.contact_id)
          |     LEFT JOIN PC USING (credential_id)
          |WHERE c.issuer_id = $issuedBy AND
-         |      c.contact_id = $subjectId
+         |      c.contact_id = $contactId
          |ORDER BY c.created_on ASC, credential_id
          |""".stripMargin)
       .query[GenericCredential]
@@ -146,7 +146,7 @@ object CredentialsDAO {
 
   def getIssuedCredentialsBy(
       issuedBy: ParticipantId,
-      subjectId: Contact.Id
+      contactId: Contact.Id
   ): doobie.ConnectionIO[List[GenericCredential]] = {
     (fr"WITH" ++ withParticipantsPTS ++ withPublishedCredentialsPC() ++ selectGenericCredential ++
       fr"""
@@ -155,7 +155,7 @@ object CredentialsDAO {
           |     JOIN contacts ON (c.contact_id = contacts.contact_id)
           |     JOIN PC USING (credential_id)
           |WHERE c.issuer_id = $issuedBy AND
-          |      c.contact_id = $subjectId
+          |      c.contact_id = $contactId
           |ORDER BY c.created_on ASC, credential_id
           |""".stripMargin)
       .query[GenericCredential]

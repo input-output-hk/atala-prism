@@ -47,7 +47,7 @@ class CredentialsServiceImplSpec extends ManagementConsoleRpcSpecBase with DIDGe
       val publicKey = keyPair.publicKey
       val did = generateDid(publicKey)
       val issuerId = createParticipant(issuerName, did)
-      val contact = createContact(issuerId, "Subject 1", None)
+      val contact = createContact(issuerId, "Contact 1", None)
       val originalCredential = DataPreparation.createGenericCredential(issuerId, contact.contactId)
 
       val mockEncodedSignedCredential = "easdadgfkfñwlekrjfadf"
@@ -99,7 +99,7 @@ class CredentialsServiceImplSpec extends ManagementConsoleRpcSpecBase with DIDGe
       val publicKey = keyPair.publicKey
       val did = generateDid(publicKey)
       val issuerId = createParticipant(issuerName, did = did)
-      val contact = createContact(issuerId, "Subject 1", None)
+      val contact = createContact(issuerId, "Contact 1", None)
       val originalCredential = createGenericCredential(issuerId, contact.contactId)
 
       val mockEncodedSignedCredential = "easdadgfkfñwlekrjfadf"
@@ -732,10 +732,10 @@ class CredentialsServiceImplSpec extends ManagementConsoleRpcSpecBase with DIDGe
 
   private def prepareCredentials(): (GenericCredential, GenericCredential) = {
     val issuerId = createParticipant("Issuer X", did)
-    val subject = createContact(issuerId, "IOHK Student", None)
+    val contact = createContact(issuerId, "IOHK Student", None)
 
-    val credential1 = createGenericCredential(issuerId, subject.contactId, "A")
-    val credential2 = createGenericCredential(issuerId, subject.contactId, "B")
+    val credential1 = createGenericCredential(issuerId, contact.contactId, "A")
+    val credential2 = createGenericCredential(issuerId, contact.contactId, "B")
 
     publishCredential(issuerId, credential1)
     publishCredential(issuerId, credential2)
@@ -751,8 +751,8 @@ class CredentialsServiceImplSpec extends ManagementConsoleRpcSpecBase with DIDGe
       val did = generateDid(publicKey)
       val issuerId = createParticipant(issuerName, did)
       val issuerGroup = createInstitutionGroup(issuerId, InstitutionGroup.Name("group 1"))
-      val subject = createContact(issuerId, "Subject 1", Some(issuerGroup.name))
-      val originalCredential = createGenericCredential(issuerId, subject.contactId)
+      val contact = createContact(issuerId, "Contact 1", Some(issuerGroup.name))
+      val originalCredential = createGenericCredential(issuerId, contact.contactId)
 
       val mockEncodedSignedCredential = "easdadgfkfñwlekrjfadf"
 
@@ -808,8 +808,8 @@ class CredentialsServiceImplSpec extends ManagementConsoleRpcSpecBase with DIDGe
       val did = generateDid(publicKey)
       val issuerId = createParticipant(issuerName, did)
       val issuerGroup = createInstitutionGroup(issuerId, InstitutionGroup.Name("group 1"))
-      val subject = createContact(issuerId, "Subject 1", Some(issuerGroup.name))
-      val originalCredential = createGenericCredential(issuerId, subject.contactId)
+      val contact = createContact(issuerId, "Contact 1", Some(issuerGroup.name))
+      val originalCredential = createGenericCredential(issuerId, contact.contactId)
 
       val mockEmptyEncodedSignedCredential = ""
 
@@ -914,8 +914,8 @@ class CredentialsServiceImplSpec extends ManagementConsoleRpcSpecBase with DIDGe
       val did = generateDid(publicKey)
       val issuerId = createParticipant(issuerName, did = did)
       val issuerGroup = createInstitutionGroup(issuerId, InstitutionGroup.Name("Group 1"))
-      val subject = createContact(issuerId, "Subject 1", Some(issuerGroup.name))
-      val originalCredential = createGenericCredential(issuerId, subject.contactId)
+      val contact = createContact(issuerId, "Contact 1", Some(issuerGroup.name))
+      val originalCredential = createGenericCredential(issuerId, contact.contactId)
 
       val mockEncodedSignedCredential = "easdadgfkfñwlekrjfadf"
 
@@ -975,8 +975,8 @@ class CredentialsServiceImplSpec extends ManagementConsoleRpcSpecBase with DIDGe
       val did = generateDid(publicKey)
       val issuerId = createParticipant(issuerName, did = did)
       val issuerGroup = createInstitutionGroup(issuerId, InstitutionGroup.Name("Group 1"))
-      val subject = createContact(issuerId, "Subject 1", Some(issuerGroup.name))
-      val originalCredential = createGenericCredential(issuerId, subject.contactId)
+      val contact = createContact(issuerId, "Contact 1", Some(issuerGroup.name))
+      val originalCredential = createGenericCredential(issuerId, contact.contactId)
 
       val mockEncodedSignedCredential = "easdadgfkfñwlekrjfadf"
 
@@ -1017,10 +1017,10 @@ class CredentialsServiceImplSpec extends ManagementConsoleRpcSpecBase with DIDGe
   "deleteCredentials" should {
     "delete draft and published, revoked credentials" in {
       val issuerId = createParticipant("Issuer X", did)
-      val subjectId = createContact(issuerId, "IOHK Student", None).contactId
+      val contactId = createContact(issuerId, "IOHK Student", None).contactId
 
-      val credential1 = createGenericCredential(issuerId, subjectId, "A")
-      val credential2 = createGenericCredential(issuerId, subjectId, "B")
+      val credential1 = createGenericCredential(issuerId, contactId, "A")
+      val credential2 = createGenericCredential(issuerId, contactId, "B")
 
       val request = console_api.DeleteCredentialsRequest(
         credentialsIds = List(credential1.credentialId.uuid.toString, credential2.credentialId.uuid.toString)
@@ -1037,10 +1037,10 @@ class CredentialsServiceImplSpec extends ManagementConsoleRpcSpecBase with DIDGe
 
     "do not delete credentials when one of them is published and not revoked" in {
       val issuerId = createParticipant("Issuer X", did)
-      val subjectId = createContact(issuerId, "IOHK Student", None).contactId
+      val contactId = createContact(issuerId, "IOHK Student", None).contactId
 
-      val credential1 = createGenericCredential(issuerId, subjectId, "A")
-      val credential2 = createGenericCredential(issuerId, subjectId, "B")
+      val credential1 = createGenericCredential(issuerId, contactId, "A")
+      val credential2 = createGenericCredential(issuerId, contactId, "B")
 
       publishCredential(issuerId, credential1)
 
@@ -1061,10 +1061,10 @@ class CredentialsServiceImplSpec extends ManagementConsoleRpcSpecBase with DIDGe
 
     "do not delete credentials when invalid uuid is supplied as credential id" in {
       val issuerId = createParticipant("Issuer X", did)
-      val subjectId = createContact(issuerId, "IOHK Student", None).contactId
+      val contactId = createContact(issuerId, "IOHK Student", None).contactId
 
-      val credential1 = createGenericCredential(issuerId, subjectId, "A")
-      val credential2 = createGenericCredential(issuerId, subjectId, "B")
+      val credential1 = createGenericCredential(issuerId, contactId, "A")
+      val credential2 = createGenericCredential(issuerId, contactId, "B")
 
       val request = console_api.DeleteCredentialsRequest(
         credentialsIds = List(credential1.credentialId.uuid.toString, "invalidUUIdzzzz")
@@ -1083,10 +1083,10 @@ class CredentialsServiceImplSpec extends ManagementConsoleRpcSpecBase with DIDGe
 
     "do not delete credentials when one of them has incorrect id" in {
       val issuerId = createParticipant("Issuer X", did)
-      val subjectId = createContact(issuerId, "IOHK Student", None).contactId
+      val contactId = createContact(issuerId, "IOHK Student", None).contactId
 
-      val credential1 = createGenericCredential(issuerId, subjectId, "A")
-      val credential2 = createGenericCredential(issuerId, subjectId, "B")
+      val credential1 = createGenericCredential(issuerId, contactId, "A")
+      val credential2 = createGenericCredential(issuerId, contactId, "B")
 
       val request = console_api.DeleteCredentialsRequest(
         credentialsIds = List(credential1.credentialId.uuid.toString, UUID.randomUUID().toString)
