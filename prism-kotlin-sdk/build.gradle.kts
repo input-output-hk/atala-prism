@@ -1,9 +1,9 @@
 import com.palantir.gradle.gitversion.VersionDetails
 
 plugins {
-    kotlin("multiplatform") version "1.4.31" apply false
-    kotlin("plugin.serialization") version "1.4.31" apply false
-    kotlin("native.cocoapods") version "1.4.31" apply false
+    kotlin("multiplatform") version "1.4.32" apply false
+    kotlin("plugin.serialization") version "1.4.32" apply false
+    kotlin("native.cocoapods") version "1.4.32" apply false
     id("com.android.library") version "4.0.2" apply false
     id("com.google.protobuf") version "0.8.14" apply false
     id("com.palantir.git-version") version "0.12.3"
