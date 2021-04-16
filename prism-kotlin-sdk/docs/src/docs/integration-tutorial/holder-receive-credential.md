@@ -1,10 +1,8 @@
-# Holder: Receive credential
-
-It is time for Holder to receive the credential. To do so, Holder has to query Connector for the incoming messages, parse them into the proper model, and extract the credential details from it.
+It is time for **Holder** to receive the credential. To do so, **Holder** has to query **Connector** for the incoming messages, parse them into the proper model and extract the credential details from it.
 
 ## Receive the message
 
-Let's ask Connector for messages addressed to Holder and take the first one (which should be the one sent from the Issuer):
+Let's ask **Connector** for messages addressed to **Holder** and take the first one (which should be the one sent from the **Issuer**):
 
 ```kotlin
 val holderGetMessagesRequest = GetMessagesPaginatedRequest(limit = 1)
@@ -39,4 +37,4 @@ println(
 
 ## Next
 
-Later, we will use this credential to share it with Verifier.
+Later, we will use this credential to share it with **Verifier**.

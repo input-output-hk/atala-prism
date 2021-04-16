@@ -1,9 +1,7 @@
-# Verifier: Verify valid credential
-
-The fun begins now, before being able to verify a credential, you will need to do several steps:
-1. Parse the signed credential to get the issuer details.
-2. Resolve the issuer details from the Node to make sure the key and the signature are correct.
-3. Resolve the credential state from the Node to make sure the proof exists in Cardano.
+The fun begins now, before being able to verify a credential, follow these steps:
+1. Parse the signed credential to get the **Issuer's** details.
+2. Resolve the **Issuer's** details from the **Node** to make sure the key, and the signature are correct.
+3. Resolve the credential state from the **Node** to make sure the proof exists in **Cardano**.
 4. Resolve the credential revocation state from the Node to make sure the credential hasn't been revoked.
 
 ## Extract the credential data
@@ -24,10 +22,9 @@ println(
 )
 ```
 
-
 ## Resolve the issuer/credential details
 
-Its time to query the Node for the data relevant to the Issuer and the Credential, which is later on used to check the credential verification state:
+It's time to query the **Node** for the data relevant to the **Issuer** and the credential, which is later on used to check the credential verification state:
 
 ```kotlin
 println("Verifier: Resolving issuer/credential details from the node")
@@ -58,7 +55,6 @@ val verifierReceivedCredentialRevocationTime = runBlocking {
     ).revocationLedgerData?.timestampInfo?.toTimestampInfoModel()
 }
 ```
-
 
 ## Verify the credential
 

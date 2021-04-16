@@ -1,15 +1,13 @@
-# Issuer: Revoke credential
-
-This section illustrates how Issuer can revoke a credential, the API allows to:
+This section illustrates how **Issuer** can revoke a credential, the API allows to:
 1. Revoke a single credential.
 2. Revoke all credentials involved in a batch.
 3. Revoke many credentials from the same batch.
 
-In this example, you'll see how to revoke a single credential, but, the other options are available by just switching the method arguments.
+This example shows how to revoke a single credential, but, the other options are available by just switching the method arguments.
 
 ## Revoke a single credential
 
-Given that you already have all the necessary data in place, the revocation is simple, just generate the revocation operation, and get it posted in Cardano by the Node:
+Given that all the necessary data is in place, the revocation is simple, just generate the revocation operation and get it posted in **Cardano** by the **Node**:
 
 ```kotlin
 val issuerRevokeCredentialOperation = ProtoUtils.revokeCredentialsOperation(

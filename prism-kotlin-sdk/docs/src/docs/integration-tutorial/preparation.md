@@ -1,14 +1,55 @@
-## Prerequisites
+This section explains how to integrate the **Atala PRISM SDK** into a **Kotlin** project using the **Gradle Build Tool**. It also shows how to set up **Atala PRISM** environment locally.
 
-This section explains how to integrate the Atala PRISM SDK into a Kotlin project using the Gradle Build Tool.
+**Note:** This tutorial assumes proficiency in setting up/working with [Gradle](https://gradle.org/) projects. Create a new project or open an existing one.
 
-**Note:** This tutorial assumes that you are proficient in setting up/working with [Gradle](https://gradle.org/) projects. You can create your own project or open an existing one.
+It is worth saying that the examples use the `runBlocking` clause to make the examples simpler (i.e. not having to worry about coroutine contexts). If Kotlin is used as integration there is no need to use `runBlocking` directly.
 
-It is worth saying that the examples use the `runBlocking` clause to make the examples simpler (i.e. not having to worry about coroutine contexts). If you use Kotlin in your integration, you aren't expected to use `runBlocking` directly.
+## Setting up services
+### Prerequisites
+
+1. Install [docker](https://www.docker.com/).
+2. Install [Java 8](https://www.oracle.com/java/technologies/javase/javase-jdk8-downloads.html).
+3. Install [sbt](https://www.scala-sbt.org/).
+4. Install [psql](https://www.postgresql.org/download/).
+
+### Steps
+1. Run **Postgres** inside docker container and leave it running:
+```bash
+docker run -it --rm -e POSTGRES_DB=connector_db -e POSTGRES_HOST_AUTH_METHOD=trust -p 5432:5432 postgres
+```
+2. Login to database in a new terminal window:
+```bash
+psql connector_db \
+       -U postgres \
+       -h localhost \
+       -p 5432
+```
+3. Create a new database called `node_db` for **Node**:
+```bash
+connector_db=# CREATE DATABASE node_db;
+```
+
+4. In a new terminal window clone [Atala repository](https://github.com/input-output-hk/atala) and navigate to `prism-backend` directory:
+```bash
+git clone git@github.com:input-output-hk/atala.git
+cd atala/prism-backend/
+```
+
+5. Start **Node** and leave it running:
+```bash
+sbt node/run
+```
+
+6. Start **Connector**  and leave it running:
+```bash
+sbt connector/run
+```
+
+That's it! All services are up and running.
 
 ## Adding Dependencies
 
-After creating (or opening) the Gradle project, add the necessary dependencies to your `build.gradle`:
+After creating (or opening) the **Gradle** project, add the necessary dependencies to your `build.gradle`:
 
 ```kotlin
 implementation("io.iohk.atala.prism:protos:$VERSION") // needed for the credential payloads defined in protobuf as well as to interact with our backend services
@@ -42,9 +83,9 @@ repositories {
 
 ## Importing Atala PRISM Modules
 
-For the rest of the tutorial, you can take the code snippets into a Kotlin file.
+For the rest of the tutorial insert the code snippets into a **Kotlin** file.
 
-Let's import the Atala PRISM modules required to complete the next steps:
+Let's import the **Atala PRISM** modules required to complete the next steps:
 
 ```kotlin:ank
 import io.iohk.atala.prism.kotlin.credentials.BatchData
@@ -73,7 +114,7 @@ import pbandk.encodeToByteArray
 
 ## Backend clients
 
-At last, let's create the clients for our backend services involved in this tutorial, the Connector and the Node:
+At last, let's create the clients for backend services involved in this tutorial, the **Connector** and the **Node**:
 
 ```kotlin:ank
 val connector = ProtoClientUtils.connectorClient("localhost", 50051)

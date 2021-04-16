@@ -1,10 +1,8 @@
-# Issuer: Share credential
+An astute reader may have noticed that the credential itself is not stored in **Cardano**. Only a proof of its existence is, which means that there is a need to send the credential to **Holder**.
 
-An astute reader may have noticed that the credential itself is not stored in Cardano. Only a proof of its existence is, which means that we need to send the credential to Holder.
+In previous step,  connection between **Issuer** and **Holder** was established. Such connection allows them to exchange messages, hence the issued credential will be sent to **Holder** by using this connection.
 
-In previous step, we have established a connection between Issuer and Holder. Such connection allows them to exchange messages, hence the issued credential will be sent to Holder by using this connection.
-
-While Connector allows to send any kind of messages, this tutorial uses our `AtalaMessage` abstraction to define which messages can be exchanged.
+While **Connector** allows to send any kind of messages, this tutorial uses our `AtalaMessage` abstraction to define which messages can be exchanged.
 
 ## Prepare the message
 
@@ -22,7 +20,7 @@ val credentialFromIssuerMessage = AtalaMessage(
 ```
 
 ## Get the connection
-Before sending the credential, you need to get the connection id required to communicate with Holder. There is an API that retrieves the connection given the token generated in a [previous section](issuer-first-steps.md):
+Before sending the credential, `connectionId` is required to communicate with **Holder**. There is an API that retrieves the connection given the token generated in a [previous section](../issuer-first-steps.md):
 
 ```kotlin
 // Issuer needs the connection id to send a message to Holder, which can be retrieved

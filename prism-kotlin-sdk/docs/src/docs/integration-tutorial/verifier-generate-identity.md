@@ -1,17 +1,15 @@
-# Verifier: First steps
-Verifier's goal in this tutorial is to receive a credential from Holder, and verify its validity.
+**Verifier's** goal in this tutorial is to receive a credential from **Holder** and verify its validity.
 
-You have to follow the same steps done by Issuer:
-1. Generate a decentralized identifier (DID) for Verifier.
-2. Publish the Verifier's DID to Cardano.
-3. Generate a token that will be used to connect to Holder. This step allows Verifier to receive credentials over the internet.
+You have to follow the same steps done by **Issuer**:
+1. Generate a **Decentralized Identifier (DID)** for **Verifier**.
+2. Publish the **Verifier's DID** to **Cardano**.
+3. Generate a token that will be used to connect to **Holder**. This step allows **Verifier** to receive credentials over the internet.
 
-An astute reader might have noticed that Verifier is publishing its DID to the Cardano network, which is not strictly necessary. While it is usually a good practice to publish DIDs related to institutions, evaluate it for your particular use case.
-
+An astute reader might have noticed that **Verifier** is publishing its **DID** to the **Cardano** network, which is not strictly necessary. While it is usually a good practice to publish **DIDs** related to institutions, evaluate it depends on use case.
 
 ## Steps
 
-Given that these are the same steps followed by Issuer in a [previous section](issuer-first-steps.md), the whole code for this section is left without much explanation:
+Given that these are the same steps followed by **Issuer** in a [previous section](../issuer-first-steps.md), the whole code for this section is left without much explanation:
 
 ```kotlin
 val verifierMasterKeyPair = EC.generateKeyPair()

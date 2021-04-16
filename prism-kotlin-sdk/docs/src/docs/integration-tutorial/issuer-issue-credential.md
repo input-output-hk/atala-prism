@@ -1,10 +1,8 @@
-# Issuer: Issue credential
-
-Now, Issuer is able to issue a credential to Holder.
+Now, **Issuer** is able to issue a credential to **Holder**.
 
 ## Prepare credential
 
-Let's create a simple certificate for Holder, and sign it with the Issuer's key:
+Let's create a simple certificate for **Holder** and sign it with the **Issuer's** key:
 
 ```kotlin
 val holderCredentialContent = CredentialContent(
@@ -29,10 +27,9 @@ val holderUnsignedCredential = JsonBasedCredential(holderCredentialContent)
 val holderSignedCredential = holderUnsignedCredential.sign(issuerMasterKeyPair.privateKey)
 ```
 
-
 ## Include the credential in a batch
 
-In Atala PRISM, credentials are published to Cardano in batches, for this tutorial, the batch includes a single credential:
+In **Atala PRISM**, credentials are published to **Cardano** in batches, for this tutorial, the batch includes a single credential:
 
 ```kotlin
 val (holderCredentialMerkleRoot, holderCredentialMerkleProofs) = CredentialBatches.batch(listOf(holderSignedCredential))
@@ -45,7 +42,7 @@ val issueCredentialOperation = ProtoUtils.issueCredentialBatchOperation(credenti
 
 ## Publish the credential to Cardano
 
-Once we have prepared the batch, we can sign the operation and invoke PRISM Node to publish it to Cardano:
+Once we have prepared the batch, we can sign the operation and invoke **Atala PRISM Node** to publish it to **Cardano**:
 
 ```kotlin
 val signedIssueCredentialOperation = ProtoUtils.signedAtalaOperation(issuerMasterKeyPair, issueCredentialOperation)
