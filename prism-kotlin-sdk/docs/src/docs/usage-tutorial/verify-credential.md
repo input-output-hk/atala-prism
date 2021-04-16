@@ -37,7 +37,7 @@ val (merkleRoot, merkleProofs) = CredentialBatches.batch(listOf(signedCredential
 ```
 
 
-## Mocking Network Data
+## Mocking network data
 
 For simplicity, this tutorial does not interact with the Cardano network. A real implementation would require the retrieval of some data from the network, so in this tutorial, we will mock that data.
 
@@ -61,7 +61,7 @@ val keyData = KeyData(publicKey = masterKeyPair.publicKey, addedOn = didBlockInf
 val batchData = BatchData(issuedOn = batchBlockInfo, revokedOn = null)
 ```
 
-## Verifying the Credential
+## Verifying the credential
 
 Taking the data from the previous steps, we can now verify the credential. The code returns no errors, so the credential is valid:
 
@@ -78,4 +78,4 @@ CredentialVerification.verify(
 
 ## More
 
-By now, check the [Integration Tutorial](../integration-tutorial) if you are ready to integrate PRISM.
+By now, check the [Integration Tutorial](../integration-tutorial) if you are ready to integrate **Atala PRISM**.

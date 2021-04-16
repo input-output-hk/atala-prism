@@ -3,7 +3,7 @@ This section explains how to integrate the Atala PRISM SDK into a Kotlin project
 **Note:** This tutorial assumes that you are proficient in setting up/working with [Gradle](https://gradle.org/) projects. You can create your own project or open an existing one.
 
 
-## Adding Dependencies
+## Adding dependencies
 
 After creating (or opening) the Gradle project, add the necessary dependencies to your `build.gradle`:
 
@@ -17,7 +17,7 @@ implementation("io.iohk.atala.prism:credentials:$VERSION") // needed to deal wit
 implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.0.1")
 ```
 
-## Importing Atala PRISM Modules
+## Importing Atala PRISM modules
 
 For the rest of the tutorial, you can take the code snippets into a Kotlin file.
 

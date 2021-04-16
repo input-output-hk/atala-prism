@@ -4,7 +4,7 @@ Add this code to your `build.gradle` to install the Crypto module:
 implementation("io.iohk.atala.prism:crypto:$VERSION")
 ```
 
-## SHA256 Hash
+## SHA256 hash
 
 The Crypto module provides a [SHA256](https://en.wikipedia.org/wiki/SHA-2) hash function that can be used as follows:
 
@@ -14,7 +14,7 @@ import io.iohk.atala.prism.kotlin.crypto.SHA256Digest
 SHA256Digest.compute(listOf(0))
 ```
 
-## Elliptic-curve Cryptography
+## Elliptic-curve cryptography
 
 This module includes low-level tools to work with public-key cryptography based on [elliptic curves]((https://en.wikipedia.org/wiki/Elliptic-curve_cryptography)).
 

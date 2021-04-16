@@ -1,4 +1,4 @@
-Once you have a project that includes the Atala PRISM SDK, you can generate a decentralized identifier (DID). This section explains how to generate a DID and extract some information from it, which you will need later.
+Once you have a project that includes the **Atala PRISM SDK**, you can generate a **Decentralized Identifier (DID)**. This section explains how to generate a **DID** and extract some information from it, which you will need later.
 
 **Note:** You do not require extensive knowledge or understanding of DIDs to complete this tutorial. Check the official [DID specifications](https://w3c-ccg.github.io/did-spec/) for reference or [Decentralized identifiers on Wiki](https://en.wikipedia.org/wiki/Decentralized_identifiers).
 

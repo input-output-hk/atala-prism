@@ -14,9 +14,9 @@ val issuerConnectionTokenDetails = runBlocking {
 }
 println(
     """
-        Holder: Check Issuer's connection token details:
-        - Issuer name = ${issuerConnectionTokenDetails.creatorName}
-        - Issuer DID  = ${issuerConnectionTokenDetails.creatorDID}
+    Holder: Check Issuer's connection token details:
+    - Issuer name = ${issuerConnectionTokenDetails.creatorName}
+    - Issuer DID  = ${issuerConnectionTokenDetails.creatorDID}
     """.trimIndent()
 )
 ```

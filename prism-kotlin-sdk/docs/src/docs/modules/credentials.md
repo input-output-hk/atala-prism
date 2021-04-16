@@ -18,6 +18,7 @@ import io.iohk.atala.prism.kotlin.crypto.* // necessary to sign a credential
 import io.iohk.atala.prism.kotlin.credentials.*
 import io.iohk.atala.prism.kotlin.credentials.content.*
 import io.iohk.atala.prism.kotlin.credentials.json.*
+import kotlinx.datetime.*
 
 import kotlinx.serialization.json.* // necessary to construct the credential content
 

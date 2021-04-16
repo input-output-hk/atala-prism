@@ -2,7 +2,7 @@ Before **Holder** is able to send its credential to **Verifier**, it needs to ac
 
 ## Accepting the Verifier's connection
 
-Given that these are the same steps followed by **Holder** in a [previous section](../holder-accept-issuer-connection.md), the whole code for this section is left without much explanation.
+Given that these are the same steps followed by **Holder** in a [previous section](holder-accept-issuer-connection), the whole code for this section is left without much explanation.
 
 One notable difference is that the second **Holder's DID** is used:
 

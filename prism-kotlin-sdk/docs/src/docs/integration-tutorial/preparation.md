@@ -47,7 +47,7 @@ sbt connector/run
 
 That's it! All services are up and running.
 
-## Adding Dependencies
+## Adding dependencies
 
 After creating (or opening) the **Gradle** project, add the necessary dependencies to your `build.gradle`:
 

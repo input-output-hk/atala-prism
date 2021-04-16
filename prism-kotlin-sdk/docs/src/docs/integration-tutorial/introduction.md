@@ -14,7 +14,7 @@ There are 3 actors involved in the code:
 
 ## Services
 There are 2 backend services involved in the examples:
-1. **Connector** - provides a way to open a communication channel between two entities, which allows `Issuer` to send a credential to `Holder`.
+1. **Connector** - provides a way to open a communication channel between two entities, which allows **Issuer** to send a credential to **Holder**.
 2. **Node** - implements the **Atala PRISM Slayer** protocol, which is what gets the proofs about **DIDs/Credentials** published on **Cardano** ledger, as well as allows to query such data.
 
 **Note:** be aware that in this tutorial there is no real integration with [Cardano](https://cardano.org/), all components use in-memory ledger. Anyway the flow will be exactly the same once both **Node** and **Connector** interacts directly with **Cardano** ledger. For simplicity **Cardano** name is used as a default ledger in next steps.

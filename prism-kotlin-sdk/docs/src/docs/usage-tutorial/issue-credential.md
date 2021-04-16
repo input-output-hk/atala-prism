@@ -1,6 +1,6 @@
 Issuing a credential on a blockchain provides proof of when, where and by whom that credential was issued and can’t be changed.
 
-This section explains how to do it using Atala PRISM SDK.
+This section explains how to do it using **Atala PRISM SDK**.
 
 ## Recap
 
@@ -20,7 +20,7 @@ val masterKeyPair = EC.generateKeyPair()
 val did = DID.createUnpublishedDID(masterKeyPair.publicKey)
 ```
 
-## Defining the Credential Claims
+## Defining the credential claims
 
 Before issuing a credential, we need to define its contents:
 
@@ -44,7 +44,7 @@ val credentialContent = CredentialContent(
 In this case, `credentialSubject` represents the claims involved in the credential, while the other fields are metadata specifying *who* is issuing the credential.
 
 
-## Deriving a Credential From its Claims
+## Deriving a credential from its claims
 
 We can use the previous claims to derive a `Credential` object:
 
@@ -52,7 +52,7 @@ We can use the previous claims to derive a `Credential` object:
 val credential = JsonBasedCredential(credentialContent)
 ```
 
-## Signing the Credential
+## Signing the credential
 
 Having the `Credential` model allows to easily sign it, which results in a signed credential:
 
@@ -63,7 +63,7 @@ val signedCredential = credential.sign(masterKeyPair.privateKey)
 **Note:** These are the keys related to the DID generated in the previous section.
 
 
-## Issuing the Credential
+## Issuing the credential
 
 In our protocol, issuing a credential involves creating batches of signed credentials to reduce the time and costs of publishing them. Batches are timestamped and for simplicity, we'll get the relevant data without touching any external network:
 

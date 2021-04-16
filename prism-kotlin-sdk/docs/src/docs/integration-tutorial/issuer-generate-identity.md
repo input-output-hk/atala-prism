@@ -36,10 +36,10 @@ val issuerDID = DID.fromString(issuerRegisterDIDResponse.did)
 val issuerUnpublishedDID = DID.createUnpublishedDID(issuerMasterKeyPair.publicKey)
 println(
     """
-            Issuer DID registered, the transaction can take up to 10 minutes to be confirmed by the Cardano network
-            - DID: ${issuerRegisterDIDResponse.did}
-            - Cardano transaction id: ${issuerRegisterDIDResponse.transactionInfo?.transactionId}
-            """.trimIndent()
+    Issuer DID registered, the transaction can take up to 10 minutes to be confirmed by the Cardano network
+    - DID: ${issuerRegisterDIDResponse.did}
+    - Cardano transaction id: ${issuerRegisterDIDResponse.transactionInfo?.transactionId}
+    """.trimIndent()
 )
 ```
 

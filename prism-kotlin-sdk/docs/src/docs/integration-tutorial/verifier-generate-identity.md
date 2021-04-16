@@ -9,7 +9,7 @@ An astute reader might have noticed that **Verifier** is publishing its **DID** 
 
 ## Steps
 
-Given that these are the same steps followed by **Issuer** in a [previous section](../issuer-first-steps.md), the whole code for this section is left without much explanation:
+Given that these are the same steps followed by **Issuer** in [this section](issuer-generate-identity), the whole code for this section is left without much explanation:
 
 ```kotlin
 val verifierMasterKeyPair = EC.generateKeyPair()
@@ -28,9 +28,9 @@ val verifierDID = DID.fromString(verifierRegisterDIDResponse.did)
 val verifierUnpublishedDID = DID.createUnpublishedDID(verifierMasterKeyPair.publicKey)
 println(
     """
-        Verifier DID registered, the transaction can take up to 10 minutes to be confirmed by the Cardano network
-        - DID: $verifierDID
-        - Cardano transaction id: ${verifierRegisterDIDResponse.transactionInfo?.transactionId}
+    Verifier DID registered, the transaction can take up to 10 minutes to be confirmed by the Cardano network
+    - DID: $verifierDID
+    - Cardano transaction id: ${verifierRegisterDIDResponse.transactionInfo?.transactionId}
     """.trimIndent()
 )
 println()

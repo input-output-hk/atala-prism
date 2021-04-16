@@ -28,9 +28,9 @@ val holderReceivedCredential = AtalaMessage
     .plainCredential!!
 println(
     """
-        Holder: Message received
-        - Canonical credential = ${holderReceivedCredential.encodedCredential}
-        - Inclusion proof = ${holderReceivedCredential.encodedMerkleProof}
+    Holder: Message received
+    - Canonical credential = ${holderReceivedCredential.encodedCredential}
+    - Inclusion proof = ${holderReceivedCredential.encodedMerkleProof}
     """.trimIndent()
 )
 ```

@@ -14,10 +14,10 @@ val verifierReceivedCredentialIssuerDID = verifierReceivedJsonCredential.content
 val verifierReceivedCredentialIssuanceKeyId = verifierReceivedJsonCredential.content.getString("issuanceKeyId")!!
 println(
     """
-        Verifier: Received credential decoded
-        - Credential: ${verifierReceivedJsonCredential.content}
-        - Issuer DID: $verifierReceivedCredentialIssuerDID
-        - Issuer issuance key id: $verifierReceivedCredentialIssuanceKeyId
+    Verifier: Received credential decoded
+    - Credential: ${verifierReceivedJsonCredential.content}
+    - Issuer DID: $verifierReceivedCredentialIssuerDID
+    - Issuer issuance key id: $verifierReceivedCredentialIssuanceKeyId
     """.trimIndent()
 )
 ```
