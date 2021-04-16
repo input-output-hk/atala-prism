@@ -1,5 +1,5 @@
 - [Preparation](preparation.md)
-- [Generate an identity](generate-identity.md)
+- [Generate Identity](generate-identity.md)
 - [Issue Credential](issue-credential.md)
 - [Verify Credential](verify-credential.md)
 

@@ -1,11 +1,10 @@
-# Issuing a Credential
+Issuing a credential on a blockchain provides proof of when, where and by whom that credential was issued and can’t be changed.
 
-This section explains how to issue a credential.
-
+This section explains how to do it using Atala PRISM SDK.
 
 ## Recap
 
-This is what we have done from previous versions:
+This is what we have done in previous steps:
 
 ```kotlin:ank
 import io.iohk.atala.prism.kotlin.crypto.*
@@ -66,10 +65,12 @@ val signedCredential = credential.sign(masterKeyPair.privateKey)
 
 ## Issuing the Credential
 
-In our protocol, issuing a credential involves creating batches of signed credentials (so that you only pay one Cardano fee). Batches are timestamped in the Cardano blockchain. For simplicity, we'll get the relevant data without touching the Cardano network:
+In our protocol, issuing a credential involves creating batches of signed credentials to reduce the time and costs of publishing them. Batches are timestamped and for simplicity, we'll get the relevant data without touching any external network:
 
 ```kotlin:ank
 val (merkleRoot, merkleProofs) = CredentialBatches.batch(listOf(signedCredential))
 ```
 
 The `merkleRoot` and `merkleProofs` are necessary to verify the credential validity.
+
+**Note:** To get more info about `Merkle tree` visit [Merkle tree wiki page](https://en.wikipedia.org/wiki/Merkle_tree) or [this page](https://www.investopedia.com/terms/m/merkle-root-cryptocurrency.asp) to see how these techniques are related to blockchain.

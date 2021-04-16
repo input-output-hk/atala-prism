@@ -6,7 +6,7 @@ implementation("io.iohk.atala.prism:crypto:$VERSION")
 
 ## SHA256 Hash
 
-The Crypto module provides a SHA256 hash function that can be used as follows:
+The Crypto module provides a [SHA256](https://en.wikipedia.org/wiki/SHA-2) hash function that can be used as follows:
 
 ```kotlin:ank
 import io.iohk.atala.prism.kotlin.crypto.SHA256Digest
@@ -16,7 +16,7 @@ SHA256Digest.compute(listOf(0))
 
 ## Elliptic-curve Cryptography
 
-This module includes low-level tools to work with public-key cryptography based on elliptic curves.
+This module includes low-level tools to work with public-key cryptography based on [elliptic curves]((https://en.wikipedia.org/wiki/Elliptic-curve_cryptography)).
 
 Some helpful globals can be found in `ECConfig`:
 ```kotlin:ank
@@ -63,6 +63,9 @@ First, there are some utilities to work with mnemonic codes:
 import io.iohk.atala.prism.kotlin.crypto.derivation.KeyDerivation
 
 val mnemonicCode = KeyDerivation.randomMnemonicCode()
+// or use the following code to use your already existing seed phrase (list of 12 words)
+// val mySeedPhrase = listOf() <- provide your list of 12 words here as strings
+// val mnemonicCode = MnemonicCode(mySeedPhrase)
 KeyDerivation.getValidMnemonicWords().take(10)
 KeyDerivation.isValidMnemonicWord("airport")
 ```
@@ -90,7 +93,7 @@ KeyDerivation.deriveKey(seed, path)
 
 ## Merkle Tree
 
-It is possible to build and verify Merkle tree proofs of inclusion by using `MerkleTree`:
+It is possible to build and verify [Merkle tree](https://en.wikipedia.org/wiki/Merkle_tree) proofs of inclusion by using `MerkleTree`:
 ```kotlin:ank
 import io.iohk.atala.prism.kotlin.crypto.*
 

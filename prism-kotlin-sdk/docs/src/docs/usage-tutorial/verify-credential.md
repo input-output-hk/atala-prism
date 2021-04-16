@@ -1,9 +1,9 @@
-# Verifying the Credential
-
 This section explains how to verify a credential's validity.
 
 ## Recap
-This is what we have done from previous versions:
+
+This is what we have done in previous steps:
+
 ```kotlin:ank
 import io.iohk.atala.prism.kotlin.crypto.*
 import io.iohk.atala.prism.kotlin.identity.*

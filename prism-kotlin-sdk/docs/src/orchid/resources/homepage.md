@@ -1,11 +1,17 @@
 # Atala PRISM SDK
-This is the official Software Development Kit (SDK) for the Atala PRISM project.
+This is the official Software Development Kit (SDK) for the [Atala PRISM](https://atalaprism.io/) project.
 
 You are encouraged to follow the [Usage Tutorial](wiki/usage-tutorial) *before* working on any integration, once you are ready to integrate PRISM, checkout the [Integration Tutorial](wiki/integration-tutorial).
 
 Our server-side APIs are powered by [gRPC](https://grpc.io), which allows you to take our [Protocol Buffers (protobuf)](https://developers.google.com/protocol-buffers/) definitions and generate the necessary API client for the most popular programming languages.
 
 Make sure to check our [gRPC API reference](wiki/grpc/grpc-api) for further information.
+
+The current version of SDK **does not support** interaction with [Cardano](https://cardano.org/) blockchain. All interactions with Cardano are simulated using in-memory ledger.
+
+Any problem? Contact us using [this service email](mailto:atala-prism-support@iohk.io).
+
+[Data protection policy](https://static.iohk.io/gdpr/IOHK-Data-Protection-GDPR-Policy.pdf).
 
 ## SDK Modules
 The SDK modules provide all the necessary functionality to deal with cryptographic primitives, identities, and credentials.
