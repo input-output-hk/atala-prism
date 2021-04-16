@@ -66,6 +66,9 @@ SHA256Digest.Companion().compute(bytes: [0, 1, 2])
 
 ## Docs
 
+Be aware that the [integration-tutorial](docs/src/docs/integration-tutorial) doesn't use Ank for compile-checked docs because we are blocked by this [issue](https://github.com/arrow-kt/arrow/issues/472). The problem is that the circleci job that builds the website docs doesn't have the connector/node running which are necessary to perform some network calls from the docs.
+
+
 ### Grpc API
 First, make sure to generate the docs for our grpc API, which is done by running this command:
 
@@ -87,3 +90,4 @@ The [docs](docs) are type-checked by [arrow-ank](https://github.com/arrow-kt/arr
 Run:
 - `./gradlew :docs:orchidServe` to launch the preview at [localhost:8080](https://localhost:8080).
 - `./gradlew :docs:orchidBuild` to build the website at `docs/build/docs/orchid`
+

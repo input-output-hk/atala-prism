@@ -1,7 +1,7 @@
 # Atala PRISM SDK
 This is the official Software Development Kit (SDK) for the Atala PRISM project.
 
-You are encouraged to follow the [Usage Tutorial](wiki/usage-tutorial) *before* working on any integration.
+You are encouraged to follow the [Usage Tutorial](wiki/usage-tutorial) *before* working on any integration, once you are ready to integrate PRISM, checkout the [Integration Tutorial](wiki/integration-tutorial).
 
 Our server-side APIs are powered by [gRPC](https://grpc.io), which allows you to take our [Protocol Buffers (protobuf)](https://developers.google.com/protocol-buffers/) definitions and generate the necessary API client for the most popular programming languages.
 

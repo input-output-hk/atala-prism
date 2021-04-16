@@ -9,6 +9,7 @@ wiki:
     - 'grpc'
     - 'modules'
     - 'usage-tutorial'
+    - 'integration-tutorial'
 
 allPages:
   metaComponents:

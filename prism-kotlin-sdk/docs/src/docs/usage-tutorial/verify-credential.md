@@ -75,3 +75,7 @@ CredentialVerification.verify(
     signedCredential = signedCredential
 )
 ```
+
+## More
+
+By now, check the [Integration Tutorial](../integration-tutorial) if you are ready to integrate PRISM.
