@@ -78,4 +78,4 @@ CredentialVerification.verify(
 
 ## More
 
-By now, check the [Integration Tutorial](../integration-tutorial) if you are ready to integrate **Atala PRISM**.
+By now, check the [Integration Tutorial](/wiki/integration-tutorial) if you are ready to integrate **Atala PRISM**.

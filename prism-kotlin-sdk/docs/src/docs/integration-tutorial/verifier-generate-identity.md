@@ -9,7 +9,7 @@ An astute reader might have noticed that **Verifier** is publishing its **DID** 
 
 ## Steps
 
-Given that these are the same steps followed by **Issuer** in [this section](issuer-generate-identity), the whole code for this section is left without much explanation:
+Given that these are the same steps followed by **Issuer** in [this section](/wiki/integration-tutorial/issuer-generate-identity), the whole code for this section is left without much explanation:
 
 ```kotlin
 val verifierMasterKeyPair = EC.generateKeyPair()

@@ -20,7 +20,7 @@ val credentialFromIssuerMessage = AtalaMessage(
 ```
 
 ## Get the connection
-Before sending the credential, `connectionId` is required to communicate with **Holder**. There is an API that retrieves the connection given the token generated in a [previous section](issuer-generate-identity):
+Before sending the credential, `connectionId` is required to communicate with **Holder**. There is an API that retrieves the connection given the token generated in a [previous section](/wiki/integration-tutorial/issuer-generate-identity):
 
 ```kotlin
 // Issuer needs the connection id to send a message to Holder, which can be retrieved

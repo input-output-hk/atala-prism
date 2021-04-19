@@ -1,4 +1,4 @@
-It is time to share the credential with **Verifier**, this is very similar to a [previous-step](issuer-share-credential), which is why the necessary code doesn't need much explanation:
+It is time to share the credential with **Verifier**, this is very similar to a [previous step](/wiki/integration-tutorial/issuer-share-credential), which is why the necessary code doesn't need much explanation:
 
 ```kotlin
 val credentialFromHolderMessage = AtalaMessage(
