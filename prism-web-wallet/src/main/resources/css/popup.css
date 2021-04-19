@@ -115,6 +115,7 @@
 .progressBtn,
 .btn_register,
 .btn_verify,
+.btn_confirm,
 .btn_sign {
   margin: 0 auto 10px auto;
   width: 90%;
@@ -660,6 +661,7 @@ select:focus {
   justify-content: center;
   align-items: center;
   margin: 0 auto;
+  cursor: pointer;
 }
 .lock_button:hover {
   background: rgba(255, 45, 59, 0.1)
@@ -691,6 +693,17 @@ select:focus {
   position: absolute;
   margin-top: -14px;
   margin-left: -12px;
+}
+
+.progress_linear_bar {
+  top: 50% !important;
+  left: 10% !important;
+  color: #4caf50;
+  height: 12px !important;
+  width: 90%;
+  position: absolute !important;
+  margin-top: -14px !important;
+  margin-left: -14px;
 }
 
 .disabled {
@@ -751,8 +764,23 @@ p.padding  { padding:0; margin:0;}
     justify-content: center;
     align-items: center;
 }
+
 .btn_sign_width{
     width: 50%;
+}
+
+.btn_confirm_width{
+    width: 50%;
+}
+
+.btn_modal_cancel_width{
+    width: 30%;
+    margin-right: 10px;
+}
+
+.btn_modal_confirm_width{
+    width: 30%;
+    margin-right: 10px;
 }
 
 .btn_cancel_width{
@@ -901,16 +929,114 @@ inputChip::placeholder {
   background-color: lightgray;
   border-radius: 10px;
 }
- 
+
 /* Handle */
 ::-webkit-scrollbar-thumb {
-  background: gray; 
+  background: gray;
   border-radius: 10px;
 }
 
 /* Handle on hover */
 ::-webkit-scrollbar-thumb:hover {
-  background: #333; 
+  background: #333;
 }
 
 /* END OF STYLE OF SCROLL */
+
+
+.modal-dialog {
+    overflow: auto !important;
+    z-index: 1300 !important;
+    position: absolute !important;
+    outline: 0 !important;
+    left: 6.4% !important;
+    right: 6.4% !important;
+    top: 30.74% !important;
+    bottom: 23% !important;
+    background: #FFFFFF !important;
+    box-shadow: 0px 0px 20px rgba(0, 0, 0, 0.08) !important;
+    border-radius: 12px !important;
+    padding: 2em 1em;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    text-align: center;
+}
+
+.signImageContainer {
+  width: 100%;
+  text-align: center;
+}
+
+.signImageContainer img {
+  width: 120px;
+}
+
+.smallTitle {
+  color: #ff2d3b;
+  font-weight: bold;
+  margin: 0.5em 0;
+  font-size: 16px;
+}
+
+.descriptionModal {
+  font-size: 14px;
+  font-weight: bold;
+  color: #011727;
+  margin: 0.5em 0;
+}
+
+.descriptionModal2 {
+  margin: 0 0 1em 0;
+  line-height: 16px;
+  font-size: 12px;
+  color: #011727;
+}
+
+.btnContainer {
+  width: 100%;
+  display: flex;
+}
+
+.rejectBtn {
+  width: 100%;
+  text-align: center;
+  border: 1px solid #011727;
+  border-radius: 30px;
+  padding:10px;
+  font-weight: bold;
+  font-weight: 14px;
+  cursor: pointer;
+}
+
+
+._label_dashboard {
+  color: #333333;
+  flex-direction: row-reverse;
+  justify-content: flex-end;
+  width: 100%;
+  background: #FFFFFF;
+  padding: 16px;
+  border-radius: 6px;
+  width:100%;
+  margin: 0.5em 0;
+  display: flex;
+  align-items: center;
+  font-weight: bold;
+  cursor: pointer;
+}
+
+.dashboardContainer{
+  display: flex;
+  width: 100%;
+  overflow: hidden;
+  margin-top: 1em;
+  left: 6.4%;
+  right: 6.4%;
+  top: 27.06%;
+  bottom: 65.34%;
+  background: #FFFFFF;
+  box-shadow: 0px 0px 8px rgba(45, 45, 45, 0.08);
+  border-radius: 8px;
+}
+

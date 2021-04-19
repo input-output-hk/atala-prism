@@ -6,7 +6,9 @@ import io.circe.parser.parse
 import io.circe.syntax._
 import io.iohk.atala.cvp.webextension.background.models.Command.{
   ApprovalRequestResult,
+  GotCredentialRequestsRequiringManualApproval,
   GotRequestsRequiringManualApproval,
+  GotRevocationRequestsRequiringManualApproval,
   SignedConnectorResponse,
   TransactionInfo,
   WalletStatusResult
@@ -48,6 +50,14 @@ class BackgroundAPI()(implicit ec: ExecutionContext) {
     process(Command.GetRequestsRequiringManualApproval)
   }
 
+  def getRevocationRequests(): Future[GotRevocationRequestsRequiringManualApproval] = {
+    process(Command.GetRevocationRequestsRequiringManualApproval)
+  }
+
+  def getCredentialSignatureRequests(): Future[GotCredentialRequestsRequiringManualApproval] = {
+    process(Command.GetCredentialRequestsRequiringManualApproval)
+  }
+
   def getWalletStatus(): Future[WalletStatusResult] = {
     process(Command.GetWalletStatus)
   }
@@ -74,6 +84,14 @@ class BackgroundAPI()(implicit ec: ExecutionContext) {
       encodedMerkleProof: String
   ): Future[Command.VerifySignedCredentialResponse] = {
     process(Command.VerifySignedCredential(sessionId, signedCredentialStringRepresentation, encodedMerkleProof))
+  }
+
+  def approveAllCredentialRequests(): Future[Unit] = {
+    process(Command.ApproveAllCredentialRequests)
+  }
+
+  def rejectAllCredentialRequests(): Future[Unit] = {
+    process(Command.RejectAllCredentialRequests)
   }
 
   def approvePendingRequest(requestId: Int): Future[Unit] = {
