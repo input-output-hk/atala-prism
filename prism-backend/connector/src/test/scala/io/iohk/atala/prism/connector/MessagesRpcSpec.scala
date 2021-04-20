@@ -7,6 +7,7 @@ import io.grpc.{Status, StatusRuntimeException}
 import io.iohk.atala.prism.auth
 import io.iohk.atala.prism.auth.SignedRpcRequest
 import io.iohk.atala.prism.auth.grpc.SignedRequestsHelper
+import io.iohk.atala.prism.connector.model.MessageId
 import io.iohk.atala.prism.connector.repositories.daos.MessagesDAO
 import io.iohk.atala.prism.crypto.EC
 import io.iohk.atala.prism.models.ParticipantId
@@ -33,7 +34,12 @@ class MessagesRpcSpec extends ConnectorRpcSpecBase {
       val issuerId = createIssuer("Issuer", Some(publicKey), Some(did))
       val holderId = createHolder("Holder")
       val connectionId = createConnection(issuerId, holderId)
-      val request = connector_api.SendMessageRequest(connectionId.toString, ByteString.copyFrom("test".getBytes))
+      val messageId = MessageId.random().uuid.toString
+      val request = connector_api.SendMessageRequest(
+        connectionId = connectionId.toString,
+        message = ByteString.copyFrom("test".getBytes),
+        id = messageId
+      )
       val rpcRequest = SignedRpcRequest.generate(keyPair, did, request)
 
       usingApiAs(rpcRequest) { blockingStub =>
@@ -41,12 +47,36 @@ class MessagesRpcSpec extends ConnectorRpcSpecBase {
         val msg =
           MessagesDAO.getMessagesPaginated(holderId, 1, None).transact(database).unsafeToFuture().futureValue.head
         msg.connection mustBe connectionId
+        msg.id.uuid.toString mustBe messageId
+      }
+    }
+
+    "fail to insert message to database if user provided id is incorrect uuid" in {
+      val keyPair = EC.generateKeyPair()
+      val publicKey = keyPair.publicKey
+      val did = generateDid(publicKey)
+
+      val issuerId = createIssuer("Issuer", Some(publicKey), Some(did))
+      val holderId = createHolder("Holder")
+      val connectionId = createConnection(issuerId, holderId)
+      val messageId = "incorrect uuid"
+      val request = connector_api.SendMessageRequest(
+        connectionId = connectionId.toString,
+        message = ByteString.copyFrom("test".getBytes),
+        id = messageId
+      )
+      val rpcRequest = SignedRpcRequest.generate(keyPair, did, request)
+
+      usingApiAs(rpcRequest) { blockingStub =>
+        intercept[StatusRuntimeException] {
+          blockingStub.sendMessage(request)
+        }
       }
     }
   }
 
   "SendMessages" should {
-    "insert many message into database" in {
+    "insert many messages into database" in {
       val keyPair = EC.generateKeyPair()
       val publicKey = keyPair.publicKey
       val did = generateDid(publicKey)
@@ -64,10 +94,14 @@ class MessagesRpcSpec extends ConnectorRpcSpecBase {
       val message2 =
         credential_models.AtalaMessage().withProofRequest(credential_models.ProofRequest(connectionToken = "token2"))
 
+      val messageId1 = MessageId.random().uuid.toString
+      val messageId2 = MessageId.random().uuid.toString
+      val messagesIds = List(messageId1, messageId2)
+
       val messages =
         List(
-          MessageToSendByConnectionToken(token1.token, Some(message1)),
-          MessageToSendByConnectionToken(token2.token, Some(message2))
+          MessageToSendByConnectionToken(token1.token, Some(message1), messageId1),
+          MessageToSendByConnectionToken(token2.token, Some(message2), messageId2)
         )
 
       val request = connector_api.SendMessagesRequest(messages)
@@ -79,10 +113,12 @@ class MessagesRpcSpec extends ConnectorRpcSpecBase {
         val msg1 =
           MessagesDAO.getMessagesPaginated(holderId1, 1, None).transact(database).unsafeToFuture().futureValue.head
         msg1.content mustBe message1.toByteArray
+        messagesIds must contain(msg1.id.uuid.toString)
 
         val msg2 =
           MessagesDAO.getMessagesPaginated(holderId2, 1, None).transact(database).unsafeToFuture().futureValue.head
         msg2.content mustBe message2.toByteArray
+        messagesIds must contain(msg2.id.uuid.toString)
       }
     }
 
@@ -133,6 +169,54 @@ class MessagesRpcSpec extends ConnectorRpcSpecBase {
         List(
           MessageToSendByConnectionToken(token1.token, Some(message1)),
           MessageToSendByConnectionToken(token2.token, Some(message2))
+        )
+
+      val request = connector_api.SendMessagesRequest(messages)
+
+      val rpcRequest = SignedRpcRequest.generate(keyPair, did, request)
+
+      usingApiAs(rpcRequest) { blockingStub =>
+        intercept[StatusRuntimeException] {
+          blockingStub.sendMessages(request)
+        }
+
+        MessagesDAO
+          .getMessagesPaginated(holderId1, 1, None)
+          .transact(database)
+          .unsafeToFuture()
+          .futureValue
+          .size mustBe 0
+
+        MessagesDAO
+          .getMessagesPaginated(holderId2, 1, None)
+          .transact(database)
+          .unsafeToFuture()
+          .futureValue
+          .size mustBe 0
+      }
+    }
+
+    "fail to insert many messages when user provided ids are not correct uuids" in {
+      val keyPair = EC.generateKeyPair()
+      val publicKey = keyPair.publicKey
+      val did = generateDid(publicKey)
+
+      val issuerId = createIssuer("Issuer", Some(publicKey), Some(did))
+      val holderId1 = createHolder("Holder1")
+      val holderId2 = createHolder("Holder2")
+      val token1 = createToken(issuerId)
+      val token2 = createToken(issuerId)
+      createConnection(issuerId, holderId1, token1)
+
+      val message1 =
+        credential_models.AtalaMessage().withProofRequest(credential_models.ProofRequest(connectionToken = "token1"))
+      val message2 =
+        credential_models.AtalaMessage().withProofRequest(credential_models.ProofRequest(connectionToken = "token2"))
+
+      val messages =
+        List(
+          MessageToSendByConnectionToken(token1.token, Some(message1)),
+          MessageToSendByConnectionToken(token2.token, Some(message2), "incorrect uuid")
         )
 
       val request = connector_api.SendMessagesRequest(messages)

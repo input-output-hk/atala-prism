@@ -101,7 +101,7 @@ object ConnectorIntegration {
         .toFuture(toRuntimeException)
     }
 
-    private def toRuntimeException(senderId: ParticipantId, connectionId: ConnectionId): Nothing => RuntimeException =
+    private def toRuntimeException(senderId: ParticipantId, connectionId: ConnectionId): Any => RuntimeException =
       _ => new RuntimeException(s"Failed to send credential for senderId = $senderId, connectionId = $connectionId.")
 
     private def toRuntimeException: ConnectorError => RuntimeException =

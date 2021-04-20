@@ -23,7 +23,12 @@ class ConnectorIntegrationImplSpec extends AnyFlatSpec {
 
       connectorIntegration.sendCredential(senderId, connectionId, credential).futureValue
 
-      verify(messagesService, times(1)).insertMessage(eqTo(senderId), eqTo(connectionId), decodesTo(credential))
+      verify(messagesService, times(1)).insertMessage(
+        eqTo(senderId),
+        eqTo(connectionId),
+        decodesTo(credential),
+        eqTo(None)
+      )
   }
 
   "sendProofRequest" should "send a decodable proof request" in connectorIntegration {
@@ -33,7 +38,12 @@ class ConnectorIntegrationImplSpec extends AnyFlatSpec {
 
       connectorIntegration.sendProofRequest(senderId, connectionId, proofRequest).futureValue
 
-      verify(messagesService, times(1)).insertMessage(eqTo(senderId), eqTo(connectionId), decodesTo(proofRequest))
+      verify(messagesService, times(1)).insertMessage(
+        eqTo(senderId),
+        eqTo(connectionId),
+        decodesTo(proofRequest),
+        any[Option[MessageId]]
+      )
   }
 }
 
@@ -47,7 +57,7 @@ object ConnectorIntegrationImplSpec {
     val connectionsService = mock[ConnectionsService]
     val messagesService = mock[MessagesService]
     val connectorIntegration = new ConnectorIntegrationImpl(connectionsService, messagesService)
-    when(messagesService.insertMessage(eqTo(senderId), eqTo(connectionId), any[Array[Byte]]))
+    when(messagesService.insertMessage(eqTo(senderId), eqTo(connectionId), any[Array[Byte]], any[Option[MessageId]]))
       .thenReturn(Right(messageId).toFutureEither)
     testCode(connectorIntegration, messagesService)
     ()
