@@ -1,6 +1,6 @@
 This section explains how to integrate the **Atala PRISM SDK** into a **Kotlin** project using the **Gradle Build Tool**.
 
-**Note:** This tutorial assumes that you are proficient in setting up/working with [Gradle](https://gradle.org/) projects. You can create your own project or open an existing one.
+**NOTE:** This tutorial assumes proficiency in setting up/working with [Gradle](https://gradle.org/) projects. Fee free to create a new project or open an existing one.
 
 
 ## Adding dependencies

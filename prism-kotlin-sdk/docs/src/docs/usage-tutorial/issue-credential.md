@@ -60,7 +60,7 @@ Having the `Credential` model allows to easily sign it, which results in a signe
 val signedCredential = credential.sign(masterKeyPair.privateKey)
 ```
 
-**Note:** These are the keys related to the DID generated in the previous section.
+**NOTE:** These are the keys related to the DID generated in the previous section.
 
 
 ## Issuing the credential
@@ -73,4 +73,4 @@ val (merkleRoot, merkleProofs) = CredentialBatches.batch(listOf(signedCredential
 
 The `merkleRoot` and `merkleProofs` are necessary to verify the credential validity.
 
-**Note:** To get more info about `Merkle tree` visit [Merkle tree wiki page](https://en.wikipedia.org/wiki/Merkle_tree) or [this page](https://www.investopedia.com/terms/m/merkle-root-cryptocurrency.asp) to see how these techniques are related to blockchain.
+**NOTE:** To get more info about `Merkle tree` visit [Merkle tree wiki page](https://en.wikipedia.org/wiki/Merkle_tree) or [this page](https://www.investopedia.com/terms/m/merkle-root-cryptocurrency.asp) to see how these techniques are related to blockchain.

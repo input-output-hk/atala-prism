@@ -42,10 +42,11 @@ object CompleteFlowTutorial {
         )
         println()
 
-        println("Creating the clients for the connector/node, which are expected to be running in localhost")
+        println("Creating the clients for the connector/node, which are expected to be running on provided environment")
         println()
-        val connector = ProtoClientUtils.connectorClient("localhost", 50051)
-        val node = ProtoClientUtils.nodeClient("localhost", 50053)
+        val environment = "localhost" // If exists, replace 'localhost' with an url to your dedicated environment.
+        val connector = ProtoClientUtils.connectorClient(environment, 50051)
+        val node = ProtoClientUtils.nodeClient(environment, 50053)
 
         // Issuer claims an identity
         println("Issuer: Generates and registers a DID")

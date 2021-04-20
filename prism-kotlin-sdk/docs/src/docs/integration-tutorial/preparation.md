@@ -1,10 +1,14 @@
 This section explains how to integrate the **Atala PRISM SDK** into a **Kotlin** project using the **Gradle Build Tool**. It also shows how to set up **Atala PRISM** environment locally.
 
-**Note:** This tutorial assumes proficiency in setting up/working with [Gradle](https://gradle.org/) projects. Create a new project or open an existing one.
+**NOTE:** This tutorial assumes proficiency in setting up/working with [Gradle](https://gradle.org/) projects. Create a new project or open an existing one.
 
 It is worth saying that the examples use the `runBlocking` clause to make the examples simpler (i.e. not having to worry about coroutine contexts). If Kotlin is used as integration there is no need to use `runBlocking` directly.
 
-## Setting up services
+## Services
+If there is no dedicated environment where all services are up and running there is a possibility to run all required services locally. To do it follow the next steps. 
+
+**NOTE:** If a working environment (where services are running) is already deployed feel free to skip these steps.
+
 ### Prerequisites
 
 1. Install [docker](https://www.docker.com/).
@@ -45,7 +49,7 @@ sbt node/run
 sbt connector/run
 ```
 
-That's it! All services are up and running.
+That's it! All services are up and running locally.
 
 ## Adding dependencies
 
@@ -117,6 +121,7 @@ import pbandk.encodeToByteArray
 At last, let's create the clients for backend services involved in this tutorial, the **Connector** and the **Node**:
 
 ```kotlin:ank
-val connector = ProtoClientUtils.connectorClient("localhost", 50051)
-val node = ProtoClientUtils.nodeClient("localhost", 50053)
+val environment = "localhost" // If exists, replace 'localhost' with an url to your dedicated environment. 
+val connector = ProtoClientUtils.connectorClient(environment, 50051)
+val node = ProtoClientUtils.nodeClient(environment, 50053)
 ```

@@ -7,7 +7,7 @@ In order to do that, some preparation steps need to be done:
 
 During preparation, set up a project that includes **Atala PRISM SDK** and proceed to do the **Issuer** steps.
 
-**Note:** You do not require extensive knowledge or understanding of **DIDs** to complete this tutorial. Check the official [DID specifications](https://w3c-ccg.github.io/did-spec/) for reference.
+**NOTE:** Extensive knowledge or understanding of **DIDs** is not required to complete this tutorial. Check the official [DID specifications](https://w3c-ccg.github.io/did-spec/) or [Decentralized identifiers on Wiki](https://en.wikipedia.org/wiki/Decentralized_identifiers) for reference.
 
 ## Generating a DID
 
