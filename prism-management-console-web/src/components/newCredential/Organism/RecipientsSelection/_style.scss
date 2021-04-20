@@ -10,6 +10,8 @@
 }
 
 .RecipientsSelection {
+  max-height: 75vh;
+  overflow-y: auto;
   .ant-tabs {
     height: 100%;
   }

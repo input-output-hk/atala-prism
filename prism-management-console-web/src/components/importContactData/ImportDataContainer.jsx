@@ -9,6 +9,7 @@ import BulkImport from '../bulkImport/BulkImport';
 import ManualImportContainer from '../manualImport/ManualImportContainer';
 import { ImportResults } from './Molecules/ImportResults';
 import { translateBackSpreadsheetNamesToContactKeys } from '../../helpers/contactValidations';
+import './_style.scss';
 import {
   BULK_IMPORT,
   MANUAL_IMPORT,
@@ -260,15 +261,17 @@ const ImportDataContainer = ({
   };
 
   return (
-    <div>
-      <GenericStepsButtons
-        steps={getSteps()}
-        currentStep={isEmbedded[useCase] ? IMPORT_CREDENTIAL_DATA_STEP : currentStep}
-        disableBack={loading}
-        disableNext={disableNext}
-        loading={loading}
-      />
-      <WizardTitle title={title[useCase]} subtitle={subtitle[useCase]} />
+    <div className="errorLogScroll">
+      <div className="TitleContainer">
+        <GenericStepsButtons
+          steps={getSteps()}
+          currentStep={isEmbedded[useCase] ? IMPORT_CREDENTIAL_DATA_STEP : currentStep}
+          disableBack={loading}
+          disableNext={disableNext}
+          loading={loading}
+        />
+        <WizardTitle title={title[useCase]} subtitle={subtitle[useCase]} />
+      </div>
       {renderStep()}
     </div>
   );
