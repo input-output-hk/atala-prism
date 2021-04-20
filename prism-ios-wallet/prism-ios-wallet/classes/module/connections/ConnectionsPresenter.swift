@@ -370,7 +370,6 @@ class ConnectionsPresenter: ListingBasePresenter, ListingBaseTableUtilsPresenter
     // MARK: ConnectionsWorkerDelegate
 
     func contactsFetched(contacts: [Contact]) {
-
         let sortedContacts = contacts.sorted { $0.name < $1.name}
         self.cleanData()
         self.contacts.append(sortedContacts)
@@ -390,11 +389,13 @@ class ConnectionsPresenter: ListingBasePresenter, ListingBaseTableUtilsPresenter
     }
 
     func showNewConnectMessage(type: Int, title: String?, logoData: Data?) {
+        self.viewImpl?.showLoading(doShow: false)
         self.viewImpl?.onBackPressed()
         self.viewImpl?.showNewConnectMessage(type: type, title: title, logoData: logoData)
     }
 
-    func conectionAccepted() {
+    func conectionAccepted(contact: Contact?) {
+        self.viewImpl?.showLoading(doShow: false)
         self.actionPullToRefresh()
     }
 

@@ -114,6 +114,8 @@
 		B3A98F5424ED5FD300E138C2 /* ActivityLogTableViewCell.xib in Resources */ = {isa = PBXBuildFile; fileRef = B3A98F5224ED5FD300E138C2 /* ActivityLogTableViewCell.xib */; };
 		B3A98F5724EDA35E00E138C2 /* ActivityHistory+CoreDataClass.swift in Sources */ = {isa = PBXBuildFile; fileRef = B3A98F5524EDA35E00E138C2 /* ActivityHistory+CoreDataClass.swift */; };
 		B3A98F5824EDA35E00E138C2 /* ActivityHistory+CoreDataProperties.swift in Sources */ = {isa = PBXBuildFile; fileRef = B3A98F5624EDA35E00E138C2 /* ActivityHistory+CoreDataProperties.swift */; };
+		B3B4910125FFA76700859707 /* kycbridge_api.grpc.swift in Sources */ = {isa = PBXBuildFile; fileRef = B3B490FF25FFA76700859707 /* kycbridge_api.grpc.swift */; };
+		B3B4910225FFA76700859707 /* kycbridge_api.pb.swift in Sources */ = {isa = PBXBuildFile; fileRef = B3B4910025FFA76700859707 /* kycbridge_api.pb.swift */; };
 		B3C760182489777C00AC46DC /* Env.swift in Sources */ = {isa = PBXBuildFile; fileRef = B3C760172489777C00AC46DC /* Env.swift */; };
 		B3E757DA260D31B700BC28A9 /* common_models.pb.swift in Sources */ = {isa = PBXBuildFile; fileRef = B3E757D6260D31B600BC28A9 /* common_models.pb.swift */; };
 		B3E757DB260D31B700BC28A9 /* connector_models.pb.swift in Sources */ = {isa = PBXBuildFile; fileRef = B3E757D7260D31B600BC28A9 /* connector_models.pb.swift */; };
@@ -414,6 +416,8 @@
 		B3A98F5224ED5FD300E138C2 /* ActivityLogTableViewCell.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = ActivityLogTableViewCell.xib; sourceTree = "<group>"; };
 		B3A98F5524EDA35E00E138C2 /* ActivityHistory+CoreDataClass.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "ActivityHistory+CoreDataClass.swift"; sourceTree = "<group>"; };
 		B3A98F5624EDA35E00E138C2 /* ActivityHistory+CoreDataProperties.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "ActivityHistory+CoreDataProperties.swift"; sourceTree = "<group>"; };
+		B3B490FF25FFA76700859707 /* kycbridge_api.grpc.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = kycbridge_api.grpc.swift; sourceTree = "<group>"; };
+		B3B4910025FFA76700859707 /* kycbridge_api.pb.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = kycbridge_api.pb.swift; sourceTree = "<group>"; };
 		B3C7601524896B9600AC46DC /* GoogleService-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = "GoogleService-Info.plist"; sourceTree = "<group>"; };
 		B3C760172489777C00AC46DC /* Env.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Env.swift; sourceTree = "<group>"; };
 		B3E757D6260D31B600BC28A9 /* common_models.pb.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = common_models.pb.swift; sourceTree = "<group>"; };
@@ -1059,6 +1063,8 @@
 				B3E757D8260D31B600BC28A9 /* credential_models.pb.swift */,
 				B3E757D9260D31B700BC28A9 /* node_models.pb.swift */,
 				B37FDB1425389CD40024766B /* connector_api.pb.swift */,
+				B3B490FF25FFA76700859707 /* kycbridge_api.grpc.swift */,
+				B3B4910025FFA76700859707 /* kycbridge_api.pb.swift */,
 				EE7D49C22366B5A7007C31A8 /* utils */,
 			);
 			path = protobuf;
@@ -1968,7 +1974,7 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "# Type a script or drag a script file from your workspace to insert its pat\nexport PATH=$PATH:${SRCROOT}/protobuf/utils\nmkdir -p ./protobuf\nprotoc --proto_path=../prism-sdk/protos/src/ --swift_out=./protobuf --swiftgrpc_out=Client=true,Server=false:. ../prism-sdk/protos/src/common_models.proto\nprotoc --proto_path=../prism-sdk/protos/src/ --swift_out=./protobuf --swiftgrpc_out=Client=true,Server=false:. ../prism-sdk/protos/src/node_models.proto\nprotoc --proto_path=../prism-sdk/protos/src/ --swift_out=./protobuf --swiftgrpc_out=Client=true,Server=false:. ../prism-sdk/protos/src/console_models.proto\nprotoc --proto_path=../prism-sdk/protos/src/ --swift_out=./protobuf --swiftgrpc_out=Client=true,Server=false:. ../prism-sdk/protos/src/connector_models.proto\nprotoc --proto_path=../prism-sdk/protos/src/ --swift_out=./protobuf --swiftgrpc_out=Client=true,Server=false:. ../prism-sdk/protos/src/credential_models.proto\nprotoc --proto_path=../prism-sdk/protos/src/ --swift_out=./protobuf --swiftgrpc_out=Client=true,Server=false:./protobuf ../prism-sdk/protos/src/connector_api.proto\n";
+			shellScript = "# Type a script or drag a script file from your workspace to insert its pat\nexport PATH=$PATH:${SRCROOT}/protobuf/utils\nmkdir -p ./protobuf\nprotoc --proto_path=../prism-sdk/protos/src/ --swift_out=./protobuf --swiftgrpc_out=Client=true,Server=false:. ../prism-sdk/protos/src/common_models.proto\nprotoc --proto_path=../prism-sdk/protos/src/ --swift_out=./protobuf --swiftgrpc_out=Client=true,Server=false:. ../prism-sdk/protos/src/node_models.proto\nprotoc --proto_path=../prism-sdk/protos/src/ --swift_out=./protobuf --swiftgrpc_out=Client=true,Server=false:. ../prism-sdk/protos/src/console_models.proto\nprotoc --proto_path=../prism-sdk/protos/src/ --swift_out=./protobuf --swiftgrpc_out=Client=true,Server=false:. ../prism-sdk/protos/src/connector_models.proto\nprotoc --proto_path=../prism-sdk/protos/src/ --swift_out=./protobuf --swiftgrpc_out=Client=true,Server=false:. ../prism-sdk/protos/src/credential_models.proto\nprotoc --proto_path=../prism-sdk/protos/src/ --swift_out=./protobuf --swiftgrpc_out=Client=true,Server=false:./protobuf ../prism-sdk/protos/src/connector_api.proto\nprotoc --proto_path=../prism-sdk/protos/src/ --swift_out=./protobuf --swiftgrpc_out=Client=true,Server=false:./protobuf ../prism-sdk/protos/src/kycbridge_api.proto\n";
 		};
 /* End PBXShellScriptBuildPhase section */
 
@@ -2007,6 +2013,7 @@
 				EE7D4C3A2366B9C4007C31A8 /* ShadowCorneredView.swift in Sources */,
 				EE904F042373AA5A00EE6344 /* DegreeViewCell.swift in Sources */,
 				EE7D4D32236FB3C1007C31A8 /* ConnectionMainViewCell.swift in Sources */,
+				B3B4910125FFA76700859707 /* kycbridge_api.grpc.swift in Sources */,
 				B3A98F5324ED5FD300E138C2 /* ActivityLogTableViewCell.swift in Sources */,
 				EE7D4BFF2366B9C4007C31A8 /* BaseTabViewController.swift in Sources */,
 				B3C760182489777C00AC46DC /* Env.swift in Sources */,
@@ -2089,6 +2096,7 @@
 				EE7D4C012366B9C4007C31A8 /* BasePresenter.swift in Sources */,
 				B35CEEFB25E581E800DA2BF9 /* HomeActivityLogTableViewCell.swift in Sources */,
 				B31EB6B225C884A000BDE34A /* TypeSelectTableViewCell.swift in Sources */,
+				B3B4910225FFA76700859707 /* kycbridge_api.pb.swift in Sources */,
 				EE22F1F223A4AD2C003C4F87 /* CryptoUtils.swift in Sources */,
 				B31F0923257AB98800BCA71C /* AtomicProperty.swift in Sources */,
 				EEB7DD56239A153700C4DEA5 /* Tracker.swift in Sources */,

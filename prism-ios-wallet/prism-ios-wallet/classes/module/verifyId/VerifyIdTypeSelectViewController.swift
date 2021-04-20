@@ -28,6 +28,12 @@ class VerifyIdTypeSelectViewController: ListingBaseViewController {
         setupButtons()
     }
 
+    // MARK: Config
+
+    func config(isLoading: Bool) {
+        showLoading(doShow: isLoading)
+    }
+
     // MARK: Table
 
     override func setupTable() {
@@ -54,14 +60,23 @@ class VerifyIdTypeSelectViewController: ListingBaseViewController {
         nextBttn.addRoundCorners(radius: AppConfigs.CORNER_RADIUS_BUTTON)
     }
     
+    func enableNextButton() {
+        nextBttn.backgroundColor = .appRed
+        nextBttn.isEnabled = true
+    }
+
     @IBAction func continueTapped(_ sender: Any) {
         presenterImpl.continueTapped()
     }
-    
+
     // MARK: Screens
 
-    func changeScreenToScanFront() {
-        _ = app_mayPerformSegue(withIdentifier: "VerifyIdScanSegue", sender: self)
+    func changeScreenToScanFront(documentInstanceID: String, kycToken: String) {
+        let params = VerifyIdScanViewController.makeSeguedParams(documentInstanceID: documentInstanceID,
+                                                                 kycToken: kycToken,
+                                                                 contact: presenterImpl.contact)
+        ViewControllerUtils.changeScreenSegued(caller: self, segue: "VerifyIdScanSegue",
+                                               params: params)
     }
 
 }

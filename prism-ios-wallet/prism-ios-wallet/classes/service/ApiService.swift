@@ -15,6 +15,14 @@ class ApiService: NSObject {
         serv.channel.timeout = 10
         return serv
     }()
+    
+    lazy var kycBridgeService: Io_Iohk_Atala_Kycbridge_Protos_KycBridgeServiceServiceClient = {
+        var base = String(Common.URL_API.split(separator: ":")[0])
+        base.append(Common.KYC_PORT)
+        let serv = Io_Iohk_Atala_Kycbridge_Protos_KycBridgeServiceServiceClient(address: base, secure: false)
+        serv.channel.timeout = 10
+        return serv
+    }()
 
     func makeMeta(_ userId: String? = nil) -> Metadata {
 
@@ -99,6 +107,7 @@ class ApiService: NSObject {
             }
             let metadata = makeSignedMeta(requestData: try request.serializedData(), keyPath: contact.keyPath)
             let response = try service.getMessagesPaginated(request, metadata: metadata)
+
             responseList.append(response)
         }
         return responseList
@@ -139,6 +148,30 @@ class ApiService: NSObject {
             responseList.append(response)
         }
         return responseList
+    }
+
+    // MARK: KYC Account
+
+    func createKycAccount() throws -> Io_Iohk_Atala_Kycbridge_Protos_CreateAccountResponse {
+
+        let request = Io_Iohk_Atala_Kycbridge_Protos_CreateAccountRequest()
+        let kyc = kycBridgeService
+        return try kyc.createAccount(request)
+    }
+    
+    func sendKycResult(contact: Contact, documentInstanceId: String,
+                       selfieImage: Data) throws -> Io_Iohk_Atala_Prism_Protos_SendMessageResponse {
+
+        var message = Io_Iohk_Atala_Prism_Protos_AtalaMessage()
+        message.kycBridgeMessage.acuantProcessFinished.documentInstanceID = documentInstanceId
+        message.kycBridgeMessage.acuantProcessFinished.selfieImage = selfieImage
+        let messageData =  try message.serializedData()
+        let request = Io_Iohk_Atala_Prism_Protos_SendMessageRequest.with {
+            $0.message = messageData
+            $0.connectionID = contact.connectionId
+        }
+        let metadata = makeSignedMeta(requestData: try request.serializedData(), keyPath: contact.keyPath)
+        return try service.sendMessage(request, metadata: metadata)
     }
 
 }

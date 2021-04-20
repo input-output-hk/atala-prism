@@ -15,7 +15,7 @@ protocol ConnectionsWorkerDelegate: class {
     func config(isLoading: Bool)
     func showErrorMessage(doShow: Bool, message: String?)
     func showNewConnectMessage(type: Int, title: String?, logoData: Data?)
-    func conectionAccepted()
+    func conectionAccepted(contact: Contact?)
 }
 
 class ConnectionsWorker: NSObject {
@@ -57,7 +57,6 @@ class ConnectionsWorker: NSObject {
             return nil
         }, success: {
             let isDuplicated = contacts.contains { $0.did == self.connectionRequest?.info?.did }
-            self.delegate?.config(isLoading: false)
             if isDuplicated {
                 self.delegate?.showErrorMessage(doShow: true,
                                                 message: String(format:
@@ -82,7 +81,7 @@ class ConnectionsWorker: NSObject {
     func confirmQrCode() {
 
         self.delegate?.config(isLoading: true)
-
+        var contact: Contact?
         // Call the service
         ApiService.call(async: {
             do {
@@ -92,7 +91,7 @@ class ConnectionsWorker: NSObject {
                 let keyPath = CryptoUtils.global.confirmNewKeyUsed()
                 let dao = ContactDAO()
                 DispatchQueue.main.sync {
-                    let contact = dao.createContact(connectionInfo: response.connection, keyPath: keyPath)
+                    contact = dao.createContact(connectionInfo: response.connection, keyPath: keyPath)
                     let historyDao = ActivityHistoryDAO()
                     historyDao.createActivityHistory(timestamp: contact?.dateCreated, type: .contactAdded,
                                                      credential: nil, contact: contact)
@@ -102,8 +101,7 @@ class ConnectionsWorker: NSObject {
             }
             return nil
         }, success: {
-            self.delegate?.config(isLoading: false)
-            self.delegate?.conectionAccepted()
+            self.delegate?.conectionAccepted(contact: contact)
         }, error: { error in
             print(error.localizedDescription)
             self.delegate?.config(isLoading: false)
