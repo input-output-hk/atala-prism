@@ -76,7 +76,7 @@
     display: flex;
     justify-content: flex-start;
     align-items: center;
-    margin-top: 1em;
+    margin: 1em 0;
     .selectContactsCheckbox,
     .selectGroupsCheckbox {
       margin-left: 1em;
@@ -104,6 +104,10 @@
         display: flex !important;
         align-items: center;
         top: 0;
+        margin: 0;
+        font-family: 'Circular-book';
+        font-size: 12px;
+        color: #303034;
       }
     }
     .noRecipientsCheckbox {
