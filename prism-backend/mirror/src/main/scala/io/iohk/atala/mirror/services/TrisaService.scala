@@ -1,64 +1,48 @@
 package io.iohk.atala.mirror.services
 
-import io.grpc.netty.{GrpcSslContexts, NettyChannelBuilder}
-import io.iohk.atala.mirror.protos.trisa.{Transaction, TrisaPeer2PeerGrpc}
-import io.grpc.stub.StreamObserver
-import io.iohk.atala.mirror.config.TrisaConfig
+import io.iohk.atala.mirror.models.{CardanoAddress, LovelaceAmount, TrisaVaspAddress}
+import io.iohk.atala.prism.protos.connector_models.ReceivedMessage
+import io.iohk.atala.prism.protos.credential_models.{AtalaMessage, InitiateTrisaCardanoTransactionMessage}
+import io.iohk.atala.prism.services.MessageProcessor
+import io.iohk.atala.prism.services.MessageProcessor.MessageProcessorException
+import monix.eval.Task
+import cats.implicits._
 import org.slf4j.LoggerFactory
 
-import java.io.File
 import scala.util.Try
 
-class TrisaService(trisaConfig: TrisaConfig) {
+class TrisaService(trisaIntegrationService: TrisaIntegrationService) {
 
   private val logger = LoggerFactory.getLogger(classOf[TrisaService])
 
-  private val sslContext = {
-    val sslContext = GrpcSslContexts.forClient()
-
-    val sslConfig = trisaConfig.sslConfig
-
-    sslContext.trustManager(new File(sslConfig.serverTrustChainLocation))
-    sslContext.keyManager(
-      new File(sslConfig.serverCertificateLocation),
-      new File(sslConfig.serverCertificatePrivateKeyLocation)
-    )
-
-    sslContext.build()
+  val initiateTrisaCardanoTransactionMessageProcessor: MessageProcessor = { receivedMessage =>
+    parseInitiateTrisaCardanoTransactionMessage(receivedMessage)
+      .map(processInitiateTrisaCardanoTransactionMessage)
   }
 
-  def connect(host: String, port: Int): TrisaPeer2PeerGrpc.TrisaPeer2PeerStub = {
-    val channel = NettyChannelBuilder
-      .forAddress(host, port)
-      .sslContext(sslContext)
-      .build()
-
-    TrisaPeer2PeerGrpc.stub(channel)
+  private def parseInitiateTrisaCardanoTransactionMessage(
+      message: ReceivedMessage
+  ): Option[InitiateTrisaCardanoTransactionMessage] = {
+    Try(AtalaMessage.parseFrom(message.message.toByteArray)).toOption
+      .flatMap(_.message.mirrorMessage)
+      .flatMap(_.message.initiateTrisaCardanoTransactionMessage)
   }
 
-  def sendTestRequest(host: String, port: Int): Unit = {
-    Try {
-      val stub = connect(host, port)
-
-      val responseObserver = new StreamObserver[Transaction] {
-        override def onNext(value: Transaction): Unit = {
-          logger.info(s"Received transaction: ${value}")
-        }
-
-        override def onError(t: Throwable): Unit = {
-          logger.info(s"Error occurred ${t.getMessage}")
-        }
-
-        override def onCompleted(): Unit = {
-          logger.info("Trisa stream completed")
+  private def processInitiateTrisaCardanoTransactionMessage(
+      message: InitiateTrisaCardanoTransactionMessage
+  ): Task[Either[MessageProcessorException, Unit]] = {
+    trisaIntegrationService
+      .initiateTransaction(
+        CardanoAddress(message.sourceCardanoAddress),
+        CardanoAddress(message.desinationCardanoAddress),
+        LovelaceAmount(message.lovelaceAmount),
+        trisaVaspAddress = TrisaVaspAddress(message.trisaVaspHost, message.trisaVaspHostPortNumber)
+      )
+      .map { result =>
+        result.leftMap(e => new MessageProcessorException(e.getMessage)).as {
+          logger.info(s"Transaction to trisa vasp send successfully")
         }
       }
-
-      val stream = stub.transactionStream(responseObserver)
-
-      stream.onNext(Transaction())
-    }.recover { e => logger.warn(e.getMessage) }
-    ()
   }
 
 }

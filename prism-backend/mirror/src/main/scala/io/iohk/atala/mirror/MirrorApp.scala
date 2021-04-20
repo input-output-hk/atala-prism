@@ -16,6 +16,7 @@ import io.iohk.atala.mirror.services.{
   CardanoAddressService,
   CredentialService,
   MirrorServiceImpl,
+  TrisaIntegrationServiceImpl,
   TrisaPeer2PeerService,
   TrisaService
 }
@@ -31,10 +32,12 @@ import io.iohk.atala.prism.services.{
 }
 import io.iohk.atala.prism.utils.GrpcUtils
 import doobie.implicits._
+import io.iohk.atala.mirror.models.{CardanoAddress, LovelaceAmount, TrisaVaspAddress}
 import io.iohk.atala.mirror.protos.trisa.TrisaPeer2PeerGrpc
 import io.iohk.atala.prism.protos.connector_api.ConnectorServiceGrpc
 import io.iohk.atala.prism.protos.node_api.NodeServiceGrpc
 import io.iohk.atala.prism.utils.syntax.DBConnectionOps
+import monix.execution.Scheduler.Implicits.global
 
 object MirrorApp extends TaskApp {
 
@@ -104,6 +107,8 @@ object MirrorApp extends TaskApp {
       cardanoAddressInfoService = new CardanoAddressInfoService(tx, mirrorConfig.httpConfig, nodeService)
       mirrorGrpcService = new MirrorGrpcService(mirrorServiceImpl)(scheduler)
       cardanoAddressService = new CardanoAddressService()
+      trisaIntegrationService = new TrisaIntegrationServiceImpl(mirrorConfig.trisaConfig)
+      trisaService = new TrisaService(trisaIntegrationService)
 
       connectorMessageService = new ConnectorMessagesService(
         connectorService = connectorService,
@@ -111,7 +116,8 @@ object MirrorApp extends TaskApp {
           credentialService.credentialMessageProcessor,
           cardanoAddressInfoService.cardanoAddressInfoMessageProcessor,
           cardanoAddressInfoService.payIdMessageProcessor,
-          cardanoAddressInfoService.payIdNameRegistrationMessageProcessor
+          cardanoAddressInfoService.payIdNameRegistrationMessageProcessor,
+          trisaService.initiateTrisaCardanoTransactionMessageProcessor
         ),
         findLastMessageOffset = ConnectorMessageOffsetDao
           .findLastMessageOffset()
@@ -141,8 +147,18 @@ object MirrorApp extends TaskApp {
       _ <- Resource.liftF(connectorMessageService.messagesUpdatesStream.compile.drain.start)
 
       //trisa
-      _ =
-        if (mirrorConfig.trisaConfig.enabled) new TrisaService(mirrorConfig.trisaConfig).sendTestRequest("vasp1", 8091)
+      _ = if (mirrorConfig.trisaConfig.enabled)
+        trisaIntegrationService
+          .initiateTransaction(
+            CardanoAddress("source"),
+            CardanoAddress("destination"),
+            LovelaceAmount(10),
+            TrisaVaspAddress("vasp1", 8091)
+          )
+          .runSyncUnsafe() match {
+          case Right(_) => logger.info("Received successful response")
+          case Left(error) => logger.warn(s"Error occurred when sending transaction to vasp ${error.getMessage}")
+        }
 
       // gRPC server
       grpcServer <- GrpcUtils.createGrpcServer[Task](

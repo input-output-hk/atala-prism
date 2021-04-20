@@ -8,5 +8,5 @@ package trisa.protocol.v1alpha1;
 message CardanoData {
   string source = 1;
   string destination = 2;
-  int32 amount = 3;
+  int64 amount = 3;
 }
