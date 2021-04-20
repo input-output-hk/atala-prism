@@ -47,6 +47,13 @@
   .box {
     height: 75vh;
     overflow-y: scroll;
+    .ai-center {
+      margin: 0;
+      display: flex;
+      .anticon svg {
+        margin-left: 1em;
+      }
+    }
   }
 
   .ant {
