@@ -31,6 +31,17 @@ trait TrisaIntegrationService {
   ): Task[Either[Throwable, Person]]
 }
 
+class TrisaIntegrationServiceDisabledImpl extends TrisaIntegrationService {
+  override def initiateTransaction(
+      source: CardanoAddress,
+      destination: CardanoAddress,
+      lovelaceAmount: LovelaceAmount,
+      trisaVaspAddress: TrisaVaspAddress
+  ): Task[Either[Throwable, Person]] = {
+    Task.raiseError(throw new RuntimeException("TRISA Integration is disabled"))
+  }
+}
+
 class TrisaIntegrationServiceImpl(trisaConfig: TrisaConfig) extends TrisaIntegrationService {
   private val REQUEST_TIMEOUT = 10.seconds
 

@@ -16,6 +16,7 @@ import io.iohk.atala.mirror.services.{
   CardanoAddressService,
   CredentialService,
   MirrorServiceImpl,
+  TrisaIntegrationServiceDisabledImpl,
   TrisaIntegrationServiceImpl,
   TrisaPeer2PeerService,
   TrisaService
@@ -107,7 +108,12 @@ object MirrorApp extends TaskApp {
       cardanoAddressInfoService = new CardanoAddressInfoService(tx, mirrorConfig.httpConfig, nodeService)
       mirrorGrpcService = new MirrorGrpcService(mirrorServiceImpl)(scheduler)
       cardanoAddressService = new CardanoAddressService()
-      trisaIntegrationService = new TrisaIntegrationServiceImpl(mirrorConfig.trisaConfig)
+      trisaIntegrationService =
+        if (mirrorConfig.trisaConfig.enabled) {
+          new TrisaIntegrationServiceImpl(mirrorConfig.trisaConfig)
+        } else {
+          new TrisaIntegrationServiceDisabledImpl
+        }
       trisaService = new TrisaService(trisaIntegrationService)
 
       connectorMessageService = new ConnectorMessagesService(
