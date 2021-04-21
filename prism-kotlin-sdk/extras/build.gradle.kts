@@ -17,6 +17,7 @@ kotlin {
         }
     }
     js(IR) {
+        moduleName = "extras"
         browser {
             testTask {
                 useKarma {

@@ -31,6 +31,7 @@ kotlin {
         }
     }
     js(IR) {
+        moduleName = "protos"
         browser {
             testTask {
                 useKarma {
