@@ -6,8 +6,6 @@ import io.iohk.atala.prism.credentials
 import io.iohk.atala.prism.crypto.{EC, ECPublicKey}
 import io.iohk.atala.prism.protos.node_models
 
-import scala.annotation.nowarn
-
 object NodeUtils {
   def fromProtoKey(protoKey: node_models.PublicKey): Option[ECPublicKey] = {
     for {
@@ -24,9 +22,8 @@ object NodeUtils {
     )
   }
 
-  @nowarn("msg=value blockTimestampDeprecated in class TimestampInfo is deprecated")
-  private def instantFromTimestampInfoProto(in: node_models.TimestampInfo): Instant =
-    in.blockTimestamp.fold(Instant.ofEpochMilli(in.blockTimestampDeprecated))(timestamp =>
-      Instant.ofEpochSecond(timestamp.seconds, timestamp.nanos.toLong)
-    )
+  private def instantFromTimestampInfoProto(in: node_models.TimestampInfo): Instant = {
+    val timestamp = in.blockTimestamp.getOrElse(throw new RuntimeException("Missing timestamp"))
+    Instant.ofEpochSecond(timestamp.seconds, timestamp.nanos.toLong)
+  }
 }

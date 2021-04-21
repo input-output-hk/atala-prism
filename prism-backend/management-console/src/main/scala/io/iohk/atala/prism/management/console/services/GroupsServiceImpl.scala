@@ -45,7 +45,6 @@ class GroupsServiceImpl(
               console_models
                 .Group()
                 .withId(group.id.toString)
-                .withCreatedAtDeprecated(group.createdAt.getEpochSecond)
                 .withCreatedAt(group.createdAt.toProtoTimestamp)
                 .withName(group.name.value)
                 .withNumberOfContacts(request.contactIds.size)

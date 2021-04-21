@@ -32,8 +32,6 @@ dependencies {
                 exclude("io.iohk.atala.prism")
             }
         }
-    implementation("com.soywiz.korlibs.krypto:krypto:2.0.6")
-    implementation("com.ionspin.kotlin:bignum:0.2.3")
     implementation("org.jetbrains.kotlinx:kotlinx-datetime:0.1.1")
     testImplementation(kotlin("test-junit5"))
     testImplementation("org.junit.jupiter:junit-jupiter-api:5.6.0")

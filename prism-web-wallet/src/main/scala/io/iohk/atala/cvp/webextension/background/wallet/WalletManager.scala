@@ -12,8 +12,14 @@ import io.iohk.atala.cvp.webextension.background.services.connector.ConnectorCli
 import io.iohk.atala.cvp.webextension.background.services.console.ConsoleClientService
 import io.iohk.atala.cvp.webextension.background.services.node.NodeClientService
 import io.iohk.atala.cvp.webextension.background.services.storage.StorageService
+import io.iohk.atala.cvp.webextension.background.wallet.models.PendingRequestsQueue.RequestId
 import io.iohk.atala.cvp.webextension.background.wallet.models._
 import io.iohk.atala.cvp.webextension.circe._
+import io.iohk.atala.cvp.webextension.common.models.PendingRequest.{
+  IssueCredential,
+  IssueCredentialWithId,
+  RevokeCredentialWithId
+}
 import io.iohk.atala.cvp.webextension.common.models._
 import io.iohk.atala.cvp.webextension.common.{ECKeyOperation, Mnemonic}
 import io.iohk.atala.prism.connector.RequestAuthenticator
@@ -96,6 +102,35 @@ private[background] class WalletManager(
     state.pendingRequestsQueue.list
   }
 
+  def getCredentialIssuanceRequestsRequiringManualApproval(): Seq[IssueCredentialWithId] = {
+    state.pendingRequestsQueue.issuanceCredentialRequests
+  }
+
+  def getRevocationRequestsRequiringManualApproval(): Seq[RevokeCredentialWithId] = {
+    state.pendingRequestsQueue.revocationRequests
+  }
+
+  def approveAllCredentialRequests(): Future[Unit] = {
+    for {
+      walletData <- walletDataF()
+      ecKeyPair = ECKeyOperation.ecKeyPairFromSeed(walletData.mnemonic)
+      issueCredentials = state.pendingRequestsQueue.issuanceCredentialRequests.map(_.request)
+      requestIds = state.pendingRequestsQueue.issuanceCredentialRequests.map(_.id)
+      _ <-
+        connectorClientService
+          .signAndPublishBatch(
+            ecKeyPair,
+            walletData.did,
+            signingKeyId,
+            toCredentialData(issueCredentials)
+          )
+          .map(handleSignAndPublishResponse)
+      _ <- removeAllCredentialRequestsF(requestIds)
+    } yield {
+      println(s"Credential Requests batch size ${requestIds.size} approved")
+    }
+  }
+
   def approvePendingRequest(requestId: Int): Future[Unit] = {
     for {
       (request, promise) <- requestF(requestId)
@@ -132,6 +167,11 @@ private[background] class WalletManager(
       println(s"Request approved: $requestId")
       removeRequest(requestId)
     }
+  }
+
+  def rejectAllCredentialRequests(): Future[Unit] = {
+    val requestIds = state.pendingRequestsQueue.issuanceCredentialRequests.map(_.id)
+    removeAllCredentialRequestsF(requestIds)
   }
 
   def rejectRequest(requestId: Int): Future[Unit] =
@@ -419,6 +459,24 @@ private[background] class WalletManager(
     }
 
     result
+  }
+
+  private def toCredentialData(issueCredentials: List[IssueCredential]): List[CredentialData] = {
+    issueCredentials.map { req =>
+      val data = req.credentialData
+      val claims = data.properties.asJson.noSpaces
+      CredentialData(ConsoleCredentialId(data.id), claims)
+    }
+  }
+
+  private def removeAllCredentialRequestsF(requestIds: List[RequestId]): Future[Unit] = {
+    Future.fromTry {
+      Try {
+        updateState { currentState =>
+          currentState.copy(pendingRequestsQueue = state.pendingRequestsQueue.removeAll(requestIds))
+        }
+      }
+    }
   }
 
   private def requestF(requestId: Int): Future[(PendingRequest, Promise[String])] = {

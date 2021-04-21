@@ -41,7 +41,6 @@ class GroupsServiceImpl(issuerGroupsRepository: GroupsRepository, val authentica
               console_models
                 .Group()
                 .withId(createdGroup.id.toString)
-                .withCreatedAtDeprecated(createdGroup.createdAt.getEpochSecond)
                 .withCreatedAt(createdGroup.createdAt.toProtoTimestamp)
                 .withName(createdGroup.name.value)
                 .withNumberOfContacts(0) // creating a group adds no contacts
@@ -57,7 +56,6 @@ class GroupsServiceImpl(issuerGroupsRepository: GroupsRepository, val authentica
           console_models
             .Group()
             .withId(g.value.id.toString)
-            .withCreatedAtDeprecated(g.value.createdAt.getEpochSecond)
             .withCreatedAt(g.value.createdAt.toProtoTimestamp)
             .withName(g.value.name.value)
             .withNumberOfContacts(g.numberOfContacts)

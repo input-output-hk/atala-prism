@@ -65,7 +65,6 @@ case class ConnectionInfo(
   def toProto: connector_models.ConnectionInfo = {
     connector_models.ConnectionInfo(
       id.toString,
-      createdDeprecated = instantiatedAt.toEpochMilli,
       created = instantiatedAt.toProtoTimestamp.some,
       token = token.token,
       participantName = participantInfo.name,
@@ -116,7 +115,6 @@ case class Message(
   def toProto: connector_models.ReceivedMessage = {
     connector_models.ReceivedMessage(
       id.toString,
-      receivedAt.toEpochMilli,
       connection.toString,
       ByteString.copyFrom(content),
       receivedAt.toProtoTimestamp.some

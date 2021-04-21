@@ -1,6 +1,5 @@
 package io.iohk.atala.prism.services
 
-import java.time.Instant
 import cats.data.EitherT
 import monix.eval.Task
 import com.google.protobuf.ByteString
@@ -15,8 +14,6 @@ import cats.implicits._
 import io.iohk.atala.prism.credentials.CredentialBatchId
 import io.iohk.atala.prism.crypto.MerkleTree.MerkleRoot
 import io.iohk.atala.prism.utils.syntax._
-
-import scala.annotation.nowarn
 
 trait NodeClientService {
 
@@ -125,11 +122,11 @@ object NodeClientService {
     )
   }
 
-  @nowarn("msg=value blockTimestampDeprecated in class TimestampInfo is deprecated")
   def fromTimestampInfoProto(timestampInfoProto: node_models.TimestampInfo): credentials.TimestampInfo = {
     credentials.TimestampInfo(
       timestampInfoProto.blockTimestamp
-        .fold(Instant.ofEpochMilli(timestampInfoProto.blockTimestampDeprecated))(_.toInstant),
+        .getOrElse(throw new RuntimeException("Missing timestamp"))
+        .toInstant,
       timestampInfoProto.blockSequenceNumber,
       timestampInfoProto.operationSequenceNumber
     )
@@ -137,10 +134,9 @@ object NodeClientService {
 
   def toInfoProto(timestampInfoProto: credentials.TimestampInfo): node_models.TimestampInfo = {
     node_models.TimestampInfo(
-      timestampInfoProto.atalaBlockTimestamp.toEpochMilli,
-      timestampInfoProto.atalaBlockSequenceNumber,
-      timestampInfoProto.operationSequenceNumber,
-      timestampInfoProto.atalaBlockTimestamp.toProtoTimestamp.some
+      blockSequenceNumber = timestampInfoProto.atalaBlockSequenceNumber,
+      operationSequenceNumber = timestampInfoProto.operationSequenceNumber,
+      blockTimestamp = timestampInfoProto.atalaBlockTimestamp.toProtoTimestamp.some
     )
   }
 

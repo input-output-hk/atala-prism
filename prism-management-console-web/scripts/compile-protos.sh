@@ -23,7 +23,6 @@ protoc -I=$OUT_DIR \
     console_models.proto \
     console_api.proto \
     credential_models.proto \
-    admin_api.proto \
     cviews_models.proto \
     cviews_api.proto \
 

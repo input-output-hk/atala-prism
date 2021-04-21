@@ -425,13 +425,79 @@ package object grpc {
       )
     }
 
-  implicit val getGenericCredentialConverter: ProtoConverter[GetGenericCredentialsRequest, GetGenericCredential] =
+  def toGenericCredentialResultOrdering(
+      sortBy: GetGenericCredentialsRequest.SortBy
+  ): Try[ResultOrdering[GenericCredential.SortBy]] = {
+    def unsafeField = {
+      sortBy.field match {
+        case GetGenericCredentialsRequest.SortBy.Field.UNKNOWN => GenericCredential.SortBy.CreatedOn
+        case GetGenericCredentialsRequest.SortBy.Field.CREDENTIAL_TYPE => GenericCredential.SortBy.CredentialType
+        case GetGenericCredentialsRequest.SortBy.Field.CREATED_ON => GenericCredential.SortBy.CreatedOn
+        case GetGenericCredentialsRequest.SortBy.Field.Unrecognized(x) =>
+          throw new RuntimeException(s"Unrecognized SortBy Field: $x")
+      }
+    }
+
+    for {
+      field <- Try(unsafeField)
+      direction <- toSortByDirection(sortBy.direction)
+    } yield ResultOrdering(field, direction)
+  }
+
+  implicit val getGenericCredentialConverter
+      : ProtoConverter[GetGenericCredentialsRequest, GenericCredential.PaginatedQuery] =
     (request: GetGenericCredentialsRequest) => {
+      val createdAfterT = Try {
+        request.filterBy
+          .flatMap(_.createdAfter)
+          .map(proto2DateTransformer.transform)
+      }
+
+      val createdBeforeT = Try {
+        request.filterBy
+          .flatMap(_.createdBefore)
+          .map(proto2DateTransformer.transform)
+      }
+
+      val credentialTypeT =
+        request.filterBy.map(_.credentialType).map(CredentialTypeId.optional).getOrElse(Success(None))
+
+      val defaultSortBy = ResultOrdering[GenericCredential.SortBy](GenericCredential.SortBy.CreatedOn)
+      val sortByT: Try[ResultOrdering[GenericCredential.SortBy]] =
+        request.sortBy.map(toGenericCredentialResultOrdering).getOrElse(Success(defaultSortBy))
+      val allowedLimit = 0 to 100
+      val defaultLimit = 10
+      val limitT = Try {
+        if (allowedLimit contains request.limit) request.limit
+        else throw new RuntimeException(s"Invalid limit, allowed values are $allowedLimit")
+      }.map {
+        case 0 => defaultLimit
+        case x => x
+      }
+
+      val offsetT =
+        if (request.offset >= 0) Success(request.offset)
+        else Failure(new IllegalArgumentException("offset cannot be negative number"))
+
       for {
-        lastSeenCredentialId <- maybeEmpty(request.lastSeenCredentialId, GenericCredential.Id.from)
-      } yield GetGenericCredential(
-        request.limit,
-        lastSeenCredentialId
+        createdAfter <- createdAfterT
+        createdBefore <- createdBeforeT
+        sortBy <- sortByT
+        limit <- limitT
+        credentialType <- credentialTypeT
+        offset <- offsetT
+      } yield PaginatedQueryConstraints(
+        limit = limit,
+        offset = offset,
+        ordering = sortBy,
+        scrollId = None,
+        filters = Some(
+          GenericCredential.FilterBy(
+            credentialType = credentialType,
+            createdAfter = createdAfter,
+            createdBefore = createdBefore
+          )
+        )
       )
     }
 

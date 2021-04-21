@@ -40,20 +40,23 @@ enum SortByDirection {
 
 // The supported ledger types, commonly used for linking on-chain transactions.
 enum Ledger {
+    reserved 2; // Removed BITCOIN_TESTNET
+    reserved "BITCOIN_TESTNET";
+    reserved 3; // Removed BITCOIN_MAINNET
+    reserved "BITCOIN_MAINNET";
+
     UNKNOWN_LEDGER = 0; // Invalid default value.
     IN_MEMORY = 1; // This is used only for development.
-    BITCOIN_TESTNET = 2; // Bitcoin testnet (used for testing, deprecated).
-    BITCOIN_MAINNET = 3; // Bitcoin mainnet (deprecated).
     CARDANO_TESTNET = 4; // Cardano testnet (used for testing).
     CARDANO_MAINNET = 5; // Cardano mainnet, used in production.
 }
 
 // Information about a ledger block.
-//
-// TODO: Consider renaming to TransactionInBlockInfo given that it includes information about the transaction.
 message BlockInfo {
+    reserved 2; // Removed timestamp_deprecated field
+    reserved "timestamp_deprecated";
+
     int32 number = 1; // Number of the block in the ledger.
-    int64 timestamp_deprecated = 2 [deprecated = true]; // Millis since the epoch when the block was created.
     int32 index = 3; // Index of the transaction within the block.
     google.protobuf.Timestamp timestamp = 4; // Timestamp when the block was created.
 }

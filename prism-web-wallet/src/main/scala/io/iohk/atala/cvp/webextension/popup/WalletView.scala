@@ -100,6 +100,10 @@ import scala.util.{Failure, Success}
         WelcomeRecoverView(props.backgroundAPI, (view: View) => updateView(view))
       case (WalletStatus.Locked, _) =>
         UnlockWalletView(props.backgroundAPI, (view: View) => updateView(view))
+      case (WalletStatus.Unlocked, ReviewCredentialIssuance) =>
+        IssueCredentialsView(props.backgroundAPI, (view: View) => updateView(view))
+      case (WalletStatus.Unlocked, ReviewCredentialRevocation) =>
+        RevokeCredentialsView(props.backgroundAPI, (view: View) => updateView(view))
       case (WalletStatus.Unlocked, _) =>
         MainWalletView(props.backgroundAPI, (view: View) => updateView(view))
       case _ =>

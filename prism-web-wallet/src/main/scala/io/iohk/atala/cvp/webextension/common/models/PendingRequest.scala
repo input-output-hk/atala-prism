@@ -21,4 +21,9 @@ object PendingRequest {
   ) extends PendingRequest
 
   final case class WithId(id: Int, request: PendingRequest)
+
+  final case class IssueCredentialWithId(id: Int, request: IssueCredential)
+
+  final case class RevokeCredentialWithId(id: Int, request: RevokeCredential)
+
 }

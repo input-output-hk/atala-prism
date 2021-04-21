@@ -62,7 +62,6 @@ class ConnectorClientServiceImplSpec extends AnyWordSpec with Matchers with Mock
           // given
           val receivedMessage = ReceivedMessage(
             "id1",
-            LocalDateTime.of(2020, 6, 12, 0, 0).toEpochSecond(ZoneOffset.UTC),
             "0a66fcef-4d50-4a67-a365-d4dbebcf22d3",
             AtalaMessage().withIssuerSentCredential(IssuerSentCredential()).toByteString,
             LocalDateTime.of(2020, 6, 12, 0, 0).toInstant(ZoneOffset.UTC).toProtoTimestamp.some

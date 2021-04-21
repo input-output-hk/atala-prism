@@ -90,7 +90,7 @@ class CredentialsServiceImpl(
     auth[GetGenericCredentialsRequest]("getGenericCredentials", request) { (issuerId, getGenericCredsRequest) =>
       val institutionId = Institution.Id(issuerId.uuid)
       credentialsRepository
-        .getBy(institutionId, getGenericCredsRequest.limit, getGenericCredsRequest.lastSeenCredential)
+        .getBy(institutionId, getGenericCredsRequest.limit, getGenericCredsRequest.offset)
         .map { list =>
           console_api.GetGenericCredentialsResponse(list.map(genericCredentialToProto))
         }

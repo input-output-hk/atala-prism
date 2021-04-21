@@ -75,7 +75,6 @@ class CredentialsStoreService(
                 console_models.StoredSignedCredential(
                   individualId = credential.individualId.toString,
                   encodedSignedCredential = credential.encodedSignedCredential,
-                  storedAtDeprecated = credential.storedAt.toEpochMilli,
                   storedAt = credential.storedAt.toProtoTimestamp.some,
                   externalId = credential.externalId.value,
                   batchInclusionProof = credential.merkleInclusionProof.encode

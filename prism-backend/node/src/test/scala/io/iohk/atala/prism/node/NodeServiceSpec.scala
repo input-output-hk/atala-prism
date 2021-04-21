@@ -413,7 +413,6 @@ class NodeServiceSpec
         .withTimestampInfo(
           node_models
             .TimestampInfo()
-            .withBlockTimestampDeprecated(issuedOnLedgerData.timestampInfo.atalaBlockTimestamp.toEpochMilli)
             .withBlockTimestamp(issuedOnLedgerData.timestampInfo.atalaBlockTimestamp.toProtoTimestamp)
             .withBlockSequenceNumber(issuedOnLedgerData.timestampInfo.atalaBlockSequenceNumber)
             .withOperationSequenceNumber(issuedOnLedgerData.timestampInfo.operationSequenceNumber)
@@ -506,7 +505,6 @@ class NodeServiceSpec
 
       val timestampInfoProto = node_models
         .TimestampInfo()
-        .withBlockTimestampDeprecated(revocationDate.atalaBlockTimestamp.toEpochMilli)
         .withBlockTimestamp(revocationDate.atalaBlockTimestamp.toProtoTimestamp)
         .withBlockSequenceNumber(revocationDate.atalaBlockSequenceNumber)
         .withOperationSequenceNumber(revocationDate.operationSequenceNumber)

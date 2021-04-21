@@ -25,6 +25,7 @@ dependencies {
     api(project(":protos"))
     api(project(":identity"))
     api(project(":credentials"))
+    api(project(":extras"))
 }
 
 repositories {
@@ -35,7 +36,7 @@ repositories {
 orchid {
     theme = "Editorial"
     version = project.version.toString()
-    baseUrl = "http://docs-${versionDetails().branchName}.atalaprism.io/"
+    baseUrl = "https://docs-${versionDetails().branchName}.atalaprism.io/"
 }
 
 ank {

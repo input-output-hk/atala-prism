@@ -165,7 +165,6 @@ class ConnectionsRpcSpec extends ConnectorRpcSpecBase with MockitoSugar {
         val response = blockingStub.addConnectionFromToken(request)
         val holderId = response.userId
         holderId mustNot be(empty)
-        response.connection.value.participantName mustBe "Issuer"
         val connectionId = ConnectionId.unsafeFrom(response.connection.value.connectionId)
 
         val participantInfo = io.iohk.atala.prism.connector.model.ParticipantInfo(
@@ -403,11 +402,10 @@ class ConnectionsRpcSpec extends ConnectorRpcSpecBase with MockitoSugar {
                   usage = usage,
                   addedOn = Some(
                     node_models
-                      .TimestampInfo(earlierTimestamp.toEpochMilli, 1, 1, earlierTimestamp.toProtoTimestamp.some)
+                      .TimestampInfo(1, 1, earlierTimestamp.toProtoTimestamp.some)
                   ),
-                  revokedOn = revokedTimestamp.map(instant =>
-                    node_models.TimestampInfo(instant.toEpochMilli, 1, 1, instant.toProtoTimestamp.some)
-                  ),
+                  revokedOn =
+                    revokedTimestamp.map(instant => node_models.TimestampInfo(1, 1, instant.toProtoTimestamp.some)),
                   keyData = node_models.PublicKey.KeyData.EcKeyData(
                     node_models.ECKeyData(
                       ECConfig.CURVE_NAME,

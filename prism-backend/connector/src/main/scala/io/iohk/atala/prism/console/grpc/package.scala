@@ -195,8 +195,7 @@ package object grpc {
 
   implicit val getGenericCredentialsRequestConverter
       : ProtoConverter[console_api.GetGenericCredentialsRequest, GetGenericCredentialsRequest] = { in =>
-    val id = GenericCredential.Id.from(in.lastSeenCredentialId).toOption
-    Success(GetGenericCredentialsRequest(id, in.limit))
+    Success(GetGenericCredentialsRequest(in.limit, in.offset))
   }
 
   implicit val createGenericCredentialRequestConverter

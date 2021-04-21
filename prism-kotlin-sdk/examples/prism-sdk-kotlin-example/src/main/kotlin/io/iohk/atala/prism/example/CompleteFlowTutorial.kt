@@ -17,6 +17,7 @@ import io.iohk.atala.prism.kotlin.extras.findPublicKey
 import io.iohk.atala.prism.kotlin.extras.toTimestampInfoModel
 import io.iohk.atala.prism.kotlin.identity.DID
 import io.iohk.atala.prism.kotlin.protos.*
+import kotlinx.coroutines.*
 import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.JsonPrimitive
 import pbandk.decodeFromByteArray
@@ -25,7 +26,7 @@ import pbandk.encodeToByteArray
 object CompleteFlowTutorial {
 
     @ExperimentalUnsignedTypes
-    suspend fun run() {
+    fun run() {
         println(
             """
             Welcome to the complete flow example, which covers:
@@ -41,26 +42,29 @@ object CompleteFlowTutorial {
         )
         println()
 
-        println("Creating the clients for the connector/node, which are expected to be running in localhost")
+        println("Creating the clients for the connector/node, which are expected to be running on provided environment")
         println()
-        val connector = ProtoClientUtils.connectorClient("localhost", 50051)
-        val node = ProtoClientUtils.nodeClient("localhost", 50053)
+        val environment = "localhost" // If exists, replace 'localhost' with an url to your dedicated environment.
+        val connector = ProtoClientUtils.connectorClient(environment, 50051)
+        val node = ProtoClientUtils.nodeClient(environment, 50053)
 
-        // the issuer claims an identity
+        // Issuer claims an identity
         println("Issuer: Generates and registers a DID")
         val issuerMasterKeyPair = EC.generateKeyPair()
         val issuerCreateDIDOperation = ProtoUtils.createDidAtalaOperation(issuerMasterKeyPair)
         val issuerCreatedDIDSignedOperation = ProtoUtils.signedAtalaOperation(issuerMasterKeyPair, issuerCreateDIDOperation)
 
-        // the issuer registers its identity to the node
+        // Issuer registers its identity to the node
         // Usually the DID would be registered with the node, but, the connector can handle that as well
         // val issuerDIDSuffix = node.CreateDID(CreateDIDRequest(signedOperation)).id
-        val issuerRegisterDIDResponse = connector.RegisterDID(
-            RegisterDIDRequest(
-                createDIDOperation = issuerCreatedDIDSignedOperation,
-                name = "The Issuer"
+        val issuerRegisterDIDResponse = runBlocking {
+            connector.RegisterDID(
+                RegisterDIDRequest(
+                    createDIDOperation = issuerCreatedDIDSignedOperation,
+                    name = "Issuer"
+                )
             )
-        )
+        }
         val issuerDID = DID.fromString(issuerRegisterDIDResponse.did)
 
         // the DID takes some minutes to get confirmed by Cardano, in the mean time, the unpublished DID
@@ -76,36 +80,40 @@ object CompleteFlowTutorial {
         )
         println()
 
-        // the issuer generates a token to connect with the credential subject
+        // Issuer generates a token to connect with the credential holder
         val issuerGenerateConnectionTokenRequest = GenerateConnectionTokenRequest(count = 1)
-        val issuerConnectionToken = connector.GenerateConnectionTokenAuth(
-            issuerGenerateConnectionTokenRequest,
-            RequestUtils.generateRequestMetadata(
-                issuerUnpublishedDID.value,
-                issuerMasterKeyPair.privateKey,
-                issuerGenerateConnectionTokenRequest
+        val issuerConnectionToken = runBlocking {
+            connector.GenerateConnectionTokenAuth(
+                issuerGenerateConnectionTokenRequest,
+                RequestUtils.generateRequestMetadata(
+                    issuerUnpublishedDID.value,
+                    issuerMasterKeyPair.privateKey,
+                    issuerGenerateConnectionTokenRequest
+                )
             )
-        )
-            .tokens.first()
-        println("Issuer: Token for connecting with the holder generated = $issuerConnectionToken")
+                .tokens.first()
+        }
+        println("Issuer: Token for connecting with Holder generated = $issuerConnectionToken")
 
-        // the holder generates its identity to connect with the issuer
+        // Holder generates its identity to connect with issuer
         val holderMasterKeyPair = EC.generateKeyPair()
         val holderUnpublishedDID = DID.createUnpublishedDID(holderMasterKeyPair.publicKey)
-        println("Holder: First DID generated to connect with the Issuer = $holderUnpublishedDID")
+        println("Holder: First DID generated to connect with Issuer = $holderUnpublishedDID")
 
-        // the holder generates its identity to connect with the verifier
+        // Holder generates its identity to connect with verifier
         // in PRISM, you are supposed to use different identities for every connection
         // TODO: We'll need to allow accepting connections even if the acceptor's identity already exists
         val holderMasterKeyPair2 = EC.generateKeyPair()
         val holderUnpublishedDID2 = DID.createUnpublishedDID(holderMasterKeyPair2.publicKey)
-        println("Holder: Second DID generated to connect with the Verifier = $holderUnpublishedDID2")
+        println("Holder: Second DID generated to connect with Verifier = $holderUnpublishedDID2")
         println()
 
-        // the subject verifies the connection token details to make sure its connecting to the right entity
-        val issuerConnectionTokenDetails = connector.GetConnectionTokenInfo(
-            GetConnectionTokenInfoRequest(token = issuerConnectionToken)
-        )
+        // Holder verifies the connection token details to make sure its connecting to the right entity
+        val issuerConnectionTokenDetails = runBlocking {
+            connector.GetConnectionTokenInfo(
+                GetConnectionTokenInfoRequest(token = issuerConnectionToken)
+            )
+        }
         println(
             """
             Holder: Check Issuer's connection token details:
@@ -114,28 +122,23 @@ object CompleteFlowTutorial {
             """.trimIndent()
         )
 
-        // the subject accepts the connection token to connect to the issuer
+        // Holder accepts the connection token to connect to Issuer
         // TODO: remove the userId from the response, its totally unnecessary
-        // TODO: Fix failing call
-        val holderAcceptsIssuerConnectionRequest = AddConnectionFromTokenRequest(
-            token = issuerConnectionToken,
-            // TODO: Send the DID instead when the backend supports it
-            holderEncodedPublicKey = EncodedPublicKey(
-                publicKey = pbandk.ByteArr(holderMasterKeyPair.publicKey.getEncoded().toByteArray())
-            )
-        )
-        val holderIssuerConnection = connector.AddConnectionFromTokenAuth(
-            holderAcceptsIssuerConnectionRequest,
-            RequestUtils.generateRequestMetadata(
-                holderUnpublishedDID.value,
-                holderMasterKeyPair.privateKey,
-                holderAcceptsIssuerConnectionRequest
-            )
-        ).connection!!
+        val holderAcceptsIssuerConnectionRequest = AddConnectionFromTokenRequest(token = issuerConnectionToken)
+        val holderIssuerConnection = runBlocking {
+            connector.AddConnectionFromTokenAuth(
+                holderAcceptsIssuerConnectionRequest,
+                RequestUtils.generateRequestMetadata(
+                    holderUnpublishedDID.value,
+                    holderMasterKeyPair.privateKey,
+                    holderAcceptsIssuerConnectionRequest
+                )
+            ).connection!!
+        }
         println("Holder (DID 1): Connected to Issuer, connectionId = ${holderIssuerConnection.connectionId}")
         println()
 
-        // the issuer generates a credential to the subject
+        // Issuer generates a credential to Holder
         val holderCredentialContent = CredentialContent(
             JsonObject(
                 mapOf(
@@ -156,6 +159,8 @@ object CompleteFlowTutorial {
 
         val holderUnsignedCredential = JsonBasedCredential(holderCredentialContent)
         val holderSignedCredential = holderUnsignedCredential.sign(issuerMasterKeyPair.privateKey)
+
+        // Include the credential in a batch
         val (holderCredentialMerkleRoot, holderCredentialMerkleProofs) = CredentialBatches.batch(listOf(holderSignedCredential))
         val credentialBatchData = CredentialBatchData(
             issuerDID = issuerDID.suffix.value, // This requires the suffix only, as the node stores only suffixes
@@ -163,9 +168,11 @@ object CompleteFlowTutorial {
         )
         val issueCredentialOperation = ProtoUtils.issueCredentialBatchOperation(credentialBatchData)
 
-        // the issuer publishes the credential to Cardano
+        // Issuer publishes the credential to Cardano
         val signedIssueCredentialOperation = ProtoUtils.signedAtalaOperation(issuerMasterKeyPair, issueCredentialOperation)
-        val issuedCredentialResponse = node.IssueCredentialBatch(IssueCredentialBatchRequest(signedIssueCredentialOperation))
+        val issuedCredentialResponse = runBlocking {
+            node.IssueCredentialBatch(IssueCredentialBatchRequest(signedIssueCredentialOperation))
+        }
         println(
             """
             Issuer: Credential issued to Holder, the transaction can take up to 10 minutes to be confirmed by the Cardano network
@@ -178,7 +185,7 @@ object CompleteFlowTutorial {
             """.trimIndent()
         )
 
-        // the issuer sends the credential to the subject through the connector
+        // Issuer sends the credential to Holder through the connector
         val credentialFromIssuerMessage = AtalaMessage(
             AtalaMessage.Message.PlainCredential(
                 PlainTextCredential(
@@ -188,28 +195,46 @@ object CompleteFlowTutorial {
             )
         )
 
+        // Issuer needs the connection id to send a message to Holder, which can be retrieved
+        // from the token generated before.
+        val issuerGetConnectionRequest = GetConnectionByTokenRequest(issuerConnectionToken)
+        val issuerHolderConnectionId = runBlocking {
+            connector.GetConnectionByTokenAuth(
+                issuerGetConnectionRequest,
+                RequestUtils.generateRequestMetadata(issuerUnpublishedDID.value, issuerMasterKeyPair.privateKey, issuerGetConnectionRequest)
+            ).connection?.connectionId!!
+        }
+
         // the connector allows any kind of message, this is just a way to send a credential but you can define your own
         val issuerSendMessageRequest = SendMessageRequest(
-            holderIssuerConnection.connectionId,
+            issuerHolderConnectionId,
             pbandk.ByteArr(credentialFromIssuerMessage.encodeToByteArray())
         )
-        connector.SendMessageAuth(
-            issuerSendMessageRequest,
-            RequestUtils.generateRequestMetadata(issuerUnpublishedDID.value, issuerMasterKeyPair.privateKey, issuerSendMessageRequest)
-        )
+        runBlocking {
+            connector.SendMessageAuth(
+                issuerSendMessageRequest,
+                RequestUtils.generateRequestMetadata(
+                    issuerUnpublishedDID.value,
+                    issuerMasterKeyPair.privateKey,
+                    issuerSendMessageRequest
+                )
+            )
+        }
         println("Issuer: Credential sent to Holder")
         println()
 
-        // the holder receives the credential from the issuer
+        // Holder receives the credential from Issuer
         val holderGetMessagesRequest = GetMessagesPaginatedRequest(limit = 1)
-        val holderReceivedMessage = connector.GetMessagesPaginatedAuth(
-            holderGetMessagesRequest,
-            RequestUtils.generateRequestMetadata(
-                holderUnpublishedDID.value,
-                holderMasterKeyPair.privateKey,
-                holderGetMessagesRequest
-            )
-        ).messages.first()
+        val holderReceivedMessage = runBlocking {
+            connector.GetMessagesPaginatedAuth(
+                holderGetMessagesRequest,
+                RequestUtils.generateRequestMetadata(
+                    holderUnpublishedDID.value,
+                    holderMasterKeyPair.privateKey,
+                    holderGetMessagesRequest
+                )
+            ).messages.first()
+        }
 
         val holderReceivedCredential = AtalaMessage
             .decodeFromByteArray(holderReceivedMessage.message.array)
@@ -223,18 +248,20 @@ object CompleteFlowTutorial {
         )
         println()
 
-        // the verifier claims an identity, similar to the previous example done with the issuer
+        // Verifier claims an identity, similar to the previous example done with Issuer
         println("Verifier: Generates and registers a DID")
         val verifierMasterKeyPair = EC.generateKeyPair()
         val verifierCreateDIDOperation = ProtoUtils.createDidAtalaOperation(verifierMasterKeyPair)
         val verifierCreateDIDSignedOperation = ProtoUtils.signedAtalaOperation(verifierMasterKeyPair, verifierCreateDIDOperation)
 
-        val verifierRegisterDIDResponse = connector.RegisterDID(
-            RegisterDIDRequest(
-                createDIDOperation = verifierCreateDIDSignedOperation,
-                name = "The Verifier"
+        val verifierRegisterDIDResponse = runBlocking {
+            connector.RegisterDID(
+                RegisterDIDRequest(
+                    createDIDOperation = verifierCreateDIDSignedOperation,
+                    name = "Verifier"
+                )
             )
-        )
+        }
         val verifierDID = DID.fromString(verifierRegisterDIDResponse.did)
         val verifierUnpublishedDID = DID.createUnpublishedDID(verifierMasterKeyPair.publicKey)
         println(
@@ -246,41 +273,39 @@ object CompleteFlowTutorial {
         )
         println()
 
-        // the verifier generates a token to connect with the credential subject
+        // Verifier generates a token to connect with the credential holder
         val verifierGenerateConnectionTokenRequest = GenerateConnectionTokenRequest(count = 1)
-        val verifierConnectionToken = connector.GenerateConnectionTokenAuth(
-            verifierGenerateConnectionTokenRequest,
-            RequestUtils.generateRequestMetadata(
-                verifierUnpublishedDID.value,
-                verifierMasterKeyPair.privateKey,
-                verifierGenerateConnectionTokenRequest
+        val verifierConnectionToken = runBlocking {
+            connector.GenerateConnectionTokenAuth(
+                verifierGenerateConnectionTokenRequest,
+                RequestUtils.generateRequestMetadata(
+                    verifierUnpublishedDID.value,
+                    verifierMasterKeyPair.privateKey,
+                    verifierGenerateConnectionTokenRequest
+                )
             )
-        )
-            .tokens
-            .first()
-        println("Verifier: Token for connecting with the holder generated = $verifierConnectionToken")
+                .tokens
+                .first()
+        }
+        println("Verifier: Token for connecting with Holder generated = $verifierConnectionToken")
         println()
 
-        // the subject accepts the connection token to connect to the verifier
-        val holderAcceptsVerifierConnectionRequest = AddConnectionFromTokenRequest(
-            token = verifierConnectionToken,
-            // TODO: Send the DID instead when the backend supports it
-            holderEncodedPublicKey = EncodedPublicKey(
-                publicKey = pbandk.ByteArr(holderMasterKeyPair2.publicKey.getEncoded().toByteArray())
+        // Holder accepts the connection token to connect to Verifier
+        val holderAcceptsVerifierConnectionRequest = AddConnectionFromTokenRequest(token = verifierConnectionToken)
+        val holderVerifierConnection = runBlocking {
+            connector.AddConnectionFromTokenAuth(
+                holderAcceptsVerifierConnectionRequest,
+                RequestUtils.generateRequestMetadata(
+                    holderUnpublishedDID2.value,
+                    holderMasterKeyPair2.privateKey,
+                    holderAcceptsVerifierConnectionRequest
+                )
             )
-        )
-        val holderVerifierConnection = connector.AddConnectionFromTokenAuth(
-            holderAcceptsVerifierConnectionRequest,
-            RequestUtils.generateRequestMetadata(
-                holderUnpublishedDID2.value,
-                holderMasterKeyPair2.privateKey,
-                holderAcceptsVerifierConnectionRequest
-            )
-        )
-            .connection!!
+                .connection!!
+        }
         println("Holder (DID 2): Connected to Verifier, connectionId = ${holderVerifierConnection.connectionId}")
 
-        // the subject shares a credential with the verifier
+        // Holder shares a credential with Verifier
         val credentialFromHolderMessage = AtalaMessage(
             AtalaMessage.Message.PlainCredential(
                 PlainTextCredential(
@@ -294,28 +319,32 @@ object CompleteFlowTutorial {
             holderVerifierConnection.connectionId,
             pbandk.ByteArr(credentialFromHolderMessage.encodeToByteArray())
         )
-        connector.SendMessageAuth(
-            holderSendMessageRequest,
-            RequestUtils.generateRequestMetadata(
-                holderUnpublishedDID2.value,
-                holderMasterKeyPair2.privateKey,
-                holderSendMessageRequest
+        runBlocking {
+            connector.SendMessageAuth(
+                holderSendMessageRequest,
+                RequestUtils.generateRequestMetadata(
+                    holderUnpublishedDID2.value,
+                    holderMasterKeyPair2.privateKey,
+                    holderSendMessageRequest
+                )
             )
-        )
+        }
         println("Holder (DID 2): Credential sent to Verifier")
         println()
 
-        // the verifier receives the credential shared from the subject
+        // Verifier receives the credential shared from Holder
         val verifierGetMessagesRequest = GetMessagesPaginatedRequest(limit = 1)
-        val verifierReceivedMessage = connector.GetMessagesPaginatedAuth(
-            verifierGetMessagesRequest,
-            RequestUtils.generateRequestMetadata(
-                verifierUnpublishedDID.value,
-                verifierMasterKeyPair.privateKey,
-                verifierGetMessagesRequest
+        val verifierReceivedMessage = runBlocking {
+            connector.GetMessagesPaginatedAuth(
+                verifierGetMessagesRequest,
+                RequestUtils.generateRequestMetadata(
+                    verifierUnpublishedDID.value,
+                    verifierMasterKeyPair.privateKey,
+                    verifierGetMessagesRequest
+                )
             )
-        )
-            .messages.first()
+                .messages.first()
+        }
         val verifierReceivedCredential = AtalaMessage
             .decodeFromByteArray(verifierReceivedMessage.message.array)
             .plainCredential!!
@@ -342,9 +371,11 @@ object CompleteFlowTutorial {
         )
         println()
 
-        // the verifier queries the node for the credential data
+        // Verifier queries the node for the credential data
         println("Verifier: Resolving issuer/credential details from the node")
-        val verifierReceivedCredentialIssuerDIDDocument = node.GetDidDocument(GetDidDocumentRequest(did = verifierReceivedCredentialIssuerDID)).document!!
+        val verifierReceivedCredentialIssuerDIDDocument = runBlocking {
+            node.GetDidDocument(GetDidDocumentRequest(did = verifierReceivedCredentialIssuerDID)).document!!
+        }
         val verifierReceivedCredentialIssuerKey = verifierReceivedCredentialIssuerDIDDocument.findPublicKey(verifierReceivedCredentialIssuanceKeyId)
         val verifierReceivedCredentialMerkleProof = MerkleInclusionProof.decode(verifierReceivedCredential.encodedMerkleProof)
 
@@ -353,20 +384,24 @@ object CompleteFlowTutorial {
             verifierReceivedCredentialMerkleProof.derivedRoot()
         )
 
-        val verifierReceivedCredentialBatchState = node.GetBatchState(GetBatchStateRequest(batchId = Hash.fromHex(verifierReceivedCredentialBatchId.id).hexValue()))
+        val verifierReceivedCredentialBatchState = runBlocking {
+            node.GetBatchState(GetBatchStateRequest(batchId = Hash.fromHex(verifierReceivedCredentialBatchId.id).hexValue()))
+        }
         val verifierReceivedCredentialBatchData = BatchData(
             issuedOn = verifierReceivedCredentialBatchState.publicationLedgerData?.timestampInfo?.toTimestampInfoModel()!!,
             revokedOn = verifierReceivedCredentialBatchState.revocationLedgerData?.timestampInfo?.toTimestampInfoModel()
         )
-        val verifierReceivedCredentialRevocationTime = node.GetCredentialRevocationTime(
-            GetCredentialRevocationTimeRequest(
-                batchId = Hash.fromHex(verifierReceivedCredentialBatchId.id).hexValue(),
-                credentialHash = pbandk.ByteArr(verifierReceivedJsonCredential.hash().value.toByteArray())
+        val verifierReceivedCredentialRevocationTime = runBlocking {
+            node.GetCredentialRevocationTime(
+                GetCredentialRevocationTimeRequest(
+                    batchId = Hash.fromHex(verifierReceivedCredentialBatchId.id).hexValue(),
+                    credentialHash = pbandk.ByteArr(verifierReceivedJsonCredential.hash().value.toByteArray())
+                )
             )
-        )
-            .revocationLedgerData?.timestampInfo?.toTimestampInfoModel()
+                .revocationLedgerData?.timestampInfo?.toTimestampInfoModel()
+        }
 
-        // the verifier checks the credential validity (which succeeds)
+        // Verifier checks the credential validity (which succeeds)
         println("Verifier: Verifying received credential")
         CredentialVerification.verify(
             keyData = verifierReceivedCredentialIssuerKey!!,
@@ -377,16 +412,18 @@ object CompleteFlowTutorial {
             signedCredential = verifierReceivedJsonCredential
         )
 
-        // the issuer revokes the credential
+        // Issuer revokes the credential
         val issuerRevokeCredentialOperation = ProtoUtils.revokeCredentialsOperation(
             batchOperationHash = Hash.compute(issueCredentialOperation.encodeToByteArray().asList()),
             batchId = CredentialBatchId.fromString(issuedCredentialResponse.batchId)!!,
             credentials = listOf(holderSignedCredential)
         )
         val issuerRevokeCredentialSignedOperation = ProtoUtils.signedAtalaOperation(issuerMasterKeyPair, issuerRevokeCredentialOperation)
-        val issuerCredentialRevocationResponse = node.RevokeCredentials(
-            RevokeCredentialsRequest(issuerRevokeCredentialSignedOperation)
-        )
+        val issuerCredentialRevocationResponse = runBlocking {
+            node.RevokeCredentials(
+                RevokeCredentialsRequest(issuerRevokeCredentialSignedOperation)
+            )
+        }
         println(
             """
             Issuer: Credential revoked, the transaction can take up to 10 minutes to be confirmed by the Cardano network
@@ -395,18 +432,20 @@ object CompleteFlowTutorial {
         )
         println()
 
-        // the verifier resolves the credential revocation time from the node
+        // Verifier resolves the credential revocation time from the node
         println("Verifier: Checking the credential validity again, expect an error explaining that the credential is revoked")
         Thread.sleep(2000) // give some time to the backend to apply the operation
-        val verifierReceivedCredentialRevocationTime2 = node.GetCredentialRevocationTime(
-            GetCredentialRevocationTimeRequest(
-                batchId = Hash.fromHex(verifierReceivedCredentialBatchId.id).hexValue(),
-                credentialHash = pbandk.ByteArr(verifierReceivedJsonCredential.hash().value.toByteArray())
+        val verifierReceivedCredentialRevocationTime2 = runBlocking {
+            node.GetCredentialRevocationTime(
+                GetCredentialRevocationTimeRequest(
+                    batchId = Hash.fromHex(verifierReceivedCredentialBatchId.id).hexValue(),
+                    credentialHash = pbandk.ByteArr(verifierReceivedJsonCredential.hash().value.toByteArray())
+                )
             )
-        )
-            .revocationLedgerData?.timestampInfo?.toTimestampInfoModel()
+                .revocationLedgerData?.timestampInfo?.toTimestampInfoModel()
+        }
 
-        // the verifier checks the credential validity (which fails)
+        // Verifier checks the credential validity (which fails)
         CredentialVerification.verify(
             keyData = verifierReceivedCredentialIssuerKey,
             batchData = verifierReceivedCredentialBatchData,

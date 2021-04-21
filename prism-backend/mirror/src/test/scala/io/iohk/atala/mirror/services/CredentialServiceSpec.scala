@@ -1,6 +1,5 @@
 package io.iohk.atala.mirror.services
 
-import java.time.Instant
 import cats.data.ValidatedNel
 import monix.eval.Task
 import doobie.implicits._
@@ -30,10 +29,9 @@ import io.iohk.atala.prism.models.{
   CredentialProofRequestType
 }
 import io.iohk.atala.prism.services.NodeClientService
-import scala.annotation.nowarn
+import io.iohk.atala.prism.utils.syntax.TimestampOps
 
 // sbt "project mirror" "testOnly *services.CredentialServiceSpec"
-@nowarn("msg=value receivedDeprecated in class ReceivedMessage is deprecated")
 class CredentialServiceSpec extends PostgresRepositorySpec[Task] with MockitoSugar with MirrorFixtures {
   import ConnectionFixtures._, CredentialFixtures._, ConnectorMessageFixtures._
 
@@ -55,7 +53,9 @@ class CredentialServiceSpec extends PostgresRepositorySpec[Task] with MockitoSug
             RawCredential(credentialMessage1.message.toString),
             None,
             ConnectorMessageId(credentialMessage1.id),
-            MessageReceivedDate(Instant.ofEpochMilli(credentialMessage1.receivedDeprecated)),
+            MessageReceivedDate(
+              credentialMessage1.received.getOrElse(throw new RuntimeException("Missing timestamp")).toInstant
+            ),
             CredentialStatus.Valid
           )
         )

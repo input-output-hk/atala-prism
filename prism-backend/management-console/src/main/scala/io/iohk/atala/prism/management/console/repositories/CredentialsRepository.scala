@@ -117,6 +117,19 @@ class CredentialsRepository(xa: Transactor[IO])(implicit ec: ExecutionContext) {
 
   def getBy(
       issuedBy: ParticipantId,
+      query: GenericCredential.PaginatedQuery
+  ): FutureEither[Nothing, List[GenericCredential]] = {
+    CredentialsDAO
+      .getBy(issuedBy, query)
+      .logSQLErrors(s"getting, issued id - $issuedBy", logger)
+      .transact(xa)
+      .unsafeToFuture()
+      .map(Right(_))
+      .toFutureEither
+  }
+
+  def getBy(
+      issuedBy: ParticipantId,
       limit: Int,
       lastSeenCredential: Option[GenericCredential.Id]
   ): FutureEither[Nothing, List[GenericCredential]] = {
