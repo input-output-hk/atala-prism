@@ -1,11 +1,7 @@
 package io.iohk.atala.prism.models
 
-import java.time.Instant
-
 import io.iohk.atala.prism.protos.common_models
 import io.iohk.atala.prism.utils.syntax._
-
-import scala.annotation.nowarn
 
 object ProtoCodecs {
   def toTransactionInfo(transactionInfo: TransactionInfo): common_models.TransactionInfo = {
@@ -53,16 +49,14 @@ object ProtoCodecs {
     common_models
       .BlockInfo()
       .withNumber(blockInfo.number)
-      .withTimestampDeprecated(blockInfo.timestamp.toEpochMilli)
       .withTimestamp(blockInfo.timestamp.toProtoTimestamp)
       .withIndex(blockInfo.index)
   }
 
-  @nowarn("msg=value timestampDeprecated in class BlockInfo is deprecated")
   def fromBlockInfo(blockInfo: common_models.BlockInfo): BlockInfo = {
     BlockInfo(
       number = blockInfo.number,
-      timestamp = blockInfo.timestamp.fold(Instant.ofEpochMilli(blockInfo.timestampDeprecated))(_.toInstant),
+      timestamp = blockInfo.timestamp.getOrElse(throw new RuntimeException("Missing timestamp")).toInstant,
       index = blockInfo.index
     )
   }

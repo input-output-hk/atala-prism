@@ -9,10 +9,10 @@ import "common_models.proto";
 import "google/protobuf/timestamp.proto";
 
 // Includes timestamping details about a blockchain's block.
-//
-// TODO: Consider renaming to BlockTimestampInfo.
 message TimestampInfo {
-    uint64 blockTimestamp_deprecated = 1 [deprecated = true]; // The timestamp provided from the underlying blockchain.
+    reserved 1; // Removed blockTimestamp_deprecated field
+    reserved "blockTimestamp_deprecated";
+
     uint32 blockSequenceNumber = 2; // The transaction index inside the underlying block.
     uint32 operationSequenceNumber = 3; // The operation index inside the AtalaBlock.
     google.protobuf.Timestamp blockTimestamp = 4; // The timestamp provided from the underlying blockchain.

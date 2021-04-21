@@ -47,15 +47,12 @@ object ProtoCodecs {
       .withContactData(credential.subjectData.noSpaces)
       .withExternalId(credential.externalId.value)
       .withConnectionStatus(connectionStatus)
-      .withSharedAtDeprecated(credential.sharedAt.map(_.toEpochMilli).getOrElse(0))
       .withSharedAt(credential.sharedAt.map(_.toProtoTimestamp).getOrElse(Timestamp()))
 
     credential.publicationData.fold(model) { data =>
       model
-        .withNodeCredentialId("") // this field is not needed anymore, it will be deprecated soon
         .withIssuanceOperationHash(ByteString.copyFrom(data.issuanceOperationHash.value.toArray))
         .withEncodedSignedCredential(data.encodedSignedCredential)
-        .withPublicationStoredAtDeprecated(data.storedAt.toEpochMilli)
         .withPublicationStoredAt(data.storedAt.toProtoTimestamp)
         .withIssuanceProof(CommonProtoCodecs.toTransactionInfo(TransactionInfo(data.transactionId, data.ledger)))
         .withBatchInclusionProof(data.inclusionProof.encode)
@@ -76,7 +73,6 @@ object ProtoCodecs {
       .withConnectionStatus(status)
       .withConnectionToken(token)
       .withConnectionId(connectionId)
-      .withCreatedAtDeprecated(contact.createdAt.toEpochMilli)
       .withCreatedAt(contact.createdAt.toProtoTimestamp)
   }
 }

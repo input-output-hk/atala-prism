@@ -60,7 +60,6 @@ object ProtoCodecs {
     console_models
       .Group()
       .withId(group.value.id.toString)
-      .withCreatedAtDeprecated(group.value.createdAt.getEpochSecond)
       .withCreatedAt(group.value.createdAt.toProtoTimestamp)
       .withName(group.value.name.value)
       .withNumberOfContacts(group.numberOfContacts)
@@ -70,7 +69,6 @@ object ProtoCodecs {
     console_models.StoredSignedCredential(
       individualId = receivedSignedCredential.individualId.toString,
       encodedSignedCredential = receivedSignedCredential.encodedSignedCredential,
-      storedAtDeprecated = receivedSignedCredential.receivedAt.toEpochMilli,
       storedAt = receivedSignedCredential.receivedAt.toProtoTimestamp.some
     )
   }
@@ -90,16 +88,13 @@ object ProtoCodecs {
       .withIssuerName(credential.issuerName)
       .withContactData(credential.subjectData.noSpaces)
       .withExternalId(credential.externalId.value)
-      .withSharedAtDeprecated(credential.sharedAt.map(_.toEpochMilli).getOrElse(0))
       .withSharedAt(credential.sharedAt.map(_.toProtoTimestamp).getOrElse(Timestamp()))
     val withPublicationData = credential.publicationData.fold(model) { data =>
       model
-        .withNodeCredentialId("") // deprecated
         .withBatchId(data.credentialBatchId.id)
         .withIssuanceOperationHash(ByteString.copyFrom(data.issuanceOperationHash.value.toArray))
         .withEncodedSignedCredential(data.encodedSignedCredential)
         .withBatchInclusionProof(data.inclusionProof.encode)
-        .withPublicationStoredAtDeprecated(data.storedAt.toEpochMilli)
         .withPublicationStoredAt(data.storedAt.toProtoTimestamp)
         .withIssuanceProof(CommonProtoCodecs.toTransactionInfo(TransactionInfo(data.transactionId, data.ledger)))
     }
@@ -116,7 +111,6 @@ object ProtoCodecs {
       .withConnectionStatus(connection.connectionStatus)
       .withConnectionToken(connection.connectionToken)
       .withConnectionId(connection.connectionId)
-      .withCreatedAtDeprecated(contact.createdAt.toEpochMilli)
       .withName(contact.name)
       .withCreatedAt(contact.createdAt.toProtoTimestamp)
   }

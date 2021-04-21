@@ -110,6 +110,22 @@ enum SortByDirection {
 }
 ```
 
+### Reserved declarations
+
+Protobuf `reserved` declarations must be written at the top of a message definition.
+
+Example:
+```proto
+message TimestampInfo {
+    reserved 1; // Removed blockTimestamp_deprecated field
+    reserved "blockTimestamp_deprecated";
+
+    uint32 blockSequenceNumber = 2; // The transaction index inside the underlying block.
+    uint32 operationSequenceNumber = 3; // The operation index inside the AtalaBlock.
+    google.protobuf.Timestamp blockTimestamp = 4; // The timestamp provided from the underlying blockchain.
+}
+```
+
 ## Notes
 - It looks like we need to keep all files on the same directory and they should belong to the same package, otherwise, the compilation fails.
 - `protoc` seems to fail when compiling to JavaScript when there are messages/methods with the same name, even if they are inside a namespace, for example, `service a {}` and `service b {}` can't have `rpc doGet ...` because the compiler fails.

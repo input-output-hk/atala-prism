@@ -99,7 +99,6 @@ class ConnectorService(
         .getTokenInfo(new model.TokenString(request.token))
         .map { participantInfo =>
           connector_api.GetConnectionTokenInfoResponse(
-            creator = Some(participantInfo.toProto),
             creatorName = participantInfo.name,
             creatorLogo = ByteString.copyFrom(participantInfo.logo.map(_.bytes).getOrElse(Vector.empty).toArray),
             creatorDID = participantInfo.did.map(_.value).getOrElse("")

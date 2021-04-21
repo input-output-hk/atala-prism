@@ -24,42 +24,6 @@ message EncodedPublicKey {
     bytes publicKey = 1; // The bytes representing the ECPoint encoded without compression.
 }
 
-// Information about an Issuer.
-//
-// TODO: Remove deprecated value
-message IssuerInfo {
-    string DID = 1;
-    string name = 2;
-    bytes logo = 3;
-}
-
-// Information about a Verifier.
-//
-// TODO: Remove deprecated value
-message VerifierInfo {
-    string DID = 1;
-    string name = 2;
-    bytes logo = 3;
-}
-
-// Information about a Holder.
-// @exclude TODO: Remove deprecated value
-message HolderInfo {
-    string DID = 1;
-    string name = 2;
-}
-
-// Type representing generic participant in the system, alternative of IssuerInfo, HolderInfo, or VerifierInfo.
-message ParticipantInfo {
-    // @exclude
-    // TODO: Remove roles, they no longer exist.
-    oneof participant {
-        IssuerInfo issuer = 1;
-        HolderInfo holder = 2;
-        VerifierInfo verifier = 3;
-    }
-}
-
 
 // @exclude
 // CONNECTIONS
@@ -73,15 +37,18 @@ message Connection {
     string connectionId = 2;
 }
 
-// Information about the connection; both sides see the same connectionId and creation time, but each sees different participantInfo.
+// Information about the connection; both sides see the same connectionId and creation time, but each sees different participant info.
 message ConnectionInfo {
+    reserved 2; // Removed created_deprecated field
+    reserved "created_deprecated";
+    reserved 3; // Removed participantInfo field
+    reserved "participantInfo";
+
     string connectionId = 1; // The connection identifier.
-    int64 created_deprecated = 2 [deprecated = true]; // Moment of instantiation in milliseconds since the Unix Epoch.
-    ParticipantInfo participantInfo = 3; // [Will be deprecated] information about the participant at the other end.
     string token = 4; // The token used to generate the connection.
-    string participantName = 5; // Same value as the one contained in `participantInfo`.
-    bytes participantLogo = 6; // Same value as the one contained in `participantInfo`.
-    string participantDID = 7; // Same value as the one contained in `participantInfo`.
+    string participantName = 5; // Participant's name.
+    bytes participantLogo = 6; // Participant's logo.
+    string participantDID = 7; // Participant's DID.
     google.protobuf.Timestamp created = 8; // Timestamp of instantiation.
 }
 
@@ -102,8 +69,10 @@ message ConnectionKey {
 
 // Message received via a connection.
 message ReceivedMessage {
+    reserved 2; // Removed received_deprecated field
+    reserved "received_deprecated";
+
     string id = 1; // The unique ID for this message.
-    int64 received_deprecated = 2 [deprecated = true]; // Time when the connector received the message, expressed in milliseconds since the Unix Epoch.
     string connectionId = 3; // Connection where the message has been received.
     bytes message = 4; // Raw message, which needs to be parsed to get something meaningful. AtalaMessage is the common choice.
     google.protobuf.Timestamp received = 5; // The timestamp when the connector received the message.

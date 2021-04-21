@@ -106,7 +106,6 @@ class DocumentUploadedMessageProcessorSpec
 
     val receivedMessage = ReceivedMessage(
       id = "id1",
-      receivedDeprecated = LocalDateTime.of(2020, 6, 12, 0, 0).toEpochSecond(ZoneOffset.UTC),
       received = LocalDateTime.of(2020, 6, 12, 0, 0).toInstant(ZoneOffset.UTC).toProtoTimestamp.some,
       connectionId = connection1.id.get.uuid.toString,
       message = AtalaMessage()

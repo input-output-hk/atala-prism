@@ -117,10 +117,11 @@ message GetConnectionTokenInfoRequest {
 
 // Result with information on connection token.
 message GetConnectionTokenInfoResponse {
-  io.iohk.atala.prism.protos.ParticipantInfo creator = 1; // [Will be deprecated] participant who generated the code.
   string creatorName = 2; // Same value as the one contained in `creator`.
   bytes creatorLogo = 3; // Same value as the one contained in `creator`.
   string creatorDID = 4; // Same value as the one contained in `creator` (if any).
+  reserved 1; // Removed creator field
+  reserved "creator";
 }
 
 // Request to instantiate a connection using a token.

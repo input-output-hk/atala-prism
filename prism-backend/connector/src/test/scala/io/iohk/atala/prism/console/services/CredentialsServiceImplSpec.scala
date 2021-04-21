@@ -30,10 +30,8 @@ import org.mockito.MockitoSugar
 import org.mockito.scalatest.ResetMocksAfterEachTest
 import org.scalatest.OptionValues._
 
-import scala.annotation.nowarn
 import scala.concurrent.Future
 
-@nowarn("msg=value publicationStoredAtDeprecated in class CManagerGenericCredential is deprecated")
 class CredentialsServiceImplSpec extends RpcSpecBase with MockitoSugar with ResetMocksAfterEachTest with DIDGenerator {
 
   private val usingApiAs = usingApiAsConstructor(new CredentialsServiceGrpc.CredentialsServiceBlockingStub(_, _))
@@ -98,11 +96,9 @@ class CredentialsServiceImplSpec extends RpcSpecBase with MockitoSugar with Rese
         response.issuerName must be(issuerName)
         response.groupName must be(issuerGroup.name.value)
         io.circe.parser.parse(response.contactData).toOption.value must be(subject.data)
-        response.nodeCredentialId must be(empty)
         response.issuanceOperationHash must be(empty)
         response.encodedSignedCredential must be(empty)
         response.publicationStoredAt must be(None)
-        response.publicationStoredAtDeprecated must be(0)
         response.externalId must be(subject.externalId.value)
       }
     }

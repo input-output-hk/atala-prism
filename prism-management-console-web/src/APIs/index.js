@@ -5,7 +5,6 @@ import Wallet from './wallet/wallet';
 import CredentialsManager from './credentials/credentialsManager';
 import ContactsManager from './contacts/contactsManager';
 import GroupsManager from './credentials/groupsManager';
-import Admin from './admin/admin';
 import CredentialsViewManager from './credentials/credentialsViewManager';
 import CredentialsReceivedManager from './credentials/credentialsReceivedManager';
 import SummaryManager from './summary/summaryManager';
@@ -19,7 +18,6 @@ const importBulk = (_, fileWithBulk) => importContactBulk(fileWithBulk);
 
 function Api(configuration, authenticator) {
   this.configuration = configuration;
-  this.admin = new Admin(this.configuration);
   this.wallet = new Wallet(this.configuration);
   this.authenticator = new authenticator(this.configuration, this.wallet);
   this.contactsManager = new ContactsManager(this.configuration, this.authenticator);

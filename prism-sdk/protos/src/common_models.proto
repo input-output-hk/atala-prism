@@ -49,11 +49,11 @@ enum Ledger {
 }
 
 // Information about a ledger block.
-//
-// TODO: Consider renaming to TransactionInBlockInfo given that it includes information about the transaction.
 message BlockInfo {
+    reserved 2; // Removed timestamp_deprecated field
+    reserved "timestamp_deprecated";
+
     int32 number = 1; // Number of the block in the ledger.
-    int64 timestamp_deprecated = 2 [deprecated = true]; // Millis since the epoch when the block was created.
     int32 index = 3; // Index of the transaction within the block.
     google.protobuf.Timestamp timestamp = 4; // Timestamp when the block was created.
 }
