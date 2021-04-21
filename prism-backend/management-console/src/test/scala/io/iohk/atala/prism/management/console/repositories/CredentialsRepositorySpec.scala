@@ -20,6 +20,7 @@ import io.iohk.atala.prism.management.console.errors.{
 import io.iohk.atala.prism.management.console.models._
 import io.iohk.atala.prism.models.{Ledger, TransactionId, TransactionInfo}
 import org.scalatest.OptionValues._
+import io.iohk.atala.prism.management.console.repositories.daos.CredentialTypeDao
 
 class CredentialsRepositorySpec extends AtalaWithPostgresSpec {
   import CredentialsRepositorySpec.publish
@@ -182,6 +183,49 @@ class CredentialsRepositorySpec extends AtalaWithPostgresSpec {
           .toOption
           .value
       result.map(_.credentialId).toSet must be(Set(credC.credentialId))
+    }
+
+    "paginate with limit and use the query" in {
+      val issuerId = createParticipant("Issuer X")
+      val group = createInstitutionGroup(issuerId, InstitutionGroup.Name("grp1"))
+      val subject = createContact(issuerId, "IOHK Student", Some(group.name)).contactId
+      val credential1 = createGenericCredential(issuerId, subject, tag = "A")
+      val credential2 = createGenericCredential(issuerId, subject, tag = "B")
+      val credential3 = createGenericCredential(issuerId, subject, tag = "C")
+      val credential4 = createGenericCredential(issuerId, subject, tag = "D")
+
+      val query: GenericCredential.PaginatedQuery = PaginatedQueryConstraints(
+        limit = 2,
+        ordering = PaginatedQueryConstraints.ResultOrdering(
+          GenericCredential.SortBy.CreatedOn,
+          PaginatedQueryConstraints.ResultOrdering.Direction.Ascending
+        )
+      )
+
+      credentialsRepository.getBy(issuerId, query).value.futureValue.toOption.value mustBe List(
+        credential1,
+        credential2
+      )
+
+      val query2 = query.copy(offset = 2)
+
+      credentialsRepository.getBy(issuerId, query2).value.futureValue.toOption.value mustBe List(
+        credential3,
+        credential4
+      )
+
+      val credentialType =
+        CredentialTypeDao.findCredentialType(issuerId, "Credential type B").transact(database).unsafeRunSync().value
+
+      val filters = GenericCredential.FilterBy(
+        credentialType = Some(credentialType.id)
+      )
+
+      val query3 = query.copy(filters = Some(filters))
+
+      credentialsRepository.getBy(issuerId, query3).value.futureValue.toOption.value mustBe List(
+        credential2
+      )
     }
   }
 

@@ -6,11 +6,14 @@ import java.time.Instant
 import cats.implicits._
 import doobie._
 import doobie.implicits._
+import doobie.util.fragments._
 import doobie.implicits.legacy.instant._
+import doobie.implicits.legacy.localdate._
 import io.iohk.atala.prism.credentials.CredentialBatchId
 import io.iohk.atala.prism.crypto.SHA256Digest
 import io.iohk.atala.prism.management.console.models._
 import io.iohk.atala.prism.models.{TransactionId, TransactionInfo}
+import io.iohk.atala.prism.management.console.repositories.daos.queries._
 
 object CredentialsDAO {
 
@@ -140,6 +143,41 @@ object CredentialsDAO {
          |      c.contact_id = $subjectId
          |ORDER BY c.created_on ASC, credential_id
          |""".stripMargin)
+      .query[GenericCredential]
+      .to[List]
+  }
+
+  def getBy(
+      issuedBy: ParticipantId,
+      query: GenericCredential.PaginatedQuery
+  ): doobie.ConnectionIO[List[GenericCredential]] = {
+    val orderBy = orderByFr(query.ordering, "credential_id") {
+      case GenericCredential.SortBy.CredentialType => "c.external_id"
+      case GenericCredential.SortBy.CreatedOn => "c.created_on"
+    }
+
+    val whereCredentialType = query.filters.flatMap(_.credentialType).map { credentialType =>
+      fr"""c.credential_type_id = $credentialType"""
+    }
+
+    val whereCreatedBefore = query.filters.flatMap(_.createdBefore).map { createdBefore =>
+      fr"c.created_at::DATE <= $createdBefore"
+    }
+
+    val whereCreatedAfter = query.filters.flatMap(_.createdAfter).map { createdAfter =>
+      fr"c.created_at::DATE >= $createdAfter"
+    }
+
+    (fr"WITH" ++ withParticipantsPTS ++ withPublishedCredentialsPC() ++ selectGenericCredential ++ fr"""
+        |FROM draft_credentials c
+        |     JOIN PTS USING (issuer_id)
+        |     JOIN contacts ON (c.contact_id = contacts.contact_id)
+        |     LEFT JOIN PC USING (credential_id)
+        |${whereAndOpt(Some(fr"c.issuer_id = $issuedBy"), whereCredentialType, whereCreatedBefore, whereCreatedAfter)}
+        |$orderBy
+        |${limitFr(query.limit)}
+        |${offsetFr(query.offset)}
+        |""".stripMargin)
       .query[GenericCredential]
       .to[List]
   }

@@ -175,7 +175,7 @@ class CredentialsServiceImplSpec extends RpcSpecBase with MockitoSugar with Rese
 
       val requestLastTwo = console_api.GetGenericCredentialsRequest(
         limit = 2,
-        lastSeenCredentialId = credential1.credentialId.toString
+        offset = 1
       )
       val rpcRequestLastTwo = SignedRpcRequest.generate(keyPair, did, requestLastTwo)
       usingApiAs(rpcRequestLastTwo) { serviceStub =>

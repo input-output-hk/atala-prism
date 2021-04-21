@@ -61,9 +61,9 @@ class CredentialsServiceImpl(
   override def getGenericCredentials(
       request: GetGenericCredentialsRequest
   ): Future[GetGenericCredentialsResponse] =
-    auth[GetGenericCredential]("getGenericCredentials", request) { (participantId, query) =>
+    auth[GenericCredential.PaginatedQuery]("getGenericCredentials", request) { (participantId, query) =>
       credentialsRepository
-        .getBy(participantId, query.limit, query.lastSeenCredentialId)
+        .getBy(participantId, query)
         .map { list =>
           console_api.GetGenericCredentialsResponse(list.map(genericCredentialToProto))
         }

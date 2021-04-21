@@ -2,7 +2,7 @@ package io.iohk.atala.prism.management.console.models
 
 import cats.data.NonEmptyList
 
-import java.time.Instant
+import java.time.{Instant, LocalDate}
 import java.util.UUID
 
 import io.circe.Json
@@ -86,4 +86,20 @@ final case class GenericCredential(
 object GenericCredential {
   final case class Id(uuid: UUID) extends AnyVal with UUIDValue
   object Id extends UUIDValue.Builder[Id]
+
+  // Used to sort the results by the given field
+  sealed trait SortBy extends Product with Serializable
+  object SortBy {
+    final case object CredentialType extends SortBy
+    final case object CreatedOn extends SortBy
+  }
+
+  final case class FilterBy(
+      credentialType: Option[CredentialTypeId] = None,
+      createdAfter: Option[LocalDate] = None,
+      createdBefore: Option[LocalDate] = None
+  )
+
+  type PaginatedQuery =
+    PaginatedQueryConstraints[GenericCredential.Id, GenericCredential.SortBy, GenericCredential.FilterBy]
 }
