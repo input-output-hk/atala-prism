@@ -40,7 +40,7 @@ class DocumentUploadedMessageProcessor(
       .map { message =>
         logger.info(s"Processing message with document instance id: ${message.documentInstanceId}")
         (for {
-          // get required informations
+          // get required information
           connection <- EitherT(
             Connection
               .fromReceivedMessage(receivedMessage)
@@ -87,15 +87,25 @@ class DocumentUploadedMessageProcessor(
           connectionId <- EitherT.fromOption[Task](connection.id, MessageProcessorException("Empty connection id."))
           credential = createCredential(document)
           (root, proof :: _) = CredentialBatches.batch(List(credential))
-          credentialResponse <- EitherT.right[MessageProcessorException](nodeService.issueCredentialBatch(root))
+          credentialResponse <- EitherT(
+            nodeService
+              .issueCredentialBatch(root)
+              .redeem(
+                ex => Left(MessageProcessorException(s"Failed issuing credential batch: ${ex.getMessage}")),
+                Right(_)
+              )
+          )
 
           // send credential along with inclusion proof
-          credentialMessage = credential_models.PlainTextCredential(
+          credentialProto = credential_models.PlainTextCredential(
             encodedCredential = credential.canonicalForm,
             encodedMerkleProof = proof.encode
           )
+          atalaMessage = credential_models.AtalaMessage(
+            message = AtalaMessage.Message.PlainCredential(credentialProto)
+          )
           sendMessageRequest =
-            SendMessageRequest(connectionId = connectionId.uuid.toString, message = credentialMessage.toByteString)
+            SendMessageRequest(connectionId = connectionId.uuid.toString, message = atalaMessage.toByteString)
 
           _ <- EitherT.right[MessageProcessorException](connectorService.sendMessage(sendMessageRequest))
           _ = logger.info(
