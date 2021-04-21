@@ -5,6 +5,7 @@ import io.circe.generic.auto._
 import io.circe.parser.parse
 import io.iohk.atala.cvp.webextension.circe._
 import io.iohk.atala.cvp.webextension.common.Mnemonic
+import io.iohk.atala.cvp.webextension.common.models.PendingRequest.{IssueCredentialWithId, RevokeCredentialWithId}
 import io.iohk.atala.cvp.webextension.common.models.{PendingRequest, _}
 import io.iohk.atala.prism.credentials.VerificationError
 
@@ -40,6 +41,17 @@ private[background] object Command {
 
   final case object GetRequestsRequiringManualApproval extends CommandWithResponse[GotRequestsRequiringManualApproval]
   final case class GotRequestsRequiringManualApproval(requests: List[PendingRequest.WithId])
+
+  final case object GetRevocationRequestsRequiringManualApproval
+      extends CommandWithResponse[GotRevocationRequestsRequiringManualApproval]
+  final case class GotRevocationRequestsRequiringManualApproval(requests: List[RevokeCredentialWithId])
+
+  final case object GetCredentialRequestsRequiringManualApproval
+      extends CommandWithResponse[GotCredentialRequestsRequiringManualApproval]
+  final case class GotCredentialRequestsRequiringManualApproval(requests: List[IssueCredentialWithId])
+
+  final case object ApproveAllCredentialRequests extends CommandWithResponse[Unit]
+  final case object RejectAllCredentialRequests extends CommandWithResponse[Unit]
 
   final case class ApprovePendingRequest(requestId: Int) extends CommandWithResponse[Unit]
   final case class RejectPendingRequest(requestId: Int) extends CommandWithResponse[Unit]

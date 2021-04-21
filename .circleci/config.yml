@@ -727,6 +727,14 @@ jobs:
       - run:
           name: Grab the grpc docs
           command: cp ./workspace/grpc-api.md prism-kotlin-sdk/docs/src/docs/grpc
+      # favicon.ico needs to be placed in /resources directory
+      # all other logos need to be placed in /assets/media directory
+      - run:
+          name: Get all required images
+          command: |
+            mkdir -p prism-kotlin-sdk/docs/src/orchid/resources/assets/media
+            cp prism-interactive-demo-web/public/favicon.ico prism-kotlin-sdk/docs/src/orchid/resources
+            cp prism-interactive-demo-web/public/images/atala-prism-logo-suite.svg prism-kotlin-sdk/docs/src/orchid/resources/assets/media
 
       # generating docs takes a short time, if this fails, it makes no sense to run the tests
       - run:

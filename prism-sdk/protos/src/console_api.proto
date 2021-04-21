@@ -595,8 +595,37 @@ message CreateGenericCredentialResponse {
 //
 // The results are sorted in ascending order by creation date. Results with same creation date are sorted by their ID.
 message GetGenericCredentialsRequest {
-  int32 limit = 1; // The maximum amount of credentials to return, must be greater than zero.
-  string lastSeenCredentialId = 2; // The last seen credential (if any). Returned credentials start after this one.
+  // The maximum amount of credentials to return (optional, default value is 10).
+  int32 limit = 1;
+  // The offset for pagination (optional, default is 0).
+
+  reserved 2; // Removed lastSeenCredentialId field 
+  reserved "lastSeenCredentialId";
+
+  int32 offset = 3;
+  // When provided, filter the results based on the given criteria, just for the Management Console.
+  FilterBy filterBy = 4;
+  // Optional. When provided, it sorts the results by the given criteria (sorted by name in ascending order by default).
+  SortBy sortBy = 5;
+
+  // The possible ways to filter the results from GetGenericCredentialsRequest.
+  message FilterBy {
+    string credentialType = 1; // If provided, it returns the credentials containing the given type.
+    Date createdAfter = 2; // If provided, it returns credentials created at the given date or after.
+    Date createdBefore = 3; // If provided, it returns credentials created before or at the given date.
+  }
+  // The possible ways to sort the results.
+  message SortBy {
+    Field field = 1; // The field used to sort the results by.
+    SortByDirection direction = 2; // Sorts results in ascending/descending order (ascending by default).
+
+    // The possible fields to sort the results by.
+    enum Field {
+      UNKNOWN = 0; // If the value is missing, we take the default one: NAME.
+      CREDENTIAL_TYPE = 1; // The credential type field.
+      CREATED_ON = 2; // The createdOn field.
+    }
+  }
 }
 // Response with the credentials found.
 message GetGenericCredentialsResponse {

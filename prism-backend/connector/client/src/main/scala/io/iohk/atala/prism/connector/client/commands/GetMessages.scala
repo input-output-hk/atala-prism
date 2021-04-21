@@ -15,8 +15,6 @@ import io.iohk.atala.prism.protos.connector_api.{
 import io.iohk.atala.prism.protos.connector_models.ReceivedMessage
 import io.iohk.atala.prism.utils.syntax._
 
-import scala.annotation.nowarn
-
 case object GetMessages extends Command {
 
   override def run(api: ConnectorServiceGrpc.ConnectorServiceBlockingStub, config: Config): Unit = {
@@ -42,12 +40,11 @@ case object GetMessages extends Command {
   case class EncodedMessage(messageId: String, connectionId: String, receivedAt: Instant, content: String)
 
   object EncodedMessage {
-    @nowarn("msg=value receivedDeprecated in class ReceivedMessage is deprecated")
     def apply(m: ReceivedMessage): EncodedMessage = {
       EncodedMessage(
         messageId = m.id,
         connectionId = m.connectionId,
-        receivedAt = m.received.fold(Instant.ofEpochMilli(m.receivedDeprecated))(_.toInstant),
+        receivedAt = m.received.getOrElse(throw new RuntimeException("Missing timestamp")).toInstant,
         content = base64.encodeToString(m.message.toByteArray)
       )
     }

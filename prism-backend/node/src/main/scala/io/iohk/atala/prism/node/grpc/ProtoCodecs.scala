@@ -1,7 +1,6 @@
 package io.iohk.atala.prism.node.grpc
 
 import java.security.PublicKey
-import java.time.Instant
 
 import com.google.protobuf.ByteString
 import io.iohk.atala.prism.credentials.TimestampInfo
@@ -14,13 +13,10 @@ import io.iohk.atala.prism.node.models.nodeState.LedgerData
 import io.iohk.atala.prism.protos.node_models
 import io.iohk.atala.prism.utils.syntax._
 
-import scala.annotation.nowarn
-
 object ProtoCodecs {
   def toTimeStampInfoProto(timestampInfo: TimestampInfo): node_models.TimestampInfo = {
     node_models
       .TimestampInfo()
-      .withBlockTimestampDeprecated(timestampInfo.atalaBlockTimestamp.toEpochMilli)
       .withBlockTimestamp(timestampInfo.atalaBlockTimestamp.toProtoTimestamp)
       .withBlockSequenceNumber(timestampInfo.atalaBlockSequenceNumber)
       .withOperationSequenceNumber(timestampInfo.operationSequenceNumber)
@@ -92,11 +88,11 @@ object ProtoCodecs {
   // TODO: Manage proper validations.
   //       This implies making default values for operation sequence number to be 1
   //       (it is currently 0). The block sequence number starts at 1 already.
-  @nowarn("msg=value blockTimestampDeprecated in class TimestampInfo is deprecated")
   def fromTimestampInfoProto(timestampInfoProto: node_models.TimestampInfo): TimestampInfo = {
     TimestampInfo(
       timestampInfoProto.blockTimestamp
-        .fold(Instant.ofEpochMilli(timestampInfoProto.blockTimestampDeprecated))(_.toInstant),
+        .getOrElse(throw new RuntimeException("Missing timestamp"))
+        .toInstant,
       timestampInfoProto.blockSequenceNumber,
       timestampInfoProto.operationSequenceNumber
     )

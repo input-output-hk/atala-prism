@@ -3,7 +3,6 @@ package io.iohk.atala.prism.connector
 import cats.effect.{ContextShift, IO}
 import com.typesafe.config.ConfigFactory
 import io.grpc.{ManagedChannelBuilder, Server, ServerBuilder}
-import io.iohk.atala.prism.admin.{AdminRepository, AdminServiceImpl}
 import io.iohk.atala.prism.auth.grpc.{GrpcAuthenticationHeaderParser, GrpcAuthenticatorInterceptor}
 import io.iohk.atala.prism.connector.repositories._
 import io.iohk.atala.prism.connector.services._
@@ -19,7 +18,6 @@ import io.iohk.atala.prism.intdemo.protos.intdemo_api.{
   IDServiceGrpc,
   InsuranceServiceGrpc
 }
-import io.iohk.atala.prism.protos.admin_api.AdminServiceGrpc
 import io.iohk.atala.prism.protos.connector_api
 import io.iohk.atala.prism.protos.connector_api.ContactConnectionServiceGrpc
 import io.iohk.atala.prism.protos.console_api._
@@ -136,10 +134,6 @@ class ConnectorApp(executionContext: ExecutionContext) { self =>
       )
     val credentialViewsService = new CredentialViewsService(authenticator)(executionContext)
 
-    // admin
-    val adminRepository = new AdminRepository(xa)(executionContext)
-    val adminService = new AdminServiceImpl(adminRepository)(executionContext)
-
     // interactive demo services
     val intDemoRepository = new IntDemoRepository(xa)
     val connectorIntegration = new ConnectorIntegrationImpl(connectionsService, messagesService)(executionContext)
@@ -173,7 +167,6 @@ class ConnectorApp(executionContext: ExecutionContext) { self =>
       .addService(DegreeServiceGrpc.bindService(degreeService, executionContext))
       .addService(EmploymentServiceGrpc.bindService(employmentService, executionContext))
       .addService(InsuranceServiceGrpc.bindService(insuranceService, executionContext))
-      .addService(AdminServiceGrpc.bindService(adminService, executionContext))
       .addService(ConsoleServiceGrpc.bindService(consoleService, executionContext))
       .addService(ContactsServiceGrpc.bindService(contactsService, executionContext))
       .addService(ContactConnectionServiceGrpc.bindService(contactConnectionService, executionContext))

@@ -1,11 +1,10 @@
-# Issuing a Credential
+Issuing a credential on a blockchain provides proof of when, where and by whom that credential was issued and can’t be changed.
 
-This section explains how to issue a credential.
-
+This section explains how to do it using **Atala PRISM SDK**.
 
 ## Recap
 
-This is what we have done from previous versions:
+This is what we have done in previous steps:
 
 ```kotlin:ank
 import io.iohk.atala.prism.kotlin.crypto.*
@@ -21,7 +20,7 @@ val masterKeyPair = EC.generateKeyPair()
 val did = DID.createUnpublishedDID(masterKeyPair.publicKey)
 ```
 
-## Defining the Credential Claims
+## Defining the credential claims
 
 Before issuing a credential, we need to define its contents:
 
@@ -45,7 +44,7 @@ val credentialContent = CredentialContent(
 In this case, `credentialSubject` represents the claims involved in the credential, while the other fields are metadata specifying *who* is issuing the credential.
 
 
-## Deriving a Credential From its Claims
+## Deriving a credential from its claims
 
 We can use the previous claims to derive a `Credential` object:
 
@@ -53,7 +52,7 @@ We can use the previous claims to derive a `Credential` object:
 val credential = JsonBasedCredential(credentialContent)
 ```
 
-## Signing the Credential
+## Signing the credential
 
 Having the `Credential` model allows to easily sign it, which results in a signed credential:
 
@@ -61,15 +60,17 @@ Having the `Credential` model allows to easily sign it, which results in a signe
 val signedCredential = credential.sign(masterKeyPair.privateKey)
 ```
 
-**Note:** These are the keys related to the DID generated in the previous section.
+**NOTE:** These are the keys related to the **DID** generated in the previous section.
 
 
-## Issuing the Credential
+## Issuing the credential
 
-In our protocol, issuing a credential involves creating batches of signed credentials (so that you only pay one Cardano fee). Batches are timestamped in the Cardano blockchain. For simplicity, we'll get the relevant data without touching the Cardano network:
+In our protocol, issuing a credential involves creating batches of signed credentials to reduce the time and costs of publishing them. Batches are timestamped and for simplicity, we'll get the relevant data without touching any external network:
 
 ```kotlin:ank
 val (merkleRoot, merkleProofs) = CredentialBatches.batch(listOf(signedCredential))
 ```
 
 The `merkleRoot` and `merkleProofs` are necessary to verify the credential validity.
+
+**NOTE:** To get more info about `Merkle tree` visit [Merkle tree wiki page](https://en.wikipedia.org/wiki/Merkle_tree) or [this page](https://www.investopedia.com/terms/m/merkle-root-cryptocurrency.asp) to see how these techniques are related to blockchain.

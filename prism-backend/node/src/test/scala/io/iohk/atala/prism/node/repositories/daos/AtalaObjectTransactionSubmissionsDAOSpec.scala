@@ -226,7 +226,6 @@ class AtalaObjectTransactionSubmissionsDAOSpec extends AtalaWithPostgresSpec {
 
       getByLedger(Ledger.InMemory) mustBe List(inMemorySubmission)
       getByLedger(Ledger.CardanoTestnet) mustBe List(cardanoTestnetSubmission)
-      getByLedger(Ledger.BitcoinTestnet) mustBe empty
     }
   }
 

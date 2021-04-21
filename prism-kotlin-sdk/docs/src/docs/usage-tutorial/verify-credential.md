@@ -1,9 +1,9 @@
-# Verifying the Credential
-
 This section explains how to verify a credential's validity.
 
 ## Recap
-This is what we have done from previous versions:
+
+This is what we have done in previous steps:
+
 ```kotlin:ank
 import io.iohk.atala.prism.kotlin.crypto.*
 import io.iohk.atala.prism.kotlin.identity.*
@@ -37,9 +37,9 @@ val (merkleRoot, merkleProofs) = CredentialBatches.batch(listOf(signedCredential
 ```
 
 
-## Mocking Network Data
+## Mocking network data
 
-For simplicity, this tutorial does not interact with the Cardano network. A real implementation would require the retrieval of some data from the network, so in this tutorial, we will mock that data.
+For simplicity, this tutorial does not interact with the **Cardano** network. A real implementation would require the retrieval of some data from the network, so in this tutorial, we will mock that data.
 
 ```kotlin:ank
 // assume there is a block in Cardano that includes the DID, and the credential, which was confirmed 1 minute ago
@@ -61,7 +61,7 @@ val keyData = KeyData(publicKey = masterKeyPair.publicKey, addedOn = didBlockInf
 val batchData = BatchData(issuedOn = batchBlockInfo, revokedOn = null)
 ```
 
-## Verifying the Credential
+## Verifying the credential
 
 Taking the data from the previous steps, we can now verify the credential. The code returns no errors, so the credential is valid:
 
@@ -75,3 +75,8 @@ CredentialVerification.verify(
     signedCredential = signedCredential
 )
 ```
+
+## Next steps
+**That's it, congratulations on completing Usage Tutorial!**
+
+By now, check the [Integration Tutorial](/wiki/integration-tutorial) if you are ready to integrate **Atala PRISM**.

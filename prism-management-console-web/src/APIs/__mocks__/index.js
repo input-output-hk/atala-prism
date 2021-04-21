@@ -20,7 +20,6 @@ import {
   setSessionState,
   setSessionErrorHandler
 } from './login';
-import { isAdminSupported, populateDemoDataset } from './admin';
 
 // TODO update mock api.
 //  - It should have the same structure that real Api
@@ -45,8 +44,6 @@ export const mockApi = {
   toProtoDate,
   getSettings,
   editSettings,
-  isAdminSupported,
-  populateDemoDataset,
   wallet: {
     isWalletUnlocked,
     getSessionFromExtension,

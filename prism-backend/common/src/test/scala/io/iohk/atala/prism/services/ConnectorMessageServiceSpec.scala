@@ -38,7 +38,6 @@ class ConnectorMessageServiceSpec extends PostgresRepositorySpec[Task] {
       // given
       val receivedMessage = ReceivedMessage(
         id = "id1",
-        receivedDeprecated = LocalDateTime.of(2020, 6, 12, 0, 0).toEpochSecond(ZoneOffset.UTC),
         received = Timestamp(LocalDateTime.of(2020, 6, 12, 0, 0).toEpochSecond(ZoneOffset.UTC)).some,
         connectionId = "0a66fcef-4d50-4a67-a365-d4dbebcf22d3",
         message = AtalaMessage().toByteString

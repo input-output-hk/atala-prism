@@ -21,9 +21,14 @@ object View extends Enum[View] {
   case object Main extends View
 
   case object Default extends View // Initial View
+
   case object Welcome extends View
 
   case object Unlock extends View
+
+  case object ReviewCredentialIssuance extends View
+
+  case object ReviewCredentialRevocation extends View
 
 }
 

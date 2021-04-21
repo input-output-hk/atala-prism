@@ -32,6 +32,8 @@ import org.scalatest.OptionValues.convertOptionToValuable
 import org.mockito.ArgumentMatchersSugar.*
 import java.util.UUID
 
+import com.google.protobuf.timestamp.Timestamp
+
 import scala.concurrent.Future
 
 class CredentialsServiceImplSpec extends ManagementConsoleRpcSpecBase with DIDGenerator {
@@ -433,21 +435,21 @@ class CredentialsServiceImplSpec extends ManagementConsoleRpcSpecBase with DIDGe
       node_models.LedgerData(
         transactionId = "tx id 1",
         ledger = common_models.Ledger.IN_MEMORY,
-        timestampInfo = Some(node_models.TimestampInfo(1, 1, 1))
+        timestampInfo = Some(node_models.TimestampInfo(1, 1, Some(new Timestamp(1, 0))))
       )
 
     val batchRevocationLedgerData =
       node_models.LedgerData(
         transactionId = "tx id 2",
         ledger = common_models.Ledger.CARDANO_MAINNET,
-        timestampInfo = Some(node_models.TimestampInfo(2, 2, 2))
+        timestampInfo = Some(node_models.TimestampInfo(2, 2, Some(new Timestamp(2, 0))))
       )
 
     val credentialRevocationLedgerData =
       node_models.LedgerData(
         transactionId = "tx id 3",
         ledger = common_models.Ledger.CARDANO_TESTNET,
-        timestampInfo = Some(node_models.TimestampInfo(3, 3, 3))
+        timestampInfo = Some(node_models.TimestampInfo(3, 3, Some(new Timestamp(3, 0))))
       )
 
     def nodeReturns(

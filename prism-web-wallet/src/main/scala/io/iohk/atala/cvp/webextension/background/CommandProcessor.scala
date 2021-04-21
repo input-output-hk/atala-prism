@@ -3,7 +3,9 @@ package io.iohk.atala.cvp.webextension.background
 import cats.syntax.functor._
 import io.circe.generic.auto._
 import io.iohk.atala.cvp.webextension.background.models.Command.{
+  GotCredentialRequestsRequiringManualApproval,
   GotRequestsRequiringManualApproval,
+  GotRevocationRequestsRequiringManualApproval,
   SignedConnectorResponse,
   TransactionInfo,
   WalletStatusResult
@@ -38,6 +40,16 @@ private[background] class CommandProcessor(
           val requests = walletManager.getRequestsRequiringManualApproval().toList
           CommandResponse(GotRequestsRequiringManualApproval(requests))
         }
+      case Command.GetCredentialRequestsRequiringManualApproval =>
+        Future.successful {
+          val requests = walletManager.getCredentialIssuanceRequestsRequiringManualApproval().toList
+          CommandResponse(GotCredentialRequestsRequiringManualApproval(requests))
+        }
+      case Command.GetRevocationRequestsRequiringManualApproval =>
+        Future.successful {
+          val requests = walletManager.getRevocationRequestsRequiringManualApproval().toList
+          CommandResponse(GotRevocationRequestsRequiringManualApproval(requests))
+        }
       case Command.SignConnectorRequest(sessionId, request) =>
         walletManager
           .signConnectorRequest(origin, sessionId, request)
@@ -56,6 +68,10 @@ private[background] class CommandProcessor(
         walletManager.approvePendingRequest(requestId).as(CommandResponse(()))
       case Command.RejectPendingRequest(requestId) =>
         walletManager.rejectRequest(requestId).as(CommandResponse(()))
+      case Command.ApproveAllCredentialRequests =>
+        walletManager.approveAllCredentialRequests().map(CommandResponse(_))
+      case Command.RejectAllCredentialRequests =>
+        walletManager.rejectAllCredentialRequests().map(CommandResponse(_))
       case Command.CreateWallet(password, mnemonic, role, organisationName, logo) =>
         walletManager.createWallet(password, mnemonic, role, organisationName, logo).map(CommandResponse.apply)
       case Command.RecoverWallet(password, mnemonic) =>

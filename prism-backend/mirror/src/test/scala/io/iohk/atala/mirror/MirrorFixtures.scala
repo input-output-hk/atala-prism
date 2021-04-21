@@ -198,7 +198,6 @@ trait MirrorFixtures extends ServicesFixtures {
 
     lazy val credentialMessage1 = ReceivedMessage(
       id = "id1",
-      receivedDeprecated = LocalDateTime.of(2020, 6, 12, 0, 0).toEpochSecond(ZoneOffset.UTC),
       received = Timestamp(LocalDateTime.of(2020, 6, 12, 0, 0).toEpochSecond(ZoneOffset.UTC)).some,
       connectionId = connectionId1.uuid.toString,
       message = plainTextCredentialMessage(jsonBasedCredential1, proof1).toByteString
@@ -206,7 +205,6 @@ trait MirrorFixtures extends ServicesFixtures {
 
     lazy val credentialMessage2 = ReceivedMessage(
       id = "id2",
-      receivedDeprecated = LocalDateTime.of(2020, 6, 14, 0, 0).toEpochSecond(ZoneOffset.UTC),
       received = Timestamp(LocalDateTime.of(2020, 6, 14, 0, 0).toEpochSecond(ZoneOffset.UTC)).some,
       connectionId = connectionId2.uuid.toString,
       message = plainTextCredentialMessage(jsonBasedCredential2, proof2).toByteString
@@ -216,7 +214,6 @@ trait MirrorFixtures extends ServicesFixtures {
 
     lazy val cardanoAddressInfoMessage1 = ReceivedMessage(
       id = "id3",
-      receivedDeprecated = LocalDateTime.of(2020, 6, 13, 0, 0).toEpochSecond(ZoneOffset.UTC),
       received = Timestamp(LocalDateTime.of(2020, 6, 13, 0, 0).toEpochSecond(ZoneOffset.UTC)).some,
       connectionId = connectionId1.uuid.toString,
       message = AtalaMessage()
@@ -226,7 +223,6 @@ trait MirrorFixtures extends ServicesFixtures {
 
     lazy val initiateTrisaCardanoTransactionMessage = ReceivedMessage(
       id = "id1",
-      receivedDeprecated = LocalDateTime.of(2020, 6, 12, 0, 0).toEpochSecond(ZoneOffset.UTC),
       received = Timestamp(LocalDateTime.of(2020, 6, 12, 0, 0).toEpochSecond(ZoneOffset.UTC)).some,
       connectionId = connectionId1.uuid.toString,
       message = AtalaMessage()
@@ -277,7 +273,6 @@ trait MirrorFixtures extends ServicesFixtures {
 
     lazy val paymentInformationMessage1 = ReceivedMessage(
       id = "id1",
-      receivedDeprecated = LocalDateTime.of(2020, 6, 12, 0, 0).toEpochSecond(ZoneOffset.UTC),
       received = Timestamp(LocalDateTime.of(2020, 6, 12, 0, 0).toEpochSecond(ZoneOffset.UTC)).some,
       connectionId = connectionId2.uuid.toString,
       message = paymentInformationToAtalaMessage(paymentInformation1)
@@ -294,7 +289,6 @@ trait MirrorFixtures extends ServicesFixtures {
 
     lazy val payIdNameRegistrationMessage1 = ReceivedMessage(
       id = "id1",
-      receivedDeprecated = LocalDateTime.of(2020, 6, 12, 0, 0).toEpochSecond(ZoneOffset.UTC),
       received = Timestamp(LocalDateTime.of(2020, 6, 12, 0, 0).toEpochSecond(ZoneOffset.UTC)).some,
       connectionId = connectionId1.uuid.toString,
       message = payIdNameRegistrationToAtalaMessage(payIdName1)
