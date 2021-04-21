@@ -1,7 +1,6 @@
 package io.iohk.atala.prism.node
 
 import com.typesafe.config.Config
-import io.iohk.atala.prism.node.bitcoin.BitcoinClient
 import io.iohk.atala.prism.node.cardano.CardanoClient
 import io.iohk.atala.prism.node.cardano.dbsync.CardanoDbSyncClient
 import io.iohk.atala.prism.node.cardano.wallet.CardanoWalletApiClient
@@ -10,14 +9,6 @@ import io.iohk.atala.prism.node.services.CardanoLedgerService.CardanoNetwork
 import io.iohk.atala.prism.repositories.TransactorFactory
 
 object NodeConfig {
-
-  def bitcoinConfig(config: Config): BitcoinClient.Config = {
-    val host = config.getString("host")
-    val port = config.getInt("port")
-    val username = config.getString("username")
-    val password = config.getString("password")
-    BitcoinClient.Config(host, port, username, password)
-  }
 
   def cardanoConfig(config: Config): CardanoLedgerService.Config = {
     val network = CardanoNetwork.withNameInsensitive(config.getString("network"))

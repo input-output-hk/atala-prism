@@ -3,10 +3,8 @@ package io.iohk.atala.prism.node
 import cats.effect.{IO, Resource, ContextShift}
 import com.typesafe.config.{Config, ConfigFactory}
 import io.grpc.{Server, ServerBuilder}
-import io.iohk.atala.prism.node.bitcoin.BitcoinClient
 import io.iohk.atala.prism.node.objects.{ObjectStorageService, S3ObjectStorageService}
 import io.iohk.atala.prism.node.repositories.{CredentialBatchesRepository, DIDDataRepository, KeyValuesRepository}
-import io.iohk.atala.prism.node.services.BitcoinLedgerService.BitcoinNetwork
 import io.iohk.atala.prism.node.services._
 import io.iohk.atala.prism.node.services.models.{AtalaObjectNotification, AtalaObjectNotificationHandler}
 import io.iohk.atala.prism.protos.node_api._
@@ -77,13 +75,11 @@ class NodeApp(executionContext: ExecutionContext) { self =>
     val keyValueService = new KeyValueService(new KeyValuesRepository(transactor))
 
     val (atalaReferenceLedger, releaseAtalaReferenceLedger) = globalConfig.getString("ledger") match {
-      case "bitcoin" => (initializeBitcoin(globalConfig.getConfig("bitcoin"), onAtalaObject), None)
       case "cardano" =>
         val (cardano, releaseCardano) =
           initializeCardano(globalConfig.getConfig("cardano"), keyValueService, onAtalaObject).allocated
             .unsafeRunSync()
         (cardano, Some(releaseCardano))
-
       case "in-memory" =>
         logger.info("Using in-memory ledger")
         (new InMemoryLedgerService(onAtalaObject), None)
@@ -131,27 +127,6 @@ class NodeApp(executionContext: ExecutionContext) { self =>
       System.err.println("*** server shut down")
     }
     ()
-  }
-
-  private def initializeBitcoin(config: Config, onAtalaObject: AtalaObjectNotificationHandler): BitcoinLedgerService = {
-    logger.info("Creating bitcoin client")
-
-    val bitcoinNetwork = BitcoinNetwork.withNameInsensitive(config.getString("network"))
-    val bitcoinClient = BitcoinClient(NodeConfig.bitcoinConfig(config))
-
-    val atalaService = BitcoinLedgerService(bitcoinNetwork, bitcoinClient, onAtalaObject)
-
-    // TODO: Re-enable Bitcoin syncer
-    /*
-    val blocksRepository = new BlocksRepository(xa)
-    val synchronizerConfig = SynchronizerConfig(30.seconds)
-    val syncStatusService = new LedgerSynchronizationStatusService(bitcoinClient, blocksRepository)
-    val synchronizerService =
-      new LedgerSynchronizerService(bitcoinClient, blocksRepository, syncStatusService, atalaService)
-    val task = new PollerSynchronizerTask(synchronizerConfig, bitcoinClient, synchronizerService)
-     */
-
-    atalaService
   }
 
   private def initializeCardano(

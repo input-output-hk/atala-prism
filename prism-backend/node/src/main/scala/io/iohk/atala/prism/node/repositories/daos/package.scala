@@ -11,7 +11,6 @@ import io.iohk.atala.prism.crypto.{EC, ECConfig}
 import io.iohk.atala.prism.daos.BaseDAO.{ledgerMeta, transactionIdMeta}
 import io.iohk.atala.prism.identity.DIDSuffix
 import io.iohk.atala.prism.models.{BlockInfo, Ledger, TransactionId, TransactionInfo}
-import io.iohk.atala.prism.node.bitcoin.models.Blockhash
 import io.iohk.atala.prism.node.models.nodeState.DIDPublicKeyState
 import io.iohk.atala.prism.node.models.{
   AtalaObject,
@@ -115,8 +114,6 @@ package object daos {
         )
     }
   }
-
-  implicit val blockhashPut: Put[Blockhash] = Put[Array[Byte]].contramap(_.value.toArray)
 
   implicit val atalaObjectIdMeta: Meta[AtalaObjectId] =
     Meta[Array[Byte]].timap(value => AtalaObjectId(value.toVector))(_.value.toArray)

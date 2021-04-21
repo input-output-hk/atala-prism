@@ -40,10 +40,13 @@ enum SortByDirection {
 
 // The supported ledger types, commonly used for linking on-chain transactions.
 enum Ledger {
+    reserved 2; // Removed BITCOIN_TESTNET
+    reserved "BITCOIN_TESTNET";
+    reserved 3; // Removed BITCOIN_MAINNET
+    reserved "BITCOIN_MAINNET";
+
     UNKNOWN_LEDGER = 0; // Invalid default value.
     IN_MEMORY = 1; // This is used only for development.
-    BITCOIN_TESTNET = 2; // Bitcoin testnet (used for testing, deprecated).
-    BITCOIN_MAINNET = 3; // Bitcoin mainnet (deprecated).
     CARDANO_TESTNET = 4; // Cardano testnet (used for testing).
     CARDANO_MAINNET = 5; // Cardano mainnet, used in production.
 }
