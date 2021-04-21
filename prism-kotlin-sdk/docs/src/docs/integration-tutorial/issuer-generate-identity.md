@@ -43,7 +43,7 @@ println(
 )
 ```
 
-Also, `issuerUnpublishedDID` is created which is a **DID** without *any network interaction nor blockchain transaction*. We call these *unpublished DIDs*.
+Also, `issuerUnpublishedDID` is created which is a **DID** without *any network interaction nor blockchain transaction*. We call these **unpublished DIDs**.
 
 
 ## Generating a connection token

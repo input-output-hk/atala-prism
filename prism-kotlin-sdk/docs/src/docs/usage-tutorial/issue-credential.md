@@ -60,7 +60,7 @@ Having the `Credential` model allows to easily sign it, which results in a signe
 val signedCredential = credential.sign(masterKeyPair.privateKey)
 ```
 
-**NOTE:** These are the keys related to the DID generated in the previous section.
+**NOTE:** These are the keys related to the **DID** generated in the previous section.
 
 
 ## Issuing the credential

@@ -1,6 +1,6 @@
 site:
   about:
-    siteName: PRISM SDK
+    siteName: Atala PRISM SDK
     siteDescription: Official SDK for the Atala PRISM project
     siteCopyright: Input Output HK
 
@@ -17,9 +17,8 @@ allPages:
       githubTheme: 'ghcolors'
       languages:
         - 'kotlin'
-
 theme:
-  primaryColor: '#DE9149'
+  primaryColor: '#F83633'
   legacySearch: false
   metaComponents:
     - type: 'orchidSearch'

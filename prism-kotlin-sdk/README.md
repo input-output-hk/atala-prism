@@ -81,6 +81,16 @@ docker run --rm \
 sed -i "1s/.*/# gRPC API Reference/" docs/src/docs/grpc/grpc-api.md
 ```
 
+### Add logos
+To improve UX/UI of the docs logos and icons can be added to docs. All these files are already a part of the [Interactive Demo section](../prism-interactive-demo-web/public). To add them to these docs execute: 
+
+```shell
+mkdir -p docs/src/orchid/resources/assets/media
+
+cp ../prism-interactive-demo-web/public/favicon.ico docs/src/orchid/resources
+cp ../prism-interactive-demo-web/public/images/atala-prism-logo-suite.svg docs/src/orchid/resources/assets/media
+```
+
 Then, you can proceed to generate the website.
 
 ### Website

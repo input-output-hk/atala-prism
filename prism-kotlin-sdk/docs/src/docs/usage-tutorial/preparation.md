@@ -5,7 +5,7 @@ This section explains how to integrate the **Atala PRISM SDK** into a **Kotlin**
 
 ## Adding dependencies
 
-After creating (or opening) the Gradle project, add the necessary dependencies to your `build.gradle`:
+After creating (or opening) the **Gradle** project, add the necessary dependencies to your `build.gradle`:
 
 ```kotlin
 implementation("io.iohk.atala.prism:protos:$VERSION") // needed for the credential payloads defined in protobuf

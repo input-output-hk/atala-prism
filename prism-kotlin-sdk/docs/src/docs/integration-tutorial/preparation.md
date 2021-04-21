@@ -2,7 +2,7 @@ This section explains how to integrate the **Atala PRISM SDK** into a **Kotlin**
 
 **NOTE:** This tutorial assumes proficiency in setting up/working with [Gradle](https://gradle.org/) projects. Create a new project or open an existing one.
 
-It is worth saying that the examples use the `runBlocking` clause to make the examples simpler (i.e. not having to worry about coroutine contexts). If Kotlin is used as integration there is no need to use `runBlocking` directly.
+It is worth saying that the examples use the `runBlocking` clause to make the examples simpler (i.e. not having to worry about coroutine contexts). If **Kotlin** is used as integration there is no need to use `runBlocking` directly.
 
 ## Services
 If there is no dedicated environment where all services are up and running there is a possibility to run all required services locally. To do it follow the next steps. 

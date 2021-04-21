@@ -18,11 +18,11 @@ import kotlinx.serialization.json.JsonPrimitive
 
 ## Generating a DID
 
-Generating a DID requires an associated public key. This example derives a public key from an [elliptic-curve](https://en.wikipedia.org/wiki/Elliptic-curve_cryptography).
+Generating a **DID** requires an associated public key. This example derives a public key from an [elliptic-curve](https://en.wikipedia.org/wiki/Elliptic-curve_cryptography).
 
 ```kotlin:ank
 val masterKeyPair = EC.generateKeyPair()
 val did = DID.createUnpublishedDID(masterKeyPair.publicKey)
 ```
 
-We can create a DID without *any network interaction nor blockchain transaction*. We call these *unpublished* DIDs.
+**DID** can be created without *any network interaction nor blockchain transaction*. These **DIDs** are called **unpublished DIDs**.

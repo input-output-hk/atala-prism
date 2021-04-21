@@ -26,6 +26,8 @@ CredentialVerification.verify(
 )
 ```
 
-## More
+## Next steps
 
-That's it, congratulations on completing this tutorial! By now, one should have a decent understanding how to replicate the work done on the [Atala PRISM Interactive Demo Website](https://atalaprism.io).
+**That's it, congratulations on completing Integration Tutorial!**
+
+By now, one should have a decent understanding how to replicate the work done on the [Atala PRISM Interactive Demo Website](https://atalaprism.io).

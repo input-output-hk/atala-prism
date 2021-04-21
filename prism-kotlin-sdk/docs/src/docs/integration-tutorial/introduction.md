@@ -2,7 +2,7 @@ This tutorial walks a user through the necessary steps to integrate the **Atala 
 
 By the end of the tutorial, one should have learned all the necessary pieces to build an application like [Atala PRISM Interactive Demo Website](https://atalaprism.io).
 
-Provided examples are written in [Kotlin](https://kotlinlang.org/), which can be easily migrated to other programming languages targeting the Java-Virtual-Machine (JVM).
+Provided examples are written in [Kotlin](https://kotlinlang.org/), which can be easily migrated to other programming languages targeting the **Java-Virtual-Machine (JVM)**.
 
 The purpose of these examples is to be verbose with the hope that one will find them simple enough to create one's own abstractions.
 
@@ -19,4 +19,4 @@ There are 2 backend services involved in the examples:
 
 **NOTE:** be aware that in this tutorial there is no real integration with [Cardano](https://cardano.org/), all components are running locally and use in-memory ledger. Anyway the flow will be exactly the same once both **Node** and **Connector** interacts directly with **Cardano** ledger. For simplicity **Cardano** name is used as a default ledger in next steps. 
 
-**IMPORTANT:** If there is a need to connect with a dedicated environment some additional waits will be needed in the code (for e.g. publishing a DID takes about 10 minutes on a production-like environment).
+**IMPORTANT:** If there is a need to connect with a dedicated environment some additional waits will be needed in the code (for e.g. publishing a **DID** takes about 10 minutes on a production-like environment).
