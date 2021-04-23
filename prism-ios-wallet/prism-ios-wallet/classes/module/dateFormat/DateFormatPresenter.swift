@@ -55,9 +55,17 @@ class DateFormatPresenter: ListingBasePresenter, ListingBaseTableUtilsPresenterD
     func hasData() -> Bool {
         true
     }
+    
+    func getSectionHeaderViews() -> [UIView] {
+        return [UIView()]
+    }
+    
+    func getSectionCount() -> Int? {
+        return 1
+    }
 
-    func getElementCount() -> Int {
-        return initialStaticCells.count + 1
+    func getElementCount() -> [Int] {
+        return [initialStaticCells.count + 1]
     }
 
     // MARK: Table

@@ -33,7 +33,7 @@ class HomeViewController: ListingBaseViewController {
         tableUtils = TableUtils(view: self, presenter: presenterImpl, table: table)
     }
 
-    override func getHeaderHeight() -> CGFloat {
+    override func getHeaderHeight(for section: Int) -> CGFloat {
         return 0
     }
 

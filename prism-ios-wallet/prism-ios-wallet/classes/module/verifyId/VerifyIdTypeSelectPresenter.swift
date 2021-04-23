@@ -53,8 +53,16 @@ class VerifyIdTypeSelectPresenter: ListingBasePresenter, ListingBaseTableUtilsPr
         return true
     }
 
-    func getElementCount() -> Int {
-        return initialStaticCells.count
+    func getElementCount() -> [Int] {
+        return [initialStaticCells.count]
+    }
+    
+    func getSectionCount() -> Int? {
+        return 1
+    }
+    
+    func getSectionHeaderViews() -> [UIView] {
+        return [UIView()]
     }
 
     // MARK: Table

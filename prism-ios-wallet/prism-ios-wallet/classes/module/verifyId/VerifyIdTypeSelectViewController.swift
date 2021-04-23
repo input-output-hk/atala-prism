@@ -40,8 +40,8 @@ class VerifyIdTypeSelectViewController: ListingBaseViewController {
         tableUtils = TableUtils(view: self, presenter: presenterImpl, table: table)
     }
 
-    override func getHeaderHeight() -> CGFloat {
-        return AppConfigs.TABLE_HEADER_HEIGHT_REGULAR
+    override func getHeaderHeight(for section: Int) -> CGFloat {
+        return 0
     }
 
     override func getCellIdentifier(for indexPath: IndexPath) -> String {

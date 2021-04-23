@@ -133,19 +133,27 @@ class ConnectionsPresenter: ListingBasePresenter, ListingBaseTableUtilsPresenter
     func hasData() -> Bool {
         return stateSpecial == .detail ? true : contacts.size() > 0
     }
+    
+    func getSectionHeaderViews() -> [UIView] {
+        return [UIView()]
+    }
+    
+    func getSectionCount() -> Int? {
+        return 1
+    }
 
-    func getElementCount() -> Int {
+    func getElementCount() -> [Int] {
         if let baseValue = super.getBaseElementCount() {
-            return baseValue
+            return [baseValue]
         }
 
         switch stateSpecial {
         case .none:
-            return filteredContacts.count == 0 ? 1 : filteredContacts.count
+            return filteredContacts.count == 0 ? [1] : [filteredContacts.count]
         case .detail:
-            return detailRows?.count ?? 0
+            return [(detailRows?.count ?? 0)]
         case .scanningQr:
-            return 0
+            return [0]
         }
     }
 

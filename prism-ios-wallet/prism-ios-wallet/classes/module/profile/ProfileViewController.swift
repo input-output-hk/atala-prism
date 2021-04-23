@@ -1,7 +1,6 @@
 //
 
-class ProfileViewController: ListingBaseViewController, UIImagePickerControllerDelegate,
-                             UINavigationControllerDelegate {
+class ProfileViewController: ListingBaseViewController, UIImagePickerControllerDelegate, UINavigationControllerDelegate{
 
     var presenterImpl = ProfilePresenter()
     override var presenter: BasePresenter { return presenterImpl }
@@ -14,6 +13,8 @@ class ProfileViewController: ListingBaseViewController, UIImagePickerControllerD
     override func navBarCustomStyle() -> NavBarCustomStyle {
         return navBar
     }
+    var countries: [String] = []
+    var picker: PickerViewCell?
 
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -23,12 +24,25 @@ class ProfileViewController: ListingBaseViewController, UIImagePickerControllerD
         ViewControllerUtils.addTapToDismissKeyboard(view: self)
         ViewControllerUtils.addShiftKeyboardListeners(view: self)
     }
-
+    
+    override func viewWillAppear(_ animated: Bool) {
+        super.viewWillAppear(animated)
+        
+        NotificationCenter.default.addObserver(self, selector: #selector(onReloadAttributes),
+                                               name: .reloadAttributes, object: nil)
+    }
+    
     override func onBackPressed() -> Bool {
         if !presenterImpl.tappedBackButton() {
             return super.onBackPressed()
         }
         return false
+    }
+    
+    // MARK: Change tab notifications
+
+    @objc func onReloadAttributes() {
+        presenterImpl.startShowingInitial()
     }
 
     // MARK: Config
@@ -43,27 +57,28 @@ class ProfileViewController: ListingBaseViewController, UIImagePickerControllerD
         viewTable.isHidden = isEmpty
 
         var navTitle = ""
-        var navTitleIcon: String?
-        var navTitleIconAction: SelectorAction?
+        var iconTitle: String?
+        var iconAction: SelectorAction?
         var hasBgSpecial = false
 
         switch profileMode {
         case .initial:
             hasBgSpecial = true
             navTitle = "profile_nav_title".localize()
-            navTitleIcon = "ico_pencil"
-            navTitleIconAction = actionEdit
+            iconTitle = "ico_pencil"
+            iconAction = actionEdit
         case .editing:
             hasBgSpecial = true
             navTitle = "profile_edit_nav_title".localize()
-            navTitleIcon = "ico_check"
-            navTitleIconAction = actionEditSave
+            iconTitle = "ico_check"
+            iconAction = actionEditSave
         }
 
         // Navigation bar
         navBar = NavBarCustomStyle(hasNavBar: true, isWhite: hasBgSpecial, title: navTitle,
-                                   hasBackButton: true, rightIconName: navTitleIcon,
-                                   rightIconAction: navTitleIconAction)
+                                   hasBackButton: true, rightIconName: iconTitle,
+                                   rightIconAction: iconAction, leftIconName: "ico_add", leftIconAction: addAction)
+        
         NavBarCustom.config(view: self)
         // Special background
         viewBgSpecial.isHidden = !hasBgSpecial
@@ -75,8 +90,11 @@ class ProfileViewController: ListingBaseViewController, UIImagePickerControllerD
         tableUtils = TableUtils(view: self, presenter: presenterImpl, table: table)
     }
 
-    override func getHeaderHeight() -> CGFloat {
-        return AppConfigs.TABLE_HEADER_HEIGHT_REGULAR
+    override func getHeaderHeight(for section: Int) -> CGFloat {
+        if section == 0 {
+            return AppConfigs.TABLE_HEADER_HEIGHT_REGULAR
+        }
+        return AppConfigs.TABLE_HEADER_HEIGHT_REGULAR * 3
     }
 
     override func getCellIdentifier(for indexPath: IndexPath) -> String {
@@ -84,12 +102,8 @@ class ProfileViewController: ListingBaseViewController, UIImagePickerControllerD
         switch presenterImpl.getElementType(indexPath: indexPath) {
         case .profile:
             return "profile"
-        case .tabs:
-            return "tabs"
-        case .field:
-            return "field"
-        case .footer:
-            return "padding"
+        case .initial:
+            return "common"
         default:
             return super.getCellIdentifier(for: indexPath)
         }
@@ -100,17 +114,13 @@ class ProfileViewController: ListingBaseViewController, UIImagePickerControllerD
         switch presenterImpl.getElementType(indexPath: indexPath) {
         case .profile:
             return ProfileViewCell.default_NibName()
-        case .tabs:
-            return TabsViewCell.default_NibName()
-        case .field:
-            return FieldViewCell.default_NibName()
-        case .footer:
-            return PaddingViewCell.default_NibName()
+        case .initial:
+            return CommonViewCell.default_NibName()
         default:
             return super.getCellNib(for: indexPath)
         }
     }
-
+    
     // MARK: Buttons
 
     func setupButtons() {}
@@ -122,13 +132,41 @@ class ProfileViewController: ListingBaseViewController, UIImagePickerControllerD
     lazy var actionEditSave = SelectorAction(action: { [weak self] in
         self?.presenterImpl.tappedEditSaveButton()
     })
+    
+    lazy var addAction = SelectorAction(action: { [weak self] in
 
-    // MARK: TextField
+        let attVC = AttributeViewController.makeThisView()
+        
+        attVC.config { (type, logo) in
+            self?.presenterImpl.addAttributeWith(type: type, logo: logo)
+        }
+        
+        self?.customPresentViewController(attVC.presentr, viewController: attVC, animated: true)
+    })
+    
+    // MARK: Screens
 
-    override func getScrollableMainView() -> UIScrollView? {
-        return table
+    func changeScreenToProfileDetail() {
+        ViewControllerUtils.changeScreenSegued(caller: self, segue: "ProfileDetailSegue", params: nil)
     }
-
+    
+    func changeScreenToAttributeVerification(type: String, logo: String) {
+        
+        var params: [Any?] = []
+        params.append(type)
+        params.append(logo)
+        
+        ViewControllerUtils.changeScreenPresented(caller: self, storyboardName: "BaseVerification", viewControllerIdentif: "BaseVerification", params: params, animated: true)
+    }
+    
+    func changeScreenToAttributeListing(type: String) {
+        
+        var params: [Any?] = []
+        params.append(type)
+        
+        ViewControllerUtils.changeScreenSegued(caller: self, segue: "AttributeListingSegue", params: params)
+    }
+    
     // MARK: Profile picture 
 
     func chooseProfilePicture() {
@@ -168,4 +206,10 @@ class ProfileViewController: ListingBaseViewController, UIImagePickerControllerD
 
         picker.dismiss(animated: true)
     }
+}
+
+// MARK: Custom notifications to reload attributes
+
+extension Notification.Name {
+    static let reloadAttributes = Notification.Name("reloadAttributes")
 }

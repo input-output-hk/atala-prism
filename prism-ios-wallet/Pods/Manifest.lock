@@ -52,7 +52,6 @@ PODS:
   - AlamofireObjectMapper (5.2.1):
     - Alamofire (~> 4.7)
     - ObjectMapper (~> 3.4)
-  - BitcoinKit (1.1.0)
   - BoringSSL-GRPC (0.0.3):
     - BoringSSL-GRPC/Implementation (= 0.0.3)
     - BoringSSL-GRPC/Interface (= 0.0.3)
@@ -90,7 +89,7 @@ PODS:
     - Braintree/UnionPay (~> 4.30)
     - BraintreeDropIn/UIKit
   - BraintreeDropIn/UIKit (7.5.0)
-  - crypto (0.1.0-394e5f71):
+  - crypto (0.1.0-28e7cec7):
     - Secp256k1Kit.swift (= 1.1)
   - Firebase/Analytics (6.23.0):
     - Firebase/Core
@@ -312,7 +311,6 @@ DEPENDENCIES:
   - Alamofire (~> 4.8.2)
   - AlamofireImage (~> 3.5)
   - AlamofireObjectMapper (~> 5.2)
-  - BitcoinKit (~> 1.1.0)
   - BraintreeDropIn (~> 7.5.0)
   - crypto (from `../prism-kotlin-sdk/crypto`)
   - Firebase/Analytics
@@ -335,7 +333,6 @@ SPEC REPOS:
     - Alamofire
     - AlamofireImage
     - AlamofireObjectMapper
-    - BitcoinKit
     - BoringSSL-GRPC
     - Braintree
     - BraintreeDropIn
@@ -389,11 +386,10 @@ SPEC CHECKSUMS:
   Alamofire: ae5c501addb7afdbb13687d7f2f722c78734c2d3
   AlamofireImage: 63cfe3baf1370be6c498149687cf6db3e3b00999
   AlamofireObjectMapper: 1989f690e982b71921b9253f53a4f33a9bc00d88
-  BitcoinKit: a8c198d2a57caf64dc43271901f8c5a2309aced2
   BoringSSL-GRPC: db8764df3204ccea016e1c8dd15d9a9ad63ff318
   Braintree: 586e4d274398fabe9d70ab790eefca41660b8a17
   BraintreeDropIn: 15d6f53bf80bc0ae7809ab17803100c0a5448fd2
-  crypto: a6c4ee156934aebd03f28c99dc9eb8f67bd9c5dc
+  crypto: 007b93c5fa78285f0be8866f370b92c3b1bb1f84
   Firebase: 585ae467b3edda6a5444e788fda6888f024d8d6f
   FirebaseABTesting: 821a3a3e4a145987e80fee3657c4de1cb9adf693
   FirebaseAnalytics: 558f7a03d19de451093032c806f39d5f9dff096e
@@ -435,6 +431,6 @@ SPEC CHECKSUMS:
   Tabman: 55d3d18f393ce5119515cd0349c841a07774c895
   Toast-Swift: 9b6a70f28b3bf0b96c40d46c0c4b9d6639846711
 
-PODFILE CHECKSUM: 6afb7502d7613575dbba454a6a9e69b7a079a261
+PODFILE CHECKSUM: de2d7d33ce5026ed37a8ff5a5d0b3f5e07ecf1b0
 
 COCOAPODS: 1.10.0

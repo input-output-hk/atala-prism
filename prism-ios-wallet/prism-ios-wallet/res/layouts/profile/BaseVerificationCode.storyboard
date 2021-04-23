@@ -1,0 +1,190 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="17701" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES" initialViewController="U80-wT-XhI">
+    <device id="retina6_1" orientation="portrait" appearance="light"/>
+    <dependencies>
+        <deployment identifier="iOS"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="17703"/>
+        <capability name="Safe area layout guides" minToolsVersion="9.0"/>
+        <capability name="System colors in document resources" minToolsVersion="11.0"/>
+        <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
+    </dependencies>
+    <scenes>
+        <!--Base Verification Code View Controller-->
+        <scene sceneID="N2T-Rk-C7Q">
+            <objects>
+                <viewController storyboardIdentifier="BaseVerificationCode" id="U80-wT-XhI" customClass="BaseVerificationCodeViewController" customModule="Atala_PRISM" customModuleProvider="target" sceneMemberID="viewController">
+                    <view key="view" contentMode="scaleToFill" id="7jK-nF-Di0">
+                        <rect key="frame" x="0.0" y="0.0" width="414" height="896"/>
+                        <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+                        <subviews>
+                            <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleToFill" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="img_phone_verif_bg" translatesAutoresizingMaskIntoConstraints="NO" id="x37-9g-1cj">
+                                <rect key="frame" x="0.0" y="0.0" width="414" height="896"/>
+                            </imageView>
+                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="INSERT PIN CODE" lineBreakMode="tailTruncation" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="ELu-52-xWA">
+                                <rect key="frame" x="24" y="303" width="132.5" height="19.5"/>
+                                <fontDescription key="fontDescription" type="system" pointSize="16"/>
+                                <color key="textColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                <nil key="highlightedColor"/>
+                                <userDefinedRuntimeAttributes>
+                                    <userDefinedRuntimeAttribute type="string" keyPath="textColorIB" value="appWhite"/>
+                                    <userDefinedRuntimeAttribute type="string" keyPath="localized" value="phone_verification_code_pint_title"/>
+                                </userDefinedRuntimeAttributes>
+                            </label>
+                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Verification Code" textAlignment="center" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="ev9-hl-Ujb">
+                                <rect key="frame" x="24" y="157.5" width="172" height="26.5"/>
+                                <fontDescription key="fontDescription" type="system" weight="semibold" pointSize="22"/>
+                                <color key="textColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                <nil key="highlightedColor"/>
+                                <userDefinedRuntimeAttributes>
+                                    <userDefinedRuntimeAttribute type="string" keyPath="textColorIB" value="appWhite"/>
+                                    <userDefinedRuntimeAttribute type="string" keyPath="localized" value="phone_verification_code_body_Title_bold"/>
+                                </userDefinedRuntimeAttributes>
+                            </label>
+                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Insert" lineBreakMode="tailTruncation" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="bfH-4b-2kh">
+                                <rect key="frame" x="24" y="122" width="44.5" height="19.5"/>
+                                <fontDescription key="fontDescription" type="system" weight="semibold" pointSize="16"/>
+                                <color key="textColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                <nil key="highlightedColor"/>
+                                <userDefinedRuntimeAttributes>
+                                    <userDefinedRuntimeAttribute type="string" keyPath="textColorIB" value="appWhite"/>
+                                    <userDefinedRuntimeAttribute type="string" keyPath="localized" value="phone_verification_code_body_title"/>
+                                </userDefinedRuntimeAttributes>
+                            </label>
+                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Check your messages and insert your 4 digit code and confirm it below" lineBreakMode="tailTruncation" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="hVc-b5-7Kb">
+                                <rect key="frame" x="24" y="216" width="366" height="43"/>
+                                <fontDescription key="fontDescription" type="system" pointSize="18"/>
+                                <color key="textColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                <nil key="highlightedColor"/>
+                                <userDefinedRuntimeAttributes>
+                                    <userDefinedRuntimeAttribute type="string" keyPath="textColorIB" value="appWhite"/>
+                                    <userDefinedRuntimeAttribute type="string" keyPath="localized" value="phone_verification_code_body_message"/>
+                                </userDefinedRuntimeAttributes>
+                            </label>
+                            <stackView opaque="NO" contentMode="scaleToFill" distribution="fillEqually" spacing="44" translatesAutoresizingMaskIntoConstraints="NO" id="IdH-IJ-eB8">
+                                <rect key="frame" x="24" y="338.5" width="366" height="50"/>
+                                <subviews>
+                                    <textField opaque="NO" tag="1" contentMode="scaleToFill" contentHorizontalAlignment="left" contentVerticalAlignment="center" borderStyle="roundedRect" placeholder="0" textAlignment="center" minimumFontSize="17" translatesAutoresizingMaskIntoConstraints="NO" id="Hre-c0-h4P">
+                                        <rect key="frame" x="0.0" y="0.0" width="58.5" height="50"/>
+                                        <fontDescription key="fontDescription" type="system" pointSize="32"/>
+                                        <textInputTraits key="textInputTraits" keyboardType="numberPad" returnKeyType="next"/>
+                                        <connections>
+                                            <outlet property="delegate" destination="U80-wT-XhI" id="f2W-NS-ExU"/>
+                                        </connections>
+                                    </textField>
+                                    <textField opaque="NO" tag="2" contentMode="scaleToFill" contentHorizontalAlignment="left" contentVerticalAlignment="center" borderStyle="roundedRect" placeholder="0" textAlignment="center" minimumFontSize="17" translatesAutoresizingMaskIntoConstraints="NO" id="I4S-j1-OrS">
+                                        <rect key="frame" x="102.5" y="0.0" width="58.5" height="50"/>
+                                        <fontDescription key="fontDescription" type="system" pointSize="32"/>
+                                        <textInputTraits key="textInputTraits" keyboardType="numberPad" returnKeyType="next"/>
+                                        <connections>
+                                            <outlet property="delegate" destination="U80-wT-XhI" id="su6-dC-p33"/>
+                                        </connections>
+                                    </textField>
+                                    <textField opaque="NO" tag="3" contentMode="scaleToFill" contentHorizontalAlignment="left" contentVerticalAlignment="center" borderStyle="roundedRect" placeholder="0" textAlignment="center" minimumFontSize="17" translatesAutoresizingMaskIntoConstraints="NO" id="zq0-bS-GSW">
+                                        <rect key="frame" x="205" y="0.0" width="58.5" height="50"/>
+                                        <fontDescription key="fontDescription" type="system" pointSize="32"/>
+                                        <textInputTraits key="textInputTraits" keyboardType="numberPad" returnKeyType="next"/>
+                                        <connections>
+                                            <outlet property="delegate" destination="U80-wT-XhI" id="qjI-qO-vNI"/>
+                                        </connections>
+                                    </textField>
+                                    <textField opaque="NO" tag="4" contentMode="scaleToFill" contentHorizontalAlignment="left" contentVerticalAlignment="center" borderStyle="roundedRect" placeholder="0" textAlignment="center" minimumFontSize="17" translatesAutoresizingMaskIntoConstraints="NO" id="XSE-Vb-AJR">
+                                        <rect key="frame" x="307.5" y="0.0" width="58.5" height="50"/>
+                                        <fontDescription key="fontDescription" type="system" pointSize="32"/>
+                                        <textInputTraits key="textInputTraits" keyboardType="numberPad" returnKeyType="done"/>
+                                        <connections>
+                                            <outlet property="delegate" destination="U80-wT-XhI" id="Sqo-d7-lC5"/>
+                                        </connections>
+                                    </textField>
+                                </subviews>
+                                <constraints>
+                                    <constraint firstAttribute="height" constant="50" id="bqB-NM-BDD"/>
+                                </constraints>
+                            </stackView>
+                            <stackView hidden="YES" opaque="NO" contentMode="scaleToFill" distribution="fillProportionally" spacing="8" translatesAutoresizingMaskIntoConstraints="NO" id="hax-hT-OlK">
+                                <rect key="frame" x="24" y="404.5" width="366" height="17"/>
+                                <subviews>
+                                    <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFit" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="ico_verified" translatesAutoresizingMaskIntoConstraints="NO" id="s8g-xQ-NF5">
+                                        <rect key="frame" x="0.0" y="0.0" width="17" height="17"/>
+                                        <constraints>
+                                            <constraint firstAttribute="width" constant="17" id="GFT-iB-x7E"/>
+                                            <constraint firstAttribute="height" constant="17" id="sdi-w2-EjF"/>
+                                        </constraints>
+                                    </imageView>
+                                    <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Your PIN Code is correct" lineBreakMode="tailTruncation" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="OWr-gj-GFf">
+                                        <rect key="frame" x="25" y="0.0" width="341" height="17"/>
+                                        <fontDescription key="fontDescription" type="system" weight="semibold" pointSize="12"/>
+                                        <color key="textColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                        <nil key="highlightedColor"/>
+                                        <userDefinedRuntimeAttributes>
+                                            <userDefinedRuntimeAttribute type="string" keyPath="textColorIB" value="appWhite"/>
+                                            <userDefinedRuntimeAttribute type="string" keyPath="localized" value="phone_verification_code_pint_verified"/>
+                                        </userDefinedRuntimeAttributes>
+                                    </label>
+                                </subviews>
+                            </stackView>
+                            <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="Pty-iF-Za7">
+                                <rect key="frame" x="31" y="794" width="352" height="44"/>
+                                <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                <fontDescription key="fontDescription" type="system" weight="semibold" pointSize="16"/>
+                                <inset key="contentEdgeInsets" minX="0.0" minY="12" maxX="0.0" maxY="12"/>
+                                <state key="normal" title="Button">
+                                    <color key="titleColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                </state>
+                                <state key="disabled">
+                                    <color key="titleColor" red="0.62745098040000002" green="0.66666666669999997" blue="0.73333333329999995" alpha="1" colorSpace="custom" customColorSpace="displayP3"/>
+                                </state>
+                                <userDefinedRuntimeAttributes>
+                                    <userDefinedRuntimeAttribute type="string" keyPath="textColorIB" value="appWhite"/>
+                                    <userDefinedRuntimeAttribute type="string" keyPath="localized" value="phone_verification_code_button"/>
+                                </userDefinedRuntimeAttributes>
+                                <connections>
+                                    <action selector="confirm:" destination="U80-wT-XhI" eventType="touchUpInside" id="mnW-fp-Jpp"/>
+                                </connections>
+                            </button>
+                        </subviews>
+                        <viewLayoutGuide key="safeArea" id="vgA-3S-R6O"/>
+                        <color key="backgroundColor" systemColor="systemBackgroundColor"/>
+                        <constraints>
+                            <constraint firstItem="hVc-b5-7Kb" firstAttribute="leading" secondItem="vgA-3S-R6O" secondAttribute="leading" constant="24" id="1PI-MW-PJC"/>
+                            <constraint firstItem="hVc-b5-7Kb" firstAttribute="top" secondItem="ev9-hl-Ujb" secondAttribute="bottom" constant="32" id="7yc-GD-7CN"/>
+                            <constraint firstItem="bfH-4b-2kh" firstAttribute="leading" secondItem="vgA-3S-R6O" secondAttribute="leading" constant="24" id="AkE-Aq-dTT"/>
+                            <constraint firstItem="IdH-IJ-eB8" firstAttribute="leading" secondItem="vgA-3S-R6O" secondAttribute="leading" constant="24" id="BY8-jd-rwt"/>
+                            <constraint firstItem="Pty-iF-Za7" firstAttribute="leading" secondItem="vgA-3S-R6O" secondAttribute="leading" constant="31" id="FaW-fF-3cg"/>
+                            <constraint firstItem="vgA-3S-R6O" firstAttribute="trailing" secondItem="Pty-iF-Za7" secondAttribute="trailing" constant="31" id="GPt-L3-dy0"/>
+                            <constraint firstItem="bfH-4b-2kh" firstAttribute="top" secondItem="vgA-3S-R6O" secondAttribute="top" constant="78" id="NtE-2V-ewZ"/>
+                            <constraint firstItem="hax-hT-OlK" firstAttribute="leading" secondItem="vgA-3S-R6O" secondAttribute="leading" constant="24" id="RLB-D7-MSR"/>
+                            <constraint firstItem="vgA-3S-R6O" firstAttribute="trailing" secondItem="hax-hT-OlK" secondAttribute="trailing" constant="24" id="RgV-6m-0vV"/>
+                            <constraint firstItem="x37-9g-1cj" firstAttribute="trailing" secondItem="vgA-3S-R6O" secondAttribute="trailing" id="TZZ-Zv-A3t"/>
+                            <constraint firstItem="ELu-52-xWA" firstAttribute="top" secondItem="hVc-b5-7Kb" secondAttribute="bottom" constant="44" id="WQK-3e-DYO"/>
+                            <constraint firstItem="ELu-52-xWA" firstAttribute="leading" secondItem="vgA-3S-R6O" secondAttribute="leading" constant="24" id="Y2M-Dq-IxU"/>
+                            <constraint firstItem="vgA-3S-R6O" firstAttribute="trailing" secondItem="IdH-IJ-eB8" secondAttribute="trailing" constant="24" id="aX3-9a-8lz"/>
+                            <constraint firstItem="vgA-3S-R6O" firstAttribute="trailing" secondItem="hVc-b5-7Kb" secondAttribute="trailing" constant="24" id="bWd-cF-gXF"/>
+                            <constraint firstItem="x37-9g-1cj" firstAttribute="top" secondItem="7jK-nF-Di0" secondAttribute="top" id="bkF-bJ-7Vp"/>
+                            <constraint firstAttribute="bottom" secondItem="x37-9g-1cj" secondAttribute="bottom" id="jay-0Q-H5d"/>
+                            <constraint firstItem="vgA-3S-R6O" firstAttribute="bottom" secondItem="Pty-iF-Za7" secondAttribute="bottom" constant="24" id="kfZ-tB-mwo"/>
+                            <constraint firstItem="ev9-hl-Ujb" firstAttribute="leading" secondItem="vgA-3S-R6O" secondAttribute="leading" constant="24" id="lQf-Wf-5ff"/>
+                            <constraint firstItem="x37-9g-1cj" firstAttribute="leading" secondItem="vgA-3S-R6O" secondAttribute="leading" id="lVL-fj-WyO"/>
+                            <constraint firstItem="hax-hT-OlK" firstAttribute="top" secondItem="IdH-IJ-eB8" secondAttribute="bottom" constant="16" id="pKM-fk-kj9"/>
+                            <constraint firstItem="ev9-hl-Ujb" firstAttribute="top" secondItem="bfH-4b-2kh" secondAttribute="bottom" constant="16" id="pcD-DR-BVE"/>
+                            <constraint firstItem="IdH-IJ-eB8" firstAttribute="top" secondItem="ELu-52-xWA" secondAttribute="bottom" constant="16" id="uZb-tz-778"/>
+                        </constraints>
+                    </view>
+                    <connections>
+                        <outlet property="confirmButton" destination="Pty-iF-Za7" id="Djk-Ad-c6k"/>
+                        <outlet property="messageLabel" destination="hVc-b5-7Kb" id="8jW-M7-kFa"/>
+                        <outlet property="stackview" destination="hax-hT-OlK" id="MhV-sm-a3u"/>
+                    </connections>
+                </viewController>
+                <placeholder placeholderIdentifier="IBFirstResponder" id="Lm8-PS-NpO" userLabel="First Responder" customClass="UIResponder" sceneMemberID="firstResponder"/>
+            </objects>
+            <point key="canvasLocation" x="-268.1159420289855" y="156.69642857142856"/>
+        </scene>
+    </scenes>
+    <resources>
+        <image name="ico_verified" width="19" height="18"/>
+        <image name="img_phone_verif_bg" width="375" height="812"/>
+        <systemColor name="systemBackgroundColor">
+            <color white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+        </systemColor>
+    </resources>
+</document>

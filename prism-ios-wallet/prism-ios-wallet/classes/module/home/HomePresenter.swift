@@ -43,9 +43,17 @@ class HomePresenter: ListingBasePresenter, ListingBaseTableUtilsPresenterDelegat
     func hasData() -> Bool {
         false
     }
+    
+    func getSectionHeaderViews() -> [UIView] {
+        return [UIView()]
+    }
+    
+    func getSectionCount() -> Int? {
+        return 1
+    }
 
-    func getElementCount() -> Int {
-        return activities.count + 4
+    func getElementCount() -> [Int] {
+        return [activities.count + 4]
     }
 
     func hasPullToRefresh() -> Bool {
