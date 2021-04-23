@@ -25,4 +25,4 @@ val masterKeyPair = EC.generateKeyPair()
 val did = DID.createUnpublishedDID(masterKeyPair.publicKey)
 ```
 
-**DID** can be created without *any network interaction nor blockchain transaction*. These **DIDs** are called **unpublished DIDs**.
+**DID** can be created without *any network interaction nor blockchain transaction*. These **DIDs** are called **unpublished DIDs** and where added to avoid waiting for them to be confirmed and make them operational once they are created.

@@ -125,3 +125,5 @@ val environment = "localhost" // If exists, replace 'localhost' with an url to y
 val connector = ProtoClientUtils.connectorClient(environment, 50051)
 val node = ProtoClientUtils.nodeClient(environment, 50053)
 ```
+
+**NOTE:** If a production-like environment with **Cardano** integration is used keep in mind that additional waits may be needed between the calls to backend services.

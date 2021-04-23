@@ -29,6 +29,12 @@ val issuerRegisterDIDResponse = runBlocking {
         )
     )
 }
+```
+If an environment with **Cardano** integration is used instead of a local one (with in-memory ledger), it is suggested to add a waiting period before running next commands.
+Note that calls sent almost at the same time may be added to the `Cardano` ledger in a different order than they were called. Due to this, a **Credential Batch** may not be considered valid due to the missing specific **Issuer's** key registered in previously sent `RegisterDID` command.
+An alternative to waiting times, one could avoid the above scenario by the use of `PublishAsABlock`call, that allows to specify the operations to perform in the exact order the client expects. 
+
+```kotlin
 val issuerDID = DID.fromString(issuerRegisterDIDResponse.did)
 
 // the DID takes some minutes to get confirmed by Cardano, in the mean time, the unpublished DID
@@ -43,7 +49,7 @@ println(
 )
 ```
 
-Also, `issuerUnpublishedDID` is created which is a **DID** without *any network interaction nor blockchain transaction*. We call these **unpublished DIDs**.
+Also, `issuerUnpublishedDID` is created which is a **DID** without *any network interaction nor blockchain transaction*. These **DIDs** are called **unpublished DIDs** and where added to avoid waiting for them to be confirmed and make them operational once they are created.
 
 
 ## Generating a connection token

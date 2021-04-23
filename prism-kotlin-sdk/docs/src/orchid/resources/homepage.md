@@ -8,7 +8,7 @@ Our server-side APIs are powered by [gRPC](https://grpc.io), which allows you to
 
 Make sure to check our [gRPC API reference](wiki/grpc/grpc-api) for further information.
 
-The current version of SDK **does not support** interaction with [Cardano](https://cardano.org/) blockchain. All interactions with **Cardano** are simulated using in-memory ledger.
+The current version of SDK **supports** both interaction with [Cardano](https://cardano.org/) blockchain and with in-memory ledger. All interactions with **Cardano** take more time so using in-memory ledger is preferred in this tutorial.
 
 **Any problem?** Contact us using [this service email](mailto:atala-prism-support@iohk.io).
 
