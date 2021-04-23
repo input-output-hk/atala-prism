@@ -69,12 +69,14 @@ class NodeServiceImpl(
             longForm.validate
               .map { validatedLongForm =>
                 // validation succeeded, we check if the DID was published
-                resolve(DID.buildPrismDID(stateHash), butShowInDIDDocument = did) orElse { _ =>
+                resolve(DID.buildPrismDID(stateHash), butShowInDIDDocument = did).orReturn {
                   // if it was not published, we return the encoded initial state
                   succeedWith(
-                    ProtoCodecs.atalaOperationToDIDDataProto(
-                      did.suffix,
-                      validatedLongForm.initialState
+                    Some(
+                      ProtoCodecs.atalaOperationToDIDDataProto(
+                        did.suffix,
+                        validatedLongForm.initialState
+                      )
                     )
                   )
                 }
@@ -320,9 +322,9 @@ object NodeServiceImpl {
   }
 
   private def succeedWith(
-      didData: node_models.DIDData
+      didData: Option[node_models.DIDData]
   )(implicit logger: Logger): Future[node_api.GetDidDocumentResponse] = {
-    val response = node_api.GetDidDocumentResponse(Some(didData))
+    val response = node_api.GetDidDocumentResponse(document = didData)
     logger.info(s"response = ${response.toProtoString}")
     Future.successful(response)
   }
@@ -332,13 +334,25 @@ object NodeServiceImpl {
     Future.failed(new RuntimeException(msg))
   }
 
-  private case class OrElse(did: DID, state: Future[Either[NodeError, models.nodeState.DIDDataState]]) {
+  private case class OrElse(did: DID, state: Future[Either[NodeError, Option[models.nodeState.DIDDataState]]]) {
+    def orReturn(
+        initialState: => Future[node_api.GetDidDocumentResponse]
+    )(implicit ec: ExecutionContext, logger: Logger): Future[node_api.GetDidDocumentResponse] =
+      state.flatMap {
+        case Right(stMaybe) =>
+          stMaybe.fold(initialState)(st => succeedWith(Some(ProtoCodecs.toDIDDataProto(did.suffix.value, st))))
+        case Left(err: NodeError) =>
+          logger.info(err.toStatus.asRuntimeException().getMessage)
+          initialState
+      }
+
     def orElse(
         ifFailed: NodeError => Future[node_api.GetDidDocumentResponse]
     )(implicit ec: ExecutionContext, logger: Logger): Future[node_api.GetDidDocumentResponse] =
       state.flatMap {
-        case Right(st) =>
-          succeedWith(ProtoCodecs.toDIDDataProto(did.suffix.value, st))
+        case Right(stMaybe) =>
+          val didData = stMaybe.map(st => ProtoCodecs.toDIDDataProto(did.suffix.value, st))
+          succeedWith(didData)
         case Left(err: NodeError) => ifFailed(err)
       }
   }

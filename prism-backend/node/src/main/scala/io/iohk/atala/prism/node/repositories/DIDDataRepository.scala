@@ -1,8 +1,8 @@
 package io.iohk.atala.prism.node.repositories
 
-import cats.data.{EitherT, OptionT}
+import cats.data.EitherT
 import cats.effect.IO
-import doobie.free.connection
+import cats.implicits.catsSyntaxEitherId
 import doobie.implicits._
 import doobie.util.transactor.Transactor
 import io.iohk.atala.prism.identity.DID
@@ -15,23 +15,32 @@ import io.iohk.atala.prism.node.models.nodeState.DIDDataState
 import io.iohk.atala.prism.node.repositories.daos.{DIDDataDAO, PublicKeysDAO}
 import org.slf4j.{Logger, LoggerFactory}
 
+import scala.concurrent.Future
+
 class DIDDataRepository(xa: Transactor[IO]) {
 
   val logger: Logger = LoggerFactory.getLogger(getClass)
 
-  def findByDid(did: DID): FutureEither[NodeError, DIDDataState] = {
-    val query = for {
-      didSuffix <- OptionT(connection.pure(did.getCanonicalSuffix))
-        .toRight[NodeError](UnknownValueError("did", did.value))
-      lastOperation <- OptionT(DIDDataDAO.getLastOperation(didSuffix))
-        .toRight[NodeError](UnknownValueError("didSuffix", didSuffix.value))
-      keys <- EitherT.right[NodeError](PublicKeysDAO.findAll(didSuffix))
-    } yield DIDDataState(didSuffix, keys, lastOperation)
+  def findByDid(did: DID): FutureEither[NodeError, Option[DIDDataState]] = {
+    did.getCanonicalSuffix match {
+      case Some(didSuffix) =>
+        val query = for {
+          lastOperationMaybe <- DIDDataDAO.getLastOperation(didSuffix)
+          keys <- PublicKeysDAO.findAll(didSuffix)
+        } yield lastOperationMaybe map { lastOperation =>
+          DIDDataState(didSuffix, keys, lastOperation)
+        }
 
-    query.value
-      .logSQLErrors(s"finding, did - $did", logger)
-      .transact(xa)
-      .unsafeToFuture()
-      .toFutureEither
+        EitherT
+          .right(query)
+          .value
+          .logSQLErrors(s"finding, did - $did", logger)
+          .transact(xa)
+          .unsafeToFuture()
+          .toFutureEither
+      case None =>
+        logger.info(s"Unknown DID format: $did")
+        Future.successful(UnknownValueError("did", did.value).asLeft).toFutureEither
+    }
   }
 }

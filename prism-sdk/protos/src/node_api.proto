@@ -50,9 +50,9 @@ service NodeService {
 message GetDidDocumentRequest {
     string did = 1; // The DID suffix.
 }
-// Response when finding a DID Document.
+// Response to a DID Document query.
 message GetDidDocumentResponse {
-    DIDData document = 1; // The DID Document.
+    DIDData document = 1; // If present, the DID Document.
 }
 
 // Request to create a public DID.

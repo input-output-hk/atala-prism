@@ -7,7 +7,6 @@ import io.iohk.atala.prism.models.{Ledger, TransactionId}
 import io.iohk.atala.prism.node.errors.NodeError.UnknownValueError
 import io.iohk.atala.prism.node.models.nodeState.LedgerData
 import io.iohk.atala.prism.node.models.{DIDData, DIDPublicKey, KeyUsage}
-import org.scalatest.EitherValues._
 import org.scalatest.OptionValues._
 import java.time.Instant
 
@@ -60,20 +59,20 @@ class DIDDataRepositorySpec extends AtalaWithPostgresSpec {
       DataPreparation.createDID(didData, dummyLedgerData)
       val did = didDataRepository.findByDid(DID.buildPrismDID(didSuffix)).value.futureValue.toOption.value
 
-      did.didSuffix mustBe didSuffix
+      did.value.didSuffix mustBe didSuffix
     }
 
-    "return UnknownValueError when the DID suffix is not found" in {
+    "return empty DID document when the DID suffix is not found" in {
       DataPreparation.createDID(didData, dummyLedgerData)
 
       val result = didDataRepository
         .findByDid(DID.buildPrismDID(didSuffixFromDigest(digestGen(0, 2))))
         .value
         .futureValue
-        .left
+        .toOption
         .value
 
-      result must be(a[UnknownValueError])
+      result must be(empty)
     }
 
     "return error when did is in invalid format" in {
