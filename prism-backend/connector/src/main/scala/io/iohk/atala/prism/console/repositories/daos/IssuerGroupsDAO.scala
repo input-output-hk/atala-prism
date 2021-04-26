@@ -2,6 +2,7 @@ package io.iohk.atala.prism.console.repositories.daos
 
 import java.time.Instant
 
+import cats.syntax.functor._
 import cats.data.NonEmptyList
 import cats.implicits.catsStdInstancesForList
 import doobie.Update
@@ -19,7 +20,7 @@ object IssuerGroupsDAO {
     sql"""
          |INSERT INTO issuer_groups (group_id, issuer_id, name, created_at)
          |VALUES ($groupId, $issuerId, $name, $now)
-       """.stripMargin.update.run.map(_ => IssuerGroup(groupId, name, issuerId, now))
+       """.stripMargin.update.run.as(IssuerGroup(groupId, name, issuerId, now))
   }
 
   def getBy(issuer: Institution.Id): ConnectionIO[List[IssuerGroup.WithContactCount]] = {
@@ -76,7 +77,7 @@ object IssuerGroupsDAO {
   def addContact(groupId: IssuerGroup.Id, contactId: Contact.Id): ConnectionIO[Unit] = {
     sql"""INSERT INTO contacts_per_group (group_id, contact_id, added_at)
          |VALUES ($groupId, $contactId, ${Instant.now()})
-         |""".stripMargin.update.run.map(_ => ())
+         |""".stripMargin.update.run.void
   }
 
   def addContacts(groupId: IssuerGroup.Id, contactIds: List[Contact.Id]): ConnectionIO[Unit] = {
@@ -87,7 +88,7 @@ object IssuerGroupsDAO {
                 |""".stripMargin
     Update[(IssuerGroup.Id, Contact.Id, Instant)](sql)
       .updateMany(contactIds.map(contactId => (groupId, contactId, addedAt)))
-      .map(_ => ())
+      .void
   }
 
   def removeContacts(groupId: IssuerGroup.Id, contactIds: List[Contact.Id]): ConnectionIO[Unit] = {
@@ -95,7 +96,7 @@ object IssuerGroupsDAO {
       case Some(contactIdsNonEmpty) =>
         val fragment = fr"DELETE FROM contacts_per_group" ++
           whereAnd(fr"group_id = $groupId", in(fr"contact_id", contactIdsNonEmpty))
-        fragment.update.run.map(_ => ())
+        fragment.update.run.void
       case None =>
         unit
     }

@@ -11,7 +11,7 @@ import {
 } from '../../../../helpers/formDefinitions/contacts';
 import { DynamicFormContext } from '../../../../providers/DynamicFormProvider';
 
-const ContactCreationTable = ({ api, tableProps, setDisableSave }) => {
+const ContactCreationTable = ({ api, tableProps }) => {
   const { allContacts } = useAllContacts(api.contactsManager);
   const { form } = useContext(DynamicFormContext);
 
@@ -21,7 +21,6 @@ const ContactCreationTable = ({ api, tableProps, setDisableSave }) => {
       columns={CONTACT_FORM_COLUMNS()}
       skeleton={CONTACT_FORM(allContacts, form)}
       initialValues={CONTACT_INITIAL_VALUE}
-      setDisableSave={setDisableSave}
       preExistingEntries={allContacts}
       useCase={IMPORT_CONTACTS}
     />
@@ -32,8 +31,7 @@ ContactCreationTable.propTypes = {
   api: PropTypes.shape({
     contactsManager: PropTypes.shape({ getContact: PropTypes.func })
   }).isRequired,
-  tableProps: PropTypes.shape({}).isRequired,
-  setDisableSave: PropTypes.func.isRequired
+  tableProps: PropTypes.shape({}).isRequired
 };
 
 export default withApi(ContactCreationTable);

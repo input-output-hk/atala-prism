@@ -41,7 +41,7 @@ class VerifyIdTutorialViewController: BaseViewController {
     @IBAction func continueTapped(_ sender: Any) {
         presenterImpl.continueTapped()
     }
-    
+
     @IBAction func skipTapped(_ sender: Any) {
         presenterImpl.skipTapped()
     }

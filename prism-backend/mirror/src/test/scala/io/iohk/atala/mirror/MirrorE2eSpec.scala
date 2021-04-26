@@ -68,7 +68,7 @@ class MirrorE2eSpec extends PostgresRepositorySpec[Task] with Matchers with Mirr
           connectorClientService,
           nodeService
         )
-        mirrorService = new MirrorService(database, connectorClientService)
+        mirrorService = new MirrorServiceImpl(database, connectorClientService)
 
         // Wallet: connector with public key auth
         walletConnectorClientService = new BaseGrpcClientService(

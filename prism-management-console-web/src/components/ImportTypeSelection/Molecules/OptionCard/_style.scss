@@ -41,20 +41,8 @@
       border-radius: 10px;
       box-shadow: $red-shadow;
       display: flex;
-      justify-content: center;
+      justify-content: center !important;
       flex-wrap: wrap;
-      .ant-avatar-circle {
-        color: $primary-color;
-        background-color: white;
-        border-color: $primary-color;
-        border-radius: 20px;
-        border-style: solid;
-        border-width: 2px;
-        span {
-          font-size: 18px;
-          line-height: 28px;
-        }
-      }
 
       h1 {
         @include secondary-text($h2, $secondary-color);
@@ -108,15 +96,6 @@
   display: flex;
   justify-content: center;
   flex-direction: column;
-  .ant-avatar-circle {
-    color: $grey;
-    opacity: 0.2;
-    background-color: white;
-    border-color: $dark-grey;
-    border-radius: 20px;
-    border-style: solid;
-    border-width: 2px;
-  }
   img {
     opacity: 0.5;
   }

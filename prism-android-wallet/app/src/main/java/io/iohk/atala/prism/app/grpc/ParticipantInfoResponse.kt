@@ -1,9 +1,9 @@
 package io.iohk.atala.prism.app.grpc
 
-import io.iohk.atala.prism.protos.ParticipantInfo
-
 data class ParticipantInfoResponse(
-    val participantInfo: ParticipantInfo,
+    val did: String,
+    val name: String,
+    val logo: ByteArray?,
     val token: String,
     val alreadyAdded: Boolean
 )

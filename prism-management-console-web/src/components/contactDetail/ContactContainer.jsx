@@ -6,6 +6,11 @@ import { message } from 'antd';
 import { withApi } from '../providers/withApi';
 import Logger from '../../helpers/Logger';
 import Contact from './Contact';
+import {
+  DEFAULT_CREDENTIAL_VERIFICATION_RESULT,
+  DRAFT_CREDENTIAL_VERIFICATION_RESULT,
+  PENDING_CREDENTIAL_VERIFICATION_RESULT
+} from '../../helpers/constants';
 
 const ContactContainer = ({ api }) => {
   const { t } = useTranslation();
@@ -115,6 +120,17 @@ const ContactContainer = ({ api }) => {
     else setLoadingByKey('receivedCredentials', false);
   }, [contact, getReceivedCredentials, setLoadingByKey]);
 
+  const verifyCredential = ({ encodedsignedcredential, batchinclusionproof }) =>
+    batchinclusionproof
+      ? api.wallet.verifyCredential(encodedsignedcredential, batchinclusionproof).catch(error => {
+          Logger.error('There has been an error verifiying the credential', error);
+          const pendingPublication = error.message.includes('Missing publication date');
+          if (pendingPublication) return PENDING_CREDENTIAL_VERIFICATION_RESULT;
+          message.error(t('credentials.errors.errorVerifying'));
+          return DEFAULT_CREDENTIAL_VERIFICATION_RESULT;
+        })
+      : DRAFT_CREDENTIAL_VERIFICATION_RESULT;
+
   return (
     <Contact
       loading={loading}
@@ -123,6 +139,7 @@ const ContactContainer = ({ api }) => {
       issuedCredentials={issuedCredentials}
       receivedCredentials={receivedCredentials}
       credentialTypes={credentialTypes}
+      verifyCredential={verifyCredential}
     />
   );
 };
@@ -136,7 +153,8 @@ ContactContainer.propTypes = {
       getCredentialTypes: PropTypes.func,
       getBlockchainData: PropTypes.func
     }),
-    credentialsReceivedManager: PropTypes.shape({ getReceivedCredentials: PropTypes.func })
+    credentialsReceivedManager: PropTypes.shape({ getReceivedCredentials: PropTypes.func }),
+    wallet: PropTypes.shape({ verifyCredential: PropTypes.func })
   }).isRequired
 };
 

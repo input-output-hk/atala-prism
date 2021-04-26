@@ -10,7 +10,7 @@ import Foundation
 
 class HomePresenter: ListingBasePresenter, ListingBaseTableUtilsPresenterDelegate, HomeProfileTableViewCellDelegate,
                      HomeActivityLogHeaderTableViewCellDelegate, HomeActivityLogTableViewCellDelegate,
-                     HomePromotionalTableViewCellDelegate {
+                     HomePromotionalTableViewCellDelegate, HomeCardsTableViewCellDelegate {
 
     var viewImpl: HomeViewController? {
         return view as? HomeViewController
@@ -43,9 +43,17 @@ class HomePresenter: ListingBasePresenter, ListingBaseTableUtilsPresenterDelegat
     func hasData() -> Bool {
         false
     }
+    
+    func getSectionHeaderViews() -> [UIView] {
+        return [UIView()]
+    }
+    
+    func getSectionCount() -> Int? {
+        return 1
+    }
 
-    func getElementCount() -> Int {
-        return activities.count + 3
+    func getElementCount() -> [Int] {
+        return [activities.count + 4]
     }
 
     func hasPullToRefresh() -> Bool {
@@ -155,7 +163,7 @@ class HomePresenter: ListingBasePresenter, ListingBaseTableUtilsPresenterDelegat
     // MARK: HomeActivityLogTableViewCellDelegate
 
     func setup(for cell: HomeActivityLogTableViewCell) {
-        let index = (cell.indexPath?.row ?? 2) - 2
+        let index = (cell.indexPath?.row ?? 3) - 3
         cell.config(history: activities[index])
     }
 
@@ -173,5 +181,33 @@ class HomePresenter: ListingBasePresenter, ListingBaseTableUtilsPresenterDelegat
         let items: [Any] = [URL(string: "https://apps.apple.com/us/app/atala-prism/id1515523675")!]
         let activity = UIActivityViewController(activityItems: items, applicationActivities: nil)
         viewImpl?.present(activity, animated: true)
+    }
+
+    // MARK: HomeCardsTableViewCellDelegate
+
+    func setup(for cell: HomeCardsTableViewCell) {
+        let loggedUser = sharedMemory.loggedUser
+        cell.config(hidePayId: loggedUser?.payIdCardDismissed ?? false,
+                    hideVerifyId: loggedUser?.verifyIdCardDismissed ?? false, delegate: self)
+    }
+
+    func payIdTapped(for cell: HomeCardsTableViewCell) {
+        // TODO: this will be implemented with the pay id functionality
+    }
+
+    func dismissPayIdTapped(for cell: HomeCardsTableViewCell) {
+        sharedMemory.loggedUser?.payIdCardDismissed = true
+        sharedMemory.loggedUser = sharedMemory.loggedUser
+        viewImpl?.table.reloadData()
+    }
+
+    func verifyIdTapped(for cell: HomeCardsTableViewCell) {
+        // TODO: this will be implemented with the verify id functionality
+    }
+
+    func dismissVerifyIdTapped(for cell: HomeCardsTableViewCell) {
+        sharedMemory.loggedUser?.verifyIdCardDismissed = true
+        sharedMemory.loggedUser = sharedMemory.loggedUser
+        viewImpl?.table.reloadData()
     }
 }

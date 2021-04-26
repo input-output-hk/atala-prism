@@ -24,10 +24,12 @@
 "accept" = "Accept";
 "service_error" = "Service is unavailable. Try again later";
 "back" = "Back";
+"add" = "Add";
+"close" = "Close";
 
  // <!-- Default errors and loadings -->
 "coming_soon_btn" = "COMING SOON";
-"coming_soon_title" = "Coming soon...";
+"coming_soon_title" = "Coming soon";
 "error_generic_title" = "Error";
 "error_generic_error" = "An error occurred. Try again.";
 "error_connection_error" = "No connection found. Try again.";
@@ -137,17 +139,74 @@
 "credentials_verify_download_error" = "Error downloading file";
 
 // <!-- Profile -->
-"profile_nav_title" = "Profile";
+"profile_nav_title" = "My Profile";
 "profile_tab_personal" = "Personal";
 "profile_tab_qr_code" = "QR Code";
-"profile_field_title_fullname" = "Full Name";
-"profile_field_title_country" = "Country";
-"profile_field_title_email" = "Email";
 "profile_field_title_dateofbirth" = "Date of Birth";
-"profile_edit_nav_title" = "Edit Profile";
+"profile_edit_nav_title" = "Edit My Profile";
 "profile_camera" = "Take from camera";
 "profile_library" = "Choose from library";
 "profile_remove_image" = "Remove image";
+"profile_table_header_title" = "PERSONAL ATTRIBUTES";
+"profile_table_header_title_social" = "SOCIAL ATTRIBUTES";
+"profile_row_personal_info_title" = "Personal Info";
+"profile_attribute_title" = "Type";
+"profile_attribute_email" = "Email";
+"profile_attribute_phone" = "Phone";
+
+// <!-- Profile Detail -->
+"profile_detail_title" = "Attribute detail";
+"profile_detail_subtitle" = "Profile Info";
+"profile_detail_status" = "Status:";
+"profile_detail_verified" = "Verified";
+"profile_detail_field_title_firstname" = "First Name";
+"profile_detail_field_title_lastname" = "Last Name";
+"profile_detail_field_title_nationality" = "Nationality";
+"profile_detail_field_title_cityzenship" = "Cityzenship";
+"profile_detail_field_title_gender" = "Gender";
+"profile_detail_field_title_birthday" = "Date of Birth";
+"profile_detail_country_picker_title" = "Country";
+"profile_detail_country_picker_button" = "Close";
+
+// <!-- Add Attribute -->
+"attribute_title" = "Add a New Attribute";
+"attribute_description" = "After completing your status will be pending for 48 hs and you will recieve a confirmation";
+"attribute_field_category" = "Attribute Category";
+"attribute_field_attribute" = "Attribute Type";
+"attribute_field_value" = "Value";
+
+// <!-- Email Verification -->
+"email_verification_title" = "Email Verification";
+"email_verification_body_title" = "Verify Email";
+"email_verification_body_message" = "Please enter your Email address below";
+"email_verification_input" = "Email";
+"email_verification_button" = "Verify Email";
+
+// <!-- Phone Verification -->
+"phone_verification_title" = "Phone Verification";
+"phone_verification_body_title" = "Verify Phone Number";
+"phone_verification_body_message" = "Please enter your Country and Phone number below";
+"phone_verification_input" = "Phone Number";
+"phone_verification_button" = "Verify Phone";
+"phone_verification_country_picker_title" = "Country";
+
+// <!-- Base Verification Code -->
+"phone_verification_code_body_title" = "Insert";
+"phone_verification_code_body_Title_bold" = "Verification Code";
+"phone_verification_code_body_message" = "Check your messages and insert your 4 digit code and confirm it below";
+"phone_verification_code_body_message_bold" = "4 digit code";
+"phone_verification_code_pint_title" = "INSERT PIN CODE";
+"phone_verification_code_pint_verified" = "Your PIN Code is correct";
+"phone_verification_code_button" = "Done";
+
+// <!-- Attribute Listing -->
+"attribute_listing_title" = "Attribute detail";
+"attribute_listing_email" = "Email";
+"attribute_listing_phone" = "Phones";
+"attribute_listing_status" = "Status:";
+"attribute_listing_verified" = "Verified";
+"attribute_listing_issuing" = "Issuing Authority:";
+"attribute_listing_acuant" = "Acuant";
 
 // <!-- Settings -->
 "settings_nav_title" = "Settings";
@@ -331,6 +390,14 @@
 "home_promotional_share" = "Share with your Friends!";
 "home_promotional_share_desc" = "Atala PRISM lorem ipsum\ndolor sit amtet";
 "home_promotional_send_invite" = "Send Invite";
+"home_payid_title" = "Get your Pay ID now!";
+"home_payid_subtitle_first" = "You can start now or do it later by goint to the ";
+"home_payid_subtitle_bold" = "Settings";
+"home_payid_subtitle_second" = " option on the bottom menu.";
+"home_payid" = "Pay ID";
+"home_get_now" = "Get it Now !";
+"home_verified_title" = "Get your Verified Credential!";
+"home_verified" = "Verified Credential";
 
 // <!-- Verify Identity -->
 "verifyid_tutorial_title" = "Verify your identity";

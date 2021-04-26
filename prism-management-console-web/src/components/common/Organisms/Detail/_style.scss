@@ -183,6 +183,22 @@
       @include body-text($label, #40eaea, 400);
     }
   }
+  .PendingButton {
+    border: 1px solid #ffd100;
+    padding: 10px;
+    border-radius: 10px;
+    display: flex;
+    img {
+      margin-right: 5px;
+    }
+    span {
+      @include body-text($label, #ffd100, bold);
+      margin-right: 3px;
+    }
+    p {
+      @include body-text($label, #ffd100, 400);
+    }
+  }
   .InvalidButton {
     border: 1px solid $primary-color;
     padding: 10px;

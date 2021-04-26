@@ -11,12 +11,9 @@ import io.iohk.atala.prism.models.{ConnectionState, ConnectionToken}
 import doobie.implicits._
 import io.iohk.atala.mirror.MirrorFixtures
 import io.iohk.atala.mirror.models.Connection
-import io.iohk.atala.mirror.protos.mirror_api.{
-  CreateAccountResponse,
-  GetCredentialForAddressRequest,
-  GetIdentityInfoForAddressRequest
-}
+import io.iohk.atala.mirror.protos.mirror_api.{CreateAccountResponse, GetCredentialForAddressRequest}
 import io.iohk.atala.prism.stubs.ConnectorClientServiceStub
+import org.scalatest.OptionValues._
 
 import scala.concurrent.duration.DurationInt
 
@@ -28,7 +25,7 @@ class MirrorServiceSpec extends PostgresRepositorySpec[Task] with MockitoSugar w
     // given
     val token = "token"
     val connectorClientStub = new ConnectorClientServiceStub(token)
-    val mirrorService = new MirrorService(database, connectorClientStub)
+    val mirrorService = new MirrorServiceImpl(database, connectorClientStub)
     val updatedAt = Instant.now()
 
     // when
@@ -62,7 +59,7 @@ class MirrorServiceSpec extends PostgresRepositorySpec[Task] with MockitoSugar w
 
       // when
       val response = mirrorService
-        .getCredentialForAddress(GetCredentialForAddressRequest(cardanoAddressInfo1.cardanoAddress.address))
+        .getCredentialForAddress(GetCredentialForAddressRequest(cardanoAddressInfo1.cardanoAddress.value))
         .runSyncUnsafe()
 
       // then
@@ -77,7 +74,7 @@ class MirrorServiceSpec extends PostgresRepositorySpec[Task] with MockitoSugar w
     "return error when address cannot be found" in new MirrorServiceFixtures {
       // when
       val response = mirrorService
-        .getCredentialForAddress(GetCredentialForAddressRequest(cardanoAddressInfo1.cardanoAddress.address))
+        .getCredentialForAddress(GetCredentialForAddressRequest(cardanoAddressInfo1.cardanoAddress.value))
         .runSyncUnsafe()
 
       // then
@@ -96,11 +93,11 @@ class MirrorServiceSpec extends PostgresRepositorySpec[Task] with MockitoSugar w
 
       // when
       val response = mirrorService
-        .getIdentityInfoForAddress(GetIdentityInfoForAddressRequest(cardanoAddressInfo1.cardanoAddress.address))
+        .getIdentityInfoForAddress(cardanoAddressInfo1.cardanoAddress)
         .runSyncUnsafe()
 
       // then
-      val person = response.getPerson
+      val person = response.value
       val naturalPerson = person.getNaturalPerson
       naturalPerson.name.flatMap(_.nameIdentifiers.headOption).map(_.primaryIdentifier) mustBe Some(
         redlandIdCredential2.name
@@ -112,16 +109,16 @@ class MirrorServiceSpec extends PostgresRepositorySpec[Task] with MockitoSugar w
     "return error when address cannot be found" in new MirrorServiceFixtures {
       // when
       val response = mirrorService
-        .getIdentityInfoForAddress(GetIdentityInfoForAddressRequest(cardanoAddressInfo1.cardanoAddress.address))
+        .getIdentityInfoForAddress(cardanoAddressInfo1.cardanoAddress)
         .runSyncUnsafe()
 
       // then
-      response.getError.isAddressNotFound mustBe true
+      response mustBe None
     }
   }
 
   trait MirrorServiceFixtures {
     val connectorClientStub = new ConnectorClientServiceStub()
-    val mirrorService = new MirrorService(database, connectorClientStub)
+    val mirrorService = new MirrorServiceImpl(database, connectorClientStub)
   }
 }

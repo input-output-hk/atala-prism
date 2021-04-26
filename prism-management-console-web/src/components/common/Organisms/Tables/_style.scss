@@ -7,14 +7,8 @@
   }
 }
 
-.InfiniteScrollTableContainer {
-  height: 100%;
-  width: 100%;
-}
-
 .PaginatedTable,
 .PaginatedTableHeader {
-  margin-top: 2em;
   table {
     @include primary-text($body, $black);
 

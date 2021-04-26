@@ -7,15 +7,43 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		00F4C2DF099BD95A448855B6 /* Pods_prism_ios_walletTests.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 2FB5FDF9E49B150E74CDBBEC /* Pods_prism_ios_walletTests.framework */; };
 		05BDBB1B25A6D44300D56D03 /* KotlinConverters.swift in Sources */ = {isa = PBXBuildFile; fileRef = 05BDBB1A25A6D44300D56D03 /* KotlinConverters.swift */; };
-		18D49A93E2B346D69BADCCD9 /* Pods_prism_ios_walletUITests.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 18216D1862661E5E125E24C5 /* Pods_prism_ios_walletUITests.framework */; };
-		7398A4DF0BF3735A9E3EB8C3 /* Pods_prism_ios_wallet.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 4736AE3C362010F15EA7E9E0 /* Pods_prism_ios_wallet.framework */; };
+		0BAF55FE86F55EA00FAD31CE /* Pods_prism_ios_walletUITests.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = F8B88DEFB34A31C89D4D7394 /* Pods_prism_ios_walletUITests.framework */; };
+		21F3C7BA2B970749C8DC777F /* Pods_prism_ios_walletTests.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = FAEEB98D90C36BE850AF1B36 /* Pods_prism_ios_walletTests.framework */; };
+		2802995925FB8976002A5489 /* ProfileDetailHeaderCell.xib in Resources */ = {isa = PBXBuildFile; fileRef = 2802995825FB8976002A5489 /* ProfileDetailHeaderCell.xib */; };
+		2802995E25FB89F2002A5489 /* ProfileDetailHeaderCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2802995D25FB89F2002A5489 /* ProfileDetailHeaderCell.swift */; };
+		280299CA25FB920F002A5489 /* ProfileDetailCell.xib in Resources */ = {isa = PBXBuildFile; fileRef = 280299C925FB920E002A5489 /* ProfileDetailCell.xib */; };
+		280299CF25FB925A002A5489 /* ProfileDetailCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 280299CE25FB925A002A5489 /* ProfileDetailCell.swift */; };
+		285A5ABB25E6D567004B9B18 /* ProfileDetail.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 285A5ABA25E6D567004B9B18 /* ProfileDetail.storyboard */; };
+		285A5AC025E6D59F004B9B18 /* ProfileDetailPresenter.swift in Sources */ = {isa = PBXBuildFile; fileRef = 285A5ABF25E6D59F004B9B18 /* ProfileDetailPresenter.swift */; };
+		285A5AC225E6D5AE004B9B18 /* ProfileDetailViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 285A5AC125E6D5AE004B9B18 /* ProfileDetailViewController.swift */; };
+		285F307A25E414BE00512502 /* PickerViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 285F307925E414BE00512502 /* PickerViewCell.swift */; };
+		285F307F25E414CB00512502 /* PickerViewCell.xib in Resources */ = {isa = PBXBuildFile; fileRef = 285F307E25E414CB00512502 /* PickerViewCell.xib */; };
+		286539BF25EE9BF800523F96 /* Attribute.swift in Sources */ = {isa = PBXBuildFile; fileRef = 286539BE25EE9BF800523F96 /* Attribute.swift */; };
+		28A3A80925F148CC006BA440 /* BaseVerificationPresenter.swift in Sources */ = {isa = PBXBuildFile; fileRef = 28A3A80825F148CC006BA440 /* BaseVerificationPresenter.swift */; };
+		28A3A80E25F148D8006BA440 /* BaseVerificationViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 28A3A80D25F148D8006BA440 /* BaseVerificationViewController.swift */; };
+		28A3A81325F148E8006BA440 /* BaseVerification.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 28A3A81225F148E8006BA440 /* BaseVerification.storyboard */; };
+		28A3A81825F15068006BA440 /* BaseVerificationCodePresenter.swift in Sources */ = {isa = PBXBuildFile; fileRef = 28A3A81725F15068006BA440 /* BaseVerificationCodePresenter.swift */; };
+		28A3A81D25F15073006BA440 /* BaseVerificationCodeViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 28A3A81C25F15073006BA440 /* BaseVerificationCodeViewController.swift */; };
+		28A3A82225F1507F006BA440 /* BaseVerificationCode.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 28A3A82125F1507F006BA440 /* BaseVerificationCode.storyboard */; };
+		28A3A8BD25F2590B006BA440 /* PickerViewUtils.swift in Sources */ = {isa = PBXBuildFile; fileRef = 28A3A8BC25F2590B006BA440 /* PickerViewUtils.swift */; };
+		28A3A8CA25F28078006BA440 /* PhoneHelper.swift in Sources */ = {isa = PBXBuildFile; fileRef = 28A3A8C925F28078006BA440 /* PhoneHelper.swift */; };
+		28A3A90225F65604006BA440 /* AttributeListingPresenter.swift in Sources */ = {isa = PBXBuildFile; fileRef = 28A3A90125F65604006BA440 /* AttributeListingPresenter.swift */; };
+		28A3A90A25F65613006BA440 /* AttributeListingViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 28A3A90925F65613006BA440 /* AttributeListingViewController.swift */; };
+		28A3A90F25F658AE006BA440 /* AttributeListing.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 28A3A90E25F658AE006BA440 /* AttributeListing.storyboard */; };
+		28A3A91425F65A4A006BA440 /* AttributeListingCell.xib in Resources */ = {isa = PBXBuildFile; fileRef = 28A3A91325F65A4A006BA440 /* AttributeListingCell.xib */; };
+		28A3A91925F65BC3006BA440 /* EmailCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 28A3A91825F65BC3006BA440 /* EmailCell.swift */; };
+		28FE64FC25E9553C0089B675 /* Attribute.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 28FE64FB25E9553C0089B675 /* Attribute.storyboard */; };
+		28FE650125E955590089B675 /* AttributeViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 28FE650025E955590089B675 /* AttributeViewController.swift */; };
+		386BF954863A1670AF2F333D /* BuildFile in Frameworks */ = {isa = PBXBuildFile; };
+		A952A3ABA5F37F460FA67215 /* Pods_prism_ios_wallet.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 322C4F1260548161F700C812 /* Pods_prism_ios_wallet.framework */; };
 		B30255012449E33D00C8E9C0 /* NotificationsViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = B30255002449E33D00C8E9C0 /* NotificationsViewController.swift */; };
 		B30255032449E36B00C8E9C0 /* NotificationsPresenter.swift in Sources */ = {isa = PBXBuildFile; fileRef = B30255022449E36B00C8E9C0 /* NotificationsPresenter.swift */; };
 		B30255062449E61900C8E9C0 /* Notifications.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = B30255052449E61900C8E9C0 /* Notifications.storyboard */; };
 		B3025508244A4FE900C8E9C0 /* ConnectionsWorker.swift in Sources */ = {isa = PBXBuildFile; fileRef = B3025507244A4FE900C8E9C0 /* ConnectionsWorker.swift */; };
 		B3045F1E2512B338004FAC50 /* NotificationHeaderViewCell.xib in Resources */ = {isa = PBXBuildFile; fileRef = B3045F1D2512B338004FAC50 /* NotificationHeaderViewCell.xib */; };
+		B3062026260A238700240643 /* HomeCardsTableViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = B3062024260A238700240643 /* HomeCardsTableViewCell.swift */; };
+		B3062027260A238700240643 /* HomeCardsTableViewCell.xib in Resources */ = {isa = PBXBuildFile; fileRef = B3062025260A238700240643 /* HomeCardsTableViewCell.xib */; };
 		B309A99D250FEACC00C62B50 /* CredentialHistoryHeaderViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = B309A99B250FEACC00C62B50 /* CredentialHistoryHeaderViewCell.swift */; };
 		B309A99E250FEACC00C62B50 /* CredentialHistoryHeaderViewCell.xib in Resources */ = {isa = PBXBuildFile; fileRef = B309A99C250FEACC00C62B50 /* CredentialHistoryHeaderViewCell.xib */; };
 		B309A9A3250FF0A500C62B50 /* CredentialSharedViewCellViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = B309A9A1250FF0A500C62B50 /* CredentialSharedViewCellViewCell.swift */; };
@@ -30,6 +58,11 @@
 		B309C16C24BF7DBA00AF70DF /* CredentialDAO.swift in Sources */ = {isa = PBXBuildFile; fileRef = B309C16B24BF7DBA00AF70DF /* CredentialDAO.swift */; };
 		B309C17024BF89F100AF70DF /* ContactDAO.swift in Sources */ = {isa = PBXBuildFile; fileRef = B309C16F24BF89F100AF70DF /* ContactDAO.swift */; };
 		B309C17324BF8F0B00AF70DF /* ActivityHistoryDAO.swift in Sources */ = {isa = PBXBuildFile; fileRef = B309C17224BF8F0B00AF70DF /* ActivityHistoryDAO.swift */; };
+		B313877525ED6EF9007A67C8 /* IntdemoTutorial.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = B313877425ED6EF9007A67C8 /* IntdemoTutorial.storyboard */; };
+		B313877A25ED7088007A67C8 /* IntdemoTutorialPageView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B313877925ED7088007A67C8 /* IntdemoTutorialPageView.swift */; };
+		B313877F25ED70AA007A67C8 /* IntdemoTutorialPageView.xib in Resources */ = {isa = PBXBuildFile; fileRef = B313877E25ED70AA007A67C8 /* IntdemoTutorialPageView.xib */; };
+		B313878425ED72BA007A67C8 /* IntdemoTutorialPresenter.swift in Sources */ = {isa = PBXBuildFile; fileRef = B313878325ED72BA007A67C8 /* IntdemoTutorialPresenter.swift */; };
+		B313878925ED72DE007A67C8 /* IntdemoTutorialViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = B313878825ED72DE007A67C8 /* IntdemoTutorialViewController.swift */; };
 		B31EB69725C844FE00BDE34A /* VerifyIdTypeSelect.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = B31EB69625C844FD00BDE34A /* VerifyIdTypeSelect.storyboard */; };
 		B31EB69C25C856FC00BDE34A /* VerifyIdTypeSelectViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = B31EB69B25C856FC00BDE34A /* VerifyIdTypeSelectViewController.swift */; };
 		B31EB6A125C8571000BDE34A /* VerifyIdTypeSelectPresenter.swift in Sources */ = {isa = PBXBuildFile; fileRef = B31EB6A025C8571000BDE34A /* VerifyIdTypeSelectPresenter.swift */; };
@@ -41,11 +74,6 @@
 		B31EB71625C9D64A00BDE34A /* AcuantConfig.plist in Resources */ = {isa = PBXBuildFile; fileRef = B31EB71525C9D64A00BDE34A /* AcuantConfig.plist */; };
 		B31EB7C025C9E41000BDE34A /* AcuantTokenService.swift in Sources */ = {isa = PBXBuildFile; fileRef = B31EB7BF25C9E41000BDE34A /* AcuantTokenService.swift */; };
 		B31EB83225CB374B00BDE34A /* AcuantUtils.swift in Sources */ = {isa = PBXBuildFile; fileRef = B31EB83125CB374B00BDE34A /* AcuantUtils.swift */; };
-		B313877525ED6EF9007A67C8 /* IntdemoTutorial.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = B313877425ED6EF9007A67C8 /* IntdemoTutorial.storyboard */; };
-		B313877A25ED7088007A67C8 /* IntdemoTutorialPageView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B313877925ED7088007A67C8 /* IntdemoTutorialPageView.swift */; };
-		B313877F25ED70AA007A67C8 /* IntdemoTutorialPageView.xib in Resources */ = {isa = PBXBuildFile; fileRef = B313877E25ED70AA007A67C8 /* IntdemoTutorialPageView.xib */; };
-		B313878425ED72BA007A67C8 /* IntdemoTutorialPresenter.swift in Sources */ = {isa = PBXBuildFile; fileRef = B313878325ED72BA007A67C8 /* IntdemoTutorialPresenter.swift */; };
-		B313878925ED72DE007A67C8 /* IntdemoTutorialViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = B313878825ED72DE007A67C8 /* IntdemoTutorialViewController.swift */; };
 		B31F0923257AB98800BCA71C /* AtomicProperty.swift in Sources */ = {isa = PBXBuildFile; fileRef = B31F0922257AB98800BCA71C /* AtomicProperty.swift */; };
 		B322A28A25C4590800A4A0B6 /* VerifyIdTutorial.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = B322A28925C4590800A4A0B6 /* VerifyIdTutorial.storyboard */; };
 		B322A29025C4802700A4A0B6 /* VerifyIdTutorialViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = B322A28F25C4802700A4A0B6 /* VerifyIdTutorialViewController.swift */; };
@@ -112,6 +140,8 @@
 		B3A98F5424ED5FD300E138C2 /* ActivityLogTableViewCell.xib in Resources */ = {isa = PBXBuildFile; fileRef = B3A98F5224ED5FD300E138C2 /* ActivityLogTableViewCell.xib */; };
 		B3A98F5724EDA35E00E138C2 /* ActivityHistory+CoreDataClass.swift in Sources */ = {isa = PBXBuildFile; fileRef = B3A98F5524EDA35E00E138C2 /* ActivityHistory+CoreDataClass.swift */; };
 		B3A98F5824EDA35E00E138C2 /* ActivityHistory+CoreDataProperties.swift in Sources */ = {isa = PBXBuildFile; fileRef = B3A98F5624EDA35E00E138C2 /* ActivityHistory+CoreDataProperties.swift */; };
+		B3B4910125FFA76700859707 /* kycbridge_api.grpc.swift in Sources */ = {isa = PBXBuildFile; fileRef = B3B490FF25FFA76700859707 /* kycbridge_api.grpc.swift */; };
+		B3B4910225FFA76700859707 /* kycbridge_api.pb.swift in Sources */ = {isa = PBXBuildFile; fileRef = B3B4910025FFA76700859707 /* kycbridge_api.pb.swift */; };
 		B3C760182489777C00AC46DC /* Env.swift in Sources */ = {isa = PBXBuildFile; fileRef = B3C760172489777C00AC46DC /* Env.swift */; };
 		B3E757DA260D31B700BC28A9 /* common_models.pb.swift in Sources */ = {isa = PBXBuildFile; fileRef = B3E757D6260D31B600BC28A9 /* common_models.pb.swift */; };
 		B3E757DB260D31B700BC28A9 /* connector_models.pb.swift in Sources */ = {isa = PBXBuildFile; fileRef = B3E757D7260D31B600BC28A9 /* connector_models.pb.swift */; };
@@ -302,18 +332,45 @@
 
 /* Begin PBXFileReference section */
 		05BDBB1A25A6D44300D56D03 /* KotlinConverters.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KotlinConverters.swift; sourceTree = "<group>"; };
-		065A1B71B0289AB649F6988C /* Pods-prism-ios-wallet.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-prism-ios-wallet.release.xcconfig"; path = "Pods/Target Support Files/Pods-prism-ios-wallet/Pods-prism-ios-wallet.release.xcconfig"; sourceTree = "<group>"; };
-		1735CF30DECD966AEF4E4026 /* Pods-prism-ios-walletTests.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-prism-ios-walletTests.debug.xcconfig"; path = "Pods/Target Support Files/Pods-prism-ios-walletTests/Pods-prism-ios-walletTests.debug.xcconfig"; sourceTree = "<group>"; };
-		18216D1862661E5E125E24C5 /* Pods_prism_ios_walletUITests.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_prism_ios_walletUITests.framework; sourceTree = BUILT_PRODUCTS_DIR; };
-		24EBADC6AC0FEEF332A21BEC /* Pods-prism-ios-wallet.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-prism-ios-wallet.debug.xcconfig"; path = "Pods/Target Support Files/Pods-prism-ios-wallet/Pods-prism-ios-wallet.debug.xcconfig"; sourceTree = "<group>"; };
-		2FB5FDF9E49B150E74CDBBEC /* Pods_prism_ios_walletTests.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_prism_ios_walletTests.framework; sourceTree = BUILT_PRODUCTS_DIR; };
-		4736AE3C362010F15EA7E9E0 /* Pods_prism_ios_wallet.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_prism_ios_wallet.framework; sourceTree = BUILT_PRODUCTS_DIR; };
-		9CB0953CF1FF5F55DF823A6D /* Pods-prism-ios-walletUITests.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-prism-ios-walletUITests.debug.xcconfig"; path = "Pods/Target Support Files/Pods-prism-ios-walletUITests/Pods-prism-ios-walletUITests.debug.xcconfig"; sourceTree = "<group>"; };
+		2802995825FB8976002A5489 /* ProfileDetailHeaderCell.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = ProfileDetailHeaderCell.xib; sourceTree = "<group>"; };
+		2802995D25FB89F2002A5489 /* ProfileDetailHeaderCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProfileDetailHeaderCell.swift; sourceTree = "<group>"; };
+		280299C925FB920E002A5489 /* ProfileDetailCell.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = ProfileDetailCell.xib; sourceTree = "<group>"; };
+		280299CE25FB925A002A5489 /* ProfileDetailCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProfileDetailCell.swift; sourceTree = "<group>"; };
+		285A5ABA25E6D567004B9B18 /* ProfileDetail.storyboard */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; path = ProfileDetail.storyboard; sourceTree = "<group>"; };
+		285A5ABF25E6D59F004B9B18 /* ProfileDetailPresenter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProfileDetailPresenter.swift; sourceTree = "<group>"; };
+		285A5AC125E6D5AE004B9B18 /* ProfileDetailViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProfileDetailViewController.swift; sourceTree = "<group>"; };
+		285F307925E414BE00512502 /* PickerViewCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PickerViewCell.swift; sourceTree = "<group>"; };
+		285F307E25E414CB00512502 /* PickerViewCell.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = PickerViewCell.xib; sourceTree = "<group>"; };
+		286539BE25EE9BF800523F96 /* Attribute.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Attribute.swift; sourceTree = "<group>"; };
+		28A3A80825F148CC006BA440 /* BaseVerificationPresenter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BaseVerificationPresenter.swift; sourceTree = "<group>"; };
+		28A3A80D25F148D8006BA440 /* BaseVerificationViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BaseVerificationViewController.swift; sourceTree = "<group>"; };
+		28A3A81225F148E8006BA440 /* BaseVerification.storyboard */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; path = BaseVerification.storyboard; sourceTree = "<group>"; };
+		28A3A81725F15068006BA440 /* BaseVerificationCodePresenter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BaseVerificationCodePresenter.swift; sourceTree = "<group>"; };
+		28A3A81C25F15073006BA440 /* BaseVerificationCodeViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BaseVerificationCodeViewController.swift; sourceTree = "<group>"; };
+		28A3A82125F1507F006BA440 /* BaseVerificationCode.storyboard */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; path = BaseVerificationCode.storyboard; sourceTree = "<group>"; };
+		28A3A8BC25F2590B006BA440 /* PickerViewUtils.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PickerViewUtils.swift; sourceTree = "<group>"; };
+		28A3A8C925F28078006BA440 /* PhoneHelper.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PhoneHelper.swift; sourceTree = "<group>"; };
+		28A3A90125F65604006BA440 /* AttributeListingPresenter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AttributeListingPresenter.swift; sourceTree = "<group>"; };
+		28A3A90925F65613006BA440 /* AttributeListingViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AttributeListingViewController.swift; sourceTree = "<group>"; };
+		28A3A90E25F658AE006BA440 /* AttributeListing.storyboard */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; path = AttributeListing.storyboard; sourceTree = "<group>"; };
+		28A3A91325F65A4A006BA440 /* AttributeListingCell.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = AttributeListingCell.xib; sourceTree = "<group>"; };
+		28A3A91825F65BC3006BA440 /* EmailCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EmailCell.swift; sourceTree = "<group>"; };
+		28FE64FB25E9553C0089B675 /* Attribute.storyboard */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; path = Attribute.storyboard; sourceTree = "<group>"; };
+		28FE650025E955590089B675 /* AttributeViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AttributeViewController.swift; sourceTree = "<group>"; };
+		306D080251EFA59EF3645375 /* Pods-prism-ios-wallet.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-prism-ios-wallet.debug.xcconfig"; path = "Target Support Files/Pods-prism-ios-wallet/Pods-prism-ios-wallet.debug.xcconfig"; sourceTree = "<group>"; };
+		322C4F1260548161F700C812 /* Pods_prism_ios_wallet.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_prism_ios_wallet.framework; sourceTree = BUILT_PRODUCTS_DIR; };
+		370783CE00B7101BE6825D17 /* Pods-prism-ios-wallet.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-prism-ios-wallet.release.xcconfig"; path = "Target Support Files/Pods-prism-ios-wallet/Pods-prism-ios-wallet.release.xcconfig"; sourceTree = "<group>"; };
+		665E7DC1A62428CDBC1883EB /* Pods-prism-ios-walletUITests.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-prism-ios-walletUITests.release.xcconfig"; path = "Target Support Files/Pods-prism-ios-walletUITests/Pods-prism-ios-walletUITests.release.xcconfig"; sourceTree = "<group>"; };
+		8ACFFDA562E21573D1E1FF91 /* Pods-prism-ios-walletUITests.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-prism-ios-walletUITests.debug.xcconfig"; path = "Target Support Files/Pods-prism-ios-walletUITests/Pods-prism-ios-walletUITests.debug.xcconfig"; sourceTree = "<group>"; };
+		A75FF87D2A02217AA6CB5ECB /* Pods-prism-ios-walletTests.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-prism-ios-walletTests.debug.xcconfig"; path = "Target Support Files/Pods-prism-ios-walletTests/Pods-prism-ios-walletTests.debug.xcconfig"; sourceTree = "<group>"; };
+		B1490CF29DD125E822BD2F43 /* Pods-prism-ios-walletTests.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-prism-ios-walletTests.release.xcconfig"; path = "Target Support Files/Pods-prism-ios-walletTests/Pods-prism-ios-walletTests.release.xcconfig"; sourceTree = "<group>"; };
 		B30255002449E33D00C8E9C0 /* NotificationsViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NotificationsViewController.swift; sourceTree = "<group>"; };
 		B30255022449E36B00C8E9C0 /* NotificationsPresenter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NotificationsPresenter.swift; sourceTree = "<group>"; };
 		B30255052449E61900C8E9C0 /* Notifications.storyboard */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; path = Notifications.storyboard; sourceTree = "<group>"; };
 		B3025507244A4FE900C8E9C0 /* ConnectionsWorker.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ConnectionsWorker.swift; sourceTree = "<group>"; };
 		B3045F1D2512B338004FAC50 /* NotificationHeaderViewCell.xib */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.xib; path = NotificationHeaderViewCell.xib; sourceTree = "<group>"; };
+		B3062024260A238700240643 /* HomeCardsTableViewCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HomeCardsTableViewCell.swift; sourceTree = "<group>"; };
+		B3062025260A238700240643 /* HomeCardsTableViewCell.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = HomeCardsTableViewCell.xib; sourceTree = "<group>"; };
 		B309A99B250FEACC00C62B50 /* CredentialHistoryHeaderViewCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CredentialHistoryHeaderViewCell.swift; sourceTree = "<group>"; };
 		B309A99C250FEACC00C62B50 /* CredentialHistoryHeaderViewCell.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = CredentialHistoryHeaderViewCell.xib; sourceTree = "<group>"; };
 		B309A9A1250FF0A500C62B50 /* CredentialSharedViewCellViewCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CredentialSharedViewCellViewCell.swift; sourceTree = "<group>"; };
@@ -328,6 +385,11 @@
 		B309C16B24BF7DBA00AF70DF /* CredentialDAO.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CredentialDAO.swift; sourceTree = "<group>"; };
 		B309C16F24BF89F100AF70DF /* ContactDAO.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContactDAO.swift; sourceTree = "<group>"; };
 		B309C17224BF8F0B00AF70DF /* ActivityHistoryDAO.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ActivityHistoryDAO.swift; sourceTree = "<group>"; };
+		B313877425ED6EF9007A67C8 /* IntdemoTutorial.storyboard */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; path = IntdemoTutorial.storyboard; sourceTree = "<group>"; };
+		B313877925ED7088007A67C8 /* IntdemoTutorialPageView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = IntdemoTutorialPageView.swift; sourceTree = "<group>"; };
+		B313877E25ED70AA007A67C8 /* IntdemoTutorialPageView.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = IntdemoTutorialPageView.xib; sourceTree = "<group>"; };
+		B313878325ED72BA007A67C8 /* IntdemoTutorialPresenter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = IntdemoTutorialPresenter.swift; sourceTree = "<group>"; };
+		B313878825ED72DE007A67C8 /* IntdemoTutorialViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = IntdemoTutorialViewController.swift; sourceTree = "<group>"; };
 		B31EB69625C844FD00BDE34A /* VerifyIdTypeSelect.storyboard */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; path = VerifyIdTypeSelect.storyboard; sourceTree = "<group>"; };
 		B31EB69B25C856FC00BDE34A /* VerifyIdTypeSelectViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VerifyIdTypeSelectViewController.swift; sourceTree = "<group>"; };
 		B31EB6A025C8571000BDE34A /* VerifyIdTypeSelectPresenter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VerifyIdTypeSelectPresenter.swift; sourceTree = "<group>"; };
@@ -339,11 +401,6 @@
 		B31EB71525C9D64A00BDE34A /* AcuantConfig.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = AcuantConfig.plist; sourceTree = "<group>"; };
 		B31EB7BF25C9E41000BDE34A /* AcuantTokenService.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = AcuantTokenService.swift; sourceTree = "<group>"; };
 		B31EB83125CB374B00BDE34A /* AcuantUtils.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = AcuantUtils.swift; sourceTree = "<group>"; };
-		B313877425ED6EF9007A67C8 /* IntdemoTutorial.storyboard */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; path = IntdemoTutorial.storyboard; sourceTree = "<group>"; };
-		B313877925ED7088007A67C8 /* IntdemoTutorialPageView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = IntdemoTutorialPageView.swift; sourceTree = "<group>"; };
-		B313877E25ED70AA007A67C8 /* IntdemoTutorialPageView.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = IntdemoTutorialPageView.xib; sourceTree = "<group>"; };
-		B313878325ED72BA007A67C8 /* IntdemoTutorialPresenter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = IntdemoTutorialPresenter.swift; sourceTree = "<group>"; };
-		B313878825ED72DE007A67C8 /* IntdemoTutorialViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = IntdemoTutorialViewController.swift; sourceTree = "<group>"; };
 		B31F0922257AB98800BCA71C /* AtomicProperty.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AtomicProperty.swift; sourceTree = "<group>"; };
 		B322A28925C4590800A4A0B6 /* VerifyIdTutorial.storyboard */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; path = VerifyIdTutorial.storyboard; sourceTree = "<group>"; };
 		B322A28F25C4802700A4A0B6 /* VerifyIdTutorialViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VerifyIdTutorialViewController.swift; sourceTree = "<group>"; };
@@ -410,6 +467,8 @@
 		B3A98F5224ED5FD300E138C2 /* ActivityLogTableViewCell.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = ActivityLogTableViewCell.xib; sourceTree = "<group>"; };
 		B3A98F5524EDA35E00E138C2 /* ActivityHistory+CoreDataClass.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "ActivityHistory+CoreDataClass.swift"; sourceTree = "<group>"; };
 		B3A98F5624EDA35E00E138C2 /* ActivityHistory+CoreDataProperties.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "ActivityHistory+CoreDataProperties.swift"; sourceTree = "<group>"; };
+		B3B490FF25FFA76700859707 /* kycbridge_api.grpc.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = kycbridge_api.grpc.swift; sourceTree = "<group>"; };
+		B3B4910025FFA76700859707 /* kycbridge_api.pb.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = kycbridge_api.pb.swift; sourceTree = "<group>"; };
 		B3C7601524896B9600AC46DC /* GoogleService-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = "GoogleService-Info.plist"; sourceTree = "<group>"; };
 		B3C760172489777C00AC46DC /* Env.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Env.swift; sourceTree = "<group>"; };
 		B3E757D6260D31B600BC28A9 /* common_models.pb.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = common_models.pb.swift; sourceTree = "<group>"; };
@@ -430,9 +489,6 @@
 		B3F94E93247455A60087EBFD /* SecurityMainViewCell.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SecurityMainViewCell.swift; sourceTree = "<group>"; };
 		B3F94E94247455A60087EBFD /* SecurityViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SecurityViewController.swift; sourceTree = "<group>"; };
 		B3F94E95247455A60087EBFD /* SecurityPresenter.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SecurityPresenter.swift; sourceTree = "<group>"; };
-		D9E0C42ED4A5D3898354CF27 /* Pods-prism-ios-walletTests.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-prism-ios-walletTests.release.xcconfig"; path = "Pods/Target Support Files/Pods-prism-ios-walletTests/Pods-prism-ios-walletTests.release.xcconfig"; sourceTree = "<group>"; };
-		E497159BDF935521E81A661D /* Pods-credentials-verification-iOSTests.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-credentials-verification-iOSTests.release.xcconfig"; path = "Pods/Target Support Files/Pods-credentials-verification-iOSTests/Pods-credentials-verification-iOSTests.release.xcconfig"; sourceTree = "<group>"; };
-		E71052E43AE636E8600E08B6 /* Pods-prism-ios-walletUITests.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-prism-ios-walletUITests.release.xcconfig"; path = "Pods/Target Support Files/Pods-prism-ios-walletUITests/Pods-prism-ios-walletUITests.release.xcconfig"; sourceTree = "<group>"; };
 		EE22F1F123A4AD2C003C4F87 /* CryptoUtils.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CryptoUtils.swift; sourceTree = "<group>"; };
 		EE48AC012377537200C0A441 /* Tutorial.storyboard */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; path = Tutorial.storyboard; sourceTree = "<group>"; };
 		EE48AC03237753A900C0A441 /* Register.storyboard */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; path = Register.storyboard; sourceTree = "<group>"; };
@@ -600,6 +656,8 @@
 		F5E38966234BC3500001F1E3 /* prism-ios-walletUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = "prism-ios-walletUITests.xctest"; sourceTree = BUILT_PRODUCTS_DIR; };
 		F5E3896A234BC3500001F1E3 /* prism_ios_walletUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = prism_ios_walletUITests.swift; sourceTree = "<group>"; };
 		F5E3896C234BC3500001F1E3 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		F8B88DEFB34A31C89D4D7394 /* Pods_prism_ios_walletUITests.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_prism_ios_walletUITests.framework; sourceTree = BUILT_PRODUCTS_DIR; };
+		FAEEB98D90C36BE850AF1B36 /* Pods_prism_ios_walletTests.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_prism_ios_walletTests.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -607,7 +665,8 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				7398A4DF0BF3735A9E3EB8C3 /* Pods_prism_ios_wallet.framework in Frameworks */,
+				386BF954863A1670AF2F333D /* BuildFile in Frameworks */,
+				A952A3ABA5F37F460FA67215 /* Pods_prism_ios_wallet.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -615,7 +674,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				00F4C2DF099BD95A448855B6 /* Pods_prism_ios_walletTests.framework in Frameworks */,
+				21F3C7BA2B970749C8DC777F /* Pods_prism_ios_walletTests.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -623,25 +682,41 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				18D49A93E2B346D69BADCCD9 /* Pods_prism_ios_walletUITests.framework in Frameworks */,
+				0BAF55FE86F55EA00FAD31CE /* Pods_prism_ios_walletUITests.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
-		96BFEC0FE5627AB7AE6CC263 /* Pods */ = {
+		28A3A80125F148B7006BA440 /* baseVerification */ = {
 			isa = PBXGroup;
 			children = (
-				E497159BDF935521E81A661D /* Pods-credentials-verification-iOSTests.release.xcconfig */,
-				24EBADC6AC0FEEF332A21BEC /* Pods-prism-ios-wallet.debug.xcconfig */,
-				065A1B71B0289AB649F6988C /* Pods-prism-ios-wallet.release.xcconfig */,
-				1735CF30DECD966AEF4E4026 /* Pods-prism-ios-walletTests.debug.xcconfig */,
-				D9E0C42ED4A5D3898354CF27 /* Pods-prism-ios-walletTests.release.xcconfig */,
-				9CB0953CF1FF5F55DF823A6D /* Pods-prism-ios-walletUITests.debug.xcconfig */,
-				E71052E43AE636E8600E08B6 /* Pods-prism-ios-walletUITests.release.xcconfig */,
+				28A3A80825F148CC006BA440 /* BaseVerificationPresenter.swift */,
+				28A3A80D25F148D8006BA440 /* BaseVerificationViewController.swift */,
+				28A3A81725F15068006BA440 /* BaseVerificationCodePresenter.swift */,
+				28A3A81C25F15073006BA440 /* BaseVerificationCodeViewController.swift */,
 			);
-			name = Pods;
+			path = baseVerification;
+			sourceTree = "<group>";
+		};
+		28A3A90025F655EA006BA440 /* attributeListing */ = {
+			isa = PBXGroup;
+			children = (
+				28A3A90125F65604006BA440 /* AttributeListingPresenter.swift */,
+				28A3A90925F65613006BA440 /* AttributeListingViewController.swift */,
+			);
+			path = attributeListing;
+			sourceTree = "<group>";
+		};
+		5DFB3703BD7EF8640F960804 /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+				FAEEB98D90C36BE850AF1B36 /* Pods_prism_ios_walletTests.framework */,
+				F8B88DEFB34A31C89D4D7394 /* Pods_prism_ios_walletUITests.framework */,
+				322C4F1260548161F700C812 /* Pods_prism_ios_wallet.framework */,
+			);
+			name = Frameworks;
 			sourceTree = "<group>";
 		};
 		B30254FF2449E27600C8E9C0 /* notifications */ = {
@@ -830,6 +905,7 @@
 				B35CEEF025E5382400DA2BF9 /* HomeActivityLogHeaderTableViewCell.xib */,
 				B35CEEFA25E581E800DA2BF9 /* HomeActivityLogTableViewCell.xib */,
 				B35CEF0425E68B6600DA2BF9 /* HomePromotionalTableViewCell.xib */,
+				B3062025260A238700240643 /* HomeCardsTableViewCell.xib */,
 			);
 			path = cells;
 			sourceTree = "<group>";
@@ -865,6 +941,7 @@
 				B35CEEEF25E5382400DA2BF9 /* HomeActivityLogHeaderTableViewCell.swift */,
 				B35CEEF925E581E800DA2BF9 /* HomeActivityLogTableViewCell.swift */,
 				B35CEF0325E68B6600DA2BF9 /* HomePromotionalTableViewCell.swift */,
+				B3062024260A238700240643 /* HomeCardsTableViewCell.swift */,
 			);
 			path = cells;
 			sourceTree = "<group>";
@@ -973,14 +1050,17 @@
 			path = cells;
 			sourceTree = "<group>";
 		};
-		CF3BEB1B8E00D564FED97064 /* Frameworks */ = {
+		BB76F1F75C3CF9AB34400C89 /* Pods */ = {
 			isa = PBXGroup;
 			children = (
-				4736AE3C362010F15EA7E9E0 /* Pods_prism_ios_wallet.framework */,
-				2FB5FDF9E49B150E74CDBBEC /* Pods_prism_ios_walletTests.framework */,
-				18216D1862661E5E125E24C5 /* Pods_prism_ios_walletUITests.framework */,
+				306D080251EFA59EF3645375 /* Pods-prism-ios-wallet.debug.xcconfig */,
+				A75FF87D2A02217AA6CB5ECB /* Pods-prism-ios-walletTests.debug.xcconfig */,
+				B1490CF29DD125E822BD2F43 /* Pods-prism-ios-walletTests.release.xcconfig */,
+				370783CE00B7101BE6825D17 /* Pods-prism-ios-wallet.release.xcconfig */,
+				8ACFFDA562E21573D1E1FF91 /* Pods-prism-ios-walletUITests.debug.xcconfig */,
+				665E7DC1A62428CDBC1883EB /* Pods-prism-ios-walletUITests.release.xcconfig */,
 			);
-			name = Frameworks;
+			path = Pods;
 			sourceTree = "<group>";
 		};
 		EE48AC07237753EB00C0A441 /* login */ = {
@@ -1030,6 +1110,9 @@
 			children = (
 				EE7185682384D09800C58F62 /* ProfileViewCell.swift */,
 				EE71856B2384D0B100C58F62 /* TabsViewCell.swift */,
+				28A3A91825F65BC3006BA440 /* EmailCell.swift */,
+				2802995D25FB89F2002A5489 /* ProfileDetailHeaderCell.swift */,
+				280299CE25FB925A002A5489 /* ProfileDetailCell.swift */,
 			);
 			path = cells;
 			sourceTree = "<group>";
@@ -1039,6 +1122,9 @@
 			children = (
 				EE7185702384D5CB00C58F62 /* ProfileViewCell.xib */,
 				EE7185742384D5EE00C58F62 /* TabsViewCell.xib */,
+				28A3A91325F65A4A006BA440 /* AttributeListingCell.xib */,
+				2802995825FB8976002A5489 /* ProfileDetailHeaderCell.xib */,
+				280299C925FB920E002A5489 /* ProfileDetailCell.xib */,
 			);
 			path = cells;
 			sourceTree = "<group>";
@@ -1053,6 +1139,8 @@
 				B3E757D8260D31B600BC28A9 /* credential_models.pb.swift */,
 				B3E757D9260D31B700BC28A9 /* node_models.pb.swift */,
 				B37FDB1425389CD40024766B /* connector_api.pb.swift */,
+				B3B490FF25FFA76700859707 /* kycbridge_api.grpc.swift */,
+				B3B4910025FFA76700859707 /* kycbridge_api.pb.swift */,
 				EE7D49C22366B5A7007C31A8 /* utils */,
 			);
 			path = protobuf;
@@ -1111,6 +1199,7 @@
 				EE7D4A122366B9C2007C31A8 /* UserUtils.swift */,
 				EE7D4A172366B9C2007C31A8 /* ViewControllerUtils.swift */,
 				EE8CD813237BA29700614578 /* ScanQrUtils.swift */,
+				28A3A8BC25F2590B006BA440 /* PickerViewUtils.swift */,
 			);
 			path = util;
 			sourceTree = "<group>";
@@ -1159,6 +1248,7 @@
 				EEB7DD4F2395F79300C4DEA5 /* ConnectionsDtos.swift */,
 				EEEFB90F23ADBAE2005BA755 /* CredentialsDtos.swift */,
 				EEEFB91523ADEDD4005BA755 /* ImageBank.swift */,
+				286539BE25EE9BF800523F96 /* Attribute.swift */,
 			);
 			path = model;
 			sourceTree = "<group>";
@@ -1254,6 +1344,7 @@
 				B3C760172489777C00AC46DC /* Env.swift */,
 				B31F0922257AB98800BCA71C /* AtomicProperty.swift */,
 				05BDBB1A25A6D44300D56D03 /* KotlinConverters.swift */,
+				28A3A8C925F28078006BA440 /* PhoneHelper.swift */,
 			);
 			path = general;
 			sourceTree = "<group>";
@@ -1358,6 +1449,7 @@
 				EE7D4B6E2366B9C3007C31A8 /* ListingLoadingViewCell.xib */,
 				EE7185782384F40500C58F62 /* PaddingViewCell.xib */,
 				B36233D024F5886500AC96A6 /* NoResultsViewCell.xib */,
+				285F307E25E414CB00512502 /* PickerViewCell.xib */,
 			);
 			path = cells;
 			sourceTree = "<group>";
@@ -1461,6 +1553,11 @@
 			children = (
 				EE71856F2384D5B900C58F62 /* cells */,
 				EE8FD4ED23726AD000EFF62E /* Profile.storyboard */,
+				285A5ABA25E6D567004B9B18 /* ProfileDetail.storyboard */,
+				28FE64FB25E9553C0089B675 /* Attribute.storyboard */,
+				28A3A81225F148E8006BA440 /* BaseVerification.storyboard */,
+				28A3A82125F1507F006BA440 /* BaseVerificationCode.storyboard */,
+				28A3A90E25F658AE006BA440 /* AttributeListing.storyboard */,
 			);
 			path = profile;
 			sourceTree = "<group>";
@@ -1486,6 +1583,7 @@
 				EE7185762384F39500C58F62 /* PaddingViewCell.swift */,
 				EEDAF2C52389ECDC00121206 /* ConfirmationViewCell.swift */,
 				B36233CE24F5880700AC96A6 /* NoResultsViewCell.swift */,
+				285F307925E414BE00512502 /* PickerViewCell.swift */,
 			);
 			path = cells;
 			sourceTree = "<group>";
@@ -1505,9 +1603,14 @@
 		EE8FD4D92372696300EFF62E /* profile */ = {
 			isa = PBXGroup;
 			children = (
+				28A3A90025F655EA006BA440 /* attributeListing */,
+				28A3A80125F148B7006BA440 /* baseVerification */,
 				EE7185672384D08500C58F62 /* cells */,
 				EE8FD4DF23726A2700EFF62E /* ProfilePresenter.swift */,
 				EE8FD4DD23726A1000EFF62E /* ProfileViewController.swift */,
+				285A5ABF25E6D59F004B9B18 /* ProfileDetailPresenter.swift */,
+				285A5AC125E6D5AE004B9B18 /* ProfileDetailViewController.swift */,
+				28FE650025E955590089B675 /* AttributeViewController.swift */,
 			);
 			path = profile;
 			sourceTree = "<group>";
@@ -1553,8 +1656,8 @@
 				F5E3895E234BC3500001F1E3 /* prism-ios-walletTests */,
 				F5E38969234BC3500001F1E3 /* prism-ios-walletUITests */,
 				F5E38946234BC34D0001F1E3 /* Products */,
-				96BFEC0FE5627AB7AE6CC263 /* Pods */,
-				CF3BEB1B8E00D564FED97064 /* Frameworks */,
+				BB76F1F75C3CF9AB34400C89 /* Pods */,
+				5DFB3703BD7EF8640F960804 /* Frameworks */,
 			);
 			sourceTree = "<group>";
 		};
@@ -1611,15 +1714,15 @@
 			isa = PBXNativeTarget;
 			buildConfigurationList = F5E3896F234BC3500001F1E3 /* Build configuration list for PBXNativeTarget "prism-ios-wallet" */;
 			buildPhases = (
-				20F0CF103BB0C1766F65E990 /* [CP] Check Pods Manifest.lock */,
+				5927A3EF20590950243784CC /* [CP] Check Pods Manifest.lock */,
 				F5A3CB6823564D31000855C1 /* Run Protobuf Script */,
 				F5E38941234BC34D0001F1E3 /* Sources */,
 				F5E38942234BC34D0001F1E3 /* Frameworks */,
 				B3C7601624896BFE00AC46DC /* Setup Firebase plist files */,
 				F5E38943234BC34D0001F1E3 /* Resources */,
-				E4442DCACB70A2F13D492DEA /* [CP] Embed Pods Frameworks */,
 				EEB7DD53239A0EF500C4DEA5 /* Run Crashlytics Script */,
 				B3F4F25F248FDAE7004E570D /* Run SwiftLint Script */,
+				4A546F008C915D016CB98E60 /* [CP] Embed Pods Frameworks */,
 			);
 			buildRules = (
 			);
@@ -1634,7 +1737,7 @@
 			isa = PBXNativeTarget;
 			buildConfigurationList = F5E38972234BC3500001F1E3 /* Build configuration list for PBXNativeTarget "prism-ios-walletTests" */;
 			buildPhases = (
-				326AEA27A9EF3F5BDF18C7C9 /* [CP] Check Pods Manifest.lock */,
+				ED34B96700523EF9118C297F /* [CP] Check Pods Manifest.lock */,
 				F5E38957234BC3500001F1E3 /* Sources */,
 				F5E38958234BC3500001F1E3 /* Frameworks */,
 				F5E38959234BC3500001F1E3 /* Resources */,
@@ -1653,7 +1756,7 @@
 			isa = PBXNativeTarget;
 			buildConfigurationList = F5E38975234BC3500001F1E3 /* Build configuration list for PBXNativeTarget "prism-ios-walletUITests" */;
 			buildPhases = (
-				0BB9B3FB9BF309D377B125B2 /* [CP] Check Pods Manifest.lock */,
+				B7505ED129BDA63CDF280264 /* [CP] Check Pods Manifest.lock */,
 				F5E38962234BC3500001F1E3 /* Sources */,
 				F5E38963234BC3500001F1E3 /* Frameworks */,
 				F5E38964234BC3500001F1E3 /* Resources */,
@@ -1717,9 +1820,12 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				285A5ABB25E6D567004B9B18 /* ProfileDetail.storyboard in Resources */,
 				B3A3E32624D075D700DEA1EE /* RestoreAccount.storyboard in Resources */,
 				EE7D4CC02366B9C5007C31A8 /* Main.storyboard in Resources */,
 				EE48AC2123775E3200C0A441 /* Success.storyboard in Resources */,
+				28A3A81325F148E8006BA440 /* BaseVerification.storyboard in Resources */,
+				28A3A82225F1507F006BA440 /* BaseVerificationCode.storyboard in Resources */,
 				EE7D4CB82366B9C5007C31A8 /* ListingErrorRetryViewCell.xib in Resources */,
 				B3EA097F24A519E50082B71B /* ConnectionAddManual.storyboard in Resources */,
 				EE8CD810237B691100614578 /* TextFieldTitledView.xib in Resources */,
@@ -1745,12 +1851,17 @@
 				EE71855E23835EB000C58F62 /* ShareItemViewCell.xib in Resources */,
 				EE7185752384D5EE00C58F62 /* TabsViewCell.xib in Resources */,
 				B352434424FFDA080053A804 /* DateFormatViewCell.xib in Resources */,
+				B3062027260A238700240643 /* HomeCardsTableViewCell.xib in Resources */,
+				28A3A91425F65A4A006BA440 /* AttributeListingCell.xib in Resources */,
+				28FE64FC25E9553C0089B675 /* Attribute.storyboard in Resources */,
+				285F307F25E414CB00512502 /* PickerViewCell.xib in Resources */,
 				B35470FA24E4252D009F4844 /* DeleteContact.storyboard in Resources */,
 				EE7D4CC52366B9C5007C31A8 /* SteradianRegular.otf in Resources */,
 				B36F27BD2406E2C400FF751B /* About.storyboard in Resources */,
 				EE7185662384B96400C58F62 /* Browser.storyboard in Resources */,
 				B3A98F5424ED5FD300E138C2 /* ActivityLogTableViewCell.xib in Resources */,
 				B313877F25ED70AA007A67C8 /* IntdemoTutorialPageView.xib in Resources */,
+				280299CA25FB920F002A5489 /* ProfileDetailCell.xib in Resources */,
 				EE7D4D19236A99D7007C31A8 /* NavBarCustom.xib in Resources */,
 				B31EB6BB25C897E400BDE34A /* VerifyIdScan.storyboard in Resources */,
 				B31EB6B325C884A000BDE34A /* TypeSelectTableViewCell.xib in Resources */,
@@ -1790,11 +1901,13 @@
 				B322A28A25C4590800A4A0B6 /* VerifyIdTutorial.storyboard in Resources */,
 				EE8FD4EA23726AC000EFF62E /* Settings.storyboard in Resources */,
 				EE48AC06237753C600C0A441 /* Terms.storyboard in Resources */,
+				2802995925FB8976002A5489 /* ProfileDetailHeaderCell.xib in Resources */,
 				B35CEEE425E4256C00DA2BF9 /* HomeProfileTableViewCell.xib in Resources */,
 				EE7185792384F40500C58F62 /* PaddingViewCell.xib in Resources */,
 				EE7D4D30236FB379007C31A8 /* ConnectionMainViewCell.xib in Resources */,
 				B30255062449E61900C8E9C0 /* Notifications.storyboard in Resources */,
 				EE48AC04237753A900C0A441 /* Register.storyboard in Resources */,
+				28A3A90F25F658AE006BA440 /* AttributeListing.storyboard in Resources */,
 				B35CEEFC25E581E800DA2BF9 /* HomeActivityLogTableViewCell.xib in Resources */,
 				B313877525ED6EF9007A67C8 /* IntdemoTutorial.storyboard in Resources */,
 				EE7D4CC32366B9C5007C31A8 /* SteradianBold.otf in Resources */,
@@ -1818,54 +1931,39 @@
 /* End PBXResourcesBuildPhase section */
 
 /* Begin PBXShellScriptBuildPhase section */
-		0BB9B3FB9BF309D377B125B2 /* [CP] Check Pods Manifest.lock */ = {
+		4A546F008C915D016CB98E60 /* [CP] Embed Pods Frameworks */ = {
 			isa = PBXShellScriptBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
 			);
-			inputPaths = (
-				"${PODS_PODFILE_DIR_PATH}/Podfile.lock",
-				"${PODS_ROOT}/Manifest.lock",
+			inputFileListPaths = (
+				"${PODS_ROOT}/Target Support Files/Pods-prism-ios-wallet/Pods-prism-ios-wallet-frameworks-${CONFIGURATION}-input-files.xcfilelist",
 			);
-			name = "[CP] Check Pods Manifest.lock";
-			outputPaths = (
-				"$(DERIVED_FILE_DIR)/Pods-prism-ios-walletUITests-checkManifestLockResult.txt",
+			name = "[CP] Embed Pods Frameworks";
+			outputFileListPaths = (
+				"${PODS_ROOT}/Target Support Files/Pods-prism-ios-wallet/Pods-prism-ios-wallet-frameworks-${CONFIGURATION}-output-files.xcfilelist",
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "diff \"${PODS_PODFILE_DIR_PATH}/Podfile.lock\" \"${PODS_ROOT}/Manifest.lock\" > /dev/null\nif [ $? != 0 ] ; then\n    # print error to STDERR\n    echo \"error: The sandbox is not in sync with the Podfile.lock. Run 'pod install' or update your CocoaPods installation.\" >&2\n    exit 1\nfi\n# This output is used by Xcode 'outputs' to avoid re-running this script phase.\necho \"SUCCESS\" > \"${SCRIPT_OUTPUT_FILE_0}\"\n";
+			shellScript = "\"${PODS_ROOT}/Target Support Files/Pods-prism-ios-wallet/Pods-prism-ios-wallet-frameworks.sh\"\n";
 			showEnvVarsInLog = 0;
 		};
-		20F0CF103BB0C1766F65E990 /* [CP] Check Pods Manifest.lock */ = {
+		5927A3EF20590950243784CC /* [CP] Check Pods Manifest.lock */ = {
 			isa = PBXShellScriptBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+			);
+			inputFileListPaths = (
 			);
 			inputPaths = (
 				"${PODS_PODFILE_DIR_PATH}/Podfile.lock",
 				"${PODS_ROOT}/Manifest.lock",
 			);
 			name = "[CP] Check Pods Manifest.lock";
+			outputFileListPaths = (
+			);
 			outputPaths = (
 				"$(DERIVED_FILE_DIR)/Pods-prism-ios-wallet-checkManifestLockResult.txt",
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-			shellPath = /bin/sh;
-			shellScript = "diff \"${PODS_PODFILE_DIR_PATH}/Podfile.lock\" \"${PODS_ROOT}/Manifest.lock\" > /dev/null\nif [ $? != 0 ] ; then\n    # print error to STDERR\n    echo \"error: The sandbox is not in sync with the Podfile.lock. Run 'pod install' or update your CocoaPods installation.\" >&2\n    exit 1\nfi\n# This output is used by Xcode 'outputs' to avoid re-running this script phase.\necho \"SUCCESS\" > \"${SCRIPT_OUTPUT_FILE_0}\"\n";
-			showEnvVarsInLog = 0;
-		};
-		326AEA27A9EF3F5BDF18C7C9 /* [CP] Check Pods Manifest.lock */ = {
-			isa = PBXShellScriptBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			inputPaths = (
-				"${PODS_PODFILE_DIR_PATH}/Podfile.lock",
-				"${PODS_ROOT}/Manifest.lock",
-			);
-			name = "[CP] Check Pods Manifest.lock";
-			outputPaths = (
-				"$(DERIVED_FILE_DIR)/Pods-prism-ios-walletTests-checkManifestLockResult.txt",
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
@@ -1908,21 +2006,48 @@
 			shellPath = /bin/sh;
 			shellScript = "\"${PODS_ROOT}/SwiftLint/swiftlint\"\n";
 		};
-		E4442DCACB70A2F13D492DEA /* [CP] Embed Pods Frameworks */ = {
+		B7505ED129BDA63CDF280264 /* [CP] Check Pods Manifest.lock */ = {
 			isa = PBXShellScriptBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
 			);
 			inputFileListPaths = (
-				"${PODS_ROOT}/Target Support Files/Pods-prism-ios-wallet/Pods-prism-ios-wallet-frameworks-${CONFIGURATION}-input-files.xcfilelist",
 			);
-			name = "[CP] Embed Pods Frameworks";
+			inputPaths = (
+				"${PODS_PODFILE_DIR_PATH}/Podfile.lock",
+				"${PODS_ROOT}/Manifest.lock",
+			);
+			name = "[CP] Check Pods Manifest.lock";
 			outputFileListPaths = (
-				"${PODS_ROOT}/Target Support Files/Pods-prism-ios-wallet/Pods-prism-ios-wallet-frameworks-${CONFIGURATION}-output-files.xcfilelist",
+			);
+			outputPaths = (
+				"$(DERIVED_FILE_DIR)/Pods-prism-ios-walletUITests-checkManifestLockResult.txt",
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "\"${PODS_ROOT}/Target Support Files/Pods-prism-ios-wallet/Pods-prism-ios-wallet-frameworks.sh\"\n";
+			shellScript = "diff \"${PODS_PODFILE_DIR_PATH}/Podfile.lock\" \"${PODS_ROOT}/Manifest.lock\" > /dev/null\nif [ $? != 0 ] ; then\n    # print error to STDERR\n    echo \"error: The sandbox is not in sync with the Podfile.lock. Run 'pod install' or update your CocoaPods installation.\" >&2\n    exit 1\nfi\n# This output is used by Xcode 'outputs' to avoid re-running this script phase.\necho \"SUCCESS\" > \"${SCRIPT_OUTPUT_FILE_0}\"\n";
+			showEnvVarsInLog = 0;
+		};
+		ED34B96700523EF9118C297F /* [CP] Check Pods Manifest.lock */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+			);
+			inputPaths = (
+				"${PODS_PODFILE_DIR_PATH}/Podfile.lock",
+				"${PODS_ROOT}/Manifest.lock",
+			);
+			name = "[CP] Check Pods Manifest.lock";
+			outputFileListPaths = (
+			);
+			outputPaths = (
+				"$(DERIVED_FILE_DIR)/Pods-prism-ios-walletTests-checkManifestLockResult.txt",
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "diff \"${PODS_PODFILE_DIR_PATH}/Podfile.lock\" \"${PODS_ROOT}/Manifest.lock\" > /dev/null\nif [ $? != 0 ] ; then\n    # print error to STDERR\n    echo \"error: The sandbox is not in sync with the Podfile.lock. Run 'pod install' or update your CocoaPods installation.\" >&2\n    exit 1\nfi\n# This output is used by Xcode 'outputs' to avoid re-running this script phase.\necho \"SUCCESS\" > \"${SCRIPT_OUTPUT_FILE_0}\"\n";
 			showEnvVarsInLog = 0;
 		};
 		EEB7DD53239A0EF500C4DEA5 /* Run Crashlytics Script */ = {
@@ -1961,7 +2086,7 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "# Type a script or drag a script file from your workspace to insert its pat\nexport PATH=$PATH:${SRCROOT}/protobuf/utils\nmkdir -p ./protobuf\nprotoc --proto_path=../prism-sdk/protos/src/ --swift_out=./protobuf --swiftgrpc_out=Client=true,Server=false:. ../prism-sdk/protos/src/common_models.proto\nprotoc --proto_path=../prism-sdk/protos/src/ --swift_out=./protobuf --swiftgrpc_out=Client=true,Server=false:. ../prism-sdk/protos/src/node_models.proto\nprotoc --proto_path=../prism-sdk/protos/src/ --swift_out=./protobuf --swiftgrpc_out=Client=true,Server=false:. ../prism-sdk/protos/src/console_models.proto\nprotoc --proto_path=../prism-sdk/protos/src/ --swift_out=./protobuf --swiftgrpc_out=Client=true,Server=false:. ../prism-sdk/protos/src/connector_models.proto\nprotoc --proto_path=../prism-sdk/protos/src/ --swift_out=./protobuf --swiftgrpc_out=Client=true,Server=false:. ../prism-sdk/protos/src/credential_models.proto\nprotoc --proto_path=../prism-sdk/protos/src/ --swift_out=./protobuf --swiftgrpc_out=Client=true,Server=false:./protobuf ../prism-sdk/protos/src/connector_api.proto\n";
+			shellScript = "# Type a script or drag a script file from your workspace to insert its pat\nexport PATH=$PATH:${SRCROOT}/protobuf/utils\nmkdir -p ./protobuf\nprotoc --proto_path=../prism-sdk/protos/src/ --swift_out=./protobuf --swiftgrpc_out=Client=true,Server=false:. ../prism-sdk/protos/src/common_models.proto\nprotoc --proto_path=../prism-sdk/protos/src/ --swift_out=./protobuf --swiftgrpc_out=Client=true,Server=false:. ../prism-sdk/protos/src/node_models.proto\nprotoc --proto_path=../prism-sdk/protos/src/ --swift_out=./protobuf --swiftgrpc_out=Client=true,Server=false:. ../prism-sdk/protos/src/console_models.proto\nprotoc --proto_path=../prism-sdk/protos/src/ --swift_out=./protobuf --swiftgrpc_out=Client=true,Server=false:. ../prism-sdk/protos/src/connector_models.proto\nprotoc --proto_path=../prism-sdk/protos/src/ --swift_out=./protobuf --swiftgrpc_out=Client=true,Server=false:. ../prism-sdk/protos/src/credential_models.proto\nprotoc --proto_path=../prism-sdk/protos/src/ --swift_out=./protobuf --swiftgrpc_out=Client=true,Server=false:./protobuf ../prism-sdk/protos/src/connector_api.proto\nprotoc --proto_path=../prism-sdk/protos/src/ --swift_out=./protobuf --swiftgrpc_out=Client=true,Server=false:./protobuf ../prism-sdk/protos/src/kycbridge_api.proto\n";
 		};
 /* End PBXShellScriptBuildPhase section */
 
@@ -1976,13 +2101,16 @@
 				EE7D4C402366B9C4007C31A8 /* String+Extensions.swift in Sources */,
 				B3F94E98247455A60087EBFD /* SecurityPresenter.swift in Sources */,
 				EE7D4C272366B9C4007C31A8 /* LoggedUser.swift in Sources */,
+				2802995E25FB89F2002A5489 /* ProfileDetailHeaderCell.swift in Sources */,
 				B37FDB1625389CD40024766B /* connector_api.pb.swift in Sources */,
 				EE7E753023C29D0600BE9AD1 /* PaymentUtils.swift in Sources */,
+				28A3A81D25F15073006BA440 /* BaseVerificationCodeViewController.swift in Sources */,
 				B36F2FC424DDAFBE0012FDCC /* DeleteCredentialViewController.swift in Sources */,
 				B3E757DA260D31B700BC28A9 /* common_models.pb.swift in Sources */,
 				EE8FD4E423726A4000EFF62E /* SettingsViewController.swift in Sources */,
 				EE904F062373AAD200EE6344 /* NotificationViewCell.swift in Sources */,
 				EE7D4C422366B9C4007C31A8 /* ErrorUtils.swift in Sources */,
+				B3062026260A238700240643 /* HomeCardsTableViewCell.swift in Sources */,
 				EE718550237DBF5400C58F62 /* WelcomeViewController.swift in Sources */,
 				EE7D4D042367622F007C31A8 /* CredentialsPresenter.swift in Sources */,
 				B367AEA925D1843A00A1BF15 /* VerifyIdResultsPresenter.swift in Sources */,
@@ -1999,23 +2127,25 @@
 				EE7D4C3A2366B9C4007C31A8 /* ShadowCorneredView.swift in Sources */,
 				EE904F042373AA5A00EE6344 /* DegreeViewCell.swift in Sources */,
 				EE7D4D32236FB3C1007C31A8 /* ConnectionMainViewCell.swift in Sources */,
+				B3B4910125FFA76700859707 /* kycbridge_api.grpc.swift in Sources */,
 				B3A98F5324ED5FD300E138C2 /* ActivityLogTableViewCell.swift in Sources */,
 				EE7D4BFF2366B9C4007C31A8 /* BaseTabViewController.swift in Sources */,
 				B3C760182489777C00AC46DC /* Env.swift in Sources */,
 				EE48AC2723791B3000C0A441 /* SwitchCustomView.swift in Sources */,
-				EE22F1ED23A486FA003C4F87 /* wallet.proto in Sources */,
 				B309C17324BF8F0B00AF70DF /* ActivityHistoryDAO.swift in Sources */,
 				EE48AC1E23775E0700C0A441 /* SuccessViewController.swift in Sources */,
 				EE71855C2383563100C58F62 /* ShareDialogViewController.swift in Sources */,
 				EE7D4D28236F8DE9007C31A8 /* ListingErrorRetryViewCell.swift in Sources */,
 				EE7D4C3D2366B9C4007C31A8 /* SelectorAction.swift in Sources */,
 				B313878925ED72DE007A67C8 /* IntdemoTutorialViewController.swift in Sources */,
+				28A3A80E25F148D8006BA440 /* BaseVerificationViewController.swift in Sources */,
 				EE7D4C412366B9C4007C31A8 /* Collection+Extension.swift in Sources */,
 				B309A9A3250FF0A500C62B50 /* CredentialSharedViewCellViewCell.swift in Sources */,
 				B3F94E96247455A60087EBFD /* SecurityMainViewCell.swift in Sources */,
 				B309C17024BF89F100AF70DF /* ContactDAO.swift in Sources */,
 				B36233CF24F5880700AC96A6 /* NoResultsViewCell.swift in Sources */,
 				B3F94E8F247455990087EBFD /* LockViewController.swift in Sources */,
+				285A5AC025E6D59F004B9B18 /* ProfileDetailPresenter.swift in Sources */,
 				EE7D4CEA23673C39007C31A8 /* UIView+Extensions.swift in Sources */,
 				B3A3E32824D0971200DEA1EE /* RestoreAccountViewController.swift in Sources */,
 				EE7D4D2B236F8DE9007C31A8 /* ListingBasePresenter.swift in Sources */,
@@ -2043,11 +2173,13 @@
 				EE7D4C432366B9C4007C31A8 /* Logger.swift in Sources */,
 				B36F27C12406F38C00FF751B /* AboutPresenter.swift in Sources */,
 				B37FDBCC253A396F0024766B /* CredentialVerificationDetailViewController.swift in Sources */,
+				285A5AC225E6D5AE004B9B18 /* ProfileDetailViewController.swift in Sources */,
 				EE7D4C452366B9C4007C31A8 /* GeneralUtils.swift in Sources */,
 				B35CEEE325E4256C00DA2BF9 /* HomeProfileTableViewCell.swift in Sources */,
 				B36889DF25AE338D00E864B5 /* SuccessModalViewController.swift in Sources */,
 				B35470FC24E42546009F4844 /* DeleteContactViewController.swift in Sources */,
 				EEE43A65237A60CA00E8E304 /* RegisterSeedView.swift in Sources */,
+				28A3A8BD25F2590B006BA440 /* PickerViewUtils.swift in Sources */,
 				B352434324FFDA080053A804 /* DateFormatTableViewCell.swift in Sources */,
 				B309A99D250FEACC00C62B50 /* CredentialHistoryHeaderViewCell.swift in Sources */,
 				EEDAF2C62389ECDC00121206 /* ConfirmationViewCell.swift in Sources */,
@@ -2057,6 +2189,7 @@
 				EE8FD4E223726A3600EFF62E /* SettingsPresenter.swift in Sources */,
 				EE48AC152377547C00C0A441 /* LoginPresenter.swift in Sources */,
 				EE7D4D17236A89AE007C31A8 /* NavBarCustom.swift in Sources */,
+				28A3A80925F148CC006BA440 /* BaseVerificationPresenter.swift in Sources */,
 				EE7D4C6E2366B9C4007C31A8 /* CrashReporter.swift in Sources */,
 				EE7D4C392366B9C4007C31A8 /* BaseNibLoadingView.swift in Sources */,
 				EE7D4CE823673C39007C31A8 /* LocalizedUI+Extensions.swift in Sources */,
@@ -2078,14 +2211,18 @@
 				EE7D4CE523673C39007C31A8 /* UISegmentedControl+Extensions.swift in Sources */,
 				B309C16C24BF7DBA00AF70DF /* CredentialDAO.swift in Sources */,
 				EE7D4CFC236759A1007C31A8 /* DashboardViewController.swift in Sources */,
+				280299CF25FB925A002A5489 /* ProfileDetailCell.swift in Sources */,
 				EE7D4C012366B9C4007C31A8 /* BasePresenter.swift in Sources */,
+				28A3A90225F65604006BA440 /* AttributeListingPresenter.swift in Sources */,
 				B35CEEFB25E581E800DA2BF9 /* HomeActivityLogTableViewCell.swift in Sources */,
 				B31EB6B225C884A000BDE34A /* TypeSelectTableViewCell.swift in Sources */,
+				B3B4910225FFA76700859707 /* kycbridge_api.pb.swift in Sources */,
 				EE22F1F223A4AD2C003C4F87 /* CryptoUtils.swift in Sources */,
 				B31F0923257AB98800BCA71C /* AtomicProperty.swift in Sources */,
 				EEB7DD56239A153700C4DEA5 /* Tracker.swift in Sources */,
 				EE7D4CEF23673C39007C31A8 /* UITextView+Extensions2.swift in Sources */,
 				EE7D4C032366B9C4007C31A8 /* BaseView.swift in Sources */,
+				28A3A81825F15068006BA440 /* BaseVerificationCodePresenter.swift in Sources */,
 				EE7D4CF623673C39007C31A8 /* UIImage+Extensions.swift in Sources */,
 				EE7D4BF72366B9C4007C31A8 /* MainNavViewController.swift in Sources */,
 				EE7D4CF123673C39007C31A8 /* UIColor+Extensions2.swift in Sources */,
@@ -2093,7 +2230,6 @@
 				B32B6354250BAC2900162A49 /* CredentialDetailView.swift in Sources */,
 				EE7D4CF423673C39007C31A8 /* UIViewController+Extensions.swift in Sources */,
 				B31EB6C025C89AB800BDE34A /* VerifyIdScanViewController.swift in Sources */,
-				B35181AD24195CAD007CA8F1 /* node_models.proto in Sources */,
 				B3025508244A4FE900C8E9C0 /* ConnectionsWorker.swift in Sources */,
 				EE48AC092377540500C0A441 /* TutorialPresenter.swift in Sources */,
 				EE7D4CEE23673C39007C31A8 /* UIImageView+Extensions.swift in Sources */,
@@ -2107,11 +2243,14 @@
 				B31EB6A125C8571000BDE34A /* VerifyIdTypeSelectPresenter.swift in Sources */,
 				EE7D4BFD2366B9C4007C31A8 /* BaseViewController.swift in Sources */,
 				B3EA098124A51C260082B71B /* ConnectionAddManualViewController.swift in Sources */,
+				28FE650125E955590089B675 /* AttributeViewController.swift in Sources */,
 				EE7D4CF923673C39007C31A8 /* Date+Extension.swift in Sources */,
 				B3A3E32A24D0972500DEA1EE /* RestoreAccountPresenter.swift in Sources */,
 				EE7D4D29236F8DE9007C31A8 /* ListingEmptyViewCell.swift in Sources */,
 				EE8CD812237B6C7300614578 /* TextFieldTitledView.swift in Sources */,
+				28A3A8CA25F28078006BA440 /* PhoneHelper.swift in Sources */,
 				EE7D4CE423673C39007C31A8 /* Locale+Extensions.swift in Sources */,
+				286539BF25EE9BF800523F96 /* Attribute.swift in Sources */,
 				EE7D4D0F23693596007C31A8 /* ConnectionsPresenter.swift in Sources */,
 				B32B6352250AAA8900162A49 /* BaseDAO.swift in Sources */,
 				EE7D4BBF2366B9C4007C31A8 /* ViewControllerUtils.swift in Sources */,
@@ -2126,8 +2265,10 @@
 				EE7D4D0D23693588007C31A8 /* ConnectionsViewController.swift in Sources */,
 				EE7D4C722366B9C4007C31A8 /* RemoteImages.swift in Sources */,
 				EE7D4C6C2366B9C4007C31A8 /* SharedMemory.swift in Sources */,
+				285F307A25E414BE00512502 /* PickerViewCell.swift in Sources */,
 				EE7D4BBA2366B9C4007C31A8 /* UserUtils.swift in Sources */,
 				B3491BFB251A26DD0040F89E /* ContactHistoryHeaderViewCell.swift in Sources */,
+				28A3A91925F65BC3006BA440 /* EmailCell.swift in Sources */,
 				B38D944A24AE53440053CE36 /* Reachability.swift in Sources */,
 				B35CEEF125E5382500DA2BF9 /* HomeActivityLogHeaderTableViewCell.swift in Sources */,
 				B309A9A7250FF2F200C62B50 /* CredentialSectionViewCell.swift in Sources */,
@@ -2139,6 +2280,7 @@
 				EEEFB91623ADEDD4005BA755 /* ImageBank.swift in Sources */,
 				B352434624FFDA270053A804 /* DateFormatPresenter.swift in Sources */,
 				EE7D4C6F2366B9C4007C31A8 /* SharedMemoryHelper.swift in Sources */,
+				28A3A90A25F65613006BA440 /* AttributeListingViewController.swift in Sources */,
 				B30255012449E33D00C8E9C0 /* NotificationsViewController.swift in Sources */,
 				EE8FD4E023726A2700EFF62E /* ProfilePresenter.swift in Sources */,
 				B322A29825C4803600A4A0B6 /* VerifyIdTutorialPresenter.swift in Sources */,
@@ -2343,13 +2485,12 @@
 		};
 		F5E38970234BC3500001F1E3 /* Debug */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = 24EBADC6AC0FEEF332A21BEC /* Pods-prism-ios-wallet.debug.xcconfig */;
+			baseConfigurationReference = 306D080251EFA59EF3645375 /* Pods-prism-ios-wallet.debug.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 148;
-				CURRENT_PROJECT_VERSION = 153;
+				CURRENT_PROJECT_VERSION = 161;
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
 				DEVELOPMENT_TEAM = 556N44M7XA;
 				ENABLE_BITCODE = NO;
@@ -2371,12 +2512,12 @@
 		};
 		F5E38971234BC3500001F1E3 /* Release */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = 065A1B71B0289AB649F6988C /* Pods-prism-ios-wallet.release.xcconfig */;
+			baseConfigurationReference = 370783CE00B7101BE6825D17 /* Pods-prism-ios-wallet.release.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 153;
+				CURRENT_PROJECT_VERSION = 161;
 				DEVELOPMENT_TEAM = 556N44M7XA;
 				ENABLE_BITCODE = NO;
 				INFOPLIST_FILE = "prism-ios-wallet/Info.plist";
@@ -2397,7 +2538,7 @@
 		};
 		F5E38973234BC3500001F1E3 /* Debug */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = 1735CF30DECD966AEF4E4026 /* Pods-prism-ios-walletTests.debug.xcconfig */;
+			baseConfigurationReference = A75FF87D2A02217AA6CB5ECB /* Pods-prism-ios-walletTests.debug.xcconfig */;
 			buildSettings = {
 				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
 				BUNDLE_LOADER = "$(TEST_HOST)";
@@ -2423,7 +2564,7 @@
 		};
 		F5E38974234BC3500001F1E3 /* Release */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = D9E0C42ED4A5D3898354CF27 /* Pods-prism-ios-walletTests.release.xcconfig */;
+			baseConfigurationReference = B1490CF29DD125E822BD2F43 /* Pods-prism-ios-walletTests.release.xcconfig */;
 			buildSettings = {
 				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
 				BUNDLE_LOADER = "$(TEST_HOST)";
@@ -2448,7 +2589,7 @@
 		};
 		F5E38976234BC3500001F1E3 /* Debug */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = 9CB0953CF1FF5F55DF823A6D /* Pods-prism-ios-walletUITests.debug.xcconfig */;
+			baseConfigurationReference = 8ACFFDA562E21573D1E1FF91 /* Pods-prism-ios-walletUITests.debug.xcconfig */;
 			buildSettings = {
 				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
 				CODE_SIGN_STYLE = Automatic;
@@ -2469,7 +2610,7 @@
 		};
 		F5E38977234BC3500001F1E3 /* Release */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = E71052E43AE636E8600E08B6 /* Pods-prism-ios-walletUITests.release.xcconfig */;
+			baseConfigurationReference = 665E7DC1A62428CDBC1883EB /* Pods-prism-ios-walletUITests.release.xcconfig */;
 			buildSettings = {
 				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
 				CODE_SIGN_STYLE = Automatic;

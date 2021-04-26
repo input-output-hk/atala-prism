@@ -52,25 +52,27 @@ const Credentials = ({ tabProps, setActiveTab, loading, verifyCredential }) => {
         </div>
         {accountStatus === CONFIRMED && <CreateCredentialsButton />}
       </div>
-      <Tabs defaultActiveKey={CREDENTIALS_ISSUED} onChange={setActiveTab}>
-        <TabPane key={CREDENTIALS_ISSUED} tab={t('credentials.tabs.credentialsIssued')}>
-          <CredentialsFilter {...tabProps[CREDENTIALS_ISSUED]} isIssued />
-          <CredentialsIssued
-            {...tabProps[CREDENTIALS_ISSUED]}
-            showCredentialData={showCredentialData}
-            initialLoading={loading.issued}
-            searchDueGeneralScroll
-          />
-        </TabPane>
-        <TabPane key={CREDENTIALS_RECEIVED} tab={t('credentials.tabs.credentialsReceived')}>
-          <CredentialsFilter {...tabProps[CREDENTIALS_RECEIVED]} />
-          <CredentialsReceived
-            {...tabProps[CREDENTIALS_RECEIVED]}
-            showCredentialData={showCredentialData}
-            initialLoading={loading.received}
-          />
-        </TabPane>
-      </Tabs>
+      <div className="tabContent">
+        <Tabs defaultActiveKey={CREDENTIALS_ISSUED} onChange={setActiveTab}>
+          <TabPane key={CREDENTIALS_ISSUED} tab={t('credentials.tabs.credentialsIssued')}>
+            <CredentialsFilter {...tabProps[CREDENTIALS_ISSUED]} isIssued />
+            <CredentialsIssued
+              {...tabProps[CREDENTIALS_ISSUED]}
+              showCredentialData={showCredentialData}
+              initialLoading={loading.issued}
+              searchDueGeneralScroll
+            />
+          </TabPane>
+          <TabPane key={CREDENTIALS_RECEIVED} tab={t('credentials.tabs.credentialsReceived')}>
+            <CredentialsFilter {...tabProps[CREDENTIALS_RECEIVED]} />
+            <CredentialsReceived
+              {...tabProps[CREDENTIALS_RECEIVED]}
+              showCredentialData={showCredentialData}
+              initialLoading={loading.received}
+            />
+          </TabPane>
+        </Tabs>
+      </div>
     </div>
   );
 };

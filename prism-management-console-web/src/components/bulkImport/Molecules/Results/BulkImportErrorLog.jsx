@@ -6,12 +6,12 @@ import Clip from '../../../../images/Clip.png';
 import greenCheck from '../../../../images/greenCheck.svg';
 import redCross from '../../../../images/redCross.svg';
 import { getColName, getRowNumber } from '../../../../helpers/fileHelpers';
-import GenericFooter from '../../../common/Molecules/GenericFooter/GenericFooter';
+
 import './_style.scss';
 
 const getCellNumber = (row, col) => `Cell # ${getColName(col)}${getRowNumber(row)}`;
 
-const BulkImportErrorLog = ({ fileData: { fileObj }, validationErrors, returnToUploadStep }) => {
+const BulkImportErrorLog = ({ fileData: { fileObj }, validationErrors }) => {
   const { t } = useTranslation();
 
   const columns = [
@@ -64,10 +64,6 @@ const BulkImportErrorLog = ({ fileData: { fileObj }, validationErrors, returnToU
   return (
     <>
       <div className="errorLogSection">
-        <div className="subtitleLog">
-          <h3>{t('bulkImport.errorLog.info')}</h3>
-        </div>
-
         <div className="table">
           <Table
             scroll={{ y: '36vh' }}
@@ -107,10 +103,6 @@ const BulkImportErrorLog = ({ fileData: { fileObj }, validationErrors, returnToU
           </div>
         </div>
       </div>
-      <GenericFooter
-        previous={returnToUploadStep}
-        labels={{ previous: t('bulkImport.errorLog.uploadAgain') }}
-      />
     </>
   );
 };
@@ -125,8 +117,7 @@ BulkImportErrorLog.propTypes = {
       row: PropTypes.number,
       col: PropTypes.number
     })
-  ).isRequired,
-  returnToUploadStep: PropTypes.func.isRequired
+  ).isRequired
 };
 
 export default BulkImportErrorLog;

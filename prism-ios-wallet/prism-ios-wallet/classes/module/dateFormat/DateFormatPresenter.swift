@@ -55,9 +55,17 @@ class DateFormatPresenter: ListingBasePresenter, ListingBaseTableUtilsPresenterD
     func hasData() -> Bool {
         true
     }
+    
+    func getSectionHeaderViews() -> [UIView] {
+        return [UIView()]
+    }
+    
+    func getSectionCount() -> Int? {
+        return 1
+    }
 
-    func getElementCount() -> Int {
-        return initialStaticCells.count + 1
+    func getElementCount() -> [Int] {
+        return [initialStaticCells.count + 1]
     }
 
     // MARK: Table
@@ -88,8 +96,8 @@ class DateFormatPresenter: ListingBasePresenter, ListingBaseTableUtilsPresenterD
     }
 
     func setup(for cell: DateFormatInfoTableViewCell) {
-        let title = NSMutableAttributedString(attributedString: "dateformat_info_bold".localize()!.bold)
-        title.append("dateformat_info".localize()!.regular)
+        let title = NSMutableAttributedString(attributedString: "dateformat_info_bold".localize().bold)
+        title.append("dateformat_info".localize().regular)
         cell.config(title: title, delegate: self)
     }
 

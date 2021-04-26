@@ -84,7 +84,7 @@ object CredentialsCopyJob {
 
     Try { credential_models.AtalaMessage.parseFrom(receivedMessage.message.toArray) } match {
       case Failure(exception) => Left(exception)
-      case Success(credential_models.AtalaMessage(Message.PlainCredential(credentialMessage), _)) =>
+      case Success(credential_models.AtalaMessage(Message.PlainCredential(credentialMessage), _, _)) =>
         Right(
           console_api
             .StoreCredentialRequest()

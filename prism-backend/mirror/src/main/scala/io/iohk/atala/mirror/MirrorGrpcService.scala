@@ -1,5 +1,7 @@
 package io.iohk.atala.mirror
 
+import io.iohk.atala.mirror.models.CardanoAddress
+
 import scala.concurrent.Future
 import monix.execution.Scheduler
 import io.iohk.atala.mirror.protos.mirror_api.{
@@ -11,9 +13,11 @@ import io.iohk.atala.mirror.protos.mirror_api.{
   GetIdentityInfoForAddressResponse,
   MirrorServiceGrpc
 }
-import io.iohk.atala.mirror.services.MirrorService
+import io.iohk.atala.mirror.protos.mirror_models.MirrorError.ADDRESS_NOT_FOUND
+import io.iohk.atala.mirror.services.MirrorServiceImpl
 
-class MirrorGrpcService(mirrorService: MirrorService)(implicit s: Scheduler) extends MirrorServiceGrpc.MirrorService {
+class MirrorGrpcService(mirrorService: MirrorServiceImpl)(implicit s: Scheduler)
+    extends MirrorServiceGrpc.MirrorService {
 
   override def createAccount(request: CreateAccountRequest): Future[CreateAccountResponse] = {
     mirrorService.createAccount.runToFuture
@@ -28,6 +32,19 @@ class MirrorGrpcService(mirrorService: MirrorService)(implicit s: Scheduler) ext
   override def getIdentityInfoForAddress(
       request: GetIdentityInfoForAddressRequest
   ): Future[GetIdentityInfoForAddressResponse] = {
-    mirrorService.getIdentityInfoForAddress(request).runToFuture
+    mirrorService
+      .getIdentityInfoForAddress(CardanoAddress(request.address))
+      .map {
+        case Some(person) =>
+          GetIdentityInfoForAddressResponse(
+            GetIdentityInfoForAddressResponse.Response.Person(person)
+          )
+
+        case None =>
+          GetIdentityInfoForAddressResponse(
+            GetIdentityInfoForAddressResponse.Response.Error(ADDRESS_NOT_FOUND)
+          )
+      }
+      .runToFuture
   }
 }

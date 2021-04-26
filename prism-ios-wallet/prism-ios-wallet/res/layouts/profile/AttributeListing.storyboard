@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="17701" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES" initialViewController="ZyM-kZ-h6D">
+    <device id="retina6_1" orientation="portrait" appearance="light"/>
+    <dependencies>
+        <deployment identifier="iOS"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="17703"/>
+        <capability name="Safe area layout guides" minToolsVersion="9.0"/>
+        <capability name="System colors in document resources" minToolsVersion="11.0"/>
+        <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
+    </dependencies>
+    <scenes>
+        <!--Attribute Listing View Controller-->
+        <scene sceneID="xIi-aV-qTB">
+            <objects>
+                <viewController storyboardIdentifier="AttributeListing" useStoryboardIdentifierAsRestorationIdentifier="YES" id="ZyM-kZ-h6D" customClass="AttributeListingViewController" customModule="Atala_PRISM" customModuleProvider="target" sceneMemberID="viewController">
+                    <view key="view" contentMode="scaleToFill" id="foY-lt-4fu">
+                        <rect key="frame" x="0.0" y="0.0" width="414" height="896"/>
+                        <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+                        <subviews>
+                            <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="asA-OH-ORy">
+                                <rect key="frame" x="0.0" y="114" width="414" height="1"/>
+                                <color key="backgroundColor" systemColor="systemBackgroundColor"/>
+                                <constraints>
+                                    <constraint firstAttribute="height" constant="1" id="aDU-oe-kbt"/>
+                                </constraints>
+                                <userDefinedRuntimeAttributes>
+                                    <userDefinedRuntimeAttribute type="string" keyPath="backgroundColorIB" value="appGreyMid"/>
+                                </userDefinedRuntimeAttributes>
+                            </view>
+                            <tableView clipsSubviews="YES" contentMode="scaleToFill" alwaysBounceVertical="YES" dataMode="prototypes" style="plain" allowsSelection="NO" rowHeight="-1" estimatedRowHeight="-1" sectionHeaderHeight="28" sectionFooterHeight="28" translatesAutoresizingMaskIntoConstraints="NO" id="YdC-Du-pbA">
+                                <rect key="frame" x="0.0" y="115" width="414" height="723"/>
+                                <color key="backgroundColor" systemColor="systemBackgroundColor"/>
+                                <inset key="separatorInset" minX="15" minY="0.0" maxX="0.0" maxY="0.0"/>
+                                <color key="sectionIndexBackgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                            </tableView>
+                        </subviews>
+                        <viewLayoutGuide key="safeArea" id="dwv-Wv-wMG"/>
+                        <color key="backgroundColor" systemColor="systemBackgroundColor"/>
+                        <constraints>
+                            <constraint firstItem="asA-OH-ORy" firstAttribute="top" secondItem="dwv-Wv-wMG" secondAttribute="top" constant="70" id="CJy-se-ZSC"/>
+                            <constraint firstItem="YdC-Du-pbA" firstAttribute="trailing" secondItem="dwv-Wv-wMG" secondAttribute="trailing" id="EWH-SB-hQe"/>
+                            <constraint firstItem="YdC-Du-pbA" firstAttribute="leading" secondItem="dwv-Wv-wMG" secondAttribute="leading" id="J4o-Ab-E39"/>
+                            <constraint firstItem="YdC-Du-pbA" firstAttribute="top" secondItem="dwv-Wv-wMG" secondAttribute="top" constant="71" id="VPo-vk-Pvd"/>
+                            <constraint firstAttribute="trailing" secondItem="asA-OH-ORy" secondAttribute="trailing" id="egS-T6-7G9"/>
+                            <constraint firstItem="dwv-Wv-wMG" firstAttribute="bottom" secondItem="YdC-Du-pbA" secondAttribute="bottom" constant="24" id="pGy-UJ-lbZ"/>
+                            <constraint firstItem="asA-OH-ORy" firstAttribute="leading" secondItem="foY-lt-4fu" secondAttribute="leading" id="ywR-1y-sa5"/>
+                        </constraints>
+                    </view>
+                    <connections>
+                        <outlet property="table" destination="YdC-Du-pbA" id="jFW-oK-0f2"/>
+                    </connections>
+                </viewController>
+                <placeholder placeholderIdentifier="IBFirstResponder" id="f2W-1s-75J" userLabel="First Responder" customClass="UIResponder" sceneMemberID="firstResponder"/>
+            </objects>
+            <point key="canvasLocation" x="-204.34782608695653" y="179.46428571428569"/>
+        </scene>
+    </scenes>
+    <resources>
+        <systemColor name="systemBackgroundColor">
+            <color white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+        </systemColor>
+    </resources>
+</document>

@@ -40,7 +40,7 @@ class DocumentUploadedMessageProcessor(
       .map { message =>
         logger.info(s"Processing message with document instance id: ${message.documentInstanceId}")
         (for {
-          // get required informations
+          // get required information
           connection <- EitherT(
             Connection
               .fromReceivedMessage(receivedMessage)
@@ -48,9 +48,10 @@ class DocumentUploadedMessageProcessor(
               .transact(tx)
           )
           documentStatus <- EitherT(assureIdService.getDocumentStatus(message.documentInstanceId))
-            .leftMap(MessageProcessorException.apply)
-          document <-
-            EitherT(assureIdService.getDocument(message.documentInstanceId)).leftMap(MessageProcessorException.apply)
+            .leftMap(e => MessageProcessorException(s"Cannot fetch document status: ${e.getMessage}"))
+
+          document <- EitherT(assureIdService.getDocument(message.documentInstanceId))
+            .leftMap(e => MessageProcessorException(s"Cannot fetch document: ${e.getMessage}"))
 
           // update connection with new document status
           _ <- EitherT.right[MessageProcessorException](
@@ -86,15 +87,25 @@ class DocumentUploadedMessageProcessor(
           connectionId <- EitherT.fromOption[Task](connection.id, MessageProcessorException("Empty connection id."))
           credential = createCredential(document)
           (root, proof :: _) = CredentialBatches.batch(List(credential))
-          credentialResponse <- EitherT.right[MessageProcessorException](nodeService.issueCredentialBatch(root))
+          credentialResponse <- EitherT(
+            nodeService
+              .issueCredentialBatch(root)
+              .redeem(
+                ex => Left(MessageProcessorException(s"Failed issuing credential batch: ${ex.getMessage}")),
+                Right(_)
+              )
+          )
 
           // send credential along with inclusion proof
-          credentialMessage = credential_models.PlainTextCredential(
+          credentialProto = credential_models.PlainTextCredential(
             encodedCredential = credential.canonicalForm,
             encodedMerkleProof = proof.encode
           )
+          atalaMessage = credential_models.AtalaMessage(
+            message = AtalaMessage.Message.PlainCredential(credentialProto)
+          )
           sendMessageRequest =
-            SendMessageRequest(connectionId = connectionId.uuid.toString, message = credentialMessage.toByteString)
+            SendMessageRequest(connectionId = connectionId.uuid.toString, message = atalaMessage.toByteString)
 
           _ <- EitherT.right[MessageProcessorException](connectorService.sendMessage(sendMessageRequest))
           _ = logger.info(
@@ -113,39 +124,6 @@ class DocumentUploadedMessageProcessor(
   }
 
   private[processors] def createCredential(document: Document): Credential = {
-    // TODO: this code is commented out due to the fact, that we send credentialSubject as a string
-    // val credentialSubject: CredentialContent.Fields = CredentialContent.Fields(
-    //   "documentInstanceId" -> document.instanceId
-    // )
-
-    // val biographic = document.biographic
-    //   .map(biographic =>
-    //     CredentialContent.Fields(
-    //       "biographic" -> CredentialContent.Fields(
-    //         "age" -> biographic.age,
-    //         "birthDate" -> biographic.birthDate,
-    //         "expirationDate" -> biographic.expirationDate,
-    //         "fullName" -> biographic.fullName,
-    //         "gender" -> biographic.gender,
-    //         "photo" -> biographic.photo
-    //       )
-    //     )
-    //   )
-    //   .getOrElse(Nil)
-
-    // val classificationType = document.classification
-    //   .map(classification =>
-    //     CredentialContent.Fields(
-    //       "classificationType" -> CredentialContent.Fields(
-    //         "class" -> classification.`type`.`class`,
-    //         "className" -> classification.`type`.className,
-    //         "countryCode" -> classification.`type`.countryCode,
-    //         "issue" -> classification.`type`.issue,
-    //         "name" -> classification.`type`.name
-    //       )
-    //     )
-    //   )
-    //   .getOrElse(Nil)
     val credentialSubject = document.asJson.noSpaces
 
     Credential
@@ -154,7 +132,6 @@ class DocumentUploadedMessageProcessor(
           CredentialContent.JsonFields.IssuerDid.field -> authConfig.did.value,
           CredentialContent.JsonFields.IssuanceKeyId.field -> authConfig.didKeyId,
           CredentialContent.JsonFields.CredentialSubject.field -> credentialSubject
-          // CredentialContent.JsonFields.CredentialSubject.field -> (credentialSubject ++ biographic ++ classificationType)
         )
       )
       .sign(authConfig.didKeyPair.privateKey)

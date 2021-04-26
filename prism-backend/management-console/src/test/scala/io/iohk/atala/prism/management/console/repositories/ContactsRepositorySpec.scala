@@ -21,7 +21,7 @@ class ContactsRepositorySpec extends AtalaWithPostgresSpec {
   lazy val credentialsRepository = new CredentialsRepository(database)
 
   "create" should {
-    "create a new subject and assign it to an specified group" in {
+    "create a new contact and assign it to an specified group" in {
       val institutionId = createParticipant("Institution-1")
       val group = createInstitutionGroup(institutionId, InstitutionGroup.Name("Grp 1"))
       val externalId = Contact.ExternalId.random()
@@ -36,12 +36,12 @@ class ContactsRepositorySpec extends AtalaWithPostgresSpec {
         .create(institutionId, request, Some(group.name), connectionToken = ConnectionToken("connectionToken"))
         .value
         .futureValue
-      val subject = result.toOption.value
-      subject.data must be(json)
-      subject.externalId must be(externalId)
+      val contact = result.toOption.value
+      contact.data must be(json)
+      contact.externalId must be(externalId)
 
-      // we check that the subject was added to the intended group
-      val subjectsInGroupList = repository
+      // we check that the contact was added to the intended group
+      val contactsInGroupList = repository
         .getBy(institutionId, Helpers.legacyQuery(None, Some(group.name), 10))
         .value
         .futureValue
@@ -49,11 +49,11 @@ class ContactsRepositorySpec extends AtalaWithPostgresSpec {
         .value
         .map(_.details)
 
-      subjectsInGroupList.size must be(1)
-      subjectsInGroupList.headOption.value must be(subject)
+      contactsInGroupList.size must be(1)
+      contactsInGroupList.headOption.value must be(contact)
     }
 
-    "create a new subject and assign it to no specified group" in {
+    "create a new contact and assign it to no specified group" in {
       val institution = createParticipant("Institution-1")
       val externalId = Contact.ExternalId.random()
       val json = Json.obj(
@@ -67,16 +67,16 @@ class ContactsRepositorySpec extends AtalaWithPostgresSpec {
         .create(institution, request, None, connectionToken = ConnectionToken("connectionToken"))
         .value
         .futureValue
-      val subject = result.toOption.value
-      subject.data must be(json)
-      subject.externalId must be(externalId)
+      val contact = result.toOption.value
+      contact.data must be(json)
+      contact.externalId must be(externalId)
 
-      // we check that the subject was added
-      val maybeSubject = repository.find(institution, subject.contactId).value.futureValue.toOption.value.value
-      maybeSubject.contact must be(subject)
+      // we check that the contact was added
+      val maybeContact = repository.find(institution, contact.contactId).value.futureValue.toOption.value.value
+      maybeContact.contact must be(contact)
     }
 
-    "fail to create a new subject when the specified group does not exist" in {
+    "fail to create a new contact when the specified group does not exist" in {
       val institutionId = createParticipant("Institution-1")
       val externalId = Contact.ExternalId.random()
       val json = Json.obj(
@@ -98,18 +98,18 @@ class ContactsRepositorySpec extends AtalaWithPostgresSpec {
           .futureValue
       )
 
-      // we check that the subject was not created
-      val subjectsList = repository
+      // we check that the contact was not created
+      val contactsList = repository
         .getBy(institutionId, Helpers.legacyQuery(None, None, 1))
         .value
         .futureValue
         .toOption
         .value
         .map(_.details)
-      subjectsList must be(empty)
+      contactsList must be(empty)
     }
 
-    "fail to create a new subject with empty external id" in {
+    "fail to create a new contact with empty external id" in {
       val institutionId = createParticipant("Institution-1")
       val group = createInstitutionGroup(institutionId, InstitutionGroup.Name("Grp 1"))
       val externalId = Contact.ExternalId("")
@@ -126,18 +126,18 @@ class ContactsRepositorySpec extends AtalaWithPostgresSpec {
           .value
           .futureValue
       )
-      // no subject should be created
-      val createdSubjects = repository
+      // no contact should be created
+      val createdContacts = repository
         .getBy(institutionId, Helpers.legacyQuery(None, None, 10))
         .value
         .futureValue
         .toOption
         .value
         .map(_.details)
-      createdSubjects must be(empty)
+      createdContacts must be(empty)
     }
 
-    "fail to create a new subject with an external id already used" in {
+    "fail to create a new contact with an external id already used" in {
       val institutionId = createParticipant("Institution-1")
       val group = createInstitutionGroup(institutionId, InstitutionGroup.Name("Grp 1"))
       val externalId = Contact.ExternalId.random()
@@ -170,7 +170,7 @@ class ContactsRepositorySpec extends AtalaWithPostgresSpec {
           .futureValue
       )
 
-      val subjectsStored = repository
+      val contactsStored = repository
         .getBy(institutionId, Helpers.legacyQuery(None, None, 10))
         .value
         .futureValue
@@ -178,14 +178,14 @@ class ContactsRepositorySpec extends AtalaWithPostgresSpec {
         .value
         .map(_.details)
 
-      // only one subject must be inserted correctly
-      subjectsStored.size must be(1)
+      // only one contact must be inserted correctly
+      contactsStored.size must be(1)
 
-      val subject = subjectsStored.head
-      // the subject must have the original data
-      subject.data must be(json)
-      subject.contactId must be(initialResponse.contactId)
-      subject.externalId must be(externalId)
+      val contact = contactsStored.head
+      // the contact must have the original data
+      contact.data must be(json)
+      contact.contactId must be(initialResponse.contactId)
+      contact.externalId must be(externalId)
     }
   }
 
@@ -541,38 +541,38 @@ class ContactsRepositorySpec extends AtalaWithPostgresSpec {
       contactWithDetails.receivedCredentials.size mustBe 1
     }
 
-    "return no subject when the subject is missing (institutionId and subjectId not correlated)" in {
+    "return no contact when the contact is missing (institutionId and contactId not correlated)" in {
       val institutionXId = createParticipant("Institution X")
       val institutionYId = createParticipant("Institution Y")
       val groupNameA = createInstitutionGroup(institutionXId, InstitutionGroup.Name("Group A")).name
       val groupNameB = createInstitutionGroup(institutionYId, InstitutionGroup.Name("Group B")).name
-      val subjectA = createContact(institutionXId, "Alice", Some(groupNameA))
+      val contactA = createContact(institutionXId, "Alice", Some(groupNameA))
       createContact(institutionYId, "Bob", Some(groupNameB))
 
-      val result = repository.find(institutionYId, subjectA.contactId).value.futureValue.toOption.value
+      val result = repository.find(institutionYId, contactA.contactId).value.futureValue.toOption.value
       result must be(empty)
     }
   }
 
   "find by externalId" should {
-    "return the correct subject when present" in {
+    "return the correct contact when present" in {
       val institutionId = createParticipant("Institution X")
-      val subjectA = createContact(institutionId, "Alice", None)
+      val contactA = createContact(institutionId, "Alice", None)
       createContact(institutionId, "Bob", None)
 
-      val result = repository.find(institutionId, subjectA.externalId).value.futureValue.toOption.value
-      result.value must be(subjectA)
+      val result = repository.find(institutionId, contactA.externalId).value.futureValue.toOption.value
+      result.value must be(contactA)
     }
 
-    "return no subject when the subject is missing (institutionId and subjectId not correlated)" in {
+    "return no contact when the contact is missing (institutionId and contactId not correlated)" in {
       val institutionXId = createParticipant("Institution X")
       val institutionYId = createParticipant("Institution Y")
       val groupNameA = createInstitutionGroup(institutionXId, InstitutionGroup.Name("Group A")).name
       val groupNameB = createInstitutionGroup(institutionYId, InstitutionGroup.Name("Group B")).name
-      val subjectA = createContact(institutionXId, "Alice", Some(groupNameA))
+      val contactA = createContact(institutionXId, "Alice", Some(groupNameA))
       createContact(institutionYId, "Bob", Some(groupNameB))
 
-      val result = repository.find(institutionYId, subjectA.externalId).value.futureValue.toOption.value
+      val result = repository.find(institutionYId, contactA.externalId).value.futureValue.toOption.value
       result must be(empty)
     }
   }
@@ -661,7 +661,7 @@ class ContactsRepositorySpec extends AtalaWithPostgresSpec {
         result must be(expected)
       }
 
-      s"[$tag] paginate by the last seen subject" in {
+      s"[$tag] paginate by the last seen contact" in {
         val institutionId = createParticipant("Institution X")
         val groupNameA = createInstitutionGroup(institutionId, InstitutionGroup.Name("Group A")).name
         val groupNameB = createInstitutionGroup(institutionId, InstitutionGroup.Name("Group B")).name
@@ -684,7 +684,7 @@ class ContactsRepositorySpec extends AtalaWithPostgresSpec {
         result must be(expected)
       }
 
-      s"[$tag] paginate by the last seen subject matching by group" in {
+      s"[$tag] paginate by the last seen contact matching by group" in {
         val institutionId = createParticipant("Institution X")
         val groupNameA = createInstitutionGroup(institutionId, InstitutionGroup.Name("Group A")).name
         val groupNameB = createInstitutionGroup(institutionId, InstitutionGroup.Name("Group B")).name

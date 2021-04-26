@@ -46,10 +46,19 @@ class VerifyIdScanPresenter: BasePresenter {
     private let faceProcessingGroup = DispatchGroup()
     private let showResultGroup = DispatchGroup()
 
+    var documentInstanceID: String?
+    var kycToken: String?
+    var contact: Contact?
+    var selfieImg: UIImage?
+
     override func viewDidAppear() {
         super.viewDidAppear()
         if !self.isInitialized {
-            self.getToken()
+            if let token = kycToken {
+                setAcuantToken(token: token)
+            } else {
+                self.getToken()
+            }
         }
         if detailedIsResultDone {
             resetData()
@@ -63,17 +72,8 @@ class VerifyIdScanPresenter: BasePresenter {
         self.viewImpl?.showLoading(doShow: true)
         let task = self.service.getTask { token in
             DispatchQueue.main.async {
-                if let success = token {
-                    if AcuantCommon.Credential.setToken(token: success) {
-                        if !self.isInitialized {
-                            self.initialize()
-                        } else {
-                            self.viewImpl?.showLoading(doShow: false)
-                        }
-                    } else {
-                        self.viewImpl?.showLoading(doShow: false)
-                        self.viewImpl?.showErrorMessage(doShow: true, message: "Invalid Token")
-                    }
+                if let token = token {
+                    self.setAcuantToken(token: token)
                 } else {
                     self.viewImpl?.showLoading(doShow: false)
                     self.viewImpl?.showErrorMessage(doShow: true, message: "Failed to get Token")
@@ -81,6 +81,19 @@ class VerifyIdScanPresenter: BasePresenter {
             }
         }
         task?.resume()
+    }
+
+    func setAcuantToken(token: String) {
+        if AcuantCommon.Credential.setToken(token: token) {
+            if !self.isInitialized {
+                self.initialize()
+            } else {
+                self.viewImpl?.showLoading(doShow: false)
+            }
+        } else {
+            self.viewImpl?.showLoading(doShow: false)
+            self.viewImpl?.showErrorMessage(doShow: true, message: "Invalid Token")
+        }
     }
 
     private func initialize() {
@@ -120,7 +133,7 @@ class VerifyIdScanPresenter: BasePresenter {
     public func confirmImage(image: AcuantImage) {
         self.createInstanceGroup.notify(queue: .main) {
             self.viewImpl?.showLoading(doShow: true, message: "Processing...")
-
+            self.selfieImg = image.image
             let evaluted = EvaluatedImageData(imageBytes: image.data, barcodeString: self.idData.barcodeString)
 
             AcuantDocumentProcessing.uploadImage(instancdId: self.documentInstance!, data: evaluted,
@@ -137,7 +150,8 @@ class VerifyIdScanPresenter: BasePresenter {
             return false
         }
         var isBackSideRequired: Bool = false
-        let supportedImages: [Dictionary<String, Int>]? = classification?.type?.supportedImages as? [Dictionary<String, Int>]
+        let supportedImages: [Dictionary<String, Int>]? = classification?.type?.supportedImages
+            as? [Dictionary<String, Int>]
         if supportedImages != nil {
             for image in supportedImages! {
                 if image["Light"] == 0 && image["Side"] == 1 {
@@ -357,8 +371,8 @@ extension VerifyIdScanPresenter: GetDataDelegate {
     func showResult(data: [String]?, front: String?, back: String?, sign: String?, face: String?) {
         self.getDataGroup.leave()
         self.viewImpl?.showLoading(doShow: false)
-        ViewControllerUtils.changeScreenSegued(caller: self.viewImpl, segue: "showVerifyIdResultsSegue",
-                                               params: data)
+        self.viewImpl?.changeScreenToResults(values: data, contact: contact, image: self.selfieImg,
+                                             documentInstanceId: documentInstance)
         detailedIsResultDone = true
 
     }
@@ -446,7 +460,8 @@ extension VerifyIdScanPresenter: FacialMatchDelegate {
         self.viewImpl?.showLoading(doShow: true, message: "Processing...")
         self.getDataGroup.notify(queue: .main) {
             if self.capturedFaceImageUrl != nil && image != nil {
-                let loginData = String(format: "%@:%@", AcuantCommon.Credential.username()!, AcuantCommon.Credential.password()!).data(using: String.Encoding.utf8)!
+                let loginData = String(format: "%@:%@", AcuantCommon.Credential.username()!,
+                                       AcuantCommon.Credential.password()!).data(using: String.Encoding.utf8)!
                 let base64LoginData = loginData.base64EncodedString()
 
                 // create the request

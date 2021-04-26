@@ -55,11 +55,11 @@ class CredentialIssuanceServiceImplSpec extends ManagementConsoleRpcSpecBase wit
             .futureValue
             .toOption
             .value
-            .sortBy(_.subjectId.toString)
+            .sortBy(_.contactId.toString)
         credentials.size mustBe contacts.size
         contacts.zip(credentials).foreach {
           case (contact, credential) =>
-            credential.subjectId.toString mustBe contact.contactId
+            credential.contactId.toString mustBe contact.contactId
             credential.credentialData mustBe asJson(contact.credentialData)
             credential.createdOn must (be >= creationTime and be <= Instant.now)
         }
@@ -172,11 +172,11 @@ class CredentialIssuanceServiceImplSpec extends ManagementConsoleRpcSpecBase wit
             .futureValue
             .toOption
             .value
-            .sortBy(_.subjectId.toString)
+            .sortBy(_.contactId.toString)
         credentials.size mustBe contacts.size
         contacts.zip(credentials).foreach {
           case (contact, credential) =>
-            credential.subjectId.toString mustBe contact.contactId
+            credential.contactId.toString mustBe contact.contactId
             credential.credentialData mustBe asJson(contact.credentialData)
             credential.createdOn must (be >= creationTime and be <= Instant.now)
         }

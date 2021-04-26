@@ -43,6 +43,17 @@ extension UITextField {
             rightView = nil
         }
     }
+    
+    func addDropDownIcon() {
+        let imageView = UIImageView.init(image: UIImage.init(systemName: "chevron.down"))
+        
+        imageView.frame = CGRect(x: CGFloat(self.frame.size.width - 25), y: CGFloat(5), width: CGFloat(25), height: CGFloat(25))
+        imageView.tag = self.tag
+        imageView.tintColor = UIColor.appGreyMid
+        
+        rightView = imageView
+        rightViewMode = .always
+    }
 }
 
 // MARK: Methods

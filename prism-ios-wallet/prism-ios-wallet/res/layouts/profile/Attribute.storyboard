@@ -1,0 +1,128 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="17701" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES">
+    <device id="retina6_1" orientation="portrait" appearance="light"/>
+    <dependencies>
+        <deployment identifier="iOS"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="17703"/>
+        <capability name="Safe area layout guides" minToolsVersion="9.0"/>
+        <capability name="System colors in document resources" minToolsVersion="11.0"/>
+        <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
+    </dependencies>
+    <scenes>
+        <!--Attribute View Controller-->
+        <scene sceneID="H6L-ks-iAR">
+            <objects>
+                <viewController storyboardIdentifier="Attribute" modalPresentationStyle="overFullScreen" useStoryboardIdentifierAsRestorationIdentifier="YES" id="3ie-UW-tOM" customClass="AttributeViewController" customModule="Atala_PRISM" customModuleProvider="target" sceneMemberID="viewController">
+                    <view key="view" contentMode="scaleToFill" insetsLayoutMarginsFromSafeArea="NO" id="xJj-rS-oXn">
+                        <rect key="frame" x="0.0" y="0.0" width="414" height="896"/>
+                        <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+                        <subviews>
+                            <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="WpK-e5-2jS">
+                                <rect key="frame" x="20" y="316" width="374" height="274.5"/>
+                                <subviews>
+                                    <view clipsSubviews="YES" contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="IV7-W1-6ax">
+                                        <rect key="frame" x="0.0" y="0.0" width="374" height="274.5"/>
+                                        <subviews>
+                                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="248" text="Add a New Attribute" textAlignment="center" lineBreakMode="tailTruncation" numberOfLines="2" baselineAdjustment="alignBaselines" adjustsLetterSpacingToFitWidth="YES" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="aI9-2j-nVN">
+                                                <rect key="frame" x="24" y="24" width="326" height="21.5"/>
+                                                <fontDescription key="fontDescription" type="boldSystem" pointSize="18"/>
+                                                <nil key="textColor"/>
+                                                <nil key="highlightedColor"/>
+                                                <userDefinedRuntimeAttributes>
+                                                    <userDefinedRuntimeAttribute type="string" keyPath="localized" value="attribute_title"/>
+                                                    <userDefinedRuntimeAttribute type="string" keyPath="textColorIB" value="appBlack"/>
+                                                </userDefinedRuntimeAttributes>
+                                            </label>
+                                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="After completing your status will be pending for 48 hs and you will recieve a confirmation" textAlignment="center" lineBreakMode="wordWrap" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="rG9-GT-YfC">
+                                                <rect key="frame" x="24" y="61.5" width="326" height="29"/>
+                                                <fontDescription key="fontDescription" type="system" pointSize="12"/>
+                                                <nil key="textColor"/>
+                                                <nil key="highlightedColor"/>
+                                                <userDefinedRuntimeAttributes>
+                                                    <userDefinedRuntimeAttribute type="string" keyPath="textColorIB" value="appBlack"/>
+                                                    <userDefinedRuntimeAttribute type="string" keyPath="localized" value="attribute_description"/>
+                                                </userDefinedRuntimeAttributes>
+                                            </label>
+                                            <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="OUH-Am-IzF" customClass="TextFieldTitledView" customModule="Atala_PRISM" customModuleProvider="target">
+                                                <rect key="frame" x="24" y="114.5" width="326" height="68"/>
+                                                <color key="backgroundColor" systemColor="systemBackgroundColor"/>
+                                                <constraints>
+                                                    <constraint firstAttribute="height" constant="68" id="c0u-Az-tWb"/>
+                                                </constraints>
+                                            </view>
+                                            <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="BmT-YQ-bZv">
+                                                <rect key="frame" x="24" y="206.5" width="326" height="44"/>
+                                                <color key="backgroundColor" systemColor="systemRedColor"/>
+                                                <fontDescription key="fontDescription" type="system" weight="semibold" pointSize="16"/>
+                                                <inset key="contentEdgeInsets" minX="0.0" minY="12" maxX="0.0" maxY="12"/>
+                                                <state key="normal" title="Add">
+                                                    <color key="titleColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                                </state>
+                                                <state key="disabled">
+                                                    <color key="titleColor" red="0.62745098040000002" green="0.66666666669999997" blue="0.73333333329999995" alpha="1" colorSpace="custom" customColorSpace="displayP3"/>
+                                                </state>
+                                                <userDefinedRuntimeAttributes>
+                                                    <userDefinedRuntimeAttribute type="string" keyPath="textColorIB" value="appWhite"/>
+                                                    <userDefinedRuntimeAttribute type="string" keyPath="backgroundColorIB" value="appRed"/>
+                                                    <userDefinedRuntimeAttribute type="string" keyPath="localized" value="add"/>
+                                                </userDefinedRuntimeAttributes>
+                                                <connections>
+                                                    <action selector="addAttribute:" destination="3ie-UW-tOM" eventType="touchUpInside" id="C8P-Za-gdV"/>
+                                                </connections>
+                                            </button>
+                                        </subviews>
+                                        <color key="backgroundColor" systemColor="systemBackgroundColor"/>
+                                        <constraints>
+                                            <constraint firstAttribute="trailing" secondItem="OUH-Am-IzF" secondAttribute="trailing" constant="24" id="5EU-bf-OG6"/>
+                                            <constraint firstItem="BmT-YQ-bZv" firstAttribute="top" secondItem="OUH-Am-IzF" secondAttribute="bottom" constant="24" id="5m2-8x-Gto"/>
+                                            <constraint firstAttribute="trailing" secondItem="aI9-2j-nVN" secondAttribute="trailing" constant="24" id="GQ6-Va-z7g"/>
+                                            <constraint firstAttribute="trailing" secondItem="rG9-GT-YfC" secondAttribute="trailing" constant="24" id="PCz-F7-PLh"/>
+                                            <constraint firstItem="OUH-Am-IzF" firstAttribute="top" secondItem="rG9-GT-YfC" secondAttribute="bottom" constant="24" id="ScZ-g8-ds5"/>
+                                            <constraint firstAttribute="trailing" secondItem="BmT-YQ-bZv" secondAttribute="trailing" constant="24" id="Sga-D2-932"/>
+                                            <constraint firstItem="BmT-YQ-bZv" firstAttribute="leading" secondItem="IV7-W1-6ax" secondAttribute="leading" constant="24" id="Xgy-U9-fT9"/>
+                                            <constraint firstItem="aI9-2j-nVN" firstAttribute="top" secondItem="IV7-W1-6ax" secondAttribute="top" constant="24" id="dO8-XB-mq8"/>
+                                            <constraint firstItem="rG9-GT-YfC" firstAttribute="top" secondItem="aI9-2j-nVN" secondAttribute="bottom" constant="16" id="h3K-lA-gTD"/>
+                                            <constraint firstItem="OUH-Am-IzF" firstAttribute="leading" secondItem="IV7-W1-6ax" secondAttribute="leading" constant="24" id="pSt-Dv-Cvw"/>
+                                            <constraint firstItem="rG9-GT-YfC" firstAttribute="leading" secondItem="IV7-W1-6ax" secondAttribute="leading" constant="24" id="ruQ-d2-jIh"/>
+                                            <constraint firstAttribute="bottom" secondItem="BmT-YQ-bZv" secondAttribute="bottom" constant="24" id="wY7-wE-yIX"/>
+                                            <constraint firstItem="aI9-2j-nVN" firstAttribute="leading" secondItem="IV7-W1-6ax" secondAttribute="leading" constant="24" id="zeu-L4-dgd"/>
+                                        </constraints>
+                                    </view>
+                                </subviews>
+                                <color key="backgroundColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                <constraints>
+                                    <constraint firstAttribute="trailing" secondItem="IV7-W1-6ax" secondAttribute="trailing" id="Dx4-Zm-T77"/>
+                                    <constraint firstAttribute="bottom" secondItem="IV7-W1-6ax" secondAttribute="bottom" id="WJv-2C-aJI"/>
+                                    <constraint firstItem="IV7-W1-6ax" firstAttribute="leading" secondItem="WpK-e5-2jS" secondAttribute="leading" id="jx9-fz-TZJ"/>
+                                    <constraint firstItem="IV7-W1-6ax" firstAttribute="top" secondItem="WpK-e5-2jS" secondAttribute="top" id="wIg-rR-Phd"/>
+                                </constraints>
+                            </view>
+                        </subviews>
+                        <viewLayoutGuide key="safeArea" id="wQJ-jQ-GUN"/>
+                        <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                        <constraints>
+                            <constraint firstItem="WpK-e5-2jS" firstAttribute="centerY" secondItem="wQJ-jQ-GUN" secondAttribute="centerY" id="3Uj-tO-GLe"/>
+                            <constraint firstItem="wQJ-jQ-GUN" firstAttribute="trailing" secondItem="WpK-e5-2jS" secondAttribute="trailing" constant="20" id="abk-Bt-KJL"/>
+                            <constraint firstItem="WpK-e5-2jS" firstAttribute="leading" secondItem="wQJ-jQ-GUN" secondAttribute="leading" constant="20" id="j2g-vj-fy8"/>
+                        </constraints>
+                    </view>
+                    <connections>
+                        <outlet property="buttonAdd" destination="BmT-YQ-bZv" id="st5-qh-46e"/>
+                        <outlet property="typetextField" destination="OUH-Am-IzF" id="BgE-JH-j4C"/>
+                        <outlet property="viewBg" destination="WpK-e5-2jS" id="Afe-B1-mTd"/>
+                    </connections>
+                </viewController>
+                <placeholder placeholderIdentifier="IBFirstResponder" id="Wv4-hO-zxs" userLabel="First Responder" customClass="UIResponder" sceneMemberID="firstResponder"/>
+            </objects>
+            <point key="canvasLocation" x="-23.188405797101453" y="4.6875"/>
+        </scene>
+    </scenes>
+    <resources>
+        <systemColor name="systemBackgroundColor">
+            <color white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+        </systemColor>
+        <systemColor name="systemRedColor">
+            <color red="1" green="0.23137254901960785" blue="0.18823529411764706" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+        </systemColor>
+    </resources>
+</document>

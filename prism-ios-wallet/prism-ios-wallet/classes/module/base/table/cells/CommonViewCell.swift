@@ -8,6 +8,8 @@ protocol CommonViewCellPresenterDelegate: BaseTableViewCellPresenterDelegate {
 
 class CommonViewCell: BaseTableViewCell {
 
+    @IBOutlet weak var viewHeader: UIView!
+    @IBOutlet weak var labelHeader: UILabel!
     @IBOutlet weak var labelTitle: UILabel!
     @IBOutlet weak var labelSubtitle: UILabel!
     @IBOutlet weak var buttonIconAction: UIButton!
@@ -16,7 +18,8 @@ class CommonViewCell: BaseTableViewCell {
     @IBOutlet weak var constraintTitleVertical: NSLayoutConstraint!
     @IBOutlet weak var viewMainBody: UIView!
     @IBOutlet weak var constraintTitleTrailing: NSLayoutConstraint!
-
+    @IBOutlet weak var imageVerified: UIImageView!
+    
     override class func default_NibName() -> String {
         return "CommonViewCell"
     }
@@ -45,7 +48,7 @@ class CommonViewCell: BaseTableViewCell {
     // MARK: Config
 
     func config(title: String?, subtitle: String?, logoData: Data?, logoPlaceholderNamed: String,
-                isComingSoon: Bool = false) {
+                isComingSoon: Bool = false, isVerified: Bool = false, showHeader: Bool = false, headerTitle: String? = nil) {
 
         labelTitle.text = title
         let hideSubtitle = subtitle == nil
@@ -56,5 +59,8 @@ class CommonViewCell: BaseTableViewCell {
         buttonIconAction.isHidden = isComingSoon
         buttonComingSoon.isHidden = !isComingSoon
         constraintTitleTrailing.constant = !isComingSoon ? 17.0 : 70.0
+        imageVerified.isHidden = !isVerified
+        viewHeader.isHidden = !showHeader
+        labelHeader.text = headerTitle
     }
 }

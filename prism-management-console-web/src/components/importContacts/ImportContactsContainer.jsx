@@ -86,6 +86,7 @@ const ImportContactsContainer = ({ api, redirector: { redirectToContacts } }) =>
         headersMapping={headersMapping}
         useCase={IMPORT_CONTACTS}
         loading={loading}
+        continueCallback={redirectToContacts}
       />
     </DynamicFormProvider>
   );

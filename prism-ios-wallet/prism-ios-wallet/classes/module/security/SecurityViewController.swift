@@ -144,7 +144,7 @@ class SecurityViewController: ListingBaseViewController, UIScrollViewDelegate {
         tableUtils = TableUtils(view: self, presenter: presenterImpl, table: table)
     }
 
-    override func getHeaderHeight() -> CGFloat {
+    override func getHeaderHeight(for section: Int) -> CGFloat {
         return AppConfigs.TABLE_HEADER_HEIGHT_REGULAR
     }
 

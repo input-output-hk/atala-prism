@@ -8,7 +8,6 @@ import androidx.lifecycle.viewModelScope
 import io.iohk.atala.prism.app.grpc.ParticipantInfoResponse
 import io.iohk.atala.prism.app.neo.common.EventWrapper
 import io.iohk.atala.prism.app.neo.data.ContactsRepository
-import io.iohk.atala.prism.protos.ParticipantInfo
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
@@ -23,17 +22,11 @@ class AcceptConnectionDialogViewModel @Inject constructor(
     val participantInfoResponse: LiveData<ParticipantInfoResponse> = _participantInfoResponse
 
     val participantName: LiveData<String> = Transformations.map(participantInfoResponse) {
-        if (it.participantInfo.participantCase.number == ParticipantInfo.ParticipantCase.ISSUER.number)
-            it.participantInfo.issuer.name
-        else
-            it.participantInfo.verifier.name
+        it.name
     }
 
     val participantLogo: LiveData<ByteArray> = Transformations.map(participantInfoResponse) {
-        if (it.participantInfo.participantCase.number == ParticipantInfo.ParticipantCase.ISSUER.number)
-            it.participantInfo.issuer.logo.toByteArray()
-        else
-            it.participantInfo.verifier.logo.toByteArray()
+        it.logo
     }
 
     private val _isLoading = MutableLiveData<Boolean>(false)

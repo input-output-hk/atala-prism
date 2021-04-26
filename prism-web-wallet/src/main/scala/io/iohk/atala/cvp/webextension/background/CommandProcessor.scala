@@ -1,5 +1,6 @@
 package io.iohk.atala.cvp.webextension.background
 
+import cats.syntax.functor._
 import io.circe.generic.auto._
 import io.iohk.atala.cvp.webextension.background.models.Command.{
   GotCredentialRequestsRequiringManualApproval,
@@ -64,9 +65,9 @@ private[background] class CommandProcessor(
       case Command.GetUserSession =>
         walletManager.getLoggedInUserSession(origin).map(CommandResponse.apply)
       case Command.ApprovePendingRequest(requestId) =>
-        walletManager.approvePendingRequest(requestId).map(_ => CommandResponse(()))
+        walletManager.approvePendingRequest(requestId).as(CommandResponse(()))
       case Command.RejectPendingRequest(requestId) =>
-        walletManager.rejectRequest(requestId).map(_ => CommandResponse(()))
+        walletManager.rejectRequest(requestId).as(CommandResponse(()))
       case Command.ApproveAllCredentialRequests =>
         walletManager.approveAllCredentialRequests().map(CommandResponse(_))
       case Command.RejectAllCredentialRequests =>

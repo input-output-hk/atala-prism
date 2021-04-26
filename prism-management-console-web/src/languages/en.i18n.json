@@ -111,7 +111,10 @@
     "inviteSuccessfull": "The Holder has been successfully invited",
     "modal": {
       "title": "Open on Mobile",
-      "subtitle": ["Scan with your phone’s camera", "using the Atala PRISM mobile app"]
+      "subtitle": [
+        "Scan with your phone’s camera",
+        "using the Atala PRISM mobile app"
+      ]
     },
     "detail": {
       "title": "Credentials List",
@@ -289,7 +292,6 @@
     },
     "detail": {
       "title": "Credential Detail",
-      "noStudent": "You can't view the details of a credential that doesn't have a student",
       "delete": "Delete",
       "resend": "Resend",
       "verify": "Verify",
@@ -301,9 +303,11 @@
       "dateCreated": "Date Created",
       "dateSigned": "Date Signed",
       "notPublished": "Not Signed",
-      "validity": "Validity: ",
       "valid": "Valid",
       "invalid": "Invalid",
+      "draft": "Draft",
+      "pendingPublication": "Pending publication",
+      "revoked": "Revoked",
       "source": "Source:",
       "integrity": {
         "title": "Integrity: ",
@@ -390,8 +394,34 @@
     "deletionSuccess": "The credential summary {{name}} was successfully deleted"
   },
   "newCredential": {
-    "title": "New Credential",
-    "subtitle": "Let's create a New Credential. Here are some key things to do.",
+    "title": {
+      "step1": "Create Credentials",
+      "step2": "Create Credentials",
+      "embeddedStep1": "Create Credentials",
+      "embeddedStep2": {
+        "bulkImport": "Create Credentials",
+        "manualImport": "Create Credentials"
+      },
+      "embeddedStep3": {
+        "success": "",
+        "errorLog": "Create Credentials | Error Log"
+      },
+      "step4": "Credential Detail"
+    },
+    "subtitle": {
+      "step1": "Select Credential Template",
+      "step2": "Select groups or contacts to issue credentials",
+      "embeddedStep1": "Select an Import Method",
+      "embeddedStep2": {
+        "bulkImport": "Follow these steps to continue",
+        "manualImport": "Add credential information manually."
+      },
+      "embeddedStep3": {
+        "success": "",
+        "errorLog": "Your file has some errors, please correct them and upload your file again."
+      },
+      "step4": ""
+    },
     "steps": {
       "step1": "Select Credential Template",
       "step2": "Assign Recipients",
@@ -682,6 +712,28 @@
     }
   },
   "importContacts": {
+    "title": {
+      "step1": "Import Contact",
+      "step2": {
+        "bulkImport": "Bulk Import",
+        "manualImport": "Add contacts manually"
+      },
+      "step3": {
+        "success": "",
+        "errorLog": "Bulk Import | Error Log"
+      }
+    },
+    "subtitle": {
+      "step1": "Choose Bulk or Manual Import",
+      "step2": {
+        "bulkImport": "Follow these steps to import your contacts correctly",
+        "manualImport": "Assign Contacts to a single or multiple Group"
+      },
+      "step3": {
+        "success": "",
+        "errorLog": "Your file has some errors, please correct them and upload your file again"
+      }
+    },
     "success": "Contact(s) successfully created",
     "importTypeSelection": {
       "title": "Import Contacts",
@@ -746,8 +798,6 @@
       "skipStepText": "Skip this step"
     },
     "errorLog": {
-      "title": "Bulk Import Error Log",
-      "info": "Your file has some errors, please correct them and upload your file again",
       "processedRows": "Processed Rows:",
       "correctRows": "Correct Format Lines",
       "incorrectRows": "Incorrect Format Lines",

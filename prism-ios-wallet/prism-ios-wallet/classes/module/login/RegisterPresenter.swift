@@ -49,8 +49,16 @@ class RegisterPresenter: ListingBasePresenter, ListingBaseTableUtilsPresenterDel
         data = []
     }
 
-    func getElementCount() -> Int {
-        return data.count
+    func getSectionHeaderViews() -> [UIView] {
+        return [UIView()]
+    }
+    
+    func getSectionCount() -> Int? {
+        return 1
+    }
+    
+    func getElementCount() -> [Int] {
+        return [data.count]
     }
 
     func fetchData() {

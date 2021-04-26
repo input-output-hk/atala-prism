@@ -27,8 +27,8 @@
                                     <constraint firstAttribute="height" constant="40" id="wF9-p3-aNp"/>
                                 </constraints>
                             </imageView>
-                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" verticalCompressionResistancePriority="751" text="Label" lineBreakMode="tailTruncation" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="BPt-xp-iBD">
-                                <rect key="frame" x="66" y="17" width="28" height="12"/>
+                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" verticalHuggingPriority="251" verticalCompressionResistancePriority="751" text="Label" lineBreakMode="wordWrap" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="BPt-xp-iBD">
+                                <rect key="frame" x="66" y="17" width="191" height="12"/>
                                 <fontDescription key="fontDescription" type="boldSystem" pointSize="10"/>
                                 <nil key="textColor"/>
                                 <nil key="highlightedColor"/>
@@ -74,6 +74,7 @@
                             <constraint firstItem="uMS-2L-HKA" firstAttribute="centerY" secondItem="418-zd-J14" secondAttribute="centerY" id="hqh-kb-pGL"/>
                             <constraint firstItem="BPt-xp-iBD" firstAttribute="leading" secondItem="D47-ON-bBn" secondAttribute="trailing" constant="11" id="jHw-oC-MPN"/>
                             <constraint firstItem="BPt-xp-iBD" firstAttribute="top" secondItem="2gA-pw-Lzb" secondAttribute="top" constant="17" id="pOh-cV-pVC"/>
+                            <constraint firstItem="uMS-2L-HKA" firstAttribute="leading" secondItem="BPt-xp-iBD" secondAttribute="trailing" constant="10" id="sWy-F9-IP8"/>
                             <constraint firstAttribute="bottom" relation="greaterThanOrEqual" secondItem="g9m-OY-xjF" secondAttribute="bottom" constant="10" id="ssw-eT-fvU"/>
                             <constraint firstItem="D47-ON-bBn" firstAttribute="top" relation="greaterThanOrEqual" secondItem="2gA-pw-Lzb" secondAttribute="top" constant="14" id="yXX-ea-Tcb"/>
                         </constraints>

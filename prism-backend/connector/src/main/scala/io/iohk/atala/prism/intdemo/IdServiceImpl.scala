@@ -5,6 +5,7 @@ import java.time.LocalDate
 import java.time.format.DateTimeFormatter
 
 import com.github.ghik.silencer.silent
+import cats.syntax.functor._
 import io.circe.Json.fromString
 import io.circe._
 import io.grpc.Status
@@ -71,7 +72,7 @@ class IdServiceImpl(
           request.firstName,
           LocalDate.of(request.dateOfBirth.get.year, request.dateOfBirth.get.month, request.dateOfBirth.get.day)
         )
-        .map(_ => intdemo_api.SetPersonalDataResponse())
+        .as(intdemo_api.SetPersonalDataResponse())
     }
   }
 }

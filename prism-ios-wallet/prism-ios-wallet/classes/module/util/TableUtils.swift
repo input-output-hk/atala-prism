@@ -2,7 +2,9 @@
 
 protocol TableUtilsPresenterDelegate: BaseTableViewCellPresenterDelegate {
 
-    func getElementCount() -> Int
+    func getSectionCount() -> Int?
+    func getSectionHeaderViews() -> [UIView]
+    func getElementCount() -> [Int]
     func hasPullToRefresh() -> Bool
     func actionPullToRefresh()
     func didSelectRowAt(indexPath: IndexPath)
@@ -19,7 +21,7 @@ protocol TableUtilsViewDelegate: class {
 
     func getCellIdentifier(for indexPath: IndexPath) -> String
     func getCellNib(for indexPath: IndexPath) -> String?
-    func getHeaderHeight() -> CGFloat
+    func getHeaderHeight(for section: Int) -> CGFloat
 }
 
 class TableUtils: NSObject, UITableViewDataSource, UITableViewDelegate {
@@ -59,15 +61,17 @@ class TableUtils: NSObject, UITableViewDataSource, UITableViewDelegate {
     }
 
     func isLastElement(indexPath: IndexPath) -> Bool {
-        return presenterDelegate.getElementCount() == indexPath.row
+        return presenterDelegate.getElementCount()[indexPath.section] == indexPath.section
+//        return false
     }
 
     func tableView(_ tableView: UITableView, heightForHeaderInSection section: Int) -> CGFloat {
-        return viewDelegate.getHeaderHeight()
+        return viewDelegate.getHeaderHeight(for: section)
     }
 
     func tableView(_ tableView: UITableView, viewForHeaderInSection section: Int) -> UIView? {
-        return UIView()
+        
+        return presenterDelegate.getSectionHeaderViews()[section]
     }
 
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
@@ -82,11 +86,12 @@ class TableUtils: NSObject, UITableViewDataSource, UITableViewDelegate {
     }
 
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        return presenterDelegate.getElementCount()
+        let rows = presenterDelegate.getElementCount()
+        return section < rows.count ? rows[section] : 0
     }
 
     func numberOfSections(in tableView: UITableView) -> Int {
-        return 1
+        return presenterDelegate.getSectionCount() ?? 1
     }
 
     func tableView(_ tableView: UITableView, willDisplay cell: UITableViewCell, forRowAt indexPath: IndexPath) {
@@ -97,6 +102,14 @@ class TableUtils: NSObject, UITableViewDataSource, UITableViewDelegate {
 
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         presenterDelegate.didSelectRowAt(indexPath: indexPath)
+    }
+    
+    func tableView(_ tableView: UITableView, heightForFooterInSection section: Int) -> CGFloat{
+        return 0.01;
+    }
+    
+    func tableView(_ tableView: UITableView, viewForFooterInSection section: Int) -> UIView? {
+        return UIView()
     }
 
     // MARK: Pull to refresh

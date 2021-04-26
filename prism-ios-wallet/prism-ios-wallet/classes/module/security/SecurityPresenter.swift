@@ -248,17 +248,25 @@ class SecurityPresenter: ListingBasePresenter, ListingBaseTableUtilsPresenterDel
             return false
         }
     }
+    
+    func getSectionHeaderViews() -> [UIView] {
+        return [UIView()]
+    }
+    
+    func getSectionCount() -> Int? {
+        return 1
+    }
 
-    func getElementCount() -> Int {
+    func getElementCount() -> [Int] {
         if let baseValue = super.getBaseElementCount() {
-            return baseValue
+            return [baseValue]
         }
 
         switch mode {
         case .main:
-            return (initialRows?.size() ?? 0)
+            return [(initialRows?.size() ?? 0)]
         default:
-            return 0
+            return [0]
         }
     }
 

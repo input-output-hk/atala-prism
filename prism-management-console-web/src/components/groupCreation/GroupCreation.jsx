@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import PropTypes from 'prop-types';
 import { useTranslation } from 'react-i18next';
 import { PulseLoader } from 'react-spinners';
-import { Checkbox, Row, Col } from 'antd';
+import { Checkbox } from 'antd';
 import { withApi } from '../providers/withApi';
 import { useContactsWithFilteredList } from '../../hooks/useContacts';
 import { withRedirector } from '../providers/withRedirector';
@@ -65,12 +65,31 @@ const GroupCreation = ({
   };
 
   return (
-    <div className="Wrapper">
+    <div className="WrapperGroupCreation">
       <div className="Header">
-        <h1>{t('groupCreation.title')}</h1>
-        <h3 className="groupsSubtitle">{t('groupCreation.subtitle')}</h3>
-      </div>
+        <div className="Title">
+          <h1>{t('groupCreation.title')}</h1>
+          <h3 className="groupsSubtitle">{t('groupCreation.subtitle')}</h3>
+        </div>
 
+        <div className="flex">
+          <div className="SearchBar">
+            <ConnectionsFilter {...filterProps} withStatus={false} />
+          </div>
+
+          <div className="groupsButtonContainer">
+            <CustomButton
+              buttonProps={{
+                className: 'theme-primary',
+                disabled: nameState === GROUP_NAME_STATES.failed,
+                onClick: () => createGroup(groupName)
+              }}
+              buttonText={t('groupCreation.form.buttonText')}
+              loading={isSaving}
+            />
+          </div>
+        </div>
+      </div>
       <div className="GroupCreationContent">
         <div className="box">
           <h3>{t('groupCreation.groupName')}</h3>
@@ -82,8 +101,8 @@ const GroupCreation = ({
             nameState={nameState}
           />
           <h3>{t('groupCreation.addContacts')}</h3>
-          <Row className="UtilsContainer mb-0">
-            <Col span={3}>
+          <div className="UtilsContainer mb-0">
+            <div className="SelectAll">
               <Checkbox className="groupsCheckbox" {...selectAllProps}>
                 {loadingSelection ? (
                   <PulseLoader size={3} color="#FFAEB3" />
@@ -94,43 +113,25 @@ const GroupCreation = ({
                   </span>
                 )}
               </Checkbox>
-            </Col>
-            <Col span={19}>
-              <ConnectionsFilter {...filterProps} withStatus={false} />
-            </Col>
-          </Row>
-          <Row gutter={10} align="bottom" type="flex">
-            <Col sm={24} md={20}>
-              <div className="addContactsContainer">
-                {(isSearching && !filteredContacts.length) || isLoading ? (
-                  <SimpleLoading />
-                ) : (
-                  <ConnectionsTable
-                    contacts={filteredContacts}
-                    selectedContacts={selectedContacts}
-                    setSelectedContacts={setSelectedContacts}
-                    handleContactsRequest={handleContactsRequest}
-                    searching={isSearching}
-                    hasMore={hasMore}
-                    size="md"
-                  />
-                )}
-              </div>
-            </Col>
-            <Col sm={24} md={4}>
-              <div className="groupsButtonContainer">
-                <CustomButton
-                  buttonProps={{
-                    className: 'theme-primary',
-                    disabled: nameState === GROUP_NAME_STATES.failed,
-                    onClick: () => createGroup(groupName)
-                  }}
-                  buttonText={t('groupCreation.form.buttonText')}
-                  loading={isSaving}
+            </div>
+          </div>
+          <div className="addContactSection">
+            <div className="addContactsContainer">
+              {(isSearching && !filteredContacts.length) || isLoading ? (
+                <SimpleLoading />
+              ) : (
+                <ConnectionsTable
+                  contacts={filteredContacts}
+                  selectedContacts={selectedContacts}
+                  setSelectedContacts={setSelectedContacts}
+                  handleContactsRequest={handleContactsRequest}
+                  searching={isSearching}
+                  hasMore={hasMore}
+                  size="md"
                 />
-              </div>
-            </Col>
-          </Row>
+              )}
+            </div>
+          </div>
         </div>
       </div>
     </div>

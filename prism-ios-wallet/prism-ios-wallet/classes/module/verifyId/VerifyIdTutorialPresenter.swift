@@ -19,7 +19,7 @@ class VerifyIdTutorialPresenter: BasePresenter {
     func continueTapped() {
         viewImpl?.changeScreenToTypeSelect()
     }
-    
+
     func skipTapped() {
         viewImpl?.goToMainScreen()
     }

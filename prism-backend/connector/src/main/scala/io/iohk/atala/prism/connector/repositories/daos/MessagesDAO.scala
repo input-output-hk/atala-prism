@@ -1,8 +1,9 @@
 package io.iohk.atala.prism.connector.repositories.daos
 
+import cats.data.NonEmptyList
 import doobie.implicits._
 import cats.implicits._
-import doobie.FC
+import doobie.{FC, Fragments}
 import doobie.implicits.legacy.instant._
 import doobie.util.update.Update
 import fs2.Stream
@@ -21,9 +22,7 @@ object MessagesDAO {
   ): doobie.ConnectionIO[Unit] = {
     sql"""
          |INSERT INTO messages (id, connection, sender, recipient, received_at, content)
-         |VALUES ($id, $connection, $sender, $recipient, ${Instant.now()}, $content)""".stripMargin.update.run.map(_ =>
-      ()
-    )
+         |VALUES ($id, $connection, $sender, $recipient, ${Instant.now()}, $content)""".stripMargin.update.run.void
   }
 
   def insert(
@@ -50,6 +49,15 @@ object MessagesDAO {
          |FROM messages
          |WHERE id = $id
        """.stripMargin.query[Message].option
+  }
+
+  def getIdsOfAlreadyExistingMessages(ids: NonEmptyList[MessageId]): doobie.ConnectionIO[List[MessageId]] = {
+    (fr"""
+         |SELECT id
+         |FROM messages
+         |WHERE""".stripMargin ++ Fragments.in(fr"id", ids))
+      .query[MessageId]
+      .to[List]
   }
 
   def getMessagesPaginated(
@@ -103,7 +111,7 @@ object MessagesDAO {
     sql"""
          |DELETE FROM messages
          |WHERE connection = $connectionId
-       """.stripMargin.update.run.map(_ => ())
+       """.stripMargin.update.run.void
   }
 
   def getMessageStream(

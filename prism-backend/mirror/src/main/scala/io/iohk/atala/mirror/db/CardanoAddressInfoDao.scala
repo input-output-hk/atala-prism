@@ -8,7 +8,7 @@ import io.iohk.atala.mirror.models.CardanoAddressInfo.CardanoNetwork
 import io.iohk.atala.prism.models.{ConnectionToken, ConnectorMessageId}
 import doobie.implicits.legacy.instant._
 import doobie.util.meta.Meta
-import io.iohk.atala.mirror.models.CardanoAddressInfo.CardanoAddress
+import io.iohk.atala.mirror.models.CardanoAddress
 import io.iohk.atala.prism.mirror.payid.Address.VerifiedAddress
 import io.iohk.atala.prism.mirror.payid.implicits._
 import io.iohk.atala.prism.jose.implicits._

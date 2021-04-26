@@ -7,22 +7,22 @@ case class Document(
 )
 
 case class DocumentBiographic(
-    age: Int,
-    birthDate: String,
-    expirationDate: String,
-    fullName: String,
-    gender: Int,
-    photo: String
+    age: Option[Int],
+    birthDate: Option[String],
+    expirationDate: Option[String],
+    fullName: Option[String],
+    gender: Option[Int],
+    photo: Option[String]
 )
 
 case class DocumentClassification(
-    `type`: DocumentClassificationType
+    `type`: Option[DocumentClassificationType]
 )
 
 case class DocumentClassificationType(
-    `class`: Int,
-    className: String,
-    countryCode: String,
-    issue: String, // issue year
-    name: String
+    `class`: Option[Int],
+    className: Option[String],
+    countryCode: Option[String],
+    issue: Option[String], // issue year
+    name: Option[String]
 )

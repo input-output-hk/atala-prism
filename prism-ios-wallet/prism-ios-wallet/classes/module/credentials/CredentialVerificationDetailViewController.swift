@@ -83,7 +83,7 @@ class CredentialVerificationDetailViewController: UIViewController {
     func setData() {
 
         txHashLbl.text = "#a4b412fdf47dfd457djhgf3bftjtyhn6hw45hwhw45gg345"
-        dateLbl.text = "credentials_verify_date_time".localize()?
+        dateLbl.text = "credentials_verify_date_time".localize()
             .appending(credential?.dateReceived.dateTimeString() ?? "")
 
         fileTv.text = credential?.json

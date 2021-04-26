@@ -1,23 +1,18 @@
 package io.iohk.atala.prism.connector
 
 import cats.data.NonEmptyList
-import cats.syntax.either._
+import cats.implicits._
 import io.grpc.Context
 import io.iohk.atala.prism.auth.grpc.{GrpcAuthenticationHeader, GrpcAuthenticationHeaderParser}
 import io.iohk.atala.prism.connector.model.actions._
-import io.iohk.atala.prism.connector.model.{
-  ParticipantLogo,
-  ParticipantType,
-  SendMessages,
-  TokenString,
-  UpdateParticipantProfile
-}
+import io.iohk.atala.prism.connector.model.{ParticipantLogo, ParticipantType, TokenString, UpdateParticipantProfile}
 import io.iohk.atala.prism.crypto.EC
 import io.iohk.atala.prism.grpc.ProtoConverter
 import io.iohk.atala.prism.protos.connector_api.UpdateProfileRequest
 
 import scala.util.{Failure, Success, Try}
 import io.iohk.atala.prism.protos.connector_api
+import io.iohk.atala.prism.protos.connector_models.MessageToSendByConnectionToken
 import io.iohk.atala.prism.protos.node_models.SignedAtalaOperation
 
 package object grpc {
@@ -39,9 +34,26 @@ package object grpc {
       }
   }
 
-  implicit val sendMessagesConverter: ProtoConverter[connector_api.SendMessagesRequest, SendMessages] = {
+  implicit val sendMessagesConverter: ProtoConverter[connector_api.SendMessagesRequest, SendMessagesRequest] = {
     (request: connector_api.SendMessagesRequest) =>
-      Try(SendMessages(NonEmptyList.fromList(request.messagesByConnectionToken.toList)))
+      def parseMessage(message: MessageToSendByConnectionToken): Try[SendMessagesRequest.MessageToSend] = {
+        Utils
+          .parseMessageId(message.id)
+          .map(messageId =>
+            SendMessagesRequest.MessageToSend(
+              connectionToken = TokenString(message.connectionToken),
+              message = message.message.fold(Array.empty[Byte])(_.toByteArray),
+              id = messageId
+            )
+          )
+      }
+
+      request.messagesByConnectionToken
+        .map(parseMessage)
+        .toList
+        .sequence
+        .map(messages => SendMessagesRequest(NonEmptyList.fromList(messages)))
+
   }
 
   implicit val connectionsPaginatedRequestConverter
@@ -127,6 +139,9 @@ package object grpc {
 
   implicit val sendMessageRequestConverter: ProtoConverter[connector_api.SendMessageRequest, SendMessageRequest] =
     (in: connector_api.SendMessageRequest) =>
-      Utils.parseConnectionId(in.connectionId).map(SendMessageRequest(_, in.message.toByteArray))
+      for {
+        connectionId <- Utils.parseConnectionId(in.connectionId)
+        messageId <- Utils.parseMessageId(in.id)
+      } yield SendMessageRequest(connectionId, in.message.toByteArray, messageId)
 
 }

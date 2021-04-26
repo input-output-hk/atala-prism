@@ -29,11 +29,7 @@ const GroupsTable = ({
     rowKey: 'name'
   };
 
-  return (
-    <div className="GroupTableContainer">
-      <InfiniteScrollTable {...tableProps} />
-    </div>
-  );
+  return <InfiniteScrollTable {...tableProps} />;
 };
 
 GroupsTable.defaultProps = {

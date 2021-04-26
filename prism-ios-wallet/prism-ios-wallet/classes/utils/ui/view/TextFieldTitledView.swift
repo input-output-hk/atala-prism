@@ -18,7 +18,7 @@ protocol TextFieldTitledViewDelegate: UITextFieldDelegate {
     override func commonInit() {
         super.commonInit()
 
-        viewBorder.addRoundCorners(radius: 10, borderWidth: 1.5, borderColor: UIColor(hexString: "ECE9F8").cgColor)
+        viewBorder.addRoundCorners(radius: 10, borderWidth: 1.5, borderColor: UIColor.appTextfieldBorderColor.cgColor)
     }
 
     func config(delegate: TextFieldTitledViewDelegate, bgColor: UIColor = UIColor.white) {
@@ -30,6 +30,14 @@ protocol TextFieldTitledViewDelegate: UITextFieldDelegate {
         self.textField.addTarget(self, action: #selector(textFieldDidChange(_:)), for: UIControl.Event.editingChanged)
     }
 
+    func changeBorderColorIf(isEditing: Bool) {
+        if isEditing {
+            viewBorder.layer.borderColor = UIColor.appTextfieldBorderColor.cgColor
+        }else{
+            viewBorder.layer.borderColor = UIColor.clear.cgColor
+        }
+    }
+    
     func config(title: String) {
 
         labelTitle.text = title

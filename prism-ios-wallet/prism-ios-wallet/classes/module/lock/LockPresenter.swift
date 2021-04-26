@@ -26,7 +26,7 @@ class LockPresenter: BasePresenter {
         if context.canEvaluatePolicy(.deviceOwnerAuthenticationWithBiometrics, error: &error) {
             let reason = "unlock_app".localize()
             context.evaluatePolicy(.deviceOwnerAuthenticationWithBiometrics,
-                                   localizedReason: reason! ) { success, policyError in
+                                   localizedReason: reason ) { success, policyError in
 
                 if success {
 

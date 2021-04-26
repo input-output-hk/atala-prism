@@ -22,6 +22,7 @@ kotlin {
         }
     }
     js(IR) {
+        moduleName = "crypto"
         browser {
             testTask {
                 useKarma {

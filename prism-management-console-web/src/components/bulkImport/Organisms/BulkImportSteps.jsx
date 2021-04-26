@@ -2,7 +2,6 @@ import React, { useState } from 'react';
 import PropTypes from 'prop-types';
 import CompleteSpreadSheetStep from '../Molecules/Steps/CompleteSpreadSheetStep';
 import AssignToGroupsStep from '../Molecules/Steps/AssignToGroupsStep';
-import StepsFooter from '../../common/Molecules/StepFooter/StepFooter';
 import { contactShape, credentialTypeShape } from '../../../helpers/propShapes';
 import {
   COMPLETE_SPREADSHEET_STEP,
@@ -20,19 +19,12 @@ const BulkImportSteps = ({
   skipGroupsAssignment,
   setSkipGroupsAssignment,
   showGroupSelection,
-  onFinish,
-  cancelImport,
   recipients,
   credentialType,
   useCase,
-  headersMapping,
-  loading
+  headersMapping
 }) => {
   const [currentStep, setCurrentStep] = useState(COMPLETE_SPREADSHEET_STEP);
-
-  const handlePreviousStep = () => setCurrentStep(currentStep - 1);
-
-  const handleNextStep = () => setCurrentStep(currentStep + 1);
 
   const shouldDisableNext = {
     [COMPLETE_SPREADSHEET_STEP]: !fileData || fileData?.errors.length,
@@ -48,8 +40,6 @@ const BulkImportSteps = ({
     [IMPORT_CONTACTS]: false,
     [IMPORT_CREDENTIALS_DATA]: true
   };
-
-  const disableNext = shouldDisableNext[currentStep];
 
   return (
     <div className={`BulkImportStepsWrapper ${isEmbedded[useCase] ? 'EmbeddedImportWrapper' : ''}`}>
@@ -76,16 +66,6 @@ const BulkImportSteps = ({
           />
         )}
       </div>
-      <StepsFooter
-        currentStep={currentStep}
-        stepCount={showGroupSelection ? 2 : 1}
-        onCancel={cancelImport}
-        previousStep={handlePreviousStep}
-        nextStep={handleNextStep}
-        disableNext={disableNext}
-        loading={loading}
-        onFinish={onFinish}
-      />
     </div>
   );
 };
@@ -93,10 +73,7 @@ const BulkImportSteps = ({
 BulkImportSteps.defaultProps = {
   fileData: null,
   showGroupSelection: false,
-  loading: false,
   selectedGroups: [],
-  onFinish: () => {},
-  cancelImport: () => {},
   recipients: null,
   credentialType: null
 };
@@ -112,9 +89,6 @@ BulkImportSteps.propTypes = {
   selectedGroups: PropTypes.arrayOf(PropTypes.string),
   setSelectedGroups: PropTypes.func.isRequired,
   showGroupSelection: PropTypes.bool,
-  loading: PropTypes.bool,
-  onFinish: PropTypes.func,
-  cancelImport: PropTypes.func,
   skipGroupsAssignment: PropTypes.bool.isRequired,
   setSkipGroupsAssignment: PropTypes.func.isRequired,
   useCase: PropTypes.oneOf([IMPORT_CONTACTS, IMPORT_CREDENTIALS_DATA]).isRequired,

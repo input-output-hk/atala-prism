@@ -31,7 +31,7 @@ class ProfileViewCell: BaseTableViewCell {
         delegateImpl?.setup(for: self)
         viewBg.addRoundCorners(radius: AppConfigs.CORNER_RADIUS_REGULAR)
         viewBg.addShadowLayer()
-        imageLogoBttn.addRoundCorners(radius: 40)
+        imageLogoBttn.addRoundCorners(radius: imageLogo.frame.size.width / 2)
     }
 
     // MARK: Config

@@ -22,6 +22,7 @@ kotlin {
         }
     }
     js(IR) {
+        moduleName = "identity"
         browser {
             testTask {
                 useKarma {

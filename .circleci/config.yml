@@ -665,18 +665,25 @@ jobs:
       - halt-step-if-not-changed:
           directories: "prism-kotlin-sdk"
 
-      # Download and cache dependencies
-      - restore_cache:
-          keys:
-            - prism-kotlin-sdk-cache-{{ checksum "prism-kotlin-sdk/build.gradle.kts" }}-{{ checksum "prism-kotlin-sdk/settings.gradle.kts" }}-{{ checksum "prism-kotlin-sdk/protos/build.gradle.kts" }}-{{ checksum "prism-kotlin-sdk/crypto/build.gradle.kts" }}-{{ checksum "prism-kotlin-sdk/identity/build.gradle.kts" }}
-            # fallback to using the latest cache if no exact match is found
-            - prism-kotlin-sdk-cache-
-
       - run:
           name: Install dependencies
           command: |
             brew update # Remove once CircleCI updates its macOS machines to use the new homebrew
-            brew install automake libtool google-chrome
+            brew install automake libtool google-chrome md5sha1sum
+
+      - run:
+          name: Hash dependency info
+          command: |
+            cd prism-kotlin-sdk
+            mkdir -p build
+            md5sum gradle.properties settings.gradle build.gradle **/build.gradle >build/deps.md5
+
+      # Download and cache dependencies
+      - restore_cache:
+          keys:
+            - prism-kotlin-sdk-cache-{{ checksum "prism-kotlin-sdk/build/deps.md5" }}
+            # fallback to using the latest cache if no exact match is found
+            - prism-kotlin-sdk-cache-
 
       - run:
           name: Install Android SDK
@@ -715,7 +722,7 @@ jobs:
           name: Compile SDK and its tests
           command: |
             cd prism-kotlin-sdk
-            ./gradlew build
+            ./gradlew build -x test
 
       - run:
           name: Grab the grpc docs
@@ -743,7 +750,8 @@ jobs:
       - save_cache:
           paths:
             - ~/.m2
-          key: prism-kotlin-sdk-cache-{{ checksum "prism-kotlin-sdk/build.gradle.kts" }}-{{ checksum "prism-kotlin-sdk/settings.gradle.kts" }}-{{ checksum "prism-kotlin-sdk/protos/build.gradle.kts" }}-{{ checksum "prism-kotlin-sdk/crypto/build.gradle.kts" }}-{{ checksum "prism-kotlin-sdk/identity/build.gradle.kts" }}
+            - ~/.konan
+          key: prism-kotlin-sdk-cache-{{ checksum "prism-kotlin-sdk/build/deps.md5" }}
 
       - run:
           name: Run tests

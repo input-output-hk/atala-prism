@@ -2,7 +2,6 @@ import React from 'react';
 import PropTypes from 'prop-types';
 import { useTranslation } from 'react-i18next';
 import { Tooltip } from 'antd';
-import { Icon as LegacyIcon } from '@ant-design/compatible';
 import { IMPORT_CONTACTS, IMPORT_CREDENTIALS_DATA } from '../../../../helpers/constants';
 import './_style.scss';
 
@@ -41,13 +40,6 @@ const OptionCard = ({ option, isSelected, onSelect, img, useCase, disabled }) =>
         role="button"
         tabIndex={disabled ? null : index[option]}
       >
-        <div className="icon-container">
-          <LegacyIcon
-            className={isSelected ? 'icon' : 'icon-disabled'}
-            type={isSelected ? 'check-circle' : 'check-circle'}
-            theme="filled"
-          />
-        </div>
         <div className="img-container">
           <img src={img} alt="" />
         </div>

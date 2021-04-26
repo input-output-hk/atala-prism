@@ -30,9 +30,9 @@
 	<key>NSCameraUsageDescription</key>
 	<string>NSCameraUsageDescription</string>
 	<key>NSFaceIDUsageDescription</key>
-	<string>Face ID is used to unlock the app</string>
+	<string>NSFaceIDUsageDescription</string>
 	<key>NSPhotoLibraryUsageDescription</key>
-	<string>Access the photos to upload a profile picture</string>
+	<string>NSPhotoLibraryUsageDescription</string>
 	<key>UIApplicationSceneManifest</key>
 	<dict>
 		<key>UIApplicationSupportsMultipleScenes</key>

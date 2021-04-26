@@ -122,19 +122,27 @@ class CredentialsPresenter: ListingBasePresenter, ListingBaseTableUtilsPresenter
             return true
         }
     }
+    
+    func getSectionHeaderViews() -> [UIView] {
+        return [UIView()]
+    }
+    
+    func getSectionCount() -> Int? {
+        return 1
+    }
 
-    func getElementCount() -> Int {
+    func getElementCount() -> [Int] {
         if let baseValue = super.getBaseElementCount() {
-            return baseValue
+            return [baseValue]
         }
 
         switch mode {
         case .degrees:
-            return degreeRows?.count ?? 0
+            return [(degreeRows?.count ?? 0)]
         case .history:
-            return historyRows?.count ?? 0
+            return [(historyRows?.count ?? 0)]
         case .detail:
-            return 0
+            return [0]
         }
     }
 

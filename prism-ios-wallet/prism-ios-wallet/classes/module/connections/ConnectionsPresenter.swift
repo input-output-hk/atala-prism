@@ -133,19 +133,27 @@ class ConnectionsPresenter: ListingBasePresenter, ListingBaseTableUtilsPresenter
     func hasData() -> Bool {
         return stateSpecial == .detail ? true : contacts.size() > 0
     }
+    
+    func getSectionHeaderViews() -> [UIView] {
+        return [UIView()]
+    }
+    
+    func getSectionCount() -> Int? {
+        return 1
+    }
 
-    func getElementCount() -> Int {
+    func getElementCount() -> [Int] {
         if let baseValue = super.getBaseElementCount() {
-            return baseValue
+            return [baseValue]
         }
 
         switch stateSpecial {
         case .none:
-            return filteredContacts.count == 0 ? 1 : filteredContacts.count
+            return filteredContacts.count == 0 ? [1] : [filteredContacts.count]
         case .detail:
-            return detailRows?.count ?? 0
+            return [(detailRows?.count ?? 0)]
         case .scanningQr:
-            return 0
+            return [0]
         }
     }
 
@@ -370,7 +378,6 @@ class ConnectionsPresenter: ListingBasePresenter, ListingBaseTableUtilsPresenter
     // MARK: ConnectionsWorkerDelegate
 
     func contactsFetched(contacts: [Contact]) {
-
         let sortedContacts = contacts.sorted { $0.name < $1.name}
         self.cleanData()
         self.contacts.append(sortedContacts)
@@ -390,11 +397,13 @@ class ConnectionsPresenter: ListingBasePresenter, ListingBaseTableUtilsPresenter
     }
 
     func showNewConnectMessage(type: Int, title: String?, logoData: Data?) {
+        self.viewImpl?.showLoading(doShow: false)
         self.viewImpl?.onBackPressed()
         self.viewImpl?.showNewConnectMessage(type: type, title: title, logoData: logoData)
     }
 
-    func conectionAccepted() {
+    func conectionAccepted(contact: Contact?) {
+        self.viewImpl?.showLoading(doShow: false)
         self.actionPullToRefresh()
     }
 

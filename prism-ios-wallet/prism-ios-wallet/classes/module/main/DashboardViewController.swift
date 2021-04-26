@@ -163,9 +163,7 @@ class DashboardViewController: BaseTabPagerViewController {
                                completion: PageboyViewController.PageScrollCompletion? = nil) -> Bool {
         // Check if is the Services button
         if case Page.at(index: 3) = page {
-            let alert = UIAlertController(title: "Comming soon", message: nil, preferredStyle: .alert)
-            alert.addAction(UIAlertAction(title: "ok".localize(), style: .default, handler: nil))
-            present(alert, animated: true, completion: nil)
+            showComingSoonMessage()
             return true
         }
         let result = super.scrollToPage(page, animated: animated)
