@@ -34,23 +34,27 @@ class ConnectionService(tx: Transactor[Task], connectorService: ConnectorClientS
             GET_CONNECTIONS_PAGINATED_LIMIT,
             GET_CONNECTIONS_PAGINATED_AWAKE_DELAY
           )
-          .evalMap(connectionInfo => {
-            val connection = Connection(
-              token = ConnectionToken(connectionInfo.token),
-              id = ConnectionId.from(connectionInfo.connectionId).toOption,
-              state = ConnectionState.Connected,
-              acuantDocumentInstanceId = None,
-              acuantDocumentStatus = None
-            )
+          .evalMap(connectionInfo =>
+            {
+              val connection = Connection(
+                token = ConnectionToken(connectionInfo.token),
+                id = ConnectionId.from(connectionInfo.connectionId).toOption,
+                state = ConnectionState.Connected,
+                acuantDocumentInstanceId = None,
+                acuantDocumentStatus = None
+              )
 
-            logger.info(s"Connection accepted: ${connection}")
+              logger.info(s"Connection accepted: ${connection}")
 
-            ConnectionDao
-              .update(connection)
-              .logSQLErrors("updating connection", logger)
-              .transact(tx)
-              .as(connection)
-          })
+              ConnectionDao
+                .update(connection)
+                .logSQLErrors("updating connection", logger)
+                .transact(tx)
+                .as(connection)
+            }.onErrorHandle[Any] { error =>
+              logger.error("Error handling stream message", error)
+            }
+          )
           .drain
       )
   }

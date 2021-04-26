@@ -6,7 +6,6 @@
 .success-wrapper {
   flex-direction: column;
   display: flex;
-  padding: 1em;
   .success-container {
     width: 100%;
     display: flex;
@@ -15,7 +14,7 @@
     margin: auto;
     margin-top: 10%;
     h1 {
-      @include secondary-text($h2, #00D793);
+      @include secondary-text($h2, #00d793);
       margin-top: 20px;
     }
     p {

@@ -321,8 +321,13 @@ class ConnectorService(
   override def sendMessage(request: connector_api.SendMessageRequest): Future[connector_api.SendMessageResponse] =
     auth[SendMessageRequest]("sendMessage", request) { (participantId, sendMessageRequest) =>
       messages
-        .insertMessage(participantId, sendMessageRequest.connectionId, sendMessageRequest.message)
-        .as(connector_api.SendMessageResponse())
+        .insertMessage(
+          sender = participantId,
+          connection = sendMessageRequest.connectionId,
+          content = sendMessageRequest.message,
+          messageId = sendMessageRequest.id
+        )
+        .map(messageId => connector_api.SendMessageResponse(id = messageId.uuid.toString))
     }
 
   override def getBuildInfo(request: connector_api.GetBuildInfoRequest): Future[connector_api.GetBuildInfoResponse] = {
@@ -379,13 +384,13 @@ class ConnectorService(
     * Connection closed (FAILED_PRECONDITION)
     */
   override def sendMessages(request: connector_api.SendMessagesRequest): Future[connector_api.SendMessagesResponse] =
-    auth[SendMessages]("sendMessages", request) { (participantId, query) =>
+    auth[SendMessagesRequest]("sendMessages", request) { (participantId, query) =>
       query.messages.fold(
         FutureEither.right[ConnectorError, connector_api.SendMessagesResponse](connector_api.SendMessagesResponse())
       ) { messagesToInsert =>
         messages
           .insertMessages(participantId, messagesToInsert)
-          .as(connector_api.SendMessagesResponse())
+          .map(messageIds => connector_api.SendMessagesResponse(ids = messageIds.map(_.uuid.toString)))
       }
     }
 

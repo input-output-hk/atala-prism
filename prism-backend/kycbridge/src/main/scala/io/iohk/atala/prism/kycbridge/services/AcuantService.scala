@@ -80,7 +80,7 @@ class AcuantService(
             ConnectionDao.findConnectionWithoutDocumentId
               .logSQLErrors("finding connection without document id", logger)
               .transact(tx)
-          _ <- connectionOption.fold(Task.unit)(connection => updateConnection(connection).map(_ => ()))
+          _ <- connectionOption.fold(Task.unit)(connection => updateConnection(connection).void)
           applyAwakeDelay = connectionOption.isEmpty
         } yield Some(connectionOption -> applyAwakeDelay)
       }

@@ -1,5 +1,6 @@
 package io.iohk.atala.prism.management.console.services
 
+import cats.syntax.functor._
 import doobie.implicits._
 import io.iohk.atala.prism.auth.SignedRpcRequest
 import io.iohk.atala.prism.auth.grpc.GrpcAuthenticationHeaderParser
@@ -67,7 +68,7 @@ class CredentialsStoreServiceImplSpec extends RpcSpecBase with DIDGenerator {
          |UPDATE participants
          |SET did = $did
          |WHERE participant_id = $participantId
-       """.stripMargin.update.run.map(_ => ())
+       """.stripMargin.update.run.void
   }
 
   "storeCredential" should {

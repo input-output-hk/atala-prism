@@ -128,15 +128,23 @@ class SettingsPresenter: ListingBasePresenter, ListingBaseTableUtilsPresenterDel
             return (initialRows?.size() ?? 0) > 0
         }
     }
-
-    func getElementCount() -> Int {
+    
+    func getSectionHeaderViews() -> [UIView] {
+        return [UIView()]
+    }
+    
+    func getSectionCount() -> Int? {
+        return 1
+    }
+    
+    func getElementCount() -> [Int] {
         if let baseValue = super.getBaseElementCount() {
-            return baseValue
+            return [baseValue]
         }
 
         switch mode {
         case .initial:
-            return (initialRows?.size() ?? 0)
+            return [(initialRows?.size() ?? 0)]
         }
     }
 

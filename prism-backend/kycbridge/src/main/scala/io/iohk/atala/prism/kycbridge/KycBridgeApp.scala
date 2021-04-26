@@ -71,7 +71,7 @@ object KycBridgeApp extends TaskApp {
         } yield ())
           .flatMap(_ => Task.never)
           .onErrorHandle(error => {
-            logger.error(error.getMessage)
+            logger.error("KYC Bridge exiting because of runaway exception", error)
             ExitCode.Error
           })
     }

@@ -57,9 +57,17 @@ class LoginPresenter: ListingBasePresenter, ListingBaseTableUtilsPresenterDelega
     func cleanData() {
         data = []
     }
+    
+    func getSectionHeaderViews() -> [UIView] {
+        return [UIView()]
+    }
+    
+    func getSectionCount() -> Int? {
+        return 1
+    }
 
-    func getElementCount() -> Int {
-        return data.count
+    func getElementCount() -> [Int] {
+        return [data.count]
     }
 
     func fetchData() {

@@ -5,23 +5,24 @@ import cats.effect.IO
 import fs2.Stream
 import io.iohk.atala.prism.connector.errors.ConnectorError
 import io.iohk.atala.prism.connector.model._
+import io.iohk.atala.prism.connector.model.actions.SendMessagesRequest
 import io.iohk.atala.prism.connector.repositories.MessagesRepository
 import io.iohk.atala.prism.models.ParticipantId
-import io.iohk.atala.prism.protos.connector_models.MessageToSendByConnectionToken
 import io.iohk.atala.prism.utils.FutureEither
 
 class MessagesService(messagesRepository: MessagesRepository) {
   def insertMessage(
       sender: ParticipantId,
       connection: ConnectionId,
-      content: Array[Byte]
-  ): FutureEither[Nothing, MessageId] = {
-    messagesRepository.insertMessage(sender, connection, content)
+      content: Array[Byte],
+      messageId: Option[MessageId] = None
+  ): FutureEither[ConnectorError, MessageId] = {
+    messagesRepository.insertMessage(sender, connection, content, messageId)
   }
 
   def insertMessages(
       sender: ParticipantId,
-      messages: NonEmptyList[MessageToSendByConnectionToken]
+      messages: NonEmptyList[SendMessagesRequest.MessageToSend]
   ): FutureEither[ConnectorError, List[MessageId]] = {
     messagesRepository.insertMessages(sender, messages)
   }

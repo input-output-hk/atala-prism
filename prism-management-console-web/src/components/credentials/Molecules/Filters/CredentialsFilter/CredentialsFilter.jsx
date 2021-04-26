@@ -2,7 +2,7 @@ import React from 'react';
 import { useTranslation } from 'react-i18next';
 import PropTypes from 'prop-types';
 import { DownOutlined, SearchOutlined } from '@ant-design/icons';
-import { Row, Col, Input, Select } from 'antd';
+import { Input, Select } from 'antd';
 import CustomDatePicker from '../../../../common/Atoms/CustomDatePicker/CustomDatePicker';
 import CustomInputGroup from '../../../../common/Atoms/CustomInputGroup/CustomInputGroup';
 import {
@@ -31,7 +31,7 @@ const CredentialsFilter = ({ credentialsTypes, filterProps, isIssued }) => {
 
   const renderBaseFilters = () => (
     <>
-      <Col span={4}>
+      <div>
         <Input
           id="nameFilter"
           placeholder={t('credentials.filters.search')}
@@ -40,8 +40,8 @@ const CredentialsFilter = ({ credentialsTypes, filterProps, isIssued }) => {
           allowClear
           value={filterProps.name}
         />
-      </Col>
-      <Col span={4}>
+      </div>
+      <div>
         <Select
           id="credentialTypeFilter"
           value={filterProps.credentialType}
@@ -55,13 +55,13 @@ const CredentialsFilter = ({ credentialsTypes, filterProps, isIssued }) => {
             </Select.Option>
           ))}
         </Select>
-      </Col>
+      </div>
     </>
   );
 
   const renderIssuedFilters = () => (
     <>
-      <Col span={4}>
+      <div>
         <Select
           id="credentialStatusFilter"
           value={filterProps.credentialStatus}
@@ -78,8 +78,8 @@ const CredentialsFilter = ({ credentialsTypes, filterProps, isIssued }) => {
             </Select.Option>
           ))}
         </Select>
-      </Col>
-      <Col span={4}>
+      </div>
+      <div>
         <Select
           id="contactStateFilter"
           value={filterProps.contactStatus}
@@ -93,29 +93,29 @@ const CredentialsFilter = ({ credentialsTypes, filterProps, isIssued }) => {
             </Select.Option>
           ))}
         </Select>
-      </Col>
-      <Col span={4}>
+      </div>
+      <div>
         <CustomInputGroup prefixIcon="calendar">
           <CustomDatePicker {...datePickerProps} />
         </CustomInputGroup>
-      </Col>
+      </div>
     </>
   );
 
   const renderReceivedFilters = () => (
-    <Col span={4}>
+    <div>
       <CustomInputGroup prefixIcon="calendar">
         <CustomDatePicker {...datePickerReceivedProps} />
       </CustomInputGroup>
-    </Col>
+    </div>
   );
 
   return (
     <div className="FilterControls">
-      <Row gutter={16} className="w-100">
+      <div className="w-100">
         {renderBaseFilters()}
         {isIssued ? renderIssuedFilters() : renderReceivedFilters()}
-      </Row>
+      </div>
     </div>
   );
 };

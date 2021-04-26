@@ -4,10 +4,16 @@ import cats.data.NonEmptyList
 import com.softwaremill.diffx.scalatest.DiffMatcher._
 import doobie.Fragments
 import doobie.implicits._
-import io.iohk.atala.prism.connector.model.{ConnectionId, ConnectionStatus}
+import io.iohk.atala.prism.connector.errors.{
+  ConnectionNotFoundByConnectionIdAndSender,
+  ConnectorError,
+  MessageIdsNotUnique,
+  MessagesAlreadyExist
+}
+import io.iohk.atala.prism.connector.model.actions.SendMessagesRequest
+import io.iohk.atala.prism.connector.model.{ConnectionId, ConnectionStatus, MessageId, TokenString}
 import io.iohk.atala.prism.connector.repositories.daos._
 import io.iohk.atala.prism.models.ParticipantId
-import io.iohk.atala.prism.protos.connector_models.MessageToSendByConnectionToken
 import io.iohk.atala.prism.protos.credential_models
 import io.iohk.atala.prism.repositories.ops.SqlTestOps.Implicits
 import org.scalatest.OptionValues._
@@ -65,12 +71,48 @@ class MessagesRepositorySpec extends ConnectorRepositorySpecBase {
       val connection = ConnectionId.random()
       val message = "hello".getBytes
 
-      val caught = intercept[RuntimeException] {
-        messagesRepository.insertMessage(issuer, connection, message).value.futureValue
-      }
-      caught.getCause must not be null
-      caught.getCause.getMessage mustBe s"Failed to send message, the connection $connection with sender $issuer doesn't exist"
+      val result = messagesRepository.insertMessage(issuer, connection, message).value.futureValue
+
+      result mustBe an[Left[ConnectionNotFoundByConnectionIdAndSender, MessageId]]
     }
+
+    "insert message with specified id" in {
+      val issuer = createIssuer()
+      val holder = createHolder()
+      val connection = createConnection(issuer, holder)
+      val message = "hello".getBytes
+      val messageId = MessageId.random()
+
+      val result = messagesRepository.insertMessage(issuer, connection, message, Some(messageId)).value.futureValue
+      result.toOption.value mustBe messageId
+
+      val (sender, recipient, content) =
+        sql"""
+             |SELECT sender, recipient, content
+             |FROM messages
+             |WHERE id = $messageId
+           """.stripMargin.runUnique[(ParticipantId, ParticipantId, Array[Byte])]()
+
+      sender mustBe issuer
+      recipient mustBe holder
+      content mustBe message
+    }
+  }
+
+  "fail to insert message with specified id when id already exists" in {
+    val issuer = createIssuer()
+    val holder = createHolder()
+    val connection = createConnection(issuer, holder)
+    val message = "hello".getBytes
+    val messageId = MessageId.random()
+
+    messagesRepository.insertMessage(issuer, connection, message, Some(messageId)).value.futureValue mustBe Right(
+      messageId
+    )
+    messagesRepository
+      .insertMessage(issuer, connection, message, Some(messageId))
+      .value
+      .futureValue mustBe an[Left[MessagesAlreadyExist, MessageId]]
   }
 
   "insert many messages from the initiator to the acceptors" in {
@@ -86,8 +128,8 @@ class MessagesRepositorySpec extends ConnectorRepositorySpecBase {
 
     val messages =
       NonEmptyList.of(
-        MessageToSendByConnectionToken(token1.token, Some(message)),
-        MessageToSendByConnectionToken(token2.token, Some(message))
+        SendMessagesRequest.MessageToSend(token1, message.toByteArray, None),
+        SendMessagesRequest.MessageToSend(token2, message.toByteArray, None)
       )
 
     val result = messagesRepository.insertMessages(issuer, messages).value.futureValue
@@ -127,8 +169,8 @@ class MessagesRepositorySpec extends ConnectorRepositorySpecBase {
 
     val messages =
       NonEmptyList.of(
-        MessageToSendByConnectionToken(token.token, Some(message1)),
-        MessageToSendByConnectionToken(token.token, Some(message2))
+        SendMessagesRequest.MessageToSend(token, message1.toByteArray, None),
+        SendMessagesRequest.MessageToSend(token, message2.toByteArray, None)
       )
 
     val result = messagesRepository.insertMessages(holder, messages).value.futureValue
@@ -153,6 +195,84 @@ class MessagesRepositorySpec extends ConnectorRepositorySpecBase {
     }
   }
 
+  "insert many messages from the initiator to the acceptors with user provided ids" in {
+    val issuer = createIssuer()
+    val holder1 = createHolder()
+    val holder2 = createHolder()
+    val token1 = createToken(issuer)
+    val token2 = createToken(issuer)
+    createConnection(issuer, holder1, token1, ConnectionStatus.InvitationMissing)
+    createConnection(issuer, holder2, token2, ConnectionStatus.InvitationMissing)
+
+    val message = credential_models.AtalaMessage()
+
+    val messageId1 = MessageId.random()
+    val messageId2 = MessageId.random()
+
+    val messages =
+      NonEmptyList.of(
+        SendMessagesRequest.MessageToSend(token1, message.toByteArray, Some(messageId1)),
+        SendMessagesRequest.MessageToSend(token2, message.toByteArray, Some(messageId2))
+      )
+
+    val result = messagesRepository.insertMessages(issuer, messages).value.futureValue
+    val messagesIds = NonEmptyList.fromList(result.toOption.value).get
+
+    messagesIds.toList.toSet mustBe Set(messageId1, messageId2)
+  }
+
+  "fail to insert many messages if user provided ids contain duplicates" in {
+    val issuer = createIssuer()
+    val holder1 = createHolder()
+    val holder2 = createHolder()
+    val token1 = createToken(issuer)
+    val token2 = createToken(issuer)
+    createConnection(issuer, holder1, token1, ConnectionStatus.InvitationMissing)
+    createConnection(issuer, holder2, token2, ConnectionStatus.InvitationMissing)
+
+    val message = credential_models.AtalaMessage()
+
+    val messageId1 = MessageId.random()
+
+    val messages =
+      NonEmptyList.of(
+        SendMessagesRequest.MessageToSend(token1, message.toByteArray, Some(messageId1)),
+        SendMessagesRequest.MessageToSend(token2, message.toByteArray, Some(messageId1))
+      )
+
+    val result = messagesRepository.insertMessages(issuer, messages).value.futureValue
+    result mustBe an[Left[MessageIdsNotUnique, List[MessageId]]]
+  }
+
+  "fail to insert many messages if messages with provided ids already exists" in {
+    val issuer = createIssuer()
+    val holder1 = createHolder()
+    val holder2 = createHolder()
+    val token1 = createToken(issuer)
+    val token2 = createToken(issuer)
+    createConnection(issuer, holder1, token1, ConnectionStatus.InvitationMissing)
+    createConnection(issuer, holder2, token2, ConnectionStatus.InvitationMissing)
+
+    val message = credential_models.AtalaMessage()
+
+    val messageId1 = MessageId.random()
+    val messageId2 = MessageId.random()
+
+    val messages =
+      NonEmptyList.of(
+        SendMessagesRequest.MessageToSend(token1, message.toByteArray, Some(messageId1)),
+        SendMessagesRequest.MessageToSend(token2, message.toByteArray, Some(messageId2))
+      )
+
+    messagesRepository
+      .insertMessages(issuer, messages)
+      .value
+      .futureValue mustBe an[Right[ConnectorError, List[MessageId]]]
+
+    val result = messagesRepository.insertMessages(issuer, messages).value.futureValue
+    result mustBe an[Left[MessagesAlreadyExist, List[MessageId]]]
+  }
+
   "fail to insert many messages if one of the connection token is invalid" in {
     val issuer = createIssuer()
     val holder1 = createHolder()
@@ -166,8 +286,8 @@ class MessagesRepositorySpec extends ConnectorRepositorySpecBase {
 
     val messages =
       NonEmptyList.of(
-        MessageToSendByConnectionToken(token1.token, Some(message)),
-        MessageToSendByConnectionToken("invalidConnectionToken", Some(message))
+        SendMessagesRequest.MessageToSend(token1, message.toByteArray, None),
+        SendMessagesRequest.MessageToSend(TokenString("invalidConnectionToken"), message.toByteArray, None)
       )
 
     val result = messagesRepository.insertMessages(issuer, messages).value.futureValue

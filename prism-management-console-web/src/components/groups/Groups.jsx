@@ -131,16 +131,22 @@ const Groups = ({
   };
 
   return (
-    <div className="Wrapper">
+    <div className="Wrapper Groups">
       {accountStatus === UNCONFIRMED && <WaitBanner />}
       <DeleteGroupModal {...deleteModalProps} />
       <CopyGroupModal {...copyModalProps} />
       <div className="ContentHeader">
-        <h1>{t('groups.title')}</h1>
-        {accountStatus === CONFIRMED && newGroupButton}
+        <div className="title">
+          <h1>{t('groups.title')}</h1>
+        </div>
+        <div className="filterSection">
+          <div className="filterContainer">
+            <GroupFilters updateGroups={handleUpdateGroups} />
+          </div>
+          {accountStatus === CONFIRMED && newGroupButton}
+        </div>
       </div>
-      <GroupFilters updateGroups={handleUpdateGroups} />
-      {renderContent()}
+      <div className="GroupContentContainer">{renderContent()}</div>
     </div>
   );
 };

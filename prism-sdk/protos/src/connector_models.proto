@@ -87,4 +87,7 @@ message ContactConnection {
 message MessageToSendByConnectionToken {
     string connectionToken = 1; // The connection token used to accept the connection.
     AtalaMessage message = 2; // Raw message.
+    // Optional id of a message. Must be valid UUID if provided. Random id will be generated
+    // if not provided. Error will be returned when message with the same id already exists.
+    string id = 3;
 }

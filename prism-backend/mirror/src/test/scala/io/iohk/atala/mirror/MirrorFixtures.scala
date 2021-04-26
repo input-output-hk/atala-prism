@@ -5,7 +5,12 @@ import cats.effect.Sync
 import cats.implicits._
 import com.google.protobuf.ByteString
 import com.google.protobuf.timestamp.Timestamp
-import io.iohk.atala.prism.protos.credential_models.{AtalaMessage, MirrorMessage, RegisterAddressMessage}
+import io.iohk.atala.prism.protos.credential_models.{
+  AtalaMessage,
+  InitiateTrisaCardanoTransactionMessage,
+  MirrorMessage,
+  RegisterAddressMessage
+}
 import io.iohk.atala.mirror.db.{CardanoAddressInfoDao, ConnectionDao, UserCredentialDao}
 import doobie.free.connection.ConnectionIO
 import doobie.implicits._
@@ -14,7 +19,7 @@ import io.iohk.atala.mirror.models.Connection._
 import io.iohk.atala.mirror.models.UserCredential._
 import io.iohk.atala.mirror.models._
 import io.iohk.atala.prism.crypto.EC
-import io.iohk.atala.mirror.models.CardanoAddressInfo.{CardanoAddress, CardanoNetwork, RegistrationDate}
+import io.iohk.atala.mirror.models.CardanoAddressInfo.{CardanoNetwork, RegistrationDate}
 import io.iohk.atala.prism.mirror.payid._
 import io.iohk.atala.prism.mirror.payid.implicits._
 import io.iohk.atala.prism.protos.connector_models.ReceivedMessage
@@ -213,6 +218,25 @@ trait MirrorFixtures extends ServicesFixtures {
       connectionId = connectionId1.uuid.toString,
       message = AtalaMessage()
         .withMirrorMessage(MirrorMessage().withRegisterAddressMessage(RegisterAddressMessage(cardanoAddress1)))
+        .toByteString
+    )
+
+    lazy val initiateTrisaCardanoTransactionMessage = ReceivedMessage(
+      id = "id1",
+      received = Timestamp(LocalDateTime.of(2020, 6, 12, 0, 0).toEpochSecond(ZoneOffset.UTC)).some,
+      connectionId = connectionId1.uuid.toString,
+      message = AtalaMessage()
+        .withMirrorMessage(
+          MirrorMessage().withInitiateTrisaCardanoTransactionMessage(
+            InitiateTrisaCardanoTransactionMessage(
+              sourceCardanoAddress = "source",
+              desinationCardanoAddress = "destination",
+              lovelaceAmount = 10,
+              trisaVaspHost = "vasp1",
+              trisaVaspHostPortNumber = 8091
+            )
+          )
+        )
         .toByteString
     )
   }

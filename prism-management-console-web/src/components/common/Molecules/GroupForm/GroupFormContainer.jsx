@@ -1,7 +1,7 @@
 import React, { useEffect } from 'react';
 import PropTypes from 'prop-types';
 import { CheckCircleFilled, CloseCircleFilled, LoadingOutlined } from '@ant-design/icons';
-import { Row, Col, message } from 'antd';
+import { message } from 'antd';
 import { useTranslation } from 'react-i18next';
 import Logger from '../../../../helpers/Logger';
 import { exactValueExists } from '../../../../helpers/filterHelpers';
@@ -72,12 +72,12 @@ const GroupName = ({
   };
 
   return (
-    <Row type="flex" gutter={12} className={`ai-center mb-3 ${className}`}>
-      <Col className="FormContainer">
+    <div className={`ai-center mb-3 ${className}`}>
+      <div className="FormContainer">
         <GroupForm ref={formRef} updateForm={handleUpdateForm} formValues={formValues} />
-      </Col>
-      <Col>{renderNameState()}</Col>
-    </Row>
+      </div>
+      <div>{renderNameState()}</div>
+    </div>
   );
 };
 

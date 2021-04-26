@@ -1,7 +1,7 @@
 package io.iohk.atala.prism.connector.grpc
 
 import io.iohk.atala.prism.connector.model
-import io.iohk.atala.prism.connector.model.ConnectionId
+import io.iohk.atala.prism.connector.model.{ConnectionId, MessageId}
 
 import scala.util.{Failure, Success, Try}
 
@@ -26,5 +26,11 @@ object Utils {
     model.ConnectionId
       .from(probablyConnectionId)
       .recoverWith { case _ => Failure(new IllegalArgumentException("Invalid connectionId value")) }
+
+  def parseMessageId(messageId: String): Try[Option[MessageId]] = {
+    val id = messageId.trim
+    if (id.nonEmpty) MessageId.from(id).map(Some(_))
+    else Try(None)
+  }
 
 }

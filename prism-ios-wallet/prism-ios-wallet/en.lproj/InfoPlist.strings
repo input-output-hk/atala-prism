@@ -1,2 +1,4 @@
 // <!-- Permissions strings -->
-"NSCameraUsageDescription" = "App needs the camera to scan QR Codes";
+"NSCameraUsageDescription" = "App needs the camera to scan QR Codes and verify IDs";
+"NSFaceIDUsageDescription" = "Face ID is used to unlock the app";
+"NSPhotoLibraryUsageDescription" = "Access the photos to upload a profile picture";

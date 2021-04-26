@@ -1,6 +1,5 @@
 import React from 'react';
 import PropTypes from 'prop-types';
-import { Avatar } from 'antd';
 import { ARROW_LEFT, ARROW_RIGHT } from '../../../../helpers/constants';
 import './_style.scss';
 
@@ -14,7 +13,6 @@ const GenericStep = ({
   actions,
   setCurrentStep,
   disabled,
-  showStepNumber,
   isEmbedded
 }) => {
   const isSelected = step === currentStep;
@@ -39,7 +37,6 @@ const GenericStep = ({
       role="button"
       tabIndex={step}
     >
-      {showStepNumber && <Avatar>{isSelected && dispayStepNumber}</Avatar>}
       <div className="CardText">
         <h1>{title}</h1>
         <p>{info}</p>
@@ -54,8 +51,7 @@ GenericStep.defaultProps = {
   info: '',
   actions: null,
   setCurrentStep: undefined,
-  disabled: false,
-  showStepNumber: true
+  disabled: false
 };
 
 GenericStep.propTypes = {
@@ -66,7 +62,6 @@ GenericStep.propTypes = {
   actions: PropTypes.element,
   setCurrentStep: PropTypes.func,
   disabled: PropTypes.bool,
-  showStepNumber: PropTypes.bool,
   isEmbedded: PropTypes.bool.isRequired
 };
 

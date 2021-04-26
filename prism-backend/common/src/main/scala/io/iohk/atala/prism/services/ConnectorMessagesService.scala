@@ -54,17 +54,19 @@ class ConnectorMessagesService(
       .flatMap(Stream.emits)
       .evalTap { receivedMessage =>
         for {
-          result <- tryToProcessMessage(messageProcessors, receivedMessage).getOrElse(
-            MessageProcessor.failed(
-              MessageProcessorException(
-                s"Connector message with id: ${receivedMessage.id} and content: ${receivedMessage.message.toString} " +
-                  "cannot be processed by any processor, skipping it"
+          result <- tryToProcessMessage(messageProcessors, receivedMessage)
+            .getOrElse(
+              MessageProcessor.failed(
+                MessageProcessorException(
+                  s"Connector message with id: ${receivedMessage.id} and content: ${receivedMessage.message.toString} " +
+                    "cannot be processed by any processor, skipping it"
+                )
               )
             )
-          )
+            .onErrorRecover(error => Left(error))
 
           _ <- result match {
-            case Left(error) => Task(logger.warn(error.getMessage))
+            case Left(error) => Task(logger.error("Error when processing message", error))
             case Right(_) => Task.unit
           }
           _ <- saveMessageOffset(ConnectorMessageId(receivedMessage.id))

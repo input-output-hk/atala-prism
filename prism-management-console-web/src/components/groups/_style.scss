@@ -17,3 +17,40 @@
     margin-left: 1em;
   }
 }
+
+.Groups {
+  .GroupContentContainer {
+    max-height: 70vh;
+    overflow-y: auto;
+  }
+}
+
+.ContentHeader {
+  display: flex;
+  flex-wrap: wrap;
+  .title {
+    width: 100%;
+    h1 {
+      @include primary-text($h1, $black);
+      font-weight: bold;
+      margin-top: 1em;
+    }
+    h3 {
+      @include primary-text($h3, $grey);
+    }
+  }
+  .filterSection {
+    display: flex;
+    justify-content: space-between;
+    width: 100%;
+    .filterContainer {
+      width: 70%;
+      .w-100 {
+        display: flex;
+        .InputContainer:last-child {
+          margin-left: 1em;
+        }
+      }
+    }
+  }
+}

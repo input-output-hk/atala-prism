@@ -30,7 +30,7 @@ class ListingBaseViewController: BaseViewController, TableUtilsViewDelegate {
         tableUtils = TableUtils(view: self, presenter: presenterImpl!.tableDelegate(), table: table)
     }
 
-    func getHeaderHeight() -> CGFloat {
+    func getHeaderHeight(for section: Int) -> CGFloat {
         return CGFloat.leastNormalMagnitude
     }
 

@@ -69,12 +69,18 @@ const Connections = ({
     <div className="ConnectionsContainer Wrapper">
       {accountStatus === UNCONFIRMED && <WaitBanner />}
       <div className="ContentHeader">
-        <h1>{t('contacts.title')}</h1>
-        {accountStatus === CONFIRMED && <AddUserButtons />}
+        <div className="title">
+          <h1>{t('contacts.title')}</h1>
+        </div>
+        <div className="flex spaceBetween fullWidth">
+          <ConnectionsFilter {...filterProps} fetchContacts={handleContactsRequest} />
+          {accountStatus === CONFIRMED && <AddUserButtons />}
+        </div>
       </div>
-      <ConnectionsFilter {...filterProps} fetchContacts={handleContactsRequest} />
       {renderContent()}
-      <div className="flexCenter">{accountStatus === CONFIRMED && <AddUserButtons />}</div>
+      <div className="flex justifyCenter">
+        {!tableProps.contacts.length && accountStatus === CONFIRMED && <AddUserButtons />}
+      </div>
       <QRModal
         visible={QRModalIsOpen}
         onCancel={onQRClosed}

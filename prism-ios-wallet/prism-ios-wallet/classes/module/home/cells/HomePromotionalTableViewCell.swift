@@ -16,7 +16,7 @@ protocol HomePromotionalTableViewCellDelegate: BaseTableViewCellPresenterDelegat
 }
 
 class HomePromotionalTableViewCell: BaseTableViewCell {
-    
+
     @IBOutlet weak var moreInfoBg: UIView!
     @IBOutlet weak var moreInfoBttn: UIButton!
     @IBOutlet weak var shareBttn: UIButton!

@@ -1,9 +1,7 @@
 //
 
-class ProfilePresenter: ListingBasePresenter, ListingBaseTableUtilsPresenterDelegate,
-                        ProfileViewCellPresenterDelegate, TabsViewCellPresenterDelegate,
-                        FieldViewCellPresenterDelegate {
-
+class ProfilePresenter: ListingBasePresenter, ListingBaseTableUtilsPresenterDelegate, CommonViewCellPresenterDelegate, ProfileViewCellPresenterDelegate {
+    
     var viewImpl: ProfileViewController? {
         return view as? ProfileViewController
     }
@@ -15,10 +13,8 @@ class ProfilePresenter: ListingBasePresenter, ListingBaseTableUtilsPresenterDele
 
     enum ProfileCellType {
         case base(value: ListingBaseCellType)
-        case profile // initial mode
-        case tabs // initial mode
-        case field // initial mode
-        case footer // initial mode
+        case profile
+        case initial
     }
 
     struct CellRow {
@@ -29,11 +25,10 @@ class ProfilePresenter: ListingBasePresenter, ListingBaseTableUtilsPresenterDele
     var mode: ProfileMode = .initial
 
     var initialRows: [CellRow]?
+    var attributeRows: [CellRow]? = []
     var editingRows: [CellRow]?
 
-    var editedFullname: String?
-    var editedEmail: String?
-    var editedCountry: String?
+    var attributes: [Attribute] = []
     var editedImage: Data?
 
     // MARK: Modes
@@ -41,14 +36,10 @@ class ProfilePresenter: ListingBasePresenter, ListingBaseTableUtilsPresenterDele
     func getMode() -> ProfileMode {
         return mode
     }
-
+    
     lazy var initialStaticCells: [CellRow] = [
         CellRow(type: .profile, value: nil),
-        // CellRow(type: .tabs, value: nil),
-        CellRow(type: .field, value: (0, true)),
-        CellRow(type: .field, value: (1, true)),
-        CellRow(type: .field, value: (2, false)),
-        CellRow(type: .footer, value: nil)
+        CellRow(type: .initial, value: (0, true))
     ]
 
     func startShowingInitial() {
@@ -56,6 +47,19 @@ class ProfilePresenter: ListingBasePresenter, ListingBaseTableUtilsPresenterDele
         mode = .initial
         cleanData()
         initialStaticCells.forEach { initialRows?.append($0) }
+
+        var count: Int = initialRows?.count ?? 1
+
+        for att in sharedMemory.loggedUser!.attributes {
+            
+            if !attributes.contains(where: { $0.type == att.type }) {
+                
+                attributes.append(att)
+                attributeRows?.append(CellRow(type: .initial, value: (count, true)))
+                attributeRows?.forEach { initialRows?.append($0) }
+                count+=1
+            }
+        }
         updateViewToState()
     }
 
@@ -65,6 +69,19 @@ class ProfilePresenter: ListingBasePresenter, ListingBaseTableUtilsPresenterDele
         cleanData()
         editedImage = sharedMemory.profilePic
         initialStaticCells.forEach { editingRows?.append($0) }
+        
+        var count: Int = editingRows?.count ?? 1
+
+        for att in sharedMemory.loggedUser!.attributes {
+            
+            if !attributes.contains(where: { $0.type == att.type }) {
+                
+                attributes.append(att)
+                attributeRows?.append(CellRow(type: .initial, value: (count, true)))
+                attributeRows?.forEach { editingRows?.append($0) }
+                count+=1
+            }
+        }
         updateViewToState()
     }
 
@@ -79,26 +96,14 @@ class ProfilePresenter: ListingBasePresenter, ListingBaseTableUtilsPresenterDele
         }
         return false
     }
-
+    
     func tappedEditButton() {
 
         startShowingEdit()
     }
-
+    
     func tappedEditSaveButton() {
-
         // Save the results
-        if let fullName = editedFullname {
-            let nameSplited = fullName.split(separator: " ", maxSplits: 1).map(String.init)
-            sharedMemory.loggedUser?.firstName = nameSplited.size() > 0 ? nameSplited[0] : ""
-            sharedMemory.loggedUser?.lastName = nameSplited.size() > 1 ? nameSplited[1] : ""
-        }
-        if let email = editedEmail, email.isEmail() {
-            sharedMemory.loggedUser?.email = email
-        }
-        if let country = editedCountry {
-            sharedMemory.loggedUser?.countryShortName = country
-        }
         sharedMemory.profilePic = editedImage
         sharedMemory.loggedUser = sharedMemory.loggedUser
         // Go back
@@ -109,11 +114,9 @@ class ProfilePresenter: ListingBasePresenter, ListingBaseTableUtilsPresenterDele
 
     func cleanData() {
         initialRows = []
+        attributeRows = []
+        attributes = []
         editingRows = []
-
-        editedFullname = nil
-        editedEmail = nil
-        editedCountry = nil
     }
 
     func fetchData() {
@@ -132,18 +135,77 @@ class ProfilePresenter: ListingBasePresenter, ListingBaseTableUtilsPresenterDele
             return (editingRows?.size() ?? 0) > 0
         }
     }
-
-    func getElementCount() -> Int {
-        if let baseValue = super.getBaseElementCount() {
-            return baseValue
+    
+    func getSectionCount() -> Int? {
+     
+        return attributeRows?.count > 0 ? 3 : 2
+    }
+    
+    func getSectionHeaderViews() -> [UIView] {
+        
+        var arrViews = [UIView]()
+        
+        let numOfSections: Int = viewImpl?.table.numberOfSections ?? 1
+        
+        for section in 0..<numOfSections{
+            switch section {
+            case 0:
+                arrViews.append(returnTalbeviewheaderWith(title: nil))
+                break
+            case 1:
+                arrViews.append(returnTalbeviewheaderWith(title: "profile_table_header_title".localize()))
+                break
+            case 2:
+                arrViews.append(returnTalbeviewheaderWith(title: "profile_table_header_title_social".localize()))
+                break
+            default:
+                break
+            }
         }
+        return arrViews
+    }
+    
+    func returnTalbeviewheaderWith(title: String?) -> UIView {
+        
+        let headerView = UIView()
 
-        switch mode {
-        case .initial:
-            return (initialRows?.size() ?? 0)
-        case .editing:
-            return (editingRows?.size() ?? 0)
+        if title != nil {
+            
+            headerView.backgroundColor = .white
+            
+            let sectionLabel = UILabel(frame: CGRect(x: 12, y: 16, width: viewImpl!.table.bounds.size.width, height: viewImpl!.table.bounds.size.height))
+            sectionLabel.font = UIFont(name: "Helvetica", size: 12)
+            sectionLabel.textColor = .lightGray
+            sectionLabel.text = title
+            sectionLabel.sizeToFit()
+            headerView.addSubview(sectionLabel)
         }
+        
+        return headerView
+    }
+
+    func getElementCount() -> [Int] {
+    
+        var arrElements = [Int]()
+        
+        let numOfSections: Int = viewImpl?.table.numberOfSections ?? 1
+        
+        for section in 0..<numOfSections{
+            switch section {
+            case 0:
+                arrElements.append(1)
+                break
+            case 1:
+                arrElements.append(1)
+                break
+            case 2:
+                arrElements.append(attributeRows?.count ?? 1)
+                break
+            default:
+                break
+            }
+        }
+        return arrElements
     }
 
     func getElementType(indexPath: IndexPath) -> ProfileCellType {
@@ -153,12 +215,12 @@ class ProfilePresenter: ListingBasePresenter, ListingBaseTableUtilsPresenterDele
 
         switch mode {
         case .initial:
-            return initialRows![indexPath.row].type
+            return initialRows![indexPath.section].type
         case .editing:
-            return editingRows![indexPath.row].type
+            return editingRows![indexPath.section].type
         }
     }
-
+    
     // MARK: Fetch
 
     func fetchElements() {
@@ -172,6 +234,11 @@ class ProfilePresenter: ListingBasePresenter, ListingBaseTableUtilsPresenterDele
             self.startListing()
         }
     }
+    
+    func addAttributeWith(type: String, logo: String) {
+        
+        viewImpl?.changeScreenToAttributeVerification(type: type, logo: logo)
+    }
 
     // MARK: Table
 
@@ -179,11 +246,7 @@ class ProfilePresenter: ListingBasePresenter, ListingBaseTableUtilsPresenterDele
         true
     }
 
-    func actionPullToRefresh() {
-
-        self.fetchData()
-        self.updateViewToState()
-    }
+    func actionPullToRefresh() {}
 
     func setup(for cell: ProfileViewCell) {
 
@@ -202,64 +265,55 @@ class ProfilePresenter: ListingBasePresenter, ListingBaseTableUtilsPresenterDele
     func setup(for cell: TabsViewCell) {
         cell.config()
     }
-
+    
     private func getFieldCellRowValue(index: IndexPath) -> (Int, Bool)? {
-        return (mode == .initial ? initialRows?[index.row] : editingRows?[index.row])?.value as? (Int, Bool)
-    }
-
-    func setup(for cell: FieldViewCell) {
-
-        let user = sharedMemory.loggedUser
-        let fieldValue = getFieldCellRowValue(index: cell.indexPath!)!
-
-        var fieldTitle: String?
-        var fieldText: String?
-        switch fieldValue.0 {
-        case 0:
-            fieldTitle = "profile_field_title_fullname".localize()
-            fieldText = "\(user?.firstName ?? "") \(user?.lastName ?? "")"
-        case 1:
-            fieldTitle = "profile_field_title_country".localize()
-            fieldText = "\(user?.countryShortName ?? "")"
-        case 2:
-            fieldTitle = "profile_field_title_email".localize()
-            fieldText = "\(user?.email ?? "")"
-        default:
-            break
-        }
-        cell.config(title: fieldTitle, text: fieldText, bgColor: UIColor.appGreyLight,
-                    isEnable: mode == .editing, hasNext: fieldValue.1)
-    }
-
-    func textFieldDidChange(for cell: FieldViewCell, text: String?) {
-
-        let fieldValue = getFieldCellRowValue(index: cell.indexPath!)!
-        switch fieldValue.0 {
-        case 0:
-            editedFullname = text
-        case 1:
-            editedCountry = text
-        case 2:
-            editedEmail = text
-        default:
-            break
-        }
-    }
-
-    func textFieldShouldReturn(for cell: FieldViewCell) -> (Bool, FieldViewCell?) {
-
-        let fieldValue = getFieldCellRowValue(index: cell.indexPath!)!
-        var nextCell: FieldViewCell?
-        if fieldValue.1 {
-            var nextIndex = cell.indexPath!
-            nextIndex.row += 1
-            nextCell = viewImpl?.table.cellForRow(at: nextIndex) as? FieldViewCell
-        }
-        return (!fieldValue.1, nextCell)
+        return (mode == .initial ? initialRows?[index.section] : editingRows?[index.section])?.value as? (Int, Bool)
     }
 
     func setProfiilePicture(jpegData: Data?) {
         editedImage = jpegData
         updateViewToState()
+    }
+    
+    func setup(for cell: CommonViewCell) {
+        
+        let fieldValue = getFieldCellRowValue(index: cell.indexPath!)!
+
+        var fieldTitle: String
+        var logo: String
+        let isVerified: Bool = true
+        
+        switch fieldValue.0 {
+        case 0:
+            fieldTitle = "profile_row_personal_info_title".localize()
+            logo = "logo_security"
+            break
+        default:
+            fieldTitle = (attributes[cell.indexPath!.row].type) ?? ""
+            logo = (attributes[cell.indexPath!.row].logo)  ?? ""
+            break
+        }
+        cell.config(title: fieldTitle, subtitle: nil, logoData: nil, logoPlaceholderNamed: logo, isVerified: isVerified)
+    }
+    
+    func tappedAction(for cell: CommonViewCell) {
+        rowActionFor(indexPath: cell.indexPath!)
+    }
+    
+    func didSelectRowAt(indexPath: IndexPath) {
+        rowActionFor(indexPath: indexPath)
+    }
+    
+    func rowActionFor(indexPath: IndexPath) -> Void {
+        switch indexPath.section {
+        case 1:
+            viewImpl?.changeScreenToProfileDetail()
+        case 2:
+            let type: String = (attributes[indexPath.row].type)  ?? ""
+            viewImpl?.changeScreenToAttributeListing(type: type)
+            break
+        default:
+            break
+        }
     }
 }

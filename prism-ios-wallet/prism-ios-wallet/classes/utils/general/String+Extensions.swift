@@ -5,7 +5,7 @@
 //
 extension String {
 
-    func localize() -> String! {
+    func localize() -> String {
         return NSLocalizedString(self, comment: "")
     }
 
@@ -134,6 +134,16 @@ extension String {
                                       range: NSRange(location: 0, length: attributedString.length))
 
         return attributedString
+    }
+    
+    func addBoldText(fullString: NSString, boldPartsOfString: Array<NSString>, font: UIFont!, boldFont: UIFont!) -> NSAttributedString {
+        let nonBoldFontAttribute = [NSAttributedString.Key.font:font!]
+        let boldFontAttribute = [NSAttributedString.Key.font:boldFont!]
+        let boldString = NSMutableAttributedString(string: fullString as String, attributes:nonBoldFontAttribute)
+        for index in 0 ..< boldPartsOfString.count {
+            boldString.addAttributes(boldFontAttribute, range: fullString.range(of: boldPartsOfString[index] as String))
+        }
+        return boldString
     }
 }
 

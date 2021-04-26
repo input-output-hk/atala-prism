@@ -1,8 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="16097.2" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES">
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="17701" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES">
     <device id="retina6_1" orientation="portrait" appearance="light"/>
     <dependencies>
-        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="16087"/>
+        <deployment identifier="iOS"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="17703"/>
         <capability name="Safe area layout guides" minToolsVersion="9.0"/>
         <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
     </dependencies>
@@ -55,6 +56,7 @@
                                 </constraints>
                             </view>
                         </subviews>
+                        <viewLayoutGuide key="safeArea" id="JmG-eh-B4f"/>
                         <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                         <constraints>
                             <constraint firstItem="JmG-eh-B4f" firstAttribute="bottom" secondItem="yUx-3R-ae9" secondAttribute="bottom" id="86v-Sd-sdo"/>
@@ -69,7 +71,6 @@
                             <constraint firstItem="sVB-Ov-Oui" firstAttribute="trailing" secondItem="JmG-eh-B4f" secondAttribute="trailing" id="hQA-xd-Qf5"/>
                             <constraint firstItem="yUx-3R-ae9" firstAttribute="leading" secondItem="JmG-eh-B4f" secondAttribute="leading" id="wh5-8S-sgP"/>
                         </constraints>
-                        <viewLayoutGuide key="safeArea" id="JmG-eh-B4f"/>
                         <userDefinedRuntimeAttributes>
                             <userDefinedRuntimeAttribute type="string" keyPath="backgroundColorIB" value="appWhite"/>
                         </userDefinedRuntimeAttributes>

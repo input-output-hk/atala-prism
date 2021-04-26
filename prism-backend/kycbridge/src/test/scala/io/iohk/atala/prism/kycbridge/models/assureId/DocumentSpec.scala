@@ -15,23 +15,26 @@ class DocumentSpec extends AnyWordSpec with Matchers {
           instanceId = "a2f3e807-06a3-41e0-8fa2-d93875532272",
           biographic = Some(
             DocumentBiographic(
-              age = 68,
-              birthDate = "/Date(-559699200000+0000)/", // TODO: Parse the date
-              expirationDate = "/Date(1865462400000+0000)/", // TODO: Parse the date
-              fullName = "MARIUSZ BOHDAN FIKUS",
-              gender = 1,
-              photo =
+              age = Some(68),
+              birthDate = Some("/Date(-559699200000+0000)/"), // TODO: Parse the date
+              expirationDate = Some("/Date(1865462400000+0000)/"), // TODO: Parse the date
+              fullName = Some("MARIUSZ BOHDAN FIKUS"),
+              gender = Some(1),
+              photo = Some(
                 "https://preview.assureid.acuant.net/AssureIDService/Document/a2f3e807-06a3-41e0-8fa2-d93875532272/Field/Image?key=Photo"
+              )
             )
           ),
           classification = Some(
             DocumentClassification(`type` =
-              DocumentClassificationType(
-                `class` = 4,
-                className = "Identification Card",
-                countryCode = "POL",
-                issue = "2019",
-                name = "Poland (POL) eIdentity Card"
+              Some(
+                DocumentClassificationType(
+                  `class` = Some(4),
+                  className = Some("Identification Card"),
+                  countryCode = Some("POL"),
+                  issue = Some("2019"),
+                  name = Some("Poland (POL) eIdentity Card")
+                )
               )
             )
           )

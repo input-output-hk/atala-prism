@@ -3,7 +3,7 @@ package io.iohk.atala.mirror.services
 import doobie.implicits._
 import io.iohk.atala.mirror.MirrorFixtures
 import io.iohk.atala.mirror.db.{CardanoAddressInfoDao, ConnectionDao}
-import io.iohk.atala.mirror.models.CardanoAddressInfo.CardanoAddress
+import io.iohk.atala.mirror.models.CardanoAddress
 import io.iohk.atala.mirror.models.Connection
 import io.iohk.atala.mirror.models.Connection.PayIdName
 import io.iohk.atala.prism.mirror.payid._

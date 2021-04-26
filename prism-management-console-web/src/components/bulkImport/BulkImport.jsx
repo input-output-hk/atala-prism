@@ -1,22 +1,23 @@
-import React, { useState } from 'react';
+import React from 'react';
 import PropTypes from 'prop-types';
 import BulkImportSteps from './Organisms/BulkImportSteps';
 import { IMPORT_CONTACTS, IMPORT_CREDENTIALS_DATA } from '../../helpers/constants';
 import { contactShape, credentialTypeShape } from '../../helpers/propShapes';
 
 const BulkImport = ({
-  onUpload,
   cancelImport,
   recipients,
   credentialType,
   useCaseProps,
   headersMapping,
-  loading
+  loading,
+  fileData,
+  setFileData,
+  selectedGroups,
+  setSelectedGroups,
+  skipGroupsAssignment,
+  setSkipGroupsAssignment
 }) => {
-  const [fileData, setFileData] = useState();
-  const [selectedGroups, setSelectedGroups] = useState([]);
-  const [skipGroupsAssignment, setSkipGroupsAssignment] = useState();
-
   const stepsProps = {
     fileData,
     setFileData,
@@ -24,7 +25,6 @@ const BulkImport = ({
     setSelectedGroups,
     skipGroupsAssignment,
     setSkipGroupsAssignment,
-    onFinish: () => onUpload(fileData, skipGroupsAssignment ? [] : selectedGroups),
     cancelImport,
     recipients,
     credentialType,

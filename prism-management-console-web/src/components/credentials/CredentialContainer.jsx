@@ -10,7 +10,9 @@ import {
   CREDENTIALS_ISSUED,
   CREDENTIALS_RECEIVED,
   DEFAULT_CREDENTIAL_VERIFICATION_RESULT,
-  CREDENTIAL_ID_KEY
+  CREDENTIAL_ID_KEY,
+  DRAFT_CREDENTIAL_VERIFICATION_RESULT,
+  PENDING_CREDENTIAL_VERIFICATION_RESULT
 } from '../../helpers/constants';
 import {
   useCredentialsIssuedListWithFilters,
@@ -77,14 +79,15 @@ const CredentialContainer = ({ api }) => {
     });
 
   const verifyCredential = ({ encodedsignedcredential, batchinclusionproof }) =>
-    api.wallet.verifyCredential(encodedsignedcredential, batchinclusionproof).catch(error => {
-      Logger.error('There has been an error verifiying the credential', error);
-      const pendingPublication = error.message.includes('Missing publication date');
-      message.error(
-        t(`credentials.errors.${pendingPublication ? 'pendingPublication' : 'errorVerifying'}`)
-      );
-      return DEFAULT_CREDENTIAL_VERIFICATION_RESULT;
-    });
+    batchinclusionproof
+      ? api.wallet.verifyCredential(encodedsignedcredential, batchinclusionproof).catch(error => {
+          Logger.error('There has been an error verifiying the credential', error);
+          const pendingPublication = error.message.includes('Missing publication date');
+          if (pendingPublication) return PENDING_CREDENTIAL_VERIFICATION_RESULT;
+          message.error(t('credentials.errors.errorVerifying'));
+          return DEFAULT_CREDENTIAL_VERIFICATION_RESULT;
+        })
+      : DRAFT_CREDENTIAL_VERIFICATION_RESULT;
 
   const selectAllProps = {
     ...getCheckedAndIndeterminateProps(filteredCredentialsIssued, selectedCredentials),

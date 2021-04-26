@@ -78,7 +78,7 @@ class PaymentEndpointsSpec extends PostgresRepositorySpec[Task] with MirrorFixtu
       address.paymentNetwork mustBe "CARDANO"
       address.environment mustBe Some("TESTNET")
       address.addressDetails mustBe CryptoAddressDetails(
-        cardanoAddressInfo3.cardanoAddress.address,
+        cardanoAddressInfo3.cardanoAddress.value,
         None
       )
 
@@ -87,7 +87,7 @@ class PaymentEndpointsSpec extends PostgresRepositorySpec[Task] with MirrorFixtu
       verifiedAddress.paymentNetwork mustBe "cardano"
       verifiedAddress.environment mustBe Some("testnet")
       verifiedAddress.addressDetails mustBe CryptoAddressDetails(
-        cardanoAddressInfo2.cardanoAddress.address,
+        cardanoAddressInfo2.cardanoAddress.value,
         None
       )
     }

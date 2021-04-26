@@ -83,10 +83,10 @@ object ProtoCodecs {
       .CManagerGenericCredential()
       .withCredentialId(credential.credentialId.toString)
       .withIssuerId(credential.issuedBy.uuid.toString)
-      .withContactId(credential.subjectId.toString)
+      .withContactId(credential.contactId.toString)
       .withCredentialData(credential.credentialData.noSpaces)
       .withIssuerName(credential.issuerName)
-      .withContactData(credential.subjectData.noSpaces)
+      .withContactData(credential.contactData.noSpaces)
       .withExternalId(credential.externalId.value)
       .withSharedAt(credential.sharedAt.map(_.toProtoTimestamp).getOrElse(Timestamp()))
     val withPublicationData = credential.publicationData.fold(model) { data =>

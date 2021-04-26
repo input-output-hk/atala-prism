@@ -24,7 +24,7 @@ const useGetContacts = (contactsManager, allowPreload = true) => {
   const { showUnconfirmedAccountError, removeUnconfirmedAccountError } = useSession();
 
   const getContacts = useCallback(
-    ({ pageSize, lastId, oldContacts = [], isRefresh = false, groupName, onFinish }) => {
+    ({ pageSize, lastId, oldContacts = [], isRefresh = false, groupName, onFinish, onResults }) => {
       if (isSearching) return;
 
       setIsSearching(true);
@@ -47,6 +47,7 @@ const useGetContacts = (contactsManager, allowPreload = true) => {
 
           setContacts(updatedContacts);
           removeUnconfirmedAccountError();
+          if (onResults) onResults(updatedContacts);
         })
         .catch(error => {
           if (error.code === UNKNOWN_DID_SUFFIX_ERROR_CODE) {
@@ -89,7 +90,7 @@ const useGetContactsNotInGroup = contactsManager => {
   const [isSearching, setIsSearching] = useState(false);
 
   const getContacts = useCallback(
-    ({ pageSize, lastId, oldContacts = [], isRefresh = false, groupName, onFinish }) => {
+    ({ pageSize, lastId, oldContacts = [], isRefresh = false, groupName, onFinish, onResults }) => {
       if (isSearching) return;
 
       setIsSearching(true);
@@ -115,6 +116,7 @@ const useGetContactsNotInGroup = contactsManager => {
             );
 
             setContacts(contactsNotInGroup);
+            if (onResults) onResults(contactsNotInGroup);
           });
         })
         .catch(error => {
@@ -133,23 +135,6 @@ const useGetContactsNotInGroup = contactsManager => {
   return { contacts, getContacts, hasMore, isLoading, isSearching };
 };
 
-export const useContacts = (contactsManager, setLoading) => {
-  const [contacts, setContacts] = useState([]);
-  const [getContacts, hasMore] = useGetContacts(contactsManager, setContacts, setLoading);
-
-  const handleContactsRequest = () => {
-    const { contactid } = getLastArrayElementOrEmpty(contacts);
-
-    return getContacts({
-      pageSize: CONTACT_PAGE_SIZE,
-      lastId: contactid,
-      oldContacts: contacts
-    });
-  };
-
-  return [contacts, handleContactsRequest, hasMore];
-};
-
 export const useContactsWithFilteredList = (contactsManager, allowPreload) => {
   const { contacts, getContacts, hasMore, isLoading, isSearching } = useGetContacts(
     contactsManager,
@@ -161,7 +146,7 @@ export const useContactsWithFilteredList = (contactsManager, allowPreload) => {
   const [filteredContacts, setFilteredContacts] = useState([]);
 
   const applyFilters = useCallback(
-    cb => {
+    (contactsToFilter, cb) => {
       const allowedStatuses = {
         [PENDING_CONNECTION]: [
           CONNECTION_STATUSES.statusInvitationMissing,
@@ -173,7 +158,7 @@ export const useContactsWithFilteredList = (contactsManager, allowPreload) => {
       const statusMatch = (contactStatus, filterStatus) =>
         !filterStatus || allowedStatuses[filterStatus].includes(contactStatus);
 
-      const newFilteredContacts = contacts.filter(it => {
+      const newFilteredContacts = contactsToFilter.filter(it => {
         const matchesName = filterByInclusion(searchText, it.contactName);
         const matchesExternalId = filterByInclusion(searchText, it.externalid);
         const matchesStatus = statusMatch(it.status, status);
@@ -183,12 +168,12 @@ export const useContactsWithFilteredList = (contactsManager, allowPreload) => {
       setFilteredContacts(newFilteredContacts);
       if (cb) cb(newFilteredContacts);
     },
-    [contacts, searchText, status]
+    [searchText, status]
   );
 
   useEffect(() => {
-    applyFilters();
-  }, [applyFilters]);
+    applyFilters(contacts);
+  }, [contacts, applyFilters]);
 
   const handleContactsRequest = useCallback(
     ({ groupNameParam, isRefresh = false, onFinish }) => {
@@ -226,7 +211,7 @@ export const useContactsWithFilteredList = (contactsManager, allowPreload) => {
     getContacts({
       pageSize: MAX_CONTACTS,
       lastId: null,
-      onFinish: () => applyFilters(cb)
+      onResults: contactsReceived => applyFilters(contactsReceived, cb)
     });
 
   return {
@@ -251,8 +236,8 @@ export const useContactsWithFilteredListAndNotInGroup = contactsManager => {
   const [filteredContacts, setFilteredContacts] = useState([]);
 
   const applyFilters = useCallback(
-    cb => {
-      const newFilteredContacts = contacts.filter(it => {
+    (contactsToFilter, cb) => {
+      const newFilteredContacts = contactsToFilter.filter(it => {
         const matchesName = filterByInclusion(searchText, it.contactName);
         const matchesExternalId = filterByInclusion(searchText, it.externalid);
         return matchesName || matchesExternalId;
@@ -260,12 +245,12 @@ export const useContactsWithFilteredListAndNotInGroup = contactsManager => {
       setFilteredContacts(newFilteredContacts);
       if (cb) cb(newFilteredContacts);
     },
-    [contacts, searchText]
+    [searchText]
   );
 
   useEffect(() => {
-    applyFilters();
-  }, [applyFilters]);
+    applyFilters(contacts);
+  }, [contacts, applyFilters]);
 
   const handleContactsRequest = useCallback(
     ({ groupNameParam, isRefresh = false, onFinish }) => {
@@ -302,7 +287,7 @@ export const useContactsWithFilteredListAndNotInGroup = contactsManager => {
       pageSize: MAX_CONTACTS,
       lastId: null,
       groupName,
-      onFinish: () => applyFilters(cb)
+      onResults: contactsReceived => applyFilters(contactsReceived, cb)
     });
 
   return {

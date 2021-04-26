@@ -2,18 +2,12 @@ package io.iohk.atala.prism.kycbridge
 
 import com.google.protobuf.ByteString
 import io.grpc.ManagedChannelBuilder
-import io.iohk.atala.kycbridge.protos.kycbridge_api.KycBridgeServiceGrpc
-import io.iohk.atala.kycbridge.protos.kycbridge_api.CreateAccountRequest
+import io.iohk.atala.kycbridge.protos.kycbridge_api.{CreateAccountRequest, KycBridgeServiceGrpc}
 import io.iohk.atala.prism.E2ETestUtils._
-import io.iohk.atala.prism.protos.credential_models.{
-  AcuantProcessFinished,
-  AtalaMessage,
-  KycBridgeMessage,
-  PlainTextCredential
-}
 import io.iohk.atala.prism.connector.RequestAuthenticator
 import io.iohk.atala.prism.crypto.{EC, ECKeyPair}
 import io.iohk.atala.prism.identity.DID
+import io.iohk.atala.prism.kycbridge.services.ServiceUtils.runRequestToEither
 import io.iohk.atala.prism.protos.connector_api.{
   ConnectorServiceGrpc,
   GetMessagesPaginatedRequest,
@@ -21,21 +15,21 @@ import io.iohk.atala.prism.protos.connector_api.{
   SendMessageResponse
 }
 import io.iohk.atala.prism.protos.connector_models.ReceivedMessage
-import io.iohk.atala.prism.services.BaseGrpcClientService.PublicKeyBasedAuthConfig
+import io.iohk.atala.prism.protos.credential_models.{AcuantProcessFinished, AtalaMessage, KycBridgeMessage}
 import io.iohk.atala.prism.services.BaseGrpcClientService
-import org.scalatest.matchers.must.Matchers
-import org.scalatest.wordspec.AnyWordSpec
-import monix.execution.Scheduler.Implicits.global
-import org.http4s.client.Client
-import org.slf4j.LoggerFactory
-import io.iohk.atala.prism.kycbridge.services.ServiceUtils.runRequestToEither
-import org.http4s.{AuthScheme, Credentials, Uri}
-import org.http4s.Method.POST
-import org.http4s.headers.Authorization
+import io.iohk.atala.prism.services.BaseGrpcClientService.PublicKeyBasedAuthConfig
+import io.iohk.atala.prism.utils.GrpcUtils
 import monix.eval.Task
+import monix.execution.Scheduler.Implicits.global
+import org.http4s.Method.POST
+import org.http4s.client.Client
 import org.http4s.client.blaze.BlazeClientBuilder
 import org.http4s.client.dsl.Http4sClientDsl
-import io.iohk.atala.prism.utils.GrpcUtils
+import org.http4s.headers.Authorization
+import org.http4s.{AuthScheme, Credentials, Uri}
+import org.scalatest.matchers.must.Matchers
+import org.scalatest.wordspec.AnyWordSpec
+import org.slf4j.LoggerFactory
 
 import scala.concurrent.ExecutionContext
 import scala.concurrent.duration.DurationInt
@@ -127,9 +121,11 @@ class KycBridgeE2ETestSpec extends AnyWordSpec with Matchers with KycBridgeFixtu
 
         credentialMessage <- fetchConnectorMessage(baseGrpcClientService, lastSeenMessageId = Some(receivedMessage.id))
 
-        credential = PlainTextCredential.parseFrom(credentialMessage.message.toByteArray)
+        atalaMessage = AtalaMessage.parseFrom(credentialMessage.message.toByteArray)
 
-        _ = logger.info(s"Credential successfully obtained from kyc bridge: ${credential.encodedCredential}")
+        _ = logger.info(
+          s"Credential successfully obtained from kyc bridge: ${atalaMessage.getPlainCredential.encodedCredential}"
+        )
 
         _ <- releaseHttpClient
       } yield ()).runSyncUnsafe()

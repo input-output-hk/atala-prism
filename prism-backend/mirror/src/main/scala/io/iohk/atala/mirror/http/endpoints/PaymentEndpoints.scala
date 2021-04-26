@@ -83,7 +83,7 @@ class PaymentEndpoints(cardanoAddressInfoService: CardanoAddressInfoService, htt
       paymentNetwork = "CARDANO",
       environment = Some(cardanoNetwork.network.toUpperCase),
       addressDetails = CryptoAddressDetails(
-        address = cardanoAddressInfo.cardanoAddress.address,
+        address = cardanoAddressInfo.cardanoAddress.value,
         tag = None
       )
     )

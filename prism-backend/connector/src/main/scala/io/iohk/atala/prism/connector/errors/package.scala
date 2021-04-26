@@ -1,8 +1,9 @@
 package io.iohk.atala.prism.connector
 
 import io.grpc.Status
-import io.iohk.atala.prism.connector.model.TokenString
+import io.iohk.atala.prism.connector.model.{ConnectionId, MessageId, TokenString}
 import io.iohk.atala.prism.errors.{PrismError, PrismServerError}
+import io.iohk.atala.prism.models.ParticipantId
 
 package object errors {
 
@@ -63,6 +64,31 @@ package object errors {
       Status.NOT_FOUND.withDescription(
         s"Connection with token $tokenString doesn't exist. " +
           s"Other side might not have accepted connection yet or connection token is invalid"
+      )
+    }
+  }
+
+  case class ConnectionNotFoundByConnectionIdAndSender(sender: ParticipantId, connection: ConnectionId)
+      extends ConnectorError {
+    override def toStatus: Status = {
+      Status.NOT_FOUND.withDescription(
+        s"Failed to send message, the connection $connection with sender $sender doesn't exist"
+      )
+    }
+  }
+
+  case class MessagesAlreadyExist(ids: List[MessageId]) extends ConnectorError {
+    override def toStatus: Status = {
+      Status.ALREADY_EXISTS.withDescription(
+        s"Messages with provided ids already exist: ${ids.map(_.uuid.toString).mkString(", ")}"
+      )
+    }
+  }
+
+  case class MessageIdsNotUnique(ids: List[MessageId]) extends ConnectorError {
+    override def toStatus: Status = {
+      Status.ALREADY_EXISTS.withDescription(
+        s"All user provided messages ids must be unique, duplicates: ${ids.map(_.uuid.toString).mkString(", ")}"
       )
     }
   }

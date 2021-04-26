@@ -45,6 +45,12 @@ class VerifyIdScanViewController: BaseViewController {
         _ = app_mayPerformSegue(withIdentifier: "VerifyIdTypeSelectSegue", sender: self)
     }
 
+    func changeScreenToResults(values: [String]?, contact: Contact?, image: UIImage?, documentInstanceId: String?) {
+        let params = VerifyIdResultsViewController.makeSeguedParams(values: values, contact: contact, image: image,
+                                                                    documentInstanceId: documentInstanceId)
+        ViewControllerUtils.changeScreenSegued(caller: self, segue: "showVerifyIdResultsSegue", params: params)
+    }
+
     // MARK: Buttons
 
     func setupButtons() {
@@ -55,4 +61,23 @@ class VerifyIdScanViewController: BaseViewController {
         presenterImpl.scanTapped()
     }
 
+}
+
+extension VerifyIdScanViewController: SegueableScreen {
+
+    func configScreenFromSegue(params: [Any?]?) {
+
+        presenterImpl.documentInstanceID = params?[0] as? String
+        presenterImpl.kycToken = params?[1] as? String
+        presenterImpl.contact = params?[2] as? Contact
+    }
+
+    static func makeSeguedParams(documentInstanceID: String?, kycToken:String?, contact: Contact?) -> [Any?]? {
+
+        var params: [Any?] = []
+        params.append(documentInstanceID)
+        params.append(kycToken)
+        params.append(contact)
+        return params
+    }
 }

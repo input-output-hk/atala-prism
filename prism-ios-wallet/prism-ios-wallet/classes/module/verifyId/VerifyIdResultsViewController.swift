@@ -9,7 +9,7 @@
 import UIKit
 
 class VerifyIdResultsViewController: ListingBaseViewController {
-    
+
     var presenterImpl = VerifyIdResultsPresenter()
     override var presenter: BasePresenter { return presenterImpl }
 
@@ -39,8 +39,8 @@ class VerifyIdResultsViewController: ListingBaseViewController {
         tableUtils = TableUtils(view: self, presenter: presenterImpl, table: table)
     }
 
-    override func getHeaderHeight() -> CGFloat {
-        return AppConfigs.TABLE_HEADER_HEIGHT_REGULAR
+    override func getHeaderHeight(for section: Int) -> CGFloat {
+        return 0
     }
 
     override func getCellIdentifier(for indexPath: IndexPath) -> String {
@@ -60,15 +60,15 @@ class VerifyIdResultsViewController: ListingBaseViewController {
         retryBttn.addRoundCorners(radius: AppConfigs.CORNER_RADIUS_BUTTON, borderWidth: 3,
                                   borderColor: UIColor.appRed.cgColor)
     }
-    
+
     @IBAction func confirmTapped(_ sender: Any) {
         presenterImpl.continueTapped()
     }
-    
+
     @IBAction func retryTapped(_ sender: Any) {
         presenterImpl.retryTapped()
     }
-    
+
     // MARK: Screens
 
     func changeScreenToScanFront() {
@@ -81,8 +81,22 @@ extension VerifyIdResultsViewController: SegueableScreen {
 
     func configScreenFromSegue(params: [Any?]?) {
 
-        if let values = params as? [String] {
+        if let values = params?[0] as? [String] {
             self.presenterImpl.config(values: values)
         }
+        presenterImpl.contact = params?[1] as? Contact
+        presenterImpl.selfieImg = params?[2] as? UIImage
+        presenterImpl.documentInstanceId = params?[3] as? String
+    }
+
+    static func makeSeguedParams(values: [String]?, contact: Contact?, image: UIImage?,
+                                 documentInstanceId: String?) -> [Any?]? {
+
+        var params: [Any?] = []
+        params.append(values)
+        params.append(contact)
+        params.append(image)
+        params.append(documentInstanceId)
+        return params
     }
 }

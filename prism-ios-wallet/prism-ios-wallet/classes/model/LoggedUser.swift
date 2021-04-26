@@ -8,6 +8,11 @@ class LoggedUser: Mappable {
     var email: String?
     var firstName: String?
     var lastName: String?
+    var gender: String?
+    var age: NSInteger?
+    
+    var attributes = [Attribute]()
+    
 
     var idCode: String?
     var identityNumber: String?
@@ -30,6 +35,9 @@ class LoggedUser: Mappable {
 
     var dateFormat: String?
 
+    var payIdCardDismissed: Bool?
+    var verifyIdCardDismissed: Bool?
+
     init() {}
 
     required init?(map: Map) {}
@@ -42,6 +50,10 @@ class LoggedUser: Mappable {
         email <- map["email"]
         firstName <- map["firstName"]
         lastName <- map["lastName"]
+        gender <- map["gender"]
+        age <- map["age"]
+
+        attributes <- map["attributes"]
 
         idCode <- map["idCode"]
         identityNumber <- map["identityNumber"]
@@ -63,5 +75,8 @@ class LoggedUser: Mappable {
         appBiometrics <- map["appBiometrics"]
 
         dateFormat <- map["dateFormat"]
+
+        payIdCardDismissed <- map["payIdCardDismissed"]
+        verifyIdCardDismissed <- map["verifyIdCardDismissed"]
     }
 }

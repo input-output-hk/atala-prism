@@ -9,11 +9,11 @@ import {
 import BulkImportResult from '../../bulkImport/Organisms/BulkImportResults';
 import ManualImportResults from '../../manualImport/Organisms/ManualImportResults';
 
-export const ImportResults = ({ results, importType, useCaseProps, returnToUploadStep }) =>
+export const ImportResults = ({ results, importType, useCaseProps }) =>
   importType === MANUAL_IMPORT ? (
     <ManualImportResults {...results} {...useCaseProps} />
   ) : (
-    <BulkImportResult {...results} {...useCaseProps} returnToUploadStep={returnToUploadStep} />
+    <BulkImportResult {...results} {...useCaseProps} />
   );
 
 ImportResults.propTypes = {
@@ -41,8 +41,7 @@ ImportResults.propTypes = {
     useCase: PropTypes.oneOf([IMPORT_CONTACTS, IMPORT_CREDENTIALS_DATA]).isRequired,
     showGroupSelection: PropTypes.bool.isRequired,
     isEmbedded: PropTypes.bool
-  }).isRequired,
-  returnToUploadStep: PropTypes.func.isRequired
+  }).isRequired
 };
 
 export default ImportResults;

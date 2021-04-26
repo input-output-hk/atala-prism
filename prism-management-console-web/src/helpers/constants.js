@@ -194,9 +194,20 @@ export const CREDENTIAL_VERIFICATION_ERRORS = {
   invalidSignature: INVALID_SIGNATURE
 };
 
+export const DRAFT_CREDENTIAL_VERIFICATION_RESULT = {
+  credentialSigned: false
+};
+
+export const PENDING_CREDENTIAL_VERIFICATION_RESULT = {
+  credentialSigned: true,
+  credentialPublished: false
+};
+
 export const DEFAULT_CREDENTIAL_VERIFICATION_RESULT = {
-  credentialRevoked: true,
-  batchRevoked: true,
+  credentialSigned: true,
+  credentialPublished: true,
+  credentialRevoked: false,
+  batchRevoked: false,
   invalidMerkleProof: true,
   invalidKey: true,
   keyRevoked: true,

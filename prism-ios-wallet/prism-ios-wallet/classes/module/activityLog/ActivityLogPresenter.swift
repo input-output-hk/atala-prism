@@ -40,9 +40,17 @@ class ActivityLogPresenter: ListingBasePresenter, ListingBaseTableUtilsPresenter
     func hasData() -> Bool {
         return !(activityLogs?.isEmpty ?? true)
     }
+    
+    func getSectionHeaderViews() -> [UIView] {
+        return [UIView()]
+    }
+    
+    func getSectionCount() -> Int? {
+        return 1
+    }
 
-    func getElementCount() -> Int {
-        return activityLogs?.size() ?? 0
+    func getElementCount() -> [Int] {
+        return [activityLogs?.size() ?? 0]
     }
 
     // MARK: Table

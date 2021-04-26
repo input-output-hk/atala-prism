@@ -11,11 +11,12 @@ struct AppConfigs {
     // Values
     static let CORNER_RADIUS_REGULAR: CGFloat = 10.0
     static let CORNER_RADIUS_BUTTON: CGFloat = 22.0
+    static let BORDER_WIDTH_BUTTON: CGFloat = 1.5
     static let TABLE_HEADER_HEIGHT_REGULAR: CGFloat = 15.0
 }
 
 extension UIColor {
-
+    
     static let appWhite = UIColor(netHex: 0xFFFFFF)
     static let appBlackLight = UIColor(netHex: 0x202020)
     static let appBlack = UIColor(netHex: 0x000000)
@@ -36,6 +37,7 @@ extension UIColor {
     static let appGreyTransparent = UIColor(red: 0.627, green: 0.667, blue: 0.733, alpha: 0.1)
     static let appAqua = UIColor(netHex: 0x40EAEA)
     static let appAquaTransparent = UIColor(red: 0.251, green: 0.918, blue: 0.918, alpha: 0.1)
+    static let appTextfieldBorderColor = UIColor(netHex: 0xECE9F8)
 
     static let ColorNameDic: [String: UIColor] = [
         "appWhite": UIColor.appWhite,
@@ -57,6 +59,7 @@ extension UIColor {
         "textGrey": UIColor.textGrey,
         "appGreyTransparent": UIColor.appGreyTransparent,
         "appAqua": UIColor.appAqua,
-        "appAquaTransparent": UIColor.appAquaTransparent
+        "appAquaTransparent": UIColor.appAquaTransparent,
+        "appTextfieldBorderColor": UIColor.appTextfieldBorderColor
     ]
 }

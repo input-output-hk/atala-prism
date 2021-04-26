@@ -70,14 +70,14 @@ case class PublicationData(
 final case class GenericCredential(
     credentialId: GenericCredential.Id,
     issuedBy: ParticipantId,
-    subjectId: Contact.Id,
+    contactId: Contact.Id,
     credentialData: Json,
     createdOn: Instant,
     credentialType: Option[CredentialTypeId],
     credentialIssuanceContactId: Option[CredentialIssuance.ContactId],
     externalId: Contact.ExternalId,
     issuerName: String,
-    subjectData: Json,
+    contactData: Json,
     publicationData: Option[PublicationData],
     sharedAt: Option[Instant],
     revokedOnTransactionId: Option[TransactionId]
