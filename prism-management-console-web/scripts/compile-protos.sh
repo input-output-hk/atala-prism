@@ -22,6 +22,7 @@ protoc -I=$OUT_DIR \
     connector_api.proto \
     console_models.proto \
     console_api.proto \
+    status.proto \
     credential_models.proto \
     cviews_models.proto \
     cviews_api.proto \
