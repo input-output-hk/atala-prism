@@ -384,11 +384,8 @@ jobs:
     steps:
       - checkout
       - halt-step-if-not-changed:
-          directories: "prism-backend prism-interactive-demo-web"
+          directories: "prism-backend prism-interactive-demo-web prism-sdk/protos/src/intdemo"
       - install-protoc
-      - run:
-          name: Move to target folder then run tests
-          command: cd prism-interactive-demo-web && ./web-testing-script.sh
 
   build-prism-management-console-web:
     working_directory: ~/repo
@@ -397,7 +394,7 @@ jobs:
     steps:
       - checkout
       - halt-step-if-not-changed:
-          directories: "prism-backend prism-management-console-web"
+          directories: "prism-backend prism-management-console-web prism-sdk/protos/src"
       - setup_remote_docker
       - install-protoc
       - run:
@@ -418,7 +415,7 @@ jobs:
     steps:
       - checkout
       - halt-step-if-not-changed:
-          directories: "prism-android-wallet prism-kotlin-sdk"
+          directories: "prism-android-wallet prism-kotlin-sdk prism-sdk/protos/src"
       - run: yes | sdkmanager --licenses || exit 0
       - run: yes | sdkmanager --update || exit 0
 
@@ -663,7 +660,7 @@ jobs:
           at: ./workspace
 
       - halt-step-if-not-changed:
-          directories: "prism-kotlin-sdk"
+          directories: "prism-kotlin-sdk prism-sdk/protos/src"
 
       - run:
           name: Install dependencies

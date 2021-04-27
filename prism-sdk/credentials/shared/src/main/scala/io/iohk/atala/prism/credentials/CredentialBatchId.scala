@@ -33,7 +33,7 @@ object CredentialBatchId {
       .compute(
         node_models
           .CredentialBatchData()
-          .withIssuerDID(issuerDIDSuffix.value)
+          .withIssuerDid(issuerDIDSuffix.value)
           .withMerkleRoot(ByteString.copyFrom(merkleRoot.hash.value.toArray))
           .toByteArray
       )

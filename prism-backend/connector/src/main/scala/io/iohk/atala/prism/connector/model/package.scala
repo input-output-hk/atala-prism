@@ -69,7 +69,7 @@ case class ConnectionInfo(
       token = token.token,
       participantName = participantInfo.name,
       participantLogo = ByteString.copyFrom(participantInfo.logo.map(_.bytes).getOrElse(Vector.empty).toArray),
-      participantDID = participantInfo.did.map(_.value).getOrElse("")
+      participantDid = participantInfo.did.map(_.value).getOrElse("")
     )
   }
 }

@@ -149,7 +149,7 @@ class CredentialServiceSpec extends PostgresRepositorySpec[Task] with MockitoSug
       val token = connection1.token.token
       val participantDID = newDID()
       val connectionInfos =
-        Seq(ConnectionInfo(token = token, connectionId = connectionId.toString, participantDID = participantDID.value))
+        Seq(ConnectionInfo(token = token, connectionId = connectionId.toString, participantDid = participantDID.value))
 
       val connectorClientStub = new ConnectorClientServiceStub(connectionInfos = connectionInfos)
       val credentialService = new CredentialService(database, connectorClientStub, defaultNodeClientStub)

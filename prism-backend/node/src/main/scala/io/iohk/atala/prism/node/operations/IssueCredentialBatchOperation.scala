@@ -87,7 +87,7 @@ object IssueCredentialBatchOperation extends SimpleOperationCompanion[IssueCrede
           .fromString(SHA256Digest.compute(credentialBatchData.value.toByteArray).hexValue)
           .fold("Credential batchId".asLeft[CredentialBatchId])(Right(_))
       }
-      issuerDID <- credentialBatchData.child(_.issuerDID, "issuerDID").parse { issuerDID =>
+      issuerDID <- credentialBatchData.child(_.issuerDid, "issuerDID").parse { issuerDID =>
         Either.fromOption(
           DIDSuffix.fromString(issuerDID),
           s"must be a valid DID suffix: $issuerDID"

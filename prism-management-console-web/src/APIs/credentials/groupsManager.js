@@ -11,7 +11,7 @@ const {
 
 async function getGroups(contactId) {
   const groupRequest = new GetGroupsRequest();
-  if (contactId) groupRequest.setContactid(contactId);
+  if (contactId) groupRequest.setContactId(contactId);
 
   const { metadata, sessionError } = await this.auth.getMetadata(
     groupRequest,
@@ -40,10 +40,10 @@ async function createGroup(groupName) {
 async function updateGroup(groupId, { contactIdsToAdd, contactIdsToRemove, newName }) {
   const request = new UpdateGroupRequest();
 
-  request.setGroupid(groupId);
+  request.setGroupId(groupId);
   if (newName) request.setName(newName);
-  request.setContactidstoaddList(contactIdsToAdd || []);
-  request.setContactidstoremoveList(contactIdsToRemove || []);
+  request.setContactIdsToAddList(contactIdsToAdd || []);
+  request.setContactIdsToRemoveList(contactIdsToRemove || []);
 
   const { metadata, sessionError } = await this.auth.getMetadata(request);
   if (sessionError) return {};
@@ -57,7 +57,7 @@ async function deleteGroup(groupId) {
   Logger.info(`deleting group with id: ${groupId}`);
   const request = new DeleteGroupRequest();
 
-  request.setGroupid(groupId);
+  request.setGroupId(groupId);
 
   const { metadata, sessionError } = await this.auth.getMetadata(request);
   if (sessionError) return {};

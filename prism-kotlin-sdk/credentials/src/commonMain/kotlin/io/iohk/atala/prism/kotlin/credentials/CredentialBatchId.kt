@@ -27,7 +27,7 @@ data class CredentialBatchId private constructor(val id: String) {
             val digest = SHA256Digest
                 .compute(
                     CredentialBatchData(
-                        issuerDID = issuerDIDSuffix.value,
+                        issuerDid = issuerDIDSuffix.value,
                         merkleRoot = ByteArr(merkleRoot.hash.value.toByteArray())
                     ).encodeToByteArray().toList()
                 )

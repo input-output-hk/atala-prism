@@ -62,7 +62,7 @@ message CreateDIDRequest {
 // Response after creating a public DID.
 message CreateDIDResponse {
     string id = 1; // DID suffix, where DID is in form did:prism.atala:[DID suffix]
-    TransactionInfo transactionInfo = 2; // The on-chain transaction info where the DID is going to be created.
+    TransactionInfo transaction_info = 2; // The on-chain transaction info where the DID is going to be created.
 }
 
 // Request to update a public DID Document.
@@ -71,7 +71,7 @@ message UpdateDIDRequest {
 }
 // Response after updating a DID Document.
 message UpdateDIDResponse {
-    TransactionInfo transactionInfo = 1; // The on-chain transaction info where the operation is going to be applied.
+    TransactionInfo transaction_info = 1; // The on-chain transaction info where the operation is going to be applied.
 }
 
 // Request to issue a batch of credentials.
@@ -80,8 +80,8 @@ message IssueCredentialBatchRequest {
 }
 // Response after issuing a batch of credentials.
 message IssueCredentialBatchResponse {
-    string batchId = 1; // The ID of the batch posted.
-    TransactionInfo transactionInfo = 2; // The on-chain transaction info where the operation is going to be applied.
+    string batch_id = 1; // The ID of the batch posted.
+    TransactionInfo transaction_info = 2; // The on-chain transaction info where the operation is going to be applied.
 }
 
 // Request to revoke credentials from a batch.
@@ -90,7 +90,7 @@ message RevokeCredentialsRequest {
 }
 // Response after revoking credentials from a batch.
 message RevokeCredentialsResponse {
-    TransactionInfo transactionInfo = 1; // The on-chain transaction info where the operation is going to be applied.
+    TransactionInfo transaction_info = 1; // The on-chain transaction info where the operation is going to be applied.
 }
 
 // Request to get the Node version info.
@@ -101,44 +101,44 @@ message GetNodeBuildInfoResponse {
     reserved 4; // buildTime
 
     string version = 1; // The actual version.
-    string scalaVersion = 2; // The Scala version used to compile the app.
-    string sbtVersion = 3; // The SBT version used to compile the app.
+    string scala_version = 2; // The Scala version used to compile the app.
+    string sbt_version = 3; // The SBT version used to compile the app.
 }
 
 // Request to get the credential's batch state.
 message GetBatchStateRequest {
-    string batchId = 1; // The batch ID.
+    string batch_id = 1; // The batch ID.
 }
 // Response with the credential's batch state.
 message GetBatchStateResponse {
-    string issuerDID = 1; // DID suffix used to sign the IssueCredentialBatch operation.
-    bytes merkleRoot = 2; // The Merkle root used for the IssueCredential operation.
+    string issuer_did = 1; // DID suffix used to sign the IssueCredentialBatch operation.
+    bytes merkle_root = 2; // The Merkle root used for the IssueCredential operation.
 
     // If present: underlying blockchain data that refers to the transaction that
     // contains the IssueCredential operation associated with the credential.
-    LedgerData publicationLedgerData = 3;
+    LedgerData publication_ledger_data = 3;
 
     // If present: underlying blockchain data that refers to the transaction that contains the RevokeCredential operation associated with the credential.
-    LedgerData revocationLedgerData = 4;
+    LedgerData revocation_ledger_data = 4;
 }
 
 // Request to get the credential's revocation time.
 message GetCredentialRevocationTimeRequest {
-    string batchId = 1; // The ID corresponding to the credential to query about.
-    bytes credentialHash = 2; // The hash of the credential to query about.
+    string batch_id = 1; // The ID corresponding to the credential to query about.
+    bytes credential_hash = 2; // The hash of the credential to query about.
 }
 // Response with the credential's revocation time.
 message GetCredentialRevocationTimeResponse {
-    LedgerData revocationLedgerData = 1; // If present, the ledger data when the credential was revoked.
+    LedgerData revocation_ledger_data = 1; // If present, the ledger data when the credential was revoked.
 }
 
 // Request to get the on-chain transaction status.
 message GetTransactionStatusRequest {
-    TransactionInfo transactionInfo = 1; // The on-chain transaction info.
+    TransactionInfo transaction_info = 1; // The on-chain transaction info.
 }
 // Response with the transaction status.
 message GetTransactionStatusResponse {
-    TransactionInfo transactionInfo = 1; // The on-chain transaction info.
+    TransactionInfo transaction_info = 1; // The on-chain transaction info.
     TransactionStatus status = 2; // Whether or not the transaction has been applied.
 }
 
@@ -149,7 +149,7 @@ message PublishAsABlockRequest {
 // Response with the transaction info and operations outputs.
 message PublishAsABlockResponse {
     // The on-chain transaction info where the block of operations is going to be attached to.
-    TransactionInfo transactionInfo = 1;
+    TransactionInfo transaction_info = 1;
     // The responses of every operation in the block, ordered the same as the operations sent in PublishAsABlockRequest.
     repeated OperationOutput outputs = 2;
 }

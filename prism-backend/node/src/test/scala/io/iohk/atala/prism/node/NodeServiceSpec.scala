@@ -378,7 +378,7 @@ class NodeServiceSpec
       doReturn(repositoryError).when(credentialBatchesRepository).getBatchState(validBatchId)
 
       val response = service.getBatchState(requestWithValidId)
-      response.issuerDID must be("")
+      response.issuerDid must be("")
       response.merkleRoot must be(empty)
       response.publicationLedgerData must be(empty)
     }
@@ -421,7 +421,7 @@ class NodeServiceSpec
       doReturn(repositoryResponse).when(credentialBatchesRepository).getBatchState(validBatchId)
 
       val response = service.getBatchState(requestWithValidId)
-      response.issuerDID must be(issuerDIDSuffix.value)
+      response.issuerDid must be(issuerDIDSuffix.value)
       response.merkleRoot.toByteArray.toVector must be(merkleRoot.hash.value)
       response.publicationLedgerData must be(Some(ledgerDataProto))
       response.revocationLedgerData must be(empty)
@@ -636,7 +636,7 @@ class NodeServiceSpec
 
       response.transactionInfo.value mustBe testTransactionInfoProto
       response.outputs.size mustBe (2)
-      response.outputs.head.getCreateDIDOutput.didSuffix mustBe expectedDIDSuffix
+      response.outputs.head.getCreateDidOutput.didSuffix mustBe expectedDIDSuffix
       response.outputs.last.getBatchOutput.batchId mustBe expectedBatchId
 
       verify(objectManagementService).publishAtalaOperation(createDIDOperation, issuanceOperation)
@@ -671,8 +671,8 @@ class NodeServiceSpec
 
       response.transactionInfo.value mustBe testTransactionInfoProto
       response.outputs.size mustBe (2)
-      response.outputs.head.getCreateDIDOutput.didSuffix mustBe expectedDIDSuffix
-      response.outputs.last.result mustBe OperationOutput.Result.UpdateDIDOutput(node_models.UpdateDIDOutput())
+      response.outputs.head.getCreateDidOutput.didSuffix mustBe expectedDIDSuffix
+      response.outputs.last.result mustBe OperationOutput.Result.UpdateDidOutput(node_models.UpdateDIDOutput())
 
       verify(objectManagementService).publishAtalaOperation(createDIDOperation, updateOperation)
       verifyNoMoreInteractions(objectManagementService)

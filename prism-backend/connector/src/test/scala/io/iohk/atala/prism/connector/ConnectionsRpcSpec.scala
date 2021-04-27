@@ -88,7 +88,7 @@ class ConnectionsRpcSpec extends ConnectorRpcSpecBase with MockitoSugar {
         val response = blockingStub.getConnectionTokenInfo(request)
         response.creatorName mustBe "Issuer"
         response.creatorLogo.size() must be > 0 // the issuer has a logo
-        response.creatorDID mustBe did.toString
+        response.creatorDid mustBe did.toString
       }
     }
 

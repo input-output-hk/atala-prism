@@ -163,7 +163,7 @@ object CompleteFlowTutorial {
         // Include the credential in a batch
         val (holderCredentialMerkleRoot, holderCredentialMerkleProofs) = CredentialBatches.batch(listOf(holderSignedCredential))
         val credentialBatchData = CredentialBatchData(
-            issuerDID = issuerDID.suffix.value, // This requires the suffix only, as the node stores only suffixes
+            issuerDid = issuerDID.suffix.value, // This requires the suffix only, as the node stores only suffixes
             merkleRoot = pbandk.ByteArr(holderCredentialMerkleRoot.hash.value.toByteArray())
         )
         val issueCredentialOperation = ProtoUtils.issueCredentialBatchOperation(credentialBatchData)

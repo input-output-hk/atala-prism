@@ -25,7 +25,7 @@ class ConnectionServiceSpec extends PostgresRepositorySpec[Task] with MockitoSug
       val token = connection1.token.token
       val participantDID = DID.buildPrismDID("did1")
       val connectionInfos =
-        Seq(ConnectionInfo(token = token, connectionId = connectionId.toString, participantDID = participantDID.value))
+        Seq(ConnectionInfo(token = token, connectionId = connectionId.toString, participantDid = participantDID.value))
 
       val connectorClientStub = new ConnectorClientServiceStub(connectionInfos = connectionInfos)
       val connectionService = new ConnectionService(database, connectorClientStub)

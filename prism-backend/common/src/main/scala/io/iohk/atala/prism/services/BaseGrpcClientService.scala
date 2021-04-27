@@ -197,7 +197,7 @@ object BaseGrpcClientService {
 
         val request = connector_api
           .RegisterDIDRequest()
-          .withCreateDIDOperation(signedAtalaOp)
+          .withCreateDidOperation(signedAtalaOp)
           .withLogo(ByteString.EMPTY)
           .withName("auto-generated-did")
           .withRole(connector_api.RegisterDIDRequest.Role.issuer)

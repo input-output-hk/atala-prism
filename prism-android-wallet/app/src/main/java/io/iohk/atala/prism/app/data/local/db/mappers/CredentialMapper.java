@@ -25,8 +25,8 @@ public class CredentialMapper {
 
     static public Boolean isACredentialMessage(AtalaMessage atalaMessage) {
         switch (atalaMessage.getMessageCase()) {
-            case ISSUERSENTCREDENTIAL:
-            case PLAINCREDENTIAL:
+            case ISSUER_SENT_CREDENTIAL:
+            case PLAIN_CREDENTIAL:
                 return true;
             default:
                 return false;
@@ -36,7 +36,7 @@ public class CredentialMapper {
     static public io.iohk.atala.prism.app.data.local.db.model.CredentialWithEncodedCredential mapToCredential(ReceivedMessage receivedMessage, String credentialId, String connectionId, Long received, Contact issuer) throws InvalidProtocolBufferException {
         AtalaMessage atalaMessage = AtalaMessage.parseFrom(receivedMessage.getMessage());
         switch (atalaMessage.getMessageCase()) {
-            case PLAINCREDENTIAL:
+            case PLAIN_CREDENTIAL:
                 PlainTextCredential plainTextCredential = atalaMessage.getPlainCredential();
                 String encodedCredential = plainTextCredential.getEncodedCredential();
                 PlainTextCredentialJson plainTextCredentialJson = parsePlainTextCredential(encodedCredential);
@@ -52,7 +52,7 @@ public class CredentialMapper {
                 encodedCredentialObj.credentialEncoded = receivedMessage.getMessage();
                 encodedCredentialObj.credentialId = credentialId;
                 return new CredentialWithEncodedCredential(credentialModel, encodedCredentialObj);
-            case ISSUERSENTCREDENTIAL:
+            case ISSUER_SENT_CREDENTIAL:
                 // support for int demo credentials
                 return mapToCredential(atalaMessage.getIssuerSentCredential(), credentialId, connectionId, received);
             default:

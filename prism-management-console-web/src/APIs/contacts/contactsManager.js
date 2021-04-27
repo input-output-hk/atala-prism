@@ -12,7 +12,7 @@ import { getAditionalTimeout } from '../../helpers/genericHelpers';
 async function generateConnectionToken(contactId) {
   Logger.info('Generating connection token for:', contactId);
   const req = new GenerateConnectionTokenForContactRequest();
-  req.setContactid(contactId);
+  req.setContactId(contactId);
 
   const { metadata, sessionError } = await this.auth.getMetadata(req, REQUEST_AUTH_TIMEOUT_MS);
   if (sessionError) return '';
@@ -27,9 +27,9 @@ async function generateConnectionToken(contactId) {
 async function createContact(groupName, jsonData, externalid) {
   Logger.info(`Creating contact with externalId = ${externalid} for group ${groupName}`, jsonData);
   const req = new CreateContactRequest();
-  if (groupName) req.setGroupname(groupName);
-  req.setJsondata(JSON.stringify(jsonData));
-  req.setExternalid(externalid);
+  if (groupName) req.setGroupName(groupName);
+  req.setJsonData(JSON.stringify(jsonData));
+  req.setExternalId(externalid);
 
   const { metadata, sessionError } = await this.auth.getMetadata(req);
   if (sessionError) return {};
@@ -44,8 +44,8 @@ async function getContacts(lastSeenContactId, limit = CONTACT_PAGE_SIZE, groupNa
   Logger.info(`Getting up to ${limit} contacts from ${lastSeenContactId} for group ${groupName}`);
   const req = new GetContactsRequest();
   req.setLimit(limit);
-  req.setLastseencontactid(lastSeenContactId);
-  if (groupName) req.setGroupname(groupName);
+  req.setLastSeenContactId(lastSeenContactId);
+  if (groupName) req.setGroupName(groupName);
 
   const timeout = REQUEST_AUTH_TIMEOUT_MS + getAditionalTimeout(limit);
 
@@ -62,7 +62,7 @@ async function getContacts(lastSeenContactId, limit = CONTACT_PAGE_SIZE, groupNa
 async function getContact(contactId) {
   Logger.info('Getting contact:', contactId);
   const req = new GetContactRequest();
-  req.setContactid(contactId);
+  req.setContactId(contactId);
 
   const { metadata, sessionError } = await this.auth.getMetadata(req, REQUEST_AUTH_TIMEOUT_MS);
   if (sessionError) return {};

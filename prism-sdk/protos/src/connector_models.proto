@@ -21,7 +21,7 @@ message ConnectorPublicKey {
 }
 // Public key ECPoint (uncompressed form).
 message EncodedPublicKey {
-    bytes publicKey = 1; // The bytes representing the ECPoint encoded without compression.
+    bytes public_key = 1; // The bytes representing the ECPoint encoded without compression.
 }
 
 
@@ -31,10 +31,10 @@ message EncodedPublicKey {
 // A connection between two parties authorizing the use of the connector as a messaging channel.
 message Connection {
     // The connection token used to initialize the connection with the wallet.
-    string connectionToken = 1;
+    string connection_token = 1;
 
     // The connector-generated connection ID.
-    string connectionId = 2;
+    string connection_id = 2;
 }
 
 // Information about the connection; both sides see the same connectionId and creation time, but each sees different participant info.
@@ -44,11 +44,11 @@ message ConnectionInfo {
     reserved 3; // Removed participantInfo field
     reserved "participantInfo";
 
-    string connectionId = 1; // The connection identifier.
+    string connection_id = 1; // The connection identifier.
     string token = 4; // The token used to generate the connection.
-    string participantName = 5; // Participant's name.
-    bytes participantLogo = 6; // Participant's logo.
-    string participantDID = 7; // Participant's DID.
+    string participant_name = 5; // Participant's name.
+    bytes participant_logo = 6; // Participant's logo.
+    string participant_did = 7; // Participant's DID.
     google.protobuf.Timestamp created = 8; // Timestamp of instantiation.
 }
 
@@ -57,7 +57,7 @@ message ConnectionInfo {
 // TODO: Remove this when unpublished DIDs are integrated on the apps.
 message ConnectionKey {
   // Key identifier; it can be empty if the participant uses only one key.
-  string keyId = 1;
+  string key_id = 1;
 
   // The actual public key.
   EncodedPublicKey key = 2;
@@ -73,19 +73,19 @@ message ReceivedMessage {
     reserved "received_deprecated";
 
     string id = 1; // The unique ID for this message.
-    string connectionId = 3; // Connection where the message has been received.
+    string connection_id = 3; // Connection where the message has been received.
     bytes message = 4; // Raw message, which needs to be parsed to get something meaningful. AtalaMessage is the common choice.
     google.protobuf.Timestamp received = 5; // The timestamp when the connector received the message.
 }
 
 message ContactConnection {
-    string connectionId = 1;
-    string connectionToken = 2;
-    ContactConnectionStatus connectionStatus = 3;
+    string connection_id = 1;
+    string connection_token = 2;
+    ContactConnectionStatus connection_status = 3;
 }
 
 message MessageToSendByConnectionToken {
-    string connectionToken = 1; // The connection token used to accept the connection.
+    string connection_token = 1; // The connection token used to accept the connection.
     AtalaMessage message = 2; // Raw message.
     // Optional id of a message. Must be valid UUID if provided. Random id will be generated
     // if not provided. Error will be returned when message with the same id already exists.

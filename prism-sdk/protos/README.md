@@ -85,8 +85,8 @@ message StoreDataRequest {
 Example:
 ```proto
 message StoreDataRequest {
-    string externalId = 1; // Client-generated UUID; should be unique for semantically different purposes.
-    bytes payloadHash = 2; // SHA256 hash of the payload content (must have 32 bytes).
+    string external_id = 1; // Client-generated UUID; should be unique for semantically different purposes.
+    bytes payload_hash = 2; // SHA256 hash of the payload content (must have 32 bytes).
     bytes payload = 3; // The content of the payload encrypted by the user.
 }
 ```
@@ -120,12 +120,15 @@ message TimestampInfo {
     reserved 1; // Removed blockTimestamp_deprecated field
     reserved "blockTimestamp_deprecated";
 
-    uint32 blockSequenceNumber = 2; // The transaction index inside the underlying block.
-    uint32 operationSequenceNumber = 3; // The operation index inside the AtalaBlock.
-    google.protobuf.Timestamp blockTimestamp = 4; // The timestamp provided from the underlying blockchain.
+    uint32 block_sequence_number = 2; // The transaction index inside the underlying block.
+    uint32 operation_sequence_number = 3; // The operation index inside the AtalaBlock.
+    google.protobuf.Timestamp block_timestamp = 4; // The timestamp provided from the underlying blockchain.
 }
 ```
 
 ## Notes
 - It looks like we need to keep all files on the same directory and they should belong to the same package, otherwise, the compilation fails.
 - `protoc` seems to fail when compiling to JavaScript when there are messages/methods with the same name, even if they are inside a namespace, for example, `service a {}` and `service b {}` can't have `rpc doGet ...` because the compiler fails.
+
+## Naming and formatting
+Please follow [the google style guide](https://developers.google.com/protocol-buffers/docs/style) for proto files.

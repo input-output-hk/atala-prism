@@ -46,7 +46,7 @@ object IssueCredentialBatchOperationSpec {
       value = node_models.IssueCredentialBatchOperation(
         credentialBatchData = Some(
           node_models.CredentialBatchData(
-            issuerDID = issuerDIDSuffix.value,
+            issuerDid = issuerDIDSuffix.value,
             merkleRoot = ByteString.copyFrom(mockMerkleRoot.hash.value.toArray)
           )
         )
@@ -68,7 +68,7 @@ class IssueCredentialBatchOperationSpec extends AtalaWithPostgresSpec {
 
     "return error when issuerDID is not provided / empty" in {
       val invalidOperation = exampleOperation
-        .update(_.issueCredentialBatch.credentialBatchData.issuerDID := "")
+        .update(_.issueCredentialBatch.credentialBatchData.issuerDid := "")
 
       inside(IssueCredentialBatchOperation.parse(invalidOperation, dummyLedgerData)) {
         case Left(ValidationError.InvalidValue(path, value, _)) =>
@@ -79,7 +79,7 @@ class IssueCredentialBatchOperationSpec extends AtalaWithPostgresSpec {
 
     "return error when issuerDID doesn't have valid form" in {
       val invalidOperation = exampleOperation
-        .update(_.issueCredentialBatch.credentialBatchData.issuerDID := "my best friend")
+        .update(_.issueCredentialBatch.credentialBatchData.issuerDid := "my best friend")
 
       inside(IssueCredentialBatchOperation.parse(invalidOperation, dummyLedgerData)) {
         case Left(ValidationError.InvalidValue(path, value, _)) =>

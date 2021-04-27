@@ -167,7 +167,7 @@ class CardanoFeeEstimator(walletId: WalletId, paymentAddress: Address, cardanoWa
     val issueCredentialOp = node_models.IssueCredentialBatchOperation(
       credentialBatchData = Some(
         node_models.CredentialBatchData(
-          issuerDID = issuerDid.suffix,
+          issuerDid = issuerDid.suffix,
           merkleRoot = ByteString.copyFrom(merkleRoot.hash.value.toArray)
         )
       )

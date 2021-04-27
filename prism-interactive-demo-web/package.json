@@ -44,8 +44,11 @@
     "prettier": "1.16.1"
   },
   "scripts": {
+    "prestart": "./scripts/compile-protos.sh",
     "start": "./scripts/copyEnvVarsToWindow.sh && cp env-config.js ./public/ && react-scripts start",
+    "prebuild": "./scripts/compile-protos.sh",
     "build": "react-scripts build",
+    "pretest": "./scripts/compile-protos.sh",
     "test": "react-scripts test",
     "eject": "react-scripts eject"
   },

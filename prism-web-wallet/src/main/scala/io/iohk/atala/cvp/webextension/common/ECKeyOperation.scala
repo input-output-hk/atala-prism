@@ -62,7 +62,7 @@ object ECKeyOperation {
     val (merkleRoot, proofs) = CredentialBatches.batch(signedCredentials)
     val merkleRootProto = ByteString.copyFrom(merkleRoot.hash.value.toArray)
     // This requires the suffix only, as the node stores only suffixes
-    val credentialBatchData = CredentialBatchData(issuerDID = canonicalDID.suffix.value, merkleRoot = merkleRootProto)
+    val credentialBatchData = CredentialBatchData(issuerDid = canonicalDID.suffix.value, merkleRoot = merkleRootProto)
     val issueCredentialOperation = IssueCredentialBatchOperation(Some(credentialBatchData))
     val credentialsAndProofs =
       signedCredentials.map(_.canonicalForm).zip(proofs)

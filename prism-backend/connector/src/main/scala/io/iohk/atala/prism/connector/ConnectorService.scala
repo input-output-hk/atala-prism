@@ -101,7 +101,7 @@ class ConnectorService(
           connector_api.GetConnectionTokenInfoResponse(
             creatorName = participantInfo.name,
             creatorLogo = ByteString.copyFrom(participantInfo.logo.map(_.bytes).getOrElse(Vector.empty).toArray),
-            creatorDID = participantInfo.did.map(_.value).getOrElse("")
+            creatorDid = participantInfo.did.map(_.value).getOrElse("")
           )
         }
     }

@@ -553,7 +553,7 @@ class CredentialsServiceImplSpec extends ManagementConsoleRpcSpecBase with DIDGe
               node_models.IssueCredentialBatchOperation(
                 credentialBatchData = Some(
                   node_models.CredentialBatchData(
-                    issuerDID = didSuffix.value,
+                    issuerDid = didSuffix.value,
                     merkleRoot = ByteString.copyFrom(credentialHash.value.toArray)
                   )
                 )

@@ -54,7 +54,7 @@ object E2ETestUtils {
     )
 
     RegisterDIDRequest()
-      .withCreateDIDOperation(signedAtalaOperation)
+      .withCreateDidOperation(signedAtalaOperation)
       .withLogo(ByteString.EMPTY)
       .withName("mirror")
       .withRole(RegisterDIDRequest.Role.issuer)

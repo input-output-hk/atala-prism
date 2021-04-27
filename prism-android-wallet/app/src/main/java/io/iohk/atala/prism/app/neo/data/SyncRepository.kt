@@ -85,7 +85,7 @@ class SyncRepository(
                     val credential = CredentialMapper.mapToCredential(receivedMessage, receivedMessage.id, receivedMessage.connectionId, receivedMessage.received.toMilliseconds(), contact)
                     contact.lastMessageId = receivedMessage.id
                     syncLocalDataSource.updateContact(contact, listOf(credential))
-                } else if (atalaMessage.messageCase == AtalaMessage.MessageCase.PROOFREQUEST) {
+                } else if (atalaMessage.messageCase == AtalaMessage.MessageCase.PROOF_REQUEST) {
                     mapProofRequest(atalaMessage.proofRequest, receivedMessage.id, contact.connectionId)?.let {
                         syncLocalDataSource.insertProofRequest(it.first, it.second)
                     }

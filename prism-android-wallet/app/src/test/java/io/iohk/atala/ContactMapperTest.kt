@@ -14,7 +14,7 @@ class ContactMapperTest {
         val connection = ConnectionInfo.newBuilder()
             .setConnectionId("e7a4309e-cce4-4d4f-abac-b12be6fccbd0")
             .setToken("KeBg_oKlmsLqDBEkxfMWYQ==")
-            .setParticipantDID("d54850e563994ecf48bff7e9fd51b9c4279af467d9b17fe01336623b178838d9")
+            .setParticipantDid("d54850e563994ecf48bff7e9fd51b9c4279af467d9b17fe01336623b178838d9")
             .setParticipantName("Contact Name")
             .setParticipantLogo(ByteString.copyFrom("verifierLogoImageData", Charset.defaultCharset()))
             .build()

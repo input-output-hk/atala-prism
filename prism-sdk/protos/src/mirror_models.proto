@@ -6,9 +6,9 @@ option java_package = "io.iohk.atala.mirror.protos";
 package io.iohk.atala.mirror.protos;
 
 message CredentialData {
-  string rawCredential = 1;
-  oneof issuersDidOption {
-    string issuersDid = 2;
+  string raw_credential = 1;
+  oneof issuers_did_option {
+    string issuers_did = 2;
   }
   string status = 3;
 }

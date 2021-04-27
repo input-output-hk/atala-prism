@@ -24,7 +24,7 @@ class RegistrationRpcSpec extends ConnectorRpcSpecBase {
       .RegisterDIDRequest(name = name)
       .withLogo(ByteString.copyFrom(logo))
       .withRole(connector_api.RegisterDIDRequest.Role.issuer)
-      .withCreateDIDOperation(node_models.SignedAtalaOperation())
+      .withCreateDidOperation(node_models.SignedAtalaOperation())
   }
 
   "registerDID" should {

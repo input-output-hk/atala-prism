@@ -30,7 +30,7 @@ async function getCredentials(limit = CREDENTIAL_PAGE_SIZE, lastSeenCredentialId
 
   const getCredentialsRequest = new GetGenericCredentialsRequest();
   getCredentialsRequest.setLimit(limit);
-  getCredentialsRequest.setLastseencredentialid(lastSeenCredentialId);
+  getCredentialsRequest.setLastSeenCredentialId(lastSeenCredentialId);
 
   const timeout = REQUEST_AUTH_TIMEOUT_MS + getAditionalTimeout(limit);
 
@@ -50,9 +50,9 @@ async function createBatchOfCredentials(credentialsData) {
   const credentialStudentsPromises = credentialsData.map(({ externalid, contactid, ...json }) => {
     const createCredentialRequest = new CreateGenericCredentialRequest();
 
-    createCredentialRequest.setContactid(contactid);
-    createCredentialRequest.setExternalid(externalid);
-    createCredentialRequest.setCredentialdata(JSON.stringify(json));
+    createCredentialRequest.setContactId(contactid);
+    createCredentialRequest.setExternalId(externalid);
+    createCredentialRequest.setCredentialData(JSON.stringify(json));
 
     return this.auth
       .getMetadata(createCredentialRequest)
@@ -84,10 +84,10 @@ function getCredentialBinary(credential) {
   const atalaMessage = new AtalaMessage();
   const plainTextCredential = new PlainTextCredential();
 
-  plainTextCredential.setEncodedcredential(encodedsignedcredential);
-  plainTextCredential.setEncodedmerkleproof(batchinclusionproof);
+  plainTextCredential.setEncodedCredential(encodedsignedcredential);
+  plainTextCredential.setEncodedMerkleProof(batchinclusionproof);
 
-  atalaMessage.setPlaincredential(plainTextCredential);
+  atalaMessage.setPlainCredential(plainTextCredential);
   return atalaMessage.serializeBinary();
 }
 
@@ -98,13 +98,13 @@ function getCredentialTypes() {
 async function getContactCredentials(contactId) {
   Logger.info('Getting credentials for contact:', contactId);
   const req = new GetContactCredentialsRequest();
-  req.setContactid(contactId);
+  req.setContactId(contactId);
 
   const { metadata, sessionError } = await this.auth.getMetadata(req, REQUEST_AUTH_TIMEOUT_MS);
   if (sessionError) return [];
 
   const res = await this.client.getContactCredentials(req, metadata);
-  const credentialsList = res.getGenericcredentialsList().map(mapCredential);
+  const credentialsList = res.getGenericCredentialsList().map(mapCredential);
   Logger.info('Got credentials:', credentialsList);
 
   return credentialsList;
@@ -112,7 +112,7 @@ async function getContactCredentials(contactId) {
 
 async function markAsSent(credentialid) {
   const markCredentialRequest = new ShareCredentialRequest();
-  markCredentialRequest.setCmanagercredentialid(credentialid);
+  markCredentialRequest.setCmanagerCredentialId(credentialid);
 
   const { metadata, sessionError } = await this.auth.getMetadata(
     markCredentialRequest,
@@ -127,13 +127,13 @@ async function markAsSent(credentialid) {
 
 async function getBlockchainData(credential) {
   const getBlockchainDataRequest = new GetBlockchainDataRequest();
-  getBlockchainDataRequest.setEncodedsignedcredential(credential);
+  getBlockchainDataRequest.setEncodedSignedCredential(credential);
 
   const { metadata, sessionError } = await this.auth.getMetadata(getBlockchainDataRequest);
   if (sessionError) return {};
 
   const res = await this.client.getBlockchainData(getBlockchainDataRequest, metadata);
-  const issuanceProof = res.getIssuanceproof()?.toObject();
+  const issuanceProof = res.getIssuanceProof()?.toObject();
   Logger.info('Got issuance proof:', issuanceProof);
   return issuanceProof;
 }

@@ -6,7 +6,7 @@ import { BROWSER_WALLET_INIT_DEFAULT_TIMEOUT_MS } from '../../helpers/constants'
 async function getConnectionsPaginated(lastSeenConnectionId, limit) {
   const connectionsPaginatedRequest = new GetConnectionsPaginatedRequest();
 
-  connectionsPaginatedRequest.setLastseenconnectionid(lastSeenConnectionId);
+  connectionsPaginatedRequest.setLastSeenConnectionId(lastSeenConnectionId);
   connectionsPaginatedRequest.setLimit(limit);
 
   const { metadata, sessionError } = await this.auth.getMetadata(
@@ -27,7 +27,7 @@ async function getConnectionsPaginated(lastSeenConnectionId, limit) {
 async function sendCredential(message, connectionId) {
   const sendMessageRequest = new SendMessageRequest();
 
-  sendMessageRequest.setConnectionid(connectionId);
+  sendMessageRequest.setConnectionId(connectionId);
   sendMessageRequest.setMessage(message);
 
   const { metadata, sessionError } = await this.auth.getMetadata(sendMessageRequest);

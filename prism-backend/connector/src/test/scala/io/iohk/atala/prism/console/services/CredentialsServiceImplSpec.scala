@@ -664,7 +664,7 @@ class CredentialsServiceImplSpec extends RpcSpecBase with MockitoSugar with Rese
             node_models.IssueCredentialBatchOperation(
               credentialBatchData = Some(
                 node_models.CredentialBatchData(
-                  issuerDID = didSuffix.value,
+                  issuerDid = didSuffix.value,
                   merkleRoot = ByteString.copyFrom(credentialHash.value.toArray)
                 )
               )

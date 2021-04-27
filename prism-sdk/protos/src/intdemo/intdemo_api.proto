@@ -34,24 +34,24 @@ service InsuranceService {
 }
 
 message GetSubjectStatusRequest {
-    string connectionToken = 1;
+    string connection_token = 1;
 }
 
 message GetSubjectStatusResponse {
-    SubjectStatus subjectStatus = 1;
+    SubjectStatus subject_status = 1;
 }
 
 message GetConnectionTokenRequest {
 }
 
 message GetConnectionTokenResponse {
-    string connectionToken = 1;
+    string connection_token = 1;
 }
 
 message SetPersonalDataRequest {
-    string connectionToken = 1;
-    string firstName = 2;
-    Date dateOfBirth = 3;
+    string connection_token = 1;
+    string first_name = 2;
+    Date date_of_birth = 3;
 }
 
 message SetPersonalDataResponse {}

@@ -10,7 +10,7 @@ public class ContactMapper {
         Contact contact = new Contact();
         contact.connectionId = connectionInfo.getConnectionId();
         contact.dateCreated = TimestampExtensionsKt.toMilliseconds(connectionInfo.getCreated());
-        contact.did = connectionInfo.getParticipantDID();
+        contact.did = connectionInfo.getParticipantDid();
         contact.name = connectionInfo.getParticipantName();
         contact.logo = connectionInfo.getParticipantLogo().toByteArray();
         contact.token = connectionInfo.getToken();

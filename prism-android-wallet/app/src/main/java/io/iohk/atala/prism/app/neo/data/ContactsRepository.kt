@@ -37,9 +37,9 @@ class ContactsRepository(
         val connectionInfo = remoteDataSource.getConnectionTokenInfo(token)
         val allContacts = contactsLocalDataSource.getAllContacts()
         val found = allContacts.any { contact: Contact ->
-            contact.did == connectionInfo.creatorDID
+            contact.did == connectionInfo.creatorDid
         }
-        return ParticipantInfoResponse(connectionInfo.creatorDID, connectionInfo.creatorName, connectionInfo.creatorLogo.toByteArray(), token, found)
+        return ParticipantInfoResponse(connectionInfo.creatorDid, connectionInfo.creatorName, connectionInfo.creatorLogo.toByteArray(), token, found)
     }
 
     suspend fun acceptConnection(token: String) {

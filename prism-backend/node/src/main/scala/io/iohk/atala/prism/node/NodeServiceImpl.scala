@@ -180,7 +180,7 @@ class NodeServiceImpl(
         val response = maybeState.fold(GetBatchStateResponse()) { state =>
           val revocationLedgerData = state.revokedOn.map(ProtoCodecs.toLedgerData)
           val responseBase = GetBatchStateResponse()
-            .withIssuerDID(state.issuerDIDSuffix.value)
+            .withIssuerDid(state.issuerDIDSuffix.value)
             .withMerkleRoot(ByteString.copyFrom(state.merkleRoot.hash.value.toArray))
             .withPublicationLedgerData(ProtoCodecs.toLedgerData(state.issuedOn))
           revocationLedgerData.fold(responseBase)(responseBase.withRevocationLedgerData)
@@ -383,7 +383,7 @@ object NodeServiceImpl {
       case Operation.CreateDid(_) =>
         CreateDIDOperation.parseWithMockedLedgerData(operation).map { parsedOp =>
           OperationOutput(
-            OperationOutput.Result.CreateDIDOutput(
+            OperationOutput.Result.CreateDidOutput(
               node_models.CreateDIDOutput(parsedOp.id.value)
             )
           )
@@ -393,7 +393,7 @@ object NodeServiceImpl {
           .parseWithMockedLedgerData(operation)
           .map { _ =>
             OperationOutput(
-              OperationOutput.Result.UpdateDIDOutput(
+              OperationOutput.Result.UpdateDidOutput(
                 node_models.UpdateDIDOutput()
               )
             )

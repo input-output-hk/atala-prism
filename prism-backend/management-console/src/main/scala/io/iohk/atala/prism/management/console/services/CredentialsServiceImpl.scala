@@ -97,7 +97,7 @@ class CredentialsServiceImpl(
         opHash = SHA256Digest.compute(atalaOperation.toByteArray)
         issueCredentialBatch <- atalaOperation.operation.issueCredentialBatch
         credentialBatchData <- issueCredentialBatch.credentialBatchData
-        did = DID.buildPrismDID(credentialBatchData.issuerDID)
+        did = DID.buildPrismDID(credentialBatchData.issuerDid)
         merkleRoot = MerkleRoot(SHA256Digest.fromVectorUnsafe(credentialBatchData.merkleRoot.toByteArray.toVector))
       } yield (merkleRoot, did, opHash)
       maybePair.getOrElse(throw new RuntimeException("Failed to extract content hash and issuer DID"))

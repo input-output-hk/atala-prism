@@ -37,7 +37,7 @@ class ConnectorClientService(url: String) {
   ): Future[RegisterDIDResponse] = {
     val request = connector_api
       .RegisterDIDRequest()
-      .withCreateDIDOperation(operation)
+      .withCreateDidOperation(operation)
       .withName(name)
       .withLogo(ByteString.copyFrom(logo))
       .withRole(RoleHepler.toConnectorApiRole(role))

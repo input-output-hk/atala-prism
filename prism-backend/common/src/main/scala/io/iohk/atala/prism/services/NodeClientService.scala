@@ -40,7 +40,7 @@ class NodeClientServiceImpl(node: NodeServiceGrpc.NodeServiceStub, authConfig: D
     Task
       .fromFuture(node.getBatchState(GetBatchStateRequest(credentialBatchId.id)))
       .map { response =>
-        if (response.issuerDID.nonEmpty) Some(response)
+        if (response.issuerDid.nonEmpty) Some(response)
         else None
       }
 
@@ -148,7 +148,7 @@ object NodeClientService {
             .IssueCredentialBatchOperation(
               credentialBatchData = Some(
                 node_models.CredentialBatchData(
-                  issuerDID = issuerDID.suffix.value,
+                  issuerDid = issuerDID.suffix.value,
                   merkleRoot = toByteString(merkleRoot.hash)
                 )
               )

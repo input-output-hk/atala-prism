@@ -102,7 +102,7 @@ package object grpc {
   implicit val registerDIDRequestConverter: ProtoConverter[connector_api.RegisterDIDRequest, RegisterDIDRequest] =
     (in: connector_api.RegisterDIDRequest) =>
       for {
-        createDIDOperation <- in.createDIDOperation.fold[Try[SignedAtalaOperation]](
+        createDIDOperation <- in.createDidOperation.fold[Try[SignedAtalaOperation]](
           Failure(new IllegalArgumentException("The createDIDOperation is mandatory"))
         )(Success(_))
         tpe <- in.role match {

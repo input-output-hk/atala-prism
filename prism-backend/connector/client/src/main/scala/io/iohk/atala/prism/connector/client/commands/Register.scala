@@ -53,7 +53,7 @@ case class Register(
 
     val request = connector_api
       .RegisterDIDRequest()
-      .withCreateDIDOperation(signedAtalaOp)
+      .withCreateDidOperation(signedAtalaOp)
       .withLogo(ByteString.EMPTY)
       .withName("iohk-test")
       .withRole(connector_api.RegisterDIDRequest.Role.issuer)

@@ -672,7 +672,7 @@ package object grpc {
   implicit val createCredentialBulkConverter: ProtoConverter[CreateGenericCredentialBulkRequest, CreateCredentialBulk] =
     (request: CreateGenericCredentialBulkRequest) => {
       for {
-        json <- io.circe.parser.parse(request.credentialsJSON).toTry
+        json <- io.circe.parser.parse(request.credentialsJson).toTry
         draftsJson <- JsonValidator.extractField[List[Json]](json)("drafts")
         drafts <- draftsJson.map { draftJson =>
           for {

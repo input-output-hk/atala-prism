@@ -103,7 +103,7 @@ trait ServicesFixtures {
     val credentialBatchId: CredentialBatchId = CredentialBatchId.fromBatchData(issuerDID.suffix, root)
     val getBatchStateResponse: GetBatchStateResponse =
       GetBatchStateResponse(
-        issuerDID = issuerDID.value,
+        issuerDid = issuerDID.value,
         merkleRoot = NodeClientService.toByteString(root.hash),
         publicationLedgerData = Some(
           LedgerData(

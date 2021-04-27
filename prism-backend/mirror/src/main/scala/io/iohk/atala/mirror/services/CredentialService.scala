@@ -71,7 +71,7 @@ class CredentialService(
               token = ConnectionToken(connectionInfo.token),
               id = ConnectionId.from(connectionInfo.connectionId).toOption,
               state = ConnectionState.Connected,
-              holderDID = DID.fromString(connectionInfo.participantDID),
+              holderDID = DID.fromString(connectionInfo.participantDid),
               payIdName = None
             )
 
