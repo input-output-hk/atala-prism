@@ -42,6 +42,8 @@ import io.iohk.atala.prism.protos.credential_models.PayIdNameTakenMessage
 import io.iohk.atala.prism.protos.credential_models.AddressRegisteredMessage
 import io.iohk.atala.prism.protos.credential_models.PaymentInformationSaved
 import io.iohk.atala.prism.protos.credential_models.CheckPayIdNameAvailabilityResponse
+import io.iohk.atala.prism.protos.credential_models.GetPayIdNameMessage
+import io.iohk.atala.prism.protos.credential_models.GetPayIdNameResponse
 
 import scala.util.Try
 import scala.util.matching.Regex
@@ -436,6 +438,37 @@ class CardanoAddressInfoService(tx: Transactor[Task], httpConfig: HttpConfig, no
         .withMirrorMessage(
           MirrorMessage().withCheckPayIdNameAvailabilityResponse(CheckPayIdNameAvailabilityResponse(available))
         )
+    } yield Some(response)).value
+  }
+
+  val getPayIdNameMessageProcessor: MessageProcessor = { receivedMessage =>
+    parseGetPayIdNameMessage(receivedMessage)
+      .as(processGetPayIdNameMessage(receivedMessage))
+  }
+
+  private[services] def parseGetPayIdNameMessage(
+      message: ReceivedMessage
+  ): Option[GetPayIdNameMessage] = {
+    Try(AtalaMessage.parseFrom(message.message.toByteArray)).toOption
+      .flatMap(_.message.mirrorMessage)
+      .flatMap(_.message.getPayIdNameMessage)
+  }
+
+  def processGetPayIdNameMessage(receivedMessage: ReceivedMessage): MessageProcessorResult = {
+    (for {
+      connection <- EitherT(
+        ConnectionUtils
+          .fromReceivedMessage(receivedMessage, ConnectionDao.findByConnectionId)
+          .logSQLErrors("getting connection by received message", logger)
+          .transact(tx)
+      )
+
+      response = AtalaMessage()
+        .withMirrorMessage(
+          MirrorMessage()
+            .withGetPayIdNameResponse(GetPayIdNameResponse(payIdName = connection.payIdName.map(_.name).getOrElse("")))
+        )
+
     } yield Some(response)).value
   }
 }

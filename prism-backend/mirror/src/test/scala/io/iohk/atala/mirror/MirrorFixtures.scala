@@ -305,6 +305,14 @@ trait MirrorFixtures extends ServicesFixtures {
         )
         .toByteString
 
+    val getPayIdNameToAtalaMessage: ByteString =
+      AtalaMessage()
+        .withMirrorMessage(
+          MirrorMessage()
+            .withGetPayIdNameMessage(credential_models.GetPayIdNameMessage())
+        )
+        .toByteString
+
     def makeReceivedMessage(
         id: String = "id1",
         received: Option[Timestamp] = Timestamp(LocalDateTime.of(2020, 6, 12, 0, 0).toEpochSecond(ZoneOffset.UTC)).some,

@@ -335,6 +335,33 @@ class CardanoAddressInfoServiceSpec extends PostgresRepositorySpec[Task] with Mo
     }
   }
 
+  "getPayIdNameMessageProcessor" should {
+    "return payIdName when payIdName is registered for connection" in new CardanoAddressInfoServiceFixtures {
+      val message =
+        makeReceivedMessage(connectionId = connectionId2.uuid.toString, message = getPayIdNameToAtalaMessage)
+
+      val result = (for {
+        _ <- ConnectionFixtures.insertAll(database)
+        result <- getPayIdNameMessageProcessor(message).get
+      } yield result).runSyncUnsafe()
+
+      result.toOption.flatten.map(_.getMirrorMessage.getGetPayIdNameResponse.payIdName) mustBe Some(
+        connectionPayIdName2.name
+      )
+    }
+
+    "return empty string when payIdName is not registered for connection" in new CardanoAddressInfoServiceFixtures {
+      val message = makeReceivedMessage(message = getPayIdNameToAtalaMessage)
+
+      val result = (for {
+        _ <- ConnectionFixtures.insertAll(database)
+        result <- getPayIdNameMessageProcessor(message).get
+      } yield result).runSyncUnsafe()
+
+      result.toOption.flatten.map(_.getMirrorMessage.getGetPayIdNameResponse.payIdName) mustBe Some("")
+    }
+  }
+
   trait CardanoAddressInfoServiceFixtures {
     val cardanoAddressInfoService =
       new CardanoAddressInfoService(database, mirrorConfig.httpConfig, defaultNodeClientStub)
@@ -343,5 +370,6 @@ class CardanoAddressInfoServiceSpec extends PostgresRepositorySpec[Task] with Mo
     val payIdNameRegistrationMessageProcessor = cardanoAddressInfoService.payIdNameRegistrationMessageProcessor
     val checkPayIdNameAvailabilityMessageProcessor =
       cardanoAddressInfoService.checkPayIdNameAvailabilityMessageProcessor
+    val getPayIdNameMessageProcessor = cardanoAddressInfoService.getPayIdNameMessageProcessor
   }
 }
