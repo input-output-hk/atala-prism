@@ -44,6 +44,25 @@ sbt "node/run"
 ```
 
 
+### Testnet
+The node can run against the Cardano Testnet by providing these environment variables before running it:
+
+```bash
+export NODE_CARDANO_DB_SYNC_HOST="credentials-database-test.co3l80tftzq2.us-east-2.rds.amazonaws.com"
+export NODE_CARDANO_DB_SYNC_DATABASE="prism-test-cardano"
+export NODE_CARDANO_DB_SYNC_USERNAME="prism-test-cardano"
+export NODE_CARDANO_DB_SYNC_PASSWORD="ask-for-it"
+export NODE_CARDANO_WALLET_API_HOST="3.21.97.253"
+export NODE_CARDANO_WALLET_API_PORT="8090"
+
+export NODE_CARDANO_PAYMENT_ADDRESS= "addr1qrlh7p9th5c9ps938ry05vq96j92lzuhqr29v46caydf2wzkvlatzplcfr8afde6wsr6weskqr8k3u80e957ecmkvkhqe4n2hn"
+export NODE_CARDANO_WALLET_ID="b8b1d9cba6582a2730a09ea704e84712dc6c1167"
+export NODE_CARDANO_WALLET_PASSPHRASE="ask-for-it"
+
+export NODE_CARDANO_CONFIRMATION_BLOCKS="1"
+export NODE_LEDGER="cardano"
+```
+
 ## IDE / Editor support
 
 If you intend to work on scala code, you should set up build server

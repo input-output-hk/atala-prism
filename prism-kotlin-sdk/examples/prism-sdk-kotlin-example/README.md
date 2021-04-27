@@ -16,3 +16,10 @@ Use the command line to try the example:
 - Run: `./gradlew run`
 
 An alternative is to open [Main.kt](src/main/kotlin/io/iohk/atala/prism/example/Main.kt) with IntelliJ and run it there.
+
+### Cardano Testnet
+
+While the examples can run with the Cardano Testnet, there are some details to be aware of:
+- Some examples expect the transactions to be confirmed instantaneously, sleeping after publishing operations could help.
+- You will likely benefit from syncing only a few Cardano blocks, which can be done by picking the latest block number from the Testnet, and set it in a variable before running the node: `export NODE_CARDANO_PRISM_GENESIS_BLOCK=1000000` (replace the `1000000` with the latest block).
+- In order to get transactions confirmed fast, set this variable before running the node: `export NODE_CARDANO_CONFIRMATION_BLOCKS=1`
