@@ -15,6 +15,7 @@ import io.iohk.atala.mirror.models.{CardanoAddress, CardanoAddressInfo, Connecti
 import io.iohk.atala.prism.protos.connector_models.ReceivedMessage
 import io.iohk.atala.prism.protos.credential_models.{
   AtalaMessage,
+  CheckPayIdNameAvailabilityMessage,
   PayIdMessage,
   PayIdNameRegistrationMessage,
   RegisterAddressMessage
@@ -40,6 +41,7 @@ import io.iohk.atala.prism.protos.credential_models.PayIdNameRegisteredMessage
 import io.iohk.atala.prism.protos.credential_models.PayIdNameTakenMessage
 import io.iohk.atala.prism.protos.credential_models.AddressRegisteredMessage
 import io.iohk.atala.prism.protos.credential_models.PaymentInformationSaved
+import io.iohk.atala.prism.protos.credential_models.CheckPayIdNameAvailabilityResponse
 
 import scala.util.Try
 import scala.util.matching.Regex
@@ -390,7 +392,7 @@ class CardanoAddressInfoService(tx: Transactor[Task], httpConfig: HttpConfig, no
       .transact(tx)
   }
 
-  private def verifyPayIdString(payIdName: String): Either[PrismError, Unit] = {
+  private[services] def verifyPayIdString(payIdName: String): Either[PrismError, Unit] = {
     val onlyAllowedCharacters = PAY_ID_NAME_ALLOWED_CHARACTERS.matches(payIdName)
     val requiredLength =
       payIdName.length >= PAY_ID_NAME_MINIMUM_LENGTH && payIdName.length <= PAY_ID_NAME_MAXIMUM_LENGTH
@@ -403,6 +405,39 @@ class CardanoAddressInfoService(tx: Transactor[Task], httpConfig: HttpConfig, no
     }
   }
 
+  val checkPayIdNameAvailabilityMessageProcessor: MessageProcessor = { receivedMessage =>
+    parseCheckPayIdNameAvailabilityMessage(receivedMessage)
+      .map(processCheckPayIdNameAvailabilityMessage)
+  }
+
+  private[services] def parseCheckPayIdNameAvailabilityMessage(
+      message: ReceivedMessage
+  ): Option[CheckPayIdNameAvailabilityMessage] = {
+    Try(AtalaMessage.parseFrom(message.message.toByteArray)).toOption
+      .flatMap(_.message.mirrorMessage)
+      .flatMap(_.message.checkPayIdNameAvailabilityMessage)
+  }
+
+  def processCheckPayIdNameAvailabilityMessage(
+      payIdMessage: CheckPayIdNameAvailabilityMessage
+  ): MessageProcessorResult = {
+    val payIdName = PayIdName(payIdMessage.nameToCheck)
+
+    (for {
+      _ <- EitherT.fromEither[Task](verifyPayIdString(payIdName.name))
+      connectionWithTheSamePayIdName <- EitherT.liftF[Task, PrismError, Option[Connection]] {
+        ConnectionDao
+          .findByPayIdName(payIdName)
+          .logSQLErrors("check payId name availability", logger)
+          .transact(tx)
+      }
+      available = connectionWithTheSamePayIdName.isEmpty
+      response = AtalaMessage()
+        .withMirrorMessage(
+          MirrorMessage().withCheckPayIdNameAvailabilityResponse(CheckPayIdNameAvailabilityResponse(available))
+        )
+    } yield Some(response)).value
+  }
 }
 
 object CardanoAddressInfoService {

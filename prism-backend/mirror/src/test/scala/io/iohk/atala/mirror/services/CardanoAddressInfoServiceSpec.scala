@@ -292,11 +292,56 @@ class CardanoAddressInfoServiceSpec extends PostgresRepositorySpec[Task] with Mo
     }
   }
 
+  "checkPayIdNameAvailabilityMessageProcessor" should {
+    "return true when name is available" in new CardanoAddressInfoServiceFixtures {
+      val message = makeReceivedMessage(message = checkPayIdNameToAtalaMessage("nonExistingPayIdName"))
+
+      val result = (for {
+        _ <- ConnectionFixtures.insertAll(database)
+        result <- checkPayIdNameAvailabilityMessageProcessor(message).get
+      } yield result).runSyncUnsafe()
+
+      result.toOption.flatten.map(_.getMirrorMessage.getCheckPayIdNameAvailabilityResponse.available) mustBe Some(true)
+    }
+
+    "return false when name is not available" in new CardanoAddressInfoServiceFixtures {
+      val message = makeReceivedMessage(message = checkPayIdNameToAtalaMessage(connectionPayIdName2.name))
+
+      val result = (for {
+        _ <- ConnectionFixtures.insertAll(database)
+        result <- checkPayIdNameAvailabilityMessageProcessor(message).get
+      } yield result).runSyncUnsafe()
+
+      result.toOption.flatten.map(_.getMirrorMessage.getCheckPayIdNameAvailabilityResponse.available) mustBe Some(false)
+    }
+  }
+
+  "verifyPayIdString" should {
+    "return unit when payId name is correct" in new CardanoAddressInfoServiceFixtures {
+      cardanoAddressInfoService.verifyPayIdString("someCorrectName") mustBe Right(())
+    }
+
+    "return error when payId name is to short" in new CardanoAddressInfoServiceFixtures {
+      cardanoAddressInfoService.verifyPayIdString("a") mustBe an[Left[PayIdNameIncorrectLength, Unit]]
+    }
+
+    "return error when payId name is to long" in new CardanoAddressInfoServiceFixtures {
+      cardanoAddressInfoService
+        .verifyPayIdString(1.to(61).map(_ => "a").mkString("")) mustBe an[Left[PayIdNameIncorrectLength, Unit]]
+    }
+
+    "return error when payId name contains illegal characters" in new CardanoAddressInfoServiceFixtures {
+      cardanoAddressInfoService.verifyPayIdString("ąńÓpeaddd") mustBe an[Left[PayIdNameNotAllowedCharacters, Unit]]
+    }
+  }
+
   trait CardanoAddressInfoServiceFixtures {
     val cardanoAddressInfoService =
       new CardanoAddressInfoService(database, mirrorConfig.httpConfig, defaultNodeClientStub)
     val cardanoAddressMessageProcessor = cardanoAddressInfoService.cardanoAddressInfoMessageProcessor
     val paymentInformationMessageProcessor = cardanoAddressInfoService.payIdMessageProcessor
     val payIdNameRegistrationMessageProcessor = cardanoAddressInfoService.payIdNameRegistrationMessageProcessor
+    val checkPayIdNameAvailabilityMessageProcessor =
+      cardanoAddressInfoService.checkPayIdNameAvailabilityMessageProcessor
   }
 }

@@ -123,6 +123,7 @@ object MirrorApp extends TaskApp {
           cardanoAddressInfoService.cardanoAddressInfoMessageProcessor,
           cardanoAddressInfoService.payIdMessageProcessor,
           cardanoAddressInfoService.payIdNameRegistrationMessageProcessor,
+          cardanoAddressInfoService.checkPayIdNameAvailabilityMessageProcessor,
           trisaService.initiateTrisaCardanoTransactionMessageProcessor
         ),
         findLastMessageOffset = ConnectorMessageOffsetDao

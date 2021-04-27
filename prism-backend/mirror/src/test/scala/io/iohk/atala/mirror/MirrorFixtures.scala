@@ -287,12 +287,8 @@ trait MirrorFixtures extends ServicesFixtures {
 
     lazy val payIdName1 = "newPayIdName1"
 
-    lazy val payIdNameRegistrationMessage1 = ReceivedMessage(
-      id = "id1",
-      received = Timestamp(LocalDateTime.of(2020, 6, 12, 0, 0).toEpochSecond(ZoneOffset.UTC)).some,
-      connectionId = connectionId1.uuid.toString,
-      message = payIdNameRegistrationToAtalaMessage(payIdName1)
-    )
+    lazy val payIdNameRegistrationMessage1 =
+      makeReceivedMessage(message = payIdNameRegistrationToAtalaMessage(payIdName1))
 
     def payIdNameRegistrationToAtalaMessage(payIdName: String): ByteString =
       AtalaMessage()
@@ -300,5 +296,20 @@ trait MirrorFixtures extends ServicesFixtures {
           MirrorMessage().withPayIdNameRegistrationMessage(credential_models.PayIdNameRegistrationMessage(payIdName))
         )
         .toByteString
+
+    def checkPayIdNameToAtalaMessage(payIdName: String): ByteString =
+      AtalaMessage()
+        .withMirrorMessage(
+          MirrorMessage()
+            .withCheckPayIdNameAvailabilityMessage(credential_models.CheckPayIdNameAvailabilityMessage(payIdName))
+        )
+        .toByteString
+
+    def makeReceivedMessage(
+        id: String = "id1",
+        received: Option[Timestamp] = Timestamp(LocalDateTime.of(2020, 6, 12, 0, 0).toEpochSecond(ZoneOffset.UTC)).some,
+        connectionId: String = connectionId1.uuid.toString,
+        message: ByteString
+    ): ReceivedMessage = ReceivedMessage(id, connectionId, message, received)
   }
 }
