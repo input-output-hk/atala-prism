@@ -1,12 +1,12 @@
 package io.iohk.atala.mirror.db
 
+import cats.data.NonEmptyList
 import monix.eval.Task
 import io.iohk.atala.prism.repositories.PostgresRepositorySpec
 import doobie.implicits._
 import io.iohk.atala.mirror.MirrorFixtures
 import io.iohk.atala.mirror.models.CardanoAddress
 import io.iohk.atala.prism.models.ConnectorMessageId
-
 import monix.execution.Scheduler.Implicits.global
 
 // sbt "project mirror" "testOnly *db.CardanoAddressInfoDaoSpec"
@@ -27,7 +27,7 @@ class CardanoAddressInfoDaoSpec extends PostgresRepositorySpec[Task] with Mirror
       resultCount mustBe 1
     }
 
-    "return cardano address by address" in {
+    "return cardano addresses by address" in {
       // given
       (for {
         _ <- ConnectionFixtures.insertAll(database)
@@ -36,10 +36,13 @@ class CardanoAddressInfoDaoSpec extends PostgresRepositorySpec[Task] with Mirror
 
       // when
       val cardanoAddressesInfo =
-        CardanoAddressInfoDao.findBy(cardanoAddressInfo1.cardanoAddress).transact(database).runSyncUnsafe()
+        CardanoAddressInfoDao
+          .findBy(NonEmptyList.of(cardanoAddressInfo1.cardanoAddress, cardanoAddressInfo2.cardanoAddress))
+          .transact(database)
+          .runSyncUnsafe()
 
       // then
-      cardanoAddressesInfo mustBe Some(cardanoAddressInfo1)
+      cardanoAddressesInfo.toSet mustBe Set(cardanoAddressInfo1, cardanoAddressInfo2)
     }
 
     "return cardano addresses by connection token and cardano network" in {
@@ -63,7 +66,7 @@ class CardanoAddressInfoDaoSpec extends PostgresRepositorySpec[Task] with Mirror
     "return none if a cardano address doesn't exist" in {
       // when
       val cardanoAddressesInfo =
-        CardanoAddressInfoDao.findBy(CardanoAddress("non existing")).transact(database).runSyncUnsafe()
+        CardanoAddressInfoDao.findBy(NonEmptyList.of(CardanoAddress("non existing"))).transact(database).runSyncUnsafe()
 
       // then
       cardanoAddressesInfo.size mustBe 0

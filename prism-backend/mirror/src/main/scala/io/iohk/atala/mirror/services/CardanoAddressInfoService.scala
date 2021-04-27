@@ -1,10 +1,9 @@
 package io.iohk.atala.mirror.services
 
 import java.time.Instant
-import cats.data.{EitherT, OptionT}
-import cats.free.Free
+import cats.data.{EitherT, NonEmptyList, OptionT}
+import doobie.free.{connection => doobieConnection}
 import cats.implicits._
-import doobie.free.connection
 import doobie.free.connection.ConnectionIO
 import doobie.util.transactor.Transactor
 import io.iohk.atala.mirror.db.{CardanoAddressInfoDao, ConnectionDao}
@@ -22,18 +21,28 @@ import io.iohk.atala.prism.protos.credential_models.{
 }
 import org.slf4j.LoggerFactory
 import io.circe.parser._
+import io.grpc.Status
 import io.iohk.atala.mirror.config.HttpConfig
 import io.iohk.atala.mirror.models.Connection.PayIdName
 import io.iohk.atala.prism.crypto.EC
+import io.iohk.atala.prism.errors.PrismError
 import io.iohk.atala.prism.mirror.payid.Address.VerifiedAddress
 import io.iohk.atala.prism.mirror.payid.implicits._
 import io.iohk.atala.prism.identity.DID
 import io.iohk.atala.prism.models.ConnectorMessageId
 import io.iohk.atala.prism.services.{MessageProcessor, NodeClientService}
-import io.iohk.atala.prism.services.MessageProcessor.{MessageProcessorException, MessageProcessorResult}
+import io.iohk.atala.prism.services.MessageProcessor.MessageProcessorResult
+import io.iohk.atala.prism.utils.ConnectionUtils
 import io.iohk.atala.prism.utils.syntax.DBConnectionOps
+import CardanoAddressInfoService._
+import io.iohk.atala.prism.protos.credential_models.MirrorMessage
+import io.iohk.atala.prism.protos.credential_models.PayIdNameRegisteredMessage
+import io.iohk.atala.prism.protos.credential_models.PayIdNameTakenMessage
+import io.iohk.atala.prism.protos.credential_models.AddressRegisteredMessage
+import io.iohk.atala.prism.protos.credential_models.PaymentInformationSaved
 
 import scala.util.Try
+import scala.util.matching.Regex
 
 class CardanoAddressInfoService(tx: Transactor[Task], httpConfig: HttpConfig, nodeService: NodeClientService) {
 
@@ -57,8 +66,8 @@ class CardanoAddressInfoService(tx: Transactor[Task], httpConfig: HttpConfig, no
 
     (for {
       connection <- EitherT(
-        Connection
-          .fromReceivedMessage(receivedMessage)
+        ConnectionUtils
+          .fromReceivedMessage(receivedMessage, ConnectionDao.findByConnectionId)
           .logSQLErrors("getting connection from received message", logger)
           .transact(tx)
       )
@@ -70,12 +79,16 @@ class CardanoAddressInfoService(tx: Transactor[Task], httpConfig: HttpConfig, no
         registrationDate = CardanoAddressInfo.RegistrationDate(Instant.now()),
         messageId = ConnectorMessageId(receivedMessage.id)
       )
-      _ <- EitherT.right[MessageProcessorException](
-        saveCardanoAddress(cardanoAddress)
+      _ <- EitherT[Task, PrismError, Unit](
+        saveCardanoAddress(List(cardanoAddress))
           .logSQLErrors("saving cardano address", logger)
           .transact(tx)
       )
-    } yield ()).value
+
+      response =
+        AtalaMessage().withMirrorMessage(MirrorMessage().withAddressRegisteredMessage(AddressRegisteredMessage()))
+
+    } yield Some(response)).value
   }
 
   private def parseCardanoAddressInfoMessage(message: ReceivedMessage): Option[RegisterAddressMessage] = {
@@ -127,83 +140,109 @@ class CardanoAddressInfoService(tx: Transactor[Task], httpConfig: HttpConfig, no
     (for {
       paymentInformation <- EitherT.fromEither[Task](
         decode[PaymentInformation](payIdMessage.paymentInformation).leftMap(error =>
-          MessageProcessorException(
-            s"Could not parse payment information: ${payIdMessage.paymentInformation} error: ${error.getMessage}"
-          )
+          PaymentInformationDecodingFailure(payIdMessage, error)
         )
       )
 
       connection <- EitherT(
-        Connection
-          .fromReceivedMessage(receivedMessage)
+        ConnectionUtils
+          .fromReceivedMessage(receivedMessage, ConnectionDao.findByConnectionId)
           .logSQLErrors("getting connection by received message", logger)
           .transact(tx)
       )
 
       splittedPayId <- EitherT.fromOption[Task](
         paymentInformation.payId.flatMap(splitPayId),
-        MessageProcessorException(s"Cannot split payId to prefix and host address: ${paymentInformation.payId}")
+        InvalidPayIdName(paymentInformation)
       )
       (payIdPrefix, payIdHostAddress) =
         splittedPayId // we don't use better-monadic-for, so I had to split the above line into two
 
-      holderDID <-
-        EitherT.fromOption[Task](DID.fromString(payIdPrefix), MessageProcessorException("Invalid holder DID."))
+      _ <- assertConnectionContainPayIdInfo(payIdPrefix, connection)
+      _ <- assertPayIdHostAddressMach(httpConfig, payIdHostAddress)
+      _ <- assertAddressesHaveValidSignatures(paymentInformation)
+      _ <- assertAddressesContainCryptoAddressDetails(paymentInformation)
 
-      _ <- EitherT.cond[Task](
-        connection.holderDID.contains(holderDID) || connection.payIdName.contains(PayIdName(payIdPrefix)),
-        (), {
-          val message = connection.holderDID match {
-            case Some(_) =>
-              s"holderDID from connection: ${connection.holderDID} doesn't match holderDID parsed from paymentId: $holderDID"
-            case None => "holderDID from connection is not defined"
-          }
-          MessageProcessorException(
-            s"$message and payIdName from connection ${connection.payIdName} doesn't match payIdName parsed from paymentId $payIdPrefix"
-          )
-        }
-      )
-
-      _ <- EitherT.cond[Task](
-        httpConfig.payIdHostAddress == payIdHostAddress,
-        (),
-        MessageProcessorException(
-          s"payIdHostAddress from config: ${httpConfig.payIdHostAddress} " +
-            s"doesn't match host address from payment information: $payIdHostAddress"
-        )
-      )
-
-      addressWithVerifiedSignature <-
-        EitherT
-          .liftF(paymentInformation.verifiedAddresses.toList.traverseFilter { address =>
-            verifySignature(address).map { isValidSignature =>
-              if (isValidSignature) Some(address)
-              else {
-                logger.warn(s"Address: $address signature is not valid")
-                None
-              }
-            }
-          })
-          .leftMap(MessageProcessorException.apply)
-
-      cardanoAddressesWithVerifiedSignature = addressWithVerifiedSignature.flatMap(verifiedAddress =>
+      cardanoAddressesWithVerifiedSignature = paymentInformation.verifiedAddresses.flatMap(verifiedAddress =>
         parseAddress(receivedMessage, verifiedAddress.content.payload.payIdAddress, Some(verifiedAddress), connection)
       )
 
       cardanoAddresses =
         paymentInformation.addresses.flatMap(address => parseAddress(receivedMessage, address, None, connection))
 
-      _ <-
-        EitherT
-          .liftF(
-            (cardanoAddresses ++ cardanoAddressesWithVerifiedSignature).toList
-              .traverse(saveCardanoAddress)
-              .logSQLErrors("saving cardano address", logger)
-              .transact(tx)
-          )
-          .leftMap(MessageProcessorException.apply)
+      _ <- EitherT[Task, PrismError, Unit](
+        saveCardanoAddress(cardanoAddresses ++ cardanoAddressesWithVerifiedSignature)
+          .logSQLErrors("saving cardano address", logger)
+          .transact(tx)
+      )
 
-    } yield ()).value
+      response =
+        AtalaMessage().withMirrorMessage(MirrorMessage().withPaymentInformationSaved(PaymentInformationSaved()))
+
+    } yield Some(response)).value
+  }
+
+  def assertConnectionContainPayIdInfo(
+      payIdPrefix: String,
+      connection: Connection
+  ): EitherT[Task, ConnectionDoesNotContainPayIdInfo, Unit] = {
+    EitherT.cond[Task](
+      connection.holderDID.map(_.toString).contains(payIdPrefix) || connection.payIdName
+        .contains(PayIdName(payIdPrefix)),
+      (),
+      ConnectionDoesNotContainPayIdInfo(connection, payIdPrefix)
+    )
+  }
+
+  def assertPayIdHostAddressMach(
+      httpConfig: HttpConfig,
+      payIdHostAddress: String
+  ): EitherT[Task, PayIdHostAddressDoesNotMach, Unit] = {
+    EitherT.cond[Task](
+      httpConfig.payIdHostAddress == payIdHostAddress,
+      (),
+      PayIdHostAddressDoesNotMach(httpConfig, payIdHostAddress)
+    )
+  }
+
+  def assertAddressesHaveValidSignatures(
+      paymentInformation: PaymentInformation
+  ): EitherT[Task, VerifiedAddressesWithNotValidSignature, Unit] = {
+    for {
+      addressWithNotValidSignature <-
+        EitherT
+          .liftF(paymentInformation.verifiedAddresses.toList.traverseFilter { address =>
+            verifySignature(address).map { isValidSignature =>
+              if (isValidSignature) None
+              else Some(address)
+            }
+          })
+
+      _ <- EitherT.cond[Task](
+        addressWithNotValidSignature.isEmpty,
+        (),
+        VerifiedAddressesWithNotValidSignature(addressWithNotValidSignature)
+      )
+    } yield ()
+  }
+
+  def assertAddressesContainCryptoAddressDetails(
+      paymentInformation: PaymentInformation
+  ): EitherT[Task, CryptoAddressDetailsMissing, Unit] = {
+    val addressesWithoutCryptoAddressDetails =
+      (paymentInformation.verifiedAddresses.map(_.content.payload.payIdAddress) ++ paymentInformation.addresses)
+        .flatMap { address =>
+          parseCryptoAddressDetails(address.addressDetails) match {
+            case Some(_) => None
+            case None => Some(address)
+          }
+        }
+
+    EitherT.cond[Task](
+      addressesWithoutCryptoAddressDetails.isEmpty,
+      (),
+      CryptoAddressDetailsMissing(addressesWithoutCryptoAddressDetails.toList)
+    )
   }
 
   private[services] def splitPayId(payId: PayID): Option[(String, String)] =
@@ -280,20 +319,27 @@ class CardanoAddressInfoService(tx: Transactor[Task], httpConfig: HttpConfig, no
       case _ => None
     }
 
-  def saveCardanoAddress(cardanoAddress: CardanoAddressInfo): ConnectionIO[Unit] =
-    for {
-      alreadyExistingAddressOption <- CardanoAddressInfoDao.findBy(cardanoAddress.cardanoAddress)
-      _ <-
-        if (alreadyExistingAddressOption.isDefined) {
-          val alreadyExistingAddress = alreadyExistingAddressOption.get
-          logger.warn(
-            s"Cardano address with id: ${alreadyExistingAddress.cardanoAddress.value} already exists. " +
-              s"It belongs to ${alreadyExistingAddress.connectionToken.token} connection token"
-          )
-          Free.pure[connection.ConnectionOp, Unit](())
-        } else
-          CardanoAddressInfoDao.insert(cardanoAddress)
-    } yield ()
+  def saveCardanoAddress(
+      cardanoAddresses: Seq[CardanoAddressInfo]
+  ): ConnectionIO[Either[CardanoAddressAlreadyExists, Unit]] =
+    (for {
+      alreadyExistingAddress <- EitherT.liftF(
+        NonEmptyList
+          .fromList(cardanoAddresses.map(_.cardanoAddress).toList)
+          .map(CardanoAddressInfoDao.findBy)
+          .getOrElse(doobieConnection.pure(List.empty))
+      )
+
+      _ <- EitherT.cond[ConnectionIO](
+        alreadyExistingAddress.isEmpty,
+        (),
+        CardanoAddressAlreadyExists(alreadyExistingAddress)
+      )
+
+      _ <- EitherT.liftF[ConnectionIO, CardanoAddressAlreadyExists, Int](
+        CardanoAddressInfoDao.insertMany.updateMany(cardanoAddresses.toList)
+      )
+    } yield ()).value
 
   val payIdNameRegistrationMessageProcessor: MessageProcessor = { receivedMessage =>
     parsePayIdNameRegistrationMessage(receivedMessage)
@@ -314,7 +360,7 @@ class CardanoAddressInfoService(tx: Transactor[Task], httpConfig: HttpConfig, no
   ): MessageProcessorResult = {
     val payIdName = PayIdName(payIdMessage.name)
     (for {
-      connection <- EitherT(Connection.fromReceivedMessage(receivedMessage))
+      connection <- EitherT(ConnectionUtils.fromReceivedMessage(receivedMessage, ConnectionDao.findByConnectionId))
       connectionWithTheSamePayIdName <- EitherT.liftF(ConnectionDao.findByPayIdName(payIdName))
 
       _ <- EitherT.fromEither[ConnectionIO](verifyPayIdString(payIdName.name))
@@ -322,50 +368,136 @@ class CardanoAddressInfoService(tx: Transactor[Task], httpConfig: HttpConfig, no
       _ <- EitherT.cond[ConnectionIO](
         connection.payIdName.isEmpty,
         (),
-        MessageProcessorException(
-          s"Cannot register pay id name: $payIdName, " +
-            s"connection: ${connection.token} has already registered name: ${connection.payIdName}"
-        )
+        ConnectionHasAlreadyRegisteredPayIdName(payIdName.name, connection)
       )
 
-      _ <- EitherT.cond[ConnectionIO](
-        connectionWithTheSamePayIdName.isEmpty,
-        (),
-        MessageProcessorException(
-          s"Cannot register pay id name: $payIdName, " +
+      responseMessage <- EitherT.liftF[ConnectionIO, PrismError, AtalaMessage] {
+        if (connectionWithTheSamePayIdName.isEmpty) {
+          val response = AtalaMessage().withMirrorMessage(
+            MirrorMessage().withPayIdNameRegisteredMessage(PayIdNameRegisteredMessage())
+          )
+          ConnectionDao.update(connection.copy(payIdName = Some(payIdName))).as(response)
+        } else {
+          val message = s"Cannot register pay id name: $payIdName, " +
             s"name has already been registered by connection token: ${connectionWithTheSamePayIdName.map(_.token)}"
-        )
-      )
-
-      _ <-
-        EitherT
-          .liftF(ConnectionDao.update(connection.copy(payIdName = Some(payIdName))))
-          .leftMap(MessageProcessorException.apply)
-    } yield ()).value.logSQLErrors("processing pay id name registration message", logger).transact(tx)
+          val respone =
+            AtalaMessage().withMirrorMessage(MirrorMessage().withPayIdNameTakenMessage(PayIdNameTakenMessage(message)))
+          doobieConnection.pure(respone)
+        }
+      }
+    } yield Some(responseMessage)).value
+      .logSQLErrors("processing pay id name registration message", logger)
+      .transact(tx)
   }
 
-  private def verifyPayIdString(payIdName: String): Either[MessageProcessorException, Boolean] = {
+  private def verifyPayIdString(payIdName: String): Either[PrismError, Unit] = {
     val onlyAllowedCharacters = PAY_ID_NAME_ALLOWED_CHARACTERS.matches(payIdName)
     val requiredLength =
       payIdName.length >= PAY_ID_NAME_MINIMUM_LENGTH && payIdName.length <= PAY_ID_NAME_MAXIMUM_LENGTH
 
     (onlyAllowedCharacters, requiredLength) match {
-      case (false, _) =>
-        Left(
-          MessageProcessorException(
-            s"Cannot register pay id name: $payIdName, name contains not allowed characters. " +
-              s"Allowed characters regex: $PAY_ID_NAME_ALLOWED_CHARACTERS"
-          )
-        )
+      case (false, _) => Left(PayIdNameNotAllowedCharacters(payIdName, PAY_ID_NAME_ALLOWED_CHARACTERS))
       case (_, false) =>
-        Left(
-          MessageProcessorException(
-            s"Cannot register pay id name: $payIdName, " +
-              s"name's length must be between $PAY_ID_NAME_MINIMUM_LENGTH and $PAY_ID_NAME_MAXIMUM_LENGTH characters long"
-          )
-        )
-      case _ => Right(true)
+        Left(PayIdNameIncorrectLength(payIdName, PAY_ID_NAME_MINIMUM_LENGTH, PAY_ID_NAME_MAXIMUM_LENGTH))
+      case _ => Right(())
     }
   }
 
+}
+
+object CardanoAddressInfoService {
+  case class PaymentInformationDecodingFailure(payIdMessage: PayIdMessage, error: io.circe.Error) extends PrismError {
+    override def toStatus: Status = {
+      Status.INVALID_ARGUMENT.withDescription(
+        s"Could not parse payment information: ${payIdMessage.paymentInformation} error: ${error.getMessage}"
+      )
+    }
+  }
+
+  case class InvalidPayIdName(paymentInformation: PaymentInformation) extends PrismError {
+    override def toStatus: Status = {
+      Status.INVALID_ARGUMENT.withDescription(
+        s"Cannot split payId to prefix and host address: ${paymentInformation.payId}"
+      )
+    }
+  }
+
+  case class ConnectionDoesNotContainPayIdInfo(connection: Connection, payIdPrefix: String) extends PrismError {
+    private val message = connection.holderDID match {
+      case Some(_) =>
+        s"holderDID from connection: ${connection.holderDID} doesn't match holderDID parsed from paymentId: $payIdPrefix"
+      case None => "holderDID from connection is not defined"
+    }
+
+    override def toStatus: Status = {
+      Status.INVALID_ARGUMENT.withDescription(
+        s"$message and payIdName from connection ${connection.payIdName} doesn't match payIdName parsed from paymentId $payIdPrefix"
+      )
+    }
+  }
+
+  case class PayIdHostAddressDoesNotMach(httpConfig: HttpConfig, payIdHostAddress: String) extends PrismError {
+    override def toStatus: Status = {
+      Status.INVALID_ARGUMENT.withDescription(
+        s"payIdHostAddress from config: ${httpConfig.payIdHostAddress} " +
+          s"doesn't match host address from payment information: $payIdHostAddress"
+      )
+    }
+  }
+
+  case class VerifiedAddressesWithNotValidSignature(verifiedAddresses: List[VerifiedAddress]) extends PrismError {
+    override def toStatus: Status = {
+      Status.INVALID_ARGUMENT.withDescription(
+        "Some of the verified addresses have not valid signature. " +
+          "Details of those addresses:" +
+          verifiedAddresses.map(_.content.payload.payIdAddress.addressDetails.toString).mkString(", ")
+      )
+    }
+  }
+
+  case class CryptoAddressDetailsMissing(addresses: List[Address]) extends PrismError {
+    override def toStatus: Status = {
+      Status.INVALID_ARGUMENT.withDescription(
+        "Some of the addresses do not contain crypto address details: " +
+          "Details of those addresses:" +
+          addresses.map(_.addressDetails).mkString(", ")
+      )
+    }
+  }
+
+  case class CardanoAddressAlreadyExists(addresses: List[CardanoAddressInfo]) extends PrismError {
+    override def toStatus: Status = {
+      Status.ALREADY_EXISTS.withDescription(
+        "Cardano addresses already exists in database" +
+          addresses.map(_.cardanoAddress).mkString(", ")
+      )
+    }
+  }
+
+  case class PayIdNameNotAllowedCharacters(payIdName: String, allowedCharacters: Regex) extends PrismError {
+    override def toStatus: Status = {
+      Status.INVALID_ARGUMENT.withDescription(
+        s"Cannot register pay id name: $payIdName, name contains not allowed characters. " +
+          s"Allowed characters regex: $allowedCharacters"
+      )
+    }
+  }
+
+  case class PayIdNameIncorrectLength(payIdName: String, minimumLength: Int, maximumLength: Int) extends PrismError {
+    override def toStatus: Status = {
+      Status.INVALID_ARGUMENT.withDescription(
+        s"Cannot register pay id name: $payIdName, " +
+          s"name's length must be between $minimumLength and $maximumLength characters long"
+      )
+    }
+  }
+
+  case class ConnectionHasAlreadyRegisteredPayIdName(payIdName: String, connection: Connection) extends PrismError {
+    override def toStatus: Status = {
+      Status.ALREADY_EXISTS.withDescription(
+        s"Cannot register pay id name: $payIdName, " +
+          s"connection: ${connection.token} has already registered name: ${connection.payIdName}"
+      )
+    }
+  }
 }

@@ -14,11 +14,19 @@ import monix.execution.CancelablePromise
 import org.slf4j.LoggerFactory
 
 import java.io.File
-import java.util.concurrent.TimeoutException
 import scala.util.{Failure, Success, Try}
 import scala.concurrent.duration._
 import cats.data.EitherT
 import cats.implicits._
+import io.grpc.Status
+import io.iohk.atala.mirror.services.TrisaIntegrationService.{
+  CannotDecryptTransactionData,
+  CannotSendTrisaTransaction,
+  IdentityDataParsingFailure,
+  TrisaError
+}
+import io.iohk.atala.prism.errors.PrismError
+import io.iohk.atala.prism.mirror.trisa.TrisaAesGcm.TrisaAesGcmException
 
 import java.util.UUID
 
@@ -28,7 +36,36 @@ trait TrisaIntegrationService {
       destination: CardanoAddress,
       lovelaceAmount: LovelaceAmount,
       trisaVaspAddress: TrisaVaspAddress
-  ): Task[Either[Throwable, Person]]
+  ): Task[Either[TrisaError, Person]]
+}
+
+object TrisaIntegrationService {
+  sealed trait TrisaError extends PrismError
+
+  case class CannotSendTrisaTransaction(trisaVaspAddress: TrisaVaspAddress, message: String) extends TrisaError {
+    override def toStatus: Status = {
+      Status.INTERNAL.withDescription(
+        s"Error occurred when sending trisa transaction to: $trisaVaspAddress cause: $message"
+      )
+    }
+  }
+
+  case class CannotDecryptTransactionData(trisaAesGcmException: TrisaAesGcmException) extends TrisaError {
+    override def toStatus: Status = {
+      Status.INTERNAL.withDescription(
+        s"Error occurred when decrypting transaction data: ${trisaAesGcmException.message}"
+      )
+    }
+  }
+
+  case class IdentityDataParsingFailure(message: String) extends TrisaError {
+    override def toStatus: Status = {
+      Status.INTERNAL.withDescription(
+        s"Error occurred when parsing identity data: $message"
+      )
+    }
+  }
+
 }
 
 class TrisaIntegrationServiceDisabledImpl extends TrisaIntegrationService {
@@ -37,7 +74,7 @@ class TrisaIntegrationServiceDisabledImpl extends TrisaIntegrationService {
       destination: CardanoAddress,
       lovelaceAmount: LovelaceAmount,
       trisaVaspAddress: TrisaVaspAddress
-  ): Task[Either[Throwable, Person]] = {
+  ): Task[Either[TrisaError, Person]] = {
     Task.raiseError(throw new RuntimeException("TRISA Integration is disabled"))
   }
 }
@@ -73,9 +110,9 @@ class TrisaIntegrationServiceImpl(trisaConfig: TrisaConfig) extends TrisaIntegra
   private def sendRequest(
       transaction: Transaction,
       trisaVaspAddress: TrisaVaspAddress
-  ): Task[Either[Throwable, Transaction]] = {
+  ): Task[Either[CannotSendTrisaTransaction, Transaction]] = {
     Try {
-      val transactionResponsePromise = CancelablePromise[Either[Throwable, Transaction]]()
+      val transactionResponsePromise = CancelablePromise[Either[CannotSendTrisaTransaction, Transaction]]()
 
       val responseObserver = new StreamObserver[Transaction] {
         override def onNext(value: Transaction): Unit = {
@@ -84,7 +121,9 @@ class TrisaIntegrationServiceImpl(trisaConfig: TrisaConfig) extends TrisaIntegra
         }
 
         override def onError(throwable: Throwable): Unit = {
-          transactionResponsePromise.tryComplete(Try(Left(throwable)))
+          transactionResponsePromise.tryComplete(
+            Try(Left(CannotSendTrisaTransaction(trisaVaspAddress, throwable.getMessage)))
+          )
           ()
         }
 
@@ -102,12 +141,16 @@ class TrisaIntegrationServiceImpl(trisaConfig: TrisaConfig) extends TrisaIntegra
         .fromCancelablePromise(transactionResponsePromise)
         .timeoutTo(
           REQUEST_TIMEOUT,
-          Task.pure(Left(new TimeoutException("Timeout occurred when waiting for response from trisa vasp")))
+          Task.pure(
+            Left(
+              CannotSendTrisaTransaction(trisaVaspAddress, "Timeout occurred when waiting for response from trisa vasp")
+            )
+          )
         )
         .guarantee(Task.pure(channel.shutdown()).void)
     } match {
       case Success(value) => value
-      case Failure(exception) => Task.pure(Left(exception))
+      case Failure(exception) => Task.pure(Left(CannotSendTrisaTransaction(trisaVaspAddress, exception.getMessage)))
     }
   }
 
@@ -116,7 +159,7 @@ class TrisaIntegrationServiceImpl(trisaConfig: TrisaConfig) extends TrisaIntegra
       destination: CardanoAddress,
       lovelaceAmount: LovelaceAmount,
       trisaVaspAddress: TrisaVaspAddress
-  ): Task[Either[Throwable, Person]] = {
+  ): Task[Either[TrisaError, Person]] = {
     val transactionData = TransactionData(
       data = Some(
         ProtobufAny(
@@ -127,17 +170,18 @@ class TrisaIntegrationServiceImpl(trisaConfig: TrisaConfig) extends TrisaIntegra
     )
 
     (for {
-      transactionToSend <- TrisaAesGcm.encryptTransactionData(transactionData).toEitherT[Task]
+      transactionToSend <-
+        TrisaAesGcm.encryptTransactionData(transactionData).toEitherT[Task].leftMap(CannotDecryptTransactionData)
       transactionResponse <- EitherT(sendRequest(transactionToSend, trisaVaspAddress))
       person <- parseIdentityData(transactionResponse).toEitherT[Task]
     } yield person).value
   }
 
-  private def parseIdentityData(value: Transaction): Either[Throwable, Person] = {
+  private def parseIdentityData(value: Transaction): Either[TrisaError, Person] = {
     val decryptionResult = TrisaAesGcm
       .decrypt(value)
       .left
-      .map(exception => new RuntimeException(s"Cannot decrypt trisa transaction: ${exception.message}"))
+      .map(exception => IdentityDataParsingFailure(s"Cannot decrypt trisa transaction: ${exception.message}"))
 
     for {
       transactionDataByteArray <- decryptionResult
@@ -145,22 +189,23 @@ class TrisaIntegrationServiceImpl(trisaConfig: TrisaConfig) extends TrisaIntegra
         TransactionData
           .validate(transactionDataByteArray)
           .toEither
-          .leftMap(e => new RuntimeException(s"Error occurred when parsing transaction data: ${e.getMessage}"))
+          .leftMap(e => IdentityDataParsingFailure(s"Cannot parse transaction data: ${e.getMessage}"))
 
-      identity <- transactionData.identity.toRight(new RuntimeException("TransactionData doesn't contain identity"))
+      identity <-
+        transactionData.identity.toRight(IdentityDataParsingFailure("TransactionData doesn't contain identity"))
 
       identityPayload <-
         IdentityPayload
           .validate(identity.value.toByteArray)
           .toEither
-          .leftMap(e => new RuntimeException(s"Error occurred when parsing Identity payload: ${e.getMessage}"))
+          .leftMap(e => IdentityDataParsingFailure(s"Cannot parse identity payload: ${e.getMessage}"))
 
       beneficiary <- identityPayload.beneficiary.toRight(
-        new RuntimeException("Beneficiary data is missing in identity payload")
+        IdentityDataParsingFailure("Beneficiary data is missing in identity payload")
       )
 
       person <- beneficiary.beneficiaryPersons.headOption.toRight(
-        new RuntimeException("Beneficiary data persons array is empty")
+        IdentityDataParsingFailure("Beneficiary data persons array is empty")
       )
     } yield person
   }

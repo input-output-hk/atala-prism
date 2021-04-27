@@ -29,7 +29,7 @@ class ConnectorMessageServiceSpec extends PostgresRepositorySpec[Task] {
 
     override def apply(receivedMessage: ReceivedMessage): Option[MessageProcessorResult] = {
       processedMessages = receivedMessage :: processedMessages
-      Some(MessageProcessor.successful)
+      Some(MessageProcessor.successful(None))
     }
   }
 

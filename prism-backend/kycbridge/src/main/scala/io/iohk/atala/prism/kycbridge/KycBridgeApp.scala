@@ -122,7 +122,6 @@ object KycBridgeApp extends TaskApp {
       documentUploadedMessageProcessor = new DocumentUploadedMessageProcessor(
         tx,
         nodeService,
-        connectorService,
         assureIdService,
         faceIdService,
         authConfig

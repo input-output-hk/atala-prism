@@ -1,6 +1,7 @@
 package io.iohk.atala.prism.kycbridge.processors
 
 import monix.eval.Task
+
 import scala.concurrent.duration.DurationInt
 import io.iohk.atala.prism.repositories.PostgresRepositorySpec
 import io.iohk.atala.prism.stubs.NodeClientServiceStub
@@ -19,6 +20,7 @@ import io.iohk.atala.prism.utils.syntax._
 import monix.execution.Scheduler.Implicits.global
 import cats.syntax.option._
 import doobie.implicits._
+import io.iohk.atala.prism.errors.PrismError
 import io.iohk.atala.prism.kycbridge.models.faceId.FaceMatchResponse
 
 //sbt "project kycbridge" "testOnly *processors.DocumentUploadedMessageProcessorSpec"
@@ -59,7 +61,7 @@ class DocumentUploadedMessageProcessorSpec
       } yield result).runSyncUnsafe(1.minute)
 
       // then
-      result mustBe Right(())
+      result mustBe an[Right[PrismError, Some[AtalaMessage]]]
     }
 
     "do not create create credential if face match is unsuccessful" in new Fixtures {
@@ -69,7 +71,6 @@ class DocumentUploadedMessageProcessorSpec
         new DocumentUploadedMessageProcessor(
           database,
           nodeClientService,
-          connectorClientService,
           assureIdServiceStub,
           faceIdServiceStubWithFailedMatch,
           defaultDidBasedAuthConfig
@@ -96,7 +97,6 @@ class DocumentUploadedMessageProcessorSpec
       new DocumentUploadedMessageProcessor(
         database,
         nodeClientService,
-        connectorClientService,
         assureIdServiceStub,
         faceIdServiceStub,
         defaultDidBasedAuthConfig

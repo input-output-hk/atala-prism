@@ -12,21 +12,40 @@ import org.http4s.headers.Accept
 import io.circe.syntax._
 import org.http4s.circe._
 import ServiceUtils._
+import io.grpc.Status
+import io.iohk.atala.prism.errors.PrismError
 import io.iohk.atala.prism.kycbridge.models.faceId.implicits._
+import io.iohk.atala.prism.kycbridge.services.FaceIdService.FaceIdServiceError
+import cats.implicits._
 
 trait FaceIdService {
-  def faceMatch(data: Data): Task[Either[Exception, FaceMatchResponse]]
+  def faceMatch(data: Data): Task[Either[FaceIdServiceError, FaceMatchResponse]]
+}
+
+object FaceIdService {
+  case class FaceIdServiceError(methodName: String, throwable: Throwable) extends PrismError {
+    override def toStatus: Status = {
+      Status.INTERNAL.withDescription(
+        s"Error occurred when calling Acuant FaceId service method: $methodName, cause: ${throwable.getMessage}"
+      )
+    }
+  }
 }
 
 class FaceIdServiceImpl(acuantConfig: AcuantConfig, client: Client[Task])
     extends FaceIdService
     with Http4sClientDsl[Task] {
 
+  private implicit class FaceIdServiceErrorOps[A](value: Task[Either[Exception, A]]) {
+    def mapExceptionToServiceError(methodName: String): Task[Either[FaceIdServiceError, A]] =
+      value.map(_.leftMap(e => FaceIdServiceError(methodName, e)))
+  }
+
   private val baseUri = Uri.unsafeFromString(acuantConfig.faceIdUrl)
 
   private lazy val authorization = basicAuthorization(acuantConfig)
 
-  override def faceMatch(data: Data): Task[Either[Exception, FaceMatchResponse]] = {
+  override def faceMatch(data: Data): Task[Either[FaceIdServiceError, FaceMatchResponse]] = {
 
     val faceMatchRequest = FaceMatchRequest(
       data = data,
@@ -43,5 +62,6 @@ class FaceIdServiceImpl(acuantConfig: AcuantConfig, client: Client[Task])
     )
 
     runRequestToEither[FaceMatchResponse](request, client)
+      .mapExceptionToServiceError("post faceMatch")
   }
 }

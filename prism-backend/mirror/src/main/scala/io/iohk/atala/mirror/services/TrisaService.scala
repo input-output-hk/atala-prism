@@ -4,16 +4,12 @@ import io.iohk.atala.mirror.models.{CardanoAddress, LovelaceAmount, TrisaVaspAdd
 import io.iohk.atala.prism.protos.connector_models.ReceivedMessage
 import io.iohk.atala.prism.protos.credential_models.{AtalaMessage, InitiateTrisaCardanoTransactionMessage}
 import io.iohk.atala.prism.services.MessageProcessor
-import io.iohk.atala.prism.services.MessageProcessor.MessageProcessorException
-import monix.eval.Task
 import cats.implicits._
-import org.slf4j.LoggerFactory
+import io.iohk.atala.prism.services.MessageProcessor.MessageProcessorResult
 
 import scala.util.Try
 
 class TrisaService(trisaIntegrationService: TrisaIntegrationService) {
-
-  private val logger = LoggerFactory.getLogger(classOf[TrisaService])
 
   val initiateTrisaCardanoTransactionMessageProcessor: MessageProcessor = { receivedMessage =>
     parseInitiateTrisaCardanoTransactionMessage(receivedMessage)
@@ -30,7 +26,7 @@ class TrisaService(trisaIntegrationService: TrisaIntegrationService) {
 
   private def processInitiateTrisaCardanoTransactionMessage(
       message: InitiateTrisaCardanoTransactionMessage
-  ): Task[Either[MessageProcessorException, Unit]] = {
+  ): MessageProcessorResult = {
     trisaIntegrationService
       .initiateTransaction(
         CardanoAddress(message.sourceCardanoAddress),
@@ -38,11 +34,6 @@ class TrisaService(trisaIntegrationService: TrisaIntegrationService) {
         LovelaceAmount(message.lovelaceAmount),
         trisaVaspAddress = TrisaVaspAddress(message.trisaVaspHost, message.trisaVaspHostPortNumber)
       )
-      .map { result =>
-        result.leftMap(e => new MessageProcessorException(e.getMessage)).as {
-          logger.info(s"Transaction to trisa vasp send successfully")
-        }
-      }
+      .map(_.as(None))
   }
-
 }

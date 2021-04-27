@@ -39,10 +39,10 @@ class AcuantService(
     logger.info(s"Fetching document instance id and bearer token for connection: ${connection.token}")
     (for {
       documentInstanceResponseBody <- EitherT(assureIdService.createNewDocumentInstance(device)).leftMap(exception =>
-        logger.warn(s"Acuant: Cannot create new document instance ${exception.getMessage}")
+        logger.warn(s"Acuant: Cannot create new document instance ${exception.toStatus.getDescription}")
       )
       tokenResponseBody <- EitherT(acasService.getAccessToken).leftMap(exception =>
-        logger.warn(s"Acuant: Cannot obtain bearer token ${exception.getMessage}")
+        logger.warn(s"Acuant: Cannot obtain bearer token ${exception.toStatus.getDescription}")
       )
 
       connectionId <-

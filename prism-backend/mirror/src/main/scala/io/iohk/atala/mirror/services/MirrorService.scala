@@ -1,7 +1,7 @@
 package io.iohk.atala.mirror.services
 
 import java.time.Instant
-import cats.data.OptionT
+import cats.data.{NonEmptyList, OptionT}
 import monix.eval.Task
 import doobie.util.transactor.Transactor
 import io.iohk.atala.mirror.protos.mirror_api.{
@@ -71,7 +71,8 @@ class MirrorServiceImpl(tx: Transactor[Task], connectorService: ConnectorClientS
       request: GetCredentialForAddressRequest
   ): Task[GetCredentialForAddressResponse] = {
     val credentialsOption = (for {
-      address <- OptionT(CardanoAddressInfoDao.findBy(CardanoAddress(request.address)))
+      address <-
+        OptionT(CardanoAddressInfoDao.findBy(NonEmptyList.of(CardanoAddress(request.address))).map(_.headOption))
       credentials <- OptionT.liftF(UserCredentialDao.findBy(address.connectionToken))
     } yield credentials).value.logSQLErrors("finding credentials", logger).transact(tx)
 
@@ -100,7 +101,7 @@ class MirrorServiceImpl(tx: Transactor[Task], connectorService: ConnectorClientS
 
   override def getIdentityInfoForAddress(cardanoAddress: CardanoAddress): Task[Option[Person]] = {
     (for {
-      address <- OptionT(CardanoAddressInfoDao.findBy(cardanoAddress))
+      address <- OptionT(CardanoAddressInfoDao.findBy(NonEmptyList.of(cardanoAddress)).map(_.headOption))
       credentials <- OptionT.liftF(UserCredentialDao.findBy(address.connectionToken))
       redlandCredential <-
         credentials

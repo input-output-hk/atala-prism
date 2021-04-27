@@ -619,6 +619,7 @@ jobs:
               node_models.proto \
               vault_api.proto \
               vault_models.proto \
+              status.proto \
               ../../../protos/
 
       # apparently, the argument to set the destination folder doesn't work

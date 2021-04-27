@@ -1,19 +1,23 @@
 package io.iohk.atala.mirror.services
 
+import cats.data.NonEmptyList
 import doobie.implicits._
 import io.iohk.atala.mirror.MirrorFixtures
 import io.iohk.atala.mirror.db.{CardanoAddressInfoDao, ConnectionDao}
 import io.iohk.atala.mirror.models.CardanoAddress
 import io.iohk.atala.mirror.models.Connection
 import io.iohk.atala.mirror.models.Connection.PayIdName
+import io.iohk.atala.prism.errors.PrismError
 import io.iohk.atala.prism.mirror.payid._
 import io.iohk.atala.prism.protos.connector_models.ReceivedMessage
+import io.iohk.atala.prism.protos.credential_models.AtalaMessage
 import io.iohk.atala.prism.repositories.PostgresRepositorySpec
 import io.iohk.atala.prism.stubs.NodeClientServiceStub
 import monix.eval.Task
 import monix.execution.Scheduler.Implicits.global
 import org.mockito.scalatest.MockitoSugar
 import org.scalatest.Assertion
+import CardanoAddressInfoService._
 
 import scala.concurrent.duration.DurationInt
 
@@ -31,12 +35,14 @@ class CardanoAddressInfoServiceSpec extends PostgresRepositorySpec[Task] with Mo
       ConnectionFixtures.insertAll(database).runSyncUnsafe()
 
       // when
-      val cardanoAddressInfoOption = (for {
-        _ <- cardanoAddressMessageProcessor(cardanoAddressInfoMessage1).get
-        cardanoAddress <- CardanoAddressInfoDao.findBy(CardanoAddress(cardanoAddress1)).transact(database)
-      } yield cardanoAddress).runSyncUnsafe(1.minute)
+      val (cardanoAddressInfoOption, processingResult) = (for {
+        processingResult <- cardanoAddressMessageProcessor(cardanoAddressInfoMessage1).get
+        cardanoAddress <-
+          CardanoAddressInfoDao.findBy(NonEmptyList.of(CardanoAddress(cardanoAddress1))).transact(database)
+      } yield (cardanoAddress.headOption, processingResult)).runSyncUnsafe(1.minute)
 
       // then
+      processingResult mustBe an[Right[PrismError, Some[AtalaMessage]]]
       cardanoAddressInfoOption.map(_.cardanoAddress) mustBe Some(CardanoAddress(cardanoAddress1))
     }
 
@@ -51,13 +57,14 @@ class CardanoAddressInfoServiceSpec extends PostgresRepositorySpec[Task] with Mo
       ConnectionFixtures.insertAll(database).runSyncUnsafe()
 
       // when
-      val cardanoAddressInfoOption = (for {
-        _ <- paymentInformationMessageProcessor(paymentInformationMessage1).get
-        cardanoAddressInfoOption <-
-          CardanoAddressInfoDao.findBy(CardanoAddress(cardanoAddressPayId1)).transact(database)
-      } yield cardanoAddressInfoOption).runSyncUnsafe(1.minute)
+      val (cardanoAddressInfoOption, processingResult) = (for {
+        processingResult <- paymentInformationMessageProcessor(paymentInformationMessage1).get
+        cardanoAddresses <-
+          CardanoAddressInfoDao.findBy(NonEmptyList.of(CardanoAddress(cardanoAddressPayId1))).transact(database)
+      } yield (cardanoAddresses.headOption, processingResult)).runSyncUnsafe(1.minute)
 
       // then
+      processingResult mustBe an[Right[PrismError, Some[AtalaMessage]]]
       cardanoAddressInfoOption.map(_.cardanoAddress) mustBe Some(CardanoAddress(cardanoAddressPayId1))
       cardanoAddressInfoOption.flatMap(_.payidVerifiedAddress) mustBe a[Some[_]]
     }
@@ -75,13 +82,14 @@ class CardanoAddressInfoServiceSpec extends PostgresRepositorySpec[Task] with Mo
         paymentInformationMessage1.copy(message = paymentInformationToAtalaMessage(paymentInformationWithWrongHolder))
 
       // when
-      val cardanoAddressInfoOption = (for {
-        _ <- paymentInformationMessageProcessor(messageWithWrongHolder).get
-        cardanoAddressInfoOption <-
-          CardanoAddressInfoDao.findBy(CardanoAddress(cardanoAddressPayId1)).transact(database)
-      } yield cardanoAddressInfoOption).runSyncUnsafe(1.minute)
+      val (cardanoAddressInfoOption, processingResult) = (for {
+        processingResult <- paymentInformationMessageProcessor(messageWithWrongHolder).get
+        cardanoAddresses <-
+          CardanoAddressInfoDao.findBy(NonEmptyList.of(CardanoAddress(cardanoAddressPayId1))).transact(database)
+      } yield (cardanoAddresses.headOption, processingResult)).runSyncUnsafe(1.minute)
 
       // then
+      processingResult mustBe an[Left[ConnectionDoesNotContainPayIdInfo, Option[AtalaMessage]]]
       cardanoAddressInfoOption mustBe None
     }
 
@@ -96,13 +104,14 @@ class CardanoAddressInfoServiceSpec extends PostgresRepositorySpec[Task] with Mo
         paymentInformationMessage1.copy(message = paymentInformationToAtalaMessage(paymentInformationWithWrongNetwork))
 
       // when
-      val cardanoAddressInfoOption = (for {
-        _ <- paymentInformationMessageProcessor(messageWithWrongNetwork).get
-        cardanoAddressInfoOption <-
-          CardanoAddressInfoDao.findBy(CardanoAddress(cardanoAddressPayId1)).transact(database)
-      } yield cardanoAddressInfoOption).runSyncUnsafe(1.minute)
+      val (cardanoAddressInfoOption, processingResult) = (for {
+        processingResult <- paymentInformationMessageProcessor(messageWithWrongNetwork).get
+        cardanoAddresses <-
+          CardanoAddressInfoDao.findBy(NonEmptyList.of(CardanoAddress(cardanoAddressPayId1))).transact(database)
+      } yield (cardanoAddresses.headOption, processingResult)).runSyncUnsafe(1.minute)
 
       // then
+      processingResult mustBe an[Left[PayIdHostAddressDoesNotMach, Some[AtalaMessage]]]
       cardanoAddressInfoOption mustBe None
     }
 
@@ -116,13 +125,14 @@ class CardanoAddressInfoServiceSpec extends PostgresRepositorySpec[Task] with Mo
       val paymentInformationMessageProcessor = cardanoAddressInfoService.payIdMessageProcessor
 
       // when
-      val cardanoAddressInfoOption = (for {
-        _ <- paymentInformationMessageProcessor(paymentInformationMessage1).get
-        cardanoAddressInfoOption <-
-          CardanoAddressInfoDao.findBy(CardanoAddress(cardanoAddressPayId1)).transact(database)
-      } yield cardanoAddressInfoOption).runSyncUnsafe(1.minute)
+      val (cardanoAddressInfoOption, processingResult) = (for {
+        processingResult <- paymentInformationMessageProcessor(paymentInformationMessage1).get
+        cardanoAddresses <-
+          CardanoAddressInfoDao.findBy(NonEmptyList.of(CardanoAddress(cardanoAddressPayId1))).transact(database)
+      } yield (cardanoAddresses.headOption, processingResult)).runSyncUnsafe(1.minute)
 
       // then
+      processingResult mustBe an[Left[VerifiedAddressesWithNotValidSignature, Some[AtalaMessage]]]
       cardanoAddressInfoOption.map(_.cardanoAddress) mustBe None
     }
 
@@ -136,70 +146,77 @@ class CardanoAddressInfoServiceSpec extends PostgresRepositorySpec[Task] with Mo
       testNameRegistration(
         connectionToUpdate = connection1,
         message = payIdNameRegistrationMessage1,
-        updatedPayIdName = Some(PayIdName(payIdName1))
+        updatedPayIdName = Some(PayIdName(payIdName1)),
+        processingResultAssertion = _ mustBe an[Right[PrismError, Some[AtalaMessage]]]
       )
     }
 
-    "do register pay id name if it is not ascii compatible" in new CardanoAddressInfoServiceFixtures {
+    "do not register pay id name if it is not ascii compatible" in new CardanoAddressInfoServiceFixtures {
       val messageWithIncorrectName =
         payIdNameRegistrationMessage1.copy(message = payIdNameRegistrationToAtalaMessage("ńćżóp"))
 
       testNameRegistration(
         connectionToUpdate = connection1,
         message = messageWithIncorrectName,
-        updatedPayIdName = None
+        updatedPayIdName = None,
+        processingResultAssertion = _ mustBe an[Left[PayIdNameNotAllowedCharacters, Some[AtalaMessage]]]
       )
     }
 
-    "do register pay id name if it is too short" in new CardanoAddressInfoServiceFixtures {
+    "do not register pay id name if it is too short" in new CardanoAddressInfoServiceFixtures {
       val messageWithIncorrectName =
         payIdNameRegistrationMessage1.copy(message = payIdNameRegistrationToAtalaMessage("aa"))
 
       testNameRegistration(
         connectionToUpdate = connection1,
         message = messageWithIncorrectName,
-        updatedPayIdName = None
+        updatedPayIdName = None,
+        processingResultAssertion = _ mustBe an[Left[PayIdNameIncorrectLength, Some[AtalaMessage]]]
       )
     }
 
-    "do register pay id name if connection has already name" in new CardanoAddressInfoServiceFixtures {
+    "do not register pay id name if connection has already name" in new CardanoAddressInfoServiceFixtures {
       val incorrectMessage =
         payIdNameRegistrationMessage1.copy(connectionId = connectionId2.uuid.toString)
 
       testNameRegistration(
         connectionToUpdate = connection2,
         message = incorrectMessage,
-        updatedPayIdName = Some(connectionPayIdName2)
+        updatedPayIdName = Some(connectionPayIdName2),
+        processingResultAssertion = _ mustBe an[Left[ConnectionHasAlreadyRegisteredPayIdName, Some[AtalaMessage]]]
       )
     }
 
-    "do register pay id name if name has already been registered by other connection" in new CardanoAddressInfoServiceFixtures {
+    "do not register pay id name if name has already been registered by other connection" in new CardanoAddressInfoServiceFixtures {
       val messageWithAlreadyRegisteredName =
         payIdNameRegistrationMessage1.copy(message = payIdNameRegistrationToAtalaMessage(connectionPayIdName2.name))
 
       testNameRegistration(
         connectionToUpdate = connection1,
         message = messageWithAlreadyRegisteredName,
-        updatedPayIdName = None
+        updatedPayIdName = None,
+        processingResultAssertion = _ mustBe an[Right[PrismError, Some[AtalaMessage]]]
       )
     }
 
     def testNameRegistration(
         connectionToUpdate: Connection,
         message: ReceivedMessage,
-        updatedPayIdName: Option[PayIdName]
+        updatedPayIdName: Option[PayIdName],
+        processingResultAssertion: Either[PrismError, Option[AtalaMessage]] => Assertion
     ): Assertion = {
       // given
       val fixtures = new CardanoAddressInfoServiceFixtures {}
       ConnectionFixtures.insertAll(database).runSyncUnsafe()
 
       // when
-      val updatedConnectionOption = (for {
-        _ <- fixtures.payIdNameRegistrationMessageProcessor(message).get
+      val (updatedConnectionOption, processingResult) = (for {
+        processingResult <- fixtures.payIdNameRegistrationMessageProcessor(message).get
         updatedConnection <- ConnectionDao.findByConnectionToken(connectionToUpdate.token).transact(database)
-      } yield updatedConnection).runSyncUnsafe(1.minute)
+      } yield (updatedConnection, processingResult)).runSyncUnsafe(1.minute)
 
       // then
+      processingResultAssertion(processingResult)
       updatedConnectionOption.flatMap(_.payIdName) mustBe updatedPayIdName
     }
 

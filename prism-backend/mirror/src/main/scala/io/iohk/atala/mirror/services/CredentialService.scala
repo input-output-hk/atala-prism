@@ -32,10 +32,12 @@ import io.iohk.atala.prism.protos.node_api.GetBatchStateResponse
 import cats.implicits._
 import doobie.implicits._
 import io.iohk.atala.prism.crypto.MerkleTree.MerkleInclusionProof
+import io.iohk.atala.prism.errors.PrismError
 import io.iohk.atala.prism.identity.DID
 import io.iohk.atala.prism.protos.credential_models.PlainTextCredential
 import io.iohk.atala.prism.services.{ConnectorClientService, MessageProcessor, NodeClientService}
-import io.iohk.atala.prism.services.MessageProcessor.{MessageProcessorException, MessageProcessorResult}
+import io.iohk.atala.prism.services.MessageProcessor.MessageProcessorResult
+import io.iohk.atala.prism.utils.ConnectionUtils
 import io.iohk.atala.prism.utils.syntax._
 
 class CredentialService(
@@ -112,22 +114,20 @@ class CredentialService(
   ): MessageProcessorResult = {
     (for {
       connection <- EitherT(
-        Connection
-          .fromReceivedMessage(receivedMessage)
+        ConnectionUtils
+          .fromReceivedMessage(receivedMessage, ConnectionDao.findByConnectionId)
           .logSQLErrors("getting connection from received message", logger)
           .transact(tx)
       )
       userCredentials <-
         EitherT
           .liftF(createUserCredential(receivedMessage, connection.token, plainTextCredential))
-          .leftMap(MessageProcessorException.apply)
       _ <-
         EitherT
-          .liftF(
+          .liftF[Task, PrismError, Int](
             UserCredentialDao.insert(userCredentials).logSQLErrors("inserting user credentials", logger).transact(tx)
           )
-          .leftMap(MessageProcessorException.apply)
-    } yield ()).value
+    } yield None).value
   }
 
   private[services] def parseCredential(message: ReceivedMessage): Option[PlainTextCredential] = {

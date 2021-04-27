@@ -1,5 +1,7 @@
 package io.iohk.atala.mirror.db
 
+import cats.data.NonEmptyList
+import doobie.Fragments
 import doobie.util.update.Update
 import doobie.free.connection.ConnectionIO
 import io.iohk.atala.mirror.models.CardanoAddressInfo
@@ -17,12 +19,13 @@ object CardanoAddressInfoDao {
 
   implicit val verifiedAddressMeta: Meta[VerifiedAddress] = Metas.circeMeta[VerifiedAddress]
 
-  def findBy(address: CardanoAddress): ConnectionIO[Option[CardanoAddressInfo]] = {
-    sql"""
+  def findBy(addresses: NonEmptyList[CardanoAddress]): ConnectionIO[List[CardanoAddressInfo]] = {
+    (fr"""
          | SELECT address, payid_verified_address, network, connection_token, registration_date, message_id
          | FROM cardano_addresses_info
-         | WHERE address = $address
-    """.stripMargin.query[CardanoAddressInfo].option
+         | WHERE""".stripMargin ++ Fragments.in(fr"address", addresses))
+      .query[CardanoAddressInfo]
+      .to[List]
   }
 
   def findBy(

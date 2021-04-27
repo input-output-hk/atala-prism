@@ -23,6 +23,7 @@ sourceSets {
                     "node_*.proto",
                     "connector_*.proto",
                     "console_*.proto",
+                    "status.proto",
                     "credential_*.proto"
                 )
             )

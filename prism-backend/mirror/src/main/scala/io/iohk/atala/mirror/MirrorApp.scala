@@ -163,7 +163,8 @@ object MirrorApp extends TaskApp {
           )
           .runSyncUnsafe() match {
           case Right(_) => logger.info("Received successful response")
-          case Left(error) => logger.warn(s"Error occurred when sending transaction to vasp ${error.getMessage}")
+          case Left(error) =>
+            logger.warn(s"Error occurred when sending transaction to vasp ${error.toStatus.getDescription}")
         }
 
       // gRPC server

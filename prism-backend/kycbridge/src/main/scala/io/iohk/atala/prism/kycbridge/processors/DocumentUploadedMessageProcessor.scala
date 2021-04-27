@@ -5,11 +5,10 @@ import monix.eval.Task
 import cats.data.EitherT
 import doobie.util.transactor.Transactor
 import io.circe.syntax._
-import io.iohk.atala.prism.services.{BaseGrpcClientService, ConnectorClientService, MessageProcessor, NodeClientService}
+import io.iohk.atala.prism.services.{BaseGrpcClientService, MessageProcessor, NodeClientService}
 import io.iohk.atala.prism.protos.connector_models.ReceivedMessage
 import io.iohk.atala.prism.protos.credential_models
 import io.iohk.atala.prism.protos.credential_models.{AcuantProcessFinished, AtalaMessage}
-import io.iohk.atala.prism.protos.connector_api.SendMessageRequest
 import io.iohk.atala.prism.kycbridge.db.ConnectionDao
 import io.iohk.atala.prism.kycbridge.models.assureId.Document
 import io.iohk.atala.prism.kycbridge.services.{AssureIdService, FaceIdService}
@@ -17,17 +16,24 @@ import io.iohk.atala.prism.credentials.{Credential, CredentialBatches}
 import io.iohk.atala.prism.credentials.content.CredentialContent
 import io.iohk.atala.prism.credentials.content.syntax._
 import io.iohk.atala.prism.crypto.ECTrait
-import io.iohk.atala.prism.services.MessageProcessor.MessageProcessorException
-import io.iohk.atala.prism.kycbridge.models.{Connection, faceId}
+import io.iohk.atala.prism.kycbridge.models.faceId
 import doobie.implicits._
+import io.grpc.Status
+import io.iohk.atala.prism.errors.PrismError
 import io.iohk.atala.prism.kycbridge.models.assureId.implicits._
+import io.iohk.atala.prism.kycbridge.models.faceId.FaceMatchResponse
+import io.iohk.atala.prism.kycbridge.processors.DocumentUploadedMessageProcessor.{
+  CannotIssueCredentialBatch,
+  FaceMatchFailedError
+}
+import io.iohk.atala.prism.protos.node_api.IssueCredentialBatchResponse
+import io.iohk.atala.prism.utils.ConnectionUtils
 import io.iohk.atala.prism.utils.syntax.DBConnectionOps
 import org.slf4j.LoggerFactory
 
 class DocumentUploadedMessageProcessor(
     tx: Transactor[Task],
     nodeService: NodeClientService,
-    connectorService: ConnectorClientService,
     assureIdService: AssureIdService,
     faceIdService: FaceIdService,
     authConfig: BaseGrpcClientService.DidBasedAuthConfig
@@ -42,56 +48,43 @@ class DocumentUploadedMessageProcessor(
         (for {
           // get required information
           connection <- EitherT(
-            Connection
-              .fromReceivedMessage(receivedMessage)
+            ConnectionUtils
+              .fromReceivedMessage(receivedMessage, ConnectionDao.findByConnectionId)
               .logSQLErrors("getting connection from received message", logger)
               .transact(tx)
           )
           documentStatus <- EitherT(assureIdService.getDocumentStatus(message.documentInstanceId))
-            .leftMap(e => MessageProcessorException(s"Cannot fetch document status: ${e.getMessage}"))
 
           document <- EitherT(assureIdService.getDocument(message.documentInstanceId))
-            .leftMap(e => MessageProcessorException(s"Cannot fetch document: ${e.getMessage}"))
 
           // update connection with new document status
-          _ <- EitherT.right[MessageProcessorException](
+          _ <- EitherT.right[PrismError](
             ConnectionDao
               .update(connection.copy(acuantDocumentStatus = Some(documentStatus)))
               .logSQLErrors("updating connection", logger)
               .transact(tx)
           )
 
-          frontScannedImage <- EitherT(assureIdService.getFrontImageFromDocument(document.instanceId)).leftMap(e =>
-            MessageProcessorException(
-              s"Cannot fetch image extracted from document from assured id service: ${e.getMessage}"
-            )
-          )
+          frontScannedImage <- EitherT(assureIdService.getFrontImageFromDocument(document.instanceId))
 
           faceMatchData = faceId.Data(frontScannedImage, message.selfieImage.toByteArray)
 
-          faceMatchResult <- EitherT(faceIdService.faceMatch(faceMatchData)).leftMap(e =>
-            MessageProcessorException(
-              s"Cannot check if user's selfie and photo extracted from document match: ${e.getMessage}"
-            )
-          )
+          faceMatchResult <- EitherT(faceIdService.faceMatch(faceMatchData))
 
           _ <- EitherT.cond[Task](
             faceMatchResult.isMatch,
             (),
-            MessageProcessorException(
-              s"User's selfie doesn't match photo extracted from document, face id score ${faceMatchResult.score}"
-            )
+            FaceMatchFailedError(faceMatchResult)
           )
 
           // create credential batch with the document
-          connectionId <- EitherT.fromOption[Task](connection.id, MessageProcessorException("Empty connection id."))
           credential = createCredential(document)
           (root, proof :: _) = CredentialBatches.batch(List(credential))
-          credentialResponse <- EitherT(
+          credentialResponse <- EitherT[Task, PrismError, IssueCredentialBatchResponse](
             nodeService
               .issueCredentialBatch(root)
               .redeem(
-                ex => Left(MessageProcessorException(s"Failed issuing credential batch: ${ex.getMessage}")),
+                ex => Left(CannotIssueCredentialBatch(ex.getMessage)),
                 Right(_)
               )
           )
@@ -101,17 +94,12 @@ class DocumentUploadedMessageProcessor(
             encodedCredential = credential.canonicalForm,
             encodedMerkleProof = proof.encode
           )
-          atalaMessage = credential_models.AtalaMessage(
-            message = AtalaMessage.Message.PlainCredential(credentialProto)
-          )
-          sendMessageRequest =
-            SendMessageRequest(connectionId = connectionId.uuid.toString, message = atalaMessage.toByteString)
+          atalaMessage = AtalaMessage().withPlainCredential(credentialProto)
 
-          _ <- EitherT.right[MessageProcessorException](connectorService.sendMessage(sendMessageRequest))
           _ = logger.info(
             s"Credential batch created for document instance id: ${message.documentInstanceId} with batch id: ${credentialResponse.batchId}"
           )
-        } yield ()).value
+        } yield Some(atalaMessage)).value
       }
   }
 
@@ -135,5 +123,23 @@ class DocumentUploadedMessageProcessor(
         )
       )
       .sign(authConfig.didKeyPair.privateKey)
+  }
+}
+
+object DocumentUploadedMessageProcessor {
+  case class FaceMatchFailedError(faceMatchResponse: FaceMatchResponse) extends PrismError {
+    override def toStatus: Status = {
+      Status.INVALID_ARGUMENT.withDescription(
+        s"User's selfie doesn't match photo extracted from document, face id score ${faceMatchResponse.score}"
+      )
+    }
+  }
+
+  case class CannotIssueCredentialBatch(message: String) extends PrismError {
+    override def toStatus: Status = {
+      Status.INTERNAL.withDescription(
+        s"Failed issuing credential batch: $message"
+      )
+    }
   }
 }

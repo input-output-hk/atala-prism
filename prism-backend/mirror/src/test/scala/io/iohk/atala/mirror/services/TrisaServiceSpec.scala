@@ -12,7 +12,7 @@ class TrisaServiceSpec extends AnyWordSpec with Matchers with MirrorFixtures {
 
   "TrisaService" should {
     "initiate transaction in trisa integration service" in new TrisaServiceFixtures {
-      messageProcessor(initiateTrisaCardanoTransactionMessage).value.runSyncUnsafe() mustBe Right(())
+      messageProcessor(initiateTrisaCardanoTransactionMessage).value.runSyncUnsafe() mustBe Right(None)
     }
 
     "return None if ReceivedMessage is not CardanoAddressMessage" in new TrisaServiceFixtures {
