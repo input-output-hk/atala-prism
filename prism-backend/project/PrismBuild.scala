@@ -26,10 +26,10 @@ object PrismBuild {
               "-Wdead-code",
               "-Ywarn-dead-code"
             )
-          ) :+ "-P:silencer:checkUnused"
+          )
         ),
         javacOptions ++= Seq("-source", "1.8", "-target", "1.8"),
-        libraryDependencies ++= scalatestDependencies ++ silencerDependencies,
+        libraryDependencies ++= scalatestDependencies,
         addCompilerPlugin("org.typelevel" % "kind-projector" % "0.11.3" cross CrossVersion.full),
         coverageScalacPluginVersion := "1.4.1",
         Test / fork := true,

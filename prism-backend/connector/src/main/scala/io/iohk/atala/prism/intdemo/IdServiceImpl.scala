@@ -4,7 +4,7 @@ import java.security.MessageDigest
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
 
-import com.github.ghik.silencer.silent
+import scala.annotation.nowarn
 import cats.syntax.functor._
 import io.circe.Json.fromString
 import io.circe._
@@ -83,7 +83,7 @@ object IdServiceImpl {
 
   val credentialTypeId = "VerifiableCredential/RedlandIdCredential"
 
-  @silent("never used")
+  @nowarn("cat=unused-params")
   def noProofRequests(connection: Connection): Future[Unit] =
     Future.unit
 

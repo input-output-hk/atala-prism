@@ -1,6 +1,6 @@
 package io.iohk.atala.prism.node.poc
 
-import com.github.ghik.silencer.silent
+import scala.annotation.nowarn
 import io.iohk.atala.prism.identity.{DID, DIDSuffix}
 import io.iohk.atala.prism.credentials.content.CredentialContent
 import io.iohk.atala.prism.credentials.content.syntax._
@@ -30,10 +30,10 @@ object GenericCredentialsSDK {
     )
   }
 
-  @silent("never used")
+  @nowarn("cat=unused-params")
   def getIssuerDID(credential: String): String = issuerDIDUsed.value
-  @silent("never used")
+  @nowarn("cat=unused-params")
   def getIssuerDIDSufix(credential: String): DIDSuffix = issuerDIDUsed.suffix
-  @silent("never used")
+  @nowarn("cat=unused-params")
   def getKeyId(credential: String): String = keyIdUsed
 }

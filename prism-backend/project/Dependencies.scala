@@ -28,7 +28,6 @@ object versions {
   val scalatestplus = s"$scalatest.0"
   val scalapb = "0.10.8"
   val scopt = "4.0.0-RC2"
-  val silencer = "1.7.1"
   val slf4j = "1.7.30"
   val sttp = "1.7.2"
   val twirl = "1.5.0"
@@ -91,10 +90,6 @@ object Dependencies {
   val scalatestWordspec = "org.scalatest" %% "scalatest-wordspec" % versions.scalatest % Test
   val scalatestplus = "org.scalatestplus" %% "scalacheck-1-14" % versions.scalatestplus % Test
 
-  // Compiler plugins
-  val silencer = "com.github.ghik" % "silencer-lib" % versions.silencer % Provided cross CrossVersion.full
-  val silencerPlugin = compilerPlugin("com.github.ghik" % "silencer-plugin" % versions.silencer cross CrossVersion.full)
-
   val bouncyDependencies = Seq(bouncyBcpkix, bouncyBcprov)
   val circeDependencies = Seq(circeCore, circeGeneric, circeGenericExtras, circeParser, circeOptics)
   val dockerDependencies = Seq(dockerClient, dockerTestkitScalatest, dockerTestkitSpotify)
@@ -104,7 +99,6 @@ object Dependencies {
   val mockitoDependencies = Seq(mockito, mockitoScalatest)
   val monocleDependencies = Seq(monocleCore, monocleGeneric, monocleMacro)
   val scalatestDependencies = Seq(scalatest, scalatestWordspec, scalatestplus, catsScalatest)
-  val silencerDependencies = Seq(silencer, silencerPlugin)
   val sttpDependencies = Seq(sttpCore, sttpFuture)
   val http4sDependencies = Seq(http4sCirce, http4sDsl, http4sBlazeServer, http4sBlazeClient)
 
