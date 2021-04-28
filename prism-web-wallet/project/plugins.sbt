@@ -7,7 +7,7 @@ libraryDependencies += "org.scala-js" %% "scalajs-env-selenium" % "1.0.0"
 
 addSbtPlugin("org.scalablytyped.converter" % "sbt-converter" % "1.0.0-beta29.1")
 
-addSbtPlugin("org.scala-js" % "sbt-scalajs" % "1.3.0")
+addSbtPlugin("org.scala-js" % "sbt-scalajs" % "1.5.1")
 
 addSbtPlugin("com.alexitc" % "sbt-chrome-plugin" % "0.7.0")
 

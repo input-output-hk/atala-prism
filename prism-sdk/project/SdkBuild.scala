@@ -91,7 +91,7 @@ object SdkBuild {
         )
       )
       .jsSettings(
-        libraryDependencies += scalajsTime.value,
+        libraryDependencies += scalaJavaTime.value,
         Compile / npmDependencies in Compile ++= Seq(
           "elliptic" -> "6.5.3",
           "hash.js" -> "1.1.7",

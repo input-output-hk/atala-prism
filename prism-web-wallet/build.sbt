@@ -118,7 +118,7 @@ val scalatagsVersion = "0.9.1"
 val scalaDomVersion = "1.0.0"
 val scalaJsChromeVersion = "0.7.0"
 val enumeratumVersion = "1.6.1"
-val scalaJsJavaTimeVersion = "1.0.0"
+val scalaJavaTimeVersion = "2.2.2"
 val slinkyVersion = "0.6.7"
 
 libraryDependencies += "org.scala-js" %%% "scalajs-dom" % scalaDomVersion
@@ -129,7 +129,7 @@ libraryDependencies += "io.circe" %%% "circe-generic" % circe
 libraryDependencies += "io.circe" %%% "circe-parser" % circe
 libraryDependencies += "com.beachape" %%% "enumeratum-circe" % enumeratumVersion
 
-libraryDependencies += "org.scala-js" %%% "scalajs-java-time" % scalaJsJavaTimeVersion
+libraryDependencies += "io.github.cquiroz" %%% "scala-java-time" % scalaJavaTimeVersion
 
 // React
 libraryDependencies += "me.shadaj" %%% "slinky-core" % slinkyVersion // core React functionality, no React DOM

@@ -6,7 +6,7 @@ object versions {
   // Bouncy Castle is non-upgradable due to https://github.com/bitcoinj/bitcoinj/issues/1951
   val bouncycastle = "1.63"
   val circe = "0.13.0"
-  val scalajsTime = "1.0.0"
+  val scalaJavaTime = "2.2.2"
   val silencer = "1.6.0"
   val spongycastle = "1.58.0.0"
   val scalatest = "3.2.2"
@@ -24,7 +24,7 @@ object Dependencies {
   val spongyBcpkix = "com.madgag.spongycastle" % "bcpkix-jdk15on" % versions.spongycastle
   val spongyBcprov = "com.madgag.spongycastle" % "prov" % versions.spongycastle
 
-  val scalajsTime = Def.setting("org.scala-js" %%% "scalajs-java-time" % versions.scalajsTime)
+  val scalaJavaTime = Def.setting("io.github.cquiroz" %%% "scala-java-time" % versions.scalaJavaTime)
   val scalaUri = Def.setting("io.lemonlabs" %%% "scala-uri" % versions.scalaUri)
   val scalaParserCombinators =
     Def.setting("org.scala-lang.modules" %%% "scala-parser-combinators" % versions.scalaParserCombinators)
