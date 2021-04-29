@@ -7,7 +7,6 @@ include(":credentials")
 include(":extras")
 include(":docs")
 include(":generator")
-include(":integration-tests")
 
 pluginManagement {
     repositories {
