@@ -52,7 +52,8 @@ object CompleteFlowTutorial {
         println("Issuer: Generates and registers a DID")
         val issuerMasterKeyPair = EC.generateKeyPair()
         val issuerCreateDIDOperation = ProtoUtils.createDidAtalaOperation(issuerMasterKeyPair)
-        val issuerCreatedDIDSignedOperation = ProtoUtils.signedAtalaOperation(issuerMasterKeyPair, issuerCreateDIDOperation)
+        val issuerCreatedDIDSignedOperation =
+            ProtoUtils.signedAtalaOperation(issuerMasterKeyPair, issuerCreateDIDOperation)
 
         // Issuer registers its identity to the node
         // Usually the DID would be registered with the node, but, the connector can handle that as well
@@ -60,7 +61,7 @@ object CompleteFlowTutorial {
         val issuerRegisterDIDResponse = runBlocking {
             connector.RegisterDID(
                 RegisterDIDRequest(
-                    createDIDOperation = issuerCreatedDIDSignedOperation,
+                    createDidOperation = issuerCreatedDIDSignedOperation,
                     name = "Issuer"
                 )
             )
@@ -118,7 +119,7 @@ object CompleteFlowTutorial {
             """
             Holder: Check Issuer's connection token details:
             - Issuer name = ${issuerConnectionTokenDetails.creatorName}
-            - Issuer DID  = ${issuerConnectionTokenDetails.creatorDID}
+            - Issuer DID  = ${issuerConnectionTokenDetails.creatorDid}
             """.trimIndent()
         )
 
@@ -161,7 +162,11 @@ object CompleteFlowTutorial {
         val holderSignedCredential = holderUnsignedCredential.sign(issuerMasterKeyPair.privateKey)
 
         // Include the credential in a batch
-        val (holderCredentialMerkleRoot, holderCredentialMerkleProofs) = CredentialBatches.batch(listOf(holderSignedCredential))
+        val (holderCredentialMerkleRoot, holderCredentialMerkleProofs) = CredentialBatches.batch(
+            listOf(
+                holderSignedCredential
+            )
+        )
         val credentialBatchData = CredentialBatchData(
             issuerDid = issuerDID.suffix.value, // This requires the suffix only, as the node stores only suffixes
             merkleRoot = pbandk.ByteArr(holderCredentialMerkleRoot.hash.value.toByteArray())
@@ -169,7 +174,8 @@ object CompleteFlowTutorial {
         val issueCredentialOperation = ProtoUtils.issueCredentialBatchOperation(credentialBatchData)
 
         // Issuer publishes the credential to Cardano
-        val signedIssueCredentialOperation = ProtoUtils.signedAtalaOperation(issuerMasterKeyPair, issueCredentialOperation)
+        val signedIssueCredentialOperation =
+            ProtoUtils.signedAtalaOperation(issuerMasterKeyPair, issueCredentialOperation)
         val issuedCredentialResponse = runBlocking {
             node.IssueCredentialBatch(IssueCredentialBatchRequest(signedIssueCredentialOperation))
         }
@@ -187,7 +193,7 @@ object CompleteFlowTutorial {
 
         // Issuer sends the credential to Holder through the connector
         val credentialFromIssuerMessage = AtalaMessage(
-            AtalaMessage.Message.PlainCredential(
+            message = AtalaMessage.Message.PlainCredential(
                 PlainTextCredential(
                     encodedCredential = holderSignedCredential.canonicalForm,
                     encodedMerkleProof = holderCredentialMerkleProofs.first().encode()
@@ -201,7 +207,11 @@ object CompleteFlowTutorial {
         val issuerHolderConnectionId = runBlocking {
             connector.GetConnectionByTokenAuth(
                 issuerGetConnectionRequest,
-                RequestUtils.generateRequestMetadata(issuerUnpublishedDID.value, issuerMasterKeyPair.privateKey, issuerGetConnectionRequest)
+                RequestUtils.generateRequestMetadata(
+                    issuerUnpublishedDID.value,
+                    issuerMasterKeyPair.privateKey,
+                    issuerGetConnectionRequest
+                )
             ).connection?.connectionId!!
         }
 
@@ -252,12 +262,13 @@ object CompleteFlowTutorial {
         println("Verifier: Generates and registers a DID")
         val verifierMasterKeyPair = EC.generateKeyPair()
         val verifierCreateDIDOperation = ProtoUtils.createDidAtalaOperation(verifierMasterKeyPair)
-        val verifierCreateDIDSignedOperation = ProtoUtils.signedAtalaOperation(verifierMasterKeyPair, verifierCreateDIDOperation)
+        val verifierCreateDIDSignedOperation =
+            ProtoUtils.signedAtalaOperation(verifierMasterKeyPair, verifierCreateDIDOperation)
 
         val verifierRegisterDIDResponse = runBlocking {
             connector.RegisterDID(
                 RegisterDIDRequest(
-                    createDIDOperation = verifierCreateDIDSignedOperation,
+                    createDidOperation = verifierCreateDIDSignedOperation,
                     name = "Verifier"
                 )
             )
@@ -307,7 +318,7 @@ object CompleteFlowTutorial {
 
         // Holder shares a credential with Verifier
         val credentialFromHolderMessage = AtalaMessage(
-            AtalaMessage.Message.PlainCredential(
+            message = AtalaMessage.Message.PlainCredential(
                 PlainTextCredential(
                     encodedCredential = holderReceivedCredential.encodedCredential,
                     encodedMerkleProof = holderReceivedCredential.encodedMerkleProof
@@ -358,9 +369,11 @@ object CompleteFlowTutorial {
         println()
 
         // decode the received credential
-        val verifierReceivedJsonCredential = JsonBasedCredential.fromString(verifierReceivedCredential.encodedCredential)
+        val verifierReceivedJsonCredential =
+            JsonBasedCredential.fromString(verifierReceivedCredential.encodedCredential)
         val verifierReceivedCredentialIssuerDID = verifierReceivedJsonCredential.content.getString("issuerDid")!!
-        val verifierReceivedCredentialIssuanceKeyId = verifierReceivedJsonCredential.content.getString("issuanceKeyId")!!
+        val verifierReceivedCredentialIssuanceKeyId =
+            verifierReceivedJsonCredential.content.getString("issuanceKeyId")!!
         println(
             """
             Verifier: Received credential decoded
@@ -376,8 +389,10 @@ object CompleteFlowTutorial {
         val verifierReceivedCredentialIssuerDIDDocument = runBlocking {
             node.GetDidDocument(GetDidDocumentRequest(did = verifierReceivedCredentialIssuerDID)).document!!
         }
-        val verifierReceivedCredentialIssuerKey = verifierReceivedCredentialIssuerDIDDocument.findPublicKey(verifierReceivedCredentialIssuanceKeyId)
-        val verifierReceivedCredentialMerkleProof = MerkleInclusionProof.decode(verifierReceivedCredential.encodedMerkleProof)
+        val verifierReceivedCredentialIssuerKey =
+            verifierReceivedCredentialIssuerDIDDocument.findPublicKey(verifierReceivedCredentialIssuanceKeyId)
+        val verifierReceivedCredentialMerkleProof =
+            MerkleInclusionProof.decode(verifierReceivedCredential.encodedMerkleProof)
 
         val verifierReceivedCredentialBatchId = CredentialBatches.computeCredentialBatchId(
             DID.fromString(verifierReceivedCredentialIssuerDID),
@@ -385,7 +400,11 @@ object CompleteFlowTutorial {
         )
 
         val verifierReceivedCredentialBatchState = runBlocking {
-            node.GetBatchState(GetBatchStateRequest(batchId = Hash.fromHex(verifierReceivedCredentialBatchId.id).hexValue()))
+            node.GetBatchState(
+                GetBatchStateRequest(
+                    batchId = Hash.fromHex(verifierReceivedCredentialBatchId.id).hexValue()
+                )
+            )
         }
         val verifierReceivedCredentialBatchData = BatchData(
             issuedOn = verifierReceivedCredentialBatchState.publicationLedgerData?.timestampInfo?.toTimestampInfoModel()!!,
@@ -418,7 +437,8 @@ object CompleteFlowTutorial {
             batchId = CredentialBatchId.fromString(issuedCredentialResponse.batchId)!!,
             credentials = listOf(holderSignedCredential)
         )
-        val issuerRevokeCredentialSignedOperation = ProtoUtils.signedAtalaOperation(issuerMasterKeyPair, issuerRevokeCredentialOperation)
+        val issuerRevokeCredentialSignedOperation =
+            ProtoUtils.signedAtalaOperation(issuerMasterKeyPair, issuerRevokeCredentialOperation)
         val issuerCredentialRevocationResponse = runBlocking {
             node.RevokeCredentials(
                 RevokeCredentialsRequest(issuerRevokeCredentialSignedOperation)

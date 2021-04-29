@@ -1,13 +1,15 @@
+import com.palantir.gradle.gitversion.VersionDetails
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 plugins {
     kotlin("jvm") version "1.4.31"
     application
     id("org.jlleitschuh.gradle.ktlint") version "9.4.1"
+    id("com.palantir.git-version") version "0.12.3"
 }
 
-// Replace with the current version
-val prismVersion = "0.1.0-941fa0d2"
+val versionDetails: groovy.lang.Closure<VersionDetails> by extra
+val prismVersion = "0.1.0-" + versionDetails().gitHash.substring(0, 8)
 
 group = "io.iohk.atala.prism.example"
 version = "1.0-SNAPSHOT"

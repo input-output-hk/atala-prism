@@ -34,7 +34,7 @@ suspend fun main() {
     fun pressEnterToContinue() {
         println("Press enter to continue...")
         while (System.`in`.read() != 10)
-        println()
+            println()
     }
 
     println(
@@ -59,7 +59,8 @@ suspend fun main() {
     val issuerMasterKeyPair = EC.generateKeyPair()
     val issuerCreatedDIDSignedOperation = ProtoUtils.signedAtalaOperation(
         issuerMasterKeyPair,
-        ProtoUtils.createDidAtalaOperation(issuerMasterKeyPair))
+        ProtoUtils.createDidAtalaOperation(issuerMasterKeyPair)
+    )
 
     val issuerRegisterDIDResponse = node.CreateDID(CreateDIDRequest(issuerCreatedDIDSignedOperation))
     val issuerDID = DID.buildPrismDID(issuerRegisterDIDResponse.id)
@@ -83,7 +84,6 @@ suspend fun main() {
     println("\nNext, let's create a credential")
     pressEnterToContinue()
     println("\n*************** STEP 3")
-
 
     // Issuer generates a credential to Holder
     val issuanceKeyId = "master0"
@@ -109,18 +109,24 @@ suspend fun main() {
     val holderSignedCredential = holderUnsignedCredential.sign(issuerMasterKeyPair.privateKey)
 
     // Include the credential in a batch
-    val (holderCredentialMerkleRoot, holderCredentialMerkleProofs) = CredentialBatches.batch(listOf(holderSignedCredential))
+    val (holderCredentialMerkleRoot, holderCredentialMerkleProofs) = CredentialBatches.batch(
+        listOf(
+            holderSignedCredential
+        )
+    )
     val credentialBatchData = CredentialBatchData(
-        issuerDID = issuerDID.suffix.value, // This requires the suffix only, as the node stores only suffixes
+        issuerDid = issuerDID.suffix.value, // This requires the suffix only, as the node stores only suffixes
         merkleRoot = pbandk.ByteArr(holderCredentialMerkleRoot.hash.value.toByteArray())
     )
 
     // Issuer publishes the credential to Cardano
     val signedIssueCredentialOperation = ProtoUtils.signedAtalaOperation(
         issuerMasterKeyPair,
-        ProtoUtils.issueCredentialBatchOperation(credentialBatchData))
+        ProtoUtils.issueCredentialBatchOperation(credentialBatchData)
+    )
     val issuedCredentialResponse = node.IssueCredentialBatch(
-        IssueCredentialBatchRequest(signedIssueCredentialOperation))
+        IssueCredentialBatchRequest(signedIssueCredentialOperation)
+    )
 
     println(
         """
@@ -146,17 +152,18 @@ suspend fun main() {
 
     val issuerIssuanceKey = resolvedIssuerDIDDocument.findPublicKey(issuanceKeyId)
     val resolvedCredentialBatchState = node.GetBatchState(
-        GetBatchStateRequest(batchId = Hash.fromHex(issuedCredentialResponse.batchId).hexValue()))
+        GetBatchStateRequest(batchId = Hash.fromHex(issuedCredentialResponse.batchId).hexValue())
+    )
     val resolvedCredentialBatchData = BatchData(
         issuedOn = resolvedCredentialBatchState.publicationLedgerData?.timestampInfo?.toTimestampInfoModel()!!,
         revokedOn = resolvedCredentialBatchState.revocationLedgerData?.timestampInfo?.toTimestampInfoModel()
     )
     val credentialRevocationTime = node.GetCredentialRevocationTime(
-            GetCredentialRevocationTimeRequest(
-                batchId = Hash.fromHex(issuedCredentialResponse.batchId).hexValue(),
-                credentialHash = pbandk.ByteArr(holderUnsignedCredential.hash().value.toByteArray())
-            )
+        GetCredentialRevocationTimeRequest(
+            batchId = Hash.fromHex(issuedCredentialResponse.batchId).hexValue(),
+            credentialHash = pbandk.ByteArr(holderUnsignedCredential.hash().value.toByteArray())
         )
+    )
         .revocationLedgerData?.timestampInfo?.toTimestampInfoModel()
     println(
         """

@@ -757,6 +757,16 @@ jobs:
             cd prism-kotlin-sdk
             ./gradlew allTests
 
+      - run:
+          name: Local publishing
+          command: cd prism-kotlin-sdk && ./gradlew publishToMavenLocal
+
+      - run:
+          name: Compiling examples and its tests
+          command: |
+            cd prism-kotlin-sdk/examples/prism-sdk-kotlin-example
+            ./gradlew build
+
       - aggregate-gradle-test-reports:
           directory: "prism-kotlin-sdk"
 
