@@ -4,6 +4,9 @@ import io.iohk.atala.prism.kotlin.credentials.Credential
 import io.iohk.atala.prism.kotlin.crypto.EC
 import io.iohk.atala.prism.kotlin.crypto.util.BytesOps.hexToBytes
 
+fun CredentialJS.toKotlin(): Credential =
+    credential
+
 @JsExport
 abstract class CredentialJS internal constructor(internal val credential: Credential) {
     abstract val contentBytes: ByteArray

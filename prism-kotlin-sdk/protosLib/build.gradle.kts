@@ -50,6 +50,7 @@ protobuf {
                 id("kotlin") {
                     option("kotlin_package=io.iohk.atala.prism.kotlin.protos")
                     option("kotlin_service_gen=${project(":generator").buildDir}/libs/generator-$version.jar|io.iohk.atala.prism.kotlin.generator.Generator")
+                    option("js_export=true")
                 }
             }
         }

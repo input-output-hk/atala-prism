@@ -2,10 +2,10 @@ package io.iohk.atala.prism.kotlin.credentials.exposed
 
 import io.iohk.atala.prism.kotlin.credentials.*
 import io.iohk.atala.prism.kotlin.crypto.MerkleInclusionProof
-import io.iohk.atala.prism.kotlin.crypto.MerkleRoot
 import io.iohk.atala.prism.kotlin.crypto.SHA256Digest
 import io.iohk.atala.prism.kotlin.crypto.exposed.MerkleInclusionProofJS
 import io.iohk.atala.prism.kotlin.crypto.exposed.MerkleRootJS
+import io.iohk.atala.prism.kotlin.crypto.exposed.toKotlin
 
 @JsExport
 object CredentialVerificationJS {
@@ -30,7 +30,7 @@ object CredentialVerificationJS {
             keyData.toKeyData(),
             batchData.toBatchData(),
             credentialRevocationTime?.internal,
-            MerkleRoot(SHA256Digest.fromHex(merkleRoot.hash)),
+            merkleRoot.toKotlin(),
             MerkleInclusionProof(
                 SHA256Digest.fromHex(inclusionProof.hash),
                 inclusionProof.index,

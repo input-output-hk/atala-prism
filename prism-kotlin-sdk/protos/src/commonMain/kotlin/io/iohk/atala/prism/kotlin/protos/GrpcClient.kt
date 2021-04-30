@@ -1,10 +1,14 @@
 package io.iohk.atala.prism.kotlin.protos
 
 import pbandk.Message
+import kotlin.js.JsExport
 
+@JsExport
 data class GrpcServerOptions(val protocol: String, val host: String, val port: Int)
+@JsExport
 data class GrpcEnvoyOptions(val protocol: String, val host: String, val port: Int)
 
+@JsExport
 class PrismMetadata(
     val did: String,
     val didKeyId: String,

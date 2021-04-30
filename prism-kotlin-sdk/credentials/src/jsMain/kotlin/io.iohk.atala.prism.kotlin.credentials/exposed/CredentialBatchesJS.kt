@@ -1,10 +1,11 @@
 package io.iohk.atala.prism.kotlin.credentials.exposed
 
 import io.iohk.atala.prism.kotlin.credentials.CredentialBatches
-import io.iohk.atala.prism.kotlin.crypto.*
 import io.iohk.atala.prism.kotlin.crypto.exposed.MerkleInclusionProofJS
 import io.iohk.atala.prism.kotlin.crypto.exposed.MerkleRootJS
-import io.iohk.atala.prism.kotlin.crypto.util.BytesOps.hexToBytes
+import io.iohk.atala.prism.kotlin.crypto.exposed.toKotlin
+import io.iohk.atala.prism.kotlin.identity.exposed.DIDJS
+import io.iohk.atala.prism.kotlin.identity.exposed.toKotlin
 
 @JsExport
 data class BatchResult(
@@ -28,8 +29,13 @@ object CredentialBatchesJS {
     ): Boolean {
         return CredentialBatches.verifyInclusion(
             signedCredential.credential,
-            MerkleRoot(Hash(hexToBytes(merkleRoot.hash))),
+            merkleRoot.toKotlin(),
             inclusionProof.internal
         )
+    }
+
+    @JsName("computeCredentialBatchId")
+    fun computeCredentialBatchId(did: DIDJS, merkleRoot: MerkleRootJS): CredentialBatchIdJS {
+        return CredentialBatches.computeCredentialBatchId(did.toKotlin(), merkleRoot.toKotlin()).toJs()
     }
 }

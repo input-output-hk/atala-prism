@@ -4,6 +4,9 @@ import io.iohk.atala.prism.kotlin.crypto.EC
 import io.iohk.atala.prism.kotlin.crypto.util.BytesOps
 import io.iohk.atala.prism.kotlin.identity.*
 
+fun DIDJS.toKotlin(): DID =
+    this.did
+
 @JsExport
 object DIDJSCompanion {
     val prismPrefix = DID.prismPrefix
@@ -24,7 +27,7 @@ object DIDJSCompanion {
 }
 
 @JsExport
-class DIDJS internal constructor(private val did: DID) {
+class DIDJS internal constructor(internal val did: DID) {
     @JsName("getValue")
     fun getValue(): String = did.value
 

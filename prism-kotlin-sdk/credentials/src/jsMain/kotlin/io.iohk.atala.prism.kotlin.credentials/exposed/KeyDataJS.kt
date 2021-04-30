@@ -4,6 +4,13 @@ import io.iohk.atala.prism.kotlin.credentials.KeyData
 import io.iohk.atala.prism.kotlin.crypto.EC
 import io.iohk.atala.prism.kotlin.crypto.util.BytesOps.hexToBytes
 
+fun KeyData.toJs(): KeyDataJS =
+    KeyDataJS(
+        publicKey.getHexEncoded(),
+        addedOn.toJs(),
+        revokedOn?.toJs()
+    )
+
 @JsExport
 data class KeyDataJS(
     val publicKey: String,

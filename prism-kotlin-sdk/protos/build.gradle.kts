@@ -108,6 +108,7 @@ kotlin {
             }
         }
         val jsMain by getting {
+            kotlin.srcDir("${project(":protosLib").buildDir}/generated/source/proto/jsMain/kotlin")
             dependencies {
                 implementation(npm("grpc-web", "1.2.1", generateExternals = true))
             }

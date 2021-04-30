@@ -5,6 +5,7 @@ import io.iohk.atala.prism.kotlin.crypto.keys.ECPublicKey
 import io.iohk.atala.prism.kotlin.protos.ECKeyData
 import io.iohk.atala.prism.kotlin.protos.KeyUsage
 import io.iohk.atala.prism.kotlin.protos.PublicKey
+import kotlin.js.JsExport
 
 fun ECPublicKey.toECKeyData(): ECKeyData {
     val point = this.getCurvePoint()
@@ -16,6 +17,7 @@ fun ECPublicKey.toECKeyData(): ECKeyData {
     )
 }
 
+@JsExport
 fun ECKeyData.toPublicKey(
     id: String,
     keyUsage: KeyUsage

@@ -2,6 +2,9 @@ package io.iohk.atala.prism.kotlin.credentials.exposed
 
 import io.iohk.atala.prism.kotlin.credentials.TimestampInfo
 
+fun TimestampInfo.toJs(): TimestampInfoJS =
+    TimestampInfoJS(this)
+
 @JsExport
 class TimestampInfoJS internal constructor(internal val internal: TimestampInfo) {
     @JsName("create")

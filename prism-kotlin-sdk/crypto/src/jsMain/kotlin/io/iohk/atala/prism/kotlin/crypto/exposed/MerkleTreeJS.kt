@@ -2,8 +2,18 @@ package io.iohk.atala.prism.kotlin.crypto.exposed
 
 import io.iohk.atala.prism.kotlin.crypto.*
 
+fun MerkleRootJS.toKotlin(): MerkleRoot =
+    MerkleRoot(SHA256Digest.fromHex(hash))
+
 @JsExport
 data class MerkleRootJS(val hash: String)
+
+@JsExport
+object MerkleInclusionProofJSCompanion {
+    @JsName("decode")
+    fun decode(encoded: String): MerkleInclusionProofJS =
+        MerkleInclusionProofJS(MerkleInclusionProof.decode(encoded))
+}
 
 @JsExport
 data class MerkleInclusionProofJS constructor(val internal: MerkleInclusionProof) {
@@ -14,6 +24,10 @@ data class MerkleInclusionProofJS constructor(val internal: MerkleInclusionProof
     @JsName("derivedRoot")
     fun derivedRoot(): MerkleRootJS =
         MerkleRootJS(internal.derivedRoot().hash.hexValue())
+
+    @JsName("encode")
+    fun encode(): String =
+        internal.encode()
 }
 
 @JsExport
@@ -30,5 +44,5 @@ fun generateProofsJS(hashes: Array<String>): MerklePairJS {
 @JsExport
 @JsName("verifyProofJS")
 fun verifyProofJS(root: MerkleRootJS, proof: MerkleInclusionProofJS): Boolean {
-    return verifyProof(MerkleRoot(SHA256Digest.fromHex(root.hash)), proof.internal)
+    return verifyProof(root.toKotlin(), proof.internal)
 }
