@@ -22,7 +22,7 @@ const DashboardCardGroup = ({ loading, data }) => {
       <BulletItems
         bulletClass="violetBullet"
         title={tp('total')}
-        value={data.numberofgroups}
+        value={data.numberOfGroups}
         loading={loading}
       />
     </div>
@@ -32,14 +32,14 @@ const DashboardCardGroup = ({ loading, data }) => {
 DashboardCardGroup.defaultProps = {
   loading: false,
   data: {
-    numberofgroups: 0
+    numberOfGroups: 0
   }
 };
 
 DashboardCardGroup.propTypes = {
   loading: PropTypes.bool,
   data: PropTypes.shape({
-    numberofgroups: PropTypes.number
+    numberOfGroups: PropTypes.number
   })
 };
 

@@ -26,19 +26,19 @@ const DashboardCardCredential = ({ loading, data }) => {
       <IconItems
         icon={iconDraft}
         title={tp('draft')}
-        value={data.numberofcredentialsindraft}
+        value={data.numberOfCredentialsInDraft}
         loading={loading}
       />
       <IconItems
         icon={iconSigned}
         title={tp('signed')}
-        value={data.numberofcredentialspublished}
+        value={data.numberOfCredentialsPublished}
         loading={loading}
       />
       <IconItems
         icon={iconReceived}
         title={tp('received')}
-        value={data.numberofcredentialsreceived}
+        value={data.numberOfCredentialsReceived}
         loading={loading}
       />
     </div>
@@ -48,18 +48,18 @@ const DashboardCardCredential = ({ loading, data }) => {
 DashboardCardCredential.defaultProps = {
   loading: false,
   data: {
-    numberofcredentialsindraft: 0,
-    numberofcredentialspublished: 0,
-    numberofcredentialsreceived: 0
+    numberOfCredentialsInDraft: 0,
+    numberOfCredentialsPublished: 0,
+    numberOfCredentialsReceived: 0
   }
 };
 
 DashboardCardCredential.propTypes = {
   loading: PropTypes.bool,
   data: PropTypes.shape({
-    numberofcredentialsindraft: PropTypes.number,
-    numberofcredentialspublished: PropTypes.number,
-    numberofcredentialsreceived: PropTypes.number
+    numberOfCredentialsInDraft: PropTypes.number,
+    numberOfCredentialsPublished: PropTypes.number,
+    numberOfCredentialsReceived: PropTypes.number
   })
 };
 

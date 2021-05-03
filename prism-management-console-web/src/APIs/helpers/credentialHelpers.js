@@ -5,10 +5,10 @@ export function credentialMapper(credential, credentialTypes) {
   const {
     batchid,
     credentialid,
-    credentialdata,
+    credentialData,
     contactid,
     externalid,
-    contactdata,
+    contactData,
     connectionstatus,
     encodedsignedcredential,
     publicationstoredat,
@@ -19,13 +19,13 @@ export function credentialMapper(credential, credentialTypes) {
     revocationproof
   } = credential;
 
-  const parsedCredentialJson = JSON.parse(credentialdata);
+  const parsedCredentialJson = JSON.parse(credentialData);
 
   return {
     ...parsedCredentialJson,
     batchid,
     credentialid,
-    credentialdata,
+    credentialData,
     encodedsignedcredential,
     publicationstoredat,
     issuanceproof,
@@ -39,7 +39,7 @@ export function credentialMapper(credential, credentialTypes) {
       contactid,
       externalid,
       connectionstatus,
-      jsondata: contactdata
+      jsonData: contactData
     })
   };
 }

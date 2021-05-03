@@ -20,8 +20,8 @@ const { AtalaMessage, PlainTextCredential } = require('../../protos/credential_m
 
 function mapCredential(cred) {
   const credential = cred.toObject();
-  const credentialData = JSON.parse(cred.getCredentialdata());
-  const subjectData = JSON.parse(cred.getContactdata());
+  const credentialData = JSON.parse(cred.getCredentialData());
+  const subjectData = JSON.parse(cred.getContactData());
   return Object.assign(credential, { subjectData }, credentialData);
 }
 
@@ -30,7 +30,7 @@ async function getCredentials(limit = CREDENTIAL_PAGE_SIZE, lastSeenCredentialId
 
   const getCredentialsRequest = new GetGenericCredentialsRequest();
   getCredentialsRequest.setLimit(limit);
-  getCredentialsRequest.setLastSeenCredentialId(lastSeenCredentialId);
+  getCredentialsRequest.setOffset(lastSeenCredentialId);
 
   const timeout = REQUEST_AUTH_TIMEOUT_MS + getAditionalTimeout(limit);
 

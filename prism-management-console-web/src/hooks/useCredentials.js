@@ -7,7 +7,6 @@ import {
   UNKNOWN_DID_SUFFIX_ERROR_CODE
 } from '../helpers/constants';
 import Logger from '../helpers/Logger';
-import { getLastArrayElementOrEmpty } from '../helpers/genericHelpers';
 import {
   filterByInclusion,
   filterByExactMatch,
@@ -64,10 +63,9 @@ export const useCredentialsIssuedListWithFilters = credentialsManager => {
       if (isLoading || isSearching) return;
 
       setIsSearching(true);
-      const { credentialid } = getLastArrayElementOrEmpty(credentials);
 
       credentialsManager
-        .getCredentials(isFetchAll ? MAX_CREDENTIALS : CREDENTIAL_PAGE_SIZE, credentialid)
+        .getCredentials(isFetchAll ? MAX_CREDENTIALS : CREDENTIAL_PAGE_SIZE, credentials.length)
         .then(newlyFetchedCredentials => {
           if (newlyFetchedCredentials.length < CREDENTIAL_PAGE_SIZE) setHasMore(false);
 

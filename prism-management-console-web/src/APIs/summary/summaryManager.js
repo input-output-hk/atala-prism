@@ -19,15 +19,15 @@ async function getStatistics() {
 
   return {
     contacts: pick(result, [
-      'numberofcontactspendingconnection',
-      'numberofcontactsconnected',
-      'numberofcontacts'
+      'numberOfContactsPendingConnection',
+      'numberOfContactsConnected',
+      'numberOfContacts'
     ]),
-    groups: pick(result, ['numberofgroups']),
+    groups: pick(result, ['numberOfGroups']),
     credentials: pick(result, [
-      'numberofcredentialsindraft',
-      'numberofcredentialspublished',
-      'numberofcredentialsreceived'
+      'numberOfCredentialsInDraft',
+      'numberOfCredentialsPublished',
+      'numberOfCredentialsReceived'
     ])
   };
 }

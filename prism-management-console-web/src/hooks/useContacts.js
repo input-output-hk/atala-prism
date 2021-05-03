@@ -41,7 +41,6 @@ const useGetContacts = (contactsManager, allowPreload = true) => {
               'There were more rows than expected. Frontend-only filters will yield incomplete results'
             );
           }
-
           const contactsWithKey = newContacts.map(contactMapper);
           const updatedContacts = oldContacts.concat(contactsWithKey);
 

@@ -9,7 +9,7 @@ import { useTranslationWithPrefix } from '../../../hooks/useTranslationWithPrefi
 const DashboardCard = ({ loading, data }) => {
   const tp = useTranslationWithPrefix('dashboard.analytics');
 
-  const contactsPendingConnection = data.numberofcontacts - data.numberofcontactsconnected;
+  const contactsPendingConnection = data.numberOfContacts - data.numberOfContactsConnected;
 
   return (
     <div className="DashboardContactCardContainer">
@@ -31,13 +31,13 @@ const DashboardCard = ({ loading, data }) => {
       <BulletItems
         bulletClass="greenBullet"
         title={tp('connected')}
-        value={data.numberofcontactsconnected}
+        value={data.numberOfContactsConnected}
         loading={loading}
       />
       <BulletItems
         bulletClass="violetBullet"
         title={tp('total')}
-        value={data.numberofcontacts}
+        value={data.numberOfContacts}
         loading={loading}
       />
     </div>
@@ -47,18 +47,18 @@ const DashboardCard = ({ loading, data }) => {
 DashboardCard.defaultProps = {
   loading: false,
   data: {
-    numberofcontactspendingconnection: 0,
-    numberofcontactsconnected: 0,
-    numberofcontacts: 0
+    numberOfContactsPendingConnection: 0,
+    numberOfContactsConnected: 0,
+    numberOfContacts: 0
   }
 };
 
 DashboardCard.propTypes = {
   loading: PropTypes.bool,
   data: PropTypes.shape({
-    numberofcontactspendingconnection: PropTypes.number,
-    numberofcontactsconnected: PropTypes.number,
-    numberofcontacts: PropTypes.number
+    numberOfContactsPendingConnection: PropTypes.number,
+    numberOfContactsConnected: PropTypes.number,
+    numberOfContacts: PropTypes.number
   })
 };
 
