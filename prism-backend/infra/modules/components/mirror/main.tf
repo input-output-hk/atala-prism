@@ -92,7 +92,7 @@ resource "aws_ecs_service" "mirror_service" {
   name            = "${var.parent_name}-mirror-service"
   cluster         = var.ecs_cluster_id
   task_definition = aws_ecs_task_definition.mirror_task_definition[0].arn
-  desired_count   = 2
+  desired_count   = 1
 
   service_registries {
     registry_arn = aws_service_discovery_service.mirror_discovery[0].arn
