@@ -6,7 +6,6 @@ import org.scalablytyped.converter.Flavour
 import org.scalajs.jsenv.selenium.SeleniumJSEnv
 
 resolvers += Resolver.sonatypeRepo("releases")
-resolvers += Resolver.bintrayRepo("oyvindberg", "ScalablyTyped")
 resolvers += "Sonatype OSS Snapshots" at "https://oss.sonatype.org/content/repositories/snapshots"
 
 name := "prism-web-wallet"
