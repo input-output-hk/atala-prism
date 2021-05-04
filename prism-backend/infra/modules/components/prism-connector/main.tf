@@ -20,8 +20,8 @@ resource "aws_service_discovery_service" "connector_discovery" {
 }
 
 locals {
-  cpu    = 256
-  memory = 512
+  cpu    = 512
+  memory = 1024
 }
 
 module "connector_container_definition" {
