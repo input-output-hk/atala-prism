@@ -15,7 +15,7 @@ repositories {
     mavenLocal()
     // TODO: Replace with the mainstream version once https://github.com/streem/pbandk/issues/88
     //       is resolved.
-    maven { setUrl("https://dl.bintray.com/itegulov/maven") }
+    maven("https://vlad107.jfrog.io/artifactory/default-maven-virtual/")
 }
 
 kotlin {

@@ -7,7 +7,7 @@ val pbandkVersion: String by rootProject.extra
 
 dependencies {
     commonMainImplementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.0.1")
-    commonMainImplementation("com.github.h0tk3y.betterParse:better-parse-ng:0.5.0-M5")
+    commonMainImplementation("com.github.h0tk3y.betterParse:better-parse-ng:0.5.0-M2")
 }
 
 kotlin {

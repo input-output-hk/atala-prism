@@ -19,9 +19,7 @@ repositories {
     mavenLocal()
     google()
     maven("https://plugins.gradle.org/m2/")
-    maven("https://dl.bintray.com/itegulov/maven")
-    maven("https://kotlin.bintray.com/kotlinx/")
-    maven("https://dl.bintray.com/acinq/libs")
+    maven("https://vlad107.jfrog.io/artifactory/default-maven-virtual/")
 }
 
 dependencies {

@@ -11,7 +11,6 @@ val pbandkVersion: String by rootProject.extra
 
 repositories {
     mavenCentral()
-    maven("https://dl.bintray.com/arrow-kt/arrow-kt/")
 }
 
 dependencies {
@@ -30,7 +29,6 @@ dependencies {
 
 repositories {
     jcenter()
-    maven("https://kotlin.bintray.com/kotlinx/")
 }
 
 orchid {

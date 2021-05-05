@@ -32,7 +32,6 @@ buildscript {
     repositories {
         gradlePluginPortal()
         mavenCentral()
-        maven("https://dl.bintray.com/arrow-kt/arrow-kt/")
     }
 
     dependencies {
