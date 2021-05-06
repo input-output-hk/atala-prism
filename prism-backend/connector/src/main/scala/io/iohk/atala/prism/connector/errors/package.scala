@@ -4,6 +4,8 @@ import io.grpc.Status
 import io.iohk.atala.prism.connector.model.{ConnectionId, MessageId, TokenString}
 import io.iohk.atala.prism.errors.{PrismError, PrismServerError}
 import io.iohk.atala.prism.models.ParticipantId
+import io.iohk.atala.prism.crypto.ECPublicKey
+import io.iohk.atala.prism.identity.DID
 
 package object errors {
 
@@ -12,6 +14,20 @@ package object errors {
   case class UnknownValueError(tpe: String, value: String) extends ConnectorError {
     override def toStatus: Status = {
       Status.UNKNOWN.withDescription(s"Unknown $tpe: $value")
+    }
+  }
+  case class DidConnectionExist(did: DID) extends ConnectorError {
+    override def toStatus: Status = {
+      Status.ALREADY_EXISTS.withDescription(
+        s"Attempting to accept a connection with a DID: $did. DID is already used for a connection, use a different DID"
+      )
+    }
+  }
+  case class PkConnectionExist(pk: ECPublicKey) extends ConnectorError {
+    override def toStatus: Status = {
+      Status.ALREADY_EXISTS.withDescription(
+        s"Attempting to accept a connection with a public key: $pk. Public key is already used for a connection, use a different Public key"
+      )
     }
   }
 

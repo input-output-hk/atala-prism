@@ -45,10 +45,9 @@ trait ECPublicKey extends ECKey {
     * <p>The curve field size is fixed to 32 bytes (256 bits), and this method will encode the public key in 65 bytes as
     * follows:
     * <ul>
-    *   <li> Byte 0: 4, a hard-coded value indicating this encoding is an uncompressed concatenation of the curve
-    *        coordinates.
-    *   <li> Bytes 1-33: the raw value of the x coordinate, padded with zeroes.
-    *   <li> Bytes 34-65: the raw value of the y coordinate, padded with zeroes.
+    *   <li> Byte 0: 4, a hard-coded value indicating this encoding is an uncompressed concatenation of the curve coordinates. </li>
+    *   <li> Bytes 1-33: the raw value of the x coordinate, padded with zeroes. </li>
+    *   <li> Bytes 34-65: the raw value of the y coordinate, padded with zeroes. </li>
     * </ul>
     */
   override final def getEncoded: Array[Byte] = {

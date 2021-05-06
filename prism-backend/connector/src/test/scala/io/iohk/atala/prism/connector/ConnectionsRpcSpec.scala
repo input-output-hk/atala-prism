@@ -192,7 +192,7 @@ class ConnectionsRpcSpec extends ConnectorRpcSpecBase with MockitoSugar {
       }
     }
 
-    "fails to add connection when signature missing" in {
+    "fail to add connection when signature missing" in {
       val issuerId = createIssuer("Issuer")
       val token = createToken(issuerId)
       val keys = EC.generateKeyPair()
@@ -206,6 +206,78 @@ class ConnectionsRpcSpec extends ConnectorRpcSpecBase with MockitoSugar {
         }
         ex.getStatus.getCode mustBe Status.Code.INVALID_ARGUMENT
       }
+    }
+
+    "return ALREADY_EXISTS if the same DID is used to connect with an issuer twice" in {
+      val holderKeys = EC.generateKeyPair()
+      val issuer = createIssuer("Issuer")
+      val holderDID = DID.createUnpublishedDID(holderKeys.publicKey)
+      val tokenStr1 = createToken(issuer)
+      val tokenStr2 = createToken(issuer)
+      val encodedHolderPublicKey =
+        connector_models.EncodedPublicKey(ByteString.copyFrom(holderKeys.publicKey.getEncoded))
+
+      val request1 = connector_api.AddConnectionFromTokenRequest(tokenStr1.token, Some(encodedHolderPublicKey))
+      val request2 = connector_api.AddConnectionFromTokenRequest(tokenStr2.token, Some(encodedHolderPublicKey))
+
+      val signedRequest1 = SignedRpcRequest.generate(holderKeys, holderDID, request1)
+      val signedRequest2 = SignedRpcRequest.generate(holderKeys, holderDID, request2)
+
+      usingApiAs(signedRequest1) { blockingStub =>
+        // first connection should be established
+        val response = blockingStub.addConnectionFromToken(request1)
+        val participantId = response.userId
+        participantId mustNot be(empty)
+        val connectionId = ConnectionId.unsafeFrom(response.connection.value.connectionId)
+        ConnectionsDAO
+          .exists(connectionId)
+          .transact(database)
+          .unsafeToFuture()
+          .futureValue mustBe true
+      }
+      usingApiAs(signedRequest2) { blockingStub =>
+        // second connection should fail
+        val status = intercept[StatusRuntimeException] {
+          blockingStub.addConnectionFromToken(request2)
+        }.getStatus
+        status.getCode mustBe Status.Code.ALREADY_EXISTS
+        status.getDescription must include(holderDID.toString)
+      }
+
+    }
+
+    "return ALREADY_EXISTS if the same Public key is used to connect with an issuer twice" in {
+      val holderKeys = EC.generateKeyPair()
+      val issuer = createIssuer("Issuer")
+      val tokenStr1 = createToken(issuer)
+      val tokenStr2 = createToken(issuer)
+      val encodedHolderPublicKey =
+        connector_models.EncodedPublicKey(ByteString.copyFrom(holderKeys.publicKey.getEncoded))
+
+      val request1 = connector_api.AddConnectionFromTokenRequest(tokenStr1.token, Some(encodedHolderPublicKey))
+      val request2 = connector_api.AddConnectionFromTokenRequest(tokenStr2.token, Some(encodedHolderPublicKey))
+
+      usingApiAs(Vector.empty, holderKeys, request1) { blockingStub =>
+        // first connection should be established
+        val response = blockingStub.addConnectionFromToken(request1)
+        val participantId = response.userId
+        participantId mustNot be(empty)
+        val connectionId = ConnectionId.unsafeFrom(response.connection.value.connectionId)
+        ConnectionsDAO
+          .exists(connectionId)
+          .transact(database)
+          .unsafeToFuture()
+          .futureValue mustBe true
+      }
+      usingApiAs(Vector.empty, holderKeys, request2) { blockingStub =>
+        // second connection should fail
+        val status = intercept[StatusRuntimeException] {
+          blockingStub.addConnectionFromToken(request2)
+        }.getStatus
+        status.getCode mustBe Status.Code.ALREADY_EXISTS
+        status.getDescription must include(holderKeys.publicKey.toString)
+      }
+
     }
 
     "return UNKNOWN if the token does not exist" in {

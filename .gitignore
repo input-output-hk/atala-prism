@@ -16,9 +16,9 @@ target/
 out/
 .docker-volumes
 .metals
-.vscode
-.ammonite/
-.bloop/
+**/.vscode
+**/.ammonite/
+**/.bloop/
 *.worksheet.sc
 **/metals.sbt
 

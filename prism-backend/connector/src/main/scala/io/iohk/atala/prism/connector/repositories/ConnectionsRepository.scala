@@ -101,11 +101,37 @@ object ConnectionsRepository {
       implicit val loggingContext: LoggingContext =
         LoggingContext("token" -> token, "did" -> maybeDid, "publicKey" -> maybePublicKey)
 
+      // if exist Left(ConnectorError) else Right(Unit)
+      val checkIfAlreadyExist: EitherT[doobie.ConnectionIO, ConnectorError, Unit] = (maybeDid, maybePublicKey) match {
+        case (Some(did), None) =>
+          EitherT {
+            ParticipantsDAO.findByDID(did).value.map {
+              case None => Right(())
+              case Some(_) => Left(DidConnectionExist(did))
+            }
+          }
+        case (None, Some(pk)) =>
+          EitherT {
+            ParticipantsDAO.findByPublicKey(pk).value.map {
+              case None => Right(())
+              case Some(_) => Left(PkConnectionExist(pk))
+            }
+          }
+        case _ => // this is the case for (None, None), (Some(_), Some(_) can not happen, at least pk or did must be used for auth)
+          EitherT.leftT[doobie.ConnectionIO, Unit](
+            InvalidRequest(
+              s"Expected either DID or Public key, got neither"
+            )
+          )
+      }
+
       val query = for {
         initiator <-
           ParticipantsDAO
             .findByAvailableToken(token)
             .toRight(UnknownValueError("token", token.token).logWarn)
+
+        _ <- checkIfAlreadyExist
 
         // Create a holder, which has no name, instead it has did or a public key
         acceptorInfo = ParticipantInfo(
@@ -118,6 +144,7 @@ object ConnectionsRepository {
           transactionId = None,
           ledger = None
         )
+
         _ <- EitherT.right[ConnectorError] {
           ParticipantsDAO.insert(acceptorInfo)
         }

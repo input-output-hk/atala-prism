@@ -64,7 +64,7 @@ message PublicKey {
 
 // The DID Document's data.
 message DIDData {
-    string id = 1; // The DID suffix, where DID is in form did:prism.atala:[DID suffix]
+    string id = 1; // The DID suffix, where DID is in form did:prism:[DID suffix]
     repeated PublicKey public_keys = 2; // The keys that belong to this DID Document.
 }
 
