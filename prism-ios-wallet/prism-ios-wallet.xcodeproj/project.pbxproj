@@ -35,7 +35,7 @@
 		28A3A91925F65BC3006BA440 /* EmailCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 28A3A91825F65BC3006BA440 /* EmailCell.swift */; };
 		28FE64FC25E9553C0089B675 /* Attribute.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 28FE64FB25E9553C0089B675 /* Attribute.storyboard */; };
 		28FE650125E955590089B675 /* AttributeViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 28FE650025E955590089B675 /* AttributeViewController.swift */; };
-		386BF954863A1670AF2F333D /* BuildFile in Frameworks */ = {isa = PBXBuildFile; };
+		386BF954863A1670AF2F333D /* (null) in Frameworks */ = {isa = PBXBuildFile; };
 		A952A3ABA5F37F460FA67215 /* Pods_prism_ios_wallet.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 322C4F1260548161F700C812 /* Pods_prism_ios_wallet.framework */; };
 		B30255012449E33D00C8E9C0 /* NotificationsViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = B30255002449E33D00C8E9C0 /* NotificationsViewController.swift */; };
 		B30255032449E36B00C8E9C0 /* NotificationsPresenter.swift in Sources */ = {isa = PBXBuildFile; fileRef = B30255022449E36B00C8E9C0 /* NotificationsPresenter.swift */; };
@@ -58,6 +58,11 @@
 		B309C16C24BF7DBA00AF70DF /* CredentialDAO.swift in Sources */ = {isa = PBXBuildFile; fileRef = B309C16B24BF7DBA00AF70DF /* CredentialDAO.swift */; };
 		B309C17024BF89F100AF70DF /* ContactDAO.swift in Sources */ = {isa = PBXBuildFile; fileRef = B309C16F24BF89F100AF70DF /* ContactDAO.swift */; };
 		B309C17324BF8F0B00AF70DF /* ActivityHistoryDAO.swift in Sources */ = {isa = PBXBuildFile; fileRef = B309C17224BF8F0B00AF70DF /* ActivityHistoryDAO.swift */; };
+		B30FD78D2643137E00D39842 /* status.pb.swift in Sources */ = {isa = PBXBuildFile; fileRef = B30FD7892643137E00D39842 /* status.pb.swift */; };
+		B30FD78E2643137E00D39842 /* mirror_api.pb.swift in Sources */ = {isa = PBXBuildFile; fileRef = B30FD78A2643137E00D39842 /* mirror_api.pb.swift */; };
+		B30FD78F2643137E00D39842 /* mirror_api.grpc.swift in Sources */ = {isa = PBXBuildFile; fileRef = B30FD78B2643137E00D39842 /* mirror_api.grpc.swift */; };
+		B30FD7902643137E00D39842 /* mirror_models.pb.swift in Sources */ = {isa = PBXBuildFile; fileRef = B30FD78C2643137E00D39842 /* mirror_models.pb.swift */; };
+		B30FD7982643159A00D39842 /* ivms101.pb.swift in Sources */ = {isa = PBXBuildFile; fileRef = B30FD7972643159A00D39842 /* ivms101.pb.swift */; };
 		B313877525ED6EF9007A67C8 /* IntdemoTutorial.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = B313877425ED6EF9007A67C8 /* IntdemoTutorial.storyboard */; };
 		B313877A25ED7088007A67C8 /* IntdemoTutorialPageView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B313877925ED7088007A67C8 /* IntdemoTutorialPageView.swift */; };
 		B313877F25ED70AA007A67C8 /* IntdemoTutorialPageView.xib in Resources */ = {isa = PBXBuildFile; fileRef = B313877E25ED70AA007A67C8 /* IntdemoTutorialPageView.xib */; };
@@ -385,6 +390,11 @@
 		B309C16B24BF7DBA00AF70DF /* CredentialDAO.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CredentialDAO.swift; sourceTree = "<group>"; };
 		B309C16F24BF89F100AF70DF /* ContactDAO.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContactDAO.swift; sourceTree = "<group>"; };
 		B309C17224BF8F0B00AF70DF /* ActivityHistoryDAO.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ActivityHistoryDAO.swift; sourceTree = "<group>"; };
+		B30FD7892643137E00D39842 /* status.pb.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = status.pb.swift; sourceTree = "<group>"; };
+		B30FD78A2643137E00D39842 /* mirror_api.pb.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = mirror_api.pb.swift; sourceTree = "<group>"; };
+		B30FD78B2643137E00D39842 /* mirror_api.grpc.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = mirror_api.grpc.swift; sourceTree = "<group>"; };
+		B30FD78C2643137E00D39842 /* mirror_models.pb.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = mirror_models.pb.swift; sourceTree = "<group>"; };
+		B30FD7972643159A00D39842 /* ivms101.pb.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ivms101.pb.swift; sourceTree = "<group>"; };
 		B313877425ED6EF9007A67C8 /* IntdemoTutorial.storyboard */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; path = IntdemoTutorial.storyboard; sourceTree = "<group>"; };
 		B313877925ED7088007A67C8 /* IntdemoTutorialPageView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = IntdemoTutorialPageView.swift; sourceTree = "<group>"; };
 		B313877E25ED70AA007A67C8 /* IntdemoTutorialPageView.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = IntdemoTutorialPageView.xib; sourceTree = "<group>"; };
@@ -665,7 +675,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				386BF954863A1670AF2F333D /* BuildFile in Frameworks */,
+				386BF954863A1670AF2F333D /* (null) in Frameworks */,
 				A952A3ABA5F37F460FA67215 /* Pods_prism_ios_wallet.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -1132,6 +1142,11 @@
 		EE7D49BE2366B5A7007C31A8 /* protobuf */ = {
 			isa = PBXGroup;
 			children = (
+				B30FD7972643159A00D39842 /* ivms101.pb.swift */,
+				B30FD78B2643137E00D39842 /* mirror_api.grpc.swift */,
+				B30FD78A2643137E00D39842 /* mirror_api.pb.swift */,
+				B30FD78C2643137E00D39842 /* mirror_models.pb.swift */,
+				B30FD7892643137E00D39842 /* status.pb.swift */,
 				B3E7585C260E0E1A00BC28A9 /* connector_api.grpc.swift */,
 				B3E7585B260E0E1A00BC28A9 /* console_models.pb.swift */,
 				B3E757D6260D31B600BC28A9 /* common_models.pb.swift */,
@@ -2086,7 +2101,7 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "# Type a script or drag a script file from your workspace to insert its pat\nexport PATH=$PATH:${SRCROOT}/protobuf/utils\nmkdir -p ./protobuf\nprotoc --proto_path=../prism-sdk/protos/src/ --swift_out=./protobuf --swiftgrpc_out=Client=true,Server=false:. ../prism-sdk/protos/src/common_models.proto\nprotoc --proto_path=../prism-sdk/protos/src/ --swift_out=./protobuf --swiftgrpc_out=Client=true,Server=false:. ../prism-sdk/protos/src/node_models.proto\nprotoc --proto_path=../prism-sdk/protos/src/ --swift_out=./protobuf --swiftgrpc_out=Client=true,Server=false:. ../prism-sdk/protos/src/console_models.proto\nprotoc --proto_path=../prism-sdk/protos/src/ --swift_out=./protobuf --swiftgrpc_out=Client=true,Server=false:. ../prism-sdk/protos/src/connector_models.proto\nprotoc --proto_path=../prism-sdk/protos/src/ --swift_out=./protobuf --swiftgrpc_out=Client=true,Server=false:. ../prism-sdk/protos/src/credential_models.proto\nprotoc --proto_path=../prism-sdk/protos/src/ --swift_out=./protobuf --swiftgrpc_out=Client=true,Server=false:./protobuf ../prism-sdk/protos/src/connector_api.proto\nprotoc --proto_path=../prism-sdk/protos/src/ --swift_out=./protobuf --swiftgrpc_out=Client=true,Server=false:./protobuf ../prism-sdk/protos/src/kycbridge_api.proto\n";
+			shellScript = "# Type a script or drag a script file from your workspace to insert its pat\nexport PATH=$PATH:${SRCROOT}/protobuf/utils\nmkdir -p ./protobuf\nprotoc --proto_path=../prism-sdk/protos/src/ --swift_out=./protobuf --swiftgrpc_out=Client=true,Server=false:. ../prism-sdk/protos/src/common_models.proto\nprotoc --proto_path=../prism-sdk/protos/src/ --swift_out=./protobuf --swiftgrpc_out=Client=true,Server=false:. ../prism-sdk/protos/src/node_models.proto\nprotoc --proto_path=../prism-sdk/protos/src/ --swift_out=./protobuf --swiftgrpc_out=Client=true,Server=false:. ../prism-sdk/protos/src/console_models.proto\nprotoc --proto_path=../prism-sdk/protos/src/ --swift_out=./protobuf --swiftgrpc_out=Client=true,Server=false:. ../prism-sdk/protos/src/connector_models.proto\nprotoc --proto_path=../prism-sdk/protos/src/ --swift_out=./protobuf --swiftgrpc_out=Client=true,Server=false:. ../prism-sdk/protos/src/credential_models.proto --swiftgrpc_out=Client=true,Server=false:. ../prism-sdk/protos/src/ivms101.proto\nprotoc --proto_path=../prism-sdk/protos/src/ --swift_out=./protobuf --swiftgrpc_out=Client=true,Server=false:./protobuf ../prism-sdk/protos/src/connector_api.proto\nprotoc --proto_path=../prism-sdk/protos/src/ --swift_out=./protobuf --swiftgrpc_out=Client=true,Server=false:./protobuf ../prism-sdk/protos/src/kycbridge_api.proto\n";
 		};
 /* End PBXShellScriptBuildPhase section */
 
@@ -2123,6 +2138,7 @@
 				B3E7585D260E0E1A00BC28A9 /* console_models.pb.swift in Sources */,
 				EE8CD814237BA29700614578 /* ScanQrUtils.swift in Sources */,
 				B3E757DC260D31B700BC28A9 /* credential_models.pb.swift in Sources */,
+				B30FD78F2643137E00D39842 /* mirror_api.grpc.swift in Sources */,
 				EE7D4C472366B9C4007C31A8 /* UITextView+Placeholder.m in Sources */,
 				EE7D4C3A2366B9C4007C31A8 /* ShadowCorneredView.swift in Sources */,
 				EE904F042373AA5A00EE6344 /* DegreeViewCell.swift in Sources */,
@@ -2182,6 +2198,7 @@
 				28A3A8BD25F2590B006BA440 /* PickerViewUtils.swift in Sources */,
 				B352434324FFDA080053A804 /* DateFormatTableViewCell.swift in Sources */,
 				B309A99D250FEACC00C62B50 /* CredentialHistoryHeaderViewCell.swift in Sources */,
+				B30FD7982643159A00D39842 /* ivms101.pb.swift in Sources */,
 				EEDAF2C62389ECDC00121206 /* ConfirmationViewCell.swift in Sources */,
 				EE7185772384F39500C58F62 /* PaddingViewCell.swift in Sources */,
 				EE7D4D012367621C007C31A8 /* CredentialsViewController.swift in Sources */,
@@ -2206,6 +2223,7 @@
 				EE7185642384B77600C58F62 /* BrowserPresenter.swift in Sources */,
 				B3E757DB260D31B700BC28A9 /* connector_models.pb.swift in Sources */,
 				B3491C00251A2C850040F89E /* ContactDetailSectionViewCell.swift in Sources */,
+				B30FD7902643137E00D39842 /* mirror_models.pb.swift in Sources */,
 				EE7D4BB82366B9C4007C31A8 /* TableUtils.swift in Sources */,
 				B31EB6C625C89ACE00BDE34A /* VerifyIdScanPresenter.swift in Sources */,
 				EE7D4CE523673C39007C31A8 /* UISegmentedControl+Extensions.swift in Sources */,
@@ -2256,6 +2274,7 @@
 				EE7D4BBF2366B9C4007C31A8 /* ViewControllerUtils.swift in Sources */,
 				EE7D4C462366B9C4007C31A8 /* Date+Extensions.swift in Sources */,
 				EE7D49D12366B697007C31A8 /* AppConfigs.swift in Sources */,
+				B30FD78E2643137E00D39842 /* mirror_api.pb.swift in Sources */,
 				EE7D4CF023673C39007C31A8 /* String+Extensions2.swift in Sources */,
 				EEB7DD502395F79300C4DEA5 /* ConnectionsDtos.swift in Sources */,
 				B3E7585E260E0E1A00BC28A9 /* connector_api.grpc.swift in Sources */,
@@ -2285,6 +2304,7 @@
 				EE8FD4E023726A2700EFF62E /* ProfilePresenter.swift in Sources */,
 				B322A29825C4803600A4A0B6 /* VerifyIdTutorialPresenter.swift in Sources */,
 				05BDBB1B25A6D44300D56D03 /* KotlinConverters.swift in Sources */,
+				B30FD78D2643137E00D39842 /* status.pb.swift in Sources */,
 				B367AEAF25D1845200A1BF15 /* VerifyIdResultsTableViewCell.swift in Sources */,
 				B309C16A24BF5CD600AF70DF /* Contact+CoreDataProperties.swift in Sources */,
 				EE7D4CEC23673C39007C31A8 /* UITextField+Extensions2.swift in Sources */,

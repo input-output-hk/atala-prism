@@ -1,50 +1,50 @@
 PODS:
-  - AcuantiOSSDKV11 (11.4.7):
-    - AcuantiOSSDKV11/AcuantCamera (= 11.4.7)
-    - AcuantiOSSDKV11/AcuantCommon (= 11.4.7)
-    - AcuantiOSSDKV11/AcuantDocumentProcessing (= 11.4.7)
-    - AcuantiOSSDKV11/AcuantEchipReader (= 11.4.7)
-    - AcuantiOSSDKV11/AcuantFaceCapture (= 11.4.7)
-    - AcuantiOSSDKV11/AcuantFaceMatch (= 11.4.7)
-    - AcuantiOSSDKV11/AcuantHGLiveness (= 11.4.7)
-    - AcuantiOSSDKV11/AcuantImagePreparation (= 11.4.7)
-    - AcuantiOSSDKV11/AcuantIPLiveness (= 11.4.7)
-    - AcuantiOSSDKV11/AcuantPassiveLiveness (= 11.4.7)
-  - AcuantiOSSDKV11/AcuantCamera (11.4.7):
-    - AcuantiOSSDKV11/AcuantCamera/Common (= 11.4.7)
-    - AcuantiOSSDKV11/AcuantCamera/Document (= 11.4.7)
-    - AcuantiOSSDKV11/AcuantCamera/Mrz (= 11.4.7)
+  - AcuantiOSSDKV11 (11.4.9):
+    - AcuantiOSSDKV11/AcuantCamera (= 11.4.9)
+    - AcuantiOSSDKV11/AcuantCommon (= 11.4.9)
+    - AcuantiOSSDKV11/AcuantDocumentProcessing (= 11.4.9)
+    - AcuantiOSSDKV11/AcuantEchipReader (= 11.4.9)
+    - AcuantiOSSDKV11/AcuantFaceCapture (= 11.4.9)
+    - AcuantiOSSDKV11/AcuantFaceMatch (= 11.4.9)
+    - AcuantiOSSDKV11/AcuantHGLiveness (= 11.4.9)
+    - AcuantiOSSDKV11/AcuantImagePreparation (= 11.4.9)
+    - AcuantiOSSDKV11/AcuantIPLiveness (= 11.4.9)
+    - AcuantiOSSDKV11/AcuantPassiveLiveness (= 11.4.9)
+  - AcuantiOSSDKV11/AcuantCamera (11.4.9):
+    - AcuantiOSSDKV11/AcuantCamera/Common (= 11.4.9)
+    - AcuantiOSSDKV11/AcuantCamera/Document (= 11.4.9)
+    - AcuantiOSSDKV11/AcuantCamera/Mrz (= 11.4.9)
     - AcuantiOSSDKV11/AcuantCommon
     - AcuantiOSSDKV11/AcuantImagePreparation
-  - AcuantiOSSDKV11/AcuantCamera/Common (11.4.7):
+  - AcuantiOSSDKV11/AcuantCamera/Common (11.4.9):
     - AcuantiOSSDKV11/AcuantCommon
     - AcuantiOSSDKV11/AcuantImagePreparation
-  - AcuantiOSSDKV11/AcuantCamera/Document (11.4.7):
+  - AcuantiOSSDKV11/AcuantCamera/Document (11.4.9):
     - AcuantiOSSDKV11/AcuantCamera/Common
     - AcuantiOSSDKV11/AcuantCommon
     - AcuantiOSSDKV11/AcuantImagePreparation
-  - AcuantiOSSDKV11/AcuantCamera/Mrz (11.4.7):
+  - AcuantiOSSDKV11/AcuantCamera/Mrz (11.4.9):
     - AcuantiOSSDKV11/AcuantCamera/Common
     - AcuantiOSSDKV11/AcuantCommon
     - AcuantiOSSDKV11/AcuantImagePreparation
-  - AcuantiOSSDKV11/AcuantCommon (11.4.7)
-  - AcuantiOSSDKV11/AcuantDocumentProcessing (11.4.7):
+  - AcuantiOSSDKV11/AcuantCommon (11.4.9)
+  - AcuantiOSSDKV11/AcuantDocumentProcessing (11.4.9):
     - AcuantiOSSDKV11/AcuantCommon
-  - AcuantiOSSDKV11/AcuantEchipReader (11.4.7):
+  - AcuantiOSSDKV11/AcuantEchipReader (11.4.9):
     - AcuantiOSSDKV11/AcuantCommon
-  - AcuantiOSSDKV11/AcuantFaceCapture (11.4.7):
+  - AcuantiOSSDKV11/AcuantFaceCapture (11.4.9):
     - AcuantiOSSDKV11/AcuantCommon
     - AcuantiOSSDKV11/AcuantImagePreparation
-  - AcuantiOSSDKV11/AcuantFaceMatch (11.4.7):
+  - AcuantiOSSDKV11/AcuantFaceMatch (11.4.9):
     - AcuantiOSSDKV11/AcuantCommon
-  - AcuantiOSSDKV11/AcuantHGLiveness (11.4.7):
+  - AcuantiOSSDKV11/AcuantHGLiveness (11.4.9):
     - AcuantiOSSDKV11/AcuantCommon
-  - AcuantiOSSDKV11/AcuantImagePreparation (11.4.7):
+  - AcuantiOSSDKV11/AcuantImagePreparation (11.4.9):
     - AcuantiOSSDKV11/AcuantCommon
-  - AcuantiOSSDKV11/AcuantIPLiveness (11.4.7):
+  - AcuantiOSSDKV11/AcuantIPLiveness (11.4.9):
     - AcuantiOSSDKV11/AcuantCommon
     - iProov (~> 7.5.0)
-  - AcuantiOSSDKV11/AcuantPassiveLiveness (11.4.7):
+  - AcuantiOSSDKV11/AcuantPassiveLiveness (11.4.9):
     - AcuantiOSSDKV11/AcuantCommon
   - Alamofire (4.8.2)
   - AlamofireImage (3.5.2):
@@ -89,7 +89,7 @@ PODS:
     - Braintree/UnionPay (~> 4.30)
     - BraintreeDropIn/UIKit
   - BraintreeDropIn/UIKit (7.5.0)
-  - crypto (0.1.0-28e7cec7):
+  - crypto (0.1.0-bf19ea04):
     - Secp256k1Kit.swift (= 1.1)
   - Firebase/Analytics (6.23.0):
     - Firebase/Core
@@ -210,7 +210,7 @@ PODS:
     - KeychainAccess (~> 4.1)
     - Socket.IO-Client-Swift (~> 15.2)
     - SwiftyJSON (~> 5.0)
-  - KeychainAccess (4.2.1)
+  - KeychainAccess (4.2.2)
   - MaterialComponents/AnimationTiming (117.0.0)
   - MaterialComponents/Availability (117.0.0)
   - MaterialComponents/Buttons (117.0.0):
@@ -300,7 +300,7 @@ PODS:
   - SwiftLint (0.39.2)
   - SwiftProtobuf (1.7.0)
   - SwiftyBeaver (1.7.1)
-  - SwiftyJSON (5.0.0)
+  - SwiftyJSON (5.0.1)
   - Tabman (2.9.0):
     - Pageboy (~> 3.6.0)
   - Toast-Swift (5.0.1)
@@ -382,14 +382,14 @@ EXTERNAL SOURCES:
     :path: "../prism-kotlin-sdk/crypto"
 
 SPEC CHECKSUMS:
-  AcuantiOSSDKV11: e04cbffcb78cab3f22dd8c370a3802a4275c94e4
+  AcuantiOSSDKV11: 9ce5f96e9c2033a8a7039ca71bbe720b4adf4101
   Alamofire: ae5c501addb7afdbb13687d7f2f722c78734c2d3
   AlamofireImage: 63cfe3baf1370be6c498149687cf6db3e3b00999
   AlamofireObjectMapper: 1989f690e982b71921b9253f53a4f33a9bc00d88
   BoringSSL-GRPC: db8764df3204ccea016e1c8dd15d9a9ad63ff318
   Braintree: 586e4d274398fabe9d70ab790eefca41660b8a17
   BraintreeDropIn: 15d6f53bf80bc0ae7809ab17803100c0a5448fd2
-  crypto: 007b93c5fa78285f0be8866f370b92c3b1bb1f84
+  crypto: 2365f3a75a2480855660e260990d74e3cf33847c
   Firebase: 585ae467b3edda6a5444e788fda6888f024d8d6f
   FirebaseABTesting: 821a3a3e4a145987e80fee3657c4de1cb9adf693
   FirebaseAnalytics: 558f7a03d19de451093032c806f39d5f9dff096e
@@ -409,7 +409,7 @@ SPEC CHECKSUMS:
   gRPC-Core: 4b1148eb8596225178e5a154e40e35141a3cdf0f
   GTMSessionFetcher: 6f5c8abbab8a9bce4bb3f057e317728ec6182b10
   iProov: 16de51166c50a08ec0d2a32334687c7d0e5236e3
-  KeychainAccess: 9b07f665298d13c3a85881bd3171f6f49b8151c1
+  KeychainAccess: c0c4f7f38f6fc7bbe58f5702e25f7bd2f65abf51
   MaterialComponents: 29320b6a89c4c90e41c7a41fc70e91127ac34161
   MBProgressHUD: 4890f671c94e8a0f3cf959aa731e9de2f036d71a
   MDFInternationalization: 010097556d6b09d2c4ea38e0820ea6d37be6a314
@@ -427,7 +427,7 @@ SPEC CHECKSUMS:
   SwiftLint: 22ccbbe3b8008684be5955693bab135e0ed6a447
   SwiftProtobuf: 4fd9645e69b72cbae6ec8da5be0cdd20ca6565dd
   SwiftyBeaver: da5e573ad583586c18236324c36900990afe1733
-  SwiftyJSON: 36413e04c44ee145039d332b4f4e2d3e8d6c4db7
+  SwiftyJSON: 2f33a42c6fbc52764d96f13368585094bfd8aa5e
   Tabman: 55d3d18f393ce5119515cd0349c841a07774c895
   Toast-Swift: 9b6a70f28b3bf0b96c40d46c0c4b9d6639846711
 
