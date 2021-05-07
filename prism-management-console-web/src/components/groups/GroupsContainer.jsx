@@ -78,14 +78,14 @@ const GroupsContainer = ({ api }) => {
         message.error(t('errors.errorDeletingGroup', { groupName: group.name }));
       });
 
-  const copyGroup = ({ numberofcontacts, name }, copyName) =>
+  const copyGroup = ({ numberOfContacts, name }, copyName) =>
     api.groupsManager
       .createGroup(copyName)
       .then(({ id }) =>
         api.contactsManager
-          .getContacts(null, numberofcontacts, name)
+          .getContacts(null, numberOfContacts, name)
           .then(contacts =>
-            api.groupsManager.updateGroup(id, contacts.map(({ contactid }) => contactid))
+            api.groupsManager.updateGroup(id, contacts.map(({ contactId }) => contactId))
           )
       )
       .then(() => {

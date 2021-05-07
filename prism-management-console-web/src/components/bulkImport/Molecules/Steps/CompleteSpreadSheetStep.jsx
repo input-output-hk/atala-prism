@@ -131,7 +131,7 @@ CompleteSpreadSheetStep.propTypes = {
   inputData: PropTypes.shape({
     contacts: PropTypes.arrayOf(
       PropTypes.shape({
-        externalid: PropTypes.string
+        externalId: PropTypes.string
       })
     )
   }),

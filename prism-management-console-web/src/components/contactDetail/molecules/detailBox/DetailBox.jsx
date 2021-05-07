@@ -11,8 +11,8 @@ const DetailBox = ({ groups, loading }) => (
       <SimpleLoading />
     ) : (
       <div className="infoRow">
-        {groups.map(({ name, numberofcontacts }) => (
-          <RowInfo key={name} contacts={numberofcontacts} groupName={name} />
+        {groups.map(({ name, numberOfContacts }) => (
+          <RowInfo key={name} contacts={numberOfContacts} groupName={name} />
         ))}
       </div>
     )}

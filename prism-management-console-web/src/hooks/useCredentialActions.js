@@ -23,7 +23,7 @@ export const useCredentialActions = (api, credentialsIssued, refreshCredentialsI
 
   const sendCredentials = credentials => {
     const handleSendCredential = async ({ contactData, ...cred }) => {
-      const { connectionid } = await api.contactsManager.getContact(contactData.contactid);
+      const { connectionid } = await api.contactsManager.getContact(contactData.contactId);
       const credentialBinary = api.credentialsManager.getCredentialBinary(cred);
       await api.connector.sendCredential(credentialBinary, connectionid);
       return api.credentialsManager.markAsSent(cred.credentialid);

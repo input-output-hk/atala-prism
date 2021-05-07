@@ -3,7 +3,7 @@ import { COMMON_CONTACT_HEADERS } from './constants';
 import { dateFormat } from './formatters';
 
 const blankContact = {
-  externalid: '',
+  externalId: '',
   contactName: ''
 };
 

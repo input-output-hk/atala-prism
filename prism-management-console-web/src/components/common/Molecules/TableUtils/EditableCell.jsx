@@ -129,8 +129,8 @@ EditableCell.propTypes = {
   editable: PropTypes.bool,
   handleSave: PropTypes.func.isRequired,
   validations: PropTypes.arrayOf(PropTypes.string),
-  dataSource: PropTypes.arrayOf(PropTypes.shape({ externalid: PropTypes.string })),
-  preExistingEntries: PropTypes.arrayOf(PropTypes.shape({ externalid: PropTypes.string }))
+  dataSource: PropTypes.arrayOf(PropTypes.shape({ externalId: PropTypes.string })),
+  preExistingEntries: PropTypes.arrayOf(PropTypes.shape({ externalId: PropTypes.string }))
 };
 
 export default EditableCell;

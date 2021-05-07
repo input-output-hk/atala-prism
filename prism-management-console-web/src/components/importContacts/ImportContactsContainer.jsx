@@ -54,8 +54,8 @@ const ImportContactsContainer = ({ api, redirector: { redirectToContacts } }) =>
   const createContacts = async (contacts, groups) => {
     const [firstGroup, ...otherGroups] = groups;
     const contactCreationPromises = contacts.map(contact => {
-      const contactToSend = omit(contact, ['originalArray', 'errors', 'key', 'externalid']);
-      return api.contactsManager.createContact(firstGroup?.name, contactToSend, contact.externalid);
+      const contactToSend = omit(contact, ['originalArray', 'errors', 'key', 'externalId']);
+      return api.contactsManager.createContact(firstGroup?.name, contactToSend, contact.externalId);
     });
     const contactsCreated = await Promise.all(contactCreationPromises);
     await assignToGroups(contactsCreated, otherGroups);
@@ -63,7 +63,7 @@ const ImportContactsContainer = ({ api, redirector: { redirectToContacts } }) =>
   };
 
   const assignToGroups = async (contacts, groups) => {
-    const contactIds = contacts.map(c => c.contactid);
+    const contactIds = contacts.map(c => c.contactId);
 
     const updateGroupsPromises = groups.map(group =>
       api.groupsManager.updateGroup(group.id, contactIds)

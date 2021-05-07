@@ -14,9 +14,7 @@ const GroupContacts = ({
   onDeleteContact,
   handleContactsRequest
 }) => {
-  const handleDelete = val => {
-    onDeleteContact([val]);
-  };
+  const handleDelete = val => onDeleteContact([val]);
 
   return (
     <div className="GroupContacts">

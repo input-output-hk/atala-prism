@@ -28,9 +28,9 @@ CredentialsPreview.propTypes = {
   groups: PropTypes.arrayOf(PropTypes.shape({ name: PropTypes.string })).isRequired,
   subjects: PropTypes.arrayOf(
     PropTypes.shape({
-      contactid: PropTypes.string,
+      contactId: PropTypes.string,
       contactName: PropTypes.string,
-      externalid: PropTypes.string,
+      externalId: PropTypes.string,
       creationDate: PropTypes.shape({
         day: PropTypes.number,
         month: PropTypes.number,

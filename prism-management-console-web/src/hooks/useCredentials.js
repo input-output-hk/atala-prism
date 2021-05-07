@@ -150,11 +150,14 @@ export const useCredentialsIssuedListWithFilters = credentialsManager => {
     const applyFilters = aCredentialsList =>
       aCredentialsList.filter(item => {
         const matchName = filterByInclusion(name, item.contactData.contactName);
-        const matchExternalId = filterByInclusion(name, item.contactData.externalid);
-        const matchContactStatus = filterContactByStatus(contactStatus, item.contactData.status);
+        const matchExternalId = filterByInclusion(name, item.contactData.externalId);
+        const matchContactStatus = filterContactByStatus(
+          contactStatus,
+          item.contactData.connectionStatus
+        );
         const matchStatus = filterByExactMatch(credentialStatus, item.status);
         const matchType = filterByExactMatch(credentialType, item.credentialType.id);
-        const matchDate = filterByUnixDate(date, item.publicationstoredat);
+        const matchDate = filterByUnixDate(date, item.publicationStoredAt);
 
         return (
           (matchName || matchExternalId) &&
@@ -225,9 +228,9 @@ export const useCredentialsReceivedListWithFilters = api => {
     const applyFilters = aCredentialsList =>
       aCredentialsList.filter(item => {
         const matchName = filterByInclusion(name, item.contactData.contactName);
-        const matchExternalId = filterByInclusion(name, item.contactData.externalid);
+        const matchExternalId = filterByInclusion(name, item.contactData.externalId);
         const matchType = filterByExactMatch(credentialType, item.credentialType?.id);
-        const matchDate = filterByUnixDate(date, item.storedat);
+        const matchDate = filterByUnixDate(date, item.storedAt);
 
         return (matchName || matchExternalId) && matchType && matchDate;
       });
@@ -243,8 +246,8 @@ export const useCredentialsReceivedListWithFilters = api => {
       const newlyFetchedCredentials = await api.credentialsReceivedManager.getReceivedCredentials();
       const credentialWithIssuanceProofPromises = newlyFetchedCredentials.map(credential =>
         api.credentialsManager
-          .getBlockchainData(credential.encodedsignedcredential)
-          .then(issuanceproof => Object.assign({ issuanceproof }, credential))
+          .getBlockchainData(credential.encodedSignedCredential)
+          .then(issuanceProof => Object.assign({ issuanceProof }, credential))
       );
       const credentialsWithIssuanceProof = await Promise.all(credentialWithIssuanceProofPromises);
 

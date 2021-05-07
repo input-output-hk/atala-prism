@@ -114,7 +114,7 @@ const validateNoExtraFields = (contact, headers) => {
     : [];
 };
 
-// validates externalid is not repeated
+// validates externalId is not repeated
 const validateUniqueness = (contact, newContacts, expectedHeaders, externalIdTranlation) =>
   newContacts.some(
     (row, index) =>
@@ -125,10 +125,10 @@ const validateUniqueness = (contact, newContacts, expectedHeaders, externalIdTra
     ? generateRepeatedIdError(contact, externalIdTranlation, expectedHeaders)
     : [];
 
-// validates externalid is not already assigned to another contact
+// validates externalId is not already assigned to another contact
 const validatePreExisting = (contact, preExistingContacts, expectedHeaders, externalIdTranlation) =>
   preExistingContacts.some(
-    row => contact[externalIdTranlation] && row.externalid === contact[externalIdTranlation]
+    row => contact[externalIdTranlation] && row.externalId === contact[externalIdTranlation]
   )
     ? generatePreExistingError(contact, externalIdTranlation, expectedHeaders)
     : [];

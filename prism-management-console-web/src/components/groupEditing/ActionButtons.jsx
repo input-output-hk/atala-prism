@@ -12,7 +12,7 @@ const ActionButtons = ({ contact, onDelete }) => {
       <CustomButton
         buttonProps={{
           className: 'theme-link',
-          onClick: () => onDelete(contact.contactid)
+          onClick: () => onDelete(contact.contactId)
         }}
         buttonText={t('contacts.table.columns.remove')}
       />

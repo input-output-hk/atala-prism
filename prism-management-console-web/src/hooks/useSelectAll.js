@@ -4,7 +4,7 @@ export const useSelectAllContacts = (contactsManager, setSelected) => {
   const handleSelectAll = async e => {
     if (e.target.checked) {
       const list = await contactsManager.getContacts(null, MAX_CONTACTS);
-      setSelected(list.map(contact => contact.contactid));
+      setSelected(list.map(contact => contact.contactId));
     } else setSelected([]);
   };
 

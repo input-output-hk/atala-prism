@@ -78,9 +78,9 @@ const CredentialContainer = ({ api }) => {
       setLoading: setLoadingSelection
     });
 
-  const verifyCredential = ({ encodedsignedcredential, batchinclusionproof }) =>
-    batchinclusionproof
-      ? api.wallet.verifyCredential(encodedsignedcredential, batchinclusionproof).catch(error => {
+  const verifyCredential = ({ encodedSignedCredential, batchInclusionProof }) =>
+    batchInclusionProof
+      ? api.wallet.verifyCredential(encodedSignedCredential, batchInclusionProof).catch(error => {
           Logger.error('There has been an error verifiying the credential', error);
           const pendingPublication = error.message.includes('Missing publication date');
           if (pendingPublication) return PENDING_CREDENTIAL_VERIFICATION_RESULT;

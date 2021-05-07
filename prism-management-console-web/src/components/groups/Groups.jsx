@@ -66,7 +66,7 @@ const Groups = ({
       groups.filter(
         group =>
           filterByInclusion(name, group.name) &&
-          (!date || backendDateFormat(group.createdat?.seconds) === date)
+          (!date || backendDateFormat(group.createdAt?.seconds) === date)
       );
 
     setFilteredGroups(filterGroups());

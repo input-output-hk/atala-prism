@@ -47,11 +47,11 @@ async function getCredentials(limit = CREDENTIAL_PAGE_SIZE, lastSeenCredentialId
 async function createBatchOfCredentials(credentialsData) {
   Logger.info(`Creating ${credentialsData?.length} credential(s):`);
 
-  const credentialStudentsPromises = credentialsData.map(({ externalid, contactid, ...json }) => {
+  const credentialStudentsPromises = credentialsData.map(({ externalId, contactId, ...json }) => {
     const createCredentialRequest = new CreateGenericCredentialRequest();
 
-    createCredentialRequest.setContactId(contactid);
-    createCredentialRequest.setExternalId(externalid);
+    createCredentialRequest.setContactId(contactId);
+    createCredentialRequest.setExternalId(externalId);
     createCredentialRequest.setCredentialData(JSON.stringify(json));
 
     return this.auth
@@ -59,10 +59,10 @@ async function createBatchOfCredentials(credentialsData) {
       .then(({ metadata }) =>
         this.client.createGenericCredential(createCredentialRequest, metadata)
       )
-      .then(response => ({ externalid, status: SUCCESS, response }))
+      .then(response => ({ externalId, status: SUCCESS, response }))
       .catch(error => {
         Logger.error(error);
-        return { externalid, status: FAILED, error };
+        return { externalId, status: FAILED, error };
       });
   });
 

@@ -73,7 +73,7 @@
         "fullName": "Full Name",
         "fullname": "Full Name",
         "contactName": "Contact Name",
-        "externalid": "External ID",
+        "externalId": "External ID",
         "creationDate": "Date Created",
         "issuedCredentials": "Credential(s) Issued",
         "receivedCredentials": "Credential(s) Received",
@@ -111,10 +111,7 @@
     "inviteSuccessfull": "The Holder has been successfully invited",
     "modal": {
       "title": "Open on Mobile",
-      "subtitle": [
-        "Scan with your phone’s camera",
-        "using the Atala PRISM mobile app"
-      ]
+      "subtitle": ["Scan with your phone’s camera", "using the Atala PRISM mobile app"]
     },
     "detail": {
       "title": "Credentials List",

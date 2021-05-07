@@ -120,7 +120,7 @@ const CredentialSummaryDetail = ({ drawerInfo, credentialData }) => {
     </div>
   );
 
-  const { transactionid, ledger } = credentialData?.issuanceproof || {};
+  const { transactionid, ledger } = credentialData?.issuanceProof || {};
 
   const revokedIcon = <img className="revokedIcon" src={revokedIconSrc} alt="revoked icon" />;
 
@@ -177,7 +177,7 @@ const CredentialSummaryDetail = ({ drawerInfo, credentialData }) => {
 
       <CredentialRawDetail
         visible={rawVisible}
-        credentialString={credentialData.credentialdata}
+        credentialString={credentialData.credentialData}
         onClose={() => setRawVisible(false)}
       />
     </Drawer>
@@ -188,8 +188,8 @@ CredentialSummaryDetail.propTypes = {
   drawerInfo: PropTypes.shape().isRequired,
   credentialData: PropTypes.shape({
     html: PropTypes.string,
-    credentialdata: PropTypes.string,
-    issuanceproof: PropTypes.shape({ transactionid: PropTypes.string }),
+    credentialData: PropTypes.string,
+    issuanceProof: PropTypes.shape({ transactionid: PropTypes.string }),
     status: PropTypes.number.isRequired,
     verificationResult: PropTypes.shape({
       credentialRevoked: PropTypes.bool,

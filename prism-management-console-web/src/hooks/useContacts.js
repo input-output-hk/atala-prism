@@ -108,10 +108,10 @@ const useGetContactsNotInGroup = contactsManager => {
           const updatedContacts = oldContacts.concat(contactsWithKey);
 
           return contactsManager.getContacts(lastId, pageSize, groupName).then(contactsInGroup => {
-            const contactIdsInGroup = new Set(contactsInGroup.map(item => item.contactid));
+            const contactIdsInGroup = new Set(contactsInGroup.map(item => item.contactId));
 
             const contactsNotInGroup = updatedContacts.filter(
-              item => !contactIdsInGroup.has(item.contactid)
+              item => !contactIdsInGroup.has(item.contactId)
             );
 
             setContacts(contactsNotInGroup);
@@ -159,8 +159,8 @@ export const useContactsWithFilteredList = (contactsManager, allowPreload) => {
 
       const newFilteredContacts = contactsToFilter.filter(it => {
         const matchesName = filterByInclusion(searchText, it.contactName);
-        const matchesExternalId = filterByInclusion(searchText, it.externalid);
-        const matchesStatus = statusMatch(it.status, status);
+        const matchesExternalId = filterByInclusion(searchText, it.externalId);
+        const matchesStatus = statusMatch(it.connectionStatus, status);
         return matchesStatus && (matchesName || matchesExternalId);
       });
 
@@ -176,12 +176,12 @@ export const useContactsWithFilteredList = (contactsManager, allowPreload) => {
 
   const handleContactsRequest = useCallback(
     ({ groupNameParam, isRefresh = false, onFinish }) => {
-      const { contactid } = getLastArrayElementOrEmpty(contacts);
+      const { contactId } = getLastArrayElementOrEmpty(contacts);
       if (groupNameParam) setGroupName(groupNameParam);
 
       return getContacts({
         pageSize: CONTACT_PAGE_SIZE,
-        lastId: isRefresh ? undefined : contactid,
+        lastId: isRefresh ? undefined : contactId,
         oldContacts: isRefresh ? [] : contacts,
         groupName: groupNameParam || groupName,
         isRefresh,
@@ -195,7 +195,7 @@ export const useContactsWithFilteredList = (contactsManager, allowPreload) => {
     /* if the amount of filtered contacts is less than the page size,
       there might be unfetched contacts that match the filters to show */
     if ((searchText || status) && filteredContacts.length < CONTACT_PAGE_SIZE && hasMore) {
-      handleContactsRequest();
+      handleContactsRequest({});
     }
   }, [filteredContacts, searchText, status, handleContactsRequest, hasMore]);
 
@@ -238,7 +238,7 @@ export const useContactsWithFilteredListAndNotInGroup = contactsManager => {
     (contactsToFilter, cb) => {
       const newFilteredContacts = contactsToFilter.filter(it => {
         const matchesName = filterByInclusion(searchText, it.contactName);
-        const matchesExternalId = filterByInclusion(searchText, it.externalid);
+        const matchesExternalId = filterByInclusion(searchText, it.externalId);
         return matchesName || matchesExternalId;
       });
       setFilteredContacts(newFilteredContacts);
@@ -253,12 +253,12 @@ export const useContactsWithFilteredListAndNotInGroup = contactsManager => {
 
   const handleContactsRequest = useCallback(
     ({ groupNameParam, isRefresh = false, onFinish }) => {
-      const { contactid } = getLastArrayElementOrEmpty(contacts);
+      const { contactId } = getLastArrayElementOrEmpty(contacts);
       if (groupNameParam) setGroupName(groupNameParam);
 
       return getContacts({
         pageSize: MAX_CONTACTS,
-        lastId: isRefresh ? undefined : contactid,
+        lastId: isRefresh ? undefined : contactId,
         oldContacts: isRefresh ? [] : contacts,
         groupName: groupNameParam || groupName,
         isRefresh,
@@ -272,7 +272,7 @@ export const useContactsWithFilteredListAndNotInGroup = contactsManager => {
     /* if the amount of filtered contacts is less than the page size,
       there might be unfetched contacts that match the filters to show */
     if (searchText && filteredContacts.length < CONTACT_PAGE_SIZE && hasMore) {
-      handleContactsRequest();
+      handleContactsRequest({});
     }
   }, [filteredContacts, searchText, handleContactsRequest, hasMore]);
 

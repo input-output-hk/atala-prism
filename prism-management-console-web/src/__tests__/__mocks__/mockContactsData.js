@@ -20,63 +20,63 @@ export const validContacts = {
   expectedParse: [
     {
       contactName: 'Astrid Bernal',
-      externalid: '454cda5e-16d5-4b86-b903-535125f78fe1'
+      externalId: '454cda5e-16d5-4b86-b903-535125f78fe1'
     },
     {
       contactName: 'Lyla Dodd',
-      externalid: 'd8619d78-e516-433a-ad45-24c91e39c7c6'
+      externalId: 'd8619d78-e516-433a-ad45-24c91e39c7c6'
     },
     {
       contactName: 'Roger Knights',
-      externalid: '6b59c558-79f3-455d-9df0-0a4b641e519d'
+      externalId: '6b59c558-79f3-455d-9df0-0a4b641e519d'
     },
     {
       contactName: 'Israel Hatfield',
-      externalid: '434b5e14-a2a3-425f-89a9-ae036d5b7df8'
+      externalId: '434b5e14-a2a3-425f-89a9-ae036d5b7df8'
     },
     {
       contactName: 'Corban Bateman',
-      externalid: 'b9692696-d19f-4fce-84c1-9f3465ea6bec'
+      externalId: 'b9692696-d19f-4fce-84c1-9f3465ea6bec'
     },
     {
       contactName: 'Montgomery Britt',
-      externalid: 'e32703db-2196-4623-b4ec-3149e91c015c'
+      externalId: 'e32703db-2196-4623-b4ec-3149e91c015c'
     },
     {
       contactName: 'Fateh Daugherty',
-      externalid: '94e3903c-2665-4c87-96f9-f2d0f53175e7'
+      externalId: '94e3903c-2665-4c87-96f9-f2d0f53175e7'
     },
     {
       contactName: 'Connar Snow',
-      externalid: '49fd1b95-d997-412e-9770-87e194fe4b28'
+      externalId: '49fd1b95-d997-412e-9770-87e194fe4b28'
     },
     {
       contactName: 'Zaynah Mccoy',
-      externalid: '7c45b6f0-643d-4b3b-8a56-93b7e926923f'
+      externalId: '7c45b6f0-643d-4b3b-8a56-93b7e926923f'
     },
     {
       contactName: 'Kaci Middleton',
-      externalid: 'd8bf8777-b24a-4be1-80b6-d9e5aff48fbc'
+      externalId: 'd8bf8777-b24a-4be1-80b6-d9e5aff48fbc'
     },
     {
       contactName: 'Meredith Burch',
-      externalid: '35e0c0f6-613a-499d-8159-aa8a4b7a23d5'
+      externalId: '35e0c0f6-613a-499d-8159-aa8a4b7a23d5'
     },
     {
       contactName: 'Emmeline Cisneros',
-      externalid: 'e55ca046-06c4-4e06-98b6-964dcc74529b'
+      externalId: 'e55ca046-06c4-4e06-98b6-964dcc74529b'
     },
     {
       contactName: 'Rueben Cross',
-      externalid: '9dae3176-91ae-4ed0-bf7e-889d753785c0'
+      externalId: '9dae3176-91ae-4ed0-bf7e-889d753785c0'
     },
     {
       contactName: 'Cleveland Mccarthy',
-      externalid: '795fa27c-9cee-46f4-a693-6c74e77844c2'
+      externalId: '795fa27c-9cee-46f4-a693-6c74e77844c2'
     },
     {
       contactName: 'Gracie-Mae Knight',
-      externalid: '8cb7440d-df29-4a95-b9a7-26d26f01a96e'
+      externalId: '8cb7440d-df29-4a95-b9a7-26d26f01a96e'
     }
   ]
 };
@@ -111,7 +111,7 @@ export const extraHeaders = {
   expectedParse: [
     {
       contactName: 'Astrid Bernal',
-      externalid: '454cda5e-16d5-4b86-b903-535125f78fe1'
+      externalId: '454cda5e-16d5-4b86-b903-535125f78fe1'
     }
   ]
 };
@@ -148,7 +148,7 @@ export const invalidHeadersOrder = {
   expectedParse: [
     {
       contactName: 'Astrid Bernal',
-      externalid: '454cda5e-16d5-4b86-b903-535125f78fe1'
+      externalId: '454cda5e-16d5-4b86-b903-535125f78fe1'
     }
   ]
 };
@@ -182,23 +182,23 @@ export const invalidContactData = {
   expectedParse: [
     {
       contactName: 'Astrid Bernal',
-      externalid: '454cda5e-16d5-4b86-b903-535125f78fe1'
+      externalId: '454cda5e-16d5-4b86-b903-535125f78fe1'
     },
     {
       contactName: 'Lyla Dodd',
-      externalid: undefined
+      externalId: undefined
     },
     {
       contactName: '',
-      externalid: ''
+      externalId: ''
     },
     {
       contactName: undefined,
-      externalid: undefined
+      externalId: undefined
     },
     {
       contactName: undefined,
-      externalid: undefined
+      externalId: undefined
     }
   ]
 };
@@ -246,29 +246,29 @@ export const emptyRows = {
   expectedParse: [
     {
       contactName: '',
-      externalid: ''
+      externalId: ''
     },
     {
       contactName: 'Astrid Bernal',
-      externalid: '454cda5e-16d5-4b86-b903-535125f78fe1'
+      externalId: '454cda5e-16d5-4b86-b903-535125f78fe1'
     },
     {
       contactName: undefined,
-      externalid: undefined
+      externalId: undefined
     },
     {
       contactName: 'Lyla Dodd',
-      externalid: undefined
+      externalId: undefined
     },
     {
       contactName: undefined,
-      externalid: undefined
+      externalId: undefined
     }
   ]
 };
 
 export const emptyData = {
-  inputAoA: [['firstName', 'lastName', 'externalid']],
+  inputAoA: [['firstName', 'lastName', 'externalId']],
   expectedErrors: [
     [
       {
@@ -298,7 +298,7 @@ export const emptyFile = {
 export const contactListToFilter = {
   input: {
     contactName: 'Lyla Dodd',
-    externalid: 'd8619d78-e516-433a-ad45-24c91e39c7c6'
+    externalId: 'd8619d78-e516-433a-ad45-24c91e39c7c6'
   },
   list: validContacts.expectedParse
 };

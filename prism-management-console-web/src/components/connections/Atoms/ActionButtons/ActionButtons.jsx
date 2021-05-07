@@ -14,7 +14,7 @@ const showQR = ({ status }) =>
 
 const ActionButtons = ({ inviteContact, viewContactDetail, contact }) => {
   const { t } = useTranslation();
-  const { contactid } = contact;
+  const { contactId } = contact;
 
   const showQRButton = showQR(contact);
 
@@ -23,7 +23,7 @@ const ActionButtons = ({ inviteContact, viewContactDetail, contact }) => {
       {showQRButton && (
         <CustomButton
           buttonProps={{
-            onClick: () => inviteContact(contactid),
+            onClick: () => inviteContact(contactId),
             className: 'theme-link'
           }}
           buttonText={t('contacts.table.columns.invite')}
@@ -46,7 +46,7 @@ const ActionButtons = ({ inviteContact, viewContactDetail, contact }) => {
       <CustomButton
         buttonProps={{
           className: 'theme-link',
-          onClick: () => viewContactDetail(contactid)
+          onClick: () => viewContactDetail(contactId)
         }}
         buttonText={t('contacts.table.columns.view')}
       />

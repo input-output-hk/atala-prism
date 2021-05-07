@@ -48,7 +48,7 @@ const ConnectionsTable = ({
         loading={loading}
         getMoreData={handleGetMoreData}
         hasMore={hasMore}
-        rowKey="contactid"
+        rowKey="contactId"
         searching={searching}
         selectionType={
           setSelectedContacts && {

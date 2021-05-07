@@ -1,82 +1,82 @@
 export const contacts = [
   {
-    externalid: '501619c5-270a-4e80-9e70-f0cf9bcef5e5',
+    externalId: '501619c5-270a-4e80-9e70-f0cf9bcef5e5',
     contactName: 'contact name'
   },
   {
-    externalid: '14c17a25-30a9-4e3d-a63d-83ebd8a2dd59',
+    externalId: '14c17a25-30a9-4e3d-a63d-83ebd8a2dd59',
     contactName: 'contact name'
   },
   {
-    externalid: '614e9d7a-71c8-4a31-a1d2-8c1928c0541d',
+    externalId: '614e9d7a-71c8-4a31-a1d2-8c1928c0541d',
     contactName: 'contact name'
   },
   {
-    externalid: 'd920875f-ddec-4c0b-ab1c-5c2b9c8ee415',
+    externalId: 'd920875f-ddec-4c0b-ab1c-5c2b9c8ee415',
     contactName: 'contact name'
   },
   {
-    externalid: 'a84b5652-99d4-41d4-9595-ce4d349baa90',
+    externalId: 'a84b5652-99d4-41d4-9595-ce4d349baa90',
     contactName: 'contact name'
   },
   {
-    externalid: '1708bfa5-4c8c-4c0c-b358-06fd088c0a89',
+    externalId: '1708bfa5-4c8c-4c0c-b358-06fd088c0a89',
     contactName: 'contact name'
   },
   {
-    externalid: '0718e98c-56d8-404d-9f14-37cf3c6c2f77',
+    externalId: '0718e98c-56d8-404d-9f14-37cf3c6c2f77',
     contactName: 'contact name'
   },
   {
-    externalid: '03ada254-dbcf-4fa1-a914-fa6585fb50a2',
+    externalId: '03ada254-dbcf-4fa1-a914-fa6585fb50a2',
     contactName: 'contact name'
   },
   {
-    externalid: '976396d0-d812-4f66-8117-491e0536a439',
+    externalId: '976396d0-d812-4f66-8117-491e0536a439',
     contactName: 'contact name'
   },
   {
-    externalid: '4291fbfb-2f01-460e-8909-15e2d1db9dfc',
+    externalId: '4291fbfb-2f01-460e-8909-15e2d1db9dfc',
     contactName: 'contact name'
   },
   {
-    externalid: 'a96e5db3-cd10-4571-9690-00a0e7caa664',
+    externalId: 'a96e5db3-cd10-4571-9690-00a0e7caa664',
     contactName: 'contact name'
   },
   {
-    externalid: '5fdcda7e-d492-4371-b028-c5fe67455762',
+    externalId: '5fdcda7e-d492-4371-b028-c5fe67455762',
     contactName: 'contact name'
   },
   {
-    externalid: '6a7a4484-fb43-43f6-8978-7d1197b254e3',
+    externalId: '6a7a4484-fb43-43f6-8978-7d1197b254e3',
     contactName: 'contact name'
   },
   {
-    externalid: '9565ba89-da3f-4cbe-9218-ab38f5c8bb30',
+    externalId: '9565ba89-da3f-4cbe-9218-ab38f5c8bb30',
     contactName: 'contact name'
   },
   {
-    externalid: '3676ad24-66a4-44e6-82eb-df9a456c3538',
+    externalId: '3676ad24-66a4-44e6-82eb-df9a456c3538',
     contactName: 'contact name'
   },
   {
-    externalid: '7bdde45f-8840-4fc2-b43e-471db1e1748f',
+    externalId: '7bdde45f-8840-4fc2-b43e-471db1e1748f',
     contactName: 'contact name'
   },
   {
-    externalid: 'd3795d9e-32cf-48f6-8a4b-14517049c172',
+    externalId: 'd3795d9e-32cf-48f6-8a4b-14517049c172',
     contactName: 'contact name'
   },
   {
-    externalid: '1527aad2-c4af-4ca8-8c62-4b6e82f77609',
+    externalId: '1527aad2-c4af-4ca8-8c62-4b6e82f77609',
     contactName: 'contact name'
   },
   {
-    externalid: '682373fc-f13b-4e39-9b3e-e46c5c234499',
+    externalId: '682373fc-f13b-4e39-9b3e-e46c5c234499',
     contactName: 'contact name'
   },
   {
-    externalid: 'a96953c3-5ddc-4c61-bdb2-f4bd87d1d58e',
+    externalId: 'a96953c3-5ddc-4c61-bdb2-f4bd87d1d58e',
     contactName: 'contact name'
   }
 ];
@@ -275,7 +275,7 @@ export const validCredentials = {
   ],
   expectedParse: [
     {
-      externalid: '501619c5-270a-4e80-9e70-f0cf9bcef5e5',
+      externalId: '501619c5-270a-4e80-9e70-f0cf9bcef5e5',
       contactName: 'contact name',
       fullname: 'full name',
       idNumber: '654654',
@@ -284,7 +284,7 @@ export const validCredentials = {
       photo: ''
     },
     {
-      externalid: '14c17a25-30a9-4e3d-a63d-83ebd8a2dd59',
+      externalId: '14c17a25-30a9-4e3d-a63d-83ebd8a2dd59',
       contactName: 'contact name',
       fullname: 'full name',
       idNumber: '661200',
@@ -293,7 +293,7 @@ export const validCredentials = {
       photo: ''
     },
     {
-      externalid: '614e9d7a-71c8-4a31-a1d2-8c1928c0541d',
+      externalId: '614e9d7a-71c8-4a31-a1d2-8c1928c0541d',
       contactName: 'contact name',
       fullname: 'full name',
       idNumber: '667746',
@@ -302,7 +302,7 @@ export const validCredentials = {
       photo: ''
     },
     {
-      externalid: 'd920875f-ddec-4c0b-ab1c-5c2b9c8ee415',
+      externalId: 'd920875f-ddec-4c0b-ab1c-5c2b9c8ee415',
       contactName: 'contact name',
       fullname: 'full name',
       idNumber: '674292',
@@ -311,7 +311,7 @@ export const validCredentials = {
       photo: ''
     },
     {
-      externalid: 'a84b5652-99d4-41d4-9595-ce4d349baa90',
+      externalId: 'a84b5652-99d4-41d4-9595-ce4d349baa90',
       contactName: 'contact name',
       fullname: 'full name',
       idNumber: '680838',
@@ -320,7 +320,7 @@ export const validCredentials = {
       photo: ''
     },
     {
-      externalid: '1708bfa5-4c8c-4c0c-b358-06fd088c0a89',
+      externalId: '1708bfa5-4c8c-4c0c-b358-06fd088c0a89',
       contactName: 'contact name',
       fullname: 'full name',
       idNumber: '687384',
@@ -329,7 +329,7 @@ export const validCredentials = {
       photo: ''
     },
     {
-      externalid: '0718e98c-56d8-404d-9f14-37cf3c6c2f77',
+      externalId: '0718e98c-56d8-404d-9f14-37cf3c6c2f77',
       contactName: 'contact name',
       fullname: 'full name',
       idNumber: '693930',
@@ -338,7 +338,7 @@ export const validCredentials = {
       photo: ''
     },
     {
-      externalid: '03ada254-dbcf-4fa1-a914-fa6585fb50a2',
+      externalId: '03ada254-dbcf-4fa1-a914-fa6585fb50a2',
       contactName: 'contact name',
       fullname: 'full name',
       idNumber: '700476',
@@ -347,7 +347,7 @@ export const validCredentials = {
       photo: ''
     },
     {
-      externalid: '976396d0-d812-4f66-8117-491e0536a439',
+      externalId: '976396d0-d812-4f66-8117-491e0536a439',
       contactName: 'contact name',
       fullname: 'full name',
       idNumber: '707022',
@@ -356,7 +356,7 @@ export const validCredentials = {
       photo: ''
     },
     {
-      externalid: '4291fbfb-2f01-460e-8909-15e2d1db9dfc',
+      externalId: '4291fbfb-2f01-460e-8909-15e2d1db9dfc',
       contactName: 'contact name',
       fullname: 'full name',
       idNumber: '713568',
@@ -365,7 +365,7 @@ export const validCredentials = {
       photo: ''
     },
     {
-      externalid: 'a96e5db3-cd10-4571-9690-00a0e7caa664',
+      externalId: 'a96e5db3-cd10-4571-9690-00a0e7caa664',
       contactName: 'contact name',
       fullname: 'full name',
       idNumber: '720114',
@@ -374,7 +374,7 @@ export const validCredentials = {
       photo: ''
     },
     {
-      externalid: '5fdcda7e-d492-4371-b028-c5fe67455762',
+      externalId: '5fdcda7e-d492-4371-b028-c5fe67455762',
       contactName: 'contact name',
       fullname: 'full name',
       idNumber: '726660',
@@ -383,7 +383,7 @@ export const validCredentials = {
       photo: ''
     },
     {
-      externalid: '6a7a4484-fb43-43f6-8978-7d1197b254e3',
+      externalId: '6a7a4484-fb43-43f6-8978-7d1197b254e3',
       contactName: 'contact name',
       fullname: 'full name',
       idNumber: '733206',
@@ -392,7 +392,7 @@ export const validCredentials = {
       photo: ''
     },
     {
-      externalid: '9565ba89-da3f-4cbe-9218-ab38f5c8bb30',
+      externalId: '9565ba89-da3f-4cbe-9218-ab38f5c8bb30',
       contactName: 'contact name',
       fullname: 'full name',
       idNumber: '739752',
@@ -401,7 +401,7 @@ export const validCredentials = {
       photo: ''
     },
     {
-      externalid: '3676ad24-66a4-44e6-82eb-df9a456c3538',
+      externalId: '3676ad24-66a4-44e6-82eb-df9a456c3538',
       contactName: 'contact name',
       fullname: 'full name',
       idNumber: '746298',
@@ -410,7 +410,7 @@ export const validCredentials = {
       photo: ''
     },
     {
-      externalid: '7bdde45f-8840-4fc2-b43e-471db1e1748f',
+      externalId: '7bdde45f-8840-4fc2-b43e-471db1e1748f',
       contactName: 'contact name',
       fullname: 'full name',
       idNumber: '752844',
@@ -419,7 +419,7 @@ export const validCredentials = {
       photo: ''
     },
     {
-      externalid: 'd3795d9e-32cf-48f6-8a4b-14517049c172',
+      externalId: 'd3795d9e-32cf-48f6-8a4b-14517049c172',
       contactName: 'contact name',
       fullname: 'full name',
       idNumber: '759390',
@@ -428,7 +428,7 @@ export const validCredentials = {
       photo: ''
     },
     {
-      externalid: '1527aad2-c4af-4ca8-8c62-4b6e82f77609',
+      externalId: '1527aad2-c4af-4ca8-8c62-4b6e82f77609',
       contactName: 'contact name',
       fullname: 'full name',
       idNumber: '765936',
@@ -437,7 +437,7 @@ export const validCredentials = {
       photo: ''
     },
     {
-      externalid: '682373fc-f13b-4e39-9b3e-e46c5c234499',
+      externalId: '682373fc-f13b-4e39-9b3e-e46c5c234499',
       contactName: 'contact name',
       fullname: 'full name',
       idNumber: '772482',
@@ -446,7 +446,7 @@ export const validCredentials = {
       photo: ''
     },
     {
-      externalid: 'a96953c3-5ddc-4c61-bdb2-f4bd87d1d58e',
+      externalId: 'a96953c3-5ddc-4c61-bdb2-f4bd87d1d58e',
       contactName: 'contact name',
       fullname: 'full name',
       idNumber: '779028',
@@ -517,7 +517,7 @@ export const extraHeaders = {
   ],
   expectedParse: [
     {
-      externalid: '501619c5-270a-4e80-9e70-f0cf9bcef5e5',
+      externalId: '501619c5-270a-4e80-9e70-f0cf9bcef5e5',
       contactName: 'contact name',
       fullname: 'full name',
       idNumber: '654654',
@@ -526,7 +526,7 @@ export const extraHeaders = {
       photo: ''
     },
     {
-      externalid: '14c17a25-30a9-4e3d-a63d-83ebd8a2dd59',
+      externalId: '14c17a25-30a9-4e3d-a63d-83ebd8a2dd59',
       contactName: 'contact name',
       fullname: 'full name',
       idNumber: '661200',
@@ -535,7 +535,7 @@ export const extraHeaders = {
       photo: ''
     },
     {
-      externalid: '614e9d7a-71c8-4a31-a1d2-8c1928c0541d',
+      externalId: '614e9d7a-71c8-4a31-a1d2-8c1928c0541d',
       contactName: 'contact name',
       fullname: 'full name',
       idNumber: '667746',
@@ -598,7 +598,7 @@ export const invalidHeadersOrder = {
   ],
   expectedParse: [
     {
-      externalid: '501619c5-270a-4e80-9e70-f0cf9bcef5e5',
+      externalId: '501619c5-270a-4e80-9e70-f0cf9bcef5e5',
       contactName: 'contact name',
       fullname: 'full name',
       idNumber: '654654',
@@ -685,7 +685,7 @@ export const invalidCredentialsData = {
   ],
   expectedParse: [
     {
-      externalid: '501619c5-270a-4e80-9e70-f0cf9bcef5e5',
+      externalId: '501619c5-270a-4e80-9e70-f0cf9bcef5e5',
       contactName: 'contact name',
       fullname: 'full name',
       idNumber: '',
@@ -694,7 +694,7 @@ export const invalidCredentialsData = {
       photo: ''
     },
     {
-      externalid: '',
+      externalId: '',
       contactName: 'contact name',
       idNumber: '661200',
       fullname: '',
@@ -703,7 +703,7 @@ export const invalidCredentialsData = {
       photo: ''
     },
     {
-      externalid: '614e9d7a-71c8-4a31-a1d2-8c1928c0541d',
+      externalId: '614e9d7a-71c8-4a31-a1d2-8c1928c0541d',
       contactName: 'contact name',
       idNumber: '667746',
       fullname: 'full name',
@@ -715,7 +715,7 @@ export const invalidCredentialsData = {
       contactName: 'contact name',
       dateOfBirth: '12/08/91',
       expirationDate: '17/12/49',
-      externalid: 'incorrectExternalId',
+      externalId: 'incorrectExternalId',
       fullname: 'full name',
       idNumber: '779028',
       photo: ''
@@ -780,7 +780,7 @@ export const emptyRows = {
   ],
   expectedParse: [
     {
-      externalid: '501619c5-270a-4e80-9e70-f0cf9bcef5e5',
+      externalId: '501619c5-270a-4e80-9e70-f0cf9bcef5e5',
       contactName: 'contact name',
       fullname: 'full name',
       idNumber: '654654',
@@ -789,7 +789,7 @@ export const emptyRows = {
       photo: ''
     },
     {
-      externalid: '14c17a25-30a9-4e3d-a63d-83ebd8a2dd59',
+      externalId: '14c17a25-30a9-4e3d-a63d-83ebd8a2dd59',
       contactName: 'contact name',
       fullname: 'full name',
       idNumber: '661200',
@@ -798,7 +798,7 @@ export const emptyRows = {
       photo: ''
     },
     {
-      externalid: '',
+      externalId: '',
       contactName: '',
       fullname: '',
       idNumber: '',
@@ -807,7 +807,7 @@ export const emptyRows = {
       photo: ''
     },
     {
-      externalid: '614e9d7a-71c8-4a31-a1d2-8c1928c0541d',
+      externalId: '614e9d7a-71c8-4a31-a1d2-8c1928c0541d',
       contactName: 'contact name',
       fullname: 'full name',
       idNumber: '667746',
@@ -816,7 +816,7 @@ export const emptyRows = {
       photo: ''
     },
     {
-      externalid: '',
+      externalId: '',
       contactName: '',
       fullname: '',
       idNumber: '',
@@ -825,7 +825,7 @@ export const emptyRows = {
       photo: ''
     },
     {
-      externalid: undefined,
+      externalId: undefined,
       contactName: undefined,
       fullname: undefined,
       idNumber: undefined,
@@ -953,7 +953,7 @@ export const invalidDates = {
   ],
   expectedParse: [
     {
-      externalid: '501619c5-270a-4e80-9e70-f0cf9bcef5e5',
+      externalId: '501619c5-270a-4e80-9e70-f0cf9bcef5e5',
       contactName: 'contact name',
       fullname: 'full name',
       idNumber: '654654',
@@ -962,7 +962,7 @@ export const invalidDates = {
       photo: ''
     },
     {
-      externalid: '14c17a25-30a9-4e3d-a63d-83ebd8a2dd59',
+      externalId: '14c17a25-30a9-4e3d-a63d-83ebd8a2dd59',
       contactName: 'contact name',
       fullname: 'full name',
       idNumber: '661200',
@@ -971,7 +971,7 @@ export const invalidDates = {
       photo: ''
     },
     {
-      externalid: '614e9d7a-71c8-4a31-a1d2-8c1928c0541d',
+      externalId: '614e9d7a-71c8-4a31-a1d2-8c1928c0541d',
       contactName: 'contact name',
       fullname: 'full name',
       idNumber: '667746',
@@ -980,7 +980,7 @@ export const invalidDates = {
       photo: ''
     },
     {
-      externalid: 'd920875f-ddec-4c0b-ab1c-5c2b9c8ee415',
+      externalId: 'd920875f-ddec-4c0b-ab1c-5c2b9c8ee415',
       contactName: 'contact name',
       fullname: 'full name',
       idNumber: '674292',

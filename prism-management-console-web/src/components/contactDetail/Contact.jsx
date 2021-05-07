@@ -19,7 +19,7 @@ const ISSUED = 'issued';
 const RECEIVED = 'received';
 
 const Contact = ({
-  contact: { contactName, externalid },
+  contact: { contactName, externalId },
   groups,
   loading,
   issuedCredentials,
@@ -48,8 +48,8 @@ const Contact = ({
               <span>{loading.contact ? <SimpleLoading size="xs" /> : contactName}</span>
             </div>
             <div className="title">
-              <p>{t('contacts.table.columns.externalid')}</p>
-              <span>{loading.contact ? <SimpleLoading size="xs" /> : externalid}</span>
+              <p>{t('contacts.table.columns.externalId')}</p>
+              <span>{loading.contact ? <SimpleLoading size="xs" /> : externalId}</span>
             </div>
             <CustomButton
               buttonText={t('groups.table.buttons.edit')}
@@ -120,23 +120,23 @@ Contact.defaultProps = {
 
 Contact.propTypes = {
   contact: PropTypes.shape({
-    contactid: PropTypes.string,
-    externalid: PropTypes.string,
+    contactId: PropTypes.string,
+    externalId: PropTypes.string,
     contactName: PropTypes.string,
     creationDate: PropTypes.shape({
       day: PropTypes.number,
       month: PropTypes.number,
       year: PropTypes.number
     }),
-    connectionstatus: PropTypes.number,
-    connectiontoken: PropTypes.string,
-    connectionid: PropTypes.string,
-    createdat: PropTypes.number
+    connectionStatus: PropTypes.number,
+    connectionToken: PropTypes.string,
+    connectionId: PropTypes.string,
+    createdAt: PropTypes.number
   }),
   groups: PropTypes.arrayOf(
     PropTypes.shape({
       name: PropTypes.string,
-      numberofcontacts: PropTypes.number
+      numberOfContacts: PropTypes.number
     })
   ),
   loading: PropTypes.shape({

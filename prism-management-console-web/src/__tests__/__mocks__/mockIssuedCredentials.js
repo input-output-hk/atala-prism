@@ -18,14 +18,14 @@ export const mockCredentials = [
     sharedat: 0,
     status: 1,
     contactData: {
-      externalid: 'debcdfb1dec543c3965d133bed318be4',
+      externalId: 'debcdfb1dec543c3965d133bed318be4',
       contactName: 'Priya Lamb',
       firstName: 'Priya',
       midNames: '',
       lastName: 'Lamb',
       key: '53d6c434-3e07-4391-82fa-2e3c9f0dbb09',
       status: 1,
-      contactid: '53d6c434-3e07-4391-82fa-2e3c9f0dbb09'
+      contactId: '53d6c434-3e07-4391-82fa-2e3c9f0dbb09'
     }
   },
   {
@@ -47,14 +47,14 @@ export const mockCredentials = [
     sharedat: 0,
     status: 1,
     contactData: {
-      externalid: '8b3339d551884afb8171d4c353fb91f0',
+      externalId: '8b3339d551884afb8171d4c353fb91f0',
       contactName: 'Klaudia Munoz',
       firstName: 'Klaudia',
       midNames: '',
       lastName: 'Munoz',
       key: '6ba33ecf-7833-4899-a6df-6a681c742067',
       status: 1,
-      contactid: '6ba33ecf-7833-4899-a6df-6a681c742067'
+      contactId: '6ba33ecf-7833-4899-a6df-6a681c742067'
     }
   },
   {
@@ -81,14 +81,14 @@ export const mockCredentials = [
     sharedat: 0,
     status: 2,
     contactData: {
-      externalid: '575a095607ca4f86b59b38e7715f922c',
+      externalId: '575a095607ca4f86b59b38e7715f922c',
       contactName: 'Harleigh Wells',
       firstName: 'Harleigh',
       midNames: '',
       lastName: 'Wells',
       key: '49fcb20a-5b7e-48ee-b4f3-e39952c36c4b',
       status: 1,
-      contactid: '49fcb20a-5b7e-48ee-b4f3-e39952c36c4b'
+      contactId: '49fcb20a-5b7e-48ee-b4f3-e39952c36c4b'
     }
   },
   {
@@ -110,14 +110,14 @@ export const mockCredentials = [
     sharedat: 0,
     status: 2,
     contactData: {
-      externalid: 'f5ecf2f2037745d3be0283bd876140ff',
+      externalId: 'f5ecf2f2037745d3be0283bd876140ff',
       contactName: 'Ayyub Conner',
       firstName: 'Ayyub',
       midNames: '',
       lastName: 'Conner',
       key: '920dfbb4-3f6b-4e6a-bfc9-732570e3e280',
       status: 3,
-      contactid: '920dfbb4-3f6b-4e6a-bfc9-732570e3e280'
+      contactId: '920dfbb4-3f6b-4e6a-bfc9-732570e3e280'
     }
   },
   {
@@ -139,14 +139,14 @@ export const mockCredentials = [
     sharedat: 0,
     status: 3,
     contactData: {
-      externalid: '63880e9e5cbd44319afb7c43b047cf88',
+      externalId: '63880e9e5cbd44319afb7c43b047cf88',
       contactName: 'Malika Ferguson',
       firstName: 'Malika',
       midNames: '',
       lastName: 'Ferguson',
       key: '49e55b84-d542-440a-8c92-eac9f6df7e90',
       status: 1,
-      contactid: '49e55b84-d542-440a-8c92-eac9f6df7e90'
+      contactId: '49e55b84-d542-440a-8c92-eac9f6df7e90'
     }
   },
   {
@@ -173,14 +173,14 @@ export const mockCredentials = [
     sharedat: 0,
     status: 3,
     contactData: {
-      externalid: 'fae84b4f0ecf42db8f793b0b7c3f7bd2',
+      externalId: 'fae84b4f0ecf42db8f793b0b7c3f7bd2',
       contactName: 'Nick Magana',
       firstName: 'Nick',
       midNames: '',
       lastName: 'Magana',
       key: '2c4cb6eb-26d1-48f5-80fd-1957160af38e',
       status: 1,
-      contactid: '2c4cb6eb-26d1-48f5-80fd-1957160af38e'
+      contactId: '2c4cb6eb-26d1-48f5-80fd-1957160af38e'
     }
   },
   {
@@ -202,14 +202,14 @@ export const mockCredentials = [
     sharedat: 0,
     status: 4,
     contactData: {
-      externalid: '0308e770ba9541c58732d1a046b170b9',
+      externalId: '0308e770ba9541c58732d1a046b170b9',
       contactName: 'Indi Avery',
       firstName: 'Indi',
       midNames: '',
       lastName: 'Avery',
       key: '810eddfb-5395-42ea-a528-c6042ca1c6d0',
       status: 1,
-      contactid: '810eddfb-5395-42ea-a528-c6042ca1c6d0'
+      contactId: '810eddfb-5395-42ea-a528-c6042ca1c6d0'
     }
   },
   {
@@ -231,14 +231,14 @@ export const mockCredentials = [
     sharedat: 0,
     status: 4,
     contactData: {
-      externalid: 'da1811b94bb1456dad3f32b1478fea47',
+      externalId: 'da1811b94bb1456dad3f32b1478fea47',
       contactName: 'Ffion Bray',
       firstName: 'Ffion',
       midNames: '',
       lastName: 'Bray',
       key: '2e9524ce-1764-457b-96c8-3a0a011b3e52',
       status: 1,
-      contactid: '2e9524ce-1764-457b-96c8-3a0a011b3e52'
+      contactId: '2e9524ce-1764-457b-96c8-3a0a011b3e52'
     }
   },
   {
@@ -260,14 +260,14 @@ export const mockCredentials = [
     sharedat: 0,
     status: 1,
     contactData: {
-      externalid: '62a300409b2645c597bb143e968c1f17',
+      externalId: '62a300409b2645c597bb143e968c1f17',
       contactName: 'Soraya Love',
       firstName: 'Soraya',
       midNames: '',
       lastName: 'Love',
       key: 'c13ad41f-2a20-41b7-bbc0-a07693f64b85',
       status: 1,
-      contactid: 'c13ad41f-2a20-41b7-bbc0-a07693f64b85'
+      contactId: 'c13ad41f-2a20-41b7-bbc0-a07693f64b85'
     }
   },
   {
@@ -289,14 +289,14 @@ export const mockCredentials = [
     sharedat: 0,
     status: 4,
     contactData: {
-      externalid: '7a7a9160cd3b40b182399b65c0f086fe',
+      externalId: '7a7a9160cd3b40b182399b65c0f086fe',
       contactName: 'Pixie Mann',
       firstName: 'Pixie',
       midNames: '',
       lastName: 'Mann',
       key: 'c4215efe-e8c8-4002-8ca8-49379f0fae4c',
       status: 1,
-      contactid: 'c4215efe-e8c8-4002-8ca8-49379f0fae4c'
+      contactId: 'c4215efe-e8c8-4002-8ca8-49379f0fae4c'
     }
   }
 ];

@@ -3,42 +3,42 @@ import { contactMapper } from './contactHelpers';
 
 export function credentialMapper(credential, credentialTypes) {
   const {
-    batchid,
-    credentialid,
+    batchId,
+    credentialId,
     credentialData,
-    contactid,
-    externalid,
+    contactId,
+    externalId,
     contactData,
-    connectionstatus,
-    encodedsignedcredential,
-    publicationstoredat,
-    issuanceproof,
-    issuanceoperationhash,
-    batchinclusionproof,
-    sharedat,
-    revocationproof
+    connectionStatus,
+    encodedSignedCredential,
+    publicationStoredAt,
+    issuanceProof,
+    issuanceOperationHash,
+    batchInclusionProof,
+    sharedAt,
+    revocationProof
   } = credential;
 
   const parsedCredentialJson = JSON.parse(credentialData);
 
   return {
     ...parsedCredentialJson,
-    batchid,
-    credentialid,
+    batchId,
+    credentialId,
     credentialData,
-    encodedsignedcredential,
-    publicationstoredat,
-    issuanceproof,
-    issuanceoperationhash,
-    batchinclusionproof,
-    sharedat,
-    revocationproof,
+    encodedSignedCredential,
+    publicationStoredAt,
+    issuanceProof,
+    issuanceOperationHash,
+    batchInclusionProof,
+    sharedAt,
+    revocationProof,
     credentialType: getCredentialTypeObject(parsedCredentialJson, credentialTypes),
     status: getCredentialStatus(credential),
     contactData: contactMapper({
-      contactid,
-      externalid,
-      connectionstatus,
+      contactId,
+      externalId,
+      connectionStatus,
       jsonData: contactData
     })
   };
@@ -56,18 +56,18 @@ function getCredentialTypeObject(credentialData, credentialTypes) {
 }
 
 function getCredentialStatus(credential) {
-  const { publicationstoredat, sharedat, revocationproof } = credential;
-  if (revocationproof) return CREDENTIAL_STATUSES.credentialRevoked;
-  if (sharedat?.seconds) return CREDENTIAL_STATUSES.credentialSent;
-  if (publicationstoredat?.seconds) return CREDENTIAL_STATUSES.credentialSigned;
+  const { publicationStoredAt, sharedAt, revocationProof } = credential;
+  if (revocationProof) return CREDENTIAL_STATUSES.credentialRevoked;
+  if (sharedAt?.seconds) return CREDENTIAL_STATUSES.credentialSent;
+  if (publicationStoredAt?.seconds) return CREDENTIAL_STATUSES.credentialSigned;
   return CREDENTIAL_STATUSES.credentialDraft;
 }
 
 export function credentialReceivedMapper(credentialReceived, credentialTypes) {
-  const { externalid, contactName, credentialType, ...rest } = credentialReceived;
+  const { externalId, contactName, credentialType, ...rest } = credentialReceived;
   return {
     contactData: {
-      externalid,
+      externalId,
       contactName
     },
     credentialType: credentialTypes[credentialType],

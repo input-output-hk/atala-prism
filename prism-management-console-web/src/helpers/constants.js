@@ -111,10 +111,10 @@ export const ASSIGN_TO_GROUPS = 1;
 
 // Entities keys
 export const CONTACT_NAME_KEY = 'contactName';
-export const EXTERNAL_ID_KEY = 'externalid';
+export const EXTERNAL_ID_KEY = 'externalId';
 export const GROUP_NAME_KEY = 'name';
-export const CONTACT_ID_KEY = 'contactid';
-export const CREDENTIAL_ID_KEY = 'credentialid';
+export const CONTACT_ID_KEY = 'contactId';
+export const CREDENTIAL_ID_KEY = 'credentialId';
 
 // Bulk import data
 export const COMMON_CONTACT_HEADERS = [CONTACT_NAME_KEY, EXTERNAL_ID_KEY];

@@ -53,10 +53,10 @@ const GroupEditingContainer = ({ api }) => {
     if (group && !contacts.length && hasMore) getGroupContacts();
   }, [group, contacts, getGroupContacts, hasMore]);
 
-  const handleRemoveContacts = async contactsIdsToRemove => {
+  const handleRemoveContacts = async contactIdsToRemove => {
     try {
       setIsSaving(true);
-      await api.groupsManager.updateGroup(id, { contactsIdsToRemove });
+      await api.groupsManager.updateGroup(id, { contactIdsToRemove });
       getGroupContacts(true);
     } catch (e) {
       message.error(t('groupEditing.errors.grpc'));

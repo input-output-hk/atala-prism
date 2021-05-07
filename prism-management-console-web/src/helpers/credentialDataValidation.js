@@ -182,7 +182,7 @@ const validateContactExistence = (
   header,
   allExpectedHeaders
 ) => {
-  const allExternalIds = contacts.map(c => c.externalid);
+  const allExternalIds = contacts.map(c => c.externalId);
 
   if (isExternalID) {
     return allExternalIds.includes(importedExternalID)
@@ -190,7 +190,7 @@ const validateContactExistence = (
       : generateCommonFieldError('nonexistentExternalID', dataRow, header, allExpectedHeaders);
   }
 
-  const expectedName = contacts.find(c => c.externalid === importedExternalID)?.contactName;
+  const expectedName = contacts.find(c => c.externalId === importedExternalID)?.contactName;
   return !expectedName || expectedName === importedValue
     ? null
     : generateCommonFieldError('valueDoesNotMatch', dataRow, header, allExpectedHeaders);

@@ -17,8 +17,8 @@ const CredentialCreationTable = ({ tableProps, setDisableSave, credentialType })
       validations: ['required']
     },
     {
-      title: t('contacts.table.columns.externalid'),
-      dataIndex: 'externalid',
+      title: t('contacts.table.columns.externalId'),
+      dataIndex: 'externalId',
       editable: false,
       type: 'string',
       validations: ['required']

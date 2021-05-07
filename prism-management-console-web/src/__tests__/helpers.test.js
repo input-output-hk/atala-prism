@@ -36,12 +36,12 @@ it('parses array of arrays with invalid keys to an object', () => {
 it('filter a list based on a single text and given list fields', () => {
   const contacts = contactListToFilter.list;
 
-  const { externalid, contactName } = contactListToFilter.input;
+  const { externalId, contactName } = contactListToFilter.input;
   const filteredByName = filterByManyFields(contacts, contactName, [
     CONTACT_NAME_KEY,
     EXTERNAL_ID_KEY
   ]);
-  const filteredByExternalId = filterByManyFields(contacts, externalid, [
+  const filteredByExternalId = filterByManyFields(contacts, externalId, [
     CONTACT_NAME_KEY,
     EXTERNAL_ID_KEY
   ]);
@@ -51,16 +51,16 @@ it('filter a list based on a single text and given list fields', () => {
 
 describe('isValueInListByKey', () => {
   const contacts = contactListToFilter.list;
-  const { externalid, contactName } = contactListToFilter.input;
+  const { externalId, contactName } = contactListToFilter.input;
 
   it('should return true when value exists', () => {
-    const isExternalidExists = isValueInListByKey(contacts, externalid, 'externalid');
+    const isExternalidExists = isValueInListByKey(contacts, externalId, 'externalId');
     expect(isExternalidExists).toEqual(true);
   });
 
   it('should return false when value not exists', () => {
-    const filteredContacts = contacts.filter(item => item.externalid !== externalid);
-    const isExternalidExists = isValueInListByKey(filteredContacts, externalid, 'externalid');
+    const filteredContacts = contacts.filter(item => item.externalId !== externalId);
+    const isExternalidExists = isValueInListByKey(filteredContacts, externalId, 'externalId');
     expect(isExternalidExists).toEqual(false);
   });
 
@@ -80,7 +80,7 @@ describe('isValueInListByKey', () => {
   });
 
   it('should return false when the field key is undefined', () => {
-    const withUndefinedKey = isValueInListByKey(contacts, externalid, undefined);
+    const withUndefinedKey = isValueInListByKey(contacts, externalId, undefined);
     expect(withUndefinedKey).toEqual(false);
   });
 
@@ -91,18 +91,18 @@ describe('isValueInListByKey', () => {
 });
 
 describe('isValueUniqueInObjectListByKey', () => {
-  const { externalid, contactName } = contactListToFilter.input;
+  const { externalId, contactName } = contactListToFilter.input;
 
   it('should return true when value is unique', () => {
     const contacts = contactListToFilter.list;
-    const isExternalidExists = isValueUniqueInObjectListByKey(contacts, externalid, 'externalid');
+    const isExternalidExists = isValueUniqueInObjectListByKey(contacts, externalId, 'externalId');
     expect(isExternalidExists).toEqual(true);
   });
 
   it('should return false when value is not unique', () => {
     const contacts = contactListToFilter.list;
     contacts.push(contactListToFilter.input);
-    const isExternalidExists = isValueUniqueInObjectListByKey(contacts, externalid, 'externalid');
+    const isExternalidExists = isValueUniqueInObjectListByKey(contacts, externalId, 'externalId');
     expect(isExternalidExists).toEqual(false);
   });
 
@@ -127,7 +127,7 @@ describe('isValueUniqueInObjectListByKey', () => {
 
   it('should return true when the field key is undefined', () => {
     const contacts = contactListToFilter.list;
-    const withUndefinedKey = isValueUniqueInObjectListByKey(contacts, externalid, undefined);
+    const withUndefinedKey = isValueUniqueInObjectListByKey(contacts, externalId, undefined);
     expect(withUndefinedKey).toEqual(true);
   });
 

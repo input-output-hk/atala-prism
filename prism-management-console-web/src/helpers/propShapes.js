@@ -19,14 +19,14 @@ export const connectionStatusesKeysShape = __.keys(CONNECTION_STATUSES);
 
 export const contactCreationShape = {
   contactName: string,
-  externalid: string,
+  externalId: string,
   key: number.isRequired
 };
 
 export const contactShape = {
   contactName: string,
-  externalid: string,
-  contactid: string,
+  externalId: string,
+  contactId: string,
   status: oneOf(connectionStatusesShape)
 };
 

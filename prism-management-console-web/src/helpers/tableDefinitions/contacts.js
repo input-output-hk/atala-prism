@@ -31,14 +31,14 @@ const getBasicContactColumns = () => [
     render: ({ contactName }) => <CellRenderer title={tp('contactName')} value={contactName} />
   },
   {
-    key: 'externalid',
+    key: 'externalId',
     width: 170,
-    render: ({ externalid }) => <CellRenderer title={tp('externalid')} value={externalid} />
+    render: ({ externalId }) => <CellRenderer title={tp('externalId')} value={externalId} />
   },
   {
     key: 'creationDate',
-    render: ({ createdat }) => (
-      <CellRenderer title={tp('creationDate')} value={backendDateFormat(createdat?.seconds)} />
+    render: ({ createdAt }) => (
+      <CellRenderer title={tp('creationDate')} value={backendDateFormat(createdAt?.seconds)} />
     )
   }
 ];
@@ -46,9 +46,9 @@ const getBasicContactColumns = () => [
 const getExtendedColumns = ({ inviteContact, viewContactDetail }) => [
   {
     key: 'connectionstatus',
-    render: ({ status }) => (
+    render: ({ connectionStatus }) => (
       <CellRenderer title={tp('contactStatus')} componentName="contacts">
-        <StatusBadge status={status} />
+        <StatusBadge status={connectionStatus} />
       </CellRenderer>
     )
   },

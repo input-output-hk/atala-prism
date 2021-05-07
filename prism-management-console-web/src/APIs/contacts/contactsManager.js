@@ -24,12 +24,12 @@ async function generateConnectionToken(contactId) {
   return token;
 }
 
-async function createContact(groupName, jsonData, externalid) {
-  Logger.info(`Creating contact with externalId = ${externalid} for group ${groupName}`, jsonData);
+async function createContact(groupName, jsonData, externalId) {
+  Logger.info(`Creating contact with externalId = ${externalId} for group ${groupName}`, jsonData);
   const req = new CreateContactRequest();
   if (groupName) req.setGroupName(groupName);
   req.setJsonData(JSON.stringify(jsonData));
-  req.setExternalId(externalid);
+  req.setExternalId(externalId);
 
   const { metadata, sessionError } = await this.auth.getMetadata(req);
   if (sessionError) return {};

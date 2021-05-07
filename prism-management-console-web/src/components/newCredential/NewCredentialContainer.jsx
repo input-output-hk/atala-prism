@@ -112,18 +112,18 @@ const NewCredentialContainer = ({ api, redirector: { redirectToCredentials } }) 
     const targetsFromGroups = (await Promise.all(groupContactsPromises)).flat();
     const targetsFromGroupsWithKeys = targetsFromGroups.map(contactMapper);
 
-    const cherryPickedSubjects = contacts.filter(({ contactid }) =>
-      selectedContacts.includes(contactid)
+    const cherryPickedSubjects = contacts.filter(({ contactId }) =>
+      selectedContacts.includes(contactId)
     );
 
     const targetSubjects = [...targetsFromGroupsWithKeys, ...cherryPickedSubjects];
-    const noRepeatedTargets = _.uniqBy(targetSubjects, 'externalid');
+    const noRepeatedTargets = _.uniqBy(targetSubjects, 'externalId');
 
     setRecipients(noRepeatedTargets);
   };
 
   const parseMultiRowCredentials = (dataObjects, multiRowKey, fields) => {
-    const groupedData = _.groupBy(dataObjects, 'externalid');
+    const groupedData = _.groupBy(dataObjects, 'externalId');
     const externalIds = Object.keys(groupedData);
     const rowsPerExternalId = externalIds.map(externalId => groupedData[externalId]);
     const rowFields = fields.filter(({ isRowField }) => isRowField).map(({ key }) => key);
@@ -152,12 +152,12 @@ const NewCredentialContainer = ({ api, redirector: { redirectToCredentials } }) 
   };
 
   const goToCredentialsPreview = credentialsData => {
-    const { htmltemplate } = credentialViewTemplates.find(
+    const { htmlTemplate } = credentialViewTemplates.find(
       template => template.id === credentialTypes[credentialType].id
     );
     const htmlCredentials = credentialsData.map(credentialData =>
       fillHTMLCredential(
-        htmltemplate,
+        htmlTemplate,
         credentialTypes[credentialType],
         credentialData,
         session.organisationName
@@ -181,13 +181,13 @@ const NewCredentialContainer = ({ api, redirector: { redirectToCredentials } }) 
     const onFinish = async allContacts => {
       try {
         const credentialsData = importedData.map((data, index) => {
-          const { contactid } = allContacts.find(
-            ({ externalid }) => externalid === data.externalid
+          const { contactId } = allContacts.find(
+            ({ externalId }) => externalId === data.externalId
           );
           const html = _.escape(credentialViews[index]);
           return Object.assign(_.omit(data, 'originalArray'), {
             credentialType,
-            contactid,
+            contactId,
             html,
             issuer: session.organisationName
           });
@@ -207,7 +207,7 @@ const NewCredentialContainer = ({ api, redirector: { redirectToCredentials } }) 
 
         const credentials = createCredentialsResponse
           .filter(({ status }) => status === SUCCESS)
-          .map(({ response }) => response.getGenericcredential().toObject());
+          .map(({ response }) => response.getGenericCredential().toObject());
 
         await api.wallet.signCredentials(credentials);
 
@@ -298,7 +298,7 @@ const NewCredentialContainer = ({ api, redirector: { redirectToCredentials } }) 
         return (
           <CredentialsPreview
             groups={groups.filter(({ name }) => selectedGroups.includes(name))}
-            subjects={contacts.filter(({ contactid }) => selectedContacts.includes(contactid))}
+            subjects={contacts.filter(({ contactId }) => selectedContacts.includes(contactId))}
             credentialViews={credentialViews}
           />
         );

@@ -34,8 +34,8 @@ const ContactContainer = ({ api }) => {
     setLoadingByKey('contact', true);
     api.contactsManager
       .getContact(id)
-      .then(({ jsondata, ...rest }) => {
-        const contactData = Object.assign(JSON.parse(jsondata), rest);
+      .then(({ jsonData, ...rest }) => {
+        const contactData = Object.assign(JSON.parse(jsonData), rest);
         setContact(contactData);
       })
       .catch(error => {
@@ -91,8 +91,8 @@ const ContactContainer = ({ api }) => {
       .then(credentials => {
         const credentialPromises = credentials.map(credential =>
           api.credentialsManager
-            .getBlockchainData(credential.encodedsignedcredential)
-            .then(issuanceproof => Object.assign({ issuanceproof }, credential))
+            .getBlockchainData(credential.encodedSignedCredential)
+            .then(issuanceProof => Object.assign({ issuanceProof }, credential))
         );
         return Promise.all(credentialPromises);
       })
@@ -116,13 +116,13 @@ const ContactContainer = ({ api }) => {
 
   useEffect(() => {
     if (!contact) return;
-    if (contact.connectionid) getReceivedCredentials();
+    if (contact.connectionId) getReceivedCredentials();
     else setLoadingByKey('receivedCredentials', false);
   }, [contact, getReceivedCredentials, setLoadingByKey]);
 
-  const verifyCredential = ({ encodedsignedcredential, batchinclusionproof }) =>
-    batchinclusionproof
-      ? api.wallet.verifyCredential(encodedsignedcredential, batchinclusionproof).catch(error => {
+  const verifyCredential = ({ encodedSignedCredential, batchInclusionProof }) =>
+    batchInclusionProof
+      ? api.wallet.verifyCredential(encodedSignedCredential, batchInclusionProof).catch(error => {
           Logger.error('There has been an error verifiying the credential', error);
           const pendingPublication = error.message.includes('Missing publication date');
           if (pendingPublication) return PENDING_CREDENTIAL_VERIFICATION_RESULT;

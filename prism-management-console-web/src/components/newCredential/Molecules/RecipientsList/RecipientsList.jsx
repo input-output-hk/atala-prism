@@ -24,10 +24,10 @@ const RecipientsList = ({ recipients }) => {
         columns={[
           {
             width: '60px',
-            render: ({ contactid }) => (
+            render: ({ contactId }) => (
               <img
                 style={{ width: '40px', height: '40px' }}
-                src={contactid ? contactLogo : groupLogo}
+                src={contactId ? contactLogo : groupLogo}
                 alt="logo"
               />
             )
@@ -41,8 +41,8 @@ const RecipientsList = ({ recipients }) => {
             )
           },
           {
-            render: ({ externalid }) =>
-              externalid && <CellRenderer title={tpc('externalid')} value={externalid} />
+            render: ({ externalId }) =>
+              externalId && <CellRenderer title={tpc('externalId')} value={externalId} />
           },
           {
             render: ({ createdat }) =>
@@ -65,10 +65,10 @@ RecipientsList.propTypes = {
     PropTypes.oneOf([
       PropTypes.shape({ name: PropTypes.string }),
       PropTypes.shape({
-        contactid: PropTypes.string,
+        contactId: PropTypes.string,
         contactName: PropTypes.string,
         groupName: PropTypes.string,
-        externalid: PropTypes.string,
+        externalId: PropTypes.string,
         createdat: PropTypes.number
       })
     ])

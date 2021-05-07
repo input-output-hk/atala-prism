@@ -124,8 +124,8 @@ async function signCredentials(unsignedCredentials) {
   const { sessionId } = this.session;
   const signRequests = unsignedCredentials.map(unsignedCredential => {
     const payload = {
-      id: unsignedCredential.credentialid,
-      properties: JSON.parse(unsignedCredential.credentialdata)
+      id: unsignedCredential.credentialId,
+      properties: JSON.parse(unsignedCredential.credentialData)
     };
 
     // FIXME: remove the courses property from the transcript credential
@@ -168,10 +168,10 @@ function revokeCredentials(credentials) {
   const revokeRequests = credentials.map(cred =>
     window.prism.revokeCredential(
       sessionId,
-      cred.encodedsignedcredential,
-      cred.batchid,
-      cred.issuanceoperationhash,
-      cred.credentialid
+      cred.encodedSignedCredential,
+      cred.batchId,
+      cred.issuanceOperationHash,
+      cred.credentialId
     )
   );
   return Promise.all(revokeRequests);

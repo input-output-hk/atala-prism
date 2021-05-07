@@ -24,16 +24,16 @@ const baseColumns = [
   {
     key: 'createdAt',
     align: 'left',
-    render: ({ createdat }) => (
-      <CellRenderer title={tp('createdAt')} value={backendDateFormat(createdat?.seconds)} />
+    render: ({ createdAt }) => (
+      <CellRenderer title={tp('createdAt')} value={backendDateFormat(createdAt?.seconds)} />
     )
   },
   {
     key: 'numberOfContacts',
     width: 100,
     align: 'right',
-    render: ({ numberofcontacts }) => (
-      <CellRenderer title={tp('numberOfContacts')} value={numberofcontacts} light />
+    render: ({ numberOfContacts }) => (
+      <CellRenderer title={tp('numberOfContacts')} value={numberOfContacts} light />
     )
   }
 ];

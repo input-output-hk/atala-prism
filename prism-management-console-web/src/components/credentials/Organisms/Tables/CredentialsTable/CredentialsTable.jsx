@@ -60,8 +60,8 @@ const commonColumns = [
   {
     key: 'externalId',
     // eslint-disable-next-line react/prop-types
-    render: ({ contactData: { externalid } }) => (
-      <CellRenderer title={tp('externalId')} value={externalid} />
+    render: ({ contactData: { externalId } }) => (
+      <CellRenderer title={tp('externalId')} value={externalId} />
     )
   }
 ];
@@ -79,12 +79,12 @@ const getCredentialsIssuedColumns = (
   {
     key: 'dateSigned',
     // eslint-disable-next-line react/prop-types
-    render: ({ publicationstoredat }) => (
+    render: ({ publicationStoredAt }) => (
       <CellRenderer
         title={tp('dateSigned')}
         value={
-          publicationstoredat?.seconds
-            ? backendDateFormat(publicationstoredat?.seconds)
+          publicationStoredAt?.seconds
+            ? backendDateFormat(publicationStoredAt?.seconds)
             : i18n.t('credentials.detail.notPublished')
         }
       />
@@ -93,9 +93,9 @@ const getCredentialsIssuedColumns = (
   {
     key: 'contactStatus',
     // eslint-disable-next-line react/prop-types
-    render: ({ contactData: { status } }) => (
+    render: ({ contactData: { connectionStatus } }) => (
       <CellRenderer title={tp('contactStatus')}>
-        <StatusBadge status={status} useCase={CONTACT_STATUS} />
+        <StatusBadge status={connectionStatus} useCase={CONTACT_STATUS} />
       </CellRenderer>
     )
   },
@@ -111,7 +111,7 @@ const getCredentialsIssuedColumns = (
   {
     key: 'actions',
     render: credential => {
-      const { status, credentialid, contactData } = credential;
+      const { status, credentialId, contactData } = credential;
       const loadingProps = { size: 3, color: '#F83633' };
       const actionButtons = (
         <div>
@@ -119,7 +119,7 @@ const getCredentialsIssuedColumns = (
             <CustomButton
               buttonProps={{
                 className: 'theme-link',
-                onClick: () => revokeSingleCredential(credentialid)
+                onClick: () => revokeSingleCredential(credentialId)
               }}
               buttonText={i18n.t('credentials.actions.revokeOneCredential')}
               loading={loadingRevokeSingle}
@@ -130,7 +130,7 @@ const getCredentialsIssuedColumns = (
             <CustomButton
               buttonProps={{
                 className: 'theme-link',
-                onClick: () => signSingleCredential(credentialid)
+                onClick: () => signSingleCredential(credentialId)
               }}
               buttonText={i18n.t('credentials.actions.signOneCredential')}
               loading={loadingSignSingle}
@@ -141,7 +141,7 @@ const getCredentialsIssuedColumns = (
             <CustomButton
               buttonProps={{
                 className: 'theme-link',
-                onClick: () => sendSingleCredential(credentialid),
+                onClick: () => sendSingleCredential(credentialId),
                 disabled: contactData.status !== CONNECTION_STATUSES.statusConnectionAccepted
               }}
               buttonText={i18n.t('credentials.actions.sendOneCredential')}
@@ -168,8 +168,8 @@ const getCredentialsReceivedColumns = (viewText, onView) => [
   {
     key: 'dateReceived',
     // eslint-disable-next-line react/prop-types
-    render: ({ storedat }) => (
-      <CellRenderer title={tp('dateReceived')} value={backendDateFormat(storedat?.seconds)} />
+    render: ({ storedAt }) => (
+      <CellRenderer title={tp('dateReceived')} value={backendDateFormat(storedAt?.seconds)} />
     )
   },
   {
@@ -208,21 +208,21 @@ const CredentialsTable = ({
   const [loadingSignSingle, setLoadingSignSingle] = useState();
   const [loadingSendSingle, setLoadingSendSingle] = useState();
 
-  const wrapRevokeSingleCredential = async credentialid => {
+  const wrapRevokeSingleCredential = async credentialId => {
     setLoadingRevokeSingle(true);
-    await revokeSingleCredential(credentialid);
+    await revokeSingleCredential(credentialId);
     setLoadingRevokeSingle(false);
   };
 
-  const wrapSignSingleCredential = async credentialid => {
+  const wrapSignSingleCredential = async credentialId => {
     setLoadingSignSingle(true);
-    await signSingleCredential(credentialid);
+    await signSingleCredential(credentialId);
     setLoadingSignSingle(false);
   };
 
-  const wrapSendSingleCredential = async credentialid => {
+  const wrapSendSingleCredential = async credentialId => {
     setLoadingSendSingle(true);
-    await sendSingleCredential(credentialid);
+    await sendSingleCredential(credentialId);
     setLoadingSendSingle(false);
   };
 
@@ -252,7 +252,7 @@ const CredentialsTable = ({
         loading={loading}
         getMoreData={getMoreData}
         hasMore={hasMore}
-        rowKey="credentialid"
+        rowKey="credentialId"
         selectionType={selectionType}
       />
     </div>
