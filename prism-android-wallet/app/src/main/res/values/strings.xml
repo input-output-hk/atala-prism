@@ -3,6 +3,8 @@
     <string name="scan_qr">Scan QR code</string>
     <string name="connection_label">Connect to an organization to receive your credentials</string>
     <string name="connection_secondary_label">Receive, store and share your digital credentials</string>
+    <string name="missing_data_default_text">--</string>
+    <string name="available_soon">Available soon</string>
 
     <!-- Activities titles -->
     <string name="connections_activity_title">Connections</string>
@@ -112,6 +114,7 @@
     <string name="about">About</string>
     <string name="wallet">Wallet</string>
     <string name="home">Credentials</string>
+    <string name="services">Services</string>
     <string name="profile">Profile</string>
     <string name="connections">Connections</string>
     <string name="contacts">Contacts</string>
@@ -285,4 +288,45 @@
     <string name="proof_request_dialog_share">Share</string>
     <string name="credential_history_title">%1$s History</string>
     <string name="date_format_setting_clarification">&lt;b>Important:&lt;/b> This is the application\'s date format. The date format in Credentials received or shared will not change.</string>
+
+    <!-- layout/include_dashboard_banners.xml -->
+    <string name="include_dashboard_banners_demo_title">Try Atala PRISM Interactive Demo &amp; receive credentials</string>
+    <string name="include_dashboard_banners_demo_text">Open &lt;b>atalaprism.io&lt;/b> on a \ndesktop and follow demo steps.</string>
+    <string name="include_dashboard_banners_demo_more_info">More Info</string>
+    <string name="include_dashboard_banners_share_title">Share with your Friends!</string>
+    <string name="include_dashboard_banners_share_text">Atala PRISM lorem ipsum \ndolor sit amtet.</string>
+    <string name="include_dashboard_banners_share_send_invite">Send Invite</string>
+
+    <!-- layout/include_dashboard_profile.xml -->
+    <string name="include_dashboard_profile_hello">Hello</string>
+    <string name="include_dashboard_profile_view_profile">VIEW PROFILE</string>
+    <string name="include_dashboard_profile_notifications_text">You have %1$d notification (s)</string>
+    <string name="include_dashboard_profile_no_notifications_text">No new notifications</string>
+
+    <!-- layout/include_dashboard_last_activity.xml -->
+    <string name="include_dashboard_last_activity_text">LAST ACTIVITY</string>
+    <string name="include_dashboard_last_activity_activity_log">Activity Log</string>
+
+
+    <!-- layout/activity_interactive_demo.xml -->
+    <string name="activity_interactive_demo_next">Next</string>
+    <string name="activity_interactive_demo_back">Back</string>
+
+    <!-- layout/fragment_interactive_demo_step1.xml -->
+    <string name="fragment_interactive_demo_step1_title">Become a Citizen of \nMetropol City</string>
+    <string name="fragment_interactive_demo_step1_text">Metropol city has announced that all residents will be issued with a new digital ID. This forward thinking initiative will give citizens fast and friction-free access to many government and municipal services, making it easier than ever before to take public transport, pay city taxes and vote on local issues, straight from your phone.</string>
+
+    <!-- layout/fragment_interactive_demo_step2.xml -->
+    <string name="fragment_interactive_demo_step2_title">Connect with an \nOrganization</string>
+    <string name="fragment_interactive_demo_step2_text">To obtain your Government ID, follow the steps below:</string>
+    <string name="fragment_interactive_demo_step2_instruction_1_number">01.</string>
+    <string name="fragment_interactive_demo_step2_instruction_1_text">Open Atala PRISM on your phone.</string>
+    <string name="fragment_interactive_demo_step2_instruction_2_number">02.</string>
+    <string name="fragment_interactive_demo_step2_instruction_2_text">Go to the Notifications Menu \nIcon menu and tap the Scan QR code button.</string>
+    <string name="fragment_interactive_demo_step2_instruction_3_number">03.</string>
+    <string name="fragment_interactive_demo_step2_instruction_3_text">Scan the QR code.</string>
+
+    <!-- layout/fragment_interactive_demo_step3.xml -->
+    <string name="fragment_interactive_demo_step3_title">Receive \nyour Credential</string>
+    <string name="fragment_interactive_demo_step3_text">Prove your identity in one click and instantly access \nservices everywhere Atala PRISM is suported.</string>
 </resources>

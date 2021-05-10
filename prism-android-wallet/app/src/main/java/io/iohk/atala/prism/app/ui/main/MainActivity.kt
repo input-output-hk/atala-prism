@@ -1,12 +1,15 @@
 package io.iohk.atala.prism.app.ui.main
 
+import android.annotation.SuppressLint
 import android.os.Bundle
+import android.view.MotionEvent
 import androidx.databinding.DataBindingUtil
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.ViewModelProviders
 import androidx.navigation.NavController
 import androidx.navigation.ui.setupActionBarWithNavController
+import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import dagger.android.support.DaggerAppCompatActivity
 import io.iohk.atala.prism.app.neo.common.EventWrapperObserver
 import io.iohk.atala.prism.app.neo.common.IntentUtils
@@ -35,7 +38,7 @@ class MainActivity : DaggerAppCompatActivity() {
         binding.lifecycleOwner = this
         if (savedInstanceState == null) {
             setupBottomNavigationBar()
-            binding.bottomNavigationView.selectedItemId = R.id.notifications_navigation
+            binding.bottomNavigationView.selectedItemId = R.id.dashboard_navigation
         }
         setObservers()
         viewModel.checkSecuritySettings()
@@ -58,13 +61,14 @@ class MainActivity : DaggerAppCompatActivity() {
     /**
      * Called on first creation and when restoring state.
      */
+    @SuppressLint("ClickableViewAccessibility")
     private fun setupBottomNavigationBar() {
 
         val navGraphIds = listOf(
             R.navigation.credentials_navigation,
             R.navigation.contacts_navigation,
-            R.navigation.notifications_navigation,
-            R.navigation.profile_navigation,
+            R.navigation.dashboard_navigation,
+            R.navigation.services_navigation,
             R.navigation.settings_navigation
         )
 
@@ -80,12 +84,23 @@ class MainActivity : DaggerAppCompatActivity() {
             // Whenever the selected controller changes, setup the action bar.
             setupActionBarWithNavController(navController)
             // Notify the state of the notification view so that the layout updates the state of the notification button a [FloatingActionButton]
-            binding.notificationSectionSelected = navController.graph.id == R.id.notifications_navigation
+            binding.dashboardSectionSelected = navController.graph.id == R.id.dashboard_navigation
         }
         currentNavController = controller
 
         binding.fab.setOnClickListener {
-            binding.bottomNavigationView.selectedItemId = R.id.notifications_navigation
+            binding.bottomNavigationView.selectedItemId = R.id.dashboard_navigation
+        }
+
+        // Disable Services Tab
+        binding.bottomNavigationView.setItemOnTouchListener(R.id.services_navigation) { _, motionEvent ->
+            if (motionEvent.action == MotionEvent.ACTION_UP) {
+                MaterialAlertDialogBuilder(this)
+                    .setMessage(R.string.available_soon)
+                    .setPositiveButton(R.string.accept, null)
+                    .show()
+            }
+            return@setItemOnTouchListener true
         }
     }
 

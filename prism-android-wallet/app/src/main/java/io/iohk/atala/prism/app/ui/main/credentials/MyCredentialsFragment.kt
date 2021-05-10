@@ -12,6 +12,7 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import dagger.android.support.DaggerFragment
 import io.iohk.atala.prism.app.data.local.db.model.Credential
 import io.iohk.atala.prism.app.neo.common.OnSelectItem
+import io.iohk.atala.prism.app.neo.common.extensions.supportActionBar
 import io.iohk.atala.prism.app.ui.utils.adapters.CredentialsAdapter
 import io.iohk.cvp.R
 import io.iohk.cvp.databinding.NeoFragmentMyCredentialsBinding
@@ -40,6 +41,8 @@ class MyCredentialsFragment : DaggerFragment(), OnSelectItem<Credential> {
         binding.viewModel = viewModel
         configureRecyclerView()
         setObservers()
+        // TODO We need to migrate to a "Fragment-owned App Bar" see: https://developer.android.com/guide/fragments/appbar#fragment
+        supportActionBar?.show()
         return binding.root
     }
 

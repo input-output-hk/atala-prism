@@ -8,7 +8,11 @@ interface ActivityHistoriesLocalDataSourceInterface {
 
     fun allActivityHistories(): LiveData<List<ActivityHistoryWithContactAndCredential>>
 
+    fun lastActivityHistories(max: Int): LiveData<List<ActivityHistoryWithContactAndCredential>>
+
     fun totalOfContacts(): LiveData<Int>
 
     fun allIssuedCredentialsNotifications(): LiveData<List<ActivityHistoryWithCredential>>
+
+    fun totalOfIssuedCredentialsNotifications(): LiveData<Int>
 }

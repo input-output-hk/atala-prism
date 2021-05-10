@@ -71,6 +71,11 @@
             </intent-filter>
         </activity>
 
+        <activity
+            android:theme="@style/AppTheme.NoActionBar.FullScreen"
+            android:name="io.iohk.atala.prism.app.ui.interctivedemo.InteractiveDemoActivity"
+            android:screenOrientation="portrait" />
+
         <provider
             android:name="androidx.core.content.FileProvider"
             android:authorities="io.iohk.cvp.fileprovider"

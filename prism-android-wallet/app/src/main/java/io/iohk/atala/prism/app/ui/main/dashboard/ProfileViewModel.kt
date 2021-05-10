@@ -1,4 +1,4 @@
-package io.iohk.atala.prism.app.ui.main.profile
+package io.iohk.atala.prism.app.ui.main.dashboard
 
 import android.content.Context
 import android.graphics.Bitmap

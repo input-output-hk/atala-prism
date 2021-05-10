@@ -8,7 +8,7 @@
     <fragment
         tools:layout="@layout/fragment_notifications"
         android:id="@+id/notificationsFragment"
-        android:name="io.iohk.atala.prism.app.ui.main.notifications.NotificationsFragment"
+        android:name="io.iohk.atala.prism.app.ui.main.dashboard.NotificationsFragment"
         android:label="@string/notifications" >
         <action
             android:id="@+id/action_notificationsFragment_to_activityLogFragment"
@@ -27,7 +27,7 @@
     <fragment
         tools:layout="@layout/fragment_activity_log"
         android:id="@+id/activityLogFragment"
-        android:name="io.iohk.atala.prism.app.ui.main.notifications.ActivityLogFragment"
+        android:name="io.iohk.atala.prism.app.ui.main.dashboard.ActivityLogFragment"
         android:label="@string/activity_log_title" />
     <include app:graph="@navigation/credential_detail_navigation" />
     <dialog

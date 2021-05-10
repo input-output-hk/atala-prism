@@ -1,7 +1,10 @@
 package io.iohk.atala.prism.app.neo.common;
 
+import android.content.res.ColorStateList;
+import android.content.res.Resources;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.graphics.PorterDuff;
 import android.graphics.drawable.Drawable;
 import android.text.Html;
 import android.text.Spanned;
@@ -9,6 +12,9 @@ import android.util.Log;
 import android.view.View;
 import android.widget.ImageView;
 import android.widget.TextView;
+
+import androidx.core.content.ContextCompat;
+import androidx.core.widget.ImageViewCompat;
 import androidx.databinding.BindingAdapter;
 import androidx.databinding.InverseBindingAdapter;
 import androidx.databinding.InverseBindingListener;
@@ -80,6 +86,19 @@ public class DataBindingAdapters {
             imageView.setImageBitmap(bitmap);
         } else {
             imageView.setImageDrawable(failImage);
+        }
+    }
+
+    @BindingAdapter("tint")
+    public static void tint(ImageView imageView, Integer tintResource) {
+        if(tintResource != null){
+            int color;
+            try{
+                color = ContextCompat.getColor(imageView.getContext(), tintResource);
+            }catch (Resources.NotFoundException e){
+                color = tintResource;
+            }
+            ImageViewCompat.setImageTintList(imageView, ColorStateList.valueOf(color));
         }
     }
 

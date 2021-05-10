@@ -36,7 +36,7 @@
             android:layout_width="match_parent">
 
             <ImageView
-                android:tint="@{textColor == null ? @color/message_box_default_on_background_color : textColor}"
+                app:tint="@{textColor == null ? @color/message_box_default_on_background_color : textColor}"
                 android:layout_gravity="center_vertical"
                 iohk:visible="@{iconSrc != null}"
                 android:src="@{iconSrc}"

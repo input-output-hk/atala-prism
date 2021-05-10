@@ -1,0 +1,97 @@
+<?xml version="1.0" encoding="utf-8"?>
+<layout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools">
+
+    <com.google.android.material.card.MaterialCardView
+        android:layout_marginHorizontal="0dp"
+        android:layout_marginBottom="12dp"
+        android:id="@+id/materialCardView"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        app:cardCornerRadius="@dimen/card_corner_radius"
+        app:cardElevation="10sp">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:padding="@dimen/default_spacing">
+
+            <LinearLayout
+                android:layout_weight="1"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal">
+
+                <ImageView
+                    android:id="@+id/icon_image_view"
+                    android:layout_width="40dp"
+                    android:layout_height="40dp"
+                    android:layout_centerInParent="true"
+                    android:scaleType="fitCenter"
+                    app:srcCompat="@drawable/ic_conection_list"
+                    tools:ignore="ContentDescription" />
+
+                <LinearLayout
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="@dimen/internal_margin"
+                    android:layout_weight="1"
+                    android:orientation="vertical">
+
+                    <TextView
+                        android:id="@+id/description_text_view"
+                        android:ellipsize="end"
+                        android:maxLines="1"
+                        android:textSize="10sp"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginBottom="@dimen/dp_2"
+                        android:text="connected with"
+                        android:textColor="@color/blueGrey" />
+
+                    <TextView
+                        android:id="@+id/title_text_view"
+                        android:textSize="14sp"
+                        android:ellipsize="end"
+                        android:maxLines="2"
+                        android:textColor="@color/grey_7"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:text="Goverment ID" />
+                </LinearLayout>
+
+            </LinearLayout>
+
+            <LinearLayout
+                android:layout_gravity="center_vertical"
+                android:orientation="horizontal"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content">
+                <ImageView
+                    android:layout_marginHorizontal="7dp"
+                    app:tint="@color/blueGrey"
+                    android:src="@drawable/ic_clock"
+                    android:layout_gravity="center_vertical"
+                    android:layout_width="12dp"
+                    android:layout_height="12dp"/>
+                <androidx.appcompat.widget.AppCompatTextView
+                    android:layout_gravity="center_vertical"
+                    android:id="@+id/date_text_view"
+                    android:textColor="@color/blueGrey"
+                    android:maxLines="1"
+                    android:textSize="10sp"
+                    android:ellipsize="end"
+                    android:text="17/12/21"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content" />
+
+            </LinearLayout>
+
+
+
+        </LinearLayout>
+
+    </com.google.android.material.card.MaterialCardView>
+</layout>

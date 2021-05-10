@@ -30,6 +30,4 @@ class PreferencesRepository(
     }
 
     suspend fun storeUserProfile(userProfile: UserProfile) = preferencesLocalDataSource.storeUserProfile(userProfile)
-
-    suspend fun getUserProfile(): UserProfile = preferencesLocalDataSource.getUserProfile()
 }

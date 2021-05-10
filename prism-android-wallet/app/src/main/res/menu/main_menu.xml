@@ -9,12 +9,12 @@
         android:title="@string/contacts"
         android:icon="@drawable/ic_contacts_grey"/>
     <item
-        android:id="@+id/notifications_navigation"
+        android:id="@+id/dashboard_navigation"
         android:title=""/>
     <item
-        android:id="@+id/profile_navigation"
-        android:title="@string/profile"
-        android:icon="@drawable/ic_profile_grey"/>
+        android:id="@+id/services_navigation"
+        android:title="@string/services"
+        android:icon="@drawable/ic_services"/>
     <item
         android:id="@+id/settings_navigation"
         android:title="@string/settings"

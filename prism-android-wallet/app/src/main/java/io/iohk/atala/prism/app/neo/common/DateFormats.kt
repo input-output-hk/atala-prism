@@ -7,7 +7,16 @@ import java.text.SimpleDateFormat
 val dateFormatDDMMYYYY = SimpleDateFormat("dd/MM/YYYY hh:mm a")
 
 @SuppressLint("SimpleDateFormat")
+val dateFormatDDMMYYYYSimple = SimpleDateFormat("dd/MM/YYYY")
+
+@SuppressLint("SimpleDateFormat")
 val dateFormatMMDDYYYY = SimpleDateFormat("MM/dd/YYYY hh:mm a")
 
 @SuppressLint("SimpleDateFormat")
+val dateFormatMMDDYYYYSimple = SimpleDateFormat("MM/dd/YYYY")
+
+@SuppressLint("SimpleDateFormat")
 val dateFormatYYYYMMDD = SimpleDateFormat("YYYY/MM/dd hh:mm a")
+
+@SuppressLint("SimpleDateFormat")
+val dateFormatYYYYMMDDSimple = SimpleDateFormat("YYYY/MM/dd")

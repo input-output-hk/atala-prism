@@ -21,6 +21,7 @@ import io.iohk.atala.prism.app.neo.common.IntentUtils
 import io.iohk.atala.prism.app.neo.common.OnSelectItem
 import io.iohk.atala.prism.app.neo.common.extensions.buildActivityResultLauncher
 import io.iohk.atala.prism.app.neo.common.extensions.buildRequestPermissionLauncher
+import io.iohk.atala.prism.app.neo.common.extensions.supportActionBar
 import io.iohk.atala.prism.app.ui.commondialogs.AddQrCodeDialogFragment
 import io.iohk.atala.prism.app.ui.utils.adapters.ContactsRecyclerViewAdapter
 import io.iohk.atala.prism.app.utils.IntentDataConstants
@@ -79,6 +80,8 @@ class ContactsFragment : DaggerFragment(), OnSelectItem<Contact> {
         }
         configureRecyclerView()
         initObservers()
+        // TODO We need to migrate to a "Fragment-owned App Bar" see: https://developer.android.com/guide/fragments/appbar#fragment
+        supportActionBar?.show()
         return binding.root
     }
 

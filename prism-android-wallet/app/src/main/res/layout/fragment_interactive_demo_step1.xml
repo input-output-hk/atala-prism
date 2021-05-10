@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent">
+        <androidx.appcompat.widget.AppCompatTextView
+            android:textAlignment="center"
+            android:layout_marginHorizontal="38dp"
+            android:textColor="@color/black"
+            app:autoSizeMinTextSize="12sp"
+            app:autoSizeTextType="uniform"
+            android:textSize="22sp"
+            android:maxLines="2"
+            android:layout_gravity="center"
+            android:text="@string/fragment_interactive_demo_step1_title"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"/>
+        <androidx.appcompat.widget.AppCompatTextView
+            android:layout_marginTop="20dp"
+            android:textAlignment="center"
+            android:layout_marginHorizontal="38dp"
+            android:textColor="@color/grey_4"
+            app:autoSizeMinTextSize="6sp"
+            app:autoSizeTextType="uniform"
+            android:textSize="12sp"
+            android:layout_gravity="center"
+            android:text="@string/fragment_interactive_demo_step1_text"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"/>
+        <ImageView
+            android:layout_marginTop="30dp"
+            android:scaleType="fitStart"
+            android:src="@mipmap/interactive_demo_step_1_image"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"/>
+    </LinearLayout>
+
+</androidx.constraintlayout.widget.ConstraintLayout>

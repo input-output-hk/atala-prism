@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="utf-8"?>
+<navigation xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/dashboard_navigation"
+    app:startDestination="@id/dashboardFragment">
+
+    <fragment
+        tools:layout="@layout/fragment_dashboard"
+        android:id="@+id/dashboardFragment"
+        android:name="io.iohk.atala.prism.app.ui.main.dashboard.DashboardFragment"
+        android:label="DashboardFragment" >
+        <action
+            android:id="@+id/action_dashboardFragment_to_activityLogFragment"
+            app:destination="@id/activityLogFragment" />
+        <action
+            android:id="@+id/action_dashboardFragment_to_profileFragment"
+            app:destination="@id/profileFragment" />
+        <action
+            android:id="@+id/action_dashboardFragment_to_notificationsFragment"
+            app:destination="@id/notificationsFragment" />
+        <action
+            android:id="@+id/action_dashboardFragment_to_interactiveDemoActivity"
+            app:destination="@id/interactiveDemoActivity" />
+    </fragment>
+
+    <fragment
+        tools:layout="@layout/fragment_activity_log"
+        android:id="@+id/activityLogFragment"
+        android:name="io.iohk.atala.prism.app.ui.main.dashboard.ActivityLogFragment"
+        android:label="@string/activity_log_title" />
+
+    <fragment
+        tools:layout="@layout/fragment_profile"
+        android:id="@+id/profileFragment"
+        android:name="io.iohk.atala.prism.app.ui.main.dashboard.ProfileFragment"
+        android:label="@string/services" />
+
+    <fragment
+        tools:layout="@layout/fragment_notifications"
+        android:id="@+id/notificationsFragment"
+        android:name="io.iohk.atala.prism.app.ui.main.dashboard.NotificationsFragment"
+        android:label="@string/notifications" >
+        <action
+            android:id="@+id/action_notificationsFragment_to_credential_detail_navigation"
+            app:destination="@id/credential_detail_navigation" >
+            <argument
+                android:name="credentialId"
+                app:argType="string" />
+        </action>
+    </fragment>
+
+    <include app:graph="@navigation/credential_detail_navigation" />
+    <activity
+        tools:layout="@layout/activity_interactive_demo"
+        android:id="@+id/interactiveDemoActivity"
+        android:name="io.iohk.atala.prism.app.ui.interctivedemo.InteractiveDemoActivity"
+        android:label="InteractiveDemoActivity" />
+</navigation>

@@ -5,7 +5,7 @@
 
         <variable
             name="viewModel"
-            type="io.iohk.atala.prism.app.ui.main.profile.ProfileViewModel" />
+            type="io.iohk.atala.prism.app.ui.main.dashboard.ProfileViewModel" />
     </data>
 
     <androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"

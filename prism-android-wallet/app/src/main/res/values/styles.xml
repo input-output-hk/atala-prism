@@ -3,6 +3,7 @@
     <style name="AppTheme" parent="Theme.MaterialComponents.Light">
         <!-- Customize your theme here. -->
         <item name="colorPrimary">@color/colorPrimary</item>
+        <item name="colorPrimaryDark">@color/atala_blue</item>
         <item name="colorPrimaryVariant">@color/lightRed</item>
         <item name="colorOnPrimary">@android:color/white</item>
         <item name="colorSecondary">@color/black</item>
@@ -114,6 +115,102 @@
         <item name="android:windowNoTitle">true</item>
         <item name="android:windowMinWidthMajor">90%</item>
         <item name="android:windowMinWidthMinor">90%</item>
+    </style>
+
+    <style name="Widget.MaterialComponents.Button.OutlinedButton.Small" parent="Widget.MaterialComponents.Button.OutlinedButton">
+        <item name="android:insetTop">0dp</item>
+        <item name="android:insetBottom">0dp</item>
+        <item name="android:inset">0dp</item>
+        <item name="android:insetLeft">0dp</item>
+        <item name="android:insetRight">0dp</item>
+        <item name="android:paddingStart">20dp</item>
+        <item name="android:paddingEnd">20dp</item>
+        <item name="android:paddingTop">11dp</item>
+        <item name="android:paddingBottom">11dp</item>
+        <item name="minHeight">0dp</item>
+        <item name="background">@color/black</item>
+        <item name="android:minHeight">0dp</item>
+        <item name="android:textSize">12sp</item>
+        <item name="cornerRadius">50dp</item>
+    </style>
+
+    <style name="Widget.MaterialComponents.Button.OutlinedButton.Medium" parent="Widget.MaterialComponents.Button.OutlinedButton">
+        <item name="android:insetTop">0dp</item>
+        <item name="android:insetBottom">0dp</item>
+        <item name="android:inset">0dp</item>
+        <item name="android:insetLeft">0dp</item>
+        <item name="android:insetRight">0dp</item>
+        <item name="android:paddingStart">20dp</item>
+        <item name="android:paddingEnd">20dp</item>
+        <item name="android:paddingTop">13dp</item>
+        <item name="android:paddingBottom">13dp</item>
+        <item name="minHeight">0dp</item>
+        <item name="background">@color/black</item>
+        <item name="android:minHeight">0dp</item>
+        <item name="android:textSize">16sp</item>
+        <item name="cornerRadius">50dp</item>
+    </style>
+
+    <style name="Widget.MaterialComponents.Button.OutlinedButton.Small.Aqua" parent="Widget.MaterialComponents.Button.OutlinedButton.Small">
+        <item name="strokeColor">@color/atala_aqua</item>
+        <item name="strokeWidth">1dp</item>
+        <item name="android:textColor">@color/atala_aqua</item>
+        <item name="rippleColor">@color/atala_aqua</item>
+        <item name="cornerRadius">50dp</item>
+    </style>
+
+    <style name="Widget.MaterialComponents.Button.OutlinedButton.XSmall" parent="Widget.MaterialComponents.Button.OutlinedButton">
+        <item name="android:insetTop">0dp</item>
+        <item name="android:insetBottom">0dp</item>
+        <item name="android:inset">0dp</item>
+        <item name="android:insetLeft">0dp</item>
+        <item name="android:insetRight">0dp</item>
+        <item name="android:paddingStart">15dp</item>
+        <item name="android:paddingEnd">15dp</item>
+        <item name="android:paddingTop">5dp</item>
+        <item name="android:paddingBottom">5dp</item>
+        <item name="minHeight">0dp</item>
+        <item name="android:minHeight">0dp</item>
+        <item name="android:textSize">12sp</item>
+        <item name="cornerRadius">50dp</item>
+    </style>
+
+    <style name="Widget.MaterialComponents.Button.OutlinedButton.XSmall.Primary" parent="Widget.MaterialComponents.Button.OutlinedButton.XSmall">
+        <item name="strokeColor">@color/mtrl_text_btn_text_color_selector</item>
+        <item name="strokeWidth">1dp</item>
+        <item name="android:textColor">@color/mtrl_text_btn_text_color_selector</item>
+        <item name="rippleColor">?colorPrimary</item>
+    </style>
+
+    <style name="Widget.MaterialComponents.Button.TextButton.NoPadding" parent="Widget.MaterialComponents.Button.TextButton">
+        <item name="android:insetTop">0dp</item>
+        <item name="android:insetBottom">0dp</item>
+        <item name="android:inset">0dp</item>
+        <item name="android:insetLeft">0dp</item>
+        <item name="android:insetRight">0dp</item>
+        <item name="android:paddingStart">0dp</item>
+        <item name="android:paddingEnd">0dp</item>
+        <item name="android:paddingTop">0dp</item>
+        <item name="android:paddingBottom">0dp</item>
+        <item name="minHeight">0dp</item>
+        <item name="android:minHeight">0dp</item>
+        <item name="android:minWidth">0dp</item>
+    </style>
+
+    <style name="Widget.MaterialComponents.Button.OutlinedButton.Medium.White" parent="Widget.MaterialComponents.Button.OutlinedButton.Medium">
+        <item name="strokeColor">@color/white</item>
+        <item name="strokeWidth">1dp</item>
+        <item name="android:textColor">@color/white</item>
+        <item name="rippleColor">@color/white</item>
+        <item name="cornerRadius">50dp</item>
+    </style>
+
+    <style name="BottomNavigationView.ItemTextAppearanceActive" parent="TextAppearance.AppCompat.Caption">
+        <item name="android:textSize">10sp</item>
+    </style>
+
+    <style name="BottomNavigationView.ItemTextAppearanceInactive" parent="TextAppearance.AppCompat.Caption">
+        <item name="android:textSize">10sp</item>
     </style>
 
 </resources>

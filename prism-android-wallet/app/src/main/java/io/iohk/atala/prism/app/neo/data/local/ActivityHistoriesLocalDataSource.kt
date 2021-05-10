@@ -9,7 +9,11 @@ class ActivityHistoriesLocalDataSource(private val contactDao: ContactDao) : Act
 
     override fun allActivityHistories(): LiveData<List<ActivityHistoryWithContactAndCredential>> = contactDao.activityHistories()
 
+    override fun lastActivityHistories(max: Int): LiveData<List<ActivityHistoryWithContactAndCredential>> = contactDao.lasActivityHistories(max)
+
     override fun totalOfContacts(): LiveData<Int> = contactDao.totalOfContacts()
 
     override fun allIssuedCredentialsNotifications(): LiveData<List<ActivityHistoryWithCredential>> = contactDao.allIssuedCredentialsNotifications()
+
+    override fun totalOfIssuedCredentialsNotifications(): LiveData<Int> = contactDao.totalIssuedCredentialsNotifications()
 }

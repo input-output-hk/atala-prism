@@ -23,6 +23,7 @@
     <color name="grey_4">#979797</color>
     <color name="grey_5">#3C393A</color>
     <color name="grey_6">#262324</color>
+    <color name="grey_7">#333333</color>
 
     <color name="black">#202020</color>
 
@@ -44,4 +45,7 @@
     <color name="message_box_default_on_background_color">#77869E</color>
 
     <color name="row_header_title_text_color">#A0AABB</color>
+
+    <color name="atala_blue">#011727</color>
+    <color name="atala_aqua">#40EAEA</color>
 </resources>

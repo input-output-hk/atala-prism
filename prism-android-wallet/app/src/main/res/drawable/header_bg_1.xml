@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="utf-8"?>
+<layer-list
+    xmlns:android="http://schemas.android.com/apk/res/android">
+    <item>
+        <shape
+            android:padding="0dp"
+            android:shape="rectangle">
+            <corners
+                android:bottomLeftRadius="32dp"
+                android:bottomRightRadius="32dp"
+                android:topLeftRadius="0dp"
+                android:topRightRadius="0dp" />
+            <solid android:color="@color/atala_blue" />
+        </shape>
+    </item>
+    <item
+        android:alpha="0.1"
+        android:gravity="top|end"
+        android:top="-148dp"
+        android:right="-124dp"
+        android:bottom="40dp">
+        <shape
+            android:padding="0dp"
+            android:shape="oval">
+            <solid android:color="#0Dffffff"/>
+            <size android:height="270dp" android:width="310dp"/>
+        </shape>
+    </item>
+
+</layer-list>

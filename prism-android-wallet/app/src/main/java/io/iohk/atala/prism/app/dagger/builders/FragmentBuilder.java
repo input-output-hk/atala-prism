@@ -6,9 +6,10 @@ import io.iohk.atala.prism.app.neo.ui.onboarding.phraseverification.PhraseVerifi
 import io.iohk.atala.prism.app.neo.ui.onboarding.restoreaccount.RestoreAccountFragment;
 import io.iohk.atala.prism.app.neo.ui.onboarding.walletsetup.WalletSetupFragment;
 import io.iohk.atala.prism.app.ui.UnlockActivity;
+import io.iohk.atala.prism.app.ui.main.dashboard.DashboardFragment;
 import io.iohk.atala.prism.app.ui.main.settings.AboutFragment;
 import io.iohk.atala.prism.app.ui.commondialogs.AcceptConnectionDialogFragment;
-import io.iohk.atala.prism.app.ui.main.notifications.ActivityLogFragment;
+import io.iohk.atala.prism.app.ui.main.dashboard.ActivityLogFragment;
 import io.iohk.atala.prism.app.ui.commondialogs.AddQrCodeDialogFragment;
 import io.iohk.atala.prism.app.ui.main.settings.BackendIpFragment;
 import io.iohk.atala.prism.app.ui.main.contacts.ContactDetailFragment;
@@ -19,8 +20,8 @@ import io.iohk.atala.prism.app.ui.main.settings.DeleteAllConnectionsDialogFragme
 import io.iohk.atala.prism.app.ui.main.contacts.DeleteContactAlertDialogFragment;
 import io.iohk.atala.prism.app.ui.main.credentials.DeleteCredentialDialogFragment;
 import io.iohk.atala.prism.app.ui.main.credentials.MyCredentialsFragment;
-import io.iohk.atala.prism.app.ui.main.notifications.NotificationsFragment;
-import io.iohk.atala.prism.app.ui.main.profile.ProfileFragment;
+import io.iohk.atala.prism.app.ui.main.dashboard.NotificationsFragment;
+import io.iohk.atala.prism.app.ui.main.dashboard.ProfileFragment;
 import io.iohk.atala.prism.app.ui.commondialogs.ProofRequestDialogFragment;
 import io.iohk.atala.prism.app.ui.main.settings.SecurityChangePinFragment;
 import io.iohk.atala.prism.app.ui.main.settings.SecurityFragment;
@@ -117,4 +118,7 @@ public abstract class FragmentBuilder {
 
     @ContributesAndroidInjector
     abstract RestoreAccountFragment contributeRestoreAccountFragment();
+
+    @ContributesAndroidInjector
+    abstract DashboardFragment contributeDashboardFragment();
 }

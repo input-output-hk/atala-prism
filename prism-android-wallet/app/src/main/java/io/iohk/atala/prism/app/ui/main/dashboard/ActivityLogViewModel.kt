@@ -1,4 +1,4 @@
-package io.iohk.atala.prism.app.ui.main.notifications
+package io.iohk.atala.prism.app.ui.main.dashboard
 
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData

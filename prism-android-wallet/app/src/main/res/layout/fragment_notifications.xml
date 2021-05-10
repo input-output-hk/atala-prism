@@ -6,7 +6,7 @@
 
         <variable
             name="viewModel"
-            type="io.iohk.atala.prism.app.ui.main.notifications.NotificationsViewModel" />
+            type="io.iohk.atala.prism.app.ui.main.dashboard.NotificationsViewModel" />
 
         <variable
             name="scanQrBtnOnClick"
@@ -19,7 +19,7 @@
         android:layout_height="match_parent">
 
         <androidx.appcompat.widget.AppCompatTextView
-            iohk:visible="@{viewModel.showNoConnectionsView == false &amp;&amp; viewModel.showEmptyMessage == false}"
+            iohk:visible="@{viewModel.showEmptyMessage == false}"
             android:id="@+id/title"
             android:layout_marginTop="@dimen/activity_default_side_margin"
             android:layout_marginHorizontal="@dimen/activity_default_side_margin"
@@ -37,7 +37,7 @@
             android:layout_height="wrap_content" />
 
         <androidx.recyclerview.widget.RecyclerView
-            iohk:visible="@{viewModel.showNoConnectionsView == false &amp;&amp; viewModel.showEmptyMessage == false}"
+            iohk:visible="@{viewModel.showEmptyMessage == false}"
             android:clipToPadding="false"
             android:padding="@dimen/activity_default_side_margin"
             app:layout_constraintBottom_toBottomOf="parent"

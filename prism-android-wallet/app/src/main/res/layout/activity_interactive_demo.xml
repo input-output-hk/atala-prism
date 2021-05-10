@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="utf-8"?>
+<layout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:iohk="http://schemas.android.com/tools">
+
+    <data>
+        <variable
+            name="viewModel"
+            type="io.iohk.atala.prism.app.ui.interctivedemo.InteractiveDemoViewModel" />
+    </data>
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+
+        <androidx.viewpager2.widget.ViewPager2
+            android:id="@+id/vp_pager"
+            iohk:currentItem="@={viewModel.step}"
+            android:layout_width="0dp"
+            android:layout_height="0dp"
+            android:layout_marginTop="@dimen/activity_default_side_margin"
+            app:layout_constraintBottom_toTopOf="@+id/tabDots"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
+
+        <com.google.android.material.tabs.TabLayout
+            android:id="@+id/tabDots"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="@dimen/activity_default_side_margin"
+            app:layout_constraintBottom_toTopOf="@+id/next_button"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:tabBackground="@drawable/tab_selector"
+            app:tabGravity="center"
+            app:tabIndicatorHeight="0dp" />
+
+
+        <com.google.android.material.button.MaterialButton
+            android:onClick="@{ v -> viewModel.next()}"
+            android:layout_marginHorizontal="30dp"
+            android:id="@+id/next_button"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            android:layout_width="match_parent"
+            android:layout_height="56dp"
+            android:layout_marginBottom="30dp"
+            android:text="@{ viewModel.isLastStep ? @string/activity_interactive_demo_back : @string/activity_interactive_demo_next}"
+            android:textAllCaps="false"
+            android:textColor="@android:color/white"
+            app:cornerRadius="32dp" />
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+</layout>

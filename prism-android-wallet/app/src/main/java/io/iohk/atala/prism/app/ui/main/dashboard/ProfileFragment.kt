@@ -1,4 +1,4 @@
-package io.iohk.atala.prism.app.ui.main.profile
+package io.iohk.atala.prism.app.ui.main.dashboard
 
 import android.Manifest
 import android.app.Activity
@@ -76,6 +76,8 @@ class ProfileFragment : DaggerFragment() {
         binding.viewModel = viewModel
         setObservers()
         configureEditPicButton()
+        // TODO We need to migrate to a "Fragment-owned App Bar" see: https://developer.android.com/guide/fragments/appbar#fragment
+        supportActionBar?.show()
         return binding.root
     }
 

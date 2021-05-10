@@ -22,9 +22,10 @@ import io.iohk.atala.prism.app.ui.main.credentials.CredentialHistoryViewModel
 import io.iohk.atala.prism.app.ui.main.credentials.DeleteCredentialDialogViewModel
 import io.iohk.atala.prism.app.ui.main.credentials.MyCredentialsViewModel
 import io.iohk.atala.prism.app.ui.main.credentials.ShareCredentialDialogViewModel
-import io.iohk.atala.prism.app.ui.main.notifications.ActivityLogViewModel
-import io.iohk.atala.prism.app.ui.main.notifications.NotificationsViewModel
-import io.iohk.atala.prism.app.ui.main.profile.ProfileViewModel
+import io.iohk.atala.prism.app.ui.main.dashboard.ActivityLogViewModel
+import io.iohk.atala.prism.app.ui.main.dashboard.DashboardViewModel
+import io.iohk.atala.prism.app.ui.main.dashboard.NotificationsViewModel
+import io.iohk.atala.prism.app.ui.main.dashboard.ProfileViewModel
 import io.iohk.atala.prism.app.ui.main.settings.SettingsDateFormatViewModel
 import io.iohk.atala.prism.app.ui.main.settings.SettingsViewModel
 import kotlin.reflect.KClass
@@ -144,4 +145,9 @@ abstract class ViewModelModule {
     @IntoMap
     @ViewModelKey(ContactsViewModel::class)
     internal abstract fun contactsViewModel(viewModel: ContactsViewModel): ViewModel
+
+    @Binds
+    @IntoMap
+    @ViewModelKey(DashboardViewModel::class)
+    internal abstract fun dashboardViewModel(viewModel: DashboardViewModel): ViewModel
 }

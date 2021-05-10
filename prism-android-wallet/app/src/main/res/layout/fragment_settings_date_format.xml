@@ -69,7 +69,7 @@
 
                         <ImageView
                             android:layout_marginTop="2dp"
-                            android:tint="@color/onSurfaceMedium"
+                            app:tint="@color/onSurfaceMedium"
                             android:layout_gravity="top"
                             android:src="@drawable/ic_info"
                             android:layout_width="18dp"

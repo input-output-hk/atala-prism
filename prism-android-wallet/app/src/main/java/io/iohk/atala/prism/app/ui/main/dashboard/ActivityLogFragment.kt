@@ -1,4 +1,4 @@
-package io.iohk.atala.prism.app.ui.main.notifications
+package io.iohk.atala.prism.app.ui.main.dashboard
 
 import android.os.Bundle
 import android.view.LayoutInflater
@@ -10,6 +10,7 @@ import androidx.lifecycle.ViewModelProviders
 import androidx.recyclerview.widget.LinearLayoutManager
 import dagger.android.support.DaggerFragment
 import io.iohk.atala.prism.app.neo.common.dateFormatDDMMYYYY
+import io.iohk.atala.prism.app.neo.common.extensions.supportActionBar
 import io.iohk.atala.prism.app.ui.utils.adapters.ActivityLogsAdapter
 import io.iohk.cvp.R
 import io.iohk.cvp.databinding.FragmentActivityLogBinding
@@ -40,6 +41,8 @@ class ActivityLogFragment : DaggerFragment() {
         binding.viewModel = viewModel
         configureRecyclerView()
         setObservers()
+        // TODO We need to migrate to a "Fragment-owned App Bar" see: https://developer.android.com/guide/fragments/appbar#fragment
+        supportActionBar?.show()
         return binding.root
     }
 

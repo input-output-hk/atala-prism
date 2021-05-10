@@ -67,6 +67,7 @@ public class SettingsFragment extends DaggerFragment {
         if (!BuildConfig.DEBUG) {
             backendConfigItem.setVisibility(View.GONE);
         }
+        // TODO We need to migrate to a "Fragment-owned App Bar" see: https://developer.android.com/guide/fragments/appbar#fragment
         FragmentExtensionsKt.getSupportActionBar(this).show();
         return view;
     }

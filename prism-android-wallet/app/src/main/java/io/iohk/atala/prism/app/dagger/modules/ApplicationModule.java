@@ -11,6 +11,7 @@ import io.iohk.atala.prism.app.neo.data.AccountRecoveryRepository;
 import io.iohk.atala.prism.app.neo.data.ActivityHistoriesRepository;
 import io.iohk.atala.prism.app.neo.data.ContactsRepository;
 import io.iohk.atala.prism.app.neo.data.CredentialsRepository;
+import io.iohk.atala.prism.app.neo.data.DashboardRepository;
 import io.iohk.atala.prism.app.neo.data.PreferencesRepository;
 import io.iohk.atala.prism.app.neo.data.SyncRepository;
 import io.iohk.atala.prism.app.neo.data.SessionRepository;
@@ -197,5 +198,18 @@ public class ApplicationModule {
                                                                     SessionLocalDataSourceInterface sessionLocalDataSource,
                                                                     PreferencesLocalDataSourceInterface preferencesLocalDataSource){
         return new PreferencesRepository(localDataSource,sessionLocalDataSource,preferencesLocalDataSource);
+    }
+
+    /*
+     * [DashboardRepository] providers
+     * */
+
+    @Provides
+    public DashboardRepository provideDashboardRepository(
+            ActivityHistoriesLocalDataSourceInterface activityHistoriesLocalDataSource,
+            SessionLocalDataSourceInterface sessionLocalDataSource,
+            PreferencesLocalDataSourceInterface preferencesLocalDataSource
+    ){
+        return new DashboardRepository(activityHistoriesLocalDataSource, sessionLocalDataSource, preferencesLocalDataSource);
     }
 }

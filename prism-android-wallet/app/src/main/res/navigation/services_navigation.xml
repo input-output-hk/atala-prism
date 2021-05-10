@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<navigation xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/services_navigation"
+    app:startDestination="@id/servicesFragment">
+
+    <fragment
+        android:id="@+id/servicesFragment"
+        android:name="io.iohk.atala.prism.app.ui.main.services.ServicesFragment"
+        android:label="@string/services" />
+</navigation>

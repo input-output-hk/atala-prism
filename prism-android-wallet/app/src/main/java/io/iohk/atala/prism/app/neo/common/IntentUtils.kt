@@ -39,5 +39,13 @@ class IntentUtils {
             intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK
             return intent
         }
+
+        fun intentShareURL(url: String, chooserTitle: String): Intent {
+            val i = Intent(Intent.ACTION_SEND)
+            i.type = "text/plain"
+            i.putExtra(Intent.EXTRA_SUBJECT, chooserTitle)
+            i.putExtra(Intent.EXTRA_TEXT, url)
+            return Intent.createChooser(i, chooserTitle)
+        }
     }
 }

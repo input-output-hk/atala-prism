@@ -30,6 +30,9 @@ abstract class ActivityHistoryDao {
     @Query("SELECT * FROM activityHistories ORDER BY date DESC, id")
     abstract fun activityHistories(): LiveData<List<ActivityHistoryWithContactAndCredential>>
 
+    @Query("SELECT * FROM activityHistories ORDER BY date DESC, id LIMIT :limit")
+    abstract fun lasActivityHistories(limit: Int): LiveData<List<ActivityHistoryWithContactAndCredential>>
+
     /**
      * Inserts [ActivityHistory]´s of requests for [Credential]´s from a [Contact]
      *
@@ -51,4 +54,9 @@ abstract class ActivityHistoryDao {
     abstract fun allIssuedCredentialsNotifications(
         type: Int = ActivityHistory.Type.CredentialIssued.value
     ): LiveData<List<ActivityHistoryWithCredential>>
+
+    @Query("SELECT count(*) FROM activityHistories WHERE needs_to_be_notified = 1 AND credential_id IS NOT NULL AND type = :type ORDER BY date asc, id")
+    abstract fun totalIssuedCredentialsNotifications(
+        type: Int = ActivityHistory.Type.CredentialIssued.value
+    ): LiveData<Int>
 }

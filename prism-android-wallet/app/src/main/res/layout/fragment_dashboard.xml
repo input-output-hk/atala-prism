@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="utf-8"?>
+<layout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:iohk="http://schemas.android.com/tools">
+    <data>
+        <variable
+            name="viewModel"
+            type="io.iohk.atala.prism.app.ui.main.dashboard.DashboardViewModel" />
+    </data>
+    <LinearLayout
+        android:orientation="vertical"
+         android:layout_width="match_parent"
+        android:layout_height="match_parent">
+
+        <ScrollView
+            android:clipToPadding="false"
+            android:clipChildren="false"
+            android:layout_weight="1"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent">
+
+            <LinearLayout
+                android:clipToPadding="false"
+                android:clipChildren="false"
+                android:paddingBottom="0dp"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical" >
+
+                <include
+                    android:id="@+id/profile_include"
+                    layout="@layout/include_dashboard_profile"
+                    app:profileImage="@{viewModel.userProfileImage}"
+                    app:profileName="@{viewModel.userProfileName}"
+                    app:totalOfNotifications="@{viewModel.totalOfNotifications}" />
+
+                <include android:id="@+id/last_activity_include" layout="@layout/include_dashboard_last_activity"/>
+
+                <include android:id="@+id/banners_include" layout="@layout/include_dashboard_banners" />
+
+            </LinearLayout>
+        </ScrollView>
+
+
+    </LinearLayout>
+</layout>
