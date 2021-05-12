@@ -73,6 +73,30 @@ class MessagesRpcSpec extends ConnectorRpcSpecBase {
         }
       }
     }
+
+    "fail to insert message if the connectionId does not exist" in {
+      val keyPair = EC.generateKeyPair()
+      val publicKey = keyPair.publicKey
+      val did = generateDid(publicKey)
+
+      val _ = createIssuer("Issuer", Some(publicKey), Some(did))
+      val nonExistingConnectionId = "c4d82cc0-6005-4d80-86fc-0d4b2fa2934a"
+      val messageId = MessageId.random().uuid.toString
+      val request = connector_api.SendMessageRequest(
+        connectionId = nonExistingConnectionId, // This connection does not exist in database
+        message = ByteString.copyFrom("test".getBytes),
+        id = messageId
+      )
+      val rpcRequest = SignedRpcRequest.generate(keyPair, did, request)
+
+      usingApiAs(rpcRequest) { blockingStub =>
+        val status = intercept[StatusRuntimeException] {
+          blockingStub.sendMessage(request)
+        }.getStatus
+        status.getCode mustBe Status.Code.NOT_FOUND
+        status.getDescription must include(nonExistingConnectionId)
+      }
+    }
   }
 
   "SendMessages" should {
