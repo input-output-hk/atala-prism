@@ -4,7 +4,7 @@ import cats.syntax.option._
 import com.google.protobuf.ByteString
 import doobie.implicits._
 import io.grpc.{Status, StatusRuntimeException}
-import io.iohk.atala.prism.auth
+import io.iohk.atala.prism.{DIDUtil, auth}
 import io.iohk.atala.prism.auth.SignedRpcRequest
 import io.iohk.atala.prism.auth.grpc.SignedRequestsHelper
 import io.iohk.atala.prism.connector.model.ParticipantType.Holder
@@ -32,24 +32,18 @@ class ConnectionsRpcSpec extends ConnectorRpcSpecBase with MockitoSugar {
 
   "GenerateConnectionTokens" should {
     "generate connection tokens" in {
-      val keyPair = EC.generateKeyPair()
-      val publicKey = keyPair.publicKey
-      val did = generateDid(publicKey)
-      testConnectionTokensGeneration(keyPair, publicKey, did)
+      val (keyPair, did) = createDid
+      testConnectionTokensGeneration(keyPair, keyPair.publicKey, did)
     }
 
     "generate connection tokens using unpublished did" in {
-      val keyPair = EC.generateKeyPair()
-      val publicKey = keyPair.publicKey
-      val did = DID.createUnpublishedDID(publicKey)
-      testConnectionTokensGeneration(keyPair, publicKey, did)
+      val (keyPair, did) = DIDUtil.createUnpublishedDid
+      testConnectionTokensGeneration(keyPair, keyPair.publicKey, did)
     }
 
     "generate connection tokens when tokens count is not supplied" in {
-      val keyPair = EC.generateKeyPair()
-      val publicKey = keyPair.publicKey
-      val did = generateDid(publicKey)
-      val _ = createIssuer("Issuer", Some(publicKey), Some(did))
+      val (keyPair, did) = createDid
+      val _ = createIssuer("Issuer", Some(keyPair.publicKey), Some(did))
       val request = connector_api.GenerateConnectionTokenRequest()
       val rpcRequest = SignedRpcRequest.generate(keyPair, did, request)
 
@@ -69,10 +63,8 @@ class ConnectionsRpcSpec extends ConnectorRpcSpecBase with MockitoSugar {
 
   "GetConnectionTokenInfo" should {
     "return token info" in {
-      val keyPair = EC.generateKeyPair()
-      val publicKey = keyPair.publicKey
-      val did = generateDid(publicKey)
-      val issuerId = createIssuer("Issuer", Some(publicKey), Some(did))
+      val (keyPair, did) = createDid
+      val issuerId = createIssuer("Issuer", Some(keyPair.publicKey), Some(did))
       val token = createToken(issuerId)
       val request = connector_api.GetConnectionTokenInfoRequest(token.token)
       val rpcRequest = SignedRpcRequest.generate(keyPair, did, request)
@@ -81,10 +73,8 @@ class ConnectionsRpcSpec extends ConnectorRpcSpecBase with MockitoSugar {
     }
 
     "return token info when user use unpublished did" in {
-      val keyPair = EC.generateKeyPair()
-      val publicKey = keyPair.publicKey
-      val did = DID.createUnpublishedDID(publicKey)
-      val issuerId = createIssuer("Issuer", Some(publicKey), Some(did))
+      val (keyPair, did) = DIDUtil.createUnpublishedDid
+      val issuerId = createIssuer("Issuer", Some(keyPair.publicKey), Some(did))
       val token = createToken(issuerId)
       val request = connector_api.GetConnectionTokenInfoRequest(token.token)
       val rpcRequest = SignedRpcRequest.generate(keyPair, did, request)
@@ -93,10 +83,8 @@ class ConnectionsRpcSpec extends ConnectorRpcSpecBase with MockitoSugar {
     }
 
     "returns UNKNOWN if token does not exist" in {
-      val keyPair = EC.generateKeyPair()
-      val publicKey = keyPair.publicKey
-      val did = generateDid(publicKey)
-      val _ = createIssuer("Issuer", Some(publicKey), Some(did))
+      val (keyPair, did) = createDid
+      val _ = createIssuer("Issuer", Some(keyPair.publicKey), Some(did))
       val token = TokenString.random()
       val request = connector_api.GetConnectionTokenInfoRequest(token.token)
       val rpcRequest = SignedRpcRequest.generate(keyPair, did, request)
@@ -156,11 +144,10 @@ class ConnectionsRpcSpec extends ConnectorRpcSpecBase with MockitoSugar {
     "add connection from token using unpublished did auth" in {
       val issuerId = createIssuer("Issuer")
       val token = createToken(issuerId)
-      val keys = EC.generateKeyPair()
-      val unpublishedDID = DID.createUnpublishedDID(keys.publicKey)
+      val (keyPair, unpublishedDID) = DIDUtil.createUnpublishedDid
       val request = connector_api
         .AddConnectionFromTokenRequest(token.token)
-      val rpcRequest = SignedRpcRequest.generate(keys, unpublishedDID, request)
+      val rpcRequest = SignedRpcRequest.generate(keyPair, unpublishedDID, request)
       usingApiAs(rpcRequest) { blockingStub =>
         val response = blockingStub.addConnectionFromToken(request)
         val holderId = response.userId
@@ -209,9 +196,8 @@ class ConnectionsRpcSpec extends ConnectorRpcSpecBase with MockitoSugar {
     }
 
     "return ALREADY_EXISTS if the same DID is used to connect with an issuer twice" in {
-      val holderKeys = EC.generateKeyPair()
       val issuer = createIssuer("Issuer")
-      val holderDID = DID.createUnpublishedDID(holderKeys.publicKey)
+      val (holderKeys, holderDID) = DIDUtil.createUnpublishedDid
       val tokenStr1 = createToken(issuer)
       val tokenStr2 = createToken(issuer)
       val encodedHolderPublicKey =
@@ -343,8 +329,7 @@ class ConnectionsRpcSpec extends ConnectorRpcSpecBase with MockitoSugar {
     "work with unpublished did auth" in {
       val issuerId = createIssuer("Issuer")
       val token = createToken(issuerId)
-      val keys = EC.generateKeyPair()
-      val unpublishedDID = DID.createUnpublishedDID(keys.publicKey)
+      val (keys, unpublishedDID) = DIDUtil.createUnpublishedDid
       val addTokenRequest = connector_api
         .AddConnectionFromTokenRequest(token.token)
       val uhpublishedDidAddTokenRequest = SignedRpcRequest.generate(keys, unpublishedDID, addTokenRequest)
@@ -384,29 +369,23 @@ class ConnectionsRpcSpec extends ConnectorRpcSpecBase with MockitoSugar {
 
   "GetConnectionsPaginated" should {
     "return new connections" in {
-      val keyPair = EC.generateKeyPair()
-      val publicKey = keyPair.publicKey
-      val did = generateDid(publicKey)
-      testNewConnectionsReturnPaginated(keyPair, publicKey, did)
+      val (keyPair, did) = createDid
+      testNewConnectionsReturnPaginated(keyPair, keyPair.publicKey, did)
     }
 
     "return new connections while authorized by unpublished did" in {
-      val keyPair = EC.generateKeyPair()
-      val publicKey = keyPair.publicKey
-      val did = DID.createUnpublishedDID(publicKey)
-      testNewConnectionsReturnPaginated(keyPair, publicKey, did)
+      val (keyPair, did) = DIDUtil.createUnpublishedDid
+      testNewConnectionsReturnPaginated(keyPair, keyPair.publicKey, did)
     }
 
     "return new connections authenticating by signature" in {
-      val keys = EC.generateKeyPair()
-      val privateKey = keys.privateKey
-      val did = generateDid(keys.publicKey)
+      val (keys, did) = createDid
       val request = connector_api.GetConnectionsPaginatedRequest("", 10)
       val requestNonce = UUID.randomUUID().toString.getBytes.toVector
       val signature =
         EC.sign(
           SignedRequestsHelper.merge(auth.model.RequestNonce(requestNonce), request.toByteArray).toArray,
-          privateKey
+          keys.privateKey
         )
 
       val verifierId = createVerifier("Verifier", Some(keys.publicKey), Some(did))
@@ -421,10 +400,8 @@ class ConnectionsRpcSpec extends ConnectorRpcSpecBase with MockitoSugar {
     }
 
     "return INVALID_ARGUMENT when limit is 0" in {
-      val keyPair = EC.generateKeyPair()
-      val publicKey = keyPair.publicKey
-      val did = generateDid(publicKey)
-      val _ = createVerifier("Verifier", Some(publicKey), Some(did))
+      val (keyPair, did) = createDid
+      val _ = createVerifier("Verifier", Some(keyPair.publicKey), Some(did))
       val request = connector_api.GetConnectionsPaginatedRequest("", 0)
       val rpcRequest = SignedRpcRequest.generate(keyPair, did, request)
 
@@ -437,10 +414,8 @@ class ConnectionsRpcSpec extends ConnectorRpcSpecBase with MockitoSugar {
     }
 
     "return INVALID_ARGUMENT when limit is negative" in {
-      val keyPair = EC.generateKeyPair()
-      val publicKey = keyPair.publicKey
-      val did = generateDid(publicKey)
-      val _ = createVerifier("Verifier", Some(publicKey), Some(did))
+      val (keyPair, did) = createDid
+      val _ = createVerifier("Verifier", Some(keyPair.publicKey), Some(did))
       val request = connector_api.GetConnectionsPaginatedRequest("", -7)
       val rpcRequest = SignedRpcRequest.generate(keyPair, did, request)
 
@@ -453,10 +428,8 @@ class ConnectionsRpcSpec extends ConnectorRpcSpecBase with MockitoSugar {
     }
 
     "return INVALID_ARGUMENT when provided id is not a valid" in {
-      val keyPair = EC.generateKeyPair()
-      val publicKey = keyPair.publicKey
-      val did = generateDid(publicKey)
-      val _ = createVerifier("Verifier", Some(publicKey), Some(did))
+      val (keyPair, did) = createDid
+      val _ = createVerifier("Verifier", Some(keyPair.publicKey), Some(did))
       val request = connector_api.GetConnectionsPaginatedRequest("uaoen", 10)
       val rpcRequest = SignedRpcRequest.generate(keyPair, did, request)
 
@@ -481,17 +454,13 @@ class ConnectionsRpcSpec extends ConnectorRpcSpecBase with MockitoSugar {
         ("revoked", EC.generateKeyPair(), Some(laterTimestamp), node_models.KeyUsage.COMMUNICATION_KEY),
         ("master", EC.generateKeyPair(), None, node_models.KeyUsage.COMMUNICATION_KEY)
       )
-
-      val holderKey = EC.generateKeyPair()
-      val holderDID = generateDid(holderKey.publicKey)
-
-      val issuerAuthKey = EC.generateKeyPair()
-      val issuerDID = generateDid(issuerAuthKey.publicKey)
+      val (holderKeys, holderDID) = createDid
+      val (issuerKeys, issuerDID) = createDid
       testReturningNonRevokedKeysForADIDOwningParticipant(
         earlierTimestamp,
         issuerCommKeys,
-        issuerAuthKey,
-        holderKey,
+        issuerKeys,
+        holderKeys,
         issuerDID,
         holderDID
       )
@@ -507,16 +476,13 @@ class ConnectionsRpcSpec extends ConnectorRpcSpecBase with MockitoSugar {
         ("master", EC.generateKeyPair(), None, node_models.KeyUsage.COMMUNICATION_KEY)
       )
 
-      val holderKey = EC.generateKeyPair()
-      val holderDID = DID.createUnpublishedDID(holderKey.publicKey)
-
-      val issuerAuthKey = EC.generateKeyPair()
-      val issuerDID = generateDid(issuerAuthKey.publicKey)
+      val (holderKeys, holderDID) = DIDUtil.createUnpublishedDid
+      val (issuerKeys, issuerDID) = createDid
       testReturningNonRevokedKeysForADIDOwningParticipant(
         earlierTimestamp,
         issuerCommKeys,
-        issuerAuthKey,
-        holderKey,
+        issuerKeys,
+        holderKeys,
         issuerDID,
         holderDID
       )
@@ -524,15 +490,14 @@ class ConnectionsRpcSpec extends ConnectorRpcSpecBase with MockitoSugar {
 
     "return connection keys for a participant with key known to connector" in {
       val holderKey = EC.generateKeyPair()
-      val issuerAuthKey = EC.generateKeyPair()
-      val did = generateDid(issuerAuthKey.publicKey)
+      val (issuerKeys, issuerDID) = createDid
 
-      val issuerId = createIssuer("Issuer", publicKey = Some(issuerAuthKey.publicKey), did = Some(did))
+      val issuerId = createIssuer("Issuer", publicKey = Some(issuerKeys.publicKey), did = Some(issuerDID))
       val holderId = createHolder("Holder", publicKey = Some(holderKey.publicKey))
       val connectionId = createConnection(issuerId, holderId)
 
       val request = connector_api.GetConnectionCommunicationKeysRequest(connectionId = connectionId.toString)
-      val rpcRequest = SignedRpcRequest.generate(issuerAuthKey, did, request)
+      val rpcRequest = SignedRpcRequest.generate(issuerKeys, issuerDID, request)
 
       usingApiAs(rpcRequest) { blockingStub =>
         val response = blockingStub.getConnectionCommunicationKeys(request)

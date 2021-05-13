@@ -2,7 +2,7 @@ package io.iohk.atala.prism
 
 import com.google.protobuf.ByteString
 import io.iohk.atala.prism.auth.SignedRpcRequest
-import io.iohk.atala.prism.crypto.{EC, ECConfig, ECPublicKey, SHA256Digest}
+import io.iohk.atala.prism.crypto.{EC, ECConfig, ECKeyPair, ECPublicKey, SHA256Digest}
 import io.iohk.atala.prism.identity.DID
 import io.iohk.atala.prism.protos.node_api.{GetDidDocumentRequest, GetDidDocumentResponse}
 import io.iohk.atala.prism.protos.node_api.NodeServiceGrpc.NodeService
@@ -71,4 +71,20 @@ trait DIDUtil {
     (keys.publicKey, SignedRpcRequest.generate(keys, did, request))
   }
 
+  def createDid: (ECKeyPair, DID) = {
+    val keyPair = EC.generateKeyPair()
+    val publicKey = keyPair.publicKey
+    val did = generateDid(publicKey)
+    (keyPair, did)
+  }
+
+}
+
+object DIDUtil {
+  def createUnpublishedDid: (ECKeyPair, DID) = {
+    val keyPair = EC.generateKeyPair()
+    val publicKey = keyPair.publicKey
+    val did = DID.createUnpublishedDID(publicKey)
+    (keyPair, did)
+  }
 }

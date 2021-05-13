@@ -1,14 +1,13 @@
 package io.iohk.atala.prism.connector
 
 import java.util.UUID
-
 import com.google.protobuf.ByteString
 import io.grpc.Context
 import io.iohk.atala.prism.crypto.{EC, ECConfig, ECPublicKey, ECSignature}
 import io.iohk.atala.prism.connector.errors.UnknownValueError
 import io.iohk.atala.prism.connector.model._
 import io.iohk.atala.prism.connector.repositories.{ParticipantsRepository, RequestNoncesRepository}
-import io.iohk.atala.prism.auth
+import io.iohk.atala.prism.{DIDUtil, auth}
 import io.iohk.atala.prism.auth.grpc.{GrpcAuthenticationHeader, GrpcAuthenticationHeaderParser}
 import io.iohk.atala.prism.identity.DID
 import io.iohk.atala.prism.models.ParticipantId
@@ -65,8 +64,7 @@ class SignedRequestsAuthenticatorSpec extends AnyWordSpec {
     }
 
     "accept the unpublished did authentication" in {
-      val keys = EC.generateKeyPair()
-      val unpublishedDid = DID.createUnpublishedDID(keys.publicKey)
+      val (keys, unpublishedDid) = DIDUtil.createUnpublishedDid
       val signedRequest = requestAuthenticator.signConnectorRequest(request.toByteArray, keys.privateKey)
 
       val header = GrpcAuthenticationHeader

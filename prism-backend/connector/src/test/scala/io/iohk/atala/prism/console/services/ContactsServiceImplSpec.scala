@@ -49,24 +49,18 @@ class ContactsServiceImplSpec extends RpcSpecBase with DIDUtil {
 
   "createContact" should {
     "create a contact and assign it to a group" in {
-      val keyPair = EC.generateKeyPair()
-      val publicKey = keyPair.publicKey
-      val did = generateDid(publicKey)
+      val (keyPair, did) = createDid
       testCreatingContactAndGroupAssigning(keyPair, did)
     }
 
     "create a contact and assign it to a group using unpublished did auth" in {
-      val keyPair = EC.generateKeyPair()
-      val publicKey = keyPair.publicKey
-      val did = DID.createUnpublishedDID(publicKey)
+      val (keyPair, did) = DIDUtil.createUnpublishedDid
       testCreatingContactAndGroupAssigning(keyPair, did)
     }
 
     "create a contact and assign it to no group" in {
-      val keyPair = EC.generateKeyPair()
-      val publicKey = keyPair.publicKey
-      val did = generateDid(publicKey)
-      val issuerId = createIssuer("issuer name", publicKey = Some(publicKey), did = Some(did))
+      val (keyPair, did) = createDid
+      val issuerId = createIssuer("issuer name", publicKey = Some(keyPair.publicKey), did = Some(did))
       val externalId = Contact.ExternalId.random()
       val json = Json
         .obj(
@@ -98,10 +92,8 @@ class ContactsServiceImplSpec extends RpcSpecBase with DIDUtil {
     }
 
     "create a contact without JSON data" in {
-      val keyPair = EC.generateKeyPair()
-      val publicKey = keyPair.publicKey
-      val did = generateDid(publicKey)
-      val issuerId = createIssuer("issuer name", publicKey = Some(publicKey), did = Some(did))
+      val (keyPair, did) = createDid
+      val issuerId = createIssuer("issuer name", publicKey = Some(keyPair.publicKey), did = Some(did))
       val externalId = Contact.ExternalId.random()
 
       val request = console_api
@@ -124,10 +116,8 @@ class ContactsServiceImplSpec extends RpcSpecBase with DIDUtil {
     }
 
     "fail to create a contact and assign it to a group that does not exists" in {
-      val keyPair = EC.generateKeyPair()
-      val publicKey = keyPair.publicKey
-      val did = generateDid(publicKey)
-      val issuerId = createIssuer("issuer name", publicKey = Some(publicKey), did = Some(did))
+      val (keyPair, did) = createDid
+      val issuerId = createIssuer("issuer name", publicKey = Some(keyPair.publicKey), did = Some(did))
       val externalId = Contact.ExternalId.random()
       val json = Json
         .obj(
@@ -160,10 +150,8 @@ class ContactsServiceImplSpec extends RpcSpecBase with DIDUtil {
     }
 
     "fail on attempt to create a contact with empty external id" in {
-      val keyPair = EC.generateKeyPair()
-      val publicKey = keyPair.publicKey
-      val did = generateDid(publicKey)
-      val issuerId = createIssuer("issuer name", publicKey = Some(publicKey), did = Some(did))
+      val (keyPair, did) = createDid
+      val issuerId = createIssuer("issuer name", publicKey = Some(keyPair.publicKey), did = Some(did))
       val group = createIssuerGroup(issuerId, IssuerGroup.Name("group 1"))
       val json = Json
         .obj(
@@ -191,10 +179,8 @@ class ContactsServiceImplSpec extends RpcSpecBase with DIDUtil {
     }
 
     "fail on attempt to duplicate an external id" in {
-      val keyPair = EC.generateKeyPair()
-      val publicKey = keyPair.publicKey
-      val did = generateDid(publicKey)
-      val issuerId = createIssuer("issuer name", publicKey = Some(publicKey), did = Some(did))
+      val (keyPair, did) = createDid
+      val issuerId = createIssuer("issuer name", publicKey = Some(keyPair.publicKey), did = Some(did))
       val group = createIssuerGroup(issuerId, IssuerGroup.Name("group 1"))
       val externalId = Contact.ExternalId.random()
       val json = Json
@@ -245,24 +231,18 @@ class ContactsServiceImplSpec extends RpcSpecBase with DIDUtil {
 
   "getContacts" should {
     "return the first contacts" in {
-      val keyPair = EC.generateKeyPair()
-      val publicKey = keyPair.publicKey
-      val did = generateDid(publicKey)
+      val (keyPair, did) = createDid
       testReturningFirstContact(keyPair, did)
     }
 
     "return the first contacts using unpublished did auth" in {
-      val keyPair = EC.generateKeyPair()
-      val publicKey = keyPair.publicKey
-      val did = DID.createUnpublishedDID(publicKey)
+      val (keyPair, did) = DIDUtil.createUnpublishedDid
       testReturningFirstContact(keyPair, did)
     }
 
     "return the first contacts matching a group" in {
-      val keyPair = EC.generateKeyPair()
-      val publicKey = keyPair.publicKey
-      val did = generateDid(publicKey)
-      val issuerId = createIssuer("Issuer X", publicKey = Some(publicKey), did = Some(did))
+      val (keyPair, did) = createDid
+      val issuerId = createIssuer("Issuer X", publicKey = Some(keyPair.publicKey), did = Some(did))
       val groupNameA = createIssuerGroup(issuerId, IssuerGroup.Name("Group A")).name
       val groupNameB = createIssuerGroup(issuerId, IssuerGroup.Name("Group B")).name
       val groupNameC = createIssuerGroup(issuerId, IssuerGroup.Name("Group C")).name
@@ -289,10 +269,8 @@ class ContactsServiceImplSpec extends RpcSpecBase with DIDUtil {
     }
 
     "paginate by the last seen contact" in {
-      val keyPair = EC.generateKeyPair()
-      val publicKey = keyPair.publicKey
-      val did = generateDid(publicKey)
-      val issuerId = createIssuer("Issuer X", publicKey = Some(publicKey), did = Some(did))
+      val (keyPair, did) = createDid
+      val issuerId = createIssuer("Issuer X", publicKey = Some(keyPair.publicKey), did = Some(did))
       val groupNameA = createIssuerGroup(issuerId, IssuerGroup.Name("Group A")).name
       val groupNameB = createIssuerGroup(issuerId, IssuerGroup.Name("Group B")).name
       val groupNameC = createIssuerGroup(issuerId, IssuerGroup.Name("Group C")).name
@@ -317,10 +295,8 @@ class ContactsServiceImplSpec extends RpcSpecBase with DIDUtil {
     }
 
     "paginate by the last seen contact matching by group" in {
-      val keyPair = EC.generateKeyPair()
-      val publicKey = keyPair.publicKey
-      val did = generateDid(publicKey)
-      val issuerId = createIssuer("Issuer X", publicKey = Some(publicKey), did = Some(did))
+      val (keyPair, did) = createDid
+      val issuerId = createIssuer("Issuer X", publicKey = Some(keyPair.publicKey), did = Some(did))
       val groupNameA = createIssuerGroup(issuerId, IssuerGroup.Name("Group A")).name
       val groupNameB = createIssuerGroup(issuerId, IssuerGroup.Name("Group B")).name
       val groupNameC = createIssuerGroup(issuerId, IssuerGroup.Name("Group C")).name
@@ -348,16 +324,12 @@ class ContactsServiceImplSpec extends RpcSpecBase with DIDUtil {
 
   "getContact" should {
     "return the correct contact when present" in {
-      val keyPair = EC.generateKeyPair()
-      val publicKey = keyPair.publicKey
-      val did = generateDid(publicKey)
+      val (keyPair, did) = createDid
       testGetContact(keyPair, did)
     }
 
     "return the correct contact when present using unpublished did auth" in {
-      val keyPair = EC.generateKeyPair()
-      val publicKey = keyPair.publicKey
-      val did = DID.createUnpublishedDID(publicKey)
+      val (keyPair, did) = DIDUtil.createUnpublishedDid
       testGetContact(keyPair, did)
     }
 
@@ -365,10 +337,8 @@ class ContactsServiceImplSpec extends RpcSpecBase with DIDUtil {
       val keyPairX = EC.generateKeyPair()
       val publicKeyX = keyPairX.publicKey
       val issuerXId = createIssuer("Issuer X", publicKey = Some(publicKeyX))
-      val keyPairY = EC.generateKeyPair()
-      val publicKeyY = keyPairY.publicKey
-      val didY = generateDid(publicKeyY)
-      val issuerYId = createIssuer("Issuer Y", publicKey = Some(publicKeyY), did = Some(didY))
+      val (keyPairY, didY) = createDid
+      val issuerYId = createIssuer("Issuer Y", publicKey = Some(keyPairY.publicKey), did = Some(didY))
       val groupNameA = createIssuerGroup(issuerXId, IssuerGroup.Name("Group A")).name
       val groupNameB = createIssuerGroup(issuerYId, IssuerGroup.Name("Group B")).name
       val contact = createContact(issuerXId, "Alice", groupNameA)
@@ -390,18 +360,14 @@ class ContactsServiceImplSpec extends RpcSpecBase with DIDUtil {
       val issuerName = "tokenizer"
       val groupName = IssuerGroup.Name("Grp 1")
       val contactName = "Contact 1"
-      val keyPair = EC.generateKeyPair()
-      val publicKey = keyPair.publicKey
-      val did = generateDid(publicKey)
+      val (keyPair, did) = createDid
       testGenerateToken(issuerName, groupName, contactName, keyPair, did)
     }
     "generate a token using unpublished did auth" in {
       val issuerName = "tokenizer"
       val groupName = IssuerGroup.Name("Grp 1")
       val contactName = "Contact 1"
-      val keyPair = EC.generateKeyPair()
-      val publicKey = keyPair.publicKey
-      val did = DID.createUnpublishedDID(publicKey)
+      val (keyPair, did) = DIDUtil.createUnpublishedDid
       testGenerateToken(issuerName, groupName, contactName, keyPair, did)
     }
   }

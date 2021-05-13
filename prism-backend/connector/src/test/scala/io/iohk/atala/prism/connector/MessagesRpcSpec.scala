@@ -4,7 +4,7 @@ import com.google.protobuf.ByteString
 import doobie.implicits._
 import io.grpc.stub.StreamObserver
 import io.grpc.{Status, StatusRuntimeException}
-import io.iohk.atala.prism.auth
+import io.iohk.atala.prism.{DIDUtil, auth}
 import io.iohk.atala.prism.auth.SignedRpcRequest
 import io.iohk.atala.prism.auth.grpc.SignedRequestsHelper
 import io.iohk.atala.prism.connector.model.MessageId
@@ -29,25 +29,19 @@ class MessagesRpcSpec extends ConnectorRpcSpecBase {
 
   "SendMessage" should {
     "insert message into database" in {
-      val keyPair = EC.generateKeyPair()
-      val publicKey = keyPair.publicKey
-      val did = generateDid(publicKey)
-      testSendMessage(publicKey, keyPair, did)
+      val (keyPair, did) = createDid
+      testSendMessage(keyPair.publicKey, keyPair, did)
     }
 
     "insert message into database using unpublished did auth" in {
-      val keyPair = EC.generateKeyPair()
-      val publicKey = keyPair.publicKey
-      val did = DID.createUnpublishedDID(publicKey)
-      testSendMessage(publicKey, keyPair, did)
+      val (keyPair, did) = DIDUtil.createUnpublishedDid
+      testSendMessage(keyPair.publicKey, keyPair, did)
     }
 
     "fail to insert message to database if user provided id is incorrect uuid" in {
-      val keyPair = EC.generateKeyPair()
-      val publicKey = keyPair.publicKey
-      val did = generateDid(publicKey)
+      val (keyPair, did) = createDid
 
-      val issuerId = createIssuer("Issuer", Some(publicKey), Some(did))
+      val issuerId = createIssuer("Issuer", Some(keyPair.publicKey), Some(did))
       val holderId = createHolder("Holder")
       val connectionId = createConnection(issuerId, holderId)
       val messageId = "incorrect uuid"
@@ -66,11 +60,9 @@ class MessagesRpcSpec extends ConnectorRpcSpecBase {
     }
 
     "fail to insert message if the connectionId does not exist" in {
-      val keyPair = EC.generateKeyPair()
-      val publicKey = keyPair.publicKey
-      val did = generateDid(publicKey)
+      val (keyPair, did) = createDid
 
-      val _ = createIssuer("Issuer", Some(publicKey), Some(did))
+      val _ = createIssuer("Issuer", Some(keyPair.publicKey), Some(did))
       val nonExistingConnectionId = "c4d82cc0-6005-4d80-86fc-0d4b2fa2934a"
       val messageId = MessageId.random().uuid.toString
       val request = connector_api.SendMessageRequest(
@@ -92,11 +84,9 @@ class MessagesRpcSpec extends ConnectorRpcSpecBase {
 
   "SendMessages" should {
     "insert many messages into database" in {
-      val keyPair = EC.generateKeyPair()
-      val publicKey = keyPair.publicKey
-      val did = generateDid(publicKey)
+      val (keyPair, did) = createDid
 
-      val issuerId = createIssuer("Issuer", Some(publicKey), Some(did))
+      val issuerId = createIssuer("Issuer", Some(keyPair.publicKey), Some(did))
       val holderId1 = createHolder("Holder1")
       val holderId2 = createHolder("Holder2")
       val token1 = createToken(issuerId)
@@ -138,11 +128,9 @@ class MessagesRpcSpec extends ConnectorRpcSpecBase {
     }
 
     "do not insert messages into database if request doesn't contain any messages" in {
-      val keyPair = EC.generateKeyPair()
-      val publicKey = keyPair.publicKey
-      val did = generateDid(publicKey)
+      val (keyPair, did) = createDid
 
-      val issuerId = createIssuer("Issuer", Some(publicKey), Some(did))
+      val issuerId = createIssuer("Issuer", Some(keyPair.publicKey), Some(did))
       val holderId1 = createHolder("Holder1")
       createConnection(issuerId, holderId1)
 
@@ -164,11 +152,9 @@ class MessagesRpcSpec extends ConnectorRpcSpecBase {
     }
 
     "fail to insert many messages when connection doesn't exist (or connection token is bad)" in {
-      val keyPair = EC.generateKeyPair()
-      val publicKey = keyPair.publicKey
-      val did = generateDid(publicKey)
+      val (keyPair, did) = createDid
 
-      val issuerId = createIssuer("Issuer", Some(publicKey), Some(did))
+      val issuerId = createIssuer("Issuer", Some(keyPair.publicKey), Some(did))
       val holderId1 = createHolder("Holder1")
       val holderId2 = createHolder("Holder2")
       val token1 = createToken(issuerId)
@@ -212,11 +198,9 @@ class MessagesRpcSpec extends ConnectorRpcSpecBase {
     }
 
     "fail to insert many messages when user provided ids are not correct uuids" in {
-      val keyPair = EC.generateKeyPair()
-      val publicKey = keyPair.publicKey
-      val did = generateDid(publicKey)
+      val (keyPair, did) = createDid
 
-      val issuerId = createIssuer("Issuer", Some(publicKey), Some(did))
+      val issuerId = createIssuer("Issuer", Some(keyPair.publicKey), Some(did))
       val holderId1 = createHolder("Holder1")
       val holderId2 = createHolder("Holder2")
       val token1 = createToken(issuerId)
@@ -262,10 +246,8 @@ class MessagesRpcSpec extends ConnectorRpcSpecBase {
 
   "GetMessagesPaginated" should {
     "return messages" in {
-      val keyPair = EC.generateKeyPair()
-      val publicKey = keyPair.publicKey
-      val did = generateDid(publicKey)
-      val verifierId = createVerifier("Verifier", Some(publicKey), Some(did))
+      val (keyPair, did) = createDid
+      val verifierId = createVerifier("Verifier", Some(keyPair.publicKey), Some(did))
       val messages = createExampleMessages(verifierId)
       val request = connector_api.GetMessagesPaginatedRequest("", 10)
       val rpcRequest = SignedRpcRequest.generate(keyPair, did, request)
@@ -278,18 +260,16 @@ class MessagesRpcSpec extends ConnectorRpcSpecBase {
     }
 
     "return messages  authenticating by signature" in {
-      val keys = EC.generateKeyPair()
-      val privateKey = keys.privateKey
-      val did = generateDid(keys.publicKey)
+      val (keyPair, did) = createDid
       val request = connector_api.GetMessagesPaginatedRequest("", 10)
 
       val requestNonce = UUID.randomUUID().toString.getBytes.toVector
       val signature =
         EC.sign(
           SignedRequestsHelper.merge(auth.model.RequestNonce(requestNonce), request.toByteArray).toArray,
-          privateKey
+          keyPair.privateKey
         )
-      val issuerId = createIssuer("Issuer", Some(keys.publicKey), Some(did))
+      val issuerId = createIssuer("Issuer", Some(keyPair.publicKey), Some(did))
 
       val messages = createExampleMessages(issuerId)
 
@@ -301,11 +281,10 @@ class MessagesRpcSpec extends ConnectorRpcSpecBase {
     }
 
     "return messages while authenticated by an unpublished did" in {
-      val keys = EC.generateKeyPair()
-      val did = DID.createUnpublishedDID(keys.publicKey)
+      val (keyPair, did) = DIDUtil.createUnpublishedDid
       val request = connector_api.GetMessagesPaginatedRequest("", 10)
-      val rpcRequest = SignedRpcRequest.generate(keys, did, request)
-      val issuerId = createIssuer("Issuer", Some(keys.publicKey), Some(did))
+      val rpcRequest = SignedRpcRequest.generate(keyPair, did, request)
+      val issuerId = createIssuer("Issuer", Some(keyPair.publicKey), Some(did))
       val messages = createExampleMessages(issuerId)
 
       usingApiAs(rpcRequest) { blockingStub =>
@@ -316,10 +295,8 @@ class MessagesRpcSpec extends ConnectorRpcSpecBase {
     }
 
     "return INVALID_ARGUMENT when limit is 0" in {
-      val keyPair = EC.generateKeyPair()
-      val publicKey = keyPair.publicKey
-      val did = generateDid(publicKey)
-      val _ = createVerifier("Verifier", Some(publicKey), Some(did))
+      val (keyPair, did) = createDid
+      val _ = createVerifier("Verifier", Some(keyPair.publicKey), Some(did))
       val request = connector_api.GetMessagesPaginatedRequest("", 0)
       val rpcRequest = SignedRpcRequest.generate(keyPair, did, request)
 
@@ -332,10 +309,8 @@ class MessagesRpcSpec extends ConnectorRpcSpecBase {
     }
 
     "return INVALID_ARGUMENT when limit is negative" in {
-      val keyPair = EC.generateKeyPair()
-      val publicKey = keyPair.publicKey
-      val did = generateDid(publicKey)
-      val _ = createVerifier("Verifier", Some(publicKey), Some(did))
+      val (keyPair, did) = createDid
+      val _ = createVerifier("Verifier", Some(keyPair.publicKey), Some(did))
       val request = connector_api.GetMessagesPaginatedRequest("", -7)
       val rpcRequest = SignedRpcRequest.generate(keyPair, did, request)
 
@@ -348,10 +323,8 @@ class MessagesRpcSpec extends ConnectorRpcSpecBase {
     }
 
     "return INVALID_ARGUMENT when provided id is not a valid" in {
-      val keyPair = EC.generateKeyPair()
-      val publicKey = keyPair.publicKey
-      val did = generateDid(publicKey)
-      val _ = createVerifier("Verifier", Some(publicKey), Some(did))
+      val (keyPair, did) = createDid
+      val _ = createVerifier("Verifier", Some(keyPair.publicKey), Some(did))
       val request = connector_api.GetMessagesPaginatedRequest("aaa", 10)
       val rpcRequest = SignedRpcRequest.generate(keyPair, did, request)
 
@@ -366,12 +339,10 @@ class MessagesRpcSpec extends ConnectorRpcSpecBase {
   }
 
   "GetMessageStream" should {
-    val keyPair = EC.generateKeyPair()
-    val publicKey = keyPair.publicKey
-    val did = generateDid(publicKey)
+    val (keyPair, did) = createDid
 
     def createParticipant(): ParticipantId = {
-      createVerifier("Participant", Some(publicKey), Some(did))
+      createVerifier("Participant", Some(keyPair.publicKey), Some(did))
     }
 
     def generateMessageIds(participantId: ParticipantId): Seq[String] = {
@@ -389,7 +360,7 @@ class MessagesRpcSpec extends ConnectorRpcSpecBase {
 
     "return existing messages immediately while authed by unpublished did" in {
       val messageIds = generateMessageIds(createParticipant())
-      val unpublishedDid = DID.createUnpublishedDID(publicKey)
+      val unpublishedDid = DID.createUnpublishedDID(keyPair.publicKey)
       testMessagesExisting(keyPair, unpublishedDid, messageIds)
     }
 

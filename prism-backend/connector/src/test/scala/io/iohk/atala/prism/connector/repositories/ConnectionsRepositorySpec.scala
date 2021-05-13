@@ -4,13 +4,13 @@ import cats.syntax.either._
 import com.softwaremill.diffx.scalatest.DiffMatcher._
 import doobie.implicits._
 import io.circe.Json
+import io.iohk.atala.prism.DIDUtil
 import io.iohk.atala.prism.connector.model._
 import io.iohk.atala.prism.connector.repositories.daos._
 import io.iohk.atala.prism.console.DataPreparation
 import io.iohk.atala.prism.console.models.{Contact, CreateContact, Institution}
 import io.iohk.atala.prism.console.repositories.ContactsRepository
 import io.iohk.atala.prism.crypto.EC
-import io.iohk.atala.prism.identity.DID
 import io.iohk.atala.prism.models.ParticipantId
 import io.iohk.atala.prism.repositories.ops.SqlTestOps._
 import org.scalatest.Assertion
@@ -90,8 +90,7 @@ class ConnectionsRepositorySpec extends ConnectorRepositorySpecBase {
 
     "add connection from existing token using unpublished did auth" in {
       val issuerId = createIssuer()
-      val publicKey = EC.generateKeyPair().publicKey
-      val did = DID.createUnpublishedDID(publicKey)
+      val (_, did) = DIDUtil.createUnpublishedDid
 
       val token = new TokenString("t0k3nc0de")
       sql"""INSERT INTO connection_tokens(token, initiator) VALUES ($token, $issuerId)""".runUpdate()

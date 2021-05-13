@@ -7,7 +7,7 @@ import doobie.util.transactor
 import doobie.implicits._
 import io.circe.Json
 import io.circe.syntax._
-import io.iohk.atala.prism.AtalaWithPostgresSpec
+import io.iohk.atala.prism.{AtalaWithPostgresSpec, TestConstants}
 import io.iohk.atala.prism.credentials.CredentialBatchId
 import io.iohk.atala.prism.crypto.MerkleTree.MerkleInclusionProof
 import io.iohk.atala.prism.crypto.SHA256Digest
@@ -777,7 +777,7 @@ object CredentialsRepositorySpec {
   private val aHash = SHA256Digest.compute("random string".getBytes())
   private val aBatchId = CredentialBatchId.fromDigest(aHash)
   private val aTxInfo = TransactionInfo(
-    TransactionId.from("3d488d9381b09954b5a9606b365ab0aaeca6aa750bdba79436e416ad6702226a").value,
+    TestConstants.testTxId,
     Ledger.InMemory,
     None
   )

@@ -14,7 +14,7 @@ import io.iohk.atala.prism.console.models.{Contact, CredentialExternalId, Instit
 import io.iohk.atala.prism.console.repositories.StoredCredentialsRepository
 import io.iohk.atala.prism.console.repositories.daos.{ContactsDAO, ReceivedCredentialsDAO}
 import io.iohk.atala.prism.crypto.MerkleTree.MerkleInclusionProof
-import io.iohk.atala.prism.crypto.{EC, ECKeyPair, SHA256Digest}
+import io.iohk.atala.prism.crypto.{ECKeyPair, SHA256Digest}
 import io.iohk.atala.prism.identity.DID
 import io.iohk.atala.prism.models.{Ledger, ParticipantId, TransactionId, TransactionInfo}
 import io.iohk.atala.prism.protos.console_api
@@ -111,9 +111,7 @@ class CredentialsStoreServiceSpec extends RpcSpecBase with DIDUtil {
 
   "storeCredential" should {
     "store credential in the database" in {
-      lazy val keyPair = EC.generateKeyPair()
-      lazy val publicKey = keyPair.publicKey
-      val did = generateDid(publicKey)
+      val (keyPair, did) = createDid
       updateDid(verifierId, did).transact(database).unsafeRunSync()
 
       val contact = DataPreparation.createContact(Institution.Id(verifierId.uuid), "Individual", None, "")
@@ -156,9 +154,7 @@ class CredentialsStoreServiceSpec extends RpcSpecBase with DIDUtil {
     }
 
     "NOT store credential in the database when there is a message id conflict" in {
-      lazy val keyPair = EC.generateKeyPair()
-      lazy val publicKey = keyPair.publicKey
-      val did = generateDid(publicKey)
+      val (keyPair, did) = createDid
       updateDid(verifierId, did).transact(database).unsafeRunSync()
 
       val contact = DataPreparation.createContact(Institution.Id(verifierId.uuid), "Individual", None, "")
@@ -234,9 +230,7 @@ class CredentialsStoreServiceSpec extends RpcSpecBase with DIDUtil {
 
   "getStoredCredentialsFor" should {
     "get credentials for a specific contact" in {
-      lazy val keyPair = EC.generateKeyPair()
-      lazy val publicKey = keyPair.publicKey
-      val did = generateDid(publicKey)
+      val (keyPair, did) = createDid
       updateDid(verifierId, did).transact(database).unsafeRunSync()
 
       val contact1 = DataPreparation.createContact(Institution.Id(verifierId.uuid), "Individual 1", None, "")
@@ -267,9 +261,7 @@ class CredentialsStoreServiceSpec extends RpcSpecBase with DIDUtil {
     }
 
     "get credentials for all contacts" in {
-      lazy val keyPair = EC.generateKeyPair()
-      lazy val publicKey = keyPair.publicKey
-      val did = generateDid(publicKey)
+      val (keyPair, did) = createDid
       updateDid(verifierId, did).transact(database).unsafeRunSync()
 
       val contact1 = DataPreparation.createContact(Institution.Id(verifierId.uuid), "Individual 1", None, "")
@@ -305,9 +297,7 @@ class CredentialsStoreServiceSpec extends RpcSpecBase with DIDUtil {
 
   "getLatestCredentialExternalId" should {
     "return the last id stored" in {
-      lazy val keyPair = EC.generateKeyPair()
-      lazy val publicKey = keyPair.publicKey
-      val did = generateDid(publicKey)
+      val (keyPair, did) = createDid
       updateDid(verifierId, did).transact(database).unsafeRunSync()
 
       val contactId = DataPreparation.createContact(Institution.Id(verifierId.uuid), "Individual", None, "").contactId

@@ -6,7 +6,6 @@ import io.iohk.atala.prism.auth.grpc.GrpcAuthenticationHeaderParser
 import io.iohk.atala.prism.connector.ConnectorAuthenticator
 import io.iohk.atala.prism.connector.repositories.{ParticipantsRepository, RequestNoncesRepository}
 import io.iohk.atala.prism.console.DataPreparation
-import io.iohk.atala.prism.crypto.EC
 import io.iohk.atala.prism.protos.connector_api.GetCurrentUserRequest
 import io.iohk.atala.prism.protos.cviews_api.{CredentialViewsServiceGrpc, GetCredentialViewTemplatesRequest}
 import io.iohk.atala.prism.view.HtmlViewImage.imageBase64
@@ -53,10 +52,8 @@ class CredentialViewsServiceSpec extends RpcSpecBase with DIDUtil {
     val PNG_MIME_TYPE = "image/png"
 
     "return the predefined templates" in {
-      val keyPair = EC.generateKeyPair()
-      val publicKey = keyPair.publicKey
-      val did = generateDid(publicKey)
-      val _ = DataPreparation.createIssuer("Great Issuer", publicKey = Some(publicKey), did = Some(did))
+      val (keyPair, did) = createDid
+      val _ = DataPreparation.createIssuer("Great Issuer", publicKey = Some(keyPair.publicKey), did = Some(did))
       val rpcRequest = SignedRpcRequest.generate(keyPair, did, GetCurrentUserRequest())
 
       usingApiAs(rpcRequest) { serviceStub =>

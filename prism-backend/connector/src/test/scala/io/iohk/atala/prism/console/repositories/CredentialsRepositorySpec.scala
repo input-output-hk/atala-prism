@@ -2,7 +2,7 @@ package io.iohk.atala.prism.console.repositories
 
 import io.circe.Json
 import io.circe.syntax._
-import io.iohk.atala.prism.AtalaWithPostgresSpec
+import io.iohk.atala.prism.{AtalaWithPostgresSpec, TestConstants}
 import io.iohk.atala.prism.connector.model.ConnectionStatus
 import io.iohk.atala.prism.console.DataPreparation._
 import io.iohk.atala.prism.console.models.{
@@ -29,7 +29,7 @@ class CredentialsRepositorySpec extends AtalaWithPostgresSpec {
   private val aHash = SHA256Digest.compute("random string".getBytes())
   private val aBatchId = CredentialBatchId.fromDigest(aHash)
   private val aTxInfo = TransactionInfo(
-    TransactionId.from("3d488d9381b09954b5a9606b365ab0aaeca6aa750bdba79436e416ad6702226a").value,
+    TestConstants.testTxId,
     Ledger.InMemory,
     None
   )

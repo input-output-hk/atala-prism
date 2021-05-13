@@ -5,7 +5,7 @@ import io.circe
 import io.circe.Json
 import io.circe.syntax._
 import io.grpc.{ServerServiceDefinition, StatusRuntimeException}
-import io.iohk.atala.prism.{DIDUtil, RpcSpecBase}
+import io.iohk.atala.prism.{DIDUtil, RpcSpecBase, TestConstants}
 import io.iohk.atala.prism.auth.SignedRpcRequest
 import io.iohk.atala.prism.auth.grpc.GrpcAuthenticationHeaderParser
 import io.iohk.atala.prism.connector.repositories.{ParticipantsRepository, RequestNoncesRepository}
@@ -19,15 +19,20 @@ import io.iohk.atala.prism.console.repositories.{ContactsRepository, Credentials
 import io.iohk.atala.prism.credentials.json.JsonBasedCredential
 import io.iohk.atala.prism.credentials.CredentialBatchId
 import io.iohk.atala.prism.crypto.MerkleTree.{MerkleInclusionProof, MerkleRoot}
-import io.iohk.atala.prism.crypto.{EC, ECKeyPair, SHA256Digest}
+import io.iohk.atala.prism.crypto.{ECKeyPair, SHA256Digest}
 import io.iohk.atala.prism.identity.{DID, DIDSuffix}
 import io.iohk.atala.prism.models.Ledger.InMemory
 import io.iohk.atala.prism.models.{Ledger, TransactionId, TransactionInfo}
-import io.iohk.atala.prism.protos.console_api.{CredentialsServiceGrpc, GetBlockchainDataRequest}
+import io.iohk.atala.prism.protos.console_api.{
+  CredentialsServiceGrpc,
+  GetBlockchainDataRequest,
+  ShareCredentialResponse
+}
 import io.iohk.atala.prism.protos.console_models.CManagerGenericCredential
 import io.iohk.atala.prism.protos.{common_models, console_api, node_api, node_models}
 import org.mockito.MockitoSugar
 import org.mockito.scalatest.ResetMocksAfterEachTest
+import org.scalatest.Assertion
 import org.scalatest.OptionValues._
 
 import scala.concurrent.Future
@@ -67,48 +72,20 @@ class CredentialsServiceImplSpec extends RpcSpecBase with MockitoSugar with Rese
   "createGenericCredential" should {
     "create a generic credential" in {
       val issuerName = "Issuer 1"
-      val keyPair = EC.generateKeyPair()
-      val publicKey = keyPair.publicKey
-      val did = generateDid(publicKey)
-      val issuerId = DataPreparation.createIssuer(issuerName, publicKey = Some(publicKey), did = Some(did))
-      val issuerGroup = DataPreparation.createIssuerGroup(issuerId, IssuerGroup.Name("Group 1"))
-      val subject = DataPreparation.createContact(issuerId, "Subject 1", issuerGroup.name)
+      val (keyPair, did) = createDid
+      testCreateGenericCredential(issuerName, keyPair, did)
+    }
 
-      val credentialData = Json.obj(
-        "claim1" -> "claim 1".asJson,
-        "claim2" -> "claim 2".asJson,
-        "claim3" -> "claim 3".asJson
-      )
-      val request = console_api.CreateGenericCredentialRequest(
-        contactId = subject.contactId.toString,
-        credentialData = credentialData.noSpaces,
-        groupName = issuerGroup.name.value
-      )
-      val rpcRequest = SignedRpcRequest.generate(keyPair, did, request)
-
-      usingApiAs(rpcRequest) { serviceStub =>
-        val response = serviceStub.createGenericCredential(request).genericCredential.value
-
-        response.credentialId mustNot be(empty)
-        response.issuerId must be(issuerId.toString)
-        response.contactId must be(subject.contactId.toString)
-        response.credentialData must be(request.credentialData)
-        response.issuerName must be(issuerName)
-        response.groupName must be(issuerGroup.name.value)
-        io.circe.parser.parse(response.contactData).toOption.value must be(subject.data)
-        response.issuanceOperationHash must be(empty)
-        response.encodedSignedCredential must be(empty)
-        response.publicationStoredAt must be(None)
-        response.externalId must be(subject.externalId.value)
-      }
+    "create a generic credential using unpublished did auth" in {
+      val issuerName = "Issuer 1"
+      val (keyPair, did) = DIDUtil.createUnpublishedDid
+      testCreateGenericCredential(issuerName, keyPair, did)
     }
 
     "create a generic credential given a extrenal subject id" in {
       val issuerName = "Issuer 1"
-      val keyPair = EC.generateKeyPair()
-      val publicKey = keyPair.publicKey
-      val did = generateDid(publicKey)
-      val issuerId = DataPreparation.createIssuer(issuerName, publicKey = Some(publicKey), did = Some(did))
+      val (keyPair, did) = createDid
+      val issuerId = DataPreparation.createIssuer(issuerName, publicKey = Some(keyPair.publicKey), did = Some(did))
       val issuerGroup = DataPreparation.createIssuerGroup(issuerId, IssuerGroup.Name("Group 1"))
       val subject = DataPreparation.createContact(issuerId, "Subject 1", issuerGroup.name)
 
@@ -134,63 +111,19 @@ class CredentialsServiceImplSpec extends RpcSpecBase with MockitoSugar with Rese
   "getGenericCredentials" should {
     "retrieve correct credentials" in {
       val issuerName = "Issuer 1"
-      val keyPair = EC.generateKeyPair()
-      val publicKey = keyPair.publicKey
-      val did = generateDid(publicKey)
-      val issuerId = DataPreparation.createIssuer(issuerName, publicKey = Some(publicKey), did = Some(did))
-      val issuerGroup = DataPreparation.createIssuerGroup(issuerId, IssuerGroup.Name("Group 1"))
-      val subject = DataPreparation.createContact(issuerId, "Subject 1", issuerGroup.name)
-      val credential1 = DataPreparation.createGenericCredential(issuerId, subject.contactId)
-      val credential2 = DataPreparation.createGenericCredential(issuerId, subject.contactId)
-      val credential3 = DataPreparation.createGenericCredential(issuerId, subject.contactId)
+      val (keyPair, did) = createDid
+      testRetrieveCorrectCredentials(issuerName, keyPair, did)
+    }
 
-      val credentlal1Proto = ProtoCodecs.genericCredentialToProto(credential1)
-      val credentlal2Proto = ProtoCodecs.genericCredentialToProto(credential2)
-      val credentlal3Proto = ProtoCodecs.genericCredentialToProto(credential3)
-
-      val requestFirst = console_api.GetGenericCredentialsRequest(
-        limit = 1
-      )
-      val rpcRequestFirst = SignedRpcRequest.generate(keyPair, did, requestFirst)
-
-      usingApiAs(rpcRequestFirst) { serviceStub =>
-        val response = serviceStub.getGenericCredentials(requestFirst).credentials
-        response.size must be(1)
-        val retrievedCred = response.headOption.value
-        retrievedCred must be(credentlal1Proto)
-        retrievedCred mustNot be(credentlal2Proto)
-        retrievedCred mustNot be(credentlal3Proto)
-      }
-
-      val requestMoreThanExistent = console_api.GetGenericCredentialsRequest(
-        limit = 4
-      )
-      val rpcRequestMoreThanExistent = SignedRpcRequest.generate(keyPair, did, requestMoreThanExistent)
-      usingApiAs(rpcRequestMoreThanExistent) { serviceStub =>
-        val allCredentials = serviceStub.getGenericCredentials(requestMoreThanExistent).credentials
-        allCredentials.size must be(3)
-
-        allCredentials.toSet must be(Set(credentlal1Proto, credentlal2Proto, credentlal3Proto))
-      }
-
-      val requestLastTwo = console_api.GetGenericCredentialsRequest(
-        limit = 2,
-        offset = 1
-      )
-      val rpcRequestLastTwo = SignedRpcRequest.generate(keyPair, did, requestLastTwo)
-      usingApiAs(rpcRequestLastTwo) { serviceStub =>
-        val lastTwoCredentials = serviceStub.getGenericCredentials(requestLastTwo).credentials
-        lastTwoCredentials.size must be(2)
-
-        lastTwoCredentials.toSet must be(Set(credentlal2Proto, credentlal3Proto))
-      }
+    "retrieve correct credentials while use unpublished did auth" in {
+      val issuerName = "Issuer 1"
+      val (keyPair, did) = DIDUtil.createUnpublishedDid
+      testRetrieveCorrectCredentials(issuerName, keyPair, did)
     }
 
     "retrieve the revocation data when a credential is revoked" in {
       val issuerName = "Issuer 1"
-      val keyPair = EC.generateKeyPair()
-      val publicKey = keyPair.publicKey
-      val did = generateDid(publicKey)
+      val (keyPair, did) = createDid
       val issuerId = DataPreparation.createIssuer(issuerName, did = Some(did))
       val contact = DataPreparation.createContact(issuerId, "Subject 1", None, "")
       val originalCredential = DataPreparation.createGenericCredential(issuerId, contact.contactId)
@@ -240,95 +173,19 @@ class CredentialsServiceImplSpec extends RpcSpecBase with MockitoSugar with Rese
   "publishBatch" should {
     "forward request to node and store data in database" in {
       val issuerName = "Issuer 1"
-      val keyPair = EC.generateKeyPair()
-      val publicKey = keyPair.publicKey
-      val did = generateDid(publicKey)
-      val issuerId = DataPreparation.createIssuer(issuerName, publicKey = Some(publicKey), did = Some(did))
-      val issuerGroup = DataPreparation.createIssuerGroup(issuerId, IssuerGroup.Name("Group 1"))
-      val subject = DataPreparation.createContact(issuerId, "Subject 1", issuerGroup.name)
-      val originalCredential = DataPreparation.createGenericCredential(issuerId, subject.contactId)
+      val (keyPair, did) = createDid
+      testForwardRequestToNodeAndStoreData(issuerName, keyPair, did)
+    }
 
-      val mockDIDSuffix = DID.buildPrismDID(SHA256Digest.compute("issuerDIDSuffix".getBytes()).hexValue).suffix
-      val mockEncodedSignedCredential = "easdadgfkfñwlekrjfadf"
-      val mockEncodedSignedCredentialHash = SHA256Digest.compute(mockEncodedSignedCredential.getBytes())
-
-      val issuanceOp = buildSignedIssueCredentialOp(
-        mockEncodedSignedCredentialHash,
-        mockDIDSuffix
-      )
-
-      val mockOperationHash = SHA256Digest.compute(issuanceOp.getOperation.toByteArray)
-      val mockCredentialBatchId =
-        CredentialBatchId.fromBatchData(mockDIDSuffix, MerkleRoot(mockEncodedSignedCredentialHash))
-      val mockTransactionInfo =
-        common_models
-          .TransactionInfo()
-          .withTransactionId(mockCredentialBatchId.id)
-          .withLedger(common_models.Ledger.IN_MEMORY)
-
-      val nodeRequest = node_api
-        .IssueCredentialBatchRequest()
-        .withSignedOperation(issuanceOp)
-
-      doReturn(
-        Future
-          .successful(
-            node_api
-              .IssueCredentialBatchResponse()
-              .withTransactionInfo(mockTransactionInfo)
-              .withBatchId(mockCredentialBatchId.id)
-          )
-      ).when(nodeMock)
-        .issueCredentialBatch(nodeRequest)
-
-      val request = console_api
-        .PublishBatchRequest()
-        .withIssueCredentialBatchOperation(issuanceOp)
-
-      val rpcRequest = SignedRpcRequest.generate(keyPair, did, request)
-
-      usingApiAs(rpcRequest) { serviceStub =>
-        val publishResponse = serviceStub.publishBatch(request)
-        verify(nodeMock).issueCredentialBatch(nodeRequest)
-
-        // we publish the credential data
-        val mockHash = SHA256Digest.compute("".getBytes())
-        val mockMerkleProof = MerkleInclusionProof(mockHash, 1, List(mockHash))
-        publishCredential(
-          issuerId,
-          mockCredentialBatchId,
-          originalCredential.credentialId,
-          mockEncodedSignedCredential,
-          mockMerkleProof
-        )
-
-        val credentialList =
-          credentialsRepository.getBy(issuerId, subject.contactId).value.futureValue.toOption.value
-
-        credentialList.length must be(1)
-
-        val updatedCredential = credentialList.headOption.value
-
-        val publicationData = updatedCredential.publicationData.value
-
-        publicationData.credentialBatchId must be(mockCredentialBatchId)
-        publicationData.issuanceOperationHash must be(mockOperationHash)
-        publicationData.encodedSignedCredential must be(mockEncodedSignedCredential)
-        publicationData.transactionId must be(TransactionId.from(mockTransactionInfo.transactionId).value)
-        publicationData.ledger must be(Ledger.InMemory)
-        // the rest should remain unchanged
-        updatedCredential.copy(publicationData = None) must be(originalCredential)
-
-        publishResponse.batchId mustBe mockCredentialBatchId.id
-        publishResponse.transactionInfo.value mustBe mockTransactionInfo
-      }
+    "forward request to node and store data in database while uses unpublished did auth" in {
+      val issuerName = "Issuer 1"
+      val (keyPair, did) = DIDUtil.createUnpublishedDid
+      testForwardRequestToNodeAndStoreData(issuerName, keyPair, did)
     }
 
     "fail if batch id returned by the node is different from the one computed by the console" in {
-      val keyPair = EC.generateKeyPair()
-      val publicKey = keyPair.publicKey
-      val did = generateDid(publicKey)
-      DataPreparation.createIssuer("issuerName", publicKey = Some(publicKey), did = Some(did))
+      val (keyPair, did) = createDid
+      DataPreparation.createIssuer("issuerName", publicKey = Some(keyPair.publicKey), did = Some(did))
 
       val mockDIDSuffix = did.suffix
       val mockEncodedSignedCredential = "easdadgfkfñwlekrjfadf"
@@ -379,67 +236,20 @@ class CredentialsServiceImplSpec extends RpcSpecBase with MockitoSugar with Rese
   "storePublishedCredential" should {
     "store a credential when the batch was published" in {
       val issuerName = "Issuer 1"
-      val keyPair = EC.generateKeyPair()
-      val publicKey = keyPair.publicKey
-      val did = generateDid(publicKey)
-      val issuerId = DataPreparation.createIssuer(issuerName, publicKey = Some(publicKey), did = Some(did))
-      val issuerGroup = DataPreparation.createIssuerGroup(issuerId, IssuerGroup.Name("Group 1"))
-      val subject = DataPreparation.createContact(issuerId, "Subject 1", issuerGroup.name)
-      val originalCredential = DataPreparation.createGenericCredential(issuerId, subject.contactId)
+      val (keyPair, did) = createDid
+      testStoreCredentialWhenBatchPublished(issuerName, keyPair, did)
+    }
 
-      val mockEncodedSignedCredential = "easdadgfkfñwlekrjfadf"
-
-      val issuanceOpHash = SHA256Digest.compute("opHash".getBytes())
-      val mockCredentialBatchId =
-        CredentialBatchId.fromDigest(SHA256Digest.compute("SomeRandomHash".getBytes()))
-
-      val mockTransactionInfo = TransactionInfo(
-        transactionId = TransactionId.from(SHA256Digest.compute("id".getBytes).value).value,
-        ledger = InMemory
-      )
-
-      // we need to first store the batch data in the db
-      publishBatch(mockCredentialBatchId, issuanceOpHash, mockTransactionInfo)
-
-      val mockHash = SHA256Digest.compute("".getBytes())
-      val mockMerkleProof = MerkleInclusionProof(mockHash, 1, List(mockHash))
-
-      val request = console_api
-        .StorePublishedCredentialRequest()
-        .withConsoleCredentialId(originalCredential.credentialId.uuid.toString)
-        .withEncodedSignedCredential(mockEncodedSignedCredential)
-        .withEncodedInclusionProof(mockMerkleProof.encode)
-        .withBatchId(mockCredentialBatchId.id)
-
-      val rpcRequest = SignedRpcRequest.generate(keyPair, did, request)
-
-      usingApiAs(rpcRequest) { serviceStub =>
-        serviceStub.storePublishedCredential(request)
-
-        val storedPublicationData = credentialsRepository
-          .getBy(originalCredential.credentialId)
-          .value
-          .futureValue
-          .toOption
-          .value
-          .value
-          .publicationData
-          .value
-
-        storedPublicationData.credentialBatchId mustBe mockCredentialBatchId
-        storedPublicationData.issuanceOperationHash mustBe issuanceOpHash
-        storedPublicationData.encodedSignedCredential mustBe mockEncodedSignedCredential
-        storedPublicationData.transactionId mustBe mockTransactionInfo.transactionId
-        storedPublicationData.ledger mustBe mockTransactionInfo.ledger
-      }
+    "store a credential when the batch was published using unpublished did auth" in {
+      val issuerName = "Issuer 1"
+      val (keyPair, did) = DIDUtil.createUnpublishedDid
+      testStoreCredentialWhenBatchPublished(issuerName, keyPair, did)
     }
 
     "fail if issuer is trying to publish an empty encoded signed credential" in {
       val issuerName = "Issuer 1"
-      val keyPair = EC.generateKeyPair()
-      val publicKey = keyPair.publicKey
-      val did = generateDid(publicKey)
-      val issuerId = DataPreparation.createIssuer(issuerName, publicKey = Some(publicKey), did = Some(did))
+      val (keyPair, did) = createDid
+      val issuerId = DataPreparation.createIssuer(issuerName, publicKey = Some(keyPair.publicKey), did = Some(did))
       val issuerGroup = DataPreparation.createIssuerGroup(issuerId, IssuerGroup.Name("Group 1"))
       val subject = DataPreparation.createContact(issuerId, "Subject 1", issuerGroup.name)
       val originalCredential = DataPreparation.createGenericCredential(issuerId, subject.contactId)
@@ -492,10 +302,8 @@ class CredentialsServiceImplSpec extends RpcSpecBase with MockitoSugar with Rese
 
     "fail if issuer is trying to publish a credential that does not exist in the db" in {
       val issuerName = "Issuer 1"
-      val keyPair = EC.generateKeyPair()
-      val publicKey = keyPair.publicKey
-      val did = generateDid(publicKey)
-      DataPreparation.createIssuer(issuerName, publicKey = Some(publicKey), did = Some(did))
+      val (keyPair, did) = createDid
+      DataPreparation.createIssuer(issuerName, publicKey = Some(keyPair.publicKey), did = Some(did))
 
       val mockEncodedSignedCredential = "easdadgfkfñwlekrjfadf"
 
@@ -544,10 +352,8 @@ class CredentialsServiceImplSpec extends RpcSpecBase with MockitoSugar with Rese
 
     "fail if issuer is trying to publish a credential he didn't create" in {
       val issuerName = "Issuer 1"
-      val keyPair = EC.generateKeyPair()
-      val publicKey = keyPair.publicKey
-      val did = generateDid(publicKey)
-      val issuerId = DataPreparation.createIssuer(issuerName, publicKey = Some(publicKey), did = Some(did))
+      val (keyPair, did) = createDid
+      val issuerId = DataPreparation.createIssuer(issuerName, publicKey = Some(keyPair.publicKey), did = Some(did))
       val issuerGroup = DataPreparation.createIssuerGroup(issuerId, IssuerGroup.Name("Group 1"))
       val subject = DataPreparation.createContact(issuerId, "Subject 1", issuerGroup.name)
       val originalCredential = DataPreparation.createGenericCredential(issuerId, subject.contactId)
@@ -571,10 +377,8 @@ class CredentialsServiceImplSpec extends RpcSpecBase with MockitoSugar with Rese
 
       // another issuer's data
       val issuerName2 = "Issuer 2"
-      val keyPair2 = EC.generateKeyPair()
-      val publicKey2 = keyPair2.publicKey
-      val did2 = generateDid(publicKey2)
-      DataPreparation.createIssuer(issuerName2, publicKey = Some(publicKey2), did = Some(did2))
+      val (keyPair2, did2) = createDid
+      DataPreparation.createIssuer(issuerName2, publicKey = Some(keyPair2.publicKey), did = Some(did2))
 
       val request = console_api
         .StorePublishedCredentialRequest()
@@ -607,10 +411,8 @@ class CredentialsServiceImplSpec extends RpcSpecBase with MockitoSugar with Rese
 
     "fail if the associated batch was not stored yet" in {
       val issuerName = "Issuer 1"
-      val keyPair = EC.generateKeyPair()
-      val publicKey = keyPair.publicKey
-      val did = generateDid(publicKey)
-      val issuerId = DataPreparation.createIssuer(issuerName, publicKey = Some(publicKey), did = Some(did))
+      val (keyPair, did) = createDid
+      val issuerId = DataPreparation.createIssuer(issuerName, publicKey = Some(keyPair.publicKey), did = Some(did))
       val issuerGroup = DataPreparation.createIssuerGroup(issuerId, IssuerGroup.Name("Group 1"))
       val subject = DataPreparation.createContact(issuerId, "Subject 1", issuerGroup.name)
       val originalCredential = DataPreparation.createGenericCredential(issuerId, subject.contactId)
@@ -682,48 +484,18 @@ class CredentialsServiceImplSpec extends RpcSpecBase with MockitoSugar with Rese
 
   "getContactCredentials" should {
     "return contact's credentials" in {
-      val keyPair = EC.generateKeyPair()
-      val publicKey = keyPair.publicKey
-      val did = generateDid(publicKey)
-      val issuerId = DataPreparation.createIssuer("Issuer X", publicKey = Some(publicKey), did = Some(did))
-      val group = createIssuerGroup(issuerId, IssuerGroup.Name("grp1"))
-      val contactId1 = createContact(issuerId, "IOHK Student", group.name).contactId
-      val contactId2 = createContact(issuerId, "IOHK Student 2", group.name).contactId
-      createGenericCredential(issuerId, contactId2, "A")
-      val cred1 = createGenericCredential(issuerId, contactId1, "B")
-      createGenericCredential(issuerId, contactId2, "C")
-      val cred2 = createGenericCredential(issuerId, contactId1, "D")
-      createGenericCredential(issuerId, contactId2, "E")
+      val (keyPair, did) = createDid
+      testReturnContactCredentials(keyPair, did)
+    }
 
-      val request = console_api.GetContactCredentialsRequest(
-        contactId = contactId1.toString
-      )
-      val rpcRequest = SignedRpcRequest.generate(keyPair, did, request)
-
-      usingApiAs(rpcRequest) { serviceStub =>
-        val response = serviceStub.getContactCredentials(request)
-        val returnedCredentials = response.genericCredentials.toList
-        val cleanCredentials = returnedCredentials map cleanCredentialData
-        val credentialsJsons = returnedCredentials map credentialJsonData
-
-        val expectedCredentials = List(cred1, cred2)
-        val expectedCleanCredentials = expectedCredentials map {
-          ProtoCodecs.genericCredentialToProto _ andThen cleanCredentialData
-        }
-        val expectedCredentialsJsons = expectedCredentials map {
-          ProtoCodecs.genericCredentialToProto _ andThen credentialJsonData
-        }
-        cleanCredentials must be(expectedCleanCredentials)
-        credentialsJsons must be(expectedCredentialsJsons)
-        returnedCredentials.forall(_.issuanceProof.isEmpty) must be(true)
-      }
+    "return contact's credentials using unpublished did auth" in {
+      val (keyPair, did) = DIDUtil.createUnpublishedDid
+      testReturnContactCredentials(keyPair, did)
     }
 
     "return empty list of credentials when not present" in {
-      val keyPair = EC.generateKeyPair()
-      val publicKey = keyPair.publicKey
-      val did = generateDid(publicKey)
-      val issuerId = DataPreparation.createIssuer("Issuer X", publicKey = Some(publicKey), did = Some(did))
+      val (keyPair, did) = createDid
+      val issuerId = DataPreparation.createIssuer("Issuer X", publicKey = Some(keyPair.publicKey), did = Some(did))
       val group = createIssuerGroup(issuerId, IssuerGroup.Name("grp1"))
       val contactId = createContact(issuerId, "IOHK Student", group.name).contactId
 
@@ -741,29 +513,12 @@ class CredentialsServiceImplSpec extends RpcSpecBase with MockitoSugar with Rese
 
   "shareCredential" should {
     "work" in {
-      val keyPair = EC.generateKeyPair()
-      val publicKey = keyPair.publicKey
-      val did = generateDid(publicKey)
-      val issuerId = DataPreparation.createIssuer("Issuer X", publicKey = Some(publicKey), did = Some(did))
-      val contactId = createContact(issuerId, "IOHK Student", None, "").contactId
-      val credentialId = createGenericCredential(issuerId, contactId, "A").credentialId
-      val mockCredential = "mockEncodedSignedCredential"
-      val mockTransactionInfo = TransactionInfo(
-        TransactionId.from("3d488d9381b09954b5a9606b365ab0aaeca6aa750bdba79436e416ad6702226a").value,
-        Ledger.InMemory,
-        None
-      )
-
-      publish(issuerId, credentialId, mockCredential, mockTransactionInfo)
-
-      val request = console_api.ShareCredentialRequest(
-        cmanagerCredentialId = credentialId.toString
-      )
-      val rpcRequest = SignedRpcRequest.generate(keyPair, did, request)
-
-      usingApiAs(rpcRequest) { serviceStub =>
-        serviceStub.shareCredential(request)
-      }
+      val (keyPair, did) = createDid
+      testShareCredential(keyPair, did)
+    }
+    "work while authed by unpublished did" in {
+      val (keyPair, did) = DIDUtil.createUnpublishedDid
+      testShareCredential(keyPair, did)
     }
   }
 
@@ -783,10 +538,41 @@ class CredentialsServiceImplSpec extends RpcSpecBase with MockitoSugar with Rese
     val nodeRequest = node_api.GetBatchStateRequest(batchId.id)
 
     "return the expected transaction info when the credential is found" in {
-      val keyPair = EC.generateKeyPair()
-      val publicKey = keyPair.publicKey
-      val did = generateDid(publicKey)
-      DataPreparation.createIssuer("Issuer X", publicKey = Some(publicKey), did = Some(did))
+      val (keyPair, did) = createDid
+      testReturnExpectedTransactionInfo(keyPair, did)
+    }
+
+    "return the expected transaction info when the credential is found using unpublished did auth" in {
+      val (keyPair, did) = DIDUtil.createUnpublishedDid
+      testReturnExpectedTransactionInfo(keyPair, did)
+    }
+
+    "return empty transaction info when the credential is not present" in {
+      val (keyPair, did) = createDid
+      DataPreparation.createIssuer("Issuer X", publicKey = Some(keyPair.publicKey), did = Some(did))
+
+      val nodeResponse = Future
+        .successful(
+          node_api.GetBatchStateResponse(
+            publicationLedgerData = None
+          )
+        )
+
+      doReturn(nodeResponse)
+        .when(nodeMock)
+        .getBatchState(nodeRequest)
+
+      val request = GetBlockchainDataRequest(encodedSignedCredential)
+      val rpcRequest = SignedRpcRequest.generate(keyPair, did, request)
+
+      usingApiAs(rpcRequest) { serviceStub =>
+        val response = serviceStub.getBlockchainData(request)
+        response.issuanceProof mustBe empty
+      }
+    }
+
+    def testReturnExpectedTransactionInfo(keyPair: ECKeyPair, did: DID) = {
+      DataPreparation.createIssuer("Issuer X", publicKey = Some(keyPair.publicKey), did = Some(did))
       val expectedTransactionInfoProto = common_models.TransactionInfo(
         transactionId = "3d488d9381b09954b5a9606b365ab0aaeca6aa750bdba79436e416ad6702226a",
         ledger = common_models.Ledger.IN_MEMORY,
@@ -817,41 +603,18 @@ class CredentialsServiceImplSpec extends RpcSpecBase with MockitoSugar with Rese
         issuanceProof mustBe expectedTransactionInfoProto
       }
     }
-
-    "return empty transaction info when the credential is not present" in {
-      val keyPair = EC.generateKeyPair()
-      val publicKey = keyPair.publicKey
-      val did = generateDid(publicKey)
-      DataPreparation.createIssuer("Issuer X", publicKey = Some(publicKey), did = Some(did))
-
-      val nodeResponse = Future
-        .successful(
-          node_api.GetBatchStateResponse(
-            publicationLedgerData = None
-          )
-        )
-
-      doReturn(nodeResponse)
-        .when(nodeMock)
-        .getBatchState(nodeRequest)
-
-      val request = GetBlockchainDataRequest(encodedSignedCredential)
-      val rpcRequest = SignedRpcRequest.generate(keyPair, did, request)
-
-      usingApiAs(rpcRequest) { serviceStub =>
-        val response = serviceStub.getBlockchainData(request)
-        response.issuanceProof mustBe empty
-      }
-    }
   }
 
   "revokePublishedCredential" should {
     def withPublishedCredential[T](f: (GenericCredential, ECKeyPair, DID) => T) = {
+      val (keyPair, did) = createDid
+      withPublishedCredentialAndCustomKeysDid(keyPair, did)(f)
+    }
+    def withPublishedCredentialAndCustomKeysDid[T](keyPair: ECKeyPair, did: DID)(
+        f: (GenericCredential, ECKeyPair, DID) => T
+    ) = {
       val issuerName = "Issuer 1"
-      val keyPair = EC.generateKeyPair()
-      val publicKey = keyPair.publicKey
-      val did = generateDid(publicKey)
-      val issuerId = DataPreparation.createIssuer(issuerName, publicKey = Some(publicKey), did = Some(did))
+      val issuerId = DataPreparation.createIssuer(issuerName, publicKey = Some(keyPair.publicKey), did = Some(did))
       val contact = DataPreparation.createContact(issuerId, "Subject 1", None, "")
       val originalCredential = DataPreparation.createGenericCredential(issuerId, contact.contactId)
 
@@ -880,66 +643,12 @@ class CredentialsServiceImplSpec extends RpcSpecBase with MockitoSugar with Rese
     }
 
     "return the generated transaction id" in {
-      withPublishedCredential { (credential, keyPair, did) =>
-        val mockHash = SHA256Digest.compute("".getBytes())
-        val mockCredentialBatchId = CredentialBatchId.fromDigest(SHA256Digest.compute("SomeRandomHash".getBytes()))
+      withPublishedCredential(testReturnTheGeneratedTransactionId)
+    }
 
-        val revokeCredentialOp = node_models.SignedAtalaOperation(
-          signedWith = "mockKey",
-          signature = ByteString.copyFrom("".getBytes()),
-          operation = Some(
-            node_models.AtalaOperation(
-              operation = node_models.AtalaOperation.Operation.RevokeCredentials(
-                node_models
-                  .RevokeCredentialsOperation()
-                  .withCredentialBatchId(mockCredentialBatchId.id)
-                  .withPreviousOperationHash(ByteString.copyFrom(mockHash.value.toArray))
-                  .withCredentialsToRevoke(List(ByteString.copyFrom(mockHash.value.toArray)))
-              )
-            )
-          )
-        )
-
-        val mockRevocationTransactionInfo = common_models
-          .TransactionInfo()
-          .withTransactionId(CredentialBatchId.fromDigest(SHA256Digest.compute("revocationRandomHash".getBytes())).id)
-          .withLedger(common_models.Ledger.IN_MEMORY)
-
-        val nodeRequest = node_api
-          .RevokeCredentialsRequest()
-          .withSignedOperation(revokeCredentialOp)
-
-        doReturn(
-          Future
-            .successful(
-              node_api
-                .RevokeCredentialsResponse()
-                .withTransactionInfo(mockRevocationTransactionInfo)
-            )
-        ).when(nodeMock).revokeCredentials(nodeRequest)
-
-        val request = console_api
-          .RevokePublishedCredentialRequest()
-          .withCredentialId(credential.credentialId.uuid.toString)
-          .withRevokeCredentialsOperation(revokeCredentialOp)
-
-        val rpcRequest = SignedRpcRequest.generate(keyPair, did, request)
-
-        usingApiAs(rpcRequest) { serviceStub =>
-          serviceStub.revokePublishedCredential(request)
-
-          val revokedOnTransactionId = credentialsRepository
-            .getBy(credential.credentialId)
-            .value
-            .futureValue
-            .toOption
-            .value
-            .value
-            .revokedOnTransactionId
-
-          revokedOnTransactionId.value.toString must be(mockRevocationTransactionInfo.transactionId)
-        }
-      }
+    "return the generated transaction id while authed by unpublished did" in {
+      val (keyPair, did) = DIDUtil.createUnpublishedDid
+      withPublishedCredentialAndCustomKeysDid(keyPair, did)(testReturnTheGeneratedTransactionId)
     }
 
     "fail when the credentialId is missing" in {
@@ -1136,10 +845,8 @@ class CredentialsServiceImplSpec extends RpcSpecBase with MockitoSugar with Rese
           .withCredentialId(credential.credentialId.uuid.toString)
           .withRevokeCredentialsOperation(revokeCredentialOp)
 
-        val keyPair = EC.generateKeyPair()
-        val publicKey = keyPair.publicKey
-        val did = generateDid(publicKey)
-        DataPreparation.createIssuer("malicious issuer", publicKey = Some(publicKey), did = Some(did))
+        val (keyPair, did) = createDid
+        DataPreparation.createIssuer("malicious issuer", publicKey = Some(keyPair.publicKey), did = Some(did))
         val rpcRequest = SignedRpcRequest.generate(keyPair, did, request)
 
         usingApiAs(rpcRequest) { serviceStub =>
@@ -1167,4 +874,347 @@ class CredentialsServiceImplSpec extends RpcSpecBase with MockitoSugar with Rese
     DataPreparation.publishBatch(mockBatchId, mockHash, mockTransactionInfo)
     DataPreparation.publishCredential(issuerId, mockBatchId, consoleId, encodedSignedCredential, mockMerkleProof)
   }
+
+  private def testCreateGenericCredential(issuerName: String, keyPair: ECKeyPair, did: DID) = {
+    val issuerId = DataPreparation.createIssuer(issuerName, publicKey = Some(keyPair.publicKey), did = Some(did))
+    val issuerGroup = DataPreparation.createIssuerGroup(issuerId, IssuerGroup.Name("Group 1"))
+    val subject = DataPreparation.createContact(issuerId, "Subject 1", issuerGroup.name)
+
+    val credentialData = Json.obj(
+      "claim1" -> "claim 1".asJson,
+      "claim2" -> "claim 2".asJson,
+      "claim3" -> "claim 3".asJson
+    )
+    val request = console_api.CreateGenericCredentialRequest(
+      contactId = subject.contactId.toString,
+      credentialData = credentialData.noSpaces,
+      groupName = issuerGroup.name.value
+    )
+    val rpcRequest = SignedRpcRequest.generate(keyPair, did, request)
+
+    usingApiAs(rpcRequest) { serviceStub =>
+      val response = serviceStub.createGenericCredential(request).genericCredential.value
+
+      val shouldBeSuccess = GenericCredential.Id.from(response.credentialId)
+
+      shouldBeSuccess.isSuccess mustBe true
+      response.issuerId must be(issuerId.toString)
+      response.contactId must be(subject.contactId.toString)
+      response.credentialData must be(request.credentialData)
+      response.issuerName must be(issuerName)
+      response.groupName must be(issuerGroup.name.value)
+      io.circe.parser.parse(response.contactData).toOption.value must be(subject.data)
+      response.issuanceOperationHash must be(empty)
+      response.encodedSignedCredential must be(empty)
+      response.publicationStoredAt must be(None)
+      response.externalId must be(subject.externalId.value)
+    }
+  }
+
+  private def testRetrieveCorrectCredentials(issuerName: String, keyPair: ECKeyPair, did: DID) = {
+    val issuerId = DataPreparation.createIssuer(issuerName, publicKey = Some(keyPair.publicKey), did = Some(did))
+    val issuerGroup = DataPreparation.createIssuerGroup(issuerId, IssuerGroup.Name("Group 1"))
+    val subject = DataPreparation.createContact(issuerId, "Subject 1", issuerGroup.name)
+    val credential1 = DataPreparation.createGenericCredential(issuerId, subject.contactId)
+    val credential2 = DataPreparation.createGenericCredential(issuerId, subject.contactId)
+    val credential3 = DataPreparation.createGenericCredential(issuerId, subject.contactId)
+
+    val credentlal1Proto = ProtoCodecs.genericCredentialToProto(credential1)
+    val credentlal2Proto = ProtoCodecs.genericCredentialToProto(credential2)
+    val credentlal3Proto = ProtoCodecs.genericCredentialToProto(credential3)
+
+    val requestFirst = console_api.GetGenericCredentialsRequest(
+      limit = 1
+    )
+    val rpcRequestFirst = SignedRpcRequest.generate(keyPair, did, requestFirst)
+
+    usingApiAs(rpcRequestFirst) { serviceStub =>
+      val response = serviceStub.getGenericCredentials(requestFirst).credentials
+      response.size must be(1)
+      val retrievedCred = response.headOption.value
+      retrievedCred must be(credentlal1Proto)
+      retrievedCred mustNot be(credentlal2Proto)
+      retrievedCred mustNot be(credentlal3Proto)
+    }
+
+    val requestMoreThanExist = console_api.GetGenericCredentialsRequest(
+      limit = 4
+    )
+    val rpcRequestMoreThanExist = SignedRpcRequest.generate(keyPair, did, requestMoreThanExist)
+    usingApiAs(rpcRequestMoreThanExist) { serviceStub =>
+      val allCredentials = serviceStub.getGenericCredentials(requestMoreThanExist).credentials
+      allCredentials.size must be(3)
+
+      allCredentials.toSet must be(Set(credentlal1Proto, credentlal2Proto, credentlal3Proto))
+    }
+
+    val requestLastTwo = console_api.GetGenericCredentialsRequest(
+      limit = 2,
+      offset = 1
+    )
+    val rpcRequestLastTwo = SignedRpcRequest.generate(keyPair, did, requestLastTwo)
+    usingApiAs(rpcRequestLastTwo) { serviceStub =>
+      val lastTwoCredentials = serviceStub.getGenericCredentials(requestLastTwo).credentials
+      lastTwoCredentials.size must be(2)
+    }
+  }
+
+  private def testForwardRequestToNodeAndStoreData(issuerName: String, keyPair: ECKeyPair, did: DID): Assertion = {
+    val issuerId = DataPreparation.createIssuer(issuerName, publicKey = Some(keyPair.publicKey), did = Some(did))
+    val issuerGroup = DataPreparation.createIssuerGroup(issuerId, IssuerGroup.Name("Group 1"))
+    val subject = DataPreparation.createContact(issuerId, "Subject 1", issuerGroup.name)
+    val originalCredential = DataPreparation.createGenericCredential(issuerId, subject.contactId)
+
+    val mockDIDSuffix = DID.buildPrismDID(SHA256Digest.compute("issuerDIDSuffix".getBytes()).hexValue).suffix
+    val mockEncodedSignedCredential = "easdadgfkfñwlekrjfadf"
+    val mockEncodedSignedCredentialHash = SHA256Digest.compute(mockEncodedSignedCredential.getBytes())
+
+    val issuanceOp = buildSignedIssueCredentialOp(
+      mockEncodedSignedCredentialHash,
+      mockDIDSuffix
+    )
+
+    val mockOperationHash = SHA256Digest.compute(issuanceOp.getOperation.toByteArray)
+    val mockCredentialBatchId =
+      CredentialBatchId.fromBatchData(mockDIDSuffix, MerkleRoot(mockEncodedSignedCredentialHash))
+    val mockTransactionInfo =
+      common_models
+        .TransactionInfo()
+        .withTransactionId(mockCredentialBatchId.id)
+        .withLedger(common_models.Ledger.IN_MEMORY)
+
+    val nodeRequest = node_api
+      .IssueCredentialBatchRequest()
+      .withSignedOperation(issuanceOp)
+
+    doReturn(
+      Future
+        .successful(
+          node_api
+            .IssueCredentialBatchResponse()
+            .withTransactionInfo(mockTransactionInfo)
+            .withBatchId(mockCredentialBatchId.id)
+        )
+    ).when(nodeMock)
+      .issueCredentialBatch(nodeRequest)
+
+    val request = console_api
+      .PublishBatchRequest()
+      .withIssueCredentialBatchOperation(issuanceOp)
+
+    val rpcRequest = SignedRpcRequest.generate(keyPair, did, request)
+
+    usingApiAs(rpcRequest) { serviceStub =>
+      val publishResponse = serviceStub.publishBatch(request)
+      verify(nodeMock).issueCredentialBatch(nodeRequest)
+
+      // we publish the credential data
+      val mockHash = SHA256Digest.compute("".getBytes())
+      val mockMerkleProof = MerkleInclusionProof(mockHash, 1, List(mockHash))
+      publishCredential(
+        issuerId,
+        mockCredentialBatchId,
+        originalCredential.credentialId,
+        mockEncodedSignedCredential,
+        mockMerkleProof
+      )
+
+      val credentialList =
+        credentialsRepository.getBy(issuerId, subject.contactId).value.futureValue.toOption.value
+
+      credentialList.length must be(1)
+
+      val updatedCredential = credentialList.headOption.value
+
+      val publicationData = updatedCredential.publicationData.value
+
+      publicationData.credentialBatchId must be(mockCredentialBatchId)
+      publicationData.issuanceOperationHash must be(mockOperationHash)
+      publicationData.encodedSignedCredential must be(mockEncodedSignedCredential)
+      publicationData.transactionId must be(TransactionId.from(mockTransactionInfo.transactionId).value)
+      publicationData.ledger must be(Ledger.InMemory)
+      // the rest should remain unchanged
+      updatedCredential.copy(publicationData = None) must be(originalCredential)
+
+      publishResponse.batchId mustBe mockCredentialBatchId.id
+      publishResponse.transactionInfo.value mustBe mockTransactionInfo
+    }
+  }
+
+  private def testStoreCredentialWhenBatchPublished(issuerName: String, keyPair: ECKeyPair, did: DID) = {
+    val issuerId = DataPreparation.createIssuer(issuerName, publicKey = Some(keyPair.publicKey), did = Some(did))
+    val issuerGroup = DataPreparation.createIssuerGroup(issuerId, IssuerGroup.Name("Group 1"))
+    val subject = DataPreparation.createContact(issuerId, "Subject 1", issuerGroup.name)
+    val originalCredential = DataPreparation.createGenericCredential(issuerId, subject.contactId)
+
+    val mockEncodedSignedCredential = "easdadgfkfñwlekrjfadf"
+
+    val issuanceOpHash = SHA256Digest.compute("opHash".getBytes())
+    val mockCredentialBatchId =
+      CredentialBatchId.fromDigest(SHA256Digest.compute("SomeRandomHash".getBytes()))
+
+    val mockTransactionInfo = TransactionInfo(
+      transactionId = TransactionId.from(SHA256Digest.compute("id".getBytes).value).value,
+      ledger = InMemory
+    )
+
+    // we need to first store the batch data in the db
+    publishBatch(mockCredentialBatchId, issuanceOpHash, mockTransactionInfo)
+
+    val mockHash = SHA256Digest.compute("".getBytes())
+    val mockMerkleProof = MerkleInclusionProof(mockHash, 1, List(mockHash))
+
+    val request = console_api
+      .StorePublishedCredentialRequest()
+      .withConsoleCredentialId(originalCredential.credentialId.uuid.toString)
+      .withEncodedSignedCredential(mockEncodedSignedCredential)
+      .withEncodedInclusionProof(mockMerkleProof.encode)
+      .withBatchId(mockCredentialBatchId.id)
+
+    val rpcRequest = SignedRpcRequest.generate(keyPair, did, request)
+
+    usingApiAs(rpcRequest) { serviceStub =>
+      serviceStub.storePublishedCredential(request)
+
+      val storedPublicationData = credentialsRepository
+        .getBy(originalCredential.credentialId)
+        .value
+        .futureValue
+        .toOption
+        .value
+        .value
+        .publicationData
+        .value
+
+      storedPublicationData.credentialBatchId mustBe mockCredentialBatchId
+      storedPublicationData.issuanceOperationHash mustBe issuanceOpHash
+      storedPublicationData.encodedSignedCredential mustBe mockEncodedSignedCredential
+      storedPublicationData.transactionId mustBe mockTransactionInfo.transactionId
+      storedPublicationData.ledger mustBe mockTransactionInfo.ledger
+    }
+  }
+
+  private def testReturnContactCredentials(keyPair: ECKeyPair, did: DID) = {
+    val issuerId = DataPreparation.createIssuer("Issuer X", publicKey = Some(keyPair.publicKey), did = Some(did))
+    val group = createIssuerGroup(issuerId, IssuerGroup.Name("grp1"))
+    val contactId1 = createContact(issuerId, "IOHK Student", group.name).contactId
+    val contactId2 = createContact(issuerId, "IOHK Student 2", group.name).contactId
+    createGenericCredential(issuerId, contactId2, "A")
+    val cred1 = createGenericCredential(issuerId, contactId1, "B")
+    createGenericCredential(issuerId, contactId2, "C")
+    val cred2 = createGenericCredential(issuerId, contactId1, "D")
+    createGenericCredential(issuerId, contactId2, "E")
+
+    val request = console_api.GetContactCredentialsRequest(
+      contactId = contactId1.toString
+    )
+    val rpcRequest = SignedRpcRequest.generate(keyPair, did, request)
+
+    usingApiAs(rpcRequest) { serviceStub =>
+      val response = serviceStub.getContactCredentials(request)
+      val returnedCredentials = response.genericCredentials.toList
+      val cleanCredentials = returnedCredentials map cleanCredentialData
+      val credentialsJsons = returnedCredentials map credentialJsonData
+
+      val expectedCredentials = List(cred1, cred2)
+      val expectedCleanCredentials = expectedCredentials map {
+        ProtoCodecs.genericCredentialToProto _ andThen cleanCredentialData
+      }
+      val expectedCredentialsJsons = expectedCredentials map {
+        ProtoCodecs.genericCredentialToProto _ andThen credentialJsonData
+      }
+      cleanCredentials must be(expectedCleanCredentials)
+      credentialsJsons must be(expectedCredentialsJsons)
+      returnedCredentials.forall(_.issuanceProof.isEmpty) must be(true)
+    }
+  }
+
+  private def testShareCredential(keyPair: ECKeyPair, did: DID): ShareCredentialResponse = {
+    val issuerId = DataPreparation.createIssuer("Issuer X", publicKey = Some(keyPair.publicKey), did = Some(did))
+    val contactId = createContact(issuerId, "IOHK Student", None, "").contactId
+    val credentialId = createGenericCredential(issuerId, contactId, "A").credentialId
+    val mockCredential = "mockEncodedSignedCredential"
+    val mockTransactionInfo = TransactionInfo(
+      TestConstants.testTxId,
+      Ledger.InMemory,
+      None
+    )
+
+    publish(issuerId, credentialId, mockCredential, mockTransactionInfo)
+
+    val request = console_api.ShareCredentialRequest(
+      cmanagerCredentialId = credentialId.toString
+    )
+    val rpcRequest = SignedRpcRequest.generate(keyPair, did, request)
+
+    usingApiAs(rpcRequest) { serviceStub =>
+      serviceStub.shareCredential(request)
+    }
+  }
+
+  private def testReturnTheGeneratedTransactionId(
+      credential: GenericCredential,
+      keyPair: ECKeyPair,
+      did: DID
+  ): Assertion = {
+    val mockHash = SHA256Digest.compute("".getBytes())
+    val mockCredentialBatchId = CredentialBatchId.fromDigest(SHA256Digest.compute("SomeRandomHash".getBytes()))
+
+    val revokeCredentialOp = node_models.SignedAtalaOperation(
+      signedWith = "mockKey",
+      signature = ByteString.copyFrom("".getBytes()),
+      operation = Some(
+        node_models.AtalaOperation(
+          operation = node_models.AtalaOperation.Operation.RevokeCredentials(
+            node_models
+              .RevokeCredentialsOperation()
+              .withCredentialBatchId(mockCredentialBatchId.id)
+              .withPreviousOperationHash(ByteString.copyFrom(mockHash.value.toArray))
+              .withCredentialsToRevoke(List(ByteString.copyFrom(mockHash.value.toArray)))
+          )
+        )
+      )
+    )
+
+    val mockRevocationTransactionInfo = common_models
+      .TransactionInfo()
+      .withTransactionId(CredentialBatchId.fromDigest(SHA256Digest.compute("revocationRandomHash".getBytes())).id)
+      .withLedger(common_models.Ledger.IN_MEMORY)
+
+    val nodeRequest = node_api
+      .RevokeCredentialsRequest()
+      .withSignedOperation(revokeCredentialOp)
+
+    doReturn(
+      Future
+        .successful(
+          node_api
+            .RevokeCredentialsResponse()
+            .withTransactionInfo(mockRevocationTransactionInfo)
+        )
+    ).when(nodeMock).revokeCredentials(nodeRequest)
+
+    val request = console_api
+      .RevokePublishedCredentialRequest()
+      .withCredentialId(credential.credentialId.uuid.toString)
+      .withRevokeCredentialsOperation(revokeCredentialOp)
+
+    val rpcRequest = SignedRpcRequest.generate(keyPair, did, request)
+
+    usingApiAs(rpcRequest) { serviceStub =>
+      serviceStub.revokePublishedCredential(request)
+
+      val revokedOnTransactionId = credentialsRepository
+        .getBy(credential.credentialId)
+        .value
+        .futureValue
+        .toOption
+        .value
+        .value
+        .revokedOnTransactionId
+
+      revokedOnTransactionId.value.toString must be(mockRevocationTransactionInfo.transactionId)
+    }
+  }
+
 }

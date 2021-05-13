@@ -12,13 +12,14 @@ import io.iohk.atala.prism.connector.repositories.daos.ParticipantsDAO
 import io.iohk.atala.prism.connector.repositories.{ParticipantsRepository, RequestNoncesRepository}
 import io.iohk.atala.prism.console.models.{Contact, CreateContact, Institution, IssuerGroup}
 import io.iohk.atala.prism.console.repositories.{ContactsRepository, GroupsRepository}
-import io.iohk.atala.prism.crypto.{EC, ECPublicKey, SHA256Digest}
+import io.iohk.atala.prism.crypto.{ECKeyPair, ECPublicKey, SHA256Digest}
 import io.iohk.atala.prism.identity.DID
 import io.iohk.atala.prism.models.{ParticipantId, TransactionId}
 import io.iohk.atala.prism.protos.console_api
 import io.iohk.atala.prism.utils.syntax.TimestampOps
 import io.iohk.atala.prism.{DIDUtil, RpcSpecBase}
 import org.mockito.MockitoSugar._
+import org.scalatest.Assertion
 import org.scalatest.OptionValues._
 
 class GroupsServiceImplSpec extends RpcSpecBase with DIDUtil {
@@ -45,56 +46,29 @@ class GroupsServiceImplSpec extends RpcSpecBase with DIDUtil {
 
   "createGroup" should {
     "create a group" in {
-      val keyPair = EC.generateKeyPair()
-      val publicKey = keyPair.publicKey
-      val did = generateDid(publicKey)
-      val issuerId = createIssuer(publicKey, did)
-      val newGroup = IssuerGroup.Name("IOHK University")
-      val request = console_api.CreateGroupRequest(newGroup.value)
-      val rpcRequest = SignedRpcRequest.generate(keyPair, did, request)
-
-      usingApiAs(rpcRequest) { serviceStub =>
-        val response = serviceStub.createGroup(request)
-
-        // the data is included
-        response.group.value.name must be(newGroup.value)
-        response.group.value.id mustNot be(empty)
-        response.group.value.createdAt.value.toInstant.toEpochMilli > 0 must be(true)
-        response.group.value.numberOfContacts must be(0)
-
-        // the new group needs to exist
-        val groups = issuerGroupsRepository.getBy(issuerId, None).value.futureValue.toOption.value
-        groups.map(_.value.name) must contain(newGroup)
-      }
+      val (keyPair, did) = createDid
+      testCreateGroup(keyPair, did)
+    }
+    "create a group using unpublished did auth" in {
+      val (keyPair, did) = DIDUtil.createUnpublishedDid
+      testCreateGroup(keyPair, did)
     }
   }
 
   "getGroups" should {
     "return available groups" in {
-      val keyPair = EC.generateKeyPair()
-      val publicKey = keyPair.publicKey
-      val did = generateDid(publicKey)
-      val issuerId = createIssuer(publicKey, did)
+      val (keyPair, did) = createDid
+      testReturnAvailableGroups(keyPair, did)
+    }
 
-      val groups = List("Blockchain 2020", "Finance 2020").map(IssuerGroup.Name.apply)
-      groups.foreach { group =>
-        issuerGroupsRepository.create(issuerId, group).value.futureValue.toOption.value
-      }
-
-      val request = console_api.GetGroupsRequest()
-      val rpcRequest = SignedRpcRequest.generate(keyPair, did, request)
-
-      usingApiAs(rpcRequest) { serviceStub =>
-        val result = serviceStub.getGroups(request)
-        result.groups.map(_.name).map(IssuerGroup.Name.apply) must be(groups)
-      }
+    "return available groups while use unpublished did auth" in {
+      val (keyPair, did) = DIDUtil.createUnpublishedDid
+      testReturnAvailableGroups(keyPair, did)
     }
 
     "return the contact count on each group" in {
-      val keyPair = EC.generateKeyPair()
-      val publicKey = keyPair.publicKey
-      val did = generateDid(publicKey)
-      val issuerId = createIssuer(publicKey, did)
+      val (keyPair, did) = createDid
+      val issuerId = createIssuer(keyPair.publicKey, did)
 
       val groups = List("Blockchain 2020", "Finance 2020").map(IssuerGroup.Name.apply)
       groups.foreach { group =>
@@ -115,10 +89,8 @@ class GroupsServiceImplSpec extends RpcSpecBase with DIDUtil {
     }
 
     "allows filtering by contact" in {
-      val keyPair = EC.generateKeyPair()
-      val publicKey = keyPair.publicKey
-      val did = generateDid(publicKey)
-      val issuerId = createIssuer(publicKey, did)
+      val (keyPair, did) = createDid
+      val issuerId = createIssuer(keyPair.publicKey, did)
 
       val groups = List("Blockchain 2020", "Finance 2020").map(IssuerGroup.Name.apply)
       groups.foreach { group =>
@@ -144,10 +116,8 @@ class GroupsServiceImplSpec extends RpcSpecBase with DIDUtil {
     }
 
     "fails to filter by contact when the value is invalid" in {
-      val keyPair = EC.generateKeyPair()
-      val publicKey = keyPair.publicKey
-      val did = generateDid(publicKey)
-      val _ = createIssuer(publicKey, did)
+      val (keyPair, did) = createDid
+      val _ = createIssuer(keyPair.publicKey, did)
 
       val request = console_api.GetGroupsRequest().withContactId("xyz")
       val rpcRequest = SignedRpcRequest.generate(keyPair, did, request)
@@ -167,44 +137,18 @@ class GroupsServiceImplSpec extends RpcSpecBase with DIDUtil {
     val group2Name = IssuerGroup.Name(group2)
 
     "be able to add new contacts" in {
-      val keyPair = EC.generateKeyPair()
-      val publicKey = keyPair.publicKey
-      val did = generateDid(publicKey)
-      val issuerId = createIssuer(publicKey, did)
+      val (keyPair, did) = createDid
+      testAddingNewContacts(group1Name, group2Name, keyPair, did)
+    }
 
-      val groupNames = List(group1Name, group2Name)
-      val List(group1Id, _) = groupNames.map { groupName =>
-        issuerGroupsRepository.create(issuerId, groupName).value.futureValue.toOption.value.id.toString
-      }
-      val contact = createRandomContact(issuerId)
-
-      val request1 =
-        console_api.UpdateGroupRequest(group1Id, Seq(contact.contactId.toString), Seq())
-      val rpcRequest1 = SignedRpcRequest.generate(keyPair, did, request1)
-
-      usingApiAs(rpcRequest1) { serviceStub =>
-        serviceStub.updateGroup(request1)
-        listContacts(issuerId, group1Name) must be(List(contact))
-        listContacts(issuerId, group2Name) must be(List())
-      }
-
-      // Adding the same contact twice should have no effect
-      val request2 =
-        console_api.UpdateGroupRequest(group1Id, Seq(contact.contactId.toString), Seq())
-      val rpcRequest2 = SignedRpcRequest.generate(keyPair, did, request2)
-
-      usingApiAs(rpcRequest2) { serviceStub =>
-        serviceStub.updateGroup(request2)
-        listContacts(issuerId, group1Name) must be(List(contact))
-        listContacts(issuerId, group2Name) must be(List())
-      }
+    "be able to add new contacts using unpublished did auth" in {
+      val (keyPair, did) = DIDUtil.createUnpublishedDid
+      testAddingNewContacts(group1Name, group2Name, keyPair, did)
     }
 
     "be able to remove contacts" in {
-      val keyPair = EC.generateKeyPair()
-      val publicKey = keyPair.publicKey
-      val did = generateDid(publicKey)
-      val issuerId = createIssuer(publicKey, did)
+      val (keyPair, did) = createDid
+      val issuerId = createIssuer(keyPair.publicKey, did)
 
       val groupNames = List(group1Name, group2Name)
       val List(group1Id, _) = groupNames.map { groupName =>
@@ -241,10 +185,8 @@ class GroupsServiceImplSpec extends RpcSpecBase with DIDUtil {
     }
 
     "be able to add and remove at the same time" in {
-      val keyPair = EC.generateKeyPair()
-      val publicKey = keyPair.publicKey
-      val did = generateDid(publicKey)
-      val issuerId = createIssuer(publicKey, did)
+      val (keyPair, did) = createDid
+      val issuerId = createIssuer(keyPair.publicKey, did)
 
       val groupNames = List(group1Name, group2Name)
       val List(group1Id, _) = groupNames.map { groupName =>
@@ -289,14 +231,10 @@ class GroupsServiceImplSpec extends RpcSpecBase with DIDUtil {
     }
 
     "reject requests with non-matching group issuer" in {
-      val keyPair1 = EC.generateKeyPair()
-      val publicKey1 = keyPair1.publicKey
-      val did1 = generateDid(publicKey1)
-      val issuerId1 = createIssuer(publicKey1, did1)
-      val keyPair2 = EC.generateKeyPair()
-      val publicKey2 = keyPair2.publicKey
-      val did2 = generateDid(publicKey2)
-      val issuerId2 = createIssuer(publicKey2, did2)
+      val (keyPair1, did1) = createDid
+      val issuerId1 = createIssuer(keyPair1.publicKey, did1)
+      val (keyPair2, did2) = createDid
+      val issuerId2 = createIssuer(keyPair2.publicKey, did2)
 
       val group1Id =
         issuerGroupsRepository.create(issuerId1, group1Name).value.futureValue.toOption.value.id.toString
@@ -314,14 +252,10 @@ class GroupsServiceImplSpec extends RpcSpecBase with DIDUtil {
     }
 
     "reject requests with non-matching contact issuer" in {
-      val keyPair1 = EC.generateKeyPair()
-      val publicKey1 = keyPair1.publicKey
-      val did1 = generateDid(publicKey1)
-      val issuerId1 = createIssuer(publicKey1, did1)
-      val keyPair2 = EC.generateKeyPair()
-      val publicKey2 = keyPair2.publicKey
-      val did2 = generateDid(publicKey2)
-      val issuerId2 = createIssuer(publicKey2, did2)
+      val (keyPair1, did1) = createDid
+      val issuerId1 = createIssuer(keyPair1.publicKey, did1)
+      val (keyPair2, did2) = createDid
+      val issuerId2 = createIssuer(keyPair2.publicKey, did2)
 
       val group1Id =
         issuerGroupsRepository.create(issuerId1, group1Name).value.futureValue.toOption.value.id.toString
@@ -371,5 +305,79 @@ class GroupsServiceImplSpec extends RpcSpecBase with DIDUtil {
     ParticipantsDAO.insert(participant).transact(database).unsafeRunSync()
 
     id
+  }
+
+  private def testCreateGroup(keyPair: ECKeyPair, did: DID): Assertion = {
+    val issuerId = createIssuer(keyPair.publicKey, did)
+    val newGroup = IssuerGroup.Name("IOHK University")
+    val request = console_api.CreateGroupRequest(newGroup.value)
+    val rpcRequest = SignedRpcRequest.generate(keyPair, did, request)
+
+    usingApiAs(rpcRequest) { serviceStub =>
+      val response = serviceStub.createGroup(request)
+
+      // the data is included
+      response.group.value.name must be(newGroup.value)
+      response.group.value.id mustNot be(empty)
+      response.group.value.createdAt.value.toInstant.toEpochMilli > 0 must be(true)
+      response.group.value.numberOfContacts must be(0)
+
+      // the new group needs to exist
+      val groups = issuerGroupsRepository.getBy(issuerId, None).value.futureValue.toOption.value
+      groups.map(_.value.name) must contain(newGroup)
+    }
+  }
+
+  private def testReturnAvailableGroups(keyPair: ECKeyPair, did: DID): Assertion = {
+    val issuerId = createIssuer(keyPair.publicKey, did)
+
+    val groups = List("Blockchain 2020", "Finance 2020").map(IssuerGroup.Name.apply)
+    groups.foreach { group =>
+      issuerGroupsRepository.create(issuerId, group).value.futureValue.toOption.value
+    }
+
+    val request = console_api.GetGroupsRequest()
+    val rpcRequest = SignedRpcRequest.generate(keyPair, did, request)
+
+    usingApiAs(rpcRequest) { serviceStub =>
+      val result = serviceStub.getGroups(request)
+      result.groups.map(_.name).map(IssuerGroup.Name.apply) must be(groups)
+    }
+  }
+
+  private def testAddingNewContacts(
+      group1Name: IssuerGroup.Name,
+      group2Name: IssuerGroup.Name,
+      keyPair: ECKeyPair,
+      did: DID
+  ): Assertion = {
+    val issuerId = createIssuer(keyPair.publicKey, did)
+
+    val groupNames = List(group1Name, group2Name)
+    val List(group1Id, _) = groupNames.map { groupName =>
+      issuerGroupsRepository.create(issuerId, groupName).value.futureValue.toOption.value.id.toString
+    }
+    val contact = createRandomContact(issuerId)
+
+    val request1 =
+      console_api.UpdateGroupRequest(group1Id, Seq(contact.contactId.toString), Seq())
+    val rpcRequest1 = SignedRpcRequest.generate(keyPair, did, request1)
+
+    usingApiAs(rpcRequest1) { serviceStub =>
+      serviceStub.updateGroup(request1)
+      listContacts(issuerId, group1Name) must be(List(contact))
+      listContacts(issuerId, group2Name) must be(List())
+    }
+
+    // Adding the same contact twice should have no effect
+    val request2 =
+      console_api.UpdateGroupRequest(group1Id, Seq(contact.contactId.toString), Seq())
+    val rpcRequest2 = SignedRpcRequest.generate(keyPair, did, request2)
+
+    usingApiAs(rpcRequest2) { serviceStub =>
+      serviceStub.updateGroup(request2)
+      listContacts(issuerId, group1Name) must be(List(contact))
+      listContacts(issuerId, group2Name) must be(List())
+    }
   }
 }
