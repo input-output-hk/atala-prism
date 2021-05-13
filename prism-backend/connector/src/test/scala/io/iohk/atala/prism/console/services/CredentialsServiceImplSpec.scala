@@ -5,7 +5,7 @@ import io.circe
 import io.circe.Json
 import io.circe.syntax._
 import io.grpc.{ServerServiceDefinition, StatusRuntimeException}
-import io.iohk.atala.prism.{DIDGenerator, RpcSpecBase}
+import io.iohk.atala.prism.{DIDUtil, RpcSpecBase}
 import io.iohk.atala.prism.auth.SignedRpcRequest
 import io.iohk.atala.prism.auth.grpc.GrpcAuthenticationHeaderParser
 import io.iohk.atala.prism.connector.repositories.{ParticipantsRepository, RequestNoncesRepository}
@@ -32,7 +32,7 @@ import org.scalatest.OptionValues._
 
 import scala.concurrent.Future
 
-class CredentialsServiceImplSpec extends RpcSpecBase with MockitoSugar with ResetMocksAfterEachTest with DIDGenerator {
+class CredentialsServiceImplSpec extends RpcSpecBase with MockitoSugar with ResetMocksAfterEachTest with DIDUtil {
 
   private val usingApiAs = usingApiAsConstructor(new CredentialsServiceGrpc.CredentialsServiceBlockingStub(_, _))
 

@@ -18,11 +18,11 @@ import io.iohk.atala.prism.crypto.{EC, ECKeyPair, SHA256Digest}
 import io.iohk.atala.prism.identity.DID
 import io.iohk.atala.prism.models.{Ledger, ParticipantId, TransactionId, TransactionInfo}
 import io.iohk.atala.prism.protos.console_api
-import io.iohk.atala.prism.{DIDGenerator, RpcSpecBase}
+import io.iohk.atala.prism.{DIDUtil, RpcSpecBase}
 import org.mockito.MockitoSugar._
 import org.scalatest.OptionValues._
 
-class CredentialsStoreServiceSpec extends RpcSpecBase with DIDGenerator {
+class CredentialsStoreServiceSpec extends RpcSpecBase with DIDUtil {
   val usingApiAs = usingApiAsConstructor(
     new console_api.CredentialsStoreServiceGrpc.CredentialsStoreServiceBlockingStub(_, _)
   )

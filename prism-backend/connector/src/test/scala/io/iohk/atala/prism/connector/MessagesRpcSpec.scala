@@ -9,7 +9,8 @@ import io.iohk.atala.prism.auth.SignedRpcRequest
 import io.iohk.atala.prism.auth.grpc.SignedRequestsHelper
 import io.iohk.atala.prism.connector.model.MessageId
 import io.iohk.atala.prism.connector.repositories.daos.MessagesDAO
-import io.iohk.atala.prism.crypto.EC
+import io.iohk.atala.prism.crypto.{EC, ECKeyPair, ECPublicKey}
+import io.iohk.atala.prism.identity.DID
 import io.iohk.atala.prism.models.ParticipantId
 import io.iohk.atala.prism.protos.connector_api
 import io.iohk.atala.prism.protos.connector_models.MessageToSendByConnectionToken
@@ -19,6 +20,7 @@ import org.mockito.Mockito
 import org.mockito.MockitoSugar._
 import org.mockito.captor.ArgCaptor
 import org.mockito.verification.VerificationWithTimeout
+import org.scalatest.Assertion
 
 import java.util.UUID
 
@@ -30,25 +32,14 @@ class MessagesRpcSpec extends ConnectorRpcSpecBase {
       val keyPair = EC.generateKeyPair()
       val publicKey = keyPair.publicKey
       val did = generateDid(publicKey)
+      testSendMessage(publicKey, keyPair, did)
+    }
 
-      val issuerId = createIssuer("Issuer", Some(publicKey), Some(did))
-      val holderId = createHolder("Holder")
-      val connectionId = createConnection(issuerId, holderId)
-      val messageId = MessageId.random().uuid.toString
-      val request = connector_api.SendMessageRequest(
-        connectionId = connectionId.toString,
-        message = ByteString.copyFrom("test".getBytes),
-        id = messageId
-      )
-      val rpcRequest = SignedRpcRequest.generate(keyPair, did, request)
-
-      usingApiAs(rpcRequest) { blockingStub =>
-        blockingStub.sendMessage(request)
-        val msg =
-          MessagesDAO.getMessagesPaginated(holderId, 1, None).transact(database).unsafeToFuture().futureValue.head
-        msg.connection mustBe connectionId
-        msg.id.uuid.toString mustBe messageId
-      }
+    "insert message into database using unpublished did auth" in {
+      val keyPair = EC.generateKeyPair()
+      val publicKey = keyPair.publicKey
+      val did = DID.createUnpublishedDID(publicKey)
+      testSendMessage(publicKey, keyPair, did)
     }
 
     "fail to insert message to database if user provided id is incorrect uuid" in {
@@ -309,6 +300,21 @@ class MessagesRpcSpec extends ConnectorRpcSpecBase {
       }
     }
 
+    "return messages while authenticated by an unpublished did" in {
+      val keys = EC.generateKeyPair()
+      val did = DID.createUnpublishedDID(keys.publicKey)
+      val request = connector_api.GetMessagesPaginatedRequest("", 10)
+      val rpcRequest = SignedRpcRequest.generate(keys, did, request)
+      val issuerId = createIssuer("Issuer", Some(keys.publicKey), Some(did))
+      val messages = createExampleMessages(issuerId)
+
+      usingApiAs(rpcRequest) { blockingStub =>
+        val response = blockingStub.getMessagesPaginated(request)
+        response.messages.map(m => (m.id, m.connectionId)) mustBe
+          messages.take(10).map { case (messageId, connectionId) => (messageId.toString, connectionId.toString) }
+      }
+    }
+
     "return INVALID_ARGUMENT when limit is 0" in {
       val keyPair = EC.generateKeyPair()
       val publicKey = keyPair.publicKey
@@ -376,23 +382,15 @@ class MessagesRpcSpec extends ConnectorRpcSpecBase {
       messageIds
     }
 
-    def asMessageIds(responses: List[connector_api.GetMessageStreamResponse]): Seq[String] = {
-      responses.flatMap(_.message).map(_.id)
-    }
-
     "return existing messages immediately" in {
       val messageIds = generateMessageIds(createParticipant())
-      val getMessageStreamRequest = SignedRpcRequest.generate(keyPair, did, connector_api.GetMessageStreamRequest())
+      testMessagesExisting(keyPair, did, messageIds)
+    }
 
-      usingAsyncApiAs(getMessageStreamRequest) { service =>
-        val streamObserver = mock[StreamObserver[connector_api.GetMessageStreamResponse]]
-        val responseCaptor = ArgCaptor[connector_api.GetMessageStreamResponse]
-
-        service.getMessageStream(getMessageStreamRequest.request, streamObserver)
-
-        verify(streamObserver, eventually.atLeast(messageIds.size)).onNext(responseCaptor.capture)
-        asMessageIds(responseCaptor.values) mustBe messageIds
-      }
+    "return existing messages immediately while authed by unpublished did" in {
+      val messageIds = generateMessageIds(createParticipant())
+      val unpublishedDid = DID.createUnpublishedDID(publicKey)
+      testMessagesExisting(keyPair, unpublishedDid, messageIds)
     }
 
     "return newer messages only" in {
@@ -500,4 +498,43 @@ class MessagesRpcSpec extends ConnectorRpcSpecBase {
       }
     }
   }
+
+  private def testSendMessage(publicKey: ECPublicKey, keyPair: ECKeyPair, did: DID): Assertion = {
+    val issuerId = createIssuer("Issuer", Some(publicKey), Some(did))
+    val holderId = createHolder("Holder")
+    val connectionId = createConnection(issuerId, holderId)
+    val messageId = MessageId.random().uuid.toString
+    val request = connector_api.SendMessageRequest(
+      connectionId = connectionId.toString,
+      message = ByteString.copyFrom("test".getBytes),
+      id = messageId
+    )
+    val rpcRequest = SignedRpcRequest.generate(keyPair, did, request)
+
+    usingApiAs(rpcRequest) { blockingStub =>
+      blockingStub.sendMessage(request)
+      val msg =
+        MessagesDAO.getMessagesPaginated(holderId, 1, None).transact(database).unsafeToFuture().futureValue.head
+      msg.connection mustBe connectionId
+      msg.id.uuid.toString mustBe messageId
+    }
+  }
+
+  private def testMessagesExisting(keyPair: ECKeyPair, did: DID, messageIds: Seq[String]): Assertion = {
+    val getMessageStreamRequest = SignedRpcRequest.generate(keyPair, did, connector_api.GetMessageStreamRequest())
+    usingAsyncApiAs(getMessageStreamRequest) { service =>
+      val streamObserver = mock[StreamObserver[connector_api.GetMessageStreamResponse]]
+      val responseCaptor = ArgCaptor[connector_api.GetMessageStreamResponse]
+
+      service.getMessageStream(getMessageStreamRequest.request, streamObserver)
+
+      verify(streamObserver, eventually.atLeast(messageIds.size)).onNext(responseCaptor.capture)
+      asMessageIds(responseCaptor.values) mustBe messageIds
+    }
+  }
+
+  private def asMessageIds(responses: List[connector_api.GetMessageStreamResponse]): Seq[String] = {
+    responses.flatMap(_.message).map(_.id)
+  }
+
 }

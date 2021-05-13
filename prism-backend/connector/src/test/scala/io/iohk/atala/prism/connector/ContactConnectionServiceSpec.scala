@@ -9,10 +9,10 @@ import io.iohk.atala.prism.console.DataPreparation
 import io.iohk.atala.prism.crypto.EC
 import io.iohk.atala.prism.identity.DID
 import io.iohk.atala.prism.protos.{connector_api, connector_models, console_models}
-import io.iohk.atala.prism.{DIDGenerator, RpcSpecBase}
+import io.iohk.atala.prism.{DIDUtil, RpcSpecBase}
 import org.mockito.MockitoSugar.mock
 
-class ContactConnectionServiceSpec extends RpcSpecBase with DIDGenerator with ConnectorRepositorySpecBase {
+class ContactConnectionServiceSpec extends RpcSpecBase with DIDUtil with ConnectorRepositorySpecBase {
   private val usingApiAs = usingApiAsConstructor(
     new connector_api.ContactConnectionServiceGrpc.ContactConnectionServiceBlockingStub(_, _)
   )

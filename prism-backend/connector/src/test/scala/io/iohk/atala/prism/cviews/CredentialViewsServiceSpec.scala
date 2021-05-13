@@ -10,12 +10,12 @@ import io.iohk.atala.prism.crypto.EC
 import io.iohk.atala.prism.protos.connector_api.GetCurrentUserRequest
 import io.iohk.atala.prism.protos.cviews_api.{CredentialViewsServiceGrpc, GetCredentialViewTemplatesRequest}
 import io.iohk.atala.prism.view.HtmlViewImage.imageBase64
-import io.iohk.atala.prism.{DIDGenerator, RpcSpecBase}
+import io.iohk.atala.prism.{DIDUtil, RpcSpecBase}
 import org.mockito.MockitoSugar._
 
 import java.io.{File, PrintWriter}
 
-class CredentialViewsServiceSpec extends RpcSpecBase with DIDGenerator {
+class CredentialViewsServiceSpec extends RpcSpecBase with DIDUtil {
   private val usingApiAs = usingApiAsConstructor(
     new CredentialViewsServiceGrpc.CredentialViewsServiceBlockingStub(_, _)
   )

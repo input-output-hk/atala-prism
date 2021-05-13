@@ -18,6 +18,7 @@ import io.iohk.atala.prism.protos.{connector_api, node_api, node_models}
 import org.mockito.ArgumentMatchersSugar._
 import org.mockito.IdiomaticMockito._
 import org.mockito.matchers.DefaultValueProvider
+import org.scalatest.Assertion
 import org.scalatest.matchers.must.Matchers._
 import org.scalatest.wordspec.AnyWordSpec
 import org.scalatest.concurrent.ScalaFutures._
@@ -60,12 +61,23 @@ class SignedRequestsAuthenticatorSpec extends AnyWordSpec {
           signature = ECSignature(signedRequest.signature)
         )
 
-      val authenticator = buildAuthenticator(getHeader = () => Some(header))
+      testAuthentication(header)
+    }
 
-      val result = authenticator.authenticated("test", request) { _ =>
-        Future.successful(response)
-      }
-      result.futureValue must be(response)
+    "accept the unpublished did authentication" in {
+      val keys = EC.generateKeyPair()
+      val unpublishedDid = DID.createUnpublishedDID(keys.publicKey)
+      val signedRequest = requestAuthenticator.signConnectorRequest(request.toByteArray, keys.privateKey)
+
+      val header = GrpcAuthenticationHeader
+        .UnpublishedDIDBased(
+          requestNonce = auth.model.RequestNonce(signedRequest.requestNonce.toVector),
+          did = unpublishedDid,
+          "master0",
+          signature = ECSignature(signedRequest.signature)
+        )
+
+      testAuthentication(header)
     }
 
     "reject wrong public key authentication" in {
@@ -421,5 +433,14 @@ class SignedRequestsAuthenticatorSpec extends AnyWordSpec {
     }
 
     new ConnectorAuthenticator(participantsRepository, requestNoncesRepository, customNode, customParser)
+  }
+
+  private def testAuthentication(header: GrpcAuthenticationHeader): Assertion = {
+    val authenticator = buildAuthenticator(getHeader = () => Some(header))
+
+    val result = authenticator.authenticated("test", request) { _ =>
+      Future.successful(response)
+    }
+    result.futureValue must be(response)
   }
 }

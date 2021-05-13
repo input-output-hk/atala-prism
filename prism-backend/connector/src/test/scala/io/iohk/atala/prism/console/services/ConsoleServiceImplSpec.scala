@@ -7,13 +7,15 @@ import io.iohk.atala.prism.connector.repositories.{ParticipantsRepository, Reque
 import io.iohk.atala.prism.console.DataPreparation.{createContact, createIssuer, createIssuerGroup}
 import io.iohk.atala.prism.console.models.IssuerGroup
 import io.iohk.atala.prism.console.repositories.StatisticsRepository
-import io.iohk.atala.prism.crypto.EC
+import io.iohk.atala.prism.crypto.{EC, ECKeyPair}
+import io.iohk.atala.prism.identity.DID
 import io.iohk.atala.prism.protos.console_api
 import io.iohk.atala.prism.protos.console_api.ConsoleServiceGrpc
-import io.iohk.atala.prism.{DIDGenerator, RpcSpecBase}
+import io.iohk.atala.prism.{DIDUtil, RpcSpecBase}
 import org.mockito.MockitoSugar._
+import org.scalatest.Assertion
 
-class ConsoleServiceImplSpec extends RpcSpecBase with DIDGenerator {
+class ConsoleServiceImplSpec extends RpcSpecBase with DIDUtil {
   private val usingApiAs = usingApiAsConstructor(new ConsoleServiceGrpc.ConsoleServiceBlockingStub(_, _))
 
   private lazy val participantsRepository = new ParticipantsRepository(database)
@@ -44,7 +46,26 @@ class ConsoleServiceImplSpec extends RpcSpecBase with DIDGenerator {
       val keyPair = EC.generateKeyPair()
       val publicKey = keyPair.publicKey
       val did = generateDid(publicKey)
-      val issuerId = createIssuer(issuerName, publicKey = Some(publicKey), did = Some(did))
+      testGetStatistics(issuerName, groupName, contactName, keyPair, did)
+    }
+    "work with unpublished did" in {
+      val issuerName = "tokenizer"
+      val groupName = IssuerGroup.Name("Grp 1")
+      val contactName = "Contact 1"
+      val keyPair = EC.generateKeyPair()
+      val publicKey = keyPair.publicKey
+      val did = DID.createUnpublishedDID(publicKey)
+      testGetStatistics(issuerName, groupName, contactName, keyPair, did)
+    }
+
+    def testGetStatistics(
+        issuerName: String,
+        groupName: IssuerGroup.Name,
+        contactName: String,
+        keyPair: ECKeyPair,
+        did: DID
+    ): Assertion = {
+      val issuerId = createIssuer(issuerName, publicKey = Some(keyPair.publicKey), did = Some(did))
       createIssuerGroup(issuerId, groupName)
       val _ = createContact(issuerId, contactName, groupName)
       val request = console_api.GetStatisticsRequest()

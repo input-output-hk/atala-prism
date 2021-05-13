@@ -1,7 +1,7 @@
 package io.iohk.atala.prism.management.console.services
 
 import io.circe.{Json, JsonObject, parser}
-import io.iohk.atala.prism.DIDGenerator
+import io.iohk.atala.prism.DIDUtil
 import io.iohk.atala.prism.auth.SignedRpcRequest
 import io.iohk.atala.prism.crypto.EC
 import io.iohk.atala.prism.management.console.DataPreparation._
@@ -16,7 +16,7 @@ import java.util.UUID
 import io.circe.syntax.EncoderOps
 
 //sbt "project management-console" "testOnly *CredentialIssuanceServiceImplSpec"
-class CredentialIssuanceServiceImplSpec extends ManagementConsoleRpcSpecBase with DIDGenerator {
+class CredentialIssuanceServiceImplSpec extends ManagementConsoleRpcSpecBase with DIDUtil {
 
   "createCredentialIssuance and getCredentialIssuance" should {
     val keyPair = EC.generateKeyPair()

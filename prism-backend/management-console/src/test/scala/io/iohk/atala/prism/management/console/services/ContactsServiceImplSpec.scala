@@ -2,7 +2,7 @@ package io.iohk.atala.prism.management.console.services
 
 import io.circe.{Json, parser}
 import io.grpc.StatusRuntimeException
-import io.iohk.atala.prism.DIDGenerator
+import io.iohk.atala.prism.DIDUtil
 import io.iohk.atala.prism.auth.SignedRpcRequest
 import io.iohk.atala.prism.crypto.EC
 import io.iohk.atala.prism.management.console.DataPreparation._
@@ -22,7 +22,7 @@ import java.util.UUID
 import scala.concurrent.Future
 import scala.util.Try
 
-class ContactsServiceImplSpec extends ManagementConsoleRpcSpecBase with DIDGenerator with ManagementConsoleTestUtil {
+class ContactsServiceImplSpec extends ManagementConsoleRpcSpecBase with DIDUtil with ManagementConsoleTestUtil {
   private val connectionMissing = connector_models.ContactConnection(
     connectionStatus = console_models.ContactConnectionStatus.STATUS_CONNECTION_MISSING
   )

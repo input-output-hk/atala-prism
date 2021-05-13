@@ -2,7 +2,7 @@ package io.iohk.atala.prism.management.console.services
 
 import com.google.protobuf.ByteString
 import io.grpc.StatusRuntimeException
-import io.iohk.atala.prism.DIDGenerator
+import io.iohk.atala.prism.DIDUtil
 import io.iohk.atala.prism.auth.SignedRpcRequest
 import io.iohk.atala.prism.credentials.CredentialBatchId
 import io.iohk.atala.prism.crypto.MerkleTree.{MerkleInclusionProof, MerkleRoot}
@@ -36,7 +36,7 @@ import com.google.protobuf.timestamp.Timestamp
 
 import scala.concurrent.Future
 
-class CredentialsServiceImplSpec extends ManagementConsoleRpcSpecBase with DIDGenerator {
+class CredentialsServiceImplSpec extends ManagementConsoleRpcSpecBase with DIDUtil {
 
   val keyPair = EC.generateKeyPair()
   val did = generateDid(keyPair.publicKey)

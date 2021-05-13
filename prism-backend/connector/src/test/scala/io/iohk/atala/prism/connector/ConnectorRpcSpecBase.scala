@@ -21,13 +21,13 @@ import io.iohk.atala.prism.crypto.ECPublicKey
 import io.iohk.atala.prism.identity.DID
 import io.iohk.atala.prism.models.{Ledger, ParticipantId, TransactionId}
 import io.iohk.atala.prism.protos.connector_api
-import io.iohk.atala.prism.{ApiTestHelper, DIDGenerator, RpcSpecBase}
+import io.iohk.atala.prism.{ApiTestHelper, DIDUtil, RpcSpecBase}
 import org.mockito.MockitoSugar._
 
 import java.time.Instant
 import java.util.UUID
 
-class ConnectorRpcSpecBase extends RpcSpecBase with DIDGenerator {
+class ConnectorRpcSpecBase extends RpcSpecBase with DIDUtil {
   override def services =
     Seq(
       connector_api.ConnectorServiceGrpc

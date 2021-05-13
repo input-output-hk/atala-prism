@@ -17,11 +17,11 @@ import io.iohk.atala.prism.identity.DID
 import io.iohk.atala.prism.models.{ParticipantId, TransactionId}
 import io.iohk.atala.prism.protos.console_api
 import io.iohk.atala.prism.utils.syntax.TimestampOps
-import io.iohk.atala.prism.{DIDGenerator, RpcSpecBase}
+import io.iohk.atala.prism.{DIDUtil, RpcSpecBase}
 import org.mockito.MockitoSugar._
 import org.scalatest.OptionValues._
 
-class GroupsServiceImplSpec extends RpcSpecBase with DIDGenerator {
+class GroupsServiceImplSpec extends RpcSpecBase with DIDUtil {
   private val usingApiAs = usingApiAsConstructor(new console_api.GroupsServiceGrpc.GroupsServiceBlockingStub(_, _))
 
   private lazy val issuerGroupsRepository = new GroupsRepository(database)

@@ -3,7 +3,7 @@ package io.iohk.atala.prism.management.console.services
 import com.google.protobuf.ByteString
 import io.grpc.{Status, StatusRuntimeException}
 import cats.syntax.option._
-import io.iohk.atala.prism.DIDGenerator
+import io.iohk.atala.prism.DIDUtil
 import io.iohk.atala.prism.auth.SignedRpcRequest
 import io.iohk.atala.prism.crypto.{EC, SHA256Digest}
 import io.iohk.atala.prism.identity.DID
@@ -22,7 +22,7 @@ import java.time.Instant
 import scala.concurrent.Future
 import scala.util.Try
 
-class ConsoleServiceImplSpec extends ManagementConsoleRpcSpecBase with DIDGenerator {
+class ConsoleServiceImplSpec extends ManagementConsoleRpcSpecBase with DIDUtil {
 
   "health check" should {
     "respond" in {

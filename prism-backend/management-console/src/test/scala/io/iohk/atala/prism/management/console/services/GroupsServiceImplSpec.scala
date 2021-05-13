@@ -19,13 +19,13 @@ import io.iohk.atala.prism.management.console.repositories.{
 }
 import io.iohk.atala.prism.management.console.{DataPreparation, ManagementConsoleAuthenticator}
 import io.iohk.atala.prism.protos.console_api
-import io.iohk.atala.prism.{DIDGenerator, RpcSpecBase}
+import io.iohk.atala.prism.{DIDUtil, RpcSpecBase}
 import org.mockito.MockitoSugar._
 import org.scalatest.OptionValues._
 
 import java.util.UUID
 
-class GroupsServiceImplSpec extends RpcSpecBase with DIDGenerator {
+class GroupsServiceImplSpec extends RpcSpecBase with DIDUtil {
   private val usingApiAs = usingApiAsConstructor(new console_api.GroupsServiceGrpc.GroupsServiceBlockingStub(_, _))
 
   private lazy val institutionGroupsRepository = new InstitutionGroupsRepository(database)

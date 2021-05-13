@@ -3,7 +3,7 @@ package io.iohk.atala.prism.management.console.services
 import java.util.UUID
 import io.grpc.StatusRuntimeException
 import org.scalatest.OptionValues
-import io.iohk.atala.prism.DIDGenerator
+import io.iohk.atala.prism.DIDUtil
 import io.iohk.atala.prism.auth.SignedRpcRequest
 import io.iohk.atala.prism.crypto.EC
 import io.iohk.atala.prism.management.console.ManagementConsoleRpcSpecBase
@@ -15,7 +15,7 @@ import io.iohk.atala.prism.management.console.models.{
   CredentialTypeState
 }
 
-class CredentialTypesServiceImplSpec extends ManagementConsoleRpcSpecBase with DIDGenerator with OptionValues {
+class CredentialTypesServiceImplSpec extends ManagementConsoleRpcSpecBase with DIDUtil with OptionValues {
 
   "CredentialTypesServiceImpl" should {
 

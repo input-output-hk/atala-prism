@@ -16,10 +16,10 @@ import io.iohk.atala.prism.management.console.repositories.{
 }
 import io.iohk.atala.prism.management.console.{DataPreparation, ManagementConsoleAuthenticator}
 import io.iohk.atala.prism.protos.console_api
-import io.iohk.atala.prism.{DIDGenerator, RpcSpecBase}
+import io.iohk.atala.prism.{DIDUtil, RpcSpecBase}
 import org.mockito.MockitoSugar._
 
-class CredentialsStoreServiceImplSpec extends RpcSpecBase with DIDGenerator {
+class CredentialsStoreServiceImplSpec extends RpcSpecBase with DIDUtil {
   val usingApiAs = usingApiAsConstructor(
     new console_api.CredentialsStoreServiceGrpc.CredentialsStoreServiceBlockingStub(_, _)
   )

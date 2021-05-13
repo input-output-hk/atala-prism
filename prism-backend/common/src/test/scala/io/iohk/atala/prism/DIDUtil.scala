@@ -1,17 +1,19 @@
 package io.iohk.atala.prism
 
 import com.google.protobuf.ByteString
-import io.iohk.atala.prism.crypto.{ECConfig, ECPublicKey, SHA256Digest}
+import io.iohk.atala.prism.auth.SignedRpcRequest
+import io.iohk.atala.prism.crypto.{EC, ECConfig, ECPublicKey, SHA256Digest}
 import io.iohk.atala.prism.identity.DID
 import io.iohk.atala.prism.protos.node_api.{GetDidDocumentRequest, GetDidDocumentResponse}
 import io.iohk.atala.prism.protos.node_api.NodeServiceGrpc.NodeService
 import io.iohk.atala.prism.protos.node_models
 import io.iohk.atala.prism.protos.node_models.DIDData
 import org.mockito.IdiomaticMockito._
+import scalapb.GeneratedMessage
 
 import scala.concurrent.Future
 
-trait DIDGenerator {
+trait DIDUtil {
   protected def nodeMock: NodeService
 
   private def publicKeyToProto(key: ECPublicKey): node_models.ECKeyData = {
@@ -56,4 +58,17 @@ trait DIDGenerator {
 
     did
   }
+
+  def prepareSignedRequest[R <: GeneratedMessage](request: R): (ECPublicKey, SignedRpcRequest[R]) = {
+    val keys = EC.generateKeyPair()
+    val did = generateDid(keys.publicKey)
+    (keys.publicKey, SignedRpcRequest.generate(keys, did, request))
+  }
+
+  def prepareSignedUnpublishedDidRequest[R <: GeneratedMessage](request: R): (ECPublicKey, SignedRpcRequest[R]) = {
+    val keys = EC.generateKeyPair()
+    val did = DID.createUnpublishedDID(keys.publicKey)
+    (keys.publicKey, SignedRpcRequest.generate(keys, did, request))
+  }
+
 }
