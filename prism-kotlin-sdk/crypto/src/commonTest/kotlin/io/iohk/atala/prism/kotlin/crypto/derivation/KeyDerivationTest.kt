@@ -108,4 +108,14 @@ class KeyDerivationTest {
             }
         }
     }
+
+    @Test
+    fun testExtendedKeyPathsMatch() {
+        val derivationPath = "m/0'/0'/1'"
+        val mnemonicCode = KeyDerivation.randomMnemonicCode()
+        val seed = KeyDerivation.binarySeed(mnemonicCode, "my_secret_password")
+        val path = DerivationPath.fromPath(derivationPath)
+        val extendedKey = KeyDerivation.deriveKey(seed, path)
+        assertEquals(DerivationPath.fromPath(derivationPath), extendedKey.path())
+    }
 }

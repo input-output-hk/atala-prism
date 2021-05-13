@@ -49,4 +49,12 @@ class DerivationAxis internal constructor(val i: Int) {
         } else {
             i.toString()
         }
+
+    override fun hashCode(): Int {
+        return i.hashCode()
+    }
+
+    override fun equals(other: Any?): Boolean {
+        return other is DerivationAxis && number == other.number
+    }
 }
