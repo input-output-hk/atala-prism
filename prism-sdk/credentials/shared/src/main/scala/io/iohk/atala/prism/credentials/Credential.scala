@@ -13,8 +13,7 @@ abstract class Credential {
   def content: CredentialContent
   def signature: Option[ECSignature]
 
-  def isSigned: Boolean = signature.isDefined
-  def isUnverifiable: Boolean = signature.isEmpty
+  def isVerifiable: Boolean = signature.isDefined
 
   def canonicalForm: String
   def hash: SHA256Digest = SHA256Digest.compute(canonicalForm.getBytes)

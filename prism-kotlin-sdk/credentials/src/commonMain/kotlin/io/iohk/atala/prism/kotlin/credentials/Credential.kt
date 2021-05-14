@@ -16,9 +16,7 @@ abstract class Credential {
 
     abstract val canonicalForm: String
 
-    fun isSigned(): Boolean = signature != null
-
-    fun isUnverifiable(): Boolean = signature == null
+    fun isVerifiable(): Boolean = signature != null
 
     fun hash(): SHA256Digest = SHA256Digest.compute(canonicalForm.encodeToByteArray().toList())
 

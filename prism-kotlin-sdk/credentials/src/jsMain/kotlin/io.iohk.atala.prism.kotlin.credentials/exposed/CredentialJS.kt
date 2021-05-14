@@ -17,11 +17,8 @@ abstract class CredentialJS internal constructor(internal val credential: Creden
 
     abstract val canonicalForm: String
 
-    @JsName("isSigned")
-    fun isSigned(): Boolean = credential.isSigned()
-
-    @JsName("isUnverifiable")
-    fun isUnverifiable(): Boolean = credential.isUnverifiable()
+    @JsName("isVerifiable")
+    fun isVerifiable(): Boolean = credential.isVerifiable()
 
     @JsName("hash")
     fun hash(): String = credential.hash().hexValue()
