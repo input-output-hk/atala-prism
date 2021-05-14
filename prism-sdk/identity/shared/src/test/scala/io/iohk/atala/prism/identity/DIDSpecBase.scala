@@ -136,7 +136,7 @@ abstract class DIDSpecBase(val ec: ECTrait) extends AnyWordSpec {
     }
   }
 
-  "stripPrismPrefix" should {
+  "suffix" should {
     "strip the did:prism: prefix" in {
       val input = DID.buildPrismDID("aabbccddee")
       val expected = "aabbccddee"

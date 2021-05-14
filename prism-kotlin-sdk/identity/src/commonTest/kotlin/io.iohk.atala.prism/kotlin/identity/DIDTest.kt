@@ -139,7 +139,7 @@ class DIDTest {
     }
 
     @Test
-    fun testStripPrismPrefix() {
+    fun testSuffix() {
         val input = DID.buildPrismDID("aabbccddee")
         val expected = "aabbccddee"
 

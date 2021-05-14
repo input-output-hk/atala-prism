@@ -22,20 +22,18 @@ final class DID private (val value: String) {
   def getFormat: DIDFormat = {
     if (isLongForm) {
       DIDFormat.LongForm(
-        stripPrismPrefix.takeWhile(_ != ':'),
-        stripPrismPrefix.dropWhile(_ != ':').tail
+        suffix.value.takeWhile(_ != ':'),
+        suffix.value.dropWhile(_ != ':').tail
       )
     } else if (isCanonicalForm) {
-      DIDFormat.Canonical(stripPrismPrefix.takeWhile(_ != ':'))
+      DIDFormat.Canonical(suffix.value.takeWhile(_ != ':'))
     } else {
       DIDFormat.Unknown
     }
   }
 
-  private def stripPrismPrefix: String = value.stripPrefix(prismPrefix)
-
   // the method assumes that the DID is a PRISM DID
-  def suffix: DIDSuffix = DIDSuffix.unsafeFromString(stripPrismPrefix)
+  def suffix: DIDSuffix = DIDSuffix.unsafeFromString(value.stripPrefix(prismPrefix))
 
   def getCanonicalSuffix: Option[DIDSuffix] = {
     getFormat match {

@@ -70,19 +70,17 @@ class DID private constructor(val value: String) {
         when {
             isLongForm() -> {
                 LongForm(
-                    stripPrismPrefix().takeWhile { it != ':' },
-                    stripPrismPrefix().dropWhile { it != ':' }.removePrefix(":")
+                    suffix.value.takeWhile { it != ':' },
+                    suffix.value.dropWhile { it != ':' }.removePrefix(":")
                 )
             }
-            isCanonicalForm() -> Canonical(stripPrismPrefix().takeWhile { it != ':' })
+            isCanonicalForm() -> Canonical(suffix.value.takeWhile { it != ':' })
             else -> Unknown
         }
 
-    fun stripPrismPrefix(): String = value.removePrefix(prismPrefix)
-
     // the method assumes that the DID is a PRISM DID
     val suffix: DIDSuffix
-        get() = DIDSuffix.fromString(stripPrismPrefix())
+        get() = DIDSuffix.fromString(value.removePrefix(prismPrefix))
 
     fun getCanonicalSuffix(): DIDSuffix? =
         when (val format = getFormat()) {

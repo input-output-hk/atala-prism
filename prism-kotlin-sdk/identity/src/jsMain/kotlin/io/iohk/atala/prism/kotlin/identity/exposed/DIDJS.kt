@@ -44,9 +44,7 @@ class DIDJS internal constructor(internal val did: DID) {
         is Unknown -> UnknownJS
     }
 
-    @JsName("stripPrismPrefix")
-    fun stripPrismPrefix(): String = did.stripPrismPrefix()
-
+    @JsName("suffix")
     val suffix: DIDSuffixJS = DIDSuffixJS(did.suffix)
 
     @JsName("getCanonicalSuffix")

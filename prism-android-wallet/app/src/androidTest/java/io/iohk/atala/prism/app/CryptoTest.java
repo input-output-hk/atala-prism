@@ -96,7 +96,7 @@ public class CryptoTest {
         assertFalse(did.isCanonicalForm());
         did.getSuffix();
         did.getCanonicalSuffix();
-        assertEquals("did:prism:" + did.stripPrismPrefix(), did.getValue());
+        assertEquals("did:prism:" + did.suffix, did.getValue());
     }
 
     @Test
