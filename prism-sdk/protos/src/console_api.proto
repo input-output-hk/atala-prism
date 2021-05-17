@@ -304,7 +304,7 @@ message GetContactsRequest {
   // Possible ways to filter the results from GetContactsRequest.
   message FilterBy {
     string group_name = 1; // If provided, it only gets the contacts that belong to this group.
-    Date created_by = 2; // If provided, the contacts should have been created in the given date.
+    Date created_at = 2; // If provided, the contacts should have been created in the given date.
     string name = 3; // If provided, the contacts should partially match the given name.
     string external_id = 4; // If provided, the contacts should partially match the given externalId.
   }

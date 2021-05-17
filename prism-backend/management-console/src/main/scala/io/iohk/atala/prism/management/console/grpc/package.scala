@@ -261,7 +261,7 @@ package object grpc {
       val scrollIdT = Contact.Id.optional(request.scrollId)
       val createdAtT = Try {
         request.filterBy
-          .flatMap(_.createdBy)
+          .flatMap(_.createdAt)
           .map(proto2DateTransformer.transform)
       }
 
