@@ -77,6 +77,7 @@ object ManagementConsoleApp extends IOApp {
       receivedCredentialsRepository = new ReceivedCredentialsRepository(tx)
       institutionGroupsRepository = new InstitutionGroupsRepository(tx)
       credentialIssuancesRepository = new CredentialIssuancesRepository(tx)
+      credentialTypeRepository = new CredentialTypeRepository(tx)
 
       authenticator = new ManagementConsoleAuthenticator(
         participantsRepository,
@@ -102,6 +103,7 @@ object ManagementConsoleApp extends IOApp {
         credentialIssuancesRepository,
         authenticator
       )
+      credentialTypesService = new CredentialTypesServiceImpl(credentialTypeRepository, authenticator)
 
       // gRPC server
       grpcServer <- GrpcUtils.createGrpcServer[IO](
@@ -114,7 +116,8 @@ object ManagementConsoleApp extends IOApp {
         console_api.CredentialsServiceGrpc.bindService(credentialsService, ec),
         console_api.GroupsServiceGrpc.bindService(groupsService, ec),
         console_api.CredentialsStoreServiceGrpc.bindService(credentialsStoreService, ec),
-        console_api.ConsoleServiceGrpc.bindService(consoleService, ec)
+        console_api.ConsoleServiceGrpc.bindService(consoleService, ec),
+        console_api.CredentialTypesServiceGrpc.bindService(credentialTypesService, ec)
       )
     } yield grpcServer
   }
