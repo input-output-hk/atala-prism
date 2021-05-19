@@ -3,16 +3,16 @@
 .CredentialMainContent {
   display: flex;
   width: 100%;
-  padding: 1em;
+  padding: 0 1em;
   flex-direction: column;
   .WizardContentContainer {
     display: flex;
     flex-direction: column;
     justify-content: flex-start;
     width: 100%;
-    position: relative;
-    max-height: 75vh;
+    height: calc(100vh - 250px);
     overflow-y: auto;
+    position: relative;
   }
   .CredentialContainerSide {
     width: 10%;

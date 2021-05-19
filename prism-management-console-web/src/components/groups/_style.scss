@@ -20,7 +20,8 @@
 
 .Groups {
   .GroupContentContainer {
-    max-height: 70vh;
+    height: calc(100vh - 220px);
+    margin-top: 1em;
     overflow-y: auto;
   }
 }

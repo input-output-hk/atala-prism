@@ -3,13 +3,13 @@
 .ManualImportWrapper {
   display: flex;
   flex-direction: column;
-  max-height:75vh;
+  height: calc(100vh - 250px);
   overflow-y: auto;
   .ContentHeader {
-    padding: 1em 2em;
+    padding: 0 2em;
     display: block !important;
     .Options {
-      margin-top: 1em;
+      margin: 1em 0;
       display: flex;
       justify-content: space-between;
       align-items: center;

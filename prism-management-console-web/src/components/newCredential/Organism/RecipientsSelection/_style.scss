@@ -10,16 +10,11 @@
 }
 
 .RecipientsSelection {
-  max-height: 75vh;
-  overflow-y: auto;
   .ant-tabs {
     height: 100%;
   }
   .ant-tabs-content {
     height: calc(100% - 6.5em);
-  }
-  .groupsTableContainer {
-    height: 100%;
   }
   .GroupTableContainer {
     height: 100%;

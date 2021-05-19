@@ -65,7 +65,11 @@ const NewCredential = ({
             />
           ]}
         </div>
-        <div className="WizardContentContainer">{renderStep()}</div>
+        <div
+          className={currentStep !== IMPORT_CREDENTIAL_DATA_STEP ? 'WizardContentContainer' : ''}
+        >
+          {renderStep()}
+        </div>
       </div>
     </React.Fragment>
   );

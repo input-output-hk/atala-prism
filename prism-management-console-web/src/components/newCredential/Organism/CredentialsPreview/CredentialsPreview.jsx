@@ -15,7 +15,7 @@ const CredentialsPreview = ({ credentialViews, groups, subjects }) => {
         <div className="Divider" />
         <div className="RecipientsContainer">
           <h3>{t('newCredential.credentialsPreview.title')}</h3>
-          <h4>{t('newCredential.credentialsPreview.subtitle')}</h4>
+          <h4>{t('newCredential.subtitle')}</h4>
           <RecipientsList recipients={groups.concat(subjects)} />
         </div>
       </div>
