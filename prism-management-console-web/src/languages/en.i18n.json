@@ -22,7 +22,7 @@
     "title": "You don't have {{model}} yet",
     "subtitle": "",
     "subtitleWithButton": "You can add them by clicking the button below",
-    "filterTitle": "No {{model}} match these filters"
+    "filterTitle": "No {{model}} match this criteria"
   },
   "generic": {
     "underConstruction": "Under construction",
@@ -50,7 +50,7 @@
     "filters": {
       "identityNumber": "Identity Number",
       "search": "Search",
-      "status": "Status"
+      "status": "Contact Status"
     },
     "buttons": {
       "import": "Add New"
