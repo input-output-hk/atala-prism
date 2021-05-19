@@ -426,6 +426,11 @@
 "verifyid_scanfront_button" = "Take a picture";
 "verifyid_scanback_back" = "Back of National ID";
 "verifyid_scanback_helper" = "Position the back of your\nID in the frame.";
+"verifyid_selfie_step" = "Step 2";
+"verifyid_selfie_title" = "Take a Selfie";
+"verifyid_selfie_desc" = "We need you to take a Selfie to validate your identity, follow this instructions:";
+"verifyid_selfie_helper_title" = "Position Your Face";
+"verifyid_selfie_helper" = "When your are ready, click on\nTake a picture and make sure the\npicture is focused.";
 "verifyid_results_step" = "Step 3";
 "verifyid_results_title" = "Confirm your data";
 "verifyid_results_desc" = "Check that the scanned information is correct.";

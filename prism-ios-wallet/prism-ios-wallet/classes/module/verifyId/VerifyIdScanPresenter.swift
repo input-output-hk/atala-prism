@@ -50,6 +50,7 @@ class VerifyIdScanPresenter: BasePresenter {
     var kycToken: String?
     var contact: Contact?
     var selfieImg: UIImage?
+    var isSelfie = false
 
     override func viewDidAppear() {
         super.viewDidAppear()
@@ -124,9 +125,11 @@ class VerifyIdScanPresenter: BasePresenter {
         ipLivenessSetupResult = nil
         livenessString = nil
         faceCapturedImage = nil
-        self.idOptions.cardSide = CardSide.Front
+        idOptions.cardSide = CardSide.Front
         viewImpl?.toogleTitle(isBack: false)
         detailedIsResultDone = false
+        isSelfie = false
+
         self.createInstance()
     }
 
@@ -167,10 +170,14 @@ class VerifyIdScanPresenter: BasePresenter {
     func scanTapped() {
         _ = AcuantCommon.Credential.getToken()
 
-        if self.idOptions.cardSide != CardSide.Back {
-            self.resetData()
+        if isSelfie {
+            self.getIdDataAndStartFace()
+        } else {
+            if self.idOptions.cardSide != CardSide.Back {
+                self.resetData()
+            }
+            self.showDocumentCaptureCamera()
         }
-        self.showDocumentCaptureCamera()
     }
 }
 
@@ -274,11 +281,12 @@ extension VerifyIdScanPresenter: UploadImageDelegate {
                         self.idOptions.cardSide = CardSide.Back
                         self.viewImpl?.toogleTitle(isBack: true)
                     } else {
-                        self.getIdDataAndStartFace()
+                        self.isSelfie = true
+                        self.viewImpl?.toogleToSelfie()
                     }
                 } else {
-                    // Get Data
-                    self.getIdDataAndStartFace()
+                    self.isSelfie = true
+                    self.viewImpl?.toogleToSelfie()
                 }
         } else {
             self.viewImpl?.showErrorMessage(doShow: true,

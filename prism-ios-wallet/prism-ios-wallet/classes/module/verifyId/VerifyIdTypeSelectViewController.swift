@@ -59,7 +59,7 @@ class VerifyIdTypeSelectViewController: ListingBaseViewController {
     func setupButtons() {
         nextBttn.addRoundCorners(radius: AppConfigs.CORNER_RADIUS_BUTTON)
     }
-    
+
     func enableNextButton() {
         nextBttn.backgroundColor = .appRed
         nextBttn.isEnabled = true
@@ -71,7 +71,7 @@ class VerifyIdTypeSelectViewController: ListingBaseViewController {
 
     // MARK: Screens
 
-    func changeScreenToScanFront(documentInstanceID: String, kycToken: String) {
+    func changeScreenToScanFront(documentInstanceID: String?, kycToken: String?) {
         let params = VerifyIdScanViewController.makeSeguedParams(documentInstanceID: documentInstanceID,
                                                                  kycToken: kycToken,
                                                                  contact: presenterImpl.contact)

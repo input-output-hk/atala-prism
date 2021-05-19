@@ -146,6 +146,9 @@
                         <outlet property="helperLbl" destination="uah-yo-96Y" id="xJX-iG-Gjg"/>
                         <outlet property="idImg" destination="bOo-1J-neF" id="Qza-VF-7DP"/>
                         <outlet property="scanBttn" destination="haQ-TR-tJa" id="q7q-cY-gzQ"/>
+                        <outlet property="stepDescLbl" destination="KIh-uv-a5L" id="yDz-hN-O3z"/>
+                        <outlet property="stepLbl" destination="0nY-Iq-7uN" id="MpS-y9-Gbo"/>
+                        <outlet property="stepTitleLbl" destination="mcT-a6-Vh7" id="Jhd-t2-r9G"/>
                         <outlet property="titleLbl" destination="ejX-kK-o0D" id="CzJ-nc-hcw"/>
                         <segue destination="fJv-IC-JvB" kind="show" identifier="showVerifyIdResultsSegue" id="En9-jk-6jl"/>
                     </connections>
