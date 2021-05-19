@@ -32,28 +32,36 @@ import scala.concurrent.ExecutionContext.Implicits.global
     if (state.requests.nonEmpty) {
       div(className := "spaceBetween", id := "mainView")(
         div(className := "div_logo", id := "logoPrism", img(src := "/assets/images/prism-logo.svg")),
+        p(className := "dashboardMainTitle", "Dashboard"),
         div(
-          p(className := "welcome_text")(
-            "Your pending requests"
+          className := "dashboardBg",
+          div(
+            p(className := "dashboardTitle", "Your pending requests"),
+            p(
+              className := "greyText",
+              "Click to sign or revoke your credentials."
+            )
           ),
           pendingCredentialSigning(props, state),
-          pendingRevocations(props, state)
-        ),
-        LockButton(props.backgroundAPI, message => onError(message, setState), props.switchToView)
+          pendingRevocations(props, state),
+          LockButton(props.backgroundAPI, message => onError(message, setState), props.switchToView)
+        )
       )
     } else {
       div(className := "spaceBetween", id := "mainView")(
         div(className := "div_logo", id := "logoPrism", img(src := "/assets/images/prism-logo.svg")),
+        p(className := "dashboardMainTitle", "Dashboard"),
         div(
+          className := "dashboardBg",
           div(
-            className := "img_cover",
-            img(className := "img-no-pending", src := "/assets/images/img-no-pending.png")
+            className := "img_NoRequest",
+            img(className := "img-no-pending", src := "/assets/images/img-no-pending.png"),
+            p(className := "dashboardTitle")(
+              "There are no requests pending"
+            )
           ),
-          p(className := "welcome_text")(
-            "There are no requests pending"
-          )
-        ),
-        LockButton(props.backgroundAPI, message => onError(message, setState), props.switchToView)
+          LockButton(props.backgroundAPI, message => onError(message, setState), props.switchToView)
+        )
       )
     }
   }
@@ -67,18 +75,25 @@ import scala.concurrent.ExecutionContext.Implicits.global
     }
 
     if (revocations.nonEmpty) { //TODO Style
-      div(className := "div__field_group")(
+      div(className := "signBoxContainer")(
         div(className := "dashboardContainer", onClick := { () => props.switchToView(ReviewCredentialRevocation) })(
-          label(className := "_label_dashboard")(
-            s"Revocation [${revocations.size} credential(s)]",
-            img(className := "successImg", src := "/assets/images/success.svg")
+          div(className := "_label_dashboard")(
+            div(
+              className := "flex",
+              img(className := "successImg", src := "/assets/images/signatureIcon.svg"),
+              div(
+                className := "flexColumn",
+                p(className := "noMargin", s"Revocation"),
+                p(className := "greyText", s"${revocations.size}[credential(s)]")
+              )
+            ),
+            img(className := "successImg", src := "/assets/images/boxarrow.svg")
           )
         )
       )
     } else {
       emptyDiv
     }
-
   }
 
   private def pendingCredentialSigning(props: Props, state: State) = {
@@ -88,11 +103,19 @@ import scala.concurrent.ExecutionContext.Implicits.global
     }
 
     if (issueCredentials.nonEmpty) {
-      div(className := "div__field_group")( //TODO Style
+      div(className := "signBoxContainer")(
         div(className := "dashboardContainer", onClick := { () => props.switchToView(ReviewCredentialIssuance) })(
-          label(className := "_label_dashboard")(
-            s"Signature [${issueCredentials.size} credential(s)]",
-            img(className := "successImg", src := "/assets/images/success.svg")
+          div(className := "_label_dashboard")(
+            div(
+              className := "flex",
+              img(className := "successImg", src := "/assets/images/signatureIcon.svg"),
+              div(
+                className := "flexColumn",
+                p(className := "noMargin", s"Signature"),
+                p(className := "greyText", s"${issueCredentials.size}[credential(s)]")
+              )
+            ),
+            img(className := "successImg", src := "/assets/images/boxarrow.svg")
           )
         )
       )

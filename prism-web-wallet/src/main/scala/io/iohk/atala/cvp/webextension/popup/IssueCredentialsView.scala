@@ -63,38 +63,41 @@ import scala.util.{Failure, Success}
 
     div(id := "mainView", className := "spaceBetween")(
       div(
-        className := "div_logo",
-        id := "logoPrism",
-        img(className := "logoImage", src := "/assets/images/prism-logo.svg")
-      ),
-      mui
-        .Button(
-          div(className := "backArrow", onClick := { () => props.switchToView(Default) })(
-            img(className := "leftArrow", src := "/assets/images/arrow-l.svg"),
-            p("Back")
-          )
-        )
-        .className("muiButton")
-        .size(materialUiCoreStrings.small),
-      h3(className := "h3_pending")(
-        "Signature request"
-      ),
-      p(
-        className := "description_signature",
-        id := "description_signature",
-        "You have been requested to sign the following operations:"
-      ),
-      if (state.requests.nonEmpty) {
-        val signingRequest = state.requests(state.id)
+        className := "containerPadding",
         div(
-          templateElement(props, setState, setMessageLabel, setOperation, state, signingRequest),
-          PaginationButtons(state.requests.size, state.id, pageNumber => setPageNumber(pageNumber, setState)),
-          LockButton(props.backgroundAPI, message => onError(message, setState), props.switchToView),
-          displayOperationDialog(setState, state, messageLabel, operation)
-        )
-      } else {
-        div()
-      }
+          className := "div_logo",
+          id := "logoPrism",
+          img(className := "logoImage", src := "/assets/images/prism-logo.svg")
+        ),
+        mui
+          .Button(
+            div(className := "backArrow", onClick := { () => props.switchToView(Default) })(
+              img(className := "leftArrow", src := "/assets/images/arrow-l.svg"),
+              p("Back")
+            )
+          )
+          .className("muiButton")
+          .size(materialUiCoreStrings.small),
+        h3(className := "h3_pending")(
+          "Signature request"
+        ),
+        p(
+          className := "description_signature",
+          id := "description_signature",
+          "You have been requested to sign the following operations:"
+        ),
+        if (state.requests.nonEmpty) {
+          val signingRequest = state.requests(state.id)
+          div(
+            templateElement(props, setState, setMessageLabel, setOperation, state, signingRequest),
+            PaginationButtons(state.requests.size, state.id, pageNumber => setPageNumber(pageNumber, setState)),
+            LockButton(props.backgroundAPI, message => onError(message, setState), props.switchToView),
+            displayOperationDialog(setState, state, messageLabel, operation)
+          )
+        } else {
+          div()
+        }
+      )
     )
 
   }
