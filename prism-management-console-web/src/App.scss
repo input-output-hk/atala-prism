@@ -29,6 +29,7 @@
   margin: 2em;
   display: flex;
   flex-direction: column;
+  height: calc(100% - 4em);
   @include breakpoint(sm) {
     margin: 2em 1em;
   }

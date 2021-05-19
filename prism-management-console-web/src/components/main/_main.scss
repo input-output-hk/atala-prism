@@ -15,7 +15,7 @@
     .MainContainer {
       width: calc(100vw - #{$sidebar-width});
       background: $white;
-      height: 100vh;
+      height: 100%;
       @include breakpoint(sm) {
         width: 100vw;
         overflow-y: auto;

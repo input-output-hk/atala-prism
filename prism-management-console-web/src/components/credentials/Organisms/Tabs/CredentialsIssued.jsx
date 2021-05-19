@@ -9,7 +9,6 @@ import { credentialTabShape } from '../../../../helpers/propShapes';
 import SimpleLoading from '../../../common/Atoms/SimpleLoading/SimpleLoading';
 import BulkActionsHeader from '../../Molecules/BulkActionsHeader/BulkActionsHeader';
 import { useSession } from '../../../providers/SessionContext';
-import { useScrolledToBottom } from '../../../../hooks/useScrolledToBottom';
 
 const CredentialsIssued = ({
   showEmpty,
@@ -24,8 +23,6 @@ const CredentialsIssued = ({
   const { t } = useTranslation();
   const [loading, setLoading] = useState(false);
   const [selectedLength, setSelectedLength] = useState();
-  const { timesScrolledToBottom } = useScrolledToBottom(tableProps.hasMore, loading);
-  const [lastUpdated, setLastUpdated] = useState(timesScrolledToBottom);
 
   const { accountStatus } = useSession();
 
@@ -42,20 +39,11 @@ const CredentialsIssued = ({
     return fetchCredentials({ onFinish: () => setLoading(false) });
   }, [fetchCredentials]);
 
-  useEffect(() => {
-    if (timesScrolledToBottom !== lastUpdated && searchDueGeneralScroll) {
-      setLastUpdated(timesScrolledToBottom);
-      getMoreData();
-    }
-  }, [timesScrolledToBottom, lastUpdated, searchDueGeneralScroll, getMoreData]);
-
-  // leave this trigger for backward compatibility, when all tables uses useScrolledToBottom remove searchDueGeneralScroll
-  const handleGetMoreData = () => !searchDueGeneralScroll && getMoreData();
-
   const expandedTableProps = {
     ...tableProps,
     tab: CREDENTIALS_ISSUED,
-    onView: showCredentialData
+    onView: showCredentialData,
+    searchDueGeneralScroll
   };
 
   const emptyProps = {
@@ -70,9 +58,7 @@ const CredentialsIssued = ({
   const renderContent = () => {
     if (!credentials.length && (initialLoading || searching)) return <SimpleLoading size="md" />;
     if (renderEmptyComponent) return <EmptyComponent {...emptyProps} />;
-    return (
-      <CredentialsTable getMoreData={handleGetMoreData} loading={loading} {...expandedTableProps} />
-    );
+    return <CredentialsTable getMoreData={getMoreData} loading={loading} {...expandedTableProps} />;
   };
 
   return (

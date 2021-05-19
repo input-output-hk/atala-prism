@@ -21,7 +21,7 @@ const ConnectionsTable = ({
   searchDueGeneralScroll
 }) => {
   const [loading, setLoading] = useState(false);
-  const { timesScrolledToBottom } = useScrolledToBottom(hasMore, loading);
+  const { timesScrolledToBottom } = useScrolledToBottom(hasMore, loading, 'ConnectionsTable ');
   const [lastUpdated, setLastUpdated] = useState(timesScrolledToBottom);
 
   // leave this trigger for backward compatibility, when all tables uses useScrolledToBottom remove searchDueGeneralScroll

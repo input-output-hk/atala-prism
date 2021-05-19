@@ -6,7 +6,6 @@ export const useScrolledToBottom = (hasMore, loading, containerClass = MAIN_CONT
 
   useEffect(() => {
     const Container = document.querySelector(`.${containerClass}`);
-
     const scrollListener = ({ target: { scrollHeight, clientHeight, scrollTop } }) => {
       const maxScroll = scrollHeight - clientHeight;
       if (scrollTop === maxScroll) setTimesScrolledToBottom(t => t + 1);

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import i18n from 'i18next';
 import PropTypes from 'prop-types';
 import { useTranslation } from 'react-i18next';
@@ -19,6 +19,7 @@ import {
   CONNECTION_STATUSES
 } from '../../../../../helpers/constants';
 import './_style.scss';
+import { useScrolledToBottom } from '../../../../../hooks/useScrolledToBottom';
 
 const translationKeyPrefix = 'credentials.table.columns';
 
@@ -201,12 +202,26 @@ const CredentialsTable = ({
   signSingleCredential,
   sendSingleCredential,
   selectionType,
-  tab
+  tab,
+  searchDueGeneralScroll
 }) => {
   const { t } = useTranslation();
   const [loadingRevokeSingle, setLoadingRevokeSingle] = useState();
   const [loadingSignSingle, setLoadingSignSingle] = useState();
   const [loadingSendSingle, setLoadingSendSingle] = useState();
+  const { timesScrolledToBottom } = useScrolledToBottom(hasMore, loading, 'CredentialsTable');
+
+  const [lastUpdated, setLastUpdated] = useState(timesScrolledToBottom);
+
+  // leave this trigger for backward compatibility, when all tables uses useScrolledToBottom remove searchDueGeneralScroll
+  const handleGetMoreData = () => !searchDueGeneralScroll && getMoreData();
+
+  useEffect(() => {
+    if (timesScrolledToBottom !== lastUpdated && searchDueGeneralScroll) {
+      setLastUpdated(timesScrolledToBottom);
+      getMoreData();
+    }
+  }, [timesScrolledToBottom, lastUpdated, searchDueGeneralScroll, getMoreData]);
 
   const wrapRevokeSingleCredential = async credentialId => {
     setLoadingRevokeSingle(true);
@@ -250,7 +265,7 @@ const CredentialsTable = ({
         columns={columns[tab]}
         data={credentials}
         loading={loading}
-        getMoreData={getMoreData}
+        getMoreData={handleGetMoreData}
         hasMore={hasMore}
         rowKey="credentialId"
         selectionType={selectionType}
@@ -261,7 +276,8 @@ const CredentialsTable = ({
 
 CredentialsTable.defaultProps = {
   credentials: [],
-  selectionType: null
+  selectionType: null,
+  searchDueGeneralScroll: false
 };
 
 CredentialsTable.propTypes = {
@@ -277,7 +293,8 @@ CredentialsTable.propTypes = {
     selectedRowKeys: PropTypes.arrayOf(PropTypes.string),
     onChange: PropTypes.func
   }),
-  tab: PropTypes.oneOf([CREDENTIALS_ISSUED, CREDENTIALS_RECEIVED]).isRequired
+  tab: PropTypes.oneOf([CREDENTIALS_ISSUED, CREDENTIALS_RECEIVED]).isRequired,
+  searchDueGeneralScroll: PropTypes.bool
 };
 
 export default CredentialsTable;
