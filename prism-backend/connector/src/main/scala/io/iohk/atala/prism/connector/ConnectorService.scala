@@ -201,12 +201,14 @@ class ConnectorService(
           registerDidRequest.tpe,
           registerDidRequest.name,
           registerDidRequest.logo,
-          registerDidRequest.operation
+          registerDidRequest.didOrOperation
         )
         .map { registerResult =>
           connector_api
-            .RegisterDIDResponse(did = registerResult.did.value)
-            .withTransactionInfo(ProtoCodecs.toTransactionInfo(registerResult.transactionInfo))
+            .RegisterDIDResponse(
+              did = registerResult.did.value,
+              transactionInfo = registerResult.transactionInfo.map(ProtoCodecs.toTransactionInfo)
+            )
         }
     }
 

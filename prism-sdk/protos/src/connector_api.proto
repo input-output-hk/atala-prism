@@ -36,12 +36,17 @@ service ConnectorService {
 
   // Binds a DID to an institution.
   // This is commonly expected for institutions that require a public DID. The method
-  // invokes the node to publish the DID to the blockchain.
+  // invokes the node to publish the DID to the blockchain
+  // or binds existing already published DID to an institution if passed.
   // TODO: Delete method, we should not register the DID but receive the registered one.
   // Errors:
   // Invalid DID (INVALID_ARGUMENT).
   // Invalid DID document (INVALID_ARGUMENT).
   // DID Document does not match DID (INVALID_ARGUMENT).
+  // DID already exists (INVALID_ARGUMENT).
+  // Expected published DID (INVALID_ARGUMENT).
+  // The passed DID was not found on the node (INVALID_ARGUMENT).
+  // Expected existing DID or atala operation (INVALID_ARGUMENT).
   rpc RegisterDID (RegisterDIDRequest) returns (RegisterDIDResponse) {}
 
   // Generates connection tokens that can be used to instantiate connections.
@@ -242,9 +247,12 @@ message SendMessagesResponse {
 // @exclude
 // TODO: Use the method to not register the DID on the blockchain.
 message RegisterDIDRequest {
-  // The necessary operation to publish the DID to the blockchain.
-  io.iohk.atala.prism.protos.SignedAtalaOperation create_did_operation = 1;
-
+  oneof register_with {
+    // The necessary operation to publish the DID to the blockchain.
+    io.iohk.atala.prism.protos.SignedAtalaOperation create_did_operation = 1;
+    // The already published DID.
+    string existing_did = 5;
+  }
   // The user's role.
   // @exclude
   // TODO: Remove, we don't use roles anymore.
@@ -280,6 +288,7 @@ message GetCurrentUserResponse {
 // Confirmation of DID registration.
 message RegisterDIDResponse {
   string did = 1;
+  // Empty if used existing DID on the registration request
   TransactionInfo transaction_info = 2;
 }
 

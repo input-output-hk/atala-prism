@@ -1,9 +1,8 @@
 package io.iohk.atala.prism.connector
 
 import java.util.UUID
-import com.google.protobuf.ByteString
 import io.grpc.Context
-import io.iohk.atala.prism.crypto.{EC, ECConfig, ECPublicKey, ECSignature}
+import io.iohk.atala.prism.crypto.{EC, ECPublicKey, ECSignature}
 import io.iohk.atala.prism.connector.errors.UnknownValueError
 import io.iohk.atala.prism.connector.model._
 import io.iohk.atala.prism.connector.repositories.{ParticipantsRepository, RequestNoncesRepository}
@@ -14,6 +13,7 @@ import io.iohk.atala.prism.models.ParticipantId
 import io.iohk.atala.prism.utils.FutureEither.FutureEitherOps
 import io.iohk.atala.prism.protos.node_api._
 import io.iohk.atala.prism.protos.{connector_api, node_api, node_models}
+import io.iohk.atala.prism.util.KeyUtils.createNodePublicKey
 import org.mockito.ArgumentMatchersSugar._
 import org.mockito.IdiomaticMockito._
 import org.mockito.matchers.DefaultValueProvider
@@ -368,18 +368,6 @@ class SignedRequestsAuthenticatorSpec extends AnyWordSpec {
         result.futureValue
       }
     }
-  }
-
-  private def createNodePublicKey(keyId: String, publicKey: ECPublicKey): node_models.PublicKey = {
-    val point = publicKey.getCurvePoint
-    val x = ByteString.copyFrom(point.x.toByteArray)
-    val y = ByteString.copyFrom(point.y.toByteArray)
-    node_models.PublicKey(
-      id = keyId,
-      usage = node_models.KeyUsage.AUTHENTICATION_KEY,
-      keyData =
-        node_models.PublicKey.KeyData.EcKeyData(node_models.ECKeyData(curve = ECConfig.CURVE_NAME, x = x, y = y))
-    )
   }
 
   // NOTE: To meet the repository interface we need to return the whole participant details while the authenticator

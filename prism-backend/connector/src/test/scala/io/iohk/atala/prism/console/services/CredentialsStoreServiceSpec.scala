@@ -1,6 +1,7 @@
 package io.iohk.atala.prism.console.services
 
 import cats.syntax.functor._
+import cats.syntax.option._
 import doobie.implicits._
 import io.iohk.atala.prism.auth.SignedRpcRequest
 import io.iohk.atala.prism.auth.grpc.GrpcAuthenticationHeaderParser
@@ -63,7 +64,7 @@ class CredentialsStoreServiceSpec extends RpcSpecBase with DIDUtil {
           "Verifier",
           DataPreparation.newDID(),
           ParticipantLogo(Vector()),
-          TransactionInfo(TransactionId.from(SHA256Digest.compute("id".getBytes).value).value, Ledger.InMemory)
+          TransactionInfo(TransactionId.from(SHA256Digest.compute("id".getBytes).value).value, Ledger.InMemory).some
         )
       )
       .value

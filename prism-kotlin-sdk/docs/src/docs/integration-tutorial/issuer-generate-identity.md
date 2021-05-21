@@ -24,7 +24,7 @@ val issuerCreatedDIDSignedOperation = ProtoUtils.signedAtalaOperation(issuerMast
 val issuerRegisterDIDResponse = runBlocking {
     connector.RegisterDID(
         RegisterDIDRequest(
-            createDIDOperation = issuerCreatedDIDSignedOperation,
+            registerWith = RegisterDIDRequest.RegisterWith.CreateDidOperation(issuerCreatedDIDSignedOperation),
             name = "Issuer"
         )
     )

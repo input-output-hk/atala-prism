@@ -19,7 +19,7 @@ val verifierCreateDIDSignedOperation = ProtoUtils.signedAtalaOperation(verifierM
 val verifierRegisterDIDResponse = runBlocking {
     connector.RegisterDID(
         RegisterDIDRequest(
-            createDIDOperation = verifierCreateDIDSignedOperation,
+            registerWith = RegisterDIDRequest.RegisterWith.CreateDidOperation(verifierCreateDIDSignedOperation),
             name = "Verifier"
         )
     )

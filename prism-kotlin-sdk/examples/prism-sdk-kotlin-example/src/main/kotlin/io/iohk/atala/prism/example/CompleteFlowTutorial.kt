@@ -61,7 +61,7 @@ object CompleteFlowTutorial {
         val issuerRegisterDIDResponse = runBlocking {
             connector.RegisterDID(
                 RegisterDIDRequest(
-                    createDidOperation = issuerCreatedDIDSignedOperation,
+                    registerWith = RegisterDIDRequest.RegisterWith.CreateDidOperation(issuerCreatedDIDSignedOperation),
                     name = "Issuer"
                 )
             )
@@ -268,7 +268,7 @@ object CompleteFlowTutorial {
         val verifierRegisterDIDResponse = runBlocking {
             connector.RegisterDID(
                 RegisterDIDRequest(
-                    createDidOperation = verifierCreateDIDSignedOperation,
+                    registerWith = RegisterDIDRequest.RegisterWith.CreateDidOperation(verifierCreateDIDSignedOperation),
                     name = "Verifier"
                 )
             )

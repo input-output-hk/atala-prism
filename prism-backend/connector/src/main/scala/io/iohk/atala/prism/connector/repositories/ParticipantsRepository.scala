@@ -34,8 +34,8 @@ class ParticipantsRepository(xa: Transactor[IO]) extends ConnectorErrorSupport {
       name = request.name,
       did = Option(request.did),
       logo = Option(request.logo),
-      transactionId = Some(request.transactionInfo.transactionId),
-      ledger = Some(request.transactionInfo.ledger)
+      transactionId = request.transactionInfo.map(_.transactionId),
+      ledger = request.transactionInfo.map(_.ledger)
     )
 
     ParticipantsDAO
@@ -120,7 +120,7 @@ object ParticipantsRepository {
       name: String,
       did: DID,
       logo: ParticipantLogo,
-      transactionInfo: TransactionInfo
+      transactionInfo: Option[TransactionInfo]
   )
 
 }

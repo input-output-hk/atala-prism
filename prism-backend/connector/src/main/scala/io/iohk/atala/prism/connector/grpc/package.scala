@@ -8,10 +8,12 @@ import io.iohk.atala.prism.connector.model.actions._
 import io.iohk.atala.prism.connector.model.{ParticipantLogo, ParticipantType, TokenString, UpdateParticipantProfile}
 import io.iohk.atala.prism.crypto.EC
 import io.iohk.atala.prism.grpc.ProtoConverter
+import io.iohk.atala.prism.identity.DID
 import io.iohk.atala.prism.protos.connector_api.UpdateProfileRequest
 
 import scala.util.{Failure, Success, Try}
 import io.iohk.atala.prism.protos.connector_api
+import io.iohk.atala.prism.protos.connector_api.RegisterDIDRequest.RegisterWith
 import io.iohk.atala.prism.protos.connector_models.MessageToSendByConnectionToken
 import io.iohk.atala.prism.protos.node_models.SignedAtalaOperation
 
@@ -102,16 +104,14 @@ package object grpc {
   implicit val registerDIDRequestConverter: ProtoConverter[connector_api.RegisterDIDRequest, RegisterDIDRequest] =
     (in: connector_api.RegisterDIDRequest) =>
       for {
-        createDIDOperation <- in.createDidOperation.fold[Try[SignedAtalaOperation]](
-          Failure(new IllegalArgumentException("The createDIDOperation is mandatory"))
-        )(Success(_))
+        didOrCreateDidOperation <- parseRegisterWith(in.registerWith)
         tpe <- in.role match {
           case connector_api.RegisterDIDRequest.Role.issuer => Success(ParticipantType.Issuer)
           case connector_api.RegisterDIDRequest.Role.verifier => Success(ParticipantType.Verifier)
           case _ => Failure(new IllegalArgumentException("Unknown role"))
         }
         logo = ParticipantLogo(in.logo.toByteArray.toVector)
-      } yield RegisterDIDRequest(in.name, createDIDOperation, tpe, logo)
+      } yield RegisterDIDRequest(in.name, didOrCreateDidOperation, tpe, logo)
 
   implicit val messagesPaginatedRequestConverter
       : ProtoConverter[connector_api.GetMessagesPaginatedRequest, MessagesPaginatedRequest] =
@@ -143,5 +143,22 @@ package object grpc {
         connectionId <- Utils.parseConnectionId(in.connectionId)
         messageId <- Utils.parseMessageId(in.id)
       } yield SendMessageRequest(connectionId, in.message.toByteArray, messageId)
+
+  private def parseRegisterWith(
+      in: connector_api.RegisterDIDRequest.RegisterWith
+  ): Try[Either[DID, SignedAtalaOperation]] =
+    in match {
+      case RegisterWith.CreateDidOperation(operation) => Success(operation.asRight)
+      case RegisterWith.ExistingDid(maybeDid) => parseCanonicalDid(maybeDid)
+      case _ => Failure(new IllegalArgumentException("Expected existing DID or atala operation"))
+    }
+
+  private def parseCanonicalDid(maybeDid: String): Try[Either[DID, SignedAtalaOperation]] =
+    DID
+      .fromString(maybeDid)
+      .fold[Try[Either[DID, SignedAtalaOperation]]](Failure(new IllegalArgumentException("Invalid DID"))) { parsedDid =>
+        if (parsedDid.isCanonicalForm) Success(parsedDid.asLeft)
+        else Failure(new IllegalArgumentException("Expected published did"))
+      }
 
 }

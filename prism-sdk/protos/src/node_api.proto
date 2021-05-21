@@ -48,7 +48,7 @@ service NodeService {
 
 // Request to find a DID Document.
 message GetDidDocumentRequest {
-    string did = 1; // The DID suffix.
+    string did = 1; // The DID.
 }
 // Response to a DID Document query.
 message GetDidDocumentResponse {
