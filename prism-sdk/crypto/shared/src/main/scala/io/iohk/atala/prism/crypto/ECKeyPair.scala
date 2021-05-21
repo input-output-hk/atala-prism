@@ -55,11 +55,15 @@ trait ECPublicKey extends ECKey {
     val size = ECConfig.CURVE_FIELD_BYTE_SIZE
     val xArr = toUnsignedByteArray(curvePoint.x)
     val yArr = toUnsignedByteArray(curvePoint.y)
-    val arr = new Array[Byte](1 + 2 * size)
-    arr(0) = 4 // Uncompressed point indicator for encoding
-    System.arraycopy(xArr, 0, arr, size - xArr.length + 1, xArr.length)
-    System.arraycopy(yArr, 0, arr, arr.length - yArr.length, yArr.length)
-    arr
+    if (xArr.length <= size && yArr.length <= size) {
+      val arr = new Array[Byte](1 + 2 * size)
+      arr(0) = 4 // Uncompressed point indicator for encoding
+      System.arraycopy(xArr, 0, arr, size - xArr.length + 1, xArr.length)
+      System.arraycopy(yArr, 0, arr, arr.length - yArr.length, yArr.length)
+      arr
+    } else {
+      throw new RuntimeException("Point coordinates do not match field size")
+    }
   }
 
   /**
