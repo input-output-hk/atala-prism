@@ -1,5 +1,7 @@
 package io.iohk.atala.prism.util
 
+import io.iohk.atala.prism.crypto.ECConfig
+
 import scala.util.control.Breaks
 
 object BigIntOps {
@@ -34,5 +36,15 @@ object BigIntOps {
       }
     }
     result
+  }
+
+  def cordBytesWithPaddedZeros(src: BigInt): Array[Byte] = {
+    val cordActualArray = toUnsignedByteArray(src)
+    if (cordActualArray.length < ECConfig.CURVE_FIELD_BYTE_SIZE) {
+      val actualSize = cordActualArray.length
+      val zerosSize = ECConfig.CURVE_FIELD_BYTE_SIZE - actualSize
+      val zeros: Seq[Byte] = for (_ <- 1 to zerosSize) yield 0
+      cordActualArray.prependedAll(zeros)
+    } else cordActualArray
   }
 }

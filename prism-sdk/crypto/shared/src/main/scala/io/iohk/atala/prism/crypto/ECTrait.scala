@@ -2,6 +2,8 @@ package io.iohk.atala.prism.crypto
 
 import io.iohk.atala.prism.util.BigIntOps.toBigInt
 
+import scala.util.Try
+
 /**
   * Trait that implements all shared behavior between js/EC and jvm/EC.
   *
@@ -68,6 +70,11 @@ trait ECTrait {
     * Returns the public key represented by the given coordinates.
     */
   def toPublicKey(x: BigInt, y: BigInt): ECPublicKey
+
+  /**
+    * Returns the public key uncompressed from the compressed representation.
+    */
+  def toPublicKeyFromCompressed(encoded: Array[Byte]): Try[ECPublicKey]
 
   /**
     * Returns the public key represented by the given private key's `D` as byte array.

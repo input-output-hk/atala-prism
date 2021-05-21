@@ -10,6 +10,8 @@ import typings.elliptic.mod.ec
 import typings.elliptic.mod.ec.KeyPair
 
 import scala.scalajs.js.`|`
+import scala.scalajs.js.typedarray.{AB2TA, Uint8Array}
+import scala.util.Try
 
 /**
   * JavaScript implementation of {@link ECTrait}.
@@ -62,5 +64,11 @@ object EC extends ECTrait {
   private def asKeyPair(key: ^ | BasePoint): KeyPair = {
     // The type can be enforced as the JS implementation can figure it out at runtime
     key.asInstanceOf[KeyPair]
+  }
+
+  override def toPublicKeyFromCompressed(encoded: Array[Byte]): Try[ECPublicKey] = {
+    val x = encoded.toTypedArray
+    val e = new Uint8Array(x.buffer, x.byteOffset, x.length)
+    Try(new JsECPublicKey(nativeEc.keyFromPublic(e).getPublic()))
   }
 }

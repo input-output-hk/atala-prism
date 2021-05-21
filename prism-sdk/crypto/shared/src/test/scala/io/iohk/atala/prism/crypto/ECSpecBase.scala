@@ -4,6 +4,8 @@ import io.iohk.atala.prism.util.BytesOps.hexToBytes
 import org.scalatest.matchers.must.Matchers._
 import org.scalatest.wordspec.AnyWordSpec
 
+import scala.util.Success
+
 /**
   * Base class to be extended by tests for {@link ECTrait} implementations.
   * @param ec the implementation under test
@@ -112,6 +114,30 @@ abstract class ECSpecBase(val ec: ECTrait) extends AnyWordSpec {
       val signature = ECSignature(hexToBytes(hexEncodedSignature))
 
       ec.verify(data, ec.toPublicKeyFromPrivateKey(privateKey.getD), signature) mustBe true
+    }
+
+    "compress and decompress public key" in {
+      val keyPair = ec.generateKeyPair()
+      val compressedPublicKey = keyPair.publicKey.getCompressed
+
+      val uncompressedKey = ec.toPublicKeyFromCompressed(compressedPublicKey)
+
+      compressedPublicKey.length mustBe 33
+      uncompressedKey mustBe Success(keyPair.publicKey)
+    }
+  }
+
+  "EC compress & decompress PK" should {
+    for {
+      publicKey <- Secp256k1TestVectors.publicKeysFromSecp256k1TestVectors(ec)
+    } {
+      s"compress and decompress public key $publicKey" in {
+        val compressedPublicKey = publicKey.getCompressed
+        val uncompressedKey = ec.toPublicKeyFromCompressed(compressedPublicKey)
+
+        compressedPublicKey.length mustBe 33
+        uncompressedKey mustBe Success(publicKey)
+      }
     }
   }
 }

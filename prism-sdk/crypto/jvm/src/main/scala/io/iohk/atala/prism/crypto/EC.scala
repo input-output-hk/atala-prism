@@ -7,6 +7,8 @@ import org.bouncycastle.jce.ECNamedCurveTable
 import org.bouncycastle.jce.provider.BouncyCastleProvider
 import org.bouncycastle.jce.spec.{ECNamedCurveSpec, ECPublicKeySpec => BCECPublicKeySpec}
 
+import scala.util.Try
+
 /**
   * JVM implementation of {@link ECTrait}.
   */
@@ -30,4 +32,12 @@ object EC extends GenericEC(new BouncyCastleProvider) {
     val Q = ecParameterSpec.getG.multiply(d.bigInteger)
     new BCECPublicKeySpec(Q, ecParameterSpec)
   }
+
+  override def toPublicKeyFromCompressed(encoded: Array[Byte]): Try[ECPublicKey] =
+    Try {
+      val point = ecParameterSpec.getCurve.decodePoint(encoded)
+      val x = point.getXCoord.getEncoded
+      val y = point.getYCoord.getEncoded
+      toPublicKey(x, y)
+    }
 }
