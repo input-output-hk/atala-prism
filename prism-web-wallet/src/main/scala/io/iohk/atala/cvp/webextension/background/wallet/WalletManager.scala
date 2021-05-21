@@ -279,10 +279,10 @@ private[background] class WalletManager(
   def enqueueRequestApproval(origin: Origin, sessionID: SessionID, request: PendingRequest): Future[String] =
     for {
       _ <- validateSessionF(origin = origin, sessionID = sessionID)
-      (newRequestQueue, promise) = state.pendingRequestsQueue.enqueue(request)
+      (newRequestQueue, _) = state.pendingRequestsQueue.enqueue(request)
       _ = updateState(_.copy(pendingRequestsQueue = newRequestQueue))
       _ = reloadPopup()
-      result <- promise.future
+      result <- Future.successful("Ack")
     } yield result
 
   def createWallet(
