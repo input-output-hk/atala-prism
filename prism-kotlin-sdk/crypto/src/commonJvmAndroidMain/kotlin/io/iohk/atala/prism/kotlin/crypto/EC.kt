@@ -5,6 +5,7 @@ import com.ionspin.kotlin.bignum.integer.Sign
 import io.iohk.atala.prism.kotlin.crypto.ECConfig.CURVE_NAME
 import io.iohk.atala.prism.kotlin.crypto.ECConfig.SIGNATURE_ALGORITHM
 import io.iohk.atala.prism.kotlin.crypto.keys.ECKeyPair
+import io.iohk.atala.prism.kotlin.crypto.keys.ECPoint
 import io.iohk.atala.prism.kotlin.crypto.keys.ECPrivateKey
 import io.iohk.atala.prism.kotlin.crypto.keys.ECPublicKey
 import io.iohk.atala.prism.kotlin.crypto.signature.ECSignature
@@ -107,5 +108,10 @@ actual object EC {
         verifier.initVerify(publicKey.key)
         verifier.update(data.toByteArray())
         return verifier.verify(signature.data.toByteArray())
+    }
+
+    @JvmStatic
+    actual fun isSecp256k1(point: ECPoint): Boolean {
+        return Secp256k1.isSecp256k1(point)
     }
 }

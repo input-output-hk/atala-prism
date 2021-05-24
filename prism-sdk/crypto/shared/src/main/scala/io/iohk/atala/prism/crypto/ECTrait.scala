@@ -1,5 +1,6 @@
 package io.iohk.atala.prism.crypto
 
+import io.iohk.atala.prism.crypto.ECConfig.{p, b}
 import io.iohk.atala.prism.util.BigIntOps.toBigInt
 
 import scala.util.Try
@@ -111,4 +112,14 @@ trait ECTrait {
     * Verifies whether the given data matches the given signature with the given public key.
     */
   def verify(data: Array[Byte], publicKey: ECPublicKey, signature: ECSignature): Boolean
+
+  /**
+    * Verifies whether the given data matches the given signature with the given public key.
+    */
+  def isSecp256k1(point: ECPoint): Boolean = {
+    val right = point.x * point.x * point.x + b
+    val left = point.y * point.y
+    // see https://en.bitcoin.it/wiki/Secp256k1
+    ((left - right) mod p) == 0
+  }
 }

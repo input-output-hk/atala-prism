@@ -1,5 +1,7 @@
 package io.iohk.atala.prism.crypto
 
+import io.iohk.atala.prism.crypto.ECConfig.{CURVE_FIELD_BYTE_SIZE, CURVE_NAME, SIGNATURE_ALGORITHM}
+
 import java.security._
 import java.security.spec.{
   KeySpec,
@@ -9,8 +11,6 @@ import java.security.spec.{
   ECPrivateKeySpec => JavaECPrivateKeySpec,
   ECPublicKeySpec => JavaECPublicKeySpec
 }
-
-import io.iohk.atala.prism.crypto.ECConfig.{CURVE_FIELD_BYTE_SIZE, CURVE_NAME, SIGNATURE_ALGORITHM}
 
 /**
   * Generic implementation of {@link ECTrait}.

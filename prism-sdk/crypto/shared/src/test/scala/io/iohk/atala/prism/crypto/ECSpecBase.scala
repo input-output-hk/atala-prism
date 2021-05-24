@@ -125,6 +125,23 @@ abstract class ECSpecBase(val ec: ECTrait) extends AnyWordSpec {
       compressedPublicKey.length mustBe 33
       uncompressedKey mustBe Success(keyPair.publicKey)
     }
+
+    "prime must be correct" in {
+      val p = BigInt(2).pow(256) - BigInt(2).pow(32) - BigInt(2).pow(9) - BigInt(2).pow(8) -
+        BigInt(2).pow(7) - BigInt(2).pow(6) - BigInt(2).pow(4) - 1
+
+      ECConfig.p mustEqual p
+    }
+
+    for {
+      publicKey <- ec.generateKeyPair().publicKey :: Secp256k1TestVectors.publicKeysFromSecp256k1TestVectors(ec)
+    } {
+      s"verify secp256k1 public key $publicKey" in {
+        val point = publicKey.getCurvePoint
+
+        ec.isSecp256k1(point) mustBe true
+      }
+    }
   }
 
   "EC compress & decompress PK" should {

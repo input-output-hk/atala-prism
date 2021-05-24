@@ -6,6 +6,7 @@ import io.iohk.atala.prism.kotlin.crypto.externals.BN
 import io.iohk.atala.prism.kotlin.crypto.externals.Coordinates
 import io.iohk.atala.prism.kotlin.crypto.externals.ec
 import io.iohk.atala.prism.kotlin.crypto.keys.ECKeyPair
+import io.iohk.atala.prism.kotlin.crypto.keys.ECPoint
 import io.iohk.atala.prism.kotlin.crypto.keys.ECPrivateKey
 import io.iohk.atala.prism.kotlin.crypto.keys.ECPublicKey
 import io.iohk.atala.prism.kotlin.crypto.signature.ECSignature
@@ -100,5 +101,9 @@ actual object EC {
     ): Boolean {
         val hexData = bytesToHex(SHA256.compute(data).map { it.toUByte() })
         return ecjs.verify(hexData, signature.sig, publicKey.getHexEncoded(), enc = "hex")
+    }
+
+    actual fun isSecp256k1(point: ECPoint): Boolean {
+        return Secp256k1.isSecp256k1(point)
     }
 }

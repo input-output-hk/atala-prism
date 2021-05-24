@@ -1,13 +1,7 @@
 package io.iohk.atala.prism.auth.utils
 
-import io.iohk.atala.prism.auth.errors.{
-  AuthError,
-  CanonicalSuffixMatchStateError,
-  InvalidAtalaOperationError,
-  NoCreateDidOperationError,
-  UnknownPublicKeyId
-}
-import io.iohk.atala.prism.crypto.{EC, ECPublicKey}
+import io.iohk.atala.prism.auth.errors._
+import io.iohk.atala.prism.crypto.{EC, ECConfig, ECPublicKey}
 import io.iohk.atala.prism.identity.DID
 import io.iohk.atala.prism.identity.DID.DIDFormat
 import io.iohk.atala.prism.protos.node_models
@@ -39,6 +33,9 @@ object DIDUtils {
     }
   }
 
+  private def verifyPublicKey(curve: String, publicKey: ECPublicKey): Option[ECPublicKey] =
+    Option.when(ECConfig.CURVE_NAME == curve && EC.isSecp256k1(publicKey.getCurvePoint))(publicKey)
+
   def findPublicKey(didData: node_models.DIDData, keyId: String)(implicit
       ec: ExecutionContext
   ): FutureEither[AuthError, ECPublicKey] = {
@@ -48,10 +45,11 @@ object DIDUtils {
       val publicKeyOpt = didData.publicKeys
         .find(_.id == keyId)
         .flatMap(_.keyData.ecKeyData)
-        .map { data =>
-          // TODO: Validate curve, right now we support a single curve
-          EC.toPublicKey(x = data.x.toByteArray, y = data.y.toByteArray)
+        .flatMap { data =>
+          val pubk = EC.toPublicKey(x = data.x.toByteArray, y = data.y.toByteArray)
+          verifyPublicKey(data.curve, pubk)
         }
+
       publicKeyOpt.toRight(UnknownPublicKeyId())
     }.toFutureEither
   }

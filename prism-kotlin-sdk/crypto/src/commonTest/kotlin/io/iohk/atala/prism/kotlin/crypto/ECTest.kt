@@ -9,7 +9,8 @@ import kotlin.test.assertFalse
 import kotlin.test.assertTrue
 
 class ECTest {
-    val testData = listOf<Byte>(-107, 101, 68, 118, 27, 74, 29, 50, -32, 72, 47, -127, -49, 3, -8, -55, -63, -66, 46, 125)
+    val testData =
+        listOf<Byte>(-107, 101, 68, 118, 27, 74, 29, 50, -32, 72, 47, -127, -49, 3, -8, -55, -63, -66, 46, 125)
 
     @Test
     fun testGeneration() {
@@ -43,7 +44,10 @@ class ECTest {
         )
         val x = curvePoint.x
         val y = curvePoint.y
-        assertTrue((y * y).mod(modulus) == (x * x * x + 7).mod(modulus), "Public key point should follow the elliptic curve equation")
+        assertTrue(
+            (y * y).mod(modulus) == (x * x * x + 7).mod(modulus),
+            "Public key point should follow the elliptic curve equation"
+        )
 
         assertEquals(keyPair.publicKey, EC.toPublicKey(encodedPublicKey))
         assertEquals(keyPair.publicKey, EC.toPublicKey(x, y))
@@ -119,5 +123,20 @@ class ECTest {
         val signature = EC.toSignature(hexToBytes(hexEncodedSignature).map { it.toByte() })
 
         assertTrue(EC.verify(testData, EC.toPublicKeyFromPrivateKey(privateKey), signature))
+    }
+
+    @Test
+    fun testPrimeIsCorrect() {
+        val p = BigInteger(2).pow(256) - BigInteger(2).pow(32) - BigInteger(2).pow(9) - BigInteger(2).pow(8) -
+            BigInteger(2).pow(7) - BigInteger(2).pow(6) - BigInteger(2).pow(4) - BigInteger.ONE
+
+        assertTrue { ECConfig.p == p }
+    }
+
+    @Test
+    fun testCorrectSecp256k1Verifying() {
+        val keyPair = EC.generateKeyPair()
+
+        assertTrue { EC.isSecp256k1(keyPair.publicKey.getCurvePoint()) }
     }
 }

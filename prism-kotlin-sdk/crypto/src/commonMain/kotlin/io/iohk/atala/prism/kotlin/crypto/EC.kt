@@ -2,6 +2,7 @@ package io.iohk.atala.prism.kotlin.crypto
 
 import com.ionspin.kotlin.bignum.integer.BigInteger
 import io.iohk.atala.prism.kotlin.crypto.keys.ECKeyPair
+import io.iohk.atala.prism.kotlin.crypto.keys.ECPoint
 import io.iohk.atala.prism.kotlin.crypto.keys.ECPrivateKey
 import io.iohk.atala.prism.kotlin.crypto.keys.ECPublicKey
 import io.iohk.atala.prism.kotlin.crypto.signature.ECSignature
@@ -66,4 +67,9 @@ expect object EC {
      * Verifies whether the given data matches the given signature with the given public key.
      */
     fun verify(data: List<Byte>, publicKey: ECPublicKey, signature: ECSignature): Boolean
+
+    /**
+     * Verifies whether the given point belongs to the secp256k1 curve.
+     */
+    fun isSecp256k1(point: ECPoint): Boolean
 }

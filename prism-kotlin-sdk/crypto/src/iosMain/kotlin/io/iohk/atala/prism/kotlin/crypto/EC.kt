@@ -5,6 +5,7 @@ import com.ionspin.kotlin.bignum.integer.BigInteger
 import fr.acinq.bitcoin.*
 import fr.acinq.secp256k1.Secp256k1
 import io.iohk.atala.prism.kotlin.crypto.keys.ECKeyPair
+import io.iohk.atala.prism.kotlin.crypto.keys.ECPoint
 import io.iohk.atala.prism.kotlin.crypto.keys.ECPrivateKey
 import io.iohk.atala.prism.kotlin.crypto.keys.ECPublicKey
 import io.iohk.atala.prism.kotlin.crypto.signature.ECSignature
@@ -142,4 +143,7 @@ actual object EC {
             publicKey.getEncoded().toByteArray()
         )
     }
+
+    actual fun isSecp256k1(point: ECPoint): Boolean =
+        io.iohk.atala.prism.kotlin.crypto.Secp256k1.isSecp256k1(point)
 }
