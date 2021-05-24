@@ -5,6 +5,8 @@ import io.iohk.atala.mirror.services.CardanoAddressService.CardanoAddressService
 
 import sys.process._
 import java.io.{ByteArrayOutputStream, PrintWriter}
+import io.iohk.atala.prism.errors.PrismError
+import io.grpc.Status
 
 class CardanoAddressService(val binaryPath: String = "target/mirror-binaries/cardano-address") {
 
@@ -50,5 +52,11 @@ class CardanoAddressService(val binaryPath: String = "target/mirror-binaries/car
 }
 
 object CardanoAddressService {
-  case class CardanoAddressServiceError(consoleErrorOutput: String) extends AnyVal
+  case class CardanoAddressServiceError(consoleErrorOutput: String) extends PrismError {
+    override def toStatus: Status = {
+      Status.INTERNAL.withDescription(
+        s"Cardano address service error: $consoleErrorOutput"
+      )
+    }
+  }
 }

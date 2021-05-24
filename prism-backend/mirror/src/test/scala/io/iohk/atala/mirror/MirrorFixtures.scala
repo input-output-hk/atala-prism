@@ -239,6 +239,25 @@ trait MirrorFixtures extends ServicesFixtures {
         )
         .toByteString
     )
+
+    lazy val cardanoRegisterWalletMessageMessage = ReceivedMessage(
+      id = "id4",
+      received = Timestamp(LocalDateTime.of(2020, 6, 13, 0, 0).toEpochSecond(ZoneOffset.UTC)).some,
+      connectionId = connectionId1.uuid.toString,
+      message = AtalaMessage()
+        .withKycBridgeMessage(
+          credential_models
+            .KycBridgeMessage()
+            .withRegisterWalletMessage(
+              credential_models.RegisterWalletMessage(
+                name = "wallet name",
+                extendedPublicKey =
+                  "acct_xvk155crk6049ap0477qvjpf5mvxtw5f46uk6k54udc9mz5wcdyyhssexcsk5sgvy05m7mqh3ed3qgs6epyf7hvdfxf6hd54aqm3uwdsewqu6vsvy"
+              )
+            )
+        )
+        .toByteString
+    )
   }
 
   object PayIdFixtures {
@@ -319,5 +338,26 @@ trait MirrorFixtures extends ServicesFixtures {
         connectionId: String = connectionId1.uuid.toString,
         message: ByteString
     ): ReceivedMessage = ReceivedMessage(id, connectionId, message, received)
+  }
+
+  object CardanoWalletFixtures {
+    import ConnectionFixtures._
+
+    val cardanoWallet = CardanoWallet(
+      id = CardanoWallet.Id.random(),
+      name = Some("name"),
+      connectionToken = connection1.token,
+      extendedPublicKey = "key",
+      lastGeneratedNo = 10,
+      lastUsedNo = 0,
+      registrationDate = CardanoWallet.RegistrationDate(LocalDateTime.of(2020, 10, 4, 0, 0).toInstant(ZoneOffset.UTC))
+    )
+
+    var cardanoWalletAddress = CardanoWalletAddress(
+      address = CardanoAddress("address"),
+      walletId = cardanoWallet.id,
+      sequenceNo = 0,
+      usedAt = Some(CardanoWalletAddress.UsedAt(LocalDateTime.of(2020, 10, 4, 0, 0).toInstant(ZoneOffset.UTC)))
+    )
   }
 }

@@ -8,7 +8,7 @@ import io.grpc.Server
 import io.iohk.atala.prism.crypto.EC
 import io.iohk.atala.prism.connector.RequestAuthenticator
 import io.iohk.atala.mirror.protos.mirror_api.MirrorServiceGrpc
-import io.iohk.atala.mirror.config.MirrorConfig
+import io.iohk.atala.mirror.config.{MirrorConfig, CardanoConfig}
 import io.iohk.atala.mirror.http.ApiServer
 import io.iohk.atala.mirror.http.endpoints.PaymentEndpoints
 import io.iohk.atala.mirror.services.{
@@ -78,6 +78,7 @@ object MirrorApp extends TaskApp {
       transactorConfig = TransactorFactory.transactorConfig(globalConfig)
       connectorConfig = ConnectorConfig(globalConfig)
       nodeConfig = NodeConfig(globalConfig)
+      cardanoConfig = CardanoConfig(globalConfig)
 
       // db
       tx <- TransactorFactory.transactor[Task](transactorConfig)
