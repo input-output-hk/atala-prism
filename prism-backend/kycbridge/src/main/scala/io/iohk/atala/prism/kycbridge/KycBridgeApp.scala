@@ -30,9 +30,16 @@ import io.iohk.atala.prism.services.ConnectorMessagesService
 import doobie.implicits._
 import io.iohk.atala.prism.daos.ConnectorMessageOffsetDao
 import io.iohk.atala.prism.kycbridge.processors.DocumentUploadedMessageProcessor
+import io.iohk.atala.prism.task.lease.system.{
+  ProcessingTaskRouterImpl,
+  ProcessingTaskScheduler,
+  ProcessingTaskServiceImpl
+}
 import io.iohk.atala.prism.protos.connector_api.ConnectorServiceGrpc
 import io.iohk.atala.prism.protos.node_api.NodeServiceGrpc
 import io.iohk.atala.prism.services.BaseGrpcClientService
+
+import java.util.UUID
 
 object KycBridgeApp extends TaskApp {
 
@@ -117,6 +124,10 @@ object KycBridgeApp extends TaskApp {
       faceIdService = new FaceIdServiceImpl(kycBridgeConfig.acuantConfig, httpClient)
       connectionService = new ConnectionService(tx, connectorService)
       acuantService = new AcuantService(tx, assureIdService, acasService, connectorService)
+      processingTaskService = new ProcessingTaskServiceImpl(tx, UUID.randomUUID())
+      processingTaskRouter = new ProcessingTaskRouterImpl(processingTaskService)
+      processingTaskScheduler =
+        new ProcessingTaskScheduler(processingTaskService, processingTaskRouter, kycBridgeConfig.taskLeaseConfig)
 
       // connector message processors
       documentUploadedMessageProcessor = new DocumentUploadedMessageProcessor(
@@ -137,7 +148,8 @@ object KycBridgeApp extends TaskApp {
       streams = List(
         connectionService.connectionUpdateStream.compile.drain,
         acuantService.acuantDataStream.compile.drain,
-        connectorMessageService.messagesUpdatesStream.compile.drain
+        connectorMessageService.messagesUpdatesStream.compile.drain,
+        processingTaskScheduler.run.void
       )
 
       // gRPC server

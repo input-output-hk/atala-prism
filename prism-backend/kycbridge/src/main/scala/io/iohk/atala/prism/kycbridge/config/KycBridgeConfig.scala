@@ -1,6 +1,7 @@
 package io.iohk.atala.prism.kycbridge.config
 
 import com.typesafe.config.Config
+import io.iohk.atala.prism.task.lease.system.ProcessingTaskLeaseConfig
 import io.iohk.atala.prism.utils.GrpcUtils.GrpcConfig
 
 case class AcuantConfig(
@@ -12,7 +13,11 @@ case class AcuantConfig(
     subscriptionId: String
 )
 
-case class KycBridgeConfig(grpcConfig: GrpcConfig, acuantConfig: AcuantConfig)
+case class KycBridgeConfig(
+    grpcConfig: GrpcConfig,
+    acuantConfig: AcuantConfig,
+    taskLeaseConfig: ProcessingTaskLeaseConfig
+)
 
 object KycBridgeConfig {
   def apply(config: Config): KycBridgeConfig = {
@@ -27,7 +32,8 @@ object KycBridgeConfig {
         username = acuantConfig.getString("username"),
         password = acuantConfig.getString("password"),
         subscriptionId = acuantConfig.getString("subscriptionId")
-      )
+      ),
+      taskLeaseConfig = ProcessingTaskLeaseConfig(config.getConfig("taskLeaseSystem"))
     )
   }
 }

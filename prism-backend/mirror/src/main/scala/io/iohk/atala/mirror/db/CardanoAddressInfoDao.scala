@@ -14,10 +14,11 @@ import io.iohk.atala.mirror.models.CardanoAddress
 import io.iohk.atala.prism.mirror.payid.Address.VerifiedAddress
 import io.iohk.atala.prism.mirror.payid.implicits._
 import io.iohk.atala.prism.jose.implicits._
+import io.iohk.atala.prism.utils.DoobieImplicits
 
 object CardanoAddressInfoDao {
 
-  implicit val verifiedAddressMeta: Meta[VerifiedAddress] = Metas.circeMeta[VerifiedAddress]
+  implicit val verifiedAddressMeta: Meta[VerifiedAddress] = DoobieImplicits.circeMeta[VerifiedAddress]
 
   def findBy(addresses: NonEmptyList[CardanoAddress]): ConnectionIO[List[CardanoAddressInfo]] = {
     (fr"""
