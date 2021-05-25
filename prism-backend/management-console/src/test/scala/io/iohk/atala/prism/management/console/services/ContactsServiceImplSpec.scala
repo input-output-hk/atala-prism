@@ -23,9 +23,11 @@ import scala.concurrent.Future
 import scala.util.Try
 
 class ContactsServiceImplSpec extends ManagementConsoleRpcSpecBase with DIDUtil with ManagementConsoleTestUtil {
-  private val connectionMissing = connector_models.ContactConnection(
-    connectionStatus = console_models.ContactConnectionStatus.STATUS_CONNECTION_MISSING
-  )
+  private def connectionMissing(connectionToken: Option[String] = None) =
+    connector_models.ContactConnection(
+      connectionStatus = console_models.ContactConnectionStatus.STATUS_CONNECTION_MISSING,
+      connectionToken = connectionToken.getOrElse("")
+    )
 
   "authentication" should {
     "support unpublished DID authentication" in {
@@ -105,7 +107,7 @@ class ContactsServiceImplSpec extends ManagementConsoleRpcSpecBase with DIDUtil 
           .value
         result.size must be(1)
         val storedContact = result.headOption.value.details
-        toContactProto(storedContact, connectionMissing).copy(jsonData = "") must be(
+        toContactProto(storedContact, connectionMissing()).copy(jsonData = "") must be(
           response.copy(jsonData = "")
         )
         storedContact.data must be(json)
@@ -147,7 +149,7 @@ class ContactsServiceImplSpec extends ManagementConsoleRpcSpecBase with DIDUtil 
         // the new contact needs to exist
         val result = contactsRepository.find(institutionId, contactId).value.futureValue.toOption.value
         val contactWithDetails = result.value
-        toContactProto(contactWithDetails.contact, connectionMissing).copy(jsonData = "") must be(
+        toContactProto(contactWithDetails.contact, connectionMissing()).copy(jsonData = "") must be(
           response.copy(jsonData = "")
         )
         contactWithDetails.contact.data must be(json)
@@ -181,7 +183,7 @@ class ContactsServiceImplSpec extends ManagementConsoleRpcSpecBase with DIDUtil 
         // the new contact needs to exist
         val result = contactsRepository.find(institutionId, contactId).value.futureValue.toOption.value
         val contactWithDetails = result.value
-        toContactProto(contactWithDetails.contact, connectionMissing) must be(response)
+        toContactProto(contactWithDetails.contact, connectionMissing()) must be(response)
       }
     }
 
@@ -682,27 +684,77 @@ class ContactsServiceImplSpec extends ManagementConsoleRpcSpecBase with DIDUtil 
   private def contactJsonData(c: console_models.Contact): Json = parser.parse(c.jsonData).toOption.value
 
   "getContacts" should {
-    "return the first contacts" in {
+    "return connectionToken of the contact if connection is not accepted" in {
       val keyPair = EC.generateKeyPair()
       val publicKey = keyPair.publicKey
       val did = generateDid(publicKey)
+      val connectionToken = "some-connection-token"
       val institutionId = createParticipant("institutionx", did)
-      val groupNameA = createInstitutionGroup(institutionId, InstitutionGroup.Name("Group A")).name
-      val groupNameB = createInstitutionGroup(institutionId, InstitutionGroup.Name("Group B")).name
-      val groupNameC = createInstitutionGroup(institutionId, InstitutionGroup.Name("Group C")).name
-      val contactA = createContact(institutionId, "Alice", Some(groupNameA))
-      val contactB = createContact(institutionId, "Bob", Some(groupNameB))
-      createContact(institutionId, "Charles", Some(groupNameC))
-      createContact(institutionId, "Alice 2", Some(groupNameA))
+      val groupName = createInstitutionGroup(institutionId, InstitutionGroup.Name("Group A")).name
+      createContact(
+        institutionId = institutionId,
+        name = "Alice",
+        groupName = Some(groupName),
+        connectionToken = connectionToken
+      )
       val request = console_api.GetContactsRequest(
-        limit = 2
+        limit = 1
       )
       val rpcRequest = SignedRpcRequest.generate(keyPair, did, request)
+      val connectionMissingWithToken = connectionMissing(Some(connectionToken))
 
       usingApiAsContacts(rpcRequest) { serviceStub =>
         connectorMock.getConnectionStatus(*).returns {
           Future.successful(
-            List(connectionMissing, connectionMissing)
+            List(connectionMissingWithToken)
+          )
+        }
+        val response = serviceStub.getContacts(request)
+        val contactsReturned = response.data.flatMap(_.contact)
+        contactsReturned.headOption.map(_.connectionToken).value mustBe connectionToken
+      }
+    }
+
+    "return first contacts" in {
+      val keyPair = EC.generateKeyPair()
+      val publicKey = keyPair.publicKey
+      val did = generateDid(publicKey)
+      val connectionToken = "some-connection-token"
+      val institutionId = createParticipant("institutionx", did)
+      val groupNameA = createInstitutionGroup(institutionId, InstitutionGroup.Name("Group A")).name
+      val groupNameB = createInstitutionGroup(institutionId, InstitutionGroup.Name("Group B")).name
+      val groupNameC = createInstitutionGroup(institutionId, InstitutionGroup.Name("Group C")).name
+      val contactA = createContact(
+        institutionId = institutionId,
+        name = "Alice",
+        groupName = Some(groupNameA),
+        connectionToken = connectionToken
+      )
+      val contactB = createContact(
+        institutionId = institutionId,
+        name = "Bob",
+        groupName = Some(groupNameB),
+        connectionToken = connectionToken
+      )
+      createContact(
+        institutionId = institutionId,
+        name = "Charles",
+        groupName = Some(groupNameC)
+      )
+      createContact(
+        institutionId = institutionId,
+        name = "Alice 2",
+        groupName = Some(groupNameA)
+      )
+      val request = console_api.GetContactsRequest(
+        limit = 2
+      )
+      val rpcRequest = SignedRpcRequest.generate(keyPair, did, request)
+      val connectionMissingWithToken = connectionMissing(Some(connectionToken))
+      usingApiAsContacts(rpcRequest) { serviceStub =>
+        connectorMock.getConnectionStatus(*).returns {
+          Future.successful(
+            List(connectionMissingWithToken, connectionMissingWithToken)
           )
         }
 
@@ -712,36 +764,48 @@ class ContactsServiceImplSpec extends ManagementConsoleRpcSpecBase with DIDUtil 
         val contactsReturnedJsons = contactsReturned map contactJsonData
         contactsReturnedNoJsons.toList must be(
           List(
-            toContactProto(contactA, connectionMissing),
-            toContactProto(contactB, connectionMissing)
+            toContactProto(contactA, connectionMissingWithToken),
+            toContactProto(contactB, connectionMissingWithToken)
           ).map(cleanContactData)
         )
         contactsReturnedJsons.toList must be(List(contactA.data, contactB.data))
       }
     }
 
-    "return the first contacts matching a group" in {
+    "return first contacts matching a group" in {
       val keyPair = EC.generateKeyPair()
       val publicKey = keyPair.publicKey
       val did = generateDid(publicKey)
+      val connectionToken = "some-connection-token"
       val institutionId = createParticipant("institutionx", did)
       val groupNameA = createInstitutionGroup(institutionId, InstitutionGroup.Name("Group A")).name
       val groupNameB = createInstitutionGroup(institutionId, InstitutionGroup.Name("Group B")).name
       val groupNameC = createInstitutionGroup(institutionId, InstitutionGroup.Name("Group C")).name
-      val contactA = createContact(institutionId, "Alice", Some(groupNameA))
+      val contactA = createContact(
+        institutionId = institutionId,
+        name = "Alice",
+        groupName = Some(groupNameA),
+        connectionToken = connectionToken
+      )
+      val contactA2 = createContact(
+        institutionId = institutionId,
+        name = "Alice 2",
+        groupName = Some(groupNameA),
+        connectionToken = connectionToken
+      )
       createContact(institutionId, "Bob", Some(groupNameB))
       createContact(institutionId, "Charles", Some(groupNameC))
-      val contactA2 = createContact(institutionId, "Alice 2", Some(groupNameA))
       val request = console_api.GetContactsRequest(
         limit = 2,
         groupName = groupNameA.value
       )
       val rpcRequest = SignedRpcRequest.generate(keyPair, did, request)
+      val connectionMissingWithToken = connectionMissing(Some(connectionToken))
 
       usingApiAsContacts(rpcRequest) { serviceStub =>
         connectorMock.getConnectionStatus(*).returns {
           Future.successful(
-            List(connectionMissing, connectionMissing)
+            List(connectionMissingWithToken, connectionMissingWithToken)
           )
         }
 
@@ -751,8 +815,8 @@ class ContactsServiceImplSpec extends ManagementConsoleRpcSpecBase with DIDUtil 
         val contactsReturnedJsons = contactsReturned map contactJsonData
         contactsReturnedNoJsons.toList must be(
           List(
-            toContactProto(contactA, connectionMissing),
-            toContactProto(contactA2, connectionMissing)
+            toContactProto(contactA, connectionMissingWithToken),
+            toContactProto(contactA2, connectionMissingWithToken)
           ).map(cleanContactData)
         )
         contactsReturnedJsons.toList must be(List(contactA.data, contactA2.data))
@@ -763,24 +827,36 @@ class ContactsServiceImplSpec extends ManagementConsoleRpcSpecBase with DIDUtil 
       val keyPair = EC.generateKeyPair()
       val publicKey = keyPair.publicKey
       val did = generateDid(publicKey)
+      val connectionToken = "some-connection-token"
       val institutionId = createParticipant("Institution X", did)
       val groupNameA = createInstitutionGroup(institutionId, InstitutionGroup.Name("Group A")).name
       val groupNameB = createInstitutionGroup(institutionId, InstitutionGroup.Name("Group B")).name
       val groupNameC = createInstitutionGroup(institutionId, InstitutionGroup.Name("Group C")).name
       createContact(institutionId, "Alice", Some(groupNameA))
-      val contactB = createContact(institutionId, "Bob", Some(groupNameB))
-      val contactC = createContact(institutionId, "Charles", Some(groupNameC))
       createContact(institutionId, "Alice 2", Some(groupNameA))
+      val contactB = createContact(
+        institutionId = institutionId,
+        name = "Bob",
+        groupName = Some(groupNameB),
+        connectionToken = connectionToken
+      )
+      val contactC = createContact(
+        institutionId = institutionId,
+        name = "Charles",
+        groupName = Some(groupNameC),
+        connectionToken = connectionToken
+      )
       val request = console_api.GetContactsRequest(
         limit = 1,
         scrollId = contactB.contactId.toString
       )
       val rpcRequest = SignedRpcRequest.generate(keyPair, did, request)
+      val connectionMissingWithToken = connectionMissing(Some(connectionToken))
 
       usingApiAsContacts(rpcRequest) { serviceStub =>
         connectorMock.getConnectionStatus(*).returns {
           Future.successful(
-            List(connectionMissing)
+            List(connectionMissingWithToken)
           )
         }
 
@@ -789,7 +865,7 @@ class ContactsServiceImplSpec extends ManagementConsoleRpcSpecBase with DIDUtil 
         val contactsReturnedNoJsons = contactsReturned map cleanContactData
         val contactsReturnedJsons = contactsReturned map contactJsonData
         contactsReturnedNoJsons.toList must be(
-          List(cleanContactData(toContactProto(contactC, connectionMissing)))
+          List(cleanContactData(toContactProto(contactC, connectionMissingWithToken)))
         )
         contactsReturnedJsons.toList must be(List(contactC.data))
       }
@@ -799,25 +875,37 @@ class ContactsServiceImplSpec extends ManagementConsoleRpcSpecBase with DIDUtil 
       val keyPair = EC.generateKeyPair()
       val publicKey = keyPair.publicKey
       val did = generateDid(publicKey)
+      val connectionToken = "some-connection-token"
       val institutionId = createParticipant("Institution X", did)
       val groupNameA = createInstitutionGroup(institutionId, InstitutionGroup.Name("Group A")).name
       val groupNameB = createInstitutionGroup(institutionId, InstitutionGroup.Name("Group B")).name
       val groupNameC = createInstitutionGroup(institutionId, InstitutionGroup.Name("Group C")).name
-      val contactA = createContact(institutionId, "Alice", Some(groupNameA))
+      val contactA = createContact(
+        institutionId = institutionId,
+        name = "Alice",
+        groupName = Some(groupNameA),
+        connectionToken = connectionToken
+      )
+      val contactA2 = createContact(
+        institutionId = institutionId,
+        name = "Alice 2",
+        groupName = Some(groupNameA),
+        connectionToken = connectionToken
+      )
       createContact(institutionId, "Bob", Some(groupNameB))
       createContact(institutionId, "Charles", Some(groupNameC))
-      val contactA2 = createContact(institutionId, "Alice 2", Some(groupNameA))
       val request = console_api.GetContactsRequest(
         limit = 2,
         scrollId = contactA.contactId.toString,
         groupName = groupNameA.value
       )
       val rpcRequest = SignedRpcRequest.generate(keyPair, did, request)
+      val connectionMissingWithToken = connectionMissing(Some(connectionToken))
 
       usingApiAsContacts(rpcRequest) { serviceStub =>
         connectorMock.getConnectionStatus(*).returns {
           Future.successful(
-            List(connectionMissing)
+            List(connectionMissingWithToken)
           )
         }
 
@@ -826,7 +914,7 @@ class ContactsServiceImplSpec extends ManagementConsoleRpcSpecBase with DIDUtil 
         val contactsReturnedNoJsons = contactsReturned map cleanContactData
         val contactsReturnedJsons = contactsReturned map contactJsonData
         contactsReturnedNoJsons.toList must be(
-          List(cleanContactData(toContactProto(contactA2, connectionMissing)))
+          List(cleanContactData(toContactProto(contactA2, connectionMissingWithToken)))
         )
         contactsReturnedJsons.toList must be(List(contactA2.data))
       }
@@ -849,7 +937,7 @@ class ContactsServiceImplSpec extends ManagementConsoleRpcSpecBase with DIDUtil 
       usingApiAsContacts(rpcRequest) { serviceStub =>
         connectorMock.getConnectionStatus(*).returns {
           Future.successful(
-            List(connectionMissing, connectionMissing)
+            List(connectionMissing(), connectionMissing())
           )
         }
 
@@ -918,13 +1006,13 @@ class ContactsServiceImplSpec extends ManagementConsoleRpcSpecBase with DIDUtil 
       usingApiAsContacts(rpcRequest) { serviceStub =>
         connectorMock.getConnectionStatus(*).returns {
           Future.successful(
-            List(connectionMissing)
+            List(connectionMissing())
           )
         }
 
         val response = serviceStub.getContact(request)
         cleanContactData(response.contact.value) must be(
-          cleanContactData(toContactProto(contact, connectionMissing))
+          cleanContactData(toContactProto(contact, connectionMissing()))
         )
         contactJsonData(response.contact.value) must be(contact.data)
       }
@@ -976,7 +1064,7 @@ class ContactsServiceImplSpec extends ManagementConsoleRpcSpecBase with DIDUtil 
       usingApiAsContacts(deleteRpcRequest) { serviceStub =>
         connectorMock.getConnectionStatus(*).returns {
           Future.successful(
-            List(connectionMissing)
+            List(connectionMissing())
           )
         }
 
@@ -1008,7 +1096,7 @@ class ContactsServiceImplSpec extends ManagementConsoleRpcSpecBase with DIDUtil 
       usingApiAsContacts(deleteRpcRequest) { serviceStub =>
         connectorMock.getConnectionStatus(*).returns {
           Future.successful(
-            List(connectionMissing)
+            List(connectionMissing())
           )
         }
 
@@ -1048,7 +1136,7 @@ class ContactsServiceImplSpec extends ManagementConsoleRpcSpecBase with DIDUtil 
       usingApiAsContacts(deleteRpcRequest) { serviceStub =>
         connectorMock.getConnectionStatus(*).returns {
           Future.successful(
-            List(connectionMissing)
+            List(connectionMissing())
           )
         }
 

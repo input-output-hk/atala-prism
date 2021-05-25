@@ -111,7 +111,10 @@ class ContactsIntegrationService(
             contact.details,
             tokenToConnection.getOrElse(
               contact.details.connectionToken,
-              ContactConnection(connectionStatus = ContactConnectionStatus.STATUS_CONNECTION_MISSING)
+              ContactConnection(
+                connectionToken = contact.details.connectionToken.token,
+                connectionStatus = ContactConnectionStatus.STATUS_CONNECTION_MISSING
+              )
             )
           ) -> contact.counts
         }

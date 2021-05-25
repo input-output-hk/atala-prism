@@ -70,7 +70,8 @@ object DataPreparation {
       name: String = s"name-${Random.nextInt(100)}",
       groupName: Option[InstitutionGroup.Name] = None,
       createdAt: Option[Instant] = None,
-      externalId: Contact.ExternalId = Contact.ExternalId.random()
+      externalId: Contact.ExternalId = Contact.ExternalId.random(),
+      connectionToken: String = "connectionToken"
   )(implicit
       database: Transactor[IO]
   ): Contact = {
@@ -87,7 +88,7 @@ object DataPreparation {
     groupName match {
       case None =>
         ContactsDAO
-          .createContact(institutionId, request, createdAt.getOrElse(Instant.now()), ConnectionToken("connectionToken"))
+          .createContact(institutionId, request, createdAt.getOrElse(Instant.now()), ConnectionToken(connectionToken))
           .transact(database)
           .unsafeRunSync()
       case Some(name) =>
@@ -102,7 +103,7 @@ object DataPreparation {
             institutionId,
             request,
             createdAt.getOrElse(Instant.now()),
-            ConnectionToken("connectionToken")
+            ConnectionToken(connectionToken)
           )
           _ <- InstitutionGroupsDAO.addContact(group.id, contact.contactId)
         } yield contact
