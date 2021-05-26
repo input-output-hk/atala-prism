@@ -83,8 +83,10 @@ export const useCredentialsIssuedListWithFilters = credentialsManager => {
             '[CredentialContainer.getCredentialsRecieved] Error while getting Credentials',
             error
           );
-          if (error.code === UNKNOWN_DID_SUFFIX_ERROR_CODE) showUnconfirmedAccountError();
-          else {
+          if (error.code === UNKNOWN_DID_SUFFIX_ERROR_CODE) {
+            showUnconfirmedAccountError();
+            setHasMore(false);
+          } else {
             removeUnconfirmedAccountError();
             message.error(t('errors.errorGetting', { model: 'Credentials' }));
           }
@@ -130,6 +132,7 @@ export const useCredentialsIssuedListWithFilters = credentialsManager => {
       );
       if (error.code === UNKNOWN_DID_SUFFIX_ERROR_CODE) {
         showUnconfirmedAccountError();
+        setHasMore(false);
       } else {
         removeUnconfirmedAccountError();
         message.error(t('errors.errorGetting', { model: 'Credentials' }));

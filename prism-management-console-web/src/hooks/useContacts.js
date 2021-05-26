@@ -51,6 +51,7 @@ const useGetContacts = (contactsManager, allowPreload = true) => {
         .catch(error => {
           if (error.code === UNKNOWN_DID_SUFFIX_ERROR_CODE) {
             showUnconfirmedAccountError();
+            setHasMore(false);
           } else {
             removeUnconfirmedAccountError();
             Logger.error('[Contacts.getContacts] Error while getting contacts', error);

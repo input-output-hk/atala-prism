@@ -44,6 +44,7 @@ const GroupsContainer = ({ api }) => {
           Logger.error('[GroupsContainer.updateGroups] Error: ', error);
           if (error.code === UNKNOWN_DID_SUFFIX_ERROR_CODE) {
             showUnconfirmedAccountError();
+            setHasMore(false);
           } else {
             removeUnconfirmedAccountError();
             message.error(t('errors.errorGetting', { model: 'groups' }));
