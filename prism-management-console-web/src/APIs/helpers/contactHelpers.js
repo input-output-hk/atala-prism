@@ -3,13 +3,12 @@ import { omit } from 'lodash';
 // TODO: adapt the rest of the frontend so this isn't necessary
 export function contactMapper(contact) {
   const jsondata = JSON.parse(contact.jsonData);
-  const { status: holderStatus, connectionstatus, contactId, ...rest } = {
+  const { connectionStatus, contactId, ...rest } = {
     ...omit(contact, ['jsondata', 'holderid']),
     ...jsondata,
     ...parseName(jsondata)
   };
-  const status = holderStatus !== undefined ? holderStatus : connectionstatus;
-  return Object.assign({}, rest, { key: contactId, status, contactId });
+  return Object.assign({}, rest, { key: contactId, connectionStatus, contactId });
 }
 
 export const parseName = ({ contactName = '', firstName = '', lastName = '', midNames = '' }) =>

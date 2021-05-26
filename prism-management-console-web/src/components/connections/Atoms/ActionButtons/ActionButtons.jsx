@@ -6,11 +6,11 @@ import CustomButton from '../../../common/Atoms/CustomButton/CustomButton';
 import { studentShape } from '../../../../helpers/propShapes';
 import { CONNECTION_STATUSES } from '../../../../helpers/constants';
 
-const showQR = ({ status }) =>
+const showQR = ({ connectionStatus }) =>
   [
     CONNECTION_STATUSES.statusInvitationMissing,
     CONNECTION_STATUSES.statusConnectionMissing
-  ].includes(status);
+  ].includes(connectionStatus);
 
 const ActionButtons = ({ inviteContact, viewContactDetail, contact }) => {
   const { t } = useTranslation();
