@@ -34,13 +34,21 @@
                     app:profileName="@{viewModel.userProfileName}"
                     app:totalOfNotifications="@{viewModel.totalOfNotifications}" />
 
+                <androidx.recyclerview.widget.RecyclerView
+                    iohk:visible="@{viewModel.dashboardCardNotifications.size() > 0}"
+                    android:clipToPadding="false"
+                    android:clipChildren="false"
+                    android:paddingVertical="20dp"
+                    android:paddingHorizontal="30dp"
+                    android:id="@+id/cards_notifications_recycler_View"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"/>
+
                 <include android:id="@+id/last_activity_include" layout="@layout/include_dashboard_last_activity"/>
 
                 <include android:id="@+id/banners_include" layout="@layout/include_dashboard_banners" />
 
             </LinearLayout>
         </ScrollView>
-
-
     </LinearLayout>
 </layout>

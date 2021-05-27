@@ -8,6 +8,7 @@ import io.iohk.atala.prism.app.data.local.preferences.models.customDateFormatFro
 import io.iohk.atala.prism.app.neo.common.extensions.Bitmap
 import io.iohk.atala.prism.app.neo.common.extensions.toEncodedBase64String
 import io.iohk.atala.prism.app.neo.model.BackendConfig
+import io.iohk.atala.prism.app.neo.model.DashboardNotification
 import io.iohk.atala.prism.app.neo.model.UserProfile
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
@@ -24,6 +25,7 @@ class PreferencesLocalDataSource(context: Context) : BaseLocalDataSource(context
         private const val USER_CUSTOM_DATE_FORMAT = "user_custom_date_format"
         private const val CUSTOM_BACKEND_URL = "backend_ip"
         private const val CUSTOM_BACKEND_PORT = "backend_port"
+        private const val REMOVED_DASHBOARD_NOTIFICATIONS_IDENTIFIERS = "REMOVED_DASHBOARD_NOTIFICATIONS_IDENTIFIERS"
     }
 
     override suspend fun storeSecurityPin(securityPin: SecurityPin) {
@@ -113,5 +115,23 @@ class PreferencesLocalDataSource(context: Context) : BaseLocalDataSource(context
             return null
         }
         return BackendConfig(url!!, port)
+    }
+
+    override suspend fun getDashboardCardNotifications(): List<DashboardNotification> {
+        val currentRemovedNotifications: MutableSet<String> = preferences.getStringSet(REMOVED_DASHBOARD_NOTIFICATIONS_IDENTIFIERS, mutableSetOf())!!
+        return listOf(DashboardNotification.PayId, DashboardNotification.VerifyId).filter {
+            return@filter !currentRemovedNotifications.contains(it.identifier)
+        }
+    }
+
+    override suspend fun removeDashboardCardNotification(notification: DashboardNotification) {
+        return withContext(Dispatchers.IO) {
+            val currentRemovedNotifications: MutableSet<String> = preferences.getStringSet(REMOVED_DASHBOARD_NOTIFICATIONS_IDENTIFIERS, mutableSetOf())!!
+            val removedNotifications = HashSet<String>(currentRemovedNotifications)
+            removedNotifications.add(notification.identifier)
+            val editor = preferences.edit()
+            editor.putStringSet(REMOVED_DASHBOARD_NOTIFICATIONS_IDENTIFIERS, removedNotifications)
+            editor.commit()
+        }
     }
 }

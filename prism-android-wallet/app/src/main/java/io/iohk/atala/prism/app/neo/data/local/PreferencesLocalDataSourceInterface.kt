@@ -3,6 +3,7 @@ package io.iohk.atala.prism.app.neo.data.local
 import io.iohk.atala.prism.app.data.local.preferences.SecurityPin
 import io.iohk.atala.prism.app.data.local.preferences.models.CustomDateFormat
 import io.iohk.atala.prism.app.neo.model.BackendConfig
+import io.iohk.atala.prism.app.neo.model.DashboardNotification
 import io.iohk.atala.prism.app.neo.model.UserProfile
 
 interface PreferencesLocalDataSourceInterface {
@@ -17,4 +18,6 @@ interface PreferencesLocalDataSourceInterface {
     fun getDefaultDateFormat(): CustomDateFormat
     fun storeCustomBackendConfig(config: BackendConfig)
     fun getCustomBackendConfig(): BackendConfig?
+    suspend fun getDashboardCardNotifications(): List<DashboardNotification>
+    suspend fun removeDashboardCardNotification(notification: DashboardNotification)
 }

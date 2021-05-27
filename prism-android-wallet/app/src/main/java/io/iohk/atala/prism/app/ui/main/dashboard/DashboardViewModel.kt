@@ -12,6 +12,7 @@ import io.iohk.atala.prism.app.data.local.db.model.ActivityHistoryWithCredential
 import io.iohk.atala.prism.app.data.local.db.model.Credential
 import io.iohk.atala.prism.app.data.local.preferences.models.CustomDateFormat
 import io.iohk.atala.prism.app.neo.data.DashboardRepository
+import io.iohk.atala.prism.app.neo.model.DashboardNotification
 import io.iohk.atala.prism.app.neo.model.UserProfile
 import kotlinx.coroutines.launch
 import javax.inject.Inject
@@ -49,9 +50,21 @@ class DashboardViewModel @Inject constructor(
         it?.profileImage
     }
 
-    fun loadUserProfile() {
+    private val _dashboardCardNotifications = MutableLiveData<List<DashboardNotification>>(listOf())
+
+    val dashboardCardNotifications: LiveData<List<DashboardNotification>> = _dashboardCardNotifications
+
+    fun loadData() {
         viewModelScope.launch {
             userProfile.value = repository.getUserProfile()
+            _dashboardCardNotifications.value = repository.getDashboardCardNotifications()
+        }
+    }
+
+    fun removeDashboardNotification(notification: DashboardNotification) {
+        viewModelScope.launch {
+            repository.removeDashboardCardNotification(notification)
+            _dashboardCardNotifications.value = repository.getDashboardCardNotifications()
         }
     }
 }

@@ -43,6 +43,8 @@
             android:visibility="visible"
             android:clipChildren="false"
             android:clipToPadding="false"
+            android:nestedScrollingEnabled="false"
+            android:isScrollContainer="false"
             android:id="@+id/activities_recycler_view"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"/>
