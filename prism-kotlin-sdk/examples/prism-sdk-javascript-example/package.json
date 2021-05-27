@@ -1,0 +1,33 @@
+{
+  "name": "prism-sdk-javascript-example",
+  "version": "1.0.0",
+  "description": "PRISM Kotlin SDK JavaScript Example",
+  "main": "./dist/index.js",
+  "scripts": {
+    "start": "node ./node_modules/parcel-bundler/bin/cli serve ./src/index.html --port 8080",
+    "build": "node ./node_modules/parcel-bundler/bin/cli build ./src/index.html --out-dir ./dist/",
+    "lint": "node ./node_modules/eslint/bin/eslint . --ext .js --fix"
+  },
+  "repository": {
+    "type": "git",
+    "url": ""
+  },
+  "keywords": [],
+  "author": "",
+  "license": "",
+  "devDependencies": {
+    "@babel/core": "^7.13.16",
+    "@babel/plugin-proposal-class-properties": "^7.13.0",
+    "@babel/plugin-transform-runtime": "^7.13.15",
+    "@js-joda/core": "^3.2.0",
+    "eslint": "^7.23.0",
+    "eslint-config-airbnb-base": "^14.2.1",
+    "eslint-plugin-import": "^2.22.1",
+    "parcel-bundler": "^1.12.5"
+  },
+  "dependencies": {
+    "grpc-web": "^1.2.1",
+    "prism-kotlin-sdk": "file:../../build/js",
+    "protobufjs": "^6.10.2"
+  }
+}
