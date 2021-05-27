@@ -15,16 +15,14 @@ const GenericStepsButtons = ({ steps, currentStep, disableBack, disableNext, loa
   return (
     <div className="GenericStepsButtons">
       <div className="ControlButtons">
-        {back && (
-          <CustomButton
-            buttonProps={{
-              onClick: back,
-              className: 'theme-link',
-              disabled: disableBack
-            }}
-            buttonText={[<LeftOutlined />, t('actions.back')]}
-          />
-        )}
+        <CustomButton
+          buttonProps={{
+            onClick: back,
+            className: 'theme-link',
+            disabled: disableBack || !back
+          }}
+          buttonText={[<LeftOutlined />, t('actions.back')]}
+        />
       </div>
       <div className="stepsContainer">
         <Steps size="small" current={currentStep}>
@@ -34,17 +32,15 @@ const GenericStepsButtons = ({ steps, currentStep, disableBack, disableNext, loa
         </Steps>
       </div>
       <div className="ControlButtons">
-        {next && (
-          <CustomButton
-            buttonProps={{
-              onClick: next,
-              className: 'theme-link',
-              disabled: disableNext
-            }}
-            buttonText={[t('actions.next'), <RightOutlined />]}
-            loading={loading}
-          />
-        )}
+        <CustomButton
+          buttonProps={{
+            onClick: next,
+            className: 'theme-link',
+            disabled: disableNext || !next
+          }}
+          buttonText={[t('actions.next'), <RightOutlined />]}
+          loading={loading}
+        />
       </div>
     </div>
   );

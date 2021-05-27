@@ -234,7 +234,7 @@ const ImportDataContainer = ({
     const baseSteps = [
       { back: onCancel, next },
       { back, next: handleSave },
-      hasErrors ? { back } : { next: results?.continueCallback }
+      hasErrors ? { back } : { next: continueCallback || results?.continueCallback }
     ];
     if (!isEmbedded[useCase]) return baseSteps;
     return [{}, {}, baseSteps[currentStep], {}];

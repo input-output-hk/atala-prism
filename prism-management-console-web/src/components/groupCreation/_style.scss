@@ -43,10 +43,10 @@
 .GroupCreationContent {
   width: 100%;
   padding-top: 0.5em;
+  height: calc(100vh - 200px);
+  overflow-y: auto;
 
   .box {
-    height: 75vh;
-    overflow-y: scroll;
     .ai-center {
       margin: 0;
       display: flex;
@@ -79,7 +79,7 @@
   .groupsCheckbox {
     display: flex;
     align-items: flex-end;
-    margin-right: 20px;
+    margin: 0 20px 20px 0;
     span {
       @include body-text($body, $secondary-color, 400);
     }
