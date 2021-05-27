@@ -5,6 +5,7 @@ import io.grpc.stub.MetadataUtils
 import io.iohk.atala.prism.connector.RequestAuthenticator
 import io.iohk.atala.prism.crypto.{EC, ECPrivateKey}
 import io.iohk.atala.prism.identity.DID
+import io.iohk.atala.prism.identity.DID.masterKeyId
 import io.iohk.atala.prism.management.console.models.ConnectorAuthenticatedRequestMetadata
 import io.iohk.atala.prism.models.ConnectionToken
 import io.iohk.atala.prism.protos.connector_api._
@@ -84,8 +85,7 @@ object ConnectorClient {
     val requestAuthenticator = new RequestAuthenticator(EC)
     def requestSigner(request: scalapb.GeneratedMessage): ConnectorAuthenticatedRequestMetadata = {
 
-      // TODO: Avoid hardcoding the key
-      val firstMasterKeyId = "master0"
+      val firstMasterKeyId = masterKeyId
       val signedRequest = requestAuthenticator.signConnectorRequest(request.toByteArray, config.didPrivateKey)
       ConnectorAuthenticatedRequestMetadata(
         did = config.whitelistedDID.value,

@@ -1,11 +1,11 @@
 package io.iohk.atala.prism.auth
 
 import java.util.UUID
-
 import io.iohk.atala.prism.crypto.{EC, ECKeyPair, ECSignature}
 import io.iohk.atala.prism.auth
 import io.iohk.atala.prism.auth.grpc.SignedRequestsHelper
 import io.iohk.atala.prism.identity.DID
+import io.iohk.atala.prism.identity.DID.masterKeyId
 import scalapb.GeneratedMessage
 
 final case class SignedRpcRequest[R <: GeneratedMessage](
@@ -32,7 +32,7 @@ object SignedRpcRequest {
       nonce = requestNonce,
       signature = signature,
       did = did,
-      keyId = "master0",
+      keyId = masterKeyId,
       request = request
     )
   }

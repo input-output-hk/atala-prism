@@ -9,6 +9,7 @@ import io.iohk.atala.prism.connector.repositories.{ParticipantsRepository, Reque
 import io.iohk.atala.prism.{DIDUtil, auth}
 import io.iohk.atala.prism.auth.grpc.{GrpcAuthenticationHeader, GrpcAuthenticationHeaderParser}
 import io.iohk.atala.prism.identity.DID
+import io.iohk.atala.prism.identity.DID.masterKeyId
 import io.iohk.atala.prism.models.ParticipantId
 import io.iohk.atala.prism.utils.FutureEither.FutureEitherOps
 import io.iohk.atala.prism.protos.node_api._
@@ -71,7 +72,7 @@ class SignedRequestsAuthenticatorSpec extends AnyWordSpec {
         .UnpublishedDIDBased(
           requestNonce = auth.model.RequestNonce(signedRequest.requestNonce.toVector),
           did = unpublishedDid,
-          "master0",
+          masterKeyId,
           signature = ECSignature(signedRequest.signature)
         )
 

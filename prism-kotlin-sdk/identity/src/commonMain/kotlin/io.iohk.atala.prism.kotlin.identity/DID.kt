@@ -12,6 +12,7 @@ class DID private constructor(val value: String) {
     companion object {
         val prismPrefix = "did:prism:"
         val prismRegex = Regex("^did:prism(:[A-Za-z0-9_-]+)+$")
+        const val masterKeyId: String = "master0"
 
         // This is the prefix we currently use in IntDemo TODO: Remove once possible
         val testRegex = Regex("^did:test(:[A-Za-z0-9_-]+)+$")
@@ -45,7 +46,7 @@ class DID private constructor(val value: String) {
                 didData = DIDData(
                     publicKeys = listOf(
                         PublicKey(
-                            id = "master0",
+                            id = masterKeyId,
                             usage = KeyUsage.MASTER_KEY,
                             keyData = PublicKey.KeyData.EcKeyData(masterKey.toProto())
                         )

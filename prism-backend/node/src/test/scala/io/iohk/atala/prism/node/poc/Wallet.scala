@@ -3,9 +3,9 @@ package io.iohk.atala.prism.node.poc
 import cats.data.ValidatedNel
 import com.google.protobuf.ByteString
 import io.iohk.atala.prism.credentials.{
+  BatchData,
   Credential,
   CredentialBatchId,
-  BatchData,
   KeyData,
   PrismCredentialVerification,
   VerificationError
@@ -17,6 +17,7 @@ import io.iohk.atala.prism.protos.{node_api, node_models}
 import org.scalatest.OptionValues._
 import io.iohk.atala.prism.identity.DIDSuffix
 import io.iohk.atala.prism.crypto.MerkleTree.MerkleInclusionProof
+import io.iohk.atala.prism.identity.DID.masterKeyId
 
 // We define some classes to illustrate what happens in the different components
 case class Wallet(node: node_api.NodeServiceGrpc.NodeServiceBlockingStub) {
@@ -39,7 +40,7 @@ case class Wallet(node: node_api.NodeServiceGrpc.NodeServiceBlockingStub) {
         node_models.DIDData(
           publicKeys = Seq(
             node_models.PublicKey(
-              id = "master0",
+              id = masterKeyId,
               usage = node_models.KeyUsage.MASTER_KEY,
               keyData = node_models.PublicKey.KeyData.EcKeyData(
                 publicKeyToProto(masterPublicKey)
@@ -62,7 +63,7 @@ case class Wallet(node: node_api.NodeServiceGrpc.NodeServiceBlockingStub) {
     val didSuffix = DIDSuffix.unsafeFromDigest(operationHash)
 
     dids += (didSuffix -> Map(
-      "master0" -> masterPrivateKey,
+      masterKeyId -> masterPrivateKey,
       "issuance0" -> issuancePrivateKey
     ))
 

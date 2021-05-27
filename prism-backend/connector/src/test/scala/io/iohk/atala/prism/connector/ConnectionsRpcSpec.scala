@@ -12,6 +12,7 @@ import io.iohk.atala.prism.connector.model._
 import io.iohk.atala.prism.connector.repositories.daos.{ConnectionTokensDAO, ConnectionsDAO, ParticipantsDAO}
 import io.iohk.atala.prism.crypto.{EC, ECConfig, ECKeyPair, ECPublicKey}
 import io.iohk.atala.prism.identity.DID
+import io.iohk.atala.prism.identity.DID.masterKeyId
 import io.iohk.atala.prism.models.ParticipantId
 import io.iohk.atala.prism.protos.connector_api.GetConnectionTokenInfoRequest
 import io.iohk.atala.prism.protos.node_api.GetDidDocumentRequest
@@ -393,7 +394,7 @@ class ConnectionsRpcSpec extends ConnectorRpcSpecBase with MockitoSugar {
       val zeroTime = System.currentTimeMillis()
       val connections = createExampleConnections(verifierId, zeroTime)
 
-      usingApiAs(requestNonce, signature, did, "master0") { blockingStub =>
+      usingApiAs(requestNonce, signature, did, masterKeyId) { blockingStub =>
         val response = blockingStub.getConnectionsPaginated(request)
         response.connections.map(_.connectionId).toSet mustBe connections.map(_._2.toString).take(10).toList.toSet
       }

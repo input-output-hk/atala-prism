@@ -9,7 +9,7 @@ val holderCredentialContent = CredentialContent(
     JsonObject(
         mapOf(
             Pair("issuerDid", JsonPrimitive(issuerDID.value)),
-            Pair("issuanceKeyId", JsonPrimitive("master0")),
+            Pair("issuanceKeyId", JsonPrimitive(masterKeyId)),
             Pair(
                 "credentialSubject",
                 JsonObject(

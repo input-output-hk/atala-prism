@@ -9,6 +9,7 @@ import io.iohk.atala.prism.AtalaWithPostgresSpec
 import io.iohk.atala.prism.credentials.{CredentialBatchId, TimestampInfo}
 import io.iohk.atala.prism.crypto.MerkleTree.MerkleRoot
 import io.iohk.atala.prism.crypto.SHA256Digest
+import io.iohk.atala.prism.identity.DID.masterKeyId
 import io.iohk.atala.prism.identity.{DID, DIDSuffix}
 import io.iohk.atala.prism.models.{Ledger, TransactionId, TransactionInfo}
 import io.iohk.atala.prism.node.errors.NodeError
@@ -146,7 +147,7 @@ class NodeServiceSpec
       document.publicKeys.size mustBe 1
 
       val publicKey = document.publicKeys.headOption.value
-      publicKey.id mustBe "master0"
+      publicKey.id mustBe masterKeyId
       publicKey.usage mustBe node_models.KeyUsage.MASTER_KEY
       publicKey.addedOn mustBe empty
       publicKey.revokedOn mustBe empty
@@ -163,7 +164,7 @@ class NodeServiceSpec
       val didDigest = SHA256Digest.fromHexUnsafe(longFormDID.getCanonicalSuffix.value.value)
       val didSuffix = DIDSuffix.unsafeFromDigest(didDigest)
       DIDDataDAO.insert(didSuffix, didDigest, dummyLedgerData).transact(database).unsafeRunSync()
-      val key1 = DIDPublicKey(didSuffix, "master0", KeyUsage.MasterKey, masterKey)
+      val key1 = DIDPublicKey(didSuffix, masterKeyId, KeyUsage.MasterKey, masterKey)
       val key2 = DIDPublicKey(didSuffix, "issuance0", KeyUsage.IssuingKey, issuingKey)
       PublicKeysDAO.insert(key1, dummyLedgerData).transact(database).unsafeRunSync()
       PublicKeysDAO.insert(key2, dummyLedgerData).transact(database).unsafeRunSync()
@@ -174,7 +175,7 @@ class NodeServiceSpec
       document.id mustBe longFormDID.suffix.value
       document.publicKeys.size mustBe 2
 
-      val publicKey1 = document.publicKeys.find(_.id == "master0").value
+      val publicKey1 = document.publicKeys.find(_.id == masterKeyId).value
       publicKey1.usage mustBe node_models.KeyUsage.MASTER_KEY
       ProtoCodecs.fromTimestampInfoProto(publicKey1.addedOn.value) mustBe dummyLedgerData.timestampInfo
       publicKey1.revokedOn mustBe empty

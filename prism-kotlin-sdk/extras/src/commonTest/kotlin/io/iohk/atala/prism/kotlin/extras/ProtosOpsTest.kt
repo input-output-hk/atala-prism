@@ -1,6 +1,7 @@
 package io.iohk.atala.prism.kotlin.extras
 
 import io.iohk.atala.prism.kotlin.crypto.EC
+import io.iohk.atala.prism.kotlin.identity.DID.Companion.masterKeyId
 import io.iohk.atala.prism.kotlin.protos.*
 import kotlinx.datetime.Clock
 import pbandk.wkt.Timestamp
@@ -12,7 +13,7 @@ class ProtosOpsTest {
     private val instant = Clock.System.now()
     private val masterPublicKeyData = EC.generateKeyPair().publicKey.toECKeyData()
     private val master = PublicKey(
-        id = "master0",
+        id = masterKeyId,
         usage = KeyUsage.MASTER_KEY,
         addedOn = TimestampInfo(
             blockTimestamp = Timestamp(instant.epochSeconds, instant.nanosecondsOfSecond)
@@ -32,7 +33,7 @@ class ProtosOpsTest {
 
     @Test
     fun canFindPublicKeyInDidData() {
-        assertNotNull(didData.findPublicKey("master0"))
+        assertNotNull(didData.findPublicKey(masterKeyId))
         assertNotNull(didData.findPublicKey("issuing0"))
     }
 

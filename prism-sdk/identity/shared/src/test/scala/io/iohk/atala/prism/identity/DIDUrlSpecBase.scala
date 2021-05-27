@@ -1,5 +1,6 @@
 package io.iohk.atala.prism.identity
 
+import io.iohk.atala.prism.identity.DID.masterKeyId
 import io.iohk.atala.prism.identity.DIDUrl.{EmptyDidScheme, EmptyDidSuffix, InvalidDid, InvalidUrl}
 import org.scalatest.matchers.must.Matchers.convertToAnyMustWrapper
 import org.scalatest.wordspec.AnyWordSpec
@@ -58,11 +59,11 @@ class DIDUrlSpecBase extends AnyWordSpec {
 
   "DIDUrl" should {
     "recognize keyId when present" in {
-      DIDUrl.fromString("did:prism:abc/keyId/master0").toOption.value.keyIdOption.value mustBe "master0"
+      DIDUrl.fromString(s"did:prism:abc/keyId/${masterKeyId}").toOption.value.keyIdOption.value mustBe masterKeyId
     }
 
     "not recognize keyId when not present" in {
-      DIDUrl.fromString("did:prism:abc/otherId/master0").toOption.value.keyIdOption mustBe None
+      DIDUrl.fromString(s"did:prism:abc/otherId/$masterKeyId").toOption.value.keyIdOption mustBe None
     }
   }
 }

@@ -8,6 +8,7 @@ import io.iohk.atala.prism.credentials.content.syntax._
 import io.iohk.atala.prism.crypto.MerkleTree.MerkleInclusionProof
 import io.iohk.atala.prism.crypto._
 import io.iohk.atala.prism.identity.DID
+import io.iohk.atala.prism.identity.DID.masterKeyId
 import io.iohk.atala.prism.protos.node_models._
 import io.iohk.atala.prism.util.BigIntOps
 import typings.bip32.bip32Mod.BIP32Interface
@@ -16,7 +17,6 @@ import typings.node.Buffer
 
 object ECKeyOperation {
   val CURVE_NAME = "secp256k1"
-  val firstMasterKeyId = "master0"
 
   private implicit val ec: ECTrait = EC
   // https://github.com/input-output-hk/atala/blob/develop/credentials-verification/docs/protocol/key-derivation.md
@@ -28,7 +28,7 @@ object ECKeyOperation {
 
   def createDIDAtalaOperation(ecKeyPair: ECKeyPair): AtalaOperation = {
     val publicKey =
-      toPublicKey(firstMasterKeyId, toECKeyData(ecKeyPair.publicKey), KeyUsage.MASTER_KEY)
+      toPublicKey(masterKeyId, toECKeyData(ecKeyPair.publicKey), KeyUsage.MASTER_KEY)
     val didData = DIDData(publicKeys = Seq(publicKey))
     val createDIDOperation = CreateDIDOperation(Some(didData))
     val atalaOperation = AtalaOperation(AtalaOperation.Operation.CreateDid(createDIDOperation))
@@ -81,7 +81,7 @@ object ECKeyOperation {
     val atalaOperation = func
     val signature = EC.sign(atalaOperation.toByteArray, ecKeyPair.privateKey)
     SignedAtalaOperation(
-      signedWith = firstMasterKeyId,
+      signedWith = masterKeyId,
       signature = ByteString.copyFrom(signature.data),
       operation = Some(atalaOperation)
     )

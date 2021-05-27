@@ -16,6 +16,7 @@ import io.iohk.atala.prism.kotlin.extras.RequestUtils
 import io.iohk.atala.prism.kotlin.extras.findPublicKey
 import io.iohk.atala.prism.kotlin.extras.toTimestampInfoModel
 import io.iohk.atala.prism.kotlin.identity.DID
+import io.iohk.atala.prism.kotlin.identity.DID.Companion.masterKeyId
 import io.iohk.atala.prism.kotlin.protos.*
 import kotlinx.coroutines.*
 import kotlinx.serialization.json.JsonObject
@@ -144,7 +145,7 @@ object CompleteFlowTutorial {
             JsonObject(
                 mapOf(
                     Pair("issuerDid", JsonPrimitive(issuerDID.value)),
-                    Pair("issuanceKeyId", JsonPrimitive("master0")),
+                    Pair("issuanceKeyId", JsonPrimitive(masterKeyId)),
                     Pair(
                         "credentialSubject",
                         JsonObject(

@@ -15,6 +15,7 @@ import io.iohk.atala.prism.kotlin.extras.ProtoUtils
 import io.iohk.atala.prism.kotlin.extras.findPublicKey
 import io.iohk.atala.prism.kotlin.extras.toTimestampInfoModel
 import io.iohk.atala.prism.kotlin.identity.DID
+import io.iohk.atala.prism.kotlin.identity.DID.Companion.masterKeyId
 import io.iohk.atala.prism.kotlin.protos.CreateDIDRequest
 import io.iohk.atala.prism.kotlin.protos.CredentialBatchData
 import io.iohk.atala.prism.kotlin.protos.GetBatchStateRequest
@@ -86,7 +87,7 @@ suspend fun main() {
     println("\n*************** STEP 3")
 
     // Issuer generates a credential to Holder
-    val issuanceKeyId = "master0"
+    val issuanceKeyId = masterKeyId
     val holderCredentialContent = CredentialContent(
         JsonObject(
             mapOf(

@@ -4,6 +4,7 @@ import io.iohk.atala.prism.kotlin.crypto.EC
 import io.iohk.atala.prism.kotlin.crypto.ECConfig
 import io.iohk.atala.prism.kotlin.crypto.util.BytesOps.hexToBytes
 import io.iohk.atala.prism.kotlin.crypto.util.toByteArray
+import io.iohk.atala.prism.kotlin.identity.DID.Companion.masterKeyId
 import io.iohk.atala.prism.kotlin.protos.ECKeyData
 import io.iohk.atala.prism.kotlin.protos.KeyUsage
 import io.iohk.atala.prism.kotlin.protos.PublicKey
@@ -24,7 +25,7 @@ class ECPublicKeyOpsTest {
 
     @Test
     fun keyDataCanBeConvertedToPublicKey() {
-        val id = "master0"
+        val id = masterKeyId
         val keyUsage = KeyUsage.MASTER_KEY
         val x = "c775e7b757ede630cd0aa1113bd102661ab38829ca52a6422ab782862f268646"
         val y = "15e2b0d3c33891ebb0f1ef609ec419420c20e320ce94c65fbc8c3312448eb225"

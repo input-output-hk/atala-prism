@@ -11,6 +11,7 @@ import io.iohk.atala.prism.connector.model.MessageId
 import io.iohk.atala.prism.connector.repositories.daos.MessagesDAO
 import io.iohk.atala.prism.crypto.{EC, ECKeyPair, ECPublicKey}
 import io.iohk.atala.prism.identity.DID
+import io.iohk.atala.prism.identity.DID.masterKeyId
 import io.iohk.atala.prism.models.ParticipantId
 import io.iohk.atala.prism.protos.connector_api
 import io.iohk.atala.prism.protos.connector_models.MessageToSendByConnectionToken
@@ -273,7 +274,7 @@ class MessagesRpcSpec extends ConnectorRpcSpecBase {
 
       val messages = createExampleMessages(issuerId)
 
-      usingApiAs(requestNonce, signature, did, "master0") { blockingStub =>
+      usingApiAs(requestNonce, signature, did, masterKeyId) { blockingStub =>
         val response = blockingStub.getMessagesPaginated(request)
         response.messages.map(m => (m.id, m.connectionId)) mustBe
           messages.take(10).map { case (messageId, connectionId) => (messageId.toString, connectionId.toString) }

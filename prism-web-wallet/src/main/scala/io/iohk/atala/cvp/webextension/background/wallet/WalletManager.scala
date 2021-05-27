@@ -27,6 +27,7 @@ import io.iohk.atala.prism.credentials.VerificationError
 import io.iohk.atala.prism.crypto.EC
 import io.iohk.atala.prism.crypto.MerkleTree.MerkleInclusionProof
 import io.iohk.atala.prism.identity.DID
+import io.iohk.atala.prism.identity.DID.masterKeyId
 import io.iohk.atala.prism.protos.connector_api.RegisterDIDResponse
 import io.iohk.atala.prism.protos.console_api.PublishBatchResponse
 import org.scalajs.dom.crypto.CryptoKey
@@ -251,7 +252,7 @@ private[background] class WalletManager(
       val signedRequest = requestAuthenticator.signConnectorRequest(request.bytes, ecKeyPair.privateKey)
       SignedMessage(
         did = walletData.did,
-        didKeyId = ECKeyOperation.firstMasterKeyId,
+        didKeyId = masterKeyId,
         base64UrlSignature = signedRequest.encodedSignature,
         base64UrlNonce = signedRequest.encodedRequestNonce
       )
@@ -513,7 +514,7 @@ private[background] class WalletManager(
   // TODO: this key id should eventually be selected by the user
   // which should be done when we complete the key derivation flow.
   private def signingKeyId = {
-    ECKeyOperation.firstMasterKeyId
+    masterKeyId
   }
 
 }

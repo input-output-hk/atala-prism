@@ -8,6 +8,7 @@ import io.iohk.atala.prism.credentials.VerificationError.{BatchWasRevoked, Crede
 import io.iohk.atala.prism.credentials.{Credential, CredentialBatchId, CredentialBatches}
 import io.iohk.atala.prism.crypto.{EC, SHA256Digest}
 import io.iohk.atala.prism.identity.DID
+import io.iohk.atala.prism.identity.DID.masterKeyId
 import io.iohk.atala.prism.node.poc.{GenericCredentialsSDK, Wallet}
 import io.iohk.atala.prism.node.repositories.{CredentialBatchesRepository, DIDDataRepository}
 import io.iohk.atala.prism.node.services.models.AtalaObjectNotification
@@ -125,7 +126,7 @@ class FlowPoC extends AtalaWithPostgresSpec with BeforeAndAfterEach {
       val (didSuffix, createDIDOp) = wallet.generateDID()
 
       // 2- she uses the connector to publish it
-      val signedCreateDIDOp = wallet.signOperation(createDIDOp, "master0", didSuffix)
+      val signedCreateDIDOp = wallet.signOperation(createDIDOp, masterKeyId, didSuffix)
       connector.registerDID(signedAtalaOperation = signedCreateDIDOp)
 
       // 3. she grabs credential data from the management console

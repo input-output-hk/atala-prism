@@ -4,7 +4,7 @@ import com.google.protobuf.ByteString
 import com.typesafe.config.ConfigFactory
 import io.iohk.atala.prism.crypto.MerkleTree.MerkleRoot
 import io.iohk.atala.prism.crypto.{EC, ECConfig, ECPrivateKey, ECPublicKey, SHA256Digest}
-import io.iohk.atala.prism.identity.DID.DIDFormat
+import io.iohk.atala.prism.identity.DID.{DIDFormat, masterKeyId}
 import io.iohk.atala.prism.node.NodeConfig
 import io.iohk.atala.prism.node.cardano.models.{Address, AtalaObjectMetadata, Lovelace, Payment, WalletId}
 import io.iohk.atala.prism.node.cardano.wallet.CardanoWalletApiClient
@@ -102,7 +102,7 @@ class CardanoFeeEstimator(walletId: WalletId, paymentAddress: Address, cardanoWa
 
   private def signOperation(atalaOperation: AtalaOperation, privateKey: ECPrivateKey): SignedAtalaOperation = {
     node_models.SignedAtalaOperation(
-      signedWith = "master0",
+      signedWith = masterKeyId,
       operation = Some(atalaOperation),
       signature = ByteString.copyFrom(EC.sign(atalaOperation.toByteArray, privateKey).data)
     )
@@ -119,7 +119,7 @@ class CardanoFeeEstimator(walletId: WalletId, paymentAddress: Address, cardanoWa
           id = did.suffix,
           publicKeys = Seq(
             node_models.PublicKey(
-              id = s"master0",
+              id = masterKeyId,
               usage = node_models.KeyUsage.MASTER_KEY,
               keyData = node_models.PublicKey.KeyData.EcKeyData(
                 publicKeyToProto(publicKey)

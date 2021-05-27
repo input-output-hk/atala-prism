@@ -1,6 +1,7 @@
 package io.iohk.atala.prism.kotlin.identity
 
 import io.iohk.atala.prism.kotlin.crypto.EC
+import io.iohk.atala.prism.kotlin.identity.DID.Companion.masterKeyId
 import io.iohk.atala.prism.kotlin.identity.util.toProto
 import io.iohk.atala.prism.kotlin.protos.*
 import kotlin.test.*
@@ -115,7 +116,7 @@ class DIDTest {
                         didData = DIDData(
                             publicKeys = listOf(
                                 PublicKey(
-                                    id = "master0",
+                                    id = masterKeyId,
                                     usage = KeyUsage.MASTER_KEY,
                                     keyData = PublicKey.KeyData.EcKeyData(masterKey.toProto())
                                 )

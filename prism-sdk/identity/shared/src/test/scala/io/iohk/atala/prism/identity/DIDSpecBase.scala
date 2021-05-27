@@ -1,7 +1,7 @@
 package io.iohk.atala.prism.identity
 
 import io.iohk.atala.prism.crypto.ECTrait
-import io.iohk.atala.prism.identity.DID.{DIDFormat, publicKeyToProto}
+import io.iohk.atala.prism.identity.DID.{DIDFormat, masterKeyId, publicKeyToProto}
 import io.iohk.atala.prism.protos.node_models
 import org.scalatest.OptionValues.convertOptionToValuable
 import org.scalatest.matchers.must.Matchers.convertToAnyMustWrapper
@@ -109,7 +109,7 @@ abstract class DIDSpecBase(val ec: ECTrait) extends AnyWordSpec {
                 node_models.DIDData(
                   publicKeys = Seq(
                     node_models.PublicKey(
-                      id = s"master0",
+                      id = masterKeyId,
                       usage = node_models.KeyUsage.MASTER_KEY,
                       keyData = node_models.PublicKey.KeyData.EcKeyData(
                         publicKeyToProto(masterKey)

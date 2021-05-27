@@ -4,6 +4,7 @@ import com.google.protobuf.ByteString
 import io.iohk.atala.prism.auth.SignedRpcRequest
 import io.iohk.atala.prism.crypto.{EC, ECConfig, ECKeyPair, ECPublicKey, SHA256Digest}
 import io.iohk.atala.prism.identity.DID
+import io.iohk.atala.prism.identity.DID.masterKeyId
 import io.iohk.atala.prism.protos.node_api.{GetDidDocumentRequest, GetDidDocumentResponse}
 import io.iohk.atala.prism.protos.node_api.NodeServiceGrpc.NodeService
 import io.iohk.atala.prism.protos.node_models
@@ -27,7 +28,7 @@ trait DIDUtil {
 
   def generateDid(masterPublicKey: ECPublicKey): DID = {
     val publicKey = node_models.PublicKey(
-      id = s"master0",
+      id = masterKeyId,
       usage = node_models.KeyUsage.MASTER_KEY,
       keyData = node_models.PublicKey.KeyData.EcKeyData(
         publicKeyToProto(masterPublicKey)

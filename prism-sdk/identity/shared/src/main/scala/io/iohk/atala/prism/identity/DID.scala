@@ -74,6 +74,8 @@ object DID {
   // This is the prefix we currently use in IntDemo TODO: Remove once possible
   val testRegex: Regex = "^did:test(:[A-Za-z0-9_-]+)+$".r
 
+  val masterKeyId: String = "master0"
+
   private def apply(value: String): DID = new DID(value)
 
   def buildPrismDID(stateHash: String, maybeEncodedState: Option[String] = None): DID = {
@@ -147,7 +149,7 @@ object DID {
         node_models.DIDData(
           publicKeys = Seq(
             node_models.PublicKey(
-              id = s"master0",
+              id = masterKeyId,
               usage = node_models.KeyUsage.MASTER_KEY,
               keyData = node_models.PublicKey.KeyData.EcKeyData(
                 publicKeyToProto(masterKey)
