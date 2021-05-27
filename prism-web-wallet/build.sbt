@@ -165,6 +165,7 @@ stIgnore ++= List(
 // Scalablytyped compilation optimization
 Compile / stMinimize := Selection.All
 stUseScalaJsDom := true
+stTypescriptVersion := "4.2.4"
 
 // Internal libraries
 lazy val cryptoLib = ProjectRef(file("../prism-sdk"), "prismCryptoJS")

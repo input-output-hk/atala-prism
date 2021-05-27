@@ -59,7 +59,8 @@ object SdkBuild {
             case Some((2, n)) if n == 12 => silencerDependencies
             case _ => Seq()
           }
-        }
+        },
+        stTypescriptVersion := "4.2.4"
       )
       .enablePlugins(GitVersioning)
       .jvmSettings(crossScalaVersions := supportedScalaVersions)
