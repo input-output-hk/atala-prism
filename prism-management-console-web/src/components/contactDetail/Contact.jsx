@@ -2,6 +2,7 @@ import React from 'react';
 import PropTypes from 'prop-types';
 import { useTranslation } from 'react-i18next';
 import { Tabs } from 'antd';
+import { LeftOutlined } from '@ant-design/icons';
 import { withRedirector } from '../providers/withRedirector';
 import DetailBox from './molecules/detailBox/DetailBox';
 import CustomButton from '../common/Atoms/CustomButton/CustomButton';
@@ -34,6 +35,16 @@ const Contact = ({
   return (
     <div className="contactDetail">
       <div className="ContentHeader headerSection">
+        <div className="buttonSection">
+          <CustomButton
+            buttonText={t('actions.back')}
+            buttonProps={{
+              icon: <LeftOutlined />,
+              className: 'theme-grey',
+              onClick: redirectToContacts
+            }}
+          />
+        </div>
         <h1>{tp('detailSection.title')}</h1>
       </div>
       <div className="detailSection">
@@ -94,12 +105,6 @@ const Contact = ({
             </div>
           </TabPane>
         </Tabs>
-      </div>
-      <div className="buttonSection">
-        <CustomButton
-          buttonText={t('actions.back')}
-          buttonProps={{ className: 'theme-grey', onClick: redirectToContacts }}
-        />
       </div>
     </div>
   );
