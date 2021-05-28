@@ -20,11 +20,23 @@ class ProcessingTaskServiceStub() extends ProcessingTaskService {
   val updateTaskAndExtendLeaseInvokeCount = new AtomicInteger(0)
   val deleteInvokeCount = new AtomicInteger(0)
 
+  var callbackOption: Option[() => Unit] = None
+
+  def registerNotifyIdleWorkerCallback(callback: () => Unit): Unit = {
+    callbackOption = Some(callback)
+  }
+
   def create(
       processingTaskData: ProcessingTaskData,
       processingTaskState: ProcessingTaskState,
       scheduledTime: Instant
-  ): Task[ProcessingTaskId] = Task.pure(ProcessingTaskId.random())
+  ): Task[ProcessingTaskId] =
+    Task.pure(ProcessingTaskId.random()).map { id =>
+      if (!scheduledTime.isAfter(Instant.now())) {
+        callbackOption.foreach(callback => callback())
+      }
+      id
+    }
 
   def fetchTaskToProcess(leaseTimeSeconds: Int): Task[Option[ProcessingTask]] = Task.pure(None)
 

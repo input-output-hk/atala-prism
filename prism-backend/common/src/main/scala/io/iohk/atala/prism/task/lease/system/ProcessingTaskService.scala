@@ -15,6 +15,12 @@ import cats.implicits._
 trait ProcessingTaskService {
 
   /**
+    * Registers a callback which will be called when a new processing task is created and it should be run
+    * immediately (scheduledTime <= Instant.now()).
+    */
+  def registerNotifyIdleWorkerCallback(callback: () => Unit): Unit
+
+  /**
     * Creates a completely new processing task that will be processed after scheduled time.
     */
   def create(
@@ -82,6 +88,12 @@ trait ProcessingTaskService {
 
 class ProcessingTaskServiceImpl(tx: Transactor[Task], currentInstanceUUID: UUID) extends ProcessingTaskService {
 
+  var callbackOption: Option[() => Unit] = None
+
+  def registerNotifyIdleWorkerCallback(callback: () => Unit): Unit = {
+    callbackOption = Some(callback)
+  }
+
   override def create(
       processingTaskData: ProcessingTaskData,
       processingTaskState: ProcessingTaskState,
@@ -96,7 +108,12 @@ class ProcessingTaskServiceImpl(tx: Transactor[Task], currentInstanceUUID: UUID)
       data = processingTaskData
     )
 
-    ProcessingTaskDao.insert(processingTask).transact(tx).map(_ => processingTask.id)
+    ProcessingTaskDao.insert(processingTask).transact(tx).map(_ => processingTask.id).map { id =>
+      if (!scheduledTime.isAfter(Instant.now())) {
+        callbackOption.foreach(callback => callback())
+      }
+      id
+    }
   }
 
   override def fetchTaskToProcess(leaseTimeSeconds: Int): Task[Option[ProcessingTask]] = {

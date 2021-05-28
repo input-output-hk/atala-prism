@@ -127,6 +127,43 @@ class ProcessingTaskSchedulerSpec extends AnyWordSpec with Matchers {
       processingTaskServiceStub.deleteInvokeCount.get() mustBe 1
     }
 
+    "notify idle worker when there is a new task to be processed" in new Fixtures {
+      val processingTaskRouter = new ProcessingTaskRouter {
+        override def process(processingTask: ProcessingTask): Task[ProcessingTaskResult] =
+          Task.pure(ProcessingTaskResult.ProcessingTaskFinished)
+      }
+
+      override val processingTaskServiceStub = new ProcessingTaskServiceStub() {
+
+        @volatile
+        var count = 0
+
+        override def fetchTaskToProcess(leaseTimeSeconds: Int): Task[Option[ProcessingTask]] = {
+          count = count + 1
+          if (count != 2) Task.pure(None)
+          else Task.pure(Some(processingTask))
+        }
+      }
+
+      val newTaskLeaseConfig = taskLeaseConfig.copy(workerSleepTimeSeconds = 10)
+
+      val processingTaskScheduler =
+        new ProcessingTaskScheduler(processingTaskServiceStub, processingTaskRouter, newTaskLeaseConfig)
+
+      intercept[TimeoutException] {
+        Task
+          .parSequence(
+            Seq(
+              processingTaskScheduler.run,
+              Task.sleep(100.milliseconds).map(_ => processingTaskScheduler.notifyIdleWorker())
+            )
+          )
+          .runSyncUnsafe(timeout = 200.milliseconds)
+      }
+
+      processingTaskServiceStub.deleteInvokeCount.get() mustBe 1
+    }
+
   }
 
   trait Fixtures {

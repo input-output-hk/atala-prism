@@ -145,6 +145,15 @@ class ProcessingTaskServiceSpec extends PostgresRepositorySpec[Task] {
       val result = processingTaskService.updateData(ProcessingTaskId.random(), newData).attempt.runSyncUnsafe()
       result mustBe an[Left[Throwable, Unit]]
     }
+
+    "invoke callback when scheduledTime <= Instant.now() " in new Fixtures {
+      var invokeCount = 0
+      processingTaskService.registerNotifyIdleWorkerCallback(() => invokeCount = 1)
+
+      processingTaskService.create(taskData, taskState, Instant.now()).runSyncUnsafe()
+
+      invokeCount mustBe 1
+    }
   }
 
   trait Fixtures {

@@ -2,7 +2,10 @@ package io.iohk.atala.prism.task.lease.system
 
 import io.iohk.atala.prism.task.lease.system.ProcessingTaskLeaseConfig
 import monix.eval.Task
+import monix.execution.AsyncSemaphore
 import org.slf4j.LoggerFactory
+
+import java.util.concurrent.atomic.AtomicInteger
 import scala.concurrent.duration.DurationInt
 
 class ProcessingTaskScheduler(
@@ -13,8 +16,23 @@ class ProcessingTaskScheduler(
 
   private val logger = LoggerFactory.getLogger(this.getClass)
 
+  private val semaphore = AsyncSemaphore(provisioned = 0.toLong)
+  private val idleWorkersNumber = new AtomicInteger(0)
+
   def run: Task[IndexedSeq[Unit]] = {
+    processingTaskService.registerNotifyIdleWorkerCallback(() => notifyIdleWorker())
     Task.parSequence(1.to(taskLeaseConfig.numberOfWorkers).map(runWorker))
+  }
+
+  private[task] def notifyIdleWorker(): Unit = {
+    // This is not 100% correct. It may occur that semaphore is released even though idleWorkersNumber is 0.
+    // Ideally, this whole section and code which increments and decrements counter should
+    // be guarded by mutex, but in my opinion that would cause unnecessary performance bottleneck.
+    // In the worst case, semaphore will be realesed when there is no free worker and after that,
+    // when there is a free worker it will not wait required time (it will acquire semaphore immediately).
+    if (idleWorkersNumber.get() > 0) {
+      semaphore.release()
+    }
   }
 
   private[task] def runWorker(workerNumber: Int): Task[Unit] = {
@@ -25,7 +43,10 @@ class ProcessingTaskScheduler(
           case Some(processingTask) => process(processingTask, workerNumber)
           case None =>
             logger.debug(s"Worker: $workerNumber, no task to process")
-            Task.sleep(taskLeaseConfig.workerSleepTimeSeconds.seconds)
+            idleWorkersNumber.incrementAndGet()
+            Task
+              .race(Task.fromFuture(semaphore.acquire()), Task.sleep(taskLeaseConfig.workerSleepTimeSeconds.seconds))
+              .map(_ => idleWorkersNumber.decrementAndGet())
         }
         .map(_ => Left(()))
     }
