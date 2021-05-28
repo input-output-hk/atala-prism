@@ -15,13 +15,11 @@ data class BatchResult(
 
 @JsExport
 object CredentialBatchesJS {
-    @JsName("batch")
     fun batch(signedCredentials: Array<CredentialJS>): BatchResult {
         val (root, proofs) = CredentialBatches.batch(signedCredentials.map { it.credential })
         return BatchResult(MerkleRootJS(root.hash.hexValue()), proofs.map { MerkleInclusionProofJS(it) }.toTypedArray())
     }
 
-    @JsName("verifyInclusion")
     fun verifyInclusion(
         signedCredential: CredentialJS,
         merkleRoot: MerkleRootJS,
@@ -34,7 +32,6 @@ object CredentialBatchesJS {
         )
     }
 
-    @JsName("computeCredentialBatchId")
     fun computeCredentialBatchId(did: DIDJS, merkleRoot: MerkleRootJS): CredentialBatchIdJS {
         return CredentialBatches.computeCredentialBatchId(did.toKotlin(), merkleRoot.toKotlin()).toJs()
     }

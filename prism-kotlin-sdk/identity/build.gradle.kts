@@ -26,7 +26,7 @@ kotlin {
         browser {
             testTask {
                 useKarma {
-                    useChrome()
+                    useChromeHeadless()
                 }
             }
         }
@@ -62,40 +62,29 @@ kotlin {
         }
         val commonTest by getting {
             dependencies {
-                implementation(kotlin("test-common"))
-                implementation(kotlin("test-annotations-common"))
+                implementation(kotlin("test"))
             }
         }
         val androidMain by getting {
             kotlin.srcDir("src/commonJvmAndroidMain/kotlin")
         }
-        val androidTest by getting {
-            dependencies {
-                implementation(kotlin("test"))
-                implementation(kotlin("test-junit5"))
-                runtimeOnly("org.robolectric:android-all:10-robolectric-5803371")
-            }
-        }
+        val androidTest by getting
         val jvmMain by getting {
             kotlin.srcDir("src/commonJvmAndroidMain/kotlin")
             dependencies {
                 implementation("com.madgag.spongycastle:prov:1.58.0.0")
-                api("org.bitcoinj:bitcoinj-core:0.15.8")
+                api("org.bitcoinj:bitcoinj-core:0.15.10")
             }
         }
-        val jvmTest by getting {
+        val jvmTest by getting
+        val jsMain by getting {
             dependencies {
-                implementation(kotlin("test"))
-                implementation(kotlin("test-junit5"))
-                runtimeOnly("org.junit.jupiter:junit-jupiter-engine:5.5.2")
+                // Polyfill dependencies
+                implementation(npm("stream-browserify", "3.0.0"))
+                implementation(npm("buffer", "6.0.3"))
             }
         }
-        val jsMain by getting
-        val jsTest by getting {
-            dependencies {
-                implementation(kotlin("test-js"))
-            }
-        }
+        val jsTest by getting
         val iosMain by getting
         val iosTest by getting
 

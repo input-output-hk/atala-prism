@@ -2,7 +2,7 @@ import com.palantir.gradle.gitversion.VersionDetails
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 plugins {
-    kotlin("jvm") version "1.4.31"
+    kotlin("jvm") version "1.5.10"
     application
     id("org.jlleitschuh.gradle.ktlint") version "9.4.1"
     id("com.palantir.git-version") version "0.12.3"
@@ -23,6 +23,7 @@ repositories {
 }
 
 dependencies {
+    testImplementation(kotlin("test"))
     listOf("protos-jvm", "crypto-jvm", "identity-jvm", "credentials-jvm", "extras-jvm")
         .map { "io.iohk.atala.prism:$it:$prismVersion" }
         .map {
@@ -32,10 +33,7 @@ dependencies {
                 exclude("io.iohk.atala.prism")
             }
         }
-    implementation("org.jetbrains.kotlinx:kotlinx-datetime:0.1.1")
-    testImplementation(kotlin("test-junit5"))
-    testImplementation("org.junit.jupiter:junit-jupiter-api:5.6.0")
-    testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:5.6.0")
+    implementation("org.jetbrains.kotlinx:kotlinx-datetime:0.2.1")
 }
 
 tasks.test {

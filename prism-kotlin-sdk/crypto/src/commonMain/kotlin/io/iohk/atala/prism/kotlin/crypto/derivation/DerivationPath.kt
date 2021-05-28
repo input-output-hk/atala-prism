@@ -17,7 +17,7 @@ data class DerivationPath(val axes: List<DerivationAxis>) {
         @JvmStatic
         fun fromPath(path: String): DerivationPath {
             val splitPath = path.split("/")
-            if (splitPath.firstOrNull()?.trim()?.toLowerCase() != "m") {
+            if (splitPath.firstOrNull()?.trim()?.lowercase() != "m") {
                 throw IllegalArgumentException("Path needs to start with m or M")
             } else {
                 return DerivationPath(splitPath.drop(1).map(this::parseAxis))

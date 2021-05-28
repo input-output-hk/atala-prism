@@ -23,7 +23,7 @@ kotlin {
         browser {
             testTask {
                 useKarma {
-                    useChrome()
+                    useChromeHeadless()
                 }
             }
         }
@@ -55,37 +55,26 @@ kotlin {
             dependencies {
                 implementation(project(":credentials"))
                 implementation(project(":identity"))
-                implementation("org.jetbrains.kotlinx:kotlinx-datetime:0.1.1")
+                implementation("org.jetbrains.kotlinx:kotlinx-datetime:0.2.1")
             }
         }
         val commonTest by getting {
             dependencies {
-                implementation(kotlin("test-common"))
-                implementation(kotlin("test-annotations-common"))
+                implementation(kotlin("test"))
             }
         }
         val androidMain by getting
-        val androidTest by getting {
-            dependencies {
-                implementation(kotlin("test"))
-                implementation(kotlin("test-junit5"))
-                runtimeOnly("org.robolectric:android-all:10-robolectric-5803371")
-            }
-        }
+        val androidTest by getting
         val jvmMain by getting
-        val jvmTest by getting {
+        val jvmTest by getting
+        val jsMain by getting {
             dependencies {
-                implementation(kotlin("test"))
-                implementation(kotlin("test-junit5"))
-                runtimeOnly("org.junit.jupiter:junit-jupiter-engine:5.5.2")
+                // Polyfill dependencies
+                implementation(npm("stream-browserify", "3.0.0"))
+                implementation(npm("buffer", "6.0.3"))
             }
         }
-        val jsMain by getting
-        val jsTest by getting {
-            dependencies {
-                implementation(kotlin("test-js"))
-            }
-        }
+        val jsTest by getting
         val iosMain by getting
         val iosTest by getting
 

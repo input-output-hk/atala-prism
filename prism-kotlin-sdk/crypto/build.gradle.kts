@@ -26,7 +26,7 @@ kotlin {
         browser {
             testTask {
                 useKarma {
-                    useChrome()
+                    useChromeHeadless()
                 }
             }
         }
@@ -67,21 +67,20 @@ kotlin {
         val commonMain by getting {
             dependencies {
                 api("com.ionspin.kotlin:bignum:0.2.3")
-                api("org.jetbrains.kotlinx:kotlinx-serialization-json:1.0.1")
-                api("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.4.2")
+                api("org.jetbrains.kotlinx:kotlinx-serialization-json:1.2.1")
+                api("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.5.0")
             }
         }
         val commonTest by getting {
             dependencies {
-                implementation(kotlin("test-common"))
-                implementation(kotlin("test-annotations-common"))
+                implementation(kotlin("test"))
             }
         }
         val androidMain by getting {
             kotlin.srcDir("src/commonJvmAndroidMain/kotlin")
             dependencies {
                 implementation("com.madgag.spongycastle:prov:1.58.0.0")
-                implementation("org.bitcoinj:bitcoinj-core:0.15.8")
+                implementation("org.bitcoinj:bitcoinj-core:0.15.10")
                 api("com.google.guava:guava:30.1-jre")
             }
         }
@@ -89,9 +88,6 @@ kotlin {
             kotlin.srcDir("src/commonJvmAndroidTest/kotlin")
             resources.srcDir("src/commonJvmAndroidTest/resources")
             dependencies {
-                implementation(kotlin("test"))
-                implementation(kotlin("test-junit5"))
-                runtimeOnly("org.robolectric:android-all:10-robolectric-5803371")
             }
         }
         val jvmMain by getting {
@@ -106,9 +102,6 @@ kotlin {
             kotlin.srcDir("src/commonJvmAndroidTest/kotlin")
             resources.srcDir("src/commonJvmAndroidTest/resources")
             dependencies {
-                implementation(kotlin("test"))
-                implementation(kotlin("test-junit5"))
-                runtimeOnly("org.junit.jupiter:junit-jupiter-engine:5.5.2")
             }
         }
         val jsMain by getting {
@@ -119,13 +112,13 @@ kotlin {
                 implementation(npm("elliptic", "6.5.3"))
                 implementation(npm("bip32", "2.0.6"))
                 implementation(npm("bip39", "3.0.3"))
+
+                // Polyfill dependencies
+                implementation(npm("stream-browserify", "3.0.0"))
+                implementation(npm("buffer", "6.0.3"))
             }
         }
-        val jsTest by getting {
-            dependencies {
-                implementation(kotlin("test-js"))
-            }
-        }
+        val jsTest by getting
         val iosMain by getting {
             dependencies {
                 api("fr.acinq.bitcoin:bitcoin-kmp:0.7.0")
@@ -162,11 +155,5 @@ android {
     defaultConfig {
         minSdkVersion(26)
         targetSdkVersion(29)
-    }
-}
-
-tasks {
-    "jvmTest"(Test::class) {
-        useJUnitPlatform()
     }
 }

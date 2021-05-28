@@ -17,16 +17,12 @@ abstract class CredentialJS internal constructor(internal val credential: Creden
 
     abstract val canonicalForm: String
 
-    @JsName("isVerifiable")
     fun isVerifiable(): Boolean = credential.isVerifiable()
 
-    @JsName("hash")
     fun hash(): String = credential.hash().hexValue()
 
-    @JsName("sign")
     abstract fun sign(privateKey: String): CredentialJS
 
-    @JsName("isValidSignature")
     fun isValidSignature(publicKey: String): Boolean {
         val key = EC.toPublicKey(hexToBytes(publicKey).map { it.toByte() })
         return credential.isValidSignature(key)

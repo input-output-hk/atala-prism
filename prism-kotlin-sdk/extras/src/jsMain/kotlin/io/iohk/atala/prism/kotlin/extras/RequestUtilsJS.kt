@@ -6,7 +6,6 @@ import io.iohk.atala.prism.kotlin.protos.PrismMetadata
 
 @JsExport
 object RequestUtilsJS {
-    @JsName("generateRequestMetadata")
     fun generateRequestMetadata(did: String, didPrivateKey: String, request: pbandk.Message): PrismMetadata =
         RequestUtils.generateRequestMetadata(
             did,

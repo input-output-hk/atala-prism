@@ -18,7 +18,6 @@ class TimestampInfoJS internal constructor(internal val internal: TimestampInfo)
     val atalaBlockSequenceNumber: Int = internal.atalaBlockSequenceNumber
     val operationSequenceNumber: Int = internal.operationSequenceNumber
 
-    @JsName("occurredBefore")
     fun occurredBefore(later: TimestampInfoJS): Boolean =
         internal.occurredBefore(later.internal)
 }

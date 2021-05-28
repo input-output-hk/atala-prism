@@ -11,15 +11,12 @@ import io.iohk.atala.prism.kotlin.protos.*
 
 @JsExport
 object ProtoUtilsJS {
-    @JsName("createDidAtalaOperation")
     fun createDidAtalaOperation(ecKeyPair: ECKeyPairJS): AtalaOperation =
         ProtoUtils.createDidAtalaOperation(ecKeyPair.toEcKeyPair())
 
-    @JsName("issueCredentialBatchOperation")
     fun issueCredentialBatchOperation(data: CredentialBatchData): AtalaOperation =
         ProtoUtils.issueCredentialBatchOperation(data)
 
-    @JsName("revokeCredentialsOperation")
     fun revokeCredentialsOperation(
         batchOperationHash: SHA256DigestJS,
         batchId: CredentialBatchIdJS,
@@ -31,7 +28,6 @@ object ProtoUtilsJS {
             credentials.map { it.toKotlin() }
         )
 
-    @JsName("signedAtalaOperation")
     fun signedAtalaOperation(ecKeyPair: ECKeyPairJS, atalaOperation: AtalaOperation): SignedAtalaOperation =
         ProtoUtils.signedAtalaOperation(ecKeyPair.toEcKeyPair(), atalaOperation)
 }

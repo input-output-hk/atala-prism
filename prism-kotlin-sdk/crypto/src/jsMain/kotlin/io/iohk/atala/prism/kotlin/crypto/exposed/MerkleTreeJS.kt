@@ -10,7 +10,6 @@ data class MerkleRootJS(val hash: String)
 
 @JsExport
 object MerkleInclusionProofJSCompanion {
-    @JsName("decode")
     fun decode(encoded: String): MerkleInclusionProofJS =
         MerkleInclusionProofJS(MerkleInclusionProof.decode(encoded))
 }
@@ -21,11 +20,9 @@ data class MerkleInclusionProofJS constructor(val internal: MerkleInclusionProof
     val index: Index = internal.index
     val siblings: Array<String> = internal.siblings.map { it.hexValue() }.toTypedArray()
 
-    @JsName("derivedRoot")
     fun derivedRoot(): MerkleRootJS =
         MerkleRootJS(internal.derivedRoot().hash.hexValue())
 
-    @JsName("encode")
     fun encode(): String =
         internal.encode()
 }
@@ -34,7 +31,6 @@ data class MerkleInclusionProofJS constructor(val internal: MerkleInclusionProof
 data class MerklePairJS(val root: MerkleRootJS, val proofs: Array<MerkleInclusionProofJS>)
 
 @JsExport
-@JsName("generateProofsJS")
 fun generateProofsJS(hashes: Array<String>): MerklePairJS {
     val (root, proofs) = generateProofs(hashes.map { SHA256Digest.fromHex(it) })
 
@@ -42,7 +38,6 @@ fun generateProofsJS(hashes: Array<String>): MerklePairJS {
 }
 
 @JsExport
-@JsName("verifyProofJS")
 fun verifyProofJS(root: MerkleRootJS, proof: MerkleInclusionProofJS): Boolean {
     return verifyProof(root.toKotlin(), proof.internal)
 }

@@ -6,8 +6,8 @@ import io.iohk.atala.prism.kotlin.crypto.util.BytesOps
 
 @JsExport
 data class ECKeyPairJS(
-    @JsName("publicKey") val publicKey: String,
-    @JsName("privateKey") val privateKey: String
+    val publicKey: String,
+    val privateKey: String
 )
 
 fun ECKeyPairJS.toEcKeyPair(): ECKeyPair =

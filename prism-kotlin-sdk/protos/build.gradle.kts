@@ -35,7 +35,7 @@ kotlin {
         browser {
             testTask {
                 useKarma {
-                    useChrome()
+                    useChromeHeadless()
                 }
             }
         }
@@ -67,14 +67,13 @@ kotlin {
             kotlin.srcDir("${project(":protosLib").buildDir}/generated/source/proto/main/kotlin")
             dependencies {
                 api("pro.streem.pbandk:pbandk-runtime:$pbandkVersion")
-                api("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.4.2")
-                api("com.benasher44:uuid:0.2.3")
+                api("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.5.0")
+                api("com.benasher44:uuid:0.3.0")
             }
         }
         val commonTest by getting {
             dependencies {
-                implementation(kotlin("test-common"))
-                implementation(kotlin("test-annotations-common"))
+                implementation(kotlin("test"))
             }
         }
         val androidMain by getting {
@@ -86,11 +85,6 @@ kotlin {
         }
         val androidTest by getting {
             kotlin.srcDir("src/commonJvmAndroidTest/kotlin")
-            dependencies {
-                implementation(kotlin("test"))
-                implementation(kotlin("test-junit5"))
-                runtimeOnly("org.robolectric:android-all:10-robolectric-5803371")
-            }
         }
         val jvmMain by getting {
             kotlin.srcDir("src/commonJvmAndroidMain/kotlin")
@@ -101,25 +95,24 @@ kotlin {
         }
         val jvmTest by getting {
             kotlin.srcDir("src/commonJvmAndroidTest/kotlin")
-            dependencies {
-                implementation(kotlin("test"))
-                implementation(kotlin("test-junit5"))
-                runtimeOnly("org.junit.jupiter:junit-jupiter-engine:5.5.2")
-            }
         }
         val jsMain by getting {
             kotlin.srcDir("${project(":protosLib").buildDir}/generated/source/proto/jsMain/kotlin")
             dependencies {
                 implementation(npm("grpc-web", "1.2.1", generateExternals = true))
+
+                // Polyfill dependencies
+                implementation(npm("stream-browserify", "3.0.0"))
+                implementation(npm("buffer", "6.0.3"))
             }
         }
-        val jsTest by getting {
-            dependencies {
-                implementation(kotlin("test-js"))
-            }
-        }
+        val jsTest by getting
         val iosMain by getting
         val iosTest by getting
+
+        all {
+            languageSettings.useExperimentalAnnotation("kotlin.js.ExperimentalJsExport")
+        }
     }
 
     publishing {

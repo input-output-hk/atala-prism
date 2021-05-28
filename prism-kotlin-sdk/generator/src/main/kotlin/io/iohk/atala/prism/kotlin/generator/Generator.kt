@@ -25,10 +25,8 @@ class Generator : ServiceGenerator {
                             }
             """
             clientMethodsJs += """
-                        @JsName("${method.name}")
                         fun ${method.name}(req: $reqType): Promise<$respType> =
                             GlobalScope.promise { internalService.${method.name}(req) }
-                        @JsName("${method.name}Auth")
                         fun ${method.name}Auth(req: $reqType, metadata: PrismMetadata): Promise<$respType> =
                             GlobalScope.promise { internalService.${method.name}Auth(req, metadata) }
             """

@@ -9,7 +9,6 @@ import io.iohk.atala.prism.kotlin.crypto.exposed.toKotlin
 
 @JsExport
 object CredentialVerificationJS {
-    @JsName("verify")
     fun verify(
         keyData: KeyDataJS,
         credentialData: CredentialDataJS,
@@ -17,7 +16,6 @@ object CredentialVerificationJS {
     ) =
         CredentialVerification.verify(keyData.toKeyData(), credentialData.toCredentialData(), credential.credential)
 
-    @JsName("verifyMerkle")
     fun verifyMerkle(
         keyData: KeyDataJS,
         batchData: BatchDataJS,

@@ -6,7 +6,6 @@ import io.iohk.atala.prism.kotlin.crypto.util.BytesOps.hexToBytes
 
 @JsExport
 object JsonBasedCredentialJSCompanion {
-    @JsName("fromString")
     fun fromString(credential: String): JsonBasedCredentialJS =
         JsonBasedCredentialJS(JsonBasedCredential.fromString(credential))
 }

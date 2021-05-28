@@ -60,10 +60,10 @@ async function completeFlow() {
     // Usually the DID would be registered with the node, but, the connector can handle that as well
     const issuerRegisterDIDResponse = await connector.RegisterDID(
         new RegisterDIDRequest(
-            issuerCreatedDIDSignedOperation,
             new RegisterDIDRequest.Role().ISSUER,
             'Issuer',
             new pbandk.ByteArr(new Int8Array(0)),
+            new RegisterDIDRequest.RegisterWith.CreateDidOperation(issuerCreatedDIDSignedOperation),
             noUnknownFields,
         ),
     );
@@ -256,10 +256,10 @@ async function completeFlow() {
 
     const verifierRegisterDIDResponse = await connector.RegisterDID(
         new RegisterDIDRequest(
-            verifierCreateDIDSignedOperation,
             new RegisterDIDRequest.Role().VERIFIER,
             'Verifier',
             new pbandk.ByteArr(new Int8Array(0)),
+            new RegisterDIDRequest.RegisterWith.CreateDidOperation(verifierCreateDIDSignedOperation),
             noUnknownFields,
         ),
     );

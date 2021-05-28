@@ -7,7 +7,6 @@ import io.iohk.atala.prism.kotlin.protos.ECKeyData
 import pbandk.ByteArr
 
 @JsExport
-@JsName("toECKeyData")
 fun toECKeyData(publicKeyHex: String): ECKeyData {
     val publicKey = EC.toPublicKey(hexToBytes(publicKeyHex).map { it.toByte() })
     val point = publicKey.getCurvePoint()
