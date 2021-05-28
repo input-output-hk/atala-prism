@@ -18,6 +18,7 @@ import monix.execution.Scheduler.Implicits.global
 import org.mockito.scalatest.MockitoSugar
 import org.scalatest.Assertion
 import CardanoAddressInfoService._
+import org.scalatest.OptionValues._
 
 import scala.concurrent.duration.DurationInt
 
@@ -28,6 +29,7 @@ class CardanoAddressInfoServiceSpec extends PostgresRepositorySpec[Task] with Mo
   import ConnectorMessageFixtures._
   import CredentialFixtures._
   import PayIdFixtures._
+  import CardanoWalletFixtures._
 
   "cardanoAddressesMessageProcessor" should {
     "upsert cardano address" in new CardanoAddressInfoServiceFixtures {
@@ -362,6 +364,39 @@ class CardanoAddressInfoServiceSpec extends PostgresRepositorySpec[Task] with Mo
     }
   }
 
+  "getPayIdAddressesMessageProcessor" should {
+    "return manually registered cardano addresses for connection" in new CardanoAddressInfoServiceFixtures {
+      val message =
+        makeReceivedMessage(connectionId = connectionId2.uuid.toString, message = getPayIdAddressesToAtalaMessage)
+
+      val result = (for {
+        _ <- ConnectionFixtures.insertAll(database)
+        _ <- CardanoAddressInfoFixtures.insertAll(database)
+        _ <- CardanoWalletFixtures.insertAll(database)
+        result <- getPayIdAddressesMessageProcessor(message).get
+      } yield result).runSyncUnsafe()
+
+      val getGetPayIdAddressesResponse = result.toOption.flatten
+        .map(_.getMirrorMessage.getGetPayIdAddressesResponse)
+        .value
+
+      val manuallyRegisteredCardanoAddresses = getGetPayIdAddressesResponse.manuallyRegisteredCardanoAddresses
+
+      manuallyRegisteredCardanoAddresses.map(cardanoAddress =>
+        (cardanoAddress.address, cardanoAddress.registrationDate.map(_.seconds))
+      ) mustBe
+        Seq(
+          (cardanoAddressInfo2.cardanoAddress.value, Some(cardanoAddressInfo2.registrationDate.date.getEpochSecond)),
+          (cardanoAddressInfo3.cardanoAddress.value, Some(cardanoAddressInfo3.registrationDate.date.getEpochSecond))
+        )
+
+      val generatedCardanoAddresses = getGetPayIdAddressesResponse.generatedCardanoAddresses
+
+      generatedCardanoAddresses.head.address mustBe cardanoWalletAddress1.address.value
+      generatedCardanoAddresses(1).address mustBe cardanoWalletAddress2.address.value
+    }
+  }
+
   trait CardanoAddressInfoServiceFixtures {
     val cardanoAddressInfoService =
       new CardanoAddressInfoService(database, mirrorConfig.httpConfig, defaultNodeClientStub)
@@ -371,5 +406,6 @@ class CardanoAddressInfoServiceSpec extends PostgresRepositorySpec[Task] with Mo
     val checkPayIdNameAvailabilityMessageProcessor =
       cardanoAddressInfoService.checkPayIdNameAvailabilityMessageProcessor
     val getPayIdNameMessageProcessor = cardanoAddressInfoService.getPayIdNameMessageProcessor
+    val getPayIdAddressesMessageProcessor = cardanoAddressInfoService.getPayIdAddressesMessageProcessor
   }
 }

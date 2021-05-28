@@ -2,11 +2,11 @@ package io.iohk.atala.mirror.db
 
 import doobie.util.update.Update
 import doobie.free.connection.ConnectionIO
-import io.iohk.atala.mirror.models.{CardanoWallet, CardanoWalletAddress}
-
+import io.iohk.atala.mirror.models.{CardanoWallet, CardanoWalletAddress, CardanoWalletAddressWithWalletName}
 import doobie.implicits._
 import doobie.postgres.implicits._
 import doobie.implicits.legacy.instant._
+import io.iohk.atala.prism.models.ConnectionToken
 
 object CardanoWalletAddressDao {
 
@@ -16,6 +16,20 @@ object CardanoWalletAddressDao {
          | FROM cardano_wallet_addresses
          | WHERE wallet_id = $walletId""".stripMargin
       .query[CardanoWalletAddress]
+      .to[List]
+  }
+
+  def findByConnectionTokenWithWalletName(
+      connectionToken: ConnectionToken
+  ): ConnectionIO[List[CardanoWalletAddressWithWalletName]] = {
+    sql"""
+         | SELECT a.address, a.wallet_id, a.sequence_no, a.used_at, w.name
+         | FROM cardano_wallets w
+         | JOIN cardano_wallet_addresses a
+         | ON w.id = a.wallet_id
+         | WHERE w.connection_token = $connectionToken
+         | ORDER BY a.address""".stripMargin
+      .query[CardanoWalletAddressWithWalletName]
       .to[List]
   }
 

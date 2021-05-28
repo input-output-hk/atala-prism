@@ -6,19 +6,20 @@ import doobie.free.{connection => doobieConnection}
 import cats.implicits._
 import doobie.free.connection.ConnectionIO
 import doobie.util.transactor.Transactor
-import io.iohk.atala.mirror.db.{CardanoAddressInfoDao, ConnectionDao}
+import io.iohk.atala.mirror.db.{CardanoAddressInfoDao, CardanoWalletAddressDao, ConnectionDao}
 import monix.eval.Task
 import doobie.implicits._
 import io.iohk.atala.mirror.models.CardanoAddressInfo.CardanoNetwork
 import io.iohk.atala.prism.mirror.payid.{Address, AddressDetails, CryptoAddressDetails, PayID, PaymentInformation}
-import io.iohk.atala.mirror.models.{CardanoAddress, CardanoAddressInfo, Connection}
+import io.iohk.atala.mirror.models.{CardanoAddress, CardanoAddressInfo, CardanoWalletAddressWithWalletName, Connection}
 import io.iohk.atala.prism.protos.connector_models.ReceivedMessage
 import io.iohk.atala.prism.protos.credential_models.{
   AtalaMessage,
   CheckPayIdNameAvailabilityMessage,
   PayIdMessage,
   PayIdNameRegistrationMessage,
-  RegisterAddressMessage
+  RegisterAddressMessage,
+  GeneratedCardanoAddress
 }
 import org.slf4j.LoggerFactory
 import io.circe.parser._
@@ -44,6 +45,10 @@ import io.iohk.atala.prism.protos.credential_models.PaymentInformationSaved
 import io.iohk.atala.prism.protos.credential_models.CheckPayIdNameAvailabilityResponse
 import io.iohk.atala.prism.protos.credential_models.GetPayIdNameMessage
 import io.iohk.atala.prism.protos.credential_models.GetPayIdNameResponse
+import io.iohk.atala.prism.protos.credential_models.GetPayIdAddressesMessage
+import io.iohk.atala.prism.protos.credential_models.GetPayIdAddressesResponse
+import io.iohk.atala.prism.protos.credential_models.ManuallyRegisteredCardanoAddress
+import com.google.protobuf.timestamp.Timestamp
 
 import scala.util.Try
 import scala.util.matching.Regex
@@ -470,6 +475,80 @@ class CardanoAddressInfoService(tx: Transactor[Task], httpConfig: HttpConfig, no
         )
 
     } yield Some(response)).value
+  }
+
+  val getPayIdAddressesMessageProcessor: MessageProcessor = { receivedMessage =>
+    parseGetPayIdAddressesMessage(receivedMessage)
+      .as(processGetPayIdAddressesMessage(receivedMessage))
+  }
+
+  private[services] def parseGetPayIdAddressesMessage(
+      message: ReceivedMessage
+  ): Option[GetPayIdAddressesMessage] = {
+    Try(AtalaMessage.parseFrom(message.message.toByteArray)).toOption
+      .flatMap(_.message.mirrorMessage)
+      .flatMap(_.message.getPayIdAddressesMessage)
+  }
+
+  def processGetPayIdAddressesMessage(receivedMessage: ReceivedMessage): MessageProcessorResult = {
+    (for {
+      allAddresses <- fetchAddressesForConnection(receivedMessage)
+      (cardanoAddressesInfo, walletAddressesWithWalletName) = allAddresses
+
+      manuallyRegisteredCardanoAddresses = cardanoAddressesInfo.map { cardanoAddress =>
+        ManuallyRegisteredCardanoAddress(
+          address = cardanoAddress.cardanoAddress.value,
+          registrationDate = Some(Timestamp(seconds = cardanoAddress.registrationDate.date.getEpochSecond))
+        )
+      }
+
+      generatedCardanoAddresses = walletAddressesWithWalletName.map { walletAddress =>
+        GeneratedCardanoAddress(
+          address = walletAddress.cardanoWalletAddress.address.value,
+          walletName = walletAddress.walletName.getOrElse(""),
+          sequenceNumber = walletAddress.cardanoWalletAddress.sequenceNo.toLong,
+          usedAt =
+            walletAddress.cardanoWalletAddress.usedAt.map(usedAt => Timestamp(seconds = usedAt.date.getEpochSecond))
+        )
+      }
+
+      response = AtalaMessage()
+        .withMirrorMessage(
+          MirrorMessage()
+            .withGetPayIdAddressesResponse(
+              GetPayIdAddressesResponse(
+                manuallyRegisteredCardanoAddresses,
+                generatedCardanoAddresses
+              )
+            )
+        )
+
+    } yield Some(response)).value
+  }
+
+  private def fetchAddressesForConnection(
+      receivedMessage: ReceivedMessage
+  ): EitherT[Task, PrismError, (List[CardanoAddressInfo], List[CardanoWalletAddressWithWalletName])] = {
+    (for {
+      connection <- EitherT(
+        ConnectionUtils
+          .fromReceivedMessage(receivedMessage, ConnectionDao.findByConnectionId)
+          .logSQLErrors("getting connection by received message", logger)
+      )
+
+      cardanoAddressesInfo <- EitherT.liftF[ConnectionIO, PrismError, List[CardanoAddressInfo]](
+        CardanoAddressInfoDao
+          .findBy(connection.token)
+          .logSQLErrors("getting manually registered cardano addresses for connection", logger)
+      )
+
+      walletAddressesWithWalletName <-
+        EitherT.liftF[ConnectionIO, PrismError, List[CardanoWalletAddressWithWalletName]](
+          CardanoWalletAddressDao
+            .findByConnectionTokenWithWalletName(connection.token)
+            .logSQLErrors("getting generated cardano addresses for connection", logger)
+        )
+    } yield (cardanoAddressesInfo, walletAddressesWithWalletName)).transact(tx)
   }
 }
 

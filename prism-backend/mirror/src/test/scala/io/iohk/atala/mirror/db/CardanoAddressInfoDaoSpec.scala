@@ -63,6 +63,24 @@ class CardanoAddressInfoDaoSpec extends PostgresRepositorySpec[Task] with Mirror
       cardanoAddressesInfo mustBe List(cardanoAddressInfo1)
     }
 
+    "return cardano addresses by connection token" in {
+      // given
+      (for {
+        _ <- ConnectionFixtures.insertAll(database)
+        _ <- CardanoAddressInfoFixtures.insertAll(database)
+      } yield ()).runSyncUnsafe()
+
+      // when
+      val cardanoAddressesInfo =
+        CardanoAddressInfoDao
+          .findBy(connection1.token)
+          .transact(database)
+          .runSyncUnsafe()
+
+      // then
+      cardanoAddressesInfo mustBe List(cardanoAddressInfo1)
+    }
+
     "return none if a cardano address doesn't exist" in {
       // when
       val cardanoAddressesInfo =

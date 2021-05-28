@@ -12,3 +12,8 @@ final case class CardanoWalletAddress(
 object CardanoWalletAddress {
   case class UsedAt(date: Instant) extends AnyVal
 }
+
+final case class CardanoWalletAddressWithWalletName(
+    cardanoWalletAddress: CardanoWalletAddress,
+    walletName: Option[String]
+)

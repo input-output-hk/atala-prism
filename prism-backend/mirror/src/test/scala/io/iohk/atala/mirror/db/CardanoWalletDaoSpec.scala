@@ -16,7 +16,7 @@ class CardanoWalletDaoSpec extends PostgresRepositorySpec[Task] with MirrorFixtu
 
       // when
       val result = (for {
-        _ <- ConnectionDao.insert(connection1)
+        _ <- ConnectionDao.insert(connection2)
         result <- CardanoWalletDao.insert(cardanoWallet)
       } yield result)
         .transact(database)

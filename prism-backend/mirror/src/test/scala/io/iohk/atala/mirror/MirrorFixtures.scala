@@ -11,7 +11,13 @@ import io.iohk.atala.prism.protos.credential_models.{
   MirrorMessage,
   RegisterAddressMessage
 }
-import io.iohk.atala.mirror.db.{CardanoAddressInfoDao, ConnectionDao, UserCredentialDao}
+import io.iohk.atala.mirror.db.{
+  CardanoAddressInfoDao,
+  CardanoWalletAddressDao,
+  CardanoWalletDao,
+  ConnectionDao,
+  UserCredentialDao
+}
 import doobie.free.connection.ConnectionIO
 import doobie.implicits._
 import doobie.util.transactor.Transactor
@@ -332,6 +338,14 @@ trait MirrorFixtures extends ServicesFixtures {
         )
         .toByteString
 
+    val getPayIdAddressesToAtalaMessage: ByteString =
+      AtalaMessage()
+        .withMirrorMessage(
+          MirrorMessage()
+            .withGetPayIdAddressesMessage(credential_models.GetPayIdAddressesMessage())
+        )
+        .toByteString
+
     def makeReceivedMessage(
         id: String = "id1",
         received: Option[Timestamp] = Timestamp(LocalDateTime.of(2020, 6, 12, 0, 0).toEpochSecond(ZoneOffset.UTC)).some,
@@ -346,18 +360,35 @@ trait MirrorFixtures extends ServicesFixtures {
     val cardanoWallet = CardanoWallet(
       id = CardanoWallet.Id.random(),
       name = Some("name"),
-      connectionToken = connection1.token,
+      connectionToken = connection2.token,
       extendedPublicKey = "key",
       lastGeneratedNo = 10,
       lastUsedNo = 0,
       registrationDate = CardanoWallet.RegistrationDate(LocalDateTime.of(2020, 10, 4, 0, 0).toInstant(ZoneOffset.UTC))
     )
 
-    var cardanoWalletAddress = CardanoWalletAddress(
-      address = CardanoAddress("address"),
+    var cardanoWalletAddress1 = CardanoWalletAddress(
+      address = CardanoAddress("address1"),
       walletId = cardanoWallet.id,
       sequenceNo = 0,
       usedAt = Some(CardanoWalletAddress.UsedAt(LocalDateTime.of(2020, 10, 4, 0, 0).toInstant(ZoneOffset.UTC)))
     )
+
+    var cardanoWalletAddress2 = CardanoWalletAddress(
+      address = CardanoAddress("address2"),
+      walletId = cardanoWallet.id,
+      sequenceNo = 0,
+      usedAt = Some(CardanoWalletAddress.UsedAt(LocalDateTime.of(2020, 10, 4, 0, 0).toInstant(ZoneOffset.UTC)))
+    )
+
+    def insertAll[F[_]: Sync](database: Transactor[F]): F[Unit] = {
+      for {
+        _ <- insertManyFixtures(CardanoWalletDao.insert(cardanoWallet))(database)
+        _ <- insertManyFixtures(
+          CardanoWalletAddressDao.insert(cardanoWalletAddress1),
+          CardanoWalletAddressDao.insert(cardanoWalletAddress2)
+        )(database)
+      } yield ()
+    }
   }
 }

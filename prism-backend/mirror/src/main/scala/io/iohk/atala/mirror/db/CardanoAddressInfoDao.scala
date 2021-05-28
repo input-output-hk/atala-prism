@@ -40,6 +40,17 @@ object CardanoAddressInfoDao {
     """.stripMargin.query[CardanoAddressInfo].to[List]
   }
 
+  def findBy(
+      connectionToken: ConnectionToken
+  ): ConnectionIO[List[CardanoAddressInfo]] = {
+    sql"""
+         | SELECT address, payid_verified_address, network, connection_token, registration_date, message_id
+         | FROM cardano_addresses_info
+         | WHERE connection_token = $connectionToken
+         | ORDER BY registration_date, address
+    """.stripMargin.query[CardanoAddressInfo].to[List]
+  }
+
   val findLastSeenMessageId: ConnectionIO[Option[ConnectorMessageId]] =
     sql"""
          | SELECT message_id
