@@ -31,7 +31,7 @@ class AttributeViewController: UIViewController, PickerViewUtilsDelegate {
         typetextField.config(title: "attribute_field_attribute".localize())
         typetextField.textField.isEnabled = false
         typetextField.textField.isUserInteractionEnabled = true
-        typetextField.textField.addDropDownIcon()
+        typetextField.textField.addRightViewWith(image: UIImage.init(systemName: "chevron.down")!)
         
         buttonAdd.addRoundCorners(radius: AppConfigs.CORNER_RADIUS_BUTTON)
         

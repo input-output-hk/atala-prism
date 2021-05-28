@@ -89,7 +89,7 @@ PODS:
     - Braintree/UnionPay (~> 4.30)
     - BraintreeDropIn/UIKit
   - BraintreeDropIn/UIKit (7.5.0)
-  - crypto (0.1.0-bf19ea04):
+  - crypto (0.1.0-2956ac94):
     - Secp256k1Kit.swift (= 1.1)
   - Firebase/Analytics (6.23.0):
     - Firebase/Core
@@ -389,7 +389,7 @@ SPEC CHECKSUMS:
   BoringSSL-GRPC: db8764df3204ccea016e1c8dd15d9a9ad63ff318
   Braintree: 586e4d274398fabe9d70ab790eefca41660b8a17
   BraintreeDropIn: 15d6f53bf80bc0ae7809ab17803100c0a5448fd2
-  crypto: 2365f3a75a2480855660e260990d74e3cf33847c
+  crypto: cdd5a7d9c077caec9843d2602bded4c311472f77
   Firebase: 585ae467b3edda6a5444e788fda6888f024d8d6f
   FirebaseABTesting: 821a3a3e4a145987e80fee3657c4de1cb9adf693
   FirebaseAnalytics: 558f7a03d19de451093032c806f39d5f9dff096e

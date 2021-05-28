@@ -19,7 +19,7 @@ class CommonViewCell: BaseTableViewCell {
     @IBOutlet weak var viewMainBody: UIView!
     @IBOutlet weak var constraintTitleTrailing: NSLayoutConstraint!
     @IBOutlet weak var imageVerified: UIImageView!
-    
+
     override class func default_NibName() -> String {
         return "CommonViewCell"
     }
@@ -48,7 +48,8 @@ class CommonViewCell: BaseTableViewCell {
     // MARK: Config
 
     func config(title: String?, subtitle: String?, logoData: Data?, logoPlaceholderNamed: String,
-                isComingSoon: Bool = false, isVerified: Bool = false, showHeader: Bool = false, headerTitle: String? = nil) {
+                isComingSoon: Bool = false, isVerified: Bool = false, showHeader: Bool = false,
+                headerTitle: String? = nil) {
 
         labelTitle.text = title
         let hideSubtitle = subtitle == nil

@@ -42,7 +42,7 @@ class PickerViewCell: BaseTableViewCell, TextFieldTitledViewDelegate {
         viewBg.backgroundColor = bgColor
         textField.textField.isEnabled = false
         textField.textField.isUserInteractionEnabled = isEnable
-        textField.textField.addDropDownIcon()
+        textField.textField.addRightViewWith(image: UIImage.init(systemName: "chevron.down")!)
         textField.changeBorderColorIf(isEditing: hasBorder)
         setupTapGesture()
     }

@@ -43,6 +43,7 @@ class VerifyIdResultsPresenter: ListingBasePresenter, ListingBaseTableUtilsPrese
             self.viewImpl?.showErrorMessage(doShow: true, message: "service_error".localize())
             return
         }
+        self.viewImpl?.showLoading(doShow: true)
 
         // Call the service
         ApiService.call(async: {
@@ -58,7 +59,8 @@ class VerifyIdResultsPresenter: ListingBasePresenter, ListingBaseTableUtilsPrese
             return nil
         }, success: {
             self.viewImpl?.goToMainScreen()
-        }, error: { _ in
+        }, error: { error in
+            print(error)
             self.viewImpl?.showLoading(doShow: false)
             self.viewImpl?.showErrorMessage(doShow: true, message: "service_error".localize())
         })
@@ -81,11 +83,11 @@ class VerifyIdResultsPresenter: ListingBasePresenter, ListingBaseTableUtilsPrese
     func getElementCount() -> [Int] {
         return [initialStaticCells.count]
     }
-    
+
     func getSectionCount() -> Int? {
         return 1
     }
-    
+
     func getSectionHeaderViews() -> [UIView] {
         return [UIView()]
     }

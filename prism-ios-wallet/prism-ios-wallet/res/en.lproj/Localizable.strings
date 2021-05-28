@@ -228,6 +228,8 @@
 "settings_reset_success" = "Contacts and credentials successfully removed!";
 "settings_date_title" = "Date";
 "settings_date_subtitle" = "Custom date format";
+"settings_pay_id_title" = "Pay ID";
+"settings_pay_id_subtitle" = "Get it Now!";
 
 // <!-- Login: Welcome -->
 "welcome_title" = "Welcome";
@@ -550,3 +552,78 @@
 "intdemotutorial_step_2_desc3" = "Scan the QR code";
 "intdemotutorial_step_3_title" = "Receive\nyour Credential";
 "intdemotutorial_step_3_subtitle" = "Prove your identity in one click and instantly access services everywhere Atala PRISM is suported.";
+
+// <!-- Pay ID Welcome -->
+
+"pay_id_welcome_title" = "Benefits of creating a Pay ID";
+"pay_id_welcome_subtitle" = "A better way to send and receive payments.";
+"pay_id_welcome_simple" = "Simple";
+"pay_id_welcome_simple_message" = "Get an easy to remember payment address like your email or phone number.";
+"pay_id_welcome_convenient" = "Convenient";
+"pay_id_welcome_convenient_message" = "Attach multiple payment systems to your Pay ID.";
+"pay_id_welcome_secure" = "Secure";
+"pay_id_welcome_secure_message" = "No need to provide financially sensitive information.";
+"pay_id_welcome_continue" = "Continue";
+"pay_id_welcome_skip" = "Skip and do later";
+
+// <!-- Pay ID Selector -->
+
+"pay_id_selector_title" = "Select an ID";
+"pay_id_selector_section_0" = "Select at least one ID credential";
+"pay_id_selector_section_1" = "Attach other credentials to your Pay ID (optional)";
+"pay_id_selector_verify_title" = "Verify your Identity";
+"pay_id_selector_verify_subtitle" = "KYC Credential";
+"pay_id_selector_gov_title" = "Government ID";
+"pay_id_selector_gov_subtitle" = "Metropol City Government";
+"pay_id_selector_transcript_title" = "Transcript";
+"pay_id_selector_transcript_subtitle" = "Art School";
+"pay_id_selector_university_title" = "University Degree";
+"pay_id_selector_university_subtitle" = "University of Innovation and Technology";
+
+// <!-- Pay ID Setup -->
+
+"pay_id_setup_title" = "Set up your Pay ID";
+"pay_id_setup_name_field" = "ENTER PAY ID NAME";
+"pay_id_setup_name_field_right" = "$atalamirror.io";
+"pay_id_setup_name_field_tip" = "* Maximum length 50 characters.";
+"pay_id_setup_name_field_available" = "Available Pay ID Name";
+"pay_id_setup_name_field_unavailable" = "Pay ID Name not available";
+"pay_id_setup_subtitle" = "Link your Pay ID to a Wallet or Specific Address";
+"pay_id_setup_scan_field" = "ADD OR SCAN";
+"pay_id_setup_scan_field_tip" = "* Scan the extended public key from your wallet. All the addresses in your wallet will be added.";
+
+// <!-- Pay ID Alert -->
+
+"pay_id_success_title" = "Your PAY ID was";
+"pay_id_create_success_message" = "Successfully Created!";
+"pay_id_share_success_message" = "Successfully Shared!";
+"pay_id_add_address_title" = "Your address(es) was";
+"pay_id_add_address_message" = "Successfully Added";
+
+// <!-- Pay ID Info -->
+
+"pay_id_info_title" = "Pay ID Information";
+"pay_id_info_subtitle" = "View all your Pay IDs, add addresses, share or remove";
+"pay_id_info_detail_title" = "Pay ID";
+"pay_id_info_detail_name" = "YOUR PAY ID NAME";
+"pay_id_info_detail_address" = "ADDRESS";
+"pay_id_info_detail_key" = "PUBLIC KEY";
+"pay_id_info_detail_key_none" = "No public key created yet";
+"pay_id_info_detail_add_address" = "Add New Address";
+"pay_id_info_detail_add_key" = "Add Public Key";
+"pay_id_info_button" = "Register New Pay ID";
+"pay_id_info_delete_error" = "The Pay ID couldn't be deleted";
+
+// <!-- Pay ID Listing -->
+
+"pay_id_listing_address_title" = "Address List";
+"pay_id_listing_key_title" = "Public Key List";
+"pay_id_listing_header_title" = "YOUR PAY ID NAME";
+"pay_id_listing_address_row_title" = "ADDRESS NAME";
+"pay_id_listing_key_row_title" = "PUBLIC KEY NAME";
+
+// <!-- Pay ID Add Address -->
+
+"pay_id_add_address_title" = "";
+"pay_id_add_address_title" = "";
+"pay_id_add_address_title" = "";

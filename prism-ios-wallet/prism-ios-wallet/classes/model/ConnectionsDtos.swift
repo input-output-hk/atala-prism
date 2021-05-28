@@ -30,7 +30,6 @@ class ConnectionBase: Mappable {
 class ConnectionMaker {
 
     static func build(_ item: Io_Iohk_Atala_Prism_Protos_GetConnectionTokenInfoResponse) -> ConnectionBase? {
-
         let issuer = ConnectionBase()
         issuer.did = item.creatorDid
         issuer.name = item.creatorName

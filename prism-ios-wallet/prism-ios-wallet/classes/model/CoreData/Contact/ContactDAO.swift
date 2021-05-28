@@ -32,6 +32,18 @@ class ContactDAO: BaseDAO {
         let result = try? getManagedContext()?.fetch(fetchRequest)
         return result
     }
+    
+    func getContact(connectionId: String) -> Contact? {
+        let fetchRequest = Contact.createFetchRequest()
+        fetchRequest.predicate = NSPredicate(format: "connectionId == %@", connectionId)
+        fetchRequest.sortDescriptors = getSortDescriptors()
+
+        let result = try? getManagedContext()?.fetch(fetchRequest)
+        if result?.count > 0 {
+            return result?[0]
+        }
+        return nil
+    }
 
     @discardableResult
     func updateMessageId(connectionId: String, messageId: String) -> Contact? {

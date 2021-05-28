@@ -44,14 +44,28 @@ extension UITextField {
         }
     }
     
-    func addDropDownIcon() {
-        let imageView = UIImageView.init(image: UIImage.init(systemName: "chevron.down"))
+    func addRightViewWith(image: UIImage) {
+        let imageView = UIImageView.init(image: image)
         
         imageView.frame = CGRect(x: CGFloat(self.frame.size.width - 25), y: CGFloat(5), width: CGFloat(25), height: CGFloat(25))
         imageView.tag = self.tag
-        imageView.tintColor = UIColor.appGreyMid
-        
+        imageView.image = imageView.image?.withRenderingMode(.alwaysTemplate)
+        imageView.tintColor = UIColor.appGreyBlue
+
         rightView = imageView
+        rightViewMode = .always
+        
+        rightView?.isUserInteractionEnabled = true
+    }
+    
+    func addRightViewWith(text: String) {
+        let label = UILabel.init(frame: CGRect(x: CGFloat(self.frame.size.width - 25), y: CGFloat(5), width: CGFloat(80), height: CGFloat(25)))
+        
+        label.tag = self.tag
+        label.text = text
+        label.textColor = UIColor.appGreyBlue
+        
+        rightView = label
         rightViewMode = .always
     }
 }

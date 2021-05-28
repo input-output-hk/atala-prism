@@ -1,0 +1,110 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.XIB" version="3.0" toolsVersion="17701" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES">
+    <device id="retina6_1" orientation="portrait" appearance="light"/>
+    <dependencies>
+        <deployment identifier="iOS"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="17703"/>
+        <capability name="System colors in document resources" minToolsVersion="11.0"/>
+        <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
+    </dependencies>
+    <objects>
+        <placeholder placeholderIdentifier="IBFilesOwner" id="-1" userLabel="File's Owner"/>
+        <placeholder placeholderIdentifier="IBFirstResponder" id="-2" customClass="UIResponder"/>
+        <tableViewCell clipsSubviews="YES" contentMode="scaleToFill" insetsLayoutMarginsFromSafeArea="NO" selectionStyle="none" hidesAccessoryWhenEditing="NO" indentationLevel="1" indentationWidth="0.0" reuseIdentifier="SelectId" rowHeight="249" id="pPZ-Xe-OKb" customClass="SelectIdCell" customModule="Atala_PRISM" customModuleProvider="target">
+            <rect key="frame" x="0.0" y="0.0" width="468" height="249"/>
+            <autoresizingMask key="autoresizingMask"/>
+            <tableViewCellContentView key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" insetsLayoutMarginsFromSafeArea="NO" tableViewCell="pPZ-Xe-OKb" id="sfu-W1-Mw7">
+                <rect key="frame" x="0.0" y="0.0" width="468" height="249"/>
+                <autoresizingMask key="autoresizingMask"/>
+                <subviews>
+                    <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="ZFH-20-3rJ">
+                        <rect key="frame" x="24" y="8" width="420" height="233"/>
+                        <subviews>
+                            <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFit" horizontalHuggingPriority="251" verticalHuggingPriority="251" translatesAutoresizingMaskIntoConstraints="NO" id="1zG-4q-lv4">
+                                <rect key="frame" x="11" y="14" width="40" height="40"/>
+                                <constraints>
+                                    <constraint firstAttribute="width" constant="40" id="MEb-OJ-ygl"/>
+                                    <constraint firstAttribute="height" constant="40" id="hvk-cv-hBC"/>
+                                </constraints>
+                            </imageView>
+                            <stackView opaque="NO" contentMode="scaleToFill" axis="vertical" distribution="fillProportionally" translatesAutoresizingMaskIntoConstraints="NO" id="4p5-x1-Ylq">
+                                <rect key="frame" x="67" y="16" width="300" height="35.5"/>
+                                <subviews>
+                                    <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Government ID" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="8TF-6n-jac">
+                                        <rect key="frame" x="0.0" y="0.0" width="300" height="19.5"/>
+                                        <fontDescription key="fontDescription" type="system" weight="semibold" pointSize="16"/>
+                                        <nil key="textColor"/>
+                                        <nil key="highlightedColor"/>
+                                    </label>
+                                    <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Metropol City Government" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="fxm-BK-VK1">
+                                        <rect key="frame" x="0.0" y="19.5" width="300" height="16"/>
+                                        <fontDescription key="fontDescription" type="system" pointSize="13"/>
+                                        <color key="textColor" red="0.46666666666666667" green="0.52549019607843139" blue="0.61960784313725492" alpha="1" colorSpace="calibratedRGB"/>
+                                        <nil key="highlightedColor"/>
+                                        <userDefinedRuntimeAttributes>
+                                            <userDefinedRuntimeAttribute type="string" keyPath="textColorIB" value="textGrey"/>
+                                        </userDefinedRuntimeAttributes>
+                                    </label>
+                                </subviews>
+                            </stackView>
+                            <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="OQt-v1-ile">
+                                <rect key="frame" x="383" y="23.5" width="21" height="21"/>
+                                <subviews>
+                                    <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFit" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="ico_share_empty" translatesAutoresizingMaskIntoConstraints="NO" id="mQb-0g-TtN">
+                                        <rect key="frame" x="0.0" y="0.0" width="21" height="21"/>
+                                    </imageView>
+                                </subviews>
+                                <color key="backgroundColor" systemColor="systemBackgroundColor"/>
+                                <constraints>
+                                    <constraint firstAttribute="trailing" secondItem="mQb-0g-TtN" secondAttribute="trailing" id="0Al-C1-Ryb"/>
+                                    <constraint firstAttribute="height" constant="21" id="9js-9h-izM"/>
+                                    <constraint firstAttribute="width" constant="21" id="G2c-We-hpO"/>
+                                    <constraint firstItem="mQb-0g-TtN" firstAttribute="top" secondItem="OQt-v1-ile" secondAttribute="top" id="QhF-Q2-V25"/>
+                                    <constraint firstAttribute="bottom" secondItem="mQb-0g-TtN" secondAttribute="bottom" id="xc2-YH-ULV"/>
+                                    <constraint firstItem="mQb-0g-TtN" firstAttribute="leading" secondItem="OQt-v1-ile" secondAttribute="leading" id="zcq-8S-tnh"/>
+                                </constraints>
+                            </view>
+                        </subviews>
+                        <color key="backgroundColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                        <constraints>
+                            <constraint firstItem="OQt-v1-ile" firstAttribute="leading" secondItem="4p5-x1-Ylq" secondAttribute="trailing" constant="16" id="6az-EL-bq8"/>
+                            <constraint firstItem="4p5-x1-Ylq" firstAttribute="leading" secondItem="1zG-4q-lv4" secondAttribute="trailing" constant="16" id="6bA-43-VJu"/>
+                            <constraint firstItem="1zG-4q-lv4" firstAttribute="leading" secondItem="ZFH-20-3rJ" secondAttribute="leading" constant="11" id="6m6-4C-9Xa"/>
+                            <constraint firstAttribute="trailing" secondItem="OQt-v1-ile" secondAttribute="trailing" constant="16" id="ISZ-6r-ERF"/>
+                            <constraint firstItem="4p5-x1-Ylq" firstAttribute="top" secondItem="ZFH-20-3rJ" secondAttribute="top" constant="16" id="JT9-2e-pXc"/>
+                            <constraint firstItem="OQt-v1-ile" firstAttribute="centerY" secondItem="4p5-x1-Ylq" secondAttribute="centerY" id="NGD-Wv-xcm"/>
+                            <constraint firstItem="1zG-4q-lv4" firstAttribute="centerY" secondItem="4p5-x1-Ylq" secondAttribute="centerY" id="ldv-rT-i9a"/>
+                            <constraint firstAttribute="bottom" relation="greaterThanOrEqual" secondItem="4p5-x1-Ylq" secondAttribute="bottom" constant="16" id="saS-Ow-3OH"/>
+                        </constraints>
+                        <userDefinedRuntimeAttributes>
+                            <userDefinedRuntimeAttribute type="string" keyPath="backgroundColorIB" value="appWhite"/>
+                        </userDefinedRuntimeAttributes>
+                    </view>
+                </subviews>
+                <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                <constraints>
+                    <constraint firstItem="ZFH-20-3rJ" firstAttribute="top" secondItem="sfu-W1-Mw7" secondAttribute="top" constant="8" id="31G-Sm-cJ4"/>
+                    <constraint firstAttribute="bottom" secondItem="ZFH-20-3rJ" secondAttribute="bottom" constant="8" id="JNK-cR-EgO"/>
+                    <constraint firstAttribute="trailing" secondItem="ZFH-20-3rJ" secondAttribute="trailing" constant="24" id="RQv-pd-72F"/>
+                    <constraint firstItem="ZFH-20-3rJ" firstAttribute="leading" secondItem="sfu-W1-Mw7" secondAttribute="leading" constant="24" id="c9b-9h-tQE"/>
+                </constraints>
+            </tableViewCellContentView>
+            <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+            <connections>
+                <outlet property="imageCheck" destination="mQb-0g-TtN" id="ovv-7v-NIi"/>
+                <outlet property="imageLogo" destination="1zG-4q-lv4" id="H8L-2K-jkV"/>
+                <outlet property="labelSubtitle" destination="fxm-BK-VK1" id="hbY-by-4QX"/>
+                <outlet property="labelTitle" destination="8TF-6n-jac" id="pjZ-RO-Kly"/>
+                <outlet property="viewCheck" destination="OQt-v1-ile" id="4ft-1T-vme"/>
+                <outlet property="viewContent" destination="ZFH-20-3rJ" id="6iR-nI-f0v"/>
+            </connections>
+            <point key="canvasLocation" x="-127.53623188405798" y="74.665178571428569"/>
+        </tableViewCell>
+    </objects>
+    <resources>
+        <image name="ico_share_empty" width="26" height="26"/>
+        <systemColor name="systemBackgroundColor">
+            <color white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+        </systemColor>
+    </resources>
+</document>

@@ -49,7 +49,9 @@ class SettingsPresenter: ListingBasePresenter, ListingBaseTableUtilsPresenterDel
         InitialCellValue(icon: "logo_about", title: "settings_about_title",
                          subtitle: "settings_about_subtitle", action: actionRowTerms),
         InitialCellValue(icon: "logo_date", title: "settings_date_title",
-                         subtitle: "settings_date_subtitle", action: actionRowDate)
+                         subtitle: "settings_date_subtitle", action: actionRowDate),
+        InitialCellValue(icon: "logo_pay_id", title: "settings_pay_id_title",
+                         subtitle: "settings_pay_id_subtitle", action: actionRowPayID)
     ]
 
     func startShowingInitial() {
@@ -93,6 +95,15 @@ class SettingsPresenter: ListingBasePresenter, ListingBaseTableUtilsPresenterDel
         self?.viewImpl?.changeScreenToDate()
     })
 
+    lazy var actionRowPayID = SelectorAction(action: { [weak self] in
+        let payIdDao = PayIdDAO()
+        if payIdDao.countPayId() == 0 {
+            self?.viewImpl?.changeScreenToCreatePayId()
+        } else {
+            self?.viewImpl?.changeScreenToPayIdDetail()
+        }
+    })
+
     func clearAppData() {
         Tracker.global.trackResetData()
         let credentialsDao = CredentialDAO()
@@ -128,15 +139,15 @@ class SettingsPresenter: ListingBasePresenter, ListingBaseTableUtilsPresenterDel
             return (initialRows?.size() ?? 0) > 0
         }
     }
-    
+
     func getSectionHeaderViews() -> [UIView] {
         return [UIView()]
     }
-    
+
     func getSectionCount() -> Int? {
         return 1
     }
-    
+
     func getElementCount() -> [Int] {
         if let baseValue = super.getBaseElementCount() {
             return [baseValue]

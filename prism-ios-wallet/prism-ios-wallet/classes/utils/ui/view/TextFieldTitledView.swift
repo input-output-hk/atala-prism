@@ -12,6 +12,7 @@ protocol TextFieldTitledViewDelegate: UITextFieldDelegate {
     @IBOutlet weak var viewLabelContainer: UIView!
     @IBOutlet weak var viewLabelLine: UIView!
     @IBOutlet weak var labelTitle: UILabel!
+    @IBOutlet weak var textFieldTrailingCtrt: NSLayoutConstraint!
 
     weak var delegate: TextFieldTitledViewDelegate?
 
@@ -33,14 +34,15 @@ protocol TextFieldTitledViewDelegate: UITextFieldDelegate {
     func changeBorderColorIf(isEditing: Bool) {
         if isEditing {
             viewBorder.layer.borderColor = UIColor.appTextfieldBorderColor.cgColor
-        }else{
+        } else {
             viewBorder.layer.borderColor = UIColor.clear.cgColor
         }
     }
     
-    func config(title: String) {
+    func config(title: String, trailing: CGFloat = 15) {
 
         labelTitle.text = title
+        textFieldTrailingCtrt.constant = trailing
     }
 
     @objc func textFieldDidChange(_ textField: UITextField) {

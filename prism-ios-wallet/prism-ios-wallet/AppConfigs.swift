@@ -34,6 +34,7 @@ extension UIColor {
     static let appBlue = UIColor(netHex: 0x4A2DFF)
     static let appPropertyGrey = UIColor(netHex: 0x3C393A)
     static let textGrey = UIColor(netHex: 0x77869E)
+    static let textGreyLight = UIColor(netHex: 0xF2F2F2)
     static let appGreyTransparent = UIColor(red: 0.627, green: 0.667, blue: 0.733, alpha: 0.1)
     static let appAqua = UIColor(netHex: 0x40EAEA)
     static let appAquaTransparent = UIColor(red: 0.251, green: 0.918, blue: 0.918, alpha: 0.1)
@@ -57,6 +58,7 @@ extension UIColor {
         "appBlue": UIColor.appBlue,
         "appPropertyGrey": UIColor.appPropertyGrey,
         "textGrey": UIColor.textGrey,
+        "textGreyLight": UIColor.textGreyLight,
         "appGreyTransparent": UIColor.appGreyTransparent,
         "appAqua": UIColor.appAqua,
         "appAquaTransparent": UIColor.appAquaTransparent,

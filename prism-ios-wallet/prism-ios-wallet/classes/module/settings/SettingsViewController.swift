@@ -115,6 +115,16 @@ class SettingsViewController: ListingBaseViewController {
 
     }
 
+    func changeScreenToCreatePayId() {
+        ViewControllerUtils.changeScreenPresented(caller: self, storyboardName: "PayID",
+                                                  viewControllerIdentif: "NavigationController", params: nil,
+                                                  animated: true)
+    }
+
+    func changeScreenToPayIdDetail() {
+        ViewControllerUtils.changeScreenSegued(caller: self, segue: "PayIDSegue", params: nil)
+    }
+
     func resetData() {
 
         let confirmation = ResetDataViewController.makeThisView()

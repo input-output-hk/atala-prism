@@ -87,6 +87,7 @@
                         <segue destination="f8I-0x-2OO" kind="show" identifier="AboutSegue" id="RwR-0t-Cny"/>
                         <segue destination="BkX-y6-Rae" kind="show" identifier="SecuritySegue" id="dcR-2r-IHg"/>
                         <segue destination="iwf-b5-eyT" kind="show" identifier="DateSegue" id="wap-Bq-lVe"/>
+                        <segue destination="KNn-5R-P5l" kind="show" identifier="PayIDSegue" id="d3u-3f-ypw"/>
                     </connections>
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="6H9-Lt-LyU" userLabel="First Responder" customClass="UIResponder" sceneMemberID="firstResponder"/>
@@ -101,7 +102,7 @@
                 </viewControllerPlaceholder>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="qtW-95-Gzw" userLabel="First Responder" customClass="UIResponder" sceneMemberID="firstResponder"/>
             </objects>
-            <point key="canvasLocation" x="1347" y="30"/>
+            <point key="canvasLocation" x="1366" y="-25"/>
         </scene>
         <!--Browser-->
         <scene sceneID="NdF-OO-9Bq">
@@ -111,7 +112,7 @@
                 </viewControllerPlaceholder>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="1wo-RJ-P7w" userLabel="First Responder" customClass="UIResponder" sceneMemberID="firstResponder"/>
             </objects>
-            <point key="canvasLocation" x="1346" y="84"/>
+            <point key="canvasLocation" x="1367" y="28"/>
         </scene>
         <!--About-->
         <scene sceneID="rN5-ev-0Pw">
@@ -121,7 +122,7 @@
                 </viewControllerPlaceholder>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="eNj-9h-hdK" userLabel="First Responder" customClass="UIResponder" sceneMemberID="firstResponder"/>
             </objects>
-            <point key="canvasLocation" x="1356" y="141"/>
+            <point key="canvasLocation" x="1357" y="85"/>
         </scene>
         <!--DateFormat-->
         <scene sceneID="AYL-La-od2">
@@ -131,7 +132,17 @@
                 </viewControllerPlaceholder>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="SOf-27-Lcs" userLabel="First Responder" customClass="UIResponder" sceneMemberID="firstResponder"/>
             </objects>
-            <point key="canvasLocation" x="1393" y="192"/>
+            <point key="canvasLocation" x="1383" y="136"/>
+        </scene>
+        <!--PayIDInfo-->
+        <scene sceneID="C9Y-4k-nda">
+            <objects>
+                <viewControllerPlaceholder storyboardName="PayID" referencedIdentifier="PayIDInfo" id="KNn-5R-P5l" sceneMemberID="viewController">
+                    <navigationItem key="navigationItem" id="Jja-eJ-KyO"/>
+                </viewControllerPlaceholder>
+                <placeholder placeholderIdentifier="IBFirstResponder" id="Aoz-1H-0Er" userLabel="First Responder" customClass="UIResponder" sceneMemberID="firstResponder"/>
+            </objects>
+            <point key="canvasLocation" x="1373" y="193"/>
         </scene>
     </scenes>
     <resources>

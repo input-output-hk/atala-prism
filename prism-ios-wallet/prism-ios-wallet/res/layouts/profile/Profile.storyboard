@@ -86,7 +86,7 @@
                             <constraint firstItem="F34-x4-xp9" firstAttribute="top" secondItem="lgE-y2-SFm" secondAttribute="top" id="xEA-Tj-2pU"/>
                         </constraints>
                         <userDefinedRuntimeAttributes>
-                            <userDefinedRuntimeAttribute type="string" keyPath="backgroundColorIB" value="appGreyLight"/>
+                            <userDefinedRuntimeAttribute type="string" keyPath="backgroundColorIB" value="appWhite"/>
                         </userDefinedRuntimeAttributes>
                     </view>
                     <extendedEdge key="edgesForExtendedLayout"/>

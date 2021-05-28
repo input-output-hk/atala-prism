@@ -20,6 +20,20 @@
 		285F307A25E414BE00512502 /* PickerViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 285F307925E414BE00512502 /* PickerViewCell.swift */; };
 		285F307F25E414CB00512502 /* PickerViewCell.xib in Resources */ = {isa = PBXBuildFile; fileRef = 285F307E25E414CB00512502 /* PickerViewCell.xib */; };
 		286539BF25EE9BF800523F96 /* Attribute.swift in Sources */ = {isa = PBXBuildFile; fileRef = 286539BE25EE9BF800523F96 /* Attribute.swift */; };
+		28693C052604D12E004BE449 /* PayIDSetupPresenter.swift in Sources */ = {isa = PBXBuildFile; fileRef = 28693C042604D12E004BE449 /* PayIDSetupPresenter.swift */; };
+		28693C0A2604D13A004BE449 /* PayIDSetupViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 28693C092604D13A004BE449 /* PayIDSetupViewController.swift */; };
+		28748039260CC1CD000BDD7A /* PayIDAddAddressViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 28748038260CC1CD000BDD7A /* PayIDAddAddressViewController.swift */; };
+		287898BB260367B3001228F2 /* SelectIdCell.xib in Resources */ = {isa = PBXBuildFile; fileRef = 287898BA260367B3001228F2 /* SelectIdCell.xib */; };
+		287898C4260367FF001228F2 /* SelectIdCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 287898C3260367FF001228F2 /* SelectIdCell.swift */; };
+		289941F9260269C700276153 /* PayIDWelcomeViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 289941F8260269C700276153 /* PayIDWelcomeViewController.swift */; };
+		289941FE260269D400276153 /* PayIDWelcomePresenter.swift in Sources */ = {isa = PBXBuildFile; fileRef = 289941FD260269D400276153 /* PayIDWelcomePresenter.swift */; };
+		2899420C26026AFA00276153 /* PayID.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 2899420B26026AFA00276153 /* PayID.storyboard */; };
+		28994211260273A300276153 /* PayIDSelectorPresenter.swift in Sources */ = {isa = PBXBuildFile; fileRef = 28994210260273A300276153 /* PayIDSelectorPresenter.swift */; };
+		28994219260273AE00276153 /* PayIDSelectorViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 28994218260273AE00276153 /* PayIDSelectorViewController.swift */; };
+		289EA52C2608CC7400043D4F /* PopupAlertViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 289EA52B2608CC7400043D4F /* PopupAlertViewController.swift */; };
+		289EA5952608D3FD00043D4F /* PopupAlert.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 289EA5942608D3FD00043D4F /* PopupAlert.storyboard */; };
+		289EA6332608D74E00043D4F /* PayIDInfoPresenter.swift in Sources */ = {isa = PBXBuildFile; fileRef = 289EA6322608D74E00043D4F /* PayIDInfoPresenter.swift */; };
+		289EA6382608D75900043D4F /* PayIDInfoViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 289EA6372608D75900043D4F /* PayIDInfoViewController.swift */; };
 		28A3A80925F148CC006BA440 /* BaseVerificationPresenter.swift in Sources */ = {isa = PBXBuildFile; fileRef = 28A3A80825F148CC006BA440 /* BaseVerificationPresenter.swift */; };
 		28A3A80E25F148D8006BA440 /* BaseVerificationViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 28A3A80D25F148D8006BA440 /* BaseVerificationViewController.swift */; };
 		28A3A81325F148E8006BA440 /* BaseVerification.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 28A3A81225F148E8006BA440 /* BaseVerification.storyboard */; };
@@ -33,6 +47,12 @@
 		28A3A90F25F658AE006BA440 /* AttributeListing.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 28A3A90E25F658AE006BA440 /* AttributeListing.storyboard */; };
 		28A3A91425F65A4A006BA440 /* AttributeListingCell.xib in Resources */ = {isa = PBXBuildFile; fileRef = 28A3A91325F65A4A006BA440 /* AttributeListingCell.xib */; };
 		28A3A91925F65BC3006BA440 /* EmailCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 28A3A91825F65BC3006BA440 /* EmailCell.swift */; };
+		28B55D35260A1E0700EB0C49 /* PayIDInfoListingPresenter.swift in Sources */ = {isa = PBXBuildFile; fileRef = 28B55D34260A1E0700EB0C49 /* PayIDInfoListingPresenter.swift */; };
+		28B55D3A260A1E1200EB0C49 /* PayIDInfoListingViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 28B55D39260A1E1200EB0C49 /* PayIDInfoListingViewController.swift */; };
+		28B55D3F260A1E9900EB0C49 /* PayIDInfoListingCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 28B55D3E260A1E9900EB0C49 /* PayIDInfoListingCell.swift */; };
+		28B55D4A260A202F00EB0C49 /* PayIDInfoListingCell.xib in Resources */ = {isa = PBXBuildFile; fileRef = 28B55D49260A202F00EB0C49 /* PayIDInfoListingCell.xib */; };
+		28CFF939261352750090A011 /* PayIDScannerPresenter.swift in Sources */ = {isa = PBXBuildFile; fileRef = 28CFF938261352750090A011 /* PayIDScannerPresenter.swift */; };
+		28CFF93E2613527F0090A011 /* PayIDScannerViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 28CFF93D2613527F0090A011 /* PayIDScannerViewController.swift */; };
 		28FE64FC25E9553C0089B675 /* Attribute.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 28FE64FB25E9553C0089B675 /* Attribute.storyboard */; };
 		28FE650125E955590089B675 /* AttributeViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 28FE650025E955590089B675 /* AttributeViewController.swift */; };
 		386BF954863A1670AF2F333D /* (null) in Frameworks */ = {isa = PBXBuildFile; };
@@ -97,6 +117,7 @@
 		B3491C01251A2C850040F89E /* ContactDetailSectionViewCell.xib in Resources */ = {isa = PBXBuildFile; fileRef = B3491BFF251A2C850040F89E /* ContactDetailSectionViewCell.xib */; };
 		B3491C06251A31B10040F89E /* ContactDetailSharedViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = B3491C04251A31B10040F89E /* ContactDetailSharedViewCell.swift */; };
 		B3491C07251A31B10040F89E /* ContactDetailSharedViewCell.xib in Resources */ = {isa = PBXBuildFile; fileRef = B3491C05251A31B10040F89E /* ContactDetailSharedViewCell.xib */; };
+		B34DD407262DBA81001F1B11 /* ivms101.proto in Sources */ = {isa = PBXBuildFile; fileRef = B34DD402262DBA81001F1B11 /* ivms101.proto */; };
 		B3508F3B25C2D53900F907B0 /* DateFormatInfoTableViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = B3508F3925C2D53900F907B0 /* DateFormatInfoTableViewCell.swift */; };
 		B3508F3C25C2D53900F907B0 /* DateFormatInfoTableViewCell.xib in Resources */ = {isa = PBXBuildFile; fileRef = B3508F3A25C2D53900F907B0 /* DateFormatInfoTableViewCell.xib */; };
 		B352433F24FFD59F0053A804 /* DateFormat.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = B352433E24FFD59F0053A804 /* DateFormat.storyboard */; };
@@ -123,6 +144,8 @@
 		B367AEAF25D1845200A1BF15 /* VerifyIdResultsTableViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = B367AEAD25D1845200A1BF15 /* VerifyIdResultsTableViewCell.swift */; };
 		B367AEB025D1845200A1BF15 /* VerifyIdResultsTableViewCell.xib in Resources */ = {isa = PBXBuildFile; fileRef = B367AEAE25D1845200A1BF15 /* VerifyIdResultsTableViewCell.xib */; };
 		B36889DF25AE338D00E864B5 /* SuccessModalViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = B36889DE25AE338D00E864B5 /* SuccessModalViewController.swift */; };
+		B36BD9812639E63900963650 /* DeletePayIdViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = B36BD9802639E63900963650 /* DeletePayIdViewController.swift */; };
+		B36BD9CC263AEEFE00963650 /* status.pb.swift in Sources */ = {isa = PBXBuildFile; fileRef = B36BD9CB263AEEFE00963650 /* status.pb.swift */; };
 		B36F27BD2406E2C400FF751B /* About.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = B36F27BC2406E2C400FF751B /* About.storyboard */; };
 		B36F27BF2406F37600FF751B /* AboutViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = B36F27BE2406F37600FF751B /* AboutViewController.swift */; };
 		B36F27C12406F38C00FF751B /* AboutPresenter.swift in Sources */ = {isa = PBXBuildFile; fileRef = B36F27C02406F38C00FF751B /* AboutPresenter.swift */; };
@@ -147,6 +170,15 @@
 		B3A98F5824EDA35E00E138C2 /* ActivityHistory+CoreDataProperties.swift in Sources */ = {isa = PBXBuildFile; fileRef = B3A98F5624EDA35E00E138C2 /* ActivityHistory+CoreDataProperties.swift */; };
 		B3B4910125FFA76700859707 /* kycbridge_api.grpc.swift in Sources */ = {isa = PBXBuildFile; fileRef = B3B490FF25FFA76700859707 /* kycbridge_api.grpc.swift */; };
 		B3B4910225FFA76700859707 /* kycbridge_api.pb.swift in Sources */ = {isa = PBXBuildFile; fileRef = B3B4910025FFA76700859707 /* kycbridge_api.pb.swift */; };
+		B3C153CE2636F331006C5E3B /* mirror_api.pb.swift in Sources */ = {isa = PBXBuildFile; fileRef = B3C153CC2636F331006C5E3B /* mirror_api.pb.swift */; };
+		B3C153CF2636F331006C5E3B /* mirror_api.grpc.swift in Sources */ = {isa = PBXBuildFile; fileRef = B3C153CD2636F331006C5E3B /* mirror_api.grpc.swift */; };
+		B3C153D72636F3E8006C5E3B /* mirror_models.pb.swift in Sources */ = {isa = PBXBuildFile; fileRef = B3C153D62636F3E8006C5E3B /* mirror_models.pb.swift */; };
+		B3C153DF2636F648006C5E3B /* ivms101.pb.swift in Sources */ = {isa = PBXBuildFile; fileRef = B3C153DE2636F648006C5E3B /* ivms101.pb.swift */; };
+		B3C153E72636FF82006C5E3B /* PayId+CoreDataClass.swift in Sources */ = {isa = PBXBuildFile; fileRef = B3C153E32636FF82006C5E3B /* PayId+CoreDataClass.swift */; };
+		B3C153E82636FF82006C5E3B /* PayId+CoreDataProperties.swift in Sources */ = {isa = PBXBuildFile; fileRef = B3C153E42636FF82006C5E3B /* PayId+CoreDataProperties.swift */; };
+		B3C153E92636FF82006C5E3B /* Address+CoreDataClass.swift in Sources */ = {isa = PBXBuildFile; fileRef = B3C153E52636FF82006C5E3B /* Address+CoreDataClass.swift */; };
+		B3C153EA2636FF82006C5E3B /* Address+CoreDataProperties.swift in Sources */ = {isa = PBXBuildFile; fileRef = B3C153E62636FF82006C5E3B /* Address+CoreDataProperties.swift */; };
+		B3C153F026372F4D006C5E3B /* PayIdDAO.swift in Sources */ = {isa = PBXBuildFile; fileRef = B3C153EF26372F4D006C5E3B /* PayIdDAO.swift */; };
 		B3C760182489777C00AC46DC /* Env.swift in Sources */ = {isa = PBXBuildFile; fileRef = B3C760172489777C00AC46DC /* Env.swift */; };
 		B3E757DA260D31B700BC28A9 /* common_models.pb.swift in Sources */ = {isa = PBXBuildFile; fileRef = B3E757D6260D31B600BC28A9 /* common_models.pb.swift */; };
 		B3E757DB260D31B700BC28A9 /* connector_models.pb.swift in Sources */ = {isa = PBXBuildFile; fileRef = B3E757D7260D31B600BC28A9 /* connector_models.pb.swift */; };
@@ -347,6 +379,20 @@
 		285F307925E414BE00512502 /* PickerViewCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PickerViewCell.swift; sourceTree = "<group>"; };
 		285F307E25E414CB00512502 /* PickerViewCell.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = PickerViewCell.xib; sourceTree = "<group>"; };
 		286539BE25EE9BF800523F96 /* Attribute.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Attribute.swift; sourceTree = "<group>"; };
+		28693C042604D12E004BE449 /* PayIDSetupPresenter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PayIDSetupPresenter.swift; sourceTree = "<group>"; };
+		28693C092604D13A004BE449 /* PayIDSetupViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PayIDSetupViewController.swift; sourceTree = "<group>"; };
+		28748038260CC1CD000BDD7A /* PayIDAddAddressViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PayIDAddAddressViewController.swift; sourceTree = "<group>"; };
+		287898BA260367B3001228F2 /* SelectIdCell.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = SelectIdCell.xib; sourceTree = "<group>"; };
+		287898C3260367FF001228F2 /* SelectIdCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SelectIdCell.swift; sourceTree = "<group>"; };
+		289941F8260269C700276153 /* PayIDWelcomeViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PayIDWelcomeViewController.swift; sourceTree = "<group>"; };
+		289941FD260269D400276153 /* PayIDWelcomePresenter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PayIDWelcomePresenter.swift; sourceTree = "<group>"; };
+		2899420B26026AFA00276153 /* PayID.storyboard */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; path = PayID.storyboard; sourceTree = "<group>"; };
+		28994210260273A300276153 /* PayIDSelectorPresenter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PayIDSelectorPresenter.swift; sourceTree = "<group>"; };
+		28994218260273AE00276153 /* PayIDSelectorViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PayIDSelectorViewController.swift; sourceTree = "<group>"; };
+		289EA52B2608CC7400043D4F /* PopupAlertViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PopupAlertViewController.swift; sourceTree = "<group>"; };
+		289EA5942608D3FD00043D4F /* PopupAlert.storyboard */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; path = PopupAlert.storyboard; sourceTree = "<group>"; };
+		289EA6322608D74E00043D4F /* PayIDInfoPresenter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PayIDInfoPresenter.swift; sourceTree = "<group>"; };
+		289EA6372608D75900043D4F /* PayIDInfoViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PayIDInfoViewController.swift; sourceTree = "<group>"; };
 		28A3A80825F148CC006BA440 /* BaseVerificationPresenter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BaseVerificationPresenter.swift; sourceTree = "<group>"; };
 		28A3A80D25F148D8006BA440 /* BaseVerificationViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BaseVerificationViewController.swift; sourceTree = "<group>"; };
 		28A3A81225F148E8006BA440 /* BaseVerification.storyboard */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; path = BaseVerification.storyboard; sourceTree = "<group>"; };
@@ -360,6 +406,12 @@
 		28A3A90E25F658AE006BA440 /* AttributeListing.storyboard */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; path = AttributeListing.storyboard; sourceTree = "<group>"; };
 		28A3A91325F65A4A006BA440 /* AttributeListingCell.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = AttributeListingCell.xib; sourceTree = "<group>"; };
 		28A3A91825F65BC3006BA440 /* EmailCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EmailCell.swift; sourceTree = "<group>"; };
+		28B55D34260A1E0700EB0C49 /* PayIDInfoListingPresenter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PayIDInfoListingPresenter.swift; sourceTree = "<group>"; };
+		28B55D39260A1E1200EB0C49 /* PayIDInfoListingViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PayIDInfoListingViewController.swift; sourceTree = "<group>"; };
+		28B55D3E260A1E9900EB0C49 /* PayIDInfoListingCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PayIDInfoListingCell.swift; sourceTree = "<group>"; };
+		28B55D49260A202F00EB0C49 /* PayIDInfoListingCell.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = PayIDInfoListingCell.xib; sourceTree = "<group>"; };
+		28CFF938261352750090A011 /* PayIDScannerPresenter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PayIDScannerPresenter.swift; sourceTree = "<group>"; };
+		28CFF93D2613527F0090A011 /* PayIDScannerViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PayIDScannerViewController.swift; sourceTree = "<group>"; };
 		28FE64FB25E9553C0089B675 /* Attribute.storyboard */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; path = Attribute.storyboard; sourceTree = "<group>"; };
 		28FE650025E955590089B675 /* AttributeViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AttributeViewController.swift; sourceTree = "<group>"; };
 		306D080251EFA59EF3645375 /* Pods-prism-ios-wallet.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-prism-ios-wallet.debug.xcconfig"; path = "Target Support Files/Pods-prism-ios-wallet/Pods-prism-ios-wallet.debug.xcconfig"; sourceTree = "<group>"; };
@@ -423,12 +475,19 @@
 		B32EC7F324C71B34004A5014 /* Data+Extensions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Data+Extensions.swift"; sourceTree = "<group>"; };
 		B33B708D249BA09D00F620D6 /* ResetData.storyboard */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; path = ResetData.storyboard; sourceTree = "<group>"; };
 		B33B708F249BB17000F620D6 /* ResetDataViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ResetDataViewController.swift; sourceTree = "<group>"; };
+		B34291A52628D4C400EB7534 /* ivms101.proto */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.protobuf; path = ivms101.proto; sourceTree = "<group>"; };
+		B34291B22628D66A00EB7534 /* mirror_api.grpc.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = mirror_api.grpc.swift; sourceTree = "<group>"; };
+		B34291B32628D66A00EB7534 /* mirror_api.pb.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = mirror_api.pb.swift; sourceTree = "<group>"; };
 		B3491BF9251A26DD0040F89E /* ContactHistoryHeaderViewCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContactHistoryHeaderViewCell.swift; sourceTree = "<group>"; };
 		B3491BFA251A26DD0040F89E /* ContactHistoryHeaderViewCell.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = ContactHistoryHeaderViewCell.xib; sourceTree = "<group>"; };
 		B3491BFE251A2C850040F89E /* ContactDetailSectionViewCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContactDetailSectionViewCell.swift; sourceTree = "<group>"; };
 		B3491BFF251A2C850040F89E /* ContactDetailSectionViewCell.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = ContactDetailSectionViewCell.xib; sourceTree = "<group>"; };
 		B3491C04251A31B10040F89E /* ContactDetailSharedViewCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContactDetailSharedViewCell.swift; sourceTree = "<group>"; };
 		B3491C05251A31B10040F89E /* ContactDetailSharedViewCell.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = ContactDetailSharedViewCell.xib; sourceTree = "<group>"; };
+		B34DD3FE262DBA81001F1B11 /* mirror_api.pb.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = mirror_api.pb.swift; sourceTree = "<group>"; };
+		B34DD3FF262DBA81001F1B11 /* mirror_api.proto */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.protobuf; path = mirror_api.proto; sourceTree = "<group>"; };
+		B34DD401262DBA81001F1B11 /* mirror_api.grpc.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = mirror_api.grpc.swift; sourceTree = "<group>"; };
+		B34DD402262DBA81001F1B11 /* ivms101.proto */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.protobuf; path = ivms101.proto; sourceTree = "<group>"; };
 		B3508F3925C2D53900F907B0 /* DateFormatInfoTableViewCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DateFormatInfoTableViewCell.swift; sourceTree = "<group>"; };
 		B3508F3A25C2D53900F907B0 /* DateFormatInfoTableViewCell.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = DateFormatInfoTableViewCell.xib; sourceTree = "<group>"; };
 		B352433E24FFD59F0053A804 /* DateFormat.storyboard */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; path = DateFormat.storyboard; sourceTree = "<group>"; };
@@ -455,6 +514,8 @@
 		B367AEAD25D1845200A1BF15 /* VerifyIdResultsTableViewCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VerifyIdResultsTableViewCell.swift; sourceTree = "<group>"; };
 		B367AEAE25D1845200A1BF15 /* VerifyIdResultsTableViewCell.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = VerifyIdResultsTableViewCell.xib; sourceTree = "<group>"; };
 		B36889DE25AE338D00E864B5 /* SuccessModalViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SuccessModalViewController.swift; sourceTree = "<group>"; };
+		B36BD9802639E63900963650 /* DeletePayIdViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DeletePayIdViewController.swift; sourceTree = "<group>"; };
+		B36BD9CB263AEEFE00963650 /* status.pb.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = status.pb.swift; sourceTree = "<group>"; };
 		B36F27BC2406E2C400FF751B /* About.storyboard */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; path = About.storyboard; sourceTree = "<group>"; };
 		B36F27BE2406F37600FF751B /* AboutViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AboutViewController.swift; sourceTree = "<group>"; };
 		B36F27C02406F38C00FF751B /* AboutPresenter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AboutPresenter.swift; sourceTree = "<group>"; };
@@ -479,6 +540,15 @@
 		B3A98F5624EDA35E00E138C2 /* ActivityHistory+CoreDataProperties.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "ActivityHistory+CoreDataProperties.swift"; sourceTree = "<group>"; };
 		B3B490FF25FFA76700859707 /* kycbridge_api.grpc.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = kycbridge_api.grpc.swift; sourceTree = "<group>"; };
 		B3B4910025FFA76700859707 /* kycbridge_api.pb.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = kycbridge_api.pb.swift; sourceTree = "<group>"; };
+		B3C153CC2636F331006C5E3B /* mirror_api.pb.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = mirror_api.pb.swift; sourceTree = "<group>"; };
+		B3C153CD2636F331006C5E3B /* mirror_api.grpc.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = mirror_api.grpc.swift; sourceTree = "<group>"; };
+		B3C153D62636F3E8006C5E3B /* mirror_models.pb.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = mirror_models.pb.swift; sourceTree = "<group>"; };
+		B3C153DE2636F648006C5E3B /* ivms101.pb.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ivms101.pb.swift; sourceTree = "<group>"; };
+		B3C153E32636FF82006C5E3B /* PayId+CoreDataClass.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "PayId+CoreDataClass.swift"; sourceTree = "<group>"; };
+		B3C153E42636FF82006C5E3B /* PayId+CoreDataProperties.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "PayId+CoreDataProperties.swift"; sourceTree = "<group>"; };
+		B3C153E52636FF82006C5E3B /* Address+CoreDataClass.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Address+CoreDataClass.swift"; sourceTree = "<group>"; };
+		B3C153E62636FF82006C5E3B /* Address+CoreDataProperties.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Address+CoreDataProperties.swift"; sourceTree = "<group>"; };
+		B3C153EF26372F4D006C5E3B /* PayIdDAO.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PayIdDAO.swift; sourceTree = "<group>"; };
 		B3C7601524896B9600AC46DC /* GoogleService-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = "GoogleService-Info.plist"; sourceTree = "<group>"; };
 		B3C760172489777C00AC46DC /* Env.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Env.swift; sourceTree = "<group>"; };
 		B3E757D6260D31B600BC28A9 /* common_models.pb.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = common_models.pb.swift; sourceTree = "<group>"; };
@@ -699,6 +769,55 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		287898B32603675C001228F2 /* cells */ = {
+			isa = PBXGroup;
+			children = (
+				287898BA260367B3001228F2 /* SelectIdCell.xib */,
+				28B55D49260A202F00EB0C49 /* PayIDInfoListingCell.xib */,
+			);
+			path = cells;
+			sourceTree = "<group>";
+		};
+		287898BF260367C4001228F2 /* cells */ = {
+			isa = PBXGroup;
+			children = (
+				287898C3260367FF001228F2 /* SelectIdCell.swift */,
+				28B55D3E260A1E9900EB0C49 /* PayIDInfoListingCell.swift */,
+			);
+			path = cells;
+			sourceTree = "<group>";
+		};
+		289941F72602696300276153 /* payID */ = {
+			isa = PBXGroup;
+			children = (
+				287898BF260367C4001228F2 /* cells */,
+				289941FD260269D400276153 /* PayIDWelcomePresenter.swift */,
+				289941F8260269C700276153 /* PayIDWelcomeViewController.swift */,
+				28994210260273A300276153 /* PayIDSelectorPresenter.swift */,
+				28994218260273AE00276153 /* PayIDSelectorViewController.swift */,
+				28693C042604D12E004BE449 /* PayIDSetupPresenter.swift */,
+				28693C092604D13A004BE449 /* PayIDSetupViewController.swift */,
+				289EA6322608D74E00043D4F /* PayIDInfoPresenter.swift */,
+				289EA6372608D75900043D4F /* PayIDInfoViewController.swift */,
+				28B55D34260A1E0700EB0C49 /* PayIDInfoListingPresenter.swift */,
+				28B55D39260A1E1200EB0C49 /* PayIDInfoListingViewController.swift */,
+				28748038260CC1CD000BDD7A /* PayIDAddAddressViewController.swift */,
+				28CFF938261352750090A011 /* PayIDScannerPresenter.swift */,
+				28CFF93D2613527F0090A011 /* PayIDScannerViewController.swift */,
+				B36BD9802639E63900963650 /* DeletePayIdViewController.swift */,
+			);
+			path = payID;
+			sourceTree = "<group>";
+		};
+		2899420226026AC000276153 /* payID */ = {
+			isa = PBXGroup;
+			children = (
+				287898B32603675C001228F2 /* cells */,
+				2899420B26026AFA00276153 /* PayID.storyboard */,
+			);
+			path = payID;
+			sourceTree = "<group>";
+		};
 		28A3A80125F148B7006BA440 /* baseVerification */ = {
 			isa = PBXGroup;
 			children = (
@@ -759,6 +878,7 @@
 		B309C15024BF323E00AF70DF /* CoreData */ = {
 			isa = PBXGroup;
 			children = (
+				B3C153EE2636FF8C006C5E3B /* PayId */,
 				B309C17124BF8EB500AF70DF /* ActivityHistory */,
 				B309C16E24BF89D300AF70DF /* Contact */,
 				B309C16D24BF821400AF70DF /* Credential */,
@@ -851,6 +971,20 @@
 				B3491C05251A31B10040F89E /* ContactDetailSharedViewCell.xib */,
 			);
 			path = cells;
+			sourceTree = "<group>";
+		};
+		B34DD3C2262DB95D001F1B11 /* Recovered References */ = {
+			isa = PBXGroup;
+			children = (
+				B34291B32628D66A00EB7534 /* mirror_api.pb.swift */,
+				B34291A52628D4C400EB7534 /* ivms101.proto */,
+				B34291B22628D66A00EB7534 /* mirror_api.grpc.swift */,
+				B34DD3FE262DBA81001F1B11 /* mirror_api.pb.swift */,
+				B34DD3FF262DBA81001F1B11 /* mirror_api.proto */,
+				B34DD401262DBA81001F1B11 /* mirror_api.grpc.swift */,
+				B34DD402262DBA81001F1B11 /* ivms101.proto */,
+			);
+			name = "Recovered References";
 			sourceTree = "<group>";
 		};
 		B352433D24FFD5730053A804 /* dateFormat */ = {
@@ -989,6 +1123,18 @@
 				B3A98F5124ED5FD300E138C2 /* ActivityLogTableViewCell.swift */,
 			);
 			path = cells;
+			sourceTree = "<group>";
+		};
+		B3C153EE2636FF8C006C5E3B /* PayId */ = {
+			isa = PBXGroup;
+			children = (
+				B3C153E32636FF82006C5E3B /* PayId+CoreDataClass.swift */,
+				B3C153E42636FF82006C5E3B /* PayId+CoreDataProperties.swift */,
+				B3C153E52636FF82006C5E3B /* Address+CoreDataClass.swift */,
+				B3C153E62636FF82006C5E3B /* Address+CoreDataProperties.swift */,
+				B3C153EF26372F4D006C5E3B /* PayIdDAO.swift */,
+			);
+			path = PayId;
 			sourceTree = "<group>";
 		};
 		B3C7601124896B4700AC46DC /* firebase */ = {
@@ -1142,11 +1288,11 @@
 		EE7D49BE2366B5A7007C31A8 /* protobuf */ = {
 			isa = PBXGroup;
 			children = (
-				B30FD7972643159A00D39842 /* ivms101.pb.swift */,
-				B30FD78B2643137E00D39842 /* mirror_api.grpc.swift */,
-				B30FD78A2643137E00D39842 /* mirror_api.pb.swift */,
-				B30FD78C2643137E00D39842 /* mirror_models.pb.swift */,
-				B30FD7892643137E00D39842 /* status.pb.swift */,
+				B36BD9CB263AEEFE00963650 /* status.pb.swift */,
+				B3C153DE2636F648006C5E3B /* ivms101.pb.swift */,
+				B3C153D62636F3E8006C5E3B /* mirror_models.pb.swift */,
+				B3C153CD2636F331006C5E3B /* mirror_api.grpc.swift */,
+				B3C153CC2636F331006C5E3B /* mirror_api.pb.swift */,
 				B3E7585C260E0E1A00BC28A9 /* connector_api.grpc.swift */,
 				B3E7585B260E0E1A00BC28A9 /* console_models.pb.swift */,
 				B3E757D6260D31B600BC28A9 /* common_models.pb.swift */,
@@ -1186,6 +1332,7 @@
 		EE7D49D52366B9C2007C31A8 /* module */ = {
 			isa = PBXGroup;
 			children = (
+				289941F72602696300276153 /* payID */,
 				B3A55F8125E7D753004FA2EA /* activityLog */,
 				B397DC5F25E3EAEF00B26506 /* home */,
 				B322A28E25C47FF700A4A0B6 /* verifyId */,
@@ -1202,6 +1349,7 @@
 				EE7D4A672366B9C2007C31A8 /* main */,
 				EE8FD4D92372696300EFF62E /* profile */,
 				EE8FD4DB2372697A00EFF62E /* settings */,
+				289EA52B2608CC7400043D4F /* PopupAlertViewController.swift */,
 			);
 			path = module;
 			sourceTree = "<group>";
@@ -1409,6 +1557,7 @@
 		EE7D4B182366B9C3007C31A8 /* layouts */ = {
 			isa = PBXGroup;
 			children = (
+				2899420226026AC000276153 /* payID */,
 				B3A55F4825E7D63E004FA2EA /* activityLog */,
 				B397DC5925E3E69500B26506 /* home */,
 				B322A28825C458DB00A4A0B6 /* verifyId */,
@@ -1427,6 +1576,7 @@
 				EE7D4D10236939DC007C31A8 /* connections */,
 				EE7D4B792366B9C3007C31A8 /* Main.storyboard */,
 				EE7D4B222366B9C3007C31A8 /* LaunchScreen.storyboard */,
+				289EA5942608D3FD00043D4F /* PopupAlert.storyboard */,
 			);
 			path = layouts;
 			sourceTree = "<group>";
@@ -1673,6 +1823,7 @@
 				F5E38946234BC34D0001F1E3 /* Products */,
 				BB76F1F75C3CF9AB34400C89 /* Pods */,
 				5DFB3703BD7EF8640F960804 /* Frameworks */,
+				B34DD3C2262DB95D001F1B11 /* Recovered References */,
 			);
 			sourceTree = "<group>";
 		};
@@ -1839,6 +1990,7 @@
 				B3A3E32624D075D700DEA1EE /* RestoreAccount.storyboard in Resources */,
 				EE7D4CC02366B9C5007C31A8 /* Main.storyboard in Resources */,
 				EE48AC2123775E3200C0A441 /* Success.storyboard in Resources */,
+				28B55D4A260A202F00EB0C49 /* PayIDInfoListingCell.xib in Resources */,
 				28A3A81325F148E8006BA440 /* BaseVerification.storyboard in Resources */,
 				28A3A82225F1507F006BA440 /* BaseVerificationCode.storyboard in Resources */,
 				EE7D4CB82366B9C5007C31A8 /* ListingErrorRetryViewCell.xib in Resources */,
@@ -1891,6 +2043,8 @@
 				EE48AC192377549C00C0A441 /* Login.storyboard in Resources */,
 				B3508F3C25C2D53900F907B0 /* DateFormatInfoTableViewCell.xib in Resources */,
 				EE7185712384D5CB00C58F62 /* ProfileViewCell.xib in Resources */,
+				289EA5952608D3FD00043D4F /* PopupAlert.storyboard in Resources */,
+				2899420C26026AFA00276153 /* PayID.storyboard in Resources */,
 				EE48AC292379221000C0A441 /* SwitchCustomView.xib in Resources */,
 				EE7D4C7A2366B9C4007C31A8 /* Localizable.stringsdict in Resources */,
 				EE71855A2383530D00C58F62 /* ShareDialog.storyboard in Resources */,
@@ -1920,6 +2074,7 @@
 				B35CEEE425E4256C00DA2BF9 /* HomeProfileTableViewCell.xib in Resources */,
 				EE7185792384F40500C58F62 /* PaddingViewCell.xib in Resources */,
 				EE7D4D30236FB379007C31A8 /* ConnectionMainViewCell.xib in Resources */,
+				287898BB260367B3001228F2 /* SelectIdCell.xib in Resources */,
 				B30255062449E61900C8E9C0 /* Notifications.storyboard in Resources */,
 				EE48AC04237753A900C0A441 /* Register.storyboard in Resources */,
 				28A3A90F25F658AE006BA440 /* AttributeListing.storyboard in Resources */,
@@ -2100,8 +2255,8 @@
 			outputPaths = (
 			);
 			runOnlyForDeploymentPostprocessing = 0;
-			shellPath = /bin/sh;
-			shellScript = "# Type a script or drag a script file from your workspace to insert its pat\nexport PATH=$PATH:${SRCROOT}/protobuf/utils\nmkdir -p ./protobuf\nprotoc --proto_path=../prism-sdk/protos/src/ --swift_out=./protobuf --swiftgrpc_out=Client=true,Server=false:. ../prism-sdk/protos/src/common_models.proto\nprotoc --proto_path=../prism-sdk/protos/src/ --swift_out=./protobuf --swiftgrpc_out=Client=true,Server=false:. ../prism-sdk/protos/src/node_models.proto\nprotoc --proto_path=../prism-sdk/protos/src/ --swift_out=./protobuf --swiftgrpc_out=Client=true,Server=false:. ../prism-sdk/protos/src/console_models.proto\nprotoc --proto_path=../prism-sdk/protos/src/ --swift_out=./protobuf --swiftgrpc_out=Client=true,Server=false:. ../prism-sdk/protos/src/connector_models.proto\nprotoc --proto_path=../prism-sdk/protos/src/ --swift_out=./protobuf --swiftgrpc_out=Client=true,Server=false:. ../prism-sdk/protos/src/credential_models.proto --swiftgrpc_out=Client=true,Server=false:. ../prism-sdk/protos/src/ivms101.proto\nprotoc --proto_path=../prism-sdk/protos/src/ --swift_out=./protobuf --swiftgrpc_out=Client=true,Server=false:./protobuf ../prism-sdk/protos/src/connector_api.proto\nprotoc --proto_path=../prism-sdk/protos/src/ --swift_out=./protobuf --swiftgrpc_out=Client=true,Server=false:./protobuf ../prism-sdk/protos/src/kycbridge_api.proto\n";
+			shellPath = /bin/sh
+			shellScript = "# Type a script or drag a script file from your workspace to insert its pat\nexport PATH=$PATH:${SRCROOT}/protobuf/utils\nmkdir -p ./protobuf\nprotoc --proto_path=../prism-sdk/protos/src/ --swift_out=./protobuf --swiftgrpc_out=Client=true,Server=false:. ../prism-sdk/protos/src/common_models.proto\nprotoc --proto_path=../prism-sdk/protos/src/ --swift_out=./protobuf --swiftgrpc_out=Client=true,Server=false:. ../prism-sdk/protos/src/node_models.proto\nprotoc --proto_path=../prism-sdk/protos/src/ --swift_out=./protobuf --swiftgrpc_out=Client=true,Server=false:. ../prism-sdk/protos/src/console_models.proto\nprotoc --proto_path=../prism-sdk/protos/src/ --swift_out=./protobuf --swiftgrpc_out=Client=true,Server=false:. ../prism-sdk/protos/src/connector_models.proto\nprotoc --proto_path=../prism-sdk/protos/src/ --swift_out=./protobuf --swiftgrpc_out=Client=true,Server=false:. ../prism-sdk/protos/src/status.proto\nprotoc --proto_path=../prism-sdk/protos/src/ --swift_out=./protobuf --swiftgrpc_out=Client=true,Server=false:. ../prism-sdk/protos/src/credential_models.proto\nprotoc --proto_path=../prism-sdk/protos/src/ --swift_out=./protobuf --swiftgrpc_out=Client=true,Server=false:. ../prism-sdk/protos/src/ivms101.proto\nprotoc --proto_path=../prism-sdk/protos/src/ --swift_out=./protobuf --swiftgrpc_out=Client=true,Server=false:. ../prism-sdk/protos/src/mirror_models.proto\nprotoc --proto_path=../prism-sdk/protos/src/ --swift_out=./protobuf --swiftgrpc_out=Client=true,Server=false:./protobuf ../prism-sdk/protos/src/connector_api.proto\nprotoc --proto_path=../prism-sdk/protos/src/ --swift_out=./protobuf --swiftgrpc_out=Client=true,Server=false:./protobuf ../prism-sdk/protos/src/kycbridge_api.proto\nprotoc --proto_path=../prism-sdk/protos/src/ --swift_out=./protobuf --swiftgrpc_out=Client=true,Server=false:./protobuf ../prism-sdk/protos/src/mirror_api.proto\n";
 		};
 /* End PBXShellScriptBuildPhase section */
 
@@ -2120,6 +2275,7 @@
 				B37FDB1625389CD40024766B /* connector_api.pb.swift in Sources */,
 				EE7E753023C29D0600BE9AD1 /* PaymentUtils.swift in Sources */,
 				28A3A81D25F15073006BA440 /* BaseVerificationCodeViewController.swift in Sources */,
+				B3C153F026372F4D006C5E3B /* PayIdDAO.swift in Sources */,
 				B36F2FC424DDAFBE0012FDCC /* DeleteCredentialViewController.swift in Sources */,
 				B3E757DA260D31B700BC28A9 /* common_models.pb.swift in Sources */,
 				EE8FD4E423726A4000EFF62E /* SettingsViewController.swift in Sources */,
@@ -2133,6 +2289,8 @@
 				EE71856C2384D0B100C58F62 /* TabsViewCell.swift in Sources */,
 				B367AEA125D1842800A1BF15 /* VerifyIdResultsViewController.swift in Sources */,
 				EE7D4C002366B9C4007C31A8 /* BaseTableViewCell.swift in Sources */,
+				B3C153E82636FF82006C5E3B /* PayId+CoreDataProperties.swift in Sources */,
+				28CFF939261352750090A011 /* PayIDScannerPresenter.swift in Sources */,
 				B32EC7F424C71B34004A5014 /* Data+Extensions.swift in Sources */,
 				B3A98F5824EDA35E00E138C2 /* ActivityHistory+CoreDataProperties.swift in Sources */,
 				B3E7585D260E0E1A00BC28A9 /* console_models.pb.swift in Sources */,
@@ -2140,6 +2298,8 @@
 				B3E757DC260D31B700BC28A9 /* credential_models.pb.swift in Sources */,
 				B30FD78F2643137E00D39842 /* mirror_api.grpc.swift in Sources */,
 				EE7D4C472366B9C4007C31A8 /* UITextView+Placeholder.m in Sources */,
+				28748039260CC1CD000BDD7A /* PayIDAddAddressViewController.swift in Sources */,
+				289EA6382608D75900043D4F /* PayIDInfoViewController.swift in Sources */,
 				EE7D4C3A2366B9C4007C31A8 /* ShadowCorneredView.swift in Sources */,
 				EE904F042373AA5A00EE6344 /* DegreeViewCell.swift in Sources */,
 				EE7D4D32236FB3C1007C31A8 /* ConnectionMainViewCell.swift in Sources */,
@@ -2152,10 +2312,14 @@
 				EE48AC1E23775E0700C0A441 /* SuccessViewController.swift in Sources */,
 				EE71855C2383563100C58F62 /* ShareDialogViewController.swift in Sources */,
 				EE7D4D28236F8DE9007C31A8 /* ListingErrorRetryViewCell.swift in Sources */,
+				B3C153EA2636FF82006C5E3B /* Address+CoreDataProperties.swift in Sources */,
 				EE7D4C3D2366B9C4007C31A8 /* SelectorAction.swift in Sources */,
 				B313878925ED72DE007A67C8 /* IntdemoTutorialViewController.swift in Sources */,
+				28994211260273A300276153 /* PayIDSelectorPresenter.swift in Sources */,
 				28A3A80E25F148D8006BA440 /* BaseVerificationViewController.swift in Sources */,
+				B3C153CF2636F331006C5E3B /* mirror_api.grpc.swift in Sources */,
 				EE7D4C412366B9C4007C31A8 /* Collection+Extension.swift in Sources */,
+				287898C4260367FF001228F2 /* SelectIdCell.swift in Sources */,
 				B309A9A3250FF0A500C62B50 /* CredentialSharedViewCellViewCell.swift in Sources */,
 				B3F94E96247455A60087EBFD /* SecurityMainViewCell.swift in Sources */,
 				B309C17024BF89F100AF70DF /* ContactDAO.swift in Sources */,
@@ -2186,9 +2350,11 @@
 				EE904F082373AAE000EE6344 /* NotificationHeaderViewCell.swift in Sources */,
 				B309C16924BF5CD600AF70DF /* Contact+CoreDataClass.swift in Sources */,
 				B36F27BF2406F37600FF751B /* AboutViewController.swift in Sources */,
+				28994219260273AE00276153 /* PayIDSelectorViewController.swift in Sources */,
 				EE7D4C432366B9C4007C31A8 /* Logger.swift in Sources */,
 				B36F27C12406F38C00FF751B /* AboutPresenter.swift in Sources */,
 				B37FDBCC253A396F0024766B /* CredentialVerificationDetailViewController.swift in Sources */,
+				B36BD9CC263AEEFE00963650 /* status.pb.swift in Sources */,
 				285A5AC225E6D5AE004B9B18 /* ProfileDetailViewController.swift in Sources */,
 				EE7D4C452366B9C4007C31A8 /* GeneralUtils.swift in Sources */,
 				B35CEEE325E4256C00DA2BF9 /* HomeProfileTableViewCell.swift in Sources */,
@@ -2197,6 +2363,7 @@
 				EEE43A65237A60CA00E8E304 /* RegisterSeedView.swift in Sources */,
 				28A3A8BD25F2590B006BA440 /* PickerViewUtils.swift in Sources */,
 				B352434324FFDA080053A804 /* DateFormatTableViewCell.swift in Sources */,
+				B3C153E72636FF82006C5E3B /* PayId+CoreDataClass.swift in Sources */,
 				B309A99D250FEACC00C62B50 /* CredentialHistoryHeaderViewCell.swift in Sources */,
 				B30FD7982643159A00D39842 /* ivms101.pb.swift in Sources */,
 				EEDAF2C62389ECDC00121206 /* ConfirmationViewCell.swift in Sources */,
@@ -2204,9 +2371,11 @@
 				EE7D4D012367621C007C31A8 /* CredentialsViewController.swift in Sources */,
 				B313877A25ED7088007A67C8 /* IntdemoTutorialPageView.swift in Sources */,
 				EE8FD4E223726A3600EFF62E /* SettingsPresenter.swift in Sources */,
+				B36BD9812639E63900963650 /* DeletePayIdViewController.swift in Sources */,
 				EE48AC152377547C00C0A441 /* LoginPresenter.swift in Sources */,
 				EE7D4D17236A89AE007C31A8 /* NavBarCustom.swift in Sources */,
 				28A3A80925F148CC006BA440 /* BaseVerificationPresenter.swift in Sources */,
+				28B55D3A260A1E1200EB0C49 /* PayIDInfoListingViewController.swift in Sources */,
 				EE7D4C6E2366B9C4007C31A8 /* CrashReporter.swift in Sources */,
 				EE7D4C392366B9C4007C31A8 /* BaseNibLoadingView.swift in Sources */,
 				EE7D4CE823673C39007C31A8 /* LocalizedUI+Extensions.swift in Sources */,
@@ -2237,9 +2406,11 @@
 				B3B4910225FFA76700859707 /* kycbridge_api.pb.swift in Sources */,
 				EE22F1F223A4AD2C003C4F87 /* CryptoUtils.swift in Sources */,
 				B31F0923257AB98800BCA71C /* AtomicProperty.swift in Sources */,
+				28693C052604D12E004BE449 /* PayIDSetupPresenter.swift in Sources */,
 				EEB7DD56239A153700C4DEA5 /* Tracker.swift in Sources */,
 				EE7D4CEF23673C39007C31A8 /* UITextView+Extensions2.swift in Sources */,
 				EE7D4C032366B9C4007C31A8 /* BaseView.swift in Sources */,
+				289EA52C2608CC7400043D4F /* PopupAlertViewController.swift in Sources */,
 				28A3A81825F15068006BA440 /* BaseVerificationCodePresenter.swift in Sources */,
 				EE7D4CF623673C39007C31A8 /* UIImage+Extensions.swift in Sources */,
 				EE7D4BF72366B9C4007C31A8 /* MainNavViewController.swift in Sources */,
@@ -2247,7 +2418,9 @@
 				B322A29025C4802700A4A0B6 /* VerifyIdTutorialViewController.swift in Sources */,
 				B32B6354250BAC2900162A49 /* CredentialDetailView.swift in Sources */,
 				EE7D4CF423673C39007C31A8 /* UIViewController+Extensions.swift in Sources */,
+				B3C153DF2636F648006C5E3B /* ivms101.pb.swift in Sources */,
 				B31EB6C025C89AB800BDE34A /* VerifyIdScanViewController.swift in Sources */,
+				289941F9260269C700276153 /* PayIDWelcomeViewController.swift in Sources */,
 				B3025508244A4FE900C8E9C0 /* ConnectionsWorker.swift in Sources */,
 				EE48AC092377540500C0A441 /* TutorialPresenter.swift in Sources */,
 				EE7D4CEE23673C39007C31A8 /* UIImageView+Extensions.swift in Sources */,
@@ -2261,9 +2434,11 @@
 				B31EB6A125C8571000BDE34A /* VerifyIdTypeSelectPresenter.swift in Sources */,
 				EE7D4BFD2366B9C4007C31A8 /* BaseViewController.swift in Sources */,
 				B3EA098124A51C260082B71B /* ConnectionAddManualViewController.swift in Sources */,
+				289EA6332608D74E00043D4F /* PayIDInfoPresenter.swift in Sources */,
 				28FE650125E955590089B675 /* AttributeViewController.swift in Sources */,
 				EE7D4CF923673C39007C31A8 /* Date+Extension.swift in Sources */,
 				B3A3E32A24D0972500DEA1EE /* RestoreAccountPresenter.swift in Sources */,
+				B34DD407262DBA81001F1B11 /* ivms101.proto in Sources */,
 				EE7D4D29236F8DE9007C31A8 /* ListingEmptyViewCell.swift in Sources */,
 				EE8CD812237B6C7300614578 /* TextFieldTitledView.swift in Sources */,
 				28A3A8CA25F28078006BA440 /* PhoneHelper.swift in Sources */,
@@ -2279,8 +2454,11 @@
 				EEB7DD502395F79300C4DEA5 /* ConnectionsDtos.swift in Sources */,
 				B3E7585E260E0E1A00BC28A9 /* connector_api.grpc.swift in Sources */,
 				EE71854E237DBF4700C58F62 /* WelcomePresenter.swift in Sources */,
+				B3C153D72636F3E8006C5E3B /* mirror_models.pb.swift in Sources */,
 				B3491C06251A31B10040F89E /* ContactDetailSharedViewCell.swift in Sources */,
+				B3C153E92636FF82006C5E3B /* Address+CoreDataClass.swift in Sources */,
 				F5E3894B234BC34D0001F1E3 /* SceneDelegate.swift in Sources */,
+				28CFF93E2613527F0090A011 /* PayIDScannerViewController.swift in Sources */,
 				EE7D4D0D23693588007C31A8 /* ConnectionsViewController.swift in Sources */,
 				EE7D4C722366B9C4007C31A8 /* RemoteImages.swift in Sources */,
 				EE7D4C6C2366B9C4007C31A8 /* SharedMemory.swift in Sources */,
@@ -2292,8 +2470,10 @@
 				B35CEEF125E5382500DA2BF9 /* HomeActivityLogHeaderTableViewCell.swift in Sources */,
 				B309A9A7250FF2F200C62B50 /* CredentialSectionViewCell.swift in Sources */,
 				EE48AC0B2377541000C0A441 /* TutorialViewController.swift in Sources */,
+				28693C0A2604D13A004BE449 /* PayIDSetupViewController.swift in Sources */,
 				B352434824FFDA3C0053A804 /* DateFormatViewController.swift in Sources */,
 				B3508F3B25C2D53900F907B0 /* DateFormatInfoTableViewCell.swift in Sources */,
+				28B55D3F260A1E9900EB0C49 /* PayIDInfoListingCell.swift in Sources */,
 				B3A98F5724EDA35E00E138C2 /* ActivityHistory+CoreDataClass.swift in Sources */,
 				B3A55F8725E7D78E004FA2EA /* ActivityLogViewController.swift in Sources */,
 				EEEFB91623ADEDD4005BA755 /* ImageBank.swift in Sources */,
@@ -2310,16 +2490,19 @@
 				EE7D4CEC23673C39007C31A8 /* UITextField+Extensions2.swift in Sources */,
 				EE8FD4F02372864900EFF62E /* FakeData.swift in Sources */,
 				EE7D4CE723673C39007C31A8 /* UIColor+Extensions.swift in Sources */,
+				28B55D35260A1E0700EB0C49 /* PayIDInfoListingPresenter.swift in Sources */,
 				EE48AC0D2377542600C0A441 /* RegisterPresenter.swift in Sources */,
 				EEEFB91023ADBAE2005BA755 /* CredentialsDtos.swift in Sources */,
 				EE7185692384D09800C58F62 /* ProfileViewCell.swift in Sources */,
 				EE7D49D22366B697007C31A8 /* Common.swift in Sources */,
+				B3C153CE2636F331006C5E3B /* mirror_api.pb.swift in Sources */,
 				B31EB7C025C9E41000BDE34A /* AcuantTokenService.swift in Sources */,
 				EE7D4CED23673C39007C31A8 /* UIView+Extensions2.swift in Sources */,
 				EE8CD818237CFDB700614578 /* InformationView.swift in Sources */,
 				B397DC6A25E3EB3800B26506 /* HomePresenter.swift in Sources */,
 				B309C16524BF5CD600AF70DF /* Credential+CoreDataClass.swift in Sources */,
 				EE71856E2384D0C100C58F62 /* FieldViewCell.swift in Sources */,
+				289941FE260269D400276153 /* PayIDWelcomePresenter.swift in Sources */,
 				EE7D4D27236F8DE9007C31A8 /* ListingBaseViewController.swift in Sources */,
 				EE7D4C3F2366B9C4007C31A8 /* Array+Extensions.swift in Sources */,
 			);
@@ -2510,7 +2693,7 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 168;
+				CURRENT_PROJECT_VERSION = 169;
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
 				DEVELOPMENT_TEAM = 556N44M7XA;
 				ENABLE_BITCODE = NO;
@@ -2537,7 +2720,7 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 168;
+				CURRENT_PROJECT_VERSION = 169;
 				DEVELOPMENT_TEAM = 556N44M7XA;
 				ENABLE_BITCODE = NO;
 				INFOPLIST_FILE = "prism-ios-wallet/Info.plist";

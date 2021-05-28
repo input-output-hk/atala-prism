@@ -86,5 +86,11 @@ class HomeViewController: ListingBaseViewController {
     func changeScreenToIntdemoTutorial() {
         ViewControllerUtils.changeScreenSegued(caller: self, segue: "IntdemoTutorialSegue", params: nil)
     }
+    
+    func changeScreenToCreatePayId() {
+        ViewControllerUtils.changeScreenPresented(caller: self, storyboardName: "PayID",
+                                                  viewControllerIdentif: "NavigationController", params: nil,
+                                                  animated: true)
+    }
 
 }

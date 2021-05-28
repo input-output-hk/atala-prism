@@ -33,6 +33,7 @@ class DashboardViewController: BaseTabPagerViewController {
         // Setup
         setupBar()
         setupBarButtons()
+        scrollToPage(Page.at(index: 2), animated: false)
     }
 
     override func viewWillAppear(_ animated: Bool) {
@@ -44,13 +45,6 @@ class DashboardViewController: BaseTabPagerViewController {
         NotificationCenter.default.addObserver(self, selector: #selector(onShowContactsScreen),
                                                name: .showContactsScreen, object: nil)
 
-    }
-
-    override func viewDidAppear(_ animated: Bool) {
-        super.viewDidAppear(animated)
-
-        // Select the initial tab
-        scrollToPage(Page.at(index: 2), animated: false)
     }
 
     override func viewWillDisappear(_ animated: Bool) {
@@ -84,7 +78,6 @@ class DashboardViewController: BaseTabPagerViewController {
 
         // Reorder mid button to top
         self.view.insertSubview(viewMidButtonContainer, at: self.view.subviews.count)
-
 
     }
 

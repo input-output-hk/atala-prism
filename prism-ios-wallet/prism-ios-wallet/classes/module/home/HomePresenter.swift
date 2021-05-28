@@ -187,12 +187,14 @@ class HomePresenter: ListingBasePresenter, ListingBaseTableUtilsPresenterDelegat
 
     func setup(for cell: HomeCardsTableViewCell) {
         let loggedUser = sharedMemory.loggedUser
-        cell.config(hidePayId: loggedUser?.payIdCardDismissed ?? false,
+        let payIdDao = PayIdDAO()
+        let countPayId = payIdDao.countPayId()
+        cell.config(hidePayId: (loggedUser?.payIdCardDismissed ?? false) || countPayId > 0,
                     hideVerifyId: loggedUser?.verifyIdCardDismissed ?? false, delegate: self)
     }
 
     func payIdTapped(for cell: HomeCardsTableViewCell) {
-        // TODO: this will be implemented with the pay id functionality
+        viewImpl?.changeScreenToCreatePayId()
     }
 
     func dismissPayIdTapped(for cell: HomeCardsTableViewCell) {

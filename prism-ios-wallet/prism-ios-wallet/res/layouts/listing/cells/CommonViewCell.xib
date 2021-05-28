@@ -150,7 +150,7 @@
                     <constraint firstAttribute="trailing" secondItem="7I7-t5-Ucg" secondAttribute="trailing" id="nka-Ev-6hV"/>
                 </constraints>
             </tableViewCellContentView>
-            <color key="backgroundColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+            <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
             <connections>
                 <outlet property="buttonComingSoon" destination="EjS-ZT-pIG" id="b0J-5R-Rqo"/>
                 <outlet property="buttonIconAction" destination="x0P-62-hFr" id="YxU-H5-0lj"/>
