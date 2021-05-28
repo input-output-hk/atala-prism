@@ -30,25 +30,28 @@ import scala.concurrent.ExecutionContext.Implicits.global
     Hooks.useEffect(() => loadRequests(props, setState), "")
 
     if (state.requests.nonEmpty) {
-      div(className := "spaceBetween", id := "mainView")(
+      div(className := "generalContainer", id := "mainView")(
         div(className := "div_logo", id := "logoPrism", img(src := "/assets/images/prism-logo.svg")),
-        p(className := "dashboardMainTitle", "Dashboard"),
         div(
-          className := "dashboardBg",
+          className := "elementWrapper",
+          p(className := "dashboardMainTitle", "Dashboard"),
           div(
-            p(className := "dashboardTitle", "Your pending requests"),
-            p(
-              className := "greyText",
-              "Click to sign or revoke your credentials."
-            )
-          ),
-          pendingCredentialSigning(props, state),
-          pendingRevocations(props, state),
-          LockButton(props.backgroundAPI, message => onError(message, setState), props.switchToView)
+            className := "dashboardBg",
+            div(
+              p(className := "dashboardTitle", "Your pending requests"),
+              p(
+                className := "greyText",
+                "Click to sign or revoke your credentials."
+              )
+            ),
+            pendingCredentialSigning(props, state),
+            pendingRevocations(props, state),
+            LockButton(props.backgroundAPI, message => onError(message, setState), props.switchToView)
+          )
         )
       )
     } else {
-      div(className := "spaceBetween", id := "mainView")(
+      div(className := "generalContainer", id := "mainView")(
         div(className := "div_logo", id := "logoPrism", img(src := "/assets/images/prism-logo.svg")),
         p(className := "dashboardMainTitle", "Dashboard"),
         div(

@@ -53,81 +53,78 @@ import slinky.web.html.{p, _}
 
   override def render(): ReactElement = {
 
-    div(id := "registrationScreen", className := "spaceBetween")(
-      div(className := "logo_container", id := "logo_container")(
-        div(
-          className := "div_logo",
-          id := "logoPrism",
-          img(className := "logoImage", src := "/assets/images/prism-logo.svg")
-        )
-      ),
-      mui
-        .Button(
-          div(className := "backArrow", onClick := { () => props.switchToView(Default) })(
-            img(className := "leftArrow", src := "/assets/images/arrow-l.svg"),
-            p("Back")
+    div(id := "registrationScreen", className := "generalContainer")(
+      div(className := "div_logo", id := "logoPrism", img(src := "/assets/images/prism-logo.svg")),
+      div(
+        className := "elementWrapper",
+        mui
+          .Button(
+            div(className := "backArrow", onClick := { () => props.switchToView(Default) })(
+              img(className := "leftArrow", src := "/assets/images/arrow-l.svg"),
+              p("Back")
+            )
           )
-        )
-        .className("muiButton")
-        .size(materialUiCoreStrings.small),
-      h3(className := "h3_register", id := "h3_register", "Account Registration"),
-      div(className := "div__field_group")(
-        h4(className := "h4_register")("Save your recovery phrase"),
-        p(
-          className := "description",
-          id := "description",
-          "Your recovery phrase is your personal key that gives you access to your account."
-        ),
-        mnemonicElement
-      ),
-      div(className := "descriptionContainer")(
-        p(
-          className := "description",
-          id := "description1",
-          "Without it you will not be able to access any of your records or funds in case you lose your device or quite the app."
-        ),
-        p(
-          className := "description",
-          id := "description2",
-          "Please store your recovery phrase securely before proceeding."
-        )
-      ),
-      h4(className := "h4_register", id := "h4_register", "Wallet information"),
-      div(className := "")(
-        p(
-          className := "description",
-          id := "description1",
-          "Your password should be a memorable passphrase of at least 30 characters."
-        ),
-        div(
-          className := "recoverPasswordContainer",
-          PasswordInput(
-            "Password",
-            "Enter Password",
-            state.password,
-            password => setPassword(password),
-            Some(_ => isValidPassphrase())
-          )
-        ),
-        div(
-          className := "recoverPasswordContainer",
-          PasswordInput(
-            "Confirm password",
-            "Re-enter Password",
-            state.password2,
-            password => setPassword2(password),
-            Some(_ => isPassphraseMatched())
-          )
-        ),
-        state.message.map(ErrorMessage(_)),
+          .className("muiButton")
+          .size(materialUiCoreStrings.small),
+        h3(className := "h3_register", id := "h3_register", "Account Registration"),
         div(className := "div__field_group")(
+          h4(className := "h4_register")("Save your recovery phrase"),
+          p(
+            className := "description",
+            id := "description",
+            "Your recovery phrase is your personal key that gives you access to your account."
+          ),
+          mnemonicElement
+        ),
+        div(className := "descriptionContainer")(
+          p(
+            className := "description",
+            id := "description1",
+            "Without it you will not be able to access any of your records or funds in case you lose your device or quite the app."
+          ),
+          p(
+            className := "description",
+            id := "description2",
+            "Please store your recovery phrase securely before proceeding."
+          )
+        ),
+        h4(className := "h4_register", id := "h4_register", "Wallet information"),
+        div(className := "")(
+          p(
+            className := "description",
+            id := "description1",
+            "Your password should be a memorable passphrase of at least 30 characters."
+          ),
           div(
-            id := "registerButton",
-            className := "btn_register",
-            onClick := { () =>
-              next()
-            }
-          )("Next")
+            className := "recoverPasswordContainer",
+            PasswordInput(
+              "Password",
+              "Enter Password",
+              state.password,
+              password => setPassword(password),
+              Some(_ => isValidPassphrase())
+            )
+          ),
+          div(
+            className := "recoverPasswordContainer",
+            PasswordInput(
+              "Confirm password",
+              "Re-enter Password",
+              state.password2,
+              password => setPassword2(password),
+              Some(_ => isPassphraseMatched())
+            )
+          ),
+          state.message.map(ErrorMessage(_)),
+          div(className := "div__field_group")(
+            div(
+              id := "registerButton",
+              className := "btn_register",
+              onClick := { () =>
+                next()
+              }
+            )("Next")
+          )
         )
       )
     )

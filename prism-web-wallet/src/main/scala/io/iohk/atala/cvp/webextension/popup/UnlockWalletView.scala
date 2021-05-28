@@ -46,13 +46,14 @@ import scala.util.{Failure, Success}
 
     div(
       id := "unlockScreen",
-      className := "spaceBetween",
+      className := "generalContainer",
       div(
-        div(
-          className := "div_logo",
-          id := "logoPrism",
-          img(src := "/assets/images/prism-logo.svg")
-        ),
+        className := "div_logo",
+        id := "logoPrism",
+        img(src := "/assets/images/prism-logo.svg")
+      ),
+      div(
+        className := "elementWrapper",
         div(
           h1(
             className := "h1_title",
@@ -63,7 +64,9 @@ import scala.util.{Failure, Success}
             className := "description",
             id := "description",
             "For safety reasons, your wallet is automatically locked after a period of inactivity. Please enter your password to unlock your wallet."
-          ),
+          )
+        ),
+        div(
           div(
             className := "img_cover",
             img(className := "img_unlock", id := "img_unlock", src := "/assets/images/img-wallet-register.svg")
@@ -75,27 +78,27 @@ import scala.util.{Failure, Success}
           ),
           PasswordInput("Password", "Enter Password", state.password, password => setPassword(password)),
           error()
-        )
-      ),
-      div(
-        div(
-          id := "unlockButton",
-          className := "btn_register",
-          onClick := { () =>
-            unlockWallet()
-          }
-        )("Unlock your wallet"),
-        div(
-          className := "btn_recover",
-          id := "unlockButton",
-          "Recover your wallet",
-          onClick := { () =>
-            recoverWallet()
-          }
         ),
-        div(className := "div__field_group")(
-          label(className := "forgotten-pass")(
-            "If you have forgotten your password, you need to recover your wallet."
+        div(
+          div(
+            id := "unlockButton",
+            className := "btn_register",
+            onClick := { () =>
+              unlockWallet()
+            }
+          )("Unlock your wallet"),
+          div(
+            className := "btn_recover",
+            id := "unlockButton",
+            "Recover your wallet",
+            onClick := { () =>
+              recoverWallet()
+            }
+          ),
+          div(className := "div__field_group")(
+            label(className := "forgotten-pass")(
+              "If you have forgotten your password, you need to recover your wallet."
+            )
           )
         )
       )

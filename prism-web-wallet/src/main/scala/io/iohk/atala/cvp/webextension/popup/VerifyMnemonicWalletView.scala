@@ -46,72 +46,73 @@ import slinky.web.html._
       }
     }
 
-    div(id := "verifyMnemonic", className := "spaceBetween")(
+    div(id := "verifyMnemonic", className := "generalContainer")(
+      div(className := "div_logo", id := "logoPrism", img(src := "/assets/images/prism-logo.svg")),
       div(
-        div(className := "div_logo", id := "logoPrism", img(src := "/assets/images/prism-logo.svg")),
-        mui
-          .Button(
-            div(className := "backArrow", onClick := { () => props.switchToView(DisplayMnemonic) })(
-              img(className := "leftArrow", src := "/assets/images/arrow-l.svg"),
-              p("Back")
+        className := "elementWrapper",
+        div(className := "Wrapper")(
+          mui
+            .Button(
+              div(className := "backArrow", onClick := { () => props.switchToView(DisplayMnemonic) })(
+                img(className := "leftArrow", src := "/assets/images/arrow-l.svg"),
+                p("Back")
+              )
             )
-          )
-          .className("muiButton")
-          .size(materialUiCoreStrings.small),
-        h3(className := "h3_register", id := "h3_register", "Account Registration"),
-        div(className := "div__field_group")(
-          h4(className := "h4_register")("Verify your recovery phrase.")
-        ),
-        div(className := "")(
+            .className("muiButton")
+            .size(materialUiCoreStrings.small),
+          h3(className := "h3_register", id := "h3_register", "Account Registration"),
+          div(className := "div__field_group")(
+            h4(className := "h4_register")("Verify your recovery phrase.")
+          ),
           p(
             className := "description",
             id := "description2",
             "Enter the correct words of your recovery phrase below."
-          )
-        ),
-        div(className := "")(
-          label(className := "_label")(wordLabel1),
-          div(className := "input__container")(
-            input(
-              id := "word1",
-              className := "_input",
-              `type` := "text",
-              value := state.word1,
-              onChange := (e => setWord1(e.target.value)),
-              onKeyUp := (e => matchWords1(e.target.value))
-            ),
-            word1Status()
           ),
-          div(className := "")(
-            label(className := "_label")(wordLabel2),
+          div(className := "wrapper")(
+            label(className := "_label")(wordLabel1),
             div(className := "input__container")(
               input(
-                id := "word2",
+                id := "word1",
                 className := "_input",
                 `type` := "text",
-                value := state.word2,
-                onChange := (e => setWord2(e.target.value)),
-                onKeyUp := (e => matchWords2(e.target.value)),
-                onKeyPress := { e =>
-                  if (e.key == "Enter") {
-                    next()
-                  }
-                }
+                value := state.word1,
+                onChange := (e => setWord1(e.target.value)),
+                onKeyUp := (e => matchWords1(e.target.value))
               ),
-              word2Status()
-            )
-          ),
-          error()
+              word1Status()
+            ),
+            div(className := "")(
+              label(className := "_label")(wordLabel2),
+              div(className := "input__container")(
+                input(
+                  id := "word2",
+                  className := "_input",
+                  `type` := "text",
+                  value := state.word2,
+                  onChange := (e => setWord2(e.target.value)),
+                  onKeyUp := (e => matchWords2(e.target.value)),
+                  onKeyPress := { e =>
+                    if (e.key == "Enter") {
+                      next()
+                    }
+                  }
+                ),
+                word2Status()
+              )
+            ),
+            error()
+          )
+        ),
+        div(className := "div__field_group")(
+          div(
+            id := "verifyNext",
+            enableButton,
+            onClick := { () =>
+              next()
+            }
+          )("Next")
         )
-      ),
-      div(className := "div__field_group")(
-        div(
-          id := "verifyNext",
-          enableButton,
-          onClick := { () =>
-            next()
-          }
-        )("Next")
       )
     )
   }

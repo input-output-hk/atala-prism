@@ -50,13 +50,22 @@
   align-items: center;
 }
 
-.spaceBetween {
+/* what makes the wallet buttons stay at the bottom */
+
+.generalContainer {
   height: 100vh;
   width: 100vw;
   display: flex;
   flex-direction: column;
+  box-sizing: border-box;
+}
+
+.elementWrapper {
+  padding: 0 2em;
+  display: flex;
+  flex-direction: column;
   justify-content: space-between;
-  overflow: auto;
+  height: 100%;
 }
 
 #recoveryScreen .errorContainer  {
@@ -67,7 +76,6 @@
   display: flex;
   width: 100%;
   overflow: hidden;
-  margin-top: 1em;
 }
 
 
@@ -314,11 +322,11 @@
 .img_cover {
   width: 100%;
   text-align: center;
-  margin-bottom: 2em;
 }
 
 .img_unlock {
   width: 220px;
+  margin-bottom: 2em;
 }
 
 .div_logo {
@@ -694,10 +702,9 @@ select:focus {
 }
 
 .welcome_registration_text{
-    margin-bottom: 80px;
-    text-align: center;
-    color: #17282f;
-    font-size: 16px;
+  text-align: center;
+  color: #17282f;
+  font-size: 16px;
 }
 
 .progress_bar {
@@ -807,6 +814,7 @@ p.padding  { padding:0; margin:0;}
     display: flex;
     justify-content: center;
     align-items: center;
+    box-sizing: border-box;
 }
 
 .upload_status_container {

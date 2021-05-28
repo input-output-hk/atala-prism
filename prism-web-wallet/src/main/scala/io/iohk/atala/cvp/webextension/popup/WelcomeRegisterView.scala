@@ -23,38 +23,36 @@ import scala.concurrent.ExecutionContext.Implicits.global
   case class State(mayBeTransactionId: Option[String])
 
   override def render(): ReactElement = {
-    div(id := "welcomeRegisterScreen", className := "spaceBetween")(
-      div(className := "logo_container", id := "logo_container")(
-        div(
-          className := "div_logo",
-          id := "logoPrism",
-          img(className := "hola", src := "/assets/images/prism-logo.svg")
-        )
-      ),
-      div(className := "welcome_img_Container")(
-        img(className := "Welcome_img", src := "/assets/images/Done.png"),
-        p(className := "welcome_registration_text")("Your wallet has been successfully registered!"),
+    div(id := "welcomeRegisterScreen", className := "generalContainer")(
+      div(className := "div_logo", id := "logoPrism", img(src := "/assets/images/prism-logo.svg")),
+      div(
+        className := "elementWrapper",
+        div( /*this div helps the next bit of code stay centered on the page*/ ),
+        div(className := "welcome_img_Container")(
+          img(className := "Welcome_img", src := "/assets/images/Done.png"),
+          p(className := "welcome_registration_text")("Your wallet has been successfully registered!"),
+          div(className := "div__field_group")(
+            state.mayBeTransactionId.map { id =>
+              a(
+                href := s"${props.blockchainExplorerUrl.format(id)}",
+                target := "_blank",
+                className := "link_to_blockchain"
+              )(
+                "See operation on the blockchain"
+              )
+            }
+          )
+        ),
+        div(className := "input__container"),
         div(className := "div__field_group")(
-          state.mayBeTransactionId.map { id =>
-            a(
-              href := s"${props.blockchainExplorerUrl.format(id)}",
-              target := "_blank",
-              className := "link_to_blockchain"
-            )(
-              "See operation on the blockchain"
-            )
-          }
+          div(
+            id := "nextButton",
+            className := "btn_register",
+            onClick := { () =>
+              props.switchToView(Main)
+            }
+          )("Login")
         )
-      ),
-      div(className := "input__container"),
-      div(className := "div__field_group")(
-        div(
-          id := "nextButton",
-          className := "btn_register",
-          onClick := { () =>
-            props.switchToView(Main)
-          }
-        )("Login")
       )
     )
   }
