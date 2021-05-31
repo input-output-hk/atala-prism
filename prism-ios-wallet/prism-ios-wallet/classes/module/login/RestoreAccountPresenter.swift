@@ -53,6 +53,7 @@ class RestoreAccountPresenter: BasePresenter {
     func fetchCredentials(contact: Contact) {
 
         let contactsDao = ContactDAO()
+        var cred: (Credential, Bool)?
 
         // Call the service
         ApiService.call(async: {
@@ -67,7 +68,6 @@ class RestoreAccountPresenter: BasePresenter {
                     for message in response.messages {
                         if let atalaMssg = try? Io_Iohk_Atala_Prism_Protos_AtalaMessage(serializedData:
                                                                                             message.message) {
-                            var cred: (Credential, Bool)?
                             if !atalaMssg.issuerSentCredential.credential.typeID.isEmpty {
                                 cred = credentialsDao.createCredential(sentCredential:
                                     atalaMssg.issuerSentCredential.credential, viewed: false,
@@ -92,9 +92,71 @@ class RestoreAccountPresenter: BasePresenter {
             }
             return nil
         }, success: {
-            self.fetchNextConnection()
+            if cred != nil {
+                self.fetchNextConnection()
+            } else {
+                self.recoverPayIdName(contact: contact)
+            }
         }, error: { error in
             print(error.localizedDescription)
+            self.viewImpl?.showLoading(doShow: false)
+            self.viewImpl?.showErrorMessage(doShow: true, message: "service_error".localize())
+        })
+    }
+
+    func recoverPayIdName(contact: Contact) {
+
+        var messageId = ""
+
+        // Call the service
+        ApiService.call(async: {
+            do {
+                let response = try ApiService.global.recoverPayIdName(contact: contact)
+                Logger.d("shareCredential response: \(response)")
+                messageId = response.id
+
+            } catch {
+                return error
+            }
+            return nil
+        }, success: {
+            DispatchQueue.main.asyncAfter(deadline: .now() + 1) {
+                self.getRecoveredPayIdName(contact: contact, messageId: messageId)
+            }
+        }, error: { _ in
+            self.viewImpl?.showLoading(doShow: false)
+            self.viewImpl?.showErrorMessage(doShow: true, message: "service_error".localize())
+        })
+    }
+    
+    func getRecoveredPayIdName(contact: Contact, messageId: String) {
+
+        // Call the service
+        ApiService.call(async: {
+            do {
+                let response = try ApiService.global.getMessages(contact: contact)
+                Logger.d("shareCredential response: \(response)")
+                
+                for message in response.messages {
+                    if let atalaMssg = try? Io_Iohk_Atala_Prism_Protos_AtalaMessage(serializedData:
+                                                                                        message.message) {
+                        if atalaMssg.replyTo == messageId {
+                            let payIDName = atalaMssg.mirrorMessage.getPayIDNameResponse.payIDName
+                            if !payIDName.isEmpty {
+                                let payIdDao = PayIdDAO()
+                                payIdDao.createPayId(payIdId: payIDName, name: payIDName,
+                                                     connectionId: contact.connectionId)
+                            }
+                        }
+                    }
+                }
+            } catch {
+                return error
+            }
+            return nil
+        }, success: {
+            self.fetchNextConnection()
+        }, error: { _ in
             self.viewImpl?.showLoading(doShow: false)
             self.viewImpl?.showErrorMessage(doShow: true, message: "service_error".localize())
         })

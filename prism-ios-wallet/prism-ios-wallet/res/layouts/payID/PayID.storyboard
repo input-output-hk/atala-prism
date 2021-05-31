@@ -574,7 +574,7 @@
                                                 </constraints>
                                             </imageView>
                                             <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Pay ID" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="OlT-QR-yX8">
-                                                <rect key="frame" x="64" y="21.5" width="168" height="19.5"/>
+                                                <rect key="frame" x="64" y="21.5" width="216" height="19.5"/>
                                                 <fontDescription key="fontDescription" type="boldSystem" pointSize="16"/>
                                                 <color key="textColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                                 <nil key="highlightedColor"/>
@@ -584,7 +584,7 @@
                                                 </userDefinedRuntimeAttributes>
                                             </label>
                                             <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="L6g-aH-lKM">
-                                                <rect key="frame" x="248" y="15" width="32" height="32"/>
+                                                <rect key="frame" x="296" y="15" width="32" height="32"/>
                                                 <constraints>
                                                     <constraint firstAttribute="height" constant="32" id="Hh6-yA-4Dj"/>
                                                     <constraint firstAttribute="width" constant="32" id="I6m-KV-Wip"/>
@@ -594,7 +594,7 @@
                                                     <action selector="share:" destination="Bct-D3-lG8" eventType="touchUpInside" id="mX6-HK-9Tb"/>
                                                 </connections>
                                             </button>
-                                            <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="cfU-RP-7Kd">
+                                            <button hidden="YES" opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="cfU-RP-7Kd">
                                                 <rect key="frame" x="296" y="15" width="32" height="32"/>
                                                 <constraints>
                                                     <constraint firstAttribute="height" constant="32" id="E9L-fR-dNk"/>
@@ -609,7 +609,7 @@
                                         <color key="backgroundColor" red="0.25098039220000001" green="0.91764705879999997" blue="0.91764705879999997" alpha="1" colorSpace="calibratedRGB"/>
                                         <constraints>
                                             <constraint firstItem="L6g-aH-lKM" firstAttribute="centerY" secondItem="QXd-3x-kQ0" secondAttribute="centerY" id="3FT-Ma-yFf"/>
-                                            <constraint firstItem="cfU-RP-7Kd" firstAttribute="leading" secondItem="L6g-aH-lKM" secondAttribute="trailing" constant="16" id="9ft-AN-gT3"/>
+                                            <constraint firstAttribute="trailing" secondItem="L6g-aH-lKM" secondAttribute="trailing" constant="24" id="9ft-AN-gT3"/>
                                             <constraint firstItem="L6g-aH-lKM" firstAttribute="leading" secondItem="OlT-QR-yX8" secondAttribute="trailing" constant="16" id="I7p-pm-Jw4"/>
                                             <constraint firstItem="cfU-RP-7Kd" firstAttribute="centerY" secondItem="QXd-3x-kQ0" secondAttribute="centerY" id="Jkg-cY-kUS"/>
                                             <constraint firstItem="OlT-QR-yX8" firstAttribute="centerY" secondItem="sam-SE-L3o" secondAttribute="centerY" id="QrP-U2-JJ8"/>

@@ -78,11 +78,6 @@
 		B309C16C24BF7DBA00AF70DF /* CredentialDAO.swift in Sources */ = {isa = PBXBuildFile; fileRef = B309C16B24BF7DBA00AF70DF /* CredentialDAO.swift */; };
 		B309C17024BF89F100AF70DF /* ContactDAO.swift in Sources */ = {isa = PBXBuildFile; fileRef = B309C16F24BF89F100AF70DF /* ContactDAO.swift */; };
 		B309C17324BF8F0B00AF70DF /* ActivityHistoryDAO.swift in Sources */ = {isa = PBXBuildFile; fileRef = B309C17224BF8F0B00AF70DF /* ActivityHistoryDAO.swift */; };
-		B30FD78D2643137E00D39842 /* status.pb.swift in Sources */ = {isa = PBXBuildFile; fileRef = B30FD7892643137E00D39842 /* status.pb.swift */; };
-		B30FD78E2643137E00D39842 /* mirror_api.pb.swift in Sources */ = {isa = PBXBuildFile; fileRef = B30FD78A2643137E00D39842 /* mirror_api.pb.swift */; };
-		B30FD78F2643137E00D39842 /* mirror_api.grpc.swift in Sources */ = {isa = PBXBuildFile; fileRef = B30FD78B2643137E00D39842 /* mirror_api.grpc.swift */; };
-		B30FD7902643137E00D39842 /* mirror_models.pb.swift in Sources */ = {isa = PBXBuildFile; fileRef = B30FD78C2643137E00D39842 /* mirror_models.pb.swift */; };
-		B30FD7982643159A00D39842 /* ivms101.pb.swift in Sources */ = {isa = PBXBuildFile; fileRef = B30FD7972643159A00D39842 /* ivms101.pb.swift */; };
 		B313877525ED6EF9007A67C8 /* IntdemoTutorial.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = B313877425ED6EF9007A67C8 /* IntdemoTutorial.storyboard */; };
 		B313877A25ED7088007A67C8 /* IntdemoTutorialPageView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B313877925ED7088007A67C8 /* IntdemoTutorialPageView.swift */; };
 		B313877F25ED70AA007A67C8 /* IntdemoTutorialPageView.xib in Resources */ = {isa = PBXBuildFile; fileRef = B313877E25ED70AA007A67C8 /* IntdemoTutorialPageView.xib */; };
@@ -983,6 +978,11 @@
 				B34DD3FF262DBA81001F1B11 /* mirror_api.proto */,
 				B34DD401262DBA81001F1B11 /* mirror_api.grpc.swift */,
 				B34DD402262DBA81001F1B11 /* ivms101.proto */,
+				B30FD78B2643137E00D39842 /* mirror_api.grpc.swift */,
+				B30FD7972643159A00D39842 /* ivms101.pb.swift */,
+				B30FD78C2643137E00D39842 /* mirror_models.pb.swift */,
+				B30FD78A2643137E00D39842 /* mirror_api.pb.swift */,
+				B30FD7892643137E00D39842 /* status.pb.swift */,
 			);
 			name = "Recovered References";
 			sourceTree = "<group>";
@@ -2255,7 +2255,7 @@
 			outputPaths = (
 			);
 			runOnlyForDeploymentPostprocessing = 0;
-			shellPath = /bin/sh
+			shellPath = /bin/sh;
 			shellScript = "# Type a script or drag a script file from your workspace to insert its pat\nexport PATH=$PATH:${SRCROOT}/protobuf/utils\nmkdir -p ./protobuf\nprotoc --proto_path=../prism-sdk/protos/src/ --swift_out=./protobuf --swiftgrpc_out=Client=true,Server=false:. ../prism-sdk/protos/src/common_models.proto\nprotoc --proto_path=../prism-sdk/protos/src/ --swift_out=./protobuf --swiftgrpc_out=Client=true,Server=false:. ../prism-sdk/protos/src/node_models.proto\nprotoc --proto_path=../prism-sdk/protos/src/ --swift_out=./protobuf --swiftgrpc_out=Client=true,Server=false:. ../prism-sdk/protos/src/console_models.proto\nprotoc --proto_path=../prism-sdk/protos/src/ --swift_out=./protobuf --swiftgrpc_out=Client=true,Server=false:. ../prism-sdk/protos/src/connector_models.proto\nprotoc --proto_path=../prism-sdk/protos/src/ --swift_out=./protobuf --swiftgrpc_out=Client=true,Server=false:. ../prism-sdk/protos/src/status.proto\nprotoc --proto_path=../prism-sdk/protos/src/ --swift_out=./protobuf --swiftgrpc_out=Client=true,Server=false:. ../prism-sdk/protos/src/credential_models.proto\nprotoc --proto_path=../prism-sdk/protos/src/ --swift_out=./protobuf --swiftgrpc_out=Client=true,Server=false:. ../prism-sdk/protos/src/ivms101.proto\nprotoc --proto_path=../prism-sdk/protos/src/ --swift_out=./protobuf --swiftgrpc_out=Client=true,Server=false:. ../prism-sdk/protos/src/mirror_models.proto\nprotoc --proto_path=../prism-sdk/protos/src/ --swift_out=./protobuf --swiftgrpc_out=Client=true,Server=false:./protobuf ../prism-sdk/protos/src/connector_api.proto\nprotoc --proto_path=../prism-sdk/protos/src/ --swift_out=./protobuf --swiftgrpc_out=Client=true,Server=false:./protobuf ../prism-sdk/protos/src/kycbridge_api.proto\nprotoc --proto_path=../prism-sdk/protos/src/ --swift_out=./protobuf --swiftgrpc_out=Client=true,Server=false:./protobuf ../prism-sdk/protos/src/mirror_api.proto\n";
 		};
 /* End PBXShellScriptBuildPhase section */
@@ -2296,7 +2296,6 @@
 				B3E7585D260E0E1A00BC28A9 /* console_models.pb.swift in Sources */,
 				EE8CD814237BA29700614578 /* ScanQrUtils.swift in Sources */,
 				B3E757DC260D31B700BC28A9 /* credential_models.pb.swift in Sources */,
-				B30FD78F2643137E00D39842 /* mirror_api.grpc.swift in Sources */,
 				EE7D4C472366B9C4007C31A8 /* UITextView+Placeholder.m in Sources */,
 				28748039260CC1CD000BDD7A /* PayIDAddAddressViewController.swift in Sources */,
 				289EA6382608D75900043D4F /* PayIDInfoViewController.swift in Sources */,
@@ -2365,7 +2364,6 @@
 				B352434324FFDA080053A804 /* DateFormatTableViewCell.swift in Sources */,
 				B3C153E72636FF82006C5E3B /* PayId+CoreDataClass.swift in Sources */,
 				B309A99D250FEACC00C62B50 /* CredentialHistoryHeaderViewCell.swift in Sources */,
-				B30FD7982643159A00D39842 /* ivms101.pb.swift in Sources */,
 				EEDAF2C62389ECDC00121206 /* ConfirmationViewCell.swift in Sources */,
 				EE7185772384F39500C58F62 /* PaddingViewCell.swift in Sources */,
 				EE7D4D012367621C007C31A8 /* CredentialsViewController.swift in Sources */,
@@ -2392,7 +2390,6 @@
 				EE7185642384B77600C58F62 /* BrowserPresenter.swift in Sources */,
 				B3E757DB260D31B700BC28A9 /* connector_models.pb.swift in Sources */,
 				B3491C00251A2C850040F89E /* ContactDetailSectionViewCell.swift in Sources */,
-				B30FD7902643137E00D39842 /* mirror_models.pb.swift in Sources */,
 				EE7D4BB82366B9C4007C31A8 /* TableUtils.swift in Sources */,
 				B31EB6C625C89ACE00BDE34A /* VerifyIdScanPresenter.swift in Sources */,
 				EE7D4CE523673C39007C31A8 /* UISegmentedControl+Extensions.swift in Sources */,
@@ -2449,7 +2446,6 @@
 				EE7D4BBF2366B9C4007C31A8 /* ViewControllerUtils.swift in Sources */,
 				EE7D4C462366B9C4007C31A8 /* Date+Extensions.swift in Sources */,
 				EE7D49D12366B697007C31A8 /* AppConfigs.swift in Sources */,
-				B30FD78E2643137E00D39842 /* mirror_api.pb.swift in Sources */,
 				EE7D4CF023673C39007C31A8 /* String+Extensions2.swift in Sources */,
 				EEB7DD502395F79300C4DEA5 /* ConnectionsDtos.swift in Sources */,
 				B3E7585E260E0E1A00BC28A9 /* connector_api.grpc.swift in Sources */,
@@ -2484,7 +2480,6 @@
 				EE8FD4E023726A2700EFF62E /* ProfilePresenter.swift in Sources */,
 				B322A29825C4803600A4A0B6 /* VerifyIdTutorialPresenter.swift in Sources */,
 				05BDBB1B25A6D44300D56D03 /* KotlinConverters.swift in Sources */,
-				B30FD78D2643137E00D39842 /* status.pb.swift in Sources */,
 				B367AEAF25D1845200A1BF15 /* VerifyIdResultsTableViewCell.swift in Sources */,
 				B309C16A24BF5CD600AF70DF /* Contact+CoreDataProperties.swift in Sources */,
 				EE7D4CEC23673C39007C31A8 /* UITextField+Extensions2.swift in Sources */,
@@ -2693,7 +2688,7 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 169;
+				CURRENT_PROJECT_VERSION = 174;
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
 				DEVELOPMENT_TEAM = 556N44M7XA;
 				ENABLE_BITCODE = NO;
@@ -2720,7 +2715,7 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 169;
+				CURRENT_PROJECT_VERSION = 174;
 				DEVELOPMENT_TEAM = 556N44M7XA;
 				ENABLE_BITCODE = NO;
 				INFOPLIST_FILE = "prism-ios-wallet/Info.plist";

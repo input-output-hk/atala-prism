@@ -244,4 +244,18 @@ class ApiService: NSObject {
         let metadata = makeSignedMeta(requestData: try request.serializedData(), keyPath: contact.keyPath)
         return try service.getMessagesPaginated(request, metadata: metadata)
     }
+    
+    func recoverPayIdName(contact: Contact) throws -> Io_Iohk_Atala_Prism_Protos_SendMessageResponse {
+
+        var message = Io_Iohk_Atala_Prism_Protos_AtalaMessage()
+        let getPayIDNameMessage = Io_Iohk_Atala_Prism_Protos_GetPayIdNameMessage()
+        message.mirrorMessage.getPayIDNameMessage = getPayIDNameMessage
+        let messageData =  try message.serializedData()
+        let request = Io_Iohk_Atala_Prism_Protos_SendMessageRequest.with {
+            $0.message = messageData
+            $0.connectionID = contact.connectionId
+        }
+        let metadata = makeSignedMeta(requestData: try request.serializedData(), keyPath: contact.keyPath)
+        return try service.sendMessage(request, metadata: metadata)
+    }
 }
