@@ -11,9 +11,9 @@ class RequestAuthenticator(ec: ECTrait) {
     */
   def signConnectorRequest(
       request: Array[Byte],
-      privateKey: ECPrivateKey
+      privateKey: ECPrivateKey,
+      requestNonce: RequestNonce = RequestNonce()
   ): SignedConnectorRequest = {
-    val requestNonce = RequestNonce()
     val signature = ec.sign(requestNonce + request, privateKey)
     SignedConnectorRequest(signature = signature.data, requestNonce = requestNonce.bytes)
   }

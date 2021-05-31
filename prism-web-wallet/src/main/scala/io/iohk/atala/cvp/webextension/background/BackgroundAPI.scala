@@ -75,8 +75,12 @@ class BackgroundAPI()(implicit ec: ExecutionContext) {
     process(Command.EnqueueRequestApproval(sessionId, request))
   }
 
-  def signConnectorRequest(sessionId: String, request: ConnectorRequest): Future[SignedConnectorResponse] = {
-    process(Command.SignConnectorRequest(sessionId, request))
+  def signConnectorRequest(
+      sessionId: String,
+      request: ConnectorRequest,
+      nonce: Option[Array[Byte]]
+  ): Future[SignedConnectorResponse] = {
+    process(Command.SignConnectorRequest(sessionId, request, nonce))
   }
 
   def verifySignedCredential(

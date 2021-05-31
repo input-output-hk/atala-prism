@@ -50,9 +50,9 @@ private[background] class CommandProcessor(
           val requests = walletManager.getRevocationRequestsRequiringManualApproval().toList
           CommandResponse(GotRevocationRequestsRequiringManualApproval(requests))
         }
-      case Command.SignConnectorRequest(sessionId, request) =>
+      case Command.SignConnectorRequest(sessionId, request, nonce) =>
         walletManager
-          .signConnectorRequest(origin, sessionId, request)
+          .signConnectorRequest(origin, sessionId, request, nonce)
           .map(SignedConnectorResponse.apply)
           .map(CommandResponse.apply)
       case Command.VerifySignedCredential(sessionId, signedCredentialStringRepresentation, encodedMerkleProof) =>

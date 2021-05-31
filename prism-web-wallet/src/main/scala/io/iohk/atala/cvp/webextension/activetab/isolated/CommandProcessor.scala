@@ -28,9 +28,9 @@ private[isolated] class CommandProcessor(backgroundAPI: BackgroundAPI)(implicit 
           .enqueueRequestApproval(sessionId, request)
           .map(response => Event.GotEnqueueRequestApprovalResultTransactionId(response.transactionId))
 
-      case Command.SignConnectorRequest(sessionId, request) =>
+      case Command.SignConnectorRequest(sessionId, request, nonce) =>
         backgroundAPI
-          .signConnectorRequest(sessionId, request)
+          .signConnectorRequest(sessionId, request, nonce)
           .map(response => Event.GotSignedResponse(response.signedMessage))
 
       case Command.VerifySignedCredential(sessionId, signedCredentialStringRepresentation, encodedMerkleProof) =>

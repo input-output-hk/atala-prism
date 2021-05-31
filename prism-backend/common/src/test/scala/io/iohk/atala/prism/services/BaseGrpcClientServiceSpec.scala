@@ -12,7 +12,7 @@ import org.scalatest.wordspec.AnyWordSpec
 import org.scalatest.matchers.must.Matchers
 import org.mockito.{ArgumentMatchersSugar, MockitoSugar}
 import io.iohk.atala.prism.crypto.{EC, ECKeyPair, ECPrivateKey}
-import io.iohk.atala.prism.connector.{RequestAuthenticator, SignedConnectorRequest}
+import io.iohk.atala.prism.connector.{RequestAuthenticator, RequestNonce, SignedConnectorRequest}
 import io.iohk.atala.prism.services.BaseGrpcClientService.AuthHeaders
 import io.iohk.atala.prism.identity.DID
 import monix.execution.Scheduler.Implicits.global
@@ -57,7 +57,11 @@ class BaseGrpcClientServiceSpec extends AnyWordSpec with Matchers with MockitoSu
     )
 
     val requestAuthenticator = new RequestAuthenticator(EC) {
-      override def signConnectorRequest(request: Array[Byte], privateKey: ECPrivateKey): SignedConnectorRequest = {
+      override def signConnectorRequest(
+          request: Array[Byte],
+          privateKey: ECPrivateKey,
+          requestNonce: RequestNonce
+      ): SignedConnectorRequest = {
         SignedConnectorRequest(
           signature = Array(115, 105, 103, 110, 97, 116, 117, 114, 101), // bytes: signature
           requestNonce = Array(110, 111, 110, 99, 101) // bytes: nonce

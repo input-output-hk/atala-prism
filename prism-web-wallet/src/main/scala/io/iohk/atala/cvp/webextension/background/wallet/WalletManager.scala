@@ -22,7 +22,7 @@ import io.iohk.atala.cvp.webextension.common.models.PendingRequest.{
 }
 import io.iohk.atala.cvp.webextension.common.models._
 import io.iohk.atala.cvp.webextension.common.{ECKeyOperation, Mnemonic}
-import io.iohk.atala.prism.connector.RequestAuthenticator
+import io.iohk.atala.prism.connector.{RequestAuthenticator, RequestNonce}
 import io.iohk.atala.prism.credentials.VerificationError
 import io.iohk.atala.prism.crypto.EC
 import io.iohk.atala.prism.crypto.MerkleTree.MerkleInclusionProof
@@ -243,13 +243,22 @@ private[background] class WalletManager(
     }
   }
 
-  def signConnectorRequest(origin: Origin, sessionID: SessionID, request: ConnectorRequest): Future[SignedMessage] = {
+  def signConnectorRequest(
+      origin: Origin,
+      sessionID: SessionID,
+      request: ConnectorRequest,
+      nonce: Option[Array[Byte]]
+  ): Future[SignedMessage] = {
     for {
       walletData <- walletDataF()
       _ <- validateSessionF(origin = origin, sessionID = sessionID)
     } yield {
       val ecKeyPair = ECKeyOperation.ecKeyPairFromSeed(walletData.mnemonic)
-      val signedRequest = requestAuthenticator.signConnectorRequest(request.bytes, ecKeyPair.privateKey)
+      val signedRequest = requestAuthenticator.signConnectorRequest(
+        request.bytes,
+        ecKeyPair.privateKey,
+        nonce.map(RequestNonce(_)).getOrElse(RequestNonce())
+      )
       SignedMessage(
         did = walletData.did,
         didKeyId = masterKeyId,

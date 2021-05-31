@@ -66,8 +66,12 @@ class ExtensionAPI()(implicit ec: ExecutionContext) {
     }
   }
 
-  def signConnectorRequest(sessionId: String, request: ConnectorRequest): Future[Event.GotSignedResponse] = {
-    val cmd = Command.SignConnectorRequest(sessionId, request)
+  def signConnectorRequest(
+      sessionId: String,
+      request: ConnectorRequest,
+      nonce: Option[Array[Byte]]
+  ): Future[Event.GotSignedResponse] = {
+    val cmd = Command.SignConnectorRequest(sessionId, request, nonce)
     processCommand(cmd).collect {
       case r: Event.GotSignedResponse => r
       case x => throw new RuntimeException(s"Unknown response: $x")

@@ -50,7 +50,7 @@ class PrismSdk(name: String = "prism", extensionAPI: ExtensionAPI)(implicit
           "getWalletStatus" -> js.Any.fromFunction0(() => getWalletStatus()),
           "login" -> js.Any.fromFunction0(() => login()),
           "requestSignature" -> js.Any.fromFunction2(requestCredentialIssuanceApproval),
-          "signConnectorRequest" -> js.Any.fromFunction2(signConnectorRequest),
+          "signConnectorRequest" -> js.Any.fromFunction3(signConnectorRequest),
           "verifySignedCredential" -> js.Any.fromFunction3(verifySignedCredential),
           "revokeCredential" -> js.Any.fromFunction5(requestCredentialRevocationApproval)
         ): js.UndefOr[js.Any]
@@ -146,27 +146,19 @@ class PrismSdk(name: String = "prism", extensionAPI: ExtensionAPI)(implicit
     result.toJSPromise
   }
 
-  def signConnectorRequest(sessionId: String, request: js.Array[Double]): js.Promise[JsSignedMessage] = {
-    val scalaBytes = request.toArray.flatMap(x => Try(x.toByte).toOption)
-
-    if (scalaBytes.length != request.length) {
-      Future
-        .failed(new RuntimeException("The request should only contain bytes [0, 255], some of the values aren't bytes"))
-        .toJSPromise
-    } else {
-      extensionAPI
-        .signConnectorRequest(sessionId, ConnectorRequest(scalaBytes))
-        .map(_.signedMessage)
-        .map { sm =>
-          JsSignedMessage(
-            did = sm.did.value,
-            didKeyId = sm.didKeyId,
-            encodedSignature = sm.base64UrlSignature,
-            encodedNonce = sm.base64UrlNonce
-          )
-        }
-        .toJSPromise
-    }
+  def signConnectorRequest(
+      sessionId: String,
+      requestJS: js.Array[Double],
+      nonceJS: js.Array[Double]
+  ): js.Promise[JsSignedMessage] = {
+    val requestBytes = toByteArray(requestJS)
+    val optionalNonceBytes = if (js.isUndefined(nonceJS)) Future.successful(None) else toByteArray(nonceJS).map(Some(_))
+    val resultFuture = for {
+      request <- requestBytes
+      nonce <- optionalNonceBytes
+      signedMessage <- signMessageFuture(sessionId, request, nonce)
+    } yield signedMessage
+    resultFuture.toJSPromise
   }
 
   def verifySignedCredential(
@@ -178,6 +170,37 @@ class PrismSdk(name: String = "prism", extensionAPI: ExtensionAPI)(implicit
       .verifySignedCredential(sessionId, signedCredentialStringRepresentation, encodedMerkleProof)
       .map(event => toJsErrorList(event.result))
       .toJSPromise
+  }
+
+  private def signMessageFuture(
+      sessionId: String,
+      requestBytes: Array[Byte],
+      nonceBytes: Option[Array[Byte]]
+  ) = {
+    extensionAPI
+      .signConnectorRequest(sessionId, ConnectorRequest(requestBytes), nonceBytes)
+      .map(_.signedMessage)
+      .map { sm =>
+        JsSignedMessage(
+          did = sm.did.value,
+          didKeyId = sm.didKeyId,
+          encodedSignature = sm.base64UrlSignature,
+          encodedNonce = sm.base64UrlNonce
+        )
+      }
+  }
+
+  private def toByteArray(jsBytes: js.Array[Double]): Future[Array[Byte]] = {
+    val scalaBytes = jsBytes.toArray.flatMap(x => Try(x.toByte).toOption)
+    if (scalaBytes.length != jsBytes.length) {
+      Future
+        .failed(
+          new RuntimeException(
+            "The request should only contain bytes [0, 255], some of the values aren't bytes"
+          )
+        )
+    }
+    Future.successful(scalaBytes)
   }
 
   private def toJsErrorList(validations: ValidatedNel[VerificationError, Unit]): js.Array[String] = {

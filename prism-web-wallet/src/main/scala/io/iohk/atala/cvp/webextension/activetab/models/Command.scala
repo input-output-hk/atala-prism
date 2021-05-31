@@ -20,7 +20,8 @@ private[activetab] object Command {
 
   final case class EnqueueRequestApproval(sessionId: String, request: PendingRequest) extends Command
 
-  final case class SignConnectorRequest(sessionId: String, request: ConnectorRequest) extends Command
+  final case class SignConnectorRequest(sessionId: String, request: ConnectorRequest, nonce: Option[Array[Byte]])
+      extends Command
   final case class VerifySignedCredential(
       sessionId: String,
       signedCredentialStringRepresentation: String,

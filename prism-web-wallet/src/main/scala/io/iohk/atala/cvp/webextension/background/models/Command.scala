@@ -26,7 +26,7 @@ private[background] object Command {
       extends CommandWithResponse[ApprovalRequestResult]
   final case class ApprovalRequestResult(transactionId: String)
 
-  final case class SignConnectorRequest(sessionId: String, request: ConnectorRequest)
+  final case class SignConnectorRequest(sessionId: String, request: ConnectorRequest, nonce: Option[Array[Byte]])
       extends CommandWithResponse[SignedConnectorResponse]
   final case class SignedConnectorResponse(signedMessage: SignedMessage)
 
