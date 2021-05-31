@@ -69,7 +69,7 @@ class Generator : ServiceGenerator {
                             GrpcServerOptions(envoyOptions.protocol, envoyOptions.host, envoyOptions.port),
                             envoyOptions
                         )
-                        private val internalService = ${service.name}.Client(grpcClient)
+                        val internalService = ${service.name}.Client(grpcClient)
                         ${clientMethodsJs.joinToString("")}
                     }
                     """.trimIndent()
