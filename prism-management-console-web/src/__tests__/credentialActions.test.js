@@ -2,7 +2,7 @@ import { REVOKE_CREDENTIALS, SEND_CREDENTIALS, SIGN_CREDENTIALS } from '../helpe
 import { credentialRequiredStatus, getTargetCredentials } from '../helpers/credentialActions';
 import { mockCredentials } from './__mocks__/mockIssuedCredentials';
 
-const selectedCredentials = mockCredentials.map(c => c.credentialid);
+const selectedCredentials = mockCredentials.map(c => c.credentialId);
 
 describe('credential actions are applied to the valid credentials', () => {
   test('it only revokes credentials on signed or sent status', () => {

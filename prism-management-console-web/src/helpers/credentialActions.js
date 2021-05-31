@@ -21,7 +21,7 @@ export const getTargetCredentials = (credentials, selectedCredentials, requiredS
 };
 
 const getSelectedCredentials = (credentials, selectedCredentials) =>
-  credentials.filter(c => selectedCredentials.includes(c.credentialid));
+  credentials.filter(c => selectedCredentials.includes(c.credentialId));
 
 export const credentialRequiredStatus = {
   [REVOKE_CREDENTIALS]: {

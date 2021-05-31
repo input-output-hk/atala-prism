@@ -58,6 +58,39 @@ export const useCredentialsIssuedListWithFilters = credentialsManager => {
 
   const { showUnconfirmedAccountError, removeUnconfirmedAccountError } = useSession();
 
+  const applyFilters = useCallback(
+    aCredentialsList =>
+      aCredentialsList?.filter(item => {
+        const matchName = filterByInclusion(name, item.contactData.contactName);
+        const matchExternalId = filterByInclusion(name, item.contactData.externalId);
+        const matchContactStatus = filterContactByStatus(
+          contactStatus,
+          item.contactData.connectionStatus
+        );
+        const matchStatus = filterByExactMatch(credentialStatus, item.status);
+        const matchType = filterByExactMatch(credentialType, item.credentialType.id);
+        const matchDate = filterByUnixDate(date, item.publicationStoredAt);
+
+        return (
+          (matchName || matchExternalId) &&
+          matchStatus &&
+          matchType &&
+          matchContactStatus &&
+          matchDate
+        );
+      }),
+    [name, contactStatus, credentialStatus, credentialType, date]
+  );
+
+  const updateFilteredCredentials = useCallback(
+    updatedCredentials => {
+      const newFilteredCredentials = applyFilters(updatedCredentials || credentials);
+      setFilteredCredentials(newFilteredCredentials);
+      return newFilteredCredentials;
+    },
+    [credentials, setFilteredCredentials, applyFilters]
+  );
+
   const getCredentials = useCallback(
     ({ onFinish, isFetchAll }) => {
       if (isLoading || isSearching) return;
@@ -77,6 +110,11 @@ export const useCredentialsIssuedListWithFilters = credentialsManager => {
 
           setCredentials(updatedCredentials);
           removeUnconfirmedAccountError();
+          return updatedCredentials;
+        })
+        .then(updatedCredentials => {
+          const newFilteredCredentials = updateFilteredCredentials(updatedCredentials);
+          if (onFinish) onFinish(newFilteredCredentials);
         })
         .catch(error => {
           Logger.error(
@@ -94,17 +132,16 @@ export const useCredentialsIssuedListWithFilters = credentialsManager => {
         .finally(() => {
           setIsLoading(false);
           setIsSearching(false);
-          if (onFinish) onFinish({ credentials, filteredCredentials });
         });
     },
     [
       isLoading,
       isSearching,
       credentials,
-      filteredCredentials,
       credentialsManager,
       removeUnconfirmedAccountError,
       showUnconfirmedAccountError,
+      updateFilteredCredentials,
       t
     ]
   );
@@ -150,30 +187,16 @@ export const useCredentialsIssuedListWithFilters = credentialsManager => {
   }, [credentials, isLoading, isSearching, hasMore, getCredentials]);
 
   useEffect(() => {
-    const applyFilters = aCredentialsList =>
-      aCredentialsList.filter(item => {
-        const matchName = filterByInclusion(name, item.contactData.contactName);
-        const matchExternalId = filterByInclusion(name, item.contactData.externalId);
-        const matchContactStatus = filterContactByStatus(
-          contactStatus,
-          item.contactData.connectionStatus
-        );
-        const matchStatus = filterByExactMatch(credentialStatus, item.status);
-        const matchType = filterByExactMatch(credentialType, item.credentialType.id);
-        const matchDate = filterByUnixDate(date, item.publicationStoredAt);
-
-        return (
-          (matchName || matchExternalId) &&
-          matchStatus &&
-          matchType &&
-          matchContactStatus &&
-          matchDate
-        );
-      });
-
-    const newFilteredCredentials = applyFilters(credentials);
-    setFilteredCredentials(newFilteredCredentials);
-  }, [credentials, name, credentialStatus, credentialType, contactStatus, date]);
+    updateFilteredCredentials();
+  }, [
+    credentials,
+    name,
+    credentialStatus,
+    credentialType,
+    contactStatus,
+    date,
+    updateFilteredCredentials
+  ]);
 
   useEffect(() => {
     /* if the amount of filtered credentials is less than the page size,
