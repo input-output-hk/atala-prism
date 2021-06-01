@@ -2,6 +2,7 @@ package io.iohk.atala.prism.management.console.models
 
 import io.circe.Json
 import io.iohk.atala.prism.models.{ConnectionToken, UUIDValue}
+import io.iohk.atala.prism.protos.console_models.ContactConnectionStatus
 
 import java.time.{Instant, LocalDate}
 import java.util.UUID
@@ -110,7 +111,8 @@ object Contact {
       groupName: Option[InstitutionGroup.Name] = None,
       externalId: Option[String] = None,
       name: Option[String] = None,
-      createdAt: Option[LocalDate] = None
+      createdAt: Option[LocalDate] = None,
+      connectionStatus: Option[ContactConnectionStatus] = None
   ) {
     lazy val nonEmptyName: Option[String] = name.map(_.trim).filter(_.nonEmpty)
     lazy val nonEmptyExternalId: Option[String] = externalId.map(_.trim).filter(_.nonEmpty)

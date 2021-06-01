@@ -9,7 +9,11 @@ import io.iohk.atala.prism.management.console.models.{Contact, PaginatedQueryCon
 
 object FindContactsQueryBuilder {
 
-  def build(participantId: ParticipantId, constraints: Contact.PaginatedQuery): Fragment = {
+  def build(
+      participantId: ParticipantId,
+      constraints: Contact.PaginatedQuery,
+      ignoreFilterLimit: Boolean = false
+  ): Fragment = {
     val baseQuery = (constraints.scrollId, constraints.filters.flatMap(_.groupName)) match {
       case (Some(scrollId), Some(_)) => selectFromScrollGroupFR(scrollId)
       case (Some(scrollId), None) => selectFromScrollFR(scrollId)
@@ -23,10 +27,14 @@ object FindContactsQueryBuilder {
       case Contact.SortBy.Name => "LOWER(contacts.name)"
     }
 
-    baseQuery ++
+    val query = baseQuery ++
       whereFr(participantId, constraints) ++
-      orderBy ++
-      limitFr(constraints.limit)
+      orderBy
+
+    if (ignoreFilterLimit)
+      query
+    else
+      query ++ limitFr(constraints.limit)
   }
 
   private def whereFr(participantId: ParticipantId, constraints: Contact.PaginatedQuery): Fragment = {

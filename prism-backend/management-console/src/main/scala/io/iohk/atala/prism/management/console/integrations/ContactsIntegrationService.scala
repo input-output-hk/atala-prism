@@ -96,16 +96,13 @@ class ContactsIntegrationService(
       institutionId: ParticipantId,
       paginatedQuery: Contact.PaginatedQuery
   ): Future[Either[errors.ManagementConsoleError, GetContactsResult]] = {
+    val filterByConnectionStatusSpecified = paginatedQuery.filters.exists(f => f.connectionStatus.isDefined)
     val result = for {
-      list <- contactsRepository.getBy(institutionId, paginatedQuery)
-      statusList <- {
-        connector
-          .getConnectionStatus(list.map(_.details.connectionToken))
-          .lift
-      }
-      tokenToConnection = statusList.map(c => ConnectionToken(c.connectionToken) -> c).toMap
+      allContacts <- contactsRepository.getBy(institutionId, paginatedQuery, filterByConnectionStatusSpecified)
+      allConnectionStatuses <- { connector.getConnectionStatus(allContacts.map(_.details.connectionToken)).lift }
+      tokenToConnection = allConnectionStatuses.map(c => ConnectionToken(c.connectionToken) -> c).toMap
     } yield {
-      val data = list
+      val data = allContacts
         .map { contact =>
           ContactWithConnection(
             contact.details,
@@ -119,9 +116,19 @@ class ContactsIntegrationService(
           ) -> contact.counts
         }
 
-      GetContactsResult(data.toList)
+      val dataPotentiallyFilteredByConnectionStatus = paginatedQuery.filters
+        .flatMap(fb => fb.connectionStatus)
+        .map(contactConnectionStatusToFilterBy => {
+          data
+            .filter {
+              case (contactWithConnection, _) =>
+                contactConnectionStatusToFilterBy == contactWithConnection.connection.connectionStatus
+            }
+            .take(paginatedQuery.limit)
+        })
+        .getOrElse(data)
+      GetContactsResult(dataPotentiallyFilteredByConnectionStatus.toList)
     }
-
     result.value
   }
 

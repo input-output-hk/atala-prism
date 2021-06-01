@@ -134,10 +134,11 @@ class ContactsRepository(xa: Transactor[IO])(implicit ec: ExecutionContext) {
 
   def getBy(
       createdBy: ParticipantId,
-      constraints: Contact.PaginatedQuery
+      constraints: Contact.PaginatedQuery,
+      ignoreFilterLimit: Boolean = false
   ): FutureEither[ManagementConsoleError, Seq[Contact.WithCredentialCounts]] = {
     ContactsDAO
-      .getBy(createdBy, constraints)
+      .getBy(createdBy, constraints, ignoreFilterLimit)
       .logSQLErrors(s"getting by some constraint, created by - $createdBy", logger)
       .transact(xa)
       .unsafeToFuture()

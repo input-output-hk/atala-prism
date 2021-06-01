@@ -12,6 +12,8 @@ import io.iohk.atala.prism.management.console.models.{Contact, Helpers, Institut
 import io.iohk.atala.prism.management.console.{DataPreparation, ManagementConsoleRpcSpecBase, ManagementConsoleTestUtil}
 import io.iohk.atala.prism.models.ConnectionToken
 import io.iohk.atala.prism.protos.console_api.DeleteContactResponse
+import io.iohk.atala.prism.protos.console_api.GetContactsRequest.FilterBy
+import io.iohk.atala.prism.protos.console_models.ContactConnectionStatus
 import io.iohk.atala.prism.protos.{connector_models, console_api, console_models}
 import org.mockito.ArgumentMatchersSugar.*
 import org.mockito.IdiomaticMockito._
@@ -820,6 +822,87 @@ class ContactsServiceImplSpec extends ManagementConsoleRpcSpecBase with DIDUtil 
           ).map(cleanContactData)
         )
         contactsReturnedJsons.toList must be(List(contactA.data, contactA2.data))
+      }
+    }
+
+    "return the first contacts matching a connection status" in {
+      val keyPair = EC.generateKeyPair()
+      val publicKey = keyPair.publicKey
+      val did = generateDid(publicKey)
+      val institutionId = createParticipant("institution", did)
+      val groupName = createInstitutionGroup(institutionId, InstitutionGroup.Name("Group")).name
+
+      val (contactA, connectionStatusA) =
+        createContactWithConnectionStatus(
+          "Alice",
+          "ConnectionTokenA",
+          ContactConnectionStatus.STATUS_CONNECTION_ACCEPTED,
+          institutionId,
+          groupName
+        )
+
+      val groupNameB = createInstitutionGroup(institutionId, InstitutionGroup.Name("GroupB")).name
+      val (_, connectionStatusB) =
+        createContactWithConnectionStatus(
+          "Bob",
+          "ConnectionTokenB",
+          ContactConnectionStatus.STATUS_CONNECTION_ACCEPTED,
+          institutionId,
+          groupNameB
+        )
+
+      val (_, connectionStatusC) =
+        createContactWithConnectionStatus(
+          "Charles",
+          "ConnectionTokenC",
+          ContactConnectionStatus.STATUS_CONNECTION_REVOKED,
+          institutionId,
+          groupName
+        )
+
+      val (contactD, connectionStatusD) =
+        createContactWithConnectionStatus(
+          "Dexter",
+          "ConnectionTokenD",
+          ContactConnectionStatus.STATUS_CONNECTION_ACCEPTED,
+          institutionId,
+          groupName
+        )
+
+      val (_, connectionStatusE) =
+        createContactWithConnectionStatus(
+          "Ellie",
+          "ConnectionTokenE",
+          ContactConnectionStatus.STATUS_CONNECTION_ACCEPTED,
+          institutionId,
+          groupName
+        )
+
+      val request = console_api.GetContactsRequest(
+        groupName = groupName.value,
+        limit = 2,
+        filterBy = Some(FilterBy(connectionStatus = ContactConnectionStatus.STATUS_CONNECTION_ACCEPTED))
+      )
+      val rpcRequest = SignedRpcRequest.generate(keyPair, did, request)
+
+      usingApiAsContacts(rpcRequest) { serviceStub =>
+        connectorMock.getConnectionStatus(*).returns {
+          Future.successful(
+            List(connectionStatusA, connectionStatusB, connectionStatusC, connectionStatusD, connectionStatusE)
+          )
+        }
+
+        val response = serviceStub.getContacts(request)
+        val contactsReturned = response.data.flatMap(_.contact)
+        val contactsReturnedNoJsons = contactsReturned map cleanContactData
+        val contactsReturnedJsons = contactsReturned map contactJsonData
+        contactsReturnedNoJsons.toList must be(
+          List(
+            toContactProto(contactA, connectionStatusA),
+            toContactProto(contactD, connectionStatusD)
+          ).map(cleanContactData)
+        )
+        contactsReturnedJsons.toList must be(List(contactA.data, contactD.data))
       }
     }
 

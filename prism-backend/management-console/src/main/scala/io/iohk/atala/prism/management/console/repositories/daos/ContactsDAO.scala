@@ -113,10 +113,11 @@ object ContactsDAO {
 
   def getBy(
       participantId: ParticipantId,
-      constraints: Contact.PaginatedQuery
+      constraints: Contact.PaginatedQuery,
+      ignoreFilterLimit: Boolean = false
   ): doobie.ConnectionIO[List[Contact.WithCredentialCounts]] = {
     FindContactsQueryBuilder
-      .build(participantId, constraints)
+      .build(participantId, constraints, ignoreFilterLimit)
       .query[Contact.WithCredentialCounts]
       .to[List]
   }

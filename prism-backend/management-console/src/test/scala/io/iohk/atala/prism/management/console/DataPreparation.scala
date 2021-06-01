@@ -21,13 +21,13 @@ import io.iohk.atala.prism.management.console.repositories.daos.{
 import io.iohk.atala.prism.models.{ConnectionToken, Ledger, TransactionId, TransactionInfo}
 import org.scalatest.OptionValues._
 import io.scalaland.chimney.dsl._
-import io.iohk.atala.prism.protos.console_models.ConnectorRequestMetadata
+import io.iohk.atala.prism.protos.console_models.{ConnectorRequestMetadata, ContactConnectionStatus}
 
 import java.time.{Instant, LocalDate}
-
 import io.iohk.atala.prism.credentials.CredentialBatchId
 import io.iohk.atala.prism.crypto.MerkleTree.MerkleInclusionProof
 import io.iohk.atala.prism.models.Ledger.InMemory
+import io.iohk.atala.prism.protos.connector_models.ContactConnection
 
 import scala.util.Random
 
@@ -110,6 +110,24 @@ object DataPreparation {
 
         query.transact(database).unsafeRunSync()
     }
+  }
+
+  def createContactWithConnectionStatus(
+      name: String,
+      connectionToken: String,
+      connectionStatus: ContactConnectionStatus,
+      institutionId: ParticipantId,
+      groupName: InstitutionGroup.Name
+  )(implicit
+      database: Transactor[IO]
+  ): (Contact, ContactConnection) = {
+    (
+      createContact(institutionId, name, Some(groupName), connectionToken = connectionToken),
+      ContactConnection(
+        connectionToken = connectionToken,
+        connectionStatus = connectionStatus
+      )
+    )
   }
 
   def createGenericCredential(

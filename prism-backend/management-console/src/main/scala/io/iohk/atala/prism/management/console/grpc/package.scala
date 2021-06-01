@@ -28,6 +28,7 @@ import io.iohk.atala.prism.crypto.MerkleTree.MerkleInclusionProof
 import io.iohk.atala.prism.crypto.SHA256Digest
 import io.iohk.atala.prism.models.TransactionId
 import io.iohk.atala.prism.protos.connector_api.SendMessagesRequest
+import io.iohk.atala.prism.protos.console_models.ContactConnectionStatus
 
 import scala.util.{Failure, Success, Try}
 
@@ -280,6 +281,8 @@ package object grpc {
         case x => x
       }
 
+      val connectionStatus: Option[ContactConnectionStatus] = request.filterBy.map(_.connectionStatus)
+
       for {
         scrollId <- scrollIdT
         createdAt <- createdAtT
@@ -293,7 +296,8 @@ package object grpc {
           Contact.FilterBy(
             groupName = groupName,
             createdAt = createdAt,
-            name = name
+            name = name,
+            connectionStatus = connectionStatus
           )
         )
       )
