@@ -1,0 +1,53 @@
+<head>
+   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+</head>
+<body style="margin:auto;padding:1em;width:90vw;overflow-x:hidden;font-variant:normal;font-family:Arial, Helvetica, sans-serif;-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale">
+   <div style="max-width:400px;border-radius:10px;display:flex;flex-wrap:wrap;box-shadow:0px 0px 20.3681px rgba(0, 0, 0, 0.0523656)">
+      <div style="display:flex;width:100%; position:relative; background: linear-gradient(180deg, #E01724 0%, #FF2D3B 100%);;border-radius:6px 6px 0 0;height:81px;padding:8px 20px;justify-content:space-between;align-items:center">
+         <div>
+            <img style="position:absolute; background: white; width: 20vw; border-radius: 10.184px; padding:0.3em; box-shadow: 0px 0px 20.3681px rgba(0, 0, 0, 0.0523656); right: 30px; bottom: -30px;" src="{{& photoSrc }}" />
+            <p style="font-size: 9px; margin:0; line-height: 11px; letter-spacing: 1px; text-transform: uppercase; color: #FFFFFF;"> Atala Prism</p>
+            <p style="font-style: normal; font-weight: bold; font-size: 14px; line-height: 17px;color:white;margin:0">Identity Verification</p>
+         </div>
+         <div>
+         </div>
+      </div>
+      <div style="display:flex;width:100%;flex-wrap:wrap">
+         <div style="width:100%;padding:0 1.5em 0 1.5em;display:flex;flex-wrap:wrap">
+            <div style="border-bottom:1px solid #e5e5e5;display:flex;justify-content:space-between;width:100%">
+               <div style="width:100%;padding:1em 0;flex-direction:column">
+                  <p style="font-style: normal; font-weight: normal; font-size: 8px; line-height: 10px; letter-spacing: 1px; text-transform: uppercase; color: #828282;"> FULL NAME</p>
+                  <h3 style="color:#3c393a;margin:-0.5em 0 0 0;font-size:13px;font-weight:600">{{ fullname }}</h3>
+               </div>
+            </div>
+            <div style="border-bottom:1px solid #e5e5e5;display:flex;justify-content:space-between;width:100%">
+               <div style="width:100%;padding:1em 0;flex-direction:column;">
+                  <p style="font-style: normal; font-weight: normal; font-size: 8px; line-height: 10px; letter-spacing: 1px; text-transform: uppercase; color: #828282;"> BIRTH DATE </p>
+                  <h3 style="color:#3c393a;margin:-0.5em 0 0 0;font-size:13px;font-weight:600">{{ birthDate }}</h3>
+               </div>
+               <div style="width:100%;padding:1em 0;flex-direction:column;">
+                  <p style="font-style: normal; font-weight: normal; font-size: 8px; line-height: 10px; letter-spacing: 1px; text-transform: uppercase; color: #828282;"> AGE </p>
+                  <h3 style="color:#3c393a;margin:-0.5em 0 0 0;font-size:13px;font-weight:600">{{ age }}</h3>
+               </div>
+            </div>
+            <div style="border-bottom:1px solid #e5e5e5;display:flex;justify-content:space-between;width:100%">
+               <div style="width:100%;padding:1em 0;flex-direction:column">
+                  <p style="font-style: normal; font-weight: normal; font-size: 8px; line-height: 10px; letter-spacing: 1px; text-transform: uppercase; color: #828282;"> Gender </p>
+                  <h3 style="color:#3c393a;margin:-0.5em 0 0 0;font-size:13px;font-weight:600">{{ gender }}</h3>
+               </div>
+            </div>
+            <div style="display:flex;justify-content:space-between;width:100%">
+               <div style="width:100%;padding:1em 0;flex-direction:column">
+                  <p style="font-style: normal; font-weight: normal; font-size: 8px; line-height: 10px;  letter-spacing: 1px; text-transform: uppercase; color: #828282;"> EXPIRATION DATE </p>
+                  <h3 style="color:#3c393a;margin:-0.5em 0 0 0;font-size:13px;font-weight:600">{{ expirationDate }}</h3>
+               </div>
+            </div>
+         </div>
+      </div>
+      <div style="height: 44px; width: 100%;background: linear-gradient(180deg, #EFEFEF 0%, #E2E2E2 100%);
+         box-shadow: 0px 0px 20.3681px rgba(0, 0, 0, 0.0523656); border-radius: 0px 0px 10.184px 10.184px; display: flex; justify-content: center; align-items:center;">
+         <p style="font-size: 9px; line-height: 11px; text-align: center; letter-spacing: 1px; text-transform: uppercase; color: #7B7B7B;">Verified with Acuant</p>
+         <img style="margin-left:0.5em" src="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTAiIGhlaWdodD0iOSIgdmlld0JveD0iMCAwIDEwIDkiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxwYXRoIGZpbGwtcnVsZT0iZXZlbm9kZCIgY2xpcC1ydWxlPSJldmVub2RkIiBkPSJNOS4wMjA2MyAzLjE3OTI2QzkuMDQ1IDMuMjQ3MTQgOS4yMzk2MyAzLjM5MDM3IDkuMzU2NTggMy40NzYyNEw5LjM1NzI4IDMuNDc2NzVDOS42NDM1NSAzLjY4Nzc3IDEwIDMuOTUwNTIgMTAgNC4zNTE3OEMxMCA0Ljc1Njc1IDkuNjM4NDIgNS4wMjc0OCA5LjM0NzUgNS4yNDQ5N0w5LjM0MTU1IDUuMjQ5NDNDOS4yMjY0OCA1LjMzNTczIDkuMDQwMDIgNS40NzU1NiA5LjAxNTY2IDUuNTM5MzFDOC45OTMgNS42MDY2OCA5LjA1NTUgNS44MzA0OSA5LjA5MzEzIDUuOTY1Mkw5LjA5MzM2IDUuOTY2MDNDOS4xODk2MyA2LjMxMDYyIDkuMjk4NzMgNi43MDE3MSA5LjA0NDU5IDcuMDE3ODFDOC43OTI1OSA3LjMzMTc4IDguMzU0MTYgNy4zNTg5MiA3Ljk2NzExIDcuMzgyODhMNy45NjQ3OSA3LjM4MzAzQzcuODA5MzkgNy4zOTI0IDcuNTQ5NDcgNy40MDgxNiA3LjQ4Mzc3IDcuNDUyMDJDNy40MTc5NCA3LjQ5NTkxIDcuMzIyNDkgNy43MDg4NCA3LjI2MzU1IDcuODQwMzRMNy4yNjA2MyA3Ljg0Njg1TDcuMjU5NzYgNy44NDg3OEM3LjExNDEgOC4xNzQ1MiA2Ljk0OTQ4IDguNTQyNjQgNi41NDYxMyA4LjY2NzI3QzYuMTM2OTMgOC43OTQ0IDUuNzUxMTQgOC41NzE3NyA1LjQ0MTY2IDguMzkzMTdMNS40MzkwNiA4LjM5MTY3QzUuMjk5MzggOC4zMTA2OCA1LjA4NzgxIDguMTg4NDMgNC45OTk3OSA4LjE4ODQzQzQuOTEwNjIgOC4xODg0MyA0LjY5OTE3IDguMzA5NjggNC41NTY2MiA4LjM5MTQxTDQuNTUyMjUgOC4zOTM5Mkw0LjU0NzEzIDguMzk2ODRDNC4yODk3OCA4LjU0MzgzIDQuMDA0NzMgOC43MDY2NSAzLjY5NjAyIDguNzA2NjVDMy42MTc1IDguNzA2NjUgMy41MzY5MSA4LjY5NjE0IDMuNDU1NTEgOC42NzE3N0MzLjA0OTg4IDguNTUyOTYgMi44ODQxNSA4LjE4MTI1IDIuNzM3OSA3Ljg1MzI2TDIuNzM3NzIgNy44NTI4NEwyLjczNzU0IDcuODUyNDZDMi42Nzg0NCA3LjcyMDA1IDIuNTgwMjEgNy40OTk5NyAyLjUxNDk4IDcuNDU2ODdDMi40NTE3MiA3LjQxNTA4IDIuMjA4ODcgNy4zOTk3MSAyLjA1NDM3IDcuMzg5OTNDMi4wNDk0IDcuMzg5NjEgMi4wNDQ1MiA3LjM4OTMgMi4wMzk3NSA3LjM4OUwyLjAzODg1IDcuMzg4OTRDMS42Njk5OCA3LjM2NjQ1IDEuMjExODIgNy4zMzg1IDAuOTUxMjcgNy4wMjYwM0MwLjY4NDI0MSA2LjcwNDcyIDAuODAxMzg2IDYuMjk1ODcgMC44OTU1NDUgNS45NjcyNUwwLjg5NTg5OCA1Ljk2NjAxQzAuOTM0NzQ2IDUuODMyMTQgMC45OTkxOTkgNS42MDc5MiAwLjk3NDQxNCA1LjUzODkyQzAuOTQ5MTk5IDUuNDY5MTcgMC43NjI4MzIgNS4zMjg1NiAwLjYzOTI3NyA1LjIzNTU3QzAuMzU0NTcgNS4wMjExIDAgNC43NTM3NCAwIDQuMzUxNDFDMCAzLjk0NjgxIDAuMzYwOTI1IDMuNjc2NiAwLjY1MTMzNiAzLjQ1OTE4TDAuNjUyMTI5IDMuNDU4NThMMC42NTQ0MjcgMy40NTY4N0MwLjc2OTU2MSAzLjM3MDgyIDAuOTU5NzU0IDMuMjI4NjcgMC45ODQzNzUgMy4xNjQyNEMxLjAwNzExIDMuMDk3NTkgMC45NDUzNDQgMi44NzcyMiAwLjkwNzEwNSAyLjc0MDc4TDAuOTA1MDM5IDIuNzMzNDFDMC44MDgzNCAyLjM5MTgxIDAuNjk4ODQ4IDIuMDA0ODUgMC45NDMwNjYgMS42OTEwMUMxLjE5MTY4IDEuMzcxNzQgMS42MzM4NyAxLjM0NDU3IDIuMDI0MiAxLjMyMDU4TDIuMDI0OTIgMS4zMjA1NEMyLjE4MTEzIDEuMzExMTcgMi40NDI3MSAxLjI5NTQxIDIuNTA4MDEgMS4yNTE1NUMyLjU3NDQ0IDEuMjA3MjYgMi42NzEwMSAwLjk5MTIzNSAyLjcyOTgyIDAuODU5NjkzTDIuNzMxMTUgMC44NTY3MTVMMi43MzI3MSAwLjg1MzIzM0MyLjg3ODIxIDAuNTI4NjE0IDMuMDQyOTMgMC4xNjEwOTggMy40NDYwNSAwLjAzNjY3MjdDMy44NTcyMyAtMC4wOTAwNzY2IDQuMjQ3MzIgMC4xMzc5MDIgNC41NTkzMiAwLjMyMjAxOEw0LjU2MTU1IDAuMzIzMzMyQzQuNzAyODggMC40MDY1NzQgNC45MTM5MSAwLjUzMDg3NCA0Ljk5OTgyIDAuNTMwODc0QzUuMDg4NzQgMC41MzA4NzQgNS4yOTk2NCAwLjQxMDMwMyA1LjQ0MjYgMC4zMjg1OEw1LjQ0ODE4IDAuMzI1Mzg1TDUuNDQ4NDYgMC4zMjUyMjVDNS43NzI3OSAwLjEzODkxNSA2LjE0MTMxIC0wLjA3Mjc4MDkgNi41NDQ1MSAwLjA0Njc5MjFDNi45NDk5IDAuMTY1MjgzIDcuMTE2MDIgMC41MzcyNTQgNy4yNjE4OSAwLjg2NTM0NkM3LjMyMDk4IDAuOTk3NzEzIDcuNDE5NzUgMS4yMTg1NyA3LjQ4NTQ1IDEuMjYxNjlDNy41NDg4MiAxLjMwMzQ0IDcuNzk1NSAxLjMxOTA4IDcuOTQ5ODEgMS4zMjg4N0w3Ljk2MDY4IDEuMzI5NTZMNy45NjE2MyAxLjMyOTYyQzguMzMxNzIgMS4zNTIxMiA4Ljc5MTkyIDEuMzgwMDkgOS4wNDc5MSAxLjY5NjY2QzkuMzA1MTcgMi4wMTU1MiA5LjE5MDYzIDIuNDIwNTEgOS4wOTg1MiAyLjc0NjIzTDkuMDk4MzIgMi43NDY5M0M5LjA1OTg4IDIuODgxOTIgOC45OTU4NCAzLjEwODc3IDkuMDIwNjMgMy4xNzkyNloiIGZpbGw9IiM0MEVBRUEiLz4KPHBhdGggZD0iTTYuOTQ2NjcgMi45MzkxN0M2Ljc2ODExIDIuODA1NjkgNi41MDQ0NCAyLjgyNzQzIDYuMzU2NDggMi45ODYwNEw0LjQ4NzM4IDQuOTg0OTlMMy42OTIyIDQuMjc0MDZDMy41MjgyOSA0LjEyNzQ0IDMuMjYzMzcgNC4xMjc0NCAzLjA5OTQ5IDQuMjc0MDZDMi45MzU1OSA0LjQyMDY4IDIuOTM1NTkgNC42NTc2NiAzLjA5OTQ5IDQuODA0MjVMNC4yMTg2OSA1LjgwNTQyQzQuMjk3MDcgNS44NzYyOSA0LjQwMzk3IDUuOTE1MjggNC41MTUwNiA1LjkxNTI4QzQuNTIwOTIgNS45MTUyOCA0LjUyNzIyIDUuOTE1MjggNC41MzMwOSA1LjkxNDUzQzQuNjUxMjggNS45MTAwMyA0Ljc2MDcgNS44NjEzIDQuODM2MTUgNS43ODA2OEw2Ljk5OTA2IDMuNDY3MTFDNy4xNDc0NSAzLjMwODE1IDcuMTI0NCAzLjA3MTkxIDYuOTQ2NjcgMi45MzkxN1oiIGZpbGw9IndoaXRlIi8+Cjwvc3ZnPgo=" />
+      </div>
+   </div>
+</body>

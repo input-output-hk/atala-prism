@@ -22,6 +22,14 @@ import cats.syntax.option._
 import doobie.implicits._
 import io.iohk.atala.prism.errors.PrismError
 import io.iohk.atala.prism.kycbridge.models.faceId.FaceMatchResponse
+import io.iohk.atala.prism.kycbridge.models.assureId.{
+  Document,
+  DocumentBiographic,
+  DocumentClassification,
+  DocumentDataField
+}
+import io.iohk.atala.prism.credentials.content.CredentialContent
+import io.iohk.atala.prism.credentials.content.syntax._
 
 //sbt "project kycbridge" "testOnly *processors.DocumentUploadedMessageProcessorSpec"
 class DocumentUploadedMessageProcessorSpec
@@ -84,13 +92,29 @@ class DocumentUploadedMessageProcessorSpec
       // then
       result mustBe a[Left[_, _]]
     }
+
+    "create credential subject" in new Fixtures {
+      processor.createCredentialSubject(document, photo) mustBe Right(
+        CredentialContent.Fields(
+          "credentialType" -> "KYCCredential",
+          "name" -> "MARIUSZ BOHDAN FIKUS",
+          "givenName" -> "MARIUSZ BOHDAN",
+          "familyName" -> "FIKUS",
+          "birthDate" -> "2020-10-04",
+          "sex" -> "M",
+          "html" -> "data:image/jpg;base64, AQ== MARIUSZ BOHDAN FIKUS 2020-10-04 30 M 2025-09-05"
+        )
+      )
+    }
   }
 
   trait Fixtures {
     val nodeClientService = new NodeClientServiceStub
     val connectorClientService = new ConnectorClientServiceStub
     val assureIdServiceStub = new AssureIdServiceStub(
-      documentStatus = Right(DocumentStatus.Complete)
+      documentStatus = Right(DocumentStatus.Complete),
+      document = Right(document),
+      frontImage = Right(photo)
     )
     val faceIdServiceStub = new FaceIdServiceStub()
     val processor =
@@ -112,5 +136,79 @@ class DocumentUploadedMessageProcessorSpec
         .withKycBridgeMessage(KycBridgeMessage().withAcuantProcessFinished(acuantProcessFinished))
         .toByteString
     )
+
+    lazy val document = Document(
+      instanceId = "id",
+      biographic = Some(
+        DocumentBiographic(
+          age = Some(30),
+          birthDate = Some(LocalDateTime.of(2020, 10, 4, 0, 0).toInstant(ZoneOffset.UTC)),
+          expirationDate = Some(LocalDateTime.of(2025, 9, 5, 0, 0).toInstant(ZoneOffset.UTC)),
+          fullName = Some("MARIUSZ BOHDAN FIKUS"),
+          gender = Some(1),
+          photo = Some("url"),
+          unknownFields = List("test")
+        )
+      ),
+      classification = Some(
+        DocumentClassification(
+          `type` = None,
+          classificationDetails = None
+        )
+      ),
+      dataFields = Some(
+        List(
+          DocumentDataField(
+            key = Some("VIZ Birth Date"),
+            name = Some("Birth Date"),
+            value = Some("/Date(-559699200000+0000)/")
+          ),
+          DocumentDataField(
+            key = Some("VIZ Document Number"),
+            name = Some("Document Number"),
+            value = Some("ZZC003483")
+          ),
+          DocumentDataField(
+            key = Some("VIZ Expiration Date"),
+            name = Some("Expiration Date"),
+            value = Some("/Date(1865462400000+0000)/")
+          ),
+          DocumentDataField(
+            key = Some("VIZ Full Name"),
+            name = Some("Full Name"),
+            value = Some("MARIUSZ BOHDAN FIKUS")
+          ),
+          DocumentDataField(
+            key = Some("VIZ Given Name"),
+            name = Some("Given Name"),
+            value = Some("MARIUSZ BOHDAN")
+          ),
+          DocumentDataField(
+            key = Some("VIZ Nationality Name"),
+            name = Some("Nationality Name"),
+            value = Some("POLSKIE")
+          ),
+          DocumentDataField(
+            key = Some("VIZ Photo"),
+            name = Some("Photo"),
+            value = Some(
+              "https://preview.assureid.acuant.net/AssureIDService/Document/a2f3e807-06a3-41e0-8fa2-d93875532272/Field/Image?key=VIZ%20Photo"
+            )
+          ),
+          DocumentDataField(
+            key = Some("VIZ Sex"),
+            name = Some("Sex"),
+            value = Some("M")
+          ),
+          DocumentDataField(
+            key = Some("VIZ Surname"),
+            name = Some("Surname"),
+            value = Some("FIKUS")
+          )
+        )
+      )
+    )
+
+    lazy val photo = Array[Byte](0x1)
   }
 }

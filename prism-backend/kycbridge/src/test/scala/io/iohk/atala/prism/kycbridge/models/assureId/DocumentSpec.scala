@@ -6,6 +6,8 @@ import org.scalatest.wordspec.AnyWordSpec
 import org.scalatest.matchers.must.Matchers
 
 import io.iohk.atala.prism.kycbridge.models.assureId.implicits._
+import java.time.LocalDateTime
+import java.time.ZoneOffset
 
 class DocumentSpec extends AnyWordSpec with Matchers {
   "Document" should {
@@ -16,28 +18,141 @@ class DocumentSpec extends AnyWordSpec with Matchers {
           biographic = Some(
             DocumentBiographic(
               age = Some(68),
-              birthDate = Some("/Date(-559699200000+0000)/"), // TODO: Parse the date
-              expirationDate = Some("/Date(1865462400000+0000)/"), // TODO: Parse the date
+              birthDate = Some(LocalDateTime.of(1952, 4, 7, 0, 0).toInstant(ZoneOffset.UTC)),
+              expirationDate = Some(LocalDateTime.of(2029, 2, 11, 0, 0).toInstant(ZoneOffset.UTC)),
               fullName = Some("MARIUSZ BOHDAN FIKUS"),
               gender = Some(1),
               photo = Some(
                 "https://preview.assureid.acuant.net/AssureIDService/Document/a2f3e807-06a3-41e0-8fa2-d93875532272/Field/Image?key=Photo"
-              )
+              ),
+              unknownFields = Nil
             )
           ),
           classification = Some(
-            DocumentClassification(`type` =
-              Some(
+            DocumentClassification(
+              `type` = Some(
                 DocumentClassificationType(
                   `class` = Some(4),
                   className = Some("Identification Card"),
                   countryCode = Some("POL"),
                   issue = Some("2019"),
-                  name = Some("Poland (POL) eIdentity Card")
+                  name = Some("Poland (POL) eIdentity Card"),
+                  unknownFields = List(
+                    "ClassCode",
+                    "GeographicRegions",
+                    "Id",
+                    "IsGeneric",
+                    "IssueType",
+                    "IssuerCode",
+                    "IssuerName",
+                    "IssuerType",
+                    "KeesingCode",
+                    "Size",
+                    "SupportedImages"
+                  )
+                )
+              ),
+              classificationDetails = Some(
+                DocumentClassificationDetails(
+                  back = None,
+                  front = Some(DocumentClassificationDetailsFront(name = Some("Poland (POL) eIdentity Card")))
                 )
               )
             )
+          ),
+          dataFields = Some(
+            List(
+              DocumentDataField(
+                key = Some("VIZ Birth Date"),
+                name = Some("Birth Date"),
+                value = Some("/Date(-559699200000+0000)/")
+              ),
+              DocumentDataField(
+                key = Some("VIZ Document Number"),
+                name = Some("Document Number"),
+                value = Some("ZZC003483")
+              ),
+              DocumentDataField(
+                key = Some("VIZ Expiration Date"),
+                name = Some("Expiration Date"),
+                value = Some("/Date(1865462400000+0000)/")
+              ),
+              DocumentDataField(
+                key = Some("VIZ Full Name"),
+                name = Some("Full Name"),
+                value = Some("MARIUSZ BOHDAN FIKUS")
+              ),
+              DocumentDataField(
+                key = Some("VIZ Given Name"),
+                name = Some("Given Name"),
+                value = Some("MARIUSZ BOHDAN")
+              ),
+              DocumentDataField(
+                key = Some("VIZ Nationality Name"),
+                name = Some("Nationality Name"),
+                value = Some("POLSKIE")
+              ),
+              DocumentDataField(
+                key = Some("VIZ Photo"),
+                name = Some("Photo"),
+                value = Some(
+                  "https://preview.assureid.acuant.net/AssureIDService/Document/a2f3e807-06a3-41e0-8fa2-d93875532272/Field/Image?key=VIZ%20Photo"
+                )
+              ),
+              DocumentDataField(
+                key = Some("VIZ Sex"),
+                name = Some("Sex"),
+                value = Some("M")
+              ),
+              DocumentDataField(
+                key = Some("VIZ Surname"),
+                name = Some("Surname"),
+                value = Some("FIKUS")
+              )
+            )
           )
+        )
+      )
+    }
+
+    "be decodable from the JSON with unknown fields information" in new Fixtures {
+      val json =
+        """
+      |{
+      |  "InstanceId": "a2f3e807-06a3-41e0-8fa2-d93875532272",
+      |  "Biographic": {
+      |    "Age": 68,
+      |    "BirthDate": "/Date(-559699200000)/",
+      |    "ExpirationDate": "/Date(1865462400000+0000)/",
+      |    "FullName": "MARIUSZ BOHDAN FIKUS",
+      |    "Gender": 1,
+      |    "Photo": "https://preview.assureid.acuant.net/AssureIDService/Document/a2f3e807-06a3-41e0-8fa2-d93875532272/Field/Image?key=Photo",
+      |    "extra1": "value",
+      |    "extra2": { "key": 1 }
+      |  }
+      |}""".stripMargin
+      parser.decode[Document](json) mustBe Right(
+        Document(
+          instanceId = "a2f3e807-06a3-41e0-8fa2-d93875532272",
+          biographic = Some(
+            DocumentBiographic(
+              age = Some(68),
+              birthDate = Some(
+                LocalDateTime.of(1952, 4, 7, 0, 0).toInstant(ZoneOffset.UTC)
+              ), // Some("/Date(-559699200000+0000)/"), // TODO: Parse the date
+              expirationDate = Some(
+                LocalDateTime.of(2029, 2, 11, 0, 0).toInstant(ZoneOffset.UTC)
+              ), // Some("/Date(1865462400000+0000)/"), // TODO: Parse the date
+              fullName = Some("MARIUSZ BOHDAN FIKUS"),
+              gender = Some(1),
+              photo = Some(
+                "https://preview.assureid.acuant.net/AssureIDService/Document/a2f3e807-06a3-41e0-8fa2-d93875532272/Field/Image?key=Photo"
+              ),
+              unknownFields = List("extra1", "extra2")
+            )
+          ),
+          classification = None,
+          dataFields = None
         )
       )
     }
