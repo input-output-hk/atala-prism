@@ -109,13 +109,11 @@ object Contact {
     */
   case class FilterBy(
       groupName: Option[InstitutionGroup.Name] = None,
-      externalId: Option[String] = None,
-      name: Option[String] = None,
+      nameOrExternalId: Option[String] = None,
       createdAt: Option[LocalDate] = None,
       connectionStatus: Option[ContactConnectionStatus] = None
   ) {
-    lazy val nonEmptyName: Option[String] = name.map(_.trim).filter(_.nonEmpty)
-    lazy val nonEmptyExternalId: Option[String] = externalId.map(_.trim).filter(_.nonEmpty)
+    lazy val nonEmptyNameOrExternalId: Option[String] = nameOrExternalId.map(_.trim).filter(_.nonEmpty)
   }
 
   type PaginatedQuery = PaginatedQueryConstraints[Contact.Id, Contact.SortBy, Contact.FilterBy]

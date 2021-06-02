@@ -266,7 +266,7 @@ package object grpc {
           .map(proto2DateTransformer.transform)
       }
 
-      val name = request.filterBy.map(_.name).map(_.trim).filter(_.nonEmpty)
+      val nameOrExternalId = request.filterBy.map(_.nameOrExternalId).map(_.trim).filter(_.nonEmpty)
       val groupName = InstitutionGroup.Name.optional(request.groupName)
 
       val defaultSortBy = ResultOrdering(Contact.SortBy.createdAt)
@@ -296,7 +296,7 @@ package object grpc {
           Contact.FilterBy(
             groupName = groupName,
             createdAt = createdAt,
-            name = name,
+            nameOrExternalId = nameOrExternalId,
             connectionStatus = connectionStatus
           )
         )

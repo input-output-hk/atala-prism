@@ -42,20 +42,21 @@ object FindContactsQueryBuilder {
     val whereGroup = constraints.filters.flatMap(_.groupName).map { group =>
       fr"""g.name = $group"""
     }
-    val whereName = constraints.filters.flatMap(_.nonEmptyName).map { name =>
-      val regexName = s"%$name%"
-      fr"contacts.name ILIKE $regexName"
-    }
-    val whereExternalId = constraints.filters.flatMap(_.externalId).map { externalId =>
-      val regexExternalId = s"%$externalId%"
-      fr"contacts.external_id ILIKE $regexExternalId"
+    val whereNameOrExternalId = constraints.filters.flatMap(_.nonEmptyNameOrExternalId).map { nameOrExternalId =>
+      val nameOrExternalIdWithWildCard = s"%$nameOrExternalId%"
+      fr"(contacts.name ILIKE $nameOrExternalIdWithWildCard OR contacts.external_id ILIKE $nameOrExternalIdWithWildCard)"
     }
     val whereCreatedAt = constraints.filters.flatMap(_.createdAt).map { createdAt =>
       fr"contacts.created_at::DATE = $createdAt"
     }
     val whereScroll = constraints.scrollId.map { scrollId => whereScrollFr(scrollId, constraints.ordering) }
-
-    whereAndOpt(Some(whereInstitution), whereGroup, whereScroll, whereExternalId, whereName, whereCreatedAt)
+    whereAndOpt(
+      Some(whereInstitution),
+      whereGroup,
+      whereScroll,
+      whereNameOrExternalId,
+      whereCreatedAt
+    )
   }
 
   private def whereScrollFr(

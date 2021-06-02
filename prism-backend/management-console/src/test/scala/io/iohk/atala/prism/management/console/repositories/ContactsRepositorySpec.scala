@@ -718,8 +718,7 @@ class ContactsRepositorySpec extends AtalaWithPostgresSpec {
     ).foreach((testQuery _).tupled)
 
     def filterQuery(
-        externalId: Option[String] = None,
-        name: Option[String] = None,
+        nameOrExternalId: Option[String] = None,
         createdAt: Option[LocalDate] = None
     ): Contact.PaginatedQuery = {
       PaginatedQueryConstraints(
@@ -727,8 +726,7 @@ class ContactsRepositorySpec extends AtalaWithPostgresSpec {
         ordering = ResultOrdering(Contact.SortBy.createdAt),
         filters = Some(
           Contact.FilterBy(
-            externalId = externalId,
-            name = name,
+            nameOrExternalId = nameOrExternalId,
             createdAt = createdAt
           )
         )
@@ -744,7 +742,7 @@ class ContactsRepositorySpec extends AtalaWithPostgresSpec {
 
       val expected = List(contactA, contactB).map(_.contactId).toSet
       val result = repository
-        .getBy(institutionId, filterQuery(externalId = Some("tala")))
+        .getBy(institutionId, filterQuery(nameOrExternalId = Some("tala")))
         .value
         .futureValue
         .toOption
@@ -763,7 +761,7 @@ class ContactsRepositorySpec extends AtalaWithPostgresSpec {
 
       val expected = List(contactA, contactB).map(_.contactId).toSet
       val result = repository
-        .getBy(institutionId, filterQuery(name = Some("harl")))
+        .getBy(institutionId, filterQuery(nameOrExternalId = Some("harl")))
         .value
         .futureValue
         .toOption
@@ -809,25 +807,6 @@ class ContactsRepositorySpec extends AtalaWithPostgresSpec {
       result.map(_.contactId).toSet must be(expected)
     }
 
-    "return items matching the externalId and contact name" in {
-      val institutionId = createParticipant("Institution X")
-      val contactA = createContact(institutionId, "Charles Hoskinson", externalId = Contact.ExternalId("atala1"))
-      val contactB = createContact(institutionId, "Charles H", externalId = Contact.ExternalId("atala2"))
-      createContact(institutionId, "Charles", externalId = Contact.ExternalId("iohk1"))
-      createContact(institutionId, "Alice 2", externalId = Contact.ExternalId("atala"))
-
-      val expected = List(contactA, contactB).map(_.contactId).toSet
-      val result = repository
-        .getBy(institutionId, filterQuery(name = Some("harl"), externalId = Some("tala")))
-        .value
-        .futureValue
-        .toOption
-        .value
-        .map(_.details)
-
-      result.map(_.contactId).toSet must be(expected)
-    }
-
     "return items matching the createdAt and contact name" in {
       val institutionId = createParticipant("Institution X")
       val now = Instant.parse("2007-12-03T10:15:30.00Z")
@@ -855,7 +834,10 @@ class ContactsRepositorySpec extends AtalaWithPostgresSpec {
 
       val expected = List(contactA, contactB).map(_.contactId).toSet
       val result = repository
-        .getBy(institutionId, filterQuery(name = Some("ioh"), createdAt = Some(LocalDate.parse("2007-12-03"))))
+        .getBy(
+          institutionId,
+          filterQuery(nameOrExternalId = Some("ioh"), createdAt = Some(LocalDate.parse("2007-12-03")))
+        )
         .value
         .futureValue
         .toOption
@@ -894,7 +876,7 @@ class ContactsRepositorySpec extends AtalaWithPostgresSpec {
       val result = repository
         .getBy(
           institutionId,
-          filterQuery(externalId = Some("atala"), createdAt = Some(LocalDate.parse("2007-12-03")))
+          filterQuery(nameOrExternalId = Some("atala"), createdAt = Some(LocalDate.parse("2007-12-03")))
         )
         .value
         .futureValue
@@ -913,8 +895,8 @@ class ContactsRepositorySpec extends AtalaWithPostgresSpec {
       val contactB =
         createContact(
           institutionId,
-          "iohk2",
-          externalId = Contact.ExternalId("atala2"),
+          "atala2",
+          externalId = Contact.ExternalId("iohk2"),
           createdAt = Some(now.plusSeconds(10))
         )
       createContact(
@@ -925,7 +907,7 @@ class ContactsRepositorySpec extends AtalaWithPostgresSpec {
       )
       createContact(
         institutionId,
-        "iohkX",
+        "atalaX",
         externalId = Contact.ExternalId("no"),
         createdAt = Some(now.minus(Period.ofDays(1)))
       )
@@ -934,7 +916,10 @@ class ContactsRepositorySpec extends AtalaWithPostgresSpec {
       val result = repository
         .getBy(
           institutionId,
-          filterQuery(externalId = Some("atala"), name = Some("iohk"), createdAt = Some(LocalDate.parse("2007-12-03")))
+          filterQuery(
+            nameOrExternalId = Some("atala"),
+            createdAt = Some(LocalDate.parse("2007-12-03"))
+          )
         )
         .value
         .futureValue
