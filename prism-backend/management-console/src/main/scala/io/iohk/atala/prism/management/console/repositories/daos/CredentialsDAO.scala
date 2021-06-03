@@ -27,7 +27,7 @@ object CredentialsDAO {
   private val selectGenericCredential =
     fr"""
         |SELECT credential_id, c.issuer_id, c.contact_id, credential_data, c.created_on, c.credential_type_id,
-        |       c.credential_issuance_contact_id, external_id, PTS.name AS issuer_name, contact_data,
+        |       c.credential_issuance_contact_id, external_id, PTS.name AS issuer_name, contact_data, connection_token,
         |       PC.batch_id, PC.issuance_operation_hash, PC.encoded_signed_credential, PC.inclusion_proof,
         |       PC.stored_at, PC.issued_on_transaction_id, PC.ledger, PC.shared_at, PC.revoked_on_transaction_id
       """.stripMargin
@@ -69,7 +69,7 @@ object CredentialsDAO {
          |  RETURNING credential_id, issuer_id, contact_id, credential_data, created_on, credential_type_id,
          |    credential_issuance_contact_id
          |),""".stripMargin ++ withParticipantsPTS ++ withPublishedCredentialsPC(Some(id)) ++
-      fr"""|SELECT inserted.*, contacts.external_id, PTS.name AS issuer_name, contacts.contact_data,
+      fr"""|SELECT inserted.*, contacts.external_id, PTS.name AS issuer_name, contacts.contact_data, connection_token,
            |       PC.batch_id, PC.issuance_operation_hash, PC.encoded_signed_credential, PC.inclusion_proof,
            |       PC.stored_at, PC.issued_on_transaction_id, PC.ledger, PC.shared_at, PC.revoked_on_transaction_id
          |FROM inserted

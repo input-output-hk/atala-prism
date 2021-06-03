@@ -7,14 +7,15 @@ import io.iohk.atala.prism.models.{ProtoCodecs => CommonProtoCodecs}
 import io.iohk.atala.prism.management.console.integrations.ContactsIntegrationService.DetailedContactWithConnection
 import io.iohk.atala.prism.management.console.models.{Contact, GenericCredential, InstitutionGroup, Statistics, _}
 import io.iohk.atala.prism.protos.console_api.GetContactResponse
-import io.iohk.atala.prism.protos.console_models.{Group, StoredSignedCredential}
+import io.iohk.atala.prism.protos.console_models.{ContactConnectionStatus, Group, StoredSignedCredential}
 import io.iohk.atala.prism.protos.{common_models, connector_models, console_api, console_models}
 import io.iohk.atala.prism.utils.syntax._
 import io.scalaland.chimney.Transformer
 import io.scalaland.chimney.dsl._
-import java.time.{Instant, LocalDate}
 
+import java.time.{Instant, LocalDate}
 import io.iohk.atala.prism.models.TransactionInfo
+import io.iohk.atala.prism.protos.connector_models.ContactConnection
 
 import scala.util.{Failure, Success, Try}
 
@@ -39,10 +40,12 @@ object ProtoCodecs {
     case CredentialTypeFieldType.Date => console_models.CredentialTypeFieldType.CREDENTIAL_TYPE_FIELD_DATE
   }
 
-  def toGetContactResponse(detailedContactWithConnection: Option[DetailedContactWithConnection]): GetContactResponse = {
-    val contactWithDetails = detailedContactWithConnection.map(_.contactWithDetails)
+  def toGetContactResponse(
+      maybeDetailedContactWithConnection: Option[DetailedContactWithConnection]
+  ): GetContactResponse = {
+    val contactWithDetails = maybeDetailedContactWithConnection.map(_.contactWithDetails)
     console_api.GetContactResponse(
-      contact = detailedContactWithConnection.map(detailedContactWithConnection =>
+      contact = maybeDetailedContactWithConnection.map(detailedContactWithConnection =>
         toContactProto(
           detailedContactWithConnection.contactWithDetails.contact,
           detailedContactWithConnection.connection
@@ -51,8 +54,25 @@ object ProtoCodecs {
       groups = contactWithDetails.map(_.groupsInvolved).getOrElse(List.empty).map(groupWithContactCountToProto),
       receivedCredentials =
         contactWithDetails.map(_.receivedCredentials).getOrElse(List.empty).map(receivedSignedCredentialToProto),
-      issuedCredentials =
-        contactWithDetails.map(_.issuedCredentials).getOrElse(List.empty).map(genericCredentialToProto)
+      issuedCredentials = maybeDetailedContactWithConnection
+        .map { detailedContactWithConnection =>
+          val issuedCredentials = detailedContactWithConnection.contactWithDetails.issuedCredentials
+          val connections = detailedContactWithConnection.issuedCredentialsConnections
+          issuedCredentials.map(issuedCredential =>
+            genericCredentialToProto(
+              issuedCredential,
+              connections.getOrElse(
+                issuedCredential.connectionToken,
+                ContactConnection(
+                  connectionToken = issuedCredential.connectionToken.token,
+                  connectionStatus = ContactConnectionStatus.STATUS_CONNECTION_MISSING
+                )
+              )
+            )
+          )
+        }
+        .toList
+        .flatten
     )
   }
 
@@ -73,7 +93,10 @@ object ProtoCodecs {
     )
   }
 
-  def genericCredentialToProto(credential: GenericCredential): console_models.CManagerGenericCredential = {
+  def genericCredentialToProto(
+      credential: GenericCredential,
+      connection: connector_models.ContactConnection
+  ): console_models.CManagerGenericCredential = {
     val revocationProofMaybe = for {
       revocationTxid <- credential.revokedOnTransactionId
       publicationData <- credential.publicationData
@@ -87,6 +110,7 @@ object ProtoCodecs {
       .withCredentialData(credential.credentialData.noSpaces)
       .withIssuerName(credential.issuerName)
       .withContactData(credential.contactData.noSpaces)
+      .withConnectionStatus(connection.connectionStatus)
       .withExternalId(credential.externalId.value)
       .withSharedAt(credential.sharedAt.map(_.toProtoTimestamp).getOrElse(Timestamp()))
     val withPublicationData = credential.publicationData.fold(model) { data =>

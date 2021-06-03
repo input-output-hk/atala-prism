@@ -4,12 +4,11 @@ import cats.data.NonEmptyList
 
 import java.time.{Instant, LocalDate}
 import java.util.UUID
-
 import io.circe.Json
 import io.iohk.atala.prism.credentials.CredentialBatchId
 import io.iohk.atala.prism.crypto.MerkleTree.MerkleInclusionProof
 import io.iohk.atala.prism.crypto.SHA256Digest
-import io.iohk.atala.prism.models.{Ledger, TransactionId, UUIDValue}
+import io.iohk.atala.prism.models.{ConnectionToken, Ledger, TransactionId, UUIDValue}
 import io.iohk.atala.prism.protos.connector_api
 
 final case class CreateGenericCredential(
@@ -78,6 +77,7 @@ final case class GenericCredential(
     externalId: Contact.ExternalId,
     issuerName: String,
     contactData: Json,
+    connectionToken: ConnectionToken,
     publicationData: Option[PublicationData],
     sharedAt: Option[Instant],
     revokedOnTransactionId: Option[TransactionId]

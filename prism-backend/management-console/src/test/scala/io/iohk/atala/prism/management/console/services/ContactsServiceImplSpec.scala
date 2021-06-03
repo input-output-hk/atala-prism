@@ -1086,16 +1086,21 @@ class ContactsServiceImplSpec extends ManagementConsoleRpcSpecBase with DIDUtil 
       )
       val rpcRequest = SignedRpcRequest.generate(keyPair, did, request)
 
+      val contactConnection = connector_models.ContactConnection(
+        connectionStatus = console_models.ContactConnectionStatus.STATUS_CONNECTION_MISSING,
+        connectionToken = "connectionToken"
+      )
+
       usingApiAsContacts(rpcRequest) { serviceStub =>
         connectorMock.getConnectionStatus(*).returns {
           Future.successful(
-            List(connectionMissing())
+            List(contactConnection)
           )
         }
 
         val response = serviceStub.getContact(request)
         cleanContactData(response.contact.value) must be(
-          cleanContactData(toContactProto(contact, connectionMissing()))
+          cleanContactData(toContactProto(contact, contactConnection))
         )
         contactJsonData(response.contact.value) must be(contact.data)
       }
@@ -1125,6 +1130,90 @@ class ContactsServiceImplSpec extends ManagementConsoleRpcSpecBase with DIDUtil 
 
         val response = serviceStub.getContact(request)
         response.contact must be(empty)
+      }
+    }
+
+    "return the contact with correct connection status for Issued Credentials " in {
+      val keyPair = EC.generateKeyPair()
+      val publicKey = keyPair.publicKey
+      val did = generateDid(publicKey)
+      val institutionId = createParticipant("Institution X", did)
+      val groupName = createInstitutionGroup(institutionId, InstitutionGroup.Name("Group A")).name
+      val contact = createContact(institutionId, "Alice", Some(groupName))
+
+      val issuedCredential = createGenericCredential(
+        issuedBy = institutionId,
+        contactId = contact.contactId,
+        tag = "tag1",
+        credentialIssuanceContactId = None
+      )
+      publishCredential(institutionId, issuedCredential)
+
+      val request = console_api.GetContactRequest(
+        contactId = contact.contactId.toString
+      )
+      val rpcRequest = SignedRpcRequest.generate(keyPair, did, request)
+
+      val contactConnection = connector_models.ContactConnection(
+        connectionStatus = console_models.ContactConnectionStatus.STATUS_CONNECTION_ACCEPTED,
+        connectionToken = "connectionToken"
+      )
+
+      usingApiAsContacts(rpcRequest) { serviceStub =>
+        connectorMock.getConnectionStatus(*).returns {
+          Future.successful(
+            List(contactConnection)
+          )
+        }
+
+        val response = serviceStub.getContact(request)
+        cleanContactData(response.contact.value) must be(
+          cleanContactData(toContactProto(contact, contactConnection))
+        )
+        contactJsonData(response.contact.value) must be(contact.data)
+        response.issuedCredentials.head.connectionStatus must be(contactConnection.connectionStatus)
+      }
+    }
+
+    "return the contact with empty connection status given connector returned no result " in {
+      val keyPair = EC.generateKeyPair()
+      val publicKey = keyPair.publicKey
+      val did = generateDid(publicKey)
+      val institutionId = createParticipant("Institution X", did)
+      val groupName = createInstitutionGroup(institutionId, InstitutionGroup.Name("Group A")).name
+      val contact = createContact(institutionId, "Alice", Some(groupName))
+
+      val issuedCredential = createGenericCredential(
+        issuedBy = institutionId,
+        contactId = contact.contactId,
+        tag = "tag1",
+        credentialIssuanceContactId = None
+      )
+      publishCredential(institutionId, issuedCredential)
+
+      val request = console_api.GetContactRequest(
+        contactId = contact.contactId.toString
+      )
+      val rpcRequest = SignedRpcRequest.generate(keyPair, did, request)
+
+      val contactConnection = connector_models.ContactConnection(
+        connectionStatus = console_models.ContactConnectionStatus.STATUS_CONNECTION_MISSING,
+        connectionToken = "connectionToken"
+      )
+
+      usingApiAsContacts(rpcRequest) { serviceStub =>
+        connectorMock.getConnectionStatus(*).returns {
+          Future.successful(
+            List()
+          )
+        }
+
+        val response = serviceStub.getContact(request)
+        cleanContactData(response.contact.value) must be(
+          cleanContactData(toContactProto(contact, contactConnection))
+        )
+        contactJsonData(response.contact.value) must be(contact.data)
+        response.issuedCredentials.head.connectionStatus must be(contactConnection.connectionStatus)
       }
     }
   }

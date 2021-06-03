@@ -25,14 +25,23 @@ import io.iohk.atala.prism.management.console.DataPreparation
 import io.iohk.atala.prism.protos.connector_api.SendMessagesResponse
 import io.iohk.atala.prism.protos.connector_models.MessageToSendByConnectionToken
 import io.iohk.atala.prism.models.{TransactionId, TransactionInfo}
-import io.iohk.atala.prism.protos.{common_models, connector_api, console_api, node_api, node_models}
+import io.iohk.atala.prism.protos.{
+  common_models,
+  connector_api,
+  connector_models,
+  console_api,
+  console_models,
+  node_api,
+  node_models
+}
 import org.mockito.IdiomaticMockito.StubbingOps
 import org.mockito.Mockito.verify
 import org.scalatest.OptionValues.convertOptionToValuable
 import org.mockito.ArgumentMatchersSugar.*
-import java.util.UUID
 
+import java.util.UUID
 import com.google.protobuf.timestamp.Timestamp
+import io.iohk.atala.prism.protos.console_models.ContactConnectionStatus
 
 import scala.concurrent.Future
 
@@ -49,7 +58,8 @@ class CredentialsServiceImplSpec extends ManagementConsoleRpcSpecBase with DIDUt
       val publicKey = keyPair.publicKey
       val did = generateDid(publicKey)
       val issuerId = createParticipant(issuerName, did)
-      val contact = createContact(issuerId, "Contact 1", None)
+      val connectionToken = "connectionToken"
+      val contact = createContact(issuerId, "Contact 1", None, connectionToken = connectionToken)
       val originalCredential = DataPreparation.createGenericCredential(issuerId, contact.contactId)
 
       val mockEncodedSignedCredential = "easdadgfkfñwlekrjfadf"
@@ -85,11 +95,124 @@ class CredentialsServiceImplSpec extends ManagementConsoleRpcSpecBase with DIDUt
       val request = console_api.GetGenericCredentialsRequest().withLimit(10)
       val rpcRequest = SignedRpcRequest.generate(keyPair, did, request)
 
+      val contactConnection = connector_models.ContactConnection(
+        connectionStatus = console_models.ContactConnectionStatus.STATUS_CONNECTION_ACCEPTED,
+        connectionToken = connectionToken
+      )
+
       usingApiAsCredentials(rpcRequest) { serviceStub =>
+        connectorMock.getConnectionStatus(*).returns {
+          Future.successful(
+            List(contactConnection)
+          )
+        }
         val response = serviceStub.getGenericCredentials(request)
         val revocationProof = response.credentials.head.revocationProof.value
         revocationProof.transactionId must be(mockRevocationTransactionId.toString)
         revocationProof.ledger.isInMemory must be(true)
+      }
+    }
+
+    "retrieve Credential with correct connection status given connection is present" in {
+      val issuerName = "Issuer 1"
+      val keyPair = EC.generateKeyPair()
+      val publicKey = keyPair.publicKey
+      val did = generateDid(publicKey)
+      val issuerId = createParticipant(issuerName, did)
+      val connectionToken = "connectionToken"
+      val connectionStatus = ContactConnectionStatus.STATUS_CONNECTION_ACCEPTED
+      val contact = createContact(issuerId, "Contact 1", None, connectionToken = connectionToken)
+      val originalCredential = DataPreparation.createGenericCredential(issuerId, contact.contactId)
+
+      val mockEncodedSignedCredential = "easdadgfkfñwlekrjfadf"
+
+      val issuanceOpHash = SHA256Digest.compute("opHash".getBytes())
+      val mockCredentialBatchId = CredentialBatchId.fromDigest(SHA256Digest.compute("SomeRandomHash".getBytes()))
+
+      val mockTransactionInfo = TransactionInfo(
+        transactionId = TransactionId.from(SHA256Digest.compute("id".getBytes).value).value,
+        ledger = InMemory
+      )
+
+      // we need to first store the batch data in the db
+      publishBatch(mockCredentialBatchId, issuanceOpHash, mockTransactionInfo)
+      val mockHash = SHA256Digest.compute("".getBytes())
+      val mockMerkleProof = MerkleInclusionProof(mockHash, 1, List(mockHash))
+      publishCredential(
+        issuerId,
+        mockCredentialBatchId,
+        originalCredential.credentialId,
+        mockEncodedSignedCredential,
+        mockMerkleProof
+      )
+
+      val request = console_api.GetGenericCredentialsRequest().withLimit(10)
+      val rpcRequest = SignedRpcRequest.generate(keyPair, did, request)
+
+      val contactConnection = connector_models.ContactConnection(
+        connectionStatus = connectionStatus,
+        connectionToken = connectionToken
+      )
+
+      usingApiAsCredentials(rpcRequest) { serviceStub =>
+        connectorMock.getConnectionStatus(*).returns {
+          Future.successful(
+            List(contactConnection)
+          )
+        }
+        val response = serviceStub.getGenericCredentials(request)
+        response.credentials.head.connectionStatus must be(connectionStatus)
+      }
+    }
+
+    "retrieve Credential with missing connection status given connector returned empty list of connections" in {
+      val issuerName = "Issuer 1"
+      val keyPair = EC.generateKeyPair()
+      val publicKey = keyPair.publicKey
+      val did = generateDid(publicKey)
+      val issuerId = createParticipant(issuerName, did)
+      val connectionToken = "connectionToken"
+      val contact = createContact(issuerId, "Contact 1", None, connectionToken = connectionToken)
+      val originalCredential = DataPreparation.createGenericCredential(issuerId, contact.contactId)
+
+      val mockEncodedSignedCredential = "easdadgfkfñwlekrjfadf"
+
+      val issuanceOpHash = SHA256Digest.compute("opHash".getBytes())
+      val mockCredentialBatchId = CredentialBatchId.fromDigest(SHA256Digest.compute("SomeRandomHash".getBytes()))
+
+      val mockTransactionInfo = TransactionInfo(
+        transactionId = TransactionId.from(SHA256Digest.compute("id".getBytes).value).value,
+        ledger = InMemory
+      )
+
+      // we need to first store the batch data in the db
+      publishBatch(mockCredentialBatchId, issuanceOpHash, mockTransactionInfo)
+      val mockHash = SHA256Digest.compute("".getBytes())
+      val mockMerkleProof = MerkleInclusionProof(mockHash, 1, List(mockHash))
+      publishCredential(
+        issuerId,
+        mockCredentialBatchId,
+        originalCredential.credentialId,
+        mockEncodedSignedCredential,
+        mockMerkleProof
+      )
+
+      val request = console_api.GetGenericCredentialsRequest().withLimit(10)
+      val rpcRequest = SignedRpcRequest.generate(keyPair, did, request)
+
+      val missingConnection = connector_models.ContactConnection(
+        connectionStatus = ContactConnectionStatus.STATUS_CONNECTION_MISSING,
+        connectionToken = connectionToken
+      )
+
+      usingApiAsCredentials(rpcRequest) { serviceStub =>
+        connectorMock.getConnectionStatus(*).returns {
+          Future.successful(
+            List()
+          )
+        }
+        val response = serviceStub.getGenericCredentials(request)
+        response.credentials.head.connectionStatus must be(missingConnection.connectionStatus)
       }
     }
   }

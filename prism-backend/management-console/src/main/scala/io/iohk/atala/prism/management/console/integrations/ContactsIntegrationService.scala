@@ -11,8 +11,10 @@ import io.iohk.atala.prism.protos.connector_models.ContactConnection
 import io.iohk.atala.prism.protos.console_models.ContactConnectionStatus
 import io.iohk.atala.prism.utils.FutureEither
 import io.iohk.atala.prism.utils.FutureEither.{FutureEitherFOps, FutureEitherOps}
-
 import scala.concurrent.{ExecutionContext, Future}
+import cats.syntax.traverse._
+import cats.instances.future._
+import cats.instances.option._
 
 class ContactsIntegrationService(
     contactsRepository: ContactsRepository,
@@ -136,24 +138,23 @@ class ContactsIntegrationService(
       institutionId: ParticipantId,
       contactId: Contact.Id
   ): Future[Either[Nothing, Option[DetailedContactWithConnection]]] = {
-    val resultFE = for {
-      contactMaybe <- contactsRepository.find(institutionId, contactId)
-
-      result <- {
-        contactMaybe
-          .map { contact =>
-            connector
-              .getConnectionStatus(List(contact.contact.connectionToken))
-              .map(_.headOption)
-              .map(contactMaybe.zip)
-              .map(_.map(DetailedContactWithConnection.tupled.apply))
-          }
-          .getOrElse(Future.successful(None))
-          .lift
-      }
-    } yield result
-
-    resultFE.value
+    val detailedContactWithConnectionFE =
+      for {
+        contactMaybe <- contactsRepository.find(institutionId, contactId)
+        detailedContactWithConnection <- contactMaybe.traverse { contact =>
+          val connectionTokens =
+            (contact.issuedCredentials.map(_.connectionToken) :+ contact.contact.connectionToken).distinct
+          connector
+            .getConnectionStatus(connectionTokens)
+            .map(contactConnections =>
+              DetailedContactWithConnection.from(
+                contact,
+                contactConnections.map(c => ConnectionToken(c.connectionToken) -> c).toMap
+              )
+            )
+        }.lift
+      } yield detailedContactWithConnection
+    detailedContactWithConnectionFE.value
   }
 
   def deleteContact(
@@ -173,8 +174,40 @@ object ContactsIntegrationService {
 
   case class DetailedContactWithConnection(
       contactWithDetails: Contact.WithDetails,
-      connection: connector_models.ContactConnection
+      connection: connector_models.ContactConnection,
+      issuedCredentialsConnections: Map[ConnectionToken, connector_models.ContactConnection]
   )
+  object DetailedContactWithConnection {
+    def from(
+        contact: Contact.WithDetails,
+        connectionTokenToConnection: Map[ConnectionToken, ContactConnection]
+    ): DetailedContactWithConnection = {
+      val issuedCredentialsTokenToContactConnections =
+        contact.issuedCredentials
+          .map(genericCredential =>
+            connectionTokenToConnection.getOrElse(
+              genericCredential.connectionToken,
+              ContactConnection(
+                connectionToken = genericCredential.connectionToken.token,
+                connectionStatus = ContactConnectionStatus.STATUS_CONNECTION_MISSING
+              )
+            )
+          )
+          .map(contactConnection => ConnectionToken(contactConnection.connectionToken) -> contactConnection)
+          .toMap
+      DetailedContactWithConnection(
+        contact,
+        connectionTokenToConnection.getOrElse(
+          contact.contact.connectionToken,
+          ContactConnection(
+            connectionToken = contact.contact.connectionToken.token,
+            connectionStatus = ContactConnectionStatus.STATUS_CONNECTION_MISSING
+          )
+        ),
+        issuedCredentialsTokenToContactConnections
+      )
+    }
+  }
 
   case class GetContactsResult(data: List[(ContactWithConnection, Contact.CredentialCounts)]) {
     def scrollId: Option[Contact.Id] = data.lastOption.map(_._1.contact.contactId)

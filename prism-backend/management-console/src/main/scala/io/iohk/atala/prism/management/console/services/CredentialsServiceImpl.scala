@@ -51,9 +51,15 @@ class CredentialsServiceImpl(
       request: CreateGenericCredentialRequest
   ): Future[CreateGenericCredentialResponse] =
     auth[CreateGenericCredential]("createGenericCredential", request) { (participantId, query) =>
-      credentialsRepository
-        .create(participantId, query)
-        .map(genericCredentialToProto)
+      credentialsIntegrationService
+        .createGenericCredential(participantId, query)
+        .toFutureEither
+        .map { genericCredentialWithConnection =>
+          genericCredentialToProto(
+            genericCredentialWithConnection.genericCredential,
+            genericCredentialWithConnection.connection
+          )
+        }
         .map { created =>
           console_api.CreateGenericCredentialResponse().withGenericCredential(created)
         }
@@ -63,19 +69,29 @@ class CredentialsServiceImpl(
       request: GetGenericCredentialsRequest
   ): Future[GetGenericCredentialsResponse] =
     auth[GenericCredential.PaginatedQuery]("getGenericCredentials", request) { (participantId, query) =>
-      credentialsRepository
-        .getBy(participantId, query)
-        .map { list =>
-          console_api.GetGenericCredentialsResponse(list.map(genericCredentialToProto))
+      credentialsIntegrationService
+        .getGenericCredentials(participantId, query)
+        .toFutureEither
+        .map { result =>
+          console_api.GetGenericCredentialsResponse(
+            result.data.map(genericCredentialsResult =>
+              genericCredentialToProto(genericCredentialsResult.genericCredential, genericCredentialsResult.connection)
+            )
+          )
         }
     }
 
   override def getContactCredentials(request: GetContactCredentialsRequest): Future[GetContactCredentialsResponse] =
     auth[GetContactCredentials]("getContactCredentials", request) { (participantId, query) =>
-      credentialsRepository
-        .getBy(participantId, query.contactId)
-        .map { list =>
-          console_api.GetContactCredentialsResponse(list.map(genericCredentialToProto))
+      credentialsIntegrationService
+        .getContactCredentials(participantId, query.contactId)
+        .toFutureEither
+        .map { result =>
+          console_api.GetContactCredentialsResponse(
+            result.data.map(genericCredentialsResult =>
+              genericCredentialToProto(genericCredentialsResult.genericCredential, genericCredentialsResult.connection)
+            )
+          )
         }
     }
 

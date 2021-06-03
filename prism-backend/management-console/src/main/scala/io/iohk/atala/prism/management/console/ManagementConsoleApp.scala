@@ -88,7 +88,7 @@ object ManagementConsoleApp extends IOApp {
 
       credentialsService = new CredentialsServiceImpl(
         credentialsRepository,
-        new CredentialsIntegrationService(credentialsRepository, node),
+        new CredentialsIntegrationService(credentialsRepository, node, connector),
         authenticator,
         node,
         connector
