@@ -92,5 +92,9 @@ class HomeViewController: ListingBaseViewController {
                                                   viewControllerIdentif: "NavigationController", params: nil,
                                                   animated: true)
     }
+    
+    func changeScreenToPayIdDetail() {
+        ViewControllerUtils.changeScreenSegued(caller: self, segue: "PayIdSegue", params: nil)
+    }
 
 }

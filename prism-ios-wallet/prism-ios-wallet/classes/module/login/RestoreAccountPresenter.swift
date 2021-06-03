@@ -180,6 +180,11 @@ class RestoreAccountPresenter: BasePresenter {
             viewImpl?.showErrorMessage(doShow: true, message: "restore_phrase_invalid_error".localize())
         } else {
             viewImpl?.showLoading(doShow: true, message: "restore_recovering_data".localize())
+
+            // There is a known bug in Kotlin Native that causes an error when calling "KeyDerivation().deriveKey(seed: seed, path: path)" from a background thread, making the app crash, the suggested workaround is to invoke this Kotlin method for the first time from the Main thread
+            let keyPath = CryptoUtils.global.getNextPublicKeyPath()
+            _ = CryptoUtils.global.signData(data: Data(), keyPath: keyPath)
+
             fetchNextConnection()
         }
     }

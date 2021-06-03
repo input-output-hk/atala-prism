@@ -384,6 +384,7 @@
 "home_profile_view_profile" = "VIEW PROFILE";
 "home_profile_notifications" = "You have %d notification(s)";
 "home_profile_notifications_empty" = "No new notifications";
+"home_profile_payid" = "YOUR PAY ID NAME";
 "home_activitylog_title" = "LAST ACTIVITY";
 "home_activitylog_button" = "Activity Log";
 "home_promotional_try" = "Try Atala PRISM\nInteractive Demo &\nreceive credentials";

@@ -65,7 +65,7 @@ class PayIDInfoPresenter: BasePresenter {
 
     func share() {
 
-        let message: String  = "Pay ID \n \(payId?.name ?? "")"
+        let message: String  = "Pay ID \n \(payId?.name ?? "")\("pay_id_setup_name_field_right".localize())"
 
         let activityViewController = UIActivityViewController(activityItems: [message], applicationActivities: nil)
         activityViewController.popoverPresentationController?.sourceView = self.viewImpl?.view

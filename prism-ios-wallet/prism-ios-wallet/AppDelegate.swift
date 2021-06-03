@@ -25,6 +25,12 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
 
         // There is a known bug in Kotlin Native that sometimes causes memory leaks, making the app crash, the suggested workaround is to invoke any Kotlin method from the Main thread
         SHA256Digest.Companion().compute(bytes: [0, 1, 2])
+        if CryptoUtils.global.seed != nil {
+            
+            // There is a known bug in Kotlin Native that causes an error when calling "KeyDerivation().deriveKey(seed: seed, path: path)" from a background thread, making the app crash, the suggested workaround is to invoke this Kotlin method for the first time from the Main thread
+            let keyPath = CryptoUtils.global.getNextPublicKeyPath()
+            _ = CryptoUtils.global.signData(data: Data(), keyPath: keyPath)
+        }
 
         return true
     }

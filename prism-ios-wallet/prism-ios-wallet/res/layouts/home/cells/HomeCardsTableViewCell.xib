@@ -14,11 +14,11 @@
         <tableViewCell contentMode="scaleToFill" selectionStyle="default" indentationWidth="10" reuseIdentifier="HomeCards" rowHeight="200" id="KGk-i7-Jjw" customClass="HomeCardsTableViewCell" customModule="Atala_PRISM" customModuleProvider="target">
             <rect key="frame" x="0.0" y="0.0" width="414" height="199"/>
             <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
-            <tableViewCellContentView key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" ambiguous="YES" tableViewCell="KGk-i7-Jjw" id="H2p-sc-9uM">
+            <tableViewCellContentView key="contentView" opaque="NO" multipleTouchEnabled="YES" contentMode="center" ambiguous="YES" tableViewCell="KGk-i7-Jjw" id="H2p-sc-9uM">
                 <rect key="frame" x="0.0" y="0.0" width="414" height="199"/>
                 <autoresizingMask key="autoresizingMask"/>
                 <subviews>
-                    <scrollView clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="scaleToFill" showsHorizontalScrollIndicator="NO" showsVerticalScrollIndicator="NO" translatesAutoresizingMaskIntoConstraints="NO" id="zne-7w-2oa">
+                    <scrollView multipleTouchEnabled="YES" contentMode="scaleToFill" showsHorizontalScrollIndicator="NO" showsVerticalScrollIndicator="NO" translatesAutoresizingMaskIntoConstraints="NO" id="zne-7w-2oa">
                         <rect key="frame" x="0.0" y="0.0" width="414" height="204"/>
                         <subviews>
                             <stackView opaque="NO" contentMode="scaleToFill" distribution="equalSpacing" alignment="center" spacing="10" translatesAutoresizingMaskIntoConstraints="NO" id="3ze-Xe-jn8">
@@ -277,6 +277,7 @@
                         <viewLayoutGuide key="frameLayoutGuide" id="i0h-pW-bk3"/>
                     </scrollView>
                 </subviews>
+                <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                 <constraints>
                     <constraint firstItem="zne-7w-2oa" firstAttribute="top" secondItem="H2p-sc-9uM" secondAttribute="top" id="WEL-Lq-YtB"/>
                     <constraint firstItem="zne-7w-2oa" firstAttribute="leading" secondItem="H2p-sc-9uM" secondAttribute="leading" id="kam-9h-qAc"/>
@@ -285,6 +286,7 @@
                 </constraints>
             </tableViewCellContentView>
             <viewLayoutGuide key="safeArea" id="njF-e1-oar"/>
+            <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
             <connections>
                 <outlet property="payIdBannerBg" destination="S8r-nq-Nqb" id="8y8-Uf-Ytt"/>
                 <outlet property="payIdBg" destination="ohF-WX-YCP" id="eRY-Fd-H9A"/>
@@ -302,7 +304,7 @@
         <image name="ico_caret" width="40" height="40"/>
         <image name="ico_close" width="10" height="10"/>
         <image name="icon_pay_id" width="29" height="29"/>
-        <image name="icon_verify" width="29" height="29"/>
+        <image name="icon_verify" width="20" height="23"/>
         <image name="img_glare" width="41" height="37"/>
         <systemColor name="systemBackgroundColor">
             <color white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>

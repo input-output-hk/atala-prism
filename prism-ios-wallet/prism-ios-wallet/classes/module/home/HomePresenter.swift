@@ -144,10 +144,17 @@ class HomePresenter: ListingBasePresenter, ListingBaseTableUtilsPresenterDelegat
         viewImpl?.changeScreenToNotifications()
     }
 
+    func payIdTapped(for cell: HomeProfileTableViewCell) {
+        viewImpl?.changeScreenToPayIdDetail()
+    }
+
     func setup(for cell: HomeProfileTableViewCell) {
         let user = sharedMemory.loggedUser
         let name = "\(user?.firstName ?? "") \(user?.lastName ?? "")"
-        cell.config(name: name, picture: sharedMemory.profilePic, notifications: notificationsCount, delegate: self)
+        let payIdDao = PayIdDAO()
+        let payId = payIdDao.listPayId()?.first
+        cell.config(name: name, picture: sharedMemory.profilePic, notifications: notificationsCount,
+                    payId: payId, delegate: self)
     }
 
     // MARK: HomeProfileTableViewCellDelegate
