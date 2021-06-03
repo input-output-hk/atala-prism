@@ -251,9 +251,9 @@ trait MirrorFixtures extends ServicesFixtures {
       received = Timestamp(LocalDateTime.of(2020, 6, 13, 0, 0).toEpochSecond(ZoneOffset.UTC)).some,
       connectionId = connectionId1.uuid.toString,
       message = AtalaMessage()
-        .withKycBridgeMessage(
+        .withMirrorMessage(
           credential_models
-            .KycBridgeMessage()
+            .MirrorMessage()
             .withRegisterWalletMessage(
               credential_models.RegisterWalletMessage(
                 name = "wallet name",

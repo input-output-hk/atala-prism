@@ -15,7 +15,7 @@ import io.iohk.atala.prism.protos.connector_models.ReceivedMessage
 import io.iohk.atala.prism.protos.credential_models.{
   AtalaMessage,
   RegisterWalletMessage,
-  KycBridgeMessage,
+  MirrorMessage,
   WalletRegistered
 }
 import io.iohk.atala.mirror.models.CardanoWallet
@@ -46,7 +46,7 @@ class CardanoDeterministicWalletsService(
 
   private def parseRegisterWalletMessage(message: ReceivedMessage): Option[RegisterWalletMessage] = {
     Try(AtalaMessage.parseFrom(message.message.toByteArray)).toOption
-      .flatMap(_.message.kycBridgeMessage)
+      .flatMap(_.message.mirrorMessage)
       .flatMap(_.message.registerWalletMessage)
   }
 
@@ -102,8 +102,8 @@ class CardanoDeterministicWalletsService(
           .transact(tx)
       )
 
-      atalaMessage = AtalaMessage().withKycBridgeMessage(
-        KycBridgeMessage().withWalletRegistered(
+      atalaMessage = AtalaMessage().withMirrorMessage(
+        MirrorMessage().withWalletRegistered(
           WalletRegistered().withId(walletId.uuid.toString)
         )
       )
