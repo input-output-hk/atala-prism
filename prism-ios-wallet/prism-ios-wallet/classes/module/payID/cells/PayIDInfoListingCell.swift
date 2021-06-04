@@ -14,7 +14,7 @@ protocol PayIDInfoListingCellPresenterDelegate: BaseTableViewCellPresenterDelega
 }
 
 class PayIDInfoListingCell: BaseTableViewCell {
-    
+
     @IBOutlet weak var labelTitle: UILabel!
     @IBOutlet weak var labelValue: UILabel!
 

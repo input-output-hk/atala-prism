@@ -9,7 +9,7 @@
 import Foundation
 
 class PayIDSelectorPresenter: ListingBasePresenter, ListingBaseTableUtilsPresenterDelegate,
-                              SelectIdCellPresenterDelegate {
+                              SelectIdCellPresenterDelegate, SelectIdEmptyCellPresenterDelegate {
     
     var viewImpl: PayIDSelectorViewController? {
         return view as? PayIDSelectorViewController
@@ -33,7 +33,7 @@ class PayIDSelectorPresenter: ListingBasePresenter, ListingBaseTableUtilsPresent
         CellRow(type: .select, value: (2, false)),
         CellRow(type: .select, value: (3, false))
     ]
-    
+
     var selectedCells: [SelectIdCell] = []
     var idCredentials: [Credential] = []
     var otherCredentials: [Credential] = []
@@ -110,7 +110,7 @@ class PayIDSelectorPresenter: ListingBasePresenter, ListingBaseTableUtilsPresent
         let headerView = UIView()
 
         if title != nil {
-            
+
             headerView.backgroundColor = .white
 
             let sectionLabel = UILabel(frame: CGRect(x: 12, y: 16, width: viewImpl!.table.bounds.size.width,
@@ -126,7 +126,7 @@ class PayIDSelectorPresenter: ListingBasePresenter, ListingBaseTableUtilsPresent
     }
 
     func getElementCount() -> [Int] {
-        return [idCredentials.count, otherCredentials.count]
+        return [idCredentials.count == 0 ? 1 : idCredentials.count, otherCredentials.count]
     }
 
     func getElementType(indexPath: IndexPath) -> SelectIdCellType {
@@ -216,5 +216,15 @@ class PayIDSelectorPresenter: ListingBasePresenter, ListingBaseTableUtilsPresent
                 || $0?.credentialType == .ethiopiaNationalID
         }
         viewImpl?.changeButtonState(isEnabled: hasId)
+    }
+
+    // MARK: - SelectIdEmptyCellPresenterDelegate
+
+    func setup(for cell: SelectIdEmptyCell) {
+        cell.config(delegate: self)
+    }
+
+    func tappedVerifyId(for cell: SelectIdEmptyCell) {
+        viewImpl?.changeScreenToVerifyId()
     }
 }

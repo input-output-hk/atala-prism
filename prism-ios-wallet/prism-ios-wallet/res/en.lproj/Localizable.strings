@@ -580,6 +580,8 @@
 "pay_id_selector_transcript_subtitle" = "Art School";
 "pay_id_selector_university_title" = "University Degree";
 "pay_id_selector_university_subtitle" = "University of Innovation and Technology";
+"pay_id_selector_empty" = "You don’t have ID Credentials yet";
+"pay_id_selector_emptybttn" = "Obtain a verified ID Credential";
 
 // <!-- Pay ID Setup -->
 

@@ -39,6 +39,12 @@ class PayIDSelectorViewController: ListingBaseViewController {
                                                params: credentials)
     }
 
+    func changeScreenToVerifyId() {
+        ViewControllerUtils.changeScreenPresented(caller: self, storyboardName: "VerifyIdTutorial",
+                                                  viewControllerIdentif: "VerifyIdTutorialNavigation", params: nil,
+                                                  animated: true)
+    }
+
     // MARK: Config
 
     override func config(mode: ListingBasePresenter.ListingBaseState) {
@@ -65,6 +71,9 @@ class PayIDSelectorViewController: ListingBaseViewController {
 
         switch presenterImpl.getElementType(indexPath: indexPath) {
         case .select:
+            if indexPath.section == 0 && presenterImpl.idCredentials.count == 0 {
+                return "SelectIdEmpty"
+            }
             return "SelectId"
         default:
             return super.getCellIdentifier(for: indexPath)
@@ -75,6 +84,9 @@ class PayIDSelectorViewController: ListingBaseViewController {
 
         switch presenterImpl.getElementType(indexPath: indexPath) {
         case .select:
+            if indexPath.section == 0 && presenterImpl.idCredentials.count == 0 {
+                return SelectIdEmptyCell.default_NibName()
+            }
             return SelectIdCell.default_NibName()
         default:
             return super.getCellNib(for: indexPath)
