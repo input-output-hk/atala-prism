@@ -11,310 +11,691 @@ import "node_models.proto";
 import "connector_api.proto";
 import "google/protobuf/timestamp.proto";
 
-// The Management Console API.
+/**
+ * The Management Console API.
+ * Provides a way to create and maintain issuers.
+*/
 service ConsoleService {
-  // Checks if the service is healthy.
+  /**
+   * PUBLIC
+   *
+   * Checks if the service is healthy.
+   * Status code 0 with empty response represents a healthy and reachable service,
+   * while all other status codes represent issues with the service.
+   */
   rpc HealthCheck (HealthCheckRequest) returns (HealthCheckResponse) {}
 
-  // Retrieves numbers about the operations done in the Management Console.
+  /**
+   * AUTHENTICATED
+   *
+   * Retrieves numbers about the operations done in the Management Console for a specific time interval.
+   * See GetStatisticsResponse documentation on which metrics are supported.
+   */
   rpc GetStatistics (GetStatisticsRequest) returns (GetStatisticsResponse) {}
 
-  // Binds DID to institution. This is required before invoking any API.
-  // The DID is expected to be resolvable from the node before issuing any credential.
+  /**
+   * PUBLIC
+   *
+   * Registers a new DID that represents an issuer. This is required to sign further requests by the issuer.
+   *
+   * Errors:
+   * - DID already exists (INVALID_ARGUMENT).
+   */
   rpc RegisterDID (RegisterConsoleDIDRequest) returns (RegisterConsoleDIDResponse) {}
 
-  // Returns the details for the authenticated user.
+  /**
+   * AUTHENTICATED
+   *
+   * Returns the name and the logo for the authenticated user.
+   *
+   * Errors:
+   * - Unknown identifier (UNKNOWN).
+   */
   rpc GetCurrentUser (GetConsoleCurrentUserRequest) returns (GetConsoleCurrentUserResponse) {}
 
- // Updates an existing participant's profile.
- rpc updateParticipantProfile (ConsoleUpdateProfileRequest) returns (ConsoleUpdateProfileResponse) {}
+  /**
+   * AUTHENTICATED
+   *
+   * Updates an existing participant's profile (profile is represented by name and logo).
+   *
+   * Errors:
+   * - Unknown identifier (UNKNOWN).
+   */
+  rpc UpdateParticipantProfile (ConsoleUpdateProfileRequest) returns (ConsoleUpdateProfileResponse) {}
 
 }
 
-// The Contacts API.
+/**
+ * The Contacts API.
+ * Provides a way to add, update, and delete contacts for an authenticated issuer.
+ */
 service ContactsService {
-  // Creates a contact for the authenticated institution.
-  // Errors:
-  // A group with a passed name does not exist (NOT_FOUND).
+  /**
+   * AUTHENTICATED
+   *
+   * Creates a new contact for the authenticated issuer.
+   * Returns the created contact.
+   *
+   * Errors:
+   * - Generation of connection tokens failed (INVALID_ARGUMENT).
+   * - A group with a passed name does not exist (INVALID_ARGUMENT).
+   */
   rpc CreateContact (CreateContactRequest) returns (CreateContactResponse) {}
 
-  // Creates the contacts atomically for the authenticated institution.
+  /**
+   * AUTHENTICATED
+   *
+   * Creates multiple contacts atomically for the authenticated issuer,
+   * and binds every contact to the provided groups.
+   * Returns the amount of created contacts.
+   *
+   * Errors:
+   * - Generation of connection tokens failed (INVALID_ARGUMENT).
+   * - A group with a passed name does not exist (INVALID_ARGUMENT).
+   */
   rpc CreateContacts (CreateContactsRequest) returns (CreateContactsResponse) {}
 
-  // Retrieves the available contacts for the authenticated institution.
+  /**
+   * AUTHENTICATED
+   *
+   * Retrieves available contacts for the authenticated issuer. Several
+   * filter and sorting options are available for finding specific contacts.
+   * Returns contacts and their details in a paginated way.
+   *
+   * Errors:
+   * - Unexpected DB error (INTERNAL).
+   */
   rpc GetContacts (GetContactsRequest) returns (GetContactsResponse) {}
 
-  // Retrieves a contact for the authenticated institution.
+  /**
+   * AUTHENTICATED
+   *
+   * Retrieves contact's info by its identifier.
+   *
+   * Errors:
+   * - Unexpected DB error (INTERNAL).
+   */
   rpc GetContact (GetContactRequest) returns (GetContactResponse) {}
 
-  // Updates the given contact on the authenticated institution.
+  /**
+   * AUTHENTICATED
+   *
+   * Updates a contact by the given identifier.
+   *
+   * Errors:
+   * - Unexpected DB error (INTERNAL).
+   */
   rpc UpdateContact (UpdateContactRequest) returns (UpdateContactResponse) {}
 
-  // Deletes a contact from the authenticated institution.
+  /**
+   * AUTHENTICATED
+   *
+   * Deletes a contact from the authenticated issuer.
+   *
+   * Errors:
+   * - The requested contact was not deleted (INTERNAL).
+   * - Contact doesn not belong to issuer (INVALID_ARGUMENT).
+   * - Contact has some existing credentials (INVALID_ARGUMENT).
+   */
   rpc DeleteContact (DeleteContactRequest) returns (DeleteContactResponse) {}
 
-  // Generates a connection token for the given contact.
-  // This is required before being able to connect to the contact.
+  /**
+   * AUTHENTICATED
+   * DEPRECATED
+   *
+   * Generates a connection token for the given contact.
+   * It's an obsolete since CreateContact generates a new connection by itself.
+   */
   rpc GenerateConnectionTokenForContact (GenerateConnectionTokenForContactRequest) returns (GenerateConnectionTokenForContactResponse) {}
 }
 
-// The Credentials Issuance API.
+/**
+ * The Credentials Issuance API.
+ * Provides a way to store credentials in the console database for further publishing.
+ */
 service CredentialIssuanceService {
-  // Creates a new credential issuance.
+  /**
+   * AUTHENTICATED
+   *
+   * Creates a new credential issuance.
+   * Accepts a list of contacts and credential data for every contact
+   * (all credentials in the request are based on the same template).
+   * Additionally, every contact info contains a list of groups it was taken from (possibly empty).
+   *
+   * Errors:
+   * - Credential data validation failed (INVALID_ARGUMENT).
+   * - External Ids were not found (INVALID_ARGUMENT).
+   * - Contact Ids were not found (INVALID_ARGUMENT).
+   * - Missing contact id and external id (INVALID_ARGUMENT).
+   * - Invalid groups (INVALID_ARGUMENT).
+   */
   rpc CreateCredentialIssuance (CreateCredentialIssuanceRequest) returns (CreateCredentialIssuanceResponse) {}
 
-  // Bulk version of CreateGenericCredential, creates credentials on the authenticated institution.
+  /**
+   * AUTHENTICATED
+   *
+   * The same as CreateCredentialIssuance, but takes JSON instead of data structures.
+   * See CreateCredentialIssuance for more details.
+   *
+   * Errors:
+   * - Credential data validation failed (INVALID_ARGUMENT).
+   * - External Ids were not found (INVALID_ARGUMENT).
+   * - Contact Ids were not found (INVALID_ARGUMENT).
+   * - Missing contact id and external id (INVALID_ARGUMENT).
+   * - Invalid groups (INVALID_ARGUMENT).
+   */
   rpc CreateGenericCredentialBulk (CreateGenericCredentialBulkRequest) returns (CreateGenericCredentialBulkResponse) {}
 
-  // Gets a credential issuance.
+  /**
+   * AUTHENTICATED
+   *
+   * Gets a credential issuance by its identifier.
+   *
+   * Errors:
+   * - Unexpected DB error (INTERNAL).
+   */
   rpc GetCredentialIssuance (GetCredentialIssuanceRequest) returns (GetCredentialIssuanceResponse) {}
 }
 
-// The Credentials API.
+/**
+ * The Credentials API.
+ * Provides a way to operate on credentials (share, delete, revoke, get detailed information from the database).
+ */
 service CredentialsService {
-  // Creates a credential on the authenticated institution.
   // TODO: Consider renaming this to CreateDraftCredential given that this is not published.
   // TODO: Consider freezing the credential details once it gets published.
+  /**
+   * AUTHENTICATED
+   *
+   * Creates a draft credential from the authenticated issuer.
+   * The created credential is not published on the chain yet.
+   * Responses with the details of the created credential.
+   * See CManagerGenericCredential for more information.
+   *
+   * Errors:
+   * - Credential data validation failed (INVALID_ARGUMENT).
+   * - External Ids were not found (INVALID_ARGUMENT).
+   * - Contact Ids were not found (INVALID_ARGUMENT).
+   * - Both contact id and external id are missing, one is required (INVALID_ARGUMENT).
+   */
   rpc CreateGenericCredential (CreateGenericCredentialRequest) returns (CreateGenericCredentialResponse) {}
 
-  // Retrieves the credentials created by the authenticated institution.
+  /**
+   * AUTHENTICATED
+   *
+   * Retrieves the credentials created by the authenticated issuer. Several
+   * filter and sorting options are available for finding specific credentials.
+   * See CManagerGenericCredential for more information.
+   *
+   * Errors:
+   * - Unexpected DB error (INTERNAL).
+   */
   rpc GetGenericCredentials (GetGenericCredentialsRequest) returns (GetGenericCredentialsResponse) {}
 
-  // Retrieves the contact credentials created by the authenticated institution.
+  /**
+   * AUTHENTICATED
+   *
+   * Retrieves the credentials for the given contact created by the authenticated issuer.
+   * See CManagerGenericCredential for the details.
+   *
+   * Errors:
+   * - Unexpected DB error (INTERNAL).
+   */
   rpc GetContactCredentials (GetContactCredentialsRequest) returns (GetContactCredentialsResponse) {}
 
-  // Marks a credential as shared.
-  // NOTE: This does not send the actual credential to the related contact, but it supposed to be
-  //       invoked every time that credential is sent.
+  /**
+   * AUTHENTICATED
+   *
+   * Marks a credential as shared.
+   * NOTE: This does not send the actual credential to the related contact, but it's supposed to be
+   * invoked every time that credential is sent.
+   *
+   * Errors:
+   * - Cannot mark the credential as shared (INTERNAL).
+   */
   rpc ShareCredential (ShareCredentialRequest) returns (ShareCredentialResponse) {}
 
-  // Sends many credentials and marks them as shared.
+  /**
+   * AUTHENTICATED
+   *
+   * Sends many credentials and marks them as shared.
+   * NOTE: This does not send the actual credential to the related contact, but it supposed to be
+   * invoked every time that credential is sent.
+   *
+   * Errors:
+   * - Cannot mark credentials as shared (INTERNAL).
+   */
   rpc ShareCredentials (ShareCredentialsRequest) returns (ShareCredentialsResponse) {}
 
-  // Retrieves node information associated with a credential.
-  // TODO: DEPRECATE when we migrate to the Management Console.
+  /**
+   * AUTHENTICATED
+   * DEPRECATED
+   *
+   * Retrieves node information associated with a credential.
+   * This method will be obsolete when we migrate to the Management Console.
+   */
   rpc GetBlockchainData (GetBlockchainDataRequest) returns (GetBlockchainDataResponse) {}
 
-  // Retrieves node information associated with a batch, and optionally, specific
-  // credentials within a batch.
-  rpc GetLedgerData(GetLedgerDataRequest) returns (GetLedgerDataResponse) {}
+  /**
+   * AUTHENTICATED
+   *
+   * Retrieves node information associated with a batch, and optionally, specific
+   * credentials within a batch.
+   * This call invokes two other calls from node service: getBatchState and getCredentialRevocationTime.
+   * See Ledger for more information.
+   */
+  rpc GetLedgerData (GetLedgerDataRequest) returns (GetLedgerDataResponse) {}
 
-  // Publishes a credential batch to the blockchain.
-  // This method also stores the published batch on the database.
-  // However, it does not store the individual credentials on the
-  // console (see StorePublishedCredential).
+  /**
+   * AUTHENTICATED
+   *
+   * Publishes a credential batch to the ledger.
+   * This method also stores the published batch on the database.
+   * However, it does not store the individual credentials on the
+   * console (see StorePublishedCredential).
+   * Ensures to send IssueCredentialBatch Operation wrapped in Atala Operation.
+   * See Ledger and IssueCredentialBatch for more information.
+   *
+   * Errors:
+   * - Failed to extract content hash and issuer DID (INTERNAL).
+   */
   rpc PublishBatch (PublishBatchRequest) returns (PublishBatchResponse) {}
 
-  // This request stores the information associated to a credential in the console database.
-  // The endpoint assumes that the credential has been published in a batch through the PublishBatch endpoint.
+  /**
+   * AUTHENTICATED
+   *
+   * This request stores the information associated with a credential in the console database.
+   * The endpoint assumes that the credential has been published in a batch through the PublishBatch endpoint.
+   *
+   * Errors:
+   * - Credential with ID does not exists (INTERNAL).
+   * - The credential was not issued by the specified issuer (INTERNAL).
+   */
   rpc StorePublishedCredential (StorePublishedCredentialRequest) returns (StorePublishedCredentialResponse) {}
 
-  // Revokes a single credential by publishing the operation on the node and storing
-  // the involved transaction ID in the database.
-  // Ensures to send the CredentialRevoked wrapped in an AtalaMessage to the contact to notify that the credential
-  // was revoked.
+  /**
+   * AUTHENTICATED
+   *
+   * Revokes a single credential by publishing the operation on the node and storing
+   * the involved transaction ID in the database.
+   * Ensures to send the CredentialRevoked wrapped in an AtalaMessage to the contact to notify that the credential
+   * was revoked.
+   * See RevokeCredentialsOperation for more information.
+   *
+   * Errors:
+   * - Internal server error (INTERNAL).
+   */
   rpc RevokePublishedCredential (RevokePublishedCredentialRequest) returns (RevokePublishedCredentialResponse) {}
 
-  // Deletes credentials from the Management Console database.
-  // Returns error when trying to delete published credentials. Revoked credentials can be deleted.
-  // If deletion of one credential fails, the deletion of other credentials also fails.
+  /**
+   * AUTHENTICATED
+   *
+   * Deletes credentials from the Management Console database.
+   * Returns error when trying to delete published credentials. Revoked credentials can be deleted.
+   * If deletion of one credential fails, the deletion of other credentials also fails.
+   *
+   * Errors:
+   * - Published credentials are not revoked (INVALID_ARGUMENT).
+   */
   rpc DeleteCredentials (DeleteCredentialsRequest) returns (DeleteCredentialsResponse) {}
 }
 
-// The Credential Types API.
+/**
+ * The Credential Types API.
+ * Provides a way to operate on credential types.
+ */
 service CredentialTypesService {
-  // Retrieves the available credential types on the authenticated institution.
+  /**
+   * AUTHENTICATED
+   *
+   * Retrieves the available credential types on the authenticated issuer.
+   * See CredentialType for more information.
+   */
   rpc GetCredentialTypes (GetCredentialTypesRequest) returns (GetCredentialTypesResponse) {}
 
-  // Retrieves the credential type on the authenticated institution.
+  /**
+   * AUTHENTICATED
+   *
+   * Retrieves the credential type by its identification on the authenticated issuer.
+   * See CredentialTypeWithRequiredFields for more information.
+   */
   rpc GetCredentialType (GetCredentialTypeRequest) returns (GetCredentialTypeResponse) {}
 
-  // Creates a credential type on the authenticated institution.
+  /**
+   * AUTHENTICATED
+   *
+   * Creates a new credential type on the authenticated issuer.
+   * Responses with the created type information.
+   * See CreateCredentialTypeField and CredentialTypeWithRequiredFields for more information.
+   *
+   * Errors:
+   * - Credential Type Incorrect Mustache Template (INVALID_ARGUMENT).
+   */
   rpc CreateCredentialType (CreateCredentialTypeRequest) returns (CreateCredentialTypeResponse) {}
 
-  // Updates an existing credential type.
+  /**
+   * AUTHENTICATED
+   *
+   * Updates an existing credential type.
+   *
+   * Errors:
+   * - Credential Type Update Incorrect State (INVALID_ARGUMENT).
+   * - Credential Type Incorrect Mustache Template (INVALID_ARGUMENT).
+   */
   rpc UpdateCredentialType (UpdateCredentialTypeRequest) returns (UpdateCredentialTypeResponse) {}
 
-  // Updates an existing credential type and marks it as ready.
+  /**
+   * AUTHENTICATED
+   *
+   * Requests to change credential type state to ready on the authenticated issuer.
+   *
+   * Errors:
+   * - Credential Type Mark Archived As Ready (INVALID_ARGUMENT).
+   */
   rpc MarkAsReadyCredentialType (MarkAsReadyCredentialTypeRequest) returns (MarkAsReadyCredentialTypeResponse) {}
 
-  // Updates an existing credential type and marks it as archived.
+  /**
+   * AUTHENTICATED
+   *
+   * Requests to change credential type state to archived on the authenticated issuer.
+   */
   rpc MarkAsArchivedCredentialType (MarkAsArchivedCredentialTypeRequest) returns (MarkAsArchivedCredentialTypeResponse) {}
 }
 
-// The Groups API.
+/**
+ * The Groups API.
+ * Provides a way to operate on groups.
+ */
 service GroupsService {
-  // Creates a group on the authenticated institution.
+  /**
+   * AUTHENTICATED
+   *
+   * Creates a group on the authenticated issuer.
+   */
   rpc CreateGroup (CreateGroupRequest) returns (CreateGroupResponse) {}
 
-  // Retrieves the available groups on the authenticated institution.
+  /**
+   * AUTHENTICATED
+   *
+   * Retrieves the available groups on the authenticated issuer. Several
+   * filter and sorting options are available for finding specific groups.
+   */
   rpc GetGroups (GetGroupsRequest) returns (GetGroupsResponse) {}
 
-  // Updates an existing group by adding new contacts and removing some of the old ones.
+  /**
+   * AUTHENTICATED
+   *
+   * Updates an existing group by adding new contacts and removing some of the old ones.
+   *
+   * Errors:
+   * - Group does not exist (INVALID_ARGUMENT).
+   * - Group does not match to the issuer (INVALID_ARGUMENT).
+   * - Contacts do not match to the issuer (INVALID_ARGUMENT).
+   * - Group name is not free (INVALID_ARGUMENT).
+   */
   rpc UpdateGroup (UpdateGroupRequest) returns (UpdateGroupResponse) {}
 
-  // Copies group using the existing group ID and passed name.
+  /**
+   * AUTHENTICATED
+   *
+   * Copies group using the existing group ID and passed name.
+   * Responses with a new group ID.
+   *
+   * Errors:
+   * - Group does not exist (INVALID_ARGUMENT).
+   * - Group does not match to the issuer (INVALID_ARGUMENT).
+   * - Group name is not free (INVALID_ARGUMENT).
+   */
   rpc CopyGroup (CopyGroupRequest) returns (CopyGroupResponse) {}
 
-  // Deletes an existing group by its ID.
+  /**
+   * AUTHENTICATED
+   *
+   * Deletes an existing group by its ID.
+   *
+   * Errors:
+   * - Group does not exist (INVALID_ARGUMENT).
+   * - Group does not match to the issuer (INVALID_ARGUMENT).
+   */
   rpc DeleteGroup (DeleteGroupRequest) returns (DeleteGroupResponse) {}
 }
 
-// The API for received credentials.
+/**
+ * The API for received credentials.
+ */
 service CredentialsStoreService {
-  // Stores a received credential.
-  // This is invoked from the wallet after receiving a credential.
+  /**
+   * AUTHENTICATED
+   *
+   * Stores a received credential.
+   * This is invoked from the wallet after receiving a credential.
+   */
   rpc StoreCredential (StoreCredentialRequest) returns (StoreCredentialResponse) {}
 
-  // Finds the received credentials when filters are provided.
+  /**
+   * AUTHENTICATED
+   *
+   * Finds the received credentials when filters are provided.
+   */
   rpc GetStoredCredentialsFor (GetStoredCredentialsForRequest) returns (GetStoredCredentialsForResponse) {}
 
-  // Finds the latest credentialExternalId received.
-  // This is invoked from the wallet to know what the latest received credential is, which enables us to avoid
-  // processing the same received credential twice.
+  /**
+   * AUTHENTICATED
+   *
+   * Finds the latest credentialExternalId received.
+   * This is invoked from the wallet to know what the latest received credential is, which enables us to avoid
+   * processing the same received credential twice.
+   */
   rpc GetLatestCredentialExternalId (GetLatestCredentialExternalIdRequest) returns (GetLatestCredentialExternalIdResponse) {}
 }
 
-// Request to get usage statistics for the authenticated institution.
+/**
+ * Request to get usage statistics for the authenticated issuer.
+ * See ConsoleService.GetStatistics call for more information.
+ */
 message GetStatisticsRequest {
-  // The query interval for inspection.
-  // This can be missing, in which case the response will contain all available statistics.
+  /**
+   * The query interval for inspection.
+   * Optional. If missing, the response will contain all available statistics.
+   */
   TimeInterval interval = 1;
 }
 
-// Response with the usage statistics for the authenticated institution.
+/**
+ * Response with the usage statistics for the authenticated issuer.
+ * See ConsoleService.GetStatistics for more information.
+ */
 message GetStatisticsResponse {
   int32 number_of_contacts = 1; // The total number of contacts created.
-  int32 number_of_contacts_pending_connection = 2; // The total number of contacts that have not yet accepted the connection.
-  int32 number_of_contacts_connected = 3; // The total number of contacts that have accepted the connection.
+  int32 number_of_contacts_pending_connection = 2; // The total number of contacts that are yet to accept a connection.
+  int32 number_of_contacts_connected = 3; // The total number of contacts that have accepted a connection.
   int32 number_of_groups = 4; // The total number of groups created.
-  int32 number_of_credentials_in_draft = 5; // The total number of credentials that have not yet been published to the blockchain.
-  int32 number_of_credentials_published = 6; // The total number of credentials published to the blockchain.
+  int32 number_of_credentials_in_draft = 5; // The total number of credentials that are yet to be published on the blockchain.
+  int32 number_of_credentials_published = 6; // The total number of credentials published on the blockchain.  
   int32 number_of_credentials_received = 7; // The total number of credentials received from contacts.
 }
 
-// Request to register DID.
 // TODO: Verify DID's ownership.
+/**
+ * Request to register a DID.
+ * See ConsoleService.RegisterDID for more information.
+ */
 message RegisterConsoleDIDRequest {
-  // The DID associated with the institution.
-  string did = 1;
-
-  // The way to identify the institution.
-  string name = 2;
-
-  // The logo linked to the institution (optional).
-  bytes logo = 3;
+  string did = 1; // The DID associated with the issuer.
+  string name = 2; // The name of the issuer. Where applicable, it should be recognizable externally (e.g. full name of the university).
+  bytes logo = 3; // Optional. The logo linked to the issuer.
 }
-// Confirmation of DID registration.
+
+/**
+ * Confirmation of DID registration.
+ */
 message RegisterConsoleDIDResponse {}
 
-// Request to get the authenticated user details.
+/**
+ * Request to get the authenticated user details.
+ * See ConsoleService.GetCurrentUser for more information.
+ */
 message GetConsoleCurrentUserRequest {}
-// The authenticated user details.
+
+/**
+ * The authenticated user details.
+ * See ConsoleService.GetCurrentUser for more information.
+ */
 message GetConsoleCurrentUserResponse {
-  string name = 1; // The name.
-  bytes logo = 2; // The associated logo (optional).
+  string name = 1; // The name of the authenticated issuer.
+  bytes logo = 2; // Optional. The associated logo.
 }
 
-// Request to create a contact on the authenticated institution.
+/**
+ * Request to create a contact on the authenticated issuer.
+ */
 message CreateContactRequest {
-  // Optional. When present, the given contact gets assigned to a group with the given name.
   // TODO: We likely need a list of groups instead, also, use group id instead of the name.
+  /**
+   * Optional. When present, the given contact gets assigned to a group with the given name.
+   */
   string group_name = 1;
 
-  // Arbitrary data for the contact. This data should be a valid JSON. If missing, "{}" will be used.
+  /**
+   * Arbitrary data for the contact. This data should be a valid JSON. If missing, "{}" will be used.
+   */
   string json_data = 2;
 
-  // The ID provided by the institution when the contact was created.
-  // An institution cannot have two contacts with the same external ID.
-  // The same ID can be used by different institutions.
+  /**
+   * The ID provided by the issuer when the contact was created.
+   * An issuer cannot have two contacts with the same external ID.
+   * The same ID can be used by different issuers.
+   */
   string external_id = 3;
 
-  // The contact's name. This is required for the Management Console and ignored on the connector.
+  /**
+   * The contact's name. This is required for the Management Console and ignored on the connector.
+   */
   string name = 4;
 
-  // Metadata used to authenticate GenerateConnectionTokenRequest to connector.
-  // Frontend must sign GenerateConnectionTokenRequest with count value equal to number of contacts and
-  // pass signed request metadata through this message.
-  // All fields of this message are required.
+  /**
+   * Metadata used to authenticate GenerateConnectionTokenRequest to connector.
+   * Frontend must sign GenerateConnectionTokenRequest with count value equal to number of contacts and
+   * pass signed request metadata through this message.
+   * All fields of this message are required.
+   */
   ConnectorRequestMetadata generate_connection_tokens_request_metadata = 5;
 }
-// Response after creating a contact.
+
+/**
+ * Response after creating a contact.
+ */
 message CreateContactResponse {
   Contact contact = 1; // The created contact.
 }
 
-// Request to create contacts on the authenticated institution.
-// The request is rejected when one or more of these conditions are met:
-// - No contacts provided.
-// - Any contact is invalid.
-// - Contacts with duplicate external IDs.
-// - Duplicate groups.
-// - A group does not exist in the authenticated institution.
+/**
+ * Request to create contacts on the authenticated issuer.
+ * The request is rejected when one or more of these conditions are met:
+ * - No contacts provided.
+ * - Any contact is invalid.
+ * - Contacts with duplicate external IDs.
+ * - Duplicate groups.
+ * - A group does not exist in the authenticated issuer.
+ */
 message CreateContactsRequest {
-  // Optional, when present, the contacts get assigned to these groups (identified by id).
+  /**
+   * Optional, when present, the contacts get assigned to these groups (identified by id).
+   */
   repeated string groups = 1;
-
-  // The contacts to create.
+  /**
+   * The contacts to create.
+   */
   repeated Contact contacts = 2;
-
   message Contact {
-    // The ID provided by the institution when the contact was created.
-    // An institution cannot have two contacts with the same external ID.
-    // The ID could be repeated in different institutions.
+    /**
+     * The ID provided by the issuer when the contact was created.
+     * An issuer cannot have two contacts with the same external ID.
+     * The ID could be repeated in different issuer.
+     */
     string external_id = 3;
-
-    // The contact's name.
+    /**
+     * The contact's name.
+     */
     string name = 4;
-
-    // Arbitrary data for the contact, should be a valid json, when missing, "{}" will be used,
+    /**
+     * Arbitrary data for the contact, should be a valid json, when missing, "{}" will be used,
+     */
     string json_data = 5;
   }
-
-  // Metadata used to authenticate GenerateConnectionTokenRequest to connector.
-  // Frontend must sign GenerateConnectionTokenRequest with count value equal to 1 and
-  // pass signed request metadata through this message.
-  // All fields of this message are required.
+  /**
+   * Metadata used to authenticate GenerateConnectionTokenRequest to connector.
+   * Frontend must sign GenerateConnectionTokenRequest with count value equal to 1 and
+   * pass signed request metadata through this message.
+   * All fields of this message are required.
+   */
   ConnectorRequestMetadata generate_connection_tokens_request_metadata = 6;
 }
-// Response after creating contacts.
+
+/**
+ * Response after creating contacts.
+ */
 message CreateContactsResponse {
   int32 contacts_created = 1; // the number of contacts created.
 }
 
-// Request to retrieve the contacts from the authenticated institution.
-//
-// The result is sorted by the contact's creation date in ascending order. Contacts with the same creation date are sorted by contact ID.
+/**
+ * Request to retrieve the contacts from the authenticated issuer.
+ * By default, the result is sorted by the contact's creation date in ascending order.
+ * Contacts with the same creation date are sorted by contact ID.
+ */
 message GetContactsRequest {
-  int32 limit = 1; // The maximum amount of contacts to return. The amount must be greater than zero.
-  // The last seen contact (if any). Returned contacts start after this one, just for the connector integration.
+  /**
+   * The maximum amount of contacts to return. The amount must be greater than zero.
+   */
+  int32 limit = 1;
   // TODO: Remove once the connector integration is removed.
+  /**
+   * The last seen contact (if any). Returned contacts start after this one, just for the connector integration.
+   */
   string last_seen_contact_id = 2;
-  // If provided, it gets only the contacts that belong to this group, just for the connector integration.
   // TODO: Remove once the connector integration is removed.
+  /**
+   * If provided, it gets only the contacts that belong to this group, just for the connector integration.
+   */
   string group_name = 3;
-  // Retrieves the next items based on the given scroll ID, when provided.
-  // This applies only to the Management Console, the connector still works with the lastSeenContactId.
+  /**
+   * Retrieves the next items based on the given scroll ID, when provided.
+   * This applies only to the Management Console, the connector still works with the lastSeenContactId.
+   */
   string scroll_id = 4;
-  // When provided, it filters the results based on the given criteria, just for the Management Console.
+  /**
+   * When provided, it filters the results based on the given criteria, just for the Management Console.
+   */
   FilterBy filter_by = 5;
-  // When provided, it sorts the results by the given criteria.
+  /**
+   * When provided, it sorts the results by the given criteria.
+   */
   SortBy sort_by = 6;
-
-  // Possible ways to filter the results from GetContactsRequest.
+  /**
+   * Possible ways to filter the results from GetContactsRequest.
+   */
   message FilterBy {
     string group_name = 1; // If provided, it only gets the contacts that belong to this group.
     Date created_at = 2; // If provided, the contacts should have been created in the given date.
     string name_or_external_id = 3; // If provided, the contacts should partially match the given name or externalId. The resulting SQL query will have the following clause "contacts.name ILIKE %name_or_external_id% OR contacts.external_id ILIKE %name_or_external_id%".
     ContactConnectionStatus connection_status = 5; // If provided, it only gets the contacts that have this connection status.
   }
-
-  // The possible ways to sort the results.
+  /**
+   * The possible ways to sort the results.
+   */
   message SortBy {
-    Field field = 1; // The field used to sort the results by.
-    SortByDirection direction = 2; // Specifies the order (ascending/descending) of the results (ascending by default).
-
-    // The possible fields to sort the results by.
+    /**
+     * The field used to sort the results by.
+     */
+    Field field = 1;
+    /**
+     * Specifies the order (ascending/descending) of the results (ascending by default).
+     */
+    SortByDirection direction = 2;
+    /**
+     * The possible fields to sort the results by.
+     */
     enum Field {
       UNKNOWN = 0; // If the value is missing, we take the default one, CREATED_AT
       CREATED_AT = 1; // The createdAt field.
@@ -323,33 +704,46 @@ message GetContactsRequest {
     }
   }
 }
-// Response with the retrieved contacts.
+
+/**
+ * Response with the retrieved contacts.
+ */
 message GetContactsResponse {
-  // The contacts found.
-  // NOTE: This is only for the connector's implementation, which will be removed once the frontend migrates out of it.
+  // TODO: This is only for the connector's implementation, which will be removed once the frontend migrates out of it.
+  /**
+   * The contacts found.
+   */
   repeated Contact contacts = 1;
-  // The scroll ID to retrieve the next items.
-  // This applies only to the Management Console, the connector still needs to compute the lastSeenContactId.
+  /**
+   * The scroll ID to retrieve the next items.
+   * This applies only to the Management Console, the connector still needs to compute the lastSeenContactId.
+   */
   string scroll_id = 2;
-
-  // The contacts found filled with the credential counters,
-  // NOTE: The connector's implementation does not use this,
+  /**
+   * The contacts found filled with the credential counters,
+   * NOTE: The connector's implementation does not use this,
+   */
   repeated ContactDetails data = 3;
-
-  // Represents a contact in the response.
+  /**
+   * Represents a contact in the response.
+   */
   message ContactDetails {
     Contact contact = 1; // The contact.
     int32 number_of_credentials_received = 2; // The number of credentials received from this contact.
-    // The number of credentials created for this contact (includes draft and published credentials).
-    int32 number_of_credentials_created = 3;
+    int32 number_of_credentials_created = 3; // The number of credentials created for this contact (includes draft and published credentials).
   }
 }
 
-// Request to retrieve a contact from the authenticated institution.
+/**
+ * Request to retrieve a contact from the authenticated issuer.
+ */
 message GetContactRequest {
   string contact_id = 1; // The ID used to find the contact.
 }
-// Response for the retrieved contact.
+
+/**
+ * Response for the retrieved contact.
+ */
 message GetContactResponse {
   Contact contact = 1; // The retrieved contact.
   repeated Group groups = 2; // Available groups.
@@ -357,78 +751,114 @@ message GetContactResponse {
   repeated CManagerGenericCredential issued_credentials = 4; // Credentials found.
 }
 
-// Request to update a contact from the authenticated institution.
-// All fields are required. This is what the contact will be updated to.
+/**
+ * Request to update a contact from the authenticated issuer.
+ * All fields are required. This is what the contact will be updated to.
+ */
 message UpdateContactRequest {
   string contact_id = 1; // The ID for the contact to update.
   string new_external_id = 2; // The new externalId.
   string new_name = 3; // The new name.
   string new_json_data = 4; // The new arbitrary JSON data. If missing, "{}" will be used
 }
-// Response after updating the contact.
+
+/**
+ * Response after updating the contact.
+ */
 message UpdateContactResponse {}
 
-// Request to delete a contact from the authenticated institution.
+/**
+ * Request to delete a contact from the authenticated issuer.
+ */
 message DeleteContactRequest {
-  string contact_id = 1; // The ID used to delete the contact.
-  // If true, related credentials will be deleted along with the contact.
-  // If false and has any related credentials, the request will fail to delete the contact.
-  // If false and has no related credentials, only the contact will be deleted.
+  /**
+   * The ID used to delete the contact.
+   */
+  string contact_id = 1;
+  /**
+   * If true, related credentials will be deleted along with the contact.
+   * If false and has any related credentials, the request will fail to delete the contact.
+   * If false and has no related credentials, only the contact will be deleted.
+   */
   bool delete_credentials = 2;
 }
 
-// Response for the deleted contact.
-message DeleteContactResponse {
-}
+/**
+ * Response for the deleted contact.
+ */
+message DeleteContactResponse {}
 
-// Request to generate a connection token for the given contact on the authenticated institution.
+/**
+ * Request to generate a connection token for the given contact on the authenticated issuer.
+ */
 message GenerateConnectionTokenForContactRequest {
   string contact_id = 1; // The contact that will be linked to the token.
 }
-// Response after generating a connection token.
+
+/**
+ * Response after generating a connection token.
+ */
 message GenerateConnectionTokenForContactResponse {
   string token = 1; // The token that needs to be shared with the user to accept the connection.
 }
 
-// Request to create a new credential issuance.
+/**
+ * Request to create a new credential issuance.
+ * It creates all needed contacts, groups, and credentials. After that it binds credentials to the contacts.
+ */
 message CreateCredentialIssuanceRequest {
   string name = 1; // Name of the credential issuance.
-  string credential_type_id = 2; // // The ID (UUID) of the credential type used as template for this credential.
+  string credential_type_id = 2; // The ID (UUID) of the credential type used as template for this credential.
   repeated CredentialIssuanceContact credential_issuance_contacts = 3; // The contacts and their credential data.
 }
-// Response to creating a credential issuance.
+
+/**
+ * Response to creating a credential issuance.
+ */
 message CreateCredentialIssuanceResponse {
   string credential_issuance_id = 1; // ID of the credential issuance just created.
 }
 
-// Request to create a credential issuance for the authenticated institution.
-// The difference with CreateCredentialIssuanceRequest is that this request takes a JSON parameter.
+/**
+ * Request to create a credential issuance for the authenticated issuer.
+ * The difference with CreateCredentialIssuanceRequest is that this request takes a JSON parameter.
+ */
 message CreateGenericCredentialBulkRequest {
-  // The JSON that contains the credentials data in this issuance.
-  // The expected structure is:
-  // {
-  //    "issuance_name": String,
-  //    "credential_type_id": String,
-  //    "drafts" : [
-  //      {
-  //        "external_id": String,
-  //        "credential_data": JSON,
-  //        "group_ids": [String],
-  //      }
-  //    ]
-  // }
+  /**
+   * The JSON that contains the credentials data in this issuance.
+   * The expected structure is:
+   * {
+   *    "issuance_name": String,
+   *    "credential_type_id": String,
+   *    "drafts" : [
+   *      {
+   *        "external_id": String,
+   *        "credential_data": JSON,
+   *        "group_ids": [String],
+   *      }
+   *    ]
+   * }
+   */
   string credentials_json = 1;
 }
-// Response when a bulk of credentials is created.
+
+/**
+ * Response when a bulk of credentials is created.
+ */
 message CreateGenericCredentialBulkResponse {
   string credential_issuance_id = 1; // The ID of the credential issuance.
 }
 
-// Request to get a credential issuance.
+/**
+ * Request to get a credential issuance.
+ */
 message GetCredentialIssuanceRequest {
   string credential_issuance_id = 1; // ID of the credential issuance.
 }
-// Response to getting a credential issuance.
+
+/**
+ * Response to getting a credential issuance.
+ */
 message GetCredentialIssuanceResponse {
   string name = 1; // Name of the credential issuance.
   string credential_type_id = 2; // // The ID (UUID) of the credential type used as template for this credential.
@@ -436,90 +866,143 @@ message GetCredentialIssuanceResponse {
   repeated CredentialIssuanceContact credential_issuance_contacts = 4; // The contacts and their credential data.
 }
 
-// Credential Types.
-
-// Request to get a list of all credential types on the authenticated institution.
+/**
+ * Request to get a list of all credential types on the authenticated issuer.
+ */
 message GetCredentialTypesRequest {}
-// Response with the retrieved credential types.
+
+/**
+ * Response with the retrieved credential types.
+ */
 message GetCredentialTypesResponse {
   repeated CredentialType credential_types = 1; // List of the credential types.
 }
 
-// Request to get a credential type on the authenticated institution.
+/**
+ * Request to get a credential type on the authenticated issuer.
+ */
 message GetCredentialTypeRequest {
   string credential_type_id = 1; // Id of the credential type.
 }
-// Response with the retrieved credential type.
+
+/**
+ * Response with the retrieved credential type.
+ */
 message GetCredentialTypeResponse {
   CredentialTypeWithRequiredFields credential_type = 1; // The retrieved credential type.
 }
 
-// Request to create a credential type on the authenticated institution.
+/**
+ * Request to create a credential type on the authenticated issuer.
+ */
 message CreateCredentialTypeRequest {
   CreateCredentialType credential_type = 2; // New credential type.
 }
-// Response with the created credential type.
+
+/**
+ * Response with the created credential type.
+ */
 message CreateCredentialTypeResponse {
   CredentialTypeWithRequiredFields credential_type = 1; // The created credential type.
 }
 
-// Request to update a credential type on the authenticated institution.
+/**
+ * Request to update a credential type on the authenticated issuer.
+ */
 message UpdateCredentialTypeRequest {
   UpdateCredentialType credential_type = 2; // Credential type to update.
 }
-// Empty response after credential type update.
+
+/**
+ * Empty response after credential type update.
+ */
 message UpdateCredentialTypeResponse {}
 
-// Request to change credential type state to ready on the authenticated institution.
+/**
+ * Request to change credential type state to ready on the authenticated issuer.
+ */
 message MarkAsReadyCredentialTypeRequest {
   string credential_type_id = 1; // Credential type to update.
 }
-// Empty response after state update.
+
+/**
+ * Empty response after state update.
+ */
 message MarkAsReadyCredentialTypeResponse {}
 
-// Request to change state to archived in credential type on the authenticated institution.
+/**
+ * Request to change state to archived in credential type on the authenticated issuer.
+ */
 message MarkAsArchivedCredentialTypeRequest {
   string credential_type_id = 1; // Credential type to update.
 }
-// Empty response after state update.
+
+/**
+ * Empty response after state update.
+ */
 message MarkAsArchivedCredentialTypeResponse {}
 
-// Request to create a group on the authenticated institution.
+/**
+ * Request to create a group on the authenticated issuer.
+ * See GroupsService.CreateGroup for more information.
+ */
 message CreateGroupRequest {
   string name = 1; // The group name, which must not exist.
   repeated string contact_ids = 2; // Contacts to put in the new group. New contacts cannot be duplicate.
 }
-// Response after creating a group.
+
+/**
+ * Response after creating a group.
+ */
 message CreateGroupResponse {
   Group group = 1; // The group created and its associated details.
 }
 
-// Request to retrieve the available groups on the authenticated institution.
+/**
+ * Request to retrieve the available groups on the authenticated issuer.
+ * See GroupsService.GetGroups for more information.
+ */
 message GetGroupsRequest {
-  // Optional. When provided, only groups related to the given contact are included.
   // TODO: Remove when the connector integration is removed.
+  /**
+   * Optional. When provided, only groups related to the given contact are included.
+   */
   string contact_id = 1;
-  // The maximum amount of groups to return (optional, default value is 10).
+  /**
+   * Optional, default value is 10. The maximum amount of groups to return.
+   */
   int32 limit = 2;
-  // The offset for pagination (optional, default is 0).
+  /**
+   * Optional, default is 0. The offset for pagination.
+   */
   int32 offset = 3;
-  // When provided, filter the results based on the given criteria, just for the Management Console.
+  /**
+   * When provided, filter the results based on the given criteria, just for the Management Console.
+   */
   FilterBy filter_by = 4;
-  // Optional. When provided, it sorts the results by the given criteria (sorted by name in ascending order by default).
+  /**
+   * Optional. When provided, it sorts the results by the given criteria (sorted by name in ascending order by default).
+   */
   SortBy sort_by = 5;
-  // The possible ways to filter the results from GetGroupsRequest.
+  /**
+   * The possible ways to filter the results from GetGroupsRequest.
+   */
   message FilterBy {
     string name = 1; // If provided, it returns the groups containing the given name (case insensitive).
     Date created_after = 2; // If provided, it returns groups created at the given date or after.
     Date created_before = 3; // If provided, it returns groups created before or at the given date.
     string contact_id = 4; // If provided, it returns groups related to the given contact only.
   }
-  // The possible ways to sort the results.
+  /**
+   * The possible ways to sort the results.
+   */
   message SortBy {
     Field field = 1; // The field used to sort the results by.
     SortByDirection direction = 2; // Sorts results in ascending/descending order (ascending by default).
 
-    // The possible fields to sort the results by.
+    /**
+     * The possible fields to sort the results by.
+     */
     enum Field {
       UNKNOWN = 0; // If the value is missing, we take the default one: NAME.
       NAME = 1; // The name field.
@@ -528,98 +1011,157 @@ message GetGroupsRequest {
     }
   }
 }
-// Response with the available groups.
+
+/**
+ * Response with the available groups.
+ */
 message GetGroupsResponse {
-  // The available groups.
+  /**
+   * The available groups.
+   */
   repeated Group groups = 1;
-  // The total number of groups that matches the filterBy criteria supplied in request,
-  // used to offset based pagination to compute the number of available pages.
+  /**
+   * The total number of groups that matches the filterBy criteria supplied in request,
+   * used to offset based pagination to compute the number of available pages.
+   */
   int32 total_number_of_groups = 2;
 }
 
-// Request to update a group.
+/**
+ * Request to update a group.
+ * See GroupsService.UpdateGroupRequest for more information.
+ */
 message UpdateGroupRequest {
   string group_id = 1; // The ID of the existing group.
   repeated string contact_ids_to_add = 2; // The list of contact IDs to be added to the specified group.
   repeated string contact_ids_to_remove = 3; // The list of contact IDs to be removed from the specified group.
   string name = 4; // The new name for the group.
 }
-// Response after updating a group.
+
+/**
+ * Response after updating a group.
+ * See GroupsService.UpdateGroup to see possible errors.
+ */
 message UpdateGroupResponse {}
 
-// Request to copy a group.
+/**
+ * Request to copy a group.
+ */
 message CopyGroupRequest {
   string group_id = 1; // The ID of the existing group.
   string name = 2; // The new name of the copied group.
 }
-// Response after copying a group.
+
+/**
+ * Response after copying a group.
+ * See GroupsService.CopyGroup to see possible errors.
+ */
 message CopyGroupResponse {
   string group_id = 1; // The new group's ID.
 }
 
-// Request to delete a group.
+/**
+ * Request to delete a group.
+ */
 message DeleteGroupRequest {
   string group_id = 1; // The ID of the existing group to delete.
 }
 
-// Response after deleting a group.
+/**
+ * Response after deleting a group.
+ * See GroupsService.DeleteGroup to see possible errors.
+ */
 message DeleteGroupResponse {}
 
-// Request to create a credential on the authenticated institution.
+/**
+ * Request to create a credential on the authenticated issuer.
+ * See CredentialsService.CreateGenericCredential for more information.
+ */
 message CreateGenericCredentialRequest {
-  // The contact ID to link the credential to.
-  // Required if the externalId is not provided, it is ignored otherwise.
+  /**
+   * The contact ID to link the credential to.
+   * Required if the external ID is not provided, it is ignored otherwise.
+   */
   string contact_id = 1;
-
-  // The credential payload as a JSON string.
-  // A valid non-empty JSON is required.
+  /**
+   * The credential payload as a JSON string.
+   * A valid non-empty JSON is required.
+   */
   string credential_data = 2;
-
-  // The group name linked to a credential.
   // TODO: Remove legacy argument, this was used for the Dec/2019 Georgia demo only.
+  /**
+   * The group name linked to a credential.
+   */
   string group_name = 3;
-
-  // The ID provided by the institution when the contact was created. If this timestamp is not provided,
-  // the contactId is expected.
+  /**
+   * The ID provided by the issuer when the contact was created. If this timestamp is not provided,
+   * the contact ID is expected.
+   */
   string external_id = 4;
-
-  // The ID (UUID) of the credential type used as a template for this credential.
+  /**
+   * The ID (UUID) of the credential type used as a template for this credential.
+   */
   string credential_type_id = 5;
 }
-// Response when a credential is created.
+
+/**
+ * Response when a credential is created.
+ * See CManagerGenericCredential, CredentialsService.CreateGenericCredential for more information.
+ */
 message CreateGenericCredentialResponse {
   CManagerGenericCredential generic_credential = 1; // The credential details.
 }
 
-// The authenticated institution is retrieving its issued credentials.
-//
-// The results are sorted in ascending order by creation date. Results with same creation date are sorted by their ID.
+/**
+ * The authenticated issuer is retrieving its issued credentials.
+ * The results are sorted in ascending order by creation date. Results with same creation date are sorted by their ID.
+ * See CredentialsService.GetGenericCredentials for more information.
+ */
 message GetGenericCredentialsRequest {
-  // The maximum amount of credentials to return (optional, default value is 10).
+  /**
+   * Optional, default value is 10. The maximum amount of credentials to return.
+   */
   int32 limit = 1;
-  // The offset for pagination (optional, default is 0).
 
-  reserved 2; // Removed lastSeenCredentialId field 
+  /**
+   * Removed lastSeenCredentialId field
+   */
+  reserved 2;
   reserved "lastSeenCredentialId";
 
+  /**
+   * Optional, default is 0. The offset for pagination.
+   */
   int32 offset = 3;
-  // When provided, filter the results based on the given criteria, just for the Management Console.
+
+  /**
+   * When provided, filter the results based on the given criteria, just for the Management Console.
+   */
   FilterBy filter_by = 4;
-  // Optional. When provided, it sorts the results by the given criteria (sorted by name in ascending order by default).
+  /**
+   * Optional. When provided, it sorts the results by the given criteria (sorted by name in ascending order by default).
+   */
   SortBy sort_by = 5;
 
-  // The possible ways to filter the results from GetGenericCredentialsRequest.
+  /**
+   * The possible ways to filter the results from GetGenericCredentialsRequest.
+   */
   message FilterBy {
     string credential_type = 1; // If provided, it returns the credentials containing the given type.
     Date created_after = 2; // If provided, it returns credentials created at the given date or after.
     Date created_before = 3; // If provided, it returns credentials created before or at the given date.
   }
-  // The possible ways to sort the results.
+
+  /**
+   * The possible ways to sort the results.
+   */
   message SortBy {
     Field field = 1; // The field used to sort the results by.
     SortByDirection direction = 2; // Sorts results in ascending/descending order (ascending by default).
 
-    // The possible fields to sort the results by.
+    /**
+     * The possible fields to sort the results by.
+     */
     enum Field {
       UNKNOWN = 0; // If the value is missing, we take the default one: NAME.
       CREDENTIAL_TYPE = 1; // The credential type field.
@@ -627,153 +1169,237 @@ message GetGenericCredentialsRequest {
     }
   }
 }
-// Response with the credentials found.
+
+/**
+ * Response with the credentials found.
+ */
 message GetGenericCredentialsResponse {
   repeated CManagerGenericCredential credentials = 1; // The retrieved credentials.
 }
 
-// Request to share a credential, which just marks the credential as sent.
-//
-// This is intended to be invoked after sending the credential through the connector.
-//
 // TODO: Consider renaming this to MarkCredentialAsSent.
+/**
+ * Request to share a credential, which just marks the credential as sent.
+ * This is intended to be invoked after sending the credential through the connector.
+ */
 message ShareCredentialRequest {
   string cmanager_credential_id = 2; // cmanager internal credential ID.
 }
-// Response after sharing a credential.
+
+/**
+ * Response after sharing a credential.
+ */
 message ShareCredentialResponse {}
 
-// Request to share many credentials, which sends credentials through the connector and marks them as sent.
+/**
+ * Request to share many credentials, which sends credentials through the connector and marks them as sent.
+ * See CredentialsService.ShareCredentials for more information.
+ */
 message ShareCredentialsRequest {
-  // Non-empty list of IDs of credentials that will be sent to the connector, and later marked as shared.
+  /**
+   * Non-empty list of IDs of credentials that will be sent to the connector, and later marked as shared.
+   */
   repeated string credentials_ids = 1;
-
-  // Request to connector containing messages with signed credentials.
+  /**
+   * Request to connector containing messages with signed credentials.
+   */
   SendMessagesRequest send_messages_request = 2;
-
-  // Metadata used to authenticate SendMessagesRequest to connector.
-  // Frontend must sign SendMessagesRequest that can be fetched.
-  // From GetShareCredentialsRequestToSign gRPC Management Console method and
-  // pass signed request through this message.
-  // All fields of this message are required.
+  /**
+   * Metadata used to authenticate SendMessagesRequest to connector.
+   * Frontend must sign SendMessagesRequest that can be fetched.
+   * From GetShareCredentialsRequestToSign gRPC Management Console method and
+   * pass signed request through this message.
+   * All fields of this message are required.
+   */
   ConnectorRequestMetadata send_messages_request_metadata = 3;
 }
-// Response after sharing a credential.
+
+/**
+ * Response after sharing a credential.
+ */
 message ShareCredentialsResponse {}
 
-// Request to get the credentials for the given contact.
-//
-// As the expected amount of credentials per contact is small, no pagination is required.
+/**
+ * Request to get the credentials for the given contact.
+ * As the expected amount of credentials per contact is small, no pagination is required.
+ */
 message GetContactCredentialsRequest {
   string contact_id = 1;
 }
-// Response with the contact credentials.
+
+/**
+ * Response with the contact credentials.
+ * See CManagerGenericCredential for more information.
+ */
 message GetContactCredentialsResponse {
   repeated CManagerGenericCredential generic_credentials = 1; // The credentials found.
 }
 
-// Request to get blockchain-related information for a credential.
+/**
+ * Request to get blockchain-related information for a credential.
+ */
 message GetBlockchainDataRequest {
   string encoded_signed_credential = 1; // Encoded credential we want to retrieve information for.
 }
 
-// Response with the information found in the blockchain.
+/**
+ * Response with the information found in the blockchain.
+ * See TransactionInfo for more information.
+ */
 message GetBlockchainDataResponse {
   TransactionInfo issuance_proof = 1; // Transaction information associated with the credential issuance event.
 }
 
-// Request to store a received credential.
+/**
+ * Request to store a received credential.
+ * See CredentialsStoreService.StoreCredential for more information.
+ */
 message StoreCredentialRequest {
   string connection_id = 1; // The connection ID retrieved from the connector message that carried the credential.
   string encoded_signed_credential = 2; // The encoded signed data.
   string credential_external_id = 3; // A credential's external id (currently, the ID of the connector message that carried it).
   string batch_inclusion_proof = 4; // Inclusion proof associated to the encodedSignedCredential.
 }
-// Response after storing a received credential.
-message StoreCredentialResponse {
+
+/**
+ * Response after storing a received credential.
+ */
+message StoreCredentialResponse {}
+
+/**
+ * Request to find the received credentials.
+ */
+message GetStoredCredentialsForRequest {
+  // TODO: Rename to `contactId` after removing legacy methods.
+  string individual_id = 1; // Optional, allows to retrieve received credentials from a single contact.
 }
 
-// Request to find the received credentials.
-message GetStoredCredentialsForRequest {
-  // Optional, allows to retrieve received credentials from a single contact.
-  // TODO: Rename to `contactId` after removing legacy methods.
-  string individual_id = 1;
-}
-// Response with the received credentials.
+/**
+ * Response with the received credentials.
+ * See StoredSignedCredential for more information.
+ */
 message GetStoredCredentialsForResponse {
   repeated StoredSignedCredential credentials = 1; // The received credentials.
 }
 
-// Request to find the latest credentialExternalId.
+/**
+ * Request to find the latest credentialExternalId.
+ */
 message GetLatestCredentialExternalIdRequest {}
-// Response with the latest credentialExternalId.
+
+/**
+ * Response with the latest credentialExternalId.
+ */
 message GetLatestCredentialExternalIdResponse {
   string latest_credential_external_id = 1;
 }
 
-// Request to publish a credential batch to the blockchain.
+/**
+ * Request to publish a credential batch to the blockchain.
+ * See CredentialsService.PublishBatch, IssueCredentialBatch, SignedAtalaOperation for more information.
+ */
 message PublishBatchRequest {
   SignedAtalaOperation issue_credential_batch_operation = 1; // A signed instance of IssueCredentialBatch operation.
 }
-// Response after publishing a batch.
+
+/**
+ * Response after publishing a batch.
+ * See CredentialsService.PublishBatch, PublishBatchRequest, TransactionInfo for more information.
+ */
 message PublishBatchResponse {
   string batch_id = 1; // The protocol assigned ID for the batch.
   TransactionInfo transaction_info = 2; // The blockchain transaction details where the batch was published.
 }
 
-// Request to store a credential for which its batch has been published.
+/**
+ * Request to store a credential for which its batch has been published.
+ * See CredentialsService.StorePublishedCredential for more information.
+ */
 message StorePublishedCredentialRequest {
   string encoded_signed_credential = 1; // The encoded credential to store.
   string console_credential_id = 2; // Management Console internal credential ID.
   string batch_id = 3; // The protocol ID associated with the batch that contains this credential.
   string encoded_inclusion_proof = 4; // The Merkle proof of inclusion for the batch associated with the credential.
 }
+
+/**
+ * Response after publishing a credential.
+ */
 message StorePublishedCredentialResponse {}
 
-// Request to revoke a published credential.
+/**
+ * Request to revoke a published credential.
+ * See CredentialsService.RevokePublishedCredential, RevokeCredentials, SignedAtalaOperation for more information.
+ */
 message RevokePublishedCredentialRequest {
-  string credential_id = 1; // The internal credential ID, used to link the revocation transaction ID. It must be an UUID.
-  // A signed instance of the RevokeCredentials operation.
-  // Note that even though the operation allows many credentials to be revoked, the request
-  // is only accepted when only a single credential involved.
+  /**
+   * The internal credential ID, used to link the revocation transaction ID. It must be an UUID.
+   */
+  string credential_id = 1;
+  /**
+   * A signed instance of the RevokeCredentials operation.
+   * Note that even though the operation allows many credentials to be revoked, the request
+   * is only accepted when only a single credential involved.
+   */
   SignedAtalaOperation revoke_credentials_operation = 2;
 }
-// Response after revoking a credential.
+
+/**
+ * Response after revoking a credential.
+ * See CredentialsService.RevokePublishedCredential, TransactionInfo for more information.
+ */
 message RevokePublishedCredentialResponse {
   TransactionInfo transaction_info = 1; // The blockchain transaction details for the revocation.
 }
 
-// Request to delete many credentials.
+/**
+ * Request to delete many credentials.
+ */
 message DeleteCredentialsRequest {
   repeated string credentials_ids = 1; // IDs of credentials to delete (non-empty).
 }
 
-// Confirmation of credential deletion.
+/**
+ * Confirmation of credential deletion.
+ */
 message DeleteCredentialsResponse {}
 
-// Requests ledger data for a specific batch and credential recorded by the node.
+/**
+ * Requests ledger data for a specific batch and credential recorded by the node.
+ */
 message GetLedgerDataRequest {
-  string batch_id = 1; // The batchId (assigned by the protocol) that we want information to be returned for.
-  // Optional. The credential hash that we want information to be returned for. We assume that the credential
-  // was issued in the batch associated with `batchId`.
+  /**
+   * The batchId (assigned by the protocol) that we want information to be returned for.
+   */
+  string batch_id = 1;
+  /**
+   * Optional. The credential hash that we want information to be returned for. We assume that the credential
+   * was issued in the batch associated with `batchId`.
+   */
   bytes credential_hash = 2;
 }
 
-// Returns the ledger data from the node associated to a batch and credential.
+/**
+ * Returns the ledger data from the node associated to a batch and credential.
+ * See CredentialsService.GetLedgerData and LedgerData for more information.
+ */
 message GetLedgerDataResponse {
   LedgerData batch_issuance = 1; // If present, the ledger data associated with the issuance of the batch requested.
   LedgerData batch_revocation = 2; // If present, the ledger data associated with the revocation of the batch requested.
   LedgerData credential_revocation = 3; // If present, the ledger data associated with the revocation of the credential requested.
 }
 
-// Request to update participant's profile name and logo.
+/**
+ * Request to update participant's profile name and logo.
+ * See ConsoleService.UpdateParticipantProfile for more information.
+ */
 message ConsoleUpdateProfileRequest {
-  // The way to identify the institution.
-  string name = 1;
-  // The logo linked to the institution (optional).
-  // If logo is missing, the field will be set to empty.
-  bytes logo = 2;
+  string name = 1; // The name of the issuer. Where applicable, it should be recognizable externally (e.g. full name of the university).
+  bytes logo = 2; // Optional. The logo linked to the issuer. If logo is missing, the field will be set to empty.
 }
 
-// Confirmation of participant's profile updated.
+/**
+ * Confirmation of participant's profile updated.
+ * See ConsoleService.UpdateParticipantProfile for more information.
+ */
 message ConsoleUpdateProfileResponse {}
