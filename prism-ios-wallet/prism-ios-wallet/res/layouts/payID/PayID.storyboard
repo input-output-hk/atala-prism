@@ -478,6 +478,9 @@
                                     <constraint firstAttribute="height" constant="68" id="Bes-28-A34"/>
                                 </constraints>
                             </view>
+                            <imageView hidden="YES" clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFit" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="ico_ok" translatesAutoresizingMaskIntoConstraints="NO" id="bPJ-e2-rr8">
+                                <rect key="frame" x="359" y="339.5" width="14" height="14"/>
+                            </imageView>
                             <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="* Scan the extended public key from your wallet. All the addresses in your wallet will be added." textAlignment="natural" lineBreakMode="tailTruncation" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="2ex-Mx-oFS">
                                 <rect key="frame" x="31" y="386.5" width="352" height="33.5"/>
                                 <fontDescription key="fontDescription" type="system" pointSize="14"/>
@@ -505,6 +508,7 @@
                             <constraint firstItem="gTB-pW-QHv" firstAttribute="top" secondItem="0mo-em-ngq" secondAttribute="top" constant="91" id="2K5-bK-QnR"/>
                             <constraint firstItem="0mo-em-ngq" firstAttribute="trailing" secondItem="63q-Rr-evl" secondAttribute="trailing" constant="31" id="4Kl-AG-Lys"/>
                             <constraint firstItem="cba-Oa-bLY" firstAttribute="top" secondItem="63q-Rr-evl" secondAttribute="bottom" constant="31" id="4Rx-Yq-Akv"/>
+                            <constraint firstItem="bPJ-e2-rr8" firstAttribute="trailing" secondItem="cba-Oa-bLY" secondAttribute="trailing" constant="-10" id="6Ab-pu-NYP"/>
                             <constraint firstItem="2ex-Mx-oFS" firstAttribute="leading" secondItem="0mo-em-ngq" secondAttribute="leading" constant="31" id="Ax9-KF-eik"/>
                             <constraint firstItem="kMm-ek-TQT" firstAttribute="top" secondItem="gTB-pW-QHv" secondAttribute="bottom" constant="8" id="FVr-Ag-Aqw"/>
                             <constraint firstItem="63q-Rr-evl" firstAttribute="leading" secondItem="0mo-em-ngq" secondAttribute="leading" constant="31" id="Fk1-f7-VS6"/>
@@ -514,6 +518,7 @@
                             <constraint firstAttribute="trailing" secondItem="UyZ-E3-DT6" secondAttribute="trailing" id="Ib0-qH-san"/>
                             <constraint firstItem="0mo-em-ngq" firstAttribute="trailing" secondItem="9ck-j7-0fS" secondAttribute="trailing" constant="31" id="Iqc-OO-6VK"/>
                             <constraint firstItem="gTB-pW-QHv" firstAttribute="leading" secondItem="0mo-em-ngq" secondAttribute="leading" constant="31" id="OMJ-aP-VvE"/>
+                            <constraint firstItem="bPJ-e2-rr8" firstAttribute="centerY" secondItem="cba-Oa-bLY" secondAttribute="centerY" constant="2" id="PN7-q7-zRI"/>
                             <constraint firstItem="0mo-em-ngq" firstAttribute="bottom" secondItem="9ck-j7-0fS" secondAttribute="bottom" constant="31" id="Twk-FC-9Ra"/>
                             <constraint firstItem="2ex-Mx-oFS" firstAttribute="top" secondItem="cba-Oa-bLY" secondAttribute="bottom" constant="8" id="U4f-Tt-97i"/>
                             <constraint firstItem="0mo-em-ngq" firstAttribute="trailing" secondItem="2ex-Mx-oFS" secondAttribute="trailing" constant="31" id="U5c-47-QaI"/>
@@ -529,6 +534,7 @@
                     </view>
                     <navigationItem key="navigationItem" id="u94-iI-Pfb"/>
                     <connections>
+                        <outlet property="addressValidImg" destination="bPJ-e2-rr8" id="iVr-mF-0ut"/>
                         <outlet property="nameInfoLbl" destination="kMm-ek-TQT" id="3l9-Wi-Wfr"/>
                         <outlet property="nameTextField" destination="gTB-pW-QHv" id="QW3-3G-QvA"/>
                         <outlet property="nameValidImg" destination="g7L-zs-gS9" id="6ZO-1b-Q7P"/>

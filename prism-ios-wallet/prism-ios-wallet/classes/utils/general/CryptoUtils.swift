@@ -96,4 +96,11 @@ class CryptoUtils: NSObject {
         }
         return true
     }
+    
+    func isValidShelleyAddress(address: String) -> Bool {
+        
+        let range = address.range(of: #"addr(?:_test)?1[qpzry9x8gf2tvdw0s3jn54khce6mua7l]+"#,
+                                     options: .regularExpression)
+        return range != nil
+    }
 }

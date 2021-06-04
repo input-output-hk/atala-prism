@@ -16,6 +16,7 @@ class PayIDSetupViewController: BaseViewController, PayIDScannerDelegate, UIText
     @IBOutlet weak var nextButton: UIButton!
     @IBOutlet weak var nameInfoLbl: UILabel!
     @IBOutlet weak var nameValidImg: UIImageView!
+    @IBOutlet weak var addressValidImg: UIImageView!
 
     var canContinue: Bool = false
 
@@ -23,7 +24,7 @@ class PayIDSetupViewController: BaseViewController, PayIDScannerDelegate, UIText
         return NavBarCustomStyle(hasNavBar: true, isWhite: false, title: "pay_id_setup_title".localize(),
                                  hasBackButton: true)
     }
-    
+
     var presenterImpl = PayIDSetupPresenter()
     override var presenter: BasePresenter { return presenterImpl }
 
@@ -44,15 +45,15 @@ class PayIDSetupViewController: BaseViewController, PayIDScannerDelegate, UIText
         nameTextField.textField.delegate = self
         nameTextField.textField.addRightViewWith(text: "pay_id_setup_name_field_right".localize())
 
-        scanTextField.config(title: "pay_id_setup_scan_field".localize())
+        scanTextField.config(title: "pay_id_setup_scan_field".localize(), trailing: 30)
         scanTextField.textField.delegate = self
         scanTextField.textField.addRightViewWith(image: UIImage.init(named: "ico_qr")!)
         scanTextField.textField.rightView?.addOnClickListener(action: openCamera)
-        
+
         nextButton.addRoundCorners(radius: AppConfigs.CORNER_RADIUS_BUTTON)
         presenterImpl.createAccount()
     }
-    
+
     func toogleNameAvailable(isAvailable: Bool?) {
         guard let isAvailable = isAvailable else {
             nameInfoLbl.text = "pay_id_setup_name_field_tip".localize()
@@ -69,6 +70,19 @@ class PayIDSetupViewController: BaseViewController, PayIDScannerDelegate, UIText
             nameInfoLbl.text = "pay_id_setup_name_field_unavailable".localize()
             nameInfoLbl.textColor = .appRed
             nameValidImg.image = #imageLiteral(resourceName: "ico_err")
+        }
+    }
+    
+    func toogleaddressValid(isValid: Bool?) {
+        guard let isValid = isValid else {
+            addressValidImg.isHidden = true
+            return
+        }
+        addressValidImg.isHidden = false
+        if isValid {
+            addressValidImg.image = #imageLiteral(resourceName: "ico_ok")
+        } else {
+            addressValidImg.image = #imageLiteral(resourceName: "ico_err")
         }
     }
 
@@ -90,6 +104,8 @@ class PayIDSetupViewController: BaseViewController, PayIDScannerDelegate, UIText
         }
         if textField == nameTextField.textField {
             presenterImpl.validateName(name: textField.text ?? "")
+        } else if textField == scanTextField.textField {
+            presenterImpl.validateaddress(address: textField.text ?? "")
         }
     }
 
@@ -98,7 +114,7 @@ class PayIDSetupViewController: BaseViewController, PayIDScannerDelegate, UIText
         textField.resignFirstResponder()
         return true
     }
-    
+
     func textField(_ textField: UITextField, shouldChangeCharactersIn range: NSRange,
                    replacementString string: String) -> Bool {
         if textField == nameTextField.textField {
@@ -143,7 +159,7 @@ class PayIDSetupViewController: BaseViewController, PayIDScannerDelegate, UIText
 }
 
 extension PayIDSetupViewController: SegueableScreen {
-    
+
     func configScreenFromSegue(params: [Any?]?) {
         if let credentials = params as? [Credential] {
             presenterImpl.credentials = credentials

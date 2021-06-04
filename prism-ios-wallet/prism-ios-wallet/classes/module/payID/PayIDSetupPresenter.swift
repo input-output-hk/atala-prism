@@ -259,6 +259,15 @@ class PayIDSetupPresenter: BasePresenter, ConnectionsWorkerDelegate {
         })
     }
 
+    func validateaddress(address: String) {
+
+        if address.isEmpty {
+            viewImpl?.toogleaddressValid(isValid: nil)
+            return
+        }
+        self.viewImpl?.toogleaddressValid(isValid: CryptoUtils.global.isValidShelleyAddress(address: address))
+    }
+
     // MARK: ConnectionsWorkerDelegate
 
     func contactsFetched(contacts: [Contact]) {
