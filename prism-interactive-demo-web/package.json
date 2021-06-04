@@ -44,11 +44,14 @@
     "prettier": "1.16.1"
   },
   "scripts": {
-    "prestart": "./scripts/compile-protos.sh",
-    "start": "./scripts/copyEnvVarsToWindow.sh && cp env-config.js ./public/ && react-scripts start",
-    "prebuild": "./scripts/compile-protos.sh",
+    "compile-protos": "./scripts/compile-protos.sh",
+    "prestart": "npm run compile-protos && ENV_FILE=.env ./scripts/copyEnvVarsToWindow.sh && cp env-config.js ./public/",
+    "predev": "npm run compile-protos && ENV_FILE=.env.local ./scripts/copyEnvVarsToWindow.sh && cp env-config.js ./public/",
+    "start": "react-scripts start",
+    "dev": "react-scripts start",
+    "prebuild": "npm run compile-protos",
     "build": "react-scripts build",
-    "pretest": "./scripts/compile-protos.sh",
+    "pretest": "npm run compile-protos",
     "test": "react-scripts test",
     "eject": "react-scripts eject"
   },

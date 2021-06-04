@@ -7,7 +7,6 @@
 .ijwb/
 bazel-*
 cef/network/db/
-credentials-verification/docs/cardano/docker/cardano-data
 local.sbt
 result
 target/
@@ -21,4 +20,5 @@ out/
 **/.bloop/
 *.worksheet.sc
 **/metals.sbt
+prism-interactive-demo-web/src/protos/intdemo
 
