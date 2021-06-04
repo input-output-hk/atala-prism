@@ -1,19 +1,22 @@
 package io.iohk.atala.prism.node
 
-import cats.effect.{IO, Resource, ContextShift}
+import cats.effect.{ContextShift, IO, Resource}
 import com.typesafe.config.{Config, ConfigFactory}
 import io.grpc.{Server, ServerBuilder}
+import io.iohk.atala.prism.metrics.UptimeReporter
 import io.iohk.atala.prism.node.objects.{ObjectStorageService, S3ObjectStorageService}
 import io.iohk.atala.prism.node.repositories.{CredentialBatchesRepository, DIDDataRepository, KeyValuesRepository}
 import io.iohk.atala.prism.node.services._
 import io.iohk.atala.prism.node.services.models.{AtalaObjectNotification, AtalaObjectNotificationHandler}
 import io.iohk.atala.prism.protos.node_api._
 import io.iohk.atala.prism.repositories.{SchemaMigrations, TransactorFactory}
+import kamon.Kamon
 import monix.execution.Scheduler.Implicits.{global => scheduler}
 import org.slf4j.LoggerFactory
 import software.amazon.awssdk.regions.Region
 
-import scala.concurrent.{ExecutionContext, Future, Promise}
+import scala.concurrent.duration.Duration
+import scala.concurrent.{Await, ExecutionContext, Future, Promise}
 
 object NodeApp {
 
@@ -38,9 +41,13 @@ class NodeApp(executionContext: ExecutionContext) { self =>
   private[this] var server: Server = null
 
   private def start(): Unit = {
+    Kamon.init()
     logger.info("Loading config")
     val globalConfig = ConfigFactory.load()
     val databaseConfig = TransactorFactory.transactorConfig(globalConfig)
+
+    logger.info("Setting-up uptime metrics")
+    Kamon.registerModule("uptime", new UptimeReporter(globalConfig))
 
     logger.info("Applying database migrations")
     applyDatabaseMigrations(databaseConfig)
@@ -124,6 +131,7 @@ class NodeApp(executionContext: ExecutionContext) { self =>
       releaseTransactor.unsafeRunSync()
       releaseAtalaReferenceLedger.foreach(_.unsafeRunSync())
       self.stop()
+      Await.result(Kamon.stop(), Duration.Inf)
       System.err.println("*** server shut down")
     }
     ()

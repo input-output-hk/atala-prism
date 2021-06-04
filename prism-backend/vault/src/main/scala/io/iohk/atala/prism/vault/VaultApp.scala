@@ -1,17 +1,20 @@
 package io.iohk.atala.prism.vault
 
-import cats.effect.{IO, ContextShift}
+import cats.effect.{ContextShift, IO}
 import com.typesafe.config.ConfigFactory
 import io.grpc.{ManagedChannelBuilder, Server, ServerBuilder}
 import io.iohk.atala.prism.auth.grpc.GrpcAuthenticationHeaderParser
+import io.iohk.atala.prism.metrics.UptimeReporter
 import io.iohk.atala.prism.protos.node_api.NodeServiceGrpc
 import io.iohk.atala.prism.repositories.{SchemaMigrations, TransactorFactory}
 import io.iohk.atala.prism.protos.vault_api
 import io.iohk.atala.prism.vault.repositories.{PayloadsRepository, RequestNoncesRepository}
 import io.iohk.atala.prism.vault.services.EncryptedDataVaultServiceImpl
+import kamon.Kamon
 import org.slf4j.LoggerFactory
 
-import scala.concurrent.ExecutionContext
+import scala.concurrent.duration.Duration
+import scala.concurrent.{Await, ExecutionContext}
 
 object VaultApp {
   def main(args: Array[String]): Unit = {
@@ -34,9 +37,13 @@ class VaultApp(executionContext: ExecutionContext) {
   implicit val cs: ContextShift[IO] = IO.contextShift(ExecutionContext.global)
 
   private def start(): Unit = {
+    Kamon.init()
     logger.info("Loading config")
     val globalConfig = ConfigFactory.load()
     val databaseConfig = TransactorFactory.transactorConfig(globalConfig)
+
+    logger.info("Setting-up uptime metrics")
+    Kamon.registerModule("uptime", new UptimeReporter(globalConfig))
 
     logger.info("Applying database migrations")
     applyDatabaseMigrations(databaseConfig)
@@ -80,6 +87,7 @@ class VaultApp(executionContext: ExecutionContext) {
   private def blockUntilShutdown(): Unit = {
     if (server != null) {
       server.awaitTermination()
+      Await.result(Kamon.stop(), Duration.Inf)
     }
   }
 

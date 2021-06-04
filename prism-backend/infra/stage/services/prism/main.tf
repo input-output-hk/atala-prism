@@ -301,6 +301,14 @@ module "security_group" {
       protocol    = "tcp"
       cidr_blocks = "0.0.0.0/0"
     },
+
+    // scala-backend-services metrics
+    {
+      from_port   = 9095
+      to_port     = 9095
+      protocol    = "tcp"
+      cidr_blocks = local.vpc_cidr_block
+    },
   ]
   egress_rules = ["all-all"]
 }

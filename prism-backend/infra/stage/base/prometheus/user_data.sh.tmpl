@@ -75,8 +75,7 @@ apt-get install -y python3-boto3
 useradd --shell /bin/false ecsdiscovery
 mkdir /home/ecsdiscovery
 
-# TODO: when https://github.com/signal-ai/prometheus-ecs-sd/pull/8 is merged, we can replace it with original repo
-curl -o /home/ecsdiscovery/discoverecs.py https://raw.githubusercontent.com/krcz/prometheus-ecs-sd/7d2c047a63d9cb001ffbbd85538300f15f7e82f6/discoverecs.py
+curl -o /home/ecsdiscovery/discoverecs.py https://raw.githubusercontent.com/signal-ai/prometheus-ecs-sd/9721450bdde35881d79f87f8f87968656b81b955/discoverecs.py
 chown ecsdiscovery.ecsdiscovery -R /home/ecsdiscovery
 mkdir /data/ecs_sd
 chmod 777 /data/ecs_sd

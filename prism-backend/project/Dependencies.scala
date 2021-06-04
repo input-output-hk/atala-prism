@@ -16,6 +16,7 @@ object versions {
   val enumeratum = "1.6.0"
   val flyway = "7.0.0"
   val grpc = "1.33.0"
+  val kamon = "2.1.11"
   val logback = "1.2.3"
   val mockito = "1.16.0"
   val monix = "3.2.2"
@@ -56,6 +57,8 @@ object Dependencies {
   val grpcNetty = "io.grpc" % "grpc-netty" % versions.grpc
   val grpcServices = "io.grpc" % "grpc-services" % versions.grpc
   val grpcContext = "io.grpc" % "grpc-context" % versions.grpc
+  val kamonBundle = "io.kamon" %% "kamon-bundle" % versions.kamon
+  val kamonPrometheus = "io.kamon" %% "kamon-prometheus" % versions.kamon
   val logbackCore = "ch.qos.logback" % "logback-core" % versions.logback
   val logbackClassic = "ch.qos.logback" % "logback-classic" % versions.logback
   val monix = "io.monix" %% "monix" % versions.monix
@@ -95,6 +98,7 @@ object Dependencies {
   val dockerDependencies = Seq(dockerClient, dockerTestkitScalatest, dockerTestkitSpotify)
   val doobieDependencies = Seq(doobieCore, doobiePostgresCirce, doobieHikari, doobieScalatest)
   val grpcDependencies = Seq(grpcNetty, grpcServices, grpcContext)
+  val kamonDependencies = Seq(kamonBundle, kamonPrometheus)
   val logbackDependencies = Seq(logbackCore, logbackClassic)
   val mockitoDependencies = Seq(mockito, mockitoScalatest)
   val monocleDependencies = Seq(monocleCore, monocleGeneric, monocleMacro)

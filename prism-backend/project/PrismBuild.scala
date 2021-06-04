@@ -70,6 +70,7 @@ object PrismBuild {
             bouncyDependencies ++
             grpcDependencies ++
             mockitoDependencies ++
+            kamonDependencies ++
             Seq(
               diffx,
               enumeratum,

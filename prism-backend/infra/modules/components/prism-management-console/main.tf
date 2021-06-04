@@ -35,7 +35,8 @@ module "management_console_container_definition" {
   memory = local.memory
 
   portMappings = [
-    { containerPort = var.port, protocol = "tcp" }
+    { containerPort = var.port, protocol = "tcp" },
+    { containerPort = var.prometheus_port, protocol = "tcp" },
   ]
 
   environment = [
@@ -47,6 +48,9 @@ module "management_console_container_definition" {
     { name = "MANAGEMENT_CONSOLE_NODE_PORT", value = var.node_port },
     { name = "MANAGEMENT_CONSOLE_CONNECTOR_HOST", value = var.connector_host },
     { name = "MANAGEMENT_CONSOLE_CONNECTOR_PORT", value = var.connector_port },
+    { name = "PROMETHEUS", value = var.prometheus_enabled },
+    { name = "PROMETHEUS_PORT", value = var.prometheus_port },
+    { name = "PROMETHEUS_ENDPOINT", value = var.prometheus_endpoint },
   ]
 
   ulimits = [{ name = "nofile", softLimit = 10240, hardLimit = 20480 }]

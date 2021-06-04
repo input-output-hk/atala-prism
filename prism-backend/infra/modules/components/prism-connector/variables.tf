@@ -64,6 +64,24 @@ variable "psql_password" {
   description = "PostgreSQL password to use for connector"
 }
 
+variable "prometheus_enabled" {
+  description = "If true, then will be added to Prometheus targets by Prometheus ECS"
+  type        = bool
+  default     = true
+}
+
+variable "prometheus_port" {
+  description = "Port for Prometheus metrics endpoint"
+  type        = number
+  default     = 9095
+}
+
+variable "prometheus_endpoint" {
+  description = "Prometheus metrics endpoint with scraping interval prefix (needed for https://github.com/signal-ai/prometheus-ecs-sd)"
+  type        = string
+  default     = "15s:/metrics"
+}
+
 variable "vpc_id" {
   description = "ID of VPC to use"
 }

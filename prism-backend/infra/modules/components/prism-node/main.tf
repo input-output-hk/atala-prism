@@ -36,7 +36,8 @@ module "node_container_definition" {
 
 
   portMappings = [
-    { containerPort = var.port, protocol = "tcp" }
+    { containerPort = var.port, protocol = "tcp" },
+    { containerPort = var.prometheus_port, protocol = "tcp" },
   ]
 
   environment = [
@@ -55,6 +56,9 @@ module "node_container_definition" {
     { name = "NODE_CARDANO_WALLET_ID", value = var.cardano_wallet_id },
     { name = "NODE_CARDANO_WALLET_PASSPHRASE", value = var.cardano_wallet_passphrase },
     { name = "NODE_CARDANO_PAYMENT_ADDRESS", value = var.cardano_payment_address },
+    { name = "PROMETHEUS", value = var.prometheus_enabled },
+    { name = "PROMETHEUS_PORT", value = var.prometheus_port },
+    { name = "PROMETHEUS_ENDPOINT", value = var.prometheus_endpoint },
   ]
 
   ulimits = [{ name = "nofile", softLimit = 10240, hardLimit = 20480 }]

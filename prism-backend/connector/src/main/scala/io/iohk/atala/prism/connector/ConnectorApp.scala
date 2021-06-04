@@ -24,9 +24,11 @@ import io.iohk.atala.prism.protos.console_api._
 import io.iohk.atala.prism.protos.cviews_api.CredentialViewsServiceGrpc
 import io.iohk.atala.prism.protos.node_api.NodeServiceGrpc
 import io.iohk.atala.prism.repositories.{SchemaMigrations, TransactorFactory}
+import io.iohk.atala.prism.metrics.UptimeReporter
+import kamon.Kamon
 import org.slf4j.LoggerFactory
 
-import scala.concurrent.ExecutionContext
+import scala.concurrent.{Await, ExecutionContext}
 import scala.concurrent.duration._
 import scala.util.Try
 
@@ -49,9 +51,13 @@ class ConnectorApp(executionContext: ExecutionContext) { self =>
   private[this] var messageNotificationService: MessageNotificationService = null
 
   private def start(): Unit = {
+    Kamon.init()
     logger.info("Loading config")
     val globalConfig = ConfigFactory.load()
     val databaseConfig = TransactorFactory.transactorConfig(globalConfig)
+
+    logger.info("Setting-up uptime metrics")
+    Kamon.registerModule("uptime", new UptimeReporter(globalConfig))
 
     logger.info("Applying database migrations")
     applyDatabaseMigrations(databaseConfig)
@@ -178,6 +184,7 @@ class ConnectorApp(executionContext: ExecutionContext) { self =>
       System.err.println("*** shutting down gRPC server since JVM is shutting down")
       releaseXa.unsafeRunSync()
       self.stop()
+      Await.result(Kamon.stop(), Duration.Inf)
       System.err.println("*** server shut down")
     }
     ()

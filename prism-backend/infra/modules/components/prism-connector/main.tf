@@ -35,7 +35,8 @@ module "connector_container_definition" {
   memory = local.memory
 
   portMappings = [
-    { containerPort = var.port, protocol = "tcp" }
+    { containerPort = var.port, protocol = "tcp" },
+    { containerPort = var.prometheus_port, protocol = "tcp" },
   ]
 
   environment = [
@@ -45,6 +46,9 @@ module "connector_container_definition" {
     { name = "CONNECTOR_PSQL_PASSWORD", value = var.psql_password },
     { name = "CONNECTOR_NODE_HOST", value = var.node_host },
     { name = "CONNECTOR_NODE_PORT", value = var.node_port },
+    { name = "PROMETHEUS", value = var.prometheus_enabled },
+    { name = "PROMETHEUS_PORT", value = var.prometheus_port },
+    { name = "PROMETHEUS_ENDPOINT", value = var.prometheus_endpoint },
   ]
 
   ulimits = [{ name = "nofile", softLimit = 10240, hardLimit = 20480 }]

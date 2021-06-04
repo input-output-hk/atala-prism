@@ -33,6 +33,7 @@ services:
       dockerfile: ../../../../connector/Dockerfile
     ports:
       - 127.0.0.1:50051:50051
+      - 127.0.0.1:9095:9095
     depends_on:
       - postgres
     environment:
@@ -47,6 +48,7 @@ services:
       dockerfile: ../../../../node/Dockerfile
     ports:
       - 127.0.0.1:50053:50053
+      - 127.0.0.1:9096:9095
     depends_on:
       - postgres
       - bitcoind
@@ -66,6 +68,7 @@ services:
       dockerfile: ../../../../management-console/Dockerfile
     ports:
       - 127.0.0.1:50054:50054
+      - 127.0.0.1:9097:9095
     depends_on:
       - postgres
     environment:

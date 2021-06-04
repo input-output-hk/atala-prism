@@ -14,13 +14,16 @@ import io.iohk.atala.prism.management.console.integrations.{
 }
 import io.iohk.atala.prism.management.console.repositories._
 import io.iohk.atala.prism.management.console.services._
+import io.iohk.atala.prism.metrics.UptimeReporter
 import io.iohk.atala.prism.protos.console_api
 import io.iohk.atala.prism.protos.node_api.NodeServiceGrpc
 import io.iohk.atala.prism.repositories.TransactorFactory
 import io.iohk.atala.prism.utils.GrpcUtils
+import kamon.Kamon
 import org.slf4j.LoggerFactory
 
-import scala.concurrent.ExecutionContext
+import scala.concurrent.{Await, ExecutionContext}
+import scala.concurrent.duration.Duration
 
 object ManagementConsoleApp extends IOApp {
 
@@ -30,12 +33,16 @@ object ManagementConsoleApp extends IOApp {
   implicit val ec = ExecutionContext.global
 
   override def run(args: List[String]): IO[ExitCode] = {
+    Kamon.init()
     // Cats resource runs in multiple threads, we have to pass class loader
     // explicit to provide a proper resource directory.
     val classLoader = Thread.currentThread().getContextClassLoader
     app(classLoader).use { grpcServer =>
       logger.info("Starting GRPC server")
       grpcServer.start()
+      sys.addShutdownHook {
+        Await.result(Kamon.stop(), Duration.Inf)
+      }
       IO.never
     }
   }
@@ -48,7 +55,8 @@ object ManagementConsoleApp extends IOApp {
         ConfigFactory.load(classLoader)
       })
       defaultCredentialTypeConfig = DefaultCredentialTypeConfig(globalConfig)
-
+      _ = logger.info("Setting-up uptime metrics")
+      _ = Kamon.registerModule("uptime", new UptimeReporter(globalConfig))
       transactorConfig = TransactorFactory.transactorConfig(globalConfig)
       nodeConfig = NodeConfig(globalConfig)
 
