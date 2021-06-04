@@ -149,14 +149,6 @@ class UpdateDIDOperationSpec extends AtalaWithPostgresSpec with ProtoParsingTest
       )
     }
 
-    "return error when attempting to remove key used to sign" in {
-      invalidValueTest(
-        _.updateDid.actions(1).removeKey.keyId := "master",
-        Vector("updateDid", "actions", "1", "removeKey", "keyId"),
-        "master"
-      )
-    }
-
     "return error when empty action is provided" in {
       missingValueTest(
         _.updateDid.actions(1).action := node_models.UpdateDIDAction.Action.Empty,

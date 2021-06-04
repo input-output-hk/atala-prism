@@ -41,10 +41,6 @@ case class UpdateDIDOperation(
       }.subflatMap { didKey =>
         Either.cond(didKey.keyUsage == KeyUsage.MasterKey, didKey.key, StateError.InvalidKeyUsed("master key"))
       }
-      _ <- EitherT.fromEither[ConnectionIO] {
-        val revokedKeyIds = actions.collect { case RevokeKeyAction(id) => id }
-        Either.cond(!(revokedKeyIds contains keyId), (), StateError.InvalidRevocation(): StateError)
-      }
     } yield CorrectnessData(key, Some(lastOperation))
   }
 
@@ -87,8 +83,7 @@ object UpdateDIDOperation extends OperationCompanion[UpdateDIDOperation] {
 
   protected def parseAction(
       action: ValueAtPath[node_models.UpdateDIDAction],
-      didSuffix: DIDSuffix,
-      signingKeyId: String
+      didSuffix: DIDSuffix
   ): Either[ValidationError, UpdateDIDAction] = {
     if (action(_.action.isAddKey)) {
       val addKeyAction = action.child(_.getAddKey, "addKey")
@@ -100,7 +95,6 @@ object UpdateDIDOperation extends OperationCompanion[UpdateDIDOperation] {
       val keyIdVal = removeKeyAction.child(_.keyId, "keyId")
       for {
         keyId <- ParsingUtils.parseKeyId(keyIdVal)
-        _ <- Either.cond(keyId != signingKeyId, (), keyIdVal.invalid("Cannot remove key used to sign operation"))
       } yield RevokeKeyAction(keyId)
     } else {
       Left(action.child(_.action, "action").missing())
@@ -118,7 +112,6 @@ object UpdateDIDOperation extends OperationCompanion[UpdateDIDOperation] {
       ledgerData: LedgerData
   ): Either[ValidationError, UpdateDIDOperation] = {
     val operation = signedOperation.getOperation
-    val signingKeyId = signedOperation.signedWith
 
     val operationDigest = SHA256Digest.compute(operation.toByteArray)
     val updateOperation = ValueAtPath(operation, Path.root).child(_.getUpdateDid, "updateDid")
@@ -140,7 +133,7 @@ object UpdateDIDOperation extends OperationCompanion[UpdateDIDOperation] {
             case (eitherAcc, action) =>
               for {
                 acc <- eitherAcc
-                parsedAction <- parseAction(action, didSuffix, signingKeyId)
+                parsedAction <- parseAction(action, didSuffix)
               } yield parsedAction :: acc
           }
     } yield UpdateDIDOperation(didSuffix, reversedActions.reverse, previousOperation, operationDigest, ledgerData)
