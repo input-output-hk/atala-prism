@@ -20,8 +20,10 @@ import io.iohk.atala.prism.protos.console_api.{
 }
 import io.iohk.atala.prism.protos.{connector_api, console_api, node_models}
 import scalapb.grpc.Channels
-
 import java.util.UUID
+
+import io.iohk.atala.cvp.webextension.common.ECKeyOperation
+
 import scala.concurrent.{ExecutionContext, Future}
 import scala.scalajs.js.JSConverters._
 
@@ -52,7 +54,8 @@ class ConnectorClientService(url: String) {
   }
 
   def revokeCredential(
-      ecKeyPair: ECKeyPair,
+      issuingECKeyPair: ECKeyPair,
+      masterECKeyPair: ECKeyPair,
       did: DID,
       signedCredentialStringRepresentation: String,
       batchId: CredentialBatchId,
@@ -79,14 +82,14 @@ class ConnectorClientService(url: String) {
             )
           )
       }
-      signedOperation = signedAtalaOperation(ecKeyPair, operation)
+      signedOperation = signedAtalaOperation(ECKeyOperation.issuingKeyId, issuingECKeyPair, operation)
       request = {
         console_api
           .RevokePublishedCredentialRequest()
           .withRevokeCredentialsOperation(signedOperation)
           .withCredentialId(credentialId.toString)
       }
-      requestMetadata = metadataForRequest(ecKeyPair, did, request)
+      requestMetadata = metadataForRequest(masterECKeyPair, did, request)
       response <- credentialsServiceApi.revokePublishedCredential(request, requestMetadata.toJSDictionary)
     } yield response.transactionInfo.getOrElse(
       throw new RuntimeException("The server didn't returned the expected transaction info")
@@ -94,19 +97,20 @@ class ConnectorClientService(url: String) {
   }
 
   def signAndPublishBatch(
-      ecKeyPair: ECKeyPair,
+      issuingECKeyPair: ECKeyPair,
+      masterECKeyPair: ECKeyPair,
       did: DID,
       signingKeyId: String,
       credentialsData: List[CredentialData]
   )(implicit ec: ExecutionContext): Future[PublishBatchResponse] = {
     val (issuanceOperation, credentialsAndProofs) =
-      issuerOperation(did, signingKeyId, ecKeyPair, credentialsData)
-    val operation = signedAtalaOperation(ecKeyPair, issuanceOperation)
+      issuerOperation(did, signingKeyId, issuingECKeyPair, credentialsData)
+    val operation = signedAtalaOperation(signingKeyId, issuingECKeyPair, issuanceOperation)
 
     val publishBatchRequest = PublishBatchRequest()
       .withIssueCredentialBatchOperation(operation)
 
-    val batchMetadata = metadataForRequest(ecKeyPair, did, publishBatchRequest)
+    val batchMetadata = metadataForRequest(masterECKeyPair, did, publishBatchRequest)
 
     for {
       // we first publish the batch
@@ -116,7 +120,7 @@ class ConnectorClientService(url: String) {
       _ = println(s"issuanceOperationHash = '${issuanceOperationHash.hexValue}'")
       _ = println(s"batchId = '${batchResponse.batchId}'")
       _ <- publishCredentials(
-        ecKeyPair,
+        masterECKeyPair,
         did,
         credentialsData.map(_.credentialId),
         credentialsAndProofs,

@@ -1,9 +1,9 @@
 package io.iohk.atala.cvp.webextension.background
 
+import io.iohk.atala.cvp.webextension.common.ECKeyOperation
 import io.iohk.atala.prism.connector.RequestAuthenticator
 import io.iohk.atala.prism.crypto.{EC, ECKeyPair}
 import io.iohk.atala.prism.identity.DID
-import io.iohk.atala.prism.identity.DID.masterKeyId
 import scalapb.GeneratedMessage
 
 package object services {
@@ -17,7 +17,7 @@ package object services {
     val signedConnectorRequest = requestAuthenticator.signConnectorRequest(request.toByteArray, ecKeyPair.privateKey)
     Map(
       "did" -> did.value,
-      "didKeyId" -> masterKeyId,
+      "didKeyId" -> ECKeyOperation.masterKeyId,
       "didSignature" -> signedConnectorRequest.encodedSignature,
       "requestNonce" -> signedConnectorRequest.encodedRequestNonce
     )

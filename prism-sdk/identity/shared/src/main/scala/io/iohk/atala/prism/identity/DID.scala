@@ -75,6 +75,7 @@ object DID {
   val testRegex: Regex = "^did:test(:[A-Za-z0-9_-]+)+$".r
 
   val masterKeyId: String = "master0"
+  val issuingKeyId: String = "issuing0"
 
   private def apply(value: String): DID = new DID(value)
 
@@ -143,19 +144,35 @@ object DID {
     case object Unknown extends DIDFormat
   }
 
-  def createUnpublishedDID(masterKey: ECPublicKey): DID = {
+  def createUnpublishedDID(masterKey: ECPublicKey, issuingKey: ECPublicKey): DID = {
+    createUnpublishedDID(masterKey, Some(issuingKey))
+  }
+
+  def createUnpublishedDID(masterKey: ECPublicKey, maybeIssuingKey: Option[ECPublicKey] = None): DID = {
+    val masterKeySeq = Seq(
+      node_models.PublicKey(
+        id = masterKeyId,
+        usage = node_models.KeyUsage.MASTER_KEY,
+        keyData = node_models.PublicKey.KeyData.EcKeyData(
+          publicKeyToProto(masterKey)
+        )
+      )
+    )
+
+    val issuingKeySeq = maybeIssuingKey.toSeq.map { issuingKey =>
+      node_models.PublicKey(
+        id = issuingKeyId,
+        usage = node_models.KeyUsage.ISSUING_KEY,
+        keyData = node_models.PublicKey.KeyData.EcKeyData(
+          publicKeyToProto(issuingKey)
+        )
+      )
+    }
+
     val createDidOp = node_models.CreateDIDOperation(
       didData = Some(
         node_models.DIDData(
-          publicKeys = Seq(
-            node_models.PublicKey(
-              id = masterKeyId,
-              usage = node_models.KeyUsage.MASTER_KEY,
-              keyData = node_models.PublicKey.KeyData.EcKeyData(
-                publicKeyToProto(masterKey)
-              )
-            )
-          )
+          publicKeys = masterKeySeq ++ issuingKeySeq
         )
       )
     )

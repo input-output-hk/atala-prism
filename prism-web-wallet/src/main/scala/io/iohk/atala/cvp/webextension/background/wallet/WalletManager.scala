@@ -27,12 +27,11 @@ import io.iohk.atala.prism.credentials.VerificationError
 import io.iohk.atala.prism.crypto.EC
 import io.iohk.atala.prism.crypto.MerkleTree.MerkleInclusionProof
 import io.iohk.atala.prism.identity.DID
-import io.iohk.atala.prism.identity.DID.masterKeyId
 import io.iohk.atala.prism.protos.connector_api.RegisterDIDResponse
 import io.iohk.atala.prism.protos.console_api.PublishBatchResponse
 import org.scalajs.dom.crypto.CryptoKey
-
 import java.util.{Base64, UUID}
+
 import scala.concurrent.{ExecutionContext, Future, Promise}
 import scala.util.control.NonFatal
 import scala.util.{Failure, Success, Try}
@@ -114,15 +113,17 @@ private[background] class WalletManager(
   def approveAllCredentialRequests(): Future[Unit] = {
     for {
       walletData <- walletDataF()
-      ecKeyPair = ECKeyOperation.ecKeyPairFromSeed(walletData.mnemonic)
+      issuingECKeyPair = ECKeyOperation.issuingECKeyPairFromSeed(walletData.mnemonic)
+      masterECKeyPair = ECKeyOperation.masterECKeyPairFromSeed(walletData.mnemonic)
       issueCredentials = state.pendingRequestsQueue.issuanceCredentialRequests.map(_.request)
       requestIds = state.pendingRequestsQueue.issuanceCredentialRequests.map(_.id)
       _ <-
         connectorClientService
           .signAndPublishBatch(
-            ecKeyPair,
+            issuingECKeyPair,
+            masterECKeyPair,
             walletData.did,
-            signingKeyId,
+            ECKeyOperation.issuingKeyId,
             toCredentialData(issueCredentials)
           )
           .map(handleSignAndPublishResponse)
@@ -136,16 +137,18 @@ private[background] class WalletManager(
     for {
       (request, promise) <- requestF(requestId)
       walletData <- walletDataF()
-      ecKeyPair = ECKeyOperation.ecKeyPairFromSeed(walletData.mnemonic)
+      issuingECKeyPair = ECKeyOperation.issuingECKeyPairFromSeed(walletData.mnemonic)
+      masterECKeyPair = ECKeyOperation.masterECKeyPairFromSeed(walletData.mnemonic)
       requestResult <- request match {
         case r: PendingRequest.IssueCredential =>
           // TODO: Issue a batch instead
           val claims = r.credentialData.properties.asJson.noSpaces
           connectorClientService
             .signAndPublishBatch(
-              ecKeyPair,
+              issuingECKeyPair,
+              masterECKeyPair,
               walletData.did,
-              signingKeyId,
+              ECKeyOperation.issuingKeyId,
               List(CredentialData(ConsoleCredentialId(r.credentialData.id), claims))
             )
             .map(handleSignAndPublishResponse)
@@ -154,7 +157,8 @@ private[background] class WalletManager(
           // TODO: Decode the credential before accepting the request to make sure it has the proper data (and html view)
           connectorClientService
             .revokeCredential(
-              ecKeyPair,
+              issuingECKeyPair,
+              masterECKeyPair,
               walletData.did,
               signedCredentialStringRepresentation = r.signedCredentialStringRepresentation,
               batchId = r.batchId,
@@ -253,7 +257,7 @@ private[background] class WalletManager(
       walletData <- walletDataF()
       _ <- validateSessionF(origin = origin, sessionID = sessionID)
     } yield {
-      val ecKeyPair = ECKeyOperation.ecKeyPairFromSeed(walletData.mnemonic)
+      val ecKeyPair = ECKeyOperation.masterECKeyPairFromSeed(walletData.mnemonic)
       val signedRequest = requestAuthenticator.signConnectorRequest(
         request.bytes,
         ecKeyPair.privateKey,
@@ -261,7 +265,7 @@ private[background] class WalletManager(
       )
       SignedMessage(
         did = walletData.did,
-        didKeyId = masterKeyId,
+        didKeyId = ECKeyOperation.masterKeyId,
         base64UrlSignature = signedRequest.encodedSignature,
         base64UrlNonce = signedRequest.encodedRequestNonce
       )
@@ -397,11 +401,11 @@ private[background] class WalletManager(
       organisationName: String,
       logo: Array[Byte]
   ): Future[(RegisterDIDResponse, DID)] = {
-    val ecKeyPair = ECKeyOperation.ecKeyPairFromSeed(mnemonic)
+    val ecKeyPair = ECKeyOperation.masterECKeyPairFromSeed(mnemonic)
 
-    val createDIDOperation = ECKeyOperation.createDIDAtalaOperation(ecKeyPair)
-    val signedOperation = ECKeyOperation.signedAtalaOperation(ecKeyPair, createDIDOperation)
-    val did = DID.createUnpublishedDID(ecKeyPair.publicKey)
+    val createDIDOperation = ECKeyOperation.createDIDAtalaOperation(mnemonic)
+    val signedOperation = ECKeyOperation.signedAtalaOperation(ECKeyOperation.masterKeyId, ecKeyPair, createDIDOperation)
+    val did = ECKeyOperation.unpublishedDidFromMnemonic(mnemonic)
 
     // Right now, the console and the connector needs to keep the DID registered, while the frontend is migrated
     // to use the console backend, we may not use it, which means that the console registration fails, in that case
@@ -432,9 +436,9 @@ private[background] class WalletManager(
   }
 
   private def recoverAccount(mnemonic: Mnemonic): Future[WalletData] = {
-    val ecKeyPair = ECKeyOperation.ecKeyPairFromSeed(mnemonic)
-    val did = ECKeyOperation.didFromMasterKey(ecKeyPair)
-    connectorClientService.getCurrentUser(ecKeyPair, did).map { res =>
+    val did = ECKeyOperation.unpublishedDidFromMnemonic(mnemonic)
+    val masterECKeyPair = ECKeyOperation.masterECKeyPairFromSeed(mnemonic)
+    connectorClientService.getCurrentUser(masterECKeyPair, did).map { res =>
       WalletData(
         keys = Map.empty,
         mnemonic = mnemonic,
@@ -448,7 +452,7 @@ private[background] class WalletManager(
 
   private def subscribeForReceivedCredentials(data: WalletData): Unit = {
     credentialsCopyJob.start(
-      ECKeyOperation.ecKeyPairFromSeed(data.mnemonic),
+      ECKeyOperation.masterECKeyPairFromSeed(data.mnemonic),
       data.did
     )
   }
@@ -519,11 +523,4 @@ private[background] class WalletManager(
     }
     Future.fromTry(t)
   }
-
-  // TODO: this key id should eventually be selected by the user
-  // which should be done when we complete the key derivation flow.
-  private def signingKeyId = {
-    masterKeyId
-  }
-
 }
