@@ -1,7 +1,8 @@
 package io.iohk.atala.prism.kotlin.credentials.exposed
 
 import io.iohk.atala.prism.kotlin.credentials.content.CredentialContent
-import kotlinx.serialization.json.*
+import io.iohk.atala.prism.kotlin.identity.exposed.DIDJS
+import io.iohk.atala.prism.kotlin.identity.exposed.toJs
 
 @JsExport
 object CredentialContentJSCompanion {
@@ -25,4 +26,14 @@ data class CredentialContentJS internal constructor(internal val credentialConte
 
     fun getField(fieldName: String): String? =
         credentialContent.getField(fieldName)?.toString()
+
+    // Predefined fields
+    fun getIssuerDid(): DIDJS? =
+        credentialContent.getIssuerDid()?.toJs()
+
+    fun getIssuanceKeyId(): String? =
+        credentialContent.getIssuanceKeyId()
+
+    fun getCredentialSubject(): String? =
+        credentialContent.getCredentialSubject()
 }

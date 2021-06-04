@@ -9,11 +9,23 @@ import io.iohk.atala.prism.kotlin.protos.PrismMetadata
 import pbandk.encodeToByteArray
 
 object RequestUtils {
+    fun generateRequestMetadata(
+        did: String,
+        didPrivateKey: ECPrivateKey,
+        request: pbandk.Message,
+        nonce: ByteArray? = null
+    ): PrismMetadata =
+        generateBytesMetadata(did, didPrivateKey, request.encodeToByteArray(), nonce)
 
-    fun generateRequestMetadata(did: String, didPrivateKey: ECPrivateKey, request: pbandk.Message): PrismMetadata {
-        val requestNonce = uuid4().bytes.toList()
+    fun generateBytesMetadata(
+        did: String,
+        didPrivateKey: ECPrivateKey,
+        bytes: ByteArray,
+        nonce: ByteArray? = null
+    ): PrismMetadata {
+        val requestNonce = nonce?.toList() ?: uuid4().bytes.toList()
         val didSignature = EC.sign(
-            requestNonce + request.encodeToByteArray().toList(),
+            requestNonce + bytes.toList(),
             didPrivateKey
         )
         return PrismMetadata(

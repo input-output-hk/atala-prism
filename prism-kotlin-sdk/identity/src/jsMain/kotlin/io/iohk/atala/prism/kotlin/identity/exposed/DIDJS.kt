@@ -1,11 +1,14 @@
 package io.iohk.atala.prism.kotlin.identity.exposed
 
-import io.iohk.atala.prism.kotlin.crypto.EC
-import io.iohk.atala.prism.kotlin.crypto.util.BytesOps
+import io.iohk.atala.prism.kotlin.crypto.exposed.ECPublicKeyJS
+import io.iohk.atala.prism.kotlin.crypto.exposed.toKotlin
 import io.iohk.atala.prism.kotlin.identity.*
 
 fun DIDJS.toKotlin(): DID =
     this.did
+
+fun DID.toJs(): DIDJS =
+    DIDJS(this)
 
 @JsExport
 object DIDJSCompanion {
@@ -17,10 +20,8 @@ object DIDJSCompanion {
     fun fromString(string: String): DIDJS =
         DIDJS(DID.fromString(string))
 
-    fun createUnpublishedDID(masterKey: String): DIDJS {
-        val key = EC.toPublicKey(BytesOps.hexToBytes(masterKey).map { it.toByte() })
-        return DIDJS(DID.createUnpublishedDID(key))
-    }
+    fun createUnpublishedDID(masterKey: ECPublicKeyJS): DIDJS =
+        DIDJS(DID.createUnpublishedDID(masterKey.toKotlin()))
 }
 
 @JsExport

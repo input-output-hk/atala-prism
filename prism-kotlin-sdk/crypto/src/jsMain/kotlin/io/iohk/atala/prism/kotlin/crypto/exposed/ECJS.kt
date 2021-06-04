@@ -2,8 +2,6 @@ package io.iohk.atala.prism.kotlin.crypto.exposed
 
 import com.ionspin.kotlin.bignum.integer.BigInteger
 import io.iohk.atala.prism.kotlin.crypto.EC
-import io.iohk.atala.prism.kotlin.crypto.signature.ECSignature
-import io.iohk.atala.prism.kotlin.crypto.util.BytesOps.hexToBytes
 
 /* Exportable Kotlin.js types are limited at the time to the following:
  * - dynamic, Any, String, Boolean, Byte, Short, Int, Float, Double
@@ -20,39 +18,50 @@ import io.iohk.atala.prism.kotlin.crypto.util.BytesOps.hexToBytes
 object ECJS {
     fun generateKeyPair(): ECKeyPairJS {
         val keyPair = EC.generateKeyPair()
-        return ECKeyPairJS(keyPair.publicKey.getHexEncoded(), keyPair.privateKey.getHexEncoded())
+        return ECKeyPairJS(ECPublicKeyJS(keyPair.publicKey), ECPrivateKeyJS(keyPair.privateKey))
     }
 
-    fun toPrivateKeyFromBytes(encoded: ByteArray): String =
-        EC.toPrivateKey(encoded.toList()).getHexEncoded()
+    fun toPrivateKeyFromBytes(encoded: ByteArray): ECPrivateKeyJS =
+        EC.toPrivateKey(encoded.toList()).toJs()
 
-    fun toPrivateKeyFromBigInteger(d: String): String =
-        EC.toPrivateKey(BigInteger.parseString(d)).getHexEncoded()
+    fun toPrivateKeyFromBigInteger(d: String): ECPrivateKeyJS =
+        EC.toPrivateKey(BigInteger.parseString(d)).toJs()
 
-    fun toPublicKeyFromBytes(encoded: ByteArray): String =
-        EC.toPublicKey(encoded.toList()).getHexEncoded()
+    fun toPublicKeyFromBytes(encoded: ByteArray): ECPublicKeyJS =
+        EC.toPublicKey(encoded.toList()).toJs()
 
-    fun toPublicKeyFromBigIntegerCoordinates(x: String, y: String): String =
-        EC.toPublicKey(BigInteger.parseString(x), BigInteger.parseString(y)).getHexEncoded()
+    fun toPublicKeyFromBigIntegerCoordinates(x: String, y: String): ECPublicKeyJS =
+        EC.toPublicKey(BigInteger.parseString(x), BigInteger.parseString(y)).toJs()
 
-    fun toPublicKeyFromPrivateKey(privateKey: String): String {
-        val bytes = hexToBytes(privateKey).map { it.toByte() }
-        return EC.toPublicKeyFromPrivateKey(EC.toPrivateKey(bytes)).getHexEncoded()
-    }
+    fun toPublicKeyFromPrivateKey(privateKey: ECPrivateKeyJS): ECPublicKeyJS =
+        EC.toPublicKeyFromPrivateKey(privateKey.toKotlin()).toJs()
 
     fun toSignature(encoded: ByteArray): String =
         EC.toSignature(encoded.toList()).getHexEncoded()
 
+    fun signBytes(
+        bytes: ByteArray,
+        privateKey: ECPrivateKeyJS
+    ): ECSignatureJS =
+        EC.sign(bytes.toList(), privateKey.toKotlin()).toJs()
+
     fun sign(
         text: String,
-        privateKey: String
-    ): String =
-        EC.sign(text, EC.toPrivateKey(hexToBytes(privateKey).map { it.toByte() })).getHexEncoded()
+        privateKey: ECPrivateKeyJS
+    ): ECSignatureJS =
+        EC.sign(text, privateKey.toKotlin()).toJs()
+
+    fun verifyBytes(
+        bytes: ByteArray,
+        publicKey: ECPublicKeyJS,
+        signature: ECSignatureJS
+    ): Boolean =
+        EC.verify(bytes.toList(), publicKey.toKotlin(), signature.toKotlin())
 
     fun verify(
         text: String,
-        publicKey: String,
-        signature: String
+        publicKey: ECPublicKeyJS,
+        signature: ECSignatureJS
     ): Boolean =
-        EC.verify(text, EC.toPublicKey(hexToBytes(publicKey).map { it.toByte() }), ECSignature(signature))
+        EC.verify(text, publicKey.toKotlin(), signature.toKotlin())
 }

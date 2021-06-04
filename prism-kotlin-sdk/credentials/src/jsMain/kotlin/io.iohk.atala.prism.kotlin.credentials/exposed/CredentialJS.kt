@@ -2,6 +2,9 @@ package io.iohk.atala.prism.kotlin.credentials.exposed
 
 import io.iohk.atala.prism.kotlin.credentials.Credential
 import io.iohk.atala.prism.kotlin.crypto.EC
+import io.iohk.atala.prism.kotlin.crypto.exposed.ECPrivateKeyJS
+import io.iohk.atala.prism.kotlin.crypto.exposed.SHA256DigestJS
+import io.iohk.atala.prism.kotlin.crypto.exposed.toJs
 import io.iohk.atala.prism.kotlin.crypto.util.BytesOps.hexToBytes
 
 fun CredentialJS.toKotlin(): Credential =
@@ -19,9 +22,9 @@ abstract class CredentialJS internal constructor(internal val credential: Creden
 
     fun isVerifiable(): Boolean = credential.isVerifiable()
 
-    fun hash(): String = credential.hash().hexValue()
+    fun hash(): SHA256DigestJS = credential.hash().toJs()
 
-    abstract fun sign(privateKey: String): CredentialJS
+    abstract fun sign(privateKey: ECPrivateKeyJS): CredentialJS
 
     fun isValidSignature(publicKey: String): Boolean {
         val key = EC.toPublicKey(hexToBytes(publicKey).map { it.toByte() })

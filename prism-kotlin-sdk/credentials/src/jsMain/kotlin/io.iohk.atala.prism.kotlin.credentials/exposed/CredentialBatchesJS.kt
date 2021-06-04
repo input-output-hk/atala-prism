@@ -3,6 +3,7 @@ package io.iohk.atala.prism.kotlin.credentials.exposed
 import io.iohk.atala.prism.kotlin.credentials.CredentialBatches
 import io.iohk.atala.prism.kotlin.crypto.exposed.MerkleInclusionProofJS
 import io.iohk.atala.prism.kotlin.crypto.exposed.MerkleRootJS
+import io.iohk.atala.prism.kotlin.crypto.exposed.toJs
 import io.iohk.atala.prism.kotlin.crypto.exposed.toKotlin
 import io.iohk.atala.prism.kotlin.identity.exposed.DIDJS
 import io.iohk.atala.prism.kotlin.identity.exposed.toKotlin
@@ -17,7 +18,7 @@ data class BatchResult(
 object CredentialBatchesJS {
     fun batch(signedCredentials: Array<CredentialJS>): BatchResult {
         val (root, proofs) = CredentialBatches.batch(signedCredentials.map { it.credential })
-        return BatchResult(MerkleRootJS(root.hash.hexValue()), proofs.map { MerkleInclusionProofJS(it) }.toTypedArray())
+        return BatchResult(MerkleRootJS(root.hash.hexValue()), proofs.map { it.toJs() }.toTypedArray())
     }
 
     fun verifyInclusion(
@@ -28,7 +29,7 @@ object CredentialBatchesJS {
         return CredentialBatches.verifyInclusion(
             signedCredential.credential,
             merkleRoot.toKotlin(),
-            inclusionProof.internal
+            inclusionProof.toKotlin()
         )
     }
 

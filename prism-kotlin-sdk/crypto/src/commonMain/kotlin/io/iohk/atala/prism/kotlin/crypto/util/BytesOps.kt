@@ -15,6 +15,9 @@ fun List<UByte>.toByteArray(): ByteArray {
 object BytesOps {
     private val HEX_ARRAY = "0123456789abcdef".toCharArray()
 
+    fun bytesToHex(bytes: ByteArray): String =
+        bytesToHex(bytes.toUByteArray().toList())
+
     fun bytesToHex(bytes: List<UByte>): String {
         val hexChars = CharArray(bytes.size * 2)
         for (j in bytes.indices) {

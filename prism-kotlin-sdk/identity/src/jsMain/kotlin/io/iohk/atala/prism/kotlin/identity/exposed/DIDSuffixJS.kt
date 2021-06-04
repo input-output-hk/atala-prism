@@ -17,5 +17,8 @@ object DIDSuffixJSCompanion {
 
 @JsExport
 data class DIDSuffixJS internal constructor(private val didSuffix: DIDSuffix) {
+    fun getValue(): String =
+        didSuffix.value
+
     override fun toString(): String = didSuffix.toString()
 }

@@ -2,6 +2,8 @@ package io.iohk.atala.prism.kotlin.credentials.exposed
 
 import io.iohk.atala.prism.kotlin.credentials.json.JsonBasedCredential
 import io.iohk.atala.prism.kotlin.crypto.EC
+import io.iohk.atala.prism.kotlin.crypto.exposed.ECPrivateKeyJS
+import io.iohk.atala.prism.kotlin.crypto.exposed.toKotlin
 import io.iohk.atala.prism.kotlin.crypto.util.BytesOps.hexToBytes
 
 @JsExport
@@ -31,8 +33,6 @@ class JsonBasedCredentialJS internal constructor(
 
     override val canonicalForm: String = internalJson.canonicalForm
 
-    override fun sign(privateKey: String): CredentialJS {
-        val key = EC.toPrivateKey(hexToBytes(privateKey).map { it.toByte() })
-        return JsonBasedCredentialJS(credential.sign(key) as JsonBasedCredential)
-    }
+    override fun sign(privateKey: ECPrivateKeyJS): CredentialJS =
+        JsonBasedCredentialJS(credential.sign(privateKey.toKotlin()) as JsonBasedCredential)
 }

@@ -1,14 +1,14 @@
 package io.iohk.atala.prism.kotlin.extras
 
-import io.iohk.atala.prism.kotlin.crypto.EC
 import io.iohk.atala.prism.kotlin.crypto.ECConfig
-import io.iohk.atala.prism.kotlin.crypto.util.BytesOps.hexToBytes
+import io.iohk.atala.prism.kotlin.crypto.exposed.ECPublicKeyJS
+import io.iohk.atala.prism.kotlin.crypto.exposed.toKotlin
 import io.iohk.atala.prism.kotlin.protos.ECKeyData
 import pbandk.ByteArr
 
 @JsExport
-fun toECKeyData(publicKeyHex: String): ECKeyData {
-    val publicKey = EC.toPublicKey(hexToBytes(publicKeyHex).map { it.toByte() })
+fun ECPublicKeyJS.toECKeyData(): ECKeyData {
+    val publicKey = this.toKotlin()
     val point = publicKey.getCurvePoint()
 
     return ECKeyData(

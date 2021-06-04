@@ -1,5 +1,6 @@
 package io.iohk.atala.prism.kotlin.credentials.content
 
+import io.iohk.atala.prism.kotlin.identity.DID
 import kotlinx.serialization.json.*
 
 /**
@@ -44,9 +45,32 @@ data class CredentialContent(val fields: JsonObject) {
         }
     }
 
+    // Predefined fields
+    fun getIssuerDid(): DID? =
+        getString(JsonField.IssuerDid.value)?.let {
+            DID.fromString(it)
+        }
+
+    fun getIssuanceKeyId(): String? =
+        getString(JsonField.IssuanceKeyId.value)
+
+    fun getCredentialSubject(): String? =
+        getString(JsonField.CredentialSubject.value)
+
     companion object {
         fun fromString(value: String): CredentialContent =
             CredentialContent(Json.parseToJsonElement(value).jsonObject)
+
+        enum class JsonField(val value: String) {
+            CredentialType("type"),
+            Issuer("issuer"),
+            IssuerDid("id"),
+            IssuerName("name"),
+            IssuanceKeyId("keyId"),
+            IssuanceDate("issuanceDate"),
+            ExpiryDate("expiryDate"),
+            CredentialSubject("credentialSubject")
+        }
     }
 }
 
