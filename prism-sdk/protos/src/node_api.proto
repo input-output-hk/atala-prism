@@ -8,6 +8,8 @@ package io.iohk.atala.prism.protos;
 import "common_models.proto";
 import "node_models.proto";
 
+import "google/protobuf/timestamp.proto";
+
 // The Node API
 service NodeService {
     // Checks if the service is healthy.
@@ -53,6 +55,10 @@ message GetDidDocumentRequest {
 // Response to a DID Document query.
 message GetDidDocumentResponse {
     DIDData document = 1; // If present, the DID Document.
+    /**
+     * Timestamp of the latest synchronized block.
+     */
+    google.protobuf.Timestamp last_synced_block_timestamp = 5;
 }
 
 // Request to create a public DID.
@@ -120,6 +126,11 @@ message GetBatchStateResponse {
 
     // If present: underlying blockchain data that refers to the transaction that contains the RevokeCredential operation associated with the credential.
     LedgerData revocation_ledger_data = 4;
+
+    /**
+     * Timestamp of the latest synchronized block.
+     */
+    google.protobuf.Timestamp last_synced_block_timestamp = 5;
 }
 
 // Request to get the credential's revocation time.
@@ -130,6 +141,7 @@ message GetCredentialRevocationTimeRequest {
 // Response with the credential's revocation time.
 message GetCredentialRevocationTimeResponse {
     LedgerData revocation_ledger_data = 1; // If present, the ledger data when the credential was revoked.
+    google.protobuf.Timestamp last_synced_block_timestamp = 2; // Timestamp of the latest synchronized block.
 }
 
 // Request to get the on-chain transaction status.
@@ -140,6 +152,7 @@ message GetTransactionStatusRequest {
 message GetTransactionStatusResponse {
     TransactionInfo transaction_info = 1; // The on-chain transaction info.
     TransactionStatus status = 2; // Whether or not the transaction has been applied.
+    google.protobuf.Timestamp last_synced_block_timestamp = 3; // Timestamp of the latest synchronized block.
 }
 
 message PublishAsABlockRequest {

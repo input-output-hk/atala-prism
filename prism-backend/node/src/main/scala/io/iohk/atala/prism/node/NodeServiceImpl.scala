@@ -9,6 +9,7 @@ import io.iohk.atala.prism.identity.DID
 import io.iohk.atala.prism.models.ProtoCodecs._
 import io.iohk.atala.prism.node.errors.NodeError
 import io.iohk.atala.prism.node.grpc.ProtoCodecs
+import io.iohk.atala.prism.node.models.nodeState.DIDDataState
 import io.iohk.atala.prism.node.operations._
 import io.iohk.atala.prism.node.repositories.{CredentialBatchesRepository, DIDDataRepository}
 import io.iohk.atala.prism.node.services.ObjectManagementService.AtalaObjectTransactionStatus
@@ -31,6 +32,7 @@ import io.iohk.atala.prism.protos.node_api.{
 import io.iohk.atala.prism.protos.node_models.AtalaOperation.Operation
 import io.iohk.atala.prism.protos.node_models.{OperationOutput, SignedAtalaOperation}
 import io.iohk.atala.prism.protos.{common_models, node_api, node_models}
+import io.iohk.atala.prism.utils.syntax._
 import org.slf4j.{Logger, LoggerFactory}
 import scalapb.GeneratedMessage
 
@@ -57,8 +59,14 @@ class NodeServiceImpl(
 
     logRequest("getDidDocument", request)
 
-    val didOpt = DID.fromString(request.did)
+    for {
+      lastSyncedTimestamp <- objectManagement.getLastSyncedTimestamp
+      response <- getDidDocument(request.did)
+    } yield response.withLastSyncedBlockTimestamp(lastSyncedTimestamp.toProtoTimestamp)
+  }
 
+  private def getDidDocument(didRequestStr: String)(implicit didDataRepository: DIDDataRepository) = {
+    val didOpt = DID.fromString(didRequestStr)
     didOpt match {
       case Some(did) =>
         did.getFormat match {
@@ -69,7 +77,7 @@ class NodeServiceImpl(
             longForm.validate
               .map { validatedLongForm =>
                 // validation succeeded, we check if the DID was published
-                resolve(DID.buildPrismDID(stateHash), butShowInDIDDocument = did).orReturn {
+                resolve(DID.buildPrismDID(stateHash), did).orReturn {
                   // if it was not published, we return the encoded initial state
                   succeedWith(
                     Some(
@@ -81,12 +89,12 @@ class NodeServiceImpl(
                   )
                 }
               }
-              .getOrElse(failWith(s"Invalid long form DID: ${request.did}"))
+              .getOrElse(failWith(s"Invalid long form DID: $didRequestStr"))
           case DID.DIDFormat.Unknown =>
-            failWith(s"DID format not supported: ${request.did}")
+            failWith(s"DID format not supported: $didRequestStr")
         }
       case None =>
-        failWith(s"Invalid DID: ${request.did}")
+        failWith(s"Invalid DID: $didRequestStr")
     }
   }
 
@@ -159,6 +167,7 @@ class NodeServiceImpl(
 
   override def getBatchState(request: GetBatchStateRequest): Future[GetBatchStateResponse] = {
     logRequest("getBatchState", request)
+    val lastSyncedTimestampF = objectManagement.getLastSyncedTimestamp
     val batchIdF = Future.fromTry {
       Try {
         CredentialBatchId
@@ -168,6 +177,7 @@ class NodeServiceImpl(
     }
 
     for {
+      lastSyncedTimestamp <- lastSyncedTimestampF
       batchId <- batchIdF
       stateEither <-
         credentialBatchesRepository
@@ -187,7 +197,7 @@ class NodeServiceImpl(
         }
         logAndReturnResponse(
           "getBatchState",
-          response
+          response.withLastSyncedBlockTimestamp(lastSyncedTimestamp.toProtoTimestamp)
         )
     }
   }
@@ -196,6 +206,7 @@ class NodeServiceImpl(
       request: GetCredentialRevocationTimeRequest
   ): Future[GetCredentialRevocationTimeResponse] = {
     logRequest("getCredentialRevocationTime", request)
+    val lastSyncedTimestampF = objectManagement.getLastSyncedTimestamp
     val batchIdF = Future.fromTry {
       Try {
         CredentialBatchId
@@ -210,6 +221,7 @@ class NodeServiceImpl(
     }
 
     for {
+      lastSyncedTimestamp <- lastSyncedTimestampF
       batchId <- batchIdF
       credentialHash <- credentialHashF
       timeEither <-
@@ -224,7 +236,7 @@ class NodeServiceImpl(
           "getCredentialRevocationTime",
           GetCredentialRevocationTimeResponse(
             revocationLedgerData = ledgerData.map(ProtoCodecs.toLedgerData)
-          )
+          ).withLastSyncedBlockTimestamp(lastSyncedTimestamp.toProtoTimestamp)
         )
     }
   }
@@ -267,6 +279,8 @@ class NodeServiceImpl(
     }
 
     logRequest("getTransactionStatus", request)
+    val lastSyncedTimestampF = objectManagement.getLastSyncedTimestamp
+
     val transactionF = Future {
       request.transactionInfo
         .map(fromTransactionInfo)
@@ -274,6 +288,7 @@ class NodeServiceImpl(
     }
 
     for {
+      lastSyncedTimestamp <- lastSyncedTimestampF
       transaction <- transactionF
       latestTransactionAndStatus <- objectManagement.getLatestTransactionAndStatus(transaction)
       latestTransaction = latestTransactionAndStatus.map(_.transaction).getOrElse(transaction)
@@ -289,6 +304,7 @@ class NodeServiceImpl(
           .GetTransactionStatusResponse()
           .withTransactionInfo(toTransactionInfo(latestTransaction))
           .withStatus(status)
+          .withLastSyncedBlockTimestamp(lastSyncedTimestamp.toProtoTimestamp)
       )
     }
   }
@@ -334,7 +350,7 @@ object NodeServiceImpl {
     Future.failed(new RuntimeException(msg))
   }
 
-  private case class OrElse(did: DID, state: Future[Either[NodeError, Option[models.nodeState.DIDDataState]]]) {
+  private case class OrElse(did: DID, state: Future[Either[NodeError, Option[DIDDataState]]]) {
     def orReturn(
         initialState: => Future[node_api.GetDidDocumentResponse]
     )(implicit ec: ExecutionContext, logger: Logger): Future[node_api.GetDidDocumentResponse] =
@@ -357,7 +373,9 @@ object NodeServiceImpl {
       }
   }
 
-  private def resolve(did: DID, butShowInDIDDocument: DID)(implicit didDataRepository: DIDDataRepository): OrElse = {
+  private def resolve(did: DID, butShowInDIDDocument: DID)(implicit
+      didDataRepository: DIDDataRepository
+  ): OrElse = {
     OrElse(butShowInDIDDocument, didDataRepository.findByDid(did).value)
   }
 

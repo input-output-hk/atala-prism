@@ -1,7 +1,6 @@
 package io.iohk.atala.prism.node.services
 
 import java.time.{Duration, Instant}
-
 import cats.effect.IO
 import cats.syntax.functor._
 import com.google.protobuf.ByteString
@@ -14,6 +13,8 @@ import enumeratum.{Enum, EnumEntry}
 import io.iohk.atala.prism.crypto.SHA256Digest
 import io.iohk.atala.prism.models.{TransactionInfo, TransactionStatus}
 import io.iohk.atala.prism.node.UnderlyingLedger
+import io.iohk.atala.prism.node.cardano.LAST_SYNCED_BLOCK_TIMESTAMP
+import io.iohk.atala.prism.node.models.nodeState.getLastSyncedTimestampFromMaybe
 import io.iohk.atala.prism.node.models.{
   AtalaObject,
   AtalaObjectId,
@@ -22,7 +23,7 @@ import io.iohk.atala.prism.node.models.{
 }
 import io.iohk.atala.prism.node.objects.ObjectStorageService
 import io.iohk.atala.prism.node.repositories.daos.AtalaObjectsDAO.{AtalaObjectCreateData, AtalaObjectSetTransactionInfo}
-import io.iohk.atala.prism.node.repositories.daos.{AtalaObjectTransactionSubmissionsDAO, AtalaObjectsDAO}
+import io.iohk.atala.prism.node.repositories.daos.{AtalaObjectTransactionSubmissionsDAO, AtalaObjectsDAO, KeyValuesDAO}
 import io.iohk.atala.prism.node.services.ObjectManagementService.{
   AtalaObjectTransactionInfo,
   AtalaObjectTransactionStatus,
@@ -146,6 +147,18 @@ class ObjectManagementService private (
       // Publish object to the blockchain
       transactionInfo <- publishAndRecordTransaction(objId, obj)
     } yield transactionInfo
+  }
+
+  def getLastSyncedTimestamp: Future[Instant] = {
+    for {
+      maybeLastSyncedBlockTimestamp <-
+        KeyValuesDAO
+          .get(LAST_SYNCED_BLOCK_TIMESTAMP)
+          .logSQLErrors(s"getting key - ${LAST_SYNCED_BLOCK_TIMESTAMP}", logger)
+          .transact(xa)
+          .unsafeToFuture()
+      lastSyncedBlockTimestamp = getLastSyncedTimestampFromMaybe(maybeLastSyncedBlockTimestamp)
+    } yield lastSyncedBlockTimestamp
   }
 
   private def publishAndRecordTransaction(

@@ -8,11 +8,14 @@ import io.iohk.atala.prism.credentials.CredentialBatchId
 import io.iohk.atala.prism.crypto.MerkleTree.MerkleRoot
 import io.iohk.atala.prism.crypto.SHA256Digest
 import io.iohk.atala.prism.identity.DIDSuffix
+import io.iohk.atala.prism.node.cardano.{LAST_SYNCED_BLOCK_NO, LAST_SYNCED_BLOCK_TIMESTAMP}
 import io.iohk.atala.prism.node.models.{DIDData, DIDPublicKey}
 import io.iohk.atala.prism.node.models.nodeState.{DIDDataState, DIDPublicKeyState, LedgerData}
 import io.iohk.atala.prism.node.repositories.daos.CredentialBatchesDAO.CreateCredentialBatchData
-import io.iohk.atala.prism.node.repositories.daos.{CredentialBatchesDAO, DIDDataDAO, PublicKeysDAO}
+import io.iohk.atala.prism.node.repositories.daos.{CredentialBatchesDAO, DIDDataDAO, KeyValuesDAO, PublicKeysDAO}
 import org.scalatest.OptionValues._
+
+import java.time.Instant
 
 // This class collects useful methods to populate and query the node db that are
 // not needed in the node production code, but are useful for tests.
@@ -31,6 +34,18 @@ object DataPreparation {
     val query = for {
       _ <- DIDDataDAO.insert(didData.didSuffix, didData.lastOperation, ledgerData)
       _ <- didData.keys.traverse((key: DIDPublicKey) => PublicKeysDAO.insert(key, ledgerData))
+    } yield ()
+
+    query
+      .transact(xa)
+      .unsafeRunSync()
+  }
+
+  def updateLastSyncedBlock(blockNo: Int, timestamp: Instant)(implicit xa: Transactor[IO]): Unit = {
+    val query = for {
+      _ <- KeyValuesDAO.upsert(KeyValuesDAO.KeyValue(LAST_SYNCED_BLOCK_NO, Some(blockNo.toString)))
+      _ <-
+        KeyValuesDAO.upsert(KeyValuesDAO.KeyValue(LAST_SYNCED_BLOCK_TIMESTAMP, Some(timestamp.toEpochMilli.toString)))
     } yield ()
 
     query

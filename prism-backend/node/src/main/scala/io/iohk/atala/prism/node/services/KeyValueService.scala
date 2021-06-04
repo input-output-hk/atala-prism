@@ -19,4 +19,12 @@ class KeyValueService(keyValueRepository: KeyValuesRepository)(implicit ec: Exec
       .upsert(KeyValue(key, value.map(_.toString)))
       .toFuture(_ => new RuntimeException(s"Could not set key $key to value $value"))
   }
+
+  def setMany(keyValues: List[KeyValue]): Future[List[Unit]] = {
+    keyValueRepository
+      .upsertMany(keyValues)
+      .toFuture(_ =>
+        new RuntimeException(s"Could not set keys [${keyValues.map(_.key)}] to values [${keyValues.map(_.value)}]")
+      )
+  }
 }

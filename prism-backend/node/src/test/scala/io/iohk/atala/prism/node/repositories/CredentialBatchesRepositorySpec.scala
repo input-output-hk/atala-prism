@@ -9,8 +9,8 @@ import io.iohk.atala.prism.models.{Ledger, TransactionId}
 import io.iohk.atala.prism.node.models.nodeState.{CredentialBatchState, LedgerData}
 import org.scalatest.OptionValues._
 import org.scalatest.concurrent.ScalaFutures._
-import java.time.Instant
 
+import java.time.Instant
 import cats.effect.IO
 import doobie.util.transactor.Transactor
 import io.iohk.atala.prism.node.DataPreparation
@@ -34,7 +34,7 @@ class CredentialBatchesRepositorySpec extends AtalaWithPostgresSpec {
       val randomBatchId = CredentialBatchId.random()
       val randomCredentialHash = SHA256Digest.compute("random".getBytes())
 
-      revocationTime(randomBatchId, randomCredentialHash) must be(empty)
+      revocationTime(randomBatchId, randomCredentialHash) must be(None)
     }
 
     "return proper timestamp when there is data associated to the credential and batch" in {
@@ -73,8 +73,12 @@ class CredentialBatchesRepositorySpec extends AtalaWithPostgresSpec {
         randomRevocationLedgerData
       )
 
-      revocationTime(randomBatchId, randomCredentialHash1) must be(Some(randomRevocationLedgerData))
-      revocationTime(randomBatchId, randomCredentialHash2) must be(Some(randomRevocationLedgerData))
+      revocationTime(randomBatchId, randomCredentialHash1) must be(
+        Some(randomRevocationLedgerData)
+      )
+      revocationTime(randomBatchId, randomCredentialHash2) must be(
+        Some(randomRevocationLedgerData)
+      )
     }
   }
 

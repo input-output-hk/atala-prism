@@ -27,7 +27,7 @@ import io.iohk.atala.prism.node.services.ObjectManagementService.{
   AtalaObjectTransactionStatus
 }
 import io.iohk.atala.prism.node.services.models.AtalaObjectNotification
-import io.iohk.atala.prism.node.{UnderlyingLedger, PublicationInfo, objects}
+import io.iohk.atala.prism.node.{DataPreparation, PublicationInfo, UnderlyingLedger, objects}
 import io.iohk.atala.prism.protos.{node_internal, node_models}
 import monix.execution.Scheduler.Implicits.{global => scheduler}
 import org.mockito
@@ -82,6 +82,7 @@ class ObjectManagementServiceSpec
 
   private val dummyTime = TimestampInfo(Instant.ofEpochMilli(0), 1, 0)
 
+  private val dummyBlockNo = 17
   private val dummyTimestamp = dummyTime.atalaBlockTimestamp
   private val dummyABSequenceNumber = dummyTime.atalaBlockSequenceNumber
   private val dummyTransactionInfo =
@@ -415,6 +416,8 @@ class ObjectManagementServiceSpec
     val publicationInfo = PublicationInfo(transactionInfo, TransactionStatus.Pending)
 
     "return None when not found" in {
+      DataPreparation.updateLastSyncedBlock(dummyBlockNo, dummyTimestamp)
+
       val status = objectManagementService.getLatestTransactionAndStatus(transactionInfo).futureValue
 
       status mustBe None
@@ -423,9 +426,15 @@ class ObjectManagementServiceSpec
     "return Pending when pending" in {
       doReturn(Future.successful(publicationInfo)).when(ledger).publish(*)
       doReturn(true).when(ledger).supportsOnChainData
+
+      DataPreparation.updateLastSyncedBlock(dummyBlockNo, dummyTimestamp)
+
       objectManagementService.publishAtalaOperation(atalaOperation).futureValue
 
-      val status = objectManagementService.getLatestTransactionAndStatus(transactionInfo).futureValue.value
+      val status = objectManagementService
+        .getLatestTransactionAndStatus(transactionInfo)
+        .futureValue
+        .value
 
       status mustBe AtalaObjectTransactionInfo(transactionInfo, AtalaObjectTransactionStatus.Pending)
     }
@@ -433,13 +442,17 @@ class ObjectManagementServiceSpec
     "return Pending when deleted" in {
       doReturn(Future.successful(publicationInfo)).when(ledger).publish(*)
       doReturn(true).when(ledger).supportsOnChainData
+
       objectManagementService.publishAtalaOperation(atalaOperation).futureValue
       setAtalaObjectTransactionSubmissionStatus(
         publicationInfo.transaction,
         AtalaObjectTransactionSubmissionStatus.Deleted
       )
 
-      val status = objectManagementService.getLatestTransactionAndStatus(transactionInfo).futureValue.value
+      val status = objectManagementService
+        .getLatestTransactionAndStatus(transactionInfo)
+        .futureValue
+        .value
 
       status mustBe AtalaObjectTransactionInfo(transactionInfo, AtalaObjectTransactionStatus.Pending)
     }
@@ -447,13 +460,17 @@ class ObjectManagementServiceSpec
     "return InLedger when in ledger" in {
       doReturn(Future.successful(publicationInfo)).when(ledger).publish(*)
       doReturn(true).when(ledger).supportsOnChainData
+
       objectManagementService.publishAtalaOperation(atalaOperation).futureValue
       setAtalaObjectTransactionSubmissionStatus(
         publicationInfo.transaction,
         AtalaObjectTransactionSubmissionStatus.InLedger
       )
 
-      val status = objectManagementService.getLatestTransactionAndStatus(transactionInfo).futureValue.value
+      val status = objectManagementService
+        .getLatestTransactionAndStatus(transactionInfo)
+        .futureValue
+        .value
 
       status mustBe AtalaObjectTransactionInfo(transactionInfo, AtalaObjectTransactionStatus.InLedger)
     }
@@ -464,11 +481,17 @@ class ObjectManagementServiceSpec
       doReturn(connection.pure(true))
         .when(blockProcessing)
         .processBlock(*, anyTransactionIdMatcher, *, *, *)
+
+      DataPreparation.updateLastSyncedBlock(dummyBlockNo, dummyTimestamp)
+
       objectManagementService.publishAtalaOperation(atalaOperation).futureValue
       // Need block info when saving an object as it comes from the ledger
       objectManagementService.saveObject(AtalaObjectNotification(atalaObject, transactionInfoWithBlock)).futureValue
 
-      val status = objectManagementService.getLatestTransactionAndStatus(transactionInfo).futureValue.value
+      val status = objectManagementService
+        .getLatestTransactionAndStatus(transactionInfo)
+        .futureValue
+        .value
 
       status mustBe AtalaObjectTransactionInfo(transactionInfoWithBlock, AtalaObjectTransactionStatus.Confirmed)
     }

@@ -1,6 +1,7 @@
 package io.iohk.atala.prism.node.repositories
 
 import cats.effect.IO
+import cats.implicits._
 import doobie.implicits._
 import doobie.util.transactor.Transactor
 import io.iohk.atala.prism.utils.FutureEither
@@ -23,6 +24,20 @@ class KeyValuesRepository(xa: Transactor[IO])(implicit ec: ExecutionContext) {
     KeyValuesDAO
       .upsert(keyValue)
       .logSQLErrors("upserting", logger)
+      .transact(xa)
+      .unsafeToFuture()
+      .map(Right.apply)
+      .toFutureEither
+  }
+
+  /**
+    * Updates many values for the given keys atomically, inserting non-existent keys.
+    */
+  def upsertMany(keyValues: List[KeyValue]): FutureEither[Nothing, List[Unit]] = {
+    keyValues
+      .map(KeyValuesDAO.upsert)
+      .sequence
+      .logSQLErrors(s"upserting: ${keyValues}", logger)
       .transact(xa)
       .unsafeToFuture()
       .map(Right.apply)

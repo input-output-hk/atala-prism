@@ -116,6 +116,8 @@ class NodeServiceSpec
     dummyTimestampInfo
   )
 
+  private val dummySyncTimestamp = Instant.ofEpochMilli(107)
+
   "NodeService.getDidDocument" should {
     "return DID document from data in the database" in {
       val didDigest = SHA256Digest.compute("test".getBytes())
@@ -123,6 +125,9 @@ class NodeServiceSpec
       DIDDataDAO.insert(didSuffix, didDigest, dummyLedgerData).transact(database).unsafeRunSync()
       val key = DIDPublicKey(didSuffix, "master", KeyUsage.MasterKey, CreateDIDOperationSpec.masterKeys.publicKey)
       PublicKeysDAO.insert(key, dummyLedgerData).transact(database).unsafeRunSync()
+
+      doReturn(Future.successful(dummySyncTimestamp)).when(objectManagementService).getLastSyncedTimestamp
+
       val response = service.getDidDocument(node_api.GetDidDocumentRequest(s"did:prism:${didSuffix.value}"))
       val document = response.document.value
       document.id mustBe didSuffix.value
@@ -135,11 +140,14 @@ class NodeServiceSpec
       publicKey.revokedOn mustBe empty
 
       ParsingUtils.parseECKey(ValueAtPath(publicKey.getEcKeyData, Path.root)) must beRight(key.key)
+
+      response.lastSyncedBlockTimestamp must be(Some(dummySyncTimestamp.toProtoTimestamp))
     }
 
     "return DID document for an unpublished DID" in {
       val masterKey = CreateDIDOperationSpec.masterKeys.publicKey
       val longFormDID = DID.createUnpublishedDID(masterKey)
+      doReturn(Future.successful(dummySyncTimestamp)).when(objectManagementService).getLastSyncedTimestamp
 
       val response = service.getDidDocument(node_api.GetDidDocumentRequest(longFormDID.value))
       val document = response.document.value
@@ -153,6 +161,7 @@ class NodeServiceSpec
       publicKey.revokedOn mustBe empty
 
       ParsingUtils.parseECKey(ValueAtPath(publicKey.getEcKeyData, Path.root)) must beRight(masterKey)
+      response.lastSyncedBlockTimestamp must be(Some(dummySyncTimestamp.toProtoTimestamp))
     }
 
     "return DID document for a long form DID after it was published" in {
@@ -168,6 +177,8 @@ class NodeServiceSpec
       val key2 = DIDPublicKey(didSuffix, "issuance0", KeyUsage.IssuingKey, issuingKey)
       PublicKeysDAO.insert(key1, dummyLedgerData).transact(database).unsafeRunSync()
       PublicKeysDAO.insert(key2, dummyLedgerData).transact(database).unsafeRunSync()
+
+      doReturn(Future.successful(dummySyncTimestamp)).when(objectManagementService).getLastSyncedTimestamp
 
       // we now resolve the long form DID
       val response = service.getDidDocument(node_api.GetDidDocumentRequest(longFormDID.value))
@@ -186,6 +197,8 @@ class NodeServiceSpec
       ProtoCodecs.fromTimestampInfoProto(publicKey2.addedOn.value) mustBe dummyLedgerData.timestampInfo
       publicKey2.revokedOn mustBe empty
       ParsingUtils.parseECKey(ValueAtPath(publicKey2.getEcKeyData, Path.root)) must beRight(issuingKey)
+
+      response.lastSyncedBlockTimestamp must be(Some(dummySyncTimestamp.toProtoTimestamp))
     }
   }
 
@@ -345,6 +358,8 @@ class NodeServiceSpec
       val requestWithInvalidId = GetBatchStateRequest(batchId = invalidBatchId)
       val expectedMessage = s"INTERNAL: Invalid batch id: $invalidBatchId"
 
+      doReturn(Future.successful(dummySyncTimestamp)).when(objectManagementService).getLastSyncedTimestamp
+
       val error = intercept[RuntimeException] {
         service.getBatchState(requestWithInvalidId)
       }
@@ -361,6 +376,7 @@ class NodeServiceSpec
       )
 
       doReturn(repositoryError).when(credentialBatchesRepository).getBatchState(validBatchId)
+      doReturn(Future.successful(dummySyncTimestamp)).when(objectManagementService).getLastSyncedTimestamp
 
       val err = intercept[RuntimeException](
         service.getBatchState(requestWithValidId)
@@ -377,11 +393,13 @@ class NodeServiceSpec
       )
 
       doReturn(repositoryError).when(credentialBatchesRepository).getBatchState(validBatchId)
+      doReturn(Future.successful(dummySyncTimestamp)).when(objectManagementService).getLastSyncedTimestamp
 
       val response = service.getBatchState(requestWithValidId)
       response.issuerDid must be("")
       response.merkleRoot must be(empty)
       response.publicationLedgerData must be(empty)
+      response.lastSyncedBlockTimestamp must be(Some(dummySyncTimestamp.toProtoTimestamp))
     }
 
     "return batch state when CredentialBatchesRepository succeeds" in {
@@ -419,6 +437,9 @@ class NodeServiceSpec
             .withOperationSequenceNumber(issuedOnLedgerData.timestampInfo.operationSequenceNumber)
         )
 
+      doReturn(
+        Future.successful(dummySyncTimestamp)
+      ).when(objectManagementService).getLastSyncedTimestamp
       doReturn(repositoryResponse).when(credentialBatchesRepository).getBatchState(validBatchId)
 
       val response = service.getBatchState(requestWithValidId)
@@ -426,6 +447,7 @@ class NodeServiceSpec
       response.merkleRoot.toByteArray.toVector must be(merkleRoot.hash.value)
       response.publicationLedgerData must be(Some(ledgerDataProto))
       response.revocationLedgerData must be(empty)
+      response.lastSyncedBlockTimestamp must be(Some(dummySyncTimestamp.toProtoTimestamp))
     }
   }
 
@@ -440,6 +462,7 @@ class NodeServiceSpec
         )
       val expectedMessage = s"INTERNAL: Invalid batch id: $invalidBatchId"
 
+      doReturn(Future.successful(dummySyncTimestamp)).when(objectManagementService).getLastSyncedTimestamp
       val error = intercept[RuntimeException] {
         service.getCredentialRevocationTime(requestWithInvalidId)
       }
@@ -456,6 +479,10 @@ class NodeServiceSpec
 
       val expectedMessage = "INTERNAL: Vector length doesn't correspond to expected length  - 32"
 
+      doReturn(
+        Future.successful(dummySyncTimestamp)
+      ).when(objectManagementService).getLastSyncedTimestamp
+
       val error = intercept[RuntimeException] {
         service.getCredentialRevocationTime(requestWithInvalidCredentialHash)
       }
@@ -470,11 +497,15 @@ class NodeServiceSpec
         credentialHash = ByteString.copyFrom(validCredentialHash.value.toArray)
       )
 
-      val repositoryResponse = new FutureEither[NodeError, Option[TimestampInfo]](
+      val repositoryResponse = new FutureEither[NodeError, Option[LedgerData]](
         Future.successful(
           Right(None)
         )
       )
+
+      doReturn(
+        Future.successful(dummySyncTimestamp)
+      ).when(objectManagementService).getLastSyncedTimestamp
 
       doReturn(repositoryResponse)
         .when(credentialBatchesRepository)
@@ -482,6 +513,7 @@ class NodeServiceSpec
 
       val response = service.getCredentialRevocationTime(validRequest)
       response.revocationLedgerData must be(empty)
+      response.lastSyncedBlockTimestamp must be(Some(dummySyncTimestamp.toProtoTimestamp))
     }
 
     "return correct timestamp when CredentialBatchesRepository succeeds returning a time" in {
@@ -516,12 +548,17 @@ class NodeServiceSpec
         .withLedger(common_models.Ledger.IN_MEMORY)
         .withTimestampInfo(timestampInfoProto)
 
+      doReturn(
+        Future.successful(dummySyncTimestamp)
+      ).when(objectManagementService).getLastSyncedTimestamp
+
       doReturn(repositoryResponse)
         .when(credentialBatchesRepository)
         .getCredentialRevocationTime(validBatchId, validCredentialHash)
 
       val response = service.getCredentialRevocationTime(validRequest)
       response.revocationLedgerData must be(Some(revocationLedgerDataProto))
+      response.lastSyncedBlockTimestamp must be(Some(dummySyncTimestamp.toProtoTimestamp))
     }
   }
 
@@ -530,8 +567,13 @@ class NodeServiceSpec
       // Use a different transaction as the original one in the request was retried
       val testTransactionInfo2 =
         TransactionInfo(TransactionId.from(SHA256Digest.compute("test2".getBytes()).value).value, Ledger.InMemory)
+      val atalaObjectTransaction =
+        Some(AtalaObjectTransactionInfo(testTransactionInfo2, AtalaObjectTransactionStatus.Pending))
       doReturn(
-        Future.successful(Some(AtalaObjectTransactionInfo(testTransactionInfo2, AtalaObjectTransactionStatus.Pending)))
+        Future.successful(dummySyncTimestamp)
+      ).when(objectManagementService).getLastSyncedTimestamp
+      doReturn(
+        Future.successful(atalaObjectTransaction)
       ).when(objectManagementService).getLatestTransactionAndStatus(*)
 
       val response =
@@ -546,11 +588,18 @@ class NodeServiceSpec
               .withLedger(common_models.Ledger.IN_MEMORY)
           )
           .withStatus(common_models.TransactionStatus.PENDING)
+          .withLastSyncedBlockTimestamp(dummySyncTimestamp.toProtoTimestamp)
       )
     }
 
     "return the same transaction and UNKNOWN status when unknown" in {
-      doReturn(Future.successful(None)).when(objectManagementService).getLatestTransactionAndStatus(*)
+      doReturn(
+        Future.successful(dummySyncTimestamp)
+      ).when(objectManagementService).getLastSyncedTimestamp
+
+      doReturn(Future.successful(None))
+        .when(objectManagementService)
+        .getLatestTransactionAndStatus(*)
 
       val response =
         service.getTransactionStatus(GetTransactionStatusRequest().withTransactionInfo(testTransactionInfoProto))
@@ -559,6 +608,7 @@ class NodeServiceSpec
         GetTransactionStatusResponse()
           .withTransactionInfo(testTransactionInfoProto)
           .withStatus(common_models.TransactionStatus.UNKNOWN)
+          .withLastSyncedBlockTimestamp(dummySyncTimestamp.toProtoTimestamp)
       )
     }
   }

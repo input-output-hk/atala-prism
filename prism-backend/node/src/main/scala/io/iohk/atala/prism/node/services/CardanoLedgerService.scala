@@ -10,11 +10,12 @@ import io.iohk.atala.prism.models.{
   TransactionInfo,
   TransactionStatus
 }
-import io.iohk.atala.prism.node.cardano.CardanoClient
+import io.iohk.atala.prism.node.cardano.{CardanoClient, LAST_SYNCED_BLOCK_NO, LAST_SYNCED_BLOCK_TIMESTAMP}
 import io.iohk.atala.prism.node.cardano.models._
+import io.iohk.atala.prism.node.repositories.daos.KeyValuesDAO.KeyValue
 import io.iohk.atala.prism.node.services.CardanoLedgerService.CardanoNetwork
 import io.iohk.atala.prism.node.services.models.{AtalaObjectNotification, AtalaObjectNotificationHandler}
-import io.iohk.atala.prism.node.{UnderlyingLedger, PublicationInfo}
+import io.iohk.atala.prism.node.{PublicationInfo, UnderlyingLedger}
 import io.iohk.atala.prism.protos.node_internal
 import io.iohk.atala.prism.utils.FutureEither
 import monix.execution.Scheduler
@@ -37,7 +38,6 @@ class CardanoLedgerService private[services] (
 )(implicit
     ec: ExecutionContext
 ) extends UnderlyingLedger {
-  private val LAST_SYNCED_BLOCK_NO = "last_synced_block_no"
   private val MAX_SYNC_BLOCKS = 100
 
   private val logger = LoggerFactory.getLogger(this.getClass)
@@ -164,8 +164,19 @@ class CardanoLedgerService private[services] (
 
     for {
       _ <- Future.traverse(notifications) { onAtalaObject(_) }
-      _ <- keyValueService.set(LAST_SYNCED_BLOCK_NO, Some(block.header.blockNo))
+      _ <- updateLastSyncedBlock(block)
     } yield ()
+  }
+
+  private def updateLastSyncedBlock(block: Block.Full): Future[List[Unit]] = {
+    val timestampEpochMilli = block.header.time.toEpochMilli
+    keyValueService
+      .setMany(
+        List(
+          KeyValue(LAST_SYNCED_BLOCK_NO, Some(block.header.blockNo.toString)),
+          KeyValue(LAST_SYNCED_BLOCK_TIMESTAMP, Some(timestampEpochMilli.toString))
+        )
+      )
   }
 }
 
