@@ -24,12 +24,21 @@ const useGetContacts = (contactsManager, allowPreload = true) => {
   const { showUnconfirmedAccountError, removeUnconfirmedAccountError } = useSession();
 
   const getContacts = useCallback(
-    ({ pageSize, lastId, oldContacts = [], isRefresh = false, groupName, onFinish, onResults }) => {
+    ({
+      pageSize,
+      lastId,
+      oldContacts = [],
+      isRefresh = false,
+      groupName,
+      onFinish,
+      onResults,
+      isFetchAll
+    }) => {
       if (isSearching) return;
 
       setIsSearching(true);
 
-      (hasMore || isRefresh
+      (hasMore || isRefresh || isFetchAll
         ? contactsManager.getContacts(lastId, pageSize, groupName)
         : Promise.resolve([])
       )
@@ -211,6 +220,7 @@ export const useContactsWithFilteredList = (contactsManager, allowPreload) => {
     getContacts({
       pageSize: MAX_CONTACTS,
       lastId: null,
+      isFetchAll: true,
       onResults: contactsReceived => applyFilters(contactsReceived, cb)
     });
 
@@ -287,6 +297,7 @@ export const useContactsWithFilteredListAndNotInGroup = contactsManager => {
       pageSize: MAX_CONTACTS,
       lastId: null,
       groupName,
+      isFetchAll: true,
       onResults: contactsReceived => applyFilters(contactsReceived, cb)
     });
 
