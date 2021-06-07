@@ -128,7 +128,7 @@ export const useCredentialActions = (api, credentialsIssued, refreshCredentialsI
   });
 
   const getTargetById = targetId =>
-    credentialsIssued.find(creds => creds.credentialid === targetId);
+    credentialsIssued.find(creds => creds.credentialId === targetId);
 
   const revokeSelectedCredentials = () => setConfirmationModal(REVOKE_CREDENTIALS);
   const signSelectedCredentials = () => setConfirmationModal(SIGN_CREDENTIALS);
