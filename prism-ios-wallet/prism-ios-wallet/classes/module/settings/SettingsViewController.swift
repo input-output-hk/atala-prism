@@ -123,6 +123,11 @@ class SettingsViewController: ListingBaseViewController {
 
     func changeScreenToPayIdDetail() {
         ViewControllerUtils.changeScreenSegued(caller: self, segue: "PayIDSegue", params: nil)
+	}
+
+    func changeScreenToVerifyId() {
+        ViewControllerUtils.changeScreenSegued(caller: self, segue: "VerifyIdSegue", params: nil)
+
     }
 
     func resetData() {

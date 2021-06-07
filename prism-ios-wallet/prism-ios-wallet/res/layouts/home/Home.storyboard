@@ -39,6 +39,7 @@
                         <segue destination="Zxg-dQ-gT6" kind="show" identifier="ActivityLogSegue" id="Bhq-jq-scc"/>
                         <segue destination="NJ6-Ct-zvz" kind="show" identifier="IntdemoTutorialSegue" id="02b-WX-Mxw"/>
                         <segue destination="ubp-i2-g4C" kind="show" identifier="PayIdSegue" id="k4g-rb-42t"/>
+                        <segue destination="hD9-zm-P5H" kind="show" identifier="VerifyIdSegue" id="eh8-hN-gB3"/>
                     </connections>
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="lwu-Qj-tt2" userLabel="First Responder" customClass="UIResponder" sceneMemberID="firstResponder"/>
@@ -111,6 +112,16 @@
                 <placeholder placeholderIdentifier="IBFirstResponder" id="mzI-Et-FP3" userLabel="First Responder" customClass="UIResponder" sceneMemberID="firstResponder"/>
             </objects>
             <point key="canvasLocation" x="644" y="-201"/>
+        </scene>
+        <!--VerifyIdTutorialNavigation-->
+        <scene sceneID="aya-g7-dWZ">
+            <objects>
+                <viewControllerPlaceholder storyboardName="VerifyIdTutorial" referencedIdentifier="VerifyIdTutorialNavigation" id="hD9-zm-P5H" sceneMemberID="viewController">
+                    <navigationItem key="navigationItem" id="Ez8-2c-yJB"/>
+                </viewControllerPlaceholder>
+                <placeholder placeholderIdentifier="IBFirstResponder" id="W1v-kE-jBA" userLabel="First Responder" customClass="UIResponder" sceneMemberID="firstResponder"/>
+            </objects>
+            <point key="canvasLocation" x="718" y="-200"/>
         </scene>
     </scenes>
     <resources>

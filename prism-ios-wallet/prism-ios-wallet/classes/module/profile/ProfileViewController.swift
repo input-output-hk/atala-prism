@@ -24,14 +24,14 @@ class ProfileViewController: ListingBaseViewController, UIImagePickerControllerD
         ViewControllerUtils.addTapToDismissKeyboard(view: self)
         ViewControllerUtils.addShiftKeyboardListeners(view: self)
     }
-    
+
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
         
         NotificationCenter.default.addObserver(self, selector: #selector(onReloadAttributes),
                                                name: .reloadAttributes, object: nil)
     }
-    
+
     override func onBackPressed() -> Bool {
         if !presenterImpl.tappedBackButton() {
             return super.onBackPressed()
@@ -78,7 +78,7 @@ class ProfileViewController: ListingBaseViewController, UIImagePickerControllerD
         navBar = NavBarCustomStyle(hasNavBar: true, isWhite: hasBgSpecial, title: navTitle,
                                    hasBackButton: true, rightIconName: iconTitle,
                                    rightIconAction: iconAction, leftIconName: "ico_add", leftIconAction: addAction)
-        
+
         NavBarCustom.config(view: self)
         // Special background
         viewBgSpecial.isHidden = !hasBgSpecial
@@ -101,7 +101,7 @@ class ProfileViewController: ListingBaseViewController, UIImagePickerControllerD
 
         switch presenterImpl.getElementType(indexPath: indexPath) {
         case .profile:
-            return "profile"
+            return indexPath.row == 0 ? "profile" : HomeCardsTableViewCell.reuseIdentifier
         case .initial:
             return "common"
         default:
@@ -113,14 +113,14 @@ class ProfileViewController: ListingBaseViewController, UIImagePickerControllerD
 
         switch presenterImpl.getElementType(indexPath: indexPath) {
         case .profile:
-            return ProfileViewCell.default_NibName()
+            return indexPath.row == 0 ? ProfileViewCell.default_NibName() : HomeCardsTableViewCell.nibName
         case .initial:
             return CommonViewCell.default_NibName()
         default:
             return super.getCellNib(for: indexPath)
         }
     }
-    
+
     // MARK: Buttons
 
     func setupButtons() {}
@@ -143,28 +143,34 @@ class ProfileViewController: ListingBaseViewController, UIImagePickerControllerD
         
         self?.customPresentViewController(attVC.presentr, viewController: attVC, animated: true)
     })
-    
+
     // MARK: Screens
 
     func changeScreenToProfileDetail() {
         ViewControllerUtils.changeScreenSegued(caller: self, segue: "ProfileDetailSegue", params: nil)
     }
-    
+
     func changeScreenToAttributeVerification(type: String, logo: String) {
-        
+
         var params: [Any?] = []
         params.append(type)
         params.append(logo)
-        
-        ViewControllerUtils.changeScreenPresented(caller: self, storyboardName: "BaseVerification", viewControllerIdentif: "BaseVerification", params: params, animated: true)
+
+        ViewControllerUtils.changeScreenPresented(caller: self, storyboardName: "BaseVerification",
+                                                  viewControllerIdentif: "BaseVerification", params: params,
+                                                  animated: true)
     }
-    
+
     func changeScreenToAttributeListing(type: String) {
-        
+
         var params: [Any?] = []
         params.append(type)
-        
+
         ViewControllerUtils.changeScreenSegued(caller: self, segue: "AttributeListingSegue", params: params)
+    }
+    
+    func changeScreenToVerifyId() {
+        ViewControllerUtils.changeScreenSegued(caller: self, segue: "VerifyIdSegue", params: nil)
     }
     
     // MARK: Profile picture 

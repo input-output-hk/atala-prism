@@ -230,6 +230,8 @@
 "settings_date_subtitle" = "Custom date format";
 "settings_pay_id_title" = "Pay ID";
 "settings_pay_id_subtitle" = "Get it Now!";
+"settings_verify_id_title" = "Verified Identity";
+"settings_verify_id_subtitle" = "Get it Now !";
 
 // <!-- Login: Welcome -->
 "welcome_title" = "Welcome";

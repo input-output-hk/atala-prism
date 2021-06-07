@@ -1,7 +1,9 @@
 //
 
-class ProfilePresenter: ListingBasePresenter, ListingBaseTableUtilsPresenterDelegate, CommonViewCellPresenterDelegate, ProfileViewCellPresenterDelegate {
-    
+class ProfilePresenter: ListingBasePresenter, ListingBaseTableUtilsPresenterDelegate,
+                        CommonViewCellPresenterDelegate, ProfileViewCellPresenterDelegate,
+                        HomeCardsTableViewCellDelegate {
+
     var viewImpl: ProfileViewController? {
         return view as? ProfileViewController
     }
@@ -51,9 +53,9 @@ class ProfilePresenter: ListingBasePresenter, ListingBaseTableUtilsPresenterDele
         var count: Int = initialRows?.count ?? 1
 
         for att in sharedMemory.loggedUser!.attributes {
-            
+
             if !attributes.contains(where: { $0.type == att.type }) {
-                
+
                 attributes.append(att)
                 attributeRows?.append(CellRow(type: .initial, value: (count, true)))
                 attributeRows?.forEach { initialRows?.append($0) }
@@ -73,9 +75,9 @@ class ProfilePresenter: ListingBasePresenter, ListingBaseTableUtilsPresenterDele
         var count: Int = editingRows?.count ?? 1
 
         for att in sharedMemory.loggedUser!.attributes {
-            
+
             if !attributes.contains(where: { $0.type == att.type }) {
-                
+
                 attributes.append(att)
                 attributeRows?.append(CellRow(type: .initial, value: (count, true)))
                 attributeRows?.forEach { editingRows?.append($0) }
@@ -96,7 +98,7 @@ class ProfilePresenter: ListingBasePresenter, ListingBaseTableUtilsPresenterDele
         }
         return false
     }
-    
+
     func tappedEditButton() {
 
         startShowingEdit()
@@ -135,72 +137,67 @@ class ProfilePresenter: ListingBasePresenter, ListingBaseTableUtilsPresenterDele
             return (editingRows?.size() ?? 0) > 0
         }
     }
-    
+
     func getSectionCount() -> Int? {
      
         return attributeRows?.count > 0 ? 3 : 2
     }
-    
+
     func getSectionHeaderViews() -> [UIView] {
-        
+
         var arrViews = [UIView]()
-        
+
         let numOfSections: Int = viewImpl?.table.numberOfSections ?? 1
-        
-        for section in 0..<numOfSections{
+
+        for section in 0..<numOfSections {
             switch section {
             case 0:
                 arrViews.append(returnTalbeviewheaderWith(title: nil))
-                break
             case 1:
                 arrViews.append(returnTalbeviewheaderWith(title: "profile_table_header_title".localize()))
-                break
             case 2:
                 arrViews.append(returnTalbeviewheaderWith(title: "profile_table_header_title_social".localize()))
-                break
             default:
                 break
             }
         }
         return arrViews
     }
-    
+
     func returnTalbeviewheaderWith(title: String?) -> UIView {
-        
+
         let headerView = UIView()
 
         if title != nil {
-            
+
             headerView.backgroundColor = .white
-            
-            let sectionLabel = UILabel(frame: CGRect(x: 12, y: 16, width: viewImpl!.table.bounds.size.width, height: viewImpl!.table.bounds.size.height))
+
+            let sectionLabel = UILabel(frame: CGRect(x: 12, y: 16, width: viewImpl!.table.bounds.size.width,
+                                                     height: viewImpl!.table.bounds.size.height))
             sectionLabel.font = UIFont(name: "Helvetica", size: 12)
             sectionLabel.textColor = .lightGray
             sectionLabel.text = title
             sectionLabel.sizeToFit()
             headerView.addSubview(sectionLabel)
         }
-        
+
         return headerView
     }
 
     func getElementCount() -> [Int] {
-    
+
         var arrElements = [Int]()
-        
+
         let numOfSections: Int = viewImpl?.table.numberOfSections ?? 1
-        
-        for section in 0..<numOfSections{
+
+        for section in 0..<numOfSections {
             switch section {
             case 0:
-                arrElements.append(1)
-                break
+                arrElements.append(2)
             case 1:
                 arrElements.append(1)
-                break
             case 2:
                 arrElements.append(attributeRows?.count ?? 1)
-                break
             default:
                 break
             }
@@ -220,7 +217,7 @@ class ProfilePresenter: ListingBasePresenter, ListingBaseTableUtilsPresenterDele
             return editingRows![indexPath.section].type
         }
     }
-    
+
     // MARK: Fetch
 
     func fetchElements() {
@@ -234,9 +231,8 @@ class ProfilePresenter: ListingBasePresenter, ListingBaseTableUtilsPresenterDele
             self.startListing()
         }
     }
-    
+
     func addAttributeWith(type: String, logo: String) {
-        
         viewImpl?.changeScreenToAttributeVerification(type: type, logo: logo)
     }
 
@@ -265,7 +261,7 @@ class ProfilePresenter: ListingBasePresenter, ListingBaseTableUtilsPresenterDele
     func setup(for cell: TabsViewCell) {
         cell.config()
     }
-    
+
     private func getFieldCellRowValue(index: IndexPath) -> (Int, Bool)? {
         return (mode == .initial ? initialRows?[index.section] : editingRows?[index.section])?.value as? (Int, Bool)
     }
@@ -274,46 +270,71 @@ class ProfilePresenter: ListingBasePresenter, ListingBaseTableUtilsPresenterDele
         editedImage = jpegData
         updateViewToState()
     }
-    
+
     func setup(for cell: CommonViewCell) {
-        
+
         let fieldValue = getFieldCellRowValue(index: cell.indexPath!)!
 
         var fieldTitle: String
         var logo: String
         let isVerified: Bool = true
-        
+
         switch fieldValue.0 {
         case 0:
             fieldTitle = "profile_row_personal_info_title".localize()
             logo = "logo_security"
-            break
         default:
             fieldTitle = (attributes[cell.indexPath!.row].type) ?? ""
             logo = (attributes[cell.indexPath!.row].logo)  ?? ""
-            break
         }
         cell.config(title: fieldTitle, subtitle: nil, logoData: nil, logoPlaceholderNamed: logo, isVerified: isVerified)
     }
-    
+
     func tappedAction(for cell: CommonViewCell) {
         rowActionFor(indexPath: cell.indexPath!)
     }
-    
+
     func didSelectRowAt(indexPath: IndexPath) {
         rowActionFor(indexPath: indexPath)
     }
-    
-    func rowActionFor(indexPath: IndexPath) -> Void {
+
+    func rowActionFor(indexPath: IndexPath) {
         switch indexPath.section {
         case 1:
             viewImpl?.changeScreenToProfileDetail()
         case 2:
             let type: String = (attributes[indexPath.row].type)  ?? ""
             viewImpl?.changeScreenToAttributeListing(type: type)
-            break
         default:
             break
         }
+    }
+
+    // MARK: HomeCardsTableViewCellDelegate
+
+    func setup(for cell: HomeCardsTableViewCell) {
+        let loggedUser = sharedMemory.loggedUser
+        cell.config(hidePayId: loggedUser?.payIdCardDismissed ?? false,
+                    hideVerifyId: loggedUser?.verifyIdCardDismissed ?? false, delegate: self)
+    }
+
+    func payIdTapped(for cell: HomeCardsTableViewCell) {
+        // TODO: this will be implemented with the pay id functionality
+    }
+
+    func dismissPayIdTapped(for cell: HomeCardsTableViewCell) {
+        sharedMemory.loggedUser?.payIdCardDismissed = true
+        sharedMemory.loggedUser = sharedMemory.loggedUser
+        viewImpl?.table.reloadData()
+    }
+
+    func verifyIdTapped(for cell: HomeCardsTableViewCell) {
+        viewImpl?.changeScreenToVerifyId()
+    }
+
+    func dismissVerifyIdTapped(for cell: HomeCardsTableViewCell) {
+        sharedMemory.loggedUser?.verifyIdCardDismissed = true
+        sharedMemory.loggedUser = sharedMemory.loggedUser
+        viewImpl?.table.reloadData()
     }
 }

@@ -49,7 +49,7 @@ class HomeCardsTableViewCell: BaseTableViewCell {
 
     // MARK: Config
 
-    func config(hidePayId: Bool, hideVerifyId: Bool, delegate: HomeActivityLogHeaderTableViewCellDelegate? = nil) {
+    func config(hidePayId: Bool, hideVerifyId: Bool, delegate: HomeCardsTableViewCellDelegate? = nil) {
 
         self.delegate = delegate
         payIdBg.addRoundCorners(radius: 10)

@@ -43,11 +43,11 @@ class HomePresenter: ListingBasePresenter, ListingBaseTableUtilsPresenterDelegat
     func hasData() -> Bool {
         false
     }
-    
+
     func getSectionHeaderViews() -> [UIView] {
         return [UIView()]
     }
-    
+
     func getSectionCount() -> Int? {
         return 1
     }
@@ -211,7 +211,7 @@ class HomePresenter: ListingBasePresenter, ListingBaseTableUtilsPresenterDelegat
     }
 
     func verifyIdTapped(for cell: HomeCardsTableViewCell) {
-        // TODO: this will be implemented with the verify id functionality
+        viewImpl?.changeScreenToVerifyId()
     }
 
     func dismissVerifyIdTapped(for cell: HomeCardsTableViewCell) {

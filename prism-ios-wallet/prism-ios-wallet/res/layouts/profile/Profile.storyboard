@@ -100,6 +100,7 @@
                         <segue destination="NAP-cg-ae0" kind="show" identifier="ProfileDetailSegue" id="2di-ak-hFt"/>
                         <segue destination="EqX-ka-qVZ" kind="show" identifier="BaseVerificationSegue" id="MEv-Yt-4R0"/>
                         <segue destination="8ac-Bc-rkX" kind="show" identifier="AttributeListingSegue" id="Ahc-Sd-8eE"/>
+                        <segue destination="vGh-oO-VBH" kind="show" identifier="VerifyIdSegue" id="nEk-IO-hTc"/>
                     </connections>
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="PRu-vJ-34t" userLabel="First Responder" customClass="UIResponder" sceneMemberID="firstResponder"/>
@@ -114,7 +115,7 @@
                 </viewControllerPlaceholder>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="TFh-PX-2qG" userLabel="First Responder" customClass="UIResponder" sceneMemberID="firstResponder"/>
             </objects>
-            <point key="canvasLocation" x="774" y="-15"/>
+            <point key="canvasLocation" x="756" y="11"/>
         </scene>
         <!--AttributeListing-->
         <scene sceneID="o2G-8M-uaV">
@@ -124,7 +125,7 @@
                 </viewControllerPlaceholder>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="NT7-ue-diE" userLabel="First Responder" customClass="UIResponder" sceneMemberID="firstResponder"/>
             </objects>
-            <point key="canvasLocation" x="769" y="80"/>
+            <point key="canvasLocation" x="771" y="58"/>
         </scene>
         <!--BaseVerification-->
         <scene sceneID="L58-k4-XUj">
@@ -134,7 +135,17 @@
                 </viewControllerPlaceholder>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="VRQ-sl-3if" userLabel="First Responder" customClass="UIResponder" sceneMemberID="firstResponder"/>
             </objects>
-            <point key="canvasLocation" x="788" y="181"/>
+            <point key="canvasLocation" x="773" y="106"/>
+        </scene>
+        <!--VerifyIdTutorialNavigation-->
+        <scene sceneID="TxW-K9-Bau">
+            <objects>
+                <viewControllerPlaceholder storyboardName="VerifyIdTutorial" referencedIdentifier="VerifyIdTutorialNavigation" id="vGh-oO-VBH" sceneMemberID="viewController">
+                    <navigationItem key="navigationItem" id="Rmu-ZG-Awj"/>
+                </viewControllerPlaceholder>
+                <placeholder placeholderIdentifier="IBFirstResponder" id="IvL-qN-RtA" userLabel="First Responder" customClass="UIResponder" sceneMemberID="firstResponder"/>
+            </objects>
+            <point key="canvasLocation" x="817" y="150"/>
         </scene>
     </scenes>
     <resources>

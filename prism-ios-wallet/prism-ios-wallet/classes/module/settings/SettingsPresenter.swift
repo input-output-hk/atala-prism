@@ -51,7 +51,9 @@ class SettingsPresenter: ListingBasePresenter, ListingBaseTableUtilsPresenterDel
         InitialCellValue(icon: "logo_date", title: "settings_date_title",
                          subtitle: "settings_date_subtitle", action: actionRowDate),
         InitialCellValue(icon: "logo_pay_id", title: "settings_pay_id_title",
-                         subtitle: "settings_pay_id_subtitle", action: actionRowPayID)
+                         subtitle: "settings_pay_id_subtitle", action: actionRowPayID),
+        InitialCellValue(icon: "logo_verify_id", title: "settings_verify_id_title",
+                         subtitle: "settings_verify_id_subtitle", action: actionRowVerifyId)
     ]
 
     func startShowingInitial() {
@@ -102,6 +104,10 @@ class SettingsPresenter: ListingBasePresenter, ListingBaseTableUtilsPresenterDel
         } else {
             self?.viewImpl?.changeScreenToPayIdDetail()
         }
+    })
+
+    lazy var actionRowVerifyId = SelectorAction(action: { [weak self] in
+        self?.viewImpl?.changeScreenToVerifyId()
     })
 
     func clearAppData() {
