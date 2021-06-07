@@ -38,6 +38,12 @@ class PayIDSetupPresenter: BasePresenter, ConnectionsWorkerDelegate {
     // MARK: Fetch
     func createAccount() {
 
+        let dao = ContactDAO()
+        if let contact = dao.getPayIdContact() {
+            self.conectionAccepted(contact: contact)
+            return
+        }
+
         self.viewImpl?.showLoading(doShow: true)
 
         // Call the service
@@ -283,7 +289,7 @@ class PayIDSetupPresenter: BasePresenter, ConnectionsWorkerDelegate {
 
     func showNewConnectMessage(type: Int, title: String?, logoData: Data?) {
         self.viewImpl?.showLoading(doShow: true)
-        self.connectionsWorker.confirmQrCode()
+        self.connectionsWorker.confirmQrCode(isPayId: true)
     }
 
     func conectionAccepted(contact: Contact?) {

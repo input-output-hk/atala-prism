@@ -17,6 +17,8 @@
         <attribute name="connectionId" attributeType="String"/>
         <attribute name="dateCreated" attributeType="Date" usesScalarValueType="NO"/>
         <attribute name="did" attributeType="String"/>
+        <attribute name="isKyc" optional="YES" attributeType="Boolean" usesScalarValueType="YES"/>
+        <attribute name="isPayId" optional="YES" attributeType="Boolean" usesScalarValueType="YES"/>
         <attribute name="keyPath" attributeType="String"/>
         <attribute name="lastMessageId" optional="YES" attributeType="String"/>
         <attribute name="logo" optional="YES" attributeType="Binary"/>
@@ -44,7 +46,7 @@
     <elements>
         <element name="ActivityHistory" positionX="38.82421875" positionY="166.625" width="128" height="148"/>
         <element name="Address" positionX="54" positionY="144" width="128" height="59"/>
-        <element name="Contact" positionX="146.6640625" positionY="-16.45703125" width="128" height="163"/>
+        <element name="Contact" positionX="146.6640625" positionY="-16.45703125" width="128" height="179"/>
         <element name="Credential" positionX="-63" positionY="-18" width="128" height="179"/>
         <element name="PayId" positionX="45" positionY="135" width="128" height="89"/>
     </elements>

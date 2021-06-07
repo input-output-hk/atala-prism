@@ -78,7 +78,7 @@ class ConnectionsWorker: NSObject {
         })
     }
 
-    func confirmQrCode() {
+    func confirmQrCode(isKyc: Bool = false, isPayId: Bool = false) {
 
         self.delegate?.config(isLoading: true)
         var contact: Contact?
@@ -91,7 +91,8 @@ class ConnectionsWorker: NSObject {
                 let keyPath = CryptoUtils.global.confirmNewKeyUsed()
                 let dao = ContactDAO()
                 DispatchQueue.main.sync {
-                    contact = dao.createContact(connectionInfo: response.connection, keyPath: keyPath)
+                    contact = dao.createContact(connectionInfo: response.connection, keyPath: keyPath,
+                                                isKyc: isKyc, isPayId: isPayId)
                     let historyDao = ActivityHistoryDAO()
                     historyDao.createActivityHistory(timestamp: contact?.dateCreated, type: .contactAdded,
                                                      credential: nil, contact: contact)

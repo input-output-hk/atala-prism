@@ -44,6 +44,24 @@ class ContactDAO: BaseDAO {
         }
         return nil
     }
+    
+    func getKycContact() -> Contact? {
+        let fetchRequest = Contact.createFetchRequest()
+        fetchRequest.predicate = NSPredicate(format: "isKyc == true")
+        fetchRequest.sortDescriptors = getSortDescriptors()
+
+        let result = try? getManagedContext()?.fetch(fetchRequest)
+        return result?.first
+    }
+    
+    func getPayIdContact() -> Contact? {
+        let fetchRequest = Contact.createFetchRequest()
+        fetchRequest.predicate = NSPredicate(format: "isPayId == true")
+        fetchRequest.sortDescriptors = getSortDescriptors()
+
+        let result = try? getManagedContext()?.fetch(fetchRequest)
+        return result?.first
+    }
 
     @discardableResult
     func updateMessageId(connectionId: String, messageId: String) -> Contact? {
@@ -78,28 +96,21 @@ class ContactDAO: BaseDAO {
     }
 
     @discardableResult
-    func createContact(connectionInfo: Io_Iohk_Atala_Prism_Protos_ConnectionInfo, keyPath: String) -> Contact? {
-        return createContact(dateCreated: Date(timeIntervalSince1970: connectionInfo.created.timeIntervalSince1970),
-                             connectionId: connectionInfo.connectionID,
-                             did: connectionInfo.participantDid,
-                             name: connectionInfo.participantName,
-                             token: connectionInfo.token,
-                             logo: connectionInfo.participantLogo,
-                             keyPath: keyPath)
-    }
+    func createContact(connectionInfo: Io_Iohk_Atala_Prism_Protos_ConnectionInfo, keyPath: String,
+                       isKyc: Bool = false, isPayId: Bool = false) -> Contact? {
 
-    func createContact(dateCreated: Date, connectionId: String, did: String, name: String,
-                       token: String, logo: Data?, keyPath: String) -> Contact? {
         guard let managedContext = getManagedContext() else { return nil }
         let contact = NSEntityDescription.insertNewObject(forEntityName: "Contact",
                                                           into: managedContext) as? Contact
-        contact?.dateCreated = dateCreated
-        contact?.connectionId = connectionId
-        contact?.did = did
-        contact?.name = name
-        contact?.token = token
-        contact?.logo = logo
+        contact?.dateCreated = Date(timeIntervalSince1970: connectionInfo.created.timeIntervalSince1970)
+        contact?.connectionId = connectionInfo.connectionID
+        contact?.did = connectionInfo.participantDid
+        contact?.name = connectionInfo.participantName
+        contact?.token = connectionInfo.token
+        contact?.logo = connectionInfo.participantLogo
         contact?.keyPath = keyPath
+        contact?.isKyc = isKyc
+        contact?.isPayId = isPayId
 
         do {
             try managedContext.save()

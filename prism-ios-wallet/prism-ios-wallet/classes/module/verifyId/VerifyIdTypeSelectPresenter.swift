@@ -97,7 +97,12 @@ class VerifyIdTypeSelectPresenter: ListingBasePresenter, ListingBaseTableUtilsPr
     // MARK: Buttons
 
     func continueTapped() {
-        createAccount()
+        let dao = ContactDAO()
+        if let contact = dao.getKycContact() {
+            self.conectionAccepted(contact: contact)
+        } else {
+            createAccount()
+        }
     }
 
     // MARK: Fetch
@@ -135,18 +140,16 @@ class VerifyIdTypeSelectPresenter: ListingBasePresenter, ListingBaseTableUtilsPr
         // Call the service
         ApiService.call(async: {
             do {
-                let responses = try ApiService.global.getCredentials(contacts: [contact])
-                Logger.d("getCredentials responses: \(responses)")
+                let response = try ApiService.global.getMessages(contact: contact)
+                Logger.d("getCredentials responses: \(response)")
 
                 // Parse the messages
-                for response in responses {
-                    for message in response.messages {
-                        if let atalaMssg = try? Io_Iohk_Atala_Prism_Protos_AtalaMessage(serializedData:
-                                                                                            message.message) {
-                            if !atalaMssg.kycBridgeMessage.startAcuantProcess.documentInstanceID.isEmpty {
-                                self.documentInstanceID = atalaMssg.kycBridgeMessage.startAcuantProcess.documentInstanceID
-                                self.kycToken = atalaMssg.kycBridgeMessage.startAcuantProcess.bearerToken
-                            }
+                for message in response.messages {
+                    if let atalaMssg = try? Io_Iohk_Atala_Prism_Protos_AtalaMessage(serializedData:
+                                                                                        message.message) {
+                        if !atalaMssg.kycBridgeMessage.startAcuantProcess.documentInstanceID.isEmpty {
+                            self.documentInstanceID = atalaMssg.kycBridgeMessage.startAcuantProcess.documentInstanceID
+                            self.kycToken = atalaMssg.kycBridgeMessage.startAcuantProcess.bearerToken
                         }
                     }
                 }
@@ -181,7 +184,7 @@ class VerifyIdTypeSelectPresenter: ListingBasePresenter, ListingBaseTableUtilsPr
 
     func showNewConnectMessage(type: Int, title: String?, logoData: Data?) {
         self.viewImpl?.config(isLoading: true)
-        self.connectionsWorker.confirmQrCode()
+        self.connectionsWorker.confirmQrCode(isKyc: true)
     }
 
     func conectionAccepted(contact: Contact?) {
