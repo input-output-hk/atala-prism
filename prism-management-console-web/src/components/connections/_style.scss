@@ -1,6 +1,9 @@
 @import '../../css/general_styling';
 
 .ConnectionsContainer {
+  .EmptyState {
+    height: 100%;
+  }
   .ContentHeader {
     width: 100%;
     display: flex;

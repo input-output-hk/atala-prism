@@ -41,7 +41,12 @@ const Connections = ({
   const emptyProps = {
     photoSrc: noContacts,
     model: t('contacts.title'),
-    isFilter: filterProps.searchText || filterProps.status
+    isFilter: filterProps.searchText || filterProps.status,
+    button: (
+      <div className="flex justifyCenter">
+        {!tableProps.contacts.length && accountStatus === CONFIRMED && <AddUserButtons />}
+      </div>
+    )
   };
 
   const onQRClosed = () => {
@@ -78,9 +83,6 @@ const Connections = ({
         </div>
       </div>
       {renderContent()}
-      <div className="flex justifyCenter">
-        {!tableProps.contacts.length && accountStatus === CONFIRMED && <AddUserButtons />}
-      </div>
       <QRModal
         visible={QRModalIsOpen}
         onCancel={onQRClosed}
