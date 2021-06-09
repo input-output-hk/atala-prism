@@ -44,7 +44,7 @@
     "no-unused-vars": "warn",
     "no-trailing-spaces": "warn",
     "padded-blocks": "warn",
-    "no-undef": "warn",
+    "no-undef": "error",
     "arrow-body-style": "warn",
     "key-spacing": "warn",
     "no-empty-function": "warn",

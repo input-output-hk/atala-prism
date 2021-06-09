@@ -26,8 +26,6 @@ const degreeService = new DegreeServicePromiseClient(config.grpcClient, null, nu
 const insuranceService = new EmploymentServicePromiseClient(config.grpcClient, null, null);
 const employmentService = new InsuranceServicePromiseClient(config.grpcClient, null, null);
 
-const getUserId = () => config.issuerId;
-
 const ServiceByCredential = {
   [GOVERNMENT_ISSUED_DIGITAL_IDENTITY]: idService,
   [UNIVERSITY_DEGREE]: degreeService,
@@ -38,9 +36,7 @@ const ServiceByCredential = {
 export const getConnectionToken = async currentCredential => {
   Logger.info('getting connection token');
   const request = new GetConnectionTokenRequest();
-  const result = await ServiceByCredential[currentCredential].getConnectionToken(request, {
-    userId: getUserId()
-  });
+  const result = await ServiceByCredential[currentCredential].getConnectionToken(request);
   return result.getConnectionToken();
 };
 
@@ -54,9 +50,7 @@ export const startSubjectStatusStream = (
   Logger.info('Getting subject status', connectionToken);
   const request = new GetSubjectStatusRequest();
   request.setConnectionToken(connectionToken);
-  const stream = ServiceByCredential[currentCredential].getSubjectStatusStream(request, {
-    userId: getUserId()
-  });
+  const stream = ServiceByCredential[currentCredential].getSubjectStatusStream(request);
   stream.on('data', response => {
     Logger.info('stream data:', response);
     Logger.info(response.getSubjectStatus());
@@ -84,5 +78,5 @@ export const setPersonalData = data => {
   request.setConnectionToken(connectionToken);
   request.setFirstName(firstName);
   request.setDateOfBirth(date);
-  idService.setPersonalData(request, { userId: getUserId() });
+  idService.setPersonalData(request);
 };
