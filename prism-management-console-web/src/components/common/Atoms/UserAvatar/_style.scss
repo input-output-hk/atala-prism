@@ -4,7 +4,9 @@
   display: flex;
   align-items: center;
   margin: 0 1em;
-
+  .ant-select {
+    min-width: 150px;
+  }
   .UserData {
     display: flex;
     align-items: center;

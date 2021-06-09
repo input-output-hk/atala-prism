@@ -1,46 +1,69 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import { DownOutlined } from '@ant-design/icons';
-import { Menu, Dropdown, Col } from 'antd';
+import { Avatar, Popover, Tooltip } from 'antd';
 import { useTranslation } from 'react-i18next';
 import CustomButton from '../CustomButton/CustomButton';
+import { getInitials } from '../../../../helpers/genericHelpers';
 
 import './_style.scss';
 
-const menu = (handleLogout, logoutText) => (
-  <Menu>
-    <Menu.Item>
-      <CustomButton
-        buttonProps={{
-          onClick: handleLogout,
-          className: 'theme-primary'
-        }}
-        buttonText={logoutText}
-      />
-    </Menu.Item>
-  </Menu>
-);
+const MAX_DISPLAY_LENGTH = 10;
 
-const SettingsMenu = ({ logout }) => {
+const SettingsMenu = ({ logout, name, logo }) => {
   const { t } = useTranslation();
 
+  const content = (
+    <div className="centerContent">
+      <CustomButton
+        buttonProps={{
+          className: 'theme-primary',
+          onClick: logout
+        }}
+        buttonText={t('menu.logout')}
+      />
+    </div>
+  );
+
+  const nameIsTruncated = name?.length > MAX_DISPLAY_LENGTH;
+
   return (
-    <Col className="SettingsMenu RightSide" xs={2} sm={2} md={2} lg={2}>
-      <Dropdown
-        className="logoutDropdown"
-        overlay={menu(logout, t('menu.logout'))}
-        trigger={['click']}
-      >
-        <div className="ant-dropdown-link">
+    <div className="SettingsMenu RightSide">
+      <Popover content={content}>
+        <div className="userInfo">
+          <div className="flex verticalAlign">
+            {logo ? (
+              <div>
+                <img className="IconUniversity" src={logo} alt="Free University Tbilisi" />
+              </div>
+            ) : (
+              <div className="logo">
+                <Avatar style={{ color: '#FF2D3B', backgroundColor: '#FFFFFF' }}>
+                  {getInitials(name)}
+                </Avatar>
+              </div>
+            )}
+            <div className="textContainer">
+              <Tooltip title={nameIsTruncated ? name : ''}>
+                <p className="UserName">{name}</p>
+              </Tooltip>
+            </div>
+          </div>
           <DownOutlined />
         </div>
-      </Dropdown>
-    </Col>
+      </Popover>
+    </div>
   );
 };
 
+SettingsMenu.defaultProps = {
+  logo: null
+};
+
 SettingsMenu.propTypes = {
-  logout: PropTypes.func.isRequired
+  logout: PropTypes.func.isRequired,
+  logo: PropTypes.string,
+  name: PropTypes.string.isRequired
 };
 
 export default SettingsMenu;
