@@ -3,7 +3,7 @@ package io.iohk.atala.prism.management.console.services
 import cats.data.NonEmptyList
 import cats.syntax.functor._
 import com.google.protobuf.ByteString
-import io.iohk.atala.prism.auth.AuthSupport
+import io.iohk.atala.prism.auth.AuthAndMiddlewareSupport
 import io.iohk.atala.prism.credentials.CredentialBatchId
 import io.iohk.atala.prism.crypto.MerkleTree.MerkleRoot
 import io.iohk.atala.prism.crypto.SHA256Digest
@@ -43,7 +43,9 @@ class CredentialsServiceImpl(
     ec: ExecutionContext
 ) extends console_api.CredentialsServiceGrpc.CredentialsService
     with ManagementConsoleErrorSupport
-    with AuthSupport[ManagementConsoleError, ParticipantId] {
+    with AuthAndMiddlewareSupport[ManagementConsoleError, ParticipantId] {
+
+  override protected val serviceName: String = "credentials-service"
 
   val logger: Logger = LoggerFactory.getLogger(this.getClass)
 

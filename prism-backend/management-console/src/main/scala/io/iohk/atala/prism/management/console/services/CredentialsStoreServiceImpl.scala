@@ -1,6 +1,6 @@
 package io.iohk.atala.prism.management.console.services
 
-import io.iohk.atala.prism.auth.AuthSupport
+import io.iohk.atala.prism.auth.AuthAndMiddlewareSupport
 import io.iohk.atala.prism.management.console.models.{
   GetLatestCredential,
   GetStoredCredentials,
@@ -28,7 +28,9 @@ class CredentialsStoreServiceImpl(
     ec: ExecutionContext
 ) extends console_api.CredentialsStoreServiceGrpc.CredentialsStoreService
     with ManagementConsoleErrorSupport
-    with AuthSupport[ManagementConsoleError, ParticipantId] {
+    with AuthAndMiddlewareSupport[ManagementConsoleError, ParticipantId] {
+
+  override protected val serviceName: String = "credentials-store-service"
 
   override val logger: Logger = LoggerFactory.getLogger(this.getClass)
 

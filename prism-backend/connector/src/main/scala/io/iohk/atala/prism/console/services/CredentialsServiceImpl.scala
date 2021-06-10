@@ -3,7 +3,7 @@ package io.iohk.atala.prism.console.services
 import cats.implicits.catsSyntaxApplicativeId
 import cats.syntax.either._
 import cats.syntax.functor._
-import io.iohk.atala.prism.auth.AuthSupport
+import io.iohk.atala.prism.auth.AuthAndMiddlewareSupport
 import io.iohk.atala.prism.connector.ConnectorAuthenticator
 import io.iohk.atala.prism.connector.errors.{ConnectorError, ConnectorErrorSupport, InternalServerError, InvalidRequest}
 import io.iohk.atala.prism.console.grpc.ProtoCodecs._
@@ -45,7 +45,9 @@ class CredentialsServiceImpl(
     ec: ExecutionContext
 ) extends console_api.CredentialsServiceGrpc.CredentialsService
     with ConnectorErrorSupport
-    with AuthSupport[ConnectorError, ParticipantId] {
+    with AuthAndMiddlewareSupport[ConnectorError, ParticipantId] {
+
+  override protected val serviceName: String = "credentials-service"
 
   override val logger: Logger = LoggerFactory.getLogger(this.getClass)
 

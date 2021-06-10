@@ -5,7 +5,7 @@ import cats.syntax.functor._
 import com.google.protobuf.ByteString
 import io.grpc.stub.StreamObserver
 import io.iohk.atala.prism.BuildInfo
-import io.iohk.atala.prism.auth.AuthSupport
+import io.iohk.atala.prism.auth.AuthAndMiddlewareSupport
 import io.iohk.atala.prism.auth.grpc.SignedRequestsHelper
 import io.iohk.atala.prism.auth.utils.DIDUtils
 import io.iohk.atala.prism.connector.errors._
@@ -20,6 +20,7 @@ import io.iohk.atala.prism.connector.services.{
   RegistrationService
 }
 import io.iohk.atala.prism.crypto.{EC, ECPublicKey}
+import io.iohk.atala.prism.metrics.RequestMeasureUtil.measureRequestFuture
 import io.iohk.atala.prism.models.{ParticipantId, ProtoCodecs}
 import io.iohk.atala.prism.protos.common_models.{HealthCheckRequest, HealthCheckResponse}
 import io.iohk.atala.prism.protos.connector_api.{GetMessageStreamResponse, UpdateProfileRequest, UpdateProfileResponse}
@@ -44,14 +45,16 @@ class ConnectorService(
     executionContext: ExecutionContext
 ) extends connector_api.ConnectorServiceGrpc.ConnectorService
     with ConnectorErrorSupport
-    with AuthSupport[ConnectorError, ParticipantId] {
+    with AuthAndMiddlewareSupport[ConnectorError, ParticipantId] {
+
+  override protected val serviceName: String = "connector-service"
 
   val logger: Logger = LoggerFactory.getLogger(this.getClass)
 
   private implicit val contextSwitch: ContextShift[IO] = IO.contextShift(executionContext)
 
   override def healthCheck(request: HealthCheckRequest): Future[HealthCheckResponse] =
-    Future.successful(HealthCheckResponse())
+    measureRequestFuture(serviceName, "healthCheck")(Future.successful(HealthCheckResponse()))
 
   /** Retrieve a connection for a given connection token.
     *

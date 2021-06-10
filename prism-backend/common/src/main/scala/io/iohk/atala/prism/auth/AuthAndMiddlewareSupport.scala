@@ -2,17 +2,19 @@ package io.iohk.atala.prism.auth
 
 import io.iohk.atala.prism.errors.{ErrorSupport, LoggingContext, PrismError}
 import io.iohk.atala.prism.grpc.ProtoConverter
+import io.iohk.atala.prism.metrics.RequestMeasureUtil.measureRequestFuture
 import io.iohk.atala.prism.utils.FutureEither
 import scalapb.GeneratedMessage
 
 import scala.concurrent.{ExecutionContext, Future}
 import scala.util.{Failure, Success, Try}
 
-trait AuthSupport[Err <: PrismError, Id] {
+trait AuthAndMiddlewareSupport[Err <: PrismError, Id] {
   self: ErrorSupport[Err] =>
-  import AuthSupport._
+  import AuthAndMiddlewareSupport._
 
   protected val authenticator: Authenticator[Id]
+  protected val serviceName: String
 
   final class AuthPartiallyApplied[Query <: Product] {
     def apply[Proto <: GeneratedMessage, Result](
@@ -30,7 +32,7 @@ trait AuthSupport[Err <: PrismError, Id] {
                 .map(i => query.productElementName(i) -> query.productElement(i).toString)
                 .toMap + ("participantId" -> participantId.toString)
             )
-            f(participantId, query).wrapExceptions.flatten
+            measureRequestFuture(serviceName, methodName)(f(participantId, query).wrapExceptions.flatten)
           }
         }
     }
@@ -52,7 +54,7 @@ trait AuthSupport[Err <: PrismError, Id] {
               .map(i => query.productElementName(i) -> query.productElement(i).toString)
               .toMap
           )
-          f(query).wrapExceptions.flatten
+          measureRequestFuture(serviceName, methodName)(f(query).wrapExceptions.flatten)
         }
       }
     }
@@ -91,7 +93,7 @@ trait AuthSupport[Err <: PrismError, Id] {
   def unitPublic: WithoutAuthPartiallyApplied[EmptyQuery.type] = public[EmptyQuery.type]
 }
 
-object AuthSupport {
+object AuthAndMiddlewareSupport {
   // Sometimes we need to authenticate a request that requires no arguments, as the interface requires
   // a Product, we can't use the Unit type but an empty case-class.
   final case object EmptyQuery

@@ -1,7 +1,7 @@
 package io.iohk.atala.prism.console.services
 
 import cats.syntax.functor._
-import io.iohk.atala.prism.auth.AuthSupport
+import io.iohk.atala.prism.auth.AuthAndMiddlewareSupport
 import io.iohk.atala.prism.connector.ConnectorAuthenticator
 import io.iohk.atala.prism.connector.errors.{ConnectorError, ConnectorErrorSupport, InternalServerError}
 import io.iohk.atala.prism.console.grpc._
@@ -25,7 +25,9 @@ class GroupsServiceImpl(issuerGroupsRepository: GroupsRepository, val authentica
     ec: ExecutionContext
 ) extends console_api.GroupsServiceGrpc.GroupsService
     with ConnectorErrorSupport
-    with AuthSupport[ConnectorError, ParticipantId] {
+    with AuthAndMiddlewareSupport[ConnectorError, ParticipantId] {
+
+  override protected val serviceName: String = "groups-service"
 
   val logger: Logger = LoggerFactory.getLogger(this.getClass)
 

@@ -1,6 +1,6 @@
 package io.iohk.atala.prism.management.console.services
 
-import io.iohk.atala.prism.auth.AuthSupport
+import io.iohk.atala.prism.auth.AuthAndMiddlewareSupport
 
 import cats.syntax.functor._
 import scala.concurrent.{ExecutionContext, Future}
@@ -27,7 +27,9 @@ class CredentialTypesServiceImpl(
 )(implicit ec: ExecutionContext)
     extends console_api.CredentialTypesServiceGrpc.CredentialTypesService
     with ManagementConsoleErrorSupport
-    with AuthSupport[ManagementConsoleError, ParticipantId] {
+    with AuthAndMiddlewareSupport[ManagementConsoleError, ParticipantId] {
+
+  override protected val serviceName: String = "credential-types-service"
 
   val logger: Logger = LoggerFactory.getLogger(this.getClass)
 

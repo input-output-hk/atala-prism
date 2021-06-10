@@ -7,6 +7,7 @@ import io.iohk.atala.prism.connector.model.TokenString
 import io.iohk.atala.prism.connector.services.ConnectionsService
 import io.iohk.atala.prism.errors.LoggingContext
 import io.iohk.atala.prism.identity.DID
+import io.iohk.atala.prism.metrics.RequestMeasureUtil.measureRequestFuture
 import io.iohk.atala.prism.models.ParticipantId
 import io.iohk.atala.prism.protos.connector_api.{
   ConnectionsStatusRequest,
@@ -25,9 +26,11 @@ class ContactConnectionService(
     executionContext: ExecutionContext
 ) extends ContactConnectionServiceGrpc.ContactConnectionService
     with ConnectorErrorSupport {
+
   val logger: Logger = LoggerFactory.getLogger(this.getClass)
 
   override def getConnectionStatus(request: ConnectionsStatusRequest): Future[ConnectionsStatusResponse] = {
+    val methodName = "getConnectionStatus"
     def f(did: DID): Future[ConnectionsStatusResponse] = {
       implicit val loggingContext: LoggingContext =
         LoggingContext("request" -> request, "did" -> did)
@@ -42,8 +45,8 @@ class ContactConnectionService(
         }
     }
 
-    authenticator.whitelistedDid(didWhitelist, "getConnectionStatus", request) { did =>
-      f(did)
+    authenticator.whitelistedDid(didWhitelist, methodName, request) { did =>
+      measureRequestFuture("contact-connection-service", methodName)(f(did))
     }
   }
 }

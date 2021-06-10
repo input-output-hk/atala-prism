@@ -4,10 +4,9 @@ import io.circe.Json
 import io.iohk.atala.prism.connector.ConnectorAuthenticator
 import io.iohk.atala.prism.console.models.Institution
 import io.iohk.atala.prism.intdemo.html._
+import io.iohk.atala.prism.metrics.RequestMeasureUtil.measureRequestFuture
 import io.iohk.atala.prism.protos.cviews_api.{GetCredentialViewTemplatesRequest, GetCredentialViewTemplatesResponse}
 import io.iohk.atala.prism.protos.{cviews_api, cviews_models}
-import io.iohk.atala.prism.utils.FutureEither
-import io.iohk.atala.prism.utils.FutureEither.FutureEitherOps
 import io.iohk.atala.prism.utils.syntax._
 import io.iohk.atala.prism.view.HtmlViewImage
 
@@ -15,12 +14,15 @@ import scala.concurrent.{ExecutionContext, Future}
 
 class CredentialViewsService(authenticator: ConnectorAuthenticator)(implicit ec: ExecutionContext)
     extends cviews_api.CredentialViewsServiceGrpc.CredentialViewsService {
+
+  private val getCredsViewTemplatesMethodName = "getCredentialViewTemplates"
+
   override def getCredentialViewTemplates(
       request: GetCredentialViewTemplatesRequest
   ): Future[GetCredentialViewTemplatesResponse] = {
-    authenticatedHandler("getCredentialViewTemplates", request) { _ =>
+    authenticatedHandler(getCredsViewTemplatesMethodName, request) { _ =>
       val response = GetCredentialViewTemplatesResponse(templates = PredefinedHtmlTemplates.all)
-      Right(response).tryF.toFutureEither
+      response.tryF
     }
   }
 
@@ -28,14 +30,12 @@ class CredentialViewsService(authenticator: ConnectorAuthenticator)(implicit ec:
       methodName: String,
       request: Request
   )(
-      block: Institution.Id => FutureEither[Nothing, Response]
+      block: Institution.Id => Future[Response]
   ): Future[Response] = {
     authenticator.authenticated(methodName, request) { participantId =>
-      block(Institution.Id(participantId.uuid)).value
-        .map {
-          case Right(x) => x
-          case Left(e) => throw new RuntimeException(s"FAILED: $e")
-        }
+      measureRequestFuture("credential-views-service-service", getCredsViewTemplatesMethodName)(
+        block(Institution.Id(participantId.uuid))
+      )
     }
   }
 }

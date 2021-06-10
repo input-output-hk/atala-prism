@@ -1,6 +1,6 @@
 package io.iohk.atala.prism.console.services
 
-import io.iohk.atala.prism.auth.AuthSupport
+import io.iohk.atala.prism.auth.AuthAndMiddlewareSupport
 import io.iohk.atala.prism.connector.ConnectorAuthenticator
 import io.iohk.atala.prism.connector.errors.{ConnectorError, ConnectorErrorSupport}
 import io.iohk.atala.prism.console.models.Institution
@@ -18,7 +18,9 @@ class ConsoleServiceImpl(statisticsRepository: StatisticsRepository, val authent
     ec: ExecutionContext
 ) extends console_api.ConsoleServiceGrpc.ConsoleService
     with ConnectorErrorSupport
-    with AuthSupport[ConnectorError, ParticipantId] {
+    with AuthAndMiddlewareSupport[ConnectorError, ParticipantId] {
+
+  override protected val serviceName: String = "console-service"
 
   val logger: Logger = LoggerFactory.getLogger(this.getClass)
 

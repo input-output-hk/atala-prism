@@ -1,6 +1,6 @@
 package io.iohk.atala.prism.management.console.services
 
-import io.iohk.atala.prism.auth.AuthSupport
+import io.iohk.atala.prism.auth.AuthAndMiddlewareSupport
 import io.iohk.atala.prism.management.console.ManagementConsoleAuthenticator
 import io.iohk.atala.prism.management.console.errors.{ManagementConsoleError, ManagementConsoleErrorSupport}
 import io.iohk.atala.prism.management.console.grpc._
@@ -28,7 +28,9 @@ class ContactsServiceImpl(
     ec: ExecutionContext
 ) extends console_api.ContactsServiceGrpc.ContactsService
     with ManagementConsoleErrorSupport
-    with AuthSupport[ManagementConsoleError, ParticipantId] {
+    with AuthAndMiddlewareSupport[ManagementConsoleError, ParticipantId] {
+
+  override protected val serviceName: String = "contacts-service"
 
   val logger: Logger = LoggerFactory.getLogger(this.getClass)
 

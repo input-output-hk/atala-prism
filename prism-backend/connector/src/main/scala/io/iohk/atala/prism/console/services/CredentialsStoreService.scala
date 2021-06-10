@@ -2,7 +2,7 @@ package io.iohk.atala.prism.console.services
 
 import cats.syntax.functor._
 import cats.syntax.option._
-import io.iohk.atala.prism.auth.AuthSupport
+import io.iohk.atala.prism.auth.AuthAndMiddlewareSupport
 import io.iohk.atala.prism.connector.ConnectorAuthenticator
 import io.iohk.atala.prism.connector.errors.{ConnectorError, ConnectorErrorSupport}
 import io.iohk.atala.prism.console.grpc._
@@ -28,7 +28,9 @@ class CredentialsStoreService(
     ec: ExecutionContext
 ) extends console_api.CredentialsStoreServiceGrpc.CredentialsStoreService
     with ConnectorErrorSupport
-    with AuthSupport[ConnectorError, ParticipantId] {
+    with AuthAndMiddlewareSupport[ConnectorError, ParticipantId] {
+
+  override protected val serviceName: String = "credentials-store-service"
 
   override val logger: Logger = LoggerFactory.getLogger(this.getClass)
 

@@ -2,7 +2,7 @@ package io.iohk.atala.prism.management.console.services
 
 import com.google.protobuf.ByteString
 import cats.syntax.functor._
-import io.iohk.atala.prism.auth.AuthSupport
+import io.iohk.atala.prism.auth.AuthAndMiddlewareSupport
 import io.iohk.atala.prism.errors.LoggingContext
 import io.iohk.atala.prism.grpc.ProtoConverter
 import io.iohk.atala.prism.management.console.ManagementConsoleAuthenticator
@@ -33,7 +33,9 @@ class ConsoleServiceImpl(
     ec: ExecutionContext
 ) extends console_api.ConsoleServiceGrpc.ConsoleService
     with ManagementConsoleErrorSupport
-    with AuthSupport[ManagementConsoleError, ParticipantId] {
+    with AuthAndMiddlewareSupport[ManagementConsoleError, ParticipantId] {
+
+  override protected val serviceName: String = "console-service"
 
   val logger: Logger = LoggerFactory.getLogger(this.getClass)
 
