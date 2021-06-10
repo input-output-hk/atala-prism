@@ -4,7 +4,7 @@ import cats.syntax.apply._
 import cats.syntax.flatMap._
 import cats.instances.future._
 import kamon.Kamon
-import kamon.metric.{Metric, Timer}
+import kamon.metric.{Gauge, Metric, Timer}
 import kamon.tag.TagSet
 import org.slf4j.LoggerFactory
 
@@ -16,11 +16,13 @@ object RequestMeasureUtil {
 
   private val logger = LoggerFactory.getLogger(this.getClass)
   private val REQUEST_TIME_METRIC_NAME = "request-time"
-  private val SERVICE_TAG_NAME = "service"
+  private val ACTIVE_REQUESTS_METRIC_NAME = "active-requests"
   // Should be lazy, otherwise scala.UninitializedFieldError will be encountered
   private lazy val requestTimer: Metric.Timer = Kamon.timer(REQUEST_TIME_METRIC_NAME)
+  private lazy val activeRequestsGauge: Metric.Gauge = Kamon.gauge(ACTIVE_REQUESTS_METRIC_NAME)
 
   private val METHOD_TAG_NAME = "method"
+  private val SERVICE_TAG_NAME = "service"
 
   def measureRequestFuture[V](serviceName: String, methodName: String)(
       requestHandling: => Future[V]
@@ -42,7 +44,8 @@ object RequestMeasureUtil {
     Try {
       val tags = TagSet.builder().add(SERVICE_TAG_NAME, serviceName).add(METHOD_TAG_NAME, methodName).build()
       val taggedStartedTimer = requestTimer.withTags(tags).start()
-      MeasureItems(taggedStartedTimer)
+      val incrementedActiveRequestsGauge = activeRequestsGauge.withTags(tags).increment()
+      MeasureItems(taggedStartedTimer, incrementedActiveRequestsGauge)
     }.recoverWith {
       case error =>
         logger.error("Metrics start just blew up", error)
@@ -52,6 +55,8 @@ object RequestMeasureUtil {
   private def tryToStopMeasurement(measureItems: MeasureItems): Try[Unit] =
     Try {
       measureItems.timer.stop()
+      measureItems.activeRequestsGauge.decrement()
+      ()
     }.recoverWith {
       case error =>
         logger.error("Metrics stop just blew up", error)
@@ -63,6 +68,6 @@ object RequestMeasureUtil {
     Future.successful(in)
   }
 
-  private case class MeasureItems(timer: Timer.Started)
+  private case class MeasureItems(timer: Timer.Started, activeRequestsGauge: Gauge)
 
 }
