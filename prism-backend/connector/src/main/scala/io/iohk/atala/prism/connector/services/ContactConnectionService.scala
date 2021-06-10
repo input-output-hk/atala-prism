@@ -27,6 +27,8 @@ class ContactConnectionService(
 ) extends ContactConnectionServiceGrpc.ContactConnectionService
     with ConnectorErrorSupport {
 
+  val serviceName = "ContactConnectionService"
+
   val logger: Logger = LoggerFactory.getLogger(this.getClass)
 
   override def getConnectionStatus(request: ConnectionsStatusRequest): Future[ConnectionsStatusResponse] = {
@@ -37,7 +39,7 @@ class ContactConnectionService(
 
       connectionsService
         .getConnectionsByConnectionTokens(request.connectionTokens.map(TokenString(_)).to(List))
-        .wrapExceptions
+        .wrapAndRegisterExceptions(serviceName, methodName)
         .successMap { contactConnections =>
           ConnectionsStatusResponse(
             connections = contactConnections.map(ProtoCodecs.contactConnection2Proto.transform)

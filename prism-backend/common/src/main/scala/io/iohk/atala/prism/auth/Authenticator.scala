@@ -247,7 +247,7 @@ abstract class SignedRequestsAuthenticatorBase[Id](
         .parse(ctx)
         .map(authenticate(request.toByteArray, _))
         .map { value =>
-          value.map(v => withLogging(methodName, request, v) { f(v) }).successMap(identity)
+          value.map(v => withLogging(methodName, request, v) { f(v) }).flatten
         }
         .getOrElse {
           logger.error(s"$methodName - unauthenticated, request = ${request.toProtoString}")
@@ -298,7 +298,7 @@ abstract class SignedRequestsAuthenticatorBase[Id](
             } yield did
           }
           .as(f(did))
-          .successMap(identity)
+          .flatten
           .flatten
 
         result.onComplete {

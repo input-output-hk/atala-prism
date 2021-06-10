@@ -26,13 +26,15 @@ trait AuthAndMiddlewareSupport[Err <: PrismError, Id] {
     ): Future[Result] = {
       authenticator
         .authenticated(methodName, request) { participantId =>
-          convertFromRequest[Proto, Result, Query](request).flatMap { query =>
+          convertFromRequest[Proto, Result, Query](request, methodName).flatMap { query =>
             implicit val lc: LoggingContext = LoggingContext(
               (0 until query.productArity)
                 .map(i => query.productElementName(i) -> query.productElement(i).toString)
                 .toMap + ("participantId" -> participantId.toString)
             )
-            measureRequestFuture(serviceName, methodName)(f(participantId, query).wrapExceptions.flatten)
+            measureRequestFuture(serviceName, methodName)(
+              f(participantId, query).wrapAndRegisterExceptions(serviceName, methodName).flatten
+            )
           }
         }
     }
@@ -47,14 +49,16 @@ trait AuthAndMiddlewareSupport[Err <: PrismError, Id] {
         protoConverter: ProtoConverter[Proto, Query]
     ): Future[Result] = {
       authenticator.public(methodName, request) {
-        convertFromRequest[Proto, Result, Query](request).flatMap { query =>
+        convertFromRequest[Proto, Result, Query](request, methodName).flatMap { query =>
           // Assemble LoggingContext out of the case class fields
           implicit val lc: LoggingContext = LoggingContext(
             (0 until query.productArity)
               .map(i => query.productElementName(i) -> query.productElement(i).toString)
               .toMap
           )
-          measureRequestFuture(serviceName, methodName)(f(query).wrapExceptions.flatten)
+          measureRequestFuture(serviceName, methodName)(
+            f(query).wrapAndRegisterExceptions(serviceName, methodName).flatten
+          )
         }
       }
     }
@@ -62,7 +66,8 @@ trait AuthAndMiddlewareSupport[Err <: PrismError, Id] {
 
   // Just converts query from proto in our representation, on failure, responds with a thrown error
   private def convertFromRequest[Proto <: GeneratedMessage, Result, Query <: Product](
-      request: Proto
+      request: Proto,
+      methodName: String
   )(implicit
       ec: ExecutionContext,
       protoConverter: ProtoConverter[Proto, Query]
@@ -70,7 +75,7 @@ trait AuthAndMiddlewareSupport[Err <: PrismError, Id] {
     protoConverter.fromProto(request) match {
       case Failure(exception) =>
         val response = invalidRequest(exception.getMessage)
-        respondWith(request, response)
+        respondWith(request, response, serviceName, methodName)
       case Success(query) =>
         Future.successful(query)
     }

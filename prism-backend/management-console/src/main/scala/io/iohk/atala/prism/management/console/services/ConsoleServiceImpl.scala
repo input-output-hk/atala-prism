@@ -50,11 +50,12 @@ class ConsoleServiceImpl(
     }
 
   override def registerDID(request: RegisterConsoleDIDRequest): Future[RegisterConsoleDIDResponse] = {
+    val methodName = "registerDID"
     implicit val codec = implicitly[ProtoConverter[RegisterConsoleDIDRequest, RegisterDID]]
     codec.fromProto(request) match {
       case Failure(exception) =>
         val response = invalidRequest(exception.getMessage)
-        respondWith(request, response)
+        respondWith(request, response, serviceName, methodName)
 
       case Success(query) =>
         // Assemble LoggingContext out of the case class fields
@@ -66,7 +67,7 @@ class ConsoleServiceImpl(
         participantsIntegrationService
           .register(query)
           .map { _ => RegisterConsoleDIDResponse() }
-          .wrapExceptions
+          .wrapAndRegisterExceptions(serviceName, methodName)
           .flatten
     }
   }

@@ -4,7 +4,7 @@ import cats.syntax.apply._
 import cats.syntax.flatMap._
 import cats.instances.future._
 import kamon.Kamon
-import kamon.metric.{Gauge, Metric, Timer}
+import kamon.metric.{Counter, Gauge, Metric, Timer}
 import kamon.tag.TagSet
 import org.slf4j.LoggerFactory
 
@@ -17,12 +17,15 @@ object RequestMeasureUtil {
   private val logger = LoggerFactory.getLogger(this.getClass)
   private val REQUEST_TIME_METRIC_NAME = "request-time"
   private val ACTIVE_REQUESTS_METRIC_NAME = "active-requests"
+  private val ERROR_METRIC_NAME = "error-count"
   // Should be lazy, otherwise scala.UninitializedFieldError will be encountered
   private lazy val requestTimer: Metric.Timer = Kamon.timer(REQUEST_TIME_METRIC_NAME)
   private lazy val activeRequestsGauge: Metric.Gauge = Kamon.gauge(ACTIVE_REQUESTS_METRIC_NAME)
+  private lazy val errorCounter = Kamon.counter(ERROR_METRIC_NAME)
 
   private val METHOD_TAG_NAME = "method"
   private val SERVICE_TAG_NAME = "service"
+  private val ERROR_CODE_TAG_NAME = "error-code"
 
   def measureRequestFuture[V](serviceName: String, methodName: String)(
       requestHandling: => Future[V]
@@ -31,6 +34,16 @@ object RequestMeasureUtil {
     requestHandling
       .flatTap(finishMeasurement(_, maybeStartedMetrics))
       .recoverWith(handleFailedFutureMeasurement(maybeStartedMetrics))
+  }
+
+  def increaseErrorCounter(serviceName: String, methodName: String, errorCode: Int): Counter = {
+    val tags = TagSet
+      .builder()
+      .add(SERVICE_TAG_NAME, serviceName)
+      .add(METHOD_TAG_NAME, methodName)
+      .add(ERROR_CODE_TAG_NAME, errorCode.toString)
+      .build()
+    errorCounter.withTags(tags).increment()
   }
 
   private def handleFailedFutureMeasurement[V](
