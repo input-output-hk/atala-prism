@@ -4,20 +4,68 @@ This is a proof of concept PRISM SDK that is cross-compiled to JVM/JS/iOS-ARM64.
 
 ## How to build the SDK
 
+###Install Ruby
+
+####Mac
+```
+$ brew install ruby
+```
+At the time of writing, the above command installs ruby version "2.6.3p62".
+####Linux
+```
+$ sudo apt-get install ruby-full
+```
+###Install Cocoapods
+
 Make sure that you have cocoapods and cocoapods-generate installed:
 ```
 $ sudo gem install cocoapods
 $ sudo gem install cocoapods-generate
 ```
+###Install XCode (Mac Only)
+
+Install XCode from App Store. 
+
+Then approve xcodebuild license in your terminal. Like so:
+```
+$ sudo xcodebuild -license
+```
+###Install Android SDK
+
+Install Android SDK from SDK Manager (via Android Studio). 
+
+Then approve Android SDK license. Like so:
+```
+$ cd /Users/{{YOUR USER}}/Library/Android/sdk 
+$ tools/bin/sdkmanager --licenses
+```
+While there are many ways to install Android SDK this has proven to be the most reliable way. Standard IntelliJ with Android plugin may work. However, we've had several issues. Your milage may vary.
+###Create local.properties file
+
+Create a file named local.properties in the root of the prism-kotlin-sdk.
+
+Add your sdk path to local.properties file. Like so:
+```
+sdk.dir = /Users/{{YOUR USER}}/Library/Android/sdk
+```
+This will indicate to your ide which SDK to use.
+
+Alternatively, you can add the following environment variable into your shell profile file:
+```
+$ export ANDROID_HOME='/Users/{{YOUR USER}}/Library/Android/sdk
+```
+
+### Building the project
 
 You should be able to import and build the project in IntelliJ IDEA now. If you experience issues with missing cocoapods modules try installing the pods manually:
-
 ```
-$ ./gradlew podspec
+./gradlew podspec
 ...
-$ pod gen
+pod gen
 ...
-$ cd gen/prism_kotlin_sdk && pod install
+pod repo update
+...
+cd gen/crypto && pod install
 ...
 ```
 
