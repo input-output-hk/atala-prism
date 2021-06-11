@@ -17,7 +17,7 @@ object PrismBuild {
       .settings(
         organization := "io.iohk",
         organizationName := "Input Output HK",
-        scalaVersion := "2.13.3",
+        scalaVersion := "2.13.6",
         scalacOptions ~= (options =>
           options.filterNot(
             Set(
@@ -30,7 +30,7 @@ object PrismBuild {
         ),
         javacOptions ++= Seq("-source", "1.8", "-target", "1.8"),
         libraryDependencies ++= scalatestDependencies,
-        addCompilerPlugin("org.typelevel" % "kind-projector" % "0.11.3" cross CrossVersion.full),
+        addCompilerPlugin("org.typelevel" % "kind-projector" % "0.13.0" cross CrossVersion.full),
         coverageScalacPluginVersion := "1.4.1",
         Test / fork := true,
         Test / parallelExecution := false,

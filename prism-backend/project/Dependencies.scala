@@ -31,7 +31,7 @@ object versions {
   val scopt = "4.0.0-RC2"
   val slf4j = "1.7.30"
   val sttp = "1.7.2"
-  val twirl = "1.5.0"
+  val twirl = "1.5.1"
   val typesafeConfig = "1.4.1"
   val http4s = "0.21.7"
 }

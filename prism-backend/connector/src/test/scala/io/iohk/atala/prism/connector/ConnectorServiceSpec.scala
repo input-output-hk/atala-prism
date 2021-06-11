@@ -25,8 +25,8 @@ class ConnectorServiceSpec extends ConnectorRpcSpecBase {
 
         // This changes greatly, so just test something was set
         buildInfo.version must not be empty
-        buildInfo.scalaVersion mustBe "2.13.3"
-        buildInfo.sbtVersion mustBe "1.4.2"
+        buildInfo.scalaVersion mustBe "2.13.6"
+        buildInfo.sbtVersion mustBe "1.5.3"
       }
     }
   }

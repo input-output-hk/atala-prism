@@ -2,8 +2,8 @@ FROM openjdk:8u272
 
 # Env variables
 ENV SCALA_2_12_VERSION=2.12.10
-ENV SCALA_2_13_VERSION=2.13.3
-ENV SBT_VERSION=1.4.2
+ENV SCALA_2_13_VERSION=2.13.6
+ENV SBT_VERSION=1.5.3
 ENV TERRAFORM_VERSION=0.13.6
 ENV NODE_VERSION=10.16.3
 
@@ -19,7 +19,7 @@ RUN \
 
 # Install sbt
 RUN \
-  curl -L -o sbt-$SBT_VERSION.deb https://dl.bintray.com/sbt/debian/sbt-$SBT_VERSION.deb && \
+  curl -L -o sbt-$SBT_VERSION.deb https://scala.jfrog.io/artifactory/debian/sbt-$SBT_VERSION.deb && \
   dpkg -i sbt-$SBT_VERSION.deb && \
   sbt --sbt-version $SBT_VERSION clean
 

@@ -37,7 +37,7 @@ class DegreeServiceImplSpec extends AnyFlatSpec {
     document.jsonStr("credentialSubject.degreeAwarded") shouldBe "Bachelor of Science"
     document.jsonStr("credentialSubject.degreeResult") shouldBe "First-class honors"
     document.jsonStr("credentialSubject.startDate") shouldBe startDate
-    document.jsonNum[Int]("credentialSubject.graduationYear") shouldBe 1993
+    document.jsonVal[Int]("credentialSubject.graduationYear") shouldBe 1993
 
     // Verify HTML view
     val expectedHtmlView =

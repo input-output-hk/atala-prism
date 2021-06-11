@@ -37,7 +37,6 @@ private[intdemo] object Testing {
     import org.scalatest.OptionValues._
     def jsonStr(dotName: String): String = jsonVal[String](dotName)
     def jsonArr(dotName: String): List[String] = jsonVal[List[String]](dotName)
-    def jsonNum[T: Numeric: Decoder](dotName: String): T = jsonVal[T](dotName)
 
     def jsonVal[T: Decoder](dotName: String): T = {
       @annotation.tailrec

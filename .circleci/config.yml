@@ -9,7 +9,7 @@ parameters:
     default: "2.13"
   prism-scala-common-docker-image:
     type: string
-    default: "inputoutput/prism-scala-common:2.12.10-2.13.3-1.4.2-0.14.5"
+    default: "inputoutput/prism-scala-common:2.12.10-2.13.6-1.5.3-0.14.5"
 
 commands:
   halt-step-if-not-changed:
@@ -48,19 +48,6 @@ commands:
               curl -O -L https://github.com/grpc/grpc-web/releases/download/<< parameters.grpcweb-version >>/$archive
               chmod +x $archive
               sudo mv $archive /usr/local/bin/protoc-gen-grpc-web
-  install-sbt:
-    description: "Install sbt"
-    parameters:
-      version:
-        type: string
-        default: "1.4.2"
-    steps:
-      - run:
-          name: "Install sbt"
-          command: |
-            apt update && apt install -y curl
-            curl -L -o sbt-<< parameters.version >>.deb https://dl.bintray.com/sbt/debian/sbt-<< parameters.version >>.deb
-            sudo dpkg -i sbt-<< parameters.version >>.deb
 
   install-coursier:
     description: "Install coursier"
@@ -421,7 +408,6 @@ jobs:
 
       - restore_cache:
           key: jars-{{ checksum "prism-android-wallet/build.gradle" }}-{{ checksum  "prism-android-wallet/app/build.gradle" }}
-      - install-sbt
       - run:
           name: Download Dependencies
           command: cd prism-android-wallet && ./gradlew --no-daemon --max-workers=2 androidDependencies

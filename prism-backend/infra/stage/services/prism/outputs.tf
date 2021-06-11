@@ -13,11 +13,11 @@ output "command_to_test_node" {
 }
 
 output "command_to_test_mirror" {
-  value = !var.mirror_enabled ? "mirror disabled" : "grpcurl -import-path ../../../../../prism-sdk/src/protos -proto mirror_api.proto -plaintext ${local.grpc_hostname}:${var.grpc_port} io.iohk.atala.mirror.protos.MirrorService/CreateAccount"
+  value = ! var.mirror_enabled ? "mirror disabled" : "grpcurl -import-path ../../../../../prism-sdk/src/protos -proto mirror_api.proto -plaintext ${local.grpc_hostname}:${var.grpc_port} io.iohk.atala.mirror.protos.MirrorService/CreateAccount"
 }
 
 output "command_to_test_kycbridge" {
-  value = !var.kycbridge_enabled ? "kycbridge disabled" : "grpcurl -import-path ../../../../../prism-sdk/src/protos -proto kycbridge_api.proto -plaintext ${local.grpc_hostname}:${var.grpc_port} io.iohk.atala.kycbridge.protos.KycBridgeService/CreateAccount"
+  value = ! var.kycbridge_enabled ? "kycbridge disabled" : "grpcurl -import-path ../../../../../prism-sdk/src/protos -proto kycbridge_api.proto -plaintext ${local.grpc_hostname}:${var.grpc_port} io.iohk.atala.kycbridge.protos.KycBridgeService/CreateAccount"
 }
 
 output "command_to_test_envoy_proxy" {
