@@ -13,10 +13,11 @@ import io.iohk.atala.prism.management.console.models.{
   GetStatistics,
   ParticipantId,
   ParticipantLogo,
-  UpdateParticipantProfile,
-  RegisterDID
+  RegisterDID,
+  UpdateParticipantProfile
 }
 import io.iohk.atala.prism.management.console.repositories.StatisticsRepository
+import io.iohk.atala.prism.metrics.RequestMeasureUtil.measureRequestFuture
 import io.iohk.atala.prism.protos.common_models.{HealthCheckRequest, HealthCheckResponse}
 import io.iohk.atala.prism.protos.console_api
 import io.iohk.atala.prism.protos.console_api._
@@ -40,7 +41,7 @@ class ConsoleServiceImpl(
   val logger: Logger = LoggerFactory.getLogger(this.getClass)
 
   override def healthCheck(request: HealthCheckRequest): Future[HealthCheckResponse] =
-    Future.successful(HealthCheckResponse())
+    measureRequestFuture(serviceName, "healthCheck")(Future.successful(HealthCheckResponse()))
 
   override def getStatistics(request: GetStatisticsRequest): Future[GetStatisticsResponse] =
     auth[GetStatistics]("getStatistics", request) { (participantId, getStatistics) =>
@@ -64,11 +65,13 @@ class ConsoleServiceImpl(
             .map(i => query.productElementName(i) -> query.productElement(i).toString)
             .toMap
         )
-        participantsIntegrationService
-          .register(query)
-          .map { _ => RegisterConsoleDIDResponse() }
-          .wrapAndRegisterExceptions(serviceName, methodName)
-          .flatten
+        measureRequestFuture(serviceName, methodName)(
+          participantsIntegrationService
+            .register(query)
+            .as(RegisterConsoleDIDResponse())
+            .wrapAndRegisterExceptions(serviceName, methodName)
+            .flatten
+        )
     }
   }
 
