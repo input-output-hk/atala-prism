@@ -33,11 +33,11 @@
                                     <constraint firstAttribute="bottom" secondItem="cpK-9V-C9M" secondAttribute="bottom" id="jOj-Nw-Q9Q"/>
                                 </constraints>
                             </view>
-                            <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="COy-mq-6JH" customClass="InformationView" customModule="Atala_PRISM" customModuleProvider="target">
+                            <view hidden="YES" contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="COy-mq-6JH" customClass="InformationView" customModule="Atala_PRISM" customModuleProvider="target">
                                 <rect key="frame" x="0.0" y="44" width="414" height="818"/>
                                 <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                             </view>
-                            <view hidden="YES" contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="F34-x4-xp9" userLabel="TableView">
+                            <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="F34-x4-xp9" userLabel="TableView">
                                 <rect key="frame" x="0.0" y="44" width="414" height="818"/>
                                 <subviews>
                                     <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="wIH-P6-rV6">

@@ -156,6 +156,7 @@
             </tableViewCellContentView>
             <viewLayoutGuide key="safeArea" id="njF-e1-oar"/>
             <connections>
+                <outlet property="heyLbl" destination="RO9-qB-24x" id="DGb-4S-KIG"/>
                 <outlet property="bgBotomCtrt" destination="4sn-c7-3bm" id="Ftr-Vg-aLu"/>
                 <outlet property="nameLbl" destination="bEz-ie-yok" id="cYC-UG-NKF"/>
                 <outlet property="notifBttnBotomCtrt" destination="OsX-pE-Niz" id="szt-vL-TzH"/>
@@ -163,6 +164,7 @@
                 <outlet property="payIdLbl" destination="3hj-xq-etT" id="0nZ-Be-RzJ"/>
                 <outlet property="payIdView" destination="J0Z-D3-1Hw" id="cqj-AA-CJg"/>
                 <outlet property="profileImg" destination="tgB-4x-zf1" id="5cX-my-f4q"/>
+                <outlet property="verifiedImg" destination="Iyd-AV-BxM" id="dwj-Y0-voA"/>
             </connections>
             <point key="canvasLocation" x="259" y="137"/>
         </tableViewCell>

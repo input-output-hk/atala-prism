@@ -1,6 +1,7 @@
 //
 
-class ProfileViewController: ListingBaseViewController, UIImagePickerControllerDelegate, UINavigationControllerDelegate{
+class ProfileViewController: ListingBaseViewController, UIImagePickerControllerDelegate,
+                             UINavigationControllerDelegate {
 
     var presenterImpl = ProfilePresenter()
     override var presenter: BasePresenter { return presenterImpl }
@@ -23,11 +24,7 @@ class ProfileViewController: ListingBaseViewController, UIImagePickerControllerD
         setupButtons()
         ViewControllerUtils.addTapToDismissKeyboard(view: self)
         ViewControllerUtils.addShiftKeyboardListeners(view: self)
-    }
 
-    override func viewWillAppear(_ animated: Bool) {
-        super.viewWillAppear(animated)
-        
         NotificationCenter.default.addObserver(self, selector: #selector(onReloadAttributes),
                                                name: .reloadAttributes, object: nil)
     }
@@ -136,11 +133,10 @@ class ProfileViewController: ListingBaseViewController, UIImagePickerControllerD
     lazy var addAction = SelectorAction(action: { [weak self] in
 
         let attVC = AttributeViewController.makeThisView()
-        
         attVC.config { (type, logo) in
             self?.presenterImpl.addAttributeWith(type: type, logo: logo)
         }
-        
+
         self?.customPresentViewController(attVC.presentr, viewController: attVC, animated: true)
     })
 

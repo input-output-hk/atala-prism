@@ -37,12 +37,20 @@ class ProfileViewCell: BaseTableViewCell {
     // MARK: Config
 
     func config(name: String?, email: String?, isVerified: Bool, logoData: Data?, isEnable: Bool = true) {
-
-        labelName.text = name
-        labelEmail.text = email
+        
+        if name == " " {
+            labelName.text = "profile_name_empty".localize()
+            labelEmail.text = "profile_mail_empty".localize()
+        } else {
+            labelName.text = name
+            labelEmail.text = email
+        }
         imageVerified.isHidden = !isVerified
         constraintNameHorizontalCenter.constant = isVerified ? -10 : 0
-        imageLogo.applyDataImage(data: logoData, isCircular: true, placeholderNamed: "ico_placeholder_user")
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
+            self.imageLogo.applyDataImage(data: logoData, isCircular: true,
+                                          placeholderNamed: "ico_placeholder_user")
+        }
         imageLogo.addDropShadow()
         imageLogoBttn.isHidden = !isEnable
     }

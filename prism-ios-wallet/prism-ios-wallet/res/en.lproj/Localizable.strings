@@ -153,6 +153,8 @@
 "profile_attribute_title" = "Type";
 "profile_attribute_email" = "Email";
 "profile_attribute_phone" = "Phone";
+"profile_name_empty" = "Hey!";
+"profile_mail_empty" = "This is your Profile";
 
 // <!-- Profile Detail -->
 "profile_detail_title" = "Attribute detail";
@@ -383,6 +385,8 @@
 
 // <!-- Home -->
 "home_profile_hey" = "Hey!";
+"home_profile_hey_empty" = "Welcome to";
+"home_profile_name_empty" = "Atala PRISM";
 "home_profile_view_profile" = "VIEW PROFILE";
 "home_profile_notifications" = "You have %d notification(s)";
 "home_profile_notifications_empty" = "No new notifications";
@@ -552,7 +556,7 @@
 "intdemotutorial_step_2_subtitle" = "To obtain your Government ID, follow the steps below:";
 "intdemotutorial_step_2_desc_1" = "Open Atala PRISM on your phone.\n\n";
 "intdemotutorial_step_2_desc_2" = "Go to the Notifications Menu\nIcon menu and tap the Scan QR code button.\n\n";
-"intdemotutorial_step_2_desc3" = "Scan the QR code";
+"intdemotutorial_step_2_desc_3" = "Scan the QR code";
 "intdemotutorial_step_3_title" = "Receive\nyour Credential";
 "intdemotutorial_step_3_subtitle" = "Prove your identity in one click and instantly access services everywhere Atala PRISM is suported.";
 

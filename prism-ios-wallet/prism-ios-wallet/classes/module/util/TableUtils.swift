@@ -70,7 +70,6 @@ class TableUtils: NSObject, UITableViewDataSource, UITableViewDelegate {
     }
 
     func tableView(_ tableView: UITableView, viewForHeaderInSection section: Int) -> UIView? {
-        
         return presenterDelegate.getSectionHeaderViews()[section]
     }
 

@@ -47,6 +47,7 @@ class ProfilePresenter: ListingBasePresenter, ListingBaseTableUtilsPresenterDele
     func startShowingInitial() {
 
         mode = .initial
+        state = .listing
         cleanData()
         initialStaticCells.forEach { initialRows?.append($0) }
 
@@ -71,7 +72,7 @@ class ProfilePresenter: ListingBasePresenter, ListingBaseTableUtilsPresenterDele
         cleanData()
         editedImage = sharedMemory.profilePic
         initialStaticCells.forEach { editingRows?.append($0) }
-        
+
         var count: Int = editingRows?.count ?? 1
 
         for att in sharedMemory.loggedUser!.attributes {
@@ -103,7 +104,7 @@ class ProfilePresenter: ListingBasePresenter, ListingBaseTableUtilsPresenterDele
 
         startShowingEdit()
     }
-    
+
     func tappedEditSaveButton() {
         // Save the results
         sharedMemory.profilePic = editedImage
@@ -139,7 +140,6 @@ class ProfilePresenter: ListingBasePresenter, ListingBaseTableUtilsPresenterDele
     }
 
     func getSectionCount() -> Int? {
-     
         return attributeRows?.count > 0 ? 3 : 2
     }
 
@@ -225,7 +225,6 @@ class ProfilePresenter: ListingBasePresenter, ListingBaseTableUtilsPresenterDele
         switch mode {
         case .initial:
             self.startShowingInitial()
-            self.startListing()
         case .editing:
             self.startShowingEdit()
             self.startListing()

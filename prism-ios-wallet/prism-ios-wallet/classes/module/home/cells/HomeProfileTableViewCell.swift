@@ -18,8 +18,10 @@ protocol HomeProfileTableViewCellDelegate: BaseTableViewCellPresenterDelegate {
 
 class HomeProfileTableViewCell: BaseTableViewCell {
 
+    @IBOutlet weak var heyLbl: UILabel!
     @IBOutlet weak var nameLbl: UILabel!
     @IBOutlet weak var profileImg: UIImageView!
+    @IBOutlet weak var verifiedImg: UIImageView!
     @IBOutlet weak var notificationsBttn: UIButton!
     @IBOutlet weak var payIdLbl: UILabel!
     @IBOutlet weak var payIdView: UIView!
@@ -51,7 +53,14 @@ class HomeProfileTableViewCell: BaseTableViewCell {
                 delegate: HomeProfileTableViewCellDelegate? = nil) {
 
         self.delegate = delegate
-        nameLbl.text = name
+        if name == " " {
+            nameLbl.text = "home_profile_name_empty".localize()
+            heyLbl.text = "home_profile_hey_empty".localize()
+            verifiedImg.isHidden = true
+        } else {
+            nameLbl.text = name
+            heyLbl.text = "home_profile_hey".localize()
+        }
         profileImg.applyDataImage(data: picture, placeholderNamed: "ico_placeholder_user")
         profileImg.addRoundCorners(radius: 49, borderWidth: 4, borderColor: UIColor.appWhite.cgColor)
         notificationsBttn.addRoundCorners(radius: 18, borderWidth: 1, borderColor: UIColor.appAqua.cgColor)
