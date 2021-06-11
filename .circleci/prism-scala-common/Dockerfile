@@ -1,10 +1,13 @@
+# NOTE: Every time this image gets updated, we need to push the image manually to the docker registry, make sure to update the image version, as well as the reference in /.circleci/config.yml
+# Build: docker build -t inputoutput/prism-scala-common:2.12.10-2.13.6-1.5.3-0.14.5 .
+# Push: docker push inputoutput/prism-scala-common:2.12.10-2.13.6-1.5.3-0.14.5
 FROM openjdk:8u272
 
 # Env variables
 ENV SCALA_2_12_VERSION=2.12.10
 ENV SCALA_2_13_VERSION=2.13.6
 ENV SBT_VERSION=1.5.3
-ENV TERRAFORM_VERSION=0.13.6
+ENV TERRAFORM_VERSION=0.14.5
 ENV NODE_VERSION=10.16.3
 
 # Define working directory
