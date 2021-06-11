@@ -7,7 +7,9 @@ import io.iohk.atala.prism.kotlin.identity.DIDSuffix
 import io.iohk.atala.prism.kotlin.protos.CredentialBatchData
 import pbandk.ByteArr
 import pbandk.encodeToByteArray
+import kotlin.js.JsExport
 
+@JsExport
 data class CredentialBatchId private constructor(val id: String) {
 
     companion object {

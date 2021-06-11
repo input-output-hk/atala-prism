@@ -6,6 +6,7 @@ import hash
 /**
  * HMAC-SHA-256 JavaScript implementation.
  */
+@JsExport
 actual object HmacSha256 {
 
     /**

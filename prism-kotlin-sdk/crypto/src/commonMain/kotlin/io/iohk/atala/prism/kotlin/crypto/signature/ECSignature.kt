@@ -1,7 +1,9 @@
 package io.iohk.atala.prism.kotlin.crypto.signature
 
 import io.iohk.atala.prism.kotlin.crypto.util.BytesOps
+import kotlin.js.JsExport
 
+@JsExport
 abstract class ECSignatureCommon {
     abstract fun getEncoded(): ByteArray
 

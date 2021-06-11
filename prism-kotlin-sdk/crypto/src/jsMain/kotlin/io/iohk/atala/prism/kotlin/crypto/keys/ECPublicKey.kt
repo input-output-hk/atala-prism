@@ -4,6 +4,7 @@ import com.ionspin.kotlin.bignum.integer.BigInteger
 import io.iohk.atala.prism.kotlin.crypto.ECConfig
 import io.iohk.atala.prism.kotlin.crypto.externals.base
 
+@JsExport
 actual class ECPublicKey(val basePoint: base.BasePoint) : ECKey() {
     override fun getEncoded(): ByteArray {
         val size = ECConfig.PRIVATE_KEY_BYTE_SIZE

@@ -1,7 +1,9 @@
 package io.iohk.atala.prism.kotlin.crypto
 
 import com.ionspin.kotlin.bignum.integer.BigInteger
+import kotlin.js.JsExport
 
+@JsExport
 object ECConfig {
     val CURVE_NAME = "secp256k1"
     val PRIVATE_KEY_BYTE_SIZE = 32 // EC curve point coordinates are 32 bytes long

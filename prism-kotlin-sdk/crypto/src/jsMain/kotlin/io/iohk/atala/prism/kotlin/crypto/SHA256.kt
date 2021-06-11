@@ -2,6 +2,7 @@ package io.iohk.atala.prism.kotlin.crypto
 
 import hash
 
+@JsExport
 actual object SHA256 {
     actual fun compute(bytes: ByteArray): ByteArray {
         val array = bytes.map { it.toUByte().toInt() }.toTypedArray()

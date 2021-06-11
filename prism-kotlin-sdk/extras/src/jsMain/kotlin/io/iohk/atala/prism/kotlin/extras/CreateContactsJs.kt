@@ -1,16 +1,16 @@
 package io.iohk.atala.prism.kotlin.extras
 
 import io.iohk.atala.prism.kotlin.protos.ConnectorRequestMetadata
-import io.iohk.atala.prism.kotlin.protos.ContactsServiceJS
+import io.iohk.atala.prism.kotlin.protos.ContactsServicePromise
 import kotlinx.coroutines.*
 import kotlin.js.Promise
 
 @JsExport
-fun createContactsRequestJS(
+fun createContactsRequest(
     csvData: Array<Array<String>>,
     groups: Array<String>,
     getMetadataJS: (ByteArray, ByteArray) -> Promise<ConnectorRequestMetadata>,
-    contactsService: ContactsServiceJS
+    contactsService: ContactsServicePromise
 ): Promise<Int> {
     return GlobalScope.promise {
         createContacts(
@@ -23,7 +23,7 @@ fun createContactsRequestJS(
 }
 
 @JsExport
-fun createConnectorRequestMetadataJS(
+fun createConnectorRequestMetadata(
     did: String,
     didKeyId: String,
     didSignature: String,

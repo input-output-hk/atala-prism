@@ -1,8 +1,10 @@
 package io.iohk.atala.prism.kotlin.crypto
 
 import io.iohk.atala.prism.kotlin.crypto.util.BytesOps
+import kotlin.js.JsExport
 import kotlin.jvm.JvmStatic
 
+@JsExport
 data class SHA256Digest(val value: ByteArray) {
     fun hexValue(): String = BytesOps.bytesToHex(value)
 
@@ -33,14 +35,14 @@ data class SHA256Digest(val value: ByteArray) {
 
         @JvmStatic
         fun fromHex(string: String): SHA256Digest {
-            require(HEX_STRING_RE.matches(string))
+            require(HEX_STRING_RE.matches(string) && string.length == HEX_STRING_LENGTH)
             return SHA256Digest(BytesOps.hexToBytes(string))
         }
 
         @JvmStatic
-        fun fromHex(bytes: ByteArray): SHA256Digest {
-            require(bytes.size == HEX_STRING_LENGTH)
-            return fromHex(bytes.decodeToString())
+        fun fromBytes(bytes: ByteArray): SHA256Digest {
+            require(bytes.size == HEX_STRING_LENGTH / 2)
+            return SHA256Digest(bytes)
         }
     }
 }

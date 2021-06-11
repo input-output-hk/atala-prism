@@ -1,5 +1,8 @@
 package io.iohk.atala.prism.kotlin.crypto.derivation
 
+import kotlin.js.JsExport
+
+@JsExport
 object MnemonicCodeEnglish {
     val wordList: List<String> = listOf(
         "abandon",

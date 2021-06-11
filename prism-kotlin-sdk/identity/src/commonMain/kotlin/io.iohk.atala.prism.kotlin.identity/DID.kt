@@ -6,8 +6,11 @@ import io.iohk.atala.prism.kotlin.identity.util.toProto
 import io.iohk.atala.prism.kotlin.protos.*
 import io.iohk.atala.prism.kotlin.protos.util.Base64Utils
 import pbandk.encodeToByteArray
+import kotlin.js.JsExport
+import kotlin.js.JsName
 import kotlin.jvm.JvmStatic
 
+@JsExport
 class DID private constructor(val value: String) {
     companion object {
         val prismPrefix = "did:prism:"
@@ -26,6 +29,7 @@ class DID private constructor(val value: String) {
             }
 
         @JvmStatic
+        @JsName("buildPrismDIDFromSuffix")
         fun buildPrismDID(suffix: DIDSuffix): DID =
             DID("$prismPrefix${suffix.value}")
 

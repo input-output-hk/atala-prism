@@ -6,6 +6,7 @@ import io.iohk.atala.prism.kotlin.crypto.externals.mnemonicToSeedSync
 import io.iohk.atala.prism.kotlin.crypto.externals.validateMnemonic
 import io.iohk.atala.prism.kotlin.crypto.util.toByteArray
 
+@JsExport
 actual object KeyDerivation {
     private val wordArray = MnemonicCodeEnglish.wordList.toTypedArray()
 

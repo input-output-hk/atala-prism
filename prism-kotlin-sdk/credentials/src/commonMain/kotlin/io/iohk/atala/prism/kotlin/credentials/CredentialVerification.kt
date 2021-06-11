@@ -2,23 +2,33 @@ package io.iohk.atala.prism.kotlin.credentials
 
 import io.iohk.atala.prism.kotlin.crypto.MerkleInclusionProof
 import io.iohk.atala.prism.kotlin.crypto.MerkleRoot
+import kotlin.js.JsExport
+import kotlin.js.JsName
 
+@JsExport
 sealed class VerificationException(message: String) : Exception(message)
 
+@JsExport
 data class CredentialWasRevoked(val revokedOn: TimestampInfo) : VerificationException("Credential was revoked on $revokedOn")
 
+@JsExport
 data class BatchWasRevoked(val revokedOn: TimestampInfo) : VerificationException("Batch was revoked on $revokedOn")
 
+@JsExport
 object InvalidMerkleProof : VerificationException("Invalid merkle proof")
 
+@JsExport
 data class KeyWasNotValid(val keyAddedOn: TimestampInfo, val credentialIssuedOn: TimestampInfo) :
     VerificationException("Key was no valid, key added on $keyAddedOn, credential issued on $credentialIssuedOn")
 
+@JsExport
 data class KeyWasRevoked(val credentialIssuedOn: TimestampInfo, val keyRevokedOn: TimestampInfo) :
     VerificationException("Key was revoked, credential issued on $credentialIssuedOn key revoked on $keyRevokedOn")
 
+@JsExport
 object InvalidSignature : VerificationException("Invalid signature")
 
+@JsExport
 object CredentialVerification {
 
     /**
@@ -77,6 +87,7 @@ object CredentialVerification {
      *
      * @throws VerificationException
      */
+    @JsName("verifyMerkle")
     fun verify(
         keyData: KeyData,
         batchData: BatchData,

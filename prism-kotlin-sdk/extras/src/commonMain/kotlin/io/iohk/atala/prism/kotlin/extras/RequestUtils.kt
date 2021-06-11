@@ -7,7 +7,9 @@ import io.iohk.atala.prism.kotlin.crypto.keys.ECPrivateKey
 import io.iohk.atala.prism.kotlin.identity.DID.Companion.masterKeyId
 import io.iohk.atala.prism.kotlin.protos.PrismMetadata
 import pbandk.encodeToByteArray
+import kotlin.js.JsExport
 
+@JsExport
 object RequestUtils {
     fun generateRequestMetadata(
         did: String,

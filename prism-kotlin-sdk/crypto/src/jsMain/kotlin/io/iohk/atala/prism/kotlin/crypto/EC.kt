@@ -12,6 +12,7 @@ import io.iohk.atala.prism.kotlin.crypto.keys.ECPublicKey
 import io.iohk.atala.prism.kotlin.crypto.signature.ECSignature
 import io.iohk.atala.prism.kotlin.crypto.util.BytesOps.bytesToHex
 
+@JsExport
 actual object EC {
     private val ecjs = ec("secp256k1")
 
@@ -22,21 +23,24 @@ actual object EC {
         return ECKeyPair(ECPublicKey(basePoint), ECPrivateKey(bigNumber))
     }
 
+    @JsName("toPrivateKeyFromBytes")
     actual fun toPrivateKey(encoded: ByteArray): ECPrivateKey {
         return toPrivateKey(BigInteger.fromByteArray(encoded, Sign.POSITIVE))
     }
 
+    @JsName("toPrivateKeyFromBigInteger")
     actual fun toPrivateKey(d: BigInteger): ECPrivateKey {
         return ECPrivateKey(BN(d.toString()))
     }
 
+    @JsName("toPublicKeyFromBytes")
     actual fun toPublicKey(encoded: ByteArray): ECPublicKey {
-        val encodedArray = encoded
-        val xBytes = encodedArray.copyOfRange(1, 1 + ECConfig.PRIVATE_KEY_BYTE_SIZE)
-        val yBytes = encodedArray.copyOfRange(1 + ECConfig.PRIVATE_KEY_BYTE_SIZE, encoded.size)
+        val xBytes = encoded.copyOfRange(1, 1 + ECConfig.PRIVATE_KEY_BYTE_SIZE)
+        val yBytes = encoded.copyOfRange(1 + ECConfig.PRIVATE_KEY_BYTE_SIZE, encoded.size)
         return toPublicKey(xBytes, yBytes)
     }
 
+    @JsName("toPublicKeyFromByteCoordinates")
     actual fun toPublicKey(
         x: ByteArray,
         y: ByteArray
@@ -46,6 +50,7 @@ actual object EC {
         return toPublicKey(xInteger, yInteger)
     }
 
+    @JsName("toPublicKeyFromBigIntegerCoordinates")
     actual fun toPublicKey(
         x: BigInteger,
         y: BigInteger
@@ -77,6 +82,7 @@ actual object EC {
         return sign(text.encodeToByteArray(), privateKey)
     }
 
+    @JsName("signBytes")
     actual fun sign(
         data: ByteArray,
         privateKey: ECPrivateKey
@@ -94,6 +100,7 @@ actual object EC {
         return verify(text.encodeToByteArray(), publicKey, signature)
     }
 
+    @JsName("verifyBytes")
     actual fun verify(
         data: ByteArray,
         publicKey: ECPublicKey,

@@ -64,7 +64,7 @@ class Generator : ServiceGenerator {
                     import kotlin.js.JsName
                     
                     @JsExport
-                    class ${service.name}JS(envoyOptions: GrpcEnvoyOptions) {
+                    class ${service.name}Promise(envoyOptions: GrpcEnvoyOptions) {
                         private val grpcClient = GrpcClient(
                             GrpcServerOptions(envoyOptions.protocol, envoyOptions.host, envoyOptions.port),
                             envoyOptions

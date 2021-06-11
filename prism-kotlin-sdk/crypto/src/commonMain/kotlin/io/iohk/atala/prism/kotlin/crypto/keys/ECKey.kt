@@ -1,7 +1,9 @@
 package io.iohk.atala.prism.kotlin.crypto.keys
 
 import io.iohk.atala.prism.kotlin.crypto.util.BytesOps
+import kotlin.js.JsExport
 
+@JsExport
 abstract class ECKey {
     /**
      * Guarantees to return a list of 65 bytes in the following form:

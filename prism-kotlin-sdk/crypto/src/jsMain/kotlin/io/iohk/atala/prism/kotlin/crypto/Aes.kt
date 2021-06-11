@@ -14,6 +14,7 @@ import kotlinx.browser.window
  *
  * @todo Only node.js implementation, the browser requires to use coroutines, and can be difficult to provide.
  */
+@JsExport
 actual object Aes {
 
     /**
@@ -27,6 +28,7 @@ actual object Aes {
     /**
      * Encrypt data with a key and IV.
      */
+    @JsName("encryptIv")
     actual fun encrypt(
         data: ByteArray,
         key: ByteArray,

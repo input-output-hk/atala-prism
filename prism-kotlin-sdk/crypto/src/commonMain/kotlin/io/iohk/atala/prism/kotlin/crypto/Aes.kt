@@ -1,5 +1,7 @@
 package io.iohk.atala.prism.kotlin.crypto
 
+import kotlin.js.JsExport
+
 /**
  * Encrypted AES256-GCM data.
  *
@@ -7,6 +9,7 @@ package io.iohk.atala.prism.kotlin.crypto
  * @param iv Initialization vector
  * @param salt Salt used to derive key from password string
  */
+@JsExport
 data class AesEncryptedData(val data: ByteArray, val iv: ByteArray, val salt: ByteArray?) {
     fun combined(): ByteArray = (data + iv)
 
@@ -47,6 +50,7 @@ data class AesEncryptedData(val data: ByteArray, val iv: ByteArray, val salt: By
 /**
  * AES default parameters.
  */
+@JsExport
 object AesConfig {
     const val IV_SIZE = 64 // size in bits
     const val KEY_SIZE = 256 // size in bits

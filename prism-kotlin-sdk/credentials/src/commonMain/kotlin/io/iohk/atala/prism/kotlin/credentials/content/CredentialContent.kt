@@ -2,6 +2,7 @@ package io.iohk.atala.prism.kotlin.credentials.content
 
 import io.iohk.atala.prism.kotlin.identity.DID
 import kotlinx.serialization.json.*
+import kotlin.js.JsExport
 
 /**
  * Credential content JSON representation,
@@ -21,6 +22,7 @@ import kotlinx.serialization.json.*
  *   credentialContent.getInt("credentialSubject.fieldName") == 123
  * }}}
  */
+@JsExport
 data class CredentialContent(val fields: JsonObject) {
 
     fun getString(field: String): String? =
@@ -60,18 +62,18 @@ data class CredentialContent(val fields: JsonObject) {
     companion object {
         fun fromString(value: String): CredentialContent =
             CredentialContent(Json.parseToJsonElement(value).jsonObject)
-
-        enum class JsonField(val value: String) {
-            CredentialType("type"),
-            Issuer("issuer"),
-            IssuerDid("id"),
-            IssuerName("name"),
-            IssuanceKeyId("keyId"),
-            IssuanceDate("issuanceDate"),
-            ExpiryDate("expiryDate"),
-            CredentialSubject("credentialSubject")
-        }
     }
+}
+
+enum class JsonField(val value: String) {
+    CredentialType("type"),
+    Issuer("issuer"),
+    IssuerDid("id"),
+    IssuerName("name"),
+    IssuanceKeyId("keyId"),
+    IssuanceDate("issuanceDate"),
+    ExpiryDate("expiryDate"),
+    CredentialSubject("credentialSubject")
 }
 
 /**

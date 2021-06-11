@@ -4,11 +4,14 @@ import io.iohk.atala.prism.kotlin.crypto.SHA256Digest
 import io.iohk.atala.prism.kotlin.protos.AtalaOperation
 import io.iohk.atala.prism.kotlin.protos.util.Base64Utils
 import pbandk.decodeFromByteArray
+import kotlin.js.JsExport
 
+@JsExport
 data class ValidatedLongForm(val stateHash: String, val encodedState: String, val initialState: AtalaOperation) {
     fun suffix(): DIDSuffix = DIDSuffix.fromString("$stateHash:$encodedState")
 }
 
+@JsExport
 sealed class DIDFormat {
     companion object {
         val longFormRegex = Regex("^did:prism:[0-9a-f]{64}:[A-Za-z0-9_-]+[=]*$")
@@ -16,7 +19,10 @@ sealed class DIDFormat {
     }
 }
 
+@JsExport
 data class Canonical(val suffix: String) : DIDFormat()
+
+@JsExport
 data class LongForm(val stateHash: String, val encodedState: String) : DIDFormat() {
     fun validate(): ValidatedLongForm {
         val atalaOperationBytes = Base64Utils.decode(encodedState)
@@ -36,4 +42,6 @@ data class LongForm(val stateHash: String, val encodedState: String) : DIDFormat
         return validate().initialState
     }
 }
+
+@JsExport
 object Unknown : DIDFormat()

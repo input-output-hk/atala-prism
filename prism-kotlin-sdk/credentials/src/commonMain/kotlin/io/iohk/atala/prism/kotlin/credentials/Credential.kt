@@ -6,7 +6,9 @@ import io.iohk.atala.prism.kotlin.crypto.SHA256Digest
 import io.iohk.atala.prism.kotlin.crypto.keys.ECPrivateKey
 import io.iohk.atala.prism.kotlin.crypto.keys.ECPublicKey
 import io.iohk.atala.prism.kotlin.crypto.signature.ECSignature
+import kotlin.js.JsExport
 
+@JsExport
 abstract class Credential {
     abstract val contentBytes: ByteArray
 

@@ -5,15 +5,25 @@ import io.iohk.atala.prism.kotlin.identity.DID
 import io.iohk.atala.prism.kotlin.protos.CredentialBatchData
 import pbandk.ByteArr
 import pbandk.encodeToByteArray
+import kotlin.js.JsExport
 
+@JsExport
+data class CredentialBatch(
+    val root: MerkleRoot,
+    val proofs: List<MerkleInclusionProof>
+)
+
+@JsExport
 object CredentialBatches {
 
     fun batch(
         signedCredentials: List<Credential>
-    ): Pair<MerkleRoot, List<MerkleInclusionProof>> {
-        return generateProofs(
+    ): CredentialBatch {
+        val merkleProofs = generateProofs(
             signedCredentials.map { it.hash() }
         )
+
+        return CredentialBatch(merkleProofs.root, merkleProofs.proofs)
     }
 
     fun verifyInclusion(

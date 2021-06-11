@@ -5,7 +5,9 @@ import io.iohk.atala.prism.kotlin.crypto.EC
 import io.iohk.atala.prism.kotlin.protos.DIDData
 import io.iohk.atala.prism.kotlin.protos.TimestampInfo
 import kotlinx.datetime.*
+import kotlin.js.JsExport
 
+@JsExport
 fun DIDData.findPublicKey(keyId: String): KeyData? {
     val didPublicKey = publicKeys.find { it.id == keyId }
     return if (didPublicKey == null) {
@@ -24,6 +26,7 @@ fun DIDData.findPublicKey(keyId: String): KeyData? {
     }
 }
 
+@JsExport
 fun TimestampInfo.toTimestampInfoModel(): io.iohk.atala.prism.kotlin.credentials.TimestampInfo {
     val instant = Instant.fromEpochSeconds(blockTimestamp?.seconds!!, blockTimestamp?.nanos!!)
     return io.iohk.atala.prism.kotlin.credentials.TimestampInfo(

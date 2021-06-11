@@ -3,7 +3,9 @@ package io.iohk.atala.prism.kotlin.identity
 import com.github.h0tk3y.betterParse.grammar.tryParseToEnd
 import com.github.h0tk3y.betterParse.parser.ErrorResult
 import com.github.h0tk3y.betterParse.parser.Parsed
+import kotlin.js.JsExport
 
+@JsExport
 data class DIDUrl(
     val did: DID,
     val path: List<String>,

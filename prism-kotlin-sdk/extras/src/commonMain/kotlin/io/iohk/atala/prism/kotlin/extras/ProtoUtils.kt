@@ -9,7 +9,9 @@ import io.iohk.atala.prism.kotlin.identity.DID.Companion.masterKeyId
 import io.iohk.atala.prism.kotlin.protos.*
 import pbandk.ByteArr
 import pbandk.encodeToByteArray
+import kotlin.js.JsExport
 
+@JsExport
 object ProtoUtils {
     fun createDidAtalaOperation(ecKeyPair: ECKeyPair): AtalaOperation {
         val publicKey =

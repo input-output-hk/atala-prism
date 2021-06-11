@@ -1,9 +1,9 @@
 const prism = require('prism-kotlin-sdk/packages/extras');
 
-const { ECJS, SHA256DigestJSCompanion, MerkleInclusionProofJSCompanion } = prism.io.iohk.atala.prism.kotlin.crypto.exposed;
-const { DIDJSCompanion } = prism.io.iohk.atala.prism.kotlin.identity.exposed;
+const { EC, SHA256DigestCompanion, MerkleInclusionProofCompanion } = prism.io.iohk.atala.prism.kotlin.crypto;
+const { DIDCompanion } = prism.io.iohk.atala.prism.kotlin.identity;
 const {
-    GrpcEnvoyOptions, ConnectorServiceJS, NodeServiceJS, RegisterDIDRequest,
+    GrpcEnvoyOptions, ConnectorServicePromise, NodeServicePromise, RegisterDIDRequest,
     GenerateConnectionTokenRequest, GetConnectionTokenInfoRequest, AddConnectionFromTokenRequest,
     CredentialBatchData, IssueCredentialBatchRequest, AtalaMessage, PlainTextCredential,
     GetConnectionByTokenRequest, SendMessageRequest, GetMessagesPaginatedRequest,
@@ -12,12 +12,12 @@ const {
     noUnknownFields,
 } = prism.io.iohk.atala.prism.kotlin.protos;
 const {
-    CredentialContentJSCompanion, JsonBasedCredentialJS, CredentialBatchesJS, BatchDataJS,
-    JsonBasedCredentialJSCompanion, CredentialVerificationJS, CredentialBatchIdJSCompanion,
-    VerificationResult,
-} = prism.io.iohk.atala.prism.kotlin.credentials.exposed;
+    CredentialBatches, BatchData, CredentialVerification, CredentialBatchIdCompanion,
+} = prism.io.iohk.atala.prism.kotlin.credentials;
+const { CredentialContentCompanion } = prism.io.iohk.atala.prism.kotlin.credentials.content;
+const { JsonBasedCredential, JsonBasedCredentialCompanion } = prism.io.iohk.atala.prism.kotlin.credentials.json;
 const {
-    ProtoUtilsJS, RequestUtilsJS, findPublicKeyJS, toTimestampInfoModelJS,
+    ProtoUtils, RequestUtils, findPublicKey, toTimestampInfoModel, toList, toArray
 } = prism.io.iohk.atala.prism.kotlin.extras;
 const { pbandk } = prism;
 
@@ -45,14 +45,14 @@ async function completeFlow() {
     console.log('Creating the clients for the connector/node, '
         + 'which are expected to be running on provided environment');
     const environment = 'localhost';
-    const connector = new ConnectorServiceJS(new GrpcEnvoyOptions('http', environment, 10000));
-    const node = new NodeServiceJS(new GrpcEnvoyOptions('http', environment, 10000));
+    const connector = new ConnectorServicePromise(new GrpcEnvoyOptions('http', environment, 10000));
+    const node = new NodeServicePromise(new GrpcEnvoyOptions('http', environment, 10000));
 
     // Issuer claims an identity
     console.log('Issuer: Generates and registers a DID');
-    const issuerMasterKeyPair = ECJS.generateKeyPair();
-    const issuerCreateDIDOperation = ProtoUtilsJS.createDidAtalaOperation(issuerMasterKeyPair);
-    const issuerCreatedDIDSignedOperation = ProtoUtilsJS.signedAtalaOperation(
+    const issuerMasterKeyPair = EC.generateKeyPair();
+    const issuerCreateDIDOperation = ProtoUtils.createDidAtalaOperation(issuerMasterKeyPair);
+    const issuerCreatedDIDSignedOperation = ProtoUtils.signedAtalaOperation(
         issuerMasterKeyPair,
         issuerCreateDIDOperation,
     );
@@ -68,11 +68,11 @@ async function completeFlow() {
             noUnknownFields,
         ),
     );
-    const issuerDID = DIDJSCompanion.fromString(issuerRegisterDIDResponse.did);
+    const issuerDID = DIDCompanion.fromString(issuerRegisterDIDResponse.did);
 
     // the DID takes some minutes to get confirmed by Cardano, in the mean time, the unpublished DID
     // can be used to authenticate requests to the backend
-    const issuerUnpublishedDID = DIDJSCompanion.createUnpublishedDID(issuerMasterKeyPair.publicKey);
+    const issuerUnpublishedDID = DIDCompanion.createUnpublishedDID(issuerMasterKeyPair.publicKey);
 
     multilinePrint(`
         Issuer DID registered, the transaction can take up to 10 minutes to be confirmed by the Cardano network
@@ -87,27 +87,27 @@ async function completeFlow() {
     );
     const issuerGenerateConnectionTokenResponse = await connector.GenerateConnectionTokenAuth(
         issuerGenerateConnectionTokenRequest,
-        RequestUtilsJS.generateRequestMetadata(
-            issuerUnpublishedDID.getValue(),
+        RequestUtils.generateRequestMetadata(
+            issuerUnpublishedDID.value,
             issuerMasterKeyPair.privateKey,
             issuerGenerateConnectionTokenRequest,
         ),
     );
-    const issuerConnectionToken = issuerGenerateConnectionTokenResponse.tokens.list.toArray()[0];
+    const issuerConnectionToken = toArray(issuerGenerateConnectionTokenResponse.tokens)[0];
     console.log('Issuer: Token for connecting with Holder generated = $issuerConnectionToken');
 
     // Holder generates its identity to connect with issuer
-    const holderMasterKeyPair = ECJS.generateKeyPair();
-    const holderUnpublishedDID = DIDJSCompanion.createUnpublishedDID(holderMasterKeyPair.publicKey);
-    console.log(`Holder: First DID generated to connect with Issuer = ${holderUnpublishedDID.getValue()}`);
+    const holderMasterKeyPair = EC.generateKeyPair();
+    const holderUnpublishedDID = DIDCompanion.createUnpublishedDID(holderMasterKeyPair.publicKey);
+    console.log(`Holder: First DID generated to connect with Issuer = ${holderUnpublishedDID.value}`);
 
     // Holder generates its identity to connect with verifier
     // in PRISM, you are supposed to use different identities for every connection
-    const holderMasterKeyPair2 = ECJS.generateKeyPair();
-    const holderUnpublishedDID2 = DIDJSCompanion.createUnpublishedDID(
+    const holderMasterKeyPair2 = EC.generateKeyPair();
+    const holderUnpublishedDID2 = DIDCompanion.createUnpublishedDID(
         holderMasterKeyPair2.publicKey,
     );
-    console.log(`Holder: Second DID generated to connect with Verifier = ${holderUnpublishedDID2.getValue()}`);
+    console.log(`Holder: Second DID generated to connect with Verifier = ${holderUnpublishedDID2.value}`);
 
     // Holder verifies the connection token details to make sure its connecting to the right entity
     const issuerConnectionTokenDetails = await connector.GetConnectionTokenInfo(
@@ -127,8 +127,8 @@ async function completeFlow() {
     );
     const holderAcceptsIssuerConnectionResponse = await connector.AddConnectionFromTokenAuth(
         holderAcceptsIssuerConnectionRequest,
-        RequestUtilsJS.generateRequestMetadata(
-            holderUnpublishedDID.getValue(),
+        RequestUtils.generateRequestMetadata(
+            holderUnpublishedDID.value,
             holderMasterKeyPair.privateKey,
             holderAcceptsIssuerConnectionRequest,
         ),
@@ -138,34 +138,34 @@ async function completeFlow() {
 
     // Issuer generates a credential to Holder
     const holderCredentialContentJson = {
-        issuerDid: issuerDID.getValue(),
+        issuerDid: issuerDID.value,
         issuanceKeyId: 'master0',
         credentialSubject: {
             name: 'José López Portillo',
             certificate: 'Certificate of PRISM SDK tutorial completion',
         },
     };
-    const holderCredentialContent = CredentialContentJSCompanion.fromString(
+    const holderCredentialContent = CredentialContentCompanion.fromString(
         JSON.stringify(holderCredentialContentJson),
     );
-    const holderUnsignedCredential = JsonBasedCredentialJS.create(holderCredentialContent, null);
+    const holderUnsignedCredential = new JsonBasedCredential(holderCredentialContent, null);
     const holderSignedCredential = holderUnsignedCredential.sign(issuerMasterKeyPair.privateKey);
 
     // Include the credential in a batch
-    const holderBatchResult = CredentialBatchesJS.batch([holderSignedCredential]);
+    const holderBatchResult = CredentialBatches.batch(toList([holderSignedCredential]));
     const holderCredentialMerkleRoot = holderBatchResult.root;
-    const holderCredentialMerkleProofs = holderBatchResult.proofs;
-    const merkleRootHash = SHA256DigestJSCompanion.fromHex(holderCredentialMerkleRoot.hash);
+    const holderCredentialMerkleProofs = toArray(holderBatchResult.proofs);
+    const merkleRootHash = holderCredentialMerkleRoot.hash;
     const credentialBatchData = new CredentialBatchData(
         // This requires the suffix only, as the node stores only suffixes
         issuerDID.suffix.toString(),
         new pbandk.ByteArr(merkleRootHash.value),
         noUnknownFields,
     );
-    const issueCredentialOperation = ProtoUtilsJS.issueCredentialBatchOperation(credentialBatchData);
+    const issueCredentialOperation = ProtoUtils.issueCredentialBatchOperation(credentialBatchData);
 
     // Issuer publishes the credential to Cardano
-    const signedIssueCredentialOperation = ProtoUtilsJS.signedAtalaOperation(issuerMasterKeyPair, issueCredentialOperation);
+    const signedIssueCredentialOperation = ProtoUtils.signedAtalaOperation(issuerMasterKeyPair, issueCredentialOperation);
     const issueCredentialBatchRequest = new IssueCredentialBatchRequest(
         signedIssueCredentialOperation,
         noUnknownFields,
@@ -202,8 +202,8 @@ async function completeFlow() {
     );
     const issuerGetConnectionResponse = await connector.GetConnectionByTokenAuth(
         issuerGetConnectionRequest,
-        RequestUtilsJS.generateRequestMetadata(
-            issuerUnpublishedDID.getValue(),
+        RequestUtils.generateRequestMetadata(
+            issuerUnpublishedDID.value,
             issuerMasterKeyPair.privateKey,
             issuerGetConnectionRequest,
         ),
@@ -219,8 +219,8 @@ async function completeFlow() {
     );
     await connector.SendMessageAuth(
         issuerSendMessageRequest,
-        RequestUtilsJS.generateRequestMetadata(
-            issuerUnpublishedDID.getValue(),
+        RequestUtils.generateRequestMetadata(
+            issuerUnpublishedDID.value,
             issuerMasterKeyPair.privateKey,
             issuerSendMessageRequest,
         ),
@@ -231,13 +231,13 @@ async function completeFlow() {
     const holderGetMessagesRequest = new GetMessagesPaginatedRequest('', 1, noUnknownFields);
     const holderGetMessagesResponse = await connector.GetMessagesPaginatedAuth(
         holderGetMessagesRequest,
-        RequestUtilsJS.generateRequestMetadata(
-            holderUnpublishedDID.getValue(),
+        RequestUtils.generateRequestMetadata(
+            holderUnpublishedDID.value,
             holderMasterKeyPair.privateKey,
             holderGetMessagesRequest,
         ),
     );
-    const holderReceivedMessage = holderGetMessagesResponse.messages.list.toArray()[0];
+    const holderReceivedMessage = toArray(holderGetMessagesResponse.messages)[0];
 
     const holderReceivedCredential = pbandk.decodeFromByteArray(
         new AtalaMessage('', null, noUnknownFields).descriptor.messageCompanion,
@@ -251,9 +251,9 @@ async function completeFlow() {
 
     // Verifier claims an identity, similar to the previous example done with Issuer
     console.log('Verifier: Generates and registers a DID');
-    const verifierMasterKeyPair = ECJS.generateKeyPair();
-    const verifierCreateDIDOperation = ProtoUtilsJS.createDidAtalaOperation(verifierMasterKeyPair);
-    const verifierCreateDIDSignedOperation = ProtoUtilsJS.signedAtalaOperation(verifierMasterKeyPair, verifierCreateDIDOperation);
+    const verifierMasterKeyPair = EC.generateKeyPair();
+    const verifierCreateDIDOperation = ProtoUtils.createDidAtalaOperation(verifierMasterKeyPair);
+    const verifierCreateDIDSignedOperation = ProtoUtils.signedAtalaOperation(verifierMasterKeyPair, verifierCreateDIDOperation);
 
     const verifierRegisterDIDResponse = await connector.RegisterDID(
         new RegisterDIDRequest(
@@ -264,8 +264,8 @@ async function completeFlow() {
             noUnknownFields,
         ),
     );
-    const verifierDID = DIDJSCompanion.fromString(verifierRegisterDIDResponse.did);
-    const verifierUnpublishedDID = DIDJSCompanion.createUnpublishedDID(verifierMasterKeyPair.publicKey);
+    const verifierDID = DIDCompanion.fromString(verifierRegisterDIDResponse.did);
+    const verifierUnpublishedDID = DIDCompanion.createUnpublishedDID(verifierMasterKeyPair.publicKey);
     multilinePrint(`
         Verifier DID registered, the transaction can take up to 10 minutes to be confirmed by the Cardano network
         - DID: $verifierDID
@@ -276,13 +276,13 @@ async function completeFlow() {
     const verifierGenerateConnectionTokenRequest = new GenerateConnectionTokenRequest(1, noUnknownFields);
     const verifierGenerateConnectionTokenResponse = await connector.GenerateConnectionTokenAuth(
         verifierGenerateConnectionTokenRequest,
-        RequestUtilsJS.generateRequestMetadata(
-            verifierUnpublishedDID.getValue(),
+        RequestUtils.generateRequestMetadata(
+            verifierUnpublishedDID.value,
             verifierMasterKeyPair.privateKey,
             verifierGenerateConnectionTokenRequest,
         ),
     );
-    const verifierConnectionToken = verifierGenerateConnectionTokenResponse.tokens.list.toArray()[0];
+    const verifierConnectionToken = toArray(verifierGenerateConnectionTokenResponse.tokens)[0];
     console.log(`Verifier: Token for connecting with Holder generated = ${verifierConnectionToken}`);
 
     // Holder accepts the connection token to connect to Verifier
@@ -293,8 +293,8 @@ async function completeFlow() {
     );
     const holderAcceptsVerifierConnectionResponse = await connector.AddConnectionFromTokenAuth(
             holderAcceptsVerifierConnectionRequest,
-            RequestUtilsJS.generateRequestMetadata(
-                holderUnpublishedDID2.getValue(),
+            RequestUtils.generateRequestMetadata(
+                holderUnpublishedDID2.value,
                 holderMasterKeyPair2.privateKey,
                 holderAcceptsVerifierConnectionRequest,
             ),
@@ -324,8 +324,8 @@ async function completeFlow() {
 
     const response = await connector.SendMessageAuth(
         holderSendMessageRequest,
-        RequestUtilsJS.generateRequestMetadata(
-            holderUnpublishedDID2.getValue(),
+        RequestUtils.generateRequestMetadata(
+            holderUnpublishedDID2.value,
             holderMasterKeyPair2.privateKey,
             holderSendMessageRequest,
         ),
@@ -336,13 +336,13 @@ async function completeFlow() {
     const verifierGetMessagesRequest = new GetMessagesPaginatedRequest('', 1, noUnknownFields);
     const verifierGetMessagesResponse = await connector.GetMessagesPaginatedAuth(
         verifierGetMessagesRequest,
-        RequestUtilsJS.generateRequestMetadata(
-            verifierUnpublishedDID.getValue(),
+        RequestUtils.generateRequestMetadata(
+            verifierUnpublishedDID.value,
             verifierMasterKeyPair.privateKey,
             verifierGetMessagesRequest,
         ),
     );
-    const verifierReceivedMessage = verifierGetMessagesResponse.messages.list.toArray()[0];
+    const verifierReceivedMessage = toArray(verifierGetMessagesResponse.messages)[0];
     const verifierReceivedCredential = pbandk.decodeFromByteArray(
         new AtalaMessage('', null, noUnknownFields).descriptor.messageCompanion,
         verifierReceivedMessage.message.array,
@@ -354,7 +354,7 @@ async function completeFlow() {
     `);
 
     // decode the received credential
-    const verifierReceivedJsonCredential = JsonBasedCredentialJSCompanion.fromString(
+    const verifierReceivedJsonCredential = JsonBasedCredentialCompanion.fromString(
         verifierReceivedCredential.encodedCredential,
     );
     const verifierReceivedCredentialIssuerDID = verifierReceivedJsonCredential.content.getString('issuerDid');
@@ -372,28 +372,28 @@ async function completeFlow() {
         new GetDidDocumentRequest(verifierReceivedCredentialIssuerDID, noUnknownFields)
     );
     const verifierReceivedCredentialIssuerDIDDocument = verifierGetDidResponse.document
-    const verifierReceivedCredentialIssuerKey = findPublicKeyJS(
+    const verifierReceivedCredentialIssuerKey = findPublicKey(
         verifierReceivedCredentialIssuerDIDDocument,
         verifierReceivedCredentialIssuanceKeyId,
     );
-    const verifierReceivedCredentialMerkleProof = MerkleInclusionProofJSCompanion.decode(verifierReceivedCredential.encodedMerkleProof);
+    const verifierReceivedCredentialMerkleProof = MerkleInclusionProofCompanion.decode(verifierReceivedCredential.encodedMerkleProof);
 
-    const verifierReceivedCredentialBatchId = CredentialBatchesJS.computeCredentialBatchId(
-        DIDJSCompanion.fromString(verifierReceivedCredentialIssuerDID),
+    const verifierReceivedCredentialBatchId = CredentialBatches.computeCredentialBatchId(
+        DIDCompanion.fromString(verifierReceivedCredentialIssuerDID),
         verifierReceivedCredentialMerkleProof.derivedRoot(),
     );
 
     const verifierReceivedCredentialBatchState = await node.GetBatchState(
         new GetBatchStateRequest(
-            SHA256DigestJSCompanion.fromHex(verifierReceivedCredentialBatchId.id).hexValue(),
+            SHA256DigestCompanion.fromHex(verifierReceivedCredentialBatchId.id).hexValue(),
             noUnknownFields,
         ),
     );
     const publicationTimestamp = verifierReceivedCredentialBatchState.publicationLedgerData.timestampInfo
     const revocationTimestamp = verifierReceivedCredentialBatchState.revocationLedgerData?.timestampInfo
-    const verifierReceivedCredentialBatchData = new BatchDataJS(
-        publicationTimestamp != null ? toTimestampInfoModelJS(publicationTimestamp) : null,
-        revocationTimestamp != null ? toTimestampInfoModelJS(revocationTimestamp) : null,
+    const verifierReceivedCredentialBatchData = new BatchData(
+        publicationTimestamp != null ? toTimestampInfoModel(publicationTimestamp) : null,
+        revocationTimestamp != null ? toTimestampInfoModel(revocationTimestamp) : null,
     );
     const verifierGetCredentialRevocationTimeResponse = await node.GetCredentialRevocationTime(
         new GetCredentialRevocationTimeRequest(
@@ -404,11 +404,11 @@ async function completeFlow() {
     );
     const verifierRevocationTimestampInfo = verifierGetCredentialRevocationTimeResponse?.revocationLedgerData?.timestampInfo
     const verifierReceivedCredentialRevocationTime = verifierRevocationTimestampInfo != null ?
-        toTimestampInfoModelJS(verifierRevocationTimestampInfo) : null;
+        toTimestampInfoModel(verifierRevocationTimestampInfo) : null;
 
     // Verifier checks the credential validity (which succeeds)
     console.log('Verifier: Verifying received credential')
-    CredentialVerificationJS.verifyMerkle(
+    CredentialVerification.verifyMerkle(
         verifierReceivedCredentialIssuerKey,
         verifierReceivedCredentialBatchData,
         verifierReceivedCredentialRevocationTime,
@@ -418,12 +418,12 @@ async function completeFlow() {
     )
 
     // Issuer revokes the credential
-    const issuerRevokeCredentialOperation = ProtoUtilsJS.revokeCredentialsOperation(
-        SHA256DigestJSCompanion.compute(pbandk.encodeToByteArray(issueCredentialOperation)),
-        CredentialBatchIdJSCompanion.fromString(issuedCredentialResponse.batchId),
-        [holderSignedCredential],
+    const issuerRevokeCredentialOperation = ProtoUtils.revokeCredentialsOperation(
+        SHA256DigestCompanion.compute(pbandk.encodeToByteArray(issueCredentialOperation)),
+        CredentialBatchIdCompanion.fromString(issuedCredentialResponse.batchId),
+        toList([holderSignedCredential]),
     )
-    const issuerRevokeCredentialSignedOperation = ProtoUtilsJS.signedAtalaOperation(issuerMasterKeyPair, issuerRevokeCredentialOperation)
+    const issuerRevokeCredentialSignedOperation = ProtoUtils.signedAtalaOperation(issuerMasterKeyPair, issuerRevokeCredentialOperation)
     const issuerCredentialRevocationResponse = await node.RevokeCredentials(
         new RevokeCredentialsRequest(
             issuerRevokeCredentialSignedOperation,
@@ -447,21 +447,21 @@ async function completeFlow() {
         )
     const verifierRevocationTimestampInfo2 = verifierGetCredentialRevocationTimeResponse2?.revocationLedgerData?.timestampInfo
     const verifierReceivedCredentialRevocationTime2 = verifierRevocationTimestampInfo2 != null ?
-        toTimestampInfoModelJS(verifierRevocationTimestampInfo2) : null;
+        toTimestampInfoModel(verifierRevocationTimestampInfo2) : null;
 
     // Verifier checks the credential validity (which fails)
-    const verificationResult = CredentialVerificationJS.verifyMerkle(
-        verifierReceivedCredentialIssuerKey,
-        verifierReceivedCredentialBatchData,
-        verifierReceivedCredentialRevocationTime2,
-        verifierReceivedCredentialMerkleProof.derivedRoot(),
-        verifierReceivedCredentialMerkleProof,
-        verifierReceivedJsonCredential
-    );
-    if (verificationResult instanceof VerificationResult.Invalid) {
-        console.log(verificationResult.error);
-    } else {
+    try {
+        CredentialVerification.verifyMerkle(
+            verifierReceivedCredentialIssuerKey,
+            verifierReceivedCredentialBatchData,
+            verifierReceivedCredentialRevocationTime2,
+            verifierReceivedCredentialMerkleProof.derivedRoot(),
+            verifierReceivedCredentialMerkleProof,
+            verifierReceivedJsonCredential
+        );
         console.error("Credential remained valid after revocation");
+    } catch (e) {
+        console.log(e);
     }
 }
 

@@ -14,7 +14,7 @@ class MerkleTreeTest {
 
     private fun randomHash(length: Int) = SHA256Digest.fromHex(randomHexString(length))
 
-    private val hashes = (1..50).map { randomHash(length = 16) }
+    private val hashes = (1..50).map { randomHash(length = SHA256Digest.HEX_STRING_LENGTH) }
 
     @Test
     fun buildProofsForAllSuppliedHashes() {
@@ -47,13 +47,13 @@ class MerkleTreeTest {
         val proof = proofs[proofNumber]
         val relevantMask = (1 shl proof.siblings.size) - 1 // The first N bits of index that matter
 
-        val invalidProof1 = proof.copy(hash = randomHash(8))
+        val invalidProof1 = proof.copy(hash = randomHash(SHA256Digest.HEX_STRING_LENGTH))
 
         val randomIndex = Random.nextInt(relevantMask)
         val differentIndex = if (randomIndex == proof.index) randomIndex + 1 else randomIndex
         val invalidProof2 = proof.copy(index = differentIndex)
 
-        val invalidProof3 = proof.copy(siblings = (1..30).map { randomHash(8) })
+        val invalidProof3 = proof.copy(siblings = (1..30).map { randomHash(SHA256Digest.HEX_STRING_LENGTH) })
 
         assertFalse(verifyProof(root, invalidProof1))
         assertFalse(verifyProof(root, invalidProof2))

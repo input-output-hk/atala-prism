@@ -1,5 +1,8 @@
 package io.iohk.atala.prism.kotlin.identity
 
+import kotlin.js.JsExport
+
+@JsExport
 sealed class DIDFormatException(msg: String, cause: Throwable? = null) : Exception(msg, cause) {
     object CanonicalSuffixMatchStateException :
         DIDFormatException("Canonical suffix does not match the computed state")

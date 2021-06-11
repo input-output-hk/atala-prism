@@ -1,8 +1,10 @@
 package io.iohk.atala.prism.kotlin.crypto.derivation
 
+import kotlin.js.JsExport
 import kotlin.jvm.JvmStatic
 
 /** Represents derivation path in BIP 32 protocol */
+@JsExport
 data class DerivationPath(val axes: List<DerivationAxis>) {
     companion object {
         /** Constructs empty derivation path */

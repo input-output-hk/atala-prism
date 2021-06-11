@@ -1,40 +1,42 @@
-const prism = require('prism-kotlin-sdk/packages/credentials');
+const prism = require('prism-kotlin-sdk/packages/extras');
 
-const { ECJS } = prism.io.iohk.atala.prism.kotlin.crypto.exposed;
-const { DIDJSCompanion } = prism.io.iohk.atala.prism.kotlin.identity.exposed;
+const { EC } = prism.io.iohk.atala.prism.kotlin.crypto;
+const { DIDCompanion } = prism.io.iohk.atala.prism.kotlin.identity;
 const {
-    CredentialContentJSCompanion, JsonBasedCredentialJS, CredentialBatchesJS, KeyDataJS,
-    TimestampInfoJS, BatchDataJS, CredentialVerificationJS,
-} = prism.io.iohk.atala.prism.kotlin.credentials.exposed;
+    CredentialBatches, KeyData, TimestampInfo, BatchData, CredentialVerification,
+} = prism.io.iohk.atala.prism.kotlin.credentials;
+const { CredentialContentCompanion } = prism.io.iohk.atala.prism.kotlin.credentials.content;
+const { JsonBasedCredential } = prism.io.iohk.atala.prism.kotlin.credentials.json;
+const { toList, toArray, toLong } = prism.io.iohk.atala.prism.kotlin.extras;
 
 function basicUsage() {
-    const masterKeyPair = ECJS.generateKeyPair();
-    const did = DIDJSCompanion.createUnpublishedDID(masterKeyPair.publicKey);
+    const masterKeyPair = EC.generateKeyPair();
+    const did = DIDCompanion.createUnpublishedDID(masterKeyPair.publicKey);
     const credentialContentJson = {
-        issuerDid: did.getValue(),
+        issuerDid: did.value,
         issuanceKeyId: 'Issuance-0',
         credentialSubject: {
             name: 'José López Portillo',
             certificate: 'Certificate of PRISM SDK tutorial completion',
         },
     };
-    const credentialContent = CredentialContentJSCompanion.fromString(
+    const credentialContent = CredentialContentCompanion.fromString(
         JSON.stringify(credentialContentJson),
     );
-    const credential = JsonBasedCredentialJS.create(credentialContent, null);
+    const credential = new JsonBasedCredential(credentialContent, null);
     const signedCredential = credential.sign(masterKeyPair.privateKey);
-    const batchResult = CredentialBatchesJS.batch([signedCredential]);
+    const batchResult = CredentialBatches.batch(toList([signedCredential]));
     const merkleRoot = batchResult.root;
-    const merkleProofs = batchResult.proofs;
+    const merkleProofs = toArray(batchResult.proofs);
 
     const now = Math.floor(Date.now() / 1000);
-    const didBlockInfo = TimestampInfoJS.create((now - 60).toString(), 1, 1);
-    const batchBlockInfo = TimestampInfoJS.create((now - 20).toString(), 2, 2);
+    const didBlockInfo = new TimestampInfo(toLong(now - 60), 1, 1);
+    const batchBlockInfo = new TimestampInfo(toLong(now - 20), 2, 2);
 
-    const keyData = new KeyDataJS(masterKeyPair.publicKey, didBlockInfo, null);
-    const batchData = new BatchDataJS(batchBlockInfo, null);
+    const keyData = new KeyData(masterKeyPair.publicKey, didBlockInfo, null);
+    const batchData = new BatchData(batchBlockInfo, null);
 
-    CredentialVerificationJS.verifyMerkle(
+    CredentialVerification.verifyMerkle(
         keyData,
         batchData,
         null,

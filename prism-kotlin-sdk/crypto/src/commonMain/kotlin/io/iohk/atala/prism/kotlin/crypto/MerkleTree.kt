@@ -1,6 +1,7 @@
 package io.iohk.atala.prism.kotlin.crypto
 
 import kotlinx.serialization.json.*
+import kotlin.js.JsExport
 
 typealias Hash = SHA256Digest
 // Bitmask index representing leaf position in a tree where unset i-th bit means that the leaf is
@@ -32,10 +33,12 @@ private data class MerkleLeaf(val data: Hash) : MerkleTree() {
     override val hash: Hash = prefixHash(data)
 }
 
+@JsExport
 data class MerkleRoot(val hash: Hash)
 
 // Cryptographic proof of the given hash's inclusion in the Merkle tree which can be verified
 // by anyone.
+@JsExport
 data class MerkleInclusionProof(
     val hash: Hash, // hash inclusion of which this proof is for
     val index: Index, // index for the given hash's position in the tree
@@ -95,7 +98,10 @@ private fun combineHashes(left: Hash, right: Hash): Hash =
 private fun prefixHash(data: Hash): Hash =
     SHA256Digest.compute(byteArrayOf(LeafPrefix) + data.value)
 
-fun generateProofs(hashes: List<Hash>): Pair<MerkleRoot, List<MerkleInclusionProof>> {
+data class MerkleProofs(val root: MerkleRoot, val proofs: List<MerkleInclusionProof>)
+
+@JsExport
+fun generateProofs(hashes: List<Hash>): MerkleProofs {
 
     fun buildMerkleTree(currentLevel: List<MerkleTree>, nextLevel: List<MerkleTree>): MerkleTree {
         return when {
@@ -139,9 +145,10 @@ fun generateProofs(hashes: List<Hash>): Pair<MerkleRoot, List<MerkleInclusionPro
     val merkleTree = buildMerkleTree(hashes.map { MerkleLeaf(it) }, emptyList())
     val merkleProofs = buildProofs(merkleTree, 0, emptyList())
 
-    return Pair(MerkleRoot(merkleTree.hash), merkleProofs)
+    return MerkleProofs(MerkleRoot(merkleTree.hash), merkleProofs)
 }
 
+@JsExport
 fun verifyProof(root: MerkleRoot, proof: MerkleInclusionProof): Boolean {
     // Proof length should not exceed 31 as 2^31 is the maximum size of Merkle tree
     return proof.siblings.size < 31 && proof.derivedRoot() == root

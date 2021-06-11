@@ -7,6 +7,7 @@ import io.iohk.atala.prism.kotlin.crypto.keys.ECPrivateKey
 import io.iohk.atala.prism.kotlin.crypto.keys.ECPublicKey
 import io.iohk.atala.prism.kotlin.crypto.util.toByteArray
 
+@JsExport
 actual class ExtendedKey(
     private val bip32: BIP32Interface,
     private val path: DerivationPath

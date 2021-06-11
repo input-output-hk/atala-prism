@@ -1,5 +1,6 @@
 package io.iohk.atala.prism.kotlin.crypto.derivation
 
+import kotlin.js.JsExport
 import kotlin.jvm.JvmStatic
 
 /** Represent an axis on BIP 32 key derivation path
@@ -13,6 +14,7 @@ import kotlin.jvm.JvmStatic
  * Implementation details are mostly hidden from the user, so user can either choose to create a normal
  * axis, providing number between 0 and 2^31^ - 1 or hardened one, providing a number from the same range.
  */
+@JsExport
 class DerivationAxis internal constructor(val i: Int) {
     companion object {
         /** Creates normal (non-hardened) axis
