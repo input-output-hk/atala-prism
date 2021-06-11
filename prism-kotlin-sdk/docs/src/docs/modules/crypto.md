@@ -11,7 +11,7 @@ The Crypto module provides a [SHA256](https://en.wikipedia.org/wiki/SHA-2) hash 
 ```kotlin:ank
 import io.iohk.atala.prism.kotlin.crypto.SHA256Digest
 
-SHA256Digest.compute(listOf(0))
+SHA256Digest.compute(byteArrayOf(0))
 ```
 
 ## Elliptic-curve cryptography
@@ -36,7 +36,7 @@ val keyPair = EC.generateKeyPair()
 val privateKey = keyPair.privateKey
 val publicKey = keyPair.publicKey
 
-val data = listOf<Byte>(1)
+val data = byteArrayOf(1)
 val dataSignature = EC.sign(data, privateKey)
 EC.verify(data, publicKey, dataSignature)
 
@@ -97,8 +97,8 @@ It is possible to build and verify [Merkle tree](https://en.wikipedia.org/wiki/M
 ```kotlin:ank
 import io.iohk.atala.prism.kotlin.crypto.*
 
-val hash1 = SHA256Digest.compute(listOf(0))
-val hash2 = SHA256Digest.compute(listOf(1))
+val hash1 = SHA256Digest.compute(byteArrayOf(0))
+val hash2 = SHA256Digest.compute(byteArrayOf(1))
 
 val (root, proofs) = generateProofs(listOf(hash1, hash2))
 val (proof1, proof2) = proofs

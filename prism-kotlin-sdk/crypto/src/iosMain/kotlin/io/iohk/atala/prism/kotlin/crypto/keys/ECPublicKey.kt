@@ -9,7 +9,7 @@ import kotlinx.cinterop.*
 import platform.posix.size_tVar
 
 actual class ECPublicKey(internal val key: UByteArray) : ECKey() {
-    override fun getEncoded(): List<Byte> {
+    override fun getEncoded(): ByteArray {
         return memScoped {
             val context = secp256k1_context_create((SECP256K1_CONTEXT_SIGN or SECP256K1_CONTEXT_VERIFY).convert())
             val pubkey = toSecpPubkey(this)
@@ -21,7 +21,7 @@ actual class ECPublicKey(internal val key: UByteArray) : ECKey() {
             if (result != 1) {
                 error("Could not serialize public key")
             }
-            output.toUByteArray(outputLen.value.convert()).toByteArray().toList()
+            output.toUByteArray(outputLen.value.convert()).toByteArray()
         }
     }
 

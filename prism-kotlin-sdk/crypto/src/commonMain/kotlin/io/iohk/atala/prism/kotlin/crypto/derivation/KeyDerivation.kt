@@ -25,11 +25,11 @@ expect object KeyDerivation {
      *   used as the salt. The iteration count is set to 2048 and HMAC-SHA512 is used as the pseudo-random
      *   function. The length of the derived key is 512 bits (= 64 bytes).
      */
-    fun binarySeed(seed: MnemonicCode, passphrase: String): List<Byte>
+    fun binarySeed(seed: MnemonicCode, passphrase: String): ByteArray
 
     /** Computes master key from seed bytes, according to BIP 32 protocol*/
-    fun derivationRoot(seed: List<Byte>): ExtendedKey
+    fun derivationRoot(seed: ByteArray): ExtendedKey
 
     /** Computes key in derivation tree from seed bytes, according to BIP 32 protocol*/
-    fun deriveKey(seed: List<Byte>, path: DerivationPath): ExtendedKey
+    fun deriveKey(seed: ByteArray, path: DerivationPath): ExtendedKey
 }

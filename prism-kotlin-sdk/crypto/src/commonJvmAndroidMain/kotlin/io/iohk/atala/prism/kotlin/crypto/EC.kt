@@ -9,10 +9,8 @@ import io.iohk.atala.prism.kotlin.crypto.keys.ECPoint
 import io.iohk.atala.prism.kotlin.crypto.keys.ECPrivateKey
 import io.iohk.atala.prism.kotlin.crypto.keys.ECPublicKey
 import io.iohk.atala.prism.kotlin.crypto.signature.ECSignature
-import io.iohk.atala.prism.kotlin.crypto.util.toByteArray
 import io.iohk.atala.prism.kotlin.crypto.util.toJavaBigInteger
 import io.iohk.atala.prism.kotlin.crypto.util.toKotlinBigInteger
-import io.iohk.atala.prism.kotlin.crypto.util.toUByteArray
 import java.security.*
 import java.security.spec.*
 
@@ -35,8 +33,8 @@ actual object EC {
     }
 
     @JvmStatic
-    actual fun toPrivateKey(encoded: List<Byte>): ECPrivateKey {
-        return toPrivateKey(BigInteger.fromByteArray(encoded.toByteArray(), Sign.POSITIVE))
+    actual fun toPrivateKey(encoded: ByteArray): ECPrivateKey {
+        return toPrivateKey(BigInteger.fromByteArray(encoded, Sign.POSITIVE))
     }
 
     @JvmStatic
@@ -46,7 +44,7 @@ actual object EC {
     }
 
     @JvmStatic
-    actual fun toPublicKey(encoded: List<Byte>): ECPublicKey {
+    actual fun toPublicKey(encoded: ByteArray): ECPublicKey {
         val expectedLength = 1 + 2 * ECConfig.PRIVATE_KEY_BYTE_SIZE
         assert(encoded.size == expectedLength) {
             "Encoded byte array's expected length is $expectedLength, but got ${encoded.size}"
@@ -55,15 +53,14 @@ actual object EC {
             "First byte was expected to be 4, but got ${encoded[0]}"
         }
 
-        val encodedArray = encoded.toByteArray()
-        val xBytes = encodedArray.copyOfRange(1, 1 + ECConfig.PRIVATE_KEY_BYTE_SIZE)
-        val yBytes = encodedArray.copyOfRange(1 + ECConfig.PRIVATE_KEY_BYTE_SIZE, encoded.size)
-        return toPublicKey(xBytes.toList(), yBytes.toList())
+        val xBytes = encoded.copyOfRange(1, 1 + ECConfig.PRIVATE_KEY_BYTE_SIZE)
+        val yBytes = encoded.copyOfRange(1 + ECConfig.PRIVATE_KEY_BYTE_SIZE, encoded.size)
+        return toPublicKey(xBytes, yBytes)
     }
 
     @JvmStatic
-    actual fun toPublicKey(x: List<Byte>, y: List<Byte>): ECPublicKey {
-        return toPublicKey(x.toByteArray().toKotlinBigInteger(), y.toByteArray().toKotlinBigInteger())
+    actual fun toPublicKey(x: ByteArray, y: ByteArray): ECPublicKey {
+        return toPublicKey(x.toKotlinBigInteger(), y.toKotlinBigInteger())
     }
 
     @JvmStatic
@@ -80,34 +77,34 @@ actual object EC {
     }
 
     @JvmStatic
-    actual fun toSignature(encoded: List<Byte>): ECSignature {
-        return ECSignature(encoded.map { it.toUByte() })
+    actual fun toSignature(encoded: ByteArray): ECSignature {
+        return ECSignature(encoded)
     }
 
     @JvmStatic
     actual fun sign(text: String, privateKey: ECPrivateKey): ECSignature {
-        return sign(text.toByteArray().toList(), privateKey)
+        return sign(text.toByteArray(), privateKey)
     }
 
     @JvmStatic
-    actual fun sign(data: List<Byte>, privateKey: ECPrivateKey): ECSignature {
+    actual fun sign(data: ByteArray, privateKey: ECPrivateKey): ECSignature {
         val signer = Signature.getInstance(SIGNATURE_ALGORITHM, provider)
         signer.initSign(privateKey.key)
-        signer.update(data.toByteArray())
-        return ECSignature(signer.sign().toUByteArray().toList())
+        signer.update(data)
+        return ECSignature(signer.sign())
     }
 
     @JvmStatic
     actual fun verify(text: String, publicKey: ECPublicKey, signature: ECSignature): Boolean {
-        return verify(text.toByteArray().toList(), publicKey, signature)
+        return verify(text.toByteArray(), publicKey, signature)
     }
 
     @JvmStatic
-    actual fun verify(data: List<Byte>, publicKey: ECPublicKey, signature: ECSignature): Boolean {
+    actual fun verify(data: ByteArray, publicKey: ECPublicKey, signature: ECSignature): Boolean {
         val verifier = Signature.getInstance(SIGNATURE_ALGORITHM, provider)
         verifier.initVerify(publicKey.key)
-        verifier.update(data.toByteArray())
-        return verifier.verify(signature.data.toByteArray())
+        verifier.update(data)
+        return verifier.verify(signature.data)
     }
 
     @JvmStatic

@@ -23,16 +23,16 @@ object RequestUtils {
         bytes: ByteArray,
         nonce: ByteArray? = null
     ): PrismMetadata {
-        val requestNonce = nonce?.toList() ?: uuid4().bytes.toList()
+        val requestNonce = nonce ?: uuid4().bytes
         val didSignature = EC.sign(
-            requestNonce + bytes.toList(),
+            requestNonce + bytes,
             didPrivateKey
         )
         return PrismMetadata(
             did = did,
             didKeyId = masterKeyId, // NOTE: For now this is hardcoded as there are no other keys in the DIDs
-            didSignature = didSignature.getEncoded().toByteArray(),
-            requestNonce = requestNonce.toByteArray()
+            didSignature = didSignature.getEncoded(),
+            requestNonce = requestNonce
         )
     }
 }

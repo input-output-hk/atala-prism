@@ -23,7 +23,7 @@ actual object KeyDerivation {
     actual fun binarySeed(
         seed: MnemonicCode,
         passphrase: String
-    ): List<Byte> {
+    ): ByteArray {
         val mnemonic = seed.words.joinToString(" ")
 
         if (seed.words.size % 3 != 0) {
@@ -41,16 +41,16 @@ actual object KeyDerivation {
             throw MnemonicChecksumException("Invalid mnemonic checksum")
         }
 
-        return mnemonicToSeedSync(mnemonic, passphrase).toByteArray().toList()
+        return mnemonicToSeedSync(mnemonic, passphrase).toByteArray()
     }
 
-    actual fun derivationRoot(seed: List<Byte>): ExtendedKey {
+    actual fun derivationRoot(seed: ByteArray): ExtendedKey {
         val bip32 = fromSeed(Buffer.from(seed.toTypedArray()))
         return ExtendedKey(bip32, DerivationPath.empty())
     }
 
     actual fun deriveKey(
-        seed: List<Byte>,
+        seed: ByteArray,
         path: DerivationPath
     ): ExtendedKey =
         path.axes.fold(derivationRoot(seed)) { key, axis -> key.derive(axis) }

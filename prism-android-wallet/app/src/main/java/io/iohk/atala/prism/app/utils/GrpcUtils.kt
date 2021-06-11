@@ -12,7 +12,7 @@ class GrpcUtils {
         val PUBLIC_KEY: Metadata.Key<String> = Metadata.Key.of("publickey", Metadata.ASCII_STRING_MARSHALLER)
 
         fun getPublicKeyEncoded(ecKeyPair: ECKeyPair): EncodedPublicKey {
-            return EncodedPublicKey.newBuilder().setPublicKey(ByteString.copyFrom(ecKeyPair.publicKey.getEncoded().toByteArray())).build()
+            return EncodedPublicKey.newBuilder().setPublicKey(ByteString.copyFrom(ecKeyPair.publicKey.getEncoded())).build()
         }
     }
 }

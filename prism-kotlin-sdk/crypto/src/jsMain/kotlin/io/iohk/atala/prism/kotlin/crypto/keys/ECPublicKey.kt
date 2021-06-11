@@ -5,8 +5,7 @@ import io.iohk.atala.prism.kotlin.crypto.ECConfig
 import io.iohk.atala.prism.kotlin.crypto.externals.base
 
 actual class ECPublicKey(val basePoint: base.BasePoint) : ECKey() {
-
-    override fun getEncoded(): List<Byte> {
+    override fun getEncoded(): ByteArray {
         val size = ECConfig.PRIVATE_KEY_BYTE_SIZE
         val xArr = BigInteger.parseString(basePoint.getX().toString()).toByteArray()
         val yArr = BigInteger.parseString(basePoint.getY().toString()).toByteArray()
@@ -15,7 +14,7 @@ actual class ECPublicKey(val basePoint: base.BasePoint) : ECKey() {
             arr[0] = 4 // Uncompressed point indicator for encoding
             xArr.copyInto(arr, size - xArr.size + 1)
             yArr.copyInto(arr, arr.size - yArr.size)
-            return arr.toList()
+            return arr
         } else {
             throw RuntimeException("Point coordinates do not match field size")
         }

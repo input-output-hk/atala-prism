@@ -22,13 +22,13 @@ object ECJS {
     }
 
     fun toPrivateKeyFromBytes(encoded: ByteArray): ECPrivateKeyJS =
-        EC.toPrivateKey(encoded.toList()).toJs()
+        EC.toPrivateKey(encoded).toJs()
 
     fun toPrivateKeyFromBigInteger(d: String): ECPrivateKeyJS =
         EC.toPrivateKey(BigInteger.parseString(d)).toJs()
 
     fun toPublicKeyFromBytes(encoded: ByteArray): ECPublicKeyJS =
-        EC.toPublicKey(encoded.toList()).toJs()
+        EC.toPublicKey(encoded).toJs()
 
     fun toPublicKeyFromBigIntegerCoordinates(x: String, y: String): ECPublicKeyJS =
         EC.toPublicKey(BigInteger.parseString(x), BigInteger.parseString(y)).toJs()
@@ -37,13 +37,13 @@ object ECJS {
         EC.toPublicKeyFromPrivateKey(privateKey.toKotlin()).toJs()
 
     fun toSignature(encoded: ByteArray): String =
-        EC.toSignature(encoded.toList()).getHexEncoded()
+        EC.toSignature(encoded).getHexEncoded()
 
     fun signBytes(
         bytes: ByteArray,
         privateKey: ECPrivateKeyJS
     ): ECSignatureJS =
-        EC.sign(bytes.toList(), privateKey.toKotlin()).toJs()
+        EC.sign(bytes, privateKey.toKotlin()).toJs()
 
     fun sign(
         text: String,
@@ -56,7 +56,7 @@ object ECJS {
         publicKey: ECPublicKeyJS,
         signature: ECSignatureJS
     ): Boolean =
-        EC.verify(bytes.toList(), publicKey.toKotlin(), signature.toKotlin())
+        EC.verify(bytes, publicKey.toKotlin(), signature.toKotlin())
 
     fun verify(
         text: String,

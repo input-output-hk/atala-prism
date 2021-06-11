@@ -9,7 +9,7 @@ class ECPublicKeyJS internal constructor(internal val publicKey: ECPublicKey) {
         publicKey.getHexEncoded()
 
     fun getEncoded(): ByteArray =
-        publicKey.getEncoded().toByteArray()
+        publicKey.getEncoded()
 
     fun getCurvePoint(): ECPointJS {
         val curvePoint = publicKey.getCurvePoint()

@@ -65,8 +65,8 @@ actual class GrpcClient actual constructor(
             json(
                 DID to prismMetadata.did,
                 DID_KEY_ID to prismMetadata.didKeyId,
-                DID_SIGNATURE to Base64Utils.encode(prismMetadata.didSignature.toList()),
-                REQUEST_NONCE to Base64Utils.encode(prismMetadata.requestNonce.toList())
+                DID_SIGNATURE to Base64Utils.encode(prismMetadata.didSignature),
+                REQUEST_NONCE to Base64Utils.encode(prismMetadata.requestNonce)
             ).unsafeCast<Metadata>(),
             methodDescriptor
         ).await()

@@ -66,7 +66,7 @@ kotlin {
     sourceSets {
         val commonMain by getting {
             dependencies {
-                api("com.ionspin.kotlin:bignum:0.2.3")
+                api("com.ionspin.kotlin:bignum:0.3.1")
                 api("org.jetbrains.kotlinx:kotlinx-serialization-json:1.2.1")
                 api("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.5.0")
             }

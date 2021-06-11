@@ -56,9 +56,9 @@ public class CryptoTest {
 
         ECKeyPair keyPair = EC.generateKeyPair();
 
-        ECSignature signedEC = EC.sign(Bytes.asList(randomBytes), keyPair.getPrivateKey());
+        ECSignature signedEC = EC.sign(randomBytes, keyPair.getPrivateKey());
 
-        boolean result = EC.verify(Bytes.asList(randomBytes), keyPair.getPublicKey(), signedEC);
+        boolean result = EC.verify(randomBytes, keyPair.getPublicKey(), signedEC);
         assertTrue(result);
     }
 
@@ -67,10 +67,10 @@ public class CryptoTest {
 
         ECKeyPair keyPair = EC.generateKeyPair();
 
-        ECSignature signedEC = EC.sign(Bytes.asList(randomBytes), keyPair.getPrivateKey());
+        ECSignature signedEC = EC.sign(randomBytes, keyPair.getPrivateKey());
         ECKeyPair keyPair2 = EC.generateKeyPair();
 
-        boolean result = EC.verify(Bytes.asList(randomBytes), keyPair2.getPublicKey(), signedEC);
+        boolean result = EC.verify(randomBytes, keyPair2.getPublicKey(), signedEC);
         assertFalse(result);
     }
 
@@ -78,9 +78,9 @@ public class CryptoTest {
     public void checkDataIntegrityWrongData() throws Exception {
 
         ECKeyPair keyPair = EC.generateKeyPair();
-        ECSignature signedEC = EC.sign(Bytes.asList(randomBytes), keyPair.getPrivateKey());
+        ECSignature signedEC = EC.sign(randomBytes, keyPair.getPrivateKey());
 
-        boolean result = EC.verify(Bytes.asList(randomBytes2), keyPair.getPublicKey(), signedEC);
+        boolean result = EC.verify(randomBytes2, keyPair.getPublicKey(), signedEC);
         assertFalse(result);
     }
 

@@ -6,7 +6,7 @@ import kotlin.test.assertEquals
 class Base64UtilsTest {
     @Test
     fun testEncoding() {
-        val actual = Base64Utils.encode("subjects?_d=1~~~".encodeToByteArray().toList())
+        val actual = Base64Utils.encode("subjects?_d=1~~~".encodeToByteArray())
         // Actual Base64 is c3ViamVjdHM/X2Q9MX5+fg==, but we need the URL-encoded version of it
         assertEquals("c3ViamVjdHM_X2Q9MX5-fg", actual)
     }
@@ -14,6 +14,6 @@ class Base64UtilsTest {
     @Test
     fun testDecoding() {
         val actual = Base64Utils.decode("c3ViamVjdHM_X2Q9MX5-fg")
-        assertEquals("subjects?_d=1~~~", actual.toByteArray().decodeToString())
+        assertEquals("subjects?_d=1~~~", actual.decodeToString())
     }
 }

@@ -13,15 +13,15 @@ data class JsonBasedCredential constructor(
     override val signature: ECSignature? = null
 ) : Credential() {
 
-    override val contentBytes = content.fields.toString().encodeToByteArray().toList()
+    override val contentBytes = content.fields.toString().encodeToByteArray()
 
     override val canonicalForm: String =
         if (signature != null) {
-            Base64Utils.encode(contentBytes.toByteArray().toList()) +
+            Base64Utils.encode(contentBytes) +
                 SEPARATOR +
                 Base64Utils.encode(signature.getEncoded())
         } else {
-            contentBytes.toByteArray().decodeToString()
+            contentBytes.decodeToString()
         }
 
     override fun sign(privateKey: ECPrivateKey): Credential {
@@ -44,10 +44,10 @@ data class JsonBasedCredential constructor(
 
                 try {
                     val credentialContent =
-                        CredentialContent.fromString(Base64Utils.decode(content).toByteArray().decodeToString())
+                        CredentialContent.fromString(Base64Utils.decode(content).decodeToString())
                     return JsonBasedCredential(
                         content = credentialContent,
-                        signature = ECSignature(Base64Utils.decode(signature).map { it.toUByte() })
+                        signature = ECSignature(Base64Utils.decode(signature))
                     )
                 } catch (e: Exception) {
                     throw CredentialParsingError("Failed to parse signed credential content: ${e.message}")

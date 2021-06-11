@@ -27,7 +27,7 @@ actual object KeyDerivation {
     actual fun getValidMnemonicWords(): List<String> =
         MnemonicCodeEnglish.wordList
 
-    actual fun binarySeed(seed: MnemonicCode, passphrase: String): List<Byte> {
+    actual fun binarySeed(seed: MnemonicCode, passphrase: String): ByteArray {
         val javaWords = seed.words
 
         try {
@@ -42,12 +42,12 @@ actual object KeyDerivation {
             throw RuntimeException("Unexpected exception returned by MnemonicCode.check", e)
         }
 
-        return org.bitcoinj.crypto.MnemonicCode.toSeed(javaWords, passphrase).toList()
+        return org.bitcoinj.crypto.MnemonicCode.toSeed(javaWords, passphrase)
     }
 
-    actual fun derivationRoot(seed: List<Byte>): ExtendedKey =
-        ExtendedKey(HDKeyDerivation.createMasterPrivateKey(seed.toByteArray()))
+    actual fun derivationRoot(seed: ByteArray): ExtendedKey =
+        ExtendedKey(HDKeyDerivation.createMasterPrivateKey(seed))
 
-    actual fun deriveKey(seed: List<Byte>, path: DerivationPath): ExtendedKey =
+    actual fun deriveKey(seed: ByteArray, path: DerivationPath): ExtendedKey =
         path.axes.fold(derivationRoot(seed)) { key, axis -> key.derive(axis) }
 }

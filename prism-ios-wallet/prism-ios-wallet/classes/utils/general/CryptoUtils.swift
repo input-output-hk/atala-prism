@@ -16,7 +16,7 @@ class CryptoUtils: NSObject {
     static let SEED_COUNT = 12
 
     var usedMnemonics: [String]?
-    var seed: [KotlinByte]?
+    var seed: KotlinByteArray?
     var lastUsedKeyIndex: Int?
 
     let signSemaphore = DispatchSemaphore(value: 1)

@@ -43,8 +43,8 @@ actual object Aes {
         )
 
         return AesEncryptedData(
-            data = BytesOps.hexToBytes(encryptedData as String).toByteArray().toList(),
-            iv = iv.toList(),
+            data = BytesOps.hexToBytes(encryptedData as String),
+            iv = iv,
             salt = null
         )
     }
@@ -58,7 +58,7 @@ actual object Aes {
     ): ByteArray {
         if (jsTypeOf(window) != "undefined") TODO("Browser version is not available.")
 
-        val iv = encryptedData.iv.toByteArray()
+        val iv = encryptedData.iv
         val authTag = encryptedData.data.takeLast(AesConfig.AUTH_TAG_SIZE / 8).toByteArray()
         val encrypted = encryptedData.data.take(encryptedData.data.size - AesConfig.AUTH_TAG_SIZE / 8).toByteArray()
 
@@ -71,6 +71,6 @@ actual object Aes {
             """
         )
 
-        return BytesOps.hexToBytes(decryptedData as String).toByteArray()
+        return BytesOps.hexToBytes(decryptedData as String)
     }
 }

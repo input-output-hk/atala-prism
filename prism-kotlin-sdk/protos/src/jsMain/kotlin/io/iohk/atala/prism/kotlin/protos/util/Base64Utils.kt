@@ -1,13 +1,13 @@
 package io.iohk.atala.prism.kotlin.protos.util
 
 actual object Base64Utils {
-    actual fun encode(bytes: List<Byte>): String {
-        val buffer = js("Buffer").from(bytes.toByteArray())
+    actual fun encode(bytes: ByteArray): String {
+        val buffer = js("Buffer").from(bytes)
         val result = buffer.toString("base64") as String
         return result.replace('/', '_').replace('+', '-').dropLastWhile { it == '=' }
     }
 
-    actual fun decode(src: String): List<Byte> {
+    actual fun decode(src: String): ByteArray {
         val expectedLength = (src.length + 3) / 4 * 4
         val base64encoded =
             src.replace('_', '/').replace('-', '+').padEnd(expectedLength, '=')
@@ -16,6 +16,6 @@ actual object Base64Utils {
         for (i in result.indices) {
             result[i] = (decoded[i] as Int).toByte()
         }
-        return result.toList()
+        return result
     }
 }

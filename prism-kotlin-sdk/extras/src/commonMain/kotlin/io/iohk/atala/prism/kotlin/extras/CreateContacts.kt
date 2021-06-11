@@ -31,7 +31,7 @@ suspend fun createContacts(
 
     val req = CreateContactsRequest(reqUnsigned.groups, reqUnsigned.contacts, connectorRequestMetadata)
     val metadata = getMetadata(req.encodeToByteArray(), nonce)
-    val prismMetadata = PrismMetadata(metadata.did, metadata.didKeyId, Base64Utils.decode(metadata.didSignature).toByteArray(), nonce)
+    val prismMetadata = PrismMetadata(metadata.did, metadata.didKeyId, Base64Utils.decode(metadata.didSignature), nonce)
 
     val response = contactsService.CreateContactsAuth(req, prismMetadata)
     return response.contactsCreated

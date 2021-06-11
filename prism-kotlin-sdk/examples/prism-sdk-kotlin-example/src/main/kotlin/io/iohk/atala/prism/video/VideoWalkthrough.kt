@@ -9,7 +9,6 @@ import io.iohk.atala.prism.kotlin.credentials.content.CredentialContent
 import io.iohk.atala.prism.kotlin.credentials.json.JsonBasedCredential
 import io.iohk.atala.prism.kotlin.crypto.EC
 import io.iohk.atala.prism.kotlin.crypto.Hash
-import io.iohk.atala.prism.kotlin.crypto.util.toByteArray
 import io.iohk.atala.prism.kotlin.extras.ProtoClientUtils
 import io.iohk.atala.prism.kotlin.extras.ProtoUtils
 import io.iohk.atala.prism.kotlin.extras.findPublicKey
@@ -117,7 +116,7 @@ suspend fun main() {
     )
     val credentialBatchData = CredentialBatchData(
         issuerDid = issuerDID.suffix.value, // This requires the suffix only, as the node stores only suffixes
-        merkleRoot = pbandk.ByteArr(holderCredentialMerkleRoot.hash.value.toByteArray())
+        merkleRoot = pbandk.ByteArr(holderCredentialMerkleRoot.hash.value)
     )
 
     // Issuer publishes the credential to Cardano
@@ -162,7 +161,7 @@ suspend fun main() {
     val credentialRevocationTime = node.GetCredentialRevocationTime(
         GetCredentialRevocationTimeRequest(
             batchId = Hash.fromHex(issuedCredentialResponse.batchId).hexValue(),
-            credentialHash = pbandk.ByteArr(holderUnsignedCredential.hash().value.toByteArray())
+            credentialHash = pbandk.ByteArr(holderUnsignedCredential.hash().value)
         )
     )
         .revocationLedgerData?.timestampInfo?.toTimestampInfoModel()

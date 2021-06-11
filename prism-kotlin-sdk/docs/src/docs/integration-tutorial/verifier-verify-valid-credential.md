@@ -50,7 +50,7 @@ val verifierReceivedCredentialRevocationTime = runBlocking {
     node.GetCredentialRevocationTime(
         GetCredentialRevocationTimeRequest(
             batchId = Hash.fromHex(verifierReceivedCredentialBatchId.id).hexValue(),
-            credentialHash = pbandk.ByteArr(verifierReceivedJsonCredential.hash().value.toByteArray())
+            credentialHash = pbandk.ByteArr(verifierReceivedJsonCredential.hash().value)
         )
     ).revocationLedgerData?.timestampInfo?.toTimestampInfoModel()
 }

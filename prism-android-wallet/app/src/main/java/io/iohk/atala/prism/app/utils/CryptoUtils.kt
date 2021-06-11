@@ -17,12 +17,12 @@ class CryptoUtils {
         fun getMetadata(ecKeyPair: ECKeyPair, data: ByteArray): Metadata {
             val nonce = BytesConverterUtil.getBytesFromUUID(UUID.randomUUID())
 
-            val firm = EC.sign(nonce!!.plus(data).toList(), ecKeyPair.privateKey)
+            val firm = EC.sign(nonce!!.plus(data), ecKeyPair.privateKey)
 
             val metadata = Metadata()
 
-            metadata.put(GrpcUtils.SIGNATURE_KEY, Base64.encodeToString(firm.getEncoded().toByteArray(), Base64.URL_SAFE or Base64.NO_WRAP))
-            metadata.put(GrpcUtils.PUBLIC_KEY, Base64.encodeToString(ecKeyPair.publicKey.getEncoded().toByteArray(), Base64.URL_SAFE or Base64.NO_WRAP))
+            metadata.put(GrpcUtils.SIGNATURE_KEY, Base64.encodeToString(firm.getEncoded(), Base64.URL_SAFE or Base64.NO_WRAP))
+            metadata.put(GrpcUtils.PUBLIC_KEY, Base64.encodeToString(ecKeyPair.publicKey.getEncoded(), Base64.URL_SAFE or Base64.NO_WRAP))
             metadata.put(GrpcUtils.REQUEST_NONCE_KEY, Base64.encodeToString(nonce, Base64.URL_SAFE or Base64.NO_WRAP))
 
             return metadata

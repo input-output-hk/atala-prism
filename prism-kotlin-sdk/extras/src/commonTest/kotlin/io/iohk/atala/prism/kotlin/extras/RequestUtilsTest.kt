@@ -16,9 +16,9 @@ class RequestUtilsTest {
         val metadata = RequestUtils.generateRequestMetadata(did.value, keyPair.privateKey, message)
         assertTrue(
             EC.verify(
-                (metadata.requestNonce + message.encodeToByteArray()).toList(),
+                (metadata.requestNonce + message.encodeToByteArray()),
                 keyPair.publicKey,
-                EC.toSignature(metadata.didSignature.toList())
+                EC.toSignature(metadata.didSignature)
             )
         )
     }

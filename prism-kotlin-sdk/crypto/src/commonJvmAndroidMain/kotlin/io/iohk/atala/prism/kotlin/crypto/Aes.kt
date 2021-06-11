@@ -30,8 +30,8 @@ actual object Aes {
         val cipher = createCipher(Cipher.ENCRYPT_MODE, key, iv)
 
         return AesEncryptedData(
-            cipher.doFinal(data).toList(),
-            iv.toList(),
+            cipher.doFinal(data),
+            iv,
             salt = null
         )
     }
@@ -43,10 +43,10 @@ actual object Aes {
         encryptedData: AesEncryptedData,
         key: ByteArray
     ): ByteArray {
-        val iv = encryptedData.iv.toByteArray()
+        val iv = encryptedData.iv
         val cipher = createCipher(Cipher.DECRYPT_MODE, key, iv)
 
-        return cipher.doFinal(encryptedData.data.toByteArray())
+        return cipher.doFinal(encryptedData.data)
     }
 
     /**

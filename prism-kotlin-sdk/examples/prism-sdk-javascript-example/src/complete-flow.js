@@ -14,6 +14,7 @@ const {
 const {
     CredentialContentJSCompanion, JsonBasedCredentialJS, CredentialBatchesJS, BatchDataJS,
     JsonBasedCredentialJSCompanion, CredentialVerificationJS, CredentialBatchIdJSCompanion,
+    VerificationResult,
 } = prism.io.iohk.atala.prism.kotlin.credentials.exposed;
 const {
     ProtoUtilsJS, RequestUtilsJS, findPublicKeyJS, toTimestampInfoModelJS,
@@ -397,7 +398,7 @@ async function completeFlow() {
     const verifierGetCredentialRevocationTimeResponse = await node.GetCredentialRevocationTime(
         new GetCredentialRevocationTimeRequest(
             verifierReceivedCredentialBatchId.id,
-            new pbandk.ByteArr(SHA256DigestJSCompanion.fromHex(verifierReceivedJsonCredential.hash()).value),
+            new pbandk.ByteArr(verifierReceivedJsonCredential.hash().value),
             noUnknownFields,
         ),
     );
@@ -440,7 +441,7 @@ async function completeFlow() {
     const verifierGetCredentialRevocationTimeResponse2 = await node.GetCredentialRevocationTime(
             new GetCredentialRevocationTimeRequest(
                 verifierReceivedCredentialBatchId.id,
-                new pbandk.ByteArr(SHA256DigestJSCompanion.fromHex(verifierReceivedJsonCredential.hash()).value),
+                new pbandk.ByteArr(verifierReceivedJsonCredential.hash().value),
                 noUnknownFields,
             ),
         )
@@ -449,17 +450,18 @@ async function completeFlow() {
         toTimestampInfoModelJS(verifierRevocationTimestampInfo2) : null;
 
     // Verifier checks the credential validity (which fails)
-    try {
-        CredentialVerificationJS.verifyMerkle(
-            verifierReceivedCredentialIssuerKey,
-            verifierReceivedCredentialBatchData,
-            verifierReceivedCredentialRevocationTime2,
-            verifierReceivedCredentialMerkleProof.derivedRoot(),
-            verifierReceivedCredentialMerkleProof,
-            verifierReceivedJsonCredential
-        )
-    } catch (e) {
-        console.log(e);
+    const verificationResult = CredentialVerificationJS.verifyMerkle(
+        verifierReceivedCredentialIssuerKey,
+        verifierReceivedCredentialBatchData,
+        verifierReceivedCredentialRevocationTime2,
+        verifierReceivedCredentialMerkleProof.derivedRoot(),
+        verifierReceivedCredentialMerkleProof,
+        verifierReceivedJsonCredential
+    );
+    if (verificationResult instanceof VerificationResult.Invalid) {
+        console.log(verificationResult.error);
+    } else {
+        console.error("Credential remained valid after revocation");
     }
 }
 

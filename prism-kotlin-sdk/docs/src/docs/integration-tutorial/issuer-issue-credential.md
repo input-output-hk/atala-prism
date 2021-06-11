@@ -35,7 +35,7 @@ In **Atala PRISM**, credentials are published to **Cardano** in batches, for thi
 val (holderCredentialMerkleRoot, holderCredentialMerkleProofs) = CredentialBatches.batch(listOf(holderSignedCredential))
 val credentialBatchData = CredentialBatchData(
     issuerDID = issuerDID.suffix.value, // This requires the suffix only, as the node stores only suffixes
-    merkleRoot = pbandk.ByteArr(holderCredentialMerkleRoot.hash.value.toByteArray())
+    merkleRoot = pbandk.ByteArr(holderCredentialMerkleRoot.hash.value)
 )
 val issueCredentialOperation = ProtoUtils.issueCredentialBatchOperation(credentialBatchData)
 ```

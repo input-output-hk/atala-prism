@@ -1,22 +1,23 @@
 package io.iohk.atala.prism.kotlin.credentials.exposed
 
 import io.iohk.atala.prism.kotlin.credentials.KeyData
-import io.iohk.atala.prism.kotlin.crypto.EC
-import io.iohk.atala.prism.kotlin.crypto.util.BytesOps.hexToBytes
+import io.iohk.atala.prism.kotlin.crypto.exposed.ECPublicKeyJS
+import io.iohk.atala.prism.kotlin.crypto.exposed.toJs
+import io.iohk.atala.prism.kotlin.crypto.exposed.toKotlin
 
 fun KeyData.toJs(): KeyDataJS =
     KeyDataJS(
-        publicKey.getHexEncoded(),
+        publicKey.toJs(),
         addedOn.toJs(),
         revokedOn?.toJs()
     )
 
 @JsExport
 data class KeyDataJS(
-    val publicKey: String,
+    val publicKey: ECPublicKeyJS,
     val addedOn: TimestampInfoJS,
     val revokedOn: TimestampInfoJS?
 ) {
     internal fun toKeyData(): KeyData =
-        KeyData(EC.toPublicKey(hexToBytes(publicKey).map { it.toByte() }), addedOn.internal, revokedOn?.internal)
+        KeyData(publicKey.toKotlin(), addedOn.internal, revokedOn?.internal)
 }

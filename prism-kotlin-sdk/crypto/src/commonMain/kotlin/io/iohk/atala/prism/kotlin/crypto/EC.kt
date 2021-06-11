@@ -16,7 +16,7 @@ expect object EC {
     /**
      * Returns the private key represented by the given byte array.
      */
-    fun toPrivateKey(encoded: List<Byte>): ECPrivateKey
+    fun toPrivateKey(encoded: ByteArray): ECPrivateKey
 
     /**
      * Returns the private key represented by the given number.
@@ -26,12 +26,12 @@ expect object EC {
     /**
      * Returns the public key represented by the given encoded byte array.
      */
-    fun toPublicKey(encoded: List<Byte>): ECPublicKey
+    fun toPublicKey(encoded: ByteArray): ECPublicKey
 
     /**
      * Returns the public key represented by the given coordinates as byte arrays.
      */
-    fun toPublicKey(x: List<Byte>, y: List<Byte>): ECPublicKey
+    fun toPublicKey(x: ByteArray, y: ByteArray): ECPublicKey
 
     /**
      * Returns the public key represented by the given coordinates.
@@ -46,7 +46,7 @@ expect object EC {
     /**
      * Returns the signature represented by the given encoded byte array.
      */
-    fun toSignature(encoded: List<Byte>): ECSignature
+    fun toSignature(encoded: ByteArray): ECSignature
 
     /**
      * Signs the given text with the given private key.
@@ -56,7 +56,7 @@ expect object EC {
     /**
      * Signs the given data with the given private key.
      */
-    fun sign(data: List<Byte>, privateKey: ECPrivateKey): ECSignature
+    fun sign(data: ByteArray, privateKey: ECPrivateKey): ECSignature
 
     /**
      * Verifies whether the given text matches the given signature with the given public key.
@@ -66,7 +66,7 @@ expect object EC {
     /**
      * Verifies whether the given data matches the given signature with the given public key.
      */
-    fun verify(data: List<Byte>, publicKey: ECPublicKey, signature: ECSignature): Boolean
+    fun verify(data: ByteArray, publicKey: ECPublicKey, signature: ECSignature): Boolean
 
     /**
      * Verifies whether the given point belongs to the secp256k1 curve.

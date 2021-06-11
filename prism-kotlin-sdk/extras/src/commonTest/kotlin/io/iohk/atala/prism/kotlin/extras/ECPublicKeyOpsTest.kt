@@ -3,7 +3,6 @@ package io.iohk.atala.prism.kotlin.extras
 import io.iohk.atala.prism.kotlin.crypto.EC
 import io.iohk.atala.prism.kotlin.crypto.ECConfig
 import io.iohk.atala.prism.kotlin.crypto.util.BytesOps.hexToBytes
-import io.iohk.atala.prism.kotlin.crypto.util.toByteArray
 import io.iohk.atala.prism.kotlin.identity.DID.Companion.masterKeyId
 import io.iohk.atala.prism.kotlin.protos.ECKeyData
 import io.iohk.atala.prism.kotlin.protos.KeyUsage
@@ -31,8 +30,8 @@ class ECPublicKeyOpsTest {
         val y = "15e2b0d3c33891ebb0f1ef609ec419420c20e320ce94c65fbc8c3312448eb225"
         val keyData = ECKeyData(
             curve = ECConfig.CURVE_NAME,
-            x = ByteArr(hexToBytes(x).toByteArray()),
-            y = ByteArr(hexToBytes(y).toByteArray())
+            x = ByteArr(hexToBytes(x)),
+            y = ByteArr(hexToBytes(y))
         )
 
         val actualPublicKey = keyData.toPublicKey(id, keyUsage)

@@ -11,7 +11,7 @@ Given that all the necessary data is in place, the revocation is simple, just ge
 
 ```kotlin
 val issuerRevokeCredentialOperation = ProtoUtils.revokeCredentialsOperation(
-    batchOperationHash = Hash.compute(issueCredentialOperation.encodeToByteArray().asList()),
+    batchOperationHash = Hash.compute(issueCredentialOperation.encodeToByteArray()),
     batchId = CredentialBatchId.fromString(issuedCredentialResponse.batchId)!!,
     credentials = listOf(holderSignedCredential)
 )

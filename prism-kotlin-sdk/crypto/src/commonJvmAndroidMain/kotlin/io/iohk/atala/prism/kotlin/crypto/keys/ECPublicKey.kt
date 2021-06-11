@@ -9,7 +9,7 @@ import io.iohk.atala.prism.kotlin.crypto.util.toUnsignedByteArray
 import java.security.PublicKey
 
 actual class ECPublicKey(internal val key: PublicKey) : ECKey() {
-    override fun getEncoded(): List<Byte> {
+    override fun getEncoded(): ByteArray {
         val javaPoint = GenericJavaCryptography.publicKeyPoint(key)
         val curvePoint = ECPoint(
             BigInteger.fromByteArray(javaPoint.affineX.toUnsignedByteArray(), Sign.POSITIVE),
@@ -23,7 +23,7 @@ actual class ECPublicKey(internal val key: PublicKey) : ECKey() {
             arr[0] = 4 // Uncompressed point indicator for encoding
             xArr.copyInto(arr, size - xArr.size + 1)
             yArr.copyInto(arr, arr.size - yArr.size)
-            return arr.toList()
+            return arr
         } else {
             throw RuntimeException("Point coordinates do not match field size")
         }

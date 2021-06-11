@@ -59,9 +59,9 @@ public class CryptoTest {
     public void checkDataIntegrityCorrectPublicKey() {
         ECKeyPair keyPair = EC.generateKeyPair();
 
-        ECSignature signedEC = EC.sign(Bytes.asList(randomBytes), keyPair.getPrivateKey());
+        ECSignature signedEC = EC.sign(randomBytes, keyPair.getPrivateKey());
 
-        boolean result = EC.verify(Bytes.asList(randomBytes), keyPair.getPublicKey(), signedEC);
+        boolean result = EC.verify(randomBytes, keyPair.getPublicKey(), signedEC);
         assertTrue(result);
     }
 
@@ -69,10 +69,10 @@ public class CryptoTest {
     public void checkDataIntegrityWrongPublicKey() {
         ECKeyPair keyPair = EC.generateKeyPair();
 
-        ECSignature signedEC = EC.sign(Bytes.asList(randomBytes), keyPair.getPrivateKey());
+        ECSignature signedEC = EC.sign(randomBytes, keyPair.getPrivateKey());
         ECKeyPair keyPair2 = EC.generateKeyPair();
 
-        boolean result = EC.verify(Bytes.asList(randomBytes), keyPair2.getPublicKey(), signedEC);
+        boolean result = EC.verify(randomBytes, keyPair2.getPublicKey(), signedEC);
         assertFalse(result);
     }
 
@@ -81,9 +81,9 @@ public class CryptoTest {
         SecureRandom.getInstanceStrong().nextBytes(randomBytes2);
 
         ECKeyPair keyPair = EC.generateKeyPair();
-        ECSignature signedEC = EC.sign(Bytes.asList(randomBytes), keyPair.getPrivateKey());
+        ECSignature signedEC = EC.sign(randomBytes, keyPair.getPrivateKey());
 
-        boolean result = EC.verify(Bytes.asList(randomBytes2), keyPair.getPublicKey(), signedEC);
+        boolean result = EC.verify(randomBytes2, keyPair.getPublicKey(), signedEC);
         assertFalse(result);
     }
 
@@ -96,15 +96,15 @@ public class CryptoTest {
         assertFalse(did.isCanonicalForm());
         did.getSuffix();
         did.getCanonicalSuffix();
-        assertEquals("did:prism:" + did.suffix, did.getValue());
+        assertEquals("did:prism:" + did.getSuffix(), did.getValue());
     }
 
     @Test
     public void checkMnemonics() throws MnemonicException {
-        JvmKeyDerivation keyDerivation = JvmKeyDerivation.INSTANCE;
+        KeyDerivation keyDerivation = KeyDerivation.INSTANCE;
         DerivationPath derivationPath = DerivationPath.fromPath("m/0'/1'/0'");
         MnemonicCode mnemonicCode = keyDerivation.randomMnemonicCode();
-        List<Byte> seed = keyDerivation.binarySeed(mnemonicCode, "");
+        byte[] seed = keyDerivation.binarySeed(mnemonicCode, "");
         keyDerivation.deriveKey(seed, derivationPath).keyPair();
     }
 
@@ -113,7 +113,7 @@ public class CryptoTest {
         ECKeyPair keyPair = EC.generateKeyPair();
         ECPublicKey publicKey = keyPair.getPublicKey();
 
-        List<Byte> encodedPublicKey = publicKey.getEncoded();
+        byte[] encodedPublicKey = publicKey.getEncoded();
         ECPublicKey decodedPublicKey = EC.toPublicKey(encodedPublicKey);
         assertEquals(publicKey.getHexEncoded(), decodedPublicKey.getHexEncoded());
     }

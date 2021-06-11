@@ -1,7 +1,6 @@
 package io.iohk.atala.prism.kotlin.credentials
 
 import io.iohk.atala.prism.kotlin.crypto.*
-import io.iohk.atala.prism.kotlin.crypto.util.toByteArray
 import io.iohk.atala.prism.kotlin.identity.DID
 import io.iohk.atala.prism.kotlin.protos.CredentialBatchData
 import pbandk.ByteArr
@@ -27,7 +26,7 @@ object CredentialBatches {
     }
 
     fun computeCredentialBatchId(did: DID, merkleRoot: MerkleRoot): CredentialBatchId {
-        val data = CredentialBatchData(did.suffix.value, ByteArr(merkleRoot.hash.value.toByteArray()))
-        return CredentialBatchId.fromDigest(SHA256Digest.compute(data.encodeToByteArray().asList()))
+        val data = CredentialBatchData(did.suffix.value, ByteArr(merkleRoot.hash.value))
+        return CredentialBatchId.fromDigest(SHA256Digest.compute(data.encodeToByteArray()))
     }
 }

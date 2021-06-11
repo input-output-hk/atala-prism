@@ -3,16 +3,13 @@ package io.iohk.atala.prism.kotlin.crypto.signature
 import io.iohk.atala.prism.kotlin.crypto.util.BytesOps.bytesToHex
 import io.iohk.atala.prism.kotlin.crypto.util.BytesOps.hexToBytes
 
-actual class ECSignature constructor(val sig: String) {
-    actual constructor(data: List<UByte>) : this(bytesToHex(data))
+actual class ECSignature constructor(val sig: String) : ECSignatureCommon() {
+    actual constructor(data: ByteArray) : this(bytesToHex(data))
 
-    actual fun getEncoded(): List<Byte> =
-        hexToBytes(sig).map { it.toByte() }
+    override fun getEncoded(): ByteArray =
+        hexToBytes(sig)
 
-    actual fun getHexEncoded(): String =
-        sig
-
-    actual fun toDer(): List<Byte> =
+    override fun toDer(): ByteArray =
         getEncoded()
 
     override fun equals(other: Any?): Boolean {

@@ -48,7 +48,7 @@ class KeyDerivationTest {
             val mnemonicCode = MnemonicCode(mnemonicPhrase.split(" "))
             val binarySeed = KeyDerivation.binarySeed(mnemonicCode, password)
 
-            assertEquals(binarySeedHex, BytesOps.bytesToHex(binarySeed.map { it.toUByte() }))
+            assertEquals(binarySeedHex, BytesOps.bytesToHex(binarySeed))
         }
     }
 
@@ -98,7 +98,7 @@ class KeyDerivationTest {
         }
 
         for (v in vectors) {
-            val seed = BytesOps.hexToBytes(v.seedHex).map { it.toByte() }
+            val seed = BytesOps.hexToBytes(v.seedHex)
             for (d in v.derivations) {
                 val path = DerivationPath.fromPath(d.path)
                 val key = KeyDerivation.deriveKey(seed, path)

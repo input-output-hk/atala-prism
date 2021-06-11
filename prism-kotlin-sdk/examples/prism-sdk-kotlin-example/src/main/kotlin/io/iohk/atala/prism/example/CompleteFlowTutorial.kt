@@ -9,7 +9,6 @@ import io.iohk.atala.prism.kotlin.credentials.json.JsonBasedCredential
 import io.iohk.atala.prism.kotlin.crypto.EC
 import io.iohk.atala.prism.kotlin.crypto.Hash
 import io.iohk.atala.prism.kotlin.crypto.MerkleInclusionProof
-import io.iohk.atala.prism.kotlin.crypto.util.toByteArray
 import io.iohk.atala.prism.kotlin.extras.ProtoClientUtils
 import io.iohk.atala.prism.kotlin.extras.ProtoUtils
 import io.iohk.atala.prism.kotlin.extras.RequestUtils
@@ -170,7 +169,7 @@ object CompleteFlowTutorial {
         )
         val credentialBatchData = CredentialBatchData(
             issuerDid = issuerDID.suffix.value, // This requires the suffix only, as the node stores only suffixes
-            merkleRoot = pbandk.ByteArr(holderCredentialMerkleRoot.hash.value.toByteArray())
+            merkleRoot = pbandk.ByteArr(holderCredentialMerkleRoot.hash.value)
         )
         val issueCredentialOperation = ProtoUtils.issueCredentialBatchOperation(credentialBatchData)
 
@@ -415,7 +414,7 @@ object CompleteFlowTutorial {
             node.GetCredentialRevocationTime(
                 GetCredentialRevocationTimeRequest(
                     batchId = Hash.fromHex(verifierReceivedCredentialBatchId.id).hexValue(),
-                    credentialHash = pbandk.ByteArr(verifierReceivedJsonCredential.hash().value.toByteArray())
+                    credentialHash = pbandk.ByteArr(verifierReceivedJsonCredential.hash().value)
                 )
             )
                 .revocationLedgerData?.timestampInfo?.toTimestampInfoModel()
@@ -434,7 +433,7 @@ object CompleteFlowTutorial {
 
         // Issuer revokes the credential
         val issuerRevokeCredentialOperation = ProtoUtils.revokeCredentialsOperation(
-            batchOperationHash = Hash.compute(issueCredentialOperation.encodeToByteArray().asList()),
+            batchOperationHash = Hash.compute(issueCredentialOperation.encodeToByteArray()),
             batchId = CredentialBatchId.fromString(issuedCredentialResponse.batchId)!!,
             credentials = listOf(holderSignedCredential)
         )
@@ -460,7 +459,7 @@ object CompleteFlowTutorial {
             node.GetCredentialRevocationTime(
                 GetCredentialRevocationTimeRequest(
                     batchId = Hash.fromHex(verifierReceivedCredentialBatchId.id).hexValue(),
-                    credentialHash = pbandk.ByteArr(verifierReceivedJsonCredential.hash().value.toByteArray())
+                    credentialHash = pbandk.ByteArr(verifierReceivedJsonCredential.hash().value)
                 )
             )
                 .revocationLedgerData?.timestampInfo?.toTimestampInfoModel()

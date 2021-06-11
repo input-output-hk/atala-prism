@@ -11,6 +11,6 @@ data class ECKeyPairJS(
 
 fun ECKeyPairJS.toEcKeyPair(): ECKeyPair =
     ECKeyPair(
-        EC.toPublicKey(publicKey.getEncoded().toList()),
-        EC.toPrivateKey(privateKey.getEncoded().toList()),
+        EC.toPublicKey(publicKey.getEncoded()),
+        EC.toPrivateKey(privateKey.getEncoded()),
     )

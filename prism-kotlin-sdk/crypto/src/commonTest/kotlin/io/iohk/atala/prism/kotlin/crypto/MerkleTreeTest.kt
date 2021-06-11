@@ -69,7 +69,7 @@ class MerkleTreeTest {
         val firstSibling = proof.siblings.first()
         val newHash =
             SHA256Digest.compute(
-                listOf(NodePrefix) + (firstSibling.value + proof.hash.value).map { it.toByte() }
+                byteArrayOf(NodePrefix) + (firstSibling.value + proof.hash.value)
             )
         val newSiblings = proof.siblings.drop(1)
         val newIndex = proof.index shl 1

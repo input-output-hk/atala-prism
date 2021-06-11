@@ -12,7 +12,7 @@ internal class HmacSha256Test {
         assertEquals(32, hmac.size)
         assertEquals(
             "0329a06b62cd16b33eb6792be8c60b158d89a2ee3a876fce9a881ebb488c0914",
-            BytesOps.bytesToHex(hmac.toUByteArray().toList())
+            BytesOps.bytesToHex(hmac)
         )
     }
 }

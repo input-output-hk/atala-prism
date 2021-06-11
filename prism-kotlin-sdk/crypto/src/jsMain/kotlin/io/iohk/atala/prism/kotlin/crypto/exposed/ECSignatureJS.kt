@@ -8,7 +8,7 @@ class ECSignatureJS internal constructor(internal val signature: ECSignature) {
         signature.getHexEncoded()
 
     fun getEncoded(): ByteArray =
-        signature.getEncoded().toByteArray()
+        signature.getEncoded()
 }
 
 fun ECSignature.toJs(): ECSignatureJS =

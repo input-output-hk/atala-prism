@@ -8,7 +8,7 @@ import io.iohk.atala.prism.kotlin.crypto.keys.ECPublicKey
 import io.iohk.atala.prism.kotlin.crypto.signature.ECSignature
 
 abstract class Credential {
-    abstract val contentBytes: List<Byte>
+    abstract val contentBytes: ByteArray
 
     abstract val content: CredentialContent
 
@@ -18,7 +18,7 @@ abstract class Credential {
 
     fun isVerifiable(): Boolean = signature != null
 
-    fun hash(): SHA256Digest = SHA256Digest.compute(canonicalForm.encodeToByteArray().toList())
+    fun hash(): SHA256Digest = SHA256Digest.compute(canonicalForm.encodeToByteArray())
 
     abstract fun sign(privateKey: ECPrivateKey): Credential
 

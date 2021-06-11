@@ -10,7 +10,7 @@ import kotlin.test.assertTrue
 
 class ECTest {
     val testData =
-        listOf<Byte>(-107, 101, 68, 118, 27, 74, 29, 50, -32, 72, 47, -127, -49, 3, -8, -55, -63, -66, 46, 125)
+        byteArrayOf(-107, 101, 68, 118, 27, 74, 29, 50, -32, 72, 47, -127, -49, 3, -8, -55, -63, -66, 46, 125)
 
     @Test
     fun testGeneration() {
@@ -25,7 +25,7 @@ class ECTest {
     fun testPrivateKeyFromEncoded() {
         val keyPair = EC.generateKeyPair()
         val encodedPrivateKey = keyPair.privateKey.getEncoded()
-        val d = BigInteger.fromByteArray(encodedPrivateKey.toByteArray(), Sign.POSITIVE)
+        val d = BigInteger.fromByteArray(encodedPrivateKey, Sign.POSITIVE)
 
         assertEquals(keyPair.privateKey, EC.toPrivateKey(encodedPrivateKey))
         assertEquals(keyPair.privateKey, EC.toPrivateKey(d))
@@ -51,7 +51,7 @@ class ECTest {
 
         assertEquals(keyPair.publicKey, EC.toPublicKey(encodedPublicKey))
         assertEquals(keyPair.publicKey, EC.toPublicKey(x, y))
-        assertEquals(keyPair.publicKey, EC.toPublicKey(x.toByteArray().toList(), y.toByteArray().toList()))
+        assertEquals(keyPair.publicKey, EC.toPublicKey(x.toByteArray(), y.toByteArray()))
     }
 
     @Test
@@ -65,7 +65,7 @@ class ECTest {
     fun testGenerateSamePrivateKeyAcrossAllImplementations() {
         val hexEncodedPrivateKey = "933c25b9e0b10b0618517edeb389b1b5ba5e781f377af6f573a1af354d008034"
 
-        val privateKey = EC.toPrivateKey(hexToBytes(hexEncodedPrivateKey).map { it.toByte() })
+        val privateKey = EC.toPrivateKey(hexToBytes(hexEncodedPrivateKey))
 
         assertEquals(hexEncodedPrivateKey, privateKey.getHexEncoded())
     }
@@ -75,7 +75,7 @@ class ECTest {
         val hexEncodedPublicKey =
             "0477d650217424671208f06ed816dab6c09e6b08c4da0f2f46ead049dd5fbd1c82cd23343346003d4c7faf24ed6314bf340e7882941fd69929526cc889a0f93a1c"
 
-        val publicKey = EC.toPublicKey(hexToBytes(hexEncodedPublicKey).map { it.toByte() })
+        val publicKey = EC.toPublicKey(hexToBytes(hexEncodedPublicKey))
 
         assertEquals(hexEncodedPublicKey, publicKey.getHexEncoded())
     }
@@ -119,8 +119,8 @@ class ECTest {
         val hexEncodedPrivateKey = "0123fbf1050c3fc060b709fdcf240e766a41190c40afc5ac7a702961df8313c0"
         val hexEncodedSignature =
             "30450221008a78c557dfc18275b5c800281ef8d26d2b40572b9c1442d708c610f50f797bd302207e44e340f787df7ab1299dabfc988e4c02fcaca0f68dbe813050f4b8641fa739"
-        val privateKey = EC.toPrivateKey(hexToBytes(hexEncodedPrivateKey).map { it.toByte() })
-        val signature = EC.toSignature(hexToBytes(hexEncodedSignature).map { it.toByte() })
+        val privateKey = EC.toPrivateKey(hexToBytes(hexEncodedPrivateKey))
+        val signature = EC.toSignature(hexToBytes(hexEncodedSignature))
 
         assertTrue(EC.verify(testData, EC.toPublicKeyFromPrivateKey(privateKey), signature))
     }

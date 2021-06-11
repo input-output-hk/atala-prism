@@ -233,7 +233,7 @@ class CredentialVerificationTest {
         val signedCredential = unsignedCredential.sign(keys.privateKey)
         val (root, proof) = rootAndProofFor(signedCredential)
         val revokedAt: TimestampInfo? = null
-        val rootWithDifferentHash = root.copy(hash = SHA256Digest(root.hash.value.drop(1)))
+        val rootWithDifferentHash = root.copy(hash = SHA256Digest(root.hash.value.drop(1).toByteArray()))
 
         assertFailsWith<InvalidMerkleProof> {
             CredentialVerification

@@ -18,7 +18,7 @@ actual class ExtendedKey(
         EC.toPublicKeyFromPrivateKey(privateKey())
 
     actual fun privateKey(): ECPrivateKey =
-        EC.toPrivateKey(bip32.privateKey!!.toByteArray().toList())
+        EC.toPrivateKey(bip32.privateKey!!.toByteArray())
 
     actual fun keyPair(): ECKeyPair =
         ECKeyPair(publicKey(), privateKey())

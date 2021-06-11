@@ -13,10 +13,10 @@ abstract class ECKey {
      *
      * y^2 == x^3 + 7
      */
-    abstract fun getEncoded(): List<Byte>
+    abstract fun getEncoded(): ByteArray
 
     fun getHexEncoded(): String {
-        return BytesOps.bytesToHex(getEncoded().map { it.toUByte() })
+        return BytesOps.bytesToHex(getEncoded())
     }
 
     override fun hashCode(): Int {
@@ -25,7 +25,7 @@ abstract class ECKey {
 
     override fun equals(other: Any?): Boolean {
         return when (other) {
-            is ECKey -> getEncoded() == other.getEncoded()
+            is ECKey -> getEncoded().contentEquals(other.getEncoded())
             else -> false
         }
     }

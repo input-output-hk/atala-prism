@@ -1,13 +1,12 @@
 package io.iohk.atala.prism.kotlin.crypto.exposed
 
 import io.iohk.atala.prism.kotlin.crypto.SHA256Digest
-import io.iohk.atala.prism.kotlin.crypto.util.toByteArray
 
 fun SHA256Digest.toJs(): SHA256DigestJS =
-    SHA256DigestJS(value.toByteArray())
+    SHA256DigestJS(value)
 
 fun SHA256DigestJS.toKotlin(): SHA256Digest =
-    SHA256Digest(value.toList().map { it.toUByte() })
+    SHA256Digest(value)
 
 @JsExport
 object SHA256DigestJSCompanion {
@@ -16,13 +15,13 @@ object SHA256DigestJSCompanion {
     val HEX_STRING_LENGTH = SHA256Digest.HEX_STRING_LENGTH
 
     fun compute(bytes: ByteArray): SHA256DigestJS =
-        SHA256Digest.compute(bytes.toList()).toJs()
+        SHA256Digest.compute(bytes).toJs()
 
     fun fromHex(string: String): SHA256DigestJS =
         SHA256Digest.fromHex(string).toJs()
 
     fun fromBytes(bytes: ByteArray): SHA256DigestJS =
-        SHA256Digest.fromHex(bytes.toList()).toJs()
+        SHA256Digest.fromHex(bytes).toJs()
 }
 
 @JsExport

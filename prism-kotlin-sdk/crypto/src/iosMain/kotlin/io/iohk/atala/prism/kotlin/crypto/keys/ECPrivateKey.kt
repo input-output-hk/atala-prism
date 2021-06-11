@@ -4,8 +4,8 @@ import com.ionspin.kotlin.bignum.integer.BigInteger
 import com.ionspin.kotlin.bignum.integer.Sign
 
 actual class ECPrivateKey(internal val key: UByteArray) : ECKey() {
-    override fun getEncoded(): List<Byte> {
-        return key.toByteArray().toList()
+    override fun getEncoded(): ByteArray {
+        return key.toByteArray()
     }
 
     actual fun getD(): BigInteger {

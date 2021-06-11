@@ -56,9 +56,9 @@ class DID private constructor(val value: String) {
 
             val atalaOp = AtalaOperation(operation = AtalaOperation.Operation.CreateDid(createDidOp))
             val operationBytes = atalaOp.encodeToByteArray()
-            val operationHash = SHA256Digest.compute(operationBytes.toList())
+            val operationHash = SHA256Digest.compute(operationBytes)
             val didCanonicalSuffix = operationHash.hexValue()
-            val encodedOperation = Base64Utils.encode(operationBytes.toList())
+            val encodedOperation = Base64Utils.encode(operationBytes)
             return buildPrismDID(didCanonicalSuffix, encodedOperation)
         }
     }

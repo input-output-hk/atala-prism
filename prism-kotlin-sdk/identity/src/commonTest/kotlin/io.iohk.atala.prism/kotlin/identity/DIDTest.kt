@@ -18,7 +18,7 @@ class DIDTest {
             -103, 81, -25, 85, 91, -109, -113, 111, 106, 7, -95, 3, 4, 36, 22, -11, -65, 126, -4,
             -116, -42, -90, -72, -118, 87, -120, 17, -119, 23, -77, -118, 69
         )
-        val masterKey = EC.toPublicKey(xBytes.toList(), yBytes.toList())
+        val masterKey = EC.toPublicKey(xBytes, yBytes)
 
         // The expected resulting DID
         val expectedDID = DID.buildPrismDID(
@@ -107,7 +107,7 @@ class DIDTest {
             -103, 81, -25, 85, 91, -109, -113, 111, 106, 7, -95, 3, 4, 36, 22, -11, -65, 126, -4,
             -116, -42, -90, -72, -118, 87, -120, 17, -119, 23, -77, -118, 69
         )
-        val masterKey = EC.toPublicKey(xBytes.toList(), yBytes.toList())
+        val masterKey = EC.toPublicKey(xBytes, yBytes)
 
         val expectedInitialState =
             AtalaOperation(

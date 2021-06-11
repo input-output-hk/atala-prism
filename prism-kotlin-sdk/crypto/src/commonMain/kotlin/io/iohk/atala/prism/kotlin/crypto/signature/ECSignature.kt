@@ -1,9 +1,12 @@
 package io.iohk.atala.prism.kotlin.crypto.signature
 
-expect class ECSignature(data: List<UByte>) {
-    fun getEncoded(): List<Byte>
+import io.iohk.atala.prism.kotlin.crypto.util.BytesOps
 
-    fun getHexEncoded(): String
+abstract class ECSignatureCommon {
+    abstract fun getEncoded(): ByteArray
+
+    fun getHexEncoded(): String =
+        BytesOps.bytesToHex(getEncoded())
 
     /**
      * Conversion form P1363 to ASN.1/DER
@@ -26,5 +29,21 @@ expect class ECSignature(data: List<UByte>) {
      *
      * The solution is inspired by: https://github.com/pauldijou/jwt-scala/blob/master/core/src/main/scala/JwtUtils.scala#L254-L290
      */
-    fun toDer(): List<Byte>
+    abstract fun toDer(): ByteArray
+
+    override fun equals(other: Any?): Boolean {
+        if (this === other) return true
+        if (other == null || this::class != other::class) return false
+
+        other as ECSignatureCommon
+
+        if (!getEncoded().contentEquals(other.getEncoded())) return false
+
+        return true
+    }
+
+    override fun hashCode(): Int =
+        getEncoded().hashCode()
 }
+
+expect class ECSignature(data: ByteArray) : ECSignatureCommon

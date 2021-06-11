@@ -5,7 +5,6 @@ import io.iohk.atala.prism.kotlin.credentials.CredentialBatchId
 import io.iohk.atala.prism.kotlin.crypto.EC
 import io.iohk.atala.prism.kotlin.crypto.SHA256Digest
 import io.iohk.atala.prism.kotlin.crypto.keys.ECKeyPair
-import io.iohk.atala.prism.kotlin.crypto.util.toByteArray
 import io.iohk.atala.prism.kotlin.identity.DID.Companion.masterKeyId
 import io.iohk.atala.prism.kotlin.protos.*
 import pbandk.ByteArr
@@ -31,18 +30,18 @@ object ProtoUtils {
         credentials: List<Credential>
     ): AtalaOperation {
         val revokeCredentialsService = RevokeCredentialsOperation(
-            previousOperationHash = ByteArr(batchOperationHash.value.toByteArray()),
+            previousOperationHash = ByteArr(batchOperationHash.value),
             credentialBatchId = batchId.id,
-            credentialsToRevoke = credentials.map { ByteArr(it.hash().value.toByteArray()) }
+            credentialsToRevoke = credentials.map { ByteArr(it.hash().value) }
         )
         return AtalaOperation(AtalaOperation.Operation.RevokeCredentials(revokeCredentialsService))
     }
 
     fun signedAtalaOperation(ecKeyPair: ECKeyPair, atalaOperation: AtalaOperation): SignedAtalaOperation {
-        val signature = EC.sign(atalaOperation.encodeToByteArray().asList(), ecKeyPair.privateKey)
+        val signature = EC.sign(atalaOperation.encodeToByteArray(), ecKeyPair.privateKey)
         return SignedAtalaOperation(
             signedWith = masterKeyId,
-            signature = ByteArr(signature.getEncoded().toByteArray()),
+            signature = ByteArr(signature.getEncoded()),
             operation = atalaOperation
         )
     }

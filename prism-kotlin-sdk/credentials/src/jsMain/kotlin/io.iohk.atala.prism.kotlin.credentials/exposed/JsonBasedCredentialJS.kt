@@ -21,11 +21,11 @@ class JsonBasedCredentialJS internal constructor(
         this(
             JsonBasedCredential(
                 content.credentialContent,
-                signature?.let { sig -> EC.toSignature(hexToBytes(sig).map { it.toByte() }) }
+                signature?.let { sig -> EC.toSignature(hexToBytes(sig)) }
             )
         )
 
-    override val contentBytes = internalJson.contentBytes.toByteArray()
+    override val contentBytes = internalJson.contentBytes
 
     override val content: CredentialContentJS = CredentialContentJS(internalJson.content)
 

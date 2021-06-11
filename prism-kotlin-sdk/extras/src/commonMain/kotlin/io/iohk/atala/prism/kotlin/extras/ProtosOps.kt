@@ -12,8 +12,8 @@ fun DIDData.findPublicKey(keyId: String): KeyData? {
         null
     } else {
         val publicKey = EC.toPublicKey(
-            x = didPublicKey.ecKeyData?.x?.array?.asList()!!,
-            y = didPublicKey.ecKeyData?.y?.array?.asList()!!
+            x = didPublicKey.ecKeyData?.x?.array!!,
+            y = didPublicKey.ecKeyData?.y?.array!!
         )
 
         KeyData(

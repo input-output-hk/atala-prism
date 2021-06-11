@@ -90,10 +90,10 @@ data class MerkleInclusionProof(
 }
 
 private fun combineHashes(left: Hash, right: Hash): Hash =
-    SHA256Digest.compute(listOf(NodePrefix) + (left.value + right.value).map { it.toByte() })
+    SHA256Digest.compute(byteArrayOf(NodePrefix) + (left.value + right.value))
 
 private fun prefixHash(data: Hash): Hash =
-    SHA256Digest.compute(listOf(LeafPrefix) + data.value.map { it.toByte() })
+    SHA256Digest.compute(byteArrayOf(LeafPrefix) + data.value)
 
 fun generateProofs(hashes: List<Hash>): Pair<MerkleRoot, List<MerkleInclusionProof>> {
 

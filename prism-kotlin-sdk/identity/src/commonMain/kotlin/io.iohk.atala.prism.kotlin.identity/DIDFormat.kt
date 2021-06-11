@@ -22,7 +22,7 @@ data class LongForm(val stateHash: String, val encodedState: String) : DIDFormat
         val atalaOperationBytes = Base64Utils.decode(encodedState)
         if (stateHash == SHA256Digest.compute(atalaOperationBytes).hexValue()) {
             val operation = try {
-                AtalaOperation.decodeFromByteArray(atalaOperationBytes.toByteArray())
+                AtalaOperation.decodeFromByteArray(atalaOperationBytes)
             } catch (e: Exception) {
                 throw DIDFormatException.InvalidAtalaOperationException(e)
             }

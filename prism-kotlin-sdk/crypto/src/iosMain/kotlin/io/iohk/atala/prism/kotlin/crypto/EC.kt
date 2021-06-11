@@ -58,7 +58,7 @@ actual object EC {
         }
     }
 
-    actual fun toPrivateKey(encoded: List<Byte>): ECPrivateKey {
+    actual fun toPrivateKey(encoded: ByteArray): ECPrivateKey {
         assert(encoded.size == ECConfig.PRIVATE_KEY_BYTE_SIZE) {
             "Encoded byte array's expected length is ${ECConfig.PRIVATE_KEY_BYTE_SIZE}, but got ${encoded.size}"
         }
@@ -67,10 +67,10 @@ actual object EC {
     }
 
     actual fun toPrivateKey(d: BigInteger): ECPrivateKey {
-        return toPrivateKey(d.toByteArray().toList())
+        return toPrivateKey(d.toByteArray())
     }
 
-    actual fun toPublicKey(encoded: List<Byte>): ECPublicKey {
+    actual fun toPublicKey(encoded: ByteArray): ECPublicKey {
         assert(encoded.size == ECConfig.PUBLIC_KEY_BYTE_SIZE) {
             "Encoded byte array's expected length is ${ECConfig.PUBLIC_KEY_BYTE_SIZE}, but got ${encoded.size}"
         }
@@ -89,12 +89,12 @@ actual object EC {
         }
     }
 
-    actual fun toPublicKey(x: List<Byte>, y: List<Byte>): ECPublicKey {
-        return toPublicKey(listOf<Byte>(0x04) + x + y)
+    actual fun toPublicKey(x: ByteArray, y: ByteArray): ECPublicKey {
+        return toPublicKey(byteArrayOf(0x04) + x + y)
     }
 
     actual fun toPublicKey(x: BigInteger, y: BigInteger): ECPublicKey {
-        return toPublicKey(x.toByteArray().toList(), y.toByteArray().toList())
+        return toPublicKey(x.toByteArray(), y.toByteArray())
     }
 
     actual fun toPublicKeyFromPrivateKey(privateKey: ECPrivateKey): ECPublicKey {
@@ -111,36 +111,36 @@ actual object EC {
         }
     }
 
-    actual fun toSignature(encoded: List<Byte>): ECSignature {
+    actual fun toSignature(encoded: ByteArray): ECSignature {
         // TODO: There seems to be a bug with the method below, we need to wait for a fix
 //        if (!Crypto.checkSignatureEncoding(encoded.toByteArray(), ScriptFlags.SCRIPT_VERIFY_DERSIG)) {
 //            error("Could not parse signature from DER format")
 //        }
-        return ECSignature(encoded.map { it.toUByte() })
+        return ECSignature(encoded)
     }
 
     actual fun sign(text: String, privateKey: ECPrivateKey): ECSignature {
-        return sign(text.encodeToByteArray().toList(), privateKey)
+        return sign(text.encodeToByteArray(), privateKey)
     }
 
-    actual fun sign(data: List<Byte>, privateKey: ECPrivateKey): ECSignature {
-        val data32 = Crypto.sha256(data.toByteArray())
-        val compressedBytes = Secp256k1.sign(data32, privateKey.getEncoded().toByteArray())
+    actual fun sign(data: ByteArray, privateKey: ECPrivateKey): ECSignature {
+        val data32 = Crypto.sha256(data)
+        val compressedBytes = Secp256k1.sign(data32, privateKey.getEncoded())
         val signatureBytes = Secp256k1.compact2der(compressedBytes)
 
-        return ECSignature(signatureBytes.toUByteArray().toList())
+        return ECSignature(signatureBytes)
     }
 
     actual fun verify(text: String, publicKey: ECPublicKey, signature: ECSignature): Boolean {
-        return verify(text.encodeToByteArray().toList(), publicKey, signature)
+        return verify(text.encodeToByteArray(), publicKey, signature)
     }
 
-    actual fun verify(data: List<Byte>, publicKey: ECPublicKey, signature: ECSignature): Boolean {
-        val data32 = Crypto.sha256(data.toByteArray())
+    actual fun verify(data: ByteArray, publicKey: ECPublicKey, signature: ECSignature): Boolean {
+        val data32 = Crypto.sha256(data)
         return Secp256k1.verify(
-            signature.getEncoded().toByteArray(),
+            signature.getEncoded(),
             data32,
-            publicKey.getEncoded().toByteArray()
+            publicKey.getEncoded()
         )
     }
 

@@ -23,7 +23,7 @@ class JsonBasedCredentialTest {
             JsonBasedCredential.fromString(signedCredentialString),
             JsonBasedCredential(
                 content = emptyCredentialContent,
-                signature = ECSignature("signature".encodeToByteArray().toList().map { it.toUByte() })
+                signature = ECSignature("signature".encodeToByteArray())
             )
         )
     }

@@ -35,7 +35,7 @@ actual object KeyDerivation {
     actual fun getValidMnemonicWords(): List<String> =
         MnemonicCodeEnglish.wordList
 
-    actual fun binarySeed(seed: MnemonicCode, passphrase: String): List<Byte> {
+    actual fun binarySeed(seed: MnemonicCode, passphrase: String): ByteArray {
         try {
             fr.acinq.bitcoin.MnemonicCode.validate(seed.words, MnemonicCodeEnglish.wordList)
         } catch (e: RuntimeException) {
@@ -56,12 +56,12 @@ actual object KeyDerivation {
             }
         }
 
-        return fr.acinq.bitcoin.MnemonicCode.toSeed(seed.words, passphrase).toList()
+        return fr.acinq.bitcoin.MnemonicCode.toSeed(seed.words, passphrase)
     }
 
-    actual fun derivationRoot(seed: List<Byte>): ExtendedKey =
-        ExtendedKey(DeterministicWallet.generate(seed.toByteArray()))
+    actual fun derivationRoot(seed: ByteArray): ExtendedKey =
+        ExtendedKey(DeterministicWallet.generate(seed))
 
-    actual fun deriveKey(seed: List<Byte>, path: DerivationPath): ExtendedKey =
+    actual fun deriveKey(seed: ByteArray, path: DerivationPath): ExtendedKey =
         path.axes.fold(derivationRoot(seed)) { key, axis -> key.derive(axis) }
 }

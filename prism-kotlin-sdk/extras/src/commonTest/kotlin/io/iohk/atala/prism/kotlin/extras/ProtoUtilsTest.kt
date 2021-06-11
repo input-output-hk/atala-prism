@@ -30,11 +30,11 @@ class ProtoUtilsTest {
 
     @Test
     fun revokeCredentialsOperationWorks() {
-        val batchOperationHash = SHA256Digest.compute(listOf(0.toByte()))
+        val batchOperationHash = SHA256Digest.compute(byteArrayOf(0))
         val batchId = CredentialBatchId.random()
         val credential = JsonBasedCredential(
             content = CredentialContent(JsonObject(emptyMap())),
-            signature = ECSignature("signature".encodeToByteArray().toList().map { it.toUByte() })
+            signature = ECSignature("signature".encodeToByteArray())
         )
         val atalaOperation = ProtoUtils.revokeCredentialsOperation(
             batchOperationHash,
@@ -49,8 +49,8 @@ class ProtoUtilsTest {
         val keyPair = EC.generateKeyPair()
         val atalaOperation = ProtoUtils.createDidAtalaOperation(keyPair)
         val signedAtalaOperation = ProtoUtils.signedAtalaOperation(keyPair, atalaOperation)
-        val operationBytes = atalaOperation.encodeToByteArray().toList()
-        val signature = EC.toSignature(signedAtalaOperation.signature.array.toList())
+        val operationBytes = atalaOperation.encodeToByteArray()
+        val signature = EC.toSignature(signedAtalaOperation.signature.array)
         assertTrue(EC.verify(operationBytes, keyPair.publicKey, signature))
     }
 }

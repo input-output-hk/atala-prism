@@ -1,39 +1,12 @@
 package io.iohk.atala.prism.kotlin.crypto.signature
 
-import io.iohk.atala.prism.kotlin.crypto.util.BytesOps.bytesToHex
-import io.iohk.atala.prism.kotlin.crypto.util.toByteArray
 import kotlin.experimental.and
 
-actual data class ECSignature actual constructor(val data: List<UByte>) {
-    actual fun getEncoded(): List<Byte> =
-        data.map { it.toByte() }
+actual class ECSignature actual constructor(val data: ByteArray) : ECSignatureCommon() {
+    override fun getEncoded(): ByteArray =
+        data
 
-    actual fun getHexEncoded(): String {
-        return bytesToHex(data)
-    }
-
-    /**
-     * Conversion form P1363 to ASN.1/DER
-     *
-     * P1363 contains two integer wothout separator, ASN.1 signature format looks like:
-     *
-     * {{{
-     *   ECDSASignature ::= SEQUENCE {
-     *     r INTEGER,
-     *     s INTEGER
-     *   }
-     * }}}
-     *
-     * Explaination for DER encoding:
-     *
-     * - 0x30 - is a SEQUENCE
-     * - 0x02 - is a INTEGER
-     *
-     * Additional padding required by the requirement to hold values larger than 128 bytes.
-     *
-     * The solution is inspired by: https://github.com/pauldijou/jwt-scala/blob/master/core/src/main/scala/JwtUtils.scala#L254-L290
-     */
-    actual fun toDer(): List<Byte> {
+    override fun toDer(): ByteArray {
         val size = data.size
 
         val rb = data.slice(0 until size / 2).toByteArray().dropWhile { it == 0.toByte() }.toMutableList()
@@ -53,6 +26,6 @@ actual data class ECSignature actual constructor(val data: List<UByte>) {
         val first = intro + byteArrayOf(len.toByte(), 0x02.toByte(), rb.size.toByte())
         val second = byteArrayOf(0x02.toByte(), sb.size.toByte())
 
-        return first.toList() + rb.toList() + second.toList() + sb.toList()
+        return first + rb + second + sb
     }
 }

@@ -27,8 +27,8 @@ actual object Aes {
     ): AesEncryptedData {
         autoreleasepool {
             return AesEncryptedData(
-                data = SwiftCryptoKit.aes256GcmEncryptWithData(data.toData(), key.toData(), iv.toData()).getOrThrow().toByteArray().toList(),
-                iv = iv.toList(),
+                data = SwiftCryptoKit.aes256GcmEncryptWithData(data.toData(), key.toData(), iv.toData()).getOrThrow().toByteArray(),
+                iv = iv,
                 salt = null
             )
         }
@@ -40,9 +40,9 @@ actual object Aes {
     ): ByteArray {
         autoreleasepool {
             return SwiftCryptoKit.aes256GcmDecryptWithData(
-                data = encryptedData.data.toByteArray().toData(),
+                data = encryptedData.data.toData(),
                 key = key.toData(),
-                iv = encryptedData.iv.toByteArray().toData()
+                iv = encryptedData.iv.toData()
             ).getOrThrow().toByteArray()
         }
     }

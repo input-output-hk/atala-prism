@@ -4,8 +4,8 @@ import java.security.MessageDigest
 
 actual object SHA256 {
     @JvmStatic
-    actual fun compute(bytes: List<Byte>): List<Byte> {
+    actual fun compute(bytes: ByteArray): ByteArray {
         val messageDigest = MessageDigest.getInstance("SHA-256")
-        return messageDigest.digest(bytes.toByteArray()).toList()
+        return messageDigest.digest(bytes)
     }
 }

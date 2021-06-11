@@ -6,11 +6,9 @@ import io.iohk.atala.prism.kotlin.crypto.externals.BN
 
 actual class ECPrivateKey(val bigNumber: BN) : ECKey() {
 
-    override fun getEncoded(): List<Byte> {
+    override fun getEncoded(): ByteArray {
         val byteList = bigNumber.toArray().map { it.toByte() }
-        val padding = List(ECConfig.PRIVATE_KEY_BYTE_SIZE - byteList.size) {
-            0.toByte()
-        }
+        val padding = ByteArray(ECConfig.PRIVATE_KEY_BYTE_SIZE - byteList.size) { 0 }
         return padding + byteList
     }
 

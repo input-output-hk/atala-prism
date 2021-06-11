@@ -3,7 +3,6 @@ package io.iohk.atala.prism.kotlin.credentials
 import com.benasher44.uuid.uuid4
 import io.iohk.atala.prism.kotlin.crypto.MerkleRoot
 import io.iohk.atala.prism.kotlin.crypto.SHA256Digest
-import io.iohk.atala.prism.kotlin.crypto.util.toByteArray
 import io.iohk.atala.prism.kotlin.identity.DIDSuffix
 import io.iohk.atala.prism.kotlin.protos.CredentialBatchData
 import pbandk.ByteArr
@@ -28,8 +27,8 @@ data class CredentialBatchId private constructor(val id: String) {
                 .compute(
                     CredentialBatchData(
                         issuerDid = issuerDIDSuffix.value,
-                        merkleRoot = ByteArr(merkleRoot.hash.value.toByteArray())
-                    ).encodeToByteArray().toList()
+                        merkleRoot = ByteArr(merkleRoot.hash.value)
+                    ).encodeToByteArray()
                 )
 
             return fromDigest(digest)
@@ -37,7 +36,7 @@ data class CredentialBatchId private constructor(val id: String) {
 
         fun random(): CredentialBatchId =
             CredentialBatchId(
-                SHA256Digest.compute(uuid4().toString().encodeToByteArray().toList()).hexValue()
+                SHA256Digest.compute(uuid4().toString().encodeToByteArray()).hexValue()
             )
     }
 }

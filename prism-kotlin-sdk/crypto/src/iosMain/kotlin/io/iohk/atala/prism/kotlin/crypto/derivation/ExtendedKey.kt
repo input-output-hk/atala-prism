@@ -15,10 +15,10 @@ actual class ExtendedKey(private val key: DeterministicWallet.ExtendedPrivateKey
         toDerivationAxis(key.path)
 
     actual fun publicKey(): ECPublicKey =
-        EC.toPublicKey(key.publicKey.toUncompressedBin().toList())
+        EC.toPublicKey(key.publicKey.toUncompressedBin())
 
     actual fun privateKey(): ECPrivateKey =
-        EC.toPrivateKey(key.privateKey.value.toByteArray().toList())
+        EC.toPrivateKey(key.privateKey.value.toByteArray())
 
     actual fun keyPair(): ECKeyPair =
         ECKeyPair(publicKey(), privateKey())

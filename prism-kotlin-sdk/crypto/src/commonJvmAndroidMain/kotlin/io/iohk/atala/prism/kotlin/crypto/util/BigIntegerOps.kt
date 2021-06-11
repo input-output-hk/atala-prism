@@ -8,10 +8,6 @@ fun BigInteger.toUnsignedByteArray(): ByteArray {
     return toByteArray().dropWhile { it == 0.toByte() }.toByteArray()
 }
 
-fun BigInteger.toUnsignedByteList(): List<Byte> {
-    return toByteArray().dropWhile { it == 0.toByte() }
-}
-
 fun ByteArray.toKotlinBigInteger(): com.ionspin.kotlin.bignum.integer.BigInteger {
     return com.ionspin.kotlin.bignum.integer.BigInteger.fromByteArray(this, Sign.POSITIVE)
 }

@@ -9,7 +9,7 @@ class ECPrivateKeyJS internal constructor(internal val privateKey: ECPrivateKey)
         privateKey.getHexEncoded()
 
     fun getEncoded(): ByteArray =
-        privateKey.getEncoded().toByteArray()
+        privateKey.getEncoded()
 
     fun getDHex(): String =
         bytesToHex(getD())
