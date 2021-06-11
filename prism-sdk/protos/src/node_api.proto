@@ -42,6 +42,13 @@ service NodeService {
     // Finds the time when a credential was revoked.
     rpc GetCredentialRevocationTime(GetCredentialRevocationTimeRequest) returns (GetCredentialRevocationTimeResponse) {}
 
+    /**
+     * AUTHENTICATED
+     *
+     * Retrieves the status of an operation.
+     */
+    rpc GetOperationStatus(GetOperationStatusRequest) returns (GetOperationStatusResponse) {}
+
     // Publishes a sequence of signed operations in a single underlying transaction.
     // The sequence of operations has a size limit to fit in the metadata of the transaction (approx. 15KB).
     rpc PublishAsABlock(PublishAsABlockRequest) returns (PublishAsABlockResponse) {}
@@ -69,6 +76,7 @@ message CreateDIDRequest {
 message CreateDIDResponse {
     string id = 1; // DID suffix, where DID is in form did:prism.atala:[DID suffix]
     TransactionInfo transaction_info = 2; // The on-chain transaction info where the DID is going to be created.
+    bytes operation_id = 3; // Operation identifier.
 }
 
 // Request to update a public DID Document.
@@ -78,6 +86,7 @@ message UpdateDIDRequest {
 // Response after updating a DID Document.
 message UpdateDIDResponse {
     TransactionInfo transaction_info = 1; // The on-chain transaction info where the operation is going to be applied.
+    bytes operation_id = 2; // Operation identifier.
 }
 
 // Request to issue a batch of credentials.
@@ -88,6 +97,7 @@ message IssueCredentialBatchRequest {
 message IssueCredentialBatchResponse {
     string batch_id = 1; // The ID of the batch posted.
     TransactionInfo transaction_info = 2; // The on-chain transaction info where the operation is going to be applied.
+    bytes operation_id = 3; // Operation identifier.
 }
 
 // Request to revoke credentials from a batch.
@@ -97,11 +107,13 @@ message RevokeCredentialsRequest {
 // Response after revoking credentials from a batch.
 message RevokeCredentialsResponse {
     TransactionInfo transaction_info = 1; // The on-chain transaction info where the operation is going to be applied.
+    bytes operation_id = 2; // Operation identifier.
 }
 
 // Request to get the Node version info.
 message GetNodeBuildInfoRequest {
 }
+
 // Response with the Node version info.
 message GetNodeBuildInfoResponse {
     reserved 4; // buildTime
@@ -148,11 +160,27 @@ message GetCredentialRevocationTimeResponse {
 message GetTransactionStatusRequest {
     TransactionInfo transaction_info = 1; // The on-chain transaction info.
 }
+
 // Response with the transaction status.
 message GetTransactionStatusResponse {
     TransactionInfo transaction_info = 1; // The on-chain transaction info.
     TransactionStatus status = 2; // Whether or not the transaction has been applied.
     google.protobuf.Timestamp last_synced_block_timestamp = 3; // Timestamp of the latest synchronized block.
+}
+
+/**
+ * Request to get the operation status.
+ */
+message GetOperationStatusRequest {
+    bytes operation_id = 1; // Operation identifier. The identifier is returned to the corresponding operation request.
+}
+
+/**
+ * Response with the current operation status.
+ */
+message GetOperationStatusResponse {
+    OperationStatus operation_status = 1; // Contains the status of this operation.
+    google.protobuf.Timestamp last_synced_block_timestamp = 2; // Timestamp of the latest synchronized block.
 }
 
 message PublishAsABlockRequest {

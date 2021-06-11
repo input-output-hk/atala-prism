@@ -15,7 +15,7 @@ import io.iohk.atala.prism.models.{Ledger, TransactionId, TransactionInfo}
 import io.iohk.atala.prism.node.errors.NodeError
 import io.iohk.atala.prism.node.grpc.ProtoCodecs
 import io.iohk.atala.prism.node.models.nodeState.{CredentialBatchState, LedgerData}
-import io.iohk.atala.prism.node.models.{DIDPublicKey, KeyUsage}
+import io.iohk.atala.prism.node.models.{AtalaOperationId, DIDPublicKey, KeyUsage}
 import io.iohk.atala.prism.node.operations.path.{Path, ValueAtPath}
 import io.iohk.atala.prism.node.operations.{
   CreateDIDOperationSpec,
@@ -35,6 +35,7 @@ import io.iohk.atala.prism.protos.node_api.{
   GetBatchStateRequest,
   GetCredentialRevocationTimeRequest,
   GetNodeBuildInfoRequest,
+  GetOperationStatusRequest,
   GetTransactionStatusRequest,
   GetTransactionStatusResponse
 }
@@ -209,6 +210,7 @@ class NodeServiceSpec
         "master",
         CreateDIDOperationSpec.masterKeys.privateKey
       )
+      val operationId = AtalaOperationId.of(operation)
 
       doReturn(Future.successful(testTransactionInfo)).when(objectManagementService).publishAtalaOperation(*)
 
@@ -221,6 +223,7 @@ class NodeServiceSpec
 
       response.id must be(expectedDIDSuffix)
       response.transactionInfo.value mustEqual testTransactionInfoProto
+      response.operationId mustEqual operationId.toProtoByteString
       verify(objectManagementService).publishAtalaOperation(operation)
       verifyNoMoreInteractions(objectManagementService)
     }
@@ -246,12 +249,14 @@ class NodeServiceSpec
         "master",
         UpdateDIDOperationSpec.masterKeys.privateKey
       )
+      val operationId = AtalaOperationId.of(operation)
 
       doReturn(Future.successful(testTransactionInfo)).when(objectManagementService).publishAtalaOperation(*)
 
       val response = service.updateDID(node_api.UpdateDIDRequest().withSignedOperation(operation))
 
       response.transactionInfo.value mustEqual testTransactionInfoProto
+      response.operationId mustEqual operationId.toProtoByteString
       verify(objectManagementService).publishAtalaOperation(operation)
       verifyNoMoreInteractions(objectManagementService)
     }
@@ -277,6 +282,7 @@ class NodeServiceSpec
         "master",
         CreateDIDOperationSpec.masterKeys.privateKey
       )
+      val operationId = AtalaOperationId.of(operation)
 
       doReturn(Future.successful(testTransactionInfo)).when(objectManagementService).publishAtalaOperation(*)
 
@@ -291,6 +297,7 @@ class NodeServiceSpec
 
       response.batchId mustBe expectedBatchId
       response.transactionInfo.value mustEqual testTransactionInfoProto
+      response.operationId mustEqual operationId.toProtoByteString
       verify(objectManagementService).publishAtalaOperation(operation)
       verifyNoMoreInteractions(objectManagementService)
     }
@@ -317,12 +324,14 @@ class NodeServiceSpec
         "master",
         CreateDIDOperationSpec.masterKeys.privateKey
       )
+      val operationId = AtalaOperationId.of(operation)
 
       doReturn(Future.successful(testTransactionInfo)).when(objectManagementService).publishAtalaOperation(*)
 
       val response = service.revokeCredentials(node_api.RevokeCredentialsRequest().withSignedOperation(operation))
 
       response.transactionInfo.value mustEqual testTransactionInfoProto
+      response.operationId mustEqual operationId.toProtoByteString
       verify(objectManagementService).publishAtalaOperation(operation)
       verifyNoMoreInteractions(objectManagementService)
     }
@@ -349,6 +358,37 @@ class NodeServiceSpec
       buildInfo.version must not be empty
       buildInfo.scalaVersion mustBe "2.13.6"
       buildInfo.sbtVersion mustBe "1.5.3"
+    }
+  }
+
+  "NodeService.getOperationStatus" should {
+    "return OPERATION_UNKNOWN when operation identifier was not found" in {
+      val validOperation = BlockProcessingServiceSpec.signOperation(
+        CreateDIDOperationSpec.exampleOperation,
+        "master",
+        CreateDIDOperationSpec.masterKeys.privateKey
+      )
+      val operationId = AtalaOperationId.of(validOperation)
+      val operationIdProto = operationId.toProtoByteString
+
+      doReturn(Future.successful(dummySyncTimestamp))
+        .when(objectManagementService)
+        .getLastSyncedTimestamp
+      doReturn(Future.successful(None))
+        .when(objectManagementService)
+        .getOperationInfo(operationId)
+
+      val operationIdRestored = AtalaOperationId.fromVectorUnsafe(operationIdProto.toByteArray.toVector)
+
+      operationId must be(operationIdRestored)
+
+      val response = service.getOperationStatus(
+        GetOperationStatusRequest()
+          .withOperationId(operationIdProto)
+      )
+
+      response.operationStatus must be(common_models.OperationStatus.UNKNOWN_OPERATION)
+      response.lastSyncedBlockTimestamp must be(Some(dummySyncTimestamp.toProtoTimestamp))
     }
   }
 
@@ -658,12 +698,14 @@ class NodeServiceSpec
         "master",
         CreateDIDOperationSpec.masterKeys.privateKey
       )
+      val createDIDOperationId = AtalaOperationId.of(createDIDOperation)
 
       val issuanceOperation = BlockProcessingServiceSpec.signOperation(
         IssueCredentialBatchOperationSpec.exampleOperation,
         "master",
         CreateDIDOperationSpec.masterKeys.privateKey
       )
+      val issuanceOperationId = AtalaOperationId.of(issuanceOperation)
 
       doReturn(Future.successful(testTransactionInfo)).when(objectManagementService).publishAtalaOperation(*)
 
@@ -687,8 +729,12 @@ class NodeServiceSpec
 
       response.transactionInfo.value mustBe testTransactionInfoProto
       response.outputs.size mustBe (2)
+
       response.outputs.head.getCreateDidOutput.didSuffix mustBe expectedDIDSuffix
+      response.outputs.head.operationId mustEqual createDIDOperationId.toProtoByteString
+
       response.outputs.last.getBatchOutput.batchId mustBe expectedBatchId
+      response.outputs.last.operationId mustBe issuanceOperationId.toProtoByteString
 
       verify(objectManagementService).publishAtalaOperation(createDIDOperation, issuanceOperation)
       verifyNoMoreInteractions(objectManagementService)
@@ -700,12 +746,14 @@ class NodeServiceSpec
         "master",
         CreateDIDOperationSpec.masterKeys.privateKey
       )
+      val createDIDOperationId = AtalaOperationId.of(createDIDOperation)
 
       val updateOperation = BlockProcessingServiceSpec.signOperation(
         UpdateDIDOperationSpec.exampleOperation,
         "master",
         UpdateDIDOperationSpec.masterKeys.privateKey
       )
+      val updateOperationId = AtalaOperationId.of(updateOperation)
 
       doReturn(Future.successful(testTransactionInfo)).when(objectManagementService).publishAtalaOperation(*)
 
@@ -723,7 +771,10 @@ class NodeServiceSpec
       response.transactionInfo.value mustBe testTransactionInfoProto
       response.outputs.size mustBe (2)
       response.outputs.head.getCreateDidOutput.didSuffix mustBe expectedDIDSuffix
+      response.outputs.head.operationId mustEqual createDIDOperationId.toProtoByteString
+
       response.outputs.last.result mustBe OperationOutput.Result.UpdateDidOutput(node_models.UpdateDIDOutput())
+      response.outputs.last.operationId mustEqual updateOperationId.toProtoByteString
 
       verify(objectManagementService).publishAtalaOperation(createDIDOperation, updateOperation)
       verifyNoMoreInteractions(objectManagementService)
@@ -735,6 +786,7 @@ class NodeServiceSpec
         "master",
         CreateDIDOperationSpec.masterKeys.privateKey
       )
+      val revokeOperationId = AtalaOperationId.of(revokeOperation)
 
       doReturn(Future.successful(testTransactionInfo)).when(objectManagementService).publishAtalaOperation(*)
 
@@ -747,6 +799,7 @@ class NodeServiceSpec
       response.transactionInfo.value mustBe testTransactionInfoProto
       response.outputs.size mustBe (1)
       response.outputs.head.getRevokeCredentialsOutput mustBe node_models.RevokeCredentialsOutput()
+      response.outputs.head.operationId mustEqual revokeOperationId.toProtoByteString
 
       verify(objectManagementService).publishAtalaOperation(revokeOperation)
       verifyNoMoreInteractions(objectManagementService)

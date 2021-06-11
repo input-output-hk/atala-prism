@@ -7,11 +7,14 @@ import io.iohk.atala.prism.credentials.TimestampInfo
 import io.iohk.atala.prism.crypto.{EC, ECPrivateKey, SHA256Digest}
 import io.iohk.atala.prism.identity.DIDSuffix
 import io.iohk.atala.prism.models.{Ledger, TransactionId}
+import io.iohk.atala.prism.node.DataPreparation
+import io.iohk.atala.prism.node.models.{AtalaOperationId, AtalaOperationInfo, AtalaOperationStatus}
 import io.iohk.atala.prism.node.operations.CreateDIDOperationSpec
 import io.iohk.atala.prism.node.repositories.daos.DIDDataDAO
 import io.iohk.atala.prism.node.repositories.DIDDataRepository
 import io.iohk.atala.prism.protos.{node_internal, node_models}
 import org.scalatest.OptionValues._
+
 import java.time.Instant
 
 object BlockProcessingServiceSpec {
@@ -31,6 +34,7 @@ object BlockProcessingServiceSpec {
   }
 
   val signedCreateDidOperation = signOperation(createDidOperation, "master", masterKeys.privateKey)
+  val signedCreateDidOperationId = AtalaOperationId.of(signedCreateDidOperation)
 
   val exampleBlock = node_internal.AtalaBlock(
     operations = Seq(signedCreateDidOperation)
@@ -55,6 +59,13 @@ class BlockProcessingServiceSpec extends AtalaWithPostgresSpec {
 
   "BlockProcessingService" should {
     "apply block in" in {
+      val (objId, opIds) = DataPreparation.insertOperationStatuses(
+        exampleBlock.operations.toList,
+        AtalaOperationStatus.RECEIVED
+      )
+      opIds.size must be(1)
+      val atalaOperationId = opIds.head
+
       val result = service
         .processBlock(exampleBlock, dummyTransactionId, dummyLedger, dummyTimestamp, dummyABSequenceNumber)
         .transact(database)
@@ -67,10 +78,21 @@ class BlockProcessingServiceSpec extends AtalaWithPostgresSpec {
       credentials.size mustBe 1
       val digest = SHA256Digest.compute(createDidOperation.toByteArray)
       credentials.head mustBe DIDSuffix.unsafeFromDigest(digest)
+
+      val atalaOperationInfo = DataPreparation.getOperationInfo(atalaOperationId).value
+      val expectedAtalaOperationInfo = AtalaOperationInfo(atalaOperationId, objId, AtalaOperationStatus.APPLIED, None)
+      atalaOperationInfo must be(expectedAtalaOperationInfo)
     }
 
     "not apply operation when signature is wrong" in {
       val invalidSignatureOperation = signedCreateDidOperation.withSignature(ByteString.EMPTY)
+
+      val (objId, opIds) = DataPreparation.insertOperationStatuses(
+        List(invalidSignatureOperation),
+        AtalaOperationStatus.RECEIVED
+      )
+      opIds.size must be(1)
+      val atalaOperationId = opIds.head
 
       val invalidSignatureBlock = node_internal.AtalaBlock(
         operations = Seq(invalidSignatureOperation)
@@ -84,6 +106,9 @@ class BlockProcessingServiceSpec extends AtalaWithPostgresSpec {
 
       result mustBe true
 
+      val atalaOperationInfo = DataPreparation.getOperationInfo(atalaOperationId).value
+      val expectedAtalaOperationInfo = AtalaOperationInfo(atalaOperationId, objId, AtalaOperationStatus.REJECTED, None)
+      atalaOperationInfo must be(expectedAtalaOperationInfo)
     }
 
     "ignore block when it contains invalid operations" in {
@@ -93,6 +118,13 @@ class BlockProcessingServiceSpec extends AtalaWithPostgresSpec {
       val invalidBlock = node_internal.AtalaBlock(
         operations = Seq(signedInvalidOperation)
       )
+      val (objId, opIds) = DataPreparation.insertOperationStatuses(
+        List(signedInvalidOperation),
+        AtalaOperationStatus.RECEIVED
+      )
+
+      opIds.size must be(1)
+      val atalaOperationId = opIds.head
 
       val result = service
         .processBlock(invalidBlock, dummyTransactionId, dummyLedger, dummyTimestamp, dummyABSequenceNumber)
@@ -101,6 +133,10 @@ class BlockProcessingServiceSpec extends AtalaWithPostgresSpec {
         .futureValue
 
       result mustBe false
+
+      val atalaOperationInfo = DataPreparation.getOperationInfo(atalaOperationId).value
+      val expectedAtalaOperationInfo = AtalaOperationInfo(atalaOperationId, objId, AtalaOperationStatus.REJECTED, None)
+      atalaOperationInfo must be(expectedAtalaOperationInfo)
     }
 
     "apply correct operations even though there are incorrect ones in the block" in {
@@ -139,6 +175,12 @@ class BlockProcessingServiceSpec extends AtalaWithPostgresSpec {
         operations = Seq(signedOperation1, incorrectlySignedOperation2, signedOperation3)
       )
 
+      val (objId, opIds) = DataPreparation.insertOperationStatuses(
+        List(signedOperation1, incorrectlySignedOperation2, signedOperation3),
+        AtalaOperationStatus.RECEIVED
+      )
+      opIds.size must be(3)
+
       val result = service
         .processBlock(block, dummyTransactionId, dummyLedger, dummyTimestamp, dummyABSequenceNumber)
         .transact(database)
@@ -151,6 +193,18 @@ class BlockProcessingServiceSpec extends AtalaWithPostgresSpec {
       val expectedSuffixes = Seq(signedOperation1.getOperation, operation3)
         .map(op => DIDSuffix.unsafeFromDigest(SHA256Digest.compute(op.toByteArray)))
       credentials must contain theSameElementsAs (expectedSuffixes)
+
+      val atalaOperationInfo1 = DataPreparation.getOperationInfo(opIds.head).value
+      val expectedAtalaOperationInfo1 = AtalaOperationInfo(opIds.head, objId, AtalaOperationStatus.APPLIED, None)
+      atalaOperationInfo1 must be(expectedAtalaOperationInfo1)
+
+      val atalaOperationInfo2 = DataPreparation.getOperationInfo(opIds(1)).value
+      val expectedAtalaOperationInfo2 = AtalaOperationInfo(opIds(1), objId, AtalaOperationStatus.REJECTED, None)
+      atalaOperationInfo2 must be(expectedAtalaOperationInfo2)
+
+      val atalaOperationInfo3 = DataPreparation.getOperationInfo(opIds.last).value
+      val expectedAtalaOperationInfo3 = AtalaOperationInfo(opIds.last, objId, AtalaOperationStatus.APPLIED, None)
+      atalaOperationInfo3 must be(expectedAtalaOperationInfo3)
     }
   }
 }

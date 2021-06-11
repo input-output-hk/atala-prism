@@ -1,7 +1,6 @@
 package io.iohk.atala.prism.node.repositories
 
 import java.time.Instant
-
 import doobie.postgres.implicits._
 import doobie.util.invariant.InvalidEnum
 import doobie.{Get, Meta, Put, Read, Write}
@@ -16,6 +15,9 @@ import io.iohk.atala.prism.node.models.{
   AtalaObject,
   AtalaObjectId,
   AtalaObjectTransactionSubmissionStatus,
+  AtalaOperationId,
+  AtalaOperationInfo,
+  AtalaOperationStatus,
   CredentialId,
   KeyUsage
 }
@@ -35,6 +37,16 @@ package object daos {
         AtalaObjectTransactionSubmissionStatus
           .withNameOption(a)
           .getOrElse(throw InvalidEnum[AtalaObjectTransactionSubmissionStatus](a)),
+      _.entryName
+    )
+
+  implicit val pgOperationStatusMeta: Meta[AtalaOperationStatus] =
+    pgEnumString[AtalaOperationStatus](
+      "ATALA_OPERATION_STATUS",
+      a =>
+        AtalaOperationStatus
+          .withNameOption(a)
+          .getOrElse(throw InvalidEnum[AtalaOperationStatus](a)),
       _.entryName
     )
 
@@ -117,6 +129,21 @@ package object daos {
 
   implicit val atalaObjectIdMeta: Meta[AtalaObjectId] =
     Meta[Array[Byte]].timap(value => AtalaObjectId(value.toVector))(_.value.toArray)
+
+  implicit val atalaOperationIdMeta: Meta[AtalaOperationId] =
+    Meta[Array[Byte]]
+      .timap(value => AtalaOperationId.fromVectorUnsafe(value.toVector))(_.value.toArray)
+
+  implicit val atalaOperationInfoRead: Read[AtalaOperationInfo] = {
+    Read[
+      (
+          AtalaOperationId,
+          AtalaObjectId,
+          AtalaOperationStatus,
+          Option[AtalaObjectTransactionSubmissionStatus]
+      )
+    ].map(AtalaOperationInfo.tupled)
+  }
 
   implicit val atalaObjectRead: Read[AtalaObject] = {
     Read[

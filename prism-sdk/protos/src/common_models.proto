@@ -104,3 +104,15 @@ enum TransactionStatus {
     IN_LEDGER = 2; // The transaction has been accepted by the blockchain, but is pending confirmation from Atala PRISM.
     CONFIRMED = 3; // The transaction has been confirmed by Atala PRISM and is now considered immutable.
 }
+
+/**
+ * The status of an Atala operation.
+ */
+enum OperationStatus {
+    UNKNOWN_OPERATION = 0; // The operation hasn't been received by the node service yet.
+    PENDING_SUBMISSION = 1; // The transaction containing this operation hasn't been published to the chain yet.
+    AWAIT_CONFIRMATION = 2; // The transaction containing this operation has been published to the chain, but hasn't been processed by PRISM yet.
+    CONFIRMED_AND_APPLIED = 3; // The operation has been successfully applied to the PRISM.
+    CONFIRMED_AND_REJECTED = 4; // The operation has been processed by PRISM, but rejected because of some error.
+}
+

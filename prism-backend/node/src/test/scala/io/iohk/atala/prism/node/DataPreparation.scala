@@ -9,11 +9,28 @@ import io.iohk.atala.prism.crypto.MerkleTree.MerkleRoot
 import io.iohk.atala.prism.crypto.SHA256Digest
 import io.iohk.atala.prism.identity.DIDSuffix
 import io.iohk.atala.prism.node.cardano.{LAST_SYNCED_BLOCK_NO, LAST_SYNCED_BLOCK_TIMESTAMP}
-import io.iohk.atala.prism.node.models.{DIDData, DIDPublicKey}
+import io.iohk.atala.prism.node.models.{
+  AtalaObjectId,
+  AtalaOperationId,
+  AtalaOperationInfo,
+  AtalaOperationStatus,
+  DIDData,
+  DIDPublicKey
+}
 import io.iohk.atala.prism.node.models.nodeState.{DIDDataState, DIDPublicKeyState, LedgerData}
+import io.iohk.atala.prism.node.repositories.daos.AtalaObjectsDAO.AtalaObjectCreateData
 import io.iohk.atala.prism.node.repositories.daos.CredentialBatchesDAO.CreateCredentialBatchData
-import io.iohk.atala.prism.node.repositories.daos.{CredentialBatchesDAO, DIDDataDAO, KeyValuesDAO, PublicKeysDAO}
+import io.iohk.atala.prism.node.repositories.daos.{
+  AtalaObjectsDAO,
+  AtalaOperationsDAO,
+  CredentialBatchesDAO,
+  DIDDataDAO,
+  KeyValuesDAO,
+  PublicKeysDAO
+}
 import org.scalatest.OptionValues._
+import io.iohk.atala.prism.protos.node_internal
+import io.iohk.atala.prism.protos.node_models.SignedAtalaOperation
 
 import java.time.Instant
 
@@ -34,18 +51,6 @@ object DataPreparation {
     val query = for {
       _ <- DIDDataDAO.insert(didData.didSuffix, didData.lastOperation, ledgerData)
       _ <- didData.keys.traverse((key: DIDPublicKey) => PublicKeysDAO.insert(key, ledgerData))
-    } yield ()
-
-    query
-      .transact(xa)
-      .unsafeRunSync()
-  }
-
-  def updateLastSyncedBlock(blockNo: Int, timestamp: Instant)(implicit xa: Transactor[IO]): Unit = {
-    val query = for {
-      _ <- KeyValuesDAO.upsert(KeyValuesDAO.KeyValue(LAST_SYNCED_BLOCK_NO, Some(blockNo.toString)))
-      _ <-
-        KeyValuesDAO.upsert(KeyValuesDAO.KeyValue(LAST_SYNCED_BLOCK_TIMESTAMP, Some(timestamp.toEpochMilli.toString)))
     } yield ()
 
     query
@@ -119,6 +124,54 @@ object DataPreparation {
         revocationLedgerData
       )
       .transact(database)
+      .unsafeRunSync()
+  }
+
+  // ***************************************
+  // Other useful methods
+  // ***************************************
+
+  def updateLastSyncedBlock(blockNo: Int, timestamp: Instant)(implicit xa: Transactor[IO]): Unit = {
+    val query = for {
+      _ <- KeyValuesDAO.upsert(KeyValuesDAO.KeyValue(LAST_SYNCED_BLOCK_NO, Some(blockNo.toString)))
+      _ <-
+        KeyValuesDAO.upsert(KeyValuesDAO.KeyValue(LAST_SYNCED_BLOCK_TIMESTAMP, Some(timestamp.toEpochMilli.toString)))
+    } yield ()
+
+    query
+      .transact(xa)
+      .unsafeRunSync()
+  }
+
+  def insertOperationStatuses(
+      atalaOperations: List[SignedAtalaOperation],
+      status: AtalaOperationStatus
+  )(implicit xa: Transactor[IO]): (AtalaObjectId, List[AtalaOperationId]) = {
+    val block = node_internal.AtalaBlock("1.0", atalaOperations)
+    val obj = node_internal.AtalaObject(
+      block = node_internal.AtalaObject.Block.BlockContent(block),
+      blockOperationCount = atalaOperations.size
+    )
+    val objBytes = obj.toByteArray
+    val objId = AtalaObjectId.of(objBytes)
+    val atalaOperationIds = atalaOperations.map(AtalaOperationId.of)
+    val atalaOperationData = atalaOperationIds.map((_, objId, status))
+
+    val query = for {
+      insertObject <- AtalaObjectsDAO.insert(AtalaObjectCreateData(objId, objBytes))
+      insertOperations <- AtalaOperationsDAO.insertMany(atalaOperationData)
+    } yield (insertObject, insertOperations)
+
+    query
+      .transact(xa)
+      .unsafeRunSync()
+    (objId, atalaOperationIds)
+  }
+
+  def getOperationInfo(atalaOperationId: AtalaOperationId)(implicit xa: Transactor[IO]): Option[AtalaOperationInfo] = {
+    AtalaOperationsDAO
+      .getAtalaOperationInfo(atalaOperationId)
+      .transact(xa)
       .unsafeRunSync()
   }
 }

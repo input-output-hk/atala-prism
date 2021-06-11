@@ -166,6 +166,7 @@ message OperationOutput {
         // Represents the response provided by RevokeCredentialOperation.
         RevokeCredentialsOutput revoke_credentials_output = 4;
     }
+    bytes operation_id = 5; // Operation identifier.
 }
 
 message IssueCredentialBatchOutput {

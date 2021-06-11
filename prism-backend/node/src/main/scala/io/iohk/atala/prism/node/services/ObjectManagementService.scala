@@ -19,11 +19,19 @@ import io.iohk.atala.prism.node.models.{
   AtalaObject,
   AtalaObjectId,
   AtalaObjectTransactionSubmission,
-  AtalaObjectTransactionSubmissionStatus
+  AtalaObjectTransactionSubmissionStatus,
+  AtalaOperationId,
+  AtalaOperationInfo,
+  AtalaOperationStatus
 }
 import io.iohk.atala.prism.node.objects.ObjectStorageService
 import io.iohk.atala.prism.node.repositories.daos.AtalaObjectsDAO.{AtalaObjectCreateData, AtalaObjectSetTransactionInfo}
-import io.iohk.atala.prism.node.repositories.daos.{AtalaObjectTransactionSubmissionsDAO, AtalaObjectsDAO, KeyValuesDAO}
+import io.iohk.atala.prism.node.repositories.daos.{
+  AtalaObjectTransactionSubmissionsDAO,
+  AtalaObjectsDAO,
+  AtalaOperationsDAO,
+  KeyValuesDAO
+}
 import io.iohk.atala.prism.node.services.ObjectManagementService.{
   AtalaObjectTransactionInfo,
   AtalaObjectTransactionStatus,
@@ -40,7 +48,8 @@ import scala.concurrent.Future
 import scala.concurrent.duration._
 
 private class AtalaObjectCannotBeModified extends Exception
-private class AtalaObjectAlreadyPublished extends Exception
+private class AtalaOperationAlreadyPublished extends Exception
+private class AtalaBlockInvalid extends Exception
 
 class ObjectManagementService private (
     config: Config,
@@ -119,16 +128,6 @@ class ObjectManagementService private (
     val objBytes = obj.toByteArray
     val objId = AtalaObjectId.of(objBytes)
 
-    val insertObject = for {
-      existingObject <- AtalaObjectsDAO.get(objId)
-      _ <- {
-        existingObject match {
-          case Some(_) => connection.raiseError(new AtalaObjectAlreadyPublished)
-          case None => AtalaObjectsDAO.insert(AtalaObjectCreateData(objId, objBytes))
-        }
-      }
-    } yield ()
-
     def storeDataOffChain(): Future[Unit] = {
       if (atalaReferenceLedger.supportsOnChainData) {
         // No need to store off-chain as whole object is in the chain already
@@ -139,14 +138,35 @@ class ObjectManagementService private (
       }
     }
 
-    for {
-      // Insert object into DB
-      _ <- insertObject.logSQLErrors("inserting object", logger).transact(xa).unsafeToFuture()
-      // If the ledger does not support data on-chain, then store it off-chain
-      _ <- storeDataOffChain()
-      // Publish object to the blockchain
-      transactionInfo <- publishAndRecordTransaction(objId, obj)
-    } yield transactionInfo
+    val atalaOperationIds = block.operations.toList.map(AtalaOperationId.of)
+    if (atalaOperationIds.distinct.size != atalaOperationIds.size) {
+      Future.failed(new AtalaBlockInvalid)
+    } else {
+      val atalaOperationData = atalaOperationIds.map((_, objId, AtalaOperationStatus.RECEIVED))
+
+      val insertObjectAndOps = for {
+        existingObject <- AtalaObjectsDAO.get(objId)
+        _ <- {
+          existingObject match {
+            case Some(_) => connection.raiseError(new AtalaOperationAlreadyPublished)
+            case None =>
+              for {
+                insertObject <- AtalaObjectsDAO.insert(AtalaObjectCreateData(objId, objBytes))
+                insertOperations <- AtalaOperationsDAO.insertMany(atalaOperationData)
+              } yield (insertObject, insertOperations)
+          }
+        }
+      } yield ()
+
+      for {
+        // Insert object into DB
+        _ <- insertObjectAndOps.logSQLErrors("inserting object and operations", logger).transact(xa).unsafeToFuture()
+        // If the ledger does not support data on-chain, then store it off-chain
+        _ <- storeDataOffChain()
+        // Publish object to the blockchain
+        transactionInfo <- publishAndRecordTransaction(objId, obj)
+      } yield transactionInfo
+    }
   }
 
   def getLastSyncedTimestamp: Future[Instant] = {
@@ -154,11 +174,19 @@ class ObjectManagementService private (
       maybeLastSyncedBlockTimestamp <-
         KeyValuesDAO
           .get(LAST_SYNCED_BLOCK_TIMESTAMP)
-          .logSQLErrors(s"getting key - ${LAST_SYNCED_BLOCK_TIMESTAMP}", logger)
+          .logSQLErrors(s"getting key - $LAST_SYNCED_BLOCK_TIMESTAMP", logger)
           .transact(xa)
           .unsafeToFuture()
       lastSyncedBlockTimestamp = getLastSyncedTimestampFromMaybe(maybeLastSyncedBlockTimestamp)
     } yield lastSyncedBlockTimestamp
+  }
+
+  def getOperationInfo(atalaOperationId: AtalaOperationId): Future[Option[AtalaOperationInfo]] = {
+    AtalaOperationsDAO
+      .getAtalaOperationInfo(atalaOperationId)
+      .logSQLErrors(s"getting operation info for [$atalaOperationId]", logger)
+      .transact(xa)
+      .unsafeToFuture()
   }
 
   private def publishAndRecordTransaction(

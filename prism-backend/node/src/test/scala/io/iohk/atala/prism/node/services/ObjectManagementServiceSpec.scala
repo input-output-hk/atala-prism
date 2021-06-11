@@ -18,7 +18,9 @@ import io.iohk.atala.prism.node.models.{
   AtalaObject,
   AtalaObjectId,
   AtalaObjectTransactionSubmission,
-  AtalaObjectTransactionSubmissionStatus
+  AtalaObjectTransactionSubmissionStatus,
+  AtalaOperationId,
+  AtalaOperationStatus
 }
 import io.iohk.atala.prism.node.operations.CreateDIDOperationSpec
 import io.iohk.atala.prism.node.repositories.daos.{AtalaObjectTransactionSubmissionsDAO, AtalaObjectsDAO}
@@ -101,6 +103,56 @@ class ObjectManagementServiceSpec
   }
 
   "ObjectManagementService.publishAtalaOperation" should {
+    "update status to received when operation was received, but haven't processed yet" in {
+      doReturn(Future.successful(dummyPublicationInfo)).when(ledger).publish(*)
+      doReturn(true).when(ledger).supportsOnChainData
+
+      val atalaOperation = BlockProcessingServiceSpec.signedCreateDidOperation
+      val atalaOperationId = AtalaOperationId.of(atalaOperation)
+      val transactionInfo = objectManagementService.publishAtalaOperation(atalaOperation).futureValue
+      transactionInfo mustBe dummyTransactionInfo
+
+      val atalaOperationInfo = objectManagementService.getOperationInfo(atalaOperationId).futureValue.value
+
+      atalaOperationInfo.operationStatus must be(AtalaOperationStatus.RECEIVED)
+      atalaOperationInfo.transactionSubmissionStatus must be(Some(AtalaObjectTransactionSubmissionStatus.Pending))
+    }
+
+    "raise AtalaOperationAlreadyPublished error when publish the same operation twice" in {
+      doReturn(Future.successful(dummyPublicationInfo)).when(ledger).publish(*)
+      doReturn(true).when(ledger).supportsOnChainData
+
+      val atalaOperation = BlockProcessingServiceSpec.signedCreateDidOperation
+      val atalaOperationId = AtalaOperationId.of(atalaOperation)
+      val transactionInfo = objectManagementService.publishAtalaOperation(atalaOperation).futureValue
+      transactionInfo mustBe dummyTransactionInfo
+
+      whenReady(objectManagementService.publishAtalaOperation(atalaOperation).failed) { err =>
+        err mustBe a[AtalaOperationAlreadyPublished]
+      }
+
+      val atalaOperationInfo = objectManagementService.getOperationInfo(atalaOperationId).futureValue.value
+
+      atalaOperationInfo.operationStatus must be(AtalaOperationStatus.RECEIVED)
+      atalaOperationInfo.transactionSubmissionStatus must be(Some(AtalaObjectTransactionSubmissionStatus.Pending))
+    }
+
+    "raise AtalaBlockInvalid error when publish batch with duplications" in {
+      doReturn(Future.successful(dummyPublicationInfo)).when(ledger).publish(*)
+      doReturn(true).when(ledger).supportsOnChainData
+
+      val atalaOperation = BlockProcessingServiceSpec.signedCreateDidOperation
+      val atalaOperationId = AtalaOperationId.of(atalaOperation)
+
+      whenReady(objectManagementService.publishAtalaOperation(atalaOperation, atalaOperation).failed) { err =>
+        err mustBe a[AtalaBlockInvalid]
+      }
+
+      val atalaOperationInfo = objectManagementService.getOperationInfo(atalaOperationId).futureValue
+
+      atalaOperationInfo must be(None)
+    }
+
     "put block content onto the ledger when supported" in {
       doReturn(Future.successful(dummyPublicationInfo)).when(ledger).publish(*)
       doReturn(true).when(ledger).supportsOnChainData

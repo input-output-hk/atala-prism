@@ -9,6 +9,12 @@ import io.iohk.atala.prism.identity.DID
 import io.iohk.atala.prism.models.ProtoCodecs._
 import io.iohk.atala.prism.node.errors.NodeError
 import io.iohk.atala.prism.node.grpc.ProtoCodecs
+import io.iohk.atala.prism.node.models.{
+  AtalaObjectTransactionSubmissionStatus,
+  AtalaOperationId,
+  AtalaOperationInfo,
+  AtalaOperationStatus
+}
 import io.iohk.atala.prism.node.models.nodeState.DIDDataState
 import io.iohk.atala.prism.node.operations._
 import io.iohk.atala.prism.node.repositories.{CredentialBatchesRepository, DIDDataRepository}
@@ -110,7 +116,10 @@ class NodeServiceImpl(
     } yield {
       logAndReturnResponse(
         "createDID",
-        node_api.CreateDIDResponse(id = parsedOp.id.value).withTransactionInfo(toTransactionInfo(transactionInfo))
+        node_api
+          .CreateDIDResponse(id = parsedOp.id.value)
+          .withTransactionInfo(toTransactionInfo(transactionInfo))
+          .withOperationId(AtalaOperationId.of(operation).toProtoByteString)
       )
     }
   }
@@ -123,7 +132,15 @@ class NodeServiceImpl(
       operation <- operationF
       _ <- errorEitherToFuture(UpdateDIDOperation.validate(operation))
       transactionInfo <- objectManagement.publishAtalaOperation(operation)
-    } yield node_api.UpdateDIDResponse().withTransactionInfo(toTransactionInfo(transactionInfo))
+    } yield {
+      logAndReturnResponse(
+        "updateDID",
+        node_api
+          .UpdateDIDResponse()
+          .withTransactionInfo(toTransactionInfo(transactionInfo))
+          .withOperationId(AtalaOperationId.of(operation).toProtoByteString)
+      )
+    }
   }
 
   override def issueCredentialBatch(request: IssueCredentialBatchRequest): Future[IssueCredentialBatchResponse] = {
@@ -144,6 +161,7 @@ class NodeServiceImpl(
         node_api
           .IssueCredentialBatchResponse(batchId = parsedOp.credentialBatchId.id)
           .withTransactionInfo(toTransactionInfo(transactionInfo))
+          .withOperationId(AtalaOperationId.of(operation).toProtoByteString)
       )
     }
   }
@@ -160,7 +178,10 @@ class NodeServiceImpl(
     } yield {
       logAndReturnResponse(
         "revokeCredentials",
-        node_api.RevokeCredentialsResponse().withTransactionInfo(toTransactionInfo(transactionInfo))
+        node_api
+          .RevokeCredentialsResponse()
+          .withTransactionInfo(toTransactionInfo(transactionInfo))
+          .withOperationId(AtalaOperationId.of(operation).toProtoByteString)
       )
     }
   }
@@ -309,6 +330,50 @@ class NodeServiceImpl(
     }
   }
 
+  override def getOperationStatus(
+      request: node_api.GetOperationStatusRequest
+  ): Future[node_api.GetOperationStatusResponse] = {
+    logRequest("getOperationStatus", request)
+    for {
+      lastSyncedTimestamp <- objectManagement.getLastSyncedTimestamp
+      atalaOperationId = AtalaOperationId.fromVectorUnsafe(request.operationId.toByteArray.toVector)
+      operationInfo <- objectManagement.getOperationInfo(atalaOperationId)
+    } yield {
+      val operationStatus = operationInfo
+        .fold[common_models.OperationStatus](common_models.OperationStatus.UNKNOWN_OPERATION) {
+          case AtalaOperationInfo(_, _, opStatus, maybeTxStatus) =>
+            evalOperationStatus(opStatus, maybeTxStatus)
+        }
+      logAndReturnResponse(
+        "getOperationStatus",
+        node_api
+          .GetOperationStatusResponse()
+          .withOperationStatus(operationStatus)
+          .withLastSyncedBlockTimestamp(lastSyncedTimestamp.toProtoTimestamp)
+      )
+    }
+  }
+
+  private def evalOperationStatus(
+      opStatus: AtalaOperationStatus,
+      maybeTxStatus: Option[AtalaObjectTransactionSubmissionStatus]
+  ): common_models.OperationStatus = {
+    (opStatus, maybeTxStatus) match {
+      case (AtalaOperationStatus.RECEIVED, None) =>
+        common_models.OperationStatus.PENDING_SUBMISSION
+      case (AtalaOperationStatus.RECEIVED, _) =>
+        common_models.OperationStatus.AWAIT_CONFIRMATION
+      case (AtalaOperationStatus.APPLIED, Some(AtalaObjectTransactionSubmissionStatus.InLedger)) =>
+        common_models.OperationStatus.CONFIRMED_AND_APPLIED
+      case (AtalaOperationStatus.REJECTED, Some(AtalaObjectTransactionSubmissionStatus.InLedger)) =>
+        common_models.OperationStatus.CONFIRMED_AND_REJECTED
+      case _ =>
+        throw new RuntimeException(
+          s"Unknown state of the operation: (operationStatus = $opStatus, transactionStatus = $maybeTxStatus)"
+        )
+    }
+  }
+
   override def getNodeBuildInfo(
       request: node_api.GetNodeBuildInfoRequest
   ): Future[node_api.GetNodeBuildInfoResponse] = {
@@ -395,7 +460,7 @@ object NodeServiceImpl {
   }
 
   private def parseOperationWithMockData(operation: SignedAtalaOperation): Either[ValidationError, OperationOutput] = {
-    operation.getOperation.operation match {
+    val operationEither = operation.getOperation.operation match {
       case Operation.Empty => // should not happen
         throw new RuntimeException("Unexpected empty AtalaOperation")
       case Operation.CreateDid(_) =>
@@ -435,5 +500,7 @@ object NodeServiceImpl {
             )
           }
     }
+
+    operationEither.map(_.withOperationId(AtalaOperationId.of(operation).toProtoByteString))
   }
 }

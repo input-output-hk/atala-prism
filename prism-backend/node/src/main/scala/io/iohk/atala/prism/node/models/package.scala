@@ -58,6 +58,24 @@ package object models {
       transaction: Option[TransactionInfo] = None
   )
 
+  case class AtalaOperationInfo(
+      operationId: AtalaOperationId,
+      objectId: AtalaObjectId,
+      operationStatus: AtalaOperationStatus,
+      transactionSubmissionStatus: Option[AtalaObjectTransactionSubmissionStatus] = None
+  )
+
+  sealed trait AtalaOperationStatus extends EnumEntry with UpperSnakecase
+
+  object AtalaOperationStatus extends Enum[AtalaOperationStatus] {
+    val values = findValues
+
+    case object UNKNOWN extends AtalaOperationStatus
+    case object RECEIVED extends AtalaOperationStatus // Received by PRISM
+    case object APPLIED extends AtalaOperationStatus // Confirmed and applied to PRISM state
+    case object REJECTED extends AtalaOperationStatus // Confirmed, but rejected by PRISM
+  }
+
   object nodeState {
 
     case class CredentialBatchState(

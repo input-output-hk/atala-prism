@@ -1,7 +1,6 @@
 package io.iohk.atala.prism.node.services
 
 import java.time.Instant
-
 import cats.data.EitherT
 import cats.implicits._
 import doobie.free.connection
@@ -9,10 +8,12 @@ import doobie.free.connection.ConnectionIO
 import io.iohk.atala.prism.credentials.TimestampInfo
 import io.iohk.atala.prism.crypto.{EC, ECPublicKey, ECSignature}
 import io.iohk.atala.prism.models.{Ledger, TransactionId}
+import io.iohk.atala.prism.node.models.{AtalaOperationId, AtalaOperationStatus}
 import io.iohk.atala.prism.node.models.nodeState.LedgerData
 import io.iohk.atala.prism.node.operations.ValidationError.InvalidValue
 import io.iohk.atala.prism.node.operations._
 import io.iohk.atala.prism.node.operations.path.Path
+import io.iohk.atala.prism.node.repositories.daos.AtalaOperationsDAO
 import io.iohk.atala.prism.protos.{node_internal, node_models}
 import org.slf4j.LoggerFactory
 
@@ -64,28 +65,33 @@ class BlockProcessingServiceImpl extends BlockProcessingService {
         logger.warn(
           s"Occurred invalid operation; ignoring whole block as invalid:\n${error.render}\nOperation:\n${signedOperation.toProtoString}"
         )
-        connection.pure(false)
+        AtalaOperationsDAO
+          .updateAtalaOperationStatusBatch(
+            operations.map(AtalaOperationId.of),
+            AtalaOperationStatus.REJECTED
+          )
+          .as(false)
       case Right(parsedOperations) =>
         (parsedOperations zip operations)
           .traverse {
             case (parsedOperation, protoOperation) =>
+              val atalaOperationId = AtalaOperationId.of(protoOperation)
               val result: ConnectionIO[Unit] = for {
                 // we want operations to be atomic - either it is applied correctly or the state is not modified
                 // we are using SQL savepoints for that, which can be used to do subtransactions
                 savepoint <- connection.setSavepoint
-                _ <- {
-                  processOperation(parsedOperation, protoOperation)
-                    .flatMap {
-                      case Right(_) =>
-                        logger.info(s"Operation applied:\n${parsedOperation.digest}")
-                        connection.releaseSavepoint(savepoint)
-                      case Left(err) =>
-                        logger.warn(
-                          s"Operation was not applied:\n${err.toString}\nOperation:\n${protoOperation.toProtoString}"
-                        )
-                        connection.rollback(savepoint)
-                    }
-                }
+                _ <- processOperation(parsedOperation, protoOperation, atalaOperationId)
+                  .flatMap {
+                    case Right(_) =>
+                      logger.info(s"Operation applied:\n${parsedOperation.digest}")
+                      connection.releaseSavepoint(savepoint)
+                    case Left(err) =>
+                      logger.warn(
+                        s"Operation was not applied:\n${err.toString}\nOperation:\n${protoOperation.toProtoString}"
+                      )
+                      connection.rollback(savepoint)
+                      AtalaOperationsDAO.updateAtalaOperationStatus(atalaOperationId, AtalaOperationStatus.REJECTED)
+                  }
               } yield ()
               result
           }
@@ -113,7 +119,8 @@ class BlockProcessingServiceImpl extends BlockProcessingService {
 
   def processOperation(
       operation: Operation,
-      protoOperation: node_models.SignedAtalaOperation
+      protoOperation: node_models.SignedAtalaOperation,
+      atalaOperationId: AtalaOperationId
   ): ConnectionIO[Either[StateError, Unit]] = {
     val result = for {
       correctnessData <- operation.getCorrectnessData(protoOperation.signedWith)
@@ -125,6 +132,9 @@ class BlockProcessingServiceImpl extends BlockProcessingService {
       )
       _ <- EitherT.fromEither[ConnectionIO](verifySignature(key, protoOperation))
       _ <- operation.applyState()
+      _ <- EitherT.right[StateError](
+        AtalaOperationsDAO.updateAtalaOperationStatus(atalaOperationId, AtalaOperationStatus.APPLIED)
+      )
     } yield ()
     result.value
   }
