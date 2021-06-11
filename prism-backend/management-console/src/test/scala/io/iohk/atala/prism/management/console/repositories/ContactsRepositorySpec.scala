@@ -30,7 +30,7 @@ class ContactsRepositorySpec extends AtalaWithPostgresSpec {
         "email" -> Json.fromString("d.here@iohk.io"),
         "admissionDate" -> Json.fromString(LocalDate.now().toString)
       )
-      val request = CreateContact(externalId, json, "Dusty Here", connectorAuthenticatedRequestMetadata)
+      val request = CreateContact(externalId, json, "Dusty Here", grpcAuthenticationHeaderDIDBased)
 
       val result = repository
         .create(institutionId, request, Some(group.name), connectionToken = ConnectionToken("connectionToken"))
@@ -61,7 +61,7 @@ class ContactsRepositorySpec extends AtalaWithPostgresSpec {
         "email" -> Json.fromString("d.here@iohk.io"),
         "admissionDate" -> Json.fromString(LocalDate.now().toString)
       )
-      val request = CreateContact(externalId, json, "Dusty Here", connectorAuthenticatedRequestMetadata)
+      val request = CreateContact(externalId, json, "Dusty Here", grpcAuthenticationHeaderDIDBased)
 
       val result = repository
         .create(institution, request, None, connectionToken = ConnectionToken("connectionToken"))
@@ -84,7 +84,7 @@ class ContactsRepositorySpec extends AtalaWithPostgresSpec {
         "email" -> Json.fromString("d.here@iohk.io"),
         "admissionDate" -> Json.fromString(LocalDate.now().toString)
       )
-      val request = CreateContact(externalId, json, "Dusty Here", connectorAuthenticatedRequestMetadata)
+      val request = CreateContact(externalId, json, "Dusty Here", grpcAuthenticationHeaderDIDBased)
 
       intercept[Exception](
         repository
@@ -118,7 +118,7 @@ class ContactsRepositorySpec extends AtalaWithPostgresSpec {
         "email" -> Json.fromString("d.here@iohk.io"),
         "admissionDate" -> Json.fromString(LocalDate.now().toString)
       )
-      val request = CreateContact(externalId, json, "Dusty Here", connectorAuthenticatedRequestMetadata)
+      val request = CreateContact(externalId, json, "Dusty Here", grpcAuthenticationHeaderDIDBased)
 
       intercept[Exception](
         repository
@@ -146,7 +146,7 @@ class ContactsRepositorySpec extends AtalaWithPostgresSpec {
         "email" -> Json.fromString("d.here@iohk.io"),
         "admissionDate" -> Json.fromString(LocalDate.now().toString)
       )
-      val request = CreateContact(externalId, json, "Dusty Here", connectorAuthenticatedRequestMetadata)
+      val request = CreateContact(externalId, json, "Dusty Here", grpcAuthenticationHeaderDIDBased)
 
       val initialResponse = repository
         .create(institutionId, request, Some(group.name), connectionToken = ConnectionToken("connectionToken"))
@@ -161,7 +161,7 @@ class ContactsRepositorySpec extends AtalaWithPostgresSpec {
         "admissionDate" -> Json.fromString(LocalDate.now().toString)
       )
 
-      val secondRequest = CreateContact(externalId, secondJson, "Dusty Here", connectorAuthenticatedRequestMetadata)
+      val secondRequest = CreateContact(externalId, secondJson, "Dusty Here", grpcAuthenticationHeaderDIDBased)
 
       intercept[Exception](
         repository
@@ -192,7 +192,7 @@ class ContactsRepositorySpec extends AtalaWithPostgresSpec {
   "createBatch" should {
     "work when there are no contacts nor groups" in {
       val institutionId = createParticipant("Institution-1")
-      val request = CreateContact.Batch(Set.empty, List.empty, connectorAuthenticatedRequestMetadata)
+      val request = CreateContact.Batch(Set.empty, List.empty, grpcAuthenticationHeaderDIDBased)
 
       val result = repository.createBatch(institutionId, request, List.empty).value.futureValue
       result.isRight must be(true)
@@ -212,7 +212,7 @@ class ContactsRepositorySpec extends AtalaWithPostgresSpec {
           CreateContact.NoOwner(Contact.ExternalId.random(), json, "Dusty 2"),
           CreateContact.NoOwner(Contact.ExternalId.random(), json, "Dusty 3")
         ),
-        connectorAuthenticatedRequestMetadata
+        grpcAuthenticationHeaderDIDBased
       )
       val result = repository.createBatch(institutionId, request, makeConnectionTokens(count = 3)).value.futureValue
       result.isRight must be(true)
@@ -246,7 +246,7 @@ class ContactsRepositorySpec extends AtalaWithPostgresSpec {
           CreateContact.NoOwner(Contact.ExternalId.random(), json, "Dusty 2"),
           CreateContact.NoOwner(Contact.ExternalId.random(), json, "Dusty 3")
         ),
-        connectorAuthenticatedRequestMetadata
+        grpcAuthenticationHeaderDIDBased
       )
       val result = repository.createBatch(institutionId, request, makeConnectionTokens(count = 3)).value.futureValue
       result.isRight must be(true)
@@ -272,7 +272,7 @@ class ContactsRepositorySpec extends AtalaWithPostgresSpec {
           CreateContact.NoOwner(externalId, json, "Dusty 2"),
           CreateContact.NoOwner(externalId, json, "Dusty 3")
         ),
-        connectorAuthenticatedRequestMetadata
+        grpcAuthenticationHeaderDIDBased
       )
       intercept[RuntimeException] {
         repository.createBatch(institutionId, request, makeConnectionTokens(count = 3)).value.futureValue
@@ -306,7 +306,7 @@ class ContactsRepositorySpec extends AtalaWithPostgresSpec {
             List(
               CreateContact.NoOwner(externalId, json, "Dusty 1")
             ),
-            connectorAuthenticatedRequestMetadata
+            grpcAuthenticationHeaderDIDBased
           ),
           List(ConnectionToken("connectionToken"))
         )
@@ -320,7 +320,7 @@ class ContactsRepositorySpec extends AtalaWithPostgresSpec {
           CreateContact.NoOwner(Contact.ExternalId.random(), json, "Dusty 2"),
           CreateContact.NoOwner(externalId, json, "Dusty 3")
         ),
-        connectorAuthenticatedRequestMetadata
+        grpcAuthenticationHeaderDIDBased
       )
 
       intercept[RuntimeException] {
@@ -357,7 +357,7 @@ class ContactsRepositorySpec extends AtalaWithPostgresSpec {
           CreateContact.NoOwner(Contact.ExternalId.random(), json, "Dusty 2"),
           CreateContact.NoOwner(Contact.ExternalId.random(), json, "Dusty 3")
         ),
-        connectorAuthenticatedRequestMetadata
+        grpcAuthenticationHeaderDIDBased
       )
       val result = repository.createBatch(institutionId, request, makeConnectionTokens(count = 3)).value.futureValue
       result.isLeft must be(true)
@@ -381,7 +381,7 @@ class ContactsRepositorySpec extends AtalaWithPostgresSpec {
           CreateContact.NoOwner(Contact.ExternalId.random(), json, "Dusty 2"),
           CreateContact.NoOwner(Contact.ExternalId.random(), json, "Dusty 3")
         ),
-        connectorAuthenticatedRequestMetadata
+        grpcAuthenticationHeaderDIDBased
       )
       val result = repository.createBatch(institutionId, request, makeConnectionTokens(count = 3)).value.futureValue
       result.isLeft must be(true)
@@ -400,7 +400,7 @@ class ContactsRepositorySpec extends AtalaWithPostgresSpec {
         .create(
           participantId = institution,
           contactData =
-            CreateContact(Contact.ExternalId.random(), json, "Dusty Here", connectorAuthenticatedRequestMetadata),
+            CreateContact(Contact.ExternalId.random(), json, "Dusty Here", grpcAuthenticationHeaderDIDBased),
           maybeGroupName = None,
           connectionToken = ConnectionToken("connectionToken")
         )
@@ -462,7 +462,7 @@ class ContactsRepositorySpec extends AtalaWithPostgresSpec {
         .create(
           participantId = institution,
           contactData =
-            CreateContact(Contact.ExternalId.random(), json, "Dusty Here", connectorAuthenticatedRequestMetadata),
+            CreateContact(Contact.ExternalId.random(), json, "Dusty Here", grpcAuthenticationHeaderDIDBased),
           maybeGroupName = None,
           connectionToken = ConnectionToken("connectionToken")
         )

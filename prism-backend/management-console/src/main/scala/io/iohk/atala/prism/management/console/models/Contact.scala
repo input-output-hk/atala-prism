@@ -1,6 +1,7 @@
 package io.iohk.atala.prism.management.console.models
 
 import io.circe.Json
+import io.iohk.atala.prism.auth.grpc.GrpcAuthenticationHeader
 import io.iohk.atala.prism.models.{ConnectionToken, UUIDValue}
 import io.iohk.atala.prism.protos.console_models.ContactConnectionStatus
 
@@ -17,7 +18,7 @@ final case class CreateContact(
     externalId: Contact.ExternalId,
     data: Json,
     name: String,
-    generateConnectionTokenRequestMetadata: ConnectorAuthenticatedRequestMetadata
+    generateConnectionTokenRequestMetadata: GrpcAuthenticationHeader.DIDBased
 )
 
 object CreateContact {
@@ -30,7 +31,7 @@ object CreateContact {
   final case class Batch(
       groups: Set[InstitutionGroup.Id],
       contacts: List[NoOwner],
-      generateConnectionTokenRequestMetadata: ConnectorAuthenticatedRequestMetadata
+      generateConnectionTokenRequestMetadata: GrpcAuthenticationHeader.DIDBased
   )
 }
 

@@ -5,6 +5,7 @@ import cats.data.NonEmptyList
 import java.time.{Instant, LocalDate}
 import java.util.UUID
 import io.circe.Json
+import io.iohk.atala.prism.auth.grpc.GrpcAuthenticationHeader
 import io.iohk.atala.prism.credentials.CredentialBatchId
 import io.iohk.atala.prism.crypto.MerkleTree.MerkleInclusionProof
 import io.iohk.atala.prism.crypto.SHA256Digest
@@ -37,7 +38,7 @@ final case class ShareCredential(
 final case class ShareCredentials(
     credentialsIds: NonEmptyList[GenericCredential.Id],
     sendMessagesRequest: connector_api.SendMessagesRequest,
-    sendMessagesRequestMetadata: ConnectorAuthenticatedRequestMetadata
+    sendMessagesRequestMetadata: GrpcAuthenticationHeader.DIDBased
 )
 
 final case class DeleteCredentials(

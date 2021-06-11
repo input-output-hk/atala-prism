@@ -2,18 +2,20 @@ package io.iohk.atala.prism.management.console.clients
 
 import io.grpc.Metadata
 import io.grpc.stub.MetadataUtils
+import io.iohk.atala.prism.auth.grpc.GrpcAuthenticationHeader
+import io.iohk.atala.prism.auth.grpc.GrpcAuthenticationHeader.PublishedDIDBased
+import io.iohk.atala.prism.auth.model.RequestNonce
 import io.iohk.atala.prism.connector.RequestAuthenticator
-import io.iohk.atala.prism.crypto.{EC, ECPrivateKey}
+import io.iohk.atala.prism.crypto.{EC, ECPrivateKey, ECSignature}
 import io.iohk.atala.prism.identity.DID
 import io.iohk.atala.prism.identity.DID.masterKeyId
-import io.iohk.atala.prism.management.console.models.ConnectorAuthenticatedRequestMetadata
 import io.iohk.atala.prism.models.ConnectionToken
 import io.iohk.atala.prism.protos.connector_api._
 import io.iohk.atala.prism.protos.connector_models.ContactConnection
 import io.iohk.atala.prism.services.BaseGrpcClientService.AuthHeaders
 import io.iohk.atala.prism.util
 import io.iohk.atala.prism.util.BytesOps
-import io.iohk.atala.prism.utils.GrpcUtils
+import io.iohk.atala.prism.utils.{Base64Utils, GrpcUtils}
 
 import scala.concurrent.{ExecutionContext, Future}
 import scala.util.{Failure, Success, Try}
@@ -23,13 +25,13 @@ trait ConnectorClient {
   // the connector request beforehand, which allows our service to invoke the connector on behalf
   // of such client.
   def generateConnectionTokens(
-      metadata: ConnectorAuthenticatedRequestMetadata,
+      metadata: GrpcAuthenticationHeader.DIDBased,
       count: Int
   ): Future[Seq[ConnectionToken]]
 
   def sendMessages(
       request: SendMessagesRequest,
-      metadata: ConnectorAuthenticatedRequestMetadata
+      metadata: GrpcAuthenticationHeader.DIDBased
   ): Future[SendMessagesResponse]
 
   def getConnectionStatus(tokens: Seq[ConnectionToken]): Future[Seq[ContactConnection]]
@@ -83,15 +85,15 @@ object ConnectorClient {
       .createPlaintextStub(host = config.host, port = config.port, stub = ConnectorServiceGrpc.stub)
 
     val requestAuthenticator = new RequestAuthenticator(EC)
-    def requestSigner(request: scalapb.GeneratedMessage): ConnectorAuthenticatedRequestMetadata = {
 
-      val firstMasterKeyId = masterKeyId
+    def requestSigner(request: scalapb.GeneratedMessage): GrpcAuthenticationHeader.DIDBased = {
+
       val signedRequest = requestAuthenticator.signConnectorRequest(request.toByteArray, config.didPrivateKey)
-      ConnectorAuthenticatedRequestMetadata(
-        did = config.whitelistedDID.value,
-        didKeyId = firstMasterKeyId,
-        requestNonce = signedRequest.encodedRequestNonce,
-        didSignature = signedRequest.encodedSignature
+      PublishedDIDBased(
+        did = DID.unsafeFromString(config.whitelistedDID.value),
+        keyId = masterKeyId,
+        requestNonce = RequestNonce(signedRequest.encodedRequestNonce.getBytes.toVector),
+        signature = ECSignature(signedRequest.encodedSignature.getBytes)
       )
     }
     new ConnectorClient.GrpcImpl(connectorService, connectorContactsService)(requestSigner)
@@ -100,11 +102,11 @@ object ConnectorClient {
   class GrpcImpl(
       connectorService: ConnectorServiceGrpc.ConnectorServiceStub,
       contactConnectionService: ContactConnectionServiceGrpc.ContactConnectionServiceStub
-  )(requestSigner: scalapb.GeneratedMessage => ConnectorAuthenticatedRequestMetadata)(implicit ec: ExecutionContext)
+  )(requestSigner: scalapb.GeneratedMessage => GrpcAuthenticationHeader.DIDBased)(implicit ec: ExecutionContext)
       extends ConnectorClient {
 
     override def generateConnectionTokens(
-        metadata: ConnectorAuthenticatedRequestMetadata,
+        metadata: GrpcAuthenticationHeader.DIDBased,
         count: Int
     ): Future[Seq[ConnectionToken]] = {
       val headers = createMetadataHeaders(metadata)
@@ -117,7 +119,7 @@ object ConnectorClient {
 
     override def sendMessages(
         request: SendMessagesRequest,
-        metadata: ConnectorAuthenticatedRequestMetadata
+        metadata: GrpcAuthenticationHeader.DIDBased
     ): Future[SendMessagesResponse] = {
       val headers = createMetadataHeaders(metadata)
       val newStub = MetadataUtils.attachHeaders(connectorService, headers)
@@ -137,15 +139,14 @@ object ConnectorClient {
         .map(_.connections)
     }
 
-    // TODO: Reuse the GrpcAuthenticationHeader instead
-    private def createMetadataHeaders(headers: ConnectorAuthenticatedRequestMetadata): Metadata = {
+    private def createMetadataHeaders(headers: GrpcAuthenticationHeader.DIDBased): Metadata = {
       val metadata = new Metadata
 
       List(
-        AuthHeaders.DID -> headers.did,
-        AuthHeaders.DID_KEY_ID -> headers.didKeyId,
-        AuthHeaders.DID_SIGNATURE -> headers.didSignature,
-        AuthHeaders.REQUEST_NONCE -> headers.requestNonce
+        AuthHeaders.DID -> headers.did.toString,
+        AuthHeaders.DID_KEY_ID -> headers.keyId,
+        AuthHeaders.DID_SIGNATURE -> Base64Utils.encodeURL(headers.signature.data),
+        AuthHeaders.REQUEST_NONCE -> Base64Utils.encodeURL(headers.requestNonce.bytes.toArray)
       ).foreach {
         case (key, value) => metadata.put(key, value)
       }

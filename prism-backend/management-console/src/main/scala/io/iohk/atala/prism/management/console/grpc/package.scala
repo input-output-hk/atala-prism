@@ -1,9 +1,12 @@
 package io.iohk.atala.prism.management.console
 
 import cats.data.NonEmptyList
+import cats.implicits.catsSyntaxTuple4Semigroupal
 import cats.syntax.traverse._
 import com.google.protobuf.ByteString
 import io.circe.Json
+import io.iohk.atala.prism.auth.grpc.GrpcAuthenticationHeader
+import io.iohk.atala.prism.auth.model.RequestNonce
 import io.iohk.atala.prism.grpc.ProtoConverter
 import io.iohk.atala.prism.identity.DID
 import io.iohk.atala.prism.management.console.grpc.ProtoCodecs.{checkListUniqueness, toTimestamp}
@@ -21,11 +24,11 @@ import io.iohk.atala.prism.protos.common_models.SortByDirection
 import io.iohk.atala.prism.protos.console_api._
 import io.scalaland.chimney.dsl._
 import io.scalaland.chimney.Transformer
-import java.time.LocalDate
 
+import java.time.LocalDate
 import io.iohk.atala.prism.credentials.CredentialBatchId
 import io.iohk.atala.prism.crypto.MerkleTree.MerkleInclusionProof
-import io.iohk.atala.prism.crypto.SHA256Digest
+import io.iohk.atala.prism.crypto.{ECSignature, SHA256Digest}
 import io.iohk.atala.prism.models.TransactionId
 import io.iohk.atala.prism.protos.connector_api.SendMessagesRequest
 import io.iohk.atala.prism.protos.console_models.ContactConnectionStatus
@@ -550,12 +553,30 @@ package object grpc {
 
   private def toConnectorRequestMetadata(
       connectorRequestMetadata: Option[console_models.ConnectorRequestMetadata]
-  ): Try[ConnectorAuthenticatedRequestMetadata] = {
-    connectorRequestMetadata
-      .map(_.transformInto[ConnectorAuthenticatedRequestMetadata])
-      .fold[Try[ConnectorAuthenticatedRequestMetadata]](
+  ): Try[GrpcAuthenticationHeader.DIDBased] = {
+
+    (
+      connectorRequestMetadata.map(_.requestNonce),
+      connectorRequestMetadata.map(_.did),
+      connectorRequestMetadata.map(_.didKeyId),
+      connectorRequestMetadata.map(_.didSignature)
+    ).mapN {
+        case (nonce, didStr, keyId, signature) =>
+          DID
+            .fromString(didStr)
+            .map { did =>
+              val didBased =
+                if (did.isCanonicalForm)
+                  GrpcAuthenticationHeader.PublishedDIDBased
+                else GrpcAuthenticationHeader.UnpublishedDIDBased
+
+              didBased(RequestNonce(nonce.getBytes.toVector), did, keyId, ECSignature(signature.getBytes))
+            }
+      }
+      .flatten
+      .fold[Try[GrpcAuthenticationHeader.DIDBased]](
         Failure(new IllegalArgumentException("connector request metadata is missing"))
-      )(Success(_))
+      )(Success.apply)
   }
 
   private def toCredentialsIds(credentialsIds: Seq[String]): Try[NonEmptyList[GenericCredential.Id]] = {

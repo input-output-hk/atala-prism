@@ -5,30 +5,22 @@ import doobie.implicits._
 import doobie.util.transactor.Transactor
 import io.circe.Json
 import io.circe.syntax._
-import io.iohk.atala.prism.crypto.{EC, SHA256Digest}
-import io.iohk.atala.prism.identity.DID
-import io.iohk.atala.prism.management.console.models._
-import io.iohk.atala.prism.management.console.repositories.daos._
-import io.iohk.atala.prism.management.console.repositories.daos.ReceivedCredentialsDAO.ReceivedSignedCredentialData
-import io.iohk.atala.prism.management.console.repositories.daos.{
-  ContactsDAO,
-  CredentialTypeDao,
-  CredentialsDAO,
-  InstitutionGroupsDAO,
-  ParticipantsDAO,
-  ReceivedCredentialsDAO
-}
-import io.iohk.atala.prism.models.{ConnectionToken, Ledger, TransactionId, TransactionInfo}
-import org.scalatest.OptionValues._
-import io.scalaland.chimney.dsl._
-import io.iohk.atala.prism.protos.console_models.{ConnectorRequestMetadata, ContactConnectionStatus}
-
-import java.time.{Instant, LocalDate}
+import io.iohk.atala.prism.auth.grpc.GrpcAuthenticationHeader
+import io.iohk.atala.prism.auth.model.RequestNonce
 import io.iohk.atala.prism.credentials.CredentialBatchId
 import io.iohk.atala.prism.crypto.MerkleTree.MerkleInclusionProof
+import io.iohk.atala.prism.crypto.{EC, ECSignature, SHA256Digest}
+import io.iohk.atala.prism.identity.DID
+import io.iohk.atala.prism.management.console.models._
+import io.iohk.atala.prism.management.console.repositories.daos.ReceivedCredentialsDAO.ReceivedSignedCredentialData
+import io.iohk.atala.prism.management.console.repositories.daos._
 import io.iohk.atala.prism.models.Ledger.InMemory
+import io.iohk.atala.prism.models.{ConnectionToken, Ledger, TransactionId, TransactionInfo}
 import io.iohk.atala.prism.protos.connector_models.ContactConnection
+import io.iohk.atala.prism.protos.console_models.{ConnectorRequestMetadata, ContactConnectionStatus}
+import org.scalatest.OptionValues._
 
+import java.time.{Instant, LocalDate}
 import scala.util.Random
 
 object DataPreparation {
@@ -48,16 +40,21 @@ object DataPreparation {
     id
   }
 
-  val connectorAuthenticatedRequestMetadata: ConnectorAuthenticatedRequestMetadata =
-    ConnectorAuthenticatedRequestMetadata(
-      did = newDID().toString,
-      didKeyId = "didKeyId",
-      didSignature = "didSignature",
-      requestNonce = "requestNonce"
+  val grpcAuthenticationHeaderDIDBased: GrpcAuthenticationHeader.DIDBased =
+    GrpcAuthenticationHeader.PublishedDIDBased(
+      did = newDID(),
+      keyId = "didKeyId",
+      signature = ECSignature("didSignature".getBytes),
+      requestNonce = RequestNonce("requestNonce".getBytes.toVector)
     )
 
   val connectorRequestMetadataProto: ConnectorRequestMetadata =
-    connectorAuthenticatedRequestMetadata.transformInto[ConnectorRequestMetadata]
+    ConnectorRequestMetadata(
+      did = grpcAuthenticationHeaderDIDBased.did.toString,
+      didKeyId = grpcAuthenticationHeaderDIDBased.keyId,
+      didSignature = new String(grpcAuthenticationHeaderDIDBased.signature.data),
+      requestNonce = new String(grpcAuthenticationHeaderDIDBased.requestNonce.bytes.toArray)
+    )
 
   def createInstitutionGroup(institutionId: ParticipantId, name: InstitutionGroup.Name)(implicit
       database: Transactor[IO]
@@ -82,7 +79,7 @@ object DataPreparation {
       ),
       externalId = externalId,
       name = name,
-      generateConnectionTokenRequestMetadata = connectorAuthenticatedRequestMetadata
+      generateConnectionTokenRequestMetadata = grpcAuthenticationHeaderDIDBased
     )
 
     groupName match {
