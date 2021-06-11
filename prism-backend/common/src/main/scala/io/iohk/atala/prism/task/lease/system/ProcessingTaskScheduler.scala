@@ -7,10 +7,11 @@ import org.slf4j.LoggerFactory
 
 import java.util.concurrent.atomic.AtomicInteger
 import scala.concurrent.duration.DurationInt
+import cats.implicits._
 
-class ProcessingTaskScheduler(
-    processingTaskService: ProcessingTaskService,
-    processingTaskRouter: ProcessingTaskRouter,
+class ProcessingTaskScheduler[S <: ProcessingTaskState](
+    processingTaskService: ProcessingTaskService[S],
+    processingTaskRouter: ProcessingTaskRouter[S],
     taskLeaseConfig: ProcessingTaskLeaseConfig
 ) {
 
@@ -52,7 +53,7 @@ class ProcessingTaskScheduler(
     }
   }
 
-  private[task] def process(processingTask: ProcessingTask, workerNumber: Int): Task[Unit] = {
+  private[task] def process(processingTask: ProcessingTask[S], workerNumber: Int): Task[Unit] = {
     Task.tailRecM(processingTask) { task =>
       logger.info(s"Worker: $workerNumber, processing task with id: ${task.id}, state: ${task.state}")
 
@@ -66,7 +67,7 @@ class ProcessingTaskScheduler(
       Task
         .race(extendLeaseTask, processingTaskRouter.process(task))
         .flatMap {
-          case Right(ProcessingTaskResult.ProcessingTaskFinished) =>
+          case Right(ProcessingTaskResult.ProcessingTaskFinished()) =>
             processingTaskService
               .deleteTask(task.id)
               .map(_ => Right(()))
@@ -78,21 +79,25 @@ class ProcessingTaskScheduler(
             processingTaskService
               .updateTaskAndExtendLease(task.id, state, data, taskLeaseConfig.leaseTimeSeconds)
               .map(Left(_))
+          case Right(ProcessingTaskResult.ProcessingTaskRestart()) =>
+            logger.warn(
+              s"Worker: ${workerNumber}, ProcessingTask: ${task.id} with state: ${task.state} finished, although it shouldn't. Restarting it."
+            )
+            processingTaskService
+              .updateTaskAndExtendLease(task.id, task.state, task.data, taskLeaseConfig.leaseTimeSeconds)
+              .map(Left(_))
           case Left(_) =>
             logger.warn(
               s"Worker: $workerNumber, error occurred when processing task with id: ${task.id}, extend lease task unexpectedly finished"
             )
             Task.pure(Right(()))
         }
-        .redeem(
-          ex => {
-            logger.warn(
-              s"Worker: $workerNumber, error occurred when processing task with id: ${task.id}, error: ${ex.getMessage}"
-            )
-            Right(())
-          },
-          id => id
-        )
+        .onErrorHandle(ex => {
+          logger.warn(
+            s"Worker: $workerNumber, error occurred when processing task with id: ${task.id}, error: ${ex.getMessage}"
+          )
+          Right(())
+        })
     }
   }
 

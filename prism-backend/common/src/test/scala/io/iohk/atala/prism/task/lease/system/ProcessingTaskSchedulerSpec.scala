@@ -1,6 +1,5 @@
 package io.iohk.atala.prism.task.lease.system
 
-import io.circe.Json
 import io.iohk.atala.prism.stubs.ProcessingTaskServiceStub
 import monix.eval.Task
 import org.scalatest.matchers.must.Matchers
@@ -16,9 +15,11 @@ class ProcessingTaskSchedulerSpec extends AnyWordSpec with Matchers {
 
   "ProcessingTaskScheduler" should {
     "process task with ProcessingTaskFinished result" in new Fixtures {
-      val processingTaskRouter = new ProcessingTaskRouter {
-        override def process(processingTask: ProcessingTask): Task[ProcessingTaskResult] =
-          Task.pure(ProcessingTaskResult.ProcessingTaskFinished)
+      val processingTaskRouter = new ProcessingTaskRouter[ProcessingTaskTestState] {
+        override def process(
+            processingTask: ProcessingTask[ProcessingTaskTestState]
+        ): Task[ProcessingTaskResult[ProcessingTaskTestState]] =
+          Task.pure(ProcessingTaskResult.ProcessingTaskFinished())
       }
 
       val processingTaskScheduler =
@@ -31,9 +32,13 @@ class ProcessingTaskSchedulerSpec extends AnyWordSpec with Matchers {
     }
 
     "process task with ProcessingTaskScheduled result" in new Fixtures {
-      val processingTaskRouter = new ProcessingTaskRouter {
-        override def process(processingTask: ProcessingTask): Task[ProcessingTaskResult] =
-          Task.pure(ProcessingTaskResult.ProcessingTaskScheduled(ProcessingTaskState.TestState1, taskData, nextAction))
+      val processingTaskRouter = new ProcessingTaskRouter[ProcessingTaskTestState] {
+        override def process(
+            processingTask: ProcessingTask[ProcessingTaskTestState]
+        ): Task[ProcessingTaskResult[ProcessingTaskTestState]] =
+          Task.pure(
+            ProcessingTaskResult.ProcessingTaskScheduled(ProcessingTaskTestState.TestState1, sampleTaskData, nextAction)
+          )
       }
 
       val processingTaskScheduler =
@@ -46,13 +51,15 @@ class ProcessingTaskSchedulerSpec extends AnyWordSpec with Matchers {
     }
 
     "process task with ProcessingTaskStateTransition result" in new Fixtures {
-      val processingTaskRouter = new ProcessingTaskRouter {
+      val processingTaskRouter = new ProcessingTaskRouter[ProcessingTaskTestState] {
         var count = 0
-        override def process(processingTask: ProcessingTask): Task[ProcessingTaskResult] =
+        override def process(
+            processingTask: ProcessingTask[ProcessingTaskTestState]
+        ): Task[ProcessingTaskResult[ProcessingTaskTestState]] =
           if (count < 3) {
             count = count + 1
-            Task.pure(ProcessingTaskResult.ProcessingTaskStateTransition(taskState, taskData))
-          } else Task.pure(ProcessingTaskResult.ProcessingTaskFinished)
+            Task.pure(ProcessingTaskResult.ProcessingTaskStateTransition(taskState, sampleTaskData))
+          } else Task.pure(ProcessingTaskResult.ProcessingTaskFinished())
       }
 
       val processingTaskScheduler =
@@ -66,9 +73,13 @@ class ProcessingTaskSchedulerSpec extends AnyWordSpec with Matchers {
     }
 
     "extend lease in specified periods of time" in new Fixtures {
-      val processingTaskRouter = new ProcessingTaskRouter {
-        override def process(processingTask: ProcessingTask): Task[ProcessingTaskResult] =
-          Task.pure(ProcessingTaskResult.ProcessingTaskFinished).delayExecution(2500.milliseconds)
+      val processingTaskRouter = new ProcessingTaskRouter[ProcessingTaskTestState] {
+        override def process(
+            processingTask: ProcessingTask[ProcessingTaskTestState]
+        ): Task[ProcessingTaskResult[ProcessingTaskTestState]] =
+          Task
+            .pure(ProcessingTaskResult.ProcessingTaskFinished[ProcessingTaskTestState]())
+            .delayExecution(2500.milliseconds)
       }
 
       val processingTaskScheduler =
@@ -82,8 +93,10 @@ class ProcessingTaskSchedulerSpec extends AnyWordSpec with Matchers {
     }
 
     "do not extend lease when processing of tasks fails" in new Fixtures {
-      val processingTaskRouter = new ProcessingTaskRouter {
-        override def process(processingTask: ProcessingTask): Task[ProcessingTaskResult] =
+      val processingTaskRouter = new ProcessingTaskRouter[ProcessingTaskTestState] {
+        override def process(
+            processingTask: ProcessingTask[ProcessingTaskTestState]
+        ): Task[ProcessingTaskResult[ProcessingTaskTestState]] =
           Task.raiseError(new Exception("Expected error"))
       }
 
@@ -100,17 +113,21 @@ class ProcessingTaskSchedulerSpec extends AnyWordSpec with Matchers {
     }
 
     "process tasks" in new Fixtures {
-      val processingTaskRouter = new ProcessingTaskRouter {
-        override def process(processingTask: ProcessingTask): Task[ProcessingTaskResult] =
-          Task.pure(ProcessingTaskResult.ProcessingTaskFinished)
+      val processingTaskRouter = new ProcessingTaskRouter[ProcessingTaskTestState] {
+        override def process(
+            processingTask: ProcessingTask[ProcessingTaskTestState]
+        ): Task[ProcessingTaskResult[ProcessingTaskTestState]] =
+          Task.pure(ProcessingTaskResult.ProcessingTaskFinished())
       }
 
-      override val processingTaskServiceStub = new ProcessingTaskServiceStub() {
+      override val processingTaskServiceStub = new ProcessingTaskServiceStub[ProcessingTaskTestState]() {
 
         @volatile
         var count = 0
 
-        override def fetchTaskToProcess(leaseTimeSeconds: Int): Task[Option[ProcessingTask]] = {
+        override def fetchTaskToProcess(
+            leaseTimeSeconds: Int
+        ): Task[Option[ProcessingTask[ProcessingTaskTestState]]] = {
           count = count + 1
           if (count != 3) Task.pure(None)
           else Task.pure(Some(processingTask))
@@ -128,17 +145,21 @@ class ProcessingTaskSchedulerSpec extends AnyWordSpec with Matchers {
     }
 
     "notify idle worker when there is a new task to be processed" in new Fixtures {
-      val processingTaskRouter = new ProcessingTaskRouter {
-        override def process(processingTask: ProcessingTask): Task[ProcessingTaskResult] =
-          Task.pure(ProcessingTaskResult.ProcessingTaskFinished)
+      val processingTaskRouter = new ProcessingTaskRouter[ProcessingTaskTestState] {
+        override def process(
+            processingTask: ProcessingTask[ProcessingTaskTestState]
+        ): Task[ProcessingTaskResult[ProcessingTaskTestState]] =
+          Task.pure(ProcessingTaskResult.ProcessingTaskFinished())
       }
 
-      override val processingTaskServiceStub = new ProcessingTaskServiceStub() {
+      override val processingTaskServiceStub = new ProcessingTaskServiceStub[ProcessingTaskTestState]() {
 
         @volatile
         var count = 0
 
-        override def fetchTaskToProcess(leaseTimeSeconds: Int): Task[Option[ProcessingTask]] = {
+        override def fetchTaskToProcess(
+            leaseTimeSeconds: Int
+        ): Task[Option[ProcessingTask[ProcessingTaskTestState]]] = {
           count = count + 1
           if (count != 2) Task.pure(None)
           else Task.pure(Some(processingTask))
@@ -163,30 +184,13 @@ class ProcessingTaskSchedulerSpec extends AnyWordSpec with Matchers {
 
       processingTaskServiceStub.deleteInvokeCount.get() mustBe 1
     }
-
   }
 
-  trait Fixtures {
-    val taskData = ProcessingTaskData(Json.fromString("sample"))
-    val taskState = ProcessingTaskState.TestState1
-    val processingTaskServiceStub = new ProcessingTaskServiceStub()
+  trait Fixtures extends ProcessingTaskFixtures {
+    val processingTaskServiceStub = new ProcessingTaskServiceStub[ProcessingTaskTestState]()
     val nextAction = Instant.now().plus(30, ChronoUnit.SECONDS)
+    val taskState = ProcessingTaskTestState.TestState1
 
-    val taskLeaseConfig = new ProcessingTaskLeaseConfig(
-      leaseTimeSeconds = 30,
-      extendLeaseTimeIntervalSeconds = 1,
-      numberOfWorkers = 1,
-      workerSleepTimeSeconds = 1
-    )
-
-    val processingTask = ProcessingTask(
-      id = ProcessingTaskId.random(),
-      state = taskState,
-      owner = None,
-      lastChange = Instant.now(),
-      nextAction = nextAction,
-      data = taskData
-    )
+    val processingTask = createProcessingTask[ProcessingTaskTestState](state = taskState, nextAction = nextAction)
   }
-
 }

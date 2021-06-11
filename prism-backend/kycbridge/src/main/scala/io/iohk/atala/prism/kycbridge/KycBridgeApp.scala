@@ -1,45 +1,37 @@
 package io.iohk.atala.prism.kycbridge
 
-import monix.eval.{Task, TaskApp}
 import cats.effect.{ExitCode, Resource}
 import com.typesafe.config.ConfigFactory
+import doobie.implicits._
 import io.grpc.Server
+import io.iohk.atala.kycbridge.protos.kycbridge_api.KycBridgeServiceGrpc
 import io.iohk.atala.prism.config.{ConnectorConfig, NodeConfig}
 import io.iohk.atala.prism.connector.RequestAuthenticator
 import io.iohk.atala.prism.crypto.EC
-import io.iohk.atala.prism.kycbridge.config.KycBridgeConfig
-import io.iohk.atala.prism.kycbridge.models.assureId.{Device, DeviceType}
-import io.iohk.atala.prism.kycbridge.services.{
-  AcasServiceImpl,
-  AcuantService,
-  AssureIdServiceImpl,
-  ConnectionService,
-  FaceIdServiceImpl,
-  KycBridgeGrpcService,
-  KycBridgeService
-}
-import io.iohk.atala.prism.repositories.TransactorFactory
-import io.iohk.atala.prism.services.{ConnectorClientServiceImpl, NodeClientServiceImpl}
-import org.http4s.client.blaze.BlazeClientBuilder
-import org.slf4j.LoggerFactory
-import io.iohk.atala.kycbridge.protos.kycbridge_api.KycBridgeServiceGrpc
-import io.iohk.atala.prism.utils.GrpcUtils
-
-import scala.concurrent.ExecutionContext.Implicits.global
-import io.iohk.atala.prism.services.ConnectorMessagesService
-import doobie.implicits._
 import io.iohk.atala.prism.daos.ConnectorMessageOffsetDao
-import io.iohk.atala.prism.kycbridge.processors.DocumentUploadedMessageProcessor
-import io.iohk.atala.prism.task.lease.system.{
-  ProcessingTaskRouterImpl,
-  ProcessingTaskScheduler,
-  ProcessingTaskServiceImpl
-}
+import io.iohk.atala.prism.kycbridge.config.KycBridgeConfig
+import io.iohk.atala.prism.kycbridge.message.processors.AcuantDocumentUploadedMessageProcessor
+import io.iohk.atala.prism.kycbridge.services._
+import io.iohk.atala.prism.kycbridge.task.lease.system.KycBridgeProcessingTaskState
+import io.iohk.atala.prism.kycbridge.task.lease.system.processors._
 import io.iohk.atala.prism.protos.connector_api.ConnectorServiceGrpc
 import io.iohk.atala.prism.protos.node_api.NodeServiceGrpc
-import io.iohk.atala.prism.services.BaseGrpcClientService
+import io.iohk.atala.prism.repositories.TransactorFactory
+import io.iohk.atala.prism.services.{
+  BaseGrpcClientService,
+  ConnectorClientServiceImpl,
+  ConnectorMessagesService,
+  NodeClientServiceImpl
+}
+import io.iohk.atala.prism.task.lease.system.processors.ProcessMessagesStateProcessor
+import io.iohk.atala.prism.task.lease.system._
+import io.iohk.atala.prism.utils.GrpcUtils
+import monix.eval.{Task, TaskApp}
+import org.http4s.client.blaze.BlazeClientBuilder
+import org.slf4j.LoggerFactory
 
 import java.util.UUID
+import scala.concurrent.ExecutionContext.Implicits.global
 
 object KycBridgeApp extends TaskApp {
 
@@ -50,32 +42,14 @@ object KycBridgeApp extends TaskApp {
   override def run(args: List[String]): Task[ExitCode] = {
     val classLoader = Thread.currentThread().getContextClassLoader
     app(classLoader).use {
-      case (assureIdService, acasService, grpcServer, streams) =>
+      case (grpcServer, monixTasks) =>
         logger.info("Kyc bridge application started")
-
-        //only for demonstration purpose
-        val device = Device(
-          `type` = DeviceType(
-            manufacturer = "manufacturer",
-            model = "model"
-          )
-        )
-
-        (for {
-          documentResponse <- assureIdService.createNewDocumentInstance(device)
-          _ = logger.info(s"New document response: $documentResponse")
-          accessTokenResponse <- acasService.getAccessToken
-          _ = logger.info(s"Access token response: $accessTokenResponse")
-          documentStatus <- assureIdService.getDocumentStatus(
-            documentResponse.toOption.get.documentId
-          )
-          _ = logger.info(s"Document status: $documentStatus")
-          _ = logger.info("Starting GRPC server")
-          _ = grpcServer.start
-          //We use Task.parSequence instead of calling `start` on every task,
-          //because `start` doesn't propagate errors, `Task.parSequence` does this.
-          _ <- Task.parSequence(streams)
-        } yield ())
+        logger.info("Starting GRPC server")
+        grpcServer.start
+        //We use Task.parSequence instead of calling `start` on every task,
+        //because `start` doesn't propagate errors, `Task.parSequence` does this.
+        Task
+          .parSequence(monixTasks)
           .flatMap(_ => Task.never)
           .onErrorHandle(error => {
             logger.error("KYC Bridge exiting because of runaway exception", error)
@@ -84,7 +58,7 @@ object KycBridgeApp extends TaskApp {
     }
   }
 
-  def app(classLoader: ClassLoader): Resource[Task, (AssureIdServiceImpl, AcasServiceImpl, Server, List[Task[Unit]])] =
+  def app(classLoader: ClassLoader): Resource[Task, (Server, List[Task[Unit]])] =
     for {
       httpClient <- BlazeClientBuilder[Task](global).resource
 
@@ -122,21 +96,16 @@ object KycBridgeApp extends TaskApp {
       assureIdService = new AssureIdServiceImpl(kycBridgeConfig.acuantConfig, httpClient)
       acasService = new AcasServiceImpl(kycBridgeConfig.acuantConfig, httpClient)
       faceIdService = new FaceIdServiceImpl(kycBridgeConfig.acuantConfig, httpClient)
-      connectionService = new ConnectionService(tx, connectorService)
-      acuantService = new AcuantService(tx, assureIdService, acasService, connectorService)
-      processingTaskService = new ProcessingTaskServiceImpl(tx, UUID.randomUUID())
-      processingTaskRouter = new ProcessingTaskRouterImpl(processingTaskService)
-      processingTaskScheduler =
-        new ProcessingTaskScheduler(processingTaskService, processingTaskRouter, kycBridgeConfig.taskLeaseConfig)
+
+      processingTaskDao =
+        new ProcessingTaskDao[KycBridgeProcessingTaskState](KycBridgeProcessingTaskState.withNameOption)
+      processingTaskService =
+        new ProcessingTaskServiceImpl[KycBridgeProcessingTaskState](tx, UUID.randomUUID(), processingTaskDao)
+
+      connectionService = new ConnectionService(tx, connectorService, processingTaskService)
 
       // connector message processors
-      documentUploadedMessageProcessor = new DocumentUploadedMessageProcessor(
-        tx,
-        nodeService,
-        assureIdService,
-        faceIdService,
-        authConfig
-      )
+      documentUploadedMessageProcessor = new AcuantDocumentUploadedMessageProcessor(processingTaskService)
 
       connectorMessageService = new ConnectorMessagesService(
         connectorService = connectorService,
@@ -145,10 +114,42 @@ object KycBridgeApp extends TaskApp {
         saveMessageOffset = messageId => ConnectorMessageOffsetDao.updateLastMessageOffset(messageId).transact(tx).void
       )
 
-      streams = List(
-        connectionService.connectionUpdateStream.compile.drain,
-        acuantService.acuantDataStream.compile.drain,
-        connectorMessageService.messagesUpdatesStream.compile.drain,
+      //processing task processors
+      processMessagesStateProcessor =
+        new ProcessMessagesStateProcessor[KycBridgeProcessingTaskState](connectorMessageService)
+      acuantFetchDocumentState1Processor = new AcuantFetchDocumentState1Processor(tx, connectorService, assureIdService)
+      acuantCompareImagesState2Processor =
+        new AcuantCompareImagesState2Processor(connectorService, assureIdService, faceIdService)
+      acuantCreateCredentialState3Processor =
+        new AcuantCreateCredentialState3Processor(connectorService, nodeService, authConfig)
+      acuantStartProcessForConnectionStateProcessor =
+        new AcuantStartProcessForConnectionStateProcessor(tx, assureIdService, acasService, connectorService)
+      processNewConnectionsStateProcessor = new ProcessNewConnectionsStateProcessor(connectionService)
+
+      processingTaskRouter = new ProcessingTaskRouter[KycBridgeProcessingTaskState] {
+        override def process(
+            processingTask: ProcessingTask[KycBridgeProcessingTaskState]
+        ): Task[ProcessingTaskResult[KycBridgeProcessingTaskState]] = {
+          val processor = processingTask.state match {
+            case KycBridgeProcessingTaskState.ProcessConnectorMessagesState => processMessagesStateProcessor
+            case KycBridgeProcessingTaskState.AcuantFetchDocumentDataState1 => acuantFetchDocumentState1Processor
+            case KycBridgeProcessingTaskState.AcuantCompareImagesState2 => acuantCompareImagesState2Processor
+            case KycBridgeProcessingTaskState.AcuantIssueCredentialState3 => acuantCreateCredentialState3Processor
+            case KycBridgeProcessingTaskState.AcuantStartProcessForConnection =>
+              acuantStartProcessForConnectionStateProcessor
+            case KycBridgeProcessingTaskState.ProcessNewConnections => processNewConnectionsStateProcessor
+          }
+          processor.process(processingTask)
+        }
+      }
+
+      processingTaskScheduler = new ProcessingTaskScheduler[KycBridgeProcessingTaskState](
+        processingTaskService,
+        processingTaskRouter,
+        kycBridgeConfig.taskLeaseConfig
+      )
+
+      monixTasks = List(
         processingTaskScheduler.run.void
       )
 
@@ -160,6 +161,6 @@ object KycBridgeApp extends TaskApp {
         KycBridgeServiceGrpc.bindService(kycBridgeGrpcService, scheduler)
       )
 
-    } yield (assureIdService, acasService, grpcServer, streams)
+    } yield (grpcServer, monixTasks)
 
 }

@@ -1,122 +1,99 @@
-package io.iohk.atala.prism.kycbridge.processors
+package io.iohk.atala.prism.kycbridge.task.lease.system.processors
 
-import java.time.{Instant, ZoneOffset}
-import java.time.format.DateTimeFormatter
-import java.util.Base64
-
-import scala.util.Try
-import scala.io.Source
-
-import monix.eval.Task
 import cats.data.EitherT
-import doobie.util.transactor.Transactor
-import org.slf4j.LoggerFactory
-import doobie.implicits._
 import io.grpc.Status
-
-import io.iohk.atala.prism.services.{BaseGrpcClientService, MessageProcessor, NodeClientService}
-import io.iohk.atala.prism.protos.connector_models.ReceivedMessage
-import io.iohk.atala.prism.protos.credential_models
-import io.iohk.atala.prism.protos.credential_models.{AcuantProcessFinished, AtalaMessage}
-import io.iohk.atala.prism.kycbridge.db.ConnectionDao
-import io.iohk.atala.prism.kycbridge.models.assureId.Document
-import io.iohk.atala.prism.kycbridge.services.{AssureIdService, FaceIdService}
-import io.iohk.atala.prism.credentials.{Credential, CredentialBatches}
 import io.iohk.atala.prism.credentials.content.CredentialContent
 import io.iohk.atala.prism.credentials.content.syntax._
+import io.iohk.atala.prism.credentials.utils.Mustache
+import io.iohk.atala.prism.credentials.{Credential, CredentialBatches}
 import io.iohk.atala.prism.crypto.ECTrait
-import io.iohk.atala.prism.kycbridge.models.faceId
 import io.iohk.atala.prism.errors.PrismError
-import io.iohk.atala.prism.kycbridge.models.faceId.FaceMatchResponse
-import io.iohk.atala.prism.kycbridge.processors.DocumentUploadedMessageProcessor.{
+import io.iohk.atala.prism.kycbridge.models.assureId.Document
+import io.iohk.atala.prism.kycbridge.task.lease.system.KycBridgeProcessingTaskState
+import io.iohk.atala.prism.kycbridge.task.lease.system.data.AcuantCreateCredentialState3Data
+import io.iohk.atala.prism.kycbridge.task.lease.system.processors.AcuantCreateCredentialState3Processor.{
   CannotIssueCredentialBatch,
-  FaceMatchFailedError,
   HtmlTemplateError
 }
+import io.iohk.atala.prism.protos.connector_api.SendMessageResponse
+import io.iohk.atala.prism.protos.credential_models
+import io.iohk.atala.prism.protos.credential_models.AtalaMessage
 import io.iohk.atala.prism.protos.node_api.IssueCredentialBatchResponse
-import io.iohk.atala.prism.utils.ConnectionUtils
-import io.iohk.atala.prism.utils.syntax.DBConnectionOps
-import io.iohk.atala.prism.credentials.utils.Mustache
+import io.iohk.atala.prism.services.ConnectorClientService.CannotSendConnectorMessage
+import io.iohk.atala.prism.services.{BaseGrpcClientService, ConnectorClientService, NodeClientService}
+import io.iohk.atala.prism.task.lease.system.ProcessingTaskProcessorOps._
+import io.iohk.atala.prism.task.lease.system.{ProcessingTask, ProcessingTaskProcessor, ProcessingTaskResult}
+import monix.eval.Task
+import org.slf4j.LoggerFactory
 
-class DocumentUploadedMessageProcessor(
-    tx: Transactor[Task],
+import java.time.format.DateTimeFormatter
+import java.time.{Instant, ZoneOffset}
+import java.util.Base64
+import scala.io.Source
+import scala.util.Try
+
+class AcuantCreateCredentialState3Processor(
+    connectorService: ConnectorClientService,
     nodeService: NodeClientService,
-    assureIdService: AssureIdService,
-    faceIdService: FaceIdService,
     authConfig: BaseGrpcClientService.DidBasedAuthConfig
-)(implicit ec: ECTrait) {
+)(implicit ec: ECTrait)
+    extends ProcessingTaskProcessor[KycBridgeProcessingTaskState] {
 
-  private val logger = LoggerFactory.getLogger(this.getClass)
+  private implicit val logger = LoggerFactory.getLogger(this.getClass)
 
-  val processor: MessageProcessor = { receivedMessage =>
-    parseAcuantProcessFinishedMessage(receivedMessage)
-      .map { message =>
-        logger.info(s"Processing message with document instance id: ${message.documentInstanceId}")
-        (for {
-          // get required information
-          connection <- EitherT(
-            ConnectionUtils
-              .fromReceivedMessage(receivedMessage, ConnectionDao.findByConnectionId)
-              .logSQLErrors("getting connection from received message", logger)
-              .transact(tx)
+  override def process(
+      processingTask: ProcessingTask[KycBridgeProcessingTaskState]
+  ): Task[ProcessingTaskResult[KycBridgeProcessingTaskState]] = {
+    (for {
+      acuantData <-
+        parseProcessingTaskData[AcuantCreateCredentialState3Data, KycBridgeProcessingTaskState](processingTask)
+
+      // create credential batch with the document
+      credential <- EitherT(
+        Task
+          .pure(createCredential(acuantData.document, acuantData.frontScannedImage))
+          .logErrorIfPresent
+          .sendResponseOnError(connectorService, acuantData.receivedMessageId, acuantData.connectionId)
+          .mapErrorToProcessingTaskFinished[KycBridgeProcessingTaskState]()
+      )
+
+      (root, proof :: _) = CredentialBatches.batch(List(credential))
+      credentialResponse <-
+        EitherT[Task, ProcessingTaskResult[KycBridgeProcessingTaskState], IssueCredentialBatchResponse](
+          nodeService
+            .issueCredentialBatch(root)
+            .redeem(
+              ex => Left(CannotIssueCredentialBatch(ex.getMessage)),
+              Right(_)
+            )
+            .logErrorIfPresent
+            .mapErrorToProcessingTaskScheduled(processingTask)
+        )
+
+      // send credential along with inclusion proof
+      credentialProto = credential_models.PlainTextCredential(
+        encodedCredential = credential.canonicalForm,
+        encodedMerkleProof = proof.encode
+      )
+      atalaMessage = AtalaMessage().withPlainCredential(credentialProto)
+
+      _ = logger.info(
+        s"Credential batch created for document instance id: ${acuantData.documentInstanceId} with batch id: ${credentialResponse.batchId}"
+      )
+
+      _ <- EitherT[Task, ProcessingTaskResult[KycBridgeProcessingTaskState], SendMessageResponse](
+        connectorService
+          .sendResponseMessage(atalaMessage, acuantData.receivedMessageId, acuantData.connectionId)
+          .redeem(
+            ex => Left(CannotSendConnectorMessage(ex.getMessage)),
+            Right(_)
           )
-          documentStatus <- EitherT(assureIdService.getDocumentStatus(message.documentInstanceId))
+          .logErrorIfPresent
+          .mapErrorToProcessingTaskScheduled(processingTask)
+      )
 
-          document <- EitherT(assureIdService.getDocument(message.documentInstanceId))
-          frontImage <- EitherT(assureIdService.getFrontImageFromDocument(message.documentInstanceId))
-
-          // update connection with new document status
-          _ <- EitherT.right[PrismError](
-            ConnectionDao
-              .update(connection.copy(acuantDocumentStatus = Some(documentStatus)))
-              .logSQLErrors("updating connection", logger)
-              .transact(tx)
-          )
-
-          frontScannedImage <- EitherT(assureIdService.getFrontImageFromDocument(document.instanceId))
-
-          faceMatchData = faceId.Data(frontScannedImage, message.selfieImage.toByteArray)
-
-          faceMatchResult <- EitherT(faceIdService.faceMatch(faceMatchData))
-
-          _ <- EitherT.cond[Task](
-            faceMatchResult.isMatch,
-            (),
-            FaceMatchFailedError(faceMatchResult)
-          )
-
-          // create credential batch with the document
-          credential <- EitherT.fromEither[Task](createCredential(document, frontImage))
-          (root, proof :: _) = CredentialBatches.batch(List(credential))
-          credentialResponse <- EitherT[Task, PrismError, IssueCredentialBatchResponse](
-            nodeService
-              .issueCredentialBatch(root)
-              .redeem(
-                ex => Left(CannotIssueCredentialBatch(ex.getMessage)),
-                Right(_)
-              )
-          )
-
-          // send credential along with inclusion proof
-          credentialProto = credential_models.PlainTextCredential(
-            encodedCredential = credential.canonicalForm,
-            encodedMerkleProof = proof.encode
-          )
-          atalaMessage = AtalaMessage().withPlainCredential(credentialProto)
-
-          _ = logger.info(
-            s"Credential batch created for document instance id: ${message.documentInstanceId} with batch id: ${credentialResponse.batchId}"
-          )
-        } yield Some(atalaMessage)).value
-      }
-  }
-
-  private[processors] def parseAcuantProcessFinishedMessage(
-      message: ReceivedMessage
-  ): Option[AcuantProcessFinished] = {
-    Try(AtalaMessage.parseFrom(message.message.toByteArray)).toOption
-      .flatMap(_.message.kycBridgeMessage)
-      .flatMap(_.message.acuantProcessFinished)
+    } yield ProcessingTaskResult.ProcessingTaskFinished[KycBridgeProcessingTaskState]()).value
+      .map(_.fold(id => id, id => id))
   }
 
   private[processors] def createCredential(
@@ -230,14 +207,7 @@ class DocumentUploadedMessageProcessor(
     DateTimeFormatter.ofPattern("yyyy-MM-dd").format(date.atOffset(ZoneOffset.UTC))
 }
 
-object DocumentUploadedMessageProcessor {
-  case class FaceMatchFailedError(faceMatchResponse: FaceMatchResponse) extends PrismError {
-    override def toStatus: Status = {
-      Status.INVALID_ARGUMENT.withDescription(
-        s"User's selfie doesn't match photo extracted from document, face id score ${faceMatchResponse.score}"
-      )
-    }
-  }
+object AcuantCreateCredentialState3Processor {
 
   case class CannotIssueCredentialBatch(message: String) extends PrismError {
     override def toStatus: Status = {

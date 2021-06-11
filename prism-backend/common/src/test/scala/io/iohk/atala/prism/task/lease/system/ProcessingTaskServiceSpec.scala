@@ -91,8 +91,12 @@ class ProcessingTaskServiceSpec extends PostgresRepositorySpec[Task] {
       val updatedTask = (for {
         taskToProcessOption <- processingTaskService.fetchTaskToProcess(leaseTimeSeconds)
         taskToProcess = taskToProcessOption.value
-        _ <-
-          processingTaskService.scheduleTask(taskToProcess.id, ProcessingTaskState.TestState1, newData, newNextAction)
+        _ <- processingTaskService.scheduleTask(
+          taskToProcess.id,
+          ProcessingTaskTestState.TestState1,
+          newData,
+          newNextAction
+        )
         updatedTaskOption <- find(taskToProcess.id)
       } yield updatedTaskOption.value).runSyncUnsafe()
 
@@ -107,7 +111,7 @@ class ProcessingTaskServiceSpec extends PostgresRepositorySpec[Task] {
         taskToProcess = taskToProcessOption.value
         _ <- processingTaskService.updateTaskAndExtendLease(
           taskToProcess.id,
-          ProcessingTaskState.TestState1,
+          ProcessingTaskTestState.TestState1,
           newData,
           10 * 60
         )
@@ -159,13 +163,14 @@ class ProcessingTaskServiceSpec extends PostgresRepositorySpec[Task] {
   trait Fixtures {
     val instanceAUuid = UUID.randomUUID()
     val instanceBUuid = UUID.randomUUID()
-    val processingTaskService = new ProcessingTaskServiceImpl(database, instanceAUuid)
-    val processingTaskServiceInstanceB = new ProcessingTaskServiceImpl(database, instanceBUuid)
+    val processingTaskDao = new ProcessingTaskDao(ProcessingTaskTestState.withNameOption)
+    val processingTaskService = new ProcessingTaskServiceImpl(database, instanceAUuid, processingTaskDao)
+    val processingTaskServiceInstanceB = new ProcessingTaskServiceImpl(database, instanceBUuid, processingTaskDao)
 
     val taskData = ProcessingTaskData(Json.fromString("sample"))
     val newData = ProcessingTaskData(Json.fromInt(42))
     val leaseTimeSeconds = 30
-    val taskState = ProcessingTaskState.TestState1
+    val taskState = ProcessingTaskTestState.TestState1
     val scheduledTime = Instant.now()
 
     val (task1NoOwner, task2OwnerB, task3OwnerB, task4NoOwner) = (for {
@@ -180,12 +185,12 @@ class ProcessingTaskServiceSpec extends PostgresRepositorySpec[Task] {
       task4NoOwner
     )).runSyncUnsafe()
 
-    def find(processingTaskId: ProcessingTaskId): Task[Option[ProcessingTask]] = {
-      ProcessingTaskDao.findById(processingTaskId).transact(database)
+    def find(processingTaskId: ProcessingTaskId): Task[Option[ProcessingTask[ProcessingTaskTestState]]] = {
+      processingTaskDao.findById(processingTaskId).transact(database)
     }
 
-    def create(owner: Option[UUID], scheduledTime: Instant): Task[ProcessingTask] = {
-      val processingTask = ProcessingTask(
+    def create(owner: Option[UUID], scheduledTime: Instant): Task[ProcessingTask[ProcessingTaskTestState]] = {
+      val processingTask = ProcessingTask[ProcessingTaskTestState](
         id = ProcessingTaskId.random(),
         state = taskState,
         owner = owner,
@@ -194,7 +199,7 @@ class ProcessingTaskServiceSpec extends PostgresRepositorySpec[Task] {
         data = taskData
       )
 
-      ProcessingTaskDao.insert(processingTask).transact(database).map(_ => processingTask)
+      processingTaskDao.insert(processingTask).transact(database).map(_ => processingTask)
     }
   }
 }

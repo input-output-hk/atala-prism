@@ -6,9 +6,9 @@ import io.iohk.atala.prism.models.UUIDValue
 import java.time.Instant
 import java.util.UUID
 
-case class ProcessingTask(
+case class ProcessingTask[S <: ProcessingTaskState](
     id: ProcessingTaskId,
-    state: ProcessingTaskState,
+    state: S,
     owner: Option[UUID],
     lastChange: Instant,
     nextAction: Instant,

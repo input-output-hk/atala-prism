@@ -12,34 +12,41 @@ object ConnectionUtils {
   def fromReceivedMessage[A](
       receivedMessage: ReceivedMessage,
       findConnection: ConnectionId => ConnectionIO[Option[A]]
+  ): ConnectionIO[Either[PrismError, A]] =
+    fromConnectionId(receivedMessage.connectionId, receivedMessage.id, findConnection)
+
+  def fromConnectionId[A](
+      connectionId: String,
+      receivedMessageId: String,
+      findConnection: ConnectionId => ConnectionIO[Option[A]]
   ): ConnectionIO[Either[PrismError, A]] = {
     (for {
       connectionId <- EitherT.fromOption[ConnectionIO](
-        ConnectionId.from(receivedMessage.connectionId).toOption,
-        IncorrectConnectionId(receivedMessage)
+        ConnectionId.from(connectionId).toOption,
+        IncorrectConnectionId(receivedMessageId, connectionId)
       )
 
       connection <-
         EitherT
           .fromOptionF[ConnectionIO, PrismError, A](
             findConnection(connectionId),
-            ConnectionDoesNotExist(receivedMessage)
+            ConnectionDoesNotExist(receivedMessageId, connectionId.toString)
           )
     } yield connection).value
   }
 
-  case class IncorrectConnectionId(receivedMessage: ReceivedMessage) extends PrismError {
+  case class IncorrectConnectionId(receivedMessageId: String, connectionId: String) extends PrismError {
     override def toStatus: Status = {
       Status.INTERNAL.withDescription(
-        s"Message with id: ${receivedMessage.id} has incorrect connectionId. ${receivedMessage.connectionId} is not valid UUID."
+        s"Message with id: $receivedMessageId has incorrect connectionId. $connectionId is not valid UUID."
       )
     }
   }
 
-  case class ConnectionDoesNotExist(receivedMessage: ReceivedMessage) extends PrismError {
+  case class ConnectionDoesNotExist(receivedMessageId: String, connectionId: String) extends PrismError {
     override def toStatus: Status = {
       Status.INTERNAL.withDescription(
-        s"Message with id: ${receivedMessage.id} and connectionId ${receivedMessage.connectionId}" +
+        s"Message with id: $receivedMessageId and connectionId $connectionId" +
           "does not have corresponding connection in database"
       )
     }

@@ -8,21 +8,28 @@ import io.iohk.atala.prism.protos.connector_api.{
   GenerateConnectionTokenResponse,
   GetConnectionsPaginatedResponse,
   GetMessagesPaginatedResponse,
-  SendMessageResponse,
-  SendMessageRequest
+  SendMessageRequest,
+  SendMessageResponse
 }
 import io.iohk.atala.prism.protos.connector_models.{ConnectionInfo, ReceivedMessage}
 import io.iohk.atala.prism.protos.credential_models.StartAcuantProcess
 import monix.eval.Task
 
+import java.util.concurrent.atomic.AtomicInteger
+
 class ConnectorClientServiceStub(
     connectionToken: String = "token",
     receivedMessages: Seq[ReceivedMessage] = Nil,
     connectionInfos: Seq[ConnectionInfo] = Nil,
-    messageResponse: SendMessageResponse = SendMessageResponse()
+    messageResponse: Task[SendMessageResponse] = Task.pure(SendMessageResponse())
 ) extends ConnectorClientService {
 
-  def sendMessage(message: SendMessageRequest): Task[SendMessageResponse] = Task.pure(messageResponse)
+  var sendMessageInvokeCount: AtomicInteger = new AtomicInteger(0)
+
+  def sendMessage(message: SendMessageRequest): Task[SendMessageResponse] = {
+    sendMessageInvokeCount.incrementAndGet()
+    messageResponse
+  }
 
   def generateConnectionToken: Task[GenerateConnectionTokenResponse] =
     Task.pure(GenerateConnectionTokenResponse(List(connectionToken)))

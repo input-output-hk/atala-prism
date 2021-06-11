@@ -71,6 +71,7 @@ object PrismBuild {
             grpcDependencies ++
             mockitoDependencies ++
             kamonDependencies ++
+            circeDependencies ++
             Seq(
               diffx,
               enumeratum,

@@ -26,8 +26,8 @@ package object assureId {
       val knownFields = Set("Age", "BirthDate", "ExpirationDate", "FullName", "Gender", "Photo")
       for {
         age <- c.downField("Age").as[Option[Int]]
-        birthDate <- c.downField("BirthDate").as[Option[String]].map(_.flatMap(parseDate))
-        expirationDate <- c.downField("ExpirationDate").as[Option[String]].map(_.flatMap(parseDate))
+        birthDate <- parseDate(c.downField("BirthDate"))
+        expirationDate <- parseDate(c.downField("ExpirationDate"))
         fullName <- c.downField("FullName").as[Option[String]]
         gender <- c.downField("Gender").as[Option[Int]]
         photo <- c.downField("Photo").as[Option[String]]
@@ -38,7 +38,7 @@ package object assureId {
         fullName,
         gender,
         photo,
-        unknownFields = c.keys.map(_.toList.filterNot(knownFields.contains)).getOrElse(Nil)
+        unknownFields = parseUnknownFields(c, knownFields)
       )
     }
 
@@ -73,7 +73,7 @@ package object assureId {
         countryCode,
         issue,
         name,
-        unknownFields = c.keys.map(_.toList.filterNot(knownFields.contains)).getOrElse(Nil)
+        unknownFields = parseUnknownFields(c, knownFields)
       )
     }
 
@@ -88,10 +88,24 @@ package object assureId {
     implicit val newDocumentInstanceRequestBodyDecoder: Decoder[NewDocumentInstanceRequestBody] =
       deriveConfiguredDecoder
 
+    private[models] def parseUnknownFields(c: HCursor, knownFields: Set[String]): List[String] = {
+      c.downField("UnknownFields").as[List[String]] match {
+        case Right(unknownFields) => unknownFields
+        case Left(_) => c.keys.map(_.toList.filterNot(knownFields.contains)).getOrElse(Nil)
+      }
+    }
+
+    private[models] def parseDate(date: ACursor): Either[DecodingFailure, Option[Instant]] = {
+      date.as[Option[Instant]] match {
+        case date: Right[DecodingFailure, Option[Instant]] => date
+        case Left(_) => date.as[Option[String]].map(_.flatMap(parseDotNetDate))
+      }
+    }
+
     /**
       * Parse .net date in format: /Date(1325134800000)/
       */
-    private[models] def parseDate(value: String): Option[Instant] = {
+    private[models] def parseDotNetDate(value: String): Option[Instant] = {
       val jsonDate = raw"\/Date\((-?\d+)(\+\d+)?\)\/".r
 
       value match {

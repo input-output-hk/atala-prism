@@ -3,8 +3,10 @@ package io.iohk.atala.prism.services
 import scala.concurrent.duration.{DurationInt, FiniteDuration}
 import monix.eval.Task
 import fs2.Stream
+import io.grpc.Status
 import org.slf4j.LoggerFactory
 import io.iohk.atala.prism.connector.RequestAuthenticator
+import io.iohk.atala.prism.errors.PrismError
 import io.iohk.atala.prism.protos.connector_api._
 import io.iohk.atala.prism.protos.credential_models.{AtalaMessage, KycBridgeMessage, ProofRequest, StartAcuantProcess}
 import io.iohk.atala.prism.protos.connector_models.{ConnectionInfo, ReceivedMessage}
@@ -15,6 +17,19 @@ import io.iohk.atala.prism.utils.TaskUtils
 trait ConnectorClientService {
 
   def generateConnectionToken: Task[GenerateConnectionTokenResponse]
+
+  def sendResponseMessage(
+      message: AtalaMessage,
+      receivedMessageId: String,
+      connectionId: String
+  ): Task[SendMessageResponse] = {
+    val atalaMessage = message.withReplyTo(receivedMessageId)
+    val sendMessageRequest = SendMessageRequest(
+      connectionId = connectionId,
+      message = atalaMessage.toByteString
+    )
+    sendMessage(sendMessageRequest)
+  }
 
   def sendMessage(
       message: SendMessageRequest
@@ -53,6 +68,16 @@ trait ConnectorClientService {
       startAcuantProcess: StartAcuantProcess
   ): Task[SendMessageResponse]
 
+}
+
+object ConnectorClientService {
+  case class CannotSendConnectorMessage(message: String) extends PrismError {
+    override def toStatus: Status = {
+      Status.INTERNAL.withDescription(
+        s"Failed to send message through connector: $message"
+      )
+    }
+  }
 }
 
 class ConnectorClientServiceImpl(

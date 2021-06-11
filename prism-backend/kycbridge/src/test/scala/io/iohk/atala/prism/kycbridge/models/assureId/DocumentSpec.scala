@@ -8,9 +8,14 @@ import org.scalatest.matchers.must.Matchers
 import io.iohk.atala.prism.kycbridge.models.assureId.implicits._
 import java.time.LocalDateTime
 import java.time.ZoneOffset
+import io.circe.syntax._
 
 class DocumentSpec extends AnyWordSpec with Matchers {
   "Document" should {
+    "be encoded and decoded preserving all of its data" in new Fixtures {
+      document.asJson.as[Document] mustBe Right(document)
+    }
+
     "be decodable from the JSON" in new Fixtures {
       parser.decode[Document](documentJson) mustBe Right(
         Document(
@@ -158,7 +163,7 @@ class DocumentSpec extends AnyWordSpec with Matchers {
     }
   }
 
-  trait Fixtures {
+  trait Fixtures extends DocumentFixtures {
     val documentJson =
       """
       |{

@@ -13,8 +13,9 @@ import java.time.Instant
 import java.time.temporal.ChronoUnit
 import java.util.concurrent.atomic.AtomicInteger
 
-class ProcessingTaskServiceStub() extends ProcessingTaskService {
+class ProcessingTaskServiceStub[S <: ProcessingTaskState]() extends ProcessingTaskService[S] {
 
+  val createTaskInvokeCount = new AtomicInteger(0)
   val extendLeaseInvokeCount = new AtomicInteger(0)
   val scheduleTaskInvokeCount = new AtomicInteger(0)
   val updateTaskAndExtendLeaseInvokeCount = new AtomicInteger(0)
@@ -28,19 +29,21 @@ class ProcessingTaskServiceStub() extends ProcessingTaskService {
 
   def create(
       processingTaskData: ProcessingTaskData,
-      processingTaskState: ProcessingTaskState,
+      processingTaskState: S,
       scheduledTime: Instant
-  ): Task[ProcessingTaskId] =
+  ): Task[ProcessingTaskId] = {
+    createTaskInvokeCount.incrementAndGet()
     Task.pure(ProcessingTaskId.random()).map { id =>
       if (!scheduledTime.isAfter(Instant.now())) {
         callbackOption.foreach(callback => callback())
       }
       id
     }
+  }
 
-  def fetchTaskToProcess(leaseTimeSeconds: Int): Task[Option[ProcessingTask]] = Task.pure(None)
+  def fetchTaskToProcess(leaseTimeSeconds: Int): Task[Option[ProcessingTask[S]]] = Task.pure(None)
 
-  def ejectTask(processingTaskId: ProcessingTaskId, leaseTimeSeconds: Int): Task[Option[ProcessingTask]] =
+  def ejectTask(processingTaskId: ProcessingTaskId, leaseTimeSeconds: Int): Task[Option[ProcessingTask[S]]] =
     Task.pure(None)
 
   def extendLease(processingTaskId: ProcessingTaskId, leaseTimeSeconds: Int): Task[Unit] = {
@@ -55,7 +58,7 @@ class ProcessingTaskServiceStub() extends ProcessingTaskService {
 
   def scheduleTask(
       processingTaskId: ProcessingTaskId,
-      state: ProcessingTaskState,
+      state: S,
       data: ProcessingTaskData,
       scheduledTime: Instant
   ): Task[Unit] = {
@@ -65,10 +68,10 @@ class ProcessingTaskServiceStub() extends ProcessingTaskService {
 
   def updateTaskAndExtendLease(
       processingTaskId: ProcessingTaskId,
-      state: ProcessingTaskState,
+      state: S,
       data: ProcessingTaskData,
       leaseTimeSeconds: Int
-  ): Task[ProcessingTask] = {
+  ): Task[ProcessingTask[S]] = {
     updateTaskAndExtendLeaseInvokeCount.incrementAndGet()
     Task.pure(
       ProcessingTask(

@@ -6,16 +6,14 @@ import doobie.implicits._
 import doobie.postgres.implicits._
 import doobie.implicits.legacy.instant._
 import doobie.util.update.Update
-import io.iohk.atala.prism.task.lease.system.{ProcessingTask, ProcessingTaskId, ProcessingTaskState}
 import io.iohk.atala.prism.utils.DoobieImplicits.jsonMeta
 import cats.implicits._
 
-object ProcessingTaskDao {
+class ProcessingTaskDao[S <: ProcessingTaskState](stringToProcessingTaskState: String => Option[S]) {
 
-  implicit val processingTaskStateMeta: Meta[ProcessingTaskState] =
-    Meta[String].imap[ProcessingTaskState](name =>
-      ProcessingTaskState
-        .withNameOption(name)
+  implicit val processingTaskStateMeta: Meta[S] =
+    Meta[String].imap[S](name =>
+      stringToProcessingTaskState(name)
         .getOrElse(
           throw new NotImplementedError(
             s"Instance cannot process task with state: $name. " +
@@ -24,36 +22,36 @@ object ProcessingTaskDao {
         )
     )(_.entryName)
 
-  def insert(processingTask: ProcessingTask): ConnectionIO[Int] =
+  def insert(processingTask: ProcessingTask[S]): ConnectionIO[Int] =
     insertMany.toUpdate0(processingTask).run
 
-  def insertMany: Update[ProcessingTask] =
-    Update[ProcessingTask](
+  def insertMany: Update[ProcessingTask[S]] =
+    Update[ProcessingTask[S]](
       """
         | INSERT INTO processing_tasks(id, state, owner, last_change, last_action, next_action, data)
-        | values (?, ?, ?, ?, now(), ?, ?)""".stripMargin
+        | VALUES (?, ?, ?, ?, now(), ?, ?)""".stripMargin
     )
 
-  def findById(id: ProcessingTaskId): ConnectionIO[Option[ProcessingTask]] = {
+  def findById(id: ProcessingTaskId): ConnectionIO[Option[ProcessingTask[S]]] = {
     sql"""
          | SELECT id, state, owner, last_change, next_action, data
          | FROM processing_tasks
          | WHERE id = $id
          | FOR UPDATE
-    """.stripMargin.query[ProcessingTask].option
+    """.stripMargin.query[ProcessingTask[S]].option
   }
 
-  def fetchTaskToProcess(): doobie.ConnectionIO[Option[ProcessingTask]] = {
+  def fetchTaskToProcess(): doobie.ConnectionIO[Option[ProcessingTask[S]]] = {
     sql"""
          | SELECT id, state, owner, last_change, next_action, data
          | FROM processing_tasks
          | WHERE next_action < now()
          | FOR UPDATE SKIP LOCKED
          | LIMIT 1
-    """.stripMargin.query[ProcessingTask].option
+    """.stripMargin.query[ProcessingTask[S]].option
   }
 
-  def updateLease(processingTask: ProcessingTask): ConnectionIO[Unit] =
+  def updateLease(processingTask: ProcessingTask[S]): ConnectionIO[Unit] =
     sql"""
          | UPDATE processing_tasks SET
          | last_action = now(),
@@ -63,7 +61,7 @@ object ProcessingTaskDao {
       .flatTap(ensureOneRowUpdated(processingTask))
       .void
 
-  def updateOwnerAndLease(processingTask: ProcessingTask): ConnectionIO[Unit] =
+  def updateOwnerAndLease(processingTask: ProcessingTask[S]): ConnectionIO[Unit] =
     sql"""
          | UPDATE processing_tasks SET
          | owner = ${processingTask.owner},
@@ -74,7 +72,7 @@ object ProcessingTaskDao {
       .flatTap(ensureOneRowUpdated(processingTask))
       .void
 
-  def update(processingTask: ProcessingTask): ConnectionIO[Unit] =
+  def update(processingTask: ProcessingTask[S]): ConnectionIO[Unit] =
     sql"""
          | UPDATE processing_tasks SET
          | state = ${processingTask.state},
@@ -88,7 +86,7 @@ object ProcessingTaskDao {
       .flatTap(ensureOneRowUpdated(processingTask))
       .void
 
-  private def ensureOneRowUpdated(processingTask: ProcessingTask)(affectedRows: Int): ConnectionIO[Unit] = {
+  private def ensureOneRowUpdated(processingTask: ProcessingTask[S])(affectedRows: Int): ConnectionIO[Unit] = {
     FC.raiseError(
         new RuntimeException(s"Unknown error while updating processing task with id: ${processingTask.id} ")
       )

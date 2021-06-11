@@ -16,7 +16,7 @@ import io.iohk.atala.prism.protos.node_models.DIDData
 class NodeClientServiceStub(
     didDocument: Map[DID, DIDData] = Map.empty,
     getBatchStateResponse: Map[CredentialBatchId, GetBatchStateResponse] = Map.empty,
-    issueCredentialBatchResponse: Option[IssueCredentialBatchResponse] = None,
+    issueCredentialBatchResponse: Task[IssueCredentialBatchResponse] = Task.pure(IssueCredentialBatchResponse()),
     credentialRevocationTimeResponse: Map[(CredentialBatchId, SHA256Digest), GetCredentialRevocationTimeResponse] =
       Map.empty
 ) extends NodeClientService {
@@ -27,12 +27,7 @@ class NodeClientServiceStub(
   def getBatchState(credentialBatchId: CredentialBatchId): Task[Option[GetBatchStateResponse]] =
     Task.pure(getBatchStateResponse.get(credentialBatchId))
 
-  def issueCredentialBatch(merkleRoot: MerkleRoot): Task[IssueCredentialBatchResponse] = {
-    issueCredentialBatchResponse match {
-      case Some(response) => Task.pure(response)
-      case None => Task.pure(IssueCredentialBatchResponse())
-    }
-  }
+  def issueCredentialBatch(merkleRoot: MerkleRoot): Task[IssueCredentialBatchResponse] = issueCredentialBatchResponse
 
   def getCredentialRevocationTime(
       credentialBatchId: CredentialBatchId,
