@@ -76,9 +76,7 @@ First, make sure to generate the docs for our grpc API, which is done by running
 docker run --rm \
   -v $(pwd)/docs/src/docs/grpc:/out \
   -v $(pwd)/../prism-sdk/protos/src:/protos \
-  pseudomuto/protoc-gen-doc --doc_opt=markdown,grpc-api.md
-
-sed -i "1s/.*/# gRPC API Reference/" docs/src/docs/grpc/grpc-api.md
+  pseudomuto/protoc-gen-doc --doc_opt=/protos/resources/markdown.tmpl,grpc-api.md
 ```
 
 ### Add logos

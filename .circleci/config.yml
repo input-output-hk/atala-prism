@@ -611,16 +611,11 @@ jobs:
       # apparently, the argument to set the destination folder doesn't work
       - run:
           name: Generate docs
-          command: /entrypoint.sh --doc_opt=markdown,docs.md
+          command: /entrypoint.sh --doc_opt=prism-sdk/protos/src/resources/markdown.tmpl,docs.md
 
       - run:
           name: Store docs
           command: mkdir grpc-docs && mv /out/docs.md grpc-docs/grpc-api.md
-
-      # Update the document title
-      - run:
-          name: Store docs
-          command: sed -i "1s/.*/# gRPC API Reference/" grpc-docs/grpc-api.md
 
       # required to persist data, otherwise, we get this error: x509: certificate signed by unknown authority
       - run:

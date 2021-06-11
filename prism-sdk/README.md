@@ -30,9 +30,7 @@ First of all, make sure to generate the docs for our grpc API, which is done by 
 docker run --rm \
   -v $(pwd)/docs/src/main/paradox:/out \
   -v $(pwd)/protos/src:/protos \
-  pseudomuto/protoc-gen-doc --doc_opt=markdown,grpc-api.md
-
-sed -i "1s/.*/# gRPC API Reference/" docs/src/main/paradox/grpc-api.md
+  pseudomuto/protoc-gen-doc --doc_opt=/protos/resources/markdown.tmpl,grpc-api.md
 ```
 
 Then, you can proceed to generate the website.
