@@ -202,8 +202,8 @@ service CredentialIssuanceService {
  * Provides a way to operate on credentials (share, delete, revoke, get detailed information from the database).
  */
 service CredentialsService {
-  // TODO: Consider renaming this to CreateDraftCredential given that this is not published.
-  // TODO: Consider freezing the credential details once it gets published.
+  // @exclude TODO: Consider renaming this to CreateDraftCredential given that this is not published.
+  // @exclude TODO: Consider freezing the credential details once it gets published.
   /**
    * AUTHENTICATED
    *
@@ -515,7 +515,7 @@ message GetStatisticsResponse {
   int32 number_of_credentials_received = 7; // The total number of credentials received from contacts.
 }
 
-// TODO: Verify DID's ownership.
+// @exclude TODO: Verify DID's ownership.
 /**
  * Request to register a DID.
  * See ConsoleService.RegisterDID for more information.
@@ -550,7 +550,7 @@ message GetConsoleCurrentUserResponse {
  * Request to create a contact on the authenticated issuer.
  */
 message CreateContactRequest {
-  // TODO: We likely need a list of groups instead, also, use group id instead of the name.
+  // @exclude TODO: We likely need a list of groups instead, also, use group id instead of the name.
   /**
    * Optional. When present, the given contact gets assigned to a group with the given name.
    */
@@ -649,12 +649,12 @@ message GetContactsRequest {
    * The maximum amount of contacts to return. The amount must be greater than zero.
    */
   int32 limit = 1;
-  // TODO: Remove once the connector integration is removed.
+  // @exclude TODO: Remove once the connector integration is removed.
   /**
    * The last seen contact (if any). Returned contacts start after this one, just for the connector integration.
    */
   string last_seen_contact_id = 2;
-  // TODO: Remove once the connector integration is removed.
+  // @exclude TODO: Remove once the connector integration is removed.
   /**
    * If provided, it gets only the contacts that belong to this group, just for the connector integration.
    */
@@ -709,7 +709,7 @@ message GetContactsRequest {
  * Response with the retrieved contacts.
  */
 message GetContactsResponse {
-  // TODO: This is only for the connector's implementation, which will be removed once the frontend migrates out of it.
+  // @exclude TODO: This is only for the connector's implementation, which will be removed once the frontend migrates out of it.
   /**
    * The contacts found.
    */
@@ -827,7 +827,7 @@ message CreateGenericCredentialBulkRequest {
   /**
    * The JSON that contains the credentials data in this issuance.
    * The expected structure is:
-   * {
+   * <pre>{
    *    "issuance_name": String,
    *    "credential_type_id": String,
    *    "drafts" : [
@@ -837,7 +837,7 @@ message CreateGenericCredentialBulkRequest {
    *        "group_ids": [String],
    *      }
    *    ]
-   * }
+   * }</pre>
    */
   string credentials_json = 1;
 }
@@ -963,7 +963,7 @@ message CreateGroupResponse {
  * See GroupsService.GetGroups for more information.
  */
 message GetGroupsRequest {
-  // TODO: Remove when the connector integration is removed.
+  // @exclude TODO: Remove when the connector integration is removed.
   /**
    * Optional. When provided, only groups related to the given contact are included.
    */
@@ -1088,7 +1088,7 @@ message CreateGenericCredentialRequest {
    * A valid non-empty JSON is required.
    */
   string credential_data = 2;
-  // TODO: Remove legacy argument, this was used for the Dec/2019 Georgia demo only.
+  // @exclude TODO: Remove legacy argument, this was used for the Dec/2019 Georgia demo only.
   /**
    * The group name linked to a credential.
    */
@@ -1177,7 +1177,7 @@ message GetGenericCredentialsResponse {
   repeated CManagerGenericCredential credentials = 1; // The retrieved credentials.
 }
 
-// TODO: Consider renaming this to MarkCredentialAsSent.
+// @exclude TODO: Consider renaming this to MarkCredentialAsSent.
 /**
  * Request to share a credential, which just marks the credential as sent.
  * This is intended to be invoked after sending the credential through the connector.
@@ -1224,7 +1224,7 @@ message ShareCredentialsResponse {}
  * As the expected amount of credentials per contact is small, no pagination is required.
  */
 message GetContactCredentialsRequest {
-  string contact_id = 1;
+  string contact_id = 1; // The contact identifier.
 }
 
 /**
@@ -1270,7 +1270,7 @@ message StoreCredentialResponse {}
  * Request to find the received credentials.
  */
 message GetStoredCredentialsForRequest {
-  // TODO: Rename to `contactId` after removing legacy methods.
+  // @exclude TODO: Rename to `contactId` after removing legacy methods.
   string individual_id = 1; // Optional, allows to retrieve received credentials from a single contact.
 }
 
@@ -1291,7 +1291,7 @@ message GetLatestCredentialExternalIdRequest {}
  * Response with the latest credentialExternalId.
  */
 message GetLatestCredentialExternalIdResponse {
-  string latest_credential_external_id = 1;
+  string latest_credential_external_id = 1; // The identifier of the latest received credential.
 }
 
 /**
