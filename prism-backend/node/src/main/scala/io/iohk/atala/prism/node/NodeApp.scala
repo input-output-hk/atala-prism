@@ -119,6 +119,7 @@ class NodeApp(executionContext: ExecutionContext) { self =>
     server = ServerBuilder
       .forPort(NodeApp.port)
       .addService(NodeServiceGrpc.bindService(nodeService, executionContext))
+      .addService(_root_.grpc.health.v1.health.HealthGrpc.bindService(new HealthService, executionContext))
       .addService(
         ProtoReflectionService.newInstance()
       ) //TODO: Decide before release if we should keep this (or guard it with a config flag)

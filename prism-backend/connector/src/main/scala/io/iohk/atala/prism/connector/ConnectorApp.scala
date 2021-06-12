@@ -164,6 +164,7 @@ class ConnectorApp(executionContext: ExecutionContext) { self =>
     server = ServerBuilder
       .forPort(ConnectorApp.port)
       .intercept(new GrpcAuthenticatorInterceptor)
+      .addService(_root_.grpc.health.v1.health.HealthGrpc.bindService(new HealthService, executionContext))
       .addService(connector_api.ConnectorServiceGrpc.bindService(connectorService, executionContext))
       .addService(CredentialsServiceGrpc.bindService(credentialsService, executionContext))
       .addService(GroupsServiceGrpc.bindService(groupsService, executionContext))
