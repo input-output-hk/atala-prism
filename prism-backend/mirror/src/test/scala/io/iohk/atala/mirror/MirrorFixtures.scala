@@ -246,6 +246,10 @@ trait MirrorFixtures extends ServicesFixtures {
         .toByteString
     )
 
+    lazy val cardanoWalletName = "wallet name"
+    lazy val cardanoExtendedPublicKey =
+      "acct_xvk155crk6049ap0477qvjpf5mvxtw5f46uk6k54udc9mz5wcdyyhssexcsk5sgvy05m7mqh3ed3qgs6epyf7hvdfxf6hd54aqm3uwdsewqu6vsvy"
+
     lazy val cardanoRegisterWalletMessageMessage = ReceivedMessage(
       id = "id4",
       received = Timestamp(LocalDateTime.of(2020, 6, 13, 0, 0).toEpochSecond(ZoneOffset.UTC)).some,
@@ -256,9 +260,8 @@ trait MirrorFixtures extends ServicesFixtures {
             .MirrorMessage()
             .withRegisterWalletMessage(
               credential_models.RegisterWalletMessage(
-                name = "wallet name",
-                extendedPublicKey =
-                  "acct_xvk155crk6049ap0477qvjpf5mvxtw5f46uk6k54udc9mz5wcdyyhssexcsk5sgvy05m7mqh3ed3qgs6epyf7hvdfxf6hd54aqm3uwdsewqu6vsvy"
+                name = cardanoWalletName,
+                extendedPublicKey = cardanoExtendedPublicKey
               )
             )
         )

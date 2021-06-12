@@ -45,6 +45,8 @@ class CardanoAddressInfoServiceSpec extends PostgresRepositorySpec[Task] with Mo
 
       // then
       processingResult mustBe an[Right[PrismError, Some[AtalaMessage]]]
+      val message = processingResult.toOption.value.value
+      message.getMirrorMessage.getAddressRegisteredMessage.cardanoAddress mustBe cardanoAddress1
       cardanoAddressInfoOption.map(_.cardanoAddress) mustBe Some(CardanoAddress(cardanoAddress1))
     }
 
@@ -149,7 +151,11 @@ class CardanoAddressInfoServiceSpec extends PostgresRepositorySpec[Task] with Mo
         connectionToUpdate = connection1,
         message = payIdNameRegistrationMessage1,
         updatedPayIdName = Some(PayIdName(payIdName1)),
-        processingResultAssertion = _ mustBe an[Right[PrismError, Some[AtalaMessage]]]
+        processingResultAssertion = { result =>
+          result mustBe an[Right[PrismError, Some[AtalaMessage]]]
+          val message = result.toOption.value.value
+          message.getMirrorMessage.getPayIdNameRegisteredMessage.name mustBe payIdName1
+        }
       )
     }
 

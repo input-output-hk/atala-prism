@@ -1,21 +1,19 @@
 package io.iohk.atala.mirror.services
 
 import scala.concurrent.duration.DurationInt
-
 import monix.eval.Task
 import org.mockito.scalatest.MockitoSugar
-
 import io.iohk.atala.mirror.db.CardanoWalletDao
 import io.iohk.atala.mirror.db.CardanoWalletAddressDao
 import io.iohk.atala.prism.protos.credential_models.AtalaMessage
 import io.iohk.atala.prism.repositories.PostgresRepositorySpec
 import io.iohk.atala.mirror.MirrorFixtures
 import io.iohk.atala.prism.errors.PrismError
-
 import doobie.implicits._
 import monix.execution.Scheduler.Implicits.global
 import io.iohk.atala.mirror.config.CardanoConfig
 import io.iohk.atala.mirror.config.CardanoNetwork
+import org.scalatest.OptionValues._
 
 // sbt "project mirror" "testOnly *services.CardanoDeterministicWalletsServiceSpec"
 class CardanoDeterministicWalletsServiceSpec
@@ -38,6 +36,9 @@ class CardanoDeterministicWalletsServiceSpec
 
       // then
       processingResult mustBe an[Right[PrismError, Option[AtalaMessage]]]
+      val message = processingResult.toOption.value.value
+      message.getMirrorMessage.getWalletRegistered.name mustBe cardanoWalletName
+      message.getMirrorMessage.getWalletRegistered.extendedPublicKey mustBe cardanoExtendedPublicKey
       addresses.size mustBe 10
     }
 

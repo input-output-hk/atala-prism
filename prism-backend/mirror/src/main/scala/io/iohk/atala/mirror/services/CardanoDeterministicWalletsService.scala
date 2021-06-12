@@ -102,10 +102,13 @@ class CardanoDeterministicWalletsService(
           .transact(tx)
       )
 
+      messageContent = WalletRegistered(
+        id = walletId.uuid.toString,
+        name = registerWalletMessage.name,
+        extendedPublicKey = registerWalletMessage.extendedPublicKey
+      )
       atalaMessage = AtalaMessage().withMirrorMessage(
-        MirrorMessage().withWalletRegistered(
-          WalletRegistered().withId(walletId.uuid.toString)
-        )
+        MirrorMessage().withWalletRegistered(messageContent)
       )
     } yield Some(atalaMessage)).value
   }

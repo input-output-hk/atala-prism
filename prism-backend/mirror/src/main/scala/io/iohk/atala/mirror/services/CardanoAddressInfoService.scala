@@ -94,8 +94,8 @@ class CardanoAddressInfoService(tx: Transactor[Task], httpConfig: HttpConfig, no
           .transact(tx)
       )
 
-      response =
-        AtalaMessage().withMirrorMessage(MirrorMessage().withAddressRegisteredMessage(AddressRegisteredMessage()))
+      messageContent = AddressRegisteredMessage(cardanoAddress = addressMessage.cardanoAddress)
+      response = AtalaMessage().withMirrorMessage(MirrorMessage().withAddressRegisteredMessage(messageContent))
 
     } yield Some(response)).value
   }
@@ -382,8 +382,9 @@ class CardanoAddressInfoService(tx: Transactor[Task], httpConfig: HttpConfig, no
 
       responseMessage <- EitherT.liftF[ConnectionIO, PrismError, AtalaMessage] {
         if (connectionWithTheSamePayIdName.isEmpty) {
+          val messageContent = PayIdNameRegisteredMessage(name = payIdMessage.name)
           val response = AtalaMessage().withMirrorMessage(
-            MirrorMessage().withPayIdNameRegisteredMessage(PayIdNameRegisteredMessage())
+            MirrorMessage().withPayIdNameRegisteredMessage(messageContent)
           )
           ConnectionDao.update(connection.copy(payIdName = Some(payIdName))).as(response)
         } else {
