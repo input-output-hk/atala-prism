@@ -28,8 +28,8 @@
                             <constraint firstAttribute="height" constant="98" id="pCd-p6-0rE"/>
                         </constraints>
                     </imageView>
-                    <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Label" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="bEz-ie-yok">
-                        <rect key="frame" x="156" y="43.5" width="42.5" height="19.5"/>
+                    <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Label" textAlignment="natural" lineBreakMode="tailTruncation" numberOfLines="2" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="bEz-ie-yok">
+                        <rect key="frame" x="156" y="118.5" width="42.5" height="19.5"/>
                         <fontDescription key="fontDescription" type="boldSystem" pointSize="16"/>
                         <nil key="textColor"/>
                         <nil key="highlightedColor"/>
@@ -49,8 +49,8 @@
                             <action selector="profileTapped:" destination="KGk-i7-Jjw" eventType="touchUpInside" id="0xe-2r-yLo"/>
                         </connections>
                     </button>
-                    <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFit" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="ico_verified_tx" translatesAutoresizingMaskIntoConstraints="NO" id="Iyd-AV-BxM">
-                        <rect key="frame" x="203.5" y="44" width="19" height="18"/>
+                    <imageView hidden="YES" clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFit" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="ico_verified_tx" translatesAutoresizingMaskIntoConstraints="NO" id="Iyd-AV-BxM">
+                        <rect key="frame" x="203.5" y="119" width="19" height="18"/>
                     </imageView>
                     <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="UVd-9K-H9R">
                         <rect key="frame" x="48" y="122" width="293" height="35"/>
@@ -144,8 +144,7 @@
                     <constraint firstItem="J0Z-D3-1Hw" firstAttribute="leading" secondItem="H2p-sc-9uM" secondAttribute="leadingMargin" constant="35" id="XYN-JM-zdE"/>
                     <constraint firstItem="een-hJ-9rV" firstAttribute="leading" secondItem="bEz-ie-yok" secondAttribute="leading" id="cUR-HT-nB5"/>
                     <constraint firstItem="tgB-4x-zf1" firstAttribute="leading" secondItem="H2p-sc-9uM" secondAttribute="leading" constant="33" id="cgV-JS-WwX"/>
-                    <constraint firstItem="J0Z-D3-1Hw" firstAttribute="centerY" secondItem="WPr-aY-Kn2" secondAttribute="bottom" id="jOi-3I-q5k"/>
-                    <constraint firstAttribute="trailingMargin" secondItem="J0Z-D3-1Hw" secondAttribute="trailing" constant="35" id="nWC-d0-vzs"/>
+                    <constraint firstAttribute="trailingMargin" relation="greaterThanOrEqual" secondItem="Iyd-AV-BxM" secondAttribute="trailing" constant="25" id="d9h-ej-75p"/>
                     <constraint firstItem="RO9-qB-24x" firstAttribute="leading" secondItem="bEz-ie-yok" secondAttribute="leading" id="pIv-Gz-5uu"/>
                     <constraint firstItem="bEz-ie-yok" firstAttribute="top" secondItem="RO9-qB-24x" secondAttribute="bottom" constant="1" id="wyL-rw-XiX"/>
                     <constraint firstItem="Iyd-AV-BxM" firstAttribute="leading" secondItem="bEz-ie-yok" secondAttribute="trailing" constant="5" id="xzt-GK-bMM"/>

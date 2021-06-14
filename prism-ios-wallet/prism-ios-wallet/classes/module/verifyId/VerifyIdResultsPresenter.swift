@@ -25,6 +25,7 @@ class VerifyIdResultsPresenter: ListingBasePresenter, ListingBaseTableUtilsPrese
     var contact: Contact?
     var selfieImg: UIImage?
     var documentInstanceId: String?
+    var attributes: [Attribute] = []
 
     func config(values: [String?]) {
 
@@ -32,13 +33,17 @@ class VerifyIdResultsPresenter: ListingBasePresenter, ListingBaseTableUtilsPrese
             if let parts = item?.split(separator: ":", maxSplits: 2, omittingEmptySubsequences: false),
                parts.count > 1 {
                 initialStaticCells.append(InitialCellValue(title: String(parts[0]), value: String(parts[1])))
+                let attribute = Attribute()
+                attribute.category = String(parts[0])
+                attribute.value = String(parts[1])
+                attributes.append(attribute)
             }
         }
     }
 
-    private func sendMessage(image: Data) {
+    private func sendMessage(image: Data?) {
 
-        guard let contact = self.contact, let documentInstanceId = documentInstanceId else {
+        guard let contact = self.contact, let documentInstanceId = documentInstanceId, let image = image else {
             self.viewImpl?.showLoading(doShow: false)
             self.viewImpl?.showErrorMessage(doShow: true, message: "service_error".localize())
             return
@@ -58,6 +63,9 @@ class VerifyIdResultsPresenter: ListingBasePresenter, ListingBaseTableUtilsPrese
             }
             return nil
         }, success: {
+            let user = self.sharedMemory.loggedUser
+            user?.personalAttributes = self.attributes
+            self.sharedMemory.loggedUser = user
             self.viewImpl?.goToMainScreen()
         }, error: { error in
             print(error)

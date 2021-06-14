@@ -57,7 +57,7 @@
                                             <action selector="choosePictureTapped:" destination="SDL-UH-4w4" eventType="touchUpInside" id="kEZ-pi-6yC"/>
                                         </connections>
                                     </button>
-                                    <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFit" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="ico_verified" translatesAutoresizingMaskIntoConstraints="NO" id="Xqt-U2-tsa">
+                                    <imageView hidden="YES" clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFit" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="ico_verified" translatesAutoresizingMaskIntoConstraints="NO" id="Xqt-U2-tsa">
                                         <rect key="frame" x="279.5" y="141.5" width="17" height="17"/>
                                         <constraints>
                                             <constraint firstAttribute="width" constant="17" id="Q4S-mO-hNq"/>

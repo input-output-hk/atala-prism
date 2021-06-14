@@ -246,10 +246,9 @@ class ProfilePresenter: ListingBasePresenter, ListingBaseTableUtilsPresenterDele
     func setup(for cell: ProfileViewCell) {
 
         let user = sharedMemory.loggedUser
-        let name = "\(user?.firstName ?? "") \(user?.lastName ?? "")"
-        let email = "\(user?.email ?? "")"
+        let name = user?.fullName ?? ""
         let pic = mode == .editing ? editedImage : sharedMemory.profilePic
-        cell.config(name: name, email: email, isVerified: user?.isVerified ?? false, logoData: pic,
+        cell.config(name: name, email: "", isVerified: user?.isVerified ?? false, logoData: pic,
                     isEnable: mode == .editing)
     }
 
@@ -276,8 +275,8 @@ class ProfilePresenter: ListingBasePresenter, ListingBaseTableUtilsPresenterDele
 
         var fieldTitle: String
         var logo: String
-        let isVerified: Bool = true
-
+        let isVerified: Bool = false
+        
         switch fieldValue.0 {
         case 0:
             fieldTitle = "profile_row_personal_info_title".localize()

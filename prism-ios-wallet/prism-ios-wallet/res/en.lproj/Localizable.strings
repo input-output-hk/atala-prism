@@ -157,10 +157,11 @@
 "profile_mail_empty" = "This is your Profile";
 
 // <!-- Profile Detail -->
-"profile_detail_title" = "Attribute detail";
+"profile_detail_title" = "Attribute details";
 "profile_detail_subtitle" = "Profile Info";
 "profile_detail_status" = "Status:";
 "profile_detail_verified" = "Verified";
+"profile_detail_not_verified" = "Not verified";
 "profile_detail_field_title_firstname" = "First Name";
 "profile_detail_field_title_lastname" = "Last Name";
 "profile_detail_field_title_nationality" = "Nationality";

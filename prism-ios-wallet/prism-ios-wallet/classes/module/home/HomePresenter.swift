@@ -150,7 +150,7 @@ class HomePresenter: ListingBasePresenter, ListingBaseTableUtilsPresenterDelegat
 
     func setup(for cell: HomeProfileTableViewCell) {
         let user = sharedMemory.loggedUser
-        let name = "\(user?.firstName ?? "") \(user?.lastName ?? "")"
+        let name = user?.fullName ?? ""
         let payIdDao = PayIdDAO()
         let payId = payIdDao.listPayId()?.first
         cell.config(name: name, picture: sharedMemory.profilePic, notifications: notificationsCount,

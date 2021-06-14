@@ -20,9 +20,9 @@
                         <rect key="frame" x="0.0" y="0.0" width="468" height="249"/>
                         <subviews>
                             <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="mFD-y3-13e">
-                                <rect key="frame" x="24" y="8" width="420" height="68"/>
+                                <rect key="frame" x="24" y="8" width="420" height="69"/>
                                 <subviews>
-                                    <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Email" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" minimumFontSize="12" adjustsFontForContentSizeCategory="YES" translatesAutoresizingMaskIntoConstraints="NO" id="P6S-6U-tvH">
+                                    <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Email" lineBreakMode="tailTruncation" numberOfLines="2" baselineAdjustment="alignBaselines" minimumFontSize="12" adjustsFontForContentSizeCategory="YES" translatesAutoresizingMaskIntoConstraints="NO" id="P6S-6U-tvH">
                                         <rect key="frame" x="21" y="12" width="375" height="14.5"/>
                                         <fontDescription key="fontDescription" type="system" pointSize="12"/>
                                         <color key="textColor" red="0.59215686270000001" green="0.59215686270000001" blue="0.59215686270000001" alpha="1" colorSpace="calibratedRGB"/>
@@ -33,7 +33,7 @@
                                         </userDefinedRuntimeAttributes>
                                     </label>
                                     <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="cosmefulanito@asd.com" lineBreakMode="tailTruncation" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="rlA-nt-Tzt">
-                                        <rect key="frame" x="21" y="35.5" width="378" height="19.5"/>
+                                        <rect key="frame" x="21" y="36.5" width="378" height="19.5"/>
                                         <fontDescription key="fontDescription" type="system" weight="semibold" pointSize="16"/>
                                         <nil key="textColor"/>
                                         <nil key="highlightedColor"/>
@@ -45,7 +45,7 @@
                                 <color key="backgroundColor" red="0.97254901959999995" green="0.97647058819999999" blue="0.97647058819999999" alpha="1" colorSpace="calibratedRGB"/>
                                 <constraints>
                                     <constraint firstItem="rlA-nt-Tzt" firstAttribute="leading" secondItem="mFD-y3-13e" secondAttribute="leading" constant="21" id="0J5-mn-mPD"/>
-                                    <constraint firstAttribute="height" constant="68" id="Jt7-DM-fqq"/>
+                                    <constraint firstItem="rlA-nt-Tzt" firstAttribute="top" secondItem="P6S-6U-tvH" secondAttribute="bottom" constant="10" id="IgS-w8-UDn"/>
                                     <constraint firstItem="P6S-6U-tvH" firstAttribute="leading" secondItem="mFD-y3-13e" secondAttribute="leading" constant="21" id="WOD-Fv-PRq"/>
                                     <constraint firstItem="P6S-6U-tvH" firstAttribute="top" secondItem="mFD-y3-13e" secondAttribute="top" constant="12" id="cQS-ZR-0TW"/>
                                     <constraint firstAttribute="trailing" secondItem="P6S-6U-tvH" secondAttribute="trailing" constant="24" id="gyO-6j-kzv"/>

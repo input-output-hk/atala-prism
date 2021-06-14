@@ -6,7 +6,8 @@
 //  Copyright © 2021 iohk. All rights reserved.
 //
 
-class ProfileDetailPresenter: ListingBasePresenter, ListingBaseTableUtilsPresenterDelegate, TabsViewCellPresenterDelegate, ProfileDetailCellPresenterDelegate {
+class ProfileDetailPresenter: ListingBasePresenter, ListingBaseTableUtilsPresenterDelegate,
+                              TabsViewCellPresenterDelegate, ProfileDetailCellPresenterDelegate {
 
     var viewImpl: ProfileDetailViewController? {
         return view as? ProfileDetailViewController
@@ -24,46 +25,15 @@ class ProfileDetailPresenter: ListingBasePresenter, ListingBaseTableUtilsPresent
 
     struct CellRow {
         var type: ProfileDetailCellType
-        var value: Any?
+        var value: Attribute?
     }
 
-    var mode: ProfileMode = .initial
-
-    var initialRows: [CellRow]?
-
-    // MARK: Modes
-
-    func getMode() -> ProfileMode {
-        return mode
-    }
-
-    lazy var initialStaticCells: [CellRow] = [
-        CellRow(type: .header, value: nil),
-        CellRow(type: .field, value: (0, true)),
-        CellRow(type: .field, value: (1, false)),
-        CellRow(type: .field, value: (2, false)),
-        CellRow(type: .field, value: (3, false)),
-        CellRow(type: .field, value: (4, false)),
-        CellRow(type: .field, value: (5, false))
-    ]
-
-    func startShowingInitial() {
-
-        mode = .initial
-        cleanData()
-        initialStaticCells.forEach { initialRows?.append($0) }
-        updateViewToState()
-    }
+    var initialRows = [CellRow(type: .header, value: nil)]
 
     // MARK: Buttons
 
     @discardableResult
     func tappedBackButton() -> Bool {
-
-        if mode != .initial {
-            startShowingInitial()
-            return true
-        }
         return false
     }
     // MARK: ListingBaseTableUtilsPresenterDelegate
@@ -81,35 +51,36 @@ class ProfileDetailPresenter: ListingBasePresenter, ListingBaseTableUtilsPresent
     }
 
     func hasData() -> Bool {
-        return (initialRows?.size() ?? 0) > 0
+        return initialRows.size() > 1
     }
-    
+
     func getSectionHeaderViews() -> [UIView] {
         return [UIView()]
     }
-    
+
     func getSectionCount() -> Int? {
         return 1
     }
 
     func getElementCount() -> [Int] {
-        if let baseValue = super.getBaseElementCount() {
-            return [baseValue]
-        }
-        return [(initialRows?.size() ?? 0)]
+        return [initialRows.size()]
     }
 
     func getElementType(indexPath: IndexPath) -> ProfileDetailCellType {
         if let baseValue = super.getBaseElementType(indexPath: indexPath) {
             return .base(value: baseValue)
         }
-        return initialRows![indexPath.row].type
+        return initialRows[indexPath.row].type
     }
 
     // MARK: Fetch
 
     func fetchElements() {
-        self.startShowingInitial()
+        if let attributes = sharedMemory.loggedUser?.personalAttributes {
+            for attribute in attributes {
+                initialRows.append(CellRow(type: .field, value: attribute))
+            }
+        }
         self.startListing()
     }
 
@@ -125,41 +96,13 @@ class ProfileDetailPresenter: ListingBasePresenter, ListingBaseTableUtilsPresent
         cell.config()
     }
 
-    private func getFieldCellRowValue(index: IndexPath) -> (Int, Bool)? {
-        return (initialRows?[index.row])?.value as? (Int, Bool)
+    private func getFieldCellRowValue(index: IndexPath) -> Attribute? {
+        return initialRows[index.row].value
     }
 
     func setup(for cell: ProfileDetailCell) {
 
-        let user = sharedMemory.loggedUser
-        let aux = getFieldCellRowValue(index: cell.indexPath!)!
-
-        var fieldType: String?
-        var fieldValue: String?
-        
-        switch aux.0 {
-        case 0:
-            fieldType = "profile_detail_field_title_firstname".localize()
-            fieldValue = user?.firstName
-        case 1:
-            fieldType = "profile_detail_field_title_lastname".localize()
-            fieldValue = user?.lastName
-        case 2:
-            fieldType = "profile_detail_field_title_nationality".localize()
-            fieldValue = user?.countryShortName
-        case 3:
-            fieldType = "profile_detail_field_title_cityzenship".localize()
-            fieldValue = user?.countryShortName
-        case 4:
-            fieldType = "profile_detail_field_title_gender".localize()
-            fieldValue = user?.gender
-        case 5:
-            fieldType = "profile_detail_field_title_birthday".localize()
-            fieldValue = String.init(format: "%d", user?.age ?? 0)
-        default:
-            break
-        }
-        
-        cell.config(type: fieldType, value: fieldValue)
+        let attribute = getFieldCellRowValue(index: cell.indexPath!)!
+        cell.config(type: attribute.category, value: attribute.value)
     }
 }

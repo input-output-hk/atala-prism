@@ -5,23 +5,10 @@ class LoggedUser: Mappable {
 
     var id: String?
     var privateKey: String?
-    var email: String?
-    var firstName: String?
-    var lastName: String?
-    var gender: String?
-    var age: NSInteger?
-    
-    var attributes = [Attribute]()
-    
 
-    var idCode: String?
-    var identityNumber: String?
-    var countryFullName: String?
-    var countryShortName: String?
-    var nationalityName: String?
-    var dateOfBirth: String?
-    var qrUrlString: String?
-    var avatarUrl: String?
+    var attributes = [Attribute]()
+    var personalAttributes: [Attribute]?
+
     var isVerified: Bool?
 
     var apiUrl: String?
@@ -37,6 +24,14 @@ class LoggedUser: Mappable {
 
     var payIdCardDismissed: Bool?
     var verifyIdCardDismissed: Bool?
+    
+    var fullName: String {
+        if let name = personalAttributes?.first(where: {
+                                                    $0.category?.lowercased().contains("full name") ?? false }) {
+                return name.value ?? ""
+            }
+            return ""
+    }
 
     init() {}
 
@@ -47,22 +42,10 @@ class LoggedUser: Mappable {
 
         id <- map["id"]
         privateKey <- map["publicKey"]
-        email <- map["email"]
-        firstName <- map["firstName"]
-        lastName <- map["lastName"]
-        gender <- map["gender"]
-        age <- map["age"]
 
         attributes <- map["attributes"]
+        personalAttributes <- map["personalAttributes"]
 
-        idCode <- map["idCode"]
-        identityNumber <- map["identityNumber"]
-        countryFullName <- map["countryFullName"]
-        countryShortName <- map["countryShortName"]
-        nationalityName <- map["nationalityName"]
-        dateOfBirth <- map["dateOfBirth"]
-        qrUrlString <- map["qrUrlString"]
-        avatarUrl <- map["avatarUrl"]
         isVerified <- map["isVerified"]
 
         apiUrl <- map["apiUrl"]

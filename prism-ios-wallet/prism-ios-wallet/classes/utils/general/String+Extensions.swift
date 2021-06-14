@@ -136,10 +136,12 @@ extension String {
         return attributedString
     }
     
-    func addBoldText(fullString: NSString, boldPartsOfString: Array<NSString>, font: UIFont!, boldFont: UIFont!) -> NSAttributedString {
-        let nonBoldFontAttribute = [NSAttributedString.Key.font:font!]
-        let boldFontAttribute = [NSAttributedString.Key.font:boldFont!]
-        let boldString = NSMutableAttributedString(string: fullString as String, attributes:nonBoldFontAttribute)
+    func addBoldText(fullString: NSString, boldPartsOfString: [NSString], font: UIFont!,
+                     boldFont: UIFont!) -> NSAttributedString {
+        let nonBoldFontAttribute = [NSAttributedString.Key.font: font!]
+        let boldFontAttribute = [NSAttributedString.Key.font: boldFont!]
+        let boldString = NSMutableAttributedString(string: fullString as String,
+                                                   attributes: nonBoldFontAttribute)
         for index in 0 ..< boldPartsOfString.count {
             boldString.addAttributes(boldFontAttribute, range: fullString.range(of: boldPartsOfString[index] as String))
         }

@@ -35,8 +35,8 @@
                                 <color key="textColor" red="0.25098039220000001" green="0.91764705879999997" blue="0.91764705879999997" alpha="1" colorSpace="calibratedRGB"/>
                                 <nil key="highlightedColor"/>
                                 <userDefinedRuntimeAttributes>
-                                    <userDefinedRuntimeAttribute type="string" keyPath="localized" value="profile_detail_verified"/>
-                                    <userDefinedRuntimeAttribute type="string" keyPath="textColorIB" value="appAqua"/>
+                                    <userDefinedRuntimeAttribute type="string" keyPath="localized" value="profile_detail_not_verified"/>
+                                    <userDefinedRuntimeAttribute type="string" keyPath="textColorIB" value="appRed"/>
                                 </userDefinedRuntimeAttributes>
                             </label>
                             <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Status:" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" minimumFontSize="12" adjustsFontForContentSizeCategory="YES" translatesAutoresizingMaskIntoConstraints="NO" id="rkt-fc-yVL">
@@ -49,7 +49,7 @@
                                     <userDefinedRuntimeAttribute type="string" keyPath="textColorIB" value="appGreySub"/>
                                 </userDefinedRuntimeAttributes>
                             </label>
-                            <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFit" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="ico_verified_cyan" translatesAutoresizingMaskIntoConstraints="NO" id="mC8-Iq-bQZ">
+                            <imageView hidden="YES" clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFit" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="ico_verified_cyan" translatesAutoresizingMaskIntoConstraints="NO" id="mC8-Iq-bQZ">
                                 <rect key="frame" x="131" y="50.5" width="17" height="17"/>
                                 <constraints>
                                     <constraint firstAttribute="width" constant="17" id="ksS-D0-H7w"/>

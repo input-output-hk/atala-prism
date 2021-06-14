@@ -15,7 +15,6 @@ protocol ProfileDetailCellPresenterDelegate: BaseTableViewCellPresenterDelegate 
 
 class ProfileDetailCell: BaseTableViewCell {
 
-    
     @IBOutlet weak var labelFieldType: UILabel!
     @IBOutlet weak var labelFieldValue: UILabel!
     @IBOutlet weak var viewField: UIView!
@@ -35,12 +34,12 @@ class ProfileDetailCell: BaseTableViewCell {
         delegateImpl?.setup(for: self)
         viewField.addRoundCorners(radius: AppConfigs.CORNER_RADIUS_REGULAR)
     }
-    
+
     // MARK: Config
     
     func config(type: String?, value: String?) {
 
-        labelFieldType.text = type
-        labelFieldValue.text = value
+        labelFieldType.text = type?.trim()
+        labelFieldValue.text = value?.trim()
     }
 }
