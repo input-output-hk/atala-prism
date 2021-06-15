@@ -5,7 +5,6 @@ import doobie.free.connection.ConnectionIO
 import doobie.implicits._
 import doobie.implicits.legacy.instant._
 import io.iohk.atala.prism.crypto.ECConfig
-import io.iohk.atala.prism.daos.BaseDAO._
 import io.iohk.atala.prism.identity.DIDSuffix
 import io.iohk.atala.prism.node.models.nodeState.{DIDPublicKeyState, LedgerData}
 import io.iohk.atala.prism.node.models.DIDPublicKey

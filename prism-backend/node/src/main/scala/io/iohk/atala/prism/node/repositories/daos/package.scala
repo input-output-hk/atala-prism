@@ -7,7 +7,7 @@ import doobie.{Get, Meta, Put, Read, Write}
 import doobie.implicits.legacy.instant._
 import io.iohk.atala.prism.credentials.{CredentialBatchId, TimestampInfo}
 import io.iohk.atala.prism.crypto.{EC, ECConfig}
-import io.iohk.atala.prism.daos.BaseDAO.{ledgerMeta, transactionIdMeta}
+import io.iohk.atala.prism.daos.BaseDAO
 import io.iohk.atala.prism.identity.DIDSuffix
 import io.iohk.atala.prism.models.{BlockInfo, Ledger, TransactionId, TransactionInfo}
 import io.iohk.atala.prism.node.models.nodeState.DIDPublicKeyState
@@ -22,7 +22,7 @@ import io.iohk.atala.prism.node.models.{
   KeyUsage
 }
 
-package object daos {
+package object daos extends BaseDAO {
 
   implicit val pgKeyUsageMeta: Meta[KeyUsage] = pgEnumString[KeyUsage](
     "KEY_USAGE",

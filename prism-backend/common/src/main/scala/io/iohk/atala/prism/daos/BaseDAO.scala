@@ -18,7 +18,10 @@ trait BaseDAO {
   implicit val jsonPut: Put[Json] = doobie.postgres.circe.json.implicits.jsonPut
   implicit val jsonGet: Get[Json] = doobie.postgres.circe.json.implicits.jsonGet
 
-  implicit val sha256Meta: Meta[SHA256Digest] = Meta[String].timap(SHA256Digest.fromHexUnsafe)(_.hexValue)
+  implicit val sha256MetaBytes: Meta[SHA256Digest] = Meta[Array[Byte]].timap { value =>
+    SHA256Digest.fromVectorUnsafe(value.toVector)
+  }(_.value.toArray)
+
   implicit val ecPublicKeyMeta: Meta[ECPublicKey] =
     Meta[Array[Byte]].timap(b => EC.toPublicKey(b))(_.getEncoded)
 

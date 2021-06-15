@@ -2,10 +2,16 @@ package io.iohk.atala.prism.crypto
 
 import io.iohk.atala.prism.util.BytesOps
 
-final case class SHA256Digest private (value: Vector[Byte]) {
+final class SHA256Digest private (val value: Vector[Byte]) {
   def hexValue: String = BytesOps.bytesToHex(value)
 
-  def equals(that: SHA256Digest): Boolean = this.value == that.value
+  override def equals(obj: Any): Boolean =
+    obj match {
+      case that: SHA256Digest => this.value == that.value
+      case _ => false
+    }
+
+  override def hashCode(): Int = value.hashCode()
 
   override def toString: String = s"SHA256Digest($hexValue)"
 }
@@ -20,7 +26,7 @@ object SHA256Digest {
 
   def fromVectorUnsafe(value: Vector[Byte]): SHA256Digest = {
     if (value.length == SHA256Digest.BYTE_LENGTH)
-      SHA256Digest(value)
+      new SHA256Digest(value)
     else
       throw new IllegalArgumentException(
         s"Vector length doesn't correspond to expected length  - ${SHA256Digest.BYTE_LENGTH}"

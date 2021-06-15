@@ -5,7 +5,6 @@ import doobie.implicits._
 import doobie.implicits.legacy.instant._
 import cats.syntax.functor._
 import io.iohk.atala.prism.crypto.SHA256Digest
-import io.iohk.atala.prism.daos.BaseDAO.{ledgerMeta, transactionIdMeta}
 import io.iohk.atala.prism.identity.DIDSuffix
 import io.iohk.atala.prism.node.models.nodeState.LedgerData
 
