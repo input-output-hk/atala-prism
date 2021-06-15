@@ -1,0 +1,8 @@
+server = true
+bootstrap_expect = {{ consul_expected_servers }}
+client_addr = "0.0.0.0"
+ui = true
+
+# The address that should be bound to for internal cluster communications.
+# This is an IP address that should be reachable by all other nodes in the cluster.
+bind_addr = "{{ host_public_ipv4_address }}"

@@ -1,0 +1,12 @@
+server {
+  enabled = true
+  # when consul runs in the same machine as nomad, it allows nomad to discover the servers
+  # while this is handy, it has caused occassional issues in the initial discovery, adding
+  # the servers explicitly should prevent that issue.
+  bootstrap_expect = {{ nomad_expected_servers }}
+  server_join {
+    retry_join = [ {{ nomad_servers_ip_addresses }} ]
+    retry_max = 3
+    retry_interval = "15s"
+  }
+}
