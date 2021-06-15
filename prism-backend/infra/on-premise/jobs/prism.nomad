@@ -102,6 +102,15 @@ job "job_prism" {
       # when using connect this needs to be the literal value the sidecar service should proxy traffic to
       port = "50051"
 
+      check {
+          type         = "grpc"
+          port         = "50051"
+          interval     = "5s"
+          timeout      = "2s"
+          address_mode = "alloc"
+          grpc_service = "connector-grpc"
+        }
+
       # TODO: Wait for postgres/node to start before running this service
       connect {
         sidecar_task {
@@ -150,7 +159,7 @@ job "job_prism" {
 
       config {
         # TODO: Avoid hardcoding the url/image/version
-        image = "895947072537.dkr.ecr.us-east-2.amazonaws.com/connector:develop-3648-410fc3376"
+        image = "895947072537.dkr.ecr.us-east-2.amazonaws.com/connector:develop-3652-33e5389d2"
       }
 
       # NOTE: Update these values to set the resources available to each connector instance
@@ -174,6 +183,16 @@ job "job_prism" {
       name = "node-grpc"
       # when using connect this needs to be the literal value the sidecar service should proxy traffic to
       port = "50053"
+
+      check {
+          type         = "grpc"
+          port         = "50053"
+          task         = "node-grpc"
+          interval     = "5s"
+          timeout      = "2s"
+          address_mode = "alloc"
+          grpc_service = "node-grpc"
+        }
 
       connect {
         sidecar_task {
@@ -214,7 +233,7 @@ job "job_prism" {
 
       config {
         # TODO: Avoid hardcoding the url/image/version
-        image = "895947072537.dkr.ecr.us-east-2.amazonaws.com/node:develop-3648-410fc3376"
+        image = "895947072537.dkr.ecr.us-east-2.amazonaws.com/node:develop-3652-33e5389d2"
       }
 
       # NOTE: Update these values to set the resources available to each node instance
