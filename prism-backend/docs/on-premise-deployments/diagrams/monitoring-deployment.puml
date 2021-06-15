@@ -1,0 +1,32 @@
+@startuml
+digraph prism_monitoring_on_premise_deployment {
+  # this is deployment dependency graph:
+  # - nodes with no dependencies are the first to be deployed.
+  # - nodes with dependencies can be deployed only after its dependencies.
+  # - "a -> b" means that "b" can be deployed only when "a" is ready.
+  # - a topological order can allow us to deploy services in parallel and in the right order.
+
+  # prism is the whole deployment without considering how to talk to it from the public internet
+  prism
+
+  # storage components
+  # each of these likely needs to RAID
+  storage_prometheus
+  storage_elasticsearch
+
+  # all the logs get collected to elasticsearch (which will likely require a cluster)
+  elasticsearch
+  kibana
+
+  # all system/server metrics get collected by prometheus
+  prometheus
+  grafana
+
+  storage_prometheus -> prometheus
+  prometheus -> grafana
+  prism -> prometheus
+
+  storage_elasticsearch -> elasticsearch
+  elasticsearch -> kibana
+  prism -> kibana}
+@enduml
