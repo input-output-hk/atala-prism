@@ -69,10 +69,10 @@ class AcuantFetchDocumentState1Processor(
       )
 
       state2Data = AcuantCompareImagesState2Data.fromAcuantFetchDocumentState1Data(acuantData, document)
-    } yield ProcessingTaskResult.ProcessingTaskStateTransition[KycBridgeProcessingTaskState](
+    } yield ProcessingTaskResult.ProcessingTaskStateTransition(
       KycBridgeProcessingTaskState.AcuantCompareImagesState2,
       ProcessingTaskData(state2Data.asJson)
     )).value
-      .map(_.fold(id => id, id => id))
+      .map(_.merge)
   }
 }

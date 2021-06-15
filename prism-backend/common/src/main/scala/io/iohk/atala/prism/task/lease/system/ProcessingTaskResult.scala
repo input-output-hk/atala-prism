@@ -2,7 +2,7 @@ package io.iohk.atala.prism.task.lease.system
 
 import java.time.Instant
 
-sealed trait ProcessingTaskResult[S <: ProcessingTaskState]
+sealed trait ProcessingTaskResult[+S <: ProcessingTaskState]
 
 object ProcessingTaskResult {
   //remove task from db

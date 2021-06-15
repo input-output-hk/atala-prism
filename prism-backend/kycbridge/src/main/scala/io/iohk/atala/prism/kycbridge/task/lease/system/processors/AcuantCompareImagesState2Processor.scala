@@ -55,31 +55,27 @@ class AcuantCompareImagesState2Processor(
       )
 
       result <-
-        EitherT[Task, ProcessingTaskResult[KycBridgeProcessingTaskState], ProcessingTaskResult[
-          KycBridgeProcessingTaskState
-        ]](
-          if (faceMatchResult.isMatch) {
+        EitherT.right[ProcessingTaskResult[KycBridgeProcessingTaskState]](Task(faceMatchResult.isMatch).flatMap {
+          case true =>
             val data = AcuantCreateCredentialState3Data.fromAcuantCompareImagesState2Data(acuantData, frontScannedImage)
             Task.pure(
-              Right(
-                ProcessingTaskResult.ProcessingTaskStateTransition(
+              ProcessingTaskResult
+                .ProcessingTaskStateTransition(
                   KycBridgeProcessingTaskState.AcuantIssueCredentialState3,
                   ProcessingTaskData(data.asJson)
                 )
-              )
             )
-          } else
+          case false =>
             connectorService
               .sendResponseMessage(
                 message = FaceMatchFailedError(faceMatchResult).toAtalaMessage,
                 receivedMessageId = acuantData.receivedMessageId,
                 connectionId = acuantData.connectionId
               )
-              .map(_ => Right(ProcessingTaskResult.ProcessingTaskFinished()))
-        )
-
+              .map(_ => ProcessingTaskResult.ProcessingTaskFinished())
+        })
     } yield result).value
-      .map(_.fold(id => id, id => id))
+      .map(_.merge)
   }
 }
 

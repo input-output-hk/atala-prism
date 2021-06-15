@@ -84,13 +84,13 @@ class AcuantStartProcessForConnectionStateProcessor(
         acuantDocumentInstanceId = Some(AcuantDocumentInstanceId(documentInstanceResponseBody.documentId))
       )
 
-      _ <- EitherT.liftF[Task, ProcessingTaskResult[KycBridgeProcessingTaskState], Int](
+      _ <- EitherT.right[ProcessingTaskResult[KycBridgeProcessingTaskState]](
         ConnectionDao
           .update(updatedConnection)
           .logSQLErrors("updating connection", logger)
           .transact(tx)
       )
-    } yield ProcessingTaskResult.ProcessingTaskFinished[KycBridgeProcessingTaskState]()).value
-      .map(_.fold(id => id, id => id))
+    } yield ProcessingTaskResult.ProcessingTaskFinished()).value
+      .map(_.merge)
   }
 }

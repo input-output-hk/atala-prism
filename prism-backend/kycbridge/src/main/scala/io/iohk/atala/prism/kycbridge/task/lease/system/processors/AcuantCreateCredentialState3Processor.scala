@@ -15,10 +15,8 @@ import io.iohk.atala.prism.kycbridge.task.lease.system.processors.AcuantCreateCr
   CannotIssueCredentialBatch,
   HtmlTemplateError
 }
-import io.iohk.atala.prism.protos.connector_api.SendMessageResponse
 import io.iohk.atala.prism.protos.credential_models
 import io.iohk.atala.prism.protos.credential_models.AtalaMessage
-import io.iohk.atala.prism.protos.node_api.IssueCredentialBatchResponse
 import io.iohk.atala.prism.services.ConnectorClientService.CannotSendConnectorMessage
 import io.iohk.atala.prism.services.{BaseGrpcClientService, ConnectorClientService, NodeClientService}
 import io.iohk.atala.prism.task.lease.system.ProcessingTaskProcessorOps._
@@ -58,17 +56,16 @@ class AcuantCreateCredentialState3Processor(
       )
 
       (root, proof :: _) = CredentialBatches.batch(List(credential))
-      credentialResponse <-
-        EitherT[Task, ProcessingTaskResult[KycBridgeProcessingTaskState], IssueCredentialBatchResponse](
-          nodeService
-            .issueCredentialBatch(root)
-            .redeem(
-              ex => Left(CannotIssueCredentialBatch(ex.getMessage)),
-              Right(_)
-            )
-            .logErrorIfPresent
-            .mapErrorToProcessingTaskScheduled(processingTask)
-        )
+      credentialResponse <- EitherT(
+        nodeService
+          .issueCredentialBatch(root)
+          .redeem(
+            ex => Left(CannotIssueCredentialBatch(ex.getMessage)),
+            Right(_)
+          )
+          .logErrorIfPresent
+          .mapErrorToProcessingTaskScheduled(processingTask)
+      )
 
       // send credential along with inclusion proof
       credentialProto = credential_models.PlainTextCredential(
@@ -81,7 +78,7 @@ class AcuantCreateCredentialState3Processor(
         s"Credential batch created for document instance id: ${acuantData.documentInstanceId} with batch id: ${credentialResponse.batchId}"
       )
 
-      _ <- EitherT[Task, ProcessingTaskResult[KycBridgeProcessingTaskState], SendMessageResponse](
+      _ <- EitherT(
         connectorService
           .sendResponseMessage(atalaMessage, acuantData.receivedMessageId, acuantData.connectionId)
           .redeem(
@@ -92,8 +89,8 @@ class AcuantCreateCredentialState3Processor(
           .mapErrorToProcessingTaskScheduled(processingTask)
       )
 
-    } yield ProcessingTaskResult.ProcessingTaskFinished[KycBridgeProcessingTaskState]()).value
-      .map(_.fold(id => id, id => id))
+    } yield ProcessingTaskResult.ProcessingTaskFinished()).value
+      .map(_.merge)
   }
 
   private[processors] def createCredential(
