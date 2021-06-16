@@ -4,25 +4,25 @@ This is a proof of concept PRISM SDK that is cross-compiled to JVM/JS/iOS-ARM64.
 
 ## How to build the SDK
 
-###Install Ruby
+### Install Ruby
 
-####Mac
+#### Mac
 ```
 $ brew install ruby
 ```
 At the time of writing, the above command installs ruby version "2.6.3p62".
-####Linux
+#### Linux
 ```
 $ sudo apt-get install ruby-full
 ```
-###Install Cocoapods
+### Install Cocoapods
 
 Make sure that you have cocoapods and cocoapods-generate installed:
 ```
 $ sudo gem install cocoapods
 $ sudo gem install cocoapods-generate
 ```
-###Install XCode (Mac Only)
+### Install XCode (Mac Only)
 
 Install XCode from App Store. 
 
@@ -30,7 +30,7 @@ Then approve xcodebuild license in your terminal. Like so:
 ```
 $ sudo xcodebuild -license
 ```
-###Install Android SDK
+### Install Android SDK
 
 Install Android SDK from SDK Manager (via Android Studio). 
 
@@ -40,7 +40,7 @@ $ cd /Users/{{YOUR USER}}/Library/Android/sdk
 $ tools/bin/sdkmanager --licenses
 ```
 While there are many ways to install Android SDK this has proven to be the most reliable way. Standard IntelliJ with Android plugin may work. However, we've had several issues. Your milage may vary.
-###Create local.properties file
+### Create local.properties file
 
 Create a file named local.properties in the root of the prism-kotlin-sdk.
 
@@ -111,6 +111,22 @@ At last, make sure to run some Kotlin code in the Main thread to avoid memory le
 // application(_ application: UIApplication, didFinishLaunchingWithOptions  launchOptions: [UIApplication.LaunchOptionsKey: Any]?) -> Bool
 SHA256Digest.Companion().compute(bytes: [0, 1, 2])
 ```
+
+## How to use for JS app
+
+`./gradlew build` generates CommonJS module located in `build/js`. You can add this module to your project as a dependency in `package.json`:
+
+```json
+{
+  "dependencies": {
+    "prism-kotlin-sdk": "file:<path to the module, located at build/js>"
+  }
+}
+```
+
+You can check the overview of the exposed methods in the generated `TypeScript` definitions. For example, for `crypto` library, you can look at the exposed API here: `build/js/packages/crypto/kotlin/crypto.d.ts`.
+
+There's also [prism-sdk-javascript-example](examples/prism-sdk-javascript-example) project with various examples of how to use this SDK.
 
 ## Docs
 
