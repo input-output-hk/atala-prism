@@ -19,7 +19,7 @@ class ProcessingTaskSchedulerSpec extends AnyWordSpec with Matchers {
         override def process(
             processingTask: ProcessingTask[ProcessingTaskTestState]
         ): Task[ProcessingTaskResult[ProcessingTaskTestState]] =
-          Task.pure(ProcessingTaskResult.ProcessingTaskFinished())
+          Task.pure(ProcessingTaskResult.ProcessingTaskFinished)
       }
 
       val processingTaskScheduler =
@@ -59,7 +59,7 @@ class ProcessingTaskSchedulerSpec extends AnyWordSpec with Matchers {
           if (count < 3) {
             count = count + 1
             Task.pure(ProcessingTaskResult.ProcessingTaskStateTransition(taskState, sampleTaskData))
-          } else Task.pure(ProcessingTaskResult.ProcessingTaskFinished())
+          } else Task.pure(ProcessingTaskResult.ProcessingTaskFinished)
       }
 
       val processingTaskScheduler =
@@ -78,7 +78,7 @@ class ProcessingTaskSchedulerSpec extends AnyWordSpec with Matchers {
             processingTask: ProcessingTask[ProcessingTaskTestState]
         ): Task[ProcessingTaskResult[ProcessingTaskTestState]] =
           Task
-            .pure(ProcessingTaskResult.ProcessingTaskFinished[ProcessingTaskTestState]())
+            .pure(ProcessingTaskResult.ProcessingTaskFinished)
             .delayExecution(2500.milliseconds)
       }
 
@@ -117,7 +117,7 @@ class ProcessingTaskSchedulerSpec extends AnyWordSpec with Matchers {
         override def process(
             processingTask: ProcessingTask[ProcessingTaskTestState]
         ): Task[ProcessingTaskResult[ProcessingTaskTestState]] =
-          Task.pure(ProcessingTaskResult.ProcessingTaskFinished())
+          Task.pure(ProcessingTaskResult.ProcessingTaskFinished)
       }
 
       override val processingTaskServiceStub = new ProcessingTaskServiceStub[ProcessingTaskTestState]() {
@@ -149,7 +149,7 @@ class ProcessingTaskSchedulerSpec extends AnyWordSpec with Matchers {
         override def process(
             processingTask: ProcessingTask[ProcessingTaskTestState]
         ): Task[ProcessingTaskResult[ProcessingTaskTestState]] =
-          Task.pure(ProcessingTaskResult.ProcessingTaskFinished())
+          Task.pure(ProcessingTaskResult.ProcessingTaskFinished)
       }
 
       override val processingTaskServiceStub = new ProcessingTaskServiceStub[ProcessingTaskTestState]() {

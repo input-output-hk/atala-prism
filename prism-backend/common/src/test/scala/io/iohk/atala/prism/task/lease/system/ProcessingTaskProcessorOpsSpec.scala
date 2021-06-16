@@ -45,7 +45,7 @@ class ProcessingTaskProcessorOpsSpec extends AnyWordSpec with Matchers {
         Task
           .pure(Left(InvalidAtalaOperationError))
           .mapErrorToProcessingTaskFinished()
-          .runSyncUnsafe() mustBe Left(ProcessingTaskResult.ProcessingTaskFinished())
+          .runSyncUnsafe() mustBe Left(ProcessingTaskResult.ProcessingTaskFinished)
       }
     }
 
@@ -76,7 +76,7 @@ class ProcessingTaskProcessorOpsSpec extends AnyWordSpec with Matchers {
         parseProcessingTaskData[TestData, ProcessingTaskTestState](
           processingTask.copy(data = ProcessingTaskData(Json.obj()))
         ).value
-          .runSyncUnsafe() mustBe Left(ProcessingTaskResult.ProcessingTaskFinished())
+          .runSyncUnsafe() mustBe Left(ProcessingTaskResult.ProcessingTaskFinished)
       }
     }
   }

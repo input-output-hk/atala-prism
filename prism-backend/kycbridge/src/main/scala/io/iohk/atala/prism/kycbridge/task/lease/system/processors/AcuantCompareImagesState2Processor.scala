@@ -1,6 +1,7 @@
 package io.iohk.atala.prism.kycbridge.task.lease.system.processors
 
 import cats.data.EitherT
+import cats.syntax.functor._
 import io.circe.syntax._
 import io.grpc.Status
 import io.iohk.atala.prism.errors.PrismError
@@ -72,7 +73,7 @@ class AcuantCompareImagesState2Processor(
                 receivedMessageId = acuantData.receivedMessageId,
                 connectionId = acuantData.connectionId
               )
-              .map(_ => ProcessingTaskResult.ProcessingTaskFinished())
+              .as(ProcessingTaskResult.ProcessingTaskFinished)
         })
     } yield result).value
       .map(_.merge)

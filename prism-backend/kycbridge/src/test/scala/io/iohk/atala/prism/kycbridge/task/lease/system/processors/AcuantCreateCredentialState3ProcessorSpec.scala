@@ -29,7 +29,7 @@ class AcuantCreateCredentialState3ProcessorSpec
   "AcuantCompareImagesState2Processor" should {
     "issue and send credential to phone" in new Fixtures {
       val result = processor.process(processingTask).runSyncUnsafe()
-      result mustBe ProcessingTaskFinished()
+      result mustBe ProcessingTaskFinished
       connectorClientStub.sendMessageInvokeCount.get() mustBe 1
     }
 

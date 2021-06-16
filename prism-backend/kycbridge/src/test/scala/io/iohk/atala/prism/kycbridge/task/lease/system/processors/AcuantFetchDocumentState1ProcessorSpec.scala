@@ -71,7 +71,7 @@ class AcuantFetchDocumentState1ProcessorSpec extends PostgresRepositorySpec[Task
       val processingTaskWithWrongConnectionId =
         processingTask.copy(data = ProcessingTaskData(state1Data.copy(connectionId = "badId").asJson))
       val result = processor.process(processingTaskWithWrongConnectionId).runSyncUnsafe()
-      result mustBe ProcessingTaskFinished()
+      result mustBe ProcessingTaskFinished
       connectorClientStub.sendMessageInvokeCount.get() mustBe 1
     }
   }

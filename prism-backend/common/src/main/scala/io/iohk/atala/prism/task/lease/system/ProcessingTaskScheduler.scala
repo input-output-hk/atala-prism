@@ -67,7 +67,7 @@ class ProcessingTaskScheduler[S <: ProcessingTaskState](
       Task
         .race(extendLeaseTask, processingTaskRouter.process(task))
         .flatMap {
-          case Right(ProcessingTaskResult.ProcessingTaskFinished()) =>
+          case Right(ProcessingTaskResult.ProcessingTaskFinished) =>
             processingTaskService
               .deleteTask(task.id)
               .map(_ => Right(()))
@@ -79,7 +79,7 @@ class ProcessingTaskScheduler[S <: ProcessingTaskState](
             processingTaskService
               .updateTaskAndExtendLease(task.id, state, data, taskLeaseConfig.leaseTimeSeconds)
               .map(Left(_))
-          case Right(ProcessingTaskResult.ProcessingTaskRestart()) =>
+          case Right(ProcessingTaskResult.ProcessingTaskRestart) =>
             logger.warn(
               s"Worker: ${workerNumber}, ProcessingTask: ${task.id} with state: ${task.state} finished, although it shouldn't. Restarting it."
             )

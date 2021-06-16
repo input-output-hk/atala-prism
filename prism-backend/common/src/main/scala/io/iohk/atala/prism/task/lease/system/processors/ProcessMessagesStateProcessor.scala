@@ -14,7 +14,7 @@ class ProcessMessagesStateProcessor[S <: ProcessingTaskState](connectorMessagesS
     extends ProcessingTaskProcessor[S] {
 
   def process(processingTask: ProcessingTask[S]): Task[ProcessingTaskResult[S]] = {
-    connectorMessagesService.messagesUpdatesStream.compile.drain.as(ProcessingTaskResult.ProcessingTaskRestart())
+    connectorMessagesService.messagesUpdatesStream.compile.drain.as(ProcessingTaskResult.ProcessingTaskRestart)
   }
 
 }

@@ -35,7 +35,7 @@ object ProcessingTaskProcessorOps {
     }
 
     def mapErrorToProcessingTaskFinished[S <: ProcessingTaskState](): Task[Either[ProcessingTaskResult[S], A]] = {
-      task.map(_.leftMap(_ => ProcessingTaskResult.ProcessingTaskFinished()))
+      task.map(_.leftMap(_ => ProcessingTaskResult.ProcessingTaskFinished))
     }
 
     def mapErrorToProcessingTaskScheduled[S <: ProcessingTaskState](
@@ -66,7 +66,7 @@ object ProcessingTaskProcessorOps {
       logger.error(
         s"Cannot decode task data: ${processingTask.data.json.toString()}, failure reason: ${decodingFailure.message}"
       )
-      ProcessingTaskResult.ProcessingTaskFinished()
+      ProcessingTaskResult.ProcessingTaskFinished
     })
 
 }

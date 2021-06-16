@@ -12,7 +12,7 @@ class ProcessNewConnectionsStateProcessor(connectionService: ConnectionService)
   def process(
       processingTask: ProcessingTask[KycBridgeProcessingTaskState]
   ): Task[ProcessingTaskResult[KycBridgeProcessingTaskState]] = {
-    connectionService.connectionUpdateStream.compile.drain.as(ProcessingTaskResult.ProcessingTaskRestart())
+    connectionService.connectionUpdateStream.compile.drain.as(ProcessingTaskResult.ProcessingTaskRestart)
   }
 
 }

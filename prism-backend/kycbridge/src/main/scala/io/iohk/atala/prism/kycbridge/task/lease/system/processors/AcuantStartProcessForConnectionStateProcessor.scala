@@ -45,7 +45,7 @@ class AcuantStartProcessForConnectionStateProcessor(
         case Some(connection) => Right(connection)
         case None =>
           logger.error(s"Cannot fetch connection: ${acuantData.connectionToken}. Deleting processing task")
-          Left(ProcessingTaskResult.ProcessingTaskFinished[KycBridgeProcessingTaskState]())
+          Left(ProcessingTaskResult.ProcessingTaskFinished)
       })
 
       documentInstanceResponseBody <- EitherT(
@@ -63,7 +63,7 @@ class AcuantStartProcessForConnectionStateProcessor(
           .fromOption[Task](connection.id, ())
           .leftMap[ProcessingTaskResult[KycBridgeProcessingTaskState]] { _ =>
             logger.error(s"Connection doesn't contain id: ${connection}, cannot start acuant process")
-            ProcessingTaskResult.ProcessingTaskFinished()
+            ProcessingTaskResult.ProcessingTaskFinished
           }
 
       _ <- EitherT.liftF(
@@ -90,7 +90,7 @@ class AcuantStartProcessForConnectionStateProcessor(
           .logSQLErrors("updating connection", logger)
           .transact(tx)
       )
-    } yield ProcessingTaskResult.ProcessingTaskFinished()).value
+    } yield ProcessingTaskResult.ProcessingTaskFinished).value
       .map(_.merge)
   }
 }

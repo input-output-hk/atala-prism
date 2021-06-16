@@ -31,7 +31,7 @@ class AcuantStartProcessForConnectionStateProcessorSpec extends PostgresReposito
         connection <- ConnectionDao.findByConnectionToken(connection1.token).transact(database)
       } yield (result, connection)).runSyncUnsafe()
 
-      result mustBe ProcessingTaskResult.ProcessingTaskFinished()
+      result mustBe ProcessingTaskResult.ProcessingTaskFinished
       connection.value.acuantDocumentInstanceId.value.id mustBe newDocumentInstanceResponseBody.documentId
     }
 

@@ -89,7 +89,7 @@ class AcuantCreateCredentialState3Processor(
           .mapErrorToProcessingTaskScheduled(processingTask)
       )
 
-    } yield ProcessingTaskResult.ProcessingTaskFinished()).value
+    } yield ProcessingTaskResult.ProcessingTaskFinished).value
       .map(_.merge)
   }
 

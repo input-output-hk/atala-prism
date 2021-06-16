@@ -6,7 +6,7 @@ sealed trait ProcessingTaskResult[+S <: ProcessingTaskState]
 
 object ProcessingTaskResult {
   //remove task from db
-  case class ProcessingTaskFinished[S <: ProcessingTaskState]() extends ProcessingTaskResult[S]
+  case object ProcessingTaskFinished extends ProcessingTaskResult[Nothing]
   //dispatch task in future
   case class ProcessingTaskScheduled[S <: ProcessingTaskState](
       state: S,
@@ -18,5 +18,5 @@ object ProcessingTaskResult {
       extends ProcessingTaskResult[S]
   //restart task with the same state
   //useful for tasks that are supposed to run forever, but fail for some reason
-  case class ProcessingTaskRestart[S <: ProcessingTaskState]() extends ProcessingTaskResult[S]
+  case object ProcessingTaskRestart extends ProcessingTaskResult[Nothing]
 }

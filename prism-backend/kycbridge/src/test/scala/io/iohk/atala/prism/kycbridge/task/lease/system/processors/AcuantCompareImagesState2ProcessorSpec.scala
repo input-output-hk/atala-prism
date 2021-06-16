@@ -34,7 +34,7 @@ class AcuantCompareImagesState2ProcessorSpec extends PostgresRepositorySpec[Task
       override val processor =
         new AcuantCompareImagesState2Processor(connectorClientStub, assureIdServiceStub, faceIdServiceStub)
       val result = processor.process(processingTask).runSyncUnsafe()
-      result mustBe ProcessingTaskFinished()
+      result mustBe ProcessingTaskFinished
       connectorClientStub.sendMessageInvokeCount.get() mustBe 1
     }
 
