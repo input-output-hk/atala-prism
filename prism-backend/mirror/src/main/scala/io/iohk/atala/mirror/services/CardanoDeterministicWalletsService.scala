@@ -1,38 +1,33 @@
 package io.iohk.atala.mirror.services
 
-import java.time.Instant
-
-import scala.util.Try
-
 import cats.data.EitherT
-import monix.eval.Task
-import io.grpc.Status
-import org.slf4j.LoggerFactory
+import cats.implicits._
+import doobie.implicits._
 import doobie.util.transactor.Transactor
-
-import io.iohk.atala.prism.services.MessageProcessor
+import io.grpc.Status
+import io.iohk.atala.mirror.config.CardanoConfig
+import io.iohk.atala.mirror.db.{CardanoDBSyncDao, CardanoWalletAddressDao, CardanoWalletDao, ConnectionDao}
+import io.iohk.atala.mirror.models.{CardanoAddress, CardanoAddressWithUsageInfo, CardanoWallet, CardanoWalletAddress}
+import io.iohk.atala.prism.errors.PrismError
 import io.iohk.atala.prism.protos.connector_models.ReceivedMessage
 import io.iohk.atala.prism.protos.credential_models.{
   AtalaMessage,
-  RegisterWalletMessage,
   MirrorMessage,
+  RegisterWalletMessage,
   WalletRegistered
 }
-import io.iohk.atala.mirror.models.CardanoWallet
-import io.iohk.atala.mirror.db.CardanoWalletDao
+import io.iohk.atala.prism.services.MessageProcessor
 import io.iohk.atala.prism.utils.ConnectionUtils
-import io.iohk.atala.mirror.db.ConnectionDao
 import io.iohk.atala.prism.utils.syntax.DBConnectionOps
-import io.iohk.atala.prism.errors.PrismError
-import io.iohk.atala.mirror.models.CardanoWalletAddress
-import io.iohk.atala.mirror.db.CardanoWalletAddressDao
-import io.iohk.atala.mirror.config.CardanoConfig
+import monix.eval.Task
+import org.slf4j.LoggerFactory
 
-import cats.implicits._
-import doobie.implicits._
+import java.time.Instant
+import scala.util.Try
 
 class CardanoDeterministicWalletsService(
     tx: Transactor[Task],
+    cardanoDbSyncTx: Transactor[Task],
     cardanoAddressService: CardanoAddressService,
     cardanoConfig: CardanoConfig
 ) {
@@ -62,45 +57,23 @@ class CardanoDeterministicWalletsService(
           .transact(tx)
       )
 
+      cardanoWallet = CardanoWallet(
+        id = CardanoWallet.Id.random(),
+        name = Option(registerWalletMessage.name).filter(_.nonEmpty),
+        connectionToken = connection.token,
+        extendedPublicKey = registerWalletMessage.extendedPublicKey,
+        lastGeneratedNo = cardanoConfig.addressCount - 1,
+        lastUsedNo = None,
+        registrationDate = CardanoWallet.RegistrationDate(Instant.now())
+      )
+
       walletId <- EitherT.liftF[Task, PrismError, CardanoWallet.Id](
         CardanoWalletDao
-          .insert(
-            CardanoWallet(
-              id = CardanoWallet.Id.random(),
-              name = Option(registerWalletMessage.name).filter(_.nonEmpty),
-              connectionToken = connection.token,
-              extendedPublicKey = registerWalletMessage.extendedPublicKey,
-              lastGeneratedNo = cardanoConfig.addressCount,
-              lastUsedNo = 0,
-              registrationDate = CardanoWallet.RegistrationDate(Instant.now())
-            )
-          )
+          .insert(cardanoWallet)
           .transact(tx)
       )
 
-      addresses <- EitherT.fromEither[Task](
-        (0 until cardanoConfig.addressCount).toList
-          .map(sequenceNo =>
-            cardanoAddressService
-              .generateWalletAddress(registerWalletMessage.extendedPublicKey, sequenceNo, cardanoConfig.network.name)
-          )
-          .sequence
-      )
-
-      _ <- EitherT.liftF[Task, PrismError, Int](
-        CardanoWalletAddressDao.insertMany
-          .updateMany(
-            addresses.mapWithIndex((address, sequenceNo) =>
-              CardanoWalletAddress(
-                address = address,
-                walletId = walletId,
-                sequenceNo = sequenceNo,
-                usedAt = None
-              )
-            )
-          )
-          .transact(tx)
-      )
+      _ <- EitherT(generateAddresses(cardanoWallet))
 
       messageContent = WalletRegistered(
         id = walletId.uuid.toString,
@@ -112,6 +85,111 @@ class CardanoDeterministicWalletsService(
       )
     } yield Some(atalaMessage)).value
   }
+
+  private[services] def generateAddresses(
+      cardanoWallet: CardanoWallet
+  ): Task[Either[PrismError, Unit]] = {
+    val initialSequenceNo = 0
+    Task.tailRecM(initialSequenceNo) { currentSequenceNo =>
+      cardanoAddressService.generateWalletAddresses(
+        cardanoWallet.extendedPublicKey,
+        currentSequenceNo,
+        currentSequenceNo + cardanoConfig.addressCount,
+        cardanoConfig.network.name
+      ) match {
+        case Left(error) => // cannot generate cardano addresses
+          Task.pure(
+            Right( // end iteration
+              Left(error) // with error
+            )
+          )
+        case Right(addressesWithSequenceNo) =>
+          processGeneratedAddresses(cardanoWallet.id, addressesWithSequenceNo).map { continueIteration =>
+            if (continueIteration) {
+              val nextSequenceNo = currentSequenceNo + cardanoConfig.addressCount
+              Left(nextSequenceNo)
+            } else {
+              Right( // end iteration
+                Right(()) // with success
+              )
+            }
+          }
+      }
+    }
+  }
+
+  private[services] def processGeneratedAddresses(
+      cardanoWalletId: CardanoWallet.Id,
+      addressesWithSequenceNo: List[(CardanoAddress, Int)]
+  ): Task[Boolean] = {
+    for {
+      _ <- insertNewAddresses(cardanoWalletId, addressesWithSequenceNo)
+
+      usedAddresses <-
+        CardanoDBSyncDao
+          .findUsedAddresses(addressesWithSequenceNo.map { case (address, _) => address })
+          .logSQLErrors("updating cardano wallet and cardano addresses usage", logger)
+          .transact(cardanoDbSyncTx)
+
+      _ <-
+        if (usedAddresses.isEmpty) Task.unit
+        else updateAddressesUsage(cardanoWalletId, addressesWithSequenceNo, usedAddresses).as(Left(()))
+
+      continueIteration = usedAddresses.nonEmpty
+    } yield continueIteration
+  }
+
+  private[services] def insertNewAddresses(
+      cardanoWalletId: CardanoWallet.Id,
+      addressesWithSequenceNo: List[(CardanoAddress, Int)]
+  ): Task[Unit] = {
+    val (_, lastGeneratedNo) = addressesWithSequenceNo.last
+    (for {
+      _ <-
+        CardanoWalletAddressDao.insertMany
+          .updateMany(
+            addressesWithSequenceNo.map {
+              case (address, sequenceNo) =>
+                CardanoWalletAddress(
+                  address = address,
+                  walletId = cardanoWalletId,
+                  sequenceNo = sequenceNo,
+                  usedAt = None
+                )
+            }
+          )
+      _ <- CardanoWalletDao.updateLastGeneratedNo(cardanoWalletId, lastGeneratedNo)
+    } yield ())
+      .logSQLErrors("inserting new addresses and updating cardano wallet", logger)
+      .transact(tx)
+  }
+
+  private[services] def updateAddressesUsage(
+      cardanoWalletId: CardanoWallet.Id,
+      addressesWithSequenceNo: List[(CardanoAddress, Int)],
+      usedAddressesWithUsageInfo: List[CardanoAddressWithUsageInfo]
+  ): Task[Unit] = {
+    (for {
+      _ <- usedAddressesWithUsageInfo.traverse { addressWithUsageInfo =>
+        CardanoWalletAddressDao.updateUsedAt(
+          addressWithUsageInfo.cardanoAddress,
+          CardanoWalletAddress.UsedAt(addressWithUsageInfo.usedAt)
+        )
+      }
+
+      usedAddressesSet = usedAddressesWithUsageInfo.map(_.cardanoAddress).toSet
+
+      (_, lastUsedAddressSequenceNo) =
+        addressesWithSequenceNo
+          .filter { case (address, _) => usedAddressesSet.contains(address) }
+          .maxBy { case (_, sequenceNo) => sequenceNo }
+
+      _ <- CardanoWalletDao.updateLastUsedNo(cardanoWalletId, lastUsedAddressSequenceNo)
+    } yield ())
+      .logSQLErrors("updating cardano wallet and cardano addresses usage", logger)
+      .transact(tx)
+  }
+
 }
 
 object CardanoDeterministicWalletsService {

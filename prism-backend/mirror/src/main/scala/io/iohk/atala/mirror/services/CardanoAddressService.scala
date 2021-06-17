@@ -7,6 +7,7 @@ import sys.process._
 import java.io.{ByteArrayOutputStream, PrintWriter}
 import io.iohk.atala.prism.errors.PrismError
 import io.grpc.Status
+import cats.implicits._
 
 class CardanoAddressService(val binaryPath: String = "target/mirror-binaries/cardano-address") {
 
@@ -17,6 +18,19 @@ class CardanoAddressService(val binaryPath: String = "target/mirror-binaries/car
     runCommand(("echo" :: extendedPublicKey :: Nil) #| (binaryPath :: "key" :: "child" :: path :: Nil))
       .map(_.trim)
       .map(CardanoAddressKey)
+  }
+
+  def generateWalletAddresses(
+      extendedPublicKey: String,
+      fromSequenceNo: Int,
+      untilSequenceNo: Int,
+      network: String
+  ): Either[CardanoAddressServiceError, List[(CardanoAddress, Int)]] = {
+    (fromSequenceNo until untilSequenceNo).toList
+      .traverse(sequenceNo =>
+        generateWalletAddress(extendedPublicKey, sequenceNo, network)
+          .map(address => address -> sequenceNo)
+      )
   }
 
   def generateWalletAddress(

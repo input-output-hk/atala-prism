@@ -21,6 +21,7 @@ import io.iohk.atala.mirror.db.{
 import doobie.free.connection.ConnectionIO
 import doobie.implicits._
 import doobie.util.transactor.Transactor
+import doobie.util.update.Update
 import io.iohk.atala.mirror.models.Connection._
 import io.iohk.atala.mirror.models.UserCredential._
 import io.iohk.atala.mirror.models._
@@ -32,6 +33,7 @@ import io.iohk.atala.prism.protos.connector_models.ReceivedMessage
 import io.iohk.atala.prism.protos.credential_models
 import io.circe.syntax._
 import io.iohk.atala.mirror.config.{HttpConfig, MirrorConfig, TrisaConfig}
+import io.iohk.atala.mirror.services.CardanoAddressService
 import io.iohk.atala.prism.mirror.payid.Address.VerifiedAddress
 import io.iohk.atala.prism.jose.implicits._
 import io.iohk.atala.prism.models.{ConnectionId, ConnectionState, ConnectionToken, ConnectorMessageId}
@@ -365,8 +367,8 @@ trait MirrorFixtures extends ServicesFixtures {
       name = Some("name"),
       connectionToken = connection2.token,
       extendedPublicKey = "key",
-      lastGeneratedNo = 10,
-      lastUsedNo = 0,
+      lastGeneratedNo = 9,
+      lastUsedNo = None,
       registrationDate = CardanoWallet.RegistrationDate(LocalDateTime.of(2020, 10, 4, 0, 0).toInstant(ZoneOffset.UTC))
     )
 
@@ -393,5 +395,81 @@ trait MirrorFixtures extends ServicesFixtures {
         )(database)
       } yield ()
     }
+  }
+
+  object CardanoDBSyncFixtures {
+
+    val createBlockTable: doobie.ConnectionIO[Int] =
+      sql"""
+        CREATE TABLE IF NOT EXISTS block (
+          id int8 NOT NULL PRIMARY KEY,
+          time timestamp NOT NULL
+        );
+         """.update.run
+
+    val createTxTable: doobie.ConnectionIO[Int] =
+      sql"""
+        CREATE TABLE IF NOT EXISTS tx (
+          id int8 NOT NULL PRIMARY KEY,
+          block_id int8 NOT NULL
+        );
+        ALTER TABLE tx DROP CONSTRAINT IF EXISTS tx_block_id_fkey;
+        ALTER TABLE tx ADD CONSTRAINT tx_block_id_fkey FOREIGN KEY (block_id) REFERENCES block(id) ON UPDATE RESTRICT ON DELETE CASCADE;
+         """.update.run
+
+    val createTxOutTable: doobie.ConnectionIO[Int] =
+      sql"""
+        CREATE TABLE IF NOT EXISTS tx_out (
+          id int8 NOT NULL PRIMARY KEY,
+          tx_id int8 NOT NULL,
+          address varchar NOT NULL
+        );
+        ALTER TABLE tx_out DROP CONSTRAINT IF EXISTS tx_out_tx_id_fkey;
+        ALTER TABLE tx_out ADD CONSTRAINT tx_out_tx_id_fkey FOREIGN KEY (tx_id) REFERENCES tx(id) ON UPDATE RESTRICT ON DELETE CASCADE;
+         """.update.run
+
+    def createDbSyncSchema[F[_]: Sync](database: Transactor[F]): F[Unit] = {
+      (for {
+        _ <- createBlockTable
+        _ <- createTxTable
+        _ <- createTxOutTable
+      } yield ()).transact(database)
+    }
+
+    val insertBlockData: doobie.ConnectionIO[Int] =
+      sql"INSERT INTO block(id, time) VALUES(1, '2019-07-24 20:20:16.000')".update.run
+
+    val insertTxData: doobie.ConnectionIO[Int] =
+      sql"INSERT INTO tx(id, block_id) VALUES(1, 1)".update.run
+
+    val insertTxOut: Update[(String, Int)] =
+      Update[(String, Int)](
+        """INSERT INTO tx_out(address, id, tx_id) values (?, ?, 1)""".stripMargin
+      )
+
+    def createAddressData(count: Int, cardanoAddressService: CardanoAddressService): List[(String, Int)] = {
+      val extendedPublicKey =
+        "acct_xvk155crk6049ap0477qvjpf5mvxtw5f46uk6k54udc9mz5wcdyyhssexcsk5sgvy05m7mqh3ed3qgs6epyf7hvdfxf6hd54aqm3uwdsewqu6vsvy"
+      val network = "testnet"
+      val fromSequenceNo = 0
+      cardanoAddressService
+        .generateWalletAddresses(extendedPublicKey, fromSequenceNo, count, network)
+        .toOption
+        .get
+        .map { case (address, sequenceNo) => address.value -> sequenceNo }
+    }
+
+    def insert[F[_]: Sync](
+        count: Int,
+        cardanoAddressService: CardanoAddressService,
+        database: Transactor[F]
+    ): F[Unit] = {
+      (for {
+        _ <- insertBlockData
+        _ <- insertTxData
+        _ <- insertTxOut.updateMany(createAddressData(count, cardanoAddressService))
+      } yield ()).transact(database)
+    }
+
   }
 }

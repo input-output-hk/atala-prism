@@ -23,16 +23,19 @@ class CardanoDeterministicWalletsServiceSpec
   import ConnectorMessageFixtures._
 
   "registerWalletMessageProcessor" should {
-    "upsert cardano wallet with addresses" in new CardanoDeterministicWalletsServiceFixtures {
+    "upsert cardano wallet with addresses when all address has not been used" in new CardanoDeterministicWalletsServiceFixtures {
       // given
-      ConnectionFixtures.insertAll(database).runSyncUnsafe()
+      (for {
+        _ <- ConnectionFixtures.insertAll(database)
+        _ <- CardanoDBSyncFixtures.createDbSyncSchema(database)
+      } yield ()).runSyncUnsafe()
 
       // when
-      val (addresses, processingResult) = (for {
+      val (cardanoWallet, addresses, processingResult) = (for {
         processingResult <- registerWalletMessageProcessor(cardanoRegisterWalletMessageMessage).get
         cardanoWallet <- CardanoWalletDao.findByName("wallet name").transact(database).map(_.get)
         addresses <- CardanoWalletAddressDao.findBy(cardanoWallet.id).transact(database)
-      } yield (addresses, processingResult)).runSyncUnsafe(1.minute)
+      } yield (cardanoWallet, addresses, processingResult)).runSyncUnsafe(1.minute)
 
       // then
       processingResult mustBe an[Right[PrismError, Option[AtalaMessage]]]
@@ -40,6 +43,31 @@ class CardanoDeterministicWalletsServiceSpec
       message.getMirrorMessage.getWalletRegistered.name mustBe cardanoWalletName
       message.getMirrorMessage.getWalletRegistered.extendedPublicKey mustBe cardanoExtendedPublicKey
       addresses.size mustBe 10
+      cardanoWallet.lastGeneratedNo mustBe (minAddressesCount - 1)
+      cardanoWallet.lastUsedNo mustBe None
+    }
+
+    "upsert cardano wallet with addresses when 15 addresses has been used" in new CardanoDeterministicWalletsServiceFixtures {
+      // given
+      val usedAddressesCount = 15
+      (for {
+        _ <- ConnectionFixtures.insertAll(database)
+        _ <- CardanoDBSyncFixtures.createDbSyncSchema(database)
+        _ <- CardanoDBSyncFixtures.insert(usedAddressesCount, cardanoAddressService, database)
+      } yield ()).runSyncUnsafe()
+
+      // when
+      val (cardanoWallet, addresses, processingResult) = (for {
+        processingResult <- registerWalletMessageProcessor(cardanoRegisterWalletMessageMessage).get
+        cardanoWallet <- CardanoWalletDao.findByName("wallet name").transact(database).map(_.get)
+        addresses <- CardanoWalletAddressDao.findBy(cardanoWallet.id).transact(database)
+      } yield (cardanoWallet, addresses, processingResult)).runSyncUnsafe(1.minute)
+
+      // then
+      processingResult mustBe an[Right[PrismError, Option[AtalaMessage]]]
+      addresses.size mustBe minAddressesCount * 3
+      cardanoWallet.lastGeneratedNo mustBe addresses.size - 1
+      cardanoWallet.lastUsedNo mustBe Some(usedAddressesCount - 1)
     }
 
     "return None if ReceivedMessage is not RegisterWalletMessageMessage" in new CardanoDeterministicWalletsServiceFixtures {
@@ -48,10 +76,11 @@ class CardanoDeterministicWalletsServiceSpec
   }
 
   trait CardanoDeterministicWalletsServiceFixtures {
-    val cardanoConfig = CardanoConfig(CardanoNetwork.TestNet, 10)
+    val minAddressesCount = 10
+    val cardanoConfig = CardanoConfig(CardanoNetwork.TestNet, minAddressesCount)
     val cardanoAddressService = new CardanoAddressService("../target/mirror-binaries/cardano-address")
     val cardanoDeterministicWalletsService =
-      new CardanoDeterministicWalletsService(database, cardanoAddressService, cardanoConfig)
+      new CardanoDeterministicWalletsService(database, database, cardanoAddressService, cardanoConfig)
 
     val registerWalletMessageProcessor = cardanoDeterministicWalletsService.registerWalletMessageProcessor
   }

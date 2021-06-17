@@ -8,12 +8,13 @@ import io.grpc.Server
 import io.iohk.atala.prism.crypto.EC
 import io.iohk.atala.prism.connector.RequestAuthenticator
 import io.iohk.atala.mirror.protos.mirror_api.MirrorServiceGrpc
-import io.iohk.atala.mirror.config.{MirrorConfig, CardanoConfig}
+import io.iohk.atala.mirror.config.{CardanoConfig, MirrorConfig}
 import io.iohk.atala.mirror.http.ApiServer
 import io.iohk.atala.mirror.http.endpoints.PaymentEndpoints
 import io.iohk.atala.mirror.services.{
   CardanoAddressInfoService,
   CardanoAddressService,
+  CardanoDeterministicWalletsService,
   CredentialService,
   MirrorServiceImpl,
   TrisaIntegrationServiceDisabledImpl,
@@ -76,6 +77,7 @@ object MirrorApp extends TaskApp {
       // configs
       mirrorConfig = MirrorConfig(globalConfig)
       transactorConfig = TransactorFactory.transactorConfig(globalConfig)
+      cardanoDBSyncTransactorConfig = TransactorFactory.transactorConfig(globalConfig.getConfig("cardano"))
       connectorConfig = ConnectorConfig(globalConfig)
       nodeConfig = NodeConfig(globalConfig)
       cardanoConfig = CardanoConfig(globalConfig)
@@ -83,6 +85,7 @@ object MirrorApp extends TaskApp {
       // db
       tx <- TransactorFactory.transactor[Task](transactorConfig)
       _ <- TransactorFactory.runDbMigrations[Task](tx, classLoader)
+      cardanoDBSyncTransactor <- TransactorFactory.transactor[Task](cardanoDBSyncTransactorConfig)
 
       // connector
       connector = GrpcUtils.createPlaintextStub(
@@ -116,6 +119,8 @@ object MirrorApp extends TaskApp {
           new TrisaIntegrationServiceDisabledImpl
         }
       trisaService = new TrisaService(trisaIntegrationService)
+      cardanoDeterministicWalletsService =
+        new CardanoDeterministicWalletsService(tx, cardanoDBSyncTransactor, cardanoAddressService, cardanoConfig)
 
       connectorMessageService = new ConnectorMessagesService(
         connectorService = connectorService,
@@ -127,7 +132,8 @@ object MirrorApp extends TaskApp {
           cardanoAddressInfoService.checkPayIdNameAvailabilityMessageProcessor,
           cardanoAddressInfoService.getPayIdNameMessageProcessor,
           cardanoAddressInfoService.getPayIdAddressesMessageProcessor,
-          trisaService.initiateTrisaCardanoTransactionMessageProcessor
+          trisaService.initiateTrisaCardanoTransactionMessageProcessor,
+          cardanoDeterministicWalletsService.registerWalletMessageProcessor
         ),
         findLastMessageOffset = ConnectorMessageOffsetDao
           .findLastMessageOffset()

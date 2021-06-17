@@ -74,6 +74,22 @@ variable "psql_password" {
   description = "PostgreSQL password to use for mirror"
 }
 
+variable "cardano_db_sync_psql_host" {
+  description = "PostgreSQL host for the cardano-db-sync db"
+}
+
+variable "cardano_db_sync_psql_username" {
+  description = "PostgreSQL username for the cardano-db-sync db"
+}
+
+variable "cardano_db_sync_psql_password" {
+  description = "PostgreSQL password for the cardano-db-sync db"
+}
+
+variable "cardano_db_sync_psql_database" {
+  description = "PostgreSQL dababase name for the cardano-db-sync db"
+}
+
 variable "did" {
   description = "DID that mirror should use to issue credentials and interact with connector"
 }

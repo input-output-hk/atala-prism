@@ -123,6 +123,11 @@ module "mirror" {
   psql_username = var.mirror_psql_username
   psql_password = var.mirror_psql_password
 
+  cardano_db_sync_psql_host     = var.cardano_db_sync_psql_host
+  cardano_db_sync_psql_username = var.cardano_db_sync_psql_username
+  cardano_db_sync_psql_password = var.cardano_db_sync_psql_password
+  cardano_db_sync_psql_database = var.cardano_db_sync_psql_database
+
   did             = var.mirror_did
   did_private_key = var.mirror_did_private_key
 

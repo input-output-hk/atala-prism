@@ -6,18 +6,13 @@ Start the database first:
 docker run -it --rm -e POSTGRES_DB=atala_mirror_db -p 5434:5432 postgres:11.5
 ```
 
-To create example DID (otherwise the DID will be generated automatically 
-and saved in the database), run:
+Ask Atala team for credentials to db sync database. Export those credentials:
 
-```sh
-sbt "connectorClient/run register"
 ```
-
-then update Mirror's configuration (in application.conf or env):
-
-```sh
-export ATALA_MIRROR_CONNECTOR_DID="<did form the above command>"
-export ATALA_MIRROR_CONNECTOR_DID_PRIVATE_KEY="<private key form the above command>"
+export ATALA_MIRROR_DB_SYNC_HOST="host"
+export ATALA_MIRROR_DB_SYNC_DATABASE="database"
+export ATALA_MIRROR_DB_SYNC_USERNAME="username"
+export ATALA_MIRROR_DB_SYNC_PASSWORD="password"
 ```
 
 Then run Mirror GRPC server:

@@ -11,7 +11,7 @@ final case class CardanoWallet(
     connectionToken: ConnectionToken,
     extendedPublicKey: String,
     lastGeneratedNo: Int,
-    lastUsedNo: Int,
+    lastUsedNo: Option[Int],
     registrationDate: CardanoWallet.RegistrationDate
 )
 

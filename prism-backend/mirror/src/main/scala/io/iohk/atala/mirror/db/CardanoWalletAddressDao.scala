@@ -1,12 +1,19 @@
 package io.iohk.atala.mirror.db
 
+import doobie.FC
 import doobie.util.update.Update
 import doobie.free.connection.ConnectionIO
-import io.iohk.atala.mirror.models.{CardanoWallet, CardanoWalletAddress, CardanoWalletAddressWithWalletName}
+import io.iohk.atala.mirror.models.{
+  CardanoAddress,
+  CardanoWallet,
+  CardanoWalletAddress,
+  CardanoWalletAddressWithWalletName
+}
 import doobie.implicits._
 import doobie.postgres.implicits._
 import doobie.implicits.legacy.instant._
 import io.iohk.atala.prism.models.ConnectionToken
+import cats.implicits._
 
 object CardanoWalletAddressDao {
 
@@ -31,6 +38,23 @@ object CardanoWalletAddressDao {
          | ORDER BY a.address""".stripMargin
       .query[CardanoWalletAddressWithWalletName]
       .to[List]
+  }
+
+  def updateUsedAt(address: CardanoAddress, usedAt: CardanoWalletAddress.UsedAt): doobie.ConnectionIO[Unit] = {
+    sql"""
+         | UPDATE cardano_wallet_addresses SET
+         | used_at = ${Some(usedAt)}
+         | WHERE address = $address
+       """.stripMargin.update.run
+      .flatTap(n =>
+        FC.raiseError(
+            new RuntimeException(
+              s"Error updating cardano wallet address: $address, expected result count: 1, actual $n"
+            )
+          )
+          .whenA(n != 1)
+      )
+      .void
   }
 
   def insert(cardanoWalletAddress: CardanoWalletAddress): ConnectionIO[Int] =
