@@ -8,7 +8,7 @@
 job "job_prism" {
   # TODO: Use variable
   datacenters = ["dc1"]
-  type = "service"
+  type        = "service"
 
   group "ingress-group" {
 
@@ -103,15 +103,20 @@ job "job_prism" {
       port = "50051"
 
       check {
-          type         = "grpc"
-          port         = "50051"
-          interval     = "5s"
-          timeout      = "2s"
-          address_mode = "alloc"
-          grpc_service = "connector-grpc"
-        }
+        type         = "grpc"
+        port         = "50051"
+        interval     = "5s"
+        timeout      = "2s"
+        address_mode = "alloc"
+        grpc_service = "connector-grpc"
+      }
 
-      # TODO: Wait for postgres/node to start before running this service
+      check_restart {
+        limit           = 3
+        grace           = "90s"
+        ignore_warnings = false
+      }
+
       connect {
         sidecar_task {
           config {
@@ -120,7 +125,7 @@ job "job_prism" {
 
           # NOTE: Update these values to set the resources available to the connector load balancer
           resources {
-            cpu    = 500
+            cpu    = 1500
             memory = 1024
           }
         }
@@ -140,7 +145,44 @@ job "job_prism" {
         }
       }
 
-      # TODO: Add grpc health checks
+    }
+
+    # Wait for database service to be registed with Consul
+    # For now we must query consul dns directly on port 8600 until we set resolving from host
+    task "await-postgres-connector" {
+      driver = "docker"
+
+      config {
+        image          = "tutum/dnsutils"
+        auth_soft_fail = true
+        command        = "sh"
+        args           = ["-c", "echo -n 'Waiting for service'; until nslookup  -port=8600 postgres-connector.service.consul; do echo '.'; sleep 2; done"]
+        network_mode   = "host"
+      }
+
+      lifecycle {
+        hook    = "prestart"
+        sidecar = false
+      }
+    }
+
+    # Wait for node-api service to be registed with Consul
+    # For now we must query consul dns directly on port 8600 until we set resolving from host
+    task "await-node-grpc" {
+      driver = "docker"
+
+      config {
+        image          = "tutum/dnsutils"
+        auth_soft_fail = true
+        command        = "sh"
+        args           = ["-c", "echo -n 'Waiting for service'; until nslookup  -port=8600 node-grpc.service.consul; do echo '.'; sleep 2; done"]
+        network_mode   = "host"
+      }
+
+      lifecycle {
+        hook    = "prestart"
+        sidecar = false
+      }
     }
 
     task "connector-grpc" {
@@ -149,12 +191,12 @@ job "job_prism" {
       env {
         # TODO: Avoid hardcoding postgres details
         # TODO: Integrate Cardano
-        CONNECTOR_PSQL_HOST = "${NOMAD_UPSTREAM_ADDR_postgres_connector}"
+        CONNECTOR_PSQL_HOST     = NOMAD_UPSTREAM_ADDR_postgres_connector
         CONNECTOR_PSQL_DATABASE = "postgres_connector"
         CONNECTOR_PSQL_USERNAME = "postgres_connector"
         CONNECTOR_PSQL_PASSWORD = "postgres_connector_pw"
-        CONNECTOR_NODE_HOST = "${NOMAD_UPSTREAM_IP_node_grpc}"
-        CONNECTOR_NODE_PORT = "${NOMAD_UPSTREAM_PORT_node_grpc}"
+        CONNECTOR_NODE_HOST     = NOMAD_UPSTREAM_IP_node_grpc
+        CONNECTOR_NODE_PORT     = NOMAD_UPSTREAM_PORT_node_grpc
       }
 
       config {
@@ -164,7 +206,7 @@ job "job_prism" {
 
       # NOTE: Update these values to set the resources available to each connector instance
       resources {
-        cpu = 500
+        cpu    = 500
         memory = 1024
       }
     }
@@ -178,21 +220,27 @@ job "job_prism" {
       mode = "bridge"
     }
 
-    # TODO: Wait for postgres to start before running this service
     service {
       name = "node-grpc"
       # when using connect this needs to be the literal value the sidecar service should proxy traffic to
       port = "50053"
 
       check {
-          type         = "grpc"
-          port         = "50053"
-          task         = "node-grpc"
-          interval     = "5s"
-          timeout      = "2s"
-          address_mode = "alloc"
-          grpc_service = "node-grpc"
-        }
+        type         = "grpc"
+        port         = "50053"
+        task         = "node-grpc"
+        interval     = "5s"
+        timeout      = "2s"
+        address_mode = "alloc"
+        grpc_service = "node-grpc"
+      }
+
+
+      check_restart {
+        limit           = 3
+        grace           = "90s"
+        ignore_warnings = false
+      }
 
       connect {
         sidecar_task {
@@ -217,15 +265,34 @@ job "job_prism" {
         }
       }
 
-      # TODO: Add grpc health checks
     }
+
+    # Wait for database service to be registed with Consul
+    # For now we must query consul dns directly on port 8600 until we set resolving from host
+    task "await-postgres-node" {
+      driver = "docker"
+
+      config {
+        image          = "tutum/dnsutils"
+        auth_soft_fail = true
+        command        = "sh"
+        args           = ["-c", "echo -n 'Waiting for service'; until nslookup  -port=8600 postgres-node.service.consul; do echo '.'; sleep 2; done"]
+        network_mode   = "host"
+      }
+
+      lifecycle {
+        hook    = "prestart"
+        sidecar = false
+      }
+    }
+
 
     task "node-grpc" {
       driver = "docker"
 
       env {
         # TODO: Avoid hardcoding the postgres details
-        NODE_PSQL_HOST = "${NOMAD_UPSTREAM_ADDR_postgres_node}"
+        NODE_PSQL_HOST     = NOMAD_UPSTREAM_ADDR_postgres_node
         NODE_PSQL_DATABASE = "postgres_node"
         NODE_PSQL_USERNAME = "postgres_node"
         NODE_PSQL_PASSWORD = "postgres_node_pw"
@@ -238,7 +305,7 @@ job "job_prism" {
 
       # NOTE: Update these values to set the resources available to each node instance
       resources {
-        cpu = 500
+        cpu    = 500
         memory = 1024
       }
     }
@@ -259,47 +326,62 @@ job "job_prism" {
 
       connect {
         sidecar_service {}
+        sidecar_task {
+          config {
+            auth_soft_fail = true
+          }
+        }
       }
 
-      # TODO: Add health checks
+      # Since its docker container it will run check inside
+      check {
+        type     = "script"
+        name     = "task_postgres_node"
+        task     = "task_postgres_node"
+        command  = "/bin/sh"
+        args     = ["-c", "pg_isready -d postgres_node"]
+        interval = "10s"
+        timeout  = "5s"
+      }
+
     }
 
-// TODO: Enable for persistence storage
-//    volume "volume_postgres_node" {
-//      type      = "host"
-//      read_only = false
-//      # TODO: Inject from config
-//      source    = "postgres_node"
-//    }
+    // TODO: Enable for persistence storage
+    //    volume "volume_postgres_node" {
+    //      type      = "host"
+    //      read_only = false
+    //      # TODO: Inject from config
+    //      source    = "postgres_node"
+    //    }
 
     task "task_postgres_node" {
       driver = "docker"
 
       config {
-        image = "postgres:13"
+        image          = "postgres:13"
         auth_soft_fail = true
       }
 
       env {
         # TODO: Avoid hardcoding these values
         # There is a db created with this name
-        POSTGRES_USER = "postgres_node"
+        POSTGRES_USER     = "postgres_node"
         POSTGRES_PASSWORD = "postgres_node_pw"
       }
 
       # NOTE: Update these values to set the resources available to each postgres instance
       resources {
-        cpu = 500
+        cpu    = 500
         memory = 1024
       }
 
-// TODO: Enable for persistence storage
-//      volume_mount {
-//        # This is the volume defined above
-//        volume      = "volume_postgres_node"
-//        destination = "/var/lib/postgresql/data"
-//        read_only   = false
-//      }
+      // TODO: Enable for persistence storage
+      //      volume_mount {
+      //        # This is the volume defined above
+      //        volume      = "volume_postgres_node"
+      //        destination = "/var/lib/postgresql/data"
+      //        read_only   = false
+      //      }
     }
   }
 
@@ -316,31 +398,46 @@ job "job_prism" {
       name = "postgres-connector"
       port = "5432"
 
+
       connect {
         sidecar_service {}
+        sidecar_task {
+          config {
+            auth_soft_fail = true
+          }
+        }
       }
 
-      # TODO: Add health checks
+      # Since its docker container it will run check inside
+      check {
+        type     = "script"
+        name     = "task_postgres_connector"
+        task     = "task_postgres_connector"
+        command  = "/bin/sh"
+        args     = ["-c", "pg_isready -d postgres_node"]
+        interval = "10s"
+        timeout  = "5s"
+      }
     }
 
     task "task_postgres_connector" {
       driver = "docker"
 
       config {
-        image = "postgres:13"
+        image          = "postgres:13"
         auth_soft_fail = true
       }
 
       env {
         # TODO: Avoid hardcoding these values
         # There is a db created with this name
-        POSTGRES_USER = "postgres_connector"
+        POSTGRES_USER     = "postgres_connector"
         POSTGRES_PASSWORD = "postgres_connector_pw"
       }
 
       # NOTE: Update these values to set the resources available to each postgres instance
       resources {
-        cpu = 500
+        cpu    = 1500
         memory = 1024
       }
     }
