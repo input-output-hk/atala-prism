@@ -30,44 +30,45 @@ class ProcessingTaskServiceSpec extends PostgresRepositorySpec[Task] {
     }
 
     "fetch task to process and update database" in new Fixtures {
-      val taskToProcess = processingTaskService.fetchTaskToProcess(leaseTimeSeconds).runSyncUnsafe().value
+      val taskToProcess = processingTaskService.fetchTaskToProcess(leaseTimeSeconds, workerNumber).runSyncUnsafe().value
       taskToProcess.id mustBe task1NoOwner.id
-      taskToProcess.owner mustBe Some(instanceAUuid)
+      taskToProcess.owner mustBe Some(ProcessingTaskOwner(s"$instanceAUuid-$workerNumber"))
       taskToProcess.nextAction.isAfter(Instant.now()) mustBe true
 
       val updatedTask = find(taskToProcess.id).runSyncUnsafe().value
-      updatedTask.owner mustBe Some(instanceAUuid)
+      updatedTask.owner mustBe Some(ProcessingTaskOwner(s"$instanceAUuid-$workerNumber"))
       updatedTask.nextAction.isAfter(Instant.now()) mustBe true
     }
 
     "fetch tasks with overrun lease" in new Fixtures {
-      val task1 = processingTaskService.fetchTaskToProcess(leaseTimeSeconds).runSyncUnsafe().value
+      val task1 = processingTaskService.fetchTaskToProcess(leaseTimeSeconds, workerNumber).runSyncUnsafe().value
       task1.id mustBe task1NoOwner.id
 
-      val ejectedTask = processingTaskService.fetchTaskToProcess(leaseTimeSeconds).runSyncUnsafe().value
+      val ejectedTask = processingTaskService.fetchTaskToProcess(leaseTimeSeconds, workerNumber).runSyncUnsafe().value
       ejectedTask.id mustBe task2OwnerB.id
 
       val updatedTask = find(ejectedTask.id).runSyncUnsafe().value
-      updatedTask.owner mustBe Some(instanceAUuid)
+      updatedTask.owner mustBe Some(ProcessingTaskOwner(s"$instanceAUuid-$workerNumber"))
       updatedTask.nextAction.isAfter(Instant.now()) mustBe true
     }
 
     "eject task" in new Fixtures {
-      val taskToProcess = processingTaskService.ejectTask(task3OwnerB.id, leaseTimeSeconds).runSyncUnsafe().value
+      val taskToProcess =
+        processingTaskService.ejectTask(task3OwnerB.id, workerNumber, leaseTimeSeconds).runSyncUnsafe().value
       taskToProcess.id mustBe task3OwnerB.id
-      taskToProcess.owner mustBe Some(instanceAUuid)
+      taskToProcess.owner mustBe Some(ProcessingTaskOwner(s"$instanceAUuid-$workerNumber"))
       taskToProcess.nextAction.isAfter(Instant.now()) mustBe true
 
       val updatedTask = find(taskToProcess.id).runSyncUnsafe().value
-      updatedTask.owner mustBe Some(instanceAUuid)
+      updatedTask.owner mustBe Some(ProcessingTaskOwner(s"$instanceAUuid-$workerNumber"))
       updatedTask.nextAction.isAfter(Instant.now()) mustBe true
     }
 
     "extend lease of a task" in new Fixtures {
       val updatedTask = (for {
-        taskToProcessOption <- processingTaskService.fetchTaskToProcess(leaseTimeSeconds)
+        taskToProcessOption <- processingTaskService.fetchTaskToProcess(leaseTimeSeconds, workerNumber)
         taskToProcess = taskToProcessOption.value
-        _ <- processingTaskService.extendLease(taskToProcess.id, 10 * 60)
+        _ <- processingTaskService.extendLease(taskToProcess.id, workerNumber, 10 * 60)
         updatedTaskOption <- find(taskToProcess.id)
       } yield updatedTaskOption.value).runSyncUnsafe()
 
@@ -76,9 +77,9 @@ class ProcessingTaskServiceSpec extends PostgresRepositorySpec[Task] {
 
     "update data of a task" in new Fixtures {
       val updatedTask = (for {
-        taskToProcessOption <- processingTaskService.fetchTaskToProcess(leaseTimeSeconds)
+        taskToProcessOption <- processingTaskService.fetchTaskToProcess(leaseTimeSeconds, workerNumber)
         taskToProcess = taskToProcessOption.value
-        _ <- processingTaskService.updateData(taskToProcess.id, newData)
+        _ <- processingTaskService.updateData(taskToProcess.id, workerNumber, newData)
         updatedTaskOption <- find(taskToProcess.id)
       } yield updatedTaskOption.value).runSyncUnsafe()
 
@@ -89,10 +90,11 @@ class ProcessingTaskServiceSpec extends PostgresRepositorySpec[Task] {
       val newNextAction = Instant.now().plus(60, ChronoUnit.SECONDS)
 
       val updatedTask = (for {
-        taskToProcessOption <- processingTaskService.fetchTaskToProcess(leaseTimeSeconds)
+        taskToProcessOption <- processingTaskService.fetchTaskToProcess(leaseTimeSeconds, workerNumber)
         taskToProcess = taskToProcessOption.value
         _ <- processingTaskService.scheduleTask(
           taskToProcess.id,
+          workerNumber,
           ProcessingTaskTestState.TestState1,
           newData,
           newNextAction
@@ -107,10 +109,11 @@ class ProcessingTaskServiceSpec extends PostgresRepositorySpec[Task] {
 
     "update task and extend lease" in new Fixtures {
       val updatedTask = (for {
-        taskToProcessOption <- processingTaskService.fetchTaskToProcess(leaseTimeSeconds)
+        taskToProcessOption <- processingTaskService.fetchTaskToProcess(leaseTimeSeconds, workerNumber)
         taskToProcess = taskToProcessOption.value
         _ <- processingTaskService.updateTaskAndExtendLease(
           taskToProcess.id,
+          workerNumber,
           ProcessingTaskTestState.TestState1,
           newData,
           10 * 60
@@ -118,16 +121,16 @@ class ProcessingTaskServiceSpec extends PostgresRepositorySpec[Task] {
         updatedTaskOption <- find(taskToProcess.id)
       } yield updatedTaskOption.value).runSyncUnsafe()
 
-      updatedTask.owner mustBe Some(instanceAUuid)
+      updatedTask.owner mustBe Some(ProcessingTaskOwner(s"$instanceAUuid-$workerNumber"))
       updatedTask.data mustBe newData
       updatedTask.nextAction.isAfter(Instant.now().plus(9 * 60, ChronoUnit.SECONDS)) mustBe true
     }
 
     "delete task" in new Fixtures {
       val updatedTaskOption = (for {
-        taskToProcessOption <- processingTaskService.fetchTaskToProcess(leaseTimeSeconds)
+        taskToProcessOption <- processingTaskService.fetchTaskToProcess(leaseTimeSeconds, workerNumber)
         taskToProcess = taskToProcessOption.value
-        _ <- processingTaskService.deleteTask(taskToProcess.id)
+        _ <- processingTaskService.deleteTask(taskToProcess.id, workerNumber)
         updatedTaskOption <- find(taskToProcess.id)
       } yield updatedTaskOption).runSyncUnsafe()
 
@@ -136,17 +139,18 @@ class ProcessingTaskServiceSpec extends PostgresRepositorySpec[Task] {
 
     "do not update task when task has been ejected by another instance" in new Fixtures {
       val taskToProcess = (for {
-        taskToProcessOption <- processingTaskService.fetchTaskToProcess(leaseTimeSeconds)
+        taskToProcessOption <- processingTaskService.fetchTaskToProcess(leaseTimeSeconds, workerNumber)
         taskToProcess = taskToProcessOption.value
-        _ <- processingTaskServiceInstanceB.ejectTask(taskToProcess.id, leaseTimeSeconds)
+        _ <- processingTaskServiceInstanceB.ejectTask(taskToProcess.id, leaseTimeSeconds, workerNumber)
       } yield taskToProcess).runSyncUnsafe()
 
-      val result = processingTaskService.updateData(taskToProcess.id, newData).attempt.runSyncUnsafe()
+      val result = processingTaskService.updateData(taskToProcess.id, workerNumber, newData).attempt.runSyncUnsafe()
       result mustBe an[Left[Throwable, Unit]]
     }
 
     "do not update task when task doesn't exist" in new Fixtures {
-      val result = processingTaskService.updateData(ProcessingTaskId.random(), newData).attempt.runSyncUnsafe()
+      val result =
+        processingTaskService.updateData(ProcessingTaskId.random(), workerNumber, newData).attempt.runSyncUnsafe()
       result mustBe an[Left[Throwable, Unit]]
     }
 
@@ -163,6 +167,8 @@ class ProcessingTaskServiceSpec extends PostgresRepositorySpec[Task] {
   trait Fixtures {
     val instanceAUuid = UUID.randomUUID()
     val instanceBUuid = UUID.randomUUID()
+    val workerNumber = 2
+    val instanceBWorkerNumber = 3
     val processingTaskDao = new ProcessingTaskDao(ProcessingTaskTestState.withNameOption)
     val processingTaskService = new ProcessingTaskServiceImpl(database, instanceAUuid, processingTaskDao)
     val processingTaskServiceInstanceB = new ProcessingTaskServiceImpl(database, instanceBUuid, processingTaskDao)
@@ -175,8 +181,8 @@ class ProcessingTaskServiceSpec extends PostgresRepositorySpec[Task] {
 
     val (task1NoOwner, task2OwnerB, task3OwnerB, task4NoOwner) = (for {
       task1NoOwner <- create(None, scheduledTime.minus(2, ChronoUnit.MINUTES))
-      task2OwnerB <- create(Some(instanceBUuid), scheduledTime.minus(1, ChronoUnit.MINUTES))
-      task3OwnerB <- create(Some(instanceBUuid), scheduledTime.plus(1, ChronoUnit.MINUTES))
+      task2OwnerB <- create(Some(s"instanceBUuid-$instanceBWorkerNumber"), scheduledTime.minus(1, ChronoUnit.MINUTES))
+      task3OwnerB <- create(Some(s"instanceBUuid-$instanceBWorkerNumber"), scheduledTime.plus(1, ChronoUnit.MINUTES))
       task4NoOwner <- create(None, scheduledTime.plus(2, ChronoUnit.MINUTES))
     } yield (
       task1NoOwner,
@@ -189,11 +195,11 @@ class ProcessingTaskServiceSpec extends PostgresRepositorySpec[Task] {
       processingTaskDao.findById(processingTaskId).transact(database)
     }
 
-    def create(owner: Option[UUID], scheduledTime: Instant): Task[ProcessingTask[ProcessingTaskTestState]] = {
+    def create(owner: Option[String], scheduledTime: Instant): Task[ProcessingTask[ProcessingTaskTestState]] = {
       val processingTask = ProcessingTask[ProcessingTaskTestState](
         id = ProcessingTaskId.random(),
         state = taskState,
-        owner = owner,
+        owner = owner.map(ProcessingTaskOwner.apply),
         lastChange = Instant.now(),
         nextAction = scheduledTime,
         data = taskData

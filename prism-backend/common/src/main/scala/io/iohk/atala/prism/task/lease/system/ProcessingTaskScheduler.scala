@@ -39,7 +39,7 @@ class ProcessingTaskScheduler[S <: ProcessingTaskState](
   private[task] def runWorker(workerNumber: Int): Task[Unit] = {
     Task.tailRecM(()) { _ =>
       processingTaskService
-        .fetchTaskToProcess(taskLeaseConfig.leaseTimeSeconds)
+        .fetchTaskToProcess(taskLeaseConfig.leaseTimeSeconds, workerNumber)
         .flatMap {
           case Some(processingTask) => process(processingTask, workerNumber)
           case None =>
@@ -60,7 +60,7 @@ class ProcessingTaskScheduler[S <: ProcessingTaskState](
       val extendLeaseTask = Task.tailRecM(()) { _ =>
         Task
           .sleep(taskLeaseConfig.extendLeaseTimeIntervalSeconds.seconds)
-          .flatMap(_ => processingTaskService.extendLease(task.id, taskLeaseConfig.leaseTimeSeconds))
+          .flatMap(_ => processingTaskService.extendLease(task.id, workerNumber, taskLeaseConfig.leaseTimeSeconds))
           .map(_ => Left(()))
       }
 
@@ -69,22 +69,22 @@ class ProcessingTaskScheduler[S <: ProcessingTaskState](
         .flatMap {
           case Right(ProcessingTaskResult.ProcessingTaskFinished) =>
             processingTaskService
-              .deleteTask(task.id)
+              .deleteTask(task.id, workerNumber)
               .map(_ => Right(()))
           case Right(ProcessingTaskResult.ProcessingTaskScheduled(state, data, scheduledTime)) =>
             processingTaskService
-              .scheduleTask(task.id, state, data, scheduledTime)
+              .scheduleTask(task.id, workerNumber, state, data, scheduledTime)
               .map(_ => Right(()))
           case Right(ProcessingTaskResult.ProcessingTaskStateTransition(state, data)) =>
             processingTaskService
-              .updateTaskAndExtendLease(task.id, state, data, taskLeaseConfig.leaseTimeSeconds)
+              .updateTaskAndExtendLease(task.id, workerNumber, state, data, taskLeaseConfig.leaseTimeSeconds)
               .map(Left(_))
           case Right(ProcessingTaskResult.ProcessingTaskRestart) =>
             logger.warn(
               s"Worker: ${workerNumber}, ProcessingTask: ${task.id} with state: ${task.state} finished, although it shouldn't. Restarting it."
             )
             processingTaskService
-              .updateTaskAndExtendLease(task.id, task.state, task.data, taskLeaseConfig.leaseTimeSeconds)
+              .updateTaskAndExtendLease(task.id, workerNumber, task.state, task.data, taskLeaseConfig.leaseTimeSeconds)
               .map(Left(_))
           case Left(_) =>
             logger.warn(

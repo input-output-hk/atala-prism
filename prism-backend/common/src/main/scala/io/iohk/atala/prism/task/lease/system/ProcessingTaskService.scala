@@ -32,19 +32,23 @@ trait ProcessingTaskService[S <: ProcessingTaskState] {
   /**
     * Acquires a processing task for a specified period of time. Returns None when there is no task to process.
     */
-  def fetchTaskToProcess(leaseTimeSeconds: Int): Task[Option[ProcessingTask[S]]]
+  def fetchTaskToProcess(leaseTimeSeconds: Int, workerNumber: Int): Task[Option[ProcessingTask[S]]]
 
   /**
     * Acquires tha task specified by id immediately, even though it's being processed by another instance which has
     * a valid lease. Returns None when task doesn't exist.
     */
-  def ejectTask(processingTaskId: ProcessingTaskId, leaseTimeSeconds: Int): Task[Option[ProcessingTask[S]]]
+  def ejectTask(
+      processingTaskId: ProcessingTaskId,
+      workerNumber: Int,
+      leaseTimeSeconds: Int
+  ): Task[Option[ProcessingTask[S]]]
 
   /**
     * Extends a lese of the processing task by specified number of seconds.
     * Fails when the processing task has been ejected by another instance.
     */
-  def extendLease(processingTaskId: ProcessingTaskId, leaseTimeSeconds: Int): Task[Unit]
+  def extendLease(processingTaskId: ProcessingTaskId, workerNumber: Int, leaseTimeSeconds: Int): Task[Unit]
 
   /**
     * Updates the processing task data.
@@ -52,6 +56,7 @@ trait ProcessingTaskService[S <: ProcessingTaskState] {
     */
   def updateData(
       processingTaskId: ProcessingTaskId,
+      workerNumber: Int,
       data: ProcessingTaskData
   ): Task[Unit]
 
@@ -62,6 +67,7 @@ trait ProcessingTaskService[S <: ProcessingTaskState] {
     */
   def scheduleTask(
       processingTaskId: ProcessingTaskId,
+      workerNumber: Int,
       state: S,
       data: ProcessingTaskData,
       scheduledTime: Instant
@@ -73,6 +79,7 @@ trait ProcessingTaskService[S <: ProcessingTaskState] {
     */
   def updateTaskAndExtendLease(
       processingTaskId: ProcessingTaskId,
+      workerNumber: Int,
       state: S,
       data: ProcessingTaskData,
       leaseTimeSeconds: Int
@@ -83,7 +90,7 @@ trait ProcessingTaskService[S <: ProcessingTaskState] {
     *  current instance own it or it's not owned by any instance.
     * Fails when the processing task has been ejected by another instance.
     */
-  def deleteTask(processingTaskId: ProcessingTaskId): Task[Unit]
+  def deleteTask(processingTaskId: ProcessingTaskId, workerNumber: Int): Task[Unit]
 }
 
 class ProcessingTaskServiceImpl[S <: ProcessingTaskState](
@@ -97,6 +104,8 @@ class ProcessingTaskServiceImpl[S <: ProcessingTaskState](
   def registerNotifyIdleWorkerCallback(callback: () => Unit): Unit = {
     callbackOption = Some(callback)
   }
+
+  def workerId(workerNumber: Int) = ProcessingTaskOwner(s"$currentInstanceUUID-$workerNumber")
 
   override def create(
       processingTaskData: ProcessingTaskData,
@@ -120,11 +129,11 @@ class ProcessingTaskServiceImpl[S <: ProcessingTaskState](
     }
   }
 
-  override def fetchTaskToProcess(leaseTimeSeconds: Int): Task[Option[ProcessingTask[S]]] = {
+  override def fetchTaskToProcess(leaseTimeSeconds: Int, workerNumber: Int): Task[Option[ProcessingTask[S]]] = {
     (for {
       taskToProcess <- OptionT(processingTaskDao.fetchTaskToProcess())
       updated = taskToProcess.copy(
-        owner = Some(currentInstanceUUID),
+        owner = Some(workerId(workerNumber)),
         nextAction = Instant.now().plus(leaseTimeSeconds.toLong, ChronoUnit.SECONDS)
       )
       _ <- OptionT.liftF(processingTaskDao.updateOwnerAndLease(updated))
@@ -132,11 +141,15 @@ class ProcessingTaskServiceImpl[S <: ProcessingTaskState](
       .transact(tx)
   }
 
-  override def ejectTask(processingTaskId: ProcessingTaskId, leaseTimeSeconds: Int): Task[Option[ProcessingTask[S]]] = {
+  override def ejectTask(
+      processingTaskId: ProcessingTaskId,
+      workerNumber: Int,
+      leaseTimeSeconds: Int
+  ): Task[Option[ProcessingTask[S]]] = {
     (for {
       task <- OptionT(processingTaskDao.findById(processingTaskId))
       updated = task.copy(
-        owner = Some(currentInstanceUUID),
+        owner = Some(workerId(workerNumber)),
         nextAction = Instant.now().plus(leaseTimeSeconds.toLong, ChronoUnit.SECONDS)
       )
       _ <- OptionT.liftF(processingTaskDao.updateOwnerAndLease(updated))
@@ -144,9 +157,9 @@ class ProcessingTaskServiceImpl[S <: ProcessingTaskState](
       .transact(tx)
   }
 
-  override def extendLease(processingTaskId: ProcessingTaskId, leaseTimeSeconds: Int): Task[Unit] = {
+  override def extendLease(processingTaskId: ProcessingTaskId, workerNumber: Int, leaseTimeSeconds: Int): Task[Unit] = {
     (for {
-      task <- fetchTaskForUpdate(processingTaskId)
+      task <- fetchTaskForUpdate(processingTaskId, workerNumber)
       updated = task.copy(nextAction = Instant.now().plus(leaseTimeSeconds.toLong, ChronoUnit.SECONDS))
       _ <- processingTaskDao.updateLease(updated)
     } yield ()).transact(tx)
@@ -154,10 +167,11 @@ class ProcessingTaskServiceImpl[S <: ProcessingTaskState](
 
   override def updateData(
       processingTaskId: ProcessingTaskId,
+      workerNumber: Int,
       data: ProcessingTaskData
   ): Task[Unit] = {
     (for {
-      task <- fetchTaskForUpdate(processingTaskId)
+      task <- fetchTaskForUpdate(processingTaskId, workerNumber)
       updated = task.copy(data = data)
       _ <- processingTaskDao.update(updated)
     } yield ()).transact(tx)
@@ -165,12 +179,13 @@ class ProcessingTaskServiceImpl[S <: ProcessingTaskState](
 
   override def scheduleTask(
       processingTaskId: ProcessingTaskId,
+      workerNumber: Int,
       state: S,
       data: ProcessingTaskData,
       scheduledTime: Instant
   ): Task[Unit] = {
     (for {
-      task <- fetchTaskForUpdate(processingTaskId)
+      task <- fetchTaskForUpdate(processingTaskId, workerNumber)
       updated = task.copy(
         owner = None,
         state = state,
@@ -183,12 +198,13 @@ class ProcessingTaskServiceImpl[S <: ProcessingTaskState](
 
   override def updateTaskAndExtendLease(
       processingTaskId: ProcessingTaskId,
+      workerNumber: Int,
       state: S,
       data: ProcessingTaskData,
       leaseTimeSeconds: Int
   ): Task[ProcessingTask[S]] = {
     (for {
-      task <- fetchTaskForUpdate(processingTaskId)
+      task <- fetchTaskForUpdate(processingTaskId, workerNumber)
       updated = task.copy(
         state = state,
         data = data,
@@ -198,16 +214,16 @@ class ProcessingTaskServiceImpl[S <: ProcessingTaskState](
     } yield updated).transact(tx)
   }
 
-  override def deleteTask(processingTaskId: ProcessingTaskId): Task[Unit] = {
+  override def deleteTask(processingTaskId: ProcessingTaskId, workerNumber: Int): Task[Unit] = {
     processingTaskDao
       .findById(processingTaskId)
       .flatMap {
         case Some(processingTask: ProcessingTask[S])
-            if processingTask.owner.nonEmpty && !processingTask.owner.contains(currentInstanceUUID) =>
+            if processingTask.owner.nonEmpty && !processingTask.owner.contains(workerId(workerNumber)) =>
           FC.raiseError[Unit](
             new RuntimeException(
-              s"Processing task with id: $processingTaskId is currently owned by instance ${processingTask.owner}. " +
-                "Processing task can only be deleted when current instance own it or it's not owned by any instance."
+              s"Processing task with id: $processingTaskId is currently owned by ${processingTask.owner}. " +
+                "Processing task can only be deleted when current worker owns it or it's not owned by any instance."
             )
           )
         case Some(_) => processingTaskDao.delete(processingTaskId).void
@@ -216,12 +232,15 @@ class ProcessingTaskServiceImpl[S <: ProcessingTaskState](
       .transact(tx)
   }
 
-  private def fetchTaskForUpdate(processingTaskId: ProcessingTaskId): ConnectionIO[ProcessingTask[S]] = {
+  private def fetchTaskForUpdate(
+      processingTaskId: ProcessingTaskId,
+      workerNumber: Int
+  ): ConnectionIO[ProcessingTask[S]] = {
     processingTaskDao.findById(processingTaskId).flatMap {
-      case Some(processingTask: ProcessingTask[S]) if !processingTask.owner.contains(currentInstanceUUID) =>
+      case Some(processingTask: ProcessingTask[S]) if !processingTask.owner.contains(workerId(workerNumber)) =>
         FC.raiseError(
           new RuntimeException(
-            s"Processing task with id: $processingTaskId has been ejected and it's currently owned by instance ${processingTask.owner}"
+            s"Processing task with id: $processingTaskId has been ejected and it's currently owned by ${processingTask.owner}"
           )
         )
       case Some(processingTask: ProcessingTask[S]) => FC.pure(processingTask)

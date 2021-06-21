@@ -126,7 +126,8 @@ class ProcessingTaskSchedulerSpec extends AnyWordSpec with Matchers {
         var count = 0
 
         override def fetchTaskToProcess(
-            leaseTimeSeconds: Int
+            leaseTimeSeconds: Int,
+            _workerNumber: Int
         ): Task[Option[ProcessingTask[ProcessingTaskTestState]]] = {
           count = count + 1
           if (count != 3) Task.pure(None)
@@ -158,7 +159,8 @@ class ProcessingTaskSchedulerSpec extends AnyWordSpec with Matchers {
         var count = 0
 
         override def fetchTaskToProcess(
-            leaseTimeSeconds: Int
+            leaseTimeSeconds: Int,
+            _workerNumber: Int
         ): Task[Option[ProcessingTask[ProcessingTaskTestState]]] = {
           count = count + 1
           if (count != 2) Task.pure(None)

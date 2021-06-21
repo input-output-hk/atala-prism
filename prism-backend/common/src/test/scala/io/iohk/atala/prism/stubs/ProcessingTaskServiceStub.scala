@@ -41,23 +41,29 @@ class ProcessingTaskServiceStub[S <: ProcessingTaskState]() extends ProcessingTa
     }
   }
 
-  def fetchTaskToProcess(leaseTimeSeconds: Int): Task[Option[ProcessingTask[S]]] = Task.pure(None)
+  def fetchTaskToProcess(leaseTimeSeconds: Int, workerNumber: Int): Task[Option[ProcessingTask[S]]] = Task.pure(None)
 
-  def ejectTask(processingTaskId: ProcessingTaskId, leaseTimeSeconds: Int): Task[Option[ProcessingTask[S]]] =
+  def ejectTask(
+      _processingTaskId: ProcessingTaskId,
+      _workerNumber: Int,
+      _leaseTimeSeconds: Int
+  ): Task[Option[ProcessingTask[S]]] =
     Task.pure(None)
 
-  def extendLease(processingTaskId: ProcessingTaskId, leaseTimeSeconds: Int): Task[Unit] = {
+  def extendLease(processingTaskId: ProcessingTaskId, workerNumber: Int, leaseTimeSeconds: Int): Task[Unit] = {
     extendLeaseInvokeCount.incrementAndGet()
     Task.unit
   }
 
   def updateData(
       processingTaskId: ProcessingTaskId,
+      _workerNumber: Int,
       data: ProcessingTaskData
   ): Task[Unit] = Task.unit
 
   def scheduleTask(
       processingTaskId: ProcessingTaskId,
+      workerNumber: Int,
       state: S,
       data: ProcessingTaskData,
       scheduledTime: Instant
@@ -68,6 +74,7 @@ class ProcessingTaskServiceStub[S <: ProcessingTaskState]() extends ProcessingTa
 
   def updateTaskAndExtendLease(
       processingTaskId: ProcessingTaskId,
+      workerNumber: Int,
       state: S,
       data: ProcessingTaskData,
       leaseTimeSeconds: Int
@@ -85,7 +92,7 @@ class ProcessingTaskServiceStub[S <: ProcessingTaskState]() extends ProcessingTa
     )
   }
 
-  def deleteTask(processingTaskId: ProcessingTaskId): Task[Unit] = {
+  def deleteTask(processingTaskId: ProcessingTaskId, workerNumber: Int): Task[Unit] = {
     deleteInvokeCount.incrementAndGet()
     Task.unit
   }

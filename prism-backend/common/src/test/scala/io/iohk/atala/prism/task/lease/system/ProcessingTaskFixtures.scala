@@ -3,7 +3,6 @@ package io.iohk.atala.prism.task.lease.system
 import io.circe.Json
 
 import java.time.Instant
-import java.util.UUID
 
 trait ProcessingTaskFixtures {
   val sampleTaskData = ProcessingTaskData(Json.fromString("sample"))
@@ -18,7 +17,7 @@ trait ProcessingTaskFixtures {
   def createProcessingTask[S <: ProcessingTaskState](
       id: ProcessingTaskId = ProcessingTaskId.random(),
       state: S,
-      owner: Option[UUID] = None,
+      owner: Option[ProcessingTaskOwner] = None,
       lastChange: Instant = Instant.now(),
       nextAction: Instant = Instant.now(),
       data: ProcessingTaskData = sampleTaskData

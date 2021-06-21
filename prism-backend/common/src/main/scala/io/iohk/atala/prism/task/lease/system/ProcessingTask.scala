@@ -9,7 +9,7 @@ import java.util.UUID
 case class ProcessingTask[S <: ProcessingTaskState](
     id: ProcessingTaskId,
     state: S,
-    owner: Option[UUID],
+    owner: Option[ProcessingTaskOwner],
     lastChange: Instant,
     nextAction: Instant,
     data: ProcessingTaskData
@@ -18,5 +18,7 @@ case class ProcessingTask[S <: ProcessingTaskState](
 case class ProcessingTaskData(json: Json) extends AnyVal
 
 case class ProcessingTaskId(uuid: UUID) extends AnyVal with UUIDValue
+
+case class ProcessingTaskOwner(owner: String) extends AnyVal
 
 object ProcessingTaskId extends UUIDValue.Builder[ProcessingTaskId]
