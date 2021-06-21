@@ -4,9 +4,10 @@ import cats.syntax.option._
 import com.google.protobuf.ByteString
 import enumeratum.EnumEntry.Lowercase
 import enumeratum._
+import io.iohk.atala.prism.connector.AtalaOperationId
 import io.iohk.atala.prism.crypto.ECPublicKey
 import io.iohk.atala.prism.identity.DID
-import io.iohk.atala.prism.models.{Ledger, ParticipantId, TransactionId, UUIDValue}
+import io.iohk.atala.prism.models.{ParticipantId, UUIDValue}
 import io.iohk.atala.prism.protos.connector_models
 import io.iohk.atala.prism.utils.syntax._
 
@@ -39,8 +40,7 @@ case class ParticipantInfo(
     name: String,
     did: Option[DID],
     logo: Option[ParticipantLogo],
-    transactionId: Option[TransactionId],
-    ledger: Option[Ledger]
+    operationId: Option[AtalaOperationId]
 )
 
 sealed abstract class ConnectionStatus(value: String) extends EnumEntry {

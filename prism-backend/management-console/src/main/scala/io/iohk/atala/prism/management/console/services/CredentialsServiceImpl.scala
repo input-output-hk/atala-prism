@@ -1,9 +1,12 @@
 package io.iohk.atala.prism.management.console.services
 
+import cats.implicits.catsSyntaxApplicativeId
 import cats.data.NonEmptyList
+import cats.syntax.either._
 import cats.syntax.functor._
 import com.google.protobuf.ByteString
 import io.iohk.atala.prism.auth.AuthAndMiddlewareSupport
+import io.iohk.atala.prism.connector.AtalaOperationId
 import io.iohk.atala.prism.credentials.CredentialBatchId
 import io.iohk.atala.prism.crypto.MerkleTree.MerkleRoot
 import io.iohk.atala.prism.crypto.SHA256Digest
@@ -11,15 +14,17 @@ import io.iohk.atala.prism.grpc.ProtoConverter
 import io.iohk.atala.prism.identity.DID
 import io.iohk.atala.prism.management.console.ManagementConsoleAuthenticator
 import io.iohk.atala.prism.management.console.clients.ConnectorClient
-import io.iohk.atala.prism.management.console.errors.{ManagementConsoleError, ManagementConsoleErrorSupport}
+import io.iohk.atala.prism.management.console.errors.{
+  InternalServerError,
+  ManagementConsoleError,
+  ManagementConsoleErrorSupport
+}
 import io.iohk.atala.prism.management.console.grpc.ProtoCodecs.genericCredentialToProto
 import io.iohk.atala.prism.management.console.grpc._
 import io.iohk.atala.prism.management.console.integrations.CredentialsIntegrationService
 import io.iohk.atala.prism.management.console.models._
 import io.iohk.atala.prism.management.console.repositories.CredentialsRepository
-import io.iohk.atala.prism.models.{TransactionInfo, ProtoCodecs => CommonProtoCodecs}
 import io.iohk.atala.prism.protos.console_api._
-import io.iohk.atala.prism.protos.common_models
 import io.iohk.atala.prism.protos.node_api.IssueCredentialBatchResponse
 import io.iohk.atala.prism.protos.node_models.SignedAtalaOperation
 import io.iohk.atala.prism.utils.FutureEither
@@ -31,7 +36,6 @@ import org.slf4j.{Logger, LoggerFactory}
 import io.iohk.atala.prism.utils.FutureEither.FutureEitherOps
 
 import scala.concurrent.{ExecutionContext, Future}
-import scala.util.Try
 
 class CredentialsServiceImpl(
     credentialsRepository: CredentialsRepository,
@@ -109,7 +113,9 @@ class CredentialsServiceImpl(
   override def getBlockchainData(request: GetBlockchainDataRequest): Future[GetBlockchainDataResponse] = ???
 
   override def publishBatch(request: PublishBatchRequest): Future[PublishBatchResponse] = {
-    def extractValues(signedAtalaOperation: SignedAtalaOperation): (MerkleRoot, DID, SHA256Digest) = {
+    def extractValues(
+        signedAtalaOperation: SignedAtalaOperation
+    ): FutureEither[ManagementConsoleError, (MerkleRoot, DID, SHA256Digest)] = {
       val maybePair = for {
         atalaOperation <- signedAtalaOperation.operation
         opHash = SHA256Digest.compute(atalaOperation.toByteArray)
@@ -118,24 +124,21 @@ class CredentialsServiceImpl(
         did = DID.buildPrismDID(credentialBatchData.issuerDid)
         merkleRoot = MerkleRoot(SHA256Digest.fromVectorUnsafe(credentialBatchData.merkleRoot.toByteArray.toVector))
       } yield (merkleRoot, did, opHash)
-      maybePair.getOrElse(throw new RuntimeException("Failed to extract content hash and issuer DID"))
+      maybePair.fold(
+        InternalServerError(new RuntimeException("Failed to extract content hash and issuer DID"))
+          .asLeft[(MerkleRoot, DID, SHA256Digest)]
+          .pure[Future]
+          .toFutureEither
+      )(_.asRight.pure[Future].toFutureEither)
     }
 
     def storeBatch(
         batchId: CredentialBatchId,
-        signedIssueCredentialBatchOp: SignedAtalaOperation,
-        transactionInfo: common_models.TransactionInfo
+        signedIssueCredentialBatchOp: SignedAtalaOperation
     ): FutureEither[ManagementConsoleError, Unit] = {
       for {
-        validatedTransactionInfo <-
-          Future
-            .successful(
-              Try(CommonProtoCodecs.fromTransactionInfo(transactionInfo)).toEither
-            )
-            .toFutureEither(ex => wrapAsServerError(ex))
-        ledger = validatedTransactionInfo.ledger
-        transactionId = validatedTransactionInfo.transactionId
-        (merkleRoot, did, operationHash) = extractValues(signedIssueCredentialBatchOp)
+        value <- extractValues(signedIssueCredentialBatchOp)
+        (merkleRoot, did, operationHash) = value
         computedBatchId = CredentialBatchId.fromBatchData(did.suffix, merkleRoot)
         // validation for sanity check
         // The `batchId` parameter is the id returned by the node.
@@ -149,11 +152,7 @@ class CredentialsServiceImpl(
             .storeBatchData(
               batchId = batchId,
               issuanceOperationHash = operationHash,
-              issuanceTransactionInfo = TransactionInfo(
-                transactionId = transactionId,
-                ledger = ledger,
-                block = None
-              )
+              AtalaOperationId.of(signedIssueCredentialBatchOp)
             )
       } yield ()
     }
@@ -170,10 +169,10 @@ class CredentialsServiceImpl(
             .map(ProtoConverter[IssueCredentialBatchResponse, IssueCredentialBatchNodeResponse].fromProto)
             .map(_.toEither)
             .toFutureEither(ex => wrapAsServerError(ex))
-        _ <- storeBatch(response.batchId, query.signedOperation, response.transactionInfo)
+        _ <- storeBatch(response.batchId, query.signedOperation)
       } yield PublishBatchResponse()
         .withBatchId(response.batchId.id)
-        .withTransactionInfo(response.transactionInfo)
+        .withOperationId(response.operationId.toProtoByteString)
     }
   }
 
@@ -183,7 +182,9 @@ class CredentialsServiceImpl(
     auth[RevokePublishedCredential]("revokePublishedCredential", request) { (participantId, query) =>
       credentialsIntegrationService
         .revokePublishedCredential(participantId, query)
-        .map(RevokePublishedCredentialResponse().withTransactionInfo)
+        .map { operationId =>
+          RevokePublishedCredentialResponse().withOperationId(operationId.toProtoByteString)
+        }
     }
   }
 

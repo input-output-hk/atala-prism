@@ -6,15 +6,15 @@ import doobie.util.transactor.Transactor
 import io.circe.Json
 import io.iohk.atala.prism.auth.SignedRpcRequest
 import io.iohk.atala.prism.auth.grpc.GrpcAuthenticationHeaderParser
-import io.iohk.atala.prism.connector.ConnectorAuthenticator
+import io.iohk.atala.prism.connector.{AtalaOperationId, ConnectorAuthenticator}
 import io.iohk.atala.prism.connector.model.{ParticipantInfo, ParticipantLogo, ParticipantType}
 import io.iohk.atala.prism.connector.repositories.daos.ParticipantsDAO
 import io.iohk.atala.prism.connector.repositories.{ParticipantsRepository, RequestNoncesRepository}
 import io.iohk.atala.prism.console.models.{Contact, CreateContact, Institution, IssuerGroup}
 import io.iohk.atala.prism.console.repositories.{ContactsRepository, GroupsRepository}
-import io.iohk.atala.prism.crypto.{ECKeyPair, ECPublicKey, SHA256Digest}
+import io.iohk.atala.prism.crypto.{ECKeyPair, ECPublicKey}
 import io.iohk.atala.prism.identity.DID
-import io.iohk.atala.prism.models.{ParticipantId, TransactionId}
+import io.iohk.atala.prism.models.ParticipantId
 import io.iohk.atala.prism.protos.console_api
 import io.iohk.atala.prism.utils.syntax.TimestampOps
 import io.iohk.atala.prism.{DIDUtil, RpcSpecBase}
@@ -288,8 +288,7 @@ class GroupsServiceImplSpec extends RpcSpecBase with DIDUtil {
       database: Transactor[IO]
   ): Institution.Id = {
     val id = Institution.Id.random()
-    val mockTransactionId =
-      TransactionId.from(SHA256Digest.compute("id".getBytes).value).value
+    val mockOperationId = AtalaOperationId.random()
 
     val participant =
       ParticipantInfo(
@@ -299,8 +298,7 @@ class GroupsServiceImplSpec extends RpcSpecBase with DIDUtil {
         "",
         Some(did),
         Some(ParticipantLogo(Vector())),
-        Some(mockTransactionId),
-        None
+        Some(mockOperationId)
       )
     ParticipantsDAO.insert(participant).transact(database).unsafeRunSync()
 

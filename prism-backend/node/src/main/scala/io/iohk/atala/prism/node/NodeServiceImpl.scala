@@ -3,6 +3,7 @@ package io.iohk.atala.prism.node
 import com.google.protobuf.ByteString
 import io.grpc.Status
 import io.iohk.atala.prism.BuildInfo
+import io.iohk.atala.prism.connector.AtalaOperationId
 import io.iohk.atala.prism.credentials.CredentialBatchId
 import io.iohk.atala.prism.crypto.SHA256Digest
 import io.iohk.atala.prism.identity.DID
@@ -11,7 +12,6 @@ import io.iohk.atala.prism.node.errors.NodeError
 import io.iohk.atala.prism.node.grpc.ProtoCodecs
 import io.iohk.atala.prism.node.models.{
   AtalaObjectTransactionSubmissionStatus,
-  AtalaOperationId,
   AtalaOperationInfo,
   AtalaOperationStatus
 }
@@ -112,14 +112,13 @@ class NodeServiceImpl(
     for {
       operation <- operationF
       parsedOp <- errorEitherToFuture(CreateDIDOperation.parseWithMockedLedgerData(operation))
-      transactionInfo <- objectManagement.publishAtalaOperation(operation)
+      operationId <- objectManagement.publishSingleAtalaOperation(operation)
     } yield {
       logAndReturnResponse(
         "createDID",
         node_api
           .CreateDIDResponse(id = parsedOp.id.value)
-          .withTransactionInfo(toTransactionInfo(transactionInfo))
-          .withOperationId(AtalaOperationId.of(operation).toProtoByteString)
+          .withOperationId(operationId.toProtoByteString)
       )
     }
   }
@@ -131,14 +130,13 @@ class NodeServiceImpl(
     for {
       operation <- operationF
       _ <- errorEitherToFuture(UpdateDIDOperation.validate(operation))
-      transactionInfo <- objectManagement.publishAtalaOperation(operation)
+      operationId <- objectManagement.publishSingleAtalaOperation(operation)
     } yield {
       logAndReturnResponse(
         "updateDID",
         node_api
           .UpdateDIDResponse()
-          .withTransactionInfo(toTransactionInfo(transactionInfo))
-          .withOperationId(AtalaOperationId.of(operation).toProtoByteString)
+          .withOperationId(operationId.toProtoByteString)
       )
     }
   }
@@ -154,14 +152,13 @@ class NodeServiceImpl(
     for {
       operation <- operationF
       parsedOp <- errorEitherToFuture(IssueCredentialBatchOperation.parseWithMockedLedgerData(operation))
-      transactionInfo <- objectManagement.publishAtalaOperation(operation)
+      operationId <- objectManagement.publishSingleAtalaOperation(operation)
     } yield {
       logAndReturnResponse(
         "issueCredentialBatch",
         node_api
           .IssueCredentialBatchResponse(batchId = parsedOp.credentialBatchId.id)
-          .withTransactionInfo(toTransactionInfo(transactionInfo))
-          .withOperationId(AtalaOperationId.of(operation).toProtoByteString)
+          .withOperationId(operationId.toProtoByteString)
       )
     }
   }
@@ -174,14 +171,13 @@ class NodeServiceImpl(
     for {
       operation <- operationF
       _ <- errorEitherToFuture(RevokeCredentialsOperation.validate(operation))
-      transactionInfo <- objectManagement.publishAtalaOperation(operation)
+      operationId <- objectManagement.publishSingleAtalaOperation(operation)
     } yield {
       logAndReturnResponse(
         "revokeCredentials",
         node_api
           .RevokeCredentialsResponse()
-          .withTransactionInfo(toTransactionInfo(transactionInfo))
-          .withOperationId(AtalaOperationId.of(operation).toProtoByteString)
+          .withOperationId(operationId.toProtoByteString)
       )
     }
   }
@@ -278,14 +274,17 @@ class NodeServiceImpl(
           errorEitherToFuture(parseOperationWithMockData(op))
         }
       )
-      transactionInfo <- objectManagement.publishAtalaOperation(operations: _*)
+      operationIds <- objectManagement.publishAtalaOperations(operations: _*)
+      outputsWithOperationIds = outputs.zip(operationIds).map {
+        case (out, opId) =>
+          out.withOperationId(opId.toProtoByteString)
+      }
     } yield {
       logAndReturnResponse(
         "publishAsABlock",
         node_api
           .PublishAsABlockResponse()
-          .withTransactionInfo(toTransactionInfo(transactionInfo))
-          .withOutputs(outputs)
+          .withOutputs(outputsWithOperationIds)
       )
     }
   }
@@ -501,6 +500,6 @@ object NodeServiceImpl {
           }
     }
 
-    operationEither.map(_.withOperationId(AtalaOperationId.of(operation).toProtoByteString))
+    operationEither
   }
 }

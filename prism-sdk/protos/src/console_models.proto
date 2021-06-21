@@ -153,6 +153,10 @@ message CManagerGenericCredential {
   reserved "publicationStoredAt_deprecated";
   reserved 14; // Removed sharedAt_deprecated field
   reserved "sharedAt_deprecated";
+  reserved 15; // Removed issuance_proof field.
+  reserved "issuance_proof";
+  reserved 18; // Removed revocation_proof field.
+  reserved "revocation_proof";
 
   string credential_id = 1; // Credential identifier internal to the cmanager.
   string issuer_id = 2; // Issuer identifier internal to the cmanager/connector.
@@ -170,10 +174,8 @@ message CManagerGenericCredential {
   string encoded_signed_credential = 10; // The actual published credential.
   string external_id = 12; // The ID provided by the issuer when the contact was created.
   ContactConnectionStatus connection_status = 13; // Checks if a contact has accepted the connection request.
-  TransactionInfo issuance_proof = 15; // Underlying transaction information related to the credential issuance.
   string batch_inclusion_proof = 16; // Inclusion proof that shows that encodedSignedCredential is a member of a batch.
   string batch_id = 17; // The batch ID defined by protocol, representing the batch that contains the encodedSignedCredential.
-  TransactionInfo revocation_proof = 18; // Underlying transaction information related to the credential revocation.
   google.protobuf.Timestamp publication_stored_at = 19; // The timestamp when the publication data was stored in the database.
   google.protobuf.Timestamp shared_at = 20; // The last time the credential was sent to the related contact.
 }

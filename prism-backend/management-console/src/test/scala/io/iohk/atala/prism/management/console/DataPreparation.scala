@@ -7,6 +7,7 @@ import io.circe.Json
 import io.circe.syntax._
 import io.iohk.atala.prism.auth.grpc.GrpcAuthenticationHeader
 import io.iohk.atala.prism.auth.model.RequestNonce
+import io.iohk.atala.prism.connector.AtalaOperationId
 import io.iohk.atala.prism.credentials.CredentialBatchId
 import io.iohk.atala.prism.crypto.MerkleTree.MerkleInclusionProof
 import io.iohk.atala.prism.crypto.{EC, ECSignature, SHA256Digest}
@@ -14,8 +15,7 @@ import io.iohk.atala.prism.identity.DID
 import io.iohk.atala.prism.management.console.models._
 import io.iohk.atala.prism.management.console.repositories.daos.ReceivedCredentialsDAO.ReceivedSignedCredentialData
 import io.iohk.atala.prism.management.console.repositories.daos._
-import io.iohk.atala.prism.models.Ledger.InMemory
-import io.iohk.atala.prism.models.{ConnectionToken, Ledger, TransactionId, TransactionInfo}
+import io.iohk.atala.prism.models.ConnectionToken
 import io.iohk.atala.prism.protos.connector_models.ContactConnection
 import io.iohk.atala.prism.protos.console_models.{ConnectorRequestMetadata, ContactConnectionStatus}
 import org.scalatest.OptionValues._
@@ -233,13 +233,13 @@ object DataPreparation {
   }
   def getBatchData(
       batchId: CredentialBatchId
-  )(implicit database: Transactor[IO]): Option[(TransactionId, Ledger, SHA256Digest)] = {
+  )(implicit database: Transactor[IO]): Option[(AtalaOperationId, SHA256Digest)] = {
     sql"""
-         |SELECT issued_on_transaction_id, ledger, issuance_operation_hash
+         |SELECT issuance_operation_id, issuance_operation_hash
          |FROM published_batches
          |WHERE batch_id = ${batchId.id}
          |""".stripMargin
-      .query[(TransactionId, Ledger, SHA256Digest)]
+      .query[(AtalaOperationId, SHA256Digest)]
       .option
       .transact(database)
       .unsafeRunSync()
@@ -248,13 +248,13 @@ object DataPreparation {
   def publishBatch(
       batchId: CredentialBatchId,
       previousOperationHash: SHA256Digest,
-      mockTransactionInfo: TransactionInfo
+      atalaOperationId: AtalaOperationId
   )(implicit database: Transactor[IO]): Unit = {
     CredentialsDAO
       .storeBatchData(
         batchId,
-        mockTransactionInfo,
-        previousOperationHash
+        previousOperationHash,
+        atalaOperationId
       )
       .transact(database)
       .unsafeRunSync()
@@ -271,17 +271,12 @@ object DataPreparation {
     val aBatchId = CredentialBatchId.random()
     val anEncodedSignedCredential = "mockEncodedSignedCredential"
     val aMerkleProof = MerkleInclusionProof(aHash, 0, List())
-    val aTransactionInfo = TransactionInfo(
-      transactionId = TransactionId.from(aHash.value).value,
-      ledger = InMemory,
-      block = None
-    )
 
     CredentialsDAO
       .storeBatchData(
         aBatchId,
-        aTransactionInfo,
-        aHash
+        aHash,
+        AtalaOperationId.fromVectorUnsafe(aHash.value)
       )
       .transact(database)
       .unsafeRunSync()

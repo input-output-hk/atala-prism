@@ -374,7 +374,7 @@ class SignedRequestsAuthenticatorSpec extends AnyWordSpec {
   // NOTE: To meet the repository interface we need to return the whole participant details while the authenticator
   // just uses the id, hence, hardcoding the values should be enough.
   private def dummyParticipantInfo(id: ParticipantId): ParticipantInfo = {
-    ParticipantInfo(id = id, tpe = ParticipantType.Issuer, None, "no-name", None, None, None, None)
+    ParticipantInfo(id = id, tpe = ParticipantType.Issuer, None, "no-name", None, None, None)
   }
 
   private def buildAuthenticator(

@@ -63,7 +63,6 @@ class ConnectionsRepositorySpec extends ConnectorRepositorySpecBase {
         "Issuer",
         Some(did),
         None,
-        None,
         None
       )
     }

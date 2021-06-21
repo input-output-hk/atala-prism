@@ -6,10 +6,11 @@ import java.time.{Instant, LocalDate}
 import java.util.UUID
 import io.circe.Json
 import io.iohk.atala.prism.auth.grpc.GrpcAuthenticationHeader
+import io.iohk.atala.prism.connector.AtalaOperationId
 import io.iohk.atala.prism.credentials.CredentialBatchId
 import io.iohk.atala.prism.crypto.MerkleTree.MerkleInclusionProof
 import io.iohk.atala.prism.crypto.SHA256Digest
-import io.iohk.atala.prism.models.{ConnectionToken, Ledger, TransactionId, UUIDValue}
+import io.iohk.atala.prism.models.{ConnectionToken, UUIDValue}
 import io.iohk.atala.prism.protos.connector_api
 
 final case class CreateGenericCredential(
@@ -60,11 +61,10 @@ final case class GetStoredCredentials(
 case class PublicationData(
     credentialBatchId: CredentialBatchId, // the id assigned by the protocol to the batch
     issuanceOperationHash: SHA256Digest, // the hex representation of the associated issuance operation hash
+    atalaOperationId: AtalaOperationId, // the identifier of the corresponding node operation
     encodedSignedCredential: String, // the actual published credential
     inclusionProof: MerkleInclusionProof, // the proof that the encodedSignedCredential belongs to the associated batch
-    storedAt: Instant, // the time when the publication data was stored in the database
-    transactionId: TransactionId,
-    ledger: Ledger
+    storedAt: Instant // the time when the publication data was stored in the database
 )
 
 final case class GenericCredential(
@@ -81,7 +81,7 @@ final case class GenericCredential(
     connectionToken: ConnectionToken,
     publicationData: Option[PublicationData],
     sharedAt: Option[Instant],
-    revokedOnTransactionId: Option[TransactionId]
+    revokedOnOperationId: Option[AtalaOperationId]
 )
 
 object GenericCredential {

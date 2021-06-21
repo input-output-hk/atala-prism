@@ -6,6 +6,7 @@ import cats.effect.IO
 import doobie.{ConnectionIO, FC}
 import doobie.util.transactor.Transactor
 import doobie.implicits._
+import io.iohk.atala.prism.connector.AtalaOperationId
 import io.iohk.atala.prism.credentials.CredentialBatchId
 import io.iohk.atala.prism.crypto.SHA256Digest
 import io.iohk.atala.prism.management.console.errors.{
@@ -27,7 +28,6 @@ import io.iohk.atala.prism.management.console.models.{
 }
 import io.iohk.atala.prism.management.console.repositories.daos.{ContactsDAO, CredentialTypeDao, CredentialsDAO}
 import io.iohk.atala.prism.management.console.validations.CredentialDataValidator
-import io.iohk.atala.prism.models.{TransactionId, TransactionInfo}
 import io.iohk.atala.prism.utils.FutureEither
 import io.iohk.atala.prism.utils.FutureEither.{FutureEitherFOps, FutureEitherOps}
 import io.iohk.atala.prism.utils.syntax.DBConnectionOps
@@ -194,10 +194,10 @@ class CredentialsRepository(xa: Transactor[IO])(implicit ec: ExecutionContext) {
   def storeBatchData(
       batchId: CredentialBatchId,
       issuanceOperationHash: SHA256Digest,
-      issuanceTransactionInfo: TransactionInfo
+      atalaOperationId: AtalaOperationId
   ): FutureEither[Nothing, Int] = {
     CredentialsDAO
-      .storeBatchData(batchId, issuanceTransactionInfo, issuanceOperationHash)
+      .storeBatchData(batchId, issuanceOperationHash, atalaOperationId)
       .logSQLErrors(s"storing batch data, batch id - $batchId", logger)
       .transact(xa)
       .unsafeToFuture()
@@ -232,10 +232,10 @@ class CredentialsRepository(xa: Transactor[IO])(implicit ec: ExecutionContext) {
   def storeRevocationData(
       institutionId: ParticipantId,
       credentialId: GenericCredential.Id,
-      transactionId: TransactionId
+      operationId: AtalaOperationId
   ): FutureEither[Nothing, Unit] = {
     CredentialsDAO
-      .revokeCredential(institutionId, credentialId, transactionId)
+      .revokeCredential(institutionId, credentialId, operationId)
       .logSQLErrors(s"storing revocation data, institution id - $institutionId", logger)
       .transact(xa)
       .unsafeToFuture()

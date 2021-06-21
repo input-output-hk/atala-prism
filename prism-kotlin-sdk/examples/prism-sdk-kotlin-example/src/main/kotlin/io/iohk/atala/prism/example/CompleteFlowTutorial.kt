@@ -76,7 +76,7 @@ object CompleteFlowTutorial {
             """
             Issuer DID registered, the transaction can take up to 10 minutes to be confirmed by the Cardano network
             - DID: ${issuerRegisterDIDResponse.did}
-            - Cardano transaction id: ${issuerRegisterDIDResponse.transactionInfo?.transactionId}
+            - Operation identifier: ${issuerRegisterDIDResponse.operationId}
             """.trimIndent()
         )
         println()
@@ -183,7 +183,7 @@ object CompleteFlowTutorial {
             """
             Issuer: Credential issued to Holder, the transaction can take up to 10 minutes to be confirmed by the Cardano network
             - IssuerDID = $issuerDID
-            - Cardano transaction id = ${issuedCredentialResponse.transactionInfo?.transactionId}
+            - Operation identifier = ${issuedCredentialResponse.operationId}
             - Credential content = $holderUnsignedCredential
             - Signed credential = ${holderSignedCredential.canonicalForm}
             - Inclusion proof (encoded) = ${holderCredentialMerkleProofs.first().encode()}
@@ -279,7 +279,7 @@ object CompleteFlowTutorial {
             """
             Verifier DID registered, the transaction can take up to 10 minutes to be confirmed by the Cardano network
             - DID: $verifierDID
-            - Cardano transaction id: ${verifierRegisterDIDResponse.transactionInfo?.transactionId}
+            - Operation identifier: ${verifierRegisterDIDResponse.operationId}
             """.trimIndent()
         )
         println()
@@ -447,7 +447,7 @@ object CompleteFlowTutorial {
         println(
             """
             Issuer: Credential revoked, the transaction can take up to 10 minutes to be confirmed by the Cardano network
-            - Cardano transaction id: ${issuerCredentialRevocationResponse.transactionInfo?.transactionId}
+            - Operation identifier: ${issuerCredentialRevocationResponse.operationId}
             """.trimIndent()
         )
         println()

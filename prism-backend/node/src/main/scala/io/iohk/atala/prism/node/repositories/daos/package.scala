@@ -5,6 +5,7 @@ import doobie.postgres.implicits._
 import doobie.util.invariant.InvalidEnum
 import doobie.{Get, Meta, Put, Read, Write}
 import doobie.implicits.legacy.instant._
+import io.iohk.atala.prism.connector.AtalaOperationId
 import io.iohk.atala.prism.credentials.{CredentialBatchId, TimestampInfo}
 import io.iohk.atala.prism.crypto.{EC, ECConfig}
 import io.iohk.atala.prism.daos.BaseDAO
@@ -15,7 +16,6 @@ import io.iohk.atala.prism.node.models.{
   AtalaObject,
   AtalaObjectId,
   AtalaObjectTransactionSubmissionStatus,
-  AtalaOperationId,
   AtalaOperationInfo,
   AtalaOperationStatus,
   CredentialId,
@@ -129,10 +129,6 @@ package object daos extends BaseDAO {
 
   implicit val atalaObjectIdMeta: Meta[AtalaObjectId] =
     Meta[Array[Byte]].timap(value => AtalaObjectId(value.toVector))(_.value.toArray)
-
-  implicit val atalaOperationIdMeta: Meta[AtalaOperationId] =
-    Meta[Array[Byte]]
-      .timap(value => AtalaOperationId.fromVectorUnsafe(value.toVector))(_.value.toArray)
 
   implicit val atalaOperationInfoRead: Read[AtalaOperationInfo] = {
     Read[

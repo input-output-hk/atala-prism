@@ -22,7 +22,7 @@ import io.iohk.atala.cvp.webextension.common.models.PendingRequest.{
 }
 import io.iohk.atala.cvp.webextension.common.models._
 import io.iohk.atala.cvp.webextension.common.{ECKeyOperation, Mnemonic}
-import io.iohk.atala.prism.connector.{RequestAuthenticator, RequestNonce}
+import io.iohk.atala.prism.connector.{AtalaOperationId, RequestAuthenticator, RequestNonce}
 import io.iohk.atala.prism.credentials.VerificationError
 import io.iohk.atala.prism.crypto.EC
 import io.iohk.atala.prism.crypto.MerkleTree.MerkleInclusionProof
@@ -30,8 +30,8 @@ import io.iohk.atala.prism.identity.DID
 import io.iohk.atala.prism.protos.connector_api.RegisterDIDResponse
 import io.iohk.atala.prism.protos.console_api.PublishBatchResponse
 import org.scalajs.dom.crypto.CryptoKey
-import java.util.{Base64, UUID}
 
+import java.util.{Base64, UUID}
 import scala.concurrent.{ExecutionContext, Future, Promise}
 import scala.util.control.NonFatal
 import scala.util.{Failure, Success, Try}
@@ -165,9 +165,11 @@ private[background] class WalletManager(
               batchOperationHash = r.batchOperationHash,
               credentialId = r.credentialId
             )
-            .map(_.transactionId)
+            .map { operationIdBytes =>
+              AtalaOperationId.fromVectorUnsafe(operationIdBytes.toVector)
+            }
       }
-      _ = promise.success(requestResult)
+      _ = promise.success(requestResult.hexValue)
     } yield {
       println(s"Request approved: $requestId")
       removeRequest(requestId)
@@ -188,8 +190,12 @@ private[background] class WalletManager(
       println(s"Request rejected = $requestId")
     }
 
-  private def handleSignAndPublishResponse(in: PublishBatchResponse): String =
-    in.transactionInfo.fold[String](throw new RuntimeException("Transaction Info Not Returned"))(_.transactionId)
+  private def handleSignAndPublishResponse(in: PublishBatchResponse): AtalaOperationId =
+    if (in.operationId.isEmpty) {
+      throw new RuntimeException("Operation Info Not Returned")
+    } else {
+      AtalaOperationId.fromVectorUnsafe(in.operationId.toVector)
+    }
 
   private def removeRequest(requestId: Int): Unit = {
     updateState { cur =>
@@ -215,10 +221,10 @@ private[background] class WalletManager(
     }
   }
 
-  def getTransactionId(): Future[String] = {
+  def getOperationId(): Future[String] = {
     Future.fromTry {
       Try {
-        state.unsafeWallet().transactionId.getOrElse(throw new RuntimeException("Transaction Id not found"))
+        state.unsafeWallet().operationId.getOrElse(throw new RuntimeException("Operation Id not found"))
       }
     }
   }
@@ -314,7 +320,7 @@ private[background] class WalletManager(
         mnemonic,
         organisationName,
         did,
-        response.transactionInfo.map(_.transactionId),
+        Some(response.operationId.toStringUtf8()),
         role,
         logo
       )

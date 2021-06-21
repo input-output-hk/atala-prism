@@ -21,7 +21,7 @@ import io.iohk.atala.prism.connector.services.{
 }
 import io.iohk.atala.prism.crypto.{EC, ECPublicKey}
 import io.iohk.atala.prism.metrics.RequestMeasureUtil.measureRequestFuture
-import io.iohk.atala.prism.models.{ParticipantId, ProtoCodecs}
+import io.iohk.atala.prism.models.ParticipantId
 import io.iohk.atala.prism.protos.common_models.{HealthCheckRequest, HealthCheckResponse}
 import io.iohk.atala.prism.protos.connector_api.{GetMessageStreamResponse, UpdateProfileRequest, UpdateProfileResponse}
 import io.iohk.atala.prism.protos.node_api.NodeServiceGrpc
@@ -207,11 +207,13 @@ class ConnectorService(
           registerDidRequest.didOrOperation
         )
         .map { registerResult =>
-          connector_api
+          val response = connector_api
             .RegisterDIDResponse(
-              did = registerResult.did.value,
-              transactionInfo = registerResult.transactionInfo.map(ProtoCodecs.toTransactionInfo)
+              did = registerResult.did.value
             )
+          registerResult.operationId
+            .map(_.toProtoByteString)
+            .fold(response)(response.withOperationId)
         }
     }
 

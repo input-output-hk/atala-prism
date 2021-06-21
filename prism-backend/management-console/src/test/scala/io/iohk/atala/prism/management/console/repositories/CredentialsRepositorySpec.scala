@@ -7,7 +7,8 @@ import doobie.util.transactor
 import doobie.implicits._
 import io.circe.Json
 import io.circe.syntax._
-import io.iohk.atala.prism.{AtalaWithPostgresSpec, TestConstants}
+import io.iohk.atala.prism.AtalaWithPostgresSpec
+import io.iohk.atala.prism.connector.AtalaOperationId
 import io.iohk.atala.prism.credentials.CredentialBatchId
 import io.iohk.atala.prism.crypto.MerkleTree.MerkleInclusionProof
 import io.iohk.atala.prism.crypto.SHA256Digest
@@ -19,7 +20,6 @@ import io.iohk.atala.prism.management.console.errors.{
   PublishedCredentialsNotRevoked
 }
 import io.iohk.atala.prism.management.console.models._
-import io.iohk.atala.prism.models.{Ledger, TransactionId, TransactionInfo}
 import org.scalatest.OptionValues._
 import io.iohk.atala.prism.management.console.repositories.daos.CredentialTypeDao
 
@@ -281,13 +281,13 @@ class CredentialsRepositorySpec extends AtalaWithPostgresSpec {
 
       val mockOperationHash = SHA256Digest.compute("000".getBytes())
       val mockBatchId = CredentialBatchId.fromDigest(mockOperationHash)
-      val mockTransactionId =
-        TransactionId.from("1423856bc91c49e928f6f30f4e8d665d53eb4ab6028bd0ac971809d514c92db1").value
-      val mockLedger = Ledger.InMemory
-      val mockTransactionInfo = TransactionInfo(mockTransactionId, mockLedger)
 
       /// we first publish the batch
-      DataPreparation.publishBatch(mockBatchId, mockOperationHash, mockTransactionInfo)
+      DataPreparation.publishBatch(
+        mockBatchId,
+        mockOperationHash,
+        AtalaOperationId.fromVectorUnsafe(mockOperationHash.value)
+      )
 
       val mockEncodedSignedCredential = "easdadgfkfñwlekrjfadf"
       val mockMerkleProof = MerkleInclusionProof(mockOperationHash, 1, List(mockOperationHash))
@@ -318,8 +318,6 @@ class CredentialsRepositorySpec extends AtalaWithPostgresSpec {
       publicationData.credentialBatchId must be(mockBatchId)
       publicationData.issuanceOperationHash must be(mockOperationHash)
       publicationData.encodedSignedCredential must be(mockEncodedSignedCredential)
-      publicationData.transactionId must be(mockTransactionInfo.transactionId)
-      publicationData.ledger must be(mockTransactionInfo.ledger)
       // the rest should remain unchanged
       updatedCredential.copy(publicationData = None) must be(originalCredential)
     }
@@ -329,13 +327,13 @@ class CredentialsRepositorySpec extends AtalaWithPostgresSpec {
 
       val mockOperationHash = SHA256Digest.compute("000".getBytes())
       val mockBatchId = CredentialBatchId.fromDigest(mockOperationHash)
-      val mockTransactionId =
-        TransactionId.from("1423856bc91c49e928f6f30f4e8d665d53eb4ab6028bd0ac971809d514c92db1").value
-      val mockLedger = Ledger.InMemory
-      val mockTransactionInfo = TransactionInfo(mockTransactionId, mockLedger)
 
       /// we first publish the batch
-      DataPreparation.publishBatch(mockBatchId, mockOperationHash, mockTransactionInfo)
+      DataPreparation.publishBatch(
+        mockBatchId,
+        mockOperationHash,
+        AtalaOperationId.fromVectorUnsafe(mockOperationHash.value)
+      )
 
       val mockEncodedSignedCredential = "easdadgfkfñwlekrjfadf"
       val mockMerkleProof = MerkleInclusionProof(mockOperationHash, 1, List(mockOperationHash))
@@ -369,13 +367,13 @@ class CredentialsRepositorySpec extends AtalaWithPostgresSpec {
 
       val mockOperationHash = SHA256Digest.compute("000".getBytes())
       val mockBatchId = CredentialBatchId.fromDigest(mockOperationHash)
-      val mockTransactionId =
-        TransactionId.from("1423856bc91c49e928f6f30f4e8d665d53eb4ab6028bd0ac971809d514c92db1").value
-      val mockLedger = Ledger.InMemory
-      val mockTransactionInfo = TransactionInfo(mockTransactionId, mockLedger)
 
       /// we first publish the batch
-      DataPreparation.publishBatch(mockBatchId, mockOperationHash, mockTransactionInfo)
+      DataPreparation.publishBatch(
+        mockBatchId,
+        mockOperationHash,
+        AtalaOperationId.fromVectorUnsafe(mockOperationHash.value)
+      )
 
       val mockEncodedSignedCredential = "easdadgfkfñwlekrjfadf"
       val mockMerkleProof = MerkleInclusionProof(mockOperationHash, 1, List(mockOperationHash))
@@ -581,26 +579,24 @@ class CredentialsRepositorySpec extends AtalaWithPostgresSpec {
 
   "storeBatchData" should {
     "insert the expected data" in {
-      val mockHash = SHA256Digest.compute("random".getBytes())
+      val mockHash = SHA256Digest.compute("randomizer2021".getBytes())
       val mockBatchId = CredentialBatchId.fromDigest(mockHash)
-      val mockLedger = Ledger.InMemory
-      val mockTransactionId =
-        TransactionId.from("1423856bc91c49e928f6f30f4e8d665d53eb4ab6028bd0ac971809d514c92db1").value
 
-      credentialsRepository
+      val added = credentialsRepository
         .storeBatchData(
           mockBatchId,
           mockHash,
-          TransactionInfo(mockTransactionId, mockLedger, None)
+          AtalaOperationId.fromVectorUnsafe(mockHash.value)
         )
         .value
         .futureValue
+        .toOption
 
-      val (transactionId, ledger, hash) = DataPreparation.getBatchData(mockBatchId).value
+      added.value must be(1)
+      val (operationId, hash) = DataPreparation.getBatchData(mockBatchId).value
 
-      transactionId mustBe mockTransactionId
-      ledger mustBe mockLedger
       hash mustBe mockHash
+      operationId.digest mustBe mockHash
     }
   }
 
@@ -645,10 +641,10 @@ class CredentialsRepositorySpec extends AtalaWithPostgresSpec {
     }
 
     def markAsRevoked(credentialId: GenericCredential.Id): Unit = {
-      val transactionId = 1.to(64).map(_ => "a").mkString("")
+      val operationId = 1.to(64).map(_ => "a").mkString("")
       sql"""
             |UPDATE published_credentials
-            |SET revoked_on_transaction_id = decode(${transactionId}, 'hex')
+            |SET revoked_on_operation_id = decode($operationId, 'hex')
             |WHERE credential_id = ${credentialId.uuid.toString}::uuid
        """.stripMargin.update.run.void.transact(database).unsafeRunSync()
     }
@@ -662,14 +658,9 @@ class CredentialsRepositorySpec extends AtalaWithPostgresSpec {
 
       val mockOperationHash = SHA256Digest.compute("000".getBytes())
       val mockBatchId = CredentialBatchId.fromDigest(mockOperationHash)
-      val mockTransactionId = TransactionId
-        .from("1423856bc91c49e928f6f30f4e8d665d53eb4ab6028bd0ac971809d514c92db1")
-        .value
-      val mockLedger = Ledger.InMemory
-      val mockTransactionInfo = TransactionInfo(mockTransactionId, mockLedger)
 
       // we first publish the batch
-      publishBatch(mockBatchId, mockOperationHash, mockTransactionInfo)
+      publishBatch(mockBatchId, mockOperationHash, AtalaOperationId.fromVectorUnsafe(mockOperationHash.value))
 
       val mockEncodedSignedCredential = "easdadgfkfñwlekrjfadf"
       val mockMerkleProof = MerkleInclusionProof(mockOperationHash, 1, List(mockOperationHash))
@@ -689,11 +680,10 @@ class CredentialsRepositorySpec extends AtalaWithPostgresSpec {
         .toOption
         .value must be(1)
 
-      val revocationTransactionId = TransactionId
-        .from("98765432c91c49e928f6f30f4e8d665d53eb4ab6028bd0ac971809d514c92db1")
-        .value
+      val revocationOperationId = AtalaOperationId
+        .fromHexUnsafe("98765432c91c49e928f6f30f4e8d665d53eb4ab6028bd0ac971809d514c92db1")
       credentialsRepository
-        .storeRevocationData(institutionId, credential.credentialId, revocationTransactionId)
+        .storeRevocationData(institutionId, credential.credentialId, revocationOperationId)
         .value
         .futureValue
 
@@ -706,7 +696,7 @@ class CredentialsRepositorySpec extends AtalaWithPostgresSpec {
         .headOption
         .value
 
-      result.revokedOnTransactionId.value must be(revocationTransactionId)
+      result.revokedOnOperationId.value must be(revocationOperationId)
     }
 
     "fail when the credential doesn't exist" in {
@@ -714,13 +704,12 @@ class CredentialsRepositorySpec extends AtalaWithPostgresSpec {
       val contactId = createContact(institutionId, "IOHK Student 2", None).contactId
       createGenericCredential(institutionId, contactId, "A")
 
-      val revocationTransactionId = TransactionId
-        .from("98765432c91c49e928f6f30f4e8d665d53eb4ab6028bd0ac971809d514c92db1")
-        .value
+      val revocationOperationId = AtalaOperationId
+        .fromHexUnsafe("98765432c91c49e928f6f30f4e8d665d53eb4ab6028bd0ac971809d514c92db1")
 
       intercept[RuntimeException] {
         credentialsRepository
-          .storeRevocationData(institutionId, GenericCredential.Id.random(), revocationTransactionId)
+          .storeRevocationData(institutionId, GenericCredential.Id.random(), revocationOperationId)
           .value
           .futureValue
       }
@@ -733,14 +722,9 @@ class CredentialsRepositorySpec extends AtalaWithPostgresSpec {
 
       val mockOperationHash = SHA256Digest.compute("000".getBytes())
       val mockBatchId = CredentialBatchId.fromDigest(mockOperationHash)
-      val mockTransactionId = TransactionId
-        .from("1423856bc91c49e928f6f30f4e8d665d53eb4ab6028bd0ac971809d514c92db1")
-        .value
-      val mockLedger = Ledger.InMemory
-      val mockTransactionInfo = TransactionInfo(mockTransactionId, mockLedger)
 
       // we first publish the batch
-      publishBatch(mockBatchId, mockOperationHash, mockTransactionInfo)
+      publishBatch(mockBatchId, mockOperationHash, AtalaOperationId.fromVectorUnsafe(mockOperationHash.value))
 
       val mockEncodedSignedCredential = "easdadgfkfñwlekrjfadf"
       val mockMerkleProof = MerkleInclusionProof(mockOperationHash, 1, List(mockOperationHash))
@@ -761,11 +745,10 @@ class CredentialsRepositorySpec extends AtalaWithPostgresSpec {
         .value must be(1)
 
       intercept[RuntimeException] {
-        val revocationTransactionId = TransactionId
-          .from("98765432c91c49e928f6f30f4e8d665d53eb4ab6028bd0ac971809d514c92db1")
-          .value
+        val revocationOperationId = AtalaOperationId
+          .fromHexUnsafe("98765432c91c49e928f6f30f4e8d665d53eb4ab6028bd0ac971809d514c92db1")
         credentialsRepository
-          .storeRevocationData(createParticipant("Issuer Y"), credential.credentialId, revocationTransactionId)
+          .storeRevocationData(createParticipant("Issuer Y"), credential.credentialId, revocationOperationId)
           .value
           .futureValue
       }
@@ -776,11 +759,7 @@ class CredentialsRepositorySpec extends AtalaWithPostgresSpec {
 object CredentialsRepositorySpec {
   private val aHash = SHA256Digest.compute("random string".getBytes())
   private val aBatchId = CredentialBatchId.fromDigest(aHash)
-  private val aTxInfo = TransactionInfo(
-    TestConstants.testTxId,
-    Ledger.InMemory,
-    None
-  )
+
   private val aProof = MerkleInclusionProof(aHash, 1, List(aHash))
   private val anEncodedCred = "encodedSignedCredenital"
 
@@ -788,7 +767,7 @@ object CredentialsRepositorySpec {
       issuerId: ParticipantId,
       consoleId: GenericCredential.Id
   )(implicit database: transactor.Transactor[IO]): Unit = {
-    DataPreparation.publishBatch(aBatchId, aHash, aTxInfo)
+    DataPreparation.publishBatch(aBatchId, aHash, AtalaOperationId.fromVectorUnsafe(aHash.value))
     DataPreparation.publishCredential(issuerId, aBatchId, consoleId, anEncodedCred, aProof)
   }
 }

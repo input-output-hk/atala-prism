@@ -287,9 +287,11 @@ message GetCurrentUserResponse {
 
 // Confirmation of DID registration.
 message RegisterDIDResponse {
+  reserved 2; // Removed "transaction_info" field
+  reserved "transaction_info";
+
   string did = 1;
-  // Empty if used existing DID on the registration request
-  TransactionInfo transaction_info = 2;
+  bytes operation_id = 3; // The internal identifier of the corresponding createDID operation. Empty if used existing DID in the corresponding request.
 }
 
 // Request to get information about this service.

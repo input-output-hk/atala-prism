@@ -1307,8 +1307,11 @@ message PublishBatchRequest {
  * See CredentialsService.PublishBatch, PublishBatchRequest, TransactionInfo for more information.
  */
 message PublishBatchResponse {
+  reserved 2; // Removed "transaction_info" field.
+  reserved "transaction_info";
+
   string batch_id = 1; // The protocol assigned ID for the batch.
-  TransactionInfo transaction_info = 2; // The blockchain transaction details where the batch was published.
+  bytes operation_id = 3; // The internal identifier of the corresponding operation.
 }
 
 /**
@@ -1349,7 +1352,10 @@ message RevokePublishedCredentialRequest {
  * See CredentialsService.RevokePublishedCredential, TransactionInfo for more information.
  */
 message RevokePublishedCredentialResponse {
-  TransactionInfo transaction_info = 1; // The blockchain transaction details for the revocation.
+  reserved 1; // Removed "transaction_info" field.
+  reserved "transaction_info";
+
+  bytes operation_id = 2; // The internal identifier of the corresponding operation.
 }
 
 /**

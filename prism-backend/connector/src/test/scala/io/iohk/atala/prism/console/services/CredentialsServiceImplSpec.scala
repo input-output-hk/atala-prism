@@ -5,11 +5,11 @@ import io.circe
 import io.circe.Json
 import io.circe.syntax._
 import io.grpc.{ServerServiceDefinition, StatusRuntimeException}
-import io.iohk.atala.prism.{DIDUtil, RpcSpecBase, TestConstants}
+import io.iohk.atala.prism.{DIDUtil, RpcSpecBase}
 import io.iohk.atala.prism.auth.SignedRpcRequest
 import io.iohk.atala.prism.auth.grpc.GrpcAuthenticationHeaderParser
 import io.iohk.atala.prism.connector.repositories.{ParticipantsRepository, RequestNoncesRepository}
-import io.iohk.atala.prism.connector.ConnectorAuthenticator
+import io.iohk.atala.prism.connector.{AtalaOperationId, ConnectorAuthenticator}
 import io.iohk.atala.prism.console.DataPreparation
 import io.iohk.atala.prism.console.DataPreparation._
 import io.iohk.atala.prism.console.grpc.ProtoCodecs
@@ -21,8 +21,6 @@ import io.iohk.atala.prism.credentials.CredentialBatchId
 import io.iohk.atala.prism.crypto.MerkleTree.{MerkleInclusionProof, MerkleRoot}
 import io.iohk.atala.prism.crypto.{ECKeyPair, SHA256Digest}
 import io.iohk.atala.prism.identity.{DID, DIDSuffix}
-import io.iohk.atala.prism.models.Ledger.InMemory
-import io.iohk.atala.prism.models.{Ledger, TransactionId, TransactionInfo}
 import io.iohk.atala.prism.protos.console_api.{
   CredentialsServiceGrpc,
   GetBlockchainDataRequest,
@@ -123,7 +121,7 @@ class CredentialsServiceImplSpec extends RpcSpecBase with MockitoSugar with Rese
 
     "retrieve the revocation data when a credential is revoked" in {
       val issuerName = "Issuer 1"
-      val (keyPair, did) = createDid
+      val (_, did) = createDid
       val issuerId = DataPreparation.createIssuer(issuerName, did = Some(did))
       val contact = DataPreparation.createContact(issuerId, "Subject 1", None, "")
       val originalCredential = DataPreparation.createGenericCredential(issuerId, contact.contactId)
@@ -133,13 +131,8 @@ class CredentialsServiceImplSpec extends RpcSpecBase with MockitoSugar with Rese
       val issuanceOpHash = SHA256Digest.compute("opHash".getBytes())
       val mockCredentialBatchId = CredentialBatchId.fromDigest(SHA256Digest.compute("SomeRandomHash".getBytes()))
 
-      val mockTransactionInfo = TransactionInfo(
-        transactionId = TransactionId.from(SHA256Digest.compute("id".getBytes).value).value,
-        ledger = InMemory
-      )
-
       // we need to first store the batch data in the db
-      publishBatch(mockCredentialBatchId, issuanceOpHash, mockTransactionInfo)
+      publishBatch(mockCredentialBatchId, issuanceOpHash, AtalaOperationId.fromVectorUnsafe(issuanceOpHash.value))
       val mockHash = SHA256Digest.compute("".getBytes())
       val mockMerkleProof = MerkleInclusionProof(mockHash, 1, List(mockHash))
       publishCredential(
@@ -150,23 +143,23 @@ class CredentialsServiceImplSpec extends RpcSpecBase with MockitoSugar with Rese
         mockMerkleProof
       )
 
-      val mockRevocationTransactionId = TransactionId.from(SHA256Digest.compute("revocation".getBytes).value).value
+      val mockRevocationOperationId = AtalaOperationId.random()
       credentialsRepository
-        .storeRevocationData(issuerId, originalCredential.credentialId, mockRevocationTransactionId)
+        .storeRevocationData(issuerId, originalCredential.credentialId, mockRevocationOperationId)
         .value
         .futureValue
         .toOption
         .value
 
-      val request = console_api.GetGenericCredentialsRequest().withLimit(10)
-      val rpcRequest = SignedRpcRequest.generate(keyPair, did, request)
+      val result = credentialsRepository
+        .getBy(issuedBy = issuerId, limit = 10, offset = 0)
+        .value
+        .futureValue
+        .toOption
+        .value
 
-      usingApiAs(rpcRequest) { serviceStub =>
-        val response = serviceStub.getGenericCredentials(request)
-        val revocationProof = response.credentials.head.revocationProof.value
-        revocationProof.transactionId must be(mockRevocationTransactionId.toString)
-        revocationProof.ledger.isInMemory must be(true)
-      }
+      result.size must be(1)
+      result.head.revokedOnOperationId.value must be(mockRevocationOperationId)
     }
   }
 
@@ -202,11 +195,7 @@ class CredentialsServiceImplSpec extends RpcSpecBase with MockitoSugar with Rese
 
       val mockCredentialBatchId =
         CredentialBatchId.fromDigest(SHA256Digest.compute("SomeRandomHash".getBytes()))
-      val mockTransactionInfo =
-        common_models
-          .TransactionInfo()
-          .withTransactionId(mockCredentialBatchId.id)
-          .withLedger(common_models.Ledger.IN_MEMORY)
+      val mockOperationId = AtalaOperationId.fromVectorUnsafe(mockEncodedSignedCredentialHash.value).toProtoByteString
 
       val nodeRequest = node_api
         .IssueCredentialBatchRequest()
@@ -218,7 +207,7 @@ class CredentialsServiceImplSpec extends RpcSpecBase with MockitoSugar with Rese
             node_api
               .IssueCredentialBatchResponse()
               .withBatchId(mockCredentialBatchId.id)
-              .withTransactionInfo(mockTransactionInfo)
+              .withOperationId(mockOperationId)
           )
       ).when(nodeMock)
         .issueCredentialBatch(nodeRequest)
@@ -260,13 +249,8 @@ class CredentialsServiceImplSpec extends RpcSpecBase with MockitoSugar with Rese
       val mockCredentialBatchId =
         CredentialBatchId.fromDigest(SHA256Digest.compute("SomeRandomHash".getBytes()))
 
-      val mockTransactionInfo = TransactionInfo(
-        transactionId = TransactionId.from(SHA256Digest.compute("id".getBytes).value).value,
-        ledger = InMemory
-      )
-
       // we need to first store the batch data in the db
-      publishBatch(mockCredentialBatchId, issuanceOpHash, mockTransactionInfo)
+      publishBatch(mockCredentialBatchId, issuanceOpHash, AtalaOperationId.fromVectorUnsafe(issuanceOpHash.value))
 
       val mockHash = SHA256Digest.compute("".getBytes())
       val mockMerkleProof = MerkleInclusionProof(mockHash, 1, List(mockHash))
@@ -311,13 +295,8 @@ class CredentialsServiceImplSpec extends RpcSpecBase with MockitoSugar with Rese
       val mockCredentialBatchId =
         CredentialBatchId.fromDigest(SHA256Digest.compute("SomeRandomHash".getBytes()))
 
-      val mockTransactionInfo = TransactionInfo(
-        transactionId = TransactionId.from(SHA256Digest.compute("id".getBytes).value).value,
-        ledger = InMemory
-      )
-
       // we need to first store the batch data in the db
-      publishBatch(mockCredentialBatchId, issuanceOpHash, mockTransactionInfo)
+      publishBatch(mockCredentialBatchId, issuanceOpHash, AtalaOperationId.fromVectorUnsafe(issuanceOpHash.value))
 
       val mockHash = SHA256Digest.compute("".getBytes())
       val mockMerkleProof = MerkleInclusionProof(mockHash, 1, List(mockHash))
@@ -364,13 +343,8 @@ class CredentialsServiceImplSpec extends RpcSpecBase with MockitoSugar with Rese
       val mockCredentialBatchId =
         CredentialBatchId.fromDigest(SHA256Digest.compute("SomeRandomHash".getBytes()))
 
-      val mockTransactionInfo = TransactionInfo(
-        transactionId = TransactionId.from(SHA256Digest.compute("id".getBytes).value).value,
-        ledger = InMemory
-      )
-
       // we need to first store the batch data in the db
-      publishBatch(mockCredentialBatchId, issuanceOpHash, mockTransactionInfo)
+      publishBatch(mockCredentialBatchId, issuanceOpHash, AtalaOperationId.fromVectorUnsafe(issuanceOpHash.value))
 
       val mockHash = SHA256Digest.compute("".getBytes())
       val mockMerkleProof = MerkleInclusionProof(mockHash, 1, List(mockHash))
@@ -623,13 +597,8 @@ class CredentialsServiceImplSpec extends RpcSpecBase with MockitoSugar with Rese
       val issuanceOpHash = SHA256Digest.compute("opHash".getBytes())
       val mockCredentialBatchId = CredentialBatchId.fromDigest(SHA256Digest.compute("SomeRandomHash".getBytes()))
 
-      val mockTransactionInfo = TransactionInfo(
-        transactionId = TransactionId.from(SHA256Digest.compute("id".getBytes).value).value,
-        ledger = InMemory
-      )
-
       // we need to first store the batch data in the db
-      publishBatch(mockCredentialBatchId, issuanceOpHash, mockTransactionInfo)
+      publishBatch(mockCredentialBatchId, issuanceOpHash, AtalaOperationId.fromVectorUnsafe(issuanceOpHash.value))
       val mockHash = SHA256Digest.compute("".getBytes())
       val mockMerkleProof = MerkleInclusionProof(mockHash, 1, List(mockHash))
       publishCredential(
@@ -822,10 +791,9 @@ class CredentialsServiceImplSpec extends RpcSpecBase with MockitoSugar with Rese
           )
         )
 
-        val mockRevocationTransactionInfo = common_models
-          .TransactionInfo()
-          .withTransactionId(CredentialBatchId.fromDigest(SHA256Digest.compute("revocationRandomHash".getBytes())).id)
-          .withLedger(common_models.Ledger.IN_MEMORY)
+        val mockRevocationOperationId = AtalaOperationId
+          .random()
+          .toProtoByteString
 
         val nodeRequest = node_api
           .RevokeCredentialsRequest()
@@ -836,7 +804,7 @@ class CredentialsServiceImplSpec extends RpcSpecBase with MockitoSugar with Rese
             .successful(
               node_api
                 .RevokeCredentialsResponse()
-                .withTransactionInfo(mockRevocationTransactionInfo)
+                .withOperationId(mockRevocationOperationId)
             )
         ).when(nodeMock).revokeCredentials(nodeRequest)
 
@@ -861,8 +829,7 @@ class CredentialsServiceImplSpec extends RpcSpecBase with MockitoSugar with Rese
   private def publish(
       issuerId: Institution.Id,
       consoleId: GenericCredential.Id,
-      encodedSignedCredential: String,
-      mockTransactionInfo: TransactionInfo
+      encodedSignedCredential: String
   )(implicit credentialsRepository: CredentialsRepository): Unit = {
     val mockHash = SHA256Digest.compute("test".getBytes)
     val mockMerkleProof = MerkleInclusionProof(
@@ -871,7 +838,7 @@ class CredentialsServiceImplSpec extends RpcSpecBase with MockitoSugar with Rese
       List(mockHash)
     )
     val mockBatchId = CredentialBatchId.fromDigest(mockHash)
-    DataPreparation.publishBatch(mockBatchId, mockHash, mockTransactionInfo)
+    DataPreparation.publishBatch(mockBatchId, mockHash, AtalaOperationId.fromVectorUnsafe(mockHash.value))
     DataPreparation.publishCredential(issuerId, mockBatchId, consoleId, encodedSignedCredential, mockMerkleProof)
   }
 
@@ -977,11 +944,6 @@ class CredentialsServiceImplSpec extends RpcSpecBase with MockitoSugar with Rese
     val mockOperationHash = SHA256Digest.compute(issuanceOp.getOperation.toByteArray)
     val mockCredentialBatchId =
       CredentialBatchId.fromBatchData(mockDIDSuffix, MerkleRoot(mockEncodedSignedCredentialHash))
-    val mockTransactionInfo =
-      common_models
-        .TransactionInfo()
-        .withTransactionId(mockCredentialBatchId.id)
-        .withLedger(common_models.Ledger.IN_MEMORY)
 
     val nodeRequest = node_api
       .IssueCredentialBatchRequest()
@@ -992,7 +954,7 @@ class CredentialsServiceImplSpec extends RpcSpecBase with MockitoSugar with Rese
         .successful(
           node_api
             .IssueCredentialBatchResponse()
-            .withTransactionInfo(mockTransactionInfo)
+            .withOperationId(AtalaOperationId.fromVectorUnsafe(mockOperationHash.value).toProtoByteString)
             .withBatchId(mockCredentialBatchId.id)
         )
     ).when(nodeMock)
@@ -1031,13 +993,11 @@ class CredentialsServiceImplSpec extends RpcSpecBase with MockitoSugar with Rese
       publicationData.credentialBatchId must be(mockCredentialBatchId)
       publicationData.issuanceOperationHash must be(mockOperationHash)
       publicationData.encodedSignedCredential must be(mockEncodedSignedCredential)
-      publicationData.transactionId must be(TransactionId.from(mockTransactionInfo.transactionId).value)
-      publicationData.ledger must be(Ledger.InMemory)
       // the rest should remain unchanged
       updatedCredential.copy(publicationData = None) must be(originalCredential)
 
       publishResponse.batchId mustBe mockCredentialBatchId.id
-      publishResponse.transactionInfo.value mustBe mockTransactionInfo
+      publishResponse.operationId must be(AtalaOperationId.fromVectorUnsafe(mockOperationHash.value).toProtoByteString)
     }
   }
 
@@ -1050,16 +1010,12 @@ class CredentialsServiceImplSpec extends RpcSpecBase with MockitoSugar with Rese
     val mockEncodedSignedCredential = "easdadgfkfñwlekrjfadf"
 
     val issuanceOpHash = SHA256Digest.compute("opHash".getBytes())
+    val atalaOperationId = AtalaOperationId.fromVectorUnsafe(issuanceOpHash.value)
     val mockCredentialBatchId =
       CredentialBatchId.fromDigest(SHA256Digest.compute("SomeRandomHash".getBytes()))
 
-    val mockTransactionInfo = TransactionInfo(
-      transactionId = TransactionId.from(SHA256Digest.compute("id".getBytes).value).value,
-      ledger = InMemory
-    )
-
     // we need to first store the batch data in the db
-    publishBatch(mockCredentialBatchId, issuanceOpHash, mockTransactionInfo)
+    publishBatch(mockCredentialBatchId, issuanceOpHash, atalaOperationId)
 
     val mockHash = SHA256Digest.compute("".getBytes())
     val mockMerkleProof = MerkleInclusionProof(mockHash, 1, List(mockHash))
@@ -1089,8 +1045,7 @@ class CredentialsServiceImplSpec extends RpcSpecBase with MockitoSugar with Rese
       storedPublicationData.credentialBatchId mustBe mockCredentialBatchId
       storedPublicationData.issuanceOperationHash mustBe issuanceOpHash
       storedPublicationData.encodedSignedCredential mustBe mockEncodedSignedCredential
-      storedPublicationData.transactionId mustBe mockTransactionInfo.transactionId
-      storedPublicationData.ledger mustBe mockTransactionInfo.ledger
+      storedPublicationData.atalaOperationId mustBe atalaOperationId
     }
   }
 
@@ -1125,7 +1080,7 @@ class CredentialsServiceImplSpec extends RpcSpecBase with MockitoSugar with Rese
       }
       cleanCredentials must be(expectedCleanCredentials)
       credentialsJsons must be(expectedCredentialsJsons)
-      returnedCredentials.forall(_.issuanceProof.isEmpty) must be(true)
+      returnedCredentials.forall(_.issuanceOperationHash.isEmpty) must be(true)
     }
   }
 
@@ -1134,13 +1089,8 @@ class CredentialsServiceImplSpec extends RpcSpecBase with MockitoSugar with Rese
     val contactId = createContact(issuerId, "IOHK Student", None, "").contactId
     val credentialId = createGenericCredential(issuerId, contactId, "A").credentialId
     val mockCredential = "mockEncodedSignedCredential"
-    val mockTransactionInfo = TransactionInfo(
-      TestConstants.testTxId,
-      Ledger.InMemory,
-      None
-    )
 
-    publish(issuerId, credentialId, mockCredential, mockTransactionInfo)
+    publish(issuerId, credentialId, mockCredential)
 
     val request = console_api.ShareCredentialRequest(
       cmanagerCredentialId = credentialId.toString
@@ -1176,10 +1126,7 @@ class CredentialsServiceImplSpec extends RpcSpecBase with MockitoSugar with Rese
       )
     )
 
-    val mockRevocationTransactionInfo = common_models
-      .TransactionInfo()
-      .withTransactionId(CredentialBatchId.fromDigest(SHA256Digest.compute("revocationRandomHash".getBytes())).id)
-      .withLedger(common_models.Ledger.IN_MEMORY)
+    val mockRevocationOperationId = AtalaOperationId.random()
 
     val nodeRequest = node_api
       .RevokeCredentialsRequest()
@@ -1190,7 +1137,7 @@ class CredentialsServiceImplSpec extends RpcSpecBase with MockitoSugar with Rese
         .successful(
           node_api
             .RevokeCredentialsResponse()
-            .withTransactionInfo(mockRevocationTransactionInfo)
+            .withOperationId(mockRevocationOperationId.toProtoByteString)
         )
     ).when(nodeMock).revokeCredentials(nodeRequest)
 
@@ -1204,16 +1151,16 @@ class CredentialsServiceImplSpec extends RpcSpecBase with MockitoSugar with Rese
     usingApiAs(rpcRequest) { serviceStub =>
       serviceStub.revokePublishedCredential(request)
 
-      val revokedOnTransactionId = credentialsRepository
+      val revokedOnOperationId = credentialsRepository
         .getBy(credential.credentialId)
         .value
         .futureValue
         .toOption
         .value
         .value
-        .revokedOnTransactionId
+        .revokedOnOperationId
 
-      revokedOnTransactionId.value.toString must be(mockRevocationTransactionInfo.transactionId)
+      revokedOnOperationId must be(Some(mockRevocationOperationId))
     }
   }
 

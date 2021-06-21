@@ -141,8 +141,7 @@ object ConnectionsRepository {
           name = "",
           did = maybeDid,
           logo = None,
-          transactionId = None,
-          ledger = None
+          operationId = None
         )
 
         _ <- EitherT.right[ConnectorError] {

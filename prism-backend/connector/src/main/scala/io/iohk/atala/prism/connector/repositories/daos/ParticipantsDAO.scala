@@ -11,17 +11,17 @@ import io.iohk.atala.prism.models.ParticipantId
 
 object ParticipantsDAO {
   def insert(participant: ParticipantInfo): doobie.ConnectionIO[Unit] = {
-    val ParticipantInfo(id, tpe, publicKey, name, did, logo, transactionId, ledger) = participant
+    val ParticipantInfo(id, tpe, publicKey, name, did, logo, operationId) = participant
     sql"""
-         |INSERT INTO participants (id, tpe, public_key, name, did, logo, transaction_id, ledger)
-         |VALUES ($id, $tpe, $publicKey, $name, $did, $logo, $transactionId, $ledger)
+         |INSERT INTO participants (id, tpe, public_key, name, did, logo, operation_id)
+         |VALUES ($id, $tpe, $publicKey, $name, $did, $logo, $operationId)
        """.stripMargin.update.run.void
   }
 
   def findBy(id: ParticipantId): OptionT[doobie.ConnectionIO, ParticipantInfo] =
     OptionT {
       sql"""
-         |SELECT id, tpe, public_key, name, did, logo, transaction_id, ledger
+         |SELECT id, tpe, public_key, name, did, logo, operation_id
          |FROM participants
          |WHERE id = $id
       """.stripMargin.query[ParticipantInfo].option
@@ -30,7 +30,7 @@ object ParticipantsDAO {
   def findBy(token: TokenString): OptionT[doobie.ConnectionIO, ParticipantInfo] =
     OptionT {
       sql"""
-         |SELECT p.id, p.tpe, p.public_key, p.name, p.did, p.logo, p.transaction_id, p.ledger
+         |SELECT p.id, p.tpe, p.public_key, p.name, p.did, p.logo, p.operation_id
          |FROM connection_tokens t
          |JOIN participants p ON p.id = t.initiator
          |WHERE t.token = $token
@@ -40,7 +40,7 @@ object ParticipantsDAO {
   def findByAvailableToken(token: TokenString): OptionT[doobie.ConnectionIO, ParticipantInfo] =
     OptionT {
       sql"""
-         |SELECT p.id, p.tpe, p.public_key, p.name, p.did, p.logo, p.transaction_id, p.ledger
+         |SELECT p.id, p.tpe, p.public_key, p.name, p.did, p.logo, p.operation_id
          |FROM connection_tokens t
          |JOIN participants p ON p.id = t.initiator
          |WHERE t.token = $token AND
@@ -51,7 +51,7 @@ object ParticipantsDAO {
   def findByPublicKey(publicKey: ECPublicKey): OptionT[doobie.ConnectionIO, ParticipantInfo] =
     OptionT {
       sql"""
-           |SELECT id, tpe, public_key, name, did, logo, transaction_id, ledger
+           |SELECT id, tpe, public_key, name, did, logo, operation_id
            |FROM participants
          |WHERE public_key = $publicKey
       """.stripMargin.query[ParticipantInfo].option
@@ -60,7 +60,7 @@ object ParticipantsDAO {
   def findByDID(did: DID): OptionT[doobie.ConnectionIO, ParticipantInfo] =
     OptionT {
       sql"""
-         |SELECT id, tpe, public_key, name, did, logo, transaction_id, ledger
+         |SELECT id, tpe, public_key, name, did, logo, operation_id
          |FROM participants
          |WHERE did = $did
       """.stripMargin.query[ParticipantInfo].option

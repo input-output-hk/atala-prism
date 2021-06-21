@@ -72,10 +72,13 @@ message GetDidDocumentResponse {
 message CreateDIDRequest {
     SignedAtalaOperation signed_operation = 1; // The signed operation.
 }
+
 // Response after creating a public DID.
 message CreateDIDResponse {
+    reserved 2; // Removed "transaction_info" field.
+    reserved "transaction_info";
+
     string id = 1; // DID suffix, where DID is in form did:prism.atala:[DID suffix]
-    TransactionInfo transaction_info = 2; // The on-chain transaction info where the DID is going to be created.
     bytes operation_id = 3; // Operation identifier.
 }
 
@@ -85,7 +88,9 @@ message UpdateDIDRequest {
 }
 // Response after updating a DID Document.
 message UpdateDIDResponse {
-    TransactionInfo transaction_info = 1; // The on-chain transaction info where the operation is going to be applied.
+    reserved 1; // Removed "transaction_info" field.
+    reserved "transaction_info";
+
     bytes operation_id = 2; // Operation identifier.
 }
 
@@ -95,8 +100,10 @@ message IssueCredentialBatchRequest {
 }
 // Response after issuing a batch of credentials.
 message IssueCredentialBatchResponse {
+    reserved 2; // Removed "transaction_info" field.
+    reserved "transaction_info";
+
     string batch_id = 1; // The ID of the batch posted.
-    TransactionInfo transaction_info = 2; // The on-chain transaction info where the operation is going to be applied.
     bytes operation_id = 3; // Operation identifier.
 }
 
@@ -106,7 +113,9 @@ message RevokeCredentialsRequest {
 }
 // Response after revoking credentials from a batch.
 message RevokeCredentialsResponse {
-    TransactionInfo transaction_info = 1; // The on-chain transaction info where the operation is going to be applied.
+    reserved 1; // Removed "transaction_info" field.
+    reserved "transaction_info";
+
     bytes operation_id = 2; // Operation identifier.
 }
 
@@ -189,8 +198,9 @@ message PublishAsABlockRequest {
 }
 // Response with the transaction info and operations outputs.
 message PublishAsABlockResponse {
-    // The on-chain transaction info where the block of operations is going to be attached to.
-    TransactionInfo transaction_info = 1;
+    reserved 1; // Removed "transaction_info" field.
+    reserved "transaction_info";
+
     // The responses of every operation in the block, ordered the same as the operations sent in PublishAsABlockRequest.
     repeated OperationOutput outputs = 2;
 }

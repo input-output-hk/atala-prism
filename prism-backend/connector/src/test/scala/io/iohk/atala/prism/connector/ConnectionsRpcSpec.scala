@@ -124,7 +124,6 @@ class ConnectionsRpcSpec extends ConnectorRpcSpecBase with MockitoSugar {
           "",
           None,
           None,
-          None,
           None
         )
         ConnectionsDAO
@@ -161,7 +160,6 @@ class ConnectionsRpcSpec extends ConnectorRpcSpecBase with MockitoSugar {
           None,
           "",
           unpublishedDID.canonical,
-          None,
           None,
           None
         )

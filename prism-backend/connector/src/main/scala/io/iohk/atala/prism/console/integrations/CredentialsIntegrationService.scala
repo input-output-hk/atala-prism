@@ -1,10 +1,9 @@
 package io.iohk.atala.prism.console.integrations
 
-import io.iohk.atala.prism.connector.errors
+import io.iohk.atala.prism.connector.{AtalaOperationId, errors}
 import io.iohk.atala.prism.console.models.{Institution, RevokePublishedCredential}
 import io.iohk.atala.prism.console.repositories.CredentialsRepository
-import io.iohk.atala.prism.models.TransactionId
-import io.iohk.atala.prism.protos.{common_models, node_api}
+import io.iohk.atala.prism.protos.node_api
 import io.iohk.atala.prism.utils.FutureEither
 import io.iohk.atala.prism.utils.FutureEither.FutureEitherOps
 
@@ -18,7 +17,7 @@ class CredentialsIntegrationService(
   def revokePublishedCredential(
       institutionId: Institution.Id,
       request: RevokePublishedCredential
-  ): FutureEither[errors.ConnectorError, common_models.TransactionInfo] = {
+  ): FutureEither[errors.ConnectorError, AtalaOperationId] = {
     for {
       // send the operation to the Node
       nodeResponse <- {
@@ -31,22 +30,14 @@ class CredentialsIntegrationService(
           .map(Right(_))
           .toFutureEither
       }
-      transactionId = {
-        nodeResponse.transactionInfo
-          .map(_.transactionId)
-          .flatMap(TransactionId.from)
-          .getOrElse(throw new RuntimeException("The node wasn't able to generate a transaction"))
-      }
-      transactionInfo = {
-        nodeResponse.transactionInfo
-          .getOrElse(throw new RuntimeException("We could not generate a transaction"))
-      }
+
+      operationId = AtalaOperationId.fromVectorUnsafe(nodeResponse.operationId.toByteArray.toVector)
 
       // Update the database
       _ <- {
         credentialsRepository
-          .storeRevocationData(institutionId, request.credentialId, transactionId)
+          .storeRevocationData(institutionId, request.credentialId, operationId)
       }
-    } yield transactionInfo
+    } yield operationId
   }
 }

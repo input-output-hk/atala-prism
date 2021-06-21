@@ -5,12 +5,12 @@ import io.grpc.{Status, StatusRuntimeException}
 import cats.syntax.option._
 import io.iohk.atala.prism.DIDUtil
 import io.iohk.atala.prism.auth.SignedRpcRequest
-import io.iohk.atala.prism.crypto.{EC, SHA256Digest}
+import io.iohk.atala.prism.connector.AtalaOperationId
+import io.iohk.atala.prism.crypto.EC
 import io.iohk.atala.prism.identity.DID
 import io.iohk.atala.prism.management.console.DataPreparation._
 import io.iohk.atala.prism.management.console.models.{InstitutionGroup, ParticipantLogo}
 import io.iohk.atala.prism.management.console.{DataPreparation, ManagementConsoleRpcSpecBase}
-import io.iohk.atala.prism.models.TransactionId
 import io.iohk.atala.prism.protos.common_models.{HealthCheckRequest, HealthCheckResponse}
 import io.iohk.atala.prism.protos.{common_models, console_api, node_api}
 import io.iohk.atala.prism.utils.syntax._
@@ -172,18 +172,13 @@ class ConsoleServiceImplSpec extends ManagementConsoleRpcSpecBase with DIDUtil {
   }
 
   "registerDID" should {
-    def doTest(did: DID, transactionId: TransactionId, request: console_api.RegisterConsoleDIDRequest) = {
+    def doTest(did: DID, operationId: AtalaOperationId, request: console_api.RegisterConsoleDIDRequest) = {
       usingApiAsConsole.unlogged { serviceStub =>
         nodeMock.createDID(*).returns {
           Future.successful(
             node_api
               .CreateDIDResponse(did.suffix.value)
-              .withTransactionInfo(
-                common_models
-                  .TransactionInfo()
-                  .withTransactionId(transactionId.toString)
-                  .withLedger(common_models.Ledger.IN_MEMORY)
-              )
+              .withOperationId(operationId.toProtoByteString)
           )
         }
         serviceStub.registerDID(request)
@@ -192,62 +187,62 @@ class ConsoleServiceImplSpec extends ManagementConsoleRpcSpecBase with DIDUtil {
 
     "work with logo" in {
       val did = DataPreparation.newDID()
-      val transactionId = TransactionId.from(SHA256Digest.compute("logotxid".getBytes).value).value
+      val operationId = AtalaOperationId.random()
       val request = console_api
         .RegisterConsoleDIDRequest()
         .withDid(did.value)
         .withName("iohk")
         .withLogo(ByteString.copyFrom("logo".getBytes()))
 
-      doTest(did, transactionId, request)
+      doTest(did, operationId, request)
     }
 
     "work without logo" in {
       val did = DataPreparation.newDID()
-      val transactionId = TransactionId.from(SHA256Digest.compute("nologotxid".getBytes).value).value
+      val operationId = AtalaOperationId.random()
       val request = console_api
         .RegisterConsoleDIDRequest()
         .withDid(did.value)
         .withName("iohk")
 
-      doTest(did, transactionId, request)
+      doTest(did, operationId, request)
     }
 
     "fail when the did is missing" in {
       val did = DataPreparation.newDID()
-      val transactionId = TransactionId.from(SHA256Digest.compute("x".getBytes).value).value
+      val operationId = AtalaOperationId.random()
       val request = console_api
         .RegisterConsoleDIDRequest()
         .withName("iohk")
 
       intercept[StatusRuntimeException] {
-        doTest(did, transactionId, request)
+        doTest(did, operationId, request)
       }
     }
 
     "fail when the did is invalid" in {
       val did = DataPreparation.newDID()
-      val transactionId = TransactionId.from(SHA256Digest.compute("x".getBytes).value).value
+      val operationId = AtalaOperationId.random()
       val request = console_api
         .RegisterConsoleDIDRequest()
         .withDid("this is not a did!")
         .withName("iohk")
 
       intercept[StatusRuntimeException] {
-        doTest(did, transactionId, request)
+        doTest(did, operationId, request)
       }
     }
 
     "fail when user tries register the same did twice" in {
       val did = DataPreparation.newDID()
-      val transactionId = TransactionId.from(SHA256Digest.compute("logotxid".getBytes).value).value
+      val operationId = AtalaOperationId.random()
       val request = console_api
         .RegisterConsoleDIDRequest()
         .withDid(did.value)
         .withName("iohk")
 
-      doTest(did, transactionId, request)
-      val mustBeError = Try(doTest(did, transactionId, request))
+      doTest(did, operationId, request)
+      val mustBeError = Try(doTest(did, operationId, request))
       mustBeError.toEither.left.map(_.getMessage) mustBe Left("INVALID_ARGUMENT: DID already exists")
     }
   }

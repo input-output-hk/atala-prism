@@ -5,7 +5,7 @@ import cats.syntax.option._
 import doobie.implicits._
 import io.iohk.atala.prism.auth.SignedRpcRequest
 import io.iohk.atala.prism.auth.grpc.GrpcAuthenticationHeaderParser
-import io.iohk.atala.prism.connector.ConnectorAuthenticator
+import io.iohk.atala.prism.connector.{AtalaOperationId, ConnectorAuthenticator}
 import io.iohk.atala.prism.connector.model.{ConnectionId, ParticipantLogo, ParticipantType}
 import io.iohk.atala.prism.connector.repositories.ParticipantsRepository.CreateParticipantRequest
 import io.iohk.atala.prism.connector.repositories.daos._
@@ -17,12 +17,11 @@ import io.iohk.atala.prism.console.repositories.daos.{ContactsDAO, ReceivedCrede
 import io.iohk.atala.prism.crypto.MerkleTree.MerkleInclusionProof
 import io.iohk.atala.prism.crypto.{ECKeyPair, SHA256Digest}
 import io.iohk.atala.prism.identity.DID
-import io.iohk.atala.prism.models.{Ledger, ParticipantId, TransactionId, TransactionInfo}
+import io.iohk.atala.prism.models.ParticipantId
 import io.iohk.atala.prism.protos.console_api
 import io.iohk.atala.prism.{DIDUtil, RpcSpecBase}
 import org.mockito.MockitoSugar._
 import org.scalatest.Assertion
-import org.scalatest.OptionValues._
 
 class CredentialsStoreServiceSpec extends RpcSpecBase with DIDUtil {
   val usingApiAs = usingApiAsConstructor(
@@ -64,7 +63,7 @@ class CredentialsStoreServiceSpec extends RpcSpecBase with DIDUtil {
           "Verifier",
           DataPreparation.newDID(),
           ParticipantLogo(Vector()),
-          TransactionInfo(TransactionId.from(SHA256Digest.compute("id".getBytes).value).value, Ledger.InMemory).some
+          AtalaOperationId.random().some
         )
       )
       .value

@@ -19,7 +19,6 @@ import io.iohk.atala.prism.node.models.{
   AtalaObjectId,
   AtalaObjectTransactionSubmission,
   AtalaObjectTransactionSubmissionStatus,
-  AtalaOperationId,
   AtalaOperationStatus
 }
 import io.iohk.atala.prism.node.operations.CreateDIDOperationSpec
@@ -108,9 +107,9 @@ class ObjectManagementServiceSpec
       doReturn(true).when(ledger).supportsOnChainData
 
       val atalaOperation = BlockProcessingServiceSpec.signedCreateDidOperation
-      val atalaOperationId = AtalaOperationId.of(atalaOperation)
-      val transactionInfo = objectManagementService.publishAtalaOperation(atalaOperation).futureValue
-      transactionInfo mustBe dummyTransactionInfo
+      val atalaOperationId = BlockProcessingServiceSpec.signedCreateDidOperationId
+      val returnedOperationId = objectManagementService.publishSingleAtalaOperation(atalaOperation).futureValue
+      returnedOperationId mustBe atalaOperationId
 
       val atalaOperationInfo = objectManagementService.getOperationInfo(atalaOperationId).futureValue.value
 
@@ -123,11 +122,11 @@ class ObjectManagementServiceSpec
       doReturn(true).when(ledger).supportsOnChainData
 
       val atalaOperation = BlockProcessingServiceSpec.signedCreateDidOperation
-      val atalaOperationId = AtalaOperationId.of(atalaOperation)
-      val transactionInfo = objectManagementService.publishAtalaOperation(atalaOperation).futureValue
-      transactionInfo mustBe dummyTransactionInfo
+      val atalaOperationId = BlockProcessingServiceSpec.signedCreateDidOperationId
+      val returnedAtalaOperation = objectManagementService.publishSingleAtalaOperation(atalaOperation).futureValue
+      returnedAtalaOperation mustBe atalaOperationId
 
-      whenReady(objectManagementService.publishAtalaOperation(atalaOperation).failed) { err =>
+      whenReady(objectManagementService.publishSingleAtalaOperation(atalaOperation).failed) { err =>
         err mustBe a[AtalaOperationAlreadyPublished]
       }
 
@@ -142,9 +141,9 @@ class ObjectManagementServiceSpec
       doReturn(true).when(ledger).supportsOnChainData
 
       val atalaOperation = BlockProcessingServiceSpec.signedCreateDidOperation
-      val atalaOperationId = AtalaOperationId.of(atalaOperation)
+      val atalaOperationId = BlockProcessingServiceSpec.signedCreateDidOperationId
 
-      whenReady(objectManagementService.publishAtalaOperation(atalaOperation, atalaOperation).failed) { err =>
+      whenReady(objectManagementService.publishAtalaOperations(atalaOperation, atalaOperation).failed) { err =>
         err mustBe a[AtalaBlockInvalid]
       }
 
@@ -157,10 +156,12 @@ class ObjectManagementServiceSpec
       doReturn(Future.successful(dummyPublicationInfo)).when(ledger).publish(*)
       doReturn(true).when(ledger).supportsOnChainData
 
-      val transactionInfo =
-        objectManagementService.publishAtalaOperation(BlockProcessingServiceSpec.signedCreateDidOperation).futureValue
+      val returnedOperationId =
+        objectManagementService
+          .publishSingleAtalaOperation(BlockProcessingServiceSpec.signedCreateDidOperation)
+          .futureValue
 
-      transactionInfo mustBe dummyTransactionInfo
+      returnedOperationId mustBe BlockProcessingServiceSpec.signedCreateDidOperationId
       // Verify published AtalaObject
       val atalaObjectCaptor = ArgCaptor[node_internal.AtalaObject]
       verify(ledger).publish(atalaObjectCaptor)
@@ -172,19 +173,23 @@ class ObjectManagementServiceSpec
       // Verify transaction submission
       val transactionSubmissions = queryTransactionSubmissions(AtalaObjectTransactionSubmissionStatus.Pending)
       transactionSubmissions.size mustBe 1
-      val transactionSubmission = transactionSubmissions.head
-      transactionSubmission.ledger mustBe transactionInfo.ledger
-      transactionSubmission.transactionId mustBe transactionInfo.transactionId
+
+      val operationInfo = objectManagementService.getOperationInfo(returnedOperationId).futureValue.value
+      operationInfo.operationId must be(returnedOperationId)
+      operationInfo.transactionSubmissionStatus.value must be(AtalaObjectTransactionSubmissionStatus.Pending)
+      operationInfo.operationStatus must be(AtalaOperationStatus.RECEIVED)
     }
 
     "put reference to block onto the ledger when on-chain data not supported" in {
       doReturn(Future.successful(dummyPublicationInfo)).when(ledger).publish(*)
       doReturn(false).when(ledger).supportsOnChainData
 
-      val transactionInfo =
-        objectManagementService.publishAtalaOperation(BlockProcessingServiceSpec.signedCreateDidOperation).futureValue
+      val returnedOperationId =
+        objectManagementService
+          .publishSingleAtalaOperation(BlockProcessingServiceSpec.signedCreateDidOperation)
+          .futureValue
 
-      transactionInfo mustBe dummyTransactionInfo
+      returnedOperationId mustBe BlockProcessingServiceSpec.signedCreateDidOperationId
       // Verify published AtalaObject
       val atalaObjectCaptor = ArgCaptor[node_internal.AtalaObject]
       verify(ledger).publish(atalaObjectCaptor)
@@ -196,9 +201,11 @@ class ObjectManagementServiceSpec
       // Verify transaction submission
       val transactionSubmissions = queryTransactionSubmissions(AtalaObjectTransactionSubmissionStatus.Pending)
       transactionSubmissions.size mustBe 1
-      val transactionSubmission = transactionSubmissions.head
-      transactionSubmission.ledger mustBe transactionInfo.ledger
-      transactionSubmission.transactionId mustBe transactionInfo.transactionId
+
+      val operationInfo = objectManagementService.getOperationInfo(returnedOperationId).futureValue.value
+      operationInfo.operationId must be(returnedOperationId)
+      operationInfo.transactionSubmissionStatus.value must be(AtalaObjectTransactionSubmissionStatus.Pending)
+      operationInfo.operationStatus must be(AtalaOperationStatus.RECEIVED)
     }
 
     "record immediate in-ledger transactions" in {
@@ -206,15 +213,21 @@ class ObjectManagementServiceSpec
       doReturn(Future.successful(inLedgerPublication)).when(ledger).publish(*)
       doReturn(true).when(ledger).supportsOnChainData
 
-      val transactionInfo =
-        objectManagementService.publishAtalaOperation(BlockProcessingServiceSpec.signedCreateDidOperation).futureValue
+      val returnedOperationId =
+        objectManagementService
+          .publishSingleAtalaOperation(BlockProcessingServiceSpec.signedCreateDidOperation)
+          .futureValue
+
+      returnedOperationId must be(BlockProcessingServiceSpec.signedCreateDidOperationId)
 
       // Verify transaction submission
       val transactionSubmissions = queryTransactionSubmissions(AtalaObjectTransactionSubmissionStatus.InLedger)
       transactionSubmissions.size mustBe 1
-      val transactionSubmission = transactionSubmissions.head
-      transactionSubmission.ledger mustBe transactionInfo.ledger
-      transactionSubmission.transactionId mustBe transactionInfo.transactionId
+
+      val operationInfo = objectManagementService.getOperationInfo(returnedOperationId).futureValue.value
+      operationInfo.operationId must be(returnedOperationId)
+      operationInfo.transactionSubmissionStatus.value must be(AtalaObjectTransactionSubmissionStatus.InLedger)
+      operationInfo.operationStatus must be(AtalaOperationStatus.RECEIVED)
     }
 
     def verifyStorage(bytes: Array[Byte], expectedInStorage: Boolean): Unit = {
@@ -251,7 +264,7 @@ class ObjectManagementServiceSpec
         .processBlock(*, anyTransactionIdMatcher, *, *, *)
       val signedOperation = BlockProcessingServiceSpec.signedCreateDidOperation
       val obj = createAtalaObject(createBlock(signedOperation))
-      objectManagementService.publishAtalaOperation(signedOperation)
+      objectManagementService.publishSingleAtalaOperation(signedOperation)
 
       objectManagementService.saveObject(AtalaObjectNotification(obj, dummyTransactionInfo)).futureValue
 
@@ -360,7 +373,7 @@ class ObjectManagementServiceSpec
       doReturn(Future.successful(dummyPublicationInfo)).when(ledger).publish(*)
       doReturn(true).when(ledger).supportsOnChainData
       // Publish once and update status
-      objectManagementService.publishAtalaOperation(atalaOperation).futureValue
+      objectManagementService.publishSingleAtalaOperation(atalaOperation).futureValue
       setAtalaObjectTransactionSubmissionStatus(
         dummyPublicationInfo.transaction,
         AtalaObjectTransactionSubmissionStatus.InLedger
@@ -375,7 +388,7 @@ class ObjectManagementServiceSpec
     "ignore deleted transactions" in {
       doReturn(Future.successful(dummyPublicationInfo)).when(ledger).publish(*)
       doReturn(true).when(ledger).supportsOnChainData
-      objectManagementService.publishAtalaOperation(atalaOperation).futureValue
+      objectManagementService.publishSingleAtalaOperation(atalaOperation).futureValue
       setAtalaObjectTransactionSubmissionStatus(
         dummyPublicationInfo.transaction,
         AtalaObjectTransactionSubmissionStatus.Deleted
@@ -390,7 +403,7 @@ class ObjectManagementServiceSpec
     "ignore other ledger's transactions" in {
       doReturn(Future.successful(dummyPublicationInfo)).when(ledger).publish(*)
       doReturn(true).when(ledger).supportsOnChainData
-      objectManagementService.publishAtalaOperation(atalaOperation).futureValue
+      objectManagementService.publishSingleAtalaOperation(atalaOperation).futureValue
       // Simulate the service is restarted with a new ledger type
       doReturn(Ledger.CardanoTestnet).when(ledger).getType
 
@@ -410,7 +423,7 @@ class ObjectManagementServiceSpec
         .publish(*)
       doReturn(Future.unit).when(ledger).deleteTransaction(dummyTransactionInfo.transactionId)
       doReturn(true).when(ledger).supportsOnChainData
-      objectManagementService.publishAtalaOperation(atalaOperation).futureValue
+      objectManagementService.publishSingleAtalaOperation(atalaOperation).futureValue
       mockTransactionStatus(dummyTransactionInfo.transactionId, TransactionStatus.Pending)
 
       objectManagementService.retryOldPendingTransactions().futureValue
@@ -431,7 +444,7 @@ class ObjectManagementServiceSpec
         )
       doReturn(Future.successful(dummyPublicationInfo)).when(ledger).publish(*)
       doReturn(true).when(ledger).supportsOnChainData
-      objectManagementService.publishAtalaOperation(atalaOperation).futureValue
+      objectManagementService.publishSingleAtalaOperation(atalaOperation).futureValue
       mockTransactionStatus(dummyTransactionInfo.transactionId, TransactionStatus.Pending)
 
       objectManagementService.retryOldPendingTransactions().futureValue
@@ -444,7 +457,7 @@ class ObjectManagementServiceSpec
     "not retry in-ledger transactions" in {
       doReturn(Future.successful(dummyPublicationInfo)).when(ledger).publish(*)
       doReturn(true).when(ledger).supportsOnChainData
-      objectManagementService.publishAtalaOperation(atalaOperation).futureValue
+      objectManagementService.publishSingleAtalaOperation(atalaOperation).futureValue
       mockTransactionStatus(dummyTransactionInfo.transactionId, TransactionStatus.InLedger)
 
       objectManagementService.retryOldPendingTransactions().futureValue
@@ -481,7 +494,7 @@ class ObjectManagementServiceSpec
 
       DataPreparation.updateLastSyncedBlock(dummyBlockNo, dummyTimestamp)
 
-      objectManagementService.publishAtalaOperation(atalaOperation).futureValue
+      objectManagementService.publishSingleAtalaOperation(atalaOperation).futureValue
 
       val status = objectManagementService
         .getLatestTransactionAndStatus(transactionInfo)
@@ -495,7 +508,7 @@ class ObjectManagementServiceSpec
       doReturn(Future.successful(publicationInfo)).when(ledger).publish(*)
       doReturn(true).when(ledger).supportsOnChainData
 
-      objectManagementService.publishAtalaOperation(atalaOperation).futureValue
+      objectManagementService.publishSingleAtalaOperation(atalaOperation).futureValue
       setAtalaObjectTransactionSubmissionStatus(
         publicationInfo.transaction,
         AtalaObjectTransactionSubmissionStatus.Deleted
@@ -513,7 +526,7 @@ class ObjectManagementServiceSpec
       doReturn(Future.successful(publicationInfo)).when(ledger).publish(*)
       doReturn(true).when(ledger).supportsOnChainData
 
-      objectManagementService.publishAtalaOperation(atalaOperation).futureValue
+      objectManagementService.publishSingleAtalaOperation(atalaOperation).futureValue
       setAtalaObjectTransactionSubmissionStatus(
         publicationInfo.transaction,
         AtalaObjectTransactionSubmissionStatus.InLedger
@@ -536,7 +549,7 @@ class ObjectManagementServiceSpec
 
       DataPreparation.updateLastSyncedBlock(dummyBlockNo, dummyTimestamp)
 
-      objectManagementService.publishAtalaOperation(atalaOperation).futureValue
+      objectManagementService.publishSingleAtalaOperation(atalaOperation).futureValue
       // Need block info when saving an object as it comes from the ledger
       objectManagementService.saveObject(AtalaObjectNotification(atalaObject, transactionInfoWithBlock)).futureValue
 

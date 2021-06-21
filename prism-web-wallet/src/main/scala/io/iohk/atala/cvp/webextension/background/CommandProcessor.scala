@@ -6,8 +6,8 @@ import io.iohk.atala.cvp.webextension.background.models.Command.{
   GotCredentialRequestsRequiringManualApproval,
   GotRequestsRequiringManualApproval,
   GotRevocationRequestsRequiringManualApproval,
+  OperationInfo,
   SignedConnectorResponse,
-  TransactionInfo,
   WalletStatusResult
 }
 import io.iohk.atala.cvp.webextension.background.models.{Command, Event}
@@ -80,7 +80,7 @@ private[background] class CommandProcessor(
         walletManager.unlock(password).map(CommandResponse.apply)
       case Command.LockWallet() =>
         walletManager.lock().map(CommandResponse(_))
-      case Command.GetTransactionInfo =>
-        walletManager.getTransactionId().map(TransactionInfo.apply).map(CommandResponse.apply)
+      case Command.GetOperationInfo =>
+        walletManager.getOperationId().map(OperationInfo.apply).map(CommandResponse.apply)
     }
 }

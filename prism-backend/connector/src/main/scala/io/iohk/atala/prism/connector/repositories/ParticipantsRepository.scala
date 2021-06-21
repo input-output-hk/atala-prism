@@ -5,13 +5,14 @@ import cats.syntax.applicative._
 import cats.syntax.either._
 import doobie.implicits._
 import doobie.util.transactor.Transactor
+import io.iohk.atala.prism.connector.AtalaOperationId
 import io.iohk.atala.prism.connector.errors.{ConnectorError, UnknownValueError, _}
-import io.iohk.atala.prism.connector.model.{ParticipantInfo, ParticipantLogo, UpdateParticipantProfile, ParticipantType}
+import io.iohk.atala.prism.connector.model.{ParticipantInfo, ParticipantLogo, ParticipantType, UpdateParticipantProfile}
 import io.iohk.atala.prism.connector.repositories.daos.ParticipantsDAO
 import io.iohk.atala.prism.crypto.ECPublicKey
 import io.iohk.atala.prism.errors.LoggingContext
 import io.iohk.atala.prism.identity.DID
-import io.iohk.atala.prism.models.{ParticipantId, TransactionInfo}
+import io.iohk.atala.prism.models.ParticipantId
 import io.iohk.atala.prism.utils.FutureEither
 import io.iohk.atala.prism.utils.FutureEither.FutureEitherOps
 import io.iohk.atala.prism.utils.syntax.DBConnectionOps
@@ -34,8 +35,7 @@ class ParticipantsRepository(xa: Transactor[IO]) extends ConnectorErrorSupport {
       name = request.name,
       did = Option(request.did),
       logo = Option(request.logo),
-      transactionId = request.transactionInfo.map(_.transactionId),
-      ledger = request.transactionInfo.map(_.ledger)
+      operationId = request.operationId
     )
 
     ParticipantsDAO
@@ -120,7 +120,7 @@ object ParticipantsRepository {
       name: String,
       did: DID,
       logo: ParticipantLogo,
-      transactionInfo: Option[TransactionInfo]
+      operationId: Option[AtalaOperationId]
   )
 
 }

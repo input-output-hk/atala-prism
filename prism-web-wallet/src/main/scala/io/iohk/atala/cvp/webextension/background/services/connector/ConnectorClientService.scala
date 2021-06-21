@@ -61,7 +61,7 @@ class ConnectorClientService(url: String) {
       batchId: CredentialBatchId,
       batchOperationHash: SHA256Digest,
       credentialId: UUID
-  )(implicit ec: ExecutionContext): Future[io.iohk.atala.prism.protos.common_models.TransactionInfo] = {
+  )(implicit ec: ExecutionContext): Future[ByteString] = {
     val credentialHashT = io.iohk.atala.prism.credentials.Credential
       .fromString(signedCredentialStringRepresentation)
       .map(_.hash)
@@ -91,9 +91,12 @@ class ConnectorClientService(url: String) {
       }
       requestMetadata = metadataForRequest(masterECKeyPair, did, request)
       response <- credentialsServiceApi.revokePublishedCredential(request, requestMetadata.toJSDictionary)
-    } yield response.transactionInfo.getOrElse(
-      throw new RuntimeException("The server didn't returned the expected transaction info")
-    )
+    } yield
+      if (response.operationId.isEmpty) {
+        throw new RuntimeException("The server didn't returned the expected operation identifier")
+      } else {
+        response.operationId
+      }
   }
 
   def signAndPublishBatch(

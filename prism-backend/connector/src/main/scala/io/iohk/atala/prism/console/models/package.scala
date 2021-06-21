@@ -1,12 +1,13 @@
 package io.iohk.atala.prism.console
 
 import io.circe.Json
+import io.iohk.atala.prism.connector.AtalaOperationId
 import io.iohk.atala.prism.connector.model.{ConnectionId, ConnectionStatus, TokenString}
 import io.iohk.atala.prism.crypto.SHA256Digest
-import io.iohk.atala.prism.models.{Ledger, TransactionId, TransactionInfo, UUIDValue}
+import io.iohk.atala.prism.models.UUIDValue
+
 import java.time.Instant
 import java.util.UUID
-
 import io.iohk.atala.prism.credentials.CredentialBatchId
 import io.iohk.atala.prism.crypto.MerkleTree.MerkleInclusionProof
 
@@ -78,7 +79,7 @@ package object models {
       connectionStatus: ConnectionStatus,
       publicationData: Option[PublicationData],
       sharedAt: Option[Instant],
-      revokedOnTransactionId: Option[TransactionId]
+      revokedOnOperationId: Option[AtalaOperationId]
   )
 
   case class CreateGenericCredential(
@@ -91,11 +92,10 @@ package object models {
   case class PublicationData(
       credentialBatchId: CredentialBatchId, // the id assigned by the protocol to the batch
       issuanceOperationHash: SHA256Digest, // the hex representation of the associated issuance operation hash
+      atalaOperationId: AtalaOperationId,
       encodedSignedCredential: String, // the actual published credential
       inclusionProof: MerkleInclusionProof, // the proof that the encodedSignedCredential belongs to the associated batch
-      storedAt: Instant, // the time when the publication data was stored in the database
-      transactionId: TransactionId,
-      ledger: Ledger
+      storedAt: Instant // the time when the publication data was stored in the database
   )
 
   case class CredentialPublicationData(
@@ -108,7 +108,7 @@ package object models {
   case class StoreBatchData(
       batchId: CredentialBatchId,
       issuanceOperationHash: SHA256Digest,
-      issuanceTransactionInfo: TransactionInfo
+      atalaOperationId: AtalaOperationId
   )
 
   import io.iohk.atala.prism.protos.node_models

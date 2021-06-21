@@ -6,21 +6,20 @@ import doobie.implicits._
 import doobie.util.transactor.Transactor
 import io.circe.Json
 import io.circe.syntax._
+import io.iohk.atala.prism.connector.AtalaOperationId
 import io.iohk.atala.prism.connector.model.{ParticipantInfo, ParticipantType, TokenString}
 import io.iohk.atala.prism.connector.repositories.{daos => connectorDaos}
 import io.iohk.atala.prism.console.models._
-
 import io.iohk.atala.prism.crypto.EC
 import io.iohk.atala.prism.daos.BaseDAO
 import io.iohk.atala.prism.console.repositories.{CredentialsRepository, daos => consoleDaos}
 import io.iohk.atala.prism.crypto.{ECPublicKey, SHA256Digest}
 import io.iohk.atala.prism.identity.DID
 import io.iohk.atala.prism.migrations.Student.ConnectionStatus
-import io.iohk.atala.prism.models.{Ledger, ParticipantId, TransactionId, TransactionInfo}
+import io.iohk.atala.prism.models.ParticipantId
 import org.scalatest.OptionValues._
 
 import java.time.LocalDate
-
 import io.iohk.atala.prism.credentials.CredentialBatchId
 import io.iohk.atala.prism.crypto.MerkleTree.MerkleInclusionProof
 import org.scalatest.concurrent.ScalaFutures.convertScalaFuture
@@ -48,7 +47,6 @@ object DataPreparation extends BaseDAO {
       name + tag,
       Option(didValue),
       None,
-      None,
       None
     )
     ParticipantsDAO.insert(participant).transact(database).unsafeRunSync()
@@ -65,7 +63,7 @@ object DataPreparation extends BaseDAO {
       database: Transactor[IO]
   ): ParticipantId = {
     val participant =
-      ParticipantInfo(id, ParticipantType.Verifier, publicKey, name + tag, Option(newDID()), None, None, None)
+      ParticipantInfo(id, ParticipantType.Verifier, publicKey, name + tag, Option(newDID()), None, None)
     ParticipantsDAO.insert(participant).transact(database).unsafeRunSync()
 
     id
@@ -180,14 +178,14 @@ object DataPreparation extends BaseDAO {
   def publishBatch(
       batchId: CredentialBatchId,
       previousOperationHash: SHA256Digest,
-      mockTransactionInfo: TransactionInfo
+      atalaOperationId: AtalaOperationId
   )(implicit credentialsRepository: CredentialsRepository): Unit = {
     credentialsRepository
       .storeBatchData(
         StoreBatchData(
           batchId,
           previousOperationHash,
-          mockTransactionInfo
+          atalaOperationId
         )
       )
       .value
@@ -219,13 +217,13 @@ object DataPreparation extends BaseDAO {
 
   def getBatchData(
       batchId: CredentialBatchId
-  )(implicit database: Transactor[IO]): Option[(TransactionId, Ledger, SHA256Digest)] = {
+  )(implicit database: Transactor[IO]): Option[SHA256Digest] = {
     sql"""
-         |SELECT issued_on_transaction_id, ledger, issuance_operation_hash
+         |SELECT issuance_operation_hash
          |FROM published_batches
          |WHERE batch_id = $batchId
          |""".stripMargin
-      .query[(TransactionId, Ledger, SHA256Digest)]
+      .query[SHA256Digest]
       .option
       .transact(database)
       .unsafeRunSync()

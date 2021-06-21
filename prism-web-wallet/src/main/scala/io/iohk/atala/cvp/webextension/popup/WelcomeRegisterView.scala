@@ -13,7 +13,7 @@ import scala.concurrent.ExecutionContext.Implicits.global
 @react class WelcomeRegisterView extends Component {
 
   override def componentDidMount(): Unit = {
-    getTransactionInfo()
+    getOperationInfo()
   }
 
   override def initialState: State = State(mayBeTransactionId = None)
@@ -57,9 +57,9 @@ import scala.concurrent.ExecutionContext.Implicits.global
     )
   }
 
-  private def getTransactionInfo(): Unit = {
-    props.backgroundAPI.getTransactionInfo().map { transactionInfo =>
-      setState(_.copy(mayBeTransactionId = Some(transactionInfo.id)))
+  private def getOperationInfo(): Unit = {
+    props.backgroundAPI.getOperationInfo().map { operationInfo =>
+      setState(_.copy(mayBeTransactionId = Some(operationInfo.id)))
     }
   }
 }

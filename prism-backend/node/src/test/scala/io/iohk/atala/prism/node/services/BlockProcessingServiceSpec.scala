@@ -3,12 +3,13 @@ package io.iohk.atala.prism.node.services
 import com.google.protobuf.ByteString
 import doobie.implicits._
 import io.iohk.atala.prism.AtalaWithPostgresSpec
+import io.iohk.atala.prism.connector.AtalaOperationId
 import io.iohk.atala.prism.credentials.TimestampInfo
 import io.iohk.atala.prism.crypto.{EC, ECPrivateKey, SHA256Digest}
 import io.iohk.atala.prism.identity.DIDSuffix
 import io.iohk.atala.prism.models.{Ledger, TransactionId}
 import io.iohk.atala.prism.node.DataPreparation
-import io.iohk.atala.prism.node.models.{AtalaOperationId, AtalaOperationInfo, AtalaOperationStatus}
+import io.iohk.atala.prism.node.models.{AtalaOperationInfo, AtalaOperationStatus}
 import io.iohk.atala.prism.node.operations.CreateDIDOperationSpec
 import io.iohk.atala.prism.node.repositories.daos.DIDDataDAO
 import io.iohk.atala.prism.node.repositories.DIDDataRepository

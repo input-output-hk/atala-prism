@@ -1,20 +1,20 @@
 package io.iohk.atala.prism.connector.services
 
-import cats.syntax.applicative._
 import cats.syntax.either._
 import cats.syntax.option._
+import io.iohk.atala.prism.connector.AtalaOperationId
 import io.iohk.atala.prism.connector.errors.{ConnectorError, InvalidRequest}
 import io.iohk.atala.prism.connector.model.{ParticipantLogo, ParticipantType}
 import io.iohk.atala.prism.connector.repositories.ParticipantsRepository
 import io.iohk.atala.prism.identity.DID
-import io.iohk.atala.prism.models.{ParticipantId, ProtoCodecs, TransactionInfo}
+import io.iohk.atala.prism.models.ParticipantId
 import io.iohk.atala.prism.utils.FutureEither
 import io.iohk.atala.prism.utils.FutureEither.FutureEitherOps
 import io.iohk.atala.prism.protos.node_api.{GetDidDocumentRequest, NodeServiceGrpc}
 import io.iohk.atala.prism.protos.node_models.SignedAtalaOperation
-import io.iohk.atala.prism.protos.{common_models, node_api}
+import io.iohk.atala.prism.protos.node_api
 
-import scala.concurrent.{ExecutionContext, Future}
+import scala.concurrent.ExecutionContext
 
 class RegistrationService(participantsRepository: ParticipantsRepository, nodeService: NodeServiceGrpc.NodeService)(
     implicit ec: ExecutionContext
@@ -35,7 +35,7 @@ class RegistrationService(participantsRepository: ParticipantsRepository, nodeSe
     } yield RegistrationResult(
       did = createRequest.did,
       id = createRequest.id,
-      transactionInfo = createRequest.transactionInfo
+      operationId = createRequest.operationId
     )
   }
 
@@ -48,12 +48,6 @@ class RegistrationService(participantsRepository: ParticipantsRepository, nodeSe
     val result = for {
       createDIDResponse <- nodeService.createDID(node_api.CreateDIDRequest().withSignedOperation(createDIDOperation))
       did = DID.buildPrismDID(createDIDResponse.id)
-      responseTransactionInfo <- createDIDResponse.transactionInfo.fold[Future[common_models.TransactionInfo]](
-        Future.failed(new RuntimeException("DID created has no transaction info"))
-      )(_.pure[Future])
-      transactionInfo = ProtoCodecs.fromTransactionInfo(
-        responseTransactionInfo
-      )
       createRequest =
         ParticipantsRepository
           .CreateParticipantRequest(
@@ -62,7 +56,11 @@ class RegistrationService(participantsRepository: ParticipantsRepository, nodeSe
             name = name,
             did = did,
             logo = logo,
-            transactionInfo = transactionInfo.some
+            operationId = AtalaOperationId
+              .fromVectorUnsafe(
+                createDIDResponse.operationId.toByteArray.toVector
+              )
+              .some
           )
           .asRight
     } yield createRequest
@@ -87,11 +85,11 @@ class RegistrationService(participantsRepository: ParticipantsRepository, nodeSe
       name = name,
       did = did,
       logo = logo,
-      transactionInfo = None
+      operationId = None
     )
   }
 }
 
 object RegistrationService {
-  case class RegistrationResult(id: ParticipantId, did: DID, transactionInfo: Option[TransactionInfo])
+  case class RegistrationResult(id: ParticipantId, did: DID, operationId: Option[AtalaOperationId])
 }

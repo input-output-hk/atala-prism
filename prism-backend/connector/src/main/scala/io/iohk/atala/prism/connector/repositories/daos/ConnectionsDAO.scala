@@ -136,7 +136,7 @@ object ConnectionsDAO {
              | all_connections AS (
              |  SELECT * FROM initiated_connections UNION SELECT * FROM accepted_connections
              | )
-             |SELECT c.id, c.instantiated_at, p.id, p.tpe, p.public_key, p.name, p.did, p.logo, p.transaction_id, p.ledger, c.token, c.status
+             |SELECT c.id, c.instantiated_at, p.id, p.tpe, p.public_key, p.name, p.did, p.logo, p.operation_id, c.token, c.status
              |FROM CTE CROSS JOIN all_connections c
              |JOIN participants p ON p.id = c.side
              |WHERE c.instantiated_at > last_seen_time OR (instantiated_at = last_seen_time AND c.id > $value)
@@ -151,7 +151,7 @@ object ConnectionsDAO {
              | accepted_connections AS (
              |  SELECT id, initiator as side, instantiated_at, token, status FROM connections WHERE acceptor = $participant),
              | all_connections AS (SELECT * FROM initiated_connections UNION SELECT * FROM accepted_connections)
-             |SELECT c.id, c.instantiated_at, p.id, p.tpe, p.public_key, p.name, p.did, p.logo, p.transaction_id, p.ledger, c.token, c.status
+             |SELECT c.id, c.instantiated_at, p.id, p.tpe, p.public_key, p.name, p.did, p.logo, p.operation_id, c.token, c.status
              |FROM all_connections c
              |JOIN participants p ON p.id = c.side
              |ORDER BY c.instantiated_at ASC, c.id

@@ -4,8 +4,14 @@ import cats.implicits.catsSyntaxApplicativeId
 import cats.syntax.either._
 import cats.syntax.functor._
 import io.iohk.atala.prism.auth.AuthAndMiddlewareSupport
-import io.iohk.atala.prism.connector.ConnectorAuthenticator
-import io.iohk.atala.prism.connector.errors.{ConnectorError, ConnectorErrorSupport, InternalServerError, InvalidRequest}
+import io.iohk.atala.prism.connector.{AtalaOperationId, ConnectorAuthenticator}
+import io.iohk.atala.prism.connector.errors.{
+  ConnectorError,
+  ConnectorErrorSupport,
+  InternalConnectorError,
+  InternalServerError,
+  InvalidRequest
+}
 import io.iohk.atala.prism.console.grpc.ProtoCodecs._
 import io.iohk.atala.prism.console.grpc._
 import io.iohk.atala.prism.console.integrations.CredentialsIntegrationService
@@ -24,7 +30,7 @@ import io.iohk.atala.prism.credentials.CredentialBatchId
 import io.iohk.atala.prism.crypto.MerkleTree.MerkleRoot
 import io.iohk.atala.prism.crypto.SHA256Digest
 import io.iohk.atala.prism.identity.DID
-import io.iohk.atala.prism.models.{ParticipantId, TransactionId, TransactionInfo, ProtoCodecs => CommonProtoCodecs}
+import io.iohk.atala.prism.models.ParticipantId
 import io.iohk.atala.prism.protos.node_api.NodeServiceGrpc
 import io.iohk.atala.prism.protos.node_models.SignedAtalaOperation
 import io.iohk.atala.prism.protos.{common_models, console_api, node_api}
@@ -98,7 +104,9 @@ class CredentialsServiceImpl(
         }
     }
 
-  private def extractValues(signedAtalaOperation: SignedAtalaOperation): (MerkleRoot, DID, SHA256Digest) = {
+  private def extractValues(
+      signedAtalaOperation: SignedAtalaOperation
+  ): FutureEither[ConnectorError, (MerkleRoot, DID, SHA256Digest)] = {
     val maybePair = for {
       atalaOperation <- signedAtalaOperation.operation
       opHash = SHA256Digest.compute(atalaOperation.toByteArray)
@@ -107,7 +115,15 @@ class CredentialsServiceImpl(
       did = DID.buildPrismDID(credentialBatchData.issuerDid)
       merkleRoot = MerkleRoot(SHA256Digest.fromVectorUnsafe(credentialBatchData.merkleRoot.toByteArray.toVector))
     } yield (merkleRoot, did, opHash)
-    maybePair.getOrElse(throw new RuntimeException("Failed to extract content hash and issuer DID"))
+    maybePair
+      .fold(
+        InternalServerError(throw new RuntimeException("Failed to extract content hash and issuer DID"))
+          .asLeft[(MerkleRoot, DID, SHA256Digest)]
+          .pure[Future]
+          .toFutureEither
+      ) { pair =>
+        pair.asRight.pure[Future].toFutureEither
+      }
   }
 
   override def getContactCredentials(
@@ -167,16 +183,11 @@ class CredentialsServiceImpl(
     def storeBatch(
         batchId: CredentialBatchId,
         signedIssueCredentialBatchOp: SignedAtalaOperation,
-        transactionInfo: common_models.TransactionInfo
+        operationId: AtalaOperationId
     ): FutureEither[ConnectorError, Unit] = {
       for {
-        ledger <- CommonProtoCodecs.fromLedger(transactionInfo.ledger).asRight.pure[Future].toFutureEither
-        transactionId <-
-          TransactionId
-            .from(transactionInfo.transactionId)
-            .pure[Future]
-            .toFutureEither(InternalServerError(new RuntimeException("Corrupted transaction ID")))
-        (merkleRoot, did, operationHash) = extractValues(signedIssueCredentialBatchOp)
+        operationDetails <- extractValues(signedIssueCredentialBatchOp)
+        (merkleRoot, did, operationHash) = operationDetails
         computedBatchId = CredentialBatchId.fromBatchData(did.suffix, merkleRoot)
         // validation for sanity check
         // The `batchId` parameter is the id returned by the node.
@@ -196,11 +207,7 @@ class CredentialsServiceImpl(
               StoreBatchData(
                 batchId = batchId,
                 issuanceOperationHash = operationHash,
-                issuanceTransactionInfo = TransactionInfo(
-                  transactionId = transactionId,
-                  ledger = ledger,
-                  block = None
-                )
+                atalaOperationId = operationId
               )
             )
       } yield ()
@@ -218,16 +225,13 @@ class CredentialsServiceImpl(
           CredentialBatchId
             .fromString(credentialIssued.batchId)
             .pure[Future]
-            .toFutureEither(InternalServerError(new RuntimeException("Node returned an invalid batch id")))
-        transactionInfo <-
-          credentialIssued.transactionInfo
-            .pure[Future]
-            .toFutureEither(InternalServerError(new RuntimeException("We could not generate a transaction")))
+            .toFutureEither(InternalConnectorError(new RuntimeException("Node returned an invalid batch id")))
+        operationId = AtalaOperationId.fromVectorUnsafe(credentialIssued.operationId.toByteArray.toVector)
         // Update the database
-        _ <- storeBatch(returnedBatchId, publishBatchRequest.signedIssueCredentialBatchOp, transactionInfo)
+        _ <- storeBatch(returnedBatchId, publishBatchRequest.signedIssueCredentialBatchOp, operationId)
       } yield console_api
         .PublishBatchResponse()
-        .withTransactionInfo(transactionInfo)
+        .withOperationId(credentialIssued.operationId)
         .withBatchId(credentialIssued.batchId)
     }
   }
@@ -271,10 +275,10 @@ class CredentialsServiceImpl(
     auth[RevokePublishedCredential]("revokePublishedCredential", request) { (participantId, query) =>
       credentialsIntegration
         .revokePublishedCredential(Institution.Id(participantId.uuid), query)
-        .map { info =>
+        .map { operationId =>
           console_api
             .RevokePublishedCredentialResponse()
-            .withTransactionInfo(info)
+            .withOperationId(operationId.toProtoByteString)
         }
     }
   }

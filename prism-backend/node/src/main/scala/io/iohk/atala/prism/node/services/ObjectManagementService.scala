@@ -10,6 +10,7 @@ import doobie.implicits._
 import doobie.util.transactor.Transactor
 import enumeratum.EnumEntry.Snakecase
 import enumeratum.{Enum, EnumEntry}
+import io.iohk.atala.prism.connector.AtalaOperationId
 import io.iohk.atala.prism.crypto.SHA256Digest
 import io.iohk.atala.prism.models.{TransactionInfo, TransactionStatus}
 import io.iohk.atala.prism.node.UnderlyingLedger
@@ -20,7 +21,6 @@ import io.iohk.atala.prism.node.models.{
   AtalaObjectId,
   AtalaObjectTransactionSubmission,
   AtalaObjectTransactionSubmissionStatus,
-  AtalaOperationId,
   AtalaOperationInfo,
   AtalaOperationStatus
 }
@@ -117,7 +117,10 @@ class ObjectManagementService private (
       }
   }
 
-  def publishAtalaOperation(op: node_models.SignedAtalaOperation*): Future[TransactionInfo] = {
+  def publishSingleAtalaOperation(op: node_models.SignedAtalaOperation): Future[AtalaOperationId] =
+    publishAtalaOperations(op).map(_.head)
+
+  def publishAtalaOperations(op: node_models.SignedAtalaOperation*): Future[List[AtalaOperationId]] = {
     val block = node_internal.AtalaBlock("1.0", op.toList)
     val blockBytes = block.toByteArray
     val blockHash = SHA256Digest.compute(blockBytes)
@@ -164,8 +167,8 @@ class ObjectManagementService private (
         // If the ledger does not support data on-chain, then store it off-chain
         _ <- storeDataOffChain()
         // Publish object to the blockchain
-        transactionInfo <- publishAndRecordTransaction(objId, obj)
-      } yield transactionInfo
+        _ <- publishAndRecordTransaction(objId, obj)
+      } yield atalaOperationIds
     }
   }
 

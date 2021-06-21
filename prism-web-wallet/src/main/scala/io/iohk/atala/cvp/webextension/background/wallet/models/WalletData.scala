@@ -15,7 +15,7 @@ case class WalletData(
     mnemonic: Mnemonic,
     organisationName: String,
     did: DID,
-    transactionId: Option[String] = None,
+    operationId: Option[String] = None,
     role: Role,
     logo: Array[Byte]
 ) {

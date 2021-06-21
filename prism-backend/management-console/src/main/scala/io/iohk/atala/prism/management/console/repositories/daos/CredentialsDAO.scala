@@ -1,18 +1,18 @@
 package io.iohk.atala.prism.management.console.repositories.daos
 
 import cats.data.NonEmptyList
-import java.time.Instant
 
+import java.time.Instant
 import cats.implicits._
 import doobie._
 import doobie.implicits._
 import doobie.util.fragments._
 import doobie.implicits.legacy.instant._
 import doobie.implicits.legacy.localdate._
+import io.iohk.atala.prism.connector.AtalaOperationId
 import io.iohk.atala.prism.credentials.CredentialBatchId
 import io.iohk.atala.prism.crypto.SHA256Digest
 import io.iohk.atala.prism.management.console.models._
-import io.iohk.atala.prism.models.{TransactionId, TransactionInfo}
 import io.iohk.atala.prism.management.console.repositories.daos.queries._
 
 object CredentialsDAO {
@@ -28,8 +28,8 @@ object CredentialsDAO {
     fr"""
         |SELECT credential_id, c.issuer_id, c.contact_id, credential_data, c.created_on, c.credential_type_id,
         |       c.credential_issuance_contact_id, external_id, PTS.name AS issuer_name, contact_data, connection_token,
-        |       PC.batch_id, PC.issuance_operation_hash, PC.encoded_signed_credential, PC.inclusion_proof,
-        |       PC.stored_at, PC.issued_on_transaction_id, PC.ledger, PC.shared_at, PC.revoked_on_transaction_id
+        |       PC.batch_id, PC.issuance_operation_hash, PC.issuance_operation_id, PC.encoded_signed_credential, PC.inclusion_proof,
+        |       PC.stored_at, PC.shared_at, PC.revoked_on_operation_id
       """.stripMargin
 
   private def withPublishedCredentialsPC(maybeCredentialId: Option[GenericCredential.Id] = None) =
@@ -37,8 +37,8 @@ object CredentialsDAO {
       case Some(credentialId) =>
         fr"""
            |PC AS (
-           |  SELECT credential_id, batch_id, issuance_operation_hash, encoded_signed_credential, inclusion_proof,
-           |         stored_at, issued_on_transaction_id, ledger, shared_at, revoked_on_transaction_id
+           |  SELECT credential_id, batch_id, issuance_operation_hash, issuance_operation_id, encoded_signed_credential, inclusion_proof,
+           |         stored_at, shared_at, revoked_on_operation_id
            |  FROM published_credentials JOIN published_batches USING (batch_id)
            |  WHERE credential_id = $credentialId
            |)
@@ -46,8 +46,8 @@ object CredentialsDAO {
       case None =>
         fr"""
           |PC AS (
-          |  SELECT credential_id, batch_id, issuance_operation_hash, encoded_signed_credential, inclusion_proof,
-          |         stored_at, issued_on_transaction_id, ledger, shared_at, revoked_on_transaction_id
+          |  SELECT credential_id, batch_id, issuance_operation_hash, issuance_operation_id, encoded_signed_credential, inclusion_proof,
+          |         stored_at, shared_at, revoked_on_operation_id
           |  FROM published_credentials JOIN published_batches USING (batch_id)
           |)
           """.stripMargin
@@ -70,8 +70,8 @@ object CredentialsDAO {
          |    credential_issuance_contact_id
          |),""".stripMargin ++ withParticipantsPTS ++ withPublishedCredentialsPC(Some(id)) ++
       fr"""|SELECT inserted.*, contacts.external_id, PTS.name AS issuer_name, contacts.contact_data, connection_token,
-           |       PC.batch_id, PC.issuance_operation_hash, PC.encoded_signed_credential, PC.inclusion_proof,
-           |       PC.stored_at, PC.issued_on_transaction_id, PC.ledger, PC.shared_at, PC.revoked_on_transaction_id
+           |       PC.batch_id, PC.issuance_operation_hash, PC.issuance_operation_id, PC.encoded_signed_credential, PC.inclusion_proof,
+           |       PC.stored_at, PC.shared_at, PC.revoked_on_operation_id
          |FROM inserted
          |     JOIN PTS USING (issuer_id)
          |     JOIN contacts ON (inserted.contact_id = contacts.contact_id)
@@ -219,17 +219,16 @@ object CredentialsDAO {
 
   def storeBatchData(
       batchId: CredentialBatchId,
-      issuanceTransactionInfo: TransactionInfo,
-      issuanceOperationHash: SHA256Digest
+      issuanceOperationHash: SHA256Digest,
+      atalaOperationId: AtalaOperationId
   ): doobie.ConnectionIO[Int] = {
     sql"""
          |INSERT INTO published_batches (
-         |  batch_id, issued_on_transaction_id, ledger, issuance_operation_hash, stored_at
+         |  batch_id, issuance_operation_hash, issuance_operation_id, stored_at
          |)
-         |VALUES ($batchId,
-         |        ${issuanceTransactionInfo.transactionId},
-         |        ${issuanceTransactionInfo.ledger},
-         |        ${issuanceOperationHash},
+         |VALUES (${batchId.id},
+         |        $issuanceOperationHash,
+         |        $atalaOperationId,
          |        ${Instant.now()}
          |)
          |""".stripMargin.update.run
@@ -238,7 +237,7 @@ object CredentialsDAO {
   def revokeCredential(
       institutionId: ParticipantId,
       credentialId: GenericCredential.Id,
-      transactionId: TransactionId
+      operationId: AtalaOperationId
   ): doobie.ConnectionIO[Unit] = {
     sql"""
          |WITH institution_credentials AS (
@@ -248,7 +247,7 @@ object CredentialsDAO {
          |        issuer_id = $institutionId
          |)
          |UPDATE published_credentials
-         |SET revoked_on_transaction_id = $transactionId
+         |SET revoked_on_operation_id = $operationId
          |WHERE credential_id = $credentialId AND
          |      credential_id IN (SELECT * FROM institution_credentials)
          |""".stripMargin.update.run.flatTap { n =>
@@ -297,7 +296,7 @@ object CredentialsDAO {
          |SELECT pc.credential_id
          |FROM published_credentials pc
          |JOIN draft_credentials c USING(credential_id)
-         |WHERE c.issuer_id = $institutionId AND pc.revoked_on_transaction_id IS NULL AND""".stripMargin ++
+         |WHERE c.issuer_id = $institutionId AND pc.revoked_on_operation_id IS NULL AND""".stripMargin ++
       Fragments.in(fr"pc.credential_id", credentialsIds))
       .query[GenericCredential.Id]
       .to[List]

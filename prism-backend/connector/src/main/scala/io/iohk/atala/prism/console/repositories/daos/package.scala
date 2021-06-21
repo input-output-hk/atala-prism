@@ -2,6 +2,7 @@ package io.iohk.atala.prism.console.repositories
 
 import doobie.implicits.legacy.instant._
 import doobie.{Meta, Read, Write}
+import io.iohk.atala.prism.connector.AtalaOperationId
 import io.iohk.atala.prism.connector.model.ConnectionStatus
 import io.iohk.atala.prism.console.models.{
   Contact,
@@ -12,9 +13,8 @@ import io.iohk.atala.prism.console.models.{
 }
 import io.iohk.atala.prism.crypto.SHA256Digest
 import io.iohk.atala.prism.daos.BaseDAO
-import io.iohk.atala.prism.models.{Ledger, TransactionId}
-import java.time.Instant
 
+import java.time.Instant
 import io.iohk.atala.prism.credentials.CredentialBatchId
 import io.iohk.atala.prism.crypto.MerkleTree.MerkleInclusionProof
 
@@ -37,39 +37,18 @@ package object daos extends BaseDAO {
     )(_.encode)
 
   implicit val publicationDataWrite: Write[PublicationData] =
-    Write[(CredentialBatchId, SHA256Digest, String, MerkleInclusionProof, Instant, TransactionId, Ledger)].contramap(
-      pc =>
-        (
-          pc.credentialBatchId,
-          pc.issuanceOperationHash,
-          pc.encodedSignedCredential,
-          pc.inclusionProof,
-          pc.storedAt,
-          pc.transactionId,
-          pc.ledger
-        )
+    Write[(CredentialBatchId, SHA256Digest, AtalaOperationId, String, MerkleInclusionProof, Instant)].contramap(pc =>
+      (
+        pc.credentialBatchId,
+        pc.issuanceOperationHash,
+        pc.atalaOperationId,
+        pc.encodedSignedCredential,
+        pc.inclusionProof,
+        pc.storedAt
+      )
     )
 
   implicit val publicationDataRead: Read[PublicationData] =
-    Read[(CredentialBatchId, SHA256Digest, String, MerkleInclusionProof, Instant, TransactionId, Ledger)]
-      .map[PublicationData] {
-        case (
-              nodeCredentialId,
-              issuanceOperationHash,
-              encodedSignedCredential,
-              proof,
-              storedAt,
-              transactionId,
-              ledger
-            ) =>
-          PublicationData(
-            nodeCredentialId,
-            issuanceOperationHash,
-            encodedSignedCredential,
-            proof,
-            storedAt,
-            transactionId,
-            ledger
-          )
-      }
+    Read[(CredentialBatchId, SHA256Digest, AtalaOperationId, String, MerkleInclusionProof, Instant)]
+      .map[PublicationData](PublicationData.tupled)
 }

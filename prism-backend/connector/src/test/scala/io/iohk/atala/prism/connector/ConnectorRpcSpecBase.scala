@@ -19,7 +19,7 @@ import io.iohk.atala.prism.connector.services.{
 }
 import io.iohk.atala.prism.crypto.ECPublicKey
 import io.iohk.atala.prism.identity.DID
-import io.iohk.atala.prism.models.{Ledger, ParticipantId, TransactionId}
+import io.iohk.atala.prism.models.ParticipantId
 import io.iohk.atala.prism.protos.connector_api
 import io.iohk.atala.prism.{ApiTestHelper, DIDUtil, RpcSpecBase}
 import org.mockito.MockitoSugar._
@@ -93,12 +93,11 @@ class ConnectorRpcSpecBase extends RpcSpecBase with DIDUtil {
       logo: Option[ParticipantLogo] = None,
       publicKey: Option[ECPublicKey] = None,
       did: Option[DID] = None,
-      transactionId: Option[TransactionId] = None,
-      ledger: Option[Ledger] = None
+      operationId: Option[AtalaOperationId] = None
   ): ParticipantId = {
     val id = ParticipantId.random()
     ParticipantsDAO
-      .insert(ParticipantInfo(id, tpe, publicKey, name, did, logo, transactionId, ledger))
+      .insert(ParticipantInfo(id, tpe, publicKey, name, did, logo, operationId))
       .transact(database)
       .unsafeToFuture()
       .futureValue

@@ -3,7 +3,6 @@ package io.iohk.atala.prism.management.console.grpc
 import cats.syntax.option._
 import com.google.protobuf.ByteString
 import com.google.protobuf.timestamp.Timestamp
-import io.iohk.atala.prism.models.{ProtoCodecs => CommonProtoCodecs}
 import io.iohk.atala.prism.management.console.integrations.ContactsIntegrationService.DetailedContactWithConnection
 import io.iohk.atala.prism.management.console.models.{Contact, GenericCredential, InstitutionGroup, Statistics, _}
 import io.iohk.atala.prism.protos.console_api.GetContactResponse
@@ -14,7 +13,6 @@ import io.scalaland.chimney.Transformer
 import io.scalaland.chimney.dsl._
 
 import java.time.{Instant, LocalDate}
-import io.iohk.atala.prism.models.TransactionInfo
 import io.iohk.atala.prism.protos.connector_models.ContactConnection
 
 import scala.util.{Failure, Success, Try}
@@ -97,11 +95,6 @@ object ProtoCodecs {
       credential: GenericCredential,
       connection: connector_models.ContactConnection
   ): console_models.CManagerGenericCredential = {
-    val revocationProofMaybe = for {
-      revocationTxid <- credential.revokedOnTransactionId
-      publicationData <- credential.publicationData
-    } yield CommonProtoCodecs.toTransactionInfo(TransactionInfo(revocationTxid, publicationData.ledger))
-
     val model = console_models
       .CManagerGenericCredential()
       .withCredentialId(credential.credentialId.toString)
@@ -113,17 +106,14 @@ object ProtoCodecs {
       .withConnectionStatus(connection.connectionStatus)
       .withExternalId(credential.externalId.value)
       .withSharedAt(credential.sharedAt.map(_.toProtoTimestamp).getOrElse(Timestamp()))
-    val withPublicationData = credential.publicationData.fold(model) { data =>
+    credential.publicationData.fold(model) { data =>
       model
         .withBatchId(data.credentialBatchId.id)
         .withIssuanceOperationHash(ByteString.copyFrom(data.issuanceOperationHash.value.toArray))
         .withEncodedSignedCredential(data.encodedSignedCredential)
         .withBatchInclusionProof(data.inclusionProof.encode)
         .withPublicationStoredAt(data.storedAt.toProtoTimestamp)
-        .withIssuanceProof(CommonProtoCodecs.toTransactionInfo(TransactionInfo(data.transactionId, data.ledger)))
     }
-
-    revocationProofMaybe.fold(withPublicationData)(withPublicationData.withRevocationProof)
   }
 
   def toContactProto(contact: Contact, connection: connector_models.ContactConnection): console_models.Contact = {

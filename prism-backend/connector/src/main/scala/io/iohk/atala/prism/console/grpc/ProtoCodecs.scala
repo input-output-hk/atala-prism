@@ -5,7 +5,6 @@ import com.google.protobuf.timestamp.Timestamp
 import io.iohk.atala.prism.connector.model.ConnectionStatus
 import io.iohk.atala.prism.console.models
 import io.iohk.atala.prism.console.models.GenericCredential
-import io.iohk.atala.prism.models.{TransactionInfo, ProtoCodecs => CommonProtoCodecs}
 import io.iohk.atala.prism.protos.{common_models, console_models}
 import io.iohk.atala.prism.utils.syntax._
 import io.scalaland.chimney.Transformer
@@ -31,13 +30,9 @@ object ProtoCodecs {
 
   def genericCredentialToProto(credential: GenericCredential): console_models.CManagerGenericCredential = {
     val connectionStatus = contactConnectionStatus2Proto.transform(credential.connectionStatus)
-    val revocationProofMaybe = for {
-      revocationTxid <- credential.revokedOnTransactionId
-      publicationData <- credential.publicationData
-    } yield CommonProtoCodecs.toTransactionInfo(TransactionInfo(revocationTxid, publicationData.ledger))
 
     val model = console_models
-      .CManagerGenericCredential(revocationProof = revocationProofMaybe)
+      .CManagerGenericCredential()
       .withCredentialId(credential.credentialId.toString)
       .withIssuerId(credential.issuedBy.toString)
       .withContactId(credential.subjectId.toString)
@@ -54,7 +49,6 @@ object ProtoCodecs {
         .withIssuanceOperationHash(ByteString.copyFrom(data.issuanceOperationHash.value.toArray))
         .withEncodedSignedCredential(data.encodedSignedCredential)
         .withPublicationStoredAt(data.storedAt.toProtoTimestamp)
-        .withIssuanceProof(CommonProtoCodecs.toTransactionInfo(TransactionInfo(data.transactionId, data.ledger)))
         .withBatchInclusionProof(data.inclusionProof.encode)
         .withBatchId(data.credentialBatchId.id)
     }

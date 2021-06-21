@@ -69,8 +69,7 @@ suspend fun main() {
         """
         Issuer DID registered, the transaction can take up to 10 minutes to be confirmed by the Cardano network
         - DID: $issuerDID
-        - Cardano transaction id: ${issuerRegisterDIDResponse.transactionInfo?.transactionId}
-        - Cardano explorer: https://explorer.cardano-testnet.iohkdev.io/en/transaction?id=${issuerRegisterDIDResponse.transactionInfo?.transactionId}
+        - Operation identifier: ${issuerRegisterDIDResponse.operationId}
         """.trimIndent()
     )
     println("\nNext, let's generate a DID for the Holder, the credential will be issued to it")
@@ -132,8 +131,7 @@ suspend fun main() {
         """
         Issuer: Credential issued to Holder, the transaction can take up to 10 minutes to be confirmed by the Cardano network
         - IssuerDID = $issuerDID
-        - Cardano transaction id = ${issuedCredentialResponse.transactionInfo?.transactionId}
-        - Cardano explorer: https://explorer.cardano-testnet.iohkdev.io/en/transaction?id=${issuedCredentialResponse.transactionInfo?.transactionId}
+        - Operation identifier = ${issuedCredentialResponse.operationId}
         - Credential content = $holderUnsignedCredential
         - Signed credential = ${holderSignedCredential.canonicalForm}
         - Inclusion proof (encoded) = ${holderCredentialMerkleProofs.first().encode()}

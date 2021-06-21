@@ -3,9 +3,9 @@ package io.iohk.atala.prism.console.repositories
 import cats.effect.IO
 import doobie.implicits._
 import doobie.util.transactor.Transactor
+import io.iohk.atala.prism.connector.AtalaOperationId
 import io.iohk.atala.prism.console.models._
 import io.iohk.atala.prism.console.repositories.daos.CredentialsDAO
-import io.iohk.atala.prism.models.TransactionId
 import io.iohk.atala.prism.utils.FutureEither
 import io.iohk.atala.prism.utils.FutureEither.FutureEitherOps
 import io.iohk.atala.prism.utils.syntax.DBConnectionOps
@@ -101,10 +101,10 @@ class CredentialsRepository(xa: Transactor[IO])(implicit ec: ExecutionContext) {
   def storeRevocationData(
       institutionId: Institution.Id,
       credentialId: GenericCredential.Id,
-      transactionId: TransactionId
+      operationId: AtalaOperationId
   ): FutureEither[Nothing, Unit] = {
     CredentialsDAO
-      .revokeCredential(institutionId, credentialId, transactionId)
+      .revokeCredential(institutionId, credentialId, operationId)
       .logSQLErrors(s"storing revocation data, institution id - $institutionId", logger)
       .transact(xa)
       .unsafeToFuture()

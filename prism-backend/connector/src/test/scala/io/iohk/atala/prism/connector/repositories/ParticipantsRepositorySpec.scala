@@ -23,7 +23,7 @@ class ParticipantsRepositorySpec extends ConnectorRepositorySpecBase {
     "get a participant" in {
       val id = ParticipantId.random()
       val did = DataPreparation.newDID()
-      val info = ParticipantInfo(id, ParticipantType.Issuer, None, "issuer", Some(did), None, None, None)
+      val info = ParticipantInfo(id, ParticipantType.Issuer, None, "issuer", Some(did), None, None)
       ParticipantsDAO
         .insert(info)
         .transact(database)
@@ -36,7 +36,7 @@ class ParticipantsRepositorySpec extends ConnectorRepositorySpecBase {
 
     "get a participant by unpublished DID" in {
       val id = ParticipantId.random()
-      val info = ParticipantInfo(id, ParticipantType.Issuer, None, "issuer", Some(shortDID), None, None, None)
+      val info = ParticipantInfo(id, ParticipantType.Issuer, None, "issuer", Some(shortDID), None, None)
       ParticipantsDAO
         .insert(info)
         .transact(database)
@@ -49,7 +49,7 @@ class ParticipantsRepositorySpec extends ConnectorRepositorySpecBase {
 
     "get a participant by DID when creating it with an unpublished DID" in {
       val id = ParticipantId.random()
-      val info = ParticipantInfo(id, ParticipantType.Issuer, None, "issuer", Some(longDID), None, None, None)
+      val info = ParticipantInfo(id, ParticipantType.Issuer, None, "issuer", Some(longDID), None, None)
       ParticipantsDAO
         .insert(info)
         .transact(database)
@@ -71,7 +71,6 @@ class ParticipantsRepositorySpec extends ConnectorRepositorySpecBase {
             "issuer",
             Some(DataPreparation.newDID()),
             None,
-            None,
             None
           )
         )
@@ -87,7 +86,7 @@ class ParticipantsRepositorySpec extends ConnectorRepositorySpecBase {
 
       val id = ParticipantId.random()
       val logo = ParticipantLogo(bytes = "SomeBytes".getBytes.toVector)
-      val info = ParticipantInfo(id, ParticipantType.Issuer, None, "issuer", Some(longDID), None, None, None)
+      val info = ParticipantInfo(id, ParticipantType.Issuer, None, "issuer", Some(longDID), None, None)
       ParticipantsDAO
         .insert(info)
         .transact(database)
@@ -111,7 +110,7 @@ class ParticipantsRepositorySpec extends ConnectorRepositorySpecBase {
 
       val id = ParticipantId.random()
       val logo = ParticipantLogo(bytes = "SomeBytes".getBytes.toVector)
-      val info = ParticipantInfo(id, ParticipantType.Issuer, None, "issuer", Some(longDID), Some(logo), None, None)
+      val info = ParticipantInfo(id, ParticipantType.Issuer, None, "issuer", Some(longDID), Some(logo), None)
       ParticipantsDAO
         .insert(info)
         .transact(database)
@@ -135,7 +134,7 @@ class ParticipantsRepositorySpec extends ConnectorRepositorySpecBase {
 
       val id = ParticipantId.random()
       val logo = ParticipantLogo(bytes = "SomeBytes".getBytes.toVector)
-      val info = ParticipantInfo(id, ParticipantType.Issuer, None, "issuer", Some(longDID), Some(logo), None, None)
+      val info = ParticipantInfo(id, ParticipantType.Issuer, None, "issuer", Some(longDID), Some(logo), None)
       ParticipantsDAO
         .insert(info)
         .transact(database)
@@ -159,7 +158,7 @@ class ParticipantsRepositorySpec extends ConnectorRepositorySpecBase {
 
       val id = ParticipantId.random()
       val logo = ParticipantLogo(bytes = "SomeBytes".getBytes.toVector)
-      val info = ParticipantInfo(id, ParticipantType.Issuer, None, "issuer", Some(longDID), None, None, None)
+      val info = ParticipantInfo(id, ParticipantType.Issuer, None, "issuer", Some(longDID), None, None)
       ParticipantsDAO
         .insert(info)
         .transact(database)

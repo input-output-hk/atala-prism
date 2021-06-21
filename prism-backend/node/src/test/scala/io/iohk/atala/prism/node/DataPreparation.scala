@@ -4,19 +4,13 @@ import cats.effect.IO
 import cats.implicits._
 import doobie.util.transactor.Transactor
 import doobie.implicits._
+import io.iohk.atala.prism.connector.AtalaOperationId
 import io.iohk.atala.prism.credentials.CredentialBatchId
 import io.iohk.atala.prism.crypto.MerkleTree.MerkleRoot
 import io.iohk.atala.prism.crypto.SHA256Digest
 import io.iohk.atala.prism.identity.DIDSuffix
 import io.iohk.atala.prism.node.cardano.{LAST_SYNCED_BLOCK_NO, LAST_SYNCED_BLOCK_TIMESTAMP}
-import io.iohk.atala.prism.node.models.{
-  AtalaObjectId,
-  AtalaOperationId,
-  AtalaOperationInfo,
-  AtalaOperationStatus,
-  DIDData,
-  DIDPublicKey
-}
+import io.iohk.atala.prism.node.models.{AtalaObjectId, AtalaOperationInfo, AtalaOperationStatus, DIDData, DIDPublicKey}
 import io.iohk.atala.prism.node.models.nodeState.{DIDDataState, DIDPublicKeyState, LedgerData}
 import io.iohk.atala.prism.node.repositories.daos.AtalaObjectsDAO.AtalaObjectCreateData
 import io.iohk.atala.prism.node.repositories.daos.CredentialBatchesDAO.CreateCredentialBatchData

@@ -5,10 +5,11 @@ import cats.data.EitherT
 import cats.implicits._
 import doobie.free.connection
 import doobie.free.connection.ConnectionIO
+import io.iohk.atala.prism.connector.AtalaOperationId
 import io.iohk.atala.prism.credentials.TimestampInfo
 import io.iohk.atala.prism.crypto.{EC, ECPublicKey, ECSignature}
 import io.iohk.atala.prism.models.{Ledger, TransactionId}
-import io.iohk.atala.prism.node.models.{AtalaOperationId, AtalaOperationStatus}
+import io.iohk.atala.prism.node.models.AtalaOperationStatus
 import io.iohk.atala.prism.node.models.nodeState.LedgerData
 import io.iohk.atala.prism.node.operations.ValidationError.InvalidValue
 import io.iohk.atala.prism.node.operations._

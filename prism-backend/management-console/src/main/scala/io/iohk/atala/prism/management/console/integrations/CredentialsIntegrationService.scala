@@ -1,10 +1,11 @@
 package io.iohk.atala.prism.management.console.integrations
 
+import io.iohk.atala.prism.connector.AtalaOperationId
 import io.iohk.atala.prism.grpc.ProtoConverter
 import io.iohk.atala.prism.management.console.clients.ConnectorClient
 import io.iohk.atala.prism.management.console.errors
-import io.iohk.atala.prism.management.console.grpc._
 import io.iohk.atala.prism.management.console.errors.{ManagementConsoleError, ManagementConsoleErrorSupport}
+import io.iohk.atala.prism.management.console.grpc._
 import io.iohk.atala.prism.management.console.models.{
   Contact,
   CreateGenericCredential,
@@ -17,7 +18,7 @@ import io.iohk.atala.prism.management.console.repositories.CredentialsRepository
 import io.iohk.atala.prism.models.ConnectionToken
 import io.iohk.atala.prism.protos.connector_models.ContactConnection
 import io.iohk.atala.prism.protos.console_models.ContactConnectionStatus
-import io.iohk.atala.prism.protos.{common_models, connector_models, node_api}
+import io.iohk.atala.prism.protos.{connector_models, node_api}
 import io.iohk.atala.prism.utils.FutureEither
 import io.iohk.atala.prism.utils.FutureEither.{FutureEitherFOps, FutureEitherOps}
 import org.slf4j.{Logger, LoggerFactory}
@@ -38,7 +39,7 @@ class CredentialsIntegrationService(
   def revokePublishedCredential(
       institutionId: ParticipantId,
       request: RevokePublishedCredential
-  ): FutureEither[ManagementConsoleError, common_models.TransactionInfo] = {
+  ): FutureEither[ManagementConsoleError, AtalaOperationId] = {
     for {
       nodeResponse <-
         nodeService
@@ -50,8 +51,12 @@ class CredentialsIntegrationService(
           .map(ProtoConverter[node_api.RevokeCredentialsResponse, NodeRevocationResponse].fromProto)
           .map(_.toEither)
           .toFutureEither(ex => wrapAsServerError(ex))
-      _ <- credentialsRepository.storeRevocationData(institutionId, request.credentialId, nodeResponse.transactionId)
-    } yield nodeResponse.transactionInfo
+      _ <- credentialsRepository.storeRevocationData(
+        institutionId,
+        request.credentialId,
+        nodeResponse.operationId
+      )
+    } yield nodeResponse.operationId
   }
 
   def createGenericCredential(

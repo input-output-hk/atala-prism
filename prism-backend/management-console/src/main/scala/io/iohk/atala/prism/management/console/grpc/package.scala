@@ -7,6 +7,7 @@ import com.google.protobuf.ByteString
 import io.circe.Json
 import io.iohk.atala.prism.auth.grpc.GrpcAuthenticationHeader
 import io.iohk.atala.prism.auth.model.RequestNonce
+import io.iohk.atala.prism.connector.AtalaOperationId
 import io.iohk.atala.prism.grpc.ProtoConverter
 import io.iohk.atala.prism.identity.DID
 import io.iohk.atala.prism.management.console.grpc.ProtoCodecs.{checkListUniqueness, toTimestamp}
@@ -29,7 +30,6 @@ import java.time.LocalDate
 import io.iohk.atala.prism.credentials.CredentialBatchId
 import io.iohk.atala.prism.crypto.MerkleTree.MerkleInclusionProof
 import io.iohk.atala.prism.crypto.{ECSignature, SHA256Digest}
-import io.iohk.atala.prism.models.TransactionId
 import io.iohk.atala.prism.protos.connector_api.SendMessagesRequest
 import io.iohk.atala.prism.protos.console_models.ContactConnectionStatus
 
@@ -665,19 +665,10 @@ package object grpc {
     }
 
   implicit val nodeRevocationResponse: ProtoConverter[node_api.RevokeCredentialsResponse, NodeRevocationResponse] =
-    (response: node_api.RevokeCredentialsResponse) => {
-      for {
-        transactionInfo <- Try {
-          response.transactionInfo
-            .getOrElse(throw new RuntimeException("We could not generate a transaction"))
-        }
-        transactionId =
-          response.transactionInfo
-            .map(_.transactionId)
-            .flatMap(TransactionId.from)
-            .getOrElse(throw new RuntimeException("The node wasn't able to generate a transaction"))
-      } yield NodeRevocationResponse(transactionInfo, transactionId)
-    }
+    (response: node_api.RevokeCredentialsResponse) =>
+      Try {
+        NodeRevocationResponse(AtalaOperationId.fromVectorUnsafe(response.operationId.toByteArray.toVector))
+      }
 
   implicit val issueCredentialBatchResponseConverter
       : ProtoConverter[node_api.IssueCredentialBatchResponse, IssueCredentialBatchNodeResponse] =
@@ -688,10 +679,10 @@ package object grpc {
             .fromString(response.batchId)
             .getOrElse(throw new RuntimeException("Node returned an invalid batch id"))
         )
-        transactionInfo =
-          response.transactionInfo
-            .getOrElse(throw new RuntimeException("The node did not return a transaction"))
-      } yield IssueCredentialBatchNodeResponse(batchId, transactionInfo)
+      } yield IssueCredentialBatchNodeResponse(
+        batchId,
+        AtalaOperationId.fromVectorUnsafe(response.operationId.toByteArray.toVector)
+      )
     }
 
   implicit val createCredentialBulkConverter: ProtoConverter[CreateGenericCredentialBulkRequest, CreateCredentialBulk] =
