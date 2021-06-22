@@ -12,17 +12,14 @@ import io.iohk.atala.prism.node.models.DIDPublicKey
 object PublicKeysDAO {
   def insert(key: DIDPublicKey, ledgerData: LedgerData): ConnectionIO[Unit] = {
     val curveName = ECConfig.CURVE_NAME
-    val point = key.key.getCurvePoint
-
-    val xBytes = point.x.toByteArray
-    val yBytes = point.y.toByteArray
+    val compressed = key.key.getCompressed
 
     val addedOn = ledgerData.timestampInfo
     sql"""
-         |INSERT INTO public_keys (did_suffix, key_id, key_usage, curve, x, y,
+         |INSERT INTO public_keys (did_suffix, key_id, key_usage, curve, compressed,
          |   added_on, added_on_absn, added_on_osn,
          |   added_on_transaction_id, ledger)
-         |VALUES (${key.didSuffix}, ${key.keyId}, ${key.keyUsage}, $curveName, $xBytes, $yBytes,
+         |VALUES (${key.didSuffix}, ${key.keyId}, ${key.keyUsage}, $curveName, $compressed,
          |   ${addedOn.atalaBlockTimestamp}, ${addedOn.atalaBlockSequenceNumber}, ${addedOn.operationSequenceNumber},
          |   ${ledgerData.transactionId}, ${ledgerData.ledger})
        """.stripMargin.update.run.void
@@ -30,7 +27,7 @@ object PublicKeysDAO {
 
   def find(didSuffix: DIDSuffix, keyId: String): ConnectionIO[Option[DIDPublicKeyState]] = {
     sql"""
-         |SELECT did_suffix, key_id, key_usage, curve, x, y, added_on, added_on_absn, added_on_osn, revoked_on, revoked_on_absn, revoked_on_osn
+         |SELECT did_suffix, key_id, key_usage, curve, compressed, added_on, added_on_absn, added_on_osn, revoked_on, revoked_on_absn, revoked_on_osn
          |FROM public_keys
          |WHERE did_suffix = $didSuffix AND key_id = $keyId
        """.stripMargin.query[DIDPublicKeyState].option
@@ -38,7 +35,7 @@ object PublicKeysDAO {
 
   def findAll(didSuffix: DIDSuffix): ConnectionIO[List[DIDPublicKeyState]] = {
     sql"""
-         |SELECT did_suffix, key_id, key_usage, curve, x, y, added_on, added_on_absn, added_on_osn, revoked_on, revoked_on_absn, revoked_on_osn
+         |SELECT did_suffix, key_id, key_usage, curve, compressed, added_on, added_on_absn, added_on_osn, revoked_on, revoked_on_absn, revoked_on_osn
          |FROM public_keys
          |WHERE did_suffix = $didSuffix
        """.stripMargin.query[DIDPublicKeyState].to[List]

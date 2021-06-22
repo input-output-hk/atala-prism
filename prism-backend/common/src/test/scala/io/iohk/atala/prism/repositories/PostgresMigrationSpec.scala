@@ -1,10 +1,11 @@
 package io.iohk.atala.prism.repositories
 
 import java.util
-
 import org.flywaydb.core.Flyway
 import org.flywaydb.core.api.configuration.Configuration
-import org.flywaydb.core.api.resolver.{Context, ResolvedMigration}
+import org.flywaydb.core.api.resolver.{Context, MigrationResolver, ResolvedMigration}
+import org.flywaydb.core.internal.resolver.java.ScanningJavaMigrationResolver
+import org.flywaydb.core.api.ClassProvider
 import org.flywaydb.core.api.ResourceProvider
 import org.flywaydb.core.internal.jdbc.JdbcConnectionFactory
 import org.flywaydb.core.internal.parser.ParsingContext
@@ -12,8 +13,9 @@ import org.flywaydb.core.internal.resolver.sql.SqlMigrationResolver
 import org.flywaydb.core.internal.scanner.{LocationScannerCache, ResourceNameCache, Scanner}
 import org.flywaydb.core.internal.sqlscript.{SqlScriptExecutorFactory, SqlScriptFactory}
 import org.slf4j.LoggerFactory
-
 import io.iohk.atala.prism.AtalaWithPostgresSpec
+import org.flywaydb.core.api.migration.JavaMigration
+import org.flywaydb.core.internal.resolver.CompositeMigrationResolver
 
 import scala.jdk.CollectionConverters._
 
@@ -27,6 +29,7 @@ import scala.jdk.CollectionConverters._
   * - You verify that the existing data was migrated properly
   * - Any migrations after v22 aren't applied
   *
+  * NOTE: If migration script written in Scala (e.g. extending JavaBasedMigration) the prefix should contain the prefix path (db.migration by default)
   * NOTE: If the given prefix isn't found, the function fails printing the available scripts.
   *
   * The simplest example test is like:
@@ -45,6 +48,7 @@ import scala.jdk.CollectionConverters._
   *
   * @param targetPrefixScript the prefix on the script to test, in order to test the migration for
   *                           "v22_alter_tables.sql", you send the prefix as "v22"
+  *                            "v18_alter_tables.scala", you should send prefix as "path.v18" (path = db.migration by default)
   */
 abstract class PostgresMigrationSpec(targetPrefixScript: String) extends AtalaWithPostgresSpec {
 
@@ -77,7 +81,6 @@ abstract class PostgresMigrationSpec(targetPrefixScript: String) extends AtalaWi
       }
     }
   }
-
   // disable automatic migrations so that we inject tests before the target migration script
   override protected def migrate(): Unit = {}
 }
@@ -108,6 +111,16 @@ object PostgresMigrationSpec {
       new LocationScannerCache()
     )
 
+    val javaProvider = new Scanner(
+      classOf[JavaMigration],
+      java.util.Arrays.asList(flywayConfig.getLocations: _*),
+      flywayConfig.getClassLoader,
+      flywayConfig.getEncoding,
+      false,
+      new ResourceNameCache(),
+      new LocationScannerCache()
+    )
+
     val jdbcConnectionFactory =
       new JdbcConnectionFactory(flywayConfig.getDataSource, flywayConfig.getConnectRetries, null)
     val databaseType = jdbcConnectionFactory.getDatabaseType
@@ -115,13 +128,24 @@ object PostgresMigrationSpec {
       databaseType.createSqlScriptExecutorFactory(jdbcConnectionFactory, null, null)
     val sqlScriptFactory = databaseType.createSqlScriptFactory(flywayConfig, new ParsingContext())
 
-    val customResolver = new CustomResolver(
+    val sqlMigration = new SqlMigrationResolver(
       resourceProvider,
       sqlScriptExecutorFactory,
       sqlScriptFactory,
       flywayConfig,
+      new ParsingContext
+    )
+    val javaMigration = new ScanningJavaMigrationResolver(javaProvider, flywayConfig)
+
+    val customResolver = new CustomResolver(
+      resourceProvider,
+      javaProvider,
+      sqlScriptExecutorFactory,
+      sqlScriptFactory,
+      flywayConfig,
       targetPrefixScript,
-      targetPrefixScriptExcluded
+      targetPrefixScriptExcluded,
+      Seq(sqlMigration, javaMigration)
     )
 
     flywayConfig
@@ -133,17 +157,21 @@ object PostgresMigrationSpec {
 
   class CustomResolver(
       resourceProvider: ResourceProvider,
+      javaMigrations: ClassProvider[JavaMigration],
       sqlScriptExecutorFactory: SqlScriptExecutorFactory,
       sqlScriptFactory: SqlScriptFactory,
       configuration: Configuration,
       targetPrefixScript: String,
-      targetPrefixScriptExcluded: Boolean
-  ) extends SqlMigrationResolver(
+      targetPrefixScriptExcluded: Boolean,
+      customMigrationResolvers: Seq[MigrationResolver]
+  ) extends CompositeMigrationResolver(
         resourceProvider,
+        javaMigrations,
+        configuration,
         sqlScriptExecutorFactory,
         sqlScriptFactory,
-        configuration,
-        new ParsingContext
+        new ParsingContext,
+        customMigrationResolvers: _*
       ) {
 
     private val logger = LoggerFactory.getLogger(this.getClass)

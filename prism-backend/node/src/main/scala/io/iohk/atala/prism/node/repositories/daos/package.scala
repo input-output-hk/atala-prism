@@ -103,7 +103,6 @@ package object daos extends BaseDAO {
           KeyUsage,
           String,
           Array[Byte],
-          Array[Byte],
           Instant,
           Int,
           Int,
@@ -112,9 +111,9 @@ package object daos extends BaseDAO {
           Option[Int]
       )
     ].map {
-      case (didSuffix, keyId, keyUsage, curveId, x, y, aTimestamp, aABSN, aOSN, rTimestamp, rABSN, rOSN) =>
+      case (didSuffix, keyId, keyUsage, curveId, x, aTimestamp, aABSN, aOSN, rTimestamp, rABSN, rOSN) =>
         assert(curveId == ECConfig.CURVE_NAME)
-        val javaPublicKey = EC.toPublicKey(x, y)
+        val javaPublicKey = EC.toPublicKeyFromCompressed(x).get
         val revokeTimestampInfo = for (t <- rTimestamp; absn <- rABSN; osn <- rOSN) yield TimestampInfo(t, absn, osn)
         DIDPublicKeyState(
           didSuffix,
