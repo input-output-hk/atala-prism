@@ -4,12 +4,14 @@ import io.circe._
 import io.circe.generic.semiauto._
 import io.iohk.atala.prism.kycbridge.models.assureId.implicits._
 import io.iohk.atala.prism.kycbridge.models.assureId.Document
+import io.iohk.atala.prism.utils.Base64ByteArrayWrapper
+import io.iohk.atala.prism.utils.Base64ByteArrayWrapper._
 
 case class AcuantCompareImagesState2Data(
     receivedMessageId: String,
     connectionId: String,
     documentInstanceId: String,
-    selfieImage: Array[Byte],
+    selfieImage: Base64ByteArrayWrapper,
     document: Document
 )
 

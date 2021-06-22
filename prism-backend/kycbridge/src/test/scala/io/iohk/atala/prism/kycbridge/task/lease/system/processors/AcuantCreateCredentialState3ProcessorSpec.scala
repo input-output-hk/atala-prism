@@ -14,6 +14,7 @@ import io.iohk.atala.prism.services.ServicesFixtures
 import io.iohk.atala.prism.stubs.{ConnectorClientServiceStub, NodeClientServiceStub}
 import io.iohk.atala.prism.task.lease.system.ProcessingTaskResult.{ProcessingTaskFinished, ProcessingTaskScheduled}
 import io.iohk.atala.prism.task.lease.system.{ProcessingTaskData, ProcessingTaskFixtures}
+import io.iohk.atala.prism.utils.Base64ByteArrayWrapper
 import monix.eval.Task
 import monix.execution.Scheduler.Implicits.global
 
@@ -81,9 +82,9 @@ class AcuantCreateCredentialState3ProcessorSpec
       receivedMessageId = "receivedMessageId",
       connectionId = connection1.id.get.uuid.toString,
       documentInstanceId = "documentInstanceId",
-      selfieImage = Array.empty[Byte],
+      selfieImage = Base64ByteArrayWrapper(Array.empty[Byte]),
       document = document,
-      frontScannedImage = photo
+      frontScannedImage = Base64ByteArrayWrapper(photo)
     )
 
     val processingTask = createProcessingTask[KycBridgeProcessingTaskState](

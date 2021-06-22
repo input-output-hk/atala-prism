@@ -46,7 +46,7 @@ class AcuantCompareImagesState2Processor(
           .mapErrorToProcessingTaskScheduled(processingTask)
       )
 
-      faceMatchData = faceId.Data(frontScannedImage, acuantData.selfieImage)
+      faceMatchData = faceId.Data(frontScannedImage, acuantData.selfieImage.value)
 
       faceMatchResult <- EitherT(
         faceIdService

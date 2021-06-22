@@ -49,7 +49,7 @@ class AcuantCreateCredentialState3Processor(
       // create credential batch with the document
       credential <- EitherT(
         Task
-          .pure(createCredential(acuantData.document, acuantData.frontScannedImage))
+          .pure(createCredential(acuantData.document, acuantData.frontScannedImage.value))
           .logErrorIfPresent
           .sendResponseOnError(connectorService, acuantData.receivedMessageId, acuantData.connectionId)
           .mapErrorToProcessingTaskFinished[KycBridgeProcessingTaskState]()

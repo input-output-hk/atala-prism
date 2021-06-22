@@ -7,6 +7,7 @@ import io.iohk.atala.prism.protos.connector_models.ReceivedMessage
 import io.iohk.atala.prism.protos.credential_models.{AcuantProcessFinished, AtalaMessage}
 import io.iohk.atala.prism.services.MessageProcessor
 import io.iohk.atala.prism.task.lease.system.{ProcessingTaskData, ProcessingTaskService}
+import io.iohk.atala.prism.utils.Base64ByteArrayWrapper
 
 import java.time.Instant
 import scala.util.Try
@@ -22,7 +23,7 @@ class AcuantDocumentUploadedMessageProcessor(
           receivedMessageId = receivedMessage.id,
           connectionId = receivedMessage.connectionId,
           documentInstanceId = message.documentInstanceId,
-          selfieImage = message.selfieImage.toByteArray
+          selfieImage = Base64ByteArrayWrapper(message.selfieImage.toByteArray)
         )
 
         val processingTaskData = ProcessingTaskData(acuantProcessingData.asJson)

@@ -17,6 +17,7 @@ import io.iohk.atala.prism.task.lease.system.ProcessingTaskResult.{
   ProcessingTaskStateTransition
 }
 import io.iohk.atala.prism.task.lease.system.{ProcessingTaskData, ProcessingTaskFixtures}
+import io.iohk.atala.prism.utils.Base64ByteArrayWrapper
 import monix.eval.Task
 import monix.execution.Scheduler.Implicits.global
 
@@ -67,7 +68,7 @@ class AcuantCompareImagesState2ProcessorSpec extends PostgresRepositorySpec[Task
       receivedMessageId = "receivedMessageId",
       connectionId = connection1.id.get.uuid.toString,
       documentInstanceId = "documentInstanceId",
-      selfieImage = Array.empty[Byte],
+      selfieImage = Base64ByteArrayWrapper(Array.empty[Byte]),
       document = Document(instanceId = "id", biographic = None, classification = None, dataFields = None)
     )
 
