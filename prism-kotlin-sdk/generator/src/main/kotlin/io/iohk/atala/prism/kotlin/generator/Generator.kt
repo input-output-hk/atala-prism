@@ -35,7 +35,7 @@ class Generator : ServiceGenerator {
             ServiceGenerator.Result(
                 otherFilePath = Paths.get(service.filePath).resolveSibling(service.name + ".kt").toString(),
                 code =
-                    """
+                """
                     package ${service.file.kotlinPackageName}
                     
                     import io.iohk.atala.prism.kotlin.protos.PrismMetadata
@@ -46,12 +46,12 @@ class Generator : ServiceGenerator {
                             ${clientMethods.joinToString("")}
                         }
                     }
-                    """.trimIndent()
+                """.trimIndent()
             ),
             ServiceGenerator.Result(
                 otherFilePath = "../../jsMain/kotlin/" + Paths.get(service.filePath).resolveSibling(service.name + "JS.kt").toString(),
                 code =
-                    """
+                """
                     package ${service.file.kotlinPackageName}
                     
                     import io.iohk.atala.prism.kotlin.protos.GrpcClient
@@ -72,7 +72,7 @@ class Generator : ServiceGenerator {
                         val internalService = ${service.name}.Client(grpcClient)
                         ${clientMethodsJs.joinToString("")}
                     }
-                    """.trimIndent()
+                """.trimIndent()
             )
         )
     }

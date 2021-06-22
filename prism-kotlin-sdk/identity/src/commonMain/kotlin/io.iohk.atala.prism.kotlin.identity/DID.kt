@@ -16,6 +16,7 @@ class DID private constructor(val value: String) {
         val prismPrefix = "did:prism:"
         val prismRegex = Regex("^did:prism(:[A-Za-z0-9_-]+)+$")
         const val masterKeyId: String = "master0"
+        const val issuingKeyId: String = "issuing0"
 
         // This is the prefix we currently use in IntDemo TODO: Remove once possible
         val testRegex = Regex("^did:test(:[A-Za-z0-9_-]+)+$")
@@ -45,16 +46,28 @@ class DID private constructor(val value: String) {
             "$stateHash:$encodedState"
 
         @JvmStatic
-        fun createUnpublishedDID(masterKey: ECPublicKey): DID {
-            val createDidOp = CreateDIDOperation(
-                didData = DIDData(
-                    publicKeys = listOf(
+        fun createUnpublishedDID(masterKey: ECPublicKey, issuingKey: ECPublicKey? = null): DID {
+            val masterKeyPublicKey =
+                listOf(
+                    PublicKey(
+                        id = masterKeyId,
+                        usage = KeyUsage.MASTER_KEY,
+                        keyData = PublicKey.KeyData.EcKeyData(masterKey.toProto())
+                    )
+                )
+            val issuingKeyPublicKey =
+                issuingKey?.let {
+                    listOf(
                         PublicKey(
-                            id = masterKeyId,
-                            usage = KeyUsage.MASTER_KEY,
-                            keyData = PublicKey.KeyData.EcKeyData(masterKey.toProto())
+                            id = issuingKeyId,
+                            usage = KeyUsage.ISSUING_KEY,
+                            keyData = PublicKey.KeyData.EcKeyData(it.toProto())
                         )
                     )
+                }.orEmpty()
+            val createDidOp = CreateDIDOperation(
+                didData = DIDData(
+                    publicKeys = masterKeyPublicKey + issuingKeyPublicKey
                 )
             )
 

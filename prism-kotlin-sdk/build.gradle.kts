@@ -4,10 +4,11 @@ plugins {
     kotlin("multiplatform") version "1.5.10" apply false
     kotlin("plugin.serialization") version "1.5.10" apply false
     kotlin("native.cocoapods") version "1.5.10" apply false
-    id("com.android.library") version "4.0.2" apply false
+    id("com.android.library") version "4.1.2" apply false
     id("com.google.protobuf") version "0.8.14" apply false
+    id("dev.petuska.npm.publish") version "2.0.2" apply false
     id("com.palantir.git-version") version "0.12.3"
-    id("org.jlleitschuh.gradle.ktlint") version "9.4.1"
+    id("org.jlleitschuh.gradle.ktlint") version "10.0.0"
 }
 val versionDetails: groovy.lang.Closure<VersionDetails> by extra
 val pbandkVersion by extra("0.10.0-M4")

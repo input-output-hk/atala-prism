@@ -39,7 +39,7 @@ kotlin {
                 }
             }
         }
-        binaries.executable()
+        binaries.library()
         useCommonJs()
 
         compilations["main"].packageJson {

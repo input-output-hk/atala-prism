@@ -29,7 +29,7 @@ class CredentialVerificationTest {
     private val now = TimestampInfo(Clock.System.now().epochSeconds, 2, 2)
     private val after = TimestampInfo(Clock.System.now().plus(1, DateTimeUnit.SECOND).epochSeconds, 3, 3)
 
-    fun rootAndProofFor(cred: Credential): Pair<MerkleRoot, MerkleInclusionProof> {
+    fun rootAndProofFor(cred: PrismCredential): Pair<MerkleRoot, MerkleInclusionProof> {
         val (root, profs) = CredentialBatches.batch(listOf(cred))
         return Pair(root, profs.first())
     }

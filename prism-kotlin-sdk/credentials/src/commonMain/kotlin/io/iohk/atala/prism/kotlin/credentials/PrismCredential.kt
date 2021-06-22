@@ -9,7 +9,7 @@ import io.iohk.atala.prism.kotlin.crypto.signature.ECSignature
 import kotlin.js.JsExport
 
 @JsExport
-abstract class Credential {
+abstract class PrismCredential {
     abstract val contentBytes: ByteArray
 
     abstract val content: CredentialContent
@@ -22,7 +22,7 @@ abstract class Credential {
 
     fun hash(): SHA256Digest = SHA256Digest.compute(canonicalForm.encodeToByteArray())
 
-    abstract fun sign(privateKey: ECPrivateKey): Credential
+    abstract fun sign(privateKey: ECPrivateKey): PrismCredential
 
     fun isValidSignature(publicKey: ECPublicKey): Boolean {
         return signature?.let { EC.verify(contentBytes, publicKey, it) } ?: false

@@ -128,6 +128,13 @@ You can check the overview of the exposed methods in the generated `TypeScript` 
 
 There's also [prism-sdk-javascript-example](examples/prism-sdk-javascript-example) project with various examples of how to use this SDK.
 
+## Publishing NPM package
+In order to publish `extras` module (it will contain all the other modules transitively) as an NPM package, you will need to have a valid Github token that has write access to input-output-hk Github organization. The token must be available as `GITHUB_PACKAGES_TOKEN` environment variable. Once you have it set, just run the following command:
+
+```
+$ ./gradlew :extras:publishJsNpmPublicationToGithub
+```
+
 ## Docs
 
 Be aware that the [integration-tutorial](docs/src/docs/integration-tutorial) doesn't use Ank for compile-checked docs because we are blocked by this [issue](https://github.com/arrow-kt/arrow/issues/472). The problem is that the circleci job that builds the website docs doesn't have the connector/node running which are necessary to perform some network calls from the docs.

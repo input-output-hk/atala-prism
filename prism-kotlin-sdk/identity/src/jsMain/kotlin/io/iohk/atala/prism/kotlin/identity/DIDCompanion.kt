@@ -16,6 +16,6 @@ object DIDCompanion {
     fun fromString(string: String): DID =
         DID.fromString(string)
 
-    fun createUnpublishedDID(masterKey: ECPublicKey): DID =
-        DID.createUnpublishedDID(masterKey)
+    fun createUnpublishedDID(masterKey: ECPublicKey, issuingKey: ECPublicKey? = null): DID =
+        DID.createUnpublishedDID(masterKey, issuingKey)
 }

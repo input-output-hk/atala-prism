@@ -1,7 +1,7 @@
 package io.iohk.atala.prism.kotlin.extras
 
-import io.iohk.atala.prism.kotlin.credentials.Credential
 import io.iohk.atala.prism.kotlin.credentials.CredentialBatchId
+import io.iohk.atala.prism.kotlin.credentials.PrismCredential
 import io.iohk.atala.prism.kotlin.crypto.EC
 import io.iohk.atala.prism.kotlin.crypto.SHA256Digest
 import io.iohk.atala.prism.kotlin.crypto.keys.ECKeyPair
@@ -29,7 +29,7 @@ object ProtoUtils {
     fun revokeCredentialsOperation(
         batchOperationHash: SHA256Digest,
         batchId: CredentialBatchId,
-        credentials: List<Credential>
+        credentials: List<PrismCredential>
     ): AtalaOperation {
         val revokeCredentialsService = RevokeCredentialsOperation(
             previousOperationHash = ByteArr(batchOperationHash.value),

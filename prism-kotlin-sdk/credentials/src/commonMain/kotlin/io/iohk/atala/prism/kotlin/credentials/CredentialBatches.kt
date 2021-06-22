@@ -17,7 +17,7 @@ data class CredentialBatch(
 object CredentialBatches {
 
     fun batch(
-        signedCredentials: List<Credential>
+        signedCredentials: List<PrismCredential>
     ): CredentialBatch {
         val merkleProofs = generateProofs(
             signedCredentials.map { it.hash() }
@@ -27,7 +27,7 @@ object CredentialBatches {
     }
 
     fun verifyInclusion(
-        signedCredential: Credential,
+        signedCredential: PrismCredential,
         merkleRoot: MerkleRoot,
         inclusionProof: MerkleInclusionProof
     ): Boolean {

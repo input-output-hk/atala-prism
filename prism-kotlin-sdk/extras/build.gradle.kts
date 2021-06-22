@@ -4,6 +4,7 @@ plugins {
     id("com.android.library")
     // A small plugin that replaces `kotlin.js.Promise` with plain `Promise` in .d.ts files
     id("com.github.turansky.kfc.definitions") version "3.8.3"
+    id("dev.petuska.npm.publish")
 }
 
 kotlin {
@@ -27,7 +28,7 @@ kotlin {
                 }
             }
         }
-        binaries.executable()
+        binaries.library()
         useCommonJs()
 
         compilations["main"].packageJson {
@@ -87,6 +88,31 @@ kotlin {
     publishing {
         repositories {
             mavenLocal()
+        }
+    }
+
+    npmPublishing {
+        organization = "input-output-hk"
+        access = RESTRICTED
+
+        repositories {
+            repository("github") {
+                access = RESTRICTED
+                registry = uri("https://npm.pkg.github.com")
+                authToken = System.getenv("GITHUB_TOKEN")
+            }
+        }
+        publications {
+            val js by getting {
+                moduleName = "prism-sdk"
+                packageJson {
+                    repository =
+                        mutableMapOf(
+                            Pair("type", "git"),
+                            Pair("url", "https://github.com/input-output-hk/atala-tobearchived.git")
+                        )
+                }
+            }
         }
     }
 }

@@ -49,7 +49,7 @@ object CredentialVerification {
     fun verify(
         keyData: KeyData,
         credentialData: CredentialData,
-        credential: Credential
+        credential: PrismCredential
     ) {
 
         if (credentialData.revokedOn != null) {
@@ -94,7 +94,7 @@ object CredentialVerification {
         credentialRevocationTime: TimestampInfo?,
         merkleRoot: MerkleRoot,
         inclusionProof: MerkleInclusionProof,
-        signedCredential: Credential
+        signedCredential: PrismCredential
     ) {
 
         if (batchData.revokedOn != null) {

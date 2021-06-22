@@ -1,7 +1,7 @@
 package io.iohk.atala.prism.kotlin.credentials.json
 
-import io.iohk.atala.prism.kotlin.credentials.Credential
 import io.iohk.atala.prism.kotlin.credentials.CredentialParsingError
+import io.iohk.atala.prism.kotlin.credentials.PrismCredential
 import io.iohk.atala.prism.kotlin.credentials.content.CredentialContent
 import io.iohk.atala.prism.kotlin.crypto.EC
 import io.iohk.atala.prism.kotlin.crypto.keys.ECPrivateKey
@@ -13,7 +13,7 @@ import kotlin.js.JsExport
 data class JsonBasedCredential constructor(
     override val content: CredentialContent,
     override val signature: ECSignature? = null
-) : Credential() {
+) : PrismCredential() {
 
     override val contentBytes = content.fields.toString().encodeToByteArray()
 
@@ -26,7 +26,7 @@ data class JsonBasedCredential constructor(
             contentBytes.decodeToString()
         }
 
-    override fun sign(privateKey: ECPrivateKey): Credential {
+    override fun sign(privateKey: ECPrivateKey): PrismCredential {
         return copy(signature = EC.sign(contentBytes, privateKey))
     }
 
