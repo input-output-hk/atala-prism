@@ -8,17 +8,17 @@ This is the server side of PRISM.
 
 Coursier is a package manager through which we will install all java/scala related dependencies. Follow the [instructions](https://get-coursier.io/docs/cli-installation.html#linux-macos) for your operating system
 
-### Install java 8
+### Install JDK 11
 
 ```bash
-cs java --jvm adopt:1.8.0-265 --setup
+cs java --jvm adopt:1.11.0-11 --setup
 ```
 after that `java -version` should yield
 
 ```bash
-openjdk version "1.8.0_265"
-OpenJDK Runtime Environment (build 1.8.0_265-b01)
-OpenJDK 64-Bit Server VM (build 25.265-b01, mixed mode)
+openjdk version "11.0.11" 2021-04-20
+OpenJDK Runtime Environment (build 11.0.11+9)
+OpenJDK 64-Bit Server VM (build 11.0.11+9, mixed mode)
 ```
 
 ### Install sbt
@@ -121,7 +121,7 @@ Once the file has been generated, edit `.bsp/sbt.json` and increase -Xmx setting
 
 You can open the project with IntelliJ IDEA.
 
-When IntelliJ IDEA asks you what project configuration to use, pick "Open as BSP project". Once the project has been imported, make sure your project SDK is set to JDK 8.
+When IntelliJ IDEA asks you what project configuration to use, pick "Open as BSP project". Once the project has been imported, make sure your project SDK is set to JDK 11.
 
 #### Troubleshooting
 

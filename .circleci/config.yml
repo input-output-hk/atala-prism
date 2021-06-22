@@ -9,7 +9,7 @@ parameters:
     default: "2.13"
   prism-scala-common-docker-image:
     type: string
-    default: "inputoutput/prism-scala-common:2.12.10-2.13.6-1.5.3-0.14.5"
+    default: "inputoutput/prism-scala-common:2.12.10-2.13.6-1.5.3-0.14.5-jdk11"
 
 commands:
   halt-step-if-not-changed:
@@ -437,7 +437,7 @@ jobs:
   build-prism-web-wallet:
     working_directory: ~/repo
     docker:
-      - image: circleci/openjdk:8-jdk-node-browsers
+      - image: circleci/openjdk:11-jdk-node-browsers
     environment:
       SBT_OPTS: -Xmx2048m
     steps:
@@ -512,7 +512,7 @@ jobs:
   build-prism-sdk:
     working_directory: ~/repo
     docker:
-        - image: circleci/openjdk:8-jdk-node
+        - image: circleci/openjdk:11-jdk-node
     environment:
       SBT_OPTS: -Xmx2048m
     steps:
@@ -667,16 +667,14 @@ jobs:
           name: Install Android SDK
           command: |
             brew tap homebrew/cask
-            brew uninstall adoptopenjdk11
-            brew install --cask homebrew/cask-versions/adoptopenjdk8
-            brew install --cask android-sdk
+            brew install --cask android-commandlinetools
 
       - run:
           name: Setup Android environment variables
           command: |
-            echo 'export ANDROID_HOME="/usr/local/share/android-sdk"' >> $BASH_ENV
-            echo 'export ANDROID_SDK_HOME="/usr/local/share/android-sdk"' >> $BASH_ENV
-            echo 'export ANDROID_SDK_ROOT="/usr/local/share/android-sdk"' >> $BASH_ENV
+            echo 'export ANDROID_HOME="/usr/local/share/android-commandlinetools"' >> $BASH_ENV
+            echo 'export ANDROID_SDK_HOME="/usr/local/share/android-commandlinetools"' >> $BASH_ENV
+            echo 'export ANDROID_SDK_ROOT="/usr/local/share/android-commandlinetools"' >> $BASH_ENV
 
       - run:
           name: Accept Android SDK licenses
