@@ -5,16 +5,21 @@ import io.iohk.atala.prism.utils.Using.using
 import org.flywaydb.core.api.migration.{BaseJavaMigration, Context}
 
 import java.sql.ResultSet
+import scala.util.{Failure, Success, Try}
 
 class V19__public_keys extends BaseJavaMigration {
 
   override def migrate(context: Context): Unit = {
-    using(context.getConnection.prepareStatement("SELECT did_suffix, key_id, x, y FROM public_keys")) { select =>
-      val rows: ResultSet = select.executeQuery()
-
+    Try {
+      val rows = context.getConnection.createStatement
+        .executeQuery("SELECT did_suffix, key_id, x, y FROM public_keys WHERE xCompressed is NULL")
       if (rows.next())
         loop(rows, context)
-
+    } match {
+      case Failure(exception) =>
+        exception.printStackTrace()
+        throw new Exception("V19__public_keys migration failed")
+      case Success(_) => println("V19__public_keys migration succeed")
     }
   }
 

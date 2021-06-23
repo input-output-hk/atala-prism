@@ -8,7 +8,6 @@ import io.iohk.atala.prism.identity.DIDSuffix
 import io.iohk.atala.prism.models.{Ledger, TransactionId}
 import io.iohk.atala.prism.node.models.nodeState.LedgerData
 import io.iohk.atala.prism.node.models.{DIDPublicKey, KeyUsage}
-import io.iohk.atala.prism.node.operations.CreateDIDOperationSpec
 import io.iohk.atala.prism.repositories.PostgresMigrationSpec
 import io.iohk.atala.prism.node.repositories.daos._
 import io.iohk.atala.prism.repositories.ops.SqlTestOps.Implicits
@@ -27,7 +26,7 @@ class V19MigrationSpec extends PostgresMigrationSpec("db.migration.V19") with Ba
   val didDigest = SHA256Digest.compute("test".getBytes())
   val didSuffix = DIDSuffix.unsafeFromDigest(didDigest)
   val didPublicKey: DIDPublicKey =
-    DIDPublicKey(didSuffix, "master", KeyUsage.MasterKey, CreateDIDOperationSpec.masterKeys.publicKey)
+    DIDPublicKey(didSuffix, "master", KeyUsage.MasterKey, EC.generateKeyPair().publicKey)
 
   private def insertPublicKey(key: DIDPublicKey, ledgerData: LedgerData) = {
     val curveName = ECConfig.CURVE_NAME

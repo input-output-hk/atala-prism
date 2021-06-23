@@ -107,8 +107,10 @@ object PostgresMigrationSpec {
       flywayConfig.getClassLoader,
       flywayConfig.getEncoding,
       false,
+      true,
       new ResourceNameCache(),
-      new LocationScannerCache()
+      new LocationScannerCache(),
+      true
     )
 
     val javaProvider = new Scanner(
@@ -117,12 +119,14 @@ object PostgresMigrationSpec {
       flywayConfig.getClassLoader,
       flywayConfig.getEncoding,
       false,
+      true,
       new ResourceNameCache(),
-      new LocationScannerCache()
+      new LocationScannerCache(),
+      true
     )
 
     val jdbcConnectionFactory =
-      new JdbcConnectionFactory(flywayConfig.getDataSource, flywayConfig.getConnectRetries, null)
+      new JdbcConnectionFactory(flywayConfig.getDataSource, flywayConfig, null)
     val databaseType = jdbcConnectionFactory.getDatabaseType
     val sqlScriptExecutorFactory =
       databaseType.createSqlScriptExecutorFactory(jdbcConnectionFactory, null, null)
