@@ -1,8 +1,7 @@
 ---
 - hosts: nomad
   vars:
-    - nomad_version: 1.1.0
-    - nomad_zip_checksum: sha1:275f53bfe62879125a29758b78ef503c128b3112
+    - nomad_version: 1.1.2
     - nomad_zip_filename: nomad.zip
     - nomad_installation_directory: /usr/local/bin
     - nomad_config_directory: /etc/nomad.d
@@ -17,6 +16,7 @@
     - awscli_zip_filename: awscli.zip
     - docker_credential_ecr_login_download_url: "https://amazon-ecr-credential-helper-releases.s3.us-east-2.amazonaws.com/0.5.0/linux-amd64/docker-credential-ecr-login"
     - docker_credential_ecr_login_checksum: sha1:45f83edf517f0cc317a3f734abd254a79e306aa2
+    - host_public_ipv4_address: "{{ hostvars[inventory_hostname]['ansible_env'].SSH_CONNECTION.split(' ')[2] }}"
   tasks:
     - name: Make sure we can form a proper server cluster
       fail:
@@ -34,7 +34,7 @@
       get_url:
         url="https://releases.hashicorp.com/nomad/{{ nomad_version }}/nomad_{{ nomad_version }}_linux_amd64.zip"
         dest="{{ ansible_env.HOME }}/{{ nomad_zip_filename }}"
-        checksum="{{ nomad_zip_checksum }}"
+        checksum="sha256:https://releases.hashicorp.com/nomad/{{ nomad_version }}/nomad_{{ nomad_version }}_SHA256SUMS"
 
     - name: Unzip nomad
       become: yes

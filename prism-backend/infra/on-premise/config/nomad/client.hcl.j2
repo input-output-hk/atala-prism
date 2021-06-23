@@ -30,9 +30,24 @@ plugin "docker" {
   }
 }
 
+advertise {
+  http = "{{ host_public_ipv4_address }}"
+  rpc = "{{ host_public_ipv4_address }}"
+  serf = "{{ host_public_ipv4_address }}"
+}
+
 # uncomment this to enable raw_exec jobs
 # plugin "raw_exec" {
 #   config {
 #     enabled = true
 #   }
+# }
+
+# Uncomment for metrics
+# telemetry {
+#   collection_interval = "1s"
+#   disable_hostname = true
+#   prometheus_metrics = true
+#   publish_allocation_metrics = true
+#   publish_node_metrics = true
 # }

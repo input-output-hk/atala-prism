@@ -16,6 +16,14 @@ aws_access_key_id = [REPLACE_ME]
 aws_secret_access_key = [REPLACE_ME]
 ```
 
+---
+**NOTE**
+
+For Local Environment setup with Vagrant go to:
+[Local deployments](VAGRANT.md)
+
+---
+
 ### VM instances
 While the approach is agnostic to any virtual machine, it has been tested with Ubuntu 20.04, having this, you should be able to use any cloud that provides virtual machines, or any physical instances.
 
