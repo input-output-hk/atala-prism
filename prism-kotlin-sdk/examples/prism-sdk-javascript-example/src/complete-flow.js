@@ -77,7 +77,7 @@ async function completeFlow() {
     multilinePrint(`
         Issuer DID registered, the transaction can take up to 10 minutes to be confirmed by the Cardano network
         - DID: ${issuerRegisterDIDResponse.did}
-        - Cardano transaction id: ${issuerRegisterDIDResponse.transactionInfo.transactionId}
+        - Operation identifier: ${issuerRegisterDIDResponse.operationId}
     `);
 
     // Issuer generates a token to connect with the credential holder
@@ -174,7 +174,7 @@ async function completeFlow() {
     multilinePrint(`
         Issuer: Credential issued to Holder, the transaction can take up to 10 minutes to be confirmed by the Cardano network
         - IssuerDID = $issuerDID
-        - Cardano transaction id = ${issuedCredentialResponse.transactionInfo.transactionId}
+        - Operation identifier = ${issuedCredentialResponse.operationId}
         - Credential content = $holderUnsignedCredential
         - Signed credential = ${holderSignedCredential.canonicalForm}
         - Inclusion proof (encoded) = ${holderCredentialMerkleProofs[0].encode()}
@@ -269,7 +269,7 @@ async function completeFlow() {
     multilinePrint(`
         Verifier DID registered, the transaction can take up to 10 minutes to be confirmed by the Cardano network
         - DID: $verifierDID
-        - Cardano transaction id: ${verifierRegisterDIDResponse.transactionInfo.transactionId}
+        - Operation identifier: ${verifierRegisterDIDResponse.operationId}
     `);
 
     // Verifier generates a token to connect with the credential holder
@@ -432,7 +432,7 @@ async function completeFlow() {
     )
     multilinePrint(`
         Issuer: Credential revoked, the transaction can take up to 10 minutes to be confirmed by the Cardano network
-        - Cardano transaction id: ${issuerCredentialRevocationResponse.transactionInfo.transactionId}
+        - Operation identifier: ${issuerCredentialRevocationResponse.operationId}
     `)
 
     // Verifier resolves the credential revocation time from the node
