@@ -32,8 +32,10 @@ trait ServicesFixtures {
 
     val defaultDidBasedAuthConfig = DidBasedAuthConfig(
       did = DID.buildPrismDID("did"),
-      didKeyId = "master",
-      didKeyPair = EC.generateKeyPair()
+      didMasterKeyId = "master",
+      didMasterKeyPair = EC.generateKeyPair(),
+      didIssuingKeyId = "issuance",
+      didIssuingKeyPair = EC.generateKeyPair()
     )
   }
 

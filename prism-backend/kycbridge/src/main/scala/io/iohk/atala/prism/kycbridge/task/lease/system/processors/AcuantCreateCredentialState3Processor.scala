@@ -104,11 +104,11 @@ class AcuantCreateCredentialState3Processor(
         CredentialContent(
           CredentialContent.JsonFields.CredentialType.field -> "KYCCredential",
           CredentialContent.JsonFields.Issuer.field -> authConfig.did.value,
-          CredentialContent.JsonFields.IssuanceKeyId.field -> authConfig.didKeyId,
+          CredentialContent.JsonFields.IssuanceKeyId.field -> authConfig.didIssuingKeyId,
           CredentialContent.JsonFields.CredentialSubject.field -> credentialSubject
         )
       )
-      .sign(authConfig.didKeyPair.privateKey)
+      .sign(authConfig.didIssuingKeyPair.privateKey)
   }
 
   private[processors] def createCredentialSubject(

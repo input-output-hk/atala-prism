@@ -58,7 +58,7 @@ class MirrorE2eSpec extends PostgresRepositorySpec[Task] with Matchers with Mirr
         _ = logger.info(s"DID: ${did.value}")
 
         // create services
-        authConfig = createAuthConfig(did, masterKey, "master")
+        authConfig = createAuthConfig(did, masterKey, "master", issuanceKey, "issuance")
 
         nodeService = new NodeClientServiceImpl(nodeStub, authConfig)
         connectorClientService =

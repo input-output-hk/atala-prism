@@ -60,11 +60,19 @@ object E2ETestUtils {
       .withRole(RegisterDIDRequest.Role.issuer)
   }
 
-  def createAuthConfig(did: DID, keys: ECKeyPair, keyId: String): DidBasedAuthConfig = {
+  def createAuthConfig(
+      did: DID,
+      masterKeys: ECKeyPair,
+      masterKeyId: String,
+      issuingKeys: ECKeyPair,
+      issuingKeyId: String
+  ): DidBasedAuthConfig = {
     DidBasedAuthConfig(
       did = did,
-      didKeyId = keyId,
-      didKeyPair = keys
+      didMasterKeyId = masterKeyId,
+      didMasterKeyPair = masterKeys,
+      didIssuingKeyId = issuingKeyId,
+      didIssuingKeyPair = issuingKeys
     )
   }
 

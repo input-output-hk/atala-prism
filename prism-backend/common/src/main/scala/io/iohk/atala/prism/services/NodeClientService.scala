@@ -50,9 +50,9 @@ class NodeClientServiceImpl(node: NodeServiceGrpc.NodeServiceStub, authConfig: D
 
     val signedAtalaOperation =
       SignedAtalaOperation(
-        signedWith = authConfig.didKeyId,
+        signedWith = authConfig.didIssuingKeyId,
         operation = Some(operation),
-        signature = ByteString.copyFrom(EC.sign(operation.toByteArray, authConfig.didKeyPair.privateKey).data)
+        signature = ByteString.copyFrom(EC.sign(operation.toByteArray, authConfig.didIssuingKeyPair.privateKey).data)
       )
 
     Task.fromFuture(node.issueCredentialBatch(IssueCredentialBatchRequest().withSignedOperation(signedAtalaOperation)))
