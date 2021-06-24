@@ -143,7 +143,8 @@ const getCredentialsIssuedColumns = (
               buttonProps={{
                 className: 'theme-link',
                 onClick: () => sendSingleCredential(credentialId),
-                disabled: contactData.status !== CONNECTION_STATUSES.statusConnectionAccepted
+                disabled:
+                  contactData.connectionStatus !== CONNECTION_STATUSES.statusConnectionAccepted
               }}
               buttonText={i18n.t('credentials.actions.sendOneCredential')}
               loading={loadingSendSingle}

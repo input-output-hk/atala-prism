@@ -14,7 +14,8 @@ export const getTargetCredentials = (credentials, selectedCredentials, requiredS
       const validCredentialStatus =
         !requiredStatus?.credential?.length || requiredStatus.credential.includes(status);
       const validContactStatus =
-        !requiredStatus?.contact?.length || requiredStatus.contact.includes(contactData.status);
+        !requiredStatus?.contact?.length ||
+        requiredStatus.contact.includes(contactData.connectionStatus);
       return validCredentialStatus && validContactStatus;
     })
   };

@@ -24,7 +24,7 @@ export const mockCredentials = [
       midNames: '',
       lastName: 'Lamb',
       key: '53d6c434-3e07-4391-82fa-2e3c9f0dbb09',
-      status: 1,
+      connectionStatus: 1,
       contactId: '53d6c434-3e07-4391-82fa-2e3c9f0dbb09'
     }
   },
@@ -53,7 +53,7 @@ export const mockCredentials = [
       midNames: '',
       lastName: 'Munoz',
       key: '6ba33ecf-7833-4899-a6df-6a681c742067',
-      status: 1,
+      connectionStatus: 1,
       contactId: '6ba33ecf-7833-4899-a6df-6a681c742067'
     }
   },
@@ -87,7 +87,7 @@ export const mockCredentials = [
       midNames: '',
       lastName: 'Wells',
       key: '49fcb20a-5b7e-48ee-b4f3-e39952c36c4b',
-      status: 1,
+      connectionStatus: 1,
       contactId: '49fcb20a-5b7e-48ee-b4f3-e39952c36c4b'
     }
   },
@@ -116,7 +116,7 @@ export const mockCredentials = [
       midNames: '',
       lastName: 'Conner',
       key: '920dfbb4-3f6b-4e6a-bfc9-732570e3e280',
-      status: 3,
+      connectionStatus: 3,
       contactId: '920dfbb4-3f6b-4e6a-bfc9-732570e3e280'
     }
   },
@@ -145,7 +145,7 @@ export const mockCredentials = [
       midNames: '',
       lastName: 'Ferguson',
       key: '49e55b84-d542-440a-8c92-eac9f6df7e90',
-      status: 1,
+      connectionStatus: 1,
       contactId: '49e55b84-d542-440a-8c92-eac9f6df7e90'
     }
   },
@@ -179,7 +179,7 @@ export const mockCredentials = [
       midNames: '',
       lastName: 'Magana',
       key: '2c4cb6eb-26d1-48f5-80fd-1957160af38e',
-      status: 1,
+      connectionStatus: 1,
       contactId: '2c4cb6eb-26d1-48f5-80fd-1957160af38e'
     }
   },
@@ -208,7 +208,7 @@ export const mockCredentials = [
       midNames: '',
       lastName: 'Avery',
       key: '810eddfb-5395-42ea-a528-c6042ca1c6d0',
-      status: 1,
+      connectionStatus: 1,
       contactId: '810eddfb-5395-42ea-a528-c6042ca1c6d0'
     }
   },
@@ -237,7 +237,7 @@ export const mockCredentials = [
       midNames: '',
       lastName: 'Bray',
       key: '2e9524ce-1764-457b-96c8-3a0a011b3e52',
-      status: 1,
+      connectionStatus: 1,
       contactId: '2e9524ce-1764-457b-96c8-3a0a011b3e52'
     }
   },
@@ -266,7 +266,7 @@ export const mockCredentials = [
       midNames: '',
       lastName: 'Love',
       key: 'c13ad41f-2a20-41b7-bbc0-a07693f64b85',
-      status: 1,
+      connectionStatus: 1,
       contactId: 'c13ad41f-2a20-41b7-bbc0-a07693f64b85'
     }
   },
@@ -295,7 +295,7 @@ export const mockCredentials = [
       midNames: '',
       lastName: 'Mann',
       key: 'c4215efe-e8c8-4002-8ca8-49379f0fae4c',
-      status: 1,
+      connectionStatus: 1,
       contactId: 'c4215efe-e8c8-4002-8ca8-49379f0fae4c'
     }
   }

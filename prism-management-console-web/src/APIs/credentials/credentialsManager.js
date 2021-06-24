@@ -70,13 +70,13 @@ async function createBatchOfCredentials(credentialsData) {
 }
 
 function getCredentialBinary(credential) {
-  const { encodedsignedcredential, batchinclusionproof } = credential;
-  if (!encodedsignedcredential) {
+  const { encodedSignedCredential, batchInclusionProof } = credential;
+  if (!encodedSignedCredential) {
     Logger.error('Could not get encoded credential', credential);
     throw new Error('No encoded credential');
   }
 
-  if (!batchinclusionproof) {
+  if (!batchInclusionProof) {
     Logger.error('Could not get batch inclusion proof', credential);
     throw new Error('No inclusion proof');
   }
@@ -84,8 +84,8 @@ function getCredentialBinary(credential) {
   const atalaMessage = new AtalaMessage();
   const plainTextCredential = new PlainTextCredential();
 
-  plainTextCredential.setEncodedCredential(encodedsignedcredential);
-  plainTextCredential.setEncodedMerkleProof(batchinclusionproof);
+  plainTextCredential.setEncodedCredential(encodedSignedCredential);
+  plainTextCredential.setEncodedMerkleProof(batchInclusionProof);
 
   atalaMessage.setPlainCredential(plainTextCredential);
   return atalaMessage.serializeBinary();
