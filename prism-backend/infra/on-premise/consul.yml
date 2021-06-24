@@ -1,8 +1,7 @@
 ---
 - hosts: nomad
   vars:
-    - consul_version: 1.9.5
-    - consul_zip_checksum: sha1:5fce07e1eb4c554a27ac16c49986739aa8a77dba
+    - consul_version: 1.10.0
     - consul_zip_filename: consul.zip
     - consul_installation_directory: /usr/local/bin
     - consul_config_directory: /etc/consul.d
@@ -32,7 +31,7 @@
       get_url:
         url="https://releases.hashicorp.com/consul/{{ consul_version }}/consul_{{ consul_version }}_linux_amd64.zip"
         dest="{{ ansible_env.HOME }}/{{ consul_zip_filename }}"
-        checksum="{{ consul_zip_checksum }}"
+        checksum="sha256:https://releases.hashicorp.com/consul/{{ consul_version }}/consul_{{ consul_version }}_SHA256SUMS"
 
     - name: Unzip consul
       become: yes
