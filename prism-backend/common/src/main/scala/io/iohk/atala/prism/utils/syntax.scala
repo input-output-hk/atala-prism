@@ -45,4 +45,10 @@ object syntax {
         onError
       )
   }
+
+  implicit class EitherThrowableOps[R](val in: Either[Throwable, R]) extends AnyVal {
+
+    /** converts Either[Throwable, T] into Future */
+    def toFuture: Future[R] = in.fold(Future.failed, Future.successful)
+  }
 }

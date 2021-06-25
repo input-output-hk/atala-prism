@@ -83,4 +83,15 @@ object RequestMeasureUtil {
 
   private case class MeasureItems(timer: Timer.Started, activeRequestsGauge: Gauge)
 
+  implicit class FutureMetricsOps[T](val value: Future[T]) extends AnyVal {
+    def countErrorOnFail(serviceName: String, methodName: String, errorCode: Int)(implicit
+        ec: ExecutionContext
+    ): Future[T] =
+      value.recoverWith {
+        case NonFatal(_) =>
+          increaseErrorCounter(serviceName, methodName, errorCode)
+          value
+      }
+  }
+
 }
