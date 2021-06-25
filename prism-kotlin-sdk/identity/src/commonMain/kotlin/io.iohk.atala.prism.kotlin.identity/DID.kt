@@ -1,7 +1,11 @@
 package io.iohk.atala.prism.kotlin.identity
 
 import io.iohk.atala.prism.kotlin.crypto.SHA256Digest
+import io.iohk.atala.prism.kotlin.crypto.derivation.*
+import io.iohk.atala.prism.kotlin.crypto.derivation.KeyDerivation.derivationRoot
+import io.iohk.atala.prism.kotlin.crypto.keys.ECKeyPair
 import io.iohk.atala.prism.kotlin.crypto.keys.ECPublicKey
+import io.iohk.atala.prism.kotlin.identity.util.ECProtoOps
 import io.iohk.atala.prism.kotlin.identity.util.toProto
 import io.iohk.atala.prism.kotlin.protos.*
 import io.iohk.atala.prism.kotlin.protos.util.Base64Utils
@@ -20,6 +24,8 @@ class DID private constructor(val value: String) {
 
         // This is the prefix we currently use in IntDemo TODO: Remove once possible
         val testRegex = Regex("^did:test(:[A-Za-z0-9_-]+)+$")
+
+        private data class AtalaOperationWithHash(val atalaOperation: AtalaOperation, val atalaOperationHash: SHA256Digest)
 
         @JvmStatic
         fun buildPrismDID(stateHash: String, encodedState: String? = null): DID =
@@ -42,11 +48,40 @@ class DID private constructor(val value: String) {
                 throw IllegalArgumentException("Invalid DID: $string")
             }
 
+        @JvmStatic
+        fun deriveKeyFromFullPath(seed: ByteArray, didIndex: Int, keyType: KeyTypeEnum, keyIndex: Int): ECKeyPair =
+            derivationRoot(seed)
+                .derive(DerivationAxis.hardened(didIndex))
+                .derive(DerivationAxis.hardened(keyType))
+                .derive(DerivationAxis.hardened(keyIndex))
+                .keyPair()
+
         private fun buildSuffix(stateHash: String, encodedState: String): String =
             "$stateHash:$encodedState"
 
         @JvmStatic
+        fun createDIDFromMnemonic(mnemonic: MnemonicCode, didIndex: Int, passphrase: String = ""): DIDContext {
+            val seed = KeyDerivation.binarySeed(mnemonic, passphrase)
+            val masterECKeyPair = deriveKeyFromFullPath(seed, didIndex, KeyType.MASTER_KEY, 0)
+            val did = createUnpublishedDID(masterECKeyPair.publicKey)
+            val (atalaOp, operationHash) = createDIDAtalaOperation(masterECKeyPair.publicKey)
+            return DIDContext(
+                did = did,
+                createDIDOperation = ECProtoOps.signedAtalaOperation(masterECKeyPair, masterKeyId, atalaOp),
+                createDIDOperationHash = operationHash
+            )
+        }
+
+        @JvmStatic
         fun createUnpublishedDID(masterKey: ECPublicKey, issuingKey: ECPublicKey? = null): DID {
+            val (atalaOp, operationHash) = createDIDAtalaOperation(masterKey, issuingKey)
+            val didCanonicalSuffix = operationHash.hexValue()
+            val encodedOperation = Base64Utils.encode(atalaOp.encodeToByteArray())
+            return buildPrismDID(didCanonicalSuffix, encodedOperation)
+        }
+
+        @JvmStatic
+        private fun createDIDAtalaOperation(masterKey: ECPublicKey, issuingKey: ECPublicKey? = null): AtalaOperationWithHash {
             val masterKeyPublicKey =
                 listOf(
                     PublicKey(
@@ -70,13 +105,10 @@ class DID private constructor(val value: String) {
                     publicKeys = masterKeyPublicKey + issuingKeyPublicKey
                 )
             )
-
             val atalaOp = AtalaOperation(operation = AtalaOperation.Operation.CreateDid(createDidOp))
             val operationBytes = atalaOp.encodeToByteArray()
             val operationHash = SHA256Digest.compute(operationBytes)
-            val didCanonicalSuffix = operationHash.hexValue()
-            val encodedOperation = Base64Utils.encode(operationBytes)
-            return buildPrismDID(didCanonicalSuffix, encodedOperation)
+            return AtalaOperationWithHash(atalaOp, operationHash)
         }
     }
 

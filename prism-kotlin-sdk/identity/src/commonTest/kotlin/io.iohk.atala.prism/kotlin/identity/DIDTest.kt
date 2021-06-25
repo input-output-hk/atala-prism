@@ -1,6 +1,7 @@
 package io.iohk.atala.prism.kotlin.identity
 
 import io.iohk.atala.prism.kotlin.crypto.EC
+import io.iohk.atala.prism.kotlin.crypto.derivation.MnemonicCode
 import io.iohk.atala.prism.kotlin.identity.DID.Companion.masterKeyId
 import io.iohk.atala.prism.kotlin.identity.util.toProto
 import io.iohk.atala.prism.kotlin.protos.*
@@ -9,27 +10,19 @@ import kotlin.test.*
 class DIDTest {
     @Test
     fun testCreateTheExpectedLongFormDid() {
-        // bytes extracted from a randomly generated key
-        val xBytes = byteArrayOf(
-            30, -105, -2, -54, 18, 39, -77, -30, -49, -34, -46, -17, 3, -56, -100, 11, -111, 73, -43,
-            -103, 65, -63, -71, 101, 62, -46, 29, 53, -99, -22, -46, 53
-        )
-        val yBytes = byteArrayOf(
-            -103, 81, -25, 85, 91, -109, -113, 111, 106, 7, -95, 3, 4, 36, 22, -11, -65, 126, -4,
-            -116, -42, -90, -72, -118, 87, -120, 17, -119, 23, -77, -118, 69
-        )
-        val masterKey = EC.toPublicKey(xBytes, yBytes)
-
         // The expected resulting DID
         val expectedDID = DID.buildPrismDID(
-            "6d1cda2c1286622f41a5fe4a47ea6d8e3f5999dc38a6b7a893d55e0d75b569ce",
-            "CmAKXhJcCgdtYXN0ZXIwEAFCTwoJc2VjcDI1NmsxEiAel_7KEiez4s_e0u8DyJwLkUnVmUHBuWU-0h01nerSNRogmVHnVVuTj29qB6EDBCQW9b9-_IzWpriKV4gRiRezikU"
+            "5f7802238f5d64a48fda6cc13a9467b2065248d31a94129ed0c0ea96d9b341a0",
+            "CmAKXhJcCgdtYXN0ZXIwEAFCTwoJc2VjcDI1NmsxEiD9401VbdKKeGfyGhHvZSEc-_nhfQg-8IPM2-QAOaZG-hog6ZugZN9_WLbX8xalkHa6YvuOJAWbGyQW66lumV0-vbM"
         )
 
-        val did = DID.createUnpublishedDID(masterKey)
-        assertEquals(expectedDID, did)
+        val mnemonic = MnemonicCode("shallow gadget world plug runway begin load bargain tomorrow never garment indoor".split(" "))
 
-        when (val format = expectedDID.getFormat()) {
+        val didContext = DID.createDIDFromMnemonic(mnemonic, 0, "secret")
+        assertEquals(expectedDID, didContext.did)
+        assertEquals(masterKeyId, didContext.createDIDOperation.signedWith)
+
+        when (val format = didContext.did.getFormat()) {
             is LongForm -> assertEquals(expectedDID.suffix, format.validate().suffix())
             else -> fail("unexpected format for long DID")
         }

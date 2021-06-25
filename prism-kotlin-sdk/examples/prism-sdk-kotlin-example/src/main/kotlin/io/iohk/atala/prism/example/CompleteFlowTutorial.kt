@@ -9,6 +9,8 @@ import io.iohk.atala.prism.kotlin.credentials.json.JsonBasedCredential
 import io.iohk.atala.prism.kotlin.crypto.EC
 import io.iohk.atala.prism.kotlin.crypto.Hash
 import io.iohk.atala.prism.kotlin.crypto.MerkleInclusionProof
+import io.iohk.atala.prism.kotlin.crypto.derivation.KeyDerivation
+import io.iohk.atala.prism.kotlin.crypto.derivation.KeyType
 import io.iohk.atala.prism.kotlin.extras.ProtoClientUtils
 import io.iohk.atala.prism.kotlin.extras.ProtoUtils
 import io.iohk.atala.prism.kotlin.extras.RequestUtils
@@ -16,6 +18,7 @@ import io.iohk.atala.prism.kotlin.extras.findPublicKey
 import io.iohk.atala.prism.kotlin.extras.toTimestampInfoModel
 import io.iohk.atala.prism.kotlin.identity.DID
 import io.iohk.atala.prism.kotlin.identity.DID.Companion.masterKeyId
+import io.iohk.atala.prism.kotlin.identity.util.ECProtoOps
 import io.iohk.atala.prism.kotlin.protos.*
 import kotlinx.coroutines.*
 import kotlinx.serialization.json.JsonObject
@@ -50,10 +53,12 @@ object CompleteFlowTutorial {
 
         // Issuer claims an identity
         println("Issuer: Generates and registers a DID")
-        val issuerMasterKeyPair = EC.generateKeyPair()
-        val issuerCreateDIDOperation = ProtoUtils.createDidAtalaOperation(issuerMasterKeyPair)
-        val issuerCreatedDIDSignedOperation =
-            ProtoUtils.signedAtalaOperation(issuerMasterKeyPair, issuerCreateDIDOperation)
+        val mnemonic = KeyDerivation.randomMnemonicCode()
+        val seed = KeyDerivation.binarySeed(mnemonic, "secret")
+        // Create KeyPair out of mnemonic seed phrase, did index, type of key, key index
+        val issuerMasterKeyPair = DID.deriveKeyFromFullPath(seed, 0, KeyType.MASTER_KEY, 0)
+        val didContext = DID.createDIDFromMnemonic(mnemonic, 0)
+        val issuerCreatedDIDSignedOperation = didContext.createDIDOperation
 
         // Issuer registers its identity to the node
         // Usually the DID would be registered with the node, but, the connector can handle that as well
@@ -70,7 +75,7 @@ object CompleteFlowTutorial {
 
         // the DID takes some minutes to get confirmed by Cardano, in the mean time, the unpublished DID
         // can be used to authenticate requests to the backend
-        val issuerUnpublishedDID = DID.createUnpublishedDID(issuerMasterKeyPair.publicKey)
+        val issuerUnpublishedDID = didContext.did
 
         println(
             """
@@ -175,7 +180,7 @@ object CompleteFlowTutorial {
 
         // Issuer publishes the credential to Cardano
         val signedIssueCredentialOperation =
-            ProtoUtils.signedAtalaOperation(issuerMasterKeyPair, issueCredentialOperation)
+            ECProtoOps.signedAtalaOperation(issuerMasterKeyPair, "master0", issueCredentialOperation)
         val issuedCredentialResponse = runBlocking {
             node.IssueCredentialBatch(IssueCredentialBatchRequest(signedIssueCredentialOperation))
         }
@@ -263,7 +268,7 @@ object CompleteFlowTutorial {
         val verifierMasterKeyPair = EC.generateKeyPair()
         val verifierCreateDIDOperation = ProtoUtils.createDidAtalaOperation(verifierMasterKeyPair)
         val verifierCreateDIDSignedOperation =
-            ProtoUtils.signedAtalaOperation(verifierMasterKeyPair, verifierCreateDIDOperation)
+            ECProtoOps.signedAtalaOperation(verifierMasterKeyPair, "master0", verifierCreateDIDOperation)
 
         val verifierRegisterDIDResponse = runBlocking {
             connector.RegisterDID(
@@ -438,7 +443,7 @@ object CompleteFlowTutorial {
             credentials = listOf(holderSignedCredential)
         )
         val issuerRevokeCredentialSignedOperation =
-            ProtoUtils.signedAtalaOperation(issuerMasterKeyPair, issuerRevokeCredentialOperation)
+            ECProtoOps.signedAtalaOperation(issuerMasterKeyPair, "master0", issuerRevokeCredentialOperation)
         val issuerCredentialRevocationResponse = runBlocking {
             node.RevokeCredentials(
                 RevokeCredentialsRequest(issuerRevokeCredentialSignedOperation)

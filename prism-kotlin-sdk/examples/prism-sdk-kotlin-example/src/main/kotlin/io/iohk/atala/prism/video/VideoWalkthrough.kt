@@ -15,6 +15,7 @@ import io.iohk.atala.prism.kotlin.extras.findPublicKey
 import io.iohk.atala.prism.kotlin.extras.toTimestampInfoModel
 import io.iohk.atala.prism.kotlin.identity.DID
 import io.iohk.atala.prism.kotlin.identity.DID.Companion.masterKeyId
+import io.iohk.atala.prism.kotlin.identity.util.ECProtoOps
 import io.iohk.atala.prism.kotlin.protos.CreateDIDRequest
 import io.iohk.atala.prism.kotlin.protos.CredentialBatchData
 import io.iohk.atala.prism.kotlin.protos.GetBatchStateRequest
@@ -57,8 +58,9 @@ suspend fun main() {
     // Generate Issuer's DID
     println("Generate Issuer's DID")
     val issuerMasterKeyPair = EC.generateKeyPair()
-    val issuerCreatedDIDSignedOperation = ProtoUtils.signedAtalaOperation(
+    val issuerCreatedDIDSignedOperation = ECProtoOps.signedAtalaOperation(
         issuerMasterKeyPair,
+        "master0",
         ProtoUtils.createDidAtalaOperation(issuerMasterKeyPair)
     )
 
@@ -119,8 +121,9 @@ suspend fun main() {
     )
 
     // Issuer publishes the credential to Cardano
-    val signedIssueCredentialOperation = ProtoUtils.signedAtalaOperation(
+    val signedIssueCredentialOperation = ECProtoOps.signedAtalaOperation(
         issuerMasterKeyPair,
+        "master0",
         ProtoUtils.issueCredentialBatchOperation(credentialBatchData)
     )
     val issuedCredentialResponse = node.IssueCredentialBatch(

@@ -1,6 +1,8 @@
 package io.iohk.atala.prism.kotlin.identity
 
-import io.iohk.atala.prism.kotlin.crypto.keys.ECPublicKey
+import io.iohk.atala.prism.kotlin.crypto.derivation.KeyTypeEnum
+import io.iohk.atala.prism.kotlin.crypto.derivation.MnemonicCode
+import io.iohk.atala.prism.kotlin.crypto.keys.ECKeyPair
 
 @JsExport
 object DIDCompanion {
@@ -16,6 +18,9 @@ object DIDCompanion {
     fun fromString(string: String): DID =
         DID.fromString(string)
 
-    fun createUnpublishedDID(masterKey: ECPublicKey, issuingKey: ECPublicKey? = null): DID =
-        DID.createUnpublishedDID(masterKey, issuingKey)
+    fun createDIDFromMnemonic(mnemonic: MnemonicCode, didIndex: Int, passphrase: String = ""): DIDContext =
+        DID.createDIDFromMnemonic(mnemonic, didIndex, passphrase)
+
+    fun deriveKeyFromFullPath(seed: ByteArray, didIndex: Int, keyType: KeyTypeEnum, keyIndex: Int): ECKeyPair =
+        DID.deriveKeyFromFullPath(seed, didIndex, keyType, keyIndex)
 }

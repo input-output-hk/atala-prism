@@ -16,7 +16,7 @@ Generating a **DID** require associating a public key. This example generates a 
 ```kotlin
 val issuerMasterKeyPair = EC.generateKeyPair()
 val issuerCreateDIDOperation = ProtoUtils.createDidAtalaOperation(issuerMasterKeyPair)
-val issuerCreatedDIDSignedOperation = ProtoUtils.signedAtalaOperation(issuerMasterKeyPair, issuerCreateDIDOperation)
+val issuerCreatedDIDSignedOperation = ECProtoOps.signedAtalaOperation(issuerMasterKeyPair, "master0", issuerCreateDIDOperation)
 
 // the issuer registers its identity to the node
 // Usually the DID would be registered with the node, but, the connector can handle that as well

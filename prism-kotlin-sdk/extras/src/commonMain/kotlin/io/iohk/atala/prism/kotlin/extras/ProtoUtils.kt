@@ -2,13 +2,11 @@ package io.iohk.atala.prism.kotlin.extras
 
 import io.iohk.atala.prism.kotlin.credentials.CredentialBatchId
 import io.iohk.atala.prism.kotlin.credentials.PrismCredential
-import io.iohk.atala.prism.kotlin.crypto.EC
 import io.iohk.atala.prism.kotlin.crypto.SHA256Digest
 import io.iohk.atala.prism.kotlin.crypto.keys.ECKeyPair
 import io.iohk.atala.prism.kotlin.identity.DID.Companion.masterKeyId
 import io.iohk.atala.prism.kotlin.protos.*
 import pbandk.ByteArr
-import pbandk.encodeToByteArray
 import kotlin.js.JsExport
 
 @JsExport
@@ -37,14 +35,5 @@ object ProtoUtils {
             credentialsToRevoke = credentials.map { ByteArr(it.hash().value) }
         )
         return AtalaOperation(AtalaOperation.Operation.RevokeCredentials(revokeCredentialsService))
-    }
-
-    fun signedAtalaOperation(ecKeyPair: ECKeyPair, atalaOperation: AtalaOperation): SignedAtalaOperation {
-        val signature = EC.sign(atalaOperation.encodeToByteArray(), ecKeyPair.privateKey)
-        return SignedAtalaOperation(
-            signedWith = masterKeyId,
-            signature = ByteArr(signature.getEncoded()),
-            operation = atalaOperation
-        )
     }
 }

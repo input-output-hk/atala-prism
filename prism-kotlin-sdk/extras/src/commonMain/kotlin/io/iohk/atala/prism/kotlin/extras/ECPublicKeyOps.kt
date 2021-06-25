@@ -1,6 +1,8 @@
 package io.iohk.atala.prism.kotlin.extras
 
 import io.iohk.atala.prism.kotlin.crypto.ECConfig
+import io.iohk.atala.prism.kotlin.crypto.derivation.KeyType
+import io.iohk.atala.prism.kotlin.crypto.derivation.KeyTypeEnum
 import io.iohk.atala.prism.kotlin.crypto.keys.ECPublicKey
 import io.iohk.atala.prism.kotlin.protos.ECKeyData
 import io.iohk.atala.prism.kotlin.protos.KeyUsage
@@ -16,6 +18,9 @@ fun ECPublicKey.toECKeyData(): ECKeyData {
         y = pbandk.ByteArr(point.y.toByteArray())
     )
 }
+
+@JsExport
+fun KeyType.toKeyUsage(keyType: KeyTypeEnum) = KeyUsage.fromName(keyTypeToString(keyType))
 
 @JsExport
 fun ECKeyData.toPublicKey(

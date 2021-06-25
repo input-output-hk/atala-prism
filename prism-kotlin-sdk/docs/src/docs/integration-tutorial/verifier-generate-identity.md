@@ -14,7 +14,7 @@ Given that these are the same steps followed by **Issuer** in [this section](/wi
 ```kotlin
 val verifierMasterKeyPair = EC.generateKeyPair()
 val verifierCreateDIDOperation = ProtoUtils.createDidAtalaOperation(verifierMasterKeyPair)
-val verifierCreateDIDSignedOperation = ProtoUtils.signedAtalaOperation(verifierMasterKeyPair, verifierCreateDIDOperation)
+val verifierCreateDIDSignedOperation = ECProtoOps.signedAtalaOperation(verifierMasterKeyPair, "master0", verifierCreateDIDOperation)
 
 val verifierRegisterDIDResponse = runBlocking {
     connector.RegisterDID(

@@ -6,6 +6,7 @@ import io.iohk.atala.prism.kotlin.credentials.json.JsonBasedCredential
 import io.iohk.atala.prism.kotlin.crypto.EC
 import io.iohk.atala.prism.kotlin.crypto.SHA256Digest
 import io.iohk.atala.prism.kotlin.crypto.signature.ECSignature
+import io.iohk.atala.prism.kotlin.identity.util.ECProtoOps
 import io.iohk.atala.prism.kotlin.protos.CredentialBatchData
 import kotlinx.serialization.json.JsonObject
 import pbandk.encodeToByteArray
@@ -48,7 +49,7 @@ class ProtoUtilsTest {
     fun signedAtalaOperationWorks() {
         val keyPair = EC.generateKeyPair()
         val atalaOperation = ProtoUtils.createDidAtalaOperation(keyPair)
-        val signedAtalaOperation = ProtoUtils.signedAtalaOperation(keyPair, atalaOperation)
+        val signedAtalaOperation = ECProtoOps.signedAtalaOperation(keyPair, "master0", atalaOperation)
         val operationBytes = atalaOperation.encodeToByteArray()
         val signature = EC.toSignature(signedAtalaOperation.signature.array)
         assertTrue(EC.verify(operationBytes, keyPair.publicKey, signature))

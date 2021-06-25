@@ -45,7 +45,7 @@ val issueCredentialOperation = ProtoUtils.issueCredentialBatchOperation(credenti
 Once we have prepared the batch, we can sign the operation and invoke **Atala PRISM Node** to publish it to **Cardano**:
 
 ```kotlin
-val signedIssueCredentialOperation = ProtoUtils.signedAtalaOperation(issuerMasterKeyPair, issueCredentialOperation)
+val signedIssueCredentialOperation = ECProtoOps.signedAtalaOperation(issuerMasterKeyPair, "master0", issueCredentialOperation)
 val issuedCredentialResponse = runBlocking {
     node.IssueCredentialBatch(IssueCredentialBatchRequest(signedIssueCredentialOperation))
 }

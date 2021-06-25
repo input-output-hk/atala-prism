@@ -15,7 +15,7 @@ val issuerRevokeCredentialOperation = ProtoUtils.revokeCredentialsOperation(
     batchId = CredentialBatchId.fromString(issuedCredentialResponse.batchId)!!,
     credentials = listOf(holderSignedCredential)
 )
-val issuerRevokeCredentialSignedOperation = ProtoUtils.signedAtalaOperation(issuerMasterKeyPair, issuerRevokeCredentialOperation)
+val issuerRevokeCredentialSignedOperation = ECProtoOps.signedAtalaOperation(issuerMasterKeyPair, "master0", issuerRevokeCredentialOperation)
 val issuerCredentialRevocationResponse = runBlocking {
     node.RevokeCredentials(
         RevokeCredentialsRequest(issuerRevokeCredentialSignedOperation)
@@ -28,3 +28,4 @@ println(
     """.trimIndent()
 )
 ```
+
