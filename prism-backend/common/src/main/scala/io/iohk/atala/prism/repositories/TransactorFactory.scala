@@ -57,7 +57,7 @@ object TransactorFactory {
     * @return number of applied migrations
     */
   def runDbMigrations[A[_]: Sync](transactor: HikariTransactor[A], classLoader: ClassLoader): Resource[A, Int] =
-    Resource.liftF(
+    Resource.eval(
       transactor.configure(dataSource =>
         Sync[A].delay(
           Flyway

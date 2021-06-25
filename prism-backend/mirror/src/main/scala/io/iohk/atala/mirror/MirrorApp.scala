@@ -69,7 +69,7 @@ object MirrorApp extends TaskApp {
     */
   def app(classLoader: ClassLoader): Resource[Task, GrpcServers] =
     for {
-      globalConfig <- Resource.liftF(Task {
+      globalConfig <- Resource.eval(Task {
         logger.info("Loading config")
         ConfigFactory.load(classLoader)
       })
@@ -149,7 +149,7 @@ object MirrorApp extends TaskApp {
       trisaPeer2PeerService = new TrisaPeer2PeerService(mirrorServiceImpl)
 
       // background streams
-      _ <- Resource.liftF(
+      _ <- Resource.eval(
         credentialService
           .connectionUpdatesStream(
             // TODO: We are sending unsigned credential form intdemo by default, it allows
@@ -160,7 +160,7 @@ object MirrorApp extends TaskApp {
           .drain
           .start
       )
-      _ <- Resource.liftF(connectorMessageService.messagesUpdatesStream.compile.drain.start)
+      _ <- Resource.eval(connectorMessageService.messagesUpdatesStream.compile.drain.start)
 
       //trisa
       _ = if (mirrorConfig.trisaConfig.enabled)

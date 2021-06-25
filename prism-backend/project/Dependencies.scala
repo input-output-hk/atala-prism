@@ -75,7 +75,8 @@ object Dependencies {
   val slf4j = "org.slf4j" % "slf4j-api" % versions.slf4j
   val sttpCore = "com.softwaremill.sttp" %% "core" % versions.sttp
   val sttpFuture = "com.softwaremill.sttp" %% "async-http-client-backend-future" % versions.sttp
-  val tofu = "tf.tofu" %% "tofu" % versions.tofu
+  // TODO update monix in the project
+  val tofu = "tf.tofu" %% "tofu" % versions.tofu excludeAll ExclusionRule(organization = "io.monix")
   val tofuDerevoTagless = "tf.tofu" %% "derevo-cats-tagless" % versions.tofuDerevo
   val twirlApi = "com.typesafe.play" %% "twirl-api" % versions.twirl
   val typesafeConfig = "com.typesafe" % "config" % versions.typesafeConfig

@@ -50,7 +50,7 @@ object ManagementConsoleApp extends IOApp {
   def app(classLoader: ClassLoader): Resource[IO, Server] = {
     for {
       // configs
-      globalConfig <- Resource.liftF(IO.delay {
+      globalConfig <- Resource.eval(IO.delay {
         logger.info("Loading config")
         ConfigFactory.load(classLoader)
       })

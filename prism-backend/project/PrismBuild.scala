@@ -72,6 +72,7 @@ object PrismBuild {
             mockitoDependencies ++
             kamonDependencies ++
             circeDependencies ++
+            tofuDependencies ++
             Seq(
               diffx,
               enumeratum,
@@ -231,8 +232,7 @@ object PrismBuild {
     commonServerProject("vault")
       .settings(
         name := "vault",
-        mainClass in (Compile, run) := Some("io.iohk.atala.prism.vault.VaultApp"),
-        libraryDependencies ++= tofuDependencies
+        mainClass in (Compile, run) := Some("io.iohk.atala.prism.vault.VaultApp")
       )
       .dependsOn(common % "compile->compile;test->test")
 

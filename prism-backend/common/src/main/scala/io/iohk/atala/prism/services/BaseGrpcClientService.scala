@@ -274,7 +274,7 @@ object BaseGrpcClientService {
         } yield ()).transact(tx).flatMap(_ => getFromDb)
       }
 
-      Resource.liftF(
+      Resource.eval(
         Task(getFromApplicationConfig).flatMap {
           case None => getFromDb
           case Some(authConfig) => Task.pure(authConfig)
