@@ -63,8 +63,8 @@ class VaultApp(executionContext: ExecutionContext) {
     val node = NodeServiceGrpc.stub(nodeChannel)
 
     // Vault repositories
-    val payloadsRepository = new PayloadsRepository(transactor)(executionContext)
-    val requestNoncesRepository = new RequestNoncesRepository.PostgresImpl(transactor)(executionContext)
+    val payloadsRepository = PayloadsRepository(transactor)
+    val requestNoncesRepository = RequestNoncesRepository.PostgresImpl(transactor)
 
     val authenticator = new VaultAuthenticator(
       requestNoncesRepository,

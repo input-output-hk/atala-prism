@@ -1,6 +1,5 @@
 package io.iohk.atala.prism.vault.repositories
 
-import cats.scalatest.EitherMatchers._
 import io.iohk.atala.prism.AtalaWithPostgresSpec
 import io.iohk.atala.prism.crypto.{EC, SHA256Digest}
 import io.iohk.atala.prism.identity.DID
@@ -11,13 +10,13 @@ import java.time.Instant
 import java.time.temporal.ChronoUnit
 
 class PayloadsRepositorySpec extends AtalaWithPostgresSpec with OptionValues {
-  lazy val repository = new PayloadsRepository(database)
+  lazy val repository = PayloadsRepository(database)
 
   def createPayload(did: DID, content: Vector[Byte]): Payload = {
     val externalId = Payload.ExternalId.random()
     val hash = SHA256Digest.compute(content.toArray)
     val createPayload1 = CreatePayload(externalId, hash, did, content)
-    repository.create(createPayload1).value.futureValue.toOption.value
+    repository.create(createPayload1).unsafeRunSync()
   }
 
   "create" should {
@@ -55,12 +54,10 @@ class PayloadsRepositorySpec extends AtalaWithPostgresSpec with OptionValues {
       val content3 = "encrypted_data_3".getBytes.toVector
       val payload3 = createPayload(did2, content3)
 
-      repository.getByPaginated(did1, None, 10).value.futureValue must beRight(List(payload1))
-      repository.getByPaginated(did2, None, 10).value.futureValue must beRight(List(payload2, payload3))
-      repository.getByPaginated(did2, None, 1).value.futureValue must beRight(List(payload2))
-      repository.getByPaginated(did2, Some(payload2.id), 1).value.futureValue must beRight(
-        List(payload3)
-      )
+      repository.getByPaginated(did1, None, 10).unsafeRunSync() mustBe List(payload1)
+      repository.getByPaginated(did2, None, 10).unsafeRunSync() mustBe List(payload2, payload3)
+      repository.getByPaginated(did2, None, 1).unsafeRunSync() mustBe List(payload2)
+      repository.getByPaginated(did2, Some(payload2.id), 1).unsafeRunSync() mustBe List(payload3)
     }
   }
 

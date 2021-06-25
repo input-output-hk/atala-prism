@@ -51,7 +51,7 @@ class EncryptedDataVaultServiceImplSpec extends VaultRpcSpecBase with OptionValu
         val responsePayloadId = serviceStub.storeData(request).payloadId
 
         val storedPayloads =
-          payloadsRepository.getByPaginated(did, None, 10).value.futureValue.toOption.value
+          payloadsRepository.getByPaginated(did, None, 10).unsafeRunSync()
 
         storedPayloads.size must be(1)
         val storedPayload = storedPayloads.head
@@ -82,7 +82,7 @@ class EncryptedDataVaultServiceImplSpec extends VaultRpcSpecBase with OptionValu
       id1 must be(id2)
 
       val storedPayloads =
-        payloadsRepository.getByPaginated(did, None, 10).value.futureValue.toOption.value
+        payloadsRepository.getByPaginated(did, None, 10).unsafeRunSync()
 
       // There must only be one payload stored
       storedPayloads.size must be(1)

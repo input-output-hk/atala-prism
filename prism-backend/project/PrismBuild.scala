@@ -22,12 +22,12 @@ object PrismBuild {
           options.filterNot(
             Set(
               "-Xlint:package-object-classes",
-              "-Ypartial-unification",
               "-Wdead-code",
               "-Ywarn-dead-code"
             )
           )
         ),
+        scalacOptions += "-Ymacro-annotations",
         javacOptions ++= Seq("-source", "1.8", "-target", "1.8"),
         libraryDependencies ++= scalatestDependencies,
         addCompilerPlugin("org.typelevel" % "kind-projector" % "0.13.0" cross CrossVersion.full),
@@ -231,7 +231,8 @@ object PrismBuild {
     commonServerProject("vault")
       .settings(
         name := "vault",
-        mainClass in (Compile, run) := Some("io.iohk.atala.prism.vault.VaultApp")
+        mainClass in (Compile, run) := Some("io.iohk.atala.prism.vault.VaultApp"),
+        libraryDependencies ++= tofuDependencies
       )
       .dependsOn(common % "compile->compile;test->test")
 

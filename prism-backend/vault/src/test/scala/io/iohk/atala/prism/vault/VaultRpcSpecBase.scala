@@ -18,8 +18,8 @@ class VaultRpcSpecBase extends RpcSpecBase {
         )
     )
 
-  lazy val requestNoncesRepository = new RequestNoncesRepository.PostgresImpl(database)(executionContext)
-  lazy val payloadsRepository = new PayloadsRepository(database)(executionContext)
+  lazy val requestNoncesRepository = RequestNoncesRepository.PostgresImpl(database)
+  lazy val payloadsRepository = PayloadsRepository(database)
 
   lazy val nodeMock = mock[io.iohk.atala.prism.protos.node_api.NodeServiceGrpc.NodeService]
   lazy val authenticator =

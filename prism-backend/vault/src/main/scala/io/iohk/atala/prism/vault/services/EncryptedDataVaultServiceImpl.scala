@@ -1,5 +1,6 @@
 package io.iohk.atala.prism.vault.services
 
+import cats.effect.IO
 import cats.syntax.option._
 import com.google.protobuf.ByteString
 import io.iohk.atala.prism.auth.errors.AuthErrorSupport
@@ -18,7 +19,7 @@ import org.slf4j.{Logger, LoggerFactory}
 import scala.concurrent.{ExecutionContext, Future}
 
 class EncryptedDataVaultServiceImpl(
-    payloadsRepository: PayloadsRepository,
+    payloadsRepository: PayloadsRepository[IO],
     authenticator: VaultAuthenticator
 )(implicit
     ec: ExecutionContext
@@ -46,11 +47,8 @@ class EncryptedDataVaultServiceImpl(
             request.payload.toByteArray.toVector
           )
         )
-        .successMapWithErrorCounter(
-          serviceName,
-          methodName,
-          payload => vault_api.StoreDataResponse(payloadId = payload.id.toString)
-        )
+        .map(payload => vault_api.StoreDataResponse(payloadId = payload.id.toString))
+        .unsafeToFuture()
     }
 
     authenticator.authenticated(methodName, request) { did =>
@@ -89,7 +87,8 @@ class EncryptedDataVaultServiceImpl(
           parseOptionalLastSeenId(request.lastSeenId),
           request.limit
         )
-        .successMapWithErrorCounter(serviceName, methodName, toGetPaginatedDataResponse)
+        .map(toGetPaginatedDataResponse)
+        .unsafeToFuture()
     }
 
     authenticator.authenticated(methodName, request) { did =>

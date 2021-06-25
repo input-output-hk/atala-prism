@@ -31,6 +31,8 @@ object versions {
   val scopt = "4.0.0-RC2"
   val slf4j = "1.7.30"
   val sttp = "1.7.2"
+  val tofu = "0.10.2"
+  val tofuDerevo = "0.12.5"
   val twirl = "1.5.1"
   val typesafeConfig = "1.4.1"
   val http4s = "0.21.7"
@@ -73,6 +75,8 @@ object Dependencies {
   val slf4j = "org.slf4j" % "slf4j-api" % versions.slf4j
   val sttpCore = "com.softwaremill.sttp" %% "core" % versions.sttp
   val sttpFuture = "com.softwaremill.sttp" %% "async-http-client-backend-future" % versions.sttp
+  val tofu = "tf.tofu" %% "tofu" % versions.tofu
+  val tofuDerevoTagless = "tf.tofu" %% "derevo-cats-tagless" % versions.tofuDerevo
   val twirlApi = "com.typesafe.play" %% "twirl-api" % versions.twirl
   val typesafeConfig = "com.typesafe" % "config" % versions.typesafeConfig
   val http4sCirce = "org.http4s" %% "http4s-circe" % versions.http4s
@@ -105,6 +109,7 @@ object Dependencies {
   val scalatestDependencies = Seq(scalatest, scalatestWordspec, scalatestplus, catsScalatest)
   val sttpDependencies = Seq(sttpCore, sttpFuture)
   val http4sDependencies = Seq(http4sCirce, http4sDsl, http4sBlazeServer, http4sBlazeClient)
+  val tofuDependencies = Seq(tofu, tofuDerevoTagless)
 
   // cardano-address library binary
   val cardanoAddressBinaryUrl =

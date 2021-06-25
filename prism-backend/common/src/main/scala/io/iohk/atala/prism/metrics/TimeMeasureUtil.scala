@@ -1,0 +1,60 @@
+package io.iohk.atala.prism.metrics
+
+import cats.effect.{Bracket, IO}
+import cats.effect.syntax.bracket._
+import cats.syntax.functor._
+import cats.syntax.flatMap._
+import cats.syntax.traverse._
+import io.iohk.atala.prism.metrics.TimeMeasureUtil.{DomainTimer, StartedDomainTimer}
+import kamon.Kamon
+import kamon.metric.Timer
+import kamon.tag.TagSet
+
+import scala.util.Try
+
+trait TimeMeasureMetric[F[_]] {
+  def startTimer(timer: DomainTimer): F[Try[StartedDomainTimer]]
+  def stopTimer(timer: StartedDomainTimer): F[Try[Unit]]
+}
+
+object TimeMeasureMetric {
+  implicit val ioTimeMeasureMetric: TimeMeasureMetric[IO] = new TimeMeasureMetric[IO] {
+    override def startTimer(timer: DomainTimer): IO[Try[StartedDomainTimer]] =
+      IO.delay(Try(StartedDomainTimer(timer.in.start())))
+    override def stopTimer(timer: StartedDomainTimer): IO[Try[Unit]] = IO.delay(Try(timer.in.stop()))
+  }
+}
+
+object TimeMeasureUtil {
+
+  private val DB_QUERY_TIMER = "db-query-time"
+  private val REPO_TAG_NAME = "repository"
+  private val METHOD_TAG_NAME = "method"
+
+  def createDBQueryTimer(repositoryName: String, methodName: String): DomainTimer = {
+    val tags = TagSet
+      .builder()
+      .add(REPO_TAG_NAME, repositoryName)
+      .add(METHOD_TAG_NAME, methodName)
+      .build()
+    DomainTimer(Kamon.timer(DB_QUERY_TIMER).withTags(tags))
+  }
+  def measureTime[F[_], T](in: F[T], timer: DomainTimer)(implicit
+      timeMeasureMetric: TimeMeasureMetric[F],
+      br: Bracket[F, Throwable]
+  ): F[T] = {
+    for {
+      maybeStartedTimer <- timeMeasureMetric.startTimer(timer)
+      res <- in.guarantee(maybeStartedTimer.flatTraverse(timeMeasureMetric.stopTimer).void)
+    } yield res
+  }
+
+  implicit class MeasureOps[F[_], T](val in: F[T]) extends AnyVal {
+    def measureOperationTime(timer: DomainTimer)(implicit br: Bracket[F, Throwable], m: TimeMeasureMetric[F]): F[T] =
+      measureTime(in, timer)
+  }
+
+  final case class DomainTimer(protected[metrics] val in: Timer) extends AnyVal
+  final case class StartedDomainTimer(protected[metrics] val in: Timer.Started) extends AnyVal
+
+}

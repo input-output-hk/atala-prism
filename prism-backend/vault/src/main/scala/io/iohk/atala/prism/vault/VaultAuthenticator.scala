@@ -1,5 +1,6 @@
 package io.iohk.atala.prism.vault
 
+import cats.effect.IO
 import io.iohk.atala.prism.auth.errors.{AuthError, UnsupportedAuthMethod}
 import io.iohk.atala.prism.auth.SignedRequestsAuthenticatorBase
 import io.iohk.atala.prism.auth.grpc.GrpcAuthenticationHeaderParser
@@ -14,7 +15,7 @@ import io.iohk.atala.prism.vault.repositories.RequestNoncesRepository
 import scala.concurrent.{ExecutionContext, Future}
 
 class VaultAuthenticator(
-    requestNoncesRepository: RequestNoncesRepository,
+    requestNoncesRepository: RequestNoncesRepository[IO],
     nodeClient: node_api.NodeServiceGrpc.NodeService,
     grpcAuthenticationHeaderParser: GrpcAuthenticationHeaderParser
 ) extends SignedRequestsAuthenticatorBase[DID](nodeClient, grpcAuthenticationHeaderParser) {
@@ -22,7 +23,7 @@ class VaultAuthenticator(
   override def burnNonce(did: DID, requestNonce: RequestNonce)(implicit
       ec: ExecutionContext
   ): FutureEither[AuthError, Unit] =
-    requestNoncesRepository.burn(did, requestNonce)
+    requestNoncesRepository.burn(did, requestNonce).unsafeToFuture().lift
 
   override def findByPublicKey(publicKey: ECPublicKey)(implicit
       ec: ExecutionContext
