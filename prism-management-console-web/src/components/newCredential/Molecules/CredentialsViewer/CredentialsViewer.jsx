@@ -7,7 +7,7 @@ import './_style.scss';
 
 const DISPLAY_CONSTANTS = { startValue: 0, changeBy: 1 };
 
-const CredentialsViewer = ({ credentialViews }) => {
+const CredentialsViewer = ({ credentialViews, showBrowseControls }) => {
   const { t } = useTranslation();
 
   const [displayedCredential, setDisplayedCredential] = useState(DISPLAY_CONSTANTS.startValue);
@@ -21,18 +21,20 @@ const CredentialsViewer = ({ credentialViews }) => {
   return (
     <div className="PreviewContainer">
       {/* eslint-disable-next-line react/no-danger */}
-      <div className="arrowsContainer">
-        <button type="button" onClick={onPrev} disabled={isFirstCredential}>
-          <img src={arrowLeft} alt="left" />
-        </button>
-        {t('newCredential.credentialsPreview.displayedCredential', {
-          current: currentCredentialNumber,
-          outOf: credentialViews.length
-        })}
-        <button type="button" onClick={onNext} disabled={isLastCredential}>
-          <img src={arrowRight} alt="right" />
-        </button>
-      </div>
+      {showBrowseControls && (
+        <div className="arrowsContainer">
+          <button type="button" onClick={onPrev} disabled={isFirstCredential}>
+            <img src={arrowLeft} alt="left" />
+          </button>
+          {t('newCredential.credentialsPreview.displayedCredential', {
+            current: currentCredentialNumber,
+            outOf: credentialViews.length
+          })}
+          <button type="button" onClick={onNext} disabled={isLastCredential}>
+            <img src={arrowRight} alt="right" />
+          </button>
+        </div>
+      )}
       <div className="PreviewCredential">
         <div
           className="credentialScroll"
@@ -43,8 +45,13 @@ const CredentialsViewer = ({ credentialViews }) => {
   );
 };
 
+CredentialsViewer.defaultProps = {
+  showBrowseControls: true
+};
+
 CredentialsViewer.propTypes = {
-  credentialViews: PropTypes.arrayOf(PropTypes.string).isRequired
+  credentialViews: PropTypes.arrayOf(PropTypes.string).isRequired,
+  showBrowseControls: PropTypes.bool
 };
 
 export default CredentialsViewer;

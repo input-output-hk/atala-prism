@@ -1,7 +1,7 @@
 import React from 'react';
 import { useTranslation } from 'react-i18next';
 import { Col, Row } from 'antd';
-import addNewCategoryIcon from '../../../images/addNewCategoryIcon.svg';
+import addNewCategoryIcon from '../../../../images/addNewCategoryIcon.svg';
 
 const AddNewCategory = () => {
   const { t } = useTranslation();

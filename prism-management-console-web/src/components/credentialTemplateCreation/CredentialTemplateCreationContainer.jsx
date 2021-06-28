@@ -11,6 +11,7 @@ import { useCredentialTypes, useTemplateCategories } from '../../hooks/useCreden
 import { credentialTypesManagerShape } from '../../helpers/propShapes';
 import CredentialTemplateCreation from './CredentialTemplateCreation';
 import TemplateCategorySelectionStep from './Organisms/TemplateCategorySelectionStep/TemplateCategorySelectionStep';
+import DesignTemplateStep from './Organisms/DesignTemplateStep/DesignTemplateStep';
 
 const CredentialTemplateCreationContainer = ({ api: { credentialTypesManager } }) => {
   const { t } = useTranslation();
@@ -37,12 +38,7 @@ const CredentialTemplateCreationContainer = ({ api: { credentialTypesManager } }
           />
         );
       case DESIGN_TEMPLATE:
-        return (
-          <div>
-            {/* FIXME: add design template component */}
-            (Design Template Component)
-          </div>
-        );
+        return <DesignTemplateStep form={form} />;
       case TEMPLATE_CREATION_RESULT: {
         return (
           <div>

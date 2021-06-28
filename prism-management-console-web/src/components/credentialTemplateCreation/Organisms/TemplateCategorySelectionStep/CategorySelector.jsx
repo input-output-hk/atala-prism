@@ -2,8 +2,8 @@ import React, { useState } from 'react';
 import PropTypes from 'prop-types';
 import { message, Radio, Form } from 'antd';
 import { useTranslation } from 'react-i18next';
-import AddNewCategory from '../../Molecules/AddNewCategory';
-import CategoryCard from '../../Molecules/CategoryCard';
+import AddNewCategory from '../../Molecules/TemplateCategorySelectionStep/AddNewCategory';
+import CategoryCard from '../../Molecules/TemplateCategorySelectionStep/CategoryCard';
 import { antdV4FormShape, templateCategoryShape } from '../../../../helpers/propShapes';
 import './_style.scss';
 
