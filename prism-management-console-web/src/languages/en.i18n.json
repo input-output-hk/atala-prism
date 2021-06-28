@@ -549,7 +549,14 @@
     },
     "step2": {
       "title": "Create a Credential Template",
-      "subtitle": "Design your Credential"
+      "subtitle": "Design your Credential",
+      "style": {
+        "title": "Style",
+        "layout": "Layout"
+      },
+      "content": {
+        "title": "Content"
+      }
     },
     "messages": {
       "selectCategoryError": "Please select a category",
