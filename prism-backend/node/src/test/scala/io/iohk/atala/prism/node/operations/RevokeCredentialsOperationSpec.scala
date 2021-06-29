@@ -166,6 +166,20 @@ class RevokeCredentialsOperationSpec extends AtalaWithPostgresSpec {
       key mustBe issuingKeys.publicKey
       previousOperation mustBe Some(credentialIssueBatchOperation.digest)
     }
+    "return state error when there are used different key than issuing key" in {
+      issuerCreateDIDOperation.applyState().transact(database).value.unsafeRunSync()
+      credentialIssueBatchOperation.applyState().transact(database).value.unsafeRunSync()
+
+      val parsedOperation = RevokeCredentialsOperation.parse(revokeFullBatchOperation, dummyLedgerData).toOption.value
+
+      val result = parsedOperation
+        .getCorrectnessData("master")
+        .transact(database)
+        .value
+        .unsafeRunSync()
+
+      result mustBe Left(StateError.InvalidKeyUsed("issuing key"))
+    }
   }
 
   "RevokeCredentialsOperation.applyState" should {

@@ -40,10 +40,7 @@ case class IssueCredentialBatchOperation(
       }
       data <- EitherT.fromEither[ConnectionIO] {
         Either.cond(
-          // TODO: ATA-2854 related, take this change back to
-          //         keyState.keyUsage == KeyUsage.IssuingKey
-          //       after updating key usage in the wallet
-          keyState.keyUsage == KeyUsage.IssuingKey || keyState.keyUsage == KeyUsage.MasterKey,
+          keyState.keyUsage == KeyUsage.IssuingKey,
           CorrectnessData(keyState.key, None),
           StateError.InvalidKeyUsed(
             s"The key type expected is Issuing key. Type used: ${keyState.keyUsage}"

@@ -15,10 +15,7 @@ import java.time.Instant
 
 package object models {
   sealed trait KeyUsage extends EnumEntry with UpperSnakecase {
-    // TODO: ATA-2854: revert this to
-    //             def canIssue: Boolean = this == KeyUsage.IssuingKey
-    //       after implementing proper key usage in the wallet
-    def canIssue: Boolean = this == KeyUsage.IssuingKey || this == KeyUsage.MasterKey
+    def canIssue: Boolean = this == KeyUsage.IssuingKey
   }
 
   object KeyUsage extends Enum[KeyUsage] {

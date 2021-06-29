@@ -129,6 +129,19 @@ class IssueCredentialBatchOperationSpec extends AtalaWithPostgresSpec {
       key mustBe issuingKeys.publicKey
       previousOperation mustBe None
     }
+    "return state error when there are used different key than issuing key" in {
+      DataPreparation
+        .createDID(DIDData(issuerDIDSuffix, issuerDidKeys, issuerCreateDIDOperation.digest), dummyLedgerData)
+      val parsedOperation = IssueCredentialBatchOperation.parse(exampleOperation, dummyLedgerData).toOption.value
+
+      val result = parsedOperation
+        .getCorrectnessData("master")
+        .transact(database)
+        .value
+        .unsafeRunSync()
+
+      result mustBe Left(StateError.InvalidKeyUsed("The key type expected is Issuing key. Type used: MasterKey"))
+    }
   }
 
   "IssueCredentialBatchOperation.applyState" should {
