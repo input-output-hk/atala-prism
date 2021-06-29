@@ -3,8 +3,10 @@ package io.iohk.atala.prism.node.operations
 import java.time.LocalDate
 
 import com.google.protobuf.ByteString
-import io.iohk.atala.prism.crypto.{EC, ECConfig, ECPublicKey}
-import io.iohk.atala.prism.crypto.SHA256Digest
+import io.iohk.atala.prism.kotlin.crypto.{EC}
+import io.iohk.atala.prism.kotlin.crypto.keys.{ECPublicKey}
+import io.iohk.atala.prism.kotlin.crypto.ECConfig.{INSTANCE => ECConfig}
+import io.iohk.atala.prism.kotlin.crypto.SHA256Digest
 import io.iohk.atala.prism.identity.DIDSuffix
 import io.iohk.atala.prism.node.models.{DIDPublicKey, KeyUsage}
 import io.iohk.atala.prism.node.operations.ValidationError.{InvalidValue, MissingValue}
@@ -32,7 +34,7 @@ object ParsingUtils {
   val KEY_ID_RE = "^\\w+$".r
 
   def parseECKey(ecData: ValueAtPath[node_models.ECKeyData]): Either[ValidationError, ECPublicKey] = {
-    if (ecData(_.curve) != ECConfig.CURVE_NAME) {
+    if (ecData(_.curve) != ECConfig.getCURVE_NAME) {
       Left(ecData.child(_.curve, "curve").invalid("Unsupported curve"))
     } else if (ecData(_.x.toByteArray.isEmpty)) {
       Left(ecData.child(_.curve, "x").missing())
@@ -68,9 +70,9 @@ object ParsingUtils {
   def parseHash(hash: ValueAtPath[ByteString]): Either[ValidationError, SHA256Digest] = {
     hash.parse { hash =>
       Either.cond(
-        hash.size() == SHA256Digest.BYTE_LENGTH,
-        SHA256Digest.fromVectorUnsafe(hash.toByteArray.toVector),
-        s"must have ${SHA256Digest.BYTE_LENGTH} bytes"
+        hash.size() == SHA256Digest.getBYTE_LENGTH,
+        SHA256Digest.fromBytes(hash.toByteArray),
+        s"must have ${SHA256Digest.getBYTE_LENGTH} bytes"
       )
     }
   }
@@ -78,9 +80,9 @@ object ParsingUtils {
   def parseHashList(hashesV: ValueAtPath[Seq[ByteString]]): Either[ValidationError, List[SHA256Digest]] = {
     hashesV.parse { hashes =>
       Either.cond(
-        hashes.forall(_.size() == SHA256Digest.BYTE_LENGTH),
-        hashes.map(h => SHA256Digest.fromVectorUnsafe(h.toByteArray.toVector)).to(List),
-        s"must have ${SHA256Digest.BYTE_LENGTH} bytes"
+        hashes.forall(_.size() == SHA256Digest.getBYTE_LENGTH),
+        hashes.map(h => SHA256Digest.fromBytes(h.toByteArray)).to(List),
+        s"must have ${SHA256Digest.getBYTE_LENGTH} bytes"
       )
     }
   }

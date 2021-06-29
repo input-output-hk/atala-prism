@@ -2,7 +2,8 @@ package io.iohk.atala.prism.node.migrations
 
 import doobie.implicits._
 import io.iohk.atala.prism.credentials.TimestampInfo
-import io.iohk.atala.prism.crypto.{EC, ECConfig, SHA256Digest}
+import io.iohk.atala.prism.kotlin.crypto.{EC, SHA256Digest}
+import io.iohk.atala.prism.kotlin.crypto.ECConfig.{INSTANCE => ECConfig}
 import io.iohk.atala.prism.daos.BaseDAO
 import io.iohk.atala.prism.identity.DIDSuffix
 import io.iohk.atala.prism.models.{Ledger, TransactionId}
@@ -12,6 +13,8 @@ import io.iohk.atala.prism.repositories.PostgresMigrationSpec
 import io.iohk.atala.prism.node.repositories.daos._
 import io.iohk.atala.prism.repositories.ops.SqlTestOps.Implicits
 import doobie.implicits.legacy.instant._
+
+import io.iohk.atala.prism.interop.toScalaSDK._
 
 import java.time.Instant
 
@@ -24,16 +27,16 @@ class V19MigrationSpec extends PostgresMigrationSpec("db.migration.V19") with Ba
     dummyTimestampInfo
   )
   val didDigest = SHA256Digest.compute("test".getBytes())
-  val didSuffix = DIDSuffix.unsafeFromDigest(didDigest)
+  val didSuffix = DIDSuffix.unsafeFromDigest(didDigest.asScala)
   val didPublicKey: DIDPublicKey =
-    DIDPublicKey(didSuffix, "master", KeyUsage.MasterKey, EC.generateKeyPair().publicKey)
+    DIDPublicKey(didSuffix, "master", KeyUsage.MasterKey, EC.generateKeyPair().getPublicKey)
 
   private def insertPublicKey(key: DIDPublicKey, ledgerData: LedgerData) = {
-    val curveName = ECConfig.CURVE_NAME
+    val curveName = ECConfig.getCURVE_NAME
     val point = key.key.getCurvePoint
 
-    val xBytes = point.x.toByteArray
-    val yBytes = point.y.toByteArray
+    val xBytes = point.xBytes()
+    val yBytes = point.yBytes()
 
     val addedOn = ledgerData.timestampInfo
     sql"""
@@ -59,9 +62,10 @@ class V19MigrationSpec extends PostgresMigrationSpec("db.migration.V19") with Ba
       val inDB = selectPublicKeyCompressed(didPublicKey)
       val expected = EC
         .toPublicKey(
-          didPublicKey.key.getCurvePoint.x.toByteArray,
-          didPublicKey.key.getCurvePoint.y.toByteArray
+          didPublicKey.key.getCurvePoint.xBytes(),
+          didPublicKey.key.getCurvePoint.yBytes()
         )
+        .asScala
         .getCompressed
       inDB mustBe expected
       inDB.length mustBe 33

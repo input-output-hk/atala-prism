@@ -5,7 +5,8 @@ import doobie.implicits._
 import io.iohk.atala.prism.AtalaWithPostgresSpec
 import io.iohk.atala.prism.connector.AtalaOperationId
 import io.iohk.atala.prism.credentials.TimestampInfo
-import io.iohk.atala.prism.crypto.{EC, ECKeyPair, SHA256Digest}
+import io.iohk.atala.prism.kotlin.crypto.{EC, SHA256Digest}
+import io.iohk.atala.prism.kotlin.crypto.keys.{ECKeyPair}
 import io.iohk.atala.prism.models.{
   BlockInfo,
   Ledger,
@@ -50,14 +51,14 @@ object ObjectManagementServiceSpec {
           id = s"key$i",
           usage = node_models.KeyUsage.AUTHENTICATION_KEY,
           keyData = node_models.PublicKey.KeyData.EcKeyData(
-            CreateDIDOperationSpec.protoECKeyFromPublicKey(keyPair.publicKey)
+            CreateDIDOperationSpec.protoECKeyFromPublicKey(keyPair.getPublicKey)
           )
         )
       })
   }
 
   val exampleSignedOperations: Seq[node_models.SignedAtalaOperation] = exampleOperations.map { operation =>
-    BlockProcessingServiceSpec.signOperation(operation, "master", CreateDIDOperationSpec.masterKeys.privateKey)
+    BlockProcessingServiceSpec.signOperation(operation, "master", CreateDIDOperationSpec.masterKeys.getPrivateKey)
   }
 }
 
@@ -82,7 +83,7 @@ class ObjectManagementServiceSpec
   private val dummyABSequenceNumber = dummyTime.atalaBlockSequenceNumber
   private val dummyTransactionInfo =
     TransactionInfo(
-      transactionId = TransactionId.from(SHA256Digest.compute("id".getBytes).value).value,
+      transactionId = TransactionId.from(SHA256Digest.compute("id".getBytes).getValue).value,
       ledger = Ledger.InMemory,
       block = Some(BlockInfo(number = 1, timestamp = dummyTimestamp, index = dummyABSequenceNumber))
     )
@@ -233,7 +234,7 @@ class ObjectManagementServiceSpec
 
       objectManagementService.saveObject(AtalaObjectNotification(obj, dummyTransactionInfo)).futureValue
       val dummyTransactionInfo2 = TransactionInfo(
-        transactionId = TransactionId.from(SHA256Digest.compute("id".getBytes).value).value,
+        transactionId = TransactionId.from(SHA256Digest.compute("id".getBytes).getValue).value,
         ledger = Ledger.InMemory,
         block = Some(BlockInfo(number = 100, timestamp = Instant.now, index = 100))
       )
@@ -328,7 +329,7 @@ class ObjectManagementServiceSpec
     }
 
     "retry old pending transactions" in {
-      val dummyTransactionId2 = TransactionId.from(SHA256Digest.compute("id2".getBytes).value).value
+      val dummyTransactionId2 = TransactionId.from(SHA256Digest.compute("id2".getBytes).getValue).value
       val dummyTransactionInfo2 = dummyTransactionInfo.copy(transactionId = dummyTransactionId2)
       val dummyPublicationInfo2 = dummyPublicationInfo.copy(transaction = dummyTransactionInfo2)
       // Return dummyTransactionInfo and then dummyTransactionInfo2

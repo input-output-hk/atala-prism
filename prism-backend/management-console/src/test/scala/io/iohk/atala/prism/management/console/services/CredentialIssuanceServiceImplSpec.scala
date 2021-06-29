@@ -3,7 +3,7 @@ package io.iohk.atala.prism.management.console.services
 import io.circe.{Json, JsonObject, parser}
 import io.iohk.atala.prism.DIDUtil
 import io.iohk.atala.prism.auth.SignedRpcRequest
-import io.iohk.atala.prism.crypto.EC
+import io.iohk.atala.prism.kotlin.crypto.EC
 import io.iohk.atala.prism.management.console.DataPreparation._
 import io.iohk.atala.prism.management.console.models.{Contact, CredentialTypeId, InstitutionGroup, ParticipantId}
 import io.iohk.atala.prism.management.console.{DataPreparation, ManagementConsoleRpcSpecBase}
@@ -20,9 +20,9 @@ class CredentialIssuanceServiceImplSpec extends ManagementConsoleRpcSpecBase wit
 
   "createCredentialIssuance and getCredentialIssuance" should {
     val keyPair = EC.generateKeyPair()
-    val did = generateDid(keyPair.publicKey)
+    val did = generateDid(keyPair.getPublicKey)
     val otherKeyPair = EC.generateKeyPair()
-    val otherDid = generateDid(otherKeyPair.publicKey)
+    val otherDid = generateDid(otherKeyPair.getPublicKey)
 
     def createCredentialIssuanceRequest(
         contacts: List[console_models.CredentialIssuanceContact],
@@ -118,9 +118,9 @@ class CredentialIssuanceServiceImplSpec extends ManagementConsoleRpcSpecBase wit
 
   "createGenericCredentialBulk and getCredentialIssuance" should {
     val keyPair = EC.generateKeyPair()
-    val did = generateDid(keyPair.publicKey)
+    val did = generateDid(keyPair.getPublicKey)
     val otherKeyPair = EC.generateKeyPair()
-    val otherDid = generateDid(otherKeyPair.publicKey)
+    val otherDid = generateDid(otherKeyPair.getPublicKey)
 
     val issuanceName = "2021 Class"
 

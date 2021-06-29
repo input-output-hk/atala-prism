@@ -109,7 +109,7 @@ object ProtoCodecs {
     credential.publicationData.fold(model) { data =>
       model
         .withBatchId(data.credentialBatchId.id)
-        .withIssuanceOperationHash(ByteString.copyFrom(data.issuanceOperationHash.value.toArray))
+        .withIssuanceOperationHash(ByteString.copyFrom(data.issuanceOperationHash.getValue))
         .withEncodedSignedCredential(data.encodedSignedCredential)
         .withBatchInclusionProof(data.inclusionProof.encode)
         .withPublicationStoredAt(data.storedAt.toProtoTimestamp)

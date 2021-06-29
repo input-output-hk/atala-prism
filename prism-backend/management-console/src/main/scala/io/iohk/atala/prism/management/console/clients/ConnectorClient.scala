@@ -5,7 +5,10 @@ import io.iohk.atala.prism.auth.grpc.GrpcAuthenticationHeader
 import io.iohk.atala.prism.auth.grpc.GrpcAuthenticationHeader.PublishedDIDBased
 import io.iohk.atala.prism.auth.model.RequestNonce
 import io.iohk.atala.prism.connector.RequestAuthenticator
-import io.iohk.atala.prism.crypto.{EC, ECPrivateKey, ECSignature}
+import io.iohk.atala.prism.kotlin.crypto.EC
+import io.iohk.atala.prism.crypto.{EC => ECScalaSDK}
+import io.iohk.atala.prism.kotlin.crypto.keys.ECPrivateKey
+import io.iohk.atala.prism.kotlin.crypto.signature.ECSignature
 import io.iohk.atala.prism.identity.DID
 import io.iohk.atala.prism.identity.DID.masterKeyId
 import io.iohk.atala.prism.models.ConnectionToken
@@ -17,6 +20,8 @@ import io.iohk.atala.prism.utils.GrpcUtils
 
 import scala.concurrent.{ExecutionContext, Future}
 import scala.util.{Failure, Success, Try}
+
+import io.iohk.atala.prism.interop.toScalaSDK._
 
 trait ConnectorClient {
   // the whole request metadata is required because we expect the client invoking the RPC to sign
@@ -82,16 +87,16 @@ object ConnectorClient {
     val connectorService = GrpcUtils
       .createPlaintextStub(host = config.host, port = config.port, stub = ConnectorServiceGrpc.stub)
 
-    val requestAuthenticator = new RequestAuthenticator(EC)
+    val requestAuthenticator = new RequestAuthenticator(ECScalaSDK)
 
     def requestSigner(request: scalapb.GeneratedMessage): GrpcAuthenticationHeader.DIDBased = {
 
-      val signedRequest = requestAuthenticator.signConnectorRequest(request.toByteArray, config.didPrivateKey)
+      val signedRequest = requestAuthenticator.signConnectorRequest(request.toByteArray, config.didPrivateKey.asScala)
       PublishedDIDBased(
         did = DID.unsafeFromString(config.whitelistedDID.value),
         keyId = masterKeyId,
-        requestNonce = RequestNonce(signedRequest.requestNonce.toVector),
-        signature = ECSignature(signedRequest.signature)
+        requestNonce = RequestNonce(signedRequest.encodedRequestNonce.getBytes.toVector),
+        signature = new ECSignature(signedRequest.encodedSignature.getBytes)
       )
     }
     new ConnectorClient.GrpcImpl(connectorService, connectorContactsService)(requestSigner)

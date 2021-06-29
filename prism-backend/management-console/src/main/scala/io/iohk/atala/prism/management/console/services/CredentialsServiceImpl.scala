@@ -8,8 +8,8 @@ import com.google.protobuf.ByteString
 import io.iohk.atala.prism.auth.AuthAndMiddlewareSupport
 import io.iohk.atala.prism.connector.AtalaOperationId
 import io.iohk.atala.prism.credentials.CredentialBatchId
-import io.iohk.atala.prism.crypto.MerkleTree.MerkleRoot
-import io.iohk.atala.prism.crypto.SHA256Digest
+import io.iohk.atala.prism.kotlin.crypto.MerkleRoot
+import io.iohk.atala.prism.kotlin.crypto.SHA256Digest
 import io.iohk.atala.prism.grpc.ProtoConverter
 import io.iohk.atala.prism.identity.DID
 import io.iohk.atala.prism.management.console.ManagementConsoleAuthenticator
@@ -36,6 +36,8 @@ import org.slf4j.{Logger, LoggerFactory}
 import io.iohk.atala.prism.utils.FutureEither.FutureEitherOps
 
 import scala.concurrent.{ExecutionContext, Future}
+
+import io.iohk.atala.prism.interop.toScalaSDK._
 
 class CredentialsServiceImpl(
     credentialsRepository: CredentialsRepository[IO],
@@ -125,7 +127,7 @@ class CredentialsServiceImpl(
         issueCredentialBatch <- atalaOperation.operation.issueCredentialBatch
         credentialBatchData <- issueCredentialBatch.credentialBatchData
         did = DID.buildPrismDID(credentialBatchData.issuerDid)
-        merkleRoot = MerkleRoot(SHA256Digest.fromVectorUnsafe(credentialBatchData.merkleRoot.toByteArray.toVector))
+        merkleRoot = new MerkleRoot(SHA256Digest.fromBytes(credentialBatchData.merkleRoot.toByteArray))
       } yield (merkleRoot, did, opHash)
       maybePair.fold(
         InternalServerError(new RuntimeException("Failed to extract content hash and issuer DID"))
@@ -142,7 +144,7 @@ class CredentialsServiceImpl(
       for {
         value <- extractValues(signedIssueCredentialBatchOp)
         (merkleRoot, did, operationHash) = value
-        computedBatchId = CredentialBatchId.fromBatchData(did.suffix, merkleRoot)
+        computedBatchId = CredentialBatchId.fromBatchData(did.suffix, merkleRoot.asScala)
         // validation for sanity check
         // The `batchId` parameter is the id returned by the node.
         // We make this check to be sure that the node and the console are
@@ -244,7 +246,7 @@ class CredentialsServiceImpl(
           node_api
             .GetCredentialRevocationTimeRequest()
             .withBatchId(query.batchId.id)
-            .withCredentialHash(ByteString.copyFrom(query.credentialHash.value.toArray))
+            .withCredentialHash(ByteString.copyFrom(query.credentialHash.getValue))
         )
       } yield GetLedgerDataResponse(
         batchIssuance = batchState.publicationLedgerData,

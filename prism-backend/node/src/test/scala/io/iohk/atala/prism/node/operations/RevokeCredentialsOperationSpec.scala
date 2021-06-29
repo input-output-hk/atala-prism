@@ -5,7 +5,7 @@ import com.google.protobuf.ByteString
 import doobie.implicits._
 import io.iohk.atala.prism.AtalaWithPostgresSpec
 import io.iohk.atala.prism.credentials.TimestampInfo
-import io.iohk.atala.prism.crypto.SHA256Digest
+import io.iohk.atala.prism.kotlin.crypto.SHA256Digest
 import io.iohk.atala.prism.models.{Ledger, TransactionId}
 import io.iohk.atala.prism.node.models.nodeState.LedgerData
 import io.iohk.atala.prism.node.models.{DIDPublicKey, KeyUsage}
@@ -23,8 +23,8 @@ object RevokeCredentialsOperationSpec {
   val issuingKeys = CreateDIDOperationSpec.issuingKeys
 
   lazy val issuerDidKeys = List(
-    DIDPublicKey(issuerDIDSuffix, "master", KeyUsage.MasterKey, masterKeys.publicKey),
-    DIDPublicKey(issuerDIDSuffix, "issuing", KeyUsage.IssuingKey, issuingKeys.publicKey)
+    DIDPublicKey(issuerDIDSuffix, "master", KeyUsage.MasterKey, masterKeys.getPublicKey),
+    DIDPublicKey(issuerDIDSuffix, "issuing", KeyUsage.IssuingKey, issuingKeys.getPublicKey)
   )
 
   lazy val dummyTimestamp = TimestampInfo(Instant.ofEpochMilli(0), 1, 0)
@@ -54,7 +54,7 @@ object RevokeCredentialsOperationSpec {
   val revokeFullBatchOperation = node_models.AtalaOperation(
     operation = node_models.AtalaOperation.Operation.RevokeCredentials(
       value = node_models.RevokeCredentialsOperation(
-        previousOperationHash = ByteString.copyFrom(credentialIssueBatchOperation.digest.value.toArray),
+        previousOperationHash = ByteString.copyFrom(credentialIssueBatchOperation.digest.getValue),
         credentialBatchId = credentialBatchId.id,
         credentialsToRevoke = Seq()
       )
@@ -67,9 +67,9 @@ object RevokeCredentialsOperationSpec {
   val revokeSpecificCredentialsOperation = node_models.AtalaOperation(
     operation = node_models.AtalaOperation.Operation.RevokeCredentials(
       value = node_models.RevokeCredentialsOperation(
-        previousOperationHash = ByteString.copyFrom(credentialIssueBatchOperation.digest.value.toArray),
+        previousOperationHash = ByteString.copyFrom(credentialIssueBatchOperation.digest.getValue),
         credentialBatchId = credentialBatchId.id,
-        credentialsToRevoke = Seq(ByteString.copyFrom(credentialHashToRevoke.value.toArray))
+        credentialsToRevoke = Seq(ByteString.copyFrom(credentialHashToRevoke.getValue))
       )
     )
   )
@@ -164,7 +164,7 @@ class RevokeCredentialsOperationSpec extends AtalaWithPostgresSpec {
         .toOption
         .value
 
-      key mustBe issuingKeys.publicKey
+      key mustBe issuingKeys.getPublicKey
       previousOperation mustBe Some(credentialIssueBatchOperation.digest)
     }
     "return state error when there are used different key than issuing key" in {

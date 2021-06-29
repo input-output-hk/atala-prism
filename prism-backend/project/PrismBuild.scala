@@ -99,7 +99,7 @@ object PrismBuild {
         repository = "prism-" + name,
         tag = sys.env.get("TAG").orElse(Some(version))
       )
-    else
+      else
       ImageName(
         namespace = Some("895947072537.dkr.ecr.us-east-2.amazonaws.com"),
         repository = name,

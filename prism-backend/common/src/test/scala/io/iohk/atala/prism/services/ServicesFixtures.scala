@@ -5,7 +5,9 @@ import io.circe.Encoder
 import io.circe.syntax._
 import com.google.protobuf.ByteString
 import io.iohk.atala.prism.credentials.{Credential, CredentialBatchId, CredentialBatches, TimestampInfo}
-import io.iohk.atala.prism.crypto.{EC, ECKeyPair}
+import io.iohk.atala.prism.kotlin.crypto.{EC, MerkleInclusionProof}
+import io.iohk.atala.prism.crypto.{EC => ECScalaSDK}
+import io.iohk.atala.prism.kotlin.crypto.keys.ECKeyPair
 import io.iohk.atala.prism.identity.DID
 import io.iohk.atala.prism.protos.node_api.GetBatchStateResponse
 import io.iohk.atala.prism.protos.node_models.PublicKey.KeyData.EcKeyData
@@ -15,15 +17,17 @@ import io.iohk.atala.prism.credentials.content.CredentialContent
 import io.iohk.atala.prism.credentials.content.syntax._
 import io.iohk.atala.prism.stubs.NodeClientServiceStub
 import io.iohk.atala.prism.config.ConnectorConfig
-import io.iohk.atala.prism.crypto.MerkleTree.MerkleInclusionProof
 import io.iohk.atala.prism.protos.credential_models.PlainTextCredential
 import io.iohk.atala.prism.services.BaseGrpcClientService.DidBasedAuthConfig
 import org.scalatest.OptionValues._
 import io.iohk.atala.prism.utils.Base64Utils
 
+import io.iohk.atala.prism.interop.toScalaSDK._
+import io.iohk.atala.prism.interop.toKotlinSDK._
+
 trait ServicesFixtures {
 
-  private implicit def ec = EC
+  private implicit def ec = ECScalaSDK
 
   object ConnectorClientServiceFixtures {
     val defaultConnectorConfig = ConnectorConfig(
@@ -54,7 +58,7 @@ trait ServicesFixtures {
       usage = KeyUsage.AUTHENTICATION_KEY,
       addedOn = Some(NodeClientService.toInfoProto(keyAddedDate)),
       revokedOn = None,
-      keyData = EcKeyData(NodeClientService.toTimestampInfoProto(keys.publicKey))
+      keyData = EcKeyData(NodeClientService.toTimestampInfoProto(keys.getPublicKey))
     )
 
     val rawMessage: ByteString = createRawMessage("{}")
@@ -90,15 +94,17 @@ trait ServicesFixtures {
       dateOfBirth = "1990-01-02"
     )
 
-    lazy val jsonBasedCredential1 =
+    lazy val jsonBasedCredential1 = {
       Credential
         .fromCredentialContent(makeCredentialContent(redlandIdCredential1))
-        .sign(keys.privateKey)
+        .sign(keys.getPrivateKey.asScala)
+    }
 
-    lazy val jsonBasedCredential2 =
+    lazy val jsonBasedCredential2 = {
       Credential
         .fromCredentialContent(makeCredentialContent(redlandIdCredential2))
-        .sign(keys.privateKey)
+        .sign(keys.getPrivateKey.asScala)
+    }
 
     val didData: DIDData = DIDData("", Seq(publicKey))
 
@@ -107,7 +113,7 @@ trait ServicesFixtures {
     val getBatchStateResponse: GetBatchStateResponse =
       GetBatchStateResponse(
         issuerDid = issuerDID.value,
-        merkleRoot = NodeClientService.toByteString(root.hash),
+        merkleRoot = NodeClientService.toByteString(root.hash.asKotlin),
         publicationLedgerData = Some(
           LedgerData(
             timestampInfo = Some(NodeClientService.toInfoProto(credentialIssueDate))
@@ -128,7 +134,7 @@ trait ServicesFixtures {
     ): PlainTextCredential =
       PlainTextCredential(
         credential.canonicalForm,
-        encodedMerkleProof = merkleInclusionProof.encode
+        encodedMerkleProof = merkleInclusionProof.encode()
       )
 
     def makeCredentialContent(redlandIdCredential: RedlandIdCredential): CredentialContent =
@@ -142,6 +148,6 @@ trait ServicesFixtures {
   }
 
   def newDID(): DID = {
-    DID.createUnpublishedDID(EC.generateKeyPair().publicKey).canonical.value
+    DID.createUnpublishedDID(EC.generateKeyPair().getPublicKey.asScala).canonical.value
   }
 }

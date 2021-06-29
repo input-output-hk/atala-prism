@@ -3,7 +3,8 @@ package io.iohk.atala.prism.connector.repositories
 import java.time.Instant
 import doobie.implicits._
 import doobie.implicits.legacy.instant._
-import io.iohk.atala.prism.crypto.{EC, ECPublicKey}
+import io.iohk.atala.prism.kotlin.crypto.EC
+import io.iohk.atala.prism.kotlin.crypto.keys.ECPublicKey
 import io.iohk.atala.prism.connector.model._
 import io.iohk.atala.prism.connector.repositories.daos._
 import io.iohk.atala.prism.identity.DID
@@ -11,6 +12,8 @@ import io.iohk.atala.prism.models.ParticipantId
 import io.iohk.atala.prism.AtalaWithPostgresSpec
 import io.iohk.atala.prism.connector.DataPreparation
 import io.iohk.atala.prism.repositories.ops.SqlTestOps.Implicits
+
+import io.iohk.atala.prism.interop.toScalaSDK._
 
 trait ConnectorRepositorySpecBase extends AtalaWithPostgresSpec {
   protected def createParticipant(
@@ -58,7 +61,7 @@ trait ConnectorRepositorySpecBase extends AtalaWithPostgresSpec {
     createParticipant(
       ParticipantType.Verifier,
       name,
-      DID.createUnpublishedDID(EC.generateKeyPair().publicKey),
+      DID.createUnpublishedDID(EC.generateKeyPair().getPublicKey.asScala),
       None,
       logo
     )

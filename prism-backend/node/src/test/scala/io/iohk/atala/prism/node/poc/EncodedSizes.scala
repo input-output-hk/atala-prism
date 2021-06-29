@@ -3,9 +3,13 @@ package io.iohk.atala.prism.node.poc
 import java.util.Base64
 
 import com.google.protobuf.ByteString
-import io.iohk.atala.prism.crypto.{EC, ECConfig, ECPublicKey, SHA256Digest}
+import io.iohk.atala.prism.kotlin.crypto.{EC, SHA256Digest}
+import io.iohk.atala.prism.kotlin.crypto.keys.{ECPublicKey}
+import io.iohk.atala.prism.kotlin.crypto.ECConfig.{INSTANCE => ECConfig}
 import io.iohk.atala.prism.identity.DIDSuffix
 import io.iohk.atala.prism.protos.node_models
+
+import io.iohk.atala.prism.interop.toScalaSDK._
 
 object EncodedSizes {
   def main(args: Array[String]): Unit = {
@@ -16,9 +20,9 @@ object EncodedSizes {
 
     val data = for {
       _ <- 1 to n
-      masterPublicKey1 = EC.generateKeyPair().publicKey
-      masterPublicKey2 = EC.generateKeyPair().publicKey
-      masterPublicKey3 = EC.generateKeyPair().publicKey
+      masterPublicKey1 = EC.generateKeyPair().getPublicKey
+      masterPublicKey2 = EC.generateKeyPair().getPublicKey
+      masterPublicKey3 = EC.generateKeyPair().getPublicKey
       did = createDID(List(masterPublicKey1, masterPublicKey2, masterPublicKey3))
     } yield (did, did.length)
 
@@ -58,7 +62,7 @@ object EncodedSizes {
     val atalaOp = node_models.AtalaOperation(operation = node_models.AtalaOperation.Operation.CreateDid(createDidOp))
     val operationBytes = atalaOp.toByteArray
     val operationHash = SHA256Digest.compute(operationBytes)
-    val didSuffix = DIDSuffix.unsafeFromDigest(operationHash)
+    val didSuffix = DIDSuffix.unsafeFromDigest(operationHash.asScala)
     val encodedOperation = Base64.getUrlEncoder.encodeToString(operationBytes)
     s"did:prism:${didSuffix.value}:$encodedOperation"
   }
@@ -66,9 +70,9 @@ object EncodedSizes {
   private def publicKeyToProto(key: ECPublicKey): node_models.ECKeyData = {
     val point = key.getCurvePoint
     node_models.ECKeyData(
-      curve = ECConfig.CURVE_NAME,
-      x = ByteString.copyFrom(point.x.toByteArray),
-      y = ByteString.copyFrom(point.y.toByteArray)
+      curve = ECConfig.getCURVE_NAME,
+      x = ByteString.copyFrom(point.getX.toByteArray),
+      y = ByteString.copyFrom(point.getY.toByteArray)
     )
   }
 }

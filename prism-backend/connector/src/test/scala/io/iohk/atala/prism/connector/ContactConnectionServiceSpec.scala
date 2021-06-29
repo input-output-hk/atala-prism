@@ -5,8 +5,8 @@ import io.iohk.atala.prism.auth.grpc.GrpcAuthenticationHeaderParser
 import io.iohk.atala.prism.connector.model.ConnectionStatus
 import io.iohk.atala.prism.connector.repositories._
 import io.iohk.atala.prism.connector.services.{ConnectionsService, ContactConnectionService}
+import io.iohk.atala.prism.kotlin.crypto.keys.ECPublicKey
 import io.iohk.atala.prism.connector.DataPreparation
-import io.iohk.atala.prism.crypto.ECPublicKey
 import io.iohk.atala.prism.protos.{connector_api, connector_models, console_models}
 import io.iohk.atala.prism.{DIDUtil, RpcSpecBase}
 import org.mockito.MockitoSugar.mock
@@ -23,7 +23,7 @@ class ContactConnectionServiceSpec extends RpcSpecBase with DIDUtil with Connect
   lazy val participantsRepository = ParticipantsRepository(database)
 
   val (keyPair, did) = DIDUtil.createUnpublishedDid
-  val publicKey: ECPublicKey = keyPair.publicKey
+  val publicKey: ECPublicKey = keyPair.getPublicKey
 
   lazy val connectionsService = new ConnectionsService(connectionsRepository, nodeMock)
 

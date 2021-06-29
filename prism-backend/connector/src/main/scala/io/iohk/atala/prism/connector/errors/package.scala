@@ -4,7 +4,7 @@ import io.grpc.Status
 import io.iohk.atala.prism.connector.model.{ConnectionId, MessageId, TokenString}
 import io.iohk.atala.prism.errors.{PrismError, PrismServerError}
 import io.iohk.atala.prism.models.ParticipantId
-import io.iohk.atala.prism.crypto.ECPublicKey
+import io.iohk.atala.prism.kotlin.crypto.keys.ECPublicKey
 import io.iohk.atala.prism.identity.DID
 
 package object errors {

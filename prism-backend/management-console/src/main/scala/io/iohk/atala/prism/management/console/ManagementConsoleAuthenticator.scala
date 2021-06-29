@@ -6,7 +6,7 @@ import io.iohk.atala.prism.auth.errors.{AuthError, UnexpectedError, UnsupportedA
 import io.iohk.atala.prism.auth.grpc.GrpcAuthenticationHeaderParser
 import io.iohk.atala.prism.auth.SignedRequestsAuthenticatorBase
 import io.iohk.atala.prism.auth.model.RequestNonce
-import io.iohk.atala.prism.crypto.ECPublicKey
+import io.iohk.atala.prism.kotlin.crypto.keys.ECPublicKey
 import io.iohk.atala.prism.identity.DID
 import io.iohk.atala.prism.management.console.models.ParticipantId
 import io.iohk.atala.prism.management.console.repositories.{ParticipantsRepository, RequestNoncesRepository}

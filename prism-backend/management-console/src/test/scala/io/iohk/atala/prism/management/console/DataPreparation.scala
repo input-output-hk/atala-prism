@@ -9,8 +9,10 @@ import io.iohk.atala.prism.auth.grpc.GrpcAuthenticationHeader
 import io.iohk.atala.prism.auth.model.RequestNonce
 import io.iohk.atala.prism.connector.AtalaOperationId
 import io.iohk.atala.prism.credentials.CredentialBatchId
-import io.iohk.atala.prism.crypto.MerkleTree.MerkleInclusionProof
-import io.iohk.atala.prism.crypto.{EC, ECSignature, SHA256Digest}
+import io.iohk.atala.prism.kotlin.crypto.MerkleInclusionProof
+import io.iohk.atala.prism.kotlin.crypto.{SHA256Digest}
+import io.iohk.atala.prism.crypto.{EC => ECScalaSDK}
+import io.iohk.atala.prism.kotlin.crypto.signature.ECSignature
 import io.iohk.atala.prism.identity.DID
 import io.iohk.atala.prism.management.console.models._
 import io.iohk.atala.prism.management.console.repositories.daos.ReceivedCredentialsDAO.ReceivedSignedCredentialData
@@ -22,6 +24,7 @@ import org.scalatest.OptionValues._
 
 import java.time.{Instant, LocalDate}
 import scala.util.Random
+import scala.jdk.CollectionConverters._
 
 object DataPreparation {
   def createParticipant(name: String)(implicit database: Transactor[IO]): ParticipantId = {
@@ -44,7 +47,7 @@ object DataPreparation {
     GrpcAuthenticationHeader.PublishedDIDBased(
       did = newDID(),
       keyId = "didKeyId",
-      signature = ECSignature("didSignature".getBytes),
+      signature = new ECSignature("didSignature".getBytes),
       requestNonce = RequestNonce("requestNonce".getBytes.toVector)
     )
 
@@ -52,7 +55,7 @@ object DataPreparation {
     ConnectorRequestMetadata(
       did = grpcAuthenticationHeaderDIDBased.did.toString,
       didKeyId = grpcAuthenticationHeaderDIDBased.keyId,
-      didSignature = new String(grpcAuthenticationHeaderDIDBased.signature.data),
+      didSignature = new String(grpcAuthenticationHeaderDIDBased.signature.getData),
       requestNonce = new String(grpcAuthenticationHeaderDIDBased.requestNonce.bytes.toArray)
     )
 
@@ -203,7 +206,7 @@ object DataPreparation {
   }
 
   def newDID(): DID = {
-    DID.createUnpublishedDID(EC.generateKeyPair().publicKey).canonical.value
+    DID.createUnpublishedDID(ECScalaSDK.generateKeyPair().publicKey).canonical.value
   }
 
   def publishCredential(
@@ -270,13 +273,13 @@ object DataPreparation {
     val aHash = SHA256Digest.compute("test".getBytes)
     val aBatchId = CredentialBatchId.random()
     val anEncodedSignedCredential = "mockEncodedSignedCredential"
-    val aMerkleProof = MerkleInclusionProof(aHash, 0, List())
+    val aMerkleProof = new MerkleInclusionProof(aHash, 0, List().asJava)
 
     CredentialsDAO
       .storeBatchData(
         aBatchId,
         aHash,
-        AtalaOperationId.fromVectorUnsafe(aHash.value)
+        AtalaOperationId.fromVectorUnsafe(aHash.getValue.toVector)
       )
       .transact(database)
       .unsafeRunSync()

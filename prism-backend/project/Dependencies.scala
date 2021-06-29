@@ -37,7 +37,7 @@ object versions {
   val twirl = "1.5.1"
   val typesafeConfig = "1.4.1"
   val http4s = "0.21.7"
-  val kotlinSDK = "0.1.0-081e970e"
+  val kotlinSDK = "0.1.0-0646fec7"
 }
 
 object Dependencies {

@@ -27,7 +27,8 @@ trait ProtoParsingTestHelpers {
   )
 
   protected def signingKeyId = "master"
-  protected def signingKey = CreateDIDOperationSpec.masterKeys.privateKey
+
+  protected def signingKey = CreateDIDOperationSpec.masterKeys.getPrivateKey
 
   protected def missingValueTest[U](
       mutation: Lens[node_models.AtalaOperation, node_models.AtalaOperation] => Mutation[node_models.AtalaOperation],

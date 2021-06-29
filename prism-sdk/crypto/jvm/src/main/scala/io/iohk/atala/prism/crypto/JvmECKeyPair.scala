@@ -2,7 +2,7 @@ package io.iohk.atala.prism.crypto
 
 import java.security.{PrivateKey => JavaPrivateKey, PublicKey => JavaPublicKey}
 
-private[prism] class JvmECPrivateKey(val key: JavaPrivateKey) extends ECPrivateKey {
+class JvmECPrivateKey(val key: JavaPrivateKey) extends ECPrivateKey {
   override def getD: BigInt = {
 
     key match {
@@ -12,7 +12,7 @@ private[prism] class JvmECPrivateKey(val key: JavaPrivateKey) extends ECPrivateK
   }
 }
 
-private[prism] class JvmECPublicKey(val key: JavaPublicKey) extends ECPublicKey {
+class JvmECPublicKey(val key: JavaPublicKey) extends ECPublicKey {
   override def getCurvePoint: ECPoint = {
     key match {
       case k: org.bouncycastle.jcajce.provider.asymmetric.ec.BCECPublicKey =>

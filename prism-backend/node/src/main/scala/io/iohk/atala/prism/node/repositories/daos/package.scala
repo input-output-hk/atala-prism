@@ -7,20 +7,14 @@ import doobie.{Get, Meta, Put, Read, Write}
 import doobie.implicits.legacy.instant._
 import io.iohk.atala.prism.connector.AtalaOperationId
 import io.iohk.atala.prism.credentials.{CredentialBatchId, TimestampInfo}
-import io.iohk.atala.prism.crypto.{EC, ECConfig}
+import io.iohk.atala.prism.kotlin.crypto.EC
+import io.iohk.atala.prism.kotlin.crypto.ECConfig.{INSTANCE => ECConfig}
 import io.iohk.atala.prism.daos.BaseDAO
 import io.iohk.atala.prism.identity.DIDSuffix
 import io.iohk.atala.prism.models.{BlockInfo, Ledger, TransactionId, TransactionInfo}
 import io.iohk.atala.prism.node.models.nodeState.DIDPublicKeyState
-import io.iohk.atala.prism.node.models.{
-  AtalaObjectInfo,
-  AtalaObjectId,
-  AtalaObjectTransactionSubmissionStatus,
-  AtalaOperationInfo,
-  AtalaOperationStatus,
-  CredentialId,
-  KeyUsage
-}
+import io.iohk.atala.prism.node.models.{AtalaObjectId, AtalaObjectInfo, AtalaObjectTransactionSubmissionStatus, AtalaOperationInfo, AtalaOperationStatus, CredentialId, KeyUsage}
+import io.iohk.atala.prism.kotlin.crypto.keys.ECPublicKey
 
 package object daos extends BaseDAO {
 
@@ -76,15 +70,15 @@ package object daos extends BaseDAO {
           Option[Int]
       )
     ].contramap { key =>
-      val curveName = ECConfig.CURVE_NAME
+      val curveName = ECConfig.getCURVE_NAME
       val point = key.key.getCurvePoint
       (
         key.didSuffix,
         key.keyId,
         key.keyUsage,
         curveName,
-        point.x.toByteArray,
-        point.y.toByteArray,
+        point.getX.bytes(),
+        point.getY.bytes(),
         key.addedOn.atalaBlockTimestamp,
         key.addedOn.atalaBlockSequenceNumber,
         key.addedOn.operationSequenceNumber,
@@ -111,9 +105,9 @@ package object daos extends BaseDAO {
           Option[Int]
       )
     ].map {
-      case (didSuffix, keyId, keyUsage, curveId, x, aTimestamp, aABSN, aOSN, rTimestamp, rABSN, rOSN) =>
-        assert(curveId == ECConfig.CURVE_NAME)
-        val javaPublicKey = EC.toPublicKeyFromCompressed(x).get
+      case (didSuffix, keyId, keyUsage, curveId, compressed, aTimestamp, aABSN, aOSN, rTimestamp, rABSN, rOSN) =>
+        assert(curveId == ECConfig.getCURVE_NAME)
+        val javaPublicKey: ECPublicKey = EC.toPublicKeyFromCompressed(compressed)
         val revokeTimestampInfo = for (t <- rTimestamp; absn <- rABSN; osn <- rOSN) yield TimestampInfo(t, absn, osn)
         DIDPublicKeyState(
           didSuffix,

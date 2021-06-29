@@ -28,8 +28,9 @@ import io.scalaland.chimney.Transformer
 
 import java.time.LocalDate
 import io.iohk.atala.prism.credentials.CredentialBatchId
-import io.iohk.atala.prism.crypto.MerkleTree.MerkleInclusionProof
-import io.iohk.atala.prism.crypto.{ECSignature, SHA256Digest}
+import io.iohk.atala.prism.kotlin.crypto.MerkleInclusionProof
+import io.iohk.atala.prism.kotlin.crypto.SHA256Digest
+import io.iohk.atala.prism.kotlin.crypto.signature.ECSignature
 import io.iohk.atala.prism.protos.connector_api.SendMessagesRequest
 import io.iohk.atala.prism.protos.console_models.ContactConnectionStatus
 import io.iohk.atala.prism.utils.Base64Utils
@@ -587,7 +588,7 @@ package object grpc {
                 RequestNonce(Base64Utils.decodeURL(nonce).toVector),
                 did,
                 keyId,
-                ECSignature(Base64Utils.decodeURL(signature))
+                new ECSignature(Base64Utils.decodeURL(signature))
               )
             }
       }
@@ -612,7 +613,7 @@ package object grpc {
     (request: GetLedgerDataRequest) => {
       for {
         batchId <- Try(CredentialBatchId.unsafeFromString(request.batchId))
-        credentialHash = SHA256Digest.fromVectorUnsafe(request.credentialHash.toByteArray.toVector)
+        credentialHash = SHA256Digest.fromBytes(request.credentialHash.toByteArray)
       } yield GetLedgerData(batchId, credentialHash)
     }
 
@@ -643,10 +644,10 @@ package object grpc {
         }
         consoleCredentialId = GenericCredential.Id.unsafeFrom(request.consoleCredentialId)
         batchId = CredentialBatchId.unsafeFromString(request.batchId)
-        proof =
+        proof = Try(
           MerkleInclusionProof
             .decode(request.encodedInclusionProof)
-            .getOrElse(throw new RuntimeException(s"Invalid inclusion proof: ${request.encodedInclusionProof}"))
+        ).getOrElse(throw new RuntimeException(s"Invalid inclusion proof: ${request.encodedInclusionProof}"))
       } yield StorePublishedCredential(
         encodedSignedCredential = encodedSignedCredential,
         consoleCredentialId = consoleCredentialId,

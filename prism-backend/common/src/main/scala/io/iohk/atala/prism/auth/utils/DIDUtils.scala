@@ -1,13 +1,15 @@
 package io.iohk.atala.prism.auth.utils
 
 import io.iohk.atala.prism.auth.errors._
-import io.iohk.atala.prism.crypto.{EC, ECConfig, ECPublicKey}
+import io.iohk.atala.prism.kotlin.crypto.{EC}
+import io.iohk.atala.prism.kotlin.crypto.keys.{ECPublicKey}
 import io.iohk.atala.prism.identity.DID
 import io.iohk.atala.prism.identity.DID.DIDFormat
 import io.iohk.atala.prism.protos.node_models
 import io.iohk.atala.prism.protos.node_models.{CreateDIDOperation, DIDData}
 import io.iohk.atala.prism.utils.FutureEither
 import io.iohk.atala.prism.utils.FutureEither.FutureEitherOps
+import io.iohk.atala.prism.kotlin.crypto.ECConfig.{INSTANCE => ECConfig}
 
 import scala.concurrent.{ExecutionContext, Future}
 
@@ -34,7 +36,7 @@ object DIDUtils {
   }
 
   private def verifyPublicKey(curve: String, publicKey: ECPublicKey): Option[ECPublicKey] =
-    Option.when(ECConfig.CURVE_NAME == curve && EC.isSecp256k1(publicKey.getCurvePoint))(publicKey)
+    Option.when(ECConfig.getCURVE_NAME == curve && EC.isSecp256k1(publicKey.getCurvePoint))(publicKey)
 
   def findPublicKey(didData: node_models.DIDData, keyId: String)(implicit
       ec: ExecutionContext
@@ -46,7 +48,7 @@ object DIDUtils {
         .find(_.id == keyId)
         .flatMap(_.keyData.ecKeyData)
         .flatMap { data =>
-          val pubk = EC.toPublicKey(x = data.x.toByteArray, y = data.y.toByteArray)
+          val pubk = EC.toPublicKey(data.x.toByteArray, data.y.toByteArray)
           verifyPublicKey(data.curve, pubk)
         }
 

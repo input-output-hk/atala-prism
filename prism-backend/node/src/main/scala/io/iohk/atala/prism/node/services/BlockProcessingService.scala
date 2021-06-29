@@ -7,7 +7,9 @@ import doobie.free.connection
 import doobie.free.connection.ConnectionIO
 import io.iohk.atala.prism.connector.AtalaOperationId
 import io.iohk.atala.prism.credentials.TimestampInfo
-import io.iohk.atala.prism.crypto.{EC, ECPublicKey, ECSignature}
+import io.iohk.atala.prism.kotlin.crypto.EC
+import io.iohk.atala.prism.kotlin.crypto.keys.ECPublicKey
+import io.iohk.atala.prism.kotlin.crypto.signature.ECSignature
 import io.iohk.atala.prism.models.{Ledger, TransactionId}
 import io.iohk.atala.prism.node.models.AtalaOperationStatus
 import io.iohk.atala.prism.node.models.nodeState.LedgerData
@@ -165,7 +167,7 @@ class BlockProcessingServiceImpl extends BlockProcessingService {
   def verifySignature(key: ECPublicKey, protoOperation: node_models.SignedAtalaOperation): Either[StateError, Unit] = {
     try {
       Either.cond(
-        EC.verify(protoOperation.getOperation.toByteArray, key, ECSignature(protoOperation.signature.toByteArray)),
+        EC.verify(protoOperation.getOperation.toByteArray, key, new ECSignature(protoOperation.signature.toByteArray)),
         (),
         StateError.InvalidSignature()
       )

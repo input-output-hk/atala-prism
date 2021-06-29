@@ -9,8 +9,8 @@ import fr.acinq.bitcoin.DeterministicWallet._
 import fr.acinq.bitcoin.MnemonicCode._
 import io.circe.syntax._
 import io.circe.{Json, Printer}
-import io.iohk.atala.prism.crypto.ECConfig
-import io.iohk.atala.prism.crypto.SHA256Digest
+import io.iohk.atala.prism.kotlin.crypto.ECConfig.{INSTANCE => ECConfig}
+import io.iohk.atala.prism.kotlin.crypto.SHA256Digest
 import io.iohk.atala.prism.protos.node_models
 import org.spongycastle.math.ec.ECFieldElement
 import scodec.bits._
@@ -75,7 +75,7 @@ object KeyDerivationTestVectors {
       usage = KeyType.keyUsage(masterKey.tpe),
       keyData = node_models.PublicKey.KeyData.EcKeyData(
         node_models.ECKeyData(
-          curve = ECConfig.CURVE_NAME,
+          curve = ECConfig.getCURVE_NAME,
           x = ByteString.copyFrom(xCoord.toArray),
           y = ByteString.copyFrom(yCoord.toArray)
         )

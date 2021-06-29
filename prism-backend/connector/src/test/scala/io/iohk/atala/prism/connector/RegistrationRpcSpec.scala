@@ -5,8 +5,7 @@ import cats.syntax.option._
 import doobie.implicits._
 import io.iohk.atala.prism.connector.model._
 import io.iohk.atala.prism.connector.repositories.daos.ParticipantsDAO
-import io.iohk.atala.prism.connector.DataPreparation
-import io.iohk.atala.prism.crypto.{EC, SHA256Digest}
+import io.iohk.atala.prism.kotlin.crypto.{EC, SHA256Digest}
 import io.iohk.atala.prism.identity.DID
 import io.iohk.atala.prism.models.ParticipantId
 import io.iohk.atala.prism.protos.connector_api.{RegisterDIDRequest, RegisterDIDResponse}
@@ -21,6 +20,8 @@ import org.scalatest.OptionValues._
 
 import scala.concurrent.Future
 import scala.util.Try
+
+import io.iohk.atala.prism.interop.toScalaSDK._
 
 class RegistrationRpcSpec extends ConnectorRpcSpecBase {
 
@@ -56,7 +57,7 @@ class RegistrationRpcSpec extends ConnectorRpcSpecBase {
       usingApiAs.unlogged { blockingStub =>
         val keyId = "key-1"
         val didKeyPair = EC.generateKeyPair()
-        val did = DID.createUnpublishedDID(didKeyPair.publicKey).canonical.get
+        val did = DID.createUnpublishedDID(didKeyPair.getPublicKey.asScala).canonical.get
         val name = "iohk"
         val logo = "none".getBytes()
         val request = connector_api
@@ -68,7 +69,7 @@ class RegistrationRpcSpec extends ConnectorRpcSpecBase {
         nodeMock.getDidDocument(*).returns {
           Future.successful(
             GetDidDocumentResponse(
-              DIDData(id = did.suffix.value, List(createNodePublicKey(keyId, didKeyPair.publicKey))).some
+              DIDData(id = did.suffix.value, List(createNodePublicKey(keyId, didKeyPair.getPublicKey))).some
             )
           )
         }
@@ -81,18 +82,18 @@ class RegistrationRpcSpec extends ConnectorRpcSpecBase {
       usingApiAs.unlogged { blockingStub =>
         val keyId = "key-1"
         val didKeyPair = EC.generateKeyPair()
-        val did = DID.createUnpublishedDID(didKeyPair.publicKey).canonical.get
+        val did = DID.createUnpublishedDID(didKeyPair.getPublicKey.asScala).canonical.get
         val name = "iohk"
         val participantId = ParticipantId.random()
         val participantRole = ParticipantType.Issuer
         val existingParticipantInfo =
-          ParticipantInfo(participantId, participantRole, didKeyPair.publicKey.some, name, did.some, None, None)
+          ParticipantInfo(participantId, participantRole, didKeyPair.getPublicKey.some, name, did.some, None, None)
         ParticipantsDAO.insert(existingParticipantInfo).transact(database).unsafeRunSync()
 
         nodeMock.getDidDocument(*).returns {
           Future.successful(
             GetDidDocumentResponse(
-              DIDData(id = did.suffix.value, List(createNodePublicKey(keyId, didKeyPair.publicKey))).some
+              DIDData(id = did.suffix.value, List(createNodePublicKey(keyId, didKeyPair.getPublicKey))).some
             )
           )
         }
@@ -110,7 +111,7 @@ class RegistrationRpcSpec extends ConnectorRpcSpecBase {
     "fail when the user passed unpublished did" in {
       usingApiAs.unlogged { blockingStub =>
         val didKeyPair = EC.generateKeyPair()
-        val did = DID.createUnpublishedDID(didKeyPair.publicKey)
+        val did = DID.createUnpublishedDID(didKeyPair.getPublicKey.asScala)
         val name = "iohk"
         val logo = "none".getBytes()
         val request = connector_api
@@ -128,7 +129,7 @@ class RegistrationRpcSpec extends ConnectorRpcSpecBase {
     "fail when user passed did which can't be found on the node" in {
       usingApiAs.unlogged { blockingStub =>
         val didKeyPair = EC.generateKeyPair()
-        val did = DID.createUnpublishedDID(didKeyPair.publicKey).canonical.get
+        val did = DID.createUnpublishedDID(didKeyPair.getPublicKey.asScala).canonical.get
         val name = "iohk"
         val logo = "none".getBytes()
         val request = connector_api
@@ -150,7 +151,7 @@ class RegistrationRpcSpec extends ConnectorRpcSpecBase {
     "fail when user passed non-prism did" in {
       usingApiAs.unlogged { blockingStub =>
         val didKeyPair = EC.generateKeyPair()
-        val did = DID.createUnpublishedDID(didKeyPair.publicKey).canonical.get
+        val did = DID.createUnpublishedDID(didKeyPair.getPublicKey.asScala).canonical.get
         val strangeDid = s"did:blabla:${did.suffix.value}"
         val name = "iohk"
         val logo = "none".getBytes()
@@ -186,7 +187,7 @@ class RegistrationRpcSpec extends ConnectorRpcSpecBase {
       val expectedDID = DataPreparation.newDID()
       val name = "iohk"
       val logo = "none".getBytes()
-      val operationId = SHA256Digest.compute("id".getBytes).value
+      val operationId = SHA256Digest.compute("id".getBytes).getValue
       val request = createRequest(name, logo)
 
       usingApiAs.unlogged { blockingStub =>

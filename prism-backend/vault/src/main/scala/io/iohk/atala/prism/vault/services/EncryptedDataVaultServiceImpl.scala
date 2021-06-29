@@ -4,7 +4,7 @@ import cats.effect.IO
 import cats.syntax.option._
 import com.google.protobuf.ByteString
 import io.iohk.atala.prism.auth.errors.AuthErrorSupport
-import io.iohk.atala.prism.crypto.SHA256Digest
+import io.iohk.atala.prism.kotlin.crypto.SHA256Digest
 import io.iohk.atala.prism.identity.DID
 import io.iohk.atala.prism.metrics.RequestMeasureUtil.measureRequestFuture
 import io.iohk.atala.prism.protos.common_models.{HealthCheckRequest, HealthCheckResponse}
@@ -42,7 +42,7 @@ class EncryptedDataVaultServiceImpl(
         .create(
           CreatePayload(
             Payload.ExternalId.unsafeFrom(request.externalId),
-            SHA256Digest.fromVectorUnsafe(request.payloadHash.toByteArray.toVector),
+            SHA256Digest.fromBytes(request.payloadHash.toByteArray),
             did,
             request.payload.toByteArray.toVector
           )
@@ -69,7 +69,7 @@ class EncryptedDataVaultServiceImpl(
       in.map(p =>
         vault_models.Payload(
           id = p.id.toString,
-          hash = ByteString.copyFrom(p.hash.value.toArray),
+          hash = ByteString.copyFrom(p.hash.getValue),
           content = ByteString.copyFrom(p.content.toArray),
           createdAt = p.createdAt.toProtoTimestamp.some
         )

@@ -6,7 +6,8 @@ import java.util.{Base64, UUID}
 
 import com.google.protobuf.ByteString
 import io.iohk.atala.prism.auth.SignedRpcRequest
-import io.iohk.atala.prism.crypto.{EC, ECSignature, SHA256Digest}
+import io.iohk.atala.prism.kotlin.crypto.{EC, SHA256Digest}
+import io.iohk.atala.prism.kotlin.crypto.signature.ECSignature
 import io.iohk.atala.prism.identity.DID
 import io.iohk.atala.prism.protos.{common_models, vault_api}
 import io.iohk.atala.prism.protos.node_models
@@ -16,10 +17,12 @@ import io.iohk.atala.prism.protos.vault_api.StoreDataRequest
 import io.iohk.atala.prism.vault.VaultRpcSpecBase
 import org.scalatest.OptionValues
 
+import io.iohk.atala.prism.interop.toScalaSDK._
+
 class EncryptedDataVaultServiceImplSpec extends VaultRpcSpecBase with OptionValues {
   private def createRequest(externalId: UUID, payload: String): StoreDataRequest = {
     val payloadBytes = payload.getBytes()
-    val hash = SHA256Digest.compute(payloadBytes).value.toArray
+    val hash = SHA256Digest.compute(payloadBytes).getValue.toArray
     vault_api.StoreDataRequest(
       externalId = externalId.toString,
       payloadHash = ByteString.copyFrom(hash),
@@ -42,7 +45,7 @@ class EncryptedDataVaultServiceImplSpec extends VaultRpcSpecBase with OptionValu
   "store" should {
     "create a payload" in {
       val keys = EC.generateKeyPair()
-      val did = DID.createUnpublishedDID(keys.publicKey)
+      val did = DID.createUnpublishedDID(keys.getPublicKey.asScala)
       val payload = "encrypted_data"
       val request = createRequest(payload)
       val rpcRequest = SignedRpcRequest.generate(keys, did, request)
@@ -65,7 +68,7 @@ class EncryptedDataVaultServiceImplSpec extends VaultRpcSpecBase with OptionValu
 
     "be idempotent on the exact same request" in {
       val keys = EC.generateKeyPair()
-      val did = DID.createUnpublishedDID(keys.publicKey)
+      val did = DID.createUnpublishedDID(keys.getPublicKey.asScala)
       val payload = "encrypted_data"
       val request = createRequest(payload)
       val rpcRequest1 = SignedRpcRequest.generate(keys, did, request)
@@ -96,7 +99,7 @@ class EncryptedDataVaultServiceImplSpec extends VaultRpcSpecBase with OptionValu
 
     "fail on the multiple different requests with the same id" in {
       val keys = EC.generateKeyPair()
-      val did = DID.createUnpublishedDID(keys.publicKey)
+      val did = DID.createUnpublishedDID(keys.getPublicKey.asScala)
       val externalId = UUID.randomUUID()
       val request1 = createRequest(externalId, "encrypted_data_1")
       val rpcRequest1 = SignedRpcRequest.generate(keys, did, request1)
@@ -118,7 +121,7 @@ class EncryptedDataVaultServiceImplSpec extends VaultRpcSpecBase with OptionValu
   "get" should {
     "return all created payloads" in {
       val keys = EC.generateKeyPair()
-      val did = DID.createUnpublishedDID(keys.publicKey)
+      val did = DID.createUnpublishedDID(keys.getPublicKey.asScala)
       val payload1 = "encrypted_data_1"
       val request1 = createRequest(payload1)
       val rpcRequest1 = SignedRpcRequest.generate(keys, did, request1)
@@ -177,7 +180,7 @@ class EncryptedDataVaultServiceImplSpec extends VaultRpcSpecBase with OptionValu
   "authentication" should {
     "support unpublished DID authentication" in {
       val keys = EC.generateKeyPair()
-      val did = DID.createUnpublishedDID(keys.publicKey)
+      val did = DID.createUnpublishedDID(keys.getPublicKey.asScala)
       val request = vault_api.GetPaginatedDataRequest()
       val rpcRequest = SignedRpcRequest.generate(keys, did, request)
       usingApiAs(rpcRequest) { blockingStub =>
@@ -189,8 +192,8 @@ class EncryptedDataVaultServiceImplSpec extends VaultRpcSpecBase with OptionValu
     "reject DIDs with non-matching hash" in {
       val keys1 = EC.generateKeyPair()
       val keys2 = EC.generateKeyPair()
-      val did1 = DID.createUnpublishedDID(keys1.publicKey)
-      val did2 = DID.createUnpublishedDID(keys2.publicKey)
+      val did1 = DID.createUnpublishedDID(keys1.getPublicKey.asScala)
+      val did2 = DID.createUnpublishedDID(keys2.getPublicKey.asScala)
       val fakeDid = DID.buildPrismDID(
         did1.getCanonicalSuffix.get.value,
         did2.suffix.value.dropWhile(_ != ':').tail
@@ -239,7 +242,7 @@ class EncryptedDataVaultServiceImplSpec extends VaultRpcSpecBase with OptionValu
 
     "reject DIDs with invalid key id" in {
       val keys = EC.generateKeyPair()
-      val did = DID.createUnpublishedDID(keys.publicKey)
+      val did = DID.createUnpublishedDID(keys.getPublicKey.asScala)
       val request = vault_api.GetPaginatedDataRequest()
       val rpcRequest = SignedRpcRequest.generate(keys, did, request).copy(keyId = "missing0")
       usingApiAs(rpcRequest) { blockingStub =>
@@ -251,12 +254,12 @@ class EncryptedDataVaultServiceImplSpec extends VaultRpcSpecBase with OptionValu
 
     "reject invalid signatures" in {
       val keys1 = EC.generateKeyPair()
-      val did1 = DID.createUnpublishedDID(keys1.publicKey)
+      val did1 = DID.createUnpublishedDID(keys1.getPublicKey.asScala)
       val request = vault_api.GetPaginatedDataRequest()
       val rpcRequest1 = SignedRpcRequest.generate(keys1, did1, request)
       val malformedSignature = Array(100.toByte, 200.toByte)
       val malformedSignatureRpcRequest = rpcRequest1
-        .copy(signature = ECSignature(malformedSignature))
+        .copy(signature = new ECSignature(malformedSignature))
       usingApiAs(malformedSignatureRpcRequest) { blockingStub =>
         intercept[RuntimeException] {
           blockingStub.getPaginatedData(request)
@@ -264,7 +267,7 @@ class EncryptedDataVaultServiceImplSpec extends VaultRpcSpecBase with OptionValu
       }
 
       val keys2 = EC.generateKeyPair()
-      val did2 = DID.createUnpublishedDID(keys2.publicKey)
+      val did2 = DID.createUnpublishedDID(keys2.getPublicKey.asScala)
       val rpcRequest2 = SignedRpcRequest.generate(keys2, did2, request)
       val invalidSignatureRpcRequest = rpcRequest1.copy(signature = rpcRequest2.signature)
       usingApiAs(invalidSignatureRpcRequest) { blockingStub =>

@@ -4,7 +4,7 @@ import io.circe.{Json, parser}
 import io.grpc.StatusRuntimeException
 import io.iohk.atala.prism.DIDUtil
 import io.iohk.atala.prism.auth.SignedRpcRequest
-import io.iohk.atala.prism.crypto.EC
+import io.iohk.atala.prism.kotlin.crypto.EC
 import io.iohk.atala.prism.management.console.DataPreparation._
 import io.iohk.atala.prism.management.console.grpc.ProtoCodecs.toContactProto
 import io.iohk.atala.prism.management.console.models.Contact.ExternalId
@@ -33,7 +33,7 @@ class ContactsServiceImplSpec extends ManagementConsoleRpcSpecBase with DIDUtil 
   "authentication" should {
     "support unpublished DID authentication" in {
       val keyPair = EC.generateKeyPair()
-      val publicKey = keyPair.publicKey
+      val publicKey = keyPair.getPublicKey
       val did = generateDid(publicKey)
       val institutionId = createParticipant("Institution", did)
       val group = createInstitutionGroup(institutionId, InstitutionGroup.Name("group 1"))
@@ -68,7 +68,7 @@ class ContactsServiceImplSpec extends ManagementConsoleRpcSpecBase with DIDUtil 
   "createContact" should {
     "create a contact and assign it to a group" in {
       val keyPair = EC.generateKeyPair()
-      val publicKey = keyPair.publicKey
+      val publicKey = keyPair.getPublicKey
       val did = generateDid(publicKey)
       val institutionId = createParticipant("Institution", did)
       val group = createInstitutionGroup(institutionId, InstitutionGroup.Name("group 1"))
@@ -113,7 +113,7 @@ class ContactsServiceImplSpec extends ManagementConsoleRpcSpecBase with DIDUtil 
 
     "create a contact and assign it to no group" in {
       val keyPair = EC.generateKeyPair()
-      val publicKey = keyPair.publicKey
+      val publicKey = keyPair.getPublicKey
       val did = generateDid(publicKey)
       val institutionId = createParticipant("Institution", did)
       val externalId = Contact.ExternalId.random()
@@ -155,7 +155,7 @@ class ContactsServiceImplSpec extends ManagementConsoleRpcSpecBase with DIDUtil 
 
     "create a contact without JSON data" in {
       val keyPair = EC.generateKeyPair()
-      val publicKey = keyPair.publicKey
+      val publicKey = keyPair.getPublicKey
       val did = generateDid(publicKey)
       val institutionId = createParticipant("Institution", did)
       val externalId = Contact.ExternalId.random()
@@ -186,7 +186,7 @@ class ContactsServiceImplSpec extends ManagementConsoleRpcSpecBase with DIDUtil 
 
     "fail to create a contact and assign it to a group that does not exists" in {
       val keyPair = EC.generateKeyPair()
-      val publicKey = keyPair.publicKey
+      val publicKey = keyPair.getPublicKey
       val did = generateDid(publicKey)
       val institutionId = createParticipant("Institution", did)
       val externalId = Contact.ExternalId.random()
@@ -225,7 +225,7 @@ class ContactsServiceImplSpec extends ManagementConsoleRpcSpecBase with DIDUtil 
 
     "fail on attempt to create a contact with empty external id" in {
       val keyPair = EC.generateKeyPair()
-      val publicKey = keyPair.publicKey
+      val publicKey = keyPair.getPublicKey
       val did = generateDid(publicKey)
       val institutionId = createParticipant("Institution", did)
       val group = createInstitutionGroup(institutionId, InstitutionGroup.Name("group 1"))
@@ -259,7 +259,7 @@ class ContactsServiceImplSpec extends ManagementConsoleRpcSpecBase with DIDUtil 
 
     "fail on attempt to duplicate an external id" in {
       val keyPair = EC.generateKeyPair()
-      val publicKey = keyPair.publicKey
+      val publicKey = keyPair.getPublicKey
       val did = generateDid(publicKey)
       val institutionId = createParticipant("Institution", did)
       val group = createInstitutionGroup(institutionId, InstitutionGroup.Name("group 1"))
@@ -318,7 +318,7 @@ class ContactsServiceImplSpec extends ManagementConsoleRpcSpecBase with DIDUtil 
 
     def runTest(requestBuilder: ParticipantId => console_api.CreateContactsRequest) = {
       val keyPair = EC.generateKeyPair()
-      val publicKey = keyPair.publicKey
+      val publicKey = keyPair.getPublicKey
       val did = generateDid(publicKey)
       val institutionId = createParticipant("Institution", did)
 
@@ -543,7 +543,7 @@ class ContactsServiceImplSpec extends ManagementConsoleRpcSpecBase with DIDUtil 
         f: (Contact.Id, ParticipantId) => console_api.UpdateContactRequest
     )(g: Try[console_api.UpdateContactResponse] => T) = {
       val keyPair = EC.generateKeyPair()
-      val publicKey = keyPair.publicKey
+      val publicKey = keyPair.getPublicKey
       val did = generateDid(publicKey)
       val institutionId = createParticipant("Institution", did)
       val externalId = Contact.ExternalId.random()
@@ -668,7 +668,7 @@ class ContactsServiceImplSpec extends ManagementConsoleRpcSpecBase with DIDUtil 
   "getContacts" should {
     "return connectionToken of the contact if connection is not accepted" in {
       val keyPair = EC.generateKeyPair()
-      val publicKey = keyPair.publicKey
+      val publicKey = keyPair.getPublicKey
       val did = generateDid(publicKey)
       val connectionToken = "some-connection-token"
       val institutionId = createParticipant("institutionx", did)
@@ -699,7 +699,7 @@ class ContactsServiceImplSpec extends ManagementConsoleRpcSpecBase with DIDUtil 
 
     "return first contacts" in {
       val keyPair = EC.generateKeyPair()
-      val publicKey = keyPair.publicKey
+      val publicKey = keyPair.getPublicKey
       val did = generateDid(publicKey)
       val connectionToken = "some-connection-token"
       val institutionId = createParticipant("institutionx", did)
@@ -756,7 +756,7 @@ class ContactsServiceImplSpec extends ManagementConsoleRpcSpecBase with DIDUtil 
 
     "return the contacts when FilterBy is provided with no criteria" in {
       val keyPair = EC.generateKeyPair()
-      val publicKey = keyPair.publicKey
+      val publicKey = keyPair.getPublicKey
       val did = generateDid(publicKey)
       val connectionToken = "some-connection-token"
       val institutionId = createParticipant("institutionx", did)
@@ -802,7 +802,7 @@ class ContactsServiceImplSpec extends ManagementConsoleRpcSpecBase with DIDUtil 
 
     "return first contacts matching a group" in {
       val keyPair = EC.generateKeyPair()
-      val publicKey = keyPair.publicKey
+      val publicKey = keyPair.getPublicKey
       val did = generateDid(publicKey)
       val connectionToken = "some-connection-token"
       val institutionId = createParticipant("institutionx", did)
@@ -858,7 +858,7 @@ class ContactsServiceImplSpec extends ManagementConsoleRpcSpecBase with DIDUtil 
 
     "return the first contacts matching a connection status" in {
       val keyPair = EC.generateKeyPair()
-      val publicKey = keyPair.publicKey
+      val publicKey = keyPair.getPublicKey
       val did = generateDid(publicKey)
       val institutionId = createParticipant("institution", did)
       val groupName = createInstitutionGroup(institutionId, InstitutionGroup.Name("Group")).name
@@ -944,7 +944,7 @@ class ContactsServiceImplSpec extends ManagementConsoleRpcSpecBase with DIDUtil 
 
     "paginate by the last seen contact" in {
       val keyPair = EC.generateKeyPair()
-      val publicKey = keyPair.publicKey
+      val publicKey = keyPair.getPublicKey
       val did = generateDid(publicKey)
       val connectionToken = "some-connection-token"
       val institutionId = createParticipant("Institution X", did)
@@ -992,7 +992,7 @@ class ContactsServiceImplSpec extends ManagementConsoleRpcSpecBase with DIDUtil 
 
     "paginate by the last seen contact matching by group" in {
       val keyPair = EC.generateKeyPair()
-      val publicKey = keyPair.publicKey
+      val publicKey = keyPair.getPublicKey
       val did = generateDid(publicKey)
       val connectionToken = "some-connection-token"
       val institutionId = createParticipant("Institution X", did)
@@ -1046,7 +1046,7 @@ class ContactsServiceImplSpec extends ManagementConsoleRpcSpecBase with DIDUtil 
 
     "return the credential counts" in {
       val keyPair = EC.generateKeyPair()
-      val publicKey = keyPair.publicKey
+      val publicKey = keyPair.getPublicKey
       val did = generateDid(publicKey)
       val institutionId = createParticipant("institutionx", did)
       val contactA = createContact(institutionId, "Alice")
@@ -1079,7 +1079,7 @@ class ContactsServiceImplSpec extends ManagementConsoleRpcSpecBase with DIDUtil 
         request: console_api.GetContactsRequest
     )(f: console_api.ContactsServiceGrpc.ContactsServiceBlockingStub => T) = {
       val keyPair = EC.generateKeyPair()
-      val publicKey = keyPair.publicKey
+      val publicKey = keyPair.getPublicKey
       val did = generateDid(publicKey)
       createParticipant("institutionx", did)
       val rpcRequest = SignedRpcRequest.generate(keyPair, did, request)
@@ -1116,7 +1116,7 @@ class ContactsServiceImplSpec extends ManagementConsoleRpcSpecBase with DIDUtil 
   "getContact" should {
     "return the correct contact when present" in {
       val keyPair = EC.generateKeyPair()
-      val publicKey = keyPair.publicKey
+      val publicKey = keyPair.getPublicKey
       val did = generateDid(publicKey)
       val institutionId = createParticipant("Institution X", did)
       val groupName = createInstitutionGroup(institutionId, InstitutionGroup.Name("Group A")).name
@@ -1150,7 +1150,7 @@ class ContactsServiceImplSpec extends ManagementConsoleRpcSpecBase with DIDUtil 
     "return no contact when the contact is missing (institutionId and contactId not correlated)" in {
       val institutionXId = createParticipant("Institution X")
       val keyPairY = EC.generateKeyPair()
-      val publicKeyY = keyPairY.publicKey
+      val publicKeyY = keyPairY.getPublicKey
       val didY = generateDid(publicKeyY)
       val institutionYId = createParticipant("Institution Y", didY)
       val groupNameA = createInstitutionGroup(institutionXId, InstitutionGroup.Name("Group A")).name
@@ -1176,7 +1176,7 @@ class ContactsServiceImplSpec extends ManagementConsoleRpcSpecBase with DIDUtil 
 
     "return the contact with correct connection status for Issued Credentials " in {
       val keyPair = EC.generateKeyPair()
-      val publicKey = keyPair.publicKey
+      val publicKey = keyPair.getPublicKey
       val did = generateDid(publicKey)
       val institutionId = createParticipant("Institution X", did)
       val groupName = createInstitutionGroup(institutionId, InstitutionGroup.Name("Group A")).name
@@ -1218,7 +1218,7 @@ class ContactsServiceImplSpec extends ManagementConsoleRpcSpecBase with DIDUtil 
 
     "return the contact with empty connection status given connector returned no result " in {
       val keyPair = EC.generateKeyPair()
-      val publicKey = keyPair.publicKey
+      val publicKey = keyPair.getPublicKey
       val did = generateDid(publicKey)
       val institutionId = createParticipant("Institution X", did)
       val groupName = createInstitutionGroup(institutionId, InstitutionGroup.Name("Group A")).name
@@ -1262,7 +1262,7 @@ class ContactsServiceImplSpec extends ManagementConsoleRpcSpecBase with DIDUtil 
   "deleteContact" should {
     "delete the correct contact along with its credentials" in {
       val keyPair = EC.generateKeyPair()
-      val publicKey = keyPair.publicKey
+      val publicKey = keyPair.getPublicKey
       val did = generateDid(publicKey)
       val institutionId = createParticipant("Institution X", did)
       val groupName = createInstitutionGroup(institutionId, InstitutionGroup.Name("Group A")).name
@@ -1294,7 +1294,7 @@ class ContactsServiceImplSpec extends ManagementConsoleRpcSpecBase with DIDUtil 
 
     "do not delete a contact without deleting its credentials" in {
       val keyPair = EC.generateKeyPair()
-      val publicKey = keyPair.publicKey
+      val publicKey = keyPair.getPublicKey
       val did = generateDid(publicKey)
       val institutionId = createParticipant("Institution X", did)
       val groupName = createInstitutionGroup(institutionId, InstitutionGroup.Name("Group A")).name
@@ -1330,11 +1330,11 @@ class ContactsServiceImplSpec extends ManagementConsoleRpcSpecBase with DIDUtil 
 
     "do not delete a contact who belongs to the wrong institution" in {
       val realKeyPair = EC.generateKeyPair()
-      val realPublicKey = realKeyPair.publicKey
+      val realPublicKey = realKeyPair.getPublicKey
       val realDid = generateDid(realPublicKey)
       val realInstitutionId = createParticipant("Institution X", realDid)
       val fakeKeyPair = EC.generateKeyPair()
-      val fakePublicKey = fakeKeyPair.publicKey
+      val fakePublicKey = fakeKeyPair.getPublicKey
       val fakeDid = generateDid(fakePublicKey)
       val fakeInstitutionId = createParticipant("Institution Y", fakeDid)
       val groupName = createInstitutionGroup(realInstitutionId, InstitutionGroup.Name("Group A")).name
