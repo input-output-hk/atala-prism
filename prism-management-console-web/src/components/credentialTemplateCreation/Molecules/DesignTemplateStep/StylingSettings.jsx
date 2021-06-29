@@ -1,11 +1,11 @@
 import React from 'react';
 import { Col, Row } from 'antd';
 import LayoutSelector from '../../Atoms/DesignTemplateStep/LayoutSelector';
+import ThemeOptions from '../../Atoms/DesignTemplateStep/ThemeOptions';
 
-const ThemeOptions = () => <div>{'<ThemeOptions/>'}</div>;
 const TemplateIcons = () => <div>{'<TemplateIcons/>'}</div>;
 
-const StylingSettings = props => (
+const StylingSettings = () => (
   <Col>
     <Row>
       <LayoutSelector />

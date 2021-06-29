@@ -6,7 +6,7 @@ import ContentSettings from './ContentSettings';
 
 const { TabPane } = Tabs;
 
-const TemplateSettings = props => {
+const TemplateSettings = () => {
   const { t } = useTranslation();
   const tabs = {
     setStyle: {

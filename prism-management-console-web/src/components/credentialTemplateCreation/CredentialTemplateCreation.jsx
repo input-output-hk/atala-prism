@@ -13,6 +13,7 @@ import {
 import { withRedirector } from '../providers/withRedirector';
 import { antdV4FormShape } from '../../helpers/propShapes';
 import './_style.scss';
+import { useTemplateContext } from '../providers/TemplateContext';
 
 const fieldsByStep = {
   [SELECT_TEMPLATE_CATEGORY]: ['templateName', 'templateCategory']
@@ -22,10 +23,10 @@ const CredentialTemplateCreation = ({
   currentStep,
   changeStep,
   renderStep,
-  form,
   redirector: { redirectToCredentialTemplates }
 }) => {
   const { t } = useTranslation();
+  const { form } = useTemplateContext();
 
   const validateByStep = () =>
     form.validateFields().catch(({ errorFields }) => {

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { useTranslation } from 'react-i18next';
 import { Form, Col, Radio } from 'antd';
 import TemplateLayout0 from '../../../../images/TemplateLayout_0.svg';
@@ -7,6 +7,7 @@ import TemplateLayout2 from '../../../../images/TemplateLayout_2.svg';
 import TemplateLayout3 from '../../../../images/TemplateLayout_3.svg';
 import TemplateLayout4 from '../../../../images/TemplateLayout_4.svg';
 import './_style.scss';
+import { useTemplateContext } from '../../../providers/TemplateContext';
 
 const layouts = [
   {
@@ -28,15 +29,11 @@ const layouts = [
 
 const LayoutSelector = () => {
   const { t } = useTranslation();
-  const [selected, setSelected] = useState(0);
-
-  const onLayoutChange = ev => {
-    setSelected(ev.target.value);
-  };
+  const { templateSettings } = useTemplateContext();
 
   return (
     <Form.Item
-      name="templateLayout"
+      name="layout"
       label={t('credentialTemplateCreation.step2.style.layout')}
       rules={[
         {
@@ -44,10 +41,14 @@ const LayoutSelector = () => {
         }
       ]}
     >
-      <Radio.Group onChange={onLayoutChange}>
+      <Radio.Group>
         {layouts.map((l, idx) => (
           <Radio value={idx}>
-            <Col className={`LayoutOption shadow ${selected === idx ? 'selected' : ''}`}>
+            <Col
+              className={`LayoutOption shadow ${
+                templateSettings.templateLayout === idx ? 'selected' : ''
+              }`}
+            >
               <img className="img-logo" src={l.thumb} alt={`LayouutTemplate_${idx}`} />
             </Col>
           </Radio>

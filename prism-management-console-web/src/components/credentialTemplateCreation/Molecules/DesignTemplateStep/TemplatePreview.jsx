@@ -1,5 +1,7 @@
-import React from 'react';
+import React, { useEffect } from 'react';
+import { message } from 'antd';
 import CredentialsViewer from '../../../newCredential/Molecules/CredentialsViewer/CredentialsViewer';
+import { useTemplateContext } from '../../../providers/TemplateContext';
 
 const credentialViews = [
   `<head>
@@ -59,9 +61,16 @@ const credentialViews = [
 </body>`
 ];
 
-const TemplatePreview = () => (
-  <CredentialsViewer credentialViews={credentialViews} showBrowseControls={false} />
-);
+const TemplatePreview = () => {
+  const { templateSettings } = useTemplateContext();
+
+  useEffect(() => {
+    // eslint-disable-next-line no-magic-numbers
+    message.info(JSON.stringify(templateSettings, null, 2));
+  }, [templateSettings]);
+
+  return <CredentialsViewer credentialViews={credentialViews} showBrowseControls={false} />;
+};
 
 TemplatePreview.propTypes = {};
 

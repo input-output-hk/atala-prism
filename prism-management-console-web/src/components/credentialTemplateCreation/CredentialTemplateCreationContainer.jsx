@@ -1,7 +1,5 @@
 import React, { useState } from 'react';
 import PropTypes from 'prop-types';
-import { Form } from 'antd';
-import { useTranslation } from 'react-i18next';
 import {
   DESIGN_TEMPLATE,
   SELECT_TEMPLATE_CATEGORY,
@@ -12,19 +10,14 @@ import { credentialTypesManagerShape } from '../../helpers/propShapes';
 import CredentialTemplateCreation from './CredentialTemplateCreation';
 import TemplateCategorySelectionStep from './Organisms/TemplateCategorySelectionStep/TemplateCategorySelectionStep';
 import DesignTemplateStep from './Organisms/DesignTemplateStep/DesignTemplateStep';
+import { useTemplateContext, withTemplateProvider } from '../providers/TemplateContext';
 
 const CredentialTemplateCreationContainer = ({ api: { credentialTypesManager } }) => {
-  const { t } = useTranslation();
   const [currentStep, setCurrentStep] = useState(SELECT_TEMPLATE_CATEGORY);
-
-  const [form] = Form.useForm();
+  const { templateSettings } = useTemplateContext();
 
   const { credentialTypes } = useCredentialTypes(credentialTypesManager);
   const { templateCategories } = useTemplateCategories(credentialTypesManager);
-
-  const validateMessages = {
-    required: t('credentialTemplateCreation.errors.required')
-  };
 
   const renderStep = () => {
     switch (currentStep) {
@@ -34,11 +27,10 @@ const CredentialTemplateCreationContainer = ({ api: { credentialTypesManager } }
           <TemplateCategorySelectionStep
             templateCategories={templateCategories}
             existingTemplates={credentialTypes}
-            form={form}
           />
         );
       case DESIGN_TEMPLATE:
-        return <DesignTemplateStep form={form} />;
+        return <DesignTemplateStep templateSettings={templateSettings} />;
       case TEMPLATE_CREATION_RESULT: {
         return (
           <div>
@@ -51,20 +43,11 @@ const CredentialTemplateCreationContainer = ({ api: { credentialTypesManager } }
   };
 
   return (
-    <Form
-      form={form}
-      name="control-hooks"
-      requiredMark={false}
-      layout="vertical"
-      validateMessages={validateMessages}
-    >
-      <CredentialTemplateCreation
-        currentStep={currentStep}
-        changeStep={setCurrentStep}
-        renderStep={renderStep}
-        form={form}
-      />
-    </Form>
+    <CredentialTemplateCreation
+      currentStep={currentStep}
+      changeStep={setCurrentStep}
+      renderStep={renderStep}
+    />
   );
 };
 
@@ -72,4 +55,4 @@ CredentialTemplateCreationContainer.propTypes = {
   api: PropTypes.shape({ credentialTypesManager: credentialTypesManagerShape }).isRequired
 };
 
-export default CredentialTemplateCreationContainer;
+export default withTemplateProvider(CredentialTemplateCreationContainer);

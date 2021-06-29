@@ -4,15 +4,17 @@ import { message, Radio, Form } from 'antd';
 import { useTranslation } from 'react-i18next';
 import AddNewCategory from '../../Molecules/TemplateCategorySelectionStep/AddNewCategory';
 import CategoryCard from '../../Molecules/TemplateCategorySelectionStep/CategoryCard';
-import { antdV4FormShape, templateCategoryShape } from '../../../../helpers/propShapes';
+import { templateCategoryShape } from '../../../../helpers/propShapes';
+import { useTemplateContext } from '../../../providers/TemplateContext';
 import './_style.scss';
 
 const ENABLED_STATE = 1;
 const ADD_NEW_CATEGORY_KEY = 'ADD_NEW_CATEGORY_KEY';
 
-const CategorySelector = ({ templateCategories, form }) => {
+const CategorySelector = ({ templateCategories }) => {
   const { t } = useTranslation();
   const [selected, setSelected] = useState();
+  const { form } = useTemplateContext();
 
   const categories = templateCategories.filter(({ state }) => state === ENABLED_STATE);
 
@@ -30,7 +32,7 @@ const CategorySelector = ({ templateCategories, form }) => {
   return (
     <div className="flex selectCathegory">
       <Form.Item
-        name="templateCategory"
+        name="category"
         label={t('credentialTemplateCreation.step1.selectCategory')}
         rules={[
           {
@@ -66,7 +68,6 @@ CategorySelector.defaultProps = {
 
 CategorySelector.propTypes = {
   templateCategories: PropTypes.arrayOf(templateCategoryShape),
-  form: antdV4FormShape.isRequired
 };
 
 export default CategorySelector;
