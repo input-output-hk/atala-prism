@@ -2,8 +2,7 @@ import React from 'react';
 import { Col, Row } from 'antd';
 import LayoutSelector from '../../Atoms/DesignTemplateStep/LayoutSelector';
 import ThemeOptions from '../../Atoms/DesignTemplateStep/ThemeOptions';
-
-const TemplateIcons = () => <div>{'<TemplateIcons/>'}</div>;
+import TemplateIcons from '../../Atoms/DesignTemplateStep/TemplateIcons';
 
 const StylingSettings = () => (
   <Col>

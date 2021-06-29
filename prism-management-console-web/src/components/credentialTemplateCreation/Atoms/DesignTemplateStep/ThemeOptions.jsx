@@ -12,6 +12,7 @@ const ThemeOptions = () => {
 
   return (
     <>
+      <h3>{t('credentialTemplateCreation.step2.style.themeOptions')}</h3>
       <ColorPicker
         name="themeColor"
         label={t('credentialTemplateCreation.step2.style.themeColor')}

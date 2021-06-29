@@ -29,6 +29,13 @@
     }
   }
 
+  .DesignTemplateStep {
+    height: calc(100vh - 18em);
+    .ant-tabs-content-holder {
+      overflow-y: auto;
+    }
+  }
+
   .ant-input-group-addon {
     background-color: inherit;
     border: none;

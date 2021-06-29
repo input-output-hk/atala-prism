@@ -3,7 +3,7 @@ import TemplatePreview from '../../Molecules/DesignTemplateStep/TemplatePreview'
 import TemplateSettings from '../../Molecules/DesignTemplateStep/TemplateSettings';
 
 const DesignTemplateStep = () => (
-  <div className="flex">
+  <div className="DesignTemplateStep flex">
     <TemplatePreview />
     <TemplateSettings />
   </div>

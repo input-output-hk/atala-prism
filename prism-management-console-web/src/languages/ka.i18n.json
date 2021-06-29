@@ -552,9 +552,13 @@
       "subtitle": "Design your Credential",
       "style": {
         "title": "Style",
+        "themeOptions": "Theme Options",
+        "customizeHeader": "Customize Header",
         "layout": "Layout",
         "themeColor": "Theme Color",
-        "backgroundColor": "Background Color"
+        "backgroundColor": "Background Color",
+        "backgroundHeader": "Background Header",
+        "iconHeader": "Icon Header"
       },
       "content": {
         "title": "Content"
