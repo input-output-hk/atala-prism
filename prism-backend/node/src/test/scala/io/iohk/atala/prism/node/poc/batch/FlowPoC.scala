@@ -1,5 +1,6 @@
 package io.iohk.atala.prism.node.poc.batch
 
+import cats.effect.IO
 import cats.scalatest.ValidatedValues.convertValidatedToValidatable
 import io.grpc.inprocess.{InProcessChannelBuilder, InProcessServerBuilder}
 import io.grpc.{ManagedChannel, Server}
@@ -30,8 +31,8 @@ class FlowPoC extends AtalaWithPostgresSpec with BeforeAndAfterEach {
   protected var serverHandle: Server = _
   protected var channelHandle: ManagedChannel = _
   protected var nodeServiceStub: node_api.NodeServiceGrpc.NodeServiceBlockingStub = _
-  protected var didDataRepository: DIDDataRepository = _
-  protected var credentialBatchesRepository: CredentialBatchesRepository = _
+  protected var didDataRepository: DIDDataRepository[IO] = _
+  protected var credentialBatchesRepository: CredentialBatchesRepository[IO] = _
   protected var atalaReferenceLedger: InMemoryLedgerService = _
   protected var blockProcessingService: BlockProcessingServiceImpl = _
   protected var objectManagementService: ObjectManagementService = _
@@ -41,8 +42,8 @@ class FlowPoC extends AtalaWithPostgresSpec with BeforeAndAfterEach {
   override def beforeEach(): Unit = {
     super.beforeEach()
 
-    didDataRepository = new DIDDataRepository(database)
-    credentialBatchesRepository = new CredentialBatchesRepository(database)
+    didDataRepository = DIDDataRepository(database)
+    credentialBatchesRepository = CredentialBatchesRepository(database)
 
     storage = new objects.ObjectStorageService.InMemory()
 

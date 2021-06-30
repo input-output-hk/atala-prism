@@ -8,7 +8,6 @@ import io.iohk.atala.prism.identity.DIDSuffix
 import io.iohk.atala.prism.models.{Ledger, TransactionId}
 import io.iohk.atala.prism.node.models.nodeState.{CredentialBatchState, LedgerData}
 import org.scalatest.OptionValues._
-import org.scalatest.concurrent.ScalaFutures._
 
 import java.time.Instant
 import cats.effect.IO
@@ -20,7 +19,7 @@ class CredentialBatchesRepositorySpec extends AtalaWithPostgresSpec {
 
   import CredentialBatchesRepositorySpec._
 
-  private lazy implicit val repository = new CredentialBatchesRepository(database)
+  private lazy implicit val repository: CredentialBatchesRepository[IO] = CredentialBatchesRepository(database)
 
   private val dummyTimestampInfo = TimestampInfo(Instant.ofEpochMilli(0), 1, 0)
   private val dummyLedgerData = LedgerData(
@@ -88,10 +87,9 @@ class CredentialBatchesRepositorySpec extends AtalaWithPostgresSpec {
 
       val response = repository
         .getBatchState(randomBatchId)
-        .value
-        .futureValue
+        .unsafeRunSync()
         .toOption
-        .value
+        .flatten
 
       response must be(empty)
     }
@@ -128,10 +126,9 @@ class CredentialBatchesRepositorySpec extends AtalaWithPostgresSpec {
 
       repository
         .getBatchState(randomBatchId)
-        .value
-        .futureValue
+        .unsafeRunSync()
         .toOption
-        .value must be(Some(expectedState))
+        .flatten must be(Some(expectedState))
     }
 
     "return proper data when the batch was revoked" in {
@@ -171,10 +168,9 @@ class CredentialBatchesRepositorySpec extends AtalaWithPostgresSpec {
 
       repository
         .getBatchState(randomBatchId)
-        .value
-        .futureValue
+        .unsafeRunSync()
         .toOption
-        .value must be(Some(expectedState))
+        .flatten must be(Some(expectedState))
     }
   }
 }
@@ -195,13 +191,12 @@ object CredentialBatchesRepositorySpec {
   }
 
   private def revocationTime(batchId: CredentialBatchId, credentialHash: SHA256Digest)(implicit
-      repository: CredentialBatchesRepository
+      repository: CredentialBatchesRepository[IO]
   ): Option[LedgerData] = {
     repository
       .getCredentialRevocationTime(batchId, credentialHash)
-      .value
-      .futureValue
+      .unsafeRunSync()
       .toOption
-      .value
+      .flatten
   }
 }

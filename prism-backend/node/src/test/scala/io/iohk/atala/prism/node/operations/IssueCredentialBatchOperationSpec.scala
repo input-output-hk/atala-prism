@@ -1,5 +1,6 @@
 package io.iohk.atala.prism.node.operations
 
+import cats.effect.IO
 import com.google.protobuf.ByteString
 import doobie.implicits._
 import io.iohk.atala.prism.AtalaWithPostgresSpec
@@ -15,8 +16,8 @@ import io.iohk.atala.prism.protos.node_models
 import org.scalatest.EitherValues._
 import org.scalatest.Inside.inside
 import org.scalatest.OptionValues.convertOptionToValuable
-import java.time.Instant
 
+import java.time.Instant
 import io.iohk.atala.prism.node.DataPreparation
 
 object IssueCredentialBatchOperationSpec {
@@ -59,7 +60,7 @@ class IssueCredentialBatchOperationSpec extends AtalaWithPostgresSpec {
 
   import IssueCredentialBatchOperationSpec._
 
-  lazy val didDataRepository = new DIDDataRepository(database)
+  lazy val didDataRepository: DIDDataRepository[IO] = DIDDataRepository(database)
 
   "IssueCredentialBatchOperation.parse" should {
     "parse valid IssueCredentialBatchOperation AtalaOperation" in {

@@ -1,5 +1,6 @@
 package io.iohk.atala.prism.node.services
 
+import cats.effect.IO
 import com.google.protobuf.ByteString
 import doobie.implicits._
 import io.iohk.atala.prism.AtalaWithPostgresSpec
@@ -48,7 +49,7 @@ class BlockProcessingServiceSpec extends AtalaWithPostgresSpec {
   import BlockProcessingServiceSpec._
   import io.iohk.atala.prism.node.operations.CreateDIDOperationSpec.masterKeys
 
-  lazy val didDataRepository = new DIDDataRepository(database)
+  lazy val didDataRepository: DIDDataRepository[IO] = DIDDataRepository(database)
 
   private val dummyTimestampInfo = TimestampInfo(Instant.ofEpochMilli(0), 1, 0)
 

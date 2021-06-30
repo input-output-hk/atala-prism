@@ -79,7 +79,7 @@ class NodeApp(executionContext: ExecutionContext) { self =>
       }
     }
 
-    val keyValueService = new KeyValueService(new KeyValuesRepository(transactor))
+    val keyValueService = new KeyValueService(KeyValuesRepository(transactor))
 
     val (atalaReferenceLedger, releaseAtalaReferenceLedger) = globalConfig.getString("ledger") match {
       case "cardano" =>
@@ -94,7 +94,7 @@ class NodeApp(executionContext: ExecutionContext) { self =>
 
     logger.info("Creating blocks processor")
     val blockProcessingService = new BlockProcessingServiceImpl
-    val didDataRepository = new DIDDataRepository(transactor)
+    val didDataRepository = DIDDataRepository(transactor)
 
     val ledgerPendingTransactionTimeout = globalConfig.getDuration("ledgerPendingTransactionTimeout")
     val objectManagementService = ObjectManagementService(
@@ -105,7 +105,7 @@ class NodeApp(executionContext: ExecutionContext) { self =>
     )
     objectManagementServicePromise.success(objectManagementService)
 
-    val credentialBatchesRepository = new CredentialBatchesRepository(transactor)
+    val credentialBatchesRepository = CredentialBatchesRepository(transactor)
 
     val nodeService =
       new NodeServiceImpl(

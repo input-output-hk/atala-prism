@@ -2,10 +2,9 @@ package io.iohk.atala.prism.node.repositories
 
 import io.iohk.atala.prism.AtalaWithPostgresSpec
 import io.iohk.atala.prism.node.repositories.daos.KeyValuesDAO.KeyValue
-import org.scalatest.OptionValues._
 
 class KeyValuesRepositorySpec extends AtalaWithPostgresSpec {
-  private lazy val keyValuesRepository = new KeyValuesRepository(database)
+  private lazy val keyValuesRepository = KeyValuesRepository(database)
 
   private val KEY = "test-key"
   private val VALUE = "Test value"
@@ -13,35 +12,35 @@ class KeyValuesRepositorySpec extends AtalaWithPostgresSpec {
   "KeyValuesRepository" should {
     "insert a KeyValue when it does not exist" in {
       val expectedKeyValue = KeyValue(KEY, Some(VALUE))
-      keyValuesRepository.upsert(expectedKeyValue).value.futureValue
+      keyValuesRepository.upsert(expectedKeyValue).unsafeToFuture().futureValue
 
-      val keyValue = keyValuesRepository.get(KEY).value.futureValue.toOption.value
+      val keyValue = keyValuesRepository.get(KEY).unsafeToFuture().futureValue
 
       keyValue must be(expectedKeyValue)
     }
 
     "update a KeyValue when it exists" in {
-      keyValuesRepository.upsert(KeyValue(KEY, Some("Old value"))).value.futureValue
+      keyValuesRepository.upsert(KeyValue(KEY, Some("Old value"))).unsafeToFuture().futureValue
       val expectedKeyValue = KeyValue(KEY, Some(VALUE))
-      keyValuesRepository.upsert(expectedKeyValue).value.futureValue
+      keyValuesRepository.upsert(expectedKeyValue).unsafeToFuture().futureValue
 
-      val keyValue = keyValuesRepository.get(KEY).value.futureValue.toOption.value
+      val keyValue = keyValuesRepository.get(KEY).unsafeToFuture().futureValue
 
       keyValue must be(expectedKeyValue)
     }
 
     "clear a KeyValue when set to None" in {
-      keyValuesRepository.upsert(KeyValue(KEY, Some("Old value"))).value.futureValue
+      keyValuesRepository.upsert(KeyValue(KEY, Some("Old value"))).unsafeToFuture()
       val expectedKeyValue = KeyValue(KEY, None)
-      keyValuesRepository.upsert(expectedKeyValue).value.futureValue
+      keyValuesRepository.upsert(expectedKeyValue).unsafeToFuture().futureValue
 
-      val keyValue = keyValuesRepository.get(KEY).value.futureValue.toOption.value
+      val keyValue = keyValuesRepository.get(KEY).unsafeToFuture().futureValue
 
       keyValue must be(expectedKeyValue)
     }
 
     "return no value when it does not exist" in {
-      val keyValue = keyValuesRepository.get(KEY).value.futureValue.toOption.value
+      val keyValue = keyValuesRepository.get(KEY).unsafeToFuture().futureValue
 
       keyValue must be(KeyValue(KEY, None))
     }

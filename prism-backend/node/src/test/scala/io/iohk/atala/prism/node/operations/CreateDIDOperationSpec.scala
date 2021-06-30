@@ -1,5 +1,6 @@
 package io.iohk.atala.prism.node.operations
 
+import cats.effect.IO
 import com.google.protobuf.ByteString
 import doobie.implicits._
 import io.iohk.atala.prism.AtalaWithPostgresSpec
@@ -14,8 +15,8 @@ import io.iohk.atala.prism.protos.node_models
 import org.scalatest.EitherValues._
 import org.scalatest.Inside._
 import org.scalatest.OptionValues._
-import java.time.Instant
 
+import java.time.Instant
 import io.iohk.atala.prism.node.DataPreparation
 import io.iohk.atala.prism.protos.node_models.ECKeyData
 
@@ -92,7 +93,7 @@ class CreateDIDOperationSpec extends AtalaWithPostgresSpec {
 
   import CreateDIDOperationSpec._
 
-  lazy val didDataRepository = new DIDDataRepository(database)
+  lazy val didDataRepository: DIDDataRepository[IO] = DIDDataRepository(database)
   lazy val dummyTimestamp: TimestampInfo = dummyTimestampInfo
   lazy val dummyLedgerData: LedgerData = LedgerData(
     TransactionId.from(Array.fill[Byte](TransactionId.config.size.toBytes.toInt)(0)).value,

@@ -1,5 +1,6 @@
 package io.iohk.atala.prism.node
 
+import cats.effect.IO
 import cats.scalatest.EitherMatchers._
 import com.google.protobuf.ByteString
 import doobie.implicits._
@@ -25,13 +26,7 @@ import io.iohk.atala.prism.node.models.{
   KeyUsage
 }
 import io.iohk.atala.prism.node.operations.path.{Path, ValueAtPath}
-import io.iohk.atala.prism.node.operations.{
-  CreateDIDOperationSpec,
-  IssueCredentialBatchOperationSpec,
-  ParsingUtils,
-  RevokeCredentialsOperationSpec,
-  UpdateDIDOperationSpec
-}
+import io.iohk.atala.prism.node.operations._
 import io.iohk.atala.prism.node.repositories.daos.{DIDDataDAO, PublicKeysDAO}
 import io.iohk.atala.prism.node.repositories.{CredentialBatchesRepository, DIDDataRepository}
 import io.iohk.atala.prism.node.services.ObjectManagementService.{
@@ -39,16 +34,8 @@ import io.iohk.atala.prism.node.services.ObjectManagementService.{
   AtalaObjectTransactionStatus
 }
 import io.iohk.atala.prism.node.services.{BlockProcessingServiceSpec, ObjectManagementService}
-import io.iohk.atala.prism.protos.node_api.{
-  GetBatchStateRequest,
-  GetCredentialRevocationTimeRequest,
-  GetNodeBuildInfoRequest,
-  GetOperationInfoRequest,
-  GetTransactionStatusRequest,
-  GetTransactionStatusResponse
-}
+import io.iohk.atala.prism.protos.node_api._
 import io.iohk.atala.prism.protos.{common_models, node_api, node_models}
-import io.iohk.atala.prism.utils.FutureEither
 import io.iohk.atala.prism.utils.syntax._
 import org.mockito.scalatest.{MockitoSugar, ResetMocksAfterEachTest}
 import org.scalatest.BeforeAndAfterEach
@@ -71,7 +58,7 @@ class NodeServiceSpec
   protected var service: node_api.NodeServiceGrpc.NodeServiceBlockingStub = _
 
   private val objectManagementService = mock[ObjectManagementService]
-  private val credentialBatchesRepository = mock[CredentialBatchesRepository]
+  private val credentialBatchesRepository = mock[CredentialBatchesRepository[IO]]
 
   private val testTransactionInfo =
     TransactionInfo(TransactionId.from(SHA256Digest.compute("test".getBytes()).value).value, Ledger.InMemory)
@@ -84,7 +71,7 @@ class NodeServiceSpec
   override def beforeEach(): Unit = {
     super.beforeEach()
 
-    val didDataRepository = new DIDDataRepository(database)
+    val didDataRepository = DIDDataRepository(database)
 
     serverName = InProcessServerBuilder.generateName()
 
@@ -452,9 +439,8 @@ class NodeServiceSpec
       val requestWithValidId = GetBatchStateRequest(batchId = validBatchId.id)
 
       val errorMsg = "an unexpected error"
-      val repositoryError = new FutureEither[NodeError, Option[CredentialBatchState]](
-        Future.failed(new RuntimeException(errorMsg))
-      )
+      val repositoryError =
+        IO.raiseError[Either[NodeError, Option[CredentialBatchState]]](new RuntimeException(errorMsg))
 
       doReturn(repositoryError).when(credentialBatchesRepository).getBatchState(validBatchId)
       doReturn(Future.successful(dummySyncTimestamp)).when(objectManagementService).getLastSyncedTimestamp
@@ -469,9 +455,7 @@ class NodeServiceSpec
       val validBatchId = CredentialBatchId.fromDigest(SHA256Digest.compute("valid".getBytes()))
       val requestWithValidId = GetBatchStateRequest(batchId = validBatchId.id)
 
-      val repositoryError = new FutureEither[NodeError, Option[CredentialBatchState]](
-        Future.successful(Right(None))
-      )
+      val repositoryError = IO.pure[Either[NodeError, Option[CredentialBatchState]]](Right(None))
 
       doReturn(repositoryError).when(credentialBatchesRepository).getBatchState(validBatchId)
       doReturn(Future.successful(dummySyncTimestamp)).when(objectManagementService).getLastSyncedTimestamp
@@ -500,11 +484,7 @@ class NodeServiceSpec
           lastOperation = SHA256Digest.compute("lastOp".getBytes())
         )
 
-      val repositoryResponse = new FutureEither[NodeError, Option[CredentialBatchState]](
-        Future.successful(
-          Right(Some(credState))
-        )
-      )
+      val repositoryResponse = IO.pure[Either[NodeError, Option[CredentialBatchState]]](Right(Some(credState)))
 
       val ledgerDataProto = node_models
         .LedgerData()
@@ -578,11 +558,7 @@ class NodeServiceSpec
         credentialHash = ByteString.copyFrom(validCredentialHash.value.toArray)
       )
 
-      val repositoryResponse = new FutureEither[NodeError, Option[LedgerData]](
-        Future.successful(
-          Right(None)
-        )
-      )
+      val repositoryResponse = IO.pure[Either[NodeError, Option[LedgerData]]](Right(None))
 
       doReturn(
         Future.successful(dummySyncTimestamp)
@@ -611,11 +587,7 @@ class NodeServiceSpec
         revocationDate
       )
 
-      val repositoryResponse = new FutureEither[NodeError, Option[LedgerData]](
-        Future.successful(
-          Right(Some(revocationLedgerData))
-        )
-      )
+      val repositoryResponse = IO.pure[Either[NodeError, Option[LedgerData]]](Right(Some(revocationLedgerData)))
 
       val timestampInfoProto = node_models
         .TimestampInfo()

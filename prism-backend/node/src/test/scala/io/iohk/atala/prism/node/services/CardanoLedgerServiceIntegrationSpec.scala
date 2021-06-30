@@ -38,7 +38,7 @@ class CardanoLedgerServiceIntegrationSpec extends AtalaWithPostgresSpec {
       val paymentAddress = Address(clientConfig.paymentAddress)
       val (cardanoClient, releaseCardanoClient) =
         CardanoClient(clientConfig.cardanoClientConfig).allocated.unsafeRunSync()
-      val keyValueService = new KeyValueService(new KeyValuesRepository(database))
+      val keyValueService = new KeyValueService(KeyValuesRepository(database))
       val notificationHandler = new TestAtalaObjectNotificationHandler()
       val cardanoLedgerService = new CardanoLedgerService(
         CardanoNetwork.Testnet,

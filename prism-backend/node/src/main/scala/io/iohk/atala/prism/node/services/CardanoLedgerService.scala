@@ -168,7 +168,7 @@ class CardanoLedgerService private[services] (
     } yield ()
   }
 
-  private def updateLastSyncedBlock(block: Block.Full): Future[List[Unit]] = {
+  private def updateLastSyncedBlock(block: Block.Full): Future[Unit] = {
     val timestampEpochMilli = block.header.time.toEpochMilli
     keyValueService
       .setMany(

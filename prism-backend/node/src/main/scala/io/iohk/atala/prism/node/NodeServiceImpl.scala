@@ -1,5 +1,6 @@
 package io.iohk.atala.prism.node
 
+import cats.effect.IO
 import cats.syntax.applicative._
 import com.google.protobuf.ByteString
 import io.grpc.Status
@@ -37,9 +38,9 @@ import scala.concurrent.{ExecutionContext, Future}
 import scala.util.Try
 
 class NodeServiceImpl(
-    didDataRepository: DIDDataRepository,
+    didDataRepository: DIDDataRepository[IO],
     objectManagement: ObjectManagementService,
-    credentialBatchesRepository: CredentialBatchesRepository
+    credentialBatchesRepository: CredentialBatchesRepository[IO]
 )(implicit
     ec: ExecutionContext
 ) extends node_api.NodeServiceGrpc.NodeService {
@@ -53,7 +54,7 @@ class NodeServiceImpl(
 
   override def getDidDocument(request: node_api.GetDidDocumentRequest): Future[node_api.GetDidDocumentResponse] = {
     val methodName = "getDidDocument"
-    implicit val didDataRepositoryImplicit: DIDDataRepository = didDataRepository
+    implicit val didDataRepositoryImplicit: DIDDataRepository[IO] = didDataRepository
 
     logRequest(methodName, request)
     measureRequestFuture(serviceName, methodName) {
@@ -65,7 +66,7 @@ class NodeServiceImpl(
   }
 
   private def getDidDocument(didRequestStr: String, methodName: String)(implicit
-      didDataRepository: DIDDataRepository
+      didDataRepository: DIDDataRepository[IO]
   ) = {
     val didOpt = DID.fromString(didRequestStr)
     didOpt match {
@@ -196,7 +197,7 @@ class NodeServiceImpl(
         stateEither <-
           credentialBatchesRepository
             .getBatchState(batchId)
-            .value
+            .unsafeToFuture()
       } yield stateEither.fold(
         countAndThrowNodeError(methodName, _),
         toGetBatchResponse(_, lastSyncedTimestamp, methodName)
@@ -227,7 +228,7 @@ class NodeServiceImpl(
         timeEither <-
           credentialBatchesRepository
             .getCredentialRevocationTime(batchId, credentialHash)
-            .value
+            .unsafeToFuture()
       } yield timeEither match {
         case Left(error) => countAndThrowNodeError(methodName, error)
         case Right(ledgerData) =>
@@ -470,13 +471,13 @@ object NodeServiceImpl {
   }
 
   private def resolve(did: DID, butShowInDIDDocument: DID)(implicit
-      didDataRepository: DIDDataRepository
+      didDataRepository: DIDDataRepository[IO]
   ): OrElse = {
-    OrElse(butShowInDIDDocument, didDataRepository.findByDid(did).value)
+    OrElse(butShowInDIDDocument, didDataRepository.findByDid(did).unsafeToFuture())
   }
 
-  private def resolve(did: DID)(implicit didDataRepository: DIDDataRepository): OrElse = {
-    OrElse(did, didDataRepository.findByDid(did).value)
+  private def resolve(did: DID)(implicit didDataRepository: DIDDataRepository[IO]): OrElse = {
+    OrElse(did, didDataRepository.findByDid(did).unsafeToFuture())
   }
 
   def logRequest[Req <: GeneratedMessage](method: String, request: Req)(implicit logger: Logger): Unit = {

@@ -1,5 +1,6 @@
 package io.iohk.atala.prism.node.repositories
 
+import cats.effect.IO
 import io.iohk.atala.prism.AtalaWithPostgresSpec
 import io.iohk.atala.prism.credentials.TimestampInfo
 import io.iohk.atala.prism.crypto.EC
@@ -14,7 +15,7 @@ import io.iohk.atala.prism.identity.DID
 import io.iohk.atala.prism.node.DataPreparation
 
 class DIDDataRepositorySpec extends AtalaWithPostgresSpec {
-  lazy val didDataRepository = new DIDDataRepository(database)
+  lazy val didDataRepository: DIDDataRepository[IO] = DIDDataRepository(database)
 
   val operationDigest = digestGen(0, 1)
   val didSuffix = didSuffixFromDigest(operationDigest)
@@ -57,7 +58,7 @@ class DIDDataRepositorySpec extends AtalaWithPostgresSpec {
   "DIDDataRepository" should {
     "retrieve previously inserted DID data" in {
       DataPreparation.createDID(didData, dummyLedgerData)
-      val did = didDataRepository.findByDid(DID.buildPrismDID(didSuffix)).value.futureValue.toOption.value
+      val did = didDataRepository.findByDid(DID.buildPrismDID(didSuffix)).unsafeRunSync().toOption.value
 
       did.value.didSuffix mustBe didSuffix
     }
@@ -67,8 +68,7 @@ class DIDDataRepositorySpec extends AtalaWithPostgresSpec {
 
       val result = didDataRepository
         .findByDid(DID.buildPrismDID(didSuffixFromDigest(digestGen(0, 2))))
-        .value
-        .futureValue
+        .unsafeRunSync()
         .toOption
         .value
 
@@ -77,7 +77,7 @@ class DIDDataRepositorySpec extends AtalaWithPostgresSpec {
 
     "return error when did is in invalid format" in {
       val did = io.iohk.atala.prism.identity.DID.buildPrismDID("11:11:11:11")
-      didDataRepository.findByDid(did).value.futureValue mustBe a[Left[UnknownValueError, _]]
+      didDataRepository.findByDid(did).unsafeToFuture().futureValue mustBe a[Left[UnknownValueError, _]]
     }
   }
 

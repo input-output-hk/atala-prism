@@ -1,5 +1,6 @@
 package io.iohk.atala.prism.node.operations
 
+import cats.effect.IO
 import com.google.protobuf.ByteString
 import doobie.implicits._
 import io.iohk.atala.prism.AtalaWithPostgresSpec
@@ -78,7 +79,7 @@ class RevokeCredentialsOperationSpec extends AtalaWithPostgresSpec {
 
   import RevokeCredentialsOperationSpec._
 
-  lazy val didDataRepository = new DIDDataRepository(database)
+  lazy val didDataRepository: DIDDataRepository[IO] = DIDDataRepository(database)
 
   "RevokeCredentialsOperation.parse" should {
     "parse valid RevokeCredentials AtalaOperation to revoke a full batch" in {

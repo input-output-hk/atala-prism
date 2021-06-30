@@ -1,13 +1,14 @@
 package io.iohk.atala.prism.node.services
 
+import cats.effect.IO
 import io.iohk.atala.prism.node.repositories.KeyValuesRepository
 import io.iohk.atala.prism.node.repositories.daos.KeyValuesDAO.KeyValue
 
 import scala.concurrent.{ExecutionContext, Future}
 
-class KeyValueService(keyValueRepository: KeyValuesRepository)(implicit ec: ExecutionContext) {
+class KeyValueService(keyValueRepository: KeyValuesRepository[IO])(implicit ec: ExecutionContext) {
   def get(key: String): Future[Option[String]] = {
-    keyValueRepository.get(key).toFuture(_ => new RuntimeException(s"Could not get the value of key $key")).map(_.value)
+    keyValueRepository.get(key).map(_.value).unsafeToFuture()
   }
 
   def getInt(key: String): Future[Option[Int]] = {
@@ -17,14 +18,12 @@ class KeyValueService(keyValueRepository: KeyValuesRepository)(implicit ec: Exec
   def set(key: String, value: Option[Any]): Future[Unit] = {
     keyValueRepository
       .upsert(KeyValue(key, value.map(_.toString)))
-      .toFuture(_ => new RuntimeException(s"Could not set key $key to value $value"))
+      .unsafeToFuture()
   }
 
-  def setMany(keyValues: List[KeyValue]): Future[List[Unit]] = {
+  def setMany(keyValues: List[KeyValue]): Future[Unit] = {
     keyValueRepository
       .upsertMany(keyValues)
-      .toFuture(_ =>
-        new RuntimeException(s"Could not set keys [${keyValues.map(_.key)}] to values [${keyValues.map(_.value)}]")
-      )
+      .unsafeToFuture()
   }
 }
