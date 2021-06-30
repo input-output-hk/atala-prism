@@ -1,6 +1,5 @@
 plugins {
     kotlin("multiplatform")
-    `maven-publish`
     id("com.android.library")
 }
 val pbandkVersion: String by rootProject.extra
@@ -93,12 +92,6 @@ kotlin {
         all {
             languageSettings.useExperimentalAnnotation("kotlin.ExperimentalUnsignedTypes")
             languageSettings.useExperimentalAnnotation("kotlin.js.ExperimentalJsExport")
-        }
-    }
-
-    publishing {
-        repositories {
-            mavenLocal()
         }
     }
 }

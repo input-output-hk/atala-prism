@@ -11,6 +11,7 @@ val pbandkVersion: String by rootProject.extra
 
 repositories {
     mavenCentral()
+    maven("https://vlad107.jfrog.io/artifactory/default-maven-virtual/")
 }
 
 dependencies {
@@ -25,10 +26,6 @@ dependencies {
     api(project(":identity"))
     api(project(":credentials"))
     api(project(":extras"))
-}
-
-repositories {
-    jcenter()
 }
 
 orchid {

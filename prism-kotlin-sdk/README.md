@@ -128,11 +128,31 @@ You can check the overview of the exposed methods in the generated `TypeScript` 
 
 There's also [prism-sdk-javascript-example](examples/prism-sdk-javascript-example) project with various examples of how to use this SDK.
 
-## Publishing NPM package
-In order to publish `extras` module (it will contain all the other modules transitively) as an NPM package, you will need to have a valid Github token that has write access to input-output-hk Github organization. The token must be available as `GITHUB_PACKAGES_TOKEN` environment variable. Once you have it set, just run the following command:
+## Publishing
+### To NPM registry
+In order to publish `extras` module (it will contain all the other modules transitively) as an NPM package, you will need to have a valid GitHub token that has write access to input-output-hk GitHub organization. The token must be available as `GITHUB_TOKEN` environment variable. Once you have it set, just run the following command:
 
-```
+```bash
 $ ./gradlew :extras:publishJsNpmPublicationToGithub
+```
+
+### To Maven repository
+Each module contains the following publishing tasks:
+- publishJvmPublicationToGitHubPackagesRepository
+- publishAndroidDebugPublicationToGitHubPackagesRepository
+- publishAndroidReleasePublicationToGitHubPackagesRepository
+- publishJsPublicationToGitHubPackagesRepository
+- publishKotlinMultiplatformPublicationToGitHubPackagesRepository
+
+Set `GITHUB_TOKEN` environment variable to your GitHub personal access token. Once you have it set, you can trigger one of the commands above as follows:
+
+```bash
+$ ./gradlew :protos:publishJvmPublicationToGitHubPackagesRepository
+```
+
+Additionally, to publish all modules at once you can do this:
+```bash
+$ ./gradlew publishAllPublicationsToGitHubPackagesRepository
 ```
 
 ## Docs

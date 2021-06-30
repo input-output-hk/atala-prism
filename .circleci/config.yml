@@ -245,6 +245,43 @@ jobs:
             ./build.sh -b
             ./build.sh -p
 
+  publish-github-packages:
+    working_directory: ~/repo
+    docker:
+      - image: circleci/android:api-29
+    steps:
+      - checkout
+
+      - setup_remote_docker
+
+      - attach_workspace:
+          at: ./workspace
+
+      - install-protoc
+
+      - run:
+          name: Hash dependency info
+          command: |
+            cd prism-kotlin-sdk
+            mkdir -p build
+            md5sum gradle.properties settings.gradle.kts build.gradle.kts **/build.gradle.kts >build/deps.md5
+
+      - restore_cache:
+          keys:
+            - prism-kotlin-sdk-cache-{{ checksum "prism-kotlin-sdk/build/deps.md5" }}
+            # fallback to using the latest cache if no exact match is found
+            - prism-kotlin-sdk-cache-
+
+      - run:
+          name: Publish SDK to GitHub Maven repository
+          command: |
+            cd prism-kotlin-sdk
+            ./gradlew publishAllPublicationsToGitHubPackagesRepository
+
+      - run:
+          name: Publish SDK to GitHub NPM registry
+          command: cd prism-kotlin-sdk && ./gradlew :extras::publishJsNpmPublicationToGithub
+
   rebuild-prism-env:
     working_directory: ~/repo
     docker:
@@ -654,7 +691,7 @@ jobs:
           command: |
             cd prism-kotlin-sdk
             mkdir -p build
-            md5sum gradle.properties settings.gradle build.gradle **/build.gradle >build/deps.md5
+            md5sum gradle.properties settings.gradle.kts build.gradle.kts **/build.gradle.kts >build/deps.md5
 
       # Download and cache dependencies
       - restore_cache:
@@ -824,6 +861,20 @@ workflows:
                 - /demo.*/
                 - /qa.*/
                 - /sandbox.*/
+          requires:
+            - build-prism-management-console-web
+            - build-prism-interactive-demo-web
+            - build-prism-backend
+            - build-prism-sdk
+            - build-prism-kotlin-sdk
+            - build-prism-web-wallet
+
+      - publish-github-packages:
+          filters:
+            branches:
+              only:
+                - /develop.*/
+                - /package.*/
           requires:
             - build-prism-management-console-web
             - build-prism-interactive-demo-web

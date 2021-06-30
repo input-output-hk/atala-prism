@@ -1,4 +1,5 @@
 import com.palantir.gradle.gitversion.VersionDetails
+import java.net.URI
 
 plugins {
     kotlin("multiplatform") version "1.5.10" apply false
@@ -9,6 +10,7 @@ plugins {
     id("dev.petuska.npm.publish") version "2.0.2" apply false
     id("com.palantir.git-version") version "0.12.3"
     id("org.jlleitschuh.gradle.ktlint") version "10.0.0"
+    `maven-publish`
 }
 val versionDetails: groovy.lang.Closure<VersionDetails> by extra
 val pbandkVersion by extra("0.10.0-M4")
@@ -41,6 +43,23 @@ allprojects {
         google()
         maven("https://plugins.gradle.org/m2/")
         maven("https://vlad107.jfrog.io/artifactory/default-maven-virtual/")
+    }
+
+    if (listOf("protos", "crypto", "identity", "credentials", "extras").contains(name)) {
+        apply(plugin = "org.gradle.maven-publish")
+
+        publishing {
+            repositories {
+                maven {
+                    name = "GitHubPackages"
+                    url = URI("https://maven.pkg.github.com/input-output-hk/atala-tobearchived")
+                    credentials {
+                        username = System.getenv("GITHUB_ACTOR")
+                        password = System.getenv("GITHUB_TOKEN")
+                    }
+                }
+            }
+        }
     }
 
     apply(plugin = "org.jlleitschuh.gradle.ktlint")

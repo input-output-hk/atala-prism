@@ -2,7 +2,6 @@ plugins {
     kotlin("multiplatform")
     kotlin("plugin.serialization")
     kotlin("native.cocoapods")
-    `maven-publish`
     id("com.android.library")
 }
 
@@ -129,12 +128,6 @@ kotlin {
         all {
             languageSettings.useExperimentalAnnotation("kotlin.ExperimentalUnsignedTypes")
             languageSettings.useExperimentalAnnotation("kotlin.js.ExperimentalJsExport")
-        }
-    }
-
-    publishing {
-        repositories {
-            mavenLocal()
         }
     }
 

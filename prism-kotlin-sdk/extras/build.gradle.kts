@@ -1,6 +1,5 @@
 plugins {
     kotlin("multiplatform")
-    `maven-publish`
     id("com.android.library")
     // A small plugin that replaces `kotlin.js.Promise` with plain `Promise` in .d.ts files
     id("com.github.turansky.kfc.definitions") version "3.8.3"
@@ -82,12 +81,6 @@ kotlin {
         all {
             languageSettings.useExperimentalAnnotation("kotlin.ExperimentalUnsignedTypes")
             languageSettings.useExperimentalAnnotation("kotlin.js.ExperimentalJsExport")
-        }
-    }
-
-    publishing {
-        repositories {
-            mavenLocal()
         }
     }
 

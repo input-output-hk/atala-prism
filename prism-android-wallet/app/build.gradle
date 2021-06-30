@@ -160,7 +160,7 @@ void publishKotlinSdk(String gitVersion) {
     def protosArtifact = prismRepositoryBase.resolve("protos-android/$gitVersion")
     def identityArtifact = prismRepositoryBase.resolve("identity-android/$gitVersion")
     if (!Files.exists(cryptoArtifact) || !Files.exists(protosArtifact) || !Files.exists(identityArtifact)) {
-        def cmd = "./gradlew compileKotlinJvm publish"
+        def cmd = "./gradlew compileKotlinJvm publishToMavenLocal"
         def proc = cmd.execute(null, new File("../prism-kotlin-sdk"))
         proc.in.eachLine { line -> println line }
         proc.err.eachLine { line -> println 'WARNING: ' + line }
