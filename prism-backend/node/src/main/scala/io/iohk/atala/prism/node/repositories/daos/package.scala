@@ -135,7 +135,8 @@ package object daos extends BaseDAO {
           AtalaOperationId,
           AtalaObjectId,
           AtalaOperationStatus,
-          Option[AtalaObjectTransactionSubmissionStatus]
+          Option[AtalaObjectTransactionSubmissionStatus],
+          Option[TransactionId]
       )
     ].map(AtalaOperationInfo.tupled)
   }

@@ -60,7 +60,8 @@ package object models {
       operationId: AtalaOperationId,
       objectId: AtalaObjectId,
       operationStatus: AtalaOperationStatus,
-      transactionSubmissionStatus: Option[AtalaObjectTransactionSubmissionStatus] = None
+      transactionSubmissionStatus: Option[AtalaObjectTransactionSubmissionStatus] = None,
+      transactionId: Option[TransactionId] = None
   )
 
   sealed trait AtalaOperationStatus extends EnumEntry with UpperSnakecase

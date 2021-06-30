@@ -47,7 +47,7 @@ service NodeService {
      *
      * Retrieves the status of an operation.
      */
-    rpc GetOperationStatus(GetOperationStatusRequest) returns (GetOperationStatusResponse) {}
+    rpc GetOperationInfo(GetOperationInfoRequest) returns (GetOperationInfoResponse) {}
 
     // Publishes a sequence of signed operations in a single underlying transaction.
     // The sequence of operations has a size limit to fit in the metadata of the transaction (approx. 15KB).
@@ -180,15 +180,16 @@ message GetTransactionStatusResponse {
 /**
  * Request to get the operation status.
  */
-message GetOperationStatusRequest {
+message GetOperationInfoRequest {
     bytes operation_id = 1; // Operation identifier. The identifier is returned to the corresponding operation request.
 }
 
 /**
  * Response with the current operation status.
  */
-message GetOperationStatusResponse {
+message GetOperationInfoResponse {
     OperationStatus operation_status = 1; // Contains the status of this operation.
+    string transaction_id = 3; // Transaction identifier containing the operation. Presented only when operation was approved by the ledger.
     google.protobuf.Timestamp last_synced_block_timestamp = 2; // Timestamp of the latest synchronized block.
 }
 

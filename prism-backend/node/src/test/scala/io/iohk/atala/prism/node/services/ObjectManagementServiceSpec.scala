@@ -115,6 +115,7 @@ class ObjectManagementServiceSpec
 
       atalaOperationInfo.operationStatus must be(AtalaOperationStatus.RECEIVED)
       atalaOperationInfo.transactionSubmissionStatus must be(Some(AtalaObjectTransactionSubmissionStatus.Pending))
+      atalaOperationInfo.transactionId.value must be(dummyPublicationInfo.transaction.transactionId)
     }
 
     "raise AtalaOperationAlreadyPublished error when publish the same operation twice" in {
@@ -134,6 +135,7 @@ class ObjectManagementServiceSpec
 
       atalaOperationInfo.operationStatus must be(AtalaOperationStatus.RECEIVED)
       atalaOperationInfo.transactionSubmissionStatus must be(Some(AtalaObjectTransactionSubmissionStatus.Pending))
+      atalaOperationInfo.transactionId.value must be(dummyPublicationInfo.transaction.transactionId)
     }
 
     "raise AtalaBlockInvalid error when publish batch with duplications" in {
@@ -178,6 +180,7 @@ class ObjectManagementServiceSpec
       operationInfo.operationId must be(returnedOperationId)
       operationInfo.transactionSubmissionStatus.value must be(AtalaObjectTransactionSubmissionStatus.Pending)
       operationInfo.operationStatus must be(AtalaOperationStatus.RECEIVED)
+      operationInfo.transactionId.value must be(dummyPublicationInfo.transaction.transactionId)
     }
 
     "put reference to block onto the ledger when on-chain data not supported" in {
@@ -206,6 +209,7 @@ class ObjectManagementServiceSpec
       operationInfo.operationId must be(returnedOperationId)
       operationInfo.transactionSubmissionStatus.value must be(AtalaObjectTransactionSubmissionStatus.Pending)
       operationInfo.operationStatus must be(AtalaOperationStatus.RECEIVED)
+      operationInfo.transactionId.value must be(dummyPublicationInfo.transaction.transactionId)
     }
 
     "record immediate in-ledger transactions" in {
@@ -228,6 +232,7 @@ class ObjectManagementServiceSpec
       operationInfo.operationId must be(returnedOperationId)
       operationInfo.transactionSubmissionStatus.value must be(AtalaObjectTransactionSubmissionStatus.InLedger)
       operationInfo.operationStatus must be(AtalaOperationStatus.RECEIVED)
+      operationInfo.transactionId.value must be(inLedgerPublication.transaction.transactionId)
     }
 
     def verifyStorage(bytes: Array[Byte], expectedInStorage: Boolean): Unit = {

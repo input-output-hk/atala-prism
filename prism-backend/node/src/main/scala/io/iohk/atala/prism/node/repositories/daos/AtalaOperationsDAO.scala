@@ -50,7 +50,7 @@ object AtalaOperationsDAO {
 
   def getAtalaOperationInfo(atalaOperationId: AtalaOperationId): ConnectionIO[Option[AtalaOperationInfo]] = {
     sql"""
-         |SELECT ops.signed_atala_operation_id, ops.atala_object_id, ops.atala_operation_status, tx.status
+         |SELECT ops.signed_atala_operation_id, ops.atala_object_id, ops.atala_operation_status, tx.status, tx.transaction_id
          |FROM atala_operations as ops
          |  LEFT OUTER JOIN atala_object_tx_submissions AS tx ON tx.atala_object_id = ops.atala_object_id
          |WHERE signed_atala_operation_id = $atalaOperationId

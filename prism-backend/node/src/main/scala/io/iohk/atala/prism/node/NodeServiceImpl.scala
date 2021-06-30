@@ -314,10 +314,10 @@ class NodeServiceImpl(
     }
   }
 
-  override def getOperationStatus(
-      request: node_api.GetOperationStatusRequest
-  ): Future[node_api.GetOperationStatusResponse] = {
-    logRequest("getOperationStatus", request)
+  override def getOperationInfo(
+      request: node_api.GetOperationInfoRequest
+  ): Future[node_api.GetOperationInfoResponse] = {
+    logRequest("getOperationInfo", request)
     for {
       lastSyncedTimestamp <- objectManagement.getLastSyncedTimestamp
       atalaOperationId = AtalaOperationId.fromVectorUnsafe(request.operationId.toByteArray.toVector)
@@ -325,15 +325,20 @@ class NodeServiceImpl(
     } yield {
       val operationStatus = operationInfo
         .fold[common_models.OperationStatus](common_models.OperationStatus.UNKNOWN_OPERATION) {
-          case AtalaOperationInfo(_, _, opStatus, maybeTxStatus) =>
+          case AtalaOperationInfo(_, _, opStatus, maybeTxStatus, _) =>
             evalOperationStatus(opStatus, maybeTxStatus)
         }
+      val response = node_api
+        .GetOperationInfoResponse()
+        .withOperationStatus(operationStatus)
+        .withLastSyncedBlockTimestamp(lastSyncedTimestamp.toProtoTimestamp)
+      val responseWithTransactionId = operationInfo
+        .flatMap(_.transactionId)
+        .map(_.toString)
+        .fold(response)(response.withTransactionId)
       logAndReturnResponse(
-        "getOperationStatus",
-        node_api
-          .GetOperationStatusResponse()
-          .withOperationStatus(operationStatus)
-          .withLastSyncedBlockTimestamp(lastSyncedTimestamp.toProtoTimestamp)
+        "getOperationInfo",
+        responseWithTransactionId
       )
     }
   }

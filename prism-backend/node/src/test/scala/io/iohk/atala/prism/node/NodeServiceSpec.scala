@@ -16,7 +16,14 @@ import io.iohk.atala.prism.models.{Ledger, TransactionId, TransactionInfo}
 import io.iohk.atala.prism.node.errors.NodeError
 import io.iohk.atala.prism.node.grpc.ProtoCodecs
 import io.iohk.atala.prism.node.models.nodeState.{CredentialBatchState, LedgerData}
-import io.iohk.atala.prism.node.models.{DIDPublicKey, KeyUsage}
+import io.iohk.atala.prism.node.models.{
+  AtalaObjectId,
+  AtalaObjectTransactionSubmissionStatus,
+  AtalaOperationInfo,
+  AtalaOperationStatus,
+  DIDPublicKey,
+  KeyUsage
+}
 import io.iohk.atala.prism.node.operations.path.{Path, ValueAtPath}
 import io.iohk.atala.prism.node.operations.{
   CreateDIDOperationSpec,
@@ -36,7 +43,7 @@ import io.iohk.atala.prism.protos.node_api.{
   GetBatchStateRequest,
   GetCredentialRevocationTimeRequest,
   GetNodeBuildInfoRequest,
-  GetOperationStatusRequest,
+  GetOperationInfoRequest,
   GetTransactionStatusRequest,
   GetTransactionStatusResponse
 }
@@ -358,7 +365,7 @@ class NodeServiceSpec
     }
   }
 
-  "NodeService.getOperationStatus" should {
+  "NodeService.getOperationInfo" should {
     "return OPERATION_UNKNOWN when operation identifier was not found" in {
       val validOperation = BlockProcessingServiceSpec.signOperation(
         CreateDIDOperationSpec.exampleOperation,
@@ -379,13 +386,50 @@ class NodeServiceSpec
 
       operationId must be(operationIdRestored)
 
-      val response = service.getOperationStatus(
-        GetOperationStatusRequest()
+      val response = service.getOperationInfo(
+        GetOperationInfoRequest()
           .withOperationId(operationIdProto)
       )
 
       response.operationStatus must be(common_models.OperationStatus.UNKNOWN_OPERATION)
-      response.lastSyncedBlockTimestamp must be(Some(dummySyncTimestamp.toProtoTimestamp))
+      response.lastSyncedBlockTimestamp.value must be(dummySyncTimestamp.toProtoTimestamp)
+    }
+
+    "return CONFIRM_AND_APPLIED when operation identifier was processed by the node" in {
+      val validOperation = BlockProcessingServiceSpec.signOperation(
+        CreateDIDOperationSpec.exampleOperation,
+        "master",
+        CreateDIDOperationSpec.masterKeys.privateKey
+      )
+      val operationId = AtalaOperationId.of(validOperation)
+      val operationIdProto = operationId.toProtoByteString
+      val operationInfo = AtalaOperationInfo(
+        operationId = operationId,
+        objectId = AtalaObjectId.of("random".getBytes),
+        operationStatus = AtalaOperationStatus.APPLIED,
+        transactionSubmissionStatus = Some(AtalaObjectTransactionSubmissionStatus.InLedger),
+        transactionId = Some(dummyLedgerData.transactionId)
+      )
+
+      doReturn(Future.successful(dummySyncTimestamp))
+        .when(objectManagementService)
+        .getLastSyncedTimestamp
+      doReturn(Future.successful(Some(operationInfo)))
+        .when(objectManagementService)
+        .getOperationInfo(operationId)
+
+      val operationIdRestored = AtalaOperationId.fromVectorUnsafe(operationIdProto.toByteArray.toVector)
+
+      operationId must be(operationIdRestored)
+
+      val response = service.getOperationInfo(
+        GetOperationInfoRequest()
+          .withOperationId(operationIdProto)
+      )
+
+      response.operationStatus must be(common_models.OperationStatus.CONFIRMED_AND_APPLIED)
+      response.transactionId must be(dummyLedgerData.transactionId.toString)
+      response.lastSyncedBlockTimestamp.value must be(dummySyncTimestamp.toProtoTimestamp)
     }
   }
 
