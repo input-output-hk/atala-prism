@@ -13,26 +13,31 @@ import slinky.web.html._
   case class Props(backgroundAPI: BackgroundAPI, switchToView: (View) => Unit)
 
   override def render(): ReactElement = {
-    div(id := "welcomeRecoveryScreen", className := "spaceBetween")(
+    div(id := "welcomeRecoveryScreen", className := "generalContainer")(
       div(
         className := "div_logo",
         id := "logoPrism",
         img(className := "logoImage", src := "/assets/images/prism-logo.svg")
       ),
-      div(className := "welcome_img")(
-        img(src := "/assets/images/unlock.png"),
-        h3(className := "h3_welcome_back")("Welcome Back"),
-        p(className := "welcome_registration_text")("Your wallet has been successfully recovered")
-      ),
-      div(className := "input__container"),
-      div(className := "div__field_group")(
+      div(
+        className := "elementWrapper",
         div(
-          id := "nextButton",
-          className := "btn_register",
-          onClick := { () =>
-            props.switchToView(Main)
-          }
-        )("Next")
+          className := "empty-component"
+        ),
+        div(className := "welcome_img")(
+          img(className := "img-size", src := "/assets/images/unlock.png"),
+          h3(className := "h3_welcome_back")("Welcome Back"),
+          p(className := "welcome_registration_text")("Your wallet has been successfully recovered")
+        ),
+        div(className := "div__field_group")(
+          div(
+            id := "nextButton",
+            className := "btn_register",
+            onClick := { () =>
+              props.switchToView(Main)
+            }
+          )("Next")
+        )
       )
     )
   }

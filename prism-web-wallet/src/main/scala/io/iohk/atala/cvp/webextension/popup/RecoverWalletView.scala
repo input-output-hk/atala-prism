@@ -49,85 +49,91 @@ import scala.util.{Failure, Success}
 
     val enableButton = state.tandc
 
-    div(id := "recoveryScreen", className := "spaceBetween")(
+    div(id := "recoveryScreen", className := "generalContainer")(
+      div(className := "div_logo", id := "logoPrism", img(src := "/assets/images/prism-logo.svg")),
       div(
-        div(className := "div_logo", id := "logoPrism", img(src := "/assets/images/prism-logo.svg")),
-        mui
-          .Button(
-            div(className := "backArrow", onClick := { () => props.switchToView(Default) })(
-              img(className := "leftArrow", src := "/assets/images/arrow-l.svg"),
-              p("Back")
+        className := "elementWrapper",
+        div(
+          mui
+            .Button(
+              div(className := "backArrow", onClick := { () => props.switchToView(Default) })(
+                img(className := "leftArrow", src := "/assets/images/arrow-l.svg"),
+                p("Back")
+              )
             )
-          )
-          .className("muiButton")
-          .size(materialUiCoreStrings.small),
-        h3(className := "h3_recover")("Recover your wallet"),
-        ChipInput(chips => setChips(chips), Some(_ => isValidSeedPhrase())),
-        h4(className := "h4_enter_pass", id := "h4_recover", "Enter a new password and confirm it"),
-        p(
-          className := "description",
-          id := "description1",
-          "Your password should be a memorable passphrase of at least 30 characters."
-        ),
-        div(
-          className := "recoverPasswordContainer",
-          PasswordInput(
-            "Password",
-            "Enter Password",
-            state.password,
-            password => setPassword(password),
-            Some(_ => isValidPassphrase())
-          )
-        ),
-        div(
-          className := "recoverPasswordContainer",
-          PasswordInput(
-            "Confirm password",
-            "Re-enter Password",
-            state.password2,
-            password => setPassword2(password),
-            Some(_ => isPassphraseMatched())
-          )
-        ),
-        div(className := "checkboxContainer")(
-          div(className := "input__container")(
-            div()(
-              input(
-                id := "tandc",
-                `type` := "checkbox",
-                onChange := (e => setTandC(e.currentTarget.checked))
-              ),
-              label(className := "_label_txt", htmlFor := "tandc")(
-                div(
-                  className := "paddingLeft",
-                  "Accept",
-                  a(
-                    href := s"${props.termsUrl}",
-                    target := "_blank",
-                    className := "_label_link"
-                  )(
-                    "Terms and Conditions"
-                  ),
-                  "and",
-                  a(
-                    href := s"${props.privacyPolicyUrl}",
-                    target := "_blank",
-                    className := "_label_link"
-                  )(
-                    "Privacy Policy Agreement"
+            .className("muiButton")
+            .size(materialUiCoreStrings.small),
+          h3(className := "h3_recover")("Recover your wallet"),
+          ChipInput(chips => setChips(chips), Some(_ => isValidSeedPhrase())),
+          h4(className := "h4_enter_pass", id := "h4_recover", "Enter a new password and confirm it"),
+          p(
+            className := "description",
+            id := "description1",
+            "Your password should be a memorable passphrase of at least 30 characters."
+          ),
+          div(
+            className := "recoverPasswordContainer",
+            PasswordInput(
+              "Password",
+              "Enter Password",
+              state.password,
+              password => setPassword(password),
+              Some(_ => isValidPassphrase())
+            )
+          ),
+          div(
+            className := "recoverPasswordContainer",
+            PasswordInput(
+              "Confirm password",
+              "Re-enter Password",
+              state.password2,
+              password => setPassword2(password),
+              Some(_ => isPassphraseMatched())
+            )
+          ),
+          div(className := "checkboxContainer")(
+            div(className := "input__container")(
+              div()(
+                input(
+                  id := "tandc",
+                  `type` := "checkbox",
+                  onChange := (e => setTandC(e.currentTarget.checked))
+                ),
+                label(className := "_label_txt", htmlFor := "tandc")(
+                  div(
+                    className := "paddingLeft",
+                    "Accept",
+                    a(
+                      href := s"${props.termsUrl}",
+                      target := "_blank",
+                      className := "_label_link"
+                    )(
+                      "Terms and Conditions"
+                    ),
+                    "and",
+                    a(
+                      href := s"${props.privacyPolicyUrl}",
+                      target := "_blank",
+                      className := "_label_link"
+                    )(
+                      "Privacy Policy Agreement"
+                    )
                   )
                 )
               )
             )
           )
         ),
-        state.message.map(ErrorMessage(_))
-      ),
-      ProgressButton(
-        "Recover wallet",
-        enableButton,
-        state.isLoading,
-        _ => recoverWallet()
+        state.message.map(ErrorMessage(_)),
+        div(
+          className := "btn-Container",
+          ProgressButton(
+            "Recover wallet",
+            enableButton,
+            state.isLoading,
+            _ => recoverWallet()
+          )
+        )
       )
     )
   }
