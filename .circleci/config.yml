@@ -260,19 +260,6 @@ jobs:
       - install-protoc
 
       - run:
-          name: Hash dependency info
-          command: |
-            cd prism-kotlin-sdk
-            mkdir -p build
-            md5sum gradle.properties settings.gradle.kts build.gradle.kts **/build.gradle.kts >build/deps.md5
-
-      - restore_cache:
-          keys:
-            - prism-kotlin-sdk-cache-{{ checksum "prism-kotlin-sdk/build/deps.md5" }}
-            # fallback to using the latest cache if no exact match is found
-            - prism-kotlin-sdk-cache-
-
-      - run:
           name: Publish SDK to GitHub Maven repository
           command: |
             cd prism-kotlin-sdk
