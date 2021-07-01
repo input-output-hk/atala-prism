@@ -12,7 +12,8 @@ import io.iohk.atala.prism.daos.ConnectorMessageOffsetDao
 import io.iohk.atala.prism.kycbridge.config.KycBridgeConfig
 import io.iohk.atala.prism.kycbridge.message.processors.{
   AcuantDocumentUploadedMessageProcessor,
-  SendForAcuantManualReviewMessageProcessor
+  SendForAcuantManualReviewMessageProcessor,
+  RequestAcuantProcessMessageProcessor
 }
 import io.iohk.atala.prism.kycbridge.services._
 import io.iohk.atala.prism.kycbridge.task.lease.system.KycBridgeProcessingTaskState
@@ -106,16 +107,20 @@ object KycBridgeApp extends TaskApp {
       processingTaskService =
         new ProcessingTaskServiceImpl[KycBridgeProcessingTaskState](tx, UUID.randomUUID(), processingTaskDao)
 
-      connectionService = new ConnectionService(tx, connectorService, processingTaskService)
+      connectionService = new ConnectionService(tx, connectorService)
 
       // connector message processors
       documentUploadedMessageProcessor = new AcuantDocumentUploadedMessageProcessor(processingTaskService)
       sendForAcuantManualReviewMessageProcessor = new SendForAcuantManualReviewMessageProcessor(processingTaskService)
+      requestAcuantProcessMessageProcessor = new RequestAcuantProcessMessageProcessor(processingTaskService)
 
       connectorMessageService = new ConnectorMessagesService(
         connectorService = connectorService,
-        messageProcessors =
-          List(documentUploadedMessageProcessor.processor, sendForAcuantManualReviewMessageProcessor.processor),
+        messageProcessors = List(
+          documentUploadedMessageProcessor.processor,
+          sendForAcuantManualReviewMessageProcessor.processor,
+          requestAcuantProcessMessageProcessor.processor
+        ),
         findLastMessageOffset = ConnectorMessageOffsetDao.findLastMessageOffset().transact(tx),
         saveMessageOffset = messageId => ConnectorMessageOffsetDao.updateLastMessageOffset(messageId).transact(tx).void
       )

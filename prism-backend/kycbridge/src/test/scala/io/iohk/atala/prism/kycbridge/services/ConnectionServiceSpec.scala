@@ -7,10 +7,9 @@ import io.iohk.atala.prism.kycbridge.db.ConnectionDao
 import io.iohk.atala.prism.models.{ConnectionId, ConnectionState, ConnectionToken}
 import io.iohk.atala.prism.protos.connector_models.ConnectionInfo
 import io.iohk.atala.prism.repositories.PostgresRepositorySpec
-import io.iohk.atala.prism.stubs.{ConnectorClientServiceStub, ProcessingTaskServiceStub}
+import io.iohk.atala.prism.stubs.ConnectorClientServiceStub
 import org.mockito.scalatest.MockitoSugar
 import doobie.implicits._
-import io.iohk.atala.prism.kycbridge.task.lease.system.KycBridgeProcessingTaskState
 import monix.execution.Scheduler.Implicits.global
 
 import scala.concurrent.duration.DurationInt
@@ -29,8 +28,7 @@ class ConnectionServiceSpec extends PostgresRepositorySpec[Task] with MockitoSug
         Seq(ConnectionInfo(token = token, connectionId = connectionId.toString, participantDid = participantDID.value))
 
       val connectorClientStub = new ConnectorClientServiceStub(connectionInfos = connectionInfos)
-      val processingTaskService = new ProcessingTaskServiceStub[KycBridgeProcessingTaskState]()
-      val connectionService = new ConnectionService(database, connectorClientStub, processingTaskService)
+      val connectionService = new ConnectionService(database, connectorClientStub)
 
       // when
       val result = (for {
@@ -50,7 +48,6 @@ class ConnectionServiceSpec extends PostgresRepositorySpec[Task] with MockitoSug
           state = ConnectionState.Connected
         )
       )
-      processingTaskService.createTaskInvokeCount.get() mustBe 1
     }
   }
 }

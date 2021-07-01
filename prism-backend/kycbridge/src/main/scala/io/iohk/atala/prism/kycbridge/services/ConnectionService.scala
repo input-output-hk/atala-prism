@@ -3,25 +3,19 @@ package io.iohk.atala.prism.kycbridge.services
 import doobie.implicits._
 import doobie.util.transactor.Transactor
 import fs2.Stream
-import io.circe.syntax._
 import io.iohk.atala.prism.kycbridge.db.ConnectionDao
 import io.iohk.atala.prism.kycbridge.models.Connection
-import io.iohk.atala.prism.kycbridge.task.lease.system.KycBridgeProcessingTaskState
-import io.iohk.atala.prism.kycbridge.task.lease.system.data.AcuantStartProcessForConnectionData
 import io.iohk.atala.prism.models.{ConnectionId, ConnectionState, ConnectionToken}
 import io.iohk.atala.prism.services.ConnectorClientService
-import io.iohk.atala.prism.task.lease.system.{ProcessingTaskData, ProcessingTaskService}
 import io.iohk.atala.prism.utils.syntax.DBConnectionOps
 import monix.eval.Task
 import org.slf4j.LoggerFactory
 
-import java.time.Instant
 import scala.concurrent.duration.DurationInt
 
 class ConnectionService(
     tx: Transactor[Task],
-    connectorService: ConnectorClientService,
-    processingTaskService: ProcessingTaskService[KycBridgeProcessingTaskState]
+    connectorService: ConnectorClientService
 ) {
 
   private val logger = LoggerFactory.getLogger(classOf[ConnectionService])
@@ -64,18 +58,11 @@ class ConnectionService(
   }
 
   private def processConnection(connection: Connection): Task[Unit] = {
-    for {
-      _ <-
-        ConnectionDao
-          .update(connection)
-          .logSQLErrors("updating connection", logger)
-          .transact(tx)
-      _ <- processingTaskService.create(
-        ProcessingTaskData(AcuantStartProcessForConnectionData(connection.token).asJson),
-        KycBridgeProcessingTaskState.AcuantStartProcessForConnection,
-        scheduledTime = Instant.now()
-      )
-    } yield ()
+    ConnectionDao
+      .update(connection)
+      .logSQLErrors("updating connection", logger)
+      .transact(tx)
+      .void
   }
 
 }

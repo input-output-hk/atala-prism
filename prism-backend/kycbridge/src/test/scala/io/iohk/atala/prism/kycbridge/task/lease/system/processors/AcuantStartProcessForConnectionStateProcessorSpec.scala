@@ -14,6 +14,8 @@ import io.iohk.atala.prism.kycbridge.task.lease.system.data.AcuantStartProcessFo
 import io.iohk.atala.prism.repositories.PostgresRepositorySpec
 import io.iohk.atala.prism.stubs.ConnectorClientServiceStub
 import io.iohk.atala.prism.task.lease.system.{ProcessingTaskData, ProcessingTaskFixtures, ProcessingTaskResult}
+import io.iohk.atala.prism.kycbridge.models.Connection
+import io.iohk.atala.prism.kycbridge.models.assureId.DocumentStatus
 import monix.eval.Task
 import monix.execution.Scheduler.Implicits.global
 import org.scalatest.OptionValues._
@@ -33,6 +35,27 @@ class AcuantStartProcessForConnectionStateProcessorSpec extends PostgresReposito
 
       result mustBe ProcessingTaskResult.ProcessingTaskFinished
       connection.value.acuantDocumentInstanceId.value.id mustBe newDocumentInstanceResponseBody.documentId
+    }
+
+    "override existing Acuant data" in new Fixtures {
+      val existingConnection = connection1.copy(
+        acuantDocumentInstanceId = Some(Connection.AcuantDocumentInstanceId("old-id")),
+        acuantDocumentStatus = Some(DocumentStatus.Error)
+      )
+
+      val (result, connection) = (for {
+        _ <- ConnectionDao.update(existingConnection).transact(database)
+
+        result <-
+          acuantStartProcessForConnectionStateProcessor
+            .process(processingTaskWithConnectionData, workerNumber)
+
+        connection <- ConnectionDao.findByConnectionToken(connection1.token).transact(database)
+      } yield (result, connection)).runSyncUnsafe()
+
+      result mustBe ProcessingTaskResult.ProcessingTaskFinished
+      connection.value.acuantDocumentInstanceId.value.id mustBe newDocumentInstanceResponseBody.documentId
+      connection.value.acuantDocumentStatus mustBe None
     }
 
     "delay task when acas service is not available" in new Fixtures {
@@ -88,9 +111,14 @@ class AcuantStartProcessForConnectionStateProcessorSpec extends PostgresReposito
 
     ConnectionFixtures.insertAll(database).runSyncUnsafe()
 
+    val acuantStartProcessForConnectionData = AcuantStartProcessForConnectionData(
+      receivedMessageId = "id1",
+      connectionId = connectionId1.uuid.toString
+    )
+
     val processingTaskWithConnectionData = createProcessingTask[KycBridgeProcessingTaskState](
       state = KycBridgeProcessingTaskState.AcuantStartProcessForConnection,
-      data = ProcessingTaskData(AcuantStartProcessForConnectionData(connection1.token).asJson)
+      data = ProcessingTaskData(acuantStartProcessForConnectionData.asJson)
     )
   }
 

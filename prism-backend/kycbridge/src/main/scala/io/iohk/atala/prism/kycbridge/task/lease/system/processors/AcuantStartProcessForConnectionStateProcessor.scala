@@ -3,6 +3,9 @@ package io.iohk.atala.prism.kycbridge.task.lease.system.processors
 import cats.data.EitherT
 import doobie.implicits._
 import doobie.util.transactor.Transactor
+import monix.eval.Task
+import org.slf4j.LoggerFactory
+
 import io.iohk.atala.prism.kycbridge.db.ConnectionDao
 import io.iohk.atala.prism.kycbridge.models.Connection.AcuantDocumentInstanceId
 import io.iohk.atala.prism.kycbridge.models.assureId.{Device, DeviceType}
@@ -15,8 +18,7 @@ import io.iohk.atala.prism.services.ConnectorClientService.CannotSendConnectorMe
 import io.iohk.atala.prism.task.lease.system.ProcessingTaskProcessorOps._
 import io.iohk.atala.prism.task.lease.system.{ProcessingTask, ProcessingTaskProcessor, ProcessingTaskResult}
 import io.iohk.atala.prism.utils.syntax.DBConnectionOps
-import monix.eval.Task
-import org.slf4j.LoggerFactory
+import io.iohk.atala.prism.utils.ConnectionUtils
 
 class AcuantStartProcessForConnectionStateProcessor(
     tx: Transactor[Task],
@@ -42,12 +44,14 @@ class AcuantStartProcessForConnectionStateProcessor(
       acuantData <-
         parseProcessingTaskData[AcuantStartProcessForConnectionData, KycBridgeProcessingTaskState](processingTask)
 
-      connection <- EitherT(ConnectionDao.findByConnectionToken(acuantData.connectionToken).transact(tx).map {
-        case Some(connection) => Right(connection)
-        case None =>
-          logger.error(s"Cannot fetch connection: ${acuantData.connectionToken}. Deleting processing task")
-          Left(ProcessingTaskResult.ProcessingTaskFinished)
-      })
+      connection <- EitherT(
+        ConnectionUtils
+          .fromConnectionId(acuantData.connectionId, acuantData.receivedMessageId, ConnectionDao.findByConnectionId)
+          .logSQLErrors("getting connection from received message", logger)
+          .transact(tx)
+          .sendResponseOnError(connectorService, acuantData.receivedMessageId, acuantData.connectionId)
+          .mapErrorToProcessingTaskFinished[KycBridgeProcessingTaskState]()
+      )
 
       documentInstanceResponseBody <- EitherT(
         assureIdService
@@ -82,7 +86,8 @@ class AcuantStartProcessForConnectionStateProcessor(
       )
 
       updatedConnection = connection.copy(
-        acuantDocumentInstanceId = Some(AcuantDocumentInstanceId(documentInstanceResponseBody.documentId))
+        acuantDocumentInstanceId = Some(AcuantDocumentInstanceId(documentInstanceResponseBody.documentId)),
+        acuantDocumentStatus = None
       )
 
       _ <- EitherT.right[ProcessingTaskResult[KycBridgeProcessingTaskState]](
