@@ -9,20 +9,21 @@ style="margin: auto; padding: 1em; width: 90vw; overflow-x: hidden; font-variant
     <div style="position: relative; width: 100%;">
         <!-- Inside this div you can change the background color of the header -->
         <div
-            style="background-color: #D8D8D8; display: flex; flex-direction: column; width: 100%; padding: 1em 2em; box-sizing: border-box; border-radius: 10px 10px 0 0;">
+            style="background-color: {{themeColor}}; display: flex; flex-direction: column; width: 100%; padding: 1em 2em; box-sizing: border-box; border-radius: 10px 10px 0 0;">
             <!-- Here you can change the header info -->
-            <!-- Small Text -->
-            <p style="font-size: 9px; color: #828282; margin: 0.53em 0 1.5em; text-transform: uppercase;">Title</p>
+            <!-- Small Text --> 
+            <p style="font-size: 9px; color: #828282; margin: 0.53em 0 1.5em; text-transform: uppercase;">{{credentialTitle}}</p>
             <!-- Big Text -->
             <h3 style="color: #3c393a; margin: -0.5em 0 0 0; font-size: 13px; font-weight: 600;">
-                Subtitle
+                {{credentialSubtitle}}
             </h3>
         </div>
     </div>
-    <div style="width: 100%; box-sizing: border-box; display: flex;">
+    <!-- Inside this div you can change the background color of the content -->
+    <div style="background-color:{{backgroundColor}}; width: 100%; box-sizing: border-box; display: flex;">
         <div style="width: 80px; display: flex; padding: 0 0 0 1em; justify-content: center; align-items: center;">
             <!-- here you can change the credential image -->
-            <img src="../images/generic-id-01.svg" />
+            <img src={{image1}} />
         </div>
         <div style="width: 320px; display: flex; flex-wrap: wrap; padding: 1em;">
             <div style="width: 50%;">

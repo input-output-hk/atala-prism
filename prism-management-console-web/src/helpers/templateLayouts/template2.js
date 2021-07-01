@@ -8,7 +8,7 @@ style="margin: auto; padding: 1em; width: 90vw; overflow-x: hidden; font-variant
     style="max-width: 400px; border-radius: 10px; display: flex; flex-wrap: wrap; box-shadow: 0 1px 6px 0 rgba(32, 33, 36, .28); border: 1px solid #e5e5e5; align-items: center;">
     <!-- Inside this div you can change the background color of the header -->
     <div
-        style="background-color: #D8D8D8; display: flex; border-radius: 10px 10px 0 0; height: 100px; box-sizing: border-box; width: 100%; align-items: center; padding: 1em 2em">
+        style="background-color: {{themeColor}}; display: flex; border-radius: 10px 10px 0 0; height: 100px; box-sizing: border-box; width: 100%; align-items: center; padding: 1em 2em">
         <!-- Here you can change the header info -->
         <div
             style="display: flex; flex-direction: column; width: 100%; box-sizing: border-box; border-radius: 10px 10px 0 0;">
@@ -21,10 +21,10 @@ style="margin: auto; padding: 1em; width: 90vw; overflow-x: hidden; font-variant
         </div>
         <div style="width: 60px;">
             <!-- here you can change the credential image -->
-            <img src="../images/generic-icon-01.svg" />
+            <img src={{image0}} />
         </div>
     </div>
-    <div style="width: 100%; display: flex; flex-wrap: wrap; padding: 1em 2em;">
+    <div style="background-color: {{backgroundColor}}; width: 100%; display: flex; flex-wrap: wrap; padding: 1em 2em;">
         <div style="width: 100%; box-sizing: border-box; display: flex;">
             <div style="width: 50%;">
                 <!-- Small Text -->

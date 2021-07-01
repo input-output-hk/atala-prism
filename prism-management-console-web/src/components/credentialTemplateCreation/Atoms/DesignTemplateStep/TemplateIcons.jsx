@@ -1,23 +1,17 @@
 import React from 'react';
-import { Button, Form, message, Upload } from 'antd';
+import { Button, Form, Upload } from 'antd';
 import { PictureOutlined } from '@ant-design/icons';
 import { useTranslation } from 'react-i18next';
-
-const normFile = ev => {
-  message.warn('Upload event:', ev);
-  if (Array.isArray(ev)) return ev;
-  return ev && ev.fileList;
-};
 
 const TemplateIcons = () => {
   const { t } = useTranslation();
 
+  const normFile = ({ file }) => [file];
+
   const uploaderProps = {
-    accept: '.svg, .png, .jpg, .jpeg',
-    multiple: false
-    // fileList: selectedFileList,
-    // onRemove: handleRemoveFile,
-    // customRequest: handleFileRequest
+    accept: '.svg',
+    listType: 'picture',
+    fileList: []
   };
 
   return (
@@ -26,10 +20,10 @@ const TemplateIcons = () => {
       <Form.Item
         name="backgroundHeader"
         label={t('credentialTemplateCreation.step2.style.backgroundHeader')}
-        valuePropName="fileList"
+        valuePropName="file"
         getValueFromEvent={normFile}
       >
-        <Upload name="logo" action="/upload.do" listType="picture" {...uploaderProps}>
+        <Upload name="logo" action="/upload.do" {...uploaderProps}>
           <Button icon={<PictureOutlined />}>
             {t('credentialTemplateCreation.step2.style.chooseImage')}
           </Button>
@@ -38,10 +32,10 @@ const TemplateIcons = () => {
       <Form.Item
         name="iconHeader"
         label={t('credentialTemplateCreation.step2.style.iconHeader')}
-        valuePropName="fileList"
+        valuePropName="file"
         getValueFromEvent={normFile}
       >
-        <Upload name="logo" action="/upload.do" listType="picture">
+        <Upload name="logo" action="/upload.do" {...uploaderProps}>
           <Button icon={<PictureOutlined />}>
             {t('credentialTemplateCreation.step2.style.chooseImage')}
           </Button>
