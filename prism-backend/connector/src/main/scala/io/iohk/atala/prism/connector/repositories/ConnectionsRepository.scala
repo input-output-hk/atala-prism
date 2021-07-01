@@ -19,8 +19,6 @@ import io.iohk.atala.prism.connector.repositories.daos.{
   MessagesDAO,
   ParticipantsDAO
 }
-import io.iohk.atala.prism.console.models.Institution
-import io.iohk.atala.prism.console.repositories.daos.ContactsDAO
 import io.iohk.atala.prism.errors.LoggingContext
 import io.iohk.atala.prism.identity.DID
 import org.slf4j.{Logger, LoggerFactory}
@@ -158,16 +156,6 @@ object ConnectionsRepository {
         )
         (connectionId, instantiatedAt) = ciia
 
-        // Kept for the sake of backward compatibility with the existing management console
-        // TODO: Remove it when management console is fully decoupled from connector
-        _ <- EitherT.right[ConnectorError] {
-          ContactsDAO.setConnectionAsAccepted(
-            Institution.Id(initiator.id.uuid),
-            token,
-            connectionId
-          )
-        }
-
         _ <- EitherT.right[ConnectorError](ConnectionTokensDAO.markAsUsed(token))
       } yield acceptorInfo.id -> ConnectionInfo(
         connectionId,
@@ -222,10 +210,6 @@ object ConnectionsRepository {
           }
         }
         _ <- EitherT(resultE)
-        // TODO: Remove it when management console is fully decoupled from connector
-        _ <- EitherT.right[ConnectorError] {
-          ContactsDAO.setConnectionAsRevoked(connectionId).map(_.asRight[ConnectorError])
-        }
         // TODO: Remove once messages are being removed after they are read
         _ <- EitherT {
           MessagesDAO.deleteConnectionMessages(connectionId).map(_.asRight[ConnectorError])

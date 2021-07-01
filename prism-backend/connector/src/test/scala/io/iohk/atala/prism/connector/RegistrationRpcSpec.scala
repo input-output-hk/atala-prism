@@ -5,7 +5,7 @@ import cats.syntax.option._
 import doobie.implicits._
 import io.iohk.atala.prism.connector.model._
 import io.iohk.atala.prism.connector.repositories.daos.ParticipantsDAO
-import io.iohk.atala.prism.console.DataPreparation
+import io.iohk.atala.prism.connector.DataPreparation
 import io.iohk.atala.prism.crypto.{EC, SHA256Digest}
 import io.iohk.atala.prism.identity.DID
 import io.iohk.atala.prism.models.ParticipantId

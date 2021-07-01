@@ -2,9 +2,9 @@ package io.iohk.atala.prism.cviews
 
 import io.circe.Json
 import io.iohk.atala.prism.connector.ConnectorAuthenticator
-import io.iohk.atala.prism.console.models.Institution
 import io.iohk.atala.prism.intdemo.html._
 import io.iohk.atala.prism.metrics.RequestMeasureUtil.measureRequestFuture
+import io.iohk.atala.prism.models.ParticipantId
 import io.iohk.atala.prism.protos.cviews_api.{GetCredentialViewTemplatesRequest, GetCredentialViewTemplatesResponse}
 import io.iohk.atala.prism.protos.{cviews_api, cviews_models}
 import io.iohk.atala.prism.utils.syntax._
@@ -30,11 +30,11 @@ class CredentialViewsService(authenticator: ConnectorAuthenticator)(implicit ec:
       methodName: String,
       request: Request
   )(
-      block: Institution.Id => Future[Response]
+      block: ParticipantId => Future[Response]
   ): Future[Response] = {
     authenticator.authenticated(methodName, request) { participantId =>
       measureRequestFuture("credential-views-service-service", getCredsViewTemplatesMethodName)(
-        block(Institution.Id(participantId.uuid))
+        block(participantId)
       )
     }
   }

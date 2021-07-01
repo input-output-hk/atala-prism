@@ -6,9 +6,6 @@ import io.grpc.{ManagedChannelBuilder, Server, ServerBuilder}
 import io.iohk.atala.prism.auth.grpc.{GrpcAuthenticationHeaderParser, GrpcAuthenticatorInterceptor}
 import io.iohk.atala.prism.connector.repositories._
 import io.iohk.atala.prism.connector.services._
-import io.iohk.atala.prism.console.integrations.CredentialsIntegrationService
-import io.iohk.atala.prism.console.repositories._
-import io.iohk.atala.prism.console.services._
 import io.iohk.atala.prism.cviews.CredentialViewsService
 import io.iohk.atala.prism.intdemo.ConnectorIntegration.ConnectorIntegrationImpl
 import io.iohk.atala.prism.intdemo._
@@ -20,7 +17,6 @@ import io.iohk.atala.prism.intdemo.protos.intdemo_api.{
 }
 import io.iohk.atala.prism.protos.connector_api
 import io.iohk.atala.prism.protos.connector_api.ContactConnectionServiceGrpc
-import io.iohk.atala.prism.protos.console_api._
 import io.iohk.atala.prism.protos.cviews_api.CredentialViewsServiceGrpc
 import io.iohk.atala.prism.protos.node_api.NodeServiceGrpc
 import io.iohk.atala.prism.repositories.{SchemaMigrations, TransactorFactory}
@@ -118,26 +114,6 @@ class ConnectorApp(executionContext: ExecutionContext) { self =>
       executionContext
     )
 
-    // cmanager
-    val statisticsRepository = new StatisticsRepository(xa)
-    val credentialsRepository = new CredentialsRepository(xa)(executionContext)
-    val contactsRepository = new ContactsRepository(xa)(executionContext)
-    val issuerGroupsRepository = new GroupsRepository(xa)(executionContext)
-    val credentialsIntegration = new CredentialsIntegrationService(credentialsRepository, node)(executionContext)
-    val credentialsService = new CredentialsServiceImpl(
-      credentialsRepository,
-      contactsRepository,
-      credentialsIntegration,
-      authenticator,
-      node
-    )(executionContext)
-    val groupsService = new GroupsServiceImpl(issuerGroupsRepository, authenticator)(executionContext)
-
-    val storedCredentialsService = new StoredCredentialsRepository(xa)(executionContext)
-    val credentialsStoreService =
-      new CredentialsStoreService(storedCredentialsService, authenticator)(
-        executionContext
-      )
     val credentialViewsService = new CredentialViewsService(authenticator)(executionContext)
 
     // interactive demo services
@@ -152,30 +128,17 @@ class ConnectorApp(executionContext: ExecutionContext) { self =>
     val insuranceService =
       new InsuranceServiceImpl(connectorIntegration, intDemoRepository, schedulerPeriod = 1.second)(executionContext)
 
-    // console (unified backend) services
-    val consoleService = new ConsoleServiceImpl(statisticsRepository, authenticator)(
-      executionContext
-    )
-    val contactsService = new ContactsServiceImpl(contactsRepository, authenticator)(
-      executionContext
-    )
-
     logger.info("Starting server")
     server = ServerBuilder
       .forPort(ConnectorApp.port)
       .intercept(new GrpcAuthenticatorInterceptor)
       .addService(_root_.grpc.health.v1.health.HealthGrpc.bindService(new HealthService, executionContext))
       .addService(connector_api.ConnectorServiceGrpc.bindService(connectorService, executionContext))
-      .addService(CredentialsServiceGrpc.bindService(credentialsService, executionContext))
-      .addService(GroupsServiceGrpc.bindService(groupsService, executionContext))
-      .addService(CredentialsStoreServiceGrpc.bindService(credentialsStoreService, executionContext))
       .addService(CredentialViewsServiceGrpc.bindService(credentialViewsService, executionContext))
       .addService(IDServiceGrpc.bindService(idService, executionContext))
       .addService(DegreeServiceGrpc.bindService(degreeService, executionContext))
       .addService(EmploymentServiceGrpc.bindService(employmentService, executionContext))
       .addService(InsuranceServiceGrpc.bindService(insuranceService, executionContext))
-      .addService(ConsoleServiceGrpc.bindService(consoleService, executionContext))
-      .addService(ContactsServiceGrpc.bindService(contactsService, executionContext))
       .addService(ContactConnectionServiceGrpc.bindService(contactConnectionService, executionContext))
       .build()
       .start()

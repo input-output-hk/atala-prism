@@ -9,7 +9,7 @@ import io.iohk.atala.prism.connector.repositories.daos._
 import io.iohk.atala.prism.identity.DID
 import io.iohk.atala.prism.models.ParticipantId
 import io.iohk.atala.prism.AtalaWithPostgresSpec
-import io.iohk.atala.prism.console.DataPreparation
+import io.iohk.atala.prism.connector.DataPreparation
 import io.iohk.atala.prism.repositories.ops.SqlTestOps.Implicits
 
 trait ConnectorRepositorySpecBase extends AtalaWithPostgresSpec {
