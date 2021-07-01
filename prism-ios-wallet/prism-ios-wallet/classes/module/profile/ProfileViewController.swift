@@ -164,11 +164,11 @@ class ProfileViewController: ListingBaseViewController, UIImagePickerControllerD
 
         ViewControllerUtils.changeScreenSegued(caller: self, segue: "AttributeListingSegue", params: params)
     }
-    
+
     func changeScreenToVerifyId() {
         ViewControllerUtils.changeScreenSegued(caller: self, segue: "VerifyIdSegue", params: nil)
     }
-    
+
     // MARK: Profile picture 
 
     func chooseProfilePicture() {

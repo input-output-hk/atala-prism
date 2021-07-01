@@ -12,6 +12,7 @@ class SuccessViewController: BaseViewController {
     var subtitleText: String? = ""
     var buttonText: String? = ""
     var buttonAction: SelectorAction?
+    var image: String?
 
     override func navBarCustomStyle() -> NavBarCustomStyle {
         return NavBarCustomStyle(hasNavBar: false)
@@ -21,7 +22,7 @@ class SuccessViewController: BaseViewController {
         super.viewDidLoad()
 
         // Setup
-        informationView.config(imageNamed: "img_success", title: titleText, titleBold: titleBoldText,
+        informationView.config(imageNamed: image ?? "img_success", title: titleText, titleBold: titleBoldText,
                                subtitle: subtitleText, buttonText: buttonText, buttonAction: buttonAction)
     }
 }
@@ -35,10 +36,11 @@ extension SuccessViewController: SegueableScreen {
         buttonText = params?[2] as? String
         buttonAction = params?[3] as? SelectorAction
         titleBoldText = params?[4] as? String
+        image = params?[5] as? String
     }
 
     static func makeSeguedParams(title: String?, subtitle: String?, buttonText: String?,
-                                 buttonAction: SelectorAction?, titleBold: String? = nil) -> [Any?]? {
+                                 buttonAction: SelectorAction?, titleBold: String? = nil, image: String? = nil) -> [Any?]? {
 
         var params: [Any?] = []
         params.append(title)
@@ -46,6 +48,7 @@ extension SuccessViewController: SegueableScreen {
         params.append(buttonText)
         params.append(buttonAction)
         params.append(titleBold)
+        params.append(image)
         return params
     }
 }

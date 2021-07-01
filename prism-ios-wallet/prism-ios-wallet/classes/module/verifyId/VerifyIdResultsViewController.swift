@@ -29,6 +29,18 @@ class VerifyIdResultsViewController: ListingBaseViewController {
         setupButtons()
     }
 
+    // MARK: Screens
+
+    func changeScreenToSuccess(action: SelectorAction) {
+
+        let params = SuccessViewController.makeSeguedParams(title: "verifyid_success_title".localize(),
+                                                            subtitle: "verifyid_success_subtitle".localize(),
+                                                            buttonText: "close".localize(),
+                                                            buttonAction: action,
+                                                            image: "img_verify_id_success")
+        ViewControllerUtils.changeScreenSegued(caller: self, segue: "SuccessSegue", params: params)
+    }
+
     func goToMainScreen() {
         MainNavViewController.openThisView()
     }

@@ -66,13 +66,17 @@ class VerifyIdResultsPresenter: ListingBasePresenter, ListingBaseTableUtilsPrese
             let user = self.sharedMemory.loggedUser
             user?.personalAttributes = self.attributes
             self.sharedMemory.loggedUser = user
-            self.viewImpl?.goToMainScreen()
+            self.viewImpl?.changeScreenToSuccess(action: self.actionSuccessContinue)
         }, error: { error in
             print(error)
             self.viewImpl?.showLoading(doShow: false)
             self.viewImpl?.showErrorMessage(doShow: true, message: "service_error".localize())
         })
     }
+
+    lazy var actionSuccessContinue = SelectorAction(action: { [weak self] in
+        self?.viewImpl?.goToMainScreen()
+    })
 
     // MARK: ListingBaseTableUtilsPresenterDelegate
 

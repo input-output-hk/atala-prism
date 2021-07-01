@@ -24,7 +24,7 @@ class LoggedUser: Mappable {
 
     var payIdCardDismissed: Bool?
     var verifyIdCardDismissed: Bool?
-    
+
     var fullName: String {
         if let name = personalAttributes?.first(where: {
                                                     $0.category?.lowercased().contains("full name") ?? false }) {

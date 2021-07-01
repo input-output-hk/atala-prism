@@ -446,6 +446,8 @@
 "verifyid_results_desc" = "Check that the scanned information is correct.";
 "verifyid_results_retry" = "Scan Again";
 "verifyid_results_confirm" = "Confirm";
+"verifyid_success_title" = "Thank You!";
+"verifyid_success_subtitle" = "You will received your verified identity\ncredential on verification completion.";
 
 // ACUANT
 
