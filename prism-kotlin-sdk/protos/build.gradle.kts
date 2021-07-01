@@ -64,6 +64,7 @@ kotlin {
     sourceSets {
         val commonMain by getting {
             kotlin.srcDir("${project(":protosLib").buildDir}/generated/source/proto/main/kotlin")
+            resources.srcDir("${project(":protosLib").projectDir}/src/main")
             dependencies {
                 api("pro.streem.pbandk:pbandk-runtime:$pbandkVersion")
                 api("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.5.0")
