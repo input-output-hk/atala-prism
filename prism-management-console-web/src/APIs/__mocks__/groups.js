@@ -24,7 +24,10 @@ export const getGroups = ({ name = '', date: filterDate = 0, pageSize, lastId })
         (!filterDate || lastUpdate > filterDate)
     );
 
-    resolve(filteredGroups.slice(0, pageSize));
+    resolve({
+      groupsList: filteredGroups.slice(0, pageSize),
+      totalNumberOfGroups: filteredGroups.length
+    });
   });
 
 export const deleteGroup = ({ id = '' }) =>

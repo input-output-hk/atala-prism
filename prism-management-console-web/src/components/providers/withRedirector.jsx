@@ -16,7 +16,8 @@ export const withRedirector = Component => props => {
 
   const redirectToContacts = () => redirectTo('contacts');
 
-  const redirectToContactDetails = id => redirectTo(`contacts/${id}`);
+  const redirectToContactDetails = (id, isEdit) =>
+    redirectTo(`contacts/${id}${isEdit ? '?editing=true' : ''}`);
 
   const redirectToImportContacts = () => redirectTo('contacts/import');
 

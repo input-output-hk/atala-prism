@@ -19,7 +19,7 @@ const GroupCreationContainer = ({ api, redirector: { redirectToGroups } }) => {
     setIsSaving(true);
     try {
       const newGroup = await api.groupsManager.createGroup(groupName);
-      await api.groupsManager.updateGroup(newGroup.id, members);
+      await api.groupsManager.updateGroup(newGroup.id, { contactIdsToAdd: members });
       message.success(t('groupCreation.success'));
       setIsSaving(false);
       redirectToGroups();

@@ -1,96 +1,54 @@
-import React, { useCallback, useEffect, useState } from 'react';
-import _ from 'lodash';
+import React from 'react';
 import { message } from 'antd';
 import { useTranslation } from 'react-i18next';
 import PropTypes from 'prop-types';
 import Logger from '../../helpers/Logger';
-import { GROUP_PAGE_SIZE, UNKNOWN_DID_SUFFIX_ERROR_CODE } from '../../helpers/constants';
 import Groups from './Groups';
 import { withApi } from '../providers/withApi';
-import { dateAsUnix } from '../../helpers/formatters';
-import { getLastArrayElementOrEmpty } from '../../helpers/genericHelpers';
-import { useSession } from '../providers/SessionContext';
+import { useGroups } from '../../hooks/useGroups';
 
 const GroupsContainer = ({ api }) => {
   const { t } = useTranslation();
 
-  const [groups, setGroups] = useState([]);
-  const [hasMore, setHasMore] = useState(true);
-  const [loading, setLoading] = useState(false);
-
-  const { showUnconfirmedAccountError, removeUnconfirmedAccountError } = useSession();
-
-  const updateGroups = useCallback(
-    (oldGroups = groups, date, name) => {
-      if (loading || !hasMore) return;
-
-      const filterDateAsUnix = dateAsUnix(date);
-
-      const { groupId } = getLastArrayElementOrEmpty(oldGroups);
-
-      setLoading(true);
-      return api.groupsManager
-        .getGroups({ name, date: filterDateAsUnix, pageSize: GROUP_PAGE_SIZE, lastId: groupId })
-        .then(filteredGroups => {
-          if (!filteredGroups.length) {
-            setHasMore(false);
-            return;
-          }
-          const newGroups = _.uniqBy(oldGroups.concat(filteredGroups), 'id');
-          setGroups(newGroups);
-          removeUnconfirmedAccountError();
-        })
-        .catch(error => {
-          Logger.error('[GroupsContainer.updateGroups] Error: ', error);
-          if (error.code === UNKNOWN_DID_SUFFIX_ERROR_CODE) {
-            showUnconfirmedAccountError();
-            setHasMore(false);
-          } else {
-            removeUnconfirmedAccountError();
-            message.error(t('errors.errorGetting', { model: 'groups' }));
-          }
-        })
-        .finally(() => setLoading(false));
-    },
-    [
-      api.groupsManager,
-      groups,
-      hasMore,
-      loading,
-      removeUnconfirmedAccountError,
-      showUnconfirmedAccountError,
-      t
-    ]
-  );
-
-  useEffect(() => {
-    if (!groups.length) updateGroups();
-  }, [groups, updateGroups]);
+  const {
+    groups,
+    loading,
+    searching,
+    hasMore,
+    name,
+    setName,
+    dateRange,
+    setDateRange,
+    setSortingKey,
+    sortingDirection,
+    setSortingDirection,
+    getMoreGroups
+  } = useGroups(api.groupsManager);
 
   const handleGroupDeletion = group =>
     api.groupsManager
       .deleteGroup(group.id)
       .then(() => {
         message.success(t('groups.deletionSuccess', { groupName: group.name }));
-        setGroups(groups.filter(g => g.id !== group.id));
       })
       .catch(error => {
         Logger.error('[GroupsContainer.handleGroupDeletion] Error: ', error);
         message.error(t('errors.errorDeletingGroup', { groupName: group.name }));
       });
 
-  const copyGroup = ({ numberOfContacts, name }, copyName) =>
+  const copyGroup = ({ numberOfContacts, name: groupName }, copyName) =>
     api.groupsManager
       .createGroup(copyName)
       .then(({ id }) =>
         api.contactsManager
-          .getContacts(null, numberOfContacts, name)
-          .then(contacts =>
-            api.groupsManager.updateGroup(id, contacts.map(({ contactId }) => contactId))
+          .getContacts({ limit: numberOfContacts, groupName })
+          .then(({ contactsList }) =>
+            api.groupsManager.updateGroup(id, {
+              contactIdsToAdd: contactsList.map(({ contactId }) => contactId)
+            })
           )
       )
       .then(() => {
-        updateGroups();
         message.success(t('groups.copy.success'));
       })
       .catch(error => {
@@ -98,17 +56,23 @@ const GroupsContainer = ({ api }) => {
         message.error(t('errors.errorCopyingGroup'));
       });
 
+  const isFilter = name && dateRange.length;
+
   return (
     <Groups
       groups={groups}
-      updateGroups={(oldGroups, date, name) => {
-        setHasMore(true);
-        updateGroups(oldGroups, date, name);
-      }}
       copyGroup={copyGroup}
       handleGroupDeletion={handleGroupDeletion}
       loading={loading}
+      searching={searching}
       hasMore={hasMore}
+      isFilter={isFilter}
+      setName={setName}
+      setDateRange={setDateRange}
+      setSortingKey={setSortingKey}
+      setSortingDirection={setSortingDirection}
+      sortingDirection={sortingDirection}
+      getMoreGroups={getMoreGroups}
     />
   );
 };

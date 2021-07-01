@@ -38,5 +38,11 @@
   }
   &.credentialRevoked {
     background: $primary-color-darker;
+  }  
+  &.undefined {
+    p {
+      @include secondary-text($label, $primary-color-darker);
+    }
+    background: lightgrey;
   }
 }

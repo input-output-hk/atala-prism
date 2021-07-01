@@ -18,7 +18,6 @@ import './_style.scss';
 
 const Connections = ({
   tableProps,
-  inviteContact,
   handleContactsRequest,
   refreshContacts,
   loading,
@@ -33,8 +32,8 @@ const Connections = ({
   const { accountStatus } = useSession();
 
   const inviteContactAndShowQR = async contactId => {
-    const token = await inviteContact(contactId);
-    setConnectionToken(token);
+    const contactToInvite = tableProps.contacts.find(c => c.contactId === contactId);
+    setConnectionToken(contactToInvite.connectionToken);
     showQRModal(true);
   };
 
@@ -106,7 +105,6 @@ Connections.propTypes = {
   }).isRequired,
   loading: PropTypes.bool,
   searching: PropTypes.bool,
-  inviteContact: PropTypes.func.isRequired,
   refreshContacts: PropTypes.func.isRequired,
   filterProps: PropTypes.shape({
     searchText: PropTypes.string,

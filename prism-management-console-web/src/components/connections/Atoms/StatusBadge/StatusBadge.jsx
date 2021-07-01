@@ -21,8 +21,8 @@ const StatusBadge = ({ status, useCase }) => {
   const statusKey = getStatusKey[useCase];
 
   return (
-    <div className={`Label ${statusKey}`}>
-      <p>{t(`${useCase}.status.${statusKey}`)}</p>
+    <div className={`Label ${statusKey || 'undefined'}`}>
+      <p>{t(`${useCase}.status.${statusKey || 'undefined'}`)}</p>
     </div>
   );
 };

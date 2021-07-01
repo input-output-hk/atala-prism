@@ -8,6 +8,7 @@ import GroupsManager from './credentials/groupsManager';
 import CredentialsViewManager from './credentials/credentialsViewManager';
 import CredentialsReceivedManager from './credentials/credentialsReceivedManager';
 import SummaryManager from './summary/summaryManager';
+import CredentialTypesManager from './credentials/credentialTypesManager';
 
 export { mockApi };
 
@@ -29,6 +30,7 @@ function Api(configuration, authenticator) {
     this.authenticator
   );
   this.credentialsViewManager = new CredentialsViewManager(this.configuration, this.authenticator);
+  this.credentialTypesManager = new CredentialTypesManager(this.configuration, this.authenticator);
   this.summaryManager = new SummaryManager(this.configuration, this.authenticator);
 }
 

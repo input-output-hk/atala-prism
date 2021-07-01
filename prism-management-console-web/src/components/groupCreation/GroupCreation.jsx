@@ -37,7 +37,7 @@ const GroupCreation = ({
     hasMore,
     isLoading,
     isSearching,
-    fetchAll
+    fetchAllContacts
   } = useContactsWithFilteredList(api.contactsManager);
 
   const { groupName } = formValues;
@@ -54,7 +54,7 @@ const GroupCreation = ({
       entities: filteredContacts,
       hasMore,
       idKey: CONTACT_ID_KEY,
-      fetchAll,
+      fetchAll: fetchAllContacts,
       setLoading: setLoadingSelection
     });
 

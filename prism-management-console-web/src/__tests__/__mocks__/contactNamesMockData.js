@@ -9,7 +9,7 @@ export const invalidJsons = [
     }
   },
   {
-    input: { contactName: 22 },
+    input: { name: 22 },
     expectedOutput: {
       firstName: '22',
       midNames: '',
@@ -27,7 +27,7 @@ export const invalidJsons = [
     }
   },
   {
-    input: { firstName: 'Rodrigo', contactName: 'Amelia Collins', lastName: 'Collins' },
+    input: { firstName: 'Rodrigo', name: 'Amelia Collins', lastName: 'Collins' },
     expectedOutput: {
       firstName: 'Amelia',
       midNames: '',
@@ -174,7 +174,7 @@ export const validJsons = [
     }
   },
   {
-    input: { contactName: 'Abbas Amelia Collins' },
+    input: { name: 'Abbas Amelia Collins' },
     expectedOutput: {
       firstName: 'Abbas',
       midNames: 'Amelia',
@@ -183,7 +183,7 @@ export const validJsons = [
     }
   },
   {
-    input: { contactName: 'Willemijn Dores Aiolfi' },
+    input: { name: 'Willemijn Dores Aiolfi' },
     expectedOutput: {
       firstName: 'Willemijn',
       midNames: 'Dores',
@@ -192,7 +192,7 @@ export const validJsons = [
     }
   },
   {
-    input: { contactName: 'Ivan Tage Greer' },
+    input: { name: 'Ivan Tage Greer' },
     expectedOutput: {
       firstName: 'Ivan',
       midNames: 'Tage',
@@ -201,7 +201,7 @@ export const validJsons = [
     }
   },
   {
-    input: { contactName: 'Ki Mikayla Bălan' },
+    input: { name: 'Ki Mikayla Bălan' },
     expectedOutput: {
       firstName: 'Ki',
       midNames: 'Mikayla',
@@ -210,7 +210,7 @@ export const validJsons = [
     }
   },
   {
-    input: { contactName: 'Oluwasegun Diarmait Stenger' },
+    input: { name: 'Oluwasegun Diarmait Stenger' },
     expectedOutput: {
       firstName: 'Oluwasegun',
       midNames: 'Diarmait',
@@ -219,7 +219,7 @@ export const validJsons = [
     }
   },
   {
-    input: { contactName: 'Ennio Dániel Bailey' },
+    input: { name: 'Ennio Dániel Bailey' },
     expectedOutput: {
       firstName: 'Ennio',
       midNames: 'Dániel',
@@ -228,7 +228,7 @@ export const validJsons = [
     }
   },
   {
-    input: { contactName: 'Rodrigo Jupiter Dreier' },
+    input: { name: 'Rodrigo Jupiter Dreier' },
     expectedOutput: {
       firstName: 'Rodrigo',
       midNames: 'Jupiter',
@@ -237,7 +237,7 @@ export const validJsons = [
     }
   },
   {
-    input: { contactName: 'Uttara Shokufeh Steed' },
+    input: { name: 'Uttara Shokufeh Steed' },
     expectedOutput: {
       firstName: 'Uttara',
       midNames: 'Shokufeh',
@@ -246,7 +246,7 @@ export const validJsons = [
     }
   },
   {
-    input: { contactName: 'Gerard Plamen Willoughby' },
+    input: { name: 'Gerard Plamen Willoughby' },
     expectedOutput: {
       firstName: 'Gerard',
       midNames: 'Plamen',
@@ -255,7 +255,7 @@ export const validJsons = [
     }
   },
   {
-    input: { contactName: 'Maia Clodagh Dale' },
+    input: { name: 'Maia Clodagh Dale' },
     expectedOutput: {
       firstName: 'Maia',
       midNames: 'Clodagh',
@@ -264,7 +264,7 @@ export const validJsons = [
     }
   },
   {
-    input: { contactName: 'Rajiv Bảo Jayanta Slater' },
+    input: { name: 'Rajiv Bảo Jayanta Slater' },
     expectedOutput: {
       firstName: 'Rajiv',
       midNames: 'Bảo Jayanta',
@@ -273,7 +273,7 @@ export const validJsons = [
     }
   },
   {
-    input: { contactName: 'Freda Aelia Wealhmær Eckstein' },
+    input: { name: 'Freda Aelia Wealhmær Eckstein' },
     expectedOutput: {
       firstName: 'Freda',
       midNames: 'Aelia Wealhmær',
@@ -282,7 +282,7 @@ export const validJsons = [
     }
   },
   {
-    input: { contactName: 'Marika Allard Dobrilo Fábián' },
+    input: { name: 'Marika Allard Dobrilo Fábián' },
     expectedOutput: {
       firstName: 'Marika',
       midNames: 'Allard Dobrilo',
@@ -291,7 +291,7 @@ export const validJsons = [
     }
   },
   {
-    input: { contactName: 'Leia@Okropir Eckehard Irvin' },
+    input: { name: 'Leia@Okropir Eckehard Irvin' },
     expectedOutput: {
       firstName: 'Leia Okropir',
       midNames: 'Eckehard',
@@ -300,7 +300,7 @@ export const validJsons = [
     }
   },
   {
-    input: { contactName: 'Baladeva@Grigorios Mahir@Ármannsson' },
+    input: { name: 'Baladeva@Grigorios Mahir@Ármannsson' },
     expectedOutput: {
       firstName: 'Baladeva Grigorios',
       midNames: '',

@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
-import { useParams } from 'react-router-dom';
+import { useParams, useLocation } from 'react-router-dom';
 import PropTypes from 'prop-types';
 import { message } from 'antd';
 import { withApi } from '../providers/withApi';
@@ -15,6 +15,9 @@ import {
 const ContactContainer = ({ api }) => {
   const { t } = useTranslation();
   const { id } = useParams();
+  const { search } = useLocation();
+  const query = new URLSearchParams(search);
+  const editing = query.get('editing');
 
   const [contact, setContact] = useState();
   const [groups, setGroups] = useState();
@@ -49,8 +52,8 @@ const ContactContainer = ({ api }) => {
     if (loading.groups) return;
     setLoadingByKey('groups', true);
     api.groupsManager
-      .getGroups(id)
-      .then(setGroups)
+      .getGroups({ contactId: id })
+      .then(({ groupsList }) => setGroups(groupsList))
       .catch(error => {
         Logger.error(
           `[ContactContainer.getGroups] Error while getting groups for contact ${id}`,
@@ -131,23 +134,58 @@ const ContactContainer = ({ api }) => {
         })
       : DRAFT_CREDENTIAL_VERIFICATION_RESULT;
 
+  const onDeleteGroup = (groupId, contactIdsToRemove) =>
+    api.groupsManager
+      .updateGroup(groupId, { contactIdsToRemove })
+      .then(() => {
+        getGroups();
+        message.success(t('contacts.edit.success.removingFromGroup'));
+      })
+      .catch(error => {
+        Logger.error(
+          '[ContactContainer.onDeleteGroup] There has been an error removing contact from group',
+          error
+        );
+        message.error(t('contacts.edit.error.removingFromGroup'));
+      });
+
+  const updateContact = (contactId, newContactData) =>
+    api.contactsManager
+      .updateContact(contactId, newContactData)
+      .then(() => {
+        getContact();
+        message.success(t('contacts.edit.success.updating'));
+      })
+      .catch(error => {
+        Logger.error(
+          '[ContactContainer.updateContact] There has been an error updating the contact information',
+          error
+        );
+        message.error(t('contacts.edit.error.updating'));
+      });
+
+  const isEditing = contact && groups && editing;
+
   return (
     <Contact
       loading={loading}
       contact={contact}
       groups={groups}
+      editing={isEditing}
       issuedCredentials={issuedCredentials}
       receivedCredentials={receivedCredentials}
       credentialTypes={credentialTypes}
       verifyCredential={verifyCredential}
+      onDeleteGroup={onDeleteGroup}
+      updateContact={updateContact}
     />
   );
 };
 
 ContactContainer.propTypes = {
   api: PropTypes.shape({
-    contactsManager: PropTypes.shape({ getContact: PropTypes.func }),
-    groupsManager: PropTypes.shape({ getGroups: PropTypes.func }),
+    contactsManager: PropTypes.shape({ getContact: PropTypes.func, updateContact: PropTypes.func }),
+    groupsManager: PropTypes.shape({ getGroups: PropTypes.func, updateGroup: PropTypes.func }),
     credentialsManager: PropTypes.shape({
       getContactCredentials: PropTypes.func,
       getCredentialTypes: PropTypes.func,

@@ -39,7 +39,7 @@ const ActionButtons = ({ inviteContact, viewContactDetail, contact }) => {
       <CustomButton
         buttonProps={{
           className: 'theme-link',
-          onClick: () => message.warn('Not implemented yet')
+          onClick: () => viewContactDetail(contactId, true)
         }}
         buttonText={t('contacts.table.columns.edit')}
       />

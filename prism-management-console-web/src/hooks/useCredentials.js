@@ -3,7 +3,7 @@ import { message } from 'antd';
 import { useTranslation } from 'react-i18next';
 import {
   CREDENTIAL_PAGE_SIZE,
-  MAX_CREDENTIALS,
+  MAX_CREDENTIAL_PAGE_SIZE,
   UNKNOWN_DID_SUFFIX_ERROR_CODE
 } from '../helpers/constants';
 import Logger from '../helpers/Logger';
@@ -92,13 +92,17 @@ export const useCredentialsIssuedListWithFilters = credentialsManager => {
   );
 
   const getCredentials = useCallback(
-    ({ onFinish, isFetchAll }) => {
+    ({ isFetchAll } = {}) => {
       if (isLoading || isSearching) return;
-
       setIsSearching(true);
 
-      credentialsManager
-        .getCredentials(isFetchAll ? MAX_CREDENTIALS : CREDENTIAL_PAGE_SIZE, credentials.length)
+      return (hasMore
+        ? credentialsManager.getCredentials(
+            isFetchAll ? MAX_CREDENTIAL_PAGE_SIZE : CREDENTIAL_PAGE_SIZE,
+            credentials.length
+          )
+        : Promise.resolve([])
+      )
         .then(newlyFetchedCredentials => {
           if (newlyFetchedCredentials.length < CREDENTIAL_PAGE_SIZE) setHasMore(false);
 
@@ -112,18 +116,15 @@ export const useCredentialsIssuedListWithFilters = credentialsManager => {
           removeUnconfirmedAccountError();
           return updatedCredentials;
         })
-        .then(updatedCredentials => {
-          const newFilteredCredentials = updateFilteredCredentials(updatedCredentials);
-          if (onFinish) onFinish(newFilteredCredentials);
-        })
+        .then(updateFilteredCredentials)
         .catch(error => {
           Logger.error(
             '[CredentialContainer.getCredentialsRecieved] Error while getting Credentials',
             error
           );
           if (error.code === UNKNOWN_DID_SUFFIX_ERROR_CODE) {
-            showUnconfirmedAccountError();
             setHasMore(false);
+            showUnconfirmedAccountError();
           } else {
             removeUnconfirmedAccountError();
             message.error(t('errors.errorGetting', { model: 'Credentials' }));
@@ -142,7 +143,8 @@ export const useCredentialsIssuedListWithFilters = credentialsManager => {
       removeUnconfirmedAccountError,
       showUnconfirmedAccountError,
       updateFilteredCredentials,
-      t
+      t,
+      hasMore
     ]
   );
 

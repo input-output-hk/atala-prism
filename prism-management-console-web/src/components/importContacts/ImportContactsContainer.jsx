@@ -20,17 +20,24 @@ const ImportContactsContainer = ({ api, redirector: { redirectToContacts } }) =>
 
   const [loading, setLoading] = useState(false);
 
-  // TODO: replace with bulk request
   const handleRequests = async ({ contacts, groups }, setResults) => {
     setLoading(true);
     try {
       const groupsToAssign = await createMissingGroups(groups);
+      const contactsToSend = contacts.map(({ contactName, externalId, ...jsonData }) => ({
+        contactName,
+        externalId,
+        jsonData: omit(jsonData, ['errorFields', 'key'])
+      }));
 
-      const contactsCreated = await createContacts(contacts, groupsToAssign);
+      const contactsCreated = await api.contactsManager.createContacts(
+        groupsToAssign,
+        contactsToSend
+      );
 
       message.success(t('importContacts.success'));
       setResults({
-        contactCreations: contactsCreated.length
+        contactCreations: contactsCreated
       });
     } catch (error) {
       Logger.error('Error while creating contact', error);
@@ -42,34 +49,13 @@ const ImportContactsContainer = ({ api, redirector: { redirectToContacts } }) =>
 
   const createMissingGroups = async groups => {
     if (!groups.length) return [];
-    const preExistingGroups = await api.groupsManager.getGroups();
+    const preExistingGroups = await api.groupsManager.getAllGroups();
     const newGroups = groups.filter(group => !preExistingGroups.map(g => g.name).includes(group));
     const groupCreationPromises = newGroups.map(group => api.groupsManager.createGroup(group));
 
     const createdGroups = await Promise.all(groupCreationPromises);
     const updatedGroupList = preExistingGroups.concat(createdGroups);
     return updatedGroupList.filter(g => groups.includes(g.name));
-  };
-
-  const createContacts = async (contacts, groups) => {
-    const [firstGroup, ...otherGroups] = groups;
-    const contactCreationPromises = contacts.map(contact => {
-      const contactToSend = omit(contact, ['originalArray', 'errors', 'key', 'externalId']);
-      return api.contactsManager.createContact(firstGroup?.name, contactToSend, contact.externalId);
-    });
-    const contactsCreated = await Promise.all(contactCreationPromises);
-    await assignToGroups(contactsCreated, otherGroups);
-    return contactsCreated;
-  };
-
-  const assignToGroups = async (contacts, groups) => {
-    const contactIds = contacts.map(c => c.contactId);
-
-    const updateGroupsPromises = groups.map(group =>
-      api.groupsManager.updateGroup(group.id, contactIds)
-    );
-
-    await Promise.all(updateGroupsPromises);
   };
 
   const headersMapping = COMMON_CONTACT_HEADERS.map(headerKey => ({
@@ -95,11 +81,11 @@ const ImportContactsContainer = ({ api, redirector: { redirectToContacts } }) =>
 ImportContactsContainer.propTypes = {
   api: PropTypes.shape({
     groupsManager: PropTypes.shape({
-      getGroups: PropTypes.func.isRequired,
+      getAllGroups: PropTypes.func.isRequired,
       createGroup: PropTypes.func.isRequired,
       updateGroup: PropTypes.func.isRequired
     }).isRequired,
-    contactsManager: PropTypes.shape({ createContact: PropTypes.func.isRequired }).isRequired
+    contactsManager: PropTypes.shape({ createContacts: PropTypes.func.isRequired }).isRequired
   }).isRequired,
   redirector: PropTypes.shape({ redirectToContacts: PropTypes.func }).isRequired
 };

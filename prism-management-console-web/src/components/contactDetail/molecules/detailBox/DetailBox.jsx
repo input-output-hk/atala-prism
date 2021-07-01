@@ -1,18 +1,25 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import RowInfo from '../../atoms/row/Row';
-
-import './_style.scss';
 import SimpleLoading from '../../../common/Atoms/SimpleLoading/SimpleLoading';
 
-const DetailBox = ({ groups, loading }) => (
+import './_style.scss';
+
+const DetailBox = ({ groups, contactId, loading, onDelete }) => (
   <div className="detailBox">
     {loading ? (
       <SimpleLoading />
     ) : (
       <div className="infoRow">
-        {groups.map(({ name, numberOfContacts }) => (
-          <RowInfo key={name} contacts={numberOfContacts} groupName={name} />
+        {groups.map(({ id, name, numberOfContacts }) => (
+          <RowInfo
+            key={name}
+            contacts={numberOfContacts}
+            groupName={name}
+            onDelete={onDelete}
+            groupId={id}
+            contactId={contactId}
+          />
         ))}
       </div>
     )}
@@ -20,7 +27,9 @@ const DetailBox = ({ groups, loading }) => (
 );
 
 DetailBox.defaultProps = {
-  loading: false
+  loading: false,
+  onDelete: null,
+  contactId: ''
 };
 
 DetailBox.propTypes = {
@@ -30,7 +39,9 @@ DetailBox.propTypes = {
       numberofcontacts: PropTypes.number
     })
   ).isRequired,
-  loading: PropTypes.bool
+  contactId: PropTypes.string,
+  loading: PropTypes.bool,
+  onDelete: PropTypes.func
 };
 
 export default DetailBox;

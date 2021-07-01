@@ -11,8 +11,6 @@ import noGroups from '../../images/noGroups.svg';
 import CustomButton from '../common/Atoms/CustomButton/CustomButton';
 import { withRedirector } from '../providers/withRedirector';
 import SimpleLoading from '../common/Atoms/SimpleLoading/SimpleLoading';
-import { backendDateFormat } from '../../helpers/formatters';
-import { filterByInclusion } from '../../helpers/filterHelpers';
 import WaitBanner from '../dashboard/Atoms/WaitBanner/WaitBanner';
 import { useSession } from '../providers/SessionContext';
 import CopyGroupModal from './Organisms/Modals/CopyGroupModal/CopyGroupModal';
@@ -39,6 +37,15 @@ const Groups = ({
   handleGroupDeletion,
   copyGroup,
   loading,
+  searching,
+  hasMore,
+  isFilter,
+  setName,
+  setDateRange,
+  setSortingKey,
+  setSortingDirection,
+  sortingDirection,
+  getMoreGroups,
   redirector: { redirectToGroupCreation }
 }) => {
   const { t } = useTranslation();
@@ -46,12 +53,7 @@ const Groups = ({
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [isCopyModalOpen, setIsCopyModalOpen] = useState(false);
   const [selectedGroup, setSelectedGroup] = useState(null);
-
-  const [name, setName] = useState('');
-  const [date, setDate] = useState('');
-
   const [groupToDelete, setGroupToDelete] = useState({});
-  const [filteredGroups, setFilteredGroups] = useState([]);
 
   const { accountStatus } = useSession();
 
@@ -62,25 +64,9 @@ const Groups = ({
   const closeCopyModal = () => setIsCopyModalOpen(false);
 
   useEffect(() => {
-    const filterGroups = () =>
-      groups.filter(
-        group =>
-          filterByInclusion(name, group.name) &&
-          (!date || backendDateFormat(group.createdAt?.seconds) === date)
-      );
-
-    setFilteredGroups(filterGroups());
-  }, [groups, name, date]);
-
-  useEffect(() => {
     const hasValues = Object.keys(groupToDelete).length !== 0;
     setIsDeleteModalOpen(hasValues);
   }, [groupToDelete]);
-
-  const handleUpdateGroups = (oldGroups, newDate, newName) => {
-    setName(newName);
-    setDate(newDate);
-  };
 
   const handleConfirmedGroupDeletion = () => {
     handleGroupDeletion(groupToDelete);
@@ -111,7 +97,10 @@ const Groups = ({
   const tableProps = {
     onCopy,
     setGroupToDelete,
-    groups: filteredGroups
+    groups,
+    searching,
+    hasMore,
+    getMoreGroups
   };
 
   const newGroupButton = <NewGroupButton onClick={redirectToGroupCreation} />;
@@ -123,8 +112,8 @@ const Groups = ({
 
   const renderContent = () => {
     if (loading) return <SimpleLoading size="md" />;
-    if (groups.length && !filteredGroups.length) return <EmptyComponent {...emptyProps} isFilter />;
-    if (groups.length) return <GroupsTable {...tableProps} groups={filteredGroups} />;
+    if (groups.length) return <GroupsTable {...tableProps} groups={groups} />;
+    if (isFilter) return <EmptyComponent {...emptyProps} isFilter />;
     return (
       <EmptyComponent {...emptyProps} button={accountStatus === CONFIRMED && newGroupButton} />
     );
@@ -141,7 +130,13 @@ const Groups = ({
         </div>
         <div className="filterSection">
           <div className="filterContainer">
-            <GroupFilters updateGroups={handleUpdateGroups} />
+            <GroupFilters
+              setName={setName}
+              setDateRange={setDateRange}
+              setSortingKey={setSortingKey}
+              setSortingDirection={setSortingDirection}
+              sortingDirection={sortingDirection}
+            />
           </div>
           {accountStatus === CONFIRMED && newGroupButton}
         </div>
@@ -153,16 +148,25 @@ const Groups = ({
 
 Groups.defaultProps = {
   groups: [],
-  loading: false
+  loading: false,
+  searching: false,
+  hasMore: true
 };
 
 Groups.propTypes = {
   groups: PropTypes.arrayOf(PropTypes.shape(groupShape)),
   handleGroupDeletion: PropTypes.func.isRequired,
   copyGroup: PropTypes.func.isRequired,
-  updateGroups: PropTypes.func.isRequired,
-  hasMore: PropTypes.bool.isRequired,
   loading: PropTypes.bool,
+  searching: PropTypes.bool,
+  hasMore: PropTypes.bool,
+  isFilter: PropTypes.bool.isRequired,
+  setName: PropTypes.func.isRequired,
+  setDateRange: PropTypes.func.isRequired,
+  setSortingKey: PropTypes.func.isRequired,
+  setSortingDirection: PropTypes.func.isRequired,
+  sortingDirection: PropTypes.string.isRequired,
+  getMoreGroups: PropTypes.func.isRequired,
   redirector: PropTypes.shape({ redirectToGroupCreation: PropTypes.func.isRequired }).isRequired
 };
 

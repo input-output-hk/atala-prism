@@ -16,10 +16,8 @@ export const handleSelectAll = async ({
   const { checked } = ev.target;
   setSelected(checked ? entities.map(e => e[idKey]) : []);
   if (checked && hasMore) {
-    const onFinish = fetchedAndFilteredEntities => {
-      setSelected(fetchedAndFilteredEntities.map(e => e[idKey]));
-      setLoading(false);
-    };
-    fetchAll(onFinish);
+    const fetchedAndFilteredEntities = await fetchAll();
+    setSelected(fetchedAndFilteredEntities.map(e => e[idKey]));
+    setLoading(false);
   } else setLoading(false);
 };

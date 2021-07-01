@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { message } from 'antd';
 import { useTranslation } from 'react-i18next';
 import PropTypes from 'prop-types';
@@ -10,14 +10,10 @@ import RecipientsSelection from './Organism/RecipientsSelection/RecipientsSelect
 import CredentialsPreview from './Organism/CredentialsPreview/CredentialsPreview';
 import { withRedirector } from '../providers/withRedirector';
 import {
-  MAX_CONTACTS,
   SELECT_CREDENTIAL_TYPE_STEP,
   SELECT_RECIPIENTS_STEP,
   IMPORT_CREDENTIAL_DATA_STEP,
-  PREVIEW_AND_SIGN_CREDENTIAL_STEP,
-  GROUP_NAME_KEY,
-  SUCCESS,
-  FAILED
+  PREVIEW_AND_SIGN_CREDENTIAL_STEP
 } from '../../helpers/constants';
 import Logger from '../../helpers/Logger';
 import { contactMapper } from '../../APIs/helpers/contactHelpers';
@@ -25,6 +21,8 @@ import ImportCredentialsData from '../importCredentialsData/ImportCredentialsDat
 import { useSession } from '../providers/SessionContext';
 import { fillHTMLCredential } from '../../helpers/credentialView';
 import { useContactsWithFilteredList } from '../../hooks/useContacts';
+import { useGroups } from '../../hooks/useGroups';
+import { useCredentialTypes } from '../../hooks/useCredentialTypes';
 
 const NewCredentialContainer = ({ api, redirector: { redirectToCredentials } }) => {
   const { t } = useTranslation();
@@ -33,12 +31,14 @@ const NewCredentialContainer = ({ api, redirector: { redirectToCredentials } }) 
   const [currentStep, setCurrentStep] = useState(SELECT_CREDENTIAL_TYPE_STEP);
   const [isLoading, setIsLoading] = useState(false);
 
-  const [credentialType, setCredentialType] = useState();
+  const [selectedCredentialTypeId, setSelectedCredentialTypeId] = useState();
+  const [credentialTypeDetails, setCredentialTypeDetails] = useState();
+  const resetCredentialTypeDetails = useCallback(() => setCredentialTypeDetails(), []);
 
-  const [groups, setGroups] = useState([]);
   const [selectedGroups, setSelectedGroups] = useState([]);
-  const [groupsFilter, setGroupsFilter] = useState('');
-  const [filteredGroups, setFilteredGroups] = useState([]);
+  const { groups, setName, setSortingDirection, setSortingKey, sortingDirection } = useGroups(
+    api.groupsManager
+  );
 
   const [selectedContacts, setSelectedContacts] = useState([]);
   const {
@@ -46,11 +46,13 @@ const NewCredentialContainer = ({ api, redirector: { redirectToCredentials } }) 
     filteredContacts,
     filterProps: subjectFilterProps,
     handleContactsRequest,
-    hasMore,
-    fetchAll,
-    isLoading: loadingContacts,
-    isSearching: searching
+    hasMore: hasMoreContacts,
+    fetchAllContacts
   } = useContactsWithFilteredList(api.contactsManager);
+
+  const { credentialTypes, getCredentialTypeDetails } = useCredentialTypes(
+    api.credentialTypesManager
+  );
 
   const [shouldSelectRecipients, setShouldSelectRecipients] = useState(true);
   const [recipients, setRecipients] = useState([]);
@@ -58,21 +60,7 @@ const NewCredentialContainer = ({ api, redirector: { redirectToCredentials } }) 
   const [credentialViewTemplates, setCredentialViewTemplates] = useState([]);
   const [credentialViews, setCredentialViews] = useState([]);
 
-  const credentialTypes = api.credentialsManager.getCredentialTypes();
-
   useEffect(() => {
-    if (!groups.length)
-      api.groupsManager
-        .getGroups()
-        .then(allGroups => {
-          const parsedGroups = allGroups.map(group => ({ ...group, groupName: group.name }));
-          setGroups(parsedGroups);
-        })
-        .catch(error => {
-          Logger.error('[NewCredentailContainer.getGroups] Error: ', error);
-          message.error(message.error(t('errors.errorGetting', { model: 'groups' })));
-        });
-
     if (!credentialViewTemplates.length)
       api.credentialsViewManager
         .getCredentialViewTemplates()
@@ -89,14 +77,16 @@ const NewCredentialContainer = ({ api, redirector: { redirectToCredentials } }) 
     t
   ]);
 
-  const filterBy = (toFilter, filter, key) =>
-    toFilter.filter(({ [key]: name }) => name.toLowerCase().includes(filter.toLowerCase()));
-
   useEffect(() => {
-    const filterGroups = filter => setFilteredGroups(filterBy(groups, filter, GROUP_NAME_KEY));
-
-    filterGroups(groupsFilter);
-  }, [groupsFilter, groups]);
+    if (!credentialTypeDetails && currentStep === SELECT_RECIPIENTS_STEP) {
+      getCredentialTypeDetails(selectedCredentialTypeId)
+        .then(setCredentialTypeDetails)
+        .catch(error => {
+          Logger.error('[NewCredentailContainer.getCredentialTypeDetails] Error: ', error);
+          message.error(t('errors.errorGettingCredentialTypeDetails'));
+        });
+    }
+  }, [currentStep, credentialTypeDetails, selectedCredentialTypeId, getCredentialTypeDetails, t]);
 
   useEffect(() => {
     if (!shouldSelectRecipients) {
@@ -106,15 +96,16 @@ const NewCredentialContainer = ({ api, redirector: { redirectToCredentials } }) 
   }, [shouldSelectRecipients]);
 
   const getRecipients = async () => {
-    const groupContactsPromises = selectedGroups.map(group =>
-      api.contactsManager.getContacts(null, MAX_CONTACTS, group)
-    );
-    const targetsFromGroups = (await Promise.all(groupContactsPromises)).flat();
-    const targetsFromGroupsWithKeys = targetsFromGroups.map(contactMapper);
+    const groupContactsPromises = selectedGroups.map(fetchAllContacts);
 
-    const cherryPickedSubjects = contacts.filter(({ contactId }) =>
-      selectedContacts.includes(contactId)
-    );
+    const allContacts = await fetchAllContacts();
+    const promisesList = await Promise.all(groupContactsPromises);
+
+    const targetsFromGroups = promisesList.flat();
+    const targetsFromGroupsWithKeys = targetsFromGroups.map(contactMapper);
+    const cherryPickedSubjects = allContacts
+      .filter(({ contactId }) => selectedContacts.includes(contactId))
+      .map(contactMapper);
 
     const targetSubjects = [...targetsFromGroupsWithKeys, ...cherryPickedSubjects];
     const noRepeatedTargets = _.uniqBy(targetSubjects, 'externalId');
@@ -138,7 +129,7 @@ const NewCredentialContainer = ({ api, redirector: { redirectToCredentials } }) 
   };
 
   const handleImportedData = ({ credentials }, setResults) => {
-    const { isMultiRow, multiRowKey, fields } = credentialTypes[credentialType];
+    const { isMultiRow, multiRowKey, fields } = credentialTypeDetails;
     const credentialsData = isMultiRow
       ? parseMultiRowCredentials(credentials, multiRowKey, fields)
       : credentials;
@@ -152,30 +143,21 @@ const NewCredentialContainer = ({ api, redirector: { redirectToCredentials } }) 
   };
 
   const goToCredentialsPreview = credentialsData => {
-    const { htmlTemplate } = credentialViewTemplates.find(
-      template => template.id === credentialTypes[credentialType].id
-    );
+    const { template } = credentialTypeDetails;
     const htmlCredentials = credentialsData.map(credentialData =>
-      fillHTMLCredential(
-        htmlTemplate,
-        credentialTypes[credentialType],
-        credentialData,
-        session.organisationName
-      )
+      fillHTMLCredential(template, credentialTypeDetails, credentialData, session.organisationName)
     );
     setCredentialViews(htmlCredentials);
     setCurrentStep(PREVIEW_AND_SIGN_CREDENTIAL_STEP);
   };
 
   const getContactsFromGroups = () => {
-    const groupContactsromises = selectedGroups.map(group =>
-      api.contactsManager.getContacts(0, MAX_CONTACTS, group)
-    );
+    const groupContactsromises = selectedGroups.map(fetchAllContacts);
 
     return Promise.all(groupContactsromises);
   };
 
-  const signCredentials = () => {
+  const signCredentials = async () => {
     setIsLoading(true);
 
     const onFinish = async allContacts => {
@@ -186,31 +168,18 @@ const NewCredentialContainer = ({ api, redirector: { redirectToCredentials } }) 
           );
           const html = _.escape(credentialViews[index]);
           return Object.assign(_.omit(data, 'originalArray'), {
-            credentialType,
+            credentialTypeDetails,
             contactId,
             html,
             issuer: session.organisationName
           });
         });
         const createCredentialsResponse = await api.credentialsManager.createBatchOfCredentials(
-          credentialsData
+          credentialsData,
+          credentialTypeDetails,
+          selectedGroups.map(sg => groups.find(g => g.name === sg))
         );
         Logger.debug('Created credentials:', createCredentialsResponse);
-
-        const failedCredentials = createCredentialsResponse.filter(
-          ({ status }) => status === FAILED
-        );
-        if (failedCredentials.length)
-          message.error(
-            t('newCredential.messages.creationError', { amount: failedCredentials.length })
-          );
-
-        const credentials = createCredentialsResponse
-          .filter(({ status }) => status === SUCCESS)
-          .map(({ response }) => response.getGenericCredential().toObject());
-
-        await api.wallet.signCredentials(credentials);
-
         Logger.info('Successfully created the credential(s)');
         message.success(
           t('newCredential.messages.creationSuccess', { amount: credentialsData.length })
@@ -225,7 +194,8 @@ const NewCredentialContainer = ({ api, redirector: { redirectToCredentials } }) 
       }
     };
 
-    fetchAll(onFinish);
+    const allContacts = await fetchAllContacts();
+    onFinish(allContacts);
   };
 
   const changeStep = nextStep => {
@@ -238,10 +208,13 @@ const NewCredentialContainer = ({ api, redirector: { redirectToCredentials } }) 
   };
 
   const groupsProps = {
-    groups: filteredGroups,
+    groups,
     selectedGroups,
     setSelectedGroups,
-    setGroupsFilter
+    setGroupsFilter: setName,
+    setSortingDirection,
+    setSortingKey,
+    sortingDirection
   };
 
   const contactsProps = {
@@ -250,15 +223,18 @@ const NewCredentialContainer = ({ api, redirector: { redirectToCredentials } }) 
     selectedContacts,
     setContactsFilter: subjectFilterProps.setSearchText,
     handleContactsRequest,
-    hasMore,
-    fetchAll,
-    loadingContacts,
-    searching
+    hasMore: hasMoreContacts,
+    fetchAllContacts
   };
 
   const handleToggleShouldSelectRecipients = ev => {
     const { checked } = ev.target;
     setShouldSelectRecipients(!checked);
+  };
+
+  const handleTypeSelection = id => {
+    resetCredentialTypeDetails();
+    setSelectedCredentialTypeId(id);
   };
 
   const renderStep = () => {
@@ -267,8 +243,8 @@ const NewCredentialContainer = ({ api, redirector: { redirectToCredentials } }) 
         return (
           <TypeSelection
             credentialTypes={credentialTypes}
-            onTypeSelection={setCredentialType}
-            selectedType={credentialType}
+            onTypeSelection={handleTypeSelection}
+            selectedType={selectedCredentialTypeId}
           />
         );
       case SELECT_RECIPIENTS_STEP:
@@ -285,7 +261,7 @@ const NewCredentialContainer = ({ api, redirector: { redirectToCredentials } }) 
           <ImportCredentialsData
             recipients={recipients}
             contacts={contacts}
-            credentialType={credentialTypes[credentialType]}
+            credentialType={credentialTypeDetails}
             onCancel={() => setCurrentStep(currentStep - 1)}
             onFinish={handleImportedData}
             getContactsFromGroups={getContactsFromGroups}
@@ -297,7 +273,7 @@ const NewCredentialContainer = ({ api, redirector: { redirectToCredentials } }) 
       default:
         return (
           <CredentialsPreview
-            groups={groups.filter(({ name }) => selectedGroups.includes(name))}
+            groups={groups.filter(({ name: groupName }) => selectedGroups.includes(groupName))}
             subjects={contacts.filter(({ contactId }) => selectedContacts.includes(contactId))}
             credentialViews={credentialViews}
           />
@@ -313,7 +289,7 @@ const NewCredentialContainer = ({ api, redirector: { redirectToCredentials } }) 
       currentStep={currentStep}
       changeStep={changeStep}
       renderStep={renderStep}
-      credentialType={credentialType}
+      selectedCredentialTypeId={selectedCredentialTypeId}
       hasSelectedRecipients={hasSelectedRecipients}
       onSuccess={signCredentials}
       isLoading={isLoading}
@@ -332,7 +308,11 @@ NewCredentialContainer.propTypes = {
       .isRequired,
     contactsManager: PropTypes.shape({
       getContacts: PropTypes.func
-    }),
+    }).isRequired,
+    credentialTypesManager: PropTypes.shape({
+      getCredentialTypes: PropTypes.func,
+      getCredentialTypeDetails: PropTypes.func
+    }).isRequired,
     wallet: PropTypes.shape({ signCredentials: PropTypes.func })
   }).isRequired,
   redirector: PropTypes.shape({

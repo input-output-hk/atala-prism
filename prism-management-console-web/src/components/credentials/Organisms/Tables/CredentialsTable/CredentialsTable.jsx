@@ -36,27 +36,25 @@ const commonColumns = [
   {
     key: 'icon',
     // eslint-disable-next-line react/prop-types
-    render: ({ credentialType }) => (
+    render: ({ credentialTypeDetails }) => (
       <img
         style={{ width: '40px', height: '40px' }}
-        src={credentialType?.logo || freeUniLogo}
-        alt={`${credentialType?.key} icon`}
+        src={credentialTypeDetails?.logo || freeUniLogo}
+        alt={`${credentialTypeDetails?.key} icon`}
       />
     )
   },
   {
     key: 'credentialType',
     // eslint-disable-next-line react/prop-types
-    render: ({ credentialType }) => (
-      <CellRenderer title={tp('credentialType')} value={i18n.t(credentialType?.name)} />
+    render: ({ credentialTypeDetails }) => (
+      <CellRenderer title={tp('credentialType')} value={i18n.t(credentialTypeDetails?.name)} />
     )
   },
   {
     key: 'contactName',
     // eslint-disable-next-line react/prop-types
-    render: ({ contactData: { contactName } }) => (
-      <CellRenderer title={tp('contactName')} value={contactName} />
-    )
+    render: ({ contactName }) => <CellRenderer title={tp('contactName')} value={contactName} />
   },
   {
     key: 'externalId',
@@ -214,7 +212,8 @@ const CredentialsTable = ({
 
   const [lastUpdated, setLastUpdated] = useState(timesScrolledToBottom);
 
-  // leave this trigger for backward compatibility, when all tables uses useScrolledToBottom remove searchDueGeneralScroll
+  // leave this trigger for backward compatibility,
+  // when all tables uses useScrolledToBottom remove searchDueGeneralScroll
   const handleGetMoreData = () => !searchDueGeneralScroll && getMoreData();
 
   useEffect(() => {

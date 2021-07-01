@@ -12,8 +12,10 @@ export const DEFAULT_PAGE_SIZE = 10;
 export const CONTACT_PAGE_SIZE = DEFAULT_PAGE_SIZE;
 export const GROUP_PAGE_SIZE = DEFAULT_PAGE_SIZE;
 export const CREDENTIAL_PAGE_SIZE = DEFAULT_PAGE_SIZE;
-export const MAX_CONTACTS = 10000;
-export const MAX_CREDENTIALS = 10000;
+export const PAYMENT_PAGE_SIZE = DEFAULT_PAGE_SIZE;
+// FIXME: refactor every use of MAX constants. api limits page size to 100 tops.
+export const MAX_CONTACT_PAGE_SIZE = 100;
+export const MAX_CREDENTIAL_PAGE_SIZE = 100;
 
 export const xScroll = 1300;
 export const yScroll = 600;
@@ -161,14 +163,6 @@ export const LONG_DATE_FORMAT = 'DD MMMM YYYY';
 export const CREDENTIALS_ISSUED = 'CREDENTIALS_ISSUED';
 export const CREDENTIALS_RECEIVED = 'CREDENTIALS_RECEIVED';
 
-// groups
-export const GROUP_NAME_STATES = {
-  initial: null,
-  loading: 'loading',
-  possible: 'possible',
-  failed: 'failed'
-};
-
 // error codes
 export const UNKNOWN_DID_SUFFIX_ERROR_CODE = 2;
 
@@ -212,4 +206,24 @@ export const DEFAULT_CREDENTIAL_VERIFICATION_RESULT = {
   invalidKey: true,
   keyRevoked: true,
   invalidSignature: true
+};
+
+// Groups
+export const GROUP_NAME_STATES = {
+  initial: null,
+  loading: 'loading',
+  possible: 'possible',
+  failed: 'failed'
+};
+
+export const GROUP_SORTING_KEYS = {
+  name: 'NAME',
+  createdAt: 'CREATED_AT',
+  numberOfContacts: 'NUMBER_OF_CONTACTS'
+};
+
+// Sorting directions
+export const SORTING_DIRECTIONS = {
+  ascending: 'ASCENDING',
+  descending: 'DESCENDING'
 };

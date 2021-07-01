@@ -23,13 +23,13 @@ const GroupEditingContainer = ({ api }) => {
     handleContactsRequest,
     hasMore,
     isLoading: loadingContacts,
-    fetchAll
+    fetchAllContacts
   } = useContactsWithFilteredList(api.contactsManager, false);
 
   useEffect(() => {
     if (!group) {
       api.groupsManager
-        .getGroups()
+        .getAllGroups()
         .then(groups => {
           const result = groups.find(item => item.id === id);
           setGroup(result);
@@ -105,7 +105,7 @@ const GroupEditingContainer = ({ api }) => {
       loadingContacts={loadingContacts}
       isSaving={isSaving}
       hasMore={hasMore}
-      fetchAll={fetchAll}
+      fetchAllContacts={fetchAllContacts}
     />
   );
 };
@@ -115,12 +115,12 @@ GroupEditingContainer.defaultProps = {};
 GroupEditingContainer.propTypes = {
   api: PropTypes.shape({
     contactsManager: PropTypes.shape({
-      getContacts: PropTypes.func
-    }),
+      getContacts: PropTypes.func.isRequired
+    }).isRequired,
     groupsManager: PropTypes.shape({
-      getGroups: PropTypes.func,
-      updateGroup: PropTypes.func
-    })
+      getAllGroups: PropTypes.func.isRequired,
+      updateGroup: PropTypes.func.isRequired
+    }).isRequired
   }).isRequired
 };
 

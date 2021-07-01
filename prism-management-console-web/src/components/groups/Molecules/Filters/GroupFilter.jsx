@@ -1,26 +1,28 @@
-import React, { useEffect, useState } from 'react';
+import React from 'react';
 import { DownOutlined, SearchOutlined } from '@ant-design/icons';
-import { Input } from 'antd';
+import { Input, Select } from 'antd';
 import { useTranslation } from 'react-i18next';
 import PropTypes from 'prop-types';
 import CustomInputGroup from '../../../common/Atoms/CustomInputGroup/CustomInputGroup';
-import CustomDatePicker from '../../../common/Atoms/CustomDatePicker/CustomDatePicker';
+import CustomDateRangePicker from '../../../common/Atoms/CustomDatePicker/CustomDateRangePicker';
+import { GROUP_SORTING_KEYS, SORTING_DIRECTIONS } from '../../../../helpers/constants';
 
-const GroupFilters = ({ updateGroups }) => {
+const GroupFilters = ({
+  setName,
+  setDateRange,
+  setSortingKey,
+  setSortingDirection,
+  sortingDirection
+}) => {
   const { t } = useTranslation();
 
-  const [date, setDate] = useState();
-  const [name, setName] = useState('');
-
-  useEffect(() => {
-    updateGroups([], date, name);
-  }, [date, name, updateGroups]);
-
   const datePickerProps = {
-    placeholder: t('groups.filters.date'),
+    placeholder: [t('groups.filters.createdAfter'), t('groups.filters.createdBefore')],
     suffixIcon: <DownOutlined />,
-    onChange: (_, dateString) => setDate(dateString)
+    onChange: (_, selectedRange) => setDateRange(selectedRange)
   };
+
+  const isAscending = sortingDirection === SORTING_DIRECTIONS.ascending;
 
   return (
     <div className="FilterControls">
@@ -32,26 +34,50 @@ const GroupFilters = ({ updateGroups }) => {
             onChange={({ target: { value } }) => setName(value)}
           />
         </div>
+        {setDateRange && (
+          <div>
+            <CustomInputGroup prefixIcon="calendar">
+              <CustomDateRangePicker {...datePickerProps} />
+            </CustomInputGroup>
+          </div>
+        )}
         <div>
-          <CustomInputGroup prefixIcon="calendar">
-            <CustomDatePicker {...datePickerProps} />
-          </CustomInputGroup>
-        </div>
-        {/* TODO: in 0.4 this will help */}
-        {/* <Col span={4}>
-          <CustomInputGroup prefixIcon="sort-ascending">
-            <Select defaultValue="name" disabled>
-              <Option value="name">{t('groups.filters.name')}</Option>
+          <CustomInputGroup
+            onClick={() =>
+              setSortingDirection(
+                isAscending ? SORTING_DIRECTIONS.descending : SORTING_DIRECTIONS.ascending
+              )
+            }
+            prefixIcon={isAscending ? 'sort-ascending' : 'sort-descending'}
+          >
+            <Select defaultValue={GROUP_SORTING_KEYS.name} onChange={key => setSortingKey(key)}>
+              <Select.Option value={GROUP_SORTING_KEYS.name}>
+                {t('groups.filters.name')}
+              </Select.Option>
+              <Select.Option value={GROUP_SORTING_KEYS.createdAt}>
+                {t('groups.filters.createdAt')}
+              </Select.Option>
+              <Select.Option value={GROUP_SORTING_KEYS.numberOfContacts}>
+                {t('groups.filters.numberOfContacts')}
+              </Select.Option>
             </Select>
           </CustomInputGroup>
-        </Col> */}
+        </div>
       </div>
     </div>
   );
 };
 
+GroupFilters.defaultProps = {
+  setDateRange: null
+};
+
 GroupFilters.propTypes = {
-  updateGroups: PropTypes.func.isRequired
+  setName: PropTypes.func.isRequired,
+  setDateRange: PropTypes.func,
+  setSortingKey: PropTypes.func.isRequired,
+  setSortingDirection: PropTypes.func.isRequired,
+  sortingDirection: PropTypes.string.isRequired
 };
 
 export default GroupFilters;

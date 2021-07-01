@@ -4,8 +4,9 @@ import { useTranslation } from 'react-i18next';
 import './_style.scss';
 import IdIcon from '../../../../images/IdIcon.svg';
 import peopleIcon from '../../../../images/iconpeople.svg';
+import CustomButton from '../../../common/Atoms/CustomButton/CustomButton';
 
-const RowInfo = ({ theme, groupName, contacts }) => {
+const RowInfo = ({ theme, groupName, contacts, groupId, contactId, onDelete }) => {
   const { t } = useTranslation();
   const classname = `RowInfo ${theme}`;
   return (
@@ -28,18 +29,32 @@ const RowInfo = ({ theme, groupName, contacts }) => {
           <span style={{ textTransform: 'uppercase' }}>{t('contacts.detail.contacts')}</span>
         </div>
       </div>
+      {onDelete && (
+        <CustomButton
+          buttonProps={{
+            onClick: () => onDelete(groupId, [contactId]),
+            className: 'theme-link'
+          }}
+          buttonText={t('actions.delete')}
+        />
+      )}
     </div>
   );
 };
 
 RowInfo.defaultProps = {
-  theme: 'row-info'
+  theme: 'row-info',
+  onDelete: null,
+  contactId: ''
 };
 
 RowInfo.propTypes = {
   theme: PropTypes.string,
   groupName: PropTypes.string.isRequired,
-  contacts: PropTypes.number.isRequired
+  contacts: PropTypes.number.isRequired,
+  groupId: PropTypes.string.isRequired,
+  contactId: PropTypes.string,
+  onDelete: PropTypes.func
 };
 
 export default RowInfo;

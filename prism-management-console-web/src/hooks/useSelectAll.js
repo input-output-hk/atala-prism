@@ -14,7 +14,7 @@ export const useSelectAllContacts = (contactsManager, setSelected) => {
 export const useSelectAllGroups = (groupsManager, setSelected) => {
   const handleSelectAll = async e => {
     if (e.target.checked) {
-      const list = await groupsManager.getGroups();
+      const list = await groupsManager.getAllGroups();
       setSelected(list.map(group => group.name));
     } else setSelected([]);
   };

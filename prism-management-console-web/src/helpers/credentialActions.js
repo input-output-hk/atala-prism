@@ -8,6 +8,7 @@ import {
 
 export const getTargetCredentials = (credentials, selectedCredentials, requiredStatus) => {
   const selected = getSelectedCredentials(credentials, selectedCredentials);
+
   return {
     selected,
     targetCredentials: selected.filter(({ status, contactData }) => {

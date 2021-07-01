@@ -45,7 +45,8 @@
       "statusInvitationMissing": "Pending Connection",
       "statusConnectionMissing": "Pending Connection",
       "statusConnectionAccepted": "Connected",
-      "statusConnectionRevoked": "Connection Revoked"
+      "statusConnectionRevoked": "Connection Revoked",
+      "undefined": "Undefined"
     },
     "filters": {
       "identityNumber": "Identity Number",
@@ -77,6 +78,8 @@
         "creationDate": "Date Created",
         "issuedCredentials": "Credential(s) Issued",
         "receivedCredentials": "Credential(s) Received",
+        "numberOfCredentialsCreated": "Credentials Issued",
+        "numberOfCredentialsReceived": "Credentials Received",
         "credentials": "Credentials",
         "contactStatus": "Contact Status",
         "idNumber": "ID Number",
@@ -105,7 +108,15 @@
         "courseCode": "Course Code",
         "credits": "Credits",
         "score": "Score",
-        "grade": "Grade"
+        "grade": "Grade",
+        "expiryDate": "Expiry Date",
+        "issuerName": "Issuer Name",
+        "productClass": "Product Class",
+        "employeeName": "Employee Name",
+        "employerAddress": "Employer Address",
+        "employmentStartDate": "Employment Start Date",
+        "employmentStatus": "Employment Status",
+        "universityName": "University Name"
       }
     },
     "inviteSuccessfull": "The Holder has been successfully invited",
@@ -126,6 +137,18 @@
         "credentialsIssuedSubtitle": "View the credential(s) that you have issued to this contact",
         "credentialsReceivedSubtitle": "View the credential(s) that you have received from this contact"
       }
+    },
+    "edit": {
+      "title": "Edit Contact Information",
+      "groups": "Groups",
+      "error": {
+        "removingFromGroup": "There has been an error removing the contact from the selected group",
+        "updating": "There has been an error updating the contact information"
+      },
+      "success": {
+        "removingFromGroup": "Successfully removed the contact from the selected group",
+        "updating": "Successfully updated the contact information"
+      }
     }
   },
   "groups": {
@@ -138,7 +161,11 @@
     "filters": {
       "date": "Filter by Date",
       "search": "Search",
-      "name": "Name"
+      "name": "Name",
+      "createdAfter": "Created After",
+      "createdBefore": "Created Before",
+      "createdAt": "Date Created",
+      "numberOfContacts": "Contacts"
     },
     "createNewGroup": "Create New Group",
     "onCreateNewGroupClick": "New Groups can not yet be created",
@@ -327,7 +354,11 @@
       "transcript": "Educational Transcript",
       "GeorgiaNationalID": "Government ID",
       "GeorgiaEducationalDegree": "Educational Degree",
-      "GeorgiaEducationalDegreeTranscript": "Educational Transcript"
+      "GeorgiaEducationalDegreeTranscript": "Educational Transcript",
+      "undefined": "Undefined",
+      "id": "Government ID",
+      "employment": "Proof of Employment",
+      "health":  "Health Insurance"
     },
     "status": {
       "credentialDraft": "Credential Draft",

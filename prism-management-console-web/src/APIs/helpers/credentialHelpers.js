@@ -1,7 +1,7 @@
 import { CREDENTIAL_STATUSES } from '../../helpers/constants';
 import { contactMapper } from './contactHelpers';
 
-export function credentialMapper(credential, credentialTypes) {
+export function credentialMapper(credential) {
   const {
     batchId,
     credentialId,
@@ -16,7 +16,8 @@ export function credentialMapper(credential, credentialTypes) {
     issuanceOperationHash,
     batchInclusionProof,
     sharedAt,
-    revocationProof
+    revocationProof,
+    credentialType
   } = credential;
 
   const parsedCredentialJson = JSON.parse(credentialData);
@@ -33,7 +34,7 @@ export function credentialMapper(credential, credentialTypes) {
     batchInclusionProof,
     sharedAt,
     revocationProof,
-    credentialType: getCredentialTypeObject(parsedCredentialJson, credentialTypes),
+    credentialType,
     status: getCredentialStatus(credential),
     contactData: contactMapper({
       contactId,
@@ -41,17 +42,6 @@ export function credentialMapper(credential, credentialTypes) {
       connectionStatus,
       jsonData: contactData
     })
-  };
-}
-
-function getCredentialTypeObject(credentialData, credentialTypes) {
-  const credentialTypeKey = credentialData.credentialType;
-  const { id, name, logo } = credentialTypes[credentialTypeKey] || {};
-  return {
-    key: credentialTypeKey,
-    id,
-    name,
-    logo
   };
 }
 

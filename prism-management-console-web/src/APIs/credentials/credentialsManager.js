@@ -1,22 +1,21 @@
-import { CredentialsServicePromiseClient } from '../../protos/console_api_grpc_web_pb';
+import _ from 'lodash';
+import {
+  CredentialsServicePromiseClient,
+  CredentialIssuanceServicePromiseClient
+} from '../../protos/console_api_grpc_web_pb';
 import Logger from '../../helpers/Logger';
 import credentialTypes from './credentialTypes';
-import {
-  REQUEST_AUTH_TIMEOUT_MS,
-  FAILED,
-  SUCCESS,
-  CREDENTIAL_PAGE_SIZE
-} from '../../helpers/constants';
+import { REQUEST_AUTH_TIMEOUT_MS, CREDENTIAL_PAGE_SIZE } from '../../helpers/constants';
 import { getAditionalTimeout } from '../../helpers/genericHelpers';
-
-const {
+import {
   GetGenericCredentialsRequest,
-  CreateGenericCredentialRequest,
   GetContactCredentialsRequest,
   ShareCredentialRequest,
-  GetBlockchainDataRequest
-} = require('../../protos/console_api_pb');
-const { AtalaMessage, PlainTextCredential } = require('../../protos/credential_models_pb');
+  GetBlockchainDataRequest,
+  CreateGenericCredentialBulkRequest
+} from '../../protos/console_api_pb';
+import { AtalaMessage, PlainTextCredential } from '../../protos/credential_models_pb';
+import { adaptCredentialType } from '../helpers/credentialTypeHelpers';
 
 function mapCredential(cred) {
   const credential = cred.toObject();
@@ -40,36 +39,52 @@ async function getCredentials(limit = CREDENTIAL_PAGE_SIZE, lastSeenCredentialId
   const result = await this.client.getGenericCredentials(getCredentialsRequest, metadata);
 
   const credentialsList = result.getCredentialsList().map(mapCredential);
+  const adaptedCredentialsList = credentialsList.map(adaptCredential);
+  Logger.info('Got credentials:', adaptedCredentialsList);
 
-  return credentialsList;
+  return adaptedCredentialsList;
 }
 
-async function createBatchOfCredentials(credentialsData) {
-  Logger.info(`Creating ${credentialsData?.length} credential(s):`);
+const adaptCredential = ({ credentialTypeDetails, ...rest }) => ({
+  ...rest,
+  credentialType: adaptCredentialType(credentialTypeDetails)
+});
 
-  const credentialStudentsPromises = credentialsData.map(({ externalId, contactId, ...json }) => {
-    const createCredentialRequest = new CreateGenericCredentialRequest();
+async function createBatchOfCredentials(credentialsData, credentialType, groups) {
+  Logger.info(`Creating ${credentialsData.length} credential(s):`);
+  const draftsToSend = credentialsData.map(({ policyNumber, ...c }) => ({
+    external_id: c.externalId,
+    // policyNumber is rejected as a string by the BE
+    credential_data: _.omit({ ...c, policyNumber: parseInt(policyNumber, 10) }, [
+      'externalId',
+      'issuer',
+      'credentialType'
+    ]),
+    group_ids: groups.map(g => g.id)
+  }));
+  const jsonToSend = {
+    // FIXME: issuance_name is required to be unique by the backend.
+    // Remove random value when it's no longer required.
+    issuance_name: Math.random().toString(),
+    credential_type_id: credentialType.id,
+    drafts: draftsToSend
+  };
 
-    createCredentialRequest.setContactId(contactId);
-    createCredentialRequest.setExternalId(externalId);
-    createCredentialRequest.setCredentialData(JSON.stringify(json));
+  const req = new CreateGenericCredentialBulkRequest();
+  req.setCredentialsJson(JSON.stringify(jsonToSend));
 
-    return this.auth
-      .getMetadata(createCredentialRequest)
-      .then(({ metadata }) =>
-        this.client.createGenericCredential(createCredentialRequest, metadata)
-      )
-      .then(response => ({ externalId, status: SUCCESS, response }))
-      .catch(error => {
-        Logger.error(error);
-        return { externalId, status: FAILED, error };
-      });
-  });
+  const { metadata } = await this.auth.getMetadata(req);
+  const res = await this.issuanceClient.createGenericCredentialBulk(req, metadata);
 
-  return Promise.all(credentialStudentsPromises);
+  return res.toObject();
 }
 
 function getCredentialBinary(credential) {
+  const atalaMessage = generateAtalaMessage(credential);
+  return atalaMessage.serializeBinary();
+}
+
+function generateAtalaMessage(credential) {
   const { encodedSignedCredential, batchInclusionProof } = credential;
   if (!encodedSignedCredential) {
     Logger.error('Could not get encoded credential', credential);
@@ -88,7 +103,7 @@ function getCredentialBinary(credential) {
   plainTextCredential.setEncodedMerkleProof(batchInclusionProof);
 
   atalaMessage.setPlainCredential(plainTextCredential);
-  return atalaMessage.serializeBinary();
+  return atalaMessage;
 }
 
 function getCredentialTypes() {
@@ -110,9 +125,9 @@ async function getContactCredentials(contactId) {
   return credentialsList;
 }
 
-async function markAsSent(credentialid) {
+async function markAsSent(credentialId) {
   const markCredentialRequest = new ShareCredentialRequest();
-  markCredentialRequest.setCmanagerCredentialId(credentialid);
+  markCredentialRequest.setCmanagerCredentialId(credentialId);
 
   const { metadata, sessionError } = await this.auth.getMetadata(
     markCredentialRequest,
@@ -121,7 +136,7 @@ async function markAsSent(credentialid) {
   if (sessionError) return;
 
   const res = await this.client.shareCredential(markCredentialRequest, metadata);
-  Logger.info(`Marked credential (${credentialid}) as sent`);
+  Logger.info(`Marked credential (${credentialId}) as sent`);
   return res;
 }
 
@@ -142,11 +157,13 @@ function CredentialsManager(config, auth) {
   this.config = config;
   this.auth = auth;
   this.client = new CredentialsServicePromiseClient(config.grpcClient, null, null);
+  this.issuanceClient = new CredentialIssuanceServicePromiseClient(config.grpcClient, null, null);
 }
 
 CredentialsManager.prototype.getCredentials = getCredentials;
 CredentialsManager.prototype.createBatchOfCredentials = createBatchOfCredentials;
 CredentialsManager.prototype.getCredentialBinary = getCredentialBinary;
+CredentialsManager.prototype.generateAtalaMessage = generateAtalaMessage;
 CredentialsManager.prototype.getCredentialTypes = getCredentialTypes;
 CredentialsManager.prototype.getContactCredentials = getContactCredentials;
 CredentialsManager.prototype.markAsSent = markAsSent;

@@ -5,11 +5,10 @@ import {
   CONNECTED,
   CONNECTION_STATUSES,
   CONTACT_PAGE_SIZE,
+  MAX_CONTACT_PAGE_SIZE,
   PENDING_CONNECTION,
-  MAX_CONTACTS,
   UNKNOWN_DID_SUFFIX_ERROR_CODE
 } from '../helpers/constants';
-import { getLastArrayElementOrEmpty } from '../helpers/genericHelpers';
 import { contactMapper } from '../APIs/helpers/contactHelpers';
 import Logger from '../helpers/Logger';
 import { filterByInclusion } from '../helpers/filterHelpers';
@@ -17,6 +16,7 @@ import { useSession } from '../components/providers/SessionContext';
 
 const useGetContacts = (contactsManager, allowPreload = true) => {
   const [contacts, setContacts] = useState([]);
+  const [scrollId, setScrollId] = useState(null);
   const [hasMore, setHasMore] = useState(true);
   const [isLoading, setIsLoading] = useState(false);
   const [isSearching, setIsSearching] = useState(false);
@@ -24,26 +24,18 @@ const useGetContacts = (contactsManager, allowPreload = true) => {
   const { showUnconfirmedAccountError, removeUnconfirmedAccountError } = useSession();
 
   const getContacts = useCallback(
-    ({
-      pageSize,
-      lastId,
-      oldContacts = [],
-      isRefresh = false,
-      groupName,
-      onFinish,
-      onResults,
-      isFetchAll
-    }) => {
+    ({ pageSize, oldContacts = [], isRefresh = false, groupName, onFinish, onResults }) => {
       if (isSearching) return;
 
       setIsSearching(true);
 
-      (hasMore || isRefresh || isFetchAll
-        ? contactsManager.getContacts(lastId, pageSize, groupName)
-        : Promise.resolve([])
+      (hasMore || isRefresh
+        ? contactsManager.getContacts({ scrollId, limit: pageSize, groupName })
+        : Promise.resolve({ contactsList: [] })
       )
-        .then(newContacts => {
-          if (newContacts.length < CONTACT_PAGE_SIZE) {
+        .then(({ contactsList: newContacts, newScrollId }) => {
+          setScrollId(newScrollId);
+          if (!newScrollId) {
             setHasMore(false);
           } else {
             Logger.warn(
@@ -59,6 +51,7 @@ const useGetContacts = (contactsManager, allowPreload = true) => {
         })
         .catch(error => {
           if (error.code === UNKNOWN_DID_SUFFIX_ERROR_CODE) {
+            setHasMore(false);
             showUnconfirmedAccountError();
             setHasMore(false);
           } else {
@@ -75,11 +68,20 @@ const useGetContacts = (contactsManager, allowPreload = true) => {
     },
     [
       contactsManager,
+      scrollId,
       hasMore,
       isSearching,
       removeUnconfirmedAccountError,
       showUnconfirmedAccountError
     ]
+  );
+
+  const fetchAllContacts = useCallback(
+    async groupName => {
+      const allContacts = await contactsManager.getAllContacts(groupName);
+      return allContacts;
+    },
+    [contactsManager]
   );
 
   useEffect(() => {
@@ -89,7 +91,7 @@ const useGetContacts = (contactsManager, allowPreload = true) => {
     }
   }, [hasMore, contacts, isLoading, isSearching, getContacts, allowPreload]);
 
-  return { contacts, getContacts, hasMore, isLoading, isSearching };
+  return { contacts, getContacts, fetchAllContacts, hasMore, isLoading, isSearching };
 };
 
 const useGetContactsNotInGroup = contactsManager => {
@@ -104,8 +106,11 @@ const useGetContactsNotInGroup = contactsManager => {
 
       setIsSearching(true);
 
-      (isRefresh || hasMore ? contactsManager.getContacts(lastId, pageSize) : Promise.resolve([]))
-        .then(newContacts => {
+      (isRefresh || hasMore
+        ? contactsManager.getContacts({ lastSeenContactId: lastId, limit: pageSize })
+        : Promise.resolve({ contactsList: [] })
+      )
+        .then(({ contactsList: newContacts }) => {
           if (newContacts.length < CONTACT_PAGE_SIZE) {
             setHasMore(false);
           } else {
@@ -117,16 +122,18 @@ const useGetContactsNotInGroup = contactsManager => {
           const contactsWithKey = newContacts.map(contactMapper);
           const updatedContacts = oldContacts.concat(contactsWithKey);
 
-          return contactsManager.getContacts(lastId, pageSize, groupName).then(contactsInGroup => {
-            const contactIdsInGroup = new Set(contactsInGroup.map(item => item.contactId));
+          return contactsManager
+            .getContacts({ lastSeenContactId: lastId, limit: pageSize, groupName })
+            .then(({ contactsList: contactsInGroup }) => {
+              const contactIdsInGroup = new Set(contactsInGroup.map(item => item.contactId));
 
-            const contactsNotInGroup = updatedContacts.filter(
-              item => !contactIdsInGroup.has(item.contactId)
-            );
+              const contactsNotInGroup = updatedContacts.filter(
+                item => !contactIdsInGroup.has(item.contactId)
+              );
 
-            setContacts(contactsNotInGroup);
-            if (onResults) onResults(contactsNotInGroup);
-          });
+              setContacts(contactsNotInGroup);
+              if (onResults) onResults(contactsNotInGroup);
+            });
         })
         .catch(error => {
           Logger.error('[Contacts.getContacts] Error while getting contacts', error);
@@ -144,11 +151,28 @@ const useGetContactsNotInGroup = contactsManager => {
   return { contacts, getContacts, hasMore, isLoading, isSearching };
 };
 
+export const useContacts = (contactsManager, setLoading) => {
+  const [contacts, setContacts] = useState([]);
+  const [getContacts, hasMore] = useGetContacts(contactsManager, setContacts, setLoading);
+
+  const handleContactsRequest = () =>
+    getContacts({
+      pageSize: CONTACT_PAGE_SIZE,
+      oldContacts: contacts
+    });
+
+  return [contacts, handleContactsRequest, hasMore];
+};
+
 export const useContactsWithFilteredList = (contactsManager, allowPreload) => {
-  const { contacts, getContacts, hasMore, isLoading, isSearching } = useGetContacts(
-    contactsManager,
-    allowPreload
-  );
+  const {
+    contacts,
+    getContacts,
+    fetchAllContacts,
+    hasMore,
+    isLoading,
+    isSearching
+  } = useGetContacts(contactsManager, allowPreload);
   const [searchText, setSearchText] = useState();
   const [groupName, setGroupName] = useState();
   const [status, setStatus] = useState();
@@ -185,13 +209,11 @@ export const useContactsWithFilteredList = (contactsManager, allowPreload) => {
   }, [contacts, applyFilters]);
 
   const handleContactsRequest = useCallback(
-    ({ groupNameParam, isRefresh = false, onFinish }) => {
-      const { contactId } = getLastArrayElementOrEmpty(contacts);
+    ({ groupNameParam, isRefresh = false, onFinish } = {}) => {
       if (groupNameParam) setGroupName(groupNameParam);
 
       return getContacts({
         pageSize: CONTACT_PAGE_SIZE,
-        lastId: isRefresh ? undefined : contactId,
         oldContacts: isRefresh ? [] : contacts,
         groupName: groupNameParam || groupName,
         isRefresh,
@@ -216,14 +238,6 @@ export const useContactsWithFilteredList = (contactsManager, allowPreload) => {
     setStatus
   };
 
-  const fetchAll = cb =>
-    getContacts({
-      pageSize: MAX_CONTACTS,
-      lastId: null,
-      isFetchAll: true,
-      onResults: contactsReceived => applyFilters(contactsReceived, cb)
-    });
-
   return {
     contacts,
     filteredContacts,
@@ -233,7 +247,7 @@ export const useContactsWithFilteredList = (contactsManager, allowPreload) => {
     hasMore,
     isLoading,
     isSearching,
-    fetchAll
+    fetchAllContacts
   };
 };
 
@@ -264,12 +278,10 @@ export const useContactsWithFilteredListAndNotInGroup = contactsManager => {
 
   const handleContactsRequest = useCallback(
     ({ groupNameParam, isRefresh = false, onFinish }) => {
-      const { contactId } = getLastArrayElementOrEmpty(contacts);
       if (groupNameParam) setGroupName(groupNameParam);
 
       return getContacts({
-        pageSize: MAX_CONTACTS,
-        lastId: isRefresh ? undefined : contactId,
+        pageSize: MAX_CONTACT_PAGE_SIZE,
         oldContacts: isRefresh ? [] : contacts,
         groupName: groupNameParam || groupName,
         isRefresh,
@@ -294,7 +306,7 @@ export const useContactsWithFilteredListAndNotInGroup = contactsManager => {
 
   const fetchAll = cb =>
     getContacts({
-      pageSize: MAX_CONTACTS,
+      pageSize: MAX_CONTACT_PAGE_SIZE,
       lastId: null,
       groupName,
       isFetchAll: true,
@@ -320,7 +332,7 @@ export const useAllContacts = contactsManager => {
   useEffect(() => {
     if (hasMore && !isLoading)
       getContacts({
-        pageSize: MAX_CONTACTS,
+        pageSize: MAX_CONTACT_PAGE_SIZE,
         lastId: null
       });
   }, [hasMore, isLoading, getContacts]);

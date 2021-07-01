@@ -29,7 +29,7 @@ const GroupEditing = ({
   isSaving,
   loading,
   loadingContacts,
-  fetchAll
+  fetchAllContacts
 }) => {
   const { t } = useTranslation();
   const formRef = React.createRef();
@@ -56,7 +56,7 @@ const GroupEditing = ({
       entities: contacts,
       hasMore,
       idKey: CONTACT_ID_KEY,
-      fetchAll,
+      fetchAll: fetchAllContacts,
       setLoading: setLoadingSelection
     });
 
@@ -245,7 +245,7 @@ GroupEditing.propTypes = {
   loadingContacts: PropTypes.bool,
   isSaving: PropTypes.bool,
   contacts: PropTypes.arrayOf(PropTypes.shape(contactShape)),
-  fetchAll: PropTypes.func.isRequired
+  fetchAllContacts: PropTypes.func.isRequired
 };
 
 export default GroupEditing;

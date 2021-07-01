@@ -1,14 +1,15 @@
 import React from 'react';
-import './_style.scss';
 import { Icon as LegacyIcon } from '@ant-design/compatible';
 
-const CustomInputGroup = ({ prefixIcon, children }) => {
+import './_style.scss';
+
+const CustomInputGroup = ({ prefixIcon, children, onClick }) => {
   const { disabled } = children?.props;
   const containerClass = `InputContainer ${disabled ? 'ant-input-disabled' : ''}`;
   return (
     <div className={containerClass}>
       <span className="InputPrefix">
-        <LegacyIcon type={prefixIcon} />
+        <LegacyIcon type={prefixIcon} onClick={onClick} />
       </span>
       <span className="ChildrenContainer">{children}</span>
     </div>

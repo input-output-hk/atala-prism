@@ -26,7 +26,7 @@ const GroupName = ({
 
   const groupExists = async value => {
     try {
-      const groups = await api.groupsManager.getGroups();
+      const groups = await api.groupsManager.getAllGroups();
       if (exactValueExists(groups, value, 'name')) {
         setNameState(GROUP_NAME_STATES.failed);
       } else {
@@ -89,7 +89,7 @@ GroupName.defaultProps = {
 GroupName.propTypes = {
   api: PropTypes.shape({
     groupsManager: PropTypes.shape({
-      getGroups: PropTypes.func.isRequired
+      getAllGroups: PropTypes.func.isRequired
     }).isRequired
   }).isRequired,
   className: PropTypes.string,

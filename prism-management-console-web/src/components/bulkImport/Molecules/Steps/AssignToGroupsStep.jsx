@@ -26,8 +26,8 @@ const AssignToGroupsStep = ({
   useEffect(() => {
     if (showGroupSelection) {
       api.groupsManager
-        .getGroups()
-        .then(setGroups)
+        .getGroups({})
+        .then(({ groupsList }) => setGroups(groupsList))
         .catch(error => {
           Logger.error('[GroupsContainer.updateGroups] Error: ', error);
           message.error(t('errors.errorGetting', { model: t('groups.title') }));

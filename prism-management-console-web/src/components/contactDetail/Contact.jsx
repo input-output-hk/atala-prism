@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import PropTypes from 'prop-types';
 import { useTranslation } from 'react-i18next';
 import { Tabs } from 'antd';
@@ -11,6 +11,7 @@ import CredentialDetail from './molecules/detailBox/CredentialDetails/Credential
 import SimpleLoading from '../common/Atoms/SimpleLoading/SimpleLoading';
 import { useTranslationWithPrefix } from '../../hooks/useTranslationWithPrefix';
 import { credentialShape, credentialTypesShape } from '../../helpers/propShapes';
+import EditContactModal from './organisms/EditContactModal/EditContactModal';
 
 import './_style.scss';
 
@@ -20,20 +21,38 @@ const ISSUED = 'issued';
 const RECEIVED = 'received';
 
 const Contact = ({
-  contact: { contactName, externalId },
+  contact: { name, externalId, contactId },
   groups,
   loading,
+  editing,
   issuedCredentials,
   receivedCredentials,
   credentialTypes,
   verifyCredential,
+  onDeleteGroup,
+  updateContact,
   redirector: { redirectToContacts }
 }) => {
   const { t } = useTranslation();
   const tp = useTranslationWithPrefix('contacts.detail');
+  const [modalIsOpen, setModalIsOpen] = useState(false);
+
+  useEffect(() => {
+    setModalIsOpen(editing);
+  }, [editing]);
 
   return (
     <div className="contactDetail">
+      <EditContactModal
+        visible={modalIsOpen}
+        externalId={externalId}
+        name={name}
+        groups={groups}
+        contactId={contactId}
+        onDeleteGroup={onDeleteGroup}
+        onClose={() => setModalIsOpen(false)}
+        updateContact={updateContact}
+      />
       <div className="ContentHeader headerSection">
         <div className="buttonSection">
           <CustomButton
@@ -56,7 +75,7 @@ const Contact = ({
             </div>
             <div className="title">
               <p>{t('contacts.table.columns.contactName')}</p>
-              <span>{loading.contact ? <SimpleLoading size="xs" /> : contactName}</span>
+              <span>{loading.contact ? <SimpleLoading size="xs" /> : name}</span>
             </div>
             <div className="title">
               <p>{t('contacts.table.columns.externalId')}</p>
@@ -64,7 +83,10 @@ const Contact = ({
             </div>
             <CustomButton
               buttonText={t('groups.table.buttons.edit')}
-              buttonProps={{ className: 'theme-link buttonEdit' }}
+              buttonProps={{
+                className: 'theme-link buttonEdit',
+                onClick: () => setModalIsOpen(true)
+              }}
             />
           </div>
           <p className="subtitleCredentials">{tp('detailSection.groupsSubtitle')}</p>
@@ -120,14 +142,15 @@ Contact.defaultProps = {
     groups: false,
     issuedCredentials: false,
     receivedCredentials: false
-  }
+  },
+  editing: false
 };
 
 Contact.propTypes = {
   contact: PropTypes.shape({
     contactId: PropTypes.string,
     externalId: PropTypes.string,
-    contactName: PropTypes.string,
+    name: PropTypes.string,
     creationDate: PropTypes.shape({
       day: PropTypes.number,
       month: PropTypes.number,
@@ -150,10 +173,13 @@ Contact.propTypes = {
     issuedCredentials: PropTypes.bool,
     receivedCredentials: PropTypes.bool
   }),
+  editing: PropTypes.bool,
   issuedCredentials: PropTypes.arrayOf(PropTypes.shape(credentialShape)),
   receivedCredentials: PropTypes.arrayOf(PropTypes.shape(credentialShape)),
   credentialTypes: PropTypes.shape(credentialTypesShape).isRequired,
   verifyCredential: PropTypes.func.isRequired,
+  onDeleteGroup: PropTypes.func.isRequired,
+  updateContact: PropTypes.func.isRequired,
   redirector: PropTypes.shape({ redirectToContacts: PropTypes.func }).isRequired
 };
 

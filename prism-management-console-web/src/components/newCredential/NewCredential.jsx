@@ -18,7 +18,7 @@ const NewCredential = ({
   currentStep,
   changeStep,
   renderStep,
-  credentialType,
+  selectedCredentialTypeId,
   hasSelectedRecipients,
   goToCredentialsPreview,
   onSuccess,
@@ -27,7 +27,7 @@ const NewCredential = ({
   const { t } = useTranslation();
 
   const goToSelectTargets = () => {
-    if (credentialType) changeStep(SELECT_RECIPIENTS_STEP);
+    if (selectedCredentialTypeId) changeStep(SELECT_RECIPIENTS_STEP);
     else message.error(t('newCredential.messages.selectTypeError'));
   };
 
@@ -76,7 +76,8 @@ const NewCredential = ({
 };
 
 NewCredential.defaultProps = {
-  isLoading: false
+  isLoading: false,
+  selectedCredentialTypeId: null
 };
 
 NewCredential.propTypes = {
@@ -84,7 +85,7 @@ NewCredential.propTypes = {
   currentStep: PropTypes.number.isRequired,
   changeStep: PropTypes.func.isRequired,
   renderStep: PropTypes.func.isRequired,
-  credentialType: PropTypes.string.isRequired,
+  selectedCredentialTypeId: PropTypes.string,
   hasSelectedRecipients: PropTypes.bool.isRequired,
   redirector: PropTypes.shape({ redirectToCredentials: PropTypes.func }).isRequired,
   goToCredentialsPreview: PropTypes.func.isRequired,

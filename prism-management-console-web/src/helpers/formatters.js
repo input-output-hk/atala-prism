@@ -3,6 +3,7 @@ import moment from 'moment';
 import 'moment/locale/ka';
 import { getCurrentLanguage } from './languageUtils';
 import { LONG_DATE_FORMAT, DEFAULT_DATE_FORMAT } from './constants';
+import { Date } from '../protos/common_models_pb';
 
 const completeDateFormatter = (date, format = DEFAULT_DATE_FORMAT) => {
   const lang = getCurrentLanguage();
@@ -68,7 +69,16 @@ export const fromMomentToProtoDateFormatter = date => {
   return protoDate;
 };
 
-export const dateFormat = date => moment(date).format(DEFAULT_DATE_FORMAT);
+export const dateFormat = date => moment(date, DEFAULT_DATE_FORMAT);
+
+export const getProtoDate = date => {
+  const formattedDate = fromMomentToProtoDateFormatter(dateFormat(date));
+  const newDate = new Date();
+  newDate.setYear(formattedDate.year);
+  newDate.setMonth(formattedDate.month);
+  newDate.setDay(formattedDate.day);
+  return newDate;
+};
 
 export const backendDateFormat = unixDate =>
   // backend gives dates as timestamp expressed in seconds, moment takes it as milliseconds

@@ -6,13 +6,13 @@ export function contactMapper(contact) {
   const { connectionStatus, contactId, ...rest } = {
     ...omit(contact, ['jsondata', 'holderid']),
     ...jsondata,
-    ...parseName(jsondata)
+    ...parseName(contact)
   };
   return Object.assign({}, rest, { key: contactId, connectionStatus, contactId });
 }
 
-export const parseName = ({ contactName = '', firstName = '', lastName = '', midNames = '' }) =>
-  contactName ? deconstructFullName(contactName) : constructFullName(firstName, midNames, lastName);
+export const parseName = ({ name = '', firstName = '', lastName = '', midNames = '' }) =>
+  name ? deconstructFullName(name) : constructFullName(firstName, midNames, lastName);
 
 export const deconstructFullName = fullnameInput => {
   const wordSeparator = '@';
@@ -20,6 +20,7 @@ export const deconstructFullName = fullnameInput => {
 
   const [joinedFirstName, ...restNames] = inputAsString.split(' ');
   const joinedMidNames = restNames.slice(0, restNames.length - 1).join(' ');
+  // eslint-disable-next-line no-magic-numbers
   const joinedLastName = restNames.slice(-1).join(' ');
 
   const firstName = joinedFirstName.split(wordSeparator).join(' ');

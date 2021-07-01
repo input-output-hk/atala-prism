@@ -14,6 +14,7 @@ import {
 import { CONTACT_ID_KEY } from '../../../../helpers/constants';
 
 import './_style.scss';
+import GroupFilters from '../../../groups/Molecules/Filters/GroupFilter';
 
 const { TabPane } = Tabs;
 
@@ -26,14 +27,22 @@ const RecipientsSelection = ({
   toggleShouldSelectRecipients,
   shouldSelectRecipients
 }) => {
-  const { groups, selectedGroups, setSelectedGroups, setGroupsFilter } = groupsProps;
+  const {
+    groups,
+    selectedGroups,
+    setSelectedGroups,
+    setGroupsFilter,
+    setSortingDirection,
+    setSortingKey,
+    sortingDirection
+  } = groupsProps;
   const {
     contacts,
     setSelectedContacts,
     selectedContacts,
     setContactsFilter,
     hasMore,
-    fetchAll
+    fetchAllContacts
   } = contactsProps;
 
   const { t } = useTranslation();
@@ -46,7 +55,7 @@ const RecipientsSelection = ({
       entities: contacts,
       hasMore,
       idKey: CONTACT_ID_KEY,
-      fetchAll,
+      fetchAll: fetchAllContacts,
       setLoading: setLoadingSelection
     });
 
@@ -79,11 +88,11 @@ const RecipientsSelection = ({
             <span>{t('newCredential.targetsSelection.selectGroup')}</span>
           </div>
           <div className="selectionContainer">
-            <Input
-              className="selectionGroups"
-              placeholder={t('groups.filters.search')}
-              prefix={<SearchOutlined />}
-              onChange={({ target: { value } }) => setGroupsFilter(value)}
+            <GroupFilters
+              setName={setGroupsFilter}
+              setSortingKey={setSortingKey}
+              setSortingDirection={setSortingDirection}
+              sortingDirection={sortingDirection}
             />
             <div className="selectGroupsCheckbox">
               <Checkbox className="groupsCheckbox" {...selectAllGroupsProps}>
@@ -156,6 +165,7 @@ const RecipientsSelection = ({
               {...contactsProps}
               shouldSelectRecipients={shouldSelectRecipients}
               size="xs"
+              searchDueGeneralScroll
             />
           )}
         </TabPane>
@@ -169,7 +179,10 @@ RecipientsSelection.propTypes = {
     groups: PropTypes.arrayOf(PropTypes.shape({})).isRequired,
     selectedGroups: PropTypes.arrayOf(PropTypes.string).isRequired,
     setSelectedGroups: PropTypes.func.isRequired,
-    setGroupsFilter: PropTypes.func.isRequired
+    setGroupsFilter: PropTypes.func.isRequired,
+    setSortingDirection: PropTypes.func.isRequired,
+    setSortingKey: PropTypes.func.isRequired,
+    sortingDirection: PropTypes.string.isRequired
   }).isRequired,
   contactsProps: PropTypes.shape({
     contacts: PropTypes.arrayOf(PropTypes.shape({})).isRequired,
@@ -178,7 +191,7 @@ RecipientsSelection.propTypes = {
     setContactsFilter: PropTypes.func.isRequired,
     handleContactsRequest: PropTypes.func.isRequired,
     hasMore: PropTypes.bool.isRequired,
-    fetchAll: PropTypes.func.isRequired
+    fetchAllContacts: PropTypes.func.isRequired
   }).isRequired,
   toggleShouldSelectRecipients: PropTypes.func.isRequired,
   shouldSelectRecipients: PropTypes.bool.isRequired

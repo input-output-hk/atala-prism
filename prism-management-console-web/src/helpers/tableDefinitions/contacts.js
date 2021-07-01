@@ -45,7 +45,27 @@ const getBasicContactColumns = () => [
 
 const getExtendedColumns = ({ inviteContact, viewContactDetail }) => [
   {
-    key: 'connectionstatus',
+    key: 'numberOfCredentialsCreated',
+    render: ({ numberOfCredentialsCreated }) => (
+      <CellRenderer
+        title={tp('numberOfCredentialsCreated')}
+        componentName="contacts"
+        value={numberOfCredentialsCreated}
+      />
+    )
+  },
+  {
+    key: 'numberOfCredentialsReceived',
+    render: ({ numberOfCredentialsReceived }) => (
+      <CellRenderer
+        title={tp('numberOfCredentialsReceived')}
+        componentName="contacts"
+        value={numberOfCredentialsReceived}
+      />
+    )
+  },
+  {
+    key: 'connectionStatus',
     render: ({ connectionStatus }) => (
       <CellRenderer title={tp('contactStatus')} componentName="contacts">
         <StatusBadge status={connectionStatus} />

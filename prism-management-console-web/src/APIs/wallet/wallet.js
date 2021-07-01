@@ -122,15 +122,11 @@ async function signMessage(unsignedRequest, timeout) {
 
 async function signCredentials(unsignedCredentials) {
   const { sessionId } = this.session;
-  const signRequests = unsignedCredentials.map(unsignedCredential => {
+  const signRequests = unsignedCredentials.map(({ credentialId, html }) => {
     const payload = {
-      id: unsignedCredential.credentialId,
-      properties: JSON.parse(unsignedCredential.credentialData)
+      id: credentialId,
+      properties: { html }
     };
-
-    // FIXME: remove the courses property from the transcript credential
-    // as the wallet doesn't support arrays as properties
-    delete payload.properties.courses;
 
     return window.prism.requestSignature(sessionId, JSON.stringify(payload));
   });

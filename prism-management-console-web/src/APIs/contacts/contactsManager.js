@@ -1,28 +1,20 @@
 import { ContactsServicePromiseClient } from '../../protos/console_api_grpc_web_pb';
 import Logger from '../../helpers/Logger';
-import { CONTACT_PAGE_SIZE, REQUEST_AUTH_TIMEOUT_MS } from '../../helpers/constants';
+import {
+  CONTACT_PAGE_SIZE,
+  MAX_CONTACT_PAGE_SIZE,
+  REQUEST_AUTH_TIMEOUT_MS
+} from '../../helpers/constants';
 import {
   CreateContactRequest,
+  CreateContactsRequest,
   GetContactsRequest,
   GetContactRequest,
-  GenerateConnectionTokenForContactRequest
+  ConnectorRequestMetadata,
+  UpdateContactRequest
 } from '../../protos/console_api_pb';
+import { GenerateConnectionTokenRequest } from '../../protos/connector_api_pb';
 import { getAditionalTimeout } from '../../helpers/genericHelpers';
-
-async function generateConnectionToken(contactId) {
-  Logger.info('Generating connection token for:', contactId);
-  const req = new GenerateConnectionTokenForContactRequest();
-  req.setContactId(contactId);
-
-  const { metadata, sessionError } = await this.auth.getMetadata(req, REQUEST_AUTH_TIMEOUT_MS);
-  if (sessionError) return '';
-
-  const res = await this.client.generateConnectionTokenForContact(req, metadata);
-  const token = res.getToken();
-  Logger.info('Created connection token:', token);
-
-  return token;
-}
 
 async function createContact(groupName, jsonData, externalId) {
   Logger.info(`Creating contact with externalId = ${externalId} for group ${groupName}`, jsonData);
@@ -40,11 +32,51 @@ async function createContact(groupName, jsonData, externalId) {
   return contact;
 }
 
-async function getContacts(lastSeenContactId, limit = CONTACT_PAGE_SIZE, groupName) {
-  Logger.info(`Getting up to ${limit} contacts from ${lastSeenContactId} for group ${groupName}`);
+async function createContacts(groups, contacts) {
+  const req = new CreateContactsRequest();
+
+  req.setGroupsList(groups.map(g => g.id));
+  req.setContactsList(
+    contacts.map(c => {
+      const contactObj = new CreateContactsRequest.Contact();
+      contactObj.setExternalId(c.externalId);
+      contactObj.setName(c.contactName);
+      contactObj.setJsonData(JSON.stringify(c.jsonData));
+      return contactObj;
+    })
+  );
+
+  const connectionReq = new GenerateConnectionTokenRequest();
+  connectionReq.setCount(contacts.length);
+
+  const {
+    metadata: { did, didKeyId, didSignature, requestNonce }
+  } = await this.auth.getMetadata(connectionReq);
+
+  const connectionTokenMetadataObj = new ConnectorRequestMetadata();
+  connectionTokenMetadataObj.setDid(did);
+  connectionTokenMetadataObj.setDidKeyId(didKeyId);
+  connectionTokenMetadataObj.setDidSignature(didSignature);
+  connectionTokenMetadataObj.setRequestNonce(requestNonce);
+  req.setGenerateConnectionTokensRequestMetadata(connectionTokenMetadataObj);
+
+  const { metadata, sessionError } = await this.auth.getMetadata(req);
+  if (sessionError) return {};
+
+  const res = await this.client.createContacts(req, metadata);
+
+  const contactsCreated = res.getContactsCreated();
+  Logger.info(`Created ${contactsCreated} contacts`);
+
+  return contactsCreated;
+}
+
+async function getContacts({ lastSeenContactId, limit = CONTACT_PAGE_SIZE, groupName, scrollId }) {
+  Logger.info(`Getting up to ${limit} contacts${groupName ? ` from ${groupName}` : ''}`);
   const req = new GetContactsRequest();
   req.setLimit(limit);
-  req.setLastSeenContactId(lastSeenContactId);
+  if (lastSeenContactId) req.setLastSeenContactId(lastSeenContactId);
+  if (scrollId) req.setScrollId(scrollId);
   if (groupName) req.setGroupName(groupName);
 
   const timeout = REQUEST_AUTH_TIMEOUT_MS + getAditionalTimeout(limit);
@@ -53,10 +85,14 @@ async function getContacts(lastSeenContactId, limit = CONTACT_PAGE_SIZE, groupNa
   if (sessionError) return [];
 
   const res = await this.client.getContacts(req, metadata);
-  const { contactsList } = res.toObject();
+
+  const { dataList, scrollid: newScrollId } = res.toObject();
+
+  const contactsList = dataList.map(({ contact, ...rest }) => ({ ...contact, ...rest }));
+
   Logger.info('Got contacts:', contactsList);
 
-  return contactsList;
+  return { contactsList, newScrollId };
 }
 
 async function getContact(contactId) {
@@ -65,7 +101,7 @@ async function getContact(contactId) {
   req.setContactId(contactId);
 
   const { metadata, sessionError } = await this.auth.getMetadata(req, REQUEST_AUTH_TIMEOUT_MS);
-  if (sessionError) return {};
+  if (sessionError) return { contactsList: [] };
 
   const res = await this.client.getContact(req, metadata);
   const { contact } = res.toObject();
@@ -74,15 +110,48 @@ async function getContact(contactId) {
   return contact;
 }
 
+async function fetchMoreContactsRecursively(scrollId, groupName, acc, onFinish) {
+  const { contactsList, newScrollId } = await this.getContacts({
+    groupName,
+    scrollId,
+    limit: MAX_CONTACT_PAGE_SIZE
+  });
+  const partialContactsArray = acc.concat(contactsList);
+  if (!newScrollId) return onFinish(partialContactsArray);
+  return this.fetchMoreContactsRecursively(newScrollId, groupName, partialContactsArray, onFinish);
+}
+
+function getAllContacts(groupName) {
+  return new Promise(resolve => {
+    this.fetchMoreContactsRecursively(null, groupName, [], resolve);
+  });
+}
+
+async function updateContact(contactId, { externalId, name, jsonData }) {
+  const req = new UpdateContactRequest();
+  req.setContactId(contactId);
+  if (externalId) req.setNewExternalId(externalId);
+  if (name) req.setNewName(name);
+  if (jsonData) req.setNewJsonData(jsonData);
+
+  const { metadata, sessionError } = await this.auth.getMetadata(req, REQUEST_AUTH_TIMEOUT_MS);
+  if (sessionError) return;
+
+  return this.client.updateContact(req, metadata);
+}
+
 function ContactsManager(config, auth) {
   this.config = config;
   this.auth = auth;
   this.client = new ContactsServicePromiseClient(this.config.grpcClient);
 }
 
-ContactsManager.prototype.generateConnectionToken = generateConnectionToken;
 ContactsManager.prototype.createContact = createContact;
+ContactsManager.prototype.createContacts = createContacts;
 ContactsManager.prototype.getContacts = getContacts;
+ContactsManager.prototype.getAllContacts = getAllContacts;
+ContactsManager.prototype.fetchMoreContactsRecursively = fetchMoreContactsRecursively;
 ContactsManager.prototype.getContact = getContact;
+ContactsManager.prototype.updateContact = updateContact;
 
 export default ContactsManager;

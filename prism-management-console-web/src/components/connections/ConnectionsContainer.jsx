@@ -18,8 +18,6 @@ const ConnectionsContainer = ({ api }) => {
 
   const refreshContacts = () => getContacts({ pageSize: contacts.length, isRefresh: true });
 
-  const inviteContact = contactId => api.contactsManager.generateConnectionToken(contactId);
-
   const tableProps = {
     contacts: filteredContacts,
     hasMore
@@ -29,7 +27,6 @@ const ConnectionsContainer = ({ api }) => {
     <Connections
       tableProps={tableProps}
       handleContactsRequest={handleContactsRequest}
-      inviteContact={inviteContact}
       refreshContacts={refreshContacts}
       loading={isLoading}
       searching={isSearching}
@@ -40,7 +37,7 @@ const ConnectionsContainer = ({ api }) => {
 
 ConnectionsContainer.propTypes = {
   api: PropTypes.shape({
-    contactsManager: PropTypes.shape({ generateConnectionToken: PropTypes.func })
+    contactsManager: PropTypes.shape({ getContacts: PropTypes.func })
   }).isRequired
 };
 

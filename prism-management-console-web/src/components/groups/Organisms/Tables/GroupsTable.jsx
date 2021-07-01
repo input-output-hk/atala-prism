@@ -11,7 +11,10 @@ const GroupsTable = ({
   selectedGroups,
   setSelectedGroups,
   onCopy,
-  shouldSelectRecipients
+  shouldSelectRecipients,
+  hasMore,
+  searching,
+  getMoreGroups
 }) => {
   const tableProps = {
     columns: getGroupColumns({ onCopy, setGroupToDelete, setSelectedGroups }),
@@ -26,7 +29,10 @@ const GroupsTable = ({
             disabled: !shouldSelectRecipients
           })
         },
-    rowKey: 'name'
+    rowKey: 'name',
+    hasMore,
+    getMoreData: getMoreGroups,
+    searching
   };
 
   return <InfiniteScrollTable {...tableProps} />;
@@ -48,7 +54,9 @@ GroupsTable.propTypes = {
   selectedGroups: PropTypes.arrayOf(PropTypes.string),
   setSelectedGroups: PropTypes.func,
   hasMore: PropTypes.bool.isRequired,
-  shouldSelectRecipients: PropTypes.bool
+  searching: PropTypes.bool.isRequired,
+  shouldSelectRecipients: PropTypes.bool,
+  getMoreGroups: PropTypes.func.isRequired
 };
 
 export default GroupsTable;

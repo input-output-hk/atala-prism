@@ -34,9 +34,10 @@ const CredentialsIssued = ({
     setSelectedLength(keys.length);
   }, [selectedRowKeys]);
 
-  const getMoreData = useCallback(() => {
+  const getMoreData = useCallback(async () => {
     setLoading(true);
-    return fetchCredentials({ onFinish: () => setLoading(false) });
+    await fetchCredentials();
+    setLoading(false);
   }, [fetchCredentials]);
 
   const expandedTableProps = {

@@ -30,7 +30,7 @@ const AddContactsModal = ({ api, groupName, visible, onCancel, onConfirm }) => {
     hasMore,
     isLoading,
     isSearching,
-    fetchAll
+    fetchAllContacts
   } = useContactsWithFilteredListAndNotInGroup(api.contactsManager);
 
   useEffect(() => {
@@ -48,7 +48,7 @@ const AddContactsModal = ({ api, groupName, visible, onCancel, onConfirm }) => {
       entities: filteredContacts,
       hasMore,
       idKey: CONTACT_ID_KEY,
-      fetchAll,
+      fetchAll: fetchAllContacts,
       setLoading: setLoadingSelection
     });
 

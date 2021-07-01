@@ -21,18 +21,27 @@ export const useCredentialActions = (api, credentialsIssued, refreshCredentialsI
 
   const signCredentials = credentials => api.wallet.signCredentials(credentials);
 
-  const sendCredentials = credentials => {
-    const handleSendCredential = async ({ contactData, ...cred }) => {
-      const { connectionId } = await api.contactsManager.getContact(contactData.contactId);
-      const credentialBinary = api.credentialsManager.getCredentialBinary(cred);
-      await api.connector.sendCredential(credentialBinary, connectionId);
-      return api.credentialsManager.markAsSent(cred.credentialId);
-    };
-
-    const sendCredentialsRequests = credentials.map(handleSendCredential);
-
-    return Promise.all(sendCredentialsRequests).then(() => setConfirmationModal(false));
+  const sendCredential = async ([{ contactData, ...cred }]) => {
+    const { connectionId } = await api.contactsManager.getContact(contactData.contactId);
+    const credentialBinary = api.credentialsManager.getCredentialBinary(cred);
+    await api.connector.sendCredential(credentialBinary, connectionId);
+    await api.credentialsManager.markAsSent(cred.credentialId);
+    setConfirmationModal(false);
   };
+
+  const gatherPayloadFromCredential = async c => ({
+    atalaMessage: await api.credentialsManager.generateAtalaMessage(c),
+    connectionToken: (await api.contactsManager.getContact(c.contactId)).connectionToken
+  });
+
+  const markCredentialsAsSent = credentials =>
+    Promise.all(credentials.map(c => api.credentialsManager.markAsSent(c.credentialId)));
+
+  const sendCredentialsBulk = credentials =>
+    Promise.all(credentials.map(gatherPayloadFromCredential))
+      .then(payload => api.connector.sendCredentialsBulk(payload))
+      .then(() => markCredentialsAsSent(credentials))
+      .then(() => setConfirmationModal(false));
 
   const showRevokeSuccess = () => {
     Logger.info('Successfully sent credential(s) to the wallet');
@@ -78,7 +87,7 @@ export const useCredentialActions = (api, credentialsIssued, refreshCredentialsI
       onError: showSignError
     },
     [SEND_CREDENTIALS]: {
-      apiCall: sendCredentials,
+      apiCall: sendCredentialsBulk,
       requiredStatus: credentialRequiredStatus[SEND_CREDENTIALS],
       onSuccess: showSendSuccess,
       onError: showSendError
@@ -94,7 +103,7 @@ export const useCredentialActions = (api, credentialsIssued, refreshCredentialsI
       onError: showSignError
     },
     [SEND_SINGLE_CREDENTIAL]: {
-      apiCall: sendCredentials,
+      apiCall: sendCredential,
       onSuccess: showSendSuccess,
       onError: showSendError
     }
@@ -134,12 +143,12 @@ export const useCredentialActions = (api, credentialsIssued, refreshCredentialsI
   const signSelectedCredentials = () => setConfirmationModal(SIGN_CREDENTIALS);
   const sendSelectedCredentials = () => setConfirmationModal(SEND_CREDENTIALS);
 
-  const revokeSingleCredential = credentialid =>
-    performBackendAction(REVOKE_SINGLE_CREDENTIAL, credentialid);
-  const signSingleCredential = credentialid =>
-    performBackendAction(SIGN_SINGLE_CREDENTIAL, credentialid);
-  const sendSingleCredential = credentialid =>
-    performBackendAction(SEND_SINGLE_CREDENTIAL, credentialid);
+  const revokeSingleCredential = credentialId =>
+    performBackendAction(REVOKE_SINGLE_CREDENTIAL, credentialId);
+  const signSingleCredential = credentialId =>
+    performBackendAction(SIGN_SINGLE_CREDENTIAL, credentialId);
+  const sendSingleCredential = credentialId =>
+    performBackendAction(SEND_SINGLE_CREDENTIAL, credentialId);
 
   const handleConfirm = () => performBackendAction(confirmationModal);
 
