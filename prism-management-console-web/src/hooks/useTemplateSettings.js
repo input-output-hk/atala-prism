@@ -3,6 +3,11 @@ import _React, { useReducer } from 'react';
 import image0 from '../images/generic-icon-01.svg';
 import image1 from '../images/genericUserIcon.svg';
 
+export const defaultAttribute = {
+  attributeLabel: '',
+  attributeType: ''
+};
+
 const defaultTemplate = {
   name: '',
   category: undefined,
@@ -10,7 +15,10 @@ const defaultTemplate = {
   themeColor: '#FF2D3B',
   backgroundColor: '#0C8762',
   image0,
-  image1
+  image1,
+  credentialTitle: 'Title',
+  credentialSubtitle: 'Subtitle',
+  credentialBody: [defaultAttribute, defaultAttribute]
 };
 // action types:
 export const UPDATE_FIELDS = 'UPDATE_FIELDS';

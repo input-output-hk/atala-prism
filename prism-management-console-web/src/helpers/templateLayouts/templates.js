@@ -13,7 +13,7 @@ import TemplateLayoutImage4 from '../../images/TemplateLayout_4.svg';
 export const templateLayouts = [
   {
     thumb: TemplateLayoutImage0,
-    html: template0
+    ...template0
   },
   {
     thumb: TemplateLayoutImage1,

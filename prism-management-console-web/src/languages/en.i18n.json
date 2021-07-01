@@ -562,7 +562,13 @@
         "chooseImage": "Choose Image"
       },
       "content": {
-        "title": "Content"
+        "title": "Content",
+        "header": "Header",
+        "body": "Body",
+        "credentialTitle": "Credential Title",
+        "credentialSubtitle": "Credential Subtitle",
+        "attributeName": "Attribute {{idx}} Label",
+        "attributeType": "Label Type"
       }
     },
     "messages": {

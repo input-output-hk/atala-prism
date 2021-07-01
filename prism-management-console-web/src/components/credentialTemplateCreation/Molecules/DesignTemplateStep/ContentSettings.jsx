@@ -1,8 +1,7 @@
 import React from 'react';
 import { Col, Row } from 'antd';
-
-const HeaderEditor = () => <div>{'<HeaderEditor/>'}</div>;
-const BodyEditor = () => <div>{'<BodyEditor/>'}</div>;
+import HeaderEditor from '../../Atoms/DesignTemplateStep/HeaderEditor';
+import BodyEditor from '../../Atoms/DesignTemplateStep/BodyEditor';
 
 const ContentSettings = props => (
   <Col>

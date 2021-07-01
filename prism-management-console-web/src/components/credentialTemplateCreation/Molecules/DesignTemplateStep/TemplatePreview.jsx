@@ -4,9 +4,23 @@ import CredentialsViewer from '../../../newCredential/Molecules/CredentialsViewe
 import { useTemplateContext } from '../../../providers/TemplateContext';
 import { templateLayouts } from '../../../../helpers/templateLayouts/templates';
 
+const placeholders = {
+  themeColor: '{{themeColor}}',
+  backgroundColor: '{{backgroundColor}}',
+  image0: '{{image0}}',
+  image1: '{{image1}}',
+  credentialTitle: '{{credentialTitle}}',
+  credentialSubtitle: '{{credentialSubtitle}}'
+};
+
+const replacePlaceholdersFromObject = (html, ph, data) =>
+  Object.keys(ph).reduce((template, key) => template.replace(ph[key], data[key]), html);
+
 const TemplatePreview = () => {
   const { templateSettings } = useTemplateContext();
+  const { form } = useTemplateContext();
   const [imageOverwrites, setImagesOverwrites] = useState();
+  const [currentSettings, setCurrentSettings] = useState(templateSettings);
 
   useEffect(() => {
     const getBase64 = file =>
@@ -17,7 +31,7 @@ const TemplatePreview = () => {
         reader.onerror = error => reject(error);
       });
 
-    // FIXME: any better solution to this forced update?
+    // FIXME: any better solution to this forced update? better names than image0-1
     const updateImages = async ({ backgroundHeader, iconHeader, image0, image1 }) => {
       const updatedImage0 = backgroundHeader?.length
         ? await getBase64(backgroundHeader[0].originFileObj)
@@ -28,35 +42,56 @@ const TemplatePreview = () => {
       setImagesOverwrites({ image0: updatedImage0, image1: updatedImage1 });
     };
 
+    const values = form.getFieldsValue();
     // eslint-disable-next-line no-magic-numbers
-    message.info(JSON.stringify(templateSettings, null, 2));
-    updateImages(templateSettings);
-  }, [templateSettings]);
+    message.info(JSON.stringify(values, null, 2));
 
-  const replacePlaceholdersFromObject = (html, placeholders, data) =>
-    Object.keys(placeholders).reduce(
-      (template, key) => template.replace(placeholders[key], data[key]),
-      html
+    setCurrentSettings(
+      // FIXME: improve this
+      values && Object.keys(values).length === 0 && values.constructor === Object
+        ? templateSettings
+        : values
     );
+    updateImages(templateSettings);
+  }, [templateSettings, form]);
 
-  const configureHtmlTemplate = (template, settings) => {
-    const placeholders = {
-      themeColor: '{{themeColor}}',
-      backgroundColor: '{{backgroundColor}}',
-      image0: '{{image0}}',
-      image1: '{{image1}}'
-    };
+  const fillBody = (template, settings) => {
+    const bodyParts = settings?.credentialBody?.map(attribute =>
+      replacePlaceholdersFromObject(template, placeholders, {
+        ...attribute,
+        ...imageOverwrites
+      })
+    );
+    return bodyParts.reduce((compilation, part) => compilation.concat(part), '');
+  };
 
-    return replacePlaceholdersFromObject(template, placeholders, {
+  const configureHeader = (template, settings) =>
+    replacePlaceholdersFromObject(template, placeholders, {
+      ...settings,
+      ...imageOverwrites
+    });
+
+  const configureBody = (template, settings) => {
+    const filledTemplate = fillBody(template, settings);
+    return replacePlaceholdersFromObject(filledTemplate, placeholders, {
       ...settings,
       ...imageOverwrites
     });
   };
+  const htmlTemplateHeader = templateLayouts[templateSettings.layout]?.header;
+  const htmlTemplateBody = templateLayouts[templateSettings.layout]?.body;
+  const configuredHeader = configureHeader(htmlTemplateHeader, templateSettings);
+  const configuredBody = configureBody(htmlTemplateBody, currentSettings);
 
-  const htmlTemplate = templateLayouts[templateSettings.layout]?.html;
-  const htmlCredential = configureHtmlTemplate(htmlTemplate, templateSettings);
+  const mergedHtml = replacePlaceholdersFromObject(
+    configuredHeader,
+    { attributes: '{{#atributes}}' },
+    {
+      attributes: configuredBody
+    }
+  );
 
-  return <CredentialsViewer credentialViews={[htmlCredential]} showBrowseControls={false} />;
+  return <CredentialsViewer credentialViews={[mergedHtml]} showBrowseControls={false} />;
 };
 
 export default TemplatePreview;
