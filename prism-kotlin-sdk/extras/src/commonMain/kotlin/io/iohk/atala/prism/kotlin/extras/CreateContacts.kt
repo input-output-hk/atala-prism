@@ -21,7 +21,7 @@ suspend fun createContacts(
     csvData: List<List<String>>,
     groups: List<String>,
     getMetadata: suspend (ByteArray, ByteArray) -> ConnectorRequestMetadata,
-    contactsService: ContactsService,
+    contactsService: ContactsServiceCoroutine,
 ): Int {
     val reqUnsigned = createContactsUnsigned(csvData, groups)
     val nonce = uuid4().bytes

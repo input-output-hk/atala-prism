@@ -78,9 +78,11 @@ kotlin {
         }
         val androidMain by getting {
             kotlin.srcDir("src/commonJvmAndroidMain/kotlin")
+            kotlin.srcDir("${project(":protosLib").buildDir}/generated/source/proto/commonJvmAndroidMain/kotlin")
             dependencies {
                 api("io.grpc:grpc-kotlin-stub:1.0.0")
                 api("io.grpc:grpc-okhttp:1.36.0")
+                api("org.jetbrains.kotlinx:kotlinx-coroutines-jdk8:1.5.0")
             }
         }
         val androidTest by getting {
@@ -88,9 +90,11 @@ kotlin {
         }
         val jvmMain by getting {
             kotlin.srcDir("src/commonJvmAndroidMain/kotlin")
+            kotlin.srcDir("${project(":protosLib").buildDir}/generated/source/proto/commonJvmAndroidMain/kotlin")
             dependencies {
                 api("io.grpc:grpc-kotlin-stub:1.0.0")
                 api("io.grpc:grpc-okhttp:1.36.0")
+                api("org.jetbrains.kotlinx:kotlinx-coroutines-jdk8:1.5.0")
             }
         }
         val jvmTest by getting {

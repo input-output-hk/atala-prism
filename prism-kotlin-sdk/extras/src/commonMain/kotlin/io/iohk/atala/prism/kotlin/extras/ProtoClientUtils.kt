@@ -3,19 +3,19 @@ package io.iohk.atala.prism.kotlin.extras
 import io.iohk.atala.prism.kotlin.protos.*
 
 object ProtoClientUtils {
-    fun nodeClient(host: String, port: Int): NodeService.Client {
+    fun nodeClient(host: String, port: Int): NodeServiceCoroutine.Client {
         val grpcClient = GrpcClient(
             GrpcServerOptions("http", host, port),
             GrpcEnvoyOptions("http", host, port)
         )
-        return NodeService.Client(grpcClient)
+        return NodeServiceCoroutine.Client(grpcClient)
     }
 
-    fun connectorClient(host: String, port: Int): ConnectorService.Client {
+    fun connectorClient(host: String, port: Int): ConnectorServiceCoroutine.Client {
         val grpcClient = GrpcClient(
             GrpcServerOptions("http", host, port),
             GrpcEnvoyOptions("http", host, port)
         )
-        return ConnectorService.Client(grpcClient)
+        return ConnectorServiceCoroutine.Client(grpcClient)
     }
 }
