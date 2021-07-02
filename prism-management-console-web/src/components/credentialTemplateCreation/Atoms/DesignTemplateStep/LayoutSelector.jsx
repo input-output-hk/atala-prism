@@ -1,6 +1,6 @@
 import React from 'react';
 import { useTranslation } from 'react-i18next';
-import { Form, Col, Radio } from 'antd';
+import { Form, Radio } from 'antd';
 import { templateLayouts } from '../../../../helpers/templateLayouts/templates';
 import { useTemplateContext } from '../../../providers/TemplateContext';
 import './_style.scss';
@@ -11,6 +11,7 @@ const LayoutSelector = () => {
 
   return (
     <Form.Item
+    className="layoutContainer"
       name="layout"
       label={t('credentialTemplateCreation.step2.style.layout')}
       rules={[
@@ -22,11 +23,11 @@ const LayoutSelector = () => {
       <Radio.Group>
         {templateLayouts.map((l, idx) => (
           <Radio value={idx}>
-            <Col
+            <div
               className={`LayoutOption shadow ${templateSettings.layout === idx ? 'selected' : ''}`}
             >
               <img className="img-logo" src={l.thumb} alt={`LayoutTemplate_${idx}`} />
-            </Col>
+            </div>
           </Radio>
         ))}
       </Radio.Group>

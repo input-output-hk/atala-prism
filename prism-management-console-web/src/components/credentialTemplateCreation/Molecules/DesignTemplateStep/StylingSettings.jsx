@@ -1,23 +1,23 @@
 import React from 'react';
-import { Col, Row } from 'antd';
 import LayoutSelector from '../../Atoms/DesignTemplateStep/LayoutSelector';
 import ThemeOptions from '../../Atoms/DesignTemplateStep/ThemeOptions';
 import TemplateIcons from '../../Atoms/DesignTemplateStep/TemplateIcons';
+import '../../_style.scss';
 
 const StylingSettings = () => (
-  <Col>
-    <Row>
+  <div className="ThemeBoxContainer">
+    <div>
       <LayoutSelector />
-    </Row>
-    <Row>
-      <Col>
+    </div>
+    <div className="OptionsContainer">
+      <div className="themeOptions">
         <ThemeOptions />
-      </Col>
-      <Col>
+      </div>
+      <div className="templateIcons">
         <TemplateIcons />
-      </Col>
-    </Row>
-  </Col>
+      </div>
+    </div>
+  </div>
 );
 
 StylingSettings.propTypes = {};

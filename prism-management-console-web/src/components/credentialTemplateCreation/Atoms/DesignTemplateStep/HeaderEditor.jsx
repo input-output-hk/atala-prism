@@ -5,9 +5,9 @@ import { Col, Form, Input, Row } from 'antd';
 const HeaderEditor = props => {
   const { t } = useTranslation();
   return (
-    <Col>
+    <div>
       <h3>{t('credentialTemplateCreation.step2.content.header')}</h3>
-      <Row>
+      <div>
         <Form.Item
           name="credentialTitle"
           label={t('credentialTemplateCreation.step2.content.credentialTitle')}
@@ -20,8 +20,8 @@ const HeaderEditor = props => {
         >
           <Input />
         </Form.Item>
-      </Row>
-    </Col>
+      </div>
+    </div>
   );
 };
 

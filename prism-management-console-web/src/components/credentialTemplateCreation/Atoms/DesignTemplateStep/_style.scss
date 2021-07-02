@@ -6,3 +6,18 @@
   padding: 1em;
   box-sizing: border-box;
 }
+
+.layoutContainer {
+  width: 100%;
+  .ant-radio-group {
+    width: 100%;
+    display: flex;
+    justify-content: space-around;
+    .LayoutOption {
+      margin:0 1em;
+    }
+  }
+  .ant-form-item-label label {
+    @include primary-text($h3, $black);
+  }
+}

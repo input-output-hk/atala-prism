@@ -3,7 +3,7 @@ import { Tabs } from 'antd';
 import { useTranslation } from 'react-i18next';
 import StylingSettings from './StylingSettings';
 import ContentSettings from './ContentSettings';
-import './_style.scss';
+import '../../_style.scss';
 
 const { TabPane } = Tabs;
 
