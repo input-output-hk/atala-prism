@@ -12,6 +12,7 @@ import io.iohk.atala.prism.app.neo.data.ActivityHistoriesRepository;
 import io.iohk.atala.prism.app.neo.data.ContactsRepository;
 import io.iohk.atala.prism.app.neo.data.CredentialsRepository;
 import io.iohk.atala.prism.app.neo.data.DashboardRepository;
+import io.iohk.atala.prism.app.neo.data.PayIdRepository;
 import io.iohk.atala.prism.app.neo.data.PreferencesRepository;
 import io.iohk.atala.prism.app.neo.data.ProofRequestRepository;
 import io.iohk.atala.prism.app.neo.data.ConnectorListenerRepository;
@@ -230,7 +231,17 @@ public class ApplicationModule {
             ActivityHistoriesLocalDataSourceInterface activityHistoriesLocalDataSource,
             SessionLocalDataSourceInterface sessionLocalDataSource,
             PreferencesLocalDataSourceInterface preferencesLocalDataSource
-    ){
+    ) {
         return new DashboardRepository(activityHistoriesLocalDataSource, sessionLocalDataSource, preferencesLocalDataSource);
+    }
+
+    /*
+     * [PayIdRepository] providers
+     * */
+    @Provides
+    public PayIdRepository providePayIdRepository(
+            CredentialsLocalDataSourceInterface credentialsLocalDataSource
+    ){
+        return new PayIdRepository(credentialsLocalDataSource);
     }
 }

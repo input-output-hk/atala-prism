@@ -1,5 +1,7 @@
 package io.iohk.atala.prism.app.core.enums;
 
+import java.util.Arrays;
+import java.util.List;
 import java.util.Optional;
 
 public enum CredentialType {
@@ -40,4 +42,10 @@ public enum CredentialType {
         }
         return Optional.empty();
     }
+
+    public static List<String> identityCredentialsTypes = Arrays.asList(
+            DEMO_ID_CREDENTIAL.value,
+            GEORGIA_NATIONAL_ID.value,
+            ETHIOPIA_NATIONAL_ID.value
+    );
 }

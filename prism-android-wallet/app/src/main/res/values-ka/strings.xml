@@ -351,4 +351,10 @@
     <string name="fragment_pay_id_instructions_step_3_text">No need to provide financially \nsensitive information</string>
     <string name="fragment_pay_id_instructions_continue">Continue</string>
     <string name="fragment_pay_id_instructions_skip">Skip and do later</string>
+
+    <!-- layout/fragment_pay_id_select_identity_credential.xml -->
+    <string name="fragment_pay_id_select_identity_credential_title">Select an ID</string>
+    <string name="fragment_pay_id_select_identity_credential_instructions">Select at least one ID credential:</string>
+    <string name="fragment_pay_id_select_identity_credential_optionals_instructions">Attach other credentials to your Pay ID (optional)</string>
+    <string name="fragment_pay_id_select_identity_credential_next">Next</string>
 </resources>

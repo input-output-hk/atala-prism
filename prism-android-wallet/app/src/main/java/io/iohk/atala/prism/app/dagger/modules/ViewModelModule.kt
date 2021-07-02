@@ -28,6 +28,7 @@ import io.iohk.atala.prism.app.ui.main.dashboard.NotificationsViewModel
 import io.iohk.atala.prism.app.ui.main.dashboard.ProfileViewModel
 import io.iohk.atala.prism.app.ui.main.settings.SettingsDateFormatViewModel
 import io.iohk.atala.prism.app.ui.main.settings.SettingsViewModel
+import io.iohk.atala.prism.app.ui.payid.step1.PayIdSelectIdentityCredentialViewModel
 import kotlin.reflect.KClass
 
 @Target(AnnotationTarget.FUNCTION, AnnotationTarget.PROPERTY_GETTER, AnnotationTarget.PROPERTY_SETTER)
@@ -150,4 +151,9 @@ abstract class ViewModelModule {
     @IntoMap
     @ViewModelKey(DashboardViewModel::class)
     internal abstract fun dashboardViewModel(viewModel: DashboardViewModel): ViewModel
+
+    @Binds
+    @IntoMap
+    @ViewModelKey(PayIdSelectIdentityCredentialViewModel::class)
+    internal abstract fun payIdSelectIdentityCredentialViewModel(viewModel: PayIdSelectIdentityCredentialViewModel): ViewModel
 }

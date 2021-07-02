@@ -26,4 +26,8 @@ interface CredentialsLocalDataSourceInterface {
         credential: Credential,
         contacts: List<Contact>
     )
+
+    suspend fun credentialsByTypes(credentialTypes: List<String>): List<Credential>
+
+    suspend fun credentialsByExcludedTypes(excludedTypes: List<String>): List<Credential>
 }

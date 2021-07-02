@@ -9,5 +9,14 @@
         tools:layout="@layout/fragment_pay_id_instructions"
         android:id="@+id/payIdInstructionsFragment"
         android:name="io.iohk.atala.prism.app.ui.payid.instructions.PayIdInstructionsFragment"
-        android:label="PayIdInstructionsFragment" />
+        android:label="PayIdInstructionsFragment" >
+        <action
+            android:id="@+id/action_payIdInstructionsFragment_to_payIdSelectIdentityCredentialFragment"
+            app:destination="@id/payIdSelectIdentityCredentialFragment" />
+    </fragment>
+    <fragment
+        tools:layout="@layout/fragment_pay_id_select_identity_credential"
+        android:id="@+id/payIdSelectIdentityCredentialFragment"
+        android:name="io.iohk.atala.prism.app.ui.payid.step1.PayIdSelectIdentityCredentialFragment"
+        android:label="@string/fragment_pay_id_select_identity_credential_title" />
 </navigation>

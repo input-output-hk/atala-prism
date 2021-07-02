@@ -48,7 +48,8 @@
 
     <color name="atala_blue">#011727</color>
     <color name="atala_aqua">#40EAEA</color>
-    
+
     <color name="dashboard_notification_card_title_text_color">#161F3D</color>
     <color name="dashboard_notification_card_text_color">#77869E</color>
+    <color name="color_row_checkable_credential_stroke">#053D92</color>
 </resources>

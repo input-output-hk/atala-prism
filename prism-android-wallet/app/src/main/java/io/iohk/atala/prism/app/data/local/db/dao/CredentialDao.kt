@@ -80,6 +80,9 @@ abstract class CredentialDao : ActivityHistoryDao() {
     @Query("SELECT * FROM credentials WHERE credential_type IN (:credentialTypes) order by id asc")
     abstract suspend fun getCredentialsByTypes(credentialTypes: List<String>): List<Credential>
 
+    @Query("SELECT * FROM credentials WHERE credential_type NOT IN (:excludedTypes) order by id asc")
+    abstract suspend fun getCredentialsByExcludedTypes(excludedTypes: List<String>): List<Credential>
+
     @Query("SELECT COUNT(*) FROM encodedCredentials ORDER BY id asc")
     abstract suspend fun totalOfEncodedCredentials(): Int
 }

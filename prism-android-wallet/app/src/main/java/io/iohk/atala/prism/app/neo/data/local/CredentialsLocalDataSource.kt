@@ -55,4 +55,12 @@ class CredentialsLocalDataSource(private val credentialDao: CredentialDao) : Cre
             credentialDao.insertShareCredentialActivityHistories(credential, contacts)
         }
     }
+
+    override suspend fun credentialsByTypes(credentialTypes: List<String>): List<Credential> = withContext(Dispatchers.IO) {
+        credentialDao.getCredentialsByTypes(credentialTypes)
+    }
+
+    override suspend fun credentialsByExcludedTypes(excludedTypes: List<String>): List<Credential> = withContext(Dispatchers.IO) {
+        credentialDao.getCredentialsByExcludedTypes(excludedTypes)
+    }
 }

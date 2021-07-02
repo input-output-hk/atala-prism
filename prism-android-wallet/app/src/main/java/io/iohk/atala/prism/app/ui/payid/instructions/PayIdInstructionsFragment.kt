@@ -6,6 +6,7 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.databinding.DataBindingUtil
 import androidx.fragment.app.Fragment
+import androidx.navigation.fragment.findNavController
 import io.iohk.atala.prism.app.neo.common.extensions.supportActionBar
 import io.iohk.cvp.R
 import io.iohk.cvp.databinding.FragmentPayIdInstructionsBinding
@@ -19,6 +20,7 @@ class PayIdInstructionsFragment : Fragment() {
         binding.lifecycleOwner = this
         supportActionBar?.hide()
         binding.skipButton.setOnClickListener { activity?.finish() }
+        binding.nextButton.setOnClickListener { findNavController().navigate(R.id.action_payIdInstructionsFragment_to_payIdSelectIdentityCredentialFragment) }
         return binding.root
     }
 }
