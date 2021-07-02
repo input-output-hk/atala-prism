@@ -12,15 +12,16 @@ import io.iohk.atala.cvp.webextension.activetab.models.{
   JsUserDetails
 }
 import io.iohk.atala.cvp.webextension.common.models.{ConnectorRequest, CredentialSubject, PendingRequest}
-import io.iohk.atala.prism.credentials.VerificationError._
-import io.iohk.atala.prism.credentials.{CredentialBatchId, VerificationError}
-import io.iohk.atala.prism.crypto.SHA256Digest
-import io.iohk.atala.prism.util.BytesOps
+import io.iohk.atala.cvp.webextension.util.ByteOps
+import io.iohk.atala.cvp.webextension.util.NullableOps._
+import typings.inputOutputHkPrismSdk.mod.io.iohk.atala.prism.kotlin.credentials._
+import typings.inputOutputHkPrismSdk.mod.io.iohk.atala.prism.kotlin.crypto.SHA256DigestCompanion
 
 import java.util.{Base64, UUID}
 import scala.concurrent.{ExecutionContext, Future}
 import scala.scalajs.js
 import scala.scalajs.js.JSConverters._
+import scala.scalajs.js.|._
 import scala.scalajs.js.PropertyDescriptor
 import scala.util.Try
 
@@ -114,18 +115,18 @@ class PrismSdk(name: String = "prism", extensionAPI: ExtensionAPI)(implicit
   ): js.Promise[JsRequestApprovalResult] = {
     val requestT = for {
       batchId <- Try {
-        CredentialBatchId
+        CredentialBatchIdCompanion
           .fromString(batchIdStr)
-          .getOrElse(throw new RuntimeException("Invalid batch id"))
+          .getNullable(throw new RuntimeException("Invalid batch id"))
       }
-      batchOperationHash <- Try { SHA256Digest.fromHexUnsafe(batchOperationHashStr) }
+      batchOperationHash <- Try { SHA256DigestCompanion.fromHex(batchOperationHashStr) }
         .orElse {
           // For some reason the frontend gets a base64 encoded string for the operation hash
           // to simplify their work, we just try to parse the hex, falling back to the base64 version
           // node that the url decoder version is not used on purpose.
           Try(Base64.getDecoder.decode(batchOperationHashStr))
-            .map(bytes => BytesOps.bytesToHex(bytes))
-            .map(SHA256Digest.fromHexUnsafe)
+            .map(ByteOps.convertBytesToHex)
+            .map(SHA256DigestCompanion.fromHex)
         }
       credentialId <- Try {
         UUID.fromString(credentialIdStr)
@@ -203,21 +204,29 @@ class PrismSdk(name: String = "prism", extensionAPI: ExtensionAPI)(implicit
     Future.successful(scalaBytes)
   }
 
-  private def toJsErrorList(validations: ValidatedNel[VerificationError, Unit]): js.Array[String] = {
-    def toErrorCode(err: VerificationError): String =
+  private def toJsErrorList(validations: ValidatedNel[VerificationException, Unit]): js.Array[String] = {
+    def toErrorCode(err: VerificationException): String =
       err match {
-        case CredentialWasRevoked(revokedOn) =>
-          s"The credential was revoked on $revokedOn"
-        case BatchWasRevoked(revokedOn) =>
-          s"The batch was revoked on $revokedOn"
+        case credentialWasRevoked: CredentialWasRevoked =>
+          s"The credential was revoked on ${credentialWasRevoked.revokedOn}"
+        case batchWasRevoked: BatchWasRevoked =>
+          s"The batch was revoked on ${batchWasRevoked.revokedOn}"
         case InvalidMerkleProof =>
           "Invalid Merkle proof"
-        case KeyWasNotValid(keyAddedOn, credentialIssuedOn) =>
-          s"The signing key was added after the credential was issued.\nKey added on: $keyAddedOn\nCredential issued on: $credentialIssuedOn"
-        case KeyWasRevoked(credentialIssuedOn, keyRevokedOn) =>
-          s"The signing key was revoked before the credential was issued.\nCredential issued on: $credentialIssuedOn\nKey revoked on: $keyRevokedOn"
+        case keyWasNotValid: KeyWasNotValid =>
+          s"""The signing key was added after the credential was issued.
+             |Key added on: ${keyWasNotValid.keyAddedOn}
+             |Credential issued on: ${keyWasNotValid.credentialIssuedOn}
+             |""".stripMargin
+        case keyWasRevoked: KeyWasRevoked =>
+          s"""The signing key was revoked before the credential was issued.
+             |Credential issued on: ${keyWasRevoked.credentialIssuedOn}
+             |Key revoked on: ${keyWasRevoked.keyRevokedOn}
+             |""".stripMargin
         case InvalidSignature =>
           "The credential signature was invalid"
+        case _ =>
+          "Unknown verification error"
       }
 
     validations.fold(

@@ -9,16 +9,18 @@ import io.iohk.atala.cvp.webextension.popup.components.{AlertMessage, LockButton
 import io.iohk.atala.cvp.webextension.popup.models.Message.{FailMessage, SuccessMessage}
 import io.iohk.atala.cvp.webextension.popup.models.View.Main
 import io.iohk.atala.cvp.webextension.popup.models.{Message, View}
+import io.iohk.atala.cvp.webextension.util.NullableOps._
 import org.scalajs.dom.raw.DOMParser
 import slinky.core.FunctionalComponent
 import slinky.core.annotations.react
 import slinky.core.facade.{Hooks, SetStateHookCallback}
 import slinky.web.html._
 import typings.dompurify.mod.{^ => dompurify}
+import typings.inputOutputHkPrismSdk.mod.io.iohk.atala.prism.kotlin.credentials.json.JsonBasedCredentialCompanion
 
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.scalajs.js
-import scala.util.{Failure, Success}
+import scala.util.{Failure, Success, Try}
 
 @react object RevokeCredentialsView {
 
@@ -107,14 +109,13 @@ import scala.util.{Failure, Success}
 
     val html = {
       // TODO: This needs to be validated before accepting the request, so that signingRequest.request.html is available
-      io.iohk.atala.prism.credentials.Credential
-        .fromString(signingRequest.request.signedCredentialStringRepresentation)
-        .map(_.content)
-        .flatMap { content =>
-          content.credentialSubject
-        }
-        .toTry
-        .flatMap { subject =>
+      Try {
+        JsonBasedCredentialCompanion
+          .fromString(signingRequest.request.signedCredentialStringRepresentation)
+          .content
+          .getCredentialSubject()
+          .getNullable(throw new RuntimeException("Invalid credential JSON"))
+      }.flatMap { subject =>
           io.circe.parser.parse(subject).toTry
         }
         .flatMap { json =>

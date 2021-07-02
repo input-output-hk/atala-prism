@@ -6,7 +6,7 @@ import io.circe.parser.parse
 import io.iohk.atala.cvp.webextension.circe._
 import io.iohk.atala.cvp.webextension.common.Mnemonic
 import io.iohk.atala.cvp.webextension.common.models.Role
-import io.iohk.atala.prism.identity.DID
+import typings.inputOutputHkPrismSdk.mod.io.iohk.atala.prism.kotlin.identity.DID
 
 import scala.util.Try
 

@@ -2,35 +2,35 @@ package io.iohk.atala.cvp.webextension.common
 
 import com.google.protobuf.ByteString
 import io.iohk.atala.cvp.webextension.background.services.connector.ConnectorClientService.CredentialData
-import io.iohk.atala.prism.credentials.{Credential, CredentialBatches}
-import io.iohk.atala.prism.credentials.content.CredentialContent
-import io.iohk.atala.prism.credentials.content.syntax._
-import io.iohk.atala.prism.crypto.MerkleTree.MerkleInclusionProof
-import io.iohk.atala.prism.crypto._
-import io.iohk.atala.prism.identity.DID
 import io.iohk.atala.prism.protos.node_models._
-import io.iohk.atala.prism.util.BigIntOps
 import typings.bip32.bip32Mod.BIP32Interface
 import typings.bip32.{mod => bip32}
-import typings.node.Buffer
+import typings.inputOutputHkPrismSdk.mod.io.iohk.atala.prism.kotlin.credentials.json.JsonBasedCredentialCompanion
+import typings.inputOutputHkPrismSdk.mod.io.iohk.atala.prism.kotlin.credentials.{CredentialBatches, PrismCredential}
+import typings.inputOutputHkPrismSdk.mod.io.iohk.atala.prism.kotlin.crypto.keys.{ECKeyPair, ECPublicKey}
+import typings.inputOutputHkPrismSdk.mod.io.iohk.atala.prism.kotlin.crypto.{EC, MerkleInclusionProof}
+import typings.inputOutputHkPrismSdk.mod.io.iohk.atala.prism.kotlin.extras.toArray
+import typings.inputOutputHkPrismSdk.mod.io.iohk.atala.prism.kotlin.identity.DIDCompanion.masterKeyId
+import typings.inputOutputHkPrismSdk.mod.io.iohk.atala.prism.kotlin.identity.{DID, DIDCompanion}
+
+import scala.scalajs.js.typedarray.{Int8Array, byteArray2Int8Array, int8Array2ByteArray}
+import scala.scalajs.js.JSConverters._
 
 object ECKeyOperation {
   val CURVE_NAME = "secp256k1"
 
-  private implicit val ec: ECTrait = EC
   // https://github.com/input-output-hk/atala/blob/develop/credentials-verification/docs/protocol/key-derivation.md
   private val firstMasterChild = "m/0'/0'/0'"
   private val firstIssuingChild = "m/0'/1'/0'"
 
   // TODO: this key id should eventually be selected by the user
   // which should be done when we complete the key derivation flow.
-  val masterKeyId = "master0"
   val issuingKeyId = "issuing0"
 
   def unpublishedDidFromMnemonic(mnemonic: Mnemonic): DID = {
     val masterECKeyPair = ECKeyOperation.masterECKeyPairFromSeed(mnemonic)
     val issuingECKeyPair = ECKeyOperation.issuingECKeyPairFromSeed(mnemonic)
-    DID.createUnpublishedDID(masterECKeyPair.publicKey, issuingECKeyPair.publicKey)
+    DIDCompanion.createUnpublishedDID(masterECKeyPair.publicKey, issuingECKeyPair.publicKey)
   }
 
   def createDIDAtalaOperation(mnemonic: Mnemonic): AtalaOperation = {
@@ -53,33 +53,34 @@ object ECKeyOperation {
       credentialsData: List[CredentialData]
   ): (AtalaOperation, List[(String, MerkleInclusionProof)]) = {
     // The long-form DID may be used in the wallet, but only the canonical one can issue credentials.
-    val canonicalDID = issuerDID.canonical
-      .getOrElse(
-        throw new RuntimeException("There is no way to get the canonical DID which is required to issue credentials")
-      )
+    if (!issuerDID.isCanonicalForm()) {
+      throw new RuntimeException("There is no way to get the canonical DID which is required to issue credentials")
+    }
 
-    val signedCredentials: List[Credential] = credentialsData.map { cd =>
-      Credential
-        .fromCredentialContent(
-          CredentialContent(
-            CredentialContent.JsonFields.IssuerDid.field -> canonicalDID.value, // The verification requires the DID
-            CredentialContent.JsonFields.IssuanceKeyId.field -> signingKeyId,
-            CredentialContent.JsonFields.CredentialSubject.field -> cd.credentialClaims
-          )
+    val signedCredentials: List[PrismCredential] = credentialsData.map { cd =>
+      JsonBasedCredentialCompanion
+        .fromString(
+          s"""{
+           |  "issuerDid": "${issuerDID.value}",
+           |  "keyId": "$signingKeyId",
+           |  "credentialSubject": "$cd"
+           |}""".stripMargin
         )
         .sign(signingKey.privateKey)
     }
 
-    val (merkleRoot, proofs) = CredentialBatches.batch(signedCredentials)
-    val merkleRootProto = ByteString.copyFrom(merkleRoot.hash.value.toArray)
+    val batchResult = CredentialBatches.batch(signedCredentials.toJSArray)
+    val merkleRoot = batchResult.root
+    val proofs = toArray[MerkleInclusionProof](batchResult.proofs)
+    val merkleRootProto = ByteString.copyFrom(int8Array2ByteArray(merkleRoot.hash.value))
     // This requires the suffix only, as the node stores only suffixes
-    val credentialBatchData = CredentialBatchData(issuerDid = canonicalDID.suffix.value, merkleRoot = merkleRootProto)
+    val credentialBatchData = CredentialBatchData(issuerDid = issuerDID.suffix.value, merkleRoot = merkleRootProto)
     val issueCredentialOperation = IssueCredentialBatchOperation(Some(credentialBatchData))
     val credentialsAndProofs =
       signedCredentials.map(_.canonicalForm).zip(proofs)
 
     println(s"${signedCredentials.size} credentials signed")
-    println(s"proof = '${proofs.headOption.map(_.encode).getOrElse("")}'")
+    println(s"proof = '${proofs.headOption.map(_.encode()).getOrElse("")}'")
     println(s"credential = '${signedCredentials.map(_.canonicalForm).headOption.getOrElse("")}'")
 
     (
@@ -90,21 +91,22 @@ object ECKeyOperation {
 
   def signedAtalaOperation(keyId: String, ecKeyPair: ECKeyPair, func: => AtalaOperation): SignedAtalaOperation = {
     val atalaOperation = func
-    val signature = EC.sign(atalaOperation.toByteArray, ecKeyPair.privateKey)
+
+    val signature = EC.signBytes(byteArray2Int8Array(atalaOperation.toByteArray), ecKeyPair.privateKey)
     SignedAtalaOperation(
       signedWith = keyId,
-      signature = ByteString.copyFrom(signature.data),
+      signature = ByteString.copyFrom(int8Array2ByteArray(signature.getEncoded())),
       operation = Some(atalaOperation)
     )
   }
 
   private def toECKeyData(publicKey: ECPublicKey): ECKeyData = {
-    val point = publicKey.getCurvePoint
+    val point = publicKey.getCurvePoint()
 
     ECKeyData()
       .withCurve(CURVE_NAME)
-      .withX(ByteString.copyFrom(point.x.toByteArray))
-      .withY(ByteString.copyFrom(point.y.toByteArray))
+      .withX(ByteString.copyFrom(int8Array2ByteArray(point.xBytes())))
+      .withY(ByteString.copyFrom(int8Array2ByteArray(point.yBytes())))
   }
 
   private def toPublicKey(
@@ -130,17 +132,10 @@ object ECKeyOperation {
   }
 
   private def toKeyPair(root: BIP32Interface): ECKeyPair = {
-    val privateKey = BigIntOps.toBigInt(toBytes(root.privateKey.get))
-    EC.toKeyPairFromPrivateKey(privateKey)
-  }
-
-  private def toBytes(buffer: Buffer): Array[Byte] = {
-    val len = buffer.length.toInt
-    val bytes = new Array[Byte](len)
-    for (i <- 0 until len) {
-      bytes(i) = buffer(i).get.toByte
-    }
-    bytes
+    val privateKeyByteArray = new Int8Array(root.privateKey.get.buffer)
+    val privateKey = EC.toPrivateKeyFromBytes(privateKeyByteArray)
+    val publicKey = EC.toPublicKeyFromPrivateKey(privateKey)
+    new ECKeyPair(publicKey, privateKey)
   }
 
 }

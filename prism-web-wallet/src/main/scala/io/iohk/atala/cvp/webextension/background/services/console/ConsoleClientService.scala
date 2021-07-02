@@ -1,12 +1,12 @@
 package io.iohk.atala.cvp.webextension.background.services.console
 
-import cats.syntax.functor._
+import cats.implicits._
 import com.google.protobuf.ByteString
 import io.iohk.atala.cvp.webextension.background.services.metadataForRequest
-import io.iohk.atala.prism.crypto.ECKeyPair
-import io.iohk.atala.prism.identity.DID
 import io.iohk.atala.prism.protos.console_api
 import scalapb.grpc.Channels
+import typings.inputOutputHkPrismSdk.mod.io.iohk.atala.prism.kotlin.crypto.keys.ECKeyPair
+import typings.inputOutputHkPrismSdk.mod.io.iohk.atala.prism.kotlin.identity.DID
 
 import scala.concurrent.{ExecutionContext, Future}
 import scala.scalajs.js.JSConverters.JSRichMap

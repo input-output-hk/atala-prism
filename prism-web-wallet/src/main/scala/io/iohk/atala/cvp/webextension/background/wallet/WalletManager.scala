@@ -1,7 +1,7 @@
 package io.iohk.atala.cvp.webextension.background.wallet
 
 import cats.data.ValidatedNel
-import cats.syntax.functor._
+import cats.implicits._
 import io.circe.generic.auto._
 import io.circe.syntax._
 import io.iohk.atala.cvp.webextension.background.CredentialsCopyJob
@@ -22,17 +22,22 @@ import io.iohk.atala.cvp.webextension.common.models.PendingRequest.{
 }
 import io.iohk.atala.cvp.webextension.common.models._
 import io.iohk.atala.cvp.webextension.common.{ECKeyOperation, Mnemonic}
-import io.iohk.atala.prism.connector.{AtalaOperationId, RequestAuthenticator, RequestNonce}
-import io.iohk.atala.prism.credentials.VerificationError
-import io.iohk.atala.prism.crypto.EC
-import io.iohk.atala.prism.crypto.MerkleTree.MerkleInclusionProof
-import io.iohk.atala.prism.identity.DID
+import io.iohk.atala.cvp.webextension.util.ByteOps
 import io.iohk.atala.prism.protos.connector_api.RegisterDIDResponse
 import io.iohk.atala.prism.protos.console_api.PublishBatchResponse
 import org.scalajs.dom.crypto.CryptoKey
+import typings.inputOutputHkPrismSdk.mod.io.iohk.atala.prism.kotlin.credentials.VerificationException
+import typings.inputOutputHkPrismSdk.mod.io.iohk.atala.prism.kotlin.crypto.MerkleInclusionProofCompanion
+import typings.inputOutputHkPrismSdk.mod.io.iohk.atala.prism.kotlin.extras.{
+  AtalaOperationId,
+  AtalaOperationIdCompanion,
+  RequestUtils
+}
+import typings.inputOutputHkPrismSdk.mod.io.iohk.atala.prism.kotlin.identity.{DID, DIDCompanion}
 
 import java.util.{Base64, UUID}
 import scala.concurrent.{ExecutionContext, Future, Promise}
+import scala.scalajs.js.typedarray.{Int8Array, byteArray2Int8Array}
 import scala.util.control.NonFatal
 import scala.util.{Failure, Success, Try}
 
@@ -72,8 +77,6 @@ private[background] class WalletManager(
 ) {
 
   import WalletManager._
-
-  private val requestAuthenticator = new RequestAuthenticator(EC)
 
   private[this] var state = State.empty
 
@@ -166,10 +169,10 @@ private[background] class WalletManager(
               credentialId = r.credentialId
             )
             .map { operationIdBytes =>
-              AtalaOperationId.fromVectorUnsafe(operationIdBytes.toVector)
+              AtalaOperationIdCompanion.fromHex(ByteOps.convertBytesToHex(operationIdBytes))
             }
       }
-      _ = promise.success(requestResult.hexValue)
+      _ = promise.success(requestResult.hexValue())
     } yield {
       println(s"Request approved: $requestId")
       removeRequest(requestId)
@@ -194,7 +197,7 @@ private[background] class WalletManager(
     if (in.operationId.isEmpty) {
       throw new RuntimeException("Operation Info Not Returned")
     } else {
-      AtalaOperationId.fromVectorUnsafe(in.operationId.toVector)
+      AtalaOperationIdCompanion.fromHex(ByteOps.convertBytesToHex(in.operationId))
     }
 
   private def removeRequest(requestId: Int): Unit = {
@@ -264,16 +267,17 @@ private[background] class WalletManager(
       _ <- validateSessionF(origin = origin, sessionID = sessionID)
     } yield {
       val ecKeyPair = ECKeyOperation.masterECKeyPairFromSeed(walletData.mnemonic)
-      val signedRequest = requestAuthenticator.signConnectorRequest(
-        request.bytes,
+      val metadata = RequestUtils.generateBytesMetadata(
+        walletData.did.value,
         ecKeyPair.privateKey,
-        nonce.map(RequestNonce(_)).getOrElse(RequestNonce())
+        byteArray2Int8Array(request.bytes),
+        nonce.map(byteArray2Int8Array).orNull[Int8Array]
       )
       SignedMessage(
         did = walletData.did,
-        didKeyId = ECKeyOperation.masterKeyId,
-        base64UrlSignature = signedRequest.encodedSignature,
-        base64UrlNonce = signedRequest.encodedRequestNonce
+        didKeyId = DIDCompanion.masterKeyId,
+        base64UrlSignature = Base64.getUrlEncoder.encodeToString(metadata.didSignature.toArray),
+        base64UrlNonce = Base64.getUrlEncoder.encodeToString(metadata.requestNonce.toArray)
       )
     }
   }
@@ -284,13 +288,12 @@ private[background] class WalletManager(
       sessionID: String,
       signedCredentialStringRepresentation: String,
       encodedMerkleProof: String
-  ): Future[ValidatedNel[VerificationError, Unit]] = {
+  ): Future[ValidatedNel[VerificationException, Unit]] = {
     for {
       _ <- validateSessionF(origin = origin, sessionID = sessionID)
       merkleProof =
-        MerkleInclusionProof
+        MerkleInclusionProofCompanion
           .decode(encodedMerkleProof)
-          .getOrElse(throw new RuntimeException(s"Unable to decode merkle proof: $encodedMerkleProof"))
       x <- nodeClientService.verifyCredential(signedCredentialStringRepresentation, merkleProof)
     } yield x
   }
@@ -410,7 +413,7 @@ private[background] class WalletManager(
     val ecKeyPair = ECKeyOperation.masterECKeyPairFromSeed(mnemonic)
 
     val createDIDOperation = ECKeyOperation.createDIDAtalaOperation(mnemonic)
-    val signedOperation = ECKeyOperation.signedAtalaOperation(ECKeyOperation.masterKeyId, ecKeyPair, createDIDOperation)
+    val signedOperation = ECKeyOperation.signedAtalaOperation(DIDCompanion.masterKeyId, ecKeyPair, createDIDOperation)
     val did = ECKeyOperation.unpublishedDidFromMnemonic(mnemonic)
 
     // Right now, the console and the connector needs to keep the DID registered, while the frontend is migrated

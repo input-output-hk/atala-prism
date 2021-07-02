@@ -3,9 +3,9 @@ package io.iohk.atala.cvp.webextension.activetab.models
 import cats.data.ValidatedNel
 import io.circe.generic.auto._
 import io.circe.parser.parse
-import io.iohk.atala.prism.credentials.VerificationError
 import io.iohk.atala.cvp.webextension.circe._
 import io.iohk.atala.cvp.webextension.common.models.{SignedMessage, UserDetails}
+import typings.inputOutputHkPrismSdk.mod.io.iohk.atala.prism.kotlin.credentials.VerificationException
 
 import scala.util.Try
 
@@ -23,7 +23,7 @@ private[activetab] object Event {
   final case class GotUserSession(userDetails: UserDetails) extends Event
   final case class GotEnqueueRequestApprovalResultTransactionId(transactionId: String) extends Event
   final case class GotSignedResponse(signedMessage: SignedMessage) extends Event
-  final case class SignedCredentialVerified(result: ValidatedNel[VerificationError, Unit]) extends Event
+  final case class SignedCredentialVerified(result: ValidatedNel[VerificationException, Unit]) extends Event
 
   def decode(string: String): Try[Event] = {
     parse(string).toTry

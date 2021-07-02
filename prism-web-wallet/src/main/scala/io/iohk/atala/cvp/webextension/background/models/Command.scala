@@ -7,7 +7,7 @@ import io.iohk.atala.cvp.webextension.circe._
 import io.iohk.atala.cvp.webextension.common.Mnemonic
 import io.iohk.atala.cvp.webextension.common.models.PendingRequest.{IssueCredentialWithId, RevokeCredentialWithId}
 import io.iohk.atala.cvp.webextension.common.models.{PendingRequest, _}
-import io.iohk.atala.prism.credentials.VerificationError
+import typings.inputOutputHkPrismSdk.mod.io.iohk.atala.prism.kotlin.credentials.VerificationException
 
 import scala.util.Try
 
@@ -35,7 +35,7 @@ private[background] object Command {
       signedCredentialStringRepresentation: String,
       encodedMerkleProof: String
   ) extends CommandWithResponse[VerifySignedCredentialResponse]
-  final case class VerifySignedCredentialResponse(result: ValidatedNel[VerificationError, Unit])
+  final case class VerifySignedCredentialResponse(result: ValidatedNel[VerificationException, Unit])
 
   final case class SignatureResult(signature: String)
 

@@ -1,7 +1,7 @@
 package io.iohk.atala.cvp.webextension.common.models
 
-import io.iohk.atala.prism.credentials.CredentialBatchId
-import io.iohk.atala.prism.crypto.SHA256Digest
+import typings.inputOutputHkPrismSdk.mod.io.iohk.atala.prism.kotlin.credentials.CredentialBatchId
+import typings.inputOutputHkPrismSdk.mod.io.iohk.atala.prism.kotlin.crypto.SHA256Digest
 
 import java.util.UUID
 

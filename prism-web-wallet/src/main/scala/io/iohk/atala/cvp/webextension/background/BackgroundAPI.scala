@@ -1,6 +1,6 @@
 package io.iohk.atala.cvp.webextension.background
 
-import cats.syntax.functor._
+import cats.implicits._
 import io.circe.Decoder
 import io.circe.generic.auto._
 import io.circe.parser.parse

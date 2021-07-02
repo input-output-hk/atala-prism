@@ -1,6 +1,6 @@
 package io.iohk.atala.cvp.webextension.background
 
-import cats.syntax.functor._
+import cats.implicits._
 import io.circe.generic.auto._
 import io.iohk.atala.cvp.webextension.background.models.Command.{
   GotCredentialRequestsRequiringManualApproval,

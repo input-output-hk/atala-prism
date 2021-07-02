@@ -10,7 +10,7 @@ resolvers += "Sonatype OSS Snapshots" at "https://oss.sonatype.org/content/repos
 
 name := "prism-web-wallet"
 version := "0.1"
-scalaVersion := "2.13.3"
+scalaVersion := "2.13.6"
 scalacOptions ++= Seq(
   "-language:implicitConversions",
   "-language:existentials",
@@ -19,38 +19,39 @@ scalacOptions ++= Seq(
   "-deprecation",
   "-Xfatal-warnings",
   "-feature",
-  "-Ymacro-annotations"
+  "-Ymacro-annotations",
+  "-Wconf:src=.*scalapb/.*:silent"
 )
 
 enablePlugins(ChromeSbtPlugin, BuildInfoPlugin, ScalaJSBundlerPlugin, ScalablyTypedConverterPlugin)
 
-version in webpack := "4.8.1"
+webpack / version := "4.8.1"
 
 // scala-js-chrome
 scalaJSLinkerConfig := scalaJSLinkerConfig.value.withRelativizeSourceMapBase(
   Some((Compile / fastOptJS / artifactPath).value.toURI)
 )
 
-scalaJSLinkerConfig in (Compile, fastOptJS) ~= { _.withSourceMap(false) }
-scalaJSLinkerConfig in (Compile, fullOptJS) ~= { _.withSourceMap(false) }
+Compile / fastOptJS / scalaJSLinkerConfig ~= { _.withSourceMap(false) }
+Compile / fullOptJS / scalaJSLinkerConfig ~= { _.withSourceMap(false) }
 
-skip in packageJSDependencies := false
+packageJSDependencies / skip := false
 
 webpackBundlingMode := BundlingMode.Application
 
-fastOptJsLib := (webpack in (Compile, fastOptJS)).value.head
-fullOptJsLib := (webpack in (Compile, fullOptJS)).value.head
+fastOptJsLib := (Compile / fastOptJS / webpack).value.head
+fullOptJsLib := (Compile / fullOptJS / webpack).value.head
 
 webpackBundlingMode := BundlingMode.LibraryAndApplication()
 
 // you can customize and have a static output name for lib and dependencies
 // instead of having the default files names like extension-fastopt.js, ...
-artifactPath in (Compile, fastOptJS) := {
-  (crossTarget in (Compile, fastOptJS)).value / "main.js"
+Compile / fastOptJS / artifactPath := {
+  (Compile / fastOptJS / crossTarget).value / "main.js"
 }
 
-artifactPath in (Compile, fullOptJS) := {
-  (crossTarget in (Compile, fullOptJS)).value / "main.js"
+Compile / fullOptJS / artifactPath := {
+  (Compile / fullOptJS / crossTarget).value / "main.js"
 }
 
 // scripts used on all modules
@@ -110,6 +111,7 @@ buildInfoKeys ++= Seq[BuildInfoKey](
 )
 
 // dependencies
+val cats = "2.1.0"
 val circe = "0.13.0"
 val grpcWebVersion = "0.3.0"
 val scalatest = "3.1.1"
@@ -122,6 +124,7 @@ val slinkyVersion = "0.6.7"
 
 libraryDependencies += "org.scala-js" %%% "scalajs-dom" % scalaDomVersion
 libraryDependencies += "com.alexitc" %%% "scala-js-chrome" % scalaJsChromeVersion
+libraryDependencies += "org.typelevel" %%% "cats-core" % cats
 
 libraryDependencies += "io.circe" %%% "circe-core" % circe
 libraryDependencies += "io.circe" %%% "circe-generic" % circe
@@ -141,7 +144,7 @@ libraryDependencies += "org.scalatest" %%% "scalatest" % scalatest % "test"
 stFlavour := Flavour.Slinky
 
 // js
-npmDependencies in Compile ++= Seq(
+Compile / npmDependencies ++= Seq(
   "bip39" -> "3.0.2",
   "bip32" -> "2.0.5",
   "grpc-web" -> "1.0.7",
@@ -151,7 +154,15 @@ npmDependencies in Compile ++= Seq(
   "@types/dompurify" -> "2.0.3",
   "@material-ui/core" -> "3.9.4",
   "@material-ui/icons" -> "3.0.2",
-  "@material-ui/styles" -> "3.0.0-alpha.10"
+  "@material-ui/styles" -> "3.0.0-alpha.10",
+  "@input-output-hk/prism-sdk" -> "0.1.0-03df343e"
+)
+
+val githubToken = sys.env.getOrElse("GITHUB_TOKEN", throw new Exception("Please put your GitHub PAT into GITHUB_TOKEN"))
+
+npmExtraArgs ++= Seq(
+  "--@input-output-hk:registry=https://npm.pkg.github.com",
+  s"--//npm.pkg.github.com/:_authToken=$githubToken"
 )
 
 // material-ui is provided by a pre-packaged library
@@ -167,15 +178,19 @@ Compile / stMinimize := Selection.All
 stUseScalaJsDom := true
 stTypescriptVersion := "4.2.4"
 
-// Internal libraries
-lazy val cryptoLib = ProjectRef(file("../prism-sdk"), "prismCryptoJS")
-lazy val protosLib = ProjectRef(file("../prism-sdk"), "prismProtosJS")
-lazy val credentialsLib = ProjectRef(file("../prism-sdk"), "prismCredentialsJS")
-lazy val connectorLib = ProjectRef(file("../prism-sdk"), "prismConnectorJS")
-dependsOn(cryptoLib, protosLib, credentialsLib, connectorLib)
+Compile / PB.protoSources := Seq(
+  (ThisBuild / baseDirectory).value / ".." / "prism-sdk" / "protos" / "src"
+)
+Compile / PB.targets := Seq(
+  scalapb.gen(grpc = false) -> (Compile / sourceManaged).value / "scalapb",
+  scalapb.grpcweb.GrpcWebCodeGenerator -> (Compile / sourceManaged).value / "scalapb"
+)
+
+libraryDependencies += "com.thesamet.scalapb" %%% "scalapb-runtime" % scalapb.compiler.Version.scalapbVersion % "protobuf"
+libraryDependencies += "com.thesamet.scalapb.grpcweb" %%% "scalapb-grpcweb" % scalapb.grpcweb.BuildInfo.version
 
 // Enable DOM testing with Chrome under Selenium
-requireJsDomEnv in Test := true
+Test / requireJsDomEnv := true
 
 lazy val chromeVersion: String = {
   // Try getting the Chrome version provided by CircleCI
@@ -186,13 +201,13 @@ lazy val chromeVersion: String = {
   val majorVersion = version.substring(0, version.indexOf('.'))
   s"$majorVersion.0.0"
 }
-npmDependencies in Test += "chromedriver" -> chromeVersion
+Test / npmDependencies += "chromedriver" -> chromeVersion
 
-jsEnv in Test := {
+Test / jsEnv := {
   // Set the path to the Chrome driver, based on the OS
   val isWindows = System.getProperty("os.name").toLowerCase.contains("win")
   val chromeDriverBin = if (isWindows) "chromedriver.exe" else "chromedriver"
-  val npmDir = (npmInstallDependencies in Test).value
+  val npmDir = (Test / npmInstallDependencies).value
   val chromeDriver = f"$npmDir/node_modules/chromedriver/bin/$chromeDriverBin"
   System.setProperty("webdriver.chrome.driver", chromeDriver)
 

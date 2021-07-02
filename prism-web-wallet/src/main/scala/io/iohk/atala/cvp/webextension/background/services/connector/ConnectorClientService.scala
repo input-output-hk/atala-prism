@@ -8,10 +8,6 @@ import io.iohk.atala.cvp.webextension.background.services.connector.ConnectorCli
 import io.iohk.atala.cvp.webextension.background.wallet.models.RoleHepler
 import io.iohk.atala.cvp.webextension.common.ECKeyOperation._
 import io.iohk.atala.cvp.webextension.common.models.Role
-import io.iohk.atala.prism.credentials.CredentialBatchId
-import io.iohk.atala.prism.crypto.MerkleTree.MerkleInclusionProof
-import io.iohk.atala.prism.crypto.{ECKeyPair, SHA256Digest}
-import io.iohk.atala.prism.identity.DID
 import io.iohk.atala.prism.protos.connector_api._
 import io.iohk.atala.prism.protos.console_api.{
   PublishBatchRequest,
@@ -20,12 +16,23 @@ import io.iohk.atala.prism.protos.console_api.{
 }
 import io.iohk.atala.prism.protos.{connector_api, console_api, node_models}
 import scalapb.grpc.Channels
-import java.util.UUID
+import typings.inputOutputHkPrismSdk.mod.io.iohk.atala.prism.kotlin.credentials.CredentialBatchId
+import typings.inputOutputHkPrismSdk.mod.io.iohk.atala.prism.kotlin.crypto.{
+  MerkleInclusionProof,
+  SHA256Digest,
+  SHA256DigestCompanion
+}
+import typings.inputOutputHkPrismSdk.mod.io.iohk.atala.prism.kotlin.identity.DID
 
+import java.util.UUID
 import io.iohk.atala.cvp.webextension.common.ECKeyOperation
+import typings.inputOutputHkPrismSdk.mod.io.iohk.atala.prism.kotlin.credentials.json.JsonBasedCredentialCompanion
+import typings.inputOutputHkPrismSdk.mod.io.iohk.atala.prism.kotlin.crypto.keys.ECKeyPair
 
 import scala.concurrent.{ExecutionContext, Future}
 import scala.scalajs.js.JSConverters._
+import scala.scalajs.js.typedarray.byteArray2Int8Array
+import scala.util.Try
 
 class ConnectorClientService(url: String) {
   private val connectorApi = connector_api.ConnectorServiceGrpcWeb.stub(Channels.grpcwebChannel(url))
@@ -62,10 +69,11 @@ class ConnectorClientService(url: String) {
       batchOperationHash: SHA256Digest,
       credentialId: UUID
   )(implicit ec: ExecutionContext): Future[ByteString] = {
-    val credentialHashT = io.iohk.atala.prism.credentials.Credential
-      .fromString(signedCredentialStringRepresentation)
-      .map(_.hash)
-      .toTry
+    val credentialHashT = Try {
+      JsonBasedCredentialCompanion
+        .fromString(signedCredentialStringRepresentation)
+        .hash()
+    }
 
     for {
       credentialHash <- Future.fromTry(credentialHashT)
@@ -119,8 +127,8 @@ class ConnectorClientService(url: String) {
       // we first publish the batch
       batchResponse <- credentialsServiceApi.publishBatch(publishBatchRequest, batchMetadata.toJSDictionary)
       // now we store all the credentials data
-      issuanceOperationHash = SHA256Digest.compute(issuanceOperation.toByteArray)
-      _ = println(s"issuanceOperationHash = '${issuanceOperationHash.hexValue}'")
+      issuanceOperationHash = SHA256DigestCompanion.compute(byteArray2Int8Array(issuanceOperation.toByteArray))
+      _ = println(s"issuanceOperationHash = '${issuanceOperationHash.hexValue()}'")
       _ = println(s"batchId = '${batchResponse.batchId}'")
       _ <- publishCredentials(
         masterECKeyPair,
@@ -161,7 +169,7 @@ class ConnectorClientService(url: String) {
           .withBatchId(batchId)
           .withEncodedSignedCredential(encodedSignedCredential)
           .withConsoleCredentialId(consoleId.id)
-          .withEncodedInclusionProof(proof.encode)
+          .withEncodedInclusionProof(proof.encode())
 
         val metadata = metadataForRequest(ecKeyPair, did, request)
 

@@ -5,10 +5,10 @@ import io.iohk.atala.cvp.webextension.background.services.connector.ConnectorCli
 import io.iohk.atala.cvp.webextension.background.services.console.ConsoleClientService
 import io.iohk.atala.cvp.webextension.util.RetryableFuture
 import io.iohk.atala.cvp.webextension.util.Scheduler.Implicits.jsScheduler
-import io.iohk.atala.prism.crypto.ECKeyPair
-import io.iohk.atala.prism.identity.DID
 import io.iohk.atala.prism.protos.credential_models.AtalaMessage.Message
-import io.iohk.atala.prism.protos.{connector_api, connector_models, credential_models, console_api}
+import io.iohk.atala.prism.protos.{connector_api, connector_models, console_api, credential_models}
+import typings.inputOutputHkPrismSdk.mod.io.iohk.atala.prism.kotlin.crypto.keys.ECKeyPair
+import typings.inputOutputHkPrismSdk.mod.io.iohk.atala.prism.kotlin.identity.DID
 
 import scala.concurrent.duration.DurationInt
 import scala.concurrent.{ExecutionContext, Future}

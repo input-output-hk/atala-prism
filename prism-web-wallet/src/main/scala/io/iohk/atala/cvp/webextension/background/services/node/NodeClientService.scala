@@ -1,20 +1,10 @@
 package io.iohk.atala.cvp.webextension.background.services.node
 
-import cats.data.ValidatedNel
+import cats.data.Validated.{Invalid, Valid}
+import cats.data.{NonEmptyList, ValidatedNel}
 import com.google.protobuf.ByteString
 import io.iohk.atala.cvp.webextension.background.services.node.NodeUtils._
-import io.iohk.atala.prism.credentials.{
-  BatchData,
-  Credential,
-  CredentialBatchId,
-  KeyData,
-  PrismCredentialVerification,
-  TimestampInfo,
-  VerificationError
-}
-import io.iohk.atala.prism.crypto.MerkleTree.MerkleInclusionProof
-import io.iohk.atala.prism.crypto.{EC, ECTrait, SHA256Digest}
-import io.iohk.atala.prism.identity.DID
+import io.iohk.atala.cvp.webextension.util.NullableOps._
 import io.iohk.atala.prism.protos.node_api
 import io.iohk.atala.prism.protos.node_api.{
   GetBatchStateRequest,
@@ -22,50 +12,65 @@ import io.iohk.atala.prism.protos.node_api.{
   GetDidDocumentRequest
 }
 import scalapb.grpc.Channels
+import typings.inputOutputHkPrismSdk.mod.io.iohk.atala.prism.kotlin.credentials.json.JsonBasedCredentialCompanion
+import typings.inputOutputHkPrismSdk.mod.io.iohk.atala.prism.kotlin.credentials.{
+  BatchData,
+  CredentialBatchId,
+  CredentialBatchIdCompanion,
+  CredentialVerification,
+  KeyData,
+  TimestampInfo,
+  VerificationException
+}
+import typings.inputOutputHkPrismSdk.mod.io.iohk.atala.prism.kotlin.crypto.{MerkleInclusionProof, SHA256Digest}
+import typings.inputOutputHkPrismSdk.mod.io.iohk.atala.prism.kotlin.identity.DID
 
 import scala.concurrent.{ExecutionContext, Future}
+import scala.scalajs.js.JavaScriptException
 
 class NodeClientService(url: String) {
-  private implicit val ec: ECTrait = EC
-
   private val nodeServiceApi = node_api.NodeServiceGrpcWeb.stub(Channels.grpcwebChannel(url))
 
   def verifyCredential(
       signedCredentialStringRepresentation: String,
       merkleProof: MerkleInclusionProof
-  )(implicit executionContext: ExecutionContext): Future[ValidatedNel[VerificationError, Unit]] = {
+  )(implicit executionContext: ExecutionContext): Future[ValidatedNel[VerificationException, Unit]] = {
 
     for {
-      credential <-
-        Credential
+      credential <- Future.successful(
+        JsonBasedCredentialCompanion
           .fromString(signedCredentialStringRepresentation)
-          .fold(
-            error => Future.failed(new RuntimeException(error.message)),
-            Future.successful
-          )
+      )
 
-      issuerDid <-
-        credential.content.issuerDid
-          .map(Future.successful)
-          .getOrElse(Future.failed(new Throwable(s"Cannot verify credential: $credential, issuerDID is empty")))
+      issuerDid =
+        credential.content
+          .getIssuerDid()
+          .getNullable(throw new RuntimeException(s"Cannot verify credential: $credential, issuerDID is empty"))
 
-      issuanceKeyId <-
-        credential.content.issuanceKeyId
-          .map(Future.successful)
-          .getOrElse(Future.failed(new Throwable(s"Cannot verify credential: $credential, issuanceKeyId is empty")))
+      issuanceKeyId =
+        credential.content
+          .getIssuanceKeyId()
+          .getNullable(throw new RuntimeException(s"Cannot verify credential: $credential, issuanceKeyId is empty"))
 
       keyData <- getKeyData(issuerDID = issuerDid, issuanceKeyId = issuanceKeyId)
-      batchId = CredentialBatchId.fromBatchData(issuerDid.suffix, merkleProof.derivedRoot)
+      batchId = CredentialBatchIdCompanion.fromBatchData(issuerDid.suffix, merkleProof.derivedRoot())
       batchData <- getBatchData(batchId)
-      credentialRevocationTime <- getCredentialRevocationTime(batchId, credential.hash)
-    } yield PrismCredentialVerification.verify(
-      keyData,
-      batchData,
-      credentialRevocationTime,
-      merkleProof.derivedRoot,
-      merkleProof,
-      credential
-    )
+      credentialRevocationTime <- getCredentialRevocationTime(batchId, credential.hash())
+      verificationResult =
+        try {
+          CredentialVerification.verifyMerkle(
+            keyData,
+            batchData,
+            credentialRevocationTime.orNull[TimestampInfo],
+            merkleProof.derivedRoot(),
+            merkleProof,
+            credential
+          )
+          Valid(())
+        } catch {
+          case JavaScriptException(e: VerificationException) => Invalid(NonEmptyList(e, Nil))
+        }
+    } yield verificationResult
   }
 
   private def getKeyData(issuerDID: DID, issuanceKeyId: String)(implicit ec: ExecutionContext): Future[KeyData] = {
@@ -82,7 +87,11 @@ class NodeClientService(url: String) {
           .map(fromTimestampInfoProto)
           .getOrElse(throw new Exception(s"Missing addedOn time:\n-Issuer DID: $issuerDID\n- keyId: $issuanceKeyId "))
       revokedOn = issuingKeyProto.revokedOn.map(fromTimestampInfoProto)
-    } yield KeyData(publicKey = issuingKey, addedOn = addedOn, revokedOn = revokedOn)
+    } yield new KeyData(
+      publicKey = issuingKey,
+      addedOn = addedOn,
+      revokedOn = revokedOn.orNull[TimestampInfo]
+    )
   }
 
   // TODO: Detect when the batch isn't found in the node, and report a reasonable error instead of
@@ -99,7 +108,7 @@ class NodeClientService(url: String) {
           .flatMap(_.timestampInfo.map(fromTimestampInfoProto))
           .getOrElse(throw new Exception(s"Missing publication date $batchId"))
       revokedOn = response.revocationLedgerData.flatMap(_.timestampInfo.map(fromTimestampInfoProto))
-    } yield BatchData(issuedOn = publishedOn, revokedOn = revokedOn)
+    } yield new BatchData(issuedOn = publishedOn, revokedOn = revokedOn.orNull[TimestampInfo])
   }
 
   def getCredentialRevocationTime(
