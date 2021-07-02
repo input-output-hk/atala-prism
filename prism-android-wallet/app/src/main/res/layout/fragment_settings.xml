@@ -91,6 +91,19 @@
             app:secondaryText="@string/custom_date_button_description" />
 
         <io.iohk.atala.prism.app.ui.utils.components.OptionItem
+            android:id="@+id/pay_id"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="@dimen/activity_default_side_margin"
+            android:layout_marginTop="16dp"
+            android:layout_marginEnd="@dimen/activity_default_side_margin"
+            app:actionImage="@drawable/arrow_right_grey"
+            app:isAvailable="true"
+            app:logoImage="@drawable/ic_pay_id"
+            app:primaryText="@string/pay_id_button_name"
+            app:secondaryText="@string/pay_id_button_description" />
+
+        <io.iohk.atala.prism.app.ui.utils.components.OptionItem
             android:id="@+id/backend_ip"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"

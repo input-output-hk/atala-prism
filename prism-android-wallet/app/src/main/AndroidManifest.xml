@@ -76,6 +76,10 @@
             android:name="io.iohk.atala.prism.app.ui.interctivedemo.InteractiveDemoActivity"
             android:screenOrientation="portrait" />
 
+        <activity
+            android:name="io.iohk.atala.prism.app.ui.payid.PayIdObtainingNavActivity"
+            android:screenOrientation="portrait" />
+
         <provider
             android:name="androidx.core.content.FileProvider"
             android:authorities="io.iohk.cvp.fileprovider"
@@ -86,6 +90,8 @@
                 android:name="android.support.FILE_PROVIDER_PATHS"
                 android:resource="@xml/file_paths" />
         </provider>
+
+        <service android:name="io.iohk.atala.prism.app.core.ConnectorListenerService"/>
 
     </application>
 

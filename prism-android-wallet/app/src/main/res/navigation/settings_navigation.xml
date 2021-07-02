@@ -31,6 +31,9 @@
         <action
             android:id="@+id/action_settingsFragment_to_securityFragment"
             app:destination="@id/securityFragment" />
+        <action
+            android:id="@+id/action_settingsFragment_to_payIdObtainingNavActivity"
+            app:destination="@id/payIdObtainingNavActivity" />
     </fragment>
     <dialog
         tools:layout="@layout/fragment_delete_all_connections_dialog"
@@ -95,4 +98,9 @@
             app:destination="@id/securityFragment"
             app:popUpTo="@id/settingsFragment" />
     </fragment>
+    <activity
+        tools:layout="@layout/activity_nav_pay_id_obtaining"
+        android:id="@+id/payIdObtainingNavActivity"
+        android:name="io.iohk.atala.prism.app.ui.payid.PayIdObtainingNavActivity"
+        android:label="PayIdObtainingNavActivity" />
 </navigation>

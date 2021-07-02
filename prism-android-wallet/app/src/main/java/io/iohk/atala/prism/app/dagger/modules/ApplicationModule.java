@@ -13,7 +13,8 @@ import io.iohk.atala.prism.app.neo.data.ContactsRepository;
 import io.iohk.atala.prism.app.neo.data.CredentialsRepository;
 import io.iohk.atala.prism.app.neo.data.DashboardRepository;
 import io.iohk.atala.prism.app.neo.data.PreferencesRepository;
-import io.iohk.atala.prism.app.neo.data.SyncRepository;
+import io.iohk.atala.prism.app.neo.data.ProofRequestRepository;
+import io.iohk.atala.prism.app.neo.data.ConnectorListenerRepository;
 import io.iohk.atala.prism.app.neo.data.SessionRepository;
 import io.iohk.atala.prism.app.neo.data.local.ActivityHistoriesLocalDataSource;
 import io.iohk.atala.prism.app.neo.data.local.ActivityHistoriesLocalDataSourceInterface;
@@ -23,8 +24,10 @@ import io.iohk.atala.prism.app.neo.data.local.CredentialsLocalDataSource;
 import io.iohk.atala.prism.app.neo.data.local.CredentialsLocalDataSourceInterface;
 import io.iohk.atala.prism.app.neo.data.local.PreferencesLocalDataSource;
 import io.iohk.atala.prism.app.neo.data.local.PreferencesLocalDataSourceInterface;
-import io.iohk.atala.prism.app.neo.data.local.SyncLocalDataSource;
-import io.iohk.atala.prism.app.neo.data.local.SyncLocalDataSourceInterface;
+import io.iohk.atala.prism.app.neo.data.local.ProofRequestLocalDataSource;
+import io.iohk.atala.prism.app.neo.data.local.ProofRequestLocalDataSourceInterface;
+import io.iohk.atala.prism.app.neo.data.local.ConnectorListenerLocalDataSource;
+import io.iohk.atala.prism.app.neo.data.local.ConnectorListenerLocalDataSourceInterface;
 import io.iohk.atala.prism.app.neo.data.local.SessionLocalDataSource;
 import io.iohk.atala.prism.app.neo.data.local.SessionLocalDataSourceInterface;
 import io.iohk.atala.prism.app.neo.data.remote.ConnectorRemoteDataSource;
@@ -126,22 +129,40 @@ public class ApplicationModule {
         return new AccountRecoveryRepository(sessionLocalDataSource, preferencesLocalDataSource, contactsLocalDataSource, connectorRemoteDataSource);
     }
 
-
     /*
      * [ProofRequestRepository] providers
      * */
 
     @Provides
-    public SyncLocalDataSourceInterface provideProofRequestsLocalDataSource(ProofRequestDao proofRequestDao, ContactDao contactDao, CredentialDao credentialDao) {
-        return new SyncLocalDataSource(proofRequestDao, contactDao,credentialDao);
+    public ProofRequestLocalDataSourceInterface provideProofRequestLocalDataSource(ProofRequestDao proofRequestDao, CredentialDao credentialDao){
+        return new ProofRequestLocalDataSource(proofRequestDao, credentialDao);
     }
 
     @Provides
-    public SyncRepository provideProofRequestRepository(SyncLocalDataSourceInterface localDataSource,
-                                                        ConnectorRemoteDataSource connectorRemoteDataSource,
-                                                        SessionLocalDataSourceInterface sessionLocalDataSource,
-                                                        PreferencesLocalDataSourceInterface preferencesLocalDataSource) {
-        return new SyncRepository(localDataSource, connectorRemoteDataSource, sessionLocalDataSource, preferencesLocalDataSource);
+    public ProofRequestRepository provideProofRequestRepository(
+            ProofRequestLocalDataSourceInterface proofRequestLocalDataSource,
+            ConnectorRemoteDataSource connectorRemoteDataSource,
+            SessionLocalDataSourceInterface sessionLocalDataSource,
+            PreferencesLocalDataSourceInterface preferencesLocalDataSource
+    ){
+        return new ProofRequestRepository(proofRequestLocalDataSource, connectorRemoteDataSource, sessionLocalDataSource, preferencesLocalDataSource);
+    }
+
+    /*
+     * [ConnectorListenerRepository] providers
+     * */
+
+    @Provides
+    public ConnectorListenerLocalDataSourceInterface provideConnectorListenerLocalDataSource(ProofRequestDao proofRequestDao, ContactDao contactDao, CredentialDao credentialDao) {
+        return new ConnectorListenerLocalDataSource(proofRequestDao, contactDao,credentialDao);
+    }
+
+    @Provides
+    public ConnectorListenerRepository provideConnectorListenerRepository(ConnectorListenerLocalDataSourceInterface localDataSource,
+                                                                          ConnectorRemoteDataSource connectorRemoteDataSource,
+                                                                          SessionLocalDataSourceInterface sessionLocalDataSource,
+                                                                          PreferencesLocalDataSourceInterface preferencesLocalDataSource) {
+        return new ConnectorListenerRepository(localDataSource, connectorRemoteDataSource, sessionLocalDataSource, preferencesLocalDataSource);
     }
 
     /*

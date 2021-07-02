@@ -8,6 +8,7 @@ import dagger.android.support.AndroidSupportInjectionModule;
 import io.iohk.atala.prism.app.core.PrismApplication;
 import io.iohk.atala.prism.app.dagger.builders.ActivityBuilder;
 import io.iohk.atala.prism.app.dagger.builders.FragmentBuilder;
+import io.iohk.atala.prism.app.dagger.builders.ServiceBuilder;
 import io.iohk.atala.prism.app.dagger.modules.ApplicationModule;
 import io.iohk.atala.prism.app.dagger.modules.ViewModelModule;
 
@@ -18,7 +19,8 @@ import io.iohk.atala.prism.app.dagger.modules.ViewModelModule;
                 ApplicationModule.class,
                 ViewModelModule.class,
                 ActivityBuilder.class,
-                FragmentBuilder.class
+                FragmentBuilder.class,
+                ServiceBuilder.class
         }
 )
 public interface CvpComponent extends AndroidInjector<PrismApplication> {

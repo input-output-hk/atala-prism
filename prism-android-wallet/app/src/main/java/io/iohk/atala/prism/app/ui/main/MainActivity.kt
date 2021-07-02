@@ -42,12 +42,6 @@ class MainActivity : DaggerAppCompatActivity() {
         }
         setObservers()
         viewModel.checkSecuritySettings()
-        viewModel.startConnectionsStreams()
-    }
-
-    override fun onDestroy() {
-        super.onDestroy()
-        viewModel.stopConnectionsStreams()
     }
 
     override fun onRestoreInstanceState(savedInstanceState: Bundle) {

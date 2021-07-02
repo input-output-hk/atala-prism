@@ -1,16 +1,14 @@
 package io.iohk.atala.prism.app.neo.data
 
-import androidx.lifecycle.LiveData
 import androidx.lifecycle.Observer
 import io.iohk.atala.prism.app.data.local.db.mappers.CredentialMapper
 import io.iohk.atala.prism.app.data.local.db.model.Contact
 import io.iohk.atala.prism.app.data.local.db.model.Credential
 import io.iohk.atala.prism.app.data.local.db.model.ProofRequest
-import io.iohk.atala.prism.app.data.local.db.model.ProofRequestWithContactAndCredentials
 import io.iohk.atala.prism.app.neo.common.extensions.toMilliseconds
+import io.iohk.atala.prism.app.neo.data.local.ConnectorListenerLocalDataSourceInterface
 import io.iohk.atala.prism.app.neo.data.local.PreferencesLocalDataSourceInterface
 import io.iohk.atala.prism.app.neo.data.local.SessionLocalDataSourceInterface
-import io.iohk.atala.prism.app.neo.data.local.SyncLocalDataSourceInterface
 import io.iohk.atala.prism.app.neo.data.remote.ConnectorGRPCStream
 import io.iohk.atala.prism.app.neo.data.remote.ConnectorGRPCStreamsManager
 import io.iohk.atala.prism.app.neo.data.remote.ConnectorRemoteDataSource
@@ -20,8 +18,8 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 
-class SyncRepository(
-    private val syncLocalDataSource: SyncLocalDataSourceInterface,
+class ConnectorListenerRepository(
+    private val localDataSource: ConnectorListenerLocalDataSourceInterface,
     private val remoteDataSource: ConnectorRemoteDataSource,
     sessionLocalDataSource: SessionLocalDataSourceInterface,
     preferencesLocalDataSource: PreferencesLocalDataSourceInterface
@@ -31,7 +29,7 @@ class SyncRepository(
         preferencesLocalDataSource
     ) {
 
-    private val contactsData = syncLocalDataSource.allContacts()
+    private val contactsData = localDataSource.allContacts()
 
     // this observer must notify the ConnectorGRPCStreamsManager every change in the list of contacts (connections)
     private val contactsObserver = Observer<List<Contact>> { contacts ->
@@ -79,25 +77,25 @@ class SyncRepository(
      * */
     private fun handleNewMessage(receivedMessage: ReceivedMessage, connectionId: String) {
         CoroutineScope(Dispatchers.Default).launch {
-            syncLocalDataSource.getContactByConnectionId(connectionId)?.let { contact ->
+            localDataSource.getContactByConnectionId(connectionId)?.let { contact ->
                 val atalaMessage = AtalaMessage.parseFrom(receivedMessage.message)
                 if (CredentialMapper.isACredentialMessage(atalaMessage)) {
                     val credential = CredentialMapper.mapToCredential(receivedMessage, receivedMessage.id, receivedMessage.connectionId, receivedMessage.received.toMilliseconds(), contact)
                     contact.lastMessageId = receivedMessage.id
-                    syncLocalDataSource.updateContact(contact, listOf(credential))
+                    localDataSource.updateContact(contact, listOf(credential))
                 } else if (atalaMessage.messageCase == AtalaMessage.MessageCase.PROOF_REQUEST) {
                     mapProofRequest(atalaMessage.proofRequest, receivedMessage.id, contact.connectionId)?.let {
-                        syncLocalDataSource.insertProofRequest(it.first, it.second)
+                        localDataSource.insertProofRequest(it.first, it.second)
                     }
                     contact.lastMessageId = receivedMessage.id
-                    syncLocalDataSource.updateContact(contact, listOf())
+                    localDataSource.updateContact(contact, listOf())
                 }
             }
         }
     }
 
     private suspend fun mapProofRequest(proofRequestMessage: io.iohk.atala.prism.protos.ProofRequest, messageId: String, connectionId: String): Pair<ProofRequest, List<Credential>>? {
-        val credentials = syncLocalDataSource.credentialsByTypes(proofRequestMessage.typeIdsList)
+        val credentials = localDataSource.credentialsByTypes(proofRequestMessage.typeIdsList)
         val credentialsFound: List<Credential> = proofRequestMessage.typeIdsList.map { typeId ->
             credentials.find { credential -> credential.credentialType == typeId }
         }.filterNotNull()
@@ -109,27 +107,5 @@ class SyncRepository(
             )
         }
         return null
-    }
-
-    fun getAllProofRequest(): LiveData<List<ProofRequest>> = syncLocalDataSource.allProofRequest()
-
-    suspend fun getProofRequestById(id: Long): ProofRequestWithContactAndCredentials? = syncLocalDataSource.getProofRequestById(id)
-
-    suspend fun removeProofRequest(proofRequest: ProofRequest) = syncLocalDataSource.removeProofRequest(proofRequest)
-
-    suspend fun declineProofRequest(proofRequest: ProofRequest) {
-        removeProofRequest(proofRequest)
-    }
-
-    suspend fun acceptProofRequest(id: Long) {
-        getProofRequestById(id)?.let { proofRequestData ->
-            val encodedCredentials = syncLocalDataSource.loadEncodedCredentials(proofRequestData.credentials)
-            remoteDataSource.sendCredentialsToContact(proofRequestData.contact!!, encodedCredentials)
-            // store activity log
-            syncLocalDataSource.insertRequestedCredentialActivities(proofRequestData.contact!!, proofRequestData.credentials)
-            removeProofRequest(proofRequestData.proofRequest)
-        } ?: kotlin.run {
-            throw Exception("ProofRequest nonexistent")
-        }
     }
 }

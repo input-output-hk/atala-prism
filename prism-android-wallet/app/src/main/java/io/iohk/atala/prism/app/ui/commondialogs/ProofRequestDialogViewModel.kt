@@ -10,11 +10,11 @@ import io.iohk.atala.prism.app.data.local.db.model.Credential
 import io.iohk.atala.prism.app.data.local.db.model.ProofRequestWithContactAndCredentials
 import io.iohk.atala.prism.app.neo.common.EventWrapper
 import io.iohk.atala.prism.app.neo.common.model.CheckableData
-import io.iohk.atala.prism.app.neo.data.SyncRepository
+import io.iohk.atala.prism.app.neo.data.ProofRequestRepository
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
-class ProofRequestDialogViewModel @Inject constructor(private val repository: SyncRepository) : ViewModel() {
+class ProofRequestDialogViewModel @Inject constructor(private val repository: ProofRequestRepository) : ViewModel() {
 
     private var proofRequestData: ProofRequestWithContactAndCredentials? = null
 

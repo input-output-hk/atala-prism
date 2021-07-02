@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<navigation xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/payid_obtaining_navigation"
+    app:startDestination="@id/payIdInstructionsFragment">
+
+    <fragment
+        tools:layout="@layout/fragment_pay_id_instructions"
+        android:id="@+id/payIdInstructionsFragment"
+        android:name="io.iohk.atala.prism.app.ui.payid.instructions.PayIdInstructionsFragment"
+        android:label="PayIdInstructionsFragment" />
+</navigation>

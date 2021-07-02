@@ -135,6 +135,8 @@
     <string name="support_title">Support</string>
     <string name="custom_date_button_name">Date</string>
     <string name="custom_date_button_description">Custom date format</string>
+    <string name="pay_id_button_name">Pay ID</string>
+    <string name="pay_id_button_description">Get it Now !</string>
 
     <!-- Payment screen labels -->
     <string name="receive_credential">Receive Credential</string>
@@ -341,4 +343,16 @@
     <string name="row_dashboard_card_notification_verified_credential_text">You can start now or do it later by goint to the &lt;b>Settings&lt;/b> option on the bottom menu.</string>
     <string name="row_dashboard_card_notification_verified_credential_button_text_1">Verified Credential</string>
     <string name="row_dashboard_card_notification_verified_credential_button_text_2">Get it Now !</string>
+
+    <!-- layout/fragment_pay_id_instructions.xml -->
+    <string name="fragment_pay_id_instructions_text_1">Benefits of creating a Pay ID</string>
+    <string name="fragment_pay_id_instructions_text2">A better way to send and receive payments</string>
+    <string name="fragment_pay_id_instructions_step_1_title">Simple</string>
+    <string name="fragment_pay_id_instructions_step_1_text">Get an easy to remember payment address \nlike your email or phone number</string>
+    <string name="fragment_pay_id_instructions_step_2_title">Convenient</string>
+    <string name="fragment_pay_id_instructions_step_2_text">Attach multiple payment systems to your \nPay ID</string>
+    <string name="fragment_pay_id_instructions_step_3_title">Secure</string>
+    <string name="fragment_pay_id_instructions_step_3_text">No need to provide financially \nsensitive information</string>
+    <string name="fragment_pay_id_instructions_continue">Continue</string>
+    <string name="fragment_pay_id_instructions_skip">Skip and do later</string>
 </resources>

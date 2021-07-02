@@ -138,6 +138,11 @@ public class SettingsFragment extends DaggerFragment {
         Navigation.findNavController(requireView()).navigate(R.id.action_settingsFragment_to_settingsDateFormatFragment);
     }
 
+    @OnClick(R.id.pay_id)
+    void onPayIdClicked(){
+        Navigation.findNavController(requireView()).navigate(R.id.action_settingsFragment_to_payIdObtainingNavActivity);
+    }
+
     private void resetData() {
         FirebaseAnalytics.getInstance(requireContext()).logEvent(FirebaseAnalyticsEvents.RESET_DATA, null);
         FragmentActivityExtensionsKt.showBlockUILoading(requireActivity());
