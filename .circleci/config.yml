@@ -249,6 +249,7 @@ jobs:
     working_directory: ~/repo
     docker:
       - image: circleci/android:api-29
+    resource_class: medium+
     steps:
       - checkout
 

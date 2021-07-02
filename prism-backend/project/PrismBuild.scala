@@ -87,18 +87,19 @@ object PrismBuild {
       )
       .dependsOn(cryptoLib, protosLib, credentialsLib, connectorLib)
 
-  private def generateImageName(name: String, version: String): ImageName = {
-    val namespace =
-      if (sys.env.get("GITHUB").contains("1"))
-        Some("ghcr.io/input-output-hk")
-      else
-        Some("895947072537.dkr.ecr.us-east-2.amazonaws.com")
-    ImageName(
-      namespace = namespace,
-      repository = name,
-      tag = sys.env.get("TAG").orElse(Some(version))
-    )
-  }
+  private def generateImageName(name: String, version: String): ImageName =
+    if (sys.env.get("GITHUB").contains("1"))
+      ImageName(
+        namespace = Some("ghcr.io/input-output-hk"),
+        repository = "prism-" + name,
+        tag = sys.env.get("TAG").orElse(Some(version))
+      )
+    else
+      ImageName(
+        namespace = Some("895947072537.dkr.ecr.us-east-2.amazonaws.com"),
+        repository = name,
+        tag = sys.env.get("TAG").orElse(Some(version))
+      )
 
   def commonServerProject(name: String): Project =
     commonProject(Project(name, file(name)))
@@ -115,7 +116,7 @@ object PrismBuild {
             cmd("/usr/local/openjdk-8/bin/java", "-classpath", s"/usr/app/$name.jar", className)
           }
         },
-        docker / imageNames := Seq(generateImageName("prism-" + name, version.value)),
+        docker / imageNames := Seq(generateImageName(name, version.value)),
         libraryDependencies ++= circeDependencies ++ doobieDependencies ++
           grpcDependencies ++ logbackDependencies ++
           sttpDependencies ++
