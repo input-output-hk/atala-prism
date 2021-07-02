@@ -35,11 +35,16 @@ job "job_prism" {
         sidecar_task {
           config {
             auth_soft_fail = true
+            command        = "envoy"
+            args = [
+              "-c", "/secrets/envoy_bootstrap.json",
+              "-l", "info", "--disable-hot-restart"
+            ]
           }
 
           # NOTE: Update these values to set the resources available to the main load balancer (receiving external traffic)
           resources {
-            cpu    = 500
+            cpu    = 1500
             memory = 1024
           }
         }
@@ -91,7 +96,7 @@ job "job_prism" {
 
   group "connector-api" {
     # NOTE: Update this value to increase the number of connectors running
-    count = 1
+    count = 6
 
     network {
       mode = "bridge"
@@ -121,12 +126,17 @@ job "job_prism" {
         sidecar_task {
           config {
             auth_soft_fail = true
+            command        = "envoy"
+            args = [
+              "-c", "/secrets/envoy_bootstrap.json",
+              "-l", "info", "--disable-hot-restart"
+            ]
           }
 
           # NOTE: Update these values to set the resources available to the connector load balancer
           resources {
             cpu    = 1500
-            memory = 1024
+            memory = 1500
           }
         }
 
@@ -201,12 +211,12 @@ job "job_prism" {
 
       config {
         # TODO: Avoid hardcoding the url/image/version
-        image = "895947072537.dkr.ecr.us-east-2.amazonaws.com/connector:develop-3652-33e5389d2"
+        image = "895947072537.dkr.ecr.us-east-2.amazonaws.com/connector:develop-3674-e2c1a2084"
       }
 
       # NOTE: Update these values to set the resources available to each connector instance
       resources {
-        cpu    = 500
+        cpu    = 3500
         memory = 1024
       }
     }
@@ -246,12 +256,17 @@ job "job_prism" {
         sidecar_task {
           config {
             auth_soft_fail = true
+            command        = "envoy"
+            args = [
+              "-c", "/secrets/envoy_bootstrap.json",
+              "-l", "info", "--disable-hot-restart"
+            ]
           }
 
           # NOTE: Update these values to set the resources available to the node load balancer
           resources {
-            cpu    = 500
-            memory = 1024
+            cpu    = 1500
+            memory = 2048
           }
         }
 
@@ -300,13 +315,13 @@ job "job_prism" {
 
       config {
         # TODO: Avoid hardcoding the url/image/version
-        image = "895947072537.dkr.ecr.us-east-2.amazonaws.com/node:develop-3652-33e5389d2"
+        image = "895947072537.dkr.ecr.us-east-2.amazonaws.com/node:develop-3674-e2c1a2084"
       }
 
       # NOTE: Update these values to set the resources available to each node instance
       resources {
-        cpu    = 500
-        memory = 1024
+        cpu    = 4000
+        memory = 2048
       }
     }
   }
@@ -329,6 +344,14 @@ job "job_prism" {
         sidecar_task {
           config {
             auth_soft_fail = true
+            command        = "envoy"
+            args = [
+              "-c", "/secrets/envoy_bootstrap.json",
+              "-l", "info", "--disable-hot-restart"
+            ]
+          }
+          resources {
+            cpu = 500
           }
         }
       }
@@ -371,7 +394,7 @@ job "job_prism" {
 
       # NOTE: Update these values to set the resources available to each postgres instance
       resources {
-        cpu    = 500
+        cpu    = 1000
         memory = 1024
       }
 
@@ -404,6 +427,14 @@ job "job_prism" {
         sidecar_task {
           config {
             auth_soft_fail = true
+            command        = "envoy"
+            args = [
+              "-c", "/secrets/envoy_bootstrap.json",
+              "-l", "info", "--disable-hot-restart"
+            ]
+          }
+          resources {
+            cpu = 1000
           }
         }
       }
@@ -437,7 +468,7 @@ job "job_prism" {
 
       # NOTE: Update these values to set the resources available to each postgres instance
       resources {
-        cpu    = 1500
+        cpu    = 4000
         memory = 1024
       }
     }
