@@ -3,6 +3,7 @@ import { Tabs } from 'antd';
 import { useTranslation } from 'react-i18next';
 import StylingSettings from './StylingSettings';
 import ContentSettings from './ContentSettings';
+import './_style.scss';
 
 const { TabPane } = Tabs;
 
@@ -20,7 +21,7 @@ const TemplateSettings = () => {
   };
 
   return (
-    <Tabs defaultActiveKey={tabs.setStyle.key} centered>
+    <Tabs className="templateTab" defaultActiveKey={tabs.setStyle.key} centered>
       <TabPane tab={tabs.setStyle.title} key={tabs.setStyle.key}>
         <StylingSettings />
       </TabPane>
