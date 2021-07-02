@@ -63,6 +63,31 @@ export NODE_CARDANO_CONFIRMATION_BLOCKS="1"
 export NODE_LEDGER="cardano"
 ```
 
+## Pushing Docker images
+To build and push a Docker image for a backend module run the following command in your terminal:
+
+```bash
+sbt <module>/dockerBuildAndPush
+```
+
+By default, `sbt` pushes to AWS Elastic Container Registry. Alternatively, you can push to GitHub Packages Container registry. First, you need to set up your login details for GitHub. Assuming that your GitHub personal access token with write rights for packages is stored in `GITHUB_TOKEN`, run this:
+
+```bash
+ echo $GITHUB_TOKEN | docker login ghcr.io -u <USERNAME> --password-stdin
+```
+
+Next, by setting `GITHUB` environment variable to `1`, you can tell `sbt` that you want the images to be pushed to GitHub. For example, to push connector in such fashion run this:
+
+```bash
+GITHUB=1 sbt connector/dockerBuildAndPush
+```
+
+You can also use `TAG` environment variable to specify a custom Docker container tag:
+
+```bash
+TAG=test-container sbt connector/dockerBuildAndPush
+```
+
 ## IDE / Editor support
 
 If you intend to work on scala code, you should set up build server

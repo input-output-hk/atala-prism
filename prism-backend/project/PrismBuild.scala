@@ -1,5 +1,6 @@
 import Dependencies._
 import com.typesafe.sbt.GitVersioning
+import com.typesafe.sbt.GitPlugin.autoImport._
 import play.twirl.sbt.SbtTwirl
 import sbt.Keys._
 import sbt._
@@ -17,6 +18,8 @@ object PrismBuild {
       .settings(
         organization := "io.iohk",
         organizationName := "Input Output HK",
+        git.baseVersion := "1.1",
+        git.formattedShaVersion := git.gitHeadCommit.value.map(git.baseVersion.value + "-" + _.take(8)),
         scalaVersion := "2.13.6",
         scalacOptions ~= (options =>
           options.filterNot(
@@ -35,12 +38,12 @@ object PrismBuild {
         Test / fork := true,
         Test / parallelExecution := false,
         Test / testForkedParallel := false,
-        test in assembly := {},
+        assembly / test := {},
         commands += Command.args("testOnlyUntilFailed", "<testOnly params>") { (state, args) =>
           val argsString = args.mkString(" ")
           ("testOnly " + argsString) :: ("testOnlyUntilFailed " + argsString) :: state
         },
-        assemblyMergeStrategy in assembly := {
+        assembly / assemblyMergeStrategy := {
           // Merge service files, otherwise GRPC client doesn't work: https://github.com/grpc/grpc-java/issues/5493
           case PathList("META-INF", "services", _*) => MergeStrategy.concat
           case PathList("META-INF", "io.netty.versions.properties") => MergeStrategy.concat
@@ -48,7 +51,7 @@ object PrismBuild {
           case x if x.endsWith("module-info.class") => MergeStrategy.discard
           case "logback.xml" => MergeStrategy.concat
           case x =>
-            val oldStrategy = (assemblyMergeStrategy in assembly).value
+            val oldStrategy = (assembly / assemblyMergeStrategy).value
             oldStrategy(x)
         }
       )
@@ -84,13 +87,26 @@ object PrismBuild {
       )
       .dependsOn(cryptoLib, protosLib, credentialsLib, connectorLib)
 
+  private def generateImageName(name: String, version: String): ImageName = {
+    val namespace =
+      if (sys.env.get("GITHUB").contains("1"))
+        Some("ghcr.io/input-output-hk")
+      else
+        Some("895947072537.dkr.ecr.us-east-2.amazonaws.com")
+    ImageName(
+      namespace = namespace,
+      repository = name,
+      tag = sys.env.get("TAG").orElse(Some(version))
+    )
+  }
+
   def commonServerProject(name: String): Project =
     commonProject(Project(name, file(name)))
       .settings(
         buildInfoPackage := "io.iohk.atala.prism",
-        dockerfile in docker := {
+        docker / dockerfile := {
           val artifact = assembly.value
-          val className = (mainClass in (Compile, run)).value.get
+          val className = (Compile / run / mainClass).value.get
           new Dockerfile {
             from("openjdk:8")
             add(file(name), file("/usr/app"))
@@ -99,21 +115,7 @@ object PrismBuild {
             cmd("/usr/local/openjdk-8/bin/java", "-classpath", s"/usr/app/$name.jar", className)
           }
         },
-        imageNames in docker :=
-          Seq(
-            if (sys.env.contains("TAG"))
-              ImageName(
-                namespace = Some("895947072537.dkr.ecr.us-east-2.amazonaws.com"),
-                repository = name,
-                tag = sys.env.get("TAG")
-              )
-            else
-              ImageName(
-                namespace = Some("895947072537.dkr.ecr.us-east-2.amazonaws.com"),
-                repository = name,
-                tag = Some(version.value)
-              )
-          ),
+        docker / imageNames := Seq(generateImageName("prism-" + name, version.value)),
         libraryDependencies ++= circeDependencies ++ doobieDependencies ++
           grpcDependencies ++ logbackDependencies ++
           sttpDependencies ++
@@ -135,7 +137,7 @@ object PrismBuild {
     commonServerProject("node")
       .settings(
         name := "node",
-        mainClass in (Compile, run) := Some("io.iohk.atala.prism.node.NodeApp"),
+        Compile / run / mainClass := Some("io.iohk.atala.prism.node.NodeApp"),
         libraryDependencies ++= Seq(awsSdk, osLib)
       )
       .dependsOn(common % "compile->compile;test->test", connectorLib)
@@ -152,7 +154,7 @@ object PrismBuild {
     commonServerProject("connector")
       .settings(
         name := "connector",
-        mainClass in (Compile, run) := Some("io.iohk.atala.prism.connector.ConnectorApp"),
+        Compile / run / mainClass := Some("io.iohk.atala.prism.connector.ConnectorApp"),
         scalacOptions ~= (_ :+ "-Wconf:src=.*twirl/.*:silent"),
         libraryDependencies ++= Seq(braintree, twirlApi)
       )
@@ -218,11 +220,11 @@ object PrismBuild {
     commonServerProject("mirror")
       .settings(
         name := "mirror",
-        mainClass in (Compile, run) := Some("io.iohk.atala.mirror.MirrorApp"),
+        Compile / run / mainClass := Some("io.iohk.atala.mirror.MirrorApp"),
         libraryDependencies ++= http4sDependencies,
         cardanoAddressBinary := { downloadCardanoAddressBinary() },
-        compile in Compile := {
-          (compile in Compile).dependsOn(cardanoAddressBinary).value
+        Compile / compile := {
+          (Compile / compile).dependsOn(cardanoAddressBinary).value
         }
       )
       .dependsOn(common % "compile->compile;test->test", connectorLib, mirrorLib)
@@ -232,7 +234,7 @@ object PrismBuild {
     commonServerProject("vault")
       .settings(
         name := "vault",
-        mainClass in (Compile, run) := Some("io.iohk.atala.prism.vault.VaultApp")
+        Compile / run / mainClass := Some("io.iohk.atala.prism.vault.VaultApp")
       )
       .dependsOn(common % "compile->compile;test->test")
 
@@ -240,7 +242,7 @@ object PrismBuild {
     commonServerProject("management-console")
       .settings(
         name := "management-console",
-        mainClass in (Compile, run) := Some("io.iohk.atala.prism.management.console.ManagementConsoleApp")
+        Compile / run / mainClass := Some("io.iohk.atala.prism.management.console.ManagementConsoleApp")
       )
       .dependsOn(common % "compile->compile;test->test")
 
@@ -248,7 +250,7 @@ object PrismBuild {
     commonServerProject("kycbridge")
       .settings(
         name := "kycbridge",
-        mainClass in (Compile, run) := Some("io.iohk.atala.prism.kycbridge.KycBridgeApp"),
+        Compile / run / mainClass := Some("io.iohk.atala.prism.kycbridge.KycBridgeApp"),
         libraryDependencies ++= http4sDependencies,
         trapExit := false
       )

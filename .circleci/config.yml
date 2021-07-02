@@ -269,6 +269,55 @@ jobs:
           name: Publish SDK to GitHub NPM registry
           command: cd prism-kotlin-sdk && ./gradlew :extras::publishJsNpmPublicationToGithub
 
+      - run:
+          name: Install SBT
+          command: |
+            echo "deb https://repo.scala-sbt.org/scalasbt/debian all main" | sudo tee /etc/apt/sources.list.d/sbt.list
+            echo "deb https://repo.scala-sbt.org/scalasbt/debian /" | sudo tee /etc/apt/sources.list.d/sbt_old.list
+            curl -sL "https://keyserver.ubuntu.com/pks/lookup?op=get&search=0x2EE0EA64E40A89B84B2DF73499E82A75642AC823" | sudo apt-key add
+            sudo apt-get update
+            sudo apt-get install sbt
+
+      - run:
+          name: Setup Github Container registry credentials
+          command: docker login ghcr.io -u atala-dev -p $GITHUB_TOKEN
+
+      - run:
+          name: Build and push prism-backend/node
+          command: |
+            cd prism-backend
+            GITHUB=1 sbt node/dockerBuildAndPush
+
+      - run:
+          name: Build and push prism-backend/connector
+          command: |
+            cd prism-backend
+            GITHUB=1 sbt connector/dockerBuildAndPush
+
+      - run:
+          name: Build and push prism-backend/vault
+          command: |
+            cd prism-backend
+            GITHUB=1 sbt vault/dockerBuildAndPush
+
+      - run:
+          name: Build and push prism-backend/management-console
+          command: |
+            cd prism-backend
+            GITHUB=1 sbt management-console/dockerBuildAndPush
+
+      - run:
+          name: Build and push prism-backend/mirror
+          command: |
+            cd prism-backend
+            GITHUB=1 sbt mirror/dockerBuildAndPush
+
+      - run:
+          name: Build and push prism-backend/kycbridge
+          command: |
+            cd prism-backend
+            GITHUB=1 sbt kycbridge/dockerBuildAndPush
+
   rebuild-prism-env:
     working_directory: ~/repo
     docker:
@@ -863,12 +912,8 @@ workflows:
                 - /develop.*/
                 - /package.*/
           requires:
-            - build-prism-management-console-web
-            - build-prism-interactive-demo-web
-            - build-prism-backend
-            - build-prism-sdk
             - build-prism-kotlin-sdk
-            - build-prism-web-wallet
+            - build-prism-backend
 
       - slack/approval-notification:
           message: Approval required for managment console demo deployment Ask Mark / Jacek / Christos
