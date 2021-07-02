@@ -146,10 +146,6 @@ message AddConnectionFromTokenRequest {
 // Confirmation of connection instantiation.
 message AddConnectionFromTokenResponse {
   io.iohk.atala.prism.protos.ConnectionInfo connection = 1; // Instantiated connection information.
-  // Your generated user ID
-  // @exclude
-  // TODO: Remove useless field, we are replacing user IDs with DIDs.
-  string user_id = 2;
 }
 
 // Request to revoke a connection.

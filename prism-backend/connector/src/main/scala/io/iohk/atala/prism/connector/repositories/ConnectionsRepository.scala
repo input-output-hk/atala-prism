@@ -34,7 +34,7 @@ trait ConnectionsRepository {
   def addConnectionFromToken(
       token: TokenString,
       didOrPublicKey: Either[DID, ECPublicKey]
-  ): FutureEither[ConnectorError, (ParticipantId, ConnectionInfo)]
+  ): FutureEither[ConnectorError, ConnectionInfo]
 
   def revokeConnection(participantId: ParticipantId, connectionId: ConnectionId): FutureEither[ConnectorError, Unit]
 
@@ -91,7 +91,7 @@ object ConnectionsRepository {
     override def addConnectionFromToken(
         token: TokenString,
         didOrPublicKey: Either[DID, ECPublicKey]
-    ): FutureEither[ConnectorError, (ParticipantId, ConnectionInfo)] = {
+    ): FutureEither[ConnectorError, ConnectionInfo] = {
 
       val maybeDid = didOrPublicKey.left.toOption
       val maybePublicKey = didOrPublicKey.toOption
@@ -157,7 +157,7 @@ object ConnectionsRepository {
         (connectionId, instantiatedAt) = ciia
 
         _ <- EitherT.right[ConnectorError](ConnectionTokensDAO.markAsUsed(token))
-      } yield acceptorInfo.id -> ConnectionInfo(
+      } yield ConnectionInfo(
         connectionId,
         instantiatedAt,
         initiator,

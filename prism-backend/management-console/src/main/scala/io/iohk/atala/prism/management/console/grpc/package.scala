@@ -270,7 +270,7 @@ package object grpc {
       }
 
       val nameOrExternalId = request.filterBy.map(_.nameOrExternalId).map(_.trim).filter(_.nonEmpty)
-      val groupName = InstitutionGroup.Name.optional(request.groupName)
+      val groupName = request.filterBy.map(_.groupName).map(InstitutionGroup.Name.apply)
 
       val defaultSortBy = ResultOrdering(Contact.SortBy.createdAt)
       val sortByT = request.sortBy.map(toContactsResultOrdering).getOrElse(Try(defaultSortBy))
@@ -284,7 +284,12 @@ package object grpc {
         case x => x
       }
 
-      val connectionStatus: Option[ContactConnectionStatus] = request.filterBy.map(_.connectionStatus)
+      // filterNot(_.isStatusMissing) fixes a weird bug, given that the proto status gets propagated
+      // to the database layer, the missing status should be translated to None, otherwise, the db will
+      // look for specific rows with such status (there are none).
+      val connectionStatus: Option[ContactConnectionStatus] = request.filterBy
+        .map(_.connectionStatus)
+        .filterNot(_.isStatusMissing)
 
       for {
         scrollId <- scrollIdT

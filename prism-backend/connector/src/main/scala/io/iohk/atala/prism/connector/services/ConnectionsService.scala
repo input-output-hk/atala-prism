@@ -35,7 +35,7 @@ class ConnectionsService(connectionsRepository: ConnectionsRepository, nodeServi
   def addConnectionFromToken(
       tokenString: TokenString,
       didOrPublicKey: Either[DID, ECPublicKey]
-  ): FutureEither[ConnectorError, (ParticipantId, ConnectionInfo)] = {
+  ): FutureEither[ConnectorError, ConnectionInfo] = {
     connectionsRepository.addConnectionFromToken(tokenString, didOrPublicKey)
   }
 

@@ -74,7 +74,7 @@ class ConnectionsRepositorySpec extends ConnectorRepositorySpecBase {
       sql"""INSERT INTO connection_tokens(token, initiator) VALUES ($token, $issuerId)""".runUpdate()
 
       val result = connectionsRepository.addConnectionFromToken(token, publicKey.asRight).value.futureValue
-      val connectionId = result.toOption.value._2.id
+      val connectionId = result.toOption.value.id
 
       checkConnection(connectionId, token)
 
@@ -92,7 +92,7 @@ class ConnectionsRepositorySpec extends ConnectorRepositorySpecBase {
       sql"""INSERT INTO connection_tokens(token, initiator) VALUES ($token, $issuerId)""".runUpdate()
 
       val result = connectionsRepository.addConnectionFromToken(token, did.asLeft).value.futureValue
-      val connectionId = result.toOption.value._2.id
+      val connectionId = result.toOption.value.id
 
       checkConnection(connectionId, token)
 
@@ -117,12 +117,21 @@ class ConnectionsRepositorySpec extends ConnectorRepositorySpecBase {
         .toOption
         .value
 
-      val (acceptor, connection) = connectionsRepository
+      val connection = connectionsRepository
         .addConnectionFromToken(token, publicKey.asRight)
         .value
         .futureValue
         .toOption
         .value
+
+      val acceptor = connectionsRepository
+        .getOtherSideInfo(connection.id, initiator)
+        .value
+        .futureValue
+        .toOption
+        .value
+        .value
+        .id
 
       (connection.id, initiator, acceptor)
     }

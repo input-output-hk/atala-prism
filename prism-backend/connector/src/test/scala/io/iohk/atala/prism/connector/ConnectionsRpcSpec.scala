@@ -13,7 +13,6 @@ import io.iohk.atala.prism.connector.repositories.daos.{ConnectionTokensDAO, Con
 import io.iohk.atala.prism.crypto.{EC, ECConfig, ECKeyPair, ECPublicKey}
 import io.iohk.atala.prism.identity.DID
 import io.iohk.atala.prism.identity.DID.masterKeyId
-import io.iohk.atala.prism.models.ParticipantId
 import io.iohk.atala.prism.protos.connector_api.GetConnectionTokenInfoRequest
 import io.iohk.atala.prism.protos.node_api.GetDidDocumentRequest
 import io.iohk.atala.prism.protos.node_models.KeyUsage
@@ -112,32 +111,25 @@ class ConnectionsRpcSpec extends ConnectorRpcSpecBase with MockitoSugar {
         .withHolderEncodedPublicKey(encodedPubKey)
       usingApiAs(Vector.empty, keys, request) { blockingStub =>
         val response = blockingStub.addConnectionFromToken(request)
-        val holderId = response.userId
-        holderId mustNot be(empty)
         response.connection.value.participantName mustBe "Issuer"
         val connectionId = ConnectionId.unsafeFrom(response.connection.value.connectionId)
 
-        val participantInfo = io.iohk.atala.prism.connector.model.ParticipantInfo(
-          ParticipantId.unsafeFrom(holderId),
-          Holder,
-          Some(keys.publicKey),
-          "",
-          None,
-          None,
-          None
-        )
         ConnectionsDAO
           .exists(connectionId)
           .transact(database)
           .unsafeToFuture()
           .futureValue mustBe true
 
-        ParticipantsDAO
+        val result = ParticipantsDAO
           .findByPublicKey(keys.publicKey)
           .transact(database)
           .value
           .unsafeToFuture()
-          .futureValue mustBe Some(participantInfo)
+          .futureValue
+          .value
+
+        result.publicKey.value must be(keys.publicKey)
+        result.tpe must be(Holder)
       }
     }
 
@@ -150,31 +142,25 @@ class ConnectionsRpcSpec extends ConnectorRpcSpecBase with MockitoSugar {
       val rpcRequest = SignedRpcRequest.generate(keyPair, unpublishedDID, request)
       usingApiAs(rpcRequest) { blockingStub =>
         val response = blockingStub.addConnectionFromToken(request)
-        val holderId = response.userId
-        holderId mustNot be(empty)
         val connectionId = ConnectionId.unsafeFrom(response.connection.value.connectionId)
 
-        val participantInfo = io.iohk.atala.prism.connector.model.ParticipantInfo(
-          ParticipantId.unsafeFrom(holderId),
-          Holder,
-          None,
-          "",
-          unpublishedDID.canonical,
-          None,
-          None
-        )
         ConnectionsDAO
           .exists(connectionId)
           .transact(database)
           .unsafeToFuture()
           .futureValue mustBe true
 
-        ParticipantsDAO
+        val result = ParticipantsDAO
           .findByDID(unpublishedDID)
           .transact(database)
           .value
           .unsafeToFuture()
-          .futureValue mustBe Some(participantInfo)
+          .futureValue
+          .value
+
+        result.publicKey must be(empty)
+        result.tpe must be(Holder)
+        result.did must be(unpublishedDID.canonical)
       }
     }
 
@@ -211,8 +197,6 @@ class ConnectionsRpcSpec extends ConnectorRpcSpecBase with MockitoSugar {
       usingApiAs(signedRequest1) { blockingStub =>
         // first connection should be established
         val response = blockingStub.addConnectionFromToken(request1)
-        val participantId = response.userId
-        participantId mustNot be(empty)
         val connectionId = ConnectionId.unsafeFrom(response.connection.value.connectionId)
         ConnectionsDAO
           .exists(connectionId)
@@ -220,6 +204,7 @@ class ConnectionsRpcSpec extends ConnectorRpcSpecBase with MockitoSugar {
           .unsafeToFuture()
           .futureValue mustBe true
       }
+
       usingApiAs(signedRequest2) { blockingStub =>
         // second connection should fail
         val status = intercept[StatusRuntimeException] {
@@ -228,7 +213,6 @@ class ConnectionsRpcSpec extends ConnectorRpcSpecBase with MockitoSugar {
         status.getCode mustBe Status.Code.ALREADY_EXISTS
         status.getDescription must include(holderDID.toString)
       }
-
     }
 
     "return ALREADY_EXISTS if the same Public key is used to connect with an issuer twice" in {
@@ -245,8 +229,6 @@ class ConnectionsRpcSpec extends ConnectorRpcSpecBase with MockitoSugar {
       usingApiAs(Vector.empty, holderKeys, request1) { blockingStub =>
         // first connection should be established
         val response = blockingStub.addConnectionFromToken(request1)
-        val participantId = response.userId
-        participantId mustNot be(empty)
         val connectionId = ConnectionId.unsafeFrom(response.connection.value.connectionId)
         ConnectionsDAO
           .exists(connectionId)
@@ -254,6 +236,7 @@ class ConnectionsRpcSpec extends ConnectorRpcSpecBase with MockitoSugar {
           .unsafeToFuture()
           .futureValue mustBe true
       }
+
       usingApiAs(Vector.empty, holderKeys, request2) { blockingStub =>
         // second connection should fail
         val status = intercept[StatusRuntimeException] {
@@ -262,7 +245,6 @@ class ConnectionsRpcSpec extends ConnectorRpcSpecBase with MockitoSugar {
         status.getCode mustBe Status.Code.ALREADY_EXISTS
         status.getDescription must include(holderKeys.publicKey.toString)
       }
-
     }
 
     "return UNKNOWN if the token does not exist" in {

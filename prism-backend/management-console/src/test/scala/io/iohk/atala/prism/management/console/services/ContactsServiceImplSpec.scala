@@ -12,7 +12,6 @@ import io.iohk.atala.prism.management.console.models.{Contact, Helpers, Institut
 import io.iohk.atala.prism.management.console.{DataPreparation, ManagementConsoleRpcSpecBase, ManagementConsoleTestUtil}
 import io.iohk.atala.prism.models.ConnectionToken
 import io.iohk.atala.prism.protos.console_api.DeleteContactResponse
-import io.iohk.atala.prism.protos.console_api.GetContactsRequest.FilterBy
 import io.iohk.atala.prism.protos.console_models.ContactConnectionStatus
 import io.iohk.atala.prism.protos.{connector_models, console_api, console_models}
 import org.mockito.ArgumentMatchersSugar.*
@@ -797,10 +796,15 @@ class ContactsServiceImplSpec extends ManagementConsoleRpcSpecBase with DIDUtil 
       )
       createContact(institutionId, "Bob", Some(groupNameB))
       createContact(institutionId, "Charles", Some(groupNameC))
-      val request = console_api.GetContactsRequest(
-        limit = 2,
-        groupName = groupNameA.value
-      )
+      val request = console_api
+        .GetContactsRequest(
+          limit = 2
+        )
+        .withFilterBy(
+          console_api.GetContactsRequest
+            .FilterBy()
+            .withGroupName(groupNameA.value)
+        )
       val rpcRequest = SignedRpcRequest.generate(keyPair, did, request)
       val connectionMissingWithToken = connectionMissing(Some(connectionToken))
 
@@ -878,11 +882,16 @@ class ContactsServiceImplSpec extends ManagementConsoleRpcSpecBase with DIDUtil 
           groupName
         )
 
-      val request = console_api.GetContactsRequest(
-        groupName = groupName.value,
-        limit = 2,
-        filterBy = Some(FilterBy(connectionStatus = ContactConnectionStatus.STATUS_CONNECTION_ACCEPTED))
-      )
+      val request = console_api
+        .GetContactsRequest(
+          limit = 2
+        )
+        .withFilterBy(
+          console_api.GetContactsRequest
+            .FilterBy()
+            .withGroupName(groupName.value)
+            .withConnectionStatus(ContactConnectionStatus.STATUS_CONNECTION_ACCEPTED)
+        )
       val rpcRequest = SignedRpcRequest.generate(keyPair, did, request)
 
       usingApiAsContacts(rpcRequest) { serviceStub =>
@@ -977,11 +986,16 @@ class ContactsServiceImplSpec extends ManagementConsoleRpcSpecBase with DIDUtil 
       )
       createContact(institutionId, "Bob", Some(groupNameB))
       createContact(institutionId, "Charles", Some(groupNameC))
-      val request = console_api.GetContactsRequest(
-        limit = 2,
-        scrollId = contactA.contactId.toString,
-        groupName = groupNameA.value
-      )
+      val request = console_api
+        .GetContactsRequest(
+          limit = 2,
+          scrollId = contactA.contactId.toString
+        )
+        .withFilterBy(
+          console_api.GetContactsRequest
+            .FilterBy()
+            .withGroupName(groupNameA.value)
+        )
       val rpcRequest = SignedRpcRequest.generate(keyPair, did, request)
       val connectionMissingWithToken = connectionMissing(Some(connectionToken))
 

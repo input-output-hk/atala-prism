@@ -22,7 +22,6 @@ case class ManagementConsole(node: node_api.NodeServiceGrpc.NodeServiceBlockingS
              | "graduationDate" : "${LocalDate.now()}",
              | "subjectName" : "Asymptomatic Joe $index"
              |}""".stripMargin,
-        groupName = "Graduation COVID-19",
         issuerName = "National University of Rosario"
       )
     }

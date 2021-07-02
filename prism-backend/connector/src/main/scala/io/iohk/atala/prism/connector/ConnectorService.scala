@@ -163,11 +163,9 @@ class ConnectorService(
           connections.addConnectionFromToken(addConnectionRequest.token, addConnectionRequest.didOrPublicKey)
       } yield connectionCreationResult
 
-      result.map {
-        case (userId, connectionInfo) =>
-          connector_api
-            .AddConnectionFromTokenResponse(Some(connectionInfo.toProto))
-            .withUserId(userId.uuid.toString)
+      result.map { connectionInfo =>
+        connector_api
+          .AddConnectionFromTokenResponse(Some(connectionInfo.toProto))
       }
     }
   }

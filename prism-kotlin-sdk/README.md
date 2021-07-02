@@ -40,6 +40,9 @@ $ cd /Users/{{YOUR USER}}/Library/Android/sdk
 $ tools/bin/sdkmanager --licenses
 ```
 While there are many ways to install Android SDK this has proven to be the most reliable way. Standard IntelliJ with Android plugin may work. However, we've had several issues. Your milage may vary.
+
+For Ubuntu, `sudo apt update && sudo apt install android-sdk` should work, leaving the SDK at `~/Android/Sdk`
+
 ### Create local.properties file
 
 Create a file named local.properties in the root of the prism-kotlin-sdk.

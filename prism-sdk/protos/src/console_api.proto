@@ -569,7 +569,7 @@ message CreateContactRequest {
   string external_id = 3;
 
   /**
-   * The contact's name. This is required for the Management Console and ignored on the connector.
+   * The contact's name.
    */
   string name = 4;
 
@@ -649,19 +649,8 @@ message GetContactsRequest {
    * The maximum amount of contacts to return. The amount must be greater than zero.
    */
   int32 limit = 1;
-  // @exclude TODO: Remove once the connector integration is removed.
-  /**
-   * The last seen contact (if any). Returned contacts start after this one, just for the connector integration.
-   */
-  string last_seen_contact_id = 2;
-  // @exclude TODO: Remove once the connector integration is removed.
-  /**
-   * If provided, it gets only the contacts that belong to this group, just for the connector integration.
-   */
-  string group_name = 3;
   /**
    * Retrieves the next items based on the given scroll ID, when provided.
-   * This applies only to the Management Console, the connector still works with the lastSeenContactId.
    */
   string scroll_id = 4;
   /**
@@ -709,19 +698,12 @@ message GetContactsRequest {
  * Response with the retrieved contacts.
  */
 message GetContactsResponse {
-  // @exclude TODO: This is only for the connector's implementation, which will be removed once the frontend migrates out of it.
-  /**
-   * The contacts found.
-   */
-  repeated Contact contacts = 1;
   /**
    * The scroll ID to retrieve the next items.
-   * This applies only to the Management Console, the connector still needs to compute the lastSeenContactId.
    */
   string scroll_id = 2;
   /**
-   * The contacts found filled with the credential counters,
-   * NOTE: The connector's implementation does not use this,
+   * The contacts found filled with the credential counters.
    */
   repeated ContactDetails data = 3;
   /**
@@ -963,11 +945,6 @@ message CreateGroupResponse {
  * See GroupsService.GetGroups for more information.
  */
 message GetGroupsRequest {
-  // @exclude TODO: Remove when the connector integration is removed.
-  /**
-   * Optional. When provided, only groups related to the given contact are included.
-   */
-  string contact_id = 1;
   /**
    * Optional, default value is 10. The maximum amount of groups to return.
    */
@@ -1088,11 +1065,6 @@ message CreateGenericCredentialRequest {
    * A valid non-empty JSON is required.
    */
   string credential_data = 2;
-  // @exclude TODO: Remove legacy argument, this was used for the Dec/2019 Georgia demo only.
-  /**
-   * The group name linked to a credential.
-   */
-  string group_name = 3;
   /**
    * The ID provided by the issuer when the contact was created. If this timestamp is not provided,
    * the contact ID is expected.
