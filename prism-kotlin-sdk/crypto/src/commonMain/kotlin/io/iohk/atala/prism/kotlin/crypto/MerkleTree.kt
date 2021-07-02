@@ -2,6 +2,7 @@ package io.iohk.atala.prism.kotlin.crypto
 
 import kotlinx.serialization.json.*
 import kotlin.js.JsExport
+import kotlin.jvm.JvmStatic
 
 typealias Hash = SHA256Digest
 // Bitmask index representing leaf position in a tree where unset i-th bit means that the leaf is
@@ -74,6 +75,7 @@ data class MerkleInclusionProof(
         const val indexField = "index"
         const val siblingsField = "siblings"
 
+        @JvmStatic
         fun decode(encoded: String): MerkleInclusionProof {
             val json = Json.parseToJsonElement(encoded).jsonObject
             val hash = json[hashField]?.jsonPrimitive?.content

@@ -24,8 +24,11 @@ data class SHA256Digest(val value: ByteArray) {
     }
 
     companion object {
+        @JvmStatic
         val BYTE_LENGTH = 32
+        @JvmStatic
         val HEX_STRING_RE = Regex("^(?:[0-9a-fA-F]{2})+$")
+        @JvmStatic
         val HEX_STRING_LENGTH = 64
 
         @JvmStatic
