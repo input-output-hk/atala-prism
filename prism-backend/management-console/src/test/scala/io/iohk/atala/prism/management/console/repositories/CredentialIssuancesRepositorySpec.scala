@@ -13,7 +13,7 @@ import io.iohk.atala.prism.management.console.repositories.CredentialIssuancesRe
 import org.scalatest.OptionValues._
 
 class CredentialIssuancesRepositorySpec extends AtalaWithPostgresSpec {
-  private lazy val credentialIssuancesRepository = new CredentialIssuancesRepository(database)
+  private lazy val credentialIssuancesRepository = CredentialIssuancesRepository(database)
 
   "create" should {
     "create a CredentialIssuance" in {
@@ -42,13 +42,12 @@ class CredentialIssuancesRepositorySpec extends AtalaWithPostgresSpec {
             }
           )
         )
-        .value
-        .futureValue
+        .unsafeRunSync()
         .toOption
         .value
 
       val credentialIssuance =
-        credentialIssuancesRepository.get(credentialIssuanceId, institutionId).value.futureValue.toOption.value
+        credentialIssuancesRepository.get(credentialIssuanceId, institutionId).unsafeRunSync()
       credentialIssuance.id mustBe credentialIssuanceId
       credentialIssuance.name mustBe "Credentials for everyone"
       credentialIssuance.credentialTypeId mustBe credentialTypeWithRequiredFields.credentialType.id
@@ -87,8 +86,7 @@ class CredentialIssuancesRepositorySpec extends AtalaWithPostgresSpec {
             }
           )
         )
-        .value
-        .futureValue
+        .unsafeRunSync()
 
       result mustBe a[Left[CredentialDataValidationFailedForContacts, _]]
     }

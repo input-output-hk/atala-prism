@@ -300,7 +300,7 @@ class ConsoleServiceImplSpec extends ManagementConsoleRpcSpecBase with DIDUtil {
 
       usingApiAsConsole(rpcRequest) { blockingStub =>
         blockingStub.updateParticipantProfile(rpcRequest.request)
-        val result = participantsRepository.findBy(participantId).value.futureValue
+        val result = participantsRepository.findBy(participantId).unsafeRunSync()
         val participantInfo = result.toOption.value
         participantInfo.name must be("iohk updated")
         participantInfo.logo must be(Some(logo))

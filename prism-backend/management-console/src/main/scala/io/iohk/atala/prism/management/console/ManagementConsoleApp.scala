@@ -77,15 +77,15 @@ object ManagementConsoleApp extends IOApp {
       connector = ConnectorClient(connectorConfig)
 
       // repositories
-      contactsRepository = new ContactsRepository(tx)
-      participantsRepository = new ParticipantsRepository(tx, defaultCredentialTypeConfig)
-      requestNoncesRepository = new RequestNoncesRepository.PostgresImpl(tx)
-      statisticsRepository = new StatisticsRepository(tx)
-      credentialsRepository = new CredentialsRepository(tx)
-      receivedCredentialsRepository = new ReceivedCredentialsRepository(tx)
-      institutionGroupsRepository = new InstitutionGroupsRepository(tx)
-      credentialIssuancesRepository = new CredentialIssuancesRepository(tx)
-      credentialTypeRepository = new CredentialTypeRepository(tx)
+      contactsRepository = ContactsRepository(tx)
+      participantsRepository = ParticipantsRepository(tx, defaultCredentialTypeConfig)
+      requestNoncesRepository = RequestNoncesRepository(tx)
+      statisticsRepository = StatisticsRepository(tx)
+      credentialsRepository = CredentialsRepository(tx)
+      receivedCredentialsRepository = ReceivedCredentialsRepository(tx)
+      institutionGroupsRepository = InstitutionGroupsRepository(tx)
+      credentialIssuancesRepository = CredentialIssuancesRepository(tx)
+      credentialTypeRepository = CredentialTypeRepository(tx)
 
       authenticator = new ManagementConsoleAuthenticator(
         participantsRepository,

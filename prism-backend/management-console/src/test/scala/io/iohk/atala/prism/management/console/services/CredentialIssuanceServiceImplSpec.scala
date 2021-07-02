@@ -51,10 +51,7 @@ class CredentialIssuanceServiceImplSpec extends ManagementConsoleRpcSpecBase wit
         val credentials =
           credentialsRepository
             .getBy(institutionId, contacts.size + 1, None)
-            .value
-            .futureValue
-            .toOption
-            .value
+            .unsafeRunSync()
             .sortBy(_.contactId.toString)
         credentials.size mustBe contacts.size
         contacts.zip(credentials).foreach {
@@ -168,10 +165,7 @@ class CredentialIssuanceServiceImplSpec extends ManagementConsoleRpcSpecBase wit
         val credentials =
           credentialsRepository
             .getBy(institutionId, contacts.size + 1, None)
-            .value
-            .futureValue
-            .toOption
-            .value
+            .unsafeRunSync()
             .sortBy(_.contactId.toString)
         credentials.size mustBe contacts.size
         contacts.zip(credentials).foreach {
@@ -230,8 +224,7 @@ class CredentialIssuanceServiceImplSpec extends ManagementConsoleRpcSpecBase wit
     val groups = List("Engineering", "Business").map { groupName =>
       institutionGroupsRepository
         .create(institutionId, InstitutionGroup.Name(groupName), Set())
-        .value
-        .futureValue
+        .unsafeRunSync()
         .toOption
         .value
     }
@@ -272,8 +265,7 @@ class CredentialIssuanceServiceImplSpec extends ManagementConsoleRpcSpecBase wit
     val groups = List("Engineering", "Business").map { groupName =>
       institutionGroupsRepository
         .create(institutionId, InstitutionGroup.Name(groupName), Set())
-        .value
-        .futureValue
+        .unsafeRunSync()
         .toOption
         .value
     }

@@ -24,9 +24,9 @@ class CredentialsStoreServiceImplSpec extends RpcSpecBase with DIDUtil {
     new console_api.CredentialsStoreServiceGrpc.CredentialsStoreServiceBlockingStub(_, _)
   )
 
-  lazy val receivedCredentials = new ReceivedCredentialsRepository(database)
-  private lazy val participantsRepository = new ParticipantsRepository(database)
-  private lazy val requestNoncesRepository = new RequestNoncesRepository.PostgresImpl(database)(executionContext)
+  lazy val receivedCredentials = ReceivedCredentialsRepository(database)
+  private lazy val participantsRepository = ParticipantsRepository(database)
+  private lazy val requestNoncesRepository = RequestNoncesRepository(database)
   protected lazy val nodeMock = mock[io.iohk.atala.prism.protos.node_api.NodeServiceGrpc.NodeService]
 
   private lazy val authenticator = new ManagementConsoleAuthenticator(
@@ -49,7 +49,7 @@ class CredentialsStoreServiceImplSpec extends RpcSpecBase with DIDUtil {
   override def beforeEach(): Unit = {
     super.beforeEach()
 
-    new ParticipantsRepository(database)
+    ParticipantsRepository(database)
       .create(
         CreateParticipantRequest(
           verifierId,
@@ -58,8 +58,7 @@ class CredentialsStoreServiceImplSpec extends RpcSpecBase with DIDUtil {
           ParticipantLogo(Vector())
         )
       )
-      .value
-      .futureValue
+      .unsafeRunSync()
     ()
   }
 
@@ -96,8 +95,7 @@ class CredentialsStoreServiceImplSpec extends RpcSpecBase with DIDUtil {
         val credential = ReceivedCredentialsDAO
           .getReceivedCredentialsFor(verifierId, contactId)
           .transact(database)
-          .unsafeToFuture()
-          .futureValue
+          .unsafeRunSync()
           .head
 
         credential.individualId mustBe contactId
@@ -129,8 +127,7 @@ class CredentialsStoreServiceImplSpec extends RpcSpecBase with DIDUtil {
         val credential = ReceivedCredentialsDAO
           .getReceivedCredentialsFor(verifierId, contactId)
           .transact(database)
-          .unsafeToFuture()
-          .futureValue
+          .unsafeRunSync()
           .head
 
         credential.individualId mustBe contactId
@@ -152,8 +149,7 @@ class CredentialsStoreServiceImplSpec extends RpcSpecBase with DIDUtil {
         val credentials = ReceivedCredentialsDAO
           .getReceivedCredentialsFor(verifierId, contactId)
           .transact(database)
-          .unsafeToFuture()
-          .futureValue
+          .unsafeRunSync()
 
         credentials.size must be(1)
 

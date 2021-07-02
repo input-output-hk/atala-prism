@@ -1,5 +1,7 @@
 package io.iohk.atala.prism.management.console.services
 
+import cats.effect.IO
+import cats.implicits.catsSyntaxEitherId
 import com.google.protobuf.ByteString
 import cats.syntax.functor._
 import io.iohk.atala.prism.auth.AuthAndMiddlewareSupport
@@ -21,6 +23,7 @@ import io.iohk.atala.prism.metrics.RequestMeasureUtil.measureRequestFuture
 import io.iohk.atala.prism.protos.common_models.{HealthCheckRequest, HealthCheckResponse}
 import io.iohk.atala.prism.protos.console_api
 import io.iohk.atala.prism.protos.console_api._
+import io.iohk.atala.prism.utils.FutureEither.FutureEitherOps
 import org.slf4j.{Logger, LoggerFactory}
 
 import scala.concurrent.{ExecutionContext, Future}
@@ -28,7 +31,7 @@ import scala.util.{Failure, Success}
 
 class ConsoleServiceImpl(
     participantsIntegrationService: ParticipantsIntegrationService,
-    statisticsRepository: StatisticsRepository,
+    statisticsRepository: StatisticsRepository[IO],
     val authenticator: ManagementConsoleAuthenticator
 )(implicit
     ec: ExecutionContext
@@ -48,6 +51,9 @@ class ConsoleServiceImpl(
       statisticsRepository
         .query(participantId, getStatistics.timeInterval)
         .map(ProtoCodecs.toStatisticsProto)
+        .unsafeToFuture()
+        .map(_.asRight)
+        .toFutureEither
     }
 
   override def registerDID(request: RegisterConsoleDIDRequest): Future[RegisterConsoleDIDResponse] = {

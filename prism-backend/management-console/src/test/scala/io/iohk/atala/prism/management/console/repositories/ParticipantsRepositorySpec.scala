@@ -21,7 +21,7 @@ import org.scalatest.OptionValues._
 
 //sbt "project management-console" "testOnly *ParticipantsRepositorySpec"
 class ParticipantsRepositorySpec extends AtalaWithPostgresSpec {
-  lazy val participantsRepository = new ParticipantsRepository(database)
+  lazy val participantsRepository = ParticipantsRepository(database)
 
   "getParticipant by did" should {
     "get a participant" in {
@@ -31,10 +31,9 @@ class ParticipantsRepositorySpec extends AtalaWithPostgresSpec {
       ParticipantsDAO
         .insert(info)
         .transact(database)
-        .unsafeToFuture()
-        .futureValue
+        .unsafeRunSync()
 
-      val result = participantsRepository.findBy(did).value.futureValue
+      val result = participantsRepository.findBy(did).unsafeRunSync()
       result.toOption.value must be(info)
     }
 
@@ -49,11 +48,10 @@ class ParticipantsRepositorySpec extends AtalaWithPostgresSpec {
           )
         )
         .transact(database)
-        .unsafeToFuture()
-        .futureValue
+        .unsafeRunSync()
 
       val did = DataPreparation.newDID()
-      val result = participantsRepository.findBy(did).value.futureValue
+      val result = participantsRepository.findBy(did).unsafeRunSync()
       result.left.value must be(UnknownValueError("did", did.value))
     }
   }
@@ -67,12 +65,12 @@ class ParticipantsRepositorySpec extends AtalaWithPostgresSpec {
         logo = ParticipantLogo(Vector.empty)
       )
 
-      participantsRepository.create(request).value.futureValue mustBe a[Right[_, _]]
+      participantsRepository.create(request).unsafeRunSync() mustBe a[Right[_, _]]
 
-      val credentialTypesRepository = new CredentialTypeRepository(database)
+      val credentialTypesRepository = CredentialTypeRepository(database)
 
       val defaultCredentialTypes =
-        credentialTypesRepository.findByInstitution(request.id).value.futureValue.toOption.get
+        credentialTypesRepository.findByInstitution(request.id).unsafeRunSync()
       defaultCredentialTypes.map(_.name).toSet mustBe DefaultCredentialTypeConfig(
         ConfigFactory.load()
       ).defaultCredentialTypes
@@ -95,8 +93,8 @@ class ParticipantsRepositorySpec extends AtalaWithPostgresSpec {
         logo = ParticipantLogo(Vector.empty)
       )
 
-      participantsRepository.create(request1).value.futureValue.isRight mustBe true
-      participantsRepository.create(request2).value.futureValue mustBe Left(InvalidRequest("DID already exists"))
+      participantsRepository.create(request1).unsafeRunSync().isRight mustBe true
+      participantsRepository.create(request2).unsafeRunSync() mustBe Left(InvalidRequest("DID already exists"))
     }
   }
 
@@ -109,19 +107,17 @@ class ParticipantsRepositorySpec extends AtalaWithPostgresSpec {
     ParticipantsDAO
       .insert(info)
       .transact(database)
-      .unsafeToFuture()
-      .futureValue
+      .unsafeRunSync()
     val profile = UpdateParticipantProfile("Updated Issuer", Some(logo))
 
     ParticipantsDAO
       .updateParticipantByID(id, profile)
       .transact(database)
-      .unsafeToFuture()
-      .futureValue
+      .unsafeRunSync()
 
     val expectedParticipant = info.copy(did = did, name = "Updated Issuer", logo = Some(logo))
 
-    val result = participantsRepository.findBy(did).value.futureValue
+    val result = participantsRepository.findBy(did).unsafeRunSync()
     result.toOption.value must be(expectedParticipant)
   }
 
@@ -135,19 +131,17 @@ class ParticipantsRepositorySpec extends AtalaWithPostgresSpec {
     ParticipantsDAO
       .insert(info)
       .transact(database)
-      .unsafeToFuture()
-      .futureValue
+      .unsafeRunSync()
     val profile = UpdateParticipantProfile("", None)
 
     ParticipantsDAO
       .updateParticipantByID(id, profile)
       .transact(database)
-      .unsafeToFuture()
-      .futureValue
+      .unsafeRunSync()
 
     val expectedParticipant = info.copy(did = did, name = "", logo = None)
 
-    val result = participantsRepository.findBy(did).value.futureValue
+    val result = participantsRepository.findBy(did).unsafeRunSync()
     result.toOption.value must be(expectedParticipant)
   }
 
@@ -161,19 +155,17 @@ class ParticipantsRepositorySpec extends AtalaWithPostgresSpec {
     ParticipantsDAO
       .insert(info)
       .transact(database)
-      .unsafeToFuture()
-      .futureValue
+      .unsafeRunSync()
     val profile = UpdateParticipantProfile("Updated Issuer", None)
 
     ParticipantsDAO
       .updateParticipantByID(id, profile)
       .transact(database)
-      .unsafeToFuture()
-      .futureValue
+      .unsafeRunSync()
 
     val expectedParticipant = info.copy(did = did, name = "Updated Issuer", logo = None)
 
-    val result = participantsRepository.findBy(did).value.futureValue
+    val result = participantsRepository.findBy(did).unsafeRunSync()
     result.toOption.value must be(expectedParticipant)
   }
 
@@ -187,20 +179,18 @@ class ParticipantsRepositorySpec extends AtalaWithPostgresSpec {
     ParticipantsDAO
       .insert(info)
       .transact(database)
-      .unsafeToFuture()
-      .futureValue
+      .unsafeRunSync()
     val profile = UpdateParticipantProfile("Updated Issuer", Some(logo))
     val invalidID = ParticipantId.random()
     assertThrows[Exception] {
       ParticipantsDAO
         .updateParticipantByID(invalidID, profile)
         .transact(database)
-        .unsafeToFuture()
-        .futureValue
+        .unsafeRunSync()
     }
 
     val expectedParticipant = info.copy(did = did)
-    val result = participantsRepository.findBy(did).value.futureValue
+    val result = participantsRepository.findBy(did).unsafeRunSync()
     result.toOption.value must be(expectedParticipant)
   }
 

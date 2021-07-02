@@ -26,7 +26,7 @@ import io.iohk.atala.prism.management.console.repositories.daos.CredentialTypeDa
 class CredentialsRepositorySpec extends AtalaWithPostgresSpec {
   import CredentialsRepositorySpec.publish
 
-  lazy val credentialsRepository = new CredentialsRepository(database)
+  lazy val credentialsRepository = CredentialsRepository(database)
 
   "create" should {
     "create a new credential" in {
@@ -48,7 +48,7 @@ class CredentialsRepositorySpec extends AtalaWithPostgresSpec {
         externalId = None
       )
 
-      val result = credentialsRepository.create(issuerId, request).value.futureValue
+      val result = credentialsRepository.create(issuerId, request).unsafeRunSync()
       val credential = result.toOption.value
       credential.credentialData must be(request.credentialData)
       credential.issuedBy must be(issuerId)
@@ -75,7 +75,7 @@ class CredentialsRepositorySpec extends AtalaWithPostgresSpec {
         externalId = None
       )
 
-      val result = credentialsRepository.create(issuerId, request).value.futureValue
+      val result = credentialsRepository.create(issuerId, request).unsafeRunSync()
       result mustBe a[Left[CredentialDataValidationFailed, _]]
     }
   }
@@ -92,7 +92,7 @@ class CredentialsRepositorySpec extends AtalaWithPostgresSpec {
       )
 
       val returnedCredential =
-        credentialsRepository.getBy(credential.credentialId).value.futureValue.toOption.value.value
+        credentialsRepository.getBy(credential.credentialId).unsafeRunSync().value
 
       returnedCredential must be(credential)
     }
@@ -105,14 +105,14 @@ class CredentialsRepositorySpec extends AtalaWithPostgresSpec {
 
       publish(issuerId, credential.credentialId)
 
-      credentialsRepository.getBy(credential.credentialId).value.futureValue.toOption.value.value
+      credentialsRepository.getBy(credential.credentialId).unsafeRunSync().value
       succeed
     }
 
     "return no credential when not found" in {
       val credentialId = GenericCredential.Id.random()
 
-      val credential = credentialsRepository.getBy(credentialId).value.futureValue.toOption.value
+      val credential = credentialsRepository.getBy(credentialId).unsafeRunSync()
 
       credential must be(None)
     }
@@ -127,7 +127,7 @@ class CredentialsRepositorySpec extends AtalaWithPostgresSpec {
       val credB = createGenericCredential(issuerId, contact, "B")
       createGenericCredential(issuerId, contact, "C")
 
-      val result = credentialsRepository.getBy(issuerId, 2, None).value.futureValue.toOption.value
+      val result = credentialsRepository.getBy(issuerId, 2, None).unsafeRunSync()
       result.toSet must be(Set(credA, credB))
     }
 
@@ -141,7 +141,7 @@ class CredentialsRepositorySpec extends AtalaWithPostgresSpec {
       publish(issuerId, credA.credentialId)
       credentialsRepository.getBy(credA.credentialId)
 
-      val result = credentialsRepository.getBy(issuerId, 2, None).value.futureValue.toOption.value
+      val result = credentialsRepository.getBy(issuerId, 2, None).unsafeRunSync()
       result.map(_.credentialId).toSet must be(Set(credA.credentialId, credB.credentialId))
     }
 
@@ -154,14 +154,11 @@ class CredentialsRepositorySpec extends AtalaWithPostgresSpec {
       val credC = createGenericCredential(issuerId, contact, "C")
       createGenericCredential(issuerId, contact, "D")
 
-      val first = credentialsRepository.getBy(issuerId, 2, None).value.futureValue.toOption.value
+      val first = credentialsRepository.getBy(issuerId, 2, None).unsafeRunSync()
       val result =
         credentialsRepository
           .getBy(issuerId, 1, first.lastOption.map(_.credentialId))
-          .value
-          .futureValue
-          .toOption
-          .value
+          .unsafeRunSync()
       result.toSet must be(Set(credC))
     }
 
@@ -175,14 +172,11 @@ class CredentialsRepositorySpec extends AtalaWithPostgresSpec {
       publish(issuerId, credC.credentialId)
       createGenericCredential(issuerId, contact, "D")
 
-      val first = credentialsRepository.getBy(issuerId, 2, None).value.futureValue.toOption.value
+      val first = credentialsRepository.getBy(issuerId, 2, None).unsafeRunSync()
       val result =
         credentialsRepository
           .getBy(issuerId, 1, first.lastOption.map(_.credentialId))
-          .value
-          .futureValue
-          .toOption
-          .value
+          .unsafeRunSync()
       result.map(_.credentialId).toSet must be(Set(credC.credentialId))
     }
 
@@ -203,14 +197,14 @@ class CredentialsRepositorySpec extends AtalaWithPostgresSpec {
         )
       )
 
-      credentialsRepository.getBy(issuerId, query).value.futureValue.toOption.value mustBe List(
+      credentialsRepository.getBy(issuerId, query).unsafeToFuture().futureValue mustBe List(
         credential1,
         credential2
       )
 
       val query2 = query.copy(offset = 2)
 
-      credentialsRepository.getBy(issuerId, query2).value.futureValue.toOption.value mustBe List(
+      credentialsRepository.getBy(issuerId, query2).unsafeToFuture().futureValue mustBe List(
         credential3,
         credential4
       )
@@ -224,7 +218,7 @@ class CredentialsRepositorySpec extends AtalaWithPostgresSpec {
 
       val query3 = query.copy(filters = Some(filters))
 
-      credentialsRepository.getBy(issuerId, query3).value.futureValue.toOption.value mustBe List(
+      credentialsRepository.getBy(issuerId, query3).unsafeToFuture().futureValue mustBe List(
         credential2
       )
     }
@@ -242,7 +236,7 @@ class CredentialsRepositorySpec extends AtalaWithPostgresSpec {
       val cred2 = createGenericCredential(issuerId, contactId1, "D")
       createGenericCredential(issuerId, contactId2, "E")
 
-      val result = credentialsRepository.getBy(issuerId, contactId1).value.futureValue.toOption.value
+      val result = credentialsRepository.getBy(issuerId, contactId1).unsafeToFuture().futureValue
       result must be(List(cred1, cred2))
     }
 
@@ -258,7 +252,7 @@ class CredentialsRepositorySpec extends AtalaWithPostgresSpec {
       createGenericCredential(issuerId, contactId2, "E")
       publish(issuerId, cred1.credentialId)
 
-      val result = credentialsRepository.getBy(issuerId, contactId1).value.futureValue.toOption.value
+      val result = credentialsRepository.getBy(issuerId, contactId1).unsafeToFuture().futureValue
       result.map(_.credentialId) must be(List(cred1.credentialId, cred2.credentialId))
     }
 
@@ -267,7 +261,7 @@ class CredentialsRepositorySpec extends AtalaWithPostgresSpec {
       val group = createInstitutionGroup(issuerId, InstitutionGroup.Name("grp1"))
       val contactId = createContact(issuerId, "IOHK Student", Some(group.name)).contactId
 
-      val result = credentialsRepository.getBy(issuerId, contactId).value.futureValue.toOption.value
+      val result = credentialsRepository.getBy(issuerId, contactId).unsafeToFuture().futureValue
       result must be(empty)
     }
   }
@@ -302,13 +296,13 @@ class CredentialsRepositorySpec extends AtalaWithPostgresSpec {
             mockMerkleProof
           )
         )
-        .value
+        .unsafeToFuture()
         .futureValue
 
-      inserted.toOption.value must be(1)
+      inserted must be(1)
 
       val credentialList =
-        credentialsRepository.getBy(issuerId, contactId).value.futureValue.toOption.value
+        credentialsRepository.getBy(issuerId, contactId).unsafeToFuture().futureValue
 
       credentialList.length must be(1)
 
@@ -349,12 +343,12 @@ class CredentialsRepositorySpec extends AtalaWithPostgresSpec {
               mockMerkleProof
             )
           )
-          .value
+          .unsafeToFuture()
           .futureValue
       )
 
       val credentialList =
-        credentialsRepository.getBy(issuerId, 10, None).value.futureValue.toOption.value
+        credentialsRepository.getBy(issuerId, 10, None).unsafeToFuture().futureValue
 
       credentialList must be(empty)
     }
@@ -389,12 +383,12 @@ class CredentialsRepositorySpec extends AtalaWithPostgresSpec {
               mockMerkleProof
             )
           )
-          .value
+          .unsafeToFuture()
           .futureValue
       )
 
       val credentialList =
-        credentialsRepository.getBy(issuerId, contactId).value.futureValue.toOption.value
+        credentialsRepository.getBy(issuerId, contactId).unsafeToFuture().futureValue
 
       credentialList.length must be(1)
 
@@ -426,12 +420,12 @@ class CredentialsRepositorySpec extends AtalaWithPostgresSpec {
               mockMerkleProof
             )
           )
-          .value
+          .unsafeToFuture()
           .futureValue
       )
 
       val credentialList =
-        credentialsRepository.getBy(issuerId, contactId).value.futureValue.toOption.value
+        credentialsRepository.getBy(issuerId, contactId).unsafeToFuture().futureValue
 
       credentialList.length must be(1)
 
@@ -455,15 +449,13 @@ class CredentialsRepositorySpec extends AtalaWithPostgresSpec {
 
       credentialsRepository
         .markAsShared(issuerId, NonEmptyList.of(credential1.credentialId, credential2.credentialId))
-        .value
+        .unsafeToFuture()
         .futureValue
-        .toOption
-        .value
 
-      val result1 = credentialsRepository.getBy(credential1.credentialId).value.futureValue.toOption.value.value
+      val result1 = credentialsRepository.getBy(credential1.credentialId).unsafeToFuture().futureValue.value
       result1.sharedAt mustNot be(empty)
 
-      val result2 = credentialsRepository.getBy(credential2.credentialId).value.futureValue.toOption.value.value
+      val result2 = credentialsRepository.getBy(credential2.credentialId).unsafeToFuture().futureValue.value
       result2.sharedAt mustNot be(empty)
     }
 
@@ -475,33 +467,25 @@ class CredentialsRepositorySpec extends AtalaWithPostgresSpec {
       publish(issuerId, credential.credentialId)
       credentialsRepository
         .markAsShared(issuerId, NonEmptyList.of(credential.credentialId))
-        .value
+        .unsafeToFuture()
         .futureValue
-        .toOption
-        .value
 
       val result1 = credentialsRepository
         .getBy(credential.credentialId)
-        .value
+        .unsafeToFuture()
         .futureValue
-        .toOption
-        .value
         .value
         .sharedAt
         .value
 
       credentialsRepository
         .markAsShared(issuerId, NonEmptyList.of(credential.credentialId))
-        .value
+        .unsafeToFuture()
         .futureValue
-        .toOption
-        .value
       val result2 = credentialsRepository
         .getBy(credential.credentialId)
-        .value
+        .unsafeToFuture()
         .futureValue
-        .toOption
-        .value
         .value
         .sharedAt
         .value
@@ -515,10 +499,8 @@ class CredentialsRepositorySpec extends AtalaWithPostgresSpec {
       assertThrows[Exception] {
         credentialsRepository
           .markAsShared(issuerId, NonEmptyList.of(credential.credentialId))
-          .value
+          .unsafeToFuture()
           .futureValue
-          .toOption
-          .value
       }
     }
 
@@ -531,10 +513,8 @@ class CredentialsRepositorySpec extends AtalaWithPostgresSpec {
       assertThrows[Exception] {
         credentialsRepository
           .markAsShared(issuerId2, NonEmptyList.of(credential.credentialId))
-          .value
+          .unsafeToFuture()
           .futureValue
-          .toOption
-          .value
       }
     }
   }
@@ -552,7 +532,7 @@ class CredentialsRepositorySpec extends AtalaWithPostgresSpec {
 
       val result = credentialsRepository
         .verifyPublishedCredentialsExist(issuerId, NonEmptyList.of(credential1.credentialId, credential2.credentialId))
-        .value
+        .unsafeToFuture()
         .futureValue
 
       result mustBe a[Right[_, _]]
@@ -569,7 +549,7 @@ class CredentialsRepositorySpec extends AtalaWithPostgresSpec {
 
       val result = credentialsRepository
         .verifyPublishedCredentialsExist(issuerId, NonEmptyList.of(credential1.credentialId, credential2.credentialId))
-        .value
+        .unsafeToFuture()
         .futureValue
 
       result mustBe Left(PublishedCredentialsNotExist(List(credential2.credentialId)))
@@ -588,11 +568,10 @@ class CredentialsRepositorySpec extends AtalaWithPostgresSpec {
           mockHash,
           AtalaOperationId.fromVectorUnsafe(mockHash.value)
         )
-        .value
+        .unsafeToFuture()
         .futureValue
-        .toOption
 
-      added.value must be(1)
+      added must be(1)
       val (operationId, hash) = DataPreparation.getBatchData(mockBatchId).value
 
       hash mustBe mockHash
@@ -613,12 +592,12 @@ class CredentialsRepositorySpec extends AtalaWithPostgresSpec {
 
       val result = credentialsRepository
         .deleteCredentials(issuerId, NonEmptyList.of(credential1.credentialId, credential2.credentialId))
-        .value
+        .unsafeToFuture()
         .futureValue
 
       result mustBe a[Right[_, _]]
-      credentialsRepository.getBy(credential1.credentialId).toFuture.futureValue mustBe None
-      credentialsRepository.getBy(credential2.credentialId).toFuture.futureValue mustBe None
+      credentialsRepository.getBy(credential1.credentialId).unsafeToFuture().futureValue mustBe None
+      credentialsRepository.getBy(credential2.credentialId).unsafeToFuture().futureValue mustBe None
     }
 
     "do not delete credentials when one of them is published and not revoked" in {
@@ -632,12 +611,12 @@ class CredentialsRepositorySpec extends AtalaWithPostgresSpec {
 
       val result = credentialsRepository
         .deleteCredentials(issuerId, NonEmptyList.of(credential1.credentialId, credential2.credentialId))
-        .value
+        .unsafeToFuture()
         .futureValue
 
       result mustBe Left(PublishedCredentialsNotRevoked(List(credential1.credentialId)))
-      credentialsRepository.getBy(credential1.credentialId).toFuture.futureValue mustBe a[Some[_]]
-      credentialsRepository.getBy(credential2.credentialId).toFuture.futureValue mustBe a[Some[_]]
+      credentialsRepository.getBy(credential1.credentialId).unsafeToFuture().futureValue mustBe a[Some[_]]
+      credentialsRepository.getBy(credential2.credentialId).unsafeToFuture().futureValue mustBe a[Some[_]]
     }
 
     def markAsRevoked(credentialId: GenericCredential.Id): Unit = {
@@ -675,24 +654,20 @@ class CredentialsRepositorySpec extends AtalaWithPostgresSpec {
             mockMerkleProof
           )
         )
-        .value
-        .futureValue
-        .toOption
-        .value must be(1)
+        .unsafeToFuture()
+        .futureValue must be(1)
 
       val revocationOperationId = AtalaOperationId
         .fromHexUnsafe("98765432c91c49e928f6f30f4e8d665d53eb4ab6028bd0ac971809d514c92db1")
       credentialsRepository
         .storeRevocationData(institutionId, credential.credentialId, revocationOperationId)
-        .value
+        .unsafeToFuture()
         .futureValue
 
       val result = credentialsRepository
         .getBy(institutionId, contactId)
-        .value
+        .unsafeToFuture()
         .futureValue
-        .toOption
-        .value
         .headOption
         .value
 
@@ -710,7 +685,7 @@ class CredentialsRepositorySpec extends AtalaWithPostgresSpec {
       intercept[RuntimeException] {
         credentialsRepository
           .storeRevocationData(institutionId, GenericCredential.Id.random(), revocationOperationId)
-          .value
+          .unsafeToFuture()
           .futureValue
       }
     }
@@ -739,17 +714,15 @@ class CredentialsRepositorySpec extends AtalaWithPostgresSpec {
             mockMerkleProof
           )
         )
-        .value
-        .futureValue
-        .toOption
-        .value must be(1)
+        .unsafeToFuture()
+        .futureValue must be(1)
 
       intercept[RuntimeException] {
         val revocationOperationId = AtalaOperationId
           .fromHexUnsafe("98765432c91c49e928f6f30f4e8d665d53eb4ab6028bd0ac971809d514c92db1")
         credentialsRepository
           .storeRevocationData(createParticipant("Issuer Y"), credential.credentialId, revocationOperationId)
-          .value
+          .unsafeToFuture()
           .futureValue
       }
     }

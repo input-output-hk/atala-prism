@@ -1,7 +1,6 @@
 package io.iohk.atala.prism.management.console.services
 
 import cats.effect.IO
-import cats.syntax.traverse._
 import doobie.implicits._
 import doobie.util.transactor.Transactor
 import io.iohk.atala.prism.auth.SignedRpcRequest
@@ -28,9 +27,9 @@ import java.util.UUID
 class GroupsServiceImplSpec extends RpcSpecBase with DIDUtil {
   private val usingApiAs = usingApiAsConstructor(new console_api.GroupsServiceGrpc.GroupsServiceBlockingStub(_, _))
 
-  private lazy val institutionGroupsRepository = new InstitutionGroupsRepository(database)
-  private lazy val participantsRepository = new ParticipantsRepository(database)
-  private lazy val requestNoncesRepository = new RequestNoncesRepository.PostgresImpl(database)(executionContext)
+  private lazy val institutionGroupsRepository = InstitutionGroupsRepository(database)
+  private lazy val participantsRepository = ParticipantsRepository(database)
+  private lazy val requestNoncesRepository = RequestNoncesRepository(database)
   protected lazy val nodeMock = mock[io.iohk.atala.prism.protos.node_api.NodeServiceGrpc.NodeService]
   private lazy val authenticator =
     new ManagementConsoleAuthenticator(
@@ -70,7 +69,7 @@ class GroupsServiceImplSpec extends RpcSpecBase with DIDUtil {
 
         // the new group needs to exist
         val (groups, _) =
-          institutionGroupsRepository.getBy(institutionId, getGroupsQuery).value.futureValue.toOption.value
+          institutionGroupsRepository.getBy(institutionId, getGroupsQuery).unsafeRunSync()
         groups.map(_.value.name) must contain(newGroup)
       }
     }
@@ -100,7 +99,7 @@ class GroupsServiceImplSpec extends RpcSpecBase with DIDUtil {
 
         // the new group needs to exist
         val (groups, _) =
-          institutionGroupsRepository.getBy(institutionId, getGroupsQuery).value.futureValue.toOption.value
+          institutionGroupsRepository.getBy(institutionId, getGroupsQuery).unsafeRunSync()
         val result = groups.find(_.value.name == newGroup).value
         result.value.name must be(newGroup)
         result.numberOfContacts must be(2)
@@ -167,7 +166,7 @@ class GroupsServiceImplSpec extends RpcSpecBase with DIDUtil {
 
       val groups = List("Blockchain 2020", "Finance 2020").map(InstitutionGroup.Name.apply)
       groups.foreach { group =>
-        institutionGroupsRepository.create(institutionId, group, Set()).value.futureValue.toOption.value
+        institutionGroupsRepository.create(institutionId, group, Set()).unsafeRunSync().toOption.value
       }
       DataPreparation.createContact(institutionId, groupName = Some(groups(0)))
       DataPreparation.createContact(institutionId, groupName = Some(groups(0)))
@@ -191,7 +190,7 @@ class GroupsServiceImplSpec extends RpcSpecBase with DIDUtil {
 
       val groups = List("Blockchain 2020", "Finance 2020").map(InstitutionGroup.Name.apply)
       groups.foreach { group =>
-        institutionGroupsRepository.create(issuerId, group, Set()).value.futureValue.toOption.value
+        institutionGroupsRepository.create(issuerId, group, Set()).unsafeRunSync().toOption.value
       }
       DataPreparation.createContact(issuerId, groupName = Some(groups(0)))
       val contact = DataPreparation.createContact(issuerId, groupName = Some(groups(0)))
@@ -262,7 +261,7 @@ class GroupsServiceImplSpec extends RpcSpecBase with DIDUtil {
 
       val groups = List("Group 1", "Group 2", "Group 3").map(InstitutionGroup.Name.apply)
       groups.foreach { group =>
-        institutionGroupsRepository.create(institutionId, group, Set()).value.futureValue.toOption.value
+        institutionGroupsRepository.create(institutionId, group, Set()).unsafeRunSync().toOption.value
       }
 
       val rpcRequest = SignedRpcRequest.generate(keyPair, did, request)
@@ -337,8 +336,7 @@ class GroupsServiceImplSpec extends RpcSpecBase with DIDUtil {
       val List(group1Id, _) = groupNames.map { groupName =>
         institutionGroupsRepository
           .create(institutionId, groupName, Set())
-          .value
-          .futureValue
+          .unsafeRunSync()
           .toOption
           .value
           .id
@@ -378,8 +376,7 @@ class GroupsServiceImplSpec extends RpcSpecBase with DIDUtil {
       val List(group1Id, _) = groupNames.map { groupName =>
         institutionGroupsRepository
           .create(institutionId, groupName, Set())
-          .value
-          .futureValue
+          .unsafeRunSync()
           .toOption
           .value
           .id
@@ -425,8 +422,7 @@ class GroupsServiceImplSpec extends RpcSpecBase with DIDUtil {
       val List(group1Id, _) = groupNames.map { groupName =>
         institutionGroupsRepository
           .create(institutionId, groupName, Set())
-          .value
-          .futureValue
+          .unsafeRunSync()
           .toOption
           .value
           .id
@@ -483,8 +479,7 @@ class GroupsServiceImplSpec extends RpcSpecBase with DIDUtil {
       val group1Id =
         institutionGroupsRepository
           .create(institutionId1, group1Name, Set())
-          .value
-          .futureValue
+          .unsafeRunSync()
           .toOption
           .value
           .id
@@ -515,8 +510,7 @@ class GroupsServiceImplSpec extends RpcSpecBase with DIDUtil {
       val group1Id =
         institutionGroupsRepository
           .create(institutionId1, group1Name, Set())
-          .value
-          .futureValue
+          .unsafeRunSync()
           .toOption
           .value
           .id
@@ -542,7 +536,7 @@ class GroupsServiceImplSpec extends RpcSpecBase with DIDUtil {
 
       val groupNames = List(group1Name, group2Name)
       val List(group1Id, _) = groupNames.map { groupName =>
-        institutionGroupsRepository.create(institutionId, groupName, Set()).value.futureValue.toOption.value.id.toString
+        institutionGroupsRepository.create(institutionId, groupName, Set()).unsafeRunSync().toOption.value.id.toString
       }
       val newName = "New Group"
 
@@ -555,7 +549,7 @@ class GroupsServiceImplSpec extends RpcSpecBase with DIDUtil {
 
         // Check that the group was indeed renamed
         val (groups, _) =
-          institutionGroupsRepository.getBy(institutionId, getGroupsQuery).value.futureValue.toOption.value
+          institutionGroupsRepository.getBy(institutionId, getGroupsQuery).unsafeRunSync()
         groups.map(_.value.name.value) must contain(newName)
       }
     }
@@ -568,7 +562,7 @@ class GroupsServiceImplSpec extends RpcSpecBase with DIDUtil {
 
       val groupNames = List(group1Name, group2Name)
       val List(group1Id, _) = groupNames.map { groupName =>
-        institutionGroupsRepository.create(institutionId, groupName, Set()).value.futureValue.toOption.value.id.toString
+        institutionGroupsRepository.create(institutionId, groupName, Set()).unsafeRunSync().toOption.value.id.toString
       }
 
       val request =
@@ -776,7 +770,7 @@ class GroupsServiceImplSpec extends RpcSpecBase with DIDUtil {
   }
 
   private def listContacts(institutionId: ParticipantId, groupName: InstitutionGroup.Name): List[Contact] =
-    institutionGroupsRepository.listContacts(institutionId, groupName).value.futureValue.toOption.value
+    institutionGroupsRepository.listContacts(institutionId, groupName).unsafeRunSync()
 
   private def createParticipant(did: DID)(implicit
       database: Transactor[IO]
@@ -798,10 +792,7 @@ class GroupsServiceImplSpec extends RpcSpecBase with DIDUtil {
   private def getInstitutionGroups(institutionId: ParticipantId): List[InstitutionGroup.WithContactCount] = {
     val (groups, _) = institutionGroupsRepository
       .getBy(institutionId, getGroupsQuery)
-      .value
-      .futureValue
-      .toOption
-      .sequence
+      .unsafeRunSync()
 
     groups
   }
@@ -813,8 +804,7 @@ class GroupsServiceImplSpec extends RpcSpecBase with DIDUtil {
   ): InstitutionGroup.Id =
     institutionGroupsRepository
       .create(institutionId, name, contactIds)
-      .value
-      .futureValue
+      .unsafeRunSync()
       .toOption
       .value
       .id

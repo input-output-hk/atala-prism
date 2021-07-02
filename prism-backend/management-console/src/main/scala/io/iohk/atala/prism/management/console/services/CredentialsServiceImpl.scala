@@ -1,9 +1,9 @@
 package io.iohk.atala.prism.management.console.services
 
-import cats.implicits.catsSyntaxApplicativeId
+import cats.implicits.{catsSyntaxApplicativeId, toFunctorOps}
 import cats.data.NonEmptyList
+import cats.effect.IO
 import cats.syntax.either._
-import cats.syntax.functor._
 import com.google.protobuf.ByteString
 import io.iohk.atala.prism.auth.AuthAndMiddlewareSupport
 import io.iohk.atala.prism.connector.AtalaOperationId
@@ -38,7 +38,7 @@ import io.iohk.atala.prism.utils.FutureEither.FutureEitherOps
 import scala.concurrent.{ExecutionContext, Future}
 
 class CredentialsServiceImpl(
-    credentialsRepository: CredentialsRepository,
+    credentialsRepository: CredentialsRepository[IO],
     credentialsIntegrationService: CredentialsIntegrationService,
     val authenticator: ManagementConsoleAuthenticator,
     nodeService: NodeServiceGrpc.NodeService,
@@ -105,6 +105,9 @@ class CredentialsServiceImpl(
     auth[ShareCredential]("shareCredential", request) { (participantId, query) =>
       credentialsRepository
         .markAsShared(participantId, NonEmptyList.of(query.credentialId))
+        .unsafeToFuture()
+        .map(_.asRight)
+        .toFutureEither
         .map { _ =>
           console_api.ShareCredentialResponse()
         }
@@ -154,6 +157,9 @@ class CredentialsServiceImpl(
               issuanceOperationHash = operationHash,
               AtalaOperationId.of(signedIssueCredentialBatchOp)
             )
+            .unsafeToFuture()
+            .map(_.asRight)
+            .toFutureEither
       } yield ()
     }
 
@@ -192,6 +198,8 @@ class CredentialsServiceImpl(
     auth[DeleteCredentials]("deleteCredentials", request) { (participantId, query) =>
       credentialsRepository
         .deleteCredentials(participantId, query.credentialsIds)
+        .unsafeToFuture()
+        .toFutureEither
         .as(DeleteCredentialsResponse())
     }
   }
@@ -200,7 +208,7 @@ class CredentialsServiceImpl(
       request: StorePublishedCredentialRequest
   ): Future[StorePublishedCredentialResponse] = {
     auth[StorePublishedCredential]("storePublishedCredential", request) { (participantId, query) =>
-      for {
+      val result = for {
         maybeCredential <- credentialsRepository.getBy(query.consoleCredentialId)
         credential = maybeCredential.getOrElse(
           throw new RuntimeException(s"Credential with ID ${query.consoleCredentialId} does not exist")
@@ -217,6 +225,10 @@ class CredentialsServiceImpl(
           )
         )
       } yield StorePublishedCredentialResponse()
+      result
+        .unsafeToFuture()
+        .map(_.asRight)
+        .toFutureEither
     }
   }
 
@@ -249,7 +261,11 @@ class CredentialsServiceImpl(
   ): Future[console_api.ShareCredentialsResponse] = {
     auth[ShareCredentials]("shareCredentials", request) { (participantId, query) =>
       for {
-        _ <- credentialsRepository.verifyPublishedCredentialsExist(participantId, query.credentialsIds)
+        _ <-
+          credentialsRepository
+            .verifyPublishedCredentialsExist(participantId, query.credentialsIds)
+            .unsafeToFuture()
+            .toFutureEither
         _ <-
           connectorClient
             .sendMessages(
@@ -258,7 +274,12 @@ class CredentialsServiceImpl(
             )
             .lift
 
-        _ <- credentialsRepository.markAsShared(participantId, query.credentialsIds)
+        _ <-
+          credentialsRepository
+            .markAsShared(participantId, query.credentialsIds)
+            .unsafeToFuture()
+            .map(_.asRight)
+            .toFutureEither
       } yield ShareCredentialsResponse()
     }
   }

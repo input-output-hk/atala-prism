@@ -2,48 +2,95 @@ package io.iohk.atala.prism.management.console.repositories
 
 import cats.data.EitherT
 import cats.data.Validated.{Invalid, Valid}
-import cats.effect.IO
+import cats.effect.BracketThrow
 import cats.implicits._
+import derevo.tagless.applyK
+import derevo.derive
 import doobie.free.connection.ConnectionIO
 import doobie.implicits._
 import doobie.util.transactor.Transactor
 import io.circe.Json
-import io.iohk.atala.prism.management.console.errors.{
-  ContactIdsWereNotFound,
-  CredentialDataValidationFailedForContacts,
-  ExternalIdsWereNotFound,
-  InvalidGroups,
-  ManagementConsoleError
-}
-import io.iohk.atala.prism.management.console.models.{
-  Contact,
-  CreateGenericCredential,
-  CredentialIssuance,
-  CredentialIssuanceContact,
-  CredentialTypeId,
-  GenericCredential,
-  InstitutionGroup,
-  ParticipantId
-}
+import io.iohk.atala.prism.management.console.errors._
+import io.iohk.atala.prism.management.console.models._
 import io.iohk.atala.prism.management.console.repositories.daos.CredentialIssuancesDAO.CreateCredentialIssuanceContactGroup
-import io.iohk.atala.prism.management.console.repositories.daos.{
-  ContactsDAO,
-  CredentialIssuancesDAO,
-  CredentialTypeDao,
-  CredentialsDAO,
-  InstitutionGroupsDAO
-}
-import io.iohk.atala.prism.utils.FutureEither
-import io.iohk.atala.prism.utils.FutureEither.FutureEitherOps
+import io.iohk.atala.prism.management.console.repositories.daos._
 import io.iohk.atala.prism.utils.syntax.DBConnectionOps
 import io.scalaland.chimney.dsl._
+import io.iohk.atala.prism.metrics.{TimeMeasureMetric, TimeMeasureUtil}
+import io.iohk.atala.prism.metrics.TimeMeasureUtil.MeasureOps
 import io.iohk.atala.prism.management.console.models.CredentialTypeWithRequiredFields
+import io.iohk.atala.prism.management.console.repositories.CredentialIssuancesRepository.{
+  CreateCredentialBulk,
+  CreateCredentialIssuance
+}
 import io.iohk.atala.prism.management.console.validations.CredentialDataValidator
 import org.slf4j.{Logger, LoggerFactory}
+import tofu.higherKind.Mid
 
-import scala.concurrent.ExecutionContext
+@derive(applyK)
+trait CredentialIssuancesRepository[F[_]] {
 
-class CredentialIssuancesRepository(xa: Transactor[IO])(implicit ec: ExecutionContext) {
+  def create(
+      participantId: ParticipantId,
+      createCredentialIssuance: CreateCredentialIssuance
+  ): F[Either[ManagementConsoleError, CredentialIssuance.Id]]
+
+  def createBulk(
+      participantId: ParticipantId,
+      credentialsType: CredentialTypeId,
+      issuanceName: String,
+      drafts: List[CreateCredentialBulk.Draft]
+  ): F[Either[ManagementConsoleError, CredentialIssuance.Id]]
+
+  def get(
+      credentialIssuanceId: CredentialIssuance.Id,
+      institutionId: ParticipantId
+  ): F[CredentialIssuance]
+
+}
+
+object CredentialIssuancesRepository {
+
+  case class CreateCredentialIssuance(
+      name: String,
+      credentialTypeId: CredentialTypeId,
+      contacts: List[CreateCredentialIssuanceContact]
+  )
+
+  case class CreateCredentialIssuanceContact(
+      contactId: Contact.Id,
+      credentialData: Json,
+      groupIds: List[InstitutionGroup.Id]
+  )
+
+  case class GetCredentialIssuance(
+      credentialIssuanceId: CredentialIssuance.Id
+  )
+
+  case class CreateCredentialBulk(
+      credentialsJson: Json,
+      drafts: List[CreateCredentialBulk.Draft],
+      credentialsType: CredentialTypeId,
+      issuanceName: String
+  )
+
+  object CreateCredentialBulk {
+    case class Draft(
+        externalId: Contact.ExternalId,
+        credentialData: Json,
+        groupIds: Set[InstitutionGroup.Id]
+    )
+  }
+
+  def apply[F[_]: TimeMeasureMetric: BracketThrow](transactor: Transactor[F]): CredentialIssuancesRepository[F] = {
+    val metrics: CredentialIssuancesRepository[Mid[F, *]] = new CredentialIssuancesRepositoryMetrics[F]
+    metrics attach new CredentialIssuancesRepositoryImpl[F](transactor)
+  }
+
+}
+
+private final class CredentialIssuancesRepositoryImpl[F[_]: BracketThrow](xa: Transactor[F])
+    extends CredentialIssuancesRepository[F] {
   import CredentialIssuancesRepository._
 
   val logger: Logger = LoggerFactory.getLogger(getClass)
@@ -212,20 +259,17 @@ class CredentialIssuancesRepository(xa: Transactor[IO])(implicit ec: ExecutionCo
   def create(
       participantId: ParticipantId,
       createCredentialIssuance: CreateCredentialIssuance
-  ): FutureEither[ManagementConsoleError, CredentialIssuance.Id] = {
+  ): F[Either[ManagementConsoleError, CredentialIssuance.Id]] =
     createQuery(participantId, createCredentialIssuance)
       .logSQLErrors(s"creating credential issuance, participant id - $participantId", logger)
       .transact(xa)
-      .unsafeToFuture()
-      .toFutureEither
-  }
 
   def createBulk(
       participantId: ParticipantId,
       credentialsType: CredentialTypeId,
       issuanceName: String,
       drafts: List[CreateCredentialBulk.Draft]
-  ): FutureEither[ManagementConsoleError, CredentialIssuance.Id] = {
+  ): F[Either[ManagementConsoleError, CredentialIssuance.Id]] = {
     val validateDraftsF = {
       drafts.map { draft =>
         for {
@@ -265,14 +309,12 @@ class CredentialIssuancesRepository(xa: Transactor[IO])(implicit ec: ExecutionCo
     query.value
       .logSQLErrors(s"creating bulk credential issuance, participant id - $participantId", logger)
       .transact(xa)
-      .unsafeToFuture()
-      .toFutureEither
   }
 
   def get(
       credentialIssuanceId: CredentialIssuance.Id,
       institutionId: ParticipantId
-  ): FutureEither[ManagementConsoleError, CredentialIssuance] = {
+  ): F[CredentialIssuance] = {
     val query = for {
       // Get the issuance first, as contacts are queried later
       issuanceWithoutContacts <-
@@ -291,41 +333,31 @@ class CredentialIssuancesRepository(xa: Transactor[IO])(implicit ec: ExecutionCo
     query
       .logSQLErrors(s"getting credential, issuance id - $credentialIssuanceId", logger)
       .transact(xa)
-      .unsafeToFuture()
-      .map(Right(_))
-      .toFutureEither
   }
 }
 
-object CredentialIssuancesRepository {
-  case class CreateCredentialIssuance(
-      name: String,
-      credentialTypeId: CredentialTypeId,
-      contacts: List[CreateCredentialIssuanceContact]
-  )
+private final class CredentialIssuancesRepositoryMetrics[F[_]: TimeMeasureMetric: BracketThrow]
+    extends CredentialIssuancesRepository[Mid[F, *]] {
 
-  case class CreateCredentialIssuanceContact(
-      contactId: Contact.Id,
-      credentialData: Json,
-      groupIds: List[InstitutionGroup.Id]
-  )
+  private val repoName = "CredentialIssuancesRepository"
+  private lazy val createTimer = TimeMeasureUtil.createDBQueryTimer(repoName, "create")
+  private lazy val createBulkTimer = TimeMeasureUtil.createDBQueryTimer(repoName, "createBulk")
+  private lazy val getTimer = TimeMeasureUtil.createDBQueryTimer(repoName, "get")
 
-  case class GetCredentialIssuance(
-      credentialIssuanceId: CredentialIssuance.Id
-  )
+  override def create(
+      participantId: ParticipantId,
+      createCredentialIssuance: CreateCredentialIssuance
+  ): Mid[F, Either[ManagementConsoleError, CredentialIssuance.Id]] = _.measureOperationTime(createTimer)
 
-  case class CreateCredentialBulk(
-      credentialsJson: Json,
-      drafts: List[CreateCredentialBulk.Draft],
+  override def createBulk(
+      participantId: ParticipantId,
       credentialsType: CredentialTypeId,
-      issuanceName: String
-  )
+      issuanceName: String,
+      drafts: List[CreateCredentialBulk.Draft]
+  ): Mid[F, Either[ManagementConsoleError, CredentialIssuance.Id]] = _.measureOperationTime(createBulkTimer)
 
-  object CreateCredentialBulk {
-    case class Draft(
-        externalId: Contact.ExternalId,
-        credentialData: Json,
-        groupIds: Set[InstitutionGroup.Id]
-    )
-  }
+  override def get(
+      credentialIssuanceId: CredentialIssuance.Id,
+      institutionId: ParticipantId
+  ): Mid[F, CredentialIssuance] = _.measureOperationTime(getTimer)
 }

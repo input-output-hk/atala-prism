@@ -3,12 +3,11 @@ package io.iohk.atala.prism.management.console.repositories
 import io.iohk.atala.prism.AtalaWithPostgresSpec
 import io.iohk.atala.prism.management.console.DataPreparation._
 import io.iohk.atala.prism.management.console.models.{InstitutionGroup, TimeInterval}
-import org.scalatest.OptionValues._
 import java.time.Instant
 
 class StatisticsRepositorySpec extends AtalaWithPostgresSpec {
-  lazy val repository = new StatisticsRepository(database)
-  lazy val credentialsRepository = new CredentialsRepository(database)
+  lazy val repository = StatisticsRepository(database)
+  lazy val credentialsRepository = CredentialsRepository(database)
 
   "query" should {
     "work" in {
@@ -24,7 +23,7 @@ class StatisticsRepositorySpec extends AtalaWithPostgresSpec {
       createGenericCredential(issuerId, contact3.contactId, "B")
       publishCredential(issuerId, credential1)
 
-      val result = repository.query(issuerId, None).value.futureValue.toOption.value
+      val result = repository.query(issuerId, None).unsafeRunSync()
       result.numberOfContacts must be(4)
 
       result.numberOfGroups must be(1)
@@ -62,7 +61,7 @@ class StatisticsRepositorySpec extends AtalaWithPostgresSpec {
       val credential3 = createGenericCredential(issuerId, contact3.contactId, "F")
       publishCredential(issuerId, credential3)
 
-      val result = repository.query(issuerId, Some(TimeInterval(start, end))).value.futureValue.toOption.value
+      val result = repository.query(issuerId, Some(TimeInterval(start, end))).unsafeRunSync()
       result.numberOfContacts must be(1)
 
       result.numberOfGroups must be(1)

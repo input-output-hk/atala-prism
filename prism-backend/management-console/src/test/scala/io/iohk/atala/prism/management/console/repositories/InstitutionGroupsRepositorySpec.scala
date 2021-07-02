@@ -1,20 +1,19 @@
 package io.iohk.atala.prism.management.console.repositories
 
 import cats.syntax.option._
-import cats.scalatest.EitherMatchers._
 import io.iohk.atala.prism.AtalaWithPostgresSpec
 import io.iohk.atala.prism.management.console.DataPreparation._
 import io.iohk.atala.prism.management.console.errors.{GroupNameIsNotFree, GroupsInstitutionDoNotMatch}
 import io.iohk.atala.prism.management.console.models.PaginatedQueryConstraints.ResultOrdering
 import io.iohk.atala.prism.management.console.models.{InstitutionGroup, PaginatedQueryConstraints}
-import org.scalatest.OptionValues._
 
 import java.time.LocalDate
 import java.time.temporal.ChronoUnit
 import java.util.UUID
+import scala.util.{Success, Try}
 
 class InstitutionGroupsRepositorySpec extends AtalaWithPostgresSpec {
-  lazy val repository = new InstitutionGroupsRepository(database)
+  lazy val repository = InstitutionGroupsRepository(database)
 
   "create" should {
     "allow creating different groups" in {
@@ -23,8 +22,8 @@ class InstitutionGroupsRepositorySpec extends AtalaWithPostgresSpec {
       val institutionId2 = createParticipant("Institution-2")
 
       // allows creating the same group on different institutions
-      repository.create(institutionId1, groupName, Set()).value.futureValue
-      repository.create(institutionId2, groupName, Set()).value.futureValue
+      repository.create(institutionId1, groupName, Set()).unsafeRunSync()
+      repository.create(institutionId2, groupName, Set()).unsafeRunSync()
       succeed
     }
 
@@ -32,9 +31,9 @@ class InstitutionGroupsRepositorySpec extends AtalaWithPostgresSpec {
       val institutionId = createParticipant("Institution-1")
       val groupName = InstitutionGroup.Name("IOHK 2019")
 
-      repository.create(institutionId, groupName, Set()).value.futureValue
+      repository.create(institutionId, groupName, Set()).unsafeRunSync()
       intercept[Exception] {
-        repository.create(institutionId, groupName, Set()).value.futureValue
+        repository.create(institutionId, groupName, Set()).unsafeRunSync()
       }
 
       succeed
@@ -52,18 +51,14 @@ class InstitutionGroupsRepositorySpec extends AtalaWithPostgresSpec {
           groupName,
           Set(contact1.contactId, contact2.contactId)
         )
-        .value
-        .futureValue
+        .unsafeRunSync()
 
       assert(result.isRight)
 
       // Check that the specified contacts were added to the group
       val contactList = repository
         .listContacts(institutionId, groupName)
-        .value
-        .futureValue
-        .toOption
-        .value
+        .unsafeRunSync()
 
       assert(contactList.size == 2)
       contactList.toSet must be(Set(contact1, contact2))
@@ -84,8 +79,7 @@ class InstitutionGroupsRepositorySpec extends AtalaWithPostgresSpec {
           groupName,
           Set(contact1.contactId, contact2.contactId)
         )
-        .value
-        .futureValue
+        .unsafeRunSync()
 
       assert(result.isLeft)
 
@@ -109,7 +103,8 @@ class InstitutionGroupsRepositorySpec extends AtalaWithPostgresSpec {
       val query: InstitutionGroup.PaginatedQuery =
         PaginatedQueryConstraints(ordering = ResultOrdering(InstitutionGroup.SortBy.Name))
 
-      val (result, totalNumberOfGroups) = repository.getBy(institutionId1, query).value.futureValue.toOption.value
+      val (result, totalNumberOfGroups) =
+        repository.getBy(institutionId1, query).unsafeRunSync()
       result.map(_.value.name) must be(groups)
       totalNumberOfGroups mustBe groups.size
     }
@@ -126,8 +121,9 @@ class InstitutionGroupsRepositorySpec extends AtalaWithPostgresSpec {
       val query: InstitutionGroup.PaginatedQuery =
         PaginatedQueryConstraints(ordering = ResultOrdering(InstitutionGroup.SortBy.Name))
 
-      val result = repository.getBy(institutionId, query).value.futureValue.map { case (groups, _) => groups }
-      result.map(_.map(_.numberOfContacts)) must beRight(List(2, 1))
+      val result =
+        repository.getBy(institutionId, query).map { case (groups, _) => groups }
+      result.map(_.map(_.numberOfContacts)).unsafeRunSync() mustBe List(2, 1)
     }
 
     "allows filtering by contact" in {
@@ -144,7 +140,7 @@ class InstitutionGroupsRepositorySpec extends AtalaWithPostgresSpec {
           filters = Some(InstitutionGroup.FilterBy(contactId = Some(contact.contactId)))
         )
 
-      val (result, _) = repository.getBy(issuerId, query).value.futureValue.toOption.value
+      val (result, _) = repository.getBy(issuerId, query).unsafeRunSync()
       result.size must be(1)
 
       val resultGroup = result.head
@@ -165,7 +161,7 @@ class InstitutionGroupsRepositorySpec extends AtalaWithPostgresSpec {
             filters = Some(InstitutionGroup.FilterBy(name = Some(InstitutionGroup.Name(name))))
           )
 
-        val (result, _) = repository.getBy(institutionId, query).value.futureValue.toOption.value
+        val (result, _) = repository.getBy(institutionId, query).unsafeRunSync()
         result.size mustBe 1
         result.head.value.name.value mustBe groupName
       }
@@ -187,7 +183,7 @@ class InstitutionGroupsRepositorySpec extends AtalaWithPostgresSpec {
             filters = Some(InstitutionGroup.FilterBy(createdAfter = Some(date)))
           )
 
-        val (result, _) = repository.getBy(institutionId, query).value.futureValue.toOption.value
+        val (result, _) = repository.getBy(institutionId, query).unsafeRunSync()
         result.size mustBe expectedCount
       }
 
@@ -207,7 +203,7 @@ class InstitutionGroupsRepositorySpec extends AtalaWithPostgresSpec {
             filters = Some(InstitutionGroup.FilterBy(createdBefore = Some(date)))
           )
 
-        val (result, _) = repository.getBy(institutionId, query).value.futureValue.toOption.value
+        val (result, _) = repository.getBy(institutionId, query).unsafeRunSync()
         result.size mustBe expectedCount
       }
 
@@ -240,7 +236,7 @@ class InstitutionGroupsRepositorySpec extends AtalaWithPostgresSpec {
           )
         )
 
-      val (result, _) = repository.getBy(institutionId, query).value.futureValue.toOption.value
+      val (result, _) = repository.getBy(institutionId, query).unsafeRunSync()
       result.map(_.value.name.value) must be(List("Group 2", "Group 1"))
     }
 
@@ -255,7 +251,7 @@ class InstitutionGroupsRepositorySpec extends AtalaWithPostgresSpec {
       val query: InstitutionGroup.PaginatedQuery =
         PaginatedQueryConstraints(ordering = ResultOrdering(InstitutionGroup.SortBy.NumberOfContacts))
 
-      val (result, _) = repository.getBy(institutionId, query).value.futureValue.toOption.value
+      val (result, _) = repository.getBy(institutionId, query).unsafeRunSync()
       result.map(_.value.name) must be(groups.reverse)
     }
 
@@ -294,7 +290,8 @@ class InstitutionGroupsRepositorySpec extends AtalaWithPostgresSpec {
           ordering = ResultOrdering(InstitutionGroup.SortBy.Name)
         )
 
-      val (result, totalNumberOfGroups) = repository.getBy(institutionId, query).value.futureValue.toOption.value
+      val (result, totalNumberOfGroups) =
+        repository.getBy(institutionId, query).unsafeRunSync()
       result.size mustBe 1
       result.head.value.name mustBe groups.head
       totalNumberOfGroups mustBe groups.size
@@ -305,7 +302,7 @@ class InstitutionGroupsRepositorySpec extends AtalaWithPostgresSpec {
       val institutionId = createParticipant("Institution-1")
       groups.foreach { g => createInstitutionGroup(institutionId, g) }
 
-      val (result, _) = repository.getBy(institutionId, query).value.futureValue.toOption.value
+      val (result, _) = repository.getBy(institutionId, query).unsafeRunSync()
       result.map(_.value.name.value) must be(expectedResult)
     }
   }
@@ -316,7 +313,7 @@ class InstitutionGroupsRepositorySpec extends AtalaWithPostgresSpec {
       val newGroupName = InstitutionGroup.Name("IOHK 2021")
       val institutionId = createParticipant("Institution-1")
 
-      val maybeGroup = repository.create(institutionId, originalGroupName, Set()).value.futureValue
+      val maybeGroup = repository.create(institutionId, originalGroupName, Set()).unsafeToFuture().futureValue
       maybeGroup.isRight mustBe true
 
       val originalGroupId = maybeGroup.toOption.get.id
@@ -325,12 +322,11 @@ class InstitutionGroupsRepositorySpec extends AtalaWithPostgresSpec {
       createContact(institutionId, "test-contact-2", originalGroupName.some)
 
       //To ensure that contacts are added
-      repository.listContacts(institutionId, originalGroupName).value.futureValue.map(_.size) mustBe Right(2)
+      repository.listContacts(institutionId, originalGroupName).unsafeRunSync().size mustBe 2
 
       val maybeNewGroup = repository
         .copyGroup(institutionId, originalGroupId, newGroupName)
-        .value
-        .futureValue
+        .unsafeRunSync()
 
       maybeNewGroup.isRight mustBe true
 
@@ -338,11 +334,12 @@ class InstitutionGroupsRepositorySpec extends AtalaWithPostgresSpec {
       newGroup.name mustBe newGroupName
       newGroup.institutionId mustBe institutionId
 
-      val maybeOriginalContacts = repository.listContacts(institutionId, originalGroupName).value.futureValue
-      val maybeNewGroupContacts = repository.listContacts(institutionId, newGroupName).value.futureValue
+      val maybeOriginalContacts =
+        Try(repository.listContacts(institutionId, originalGroupName).unsafeToFuture().futureValue)
+      val maybeNewGroupContacts = repository.listContacts(institutionId, newGroupName).unsafeToFuture().futureValue
 
-      maybeOriginalContacts.isRight mustBe true
-      maybeOriginalContacts mustBe maybeNewGroupContacts
+      maybeOriginalContacts.isSuccess mustBe true
+      maybeOriginalContacts mustBe Success(maybeNewGroupContacts)
     }
 
     "return error if group doesn't exists" in {
@@ -352,8 +349,7 @@ class InstitutionGroupsRepositorySpec extends AtalaWithPostgresSpec {
 
       repository
         .copyGroup(institutionId, fakeGroupId, newGroupName)
-        .value
-        .futureValue mustBe Left(GroupsInstitutionDoNotMatch(List(fakeGroupId), institutionId))
+        .unsafeRunSync() mustBe Left(GroupsInstitutionDoNotMatch(List(fakeGroupId), institutionId))
     }
 
     "reject group copying if there is the wrong institutionId" in {
@@ -362,15 +358,14 @@ class InstitutionGroupsRepositorySpec extends AtalaWithPostgresSpec {
       val institutionId = createParticipant("Institution-1")
       val imposterInstitutionId = createParticipant("Institution-2")
 
-      val maybeGroup = repository.create(institutionId, groupName, Set()).value.futureValue
+      val maybeGroup = repository.create(institutionId, groupName, Set()).unsafeToFuture().futureValue
       maybeGroup.isRight mustBe true
 
       val group = maybeGroup.toOption.get
 
       repository
         .copyGroup(imposterInstitutionId, group.id, newGroupName)
-        .value
-        .futureValue mustBe Left(GroupsInstitutionDoNotMatch(List(group.id), imposterInstitutionId))
+        .unsafeRunSync() mustBe Left(GroupsInstitutionDoNotMatch(List(group.id), imposterInstitutionId))
     }
 
     "copy group even without contacts" in {
@@ -378,15 +373,14 @@ class InstitutionGroupsRepositorySpec extends AtalaWithPostgresSpec {
       val newGroupName = InstitutionGroup.Name("IOHK 2021")
       val institutionId = createParticipant("Institution-1")
 
-      val maybeGroup = repository.create(institutionId, originalGroupName, Set()).value.futureValue
+      val maybeGroup = repository.create(institutionId, originalGroupName, Set()).unsafeToFuture().futureValue
       maybeGroup.isRight mustBe true
 
       val originalGroupId = maybeGroup.toOption.get.id
 
       val maybeNewGroup = repository
         .copyGroup(institutionId, originalGroupId, newGroupName)
-        .value
-        .futureValue
+        .unsafeRunSync()
 
       maybeNewGroup.isRight mustBe true
 
@@ -394,10 +388,10 @@ class InstitutionGroupsRepositorySpec extends AtalaWithPostgresSpec {
       newGroup.name mustBe newGroupName
       newGroup.institutionId mustBe institutionId
 
-      val maybeOriginalContacts = repository.listContacts(institutionId, originalGroupName).value.futureValue
-      val maybeNewGroupContacts = repository.listContacts(institutionId, newGroupName).value.futureValue
+      val maybeOriginalContacts = repository.listContacts(institutionId, originalGroupName).unsafeToFuture().futureValue
+      val maybeNewGroupContacts = repository.listContacts(institutionId, newGroupName).unsafeToFuture().futureValue
 
-      maybeOriginalContacts mustBe Right(Nil)
+      maybeOriginalContacts mustBe Nil
       maybeOriginalContacts mustBe maybeNewGroupContacts
     }
 
@@ -406,16 +400,15 @@ class InstitutionGroupsRepositorySpec extends AtalaWithPostgresSpec {
       val group2Name = InstitutionGroup.Name("IOHK 2021")
       val institutionId = createParticipant("Institution-1")
 
-      val maybeGroup = repository.create(institutionId, originalGroupName, Set()).value.futureValue
+      val maybeGroup = repository.create(institutionId, originalGroupName, Set()).unsafeToFuture().futureValue
       maybeGroup.isRight mustBe true
-      repository.create(institutionId, group2Name, Set()).value.futureValue.isRight mustBe true
+      repository.create(institutionId, group2Name, Set()).unsafeRunSync().isRight mustBe true
 
       val originalGroupId = maybeGroup.toOption.get.id
 
       repository
         .copyGroup(institutionId, originalGroupId, group2Name)
-        .value
-        .futureValue mustBe Left(GroupNameIsNotFree(group2Name))
+        .unsafeRunSync() mustBe Left(GroupNameIsNotFree(group2Name))
     }
   }
 
@@ -424,7 +417,7 @@ class InstitutionGroupsRepositorySpec extends AtalaWithPostgresSpec {
       val groupName = InstitutionGroup.Name("IOHK 2019")
       val institutionId = createParticipant("Institution-1")
 
-      val maybeGroup = repository.create(institutionId, groupName, Set()).value.futureValue
+      val maybeGroup = repository.create(institutionId, groupName, Set()).unsafeToFuture().futureValue
       maybeGroup.isRight mustBe true
 
       val groupId = maybeGroup.toOption.get.id
@@ -433,16 +426,16 @@ class InstitutionGroupsRepositorySpec extends AtalaWithPostgresSpec {
       createContact(institutionId, "test-contact-2", groupName.some)
 
       //To ensure that contacts are added
-      repository.listContacts(institutionId, groupName).value.futureValue.map(_.size) mustBe Right(2)
+      repository.listContacts(institutionId, groupName).unsafeRunSync().size mustBe 2
 
-      repository.deleteGroup(institutionId, groupId).value.futureValue.isRight mustBe true
+      repository.deleteGroup(institutionId, groupId).unsafeToFuture().futureValue.isRight mustBe true
 
       val query: InstitutionGroup.PaginatedQuery =
         PaginatedQueryConstraints(ordering = ResultOrdering(InstitutionGroup.SortBy.Name))
 
-      repository.getBy(institutionId, query).value.futureValue.map { case (groups, _) => groups } mustBe Right(Nil)
+      repository.getBy(institutionId, query).unsafeRunSync()._1 mustBe Nil
       //Guarantee that we removed contacts and group
-      intercept[RuntimeException](repository.listContacts(institutionId, groupName).value.futureValue)
+      intercept[RuntimeException](repository.listContacts(institutionId, groupName).unsafeToFuture().futureValue)
       succeed
     }
 
@@ -452,8 +445,7 @@ class InstitutionGroupsRepositorySpec extends AtalaWithPostgresSpec {
 
       repository
         .deleteGroup(institutionId, fakeGroupId)
-        .value
-        .futureValue mustBe Left(GroupsInstitutionDoNotMatch(List(fakeGroupId), institutionId))
+        .unsafeRunSync() mustBe Left(GroupsInstitutionDoNotMatch(List(fakeGroupId), institutionId))
     }
 
     "reject group deleting if there is wrong institutionId" in {
@@ -461,15 +453,14 @@ class InstitutionGroupsRepositorySpec extends AtalaWithPostgresSpec {
       val institutionId = createParticipant("Institution-1")
       val imposterInstitutionId = createParticipant("Institution-2")
 
-      val maybeGroup = repository.create(institutionId, groupName, Set()).value.futureValue
+      val maybeGroup = repository.create(institutionId, groupName, Set()).unsafeToFuture().futureValue
       maybeGroup.isRight mustBe true
 
       val group = maybeGroup.toOption.get
 
       repository
         .deleteGroup(imposterInstitutionId, group.id)
-        .value
-        .futureValue mustBe Left(GroupsInstitutionDoNotMatch(List(group.id), imposterInstitutionId))
+        .unsafeRunSync() mustBe Left(GroupsInstitutionDoNotMatch(List(group.id), imposterInstitutionId))
     }
   }
 }

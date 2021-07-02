@@ -1,5 +1,7 @@
 package io.iohk.atala.prism.management.console.services
 
+import cats.effect.IO
+import cats.implicits.{catsSyntaxEitherId, toFunctorOps}
 import io.iohk.atala.prism.auth.AuthAndMiddlewareSupport
 import io.iohk.atala.prism.management.console.ManagementConsoleAuthenticator
 import io.iohk.atala.prism.management.console.errors.{ManagementConsoleError, ManagementConsoleErrorSupport}
@@ -14,13 +16,14 @@ import io.iohk.atala.prism.management.console.models.{
 }
 import io.iohk.atala.prism.management.console.repositories.InstitutionGroupsRepository
 import io.iohk.atala.prism.protos.{console_api, console_models}
+import io.iohk.atala.prism.utils.FutureEither.FutureEitherOps
 import io.iohk.atala.prism.utils.syntax._
 import org.slf4j.{Logger, LoggerFactory}
 
 import scala.concurrent.{ExecutionContext, Future}
 
 class GroupsServiceImpl(
-    institutionGroupsRepository: InstitutionGroupsRepository,
+    institutionGroupsRepository: InstitutionGroupsRepository[IO],
     val authenticator: ManagementConsoleAuthenticator
 )(implicit
     ec: ExecutionContext
@@ -40,6 +43,8 @@ class GroupsServiceImpl(
           request.name,
           request.contactIds
         )
+        .unsafeToFuture()
+        .toFutureEither
         .map { group =>
           console_api
             .CreateGroupResponse()
@@ -57,7 +62,12 @@ class GroupsServiceImpl(
   override def getGroups(request: console_api.GetGroupsRequest): Future[console_api.GetGroupsResponse] =
     auth[InstitutionGroup.PaginatedQuery]("getGroups", request) { (institutionId, query) =>
       for {
-        result <- institutionGroupsRepository.getBy(institutionId, query)
+        result <-
+          institutionGroupsRepository
+            .getBy(institutionId, query)
+            .unsafeToFuture()
+            .map(_.asRight)
+            .toFutureEither
         (groups, totalNumberOfRecords) = result
       } yield {
         val groupsProto = groups.map(ProtoCodecs.groupWithContactCountToProto)
@@ -75,15 +85,17 @@ class GroupsServiceImpl(
           updateInstitutionGroup.contactIdsToRemove,
           updateInstitutionGroup.name
         )
-        .map { _ =>
-          console_api.UpdateGroupResponse()
-        }
+        .unsafeToFuture()
+        .toFutureEither
+        .as(console_api.UpdateGroupResponse())
     }
 
   override def copyGroup(request: console_api.CopyGroupRequest): Future[console_api.CopyGroupResponse] =
     auth[CopyInstitutionGroup]("copyGroup", request) { (institutionId, copyInstitutionGroup) =>
       institutionGroupsRepository
         .copyGroup(institutionId, copyInstitutionGroup.groupId, copyInstitutionGroup.newName)
+        .unsafeToFuture()
+        .toFutureEither
         .map { createdGroup =>
           console_api.CopyGroupResponse(groupId = createdGroup.id.toString)
         }
@@ -93,9 +105,9 @@ class GroupsServiceImpl(
     auth[DeleteInstitutionGroup]("deleteGroup", request) { (institutionId, deleteInstitutionGroup) =>
       institutionGroupsRepository
         .deleteGroup(institutionId, deleteInstitutionGroup.groupId)
-        .map { _ =>
-          console_api.DeleteGroupResponse()
-        }
+        .unsafeToFuture()
+        .toFutureEither
+        .as(console_api.DeleteGroupResponse())
     }
   }
 }

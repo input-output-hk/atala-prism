@@ -100,12 +100,8 @@ class ContactsServiceImplSpec extends ManagementConsoleRpcSpecBase with DIDUtil 
         response.externalId must be(request.externalId)
 
         // the new contact needs to exist
-        val result = contactsRepository
-          .getBy(institutionId, Helpers.legacyQuery(None, Some(group.name), 10))
-          .value
-          .futureValue
-          .toOption
-          .value
+        val result =
+          contactsRepository.getBy(institutionId, Helpers.legacyQuery(None, Some(group.name), 10)).unsafeRunSync()
         result.size must be(1)
         val storedContact = result.headOption.value.details
         toContactProto(storedContact, connectionMissing()).copy(jsonData = "") must be(
@@ -148,7 +144,7 @@ class ContactsServiceImplSpec extends ManagementConsoleRpcSpecBase with DIDUtil 
         response.externalId must be(request.externalId)
 
         // the new contact needs to exist
-        val result = contactsRepository.find(institutionId, contactId).value.futureValue.toOption.value
+        val result = contactsRepository.find(institutionId, contactId).unsafeRunSync()
         val contactWithDetails = result.value
         toContactProto(contactWithDetails.contact, connectionMissing()).copy(jsonData = "") must be(
           response.copy(jsonData = "")
@@ -182,7 +178,7 @@ class ContactsServiceImplSpec extends ManagementConsoleRpcSpecBase with DIDUtil 
         response.externalId must be(request.externalId)
 
         // the new contact needs to exist
-        val result = contactsRepository.find(institutionId, contactId).value.futureValue.toOption.value
+        val result = contactsRepository.find(institutionId, contactId).unsafeRunSync()
         val contactWithDetails = result.value
         toContactProto(contactWithDetails.contact, connectionMissing()) must be(response)
       }
@@ -222,10 +218,7 @@ class ContactsServiceImplSpec extends ManagementConsoleRpcSpecBase with DIDUtil 
         // the contact must not be added
         val result = contactsRepository
           .getBy(institutionId, Helpers.legacyQuery(None, None, 10))
-          .value
-          .futureValue
-          .toOption
-          .value
+          .unsafeRunSync()
         result must be(empty)
       }
     }
@@ -259,10 +252,7 @@ class ContactsServiceImplSpec extends ManagementConsoleRpcSpecBase with DIDUtil 
         // the new contact should not exist
         val result = contactsRepository
           .getBy(institutionId, Helpers.legacyQuery(None, None, 10))
-          .value
-          .futureValue
-          .toOption
-          .value
+          .unsafeRunSync()
         result must be(empty)
       }
     }
@@ -313,10 +303,7 @@ class ContactsServiceImplSpec extends ManagementConsoleRpcSpecBase with DIDUtil 
         // the contact needs to exist as originally inserted
         val result = contactsRepository
           .getBy(institutionId, Helpers.legacyQuery(None, None, 10))
-          .value
-          .futureValue
-          .toOption
-          .value
+          .unsafeRunSync()
         result.size must be(1)
 
         val storedContact = result.head.details
@@ -348,10 +335,7 @@ class ContactsServiceImplSpec extends ManagementConsoleRpcSpecBase with DIDUtil 
     def testAvailableContacts(institutionId: ParticipantId, expected: Int) = {
       val result = contactsRepository
         .getBy(institutionId, Helpers.legacyQuery())
-        .value
-        .futureValue
-        .toOption
-        .value
+        .unsafeRunSync()
       result.size must be(expected)
     }
 
@@ -428,10 +412,7 @@ class ContactsServiceImplSpec extends ManagementConsoleRpcSpecBase with DIDUtil 
       groups.foreach { group =>
         institutionGroupsRepository
           .listContacts(institutionId, group)
-          .value
-          .futureValue
-          .toOption
-          .value
+          .unsafeRunSync()
           .size must be(2)
       }
     }

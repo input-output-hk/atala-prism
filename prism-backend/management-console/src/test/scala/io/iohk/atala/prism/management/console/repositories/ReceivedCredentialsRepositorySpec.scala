@@ -5,14 +5,13 @@ import io.iohk.atala.prism.management.console.DataPreparation
 import io.iohk.atala.prism.management.console.models.{Contact, CredentialExternalId, ParticipantId, ParticipantLogo}
 import io.iohk.atala.prism.management.console.repositories.ParticipantsRepository.CreateParticipantRequest
 import io.iohk.atala.prism.management.console.repositories.daos.ReceivedCredentialsDAO.ReceivedSignedCredentialData
-import org.scalatest.OptionValues._
 
 import java.time.Instant
 import java.time.temporal.ChronoUnit
 
 class ReceivedCredentialsRepositorySpec extends AtalaWithPostgresSpec {
-  lazy val receivedCredentialsRepository = new ReceivedCredentialsRepository(database)
-  lazy val participantsRepository = new ParticipantsRepository(database)
+  lazy val receivedCredentialsRepository = ReceivedCredentialsRepository(database)
+  lazy val participantsRepository = ParticipantsRepository(database)
 
   lazy val verifierId = ParticipantId.unsafeFrom("af45a4da-65b8-473e-aadc-aa6b346250a3")
 
@@ -28,8 +27,7 @@ class ReceivedCredentialsRepositorySpec extends AtalaWithPostgresSpec {
           ParticipantLogo(Vector())
         )
       )
-      .value
-      .futureValue
+      .unsafeRunSync()
     ()
   }
 
@@ -46,8 +44,7 @@ class ReceivedCredentialsRepositorySpec extends AtalaWithPostgresSpec {
           credentialExternalId
         )
       )
-      .value
-      .futureValue
+      .unsafeRunSync()
     ()
   }
 
@@ -61,7 +58,7 @@ class ReceivedCredentialsRepositorySpec extends AtalaWithPostgresSpec {
       create(contactId, encodedSignedCredential, mockCredentialExternalId)
 
       val result =
-        receivedCredentialsRepository.getCredentialsFor(verifierId, contactId).value.futureValue.toOption.value
+        receivedCredentialsRepository.getCredentialsFor(verifierId, contactId).unsafeRunSync()
       result.size must be(1)
       val resultCredential = result.head
 
@@ -90,9 +87,9 @@ class ReceivedCredentialsRepositorySpec extends AtalaWithPostgresSpec {
       create(contactId, encodedSignedCredential2, mockCredentialExternalId2)
 
       val result =
-        receivedCredentialsRepository.getLatestCredentialExternalId(verifierId).value.futureValue.toOption.value.value
+        receivedCredentialsRepository.getLatestCredentialExternalId(verifierId).unsafeRunSync()
 
-      result must be(mockCredentialExternalId2)
+      result must be(Some(mockCredentialExternalId2))
     }
   }
 }

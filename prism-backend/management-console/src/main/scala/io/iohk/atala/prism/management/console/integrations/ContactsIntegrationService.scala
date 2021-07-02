@@ -1,5 +1,7 @@
 package io.iohk.atala.prism.management.console.integrations
 
+import cats.effect.IO
+import cats.implicits.catsSyntaxEitherId
 import io.iohk.atala.prism.management.console.clients.ConnectorClient
 import io.iohk.atala.prism.management.console.errors
 import io.iohk.atala.prism.management.console.errors.ManagementConsoleError
@@ -11,13 +13,14 @@ import io.iohk.atala.prism.protos.connector_models.ContactConnection
 import io.iohk.atala.prism.protos.console_models.ContactConnectionStatus
 import io.iohk.atala.prism.utils.FutureEither
 import io.iohk.atala.prism.utils.FutureEither.{FutureEitherFOps, FutureEitherOps}
+
 import scala.concurrent.{ExecutionContext, Future}
 import cats.syntax.traverse._
 import cats.instances.future._
 import cats.instances.option._
 
 class ContactsIntegrationService(
-    contactsRepository: ContactsRepository,
+    contactsRepository: ContactsRepository[IO],
     connector: ConnectorClient
 )(implicit
     ec: ExecutionContext
@@ -43,12 +46,17 @@ class ContactsIntegrationService(
             FutureEither.left(errors.GenerationOfConnectionTokensFailed(expectedTokenCount = 1, actualTokenCount = 0))
           )
 
-      contact <- contactsRepository.create(
-        participantId,
-        request,
-        group,
-        connectionToken = token
-      )
+      contact <-
+        contactsRepository
+          .create(
+            participantId,
+            request,
+            group,
+            connectionToken = token
+          )
+          .unsafeToFuture()
+          .map(_.asRight)
+          .toFutureEither
     } yield {
       val connection = connector_models.ContactConnection(
         connectionStatus = ContactConnectionStatus.STATUS_CONNECTION_MISSING
@@ -79,11 +87,15 @@ class ContactsIntegrationService(
             )
           )
 
-      numberOfContacts <- contactsRepository.createBatch(
-        institutionId,
-        request,
-        tokens.toList
-      )
+      numberOfContacts <-
+        contactsRepository
+          .createBatch(
+            institutionId,
+            request,
+            tokens.toList
+          )
+          .unsafeToFuture()
+          .toFutureEither
     } yield numberOfContacts).value
   }
 
@@ -91,7 +103,7 @@ class ContactsIntegrationService(
       institutionId: ParticipantId,
       request: UpdateContact
   ): Future[Either[errors.ManagementConsoleError, Unit]] = {
-    contactsRepository.updateContact(institutionId, request).value
+    contactsRepository.updateContact(institutionId, request).unsafeToFuture().map(_.asRight)
   }
 
   def getContacts(
@@ -100,8 +112,13 @@ class ContactsIntegrationService(
   ): Future[Either[errors.ManagementConsoleError, GetContactsResult]] = {
     val filterByConnectionStatusSpecified = paginatedQuery.filters.exists(f => f.connectionStatus.isDefined)
     val result = for {
-      allContacts <- contactsRepository.getBy(institutionId, paginatedQuery, filterByConnectionStatusSpecified)
-      allConnectionStatuses <- { connector.getConnectionStatus(allContacts.map(_.details.connectionToken)).lift }
+      allContacts <-
+        contactsRepository
+          .getBy(institutionId, paginatedQuery, filterByConnectionStatusSpecified)
+          .unsafeToFuture()
+          .map(_.asRight)
+          .toFutureEither
+      allConnectionStatuses <- connector.getConnectionStatus(allContacts.map(_.details.connectionToken)).lift
       tokenToConnection = allConnectionStatuses.map(c => ConnectionToken(c.connectionToken) -> c).toMap
     } yield {
       val data = allContacts
@@ -140,7 +157,12 @@ class ContactsIntegrationService(
   ): Future[Either[Nothing, Option[DetailedContactWithConnection]]] = {
     val detailedContactWithConnectionFE =
       for {
-        contactMaybe <- contactsRepository.find(institutionId, contactId)
+        contactMaybe <-
+          contactsRepository
+            .find(institutionId, contactId)
+            .unsafeToFuture()
+            .map(_.asRight)
+            .toFutureEither
         detailedContactWithConnection <- contactMaybe.traverse { contact =>
           val connectionTokens =
             (contact.issuedCredentials.map(_.connectionToken) :+ contact.contact.connectionToken).distinct
@@ -161,9 +183,8 @@ class ContactsIntegrationService(
       institutionId: ParticipantId,
       contactId: Contact.Id,
       deleteCredentials: Boolean
-  ): Future[Either[ManagementConsoleError, Unit]] = {
-    contactsRepository.delete(institutionId, contactId, deleteCredentials).value
-  }
+  ): Future[Either[ManagementConsoleError, Unit]] =
+    contactsRepository.delete(institutionId, contactId, deleteCredentials).unsafeToFuture()
 }
 
 object ContactsIntegrationService {

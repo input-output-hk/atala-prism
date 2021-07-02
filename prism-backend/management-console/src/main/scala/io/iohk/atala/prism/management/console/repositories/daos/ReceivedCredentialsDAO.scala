@@ -33,12 +33,12 @@ object ReceivedCredentialsDAO {
   def getReceivedCredentialsFor(
       verifierId: ParticipantId,
       contactId: Contact.Id
-  ): ConnectionIO[Seq[ReceivedSignedCredential]] = {
+  ): ConnectionIO[List[ReceivedSignedCredential]] = {
     sql"""SELECT contact_id, encoded_signed_credential, received_at
          |FROM received_credentials JOIN contacts USING (contact_id)
          |WHERE created_by = $verifierId AND contact_id = $contactId
          |ORDER BY received_at
-       """.stripMargin.query[ReceivedSignedCredential].to[Seq]
+       """.stripMargin.query[ReceivedSignedCredential].to[List]
   }
 
   def getLatestCredentialExternalId(

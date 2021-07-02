@@ -46,14 +46,14 @@ class ManagementConsoleRpcSpecBase extends RpcSpecBase {
     )
   }
 
-  lazy val participantsRepository = new ParticipantsRepository(database)
-  lazy val requestNoncesRepository = new RequestNoncesRepository.PostgresImpl(database)(executionContext)
-  lazy val contactsRepository = new ContactsRepository(database)(executionContext)
-  lazy val statisticsRepository = new StatisticsRepository(database)
-  lazy val institutionGroupsRepository = new InstitutionGroupsRepository(database)(executionContext)
-  lazy val credentialIssuancesRepository = new CredentialIssuancesRepository(database)(executionContext)
-  lazy val credentialsRepository = new CredentialsRepository(database)(executionContext)
-  lazy val credentialTypeRepository = new CredentialTypeRepository(database)
+  lazy val participantsRepository = ParticipantsRepository(database)
+  lazy val requestNoncesRepository = RequestNoncesRepository(database)
+  lazy val contactsRepository = ContactsRepository(database)
+  lazy val statisticsRepository = StatisticsRepository(database)
+  lazy val institutionGroupsRepository = InstitutionGroupsRepository(database)
+  lazy val credentialIssuancesRepository = CredentialIssuancesRepository(database)
+  lazy val credentialsRepository = CredentialsRepository(database)
+  lazy val credentialTypeRepository = CredentialTypeRepository(database)
 
   lazy val nodeMock = mock[io.iohk.atala.prism.protos.node_api.NodeServiceGrpc.NodeService]
 

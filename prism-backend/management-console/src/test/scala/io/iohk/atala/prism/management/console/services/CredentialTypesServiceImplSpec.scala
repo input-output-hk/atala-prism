@@ -28,7 +28,7 @@ class CredentialTypesServiceImplSpec extends ManagementConsoleRpcSpecBase with D
       }
 
       // create credential type
-      credentialTypeRepository.create(participantId, createCredentialType).value.futureValue
+      credentialTypeRepository.create(participantId, createCredentialType).unsafeRunSync()
 
       // test with data
       usingApiAsCredentialType(SignedRpcRequest.generate(keyPair, did, request)) { stub =>
@@ -41,7 +41,7 @@ class CredentialTypesServiceImplSpec extends ManagementConsoleRpcSpecBase with D
     "return credential type" in new Fixtures {
       // create credential type
       val credentialType =
-        credentialTypeRepository.create(participantId, createCredentialType).value.futureValue.getOrElse(fail())
+        credentialTypeRepository.create(participantId, createCredentialType).unsafeRunSync().getOrElse(fail())
 
       val request =
         console_api.GetCredentialTypeRequest(credentialTypeId = credentialType.credentialType.id.uuid.toString)
@@ -89,7 +89,7 @@ class CredentialTypesServiceImplSpec extends ManagementConsoleRpcSpecBase with D
     "update credential type" in new Fixtures {
       // create credential type
       val credentialType =
-        credentialTypeRepository.create(participantId, createCredentialType).value.futureValue.getOrElse(fail())
+        credentialTypeRepository.create(participantId, createCredentialType).unsafeRunSync().getOrElse(fail())
 
       val model = console_models.UpdateCredentialType(
         id = credentialType.credentialType.id.uuid.toString,
@@ -108,12 +108,11 @@ class CredentialTypesServiceImplSpec extends ManagementConsoleRpcSpecBase with D
       usingApiAsCredentialType(SignedRpcRequest.generate(keyPair, did, request))(_.updateCredentialType(request))
       val result = credentialTypeRepository
         .find(credentialType.credentialType.id)
-        .value
-        .futureValue
-      result.map(_.map(_.credentialType.name)) mustBe Right(Some("credenital-type-changed"))
-      val fields = result.map(_.map(_.requiredFields))
-      fields.map(_.size) mustBe Right(1) // fields were overwritten
-      fields.map(_.map(_.head.name)) mustBe Right(Some("new field"))
+        .unsafeRunSync()
+      result.map(_.credentialType.name) mustBe Some("credenital-type-changed")
+      val fields = result.map(_.requiredFields)
+      fields.map(_.size) mustBe Some(1) // fields were overwritten
+      fields.map(_.head.name) mustBe Some("new field")
     }
 
     "update credential type with invalid uuid" in new Fixtures {
@@ -135,7 +134,7 @@ class CredentialTypesServiceImplSpec extends ManagementConsoleRpcSpecBase with D
     "update credential type state to ready" in new Fixtures {
       // create credential type
       val credentialType =
-        credentialTypeRepository.create(participantId, createCredentialType).value.futureValue.getOrElse(fail())
+        credentialTypeRepository.create(participantId, createCredentialType).unsafeRunSync().getOrElse(fail())
 
       val request =
         console_api.MarkAsReadyCredentialTypeRequest(credentialTypeId = credentialType.credentialType.id.uuid.toString)
@@ -146,15 +145,14 @@ class CredentialTypesServiceImplSpec extends ManagementConsoleRpcSpecBase with D
       usingApiAsCredentialType(SignedRpcRequest.generate(keyPair, did, request))(_.markAsReadyCredentialType(request))
       credentialTypeRepository
         .find(credentialType.credentialType.id)
-        .value
-        .futureValue
-        .map(_.map(_.credentialType.state)) mustBe Right(Some(CredentialTypeState.Ready))
+        .unsafeRunSync()
+        .map(_.credentialType.state) mustBe Some(CredentialTypeState.Ready)
     }
 
     "update credential type state to archived" in new Fixtures {
       // create credential type
       val credentialType =
-        credentialTypeRepository.create(participantId, createCredentialType).value.futureValue.getOrElse(fail())
+        credentialTypeRepository.create(participantId, createCredentialType).unsafeRunSync().getOrElse(fail())
 
       val request =
         console_api.MarkAsArchivedCredentialTypeRequest(credentialTypeId =
@@ -169,9 +167,8 @@ class CredentialTypesServiceImplSpec extends ManagementConsoleRpcSpecBase with D
       )
       credentialTypeRepository
         .find(credentialType.credentialType.id)
-        .value
-        .futureValue
-        .map(_.map(_.credentialType.state)) mustBe Right(Some(CredentialTypeState.Archived))
+        .unsafeRunSync()
+        .map(_.credentialType.state) mustBe Some(CredentialTypeState.Archived)
     }
 
   }

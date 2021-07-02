@@ -73,10 +73,7 @@ class CredentialsServiceImplSpec extends ManagementConsoleRpcSpecBase with DIDUt
       val mockRevocationOperationId = AtalaOperationId.random()
       credentialsRepository
         .storeRevocationData(issuerId, originalCredential.credentialId, mockRevocationOperationId)
-        .value
-        .futureValue
-        .toOption
-        .value
+        .unsafeRunSync()
 
       val contactConnection = connector_models.ContactConnection(
         connectionStatus = ContactConnectionStatus.STATUS_CONNECTION_ACCEPTED,
@@ -273,10 +270,7 @@ class CredentialsServiceImplSpec extends ManagementConsoleRpcSpecBase with DIDUt
 
           val revokedOnOperationId = credentialsRepository
             .getBy(credential.credentialId)
-            .value
-            .futureValue
-            .toOption
-            .value
+            .unsafeRunSync()
             .value
             .revokedOnOperationId
 
@@ -728,10 +722,10 @@ class CredentialsServiceImplSpec extends ManagementConsoleRpcSpecBase with DIDUt
       usingApiAsCredentials(SignedRpcRequest.generate(keyPair, did, request)) { serviceStub =>
         serviceStub.shareCredentials(request)
 
-        val result1 = credentialsRepository.getBy(credential1.credentialId).value.futureValue.toOption.value.value
+        val result1 = credentialsRepository.getBy(credential1.credentialId).unsafeRunSync().value
         result1.sharedAt mustNot be(empty)
 
-        val result2 = credentialsRepository.getBy(credential2.credentialId).value.futureValue.toOption.value.value
+        val result2 = credentialsRepository.getBy(credential2.credentialId).unsafeRunSync().value
         result2.sharedAt mustNot be(empty)
       }
     }
@@ -807,10 +801,10 @@ class CredentialsServiceImplSpec extends ManagementConsoleRpcSpecBase with DIDUt
           serviceStub.shareCredentials(request)
         }
 
-        val result1 = credentialsRepository.getBy(credential1.credentialId).value.futureValue.toOption.value.value
+        val result1 = credentialsRepository.getBy(credential1.credentialId).unsafeRunSync().value
         result1.sharedAt must be(empty)
 
-        val result2 = credentialsRepository.getBy(credential2.credentialId).value.futureValue.toOption.value.value
+        val result2 = credentialsRepository.getBy(credential2.credentialId).unsafeRunSync().value
         result2.sharedAt must be(empty)
       }
     }
@@ -867,10 +861,7 @@ class CredentialsServiceImplSpec extends ManagementConsoleRpcSpecBase with DIDUt
 
         val storedPublicationData = credentialsRepository
           .getBy(originalCredential.credentialId)
-          .value
-          .futureValue
-          .toOption
-          .value
+          .unsafeRunSync()
           .value
           .publicationData
           .value
@@ -922,10 +913,7 @@ class CredentialsServiceImplSpec extends ManagementConsoleRpcSpecBase with DIDUt
 
         val storedPublicationData = credentialsRepository
           .getBy(originalCredential.credentialId)
-          .value
-          .futureValue
-          .toOption
-          .value
+          .unsafeRunSync()
           .value
           .publicationData
 
@@ -969,10 +957,7 @@ class CredentialsServiceImplSpec extends ManagementConsoleRpcSpecBase with DIDUt
 
         val storedCredential = credentialsRepository
           .getBy(aRandomId)
-          .value
-          .futureValue
-          .toOption
-          .value
+          .unsafeRunSync()
 
         storedCredential mustBe empty
       }
@@ -1023,10 +1008,7 @@ class CredentialsServiceImplSpec extends ManagementConsoleRpcSpecBase with DIDUt
 
         val storedPublicationData = credentialsRepository
           .getBy(originalCredential.credentialId)
-          .value
-          .futureValue
-          .toOption
-          .value
+          .unsafeRunSync()
           .value
           .publicationData
 
@@ -1068,10 +1050,7 @@ class CredentialsServiceImplSpec extends ManagementConsoleRpcSpecBase with DIDUt
 
         val storedPublicationData = credentialsRepository
           .getBy(originalCredential.credentialId)
-          .value
-          .futureValue
-          .toOption
-          .value
+          .unsafeRunSync()
           .value
           .publicationData
 
@@ -1095,8 +1074,8 @@ class CredentialsServiceImplSpec extends ManagementConsoleRpcSpecBase with DIDUt
 
       usingApiAsCredentials(rpcRequest) { serviceStub =>
         serviceStub.deleteCredentials(request)
-        credentialsRepository.getBy(credential1.credentialId).toFuture.futureValue mustBe None
-        credentialsRepository.getBy(credential2.credentialId).toFuture.futureValue mustBe None
+        credentialsRepository.getBy(credential1.credentialId).unsafeRunSync() mustBe None
+        credentialsRepository.getBy(credential2.credentialId).unsafeRunSync() mustBe None
       }
 
     }
@@ -1120,8 +1099,8 @@ class CredentialsServiceImplSpec extends ManagementConsoleRpcSpecBase with DIDUt
           serviceStub.deleteCredentials(request)
         )
 
-        credentialsRepository.getBy(credential1.credentialId).toFuture.futureValue mustBe a[Some[_]]
-        credentialsRepository.getBy(credential2.credentialId).toFuture.futureValue mustBe a[Some[_]]
+        credentialsRepository.getBy(credential1.credentialId).unsafeRunSync() mustBe a[Some[_]]
+        credentialsRepository.getBy(credential2.credentialId).unsafeRunSync() mustBe a[Some[_]]
       }
     }
 
@@ -1142,8 +1121,8 @@ class CredentialsServiceImplSpec extends ManagementConsoleRpcSpecBase with DIDUt
           serviceStub.deleteCredentials(request)
         )
 
-        credentialsRepository.getBy(credential1.credentialId).toFuture.futureValue mustBe a[Some[_]]
-        credentialsRepository.getBy(credential2.credentialId).toFuture.futureValue mustBe a[Some[_]]
+        credentialsRepository.getBy(credential1.credentialId).unsafeRunSync() mustBe a[Some[_]]
+        credentialsRepository.getBy(credential2.credentialId).unsafeRunSync() mustBe a[Some[_]]
       }
     }
 
@@ -1164,8 +1143,8 @@ class CredentialsServiceImplSpec extends ManagementConsoleRpcSpecBase with DIDUt
           serviceStub.deleteCredentials(request)
         )
 
-        credentialsRepository.getBy(credential1.credentialId).toFuture.futureValue mustBe a[Some[_]]
-        credentialsRepository.getBy(credential2.credentialId).toFuture.futureValue mustBe a[Some[_]]
+        credentialsRepository.getBy(credential1.credentialId).unsafeRunSync() mustBe a[Some[_]]
+        credentialsRepository.getBy(credential2.credentialId).unsafeRunSync() mustBe a[Some[_]]
       }
     }
   }

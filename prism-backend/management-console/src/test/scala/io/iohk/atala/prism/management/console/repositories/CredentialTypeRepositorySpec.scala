@@ -15,7 +15,7 @@ import java.util.UUID
 
 //sbt "project management-console" "testOnly *CredentialTypeRepositorySpec"
 class CredentialTypeRepositorySpec extends AtalaWithPostgresSpec {
-  lazy val repository = new CredentialTypeRepository(database)
+  lazy val repository = CredentialTypeRepository(database)
 
   "create" should {
     "create a new credential type with required fields" in {
@@ -23,9 +23,9 @@ class CredentialTypeRepositorySpec extends AtalaWithPostgresSpec {
 
       val createCredentialType = sampleCreateCredentialType("name")
 
-      val result = repository.create(participantId, createCredentialType).value.futureValue.toOption.value
+      val result = repository.create(participantId, createCredentialType).unsafeRunSync().toOption.value
 
-      val credentialType = repository.find(result.credentialType.id).value.futureValue.toOption.value
+      val credentialType = repository.find(result.credentialType.id).unsafeRunSync()
       credentialType mustBe a[Some[_]]
     }
 
@@ -35,7 +35,11 @@ class CredentialTypeRepositorySpec extends AtalaWithPostgresSpec {
       createCredentialType(participantId, templateName)
 
       intercept[Exception](
-        repository.create(participantId, sampleCreateCredentialType(templateName)).value.futureValue
+        repository
+          .create(participantId, sampleCreateCredentialType(templateName))
+          .unsafeRunSync()
+          .toOption
+          .value
       )
     }
 
@@ -44,14 +48,14 @@ class CredentialTypeRepositorySpec extends AtalaWithPostgresSpec {
       val createCredentialType = sampleCreateCredentialType("name")
         .copy(template = "incorrect {{name1}")
 
-      val result = repository.create(participantId, createCredentialType).value.futureValue
+      val result = repository.create(participantId, createCredentialType).unsafeRunSync()
       result mustBe a[Left[_, _]]
     }
   }
 
   "find" should {
     "find by id" in new Fixtures {
-      val credentialType = repository.find(credentialType3.credentialType.id).value.futureValue.toOption.value
+      val credentialType = repository.find(credentialType3.credentialType.id).unsafeRunSync()
 
       credentialType mustBe Some(credentialType3)
     }
@@ -59,10 +63,7 @@ class CredentialTypeRepositorySpec extends AtalaWithPostgresSpec {
     "find by institution and name" in new Fixtures {
       val credentialType = repository
         .find(credentialType3.credentialType.institution, credentialType3.credentialType.name)
-        .value
-        .futureValue
-        .toOption
-        .value
+        .unsafeRunSync()
 
       credentialType mustBe Some(credentialType3)
     }
@@ -70,10 +71,7 @@ class CredentialTypeRepositorySpec extends AtalaWithPostgresSpec {
     "find by institution and id" in new Fixtures {
       val credentialType = repository
         .find(credentialType3.credentialType.institution, credentialType3.credentialType.id)
-        .value
-        .futureValue
-        .toOption
-        .value
+        .unsafeRunSync()
 
       credentialType mustBe Some(credentialType3)
     }
@@ -81,10 +79,7 @@ class CredentialTypeRepositorySpec extends AtalaWithPostgresSpec {
     "find by institution" in new Fixtures {
       val credentialTypes = repository
         .findByInstitution(institution2)
-        .value
-        .futureValue
-        .toOption
-        .value
+        .unsafeRunSync()
 
       credentialTypes mustBe List(credentialType3, credentialType4).map(_.credentialType)
     }
@@ -94,8 +89,8 @@ class CredentialTypeRepositorySpec extends AtalaWithPostgresSpec {
     "update credential type" in new Fixtures {
       val updateRequest = prepareUpdateCredentialType(credentialType1.credentialType.id)
 
-      val result = repository.update(updateRequest, institution1).value.futureValue
-      val updatedCredentialType = repository.find(credentialType1.credentialType.id).value.futureValue.toOption.value
+      val result = repository.update(updateRequest, institution1).unsafeRunSync()
+      val updatedCredentialType = repository.find(credentialType1.credentialType.id).unsafeRunSync()
 
       result mustBe a[Right[_, _]]
       updatedCredentialType.isDefined mustBe true
@@ -114,23 +109,23 @@ class CredentialTypeRepositorySpec extends AtalaWithPostgresSpec {
     "return error when credential type does not exist" in new Fixtures {
       val updateRequest = prepareUpdateCredentialType(CredentialTypeId(UUID.randomUUID()))
 
-      val result = repository.update(updateRequest, institution1).value.futureValue
+      val result = repository.update(updateRequest, institution1).unsafeRunSync()
       result mustBe a[Left[_, _]]
     }
 
     "return error when updated credential type is not in draft state" in new Fixtures {
-      repository.markAsReady(credentialType1.credentialType.id, institution1).value.futureValue
+      repository.markAsReady(credentialType1.credentialType.id, institution1).unsafeRunSync()
 
       val updateRequest = prepareUpdateCredentialType(credentialType1.credentialType.id)
 
-      val result = repository.update(updateRequest, institution1).value.futureValue
+      val result = repository.update(updateRequest, institution1).unsafeRunSync()
       result mustBe a[Left[_, _]]
     }
 
     "return error when updated credential does not belong to institution which initiated update" in new Fixtures {
       val updateRequest = prepareUpdateCredentialType(credentialType1.credentialType.id)
 
-      val result = repository.update(updateRequest, institution2).value.futureValue
+      val result = repository.update(updateRequest, institution2).unsafeRunSync()
       result mustBe a[Left[_, _]]
     }
 
@@ -138,54 +133,58 @@ class CredentialTypeRepositorySpec extends AtalaWithPostgresSpec {
       val updateRequest = prepareUpdateCredentialType(credentialType1.credentialType.id)
         .copy(template = "incorrect {{name}")
 
-      val result = repository.update(updateRequest, institution1).value.futureValue
+      val result = repository.update(updateRequest, institution1).unsafeToFuture().futureValue
       result mustBe a[Left[_, _]]
     }
   }
 
   "mark as archived" should {
     "change state of credential type to archive" in new Fixtures {
-      val result = repository.markAsArchived(credentialType1.credentialType.id, institution1).value.futureValue
-      val updatedCredentialType = repository.find(credentialType1.credentialType.id).value.futureValue.toOption.value
+      val result =
+        repository.markAsArchived(credentialType1.credentialType.id, institution1).unsafeToFuture().futureValue
+      val updatedCredentialType = repository.find(credentialType1.credentialType.id).unsafeToFuture().futureValue
 
       result mustBe a[Right[_, _]]
       updatedCredentialType.map(_.credentialType.state) mustBe Some(CredentialTypeState.Archived)
     }
 
     "return error when credential type does not exist" in new Fixtures {
-      val result = repository.markAsArchived(CredentialTypeId(UUID.randomUUID()), institution1).value.futureValue
+      val result =
+        repository.markAsArchived(CredentialTypeId(UUID.randomUUID()), institution1).unsafeToFuture().futureValue
       result mustBe a[Left[_, _]]
     }
 
     "return error when updated credential does not belong to institution which initiated update" in new Fixtures {
-      val result = repository.markAsArchived(credentialType1.credentialType.id, institution2).value.futureValue
+      val result =
+        repository.markAsArchived(credentialType1.credentialType.id, institution2).unsafeToFuture().futureValue
       result mustBe a[Left[_, _]]
     }
   }
 
   "mark as ready" should {
     "change state of credential type to ready" in new Fixtures {
-      val result = repository.markAsReady(credentialType1.credentialType.id, institution1).value.futureValue
-      val updatedCredentialType = repository.find(credentialType1.credentialType.id).value.futureValue.toOption.value
+      val result = repository.markAsReady(credentialType1.credentialType.id, institution1).unsafeToFuture().futureValue
+      val updatedCredentialType = repository.find(credentialType1.credentialType.id).unsafeToFuture().futureValue
 
       result mustBe a[Right[_, _]]
       updatedCredentialType.map(_.credentialType.state) mustBe Some(CredentialTypeState.Ready)
     }
 
     "return error when credential type does not exist" in new Fixtures {
-      val result = repository.markAsReady(CredentialTypeId(UUID.randomUUID()), institution1).value.futureValue
+      val result =
+        repository.markAsReady(CredentialTypeId(UUID.randomUUID()), institution1).unsafeToFuture().futureValue
       result mustBe a[Left[_, _]]
     }
 
     "return error when credential type has already been marked as archived" in new Fixtures {
-      repository.markAsArchived(credentialType1.credentialType.id, institution1).value.futureValue
+      repository.markAsArchived(credentialType1.credentialType.id, institution1).unsafeToFuture().futureValue
 
-      val result = repository.markAsReady(credentialType1.credentialType.id, institution1).value.futureValue
+      val result = repository.markAsReady(credentialType1.credentialType.id, institution1).unsafeToFuture().futureValue
       result mustBe a[Left[_, _]]
     }
 
     "return error when updated credential does not belong to institution which initiated update" in new Fixtures {
-      val result = repository.markAsReady(credentialType1.credentialType.id, institution2).value.futureValue
+      val result = repository.markAsReady(credentialType1.credentialType.id, institution2).unsafeToFuture().futureValue
       result mustBe a[Left[_, _]]
     }
   }

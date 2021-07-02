@@ -1,19 +1,14 @@
 package io.iohk.atala.prism.management.console.integrations
 
+import cats.effect.IO
+import cats.implicits.catsSyntaxEitherId
 import io.iohk.atala.prism.connector.AtalaOperationId
 import io.iohk.atala.prism.grpc.ProtoConverter
 import io.iohk.atala.prism.management.console.clients.ConnectorClient
 import io.iohk.atala.prism.management.console.errors
 import io.iohk.atala.prism.management.console.errors.{ManagementConsoleError, ManagementConsoleErrorSupport}
 import io.iohk.atala.prism.management.console.grpc._
-import io.iohk.atala.prism.management.console.models.{
-  Contact,
-  CreateGenericCredential,
-  GenericCredential,
-  NodeRevocationResponse,
-  ParticipantId,
-  RevokePublishedCredential
-}
+import io.iohk.atala.prism.management.console.models._
 import io.iohk.atala.prism.management.console.repositories.CredentialsRepository
 import io.iohk.atala.prism.models.ConnectionToken
 import io.iohk.atala.prism.protos.connector_models.ContactConnection
@@ -26,7 +21,7 @@ import org.slf4j.{Logger, LoggerFactory}
 import scala.concurrent.{ExecutionContext, Future}
 
 class CredentialsIntegrationService(
-    credentialsRepository: CredentialsRepository,
+    credentialsRepository: CredentialsRepository[IO],
     nodeService: node_api.NodeServiceGrpc.NodeService,
     connector: ConnectorClient
 )(implicit ec: ExecutionContext)
@@ -51,11 +46,16 @@ class CredentialsIntegrationService(
           .map(ProtoConverter[node_api.RevokeCredentialsResponse, NodeRevocationResponse].fromProto)
           .map(_.toEither)
           .toFutureEither(ex => wrapAsServerError(ex))
-      _ <- credentialsRepository.storeRevocationData(
-        institutionId,
-        request.credentialId,
-        nodeResponse.operationId
-      )
+      _ <-
+        credentialsRepository
+          .storeRevocationData(
+            institutionId,
+            request.credentialId,
+            nodeResponse.operationId
+          )
+          .unsafeToFuture()
+          .map(_.asRight)
+          .toFutureEither
     } yield nodeResponse.operationId
   }
 
@@ -64,7 +64,11 @@ class CredentialsIntegrationService(
       createGenericCredential: CreateGenericCredential
   ): Future[Either[errors.ManagementConsoleError, GenericCredentialWithConnection]] = {
     getAndAppendConnectionStatus(
-      credentialsRepository.create(participantId, createGenericCredential).map(credential => List(credential))
+      credentialsRepository
+        .create(participantId, createGenericCredential)
+        .unsafeToFuture()
+        .toFutureEither
+        .map(credential => List(credential))
     ).map(_.map(result => result.data.head))
   }
 
@@ -72,13 +76,17 @@ class CredentialsIntegrationService(
       issuedBy: ParticipantId,
       query: GenericCredential.PaginatedQuery
   ): Future[Either[Nothing, GetGenericCredentialsResult]] =
-    getAndAppendConnectionStatus(credentialsRepository.getBy(issuedBy, query))
+    getAndAppendConnectionStatus(
+      credentialsRepository.getBy(issuedBy, query).map(_.asRight).unsafeToFuture().toFutureEither
+    )
 
   def getContactCredentials(
       issuedBy: ParticipantId,
       contactId: Contact.Id
   ): Future[Either[Nothing, GetGenericCredentialsResult]] =
-    getAndAppendConnectionStatus(credentialsRepository.getBy(issuedBy, contactId))
+    getAndAppendConnectionStatus(
+      credentialsRepository.getBy(issuedBy, contactId).map(_.asRight).unsafeToFuture().toFutureEither
+    )
 
   private def getAndAppendConnectionStatus[E](
       genericCredentialSupplier: => FutureEither[E, List[GenericCredential]]

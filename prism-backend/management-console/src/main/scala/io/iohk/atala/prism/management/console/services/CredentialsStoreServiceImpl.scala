@@ -1,5 +1,7 @@
 package io.iohk.atala.prism.management.console.services
 
+import cats.effect.IO
+import cats.implicits.catsSyntaxEitherId
 import io.iohk.atala.prism.auth.AuthAndMiddlewareSupport
 import io.iohk.atala.prism.management.console.models.{
   GetLatestCredential,
@@ -17,12 +19,13 @@ import io.iohk.atala.prism.protos.console_api.{
   GetLatestCredentialExternalIdResponse
 }
 import io.iohk.atala.prism.protos.console_api
+import io.iohk.atala.prism.utils.FutureEither.FutureEitherOps
 import org.slf4j.{Logger, LoggerFactory}
 
 import scala.concurrent.{ExecutionContext, Future}
 
 class CredentialsStoreServiceImpl(
-    receivedCredentials: ReceivedCredentialsRepository,
+    receivedCredentials: ReceivedCredentialsRepository[IO],
     val authenticator: ManagementConsoleAuthenticator
 )(implicit
     ec: ExecutionContext
@@ -49,6 +52,9 @@ class CredentialsStoreServiceImpl(
         .map { _ =>
           console_api.StoreCredentialResponse()
         }
+        .unsafeToFuture()
+        .map(_.asRight)
+        .toFutureEither
     }
 
   override def getLatestCredentialExternalId(
@@ -62,6 +68,9 @@ class CredentialsStoreServiceImpl(
             latestCredentialExternalId = maybeCredentialExternalId.fold("")(_.value.toString)
           )
         }
+        .unsafeToFuture()
+        .map(_.asRight)
+        .toFutureEither
     }
 
   override def getStoredCredentialsFor(
@@ -75,5 +84,8 @@ class CredentialsStoreServiceImpl(
             credentials = credentials.map(ProtoCodecs.receivedSignedCredentialToProto)
           )
         }
+        .unsafeToFuture()
+        .map(_.asRight)
+        .toFutureEither
     }
 }
