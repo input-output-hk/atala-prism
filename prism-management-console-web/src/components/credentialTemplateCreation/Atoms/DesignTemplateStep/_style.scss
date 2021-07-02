@@ -21,3 +21,32 @@
     @include primary-text($h3, $black);
   }
 }
+
+.customizeHeaderContainer {
+  .ant-btn:hover, .ant-btn:focus {
+    color: $primary-color;
+    border: 1px solid $primary-color;
+  }
+}
+
+.headerContainer {
+  @include primary-text($h3, $black);
+  .inputContainer {
+    display: flex;
+    flex-direction: row;
+    width: 100%;
+    .input {
+      width: 50% !important;
+      label {
+        @include primary-text($label, $grey);
+      }
+      input {
+        width: 90%;
+        border: 1px solid lightgray;
+      }
+      .ant-input:focus {
+        border: 1px solid $primary-color;
+      }
+    }
+  }
+}
