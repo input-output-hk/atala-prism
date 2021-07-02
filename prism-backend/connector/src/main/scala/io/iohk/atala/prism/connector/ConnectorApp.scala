@@ -76,10 +76,10 @@ class ConnectorApp(executionContext: ExecutionContext) { self =>
     val node = NodeServiceGrpc.stub(nodeChannel)
 
     // connector repositories
-    val connectionsRepository = new ConnectionsRepository.PostgresImpl(xa)(executionContext)
-    val messagesRepository = new MessagesRepository(xa)(executionContext)
-    val requestNoncesRepository = new RequestNoncesRepository.PostgresImpl(xa)(executionContext)
-    val participantsRepository = new ParticipantsRepository(xa)
+    val connectionsRepository = ConnectionsRepository(xa)
+    val messagesRepository = MessagesRepository(xa)
+    val requestNoncesRepository = RequestNoncesRepository(xa)
+    val participantsRepository = ParticipantsRepository(xa)
 
     // authenticator
     val authenticator = new ConnectorAuthenticator(

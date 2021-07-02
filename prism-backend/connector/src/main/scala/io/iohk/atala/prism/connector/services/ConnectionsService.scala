@@ -1,5 +1,7 @@
 package io.iohk.atala.prism.connector.services
 
+import cats.effect.IO
+import cats.implicits.catsSyntaxEitherId
 import io.iohk.atala.prism.connector.errors._
 import io.iohk.atala.prism.connector.model._
 import io.iohk.atala.prism.connector.repositories.ConnectionsRepository
@@ -14,45 +16,45 @@ import org.slf4j.LoggerFactory
 
 import scala.concurrent.{ExecutionContext, Future}
 
-class ConnectionsService(connectionsRepository: ConnectionsRepository, nodeService: NodeServiceGrpc.NodeService)(
+class ConnectionsService(connectionsRepository: ConnectionsRepository[IO], nodeService: NodeServiceGrpc.NodeService)(
     implicit ec: ExecutionContext
 ) {
 
   private val logger = LoggerFactory.getLogger(this.getClass)
 
   def getConnectionByToken(token: TokenString): FutureEither[ConnectorError, Option[Connection]] = {
-    connectionsRepository.getConnectionByToken(token)
+    connectionsRepository.getConnectionByToken(token).map(_.asRight).unsafeToFuture().toFutureEither
   }
 
   def generateTokens(userId: ParticipantId, tokensCount: Int): FutureEither[ConnectorError, List[TokenString]] = {
-    connectionsRepository.insertTokens(userId, List.fill(tokensCount)(TokenString.random()))
+    connectionsRepository
+      .insertTokens(userId, List.fill(tokensCount)(TokenString.random()))
+      .map(_.asRight)
+      .unsafeToFuture()
+      .toFutureEither
   }
 
-  def getTokenInfo(token: TokenString): FutureEither[ConnectorError, ParticipantInfo] = {
-    connectionsRepository.getTokenInfo(token)
-  }
+  def getTokenInfo(token: TokenString): FutureEither[ConnectorError, ParticipantInfo] =
+    connectionsRepository.getTokenInfo(token).unsafeToFuture().toFutureEither
 
   def addConnectionFromToken(
       tokenString: TokenString,
       didOrPublicKey: Either[DID, ECPublicKey]
-  ): FutureEither[ConnectorError, ConnectionInfo] = {
-    connectionsRepository.addConnectionFromToken(tokenString, didOrPublicKey)
-  }
+  ): FutureEither[ConnectorError, ConnectionInfo] =
+    connectionsRepository.addConnectionFromToken(tokenString, didOrPublicKey).unsafeToFuture().toFutureEither
 
   def revokeConnection(
       participantId: ParticipantId,
       connectionId: ConnectionId
-  ): FutureEither[ConnectorError, Unit] = {
-    connectionsRepository.revokeConnection(participantId, connectionId)
-  }
+  ): FutureEither[ConnectorError, Unit] =
+    connectionsRepository.revokeConnection(participantId, connectionId).unsafeToFuture().toFutureEither
 
   def getConnectionsPaginated(
       userId: ParticipantId,
       limit: Int,
       lastSeenConnectionId: Option[ConnectionId]
-  ): FutureEither[ConnectorError, Seq[ConnectionInfo]] = {
-    connectionsRepository.getConnectionsPaginated(userId, limit, lastSeenConnectionId)
-  }
+  ): FutureEither[ConnectorError, Seq[ConnectionInfo]] =
+    connectionsRepository.getConnectionsPaginated(userId, limit, lastSeenConnectionId).unsafeToFuture().toFutureEither
 
   def getConnectionCommunicationKeys(
       connectionId: ConnectionId,
@@ -75,7 +77,8 @@ class ConnectionsService(connectionsRepository: ConnectionsRepository, nodeServi
     }
 
     for {
-      participantInfo <- connectionsRepository.getOtherSideInfo(connectionId, userId).map(_.get)
+      participantInfo <-
+        connectionsRepository.getOtherSideInfo(connectionId, userId).map(_.get.asRight).unsafeToFuture().toFutureEither
       keys <- (participantInfo.did, participantInfo.publicKey) match {
         case (Some(did), keyOpt) =>
           if (keyOpt.isDefined) {
@@ -90,7 +93,10 @@ class ConnectionsService(connectionsRepository: ConnectionsRepository, nodeServi
 
   def getConnectionsByConnectionTokens(
       connectionTokens: List[TokenString]
-  ): FutureEither[ConnectorError, List[ContactConnection]] = {
-    connectionsRepository.getConnectionsByConnectionTokens(connectionTokens)
-  }
+  ): FutureEither[ConnectorError, List[ContactConnection]] =
+    connectionsRepository
+      .getConnectionsByConnectionTokens(connectionTokens)
+      .map(_.asRight)
+      .unsafeToFuture()
+      .toFutureEither
 }

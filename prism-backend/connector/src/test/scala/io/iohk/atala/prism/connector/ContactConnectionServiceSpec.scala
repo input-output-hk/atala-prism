@@ -18,9 +18,9 @@ class ContactConnectionServiceSpec extends RpcSpecBase with DIDUtil with Connect
 
   protected lazy val nodeMock = mock[io.iohk.atala.prism.protos.node_api.NodeServiceGrpc.NodeService]
 
-  private lazy val connectionsRepository = new ConnectionsRepository.PostgresImpl(database)(executionContext)
-  lazy val requestNoncesRepository = new RequestNoncesRepository.PostgresImpl(database)(executionContext)
-  lazy val participantsRepository = new ParticipantsRepository(database)
+  private lazy val connectionsRepository = ConnectionsRepository(database)
+  lazy val requestNoncesRepository = RequestNoncesRepository(database)
+  lazy val participantsRepository = ParticipantsRepository(database)
 
   val (keyPair, did) = DIDUtil.createUnpublishedDid
   val publicKey: ECPublicKey = keyPair.publicKey

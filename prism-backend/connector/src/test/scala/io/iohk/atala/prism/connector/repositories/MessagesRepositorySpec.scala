@@ -21,7 +21,7 @@ import org.scalatest.OptionValues._
 import java.time.{Instant, LocalDateTime, ZoneOffset}
 
 class MessagesRepositorySpec extends ConnectorRepositorySpecBase {
-  lazy val messagesRepository = new MessagesRepository(database)
+  lazy val messagesRepository = MessagesRepository(database)
 
   "insertMessage" should {
     "insert message from the initiator to the acceptor" in {
@@ -30,7 +30,7 @@ class MessagesRepositorySpec extends ConnectorRepositorySpecBase {
       val connection = createConnection(issuer, holder)
       val message = "hello".getBytes
 
-      val result = messagesRepository.insertMessage(issuer, connection, message).value.futureValue
+      val result = messagesRepository.insertMessage(issuer, connection, message).unsafeRunSync()
       val messageId = result.toOption.value
 
       val (sender, recipient, content) =
@@ -51,7 +51,7 @@ class MessagesRepositorySpec extends ConnectorRepositorySpecBase {
       val connection = createConnection(issuer, holder)
       val message = "hello".getBytes
 
-      val result = messagesRepository.insertMessage(holder, connection, message).value.futureValue
+      val result = messagesRepository.insertMessage(holder, connection, message).unsafeRunSync()
       val messageId = result.toOption.value
 
       val (sender, recipient, content) =
@@ -71,7 +71,7 @@ class MessagesRepositorySpec extends ConnectorRepositorySpecBase {
       val connection = ConnectionId.random()
       val message = "hello".getBytes
 
-      val result = messagesRepository.insertMessage(issuer, connection, message).value.futureValue
+      val result = messagesRepository.insertMessage(issuer, connection, message).unsafeRunSync()
 
       result mustBe an[Left[ConnectionNotFoundByConnectionIdAndSender, MessageId]]
     }
@@ -83,7 +83,8 @@ class MessagesRepositorySpec extends ConnectorRepositorySpecBase {
       val message = "hello".getBytes
       val messageId = MessageId.random()
 
-      val result = messagesRepository.insertMessage(issuer, connection, message, Some(messageId)).value.futureValue
+      val result =
+        messagesRepository.insertMessage(issuer, connection, message, Some(messageId)).unsafeRunSync()
       result.toOption.value mustBe messageId
 
       val (sender, recipient, content) =
@@ -106,12 +107,15 @@ class MessagesRepositorySpec extends ConnectorRepositorySpecBase {
     val message = "hello".getBytes
     val messageId = MessageId.random()
 
-    messagesRepository.insertMessage(issuer, connection, message, Some(messageId)).value.futureValue mustBe Right(
+    messagesRepository
+      .insertMessage(issuer, connection, message, Some(messageId))
+      .unsafeToFuture()
+      .futureValue mustBe Right(
       messageId
     )
     messagesRepository
       .insertMessage(issuer, connection, message, Some(messageId))
-      .value
+      .unsafeToFuture()
       .futureValue mustBe an[Left[MessagesAlreadyExist, MessageId]]
   }
 
@@ -132,7 +136,7 @@ class MessagesRepositorySpec extends ConnectorRepositorySpecBase {
         SendMessagesRequest.MessageToSend(token2, message.toByteArray, None)
       )
 
-    val result = messagesRepository.insertMessages(issuer, messages).value.futureValue
+    val result = messagesRepository.insertMessages(issuer, messages).unsafeRunSync()
     val messagesIds = NonEmptyList.fromList(result.toOption.value).get
 
     val insertedMessages =
@@ -173,7 +177,7 @@ class MessagesRepositorySpec extends ConnectorRepositorySpecBase {
         SendMessagesRequest.MessageToSend(token, message2.toByteArray, None)
       )
 
-    val result = messagesRepository.insertMessages(holder, messages).value.futureValue
+    val result = messagesRepository.insertMessages(holder, messages).unsafeRunSync()
     val messagesIds = NonEmptyList.fromList(result.toOption.value).get
 
     val insertedMessages =
@@ -215,7 +219,7 @@ class MessagesRepositorySpec extends ConnectorRepositorySpecBase {
         SendMessagesRequest.MessageToSend(token2, message.toByteArray, Some(messageId2))
       )
 
-    val result = messagesRepository.insertMessages(issuer, messages).value.futureValue
+    val result = messagesRepository.insertMessages(issuer, messages).unsafeRunSync()
     val messagesIds = NonEmptyList.fromList(result.toOption.value).get
 
     messagesIds.toList.toSet mustBe Set(messageId1, messageId2)
@@ -240,7 +244,7 @@ class MessagesRepositorySpec extends ConnectorRepositorySpecBase {
         SendMessagesRequest.MessageToSend(token2, message.toByteArray, Some(messageId1))
       )
 
-    val result = messagesRepository.insertMessages(issuer, messages).value.futureValue
+    val result = messagesRepository.insertMessages(issuer, messages).unsafeRunSync()
     result mustBe an[Left[MessageIdsNotUnique, List[MessageId]]]
   }
 
@@ -266,10 +270,10 @@ class MessagesRepositorySpec extends ConnectorRepositorySpecBase {
 
     messagesRepository
       .insertMessages(issuer, messages)
-      .value
+      .unsafeToFuture()
       .futureValue mustBe an[Right[ConnectorError, List[MessageId]]]
 
-    val result = messagesRepository.insertMessages(issuer, messages).value.futureValue
+    val result = messagesRepository.insertMessages(issuer, messages).unsafeRunSync()
     result mustBe an[Left[MessagesAlreadyExist, List[MessageId]]]
   }
 
@@ -290,7 +294,7 @@ class MessagesRepositorySpec extends ConnectorRepositorySpecBase {
         SendMessagesRequest.MessageToSend(TokenString("invalidConnectionToken"), message.toByteArray, None)
       )
 
-    val result = messagesRepository.insertMessages(issuer, messages).value.futureValue
+    val result = messagesRepository.insertMessages(issuer, messages).unsafeRunSync()
     result mustBe a[Left[_, _]]
   }
 
@@ -309,7 +313,7 @@ class MessagesRepositorySpec extends ConnectorRepositorySpecBase {
 
       val all = messagesRepository
         .getMessagesPaginated(holder, 20, Option.empty)
-        .value
+        .unsafeToFuture()
         .futureValue
         .toOption
         .value
@@ -318,11 +322,12 @@ class MessagesRepositorySpec extends ConnectorRepositorySpecBase {
       val firstTenExpected = all.take(10)
       val nextTenExpected = all.slice(10, 20)
 
-      val firstTenResult = messagesRepository.getMessagesPaginated(holder, 10, Option.empty).value.futureValue
+      val firstTenResult =
+        messagesRepository.getMessagesPaginated(holder, 10, Option.empty).unsafeRunSync()
       firstTenResult.toOption.value.map(_.id) must matchTo(firstTenExpected)
 
       val nextTenResult =
-        messagesRepository.getMessagesPaginated(holder, 10, Some(firstTenExpected.last)).value.futureValue
+        messagesRepository.getMessagesPaginated(holder, 10, Some(firstTenExpected.last)).unsafeRunSync()
       nextTenResult.toOption.value.map(_.id) must matchTo(nextTenExpected)
     }
   }

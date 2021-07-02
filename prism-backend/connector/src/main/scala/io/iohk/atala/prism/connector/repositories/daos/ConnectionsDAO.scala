@@ -117,7 +117,7 @@ object ConnectionsDAO {
       participant: ParticipantId,
       limit: Int,
       lastSeenConnectionId: Option[ConnectionId]
-  ): doobie.ConnectionIO[Seq[ConnectionInfo]] = {
+  ): doobie.ConnectionIO[List[ConnectionInfo]] = {
     lastSeenConnectionId match {
       case Some(value) =>
         sql"""
@@ -142,7 +142,7 @@ object ConnectionsDAO {
              |WHERE c.instantiated_at > last_seen_time OR (instantiated_at = last_seen_time AND c.id > $value)
              |ORDER BY c.instantiated_at ASC, c.id
              |LIMIT $limit
-      """.stripMargin.query[ConnectionInfo].to[Seq]
+      """.stripMargin.query[ConnectionInfo].to[List]
       case None =>
         sql"""
              |WITH
@@ -156,7 +156,7 @@ object ConnectionsDAO {
              |JOIN participants p ON p.id = c.side
              |ORDER BY c.instantiated_at ASC, c.id
              |LIMIT $limit
-      """.stripMargin.query[ConnectionInfo].to[Seq]
+      """.stripMargin.query[ConnectionInfo].to[List]
     }
   }
 

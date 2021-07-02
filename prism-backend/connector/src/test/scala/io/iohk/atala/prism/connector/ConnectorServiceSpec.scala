@@ -98,7 +98,7 @@ class ConnectorServiceSpec extends ConnectorRpcSpecBase {
 
       usingApiAs(rpcRequest) { blockingStub =>
         val _ = blockingStub.updateParticipantProfile(rpcRequest.request)
-        val result = participantsRepository.findBy(participantId).value.futureValue
+        val result = participantsRepository.findBy(participantId).unsafeRunSync()
 
         val participantInfo = result.toOption.value
         participantInfo.name must be("Update Issuer")
@@ -117,7 +117,7 @@ class ConnectorServiceSpec extends ConnectorRpcSpecBase {
 
       usingApiAs(rpcRequest) { blockingStub =>
         val _ = blockingStub.updateParticipantProfile(rpcRequest.request)
-        val result = participantsRepository.findBy(participantId).value.futureValue
+        val result = participantsRepository.findBy(participantId).unsafeRunSync()
 
         val participantInfo = result.toOption.value
         participantInfo.name must be("Update Issuer")

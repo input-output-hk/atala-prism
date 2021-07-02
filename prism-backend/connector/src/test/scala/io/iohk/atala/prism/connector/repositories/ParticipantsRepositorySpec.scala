@@ -11,7 +11,7 @@ import org.scalatest.EitherValues._
 import org.scalatest.OptionValues._
 
 class ParticipantsRepositorySpec extends ConnectorRepositorySpecBase {
-  lazy val participantsRepository = new ParticipantsRepository(database)
+  lazy val participantsRepository = ParticipantsRepository(database)
   private val canonicalSuffix = "0f753f41e0f3488ba56bd581d153ae9b3c9040cbcc7a63245b4644a265eb3b77"
   private val encodedStateUsed =
     "CmEKXxJdCgdtYXN0ZXIwEAFCUAoJc2VjcDI1NmsxEiAel_7KEiez4s_e0u8DyJwLkUnVmUHBuWU-0h01nerSNRohAJlR51Vbk49vagehAwQkFvW_fvyM1qa4ileIEYkXs4pF"
@@ -30,7 +30,7 @@ class ParticipantsRepositorySpec extends ConnectorRepositorySpecBase {
         .unsafeToFuture()
         .futureValue
 
-      val result = participantsRepository.findBy(did).value.futureValue
+      val result = participantsRepository.findBy(did).unsafeRunSync()
       result.toOption.value must be(info)
     }
 
@@ -43,7 +43,7 @@ class ParticipantsRepositorySpec extends ConnectorRepositorySpecBase {
         .unsafeToFuture()
         .futureValue
 
-      val result = participantsRepository.findBy(longDID).value.futureValue
+      val result = participantsRepository.findBy(longDID).unsafeRunSync()
       result.toOption.value must be(info)
     }
 
@@ -56,7 +56,7 @@ class ParticipantsRepositorySpec extends ConnectorRepositorySpecBase {
         .unsafeToFuture()
         .futureValue
 
-      val result = participantsRepository.findBy(shortDID).value.futureValue
+      val result = participantsRepository.findBy(shortDID).unsafeRunSync()
       result.toOption.value must be(info.copy(did = Some(shortDID)))
     }
 
@@ -78,7 +78,7 @@ class ParticipantsRepositorySpec extends ConnectorRepositorySpecBase {
         .unsafeToFuture()
         .futureValue
 
-      val result = participantsRepository.findBy(did).value.futureValue
+      val result = participantsRepository.findBy(did).unsafeRunSync()
       result.left.value must be(UnknownValueError("did", did.value))
     }
 
@@ -102,7 +102,7 @@ class ParticipantsRepositorySpec extends ConnectorRepositorySpecBase {
 
       val expectedParticipant = info.copy(did = Some(shortDID), name = "Updated Issuer", logo = Some(logo))
 
-      val result = participantsRepository.findBy(longDID).value.futureValue
+      val result = participantsRepository.findBy(longDID).unsafeRunSync()
       result.toOption.value must be(expectedParticipant)
     }
 
@@ -126,7 +126,7 @@ class ParticipantsRepositorySpec extends ConnectorRepositorySpecBase {
 
       val expectedParticipant = info.copy(did = Some(shortDID), name = "", logo = None)
 
-      val result = participantsRepository.findBy(longDID).value.futureValue
+      val result = participantsRepository.findBy(longDID).unsafeRunSync()
       result.toOption.value must be(expectedParticipant)
     }
 
@@ -150,7 +150,7 @@ class ParticipantsRepositorySpec extends ConnectorRepositorySpecBase {
 
       val expectedParticipant = info.copy(did = Some(shortDID), name = "Updated Issuer", logo = None)
 
-      val result = participantsRepository.findBy(longDID).value.futureValue
+      val result = participantsRepository.findBy(longDID).unsafeRunSync()
       result.toOption.value must be(expectedParticipant)
     }
 
@@ -175,7 +175,7 @@ class ParticipantsRepositorySpec extends ConnectorRepositorySpecBase {
       }
 
       val expectedParticipant = info.copy(did = Some(shortDID))
-      val result = participantsRepository.findBy(longDID).value.futureValue
+      val result = participantsRepository.findBy(longDID).unsafeRunSync()
       result.toOption.value must be(expectedParticipant)
     }
   }

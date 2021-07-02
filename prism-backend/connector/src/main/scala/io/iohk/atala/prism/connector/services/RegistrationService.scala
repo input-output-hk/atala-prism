@@ -1,5 +1,6 @@
 package io.iohk.atala.prism.connector.services
 
+import cats.effect.IO
 import cats.syntax.either._
 import cats.syntax.option._
 import io.iohk.atala.prism.connector.AtalaOperationId
@@ -16,7 +17,7 @@ import io.iohk.atala.prism.protos.node_api
 
 import scala.concurrent.ExecutionContext
 
-class RegistrationService(participantsRepository: ParticipantsRepository, nodeService: NodeServiceGrpc.NodeService)(
+class RegistrationService(participantsRepository: ParticipantsRepository[IO], nodeService: NodeServiceGrpc.NodeService)(
     implicit ec: ExecutionContext
 ) {
 
@@ -31,7 +32,7 @@ class RegistrationService(participantsRepository: ParticipantsRepository, nodeSe
 
     for {
       createRequest <- didOrOperation.fold(checkAndUseExistingDID(_, tpe, name, logo), createDID(tpe, name, logo, _))
-      _ <- participantsRepository.create(createRequest)
+      _ <- participantsRepository.create(createRequest).unsafeToFuture().toFutureEither
     } yield RegistrationResult(
       did = createRequest.did,
       id = createRequest.id,

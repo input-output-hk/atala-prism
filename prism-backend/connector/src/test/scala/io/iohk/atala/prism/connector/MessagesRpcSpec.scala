@@ -117,12 +117,12 @@ class MessagesRpcSpec extends ConnectorRpcSpecBase {
       usingApiAs(rpcRequest) { blockingStub =>
         blockingStub.sendMessages(request)
         val msg1 =
-          MessagesDAO.getMessagesPaginated(holderId1, 1, None).transact(database).unsafeToFuture().futureValue.head
+          MessagesDAO.getMessagesPaginated(holderId1, 1, None).transact(database).unsafeRunSync().head
         msg1.content mustBe message1.toByteArray
         messagesIds must contain(msg1.id.uuid.toString)
 
         val msg2 =
-          MessagesDAO.getMessagesPaginated(holderId2, 1, None).transact(database).unsafeToFuture().futureValue.head
+          MessagesDAO.getMessagesPaginated(holderId2, 1, None).transact(database).unsafeRunSync().head
         msg2.content mustBe message2.toByteArray
         messagesIds must contain(msg2.id.uuid.toString)
       }
@@ -486,7 +486,7 @@ class MessagesRpcSpec extends ConnectorRpcSpecBase {
     usingApiAs(rpcRequest) { blockingStub =>
       blockingStub.sendMessage(request)
       val msg =
-        MessagesDAO.getMessagesPaginated(holderId, 1, None).transact(database).unsafeToFuture().futureValue.head
+        MessagesDAO.getMessagesPaginated(holderId, 1, None).transact(database).unsafeRunSync().head
       msg.connection mustBe connectionId
       msg.id.uuid.toString mustBe messageId
     }

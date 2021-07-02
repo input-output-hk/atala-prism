@@ -64,7 +64,7 @@ object MessagesDAO {
       recipientId: ParticipantId,
       limit: Int,
       lastSeenMessageId: Option[MessageId]
-  ): doobie.ConnectionIO[Seq[Message]] = {
+  ): doobie.ConnectionIO[List[Message]] = {
     val query = lastSeenMessageId match {
       case Some(value) =>
         sql"""
@@ -91,20 +91,20 @@ object MessagesDAO {
        """.stripMargin
     }
 
-    query.query[Message].to[Seq]
+    query.query[Message].to[List]
   }
 
   def getConnectionMessages(
       recipientId: ParticipantId,
       connectionId: ConnectionId
-  ): doobie.ConnectionIO[Seq[Message]] = {
+  ): doobie.ConnectionIO[List[Message]] = {
     sql"""
          |SELECT id, connection, recipient, received_at, content
          |FROM messages
          |WHERE recipient = $recipientId AND
          |      connection = $connectionId
          |ORDER BY received_at ASC, id
-       """.stripMargin.query[Message].to[Seq]
+       """.stripMargin.query[Message].to[List]
   }
 
   def deleteConnectionMessages(connectionId: ConnectionId): doobie.ConnectionIO[Unit] = {

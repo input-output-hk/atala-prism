@@ -1,6 +1,7 @@
 package io.iohk.atala.prism.connector
 
 import cats.effect._
+import cats.implicits.catsSyntaxEitherId
 import cats.syntax.functor._
 import com.google.protobuf.ByteString
 import io.grpc.stub.StreamObserver
@@ -40,7 +41,7 @@ class ConnectorService(
     messageNotificationService: MessageNotificationService,
     val authenticator: ConnectorAuthenticator,
     nodeService: NodeServiceGrpc.NodeService,
-    participantsRepository: ParticipantsRepository
+    participantsRepository: ParticipantsRepository[IO]
 )(implicit
     executionContext: ExecutionContext
 ) extends connector_api.ConnectorServiceGrpc.ConnectorService
@@ -354,6 +355,8 @@ class ConnectorService(
     unitAuth("getCurrentUser", request) { (participantId, _) =>
       participantsRepository
         .findBy(participantId)
+        .unsafeToFuture()
+        .toFutureEither
         .map { info =>
           val role = info.tpe match {
             case ParticipantType.Holder =>
@@ -377,7 +380,10 @@ class ConnectorService(
     auth[UpdateParticipantProfile]("updateParticipantProfile", request) { (participantId, updateProfile) =>
       participantsRepository
         .updateParticipantProfileBy(participantId, updateProfile)
+        .unsafeToFuture()
         .as(connector_api.UpdateProfileResponse())
+        .map(_.asRight)
+        .toFutureEither
     }
 
   /** Send messages over many connections

@@ -19,8 +19,8 @@ class CredentialViewsServiceSpec extends RpcSpecBase with DIDUtil {
     new CredentialViewsServiceGrpc.CredentialViewsServiceBlockingStub(_, _)
   )
 
-  private lazy val participantsRepository = new ParticipantsRepository(database)
-  private lazy val requestNoncesRepository = new RequestNoncesRepository.PostgresImpl(database)(executionContext)
+  private lazy val participantsRepository = ParticipantsRepository(database)
+  private lazy val requestNoncesRepository = RequestNoncesRepository(database)
   protected lazy val nodeMock = mock[io.iohk.atala.prism.protos.node_api.NodeServiceGrpc.NodeService]
   private lazy val authenticator = new ConnectorAuthenticator(
     participantsRepository,

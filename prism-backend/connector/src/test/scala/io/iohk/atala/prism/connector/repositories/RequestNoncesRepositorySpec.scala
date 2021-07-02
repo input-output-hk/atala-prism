@@ -8,9 +8,11 @@ import io.iohk.atala.prism.connector.DataPreparation
 import io.iohk.atala.prism.models.ParticipantId
 import org.scalatest.OptionValues._
 
+import scala.util.Try
+
 class RequestNoncesRepositorySpec extends ConnectorRepositorySpecBase {
 
-  lazy val requestNoncesRepository = new RequestNoncesRepository.PostgresImpl(database)
+  lazy val requestNoncesRepository = RequestNoncesRepository(database)
 
   private def available(participantId: ParticipantId, requestNonce: RequestNonce): Boolean = {
     RequestNoncesDAO.available(participantId, requestNonce).transact(database).unsafeRunSync()
@@ -22,7 +24,7 @@ class RequestNoncesRepositorySpec extends ConnectorRepositorySpecBase {
       val nonce = RequestNonce("test".getBytes.toVector)
 
       available(participantId, nonce) must be(true)
-      val result = requestNoncesRepository.burn(participantId, nonce).value.futureValue
+      val result = Try(requestNoncesRepository.burn(participantId, nonce).unsafeRunSync())
       result.toOption.value must be(())
 
       available(participantId, nonce) must be(false)
@@ -31,9 +33,9 @@ class RequestNoncesRepositorySpec extends ConnectorRepositorySpecBase {
     "fail if the nonce is already burnt" in {
       val participantId = createParticipant(ParticipantType.Issuer, "iohk", DataPreparation.newDID(), None, None)
       val nonce = RequestNonce("test".getBytes.toVector)
-      requestNoncesRepository.burn(participantId, nonce).value.futureValue
+      requestNoncesRepository.burn(participantId, nonce).unsafeRunSync()
       intercept[RuntimeException] {
-        requestNoncesRepository.burn(participantId, nonce).value.futureValue
+        requestNoncesRepository.burn(participantId, nonce).unsafeRunSync()
       }
     }
 
@@ -41,9 +43,9 @@ class RequestNoncesRepositorySpec extends ConnectorRepositorySpecBase {
       val participantId = createParticipant(ParticipantType.Issuer, "iohk", DataPreparation.newDID(), None, None)
       val participantId2 = createParticipant(ParticipantType.Issuer, "iohk-2", DataPreparation.newDID(), None, None)
       val nonce = RequestNonce("test".getBytes.toVector)
-      requestNoncesRepository.burn(participantId, nonce).value.futureValue
+      requestNoncesRepository.burn(participantId, nonce).unsafeRunSync()
 
-      val result = requestNoncesRepository.burn(participantId2, nonce).value.futureValue
+      val result = Try(requestNoncesRepository.burn(participantId2, nonce).unsafeRunSync())
       result.toOption.value must be(())
 
       available(participantId, nonce) must be(false)

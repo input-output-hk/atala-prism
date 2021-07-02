@@ -1,5 +1,7 @@
 package io.iohk.atala.prism.connector
 
+import cats.effect.IO
+
 import java.util.UUID
 import io.grpc.Context
 import io.iohk.atala.prism.crypto.{EC, ECPublicKey, ECSignature}
@@ -11,7 +13,6 @@ import io.iohk.atala.prism.auth.grpc.{GrpcAuthenticationHeader, GrpcAuthenticati
 import io.iohk.atala.prism.identity.DID
 import io.iohk.atala.prism.identity.DID.masterKeyId
 import io.iohk.atala.prism.models.ParticipantId
-import io.iohk.atala.prism.utils.FutureEither.FutureEitherOps
 import io.iohk.atala.prism.protos.node_api._
 import io.iohk.atala.prism.protos.{connector_api, node_api, node_models}
 import io.iohk.atala.prism.util.KeyUtils.createNodePublicKey
@@ -246,9 +247,9 @@ class SignedRequestsAuthenticatorSpec extends AnyWordSpec {
       val keys = EC.generateKeyPair()
       val signedRequest = requestAuthenticator.signConnectorRequest(request.toByteArray, keys.privateKey)
 
-      val participantsRepository = mock[ParticipantsRepository]
+      val participantsRepository = mock[ParticipantsRepository[IO]]
       participantsRepository.findBy(any[DID](defaultValueDID)).returns {
-        Future.successful(Left(UnknownValueError("did", "not found"))).toFutureEither
+        IO.pure(Left(UnknownValueError("did", "not found")))
       }
 
       val customParser = new GrpcAuthenticationHeaderParser {
@@ -266,7 +267,7 @@ class SignedRequestsAuthenticatorSpec extends AnyWordSpec {
       }
       val authenticator = new ConnectorAuthenticator(
         participantsRepository,
-        mock[RequestNoncesRepository],
+        mock[RequestNoncesRepository[IO]],
         mock[NodeServiceGrpc.NodeService],
         customParser
       )
@@ -383,20 +384,20 @@ class SignedRequestsAuthenticatorSpec extends AnyWordSpec {
       burnNonce: () => Unit = () => (),
       getDidResponse: () => Option[node_api.GetDidDocumentResponse] = () => None
   ): ConnectorAuthenticator = {
-    val participantsRepository = mock[ParticipantsRepository]
+    val participantsRepository = mock[ParticipantsRepository[IO]]
     participantsRepository.findBy(any[DID](defaultValueDID)).returns {
       getuserId() match {
         case Some(userId) =>
-          Future.successful(Right(dummyParticipantInfo(userId))).toFutureEither
-        case None => Future.failed(new RuntimeException("Missing user")).toFutureEither
+          IO.pure(Right(dummyParticipantInfo(userId)))
+        case None => IO.raiseError(new RuntimeException("Missing user"))
       }
     }
 
     participantsRepository.findBy(any[ECPublicKey]).returns {
       getuserId() match {
         case Some(userId) =>
-          Future.successful(Right(dummyParticipantInfo(userId))).toFutureEither
-        case None => Future.failed(new RuntimeException("Missing user")).toFutureEither
+          IO.pure(Right(dummyParticipantInfo(userId)))
+        case None => IO.raiseError(new RuntimeException("Missing user"))
       }
     }
 
@@ -406,10 +407,10 @@ class SignedRequestsAuthenticatorSpec extends AnyWordSpec {
       }
     }
 
-    val requestNoncesRepository = mock[RequestNoncesRepository]
+    val requestNoncesRepository = mock[RequestNoncesRepository[IO]]
     requestNoncesRepository
       .burn(any[ParticipantId], any[auth.model.RequestNonce])
-      .returns(Future(burnNonce()).map(Right(_)).toFutureEither)
+      .returns(IO(burnNonce()))
 
     val customNode = mock[NodeServiceGrpc.NodeService]
     customNode.getDidDocument(*).returns {

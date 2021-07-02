@@ -47,11 +47,11 @@ class ConnectorRpcSpecBase extends RpcSpecBase with DIDUtil {
       new connector_api.ConnectorServiceGrpc.ConnectorServiceStub(_, _)
     )
 
-  lazy val connectionsRepository = new ConnectionsRepository.PostgresImpl(database)(executionContext)
+  lazy val connectionsRepository = ConnectionsRepository(database)
   lazy val connectionsService = new ConnectionsService(connectionsRepository, nodeMock)
-  lazy val messagesRepository = new MessagesRepository(database)(executionContext)
-  lazy val requestNoncesRepository = new RequestNoncesRepository.PostgresImpl(database)(executionContext)
-  lazy val participantsRepository = new ParticipantsRepository(database)
+  lazy val messagesRepository = MessagesRepository(database)
+  lazy val requestNoncesRepository = RequestNoncesRepository(database)
+  lazy val participantsRepository = ParticipantsRepository(database)
 
   lazy val nodeMock = mock[io.iohk.atala.prism.protos.node_api.NodeServiceGrpc.NodeService]
   lazy val authenticator =
@@ -211,7 +211,7 @@ class ConnectorRpcSpecBase extends RpcSpecBase with DIDUtil {
       _ <- MessagesDAO.insert(messageId, connectionId, sender, recipient, content)
     } yield messageId
 
-    query.transact(database).unsafeToFuture().futureValue
+    query.transact(database).unsafeRunSync()
   }
 
   protected def createExampleMessages(recipientId: ParticipantId): Seq[(MessageId, ConnectionId)] = {
