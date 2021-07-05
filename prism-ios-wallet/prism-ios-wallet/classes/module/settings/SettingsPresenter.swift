@@ -107,7 +107,11 @@ class SettingsPresenter: ListingBasePresenter, ListingBaseTableUtilsPresenterDel
     })
 
     lazy var actionRowVerifyId = SelectorAction(action: { [weak self] in
-        self?.viewImpl?.changeScreenToVerifyId()
+        if self?.sharedMemory.loggedUser?.verifyIdManualPending ?? false {
+            self?.viewImpl?.changeScreenToVerifyIdPending()
+        } else {
+            self?.viewImpl?.changeScreenToVerifyId()
+        }
     })
 
     func clearAppData() {

@@ -318,20 +318,13 @@ extension VerifyIdScanPresenter: GetDataDelegate {
     func processingResultReceived(processingResult: ProcessingResult) {
         if processingResult.error == nil {
             let idResult = processingResult as? IDResult
-            if idResult?.fields == nil {
+            if idResult?.fields == nil
+                || idResult?.fields!.documentFields == nil
+                || idResult?.fields!.documentFields!.count == 0 {
                 self.viewImpl?.showLoading(doShow: false)
-                self.viewImpl?.showErrorMessage(doShow: true, message: "Could not extract data")
                 getDataGroup.leave()
-                return
-            } else if idResult?.fields!.documentFields == nil {
-                self.viewImpl?.showLoading(doShow: false)
-                self.viewImpl?.showErrorMessage(doShow: true, message: "Could not extract data")
-                getDataGroup.leave()
-                return
-            } else if idResult?.fields!.documentFields!.count == 0 {
-                self.viewImpl?.showLoading(doShow: false)
-                self.viewImpl?.showErrorMessage(doShow: true, message: "Could not extract data")
-                getDataGroup.leave()
+                self.detailedIsResultDone = true
+                self.viewImpl?.changeScreenToError()
                 return
             }
             let fields: Array<DocumentField>! = idResult?.fields!.documentFields!
@@ -370,9 +363,8 @@ extension VerifyIdScanPresenter: GetDataDelegate {
                             face: faceImageUri)
         } else {
             self.viewImpl?.showLoading(doShow: false)
-            if let msg = processingResult.error?.errorDescription {
-                self.viewImpl?.showErrorMessage(doShow: true, message: msg)
-            }
+            self.detailedIsResultDone = true
+            self.viewImpl?.changeScreenToError()
         }
     }
 

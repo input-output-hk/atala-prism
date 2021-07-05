@@ -129,7 +129,7 @@ class ProfileViewController: ListingBaseViewController, UIImagePickerControllerD
     lazy var actionEditSave = SelectorAction(action: { [weak self] in
         self?.presenterImpl.tappedEditSaveButton()
     })
-    
+
     lazy var addAction = SelectorAction(action: { [weak self] in
 
         let attVC = AttributeViewController.makeThisView()
@@ -167,6 +167,10 @@ class ProfileViewController: ListingBaseViewController, UIImagePickerControllerD
 
     func changeScreenToVerifyId() {
         ViewControllerUtils.changeScreenSegued(caller: self, segue: "VerifyIdSegue", params: nil)
+    }
+
+    func changeScreenToVerifyIdPending() {
+        ViewControllerUtils.changeScreenSegued(caller: self, segue: "VerifyIdPendingSegue", params: nil)
     }
 
     // MARK: Profile picture 

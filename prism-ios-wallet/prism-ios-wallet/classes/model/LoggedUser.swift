@@ -25,6 +25,8 @@ class LoggedUser: Mappable {
     var payIdCardDismissed: Bool?
     var verifyIdCardDismissed: Bool?
 
+    var verifyIdManualPending: Bool?
+
     var fullName: String {
         if let name = personalAttributes?.first(where: {
                                                     $0.category?.lowercased().contains("full name") ?? false }) {
@@ -61,5 +63,7 @@ class LoggedUser: Mappable {
 
         payIdCardDismissed <- map["payIdCardDismissed"]
         verifyIdCardDismissed <- map["verifyIdCardDismissed"]
+
+        verifyIdManualPending <- map["verifyIdManualPending"]
     }
 }

@@ -66,6 +66,10 @@ class VerifyIdScanViewController: BaseViewController {
         ViewControllerUtils.changeScreenSegued(caller: self, segue: "showVerifyIdResultsSegue", params: params)
     }
 
+    func changeScreenToError() {
+        ViewControllerUtils.changeScreenSegued(caller: self, segue: "showVerifyIdErrorSegue", params: nil)
+    }
+
     // MARK: Buttons
 
     func setupButtons() {

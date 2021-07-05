@@ -101,6 +101,7 @@
                         <segue destination="EqX-ka-qVZ" kind="show" identifier="BaseVerificationSegue" id="MEv-Yt-4R0"/>
                         <segue destination="8ac-Bc-rkX" kind="show" identifier="AttributeListingSegue" id="Ahc-Sd-8eE"/>
                         <segue destination="vGh-oO-VBH" kind="show" identifier="VerifyIdSegue" id="nEk-IO-hTc"/>
+                        <segue destination="WTO-dG-wOH" kind="show" identifier="VerifyIdPendingSegue" id="w5U-Ty-vhu"/>
                     </connections>
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="PRu-vJ-34t" userLabel="First Responder" customClass="UIResponder" sceneMemberID="firstResponder"/>
@@ -146,6 +147,16 @@
                 <placeholder placeholderIdentifier="IBFirstResponder" id="IvL-qN-RtA" userLabel="First Responder" customClass="UIResponder" sceneMemberID="firstResponder"/>
             </objects>
             <point key="canvasLocation" x="817" y="150"/>
+        </scene>
+        <!--VerifyIdPending-->
+        <scene sceneID="9E9-vE-TzY">
+            <objects>
+                <viewControllerPlaceholder storyboardName="VerifyIdPending" referencedIdentifier="VerifyIdPending" id="WTO-dG-wOH" sceneMemberID="viewController">
+                    <navigationItem key="navigationItem" id="eeo-ek-tpF"/>
+                </viewControllerPlaceholder>
+                <placeholder placeholderIdentifier="IBFirstResponder" id="w5f-6s-t3U" userLabel="First Responder" customClass="UIResponder" sceneMemberID="firstResponder"/>
+            </objects>
+            <point key="canvasLocation" x="770" y="196"/>
         </scene>
     </scenes>
     <resources>

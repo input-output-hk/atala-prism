@@ -100,5 +100,9 @@ class HomeViewController: ListingBaseViewController {
     func changeScreenToVerifyId() {
         ViewControllerUtils.changeScreenSegued(caller: self, segue: "VerifyIdSegue", params: nil)
     }
+    
+    func changeScreenToVerifyIdPending() {
+        ViewControllerUtils.changeScreenSegued(caller: self, segue: "VerifyIdPendingSegue", params: nil)
+    }
 
 }

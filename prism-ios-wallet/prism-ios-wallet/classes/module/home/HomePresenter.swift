@@ -211,7 +211,11 @@ class HomePresenter: ListingBasePresenter, ListingBaseTableUtilsPresenterDelegat
     }
 
     func verifyIdTapped(for cell: HomeCardsTableViewCell) {
-        viewImpl?.changeScreenToVerifyId()
+        if sharedMemory.loggedUser?.verifyIdManualPending ?? false {
+            viewImpl?.changeScreenToVerifyIdPending()
+        } else {
+            viewImpl?.changeScreenToVerifyId()
+        }
     }
 
     func dismissVerifyIdTapped(for cell: HomeCardsTableViewCell) {

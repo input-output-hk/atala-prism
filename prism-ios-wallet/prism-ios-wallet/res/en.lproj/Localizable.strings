@@ -446,6 +446,13 @@
 "verifyid_results_desc" = "Check that the scanned information is correct.";
 "verifyid_results_retry" = "Scan Again";
 "verifyid_results_confirm" = "Confirm";
+"verifyid_error_title" = "Complete KYC";
+"verifyid_error_subtitle" = "We could not verify your ID";
+"verifyid_error_desc" = "Please try again or request a\nmanual review to verify your identity.";
+"verifyid_error_manual" = "Manual Review";
+"verifyid_pending_title" = "Complete KYC";
+"verifyid_pending_subtitle" = "Your status is Pending";
+"verifyid_pending_desc" = "We’ll review your information and send\nyou a notification in 48 hours.";
 "verifyid_success_title" = "Thank You!";
 "verifyid_success_subtitle" = "You will received your verified identity\ncredential on verification completion.";
 

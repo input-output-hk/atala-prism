@@ -152,6 +152,12 @@
 		B37FDBC7253A23A90024766B /* CredentialVerificationDetail.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = B37FDBC6253A23A90024766B /* CredentialVerificationDetail.storyboard */; };
 		B37FDBCC253A396F0024766B /* CredentialVerificationDetailViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = B37FDBCB253A396F0024766B /* CredentialVerificationDetailViewController.swift */; };
 		B38D944A24AE53440053CE36 /* Reachability.swift in Sources */ = {isa = PBXBuildFile; fileRef = B38D944924AE53430053CE36 /* Reachability.swift */; };
+		B38F5557268222C900AD41F6 /* VerifyIdErrorViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = B38F5556268222C900AD41F6 /* VerifyIdErrorViewController.swift */; };
+		B38F555C268222E100AD41F6 /* VerifyIdErrorPresenter.swift in Sources */ = {isa = PBXBuildFile; fileRef = B38F555B268222E000AD41F6 /* VerifyIdErrorPresenter.swift */; };
+		B38F5561268222FF00AD41F6 /* VerifyIdError.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = B38F5560268222FF00AD41F6 /* VerifyIdError.storyboard */; };
+		B38F55662682790800AD41F6 /* VerifyIdPending.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = B38F55652682790800AD41F6 /* VerifyIdPending.storyboard */; };
+		B38F556B26836E4B00AD41F6 /* VerifyIdPendingPresenter.swift in Sources */ = {isa = PBXBuildFile; fileRef = B38F556A26836E4A00AD41F6 /* VerifyIdPendingPresenter.swift */; };
+		B38F557026836E5900AD41F6 /* VerifyIdPendingViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = B38F556F26836E5900AD41F6 /* VerifyIdPendingViewController.swift */; };
 		B397DC5B25E3E6A900B26506 /* Home.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = B397DC5A25E3E6A900B26506 /* Home.storyboard */; };
 		B397DC6125E3EB2200B26506 /* HomeViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = B397DC6025E3EB2200B26506 /* HomeViewController.swift */; };
 		B397DC6A25E3EB3800B26506 /* HomePresenter.swift in Sources */ = {isa = PBXBuildFile; fileRef = B397DC6925E3EB3800B26506 /* HomePresenter.swift */; };
@@ -524,6 +530,12 @@
 		B37FDBC6253A23A90024766B /* CredentialVerificationDetail.storyboard */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; path = CredentialVerificationDetail.storyboard; sourceTree = "<group>"; };
 		B37FDBCB253A396F0024766B /* CredentialVerificationDetailViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CredentialVerificationDetailViewController.swift; sourceTree = "<group>"; };
 		B38D944924AE53430053CE36 /* Reachability.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Reachability.swift; sourceTree = "<group>"; };
+		B38F5556268222C900AD41F6 /* VerifyIdErrorViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VerifyIdErrorViewController.swift; sourceTree = "<group>"; };
+		B38F555B268222E000AD41F6 /* VerifyIdErrorPresenter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VerifyIdErrorPresenter.swift; sourceTree = "<group>"; };
+		B38F5560268222FF00AD41F6 /* VerifyIdError.storyboard */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; path = VerifyIdError.storyboard; sourceTree = "<group>"; };
+		B38F55652682790800AD41F6 /* VerifyIdPending.storyboard */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; path = VerifyIdPending.storyboard; sourceTree = "<group>"; };
+		B38F556A26836E4A00AD41F6 /* VerifyIdPendingPresenter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VerifyIdPendingPresenter.swift; sourceTree = "<group>"; };
+		B38F556F26836E5900AD41F6 /* VerifyIdPendingViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VerifyIdPendingViewController.swift; sourceTree = "<group>"; };
 		B397DC5A25E3E6A900B26506 /* Home.storyboard */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; path = Home.storyboard; sourceTree = "<group>"; };
 		B397DC6025E3EB2200B26506 /* HomeViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HomeViewController.swift; sourceTree = "<group>"; };
 		B397DC6925E3EB3800B26506 /* HomePresenter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HomePresenter.swift; sourceTree = "<group>"; };
@@ -944,6 +956,8 @@
 				B31EB69625C844FD00BDE34A /* VerifyIdTypeSelect.storyboard */,
 				B31EB6BA25C897E400BDE34A /* VerifyIdScan.storyboard */,
 				B367AE9225D178E100A1BF15 /* VerifyIdResults.storyboard */,
+				B38F5560268222FF00AD41F6 /* VerifyIdError.storyboard */,
+				B38F55652682790800AD41F6 /* VerifyIdPending.storyboard */,
 			);
 			path = verifyId;
 			sourceTree = "<group>";
@@ -960,6 +974,10 @@
 				B31EB6C525C89ACD00BDE34A /* VerifyIdScanPresenter.swift */,
 				B367AEA025D1842800A1BF15 /* VerifyIdResultsViewController.swift */,
 				B367AEA825D1843A00A1BF15 /* VerifyIdResultsPresenter.swift */,
+				B38F5556268222C900AD41F6 /* VerifyIdErrorViewController.swift */,
+				B38F555B268222E000AD41F6 /* VerifyIdErrorPresenter.swift */,
+				B38F556F26836E5900AD41F6 /* VerifyIdPendingViewController.swift */,
+				B38F556A26836E4A00AD41F6 /* VerifyIdPendingPresenter.swift */,
 			);
 			path = verifyId;
 			sourceTree = "<group>";
@@ -2049,6 +2067,7 @@
 				EE7D4CB62366B9C5007C31A8 /* ListingEmptyViewCell.xib in Resources */,
 				EE48AC192377549C00C0A441 /* Login.storyboard in Resources */,
 				B3508F3C25C2D53900F907B0 /* DateFormatInfoTableViewCell.xib in Resources */,
+				B38F5561268222FF00AD41F6 /* VerifyIdError.storyboard in Resources */,
 				EE7185712384D5CB00C58F62 /* ProfileViewCell.xib in Resources */,
 				289EA5952608D3FD00043D4F /* PopupAlert.storyboard in Resources */,
 				2899420C26026AFA00276153 /* PayID.storyboard in Resources */,
@@ -2057,6 +2076,7 @@
 				EE71855A2383530D00C58F62 /* ShareDialog.storyboard in Resources */,
 				EE71855823831BDB00C58F62 /* ConnectionConfirm.storyboard in Resources */,
 				B3491C07251A31B10040F89E /* ContactDetailSharedViewCell.xib in Resources */,
+				B38F55662682790800AD41F6 /* VerifyIdPending.storyboard in Resources */,
 				B31EB69725C844FE00BDE34A /* VerifyIdTypeSelect.storyboard in Resources */,
 				EE7D4D0A2367631B007C31A8 /* Credentials.storyboard in Resources */,
 				EE904F202373BA2100EE6344 /* NotificationViewCell.xib in Resources */,
@@ -2285,6 +2305,7 @@
 				B3C153F026372F4D006C5E3B /* PayIdDAO.swift in Sources */,
 				B36F2FC424DDAFBE0012FDCC /* DeleteCredentialViewController.swift in Sources */,
 				B3E757DA260D31B700BC28A9 /* common_models.pb.swift in Sources */,
+				B38F5557268222C900AD41F6 /* VerifyIdErrorViewController.swift in Sources */,
 				EE8FD4E423726A4000EFF62E /* SettingsViewController.swift in Sources */,
 				EE904F062373AAD200EE6344 /* NotificationViewCell.swift in Sources */,
 				EE7D4C422366B9C4007C31A8 /* ErrorUtils.swift in Sources */,
@@ -2371,6 +2392,7 @@
 				28A3A8BD25F2590B006BA440 /* PickerViewUtils.swift in Sources */,
 				B352434324FFDA080053A804 /* DateFormatTableViewCell.swift in Sources */,
 				B3C153E72636FF82006C5E3B /* PayId+CoreDataClass.swift in Sources */,
+				B38F557026836E5900AD41F6 /* VerifyIdPendingViewController.swift in Sources */,
 				B309A99D250FEACC00C62B50 /* CredentialHistoryHeaderViewCell.swift in Sources */,
 				EEDAF2C62389ECDC00121206 /* ConfirmationViewCell.swift in Sources */,
 				EE7185772384F39500C58F62 /* PaddingViewCell.swift in Sources */,
@@ -2492,12 +2514,14 @@
 				B309C16A24BF5CD600AF70DF /* Contact+CoreDataProperties.swift in Sources */,
 				EE7D4CEC23673C39007C31A8 /* UITextField+Extensions2.swift in Sources */,
 				EE8FD4F02372864900EFF62E /* FakeData.swift in Sources */,
+				B38F555C268222E100AD41F6 /* VerifyIdErrorPresenter.swift in Sources */,
 				EE7D4CE723673C39007C31A8 /* UIColor+Extensions.swift in Sources */,
 				28B55D35260A1E0700EB0C49 /* PayIDInfoListingPresenter.swift in Sources */,
 				EE48AC0D2377542600C0A441 /* RegisterPresenter.swift in Sources */,
 				EEEFB91023ADBAE2005BA755 /* CredentialsDtos.swift in Sources */,
 				EE7185692384D09800C58F62 /* ProfileViewCell.swift in Sources */,
 				EE7D49D22366B697007C31A8 /* Common.swift in Sources */,
+				B38F556B26836E4B00AD41F6 /* VerifyIdPendingPresenter.swift in Sources */,
 				B3C153CE2636F331006C5E3B /* mirror_api.pb.swift in Sources */,
 				B31EB7C025C9E41000BDE34A /* AcuantTokenService.swift in Sources */,
 				EE7D4CED23673C39007C31A8 /* UIView+Extensions2.swift in Sources */,

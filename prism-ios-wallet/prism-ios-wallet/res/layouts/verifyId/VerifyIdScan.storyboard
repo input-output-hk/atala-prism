@@ -151,6 +151,7 @@
                         <outlet property="stepTitleLbl" destination="mcT-a6-Vh7" id="Jhd-t2-r9G"/>
                         <outlet property="titleLbl" destination="ejX-kK-o0D" id="CzJ-nc-hcw"/>
                         <segue destination="fJv-IC-JvB" kind="show" identifier="showVerifyIdResultsSegue" id="En9-jk-6jl"/>
+                        <segue destination="4kg-0F-clJ" kind="show" identifier="showVerifyIdErrorSegue" id="egO-SQ-dVs"/>
                     </connections>
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="06O-B4-M36" userLabel="First Responder" customClass="UIResponder" sceneMemberID="firstResponder"/>
@@ -166,6 +167,16 @@
                 <placeholder placeholderIdentifier="IBFirstResponder" id="tdK-Nu-it4" userLabel="First Responder" customClass="UIResponder" sceneMemberID="firstResponder"/>
             </objects>
             <point key="canvasLocation" x="-30" y="-271"/>
+        </scene>
+        <!--VerifyIdError-->
+        <scene sceneID="v12-Lt-ssr">
+            <objects>
+                <viewControllerPlaceholder storyboardName="VerifyIdError" referencedIdentifier="VerifyIdError" id="4kg-0F-clJ" sceneMemberID="viewController">
+                    <navigationItem key="navigationItem" id="yRk-y7-m2t"/>
+                </viewControllerPlaceholder>
+                <placeholder placeholderIdentifier="IBFirstResponder" id="bwz-YW-Mds" userLabel="First Responder" customClass="UIResponder" sceneMemberID="firstResponder"/>
+            </objects>
+            <point key="canvasLocation" x="-41" y="-227"/>
         </scene>
     </scenes>
     <resources>

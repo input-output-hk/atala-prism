@@ -1,0 +1,137 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="17701" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES">
+    <device id="retina6_1" orientation="portrait" appearance="light"/>
+    <dependencies>
+        <deployment identifier="iOS"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="17703"/>
+        <capability name="Safe area layout guides" minToolsVersion="9.0"/>
+        <capability name="System colors in document resources" minToolsVersion="11.0"/>
+        <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
+    </dependencies>
+    <scenes>
+        <!--Verify Id Error View Controller-->
+        <scene sceneID="fik-5F-CLJ">
+            <objects>
+                <viewController storyboardIdentifier="VerifyIdError" id="SFJ-6H-RMW" customClass="VerifyIdErrorViewController" customModule="Atala_PRISM" customModuleProvider="target" sceneMemberID="viewController">
+                    <view key="view" contentMode="scaleToFill" id="sLx-Jk-PnF">
+                        <rect key="frame" x="0.0" y="0.0" width="414" height="896"/>
+                        <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+                        <subviews>
+                            <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="7bQ-6q-r80">
+                                <rect key="frame" x="0.0" y="116" width="414" height="1"/>
+                                <color key="backgroundColor" systemColor="systemBackgroundColor"/>
+                                <constraints>
+                                    <constraint firstAttribute="height" constant="1" id="wWi-aq-9lN"/>
+                                </constraints>
+                                <userDefinedRuntimeAttributes>
+                                    <userDefinedRuntimeAttribute type="string" keyPath="backgroundColorIB" value="appGreyMid"/>
+                                </userDefinedRuntimeAttributes>
+                            </view>
+                            <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="PLO-Oj-yjT">
+                                <rect key="frame" x="215" y="778" width="169" height="44"/>
+                                <color key="backgroundColor" red="1" green="0.1764705882" blue="0.23137254900000001" alpha="1" colorSpace="calibratedRGB"/>
+                                <fontDescription key="fontDescription" type="system" weight="semibold" pointSize="16"/>
+                                <inset key="contentEdgeInsets" minX="0.0" minY="12" maxX="0.0" maxY="12"/>
+                                <state key="normal" title="Button"/>
+                                <state key="disabled">
+                                    <color key="titleColor" red="0.62745098040000002" green="0.66666666669999997" blue="0.73333333329999995" alpha="1" colorSpace="custom" customColorSpace="displayP3"/>
+                                </state>
+                                <userDefinedRuntimeAttributes>
+                                    <userDefinedRuntimeAttribute type="string" keyPath="backgroundColorIB" value="appRed"/>
+                                    <userDefinedRuntimeAttribute type="string" keyPath="localized" value="verifyid_error_manual"/>
+                                    <userDefinedRuntimeAttribute type="string" keyPath="textColorIB" value="appWhite"/>
+                                </userDefinedRuntimeAttributes>
+                                <connections>
+                                    <action selector="manualReviewTapped:" destination="SFJ-6H-RMW" eventType="touchUpInside" id="Zn4-oy-ycd"/>
+                                </connections>
+                            </button>
+                            <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="QPS-eP-J8B">
+                                <rect key="frame" x="30" y="778" width="169" height="44"/>
+                                <color key="backgroundColor" red="1" green="0.1764705882" blue="0.23137254900000001" alpha="1" colorSpace="calibratedRGB"/>
+                                <fontDescription key="fontDescription" type="system" weight="semibold" pointSize="16"/>
+                                <inset key="contentEdgeInsets" minX="0.0" minY="12" maxX="0.0" maxY="12"/>
+                                <state key="normal" title="Button"/>
+                                <state key="disabled">
+                                    <color key="titleColor" red="0.62745098040000002" green="0.66666666669999997" blue="0.73333333329999995" alpha="1" colorSpace="custom" customColorSpace="displayP3"/>
+                                </state>
+                                <userDefinedRuntimeAttributes>
+                                    <userDefinedRuntimeAttribute type="string" keyPath="backgroundColorIB" value="appWhite"/>
+                                    <userDefinedRuntimeAttribute type="string" keyPath="localized" value="verifyid_results_retry"/>
+                                    <userDefinedRuntimeAttribute type="string" keyPath="textColorIB" value="appRed"/>
+                                </userDefinedRuntimeAttributes>
+                                <connections>
+                                    <action selector="retryTapped:" destination="SFJ-6H-RMW" eventType="touchUpInside" id="oA9-5W-kGf"/>
+                                </connections>
+                            </button>
+                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Label" textAlignment="center" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="wL5-2k-fZi">
+                                <rect key="frame" x="180.5" y="406" width="53.5" height="26.5"/>
+                                <fontDescription key="fontDescription" type="system" weight="medium" pointSize="22"/>
+                                <nil key="textColor"/>
+                                <nil key="highlightedColor"/>
+                                <userDefinedRuntimeAttributes>
+                                    <userDefinedRuntimeAttribute type="string" keyPath="localized" value="verifyid_error_subtitle"/>
+                                    <userDefinedRuntimeAttribute type="string" keyPath="textColorIB" value="appBlack"/>
+                                </userDefinedRuntimeAttributes>
+                            </label>
+                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Label" textAlignment="natural" lineBreakMode="tailTruncation" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="2Aa-J7-wIK">
+                                <rect key="frame" x="187.5" y="445.5" width="39.5" height="19.5"/>
+                                <fontDescription key="fontDescription" type="system" pointSize="16"/>
+                                <nil key="textColor"/>
+                                <nil key="highlightedColor"/>
+                                <userDefinedRuntimeAttributes>
+                                    <userDefinedRuntimeAttribute type="string" keyPath="localized" value="verifyid_error_desc"/>
+                                    <userDefinedRuntimeAttribute type="string" keyPath="textColorIB" value="textGrey"/>
+                                </userDefinedRuntimeAttributes>
+                            </label>
+                            <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFit" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="img_verifyId_error" translatesAutoresizingMaskIntoConstraints="NO" id="AFt-Nd-CJF">
+                                <rect key="frame" x="135.5" y="307" width="143" height="80"/>
+                            </imageView>
+                        </subviews>
+                        <viewLayoutGuide key="safeArea" id="7xK-KC-y4W"/>
+                        <color key="backgroundColor" systemColor="systemBackgroundColor"/>
+                        <constraints>
+                            <constraint firstItem="7xK-KC-y4W" firstAttribute="bottom" secondItem="PLO-Oj-yjT" secondAttribute="bottom" constant="40" id="0oS-dc-ZIu"/>
+                            <constraint firstItem="2Aa-J7-wIK" firstAttribute="centerX" secondItem="sLx-Jk-PnF" secondAttribute="centerX" id="7Rg-0s-CAd"/>
+                            <constraint firstItem="PLO-Oj-yjT" firstAttribute="leading" secondItem="sLx-Jk-PnF" secondAttribute="centerX" constant="8" id="AGy-9m-Uqy"/>
+                            <constraint firstAttribute="trailing" secondItem="7bQ-6q-r80" secondAttribute="trailing" id="G1x-Cp-hVT"/>
+                            <constraint firstItem="7xK-KC-y4W" firstAttribute="bottom" secondItem="QPS-eP-J8B" secondAttribute="bottom" constant="40" id="IB0-LO-Goy"/>
+                            <constraint firstItem="PLO-Oj-yjT" firstAttribute="leading" secondItem="QPS-eP-J8B" secondAttribute="trailing" constant="16" id="Jw4-eb-coW"/>
+                            <constraint firstItem="QPS-eP-J8B" firstAttribute="leading" secondItem="7xK-KC-y4W" secondAttribute="leading" constant="30" id="NPS-Oi-zWu"/>
+                            <constraint firstItem="wL5-2k-fZi" firstAttribute="top" secondItem="AFt-Nd-CJF" secondAttribute="bottom" constant="19" id="Qgr-vk-Pmp"/>
+                            <constraint firstItem="7bQ-6q-r80" firstAttribute="leading" secondItem="sLx-Jk-PnF" secondAttribute="leading" id="Wg7-a4-31m"/>
+                            <constraint firstItem="AFt-Nd-CJF" firstAttribute="top" secondItem="7bQ-6q-r80" secondAttribute="bottom" constant="190" id="XcM-2a-6fT"/>
+                            <constraint firstItem="wL5-2k-fZi" firstAttribute="centerX" secondItem="sLx-Jk-PnF" secondAttribute="centerX" id="dcE-VS-sXp"/>
+                            <constraint firstItem="2Aa-J7-wIK" firstAttribute="top" secondItem="wL5-2k-fZi" secondAttribute="bottom" constant="13" id="gub-8x-jb3"/>
+                            <constraint firstItem="AFt-Nd-CJF" firstAttribute="centerX" secondItem="sLx-Jk-PnF" secondAttribute="centerX" id="oV4-oy-qYb"/>
+                            <constraint firstItem="7bQ-6q-r80" firstAttribute="top" secondItem="7xK-KC-y4W" secondAttribute="top" constant="72" id="uyy-5l-yj6"/>
+                            <constraint firstItem="7xK-KC-y4W" firstAttribute="trailing" secondItem="PLO-Oj-yjT" secondAttribute="trailing" constant="30" id="zxf-lh-MnV"/>
+                        </constraints>
+                    </view>
+                    <connections>
+                        <outlet property="confirmBttn" destination="PLO-Oj-yjT" id="PEJ-C2-gEU"/>
+                        <outlet property="retryBttn" destination="QPS-eP-J8B" id="aUj-Nt-1Oa"/>
+                        <segue destination="gXR-vV-08R" kind="show" identifier="VerifyIdPendingSegue" id="Kjl-kd-erR"/>
+                    </connections>
+                </viewController>
+                <placeholder placeholderIdentifier="IBFirstResponder" id="mF1-s9-d2f" userLabel="First Responder" customClass="UIResponder" sceneMemberID="firstResponder"/>
+            </objects>
+            <point key="canvasLocation" x="-248" y="-92"/>
+        </scene>
+        <!--VerifyIdPending-->
+        <scene sceneID="PlO-cb-4xh">
+            <objects>
+                <viewControllerPlaceholder storyboardName="VerifyIdPending" referencedIdentifier="VerifyIdPending" id="gXR-vV-08R" sceneMemberID="viewController">
+                    <navigationItem key="navigationItem" id="UP9-aj-w2c"/>
+                </viewControllerPlaceholder>
+                <placeholder placeholderIdentifier="IBFirstResponder" id="g8u-6T-xu6" userLabel="First Responder" customClass="UIResponder" sceneMemberID="firstResponder"/>
+            </objects>
+            <point key="canvasLocation" x="375" y="-92"/>
+        </scene>
+    </scenes>
+    <resources>
+        <image name="img_verifyId_error" width="143" height="80"/>
+        <systemColor name="systemBackgroundColor">
+            <color white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+        </systemColor>
+    </resources>
+</document>
