@@ -13,22 +13,28 @@ import TemplateLayoutImage4 from '../../images/TemplateLayout_4.svg';
 export const templateLayouts = [
   {
     thumb: TemplateLayoutImage0,
+    images: ['user'],
     ...template0
   },
   {
     thumb: TemplateLayoutImage1,
-    html: template1
+    images: ['company'],
+
+    ...template1
   },
   {
     thumb: TemplateLayoutImage2,
-    html: template2
+    images: ['company'],
+    ...template2
   },
   {
     thumb: TemplateLayoutImage3,
-    html: template3
+    images: ['company'],
+    ...template3
   },
   {
     thumb: TemplateLayoutImage4,
-    html: template4
+    images: ['company', 'user'],
+    ...template4
   }
 ];

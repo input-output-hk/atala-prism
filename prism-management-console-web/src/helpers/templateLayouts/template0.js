@@ -28,7 +28,7 @@ export const template0 = {
                 <img src={{image1}} />
             </div>
             <div style="width: 320px; display: flex; flex-wrap: wrap; padding: 1em;">
-            {{#atributes}}
+            {{#attributes}}
             </div>
         </div>
     </div>
@@ -37,19 +37,10 @@ export const template0 = {
         <div style="width: 50%;">
             <!-- Small Text -->
             <p style="font-size: 9px; color: #828282; margin: 0.53em 0 1.5em; text-transform: uppercase;">
-                {{Full name}}</p>
+                {{attributeLabel}}</p>
             <!-- Big Text -->
             <h3 style="color: #3c393a; margin: -0.5em 0 0 0; font-size: 13px; font-weight: 600;">
-                {{Title}}
-            </h3>
-        </div>
-        <div style="width: 50%;">
-            <!-- Small Text -->
-            <p style="font-size: 9px; color: #828282; margin: 0.53em 0 1.5em; text-transform: uppercase;">
-                Full name</p>
-            <!-- Big Text -->
-            <h3 style="color: #3c393a; margin: -0.5em 0 0 0; font-size: 13px; font-weight: 600;">
-                Title
+                {{attributeType}}
             </h3>
         </div>
      `

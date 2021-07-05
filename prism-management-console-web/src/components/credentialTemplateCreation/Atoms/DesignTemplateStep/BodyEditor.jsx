@@ -3,7 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { Button, Form, Input, Space } from 'antd';
 import { DeleteOutlined, PlusOutlined } from '@ant-design/icons';
 import CustomButton from '../../../common/Atoms/CustomButton/CustomButton';
-import { defaultAttribute } from '../../../../hooks/useTemplateSettings';
+import { getDefaultAttribute } from '../../../../hooks/useTemplateSettings';
 
 const BodyEditor = props => {
   const { t } = useTranslation();
@@ -20,7 +20,7 @@ const BodyEditor = props => {
                 buttonProps={{
                   className: 'theme-link',
                   icon: <PlusOutlined />,
-                  onClick: () => add(defaultAttribute)
+                  onClick: () => add(getDefaultAttribute(attributes.length + 1))
                 }}
               />{' '}
               <CustomButton

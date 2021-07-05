@@ -25,7 +25,7 @@ const TemplateSettings = () => {
       <TabPane tab={tabs.setStyle.title} key={tabs.setStyle.key}>
         <StylingSettings />
       </TabPane>
-      <TabPane tab={tabs.setContent.title} key={tabs.setContent.key}>
+      <TabPane forceRender tab={tabs.setContent.title} key={tabs.setContent.key}>
         <ContentSettings />
       </TabPane>
     </Tabs>

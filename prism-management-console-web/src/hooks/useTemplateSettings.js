@@ -3,10 +3,10 @@ import _React, { useReducer } from 'react';
 import image0 from '../images/generic-icon-01.svg';
 import image1 from '../images/genericUserIcon.svg';
 
-export const defaultAttribute = {
-  attributeLabel: '',
+export const getDefaultAttribute = index => ({
+  attributeLabel: `Attibute ${index} Label`,
   attributeType: ''
-};
+});
 
 const defaultTemplate = {
   name: '',
@@ -18,7 +18,8 @@ const defaultTemplate = {
   image1,
   credentialTitle: 'Title',
   credentialSubtitle: 'Subtitle',
-  credentialBody: [defaultAttribute, defaultAttribute]
+  // eslint-disable-next-line no-magic-numbers
+  credentialBody: [1, 2].map(getDefaultAttribute) || []
 };
 // action types:
 export const UPDATE_FIELDS = 'UPDATE_FIELDS';

@@ -10,7 +10,9 @@ const placeholders = {
   image0: '{{image0}}',
   image1: '{{image1}}',
   credentialTitle: '{{credentialTitle}}',
-  credentialSubtitle: '{{credentialSubtitle}}'
+  credentialSubtitle: '{{credentialSubtitle}}',
+  attributeLabel: '{{attributeLabel}}',
+  attributeType: '{{attributeType}}'
 };
 
 const replacePlaceholdersFromObject = (html, ph, data) =>
@@ -20,7 +22,7 @@ const TemplatePreview = () => {
   const { templateSettings } = useTemplateContext();
   const { form } = useTemplateContext();
   const [imageOverwrites, setImagesOverwrites] = useState();
-  const [currentSettings, setCurrentSettings] = useState(templateSettings);
+  const [displayHtml, setDisplayHtml] = useState('');
 
   useEffect(() => {
     const getBase64 = file =>
@@ -45,15 +47,38 @@ const TemplatePreview = () => {
     const values = form.getFieldsValue();
     // eslint-disable-next-line no-magic-numbers
     message.info(JSON.stringify(values, null, 2));
-
-    setCurrentSettings(
-      // FIXME: improve this
+    const currentSettings =
       values && Object.keys(values).length === 0 && values.constructor === Object
         ? templateSettings
-        : values
-    );
+        : values;
+
     updateImages(templateSettings);
+    const configuredBody = updateBody(currentSettings);
+    const configuredHeader = updateHeader(currentSettings);
+    const mergedHtml = replacePlaceholdersFromObject(
+      configuredHeader,
+      { attributes: '{{#attributes}}' },
+      {
+        attributes: configuredBody
+      }
+    );
+
+    setDisplayHtml(mergedHtml);
   }, [templateSettings, form]);
+
+  const updateBody = currentSettings => {
+    const htmlTemplateBody = templateLayouts[currentSettings.layout]?.body;
+    const configuredBody = configureBody(htmlTemplateBody, currentSettings);
+
+    return configuredBody;
+  };
+
+  const updateHeader = currentSettings => {
+    const htmlTemplateHeader = templateLayouts[currentSettings.layout]?.header;
+    const configuredHeader = configureHeader(htmlTemplateHeader, currentSettings);
+
+    return configuredHeader;
+  };
 
   const fillBody = (template, settings) => {
     const bodyParts = settings?.credentialBody?.map(attribute =>
@@ -78,20 +103,13 @@ const TemplatePreview = () => {
       ...imageOverwrites
     });
   };
-  const htmlTemplateHeader = templateLayouts[templateSettings.layout]?.header;
-  const htmlTemplateBody = templateLayouts[templateSettings.layout]?.body;
-  const configuredHeader = configureHeader(htmlTemplateHeader, templateSettings);
-  const configuredBody = configureBody(htmlTemplateBody, currentSettings);
 
-  const mergedHtml = replacePlaceholdersFromObject(
-    configuredHeader,
-    { attributes: '{{#atributes}}' },
-    {
-      attributes: configuredBody
-    }
-  );
+  // const htmlTemplateHeader = templateLayouts[templateSettings.layout]?.header;
+  // const htmlTemplateBody = templateLayouts[templateSettings.layout]?.body;
+  // const configuredHeader = configureHeader(htmlTemplateHeader, templateSettings);
+  // const configuredBody = configureBody(htmlTemplateBody, currentSettings);
 
-  return <CredentialsViewer credentialViews={[mergedHtml]} showBrowseControls={false} />;
+  return <CredentialsViewer credentialViews={[displayHtml]} showBrowseControls={false} />;
 };
 
 export default TemplatePreview;
