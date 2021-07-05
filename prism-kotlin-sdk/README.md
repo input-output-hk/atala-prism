@@ -117,7 +117,7 @@ SHA256Digest.Companion().compute(bytes: [0, 1, 2])
 
 ## How to use for JS app
 
-`./gradlew build` generates CommonJS module located in `build/js`. You can add this module to your project as a dependency in `package.json`:
+`./gradlew compileProductionLibraryKotlinJs` generates CommonJS module located in `build/js`. You can add this module to your project as a dependency in `package.json`:
 
 ```json
 {
@@ -128,6 +128,8 @@ SHA256Digest.Companion().compute(bytes: [0, 1, 2])
 ```
 
 You can check the overview of the exposed methods in the generated `TypeScript` definitions. For example, for `crypto` library, you can look at the exposed API here: `build/js/packages/crypto/kotlin/crypto.d.ts`.
+
+Use `compileTestDevelopmentExecutableKotlinJs` to generate JS tests.
 
 There's also [prism-sdk-javascript-example](examples/prism-sdk-javascript-example) project with various examples of how to use this SDK.
 
