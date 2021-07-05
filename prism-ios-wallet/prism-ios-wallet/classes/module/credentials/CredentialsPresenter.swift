@@ -233,7 +233,9 @@ class CredentialsPresenter: ListingBasePresenter, ListingBaseTableUtilsPresenter
         }, success: {
             self.startListing()
             self.isFetching = false
-        }, error: { _ in
+        }, error: { error in
+            print(error)
+
             self.cleanData()
             let credentialsDao = CredentialDAO()
             self.credentials = credentialsDao.listCredentials() ?? []

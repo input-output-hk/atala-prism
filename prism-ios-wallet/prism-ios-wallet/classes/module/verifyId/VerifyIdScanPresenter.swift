@@ -52,6 +52,9 @@ class VerifyIdScanPresenter: BasePresenter {
     var selfieImg: UIImage?
     var isSelfie = false
 
+    let fieldsRequiered = ["full name", "sex", "nationality name", "document number",
+                           "birth date", "issue date", "expiration date"]
+
     override func viewDidAppear() {
         super.viewDidAppear()
         if !self.isInitialized {
@@ -339,13 +342,10 @@ extension VerifyIdScanPresenter: GetDataDelegate {
 
             var dataArray = [String]()
 
-            if !detailedAuth {
-                dataArray.append("Authentication Result: \(AcuantUtils.getAuthResultString(authResult: idResult!.result))")
-            } else {
-                appendDetailed(dataArray: &dataArray, result: idResult!)
-            }
-            //var images = [String:UIImage]()
             for field in fields {
+                if !fieldsRequiered.contains(field.key?.lowercased().trim() ?? "") {
+                    continue
+                }
                 if field.type == "string" {
                     dataArray.append("\(field.key!) : \(field.value!)")
                 } else if field.type == "datetime" {

@@ -158,8 +158,8 @@ class VerifyIdTypeSelectPresenter: ListingBasePresenter, ListingBaseTableUtilsPr
             }
             return nil
         }, success: {
+            self.viewImpl?.config(isLoading: false)
             if let documentInstanceID = self.documentInstanceID, let kycToken = self.kycToken {
-                self.viewImpl?.config(isLoading: false)
                 self.viewImpl?.changeScreenToScanFront(documentInstanceID: documentInstanceID, kycToken: kycToken)
             } else {
                 self.viewImpl?.showErrorMessage(doShow: true, message: "service_error".localize())
