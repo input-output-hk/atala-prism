@@ -11,7 +11,7 @@ const LayoutSelector = () => {
 
   return (
     <Form.Item
-    className="layoutContainer"
+      className="layoutContainer"
       name="layout"
       label={t('credentialTemplateCreation.step2.style.layout')}
       rules={[
