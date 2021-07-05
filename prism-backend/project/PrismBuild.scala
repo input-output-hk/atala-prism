@@ -226,6 +226,18 @@ object PrismBuild {
         cardanoAddressBinary := { downloadCardanoAddressBinary() },
         Compile / compile := {
           (Compile / compile).dependsOn(cardanoAddressBinary).value
+        },
+        docker / dockerfile := {
+          val artifact = assembly.value
+          val className = (Compile / run / mainClass).value.get
+          new Dockerfile {
+            from("openjdk:8")
+            add(file("target/mirror-binaries/cardano-address"), file("/usr/app/target/mirror-binaries/cardano-address"))
+            add(file("mirror"), file("/usr/app"))
+            workDir("/usr/app")
+            add(artifact, file("mirror.jar"))
+            cmd("/usr/local/openjdk-8/bin/java", "-classpath", s"/usr/app/mirror.jar", className)
+          }
         }
       )
       .dependsOn(common % "compile->compile;test->test", connectorLib, mirrorLib)
