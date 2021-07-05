@@ -20,6 +20,13 @@ object ServiceUtils {
     Authorization(Credentials.Token(AuthScheme.Basic, credentials))
   }
 
+  def basicAuthorization(username: String, password: String): Authorization = {
+    val credentials = Base64.getEncoder
+      .encodeToString(s"$username:$password".getBytes(StandardCharsets.UTF_8))
+
+    Authorization(Credentials.Token(AuthScheme.Basic, credentials))
+  }
+
   def runRequestToEither[A: Decoder](
       request: Task[Request[Task]],
       client: Client[Task]

@@ -10,13 +10,21 @@ case class AcuantConfig(
     faceIdUrl: String,
     username: String,
     password: String,
-    subscriptionId: String
+    subscriptionId: String,
+    identityMind: IdentityMindConfig
 )
 
 case class KycBridgeConfig(
     grpcConfig: GrpcConfig,
     acuantConfig: AcuantConfig,
     taskLeaseConfig: ProcessingTaskLeaseConfig
+)
+
+case class IdentityMindConfig(
+    url: String,
+    username: String,
+    password: String,
+    profile: String
 )
 
 object KycBridgeConfig {
@@ -31,9 +39,21 @@ object KycBridgeConfig {
         faceIdUrl = acuantConfig.getString("faceId"),
         username = acuantConfig.getString("username"),
         password = acuantConfig.getString("password"),
-        subscriptionId = acuantConfig.getString("subscriptionId")
+        subscriptionId = acuantConfig.getString("subscriptionId"),
+        identityMind = getIdentityMindConfig(acuantConfig)
       ),
       taskLeaseConfig = ProcessingTaskLeaseConfig(config.getConfig("taskLeaseSystem"))
+    )
+  }
+
+  private[config] def getIdentityMindConfig(config: Config): IdentityMindConfig = {
+    val identityMind = config.getConfig("identityMind")
+
+    IdentityMindConfig(
+      url = identityMind.getString("url"),
+      username = identityMind.getString("username"),
+      password = identityMind.getString("password"),
+      profile = identityMind.getString("profile")
     )
   }
 }

@@ -14,7 +14,8 @@ class AssureIdServiceStub(
       Document(instanceId = "id", biographic = None, classification = None, dataFields = None)
     ),
     documentStatus: Either[AssureIdServiceError, DocumentStatus] = Right(DocumentStatus.None),
-    getFrontImageFromDocumentResponse: Either[AssureIdServiceError, Array[Byte]] = Right(Array())
+    getFrontImageFromDocumentResponse: Either[AssureIdServiceError, Array[Byte]] = Right(Array.empty),
+    getImageFromDocumentResponse: Either[AssureIdServiceError, Array[Byte]] = Right(Array.empty)
 ) extends AssureIdService {
 
   def getDocument(id: String): Task[Either[AssureIdServiceError, Document]] =
@@ -26,8 +27,10 @@ class AssureIdServiceStub(
   def getDocumentStatus(id: String): Task[Either[AssureIdServiceError, DocumentStatus]] =
     Task.pure(documentStatus)
 
-  def getFrontImageFromDocument(id: String): Task[Either[AssureIdServiceError, Array[Byte]]] = {
+  def getFrontImageFromDocument(id: String): Task[Either[AssureIdServiceError, Array[Byte]]] =
     Task.pure(getFrontImageFromDocumentResponse)
-  }
+
+  def getImageFromDocument(id: String, side: String): Task[Either[AssureIdServiceError, Array[Byte]]] =
+    Task.pure(getImageFromDocumentResponse)
 
 }

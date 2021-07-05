@@ -28,6 +28,7 @@ trait AssureIdService {
   def getDocument(id: String): Task[Either[AssureIdServiceError, Document]]
   def getDocumentStatus(id: String): Task[Either[AssureIdServiceError, DocumentStatus]]
   def getFrontImageFromDocument(id: String): Task[Either[AssureIdServiceError, Array[Byte]]]
+  def getImageFromDocument(id: String, side: String): Task[Either[AssureIdServiceError, Array[Byte]]]
 }
 
 object AssureIdService {
@@ -101,6 +102,15 @@ class AssureIdServiceImpl(acuantConfig: AcuantConfig, client: Client[Task])
       authorization
     )
 
-    fetchBinaryData(request, client).map(_.leftMap(e => AssureIdServiceError("get image", e)))
+    fetchBinaryData(request, client).map(_.leftMap(e => AssureIdServiceError("get photo", e)))
+  }
+
+  def getImageFromDocument(id: String, side: String): Task[Either[AssureIdServiceError, Array[Byte]]] = {
+    val request = GET(
+      (baseUri / "AssureIDService.svc/Document" / id / "Image").+?("side", side),
+      authorization
+    )
+
+    fetchBinaryData(request, client).map(_.leftMap(e => AssureIdServiceError(s"get $side image", e)))
   }
 }

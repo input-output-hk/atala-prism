@@ -8,41 +8,41 @@ import cats.syntax.functor._
 import io.circe.syntax._
 
 import io.iohk.atala.prism.kycbridge.task.lease.system.KycBridgeProcessingTaskState
-import io.iohk.atala.prism.kycbridge.task.lease.system.data.AcuantFetchDocumentState1Data
+import io.iohk.atala.prism.kycbridge.task.lease.system.data.SendForAcuantManualReviewStateData
 import io.iohk.atala.prism.protos.connector_models.ReceivedMessage
-import io.iohk.atala.prism.protos.credential_models.{AcuantProcessFinished, AtalaMessage}
+import io.iohk.atala.prism.protos.credential_models.{SendForAcuantManualReview, AtalaMessage}
 import io.iohk.atala.prism.services.MessageProcessor
 import io.iohk.atala.prism.task.lease.system.{ProcessingTaskData, ProcessingTaskService}
 import io.iohk.atala.prism.utils.Base64ByteArrayWrapper
 
-class AcuantDocumentUploadedMessageProcessor(
+class SendForAcuantManualReviewMessageProcessor(
     processingTaskService: ProcessingTaskService[KycBridgeProcessingTaskState]
 ) {
 
   val processor: MessageProcessor = { receivedMessage =>
-    parseAcuantProcessFinishedMessage(receivedMessage)
+    parseSendForAcuantManualReviewMessage(receivedMessage)
       .map { message =>
-        val acuantProcessingData = AcuantFetchDocumentState1Data(
+        val sendForAcuantManualReviewStateData = SendForAcuantManualReviewStateData(
           receivedMessageId = receivedMessage.id,
           connectionId = receivedMessage.connectionId,
           documentInstanceId = message.documentInstanceId,
           selfieImage = Base64ByteArrayWrapper(message.selfieImage.toByteArray)
         )
 
-        val processingTaskData = ProcessingTaskData(acuantProcessingData.asJson)
+        val processingTaskData = ProcessingTaskData(sendForAcuantManualReviewStateData.asJson)
 
         processingTaskService
-          .create(processingTaskData, KycBridgeProcessingTaskState.AcuantFetchDocumentDataState1, Instant.now())
+          .create(processingTaskData, KycBridgeProcessingTaskState.SendForAcuantManualReviewState, Instant.now())
           .as(Right(None))
       }
   }
 
-  private[processors] def parseAcuantProcessFinishedMessage(
+  private[processors] def parseSendForAcuantManualReviewMessage(
       message: ReceivedMessage
-  ): Option[AcuantProcessFinished] = {
+  ): Option[SendForAcuantManualReview] = {
     Try(AtalaMessage.parseFrom(message.message.toByteArray)).toOption
       .flatMap(_.message.kycBridgeMessage)
-      .flatMap(_.message.acuantProcessFinished)
+      .flatMap(_.message.sendForAcuantManualReview)
   }
 
 }

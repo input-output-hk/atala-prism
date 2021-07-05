@@ -96,6 +96,7 @@ object KycBridgeApp extends TaskApp {
       assureIdService = new AssureIdServiceImpl(kycBridgeConfig.acuantConfig, httpClient)
       acasService = new AcasServiceImpl(kycBridgeConfig.acuantConfig, httpClient)
       faceIdService = new FaceIdServiceImpl(kycBridgeConfig.acuantConfig, httpClient)
+      identityMindService = new IdentityMindServiceImpl(kycBridgeConfig.acuantConfig.identityMind, httpClient)
 
       processingTaskDao =
         new ProcessingTaskDao[KycBridgeProcessingTaskState](KycBridgeProcessingTaskState.withNameOption)
@@ -114,7 +115,7 @@ object KycBridgeApp extends TaskApp {
         saveMessageOffset = messageId => ConnectorMessageOffsetDao.updateLastMessageOffset(messageId).transact(tx).void
       )
 
-      //processing task processors
+      // processing task processors
       processMessagesStateProcessor =
         new ProcessMessagesStateProcessor[KycBridgeProcessingTaskState](connectorMessageService)
       acuantFetchDocumentState1Processor = new AcuantFetchDocumentState1Processor(tx, connectorService, assureIdService)
@@ -125,6 +126,11 @@ object KycBridgeApp extends TaskApp {
       acuantStartProcessForConnectionStateProcessor =
         new AcuantStartProcessForConnectionStateProcessor(tx, assureIdService, acasService, connectorService)
       processNewConnectionsStateProcessor = new ProcessNewConnectionsStateProcessor(connectionService)
+      sendForAcuantManualReviewStateProcessor = new SendForAcuantManualReviewStateProcessor(
+        assureIdService,
+        identityMindService,
+        kycBridgeConfig.acuantConfig.identityMind
+      )
 
       processingTaskRouter = new ProcessingTaskRouter[KycBridgeProcessingTaskState] {
         override def process(
@@ -138,6 +144,7 @@ object KycBridgeApp extends TaskApp {
             case KycBridgeProcessingTaskState.AcuantStartProcessForConnection =>
               acuantStartProcessForConnectionStateProcessor
             case KycBridgeProcessingTaskState.ProcessNewConnections => processNewConnectionsStateProcessor
+            case KycBridgeProcessingTaskState.SendForAcuantManualReviewState => sendForAcuantManualReviewStateProcessor
           }
           processor.process(processingTask)
         }
