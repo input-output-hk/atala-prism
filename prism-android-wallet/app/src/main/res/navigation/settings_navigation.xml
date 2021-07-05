@@ -11,9 +11,6 @@
         android:name="io.iohk.atala.prism.app.ui.main.settings.SettingsFragment"
         android:label="@string/settings" >
         <action
-            android:id="@+id/action_settingsFragment_to_deleteAllConnectionsDialogFragment"
-            app:destination="@id/deleteAllConnectionsDialogFragment" />
-        <action
             android:id="@+id/action_settingsFragment_to_securitySettingsStep1Fragment"
             app:destination="@id/securitySettingsStep1Fragment" />
         <action
@@ -34,12 +31,10 @@
         <action
             android:id="@+id/action_settingsFragment_to_payIdObtainingNavActivity"
             app:destination="@id/payIdObtainingNavActivity" />
+        <action
+            android:id="@+id/action_settingsFragment_to_resetDataDialogFragment"
+            app:destination="@id/resetDataDialogFragment" />
     </fragment>
-    <dialog
-        tools:layout="@layout/fragment_delete_all_connections_dialog"
-        android:id="@+id/deleteAllConnectionsDialogFragment"
-        android:name="io.iohk.atala.prism.app.ui.main.settings.DeleteAllConnectionsDialogFragment"
-        android:label="DeleteAllConnectionsDialogFragment" />
     <fragment
         tools:layout="@layout/fragment_security"
         android:id="@+id/securityFragment"
@@ -103,4 +98,9 @@
         android:id="@+id/payIdObtainingNavActivity"
         android:name="io.iohk.atala.prism.app.ui.payid.PayIdObtainingNavActivity"
         android:label="PayIdObtainingNavActivity" />
+    <dialog
+        tools:layout="@layout/dialog_fragment_reset_data"
+        android:id="@+id/resetDataDialogFragment"
+        android:name="io.iohk.atala.prism.app.ui.main.settings.ResetDataDialogFragment"
+        android:label="ResetDataDialogFragment" />
 </navigation>

@@ -229,7 +229,7 @@
     <string name="delete_contacts_credentials"><![CDATA[Delete contacts & credentials]]></string>
     <string name="reset">Reset</string>
     <string name="you_have_already_connected">You have already connected with:</string>
-    <string name="connections_remove_success">Contacts and credentials successfully removed</string>
+    <string name="connections_remove_success">Contacts and credentials \nsuccessfully removed!</string>
     <string name="delete_all_data_body">Are your sure you want to\nreset data?</string>
     <string name="delete_all_data_title">Your contacts and credentials\nwill be deleted</string>
     <string name="please_reset_data">Please reset the data in the settings\nand reset the inactive city map.</string>

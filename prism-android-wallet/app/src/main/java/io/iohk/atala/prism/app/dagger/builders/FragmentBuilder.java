@@ -16,7 +16,6 @@ import io.iohk.atala.prism.app.ui.main.contacts.ContactDetailFragment;
 import io.iohk.atala.prism.app.ui.main.contacts.ContactsFragment;
 import io.iohk.atala.prism.app.ui.main.credentials.CredentialDetailFragment;
 import io.iohk.atala.prism.app.ui.main.credentials.CredentialHistoryFragment;
-import io.iohk.atala.prism.app.ui.main.settings.DeleteAllConnectionsDialogFragment;
 import io.iohk.atala.prism.app.ui.main.contacts.DeleteContactAlertDialogFragment;
 import io.iohk.atala.prism.app.ui.main.credentials.DeleteCredentialDialogFragment;
 import io.iohk.atala.prism.app.ui.main.credentials.MyCredentialsFragment;
@@ -83,9 +82,6 @@ public abstract class FragmentBuilder {
 
     @ContributesAndroidInjector
     abstract ForegroundBackgroundListener foregroundBackgroundListener();
-
-    @ContributesAndroidInjector
-    abstract DeleteAllConnectionsDialogFragment deleteAllConnectionsDialogFragment();
 
     @ContributesAndroidInjector
     abstract AddQrCodeDialogFragment addQrCodeDialogFragment();

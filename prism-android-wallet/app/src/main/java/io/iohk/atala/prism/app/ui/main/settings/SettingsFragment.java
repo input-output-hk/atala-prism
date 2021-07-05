@@ -51,7 +51,7 @@ public class SettingsFragment extends DaggerFragment {
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         // Handle DeleteAllConnectionsDialogFragment response
-        getParentFragmentManager().setFragmentResultListener(DeleteAllConnectionsDialogFragment.REQUEST_DELETE_DATA, this, (requestKey, bundle) -> {
+        getParentFragmentManager().setFragmentResultListener(ResetDataDialogFragment.REQUEST_DELETE_DATA, this, (requestKey, bundle) -> {
             int result = bundle.getInt(FragmentExtensionsKt.getKEY_RESULT(this));
             if(result == Activity.RESULT_OK){
                 resetData();
@@ -130,7 +130,7 @@ public class SettingsFragment extends DaggerFragment {
     @OnClick(R.id.delete_credentials)
     void onDeleteCredentialsClicked() {
         Navigation.findNavController(requireView())
-                .navigate(R.id.action_settingsFragment_to_deleteAllConnectionsDialogFragment);
+                .navigate(R.id.action_settingsFragment_to_resetDataDialogFragment);
     }
 
     @OnClick(R.id.custom_date)
