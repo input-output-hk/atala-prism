@@ -2,10 +2,15 @@ import React from 'react';
 import { Button, Form, Upload } from 'antd';
 import { PictureOutlined } from '@ant-design/icons';
 import { useTranslation } from 'react-i18next';
+import { useTemplateContext } from '../../../providers/TemplateContext';
+import { templateLayouts } from '../../../../helpers/templateLayouts/templates';
 import './_style.scss';
 
 const TemplateIcons = () => {
   const { t } = useTranslation();
+  const { templateSettings } = useTemplateContext();
+
+  const { images } = templateLayouts[templateSettings.layout];
 
   const normFile = ({ file }) => [file];
 
@@ -19,30 +24,20 @@ const TemplateIcons = () => {
     <>
       <div className="customizeHeaderContainer">
         <h3>{t('credentialTemplateCreation.step2.style.customizeHeader')}</h3>
-        <Form.Item
-          name="backgroundHeader"
-          label={t('credentialTemplateCreation.step2.style.backgroundHeader')}
-          valuePropName="file"
-          getValueFromEvent={normFile}
-        >
-          <Upload name="logo" action="/upload.do" {...uploaderProps}>
-            <Button icon={<PictureOutlined />}>
-              {t('credentialTemplateCreation.step2.style.chooseImage')}
-            </Button>
-          </Upload>
-        </Form.Item>
-        <Form.Item
-          name="iconHeader"
-          label={t('credentialTemplateCreation.step2.style.iconHeader')}
-          valuePropName="file"
-          getValueFromEvent={normFile}
-        >
-          <Upload name="logo" action="/upload.do" {...uploaderProps}>
-            <Button icon={<PictureOutlined />}>
-              {t('credentialTemplateCreation.step2.style.chooseImage')}
-            </Button>
-          </Upload>
-        </Form.Item>
+        {images.map(key => (
+          <Form.Item
+            name={key}
+            label={t(`credentialTemplateCreation.step2.style.${key}`)}
+            valuePropName="file"
+            getValueFromEvent={normFile}
+          >
+            <Upload name="logo" action="/upload.do" {...uploaderProps}>
+              <Button icon={<PictureOutlined />}>
+                {t('credentialTemplateCreation.step2.style.chooseImage')}
+              </Button>
+            </Upload>
+          </Form.Item>
+        ))}
       </div>
     </>
   );

@@ -8,9 +8,9 @@ import {
 import { useCredentialTypes, useTemplateCategories } from '../../hooks/useCredentialTypes';
 import { credentialTypesManagerShape } from '../../helpers/propShapes';
 import CredentialTemplateCreation from './CredentialTemplateCreation';
-import TemplateCategorySelectionStep from './Organisms/TemplateCategorySelectionStep/TemplateCategorySelectionStep';
 import DesignTemplateStep from './Organisms/DesignTemplateStep/DesignTemplateStep';
 import { useTemplateContext, withTemplateProvider } from '../providers/TemplateContext';
+import TemplateCategorySelectionStep from './Organisms/TemplateCategorySelectionStep/TemplateCategorySelector';
 
 const CredentialTemplateCreationContainer = ({ api: { credentialTypesManager } }) => {
   const [currentStep, setCurrentStep] = useState(SELECT_TEMPLATE_CATEGORY);

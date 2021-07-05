@@ -2,7 +2,7 @@ import React from 'react';
 import PropTypes from 'prop-types';
 import { templateCategoryShape } from '../../../../helpers/propShapes';
 import CategorySelector from './CategorySelector';
-import TemplateName from '../../../common/Molecules/TemplateForm/TemplateFormContainer';
+import TemplateName from './TemplateName';
 import SimpleLoading from '../../../common/Atoms/SimpleLoading/SimpleLoading';
 
 const TemplateCategorySelectionStep = ({ templateCategories }) => {

@@ -48,7 +48,7 @@ export const template3 = {
       {{attributeLabel}}</p>
     <!-- Big Text -->
     <h3 style="color: #3c393a; margin: -0.5em 0 0 0; font-size: 13px; font-weight: 600;">
-      {{attributeType}}
+      {{{{attributeLabel}}}}
     </h3>
   </div>
 `

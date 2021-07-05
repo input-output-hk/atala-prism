@@ -557,8 +557,8 @@
         "layout": "Layout",
         "themeColor": "Theme Color",
         "backgroundColor": "Background Color",
-        "backgroundHeader": "Background Header",
-        "iconHeader": "Icon Header",
+        "companyIcon": "Background Header",
+        "userIcon": "Icon Header",
         "chooseImage": "Choose Image"
       },
       "content": {

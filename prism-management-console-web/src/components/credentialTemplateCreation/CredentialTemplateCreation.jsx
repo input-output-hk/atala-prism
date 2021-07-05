@@ -12,8 +12,8 @@ import {
 } from '../../helpers/constants';
 import { withRedirector } from '../providers/withRedirector';
 import { antdV4FormShape } from '../../helpers/propShapes';
-import './_style.scss';
 import { useTemplateContext } from '../providers/TemplateContext';
+import './_style.scss';
 
 const fieldsByStep = {
   [SELECT_TEMPLATE_CATEGORY]: ['templateName', 'templateCategory']

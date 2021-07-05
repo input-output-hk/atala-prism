@@ -5,8 +5,10 @@ import image1 from '../images/genericUserIcon.svg';
 
 export const getDefaultAttribute = index => ({
   attributeLabel: `Attibute ${index} Label`,
-  attributeType: ''
+  attributeType: undefined
 });
+
+const defaultCredentialBodyLength = 2;
 
 const defaultTemplate = {
   name: '',
@@ -18,9 +20,11 @@ const defaultTemplate = {
   image1,
   credentialTitle: 'Title',
   credentialSubtitle: 'Subtitle',
-  // eslint-disable-next-line no-magic-numbers
-  credentialBody: [1, 2].map(getDefaultAttribute) || []
+  credentialBody: new Array(defaultCredentialBodyLength)
+    .fill(undefined)
+    .map((_, index) => getDefaultAttribute(index))
 };
+
 // action types:
 export const UPDATE_FIELDS = 'UPDATE_FIELDS';
 

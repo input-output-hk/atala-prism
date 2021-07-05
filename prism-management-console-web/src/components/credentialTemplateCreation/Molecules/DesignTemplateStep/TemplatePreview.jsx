@@ -15,7 +15,7 @@ const placeholders = {
 };
 
 const replacePlaceholdersFromObject = (html, ph, data) =>
-  Object.keys(ph).reduce((template, key) => template.replace(ph[key], data[key]), html);
+  Object.keys(ph).reduce((template, key) => template.replaceAll(ph[key], data[key]), html);
 
 const updateHeader = (htmlTemplateHeader, currentSettings) =>
   replacePlaceholdersFromObject(htmlTemplateHeader, placeholders, currentSettings);
@@ -48,11 +48,10 @@ const TemplatePreview = () => {
 
   useEffect(() => {
     // FIXME: any better solution to this forced update? better names than image0-1
-    const updateImages = async ({ backgroundHeader, iconHeader }) => {
-      if (!backgroundHeader && !iconHeader) return;
-      const image0 =
-        backgroundHeader?.length && (await getBase64(backgroundHeader[0].originFileObj));
-      const image1 = iconHeader?.length && (await getBase64(iconHeader[0].originFileObj));
+    const updateImages = async ({ companyIcon, userIcon }) => {
+      if (!companyIcon && !userIcon) return;
+      const image0 = companyIcon?.length && (await getBase64(companyIcon[0].originFileObj));
+      const image1 = userIcon?.length && (await getBase64(userIcon[0].originFileObj));
 
       setImagesOverwrites({ ...(image0 && { image0 }), ...(image1 && { image1 }) });
     };
@@ -64,10 +63,6 @@ const TemplatePreview = () => {
     const formValues = form.getFieldsValue();
 
     const currentConfig = { ...templateSettings, ...formValues, ...imageOverwrites };
-
-    // FIXME: remove once fully debugged
-    // eslint-disable-next-line no-magic-numbers
-    // message.info(JSON.stringify(currentConfig, null, 2));
 
     const htmlTemplate = templateLayouts[currentConfig.layout];
     const htmlTemplateHeader = htmlTemplate.header;
