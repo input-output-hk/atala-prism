@@ -1,28 +1,35 @@
 package io.iohk.atala.prism.kotlin.identity
 
 import io.iohk.atala.prism.kotlin.crypto.EC
+import io.iohk.atala.prism.kotlin.crypto.SHA256Digest
+import io.iohk.atala.prism.kotlin.crypto.derivation.KeyType
 import io.iohk.atala.prism.kotlin.crypto.derivation.MnemonicCode
+import io.iohk.atala.prism.kotlin.crypto.signature.ECSignature
 import io.iohk.atala.prism.kotlin.identity.DID.Companion.masterKeyId
 import io.iohk.atala.prism.kotlin.identity.util.toProto
 import io.iohk.atala.prism.kotlin.protos.*
+import pbandk.encodeToByteArray
 import kotlin.test.*
 
 class DIDTest {
+    private val mnemonicCodeDummy =
+        MnemonicCode("shallow gadget world plug runway begin load bargain tomorrow never garment indoor".split(" "))
+    private val stateHashDummy = "5f7802238f5d64a48fda6cc13a9467b2065248d31a94129ed0c0ea96d9b341a0"
+    private val encodedStateDummy = "CmAKXhJcCgdtYXN0ZXIwEAFCTwoJc2VjcDI1NmsxEiD9401VbdKKeGfyGhHvZSEc-_nhfQg-8IPM2-QAOaZG-hog6ZugZN9_WLbX8xalkHa6YvuOJAWbGyQW66lumV0-vbM"
+
     @Test
     fun testCreateTheExpectedLongFormDid() {
         // The expected resulting DID
         val expectedDID = DID.buildPrismDID(
-            "5f7802238f5d64a48fda6cc13a9467b2065248d31a94129ed0c0ea96d9b341a0",
-            "CmAKXhJcCgdtYXN0ZXIwEAFCTwoJc2VjcDI1NmsxEiD9401VbdKKeGfyGhHvZSEc-_nhfQg-8IPM2-QAOaZG-hog6ZugZN9_WLbX8xalkHa6YvuOJAWbGyQW66lumV0-vbM"
+            stateHashDummy,
+            encodedStateDummy
         )
 
-        val mnemonic = MnemonicCode("shallow gadget world plug runway begin load bargain tomorrow never garment indoor".split(" "))
+        val didContext = DID.createDIDFromMnemonic(mnemonicCodeDummy, 0, "secret")
+        assertEquals(expectedDID, didContext.unpublishedDID)
+        assertEquals(masterKeyId, didContext.createDIDSignedOperation.signedWith)
 
-        val didContext = DID.createDIDFromMnemonic(mnemonic, 0, "secret")
-        assertEquals(expectedDID, didContext.did)
-        assertEquals(masterKeyId, didContext.createDIDOperation.signedWith)
-
-        when (val format = didContext.did.getFormat()) {
+        when (val format = didContext.unpublishedDID.getFormat()) {
             is LongForm -> assertEquals(expectedDID.suffix, format.validate().suffix())
             else -> fail("unexpected format for long DID")
         }
@@ -155,5 +162,88 @@ class DIDTest {
         }
 
         assertEquals("Invalid DID: invalid-did", caught.message)
+    }
+
+    @Test
+    fun testUpdateDIDAtalaOperationShouldReturnSignedUpdateDIDOperation() {
+        val singingKeyPair = EC.generateKeyPair()
+        val singingKeyId = "signingKeyId"
+        val did = DID.buildPrismDID(stateHashDummy)
+        val previousHash = SHA256Digest.compute(byteArrayOf(123))
+        val key1ToAdd = KeyInformation(
+            keyId = "key1ToAdd",
+            keyTypeEnum = KeyType.MASTER_KEY,
+            publicKey = EC.generateKeyPair().publicKey
+        )
+        val key2ToAdd = KeyInformation(
+            keyId = "key2ToAdd",
+            keyTypeEnum = KeyType.ISSUING_KEY,
+            publicKey = EC.generateKeyPair().publicKey
+        )
+        val keys1ToRevoke: String = "keys1ToRevoke"
+        val keys2ToRevoke: String = "keys2ToRevoke"
+
+        val expectedAtalaOperation: AtalaOperation = AtalaOperation(
+            operation = AtalaOperation.Operation.UpdateDid(
+                updateDid = UpdateDIDOperation(
+                    previousOperationHash = pbandk.ByteArr(previousHash.value),
+                    id = did.suffix.value,
+                    actions = listOf(
+                        UpdateDIDAction(
+                            UpdateDIDAction.Action.AddKey(
+                                AddKeyAction(
+                                    PublicKey(
+                                        id = key1ToAdd.keyId,
+                                        usage = KeyUsage.fromName(KeyType.keyTypeToString(key1ToAdd.keyTypeEnum)),
+                                        keyData = key1ToAdd.publicKey.toProto().let { PublicKey.KeyData.EcKeyData(it) }
+                                    )
+                                )
+                            )
+                        ),
+                        UpdateDIDAction(
+                            UpdateDIDAction.Action.AddKey(
+                                AddKeyAction(
+                                    PublicKey(
+                                        id = key2ToAdd.keyId,
+                                        usage = KeyUsage.fromName(KeyType.keyTypeToString(key2ToAdd.keyTypeEnum)),
+                                        keyData = key2ToAdd.publicKey.toProto().let { PublicKey.KeyData.EcKeyData(it) }
+                                    )
+                                )
+                            )
+                        ),
+                        UpdateDIDAction(
+                            UpdateDIDAction.Action.RemoveKey(
+                                RemoveKeyAction(keys1ToRevoke)
+                            )
+                        ),
+                        UpdateDIDAction(
+                            UpdateDIDAction.Action.RemoveKey(
+                                RemoveKeyAction(keys2ToRevoke)
+                            )
+                        )
+                    )
+                )
+            )
+        )
+        val expectedOperationHash = SHA256Digest.compute(expectedAtalaOperation.encodeToByteArray())
+
+        val result = DID.updateDIDAtalaOperation(
+            singingKeyPair.privateKey,
+            singingKeyId,
+            did,
+            previousHash,
+            listOf(key1ToAdd, key2ToAdd),
+            listOf(keys1ToRevoke, keys2ToRevoke)
+        )
+
+        assertEquals(expectedAtalaOperation, result.updateDIDSignedOperation.operation)
+        assertEquals(expectedOperationHash, result.operationHash)
+        assertTrue(
+            EC.verify(
+                expectedAtalaOperation.encodeToByteArray(),
+                singingKeyPair.publicKey,
+                ECSignature(result.updateDIDSignedOperation.signature.array)
+            )
+        )
     }
 }

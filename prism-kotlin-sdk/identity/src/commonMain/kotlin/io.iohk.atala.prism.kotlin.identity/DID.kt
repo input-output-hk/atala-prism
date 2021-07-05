@@ -4,6 +4,7 @@ import io.iohk.atala.prism.kotlin.crypto.SHA256Digest
 import io.iohk.atala.prism.kotlin.crypto.derivation.*
 import io.iohk.atala.prism.kotlin.crypto.derivation.KeyDerivation.derivationRoot
 import io.iohk.atala.prism.kotlin.crypto.keys.ECKeyPair
+import io.iohk.atala.prism.kotlin.crypto.keys.ECPrivateKey
 import io.iohk.atala.prism.kotlin.crypto.keys.ECPublicKey
 import io.iohk.atala.prism.kotlin.identity.util.ECProtoOps
 import io.iohk.atala.prism.kotlin.identity.util.toProto
@@ -60,15 +61,15 @@ class DID private constructor(val value: String) {
             "$stateHash:$encodedState"
 
         @JvmStatic
-        fun createDIDFromMnemonic(mnemonic: MnemonicCode, didIndex: Int, passphrase: String = ""): DIDContext {
+        fun createDIDFromMnemonic(mnemonic: MnemonicCode, didIndex: Int, passphrase: String = ""): CreateDIDContext {
             val seed = KeyDerivation.binarySeed(mnemonic, passphrase)
             val masterECKeyPair = deriveKeyFromFullPath(seed, didIndex, KeyType.MASTER_KEY, 0)
             val did = createUnpublishedDID(masterECKeyPair.publicKey)
             val (atalaOp, operationHash) = createDIDAtalaOperation(masterECKeyPair.publicKey)
-            return DIDContext(
-                did = did,
-                createDIDOperation = ECProtoOps.signedAtalaOperation(masterECKeyPair, masterKeyId, atalaOp),
-                createDIDOperationHash = operationHash
+            return CreateDIDContext(
+                unpublishedDID = did,
+                createDIDSignedOperation = ECProtoOps.signedAtalaOperation(masterECKeyPair.privateKey, masterKeyId, atalaOp),
+                operationHash = operationHash
             )
         }
 
@@ -109,6 +110,51 @@ class DID private constructor(val value: String) {
             val operationBytes = atalaOp.encodeToByteArray()
             val operationHash = SHA256Digest.compute(operationBytes)
             return AtalaOperationWithHash(atalaOp, operationHash)
+        }
+
+        @JvmStatic
+        fun updateDIDAtalaOperation(
+            signingPrivateKey: ECPrivateKey,
+            signingKeyId: String,
+            did: DID,
+            previousHash: SHA256Digest,
+            keysToAdd: List<KeyInformation> = emptyList(),
+            keysToRevoke: List<String> = emptyList()
+        ): UpdateDIDContext {
+            require(did.isCanonicalForm()) {
+                "DID should be in canonical form, found DID: $did"
+            }
+
+            val atalaUpdateOperation = AtalaOperation(
+                operation = AtalaOperation.Operation.UpdateDid(
+                    updateDid = UpdateDIDOperation(
+                        previousOperationHash = pbandk.ByteArr(previousHash.value),
+                        id = did.suffix.value,
+                        actions = keysToAdd.map { keyInformation ->
+                            UpdateDIDAction(
+                                UpdateDIDAction.Action.AddKey(
+                                    AddKeyAction(keyInformation.toPublicKey())
+                                )
+                            )
+                        } + keysToRevoke.map { keyToRevoke ->
+                            UpdateDIDAction(
+                                UpdateDIDAction.Action.RemoveKey(
+                                    RemoveKeyAction(keyToRevoke)
+                                )
+                            )
+                        }
+                    )
+                )
+            )
+
+            return UpdateDIDContext(
+                operationHash = SHA256Digest.compute(atalaUpdateOperation.encodeToByteArray()),
+                updateDIDSignedOperation = ECProtoOps.signedAtalaOperation(
+                    privateKey = signingPrivateKey,
+                    signedWith = signingKeyId,
+                    atalaOperation = atalaUpdateOperation
+                )
+            )
         }
     }
 
@@ -155,4 +201,17 @@ class DID private constructor(val value: String) {
     }
 
     override fun hashCode(): Int = value.hashCode()
+}
+
+@JsExport
+data class KeyInformation(
+    val keyId: String,
+    val keyTypeEnum: KeyTypeEnum,
+    val publicKey: ECPublicKey
+) {
+    fun toPublicKey(): PublicKey = PublicKey(
+        id = keyId,
+        usage = KeyUsage.fromName(KeyType.keyTypeToString(keyTypeEnum)),
+        keyData = publicKey.toProto().let { PublicKey.KeyData.EcKeyData(it) }
+    )
 }

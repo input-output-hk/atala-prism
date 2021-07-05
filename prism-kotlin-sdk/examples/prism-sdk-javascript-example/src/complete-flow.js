@@ -3,13 +3,15 @@ const prism = require('prism-kotlin-sdk/packages/extras');
 const { EC, SHA256DigestCompanion, MerkleInclusionProofCompanion } = prism.io.iohk.atala.prism.kotlin.crypto;
 const { KeyDerivation, KeyType } = prism.io.iohk.atala.prism.kotlin.crypto.derivation;
 const { DIDCompanion } = prism.io.iohk.atala.prism.kotlin.identity;
+const { KeyInformation } = prism.io.iohk.atala.prism.kotlin.identity;
+const { ECProtoOps } = prism.io.iohk.atala.prism.kotlin.identity.util;
 const {
     GrpcEnvoyOptions, ConnectorServicePromise, NodeServicePromise, RegisterDIDRequest,
     GenerateConnectionTokenRequest, GetConnectionTokenInfoRequest, AddConnectionFromTokenRequest,
-    CredentialBatchData, IssueCredentialBatchRequest, AtalaMessage, PlainTextCredential,
+    CredentialBatchData, AtalaMessage, PlainTextCredential, UpdateDIDRequest,
     GetConnectionByTokenRequest, SendMessageRequest, GetMessagesPaginatedRequest,
     GetDidDocumentRequest, GetBatchStateRequest, GetCredentialRevocationTimeRequest,
-    RevokeCredentialsRequest,
+    RevokeCredentialsRequest, PublishAsABlockRequest,
     noUnknownFields,
 } = prism.io.iohk.atala.prism.kotlin.protos;
 const {
@@ -55,8 +57,8 @@ async function completeFlow() {
     const seed = KeyDerivation.binarySeed(mnemonic, "secret");
     // Create KeyPair out of mnemonic seed phrase, did index, type of key, key index
     const issuerMasterKeyPair = DIDCompanion.deriveKeyFromFullPath(seed, 0, KeyType.MASTER_KEY, 0);
-    const didContext = DIDCompanion.createDIDFromMnemonic(mnemonic, 0);
-    const issuerCreatedDIDSignedOperation = didContext.createDIDOperation;
+    const createDIDContext = DIDCompanion.createDIDFromMnemonic(mnemonic, 0, "secret");
+    const issuerCreatedDIDSignedOperation = createDIDContext.createDIDSignedOperation;
 
     // Issuer registers its identity to the node
     // Usually the DID would be registered with the node, but, the connector can handle that as well
@@ -73,7 +75,7 @@ async function completeFlow() {
 
     // the DID takes some minutes to get confirmed by Cardano, in the mean time, the unpublished DID
     // can be used to authenticate requests to the backend
-    const issuerUnpublishedDID = didContext.did;
+    const issuerUnpublishedDID = createDIDContext.unpublishedDID;
 
     multilinePrint(`
         Issuer DID registered, the transaction can take up to 10 minutes to be confirmed by the Cardano network
@@ -163,23 +165,36 @@ async function completeFlow() {
         new pbandk.ByteArr(merkleRootHash.value),
         noUnknownFields,
     );
+    const issuerIssuingKeyPair = DIDCompanion.deriveKeyFromFullPath(seed, 0, KeyType.ISSUING_KEY, 0);
+    const issuingKeyId = "issuing0";
+    const addIssuingKeyDIDContext = DIDCompanion.updateDIDAtalaOperation(
+        issuerMasterKeyPair.privateKey,
+        "master0",
+        issuerDID,
+        createDIDContext.operationHash,
+        [new KeyInformation(issuingKeyId, KeyType.ISSUING_KEY, issuerIssuingKeyPair.publicKey)],
+        []
+    );
     const issueCredentialOperation = ProtoUtils.issueCredentialBatchOperation(credentialBatchData);
 
     // Issuer publishes the credential to Cardano
-    const signedIssueCredentialOperation = ProtoUtils.signedAtalaOperation(issuerMasterKeyPair, "master0", issueCredentialOperation);
-    const issueCredentialBatchRequest = new IssueCredentialBatchRequest(
-        signedIssueCredentialOperation,
-        noUnknownFields,
-    );
-    const issuedCredentialResponse = await node.IssueCredentialBatch(issueCredentialBatchRequest);
+    const signedIssueCredentialOperation = ECProtoOps.signedAtalaOperation(issuerIssuingKeyPair.privateKey, issuingKeyId, issueCredentialOperation);
+    const publishAsABlockResponse = await node.PublishAsABlock(
+        new PublishAsABlockRequest(
+            toList([addIssuingKeyDIDContext.updateDIDSignedOperation, signedIssueCredentialOperation])
+        )
+    )
+    const addDidKeyResponse = toArray(publishAsABlockResponse.outputs)[0]
+    const issueCredentialBatchResponse = toArray(publishAsABlockResponse.outputs)[1]
     multilinePrint(`
         Issuer: Credential issued to Holder, the transaction can take up to 10 minutes to be confirmed by the Cardano network
         - IssuerDID = $issuerDID
-        - Operation identifier = ${issuedCredentialResponse.operationId}
+        - Add issuing key to DID operation identifier = ${addDidKeyResponse.operationId}
+        - Issuer credential batch operation identifier = ${issueCredentialBatchResponse.operationId}
         - Credential content = $holderUnsignedCredential
         - Signed credential = ${holderSignedCredential.canonicalForm}
         - Inclusion proof (encoded) = ${holderCredentialMerkleProofs[0].encode()}
-        - Batch id = ${issuedCredentialResponse.batchId}
+        - Batch id = ${issueCredentialBatchResponse.batchOutput.batchId}
     `);
 
     // Issuer sends the credential to Holder through the connector
@@ -254,7 +269,7 @@ async function completeFlow() {
     console.log('Verifier: Generates and registers a DID');
     const verifierMasterKeyPair = EC.generateKeyPair();
     const verifierCreateDIDOperation = ProtoUtils.createDidAtalaOperation(verifierMasterKeyPair);
-    const verifierCreateDIDSignedOperation = ProtoUtils.signedAtalaOperation(verifierMasterKeyPair, "master0", verifierCreateDIDOperation);
+    const verifierCreateDIDSignedOperation = ECProtoOps.signedAtalaOperation(verifierMasterKeyPair.privateKey, "master0", verifierCreateDIDOperation);
 
     const verifierRegisterDIDResponse = await connector.RegisterDID(
         new RegisterDIDRequest(
@@ -421,10 +436,10 @@ async function completeFlow() {
     // Issuer revokes the credential
     const issuerRevokeCredentialOperation = ProtoUtils.revokeCredentialsOperation(
         SHA256DigestCompanion.compute(pbandk.encodeToByteArray(issueCredentialOperation)),
-        CredentialBatchIdCompanion.fromString(issuedCredentialResponse.batchId),
+        CredentialBatchIdCompanion.fromString(issueCredentialBatchResponse.batchOutput.batchId),
         toList([holderSignedCredential]),
     )
-    const issuerRevokeCredentialSignedOperation = ProtoUtils.signedAtalaOperation(issuerMasterKeyPair, "master0", issuerRevokeCredentialOperation)
+    const issuerRevokeCredentialSignedOperation = ECProtoOps.signedAtalaOperation(issuerIssuingKeyPair.privateKey, issuingKeyId, issuerRevokeCredentialOperation)
     const issuerCredentialRevocationResponse = await node.RevokeCredentials(
         new RevokeCredentialsRequest(
             issuerRevokeCredentialSignedOperation,

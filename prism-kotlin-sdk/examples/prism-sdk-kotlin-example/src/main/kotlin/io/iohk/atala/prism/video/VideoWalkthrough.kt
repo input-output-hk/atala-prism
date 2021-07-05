@@ -59,7 +59,7 @@ suspend fun main() {
     println("Generate Issuer's DID")
     val issuerMasterKeyPair = EC.generateKeyPair()
     val issuerCreatedDIDSignedOperation = ECProtoOps.signedAtalaOperation(
-        issuerMasterKeyPair,
+        issuerMasterKeyPair.privateKey,
         "master0",
         ProtoUtils.createDidAtalaOperation(issuerMasterKeyPair)
     )
@@ -122,7 +122,7 @@ suspend fun main() {
 
     // Issuer publishes the credential to Cardano
     val signedIssueCredentialOperation = ECProtoOps.signedAtalaOperation(
-        issuerMasterKeyPair,
+        issuerMasterKeyPair.privateKey,
         "master0",
         ProtoUtils.issueCredentialBatchOperation(credentialBatchData)
     )

@@ -49,7 +49,7 @@ class ProtoUtilsTest {
     fun signedAtalaOperationWorks() {
         val keyPair = EC.generateKeyPair()
         val atalaOperation = ProtoUtils.createDidAtalaOperation(keyPair)
-        val signedAtalaOperation = ECProtoOps.signedAtalaOperation(keyPair, "master0", atalaOperation)
+        val signedAtalaOperation = ECProtoOps.signedAtalaOperation(keyPair.privateKey, "master0", atalaOperation)
         val operationBytes = atalaOperation.encodeToByteArray()
         val signature = EC.toSignature(signedAtalaOperation.signature.array)
         assertTrue(EC.verify(operationBytes, keyPair.publicKey, signature))

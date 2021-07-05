@@ -17,7 +17,7 @@ class RequestUtilsTest {
         val seed = KeyDerivation.binarySeed(mnemonic, "password")
         val keyPair = DID.deriveKeyFromFullPath(seed, didIndex, KeyType.MASTER_KEY, 0)
 
-        val did = DID.createDIDFromMnemonic(mnemonic, didIndex).did
+        val did = DID.createDIDFromMnemonic(mnemonic, didIndex).unpublishedDID
         val message = HealthCheckRequest()
         val metadata = RequestUtils.generateRequestMetadata(did.value, keyPair.privateKey, message)
         assertTrue(
