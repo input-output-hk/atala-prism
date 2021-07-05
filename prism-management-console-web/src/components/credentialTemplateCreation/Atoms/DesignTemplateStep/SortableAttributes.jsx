@@ -24,8 +24,9 @@ const SortableItem = SortableElement(({ value: { key, name, fieldKey, ...restFie
             label={t('credentialTemplateCreation.step2.content.attributeLabel', {
               index: fieldKey + 1
             })}
+            rules={[{ required: true }]}
           >
-            <Input placeholder={`Attribute ${fieldKey} Label`} />
+            <Input placeholder={`Attribute ${fieldKey}`} />
           </Form.Item>
           <Form.Item
             className="inputContainer"

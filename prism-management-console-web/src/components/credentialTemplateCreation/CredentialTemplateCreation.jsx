@@ -16,7 +16,15 @@ import { useTemplateContext } from '../providers/TemplateContext';
 import './_style.scss';
 
 const fieldsByStep = {
-  [SELECT_TEMPLATE_CATEGORY]: ['templateName', 'templateCategory']
+  [SELECT_TEMPLATE_CATEGORY]: ['name', 'category'],
+  [DESIGN_TEMPLATE]: [
+    'layout',
+    'themeColor',
+    'backgroundColor',
+    'credentialTitle',
+    'credentialSubtitle',
+    'credentialBody'
+  ]
 };
 
 const CredentialTemplateCreation = ({
@@ -46,13 +54,11 @@ const CredentialTemplateCreation = ({
     else errors.map(msg => message.error(t(msg)));
   };
 
-  const validateCredentialTemplate = () => false;
-
-  const createTemplates = () => {
-    // TODO: implement template validation and creation
-    // if (validateCredentialTemplate) changeStep(TEMPLATE_CREATION_RESULT);
-    if (validateCredentialTemplate()) message.warn(t('errors.notImplementedYet'));
-    else message.error(t('credentialTemplateCreation.messages.templateDesignError'));
+  const createTemplates = async () => {
+    const stepValidation = await validateByStep(DESIGN_TEMPLATE);
+    const isPartiallyValid = !stepValidation;
+    if (isPartiallyValid) changeStep(TEMPLATE_CREATION_RESULT);
+    else stepValidation.map(msg => message.error(t(msg)));
   };
 
   const goBack = () => changeStep(currentStep - NEW_TEMPLATE_STEP_UNIT);

@@ -12,6 +12,7 @@ const HeaderEditor = () => {
           className="input"
           name="credentialTitle"
           label={t('credentialTemplateCreation.step2.content.credentialTitle')}
+          rules={[{ required: true }]}
         >
           <Input />
         </Form.Item>
@@ -19,6 +20,7 @@ const HeaderEditor = () => {
           className="input"
           name="credentialSubtitle"
           label={t('credentialTemplateCreation.step2.content.credentialSubtitle')}
+          rules={[{ required: true }]}
         >
           <Input />
         </Form.Item>

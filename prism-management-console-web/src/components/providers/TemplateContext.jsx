@@ -11,7 +11,7 @@ const TemplateProvider = props => {
   const [templateSettings, setTemplateSettings] = useTemplateSettings();
 
   const validateMessages = {
-    required: t('credentialTemplateCreation.ertemplateSettingsrors.required')
+    required: t('credentialTemplateCreation.errors.required')
   };
 
   const handleFormUpdate = newSetting =>

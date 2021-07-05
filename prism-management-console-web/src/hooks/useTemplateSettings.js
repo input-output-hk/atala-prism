@@ -4,7 +4,7 @@ import image0 from '../images/generic-icon-01.svg';
 import image1 from '../images/genericUserIcon.svg';
 
 export const getDefaultAttribute = index => ({
-  attributeLabel: `Attibute ${index} Label`,
+  attributeLabel: `Attibute ${index}`,
   attributeType: undefined
 });
 
