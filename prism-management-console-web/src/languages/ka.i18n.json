@@ -567,7 +567,7 @@
         "body": "Body",
         "credentialTitle": "Credential Title",
         "credentialSubtitle": "Credential Subtitle",
-        "attributeName": "Attribute {{idx}} Label",
+        "attributeLabel": "Attribute {{index}} Label",
         "attributeType": "Label Type"
       }
     },

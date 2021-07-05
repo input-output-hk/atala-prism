@@ -1,5 +1,4 @@
 import React, { useEffect, useState } from 'react';
-import { message } from 'antd';
 import CredentialsViewer from '../../../newCredential/Molecules/CredentialsViewer/CredentialsViewer';
 import { useTemplateContext } from '../../../providers/TemplateContext';
 import { templateLayouts } from '../../../../helpers/templateLayouts/templates';
@@ -18,6 +17,29 @@ const placeholders = {
 const replacePlaceholdersFromObject = (html, ph, data) =>
   Object.keys(ph).reduce((template, key) => template.replace(ph[key], data[key]), html);
 
+const updateHeader = (htmlTemplateHeader, currentSettings) =>
+  replacePlaceholdersFromObject(htmlTemplateHeader, placeholders, currentSettings);
+
+const updateBody = (htmlTemplateBody, currentSettings) => {
+  const filledTemplate = fillBody(htmlTemplateBody, currentSettings);
+  return replacePlaceholdersFromObject(filledTemplate, placeholders, currentSettings);
+};
+
+const fillBody = (htmlTemplateBody, currentSettings) => {
+  const bodyParts = currentSettings?.credentialBody?.map(attribute =>
+    replacePlaceholdersFromObject(htmlTemplateBody, placeholders, attribute)
+  );
+  return bodyParts.reduce((compilation, part) => compilation.concat(part), '');
+};
+
+const getBase64 = file =>
+  new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.readAsDataURL(file);
+    reader.onload = () => resolve(reader.result);
+    reader.onerror = error => reject(error);
+  });
+
 const TemplatePreview = () => {
   const { templateSettings } = useTemplateContext();
   const { form } = useTemplateContext();
@@ -25,36 +47,34 @@ const TemplatePreview = () => {
   const [displayHtml, setDisplayHtml] = useState('');
 
   useEffect(() => {
-    const getBase64 = file =>
-      new Promise((resolve, reject) => {
-        const reader = new FileReader();
-        reader.readAsDataURL(file);
-        reader.onload = () => resolve(reader.result);
-        reader.onerror = error => reject(error);
-      });
-
     // FIXME: any better solution to this forced update? better names than image0-1
-    const updateImages = async ({ backgroundHeader, iconHeader, image0, image1 }) => {
-      const updatedImage0 = backgroundHeader?.length
-        ? await getBase64(backgroundHeader[0].originFileObj)
-        : image0;
-      const updatedImage1 = iconHeader?.length
-        ? await getBase64(iconHeader[0].originFileObj)
-        : image1;
-      setImagesOverwrites({ image0: updatedImage0, image1: updatedImage1 });
+    const updateImages = async ({ backgroundHeader, iconHeader }) => {
+      if (!backgroundHeader && !iconHeader) return;
+      const image0 =
+        backgroundHeader?.length && (await getBase64(backgroundHeader[0].originFileObj));
+      const image1 = iconHeader?.length && (await getBase64(iconHeader[0].originFileObj));
+
+      setImagesOverwrites({ ...(image0 && { image0 }), ...(image1 && { image1 }) });
     };
 
-    const values = form.getFieldsValue();
-    // eslint-disable-next-line no-magic-numbers
-    message.info(JSON.stringify(values, null, 2));
-    const currentSettings =
-      values && Object.keys(values).length === 0 && values.constructor === Object
-        ? templateSettings
-        : values;
-
     updateImages(templateSettings);
-    const configuredBody = updateBody(currentSettings);
-    const configuredHeader = updateHeader(currentSettings);
+  }, [templateSettings]);
+
+  useEffect(() => {
+    const formValues = form.getFieldsValue();
+
+    const currentConfig = { ...templateSettings, ...formValues, ...imageOverwrites };
+
+    // FIXME: remove once fully debugged
+    // eslint-disable-next-line no-magic-numbers
+    // message.info(JSON.stringify(currentConfig, null, 2));
+
+    const htmlTemplate = templateLayouts[currentConfig.layout];
+    const htmlTemplateHeader = htmlTemplate.header;
+    const htmlTemplateBody = htmlTemplate.body;
+
+    const configuredHeader = updateHeader(htmlTemplateHeader, currentConfig);
+    const configuredBody = updateBody(htmlTemplateBody, currentConfig);
     const mergedHtml = replacePlaceholdersFromObject(
       configuredHeader,
       { attributes: '{{#attributes}}' },
@@ -64,50 +84,7 @@ const TemplatePreview = () => {
     );
 
     setDisplayHtml(mergedHtml);
-  }, [templateSettings, form]);
-
-  const updateBody = currentSettings => {
-    const htmlTemplateBody = templateLayouts[currentSettings.layout]?.body;
-    const configuredBody = configureBody(htmlTemplateBody, currentSettings);
-
-    return configuredBody;
-  };
-
-  const updateHeader = currentSettings => {
-    const htmlTemplateHeader = templateLayouts[currentSettings.layout]?.header;
-    const configuredHeader = configureHeader(htmlTemplateHeader, currentSettings);
-
-    return configuredHeader;
-  };
-
-  const fillBody = (template, settings) => {
-    const bodyParts = settings?.credentialBody?.map(attribute =>
-      replacePlaceholdersFromObject(template, placeholders, {
-        ...attribute,
-        ...imageOverwrites
-      })
-    );
-    return bodyParts.reduce((compilation, part) => compilation.concat(part), '');
-  };
-
-  const configureHeader = (template, settings) =>
-    replacePlaceholdersFromObject(template, placeholders, {
-      ...settings,
-      ...imageOverwrites
-    });
-
-  const configureBody = (template, settings) => {
-    const filledTemplate = fillBody(template, settings);
-    return replacePlaceholdersFromObject(filledTemplate, placeholders, {
-      ...settings,
-      ...imageOverwrites
-    });
-  };
-
-  // const htmlTemplateHeader = templateLayouts[templateSettings.layout]?.header;
-  // const htmlTemplateBody = templateLayouts[templateSettings.layout]?.body;
-  // const configuredHeader = configureHeader(htmlTemplateHeader, templateSettings);
-  // const configuredBody = configureBody(htmlTemplateBody, currentSettings);
+  }, [templateSettings, form, imageOverwrites]);
 
   return <CredentialsViewer credentialViews={[displayHtml]} showBrowseControls={false} />;
 };

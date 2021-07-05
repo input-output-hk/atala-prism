@@ -37,24 +37,26 @@ const BodyEditor = props => {
               {attributes.map(({ key, name, fieldKey, ...restField }) => (
                 <Space key={key} style={{ display: 'flex', marginBottom: 8 }} align="baseline">
                   <div className="firstGroupInputContainer">
-                    <div
+                    <Form.Item
                       className="inputContainer"
                       {...restField}
                       name={[name, 'attributeLabel']}
                       fieldKey={[fieldKey, 'attributeLabel']}
-                      label={`Attribute ${fieldKey} Label`}
+                      label={t('credentialTemplateCreation.step2.content.attributeLabel', {
+                        index: fieldKey + 1
+                      })}
                     >
                       <Input placeholder={`Attribute ${fieldKey} Label`} />
-                    </div>
-                    <div
+                    </Form.Item>
+                    <Form.Item
                       className="inputContainer"
                       {...restField}
                       name={[name, 'attributeType']}
                       fieldKey={[fieldKey, 'attributeType']}
-                      label="Label Type"
+                      label={t('credentialTemplateCreation.step2.content.attributeType')}
                     >
                       <Input placeholder="Label Type" />
-                    </div>
+                    </Form.Item>
                     <Button icon={<DeleteOutlined />} onClick={() => remove(name)} />
                   </div>
                 </Space>
