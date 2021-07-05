@@ -15,12 +15,15 @@ const {
     noUnknownFields,
 } = prism.io.iohk.atala.prism.kotlin.protos;
 const {
-    CredentialBatches, BatchData, CredentialVerification, CredentialBatchIdCompanion,
+    CredentialBatches, BatchData, CredentialVerification, CredentialVerificationServiceJS, CredentialBatchIdCompanion,
 } = prism.io.iohk.atala.prism.kotlin.credentials;
+const {
+    toTimestampInfoModel
+} = prism.io.iohk.atala.prism.kotlin.credentials.utils;
 const { CredentialContentCompanion } = prism.io.iohk.atala.prism.kotlin.credentials.content;
 const { JsonBasedCredential, JsonBasedCredentialCompanion } = prism.io.iohk.atala.prism.kotlin.credentials.json;
 const {
-    ProtoUtils, RequestUtils, findPublicKey, toTimestampInfoModel, toList, toArray
+    ProtoUtils, RequestUtils, findPublicKey, toList, toArray
 } = prism.io.iohk.atala.prism.kotlin.extras;
 const { pbandk } = prism;
 
@@ -141,8 +144,8 @@ async function completeFlow() {
 
     // Issuer generates a credential to Holder
     const holderCredentialContentJson = {
-        issuerDid: issuerDID.value,
-        issuanceKeyId: 'master0',
+        id: issuerDID.value,
+        keyId: 'master0',
         credentialSubject: {
             name: 'José López Portillo',
             certificate: 'Certificate of PRISM SDK tutorial completion',
@@ -373,8 +376,8 @@ async function completeFlow() {
     const verifierReceivedJsonCredential = JsonBasedCredentialCompanion.fromString(
         verifierReceivedCredential.encodedCredential,
     );
-    const verifierReceivedCredentialIssuerDID = verifierReceivedJsonCredential.content.getString('issuerDid');
-    const verifierReceivedCredentialIssuanceKeyId = verifierReceivedJsonCredential.content.getString('issuanceKeyId');
+    const verifierReceivedCredentialIssuerDID = verifierReceivedJsonCredential.content.getString('id');
+    const verifierReceivedCredentialIssuanceKeyId = verifierReceivedJsonCredential.content.getString('keyId');
     multilinePrint(`
         Verifier: Received credential decoded
         - Credential: ${verifierReceivedJsonCredential.content}
@@ -432,6 +435,15 @@ async function completeFlow() {
         verifierReceivedCredentialMerkleProof,
         verifierReceivedJsonCredential
     )
+
+    // Verifier using convinience method (which return no errors)
+    console.log('Verifier: Verifying received credential using single convenience method')
+    const credentialVerificationServiceResult = await new CredentialVerificationServiceJS(node).verify(verifierReceivedJsonCredential, verifierReceivedCredentialMerkleProof)
+    if (toArray(credentialVerificationServiceResult.verificationErrors).length > 0) {
+        console.log("CredentialVerificationService VerificationErrors:")
+        toArray(credentialVerificationServiceResult.verificationErrors).forEach((verificationError) => verificationError.console.log(errorMessage))
+        throw 'VerificationErrors should be empty';
+    }
 
     // Issuer revokes the credential
     const issuerRevokeCredentialOperation = ProtoUtils.revokeCredentialsOperation(

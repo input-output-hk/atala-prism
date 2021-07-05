@@ -8,3 +8,4 @@ local.properties
 gen
 docs/src/docs/grpc/grpc-api.md
 
+/gen/

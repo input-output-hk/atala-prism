@@ -98,6 +98,7 @@ import io.iohk.atala.prism.kotlin.credentials.CredentialBatches
 import io.iohk.atala.prism.kotlin.credentials.CredentialVerification
 import io.iohk.atala.prism.kotlin.credentials.content.CredentialContent
 import io.iohk.atala.prism.kotlin.credentials.json.JsonBasedCredential
+import io.iohk.atala.prism.kotlin.credentials.utils.toTimestampInfoModel
 import io.iohk.atala.prism.kotlin.crypto.EC
 import io.iohk.atala.prism.kotlin.crypto.Hash
 import io.iohk.atala.prism.kotlin.crypto.MerkleInclusionProof
@@ -105,7 +106,6 @@ import io.iohk.atala.prism.kotlin.extras.ProtoClientUtils
 import io.iohk.atala.prism.kotlin.extras.ProtoUtils
 import io.iohk.atala.prism.kotlin.extras.RequestUtils
 import io.iohk.atala.prism.kotlin.extras.findPublicKey
-import io.iohk.atala.prism.kotlin.extras.toTimestampInfoModel
 import io.iohk.atala.prism.kotlin.identity.DID
 import io.iohk.atala.prism.kotlin.protos.*
 import kotlinx.coroutines.*

@@ -1,11 +1,9 @@
 package io.iohk.atala.prism.example
 
-import io.iohk.atala.prism.kotlin.credentials.BatchData
-import io.iohk.atala.prism.kotlin.credentials.CredentialBatchId
-import io.iohk.atala.prism.kotlin.credentials.CredentialBatches
-import io.iohk.atala.prism.kotlin.credentials.CredentialVerification
+import io.iohk.atala.prism.kotlin.credentials.*
 import io.iohk.atala.prism.kotlin.credentials.content.CredentialContent
 import io.iohk.atala.prism.kotlin.credentials.json.JsonBasedCredential
+import io.iohk.atala.prism.kotlin.credentials.utils.toTimestampInfoModel
 import io.iohk.atala.prism.kotlin.crypto.EC
 import io.iohk.atala.prism.kotlin.crypto.Hash
 import io.iohk.atala.prism.kotlin.crypto.MerkleInclusionProof
@@ -15,7 +13,6 @@ import io.iohk.atala.prism.kotlin.extras.ProtoClientUtils
 import io.iohk.atala.prism.kotlin.extras.ProtoUtils
 import io.iohk.atala.prism.kotlin.extras.RequestUtils
 import io.iohk.atala.prism.kotlin.extras.findPublicKey
-import io.iohk.atala.prism.kotlin.extras.toTimestampInfoModel
 import io.iohk.atala.prism.kotlin.identity.DID
 import io.iohk.atala.prism.kotlin.identity.DID.Companion.issuingKeyId
 import io.iohk.atala.prism.kotlin.identity.DID.Companion.masterKeyId
@@ -194,7 +191,10 @@ object CompleteFlowTutorial {
         val publishAsABlockResponse = runBlocking {
             node.PublishAsABlock(
                 PublishAsABlockRequest(
-                    signedOperations = listOf(addIssuingKeyDIDContext.updateDIDSignedOperation, signedIssueCredentialOperation)
+                    signedOperations = listOf(
+                        addIssuingKeyDIDContext.updateDIDSignedOperation,
+                        signedIssueCredentialOperation
+                    )
                 )
             )
         }
@@ -453,6 +453,16 @@ object CompleteFlowTutorial {
             signedCredential = verifierReceivedJsonCredential
         )
 
+        // Verifier using convinience method (which return no errors)
+        println("Verifier: Verifying received credential using single convenience method")
+        val credentialVerificationServiceResult = runBlocking {
+            CredentialVerificationService(node).verify(
+                signedCredential = verifierReceivedJsonCredential,
+                merkleInclusionProof = verifierReceivedCredentialMerkleProof
+            )
+        }
+        assert(credentialVerificationServiceResult.verificationErrors.isEmpty()) { -> "VerificationErrors should be empty" }
+
         // Issuer revokes the credential
         val issuerRevokeCredentialOperation = ProtoUtils.revokeCredentialsOperation(
             batchOperationHash = Hash.compute(issueCredentialOperation.encodeToByteArray()),
@@ -460,7 +470,11 @@ object CompleteFlowTutorial {
             credentials = listOf(holderSignedCredential)
         )
         val issuerRevokeCredentialSignedOperation =
-            ECProtoOps.signedAtalaOperation(issuerIssuingKeyPair.privateKey, issuingKeyId, issuerRevokeCredentialOperation)
+            ECProtoOps.signedAtalaOperation(
+                issuerIssuingKeyPair.privateKey,
+                issuingKeyId,
+                issuerRevokeCredentialOperation
+            )
         val issuerCredentialRevocationResponse = runBlocking {
             node.RevokeCredentials(
                 RevokeCredentialsRequest(issuerRevokeCredentialSignedOperation)
