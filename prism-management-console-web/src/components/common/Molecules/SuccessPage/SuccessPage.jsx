@@ -1,8 +1,7 @@
 import React from 'react';
 import PropTypes from 'prop-types';
-import { Button } from 'antd';
 import { useTranslation } from 'react-i18next';
-import img from '../../../../images/success-img.png';
+import SuccessBanner from './SuccessBanner';
 import {
   BULK_IMPORT,
   MANUAL_IMPORT,
@@ -26,20 +25,14 @@ const SuccessPage = ({
   };
 
   return (
-    <div className="success-wrapper">
-      <div className="success-container">
-        <img className="img-success" src={img} alt="" />
-        <h1>{t(`${importType}.importSuccess.${useCase}.title`)}</h1>
-        <p>
-          {`${successAmount[useCase]} ${t(
-            `${importType}.importSuccess.${useCase}.uploadedEntities`
-          )}`}
-        </p>
-        <Button className="theme-secondary" onClick={continueCallback}>
-          {t(`${importType}.importSuccess.${useCase}.continue`)}
-        </Button>
-      </div>
-    </div>
+    <SuccessBanner
+      title={t(`${importType}.importSuccess.${useCase}.title`)}
+      message={`${successAmount[useCase]} ${t(
+        `${importType}.importSuccess.${useCase}.uploadedEntities`
+      )}`}
+      buttonText={t(`${importType}.importSuccess.${useCase}.continue`)}
+      onContinue={continueCallback}
+    />
   );
 };
 

@@ -568,8 +568,18 @@
         "credentialTitle": "Credential Title",
         "credentialSubtitle": "Credential Subtitle",
         "attributeLabel": "Attribute {{index}} Label",
-        "attributeType": "Label Type"
+        "attributeType": "Label Type",
+        "attributeTypeOptions": {
+          "text": "Text",
+          "date": "Date",
+          "number": "Number"
+        }
       }
+    },
+    "step3": {
+      "successTitle": "Your template was successfully created",
+      "successMessage": "You have a new credential template available",
+      "continueButton": "Continue"
     },
     "messages": {
       "selectCategoryError": "Please select a category",

@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import PropTypes from 'prop-types';
+import { useTranslation } from 'react-i18next';
 import {
   DESIGN_TEMPLATE,
   SELECT_TEMPLATE_CATEGORY,
@@ -11,8 +12,14 @@ import CredentialTemplateCreation from './CredentialTemplateCreation';
 import DesignTemplateStep from './Organisms/DesignTemplateStep/DesignTemplateStep';
 import { useTemplateContext, withTemplateProvider } from '../providers/TemplateContext';
 import TemplateCategorySelectionStep from './Organisms/TemplateCategorySelectionStep/TemplateCategorySelector';
+import SuccessBanner from '../common/Molecules/SuccessPage/SuccessBanner';
+import { withRedirector } from '../providers/withRedirector';
 
-const CredentialTemplateCreationContainer = ({ api: { credentialTypesManager } }) => {
+const CredentialTemplateCreationContainer = ({
+  api: { credentialTypesManager },
+  redirector: { redirectToCredentialTemplates }
+}) => {
+  const { t } = useTranslation();
   const [currentStep, setCurrentStep] = useState(SELECT_TEMPLATE_CATEGORY);
   const { templateSettings } = useTemplateContext();
 
@@ -33,10 +40,12 @@ const CredentialTemplateCreationContainer = ({ api: { credentialTypesManager } }
         return <DesignTemplateStep templateSettings={templateSettings} />;
       case TEMPLATE_CREATION_RESULT: {
         return (
-          <div>
-            {/* FIXME: add template creation result component */}
-            (Template Creation Result Component)
-          </div>
+          <SuccessBanner
+            title={t('credentialTemplateCreation.step3.successTitle')}
+            message={t('credentialTemplateCreation.step3.successMessage')}
+            buttonText={t('credentialTemplateCreation.step3.continueButton')}
+            onContinue={redirectToCredentialTemplates}
+          />
         );
       }
     }
@@ -52,7 +61,12 @@ const CredentialTemplateCreationContainer = ({ api: { credentialTypesManager } }
 };
 
 CredentialTemplateCreationContainer.propTypes = {
-  api: PropTypes.shape({ credentialTypesManager: credentialTypesManagerShape }).isRequired
+  api: PropTypes.shape({
+    credentialTypesManager: credentialTypesManagerShape
+  }).isRequired,
+  redirector: PropTypes.shape({
+    redirectToCredentialTemplates: PropTypes.func.isRequired
+  }).isRequired
 };
 
-export default withTemplateProvider(CredentialTemplateCreationContainer);
+export default withTemplateProvider(withRedirector(CredentialTemplateCreationContainer));

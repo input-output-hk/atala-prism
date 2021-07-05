@@ -7,6 +7,8 @@ import { SortableContainer, SortableElement, SortableHandle } from 'react-sortab
 
 const { Option } = Select;
 
+const attributeTypeOptions = ['text', 'date', 'number'];
+
 const DragHandle = SortableHandle(() => <MenuOutlined />);
 
 const SortableItem = SortableElement(({ value: { key, name, fieldKey, ...restField }, remove }) => {
@@ -36,10 +38,11 @@ const SortableItem = SortableElement(({ value: { key, name, fieldKey, ...restFie
             label={t('credentialTemplateCreation.step2.content.attributeType')}
           >
             <Select>
-              <Option value="to">To</Option>
-              <Option value="be">Be</Option>
-              <Option value="defined">Defined</Option>
-              <Option value="...">...</Option>
+              {attributeTypeOptions.map(option => (
+                <Option value={option}>
+                  {t(`credentialTemplateCreation.step2.content.attributeTypeOptions.${option}`)}
+                </Option>
+              ))}
             </Select>
           </Form.Item>
           <Button icon={<DeleteOutlined />} onClick={() => remove(name)} />
