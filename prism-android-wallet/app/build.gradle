@@ -33,12 +33,14 @@ android {
         debug {
             buildConfigField "String", "API_BASE_URL", API_BASE_URL_DEBUG
             buildConfigField "Integer", "API_PORT", API_PORT_DEBUG
+            buildConfigField "Integer", "MIRROR_SERVICE_PORT", MIRROR_SERVICE_PORT_DEBUG
         }
         release {
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
             buildConfigField "String", "API_BASE_URL", API_BASE_URL_RELEASE
             buildConfigField "Integer", "API_PORT", API_PORT_RELEASE
+            buildConfigField "Integer", "MIRROR_SERVICE_PORT", MIRROR_SERVICE_PORT_RELEASE
         }
     }
     sourceSets {
@@ -169,6 +171,7 @@ void publishKotlinSdk(String gitVersion) {
 }
 
 dependencies {
+    testImplementation 'androidx.arch.core:core-testing:2.1.0'
     implementation "androidx.appcompat:appcompat:$appcompatVersion"
     implementation 'androidx.constraintlayout:constraintlayout:2.0.4'
     protobuf 'com.google.protobuf:protobuf-java:3.15.5'

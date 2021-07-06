@@ -12,6 +12,7 @@ import io.iohk.atala.prism.app.neo.data.ActivityHistoriesRepository;
 import io.iohk.atala.prism.app.neo.data.ContactsRepository;
 import io.iohk.atala.prism.app.neo.data.CredentialsRepository;
 import io.iohk.atala.prism.app.neo.data.DashboardRepository;
+import io.iohk.atala.prism.app.neo.data.MirrorMessageHandler;
 import io.iohk.atala.prism.app.neo.data.PayIdRepository;
 import io.iohk.atala.prism.app.neo.data.PreferencesRepository;
 import io.iohk.atala.prism.app.neo.data.ProofRequestRepository;
@@ -23,6 +24,8 @@ import io.iohk.atala.prism.app.neo.data.local.ContactsLocalDataSource;
 import io.iohk.atala.prism.app.neo.data.local.ContactsLocalDataSourceInterface;
 import io.iohk.atala.prism.app.neo.data.local.CredentialsLocalDataSource;
 import io.iohk.atala.prism.app.neo.data.local.CredentialsLocalDataSourceInterface;
+import io.iohk.atala.prism.app.neo.data.local.PayIdLocalDataSource;
+import io.iohk.atala.prism.app.neo.data.local.PayIdLocalDataSourceInterface;
 import io.iohk.atala.prism.app.neo.data.local.PreferencesLocalDataSource;
 import io.iohk.atala.prism.app.neo.data.local.PreferencesLocalDataSourceInterface;
 import io.iohk.atala.prism.app.neo.data.local.ProofRequestLocalDataSource;
@@ -114,6 +117,15 @@ public class ApplicationModule {
     }
 
     /*
+     * MirrorMessageHandler provider
+     * */
+
+    @Provides
+    public MirrorMessageHandler provideMirrorMessageHandler(ConnectorRemoteDataSource remoteDataSource){
+        return MirrorMessageHandler.Companion.getInstance(remoteDataSource);
+    }
+
+    /*
      * AccountRecoveryRepository providers
      * */
 
@@ -161,9 +173,10 @@ public class ApplicationModule {
     @Provides
     public ConnectorListenerRepository provideConnectorListenerRepository(ConnectorListenerLocalDataSourceInterface localDataSource,
                                                                           ConnectorRemoteDataSource connectorRemoteDataSource,
+                                                                          MirrorMessageHandler mirrorMessageHandler,
                                                                           SessionLocalDataSourceInterface sessionLocalDataSource,
                                                                           PreferencesLocalDataSourceInterface preferencesLocalDataSource) {
-        return new ConnectorListenerRepository(localDataSource, connectorRemoteDataSource, sessionLocalDataSource, preferencesLocalDataSource);
+        return new ConnectorListenerRepository(localDataSource, connectorRemoteDataSource, mirrorMessageHandler, sessionLocalDataSource, preferencesLocalDataSource);
     }
 
     /*
@@ -238,10 +251,23 @@ public class ApplicationModule {
     /*
      * [PayIdRepository] providers
      * */
+
+    @Provides
+    public PayIdLocalDataSourceInterface providePayIdLocalDataSource(
+            CredentialDao credentialDao,
+            ContactDao contactDao,
+            PrismApplication prismApplication
+    ){
+        return new PayIdLocalDataSource(credentialDao, contactDao, prismApplication.getApplicationContext());
+    }
     @Provides
     public PayIdRepository providePayIdRepository(
-            CredentialsLocalDataSourceInterface credentialsLocalDataSource
+            MirrorMessageHandler mirrorMessageHandler,
+            PayIdLocalDataSourceInterface payIdLocalDataSource,
+            ConnectorRemoteDataSource remoteDataSource,
+            SessionLocalDataSourceInterface sessionLocalDataSource,
+            PreferencesLocalDataSourceInterface preferencesLocalDataSource
     ){
-        return new PayIdRepository(credentialsLocalDataSource);
+        return new PayIdRepository(payIdLocalDataSource, mirrorMessageHandler, remoteDataSource, sessionLocalDataSource, preferencesLocalDataSource);
     }
 }

@@ -3,6 +3,9 @@ package io.iohk.atala.prism.app.neo.data.remote
 import com.google.protobuf.ByteString
 import io.grpc.stub.MetadataUtils
 import io.grpc.stub.StreamObserver
+import io.iohk.atala.mirror.protos.CreateAccountRequest
+import io.iohk.atala.mirror.protos.CreateAccountResponse
+import io.iohk.atala.mirror.protos.MirrorServiceGrpc
 import io.iohk.atala.prism.app.data.local.db.model.Contact
 import io.iohk.atala.prism.app.data.local.db.model.Credential
 import io.iohk.atala.prism.app.data.local.db.model.EncodedCredential
@@ -13,6 +16,7 @@ import io.iohk.atala.prism.app.utils.GrpcUtils
 import io.iohk.atala.prism.kotlin.crypto.keys.ECKeyPair
 import io.iohk.atala.prism.protos.AddConnectionFromTokenRequest
 import io.iohk.atala.prism.protos.AddConnectionFromTokenResponse
+import io.iohk.atala.prism.protos.AtalaMessage
 import io.iohk.atala.prism.protos.ConnectorServiceGrpc
 import io.iohk.atala.prism.protos.GetConnectionTokenInfoRequest
 import io.iohk.atala.prism.protos.GetConnectionTokenInfoResponse
@@ -22,9 +26,12 @@ import io.iohk.atala.prism.protos.GetMessageStreamRequest
 import io.iohk.atala.prism.protos.GetMessageStreamResponse
 import io.iohk.atala.prism.protos.GetMessagesPaginatedRequest
 import io.iohk.atala.prism.protos.GetMessagesPaginatedResponse
+import io.iohk.atala.prism.protos.MirrorMessage
 import io.iohk.atala.prism.protos.SendMessageRequest
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
+import java.util.concurrent.ExecutionException
+import java.util.concurrent.TimeoutException
 import java.util.stream.Collectors
 
 class ConnectorRemoteDataSource(preferencesLocalDataSource: PreferencesLocalDataSourceInterface, private val sessionLocalDataSource: SessionLocalDataSourceInterface) : BaseRemoteDataSource(preferencesLocalDataSource) {
@@ -112,5 +119,32 @@ class ConnectorRemoteDataSource(preferencesLocalDataSource: PreferencesLocalData
             it.credentialEncoded
         }.collect(Collectors.toList())
         sendMultipleMessage(keyPair, contact.connectionId, messages)
+    }
+
+    @Throws(ExecutionException::class, InterruptedException::class, TimeoutException::class)
+    suspend fun sendAtalaMessage(atalaMessage: AtalaMessage, contact: Contact): String {
+        val mnemonicList = sessionLocalDataSource.getSessionData()!!
+        val keyPair = CryptoUtils.getKeyPairFromPath(contact.keyDerivationPath, mnemonicList)
+        val request = SendMessageRequest.newBuilder()
+            .setConnectionId(contact.connectionId).setMessage(atalaMessage.toByteString()).build()
+        return getChannel(keyPair, request.toByteArray()).sendMessage(request).get().id
+    }
+
+    /*
+    * MIRROR SERVICE
+    * */
+
+    suspend fun mirrorServiceCreateAccount(): CreateAccountResponse = withContext(Dispatchers.IO) {
+        val stub = MirrorServiceGrpc.newFutureStub(getMirrorServiceChannel())
+        val request = CreateAccountRequest.newBuilder().build()
+        stub.createAccount(request).get()
+    }
+
+    @Throws(ExecutionException::class, InterruptedException::class)
+    suspend fun sendMirrorMessage(mirrorMessage: MirrorMessage, mirrorContact: Contact): String {
+        val atalaMessage = AtalaMessage.newBuilder()
+            .setMirrorMessage(mirrorMessage)
+            .build()
+        return sendAtalaMessage(atalaMessage, mirrorContact)
     }
 }

@@ -362,4 +362,14 @@
     <string name="fragment_pay_id_select_identity_credential_optionals_instructions">Attach other credentials to your Pay ID (optional)</string>
     <string name="fragment_pay_id_select_identity_credential_next">Next</string>
 
+    <!-- layout/fragment_pay_id_setup_form.xml -->
+    <string name="fragment_pay_id_setup_form_title">Set up your Pay ID</string>
+    <string name="fragment_pay_id_setup_form_pay_id_name_label">ENTER PAY ID NAME</string>
+    <string name="fragment_pay_id_setup_form_pay_id_name_extension">$atalamirror.io</string>
+    <string name="fragment_pay_id_setup_form_pay_id_name_rule">* Maximum length 50 characters</string>
+    <string name="fragment_pay_id_setup_form_pay_id_wallet_instructions">Link your Pay ID to a Wallet or \nSpecific Address</string>
+    <string name="fragment_pay_id_setup_form_pay_id_wallet_label">ADD OR SCAN</string>
+    <string name="fragment_pay_id_setup_form_pay_id_wallet_rule">* Scan the extended public key from your wallet. \nAll the addresses in your wallet will be added</string>
+    <string name="fragment_pay_id_setup_form_next">Next</string>
+    <string name="fragment_pay_id_setup_form_error_msg_unavailable_pay_id_name">Sorry "%1$s" is not available</string>
 </resources>

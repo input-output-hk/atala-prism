@@ -18,5 +18,14 @@
         tools:layout="@layout/fragment_pay_id_select_identity_credential"
         android:id="@+id/payIdSelectIdentityCredentialFragment"
         android:name="io.iohk.atala.prism.app.ui.payid.step1.PayIdSelectIdentityCredentialFragment"
-        android:label="@string/fragment_pay_id_select_identity_credential_title" />
+        android:label="@string/fragment_pay_id_select_identity_credential_title" >
+        <action
+            android:id="@+id/action_payIdSelectIdentityCredentialFragment_to_payIdSetupFormFragment"
+            app:destination="@id/payIdSetupFormFragment" />
+    </fragment>
+    <fragment
+        tools:layout="@layout/fragment_pay_id_setup_form"
+        android:id="@+id/payIdSetupFormFragment"
+        android:name="io.iohk.atala.prism.app.ui.payid.step2.PayIdSetupFormFragment"
+        android:label="@string/fragment_pay_id_setup_form_title" />
 </navigation>

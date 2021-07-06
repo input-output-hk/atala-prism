@@ -21,6 +21,7 @@ import kotlinx.coroutines.launch
 class ConnectorListenerRepository(
     private val localDataSource: ConnectorListenerLocalDataSourceInterface,
     private val remoteDataSource: ConnectorRemoteDataSource,
+    private val mirrorMessageReceiver: MirrorMessageReceiver,
     sessionLocalDataSource: SessionLocalDataSourceInterface,
     preferencesLocalDataSource: PreferencesLocalDataSourceInterface
 ) :
@@ -79,6 +80,9 @@ class ConnectorListenerRepository(
         CoroutineScope(Dispatchers.Default).launch {
             localDataSource.getContactByConnectionId(connectionId)?.let { contact ->
                 val atalaMessage = AtalaMessage.parseFrom(receivedMessage.message)
+                if (atalaMessage.replyTo.isNotBlank()) {
+                    mirrorMessageReceiver.handleNewReceivedMessage(atalaMessage.mirrorMessage, atalaMessage.replyTo)
+                }
                 if (CredentialMapper.isACredentialMessage(atalaMessage)) {
                     val credential = CredentialMapper.mapToCredential(receivedMessage, receivedMessage.id, receivedMessage.connectionId, receivedMessage.received.toMilliseconds(), contact)
                     contact.lastMessageId = receivedMessage.id
@@ -87,6 +91,9 @@ class ConnectorListenerRepository(
                     mapProofRequest(atalaMessage.proofRequest, receivedMessage.id, contact.connectionId)?.let {
                         localDataSource.insertProofRequest(it.first, it.second)
                     }
+                    contact.lastMessageId = receivedMessage.id
+                    localDataSource.updateContact(contact, listOf())
+                } else if (atalaMessage.messageCase == AtalaMessage.MessageCase.MIRROR_MESSAGE) {
                     contact.lastMessageId = receivedMessage.id
                     localDataSource.updateContact(contact, listOf())
                 }
