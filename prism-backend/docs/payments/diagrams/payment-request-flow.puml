@@ -1,0 +1,32 @@
+@startuml
+title Payments - flow with request
+
+participant IOHK
+participant Processor
+actor Student
+
+IOHK -> Processor : Request one time payment link
+Processor -> IOHK : Link created
+IOHK -> Student : Send the payment link
+
+Student -> Processor : Open the payment link
+Processor -> Student : Show payment interface
+Student -> Processor : Fill in all data
+Processor -> Student : Confirm payment
+
+...Three possible finalization scenarios...
+
+alt Pull API
+  IOHK -> Processor : Check payment status
+  Processor -> IOHK : Payment confirmed
+
+else Push API
+  Processor -> IOHK: Payment status change
+
+else Batch pull API
+  IOHK -> Processor : Get payment status changes
+  Processor -> IOHK : Batch of payment status updates,\nincluding the one from the student
+end
+...
+IOHK -> Student : Payment received
+@enduml

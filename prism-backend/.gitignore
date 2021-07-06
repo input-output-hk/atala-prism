@@ -1,0 +1,13 @@
+out
+.idea_modules
+.idea
+.cvpwallet
+.node
+.terraform/
+*.tfstate*
+*.tfstate.backup
+*.tfvars
+mill
+client-storage.txt
+.bsp
+

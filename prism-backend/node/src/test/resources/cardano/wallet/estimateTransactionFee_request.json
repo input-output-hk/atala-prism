@@ -1,0 +1,14 @@
+{
+  "payments": [
+    {
+      "address": "2cWKMJemoBakZBR9TG2YAmxxtJpyvBqv31yWuHjUWpjbc24XbxiLytuzxSdyMtrbCfGmb",
+      "amount": {
+        "quantity": 42000000,
+        "unit": "lovelace"
+      }
+    }
+  ],
+  "metadata": {
+    "0": "0x1234567890abcdef"
+  }
+}

@@ -1,0 +1,29 @@
+@startuml
+title Issuer Wallet preparation, and Registration
+
+participant "ATALA Node" as AtalaNode
+actor IOHK
+actor Issuer
+participant "Web Portal" as WebPortal
+participant "Issuer IssuerWallet" as IssuerWallet
+
+Issuer -> WebPortal : Register
+WebPortal -> IssuerWallet : Create Wallet\n (requires password and organization)
+IssuerWallet -> IssuerWallet : Generates wallet data\n (keys, DID, etc)
+IssuerWallet -> IssuerWallet : Encrypts and stores wallet data
+IssuerWallet -> WebPortal : Wallet Created
+WebPortal -> IssuerWallet : Create DID registration request
+IssuerWallet -> WebPortal : DID Registration Request
+WebPortal -> Issuer : Export DID Registration Request as file
+note over Issuer : At this point, the Issuer has created its identity\n but it needs to be reviewed by IOHK
+
+Issuer -> IOHK : Sends registration request file
+note over IOHK : IOHK needs to validate the organization manually
+IOHK -> AtalaNode : Publish Issuer DID
+AtalaNode -> IOHK : DID published
+IOHK -> IOHK : Update the database manually\n to add the issuer details
+IOHK -> Issuer : Registration successful
+note over Issuer : Now the Issuer can interact with our system
+Issuer -> Issuer : Backups its wallet
+note over Issuer : The Issuer will likely issue\n credentials in batches,\n possibly twice a year\n having the key in cold storage is\n a safe mechanism for protecting it\n to prevent getting it compromised
+@enduml

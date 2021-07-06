@@ -1,0 +1,38 @@
+{
+  "payments": [
+    {
+      "address": "2cWKMJemoBakZBR9TG2YAmxxtJpyvBqv31yWuHjUWpjbc24XbxiLytuzxSdyMtrbCfGmb",
+      "amount": {
+        "quantity": 1000000,
+        "unit": "lovelace"
+      }
+    }
+  ],
+  "passphrase": "Secure Passphrase",
+  "metadata": {
+    "21325": {
+      "map": [
+        {
+          "k": {
+            "string": "v"
+          },
+          "v": {
+            "int": 1
+          }
+        },
+        {
+          "k": {
+            "string": "c"
+          },
+          "v": {
+            "list": [
+              {
+                "bytes": "22030a0131"
+              }
+            ]
+          }
+        }
+      ]
+    }
+  }
+}

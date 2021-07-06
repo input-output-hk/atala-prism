@@ -1,0 +1,67 @@
+package io.iohk.atala.prism.vault.repositories
+
+import io.iohk.atala.prism.AtalaWithPostgresSpec
+import io.iohk.atala.prism.crypto.{EC, SHA256Digest}
+import io.iohk.atala.prism.identity.DID
+import io.iohk.atala.prism.vault.model.{CreatePayload, Payload}
+import org.scalatest.OptionValues
+
+import java.time.Instant
+import java.time.temporal.ChronoUnit
+
+class PayloadsRepositorySpec extends AtalaWithPostgresSpec with OptionValues {
+  lazy val repository = PayloadsRepository(database)
+
+  def createPayload(did: DID, content: Vector[Byte]): Payload = {
+    val externalId = Payload.ExternalId.random()
+    val hash = SHA256Digest.compute(content.toArray)
+    val createPayload1 = CreatePayload(externalId, hash, did, content)
+    repository.create(createPayload1).unsafeRunSync()
+  }
+
+  "create" should {
+    "create a new payload" in {
+      val did1 = newDID()
+      val content1 = "encrypted_data_1".getBytes.toVector
+      val payload1 = createPayload(did1, content1)
+
+      val did2 = newDID()
+      val content2 = "encrypted_data_2".getBytes.toVector
+      val payload2 = createPayload(did2, content2)
+
+      payload1.did must be(did1)
+      payload1.content must be(content1)
+      assert(payload1.createdAt.until(Instant.now(), ChronoUnit.MINUTES) <= 2)
+
+      payload2.did must be(did2)
+      payload2.content must be(content2)
+      assert(payload2.createdAt.until(Instant.now(), ChronoUnit.MINUTES) <= 2)
+
+      assert(payload1.createdAt.isBefore(payload2.createdAt))
+    }
+  }
+
+  "getBy" should {
+    "return all created payloads" in {
+      val did1 = newDID()
+      val content1 = "encrypted_data_1".getBytes.toVector
+      val payload1 = createPayload(did1, content1)
+
+      val did2 = newDID()
+      val content2 = "encrypted_data_2".getBytes.toVector
+      val payload2 = createPayload(did2, content2)
+
+      val content3 = "encrypted_data_3".getBytes.toVector
+      val payload3 = createPayload(did2, content3)
+
+      repository.getByPaginated(did1, None, 10).unsafeRunSync() mustBe List(payload1)
+      repository.getByPaginated(did2, None, 10).unsafeRunSync() mustBe List(payload2, payload3)
+      repository.getByPaginated(did2, None, 1).unsafeRunSync() mustBe List(payload2)
+      repository.getByPaginated(did2, Some(payload2.id), 1).unsafeRunSync() mustBe List(payload3)
+    }
+  }
+
+  private def newDID(): DID = {
+    DID.createUnpublishedDID(EC.generateKeyPair().publicKey).canonical.value
+  }
+}
