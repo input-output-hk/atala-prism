@@ -1,0 +1,119 @@
+@import '../../css/general_styling';
+
+html {
+  scroll-behavior: smooth;
+}
+
+.LandingContainer {
+  .LandingHeader {
+    background: $secondary-color;
+    width: 100%;
+
+    .LadingHeaderContent {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 4em 2em 0 8em;
+      position: relative;
+
+      .HeaderImages {
+        display: flex;
+        padding-right: 4em;
+        width: 70%;
+        justify-content: flex-end;
+
+        img {
+          width: 100%;
+        }
+      }
+
+      .HeaderText {
+        width: 30%;
+        margin-top: 8em;
+
+        h1 {
+          @include secondary-text($large-title, $white);
+          line-height: 44px;
+          width: 350px;
+          margin: 0.5em 0;
+        }
+
+        h3 {
+          @include primary-text($h3, $white);
+        }
+      }
+    }
+  }
+}
+
+@media only screen and (max-width: 1024px) {
+  .LandingContainer {
+    .LandingHeader {
+      .LadingHeaderContent {
+        padding: 4em 2em 0 4em;
+        height: 380px;
+
+        .HeaderText {
+          width: 50%;
+          padding-right: 2em;
+          margin-top: 4em;
+          margin-bottom: 2em;
+
+          h1 {
+            @include secondary-text($h1, $white);
+            line-height: 30px;
+          }
+        }
+
+        .HeaderImages {
+          width: 50%;
+          margin-top: 4em;
+        }
+      }
+    }
+  }
+}
+
+@media only screen and (max-width: 768px) {
+  .LandingContainer {
+    .LandingHeader {
+      .LadingHeaderContent {
+        .HeaderText {
+          width: 40%;
+          padding-right: 0;
+          h3 {
+            @include primary-text($label, $white);
+          }
+        }
+        .HeaderImages {
+          padding-right: 0;
+        }
+      }
+    }
+  }
+}
+
+@media only screen and (max-width: 450px) {
+  .LandingContainer {
+    .LandingHeader {
+      .LadingHeaderContent {
+        padding: 8em 2em 0 2em;
+        flex-direction: column;
+        align-items: flex-start;
+        justify-content: flex-start;
+        height: 500px;
+
+        .HeaderText {
+          width: 100%;
+          margin-top: 2em;
+          margin-bottom: 0;
+        }
+        .HeaderImages {
+          width: 100%;
+          margin-top: 0;
+          margin-bottom: 1em;
+        }
+      }
+    }
+  }
+}

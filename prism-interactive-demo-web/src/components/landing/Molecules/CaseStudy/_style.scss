@@ -1,0 +1,90 @@
+@import '../../../../css/general_styling';
+
+.CaseStudyContent {
+  display: flex;
+  padding: 8em;
+  background: $background;
+
+  .TextContainer {
+    width: 50%;
+
+    .CaseStudyDescription {
+      width: 70%;
+      margin-top: 4em;
+      h1 {
+        @include secondary-text($h1, $black);
+        line-height: 30px;
+      }
+      p {
+        @include primary-text($body, $black);
+        margin-top: 3em;
+      }
+    }
+  }
+
+  .ImageContainer {
+    width: 50%;
+    display: flex;
+    justify-content: center;
+    img {
+      margin-top: -2em;
+      height: 560px;
+    }
+  }
+}
+
+@media only screen and (max-width: 1024px) {
+  .CaseStudyContent {
+    padding: 8em 4em 4em 4em;
+
+    .TextContainer {
+      .CaseStudyDescription {
+        width: 80%;
+      }
+    }
+
+    .ImageContainer {
+      display: block;
+      img {
+        width: 90%;
+        margin-left: 1.5em;
+      }
+    }
+  }
+}
+
+@media only screen and (max-width: 768px) {
+  .CaseStudyContent {
+    .TextContainer {
+      .CaseStudyDescription {
+        margin-left: 0;
+        width: 90%;
+      }
+    }
+  }
+}
+
+@media only screen and (max-width: 450px) {
+  .CaseStudyContent {
+    padding: 8em 2em 4em 2em;
+    flex-direction: column;
+    .TextContainer {
+      width: 100%;
+      .CaseStudyDescription {
+        width: 100%;
+        h1 {
+          @include secondary-text($subtitle, $black);
+          line-height: 22px;
+        }
+      }
+    }
+    .ImageContainer {
+      width: 100%;
+      margin-top: 1.5em;
+      img {
+        width: 100%;
+        margin-left: 0;
+      }
+    }
+  }
+}
