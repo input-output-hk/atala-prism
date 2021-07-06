@@ -21,12 +21,12 @@ import dagger.android.support.DaggerFragment;
 import io.iohk.atala.prism.app.grpc.AsyncTaskResult;
 import io.iohk.atala.prism.app.neo.common.extensions.FragmentActivityExtensionsKt;
 import io.iohk.atala.prism.app.neo.common.extensions.FragmentExtensionsKt;
+import io.iohk.atala.prism.app.ui.commondialogs.SuccessDialog;
 import io.iohk.cvp.BuildConfig;
 import io.iohk.cvp.R;
 import io.iohk.atala.prism.app.utils.FirebaseAnalyticsEvents;
 import io.iohk.atala.prism.app.data.local.preferences.Preferences;
 import io.iohk.atala.prism.app.ui.utils.components.OptionItem;
-import io.iohk.atala.prism.app.ui.commondialogs.SuccessDialog;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
@@ -89,7 +89,7 @@ public class SettingsFragment extends DaggerFragment {
                 }
 
                 if (response.getResult()) {
-                    SuccessDialog.newInstance(this, R.string.connections_remove_success, true)
+                    new SuccessDialog.Builder(requireContext()).setSecondaryText(R.string.connections_remove_success).build()
                             .show(requireActivity().getSupportFragmentManager(), "dialog");
                     getViewModel().getRemoveAllDataLiveData().setValue(new AsyncTaskResult(false));
                 }

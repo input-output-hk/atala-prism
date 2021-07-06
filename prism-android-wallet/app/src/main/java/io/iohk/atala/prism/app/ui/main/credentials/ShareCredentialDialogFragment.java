@@ -20,6 +20,7 @@ import com.google.firebase.crashlytics.FirebaseCrashlytics;
 import javax.inject.Inject;
 
 import dagger.android.support.DaggerDialogFragment;
+import io.iohk.atala.prism.app.ui.commondialogs.SuccessDialog;
 import io.iohk.cvp.R;
 import io.iohk.atala.prism.app.data.local.db.model.Contact;
 import io.iohk.cvp.databinding.NeoDialogShareCredentialBinding;
@@ -27,7 +28,6 @@ import io.iohk.atala.prism.app.neo.common.OnSelectItem;
 import io.iohk.atala.prism.app.neo.common.extensions.FragmentActivityExtensionsKt;
 import io.iohk.atala.prism.app.neo.common.model.CheckableData;
 import io.iohk.atala.prism.app.ui.utils.adapters.CheckableContactRecyclerViewAdapter;
-import io.iohk.atala.prism.app.ui.commondialogs.SuccessDialog;
 import lombok.NoArgsConstructor;
 
 @NoArgsConstructor
@@ -112,7 +112,11 @@ public class ShareCredentialDialogFragment extends DaggerDialogFragment implemen
         // Handles when the credential has been sent successfully
         viewModel.getCredentialHasBeenShared().observe(getViewLifecycleOwner(), completeEvent -> {
             if (completeEvent.getContentIfNotHandled() != null) {
-                SuccessDialog.newInstance(this, R.string.server_share_successfully).show(requireActivity().getSupportFragmentManager(), "dialog");
+                new SuccessDialog.Builder(requireContext())
+                        .setPrimaryText(R.string.your_credentials_were)
+                        .setSecondaryText(R.string.server_share_successfully)
+                        .build()
+                        .show(requireActivity().getSupportFragmentManager(), "dialog");
                 dismiss();
             }
         });

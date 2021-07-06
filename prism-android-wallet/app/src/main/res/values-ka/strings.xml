@@ -5,6 +5,10 @@
     <string name="connection_secondary_label">Receive, store and share your digital credentials</string>
     <string name="missing_data_default_text">--</string>
     <string name="available_soon">Available soon</string>
+    <string name="your_credentials_were">Your credentials were</string>
+
+    <!-- layout/dialog_success.xml -->
+    <string name="dialog_success_ok_button">OK</string>
 
     <!-- Activities titles -->
     <string name="connections_activity_title">Connections</string>
@@ -368,4 +372,7 @@
     <string name="fragment_pay_id_setup_form_pay_id_wallet_rule">* Scan the extended public key from your wallet. \nAll the addresses in your wallet will be added</string>
     <string name="fragment_pay_id_setup_form_next">Next</string>
     <string name="fragment_pay_id_setup_form_error_msg_unavailable_pay_id_name">Sorry "%1$s" is not available</string>
+    <string name="fragment_pay_id_setup_form_success_dialog_primary_text">Your PAY ID was</string>
+    <string name="fragment_pay_id_setup_form_success_dialog_secondary_text">Successfully Created!</string>
+    <string name="fragment_pay_id_setup_form_success_dialog_button_text">Close</string>
 </resources>

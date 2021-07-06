@@ -86,7 +86,10 @@ class ProofRequestDialogFragment : DaggerDialogFragment(), OnSelectItem<Credenti
             viewLifecycleOwner,
             EventWrapperObserver { accepted ->
                 if (accepted) {
-                    val successDialog = SuccessDialog.newInstance(this, R.string.server_share_successfully)
+                    val successDialog = SuccessDialog.Builder(requireContext())
+                        .setPrimaryText(R.string.your_credentials_were)
+                        .setSecondaryText(R.string.server_share_successfully)
+                        .build()
                     successDialog.show(requireActivity().supportFragmentManager, null)
                     handleSyncRequest()
                 }

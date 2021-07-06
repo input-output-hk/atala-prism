@@ -6,7 +6,6 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.Toast
 import androidx.databinding.DataBindingUtil
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.ViewModelProviders
@@ -19,6 +18,7 @@ import io.iohk.atala.prism.app.neo.common.extensions.buildRequestPermissionLaunc
 import io.iohk.atala.prism.app.neo.common.extensions.hideBlockUILoading
 import io.iohk.atala.prism.app.neo.common.extensions.showBlockUILoading
 import io.iohk.atala.prism.app.neo.common.extensions.showErrorDialog
+import io.iohk.atala.prism.app.ui.commondialogs.SuccessDialog
 import io.iohk.atala.prism.app.utils.IntentDataConstants
 import io.iohk.atala.prism.app.utils.PermissionUtils
 import io.iohk.cvp.R
@@ -92,8 +92,7 @@ class PayIdSetupFormFragment : DaggerFragment() {
             viewLifecycleOwner,
             EventWrapperObserver { success ->
                 if (success) {
-                    // TODO to be implemented
-                    Toast.makeText(requireContext(), "Registration is completed", Toast.LENGTH_SHORT).show()
+                    showSuccessDialog()
                 }
             }
         )
@@ -106,5 +105,16 @@ class PayIdSetupFormFragment : DaggerFragment() {
         } else {
             cameraPermissionLauncher.launch(Manifest.permission.CAMERA)
         }
+    }
+
+    private fun showSuccessDialog() {
+        SuccessDialog.Builder(requireContext())
+            .setPrimaryText(R.string.fragment_pay_id_setup_form_success_dialog_primary_text)
+            .setSecondaryText(R.string.fragment_pay_id_setup_form_success_dialog_secondary_text)
+            .setCustomButtonText(R.string.fragment_pay_id_setup_form_success_dialog_button_text)
+            .setOkButtonClickLister {
+                requireActivity().finish()
+            }.build()
+            .show(requireActivity().supportFragmentManager, null)
     }
 }

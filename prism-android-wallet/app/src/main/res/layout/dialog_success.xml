@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="utf-8"?>
+<layout  xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools" xmlns:iohk="http://schemas.android.com/tools">
+    <data>
+        <variable
+            name="primaryText"
+            type="String" />
+        <variable
+            name="secondaryText"
+            type="String" />
+        <variable
+            name="customButtonText"
+            type="String" />
+    </data>
+    <androidx.constraintlayout.widget.ConstraintLayout
+
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+
+        <LinearLayout
+            android:paddingTop="16dp"
+            android:paddingHorizontal="23dp"
+            android:paddingBottom="38dp"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent">
+            <ImageView
+                android:src="@drawable/ic_done"
+                android:layout_gravity="center_horizontal"
+                android:layout_width="wrap_content"
+                android:layout_height="100dp"/>
+            <androidx.appcompat.widget.AppCompatTextView
+                android:text="@{primaryText}"
+                iohk:visible="@{primaryText != null}"
+                android:layout_gravity="center_horizontal"
+                tools:text="Your credentials were"
+                android:textSize="12dp"
+                android:textAlignment="center"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"/>
+            <androidx.appcompat.widget.AppCompatTextView
+                android:text="@{secondaryText}"
+                iohk:visible="@{secondaryText != null}"
+                android:layout_gravity="center_horizontal"
+                tools:text="@string/server_share_successfully"
+                android:textAlignment="center"
+                android:textColor="@color/black"
+                android:layout_marginTop="5dp"
+                android:textSize="16dp"
+                android:textStyle="bold"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"/>
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/ok_button"
+                android:layout_marginTop="30dp"
+                tools:text="@string/dialog_success_ok_button"
+                app:cornerRadius="50dp"
+                android:text="@{customButtonText == null ? @string/dialog_success_ok_button : customButtonText}"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"/>
+        </LinearLayout>
+    </androidx.constraintlayout.widget.ConstraintLayout>
+</layout>
