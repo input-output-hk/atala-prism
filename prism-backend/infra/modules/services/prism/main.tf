@@ -175,6 +175,11 @@ module "kycbridge" {
   acuant_password        = var.acuant_password
   acuant_subscription_id = var.acuant_subscription_id
 
+  identitymind_url      = var.identitymind_url
+  identitymind_profile  = var.identitymind_profile
+  identitymind_username = var.identitymind_username
+  identitymind_password = var.identitymind_password
+
   parent_name               = "prism-${var.env_name_short}"
   aws_region                = var.aws_region
   ecs_cluster_id            = var.ecs_cluster_id

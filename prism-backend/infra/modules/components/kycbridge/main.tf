@@ -52,6 +52,10 @@ module "kycbridge_container_definition" {
     { name = "KYC_BRIDGE_ACUANT_USERNAME", value = var.acuant_username },
     { name = "KYC_BRIDGE_ACUANT_PASSWORD", value = var.acuant_password },
     { name = "KYC_BRIDGE_ACUANT_SUBSCRIPTION_ID", value = var.acuant_subscription_id },
+    { name = "KYC_BRIDGE_IDENTITYMIND_URL", value = var.identitymind_url },
+    { name = "KYC_BRIDGE_IDENTITYMIND_PROFILE", value = var.identitymind_profile },
+    { name = "KYC_BRIDGE_IDENTITYMIND_USERNAME", value = var.identitymind_username },
+    { name = "KYC_BRIDGE_IDENTITYMIND_PASSWORD", value = var.identitymind_password },
   ]
 
   logConfiguration = {

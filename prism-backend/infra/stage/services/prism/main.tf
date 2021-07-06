@@ -391,6 +391,8 @@ module "prism_service" {
   acuant_username           = var.acuant_username
   acuant_password           = var.acuant_password
   acuant_subscription_id    = var.acuant_subscription_id
+  identitymind_username     = var.identitymind_username
+  identitymind_password     = var.identitymind_password
   kycbridge_did             = var.kycbridge_did
   kycbridge_did_private_key = var.kycbridge_did_private_key
 
