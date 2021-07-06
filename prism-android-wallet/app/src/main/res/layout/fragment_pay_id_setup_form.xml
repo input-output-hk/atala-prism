@@ -39,7 +39,7 @@
                     <com.google.android.material.textfield.TextInputEditText
                         android:digits="@string/pay_id_name_valid_digits"
                         android:inputType="textFilter"
-                        android:enabled="@{!viewModel.payIdNameIsRegistered}"
+                        android:enabled="@{!viewModel.payIdIsRegistered}"
                         android:text="@={viewModel.payIdName}"
                         android:maxLength="@{PayIdSetupFormViewModel.MAX_PAY_ID_NAME_LENGTH}"
                         android:layout_width="match_parent"
@@ -49,7 +49,7 @@
                 </com.google.android.material.textfield.TextInputLayout>
 
                 <androidx.appcompat.widget.AppCompatTextView
-                    iohk:visible="@{viewModel.payIdNameIsRegistered}"
+                    iohk:visible="@{viewModel.payIdIsRegistered}"
                     android:textStyle="bold"
                     android:textColor="@color/black"
                     android:textSize="16sp"
@@ -59,7 +59,8 @@
                     android:layout_height="wrap_content"/>
 
                 <com.google.android.material.textfield.TextInputLayout
-                    iohk:visible="@{viewModel.payIdNameIsRegistered}"
+                    android:enabled="@{viewModel.eventRegistrationIsCompleted.peekContent() != true}"
+                    iohk:visible="@{viewModel.payIdIsRegistered}"
                     android:id="@+id/wallet_public_key_text_input"
                     android:layout_marginTop="40dp"
                     android:layout_width="match_parent"

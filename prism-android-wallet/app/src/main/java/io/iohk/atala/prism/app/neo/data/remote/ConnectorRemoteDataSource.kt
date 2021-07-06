@@ -17,6 +17,7 @@ import io.iohk.atala.prism.kotlin.crypto.keys.ECKeyPair
 import io.iohk.atala.prism.protos.AddConnectionFromTokenRequest
 import io.iohk.atala.prism.protos.AddConnectionFromTokenResponse
 import io.iohk.atala.prism.protos.AtalaMessage
+import io.iohk.atala.prism.protos.CheckPayIdNameAvailabilityMessage
 import io.iohk.atala.prism.protos.ConnectorServiceGrpc
 import io.iohk.atala.prism.protos.GetConnectionTokenInfoRequest
 import io.iohk.atala.prism.protos.GetConnectionTokenInfoResponse
@@ -26,7 +27,10 @@ import io.iohk.atala.prism.protos.GetMessageStreamRequest
 import io.iohk.atala.prism.protos.GetMessageStreamResponse
 import io.iohk.atala.prism.protos.GetMessagesPaginatedRequest
 import io.iohk.atala.prism.protos.GetMessagesPaginatedResponse
+import io.iohk.atala.prism.protos.GetPayIdNameMessage
 import io.iohk.atala.prism.protos.MirrorMessage
+import io.iohk.atala.prism.protos.PayIdNameRegistrationMessage
+import io.iohk.atala.prism.protos.RegisterAddressMessage
 import io.iohk.atala.prism.protos.SendMessageRequest
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
@@ -146,5 +150,64 @@ class ConnectorRemoteDataSource(preferencesLocalDataSource: PreferencesLocalData
             .setMirrorMessage(mirrorMessage)
             .build()
         return sendAtalaMessage(atalaMessage, mirrorContact)
+    }
+
+    /**
+     * Send a [CheckPayIdNameAvailabilityMessage] message to a Mirror Connection
+     * @param payIdName name to verify
+     * @param mirrorContact a mirror connection contact
+     * @return id of the sent message
+     * */
+    @Throws(ExecutionException::class, InterruptedException::class)
+    suspend fun sendCheckPayIdNameAvailabilityMessage(
+        payIdName: String,
+        mirrorContact: Contact
+    ): String {
+        val message = CheckPayIdNameAvailabilityMessage.newBuilder().setNameToCheck(payIdName).build()
+        val mirrorMessage = MirrorMessage.newBuilder().setCheckPayIdNameAvailabilityMessage(message).build()
+        return sendMirrorMessage(mirrorMessage, mirrorContact)
+    }
+
+    /**
+     * Send a [GetPayIdNameMessage] message to a Mirror Connection
+     * @param mirrorContact a mirror connection contact
+     * @return id of the sent message
+     * */
+    @Throws(ExecutionException::class, InterruptedException::class)
+    suspend fun sendGetPayIdNameMessage(
+        mirrorContact: Contact
+    ): String {
+        val message = GetPayIdNameMessage.newBuilder().build()
+        val mirrorMessage = MirrorMessage.newBuilder().setGetPayIdNameMessage(message).build()
+        return sendMirrorMessage(mirrorMessage, mirrorContact)
+    }
+
+    /**
+     * Send a [PayIdNameRegistrationMessage] message to a Mirror Connection
+     * @param payIdName name to register
+     * @param mirrorContact a mirror connection contact
+     * @return id of the sent message
+     * */
+    @Throws(ExecutionException::class, InterruptedException::class)
+    suspend fun sendPayIdNameRegistrationMessage(
+        payIdName: String,
+        mirrorContact: Contact,
+    ): String {
+        val message = PayIdNameRegistrationMessage.newBuilder().setName(payIdName).build()
+        val mirrorMessage = MirrorMessage.newBuilder().setPayIdNameRegistrationMessage(message).build()
+        return sendMirrorMessage(mirrorMessage, mirrorContact)
+    }
+
+    /**
+     * Send a [RegisterAddressMessage] message to a Mirror Connection
+     * @param cardanoAddress address to register
+     * @param mirrorContact a mirror connection contact
+     * @return id of the sent message
+     * */
+    @Throws(ExecutionException::class, InterruptedException::class)
+    suspend fun sendRegisterAddressMessage(cardanoAddress: String, mirrorContact: Contact): String {
+        val message = RegisterAddressMessage.newBuilder().setCardanoAddress(cardanoAddress).build()
+        val mirrorMessage = MirrorMessage.newBuilder().setRegisterAddressMessage(message).build()
+        return sendMirrorMessage(mirrorMessage, mirrorContact)
     }
 }

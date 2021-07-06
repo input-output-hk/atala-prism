@@ -3,8 +3,11 @@ package io.iohk.atala.prism.app.ui.payid.step2
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MediatorLiveData
 import androidx.lifecycle.MutableLiveData
+import androidx.lifecycle.Transformations
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import io.iohk.atala.prism.app.data.local.db.model.PayId
+import io.iohk.atala.prism.app.data.local.db.model.PayIdAddress
 import io.iohk.atala.prism.app.neo.common.EventWrapper
 import io.iohk.atala.prism.app.neo.data.PayIdRepository
 import io.iohk.atala.prism.app.neo.data.PayIdRepositoryException
@@ -24,12 +27,11 @@ class PayIdSetupFormViewModel @Inject constructor(private val repository: PayIdR
         object CantLoadCurrentRegisteredPayIdName : Error()
         class PayIdNameAlreadyTaken(val payIdName: String) : Error()
         object TimeOutError : Error()
+        class ServerError(val message: String?) : Error()
         class UnknownError(val message: String?) : Error()
     }
 
-    private val _payIdNameIsRegistered = MutableLiveData<Boolean>(false)
-
-    val payIdNameIsRegistered: LiveData<Boolean> = _payIdNameIsRegistered
+    private val _payId = MutableLiveData<PayId?>(null)
 
     val payIdName = MutableLiveData("")
 
@@ -39,7 +41,7 @@ class PayIdSetupFormViewModel @Inject constructor(private val repository: PayIdR
     val canContinue = MediatorLiveData<Boolean>().apply {
         addSource(payIdName) { value = computeCanContinue() }
         addSource(walletPublicKey) { value = computeCanContinue() }
-        addSource(_payIdNameIsRegistered) { value = computeCanContinue() }
+        addSource(_payId) { value = computeCanContinue() }
     }
 
     private val _isLoading = MutableLiveData(false)
@@ -50,28 +52,31 @@ class PayIdSetupFormViewModel @Inject constructor(private val repository: PayIdR
 
     val error: LiveData<EventWrapper<Error>> = _error
 
-    init {
-        // We must be sure that a Pay Id Name is not already registered
-        loadRegisteredPayIdName()
+    private val firstPayIdAddress: LiveData<PayIdAddress?> = repository.firstRegisteredPayIdAddress
+
+    val eventRegistrationIsCompleted = MediatorLiveData<EventWrapper<Boolean>>().apply {
+        addSource(firstPayIdAddress) { value = EventWrapper(computeEventRegistrationIsCompleted()) }
+        addSource(_payId) { value = EventWrapper(computeEventRegistrationIsCompleted()) }
     }
 
-    private fun loadRegisteredPayIdName() {
-        _isLoading.value = true
+    val payIdIsRegistered = Transformations.map(_payId) {
+        it != null
+    }
+
+    init {
+        // We must be sure that a Pay Id Name is not already registered
+        loadRegisteredPayId()
+    }
+
+    private fun loadRegisteredPayId() {
         viewModelScope.launch {
-            try {
-                val registeredPayIdName = repository.loadCurrentPayIdName()
-                payIdName.value = registeredPayIdName
-                _payIdNameIsRegistered.value = registeredPayIdName?.isNotBlank() ?: false
-            } catch (ex: Exception) {
-                _error.value = EventWrapper(Error.CantLoadCurrentRegisteredPayIdName)
-            } finally {
-                _isLoading.value = false
-            }
+            _payId.value = repository.loadCurrentPayId()
+            payIdName.value = _payId.value?.name
         }
     }
 
     fun next() {
-        if (payIdNameIsRegistered.value != true)
+        if (_payId.value == null)
             registerPayId()
         else
             registerWalletAddress()
@@ -82,19 +87,22 @@ class PayIdSetupFormViewModel @Inject constructor(private val repository: PayIdR
             _isLoading.value = true
             viewModelScope.launch {
                 try {
-                    repository.registerPayIdName(payIdName)
-                    _payIdNameIsRegistered.value = true
+                    repository.registerPayIdName(payIdName)?.let {
+                        _payId.value = it
+                        this@PayIdSetupFormViewModel.payIdName.value = it.name
+                    }
                     _isLoading.value = false
                 } catch (ex: PayIdRepositoryException.PayIdNameAlreadyTaken) {
                     ex.printStackTrace()
                     _error.value = EventWrapper(Error.PayIdNameAlreadyTaken(ex.payIdName))
-                    _isLoading.value = false
                 } catch (ex: TimeoutCancellationException) {
+                    ex.printStackTrace()
                     _error.value = EventWrapper(Error.TimeOutError)
-                    loadRegisteredPayIdName()
                 } catch (ex: Exception) {
+                    ex.printStackTrace()
                     _error.value = EventWrapper(Error.UnknownError(ex.message))
-                    loadRegisteredPayIdName()
+                } finally {
+                    _isLoading.value = false
                 }
             }
         }
@@ -102,15 +110,31 @@ class PayIdSetupFormViewModel @Inject constructor(private val repository: PayIdR
 
     private fun registerWalletAddress() {
         walletPublicKey.value?.let { walletPublicKey ->
-            // TODO to be implemented
+            _isLoading.value = true
+            viewModelScope.launch {
+                try {
+                    repository.registerCardanoAddress(walletPublicKey)
+                    _isLoading.value = false
+                } catch (ex: TimeoutCancellationException) {
+                    _error.value = EventWrapper(Error.TimeOutError)
+                } catch (ex: PayIdRepositoryException.AtalaError) {
+                    _error.value = EventWrapper(Error.ServerError(ex.message))
+                } catch (ex: Exception) {
+                    _error.value = EventWrapper(Error.UnknownError(ex.message))
+                } finally {
+                    _isLoading.value = false
+                }
+            }
         }
     }
 
     private fun computeCanContinue(): Boolean {
         val payIdNameLength = payIdName.value?.length ?: 0
-        return if (payIdNameIsRegistered.value == true)
+        return if (_payId.value != null)
             walletPublicKey.value?.isNotBlank() == true
         else
             payIdNameLength in MIN_PAY_ID_NAME_LENGTH..MAX_PAY_ID_NAME_LENGTH
     }
+
+    private fun computeEventRegistrationIsCompleted(): Boolean = _payId.value != null && firstPayIdAddress.value != null
 }

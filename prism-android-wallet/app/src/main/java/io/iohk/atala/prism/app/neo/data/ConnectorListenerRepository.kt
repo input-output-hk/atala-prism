@@ -4,6 +4,8 @@ import androidx.lifecycle.Observer
 import io.iohk.atala.prism.app.data.local.db.mappers.CredentialMapper
 import io.iohk.atala.prism.app.data.local.db.model.Contact
 import io.iohk.atala.prism.app.data.local.db.model.Credential
+import io.iohk.atala.prism.app.data.local.db.model.PayId
+import io.iohk.atala.prism.app.data.local.db.model.PayIdAddress
 import io.iohk.atala.prism.app.data.local.db.model.ProofRequest
 import io.iohk.atala.prism.app.neo.common.extensions.toMilliseconds
 import io.iohk.atala.prism.app.neo.data.local.ConnectorListenerLocalDataSourceInterface
@@ -13,6 +15,7 @@ import io.iohk.atala.prism.app.neo.data.remote.ConnectorGRPCStream
 import io.iohk.atala.prism.app.neo.data.remote.ConnectorGRPCStreamsManager
 import io.iohk.atala.prism.app.neo.data.remote.ConnectorRemoteDataSource
 import io.iohk.atala.prism.protos.AtalaMessage
+import io.iohk.atala.prism.protos.MirrorMessage
 import io.iohk.atala.prism.protos.ReceivedMessage
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -80,9 +83,7 @@ class ConnectorListenerRepository(
         CoroutineScope(Dispatchers.Default).launch {
             localDataSource.getContactByConnectionId(connectionId)?.let { contact ->
                 val atalaMessage = AtalaMessage.parseFrom(receivedMessage.message)
-                if (atalaMessage.replyTo.isNotBlank()) {
-                    mirrorMessageReceiver.handleNewReceivedMessage(atalaMessage.mirrorMessage, atalaMessage.replyTo)
-                }
+                lookIfIsAReplyMessageAndHandleIt(atalaMessage)
                 if (CredentialMapper.isACredentialMessage(atalaMessage)) {
                     val credential = CredentialMapper.mapToCredential(receivedMessage, receivedMessage.id, receivedMessage.connectionId, receivedMessage.received.toMilliseconds(), contact)
                     contact.lastMessageId = receivedMessage.id
@@ -93,7 +94,7 @@ class ConnectorListenerRepository(
                     }
                     contact.lastMessageId = receivedMessage.id
                     localDataSource.updateContact(contact, listOf())
-                } else if (atalaMessage.messageCase == AtalaMessage.MessageCase.MIRROR_MESSAGE) {
+                } else {
                     contact.lastMessageId = receivedMessage.id
                     localDataSource.updateContact(contact, listOf())
                 }
@@ -114,5 +115,31 @@ class ConnectorListenerRepository(
             )
         }
         return null
+    }
+
+    private suspend fun lookIfIsAReplyMessageAndHandleIt(atalaMessage: AtalaMessage) {
+        if (atalaMessage.replyTo.isNotBlank()) {
+            // see if there are payIdAddress waiting for this message
+            localDataSource.notRepliedPayIdAddressByMessageId(atalaMessage.replyTo)?.let { payIdAddress ->
+                if (atalaMessage.mirrorMessage.messageCase == MirrorMessage.MessageCase.ADDRESS_REGISTERED_MESSAGE) {
+                    // this means that the registration was successful
+                    payIdAddress.status = PayIdAddress.Status.Registered
+                    localDataSource.updatePayIdAddress(payIdAddress)
+                } else {
+                    // this means that the registration was not successful
+                    localDataSource.deletePayIdAddress(payIdAddress)
+                }
+            }
+            localDataSource.getPayIdByMessageIdAndStatus(atalaMessage.replyTo, PayId.Status.WaitingForResponse)?.let { payId ->
+                if (atalaMessage.mirrorMessage.messageCase == MirrorMessage.MessageCase.PAYID_NAME_REGISTERED_MESSAGE) {
+                    payId.status = PayId.Status.Registered
+                    localDataSource.updatePayId(payId)
+                } else {
+                    localDataSource.deletePayId(payId)
+                }
+            }
+            // Message is sent to an a mirrorMessageReceiver, it will handle the scenarios in which the UI is waiting for a response
+            mirrorMessageReceiver.handleNewReceivedMessage(atalaMessage)
+        }
     }
 }

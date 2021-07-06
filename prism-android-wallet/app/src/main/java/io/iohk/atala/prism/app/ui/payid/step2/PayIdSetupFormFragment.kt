@@ -6,6 +6,7 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.Toast
 import androidx.databinding.DataBindingUtil
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.ViewModelProviders
@@ -73,6 +74,9 @@ class PayIdSetupFormFragment : DaggerFragment() {
                         )
                         requireActivity().showErrorDialog(errorMessage)
                     }
+                    is PayIdSetupFormViewModel.Error.ServerError -> {
+                        requireActivity().showErrorDialog(error.message)
+                    }
                     else -> {
                         requireActivity().showErrorDialog(R.string.server_error_message)
                     }
@@ -83,6 +87,16 @@ class PayIdSetupFormFragment : DaggerFragment() {
         viewModel.isLoading.observe(viewLifecycleOwner) { isLoading ->
             if (isLoading) requireActivity().showBlockUILoading() else requireActivity().hideBlockUILoading()
         }
+
+        viewModel.eventRegistrationIsCompleted.observe(
+            viewLifecycleOwner,
+            EventWrapperObserver { success ->
+                if (success) {
+                    // TODO to be implemented
+                    Toast.makeText(requireContext(), "Registration is completed", Toast.LENGTH_SHORT).show()
+                }
+            }
+        )
     }
 
     private fun showQRScanner() {

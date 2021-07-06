@@ -1,0 +1,621 @@
+{
+  "formatVersion": 1,
+  "database": {
+    "version": 8,
+    "identityHash": "0496d6a3e88a47c9d2282e00407056a5",
+    "entities": [
+      {
+        "tableName": "credentials",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` INTEGER PRIMARY KEY AUTOINCREMENT, `credential_id` TEXT, `date_received` INTEGER, `issuer_id` TEXT, `issuer_name` TEXT, `credential_type` TEXT, `connection_id` TEXT NOT NULL, `deleted` INTEGER DEFAULT false, FOREIGN KEY(`connection_id`) REFERENCES `contacts`(`connection_id`) ON UPDATE NO ACTION ON DELETE CASCADE )",
+        "fields": [
+          {
+            "fieldPath": "id",
+            "columnName": "id",
+            "affinity": "INTEGER",
+            "notNull": false
+          },
+          {
+            "fieldPath": "credentialId",
+            "columnName": "credential_id",
+            "affinity": "TEXT",
+            "notNull": false
+          },
+          {
+            "fieldPath": "dateReceived",
+            "columnName": "date_received",
+            "affinity": "INTEGER",
+            "notNull": false
+          },
+          {
+            "fieldPath": "issuerId",
+            "columnName": "issuer_id",
+            "affinity": "TEXT",
+            "notNull": false
+          },
+          {
+            "fieldPath": "issuerName",
+            "columnName": "issuer_name",
+            "affinity": "TEXT",
+            "notNull": false
+          },
+          {
+            "fieldPath": "credentialType",
+            "columnName": "credential_type",
+            "affinity": "TEXT",
+            "notNull": false
+          },
+          {
+            "fieldPath": "connectionId",
+            "columnName": "connection_id",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "deleted",
+            "columnName": "deleted",
+            "affinity": "INTEGER",
+            "notNull": false,
+            "defaultValue": "false"
+          }
+        ],
+        "primaryKey": {
+          "columnNames": [
+            "id"
+          ],
+          "autoGenerate": true
+        },
+        "indices": [
+          {
+            "name": "index_credentials_connection_id",
+            "unique": false,
+            "columnNames": [
+              "connection_id"
+            ],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_credentials_connection_id` ON `${TABLE_NAME}` (`connection_id`)"
+          },
+          {
+            "name": "index_credentials_credential_id",
+            "unique": true,
+            "columnNames": [
+              "credential_id"
+            ],
+            "createSql": "CREATE UNIQUE INDEX IF NOT EXISTS `index_credentials_credential_id` ON `${TABLE_NAME}` (`credential_id`)"
+          }
+        ],
+        "foreignKeys": [
+          {
+            "table": "contacts",
+            "onDelete": "CASCADE",
+            "onUpdate": "NO ACTION",
+            "columns": [
+              "connection_id"
+            ],
+            "referencedColumns": [
+              "connection_id"
+            ]
+          }
+        ]
+      },
+      {
+        "tableName": "contacts",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` INTEGER PRIMARY KEY AUTOINCREMENT, `connection_id` TEXT, `date_created` INTEGER, `did` TEXT, `last_message_id` TEXT, `name` TEXT, `token` TEXT, `key_derivation_path` TEXT, `logo` BLOB, `deleted` INTEGER DEFAULT false)",
+        "fields": [
+          {
+            "fieldPath": "id",
+            "columnName": "id",
+            "affinity": "INTEGER",
+            "notNull": false
+          },
+          {
+            "fieldPath": "connectionId",
+            "columnName": "connection_id",
+            "affinity": "TEXT",
+            "notNull": false
+          },
+          {
+            "fieldPath": "dateCreated",
+            "columnName": "date_created",
+            "affinity": "INTEGER",
+            "notNull": false
+          },
+          {
+            "fieldPath": "did",
+            "columnName": "did",
+            "affinity": "TEXT",
+            "notNull": false
+          },
+          {
+            "fieldPath": "lastMessageId",
+            "columnName": "last_message_id",
+            "affinity": "TEXT",
+            "notNull": false
+          },
+          {
+            "fieldPath": "name",
+            "columnName": "name",
+            "affinity": "TEXT",
+            "notNull": false
+          },
+          {
+            "fieldPath": "token",
+            "columnName": "token",
+            "affinity": "TEXT",
+            "notNull": false
+          },
+          {
+            "fieldPath": "keyDerivationPath",
+            "columnName": "key_derivation_path",
+            "affinity": "TEXT",
+            "notNull": false
+          },
+          {
+            "fieldPath": "logo",
+            "columnName": "logo",
+            "affinity": "BLOB",
+            "notNull": false
+          },
+          {
+            "fieldPath": "deleted",
+            "columnName": "deleted",
+            "affinity": "INTEGER",
+            "notNull": false,
+            "defaultValue": "false"
+          }
+        ],
+        "primaryKey": {
+          "columnNames": [
+            "id"
+          ],
+          "autoGenerate": true
+        },
+        "indices": [
+          {
+            "name": "index_contacts_connection_id",
+            "unique": true,
+            "columnNames": [
+              "connection_id"
+            ],
+            "createSql": "CREATE UNIQUE INDEX IF NOT EXISTS `index_contacts_connection_id` ON `${TABLE_NAME}` (`connection_id`)"
+          }
+        ],
+        "foreignKeys": []
+      },
+      {
+        "tableName": "activityHistories",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `connection_id` TEXT, `credential_id` TEXT, `date` INTEGER NOT NULL, `type` INTEGER NOT NULL, `needs_to_be_notified` INTEGER NOT NULL DEFAULT false, FOREIGN KEY(`credential_id`) REFERENCES `credentials`(`credential_id`) ON UPDATE NO ACTION ON DELETE CASCADE , FOREIGN KEY(`connection_id`) REFERENCES `contacts`(`connection_id`) ON UPDATE NO ACTION ON DELETE CASCADE )",
+        "fields": [
+          {
+            "fieldPath": "id",
+            "columnName": "id",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "connectionId",
+            "columnName": "connection_id",
+            "affinity": "TEXT",
+            "notNull": false
+          },
+          {
+            "fieldPath": "credentialId",
+            "columnName": "credential_id",
+            "affinity": "TEXT",
+            "notNull": false
+          },
+          {
+            "fieldPath": "date",
+            "columnName": "date",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "type",
+            "columnName": "type",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "needsToBeNotified",
+            "columnName": "needs_to_be_notified",
+            "affinity": "INTEGER",
+            "notNull": true,
+            "defaultValue": "false"
+          }
+        ],
+        "primaryKey": {
+          "columnNames": [
+            "id"
+          ],
+          "autoGenerate": true
+        },
+        "indices": [
+          {
+            "name": "index_activityHistories_credential_id",
+            "unique": false,
+            "columnNames": [
+              "credential_id"
+            ],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_activityHistories_credential_id` ON `${TABLE_NAME}` (`credential_id`)"
+          },
+          {
+            "name": "index_activityHistories_connection_id",
+            "unique": false,
+            "columnNames": [
+              "connection_id"
+            ],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_activityHistories_connection_id` ON `${TABLE_NAME}` (`connection_id`)"
+          }
+        ],
+        "foreignKeys": [
+          {
+            "table": "credentials",
+            "onDelete": "CASCADE",
+            "onUpdate": "NO ACTION",
+            "columns": [
+              "credential_id"
+            ],
+            "referencedColumns": [
+              "credential_id"
+            ]
+          },
+          {
+            "table": "contacts",
+            "onDelete": "CASCADE",
+            "onUpdate": "NO ACTION",
+            "columns": [
+              "connection_id"
+            ],
+            "referencedColumns": [
+              "connection_id"
+            ]
+          }
+        ]
+      },
+      {
+        "tableName": "proofRequests",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `connection_id` TEXT NOT NULL, `message_id` TEXT NOT NULL, FOREIGN KEY(`connection_id`) REFERENCES `contacts`(`connection_id`) ON UPDATE NO ACTION ON DELETE CASCADE )",
+        "fields": [
+          {
+            "fieldPath": "id",
+            "columnName": "id",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "connectionId",
+            "columnName": "connection_id",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "messageId",
+            "columnName": "message_id",
+            "affinity": "TEXT",
+            "notNull": true
+          }
+        ],
+        "primaryKey": {
+          "columnNames": [
+            "id"
+          ],
+          "autoGenerate": true
+        },
+        "indices": [
+          {
+            "name": "index_proofRequests_connection_id",
+            "unique": false,
+            "columnNames": [
+              "connection_id"
+            ],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_proofRequests_connection_id` ON `${TABLE_NAME}` (`connection_id`)"
+          },
+          {
+            "name": "index_proofRequests_message_id",
+            "unique": true,
+            "columnNames": [
+              "message_id"
+            ],
+            "createSql": "CREATE UNIQUE INDEX IF NOT EXISTS `index_proofRequests_message_id` ON `${TABLE_NAME}` (`message_id`)"
+          }
+        ],
+        "foreignKeys": [
+          {
+            "table": "contacts",
+            "onDelete": "CASCADE",
+            "onUpdate": "NO ACTION",
+            "columns": [
+              "connection_id"
+            ],
+            "referencedColumns": [
+              "connection_id"
+            ]
+          }
+        ]
+      },
+      {
+        "tableName": "proofRequestCredential",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `credential_id` TEXT NOT NULL, `proof_request_id` INTEGER NOT NULL, FOREIGN KEY(`credential_id`) REFERENCES `credentials`(`credential_id`) ON UPDATE NO ACTION ON DELETE CASCADE , FOREIGN KEY(`proof_request_id`) REFERENCES `proofRequests`(`id`) ON UPDATE NO ACTION ON DELETE CASCADE )",
+        "fields": [
+          {
+            "fieldPath": "id",
+            "columnName": "id",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "credentialId",
+            "columnName": "credential_id",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "proofRequestId",
+            "columnName": "proof_request_id",
+            "affinity": "INTEGER",
+            "notNull": true
+          }
+        ],
+        "primaryKey": {
+          "columnNames": [
+            "id"
+          ],
+          "autoGenerate": true
+        },
+        "indices": [
+          {
+            "name": "index_proofRequestCredential_credential_id",
+            "unique": false,
+            "columnNames": [
+              "credential_id"
+            ],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_proofRequestCredential_credential_id` ON `${TABLE_NAME}` (`credential_id`)"
+          },
+          {
+            "name": "index_proofRequestCredential_proof_request_id",
+            "unique": false,
+            "columnNames": [
+              "proof_request_id"
+            ],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_proofRequestCredential_proof_request_id` ON `${TABLE_NAME}` (`proof_request_id`)"
+          }
+        ],
+        "foreignKeys": [
+          {
+            "table": "credentials",
+            "onDelete": "CASCADE",
+            "onUpdate": "NO ACTION",
+            "columns": [
+              "credential_id"
+            ],
+            "referencedColumns": [
+              "credential_id"
+            ]
+          },
+          {
+            "table": "proofRequests",
+            "onDelete": "CASCADE",
+            "onUpdate": "NO ACTION",
+            "columns": [
+              "proof_request_id"
+            ],
+            "referencedColumns": [
+              "id"
+            ]
+          }
+        ]
+      },
+      {
+        "tableName": "encodedCredentials",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` INTEGER PRIMARY KEY AUTOINCREMENT, `credential_id` TEXT, `credential_encoded` BLOB, FOREIGN KEY(`credential_id`) REFERENCES `credentials`(`credential_id`) ON UPDATE NO ACTION ON DELETE CASCADE )",
+        "fields": [
+          {
+            "fieldPath": "id",
+            "columnName": "id",
+            "affinity": "INTEGER",
+            "notNull": false
+          },
+          {
+            "fieldPath": "credentialId",
+            "columnName": "credential_id",
+            "affinity": "TEXT",
+            "notNull": false
+          },
+          {
+            "fieldPath": "credentialEncoded",
+            "columnName": "credential_encoded",
+            "affinity": "BLOB",
+            "notNull": false
+          }
+        ],
+        "primaryKey": {
+          "columnNames": [
+            "id"
+          ],
+          "autoGenerate": true
+        },
+        "indices": [
+          {
+            "name": "index_encodedCredentials_credential_id",
+            "unique": true,
+            "columnNames": [
+              "credential_id"
+            ],
+            "createSql": "CREATE UNIQUE INDEX IF NOT EXISTS `index_encodedCredentials_credential_id` ON `${TABLE_NAME}` (`credential_id`)"
+          }
+        ],
+        "foreignKeys": [
+          {
+            "table": "credentials",
+            "onDelete": "CASCADE",
+            "onUpdate": "NO ACTION",
+            "columns": [
+              "credential_id"
+            ],
+            "referencedColumns": [
+              "credential_id"
+            ]
+          }
+        ]
+      },
+      {
+        "tableName": "payIds",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `connection_id` TEXT NOT NULL, `name` TEXT, `message_id` TEXT, `status` INTEGER NOT NULL, FOREIGN KEY(`connection_id`) REFERENCES `contacts`(`connection_id`) ON UPDATE NO ACTION ON DELETE CASCADE )",
+        "fields": [
+          {
+            "fieldPath": "id",
+            "columnName": "id",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "connectionId",
+            "columnName": "connection_id",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "name",
+            "columnName": "name",
+            "affinity": "TEXT",
+            "notNull": false
+          },
+          {
+            "fieldPath": "messageId",
+            "columnName": "message_id",
+            "affinity": "TEXT",
+            "notNull": false
+          },
+          {
+            "fieldPath": "status",
+            "columnName": "status",
+            "affinity": "INTEGER",
+            "notNull": true
+          }
+        ],
+        "primaryKey": {
+          "columnNames": [
+            "id"
+          ],
+          "autoGenerate": true
+        },
+        "indices": [
+          {
+            "name": "index_payIds_connection_id",
+            "unique": true,
+            "columnNames": [
+              "connection_id"
+            ],
+            "createSql": "CREATE UNIQUE INDEX IF NOT EXISTS `index_payIds_connection_id` ON `${TABLE_NAME}` (`connection_id`)"
+          },
+          {
+            "name": "index_payIds_name",
+            "unique": true,
+            "columnNames": [
+              "name"
+            ],
+            "createSql": "CREATE UNIQUE INDEX IF NOT EXISTS `index_payIds_name` ON `${TABLE_NAME}` (`name`)"
+          },
+          {
+            "name": "index_payIds_message_id",
+            "unique": true,
+            "columnNames": [
+              "message_id"
+            ],
+            "createSql": "CREATE UNIQUE INDEX IF NOT EXISTS `index_payIds_message_id` ON `${TABLE_NAME}` (`message_id`)"
+          }
+        ],
+        "foreignKeys": [
+          {
+            "table": "contacts",
+            "onDelete": "CASCADE",
+            "onUpdate": "NO ACTION",
+            "columns": [
+              "connection_id"
+            ],
+            "referencedColumns": [
+              "connection_id"
+            ]
+          }
+        ]
+      },
+      {
+        "tableName": "payIdAddresses",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `pay_id_local_id` INTEGER NOT NULL, `address` TEXT NOT NULL, `message_id` TEXT NOT NULL, `status` INTEGER NOT NULL, FOREIGN KEY(`pay_id_local_id`) REFERENCES `payIds`(`id`) ON UPDATE NO ACTION ON DELETE CASCADE )",
+        "fields": [
+          {
+            "fieldPath": "id",
+            "columnName": "id",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "payIdLocalId",
+            "columnName": "pay_id_local_id",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "address",
+            "columnName": "address",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "messageId",
+            "columnName": "message_id",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "status",
+            "columnName": "status",
+            "affinity": "INTEGER",
+            "notNull": true
+          }
+        ],
+        "primaryKey": {
+          "columnNames": [
+            "id"
+          ],
+          "autoGenerate": true
+        },
+        "indices": [
+          {
+            "name": "index_payIdAddresses_pay_id_local_id",
+            "unique": false,
+            "columnNames": [
+              "pay_id_local_id"
+            ],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_payIdAddresses_pay_id_local_id` ON `${TABLE_NAME}` (`pay_id_local_id`)"
+          },
+          {
+            "name": "index_payIdAddresses_address",
+            "unique": true,
+            "columnNames": [
+              "address"
+            ],
+            "createSql": "CREATE UNIQUE INDEX IF NOT EXISTS `index_payIdAddresses_address` ON `${TABLE_NAME}` (`address`)"
+          }
+        ],
+        "foreignKeys": [
+          {
+            "table": "payIds",
+            "onDelete": "CASCADE",
+            "onUpdate": "NO ACTION",
+            "columns": [
+              "pay_id_local_id"
+            ],
+            "referencedColumns": [
+              "id"
+            ]
+          }
+        ]
+      }
+    ],
+    "views": [],
+    "setupQueries": [
+      "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '0496d6a3e88a47c9d2282e00407056a5')"
+    ]
+  }
+}

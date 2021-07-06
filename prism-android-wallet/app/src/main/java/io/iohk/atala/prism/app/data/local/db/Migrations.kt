@@ -195,3 +195,67 @@ val MIGRATION_5_6 = object : Migration(5, 6) {
         database.execSQL("CREATE UNIQUE INDEX IF NOT EXISTS index_credentials_credential_id ON credentials (credential_id)")
     }
 }
+
+/*
+* Added payIds and payIdAddresses tables
+* */
+val MIGRATION_6_7 = object : Migration(6, 7) {
+    override fun migrate(database: SupportSQLiteDatabase) {
+
+        // payIds
+        database.execSQL(
+            "CREATE TABLE IF NOT EXISTS payIds (" +
+                "id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, " +
+                "connection_id TEXT NOT NULL, name TEXT, " +
+                "FOREIGN KEY(connection_id) " +
+                "REFERENCES contacts(connection_id) ON UPDATE NO ACTION ON DELETE CASCADE )"
+        )
+
+        database.execSQL("CREATE UNIQUE INDEX IF NOT EXISTS index_payIds_connection_id ON payIds (connection_id)")
+        database.execSQL("CREATE UNIQUE INDEX IF NOT EXISTS index_payIds_name ON payIds (name)")
+
+        // payIdAddresses
+        database.execSQL(
+            "CREATE TABLE IF NOT EXISTS payIdAddresses (" +
+                "id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, " +
+                "pay_id_local_id INTEGER NOT NULL, " +
+                "address TEXT NOT NULL, " +
+                "status INTEGER NOT NULL, " +
+                "message_id TEXT NOT NULL, " +
+                "FOREIGN KEY(pay_id_local_id) REFERENCES payIds(id) ON UPDATE NO ACTION ON DELETE CASCADE )"
+        )
+
+        database.execSQL("CREATE INDEX IF NOT EXISTS index_payIdAddresses_pay_id_local_id ON payIdAddresses (pay_id_local_id)")
+        database.execSQL("CREATE UNIQUE INDEX IF NOT EXISTS index_payIdAddresses_address ON payIdAddresses (address)")
+    }
+}
+
+val MIGRATION_7_8 = object : Migration(7, 8) {
+    override fun migrate(database: SupportSQLiteDatabase) {
+        /*
+        * Added "message_id", and "status" fields to "payIds" table.
+        * We must recreate the "payIds" table due to limitations of SQlite info: https://www.sqlite.org/faq.html#q11
+        * */
+        database.execSQL(
+            "CREATE TABLE IF NOT EXISTS payIds_backup (" +
+                "id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, " +
+                "connection_id TEXT NOT NULL, " +
+                "name TEXT, " +
+                "message_id TEXT, " +
+                "status INTEGER NOT NULL, " +
+                "FOREIGN KEY(connection_id) REFERENCES contacts(connection_id) ON UPDATE NO ACTION ON DELETE CASCADE )"
+        )
+        database.execSQL(
+            """
+                INSERT INTO payIds_backup (id, connection_id, name, status)
+                SELECT id, connection_id, name, 1 FROM payIds
+            """.trimIndent()
+        )
+
+        database.execSQL("DROP TABLE payIds")
+        database.execSQL("ALTER TABLE payIds_backup RENAME TO payIds")
+        database.execSQL("CREATE UNIQUE INDEX IF NOT EXISTS index_payIds_connection_id ON payIds (connection_id)")
+        database.execSQL("CREATE UNIQUE INDEX IF NOT EXISTS index_payIds_name ON payIds (name)")
+        database.execSQL("CREATE UNIQUE INDEX IF NOT EXISTS index_payIds_message_id ON payIds (message_id)")
+    }
+}

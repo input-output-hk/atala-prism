@@ -3,10 +3,13 @@ package io.iohk.atala.prism.app.neo.data.local
 import androidx.lifecycle.LiveData
 import io.iohk.atala.prism.app.data.local.db.dao.ContactDao
 import io.iohk.atala.prism.app.data.local.db.dao.CredentialDao
+import io.iohk.atala.prism.app.data.local.db.dao.PayIdDao
 import io.iohk.atala.prism.app.data.local.db.dao.ProofRequestDao
 import io.iohk.atala.prism.app.data.local.db.model.Contact
 import io.iohk.atala.prism.app.data.local.db.model.Credential
 import io.iohk.atala.prism.app.data.local.db.model.CredentialWithEncodedCredential
+import io.iohk.atala.prism.app.data.local.db.model.PayId
+import io.iohk.atala.prism.app.data.local.db.model.PayIdAddress
 import io.iohk.atala.prism.app.data.local.db.model.ProofRequest
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
@@ -14,7 +17,8 @@ import kotlinx.coroutines.withContext
 class ConnectorListenerLocalDataSource(
     private val proofRequestDao: ProofRequestDao,
     private val contactDao: ContactDao,
-    private val credentialDao: CredentialDao
+    private val credentialDao: CredentialDao,
+    private val payIdDao: PayIdDao
 ) : ConnectorListenerLocalDataSourceInterface {
 
     override fun allContacts(): LiveData<List<Contact>> = contactDao.all()
@@ -33,5 +37,32 @@ class ConnectorListenerLocalDataSource(
 
     override suspend fun insertProofRequest(proofRequest: ProofRequest, credentials: List<Credential>): Long = withContext(Dispatchers.IO) {
         proofRequestDao.insertSync(proofRequest, credentials)
+    }
+
+    override suspend fun notRepliedPayIdAddressByMessageId(messageId: String): PayIdAddress? = withContext(Dispatchers.IO) {
+        payIdDao.notRepliedPayIdAddressByMessageId(messageId)
+    }
+
+    override suspend fun getPayIdByMessageIdAndStatus(
+        messageId: String,
+        status: PayId.Status
+    ): PayId? = withContext(Dispatchers.IO) {
+        payIdDao.getPayIdByMessageIdAndStatus(messageId, PayId.Status.WaitingForResponse.value)
+    }
+
+    override suspend fun updatePayId(payId: PayId) = withContext(Dispatchers.IO) {
+        payIdDao.updatePayId(payId)
+    }
+
+    override suspend fun deletePayId(payId: PayId) = withContext(Dispatchers.IO) {
+        payIdDao.deletePayId(payId)
+    }
+
+    override suspend fun updatePayIdAddress(payIdAddress: PayIdAddress) = withContext(Dispatchers.IO) {
+        payIdDao.updatePayIdAddress(payIdAddress)
+    }
+
+    override suspend fun deletePayIdAddress(payIdAddress: PayIdAddress) = withContext(Dispatchers.IO) {
+        payIdDao.deletePayIdAddress(payIdAddress)
     }
 }

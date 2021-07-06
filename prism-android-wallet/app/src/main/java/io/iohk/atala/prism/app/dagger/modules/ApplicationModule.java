@@ -6,6 +6,7 @@ import io.iohk.atala.prism.app.core.PrismApplication;
 import io.iohk.atala.prism.app.data.local.db.AppDatabase;
 import io.iohk.atala.prism.app.data.local.db.dao.ContactDao;
 import io.iohk.atala.prism.app.data.local.db.dao.CredentialDao;
+import io.iohk.atala.prism.app.data.local.db.dao.PayIdDao;
 import io.iohk.atala.prism.app.data.local.db.dao.ProofRequestDao;
 import io.iohk.atala.prism.app.neo.data.AccountRecoveryRepository;
 import io.iohk.atala.prism.app.neo.data.ActivityHistoriesRepository;
@@ -63,6 +64,11 @@ public class ApplicationModule {
     @Provides
     ProofRequestDao provideProofRequestDao(AppDatabase appDatabase) {
         return appDatabase.proofRequestDao();
+    }
+
+    @Provides
+    PayIdDao providePayIdDao(AppDatabase appDatabase) {
+        return appDatabase.payIdDao();
     }
 
     /*
@@ -166,8 +172,8 @@ public class ApplicationModule {
      * */
 
     @Provides
-    public ConnectorListenerLocalDataSourceInterface provideConnectorListenerLocalDataSource(ProofRequestDao proofRequestDao, ContactDao contactDao, CredentialDao credentialDao) {
-        return new ConnectorListenerLocalDataSource(proofRequestDao, contactDao,credentialDao);
+    public ConnectorListenerLocalDataSourceInterface provideConnectorListenerLocalDataSource(ProofRequestDao proofRequestDao, ContactDao contactDao, CredentialDao credentialDao, PayIdDao payIdDao) {
+        return new ConnectorListenerLocalDataSource(proofRequestDao, contactDao,credentialDao, payIdDao);
     }
 
     @Provides
@@ -256,9 +262,10 @@ public class ApplicationModule {
     public PayIdLocalDataSourceInterface providePayIdLocalDataSource(
             CredentialDao credentialDao,
             ContactDao contactDao,
+            PayIdDao payIdDao,
             PrismApplication prismApplication
     ){
-        return new PayIdLocalDataSource(credentialDao, contactDao, prismApplication.getApplicationContext());
+        return new PayIdLocalDataSource(credentialDao, contactDao, payIdDao, prismApplication.getApplicationContext());
     }
     @Provides
     public PayIdRepository providePayIdRepository(
