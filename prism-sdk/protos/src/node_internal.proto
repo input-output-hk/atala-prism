@@ -1,0 +1,26 @@
+syntax = "proto3";
+
+option java_multiple_files = true;
+option java_package = "io.iohk.atala.prism.protos";
+
+import "node_models.proto";
+
+package io.iohk.atala.prism.protos;
+
+// @exclude
+// These models are intended for internal usage inside
+// the AtalaNode (not to be publicly accessible from the gRPC API).
+
+message AtalaBlock {
+  string version = 1;
+  repeated SignedAtalaOperation operations = 2;
+}
+
+message AtalaObject {
+  int32 block_operation_count = 2;
+  int32 block_byte_length = 3;
+  oneof block {
+    bytes block_hash = 1;
+    AtalaBlock block_content = 4;
+  }
+}

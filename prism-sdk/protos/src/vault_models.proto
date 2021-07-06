@@ -1,0 +1,16 @@
+syntax = "proto3";
+
+option java_multiple_files = true;
+option java_package = "io.iohk.atala.prism.protos";
+
+package io.iohk.atala.prism.protos;
+
+import "google/protobuf/timestamp.proto";
+
+// Represents a payload stored on the authenticated user's vault.
+message Payload {
+    string id = 1; // A unique UUID identifying the payload.
+    bytes hash = 2; // Content hash.
+    bytes content = 3; // The content of the payload encrypted by the user.
+    google.protobuf.Timestamp created_at = 4; // The timestamp of when the payload was registered by the vault.
+}
