@@ -11,7 +11,7 @@ import io.iohk.atala.prism.credentials.{
   VerificationError
 }
 import io.iohk.atala.prism.credentials.content.CredentialContent
-import io.iohk.atala.prism.crypto.{EC, ECConfig, ECPrivateKey, ECPublicKey, SHA256Digest}
+import io.iohk.atala.prism.crypto.{EC, ECConfig, ECPrivateKey, ECPublicKey, ECSignature, SHA256Digest}
 import io.iohk.atala.prism.node.grpc.ProtoCodecs
 import io.iohk.atala.prism.protos.{node_api, node_models}
 import org.scalatest.OptionValues._
@@ -23,16 +23,16 @@ import io.iohk.atala.prism.identity.DID.masterKeyId
 case class Wallet(node: node_api.NodeServiceGrpc.NodeServiceBlockingStub) {
   implicit val ec = EC
 
-  val masterKeyPair = EC.generateKeyPair()
-  val masterPrivateKey = masterKeyPair.privateKey
-  val masterPublicKey = masterKeyPair.publicKey
-  val issuanceKeyPair = EC.generateKeyPair()
-  val issuancePrivateKey = issuanceKeyPair.privateKey
-  val issuancePublicKey = issuanceKeyPair.publicKey
-
   private var dids: Map[DIDSuffix, Map[String, ECPrivateKey]] = Map()
 
   def generateDID(): (DIDSuffix, node_models.AtalaOperation) = {
+    val masterKeyPair = EC.generateKeyPair()
+    val masterPrivateKey = masterKeyPair.privateKey
+    val masterPublicKey = masterKeyPair.publicKey
+    val issuanceKeyPair = EC.generateKeyPair()
+    val issuancePrivateKey = issuanceKeyPair.privateKey
+    val issuancePublicKey = issuanceKeyPair.publicKey
+
     // This could be encapsulated in the "NodeSDK". I added it here for simplicity
     // Note that in our current design we cannot create a did that has two keys from start
     val createDidOp = node_models.CreateDIDOperation(
@@ -91,6 +91,19 @@ case class Wallet(node: node_api.NodeServiceGrpc.NodeServiceBlockingStub) {
   ): Credential = {
     val privateKey = dids(didSuffix)(keyId)
     Credential.fromCredentialContent(credentialContent).sign(privateKey)
+  }
+
+  def signKey(
+      publicKey: ECPublicKey,
+      keyId: String,
+      didSuffix: DIDSuffix
+  ): ECSignature = {
+    val privateKey = dids(didSuffix)(keyId)
+    EC.sign(publicKey.getEncoded, privateKey)
+  }
+
+  def verifySignedKey(publicKey: ECPublicKey, signature: ECSignature, signingKey: ECPublicKey): Boolean = {
+    EC.verify(publicKey.getEncoded, signingKey, signature)
   }
 
   def verifyCredential(
