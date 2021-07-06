@@ -1,0 +1,84 @@
+import React from 'react';
+import { message } from 'antd';
+import { useTranslation } from 'react-i18next';
+import PropTypes from 'prop-types';
+import Logger from '../../helpers/Logger';
+import Groups from './Groups';
+import { withApi } from '../providers/withApi';
+import { useGroups } from '../../hooks/useGroups';
+
+const GroupsContainer = ({ api }) => {
+  const { t } = useTranslation();
+
+  const {
+    groups,
+    loading,
+    searching,
+    hasMore,
+    name,
+    setName,
+    dateRange,
+    setDateRange,
+    setSortingKey,
+    sortingDirection,
+    setSortingDirection,
+    getMoreGroups
+  } = useGroups(api.groupsManager);
+
+  const handleGroupDeletion = group =>
+    api.groupsManager
+      .deleteGroup(group.id)
+      .then(() => {
+        message.success(t('groups.deletionSuccess', { groupName: group.name }));
+      })
+      .catch(error => {
+        Logger.error('[GroupsContainer.handleGroupDeletion] Error: ', error);
+        message.error(t('errors.errorDeletingGroup', { groupName: group.name }));
+      });
+
+  const copyGroup = ({ numberOfContacts, name: groupName }, copyName) =>
+    api.groupsManager
+      .createGroup(copyName)
+      .then(({ id }) =>
+        api.contactsManager
+          .getContacts({ limit: numberOfContacts, groupName })
+          .then(({ contactsList }) =>
+            api.groupsManager.updateGroup(id, {
+              contactIdsToAdd: contactsList.map(({ contactId }) => contactId)
+            })
+          )
+      )
+      .then(() => {
+        message.success(t('groups.copy.success'));
+      })
+      .catch(error => {
+        Logger.error('[GroupsContainer.copyGroup] Error: ', error);
+        message.error(t('errors.errorCopyingGroup'));
+      });
+
+  const isFilter = name && dateRange.length;
+
+  return (
+    <Groups
+      groups={groups}
+      copyGroup={copyGroup}
+      handleGroupDeletion={handleGroupDeletion}
+      loading={loading}
+      searching={searching}
+      hasMore={hasMore}
+      isFilter={isFilter}
+      setName={setName}
+      setDateRange={setDateRange}
+      setSortingKey={setSortingKey}
+      setSortingDirection={setSortingDirection}
+      sortingDirection={sortingDirection}
+      getMoreGroups={getMoreGroups}
+    />
+  );
+};
+
+GroupsContainer.propTypes = {
+  api: PropTypes.shape().isRequired
+};
+
+export default withApi(GroupsContainer);

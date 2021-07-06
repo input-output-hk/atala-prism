@@ -1,0 +1,217 @@
+@import '../../css/general_styling';
+
+.contactDetail {
+  display: flex;
+  flex-direction: column;
+  padding: 1em 3em;
+  height: 100vh;
+  .ContentHeader {
+    flex-direction: column;
+    border-bottom: 1px solid $light-grey;
+    height: 13vh;
+    h1 {
+      margin-bottom: 0.5em !important;
+    }
+  }
+  .headerSection {
+    display: flex;
+    align-items: flex-start;
+  }
+  .header {
+    display: flex;
+    background-color: #f8f9f9;
+    border-radius: 6px;
+    padding: 1em;
+    .img {
+      margin-right: 1em;
+    }
+    .title {
+      margin-right: 50px;
+      p {
+        @include primary-text($label, $dark-grey);
+        margin: 0;
+      }
+      span {
+        @include primary-text($label, $secondary-color);
+        font-weight: bold;
+      }
+    }
+  }
+  .subtitle {
+    @include primary-text($body, $dark-grey);
+    margin: 20px 0 10px 0;
+  }
+  .subtitleCredentials {
+    margin: 20px 0 0 0 !important;
+    @include primary-text($h3, $secondary-color);
+  }
+  .buttonEdit {
+    margin-left: auto;
+  }
+  .detailSection {
+    display: flex;
+    max-height: 85vh;
+    overflow-y: auto;
+    h3 {
+      @include primary-text($h3, #303034);
+      margin-bottom: 20px;
+    }
+    .ContactInfo {
+      width: 45%;
+      padding-top: 14px;
+    }
+    .CredentialInfo {
+      .ant-tabs-nav .ant-tabs-tab {
+        @include primary-text($body, #a0aabb);
+        font-weight: 800;
+        margin: 0 1em 0 0;
+      }
+      .ant-tabs-tab-active {
+        .ant-tabs-tab-btn {
+          @include primary-text($body, $black);
+          font-weight: 800;
+        }
+      }
+      .ant-input {
+        &:focus {
+          border-color: $primary-color;
+          box-shadow: 0 0 0 2px rgba(0, 0, 0, 0.0523656);
+        }
+        &:hover {
+          border-color: $primary-color;
+        }
+      }
+      .ant-tabs-ink-bar {
+        background-color: $primary-color;
+      }
+      .ant-tabs-nav .ant-tabs-tab:active {
+        color: $primary-color;
+      }
+      .ant-tabs-tab:hover {
+        color: $primary-color;
+      }
+      padding: 0 3em 2em 3em;
+      width: 55%;
+      h3 {
+        @include primary-text($h3, $black);
+      }
+      p {
+        @include primary-text($body, $dark-grey);
+        margin: 0 0 20px 0;
+      }
+      .credentialInfoContainer {
+        display: flex;
+        align-items: center;
+        margin: 2em 0;
+        .img {
+          margin-right: 1em;
+        }
+        .title {
+          margin-right: 50px;
+          p {
+            margin: 0;
+            @include primary-text($label, $dark-grey);
+          }
+          span {
+            margin: 0;
+            @include secondary-text($label, #303034);
+          }
+        }
+      }
+    }
+  }
+  .buttonSection {
+    background: transparent;
+    button {
+      background: transparent;
+      padding: 0;
+      border: transparent;
+      color: $primary-color;
+    }
+  }
+}
+
+.ant-drawer-header {
+  .ant-drawer-title {
+    @include primary-text($body, $black);
+    font-weight: bold;
+  }
+}
+
+.ant-drawer-body {
+  .ant-tabs-nav-wrap {
+    justify-content: flex-start !important;
+    .ant-tabs-nav-list {
+      width: 100%;
+      justify-content: space-between;
+      .ant-tabs-tab {
+        width: 45%;
+        .ant-tabs-tab-btn {
+          font-size: $body !important;
+        }
+      }
+    }
+  }
+}
+
+.CredentialStatusCard {
+  .ant-card-head-title {
+    font-size: $body;
+    font-feature-settings: normal !important;
+    font-variant: normal;
+  }
+}
+
+.credentialDetailDrawer .ant-tabs-nav .ant-tabs-tab {
+  margin: 0 1em 0 0 !important;
+}
+
+.credentialDetailsContainer {
+  display: flex;
+  p {
+    margin: 0px;
+  }
+}
+.CredentialTitleContainer {
+  display: flex;
+  span {
+    cursor: pointer;
+  }
+  @include primary-text($h3, #303034);
+  span:first-child {
+    margin-right: 20px;
+  }
+}
+
+@media only screen and (max-width: 1184px) {
+  .contactDetail .detailSection {
+    .detailBox {
+      margin: 0;
+    }
+  }
+}
+
+@media only screen and (max-width: 768px) {
+  .contactDetail {
+    .detailSection {
+      flex-direction: column;
+      .CredentialInfo {
+        margin: 0;
+        padding: 2em;
+      }
+      .detailBox {
+        margin: 2em auto;
+      }
+    }
+  }
+}
+
+@media only screen and (max-width: 400px) {
+  .contactDetail {
+    .detailSection {
+      .CredentialInfo {
+        padding: 2em 0;
+      }
+    }
+  }
+}

@@ -1,0 +1,60 @@
+@import '../../css/general_styling';
+
+.RecipientsHeader {
+  display: flex;
+  justify-content: space-between;
+  h1 {
+    @include primary-text($h1, $secondary-color);
+    font-feature-settings: normal !important;
+    font-variant: normal;
+  }
+}
+
+.ButtonControls {
+  display: flex;
+
+  button {
+    margin-left: 1em;
+  }
+}
+
+.Groups {
+  .GroupContentContainer {
+    height: calc(100vh - 220px);
+    margin-top: 1em;
+    overflow-y: auto;
+  }
+  .EmptyState {
+    height: 100%;
+  }
+}
+
+.ContentHeader {
+  display: flex;
+  flex-wrap: wrap;
+  .title {
+    width: 100%;
+    h1 {
+      @include primary-text($h1, $black);
+      font-weight: bold;
+      margin-top: 1em;
+    }
+    h3 {
+      @include primary-text($h3, $grey);
+    }
+  }
+  .filterSection {
+    display: flex;
+    justify-content: space-between;
+    width: 100%;
+    .filterContainer {
+      width: 70%;
+      .w-100 {
+        display: flex;
+        .InputContainer:last-child {
+          margin-left: 1em;
+        }
+      }
+    }
+  }
+}

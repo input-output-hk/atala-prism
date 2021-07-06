@@ -1,0 +1,46 @@
+@import '../../css/general_styling';
+
+.ConnectionsContainer {
+  .EmptyState {
+    height: 100%;
+  }
+  .ContentHeader {
+    width: 100%;
+    display: flex;
+    flex-wrap: wrap;
+    border-bottom: 1px solid $light-grey;
+    .title {
+      width: 100%;
+    }
+  }
+  .ConnectionsTable {
+    margin-top: 1em;
+    height: calc(100vh - 230px);
+    overflow-y: auto;
+  }
+  .FilterControls {
+    .ContactFilters {
+      display: flex;
+      .ant-input-affix-wrapper {
+        margin-right: 1em;
+      }
+    }
+  }
+}
+
+.RecipientsHeader {
+  display: flex;
+  justify-content: space-between;
+  h1 {
+    @include primary-text($h1, $secondary-color);
+  }
+}
+
+.ButtonControls {
+  display: flex;
+  justify-content: center;
+
+  button {
+    margin-left: 1em;
+  }
+}

@@ -1,0 +1,56 @@
+@import '../../../../css/general_styling';
+
+.RowInfo {
+  margin: 1em 0;
+  padding: 1em;
+  background-color: #f8f9f9;
+  border-radius: 6px;
+  justify-content: space-between;
+  margin-right: 15px;
+  p {
+    @include primary-text($label, $dark-grey);
+    margin: 0;
+  }
+  h3 {
+    @include primary-text($h3, $secondary-color);
+    margin: 0;
+  }
+
+  display: flex;
+  .img {
+    margin-right: 1em;
+  }
+  .contactsContainer {
+    line-height: 14px;
+    p {
+      @include primary-text($body, #b3c0d9);
+      font-weight: bold;
+    }
+    span {
+      @include primary-text($explain, #b3c0d9);
+    }
+  }
+}
+.groupNameContainer {
+  display: flex;
+}
+
+.groupTitle {
+  p {
+    @include primary-text($label, $dark-grey);
+    margin: 0;
+  }
+  span {
+    @include primary-text($label, $secondary-color);
+    font-weight: bold;
+  }
+}
+
+.contactsTitle {
+  display: flex;
+  align-items: center;
+}
+
+.theme-row {
+  background-color: $light-grey;
+}

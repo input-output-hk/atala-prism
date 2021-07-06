@@ -1,0 +1,22 @@
+@import '../../../../css/general_styling';
+
+.SettingsMenu {
+  width: 150px;
+  color: white;
+  .userInfo {
+    width: 100%;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    .verticalAlign {
+      align-items: center;
+      .logo {
+        margin-right: 0.5em;
+      }
+      .UserName {
+        margin: 0 1em;
+        @include primary-text($body, white);
+      }
+    }
+  }
+}

@@ -1,0 +1,118 @@
+@import '../../../../css/general_styling';
+
+.ImportCredentialsOptionCard {
+  width: 300px;
+  height: 250px;
+}
+
+.OptionCard {
+  cursor: pointer;
+  text-align: center;
+  margin: 0 1em;
+  background-color: white;
+  position: relative;
+  justify-content: center;
+  padding: 2em 2em 4em 2em;
+  border-radius: 10px;
+  box-shadow: $shadow;
+
+  &:focus {
+    outline: none;
+    border: 2px solid $primary-color;
+  }
+
+  .active {
+    border-radius: 50px;
+  }
+  .CardText {
+    h1 {
+      @include primary-text($h2, $black);
+      font-weight: bold;
+    }
+    p {
+      @include primary-text($body, $dark-grey);
+    }
+  }
+  .ImportContactOptionCard {
+    width: 300px;
+    height: 268px;
+    .Selected {
+      border: 2px solid $primary-color;
+      border-radius: 10px;
+      box-shadow: $red-shadow;
+      display: flex;
+      justify-content: center !important;
+      flex-wrap: wrap;
+
+      h1 {
+        @include secondary-text($h2, $secondary-color);
+        @include letter-spacing();
+      }
+
+      p {
+        @include primary-text($body, $secondary-color);
+        @include letter-spacing();
+      }
+    }
+    .img-container {
+      display: flex;
+      align-items: center;
+      img {
+        width: 100px;
+      }
+    }
+  }
+}
+.content-container {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+}
+
+.icon-container {
+  width: 100%;
+  text-align: end;
+  .icon {
+    color: $primary-color;
+    font-size: 25px;
+    margin-bottom: 0.4em;
+  }
+  .icon-disabled {
+    color: white;
+    font-size: 25px;
+  }
+}
+.img-container {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  img {
+    width: 100px;
+  }
+}
+.NotSelected {
+  border: 2px solid transparent;
+  display: flex;
+  justify-content: center;
+  flex-direction: column;
+  img {
+    opacity: 0.5;
+  }
+
+  .CardText {
+    h1 {
+      @include primary-text($h2, $grey);
+      font-weight: bold;
+    }
+    p {
+      @include primary-text($body, $dark-grey);
+    }
+  }
+}
+
+.Disabled {
+  cursor: not-allowed !important;
+  box-shadow: none;
+}
