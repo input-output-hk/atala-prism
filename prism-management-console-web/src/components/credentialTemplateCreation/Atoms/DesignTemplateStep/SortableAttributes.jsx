@@ -1,13 +1,10 @@
 import React from 'react';
 import PropTypes from 'prop-types';
-import { useTranslation } from 'react-i18next';
-import { Button, Form, Input, Select, Space } from 'antd';
+import { Button, Space } from 'antd';
 import { DeleteOutlined, SwapOutlined } from '@ant-design/icons';
 import { SortableContainer, SortableElement, SortableHandle } from 'react-sortable-hoc';
-
-const { Option } = Select;
-
-const attributeTypeOptions = ['text', 'date', 'number'];
+import FixedTextInput from './FixedTextInput';
+import DynamicAttributeInput from './DynamicAttributeInput';
 
 const DragHandle = SortableHandle(() => (
   <div className="dragHandleWrapper">
@@ -15,40 +12,14 @@ const DragHandle = SortableHandle(() => (
   </div>
 ));
 
-const SortableItem = SortableElement(({ value: { key, name, fieldKey, ...restField }, remove }) => {
-  const { t } = useTranslation();
+const SortableItem = SortableElement(({ value, remove }) => {
+  const { key, name, isFixedText } = value;
   return (
     <div className="sortable">
       <DragHandle />
       <Space key={key} style={{ display: 'flex', marginBottom: 8 }} align="baseline">
         <div className="firstGroupInputContainer">
-          <Form.Item
-            className="inputContainer"
-            {...restField}
-            name={[name, 'attributeLabel']}
-            fieldKey={[fieldKey, 'attributeLabel']}
-            label={t('credentialTemplateCreation.step2.content.attributeLabel', {
-              index: fieldKey + 1
-            })}
-            rules={[{ required: true }]}
-          >
-            <Input placeholder={`Attribute ${fieldKey}`} />
-          </Form.Item>
-          <Form.Item
-            className="inputContainer"
-            {...restField}
-            name={[name, 'attributeType']}
-            fieldKey={[fieldKey, 'attributeType']}
-            label={t('credentialTemplateCreation.step2.content.attributeType')}
-          >
-            <Select>
-              {attributeTypeOptions.map(option => (
-                <Option value={option}>
-                  {t(`credentialTemplateCreation.step2.content.attributeTypeOptions.${option}`)}
-                </Option>
-              ))}
-            </Select>
-          </Form.Item>
+          {isFixedText ? <FixedTextInput value={value} /> : <DynamicAttributeInput value={value} />}
           <Button icon={<DeleteOutlined />} onClick={() => remove(name)} />
         </div>
       </Space>

@@ -567,13 +567,16 @@
         "body": "Body",
         "credentialTitle": "Credential Title",
         "credentialSubtitle": "Credential Subtitle",
-        "attributeLabel": "Attribute {{index}} Label",
-        "attributeType": "Label Type",
-        "attributeTypeOptions": {
+        "addAttribute": "Add Attribute",
+        "addFixedText": "Add Fixed Text",
+        "dynamicAttributeLabel": "Attribute {{index}} Label",
+        "dynamicAttributeType": "Label Type",
+        "dynamicAttributeTypeOptions": {
           "text": "Text",
           "date": "Date",
           "number": "Number"
-        }
+        },
+        "fixedTextAttribute": "Fixed Text {{index}}"
       }
     },
     "step3": {

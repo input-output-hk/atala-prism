@@ -567,6 +567,8 @@
         "body": "Body",
         "credentialTitle": "Credential Title",
         "credentialSubtitle": "Credential Subtitle",
+        "addAttribute": "Add Attribute",
+        "addFixedText": "Add Fixed Text",
         "attributeLabel": "Attribute {{index}} Label",
         "attributeType": "Label Type",
         "attributeTypeOptions": {

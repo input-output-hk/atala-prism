@@ -3,9 +3,33 @@ import _React, { useReducer } from 'react';
 import image0 from '../images/generic-icon-01.svg';
 import image1 from '../images/genericUserIcon.svg';
 
-export const getDefaultAttribute = index => ({
-  attributeLabel: `Attibute ${index}`,
-  attributeType: undefined
+export const getNewDynamicAttribute = attributes => {
+  const index = attributes.length;
+  const dynamicAttributeIndex = attributes.filter(attr => !attr.isFixedText).length;
+  return {
+    attributeLabel: `Attibute ${dynamicAttributeIndex + 1}`,
+    attributeType: undefined,
+    dynamicAttributeIndex,
+    key: index
+  };
+};
+
+export const getNewFixedTextAttribute = attributes => {
+  const index = attributes.length;
+  const textAttributeIndex = attributes.filter(attr => attr.isFixedText).length;
+  return {
+    text: `Text Field ${textAttributeIndex + 1}`,
+    isFixedText: true,
+    textAttributeIndex,
+    key: index
+  };
+};
+
+const getDefaultAttribute = index => ({
+  attributeLabel: `Attibute ${index + 1}`,
+  attributeType: undefined,
+  dynamicAttributeIndex: index,
+  key: index
 });
 
 const defaultCredentialBodyLength = 2;

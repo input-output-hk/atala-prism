@@ -90,13 +90,6 @@
       border: 1px solid $primary-color;
       color: $primary-color;
     }
-    .inputContainer {
-      width: 48%;
-      margin: 0 1em 0 0;
-      input {
-        border: 1px solid lightgray;
-      }
-    }
   }
 }
 
@@ -162,7 +155,14 @@
     border: 1px solid $primary-color;
     color: $primary-color;
   }
-  .inputContainer {
+  .dynamicAttributeInputContainer {
+    width: 48%;
+    margin: 0 1em 0 0;
+    input {
+      border: 1px solid lightgray;
+    }
+  }
+  .fixedTextInputContainer {
     width: 100%;
     margin: 0 1em 0 0;
     input {
@@ -170,9 +170,9 @@
     }
   }
   .ant-form-item-required::before {
-    display: none;
+    display: none !important;
   }
   .ant-form-item-required::after {
-    display: none;
+    display: none !important;
   }
 }

@@ -11,23 +11,28 @@ const placeholders = {
   credentialTitle: '{{credentialTitle}}',
   credentialSubtitle: '{{credentialSubtitle}}',
   attributeLabel: '{{attributeLabel}}',
-  attributeType: '{{attributeType}}'
+  attributeType: '{{attributeType}}',
+  text: '{{text}}'
 };
 
 const replacePlaceholdersFromObject = (html, ph, data) =>
   Object.keys(ph).reduce((template, key) => template.replaceAll(ph[key], data[key]), html);
 
-const updateHeader = (htmlTemplateHeader, currentSettings) =>
-  replacePlaceholdersFromObject(htmlTemplateHeader, placeholders, currentSettings);
+const updateHeader = ({ header }, currentSettings) =>
+  replacePlaceholdersFromObject(header, placeholders, currentSettings);
 
 const updateBody = (htmlTemplateBody, currentSettings) => {
   const filledTemplate = fillBody(htmlTemplateBody, currentSettings);
   return replacePlaceholdersFromObject(filledTemplate, placeholders, currentSettings);
 };
 
-const fillBody = (htmlTemplateBody, currentSettings) => {
+const fillBody = ({ dynamicAttribute, fixedText }, currentSettings) => {
   const bodyParts = currentSettings?.credentialBody?.map(attribute =>
-    replacePlaceholdersFromObject(htmlTemplateBody, placeholders, attribute)
+    replacePlaceholdersFromObject(
+      attribute.isFixedText ? fixedText : dynamicAttribute,
+      placeholders,
+      attribute
+    )
   );
   return bodyParts.reduce((compilation, part) => compilation.concat(part), '');
 };
@@ -65,11 +70,12 @@ const TemplatePreview = () => {
     const currentConfig = { ...templateSettings, ...formValues, ...imageOverwrites };
 
     const htmlTemplate = templateLayouts[currentConfig.layout];
-    const htmlTemplateHeader = htmlTemplate.header;
-    const htmlTemplateBody = htmlTemplate.body;
+    // const htmlTemplateHeader = htmlTemplate.header;
+    // const htmlTemplateFixedText = htmlTemplate.fixedText;
+    // const htmlTemplateDynamicAttribute = htmlTemplate.attribute;
 
-    const configuredHeader = updateHeader(htmlTemplateHeader, currentConfig);
-    const configuredBody = updateBody(htmlTemplateBody, currentConfig);
+    const configuredHeader = updateHeader(htmlTemplate, currentConfig);
+    const configuredBody = updateBody(htmlTemplate, currentConfig);
     const mergedHtml = replacePlaceholdersFromObject(
       configuredHeader,
       { attributes: '{{#attributes}}' },

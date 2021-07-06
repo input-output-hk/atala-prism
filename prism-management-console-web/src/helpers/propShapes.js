@@ -164,3 +164,10 @@ export const credentialTypesManagerShape = shape({
 export const refPropShape = oneOfType([func, shape({ current: instanceOf(Element) })]);
 
 export const antdV4FormShape = shape({ validateFields: func, resetFields: func });
+
+export const templateBodyAttributeShape = shape({
+  key: number,
+  name: string,
+  fieldKey: number,
+  textAttributeIndex: number
+});

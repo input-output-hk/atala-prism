@@ -48,12 +48,12 @@
           .ant-tabs-tab.ant-tabs-tab-active .ant-tabs-tab-btn {
             @include primary-text($button, $primary-color);
           }
+          .ant-tabs-ink-bar, .ant-tabs-ink-bar-animated {
+            background-color: $primary-color;
+            @include primary-text($button, $primary-color);
+          }
           .ant-tabs-tab .ant-tabs-tab-btn {
             @include primary-text($button, $black);
-          }
-          .ant-tabs-tab.ant-tabs-tab-active {
-            border-bottom: 2px solid $primary-color !important;
-            z-index: 2;
           }
         }
       }
@@ -81,7 +81,8 @@
   .OptionsContainer {
     display: flex;
     width: 100%;
-    .themeOptions, .templateIcons {
+    .themeOptions,
+    .templateIcons {
       width: 50%;
       h3 {
         @include primary-text($h3, $black);
@@ -101,4 +102,3 @@
     }
   }
 }
-
