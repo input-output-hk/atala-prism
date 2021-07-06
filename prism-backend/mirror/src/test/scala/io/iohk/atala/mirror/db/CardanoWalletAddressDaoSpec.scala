@@ -38,7 +38,7 @@ class CardanoWalletAddressDaoSpec extends PostgresRepositorySpec[Task] with Mirr
         .runSyncUnsafe()
 
       // then
-      walletAddresses.size mustBe 2
+      walletAddresses.size mustBe minAddressesCount
 
       walletAddresses.head.cardanoWalletAddress mustBe cardanoWalletAddress1
       walletAddresses.head.walletName mustBe cardanoWallet.name

@@ -1,6 +1,7 @@
 package io.iohk.atala.mirror.config
 
 import com.typesafe.config.Config
+import io.iohk.atala.prism.task.lease.system.ProcessingTaskLeaseConfig
 import io.iohk.atala.prism.utils.GrpcUtils.{GrpcConfig, SslConfig}
 
 case class HttpConfig(payIdPort: Int, payIdHostAddress: String)
@@ -10,7 +11,8 @@ case class TrisaConfig(enabled: Boolean, grpcConfig: GrpcConfig, sslConfig: SslC
 case class MirrorConfig(
     grpcConfig: GrpcConfig,
     httpConfig: HttpConfig,
-    trisaConfig: TrisaConfig
+    trisaConfig: TrisaConfig,
+    taskLeaseConfig: ProcessingTaskLeaseConfig
 )
 
 object MirrorConfig {
@@ -29,7 +31,8 @@ object MirrorConfig {
     MirrorConfig(
       grpcConfig,
       httpConfig,
-      TrisaConfig(trisa.getBoolean("enabled"), GrpcConfig(trisa), SslConfig(trisa))
+      TrisaConfig(trisa.getBoolean("enabled"), GrpcConfig(trisa), SslConfig(trisa)),
+      ProcessingTaskLeaseConfig(globalConfig.getConfig("taskLeaseSystem"))
     )
   }
 

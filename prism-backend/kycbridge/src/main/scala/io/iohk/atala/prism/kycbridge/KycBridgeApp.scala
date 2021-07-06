@@ -134,7 +134,8 @@ object KycBridgeApp extends TaskApp {
 
       processingTaskRouter = new ProcessingTaskRouter[KycBridgeProcessingTaskState] {
         override def process(
-            processingTask: ProcessingTask[KycBridgeProcessingTaskState]
+            processingTask: ProcessingTask[KycBridgeProcessingTaskState],
+            workerNumber: Int
         ): Task[ProcessingTaskResult[KycBridgeProcessingTaskState]] = {
           val processor = processingTask.state match {
             case KycBridgeProcessingTaskState.ProcessConnectorMessagesState => processMessagesStateProcessor
@@ -146,7 +147,7 @@ object KycBridgeApp extends TaskApp {
             case KycBridgeProcessingTaskState.ProcessNewConnections => processNewConnectionsStateProcessor
             case KycBridgeProcessingTaskState.SendForAcuantManualReviewState => sendForAcuantManualReviewStateProcessor
           }
-          processor.process(processingTask)
+          processor.process(processingTask, workerNumber)
         }
       }
 

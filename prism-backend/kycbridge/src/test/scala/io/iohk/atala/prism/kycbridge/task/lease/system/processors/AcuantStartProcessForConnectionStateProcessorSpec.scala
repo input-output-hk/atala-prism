@@ -26,7 +26,7 @@ class AcuantStartProcessForConnectionStateProcessorSpec extends PostgresReposito
       val (result, connection) = (for {
         result <-
           acuantStartProcessForConnectionStateProcessor
-            .process(processingTaskWithConnectionData)
+            .process(processingTaskWithConnectionData, workerNumber)
 
         connection <- ConnectionDao.findByConnectionToken(connection1.token).transact(database)
       } yield (result, connection)).runSyncUnsafe()
@@ -45,7 +45,7 @@ class AcuantStartProcessForConnectionStateProcessorSpec extends PostgresReposito
       )
 
       acuantStartProcessForConnectionStateProcessor
-        .process(processingTaskWithConnectionData)
+        .process(processingTaskWithConnectionData, workerNumber)
         .runSyncUnsafe() mustBe an[ProcessingTaskResult.ProcessingTaskScheduled[KycBridgeProcessingTaskState]]
     }
 
@@ -61,7 +61,7 @@ class AcuantStartProcessForConnectionStateProcessorSpec extends PostgresReposito
       )
 
       acuantStartProcessForConnectionStateProcessor
-        .process(processingTaskWithConnectionData)
+        .process(processingTaskWithConnectionData, workerNumber)
         .runSyncUnsafe() mustBe an[ProcessingTaskResult.ProcessingTaskScheduled[KycBridgeProcessingTaskState]]
     }
   }

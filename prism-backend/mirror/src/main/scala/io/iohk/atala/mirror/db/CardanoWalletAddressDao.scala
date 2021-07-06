@@ -1,6 +1,7 @@
 package io.iohk.atala.mirror.db
 
-import doobie.FC
+import cats.data.NonEmptyList
+import doobie.{FC, Fragments}
 import doobie.util.update.Update
 import doobie.free.connection.ConnectionIO
 import io.iohk.atala.mirror.models.{
@@ -14,6 +15,7 @@ import doobie.postgres.implicits._
 import doobie.implicits.legacy.instant._
 import io.iohk.atala.prism.models.ConnectionToken
 import cats.implicits._
+import io.iohk.atala.prism.utils.PostgresWhereInSplitter
 
 object CardanoWalletAddressDao {
 
@@ -26,6 +28,19 @@ object CardanoWalletAddressDao {
       .to[List]
   }
 
+  def findAddresses(addresses: List[CardanoAddress]): doobie.ConnectionIO[List[CardanoWalletAddress]] =
+    PostgresWhereInSplitter.splitQueryExecution(addresses, findAddresses)
+
+  private def findAddresses(
+      nonEmptyAddresses: NonEmptyList[CardanoAddress]
+  ): doobie.ConnectionIO[List[CardanoWalletAddress]] =
+    (fr"""
+     | SELECT address, wallet_id, sequence_no, used_at
+     | FROM cardano_wallet_addresses
+     | WHERE""".stripMargin ++ Fragments.in(fr"address", nonEmptyAddresses))
+      .query[CardanoWalletAddress]
+      .to[List]
+
   def findByConnectionTokenWithWalletName(
       connectionToken: ConnectionToken
   ): ConnectionIO[List[CardanoWalletAddressWithWalletName]] = {
@@ -35,7 +50,7 @@ object CardanoWalletAddressDao {
          | JOIN cardano_wallet_addresses a
          | ON w.id = a.wallet_id
          | WHERE w.connection_token = $connectionToken
-         | ORDER BY a.address""".stripMargin
+         | ORDER BY a.sequence_no""".stripMargin
       .query[CardanoWalletAddressWithWalletName]
       .to[List]
   }

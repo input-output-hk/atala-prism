@@ -35,7 +35,8 @@ class AcuantStartProcessForConnectionStateProcessor(
   )
 
   override def process(
-      processingTask: ProcessingTask[KycBridgeProcessingTaskState]
+      processingTask: ProcessingTask[KycBridgeProcessingTaskState],
+      workerNumber: Int
   ): Task[ProcessingTaskResult[KycBridgeProcessingTaskState]] = {
     (for {
       acuantData <-

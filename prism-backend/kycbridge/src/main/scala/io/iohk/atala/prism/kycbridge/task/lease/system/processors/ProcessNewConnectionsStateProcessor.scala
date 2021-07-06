@@ -10,7 +10,8 @@ class ProcessNewConnectionsStateProcessor(connectionService: ConnectionService)
     extends ProcessingTaskProcessor[KycBridgeProcessingTaskState] {
 
   def process(
-      processingTask: ProcessingTask[KycBridgeProcessingTaskState]
+      processingTask: ProcessingTask[KycBridgeProcessingTaskState],
+      workerNumber: Int
   ): Task[ProcessingTaskResult[KycBridgeProcessingTaskState]] = {
     connectionService.connectionUpdateStream.compile.drain.as(ProcessingTaskResult.ProcessingTaskRestart)
   }

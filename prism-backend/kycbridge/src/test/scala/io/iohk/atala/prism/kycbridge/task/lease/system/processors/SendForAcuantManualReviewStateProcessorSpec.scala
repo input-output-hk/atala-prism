@@ -29,7 +29,7 @@ class SendForAcuantManualReviewStateProcessorSpec
   "SendForAcuantManualReviewStateProcessor" should {
     "delay task when assure id service is not available" in new Fixtures {
       acuantStartProcessForConnectionStateProcessor
-        .process(processingTaskWithConnectionData)
+        .process(processingTaskWithConnectionData, workerNumber)
         .runSyncUnsafe() mustBe ProcessingTaskResult.ProcessingTaskFinished
     }
   }

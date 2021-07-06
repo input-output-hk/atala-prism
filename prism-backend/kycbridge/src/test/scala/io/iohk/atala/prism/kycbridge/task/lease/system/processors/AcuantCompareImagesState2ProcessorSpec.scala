@@ -26,7 +26,7 @@ class AcuantCompareImagesState2ProcessorSpec extends PostgresRepositorySpec[Task
 
   "AcuantCompareImagesState2Processor" should {
     "transition to next state when face match succeeded" in new Fixtures {
-      val result = processor.process(processingTask).runSyncUnsafe()
+      val result = processor.process(processingTask, workerNumber).runSyncUnsafe()
       result mustBe an[ProcessingTaskStateTransition[KycBridgeProcessingTaskState]]
     }
 
@@ -34,7 +34,7 @@ class AcuantCompareImagesState2ProcessorSpec extends PostgresRepositorySpec[Task
       override val faceIdServiceStub = new FaceIdServiceStub(Right(FaceMatchResponse(score = 0, isMatch = false)))
       override val processor =
         new AcuantCompareImagesState2Processor(connectorClientStub, assureIdServiceStub, faceIdServiceStub)
-      val result = processor.process(processingTask).runSyncUnsafe()
+      val result = processor.process(processingTask, workerNumber).runSyncUnsafe()
       result mustBe ProcessingTaskFinished
       connectorClientStub.sendMessageInvokeCount.get() mustBe 1
     }
@@ -43,7 +43,7 @@ class AcuantCompareImagesState2ProcessorSpec extends PostgresRepositorySpec[Task
       override val faceIdServiceStub = new FaceIdServiceStub(Left(FaceIdServiceError("faceMatch", new Throwable)))
       override val processor =
         new AcuantCompareImagesState2Processor(connectorClientStub, assureIdServiceStub, faceIdServiceStub)
-      val result = processor.process(processingTask).runSyncUnsafe()
+      val result = processor.process(processingTask, workerNumber).runSyncUnsafe()
       result mustBe an[ProcessingTaskScheduled[KycBridgeProcessingTaskState]]
     }
 
@@ -53,7 +53,7 @@ class AcuantCompareImagesState2ProcessorSpec extends PostgresRepositorySpec[Task
       )
       override val processor =
         new AcuantCompareImagesState2Processor(connectorClientStub, assureIdServiceStub, faceIdServiceStub)
-      val result = processor.process(processingTask).runSyncUnsafe()
+      val result = processor.process(processingTask, workerNumber).runSyncUnsafe()
       result mustBe an[ProcessingTaskScheduled[KycBridgeProcessingTaskState]]
     }
   }

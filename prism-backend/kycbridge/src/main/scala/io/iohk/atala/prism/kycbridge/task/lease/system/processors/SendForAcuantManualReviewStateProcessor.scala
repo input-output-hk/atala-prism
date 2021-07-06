@@ -23,7 +23,8 @@ class SendForAcuantManualReviewStateProcessor(
   private implicit val logger = LoggerFactory.getLogger(this.getClass)
 
   def process(
-      processingTask: ProcessingTask[KycBridgeProcessingTaskState]
+      processingTask: ProcessingTask[KycBridgeProcessingTaskState],
+      workerNumber: Int
   ): Task[ProcessingTaskResult[KycBridgeProcessingTaskState]] = {
     (for {
       acuantData <-

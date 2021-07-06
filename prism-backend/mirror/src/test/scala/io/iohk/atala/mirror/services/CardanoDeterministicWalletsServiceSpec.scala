@@ -1,25 +1,24 @@
 package io.iohk.atala.mirror.services
 
-import scala.concurrent.duration.DurationInt
-import monix.eval.Task
-import org.mockito.scalatest.MockitoSugar
-import io.iohk.atala.mirror.db.CardanoWalletDao
-import io.iohk.atala.mirror.db.CardanoWalletAddressDao
+import doobie.implicits._
+import io.iohk.atala.mirror.MirrorFixtures
+import io.iohk.atala.mirror.db.{CardanoWalletAddressDao, CardanoWalletDao}
+import io.iohk.atala.prism.errors.PrismError
 import io.iohk.atala.prism.protos.credential_models.AtalaMessage
 import io.iohk.atala.prism.repositories.PostgresRepositorySpec
-import io.iohk.atala.mirror.MirrorFixtures
-import io.iohk.atala.prism.errors.PrismError
-import doobie.implicits._
+import monix.eval.Task
 import monix.execution.Scheduler.Implicits.global
-import io.iohk.atala.mirror.config.CardanoConfig
-import io.iohk.atala.mirror.config.CardanoNetwork
+import org.mockito.scalatest.MockitoSugar
 import org.scalatest.OptionValues._
+
+import scala.concurrent.duration.DurationInt
 
 // sbt "project mirror" "testOnly *services.CardanoDeterministicWalletsServiceSpec"
 class CardanoDeterministicWalletsServiceSpec
     extends PostgresRepositorySpec[Task]
     with MockitoSugar
     with MirrorFixtures {
+  import CardanoWalletFixtures._
   import ConnectorMessageFixtures._
 
   "registerWalletMessageProcessor" should {
@@ -76,9 +75,6 @@ class CardanoDeterministicWalletsServiceSpec
   }
 
   trait CardanoDeterministicWalletsServiceFixtures {
-    val minAddressesCount = 10
-    val cardanoConfig = CardanoConfig(CardanoNetwork.TestNet, minAddressesCount)
-    val cardanoAddressService = new CardanoAddressService("../target/mirror-binaries/cardano-address")
     val cardanoDeterministicWalletsService =
       new CardanoDeterministicWalletsService(database, database, cardanoAddressService, cardanoConfig)
 

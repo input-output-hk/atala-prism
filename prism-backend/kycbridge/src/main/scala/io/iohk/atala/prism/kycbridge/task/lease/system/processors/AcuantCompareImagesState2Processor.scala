@@ -34,7 +34,8 @@ class AcuantCompareImagesState2Processor(
   private implicit val logger = LoggerFactory.getLogger(this.getClass)
 
   override def process(
-      processingTask: ProcessingTask[KycBridgeProcessingTaskState]
+      processingTask: ProcessingTask[KycBridgeProcessingTaskState],
+      workerNumber: Int
   ): Task[ProcessingTaskResult[KycBridgeProcessingTaskState]] = {
     (for {
       acuantData <- parseProcessingTaskData[AcuantCompareImagesState2Data, KycBridgeProcessingTaskState](processingTask)

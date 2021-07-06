@@ -29,7 +29,7 @@ class AcuantCreateCredentialState3ProcessorSpec
 
   "AcuantCompareImagesState2Processor" should {
     "issue and send credential to phone" in new Fixtures {
-      val result = processor.process(processingTask).runSyncUnsafe()
+      val result = processor.process(processingTask, workerNumber).runSyncUnsafe()
       result mustBe ProcessingTaskFinished
       connectorClientStub.sendMessageInvokeCount.get() mustBe 1
     }
@@ -39,7 +39,7 @@ class AcuantCreateCredentialState3ProcessorSpec
         new NodeClientServiceStub(issueCredentialBatchResponse = Task.raiseError(new Throwable))
       override val processor =
         new AcuantCreateCredentialState3Processor(connectorClientStub, nodeClientService, defaultDidBasedAuthConfig)
-      val result = processor.process(processingTask).runSyncUnsafe()
+      val result = processor.process(processingTask, workerNumber).runSyncUnsafe()
       result mustBe an[ProcessingTaskScheduled[KycBridgeProcessingTaskState]]
     }
 
@@ -48,7 +48,7 @@ class AcuantCreateCredentialState3ProcessorSpec
         new ConnectorClientServiceStub(messageResponse = Task.raiseError(new Throwable))
       override val processor =
         new AcuantCreateCredentialState3Processor(connectorClientStub, nodeClientService, defaultDidBasedAuthConfig)
-      val result = processor.process(processingTask).runSyncUnsafe()
+      val result = processor.process(processingTask, workerNumber).runSyncUnsafe()
       result mustBe an[ProcessingTaskScheduled[KycBridgeProcessingTaskState]]
     }
 

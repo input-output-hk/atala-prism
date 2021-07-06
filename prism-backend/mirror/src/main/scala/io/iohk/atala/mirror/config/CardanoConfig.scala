@@ -8,7 +8,7 @@ object CardanoNetwork {
   case object MainNet extends CardanoNetwork("mainnet")
 }
 
-case class CardanoConfig(network: CardanoNetwork, addressCount: Int)
+case class CardanoConfig(network: CardanoNetwork, addressCount: Int, syncIntervalInSeconds: Int)
 
 object CardanoConfig {
 
@@ -21,10 +21,12 @@ object CardanoConfig {
       case _ => throw new RuntimeException("Invalid Cardano network.")
     }
     val addressCount = config.getInt("addressCount")
+    val syncIntervalInSeconds = config.getInt("blockchainSyncIntervalSeconds")
 
     CardanoConfig(
       network = network,
-      addressCount = addressCount
+      addressCount = addressCount,
+      syncIntervalInSeconds = syncIntervalInSeconds
     )
   }
 

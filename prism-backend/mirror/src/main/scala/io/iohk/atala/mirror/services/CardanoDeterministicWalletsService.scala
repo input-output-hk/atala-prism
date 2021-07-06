@@ -7,7 +7,7 @@ import doobie.util.transactor.Transactor
 import io.grpc.Status
 import io.iohk.atala.mirror.config.CardanoConfig
 import io.iohk.atala.mirror.db.{CardanoDBSyncDao, CardanoWalletAddressDao, CardanoWalletDao, ConnectionDao}
-import io.iohk.atala.mirror.models.{CardanoAddress, CardanoAddressWithUsageInfo, CardanoWallet, CardanoWalletAddress}
+import io.iohk.atala.mirror.models.{CardanoAddress, CardanoAddressBlockInfo, CardanoWallet, CardanoWalletAddress}
 import io.iohk.atala.prism.errors.PrismError
 import io.iohk.atala.prism.protos.connector_models.ReceivedMessage
 import io.iohk.atala.prism.protos.credential_models.{
@@ -167,13 +167,13 @@ class CardanoDeterministicWalletsService(
   private[services] def updateAddressesUsage(
       cardanoWalletId: CardanoWallet.Id,
       addressesWithSequenceNo: List[(CardanoAddress, Int)],
-      usedAddressesWithUsageInfo: List[CardanoAddressWithUsageInfo]
+      usedAddressesWithUsageInfo: List[CardanoAddressBlockInfo]
   ): Task[Unit] = {
     (for {
       _ <- usedAddressesWithUsageInfo.traverse { addressWithUsageInfo =>
         CardanoWalletAddressDao.updateUsedAt(
           addressWithUsageInfo.cardanoAddress,
-          CardanoWalletAddress.UsedAt(addressWithUsageInfo.usedAt)
+          CardanoWalletAddress.UsedAt(addressWithUsageInfo.blockIssueTime)
         )
       }
 

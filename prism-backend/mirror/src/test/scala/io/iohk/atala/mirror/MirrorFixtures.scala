@@ -1,46 +1,43 @@
 package io.iohk.atala.mirror
 
-import java.time.{LocalDateTime, ZoneOffset}
 import cats.effect.Sync
 import cats.implicits._
 import com.google.protobuf.ByteString
 import com.google.protobuf.timestamp.Timestamp
+import doobie.free.connection.ConnectionIO
+import doobie.implicits._
+import doobie.util.transactor.Transactor
+import doobie.util.update.Update
+import io.circe.syntax._
+import io.iohk.atala.mirror.config.{CardanoConfig, HttpConfig, MirrorConfig, TrisaConfig}
+import io.iohk.atala.mirror.db._
+import io.iohk.atala.mirror.models.CardanoAddressInfo.{CardanoNetwork, RegistrationDate}
+import io.iohk.atala.mirror.models.Connection._
+import io.iohk.atala.mirror.models.UserCredential._
+import io.iohk.atala.mirror.models._
+import io.iohk.atala.mirror.services.CardanoAddressService
+import io.iohk.atala.prism.crypto.EC
+import io.iohk.atala.prism.jose.implicits._
+import io.iohk.atala.prism.mirror.payid.Address.VerifiedAddress
+import io.iohk.atala.prism.mirror.payid._
+import io.iohk.atala.prism.mirror.payid.implicits._
+import io.iohk.atala.prism.models.{ConnectionId, ConnectionState, ConnectionToken, ConnectorMessageId}
+import io.iohk.atala.prism.protos.connector_models.ReceivedMessage
+import io.iohk.atala.prism.protos.credential_models
 import io.iohk.atala.prism.protos.credential_models.{
   AtalaMessage,
   InitiateTrisaCardanoTransactionMessage,
   MirrorMessage,
   RegisterAddressMessage
 }
-import io.iohk.atala.mirror.db.{
-  CardanoAddressInfoDao,
-  CardanoWalletAddressDao,
-  CardanoWalletDao,
-  ConnectionDao,
-  UserCredentialDao
-}
-import doobie.free.connection.ConnectionIO
-import doobie.implicits._
-import doobie.util.transactor.Transactor
-import doobie.util.update.Update
-import io.iohk.atala.mirror.models.Connection._
-import io.iohk.atala.mirror.models.UserCredential._
-import io.iohk.atala.mirror.models._
-import io.iohk.atala.prism.crypto.EC
-import io.iohk.atala.mirror.models.CardanoAddressInfo.{CardanoNetwork, RegistrationDate}
-import io.iohk.atala.prism.mirror.payid._
-import io.iohk.atala.prism.mirror.payid.implicits._
-import io.iohk.atala.prism.protos.connector_models.ReceivedMessage
-import io.iohk.atala.prism.protos.credential_models
-import io.circe.syntax._
-import io.iohk.atala.mirror.config.{HttpConfig, MirrorConfig, TrisaConfig}
-import io.iohk.atala.mirror.services.CardanoAddressService
-import io.iohk.atala.prism.mirror.payid.Address.VerifiedAddress
-import io.iohk.atala.prism.jose.implicits._
-import io.iohk.atala.prism.models.{ConnectionId, ConnectionState, ConnectionToken, ConnectorMessageId}
-import io.iohk.atala.prism.utils.GrpcUtils.{GrpcConfig, SslConfig}
 import io.iohk.atala.prism.services.ServicesFixtures
+import io.iohk.atala.prism.task.lease.system.ProcessingTaskFixtures
+import io.iohk.atala.prism.utils.GrpcUtils.{GrpcConfig, SslConfig}
+import org.scalatest.OptionValues._
 
-trait MirrorFixtures extends ServicesFixtures {
+import java.time.{LocalDateTime, ZoneOffset}
+
+trait MirrorFixtures extends ServicesFixtures with ProcessingTaskFixtures {
 
   private implicit def ec = EC
 
@@ -51,7 +48,8 @@ trait MirrorFixtures extends ServicesFixtures {
       enabled = false,
       GrpcConfig(7777),
       SslConfig("mirror/etc/trisa/server.crt", "mirror/etc/trisa/server.key", "mirror/etc/trisa/trust.chain")
-    )
+    ),
+    taskLeaseConfig
   )
 
   /**
@@ -141,7 +139,8 @@ trait MirrorFixtures extends ServicesFixtures {
   }
 
   object CardanoAddressInfoFixtures {
-    import ConnectionFixtures._, CredentialFixtures._
+    import ConnectionFixtures._
+    import CredentialFixtures._
 
     lazy val cardanoNetwork1 = CardanoNetwork("mainnet")
     lazy val cardanoNetwork2 = CardanoNetwork("testnet")
@@ -272,7 +271,8 @@ trait MirrorFixtures extends ServicesFixtures {
   }
 
   object PayIdFixtures {
-    import ConnectionFixtures._, CredentialFixtures._
+    import ConnectionFixtures._
+    import CredentialFixtures._
 
     val cardanoAddressPayId1 = "cardanoAddressPayId1"
 
@@ -361,43 +361,61 @@ trait MirrorFixtures extends ServicesFixtures {
 
   object CardanoWalletFixtures {
     import ConnectionFixtures._
+    val minAddressesCount = 10
+    val extendedPublicKey =
+      "acct_xvk155crk6049ap0477qvjpf5mvxtw5f46uk6k54udc9mz5wcdyyhssexcsk5sgvy05m7mqh3ed3qgs6epyf7hvdfxf6hd54aqm3uwdsewqu6vsvy"
+    val network = "testnet"
+    val cardanoConfig = CardanoConfig(config.CardanoNetwork.TestNet, minAddressesCount, syncIntervalInSeconds = 300)
+    val cardanoAddressService = new CardanoAddressService("../target/mirror-binaries/cardano-address")
 
     val cardanoWallet = CardanoWallet(
       id = CardanoWallet.Id.random(),
       name = Some("name"),
       connectionToken = connection2.token,
-      extendedPublicKey = "key",
-      lastGeneratedNo = 9,
+      extendedPublicKey = extendedPublicKey,
+      lastGeneratedNo = minAddressesCount - 1,
       lastUsedNo = None,
       registrationDate = CardanoWallet.RegistrationDate(LocalDateTime.of(2020, 10, 4, 0, 0).toInstant(ZoneOffset.UTC))
     )
 
     var cardanoWalletAddress1 = CardanoWalletAddress(
-      address = CardanoAddress("address1"),
+      address = CardanoAddress(
+        "addr_test1qqev5h8thxju452j953er64ffcsg4rksx3vr2pxrnsrg50xxrm8nx4l8qntadvlvdfldg8h3v7q7x6s0xcfg54g5c3qqnwnu99"
+      ),
       walletId = cardanoWallet.id,
       sequenceNo = 0,
-      usedAt = Some(CardanoWalletAddress.UsedAt(LocalDateTime.of(2020, 10, 4, 0, 0).toInstant(ZoneOffset.UTC)))
+      usedAt = None
     )
 
     var cardanoWalletAddress2 = CardanoWalletAddress(
-      address = CardanoAddress("address2"),
+      address = CardanoAddress(
+        "addr_test1qzuzav002lnp3j6zketk0m8fzuvkcrzs9lvdl9lp0ztz8u3g9ygxc0vwf6fdvlneqjw8ml5hewmx4fcm93rrh33z844s2zafhy"
+      ),
       walletId = cardanoWallet.id,
-      sequenceNo = 0,
-      usedAt = Some(CardanoWalletAddress.UsedAt(LocalDateTime.of(2020, 10, 4, 0, 0).toInstant(ZoneOffset.UTC)))
+      sequenceNo = 1,
+      usedAt = None
     )
+
+    lazy val otherWalletAddresses = cardanoAddressService
+      .generateWalletAddresses(extendedPublicKey, fromSequenceNo = 2, minAddressesCount, network)
+      .toOption
+      .value
+      .map { case (address, sequenceNo) => CardanoWalletAddress(address, cardanoWallet.id, sequenceNo, None) }
 
     def insertAll[F[_]: Sync](database: Transactor[F]): F[Unit] = {
       for {
         _ <- insertManyFixtures(CardanoWalletDao.insert(cardanoWallet))(database)
         _ <- insertManyFixtures(
-          CardanoWalletAddressDao.insert(cardanoWalletAddress1),
-          CardanoWalletAddressDao.insert(cardanoWalletAddress2)
+          CardanoWalletAddressDao.insertMany.updateMany(
+            cardanoWalletAddress1 :: cardanoWalletAddress2 :: otherWalletAddresses
+          )
         )(database)
       } yield ()
     }
   }
 
   object CardanoDBSyncFixtures {
+    import CardanoWalletFixtures._
 
     val createBlockTable: doobie.ConnectionIO[Int] =
       sql"""
@@ -436,8 +454,11 @@ trait MirrorFixtures extends ServicesFixtures {
       } yield ()).transact(database)
     }
 
-    val insertBlockData: doobie.ConnectionIO[Int] =
-      sql"INSERT INTO block(id, time) VALUES(1, '2019-07-24 20:20:16.000')".update.run
+    val blocksCount = 53
+
+    val insertBlockData: doobie.ConnectionIO[List[Int]] = 1.to(blocksCount).toList.traverse { id =>
+      sql"INSERT INTO block(id, time) VALUES($id, '2019-07-24 20:20:16.000')".update.run
+    }
 
     val insertTxData: doobie.ConnectionIO[Int] =
       sql"INSERT INTO tx(id, block_id) VALUES(1, 1)".update.run
@@ -448,9 +469,6 @@ trait MirrorFixtures extends ServicesFixtures {
       )
 
     def createAddressData(count: Int, cardanoAddressService: CardanoAddressService): List[(String, Int)] = {
-      val extendedPublicKey =
-        "acct_xvk155crk6049ap0477qvjpf5mvxtw5f46uk6k54udc9mz5wcdyyhssexcsk5sgvy05m7mqh3ed3qgs6epyf7hvdfxf6hd54aqm3uwdsewqu6vsvy"
-      val network = "testnet"
       val fromSequenceNo = 0
       cardanoAddressService
         .generateWalletAddresses(extendedPublicKey, fromSequenceNo, count, network)

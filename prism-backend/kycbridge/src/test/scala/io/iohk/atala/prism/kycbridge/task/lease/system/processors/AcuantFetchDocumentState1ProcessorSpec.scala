@@ -29,7 +29,7 @@ class AcuantFetchDocumentState1ProcessorSpec extends PostgresRepositorySpec[Task
 
   "AcuantFetchDocumentState1Processor" should {
     "fetch document and document status" in new Fixtures {
-      val result = processor.process(processingTask).runSyncUnsafe()
+      val result = processor.process(processingTask, workerNumber).runSyncUnsafe()
       result mustBe ProcessingTaskStateTransition(
         KycBridgeProcessingTaskState.AcuantCompareImagesState2,
         ProcessingTaskData(
@@ -55,7 +55,7 @@ class AcuantFetchDocumentState1ProcessorSpec extends PostgresRepositorySpec[Task
         new AssureIdServiceStub(document = Left(AssureIdServiceError("getDocument", new Throwable)))
       override val processor =
         new AcuantFetchDocumentState1Processor(database, connectorClientStub, assureIdServiceStub)
-      val result = processor.process(processingTask).runSyncUnsafe()
+      val result = processor.process(processingTask, workerNumber).runSyncUnsafe()
       result mustBe an[ProcessingTaskScheduled[KycBridgeProcessingTaskState]]
     }
 
@@ -64,14 +64,14 @@ class AcuantFetchDocumentState1ProcessorSpec extends PostgresRepositorySpec[Task
         new AssureIdServiceStub(documentStatus = Left(AssureIdServiceError("getDocumentStatus", new Throwable)))
       override val processor =
         new AcuantFetchDocumentState1Processor(database, connectorClientStub, assureIdServiceStub)
-      val result = processor.process(processingTask).runSyncUnsafe()
+      val result = processor.process(processingTask, workerNumber).runSyncUnsafe()
       result mustBe an[ProcessingTaskScheduled[KycBridgeProcessingTaskState]]
     }
 
     "send error message and finish processing when connection id doesn't exist" in new Fixtures {
       val processingTaskWithWrongConnectionId =
         processingTask.copy(data = ProcessingTaskData(state1Data.copy(connectionId = "badId").asJson))
-      val result = processor.process(processingTaskWithWrongConnectionId).runSyncUnsafe()
+      val result = processor.process(processingTaskWithWrongConnectionId, workerNumber).runSyncUnsafe()
       result mustBe ProcessingTaskFinished
       connectorClientStub.sendMessageInvokeCount.get() mustBe 1
     }

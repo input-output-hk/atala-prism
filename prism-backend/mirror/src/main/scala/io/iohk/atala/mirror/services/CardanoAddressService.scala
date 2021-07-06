@@ -72,5 +72,7 @@ object CardanoAddressService {
         s"Cardano address service error: $consoleErrorOutput"
       )
     }
+
+    val exception = new RuntimeException(s"Cardano address service error: $consoleErrorOutput")
   }
 }

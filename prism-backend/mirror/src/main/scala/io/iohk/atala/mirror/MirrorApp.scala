@@ -36,16 +36,32 @@ import io.iohk.atala.prism.utils.GrpcUtils
 import doobie.implicits._
 import io.iohk.atala.mirror.models.{CardanoAddress, LovelaceAmount, TrisaVaspAddress}
 import io.iohk.atala.mirror.protos.trisa.TrisaPeer2PeerGrpc
+import io.iohk.atala.mirror.task.lease.system.MirrorProcessingTaskState
+import io.iohk.atala.mirror.task.lease.system.processors.WatchCardanoBlockchainAddressesProcessor
 import io.iohk.atala.prism.protos.connector_api.ConnectorServiceGrpc
 import io.iohk.atala.prism.protos.node_api.NodeServiceGrpc
+import io.iohk.atala.prism.task.lease.system.{
+  ProcessingTask,
+  ProcessingTaskDao,
+  ProcessingTaskResult,
+  ProcessingTaskRouter,
+  ProcessingTaskScheduler,
+  ProcessingTaskServiceImpl
+}
 import io.iohk.atala.prism.utils.syntax.DBConnectionOps
 import monix.execution.Scheduler.Implicits.global
+
+import java.util.UUID
 
 object MirrorApp extends TaskApp {
 
   private val logger = LoggerFactory.getLogger(this.getClass)
 
-  case class GrpcServers(mirrorGrpcServer: Server, trisaGrpcServer: Option[Server])
+  case class AppComponents(
+      grpcServer: Server,
+      trisaGrpcServer: Option[Server],
+      monixTasks: List[Task[Unit]]
+  )
 
   /**
     * Run the Mirror application.
@@ -55,11 +71,19 @@ object MirrorApp extends TaskApp {
     //of Resource "for comprehension".
     val classLoader = Thread.currentThread().getContextClassLoader
     app(classLoader).use {
-      case GrpcServers(grpcServer, trisaGrpcServer) =>
+      case AppComponents(grpcServer, trisaGrpcServer, monixTasks) =>
         logger.info("Starting GRPC server")
         grpcServer.start
         trisaGrpcServer.foreach(_.start())
-        Task.never // run server forever
+        //We use Task.parSequence instead of calling `start` on every task,
+        //because `start` doesn't propagate errors, `Task.parSequence` does this.
+        Task
+          .parSequence(monixTasks)
+          .flatMap(_ => Task.never)
+          .onErrorHandle(error => {
+            logger.error("KYC Bridge exiting because of runaway exception", error)
+            ExitCode.Error
+          })
     }
   }
 
@@ -67,7 +91,7 @@ object MirrorApp extends TaskApp {
     * This is an entry point for the Mirror application.
     * The resource contains a GRPC [[Server]] instance, that isn't started.
     */
-  def app(classLoader: ClassLoader): Resource[Task, GrpcServers] =
+  def app(classLoader: ClassLoader): Resource[Task, AppComponents] =
     for {
       globalConfig <- Resource.eval(Task {
         logger.info("Loading config")
@@ -148,20 +172,6 @@ object MirrorApp extends TaskApp {
       )
       trisaPeer2PeerService = new TrisaPeer2PeerService(mirrorServiceImpl)
 
-      // background streams
-      _ <- Resource.eval(
-        credentialService
-          .connectionUpdatesStream(
-            // TODO: We are sending unsigned credential form intdemo by default, it allows
-            //       to test the Mirror with the mobile apps, to check signed flow, see: [[MirrorE2eSpec]].
-            immediatelyRequestedCredential = CredentialProofRequestType.RedlandIdCredential
-          )
-          .compile
-          .drain
-          .start
-      )
-      _ <- Resource.eval(connectorMessageService.messagesUpdatesStream.compile.drain.start)
-
       //trisa
       _ = if (mirrorConfig.trisaConfig.enabled)
         trisaIntegrationService
@@ -201,6 +211,53 @@ object MirrorApp extends TaskApp {
       paymentsEndpoint = new PaymentEndpoints(cardanoAddressInfoService, mirrorConfig.httpConfig)
       apiServer = new ApiServer(paymentsEndpoint, mirrorConfig.httpConfig)
       _ <- apiServer.payIdServer.resource
-    } yield GrpcServers(grpcServer, trisaGrpcServer)
+
+      processingTaskDao = new ProcessingTaskDao[MirrorProcessingTaskState](MirrorProcessingTaskState.withNameOption)
+      processingTaskService =
+        new ProcessingTaskServiceImpl[MirrorProcessingTaskState](tx, UUID.randomUUID(), processingTaskDao)
+
+      watchCardanoBlockchainAddressesProcessor = new WatchCardanoBlockchainAddressesProcessor(
+        tx,
+        cardanoDBSyncTransactor,
+        cardanoConfig,
+        cardanoAddressService,
+        processingTaskService
+      )
+
+      processingTaskRouter = new ProcessingTaskRouter[MirrorProcessingTaskState] {
+        override def process(
+            processingTask: ProcessingTask[MirrorProcessingTaskState],
+            workerNumber: Int
+        ): Task[ProcessingTaskResult[MirrorProcessingTaskState]] = {
+
+          val processor = processingTask.state match {
+            case MirrorProcessingTaskState.WatchCardanoBlockchainAddressesState =>
+              watchCardanoBlockchainAddressesProcessor
+          }
+
+          processor.process(processingTask, workerNumber)
+        }
+      }
+
+      processingTaskScheduler = new ProcessingTaskScheduler[MirrorProcessingTaskState](
+        processingTaskService,
+        processingTaskRouter,
+        mirrorConfig.taskLeaseConfig
+      )
+
+      monixTasks = List(
+        processingTaskScheduler.run.void,
+        connectorMessageService.messagesUpdatesStream.compile.drain,
+        credentialService
+          .connectionUpdatesStream(
+            // TODO: We are sending unsigned credential form intdemo by default, it allows
+            //       to test the Mirror with the mobile apps, to check signed flow, see: [[MirrorE2eSpec]].
+            immediatelyRequestedCredential = CredentialProofRequestType.RedlandIdCredential
+          )
+          .compile
+          .drain
+      )
+
+    } yield AppComponents(grpcServer, trisaGrpcServer, monixTasks)
 
 }
