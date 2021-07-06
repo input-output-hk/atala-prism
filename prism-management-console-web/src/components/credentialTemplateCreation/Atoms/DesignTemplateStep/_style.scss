@@ -1,10 +1,16 @@
 @import "../../../../css/general_styling.scss";
 .LayoutOption {
+  display: flex;
   margin: 1em;
   box-shadow: 0px 0px 20px rgba(0, 0, 0, 0.0523656);
   border-radius: 6px;
   padding: 1em;
   box-sizing: border-box;
+  height: 7em;
+  align-content: center;
+  .layout-thumb {
+    margin: auto;
+  }
 }
 
 .layoutContainer {
@@ -14,7 +20,7 @@
     display: flex;
     justify-content: space-around;
     .LayoutOption {
-      margin:0 1em;
+      margin: 0 1em;
     }
   }
   .ant-form-item-label label {
@@ -23,7 +29,8 @@
 }
 
 .customizeHeaderContainer {
-  .ant-btn:hover, .ant-btn:focus {
+  .ant-btn:hover,
+  .ant-btn:focus {
     color: $primary-color;
     border: 1px solid $primary-color;
   }
@@ -53,6 +60,56 @@
   }
 }
 
+.rowHeader {
+  margin-top: 1em;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  h3 {
+    @include primary-text($h3, $black);
+  }
+}
+
+.bodyItemContainer {
+  .ant-space-item {
+    width: 100%;
+  }
+  .firstGroupInputContainer {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+    .ant-btn-icon-only {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 32px;
+    }
+    .ant-btn:hover,
+    .ant-btn:focus,
+    .ant-btn:active {
+      border: 1px solid $primary-color;
+      color: $primary-color;
+    }
+    .inputContainer {
+      width: 48%;
+      margin: 0 1em 0 0;
+      input {
+        border: 1px solid lightgray;
+      }
+    }
+  }
+}
+
+.sortable {
+  display: flex;
+  width: 100%;
+  .dragHandleWrapper {
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+    padding: 1.25em 1em;
+    color: #99a2a9;
+  }
 
   .rowHeader {
     margin-top: 1em;
@@ -64,30 +121,58 @@
     }
   }
 
-  .bodyItemContainer {
-    .ant-space-item {
-      width: 100%;
+  .ant-space {
+    width: 100%;
+  }
+  .ant-space-item {
+    width: 100%;
+  }
+  .ant-form-item {
+    flex-direction: column;
+  }
+
+  .ant-form-item-label {
+    display: flex;
+    line-height: 23px;
+    label {
+      @include primary-text($label, $dark-grey);
+      @include letter-spacing();
     }
-    .firstGroupInputContainer {
-      display: flex;
-      justify-content: space-between;
-      align-items: flex-end;
-      .ant-btn-icon-only {
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        height: 32px;
-      }
-      .ant-btn:hover, .ant-btn:focus, .ant-btn:active {
-        border: 1px solid $primary-color;
-        color: $primary-color;
-      }
-      .inputContainer {
-        width: 48%;
-        margin: 0 1em 0 0;
-        input {
-          border: 1px solid lightgray;
-        }
-      }
+
+    label::after {
+      display: none;
     }
   }
+
+  .firstGroupInputContainer {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+    width: 100%;
+  }
+  .ant-btn-icon-only {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 32px;
+  }
+  .ant-btn:hover,
+  .ant-btn:focus,
+  .ant-btn:active {
+    border: 1px solid $primary-color;
+    color: $primary-color;
+  }
+  .inputContainer {
+    width: 100%;
+    margin: 0 1em 0 0;
+    input {
+      border: 1px solid lightgray;
+    }
+  }
+  .ant-form-item-required::before {
+    display: none;
+  }
+  .ant-form-item-required::after {
+    display: none;
+  }
+}

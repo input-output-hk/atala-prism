@@ -22,7 +22,7 @@ const BodyEditor = () => {
                   icon: <PlusOutlined />,
                   onClick: () => add(getDefaultAttribute(attributes.length + 1))
                 }}
-              />{' '}
+              />
               <CustomButton
                 buttonText="Add fixed text"
                 buttonProps={{

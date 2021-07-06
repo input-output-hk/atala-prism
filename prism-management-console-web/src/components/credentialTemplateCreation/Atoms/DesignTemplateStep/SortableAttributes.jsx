@@ -2,19 +2,23 @@ import React from 'react';
 import PropTypes from 'prop-types';
 import { useTranslation } from 'react-i18next';
 import { Button, Form, Input, Select, Space } from 'antd';
-import { DeleteOutlined, MenuOutlined } from '@ant-design/icons';
+import { DeleteOutlined, SwapOutlined } from '@ant-design/icons';
 import { SortableContainer, SortableElement, SortableHandle } from 'react-sortable-hoc';
 
 const { Option } = Select;
 
 const attributeTypeOptions = ['text', 'date', 'number'];
 
-const DragHandle = SortableHandle(() => <MenuOutlined />);
+const DragHandle = SortableHandle(() => (
+  <div className="dragHandleWrapper">
+    <SwapOutlined rotate={90} />
+  </div>
+));
 
 const SortableItem = SortableElement(({ value: { key, name, fieldKey, ...restField }, remove }) => {
   const { t } = useTranslation();
   return (
-    <div>
+    <div className="sortable">
       <DragHandle />
       <Space key={key} style={{ display: 'flex', marginBottom: 8 }} align="baseline">
         <div className="firstGroupInputContainer">

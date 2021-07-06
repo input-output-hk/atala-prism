@@ -29,6 +29,7 @@
     "env-cmd": "10.0.1",
     "faker": "4.1.0",
     "file-saver": "2.0.2",
+    "get-contrast": "3.0.0",
     "google-protobuf": "3.9.2",
     "grpc-web": "1.0.7",
     "i18next": "17.0.18",

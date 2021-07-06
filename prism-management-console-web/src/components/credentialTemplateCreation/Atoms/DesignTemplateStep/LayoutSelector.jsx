@@ -26,7 +26,7 @@ const LayoutSelector = () => {
             <div
               className={`LayoutOption shadow ${templateSettings.layout === idx ? 'selected' : ''}`}
             >
-              <img className="img-logo" src={l.thumb} alt={`LayoutTemplate_${idx}`} />
+              <img className="layout-thumb" src={l.thumb} alt={`LayoutTemplate_${idx}`} />
             </div>
           </Radio>
         ))}
