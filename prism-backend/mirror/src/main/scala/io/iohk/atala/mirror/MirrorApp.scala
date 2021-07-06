@@ -156,6 +156,7 @@ object MirrorApp extends TaskApp {
           cardanoAddressInfoService.checkPayIdNameAvailabilityMessageProcessor,
           cardanoAddressInfoService.getPayIdNameMessageProcessor,
           cardanoAddressInfoService.getPayIdAddressesMessageProcessor,
+          cardanoAddressInfoService.getRegisteredWalletsMessageProcessor,
           trisaService.initiateTrisaCardanoTransactionMessageProcessor,
           cardanoDeterministicWalletsService.registerWalletMessageProcessor
         ),

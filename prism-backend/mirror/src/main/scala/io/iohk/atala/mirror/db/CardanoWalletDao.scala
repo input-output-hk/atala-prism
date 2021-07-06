@@ -10,6 +10,7 @@ import doobie.implicits.legacy.instant._
 import cats.implicits._
 import doobie.free.connection
 import doobie.{FC, Fragments}
+import io.iohk.atala.prism.models.ConnectionToken
 
 object CardanoWalletDao {
 
@@ -29,6 +30,12 @@ object CardanoWalletDao {
     (selectCardanoWallet ++ fr"WHERE id = $id")
       .query[CardanoWallet]
       .option
+  }
+
+  def findByConnectionToken(connectionToken: ConnectionToken): ConnectionIO[List[CardanoWallet]] = {
+    (selectCardanoWallet ++ fr"WHERE connection_token = $connectionToken" ++ fr"ORDER BY name")
+      .query[CardanoWallet]
+      .to[List]
   }
 
   def findByIds(ids: List[CardanoWallet.Id]): doobie.ConnectionIO[List[CardanoWallet]] = {

@@ -17,7 +17,7 @@ class CardanoWalletAddressDaoSpec extends PostgresRepositorySpec[Task] with Mirr
       // when
       val resultCount = (for {
         _ <- ConnectionDao.insert(connection2)
-        _ <- CardanoWalletDao.insert(cardanoWallet)
+        _ <- CardanoWalletDao.insert(cardanoWallet1)
         resultCount <- CardanoWalletAddressDao.insert(cardanoWalletAddress1)
       } yield resultCount)
         .transact(database)
@@ -41,10 +41,10 @@ class CardanoWalletAddressDaoSpec extends PostgresRepositorySpec[Task] with Mirr
       walletAddresses.size mustBe minAddressesCount
 
       walletAddresses.head.cardanoWalletAddress mustBe cardanoWalletAddress1
-      walletAddresses.head.walletName mustBe cardanoWallet.name
+      walletAddresses.head.walletName mustBe cardanoWallet1.name
 
       walletAddresses(1).cardanoWalletAddress mustBe cardanoWalletAddress2
-      walletAddresses(1).walletName mustBe cardanoWallet.name
+      walletAddresses(1).walletName mustBe cardanoWallet1.name
     }
   }
 

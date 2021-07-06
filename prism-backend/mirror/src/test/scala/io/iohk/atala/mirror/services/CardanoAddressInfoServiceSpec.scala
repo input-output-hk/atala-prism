@@ -403,6 +403,31 @@ class CardanoAddressInfoServiceSpec extends PostgresRepositorySpec[Task] with Mo
     }
   }
 
+  "getRegisteredWalletsMessageProcessor" should {
+    "return manually registered wallets" in new CardanoAddressInfoServiceFixtures {
+      val message =
+        makeReceivedMessage(connectionId = connectionId2.uuid.toString, message = getRegisteredWalletsToAtalaMessage)
+
+      val result = (for {
+        _ <- ConnectionFixtures.insertAll(database)
+        _ <- CardanoWalletFixtures.insertAll(database)
+        result <- getRegisteredWalletsMessageProcessor(message).get
+      } yield result).runSyncUnsafe()
+
+      val getRegisteredWalletsResponse = result.toOption.flatten
+        .map(_.getMirrorMessage.getGetRegisteredWalletsResponse)
+        .value
+
+      val wallets = getRegisteredWalletsResponse.wallets
+
+      wallets.map(wallet => (wallet.id, wallet.name, wallet.extendedPublicKey)) mustBe
+        Seq(
+          (cardanoWallet1.id.uuid.toString, cardanoWallet1.name.getOrElse(""), cardanoWallet1.extendedPublicKey),
+          (cardanoWallet2.id.uuid.toString, cardanoWallet2.name.getOrElse(""), cardanoWallet2.extendedPublicKey)
+        )
+    }
+  }
+
   trait CardanoAddressInfoServiceFixtures {
     val cardanoAddressInfoService =
       new CardanoAddressInfoService(database, mirrorConfig.httpConfig, defaultNodeClientStub)
@@ -413,5 +438,6 @@ class CardanoAddressInfoServiceSpec extends PostgresRepositorySpec[Task] with Mo
       cardanoAddressInfoService.checkPayIdNameAvailabilityMessageProcessor
     val getPayIdNameMessageProcessor = cardanoAddressInfoService.getPayIdNameMessageProcessor
     val getPayIdAddressesMessageProcessor = cardanoAddressInfoService.getPayIdAddressesMessageProcessor
+    val getRegisteredWalletsMessageProcessor = cardanoAddressInfoService.getRegisteredWalletsMessageProcessor
   }
 }

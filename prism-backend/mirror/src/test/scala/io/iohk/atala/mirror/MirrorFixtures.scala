@@ -351,6 +351,14 @@ trait MirrorFixtures extends ServicesFixtures with ProcessingTaskFixtures {
         )
         .toByteString
 
+    val getRegisteredWalletsToAtalaMessage: ByteString =
+      AtalaMessage()
+        .withMirrorMessage(
+          MirrorMessage()
+            .withGetRegisteredWalletsMessage(credential_models.GetRegisteredWalletsMessage())
+        )
+        .toByteString
+
     def makeReceivedMessage(
         id: String = "id1",
         received: Option[Timestamp] = Timestamp(LocalDateTime.of(2020, 6, 12, 0, 0).toEpochSecond(ZoneOffset.UTC)).some,
@@ -368,7 +376,7 @@ trait MirrorFixtures extends ServicesFixtures with ProcessingTaskFixtures {
     val cardanoConfig = CardanoConfig(config.CardanoNetwork.TestNet, minAddressesCount, syncIntervalInSeconds = 300)
     val cardanoAddressService = new CardanoAddressService("../target/mirror-binaries/cardano-address")
 
-    val cardanoWallet = CardanoWallet(
+    val cardanoWallet1 = CardanoWallet(
       id = CardanoWallet.Id.random(),
       name = Some("name"),
       connectionToken = connection2.token,
@@ -378,11 +386,21 @@ trait MirrorFixtures extends ServicesFixtures with ProcessingTaskFixtures {
       registrationDate = CardanoWallet.RegistrationDate(LocalDateTime.of(2020, 10, 4, 0, 0).toInstant(ZoneOffset.UTC))
     )
 
+    val cardanoWallet2 = CardanoWallet(
+      id = CardanoWallet.Id.random(),
+      name = Some("name2"),
+      connectionToken = connection2.token,
+      extendedPublicKey = "key2",
+      lastGeneratedNo = 9,
+      lastUsedNo = None,
+      registrationDate = CardanoWallet.RegistrationDate(LocalDateTime.of(2020, 10, 4, 0, 0).toInstant(ZoneOffset.UTC))
+    )
+
     var cardanoWalletAddress1 = CardanoWalletAddress(
       address = CardanoAddress(
         "addr_test1qqev5h8thxju452j953er64ffcsg4rksx3vr2pxrnsrg50xxrm8nx4l8qntadvlvdfldg8h3v7q7x6s0xcfg54g5c3qqnwnu99"
       ),
-      walletId = cardanoWallet.id,
+      walletId = cardanoWallet1.id,
       sequenceNo = 0,
       usedAt = None
     )
@@ -391,7 +409,7 @@ trait MirrorFixtures extends ServicesFixtures with ProcessingTaskFixtures {
       address = CardanoAddress(
         "addr_test1qzuzav002lnp3j6zketk0m8fzuvkcrzs9lvdl9lp0ztz8u3g9ygxc0vwf6fdvlneqjw8ml5hewmx4fcm93rrh33z844s2zafhy"
       ),
-      walletId = cardanoWallet.id,
+      walletId = cardanoWallet1.id,
       sequenceNo = 1,
       usedAt = None
     )
@@ -400,11 +418,14 @@ trait MirrorFixtures extends ServicesFixtures with ProcessingTaskFixtures {
       .generateWalletAddresses(extendedPublicKey, fromSequenceNo = 2, minAddressesCount, network)
       .toOption
       .value
-      .map { case (address, sequenceNo) => CardanoWalletAddress(address, cardanoWallet.id, sequenceNo, None) }
+      .map { case (address, sequenceNo) => CardanoWalletAddress(address, cardanoWallet1.id, sequenceNo, None) }
 
     def insertAll[F[_]: Sync](database: Transactor[F]): F[Unit] = {
       for {
-        _ <- insertManyFixtures(CardanoWalletDao.insert(cardanoWallet))(database)
+        _ <- insertManyFixtures(
+          CardanoWalletDao.insert(cardanoWallet1),
+          CardanoWalletDao.insert(cardanoWallet2)
+        )(database)
         _ <- insertManyFixtures(
           CardanoWalletAddressDao.insertMany.updateMany(
             cardanoWalletAddress1 :: cardanoWalletAddress2 :: otherWalletAddresses

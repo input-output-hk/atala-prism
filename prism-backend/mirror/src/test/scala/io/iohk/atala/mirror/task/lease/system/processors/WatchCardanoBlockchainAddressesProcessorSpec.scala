@@ -39,7 +39,8 @@ class WatchCardanoBlockchainAddressesProcessorSpec
       // when
       val (cardanoWallet, addresses, result) = (for {
         processingResult <- processor.process(processingTask, workerNumber)
-        cardanoWallet <- CardanoWalletDao.findById(CardanoWalletFixtures.cardanoWallet.id).transact(database).map(_.get)
+        cardanoWallet <-
+          CardanoWalletDao.findById(CardanoWalletFixtures.cardanoWallet1.id).transact(database).map(_.get)
         addresses <- CardanoWalletAddressDao.findBy(cardanoWallet.id).transact(database)
       } yield (cardanoWallet, addresses, processingResult)).runSyncUnsafe(1.minute)
 

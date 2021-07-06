@@ -18,13 +18,13 @@ class CardanoWalletDaoSpec extends PostgresRepositorySpec[Task] with MirrorFixtu
       // when
       val result = (for {
         _ <- ConnectionDao.insert(connection2)
-        result <- CardanoWalletDao.insert(cardanoWallet)
+        result <- CardanoWalletDao.insert(cardanoWallet1)
       } yield result)
         .transact(database)
         .runSyncUnsafe()
 
       // then
-      result mustBe cardanoWallet.id
+      result mustBe cardanoWallet1.id
     }
 
     "update last used number" in {
@@ -32,9 +32,9 @@ class CardanoWalletDaoSpec extends PostgresRepositorySpec[Task] with MirrorFixtu
       val lastUsedNo = 15
       val updatedWallet = (for {
         _ <- ConnectionDao.insert(connection2)
-        _ <- CardanoWalletDao.insert(cardanoWallet)
-        _ <- CardanoWalletDao.updateLastUsedNo(cardanoWallet.id, lastUsedNo)
-        updatedWalletOption <- CardanoWalletDao.findById(cardanoWallet.id)
+        _ <- CardanoWalletDao.insert(cardanoWallet1)
+        _ <- CardanoWalletDao.updateLastUsedNo(cardanoWallet1.id, lastUsedNo)
+        updatedWalletOption <- CardanoWalletDao.findById(cardanoWallet1.id)
       } yield updatedWalletOption.value)
         .transact(database)
         .runSyncUnsafe()
@@ -48,15 +48,30 @@ class CardanoWalletDaoSpec extends PostgresRepositorySpec[Task] with MirrorFixtu
       val lastGeneratedNo = 15
       val updatedWallet = (for {
         _ <- ConnectionDao.insert(connection2)
-        _ <- CardanoWalletDao.insert(cardanoWallet)
-        _ <- CardanoWalletDao.updateLastGeneratedNo(cardanoWallet.id, lastGeneratedNo)
-        updatedWalletOption <- CardanoWalletDao.findById(cardanoWallet.id)
+        _ <- CardanoWalletDao.insert(cardanoWallet1)
+        _ <- CardanoWalletDao.updateLastGeneratedNo(cardanoWallet1.id, lastGeneratedNo)
+        updatedWalletOption <- CardanoWalletDao.findById(cardanoWallet1.id)
       } yield updatedWalletOption.value)
         .transact(database)
         .runSyncUnsafe()
 
       // then
       updatedWallet.lastGeneratedNo mustBe lastGeneratedNo
+    }
+
+    "find by connection token" in {
+      // when
+      val wallets = (for {
+        _ <- ConnectionDao.insert(connection2)
+        _ <- CardanoWalletDao.insert(cardanoWallet1)
+        _ <- CardanoWalletDao.insert(cardanoWallet2)
+        wallets <- CardanoWalletDao.findByConnectionToken(connection2.token)
+      } yield wallets)
+        .transact(database)
+        .runSyncUnsafe()
+
+      // then
+      wallets mustBe List(cardanoWallet1, cardanoWallet2)
     }
   }
 
