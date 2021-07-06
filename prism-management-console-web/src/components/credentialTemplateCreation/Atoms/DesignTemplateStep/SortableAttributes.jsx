@@ -14,7 +14,7 @@ const DragHandle = SortableHandle(() => <MenuOutlined />);
 const SortableItem = SortableElement(({ value: { key, name, fieldKey, ...restField }, remove }) => {
   const { t } = useTranslation();
   return (
-    <li>
+    <div>
       <DragHandle />
       <Space key={key} style={{ display: 'flex', marginBottom: 8 }} align="baseline">
         <div className="firstGroupInputContainer">
@@ -48,11 +48,11 @@ const SortableItem = SortableElement(({ value: { key, name, fieldKey, ...restFie
           <Button icon={<DeleteOutlined />} onClick={() => remove(name)} />
         </div>
       </Space>
-    </li>
+    </div>
   );
 });
 
-const SortableList = SortableContainer(({ children }) => <ul>{children}</ul>);
+const SortableList = SortableContainer(({ children }) => <div className="row">{children}</div>);
 
 const SortableAttributes = ({ attributes, move, remove }) => {
   const onSortEnd = ({ oldIndex, newIndex }) => move(oldIndex, newIndex);

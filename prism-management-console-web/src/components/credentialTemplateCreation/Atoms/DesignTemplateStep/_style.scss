@@ -71,6 +71,17 @@
     .firstGroupInputContainer {
       display: flex;
       justify-content: space-between;
+      align-items: flex-end;
+      .ant-btn-icon-only {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        height: 32px;
+      }
+      .ant-btn:hover, .ant-btn:focus, .ant-btn:active {
+        border: 1px solid $primary-color;
+        color: $primary-color;
+      }
       .inputContainer {
         width: 48%;
         margin: 0 1em 0 0;
