@@ -5,7 +5,7 @@ import com.google.protobuf.ByteString
 import doobie.implicits._
 import io.iohk.atala.prism.AtalaWithPostgresSpec
 import io.iohk.atala.prism.credentials.TimestampInfo
-import io.iohk.atala.prism.crypto.EC
+import io.iohk.atala.prism.crypto.{EC, SHA256Digest}
 import io.iohk.atala.prism.models.{Ledger, TransactionId}
 import io.iohk.atala.prism.node.models.nodeState.LedgerData
 import io.iohk.atala.prism.node.models.{DIDPublicKey, KeyUsage}
@@ -34,33 +34,34 @@ object UpdateDIDOperationSpec {
   lazy val createDidOperation =
     CreateDIDOperation.parse(CreateDIDOperationSpec.exampleOperation, dummyLedgerData).toOption.value
 
+  val exampleAddKeyAction = node_models.UpdateDIDAction(
+    node_models.UpdateDIDAction.Action.AddKey(
+      node_models.AddKeyAction(
+        key = Some(
+          node_models.PublicKey(
+            id = "new_master",
+            usage = node_models.KeyUsage.MASTER_KEY,
+            keyData = node_models.PublicKey.KeyData.EcKeyData(randomProtoECKey)
+          )
+        )
+      )
+    )
+  )
+
+  val exampleRemoveKeyAction = node_models.UpdateDIDAction(
+    node_models.UpdateDIDAction.Action.RemoveKey(
+      node_models.RemoveKeyAction(
+        keyId = "issuing"
+      )
+    )
+  )
+
   val exampleOperation = node_models.AtalaOperation(
     operation = node_models.AtalaOperation.Operation.UpdateDid(
       value = node_models.UpdateDIDOperation(
         previousOperationHash = ByteString.copyFrom(createDidOperation.digest.value.toArray),
         id = createDidOperation.id.value,
-        actions = Seq(
-          node_models.UpdateDIDAction(
-            node_models.UpdateDIDAction.Action.AddKey(
-              node_models.AddKeyAction(
-                key = Some(
-                  node_models.PublicKey(
-                    id = "new_master",
-                    usage = node_models.KeyUsage.MASTER_KEY,
-                    keyData = node_models.PublicKey.KeyData.EcKeyData(randomProtoECKey)
-                  )
-                )
-              )
-            )
-          ),
-          node_models.UpdateDIDAction(
-            node_models.UpdateDIDAction.Action.RemoveKey(
-              node_models.RemoveKeyAction(
-                keyId = "issuing"
-              )
-            )
-          )
-        )
+        actions = Seq(exampleAddKeyAction, exampleRemoveKeyAction)
       )
     )
   )
@@ -186,22 +187,22 @@ class UpdateDIDOperationSpec extends AtalaWithPostgresSpec with ProtoParsingTest
 
       parsedOperation.applyState().transact(database).value.unsafeRunSync().toOption.value
 
-      val did = DataPreparation.findByDidSuffix(createDidOperation.id)
+      val didInfo = DataPreparation.findByDidSuffix(createDidOperation.id)
 
       val initialKeys = CreateDIDOperationSpec.exampleOperation.getCreateDid.getDidData.publicKeys.map(_.id).toSet
       val expectedKeys = initialKeys + "new_master" - "issuing"
-      did.keys.filter(_.revokedOn.isEmpty).map(_.keyId) must contain theSameElementsAs expectedKeys
+      didInfo.keys.filter(_.revokedOn.isEmpty).map(_.keyId) must contain theSameElementsAs expectedKeys
 
-      val newKey = did.keys.find(_.keyId == "new_master").value
+      val newKey = didInfo.keys.find(_.keyId == "new_master").value
 
       newKey.keyUsage mustBe KeyUsage.MasterKey
       newKey.didSuffix mustBe createDidOperation.id
-      DIDPublicKey(newKey.didSuffix, newKey.keyId, newKey.keyUsage, newKey.key) mustBe parsedOperation
-        .actions(0)
+      DIDPublicKey(newKey.didSuffix, newKey.keyId, newKey.keyUsage, newKey.key) mustBe parsedOperation.actions.head
         .asInstanceOf[AddKeyAction]
         .key
       newKey.addedOn mustBe dummyLedgerData.timestampInfo
       newKey.revokedOn mustBe None
+      didInfo.lastOperation mustBe SHA256Digest.compute(UpdateDIDOperationSpec.exampleOperation.toByteArray)
     }
 
     "return error when issuer is missing in the DB" in {

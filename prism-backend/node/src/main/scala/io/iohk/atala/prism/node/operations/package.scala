@@ -127,6 +127,13 @@ package object operations {
     def parse(
         signedOperation: node_models.SignedAtalaOperation,
         ledgerData: LedgerData
+    ): Either[ValidationError, Repr] = {
+      parse(signedOperation.getOperation, ledgerData)
+    }
+
+    def parse(
+        operation: node_models.AtalaOperation,
+        ledgerData: LedgerData
     ): Either[ValidationError, Repr]
 
     /** Parses the protobuf representation of operation and report errors (if any)
@@ -157,14 +164,6 @@ package object operations {
   }
 
   trait SimpleOperationCompanion[Repr <: Operation] extends OperationCompanion[Repr] {
-
-    override def parse(
-        operation: node_models.SignedAtalaOperation,
-        ledgerData: LedgerData
-    ): Either[ValidationError, Repr] = {
-      parse(operation.getOperation, ledgerData)
-    }
-
     def parse(
         operation: node_models.AtalaOperation,
         ledgerData: LedgerData

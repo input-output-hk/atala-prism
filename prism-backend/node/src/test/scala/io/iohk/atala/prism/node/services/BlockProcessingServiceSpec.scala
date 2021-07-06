@@ -11,7 +11,8 @@ import io.iohk.atala.prism.identity.DIDSuffix
 import io.iohk.atala.prism.models.{Ledger, TransactionId}
 import io.iohk.atala.prism.node.DataPreparation
 import io.iohk.atala.prism.node.models.{AtalaOperationInfo, AtalaOperationStatus}
-import io.iohk.atala.prism.node.operations.CreateDIDOperationSpec
+import io.iohk.atala.prism.node.operations.{CreateDIDOperation, CreateDIDOperationSpec}
+import io.iohk.atala.prism.node.operations.UpdateDIDOperationSpec.{exampleAddKeyAction, exampleRemoveKeyAction}
 import io.iohk.atala.prism.node.repositories.daos.DIDDataDAO
 import io.iohk.atala.prism.node.repositories.DIDDataRepository
 import io.iohk.atala.prism.protos.{node_internal, node_models}
@@ -207,6 +208,72 @@ class BlockProcessingServiceSpec extends AtalaWithPostgresSpec {
       val atalaOperationInfo3 = DataPreparation.getOperationInfo(opIds.last).value
       val expectedAtalaOperationInfo3 = AtalaOperationInfo(opIds.last, objId, AtalaOperationStatus.APPLIED, None)
       atalaOperationInfo3 must be(expectedAtalaOperationInfo3)
+    }
+
+    "apply two update operations sequentially" in {
+      val did = CreateDIDOperation
+        .parse(CreateDIDOperationSpec.exampleOperation, CreateDIDOperationSpec.dummyLedgerData)
+        .toOption
+        .value
+        .id
+        .value
+
+      val createDidSignedOperation = signedCreateDidOperation
+
+      val updateDidOperation1 = node_models.AtalaOperation(
+        operation = node_models.AtalaOperation.Operation.UpdateDid(
+          value = node_models.UpdateDIDOperation(
+            previousOperationHash = ByteString.copyFrom(
+              SHA256Digest.compute(signedCreateDidOperation.operation.value.toByteArray).value.toArray
+            ),
+            id = did,
+            actions = Seq(exampleAddKeyAction)
+          )
+        )
+      )
+      val updateDidSignedOperation1 = signOperation(updateDidOperation1, "master", masterKeys.privateKey)
+
+      val updateDidOperation2 = node_models.AtalaOperation(
+        operation = node_models.AtalaOperation.Operation.UpdateDid(
+          value = node_models.UpdateDIDOperation(
+            previousOperationHash =
+              ByteString.copyFrom(SHA256Digest.compute(updateDidOperation1.toByteArray).value.toArray),
+            id = did,
+            actions = Seq(exampleRemoveKeyAction)
+          )
+        )
+      )
+      val updateDidSignedOperation2 = signOperation(updateDidOperation2, "master", masterKeys.privateKey)
+
+      val block = node_internal.AtalaBlock(
+        operations = Seq(createDidSignedOperation, updateDidSignedOperation1, updateDidSignedOperation2)
+      )
+
+      val (objId, opIds) = DataPreparation.insertOperationStatuses(
+        List(createDidSignedOperation, updateDidSignedOperation1, updateDidSignedOperation2),
+        AtalaOperationStatus.RECEIVED
+      )
+      opIds.size must be(3)
+
+      val result = service
+        .processBlock(block, dummyTransactionId, dummyLedger, dummyTimestamp, dummyABSequenceNumber)
+        .transact(database)
+        .unsafeToFuture()
+        .futureValue
+
+      result mustBe true
+
+      val createDidSignedOperationInfo = DataPreparation.getOperationInfo(opIds.head).value
+      val expectedAtalaOperationInfo1 = AtalaOperationInfo(opIds.head, objId, AtalaOperationStatus.APPLIED, None)
+      createDidSignedOperationInfo must be(expectedAtalaOperationInfo1)
+
+      val updateDidSignedOperation1Info = DataPreparation.getOperationInfo(opIds(1)).value
+      val expectedAtalaOperationInfo2 = AtalaOperationInfo(opIds(1), objId, AtalaOperationStatus.APPLIED, None)
+      updateDidSignedOperation1Info must be(expectedAtalaOperationInfo2)
+
+      val updateDidSignedOperation2Info = DataPreparation.getOperationInfo(opIds.last).value
+      val expectedAtalaOperationInfo3 = AtalaOperationInfo(opIds.last, objId, AtalaOperationStatus.APPLIED, None)
+      updateDidSignedOperation2Info must be(expectedAtalaOperationInfo3)
     }
   }
 }
