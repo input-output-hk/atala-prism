@@ -103,4 +103,11 @@ class CryptoUtils: NSObject {
                                      options: .regularExpression)
         return range != nil
     }
+    
+    func isValidExtendedPublicKey(key: String) -> Bool {
+        
+        let range = key.range(of: #"acct_xvk1[qpzry9x8gf2tvdw0s3jn54khce6mua7l]+"#,
+                                     options: .regularExpression)
+        return range != nil
+    }
 }

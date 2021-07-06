@@ -134,9 +134,11 @@ class RestoreAccountPresenter: BasePresenter {
         // Call the service
         ApiService.call(async: {
             do {
-                let response = try ApiService.global.getMessages(contact: contact)
+                let response = try ApiService.global.getMessages(contact: contact, limit: 100)
                 Logger.d("shareCredential response: \(response)")
                 
+                let contactsDao = ContactDAO()
+
                 for message in response.messages {
                     if let atalaMssg = try? Io_Iohk_Atala_Prism_Protos_AtalaMessage(serializedData:
                                                                                         message.message) {
@@ -147,6 +149,7 @@ class RestoreAccountPresenter: BasePresenter {
                                 payIdDao.createPayId(payIdId: payIDName, name: payIDName,
                                                      connectionId: contact.connectionId)
                             }
+                            contactsDao.updateMessageId(connectionId: contact.connectionId, messageId: message.id)
                         }
                     }
                 }

@@ -23,19 +23,19 @@ class PayIDAddAddressViewController: UIViewController, UITextFieldDelegate, Segu
     var canContinue: Bool = false
 
     lazy var scanner: QRCode = { QRCode() }()
-    
-    var delegate:PayIDAddAddressDelegate?
+
+    var delegate: PayIDAddAddressDelegate?
 
     lazy var actionToDismiss = SelectorAction(action: { [weak self] in
-        
-        if(!(self?.scanTextField.textField.isFirstResponder)!){
+
+        if !(self?.scanTextField.textField.isFirstResponder)! {
             self?.dismiss(animated: true, completion: nil)
         }
     })
     
     override func viewDidLoad() {
         super.viewDidLoad()
-        
+
         ViewControllerUtils.addTapToDismissKeyboard(view: self)
         topView.addOnClickListener(action: actionToDismiss)
 
@@ -62,18 +62,18 @@ class PayIDAddAddressViewController: UIViewController, UITextFieldDelegate, Segu
     }
     
     // MARK: Segue Value
-    
+
     func configScreenFromSegue(params: [Any?]?) {
         delegate = params?[0] as? PayIDAddAddressDelegate
     }
-    
+
     func setupView() {
-        
+
         self.view.backgroundColor = UIColor.clear
         self.view.backgroundColor = UIColor.black.withAlphaComponent(0.4)
     }
     
-    func setupQRScanner() -> Void {
+    func setupQRScanner() {
         scanner.prepareScan(self.view) { (value) in
             print("Code: ", value)
         }
@@ -83,39 +83,39 @@ class PayIDAddAddressViewController: UIViewController, UITextFieldDelegate, Segu
         scanner.strokeColor = UIColor.appRed
         scanner.maxDetectedCount = 1
     }
-    
-    func scanQR() -> Void {
+
+    func scanQR() {
         scanner.clearDrawLayer()
         scanner.startScan()
     }
-    
+
     func stopQrScan() {
         scanner.stopScan()
     }
-    
+
     func textFieldDidEndEditing(_ textField: UITextField) {
-        
-        if(scanTextField.textField.text?.count > 0){
+
+        if scanTextField.textField.text?.count > 0 {
             addButton.backgroundColor = UIColor.appRed
             canContinue = true
-        }else{
+        } else {
             addButton.backgroundColor = UIColor.appGreyBlue
             canContinue = false
         }
     }
     
     func textFieldShouldReturn(_ textField: UITextField) -> Bool {
-        
+
         textField.resignFirstResponder()
         return true
     }
-    
+
     @IBAction func add(_ sender: Any) {
 
         if canContinue {
-            
+
             self.dismiss(animated: true) {
-                
+
                 self.delegate?.addAddress(value: self.scanTextField.textField.text ?? "")
             }
         }

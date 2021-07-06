@@ -124,6 +124,8 @@
 		B352434824FFDA3C0053A804 /* DateFormatViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = B352434724FFDA3C0053A804 /* DateFormatViewController.swift */; };
 		B35470FA24E4252D009F4844 /* DeleteContact.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = B35470F924E4252D009F4844 /* DeleteContact.storyboard */; };
 		B35470FC24E42546009F4844 /* DeleteContactViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = B35470FB24E42546009F4844 /* DeleteContactViewController.swift */; };
+		B3597939266E646D00F768E0 /* WalletPublicKey+CoreDataClass.swift in Sources */ = {isa = PBXBuildFile; fileRef = B3597937266E646D00F768E0 /* WalletPublicKey+CoreDataClass.swift */; };
+		B359793A266E646D00F768E0 /* WalletPublicKey+CoreDataProperties.swift in Sources */ = {isa = PBXBuildFile; fileRef = B3597938266E646D00F768E0 /* WalletPublicKey+CoreDataProperties.swift */; };
 		B35AE71724351395005619F0 /* ConnectionProofRequestCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = B35AE71624351395005619F0 /* ConnectionProofRequestCell.swift */; };
 		B35CEEE325E4256C00DA2BF9 /* HomeProfileTableViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = B35CEEE125E4256C00DA2BF9 /* HomeProfileTableViewCell.swift */; };
 		B35CEEE425E4256C00DA2BF9 /* HomeProfileTableViewCell.xib in Resources */ = {isa = PBXBuildFile; fileRef = B35CEEE225E4256C00DA2BF9 /* HomeProfileTableViewCell.xib */; };
@@ -502,6 +504,8 @@
 		B352434724FFDA3C0053A804 /* DateFormatViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DateFormatViewController.swift; sourceTree = "<group>"; };
 		B35470F924E4252D009F4844 /* DeleteContact.storyboard */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.storyboard; path = DeleteContact.storyboard; sourceTree = "<group>"; };
 		B35470FB24E42546009F4844 /* DeleteContactViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = DeleteContactViewController.swift; sourceTree = "<group>"; };
+		B3597937266E646D00F768E0 /* WalletPublicKey+CoreDataClass.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "WalletPublicKey+CoreDataClass.swift"; sourceTree = "<group>"; };
+		B3597938266E646D00F768E0 /* WalletPublicKey+CoreDataProperties.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "WalletPublicKey+CoreDataProperties.swift"; sourceTree = "<group>"; };
 		B35AE71624351395005619F0 /* ConnectionProofRequestCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ConnectionProofRequestCell.swift; sourceTree = "<group>"; };
 		B35CEEE125E4256C00DA2BF9 /* HomeProfileTableViewCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HomeProfileTableViewCell.swift; sourceTree = "<group>"; };
 		B35CEEE225E4256C00DA2BF9 /* HomeProfileTableViewCell.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = HomeProfileTableViewCell.xib; sourceTree = "<group>"; };
@@ -1152,6 +1156,8 @@
 		B3C153EE2636FF8C006C5E3B /* PayId */ = {
 			isa = PBXGroup;
 			children = (
+				B3597937266E646D00F768E0 /* WalletPublicKey+CoreDataClass.swift */,
+				B3597938266E646D00F768E0 /* WalletPublicKey+CoreDataProperties.swift */,
 				B3C153E32636FF82006C5E3B /* PayId+CoreDataClass.swift */,
 				B3C153E42636FF82006C5E3B /* PayId+CoreDataProperties.swift */,
 				B3C153E52636FF82006C5E3B /* Address+CoreDataClass.swift */,
@@ -2360,6 +2366,7 @@
 				EE7D4CFE236759B4007C31A8 /* DashboardPresenter.swift in Sources */,
 				EE48AC252377652F00C0A441 /* TutorialPageView.swift in Sources */,
 				EE48AC172377548700C0A441 /* LoginViewController.swift in Sources */,
+				B359793A266E646D00F768E0 /* WalletPublicKey+CoreDataProperties.swift in Sources */,
 				B3F94E97247455A60087EBFD /* SecurityViewController.swift in Sources */,
 				B31EB83225CB374B00BDE34A /* AcuantUtils.swift in Sources */,
 				B35AE71724351395005619F0 /* ConnectionProofRequestCell.swift in Sources */,
@@ -2470,6 +2477,7 @@
 				EE8CD812237B6C7300614578 /* TextFieldTitledView.swift in Sources */,
 				28A3A8CA25F28078006BA440 /* PhoneHelper.swift in Sources */,
 				EE7D4CE423673C39007C31A8 /* Locale+Extensions.swift in Sources */,
+				B3597939266E646D00F768E0 /* WalletPublicKey+CoreDataClass.swift in Sources */,
 				286539BF25EE9BF800523F96 /* Attribute.swift in Sources */,
 				EE7D4D0F23693596007C31A8 /* ConnectionsPresenter.swift in Sources */,
 				B32B6352250AAA8900162A49 /* BaseDAO.swift in Sources */,

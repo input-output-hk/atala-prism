@@ -33,18 +33,26 @@ class PayIDInfoListingPresenter: ListingBasePresenter, ListingBaseTableUtilsPres
 
     var initialRows: [CellRow]?
     var payId: PayId?
+    var isAddress = false
 
     func startShowingInitial() {
 
         cleanData()
-        guard let addresses = payId?.addresses?.allObjects as? [Address] else { return }
-        for address in addresses {
-            initialRows?.append(CellRow(type: .listing, value: address.name))
+        if isAddress {
+            guard let addresses = payId?.addresses?.allObjects as? [Address] else { return }
+            for address in addresses {
+                initialRows?.append(CellRow(type: .listing, value: address.name))
+            }
+        } else {
+            guard let keys = payId?.publicKeys?.allObjects as? [WalletPublicKey] else { return }
+            for key in keys {
+                initialRows?.append(CellRow(type: .listing, value: key.key))
+            }
         }
 
         updateViewToState()
     }
-    
+
     // MARK: ListingBaseTableUtilsPresenterDelegate
 
     func cleanData() {
@@ -65,7 +73,7 @@ class PayIDInfoListingPresenter: ListingBasePresenter, ListingBaseTableUtilsPres
     func getSectionCount() -> Int? {
         return 1
     }
-    
+
     func getSectionHeaderViews() -> [UIView] {
         return [UIView()]
     }

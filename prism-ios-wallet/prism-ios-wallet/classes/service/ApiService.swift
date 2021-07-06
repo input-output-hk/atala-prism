@@ -219,6 +219,20 @@ class ApiService: NSObject {
         return try service.sendMessage(request, metadata: metadata)
     }
 
+    func registerPayIdPublicKey(contact: Contact,
+                                publicKey: String) throws -> Io_Iohk_Atala_Prism_Protos_SendMessageResponse {
+
+        var message = Io_Iohk_Atala_Prism_Protos_AtalaMessage()
+        message.mirrorMessage.registerWalletMessage.extendedPublicKey = publicKey
+        let messageData =  try message.serializedData()
+        let request = Io_Iohk_Atala_Prism_Protos_SendMessageRequest.with {
+            $0.message = messageData
+            $0.connectionID = contact.connectionId
+        }
+        let metadata = makeSignedMeta(requestData: try request.serializedData(), keyPath: contact.keyPath)
+        return try service.sendMessage(request, metadata: metadata)
+    }
+
     func validatePayIdName(contact: Contact,
                            name: String) throws -> Io_Iohk_Atala_Prism_Protos_SendMessageResponse {
 
@@ -233,10 +247,11 @@ class ApiService: NSObject {
         return try service.sendMessage(request, metadata: metadata)
     }
 
-    func getMessages(contact: Contact) throws -> Io_Iohk_Atala_Prism_Protos_GetMessagesPaginatedResponse {
-        
+    func getMessages(contact: Contact,
+                     limit: Int32 = ApiService.DEFAULT_REQUEST_LIMIT) throws -> Io_Iohk_Atala_Prism_Protos_GetMessagesPaginatedResponse {
+
         let request = Io_Iohk_Atala_Prism_Protos_GetMessagesPaginatedRequest.with {
-            $0.limit = ApiService.DEFAULT_REQUEST_LIMIT
+            $0.limit = limit
             if let lastMessage = contact.lastMessageId {
                 $0.lastSeenMessageID = lastMessage
             }
@@ -244,12 +259,26 @@ class ApiService: NSObject {
         let metadata = makeSignedMeta(requestData: try request.serializedData(), keyPath: contact.keyPath)
         return try service.getMessagesPaginated(request, metadata: metadata)
     }
-    
+
     func recoverPayIdName(contact: Contact) throws -> Io_Iohk_Atala_Prism_Protos_SendMessageResponse {
 
         var message = Io_Iohk_Atala_Prism_Protos_AtalaMessage()
         let getPayIDNameMessage = Io_Iohk_Atala_Prism_Protos_GetPayIdNameMessage()
         message.mirrorMessage.getPayIDNameMessage = getPayIDNameMessage
+        let messageData =  try message.serializedData()
+        let request = Io_Iohk_Atala_Prism_Protos_SendMessageRequest.with {
+            $0.message = messageData
+            $0.connectionID = contact.connectionId
+        }
+        let metadata = makeSignedMeta(requestData: try request.serializedData(), keyPath: contact.keyPath)
+        return try service.sendMessage(request, metadata: metadata)
+    }
+
+    func getPayIdAddresses(contact: Contact) throws -> Io_Iohk_Atala_Prism_Protos_SendMessageResponse {
+
+        var message = Io_Iohk_Atala_Prism_Protos_AtalaMessage()
+        let getPayIdAddressesMessage = Io_Iohk_Atala_Prism_Protos_GetPayIdAddressesMessage()
+        message.mirrorMessage.getPayIDAddressesMessage = getPayIdAddressesMessage
         let messageData =  try message.serializedData()
         let request = Io_Iohk_Atala_Prism_Protos_SendMessageRequest.with {
             $0.message = messageData

@@ -42,12 +42,19 @@
         <attribute name="name" optional="YES" attributeType="String"/>
         <attribute name="payIdId" optional="YES" attributeType="String"/>
         <relationship name="addresses" optional="YES" toMany="YES" deletionRule="Nullify" destinationEntity="Address" inverseName="payId" inverseEntity="Address"/>
+        <relationship name="publicKeys" optional="YES" toMany="YES" deletionRule="Nullify" destinationEntity="WalletPublicKey" inverseName="payId" inverseEntity="WalletPublicKey"/>
+    </entity>
+    <entity name="WalletPublicKey" representedClassName="WalletPublicKey" syncable="YES">
+        <attribute name="key" optional="YES" attributeType="String"/>
+        <attribute name="name" optional="YES" attributeType="String"/>
+        <relationship name="payId" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="PayId" inverseName="publicKeys" inverseEntity="PayId"/>
     </entity>
     <elements>
         <element name="ActivityHistory" positionX="38.82421875" positionY="166.625" width="128" height="148"/>
         <element name="Address" positionX="54" positionY="144" width="128" height="59"/>
         <element name="Contact" positionX="146.6640625" positionY="-16.45703125" width="128" height="179"/>
         <element name="Credential" positionX="-63" positionY="-18" width="128" height="179"/>
-        <element name="PayId" positionX="45" positionY="135" width="128" height="89"/>
+        <element name="PayId" positionX="45" positionY="135" width="128" height="104"/>
+        <element name="WalletPublicKey" positionX="45" positionY="135" width="128" height="74"/>
     </elements>
 </model>

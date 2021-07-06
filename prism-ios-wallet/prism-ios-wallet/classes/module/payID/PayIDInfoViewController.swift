@@ -55,6 +55,7 @@ class PayIDInfoViewController: BaseViewController, PayIDAddAddressDelegate {
     func setupData() {
         nameValueLabel.text = "\(presenterImpl.payId?.name ?? "")\("pay_id_setup_name_field_right".localize())"
         addressValueLabel.text = "\(presenterImpl.payId?.addresses?.count ?? 0)"
+        keyValueLabel.text = "\(presenterImpl.payId?.publicKeys?.count ?? 0)"
     }
 
     override func onBackPressed() -> Bool {
@@ -74,12 +75,12 @@ class PayIDInfoViewController: BaseViewController, PayIDAddAddressDelegate {
 
     @IBAction func showAddress(_ sender: Any) {
         changeScreenWith(title: "pay_id_listing_address_title".localize(),
-                         type: "pay_id_listing_address_row_title".localize())
+                         type: "pay_id_listing_address_row_title".localize(), isAddress: true)
     }
 
     @IBAction func showKey(_ sender: Any) {
         changeScreenWith(title: "pay_id_listing_key_title".localize(),
-                         type: "pay_id_listing_key_row_title".localize())
+                         type: "pay_id_listing_key_row_title".localize(), isAddress: false)
     }
 
     @IBAction func addAddress(_ sender: Any) {
@@ -92,6 +93,12 @@ class PayIDInfoViewController: BaseViewController, PayIDAddAddressDelegate {
     }
 
     @IBAction func addKey(_ sender: Any) {
+
+        var params: [Any?] = []
+        params.append(self)
+
+        ViewControllerUtils.changeScreenSegued(caller: self, segue: "SeguePayIDAddAddressViewController",
+                                               params: params)
 
     }
 
@@ -108,11 +115,12 @@ class PayIDInfoViewController: BaseViewController, PayIDAddAddressDelegate {
         customPresentViewController(popUp.presentr, viewController: popUp, animated: true)
     }
 
-    func changeScreenWith(title: String, type: String) {
+    func changeScreenWith(title: String, type: String, isAddress: Bool) {
 
         var params: [Any?] = []
         params.append(title)
         params.append(type)
+        params.append(isAddress)
 
         ViewControllerUtils.changeScreenSegued(caller: self, segue: "SeguePayIDInfoListingViewController",
                                                params: params)
@@ -121,7 +129,7 @@ class PayIDInfoViewController: BaseViewController, PayIDAddAddressDelegate {
     // MARK: Add Address
 
     func addAddress(value: String) {
-        presenterImpl.addAddress(value: value)
+        presenterImpl.addAddressOrKey(value: value)
     }
 
     // MARK: Delete

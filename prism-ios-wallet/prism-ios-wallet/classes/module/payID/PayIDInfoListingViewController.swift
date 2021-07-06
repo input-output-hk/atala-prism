@@ -45,6 +45,7 @@ class PayIDInfoListingViewController: ListingBaseViewController, UINavigationCon
     func configScreenFromSegue(params: [Any?]?) {
         titleValue = params?[0] as? String
         type = params?[1] as? String
+        presenterImpl.isAddress = params?[2] as? Bool ?? false
     }
     
     // MARK: Config
@@ -53,7 +54,7 @@ class PayIDInfoListingViewController: ListingBaseViewController, UINavigationCon
 
         // Navigation bar
         navBar = NavBarCustomStyle(hasNavBar: true, isWhite: false, title: titleValue, hasBackButton: true)
-        
+
         NavBarCustom.config(view: self)
     }
 

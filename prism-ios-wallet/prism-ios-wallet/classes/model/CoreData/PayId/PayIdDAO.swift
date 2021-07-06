@@ -49,14 +49,36 @@ class PayIdDAO: BaseDAO {
         }
     }
     
-    func addAddress(payId: PayId, name: String?) {
+    func addAddress(payId: PayId, name: String) {
         guard let managedContext = getManagedContext() else { return }
+        let fetchRequest = Address.createFetchRequest()
+        fetchRequest.predicate = NSPredicate(format: "name == %@", name)
+
+        if let result = try? managedContext.fetch(fetchRequest), !result.isEmpty {
+            return
+        }
         let address = NSEntityDescription.insertNewObject(forEntityName: "Address",
                                                              into: managedContext) as? Address
         
         address?.name = name
         address?.payId = payId
         
+        do {
+            try managedContext.save()
+
+        } catch let error as NSError {
+            print(error.debugDescription)
+        }
+    }
+    
+    func addPublicKey(payId: PayId, publicKey: String?) {
+        guard let managedContext = getManagedContext() else { return }
+        let walletPublicKey = NSEntityDescription.insertNewObject(forEntityName: "WalletPublicKey",
+                                                                  into: managedContext) as? WalletPublicKey
+
+        walletPublicKey?.key = publicKey
+        walletPublicKey?.payId = payId
+
         do {
             try managedContext.save()
 

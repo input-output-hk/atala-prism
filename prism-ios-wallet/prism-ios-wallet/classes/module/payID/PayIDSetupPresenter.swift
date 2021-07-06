@@ -118,6 +118,8 @@ class PayIDSetupPresenter: BasePresenter, ConnectionsWorkerDelegate {
                                                                                         message.message),
                        atalaMssg.replyTo == messageId {
                         self.availableName = atalaMssg.mirrorMessage.payIDNameRegisteredMessage.isInitialized
+                        let contactsDao = ContactDAO()
+                        contactsDao.updateMessageId(connectionId: contact.connectionId, messageId: message.id)
                     }
                 }
             } catch {
@@ -125,7 +127,16 @@ class PayIDSetupPresenter: BasePresenter, ConnectionsWorkerDelegate {
             }
             return nil
         }, success: {
-            self.registerAddress()
+            if let address = self.payIdAddress {
+                if CryptoUtils.global.isValidShelleyAddress(address: address) {
+                    self.registerAddress()
+                } else {
+                    self.registerPublicKey()
+                }
+            } else {
+                self.viewImpl?.showLoading(doShow: false)
+                self.viewImpl?.showErrorMessage(doShow: true, message: "service_error".localize())
+            }
         }, error: { error in
             print(error)
             self.viewImpl?.showLoading(doShow: false)
@@ -141,14 +152,54 @@ class PayIDSetupPresenter: BasePresenter, ConnectionsWorkerDelegate {
             return
         }
 
+        var messageId = ""
         // Call the service
         ApiService.call(async: {
             do {
-                let responses = try ApiService.global.registerPayIdAddress(contact: contact, address: payIdAddress)
-                Logger.d("shareCredential response: \(responses)")
+                let response = try ApiService.global.registerPayIdAddress(contact: contact, address: payIdAddress)
+                Logger.d("registerPayIdAddress response: \(response)")
 
-                let payIdDao = PayIdDAO()
-                payIdDao.addAddress(payId: self.payId!, name: payIdAddress)
+                messageId = response.id
+            } catch {
+                return error
+            }
+            return nil
+        }, success: {
+            DispatchQueue.main.asyncAfter(deadline: .now() + 5) {
+                self.getRegisteredAddress(messageId: messageId, address: payIdAddress)
+            }
+        }, error: { error in
+            print(error.localizedDescription)
+            self.viewImpl?.showLoading(doShow: false)
+            self.viewImpl?.showErrorMessage(doShow: true, message: "service_error".localize())
+        })
+    }
+
+    func getRegisteredAddress(messageId: String, address: String) {
+
+        guard let contact = self.contact else {
+            self.viewImpl?.showLoading(doShow: false)
+            self.viewImpl?.showErrorMessage(doShow: true, message: "service_error".localize())
+            return
+        }
+
+        // Call the service
+        ApiService.call(async: {
+            do {
+                let response = try ApiService.global.getMessages(contact: contact)
+                Logger.d("registerPayIdPublicKey response: \(response)")
+                for message in response.messages {
+                    if let atalaMssg = try? Io_Iohk_Atala_Prism_Protos_AtalaMessage(serializedData:
+                                                                                        message.message),
+                       atalaMssg.replyTo == messageId {
+                        if atalaMssg.mirrorMessage.walletRegistered.isInitialized {
+                            let payIdDao = PayIdDAO()
+                            payIdDao.addAddress(payId: self.payId!, name: address)
+                            let contactsDao = ContactDAO()
+                            contactsDao.updateMessageId(connectionId: contact.connectionId, messageId: message.id)
+                        }
+                    }
+                }
             } catch {
                 return error
             }
@@ -156,7 +207,76 @@ class PayIDSetupPresenter: BasePresenter, ConnectionsWorkerDelegate {
         }, success: {
             self.shareCredentials()
         }, error: { error in
+            print(error)
+            self.viewImpl?.showLoading(doShow: false)
+            self.viewImpl?.showErrorMessage(doShow: true, message: "service_error".localize())
+        })
+    }
+
+    private func registerPublicKey() {
+
+        guard let contact = self.contact, let publicKey = payIdAddress else {
+            self.viewImpl?.showLoading(doShow: false)
+            self.viewImpl?.showErrorMessage(doShow: true, message: "service_error".localize())
+            return
+        }
+        var messageId = ""
+
+        // Call the service
+        ApiService.call(async: {
+            do {
+                let response = try ApiService.global.registerPayIdPublicKey(contact: contact, publicKey: publicKey)
+                Logger.d("shareCredential response: \(response)")
+                
+                messageId = response.id
+            } catch {
+                return error
+            }
+            return nil
+        }, success: {
+            DispatchQueue.main.asyncAfter(deadline: .now() + 5) {
+                self.getRegisteredPublicKey(messageId: messageId, publicKey: publicKey)
+            }
+        }, error: { error in
             print(error.localizedDescription)
+            self.viewImpl?.showLoading(doShow: false)
+            self.viewImpl?.showErrorMessage(doShow: true, message: "service_error".localize())
+        })
+    }
+    
+    func getRegisteredPublicKey(messageId: String, publicKey: String) {
+
+        guard let contact = self.contact else {
+            self.viewImpl?.showLoading(doShow: false)
+            self.viewImpl?.showErrorMessage(doShow: true, message: "service_error".localize())
+            return
+        }
+
+        // Call the service
+        ApiService.call(async: {
+            do {
+                let response = try ApiService.global.getMessages(contact: contact)
+                Logger.d("registerPayIdPublicKey response: \(response)")
+                for message in response.messages {
+                    if let atalaMssg = try? Io_Iohk_Atala_Prism_Protos_AtalaMessage(serializedData:
+                                                                                        message.message),
+                       atalaMssg.replyTo == messageId {
+                        if atalaMssg.mirrorMessage.walletRegistered.isInitialized {
+                            let payIdDao = PayIdDAO()
+                            payIdDao.addPublicKey(payId: self.payId!, publicKey: publicKey)
+                            let contactsDao = ContactDAO()
+                            contactsDao.updateMessageId(connectionId: contact.connectionId, messageId: message.id)
+                        }
+                    }
+                }
+            } catch {
+                return error
+            }
+            return nil
+        }, success: {
+            self.shareCredentials()
+        }, error: { error in
+            print(error)
             self.viewImpl?.showLoading(doShow: false)
             self.viewImpl?.showErrorMessage(doShow: true, message: "service_error".localize())
         })
@@ -271,7 +391,9 @@ class PayIDSetupPresenter: BasePresenter, ConnectionsWorkerDelegate {
             viewImpl?.toogleaddressValid(isValid: nil)
             return
         }
-        self.viewImpl?.toogleaddressValid(isValid: CryptoUtils.global.isValidShelleyAddress(address: address))
+        let validAddress = CryptoUtils.global.isValidShelleyAddress(address: address)
+        let validPublicKey = CryptoUtils.global.isValidExtendedPublicKey(key: address)
+        self.viewImpl?.toogleaddressValid(isValid: validAddress || validPublicKey)
     }
 
     // MARK: ConnectionsWorkerDelegate
