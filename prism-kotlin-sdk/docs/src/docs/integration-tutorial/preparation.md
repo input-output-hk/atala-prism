@@ -12,9 +12,11 @@ If there is no dedicated environment where all services are up and running there
 ### Prerequisites
 
 1. Install [docker](https://www.docker.com/).
-2. Install [Java 8](https://www.oracle.com/java/technologies/javase/javase-jdk8-downloads.html).
+2. Install [Java 11](https://www.oracle.com/java/technologies/javase-downloads.html).
 3. Install [sbt](https://www.scala-sbt.org/).
 4. Install [psql](https://www.postgresql.org/download/).
+5. Install [Android SDK](https://developer.android.com) and add either `ANDROID_SDK_ROOT` or `ANDROID_HOME` to the `PATH`.
+6. Get android build tools in version `29.0.2`.
 
 ### Steps
 1. Run **Postgres** inside docker container and leave it running:
@@ -53,6 +55,31 @@ That's it! All services are up and running locally.
 
 ## Adding dependencies
 
+### Getting required libraries
+Having all required libraries is critical to follow next steps. To get these follow these steps:
+1. Ask **Atala PRISM** team directly.
+2. Build them on your own.
+
+#### Building libraries
+To build libraries follow these steps:
+1. In a new terminal window clone [Atala repository](https://github.com/input-output-hk/atala) and navigate to `prism-kotlin-sdk` directory:
+```bash
+git clone git@github.com:input-output-hk/atala.git
+cd atala/prism-kotlin-sdk/
+```
+2. Execute:
+```bash
+./gradlew clean build -x test -x lint publish
+```
+Once it's done new libraries should be available under:
+```bash
+~/.m2/repository/io/iohk/atala
+```
+
+### Adding dependencies to Gradle
+
+**NOTE:** to get `$VERSION` take a look in the bottom left corner of these docs.
+
 After creating (or opening) the **Gradle** project, add the necessary dependencies to your `build.gradle`:
 
 ```kotlin
@@ -78,9 +105,7 @@ repositories {
     mavenLocal()
     google()
     maven("https://plugins.gradle.org/m2/")
-    maven("https://dl.bintray.com/itegulov/maven")
-    maven("https://kotlin.bintray.com/kotlinx/")
-    maven("https://dl.bintray.com/acinq/libs")
+    maven("https://vlad107.jfrog.io/artifactory/default-maven-virtual/")
 }
 ```
 
