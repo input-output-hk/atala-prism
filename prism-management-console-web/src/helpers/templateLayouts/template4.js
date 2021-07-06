@@ -15,10 +15,10 @@ export const template4 = {
         <div
           style="display: flex; flex-direction: column; width: 100%; box-sizing: border-box; border-radius: 10px 10px 0 0;">
           <!-- Small Text -->
-          <p style="font-size: 9px; color: #828282; margin: 0.53em 0 1.5em; text-transform: uppercase;">Title</p>
+          <p style="font-size: 9px; color: #828282; margin: 0.53em 0 1.5em; text-transform: uppercase;">{{credentialTitle}}</p>
           <!-- Big Text -->
           <h3 style="color: #3c393a; margin: -0.5em 0 0 0; font-size: 13px; font-weight: 600;">
-            Subtitle
+            {{credentialSubtitle}}
           </h3>
         </div>
         <div style="width: 60px;">

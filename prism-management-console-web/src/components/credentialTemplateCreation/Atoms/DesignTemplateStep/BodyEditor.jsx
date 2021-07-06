@@ -6,7 +6,7 @@ import CustomButton from '../../../common/Atoms/CustomButton/CustomButton';
 import { getDefaultAttribute } from '../../../../hooks/useTemplateSettings';
 import SortableAttributes from './SortableAttributes';
 
-const BodyEditor = props => {
+const BodyEditor = () => {
   const { t } = useTranslation();
   return (
     <Form.List name="credentialBody">
