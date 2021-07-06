@@ -46,10 +46,8 @@ class ConnectorClientServiceStub(
   ): Task[GetMessagesPaginatedResponse] = Task.pure(GetMessagesPaginatedResponse(receivedMessages))
 
   def getMessagesPaginatedStream(
-      lastSeenMessageId: Option[ConnectorMessageId],
-      limit: Int,
-      awakeDelay: FiniteDuration
-  ): Stream[Task, Seq[ReceivedMessage]] = Stream(receivedMessages)
+      lastSeenMessageId: Option[ConnectorMessageId]
+  ): Stream[Task, ReceivedMessage] = Stream.emits(receivedMessages)
 
   def getConnectionsPaginated(
       lastSeenConnectionId: Option[ConnectionId],

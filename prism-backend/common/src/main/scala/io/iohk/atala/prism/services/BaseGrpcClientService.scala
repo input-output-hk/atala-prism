@@ -1,12 +1,10 @@
 package io.iohk.atala.prism.services
 
 import java.util.Base64
-
 import scala.concurrent.Future
 import scala.util.Try
-
 import io.grpc.Metadata
-import io.grpc.stub.{AbstractStub, MetadataUtils}
+import io.grpc.stub.{AbstractStub, MetadataUtils, StreamObserver}
 import scalapb.GeneratedMessage
 import monix.eval.Task
 import org.slf4j.LoggerFactory
@@ -27,7 +25,6 @@ import io.iohk.atala.prism.services.BaseGrpcClientService.{
 import io.iohk.atala.prism.identity.DID
 import io.iohk.atala.prism.daos.DbConfigDao
 import io.iohk.atala.prism.protos.{connector_api, node_models}
-
 import doobie.implicits._
 
 /**
@@ -60,6 +57,21 @@ abstract class BaseGrpcClientService[S <: AbstractStub[S]](
         logger.error(s"Error occurred when calling grpc service: ${error.getMessage} cause: ${error.getCause}")
         Task.raiseError(error)
       }
+  }
+
+  /**
+    * Perform gRPC call with DID based authentication for stream processing.
+    *
+   * @param request gRPC request needed to create a signature
+    * @param call a gRPC method that is performed on stub with proper authorization headers
+    */
+  def authenticatedCallStream[Request <: GeneratedMessage, StreamElement](
+      request: Request,
+      streamObserver: StreamObserver[StreamElement],
+      call: S => (Request, StreamObserver[StreamElement]) => Unit
+  ): Unit = {
+    val newStub = MetadataUtils.attachHeaders(stub, signRequest(request))
+    call(newStub)(request, streamObserver)
   }
 
   private[services] def signRequest[Request <: GeneratedMessage](request: Request): Metadata = {

@@ -1,18 +1,18 @@
 package io.iohk.atala.prism.services
 
-import scala.annotation.tailrec
-import scala.concurrent.duration.DurationInt
 import fs2.Stream
 import io.grpc.Status
 import io.iohk.atala.prism.errors.PrismError
-import monix.eval.Task
-import org.slf4j.LoggerFactory
 import io.iohk.atala.prism.models.ConnectorMessageId
 import io.iohk.atala.prism.protos.connector_api.{SendMessageRequest, SendMessageResponse}
 import io.iohk.atala.prism.protos.connector_models.ReceivedMessage
 import io.iohk.atala.prism.protos.credential_models.AtalaMessage
 import io.iohk.atala.prism.services.ConnectorMessagesService.MessageProcessorNotFound
 import io.iohk.atala.prism.services.MessageProcessor.MessageProcessorResult
+import monix.eval.Task
+import org.slf4j.LoggerFactory
+
+import scala.annotation.tailrec
 
 trait MessageProcessor extends (ReceivedMessage => Option[MessageProcessorResult])
 object MessageProcessor {
@@ -30,20 +30,12 @@ class ConnectorMessagesService(
 
   private val logger = LoggerFactory.getLogger(classOf[ConnectorMessagesService])
 
-  private val GET_MESSAGES_PAGINATED_LIMIT = 100
-  private val GET_MESSAGES_PAGINATED_AWAKE_DELAY = 10.seconds
-
   val messagesUpdatesStream: Stream[Task, Unit] = {
     Stream
       .eval(findLastMessageOffset)
       .flatMap { lastSeenMessageId =>
-        connectorService.getMessagesPaginatedStream(
-          lastSeenMessageId,
-          GET_MESSAGES_PAGINATED_LIMIT,
-          GET_MESSAGES_PAGINATED_AWAKE_DELAY
-        )
+        connectorService.getMessagesPaginatedStream(lastSeenMessageId)
       }
-      .flatMap(Stream.emits)
       .evalTap { receivedMessage =>
         for {
           result <- tryToProcessMessage(messageProcessors, receivedMessage).getOrElse(

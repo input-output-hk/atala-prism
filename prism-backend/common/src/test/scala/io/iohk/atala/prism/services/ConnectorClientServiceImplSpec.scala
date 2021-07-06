@@ -1,25 +1,18 @@
 package io.iohk.atala.prism.services
 
-import java.time.{LocalDateTime, ZoneOffset}
+import io.iohk.atala.prism.connector.RequestAuthenticator
+import io.iohk.atala.prism.models.{ConnectionId, ConnectionToken, CredentialProofRequestType}
+import io.iohk.atala.prism.protos.connector_api._
+import io.iohk.atala.prism.protos.connector_models.ConnectionInfo
+import monix.eval.Task
+import monix.execution.Scheduler.Implicits.global
+import org.mockito.{ArgumentMatchersSugar, MockitoSugar}
+import org.scalatest.matchers.must.Matchers
+import org.scalatest.wordspec.AnyWordSpec
+import scalapb.GeneratedMessage
 
-import cats.syntax.option._
 import scala.concurrent.Future
 import scala.concurrent.duration._
-import scalapb.GeneratedMessage
-import monix.eval.Task
-import org.scalatest.wordspec.AnyWordSpec
-import org.scalatest.matchers.must.Matchers
-import org.mockito.{ArgumentMatchersSugar, MockitoSugar}
-import io.iohk.atala.prism.connector.RequestAuthenticator
-import io.iohk.atala.prism.protos.connector_api._
-import io.iohk.atala.prism.models.{ConnectionId, ConnectionToken}
-import io.iohk.atala.prism.models.CredentialProofRequestType
-import io.iohk.atala.prism.protos.connector_models.ReceivedMessage
-import io.iohk.atala.prism.protos.credential_models.{AtalaMessage, IssuerSentCredential}
-import io.iohk.atala.prism.protos.connector_models.ConnectionInfo
-import io.iohk.atala.prism.utils.syntax._
-
-import monix.execution.Scheduler.Implicits.global
 
 // sbt "project common" "testOnly *services.ConnectorClientServiceImplSpec"
 class ConnectorClientServiceImplSpec extends AnyWordSpec with Matchers with MockitoSugar with ArgumentMatchersSugar {
@@ -54,56 +47,6 @@ class ConnectorClientServiceImplSpec extends AnyWordSpec with Matchers with Mock
       service
         .getMessagesPaginated(lastSeenMessageId = None, limit = 10)
         .runSyncUnsafe(1.minute) mustBe response
-    }
-
-    "get messages paginated stream" when {
-      "new messages appears" should {
-        "return stream with message info" in new ConnectorStubs {
-          // given
-          val receivedMessage = ReceivedMessage(
-            "id1",
-            "0a66fcef-4d50-4a67-a365-d4dbebcf22d3",
-            AtalaMessage().withIssuerSentCredential(IssuerSentCredential()).toByteString,
-            LocalDateTime.of(2020, 6, 12, 0, 0).toInstant(ZoneOffset.UTC).toProtoTimestamp.some
-          )
-          val response = GetMessagesPaginatedResponse(Seq(receivedMessage))
-
-          when(connector.getMessagesPaginated(any))
-            .thenReturn(Future.successful(response))
-
-          // when
-          val receivedMessages: Seq[Seq[ReceivedMessage]] = service
-            .getMessagesPaginatedStream(lastSeenMessageId = None, limit = 10, 2.second)
-            .interruptAfter(1.seconds)
-            .compile
-            .toList
-            .runSyncUnsafe(1.minute)
-
-          // then
-          receivedMessages mustBe Seq(Seq(receivedMessage))
-        }
-      }
-
-      "there are no new Messages" should {
-        "return empty stream" in new ConnectorStubs {
-          // given
-          val response = GetMessagesPaginatedResponse(Nil)
-
-          when(connector.getMessagesPaginated(any))
-            .thenReturn(Future.successful(response))
-
-          // when
-          val receivedMessages: Seq[Seq[ReceivedMessage]] = service
-            .getMessagesPaginatedStream(lastSeenMessageId = None, limit = 10, 2.second)
-            .interruptAfter(1.seconds)
-            .compile
-            .toList
-            .runSyncUnsafe(1.minute)
-
-          // then
-          receivedMessages mustBe List(Nil)
-        }
-      }
     }
 
     "get connections paginated" in new ConnectorStubs {

@@ -1,30 +1,27 @@
 package io.iohk.atala.mirror
 
-import com.typesafe.config.ConfigFactory
-import org.slf4j.LoggerFactory
 import cats.effect.{ExitCode, Resource}
-import monix.eval.{Task, TaskApp}
+import com.typesafe.config.ConfigFactory
+import doobie.implicits._
 import io.grpc.Server
-import io.iohk.atala.prism.crypto.EC
-import io.iohk.atala.prism.connector.RequestAuthenticator
-import io.iohk.atala.mirror.protos.mirror_api.MirrorServiceGrpc
 import io.iohk.atala.mirror.config.{CardanoConfig, MirrorConfig}
 import io.iohk.atala.mirror.http.ApiServer
 import io.iohk.atala.mirror.http.endpoints.PaymentEndpoints
-import io.iohk.atala.mirror.services.{
-  CardanoAddressInfoService,
-  CardanoAddressService,
-  CardanoDeterministicWalletsService,
-  CredentialService,
-  MirrorServiceImpl,
-  TrisaIntegrationServiceDisabledImpl,
-  TrisaIntegrationServiceImpl,
-  TrisaPeer2PeerService,
-  TrisaService
+import io.iohk.atala.mirror.models.{CardanoAddress, LovelaceAmount, TrisaVaspAddress}
+import io.iohk.atala.mirror.protos.mirror_api.MirrorServiceGrpc
+import io.iohk.atala.mirror.protos.trisa.TrisaPeer2PeerGrpc
+import io.iohk.atala.mirror.services._
+import io.iohk.atala.mirror.task.lease.system.MirrorProcessingTaskState
+import io.iohk.atala.mirror.task.lease.system.processors.{
+  ProcessNewConnectionsStateProcessor,
+  WatchCardanoBlockchainAddressesProcessor
 }
 import io.iohk.atala.prism.config.{ConnectorConfig, NodeConfig}
+import io.iohk.atala.prism.connector.RequestAuthenticator
+import io.iohk.atala.prism.crypto.EC
 import io.iohk.atala.prism.daos.ConnectorMessageOffsetDao
-import io.iohk.atala.prism.models.CredentialProofRequestType
+import io.iohk.atala.prism.protos.connector_api.ConnectorServiceGrpc
+import io.iohk.atala.prism.protos.node_api.NodeServiceGrpc
 import io.iohk.atala.prism.repositories.TransactorFactory
 import io.iohk.atala.prism.services.{
   BaseGrpcClientService,
@@ -32,24 +29,13 @@ import io.iohk.atala.prism.services.{
   ConnectorMessagesService,
   NodeClientServiceImpl
 }
+import io.iohk.atala.prism.task.lease.system.processors.ProcessMessagesStateProcessor
+import io.iohk.atala.prism.task.lease.system._
 import io.iohk.atala.prism.utils.GrpcUtils
-import doobie.implicits._
-import io.iohk.atala.mirror.models.{CardanoAddress, LovelaceAmount, TrisaVaspAddress}
-import io.iohk.atala.mirror.protos.trisa.TrisaPeer2PeerGrpc
-import io.iohk.atala.mirror.task.lease.system.MirrorProcessingTaskState
-import io.iohk.atala.mirror.task.lease.system.processors.WatchCardanoBlockchainAddressesProcessor
-import io.iohk.atala.prism.protos.connector_api.ConnectorServiceGrpc
-import io.iohk.atala.prism.protos.node_api.NodeServiceGrpc
-import io.iohk.atala.prism.task.lease.system.{
-  ProcessingTask,
-  ProcessingTaskDao,
-  ProcessingTaskResult,
-  ProcessingTaskRouter,
-  ProcessingTaskScheduler,
-  ProcessingTaskServiceImpl
-}
 import io.iohk.atala.prism.utils.syntax.DBConnectionOps
+import monix.eval.{Task, TaskApp}
 import monix.execution.Scheduler.Implicits.global
+import org.slf4j.LoggerFactory
 
 import java.util.UUID
 
@@ -224,6 +210,9 @@ object MirrorApp extends TaskApp {
         cardanoAddressService,
         processingTaskService
       )
+      processMessagesStateProcessor =
+        new ProcessMessagesStateProcessor[MirrorProcessingTaskState](connectorMessageService)
+      processNewConnectionsStateProcessor = new ProcessNewConnectionsStateProcessor(credentialService)
 
       processingTaskRouter = new ProcessingTaskRouter[MirrorProcessingTaskState] {
         override def process(
@@ -234,6 +223,8 @@ object MirrorApp extends TaskApp {
           val processor = processingTask.state match {
             case MirrorProcessingTaskState.WatchCardanoBlockchainAddressesState =>
               watchCardanoBlockchainAddressesProcessor
+            case MirrorProcessingTaskState.ProcessConnectorMessagesState => processMessagesStateProcessor
+            case MirrorProcessingTaskState.ProcessNewConnections => processNewConnectionsStateProcessor
           }
 
           processor.process(processingTask, workerNumber)
@@ -247,16 +238,7 @@ object MirrorApp extends TaskApp {
       )
 
       monixTasks = List(
-        processingTaskScheduler.run.void,
-        connectorMessageService.messagesUpdatesStream.compile.drain,
-        credentialService
-          .connectionUpdatesStream(
-            // TODO: We are sending unsigned credential form intdemo by default, it allows
-            //       to test the Mirror with the mobile apps, to check signed flow, see: [[MirrorE2eSpec]].
-            immediatelyRequestedCredential = CredentialProofRequestType.RedlandIdCredential
-          )
-          .compile
-          .drain
+        processingTaskScheduler.run.void
       )
 
     } yield AppComponents(grpcServer, trisaGrpcServer, monixTasks)

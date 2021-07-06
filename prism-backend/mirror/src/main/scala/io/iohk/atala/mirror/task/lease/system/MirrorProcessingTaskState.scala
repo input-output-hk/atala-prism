@@ -10,4 +10,6 @@ object MirrorProcessingTaskState extends Enum[MirrorProcessingTaskState] {
 
   final case object WatchCardanoBlockchainAddressesState
       extends MirrorProcessingTaskState("WATCH_CARDANO_BLOCKCHAIN_ADDRESSES_STATE")
+  final case object ProcessConnectorMessagesState extends MirrorProcessingTaskState("PROCESS_CONNECTOR_MESSAGES_STATE")
+  final case object ProcessNewConnections extends MirrorProcessingTaskState("PROCESS_NEW_CONNECTIONS")
 }
