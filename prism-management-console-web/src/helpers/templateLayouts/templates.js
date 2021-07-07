@@ -113,9 +113,7 @@ const getBase64 = file =>
     reader.onerror = error => reject(error);
   });
 
-export const getContrastColorSettings = ({ themeColor, backgroundColor }) => {
-  return {
-    contrastThemeColor: getContrastColor(themeColor),
-    contrastBackgroundColor: getContrastColor(backgroundColor),
-  };
-};
+export const getContrastColorSettings = ({ themeColor, backgroundColor }) => ({
+  contrastThemeColor: getContrastColor(themeColor),
+  contrastBackgroundColor: getContrastColor(backgroundColor)
+});
