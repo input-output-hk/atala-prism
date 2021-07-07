@@ -45,7 +45,7 @@ class WatchCardanoBlockchainAddressesProcessor(
     processingTaskService: ProcessingTaskService[MirrorProcessingTaskState]
 ) extends ProcessingTaskProcessor[MirrorProcessingTaskState] {
 
-  private val BLOCKS_BATCH_SIZE_LIMIT = 10000
+  private val BLOCKS_BATCH_SIZE_LIMIT = 500
 
   private implicit val logger = LoggerFactory.getLogger(this.getClass)
 
