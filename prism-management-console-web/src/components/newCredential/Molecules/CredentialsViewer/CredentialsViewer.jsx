@@ -20,7 +20,6 @@ const CredentialsViewer = ({ credentialViews, showBrowseControls }) => {
 
   return (
     <div className="PreviewContainer">
-      {/* eslint-disable-next-line react/no-danger */}
       {showBrowseControls && (
         <div className="arrowsContainer">
           <button type="button" onClick={onPrev} disabled={isFirstCredential}>
@@ -38,6 +37,7 @@ const CredentialsViewer = ({ credentialViews, showBrowseControls }) => {
       <div className="PreviewCredential">
         <div
           className="credentialScroll"
+          // eslint-disable-next-line react/no-danger
           dangerouslySetInnerHTML={{ __html: credentialViews[displayedCredential] }}
         />
       </div>

@@ -48,7 +48,8 @@
           .ant-tabs-tab.ant-tabs-tab-active .ant-tabs-tab-btn {
             @include primary-text($button, $primary-color);
           }
-          .ant-tabs-ink-bar, .ant-tabs-ink-bar-animated {
+          .ant-tabs-ink-bar,
+          .ant-tabs-ink-bar-animated {
             background-color: $primary-color;
             @include primary-text($button, $primary-color);
           }
@@ -88,17 +89,23 @@
         @include primary-text($h3, $black);
       }
     }
-    .TemplateOptions {
-    }
     .themeOptions {
       .ant-radio-group {
-        width: 100%;
         .ant-radio-wrapper {
           .ant-radio-wrapper {
             margin-right: 0;
           }
         }
       }
+    }
+  }
+}
+
+.ColorPickerContainer {
+  .ant-radio-group {
+    width: 85%;
+    label {
+      margin: 0.5em 0;
     }
   }
 }
