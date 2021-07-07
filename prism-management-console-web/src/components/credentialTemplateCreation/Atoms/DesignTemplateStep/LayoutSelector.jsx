@@ -35,6 +35,4 @@ const LayoutSelector = () => {
   );
 };
 
-LayoutSelector.propTypes = {};
-
 export default LayoutSelector;

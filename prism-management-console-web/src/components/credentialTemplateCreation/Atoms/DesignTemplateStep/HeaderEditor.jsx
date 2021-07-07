@@ -29,6 +29,4 @@ const HeaderEditor = () => {
   );
 };
 
-HeaderEditor.propTypes = {};
-
 export default HeaderEditor;

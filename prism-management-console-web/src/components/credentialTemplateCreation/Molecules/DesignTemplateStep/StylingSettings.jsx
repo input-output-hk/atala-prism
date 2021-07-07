@@ -20,6 +20,4 @@ const StylingSettings = () => (
   </div>
 );
 
-StylingSettings.propTypes = {};
-
 export default StylingSettings;

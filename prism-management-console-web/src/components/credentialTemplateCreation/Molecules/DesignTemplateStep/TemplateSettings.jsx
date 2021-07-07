@@ -32,6 +32,4 @@ const TemplateSettings = () => {
   );
 };
 
-TemplateSettings.propTypes = {};
-
 export default TemplateSettings;

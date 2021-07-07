@@ -62,6 +62,4 @@ const BodyEditor = () => {
   );
 };
 
-BodyEditor.propTypes = {};
-
 export default BodyEditor;

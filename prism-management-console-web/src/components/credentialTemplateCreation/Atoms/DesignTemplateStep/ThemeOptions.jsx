@@ -47,6 +47,4 @@ const ThemeOptions = () => {
   );
 };
 
-ThemeOptions.propTypes = {};
-
 export default ThemeOptions;
