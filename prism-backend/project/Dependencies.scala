@@ -18,6 +18,8 @@ object versions {
   val grpc = "1.33.0"
   val kamon = "2.1.11"
   val logback = "1.2.3"
+  val logbackLogstash = "6.6"
+  val jaxb = "2.3.1"
   val mockito = "1.16.0"
   val monix = "3.2.2"
   val monocle = "2.1.0"
@@ -63,6 +65,8 @@ object Dependencies {
   val kamonPrometheus = "io.kamon" %% "kamon-prometheus" % versions.kamon
   val logbackCore = "ch.qos.logback" % "logback-core" % versions.logback
   val logbackClassic = "ch.qos.logback" % "logback-classic" % versions.logback
+  val logbackLogstash = "net.logstash.logback" % "logstash-logback-encoder" % versions.logbackLogstash
+  val jaxb = "javax.xml.bind" % "jaxb-api" % versions.jaxb
   val monix = "io.monix" %% "monix" % versions.monix
   val monocleCore = "com.github.julien-truffaut" %% "monocle-core" % versions.monocle
   val monocleGeneric = "com.github.julien-truffaut" %% "monocle-generic" % versions.monocle
@@ -104,7 +108,7 @@ object Dependencies {
   val doobieDependencies = Seq(doobieCore, doobiePostgresCirce, doobieHikari, doobieScalatest)
   val grpcDependencies = Seq(grpcNetty, grpcServices, grpcContext)
   val kamonDependencies = Seq(kamonBundle, kamonPrometheus)
-  val logbackDependencies = Seq(logbackCore, logbackClassic)
+  val logbackDependencies = Seq(logbackCore, logbackClassic, logbackLogstash, jaxb)
   val mockitoDependencies = Seq(mockito, mockitoScalatest)
   val monocleDependencies = Seq(monocleCore, monocleGeneric, monocleMacro)
   val scalatestDependencies = Seq(scalatest, scalatestWordspec, scalatestplus, catsScalatest)

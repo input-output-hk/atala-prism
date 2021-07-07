@@ -38,12 +38,12 @@ import io.iohk.atala.prism.node.services.ObjectManagementService.{
   Config
 }
 import io.iohk.atala.prism.node.services.models.AtalaObjectNotification
+import io.iohk.atala.prism.protos.node_internal.AtalaBlock
 import io.iohk.atala.prism.protos.node_internal.AtalaObject.Block
 import io.iohk.atala.prism.protos.{node_internal, node_models}
 import io.iohk.atala.prism.utils.syntax.DBConnectionOps
 import monix.execution.Scheduler
 import org.slf4j.LoggerFactory
-
 import scala.concurrent.Future
 import scala.concurrent.duration._
 
@@ -163,7 +163,14 @@ class ObjectManagementService private (
 
       for {
         // Insert object into DB
-        _ <- insertObjectAndOps.logSQLErrors("inserting object and operations", logger).transact(xa).unsafeToFuture()
+        _ <-
+          insertObjectAndOps
+            .logSQLErrors(
+              s"inserting object and operations \n Operations:[${atalaOperationIds.mkString("\n")}]",
+              logger
+            )
+            .transact(xa)
+            .unsafeToFuture()
         // If the ledger does not support data on-chain, then store it off-chain
         _ <- storeDataOffChain()
         // Publish object to the blockchain
@@ -211,7 +218,7 @@ class ObjectManagementService private (
               toAtalaObjectTransactionSubmissionStatus(publication.status)
             )
           )
-          .logSQLErrors("publishing and record transaction", logger)
+          .logSQLErrors(s"publishing and record transaction for [$atalaObjectId]", logger)
           .transact(xa)
           .unsafeToFuture()
     } yield publication.transaction
@@ -246,6 +253,7 @@ class ObjectManagementService private (
       transactionInfo = obj.transaction.getOrElse(throw new RuntimeException("AtalaObject has no transaction info"))
       transactionBlock =
         transactionInfo.block.getOrElse(throw new RuntimeException("AtalaObject has no transaction block"))
+      _ = logBlockRequest("processObject", block, obj)
       blockProcess = blockProcessing.processBlock(
         block,
         transactionInfo.transactionId,
@@ -259,6 +267,12 @@ class ObjectManagementService private (
     } yield wasProcessed
   }
 
+  private def logBlockRequest(methodName: String, block: AtalaBlock, atalaObject: AtalaObject): Unit = {
+    val operationIds = block.operations.map(AtalaOperationId.of).mkString("\n")
+    logger.info(
+      s"MethodName:$methodName \n Block OperationIds = [$operationIds \n] atalaObject = $atalaObject"
+    )
+  }
   private def scheduleRetryOldPendingTransactions(delay: FiniteDuration): Unit = {
     scheduler.scheduleOnce(delay) {
       // Ensure run is scheduled after completion, even if current run fails
