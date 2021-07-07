@@ -1,4 +1,4 @@
-import contrast from 'get-contrast';
+import { getContrastColor } from '../colors';
 
 import { template0 } from './template0';
 import { template1 } from './template1';
@@ -114,17 +114,8 @@ const getBase64 = file =>
   });
 
 export const getContrastColorSettings = ({ themeColor, backgroundColor }) => {
-  const black = '#000000';
-  const white = '#FFFFFF';
-
-  const themeColorVsBlackRatio = contrast.ratio(black, themeColor);
-  const themeColorVsWhiteRatio = contrast.ratio(white, themeColor);
-  const backgroundColorVsBlackRatio = contrast.ratio(black, backgroundColor);
-  const backgroundColorVsWhiteRatio = contrast.ratio(white, backgroundColor);
-
   return {
-    contrastThemeColor: themeColorVsBlackRatio > themeColorVsWhiteRatio ? black : white,
-    contrastBackgroundColor:
-      backgroundColorVsBlackRatio > backgroundColorVsWhiteRatio ? black : white
+    contrastThemeColor: getContrastColor(themeColor),
+    contrastBackgroundColor: getContrastColor(backgroundColor),
   };
 };

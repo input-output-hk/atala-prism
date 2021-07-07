@@ -15,9 +15,9 @@ export const template1 = {
           <div
             style="display: flex; flex-direction: column; width: 100%; box-sizing: border-box; border-radius: 10px 10px 0 0;">
             <!-- Small Text -->
-            <p style="font-size: 9px; color: #828282; margin: 0.53em 0 1.5em; text-transform: uppercase;">{{credentialTitle}}</p>
+            <p style="font-size: 9px; color: {{contrastThemeColor}}; margin: 0.53em 0 1.5em; text-transform: uppercase;">{{credentialTitle}}</p>
             <!-- Big Text -->
-            <h3 style="color: #3c393a; margin: -0.5em 0 0 0; font-size: 13px; font-weight: 600;">
+            <h3 style="color: {{contrastThemeColor}}; margin: -0.5em 0 0 0; font-size: 13px; font-weight: 600;">
                 {{credentialSubtitle}}
             </h3>
           </div>
@@ -27,24 +27,37 @@ export const template1 = {
           </div>
         </div>
       </div>
-    <div style="background-color: {{backgroundColor}}; width: 100%; display: flex; flex-wrap: wrap;">
+    <div 
+      style="background-color: {{backgroundColor}}; width: 100%; display: flex; flex-wrap: wrap;
+      border-radius: 0 0 10px 10px; box-shadow: 0 1px 6px 0 rgba(32, 33, 36, .28);">
       {{#attributes}}  
     </div>
   </body>`,
-  body: `    
+  dynamicAttribute: `    
     <div style="
       display: flex; flex-direction: column; justify-content: space-between; width: 100%;">
       <div style="width: 100%; box-sizing: border-box; display: flex; padding: 1em 0; padding:1em 2em;">
         <div style="width: 100%;">
           <!-- Small Text -->
-          <p style="font-size: 9px; color: #828282; margin: 0.53em 0 1.5em; text-transform: uppercase;">
+          <p style="font-size: 9px; color: {{contrastBackgroundColor}}; margin: 0.53em 0 1.5em; text-transform: uppercase;">
             {{attributeLabel}}</p>
           <!-- Big Text -->
-          <h3 style="color: #3c393a; margin: -0.5em 0 0 0; font-size: 13px; font-weight: 600;">
+          <h3 style="color: {{contrastBackgroundColor}}; margin: -0.5em 0 0 0; font-size: 13px; font-weight: 600;">
             {{{{attributeLabel}}}}
           </h3>
         </div>
       </div>
-    </div>
-`
+    </div>`,
+  fixedText: `
+    <div style="
+      display: flex; flex-direction: column; justify-content: space-between; width: 100%;">
+      <div style="width: 100%; box-sizing: border-box; display: flex; padding: 1em 0; padding:1em 2em;">
+        <div style="width: 100%;">
+          <!-- Big Text -->
+          <h3 style="color: {{contrastBackgroundColor}}; margin: -0.5em 0 0 0; font-size: 13px; font-weight: 600;">
+            {{text}}
+          </h3>
+        </div>
+      </div>
+    </div>`
 };
