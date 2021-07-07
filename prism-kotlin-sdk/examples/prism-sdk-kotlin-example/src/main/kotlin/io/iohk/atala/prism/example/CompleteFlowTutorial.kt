@@ -147,8 +147,8 @@ object CompleteFlowTutorial {
         val holderCredentialContent = CredentialContent(
             JsonObject(
                 mapOf(
-                    Pair("issuerDid", JsonPrimitive(issuerDID.value)),
-                    Pair("issuanceKeyId", JsonPrimitive(masterKeyId)),
+                    Pair("id", JsonPrimitive(issuerDID.value)),
+                    Pair("keyId", JsonPrimitive(masterKeyId)),
                     Pair(
                         "credentialSubject",
                         JsonObject(
@@ -393,9 +393,9 @@ object CompleteFlowTutorial {
         // decode the received credential
         val verifierReceivedJsonCredential =
             JsonBasedCredential.fromString(verifierReceivedCredential.encodedCredential)
-        val verifierReceivedCredentialIssuerDID = verifierReceivedJsonCredential.content.getString("issuerDid")!!
+        val verifierReceivedCredentialIssuerDID = verifierReceivedJsonCredential.content.getString("id")!!
         val verifierReceivedCredentialIssuanceKeyId =
-            verifierReceivedJsonCredential.content.getString("issuanceKeyId")!!
+            verifierReceivedJsonCredential.content.getString("keyId")!!
         println(
             """
             Verifier: Received credential decoded
@@ -461,7 +461,7 @@ object CompleteFlowTutorial {
                 merkleInclusionProof = verifierReceivedCredentialMerkleProof
             )
         }
-        assert(credentialVerificationServiceResult.verificationErrors.isEmpty()) { -> "VerificationErrors should be empty" }
+        require(credentialVerificationServiceResult.verificationErrors.isEmpty()) { -> "VerificationErrors should be empty" }
 
         // Issuer revokes the credential
         val issuerRevokeCredentialOperation = ProtoUtils.revokeCredentialsOperation(
