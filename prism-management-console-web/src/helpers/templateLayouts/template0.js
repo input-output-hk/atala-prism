@@ -14,9 +14,9 @@ export const template0 = {
                 style="background-color: {{themeColor}}; display: flex; flex-direction: column; width: 100%; padding: 1em 2em; box-sizing: border-box; border-radius: 10px 10px 0 0;">
                 <!-- Here you can change the header info -->
                 <!-- Small Text --> 
-                <p style="font-size: 9px; color: #828282; margin: 0.53em 0 1.5em; text-transform: uppercase;">{{credentialTitle}}</p>
+                <p style="font-size: 9px; color: {{contrastThemeColor}}; margin: 0.53em 0 1.5em; text-transform: uppercase;">{{credentialTitle}}</p>
                 <!-- Big Text -->
-                <h3 style="color: #3c393a; margin: -0.5em 0 0 0; font-size: 13px; font-weight: 600;">
+                <h3 style="color: {{contrastThemeColor}}; margin: -0.5em 0 0 0; font-size: 13px; font-weight: 600;">
                     {{credentialSubtitle}}
                 </h3>
             </div>
@@ -36,16 +36,16 @@ export const template0 = {
   dynamicAttribute: `
     <div style="width: 50%;">
         <!-- Small Text -->
-        <p style="font-size: 9px; color: #828282; margin: 0.53em 0 1.5em; text-transform: uppercase;">
+        <p style="font-size: 9px; color: {{contrastBackgroundColor}}; margin: 0.53em 0 1.5em; text-transform: uppercase;">
             {{attributeLabel}}</p>
         <!-- Big Text -->
-        <h3 style="color: #3c393a; margin: -0.5em 0 0 0; font-size: 13px; font-weight: 600;">
+        <h3 style="color: {{contrastBackgroundColor}}; margin: -0.5em 0 0 0; font-size: 13px; font-weight: 600;">
             {{{{attributeLabel}}}}
         </h3>
     </div>`,
   fixedText: `
     <div style="width: 50%;">
-        <h3 style="color: #3c393a; margin: -0.5em 0 0 0; font-size: 13px; font-weight: 600;">
+        <h3 style="color: {{contrastBackgroundColor}}; margin: -0.5em 0 0 0; font-size: 13px; font-weight: 600;">
             {{text}}
         </h3>
     </div>`

@@ -1,3 +1,5 @@
+import contrast from 'get-contrast';
+
 import { template0 } from './template0';
 import { template1 } from './template1';
 import { template2 } from './template2';
@@ -38,3 +40,91 @@ export const templateLayouts = [
     ...template4
   }
 ];
+
+export const placeholders = {
+  themeColor: '{{themeColor}}',
+  backgroundColor: '{{backgroundColor}}',
+  contrastThemeColor: '{{contrastThemeColor}}',
+  contrastBackgroundColor: '{{contrastBackgroundColor}}',
+  image0: '{{image0}}',
+  image1: '{{image1}}',
+  credentialTitle: '{{credentialTitle}}',
+  credentialSubtitle: '{{credentialSubtitle}}',
+  attributeLabel: '{{attributeLabel}}',
+  attributeType: '{{attributeType}}',
+  text: '{{text}}'
+};
+
+export const configureHtmlTemplate = (tempalteId, currentConfig) => {
+  const htmlTemplate = templateLayouts[tempalteId];
+  const configuredHeader = updateHeader(htmlTemplate, currentConfig);
+  const configuredBody = updateBody(htmlTemplate, currentConfig);
+  const mergedHtml = replacePlaceholdersFromObject(
+    configuredHeader,
+    { attributes: '{{#attributes}}' },
+    {
+      attributes: configuredBody
+    }
+  );
+
+  return mergedHtml;
+};
+
+// replaces {{placeholders}} with object value (unless the value is undefined).
+const replacePlaceholdersFromObject = (html, ph, data) =>
+  Object.keys(ph).reduce(
+    (template, key) => template.replaceAll(ph[key], data[key] || ph[key]),
+    html
+  );
+
+const updateHeader = ({ header }, currentSettings) =>
+  replacePlaceholdersFromObject(header, placeholders, currentSettings);
+
+const updateBody = (htmlTemplateBody, currentSettings) => {
+  const filledTemplate = fillBody(htmlTemplateBody, currentSettings);
+  return replacePlaceholdersFromObject(filledTemplate, placeholders, currentSettings);
+};
+
+const fillBody = ({ dynamicAttribute, fixedText }, currentSettings) => {
+  const bodyParts = currentSettings?.credentialBody?.map(attribute =>
+    replacePlaceholdersFromObject(
+      attribute.isFixedText ? fixedText : dynamicAttribute,
+      placeholders,
+      attribute
+    )
+  );
+  return bodyParts.reduce((compilation, part) => compilation.concat(part), '');
+};
+
+// FIXME: any better solution to this forced update? better names than image0-1
+export const updateImages = async ({ companyIcon, userIcon }, setImagesOverwrites) => {
+  if (!companyIcon && !userIcon) return;
+  const image0 = companyIcon?.length && (await getBase64(companyIcon[0].originFileObj));
+  const image1 = userIcon?.length && (await getBase64(userIcon[0].originFileObj));
+
+  setImagesOverwrites({ ...(image0 && { image0 }), ...(image1 && { image1 }) });
+};
+
+const getBase64 = file =>
+  new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.readAsDataURL(file);
+    reader.onload = () => resolve(reader.result);
+    reader.onerror = error => reject(error);
+  });
+
+export const getContrastColorSettings = ({ themeColor, backgroundColor }) => {
+  const black = '#000000';
+  const white = '#FFFFFF';
+
+  const themeColorVsBlackRatio = contrast.ratio(black, themeColor);
+  const themeColorVsWhiteRatio = contrast.ratio(white, themeColor);
+  const backgroundColorVsBlackRatio = contrast.ratio(black, backgroundColor);
+  const backgroundColorVsWhiteRatio = contrast.ratio(white, backgroundColor);
+
+  return {
+    contrastThemeColor: themeColorVsBlackRatio > themeColorVsWhiteRatio ? black : white,
+    contrastBackgroundColor:
+      backgroundColorVsBlackRatio > backgroundColorVsWhiteRatio ? black : white
+  };
+};

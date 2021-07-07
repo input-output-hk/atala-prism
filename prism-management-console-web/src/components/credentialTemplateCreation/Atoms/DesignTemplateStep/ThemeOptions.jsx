@@ -5,6 +5,7 @@ import ColorPicker from './ColorPicker';
 import './_style.scss';
 
 const themeColors = [
+  '#D8D8D8',
   '#FF2D3B',
   '#40EAEA',
   '#2BB5B5',
@@ -18,7 +19,8 @@ const themeColors = [
   '#011727',
   '#808080'
 ];
-const backgroundColors = ['#0C8762', '#2ACA9A', '#79CEB5', '#D8D8D8'];
+
+const backgroundColors = ['#FFFFFF', '#0C8762', '#2ACA9A', '#79CEB5', '#D8D8D8', '#000000'];
 
 const ThemeOptions = () => {
   const { t } = useTranslation();

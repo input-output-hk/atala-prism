@@ -7,7 +7,7 @@ export const getNewDynamicAttribute = attributes => {
   const index = attributes.length;
   const dynamicAttributeIndex = attributes.filter(attr => !attr.isFixedText).length;
   return {
-    attributeLabel: `Attibute ${dynamicAttributeIndex + 1}`,
+    attributeLabel: `Attribute ${dynamicAttributeIndex + 1}`,
     attributeType: undefined,
     dynamicAttributeIndex,
     key: index
@@ -26,7 +26,7 @@ export const getNewFixedTextAttribute = attributes => {
 };
 
 const getDefaultAttribute = index => ({
-  attributeLabel: `Attibute ${index + 1}`,
+  attributeLabel: `Attribute ${index + 1}`,
   attributeType: undefined,
   dynamicAttributeIndex: index,
   key: index
@@ -38,8 +38,8 @@ const defaultTemplate = {
   name: '',
   category: undefined,
   layout: 0,
-  themeColor: '#FF2D3B',
-  backgroundColor: '#0C8762',
+  themeColor: '#D8D8D8',
+  backgroundColor: '#FFFFFF',
   image0,
   image1,
   credentialTitle: 'Title',
