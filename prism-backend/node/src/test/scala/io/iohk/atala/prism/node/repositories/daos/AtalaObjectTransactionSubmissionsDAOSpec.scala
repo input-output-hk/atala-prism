@@ -1,5 +1,6 @@
 package io.iohk.atala.prism.node.repositories.daos
 
+import cats.syntax.functor._
 import doobie.free.connection.ConnectionIO
 import doobie.implicits._
 import io.iohk.atala.prism.AtalaWithPostgresSpec
@@ -261,7 +262,9 @@ class AtalaObjectTransactionSubmissionsDAOSpec extends AtalaWithPostgresSpec {
     AtalaObjectsDAO
       .insert(AtalaObjectsDAO.AtalaObjectCreateData(objectId, byteContent))
       .transact(database)
-      .unsafeRunSync()
+      .unsafeToFuture()
+      .void
+      .futureValue
   }
 
   private implicit class TestOps[T](connection: ConnectionIO[T]) {

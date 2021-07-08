@@ -9,12 +9,22 @@ import io.iohk.atala.prism.credentials.CredentialBatchId
 import io.iohk.atala.prism.crypto.MerkleTree.MerkleRoot
 import io.iohk.atala.prism.crypto.SHA256Digest
 import io.iohk.atala.prism.identity.DIDSuffix
+import io.iohk.atala.prism.models.Ledger
 import io.iohk.atala.prism.node.cardano.{LAST_SYNCED_BLOCK_NO, LAST_SYNCED_BLOCK_TIMESTAMP}
-import io.iohk.atala.prism.node.models.{AtalaObjectId, AtalaOperationInfo, AtalaOperationStatus, DIDData, DIDPublicKey}
+import io.iohk.atala.prism.node.models.{
+  AtalaObjectId,
+  AtalaObjectTransactionSubmission,
+  AtalaObjectTransactionSubmissionStatus,
+  AtalaOperationInfo,
+  AtalaOperationStatus,
+  DIDData,
+  DIDPublicKey
+}
 import io.iohk.atala.prism.node.models.nodeState.{DIDDataState, DIDPublicKeyState, LedgerData}
 import io.iohk.atala.prism.node.repositories.daos.AtalaObjectsDAO.AtalaObjectCreateData
 import io.iohk.atala.prism.node.repositories.daos.CredentialBatchesDAO.CreateCredentialBatchData
 import io.iohk.atala.prism.node.repositories.daos.{
+  AtalaObjectTransactionSubmissionsDAO,
   AtalaObjectsDAO,
   AtalaOperationsDAO,
   CredentialBatchesDAO,
@@ -165,6 +175,17 @@ object DataPreparation {
   def getOperationInfo(atalaOperationId: AtalaOperationId)(implicit xa: Transactor[IO]): Option[AtalaOperationInfo] = {
     AtalaOperationsDAO
       .getAtalaOperationInfo(atalaOperationId)
+      .transact(xa)
+      .unsafeRunSync()
+  }
+
+  def getPendingSubmissions()(implicit xa: Transactor[IO]): List[AtalaObjectTransactionSubmission] = {
+    AtalaObjectTransactionSubmissionsDAO
+      .getBy(
+        olderThan = Instant.now(),
+        status = AtalaObjectTransactionSubmissionStatus.Pending,
+        ledger = Ledger.InMemory
+      )
       .transact(xa)
       .unsafeRunSync()
   }

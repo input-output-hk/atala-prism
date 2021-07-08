@@ -8,7 +8,7 @@ import io.iohk.atala.prism.credentials.{CredentialBatchId, TimestampInfo}
 import io.iohk.atala.prism.crypto.MerkleTree.MerkleRoot
 import io.iohk.atala.prism.crypto.{ECPublicKey, SHA256Digest}
 import io.iohk.atala.prism.identity.DIDSuffix
-import io.iohk.atala.prism.models.{Ledger, TransactionId, TransactionInfo}
+import io.iohk.atala.prism.models.{Ledger, TransactionId}
 import io.iohk.atala.prism.node.repositories.daos.KeyValuesDAO
 
 import java.time.Instant
@@ -45,16 +45,6 @@ package object models {
 
     val CREDENTIAL_ID_RE = "^[0-9a-f]{64}$".r
   }
-
-  case class AtalaObject(
-      objectId: AtalaObjectId,
-      // Serialization of a io.iohk.atala.prism.protos.node_internal.AtalaObject
-      byteContent: Array[Byte],
-      // Whether the object has been processed (e.g., DIDs were recognized and stored in DB)
-      processed: Boolean,
-      // Blockchain transaction the object was first found in
-      transaction: Option[TransactionInfo] = None
-  )
 
   case class AtalaOperationInfo(
       operationId: AtalaOperationId,

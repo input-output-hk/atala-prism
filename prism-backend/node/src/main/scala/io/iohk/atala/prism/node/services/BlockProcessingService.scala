@@ -83,6 +83,7 @@ class BlockProcessingServiceImpl extends BlockProcessingService {
                 // we want operations to be atomic - either it is applied correctly or the state is not modified
                 // we are using SQL savepoints for that, which can be used to do subtransactions
                 savepoint <- connection.setSavepoint
+                atalaOperationInfo <- AtalaOperationsDAO.getAtalaOperationInfo(atalaOperationId)
                 _ <- processOperation(parsedOperation, protoOperation, atalaOperationId)
                   .flatMap {
                     case Right(_) =>
@@ -103,8 +104,16 @@ class BlockProcessingServiceImpl extends BlockProcessingService {
                         atalaOperationId.toString,
                         protoOperation
                       )
-                      connection.rollback(savepoint)
-                      AtalaOperationsDAO.updateAtalaOperationStatus(atalaOperationId, AtalaOperationStatus.REJECTED)
+                      connection
+                        .rollback(savepoint)
+                        .flatMap { _ =>
+                          if (atalaOperationInfo.exists(_.operationStatus != AtalaOperationStatus.APPLIED)) {
+                            AtalaOperationsDAO
+                              .updateAtalaOperationStatus(atalaOperationId, AtalaOperationStatus.REJECTED)
+                          } else {
+                            connection.unit
+                          }
+                        }
                   }
               } yield ()
               result

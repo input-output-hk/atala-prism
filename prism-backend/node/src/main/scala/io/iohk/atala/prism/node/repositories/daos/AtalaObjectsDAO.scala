@@ -6,18 +6,19 @@ import doobie.free.connection.ConnectionIO
 import doobie.implicits._
 import doobie.implicits.legacy.instant._
 import io.iohk.atala.prism.models.TransactionInfo
-import io.iohk.atala.prism.node.models.{AtalaObject, AtalaObjectId}
+import io.iohk.atala.prism.node.models.{AtalaObjectInfo, AtalaObjectId}
 
 object AtalaObjectsDAO {
 
   case class AtalaObjectCreateData(objectId: AtalaObjectId, byteContent: Array[Byte])
   case class AtalaObjectSetTransactionInfo(objectId: AtalaObjectId, transactionInfo: TransactionInfo)
 
-  def insert(data: AtalaObjectCreateData): ConnectionIO[Unit] = {
+  def insert(data: AtalaObjectCreateData): ConnectionIO[Int] = {
     sql"""
          |INSERT INTO atala_objects (atala_object_id, object_content)
          |VALUES (${data.objectId}, ${data.byteContent})
-       """.stripMargin.update.run.void
+         |ON CONFLICT (atala_object_id) DO NOTHING
+       """.stripMargin.update.run
   }
 
   def setTransactionInfo(data: AtalaObjectSetTransactionInfo): ConnectionIO[Unit] = {
@@ -32,7 +33,7 @@ object AtalaObjectsDAO {
     }
   }
 
-  def get(objectId: AtalaObjectId): ConnectionIO[Option[AtalaObject]] = {
+  def get(objectId: AtalaObjectId): ConnectionIO[Option[AtalaObjectInfo]] = {
     sql"""
          |SELECT obj.atala_object_id, obj.object_content, obj.processed,
          |       tx.transaction_id, tx.ledger, tx.block_number, tx.block_timestamp, tx.block_index
@@ -40,7 +41,7 @@ object AtalaObjectsDAO {
          |  LEFT OUTER JOIN atala_object_txs AS tx ON tx.atala_object_id = obj.atala_object_id
          |WHERE obj.atala_object_id = $objectId
        """.stripMargin
-      .query[AtalaObject]
+      .query[AtalaObjectInfo]
       .option
   }
 

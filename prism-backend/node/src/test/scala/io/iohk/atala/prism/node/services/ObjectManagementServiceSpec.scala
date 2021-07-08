@@ -14,9 +14,11 @@ import io.iohk.atala.prism.models.{
   TransactionInfo,
   TransactionStatus
 }
+import io.iohk.atala.prism.node.cardano
+import io.iohk.atala.prism.node.cardano.models.AtalaObjectMetadata.estimateTxMetadataSize
 import io.iohk.atala.prism.node.models.{
-  AtalaObject,
   AtalaObjectId,
+  AtalaObjectInfo,
   AtalaObjectTransactionSubmission,
   AtalaObjectTransactionSubmissionStatus,
   AtalaOperationStatus
@@ -36,6 +38,7 @@ import org.mockito.captor.ArgCaptor
 import org.mockito.scalatest.{MockitoSugar, ResetMocksAfterEachTest}
 import org.scalatest.BeforeAndAfterEach
 import org.scalatest.OptionValues._
+import org.scalatest.concurrent.ScalaFutures
 
 import java.time.{Duration, Instant}
 import scala.concurrent.Future
@@ -118,7 +121,7 @@ class ObjectManagementServiceSpec
       atalaOperationInfo.transactionId.value must be(dummyPublicationInfo.transaction.transactionId)
     }
 
-    "raise AtalaOperationAlreadyPublished error when publish the same operation twice" in {
+    "ignore publishing duplicate operation" in {
       doReturn(Future.successful(dummyPublicationInfo)).when(ledger).publish(*)
       doReturn(true).when(ledger).supportsOnChainData
 
@@ -127,8 +130,8 @@ class ObjectManagementServiceSpec
       val returnedAtalaOperation = objectManagementService.publishSingleAtalaOperation(atalaOperation).futureValue
       returnedAtalaOperation mustBe atalaOperationId
 
-      whenReady(objectManagementService.publishSingleAtalaOperation(atalaOperation).failed) { err =>
-        err mustBe a[AtalaOperationAlreadyPublished]
+      ScalaFutures.whenReady(objectManagementService.publishSingleAtalaOperation(atalaOperation).failed) { err =>
+        err mustBe a[DuplicateAtalaBlock]
       }
 
       val atalaOperationInfo = objectManagementService.getOperationInfo(atalaOperationId).futureValue.value
@@ -138,20 +141,23 @@ class ObjectManagementServiceSpec
       atalaOperationInfo.transactionId.value must be(dummyPublicationInfo.transaction.transactionId)
     }
 
-    "raise AtalaBlockInvalid error when publish batch with duplications" in {
+    "ignore publishing duplicate operation in the same block" in {
       doReturn(Future.successful(dummyPublicationInfo)).when(ledger).publish(*)
       doReturn(true).when(ledger).supportsOnChainData
 
       val atalaOperation = BlockProcessingServiceSpec.signedCreateDidOperation
       val atalaOperationId = BlockProcessingServiceSpec.signedCreateDidOperationId
 
-      whenReady(objectManagementService.publishAtalaOperations(atalaOperation, atalaOperation).failed) { err =>
-        err mustBe a[AtalaBlockInvalid]
-      }
+      val opIds = objectManagementService.publishAtalaOperations(atalaOperation, atalaOperation).futureValue
 
-      val atalaOperationInfo = objectManagementService.getOperationInfo(atalaOperationId).futureValue
+      opIds.size mustBe 2
+      opIds.head mustBe atalaOperationId
+      opIds.last mustBe atalaOperationId
 
-      atalaOperationInfo must be(None)
+      val atalaOperationInfo = objectManagementService.getOperationInfo(atalaOperationId).futureValue.value
+
+      atalaOperationInfo.operationStatus must be(AtalaOperationStatus.RECEIVED)
+      atalaOperationInfo.transactionSubmissionStatus must be(Some(AtalaObjectTransactionSubmissionStatus.Pending))
     }
 
     "put block content onto the ledger when supported" in {
@@ -358,7 +364,7 @@ class ObjectManagementServiceSpec
       verifyNoMoreInteractions(blockProcessing)
     }
 
-    def queryAtalaObject(obj: node_internal.AtalaObject): AtalaObject = {
+    def queryAtalaObject(obj: node_internal.AtalaObject): AtalaObjectInfo = {
       AtalaObjectsDAO.get(AtalaObjectId.of(obj)).transact(database).unsafeRunSync().value
     }
   }
@@ -436,6 +442,81 @@ class ObjectManagementServiceSpec
       // It should have published twice and deleted the first one
       verify(ledger, times(2)).publish(atalaObject)
       verify(ledger).deleteTransaction(dummyTransactionInfo.transactionId)
+    }
+
+    "merge several operations in one transaction while retrying" in {
+      val atalaOperations = (0 to 20).toList.map { masterId =>
+        BlockProcessingServiceSpec.signOperation(
+          BlockProcessingServiceSpec.createDidOperation,
+          s"master$masterId",
+          CreateDIDOperationSpec.masterKeys.privateKey
+        )
+      }
+      val atalaObjects = atalaOperations.map { op =>
+        createAtalaObject(block = createBlock(op))
+      }
+      val objs = atalaObjects.map { obj =>
+        AtalaObjectInfo(AtalaObjectId.of(obj), obj.toByteArray, processed = false)
+      }.reverse
+      var accObj = objs.head
+
+      val secondMergedBlockSize = 1 + objs.tail.takeWhile { obj =>
+        obj.mergeIfPossible(accObj) match {
+          case Some(mergedObj) =>
+            accObj = mergedObj
+            true
+          case None =>
+            false
+        }
+      }.size
+      val firstMergedBlockSize = atalaObjects.size - secondMergedBlockSize
+
+      val atalaObjectMerged1 = createAtalaObject(
+        block = node_internal.AtalaBlock(version = "1.0", operations = atalaOperations.take(firstMergedBlockSize)),
+        opsCount = firstMergedBlockSize
+      )
+      val atalaObjectMerged2 = createAtalaObject(
+        block = node_internal.AtalaBlock(version = "1.0", operations = atalaOperations.drop(firstMergedBlockSize)),
+        opsCount = secondMergedBlockSize
+      )
+
+      val dummyTransactionIds = (0 to (atalaOperations.size + 2)).map { index =>
+        TransactionId.from(SHA256Digest.compute(s"id$index".getBytes).value).value
+      }
+      val dummyTransactionInfos = dummyTransactionIds.map { transactionId =>
+        dummyTransactionInfo.copy(transactionId = transactionId)
+      }
+      val dummyPublicationInfos = dummyTransactionInfos.map { transactionInfo =>
+        dummyPublicationInfo.copy(transaction = transactionInfo)
+      }
+
+      doReturn(true).when(ledger).supportsOnChainData
+      (atalaObjects :+ atalaObjectMerged1 :+ atalaObjectMerged2).zip(dummyPublicationInfos).foreach {
+        case (atalaObject, publicationInfo) =>
+          doReturn(Future.successful(publicationInfo)).when(ledger).publish(atalaObject)
+          mockTransactionStatus(publicationInfo.transaction.transactionId, TransactionStatus.Pending)
+      }
+      dummyPublicationInfos.dropRight(2).foreach { publicationInfo =>
+        doReturn(Future.unit).when(ledger).deleteTransaction(publicationInfo.transaction.transactionId)
+      }
+
+      // publish operations sequentially because we want to preserve the order by timestamps
+      atalaOperations.foreach { atalaOperation =>
+        objectManagementService.publishSingleAtalaOperation(atalaOperation).futureValue
+      }
+
+      objectManagementService.retryOldPendingTransactions().futureValue
+
+      verify(ledger, times(atalaObjects.size + 2))
+        .publish(*) // publish transactions for initial objects and for two new objects
+
+      assert(estimateTxMetadataSize(atalaObjectMerged1) < cardano.TX_METADATA_MAX_SIZE)
+      assert(estimateTxMetadataSize(atalaObjectMerged2) < cardano.TX_METADATA_MAX_SIZE)
+      assert(
+        estimateTxMetadataSize(atalaObjectMerged2) > cardano.TX_METADATA_MAX_SIZE / 2
+      ) // check that merged object is big enough
+
+      DataPreparation.getPendingSubmissions().size must be(2)
     }
 
     "not retry new pending transactions" in {
@@ -598,18 +679,19 @@ class ObjectManagementServiceSpec
 
   protected def createAtalaObject(
       block: node_internal.AtalaBlock = createBlock(),
-      includeBlock: Boolean = true
+      includeBlock: Boolean = true,
+      opsCount: Int = 1
   ): node_internal.AtalaObject = {
     if (includeBlock) {
       node_internal.AtalaObject(
         block = node_internal.AtalaObject.Block.BlockContent(block),
-        blockOperationCount = 1
+        blockOperationCount = opsCount
       )
     } else {
       val blockHash = storeBlock(block)
       node_internal.AtalaObject(
         block = node_internal.AtalaObject.Block.BlockHash(ByteString.copyFrom(blockHash.value.toArray)),
-        blockOperationCount = 1
+        blockOperationCount = opsCount
       )
     }
   }

@@ -88,4 +88,8 @@ object AtalaObjectMetadata {
       )
     )
   }
+
+  def estimateTxMetadataSize(atalaObject: node_internal.AtalaObject): Int = {
+    toTransactionMetadata(atalaObject).json.noSpaces.length
+  }
 }

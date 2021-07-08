@@ -91,6 +91,8 @@ package object operations {
 
     // Error signifying that the associated batch is already revoked
     case class BatchAlreadyRevoked(batchId: String) extends StateError
+
+    case class DuplicateOperation() extends StateError
   }
 
   /** Data required to verify the correctness of the operation */
