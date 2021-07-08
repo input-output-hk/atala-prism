@@ -1,6 +1,7 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { Form } from 'antd';
 import { useTranslation } from 'react-i18next';
+import Logger from '../../helpers/Logger';
 import { UPDATE_FIELDS, useTemplateSettings } from '../../hooks/useTemplateSettings';
 
 const TemplateContext = React.createContext();
@@ -16,6 +17,10 @@ const TemplateProvider = props => {
 
   const handleFormUpdate = newSetting =>
     setTemplateSettings({ type: UPDATE_FIELDS, payload: newSetting });
+
+  useEffect(() => {
+    Logger.debug('[Template Creation] partial template settings:', templateSettings);
+  }, [templateSettings]);
 
   return (
     <Form

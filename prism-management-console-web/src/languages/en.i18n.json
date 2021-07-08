@@ -600,9 +600,13 @@
     "actions": {
       "addCategory": "Add New"
     },
+    "fields" : {
+      "category": "Category"
+    },
     "errors":  {
-      "required":"${label} is required",
-      "preExisting": "A template called '{{value}}' already exists"
+      "required": "${label} is required",
+      "preExisting": "A template called '{{value}}' already exists",
+      "fieldIsRequired": "{{field}} is required"
     }
   },
   "landing": {

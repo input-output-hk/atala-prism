@@ -13,15 +13,16 @@ const ADD_NEW_CATEGORY_KEY = 'ADD_NEW_CATEGORY_KEY';
 
 const CategorySelector = ({ templateCategories }) => {
   const { t } = useTranslation();
-  const [selected, setSelected] = useState();
-  const { form } = useTemplateContext();
+  const { form, templateSettings } = useTemplateContext();
+  const initialSelection = parseInt(templateSettings.category, 10);
+  const [selected, setSelected] = useState(initialSelection);
 
   const categories = templateCategories.filter(({ state }) => state === ENABLED_STATE);
 
   const handleAddNewCategory = () => {
     // TODO: implement add new category functionality
     message.warn(t('errors.notImplementedYet'));
-    form.resetFields(['templateCategory']);
+    form.resetFields(['category']);
   };
 
   const onCategoryChange = ev => {
@@ -30,13 +31,26 @@ const CategorySelector = ({ templateCategories }) => {
   };
 
   return (
-    <div className="flex selectCathegory">
+    <div className="flex selectCategory">
       <Form.Item
         name="category"
         label={t('credentialTemplateCreation.step1.selectCategory')}
         rules={[
           {
-            required: true
+            required: true,
+            message: t('credentialTemplateCreation.errors.fieldIsRequired', {
+              field: t('credentialTemplateCreation.fields.category')
+            })
+          },
+          {
+            validator: ({ field }, value) =>
+              Number.isNaN(parseInt(value, 10))
+                ? Promise.reject(
+                    t('credentialTemplateCreation.errors.fieldIsRequired', {
+                      field: t(`credentialTemplateCreation.fields.${field}`)
+                    })
+                  )
+                : Promise.resolve()
           }
         ]}
       >

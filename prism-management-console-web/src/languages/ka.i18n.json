@@ -569,13 +569,14 @@
         "credentialSubtitle": "Credential Subtitle",
         "addAttribute": "Add Attribute",
         "addFixedText": "Add Fixed Text",
-        "attributeLabel": "Attribute {{index}} Label",
-        "attributeType": "Label Type",
-        "attributeTypeOptions": {
+        "dynamicAttributeLabel": "Attribute {{index}} Label",
+        "dynamicAttributeType": "Label Type",
+        "dynamicAttributeTypeOptions": {
           "text": "Text",
           "date": "Date",
           "number": "Number"
-        }
+        },
+        "fixedTextAttribute": "Fixed Text {{index}}"
       }
     },
     "step3": {
@@ -599,9 +600,13 @@
     "actions": {
       "addCategory": "Add New"
     },
+    "fields" : {
+      "category": "Category"
+    },
     "errors":  {
-      "required":"${label} is required",
-      "preExisting": "A template called '{{value}}' already exists"
+      "required": "${label} is required",
+      "preExisting": "A template called '{{value}}' already exists",
+      "fieldIsRequired": "{{field}} is required"
     }
   },
   "landing": {

@@ -18,11 +18,9 @@ const TemplatePreview = () => {
   }, [templateSettings]);
 
   useEffect(() => {
-    const formValues = form.getFieldsValue();
     const contrastColorSettings = getContrastColorSettings(templateSettings);
     const currentConfig = {
       ...templateSettings,
-      ...formValues,
       ...imageOverwrites,
       ...contrastColorSettings
     };

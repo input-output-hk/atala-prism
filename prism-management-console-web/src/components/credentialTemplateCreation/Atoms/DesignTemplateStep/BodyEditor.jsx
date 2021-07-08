@@ -12,15 +12,12 @@ import { useTemplateContext } from '../../../providers/TemplateContext';
 
 const BodyEditor = () => {
   const { t } = useTranslation();
-  const { form, templateSettings } = useTemplateContext();
-  const formValues = form.getFieldsValue();
-
-  const currentConfig = { ...templateSettings, ...formValues };
+  const { templateSettings } = useTemplateContext();
 
   return (
     <Form.List name="credentialBody">
       {(attributes, { add, move, remove }) => {
-        const attributesWithValues = currentConfig.credentialBody;
+        const attributesWithValues = templateSettings.credentialBody;
 
         const mergedAttributes = attributes.map((attr, index) => ({
           ...attr,
