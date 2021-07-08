@@ -23,7 +23,7 @@ export const template2 = {
           </div>
           <div style="width: 60px;">
             <!-- here you can change the credential image -->
-            <img src={{image0}} />
+            <img src={{image0}} style="width: 44px;" />
           </div>
         </div>
         <div 
@@ -34,19 +34,20 @@ export const template2 = {
       </div>
     </body>`,
   dynamicAttribute: `          
-    <div style="width: 50%;">
+    <div style="width: 50%; width: calc(50% - 1em); margin: 0.5em;">
       <!-- Small Text -->
-      <p style="font-size: 9px; color: {{contrastBackgroundColor}}; margin: 0.53em 0 1.5em; text-transform: uppercase;">
+      <p style="font-size: 9px; color: {{contrastBackgroundColor}}; margin: 0.53em 0 1.5em; text-transform: uppercase; word-break: break-all;">
         {{attributeLabel}}</p>
       <!-- Big Text -->
-      <h3 style="color: {{contrastBackgroundColor}}; margin: -0.5em 0 0 0; font-size: 13px; font-weight: 600;">
-        {{{{attributeLabel}}}}
+      <h3 style="color: {{contrastBackgroundColor}}; font-size: 13px; font-weight: 600; word-break: break-all;">
+        {{{{attributeLabelPlaceholder}}}}
       </h3>
     </div>`,
   fixedText: `         
-    <div style="width: 50%;">
+    <div style="width: 50%; width: calc(50% - 1em); margin: 0.5em; 
+    display: flex; align-items: flex-end; justify-content: flex-start;">
       <!-- Big Text -->
-      <h3 style="color: {{contrastBackgroundColor}}; margin: -0.5em 0 0 0; font-size: 13px; font-weight: 600;">
+      <h3 style="color: {{contrastBackgroundColor}}; font-size: 13px; font-weight: 600; word-break: break-all;">
         {{text}}
       </h3>
     </div>`

@@ -23,7 +23,7 @@ export const template4 = {
           </div>
           <div style="width: 60px;">
             <!-- here you can change the credential image -->
-            <img src={{image0}} />
+            <img src={{image0}} style="width: 44px;" />
           </div>
         </div>
         <div 
@@ -31,7 +31,7 @@ export const template4 = {
           border-radius: 0 0 10px 10px; box-shadow: 0 1px 6px 0 rgba(32, 33, 36, .28);">
           <div style="width: 80px; display: flex; padding: 0 0 0 1em; justify-content: center; align-items: center;">
             <!-- here you can change the credential image -->
-            <img src={{image1}} /> 
+            <img src={{image1}} style="width: 44px;" /> 
           </div>
           <div style="width: 320px; padding: 1em;">
           {{#attributes}}
@@ -42,17 +42,17 @@ export const template4 = {
   dynamicAttribute: `
     <div>
       <!-- Small Text -->
-      <p style="font-size: 9px; color: {{contrastBackgroundColor}}; margin: 0.53em 0 1.5em; text-transform: uppercase;">
+      <p style="font-size: 9px; color: {{contrastBackgroundColor}}; margin: 0.53em 0 1.5em; text-transform: uppercase; word-break: break-all;">
         {{attributeLabel}}</p>
       <!-- Big Text -->
-      <h3 style="color: {{contrastBackgroundColor}}; margin: -0.5em 0 0 0; font-size: 13px; font-weight: 600;">
-        {{{{attributeLabel}}}}
+      <h3 style="color: {{contrastBackgroundColor}}; font-size: 13px; font-weight: 600; word-break: break-all;">
+        {{{{attributeLabelPlaceholder}}}}
       </h3>
     </div>`,
   fixedText: `
-    <div>
+    <div style="display: flex; align-items: flex-end; justify-content: flex-start;">
       <!-- Big Text -->
-      <h3 style="color: {{contrastBackgroundColor}}; margin: -0.5em 0 0 0; font-size: 13px; font-weight: 600;">
+      <h3 style="color: {{contrastBackgroundColor}}; font-size: 13px; font-weight: 600; word-break: break-all;">
         {{text}}
       </h3>
     </div>`

@@ -23,7 +23,7 @@ export const template1 = {
           </div>
           <div style="width: 60px;">
             <!-- here you can change the credential image -->
-            <img src={{image0}} />
+            <img src={{image0}} style="width: 44px;" />
           </div>
         </div>
       </div>
@@ -39,11 +39,11 @@ export const template1 = {
       <div style="width: 100%; box-sizing: border-box; display: flex; padding: 1em 0; padding:1em 2em;">
         <div style="width: 100%;">
           <!-- Small Text -->
-          <p style="font-size: 9px; color: {{contrastBackgroundColor}}; margin: 0.53em 0 1.5em; text-transform: uppercase;">
+          <p style="font-size: 9px; color: {{contrastBackgroundColor}}; margin: 0.53em 0 1.5em; text-transform: uppercase; word-break: break-all;">
             {{attributeLabel}}</p>
           <!-- Big Text -->
-          <h3 style="color: {{contrastBackgroundColor}}; margin: -0.5em 0 0 0; font-size: 13px; font-weight: 600;">
-            {{{{attributeLabel}}}}
+          <h3 style="color: {{contrastBackgroundColor}}; font-size: 13px; font-weight: 600; word-break: break-all;">
+            {{{{attributeLabelPlaceholder}}}}
           </h3>
         </div>
       </div>
@@ -52,9 +52,9 @@ export const template1 = {
     <div style="
       display: flex; flex-direction: column; justify-content: space-between; width: 100%;">
       <div style="width: 100%; box-sizing: border-box; display: flex; padding: 1em 0; padding:1em 2em;">
-        <div style="width: 100%;">
-          <!-- Big Text -->
-          <h3 style="color: {{contrastBackgroundColor}}; margin: -0.5em 0 0 0; font-size: 13px; font-weight: 600;">
+        <div style="width: 100%; display: flex; align-items: flex-end; justify-content: flex-start;">
+        <!-- Big Text -->
+          <h3 style="color: {{contrastBackgroundColor}}; font-size: 13px; font-weight: 600; word-break: break-all;">
             {{text}}
           </h3>
         </div>

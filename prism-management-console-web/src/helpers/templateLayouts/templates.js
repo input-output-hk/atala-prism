@@ -1,3 +1,4 @@
+import _ from 'lodash';
 import { getContrastColor } from '../colors';
 
 import { template0 } from './template0';
@@ -51,6 +52,7 @@ export const placeholders = {
   credentialTitle: '{{credentialTitle}}',
   credentialSubtitle: '{{credentialSubtitle}}',
   attributeLabel: '{{attributeLabel}}',
+  attributeLabelPlaceholder: '{{attributeLabelPlaceholder}}',
   attributeType: '{{attributeType}}',
   text: '{{text}}'
 };
@@ -86,13 +88,17 @@ const updateBody = (htmlTemplateBody, currentSettings) => {
 };
 
 const fillBody = ({ dynamicAttribute, fixedText }, currentSettings) => {
-  const bodyParts = currentSettings?.credentialBody?.map(attribute =>
-    replacePlaceholdersFromObject(
+  const bodyParts = currentSettings?.credentialBody?.map(attribute => {
+    const parsedAttribute = {
+      ...attribute,
+      attributeLabelPlaceholder: _.camelCase(attribute.attributeLabel)
+    };
+    return replacePlaceholdersFromObject(
       attribute.isFixedText ? fixedText : dynamicAttribute,
       placeholders,
-      attribute
-    )
-  );
+      parsedAttribute
+    );
+  });
   return bodyParts.reduce((compilation, part) => compilation.concat(part), '');
 };
 
