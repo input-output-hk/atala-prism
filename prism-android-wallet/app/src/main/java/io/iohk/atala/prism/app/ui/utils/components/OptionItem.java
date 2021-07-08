@@ -98,4 +98,14 @@ public class OptionItem extends ConstraintLayout {
             textView.setLayoutParams(params);
         }
     }
+
+    @Override
+    public void setEnabled(boolean enabled) {
+        super.setEnabled(enabled);
+        if (enabled){
+            setAlpha(1);
+        }else {
+            setAlpha(0.3f);
+        }
+    }
 }

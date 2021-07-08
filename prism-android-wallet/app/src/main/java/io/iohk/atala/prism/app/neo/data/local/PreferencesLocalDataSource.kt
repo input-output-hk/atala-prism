@@ -2,6 +2,8 @@ package io.iohk.atala.prism.app.neo.data.local
 
 import android.content.Context
 import android.graphics.Bitmap
+import androidx.lifecycle.LiveData
+import androidx.lifecycle.MutableLiveData
 import io.iohk.atala.prism.app.data.local.preferences.SecurityPin
 import io.iohk.atala.prism.app.data.local.preferences.models.CustomDateFormat
 import io.iohk.atala.prism.app.data.local.preferences.models.customDateFormatFrom
@@ -10,7 +12,9 @@ import io.iohk.atala.prism.app.neo.common.extensions.toEncodedBase64String
 import io.iohk.atala.prism.app.neo.model.BackendConfig
 import io.iohk.atala.prism.app.neo.model.DashboardNotification
 import io.iohk.atala.prism.app.neo.model.UserProfile
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
 class PreferencesLocalDataSource(context: Context) : BaseLocalDataSource(context), PreferencesLocalDataSourceInterface {
@@ -117,7 +121,15 @@ class PreferencesLocalDataSource(context: Context) : BaseLocalDataSource(context
         return BackendConfig(url!!, port)
     }
 
-    override suspend fun getDashboardCardNotifications(): List<DashboardNotification> {
+    private val _dashboardCardNotifications = MutableLiveData<List<DashboardNotification>>().apply {
+        CoroutineScope(Dispatchers.IO).launch {
+            postValue(getDashboardCardNotifications())
+        }
+    }
+
+    override fun dashboardCardNotifications(): LiveData<List<DashboardNotification>> = _dashboardCardNotifications
+
+    private fun getDashboardCardNotifications(): List<DashboardNotification> {
         val currentRemovedNotifications: MutableSet<String> = preferences.getStringSet(REMOVED_DASHBOARD_NOTIFICATIONS_IDENTIFIERS, mutableSetOf())!!
         return listOf(DashboardNotification.PayId, DashboardNotification.VerifyId).filter {
             return@filter !currentRemovedNotifications.contains(it.identifier)
@@ -132,6 +144,7 @@ class PreferencesLocalDataSource(context: Context) : BaseLocalDataSource(context
             val editor = preferences.edit()
             editor.putStringSet(REMOVED_DASHBOARD_NOTIFICATIONS_IDENTIFIERS, removedNotifications)
             editor.commit()
+            _dashboardCardNotifications.postValue(getDashboardCardNotifications())
         }
     }
 }

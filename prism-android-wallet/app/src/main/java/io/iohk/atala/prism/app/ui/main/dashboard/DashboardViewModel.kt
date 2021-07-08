@@ -50,21 +50,17 @@ class DashboardViewModel @Inject constructor(
         it?.profileImage
     }
 
-    private val _dashboardCardNotifications = MutableLiveData<List<DashboardNotification>>(listOf())
-
-    val dashboardCardNotifications: LiveData<List<DashboardNotification>> = _dashboardCardNotifications
+    val dashboardCardNotifications: LiveData<List<DashboardNotification>> = repository.dashboardCardNotifications
 
     fun loadData() {
         viewModelScope.launch {
             userProfile.value = repository.getUserProfile()
-            _dashboardCardNotifications.value = repository.getDashboardCardNotifications()
         }
     }
 
     fun removeDashboardNotification(notification: DashboardNotification) {
         viewModelScope.launch {
             repository.removeDashboardCardNotification(notification)
-            _dashboardCardNotifications.value = repository.getDashboardCardNotifications()
         }
     }
 }

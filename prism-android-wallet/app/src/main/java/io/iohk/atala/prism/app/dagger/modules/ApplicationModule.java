@@ -94,6 +94,7 @@ public class ApplicationModule {
     /*
      *  [PreferencesLocalDataSource] providers
      * */
+    @Singleton
     @Provides
     public PreferencesLocalDataSourceInterface providePreferencesLocalDataSource(PrismApplication prismApplication) {
         return new PreferencesLocalDataSource(prismApplication.getApplicationContext());
@@ -236,9 +237,10 @@ public class ApplicationModule {
      * */
     @Provides
     public PreferencesRepository providePreferencesRepository(ContactsLocalDataSourceInterface localDataSource,
+                                                                    PayIdLocalDataSourceInterface payIdLocalDataSource,
                                                                     SessionLocalDataSourceInterface sessionLocalDataSource,
                                                                     PreferencesLocalDataSourceInterface preferencesLocalDataSource){
-        return new PreferencesRepository(localDataSource,sessionLocalDataSource,preferencesLocalDataSource);
+        return new PreferencesRepository(payIdLocalDataSource, localDataSource,sessionLocalDataSource,preferencesLocalDataSource);
     }
 
     /*
@@ -247,11 +249,12 @@ public class ApplicationModule {
 
     @Provides
     public DashboardRepository provideDashboardRepository(
+            PayIdLocalDataSourceInterface payIdLocalDataSource,
             ActivityHistoriesLocalDataSourceInterface activityHistoriesLocalDataSource,
             SessionLocalDataSourceInterface sessionLocalDataSource,
             PreferencesLocalDataSourceInterface preferencesLocalDataSource
     ) {
-        return new DashboardRepository(activityHistoriesLocalDataSource, sessionLocalDataSource, preferencesLocalDataSource);
+        return new DashboardRepository(payIdLocalDataSource, activityHistoriesLocalDataSource, sessionLocalDataSource, preferencesLocalDataSource);
     }
 
     /*

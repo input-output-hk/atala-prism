@@ -22,6 +22,9 @@
         <action
             android:id="@+id/action_dashboardFragment_to_interactiveDemoActivity"
             app:destination="@id/interactiveDemoActivity" />
+        <action
+            android:id="@+id/action_dashboardFragment_to_payIdObtainingNavActivity"
+            app:destination="@id/payIdObtainingNavActivity" />
     </fragment>
 
     <fragment
@@ -56,4 +59,10 @@
         android:id="@+id/interactiveDemoActivity"
         android:name="io.iohk.atala.prism.app.ui.interctivedemo.InteractiveDemoActivity"
         android:label="InteractiveDemoActivity" />
+
+    <activity
+        tools:layout="@layout/activity_nav_pay_id_obtaining"
+        android:id="@+id/payIdObtainingNavActivity"
+        android:name="io.iohk.atala.prism.app.ui.payid.PayIdObtainingNavActivity"
+        android:label="PayIdObtainingNavActivity" />
 </navigation>

@@ -101,7 +101,12 @@ class DashboardFragment : DaggerFragment(), OnSelectItemAction<DashboardNotifica
     override fun onSelect(item: DashboardNotification, action: CardNotificationsAdapter.Action?) {
         when (action) {
             CardNotificationsAdapter.Action.Remove -> viewModel.removeDashboardNotification(item)
-            CardNotificationsAdapter.Action.Select -> Toast.makeText(requireContext(), "To be implemented", Toast.LENGTH_SHORT).show()
+            CardNotificationsAdapter.Action.Select -> {
+                when (item) {
+                    DashboardNotification.PayId -> findNavController().navigate(R.id.action_dashboardFragment_to_payIdObtainingNavActivity)
+                    DashboardNotification.VerifyId -> Toast.makeText(requireContext(), "To be implemented", Toast.LENGTH_SHORT).show()
+                }
+            }
         }
     }
 }

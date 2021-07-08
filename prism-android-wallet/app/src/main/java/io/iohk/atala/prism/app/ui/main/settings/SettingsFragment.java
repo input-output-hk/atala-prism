@@ -42,6 +42,9 @@ public class SettingsFragment extends DaggerFragment {
     @Inject
     ViewModelProvider.Factory factory;
 
+    @BindView(R.id.pay_id)
+    OptionItem payIdItem;
+
     public SettingsViewModel getViewModel() {
         SettingsViewModel viewModel = ViewModelProviders.of(this, factory).get(SettingsViewModel.class);
         return viewModel;
@@ -98,6 +101,10 @@ public class SettingsFragment extends DaggerFragment {
             } finally {
                 FragmentActivityExtensionsKt.hideBlockUILoading(requireActivity());
             }
+        });
+
+        getViewModel().getPayIdOptionEnable().observe(getViewLifecycleOwner(), enabled -> {
+            payIdItem.setEnabled(enabled);
         });
     }
 

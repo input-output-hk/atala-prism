@@ -1,6 +1,8 @@
 package io.iohk.atala.prism.app.ui.main.settings
 
+import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
+import androidx.lifecycle.Transformations
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import io.iohk.atala.prism.app.grpc.AsyncTaskResult
@@ -11,6 +13,10 @@ import javax.inject.Inject
 class SettingsViewModel @Inject constructor(private val repository: PreferencesRepository) : ViewModel() {
 
     private val _removeAllDataLiveData = MutableLiveData<AsyncTaskResult<Boolean>>()
+
+    val payIdOptionEnable: LiveData<Boolean> = Transformations.map(repository.payId) {
+        it == null
+    }
 
     fun removeAllLocalData() {
         viewModelScope.launch {
