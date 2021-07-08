@@ -38,5 +38,14 @@
         tools:layout="@layout/fragment_pay_id_detail"
         android:id="@+id/payIdDetailFragment"
         android:name="io.iohk.atala.prism.app.ui.payid.detail.PayIdDetailFragment"
-        android:label="@string/fragment_pay_id_detail_title" />
+        android:label="@string/fragment_pay_id_detail_title" >
+        <action
+            android:id="@+id/action_payIdDetailFragment_to_payIdAddressListFragment"
+            app:destination="@id/payIdAddressListFragment" />
+    </fragment>
+    <fragment
+        tools:layout="@layout/fragment_pay_id_address_list"
+        android:id="@+id/payIdAddressListFragment"
+        android:name="io.iohk.atala.prism.app.ui.payid.addresslist.PayIdAddressListFragment"
+        android:label="@string/fragment_pay_id_address_list_title" />
 </navigation>

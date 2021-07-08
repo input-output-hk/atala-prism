@@ -37,6 +37,8 @@ class PayIdRepository(
 
     val firstRegisteredPayIdAddress: LiveData<PayIdAddress?> = payIdLocalDataSource.firstRegisteredPayIdAddress()
 
+    val payIdAddresses: LiveData<List<PayIdAddress>> = payIdLocalDataSource.registeredPayIdAddresses()
+
     suspend fun getIdentityCredentials(): List<Credential> = payIdLocalDataSource.getIdentityCredentials()
 
     suspend fun getNotIdentityCredentials(): List<Credential> = payIdLocalDataSource.getNotIdentityCredentials()

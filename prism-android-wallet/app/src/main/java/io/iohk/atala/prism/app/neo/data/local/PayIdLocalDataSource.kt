@@ -68,4 +68,6 @@ class PayIdLocalDataSource(
     }
 
     override fun firstRegisteredPayIdAddress(): LiveData<PayIdAddress?> = payIdDao.firstRegisteredPayIdAddress()
+
+    override fun registeredPayIdAddresses(): LiveData<List<PayIdAddress>> = payIdDao.registeredPayIdAddresses()
 }

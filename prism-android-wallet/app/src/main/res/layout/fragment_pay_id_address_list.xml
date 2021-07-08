@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="utf-8"?>
+<layout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools">
+    <data>
+        <variable
+            name="viewModel"
+            type="io.iohk.atala.prism.app.ui.payid.addresslist.PayIdAddressListViewModel" />
+    </data>
+    <LinearLayout
+        android:orientation="vertical"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+        <LinearLayout
+            android:paddingHorizontal="29dp"
+            android:paddingVertical="24dp"
+            android:background="@color/grey_1"
+            android:orientation="horizontal"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
+            <ImageView
+                android:layout_marginEnd="10dp"
+                android:src="@drawable/ic_pay_id_aqua_inverted"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"/>
+            <LinearLayout
+                android:layout_gravity="center_vertical"
+                android:orientation="vertical"
+                android:layout_weight="1"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content">
+                <androidx.appcompat.widget.AppCompatTextView
+                    android:ellipsize="end"
+                    android:lines="1"
+                    android:textSize="12sp"
+                    android:textColor="@color/grey_5"
+                    android:text="@string/fragment_pay_id_address_list_your_pay_id_name"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"/>
+                <androidx.appcompat.widget.AppCompatTextView
+                    android:ellipsize="end"
+                    android:lines="1"
+                    android:textSize="16sp"
+                    android:textColor="@color/black"
+                    tools:text ="JohnSmith$atalamirror.io"
+                    android:text="@{@string/fragment_pay_id_address_list_pay_id_mask(viewModel.payIdName)}"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"/>
+            </LinearLayout>
+
+        </LinearLayout>
+        <androidx.appcompat.widget.AppCompatTextView
+            android:textColor="@color/grey_3"
+            android:layout_marginTop="23dp"
+            android:textSize="12sp"
+            android:layout_marginStart="34dp"
+            android:text="@string/fragment_pay_id_address_list_address_name"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"/>
+
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/list_recycler_view"
+            android:paddingHorizontal="34dp"
+            android:layout_weight="1"
+            android:layout_width="match_parent"
+            android:layout_height="0dp"/>
+
+    </LinearLayout>
+</layout>

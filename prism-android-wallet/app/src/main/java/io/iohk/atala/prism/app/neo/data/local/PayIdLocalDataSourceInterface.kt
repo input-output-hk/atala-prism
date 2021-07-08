@@ -16,4 +16,5 @@ interface PayIdLocalDataSourceInterface {
     fun getPayIdByStatusLiveData(status: PayId.Status): LiveData<PayId?>
     suspend fun createPayIdAddress(payIdAddress: PayIdAddress)
     fun firstRegisteredPayIdAddress(): LiveData<PayIdAddress?>
+    fun registeredPayIdAddresses(): LiveData<List<PayIdAddress>>
 }

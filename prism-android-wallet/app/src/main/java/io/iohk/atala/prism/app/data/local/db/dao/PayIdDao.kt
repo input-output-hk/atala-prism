@@ -37,6 +37,9 @@ abstract class PayIdDao {
     @Query("SELECT * FROM payIdAddresses WHERE status = :status ORDER BY id ASC LIMIT 1")
     abstract fun firstRegisteredPayIdAddress(status: Int = PayIdAddress.Status.Registered.value): LiveData<PayIdAddress?>
 
+    @Query("SELECT * FROM payIdAddresses WHERE status = :status ORDER BY id ASC")
+    abstract fun registeredPayIdAddresses(status: Int = PayIdAddress.Status.Registered.value): LiveData<List<PayIdAddress>>
+
     @Insert(onConflict = OnConflictStrategy.IGNORE)
     abstract suspend fun createPayIdAddress(payIdAddress: PayIdAddress): Long
 

@@ -390,4 +390,11 @@
     <string name="fragment_pay_id_detail_add_address_button_text">Add New Address</string>
     <string name="fragment_pay_id_detail_add_public_key_button_text">Add Public Key</string>
     <string name="fragment_pay_id_detail_not_public_key_message">No public key created yet</string>
+
+    <!-- layout/fragment_pay_id_address_list.xml -->
+    <string name="fragment_pay_id_address_list_title">Address List</string>
+    <string name="fragment_pay_id_address_list_your_pay_id_name">YOUR PAY ID NAME</string>
+    <string name="fragment_pay_id_address_list_address_name">ADDRESS NAME</string>
+    <string name="fragment_pay_id_address_list_address_on_clipboard">Copied!!</string>
+    <string name="fragment_pay_id_address_list_pay_id_mask">%1$s$atalamirror.io</string>
 </resources>
