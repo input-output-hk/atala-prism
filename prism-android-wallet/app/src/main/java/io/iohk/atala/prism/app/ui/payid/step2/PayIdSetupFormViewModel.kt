@@ -9,6 +9,8 @@ import androidx.lifecycle.viewModelScope
 import io.iohk.atala.prism.app.data.local.db.model.PayId
 import io.iohk.atala.prism.app.data.local.db.model.PayIdAddress
 import io.iohk.atala.prism.app.neo.common.EventWrapper
+import io.iohk.atala.prism.app.neo.common.softCardanoAddressValidation
+import io.iohk.atala.prism.app.neo.common.softCardanoExtendedPublicKeyValidation
 import io.iohk.atala.prism.app.neo.data.PayIdRepository
 import io.iohk.atala.prism.app.neo.data.PayIdRepositoryException
 import kotlinx.coroutines.TimeoutCancellationException
@@ -131,7 +133,8 @@ class PayIdSetupFormViewModel @Inject constructor(private val repository: PayIdR
     private fun computeCanContinue(): Boolean {
         val payIdNameLength = payIdName.value?.length ?: 0
         return if (_payId.value != null)
-            walletPublicKey.value?.isNotBlank() == true
+        // if a Pay Id already exists, the cardano address is validated
+            softCardanoAddressValidation(walletPublicKey.value ?: "") || softCardanoExtendedPublicKeyValidation(walletPublicKey.value ?: "")
         else
             payIdNameLength in MIN_PAY_ID_NAME_LENGTH..MAX_PAY_ID_NAME_LENGTH
     }

@@ -6,6 +6,8 @@ import androidx.lifecycle.Transformations
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import io.iohk.atala.prism.app.neo.common.EventWrapper
+import io.iohk.atala.prism.app.neo.common.softCardanoAddressValidation
+import io.iohk.atala.prism.app.neo.common.softCardanoExtendedPublicKeyValidation
 import io.iohk.atala.prism.app.neo.data.PayIdRepository
 import io.iohk.atala.prism.app.neo.data.PayIdRepositoryException
 import kotlinx.coroutines.TimeoutCancellationException
@@ -24,7 +26,7 @@ class AddAddressFormViewModel @Inject constructor(private val repository: PayIdR
     val walletPublicKey = MutableLiveData("")
 
     val isAValidAddress: LiveData<Boolean> = Transformations.map(walletPublicKey) {
-        it.isNotBlank()
+        softCardanoExtendedPublicKeyValidation(it) || softCardanoAddressValidation(it)
     }
 
     private val _isLoading = MutableLiveData(false)
