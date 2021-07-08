@@ -47,5 +47,14 @@ class IntentUtils {
             i.putExtra(Intent.EXTRA_TEXT, url)
             return Intent.createChooser(i, chooserTitle)
         }
+
+        fun intentShareText(text: String): Intent {
+            val intent = Intent().apply {
+                action = Intent.ACTION_SEND
+                putExtra(Intent.EXTRA_TEXT, text)
+                type = "text/plain"
+            }
+            return Intent.createChooser(intent, null)
+        }
     }
 }

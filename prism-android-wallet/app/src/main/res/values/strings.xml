@@ -390,6 +390,10 @@
     <string name="fragment_pay_id_detail_add_address_button_text">Add New Address</string>
     <string name="fragment_pay_id_detail_add_public_key_button_text">Add Public Key</string>
     <string name="fragment_pay_id_detail_not_public_key_message">No public key created yet</string>
+    <string name="fragment_pay_id_detail_share_pay_id_text">Pay Id: %1$s</string>
+    <string name="fragment_pay_id_detail_share_success_dialog_text_1">Your PAY ID was</string>
+    <string name="fragment_pay_id_detail_share_success_dialog_text_2">Successfully Shared</string>
+    <string name="fragment_pay_id_detail_share_success_dialog_custom_button_text">Close</string>
 
     <!-- layout/fragment_pay_id_address_list.xml -->
     <string name="fragment_pay_id_address_list_title">Address List</string>
