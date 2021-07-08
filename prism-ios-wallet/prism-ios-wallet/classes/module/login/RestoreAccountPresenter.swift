@@ -15,6 +15,8 @@ class RestoreAccountPresenter: BasePresenter {
     var viewImpl: RestoreAccountViewController? {
         return view as? RestoreAccountViewController
     }
+    
+    var payId: PayId?
 
     func fetchNextConnection() {
 
@@ -95,7 +97,7 @@ class RestoreAccountPresenter: BasePresenter {
             if cred != nil {
                 self.fetchNextConnection()
             } else {
-                self.recoverPayIdName(contact: contact)
+                self.recoverPayId(contact: contact)
             }
         }, error: { error in
             print(error.localizedDescription)
@@ -104,61 +106,56 @@ class RestoreAccountPresenter: BasePresenter {
         })
     }
 
-    func recoverPayIdName(contact: Contact) {
+    func recoverPayId(contact: Contact) {
 
-        var messageId = ""
-
+        var payId: PayId?
+        var messagesCount = 0
         // Call the service
         ApiService.call(async: {
             do {
-                let response = try ApiService.global.recoverPayIdName(contact: contact)
-                Logger.d("shareCredential response: \(response)")
-                messageId = response.id
-
-            } catch {
-                return error
-            }
-            return nil
-        }, success: {
-            DispatchQueue.main.asyncAfter(deadline: .now() + 1) {
-                self.getRecoveredPayIdName(contact: contact, messageId: messageId)
-            }
-        }, error: { _ in
-            self.viewImpl?.showLoading(doShow: false)
-            self.viewImpl?.showErrorMessage(doShow: true, message: "service_error".localize())
-        })
-    }
-    
-    func getRecoveredPayIdName(contact: Contact, messageId: String) {
-
-        // Call the service
-        ApiService.call(async: {
-            do {
-                let response = try ApiService.global.getMessages(contact: contact, limit: 100)
-                Logger.d("shareCredential response: \(response)")
+                let response = try ApiService.global.getMessages(contact: contact)
+                Logger.d("getMessages response: \(response)")
                 
-                let contactsDao = ContactDAO()
 
                 for message in response.messages {
                     if let atalaMssg = try? Io_Iohk_Atala_Prism_Protos_AtalaMessage(serializedData:
                                                                                         message.message) {
-                        if atalaMssg.replyTo == messageId {
-                            let payIDName = atalaMssg.mirrorMessage.getPayIDNameResponse.payIDName
-                            if !payIDName.isEmpty {
-                                let payIdDao = PayIdDAO()
-                                payIdDao.createPayId(payIdId: payIDName, name: payIDName,
-                                                     connectionId: contact.connectionId)
+                        let mirrorMessage = atalaMssg.mirrorMessage
+                        let payIDName = mirrorMessage.payIDNameRegisteredMessage.name
+                        if !payIDName.isEmpty {
+                            let payIdDao = PayIdDAO()
+                            payIdDao.deleteAllPayId()
+                            payId = payIdDao.createPayId(payIdId: payIDName, name: payIDName,
+                                                         connectionId: contact.connectionId)
+                        } else if let payId = payId  {
+                            let payIdDao = PayIdDAO()
+                            
+                            if !mirrorMessage.addressRegisteredMessage.cardanoAddress.isEmpty {
+                                payIdDao.addAddress(payId: payId,
+                                                    name: mirrorMessage.addressRegisteredMessage.cardanoAddress)
+                                
+                            } else  if !mirrorMessage.walletRegistered.extendedPublicKey.isEmpty {
+                                payIdDao.addPublicKey(payId: payId,
+                                                      publicKey: mirrorMessage.walletRegistered.extendedPublicKey)
                             }
-                            contactsDao.updateMessageId(connectionId: contact.connectionId, messageId: message.id)
                         }
                     }
                 }
+                let contactsDao = ContactDAO()
+                contact.lastMessageId = response.messages.last?.id
+                contactsDao.updateContact()
+                messagesCount = response.messages.count
             } catch {
                 return error
             }
             return nil
         }, success: {
-            self.fetchNextConnection()
+            if payId != nil && messagesCount == ApiService.DEFAULT_REQUEST_LIMIT {
+                self.recoverPayId(contact: contact)
+            } else {
+                self.payId = nil
+                self.fetchNextConnection()
+            }
         }, error: { _ in
             self.viewImpl?.showLoading(doShow: false)
             self.viewImpl?.showErrorMessage(doShow: true, message: "service_error".localize())

@@ -98,4 +98,22 @@ class PayIdDAO: BaseDAO {
             return false
         }
     }
+    
+    @discardableResult
+    func deleteAllPayId() -> Bool {
+        guard let managedContext = getManagedContext() else { return false }
+        let fetchRequest = PayId.fetchRequest()
+        do {
+            if let result = try managedContext.fetch(fetchRequest) as? [PayId] {
+                for credential in result {
+                    managedContext.delete(credential)
+                }
+                try managedContext.save()
+                return true
+            }
+        } catch let error as NSError {
+            print(error.debugDescription)
+        }
+        return false
+    }
 }

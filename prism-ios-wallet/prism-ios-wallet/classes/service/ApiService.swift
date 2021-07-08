@@ -247,11 +247,10 @@ class ApiService: NSObject {
         return try service.sendMessage(request, metadata: metadata)
     }
 
-    func getMessages(contact: Contact,
-                     limit: Int32 = ApiService.DEFAULT_REQUEST_LIMIT) throws -> Io_Iohk_Atala_Prism_Protos_GetMessagesPaginatedResponse {
+    func getMessages(contact: Contact) throws -> Io_Iohk_Atala_Prism_Protos_GetMessagesPaginatedResponse {
 
         let request = Io_Iohk_Atala_Prism_Protos_GetMessagesPaginatedRequest.with {
-            $0.limit = limit
+            $0.limit = ApiService.DEFAULT_REQUEST_LIMIT
             if let lastMessage = contact.lastMessageId {
                 $0.lastSeenMessageID = lastMessage
             }
