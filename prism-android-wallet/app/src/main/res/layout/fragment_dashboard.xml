@@ -32,6 +32,7 @@
                     layout="@layout/include_dashboard_profile"
                     app:profileImage="@{viewModel.userProfileImage}"
                     app:profileName="@{viewModel.userProfileName}"
+                    app:payIdName="@{viewModel.payIdName}"
                     app:totalOfNotifications="@{viewModel.totalOfNotifications}" />
 
                 <androidx.recyclerview.widget.RecyclerView

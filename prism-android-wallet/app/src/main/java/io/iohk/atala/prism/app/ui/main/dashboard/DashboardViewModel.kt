@@ -31,6 +31,10 @@ class DashboardViewModel @Inject constructor(
         }
     }
 
+    val payIdName: LiveData<String?> = Transformations.map(repository.payId) {
+        it?.name
+    }
+
     /**
      * There is no model for notifications, a notification is actually a record in the "activityHistories" table with the "type" field equal to [ActivityHistory.Type.CredentialIssued]
      * and the [ActivityHistory.needsToBeNotified] field equal to true. you can see the table fields in class [ActivityHistory] and expect to receive a list of type [ActivityHistoryWithCredential]

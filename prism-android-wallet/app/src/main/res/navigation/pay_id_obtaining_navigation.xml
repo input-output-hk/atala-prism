@@ -13,6 +13,11 @@
         <action
             android:id="@+id/action_payIdInstructionsFragment_to_payIdSelectIdentityCredentialFragment"
             app:destination="@id/payIdSelectIdentityCredentialFragment" />
+        <action
+            android:id="@+id/action_payIdInstructionsFragment_to_payIdDetailFragment"
+            app:destination="@id/payIdDetailFragment"
+            app:popUpTo="@id/payid_obtaining_navigation"
+            app:popUpToInclusive="false" />
     </fragment>
     <fragment
         tools:layout="@layout/fragment_pay_id_select_identity_credential"

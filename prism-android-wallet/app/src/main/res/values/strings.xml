@@ -1,4 +1,7 @@
 <resources>
+    <!-- Commons -->
+    <string name="pay_id_mask">%1$s$atalamirror.io</string>
+
     <string name="app_name">Atala PRISM</string>
     <string name="scan_qr">Scan QR code</string>
     <string name="connection_label">Connect to an organization to receive your credentials</string>
@@ -308,6 +311,7 @@
     <string name="include_dashboard_profile_view_profile">VIEW PROFILE</string>
     <string name="include_dashboard_profile_notifications_text">You have %1$d notification (s)</string>
     <string name="include_dashboard_profile_no_notifications_text">No new notifications</string>
+    <string name="include_dashboard_profile_your_pay_id_name">YOUR PAY ID NAME</string>
 
     <!-- layout/include_dashboard_last_activity.xml -->
     <string name="include_dashboard_last_activity_text">LAST ACTIVITY</string>

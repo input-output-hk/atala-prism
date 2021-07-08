@@ -5,13 +5,23 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.databinding.DataBindingUtil
-import androidx.fragment.app.Fragment
+import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.ViewModelProviders
 import androidx.navigation.fragment.findNavController
+import dagger.android.support.DaggerFragment
 import io.iohk.atala.prism.app.neo.common.extensions.supportActionBar
 import io.iohk.cvp.R
 import io.iohk.cvp.databinding.FragmentPayIdInstructionsBinding
+import javax.inject.Inject
 
-class PayIdInstructionsFragment : Fragment() {
+class PayIdInstructionsFragment : DaggerFragment() {
+
+    @Inject
+    lateinit var viewModelFactory: ViewModelProvider.Factory
+
+    private val viewModel: PayIdInstructionsViewModel by lazy {
+        ViewModelProviders.of(this, viewModelFactory).get(PayIdInstructionsViewModel::class.java)
+    }
 
     private lateinit var binding: FragmentPayIdInstructionsBinding
 
@@ -21,6 +31,15 @@ class PayIdInstructionsFragment : Fragment() {
         supportActionBar?.hide()
         binding.skipButton.setOnClickListener { activity?.finish() }
         binding.nextButton.setOnClickListener { findNavController().navigate(R.id.action_payIdInstructionsFragment_to_payIdSelectIdentityCredentialFragment) }
+        setObservers()
         return binding.root
+    }
+
+    private fun setObservers() {
+        viewModel.shouldGoToPayIdDetail.observe(viewLifecycleOwner) {
+            if (it) {
+                findNavController().navigate(R.id.action_payIdInstructionsFragment_to_payIdDetailFragment)
+            }
+        }
     }
 }

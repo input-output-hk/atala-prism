@@ -85,6 +85,7 @@ class DashboardFragment : DaggerFragment(), OnSelectItemAction<DashboardNotifica
     private fun setClickListeners() {
         binding.profileInclude.viewProfileButton.setOnClickListener { findNavController().navigate(R.id.action_dashboardFragment_to_profileFragment) }
         binding.profileInclude.notificationsButton.setOnClickListener { findNavController().navigate(R.id.action_dashboardFragment_to_notificationsFragment) }
+        binding.profileInclude.payIdContainer.setOnClickListener { findNavController().navigate(R.id.action_dashboardFragment_to_payIdObtainingNavActivity) }
         binding.lastActivityInclude.activityLogButton.setOnClickListener { findNavController().navigate(R.id.action_dashboardFragment_to_activityLogFragment) }
         binding.bannersInclude.demoMoreInfoButton.setOnClickListener { findNavController().navigate(R.id.action_dashboardFragment_to_interactiveDemoActivity) }
         binding.bannersInclude.sendInviteButton.setOnClickListener { share() }

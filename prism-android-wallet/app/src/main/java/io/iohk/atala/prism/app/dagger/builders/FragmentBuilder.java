@@ -32,6 +32,7 @@ import io.iohk.atala.prism.app.ui.main.credentials.ShareCredentialDialogFragment
 import io.iohk.atala.prism.app.ui.payid.addresslist.PayIdAddressListFragment;
 import io.iohk.atala.prism.app.ui.payid.detail.PayIdDetailFragment;
 import io.iohk.atala.prism.app.ui.payid.addaddressform.AddAddressFormDialogFragment;
+import io.iohk.atala.prism.app.ui.payid.instructions.PayIdInstructionsFragment;
 import io.iohk.atala.prism.app.ui.payid.step1.PayIdSelectIdentityCredentialFragment;
 import io.iohk.atala.prism.app.ui.payid.step2.PayIdSetupFormFragment;
 import io.iohk.atala.prism.app.ui.utils.ForegroundBackgroundListener;
@@ -137,4 +138,7 @@ public abstract class FragmentBuilder {
 
     @ContributesAndroidInjector
     abstract AddAddressFormDialogFragment contributeAddAddressFormDialogFragment();
+
+    @ContributesAndroidInjector
+    abstract PayIdInstructionsFragment contributePayIdInstructionsFragment();
 }

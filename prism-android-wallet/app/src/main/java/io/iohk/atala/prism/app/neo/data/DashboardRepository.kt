@@ -19,7 +19,7 @@ class DashboardRepository(
 
     private val preferencesDashboardCardNotifications: LiveData<List<DashboardNotification>> = preferencesLocalDataSource.dashboardCardNotifications()
 
-    private val payId: LiveData<PayId?> = payIdLocalDataSource.getPayIdByStatusLiveData(PayId.Status.Registered)
+    val payId: LiveData<PayId?> = payIdLocalDataSource.getPayIdByStatusLiveData(PayId.Status.Registered)
 
     val dashboardCardNotifications = MediatorLiveData<List<DashboardNotification>>().apply {
         addSource(preferencesDashboardCardNotifications) { value = computeDashboardCardNotifications() }

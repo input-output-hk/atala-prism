@@ -31,6 +31,7 @@ import io.iohk.atala.prism.app.ui.main.settings.SettingsViewModel
 import io.iohk.atala.prism.app.ui.payid.addaddressform.AddAddressFormViewModel
 import io.iohk.atala.prism.app.ui.payid.addresslist.PayIdAddressListViewModel
 import io.iohk.atala.prism.app.ui.payid.detail.PayIdDetailViewModel
+import io.iohk.atala.prism.app.ui.payid.instructions.PayIdInstructionsViewModel
 import io.iohk.atala.prism.app.ui.payid.step1.PayIdSelectIdentityCredentialViewModel
 import io.iohk.atala.prism.app.ui.payid.step2.PayIdSetupFormViewModel
 import kotlin.reflect.KClass
@@ -180,4 +181,9 @@ abstract class ViewModelModule {
     @IntoMap
     @ViewModelKey(AddAddressFormViewModel::class)
     internal abstract fun addAddressFormViewModel(viewModel: AddAddressFormViewModel): ViewModel
+
+    @Binds
+    @IntoMap
+    @ViewModelKey(PayIdInstructionsViewModel::class)
+    internal abstract fun payIdInstructionsViewModel(viewModel: PayIdInstructionsViewModel): ViewModel
 }
