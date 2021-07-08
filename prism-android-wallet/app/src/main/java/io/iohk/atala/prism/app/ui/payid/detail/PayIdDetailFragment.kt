@@ -31,6 +31,9 @@ class PayIdDetailFragment : DaggerFragment() {
         binding.payIdAddressListButton.setOnClickListener {
             findNavController().navigate(R.id.action_payIdDetailFragment_to_payIdAddressListFragment)
         }
+        binding.addAddressButton.setOnClickListener {
+            findNavController().navigate(R.id.action_payIdDetailFragment_to_addAddressFormDialogFragment)
+        }
         return binding.root
     }
 }

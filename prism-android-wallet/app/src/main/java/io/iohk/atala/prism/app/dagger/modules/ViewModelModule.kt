@@ -28,6 +28,7 @@ import io.iohk.atala.prism.app.ui.main.dashboard.NotificationsViewModel
 import io.iohk.atala.prism.app.ui.main.dashboard.ProfileViewModel
 import io.iohk.atala.prism.app.ui.main.settings.SettingsDateFormatViewModel
 import io.iohk.atala.prism.app.ui.main.settings.SettingsViewModel
+import io.iohk.atala.prism.app.ui.payid.addaddressform.AddAddressFormViewModel
 import io.iohk.atala.prism.app.ui.payid.addresslist.PayIdAddressListViewModel
 import io.iohk.atala.prism.app.ui.payid.detail.PayIdDetailViewModel
 import io.iohk.atala.prism.app.ui.payid.step1.PayIdSelectIdentityCredentialViewModel
@@ -174,4 +175,9 @@ abstract class ViewModelModule {
     @IntoMap
     @ViewModelKey(PayIdAddressListViewModel::class)
     internal abstract fun payIdAddressListViewModel(viewModel: PayIdAddressListViewModel): ViewModel
+
+    @Binds
+    @IntoMap
+    @ViewModelKey(AddAddressFormViewModel::class)
+    internal abstract fun addAddressFormViewModel(viewModel: AddAddressFormViewModel): ViewModel
 }

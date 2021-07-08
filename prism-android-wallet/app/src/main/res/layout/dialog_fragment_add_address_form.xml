@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="utf-8"?>
+<layout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+    <data>
+        <variable
+            name="viewModel"
+            type="io.iohk.atala.prism.app.ui.payid.addaddressform.AddAddressFormViewModel" />
+    </data>
+    <LinearLayout
+        android:padding="30dp"
+        android:orientation="vertical"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+        <androidx.appcompat.widget.AppCompatTextView
+            android:textSize="14sp"
+            android:textColor="@color/black"
+            android:text="@string/dialog_fragment_new_address_form_title"
+            android:singleLine="true"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"/>
+        <com.google.android.material.textfield.TextInputLayout
+            android:layout_marginBottom="70dp"
+            android:id="@+id/wallet_public_key_text_input"
+            android:layout_marginTop="40dp"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            app:endIconMode="custom"
+            app:endIconDrawable="@drawable/ic_qr_small"
+            app:helperText="@string/dialog_fragment_new_address_form_address_help_text"
+            android:hint="@string/dialog_fragment_new_address_form_address_label"
+            style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox">
+
+            <com.google.android.material.textfield.TextInputEditText
+                android:text="@={viewModel.walletPublicKey}"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                />
+
+        </com.google.android.material.textfield.TextInputLayout>
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/add_button"
+            android:enabled="@{viewModel.isAValidAddress}"
+            android:onClick="@{ v -> viewModel.addAddress()}"
+            app:cornerRadius="50dp"
+            android:layout_marginTop="70dp"
+            android:text="@string/dialog_fragment_new_address_form_add_button_text"
+            android:layout_width="match_parent"
+            android:layout_height="56dp"/>
+    </LinearLayout>
+</layout>

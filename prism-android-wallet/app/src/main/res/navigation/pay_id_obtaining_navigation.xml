@@ -42,10 +42,19 @@
         <action
             android:id="@+id/action_payIdDetailFragment_to_payIdAddressListFragment"
             app:destination="@id/payIdAddressListFragment" />
+        <action
+            android:id="@+id/action_payIdDetailFragment_to_addAddressFormDialogFragment"
+            app:destination="@id/addAddressFormDialogFragment" />
+
     </fragment>
     <fragment
         tools:layout="@layout/fragment_pay_id_address_list"
         android:id="@+id/payIdAddressListFragment"
         android:name="io.iohk.atala.prism.app.ui.payid.addresslist.PayIdAddressListFragment"
         android:label="@string/fragment_pay_id_address_list_title" />
+    <dialog
+        tools:layout="@layout/dialog_fragment_add_address_form"
+        android:id="@+id/addAddressFormDialogFragment"
+        android:name="io.iohk.atala.prism.app.ui.payid.addaddressform.AddAddressFormDialogFragment"
+        android:label="@string/dialog_fragment_new_address_form_title" />
 </navigation>

@@ -397,4 +397,13 @@
     <string name="fragment_pay_id_address_list_address_name">ADDRESS NAME</string>
     <string name="fragment_pay_id_address_list_address_on_clipboard">Copied!!</string>
     <string name="fragment_pay_id_address_list_pay_id_mask">%1$s$atalamirror.io</string>
+
+    <!-- layout/dialog_fragment_new_address_form.xml -->
+    <string name="dialog_fragment_new_address_form_title">Add New Address</string>
+    <string name="dialog_fragment_new_address_form_address_label">ADD OR SCAN AN ADDRESS</string>
+    <string name="dialog_fragment_new_address_form_address_help_text">* Scan the extended public key from your wallet. \nAll the addresses in your wallet will be added</string>
+    <string name="dialog_fragment_new_address_form_add_button_text">Add</string>
+    <string name="dialog_fragment_new_address_form_success_dialog_primary_text">Your address(es) was</string>
+    <string name="dialog_fragment_new_address_form_success_dialog_secondary_text">Successfully Added</string>
+    <string name="dialog_fragment_new_address_form_success_dialog_button_text">Close</string>
 </resources>
