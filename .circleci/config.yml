@@ -668,28 +668,37 @@ jobs:
             mkdir protos
             cd prism-sdk/protos/src
             mv common_models.proto \
+              status.proto \
+              health.proto \
               connector_api.proto \
               connector_models.proto \
-              console_api.proto \
               console_models.proto \
               credential_models.proto \
-              cviews_api.proto \
-              cviews_models.proto \
               node_api.proto \
               node_models.proto \
-              vault_api.proto \
-              vault_models.proto \
-              status.proto \
               ../../../protos/
 
       # apparently, the argument to set the destination folder doesn't work
       - run:
           name: Generate docs
-          command: /entrypoint.sh --doc_opt=prism-sdk/protos/src/resources/markdown.tmpl,docs.md
+          command: |
+            /entrypoint.sh --doc_opt=prism-sdk/protos/src/resources/markdown.tmpl,common-grpc-api.md \
+                           --proto_path=/protos common_models.proto health.proto status.proto
+            /entrypoint.sh --doc_opt=prism-sdk/protos/src/resources/markdown.tmpl,connector-grpc-api.md \
+                           --proto_path=/protos connector_api.proto connector_models.proto credential_models.proto
+            /entrypoint.sh --doc_opt=prism-sdk/protos/src/resources/markdown.tmpl,node-grpc-api.md \
+                           --proto_path=/protos node_api.proto node_models.proto
 
       - run:
           name: Store docs
-          command: mkdir grpc-docs && mv /out/docs.md grpc-docs/grpc-api.md
+          command: mkdir grpc-docs && mv /out/common-grpc-api.md /out/connector-grpc-api.md /out/node-grpc-api.md grpc-docs/
+
+      - run:
+          name: Update documentation titles
+          command: |
+            sed -i "1s/.*/# Common gRPC API Reference/" grpc-docs/common-grpc-api.md
+            sed -i "1s/.*/# Connector gRPC API Reference/" grpc-docs/connector-grpc-api.md
+            sed -i "1s/.*/# Node gRPC API Reference/" grpc-docs/node-grpc-api.md
 
       # required to persist data, otherwise, we get this error: x509: certificate signed by unknown authority
       - run:
@@ -700,7 +709,9 @@ jobs:
       - persist_to_workspace:
           root: grpc-docs
           paths:
-            - grpc-api.md
+            - common-grpc-api.md
+            - connector-grpc-api.md
+            - node-grpc-api.md
 
       - store_artifacts:
           path: ./grpc-docs
@@ -776,7 +787,7 @@ jobs:
 
       - run:
           name: Grab the grpc docs
-          command: cp ./workspace/grpc-api.md prism-kotlin-sdk/docs/src/docs/grpc
+          command: cp ./workspace/*-grpc-api.md prism-kotlin-sdk/docs/src/docs/grpc
       # favicon.ico needs to be placed in /resources directory
       # all other logos need to be placed in /assets/media directory
       - run:

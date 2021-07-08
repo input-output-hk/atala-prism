@@ -6,6 +6,5 @@ local.properties
 *.iml
 *.podspec
 gen
-docs/src/docs/grpc/grpc-api.md
 
 /gen/
