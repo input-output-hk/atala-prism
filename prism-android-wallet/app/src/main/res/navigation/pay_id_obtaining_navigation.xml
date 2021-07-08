@@ -27,5 +27,16 @@
         tools:layout="@layout/fragment_pay_id_setup_form"
         android:id="@+id/payIdSetupFormFragment"
         android:name="io.iohk.atala.prism.app.ui.payid.step2.PayIdSetupFormFragment"
-        android:label="@string/fragment_pay_id_setup_form_title" />
+        android:label="@string/fragment_pay_id_setup_form_title" >
+        <action
+            android:id="@+id/action_payIdSetupFormFragment_to_payIdDetailFragment"
+            app:destination="@id/payIdDetailFragment"
+            app:launchSingleTop="true"
+            app:popUpTo="@id/payid_obtaining_navigation" />
+    </fragment>
+    <fragment
+        tools:layout="@layout/fragment_pay_id_detail"
+        android:id="@+id/payIdDetailFragment"
+        android:name="io.iohk.atala.prism.app.ui.payid.detail.PayIdDetailFragment"
+        android:label="@string/fragment_pay_id_detail_title" />
 </navigation>

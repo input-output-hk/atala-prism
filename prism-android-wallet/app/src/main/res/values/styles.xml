@@ -213,4 +213,10 @@
         <item name="android:textSize">10sp</item>
     </style>
 
+    <style name="Widget.App.Button.IconOnly" parent="Widget.MaterialComponents.Button.TextButton.NoPadding">
+        <item name="iconPadding">0dp</item>
+        <item name="android:paddingStart">10dp</item>
+        <item name="android:paddingEnd">10dp</item>
+    </style>
+
 </resources>

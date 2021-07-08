@@ -29,6 +29,7 @@ import io.iohk.atala.prism.app.ui.main.settings.SecuritySettingsStep2Fragment;
 import io.iohk.atala.prism.app.ui.main.settings.SettingsDateFormatFragment;
 import io.iohk.atala.prism.app.ui.main.settings.SettingsFragment;
 import io.iohk.atala.prism.app.ui.main.credentials.ShareCredentialDialogFragment;
+import io.iohk.atala.prism.app.ui.payid.detail.PayIdDetailFragment;
 import io.iohk.atala.prism.app.ui.payid.step1.PayIdSelectIdentityCredentialFragment;
 import io.iohk.atala.prism.app.ui.payid.step2.PayIdSetupFormFragment;
 import io.iohk.atala.prism.app.ui.utils.ForegroundBackgroundListener;
@@ -125,4 +126,7 @@ public abstract class FragmentBuilder {
 
     @ContributesAndroidInjector
     abstract PayIdSetupFormFragment contributePayIdSetupFormFragment();
+
+    @ContributesAndroidInjector
+    abstract PayIdDetailFragment contributePayIdDetailFragment();
 }

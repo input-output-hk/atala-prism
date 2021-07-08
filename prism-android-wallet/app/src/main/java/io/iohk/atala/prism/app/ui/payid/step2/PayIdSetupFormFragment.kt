@@ -113,8 +113,12 @@ class PayIdSetupFormFragment : DaggerFragment() {
             .setSecondaryText(R.string.fragment_pay_id_setup_form_success_dialog_secondary_text)
             .setCustomButtonText(R.string.fragment_pay_id_setup_form_success_dialog_button_text)
             .setOkButtonClickLister {
-                requireActivity().finish()
+                navigateToPayIdDetail()
             }.build()
             .show(requireActivity().supportFragmentManager, null)
+    }
+
+    private fun navigateToPayIdDetail() {
+        findNavController().navigate(R.id.action_payIdSetupFormFragment_to_payIdDetailFragment)
     }
 }
