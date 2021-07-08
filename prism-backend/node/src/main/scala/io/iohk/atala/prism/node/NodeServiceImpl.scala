@@ -11,7 +11,6 @@ import io.iohk.atala.prism.crypto.SHA256Digest
 import io.iohk.atala.prism.identity.DID
 import io.iohk.atala.prism.metrics.RequestMeasureUtil
 import io.iohk.atala.prism.metrics.RequestMeasureUtil.{FutureMetricsOps, measureRequestFuture}
-import io.iohk.atala.prism.models.ProtoCodecs._
 import io.iohk.atala.prism.node.errors.NodeError
 import io.iohk.atala.prism.node.grpc.ProtoCodecs
 import io.iohk.atala.prism.node.logging.NodeLogging.{logWithTraceId, withLog}
@@ -24,8 +23,7 @@ import io.iohk.atala.prism.node.models.{
 import io.iohk.atala.prism.node.operations._
 import io.iohk.atala.prism.node.repositories.{CredentialBatchesRepository, DIDDataRepository}
 import io.iohk.atala.prism.node.services.ObjectManagementService
-import io.iohk.atala.prism.node.services.ObjectManagementService.AtalaObjectTransactionStatus
-import io.iohk.atala.prism.protos.common_models.{HealthCheckRequest, HealthCheckResponse, TransactionStatus}
+import io.iohk.atala.prism.protos.common_models.{HealthCheckRequest, HealthCheckResponse}
 import io.iohk.atala.prism.protos.node_api._
 import io.iohk.atala.prism.protos.node_models.AtalaOperation.Operation
 import io.iohk.atala.prism.protos.node_models.{OperationOutput, SignedAtalaOperation}
@@ -290,43 +288,6 @@ class NodeServiceImpl(
       }
     }
 
-  }
-
-  override def getTransactionStatus(request: GetTransactionStatusRequest): Future[GetTransactionStatusResponse] = {
-    val methodName = "getTransactionStatus"
-
-    def toTransactionStatus(status: AtalaObjectTransactionStatus): common_models.TransactionStatus = {
-      status match {
-        case AtalaObjectTransactionStatus.InLedger => common_models.TransactionStatus.IN_LEDGER
-        case AtalaObjectTransactionStatus.Pending => common_models.TransactionStatus.PENDING
-        case AtalaObjectTransactionStatus.Confirmed => common_models.TransactionStatus.CONFIRMED
-      }
-    }
-
-    val lastSyncedTimestampF = objectManagement.getLastSyncedTimestamp
-
-    val transactionF =
-      getFromOptionOrFailF(request.transactionInfo.map(fromTransactionInfo), "transaction_info is missing", methodName)
-    measureRequestFuture(serviceName, methodName) {
-      withLog(methodName, request) { traceId =>
-        for {
-          lastSyncedTimestamp <- lastSyncedTimestampF
-          transaction <- transactionF
-          _ = logWithTraceId(methodName, traceId, "transactionId" -> s"${transaction.transactionId.toString}")
-          latestTransactionAndStatus <- objectManagement.getLatestTransactionAndStatus(transaction)
-          latestTransaction = latestTransactionAndStatus.map(_.transaction).getOrElse(transaction)
-          status = latestTransactionAndStatus.fold[TransactionStatus](common_models.TransactionStatus.UNKNOWN)(info =>
-            toTransactionStatus(info.status)
-          )
-        } yield {
-          node_api
-            .GetTransactionStatusResponse()
-            .withTransactionInfo(toTransactionInfo(latestTransaction))
-            .withStatus(status)
-            .withLastSyncedBlockTimestamp(lastSyncedTimestamp.toProtoTimestamp)
-        }
-      }
-    }
   }
 
   override def getOperationInfo(

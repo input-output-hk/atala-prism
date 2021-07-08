@@ -30,9 +30,6 @@ service NodeService {
     // Revokes credentials from a batch (all, or just a subset).
     rpc RevokeCredentials(RevokeCredentialsRequest) returns (RevokeCredentialsResponse) {}
 
-    // Finds a transaction's details.
-    rpc GetTransactionStatus(GetTransactionStatusRequest) returns (GetTransactionStatusResponse) {}
-
     // Retrieves the Node version info.
     rpc GetNodeBuildInfo(GetNodeBuildInfoRequest) returns (GetNodeBuildInfoResponse) {}
 
@@ -163,18 +160,6 @@ message GetCredentialRevocationTimeRequest {
 message GetCredentialRevocationTimeResponse {
     LedgerData revocation_ledger_data = 1; // If present, the ledger data when the credential was revoked.
     google.protobuf.Timestamp last_synced_block_timestamp = 2; // Timestamp of the latest synchronized block.
-}
-
-// Request to get the on-chain transaction status.
-message GetTransactionStatusRequest {
-    TransactionInfo transaction_info = 1; // The on-chain transaction info.
-}
-
-// Response with the transaction status.
-message GetTransactionStatusResponse {
-    TransactionInfo transaction_info = 1; // The on-chain transaction info.
-    TransactionStatus status = 2; // Whether or not the transaction has been applied.
-    google.protobuf.Timestamp last_synced_block_timestamp = 3; // Timestamp of the latest synchronized block.
 }
 
 /**

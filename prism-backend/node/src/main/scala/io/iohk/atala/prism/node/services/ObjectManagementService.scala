@@ -33,11 +33,7 @@ import io.iohk.atala.prism.node.repositories.daos.{
   AtalaOperationsDAO,
   KeyValuesDAO
 }
-import io.iohk.atala.prism.node.services.ObjectManagementService.{
-  AtalaObjectTransactionInfo,
-  AtalaObjectTransactionStatus,
-  Config
-}
+import io.iohk.atala.prism.node.services.ObjectManagementService.Config
 import io.iohk.atala.prism.node.services.models.AtalaObjectNotification
 import io.iohk.atala.prism.protos.node_internal.AtalaBlock
 import io.iohk.atala.prism.protos.node_internal.AtalaObject.Block
@@ -435,54 +431,6 @@ class ObjectManagementService private (
       .unsafeToFuture()
   }
 
-  def getLatestTransactionAndStatus(transaction: TransactionInfo): Future[Option[AtalaObjectTransactionInfo]] = {
-    for {
-      maybeLatestSubmission <-
-        AtalaObjectTransactionSubmissionsDAO
-          .getLatest(transaction.ledger, transaction.transactionId)
-          .logSQLErrors("getting latest transaction and status", logger)
-          .transact(xa)
-          .unsafeToFuture()
-      maybeTransactionAndStatus <- getLatestTransactionAndStatus(maybeLatestSubmission)
-    } yield maybeTransactionAndStatus
-  }
-
-  private def getLatestTransactionAndStatus(
-      maybeLatestSubmission: Option[AtalaObjectTransactionSubmission]
-  ): Future[Option[AtalaObjectTransactionInfo]] = {
-    maybeLatestSubmission match {
-      case Some(latestSubmission) =>
-        for {
-          maybeAtalaObject <-
-            AtalaObjectsDAO
-              .get(latestSubmission.atalaObjectId)
-              .logSQLErrors("getting object while getting latest transaction and status", logger)
-              .transact(xa)
-              .unsafeToFuture()
-          // This is not expected to fail because if a submission exists, the object must too
-          atalaObject = maybeAtalaObject.getOrElse(
-            throw new RuntimeException(s"AtalaObject ${latestSubmission.atalaObjectId} not found")
-          )
-        } yield {
-          // The transaction in the AtalaObject has higher priority because it comes from the ledger
-          val latestTransaction =
-            atalaObject.transaction.getOrElse(TransactionInfo(latestSubmission.transactionId, latestSubmission.ledger))
-          if (atalaObject.processed) {
-            Some(AtalaObjectTransactionInfo(latestTransaction, AtalaObjectTransactionStatus.Confirmed))
-          } else {
-            val status = latestSubmission.status match {
-              case AtalaObjectTransactionSubmissionStatus.InLedger => AtalaObjectTransactionStatus.InLedger
-              // Default to `Pending` in case it's transitioning from `Deleted` (i.e., the transaction is being retried)
-              case AtalaObjectTransactionSubmissionStatus.Pending | AtalaObjectTransactionSubmissionStatus.Deleted =>
-                AtalaObjectTransactionStatus.Pending
-            }
-            Some(AtalaObjectTransactionInfo(latestTransaction, status))
-          }
-        }
-
-      case None => Future.successful(None)
-    }
-  }
 }
 
 object ObjectManagementService {

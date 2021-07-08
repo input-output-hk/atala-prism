@@ -25,10 +25,6 @@ import io.iohk.atala.prism.node.models.{
 }
 import io.iohk.atala.prism.node.operations.CreateDIDOperationSpec
 import io.iohk.atala.prism.node.repositories.daos.{AtalaObjectTransactionSubmissionsDAO, AtalaObjectsDAO}
-import io.iohk.atala.prism.node.services.ObjectManagementService.{
-  AtalaObjectTransactionInfo,
-  AtalaObjectTransactionStatus
-}
 import io.iohk.atala.prism.node.services.models.AtalaObjectNotification
 import io.iohk.atala.prism.node.{DataPreparation, PublicationInfo, UnderlyingLedger, objects}
 import io.iohk.atala.prism.protos.{node_internal, node_models}
@@ -86,7 +82,6 @@ class ObjectManagementServiceSpec
 
   private val dummyTime = TimestampInfo(Instant.ofEpochMilli(0), 1, 0)
 
-  private val dummyBlockNo = 17
   private val dummyTimestamp = dummyTime.atalaBlockTimestamp
   private val dummyABSequenceNumber = dummyTime.atalaBlockSequenceNumber
   private val dummyTransactionInfo =
@@ -551,100 +546,6 @@ class ObjectManagementServiceSpec
       // It should have published only once
       verify(ledger).publish(atalaObject)
       verify(ledger, never).deleteTransaction(dummyTransactionInfo.transactionId)
-    }
-  }
-
-  "ObjectManagementService.getLatestTransactionAndStatus" should {
-    val atalaOperation = BlockProcessingServiceSpec.signedCreateDidOperation
-    val atalaObject = createAtalaObject(block = createBlock(atalaOperation))
-    val transactionInfo = TransactionInfo(
-      transactionId = TransactionId.from(SHA256Digest.compute("id".getBytes).value).value,
-      ledger = Ledger.InMemory
-    )
-    val transactionInfoWithBlock = transactionInfo.copy(block =
-      Some(BlockInfo(number = 1, timestamp = dummyTimestamp, index = dummyABSequenceNumber))
-    )
-    val publicationInfo = PublicationInfo(transactionInfo, TransactionStatus.Pending)
-
-    "return None when not found" in {
-      DataPreparation.updateLastSyncedBlock(dummyBlockNo, dummyTimestamp)
-
-      val status = objectManagementService.getLatestTransactionAndStatus(transactionInfo).futureValue
-
-      status mustBe None
-    }
-
-    "return Pending when pending" in {
-      doReturn(Future.successful(publicationInfo)).when(ledger).publish(*)
-      doReturn(true).when(ledger).supportsOnChainData
-
-      DataPreparation.updateLastSyncedBlock(dummyBlockNo, dummyTimestamp)
-
-      objectManagementService.publishSingleAtalaOperation(atalaOperation).futureValue
-
-      val status = objectManagementService
-        .getLatestTransactionAndStatus(transactionInfo)
-        .futureValue
-        .value
-
-      status mustBe AtalaObjectTransactionInfo(transactionInfo, AtalaObjectTransactionStatus.Pending)
-    }
-
-    "return Pending when deleted" in {
-      doReturn(Future.successful(publicationInfo)).when(ledger).publish(*)
-      doReturn(true).when(ledger).supportsOnChainData
-
-      objectManagementService.publishSingleAtalaOperation(atalaOperation).futureValue
-      setAtalaObjectTransactionSubmissionStatus(
-        publicationInfo.transaction,
-        AtalaObjectTransactionSubmissionStatus.Deleted
-      )
-
-      val status = objectManagementService
-        .getLatestTransactionAndStatus(transactionInfo)
-        .futureValue
-        .value
-
-      status mustBe AtalaObjectTransactionInfo(transactionInfo, AtalaObjectTransactionStatus.Pending)
-    }
-
-    "return InLedger when in ledger" in {
-      doReturn(Future.successful(publicationInfo)).when(ledger).publish(*)
-      doReturn(true).when(ledger).supportsOnChainData
-
-      objectManagementService.publishSingleAtalaOperation(atalaOperation).futureValue
-      setAtalaObjectTransactionSubmissionStatus(
-        publicationInfo.transaction,
-        AtalaObjectTransactionSubmissionStatus.InLedger
-      )
-
-      val status = objectManagementService
-        .getLatestTransactionAndStatus(transactionInfo)
-        .futureValue
-        .value
-
-      status mustBe AtalaObjectTransactionInfo(transactionInfo, AtalaObjectTransactionStatus.InLedger)
-    }
-
-    "return Confirmed when object has been processed" in {
-      doReturn(Future.successful(publicationInfo)).when(ledger).publish(*)
-      doReturn(true).when(ledger).supportsOnChainData
-      doReturn(connection.pure(true))
-        .when(blockProcessing)
-        .processBlock(*, anyTransactionIdMatcher, *, *, *)
-
-      DataPreparation.updateLastSyncedBlock(dummyBlockNo, dummyTimestamp)
-
-      objectManagementService.publishSingleAtalaOperation(atalaOperation).futureValue
-      // Need block info when saving an object as it comes from the ledger
-      objectManagementService.saveObject(AtalaObjectNotification(atalaObject, transactionInfoWithBlock)).futureValue
-
-      val status = objectManagementService
-        .getLatestTransactionAndStatus(transactionInfo)
-        .futureValue
-        .value
-
-      status mustBe AtalaObjectTransactionInfo(transactionInfoWithBlock, AtalaObjectTransactionStatus.Confirmed)
     }
   }
 

@@ -832,17 +832,6 @@ class CredentialVerificationServiceTest {
             TODO("Not yet implemented")
         }
 
-        override suspend fun GetTransactionStatus(req: GetTransactionStatusRequest): GetTransactionStatusResponse {
-            TODO("Not yet implemented")
-        }
-
-        override suspend fun GetTransactionStatusAuth(
-            req: GetTransactionStatusRequest,
-            metadata: PrismMetadata
-        ): GetTransactionStatusResponse {
-            TODO("Not yet implemented")
-        }
-
         override suspend fun GetNodeBuildInfo(req: GetNodeBuildInfoRequest): GetNodeBuildInfoResponse {
             TODO("Not yet implemented")
         }
