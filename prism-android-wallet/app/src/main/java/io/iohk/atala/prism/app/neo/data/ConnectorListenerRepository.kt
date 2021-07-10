@@ -2,6 +2,7 @@ package io.iohk.atala.prism.app.neo.data
 
 import androidx.lifecycle.Observer
 import io.iohk.atala.prism.app.data.local.db.mappers.CredentialMapper
+import io.iohk.atala.prism.app.data.local.db.mappers.KycRequestMapper
 import io.iohk.atala.prism.app.data.local.db.model.Contact
 import io.iohk.atala.prism.app.data.local.db.model.Credential
 import io.iohk.atala.prism.app.data.local.db.model.PayId
@@ -94,6 +95,12 @@ class ConnectorListenerRepository(
                     }
                     contact.lastMessageId = receivedMessage.id
                     localDataSource.updateContact(contact, listOf())
+                } else if (atalaMessage.messageCase == AtalaMessage.MessageCase.KYC_BRIDGE_MESSAGE) {
+                    KycRequestMapper.map(contact.connectionId, receivedMessage.id, atalaMessage.kycBridgeMessage)?.let {
+                        localDataSource.storeKycRequest(it)
+                        contact.lastMessageId = receivedMessage.id
+                        localDataSource.updateContact(contact, listOf())
+                    }
                 } else {
                     contact.lastMessageId = receivedMessage.id
                     localDataSource.updateContact(contact, listOf())
@@ -102,7 +109,11 @@ class ConnectorListenerRepository(
         }
     }
 
-    private suspend fun mapProofRequest(proofRequestMessage: io.iohk.atala.prism.protos.ProofRequest, messageId: String, connectionId: String): Pair<ProofRequest, List<Credential>>? {
+    private suspend fun mapProofRequest(
+        proofRequestMessage: io.iohk.atala.prism.protos.ProofRequest,
+        messageId: String,
+        connectionId: String
+    ): Pair<ProofRequest, List<Credential>>? {
         val credentials = localDataSource.credentialsByTypes(proofRequestMessage.typeIdsList)
         val credentialsFound: List<Credential> = proofRequestMessage.typeIdsList.map { typeId ->
             credentials.find { credential -> credential.credentialType == typeId }

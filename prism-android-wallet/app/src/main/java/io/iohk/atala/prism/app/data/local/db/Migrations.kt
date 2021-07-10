@@ -259,3 +259,24 @@ val MIGRATION_7_8 = object : Migration(7, 8) {
         database.execSQL("CREATE UNIQUE INDEX IF NOT EXISTS index_payIds_message_id ON payIds (message_id)")
     }
 }
+
+/*
+* Create "kycRequests" table
+* */
+val MIGRATION_8_9 = object : Migration(8, 9) {
+    override fun migrate(database: SupportSQLiteDatabase) {
+        database.execSQL(
+            "CREATE TABLE IF NOT EXISTS kycRequests (" +
+                "id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, " +
+                "connection_id TEXT NOT NULL, " +
+                "message_id TEXT NOT NULL, " +
+                "bearer_token TEXT NOT NULL, " +
+                "instance_id TEXT NOT NULL, " +
+                "skipped INTEGER NOT NULL DEFAULT 0, " +
+                "FOREIGN KEY(connection_id) REFERENCES contacts(connection_id) ON UPDATE NO ACTION ON DELETE CASCADE " +
+                ")"
+        )
+        database.execSQL("CREATE INDEX IF NOT EXISTS index_kycRequests_connection_id ON kycRequests (connection_id)")
+        database.execSQL("CREATE UNIQUE INDEX IF NOT EXISTS index_kycRequests_message_id ON kycRequests (message_id)")
+    }
+}

@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="utf-8"?>
+<navigation xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/id_verification"
+    app:startDestination="@id/idVerificationTutorialFragment">
+
+    <fragment
+        tools:layout="@layout/fragment_id_verification_tutorial"
+        android:id="@+id/idVerificationTutorialFragment"
+        android:name="io.iohk.atala.prism.app.ui.idverification.tutorial.IdVerificationTutorialFragment"
+        android:label="IdVerificationTutorialFragment">
+
+        <action
+            app:popUpTo="@id/id_verification"
+            android:id="@+id/action_idVerificationTutorialFragment_to_mainActivity"
+            app:destination="@id/mainActivity"
+            app:launchSingleTop="true" />
+        <action
+            app:enterAnim="@anim/slide_in_right"
+            app:exitAnim="@anim/slide_out_left"
+            app:popEnterAnim="@anim/slide_in_left"
+            app:popExitAnim="@anim/slide_out_right"
+            android:id="@+id/action_idVerificationTutorialFragment_to_idTypeSelectionFragment"
+            app:destination="@id/idTypeSelectionFragment" />
+    </fragment>
+    <activity
+        android:id="@+id/mainActivity"
+        android:name="io.iohk.atala.prism.app.ui.main.MainActivity"
+        android:label="activity_main"
+        tools:layout="@layout/activity_main" />
+
+    <fragment
+        tools:layout="@layout/fragment_id_type_selection"
+        android:id="@+id/idTypeSelectionFragment"
+        android:name="io.iohk.atala.prism.app.ui.idverification.step1.IdTypeSelectionFragment"
+        android:label="@string/id_type_selection_toolbar_title" />
+</navigation>

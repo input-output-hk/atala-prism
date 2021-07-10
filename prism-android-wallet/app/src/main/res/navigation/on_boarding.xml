@@ -106,8 +106,8 @@
         <action
             app:popUpTo="@id/on_board"
             app:launchSingleTop="true"
-            android:id="@+id/action_accountCreatedFragment_to_mainActivity"
-            app:destination="@id/mainActivity" />
+            android:id="@+id/action_accountCreatedFragment_to_idVerificationNavActivity"
+            app:destination="@id/idVerificationNavActivity" />
     </fragment>
     <activity
         android:id="@+id/mainActivity"
@@ -138,4 +138,9 @@
             android:id="@+id/action_restoreAccountSuccessFragment_to_mainActivity"
             app:destination="@id/mainActivity" />
     </fragment>
+    <activity
+        android:id="@+id/idVerificationNavActivity"
+        tools:layout="@layout/activity_nav_id_verification"
+        android:name="io.iohk.atala.prism.app.ui.idverification.IdVerificationNavActivity"
+        android:label="IdVerificationNavActivity" />
 </navigation>

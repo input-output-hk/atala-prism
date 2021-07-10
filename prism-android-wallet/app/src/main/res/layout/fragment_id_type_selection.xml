@@ -1,0 +1,119 @@
+<?xml version="1.0" encoding="utf-8"?>
+<layout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+
+    <data>
+
+        <import type="io.iohk.atala.prism.app.ui.idverification.step1.IdTypeSelectionViewModel.IdType" />
+
+        <variable
+            name="viewModel"
+            type="io.iohk.atala.prism.app.ui.idverification.step1.IdTypeSelectionViewModel" />
+    </data>
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+
+        <LinearLayout
+            android:id="@+id/textsContainer"
+            android:layout_marginTop="30dp"
+            android:orientation="vertical"
+            android:layout_marginHorizontal="30dp"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
+
+            <androidx.appcompat.widget.AppCompatTextView
+                android:textSize="16sp"
+                android:textStyle="bold"
+                android:textColor="@color/colorPrimary"
+                android:text="@string/id_type_selection_step1"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content" />
+
+            <androidx.appcompat.widget.AppCompatTextView
+                android:textSize="22sp"
+                android:textColor="@color/black"
+                android:text="@string/id_type_selection_title"
+                android:layout_marginTop="6dp"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content" />
+
+            <androidx.appcompat.widget.AppCompatTextView
+                android:textSize="16sp"
+                android:text="@string/id_type_selection_instructions"
+                android:textColor="@color/onSurfaceMedium"
+                android:layout_marginTop="22dp"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content" />
+
+        </LinearLayout>
+
+        <ScrollView
+            android:clipToPadding="false"
+            android:clipChildren="false"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/textsContainer"
+            app:layout_constraintBottom_toTopOf="@+id/next_button"
+            android:layout_width="0dp"
+            android:layout_height="0dp">
+
+            <LinearLayout
+                android:paddingHorizontal="30dp"
+                android:clipToPadding="false"
+                android:clipChildren="false"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical">
+
+                <include
+                    app:iconSrc="@{@drawable/ic_id_type_national_id}"
+                    app:isChecked="@{viewModel.selectedIdType == IdType.NationalId}"
+                    app:text="@{@string/id_type_selection_option_national_id}"
+                    app:onClick="@{(v)-> viewModel.selectIdType(IdType.NationalId)}"
+                    android:layout_marginTop="20dp"
+                    layout="@layout/row_checkable_item"
+                    android:layout_height="wrap_content"
+                    android:layout_width="match_parent" />
+
+                <include
+                    app:iconSrc="@{@drawable/ic_id_type_passport}"
+                    app:isChecked="@{viewModel.selectedIdType == IdType.Passport}"
+                    app:text="@{@string/id_type_selection_option_passport}"
+                    app:onClick="@{(v)-> viewModel.selectIdType(IdType.Passport)}"
+                    android:layout_marginTop="20dp"
+                    layout="@layout/row_checkable_item"
+                    android:layout_height="wrap_content"
+                    android:layout_width="match_parent" />
+
+                <include
+                    app:iconSrc="@{@drawable/ic_id_type_driver_license}"
+                    app:isChecked="@{viewModel.selectedIdType == IdType.DriverLicense}"
+                    app:text="@{@string/id_type_selection_option_driver_license}"
+                    app:onClick="@{(v)-> viewModel.selectIdType(IdType.DriverLicense)}"
+                    android:layout_marginTop="20dp"
+                    layout="@layout/row_checkable_item"
+                    android:layout_height="wrap_content"
+                    android:layout_width="match_parent" />
+            </LinearLayout>
+        </ScrollView>
+
+        <Button
+            android:onClick="@{v -> viewModel.next()}"
+            android:enabled="@{viewModel.selectedIdType != null}"
+            app:cornerRadius="32dp"
+            android:text="@string/id_type_selection_next"
+            android:layout_marginBottom="50dp"
+            android:layout_marginHorizontal="30dp"
+            android:id="@+id/next_button"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintBottom_toBottomOf="parent"
+            android:layout_width="match_parent"
+            android:layout_height="56dp" />
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+</layout>

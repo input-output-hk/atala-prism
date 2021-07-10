@@ -80,6 +80,11 @@
             android:name="io.iohk.atala.prism.app.ui.payid.PayIdObtainingNavActivity"
             android:screenOrientation="portrait" />
 
+        <activity
+            android:name="io.iohk.atala.prism.app.ui.idverification.IdVerificationNavActivity"
+            android:noHistory="true"
+            android:screenOrientation="portrait" />
+
         <provider
             android:name="androidx.core.content.FileProvider"
             android:authorities="io.iohk.cvp.fileprovider"
@@ -94,5 +99,6 @@
         <service android:name="io.iohk.atala.prism.app.core.ConnectorListenerService"/>
 
     </application>
+
 
 </manifest>

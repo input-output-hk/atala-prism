@@ -48,11 +48,9 @@ public class GrpcCallsTest {
         EncodedPublicKey publicKeyEncoded = GrpcUtils.Companion.getPublicKeyEncoded(ecKeyPair);
 
         String token = "IoKAZ_a8Q87eBH-KSm3Bsg==";
-        String nonce = "";
 
         AddConnectionFromTokenRequest request = AddConnectionFromTokenRequest.newBuilder()
                 .setToken(token)
-                .setPaymentNonce(nonce)
                 .setHolderEncodedPublicKey(publicKeyEncoded)
                 .build();
 

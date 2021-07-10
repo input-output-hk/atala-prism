@@ -4,6 +4,7 @@ import androidx.lifecycle.LiveData
 import io.iohk.atala.prism.app.data.local.db.model.Contact
 import io.iohk.atala.prism.app.data.local.db.model.Credential
 import io.iohk.atala.prism.app.data.local.db.model.CredentialWithEncodedCredential
+import io.iohk.atala.prism.app.data.local.db.model.KycRequest
 import io.iohk.atala.prism.app.data.local.db.model.PayId
 import io.iohk.atala.prism.app.data.local.db.model.PayIdAddress
 import io.iohk.atala.prism.app.data.local.db.model.ProofRequest
@@ -31,4 +32,6 @@ interface ConnectorListenerLocalDataSourceInterface {
     suspend fun updatePayIdAddress(payIdAddress: PayIdAddress)
 
     suspend fun deletePayIdAddress(payIdAddress: PayIdAddress)
+
+    suspend fun storeKycRequest(kycRequest: KycRequest)
 }

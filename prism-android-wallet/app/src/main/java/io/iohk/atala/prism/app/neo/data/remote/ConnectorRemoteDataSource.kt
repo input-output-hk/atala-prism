@@ -3,8 +3,7 @@ package io.iohk.atala.prism.app.neo.data.remote
 import com.google.protobuf.ByteString
 import io.grpc.stub.MetadataUtils
 import io.grpc.stub.StreamObserver
-import io.iohk.atala.mirror.protos.CreateAccountRequest
-import io.iohk.atala.mirror.protos.CreateAccountResponse
+import io.iohk.atala.kycbridge.protos.KycBridgeServiceGrpc
 import io.iohk.atala.mirror.protos.MirrorServiceGrpc
 import io.iohk.atala.prism.app.data.local.db.model.Contact
 import io.iohk.atala.prism.app.data.local.db.model.Credential
@@ -37,6 +36,10 @@ import kotlinx.coroutines.withContext
 import java.util.concurrent.ExecutionException
 import java.util.concurrent.TimeoutException
 import java.util.stream.Collectors
+import io.iohk.atala.kycbridge.protos.CreateAccountRequest as KycCreateAccountRequest
+import io.iohk.atala.kycbridge.protos.CreateAccountResponse as KycCreateAccountResponse
+import io.iohk.atala.mirror.protos.CreateAccountRequest as MirrorCreateAccountRequest
+import io.iohk.atala.mirror.protos.CreateAccountResponse as MirrorCreateAccountResponse
 
 class ConnectorRemoteDataSource(preferencesLocalDataSource: PreferencesLocalDataSourceInterface, private val sessionLocalDataSource: SessionLocalDataSourceInterface) : BaseRemoteDataSource(preferencesLocalDataSource) {
 
@@ -138,9 +141,9 @@ class ConnectorRemoteDataSource(preferencesLocalDataSource: PreferencesLocalData
     * MIRROR SERVICE
     * */
 
-    suspend fun mirrorServiceCreateAccount(): CreateAccountResponse = withContext(Dispatchers.IO) {
+    suspend fun mirrorServiceCreateAccount(): MirrorCreateAccountResponse = withContext(Dispatchers.IO) {
         val stub = MirrorServiceGrpc.newFutureStub(getMirrorServiceChannel())
-        val request = CreateAccountRequest.newBuilder().build()
+        val request = MirrorCreateAccountRequest.newBuilder().build()
         stub.createAccount(request).get()
     }
 
@@ -209,5 +212,14 @@ class ConnectorRemoteDataSource(preferencesLocalDataSource: PreferencesLocalData
         val message = RegisterAddressMessage.newBuilder().setCardanoAddress(cardanoAddress).build()
         val mirrorMessage = MirrorMessage.newBuilder().setRegisterAddressMessage(message).build()
         return sendMirrorMessage(mirrorMessage, mirrorContact)
+    }
+
+    /**
+     * KycBridgeService/CreateAccount
+     * */
+    suspend fun kycBridgeCreateAccount(): KycCreateAccountResponse = withContext(Dispatchers.IO) {
+        val stub = KycBridgeServiceGrpc.newFutureStub(kycBridgeChannel)
+        val request = KycCreateAccountRequest.newBuilder().build()
+        stub.createAccount(request).get()
     }
 }

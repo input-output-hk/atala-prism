@@ -34,6 +34,8 @@ android {
             buildConfigField "String", "API_BASE_URL", API_BASE_URL_DEBUG
             buildConfigField "Integer", "API_PORT", API_PORT_DEBUG
             buildConfigField "Integer", "MIRROR_SERVICE_PORT", MIRROR_SERVICE_PORT_DEBUG
+            buildConfigField "String", "KYC_BRIDGE_BASE_URL", KYC_BRIDGE_BASE_URL_DEBUG
+            buildConfigField "Integer", "KYC_BRIDGE_PORT", KYC_BRIDGE_PORT_DEBUG
         }
         release {
             minifyEnabled false
@@ -41,6 +43,8 @@ android {
             buildConfigField "String", "API_BASE_URL", API_BASE_URL_RELEASE
             buildConfigField "Integer", "API_PORT", API_PORT_RELEASE
             buildConfigField "Integer", "MIRROR_SERVICE_PORT", MIRROR_SERVICE_PORT_RELEASE
+            buildConfigField "String", "KYC_BRIDGE_BASE_URL", KYC_BRIDGE_BASE_URL_RELEASE
+            buildConfigField "Integer", "KYC_BRIDGE_PORT", KYC_BRIDGE_PORT_RELEASE
         }
     }
     sourceSets {

@@ -13,6 +13,7 @@ import io.iohk.atala.prism.app.neo.ui.onboarding.restoreaccount.RestoreAccountVi
 import io.iohk.atala.prism.app.neo.ui.onboarding.walletsetup.WalletSetupViewModel
 import io.iohk.atala.prism.app.ui.commondialogs.AcceptConnectionDialogViewModel
 import io.iohk.atala.prism.app.ui.commondialogs.ProofRequestDialogViewModel
+import io.iohk.atala.prism.app.ui.idverification.tutorial.IdVerificationTutorialViewModel
 import io.iohk.atala.prism.app.ui.main.MainViewModel
 import io.iohk.atala.prism.app.ui.main.contacts.ContactDetailViewModel
 import io.iohk.atala.prism.app.ui.main.contacts.ContactsViewModel
@@ -186,4 +187,9 @@ abstract class ViewModelModule {
     @IntoMap
     @ViewModelKey(PayIdInstructionsViewModel::class)
     internal abstract fun payIdInstructionsViewModel(viewModel: PayIdInstructionsViewModel): ViewModel
+
+    @Binds
+    @IntoMap
+    @ViewModelKey(IdVerificationTutorialViewModel::class)
+    internal abstract fun idVerificationTutorialViewModel(viewModel: IdVerificationTutorialViewModel): ViewModel
 }

@@ -411,4 +411,30 @@
     <string name="dialog_fragment_new_address_form_success_dialog_primary_text">Your address(es) was</string>
     <string name="dialog_fragment_new_address_form_success_dialog_secondary_text">Successfully Added</string>
     <string name="dialog_fragment_new_address_form_success_dialog_button_text">Close</string>
+
+    <!-- IdVerificationTutorialFragment -->
+    <string name="id_verification_tutorial_title">Verify your identity</string>
+    <string name="id_verification_tutorial_sub_title">How does it work?</string>
+    <string name="id_verification_tutorial_step1">Step 1</string>
+    <string name="id_verification_tutorial_step1_text">Scan your selected Document</string>
+    <string name="id_verification_tutorial_step2">Step 2</string>
+    <string name="id_verification_tutorial_step2_text">Confirm your Data</string>
+    <string name="id_verification_tutorial_step3">Step 3</string>
+    <string name="id_verification_tutorial_step3_text">Take a Selfie</string>
+    <string name="id_verification_tutorial_final_step">Final Step</string>
+    <string name="id_verification_tutorial_final_step_text">Get your Acuant ID</string>
+    <string name="id_verification_tutorial_continue">Continue</string>
+    <string name="id_verification_tutorial_skip_text">Skip and do later</string>
+    <string name="id_verification_tutorial_initialization_error_msg">Something went wrong, you can try again later from the settings screen</string>
+
+    <!-- IdTypeSelectionFragment -->
+    <string name="id_type_selection_toolbar_title">Identity Verification</string>
+    <string name="id_type_selection_step1">Step 1</string>
+    <string name="id_type_selection_title">Select ID type</string>
+    <string name="id_type_selection_instructions">Select the type of document to start the verification process and proceed to next step.</string>
+    <string name="id_type_selection_option_national_id">National Identity Card</string>
+    <string name="id_type_selection_option_passport">Passport</string>
+    <string name="id_type_selection_option_driver_license">Driver\'s License</string>
+    <string name="id_type_selection_next">Next</string>
+
 </resources>

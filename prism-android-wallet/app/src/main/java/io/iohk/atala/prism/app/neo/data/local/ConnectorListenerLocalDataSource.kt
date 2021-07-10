@@ -3,11 +3,13 @@ package io.iohk.atala.prism.app.neo.data.local
 import androidx.lifecycle.LiveData
 import io.iohk.atala.prism.app.data.local.db.dao.ContactDao
 import io.iohk.atala.prism.app.data.local.db.dao.CredentialDao
+import io.iohk.atala.prism.app.data.local.db.dao.KycRequestDao
 import io.iohk.atala.prism.app.data.local.db.dao.PayIdDao
 import io.iohk.atala.prism.app.data.local.db.dao.ProofRequestDao
 import io.iohk.atala.prism.app.data.local.db.model.Contact
 import io.iohk.atala.prism.app.data.local.db.model.Credential
 import io.iohk.atala.prism.app.data.local.db.model.CredentialWithEncodedCredential
+import io.iohk.atala.prism.app.data.local.db.model.KycRequest
 import io.iohk.atala.prism.app.data.local.db.model.PayId
 import io.iohk.atala.prism.app.data.local.db.model.PayIdAddress
 import io.iohk.atala.prism.app.data.local.db.model.ProofRequest
@@ -18,7 +20,8 @@ class ConnectorListenerLocalDataSource(
     private val proofRequestDao: ProofRequestDao,
     private val contactDao: ContactDao,
     private val credentialDao: CredentialDao,
-    private val payIdDao: PayIdDao
+    private val payIdDao: PayIdDao,
+    private val kycRequestDao: KycRequestDao
 ) : ConnectorListenerLocalDataSourceInterface {
 
     override fun allContacts(): LiveData<List<Contact>> = contactDao.all()
@@ -64,5 +67,11 @@ class ConnectorListenerLocalDataSource(
 
     override suspend fun deletePayIdAddress(payIdAddress: PayIdAddress) = withContext(Dispatchers.IO) {
         payIdDao.deletePayIdAddress(payIdAddress)
+    }
+
+    override suspend fun storeKycRequest(kycRequest: KycRequest) {
+        return withContext(Dispatchers.IO) {
+            kycRequestDao.insertSync(kycRequest)
+        }
     }
 }

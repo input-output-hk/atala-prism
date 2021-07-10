@@ -12,6 +12,7 @@ import io.iohk.atala.prism.app.data.local.db.MIGRATION_4_5
 import io.iohk.atala.prism.app.data.local.db.MIGRATION_5_6
 import io.iohk.atala.prism.app.data.local.db.MIGRATION_6_7
 import io.iohk.atala.prism.app.data.local.db.MIGRATION_7_8
+import io.iohk.atala.prism.app.data.local.db.MIGRATION_8_9
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -24,7 +25,7 @@ class MigrationsTest {
     private val TEST_DB_NAME = "migration-test"
 
     // Array of all migrations
-    private val ALL_MIGRATIONS = arrayOf(MIGRATION_1_2, MIGRATION_2_3, MIGRATION_3_4, MIGRATION_4_5, MIGRATION_5_6, MIGRATION_6_7, MIGRATION_7_8)
+    private val ALL_MIGRATIONS = arrayOf(MIGRATION_1_2, MIGRATION_2_3, MIGRATION_3_4, MIGRATION_4_5, MIGRATION_5_6, MIGRATION_6_7, MIGRATION_7_8, MIGRATION_8_9)
 
     private lateinit var helper: MigrationTestHelper
 

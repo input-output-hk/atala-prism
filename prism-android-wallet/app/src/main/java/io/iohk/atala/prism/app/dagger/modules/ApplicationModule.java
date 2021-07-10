@@ -7,6 +7,7 @@ import io.iohk.atala.prism.app.data.local.db.AppDatabase;
 import io.iohk.atala.prism.app.data.local.db.dao.ContactDao;
 import io.iohk.atala.prism.app.data.local.db.dao.CredentialDao;
 import io.iohk.atala.prism.app.data.local.db.dao.PayIdDao;
+import io.iohk.atala.prism.app.data.local.db.dao.KycRequestDao;
 import io.iohk.atala.prism.app.data.local.db.dao.ProofRequestDao;
 import io.iohk.atala.prism.app.neo.data.AccountRecoveryRepository;
 import io.iohk.atala.prism.app.neo.data.ActivityHistoriesRepository;
@@ -15,6 +16,7 @@ import io.iohk.atala.prism.app.neo.data.CredentialsRepository;
 import io.iohk.atala.prism.app.neo.data.DashboardRepository;
 import io.iohk.atala.prism.app.neo.data.MirrorMessageHandler;
 import io.iohk.atala.prism.app.neo.data.PayIdRepository;
+import io.iohk.atala.prism.app.neo.data.KycRepository;
 import io.iohk.atala.prism.app.neo.data.PreferencesRepository;
 import io.iohk.atala.prism.app.neo.data.ProofRequestRepository;
 import io.iohk.atala.prism.app.neo.data.ConnectorListenerRepository;
@@ -27,6 +29,8 @@ import io.iohk.atala.prism.app.neo.data.local.CredentialsLocalDataSource;
 import io.iohk.atala.prism.app.neo.data.local.CredentialsLocalDataSourceInterface;
 import io.iohk.atala.prism.app.neo.data.local.PayIdLocalDataSource;
 import io.iohk.atala.prism.app.neo.data.local.PayIdLocalDataSourceInterface;
+import io.iohk.atala.prism.app.neo.data.local.KycLocalDataSource;
+import io.iohk.atala.prism.app.neo.data.local.KycLocalDataSourceInterface;
 import io.iohk.atala.prism.app.neo.data.local.PreferencesLocalDataSource;
 import io.iohk.atala.prism.app.neo.data.local.PreferencesLocalDataSourceInterface;
 import io.iohk.atala.prism.app.neo.data.local.ProofRequestLocalDataSource;
@@ -69,6 +73,11 @@ public class ApplicationModule {
     @Provides
     PayIdDao providePayIdDao(AppDatabase appDatabase) {
         return appDatabase.payIdDao();
+    }
+
+    @Provides
+    KycRequestDao provideKycRequestDao(AppDatabase appDatabase){
+        return appDatabase.kycRequestDao();
     }
 
     /*
@@ -173,8 +182,8 @@ public class ApplicationModule {
      * */
 
     @Provides
-    public ConnectorListenerLocalDataSourceInterface provideConnectorListenerLocalDataSource(ProofRequestDao proofRequestDao, ContactDao contactDao, CredentialDao credentialDao, PayIdDao payIdDao) {
-        return new ConnectorListenerLocalDataSource(proofRequestDao, contactDao,credentialDao, payIdDao);
+    public ConnectorListenerLocalDataSourceInterface provideConnectorListenerLocalDataSource(ProofRequestDao proofRequestDao, ContactDao contactDao, CredentialDao credentialDao,PayIdDao payIdDao, KycRequestDao kycRequestDao) {
+        return new ConnectorListenerLocalDataSource(proofRequestDao, contactDao,credentialDao, payIdDao, kycRequestDao);
     }
 
     @Provides
@@ -216,19 +225,19 @@ public class ApplicationModule {
     }
 
     /*
-    * [ActivityHistoriesRepository] providers
-    * */
+     * [ActivityHistoriesRepository] providers
+     * */
 
     @Provides
-    public ActivityHistoriesLocalDataSourceInterface provideActivityHistoriesLocalDataSource(ContactDao contactDao){
+    public ActivityHistoriesLocalDataSourceInterface provideActivityHistoriesLocalDataSource(ContactDao contactDao) {
         return new ActivityHistoriesLocalDataSource(contactDao);
     }
 
     @Provides
     public ActivityHistoriesRepository provideActivityHistoriesRepository(ActivityHistoriesLocalDataSourceInterface localDataSource,
                                                                           SessionLocalDataSourceInterface sessionLocalDataSource,
-                                                                          PreferencesLocalDataSourceInterface preferencesLocalDataSource){
-        return new ActivityHistoriesRepository(localDataSource,sessionLocalDataSource,preferencesLocalDataSource);
+                                                                          PreferencesLocalDataSourceInterface preferencesLocalDataSource) {
+        return new ActivityHistoriesRepository(localDataSource, sessionLocalDataSource, preferencesLocalDataSource);
     }
 
 
@@ -241,6 +250,25 @@ public class ApplicationModule {
                                                                     SessionLocalDataSourceInterface sessionLocalDataSource,
                                                                     PreferencesLocalDataSourceInterface preferencesLocalDataSource){
         return new PreferencesRepository(payIdLocalDataSource, localDataSource,sessionLocalDataSource,preferencesLocalDataSource);
+    }
+
+    /*
+     * [IdentityVerificationRepository] providers
+     * */
+
+    @Provides
+    public KycLocalDataSourceInterface provideKycLocalDataSource(KycRequestDao kycRequestDao,
+                                                                 ContactDao contactDao,
+                                                                 PrismApplication prismApplication) {
+        return new KycLocalDataSource(kycRequestDao, contactDao, prismApplication.getApplicationContext());
+    }
+
+    @Provides
+    public KycRepository provideIdentityVerificationRepository(KycLocalDataSourceInterface kycLocalDataSource,
+                                                               ConnectorRemoteDataSource remoteDataSource,
+                                                               SessionLocalDataSourceInterface sessionLocalDataSource,
+                                                               PreferencesLocalDataSourceInterface preferencesLocalDataSource) {
+        return new KycRepository(kycLocalDataSource, remoteDataSource, sessionLocalDataSource, preferencesLocalDataSource);
     }
 
     /*

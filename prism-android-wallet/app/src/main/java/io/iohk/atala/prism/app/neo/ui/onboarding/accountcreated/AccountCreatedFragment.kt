@@ -28,7 +28,7 @@ class AccountCreatedFragment : Fragment() {
                 .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
                 .addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK)
                 .build()
-            val action = AccountCreatedFragmentDirections.actionAccountCreatedFragmentToMainActivity()
+            val action = AccountCreatedFragmentDirections.actionAccountCreatedFragmentToIdVerificationNavActivity()
             findNavController().navigate(action, extras)
         }
         return binding.root
