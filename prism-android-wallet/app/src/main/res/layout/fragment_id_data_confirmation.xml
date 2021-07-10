@@ -1,0 +1,175 @@
+<?xml version="1.0" encoding="utf-8"?>
+<layout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+
+    <data>
+
+        <variable
+            name="fullName"
+            type="String" />
+
+        <variable
+            name="gender"
+            type="String" />
+
+        <variable
+            name="nationality"
+            type="String" />
+
+        <variable
+            name="nationalIdNumber"
+            type="String" />
+
+        <variable
+            name="birthDate"
+            type="String" />
+
+        <variable
+            name="issueDate"
+            type="String" />
+
+        <variable
+            name="expirationDate"
+            type="String" />
+    </data>
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+
+        <LinearLayout
+            android:id="@+id/textsContainer"
+            android:layout_marginTop="30dp"
+            android:orientation="vertical"
+            android:layout_marginHorizontal="30dp"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
+
+            <androidx.appcompat.widget.AppCompatTextView
+                android:textSize="16sp"
+                android:textStyle="bold"
+                android:textColor="@color/colorPrimary"
+                android:text="@string/id_data_confirmation_step2"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content" />
+
+            <androidx.appcompat.widget.AppCompatTextView
+                android:textSize="22sp"
+                android:textColor="@color/black"
+                android:text="@string/id_data_confirmation_title"
+                android:layout_marginTop="6dp"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content" />
+
+            <androidx.appcompat.widget.AppCompatTextView
+                android:textSize="16sp"
+                android:text="@string/id_data_confirmation_instructions"
+                android:textColor="@color/onSurfaceMedium"
+                android:layout_marginTop="22dp"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content" />
+
+        </LinearLayout>
+
+        <ScrollView
+            android:paddingTop="20dp"
+            android:clipToPadding="false"
+            android:clipChildren="false"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/textsContainer"
+            app:layout_constraintBottom_toTopOf="@+id/buttons_container"
+            android:layout_width="0dp"
+            android:layout_height="0dp">
+
+            <LinearLayout
+                android:clipToPadding="false"
+                android:clipChildren="false"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical">
+
+                <include
+                    app:text1="@{@string/id_data_confirmation_full_name}"
+                    app:text2="@{fullName}"
+                    app:darkBackground="@{true}"
+                    layout="@layout/row_list_item" />
+
+                <include
+                    app:text1="@{@string/id_data_confirmation_gender}"
+                    app:text2="@{gender}"
+                    layout="@layout/row_list_item" />
+
+                <include
+                    app:text1="@{@string/id_data_confirmation_nationality}"
+                    app:text2="@{nationality}"
+                    app:darkBackground="@{true}"
+                    layout="@layout/row_list_item" />
+
+                <include
+                    app:text1="@{@string/id_data_confirmation_national_id_number}"
+                    app:text2="@{nationalIdNumber}"
+                    layout="@layout/row_list_item" />
+
+                <include
+                    app:text1="@{@string/id_data_confirmation_date_of_birth}"
+                    app:text2="@{birthDate}"
+                    app:darkBackground="@{true}"
+                    layout="@layout/row_list_item" />
+
+                <include
+                    app:text1="@{@string/id_data_confirmation_issue_date}"
+                    app:text2="@{issueDate}"
+                    layout="@layout/row_list_item" />
+
+                <include
+                    app:text1="@{@string/id_data_confirmation_expiration_date}"
+                    app:text2="@{expirationDate}"
+                    app:darkBackground="@{true}"
+                    layout="@layout/row_list_item" />
+
+            </LinearLayout>
+        </ScrollView>
+
+        <LinearLayout
+            android:paddingVertical="24dp"
+            android:paddingHorizontal="30dp"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintBottom_toBottomOf="parent"
+            android:background="@color/white"
+            android:id="@+id/buttons_container"
+            android:orientation="horizontal"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
+
+            <Button
+                android:id="@+id/scan_again_btn"
+                app:strokeColor="@color/colorPrimary"
+                style="?attr/materialButtonOutlinedStyle"
+                android:layout_marginEnd="7dp"
+                android:layout_weight="1"
+                app:cornerRadius="32dp"
+                android:text="@string/id_data_confirmation_scan_again"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintBottom_toBottomOf="parent"
+                android:layout_width="0dp"
+                android:layout_height="56dp" />
+
+            <Button
+                android:layout_marginStart="7dp"
+                android:layout_weight="1"
+                app:cornerRadius="32dp"
+                android:text="@string/id_data_confirmation_confirm"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintBottom_toBottomOf="parent"
+                android:layout_width="0dp"
+                android:layout_height="56dp" />
+        </LinearLayout>
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+</layout>

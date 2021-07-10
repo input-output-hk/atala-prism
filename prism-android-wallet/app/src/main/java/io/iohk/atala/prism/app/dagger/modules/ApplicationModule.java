@@ -1,5 +1,6 @@
 package io.iohk.atala.prism.app.dagger.modules;
 
+import android.content.Context;
 import android.content.res.Resources;
 
 import io.iohk.atala.prism.app.core.PrismApplication;
@@ -76,8 +77,13 @@ public class ApplicationModule {
     }
 
     @Provides
-    KycRequestDao provideKycRequestDao(AppDatabase appDatabase){
+    KycRequestDao provideKycRequestDao(AppDatabase appDatabase) {
         return appDatabase.kycRequestDao();
+    }
+    
+    @Provides
+    Context provideContext(PrismApplication prismApplication) {
+        return prismApplication.getApplicationContext();
     }
 
     /*
@@ -253,7 +259,7 @@ public class ApplicationModule {
     }
 
     /*
-     * [IdentityVerificationRepository] providers
+     * [KycRepository] providers
      * */
 
     @Provides
@@ -266,9 +272,10 @@ public class ApplicationModule {
     @Provides
     public KycRepository provideIdentityVerificationRepository(KycLocalDataSourceInterface kycLocalDataSource,
                                                                ConnectorRemoteDataSource remoteDataSource,
+                                                               Context context,
                                                                SessionLocalDataSourceInterface sessionLocalDataSource,
                                                                PreferencesLocalDataSourceInterface preferencesLocalDataSource) {
-        return new KycRepository(kycLocalDataSource, remoteDataSource, sessionLocalDataSource, preferencesLocalDataSource);
+        return new KycRepository(kycLocalDataSource, remoteDataSource, context, sessionLocalDataSource, preferencesLocalDataSource);
     }
 
     /*

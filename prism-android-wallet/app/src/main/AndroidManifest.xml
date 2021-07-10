@@ -13,6 +13,15 @@
     <uses-permission android:name="android.permission.AUTHENTICATE_ACCOUNTS" />
     <uses-permission android:name="android.permission.READ_SYNC_STATS" />
 
+    <!-- SPECIAL PERMISSIONS FOR ACUANT SDK -->
+    <uses-permission android:name="android.permission.NFC" />
+    <uses-permission
+        android:name="android.permission.WRITE_EXTERNAL_STORAGE"
+        tools:ignore="ScopedStorage" />
+
+    <uses-feature android:name="android.hardware.camera" />
+    <uses-feature android:name="android.hardware.camera.autofocus" />
+
     <application
         android:name="io.iohk.atala.prism.app.core.PrismApplication"
         android:allowBackup="true"
@@ -24,6 +33,13 @@
         android:supportsRtl="true"
         android:theme="@style/AppTheme"
         tools:ignore="GoogleAppIndexingWarning">
+
+        <!-- SPECIAL META DATA FOR ACUANT SDK -->
+        <meta-data
+            android:name="com.google.android.gms.vision.DEPENDENCIES"
+            android:value="barcode,face"
+            tools:replace="android:value" />
+
         <activity
             android:theme="@style/AppTheme.NoActionBar.FullScreen"
             android:name="io.iohk.atala.prism.app.neo.ui.launch.LaunchActivity"
@@ -58,18 +74,6 @@
         <activity
             android:name="io.iohk.atala.prism.app.ui.WebViewActivity"
             android:screenOrientation="portrait" />
-        <activity
-            android:name="com.braintreepayments.api.BraintreeBrowserSwitchActivity"
-            android:launchMode="singleTask">
-            <intent-filter>
-                <action android:name="android.intent.action.VIEW" />
-
-                <category android:name="android.intent.category.DEFAULT" />
-                <category android:name="android.intent.category.BROWSABLE" />
-
-                <data android:scheme="${applicationId}.braintree" />
-            </intent-filter>
-        </activity>
 
         <activity
             android:theme="@style/AppTheme.NoActionBar.FullScreen"
@@ -82,7 +86,6 @@
 
         <activity
             android:name="io.iohk.atala.prism.app.ui.idverification.IdVerificationNavActivity"
-            android:noHistory="true"
             android:screenOrientation="portrait" />
 
         <provider

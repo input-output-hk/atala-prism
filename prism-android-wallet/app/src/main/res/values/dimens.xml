@@ -12,4 +12,6 @@
     <dimen name="dp_1">1dp</dimen>
     <dimen name="divider_margin">15dp</dimen>
     <dimen name="default_spacing">15dp</dimen>
+    <dimen name="bt_form_padding">16dp</dimen>
+    <dimen name="bt_form_field_padding">12dp</dimen>
 </resources>

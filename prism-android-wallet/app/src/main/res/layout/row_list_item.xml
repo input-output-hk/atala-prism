@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="utf-8"?>
+<layout xmlns:tools="http://schemas.android.com/tools">
+
+    <data>
+
+        <variable
+            name="text1"
+            type="String" />
+
+        <variable
+            name="text2"
+            type="String" />
+
+        <variable
+            name="darkBackground"
+            type="Boolean" />
+    </data>
+
+    <LinearLayout android:paddingTop="18dp"
+        android:paddingBottom="14dp"
+        android:paddingHorizontal="30dp"
+        android:background="@{darkBackground == true ? @color/grey_1 : @color/white}"
+        android:orientation="vertical"
+        xmlns:android="http://schemas.android.com/apk/res/android"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+
+        <androidx.appcompat.widget.AppCompatTextView
+            android:text="@{text1}"
+            android:textColor="@color/grey_4"
+            android:textSize="12sp"
+            tools:text="Label 1"
+            android:ellipsize="end"
+            android:maxLines="1"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content" />
+
+        <androidx.appcompat.widget.AppCompatTextView
+            android:layout_marginTop="11dp"
+            android:textSize="16sp"
+            android:textColor="@color/black"
+            android:text="@{text2}"
+            tools:text="Label 2"
+            android:ellipsize="end"
+            android:maxLines="1"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content" />
+    </LinearLayout>
+</layout>

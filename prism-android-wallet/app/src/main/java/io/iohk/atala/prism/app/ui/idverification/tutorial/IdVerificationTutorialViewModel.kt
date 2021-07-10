@@ -21,7 +21,7 @@ class IdVerificationTutorialViewModel @Inject constructor(private val repository
         EventWrapper(it is KycInitializationHelper.KycInitializationResult.IsLoaDing)
     }
 
-    val shouldInitializeAcuantSDK: LiveData<EventWrapper<KycRequest?>> = Transformations.map(kycInitializationStatus) {
+    val acuantSDKIsAlreadyInitialized: LiveData<EventWrapper<KycRequest?>> = Transformations.map(kycInitializationStatus) {
         return@map if (it is KycInitializationHelper.KycInitializationResult.Success) {
             EventWrapper(it.kycRequest)
         } else {

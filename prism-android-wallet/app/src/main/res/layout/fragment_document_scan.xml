@@ -1,0 +1,167 @@
+<?xml version="1.0" encoding="utf-8"?>
+<layout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools">
+
+    <data>
+
+        <variable
+            name="documentType"
+            type="String" />
+    </data>
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+
+        <LinearLayout
+            android:clipToPadding="false"
+            android:clipChildren="false"
+            android:id="@+id/textsContainer"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="@drawable/rounded_bottom_corners_grey_1"
+            android:orientation="vertical"
+            android:paddingHorizontal="30dp"
+            android:paddingTop="30dp"
+            android:paddingBottom="50dp"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent">
+
+            <androidx.appcompat.widget.AppCompatTextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/document_scan_step1"
+                android:textColor="@color/colorPrimary"
+                android:textSize="16sp"
+                android:textStyle="bold" />
+
+            <androidx.appcompat.widget.AppCompatTextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="6dp"
+                android:text="@{@string/document_scan_title(documentType)}"
+                android:textColor="@color/black"
+                android:textSize="22sp"
+                tools:text="@string/document_scan_title" />
+
+            <androidx.appcompat.widget.AppCompatTextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="22dp"
+                android:text="@string/document_scan_instructions_a"
+                android:textColor="@color/onSurfaceMedium"
+                android:textSize="16sp" />
+
+            <androidx.constraintlayout.widget.ConstraintLayout
+                android:clipToPadding="false"
+                android:clipChildren="false"
+                android:layout_width="match_parent"
+                android:layout_height="177dp"
+                android:layout_marginTop="37dp"
+                android:background="@drawable/rounded_border_primary">
+
+                <ImageView
+                    android:id="@+id/front_image"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:src="@drawable/ic_front_id"
+                    app:layout_constraintBottom_toBottomOf="parent"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toTopOf="parent" />
+
+                <ImageView
+                    android:rotationY="-90"
+                    android:id="@+id/back_image"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:src="@drawable/ic_back_id"
+                    app:layout_constraintBottom_toBottomOf="parent"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toTopOf="parent" />
+
+            </androidx.constraintlayout.widget.ConstraintLayout>
+
+        </LinearLayout>
+
+        <LinearLayout
+            android:id="@+id/front_instructions"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            app:layout_constraintBottom_toTopOf="@+id/take_a_picture_buttom"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/textsContainer"
+            app:layout_constraintVertical_bias="0.25">
+
+            <androidx.appcompat.widget.AppCompatTextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center_horizontal"
+                android:text="@{@string/document_scan_instructions_b(documentType)}"
+                android:textAlignment="center"
+                android:textColor="@color/black"
+                android:textSize="22sp"
+                tools:text="@string/document_scan_instructions_b" />
+
+            <androidx.appcompat.widget.AppCompatTextView
+                android:layout_width="180dp"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center_horizontal"
+                android:layout_marginTop="8dp"
+                android:text="@{@string/document_scan_instructions_c(documentType)}"
+                android:textAlignment="center"
+                android:textSize="16sp"
+                tools:text="@string/document_scan_instructions_c" />
+        </LinearLayout>
+
+        <LinearLayout
+            android:alpha="0"
+            android:id="@+id/back_instructions"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            app:layout_constraintBottom_toTopOf="@+id/take_a_picture_buttom"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/textsContainer"
+            app:layout_constraintVertical_bias="0.25">
+
+            <androidx.appcompat.widget.AppCompatTextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center_horizontal"
+                android:text="@{@string/document_scan_instructions_e(documentType)}"
+                android:textAlignment="center"
+                android:textColor="@color/black"
+                android:textSize="22sp"
+                tools:text="@string/document_scan_instructions_e" />
+
+            <androidx.appcompat.widget.AppCompatTextView
+                android:layout_width="180dp"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center_horizontal"
+                android:layout_marginTop="8dp"
+                android:text="@{@string/document_scan_instructions_d(documentType)}"
+                android:textAlignment="center"
+                android:textSize="16sp"
+                tools:text="@string/document_scan_instructions_d" />
+        </LinearLayout>
+
+        <Button
+            app:cornerRadius="32dp"
+            android:text="@string/document_scan_take_a_picture"
+            android:layout_marginBottom="50dp"
+            android:layout_marginHorizontal="30dp"
+            android:id="@+id/take_a_picture_buttom"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintBottom_toBottomOf="parent"
+            android:layout_width="match_parent"
+            android:layout_height="56dp" />
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+</layout>

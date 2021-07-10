@@ -7,6 +7,7 @@ import android.view.ViewGroup
 import androidx.databinding.DataBindingUtil
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
+import androidx.navigation.fragment.findNavController
 import io.iohk.atala.prism.app.neo.common.EventWrapperObserver
 import io.iohk.atala.prism.app.neo.common.extensions.supportActionBar
 import io.iohk.cvp.R
@@ -32,7 +33,8 @@ class IdTypeSelectionFragment : Fragment() {
             viewLifecycleOwner,
             EventWrapperObserver {
                 it?.let {
-                    // TODO to implement
+                    val direction = IdTypeSelectionFragmentDirections.actionIdTypeSelectionFragmentToDocumentScanFragment(it.name)
+                    findNavController().navigate(direction)
                 }
             }
         )

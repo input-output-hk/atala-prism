@@ -13,6 +13,7 @@
     <color name="onSurfaceMedium02">#0577869E</color>
     <color name="onSurfaceMedium20">#3277869E</color>
     <color name="trasparent">#80000000</color>
+    <color name="bt_error_red">#dd5555</color>
 
     <color name="orange">#FFB954</color>
     <color name="white">#FFFFFF</color>

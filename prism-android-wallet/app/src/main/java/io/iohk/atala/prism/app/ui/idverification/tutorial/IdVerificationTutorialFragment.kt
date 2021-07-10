@@ -12,7 +12,6 @@ import androidx.lifecycle.ViewModelProviders
 import androidx.navigation.ActivityNavigator
 import androidx.navigation.fragment.findNavController
 import dagger.android.support.DaggerFragment
-import io.iohk.atala.prism.app.data.local.db.model.KycRequest
 import io.iohk.atala.prism.app.neo.common.EventWrapperObserver
 import io.iohk.atala.prism.app.neo.common.extensions.hideBlockUILoading
 import io.iohk.atala.prism.app.neo.common.extensions.showBlockUILoading
@@ -73,19 +72,15 @@ class IdVerificationTutorialFragment : DaggerFragment() {
                 }
             }
         )
-        viewModel.shouldInitializeAcuantSDK.observe(
+        viewModel.acuantSDKIsAlreadyInitialized.observe(
             viewLifecycleOwner,
             EventWrapperObserver {
                 it?.let {
                     requireActivity().hideBlockUILoading()
-                    acuantSdkInitialization(it)
+                    findNavController().navigate(R.id.action_idVerificationTutorialFragment_to_idTypeSelectionFragment)
                 }
             }
         )
-    }
-
-    private fun acuantSdkInitialization(kycRequest: KycRequest) {
-        findNavController().navigate(R.id.action_idVerificationTutorialFragment_to_idTypeSelectionFragment)
     }
 
     private fun goToMainActivity() {

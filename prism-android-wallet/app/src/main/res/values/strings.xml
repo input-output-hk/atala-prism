@@ -12,6 +12,7 @@
 
     <!-- layout/dialog_success.xml -->
     <string name="dialog_success_ok_button">OK</string>
+    <string name="generic_error_message">Something went wrong</string>
 
     <!-- Activities titles -->
     <string name="connections_activity_title">Connections</string>
@@ -439,5 +440,34 @@
     <string name="id_type_selection_option_passport">Passport</string>
     <string name="id_type_selection_option_driver_license">Driver\'s License</string>
     <string name="id_type_selection_next">Next</string>
+
+    <!-- DocumentScanFragment -->
+    <string name="document_scan_toolbar_title">Identity Verification</string>
+    <string name="document_scan_step1">Step 1</string>
+    <string name="document_scan_title">Scan your %1$s</string>
+    <string name="document_scan_instructions_a">Please check that the camera is focused correctly over the document</string>
+    <string name="document_scan_instructions_b">Front of %1$s</string>
+    <string name="document_scan_instructions_c">Position the front of your %1$s in the frame</string>
+    <string name="document_scan_instructions_d">Position the back of your %1$s in the frame</string>
+    <string name="document_scan_instructions_e">Back of %1$s</string>
+    <string name="document_scan_take_a_picture">Take a picture</string>
+    <string name="document_scan_id_type_national_id">ID</string>
+    <string name="document_scan_id_type_passport">Passport</string>
+    <string name="document_scan_id_type_driver_license">Driver\'s License</string>
+
+    <!-- IdDataConfirmationFragment -->
+    <string name="id_data_confirmation_toolbar_title">Identity Verification</string>
+    <string name="id_data_confirmation_step2">Step 2</string>
+    <string name="id_data_confirmation_title">Confirm your data</string>
+    <string name="id_data_confirmation_instructions">Check that the scanned information is correct.</string>
+    <string name="id_data_confirmation_full_name">FULL NAME</string>
+    <string name="id_data_confirmation_gender">GENDER</string>
+    <string name="id_data_confirmation_nationality">NATIONALITY</string>
+    <string name="id_data_confirmation_date_of_birth">DATE OF BIRTH</string>
+    <string name="id_data_confirmation_national_id_number">NATIONAL ID NUMBER</string>
+    <string name="id_data_confirmation_issue_date">ISSUE DATE</string>
+    <string name="id_data_confirmation_expiration_date">EXPIRATION DATE</string>
+    <string name="id_data_confirmation_scan_again">Scan Again</string>
+    <string name="id_data_confirmation_confirm">Confirm</string>
 
 </resources>

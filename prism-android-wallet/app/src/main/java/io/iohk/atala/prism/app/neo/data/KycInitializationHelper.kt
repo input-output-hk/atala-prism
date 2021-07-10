@@ -1,7 +1,14 @@
 package io.iohk.atala.prism.app.neo.data
 
+import android.content.Context
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
+import com.acuant.acuantcamera.initializer.MrzCameraInitializer
+import com.acuant.acuantcommon.initializer.AcuantInitializer
+import com.acuant.acuantcommon.initializer.IAcuantPackageCallback
+import com.acuant.acuantcommon.model.Error
+import com.acuant.acuantechipreader.initializer.EchipInitializer
+import com.acuant.acuantimagepreparation.initializer.ImageProcessorInitializer
 import io.iohk.atala.prism.app.core.ConnectorListenerService
 import io.iohk.atala.prism.app.data.local.db.mappers.ContactMapper
 import io.iohk.atala.prism.app.data.local.db.model.Contact
@@ -12,6 +19,7 @@ import io.iohk.atala.prism.app.neo.data.local.SessionLocalDataSourceInterface
 import io.iohk.atala.prism.app.neo.data.remote.ConnectorRemoteDataSource
 import io.iohk.atala.prism.app.utils.CryptoUtils
 import io.iohk.atala.prism.protos.AtalaMessage
+import io.iohk.cvp.BuildConfig
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
@@ -29,12 +37,14 @@ class KycInitializationHelper(
     private val kycLocalDataSource: KycLocalDataSourceInterface,
     private val remoteDataSource: ConnectorRemoteDataSource,
     private val sessionLocalDataSource: SessionLocalDataSourceInterface,
+    private val context: Context
 ) {
 
     sealed class KycInitializationResult {
         class Error(val ex: Exception) : KycInitializationResult()
         class Success(val kycRequest: KycRequest) : KycInitializationResult()
         object TimeoutError : KycInitializationResult()
+        class AcuantError(val error: List<com.acuant.acuantcommon.model.Error>) : KycInitializationResult()
         object IsLoaDing : KycInitializationResult()
     }
 
@@ -68,7 +78,7 @@ class KycInitializationHelper(
             kycLocalDataSource.kycContact()?.let {
                 kycLocalDataSource.kycRequestSync()?.let {
                     // When there is data stored for a [AtalaMessage.MessageCase.KYCBRIDGEMESSAGE] message it means that Acuant initialization is already success
-                    result.postValue(KycInitializationResult.Success(it))
+                    initializeAcuantSDK(it)
                 } ?: kotlin.run {
                     // When there is already a connection with the KYC bridge but there is no local data for a [AtalaMessage.MessageCase.KYCBRIDGEMESSAGE] message, we should go to step 3
                     kycConnectionContact = it
@@ -127,10 +137,27 @@ class KycInitializationHelper(
         GlobalScope.launch(Dispatchers.Main) {
             kycLocalDataSource.kycRequestAsync().getOrAwaitValue(MAX_WAITING_TIME_MILL)?.let {
                 // when the [AtalaMessage.MessageCase.KYCBRIDGEMESSAGE] message data is already stored locally the initialization process is complete
-                result.postValue(KycInitializationResult.Success(it))
+                initializeAcuantSDK(it)
             } ?: kotlin.run {
                 result.postValue(KycInitializationResult.TimeoutError)
             }
         }
+    }
+
+    private fun initializeAcuantSDK(kycRequest: KycRequest) {
+        AcuantInitializer.initializeWithToken(
+            BuildConfig.ACUANT_CONF_FILE,
+            kycRequest.bearerToken,
+            context,
+            listOf(ImageProcessorInitializer(), EchipInitializer(), MrzCameraInitializer()),
+            object : IAcuantPackageCallback {
+                override fun onInitializeFailed(error: List<Error>) {
+                    result.value = KycInitializationResult.AcuantError(error)
+                }
+                override fun onInitializeSuccess() {
+                    result.value = KycInitializationResult.Success(kycRequest)
+                }
+            }
+        )
     }
 }

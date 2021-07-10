@@ -34,5 +34,58 @@
         tools:layout="@layout/fragment_id_type_selection"
         android:id="@+id/idTypeSelectionFragment"
         android:name="io.iohk.atala.prism.app.ui.idverification.step1.IdTypeSelectionFragment"
-        android:label="@string/id_type_selection_toolbar_title" />
+        android:label="@string/id_type_selection_toolbar_title">
+        <action
+            app:enterAnim="@anim/slide_in_right"
+            app:exitAnim="@anim/slide_out_left"
+            app:popEnterAnim="@anim/slide_in_left"
+            app:popExitAnim="@anim/slide_out_right"
+            android:id="@+id/action_idTypeSelectionFragment_to_documentScanFragment"
+            app:destination="@id/documentScanFragment" />
+    </fragment>
+
+    <fragment
+        tools:layout="@layout/fragment_document_scan"
+        android:id="@+id/documentScanFragment"
+        android:name="io.iohk.atala.prism.app.ui.idverification.step1.DocumentScanFragment"
+        android:label="@string/document_scan_toolbar_title">
+        <argument
+            android:name="documentType"
+            app:argType="string" />
+        <action
+            app:enterAnim="@anim/slide_in_right"
+            app:exitAnim="@anim/slide_out_left"
+            app:popEnterAnim="@anim/slide_in_left"
+            app:popExitAnim="@anim/slide_out_right"
+            android:id="@+id/action_documentScanFragment_to_idDataConfirmationFragment"
+            app:destination="@id/idDataConfirmationFragment"
+            app:popUpTo="@id/idTypeSelectionFragment" />
+    </fragment>
+    <fragment
+        tools:layout="@layout/fragment_id_data_confirmation"
+        android:id="@+id/idDataConfirmationFragment"
+        android:name="io.iohk.atala.prism.app.ui.idverification.step2.IdDataConfirmationFragment"
+        android:label="@string/id_data_confirmation_toolbar_title">
+        <argument
+            android:name="fullName"
+            app:argType="string" />
+        <argument
+            android:name="gender"
+            app:argType="string" />
+        <argument
+            android:name="nationality"
+            app:argType="string" />
+        <argument
+            android:name="nationalIdNumber"
+            app:argType="string" />
+        <argument
+            android:name="birthDate"
+            app:argType="string" />
+        <argument
+            android:name="issueDate"
+            app:argType="string" />
+        <argument
+            android:name="expirationDate"
+            app:argType="string" />
+    </fragment>
 </navigation>
