@@ -51,9 +51,7 @@ const useGetContacts = (contactsManager, allowPreload = true) => {
         })
         .catch(error => {
           if (error.code === UNKNOWN_DID_SUFFIX_ERROR_CODE) {
-            setHasMore(false);
             showUnconfirmedAccountError();
-            setHasMore(false);
           } else {
             removeUnconfirmedAccountError();
             Logger.error('[Contacts.getContacts] Error while getting contacts', error);
@@ -61,6 +59,7 @@ const useGetContacts = (contactsManager, allowPreload = true) => {
           }
         })
         .finally(() => {
+          setHasMore(false);
           setIsLoading(false);
           setIsSearching(false);
           if (onFinish) onFinish();
@@ -140,6 +139,7 @@ const useGetContactsNotInGroup = contactsManager => {
           message.error(i18n.t('errors.errorGetting', { model: 'Contacts' }));
         })
         .finally(() => {
+          setHasMore(false);
           setIsLoading(false);
           setIsSearching(false);
           if (onFinish) onFinish();

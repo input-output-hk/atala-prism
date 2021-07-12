@@ -123,7 +123,6 @@ export const useCredentialsIssuedListWithFilters = credentialsManager => {
             error
           );
           if (error.code === UNKNOWN_DID_SUFFIX_ERROR_CODE) {
-            setHasMore(false);
             showUnconfirmedAccountError();
           } else {
             removeUnconfirmedAccountError();
@@ -131,6 +130,7 @@ export const useCredentialsIssuedListWithFilters = credentialsManager => {
           }
         })
         .finally(() => {
+          setHasMore(false);
           setIsLoading(false);
           setIsSearching(false);
         });
@@ -171,12 +171,12 @@ export const useCredentialsIssuedListWithFilters = credentialsManager => {
       );
       if (error.code === UNKNOWN_DID_SUFFIX_ERROR_CODE) {
         showUnconfirmedAccountError();
-        setHasMore(false);
       } else {
         removeUnconfirmedAccountError();
         message.error(t('errors.errorGetting', { model: 'Credentials' }));
       }
     } finally {
+      setHasMore(false);
       setIsLoading(false);
     }
   };
