@@ -45,27 +45,18 @@ const CredentialTemplateCreation = ({
       return { errors: partialErrorsFields.map(errorField => errorField.errors) };
     });
 
-  const goToDesignCredential = async () => {
-    // TODO: implement design template
-    // if (selectedCategory) changeStep(DESIGN_TEMPLATE);
-    const { errors } = await validateByStep(SELECT_TEMPLATE_CATEGORY);
+  const advanceStep = async () => {
+    const { errors } = await validateByStep(currentStep);
     const isPartiallyValid = !errors;
-    if (isPartiallyValid) message.warn(t('errors.notImplementedYet'));
+    if (isPartiallyValid) changeStep(currentStep + 1);
     else errors.map(msg => message.error(t(msg)));
-  };
-
-  const createTemplates = async () => {
-    const stepValidation = await validateByStep(DESIGN_TEMPLATE);
-    const isPartiallyValid = !stepValidation;
-    if (isPartiallyValid) changeStep(TEMPLATE_CREATION_RESULT);
-    else stepValidation.map(msg => message.error(t(msg)));
   };
 
   const goBack = () => changeStep(currentStep - NEW_TEMPLATE_STEP_UNIT);
 
   const steps = [
-    { back: redirectToCredentialTemplates, next: goToDesignCredential },
-    { back: goBack, next: createTemplates },
+    { back: redirectToCredentialTemplates, next: advanceStep },
+    { back: goBack, next: advanceStep },
     { back: goBack, next: redirectToCredentialTemplates }
   ];
 
