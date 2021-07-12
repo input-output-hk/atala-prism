@@ -31,7 +31,8 @@ export const template3 = {
             <img src={{image0}} style="width: 44px;" />
           </div>
         </div>
-        <div style="background-color: {{backgroundColor}}; width: 100%; display: flex; flex-wrap: wrap; padding: 1em 2em;">
+        <div style="background-color: {{backgroundColor}}; width: 100%; display: flex; flex-wrap: wrap; padding: 1em 2em;
+          border-radius: 0 0 10px 10px; box-shadow: 0 1px 6px 0 rgba(32, 33, 36, .28);">
           <div class="attribute-container" 
             style="width: 100%; box-sizing: border-box; display: flex; flex-wrap: wrap;" >
             {{#attributes}}
