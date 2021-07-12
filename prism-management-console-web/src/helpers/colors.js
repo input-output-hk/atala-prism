@@ -11,6 +11,24 @@ export const colors = {
   error: '#F83633'
 };
 
+export const themeColors = [
+  '#D8D8D8',
+  '#FF2D3B',
+  '#40EAEA',
+  '#2BB5B5',
+  '#2ACA9A',
+  '#0C8762',
+  '#EC2691',
+  '#FFD100',
+  '#FF8718',
+  '#AF2DFF',
+  '#4A2DFF',
+  '#011727',
+  '#808080'
+];
+
+export const backgroundColors = ['#FFFFFF', '#0C8762', '#2ACA9A', '#79CEB5', '#D8D8D8', '#000000'];
+
 export const getContrastColor = backgroundColor => {
   const black = '#000000';
   const white = '#FFFFFF';
