@@ -28,7 +28,7 @@ export const template3 = {
           </div>
           <div style="width: 60px;">
             <!-- here you can change the credential image -->
-            <img src={{image0}} style="width: 44px;" />
+            <img src={{embeddedCompanyLogo}} style="width: 44px;" />
           </div>
         </div>
         <div style="background-color: {{backgroundColor}}; width: 100%; display: flex; flex-wrap: wrap; padding: 1em 2em;

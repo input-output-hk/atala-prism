@@ -47,8 +47,8 @@ export const placeholders = {
   backgroundColor: '{{backgroundColor}}',
   contrastThemeColor: '{{contrastThemeColor}}',
   contrastBackgroundColor: '{{contrastBackgroundColor}}',
-  image0: '{{image0}}',
-  image1: '{{image1}}',
+  embeddedCompanyLogo: '{{embeddedCompanyLogo}}',
+  embeddedUserIcon: '{{embeddedUserIcon}}',
   credentialTitle: '{{credentialTitle}}',
   credentialSubtitle: '{{credentialSubtitle}}',
   attributeLabel: '{{attributeLabel}}',
@@ -102,13 +102,21 @@ const fillBody = ({ dynamicAttribute, fixedText }, currentSettings) => {
   return bodyParts.reduce((compilation, part) => compilation.concat(part), '');
 };
 
-// FIXME: any better solution to this forced update? better names than image0-1
-export const updateImages = async ({ companyIcon, userIcon }, setImagesOverwrites) => {
+export const updateImages = async (templateSettings, setImagesOverwrites) => {
+  const { companyIcon, userIcon, embeddedCompanyLogo, embeddedUserIcon } = templateSettings;
   if (!companyIcon && !userIcon) return;
-  const image0 = companyIcon?.length && (await getBase64(companyIcon[0].originFileObj));
-  const image1 = userIcon?.length && (await getBase64(userIcon[0].originFileObj));
-
-  setImagesOverwrites({ ...(image0 && { image0 }), ...(image1 && { image1 }) });
+  const newEmbeddedCompanyLogo = companyIcon?.length
+    ? await getBase64(companyIcon[0].originFileObj)
+    : embeddedCompanyLogo;
+  const newEmbeddedUserIcon = userIcon?.length
+    ? await getBase64(userIcon[0].originFileObj)
+    : embeddedUserIcon;
+  const images = Object.assign(
+    {},
+    { embeddedCompanyLogo: newEmbeddedCompanyLogo },
+    { embeddedUserIcon: newEmbeddedUserIcon }
+  );
+  setImagesOverwrites(images);
 };
 
 const getBase64 = file =>

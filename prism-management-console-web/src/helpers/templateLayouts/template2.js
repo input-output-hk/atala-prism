@@ -23,7 +23,7 @@ export const template2 = {
           </div>
           <div style="width: 60px;">
             <!-- here you can change the credential image -->
-            <img src={{image0}} style="width: 44px;" />
+            <img src={{embeddedCompanyLogo}} style="width: 44px;" />
           </div>
         </div>
         <div 

@@ -1,8 +1,8 @@
 // eslint-disable-next-line no-unused-vars
 import _React, { useReducer } from 'react';
 import _ from 'lodash';
-import image0 from '../images/generic-icon-01.svg';
-import image1 from '../images/genericUserIcon.svg';
+import embeddedCompanyLogo from '../images/generic-icon-01.svg';
+import embeddedUserIcon from '../images/genericUserIcon.svg';
 
 export const getNewDynamicAttribute = attributes => {
   const index = attributes.length;
@@ -41,8 +41,8 @@ const defaultTemplate = {
   layout: 0,
   themeColor: '#D8D8D8',
   backgroundColor: '#FFFFFF',
-  image0,
-  image1,
+  embeddedCompanyLogo,
+  embeddedUserIcon,
   credentialTitle: 'Title',
   credentialSubtitle: 'Subtitle',
   credentialBody: new Array(defaultCredentialBodyLength)
@@ -54,14 +54,18 @@ const defaultTemplate = {
 export const UPDATE_FIELDS = 'UPDATE_FIELDS';
 
 const insertFormChangeIntoArray = (change, oldArray) => {
-  // when there's no change, return the unchanged array:
+  // change can either be...
+  // - undefined: w hen there's no change => return the unchanged array
   if (!change) return oldArray;
-  // when there's a change in sort, return the sorted array:
+
+  // - A dense array: when there's a change in sort => return the sorted array
   if (_.compact(change).length === oldArray.length) return change;
-  // otherwise, merge both arrays:
-  const changeArray = Array.from(change); // casting because change is a sparse array
-  const newPartialArray = changeArray.map((ch, index) => ({ ...oldArray[index], ...ch }));
-  const newArray = [...newPartialArray, ...oldArray.slice(newPartialArray.length)];
+
+  // - A sparse array: on any other change event => merge both arrays
+  const changeArray = Array.from(change); // casting to array because it's a sparse array
+  const newPartialArray = changeArray.map((ch, index) => Object.assign({ ...oldArray[index] }, ch));
+  const oldArrayTail = oldArray.slice(newPartialArray.length);
+  const newArray = newPartialArray.concat(oldArrayTail);
   return newArray;
 };
 

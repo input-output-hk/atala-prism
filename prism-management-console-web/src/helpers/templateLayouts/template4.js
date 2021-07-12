@@ -23,7 +23,7 @@ export const template4 = {
           </div>
           <div style="width: 60px;">
             <!-- here you can change the credential image -->
-            <img src={{image0}} style="width: 44px;" />
+            <img src={{embeddedCompanyLogo}} style="width: 44px;" />
           </div>
         </div>
         <div 
@@ -31,7 +31,7 @@ export const template4 = {
           border-radius: 0 0 10px 10px; box-shadow: 0 1px 6px 0 rgba(32, 33, 36, .28);">
           <div style="width: 80px; display: flex; padding: 0 0 0 1em; justify-content: center; align-items: center;">
             <!-- here you can change the credential image -->
-            <img src={{image1}} style="width: 44px;" /> 
+            <img src={{embeddedUserIcon}} style="width: 44px;" /> 
           </div>
           <div style="width: 320px; padding: 1em;">
           {{#attributes}}
