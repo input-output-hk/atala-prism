@@ -32,7 +32,7 @@ class WatchCardanoBlockchainAddressesProcessorSpec
       (for {
         _ <- ConnectionFixtures.insertAll(database)
         _ <- CardanoDBSyncFixtures.createDbSyncSchema(database)
-        _ <- CardanoDBSyncFixtures.insert(usedAddressesCount, cardanoAddressService, database)
+        _ <- CardanoDBSyncFixtures.insert(usedAddressesCount, cardanoAddressServiceStub, database)
         _ <- CardanoWalletFixtures.insertAll(database)
       } yield ()).runSyncUnsafe()
 
@@ -80,7 +80,7 @@ class WatchCardanoBlockchainAddressesProcessorSpec
         database,
         database,
         cardanoConfig,
-        cardanoAddressService,
+        cardanoAddressServiceStub,
         processingTaskService
       )
     val data = WatchCardanoBlockchainAddressesStateData(CardanoBlockId(id = 0))

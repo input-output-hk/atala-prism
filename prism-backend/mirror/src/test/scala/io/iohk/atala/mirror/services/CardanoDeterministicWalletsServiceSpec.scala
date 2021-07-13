@@ -12,6 +12,7 @@ import org.mockito.scalatest.MockitoSugar
 import org.scalatest.OptionValues._
 
 import scala.concurrent.duration.DurationInt
+import io.iohk.atala.mirror.stubs.CardanoAddressServiceStub
 
 // sbt "project mirror" "testOnly *services.CardanoDeterministicWalletsServiceSpec"
 class CardanoDeterministicWalletsServiceSpec
@@ -52,7 +53,7 @@ class CardanoDeterministicWalletsServiceSpec
       (for {
         _ <- ConnectionFixtures.insertAll(database)
         _ <- CardanoDBSyncFixtures.createDbSyncSchema(database)
-        _ <- CardanoDBSyncFixtures.insert(usedAddressesCount, cardanoAddressService, database)
+        _ <- CardanoDBSyncFixtures.insert(usedAddressesCount, cardanoAddressServiceStub, database)
       } yield ()).runSyncUnsafe()
 
       // when
@@ -71,12 +72,34 @@ class CardanoDeterministicWalletsServiceSpec
 
     "return None if ReceivedMessage is not RegisterWalletMessageMessage" in new CardanoDeterministicWalletsServiceFixtures {
       registerWalletMessageProcessor(credentialMessage1) mustBe None
+      registerWalletMessageProcessor(cardanoRegisterWalletMessageMessage) mustBe a[Some[_]]
+    }
+
+    "handle duplicate wallets without throwing exception" in new CardanoDeterministicWalletsServiceFixtures {
+      // given
+      (for {
+        _ <- ConnectionFixtures.insertAll(database)
+        _ <- CardanoDBSyncFixtures.createDbSyncSchema(database)
+      } yield ()).runSyncUnsafe()
+
+      // when
+      val (processingResult1, processingResult2) = (for {
+        processingResult1 <- registerWalletMessageProcessor(cardanoRegisterWalletMessageMessage).get
+        processingResult2 <- registerWalletMessageProcessor(cardanoRegisterWalletMessageMessage).get
+      } yield (processingResult1, processingResult2)).runSyncUnsafe(1.minute)
+
+      // then
+      processingResult1 mustBe an[Right[PrismError, Option[AtalaMessage]]]
+      processingResult2 mustBe Left(
+        CardanoDeterministicWalletsService.CardanoWalletExists
+      )
     }
   }
 
   trait CardanoDeterministicWalletsServiceFixtures {
+    val cardanoAddressServiceStub = new CardanoAddressServiceStub()
     val cardanoDeterministicWalletsService =
-      new CardanoDeterministicWalletsService(database, database, cardanoAddressService, cardanoConfig)
+      new CardanoDeterministicWalletsService(database, database, cardanoAddressServiceStub, cardanoConfig)
 
     val registerWalletMessageProcessor = cardanoDeterministicWalletsService.registerWalletMessageProcessor
   }

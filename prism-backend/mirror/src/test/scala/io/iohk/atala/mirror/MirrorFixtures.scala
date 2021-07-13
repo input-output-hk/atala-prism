@@ -36,6 +36,7 @@ import io.iohk.atala.prism.utils.GrpcUtils.{GrpcConfig, SslConfig}
 import org.scalatest.OptionValues._
 
 import java.time.{LocalDateTime, ZoneOffset}
+import io.iohk.atala.mirror.stubs.CardanoAddressServiceStub
 
 trait MirrorFixtures extends ServicesFixtures with ProcessingTaskFixtures {
 
@@ -136,6 +137,21 @@ trait MirrorFixtures extends ServicesFixtures with ProcessingTaskFixtures {
         UserCredentialDao.insert(userCredential3)
       )(database)
     }
+  }
+
+  object CardanoAddressFixtures {
+    // extended public key was generated as:
+    // echo "root_xsk12qaq7ccdh97uhvqxfn8l9f5ph0hcpf38nkv3yfpky8uge58gx9xr7up7havl0k8dgy0u38qzakhvmuwtzat4jnvyrjqyvwe2mpewemn6z0wajkjsj2sh3ykj27xkhwhcvwz32wllx6qtvzy4leyz8up6tgd98zkl" | cardano-address key child 1852H/1815H/0H | cardano-address key public --with-chain-code
+    val acctExtendedVkey =
+      "acct_xvk155crk6049ap0477qvjpf5mvxtw5f46uk6k54udc9mz5wcdyyhssexcsk5sgvy05m7mqh3ed3qgs6epyf7hvdfxf6hd54aqm3uwdsewqu6vsvy"
+
+    val cardanoAddressKey = CardanoAddressKey(
+      "addr_xvk1ywluxn2exkm7gl0m66nnzdkp3fcttkqca48jz3wkdmjmw4vqvahsmk2ajq22f9dwuqjfupeapplreav68dsuyhsv46fdtagj779lrtsmwt0th"
+    )
+
+    val cardanoAddress = CardanoAddress(
+      "addr1qyev5h8thxju452j953er64ffcsg4rksx3vr2pxrnsrg50xxrm8nx4l8qntadvlvdfldg8h3v7q7x6s0xcfg54g5c3qqscwuf6"
+    )
   }
 
   object CardanoAddressInfoFixtures {
@@ -374,7 +390,7 @@ trait MirrorFixtures extends ServicesFixtures with ProcessingTaskFixtures {
       "acct_xvk155crk6049ap0477qvjpf5mvxtw5f46uk6k54udc9mz5wcdyyhssexcsk5sgvy05m7mqh3ed3qgs6epyf7hvdfxf6hd54aqm3uwdsewqu6vsvy"
     val network = "testnet"
     val cardanoConfig = CardanoConfig(config.CardanoNetwork.TestNet, minAddressesCount, syncIntervalInSeconds = 300)
-    val cardanoAddressService = new CardanoAddressService("../target/mirror-binaries/cardano-address")
+    val cardanoAddressServiceStub: CardanoAddressService = new CardanoAddressServiceStub()
 
     val cardanoWallet1 = CardanoWallet(
       id = CardanoWallet.Id.random(),
@@ -398,7 +414,7 @@ trait MirrorFixtures extends ServicesFixtures with ProcessingTaskFixtures {
 
     var cardanoWalletAddress1 = CardanoWalletAddress(
       address = CardanoAddress(
-        "addr_test1qqev5h8thxju452j953er64ffcsg4rksx3vr2pxrnsrg50xxrm8nx4l8qntadvlvdfldg8h3v7q7x6s0xcfg54g5c3qqnwnu99"
+        "addr_0"
       ),
       walletId = cardanoWallet1.id,
       sequenceNo = 0,
@@ -407,14 +423,14 @@ trait MirrorFixtures extends ServicesFixtures with ProcessingTaskFixtures {
 
     var cardanoWalletAddress2 = CardanoWalletAddress(
       address = CardanoAddress(
-        "addr_test1qzuzav002lnp3j6zketk0m8fzuvkcrzs9lvdl9lp0ztz8u3g9ygxc0vwf6fdvlneqjw8ml5hewmx4fcm93rrh33z844s2zafhy"
+        "addr_1"
       ),
       walletId = cardanoWallet1.id,
       sequenceNo = 1,
       usedAt = None
     )
 
-    lazy val otherWalletAddresses = cardanoAddressService
+    lazy val otherWalletAddresses = cardanoAddressServiceStub
       .generateWalletAddresses(extendedPublicKey, fromSequenceNo = 2, minAddressesCount, network)
       .toOption
       .value

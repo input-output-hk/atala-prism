@@ -50,6 +50,21 @@ class CardanoAddressInfoServiceSpec extends PostgresRepositorySpec[Task] with Mo
       cardanoAddressInfoOption.map(_.cardanoAddress) mustBe Some(CardanoAddress(cardanoAddress1))
     }
 
+    "handle duplicate addreses without throwing exception" in new CardanoAddressInfoServiceFixtures {
+      // given
+      ConnectionFixtures.insertAll(database).runSyncUnsafe()
+
+      // when
+      val (processingResult1, processingResult2) = (for {
+        processingResult1 <- cardanoAddressMessageProcessor(cardanoAddressInfoMessage1).get
+        processingResult2 <- cardanoAddressMessageProcessor(cardanoAddressInfoMessage1).get
+      } yield (processingResult1, processingResult2)).runSyncUnsafe(1.minute)
+
+      // then
+      processingResult1 mustBe an[Right[PrismError, Some[AtalaMessage]]]
+      processingResult2 mustBe an[Left[CardanoAddressAlreadyExist, Some[AtalaMessage]]]
+    }
+
     "return None if ReceivedMessage is not CardanoAddressMessage" in new CardanoAddressInfoServiceFixtures {
       cardanoAddressMessageProcessor(credentialMessage1) mustBe None
     }
@@ -71,6 +86,21 @@ class CardanoAddressInfoServiceSpec extends PostgresRepositorySpec[Task] with Mo
       processingResult mustBe an[Right[PrismError, Some[AtalaMessage]]]
       cardanoAddressInfoOption.map(_.cardanoAddress) mustBe Some(CardanoAddress(cardanoAddressPayId1))
       cardanoAddressInfoOption.flatMap(_.payidVerifiedAddress) mustBe a[Some[_]]
+    }
+
+    "handle duplicate addreses without throwing exception" in new CardanoAddressInfoServiceFixtures {
+      // given
+      ConnectionFixtures.insertAll(database).runSyncUnsafe()
+
+      // when
+      val (processingResult1, processingResult2) = (for {
+        processingResult1 <- paymentInformationMessageProcessor(paymentInformationMessage1).get
+        processingResult2 <- paymentInformationMessageProcessor(paymentInformationMessage1).get
+      } yield (processingResult1, processingResult2)).runSyncUnsafe(1.minute)
+
+      // then
+      processingResult1 mustBe an[Right[PrismError, Some[AtalaMessage]]]
+      processingResult2 mustBe an[Left[CardanoAddressAlreadyExist, Some[AtalaMessage]]]
     }
 
     "do not upsert cardano address if holder did and pay id name do not match" in new CardanoAddressInfoServiceFixtures {

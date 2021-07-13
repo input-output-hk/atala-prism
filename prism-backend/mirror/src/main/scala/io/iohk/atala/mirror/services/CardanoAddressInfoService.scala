@@ -312,7 +312,7 @@ class CardanoAddressInfoService(tx: Transactor[Task], httpConfig: HttpConfig, no
 
   def saveCardanoAddress(
       cardanoAddresses: Seq[CardanoAddressInfo]
-  ): ConnectionIO[Either[CardanoAddressAlreadyExists, Unit]] =
+  ): ConnectionIO[Either[CardanoAddressAlreadyExist, Unit]] =
     (for {
       alreadyExistingAddress <- EitherT.liftF(
         NonEmptyList
@@ -324,10 +324,10 @@ class CardanoAddressInfoService(tx: Transactor[Task], httpConfig: HttpConfig, no
       _ <- EitherT.cond[ConnectionIO](
         alreadyExistingAddress.isEmpty,
         (),
-        CardanoAddressAlreadyExists(alreadyExistingAddress)
+        CardanoAddressAlreadyExist(alreadyExistingAddress)
       )
 
-      _ <- EitherT.liftF[ConnectionIO, CardanoAddressAlreadyExists, Int](
+      _ <- EitherT.liftF[ConnectionIO, CardanoAddressAlreadyExist, Int](
         CardanoAddressInfoDao.insertMany.updateMany(cardanoAddresses.toList)
       )
     } yield ()).value
@@ -643,11 +643,10 @@ object CardanoAddressInfoService {
     }
   }
 
-  case class CardanoAddressAlreadyExists(addresses: List[CardanoAddressInfo]) extends PrismError {
+  case class CardanoAddressAlreadyExist(addresses: List[CardanoAddressInfo]) extends PrismError {
     override def toStatus: Status = {
       Status.ALREADY_EXISTS.withDescription(
-        "Cardano addresses already exists in database" +
-          addresses.map(_.cardanoAddress).mkString(", ")
+        s"Cardano addresses already exist in database ${addresses.map(_.cardanoAddress).mkString(", ")}"
       )
     }
   }

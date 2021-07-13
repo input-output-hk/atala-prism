@@ -121,7 +121,7 @@ object MirrorApp extends TaskApp {
       credentialService = new CredentialService(tx, connectorService, nodeService)
       cardanoAddressInfoService = new CardanoAddressInfoService(tx, mirrorConfig.httpConfig, nodeService)
       mirrorGrpcService = new MirrorGrpcService(mirrorServiceImpl)(scheduler)
-      cardanoAddressService = new CardanoAddressService()
+      cardanoAddressService = new CardanoAddressServiceImpl()
       trisaIntegrationService =
         if (mirrorConfig.trisaConfig.enabled) {
           new TrisaIntegrationServiceImpl(mirrorConfig.trisaConfig)

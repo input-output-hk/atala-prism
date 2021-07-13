@@ -6,6 +6,7 @@ CREATE TABLE cardano_wallets(
   last_generated_no INT NOT NULL,
   last_used_no INT,
   registration_date TIMESTAMPTZ NOT NULL,
+  CONSTRAINT cardano_wallets_extended_public_key_unique UNIQUE (extended_public_key),
   CONSTRAINT cardano_wallets_connection_token_fk FOREIGN KEY (connection_token) REFERENCES connections (token)
 );
 

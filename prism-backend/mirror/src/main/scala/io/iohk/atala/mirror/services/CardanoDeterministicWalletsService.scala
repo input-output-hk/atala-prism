@@ -67,11 +67,12 @@ class CardanoDeterministicWalletsService(
         registrationDate = CardanoWallet.RegistrationDate(Instant.now())
       )
 
-      walletId <- EitherT.liftF[Task, PrismError, CardanoWallet.Id](
+      walletId <- EitherT(
         CardanoWalletDao
           .insert(cardanoWallet)
           .transact(tx)
-      )
+          .attempt
+      ).leftMap(_ => CardanoDeterministicWalletsService.CardanoWalletExists)
 
       _ <- EitherT(generateAddresses(cardanoWallet))
 
@@ -197,6 +198,14 @@ object CardanoDeterministicWalletsService {
     override def toStatus: Status = {
       Status.INTERNAL.withDescription(
         s"Cardano deterministic wallet service error: $message"
+      )
+    }
+  }
+
+  case object CardanoWalletExists extends PrismError {
+    override def toStatus: Status = {
+      Status.ALREADY_EXISTS.withDescription(
+        "Cardano Wallet with the given extended public key already exists."
       )
     }
   }

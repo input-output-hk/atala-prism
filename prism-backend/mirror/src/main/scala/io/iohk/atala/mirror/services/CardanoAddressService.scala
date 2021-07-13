@@ -9,9 +9,43 @@ import io.iohk.atala.prism.errors.PrismError
 import io.grpc.Status
 import cats.implicits._
 
-class CardanoAddressService(val binaryPath: String = "target/mirror-binaries/cardano-address") {
+trait CardanoAddressService {
 
   def generateAddressKey(
+      extendedPublicKey: String,
+      path: String
+  ): Either[CardanoAddressServiceError, CardanoAddressKey]
+
+  def generateWalletAddresses(
+      extendedPublicKey: String,
+      fromSequenceNo: Int,
+      untilSequenceNo: Int,
+      network: String
+  ): Either[CardanoAddressServiceError, List[(CardanoAddress, Int)]]
+
+  def generateWalletAddress(
+      extendedPublicKey: String,
+      index: Int,
+      network: String
+  ): Either[CardanoAddressServiceError, CardanoAddress]
+}
+
+object CardanoAddressService {
+  case class CardanoAddressServiceError(consoleErrorOutput: String) extends PrismError {
+    override def toStatus: Status = {
+      Status.INTERNAL.withDescription(
+        s"Cardano address service error: $consoleErrorOutput"
+      )
+    }
+
+    val exception = new RuntimeException(s"Cardano address service error: $consoleErrorOutput")
+  }
+}
+
+class CardanoAddressServiceImpl(val binaryPath: String = "target/mirror-binaries/cardano-address")
+    extends CardanoAddressService {
+
+  override def generateAddressKey(
       extendedPublicKey: String,
       path: String
   ): Either[CardanoAddressServiceError, CardanoAddressKey] = {
@@ -20,7 +54,7 @@ class CardanoAddressService(val binaryPath: String = "target/mirror-binaries/car
       .map(CardanoAddressKey)
   }
 
-  def generateWalletAddresses(
+  override def generateWalletAddresses(
       extendedPublicKey: String,
       fromSequenceNo: Int,
       untilSequenceNo: Int,
@@ -33,7 +67,7 @@ class CardanoAddressService(val binaryPath: String = "target/mirror-binaries/car
       )
   }
 
-  def generateWalletAddress(
+  override def generateWalletAddress(
       extendedPublicKey: String,
       index: Int,
       network: String
@@ -63,16 +97,4 @@ class CardanoAddressService(val binaryPath: String = "target/mirror-binaries/car
       Left(CardanoAddressServiceError(stderrStream.toString))
   }
 
-}
-
-object CardanoAddressService {
-  case class CardanoAddressServiceError(consoleErrorOutput: String) extends PrismError {
-    override def toStatus: Status = {
-      Status.INTERNAL.withDescription(
-        s"Cardano address service error: $consoleErrorOutput"
-      )
-    }
-
-    val exception = new RuntimeException(s"Cardano address service error: $consoleErrorOutput")
-  }
 }
