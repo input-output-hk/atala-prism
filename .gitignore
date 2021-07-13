@@ -21,4 +21,6 @@ out/
 *.worksheet.sc
 **/metals.sbt
 prism-interactive-demo-web/src/protos/intdemo
-
+*.aux 
+*.toc
+*.pdf

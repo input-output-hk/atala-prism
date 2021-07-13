@@ -1,4 +1,5 @@
 \documentclass[10pt,a4paper]{article}
+\usepackage[margin=1in]{geometry}
 
 \title{PRISM protocol v0.3} 
 
@@ -108,17 +109,33 @@ For practical reasons, we assume that issuers want to issue credentials in batch
 
 \subsubsection{Credentials batch issuance}
 
+Lets us define first what a credential is in the context of this document
+
+\begin{description}
+\item[Credential] a credential is a JSON document that contains three key-value maps.
+ \begin{itemize}
+ \item the "issuer" key represents the issuer DID.
+ \item the "keyId" key represents the key identifier associated to the issuer DID that was used to sign the credential.
+ \item the "claims" key represents claims that the issuer makes about the subject. The claims are grouped in a JSON object.
+       There is a key for each claim asserted by the issuer. One particular claim is the subject DID, that represents a DID
+       controlled by the subject of the credential.
+ \end{itemize}
+\end{description}
+
 In the following steps, we assume the issuer and subjects have already established a secure communication channel.
 In order to issue a batch of an arbitrary number $N$ of credentials, the issuer will:
 \begin{itemize}
 \item Ask to each subject the DID they would like to use for the credential they will receive.
-\item The issuer creates the credentials (sets of claims) for each subject. One of the claims is the subject DID.
-      The issuer DID is also attached in the claims.
-\item The issuer signs each individual credential with an \emph{issuing key} associated to his publicly known DID. 
-      The signing key id is also attached to the credentials' claims.
-\item The issuer computes a merkle root based on the list of signed credentials.
+\item The issuer creates the credentials for each subject. It uses his DID and the key id of an \emph{issuing key} to populate
+      the credential corresponding fields. On each credential, it adds the corresponding subject DID as one of the claims.
+\item The issuer encodes each individual credential using a base64URL encoding.
+\item The issuer signs each individual encoded credential with an \emph{issuing key} associated to his publicly known DID. 
+      The signing key corresponds to the key id in the credentials' claims.
+\item The issuer encodes each signature, and concatenate them to their corresponding credentials using a dot (".") as separator.
+      This produces strings of the form $<encoded\_credentials>.<encoded\_signature>$. We call these strings as \emph{signed credentials}.
+\item Now, the issuer takes all the signed credentials, and computes a merkle root from them.
 \item The issuer creates an \emph{IssueBatch} event that contains the merkle root, and signs the event with an \emph{issuing key} associated to his publicly known DID. 
-      \textbf{Note}: Today we use the same issuing key for the event signature and the individual credentials signature, but those could be different keys.
+\textbf{Note}: Today we use the same issuing key for the event signature and the individual credentials signature, but those could be different keys.
 \item The issuer attaches the signed event to the metadata of a transaction and sends it to the blockchain.
 \item The issuer gives to each user their corresponding signed credential along with their associated merkle inclusion proof.
 \end{itemize}
@@ -145,12 +162,20 @@ In both variants, the event is published on-chain and processed by all the parti
 
 Once they receive credentials from issuers, subjects will present them to interested parties, called \emph{verifiers}. For example, a student may receive a verifiable credential from a university, and would like to present his credential to a potential employer. In our setting, the verifier will be a party following our protocol events from the blockchain. The steps to present and verify a credential are the following:
 \begin{itemize}
-\item We assume a safe communication channel between the subject and verifier. 
-      We also assume that the verifier has a DID $DID_{V}$ known by the subject.
+\item We assume a safe communication channel between the subject and verifier.
+      We also assume that the channel can be identified by an identifier $ch$.
 \item The subject shares his credential and merkle inclusion proof to the verifier.
-\item The verifier computes the merkle root from the inclusion proof and the credential hash; extracts the issuer DID and signing key id from the credential claims. Then, it retrieves from the state he computed from the blockchain, the timestamps associated to the merkle root, the issuing key, he also extracts the signing key and checks if the merkle root or credential hash has been revoked. With all that data, he validates the issuer signature and is able to determine if it was signed at a time when the issuer key was valid.
+\item The verifier then: 
+	\begin{itemize}
+	\item computes the merkle root from the inclusion proof and the credential hash;
+	\item extracts the issuer DID and signing key id from the credential claims,
+	\item retrieves from the state he computed from the blockchain, the timestamps associated to the merkle root and the issuing key, 
+	\item checks if the merkle root or credential hash has been revoked
+	\item validates the issuer signature on the credential, and determines if it was signed at a time when the issuer key was valid.
+	\end{itemize}
+  \textbf{Note:} The signature of the IssueBatch event has already been verified by the protocol participants at the time of batch publication. 
 \item At this point, the verifier knows that the credential was properly signed. Now, he shares a nonce to the subject and asks him to sign it with a key associated to his DID.
-\item The subject signs the hash of $nonce || DID_{V}$ and returns the signature to the verifier.
+\item The subject signs the hash of $nonce || ch$ and returns the signature to the verifier.
 \item The verifier now checks the signature and concludes that the credential subject is indeed the person presenting it.
 \end{itemize}
 
