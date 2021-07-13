@@ -1,0 +1,105 @@
+name: Test Changes
+
+on:
+  push:
+    branches:
+      - master
+      - test*
+  pull_request:
+
+jobs:
+  build-backend:
+    runs-on: ubuntu-20.04
+    container:
+      image: inputoutput/prism-scala-common:2.12.10-2.13.6-1.5.3-0.14.5-jdk11
+
+    services:
+      postgres:
+        image: postgres:13.3
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_DB: postgres
+          POSTGRES_PASSWORD: postgres
+        # Set health checks to wait until postgres has started
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 5432:5432
+
+    steps:
+      - name: Checkout the repo
+        uses: actions/checkout@v2
+
+      - name: Cache sbt
+        uses: actions/cache@v2
+        with:
+          path: |
+            ~/.cache/coursier
+            ~/.ivy2
+            ~/.m2
+          key: ${{ runner.os }}-sbt-backend-${{ hashFiles('prism-backend/build.sbt', 'prism-backend/project/*') }}
+          restore-keys: |
+            ${{ runner.os }}-sbt-backend-
+
+      - name: Test Scala code is properly formatted
+        run: cd prism-backend && sbt scalafmtCheckAll
+
+      - name: Test Terraform code is properly formatted
+        run: terraform fmt -check -recursive
+
+      - name: Configure AWS
+        run: |
+          aws configure set aws_access_key_id ${{ secrets.AWS_ACCESS_KEY_ID }} --profile default
+          aws configure set aws_secret_access_key ${{ secrets.AWS_SECRET_ACCESS_KEY }} --profile default
+          aws configure set region ${{ secrets.AWS_DEFAULT_REGION }} --profile default
+          $(aws ecr get-login --no-include-email --region ${{ secrets.AWS_DEFAULT_REGION }})
+
+      - name: Obtain Cardano db sync and wallet endpoints config
+        id: cardano
+        run: .github/generate_cardano_variables.sh
+
+      - name: Compile prism-backend components
+        run: cd prism-backend && sbt compile test:compile
+
+      - name: Test prism-backend components
+        run: cd prism-backend && sbt coverage test
+        env:
+          POSTGRES_TEST_HOST: postgres:${{ job.services.postgres.ports[5432] }}
+          POSTGRES_TEST_DB: postgres
+          POSTGRES_TEST_USER: postgres
+          POSTGRES_TEST_PASSWORD: postgres
+          NODE_CARDANO_DB_SYNC_HOST: ${{ steps.cardano.outputs.db-sync-host }}
+          NODE_CARDANO_DB_SYNC_DATABASE: ${{ steps.cardano.outputs.db-sync-database }}
+          NODE_CARDANO_DB_SYNC_USERNAME: ${{ steps.cardano.outputs.db-sync-username }}
+          NODE_CARDANO_DB_SYNC_PASSWORD: ${{ steps.cardano.outputs.db-sync-password }}
+          NODE_CARDANO_WALLET_API_HOST: ${{ steps.cardano.outputs.wallet-api-host }}
+          NODE_CARDANO_WALLET_API_PORT: ${{ steps.cardano.outputs.wallet-api-port }}
+          NODE_CARDANO_WALLET_ID: ${{ secrets.NODE_CARDANO_WALLET_ID }}
+          NODE_CARDANO_WALLET_PASSPHRASE: ${{ secrets.NODE_CARDANO_WALLET_PASSPHRASE }}
+          NODE_CARDANO_CONFIRMATION_BLOCKS: ${{ secrets.NODE_CARDANO_CONFIRMATION_BLOCKS }}
+          NODE_CARDANO_PAYMENT_ADDRESS: ${{ secrets.NODE_CARDANO_PAYMENT_ADDRESS }}
+
+      - name: Generate code coverage reports
+        run: cd prism-backend && sbt coverageReport coverageAggregate
+        if: always()
+
+      - name: Aggregate test reports
+        if: always()
+        run: |
+          cd prism-backend
+          for reports in `find -name test-reports`; do
+            project=${reports%/target/*}
+            dest=target/test-reports/$project
+            mkdir -p $dest
+            cp $reports/* $dest
+          done
+
+      - name: Upload the test reports
+        if: always()
+        uses: actions/upload-artifact@v2
+        with:
+          name: test-reports
+          path: prism-backend/target/test-reports
