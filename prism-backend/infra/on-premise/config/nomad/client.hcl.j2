@@ -8,7 +8,7 @@ client {
   # TODO: Use variable
   host_volume "postgres_node" {
     # TODO: Use variable
-    path      = "/opt/postgres/node"
+    path = "/opt/postgres/node"
     read_only = false
   }
 
@@ -18,6 +18,16 @@ client {
     connect.sidecar_image = "envoyproxy/envoy:v1.18.3"
   }
 }
+
+{% if nomad_tls_enabled == true %}
+consul {
+  address = "127.0.0.1:8501"
+  ssl = true
+  ca_file = "{{ nomad_config_directory }}/consul-ca.pem"
+  cert_file = "{{ nomad_config_directory }}/consul-{{ nomad_mode }}.pem"
+  key_file = "{{ nomad_config_directory }}/consul-{{ nomad_mode }}-key.pem"
+}
+{% endif %}
 
 # necessary to pull from aws ecr
 plugin "docker" {
@@ -43,11 +53,28 @@ advertise {
 #   }
 # }
 
-# Uncomment for metrics
-# telemetry {
-#   collection_interval = "1s"
-#   disable_hostname = true
-#   prometheus_metrics = true
-#   publish_allocation_metrics = true
-#   publish_node_metrics = true
-# }
+{% if nomad_telemetry_enabled == true %}
+# Metrics
+telemetry {
+  collection_interval = "1s"
+  disable_hostname = true
+  prometheus_metrics = true
+  publish_allocation_metrics = true
+  publish_node_metrics = true
+}
+{% endif %}
+
+{% if nomad_tls_enabled == true %}
+# TLS Required
+tls {
+  http = true
+  rpc = true
+
+  ca_file = "{{ nomad_config_directory }}/nomad-ca.pem"
+  cert_file = "{{ nomad_config_directory }}/nomad-client.pem"
+  key_file = "{{ nomad_config_directory }}/nomad-client-key.pem"
+
+  verify_server_hostname = true
+  verify_https_client = true
+  }
+{% endif %}

@@ -141,10 +141,15 @@ node_version: "ed54105bd9942071a3ccb68369262d6c4945d653"
 - Run `dig @127.0.0.1 -p 8600 ${service_name}.service.dc1.consul. ANY` to resolve the ip for a specific service.
 - `consul catalog services` lists the registered services.
 
-
+## TLS and Gossip Encryption
+For TLS configuration we are using local CA setup with [cfssl](https://github.com/cloudflare/cfssl) tool with configuration files in [certs](./certs/), but for production ideally Hashicorp Vault should be used. Ansible will create CA certificate with matching key and use CA certificate to issue client/server certificates for both Nomad and Consul.
+- [Nomad mTLS](https://learn.hashicorp.com/tutorials/nomad/security-enable-tls?in=nomad/transport-security) - To enable tls and gossip encryption for Nomad we need to set `nomad_tls_enabled: true` and `nomad_gossip_encryption_enabled: true` in `nomad.yml` ansible playbook
+- [Consul mTLS](https://learn.hashicorp.com/tutorials/consul/tls-encryption-secure) - To enable tls and gossip encryption for Consul we need to set `consul_tls_enabled: true` and `consul_gossip_encryption_enabled: true` in `consul.yml` ansible playbook
+- [Nomad Consul Stanza mTLS](https://www.nomadproject.io/docs/configuration/consul) - Configures the Nomad agent's communication with Consul using mTLS
+- [Consul Connect](https://www.nomadproject.io/docs/integrations/consul-connect) - provides service-to-service connection authorization and encryption using mutual Transport Layer Security (mTLS)
 
 ## Missing
 The integration is still not ready for a production deployment, there is a lot of stuff that needs to be secured, like:
-- TLS
+- TLS - Make howto's import certificates into browser and use cli with tls.
 - Secrets
 - Authentication in nomad/consul

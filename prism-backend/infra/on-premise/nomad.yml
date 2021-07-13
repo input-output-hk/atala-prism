@@ -8,6 +8,9 @@
     - nomad_data_directory: /opt/nomad
     - nomad_expected_servers: "{{ groups['nomad_servers'] | length }}"
     - nomad_datacenter: dc1
+    - nomad_tls_enabled: true
+    - nomad_gossip_encryption_enabled: true
+    - nomad_telemetry_enabled: false
     # Lists all server ip addresses separated by comma, like: ip1, ip2, ip3
     # Ideally, we should be able to filter out the ip from the host being deployed.
     - nomad_servers_ip_addresses: "{{ groups['nomad_servers'] | map('extract', hostvars, ['ansible_host']) | map('to_json') | join(', ') }}"
@@ -43,6 +46,13 @@
         src: "{{ ansible_env.HOME }}/{{ nomad_zip_filename }}"
         dest: "{{ nomad_installation_directory }}"
 
+    - name: Generate nomad gossip encryption key
+      become: yes
+      run_once: true
+      shell: openssl rand -base64 32
+      register: encryption
+      when: nomad_mode == "server" and nomad_gossip_encryption_enabled == true
+
     - name: Create nomad data directory
       become: yes
       file:
@@ -61,6 +71,49 @@
       template:
         src: config/systemd/nomad.service.j2
         dest: /etc/systemd/system/nomad.service
+
+    - name: Generate Nomad CA
+      delegate_to: localhost
+      shell: cat cfssl-root.json | cfssl gencert -initca - | cfssljson -bare nomad-ca
+      args:
+        chdir: certs/
+        creates: nomad-ca.pem
+      run_once: true
+      when: nomad_tls_enabled == true
+
+    - name: Generate Nomad Certificates
+      delegate_to: localhost
+      shell: "{{ item }}"
+      args:
+        chdir: certs/
+      run_once: true
+      with_items:
+        - echo '{}' | cfssl gencert -ca=nomad-ca.pem -ca-key=nomad-ca-key.pem -config=cfssl.json -hostname="nomadtest.local,server.global.nomad,localhost,127.0.0.1" - | cfssljson -bare nomad-server
+        - echo '{}' | cfssl gencert -ca=nomad-ca.pem -ca-key=nomad-ca-key.pem -config=cfssl.json -hostname="client.global.nomad,localhost,127.0.0.1" - | cfssljson -bare nomad-client
+        - echo '{}' | cfssl gencert -ca=nomad-ca.pem -ca-key=nomad-ca-key.pem -profile=client - | cfssljson -bare nomad-cli
+      when: nomad_tls_enabled == true
+
+    - name: Copy the nomad certificates
+      become: yes
+      copy:
+        src: "{{ item }}"
+        dest: "{{ nomad_config_directory }}"
+      with_items:
+        - "certs/nomad-ca.pem"
+        - "certs/nomad-{{ nomad_mode }}.pem"
+        - "certs/nomad-{{ nomad_mode }}-key.pem"
+      when: nomad_tls_enabled == true
+
+    - name: Copy the consul certificates
+      become: yes
+      copy:
+        src: "{{ item }}"
+        dest: "{{ nomad_config_directory }}"
+      with_items:
+        - "certs/consul-ca.pem"
+        - "certs/consul-{{ nomad_mode }}.pem"
+        - "certs/consul-{{ nomad_mode }}-key.pem"
+      when: nomad_tls_enabled == true
 
     - name: Copy the nomad config
       become: yes
