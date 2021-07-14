@@ -74,7 +74,7 @@ class CardanoAddressServiceImpl(val binaryPath: String = "target/mirror-binaries
   ): Either[CardanoAddressServiceError, CardanoAddress] = {
     for {
       spendingKey <- generateAddressKey(extendedPublicKey, s"0/$index")
-      stakingKey <- generateAddressKey(extendedPublicKey, s"2/$index")
+      stakingKey <- generateAddressKey(extendedPublicKey, s"2/0")
       address <- runCommand {
         ("echo" :: spendingKey.value :: Nil) #|
           (binaryPath :: "address" :: "payment" :: "--network-tag" :: network :: Nil) #|

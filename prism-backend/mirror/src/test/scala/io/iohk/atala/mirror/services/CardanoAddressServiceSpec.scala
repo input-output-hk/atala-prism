@@ -16,7 +16,7 @@ class CardanoAddressServiceSpec extends AnyWordSpec with Matchers with MirrorFix
     "generate address key based on extended public key" in {
       assume(OsUtils.isLinux)
 
-      val path = "0/0"
+      val path = s"0/${CardanoAddressFixtures.cardanoAddressNo}"
       val generateAddressKeyResult = service.generateAddressKey(CardanoAddressFixtures.acctExtendedVkey, path)
       generateAddressKeyResult mustBe Right(CardanoAddressFixtures.cardanoAddressKey)
     }
@@ -24,7 +24,11 @@ class CardanoAddressServiceSpec extends AnyWordSpec with Matchers with MirrorFix
     "generate wallet address based on account extended public key and index" in {
       assume(OsUtils.isLinux)
 
-      val generateAddressResult = service.generateWalletAddress(CardanoAddressFixtures.acctExtendedVkey, 0, "mainnet")
+      val generateAddressResult = service.generateWalletAddress(
+        CardanoAddressFixtures.acctExtendedVkey,
+        CardanoAddressFixtures.cardanoAddressNo,
+        "mainnet"
+      )
       generateAddressResult mustBe Right(CardanoAddressFixtures.cardanoAddress)
     }
   }

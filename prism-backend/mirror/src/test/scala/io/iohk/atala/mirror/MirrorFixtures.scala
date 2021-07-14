@@ -145,12 +145,14 @@ trait MirrorFixtures extends ServicesFixtures with ProcessingTaskFixtures {
     val acctExtendedVkey =
       "acct_xvk155crk6049ap0477qvjpf5mvxtw5f46uk6k54udc9mz5wcdyyhssexcsk5sgvy05m7mqh3ed3qgs6epyf7hvdfxf6hd54aqm3uwdsewqu6vsvy"
 
+    val cardanoAddressNo = 5
+
     val cardanoAddressKey = CardanoAddressKey(
-      "addr_xvk1ywluxn2exkm7gl0m66nnzdkp3fcttkqca48jz3wkdmjmw4vqvahsmk2ajq22f9dwuqjfupeapplreav68dsuyhsv46fdtagj779lrtsmwt0th"
+      "addr_xvk1q97wa0kvhw4xjchxm66f5ulrdkl50sw5lshxazgj28g34wnqj9fx28acsheajay7sk9ymgaghh8m7mlssly0aqwvedynyrs7apest4c3lhxja"
     )
 
     val cardanoAddress = CardanoAddress(
-      "addr1qyev5h8thxju452j953er64ffcsg4rksx3vr2pxrnsrg50xxrm8nx4l8qntadvlvdfldg8h3v7q7x6s0xcfg54g5c3qqscwuf6"
+      "addr1qxhlq8kzxw5l0s0zrljg24pjsduf8vndtg5z2qhy9dm040xxrm8nx4l8qntadvlvdfldg8h3v7q7x6s0xcfg54g5c3qqmu2zvy"
     )
   }
 
