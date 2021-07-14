@@ -1,9 +1,10 @@
 import React, { useState } from 'react';
 import PropTypes from 'prop-types';
-import { message, Radio, Form } from 'antd';
+import { Radio, Form } from 'antd';
 import { useTranslation } from 'react-i18next';
-import AddNewCategory from '../../Molecules/TemplateCategorySelectionStep/AddNewCategory';
-import CategoryCard from '../../Molecules/TemplateCategorySelectionStep/CategoryCard';
+import AddNewCategory from '../../Molecules/CategoryStep/AddNewCategory';
+import CategoryCreationModal from '../CategoryCreationModal/CategoryCreationModal';
+import CategoryCard from '../../Molecules/CategoryStep/CategoryCard';
 import { templateCategoryShape } from '../../../../helpers/propShapes';
 import { useTemplateContext } from '../../../providers/TemplateContext';
 import { isInteger } from '../../../../helpers/genericHelpers';
@@ -17,12 +18,13 @@ const CategorySelector = ({ templateCategories }) => {
   const { form, templateSettings } = useTemplateContext();
   const initialSelection = parseInt(templateSettings.category, 10);
   const [selected, setSelected] = useState(initialSelection);
+  const [showCategoryCreation, setShowCategoryCreation] = useState(false);
+  const i18nPrefix = 'credentialTemplateCreation';
 
   const categories = templateCategories.filter(({ state }) => state === ENABLED_STATE);
 
   const handleAddNewCategory = () => {
-    // TODO: implement add new category functionality
-    message.warn(t('errors.notImplementedYet'));
+    setShowCategoryCreation(true);
     form.resetFields(['category']);
   };
 
@@ -33,9 +35,13 @@ const CategorySelector = ({ templateCategories }) => {
 
   return (
     <div className="flex selectCategory">
+      <CategoryCreationModal
+        visible={showCategoryCreation}
+        close={() => setShowCategoryCreation(false)}
+      />
       <Form.Item
         name="category"
-        label={t('credentialTemplateCreation.step1.selectCategory')}
+        label={t(`${i18nPrefix}.step1.selectCategory`)}
         rules={[
           {
             validator: ({ field }, value) =>
