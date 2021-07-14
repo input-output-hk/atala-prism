@@ -57,10 +57,11 @@ export const useTemplateCategories = credentialTypesManager => {
 
   const getTemplateCategories = useCallback(() => {
     setIsLoading(true);
-    credentialTypesManager
+    return credentialTypesManager
       .getTemplateCategories()
       .then(fetchedCategories => {
         setTemplateCategories(fetchedCategories);
+        return fetchedCategories;
       })
       .catch(error => {
         Logger.error('[Templates.getTemplateCategories] Error while getting categories', error);

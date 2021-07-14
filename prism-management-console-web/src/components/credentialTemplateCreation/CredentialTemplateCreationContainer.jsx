@@ -11,7 +11,7 @@ import { credentialTypesManagerShape } from '../../helpers/propShapes';
 import CredentialTemplateCreation from './CredentialTemplateCreation';
 import DesignTemplateStep from './Organisms/DesignTemplateStep/DesignTemplateStep';
 import { useTemplateContext, withTemplateProvider } from '../providers/TemplateContext';
-import TemplateCategorySelectionStep from './Organisms/TemplateCategorySelectionStep/TemplateCategorySelector';
+import TemplateCategorySelectionStep from './Organisms/CategoryStep/TemplateCategorySelector';
 import SuccessBanner from '../common/Molecules/SuccessPage/SuccessBanner';
 import { withRedirector } from '../providers/withRedirector';
 

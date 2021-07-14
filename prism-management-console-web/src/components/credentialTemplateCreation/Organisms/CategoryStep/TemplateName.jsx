@@ -23,7 +23,7 @@ const TemplateName = ({ api }) => {
         else cb();
       })
       .catch(error => {
-        Logger.error('[GroupsContainer.updateGroups] Error: ', error);
+        Logger.error('[CredentialTypes.getCredentialTypes] Error: ', error);
         message.error(t('errors.errorGetting', { model: t('templates.title') }));
       });
 

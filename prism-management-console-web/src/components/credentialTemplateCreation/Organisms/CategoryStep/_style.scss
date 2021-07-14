@@ -1,4 +1,4 @@
-@import '../../../../css/general_styling';
+@import "../../../../css/general_styling";
 
 .selectCategory {
   .ant-row {
@@ -12,14 +12,15 @@
       justify-content: space-between;
       .ant-radio-wrapper {
         margin: 0;
-        .TypeCard, .SelectedTypeCard {
+        .TypeCard,
+        .SelectedTypeCard {
           height: 220px;
           display: flex;
           flex-direction: column;
           justify-content: flex-start;
           align-items: center;
           .img-credential {
-              margin-top: 1em;
+            margin-top: 1em;
           }
         }
       }
@@ -28,7 +29,7 @@
 }
 
 .TypeSelectionContainer .TypeSelection .flex label {
-    margin:0;
+  margin: 0;
 }
 
 .templateName {
@@ -46,12 +47,13 @@
         input {
           width: 250px;
         }
-        .ant-input, .ant-select-selection {
-          border: 1px solid rgb(196, 195, 195)!important;
-      }
+        .ant-input,
+        .ant-select-selection {
+          border: 1px solid rgb(196, 195, 195) !important;
+        }
         .ant-input:hover {
           border-color: $primary-color;
-      }
+        }
       }
     }
   }
@@ -59,4 +61,21 @@
 
 .templateFormContainer {
   height: calc(100vh - 40vh);
+}
+
+.CategoryIconOption {
+  display: flex;
+  border-radius: 6px;
+  box-sizing: border-box;
+  height: 7em;
+  align-content: center;
+}
+
+.ant-radio {
+  display: none;
+}
+
+.ant-upload-list {
+  display: flex;
+  flex-wrap: wrap;
 }

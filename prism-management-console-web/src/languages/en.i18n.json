@@ -584,6 +584,23 @@
       "successMessage": "You have a new credential template available",
       "continueButton": "Continue"
     },
+    "categoryCreationModal": {
+      "title": "Create New Category",
+      "categoryNameLabel": "Category Name",
+      "categoryNamePlaceholder": "Category Name",  
+      "categoryIconLabel": "Select your Category Icon",
+      "categoryIcon": "Category Icon",
+      "uploadIcon": "Upload Your Icon",
+      "uploadButton":"Browse",
+      "gallery": "Gallery",
+      "save": "Save",
+      "allowedFormats": "Allowed formats are {{allowedFormats}}",
+      "errors": {
+        "required": "${label} is required",
+        "preExisting": "A category called '{{value}}' already exists",
+        "fieldIsRequired": "{{field}} is required"
+      }
+    },
     "messages": {
       "selectCategoryError": "Please select a category",
       "templateDesignError": "Invalid Template"
