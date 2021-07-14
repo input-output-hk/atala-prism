@@ -40,7 +40,7 @@ enum KeyUsage {
 
 // Holds the necessary data to recover an Elliptic Curve (EC)'s public key.
 //
-// TODO: Consider renaming this to ECPublicKeyData.
+// @exclude TODO: Consider renaming this to ECPublicKeyData.
 message ECKeyData {
     string curve = 1; // The curve name, like secp256k1.
     bytes x = 2; // The x coordinate, represented as bytes.
@@ -49,7 +49,7 @@ message ECKeyData {
 
 // Represents a public key with metadata, necessary for a DID document.
 //
-// TODO: Consider renaming this to something more specific, like DIDPublicKey.
+// @exclude TODO: Consider renaming this to something more specific, like DIDPublicKey.
 message PublicKey {
     string id = 1; // The key identifier within the DID Document.
     KeyUsage usage = 2; // The key's purpose.
@@ -96,7 +96,7 @@ message UpdateDIDAction {
 // Specifies the necessary data to update a public DID.
 message UpdateDIDOperation {
     bytes previous_operation_hash = 1; // The hash of the operation that issued the DID.
-    string id = 2; // TODO: To be redefined after we start using this operation.
+    string id = 2; // @exclude TODO: To be redefined after we start using this operation.
     repeated UpdateDIDAction actions = 3; // The actual updates to perform on the DID.
 }
 

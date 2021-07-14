@@ -165,8 +165,7 @@ message CManagerGenericCredential {
   string issuer_name = 5; // The name of the issuer according to the cmanager internal data.
   string contact_data = 7; // The arbitrary JSON data related to the contact.
 
-  // @exclude
-  // The fields below will only be populated after the credential is published to the blockchain.
+  // @exclude The fields below will only be populated after the credential is published to the blockchain.
 
   bytes issuance_operation_hash = 9; // The hash of the associated issuance operation.
   string encoded_signed_credential = 10; // The actual published credential.

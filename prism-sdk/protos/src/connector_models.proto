@@ -9,12 +9,11 @@ import "google/protobuf/timestamp.proto";
 
 package io.iohk.atala.prism.protos;
 
-// @exclude
-// GENERAL
+// @exclude GENERAL
 
 // Just an elliptic curve (EC) public key represented with big integers as strings.
 //
-// TODO: merge with the node PublicKey
+// @exclude TODO: merge with the node PublicKey
 message ConnectorPublicKey {
     string x = 1;
     string y = 2;
@@ -25,8 +24,7 @@ message EncodedPublicKey {
 }
 
 
-// @exclude
-// CONNECTIONS
+// @exclude CONNECTIONS
 
 // A connection between two parties authorizing the use of the connector as a messaging channel.
 message Connection {
@@ -54,7 +52,7 @@ message ConnectionInfo {
 
 // Communication key for connection participant.
 //
-// TODO: Remove this when unpublished DIDs are integrated on the apps.
+// @exclude TODO: Remove this when unpublished DIDs are integrated on the apps.
 message ConnectionKey {
   // Key identifier; it can be empty if the participant uses only one key.
   string key_id = 1;
@@ -64,8 +62,7 @@ message ConnectionKey {
 }
 
 
-// @exclude
-// MESSAGES
+// @exclude MESSAGES
 
 // Message received via a connection.
 message ReceivedMessage {
