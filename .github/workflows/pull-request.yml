@@ -6,6 +6,9 @@ on:
       - master
       - test*
   pull_request:
+    paths:
+      - 'prism-backend/**'
+      - '!prism-backend/docs/**'
 
 jobs:
   build-backend:
