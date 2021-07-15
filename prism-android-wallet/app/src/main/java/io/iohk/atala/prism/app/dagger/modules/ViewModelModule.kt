@@ -14,6 +14,8 @@ import io.iohk.atala.prism.app.neo.ui.onboarding.walletsetup.WalletSetupViewMode
 import io.iohk.atala.prism.app.ui.commondialogs.AcceptConnectionDialogViewModel
 import io.iohk.atala.prism.app.ui.commondialogs.ProofRequestDialogViewModel
 import io.iohk.atala.prism.app.ui.idverification.step1.DocumentScanViewModel
+import io.iohk.atala.prism.app.ui.idverification.step2.IdDataConfirmationViewModel
+import io.iohk.atala.prism.app.ui.idverification.step2.IdSelfieViewModel
 import io.iohk.atala.prism.app.ui.idverification.tutorial.IdVerificationTutorialViewModel
 import io.iohk.atala.prism.app.ui.main.MainViewModel
 import io.iohk.atala.prism.app.ui.main.contacts.ContactDetailViewModel
@@ -198,4 +200,14 @@ abstract class ViewModelModule {
     @IntoMap
     @ViewModelKey(DocumentScanViewModel::class)
     internal abstract fun documentScanViewModel(viewModel: DocumentScanViewModel): ViewModel
+
+    @Binds
+    @IntoMap
+    @ViewModelKey(IdDataConfirmationViewModel::class)
+    internal abstract fun idDataConfirmationViewModel(viewModel: IdDataConfirmationViewModel): ViewModel
+
+    @Binds
+    @IntoMap
+    @ViewModelKey(IdSelfieViewModel::class)
+    internal abstract fun idSelfieViewModel(viewModel: IdSelfieViewModel): ViewModel
 }

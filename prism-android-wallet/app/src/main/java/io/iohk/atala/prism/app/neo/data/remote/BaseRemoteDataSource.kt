@@ -17,6 +17,9 @@ open class BaseRemoteDataSource(
     private var mainChannel: ManagedChannel? = null
     private var currentBackendConfig = BackendConfig(BuildConfig.API_BASE_URL, BuildConfig.API_PORT)
 
+    private var kycBridgeChannel: ManagedChannel? = null
+    private var currentKycBridgeConfig = BackendConfig(BuildConfig.API_BASE_URL, BuildConfig.KYC_BRIDGE_PORT)
+
     @Synchronized
     protected fun getMainChannel(): ManagedChannel {
         val expectedConfiguration = preferencesLocalDataSource.getCustomBackendConfig()
@@ -51,10 +54,18 @@ open class BaseRemoteDataSource(
         return mirrorChannel!!
     }
 
-    val kycBridgeChannel: ManagedChannel by lazy {
-        ManagedChannelBuilder
-            .forAddress(BuildConfig.KYC_BRIDGE_BASE_URL, BuildConfig.KYC_BRIDGE_PORT)
-            .usePlaintext()
-            .build()
+    @Synchronized
+    protected fun getKycBridgeChannel(): ManagedChannel {
+        /** The base url should be exactly the same as the main channel, only the port should be used: [BuildConfig.KYC_BRIDGE_PORT] */
+        val customConfig = preferencesLocalDataSource.getCustomBackendConfig()?.let { BackendConfig(it.url, BuildConfig.KYC_BRIDGE_PORT) }
+        val expectedConfiguration = customConfig ?: BackendConfig(BuildConfig.API_BASE_URL, BuildConfig.KYC_BRIDGE_PORT)
+        if (kycBridgeChannel == null || expectedConfiguration != currentKycBridgeConfig) {
+            kycBridgeChannel = ManagedChannelBuilder
+                .forAddress(expectedConfiguration.url, expectedConfiguration.port)
+                .usePlaintext()
+                .build()
+            currentKycBridgeConfig = expectedConfiguration
+        }
+        return kycBridgeChannel!!
     }
 }

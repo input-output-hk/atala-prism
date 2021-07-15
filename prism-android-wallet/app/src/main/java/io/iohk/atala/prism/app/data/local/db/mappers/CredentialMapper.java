@@ -119,7 +119,7 @@ public class CredentialMapper {
     }
 
     public static Boolean isADemoCredential(io.iohk.atala.prism.app.data.local.db.model.Credential credential) {
-        CredentialType credentialType = CredentialType.getByValue(credential.credentialType).get();
+        CredentialType credentialType = CredentialType.getByValue(credential.credentialType);
         return credentialType.equals(CredentialType.DEMO_EMPLOYMENT_CREDENTIAL)
                 || credentialType.equals(CredentialType.DEMO_DEGREE_CREDENTIAL)
                 || credentialType.equals(CredentialType.DEMO_ID_CREDENTIAL)

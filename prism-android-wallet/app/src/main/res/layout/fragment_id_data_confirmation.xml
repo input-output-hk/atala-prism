@@ -3,7 +3,9 @@
     xmlns:app="http://schemas.android.com/apk/res-auto">
 
     <data>
-
+        <variable
+            name="viewModel"
+            type="io.iohk.atala.prism.app.ui.idverification.step2.IdDataConfirmationViewModel" />
         <variable
             name="fullName"
             type="String" />
@@ -93,40 +95,40 @@
 
                 <include
                     app:text1="@{@string/id_data_confirmation_full_name}"
-                    app:text2="@{fullName}"
+                    app:text2="@{viewModel.acuantUserInfo.fullName}"
                     app:darkBackground="@{true}"
                     layout="@layout/row_list_item" />
 
                 <include
                     app:text1="@{@string/id_data_confirmation_gender}"
-                    app:text2="@{gender}"
+                    app:text2="@{viewModel.acuantUserInfo.gender == 1 ? @string/id_data_confirmation_male : @string/id_data_confirmation_female}"
                     layout="@layout/row_list_item" />
 
                 <include
                     app:text1="@{@string/id_data_confirmation_nationality}"
-                    app:text2="@{nationality}"
+                    app:text2="@{viewModel.acuantUserInfo.countryCode}"
                     app:darkBackground="@{true}"
                     layout="@layout/row_list_item" />
 
                 <include
                     app:text1="@{@string/id_data_confirmation_national_id_number}"
-                    app:text2="@{nationalIdNumber}"
+                    app:text2="@{viewModel.acuantUserInfo.documentNumber}"
                     layout="@layout/row_list_item" />
 
                 <include
                     app:text1="@{@string/id_data_confirmation_date_of_birth}"
-                    app:text2="@{birthDate}"
+                    app:text2="@{viewModel.acuantUserInfo.birthDate}"
                     app:darkBackground="@{true}"
                     layout="@layout/row_list_item" />
 
                 <include
                     app:text1="@{@string/id_data_confirmation_issue_date}"
-                    app:text2="@{issueDate}"
+                    app:text2="@{viewModel.acuantUserInfo.documentIssueDate}"
                     layout="@layout/row_list_item" />
 
                 <include
                     app:text1="@{@string/id_data_confirmation_expiration_date}"
-                    app:text2="@{expirationDate}"
+                    app:text2="@{viewModel.acuantUserInfo.documentExpirationDate}"
                     app:darkBackground="@{true}"
                     layout="@layout/row_list_item" />
 
@@ -160,6 +162,7 @@
                 android:layout_height="56dp" />
 
             <Button
+                android:id="@+id/confirm_button"
                 android:layout_marginStart="7dp"
                 android:layout_weight="1"
                 app:cornerRadius="32dp"

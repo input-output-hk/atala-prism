@@ -6,8 +6,10 @@ import io.iohk.atala.prism.app.neo.ui.onboarding.phraseverification.PhraseVerifi
 import io.iohk.atala.prism.app.neo.ui.onboarding.restoreaccount.RestoreAccountFragment;
 import io.iohk.atala.prism.app.neo.ui.onboarding.walletsetup.WalletSetupFragment;
 import io.iohk.atala.prism.app.ui.UnlockActivity;
+import io.iohk.atala.prism.app.ui.idverification.step2.IdSelfieFragment;
 import io.iohk.atala.prism.app.ui.main.dashboard.DashboardFragment;
 import io.iohk.atala.prism.app.ui.idverification.step1.DocumentScanFragment;
+import io.iohk.atala.prism.app.ui.idverification.step2.IdDataConfirmationFragment;
 import io.iohk.atala.prism.app.ui.idverification.tutorial.IdVerificationTutorialFragment;
 import io.iohk.atala.prism.app.ui.main.settings.AboutFragment;
 import io.iohk.atala.prism.app.ui.commondialogs.AcceptConnectionDialogFragment;
@@ -149,4 +151,10 @@ public abstract class FragmentBuilder {
 
     @ContributesAndroidInjector
     abstract DocumentScanFragment contributeDocumentScanFragment();
+
+    @ContributesAndroidInjector
+    abstract IdDataConfirmationFragment contributeIdDataConfirmationFragment();
+
+    @ContributesAndroidInjector
+    abstract IdSelfieFragment contributeIdSelfieFragment();
 }

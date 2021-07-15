@@ -9,6 +9,7 @@ import android.view.MenuItem
 import android.view.View
 import android.view.ViewGroup
 import androidx.activity.addCallback
+import androidx.core.animation.doOnEnd
 import androidx.databinding.DataBindingUtil
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.ViewModelProviders
@@ -18,16 +19,17 @@ import com.acuant.acuantcamera.camera.AcuantCameraActivity
 import com.acuant.acuantcamera.camera.AcuantCameraOptions
 import com.acuant.acuantcamera.constant.ACUANT_EXTRA_CAMERA_OPTIONS
 import com.acuant.acuantcamera.constant.ACUANT_EXTRA_IMAGE_URL
+import com.acuant.acuantcamera.constant.ACUANT_EXTRA_PDF417_BARCODE
 import dagger.android.support.DaggerFragment
 import io.iohk.atala.prism.app.neo.common.EventWrapperObserver
 import io.iohk.atala.prism.app.neo.common.extensions.buildActivityResultLauncher
-import io.iohk.atala.prism.app.neo.common.extensions.documentIssueDate
-import io.iohk.atala.prism.app.neo.common.extensions.documentNumber
-import io.iohk.atala.prism.app.neo.common.extensions.getGender
+import io.iohk.atala.prism.app.neo.common.extensions.decodeBitmapFromUrl
 import io.iohk.atala.prism.app.neo.common.extensions.hideBlockUILoading
 import io.iohk.atala.prism.app.neo.common.extensions.showBlockUILoading
 import io.iohk.atala.prism.app.neo.common.extensions.showErrorDialog
 import io.iohk.atala.prism.app.neo.common.extensions.supportActionBar
+import io.iohk.atala.prism.app.neo.common.extensions.toast
+import io.iohk.atala.prism.app.neo.data.KycRepository
 import io.iohk.cvp.R
 import io.iohk.cvp.databinding.FragmentDocumentScanBinding
 import javax.inject.Inject
@@ -51,8 +53,13 @@ class DocumentScanFragment : DaggerFragment() {
 
     private val acuantCameraLauncher = buildActivityResultLauncher { activityResult ->
         if (activityResult.resultCode == AcuantCameraActivity.RESULT_SUCCESS_CODE) {
-            activityResult.data?.getStringExtra(ACUANT_EXTRA_IMAGE_URL)?.let {
-                viewModel.processDocument(it)
+            activityResult.data?.getStringExtra(ACUANT_EXTRA_IMAGE_URL)?.let { photoUrl ->
+                val barcodeString = activityResult.data?.getStringExtra(ACUANT_EXTRA_PDF417_BARCODE)
+                decodeBitmapFromUrl(photoUrl) { bitmap ->
+                    bitmap?.let {
+                        viewModel.processDocument(it, barcodeString)
+                    } ?: toast(R.string.commons_error_decoding_a_image_file)
+                }
             }
         }
     }
@@ -97,35 +104,30 @@ class DocumentScanFragment : DaggerFragment() {
 
         viewModel.showError.observe(
             viewLifecycleOwner,
-            EventWrapperObserver {
-                if (it.first) {
-                    val errorMsg = it.second?.errorDescription
-                        ?: requireActivity().getString(R.string.generic_error_message)
-                    requireActivity().showErrorDialog(errorMsg)
+            EventWrapperObserver { error ->
+                val errorMsg = when (error) {
+                    is KycRepository.KycRepositoryError.AcuantError -> error.message
+                    is KycRepository.KycRepositoryError.DocumentPhotoNotFound -> getString(R.string.document_scan_error_document_photo_not_found)
+                    else -> getString(R.string.generic_error_message)
                 }
+                requireActivity().showErrorDialog(errorMsg)
             }
         )
 
-        viewModel.frontDocumentResult.observe(viewLifecycleOwner) { frontDocumentResult ->
-            if (frontDocumentResult != null) {
+        viewModel.frontDocumentLoaded.observe(viewLifecycleOwner) { frontDocumentResult ->
+            if (frontDocumentResult) {
                 animateNext()
+            } else {
+                animateBack()
             }
         }
 
-        viewModel.shouldGoNextStep.observe(
+        viewModel.shouldGoToNextStep.observe(
             viewLifecycleOwner,
             EventWrapperObserver {
-                // TODO This information has to be managed by a data repository, in the following tickets that will be added with an appropriate data model
-                val direction = DocumentScanFragmentDirections.actionDocumentScanFragmentToIdDataConfirmationFragment(
-                    it.biographic.fullName,
-                    it.getGender(),
-                    it.classification.type.countryCode,
-                    it.documentNumber() ?: "",
-                    it.biographic.birthDate,
-                    it.documentIssueDate() ?: "",
-                    it.biographic.expirationDate
-                )
-                findNavController().navigate(direction)
+                if (it) {
+                    findNavController().navigate(R.id.action_documentScanFragment_to_idSelfieFragment)
+                }
             }
         )
     }
@@ -150,8 +152,7 @@ class DocumentScanFragment : DaggerFragment() {
     }
 
     private fun back() {
-        if (viewModel.frontDocumentResult.value != null) {
-            animateBack()
+        if (viewModel.frontDocumentLoaded.value!!) {
             viewModel.resetProcess()
         } else {
             findNavController().popBackStack()
@@ -179,10 +180,23 @@ class DocumentScanFragment : DaggerFragment() {
         // Main Animation Set
         val set = AnimatorSet()
         set.playTogether(cardsSet, instructionsSet)
+        set.doOnEnd {
+            isInFrontCaptureStep = binding.backInstructions.alpha == 0f
+        }
         return@lazy set
     }
 
-    private fun animateNext() = animatorSet.start()
+    private var isInFrontCaptureStep: Boolean = true
 
-    private fun animateBack() = animatorSet.reverse()
+    private fun animateNext() {
+        if (isInFrontCaptureStep) {
+            animatorSet.start()
+        }
+    }
+
+    private fun animateBack() {
+        if (!isInFrontCaptureStep) {
+            animatorSet.reverse()
+        }
+    }
 }

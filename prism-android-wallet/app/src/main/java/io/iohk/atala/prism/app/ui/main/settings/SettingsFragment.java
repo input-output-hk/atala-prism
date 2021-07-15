@@ -146,8 +146,12 @@ public class SettingsFragment extends DaggerFragment {
     }
 
     @OnClick(R.id.pay_id)
-    void onPayIdClicked(){
+    void onPayIdClicked() {
         Navigation.findNavController(requireView()).navigate(R.id.action_settingsFragment_to_payIdObtainingNavActivity);
+    }
+    @OnClick(R.id.verified_identity)
+    void onVerifiedIdentityClicked() {
+        Navigation.findNavController(requireView()).navigate(R.id.action_settingsFragment_to_idVerificationNavActivity2);
     }
 
     private void resetData() {

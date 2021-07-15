@@ -5,13 +5,24 @@ import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.net.Uri
 import android.util.Size
+import androidx.core.net.toUri
 import androidx.exifinterface.media.ExifInterface
 import io.iohk.atala.prism.app.neo.common.extensions.getRotated
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
+import java.io.File
 
 class FileUtils {
     companion object {
+
+        suspend fun decodeBitmapFromUrl(context: Context, photoUrl: String, maxSize: Int? = null): Bitmap? {
+            return decodeBitmapFromFile(context, File(photoUrl), maxSize)
+        }
+
+        suspend fun decodeBitmapFromFile(context: Context, photoFile: File, maxSize: Int? = null): Bitmap? {
+            return decodeBitmapFromUri(context, photoFile.toUri(), maxSize)
+        }
+
         suspend fun decodeBitmapFromUri(context: Context, photoUri: Uri, maxSize: Int? = null): Bitmap? {
             return withContext(Dispatchers.IO) {
                 val photoSizeAndOrientation = obtainPhotoSizeAndOrientation(context, photoUri)

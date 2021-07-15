@@ -22,8 +22,7 @@ data class KycRequest(
     @ColumnInfo(name = "connection_id") val connectionId: String,
     @ColumnInfo(name = "message_id") val messageId: String,
     @ColumnInfo(name = "bearer_token") val bearerToken: String,
-    @ColumnInfo(name = "instance_id") val instanceId: String,
-    @ColumnInfo(name = "skipped", defaultValue = "0") var skipped: Boolean = false
+    @ColumnInfo(name = "instance_id") val instanceId: String
 ) {
     @PrimaryKey(autoGenerate = true)
     var id: Long = 0

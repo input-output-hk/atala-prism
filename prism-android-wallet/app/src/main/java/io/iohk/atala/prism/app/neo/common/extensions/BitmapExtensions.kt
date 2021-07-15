@@ -49,3 +49,11 @@ fun Bitmap.getRotated(degree: Float): Bitmap {
     matrix.postRotate(degree)
     return Bitmap.createBitmap(this, 0, 0, width, height, matrix, true)
 }
+
+suspend fun Bitmap.toByteArray(format: Bitmap.CompressFormat = Bitmap.CompressFormat.PNG, quality: Int = 100): ByteArray {
+    return withContext(Dispatchers.Default) {
+        val stream = ByteArrayOutputStream()
+        compress(format, quality, stream)
+        return@withContext stream.toByteArray()
+    }
+}

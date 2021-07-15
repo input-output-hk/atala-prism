@@ -34,6 +34,9 @@
         <action
             android:id="@+id/action_settingsFragment_to_resetDataDialogFragment"
             app:destination="@id/resetDataDialogFragment" />
+        <action
+            android:id="@+id/action_settingsFragment_to_idVerificationNavActivity2"
+            app:destination="@id/idVerificationNavActivity2" />
     </fragment>
     <fragment
         tools:layout="@layout/fragment_security"
@@ -103,4 +106,9 @@
         android:id="@+id/resetDataDialogFragment"
         android:name="io.iohk.atala.prism.app.ui.main.settings.ResetDataDialogFragment"
         android:label="ResetDataDialogFragment" />
+    <activity
+        tools:layout="@layout/activity_nav_id_verification"
+        android:id="@+id/idVerificationNavActivity2"
+        android:name="io.iohk.atala.prism.app.ui.idverification.IdVerificationNavActivity"
+        android:label="IdVerificationNavActivity" />
 </navigation>

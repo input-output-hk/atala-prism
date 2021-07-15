@@ -272,7 +272,6 @@ val MIGRATION_8_9 = object : Migration(8, 9) {
                 "message_id TEXT NOT NULL, " +
                 "bearer_token TEXT NOT NULL, " +
                 "instance_id TEXT NOT NULL, " +
-                "skipped INTEGER NOT NULL DEFAULT 0, " +
                 "FOREIGN KEY(connection_id) REFERENCES contacts(connection_id) ON UPDATE NO ACTION ON DELETE CASCADE " +
                 ")"
         )

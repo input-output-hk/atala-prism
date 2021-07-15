@@ -13,11 +13,11 @@ abstract class KycRequestDao {
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     abstract suspend fun insertSync(kycRequest: KycRequest): Long
 
-    @Query("SELECT * FROM kycRequests WHERE skipped = 0 ORDER BY id asc LIMIT 1")
-    abstract fun firstNotSkipped(): LiveData<KycRequest?>
+    @Query("SELECT * FROM kycRequests ORDER BY id asc LIMIT 1")
+    abstract fun first(): LiveData<KycRequest?>
 
-    @Query("SELECT * FROM kycRequests WHERE skipped = 0 ORDER BY id asc LIMIT 1")
-    abstract suspend fun firstNotSkippedSync(): KycRequest?
+    @Query("SELECT * FROM kycRequests ORDER BY id asc LIMIT 1")
+    abstract suspend fun firstSync(): KycRequest?
 
     @Update
     abstract suspend fun update(kycRequest: KycRequest)

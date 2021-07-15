@@ -269,6 +269,7 @@ public class ApplicationModule {
         return new KycLocalDataSource(kycRequestDao, contactDao, prismApplication.getApplicationContext());
     }
 
+    @Singleton
     @Provides
     public KycRepository provideIdentityVerificationRepository(KycLocalDataSourceInterface kycLocalDataSource,
                                                                ConnectorRemoteDataSource remoteDataSource,

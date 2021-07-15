@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <setting>
-    <acuant_username>dev@IOHK</acuant_username>
-    <acuant_password>4MVmhjrbFcd!9y</acuant_password>
+    <acuant_username></acuant_username>
+    <acuant_password></acuant_password>
     <acuant_subscription>856845dc-d78e-4b7e-92bc-1f592f827190</acuant_subscription>
     <frm_endpoint>https://preview.face.acuant.net</frm_endpoint>
     <med_endpoint>https://preview.medicscan.acuant.net</med_endpoint>

@@ -44,7 +44,7 @@ class KycInitializationHelper(
         class Error(val ex: Exception) : KycInitializationResult()
         class Success(val kycRequest: KycRequest) : KycInitializationResult()
         object TimeoutError : KycInitializationResult()
-        class AcuantError(val error: List<com.acuant.acuantcommon.model.Error>) : KycInitializationResult()
+        class AcuantError(val errorDescription: String) : KycInitializationResult()
         object IsLoaDing : KycInitializationResult()
     }
 
@@ -152,7 +152,10 @@ class KycInitializationHelper(
             listOf(ImageProcessorInitializer(), EchipInitializer(), MrzCameraInitializer()),
             object : IAcuantPackageCallback {
                 override fun onInitializeFailed(error: List<Error>) {
-                    result.value = KycInitializationResult.AcuantError(error)
+                    val errorDescriptions: String = error.joinToString {
+                        "${it.errorDescription} ${System.getProperty("line.separator")}"
+                    }
+                    result.value = KycInitializationResult.AcuantError(errorDescriptions)
                 }
                 override fun onInitializeSuccess() {
                     result.value = KycInitializationResult.Success(kycRequest)

@@ -13,6 +13,7 @@
     <!-- layout/dialog_success.xml -->
     <string name="dialog_success_ok_button">OK</string>
     <string name="generic_error_message">Something went wrong</string>
+    <string name="commons_error_decoding_a_image_file">Something went wrong decoding the image file</string>
 
     <!-- Activities titles -->
     <string name="connections_activity_title">Connections</string>
@@ -28,6 +29,7 @@
     <string name="credential_georgia_educational_degree_type_title">\n• Educational Degree</string>
     <string name="credential_georgia_educational_degree_transcript_type_title">\n• Educational Degree Transcript</string>
     <string name="credential_georgia_national_id_type_title">\n• National ID</string>
+    <string name="credential_kyc_type_title">\n• KYC Credential</string>
 
     <!-- Terms and Conditions -->
     <string name="account_creation">Account Creation</string>
@@ -63,6 +65,8 @@
     <string name="credential_georgia_educational_degree_name">Educational Degree</string>
     <string name="credential_georgia_educational_degree_transcript_name">Educational Degree Transcript</string>
     <string name="credential_georgia_national_id_name">National ID</string>
+    <string name="credential_kyc">KYC Credential</string>
+    <string name="credential_unknown">Unknown credential</string>
 
     <!-- Credential Detail -->
     <string name="degree_name">Degree Name</string>
@@ -142,6 +146,8 @@
     <string name="custom_date_button_description">Custom date format</string>
     <string name="pay_id_button_name">Pay ID</string>
     <string name="pay_id_button_description">Get it Now !</string>
+    <string name="verified_identity_button_name">Verified Identity</string>
+    <string name="verified_identity_button_description">Get it Now !</string>
 
     <!-- Payment screen labels -->
     <string name="receive_credential">Receive Credential</string>
@@ -419,9 +425,9 @@
     <string name="id_verification_tutorial_step1">Step 1</string>
     <string name="id_verification_tutorial_step1_text">Scan your selected Document</string>
     <string name="id_verification_tutorial_step2">Step 2</string>
-    <string name="id_verification_tutorial_step2_text">Confirm your Data</string>
+    <string name="id_verification_tutorial_step2_text">Take a Selfie</string>
     <string name="id_verification_tutorial_step3">Step 3</string>
-    <string name="id_verification_tutorial_step3_text">Take a Selfie</string>
+    <string name="id_verification_tutorial_step3_text">Confirm your Data</string>
     <string name="id_verification_tutorial_final_step">Final Step</string>
     <string name="id_verification_tutorial_final_step_text">Get your Acuant ID</string>
     <string name="id_verification_tutorial_continue">Continue</string>
@@ -451,6 +457,7 @@
     <string name="document_scan_id_type_national_id">ID</string>
     <string name="document_scan_id_type_passport">Passport</string>
     <string name="document_scan_id_type_driver_license">Driver\'s License</string>
+    <string name="document_scan_error_document_photo_not_found">No photo found in document, please try another document</string>
 
     <!-- IdDataConfirmationFragment -->
     <string name="id_data_confirmation_toolbar_title">Identity Verification</string>
@@ -466,5 +473,17 @@
     <string name="id_data_confirmation_expiration_date">EXPIRATION DATE</string>
     <string name="id_data_confirmation_scan_again">Scan Again</string>
     <string name="id_data_confirmation_confirm">Confirm</string>
+    <string name="id_data_confirmation_male">Male</string>
+    <string name="id_data_confirmation_female">Female</string>
+
+    <!--  @layout/fragment_id_selfie -->
+    <string name="fragment_id_selfie_title">Identity Verification</string>
+    <string name="fragment_id_selfie_step_2">Step 2</string>
+    <string name="fragment_id_selfie_take_a_selfie">Take a Selfie</string>
+    <string name="fragment_id_selfie_instructions_1">We need you to take a Selfie to validate your identity, follow this instructions:</string>
+    <string name="fragment_id_selfie_instructions_2">Position Your Face</string>
+    <string name="fragment_id_selfie_instructions_3">When your are ready, click on Take a picture and make sure the picture is focused.</string>
+    <string name="fragment_id_selfie_take_a_picture_button_text">Take a picture</string>
+    <string name="fragment_id_selfie_error_face_matching_process">Something went wrong when validating the selfie</string>
 
 </resources>

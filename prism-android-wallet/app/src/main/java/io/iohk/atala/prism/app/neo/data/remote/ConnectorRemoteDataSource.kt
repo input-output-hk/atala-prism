@@ -8,11 +8,14 @@ import io.iohk.atala.mirror.protos.MirrorServiceGrpc
 import io.iohk.atala.prism.app.data.local.db.model.Contact
 import io.iohk.atala.prism.app.data.local.db.model.Credential
 import io.iohk.atala.prism.app.data.local.db.model.EncodedCredential
+import io.iohk.atala.prism.app.data.local.preferences.models.AcuantUserInfo
+import io.iohk.atala.prism.app.neo.common.extensions.toByteArray
 import io.iohk.atala.prism.app.neo.data.local.PreferencesLocalDataSourceInterface
 import io.iohk.atala.prism.app.neo.data.local.SessionLocalDataSourceInterface
 import io.iohk.atala.prism.app.utils.CryptoUtils
 import io.iohk.atala.prism.app.utils.GrpcUtils
 import io.iohk.atala.prism.kotlin.crypto.keys.ECKeyPair
+import io.iohk.atala.prism.protos.AcuantProcessFinished
 import io.iohk.atala.prism.protos.AddConnectionFromTokenRequest
 import io.iohk.atala.prism.protos.AddConnectionFromTokenResponse
 import io.iohk.atala.prism.protos.AtalaMessage
@@ -27,6 +30,7 @@ import io.iohk.atala.prism.protos.GetMessageStreamResponse
 import io.iohk.atala.prism.protos.GetMessagesPaginatedRequest
 import io.iohk.atala.prism.protos.GetMessagesPaginatedResponse
 import io.iohk.atala.prism.protos.GetPayIdNameMessage
+import io.iohk.atala.prism.protos.KycBridgeMessage
 import io.iohk.atala.prism.protos.MirrorMessage
 import io.iohk.atala.prism.protos.PayIdNameRegistrationMessage
 import io.iohk.atala.prism.protos.RegisterAddressMessage
@@ -214,11 +218,32 @@ class ConnectorRemoteDataSource(preferencesLocalDataSource: PreferencesLocalData
         return sendMirrorMessage(mirrorMessage, mirrorContact)
     }
 
+    suspend fun sendKycData(acuantUserInfo: AcuantUserInfo, kycContact: Contact) {
+        val selfieData = ByteString.copyFrom(acuantUserInfo.selfieImage!!.toByteArray())
+        val atalaMessage = AtalaMessage.newBuilder()
+            .setKycBridgeMessage(
+                KycBridgeMessage
+                    .newBuilder()
+                    .setAcuantProcessFinished(
+                        AcuantProcessFinished
+                            .newBuilder()
+                            .setDocumentInstanceId(acuantUserInfo.instanceId)
+                            .setSelfieImage(selfieData)
+                            .build()
+                    ).build()
+            ).build()
+        val mnemonicList = sessionLocalDataSource.getSessionData()!!
+        val keyPair = CryptoUtils.getKeyPairFromPath(kycContact.keyDerivationPath, mnemonicList)
+        val request = SendMessageRequest.newBuilder()
+            .setConnectionId(kycContact.connectionId).setMessage(atalaMessage.toByteString()).build()
+        getChannel(keyPair, request.toByteArray()).sendMessage(request).get()
+    }
+
     /**
      * KycBridgeService/CreateAccount
      * */
     suspend fun kycBridgeCreateAccount(): KycCreateAccountResponse = withContext(Dispatchers.IO) {
-        val stub = KycBridgeServiceGrpc.newFutureStub(kycBridgeChannel)
+        val stub = KycBridgeServiceGrpc.newFutureStub(getKycBridgeChannel())
         val request = KycCreateAccountRequest.newBuilder().build()
         stub.createAccount(request).get()
     }

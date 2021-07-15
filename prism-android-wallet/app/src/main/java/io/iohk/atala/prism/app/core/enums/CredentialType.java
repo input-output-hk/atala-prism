@@ -5,7 +5,7 @@ import java.util.List;
 import java.util.Optional;
 
 public enum CredentialType {
-
+    UNKNOWN(0,"unknown"),
     DEMO_ID_CREDENTIAL(1, "VerifiableCredential/RedlandIdCredential"),
     DEMO_DEGREE_CREDENTIAL(2, "VerifiableCredential/AirsideDegreeCredential"),
     DEMO_EMPLOYMENT_CREDENTIAL(3, "VerifiableCredential/AtalaEmploymentCredential"),
@@ -15,7 +15,9 @@ public enum CredentialType {
     GEORGIA_NATIONAL_ID(7, "GeorgiaNationalID"),
     ETHIOPIA_EDUCATIONAL_DEGREE(8, "EthiopiaEducationalDegree"),
     ETHIOPIA_EDUCATIONAL_DEGREE_TRANSCRIPT(9, "EthiopiaEducationalDegreeTranscript"),
-    ETHIOPIA_NATIONAL_ID(10, "EthiopiaNationalID");
+    ETHIOPIA_NATIONAL_ID(10, "EthiopiaNationalID"),
+    KYC_CREDENTIAL(11, "KYCCredential");
+
 
     private String value;
 
@@ -34,18 +36,19 @@ public enum CredentialType {
         return id;
     }
 
-    public static Optional<CredentialType> getByValue(String value) {
+    public static CredentialType getByValue(String value) {
         for (CredentialType c : CredentialType.values()) {
             if (c.value.equalsIgnoreCase(value)) {
-                return Optional.of(c);
+                return c;
             }
         }
-        return Optional.empty();
+        return CredentialType.UNKNOWN;
     }
 
     public static List<String> identityCredentialsTypes = Arrays.asList(
             DEMO_ID_CREDENTIAL.value,
             GEORGIA_NATIONAL_ID.value,
-            ETHIOPIA_NATIONAL_ID.value
+            ETHIOPIA_NATIONAL_ID.value,
+            KYC_CREDENTIAL.value
     );
 }

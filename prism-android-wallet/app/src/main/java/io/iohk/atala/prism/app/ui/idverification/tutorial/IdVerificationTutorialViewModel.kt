@@ -14,7 +14,11 @@ class IdVerificationTutorialViewModel @Inject constructor(private val repository
     private val kycInitializationStatus: LiveData<KycInitializationHelper.KycInitializationResult?> = repository.kycInitializationStatus
 
     val errorStartingKycFlow: LiveData<EventWrapper<Boolean>> = Transformations.map(kycInitializationStatus) {
-        EventWrapper(it is KycInitializationHelper.KycInitializationResult.Error || it is KycInitializationHelper.KycInitializationResult.TimeoutError)
+        EventWrapper(
+            it is KycInitializationHelper.KycInitializationResult.Error ||
+                it is KycInitializationHelper.KycInitializationResult.TimeoutError ||
+                it is KycInitializationHelper.KycInitializationResult.AcuantError
+        )
     }
 
     val showLoading: LiveData<EventWrapper<Boolean>> = Transformations.map(kycInitializationStatus) {

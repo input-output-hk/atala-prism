@@ -2,7 +2,7 @@
   "formatVersion": 1,
   "database": {
     "version": 9,
-    "identityHash": "ca8a935c57c9572b71252b37a269439f",
+    "identityHash": "4df43f546a0123725d3278c40b159acd",
     "entities": [
       {
         "tableName": "credentials",
@@ -613,7 +613,7 @@
       },
       {
         "tableName": "kycRequests",
-        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `connection_id` TEXT NOT NULL, `message_id` TEXT NOT NULL, `bearer_token` TEXT NOT NULL, `instance_id` TEXT NOT NULL, `skipped` INTEGER NOT NULL DEFAULT 0, FOREIGN KEY(`connection_id`) REFERENCES `contacts`(`connection_id`) ON UPDATE NO ACTION ON DELETE CASCADE )",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `connection_id` TEXT NOT NULL, `message_id` TEXT NOT NULL, `bearer_token` TEXT NOT NULL, `instance_id` TEXT NOT NULL, FOREIGN KEY(`connection_id`) REFERENCES `contacts`(`connection_id`) ON UPDATE NO ACTION ON DELETE CASCADE )",
         "fields": [
           {
             "fieldPath": "id",
@@ -644,13 +644,6 @@
             "columnName": "instance_id",
             "affinity": "TEXT",
             "notNull": true
-          },
-          {
-            "fieldPath": "skipped",
-            "columnName": "skipped",
-            "affinity": "INTEGER",
-            "notNull": true,
-            "defaultValue": "0"
           }
         ],
         "primaryKey": {
@@ -695,7 +688,7 @@
     "views": [],
     "setupQueries": [
       "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
-      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, 'ca8a935c57c9572b71252b37a269439f')"
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '4df43f546a0123725d3278c40b159acd')"
     ]
   }
 }

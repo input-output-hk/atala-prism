@@ -57,35 +57,34 @@
             app:exitAnim="@anim/slide_out_left"
             app:popEnterAnim="@anim/slide_in_left"
             app:popExitAnim="@anim/slide_out_right"
-            android:id="@+id/action_documentScanFragment_to_idDataConfirmationFragment"
-            app:destination="@id/idDataConfirmationFragment"
-            app:popUpTo="@id/idTypeSelectionFragment" />
+            android:id="@+id/action_documentScanFragment_to_idSelfieFragment"
+            app:destination="@id/idSelfieFragment"
+            app:popUpTo="@id/idTypeSelectionFragment"/>
     </fragment>
     <fragment
         tools:layout="@layout/fragment_id_data_confirmation"
         android:id="@+id/idDataConfirmationFragment"
         android:name="io.iohk.atala.prism.app.ui.idverification.step2.IdDataConfirmationFragment"
         android:label="@string/id_data_confirmation_toolbar_title">
-        <argument
-            android:name="fullName"
-            app:argType="string" />
-        <argument
-            android:name="gender"
-            app:argType="string" />
-        <argument
-            android:name="nationality"
-            app:argType="string" />
-        <argument
-            android:name="nationalIdNumber"
-            app:argType="string" />
-        <argument
-            android:name="birthDate"
-            app:argType="string" />
-        <argument
-            android:name="issueDate"
-            app:argType="string" />
-        <argument
-            android:name="expirationDate"
-            app:argType="string" />
+
+        <action
+            app:popUpTo="@id/id_verification"
+            android:id="@+id/action_idDataConfirmationFragment_to_mainActivity"
+            app:destination="@id/mainActivity"
+            app:launchSingleTop="true" />
+    </fragment>
+    <fragment
+        tools:layout="@layout/fragment_id_selfie"
+        android:id="@+id/idSelfieFragment"
+        android:name="io.iohk.atala.prism.app.ui.idverification.step2.IdSelfieFragment"
+        android:label="@string/fragment_id_selfie_title" >
+        <action
+            app:enterAnim="@anim/slide_in_right"
+            app:exitAnim="@anim/slide_out_left"
+            app:popEnterAnim="@anim/slide_in_left"
+            app:popExitAnim="@anim/slide_out_right"
+            app:popUpTo="@id/idTypeSelectionFragment"
+            android:id="@+id/action_idSelfieFragment_to_idDataConfirmationFragment"
+            app:destination="@id/idDataConfirmationFragment" />
     </fragment>
 </navigation>
