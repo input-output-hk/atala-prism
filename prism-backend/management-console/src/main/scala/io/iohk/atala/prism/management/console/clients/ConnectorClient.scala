@@ -92,8 +92,8 @@ object ConnectorClient {
       PublishedDIDBased(
         did = DID.unsafeFromString(config.whitelistedDID.value),
         keyId = masterKeyId,
-        requestNonce = RequestNonce(signedRequest.encodedRequestNonce.getBytes.toVector),
-        signature = ECSignature(signedRequest.encodedSignature.getBytes)
+        requestNonce = RequestNonce(signedRequest.requestNonce.toVector),
+        signature = ECSignature(signedRequest.signature)
       )
     }
     new ConnectorClient.GrpcImpl(connectorService, connectorContactsService)(requestSigner)
