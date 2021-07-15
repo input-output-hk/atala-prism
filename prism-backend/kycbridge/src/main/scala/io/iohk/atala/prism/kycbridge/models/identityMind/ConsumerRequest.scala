@@ -1,6 +1,6 @@
 package io.iohk.atala.prism.kycbridge.models.identityMind
 
-final case class ConsumerRequest(
+final case class PostConsumerRequest(
     man: String,
     profile: String,
     scanData: String,
@@ -8,4 +8,8 @@ final case class ConsumerRequest(
     faceImages: Seq[String],
     docType: Option[String],
     docCountry: Option[String]
+)
+
+final case class GetConsumerRequest(
+    mtid: String
 )

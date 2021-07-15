@@ -4,7 +4,6 @@ import java.time.Instant
 
 import scala.util.Try
 
-import cats.syntax.functor._
 import io.circe.syntax._
 
 import io.iohk.atala.prism.kycbridge.task.lease.system.KycBridgeProcessingTaskState
@@ -14,6 +13,7 @@ import io.iohk.atala.prism.protos.credential_models.{SendForAcuantManualReview, 
 import io.iohk.atala.prism.services.MessageProcessor
 import io.iohk.atala.prism.task.lease.system.{ProcessingTaskData, ProcessingTaskService}
 import io.iohk.atala.prism.utils.Base64ByteArrayWrapper
+import io.iohk.atala.prism.protos.credential_models.{KycBridgeMessage, SentForAcuantManualReview}
 
 class SendForAcuantManualReviewMessageProcessor(
     processingTaskService: ProcessingTaskService[KycBridgeProcessingTaskState]
@@ -31,9 +31,13 @@ class SendForAcuantManualReviewMessageProcessor(
 
         val processingTaskData = ProcessingTaskData(sendForAcuantManualReviewStateData.asJson)
 
+        val responseMessage = AtalaMessage().withKycBridgeMessage(
+          KycBridgeMessage().withSentForAcuantManualReview(SentForAcuantManualReview())
+        )
+
         processingTaskService
           .create(processingTaskData, KycBridgeProcessingTaskState.SendForAcuantManualReviewState, Instant.now())
-          .as(Right(None))
+          .flatMap(_ => MessageProcessor.successful(Some(responseMessage)))
       }
   }
 

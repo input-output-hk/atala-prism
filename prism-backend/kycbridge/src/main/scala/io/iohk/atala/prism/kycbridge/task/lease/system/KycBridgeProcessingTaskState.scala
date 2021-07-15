@@ -21,4 +21,8 @@ object KycBridgeProcessingTaskState extends Enum[KycBridgeProcessingTaskState] {
   final case object ProcessNewConnections extends KycBridgeProcessingTaskState("PROCESS_NEW_CONNECTIONS")
 
   final case object SendForAcuantManualReviewState extends KycBridgeProcessingTaskState("SEND_FOR_ACUANT_MANUAL_REVIEW")
+  final case object SendForAcuantManualReviewPendingState
+      extends KycBridgeProcessingTaskState("SEND_FOR_ACUANT_MANUAL_REVIEW_PENDING")
+  final case object SendForAcuantManualReviewReadyState
+      extends KycBridgeProcessingTaskState("SEND_FOR_ACUANT_MANUAL_REVIEW_READY")
 }

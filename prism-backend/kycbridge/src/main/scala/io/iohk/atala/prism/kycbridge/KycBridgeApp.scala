@@ -10,7 +10,10 @@ import io.iohk.atala.prism.connector.RequestAuthenticator
 import io.iohk.atala.prism.crypto.EC
 import io.iohk.atala.prism.daos.ConnectorMessageOffsetDao
 import io.iohk.atala.prism.kycbridge.config.KycBridgeConfig
-import io.iohk.atala.prism.kycbridge.message.processors.AcuantDocumentUploadedMessageProcessor
+import io.iohk.atala.prism.kycbridge.message.processors.{
+  AcuantDocumentUploadedMessageProcessor,
+  SendForAcuantManualReviewMessageProcessor
+}
 import io.iohk.atala.prism.kycbridge.services._
 import io.iohk.atala.prism.kycbridge.task.lease.system.KycBridgeProcessingTaskState
 import io.iohk.atala.prism.kycbridge.task.lease.system.processors._
@@ -107,10 +110,12 @@ object KycBridgeApp extends TaskApp {
 
       // connector message processors
       documentUploadedMessageProcessor = new AcuantDocumentUploadedMessageProcessor(processingTaskService)
+      sendForAcuantManualReviewMessageProcessor = new SendForAcuantManualReviewMessageProcessor(processingTaskService)
 
       connectorMessageService = new ConnectorMessagesService(
         connectorService = connectorService,
-        messageProcessors = List(documentUploadedMessageProcessor.processor),
+        messageProcessors =
+          List(documentUploadedMessageProcessor.processor, sendForAcuantManualReviewMessageProcessor.processor),
         findLastMessageOffset = ConnectorMessageOffsetDao.findLastMessageOffset().transact(tx),
         saveMessageOffset = messageId => ConnectorMessageOffsetDao.updateLastMessageOffset(messageId).transact(tx).void
       )
@@ -131,6 +136,16 @@ object KycBridgeApp extends TaskApp {
         identityMindService,
         kycBridgeConfig.acuantConfig.identityMind
       )
+      sendForAcuantManualReviewPendingStateProcessor = new SendForAcuantManualReviewPendingStateProcessor(
+        connectorService,
+        identityMindService
+      )
+      sendForAcuantManualReviewReadyStateProcessor = new SendForAcuantManualReviewReadyStateProcessor(
+        connectorService,
+        nodeService,
+        identityMindService,
+        authConfig
+      )
 
       processingTaskRouter = new ProcessingTaskRouter[KycBridgeProcessingTaskState] {
         override def process(
@@ -146,6 +161,10 @@ object KycBridgeApp extends TaskApp {
               acuantStartProcessForConnectionStateProcessor
             case KycBridgeProcessingTaskState.ProcessNewConnections => processNewConnectionsStateProcessor
             case KycBridgeProcessingTaskState.SendForAcuantManualReviewState => sendForAcuantManualReviewStateProcessor
+            case KycBridgeProcessingTaskState.SendForAcuantManualReviewPendingState =>
+              sendForAcuantManualReviewPendingStateProcessor
+            case KycBridgeProcessingTaskState.SendForAcuantManualReviewReadyState =>
+              sendForAcuantManualReviewReadyStateProcessor
           }
           processor.process(processingTask, workerNumber)
         }

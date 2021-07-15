@@ -13,7 +13,7 @@ import io.iohk.atala.prism.repositories.PostgresRepositorySpec
 import io.iohk.atala.prism.stubs.ConnectorClientServiceStub
 import io.iohk.atala.prism.task.lease.system.{ProcessingTaskData, ProcessingTaskFixtures, ProcessingTaskResult}
 import io.iohk.atala.prism.kycbridge.stubs.IdentityMindServiceStub
-import io.iohk.atala.prism.kycbridge.models.identityMind.ConsumerResponse
+import io.iohk.atala.prism.kycbridge.models.identityMind.PostConsumerResponse
 import io.iohk.atala.prism.kycbridge.task.lease.system.data.SendForAcuantManualReviewStateData
 import io.iohk.atala.prism.utils.Base64ByteArrayWrapper
 
@@ -28,9 +28,11 @@ class SendForAcuantManualReviewStateProcessorSpec
 
   "SendForAcuantManualReviewStateProcessor" should {
     "delay task when assure id service is not available" in new Fixtures {
-      acuantStartProcessForConnectionStateProcessor
+      processor
         .process(processingTaskWithConnectionData, workerNumber)
-        .runSyncUnsafe() mustBe ProcessingTaskResult.ProcessingTaskFinished
+        .runSyncUnsafe() mustBe an[ProcessingTaskResult.ProcessingTaskScheduled[
+        KycBridgeProcessingTaskState.SendForAcuantManualReviewPendingState.type
+      ]]
     }
   }
 
@@ -48,8 +50,9 @@ class SendForAcuantManualReviewStateProcessorSpec
     )
     val assureIdServiceStub = new AssureIdServiceStub(Right(newDocumentInstanceResponseBody))
     val identityMindServiceStub = new IdentityMindServiceStub(
-      consumerResponse = Right(
-        ConsumerResponse(
+      postConsumerResponse = Right(
+        PostConsumerResponse(
+          mtid = "mtid",
           user = "test",
           upr = None,
           frn = None,
@@ -67,7 +70,7 @@ class SendForAcuantManualReviewStateProcessorSpec
       profile = "assureid"
     )
 
-    val acuantStartProcessForConnectionStateProcessor = new SendForAcuantManualReviewStateProcessor(
+    val processor = new SendForAcuantManualReviewStateProcessor(
       assureIdServiceStub,
       identityMindServiceStub,
       identityMindConfig

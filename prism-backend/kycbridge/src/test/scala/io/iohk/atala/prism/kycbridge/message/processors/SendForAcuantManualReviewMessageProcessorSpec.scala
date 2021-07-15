@@ -4,7 +4,12 @@ import cats.implicits.catsSyntaxOptionId
 import io.iohk.atala.prism.kycbridge.KycBridgeFixtures
 import io.iohk.atala.prism.kycbridge.task.lease.system.KycBridgeProcessingTaskState
 import io.iohk.atala.prism.protos.connector_models.ReceivedMessage
-import io.iohk.atala.prism.protos.credential_models.{SendForAcuantManualReview, AtalaMessage, KycBridgeMessage}
+import io.iohk.atala.prism.protos.credential_models.{
+  SendForAcuantManualReview,
+  SentForAcuantManualReview,
+  AtalaMessage,
+  KycBridgeMessage
+}
 import io.iohk.atala.prism.services.ServicesFixtures
 import io.iohk.atala.prism.stubs.ProcessingTaskServiceStub
 import io.iohk.atala.prism.utils.syntax.InstantToTimestampOps
@@ -28,7 +33,12 @@ class SendForAcuantManualReviewMessageProcessorSpec
     }
 
     "process message and create a new processing task" in new Fixtures {
-      processor.processor(receivedMessage).value.runSyncUnsafe() mustBe Right(None)
+      processor.processor(receivedMessage).value.runSyncUnsafe() mustBe Right(
+        Some(
+          AtalaMessage()
+            .withKycBridgeMessage(KycBridgeMessage().withSentForAcuantManualReview(sentForAcuantManualReview))
+        )
+      )
       processingTaskServiceStub.createTaskInvokeCount.get() mustBe 1
     }
   }
@@ -40,6 +50,8 @@ class SendForAcuantManualReviewMessageProcessorSpec
     val sendForAcuantManualReview = SendForAcuantManualReview(
       documentInstanceId = "id"
     )
+
+    val sentForAcuantManualReview = SentForAcuantManualReview()
 
     val receivedMessage = ReceivedMessage(
       id = "id1",

@@ -16,10 +16,12 @@ import ServiceUtils._
 import io.iohk.atala.prism.errors.PrismError
 import io.iohk.atala.prism.kycbridge.config.IdentityMindConfig
 import io.iohk.atala.prism.kycbridge.services.IdentityMindService.{IdentityMindResponse, IdentityMindServiceError}
-import io.iohk.atala.prism.kycbridge.models.identityMind.{ConsumerRequest, ConsumerResponse}
+import io.iohk.atala.prism.kycbridge.models.identityMind._
 
 trait IdentityMindService {
-  def consumer(consumerRequest: ConsumerRequest): Task[IdentityMindResponse[ConsumerResponse]]
+  def consumer(consumerRequest: PostConsumerRequest): Task[IdentityMindResponse[PostConsumerResponse]]
+  def consumer(consumerRequest: GetConsumerRequest): Task[IdentityMindResponse[GetConsumerResponse]]
+  def attributes(attributesRequest: AttributesRequest): Task[IdentityMindResponse[AttributesResponse]]
 }
 
 object IdentityMindService {
@@ -49,8 +51,8 @@ class IdentityMindServiceImpl(identityMindConfig: IdentityMindConfig, client: Cl
   private lazy val authorization = basicAuthorization(identityMindConfig.password, identityMindConfig.password)
 
   override def consumer(
-      consumerRequest: ConsumerRequest
-  ): Task[IdentityMindResponse[ConsumerResponse]] = {
+      consumerRequest: PostConsumerRequest
+  ): Task[IdentityMindResponse[PostConsumerResponse]] = {
     val request = POST(
       consumerRequest.asJson,
       baseUri / "im" / "account" / "consumer",
@@ -58,8 +60,30 @@ class IdentityMindServiceImpl(identityMindConfig: IdentityMindConfig, client: Cl
       Accept(MediaType.application.json)
     )
 
-    runRequestToEither[ConsumerResponse](request, client)
-      .mapExceptionToServiceError("post document")
+    runRequestToEither[PostConsumerResponse](request, client)
+      .mapExceptionToServiceError("post consumer")
+  }
+
+  override def consumer(consumerRequest: GetConsumerRequest): Task[IdentityMindResponse[GetConsumerResponse]] = {
+    val request = GET(
+      baseUri / "im" / "account" / "consumer" / "v2" / consumerRequest.mtid,
+      authorization,
+      Accept(MediaType.application.json)
+    )
+
+    runRequestToEither[GetConsumerResponse](request, client)
+      .mapExceptionToServiceError("get consumer")
+  }
+
+  override def attributes(attributesRequest: AttributesRequest): Task[IdentityMindResponse[AttributesResponse]] = {
+    val request = GET(
+      baseUri / "im" / "account" / "consumer" / attributesRequest.mtid / "attributes",
+      authorization,
+      Accept(MediaType.application.json)
+    )
+
+    runRequestToEither[AttributesResponse](request, client)
+      .mapExceptionToServiceError("attributes")
   }
 
 }
