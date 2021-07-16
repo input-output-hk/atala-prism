@@ -8,6 +8,7 @@ import io.iohk.atala.prism.kotlin.crypto.keys.ECPrivateKey
 import io.iohk.atala.prism.kotlin.crypto.signature.ECSignature
 import io.iohk.atala.prism.kotlin.protos.util.Base64Utils
 import kotlin.js.JsExport
+import kotlin.jvm.JvmStatic
 
 @JsExport
 data class JsonBasedCredential constructor(
@@ -33,11 +34,13 @@ data class JsonBasedCredential constructor(
     companion object {
         val SEPARATOR = '.'
 
+        @JvmStatic
         private fun parseUnsignedCredential(credential: String): JsonBasedCredential {
             val credentialContent = CredentialContent.fromString(credential)
             return JsonBasedCredential(credentialContent)
         }
 
+        @JvmStatic
         private fun parseSignedCredential(credential: String): JsonBasedCredential {
             val contentWithSignature = credential.split(SEPARATOR)
             if (contentWithSignature.size == 2) {
@@ -62,6 +65,7 @@ data class JsonBasedCredential constructor(
             }
         }
 
+        @JvmStatic
         fun fromString(credential: String): JsonBasedCredential {
             try {
                 return parseUnsignedCredential(credential)

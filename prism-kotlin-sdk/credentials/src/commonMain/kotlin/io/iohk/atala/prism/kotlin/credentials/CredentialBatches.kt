@@ -6,6 +6,7 @@ import io.iohk.atala.prism.kotlin.protos.CredentialBatchData
 import pbandk.ByteArr
 import pbandk.encodeToByteArray
 import kotlin.js.JsExport
+import kotlin.jvm.JvmStatic
 
 @JsExport
 data class CredentialBatch(
@@ -16,6 +17,7 @@ data class CredentialBatch(
 @JsExport
 object CredentialBatches {
 
+    @JvmStatic
     fun batch(
         signedCredentials: List<PrismCredential>
     ): CredentialBatch {
@@ -26,6 +28,7 @@ object CredentialBatches {
         return CredentialBatch(merkleProofs.root, merkleProofs.proofs)
     }
 
+    @JvmStatic
     fun verifyInclusion(
         signedCredential: PrismCredential,
         merkleRoot: MerkleRoot,
@@ -35,6 +38,7 @@ object CredentialBatches {
             verifyProof(merkleRoot, inclusionProof)
     }
 
+    @JvmStatic
     fun computeCredentialBatchId(did: DID, merkleRoot: MerkleRoot): CredentialBatchId {
         val data = CredentialBatchData(did.suffix.value, ByteArr(merkleRoot.hash.value))
         return CredentialBatchId.fromDigest(SHA256Digest.compute(data.encodeToByteArray()))

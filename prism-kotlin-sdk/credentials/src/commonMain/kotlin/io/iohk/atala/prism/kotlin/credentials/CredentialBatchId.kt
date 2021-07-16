@@ -8,6 +8,7 @@ import io.iohk.atala.prism.kotlin.protos.CredentialBatchData
 import pbandk.ByteArr
 import pbandk.encodeToByteArray
 import kotlin.js.JsExport
+import kotlin.jvm.JvmStatic
 
 @JsExport
 data class CredentialBatchId private constructor(val id: String) {
@@ -15,15 +16,18 @@ data class CredentialBatchId private constructor(val id: String) {
     companion object {
         private val CREDENTIAL_BATCH_ID_RE = Regex("^[0-9a-f]{64}$")
 
+        @JvmStatic
         fun fromString(id: String): CredentialBatchId? =
             if (id.matches(CREDENTIAL_BATCH_ID_RE))
                 CredentialBatchId(id)
             else
                 null
 
+        @JvmStatic
         fun fromDigest(digest: SHA256Digest): CredentialBatchId =
             CredentialBatchId(digest.hexValue())
 
+        @JvmStatic
         fun fromBatchData(issuerDIDSuffix: DIDSuffix, merkleRoot: MerkleRoot): CredentialBatchId {
             val digest = SHA256Digest
                 .compute(
@@ -36,6 +40,7 @@ data class CredentialBatchId private constructor(val id: String) {
             return fromDigest(digest)
         }
 
+        @JvmStatic
         fun random(): CredentialBatchId =
             CredentialBatchId(
                 SHA256Digest.compute(uuid4().toString().encodeToByteArray()).hexValue()
