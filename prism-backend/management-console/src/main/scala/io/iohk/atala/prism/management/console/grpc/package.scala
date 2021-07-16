@@ -32,6 +32,7 @@ import io.iohk.atala.prism.crypto.MerkleTree.MerkleInclusionProof
 import io.iohk.atala.prism.crypto.{ECSignature, SHA256Digest}
 import io.iohk.atala.prism.protos.connector_api.SendMessagesRequest
 import io.iohk.atala.prism.protos.console_models.ContactConnectionStatus
+import io.iohk.atala.prism.utils.Base64Utils
 
 import scala.util.{Failure, Success, Try}
 
@@ -575,7 +576,12 @@ package object grpc {
                   GrpcAuthenticationHeader.PublishedDIDBased
                 else GrpcAuthenticationHeader.UnpublishedDIDBased
 
-              didBased(RequestNonce(nonce.getBytes.toVector), did, keyId, ECSignature(signature.getBytes))
+              didBased(
+                RequestNonce(Base64Utils.decodeURL(nonce).toVector),
+                did,
+                keyId,
+                ECSignature(Base64Utils.decodeURL(signature))
+              )
             }
       }
       .flatten
