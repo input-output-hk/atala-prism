@@ -1,4 +1,4 @@
-# PRISM Management Console Web 
+# PRISM Management Console Web
 
 ## Running the project
 
@@ -67,11 +67,6 @@ Run envoy on linux in docker
 ```bash
 docker run --rm -ti --net=host -v $PWD/envoy/envoy.yaml:/etc/envoy/envoy.yaml envoyproxy/envoy:v1.16-latest
 ```
-If you interact with the console backend
-
-```bash
-docker run --rm -ti --net=host -v $PWD/envoy/envoy-console.yaml:/etc/envoy/envoy.yaml envoyproxy/envoy:v1.16-latest
-```
 
 #### Mac
 
@@ -97,7 +92,7 @@ For more information about environment variables see [Configurations](#Configura
 
 ### Start the server
 
-First install npm dependencies 
+First install npm dependencies
 
 ```bash
 npm install
@@ -129,7 +124,7 @@ These instructions are useful for our deploys, they may be outdated. They are no
 
 ## Developer considerations
 
-You should avoid destructuring or `...` operator with Api object in components. As I noticed, when using such features combined with `function` and `prototype` it produces to loose "this" context. 
+You should avoid destructuring or `...` operator with Api object in components. As I noticed, when using such features combined with `function` and `prototype` it produces to loose "this" context.
 
 In some components, you should also find some functions wrapped in other functions that look as unnecessary. This is a hack to preserve "this" context.
 
@@ -144,4 +139,3 @@ To run it, you must shut down the node, wallet and connector first.
 ### Running the whole project
 
 See our main [README](../README.md#How-to-run) for instructions on how to run the whole project, including the backend and the chrome extension (which is necessary to log into the management console).
-

@@ -37,12 +37,48 @@ static_resources:
             - name: local_service
               domains: ["*"]
               routes:
+              # connector
+              - match: { prefix: "/io.iohk.atala.prism.protos.ConnectorService" }
+                route:
+                  cluster: connector_service
+              - match: { prefix: "/io.iohk.atala.prism.protos.ContactConnectionService" }
+                route:
+                  cluster: connector_service
+              - match: { prefix: "/io.iohk.atala.prism.protos.CredentialViewsService" }
+                route:
+                  cluster: connector_service
+              - match: { prefix: "/io.iohk.atala.prism.protos.ContactConnectionService" }
+                route:
+                  cluster: connector_service
+              - match: { prefix: "/io.iohk.atala.prism.intdemo.protos." }
+                route:
+                  cluster: connector_service
+              # node
               - match: { prefix: "/io.iohk.atala.prism.protos.NodeService" }
                 route:
                   cluster: node_service
-              - match: { prefix: "/io.iohk" }
+              # console
+              - match: { prefix: "/io.iohk.atala.prism.protos.ConsoleService" }
                 route:
-                  cluster: connector_service
+                  cluster: console_service
+              - match: { prefix: "/io.iohk.atala.prism.protos.ContactsService" }
+                route:
+                  cluster: console_service
+              - match: { prefix: "/io.iohk.atala.prism.protos.CredentialIssuanceService" }
+                route:
+                  cluster: console_service
+              - match: { prefix: "/io.iohk.atala.prism.protos.CredentialsService" }
+                route:
+                  cluster: console_service
+              - match: { prefix: "/io.iohk.atala.prism.protos.CredentialTypesService" }
+                route:
+                  cluster: console_service
+              - match: { prefix: "/io.iohk.atala.prism.protos.GroupsService" }
+                route:
+                  cluster: console_service
+              - match: { prefix: "/io.iohk.atala.prism.protos.CredentialsStoreService" }
+                route:
+                  cluster: console_service
               cors:
                 allow_origin_string_match:
                 - prefix: "*"
