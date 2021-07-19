@@ -270,8 +270,15 @@ package object grpc {
           .map(proto2DateTransformer.transform)
       }
 
-      val nameOrExternalId = request.filterBy.map(_.nameOrExternalId).map(_.trim).filter(_.nonEmpty)
-      val groupName = request.filterBy.map(_.groupName).map(InstitutionGroup.Name.apply)
+      val nameOrExternalId = request.filterBy
+        .map(_.nameOrExternalId)
+        .map(_.trim)
+        .filter(_.nonEmpty)
+      val groupName = request.filterBy
+        .map(_.groupName)
+        .map(_.trim)
+        .filter(_.nonEmpty)
+        .map(InstitutionGroup.Name.apply)
 
       val defaultSortBy = ResultOrdering(Contact.SortBy.createdAt)
       val sortByT = request.sortBy.map(toContactsResultOrdering).getOrElse(Try(defaultSortBy))
