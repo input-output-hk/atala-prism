@@ -51,7 +51,10 @@
     "filters": {
       "identityNumber": "Identity Number",
       "search": "Search",
-      "status": "Contact Status"
+      "status": "Contact Status",
+      "name": "Name",
+      "createdAt": "Date Created",
+      "externalId": "External ID"
     },
     "buttons": {
       "import": "Add New"
@@ -358,7 +361,7 @@
       "undefined": "Undefined",
       "id": "Government ID",
       "employment": "Proof of Employment",
-      "health":  "Health Insurance"
+      "health": "Health Insurance"
     },
     "status": {
       "credentialDraft": "Credential Draft",

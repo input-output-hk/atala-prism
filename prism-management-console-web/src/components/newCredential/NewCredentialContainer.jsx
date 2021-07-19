@@ -20,7 +20,7 @@ import { contactMapper } from '../../APIs/helpers/contactHelpers';
 import ImportCredentialsData from '../importCredentialsData/ImportCredentialsData';
 import { useSession } from '../providers/SessionContext';
 import { fillHTMLCredential } from '../../helpers/credentialView';
-import { useContactsWithFilteredList } from '../../hooks/useContacts';
+import { useContacts } from '../../hooks/useContacts';
 import { useGroups } from '../../hooks/useGroups';
 import { useCredentialTypes } from '../../hooks/useCredentialTypes';
 
@@ -43,12 +43,10 @@ const NewCredentialContainer = ({ api, redirector: { redirectToCredentials } }) 
   const [selectedContacts, setSelectedContacts] = useState([]);
   const {
     contacts,
-    filteredContacts,
     filterProps: subjectFilterProps,
-    handleContactsRequest,
-    hasMore: hasMoreContacts,
-    fetchAllContacts
-  } = useContactsWithFilteredList(api.contactsManager);
+    getMoreContacts,
+    hasMore: hasMoreContacts
+  } = useContacts(api.contactsManager);
 
   const { credentialTypes, getCredentialTypeDetails } = useCredentialTypes(
     api.credentialTypesManager
@@ -96,9 +94,11 @@ const NewCredentialContainer = ({ api, redirector: { redirectToCredentials } }) 
   }, [shouldSelectRecipients]);
 
   const getRecipients = async () => {
-    const groupContactsPromises = selectedGroups.map(fetchAllContacts);
+    const groupContactsPromises = selectedGroups.map(group =>
+      api.contactsManager.getAllContacts(group)
+    );
 
-    const allContacts = await fetchAllContacts();
+    const allContacts = await api.contactsManager.getAllContacts();
     const promisesList = await Promise.all(groupContactsPromises);
 
     const targetsFromGroups = promisesList.flat();
@@ -152,9 +152,11 @@ const NewCredentialContainer = ({ api, redirector: { redirectToCredentials } }) 
   };
 
   const getContactsFromGroups = () => {
-    const groupContactsromises = selectedGroups.map(fetchAllContacts);
+    const groupContactsPromises = selectedGroups.map(group =>
+      api.contactsManager.getAllContacts(group)
+    );
 
-    return Promise.all(groupContactsromises);
+    return Promise.all(groupContactsPromises);
   };
 
   const signCredentials = async () => {
@@ -194,8 +196,7 @@ const NewCredentialContainer = ({ api, redirector: { redirectToCredentials } }) 
       }
     };
 
-    const allContacts = await fetchAllContacts();
-    onFinish(allContacts);
+    return api.contactsManager.getAllContacts().then(onFinish);
   };
 
   const changeStep = nextStep => {
@@ -218,13 +219,13 @@ const NewCredentialContainer = ({ api, redirector: { redirectToCredentials } }) 
   };
 
   const contactsProps = {
-    contacts: filteredContacts,
+    contacts,
     setSelectedContacts,
     selectedContacts,
     setContactsFilter: subjectFilterProps.setSearchText,
-    handleContactsRequest,
+    getMoreContacts,
     hasMore: hasMoreContacts,
-    fetchAllContacts
+    fetchAllContacts: () => api.contactsManager.getAllContacts()
   };
 
   const handleToggleShouldSelectRecipients = ev => {
@@ -307,7 +308,8 @@ NewCredentialContainer.propTypes = {
     credentialsViewManager: PropTypes.shape({ getCredentialViewTemplates: PropTypes.func })
       .isRequired,
     contactsManager: PropTypes.shape({
-      getContacts: PropTypes.func
+      getContacts: PropTypes.func,
+      getAllContacts: PropTypes.func
     }).isRequired,
     credentialTypesManager: PropTypes.shape({
       getCredentialTypes: PropTypes.func,

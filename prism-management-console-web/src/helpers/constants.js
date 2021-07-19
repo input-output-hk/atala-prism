@@ -222,6 +222,13 @@ export const GROUP_SORTING_KEYS = {
   numberOfContacts: 'NUMBER_OF_CONTACTS'
 };
 
+// Contacts
+export const CONTACT_SORTING_KEYS = {
+  name: 'NAME',
+  createdAt: 'CREATED_AT',
+  externalId: 'EXTERNAL_ID'
+};
+
 // Sorting directions
 export const SORTING_DIRECTIONS = {
   ascending: 'ASCENDING',
