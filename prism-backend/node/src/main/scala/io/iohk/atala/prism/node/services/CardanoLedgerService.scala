@@ -12,6 +12,7 @@ import io.iohk.atala.prism.models.{
 }
 import io.iohk.atala.prism.node.cardano.{CardanoClient, LAST_SYNCED_BLOCK_NO, LAST_SYNCED_BLOCK_TIMESTAMP}
 import io.iohk.atala.prism.node.cardano.models._
+import io.iohk.atala.prism.node.logging.NodeLogging.logOperationIds
 import io.iohk.atala.prism.node.repositories.daos.KeyValuesDAO.KeyValue
 import io.iohk.atala.prism.node.services.CardanoLedgerService.CardanoNetwork
 import io.iohk.atala.prism.node.services.models.{AtalaObjectNotification, AtalaObjectNotificationHandler}
@@ -67,8 +68,10 @@ class CardanoLedgerService private[services] (
       .map {
         case Right(transactionId) => PublicationInfo(TransactionInfo(transactionId, getType), TransactionStatus.Pending)
         case Left(error) =>
-          logger.error(s"FATAL: Error while publishing reference: $error")
-          throw new RuntimeException(s"FATAL: Error while publishing reference: $error")
+          logOperationIds("publish", s"FATAL: Error while publishing reference: $error", obj)(logger)
+          throw new RuntimeException(
+            s"FATAL: Error while publishing reference: $error"
+          )
       }
   }
 

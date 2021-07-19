@@ -1,5 +1,7 @@
 package io.iohk.atala.prism.node.logging
 
+import io.iohk.atala.prism.connector.AtalaOperationId
+import io.iohk.atala.prism.protos.node_internal.AtalaObject
 import net.logstash.logback.argument.StructuredArguments.kv
 import org.slf4j.Logger
 import scalapb.GeneratedMessage
@@ -31,14 +33,26 @@ object NodeLogging {
     }
   }
 
-  def logWithTraceId[Req <: GeneratedMessage](methodName: String, traceId: String, argsToLog: (String, String)*)(
-      implicit logger: Logger
+  def logWithTraceId(methodName: String, traceId: String, argsToLog: (String, String)*)(implicit
+      logger: Logger
   ): Unit = {
     logger.info(
       s"methodName:$methodName traceId = $traceId, \n  ${argsToLog.map(x => s"${x._1}=${x._2}").mkString(",")}",
       kv("methodName", methodName),
       kv("traceId", traceId)
     )
+  }
+
+  def logOperationIds(methodName: String, message: String, obj: AtalaObject)(implicit
+      logger: Logger
+  ): Unit = {
+    obj.block.blockContent.foreach { block =>
+      val atalaOperationIds = block.operations.toList.map(AtalaOperationId.of)
+      logger.error(
+        s"methodName:$methodName , message: $message, AtalaObjectId : ${obj.toString},\n atalaOperationIds = [${atalaOperationIds
+          .mkString(",")}]"
+      )
+    }
   }
 
   def logAndReturnResponse[Response <: GeneratedMessage](methodName: String, traceId: String, response: Response)(
