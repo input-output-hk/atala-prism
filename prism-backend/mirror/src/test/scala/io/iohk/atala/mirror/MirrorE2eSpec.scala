@@ -53,12 +53,12 @@ class MirrorE2eSpec extends PostgresRepositorySpec[Task] with Matchers with Mirr
         // Mirror: create new DID
         did <-
           Task
-            .fromFuture(connectorStub.registerDID(createDid(masterKey, keyId, masterKey)))
+            .fromFuture(connectorStub.registerDID(createDid(masterKey, masterKeyId, issuanceKey, issuanceKeyId)))
             .map(response => DID.unsafeFromString(response.did))
         _ = logger.info(s"DID: ${did.value}")
 
         // create services
-        authConfig = createAuthConfig(did, masterKey, "master", issuanceKey, "issuance")
+        authConfig = createAuthConfig(did, masterKey, masterKeyId, issuanceKey, issuanceKeyId)
 
         nodeService = new NodeClientServiceImpl(nodeStub, authConfig)
         connectorClientService =
@@ -141,17 +141,18 @@ class MirrorE2eSpec extends PostgresRepositorySpec[Task] with Matchers with Mirr
     val masterKey = ecTrait.generateKeyPair()
     val issuanceKey = ecTrait.generateKeyPair()
 
-    val keyId = "master"
+    val masterKeyId = "master"
+    val issuanceKeyId = "issuance"
 
     def signedCredential(did: DID) = {
       val credentialContent = CredentialContent(
         CredentialContent.JsonFields.IssuerDid.field -> did.value,
-        CredentialContent.JsonFields.IssuanceKeyId.field -> keyId
+        CredentialContent.JsonFields.IssuanceKeyId.field -> issuanceKeyId
       )
 
       Credential
         .fromCredentialContent(credentialContent)
-        .sign(masterKey.privateKey)
+        .sign(issuanceKey.privateKey)
     }
 
     def sendMessageRequest(connectionId: String, message: ByteString) =

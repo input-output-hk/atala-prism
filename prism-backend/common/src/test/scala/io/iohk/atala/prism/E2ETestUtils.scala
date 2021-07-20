@@ -28,16 +28,28 @@ object E2ETestUtils {
     )
   }
 
-  def createDid(keys: ECKeyPair, keyId: String, clientKey: ECKeyPair): RegisterDIDRequest = {
+  def createDid(
+      masterKey: ECKeyPair,
+      masterKeyId: String,
+      issuanceKey: ECKeyPair,
+      issuanceKeyId: String
+  ): RegisterDIDRequest = {
     val createDidOp = CreateDIDOperation(
       didData = Some(
         DIDData(
           publicKeys = Seq(
             PublicKey(
-              id = keyId,
+              id = masterKeyId,
               usage = KeyUsage.MASTER_KEY,
               keyData = PublicKey.KeyData.EcKeyData(
-                NodeClientService.toTimestampInfoProto(keys.publicKey)
+                NodeClientService.toTimestampInfoProto(masterKey.publicKey)
+              )
+            ),
+            PublicKey(
+              id = issuanceKeyId,
+              usage = KeyUsage.ISSUING_KEY,
+              keyData = PublicKey.KeyData.EcKeyData(
+                NodeClientService.toTimestampInfoProto(issuanceKey.publicKey)
               )
             )
           )
@@ -48,9 +60,9 @@ object E2ETestUtils {
     val atalaOperation = AtalaOperation(operation = AtalaOperation.Operation.CreateDid(createDidOp))
 
     val signedAtalaOperation = SignedAtalaOperation(
-      signedWith = keyId,
+      signedWith = masterKeyId,
       operation = Some(atalaOperation),
-      signature = ByteString.copyFrom(ecTrait.sign(atalaOperation.toByteArray, clientKey.privateKey).data)
+      signature = ByteString.copyFrom(ecTrait.sign(atalaOperation.toByteArray, masterKey.privateKey).data)
     )
 
     RegisterDIDRequest()

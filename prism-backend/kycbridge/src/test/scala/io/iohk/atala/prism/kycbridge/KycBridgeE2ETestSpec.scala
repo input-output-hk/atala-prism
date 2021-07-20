@@ -5,7 +5,7 @@ import io.grpc.ManagedChannelBuilder
 import io.iohk.atala.kycbridge.protos.kycbridge_api.{CreateAccountRequest, KycBridgeServiceGrpc}
 import io.iohk.atala.prism.E2ETestUtils._
 import io.iohk.atala.prism.connector.RequestAuthenticator
-import io.iohk.atala.prism.crypto.{EC, ECKeyPair}
+import io.iohk.atala.prism.crypto.EC
 import io.iohk.atala.prism.identity.DID
 import io.iohk.atala.prism.kycbridge.services.ServiceUtils.runRequestToEither
 import io.iohk.atala.prism.protos.connector_api.{
@@ -60,12 +60,12 @@ class KycBridgeE2ETestSpec extends AnyWordSpec with Matchers with KycBridgeFixtu
         baseGrpcClientService = new BaseGrpcClientService(
           connectorStub,
           new RequestAuthenticator(ecTrait),
-          PublicKeyBasedAuthConfig(clientKey)
+          PublicKeyBasedAuthConfig(masterKey)
         ) {}
 
         did <-
           Task
-            .fromFuture(connectorStub.registerDID(createDid(clientKey, keyId, clientKey)))
+            .fromFuture(connectorStub.registerDID(createDid(masterKey, masterKeyId, issuanceKey, issuanceKeyId)))
             .map(response => DID.unsafeFromString(response.did))
 
         _ = logger.info(s"DID created: ${did.value}")
@@ -77,7 +77,7 @@ class KycBridgeE2ETestSpec extends AnyWordSpec with Matchers with KycBridgeFixtu
         connection <-
           baseGrpcClientService
             .authenticatedCall(
-              addConnectionFromTokenRequest(createAccountResponse.connectionToken, clientKey),
+              addConnectionFromTokenRequest(createAccountResponse.connectionToken, masterKey),
               _.addConnectionFromToken
             )
 
@@ -204,7 +204,10 @@ class KycBridgeE2ETestSpec extends AnyWordSpec with Matchers with KycBridgeFixtu
   }
 
   trait E2EFixtures {
-    val clientKey: ECKeyPair = ecTrait.generateKeyPair()
-    val keyId = "master"
+    val masterKey = ecTrait.generateKeyPair()
+    val issuanceKey = ecTrait.generateKeyPair()
+
+    val masterKeyId = "master"
+    val issuanceKeyId = "issuance"
   }
 }
