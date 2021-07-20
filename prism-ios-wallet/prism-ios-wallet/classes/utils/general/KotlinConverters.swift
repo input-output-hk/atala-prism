@@ -28,7 +28,7 @@ func toKotlinBytes(data: Data) -> KotlinByteArray {
 func fromKotlinBytes(bytes: KotlinByteArray) -> Data {
     var data = Data(count: Int(bytes.size))
     for index in data.indices {
-        data[index] = UInt8(bytes.get(index: Int32(index)))
+        data[index] = UInt8(bitPattern: bytes.get(index: Int32(index)))
     }
     return data
 }

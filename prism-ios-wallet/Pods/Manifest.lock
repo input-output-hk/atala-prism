@@ -1,50 +1,52 @@
 PODS:
-  - AcuantiOSSDKV11 (11.4.9):
-    - AcuantiOSSDKV11/AcuantCamera (= 11.4.9)
-    - AcuantiOSSDKV11/AcuantCommon (= 11.4.9)
-    - AcuantiOSSDKV11/AcuantDocumentProcessing (= 11.4.9)
-    - AcuantiOSSDKV11/AcuantEchipReader (= 11.4.9)
-    - AcuantiOSSDKV11/AcuantFaceCapture (= 11.4.9)
-    - AcuantiOSSDKV11/AcuantFaceMatch (= 11.4.9)
-    - AcuantiOSSDKV11/AcuantHGLiveness (= 11.4.9)
-    - AcuantiOSSDKV11/AcuantImagePreparation (= 11.4.9)
-    - AcuantiOSSDKV11/AcuantIPLiveness (= 11.4.9)
-    - AcuantiOSSDKV11/AcuantPassiveLiveness (= 11.4.9)
-  - AcuantiOSSDKV11/AcuantCamera (11.4.9):
-    - AcuantiOSSDKV11/AcuantCamera/Common (= 11.4.9)
-    - AcuantiOSSDKV11/AcuantCamera/Document (= 11.4.9)
-    - AcuantiOSSDKV11/AcuantCamera/Mrz (= 11.4.9)
+  - AcuantiOSSDKV11 (11.5.1):
+    - AcuantiOSSDKV11/AcuantCamera (= 11.5.1)
+    - AcuantiOSSDKV11/AcuantCommon (= 11.5.1)
+    - AcuantiOSSDKV11/AcuantDocumentProcessing (= 11.5.1)
+    - AcuantiOSSDKV11/AcuantEchipReader (= 11.5.1)
+    - AcuantiOSSDKV11/AcuantFaceCapture (= 11.5.1)
+    - AcuantiOSSDKV11/AcuantFaceMatch (= 11.5.1)
+    - AcuantiOSSDKV11/AcuantHGLiveness (= 11.5.1)
+    - AcuantiOSSDKV11/AcuantImagePreparation (= 11.5.1)
+    - AcuantiOSSDKV11/AcuantIPLiveness (= 11.5.1)
+    - AcuantiOSSDKV11/AcuantPassiveLiveness (= 11.5.1)
+  - AcuantiOSSDKV11/AcuantCamera (11.5.1):
+    - AcuantiOSSDKV11/AcuantCamera/Common (= 11.5.1)
+    - AcuantiOSSDKV11/AcuantCamera/Document (= 11.5.1)
+    - AcuantiOSSDKV11/AcuantCamera/Mrz (= 11.5.1)
     - AcuantiOSSDKV11/AcuantCommon
     - AcuantiOSSDKV11/AcuantImagePreparation
-  - AcuantiOSSDKV11/AcuantCamera/Common (11.4.9):
+  - AcuantiOSSDKV11/AcuantCamera/Common (11.5.1):
     - AcuantiOSSDKV11/AcuantCommon
     - AcuantiOSSDKV11/AcuantImagePreparation
-  - AcuantiOSSDKV11/AcuantCamera/Document (11.4.9):
+  - AcuantiOSSDKV11/AcuantCamera/Document (11.5.1):
     - AcuantiOSSDKV11/AcuantCamera/Common
     - AcuantiOSSDKV11/AcuantCommon
     - AcuantiOSSDKV11/AcuantImagePreparation
-  - AcuantiOSSDKV11/AcuantCamera/Mrz (11.4.9):
+  - AcuantiOSSDKV11/AcuantCamera/Mrz (11.5.1):
     - AcuantiOSSDKV11/AcuantCamera/Common
     - AcuantiOSSDKV11/AcuantCommon
     - AcuantiOSSDKV11/AcuantImagePreparation
-  - AcuantiOSSDKV11/AcuantCommon (11.4.9)
-  - AcuantiOSSDKV11/AcuantDocumentProcessing (11.4.9):
+  - AcuantiOSSDKV11/AcuantCommon (11.5.1)
+  - AcuantiOSSDKV11/AcuantDocumentProcessing (11.5.1):
     - AcuantiOSSDKV11/AcuantCommon
-  - AcuantiOSSDKV11/AcuantEchipReader (11.4.9):
+  - AcuantiOSSDKV11/AcuantEchipReader (11.5.1):
     - AcuantiOSSDKV11/AcuantCommon
-  - AcuantiOSSDKV11/AcuantFaceCapture (11.4.9):
+  - AcuantiOSSDKV11/AcuantFaceCapture (11.5.1):
     - AcuantiOSSDKV11/AcuantCommon
     - AcuantiOSSDKV11/AcuantImagePreparation
-  - AcuantiOSSDKV11/AcuantFaceMatch (11.4.9):
+  - AcuantiOSSDKV11/AcuantFaceMatch (11.5.1):
     - AcuantiOSSDKV11/AcuantCommon
-  - AcuantiOSSDKV11/AcuantHGLiveness (11.4.9):
+  - AcuantiOSSDKV11/AcuantHGLiveness (11.5.1):
     - AcuantiOSSDKV11/AcuantCommon
-  - AcuantiOSSDKV11/AcuantImagePreparation (11.4.9):
+  - AcuantiOSSDKV11/AcuantImagePreparation (11.5.1):
     - AcuantiOSSDKV11/AcuantCommon
-  - AcuantiOSSDKV11/AcuantIPLiveness (11.4.9):
+  - AcuantiOSSDKV11/AcuantIPLiveness (11.5.1):
     - AcuantiOSSDKV11/AcuantCommon
-    - iProov (~> 7.5.0)
-  - AcuantiOSSDKV11/AcuantPassiveLiveness (11.4.9):
+    - iProov (~> 8.4.0)
+    - KeychainAccess (~> 4.2)
+    - SwiftyJSON (~> 5.0)
+  - AcuantiOSSDKV11/AcuantPassiveLiveness (11.5.1):
     - AcuantiOSSDKV11/AcuantCommon
   - Alamofire (4.8.2)
   - AlamofireImage (3.5.2):
@@ -89,7 +91,7 @@ PODS:
     - Braintree/UnionPay (~> 4.30)
     - BraintreeDropIn/UIKit
   - BraintreeDropIn/UIKit (7.5.0)
-  - crypto (0.1.0-6ac581e3):
+  - crypto (0.1.0-4a326b60):
     - Secp256k1Kit.swift (= 1.1)
   - Firebase/Analytics (6.23.0):
     - Firebase/Core
@@ -206,10 +208,8 @@ PODS:
     - nanopb (~> 0.3)
   - gRPC-Core/Interface (1.23.1)
   - GTMSessionFetcher/Core (1.4.0)
-  - iProov (7.5.0):
-    - KeychainAccess (~> 4.1)
+  - iProov (8.4.0):
     - Socket.IO-Client-Swift (~> 15.2)
-    - SwiftyJSON (~> 5.0)
   - KeychainAccess (4.2.2)
   - MaterialComponents/AnimationTiming (117.0.0)
   - MaterialComponents/Availability (117.0.0)
@@ -306,7 +306,7 @@ PODS:
   - Toast-Swift (5.0.1)
 
 DEPENDENCIES:
-  - AcuantiOSSDKV11 (~> 11.4.7)
+  - AcuantiOSSDKV11 (~> 11.5.1)
   - AcuantiOSSDKV11/AcuantCamera
   - Alamofire (~> 4.8.2)
   - AlamofireImage (~> 3.5)
@@ -382,14 +382,14 @@ EXTERNAL SOURCES:
     :path: "../prism-kotlin-sdk/crypto"
 
 SPEC CHECKSUMS:
-  AcuantiOSSDKV11: 9ce5f96e9c2033a8a7039ca71bbe720b4adf4101
+  AcuantiOSSDKV11: e7d9b96346929d2a9566d3a50dd781a93a31bc8f
   Alamofire: ae5c501addb7afdbb13687d7f2f722c78734c2d3
   AlamofireImage: 63cfe3baf1370be6c498149687cf6db3e3b00999
   AlamofireObjectMapper: 1989f690e982b71921b9253f53a4f33a9bc00d88
   BoringSSL-GRPC: db8764df3204ccea016e1c8dd15d9a9ad63ff318
   Braintree: 586e4d274398fabe9d70ab790eefca41660b8a17
   BraintreeDropIn: 15d6f53bf80bc0ae7809ab17803100c0a5448fd2
-  crypto: e6a755d3a75feb8fd3d68c97a0164e07c2afd5eb
+  crypto: 871e622f2f2efd7dafb7bb9f7de1f303834e6286
   Firebase: 585ae467b3edda6a5444e788fda6888f024d8d6f
   FirebaseABTesting: 821a3a3e4a145987e80fee3657c4de1cb9adf693
   FirebaseAnalytics: 558f7a03d19de451093032c806f39d5f9dff096e
@@ -408,7 +408,7 @@ SPEC CHECKSUMS:
   GoogleUtilities: 39530bc0ad980530298e9c4af8549e991fd033b1
   gRPC-Core: 4b1148eb8596225178e5a154e40e35141a3cdf0f
   GTMSessionFetcher: 6f5c8abbab8a9bce4bb3f057e317728ec6182b10
-  iProov: 16de51166c50a08ec0d2a32334687c7d0e5236e3
+  iProov: 94dc03f2fa0e29426dd915fe33678ec7666d8505
   KeychainAccess: c0c4f7f38f6fc7bbe58f5702e25f7bd2f65abf51
   MaterialComponents: 29320b6a89c4c90e41c7a41fc70e91127ac34161
   MBProgressHUD: 4890f671c94e8a0f3cf959aa731e9de2f036d71a
@@ -431,6 +431,6 @@ SPEC CHECKSUMS:
   Tabman: 55d3d18f393ce5119515cd0349c841a07774c895
   Toast-Swift: 9b6a70f28b3bf0b96c40d46c0c4b9d6639846711
 
-PODFILE CHECKSUM: de2d7d33ce5026ed37a8ff5a5d0b3f5e07ecf1b0
+PODFILE CHECKSUM: 4bb6b0514012fd98cf5c79c274a17e9b0683953e
 
 COCOAPODS: 1.10.0

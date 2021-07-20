@@ -102,14 +102,14 @@ class VerifyIdScanPresenter: BasePresenter {
 
     private func initialize() {
         let initalizer: IAcuantInitializer = AcuantInitializer()
-        let packages: [IAcuantPackage] = [AcuantImagePreparationPackage()]
+        let packages: [IAcuantPackage] = [ImagePreparationPackage()]
 
         _ = initalizer.initialize(packages: packages) { [weak self] error in
 
             DispatchQueue.main.async {
                 if let self = self {
                     if error == nil {
-                        AcuantIPLiveness.getLivenessTestCredential(delegate: self)
+                        IPLiveness.getLivenessTestCredential(delegate: self)
                     } else {
                         if let msg = error?.errorDescription {
                             self.viewImpl?.showErrorMessage(doShow: true, message: "\(error!.errorCode) : \(msg)")
@@ -142,8 +142,8 @@ class VerifyIdScanPresenter: BasePresenter {
             self.selfieImg = image.image
             let evaluted = EvaluatedImageData(imageBytes: image.data, barcodeString: self.idData.barcodeString)
 
-            AcuantDocumentProcessing.uploadImage(instancdId: self.documentInstance!, data: evaluted,
-                                                 options: self.idOptions, delegate: self)
+            DocumentProcessing.uploadImage(instancdId: self.documentInstance!, data: evaluted,
+                                           options: self.idOptions, delegate: self)
         }
     }
 
@@ -190,7 +190,7 @@ extension VerifyIdScanPresenter: CameraCaptureDelegate {
     public func setCapturedImage(image: Image, barcodeString: String?) {
         if image.image != nil {
             self.viewImpl?.showLoading(doShow: true, message: "Processing...")
-            AcuantImagePreparation.evaluateImage(image: image.image!) { result, error in
+            ImagePreparation.evaluateImage(image: image.image!) { result, error in
 
                 DispatchQueue.main.async {
                     if result != nil {
@@ -212,8 +212,8 @@ extension VerifyIdScanPresenter: CameraCaptureDelegate {
         AVCaptureDevice.requestAccess(for: .video) { [weak self] success in
             if success { // if request is granted (success is true)
                 DispatchQueue.main.async {
-                    let options = AcuantCameraOptions(digitsToShow: 2, autoCapture: self!.autoCapture,
-                                                      hideNavigationBar: true)
+                    let options = CameraOptions(digitsToShow: 2, autoCapture: self!.autoCapture,
+                                                hideNavigationBar: true)
                     let documentCameraController = DocumentCameraController.getCameraController(delegate: self!,
                                                                                                 cameraOptions: options)
                     self!.viewImpl?.navigationController?.pushViewController(documentCameraController, animated: false)
@@ -258,7 +258,7 @@ extension VerifyIdScanPresenter: CreateInstanceDelegate {
 
     private func createInstance() {
         self.createInstanceGroup.enter()
-        AcuantDocumentProcessing.createInstance(options: self.idOptions, delegate: self)
+        DocumentProcessing.createInstance(options: self.idOptions, delegate: self)
     }
 }
 
@@ -269,7 +269,7 @@ extension VerifyIdScanPresenter: UploadImageDelegate {
             self.showFacialCaptureInterface()
         }
         self.getDataGroup.enter()
-        AcuantDocumentProcessing.getData(instanceId: self.documentInstance!, isHealthCard: false, delegate: self)
+        DocumentProcessing.getData(instanceId: self.documentInstance!, isHealthCard: false, delegate: self)
         self.viewImpl?.showLoading(doShow: true, message: "Processing...")
     }
 
@@ -406,7 +406,7 @@ extension VerifyIdScanPresenter: LivenessTestCredentialDelegate {
 extension VerifyIdScanPresenter {
     private func processPassiveLiveness(image: UIImage) {
         self.faceProcessingGroup.enter()
-        AcuantPassiveLiveness.postLiveness(request: AcuantLivenessRequest(image: image)) { [weak self] (result, err) in
+        PassiveLiveness.postLiveness(request: AcuantLivenessRequest(image: image)) { [weak self] (result, err) in
             if result != nil && (result?.result == AcuantLivenessAssessment.Live
                                     || result?.result == AcuantLivenessAssessment.NotLive) {
                 self?.livenessString = "Liveness : \(result!.result.rawValue)"
@@ -419,7 +419,7 @@ extension VerifyIdScanPresenter {
 
     public func showPassiveLiveness() {
         DispatchQueue.main.async {
-            let controller = AcuantFaceCaptureController()
+            let controller = FaceCaptureController()
             controller.callback = { [weak self]
                 (image) in
 
@@ -477,7 +477,7 @@ extension VerifyIdScanPresenter: FacialMatchDelegate {
 
                         if downloadedImage != nil {
                             let facialMatchData = FacialMatchData(faceImageOne: downloadedImage!, faceImageTwo: image!)
-                            AcuantFaceMatch.processFacialMatch(facialData: facialMatchData, delegate: self)
+                            FaceMatch.processFacialMatch(facialData: facialMatchData, delegate: self)
                         } else {
                             self.faceProcessingGroup.leave()
                         }

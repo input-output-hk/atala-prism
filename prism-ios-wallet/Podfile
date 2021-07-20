@@ -36,7 +36,7 @@ target 'prism-ios-wallet' do
   # PRISM SDK
   pod 'crypto', :path => '../prism-kotlin-sdk/crypto'
   # Acuant
-  pod 'AcuantiOSSDKV11', '~> 11.4.7' 
+  pod 'AcuantiOSSDKV11', '~> 11.5.1' 
   pod 'AcuantiOSSDKV11/AcuantCamera'
    
   post_install do |installer|
