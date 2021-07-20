@@ -1,7 +1,6 @@
 package io.iohk.atala.prism.example
 
 import io.iohk.atala.prism.kotlin.credentials.*
-import io.iohk.atala.prism.kotlin.credentials.content.CredentialContent
 import io.iohk.atala.prism.kotlin.credentials.json.JsonBasedCredential
 import io.iohk.atala.prism.kotlin.credentials.utils.toTimestampInfoModel
 import io.iohk.atala.prism.kotlin.crypto.EC
@@ -12,7 +11,6 @@ import io.iohk.atala.prism.kotlin.crypto.derivation.KeyType
 import io.iohk.atala.prism.kotlin.extras.ProtoClientUtils
 import io.iohk.atala.prism.kotlin.extras.ProtoUtils
 import io.iohk.atala.prism.kotlin.extras.RequestUtils
-import io.iohk.atala.prism.kotlin.extras.findPublicKey
 import io.iohk.atala.prism.kotlin.identity.DID
 import io.iohk.atala.prism.kotlin.identity.DID.Companion.issuingKeyId
 import io.iohk.atala.prism.kotlin.identity.DID.Companion.masterKeyId
@@ -143,38 +141,7 @@ object CompleteFlowTutorial {
         println("Holder (DID 1): Connected to Issuer, connectionId = ${holderIssuerConnection.connectionId}")
         println()
 
-        // Issuer generates a credential to Holder
-        val holderCredentialContent = CredentialContent(
-            JsonObject(
-                mapOf(
-                    Pair("id", JsonPrimitive(issuerDID.value)),
-                    Pair("keyId", JsonPrimitive(masterKeyId)),
-                    Pair(
-                        "credentialSubject",
-                        JsonObject(
-                            mapOf(
-                                Pair("name", JsonPrimitive("José López Portillo")),
-                                Pair("certificate", JsonPrimitive("Certificate of PRISM SDK tutorial completion"))
-                            )
-                        )
-                    ),
-                )
-            )
-        )
-
-        val holderUnsignedCredential = JsonBasedCredential(holderCredentialContent)
-        val holderSignedCredential = holderUnsignedCredential.sign(issuerMasterKeyPair.privateKey)
-
-        // Include the credential in a batch
-        val (holderCredentialMerkleRoot, holderCredentialMerkleProofs) = CredentialBatches.batch(
-            listOf(
-                holderSignedCredential
-            )
-        )
-        val credentialBatchData = CredentialBatchData(
-            issuerDid = issuerDID.suffix.value, // This requires the suffix only, as the node stores only suffixes
-            merkleRoot = pbandk.ByteArr(holderCredentialMerkleRoot.hash.value)
-        )
+        // Issuer generates a credential to Holder and the credential in a batch
         val issuerIssuingKeyPair = DID.deriveKeyFromFullPath(seed, 0, KeyType.ISSUING_KEY, 0)
         val addIssuingKeyDIDContext = DID.updateDIDAtalaOperation(
             issuerMasterKeyPair.privateKey,
@@ -183,32 +150,42 @@ object CompleteFlowTutorial {
             createDIDContext.operationHash,
             listOf(KeyInformation(issuingKeyId, KeyType.ISSUING_KEY, issuerIssuingKeyPair.publicKey))
         )
-        val issueCredentialOperation = ProtoUtils.issueCredentialBatchOperation(credentialBatchData)
-
-        // Issuer publishes the credential to Cardano
-        val signedIssueCredentialOperation =
-            ECProtoOps.signedAtalaOperation(issuerIssuingKeyPair.privateKey, issuingKeyId, issueCredentialOperation)
+        val issueBatchContext = CredentialBatches.createBatchAtalaOperation(
+            issuerDID = issuerDID,
+            signingKeyId = issuingKeyId,
+            issuingPrivateKey = issuerIssuingKeyPair.privateKey,
+            credentialsClaims = listOf(
+                JsonObject(
+                    mapOf(
+                        Pair("name", JsonPrimitive("José López Portillo")),
+                        Pair("certificate", JsonPrimitive("Certificate of PRISM SDK tutorial completion"))
+                    )
+                ).toString()
+            )
+        )
         val publishAsABlockResponse = runBlocking {
             node.PublishAsABlock(
                 PublishAsABlockRequest(
                     signedOperations = listOf(
                         addIssuingKeyDIDContext.updateDIDSignedOperation,
-                        signedIssueCredentialOperation
+                        issueBatchContext.signedAtalaOperation
                     )
                 )
             )
         }
         val addDidKeyResponse = publishAsABlockResponse.outputs.first()
         val issueCredentialBatchResponse = publishAsABlockResponse.outputs.last()
+        val holderSignedCredential = issueBatchContext.credentialsAndProofs.first().signedCredential
+        val holderCredentialMerkleProof = issueBatchContext.credentialsAndProofs.first().inclusionProof
         println(
             """
             Issuer: Credential issued to Holder, the transaction can take up to 10 minutes to be confirmed by the Cardano network
             - IssuerDID = $issuerDID
             - Add issuing key to DID operation identifier = ${addDidKeyResponse.operationId}
             - Issuer credential batch operation identifier = ${issueCredentialBatchResponse.operationId}
-            - Credential content = $holderUnsignedCredential
+            - Credential content = ${holderSignedCredential.content}
             - Signed credential = ${holderSignedCredential.canonicalForm}
-            - Inclusion proof (encoded) = ${holderCredentialMerkleProofs.first().encode()}
+            - Inclusion proof (encoded) = ${holderCredentialMerkleProof.encode()}
             - Batch id = ${issueCredentialBatchResponse.batchOutput!!.batchId}
             """.trimIndent()
         )
@@ -218,7 +195,7 @@ object CompleteFlowTutorial {
             message = AtalaMessage.Message.PlainCredential(
                 PlainTextCredential(
                     encodedCredential = holderSignedCredential.canonicalForm,
-                    encodedMerkleProof = holderCredentialMerkleProofs.first().encode()
+                    encodedMerkleProof = holderCredentialMerkleProof.encode()
                 )
             )
         )
@@ -408,49 +385,12 @@ object CompleteFlowTutorial {
 
         // Verifier queries the node for the credential data
         println("Verifier: Resolving issuer/credential details from the node")
-        val verifierReceivedCredentialIssuerDIDDocument = runBlocking {
-            node.GetDidDocument(GetDidDocumentRequest(did = verifierReceivedCredentialIssuerDID)).document!!
-        }
-        val verifierReceivedCredentialIssuerKey =
-            verifierReceivedCredentialIssuerDIDDocument.findPublicKey(verifierReceivedCredentialIssuanceKeyId)
         val verifierReceivedCredentialMerkleProof =
             MerkleInclusionProof.decode(verifierReceivedCredential.encodedMerkleProof)
 
         val verifierReceivedCredentialBatchId = CredentialBatches.computeCredentialBatchId(
             DID.fromString(verifierReceivedCredentialIssuerDID),
             verifierReceivedCredentialMerkleProof.derivedRoot()
-        )
-
-        val verifierReceivedCredentialBatchState = runBlocking {
-            node.GetBatchState(
-                GetBatchStateRequest(
-                    batchId = Hash.fromHex(verifierReceivedCredentialBatchId.id).hexValue()
-                )
-            )
-        }
-        val verifierReceivedCredentialBatchData = BatchData(
-            issuedOn = verifierReceivedCredentialBatchState.publicationLedgerData?.timestampInfo?.toTimestampInfoModel()!!,
-            revokedOn = verifierReceivedCredentialBatchState.revocationLedgerData?.timestampInfo?.toTimestampInfoModel()
-        )
-        val verifierReceivedCredentialRevocationTime = runBlocking {
-            node.GetCredentialRevocationTime(
-                GetCredentialRevocationTimeRequest(
-                    batchId = Hash.fromHex(verifierReceivedCredentialBatchId.id).hexValue(),
-                    credentialHash = pbandk.ByteArr(verifierReceivedJsonCredential.hash().value)
-                )
-            )
-                .revocationLedgerData?.timestampInfo?.toTimestampInfoModel()
-        }
-
-        // Verifier checks the credential validity (which succeeds)
-        println("Verifier: Verifying received credential")
-        CredentialVerification.verify(
-            keyData = verifierReceivedCredentialIssuerKey!!,
-            batchData = verifierReceivedCredentialBatchData,
-            credentialRevocationTime = verifierReceivedCredentialRevocationTime,
-            merkleRoot = verifierReceivedCredentialMerkleProof.derivedRoot(), // TODO: We may want to receive this instead of computing it
-            inclusionProof = verifierReceivedCredentialMerkleProof,
-            signedCredential = verifierReceivedJsonCredential
         )
 
         // Verifier using convinience method (which return no errors)
@@ -465,7 +405,7 @@ object CompleteFlowTutorial {
 
         // Issuer revokes the credential
         val issuerRevokeCredentialOperation = ProtoUtils.revokeCredentialsOperation(
-            batchOperationHash = Hash.compute(issueCredentialOperation.encodeToByteArray()),
+            batchOperationHash = issueBatchContext.issuanceOperationHash,
             batchId = CredentialBatchId.fromString(issueCredentialBatchResponse.batchOutput!!.batchId)!!,
             credentials = listOf(holderSignedCredential)
         )
@@ -502,13 +442,19 @@ object CompleteFlowTutorial {
         }
 
         // Verifier checks the credential validity (which fails)
-        CredentialVerification.verify(
-            keyData = verifierReceivedCredentialIssuerKey,
-            batchData = verifierReceivedCredentialBatchData,
-            credentialRevocationTime = verifierReceivedCredentialRevocationTime2,
-            merkleRoot = verifierReceivedCredentialMerkleProof.derivedRoot(),
-            inclusionProof = verifierReceivedCredentialMerkleProof,
-            signedCredential = verifierReceivedJsonCredential
-        )
+        val credentialVerificationServiceResult2 = runBlocking {
+            CredentialVerificationService(node).verify(
+                signedCredential = verifierReceivedJsonCredential,
+                merkleInclusionProof = verifierReceivedCredentialMerkleProof
+            )
+        }
+
+        require(
+            credentialVerificationServiceResult2.verificationErrors.contains(
+                VerificationError.CredentialWasRevokedOn(
+                    verifierReceivedCredentialRevocationTime2!!
+                )
+            )
+        ) { -> "CredentialWasRevokedOn error is expected" }
     }
 }

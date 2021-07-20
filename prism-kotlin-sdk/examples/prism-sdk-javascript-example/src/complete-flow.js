@@ -1,31 +1,39 @@
 const prism = require('prism-kotlin-sdk/packages/extras');
 
-const { EC, SHA256DigestCompanion, MerkleInclusionProofCompanion } = prism.io.iohk.atala.prism.kotlin.crypto;
-const { KeyDerivation, KeyType } = prism.io.iohk.atala.prism.kotlin.crypto.derivation;
-const { DIDCompanion } = prism.io.iohk.atala.prism.kotlin.identity;
-const { KeyInformation } = prism.io.iohk.atala.prism.kotlin.identity;
-const { ECProtoOps } = prism.io.iohk.atala.prism.kotlin.identity.util;
+const {EC, MerkleInclusionProofCompanion} = prism.io.iohk.atala.prism.kotlin.crypto;
+const {KeyDerivation, KeyType} = prism.io.iohk.atala.prism.kotlin.crypto.derivation;
+const {DIDCompanion} = prism.io.iohk.atala.prism.kotlin.identity;
+const {KeyInformation} = prism.io.iohk.atala.prism.kotlin.identity;
+const {ECProtoOps} = prism.io.iohk.atala.prism.kotlin.identity.util;
 const {
-    GrpcEnvoyOptions, ConnectorServicePromise, NodeServicePromise, RegisterDIDRequest,
-    GenerateConnectionTokenRequest, GetConnectionTokenInfoRequest, AddConnectionFromTokenRequest,
-    CredentialBatchData, AtalaMessage, PlainTextCredential, UpdateDIDRequest,
-    GetConnectionByTokenRequest, SendMessageRequest, GetMessagesPaginatedRequest,
-    GetDidDocumentRequest, GetBatchStateRequest, GetCredentialRevocationTimeRequest,
-    RevokeCredentialsRequest, PublishAsABlockRequest,
+    GrpcEnvoyOptions,
+    ConnectorServicePromise,
+    NodeServicePromise,
+    RegisterDIDRequest,
+    GenerateConnectionTokenRequest,
+    GetConnectionTokenInfoRequest,
+    AddConnectionFromTokenRequest,
+    AtalaMessage,
+    PlainTextCredential,
+    GetConnectionByTokenRequest,
+    SendMessageRequest,
+    GetMessagesPaginatedRequest,
+    GetCredentialRevocationTimeRequest,
+    RevokeCredentialsRequest,
+    PublishAsABlockRequest,
     noUnknownFields,
 } = prism.io.iohk.atala.prism.kotlin.protos;
 const {
-    CredentialBatches, BatchData, CredentialVerification, CredentialVerificationServiceJS, CredentialBatchIdCompanion,
+    CredentialBatches, CredentialVerificationServiceJS, CredentialBatchIdCompanion, VerificationError
 } = prism.io.iohk.atala.prism.kotlin.credentials;
 const {
     toTimestampInfoModel
 } = prism.io.iohk.atala.prism.kotlin.credentials.utils;
-const { CredentialContentCompanion } = prism.io.iohk.atala.prism.kotlin.credentials.content;
-const { JsonBasedCredential, JsonBasedCredentialCompanion } = prism.io.iohk.atala.prism.kotlin.credentials.json;
+const {JsonBasedCredentialCompanion} = prism.io.iohk.atala.prism.kotlin.credentials.json;
 const {
-    ProtoUtils, RequestUtils, findPublicKey, toList, toArray
+    ProtoUtils, RequestUtils, toList, toArray
 } = prism.io.iohk.atala.prism.kotlin.extras;
-const { pbandk } = prism;
+const {pbandk} = prism;
 
 function multilinePrint(text) {
     console.log(text.split('\n').map((s) => s.trim()).join('\n'));
@@ -142,32 +150,7 @@ async function completeFlow() {
     const holderIssuerConnection = holderAcceptsIssuerConnectionResponse.connection;
     console.log(`Holder (DID 1): Connected to Issuer, connectionId = ${holderIssuerConnection.connectionId}`);
 
-    // Issuer generates a credential to Holder
-    const holderCredentialContentJson = {
-        id: issuerDID.value,
-        keyId: 'master0',
-        credentialSubject: {
-            name: 'José López Portillo',
-            certificate: 'Certificate of PRISM SDK tutorial completion',
-        },
-    };
-    const holderCredentialContent = CredentialContentCompanion.fromString(
-        JSON.stringify(holderCredentialContentJson),
-    );
-    const holderUnsignedCredential = new JsonBasedCredential(holderCredentialContent, null);
-    const holderSignedCredential = holderUnsignedCredential.sign(issuerMasterKeyPair.privateKey);
-
-    // Include the credential in a batch
-    const holderBatchResult = CredentialBatches.batch(toList([holderSignedCredential]));
-    const holderCredentialMerkleRoot = holderBatchResult.root;
-    const holderCredentialMerkleProofs = toArray(holderBatchResult.proofs);
-    const merkleRootHash = holderCredentialMerkleRoot.hash;
-    const credentialBatchData = new CredentialBatchData(
-        // This requires the suffix only, as the node stores only suffixes
-        issuerDID.suffix.toString(),
-        new pbandk.ByteArr(merkleRootHash.value),
-        noUnknownFields,
-    );
+    // Issuer generates a credential to Holder & Include the credential in a batch
     const issuerIssuingKeyPair = DIDCompanion.deriveKeyFromFullPath(seed, 0, KeyType.ISSUING_KEY, 0);
     const issuingKeyId = "issuing0";
     const addIssuingKeyDIDContext = DIDCompanion.updateDIDAtalaOperation(
@@ -178,13 +161,18 @@ async function completeFlow() {
         [new KeyInformation(issuingKeyId, KeyType.ISSUING_KEY, issuerIssuingKeyPair.publicKey)],
         []
     );
-    const issueCredentialOperation = ProtoUtils.issueCredentialBatchOperation(credentialBatchData);
 
+    const holderCredentialClainContentJson = {
+        name: 'José López Portillo',
+        certificate: 'Certificate of PRISM SDK tutorial completion',
+    };
+    const issueCredentialContext = CredentialBatches.createBatchAtalaOperation(issuerDID, issuingKeyId, issuerIssuingKeyPair.privateKey, toList([JSON.stringify(holderCredentialClainContentJson)]))
+    const holderSignedCredential = toArray(issueCredentialContext.credentialsAndProofs)[0].signedCredential
+    const holderCredentialMerkleProof = toArray(issueCredentialContext.credentialsAndProofs)[0].inclusionProof
     // Issuer publishes the credential to Cardano
-    const signedIssueCredentialOperation = ECProtoOps.signedAtalaOperation(issuerIssuingKeyPair.privateKey, issuingKeyId, issueCredentialOperation);
     const publishAsABlockResponse = await node.PublishAsABlock(
         new PublishAsABlockRequest(
-            toList([addIssuingKeyDIDContext.updateDIDSignedOperation, signedIssueCredentialOperation])
+            toList([addIssuingKeyDIDContext.updateDIDSignedOperation, issueCredentialContext.signedAtalaOperation])
         )
     )
     const addDidKeyResponse = toArray(publishAsABlockResponse.outputs)[0]
@@ -196,7 +184,7 @@ async function completeFlow() {
         - Issuer credential batch operation identifier = ${issueCredentialBatchResponse.operationId}
         - Credential content = $holderUnsignedCredential
         - Signed credential = ${holderSignedCredential.canonicalForm}
-        - Inclusion proof (encoded) = ${holderCredentialMerkleProofs[0].encode()}
+        - Inclusion proof (encoded) = ${holderCredentialMerkleProof.encode()}
         - Batch id = ${issueCredentialBatchResponse.batchOutput.batchId}
     `);
 
@@ -206,7 +194,7 @@ async function completeFlow() {
         new AtalaMessage.Message.PlainCredential(
             new PlainTextCredential(
                 holderSignedCredential.canonicalForm,
-                holderCredentialMerkleProofs[0].encode(),
+                holderCredentialMerkleProof.encode(),
                 noUnknownFields,
             ),
         ),
@@ -283,7 +271,6 @@ async function completeFlow() {
             noUnknownFields,
         ),
     );
-    const verifierDID = DIDCompanion.fromString(verifierRegisterDIDResponse.did);
     const verifierUnpublishedDID = DIDCompanion.createUnpublishedDID(verifierMasterKeyPair.publicKey);
     multilinePrint(`
         Verifier DID registered, the transaction can take up to 10 minutes to be confirmed by the Cardano network
@@ -311,13 +298,13 @@ async function completeFlow() {
         noUnknownFields,
     );
     const holderAcceptsVerifierConnectionResponse = await connector.AddConnectionFromTokenAuth(
+        holderAcceptsVerifierConnectionRequest,
+        RequestUtils.generateRequestMetadata(
+            holderUnpublishedDID2.value,
+            holderMasterKeyPair2.privateKey,
             holderAcceptsVerifierConnectionRequest,
-            RequestUtils.generateRequestMetadata(
-                holderUnpublishedDID2.value,
-                holderMasterKeyPair2.privateKey,
-                holderAcceptsVerifierConnectionRequest,
-            ),
-        );
+        ),
+    );
     const holderVerifierConnection = holderAcceptsVerifierConnectionResponse.connection;
     console.log(`Holder (DID 2): Connected to Verifier, connectionId = ${holderVerifierConnection.connectionId}`);
 
@@ -341,7 +328,7 @@ async function completeFlow() {
         noUnknownFields,
     );
 
-    const response = await connector.SendMessageAuth(
+    await connector.SendMessageAuth(
         holderSendMessageRequest,
         RequestUtils.generateRequestMetadata(
             holderUnpublishedDID2.value,
@@ -377,7 +364,6 @@ async function completeFlow() {
         verifierReceivedCredential.encodedCredential,
     );
     const verifierReceivedCredentialIssuerDID = verifierReceivedJsonCredential.content.getString('id');
-    const verifierReceivedCredentialIssuanceKeyId = verifierReceivedJsonCredential.content.getString('keyId');
     multilinePrint(`
         Verifier: Received credential decoded
         - Credential: ${verifierReceivedJsonCredential.content}
@@ -387,54 +373,12 @@ async function completeFlow() {
 
     // Verifier queries the node for the credential data
     console.log('Verifier: Resolving issuer/credential details from the node');
-    const verifierGetDidResponse = await node.GetDidDocument(
-        new GetDidDocumentRequest(verifierReceivedCredentialIssuerDID, noUnknownFields)
-    );
-    const verifierReceivedCredentialIssuerDIDDocument = verifierGetDidResponse.document
-    const verifierReceivedCredentialIssuerKey = findPublicKey(
-        verifierReceivedCredentialIssuerDIDDocument,
-        verifierReceivedCredentialIssuanceKeyId,
-    );
     const verifierReceivedCredentialMerkleProof = MerkleInclusionProofCompanion.decode(verifierReceivedCredential.encodedMerkleProof);
 
     const verifierReceivedCredentialBatchId = CredentialBatches.computeCredentialBatchId(
         DIDCompanion.fromString(verifierReceivedCredentialIssuerDID),
         verifierReceivedCredentialMerkleProof.derivedRoot(),
     );
-
-    const verifierReceivedCredentialBatchState = await node.GetBatchState(
-        new GetBatchStateRequest(
-            SHA256DigestCompanion.fromHex(verifierReceivedCredentialBatchId.id).hexValue(),
-            noUnknownFields,
-        ),
-    );
-    const publicationTimestamp = verifierReceivedCredentialBatchState.publicationLedgerData.timestampInfo
-    const revocationTimestamp = verifierReceivedCredentialBatchState.revocationLedgerData?.timestampInfo
-    const verifierReceivedCredentialBatchData = new BatchData(
-        publicationTimestamp != null ? toTimestampInfoModel(publicationTimestamp) : null,
-        revocationTimestamp != null ? toTimestampInfoModel(revocationTimestamp) : null,
-    );
-    const verifierGetCredentialRevocationTimeResponse = await node.GetCredentialRevocationTime(
-        new GetCredentialRevocationTimeRequest(
-            verifierReceivedCredentialBatchId.id,
-            new pbandk.ByteArr(verifierReceivedJsonCredential.hash().value),
-            noUnknownFields,
-        ),
-    );
-    const verifierRevocationTimestampInfo = verifierGetCredentialRevocationTimeResponse?.revocationLedgerData?.timestampInfo
-    const verifierReceivedCredentialRevocationTime = verifierRevocationTimestampInfo != null ?
-        toTimestampInfoModel(verifierRevocationTimestampInfo) : null;
-
-    // Verifier checks the credential validity (which succeeds)
-    console.log('Verifier: Verifying received credential')
-    CredentialVerification.verifyMerkle(
-        verifierReceivedCredentialIssuerKey,
-        verifierReceivedCredentialBatchData,
-        verifierReceivedCredentialRevocationTime,
-        verifierReceivedCredentialMerkleProof.derivedRoot(), // TODO: We may want to receive this instead of computing it
-        verifierReceivedCredentialMerkleProof,
-        verifierReceivedJsonCredential
-    )
 
     // Verifier using convinience method (which return no errors)
     console.log('Verifier: Verifying received credential using single convenience method')
@@ -447,7 +391,7 @@ async function completeFlow() {
 
     // Issuer revokes the credential
     const issuerRevokeCredentialOperation = ProtoUtils.revokeCredentialsOperation(
-        SHA256DigestCompanion.compute(pbandk.encodeToByteArray(issueCredentialOperation)),
+        issueCredentialContext.issuanceOperationHash,
         CredentialBatchIdCompanion.fromString(issueCredentialBatchResponse.batchOutput.batchId),
         toList([holderSignedCredential]),
     )
@@ -467,29 +411,24 @@ async function completeFlow() {
     console.log("Verifier: Checking the credential validity again, expect an error explaining that the credential is revoked")
     await sleep(2000) // give some time to the backend to apply the operation
     const verifierGetCredentialRevocationTimeResponse2 = await node.GetCredentialRevocationTime(
-            new GetCredentialRevocationTimeRequest(
-                verifierReceivedCredentialBatchId.id,
-                new pbandk.ByteArr(verifierReceivedJsonCredential.hash().value),
-                noUnknownFields,
-            ),
-        )
+        new GetCredentialRevocationTimeRequest(
+            verifierReceivedCredentialBatchId.id,
+            new pbandk.ByteArr(verifierReceivedJsonCredential.hash().value),
+            noUnknownFields,
+        ),
+    )
     const verifierRevocationTimestampInfo2 = verifierGetCredentialRevocationTimeResponse2?.revocationLedgerData?.timestampInfo
     const verifierReceivedCredentialRevocationTime2 = verifierRevocationTimestampInfo2 != null ?
         toTimestampInfoModel(verifierRevocationTimestampInfo2) : null;
+    const expectedVerificationError = new VerificationError.CredentialWasRevokedOn(verifierReceivedCredentialRevocationTime2)
 
     // Verifier checks the credential validity (which fails)
-    try {
-        CredentialVerification.verifyMerkle(
-            verifierReceivedCredentialIssuerKey,
-            verifierReceivedCredentialBatchData,
-            verifierReceivedCredentialRevocationTime2,
-            verifierReceivedCredentialMerkleProof.derivedRoot(),
-            verifierReceivedCredentialMerkleProof,
-            verifierReceivedJsonCredential
-        );
-        console.error("Credential remained valid after revocation");
-    } catch (e) {
-        console.log(e);
+    console.log('Verifier checks the credential validity (which fails)')
+    const credentialVerificationServiceResult2 = await new CredentialVerificationServiceJS(node).verify(verifierReceivedJsonCredential, verifierReceivedCredentialMerkleProof)
+    if (JSON.stringify(toArray(credentialVerificationServiceResult2.verificationErrors)[0]) !== JSON.stringify(expectedVerificationError)) {
+        console.log("CredentialVerificationService VerificationErrors:")
+        toArray(credentialVerificationServiceResult2.verificationErrors).forEach((verificationError) => console.log(verificationError.errorMessage))
+        throw 'VerificationErrors should contain CredentialWasRevokedOn error';
     }
 }
 
