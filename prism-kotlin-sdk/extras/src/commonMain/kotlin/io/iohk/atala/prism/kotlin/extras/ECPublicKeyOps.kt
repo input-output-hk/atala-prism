@@ -14,8 +14,8 @@ fun ECPublicKey.toECKeyData(): ECKeyData {
 
     return ECKeyData(
         curve = ECConfig.CURVE_NAME,
-        x = pbandk.ByteArr(point.x.toByteArray()),
-        y = pbandk.ByteArr(point.y.toByteArray())
+        x = pbandk.ByteArr(point.x.bytes()),
+        y = pbandk.ByteArr(point.y.bytes())
     )
 }
 

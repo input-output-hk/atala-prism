@@ -8,8 +8,17 @@ import io.iohk.atala.prism.kotlin.crypto.util.toUByteArray
 import kotlinx.cinterop.*
 import platform.posix.size_tVar
 
-actual class ECPublicKey(internal val key: UByteArray) : ECKey() {
-    override fun getEncoded(): ByteArray {
+actual class ECPublicKey(internal val key: UByteArray) : ECPublicKeyCommon() {
+    private fun toSecpPubkey(memScope: MemScope): secp256k1_pubkey {
+        val pubkey = memScope.alloc<secp256k1_pubkey>()
+        for (i in 0 until ECConfig.PUBLIC_KEY_BYTE_SIZE) {
+            pubkey.data[i] = key[i]
+        }
+
+        return pubkey
+    }
+
+    private fun convertRepresentation(): ByteArray {
         return memScoped {
             val context = secp256k1_context_create((SECP256K1_CONTEXT_SIGN or SECP256K1_CONTEXT_VERIFY).convert())
             val pubkey = toSecpPubkey(this)
@@ -25,22 +34,13 @@ actual class ECPublicKey(internal val key: UByteArray) : ECKey() {
         }
     }
 
-    actual fun getCurvePoint(): ECPoint {
-        val encoded = getEncoded()
+    override fun getCurvePoint(): ECPoint {
+        val encoded = convertRepresentation()
         val xBytes = encoded.slice(1..32)
         val x = BigInteger.fromByteArray(xBytes.toByteArray(), Sign.POSITIVE)
         val yBytes = encoded.slice(33..64)
         val y = BigInteger.fromByteArray(yBytes.toByteArray(), Sign.POSITIVE)
 
         return ECPoint(x, y)
-    }
-
-    fun toSecpPubkey(memScope: MemScope): secp256k1_pubkey {
-        val pubkey = memScope.alloc<secp256k1_pubkey>()
-        for (i in 0 until ECConfig.PUBLIC_KEY_BYTE_SIZE) {
-            pubkey.data[i] = key[i]
-        }
-
-        return pubkey
     }
 }

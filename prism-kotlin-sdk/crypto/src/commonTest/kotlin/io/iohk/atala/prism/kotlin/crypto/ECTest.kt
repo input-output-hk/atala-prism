@@ -42,8 +42,8 @@ class ECTest {
             hexToBytes("fffffffffffffffffffffffffffffffffffffffffffffffffffffffefffffc2f").toUByteArray(),
             Sign.POSITIVE
         )
-        val x = curvePoint.x
-        val y = curvePoint.y
+        val x = curvePoint.x.coordinate
+        val y = curvePoint.y.coordinate
         assertTrue(
             (y * y).mod(modulus) == (x * x * x + 7).mod(modulus),
             "Public key point should follow the elliptic curve equation"
@@ -138,5 +138,18 @@ class ECTest {
         val keyPair = EC.generateKeyPair()
 
         assertTrue { EC.isSecp256k1(keyPair.publicKey.getCurvePoint()) }
+    }
+
+    @Test
+    fun testShortCoordinates() {
+        // x starts with 0, so it is possible to lose it during BigInteger transformations
+        val x = byteArrayOf(0, 11, 29, 14, 70, 52, -97, -68, -30, 57, -95, 86, 82, 1, 97, -11, -93, 77, 106, -92, 54, 39, -112, 115, -54, -39, 36, 61, 90, -128, 36, 44)
+        val y = byteArrayOf(-95, -92, 79, 20, -8, 74, -117, 98, 41, -123, -120, 64, -39, -42, 56, 8, 60, 95, 27, -33, -71, -57, 93, 74, -120, 31, 56, 18, -50, 90, -58, -22)
+        val publicKey = EC.toPublicKey(x, y)
+
+        assertTrue { publicKey.getCurvePoint().x.bytes().size == 32 }
+        assertTrue { publicKey.getCurvePoint().y.bytes().size == 32 }
+        assertTrue { publicKey.getEncoded().size == ECConfig.PUBLIC_KEY_BYTE_SIZE }
+        assertTrue { publicKey.getHexEncoded().length == ECConfig.PUBLIC_KEY_BYTE_SIZE * 2 }
     }
 }

@@ -9,7 +9,7 @@ fun ECPublicKey.toProto(): ECKeyData {
     val point = getCurvePoint()
     return ECKeyData(
         curve = ECConfig.CURVE_NAME,
-        x = ByteArr(point.x.toByteArray()),
-        y = ByteArr(point.y.toByteArray())
+        x = ByteArr(point.x.bytes()),
+        y = ByteArr(point.y.bytes())
     )
 }

@@ -4,6 +4,15 @@ fun ByteArray.toUByteArray(): UByteArray {
     return this.map { it.toUByte() }.toUByteArray()
 }
 
+fun ByteArray.padStart(length: Int, padValue: Byte): ByteArray =
+    if (size >= length) {
+        this
+    } else {
+        val result = ByteArray(length) { padValue }
+        copyInto(result, length - size)
+        result
+    }
+
 object BytesOps {
     private val HEX_ARRAY = "0123456789abcdef".toCharArray()
 
