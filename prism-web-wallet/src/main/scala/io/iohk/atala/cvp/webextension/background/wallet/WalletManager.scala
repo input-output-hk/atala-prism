@@ -169,7 +169,7 @@ private[background] class WalletManager(
               credentialId = r.credentialId
             )
             .map { operationIdBytes =>
-              AtalaOperationIdCompanion.fromHex(ByteOps.convertBytesToHex(operationIdBytes))
+              AtalaOperationIdCompanion.fromHex(ByteOps.convertBytesToHex(operationIdBytes.toByteArray()))
             }
       }
       _ = promise.success(requestResult.hexValue())
@@ -193,12 +193,13 @@ private[background] class WalletManager(
       println(s"Request rejected = $requestId")
     }
 
-  private def handleSignAndPublishResponse(in: PublishBatchResponse): AtalaOperationId =
+  private def handleSignAndPublishResponse(in: PublishBatchResponse): AtalaOperationId = {
     if (in.operationId.isEmpty) {
       throw new RuntimeException("Operation Info Not Returned")
     } else {
-      AtalaOperationIdCompanion.fromHex(ByteOps.convertBytesToHex(in.operationId))
+      AtalaOperationIdCompanion.fromHex(ByteOps.convertBytesToHex(in.operationId.toByteArray()))
     }
+  }
 
   private def removeRequest(requestId: Int): Unit = {
     updateState { cur =>

@@ -5,11 +5,14 @@ import io.iohk.atala.cvp.webextension.background.services.connector.ConnectorCli
 import io.iohk.atala.prism.protos.node_models._
 import typings.bip32.bip32Mod.BIP32Interface
 import typings.bip32.{mod => bip32}
-import typings.inputOutputHkPrismSdk.mod.io.iohk.atala.prism.kotlin.credentials.json.JsonBasedCredentialCompanion
+import typings.inputOutputHkPrismSdk.mod.Nullable
+import typings.inputOutputHkPrismSdk.mod.io.iohk.atala.prism.kotlin.credentials.content.CredentialContentCompanion
+import typings.inputOutputHkPrismSdk.mod.io.iohk.atala.prism.kotlin.credentials.json.JsonBasedCredential
 import typings.inputOutputHkPrismSdk.mod.io.iohk.atala.prism.kotlin.credentials.{CredentialBatches, PrismCredential}
 import typings.inputOutputHkPrismSdk.mod.io.iohk.atala.prism.kotlin.crypto.keys.{ECKeyPair, ECPublicKey}
+import typings.inputOutputHkPrismSdk.mod.io.iohk.atala.prism.kotlin.crypto.signature.ECSignature
 import typings.inputOutputHkPrismSdk.mod.io.iohk.atala.prism.kotlin.crypto.{EC, MerkleInclusionProof}
-import typings.inputOutputHkPrismSdk.mod.io.iohk.atala.prism.kotlin.extras.toArray
+import typings.inputOutputHkPrismSdk.mod.io.iohk.atala.prism.kotlin.extras.{toArray, toList => toKotlingList}
 import typings.inputOutputHkPrismSdk.mod.io.iohk.atala.prism.kotlin.identity.DIDCompanion.masterKeyId
 import typings.inputOutputHkPrismSdk.mod.io.iohk.atala.prism.kotlin.identity.{DID, DIDCompanion, DIDSuffix}
 
@@ -64,18 +67,20 @@ object ECKeyOperation {
       }
 
     val signedCredentials: List[PrismCredential] = credentialsData.map { cd =>
-      JsonBasedCredentialCompanion
+      val content = CredentialContentCompanion
         .fromString(
           s"""{
            |  "issuerDid": "${canonicalIssuerDID.value}",
            |  "keyId": "$signingKeyId",
-           |  "credentialSubject": "$cd"
+           |  "credentialSubject": ${cd.credentialClaims}
            |}""".stripMargin
         )
+
+      new JsonBasedCredential(content, null.asInstanceOf[Nullable[ECSignature]])
         .sign(signingKey.privateKey)
     }
 
-    val batchResult = CredentialBatches.batch(signedCredentials.toJSArray)
+    val batchResult = CredentialBatches.batch(toKotlingList(signedCredentials.toJSArray))
     val merkleRoot = batchResult.root
     val proofs = toArray[MerkleInclusionProof](batchResult.proofs)
     val merkleRootProto = ByteString.copyFrom(int8Array2ByteArray(merkleRoot.hash.value))
