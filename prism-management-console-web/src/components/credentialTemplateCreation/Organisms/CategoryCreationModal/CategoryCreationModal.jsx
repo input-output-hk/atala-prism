@@ -96,11 +96,6 @@ const CategoryCreationModal = ({ api, visible, close }) => {
     required: t('credentialTemplateCreation.errors.required')
   };
 
-  // const handleFormUpdate = newSetting => {
-  //   debugger;
-  //   setCategorySettings(newSetting);
-  // };
-
   const onIconChange = ev => {
     setSelectedIcon(ev.target.value);
   };
