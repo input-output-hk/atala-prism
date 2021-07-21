@@ -1,3 +1,0 @@
-- [Common gRPC API](common-grpc-api.md)
-- [Connector gRPC API](connector-grpc-api.md)
-- [Node gRPC API](node-grpc-api.md)

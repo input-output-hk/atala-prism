@@ -186,7 +186,7 @@ jobs:
       - run:
           name: Build and push prism-docs-website
           command: |
-            mv workspace/orchid prism-kotlin-sdk/infra/docs-website/website
+            mv workspace/docs-website prism-kotlin-sdk/infra/docs-website/website
             docker build -f prism-kotlin-sdk/infra/docs-website/Dockerfile -t 895947072537.dkr.ecr.us-east-2.amazonaws.com/prism-docs-website:${TAG} prism-kotlin-sdk/infra/docs-website
             docker push 895947072537.dkr.ecr.us-east-2.amazonaws.com/prism-docs-website:${TAG}
 
@@ -682,23 +682,13 @@ jobs:
       - run:
           name: Generate docs
           command: |
-            /entrypoint.sh --doc_opt=prism-sdk/protos/src/resources/markdown.tmpl,common-grpc-api.md \
-                           --proto_path=/protos common_models.proto health.proto status.proto
-            /entrypoint.sh --doc_opt=prism-sdk/protos/src/resources/markdown.tmpl,connector-grpc-api.md \
-                           --proto_path=/protos connector_api.proto connector_models.proto credential_models.proto
-            /entrypoint.sh --doc_opt=prism-sdk/protos/src/resources/markdown.tmpl,node-grpc-api.md \
-                           --proto_path=/protos node_api.proto node_models.proto
+            /entrypoint.sh --doc_opt=json,grpc-api.json \
+                           --proto_path=protosLib/src/main/proto common_models.proto console_models.proto \
+                           connector_models.proto connector_api.proto node_models.proto node_api.proto
 
       - run:
           name: Store docs
-          command: mkdir grpc-docs && mv /out/common-grpc-api.md /out/connector-grpc-api.md /out/node-grpc-api.md grpc-docs/
-
-      - run:
-          name: Update documentation titles
-          command: |
-            sed -i "1s/.*/# Common gRPC API Reference/" grpc-docs/common-grpc-api.md
-            sed -i "1s/.*/# Connector gRPC API Reference/" grpc-docs/connector-grpc-api.md
-            sed -i "1s/.*/# Node gRPC API Reference/" grpc-docs/node-grpc-api.md
+          command: mkdir grpc-docs && mv /out/grpc-api.json grpc-docs/
 
       # required to persist data, otherwise, we get this error: x509: certificate signed by unknown authority
       - run:
@@ -709,9 +699,7 @@ jobs:
       - persist_to_workspace:
           root: grpc-docs
           paths:
-            - common-grpc-api.md
-            - connector-grpc-api.md
-            - node-grpc-api.md
+            - grpc-api.json
 
       - store_artifacts:
           path: ./grpc-docs
@@ -787,26 +775,27 @@ jobs:
 
       - run:
           name: Grab the grpc docs
-          command: cp ./workspace/*-grpc-api.md prism-kotlin-sdk/docs/src/docs/grpc
-      # favicon.ico needs to be placed in /resources directory
-      # all other logos need to be placed in /assets/media directory
-      - run:
-          name: Get all required images
           command: |
-            mkdir -p prism-kotlin-sdk/docs/src/orchid/resources/assets/media
-            cp prism-interactive-demo-web/public/favicon.ico prism-kotlin-sdk/docs/src/orchid/resources
-            cp prism-interactive-demo-web/public/images/atala-prism-logo-suite.svg prism-kotlin-sdk/docs/src/orchid/resources/assets/media
+            mkdir prism-kotlin-sdk/docs/src/docusaurus/docs/grpc
+            cp ./workspace/grpc-api.json prism-kotlin-sdk/docs/src/docusaurus/docs/grpc
 
       # generating docs takes a short time, if this fails, it makes no sense to run the tests
       - run:
           name: Generate documentation
-          command: cd prism-kotlin-sdk && ./gradlew :docs:orchidBuild
+          command: |
+            cd prism-kotlin-sdk
+            ./gradlew :docs:runAnk
+            cd docs/src/docusaurus
+            yarn install
+            npx docusaurus generate-proto-docs
+            yarn run build
+            cp -r build docs-website
 
       # persist docs so that another job can deploy it
       - persist_to_workspace:
-          root: prism-kotlin-sdk/docs/build/docs
+          root: prism-kotlin-sdk/docs/src/docusaurus
           paths:
-            - orchid
+            - docs-website
 
       - save_cache:
           paths:

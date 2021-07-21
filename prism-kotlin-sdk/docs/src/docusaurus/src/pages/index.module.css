@@ -1,0 +1,68 @@
+.heroLight {
+  background-color: #f1f3f8;
+  padding: 48px;
+}
+
+.heroDark {
+  background-color: #1f222a;
+  padding: 48px;
+}
+
+.heroInner {
+  margin: 0 auto;
+  max-width: 1250px;
+  padding: 0 20px;
+}
+
+.heroProjectTagline {
+  color: #000;
+  font-size: 50px;
+  margin: 0;
+}
+
+.heroTitleTextHtmlLight {
+  color: black;
+}
+
+.heroTitleTextHtmlDark {
+  color: white;
+}
+
+.heroTitleTextHtmlLight b {
+  color: var(--ifm-color-primary);
+}
+
+.heroTitleTextHtmlDark b {
+  color: var(--ifm-color-primary);
+}
+
+.heroLogo {
+  animation-duration: 2s;
+  animation-name: jackInTheBox;
+  float: right;
+  padding: 0 20px 20px;
+  margin-left: 20px;
+  height: 200px;
+  width: 400px;
+}
+
+.indexCtas {
+  --ifm-button-size-multiplier: 1.6;
+  display: block;
+  flex-wrap: wrap;
+  align-items: center;
+  text-align: center;
+  margin-top: 24px;
+}
+
+@media screen and (max-width: 966px) {
+  .heroBanner {
+    padding: 2rem;
+  }
+}
+
+.buttons {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}

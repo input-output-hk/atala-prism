@@ -166,32 +166,33 @@ Be aware that the [integration-tutorial](docs/src/docs/integration-tutorial) doe
 
 
 ### Grpc API
-First, make sure to generate the docs for our grpc API, which is done by running this command:
+First, make sure to generate the JSON descriptor for our grpc API, which is done by running this command:
 
 ```shell script
 docker run --rm \
   -v $(pwd)/docs/src/docs/grpc:/out \
   -v $(pwd)/../prism-sdk/protos/src:/protos \
-  pseudomuto/protoc-gen-doc --doc_opt=/protos/resources/markdown.tmpl,grpc-api.md
+  inputoutput/protoc-gen-doc:1.4.1-with-exclude --doc_opt=json,grpc-api.json --proto_path=/protos \
+  common_models.proto console_models.proto connector_models.proto connector_api.proto node_models.proto node_api.proto
 ```
-
-### Add logos
-To improve UX/UI of the docs logos and icons can be added to docs. All these files are already a part of the [Interactive Demo section](../prism-interactive-demo-web/public). To add them to these docs execute: 
-
-```shell
-mkdir -p docs/src/orchid/resources/assets/media
-
-cp ../prism-interactive-demo-web/public/favicon.ico docs/src/orchid/resources
-cp ../prism-interactive-demo-web/public/images/atala-prism-logo-suite.svg docs/src/orchid/resources/assets/media
-```
-
-Then, you can proceed to generate the website.
 
 ### Website
 
-The [docs](docs) are type-checked by [arrow-ank](https://github.com/arrow-kt/arrow-ank), and compiled to a website by [orchid](https://orchid.run/), while updating them.
+The [docs](docs) are type-checked by [arrow-ank](https://github.com/arrow-kt/arrow-ank), and compiled to a website by [docusaurus](https://docusaurus.io/).
 
-Run:
-- `./gradlew :docs:orchidServe` to launch the preview at [localhost:8080](https://localhost:8080).
-- `./gradlew :docs:orchidBuild` to build the website at `docs/build/docs/orchid`
+First, run [arrow-ank](https://github.com/arrow-kt/arrow-ank) to type-check and run the Kotlin snippets in the [docs](docs):
 
+```bash
+$ ./gradlew :docs:runAnk
+```
+
+The documentation website itself is powered by [docusaurus](https://docusaurus.io/). Go to [docs/src/docusaurus](docs/src/docusaurus) and run:
+
+```bash
+$ yarn install
+$ npx docusaurus generate-proto-docs
+```
+
+Now you can either do:
+- `npx docusaurus start` to launch the preview at [localhost:3000](https://localhost:3000).
+- `yarn run build` to build the website at `docs/src/docusaurus/build`

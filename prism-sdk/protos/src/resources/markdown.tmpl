@@ -52,7 +52,7 @@
 {{end}}
 {{end}}
 
-{{end}} <!-- end messages -->
+{{end}}
 
 {{range .Enums}}
 <a name="{{.FullName}}"></a>
@@ -66,7 +66,7 @@
   | {{.Name}} | {{.Number}} | {{.Description | replace "\n" "<br>"}} |
 {{end}}
 
-{{end}} <!-- end enums -->
+{{end}}
 
 {{if .HasExtensions}}
 <a name="{{$file_name}}-extensions"></a>
@@ -77,7 +77,7 @@
 {{range .Extensions -}}
   | {{.Name}} | {{.LongType}} | {{.ContainingLongType}} | {{.Number}} | {{.Description | replace "\n" "<br>"}}{{if .DefaultValue}} Default: `{{.DefaultValue}}`{{end}} |
 {{end}}
-{{end}} <!-- end HasExtensions -->
+{{end}}
 
 {{range .Services}}
 <a name="{{.FullName}}"></a>
@@ -90,6 +90,6 @@
 {{range .Methods -}}
   | {{.Name}} | [{{.RequestLongType}}](#{{.RequestFullType}}){{if .RequestStreaming}} stream{{end}} | [{{.ResponseLongType}}](#{{.ResponseFullType}}){{if .ResponseStreaming}} stream{{end}} | {{.Description | replace "\n" "<br>"}} |
 {{end}}
-{{end}} <!-- end services -->
+{{end}}
 
 {{end}}
