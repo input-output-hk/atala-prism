@@ -10,10 +10,10 @@ Let's prepare a message with the issued credential. Which means the message must
 
 ```kotlin
 val credentialFromIssuerMessage = AtalaMessage(
-    AtalaMessage.Message.PlainCredential(
+    message = AtalaMessage.Message.PlainCredential(
         PlainTextCredential(
             encodedCredential = holderSignedCredential.canonicalForm,
-            encodedMerkleProof = holderCredentialMerkleProofs.first().encode()
+            encodedMerkleProof = holderCredentialMerkleProof.encode()
         )
     )
 )
@@ -29,7 +29,11 @@ val issuerGetConnectionRequest = GetConnectionByTokenRequest(issuerConnectionTok
 val issuerHolderConnectionId = runBlocking {
     connector.GetConnectionByTokenAuth(
         issuerGetConnectionRequest,
-        RequestUtils.generateRequestMetadata(issuerUnpublishedDID.value, issuerMasterKeyPair.privateKey, issuerGetConnectionRequest)
+        RequestUtils.generateRequestMetadata(
+            issuerUnpublishedDID.value,
+            issuerMasterKeyPair.privateKey,
+            issuerGetConnectionRequest
+        )
     ).connection?.connectionId!!
 }
 ```
@@ -39,7 +43,7 @@ val issuerHolderConnectionId = runBlocking {
 Now, proceed to send the actual message that includes the credential:
 
 ```kotlin
-// the connector allows any kind of message, this is just a way to send a credential but you can define your own
+// Connector allows any kind of message, this is just a way to send a credential but you can define your own
 val issuerSendMessageRequest = SendMessageRequest(
     issuerHolderConnectionId,
     pbandk.ByteArr(credentialFromIssuerMessage.encodeToByteArray())

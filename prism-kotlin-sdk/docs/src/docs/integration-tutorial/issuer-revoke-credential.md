@@ -11,11 +11,16 @@ Given that all the necessary data is in place, the revocation is simple, just ge
 
 ```kotlin
 val issuerRevokeCredentialOperation = ProtoUtils.revokeCredentialsOperation(
-    batchOperationHash = Hash.compute(issueCredentialOperation.encodeToByteArray()),
-    batchId = CredentialBatchId.fromString(issuedCredentialResponse.batchId)!!,
+    batchOperationHash = issueBatchContext.issuanceOperationHash,
+    batchId = CredentialBatchId.fromString(issueCredentialBatchResponse.batchOutput!!.batchId)!!,
     credentials = listOf(holderSignedCredential)
 )
-val issuerRevokeCredentialSignedOperation = ECProtoOps.signedAtalaOperation(issuerMasterKeyPair, "master0", issuerRevokeCredentialOperation)
+val issuerRevokeCredentialSignedOperation =
+    ECProtoOps.signedAtalaOperation(
+        issuerIssuingKeyPair.privateKey,
+        issuingKeyId,
+        issuerRevokeCredentialOperation
+    )
 val issuerCredentialRevocationResponse = runBlocking {
     node.RevokeCredentials(
         RevokeCredentialsRequest(issuerRevokeCredentialSignedOperation)
@@ -24,8 +29,7 @@ val issuerCredentialRevocationResponse = runBlocking {
 println(
     """
     Issuer: Credential revoked, the transaction can take up to 10 minutes to be confirmed by the Cardano network
-    - Cardano transaction id: ${issuerCredentialRevocationResponse.transactionInfo?.transactionId}
+    - Operation identifier: ${issuerCredentialRevocationResponse.operationId}
     """.trimIndent()
 )
 ```
-

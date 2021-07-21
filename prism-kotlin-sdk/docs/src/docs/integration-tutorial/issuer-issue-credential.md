@@ -1,43 +1,31 @@
 Now, **Issuer** is able to issue a credential to **Holder**.
 
-## Prepare credential
-
-Let's create a simple certificate for **Holder** and sign it with the **Issuer's** key:
-
-```kotlin
-val holderCredentialContent = CredentialContent(
-    JsonObject(
-        mapOf(
-            Pair("issuerDid", JsonPrimitive(issuerDID.value)),
-            Pair("issuanceKeyId", JsonPrimitive(masterKeyId)),
-            Pair(
-                "credentialSubject",
-                JsonObject(
-                    mapOf(
-                        Pair("name", JsonPrimitive("José López Portillo")),
-                        Pair("certificate", JsonPrimitive("Certificate of PRISM SDK tutorial completion"))
-                    )
-                )
-            ),
-        )
-    )
-)
-
-val holderUnsignedCredential = JsonBasedCredential(holderCredentialContent)
-val holderSignedCredential = holderUnsignedCredential.sign(issuerMasterKeyPair.privateKey)
-```
-
 ## Include the credential in a batch
 
-In **Atala PRISM**, credentials are published to **Cardano** in batches, for this tutorial, the batch includes a single credential:
+In **Atala PRISM**, credentials are published to **Cardano** in batches, for this tutorial, the batch includes a single credential that will be created from the given claim about **Holder** and signed using **Issuer's** key:
 
 ```kotlin
-val (holderCredentialMerkleRoot, holderCredentialMerkleProofs) = CredentialBatches.batch(listOf(holderSignedCredential))
-val credentialBatchData = CredentialBatchData(
-    issuerDID = issuerDID.suffix.value, // This requires the suffix only, as the node stores only suffixes
-    merkleRoot = pbandk.ByteArr(holderCredentialMerkleRoot.hash.value)
+val issuerIssuingKeyPair = DID.deriveKeyFromFullPath(seed, 0, KeyType.ISSUING_KEY, 0)
+val addIssuingKeyDIDContext = DID.updateDIDAtalaOperation(
+    issuerMasterKeyPair.privateKey,
+    masterKeyId,
+    issuerDID,
+    createDIDContext.operationHash,
+    listOf(KeyInformation(issuingKeyId, KeyType.ISSUING_KEY, issuerIssuingKeyPair.publicKey))
 )
-val issueCredentialOperation = ProtoUtils.issueCredentialBatchOperation(credentialBatchData)
+val issueBatchContext = CredentialBatches.createBatchAtalaOperation(
+    issuerDID = issuerDID,
+    signingKeyId = issuingKeyId,
+    issuingPrivateKey = issuerIssuingKeyPair.privateKey,
+    credentialsClaims = listOf(
+        JsonObject(
+            mapOf(
+                Pair("name", JsonPrimitive("José López Portillo")),
+                Pair("certificate", JsonPrimitive("Certificate of PRISM SDK tutorial completion"))
+            )
+        ).toString()
+    )
+)
 ```
 
 ## Publish the credential to Cardano
@@ -45,10 +33,20 @@ val issueCredentialOperation = ProtoUtils.issueCredentialBatchOperation(credenti
 Once we have prepared the batch, we can sign the operation and invoke **Atala PRISM Node** to publish it to **Cardano**:
 
 ```kotlin
-val signedIssueCredentialOperation = ECProtoOps.signedAtalaOperation(issuerMasterKeyPair, "master0", issueCredentialOperation)
-val issuedCredentialResponse = runBlocking {
-    node.IssueCredentialBatch(IssueCredentialBatchRequest(signedIssueCredentialOperation))
+val publishAsABlockResponse = runBlocking {
+    node.PublishAsABlock(
+        PublishAsABlockRequest(
+            signedOperations = listOf(
+                addIssuingKeyDIDContext.updateDIDSignedOperation,
+                issueBatchContext.signedAtalaOperation
+            )
+        )
+    )
 }
+val addDidKeyResponse = publishAsABlockResponse.outputs.first()
+val issueCredentialBatchResponse = publishAsABlockResponse.outputs.last()
+val holderSignedCredential = issueBatchContext.credentialsAndProofs.first().signedCredential
+val holderCredentialMerkleProof = issueBatchContext.credentialsAndProofs.first().inclusionProof
 ```
 
 Print out some details:
@@ -58,11 +56,12 @@ println(
     """
     Issuer: Credential issued to Holder, the transaction can take up to 10 minutes to be confirmed by the Cardano network
     - IssuerDID = $issuerDID
-    - Cardano transaction id = ${issuedCredentialResponse.transactionInfo?.transactionId}
-    - Credential content = $holderUnsignedCredential
+    - Add issuing key to DID operation identifier = ${addDidKeyResponse.operationId}
+    - Issuer credential batch operation identifier = ${issueCredentialBatchResponse.operationId}
+    - Credential content = ${holderSignedCredential.content}
     - Signed credential = ${holderSignedCredential.canonicalForm}
-    - Inclusion proof (encoded) = ${holderCredentialMerkleProofs.first().encode()}
-    - Batch id = ${issuedCredentialResponse.batchId}
+    - Inclusion proof (encoded) = ${holderCredentialMerkleProof.encode()}
+    - Batch id = ${issueCredentialBatchResponse.batchOutput!!.batchId}
     """.trimIndent()
 )
 ```

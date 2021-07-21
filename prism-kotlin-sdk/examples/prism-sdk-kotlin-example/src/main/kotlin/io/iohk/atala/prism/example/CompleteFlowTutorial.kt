@@ -93,8 +93,7 @@ object CompleteFlowTutorial {
                     issuerMasterKeyPair.privateKey,
                     issuerGenerateConnectionTokenRequest
                 )
-            )
-                .tokens.first()
+            ).tokens.first()
         }
         println("Issuer: Token for connecting with Holder generated = $issuerConnectionToken")
 
@@ -214,7 +213,7 @@ object CompleteFlowTutorial {
             ).connection?.connectionId!!
         }
 
-        // the connector allows any kind of message, this is just a way to send a credential but you can define your own
+        // Connector allows any kind of message, this is just a way to send a credential but you can define your own
         val issuerSendMessageRequest = SendMessageRequest(
             issuerHolderConnectionId,
             pbandk.ByteArr(credentialFromIssuerMessage.encodeToByteArray())
@@ -293,9 +292,7 @@ object CompleteFlowTutorial {
                     verifierMasterKeyPair.privateKey,
                     verifierGenerateConnectionTokenRequest
                 )
-            )
-                .tokens
-                .first()
+            ).tokens.first()
         }
         println("Verifier: Token for connecting with Holder generated = $verifierConnectionToken")
         println()
@@ -373,25 +370,22 @@ object CompleteFlowTutorial {
         val verifierReceivedCredentialIssuerDID = verifierReceivedJsonCredential.content.getString("id")!!
         val verifierReceivedCredentialIssuanceKeyId =
             verifierReceivedJsonCredential.content.getString("keyId")!!
+        val verifierReceivedCredentialMerkleProof =
+            MerkleInclusionProof.decode(verifierReceivedCredential.encodedMerkleProof)
+        val verifierReceivedCredentialBatchId = CredentialBatches.computeCredentialBatchId(
+            DID.fromString(verifierReceivedCredentialIssuerDID),
+            verifierReceivedCredentialMerkleProof.derivedRoot()
+        )
         println(
             """
             Verifier: Received credential decoded
             - Credential: ${verifierReceivedJsonCredential.content}
             - Issuer DID: $verifierReceivedCredentialIssuerDID
             - Issuer issuance key id: $verifierReceivedCredentialIssuanceKeyId
+            - Merkle proof root: ${verifierReceivedCredentialMerkleProof.hash.hexValue()}
             """.trimIndent()
         )
         println()
-
-        // Verifier queries the node for the credential data
-        println("Verifier: Resolving issuer/credential details from the node")
-        val verifierReceivedCredentialMerkleProof =
-            MerkleInclusionProof.decode(verifierReceivedCredential.encodedMerkleProof)
-
-        val verifierReceivedCredentialBatchId = CredentialBatches.computeCredentialBatchId(
-            DID.fromString(verifierReceivedCredentialIssuerDID),
-            verifierReceivedCredentialMerkleProof.derivedRoot()
-        )
 
         // Verifier using convinience method (which return no errors)
         println("Verifier: Verifying received credential using single convenience method")
@@ -437,8 +431,7 @@ object CompleteFlowTutorial {
                     batchId = Hash.fromHex(verifierReceivedCredentialBatchId.id).hexValue(),
                     credentialHash = pbandk.ByteArr(verifierReceivedJsonCredential.hash().value)
                 )
-            )
-                .revocationLedgerData?.timestampInfo?.toTimestampInfoModel()
+            ).revocationLedgerData?.timestampInfo?.toTimestampInfoModel()
         }
 
         // Verifier checks the credential validity (which fails)

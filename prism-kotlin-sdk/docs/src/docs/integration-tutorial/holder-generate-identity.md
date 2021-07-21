@@ -12,6 +12,8 @@ val holderMasterKeyPair = EC.generateKeyPair()
 val holderUnpublishedDID = DID.createUnpublishedDID(holderMasterKeyPair.publicKey)
 println("Holder: First DID generated to connect with Issuer = $holderUnpublishedDID")
 
+// Holder generates its identity to connect with verifier
+// in PRISM, you are supposed to use different identities for every connection
 val holderMasterKeyPair2 = EC.generateKeyPair()
 val holderUnpublishedDID2 = DID.createUnpublishedDID(holderMasterKeyPair2.publicKey)
 println("Holder: Second DID generated to connect with Verifier = $holderUnpublishedDID2")

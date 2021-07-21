@@ -6,24 +6,15 @@ The operations take some minutes to be applied by **Cardano**, once the revoke o
 
 ```kotlin
 println("Verifier: Checking the credential validity again, expect an error explaining that the credential is revoked")
-val verifierReceivedCredentialRevocationTime2 = runBlocking {
-    node.GetCredentialRevocationTime(
-        GetCredentialRevocationTimeRequest(
-            batchId = Hash.fromHex(verifierReceivedCredentialBatchId.id).hexValue(),
-            credentialHash = pbandk.ByteArr(verifierReceivedJsonCredential.hash().value)
-        )
-    ).revocationLedgerData?.timestampInfo?.toTimestampInfoModel()
+Thread.sleep(2000) // give some time to the backend to apply the operation
+val credentialVerificationServiceResult2 = runBlocking {
+    CredentialVerificationService(node).verify(
+        signedCredential = verifierReceivedJsonCredential,
+        merkleInclusionProof = verifierReceivedCredentialMerkleProof
+    )
 }
 
-// Verifier checks the credential validity (which fails)
-CredentialVerification.verify(
-    keyData = verifierReceivedCredentialIssuerKey,
-    batchData = verifierReceivedCredentialBatchData,
-    credentialRevocationTime = verifierReceivedCredentialRevocationTime2,
-    merkleRoot = verifierReceivedCredentialMerkleProof.derivedRoot(),
-    inclusionProof = verifierReceivedCredentialMerkleProof,
-    signedCredential = verifierReceivedJsonCredential
-)
+println("Verification errors: ${credentialVerificationServiceResult2.verificationErrors.size}")
 ```
 
 ## Next steps

@@ -14,11 +14,14 @@ During preparation, set up a project that includes **Atala PRISM SDK** and proce
 Generating a **DID** require associating a public key. This example generates a public key from an elliptic-curve and then publishes the **DID** to **Cardano** by invoking the **Connector's** service:
 
 ```kotlin
-val issuerMasterKeyPair = EC.generateKeyPair()
-val issuerCreateDIDOperation = ProtoUtils.createDidAtalaOperation(issuerMasterKeyPair)
-val issuerCreatedDIDSignedOperation = ECProtoOps.signedAtalaOperation(issuerMasterKeyPair, "master0", issuerCreateDIDOperation)
+val mnemonic = KeyDerivation.randomMnemonicCode()
+val seed = KeyDerivation.binarySeed(mnemonic, "secret")
+// Create KeyPair out of mnemonic seed phrase, did index, type of key, key index
+val issuerMasterKeyPair = DID.deriveKeyFromFullPath(seed, 0, KeyType.MASTER_KEY, 0)
+val createDIDContext = DID.createDIDFromMnemonic(mnemonic, 0, "secret")
+val issuerCreatedDIDSignedOperation = createDIDContext.createDIDSignedOperation
 
-// the issuer registers its identity to the node
+// Issuer registers its identity to the node
 // Usually the DID would be registered with the node, but, the connector can handle that as well
 // val issuerDIDSuffix = node.CreateDID(CreateDIDRequest(signedOperation)).id
 val issuerRegisterDIDResponse = runBlocking {
@@ -39,12 +42,13 @@ val issuerDID = DID.fromString(issuerRegisterDIDResponse.did)
 
 // the DID takes some minutes to get confirmed by Cardano, in the mean time, the unpublished DID
 // can be used to authenticate requests to the backend
-val issuerUnpublishedDID = DID.createUnpublishedDID(issuerMasterKeyPair.publicKey)
+val issuerUnpublishedDID = createDIDContext.unpublishedDID
+
 println(
     """
     Issuer DID registered, the transaction can take up to 10 minutes to be confirmed by the Cardano network
     - DID: ${issuerRegisterDIDResponse.did}
-    - Cardano transaction id: ${issuerRegisterDIDResponse.transactionInfo?.transactionId}
+    - Operation identifier: ${issuerRegisterDIDResponse.operationId}
     """.trimIndent()
 )
 ```
@@ -68,5 +72,5 @@ val issuerConnectionToken = runBlocking {
         )
     ).tokens.first()
 }
-println("Issuer: Token for connecting with the holder generated = $issuerConnectionToken")
+println("Issuer: Token for connecting with Holder generated = $issuerConnectionToken")
 ```

@@ -14,7 +14,8 @@ Given that these are the same steps followed by **Issuer** in [this section](/wi
 ```kotlin
 val verifierMasterKeyPair = EC.generateKeyPair()
 val verifierCreateDIDOperation = ProtoUtils.createDidAtalaOperation(verifierMasterKeyPair)
-val verifierCreateDIDSignedOperation = ECProtoOps.signedAtalaOperation(verifierMasterKeyPair, "master0", verifierCreateDIDOperation)
+val verifierCreateDIDSignedOperation =
+    ECProtoOps.signedAtalaOperation(verifierMasterKeyPair.privateKey, masterKeyId, verifierCreateDIDOperation)
 
 val verifierRegisterDIDResponse = runBlocking {
     connector.RegisterDID(
@@ -30,12 +31,12 @@ println(
     """
     Verifier DID registered, the transaction can take up to 10 minutes to be confirmed by the Cardano network
     - DID: $verifierDID
-    - Cardano transaction id: ${verifierRegisterDIDResponse.transactionInfo?.transactionId}
+    - Operation identifier: ${verifierRegisterDIDResponse.operationId}
     """.trimIndent()
 )
 println()
 
-// Verifier generates a token to connect with the credential subject
+// Verifier generates a token to connect with the credential holder
 val verifierGenerateConnectionTokenRequest = GenerateConnectionTokenRequest(count = 1)
 val verifierConnectionToken = runBlocking {
     connector.GenerateConnectionTokenAuth(
@@ -47,5 +48,5 @@ val verifierConnectionToken = runBlocking {
         )
     ).tokens.first()
 }
-println("Verifier: Token for connecting with holder generated = $verifierConnectionToken")
+println("Verifier: Token for connecting with Holder generated = $verifierConnectionToken")
 ```

@@ -2,7 +2,7 @@ It is time to share the credential with **Verifier**, this is very similar to a 
 
 ```kotlin
 val credentialFromHolderMessage = AtalaMessage(
-    AtalaMessage.Message.PlainCredential(
+    message = AtalaMessage.Message.PlainCredential(
         PlainTextCredential(
             encodedCredential = holderReceivedCredential.encodedCredential,
             encodedMerkleProof = holderReceivedCredential.encodedMerkleProof

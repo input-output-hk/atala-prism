@@ -16,7 +16,7 @@ println(
     """
     Holder: Check Issuer's connection token details:
     - Issuer name = ${issuerConnectionTokenDetails.creatorName}
-    - Issuer DID  = ${issuerConnectionTokenDetails.creatorDID}
+    - Issuer DID  = ${issuerConnectionTokenDetails.creatorDid}
     """.trimIndent()
 )
 ```

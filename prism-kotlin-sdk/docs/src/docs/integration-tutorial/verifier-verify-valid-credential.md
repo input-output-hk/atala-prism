@@ -1,74 +1,43 @@
-The fun begins now, before being able to verify a credential, follow these steps:
-1. Parse the signed credential to get the **Issuer's** details.
-2. Resolve the **Issuer's** details from the **Node** to make sure the key, and the signature are correct.
-3. Resolve the credential state from the **Node** to make sure the proof exists in **Cardano**.
-4. Resolve the credential revocation state from the Node to make sure the credential hasn't been revoked.
+The fun begins now. But before we able to verify a credential, we need to parse the signed credential to get the **Issuer's** details.
 
 ## Extract the credential data
 
 Let's decode the signed credential to get the data relevant for the verification:
 
 ```kotlin
-val verifierReceivedJsonCredential = JsonBasedCredential.fromString(verifierReceivedCredential.encodedCredential)
-val verifierReceivedCredentialIssuerDID = verifierReceivedJsonCredential.content.getString("issuerDid")!!
-val verifierReceivedCredentialIssuanceKeyId = verifierReceivedJsonCredential.content.getString("issuanceKeyId")!!
+val verifierReceivedJsonCredential =
+    JsonBasedCredential.fromString(verifierReceivedCredential.encodedCredential)
+val verifierReceivedCredentialIssuerDID = verifierReceivedJsonCredential.content.getString("id")!!
+val verifierReceivedCredentialIssuanceKeyId =
+    verifierReceivedJsonCredential.content.getString("keyId")!!
+val verifierReceivedCredentialMerkleProof =
+    MerkleInclusionProof.decode(verifierReceivedCredential.encodedMerkleProof)
+val verifierReceivedCredentialBatchId = CredentialBatches.computeCredentialBatchId(
+    DID.fromString(verifierReceivedCredentialIssuerDID),
+    verifierReceivedCredentialMerkleProof.derivedRoot()
+)
 println(
     """
     Verifier: Received credential decoded
     - Credential: ${verifierReceivedJsonCredential.content}
     - Issuer DID: $verifierReceivedCredentialIssuerDID
     - Issuer issuance key id: $verifierReceivedCredentialIssuanceKeyId
+    - Merkle proof root: ${verifierReceivedCredentialMerkleProof.hash.hexValue()}
     """.trimIndent()
 )
 ```
 
-## Resolve the issuer/credential details
-
-It's time to query the **Node** for the data relevant to the **Issuer** and the credential, which is later on used to check the credential verification state:
-
-```kotlin
-println("Verifier: Resolving issuer/credential details from the node")
-val verifierReceivedCredentialIssuerDIDDocument = runBlocking {
-    node.GetDidDocument(GetDidDocumentRequest(did = verifierReceivedCredentialIssuerDID)).document!!
-}
-val verifierReceivedCredentialIssuerKey = verifierReceivedCredentialIssuerDIDDocument.findPublicKey(verifierReceivedCredentialIssuanceKeyId)
-val verifierReceivedCredentialMerkleProof = MerkleInclusionProof.decode(verifierReceivedCredential.encodedMerkleProof)
-
-val verifierReceivedCredentialBatchId = CredentialBatches.computeCredentialBatchId(
-    DID.fromString(verifierReceivedCredentialIssuerDID),
-    verifierReceivedCredentialMerkleProof.derivedRoot()
-)
-
-val verifierReceivedCredentialBatchState = runBlocking {
-    node.GetBatchState(GetBatchStateRequest(batchId = Hash.fromHex(verifierReceivedCredentialBatchId.id).hexValue()))
-}
-val verifierReceivedCredentialBatchData = BatchData(
-    issuedOn = verifierReceivedCredentialBatchState.publicationLedgerData?.timestampInfo?.toTimestampInfoModel()!!,
-    revokedOn = verifierReceivedCredentialBatchState.revocationLedgerData?.timestampInfo?.toTimestampInfoModel()
-)
-val verifierReceivedCredentialRevocationTime = runBlocking {
-    node.GetCredentialRevocationTime(
-        GetCredentialRevocationTimeRequest(
-            batchId = Hash.fromHex(verifierReceivedCredentialBatchId.id).hexValue(),
-            credentialHash = pbandk.ByteArr(verifierReceivedJsonCredential.hash().value)
-        )
-    ).revocationLedgerData?.timestampInfo?.toTimestampInfoModel()
-}
-```
-
 ## Verify the credential
 
-Having the necessary data, verifying the credential requires a single method call, which succeeds because the credential is valid:
+Having the necessary data, verifying the credential requires a single convenience method call that queries **Node** for the data relevant to **Issuer** and the credential:
 
 ```kotlin
-// Verifier checks the credential validity (which succeeds)
-println("Verifier: Verifying received credential")
-CredentialVerification.verify(
-    keyData = verifierReceivedCredentialIssuerKey!!,
-    batchData = verifierReceivedCredentialBatchData,
-    credentialRevocationTime = verifierReceivedCredentialRevocationTime,
-    merkleRoot = verifierReceivedCredentialMerkleProof.derivedRoot(),
-    inclusionProof = verifierReceivedCredentialMerkleProof,
-    signedCredential = verifierReceivedJsonCredential
-)
+println("Verifier: Verifying received credential using single convenience method")
+val credentialVerificationServiceResult = runBlocking {
+    CredentialVerificationService(node).verify(
+        signedCredential = verifierReceivedJsonCredential,
+        merkleInclusionProof = verifierReceivedCredentialMerkleProof
+    )
+}
+println("Credential is valid: ${credentialVerificationServiceResult.verificationErrors.isEmpty()}")
 ```
