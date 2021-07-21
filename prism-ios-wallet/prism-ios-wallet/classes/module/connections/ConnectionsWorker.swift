@@ -78,35 +78,52 @@ class ConnectionsWorker: NSObject {
         })
     }
 
+    // TODO: Adding a target fix but ll this needs to be refactored:
+    // There needs to be a component that takes care of the Crypto Utils thread issues
+    // and assures that its always taking care in a single thread.
+    // Also we can streamline this threading by the usage of Combine.
+    // API should also be streamlined with Combine.
     func confirmQrCode(isKyc: Bool = false, isPayId: Bool = false) {
-
         self.delegate?.config(isLoading: true)
         var contact: Contact?
         // Call the service
-        ApiService.call(async: {
-            do {
-                let response = try ApiService.global.addConnectionToken(token: self.connectionRequest!.token!)
-                Logger.d("addConnectionToken response: \(response)")
-                // Save the contact
-                let keyPath = CryptoUtils.global.confirmNewKeyUsed()
-                let dao = ContactDAO()
-                DispatchQueue.main.sync {
-                    contact = dao.createContact(connectionInfo: response.connection, keyPath: keyPath,
-                                                isKyc: isKyc, isPayId: isPayId)
-                    let historyDao = ActivityHistoryDAO()
-                    historyDao.createActivityHistory(timestamp: contact?.dateCreated, type: .contactAdded,
-                                                     credential: nil, contact: contact)
+        guard let token = connectionRequest?.token else {
+            delegate?.config(isLoading: false)
+            delegate?.showErrorMessage(doShow: true, message: "connections_scan_qr_confirm_error".localize())
+            return
+        }
+        let keyPath = CryptoUtils.global.getNextPublicKeyPath()
+        let encodedPublicKey = CryptoUtils.global.encodedPublicKey(keyPath: keyPath)
+        do {
+            let connectionRequest = try AddConnectionRequest(keyPath: keyPath, token: token, publicKey: encodedPublicKey)
+            ApiService.call(async: {
+                do {
+                    let response = try ApiService.global.addConnectionToken(addConnectionRequest: connectionRequest)
+                    Logger.d("addConnectionToken response: \(response)")
+                    // Save the contact
+                    let keyPath = CryptoUtils.global.confirmNewKeyUsed()
+                    let dao = ContactDAO()
+                    DispatchQueue.main.sync {
+                        contact = dao.createContact(connectionInfo: response.connection, keyPath: keyPath,
+                                                    isKyc: isKyc, isPayId: isPayId)
+                        let historyDao = ActivityHistoryDAO()
+                        historyDao.createActivityHistory(timestamp: contact?.dateCreated, type: .contactAdded,
+                                                         credential: nil, contact: contact)
+                    }
+                } catch {
+                    return error
                 }
-            } catch {
-                return error
-            }
-            return nil
-        }, success: {
-            self.delegate?.conectionAccepted(contact: contact)
-        }, error: { error in
-            print(error.localizedDescription)
-            self.delegate?.config(isLoading: false)
-            self.delegate?.showErrorMessage(doShow: true, message: "connections_scan_qr_confirm_error".localize())
-        })
+                return nil
+            }, success: {
+                self.delegate?.conectionAccepted(contact: contact)
+            }, error: { error in
+                print(error.localizedDescription)
+                self.delegate?.config(isLoading: false)
+                self.delegate?.showErrorMessage(doShow: true, message: "connections_scan_qr_confirm_error".localize())
+            })
+        } catch {
+            delegate?.config(isLoading: false)
+            delegate?.showErrorMessage(doShow: true, message: "connections_scan_qr_confirm_error".localize())
+        }
     }
 }

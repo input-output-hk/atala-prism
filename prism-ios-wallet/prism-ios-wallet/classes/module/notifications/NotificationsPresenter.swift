@@ -160,63 +160,72 @@ class NotificationsPresenter: ListingBasePresenter, ListingBaseTableUtilsPresent
         let credentials = credentialsDao.listNewCredentials() ?? []
         self.makeDegreeRows(credentials: credentials)
         self.startListing()
+        
+        do {
+            var credentialsRequests = [GetCredentialsPaginatedRequest]()
+            for contact in contacts ?? [] {
+                credentialsRequests.append(try .init(contactKeyPath: contact.keyPath, lastMessageId: contact.lastMessageId))
+            }
+            // Call the service
+            ApiService.call(async: {
+                do {
+                    let responses = try ApiService.global.getCredentials(credentialRequests: credentialsRequests)
+                    Logger.d("getCredentials responses: \(responses)")
 
-        // Call the service
-        ApiService.call(async: {
-            do {
-                let responses = try ApiService.global.getCredentials(contacts: contacts)
-                Logger.d("getCredentials responses: \(responses)")
+                    let historyDao = ActivityHistoryDAO()
 
-                let historyDao = ActivityHistoryDAO()
+                    // Parse the messages
+                    for response in responses {
+                        for message in response.messages {
+                            if let atalaMssg = try? Io_Iohk_Atala_Prism_Protos_AtalaMessage(serializedData:
+                                                                                                message.message) {
+                                var cred: (Credential, Bool)?
 
-                // Parse the messages
-                for response in responses {
-                    for message in response.messages {
-                        if let atalaMssg = try? Io_Iohk_Atala_Prism_Protos_AtalaMessage(serializedData:
-                                                                                            message.message) {
-                            var cred: (Credential, Bool)?
-                            if !atalaMssg.issuerSentCredential.credential.typeID.isEmpty {
-                                cred = credentialsDao.createCredential(sentCredential:
-                                    atalaMssg.issuerSentCredential.credential, viewed: false,
-                                                                               messageId: message.id,
-                                                                               connectionId: message.connectionID)
-                            } else if !atalaMssg.plainCredential.encodedCredential.isEmpty {
-                                let issuer = contacts?.first(where: { $0.connectionId == message.connectionID})
-                                cred = credentialsDao.createCredential(message: atalaMssg,
-                                                                       viewed: false, messageId: message.id,
-                                                                       connectionId: message.connectionID,
-                                                                       issuerName: issuer?.name ?? "")
-                            }
-                            if let credential = cred {
-                                contactsDao.updateMessageId(connectionId: credential.0.issuerId, messageId: message.id)
-                                if credential.1 {
-                                    historyDao.createActivityHistory(timestamp: credential.0.dateReceived,
-                                                                     type: .credentialAdded, credential: credential.0,
-                                                                     contact: nil)
+                                if !atalaMssg.plainCredential.encodedCredential.isEmpty {
+                                    let issuer = contacts?.first(where: { $0.connectionId == message.connectionID})
+                                    cred = credentialsDao.createCredential(message: atalaMssg,
+                                                                           viewed: false, messageId: message.id,
+                                                                           connectionId: message.connectionID,
+                                                                           issuerName: issuer?.name ?? "")
+                                }
+                                if let credential = cred {
+                                    contactsDao.updateMessageId(connectionId: credential.0.issuerId, messageId: message.id)
+                                    if credential.1 {
+                                        historyDao.createActivityHistory(timestamp: credential.0.dateReceived,
+                                                                         type: .credentialAdded, credential: credential.0,
+                                                                         contact: nil)
+                                    }
                                 }
                             }
                         }
                     }
+                    self.cleanData()
+                    let credentials = credentialsDao.listNewCredentials() ?? []
+                    self.makeDegreeRows(credentials: credentials)
+
+                } catch {
+                    return error
                 }
+                return nil
+            }, success: {
+                self.startListing()
+                self.isFetching = false
+            }, error: { _ in
                 self.cleanData()
+                let credentialsDao = CredentialDAO()
                 let credentials = credentialsDao.listNewCredentials() ?? []
                 self.makeDegreeRows(credentials: credentials)
-
-            } catch {
-                return error
-            }
-            return nil
-        }, success: {
-            self.startListing()
-            self.isFetching = false
-        }, error: { _ in
+                self.startListing()
+                self.isFetching = false
+            })
+        } catch {
             self.cleanData()
             let credentialsDao = CredentialDAO()
             let credentials = credentialsDao.listNewCredentials() ?? []
             self.makeDegreeRows(credentials: credentials)
             self.startListing()
             self.isFetching = false
-        })
+        }
     }
 
     private func makeDegreeRows(credentials: [Credential]) {

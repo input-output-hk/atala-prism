@@ -1,6 +1,42 @@
 //
 import SwiftGRPC
 
+struct AddConnectionRequest {
+    fileprivate let request: Io_Iohk_Atala_Prism_Protos_AddConnectionFromTokenRequest
+    fileprivate let metadata: Metadata
+    
+    init(
+        service: ApiService = ApiService.global,
+        keyPath: String,
+        token: String,
+        publicKey: Io_Iohk_Atala_Prism_Protos_EncodedPublicKey
+    ) throws {
+        let req = Io_Iohk_Atala_Prism_Protos_AddConnectionFromTokenRequest.with {
+            $0.token = token
+            $0.holderEncodedPublicKey = publicKey
+        }
+        self.request = req
+        self.metadata = service.makeSignedMeta(requestData: try req.serializedData(), keyPath: keyPath)
+    }
+}
+
+struct GetCredentialsPaginatedRequest {
+    
+    private let service: ApiService
+    fileprivate let request: Io_Iohk_Atala_Prism_Protos_GetMessagesPaginatedRequest
+    fileprivate let metadata: Metadata
+    
+    init(service: ApiService = ApiService.global, contactKeyPath: String, lastMessageId: String? = nil) throws {
+        self.service = service
+        let req = Io_Iohk_Atala_Prism_Protos_GetMessagesPaginatedRequest.with { request in
+            request.limit = ApiService.DEFAULT_REQUEST_LIMIT
+            lastMessageId.map { request.lastSeenMessageID = $0}
+        }
+        self.request = req
+        self.metadata = service.makeSignedMeta(requestData: try req.serializedData(), keyPath: contactKeyPath)
+    }
+}
+
 class ApiService: NSObject {
 
     static let DEFAULT_REQUEST_LIMIT: Int32 = 10
@@ -76,15 +112,13 @@ class ApiService: NSObject {
         }, metadata: makeMeta(userId))
     }
 
-    func addConnectionToken(token: String) throws -> Io_Iohk_Atala_Prism_Protos_AddConnectionFromTokenResponse {
-        let keyPath = CryptoUtils.global.getNextPublicKeyPath()
-        let encodedPublicKey = CryptoUtils.global.encodedPublicKey(keyPath: keyPath)
-        let request = Io_Iohk_Atala_Prism_Protos_AddConnectionFromTokenRequest.with {
-            $0.token = token
-            $0.holderEncodedPublicKey = encodedPublicKey
-        }
-        let metadata = makeSignedMeta(requestData: try request.serializedData(), keyPath: keyPath)
-        return try service.addConnectionFromToken(request, metadata: metadata)
+    func addConnectionToken(
+        addConnectionRequest: AddConnectionRequest
+    ) throws -> Io_Iohk_Atala_Prism_Protos_AddConnectionFromTokenResponse {
+        return try service.addConnectionFromToken(
+            addConnectionRequest.request,
+            metadata: addConnectionRequest.metadata
+        )
     }
 
     func getConnection(keyPath: String, limit: Int32 = DEFAULT_REQUEST_LIMIT)
@@ -102,20 +136,12 @@ class ApiService: NSObject {
 
     // MARK: Credentials
 
-    func getCredentials(contacts: [Contact]?, limit: Int32 = DEFAULT_REQUEST_LIMIT)
+    func getCredentials(credentialRequests: [GetCredentialsPaginatedRequest])
         throws -> [Io_Iohk_Atala_Prism_Protos_GetMessagesPaginatedResponse] {
 
         var responseList: [Io_Iohk_Atala_Prism_Protos_GetMessagesPaginatedResponse] = []
-        for contact in contacts ?? [] {
-            let request = Io_Iohk_Atala_Prism_Protos_GetMessagesPaginatedRequest.with {
-                $0.limit = limit
-                if let lastMessage = contact.lastMessageId {
-                    $0.lastSeenMessageID = lastMessage
-                }
-            }
-            let metadata = makeSignedMeta(requestData: try request.serializedData(), keyPath: contact.keyPath)
-            let response = try service.getMessagesPaginated(request, metadata: metadata)
-
+        for credentialRequest in credentialRequests {
+            let response = try service.getMessagesPaginated(credentialRequest.request, metadata: credentialRequest.metadata)
             responseList.append(response)
         }
         return responseList

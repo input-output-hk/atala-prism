@@ -178,64 +178,67 @@ class ConnectionsPresenter: ListingBasePresenter, ListingBaseTableUtilsPresenter
     }
 
     func fetchCredentials() {
-
         let contactsDao = ContactDAO()
         let contacts = contactsDao.listContacts()
         let credentialsDao = CredentialDAO()
         let historyDao = ActivityHistoryDAO()
+        
+        do {
+            var credentialsRequests = [GetCredentialsPaginatedRequest]()
+            for contact in contacts ?? [] {
+                credentialsRequests.append(try .init(contactKeyPath: contact.keyPath, lastMessageId: contact.lastMessageId))
+            }
+            // Call the service
+            ApiService.call(async: {
+                do {
+                    let responses = try ApiService.global.getCredentials(credentialRequests: credentialsRequests)
+                    Logger.d("getCredentials responses: \(responses)")
 
-        // Call the service
-        ApiService.call(async: {
-            do {
-                let responses = try ApiService.global.getCredentials(contacts: contacts)
-                Logger.d("getCredentials responses: \(responses)")
-
-                var proofRequest: Io_Iohk_Atala_Prism_Protos_ProofRequest?
-                // Parse the messages
-                for response in responses {
-                    for message in response.messages {
-                        if let atalaMssg = try? Io_Iohk_Atala_Prism_Protos_AtalaMessage(serializedData:
-                                                                                            message.message) {
-                            var cred: (Credential, Bool)?
-                            if !atalaMssg.issuerSentCredential.credential.typeID.isEmpty {
-                                cred = credentialsDao.createCredential(sentCredential:
-                                    atalaMssg.issuerSentCredential.credential, viewed: false,
-                                                                               messageId: message.id,
-                                                                               connectionId: message.connectionID)
-                            } else if !atalaMssg.plainCredential.encodedCredential.isEmpty {
-                                let issuer = contacts?.first(where: { $0.connectionId == message.connectionID})
-                                cred = credentialsDao.createCredential(message: atalaMssg,
-                                                                       viewed: false, messageId: message.id,
-                                                                       connectionId: message.connectionID,
-                                                                       issuerName: issuer?.name ?? "")
-                            } else if !atalaMssg.proofRequest.connectionToken.isEmpty {
-                                proofRequest = atalaMssg.proofRequest
-                                self.detailProofRequestMessageId = message.id
-                            }
-                            if let credential = cred {
-                                contactsDao.updateMessageId(connectionId: credential.0.issuerId, messageId: message.id)
-                                if credential.1 {
-                                    historyDao.createActivityHistory(timestamp: credential.0.dateReceived,
-                                                                     type: .credentialAdded, credential: credential.0,
-                                                                     contact: nil)
+                    var proofRequest: Io_Iohk_Atala_Prism_Protos_ProofRequest?
+                    // Parse the messages
+                    for response in responses {
+                        for message in response.messages {
+                            if let atalaMssg = try? Io_Iohk_Atala_Prism_Protos_AtalaMessage(serializedData:
+                                                                                                message.message) {
+                                var cred: (Credential, Bool)?
+                                
+                                if !atalaMssg.plainCredential.encodedCredential.isEmpty {
+                                    let issuer = contacts?.first(where: { $0.connectionId == message.connectionID})
+                                    cred = credentialsDao.createCredential(message: atalaMssg,
+                                                                           viewed: false, messageId: message.id,
+                                                                           connectionId: message.connectionID,
+                                                                           issuerName: issuer?.name ?? "")
+                                } else if !atalaMssg.proofRequest.connectionToken.isEmpty {
+                                    proofRequest = atalaMssg.proofRequest
+                                    self.detailProofRequestMessageId = message.id
+                                }
+                                if let credential = cred {
+                                    contactsDao.updateMessageId(connectionId: credential.0.issuerId, messageId: message.id)
+                                    if credential.1 {
+                                        historyDao.createActivityHistory(timestamp: credential.0.dateReceived,
+                                                                         type: .credentialAdded, credential: credential.0,
+                                                                         contact: nil)
+                                    }
                                 }
                             }
                         }
                     }
+                    if proofRequest != nil {
+                        self.askProofRequest(proofRequest: proofRequest!)
+                    }
+                } catch {
+                    return error
                 }
-                if proofRequest != nil {
-                    self.askProofRequest(proofRequest: proofRequest!)
-                }
-            } catch {
-                return error
-            }
-            return nil
-        }, success: {
-            // Already asked for proof rquest do nothing
-        }, error: { _ in
+                return nil
+            }, success: {
+                // Already asked for proof rquest do nothing
+            }, error: { _ in
+                self.viewImpl?.showErrorMessage(doShow: true, message: "service_error".localize())
+                self.observeReachability()
+            })
+        } catch {
             self.viewImpl?.showErrorMessage(doShow: true, message: "service_error".localize())
-            self.observeReachability()
-        })
+        }
     }
 
     func askProofRequest(proofRequest: Io_Iohk_Atala_Prism_Protos_ProofRequest) {

@@ -56,54 +56,55 @@ class RestoreAccountPresenter: BasePresenter {
 
         let contactsDao = ContactDAO()
         var cred: (Credential, Bool)?
+        do {
+            let credentialRequest = try GetCredentialsPaginatedRequest(contactKeyPath: contact.keyPath, lastMessageId: contact.lastMessageId)
+            // Call the service
+            ApiService.call(async: {
+                do {
+                    let responses = try ApiService.global.getCredentials(credentialRequests: [credentialRequest])
+                    Logger.d("getCredentials responses: \(responses)")
 
-        // Call the service
-        ApiService.call(async: {
-            do {
-                let responses = try ApiService.global.getCredentials(contacts: [contact])
-                Logger.d("getCredentials responses: \(responses)")
+                    let credentialsDao = CredentialDAO()
 
-                let credentialsDao = CredentialDAO()
-
-                // Parse the messages
-                for response in responses {
-                    for message in response.messages {
-                        if let atalaMssg = try? Io_Iohk_Atala_Prism_Protos_AtalaMessage(serializedData:
-                                                                                            message.message) {
-                            if !atalaMssg.issuerSentCredential.credential.typeID.isEmpty {
-                                cred = credentialsDao.createCredential(sentCredential:
-                                    atalaMssg.issuerSentCredential.credential, viewed: false,
-                                                                               messageId: message.id,
-                                                                               connectionId: message.connectionID)
-                            } else if !atalaMssg.plainCredential.encodedCredential.isEmpty {
-                                cred = credentialsDao.createCredential(message: atalaMssg,
-                                                                       viewed: false, messageId: message.id,
-                                                                       connectionId: message.connectionID,
-                                                                       issuerName: contact.name)
-                            }
-                            if cred != nil {
-                                contact.lastMessageId = message.id
-                                contactsDao.updateContact()
+                    // Parse the messages
+                    for response in responses {
+                        for message in response.messages {
+                            if let atalaMssg = try? Io_Iohk_Atala_Prism_Protos_AtalaMessage(serializedData:
+                                                                                                message.message) {
+                                if !atalaMssg.plainCredential.encodedCredential.isEmpty {
+                                    cred = credentialsDao.createCredential(message: atalaMssg,
+                                                                           viewed: false, messageId: message.id,
+                                                                           connectionId: message.connectionID,
+                                                                           issuerName: contact.name)
+                                }
+                                if cred != nil {
+                                    contact.lastMessageId = message.id
+                                    contactsDao.updateContact()
+                                }
                             }
                         }
                     }
-                }
 
-            } catch {
-                return error
-            }
-            return nil
-        }, success: {
-            if cred != nil {
-                self.fetchNextConnection()
-            } else {
-                self.recoverPayId(contact: contact)
-            }
-        }, error: { error in
+                } catch {
+                    return error
+                }
+                return nil
+            }, success: {
+                if cred != nil {
+                    self.fetchNextConnection()
+                } else {
+                    self.recoverPayId(contact: contact)
+                }
+            }, error: { error in
+                print(error.localizedDescription)
+                self.viewImpl?.showLoading(doShow: false)
+                self.viewImpl?.showErrorMessage(doShow: true, message: "service_error".localize())
+            })
+        } catch {
             print(error.localizedDescription)
             self.viewImpl?.showLoading(doShow: false)
             self.viewImpl?.showErrorMessage(doShow: true, message: "service_error".localize())
-        })
+        }
     }
 
     func recoverPayId(contact: Contact) {
