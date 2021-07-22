@@ -137,7 +137,7 @@ class LunrSearchAdapter {
                     }
                 }
             });
-            hits.length > 5 && (hits.length = 5);
+            hits.length > 10 && (hits.length = 10);
             resolve(hits);
         });
     }

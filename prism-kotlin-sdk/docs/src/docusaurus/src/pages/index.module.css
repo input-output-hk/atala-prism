@@ -22,10 +22,12 @@
 
 .heroTitleTextHtmlLight {
   color: black;
+  font-weight: 600;
 }
 
 .heroTitleTextHtmlDark {
   color: white;
+  font-weight: 600;
 }
 
 .heroTitleTextHtmlLight b {
