@@ -55,10 +55,8 @@ kotlin {
                 freeCompilerArgs = freeCompilerArgs + "-Xopt-in=kotlin.RequiresOptIn"
             }
         }
-        binaries.all {
-            // Linker options required to link to libsecp256k1.
-            linkerOpts("-L$rootDir/crypto/build/cocoapods/synthetic/IOS/crypto/Pods/Secp256k1Kit.swift/Secp256k1Kit/Libraries/lib", "-lsecp256k1")
-        }
+
+        binaries.all {}
     }
 
     sourceSets {

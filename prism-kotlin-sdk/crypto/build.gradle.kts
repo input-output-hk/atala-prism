@@ -1,8 +1,8 @@
 plugins {
     kotlin("multiplatform")
     kotlin("plugin.serialization")
-    kotlin("native.cocoapods")
     id("com.android.library")
+    id("com.chromaticnoise.multiplatform-swiftpackage") version "2.0.3"
 }
 
 dependencies {
@@ -40,10 +40,10 @@ kotlin {
             version = "0.1.0"
         }
     }
+
     ios("ios") {
-        binaries.all {
-            // Linker options required to link to libsecp256k1.
-            linkerOpts("-L$rootDir/crypto/build/cocoapods/synthetic/IOS/crypto/Pods/Secp256k1Kit.swift/Secp256k1Kit/Libraries/lib", "-lsecp256k1")
+        binaries.framework {
+            baseName = "Crypto"
         }
 
         // Facade to SwiftCryptoKit
@@ -60,6 +60,22 @@ kotlin {
                 includeDirs.headerFilterOnly("$rootDir/SwiftCryptoKit/build/Release-$platform/include")
             }
         }
+
+        compilations.getByName("main") {
+            cinterops.create("secp256k1") {
+                val interopTask = tasks[interopProcessingTaskName]
+                includeDirs.headerFilterOnly("$rootDir/Secp256k1/include")
+            }
+        }
+    }
+
+    multiplatformSwiftPackage {
+        packageName("Crypto")
+        swiftToolsVersion("5.3")
+        targetPlatforms {
+            iOS { v("13") }
+        }
+        outputDirectory(File(rootDir, "../prism-ios-wallet/CryptoSDK"))
     }
 
     sourceSets {
@@ -129,16 +145,6 @@ kotlin {
             languageSettings.useExperimentalAnnotation("kotlin.ExperimentalUnsignedTypes")
             languageSettings.useExperimentalAnnotation("kotlin.js.ExperimentalJsExport")
         }
-    }
-
-    cocoapods {
-        // Configure fields required by CocoaPods.
-        summary = "Atala PRISM Multiplatform SDK"
-        homepage = "https://atalaprism.io/"
-
-        ios.deploymentTarget = "13.0"
-
-        pod("Secp256k1Kit.swift", version = "1.1", moduleName = "Secp256k1Kit")
     }
 }
 

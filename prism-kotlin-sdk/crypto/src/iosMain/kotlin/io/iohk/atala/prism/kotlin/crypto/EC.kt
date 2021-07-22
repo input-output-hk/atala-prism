@@ -1,9 +1,9 @@
 package io.iohk.atala.prism.kotlin.crypto
 
-import cocoapods.Secp256k1Kit.*
 import com.ionspin.kotlin.bignum.integer.BigInteger
 import fr.acinq.bitcoin.*
 import fr.acinq.secp256k1.Secp256k1
+import io.iohk.atala.prism.c.secp256k1.*
 import io.iohk.atala.prism.kotlin.crypto.keys.ECKeyPair
 import io.iohk.atala.prism.kotlin.crypto.keys.ECPoint
 import io.iohk.atala.prism.kotlin.crypto.keys.ECPrivateKey

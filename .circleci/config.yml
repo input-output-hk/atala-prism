@@ -754,16 +754,6 @@ jobs:
           command: (echo y; echo y; echo y; echo y; echo y; echo y; echo y) | sdkmanager --licenses
 
       - run:
-          name: Install cocoapods-generate
-          command: gem install cocoapods-generate
-
-      - run:
-          name: Generate podspecs
-          command: |
-            cd prism-kotlin-sdk
-            ./gradlew podspec
-
-      - run:
           name: Test Kotlin code is properly formatted
           command: cd prism-kotlin-sdk && ./gradlew ktlintCheck
 

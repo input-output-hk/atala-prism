@@ -12,11 +12,11 @@ Lastly, to run the server use `node simple_proto_server.js`.
 
 ## Running the app
 
-Prior to building the app it's necessary to generate the Podspec file for the Kotlin Crypto library. For this navigate to the `prism-kotlin-sdk` directory on the Terminal and run th following command:
+Prior to building the app it's necessary to generate the Swift Package for the Kotlin Crypto library. For this navigate to the `prism-kotlin-sdk` directory on the Terminal and run th following command:
 ```
-$ ./gradlew podspec
+$ ./gradlew :crypto:build :crypto:createSwiftPackage
 ```
-Then navigate to the `prism-ios-wallet` directory and run the following command to install Kotlin Crypto library and all Cocoapods dependencies:
+Then navigate to the `prism-ios-wallet` directory and run the following command to install all Cocoapods dependencies:
 ```
 $ pod install
 ```

@@ -1,10 +1,10 @@
 package io.iohk.atala.prism.kotlin.crypto.keys
 
-import cocoapods.Secp256k1Kit.*
 import com.ionspin.kotlin.bignum.integer.BigInteger
 import com.ionspin.kotlin.bignum.integer.Sign
+import io.iohk.atala.prism.c.secp256k1.*
 import io.iohk.atala.prism.kotlin.crypto.ECConfig
-import io.iohk.atala.prism.kotlin.crypto.util.toUByteArray
+import io.iohk.atala.prism.kotlin.crypto.util.*
 import kotlinx.cinterop.*
 import platform.posix.size_tVar
 

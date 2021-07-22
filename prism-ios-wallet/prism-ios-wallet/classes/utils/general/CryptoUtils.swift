@@ -2,7 +2,7 @@
 import JavaScriptCore
 import WebKit
 import CommonCrypto
-import crypto
+import Crypto
 
 class CryptoUtils: NSObject {
 

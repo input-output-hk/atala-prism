@@ -8,7 +8,7 @@
 
 import UIKit
 import SwiftGRPC
-import crypto
+import Crypto
 
 class RestoreAccountPresenter: BasePresenter {
 

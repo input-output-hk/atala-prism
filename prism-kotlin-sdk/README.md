@@ -196,3 +196,7 @@ $ npx docusaurus generate-proto-docs
 Now you can either do:
 - `npx docusaurus start` to launch the preview at [localhost:3000](https://localhost:3000).
 - `yarn run build` to build the website at `docs/src/docusaurus/build`
+
+### Secp256k1
+
+This library is being used to provide elliptic encryption to iOS. The library itself is build in iOS architectures taken from this repo: [secp256k1](https://github.com/horizontalsystems/secp256k1-kit-ios/tree/master/Secp256k1Kit/Libraries) as well as the headers.

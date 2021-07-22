@@ -3,7 +3,7 @@ import FirebaseCrashlytics
 import Firebase
 import UIKit
 import CoreData
-import crypto
+import Crypto
 
 @UIApplicationMain
 class AppDelegate: UIResponder, UIApplicationDelegate {

@@ -47,3 +47,4 @@ fastlane/report.xml
 fastlane/.env.*
 fastlane/README.md
 protobuf/*.swift
+CryptoSDK

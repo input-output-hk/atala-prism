@@ -8,7 +8,7 @@
 
 import XCTest
 @testable import Atala_PRISM
-import crypto
+import Crypto
 import BitcoinKit
 
 class MnemonicsTests: XCTestCase {

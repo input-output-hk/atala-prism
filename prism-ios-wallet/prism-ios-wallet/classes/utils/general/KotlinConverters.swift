@@ -7,7 +7,7 @@
 //
 
 import Foundation
-import crypto
+import Crypto
 
 func toKotlinBytes(array: [Int8]) -> KotlinByteArray {
     let result = KotlinByteArray(size: Int32(array.count))

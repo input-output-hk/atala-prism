@@ -3,7 +3,7 @@
 	archiveVersion = 1;
 	classes = {
 	};
-	objectVersion = 51;
+	objectVersion = 52;
 	objects = {
 
 /* Begin PBXBuildFile section */
@@ -202,6 +202,7 @@
 		B3F94E96247455A60087EBFD /* SecurityMainViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = B3F94E93247455A60087EBFD /* SecurityMainViewCell.swift */; };
 		B3F94E97247455A60087EBFD /* SecurityViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = B3F94E94247455A60087EBFD /* SecurityViewController.swift */; };
 		B3F94E98247455A60087EBFD /* SecurityPresenter.swift in Sources */ = {isa = PBXBuildFile; fileRef = B3F94E95247455A60087EBFD /* SecurityPresenter.swift */; };
+		DA1B337726A9A6600033E667 /* Crypto in Frameworks */ = {isa = PBXBuildFile; productRef = DA1B337626A9A6600033E667 /* Crypto */; };
 		EE22F1F223A4AD2C003C4F87 /* CryptoUtils.swift in Sources */ = {isa = PBXBuildFile; fileRef = EE22F1F123A4AD2C003C4F87 /* CryptoUtils.swift */; };
 		EE48AC022377537200C0A441 /* Tutorial.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = EE48AC012377537200C0A441 /* Tutorial.storyboard */; };
 		EE48AC04237753A900C0A441 /* Register.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = EE48AC03237753A900C0A441 /* Register.storyboard */; };
@@ -584,6 +585,7 @@
 		B3F94E93247455A60087EBFD /* SecurityMainViewCell.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SecurityMainViewCell.swift; sourceTree = "<group>"; };
 		B3F94E94247455A60087EBFD /* SecurityViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SecurityViewController.swift; sourceTree = "<group>"; };
 		B3F94E95247455A60087EBFD /* SecurityPresenter.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SecurityPresenter.swift; sourceTree = "<group>"; };
+		DA1B337526A99CFA0033E667 /* CryptoSDK */ = {isa = PBXFileReference; lastKnownFileType = folder; path = CryptoSDK; sourceTree = "<group>"; };
 		EE22F1F123A4AD2C003C4F87 /* CryptoUtils.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CryptoUtils.swift; sourceTree = "<group>"; };
 		EE48AC012377537200C0A441 /* Tutorial.storyboard */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; path = Tutorial.storyboard; sourceTree = "<group>"; };
 		EE48AC03237753A900C0A441 /* Register.storyboard */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; path = Register.storyboard; sourceTree = "<group>"; };
@@ -760,6 +762,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				DA1B337726A9A6600033E667 /* Crypto in Frameworks */,
 				386BF954863A1670AF2F333D /* (null) in Frameworks */,
 				A952A3ABA5F37F460FA67215 /* Pods_prism_ios_wallet.framework in Frameworks */,
 			);
@@ -1846,6 +1849,7 @@
 		F5E3893C234BC34D0001F1E3 = {
 			isa = PBXGroup;
 			children = (
+				DA1B337526A99CFA0033E667 /* CryptoSDK */,
 				EE7D49BE2366B5A7007C31A8 /* protobuf */,
 				F5E38947234BC34D0001F1E3 /* prism-ios-wallet */,
 				F5E3895E234BC3500001F1E3 /* prism-ios-walletTests */,
@@ -1925,6 +1929,9 @@
 			dependencies = (
 			);
 			name = "prism-ios-wallet";
+			packageProductDependencies = (
+				DA1B337626A9A6600033E667 /* Crypto */,
+			);
 			productName = "credentials-verification-iOS";
 			productReference = F5E38945234BC34D0001F1E3 /* Atala PRISM.app */;
 			productType = "com.apple.product-type.application";
@@ -2907,6 +2914,13 @@
 			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		DA1B337626A9A6600033E667 /* Crypto */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = Crypto;
+		};
+/* End XCSwiftPackageProductDependency section */
 
 /* Begin XCVersionGroup section */
 		B309C14D24BE40A200AF70DF /* AtalaPrismModel.xcdatamodeld */ = {
