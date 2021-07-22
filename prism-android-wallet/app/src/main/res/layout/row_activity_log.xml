@@ -72,7 +72,7 @@
                         android:layout_width="14dp"
                         android:layout_height="14dp" />
 
-                    <androidx.appcompat.widget.AppCompatTextView
+                    <io.iohk.atala.prism.android.customui.DateTextView
                         android:id="@+id/date_text_view"
                         android:layout_gravity="center_vertical"
                         android:textColor="@color/onSurfaceMedium"

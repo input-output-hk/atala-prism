@@ -71,7 +71,7 @@ class ActivityLogsAdapter(private var dateFormat: SimpleDateFormat) : BaseRecycl
             binding.iconImageView.setImageResource(iconResourceId)
             binding.titleTextView.text = title
             binding.descriptionTextView.text = description
-            binding.dateTextView.text = adapter.dateFormat.format(data.activityHistory.date)
+            binding.dateTextView.setDate(data.activityHistory.date, adapter.dateFormat)
         }
     }
 }

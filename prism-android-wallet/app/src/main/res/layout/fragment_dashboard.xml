@@ -12,7 +12,7 @@
          android:layout_width="match_parent"
         android:layout_height="match_parent">
 
-        <ScrollView
+        <androidx.core.widget.NestedScrollView
             android:clipToPadding="false"
             android:clipChildren="false"
             android:layout_weight="1"
@@ -50,6 +50,6 @@
                 <include android:id="@+id/banners_include" layout="@layout/include_dashboard_banners" />
 
             </LinearLayout>
-        </ScrollView>
+        </androidx.core.widget.NestedScrollView>
     </LinearLayout>
 </layout>

@@ -40,12 +40,11 @@ class NotificationsAdapter(
                 }
             }
         }
-
         override fun bind(data: ActivityHistoryWithCredential) {
             val ctx = binding.root.context
             data.credential?.let {
                 binding.credentialNameTextView.text = it.issuerName
-                binding.issuedDateTextView.text = ctx.getString(R.string.received, adapter.dateFormat.format(it.dateReceived))
+                binding.issuedDateTextView.setDate(it.dateReceived, adapter.dateFormat)
                 binding.credentialTypeTextView.setText(CredentialUtil.getNameResource(it))
                 binding.credentialLogoImageView.setImageDrawable(CredentialUtil.getLogo(it.credentialType, ctx))
             }

@@ -35,8 +35,18 @@
         <item name="android:homeAsUpIndicator">@drawable/ic_back_arrow_toolbar</item>
 
         <item name="bottomSheetDialogTheme">@style/AppBottomSheetDialogTheme</item>
+
+        <item name="dateTextViewStyle">@style/DateTextViewStyle</item>
     </style>
 
+    <style name="DateTextViewStyle" parent="Widget.AppCompat.TextView">
+        <item name="secondAgoText">@string/date_text_view_second_ago_text</item>
+        <item name="secondsAgoText">@string/date_text_view_seconds_ago_text</item>
+        <item name="minuteAgoText">@string/date_text_view_minute_ago_text</item>
+        <item name="minutesAgoText">@string/date_text_view_minutes_ago_text</item>
+        <item name="hourAgoText">@string/date_text_view_hour_ago_text</item>
+        <item name="hoursAgoText">@string/date_text_view_hours_ago_text</item>
+    </style>
     <!-- Action bar theme. -->
     <style name="CustomActionBar" parent="@style/Widget.AppCompat.Light.ActionBar.Solid">
         <item name="elevation">0dp</item>

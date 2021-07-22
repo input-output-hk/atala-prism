@@ -76,7 +76,14 @@
                 android:layout_marginBottom="12dp"
                 android:background="@color/grey_2" />
 
-            <androidx.appcompat.widget.AppCompatTextView
+            <io.iohk.atala.prism.android.customui.DateTextView
+                app:dateFormatWrapperText="@string/received"
+                app:secondAgoText="@string/received_second_ago"
+                app:secondsAgoText="@string/received_seconds_ago"
+                app:minuteAgoText="@string/received_minute_ago"
+                app:minutesAgoText="@string/received_minutes_ago"
+                app:hourAgoText="@string/received_hour_ago"
+                app:hoursAgoText="@string/received_hours_ago"
                 android:id="@+id/issued_date_text_view"
                 android:maxLines="1"
                 android:textSize="14sp"

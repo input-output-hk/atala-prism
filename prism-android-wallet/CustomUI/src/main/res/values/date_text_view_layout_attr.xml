@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <declare-styleable name="DefaultDateTextViewStyle">
+        <attr name="dateTextViewStyle" format="reference"/>
+    </declare-styleable>
+    <declare-styleable name="DateTextView">
+        <attr name="secondAgoText" format="string"/>
+        <attr name="secondsAgoText" format="string"/>
+        <attr name="minuteAgoText" format="string"/>
+        <attr name="minutesAgoText" format="string"/>
+        <attr name="hourAgoText" format="string"/>
+        <attr name="hoursAgoText" format="string"/>
+        <attr name="dateFormatWrapperText" format="string"/>
+    </declare-styleable>
+</resources>
