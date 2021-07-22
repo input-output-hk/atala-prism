@@ -149,7 +149,7 @@
     <string name="custom_date_button_name">Date</string>
     <string name="custom_date_button_description">Custom date format</string>
     <string name="pay_id_button_name">Pay ID</string>
-    <string name="pay_id_button_description">Get it Now !</string>
+    <string name="pay_id_button_description">View or Create Pay ID</string>
     <string name="verified_identity_button_name">Verified Identity</string>
     <string name="verified_identity_button_description">Get it Now !</string>
 
@@ -307,17 +307,15 @@
     <string name="date_format_setting_clarification">&lt;b>Important:&lt;/b> This is the application\'s date format. The date format in Credentials received or shared will not change.</string>
 
     <!-- layout/include_dashboard_banners.xml -->
-    <string name="include_dashboard_banners_demo_title">Try Atala PRISM Interactive Demo &amp; receive credentials</string>
-    <string name="include_dashboard_banners_demo_text">Open &lt;b>atalaprism.io&lt;/b> on a \ndesktop and follow demo steps.</string>
+    <string name="include_dashboard_banners_demo_title">Visit atalaprism.io on a desktop computer and try our interactive demo</string>
     <string name="include_dashboard_banners_demo_more_info">More Info</string>
-    <string name="include_dashboard_banners_share_title">Share with your Friends!</string>
-    <string name="include_dashboard_banners_share_text">Atala PRISM lorem ipsum \ndolor sit amtet.</string>
-    <string name="include_dashboard_banners_share_send_invite">Send Invite</string>
+    <string name="include_dashboard_banners_share_title">Share Atala PRISM with your friends</string>
+    <string name="include_dashboard_banners_share_send_invite">Share app</string>
 
     <!-- layout/include_dashboard_profile.xml -->
     <string name="include_dashboard_profile_hello">Hello</string>
     <string name="include_dashboard_profile_view_profile">VIEW PROFILE</string>
-    <string name="include_dashboard_profile_notifications_text">You have %1$d notification (s)</string>
+    <string name="include_dashboard_profile_notifications_text">You have %1$d notification(s)</string>
     <string name="include_dashboard_profile_no_notifications_text">No new notifications</string>
     <string name="include_dashboard_profile_your_pay_id_name">YOUR PAY ID NAME</string>
 
@@ -350,15 +348,15 @@
 
     <!-- layout/row_dashboard_card_notification_pay_id.xml -->
     <string name="row_dashboard_card_notification_pay_id_title">Get your Pay ID now!</string>
-    <string name="row_dashboard_card_notification_pay_id_text">You can start now or do it later by goint to the &lt;b>Settings&lt;/b> option on the bottom menu.</string>
+    <string name="row_dashboard_card_notification_pay_id_text">You can start now or do it later by going to &lt;b>settings&lt;/b></string>
     <string name="row_dashboard_card_notification_pay_id_button_text_1">Pay ID</string>
     <string name="row_dashboard_card_notification_pay_id_button_text_2">Get it Now !</string>
 
     <!-- layout/row_dashboard_card_notification_verified_credential.xml -->
-    <string name="row_dashboard_card_notification_verified_credential_title">Get your Verified Credential!</string>
-    <string name="row_dashboard_card_notification_verified_credential_text">You can start now or do it later by goint to the &lt;b>Settings&lt;/b> option on the bottom menu.</string>
-    <string name="row_dashboard_card_notification_verified_credential_button_text_1">Verified Credential</string>
-    <string name="row_dashboard_card_notification_verified_credential_button_text_2">Get it Now !</string>
+    <string name="row_dashboard_card_notification_verified_credential_title">Get your identity verified</string>
+    <string name="row_dashboard_card_notification_verified_credential_text">You can start now or do it later by going to &lt;b>settings&lt;/b></string>
+    <string name="row_dashboard_card_notification_verified_credential_button_text_1">Verified identity</string>
+    <string name="row_dashboard_card_notification_verified_credential_button_text_2">Apply now</string>
 
     <!-- layout/fragment_pay_id_instructions.xml -->
     <string name="fragment_pay_id_instructions_text_1">Benefits of creating a Pay ID</string>
@@ -440,7 +438,7 @@
     <string name="id_verification_tutorial_step3">Step 3</string>
     <string name="id_verification_tutorial_step3_text">Confirm your Data</string>
     <string name="id_verification_tutorial_final_step">Final Step</string>
-    <string name="id_verification_tutorial_final_step_text">Get your Acuant ID</string>
+    <string name="id_verification_tutorial_final_step_text">Receive a verified identity credential</string>
     <string name="id_verification_tutorial_continue">Continue</string>
     <string name="id_verification_tutorial_skip_text">Skip and do later</string>
     <string name="id_verification_tutorial_initialization_error_msg">Something went wrong, you can try again later from the settings screen</string>
