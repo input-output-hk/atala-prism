@@ -68,10 +68,10 @@
         android:label="@string/id_data_confirmation_toolbar_title">
 
         <action
+            app:launchSingleTop="true"
             app:popUpTo="@id/id_verification"
-            android:id="@+id/action_idDataConfirmationFragment_to_mainActivity"
-            app:destination="@id/mainActivity"
-            app:launchSingleTop="true" />
+            android:id="@+id/action_idDataConfirmationFragment_to_idVerificationSuccessFragment"
+            app:destination="@id/idVerificationSuccessFragment" />
     </fragment>
     <fragment
         tools:layout="@layout/fragment_id_selfie"
@@ -86,5 +86,16 @@
             app:popUpTo="@id/idTypeSelectionFragment"
             android:id="@+id/action_idSelfieFragment_to_idDataConfirmationFragment"
             app:destination="@id/idDataConfirmationFragment" />
+    </fragment>
+    <fragment
+        tools:layout="@layout/fragment_id_verification_success"
+        android:id="@+id/idVerificationSuccessFragment"
+        android:name="io.iohk.atala.prism.app.ui.idverification.IdVerificationSuccessFragment"
+        android:label="@string/fragment_id_verification_success_title" >
+        <action
+            app:launchSingleTop="true"
+            app:popUpTo="@id/id_verification"
+            android:id="@+id/action_idVerificationSuccessFragment_to_mainActivity"
+            app:destination="@id/mainActivity" />
     </fragment>
 </navigation>

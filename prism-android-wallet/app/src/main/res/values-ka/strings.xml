@@ -505,4 +505,10 @@
     <string name="fragment_id_selfie_take_a_picture_button_text">Take a picture</string>
     <string name="fragment_id_selfie_error_face_matching_process">Something went wrong when validating the selfie</string>
 
+    <!-- @layout/fragment_id_verification_success -->
+    <string name="fragment_id_verification_success_title">Complete KYC</string>
+    <string name="fragment_id_verification_success_text_1">Thank You!</string>
+    <string name="fragment_id_verification_success_text_2">You will received your verified identity \ncredential on verification completion</string>
+    <string name="fragment_id_verification_success_close">Close</string>
+
 </resources>

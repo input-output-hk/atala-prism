@@ -1,6 +1,5 @@
 package io.iohk.atala.prism.app.ui.idverification.step2
 
-import android.content.Intent
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -8,7 +7,6 @@ import android.view.ViewGroup
 import androidx.databinding.DataBindingUtil
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.ViewModelProviders
-import androidx.navigation.ActivityNavigator
 import androidx.navigation.fragment.findNavController
 import dagger.android.support.DaggerFragment
 import io.iohk.atala.prism.app.neo.common.EventWrapperObserver
@@ -73,18 +71,9 @@ class IdDataConfirmationFragment : DaggerFragment() {
             viewLifecycleOwner,
             EventWrapperObserver {
                 if (it) {
-                    goToMainActivity()
+                    findNavController().navigate(IdDataConfirmationFragmentDirections.actionIdDataConfirmationFragmentToIdVerificationSuccessFragment())
                 }
             }
         )
-    }
-
-    private fun goToMainActivity() {
-        val extras = ActivityNavigator.Extras.Builder()
-            .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-            .addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK)
-            .build()
-        val action = IdDataConfirmationFragmentDirections.actionIdDataConfirmationFragmentToMainActivity()
-        findNavController().navigate(action, extras)
     }
 }
