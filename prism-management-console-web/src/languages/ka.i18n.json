@@ -585,7 +585,7 @@
       "continueButton": "Continue"
     },
     "categoryCreationModal": {
-      "title": "Create New Category",
+      "title": "Select Category Icon",
       "categoryNameLabel": "Category Name",
       "categoryNamePlaceholder": "Category Name",  
       "categoryIconLabel": "Select your Category Icon",
