@@ -399,6 +399,7 @@
     <string name="fragment_pay_id_setup_form_success_dialog_primary_text">Your PAY ID was</string>
     <string name="fragment_pay_id_setup_form_success_dialog_secondary_text">Successfully Created!</string>
     <string name="fragment_pay_id_setup_form_success_dialog_button_text">Close</string>
+    <string name="fragment_pay_id_setup_form_name_confirmation_dialog_message">Are you sure your Pay ID is correct? You will not be able to update it</string>
 
     <!-- layout/fragment_pay_id_detail.xml -->
     <string name="fragment_pay_id_detail_title">Pay ID Information</string>

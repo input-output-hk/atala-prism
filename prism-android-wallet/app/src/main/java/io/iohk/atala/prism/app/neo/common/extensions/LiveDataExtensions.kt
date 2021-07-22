@@ -35,7 +35,7 @@ suspend fun <T> LiveData<T>.getOrAwaitValue(timeMillis: Long): T? = suspendCance
  * @return returns the value of the [LiveData]
  */
 @Throws(TimeoutCancellationException::class)
-suspend fun <T> LiveData<T>.getOrAwaitValueOrThrow(timeMillis: Long): T? = suspendCancellableCoroutineWithTimeout(timeMillis) { continuation ->
+suspend fun <T> LiveData<T>.getOrAwaitValueOrThrow(timeMillis: Long): T = suspendCancellableCoroutineWithTimeout(timeMillis) { continuation ->
     val observer = object : Observer<T> {
         override fun onChanged(v: T?) {
             v?.let {

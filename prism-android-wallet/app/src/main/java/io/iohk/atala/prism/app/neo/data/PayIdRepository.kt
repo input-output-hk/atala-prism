@@ -50,31 +50,63 @@ class PayIdRepository(
 
     suspend fun getNotIdentityCredentials(): List<Credential> = payIdLocalDataSource.getNotIdentityCredentials()
 
-    suspend fun loadCurrentPayId(): PayId? = payIdLocalDataSource.getPayIdByStatus(PayId.Status.Registered)
+    @Throws(TimeoutCancellationException::class)
+    suspend fun loadCurrentPayId(): PayId? {
+        return if (payIdLocalDataSource.getPayIdByStatus(PayId.Status.WaitingForResponse) != null) {
+            // if there is already a PayId waiting to be answered, it waits for the answer
+            payIdLocalDataSource.getPayIdByStatusLiveData(PayId.Status.Registered).getOrAwaitValue(DEFAULT_MAX_TIMEOUT_MILL)
+        } else payIdLocalDataSource.getPayIdByStatus(PayId.Status.Registered)
+    }
 
-    @Throws(PayIdRepositoryException::class, ExecutionException::class, InterruptedException::class, TimeoutCancellationException::class)
-    suspend fun registerPayIdName(payIdName: String): PayId? {
-        if (payIdLocalDataSource.getPayIdByStatus(PayId.Status.WaitingForResponse) != null) {
-            return payIdLocalDataSource.getPayIdByStatusLiveData(PayId.Status.Registered).getOrAwaitValue(DEFAULT_MAX_TIMEOUT_MILL) // if there is already a PayId waiting to be answered, it waits for the answer
-        }
-        payIdLocalDataSource.getPayIdByStatus(PayId.Status.Registered)?.let {
-            return it // if there is already a registered PayId, it is returned
+    @Throws(
+        PayIdRepositoryException.AtalaError::class,
+        PayIdRepositoryException.PayIdAlreadyRegistered::class,
+        ExecutionException::class,
+        InterruptedException::class,
+        TimeoutCancellationException::class
+    )
+    suspend fun checkPayIdNameAvailability(payIdName: String): Boolean {
+        loadCurrentPayId()?.let {
+            throw PayIdRepositoryException.PayIdAlreadyRegistered(it.name ?: "")
         }
         val mirrorContact = getMirrorContact()
         val payIdNameIsAvailableMessageId = remoteDataSource.sendCheckPayIdNameAvailabilityMessage(payIdName, mirrorContact)
-        val payIdNameIsAvailable: Boolean = mirrorMessageResponseHandler.awaitForResponse(payIdNameIsAvailableMessageId)?.let { atalaMessage ->
-            atalaMessage.mirrorMessage?.checkPayIdNameAvailabilityResponse?.available
-        } == true
-        if (!payIdNameIsAvailable) throw PayIdRepositoryException.PayIdNameAlreadyTaken(payIdName)
+        return mirrorMessageResponseHandler.awaitForResponse(payIdNameIsAvailableMessageId)?.let { atalaMessage ->
+            if (atalaMessage.messageCase == AtalaMessage.MessageCase.ATALA_ERROR_MESSAGE) {
+                throw PayIdRepositoryException.AtalaError(atalaMessage.atalaErrorMessage.status.message)
+            }
+            atalaMessage.mirrorMessage?.checkPayIdNameAvailabilityResponse?.available == true
+        }
+    }
+
+    @Throws(
+        PayIdRepositoryException.AtalaError::class,
+        PayIdRepositoryException.PayIdNameAlreadyTaken::class,
+        ExecutionException::class,
+        InterruptedException::class,
+        TimeoutCancellationException::class
+    )
+    suspend fun registerPayIdName(payIdName: String): PayId? {
+        loadCurrentPayId()?.let { return@registerPayIdName it }
+        val mirrorContact = getMirrorContact()
         val payIdNameRegistrationMessageId = remoteDataSource.sendPayIdNameRegistrationMessage(payIdName, mirrorContact)
         // PayID registration request is saved locally waiting to be answered (the response will be handled in ConnectorListenerRepository)
         payIdLocalDataSource.storePayId(PayId(mirrorContact.connectionId, payIdName, payIdNameRegistrationMessageId, PayId.Status.WaitingForResponse))
-        val payIdNameRegistrationResult = mirrorMessageResponseHandler.awaitForResponse(payIdNameRegistrationMessageId)?.let { atalaMessage ->
-            atalaMessage.mirrorMessage?.messageCase == MirrorMessage.MessageCase.PAYID_NAME_REGISTERED_MESSAGE
-        } == true
-        if (!payIdNameRegistrationResult) throw PayIdRepositoryException.PayIdNameAlreadyTaken(payIdName)
-        return payIdLocalDataSource.getPayIdByStatusLiveData(PayId.Status.Registered).getOrAwaitValue(DEFAULT_MAX_TIMEOUT_MILL)
+        return mirrorMessageResponseHandler.awaitForResponse(payIdNameRegistrationMessageId).let { atalaMessage ->
+            when {
+                atalaMessage.mirrorMessage?.messageCase == MirrorMessage.MessageCase.PAYID_NAME_REGISTERED_MESSAGE ->
+                    payIdLocalDataSource
+                        .getPayIdByStatusLiveData(PayId.Status.Registered)
+                        .getOrAwaitValue(DEFAULT_MAX_TIMEOUT_MILL)
+                atalaMessage.mirrorMessage?.messageCase == MirrorMessage.MessageCase.PAYID_NAME_TAKEN_MESSAGE ->
+                    throw PayIdRepositoryException.PayIdNameAlreadyTaken(payIdName)
+                atalaMessage.messageCase == AtalaMessage.MessageCase.ATALA_ERROR_MESSAGE ->
+                    throw PayIdRepositoryException.AtalaError(atalaMessage.atalaErrorMessage.status.message)
+                else -> throw Exception("unexpected reply message for a PayIdNameRegistrationMessage")
+            }
+        }
     }
+
     suspend fun registerAddressOrPublicKey(addressOrPublicKey: String) {
         payIdLocalDataSource.getPayIdByStatus(PayId.Status.Registered)?.let { payId ->
             when {
@@ -132,5 +164,6 @@ class PayIdRepository(
 
 sealed class PayIdRepositoryException(message: String?) : Exception(message) {
     class PayIdNameAlreadyTaken(val payIdName: String) : PayIdRepositoryException("'$payIdName' is already taken")
+    class PayIdAlreadyRegistered(val payIdName: String) : PayIdRepositoryException("'$payIdName' is already registered")
     class AtalaError(message: String?) : PayIdRepositoryException(message)
 }

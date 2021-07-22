@@ -10,6 +10,7 @@ import androidx.databinding.DataBindingUtil
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.ViewModelProviders
 import androidx.navigation.fragment.findNavController
+import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import dagger.android.support.DaggerFragment
 import io.iohk.atala.prism.app.neo.common.EventWrapperObserver
 import io.iohk.atala.prism.app.neo.common.IntentUtils
@@ -95,6 +96,15 @@ class PayIdSetupFormFragment : DaggerFragment() {
                 }
             }
         )
+
+        viewModel.showNameConfirmationDialog.observe(
+            viewLifecycleOwner,
+            EventWrapperObserver { show ->
+                if (show) {
+                    showPayIdNameConfirmationDialog()
+                }
+            }
+        )
     }
 
     private fun showQRScanner() {
@@ -119,5 +129,14 @@ class PayIdSetupFormFragment : DaggerFragment() {
 
     private fun navigateToPayIdDetail() {
         findNavController().navigate(R.id.action_payIdSetupFormFragment_to_payIdDetailFragment)
+    }
+
+    private fun showPayIdNameConfirmationDialog() {
+        MaterialAlertDialogBuilder(requireContext())
+            .setMessage(R.string.fragment_pay_id_setup_form_name_confirmation_dialog_message)
+            .setNegativeButton(R.string.cancel, null)
+            .setPositiveButton(R.string.accept) { _, _ ->
+                viewModel.confirmPayIdNameRegistration()
+            }.show()
     }
 }

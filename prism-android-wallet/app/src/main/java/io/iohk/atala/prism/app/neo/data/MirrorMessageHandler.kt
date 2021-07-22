@@ -18,7 +18,7 @@ interface MirrorMessageReceiver {
 
 interface MirrorMessageResponseHandler {
     @Throws(TimeoutCancellationException::class)
-    suspend fun awaitForResponse(messageId: String, maxTimeoutMill: Long = MirrorMessageHandler.DEFAULT_MAX_TIMEOUT_MILL): AtalaMessage?
+    suspend fun awaitForResponse(messageId: String, maxTimeoutMill: Long = MirrorMessageHandler.DEFAULT_MAX_TIMEOUT_MILL): AtalaMessage
 }
 
 class MirrorMessageHandler : MirrorMessageReceiver, MirrorMessageResponseHandler {
@@ -46,7 +46,7 @@ class MirrorMessageHandler : MirrorMessageReceiver, MirrorMessageResponseHandler
     /**
      * queue of [MutableLiveData]<[MirrorMessage]> waiting for response (the map key should be the message id)
      * */
-    private val messagesNeedingResponse: MutableMap<String, MutableLiveData<AtalaMessage?>> = mutableMapOf()
+    private val messagesNeedingResponse: MutableMap<String, MutableLiveData<AtalaMessage>> = mutableMapOf()
 
     /**
      * [MirrorMessageReceiver] implementations
@@ -65,8 +65,8 @@ class MirrorMessageHandler : MirrorMessageReceiver, MirrorMessageResponseHandler
      * [MirrorMessageResponseHandler] implementations
      * */
 
-    override suspend fun awaitForResponse(messageId: String, maxTimeoutMill: Long): AtalaMessage? {
-        val mutableLiveData = MutableLiveData<AtalaMessage?>()
+    override suspend fun awaitForResponse(messageId: String, maxTimeoutMill: Long): AtalaMessage {
+        val mutableLiveData = MutableLiveData<AtalaMessage>()
         messagesNeedingResponse[messageId] = mutableLiveData
         return mutableLiveData.getOrAwaitValueOrThrow(maxTimeoutMill)
     }

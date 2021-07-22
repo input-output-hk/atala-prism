@@ -52,6 +52,10 @@ class PayIdSetupFormViewModel @Inject constructor(private val repository: PayIdR
 
     val error: LiveData<EventWrapper<Error>> = _error
 
+    private val _showNameConfirmationDialog = MutableLiveData<EventWrapper<Boolean>>()
+
+    val showNameConfirmationDialog: LiveData<EventWrapper<Boolean>> = _showNameConfirmationDialog
+
     private val totalOfPayIdAddresses: LiveData<Int> = repository.totalOfPayIdAddresses
 
     private val totalOfPayIdPublicKeys: LiveData<Int> = repository.totalOfPayIdPublicKeys
@@ -72,20 +76,58 @@ class PayIdSetupFormViewModel @Inject constructor(private val repository: PayIdR
     }
 
     private fun loadRegisteredPayId() {
+        _isLoading.value = true
         viewModelScope.launch {
-            _payId.value = repository.loadCurrentPayId()
-            payIdName.value = _payId.value?.name
+            try {
+                _payId.value = repository.loadCurrentPayId()
+                payIdName.value = _payId.value?.name
+            } catch (ex: TimeoutCancellationException) {
+                ex.printStackTrace()
+                _error.value = EventWrapper(Error.TimeOutError)
+            } finally {
+                _isLoading.postValue(false)
+            }
         }
     }
 
     fun next() {
         if (_payId.value == null)
-            registerPayId()
+            checkPayIdNameAvailability()
         else
             registerWalletAddress()
     }
 
-    private fun registerPayId() {
+    private fun checkPayIdNameAvailability() {
+        payIdName.value?.let { payIdName ->
+            _isLoading.value = true
+            viewModelScope.launch {
+                try {
+                    val nameAvailability = repository.checkPayIdNameAvailability(payIdName)
+                    if (nameAvailability) {
+                        _showNameConfirmationDialog.postValue(EventWrapper(true))
+                    } else {
+                        _error.value = EventWrapper(Error.PayIdNameAlreadyTaken(payIdName))
+                    }
+                } catch (ex: PayIdRepositoryException.AtalaError) {
+                    ex.printStackTrace()
+                    _error.value = EventWrapper(Error.ServerError(ex.message))
+                } catch (ex: PayIdRepositoryException.PayIdAlreadyRegistered) {
+                    ex.printStackTrace()
+                    loadRegisteredPayId()
+                } catch (ex: TimeoutCancellationException) {
+                    ex.printStackTrace()
+                    _error.value = EventWrapper(Error.TimeOutError)
+                } catch (ex: Exception) {
+                    ex.printStackTrace()
+                    _error.value = EventWrapper(Error.UnknownError(ex.message))
+                } finally {
+                    _isLoading.value = false
+                }
+            }
+        }
+    }
+
+    fun confirmPayIdNameRegistration() {
         payIdName.value?.let { payIdName ->
             _isLoading.value = true
             viewModelScope.launch {
@@ -98,6 +140,9 @@ class PayIdSetupFormViewModel @Inject constructor(private val repository: PayIdR
                 } catch (ex: PayIdRepositoryException.PayIdNameAlreadyTaken) {
                     ex.printStackTrace()
                     _error.value = EventWrapper(Error.PayIdNameAlreadyTaken(ex.payIdName))
+                } catch (ex: PayIdRepositoryException.AtalaError) {
+                    ex.printStackTrace()
+                    _error.value = EventWrapper(Error.ServerError(ex.message))
                 } catch (ex: TimeoutCancellationException) {
                     ex.printStackTrace()
                     _error.value = EventWrapper(Error.TimeOutError)

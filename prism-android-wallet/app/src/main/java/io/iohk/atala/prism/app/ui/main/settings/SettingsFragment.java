@@ -103,8 +103,8 @@ public class SettingsFragment extends DaggerFragment {
             }
         });
 
-        getViewModel().getPayIdOptionEnable().observe(getViewLifecycleOwner(), enabled -> {
-            payIdItem.setEnabled(enabled);
+        getViewModel().getThereIsAPayId().observe(getViewLifecycleOwner(), thereIsAPayId -> {
+            // TODO change text of PayId button
         });
     }
 

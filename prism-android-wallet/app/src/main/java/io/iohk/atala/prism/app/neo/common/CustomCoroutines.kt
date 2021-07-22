@@ -19,8 +19,8 @@ suspend inline fun <T> suspendCancellableCoroutineWithTimeoutOrNull(
 suspend inline fun <T> suspendCancellableCoroutineWithTimeout(
     timeoutMillis: Long,
     crossinline block: (Continuation<T>) -> Unit
-): T? {
-    var result: T? = null
+): T {
+    var result: T
     withTimeout(timeMillis = timeoutMillis) {
         result = suspendCancellableCoroutine(block = block)
     }

@@ -14,8 +14,8 @@ class SettingsViewModel @Inject constructor(private val repository: PreferencesR
 
     private val _removeAllDataLiveData = MutableLiveData<AsyncTaskResult<Boolean>>()
 
-    val payIdOptionEnable: LiveData<Boolean> = Transformations.map(repository.payId) {
-        it == null
+    val thereIsAPayId: LiveData<Boolean> = Transformations.map(repository.payId) {
+        it != null
     }
 
     fun removeAllLocalData() {

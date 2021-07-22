@@ -22,7 +22,7 @@ class LiveDataGetOrAwaitValueOrThrowExtensionTest {
         val liveData = MutableLiveData<String>()
         postValueDelayed(liveData, "Hello world", 3000)
 
-        val result: String? = liveData.getOrAwaitValueOrThrow(2000)
+        val result: String = liveData.getOrAwaitValueOrThrow(2000)
     }
 
     @Test
@@ -30,7 +30,7 @@ class LiveDataGetOrAwaitValueOrThrowExtensionTest {
         val liveData = MutableLiveData<String>()
         postValueDelayed(liveData, "Hello world", 3000)
 
-        val result = liveData.getOrAwaitValueOrThrow(3500)
+        val result: String = liveData.getOrAwaitValueOrThrow(3500)
 
         Assert.assertEquals(result, "Hello world")
     }
