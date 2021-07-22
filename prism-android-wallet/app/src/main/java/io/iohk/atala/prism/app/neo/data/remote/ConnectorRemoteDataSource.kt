@@ -29,7 +29,6 @@ import io.iohk.atala.prism.protos.GetMessageStreamRequest
 import io.iohk.atala.prism.protos.GetMessageStreamResponse
 import io.iohk.atala.prism.protos.GetMessagesPaginatedRequest
 import io.iohk.atala.prism.protos.GetMessagesPaginatedResponse
-import io.iohk.atala.prism.protos.GetPayIdNameMessage
 import io.iohk.atala.prism.protos.KycBridgeMessage
 import io.iohk.atala.prism.protos.MirrorMessage
 import io.iohk.atala.prism.protos.PayIdNameRegistrationMessage
@@ -208,20 +207,6 @@ class ConnectorRemoteDataSource(preferencesLocalDataSource: PreferencesLocalData
             CheckPayIdNameAvailabilityMessage.newBuilder().setNameToCheck(payIdName).build()
         val mirrorMessage =
             MirrorMessage.newBuilder().setCheckPayIdNameAvailabilityMessage(message).build()
-        return sendMirrorMessage(mirrorMessage, mirrorContact)
-    }
-
-    /**
-     * Send a [GetPayIdNameMessage] message to a Mirror Connection
-     * @param mirrorContact a mirror connection contact
-     * @return id of the sent message
-     * */
-    @Throws(ExecutionException::class, InterruptedException::class)
-    suspend fun sendGetPayIdNameMessage(
-        mirrorContact: Contact
-    ): String {
-        val message = GetPayIdNameMessage.newBuilder().build()
-        val mirrorMessage = MirrorMessage.newBuilder().setGetPayIdNameMessage(message).build()
         return sendMirrorMessage(mirrorMessage, mirrorContact)
     }
 

@@ -27,8 +27,12 @@ class PayIdLocalDataSource(
 
     override suspend fun storePayIdContact(contact: Contact) = withContext(Dispatchers.IO) {
         contactDao.insert(contact)
+        setContactAsAPayIdContact(contact.connectionId)
+    }
+
+    override suspend fun setContactAsAPayIdContact(connectionId: String) = withContext(Dispatchers.IO) {
         val editor = preferences.edit()
-        editor.putString(PAY_ID_CONNECTION_ID, contact.connectionId)
+        editor.putString(PAY_ID_CONNECTION_ID, connectionId)
         editor.apply()
     }
 
@@ -62,9 +66,17 @@ class PayIdLocalDataSource(
 
     override fun getPayIdByStatusLiveData(status: PayId.Status): LiveData<PayId?> = payIdDao.getPayIdByStatusLiveData(status.value)
 
+    override suspend fun createPayIdAddress(payIdAddress: PayIdAddress): Long = withContext(Dispatchers.IO) {
+        payIdDao.createPayIdAddress(payIdAddress)
+    }
+
     override fun totalOfPayIdAddresses(): LiveData<Int> = payIdDao.totalOfPayIdAddresses()
 
     override fun registeredPayIdAddresses(): LiveData<List<PayIdAddress>> = payIdDao.registeredPayIdAddresses()
+
+    override suspend fun createPayIdPublicKey(payIdPublicKey: PayIdPublicKey): Long = withContext(Dispatchers.IO) {
+        payIdDao.createPayIdPublicKey(payIdPublicKey)
+    }
 
     override fun totalOfPayIdPublicKeys(): LiveData<Int> = payIdDao.totalOfPayIdPublicKeys()
 

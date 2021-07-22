@@ -6,10 +6,14 @@ import io.iohk.atala.prism.app.data.local.db.mappers.ContactMapper
 import io.iohk.atala.prism.app.data.local.db.mappers.CredentialMapper
 import io.iohk.atala.prism.app.data.local.db.model.Contact
 import io.iohk.atala.prism.app.data.local.db.model.CredentialWithEncodedCredential
+import io.iohk.atala.prism.app.data.local.db.model.PayId
+import io.iohk.atala.prism.app.data.local.db.model.PayIdAddress
+import io.iohk.atala.prism.app.data.local.db.model.PayIdPublicKey
 import io.iohk.atala.prism.app.neo.common.exceptions.InvalidSecurityWord
 import io.iohk.atala.prism.app.neo.common.exceptions.InvalidSecurityWordsLength
 import io.iohk.atala.prism.app.neo.common.extensions.toMilliseconds
 import io.iohk.atala.prism.app.neo.data.local.ContactsLocalDataSourceInterface
+import io.iohk.atala.prism.app.neo.data.local.PayIdLocalDataSourceInterface
 import io.iohk.atala.prism.app.neo.data.local.PreferencesLocalDataSourceInterface
 import io.iohk.atala.prism.app.neo.data.local.SessionLocalDataSourceInterface
 import io.iohk.atala.prism.app.neo.data.remote.ConnectorRemoteDataSource
@@ -17,6 +21,8 @@ import io.iohk.atala.prism.app.utils.CryptoUtils
 import io.iohk.atala.prism.kotlin.crypto.derivation.MnemonicLengthException
 import io.iohk.atala.prism.kotlin.crypto.keys.ECKeyPair
 import io.iohk.atala.prism.protos.AtalaMessage
+import io.iohk.atala.prism.protos.MirrorMessage
+import io.iohk.atala.prism.protos.ReceivedMessage
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import java.util.concurrent.ExecutionException
@@ -24,6 +30,7 @@ import java.util.concurrent.ExecutionException
 class AccountRecoveryRepository(
     sessionLocalDataSource: SessionLocalDataSourceInterface,
     preferencesLocalDataSource: PreferencesLocalDataSourceInterface,
+    private val payIdLocalDataSource: PayIdLocalDataSourceInterface,
     private val contactsLocalDataSource: ContactsLocalDataSourceInterface,
     private val connectorApi: ConnectorRemoteDataSource
 ) : BaseRepository(sessionLocalDataSource, preferencesLocalDataSource) {
@@ -39,11 +46,40 @@ class AccountRecoveryRepository(
             var lastIndex = 0
             var done = false
             val loadedContactsAndCredentials = mutableMapOf<Contact, List<CredentialWithEncodedCredential>>()
+            var payId: PayId? = null
+            val payIdAddressesMessages = mutableListOf<AtalaMessage>()
+            val payIdPublicKeysMessages = mutableListOf<AtalaMessage>()
             while (!done) {
                 try {
                     val contacts = loadContactsAt(currentIndex, words)
                     contacts.forEach { (contact, ecKeyPair) ->
-                        val credentials = loadCredentialsFromContact(contact, ecKeyPair)
+                        val credentials: MutableList<CredentialWithEncodedCredential> = mutableListOf()
+                        cycleThroughMessages(contact, ecKeyPair) { atalaMessage, receivedMessage ->
+                            when {
+                                // Credential Recovery
+                                CredentialMapper.isACredentialMessage(atalaMessage) -> {
+                                    val credential = CredentialMapper.mapToCredential(receivedMessage, receivedMessage.id, receivedMessage.connectionId, receivedMessage.received.toMilliseconds(), contact)
+                                    credentials.add(credential)
+                                }
+                                // Pay Id Name Recovery
+                                atalaMessage.mirrorMessage?.messageCase == MirrorMessage.MessageCase.PAYID_NAME_REGISTERED_MESSAGE -> {
+                                    payId = PayId(
+                                        connectionId = contact.connectionId,
+                                        name = atalaMessage.mirrorMessage!!.payIdNameRegisteredMessage.name,
+                                        messageId = receivedMessage.id,
+                                        status = PayId.Status.Registered
+                                    )
+                                }
+                                // Pay Id Address Recovery
+                                atalaMessage.mirrorMessage?.messageCase == MirrorMessage.MessageCase.ADDRESS_REGISTERED_MESSAGE -> {
+                                    payIdAddressesMessages.add(atalaMessage)
+                                }
+                                // Pay Id Public Key Recovery
+                                atalaMessage.mirrorMessage?.messageCase == MirrorMessage.MessageCase.WALLET_REGISTERED -> {
+                                    payIdPublicKeysMessages.add(atalaMessage)
+                                }
+                            }
+                        }
                         loadedContactsAndCredentials[contact] = credentials
                     }
                 } catch (ex: ExecutionException) {
@@ -61,6 +97,30 @@ class AccountRecoveryRepository(
             sessionLocalDataSource.storeSessionData(words)
             contactsLocalDataSource.storeContactsWithIssuedCredentials(loadedContactsAndCredentials)
             sessionLocalDataSource.storeLastSyncedIndex(lastIndex)
+
+            // Store Pay Id Data
+            payId?.let {
+                payIdLocalDataSource.setContactAsAPayIdContact(connectionId = it.connectionId)
+                val payIdLocalId = payIdLocalDataSource.storePayId(it)
+                payIdAddressesMessages.forEach { atalaMessage ->
+                    payIdLocalDataSource.createPayIdAddress(
+                        PayIdAddress(
+                            payIdLocalId = payIdLocalId,
+                            address = atalaMessage.mirrorMessage.addressRegisteredMessage.cardanoAddress,
+                            messageId = atalaMessage.replyTo
+                        )
+                    )
+                }
+                payIdPublicKeysMessages.forEach { atalaMessage ->
+                    payIdLocalDataSource.createPayIdPublicKey(
+                        PayIdPublicKey(
+                            payIdLocalId = payIdLocalId,
+                            publicKey = atalaMessage.mirrorMessage.walletRegistered.extendedPublicKey,
+                            messageId = atalaMessage.replyTo
+                        )
+                    )
+                }
+            }
         }
     }
 
@@ -97,15 +157,13 @@ class AccountRecoveryRepository(
         return map
     }
 
-    private fun loadCredentialsFromContact(contact: Contact, keyPair: ECKeyPair): List<CredentialWithEncodedCredential> {
+    private fun cycleThroughMessages(contact: Contact, keyPair: ECKeyPair, operation: (AtalaMessage, ReceivedMessage) -> Unit) {
         val paginatedMessagesResponse = connectorApi.getAllMessages(keyPair, contact.lastMessageId)
-        return paginatedMessagesResponse.messagesList.map { receivedMessage ->
-            val atalaMessage = AtalaMessage.parseFrom(receivedMessage.message)
+        paginatedMessagesResponse.messagesList.map { receivedMessage ->
             contact.lastMessageId = receivedMessage.id
-            return@map if (CredentialMapper.isACredentialMessage(atalaMessage))
-                CredentialMapper.mapToCredential(receivedMessage, receivedMessage.id, receivedMessage.connectionId, receivedMessage.received.toMilliseconds(), contact)
-            else
-                null
-        }.filterNotNull()
+            AtalaMessage.parseFrom(receivedMessage.message)?.apply {
+                operation(this, receivedMessage)
+            }
+        }
     }
 }

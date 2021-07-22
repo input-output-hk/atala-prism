@@ -159,9 +159,10 @@ public class ApplicationModule {
     @Provides
     public AccountRecoveryRepository provideSessionLocalDataSourceInterface(SessionLocalDataSourceInterface sessionLocalDataSource,
                                                                             PreferencesLocalDataSourceInterface preferencesLocalDataSource,
+                                                                            PayIdLocalDataSourceInterface payIdLocalDataSource,
                                                                             ContactsLocalDataSourceInterface contactsLocalDataSource,
                                                                             ConnectorRemoteDataSource connectorRemoteDataSource) {
-        return new AccountRecoveryRepository(sessionLocalDataSource, preferencesLocalDataSource, contactsLocalDataSource, connectorRemoteDataSource);
+        return new AccountRecoveryRepository(sessionLocalDataSource, preferencesLocalDataSource, payIdLocalDataSource, contactsLocalDataSource, connectorRemoteDataSource);
     }
 
     /*
