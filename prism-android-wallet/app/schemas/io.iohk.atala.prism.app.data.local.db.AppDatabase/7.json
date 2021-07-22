@@ -520,7 +520,7 @@
       },
       {
         "tableName": "payIdAddresses",
-        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `pay_id_local_id` INTEGER NOT NULL, `address` TEXT NOT NULL, `status` INTEGER NOT NULL, `message_id` TEXT NOT NULL, FOREIGN KEY(`pay_id_local_id`) REFERENCES `payIds`(`id`) ON UPDATE NO ACTION ON DELETE CASCADE )",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `pay_id_local_id` INTEGER NOT NULL, `address` TEXT NOT NULL, `message_id` TEXT NOT NULL, FOREIGN KEY(`pay_id_local_id`) REFERENCES `payIds`(`id`) ON UPDATE NO ACTION ON DELETE CASCADE )",
         "fields": [
           {
             "fieldPath": "id",
@@ -538,12 +538,6 @@
             "fieldPath": "address",
             "columnName": "address",
             "affinity": "TEXT",
-            "notNull": true
-          },
-          {
-            "fieldPath": "status",
-            "columnName": "status",
-            "affinity": "INTEGER",
             "notNull": true
           },
           {

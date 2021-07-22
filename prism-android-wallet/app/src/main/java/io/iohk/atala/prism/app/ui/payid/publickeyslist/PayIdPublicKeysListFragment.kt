@@ -1,4 +1,4 @@
-package io.iohk.atala.prism.app.ui.payid.addresslist
+package io.iohk.atala.prism.app.ui.payid.publickeyslist
 
 import android.os.Bundle
 import android.view.LayoutInflater
@@ -13,23 +13,23 @@ import io.iohk.atala.prism.app.neo.common.OnSelectItem
 import io.iohk.atala.prism.app.neo.common.extensions.copyToClipBoard
 import io.iohk.atala.prism.app.ui.utils.adapters.AddressOrPublicKeyListAdapter
 import io.iohk.cvp.R
-import io.iohk.cvp.databinding.FragmentPayIdAddressListBinding
+import io.iohk.cvp.databinding.FragmentPayIdPublicKeysListBinding
 import javax.inject.Inject
 
-class PayIdAddressListFragment : DaggerFragment(), OnSelectItem<String> {
+class PayIdPublicKeysListFragment : DaggerFragment(), OnSelectItem<String> {
     @Inject
     lateinit var viewModelFactory: ViewModelProvider.Factory
 
-    private val viewModel: PayIdAddressListViewModel by lazy {
-        ViewModelProviders.of(this, viewModelFactory).get(PayIdAddressListViewModel::class.java)
+    private val viewModel: PayIdPublicKeysListViewModel by lazy {
+        ViewModelProviders.of(this, viewModelFactory).get(PayIdPublicKeysListViewModel::class.java)
     }
 
-    private lateinit var binding: FragmentPayIdAddressListBinding
+    private lateinit var binding: FragmentPayIdPublicKeysListBinding
 
     private val listAdapter = AddressOrPublicKeyListAdapter(this)
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
-        binding = FragmentPayIdAddressListBinding.inflate(inflater, container, false)
+        binding = FragmentPayIdPublicKeysListBinding.inflate(inflater, container, false)
         binding.lifecycleOwner = this
         binding.viewModel = viewModel
         setupRecyclerView()
@@ -44,9 +44,9 @@ class PayIdAddressListFragment : DaggerFragment(), OnSelectItem<String> {
     }
 
     private fun setObservers() {
-        viewModel.addresses.observe(viewLifecycleOwner) { addresses ->
+        viewModel.publicKeys.observe(viewLifecycleOwner) { publicKey ->
             listAdapter.clear()
-            listAdapter.addAll(addresses.map { it.address })
+            listAdapter.addAll(publicKey.map { it.publicKey })
             listAdapter.notifyDataSetChanged()
         }
     }

@@ -1,8 +1,8 @@
 {
   "formatVersion": 1,
   "database": {
-    "version": 8,
-    "identityHash": "32cb35be5ddb51adfde0471b77a0a24f",
+    "version": 10,
+    "identityHash": "1542ee8efa1affcd29610b699209e7da",
     "entities": [
       {
         "tableName": "credentials",
@@ -604,12 +604,152 @@
             ]
           }
         ]
+      },
+      {
+        "tableName": "payIdPublicKeys",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `pay_id_local_id` INTEGER NOT NULL, `public_key` TEXT NOT NULL, `message_id` TEXT NOT NULL, FOREIGN KEY(`pay_id_local_id`) REFERENCES `payIds`(`id`) ON UPDATE NO ACTION ON DELETE CASCADE )",
+        "fields": [
+          {
+            "fieldPath": "id",
+            "columnName": "id",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "payIdLocalId",
+            "columnName": "pay_id_local_id",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "publicKey",
+            "columnName": "public_key",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "messageId",
+            "columnName": "message_id",
+            "affinity": "TEXT",
+            "notNull": true
+          }
+        ],
+        "primaryKey": {
+          "columnNames": [
+            "id"
+          ],
+          "autoGenerate": true
+        },
+        "indices": [
+          {
+            "name": "index_payIdPublicKeys_pay_id_local_id",
+            "unique": false,
+            "columnNames": [
+              "pay_id_local_id"
+            ],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_payIdPublicKeys_pay_id_local_id` ON `${TABLE_NAME}` (`pay_id_local_id`)"
+          },
+          {
+            "name": "index_payIdPublicKeys_public_key",
+            "unique": true,
+            "columnNames": [
+              "public_key"
+            ],
+            "createSql": "CREATE UNIQUE INDEX IF NOT EXISTS `index_payIdPublicKeys_public_key` ON `${TABLE_NAME}` (`public_key`)"
+          }
+        ],
+        "foreignKeys": [
+          {
+            "table": "payIds",
+            "onDelete": "CASCADE",
+            "onUpdate": "NO ACTION",
+            "columns": [
+              "pay_id_local_id"
+            ],
+            "referencedColumns": [
+              "id"
+            ]
+          }
+        ]
+      },
+      {
+        "tableName": "kycRequests",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `connection_id` TEXT NOT NULL, `message_id` TEXT NOT NULL, `bearer_token` TEXT NOT NULL, `instance_id` TEXT NOT NULL, FOREIGN KEY(`connection_id`) REFERENCES `contacts`(`connection_id`) ON UPDATE NO ACTION ON DELETE CASCADE )",
+        "fields": [
+          {
+            "fieldPath": "id",
+            "columnName": "id",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "connectionId",
+            "columnName": "connection_id",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "messageId",
+            "columnName": "message_id",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "bearerToken",
+            "columnName": "bearer_token",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "instanceId",
+            "columnName": "instance_id",
+            "affinity": "TEXT",
+            "notNull": true
+          }
+        ],
+        "primaryKey": {
+          "columnNames": [
+            "id"
+          ],
+          "autoGenerate": true
+        },
+        "indices": [
+          {
+            "name": "index_kycRequests_connection_id",
+            "unique": false,
+            "columnNames": [
+              "connection_id"
+            ],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_kycRequests_connection_id` ON `${TABLE_NAME}` (`connection_id`)"
+          },
+          {
+            "name": "index_kycRequests_message_id",
+            "unique": true,
+            "columnNames": [
+              "message_id"
+            ],
+            "createSql": "CREATE UNIQUE INDEX IF NOT EXISTS `index_kycRequests_message_id` ON `${TABLE_NAME}` (`message_id`)"
+          }
+        ],
+        "foreignKeys": [
+          {
+            "table": "contacts",
+            "onDelete": "CASCADE",
+            "onUpdate": "NO ACTION",
+            "columns": [
+              "connection_id"
+            ],
+            "referencedColumns": [
+              "connection_id"
+            ]
+          }
+        ]
       }
     ],
     "views": [],
     "setupQueries": [
       "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
-      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '32cb35be5ddb51adfde0471b77a0a24f')"
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '1542ee8efa1affcd29610b699209e7da')"
     ]
   }
 }

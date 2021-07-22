@@ -50,6 +50,9 @@
         <action
             android:id="@+id/action_payIdDetailFragment_to_addAddressFormDialogFragment"
             app:destination="@id/addAddressFormDialogFragment" />
+        <action
+            android:id="@+id/action_payIdDetailFragment_to_payIdPublicKeysListFragment"
+            app:destination="@id/payIdPublicKeysListFragment" />
 
     </fragment>
     <fragment
@@ -62,4 +65,9 @@
         android:id="@+id/addAddressFormDialogFragment"
         android:name="io.iohk.atala.prism.app.ui.payid.addaddressform.AddAddressFormDialogFragment"
         android:label="@string/dialog_fragment_new_address_form_title" />
+    <fragment
+        android:id="@+id/payIdPublicKeysListFragment"
+        tools:layout="@layout/fragment_pay_id_public_keys_list"
+        android:name="io.iohk.atala.prism.app.ui.payid.publickeyslist.PayIdPublicKeysListFragment"
+        android:label="@string/fragment_pay_id_public_keys_list_title" />
 </navigation>

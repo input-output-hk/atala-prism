@@ -7,8 +7,8 @@ import androidx.room.Index
 import androidx.room.PrimaryKey
 
 @Entity(
-    tableName = "payIdAddresses",
-    indices = [Index("pay_id_local_id"), Index("address", unique = true)],
+    tableName = "payIdPublicKeys",
+    indices = [Index("pay_id_local_id"), Index("public_key", unique = true)],
     foreignKeys = [
         ForeignKey(
             entity = PayId::class,
@@ -18,10 +18,10 @@ import androidx.room.PrimaryKey
         )
     ]
 )
-data class PayIdAddress(
+data class PayIdPublicKey(
     @ColumnInfo(name = "pay_id_local_id") val payIdLocalId: Long,
-    @ColumnInfo(name = "address") val address: String,
-    @ColumnInfo(name = "message_id") val messageId: String // request message id
+    @ColumnInfo(name = "public_key") val publicKey: String,
+    @ColumnInfo(name = "message_id") val messageId: String, // request message id
 ) {
     @PrimaryKey(autoGenerate = true)
     var id: Long = 0

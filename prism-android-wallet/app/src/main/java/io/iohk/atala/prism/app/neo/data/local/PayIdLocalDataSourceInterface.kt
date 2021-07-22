@@ -5,6 +5,7 @@ import io.iohk.atala.prism.app.data.local.db.model.Contact
 import io.iohk.atala.prism.app.data.local.db.model.Credential
 import io.iohk.atala.prism.app.data.local.db.model.PayId
 import io.iohk.atala.prism.app.data.local.db.model.PayIdAddress
+import io.iohk.atala.prism.app.data.local.db.model.PayIdPublicKey
 
 interface PayIdLocalDataSourceInterface {
     suspend fun storePayIdContact(contact: Contact)
@@ -14,7 +15,8 @@ interface PayIdLocalDataSourceInterface {
     suspend fun storePayId(payId: PayId): Long
     suspend fun getPayIdByStatus(status: PayId.Status): PayId?
     fun getPayIdByStatusLiveData(status: PayId.Status): LiveData<PayId?>
-    suspend fun createPayIdAddress(payIdAddress: PayIdAddress)
-    fun firstRegisteredPayIdAddress(): LiveData<PayIdAddress?>
+    fun totalOfPayIdAddresses(): LiveData<Int>
     fun registeredPayIdAddresses(): LiveData<List<PayIdAddress>>
+    fun totalOfPayIdPublicKeys(): LiveData<Int>
+    fun registeredPayIdPublicKeys(): LiveData<List<PayIdPublicKey>>
 }

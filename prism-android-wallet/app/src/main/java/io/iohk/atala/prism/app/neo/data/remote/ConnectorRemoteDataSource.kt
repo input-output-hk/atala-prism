@@ -34,6 +34,7 @@ import io.iohk.atala.prism.protos.KycBridgeMessage
 import io.iohk.atala.prism.protos.MirrorMessage
 import io.iohk.atala.prism.protos.PayIdNameRegistrationMessage
 import io.iohk.atala.prism.protos.RegisterAddressMessage
+import io.iohk.atala.prism.protos.RegisterWalletMessage
 import io.iohk.atala.prism.protos.SendMessageRequest
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
@@ -47,17 +48,24 @@ import io.iohk.atala.mirror.protos.CreateAccountResponse as MirrorCreateAccountR
 
 class ConnectorRemoteDataSource(preferencesLocalDataSource: PreferencesLocalDataSourceInterface, private val sessionLocalDataSource: SessionLocalDataSourceInterface) : BaseRemoteDataSource(preferencesLocalDataSource) {
 
-    private fun getChannel(ecKeyPair: ECKeyPair?, requestByteArray: ByteArray): ConnectorServiceGrpc.ConnectorServiceFutureStub {
+    private fun getChannel(
+        ecKeyPair: ECKeyPair?,
+        requestByteArray: ByteArray
+    ): ConnectorServiceGrpc.ConnectorServiceFutureStub {
         val mainChannel = getMainChannel()
         var stub = ConnectorServiceGrpc.newFutureStub(mainChannel)
         if (ecKeyPair != null) {
-            stub = MetadataUtils.attachHeaders(stub, CryptoUtils.getMetadata(ecKeyPair, requestByteArray))
+            stub = MetadataUtils.attachHeaders(
+                stub,
+                CryptoUtils.getMetadata(ecKeyPair, requestByteArray)
+            )
         }
         return stub
     }
 
     fun getConnections(ecKeyPair: ECKeyPair): GetConnectionsPaginatedResponse {
-        val request = GetConnectionsPaginatedRequest.newBuilder().setLimit(QUERY_LENGTH_LIMIT).build()
+        val request =
+            GetConnectionsPaginatedRequest.newBuilder().setLimit(QUERY_LENGTH_LIMIT).build()
         return getChannel(ecKeyPair, request.toByteArray()).getConnectionsPaginated(request).get()
     }
 
@@ -66,17 +74,25 @@ class ConnectorRemoteDataSource(preferencesLocalDataSource: PreferencesLocalData
         if (lastMessageId != null)
             request.lastSeenMessageId = lastMessageId
         val requestBuild = request.build()
-        return getChannel(ecKeyPair, requestBuild.toByteArray()).getMessagesPaginated(requestBuild).get()
+        return getChannel(ecKeyPair, requestBuild.toByteArray()).getMessagesPaginated(requestBuild)
+            .get()
     }
 
-    fun startMessagesStream(ecKeyPair: ECKeyPair, lastMessageId: String?, observer: StreamObserver<GetMessageStreamResponse>) {
+    fun startMessagesStream(
+        ecKeyPair: ECKeyPair,
+        lastMessageId: String?,
+        observer: StreamObserver<GetMessageStreamResponse>
+    ) {
         var stub = ConnectorServiceGrpc.newStub(getMainChannel())
         val requestBuilder = GetMessageStreamRequest.newBuilder()
         lastMessageId?.let {
             requestBuilder.setLastSeenMessageId(it)
         }
         val request = requestBuilder.build()
-        stub = MetadataUtils.attachHeaders(stub, CryptoUtils.getMetadata(ecKeyPair, request.toByteArray()))
+        stub = MetadataUtils.attachHeaders(
+            stub,
+            CryptoUtils.getMetadata(ecKeyPair, request.toByteArray())
+        )
         stub.getMessageStream(request, observer)
     }
 
@@ -86,36 +102,50 @@ class ConnectorRemoteDataSource(preferencesLocalDataSource: PreferencesLocalData
      * @param contacts [List] of [Contact]
      * @param encodedCredential [Credential]
      */
-    suspend fun sendCredentialToMultipleContacts(encodedCredential: EncodedCredential, contacts: List<Contact>) {
+    suspend fun sendCredentialToMultipleContacts(
+        encodedCredential: EncodedCredential,
+        contacts: List<Contact>
+    ) {
         return withContext(Dispatchers.IO) {
             val phrases = sessionLocalDataSource.getSessionData()
             contacts.forEach { contact ->
                 val keyPair = CryptoUtils.getKeyPairFromPath(contact.keyDerivationPath, phrases!!)
                 val request = SendMessageRequest.newBuilder()
-                    .setConnectionId(contact.connectionId).setMessage(encodedCredential.credentialEncoded).build()
+                    .setConnectionId(contact.connectionId)
+                    .setMessage(encodedCredential.credentialEncoded).build()
                 val channel = getChannel(keyPair, request.toByteArray())
                 channel.sendMessage(request).get()
             }
         }
     }
 
-    suspend fun getConnectionTokenInfo(token: String): GetConnectionTokenInfoResponse = withContext(Dispatchers.IO) {
-        val request = GetConnectionTokenInfoRequest
-            .newBuilder()
-            .setToken(token)
-            .build()
-        return@withContext getChannel(null, request.toByteArray()).getConnectionTokenInfo(request).get()
-    }
+    suspend fun getConnectionTokenInfo(token: String): GetConnectionTokenInfoResponse =
+        withContext(Dispatchers.IO) {
+            val request = GetConnectionTokenInfoRequest
+                .newBuilder()
+                .setToken(token)
+                .build()
+            return@withContext getChannel(null, request.toByteArray()).getConnectionTokenInfo(
+                request
+            ).get()
+        }
 
-    suspend fun addConnection(ecKeyPair: ECKeyPair, token: String): AddConnectionFromTokenResponse = withContext(Dispatchers.IO) {
-        val request = AddConnectionFromTokenRequest.newBuilder()
-            .setToken(token)
-            .setHolderEncodedPublicKey(GrpcUtils.getPublicKeyEncoded(ecKeyPair))
-            .build()
-        return@withContext getChannel(ecKeyPair, request.toByteArray()).addConnectionFromToken(request).get()
-    }
+    suspend fun addConnection(ecKeyPair: ECKeyPair, token: String): AddConnectionFromTokenResponse =
+        withContext(Dispatchers.IO) {
+            val request = AddConnectionFromTokenRequest.newBuilder()
+                .setToken(token)
+                .setHolderEncodedPublicKey(GrpcUtils.getPublicKeyEncoded(ecKeyPair))
+                .build()
+            return@withContext getChannel(ecKeyPair, request.toByteArray()).addConnectionFromToken(
+                request
+            ).get()
+        }
 
-    fun sendMultipleMessage(ecKeyPair: ECKeyPair, connectionId: String, messages: List<ByteString>) {
+    fun sendMultipleMessage(
+        ecKeyPair: ECKeyPair,
+        connectionId: String,
+        messages: List<ByteString>
+    ) {
         messages.forEach { byteString: ByteString ->
             val request = SendMessageRequest.newBuilder()
                 .setConnectionId(connectionId).setMessage(byteString).build()
@@ -123,7 +153,10 @@ class ConnectorRemoteDataSource(preferencesLocalDataSource: PreferencesLocalData
         }
     }
 
-    suspend fun sendCredentialsToContact(contact: Contact, encodedCredentials: List<EncodedCredential>) = withContext(Dispatchers.IO) {
+    suspend fun sendCredentialsToContact(
+        contact: Contact,
+        encodedCredentials: List<EncodedCredential>
+    ) = withContext(Dispatchers.IO) {
         val mnemonicList = sessionLocalDataSource.getSessionData()!!
         val keyPair = CryptoUtils.getKeyPairFromPath(contact.keyDerivationPath, mnemonicList)
         val messages: List<ByteString> = encodedCredentials.stream().map {
@@ -145,11 +178,12 @@ class ConnectorRemoteDataSource(preferencesLocalDataSource: PreferencesLocalData
     * MIRROR SERVICE
     * */
 
-    suspend fun mirrorServiceCreateAccount(): MirrorCreateAccountResponse = withContext(Dispatchers.IO) {
-        val stub = MirrorServiceGrpc.newFutureStub(getMirrorServiceChannel())
-        val request = MirrorCreateAccountRequest.newBuilder().build()
-        stub.createAccount(request).get()
-    }
+    suspend fun mirrorServiceCreateAccount(): MirrorCreateAccountResponse =
+        withContext(Dispatchers.IO) {
+            val stub = MirrorServiceGrpc.newFutureStub(getMirrorServiceChannel())
+            val request = MirrorCreateAccountRequest.newBuilder().build()
+            stub.createAccount(request).get()
+        }
 
     @Throws(ExecutionException::class, InterruptedException::class)
     suspend fun sendMirrorMessage(mirrorMessage: MirrorMessage, mirrorContact: Contact): String {
@@ -170,8 +204,10 @@ class ConnectorRemoteDataSource(preferencesLocalDataSource: PreferencesLocalData
         payIdName: String,
         mirrorContact: Contact
     ): String {
-        val message = CheckPayIdNameAvailabilityMessage.newBuilder().setNameToCheck(payIdName).build()
-        val mirrorMessage = MirrorMessage.newBuilder().setCheckPayIdNameAvailabilityMessage(message).build()
+        val message =
+            CheckPayIdNameAvailabilityMessage.newBuilder().setNameToCheck(payIdName).build()
+        val mirrorMessage =
+            MirrorMessage.newBuilder().setCheckPayIdNameAvailabilityMessage(message).build()
         return sendMirrorMessage(mirrorMessage, mirrorContact)
     }
 
@@ -201,7 +237,8 @@ class ConnectorRemoteDataSource(preferencesLocalDataSource: PreferencesLocalData
         mirrorContact: Contact,
     ): String {
         val message = PayIdNameRegistrationMessage.newBuilder().setName(payIdName).build()
-        val mirrorMessage = MirrorMessage.newBuilder().setPayIdNameRegistrationMessage(message).build()
+        val mirrorMessage =
+            MirrorMessage.newBuilder().setPayIdNameRegistrationMessage(message).build()
         return sendMirrorMessage(mirrorMessage, mirrorContact)
     }
 
@@ -237,6 +274,19 @@ class ConnectorRemoteDataSource(preferencesLocalDataSource: PreferencesLocalData
         val request = SendMessageRequest.newBuilder()
             .setConnectionId(kycContact.connectionId).setMessage(atalaMessage.toByteString()).build()
         getChannel(keyPair, request.toByteArray()).sendMessage(request).get()
+    }
+
+    /**
+     * Send a [RegisterWalletMessage] message to a Mirror Connection
+     * @param publicKey as acct_xvk string
+     * @param mirrorContact a mirror connection contact
+     * @return id of the sent message
+     * */
+    @Throws(ExecutionException::class, InterruptedException::class)
+    suspend fun sendRegisterWalletMessage(publicKey: String, mirrorContact: Contact): String {
+        val message = RegisterWalletMessage.newBuilder().setExtendedPublicKey(publicKey).build()
+        val mirrorMessage = MirrorMessage.newBuilder().setRegisterWalletMessage(message).build()
+        return sendMirrorMessage(mirrorMessage, mirrorContact)
     }
 
     /**

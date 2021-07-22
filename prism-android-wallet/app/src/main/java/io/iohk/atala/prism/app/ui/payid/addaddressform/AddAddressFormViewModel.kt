@@ -46,7 +46,7 @@ class AddAddressFormViewModel @Inject constructor(private val repository: PayIdR
             _isLoading.value = true
             viewModelScope.launch {
                 try {
-                    repository.registerCardanoAddress(walletPublicKey)
+                    repository.registerAddressOrPublicKey(walletPublicKey)
                     _isLoading.value = false
                     _successEvent.value = EventWrapper(true)
                 } catch (ex: TimeoutCancellationException) {

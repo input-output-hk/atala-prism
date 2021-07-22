@@ -68,6 +68,9 @@ class AddAddressFormDialogFragment : DaggerDialogFragment() {
                     is AddAddressFormViewModel.Error.ServerError -> {
                         requireActivity().showErrorDialog(error.message)
                     }
+                    is AddAddressFormViewModel.Error.TimeOutError -> {
+                        requireActivity().showErrorDialog(R.string.error_connection_timeout)
+                    }
                     else -> {
                         requireActivity().showErrorDialog(R.string.server_error_message)
                     }

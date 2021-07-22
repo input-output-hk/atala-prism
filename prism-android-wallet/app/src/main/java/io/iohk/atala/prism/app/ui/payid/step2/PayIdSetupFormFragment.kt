@@ -63,10 +63,6 @@ class PayIdSetupFormFragment : DaggerFragment() {
             viewLifecycleOwner,
             EventWrapperObserver { error ->
                 when (error) {
-                    is PayIdSetupFormViewModel.Error.CantLoadCurrentRegisteredPayIdName -> {
-                        requireActivity().showErrorDialog(R.string.server_error_message)
-                        findNavController().popBackStack()
-                    }
                     is PayIdSetupFormViewModel.Error.PayIdNameAlreadyTaken -> {
                         val errorMessage = getString(
                             R.string.fragment_pay_id_setup_form_error_msg_unavailable_pay_id_name,
@@ -76,6 +72,9 @@ class PayIdSetupFormFragment : DaggerFragment() {
                     }
                     is PayIdSetupFormViewModel.Error.ServerError -> {
                         requireActivity().showErrorDialog(error.message)
+                    }
+                    is PayIdSetupFormViewModel.Error.TimeOutError -> {
+                        requireActivity().showErrorDialog(R.string.error_connection_timeout)
                     }
                     else -> {
                         requireActivity().showErrorDialog(R.string.server_error_message)

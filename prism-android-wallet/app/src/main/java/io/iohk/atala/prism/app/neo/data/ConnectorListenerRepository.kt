@@ -7,6 +7,7 @@ import io.iohk.atala.prism.app.data.local.db.model.Contact
 import io.iohk.atala.prism.app.data.local.db.model.Credential
 import io.iohk.atala.prism.app.data.local.db.model.PayId
 import io.iohk.atala.prism.app.data.local.db.model.PayIdAddress
+import io.iohk.atala.prism.app.data.local.db.model.PayIdPublicKey
 import io.iohk.atala.prism.app.data.local.db.model.ProofRequest
 import io.iohk.atala.prism.app.neo.common.extensions.toMilliseconds
 import io.iohk.atala.prism.app.neo.data.local.ConnectorListenerLocalDataSourceInterface
@@ -84,7 +85,6 @@ class ConnectorListenerRepository(
         CoroutineScope(Dispatchers.Default).launch {
             localDataSource.getContactByConnectionId(connectionId)?.let { contact ->
                 val atalaMessage = AtalaMessage.parseFrom(receivedMessage.message)
-                lookIfIsAReplyMessageAndHandleIt(atalaMessage)
                 if (CredentialMapper.isACredentialMessage(atalaMessage)) {
                     val credential = CredentialMapper.mapToCredential(receivedMessage, receivedMessage.id, receivedMessage.connectionId, receivedMessage.received.toMilliseconds(), contact)
                     contact.lastMessageId = receivedMessage.id
@@ -102,6 +102,7 @@ class ConnectorListenerRepository(
                         localDataSource.updateContact(contact, listOf())
                     }
                 } else {
+                    handleMirrorMessages(atalaMessage, receivedMessage.id)
                     contact.lastMessageId = receivedMessage.id
                     localDataSource.updateContact(contact, listOf())
                 }
@@ -128,19 +129,9 @@ class ConnectorListenerRepository(
         return null
     }
 
-    private suspend fun lookIfIsAReplyMessageAndHandleIt(atalaMessage: AtalaMessage) {
+    private suspend fun handleMirrorMessages(atalaMessage: AtalaMessage, messageId: String) {
+        // see if there is a PayId waiting for response
         if (atalaMessage.replyTo.isNotBlank()) {
-            // see if there are payIdAddress waiting for this message
-            localDataSource.notRepliedPayIdAddressByMessageId(atalaMessage.replyTo)?.let { payIdAddress ->
-                if (atalaMessage.mirrorMessage.messageCase == MirrorMessage.MessageCase.ADDRESS_REGISTERED_MESSAGE) {
-                    // this means that the registration was successful
-                    payIdAddress.status = PayIdAddress.Status.Registered
-                    localDataSource.updatePayIdAddress(payIdAddress)
-                } else {
-                    // this means that the registration was not successful
-                    localDataSource.deletePayIdAddress(payIdAddress)
-                }
-            }
             localDataSource.getPayIdByMessageIdAndStatus(atalaMessage.replyTo, PayId.Status.WaitingForResponse)?.let { payId ->
                 if (atalaMessage.mirrorMessage.messageCase == MirrorMessage.MessageCase.PAYID_NAME_REGISTERED_MESSAGE) {
                     payId.status = PayId.Status.Registered
@@ -148,9 +139,25 @@ class ConnectorListenerRepository(
                 } else {
                     localDataSource.deletePayId(payId)
                 }
+                // Message is sent to an a mirrorMessageReceiver, it will handle the scenarios in which the UI is waiting for a response
+                mirrorMessageReceiver.handleNewReceivedMessage(atalaMessage)
+                return@handleMirrorMessages
             }
-            // Message is sent to an a mirrorMessageReceiver, it will handle the scenarios in which the UI is waiting for a response
-            mirrorMessageReceiver.handleNewReceivedMessage(atalaMessage)
         }
+        localDataSource.getPayId()?.let { payId ->
+            when (atalaMessage.mirrorMessage.messageCase) {
+                MirrorMessage.MessageCase.ADDRESS_REGISTERED_MESSAGE -> {
+                    val payIdAddress = PayIdAddress(payId.id, atalaMessage.mirrorMessage.addressRegisteredMessage.cardanoAddress, messageId)
+                    localDataSource.createPayIdAddress(payIdAddress)
+                }
+                MirrorMessage.MessageCase.WALLET_REGISTERED -> {
+                    val payIdPublicKey = PayIdPublicKey(payId.id, atalaMessage.mirrorMessage.walletRegistered.extendedPublicKey, messageId)
+                    localDataSource.createPayIdPublicKey(payIdPublicKey)
+                }
+                else -> {}
+            }
+        }
+        // Message is sent to an a mirrorMessageReceiver, it will handle the scenarios in which the UI is waiting for a response
+        mirrorMessageReceiver.handleNewReceivedMessage(atalaMessage)
     }
 }

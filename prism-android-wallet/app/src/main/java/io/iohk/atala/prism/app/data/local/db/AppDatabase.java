@@ -9,7 +9,6 @@ import androidx.room.TypeConverters;
 
 import io.iohk.atala.prism.app.data.local.db.converters.ByteStringConverter;
 import io.iohk.atala.prism.app.data.local.db.converters.ActivityHistoryTypeConverter;
-import io.iohk.atala.prism.app.data.local.db.converters.PayIdAddressStatusConverter;
 import io.iohk.atala.prism.app.data.local.db.converters.PayIdStatusConverter;
 import io.iohk.atala.prism.app.data.local.db.dao.ContactDao;
 import io.iohk.atala.prism.app.data.local.db.dao.CredentialDao;
@@ -23,13 +22,14 @@ import io.iohk.atala.prism.app.data.local.db.model.EncodedCredential;
 import io.iohk.atala.prism.app.data.local.db.model.PayId;
 import io.iohk.atala.prism.app.data.local.db.model.PayIdAddress;
 import io.iohk.atala.prism.app.data.local.db.model.KycRequest;
+import io.iohk.atala.prism.app.data.local.db.model.PayIdPublicKey;
 import io.iohk.atala.prism.app.data.local.db.model.ProofRequest;
 import io.iohk.atala.prism.app.data.local.db.model.ProofRequestCredential;
 import io.iohk.atala.prism.app.utils.Constants;
 import kotlin.jvm.Volatile;
 
-@Database(entities = {Credential.class, Contact.class, ActivityHistory.class, ProofRequest.class, ProofRequestCredential.class, EncodedCredential.class, PayId.class, PayIdAddress.class, KycRequest.class}, version = 9)
-@TypeConverters({ByteStringConverter.class, ActivityHistoryTypeConverter.class, PayIdAddressStatusConverter.class, PayIdStatusConverter.class})
+@Database(entities = {Credential.class, Contact.class, ActivityHistory.class, ProofRequest.class, ProofRequestCredential.class, EncodedCredential.class, PayId.class, PayIdAddress.class, PayIdPublicKey.class, KycRequest.class}, version = 10)
+@TypeConverters({ByteStringConverter.class, ActivityHistoryTypeConverter.class, PayIdStatusConverter.class})
 public abstract class AppDatabase extends RoomDatabase {
     public abstract CredentialDao credentialDao();
 
@@ -60,7 +60,8 @@ public abstract class AppDatabase extends RoomDatabase {
                                     MigrationsKt.getMIGRATION_5_6(),
                                     MigrationsKt.getMIGRATION_6_7(),
                                     MigrationsKt.getMIGRATION_7_8(),
-                                    MigrationsKt.getMIGRATION_8_9()
+                                    MigrationsKt.getMIGRATION_8_9(),
+                                    MigrationsKt.getMIGRATION_9_10()
                             )
                             .build();
                 }

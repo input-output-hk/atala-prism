@@ -1,6 +1,7 @@
 <resources>
     <!-- Commons -->
     <string name="pay_id_mask">%1$s$atalamirror.io</string>
+    <string name="error_connection_timeout">Timeout error, Please try again. If the error persists contact support.</string>
 
     <string name="app_name">Atala PRISM</string>
     <string name="scan_qr">Scan QR code</string>
@@ -389,14 +390,14 @@
 
     <!-- layout/fragment_pay_id_detail.xml -->
     <string name="fragment_pay_id_detail_title">Pay ID Information</string>
-    <string name="fragment_pay_id_detail_text_1">View all your Pay IDs, add addresses or share</string>
+    <string name="fragment_pay_id_detail_text_1">Share your Pay ID, add or scan address</string>
     <string name="fragment_pay_id_detail_card_header">Pay ID</string>
     <string name="fragment_pay_id_detail_name_label">YOUR PAY ID NAME</string>
     <string name="fragment_pay_id_detail_address_label">ADDRESS</string>
     <string name="fragment_pay_id_detail_public_key_label">PUBLIC KEY</string>
-    <string name="fragment_pay_id_detail_add_address_button_text">Add New Address</string>
-    <string name="fragment_pay_id_detail_add_public_key_button_text">Add Public Key</string>
-    <string name="fragment_pay_id_detail_not_public_key_message">No public key created yet</string>
+    <string name="fragment_pay_id_detail_add_address_button_text">New Address</string>
+    <string name="fragment_pay_id_detail_not_public_key_message">No public key added</string>
+    <string name="fragment_pay_id_detail_not_address_message">No address added</string>
     <string name="fragment_pay_id_detail_share_pay_id_text">Pay Id: %1$s</string>
     <string name="fragment_pay_id_detail_share_success_dialog_text_1">Your PAY ID was</string>
     <string name="fragment_pay_id_detail_share_success_dialog_text_2">Successfully Shared</string>
@@ -409,14 +410,20 @@
     <string name="fragment_pay_id_address_list_address_on_clipboard">Copied!!</string>
     <string name="fragment_pay_id_address_list_pay_id_mask">%1$s$atalamirror.io</string>
 
+    <!-- layout/fragment_pay_id_public_keys_list.xml -->
+    <string name="fragment_pay_id_public_keys_list_title">Public Key List</string>
+    <string name="fragment_pay_id_public_keys_list_your_pay_id_name">YOUR PAY ID NAME</string>
+    <string name="fragment_pay_id_public_keys_list_public_key">PUBLIC KEY</string>
+    <string name="fragment_pay_id_public_keys_list_public_key_on_clipboard">Copied!!</string>
+    <string name="fragment_pay_id_public_keys_list_pay_id_mask">%1$s$atalamirror.io</string>
 
     <!-- layout/dialog_fragment_new_address_form.xml -->
     <string name="dialog_fragment_new_address_form_title">Add New Address</string>
-    <string name="dialog_fragment_new_address_form_address_label">ADD OR SCAN AN ADDRESS</string>
-    <string name="dialog_fragment_new_address_form_address_help_text">* Scan the extended public key from your wallet. \nAll the addresses in your wallet will be added</string>
+    <string name="dialog_fragment_new_address_form_address_label">Add or scan address</string>
+    <string name="dialog_fragment_new_address_form_address_help_text">* Scan QR code of an address \n* Paste an address \n* Scan the extended public key from your wallet. All the addresses in your wallet will be added.</string>
     <string name="dialog_fragment_new_address_form_add_button_text">Add</string>
-    <string name="dialog_fragment_new_address_form_success_dialog_primary_text">Your address(es) was</string>
-    <string name="dialog_fragment_new_address_form_success_dialog_secondary_text">Successfully Added</string>
+    <string name="dialog_fragment_new_address_form_success_dialog_primary_text">Address(es)</string>
+    <string name="dialog_fragment_new_address_form_success_dialog_secondary_text">successfully added</string>
     <string name="dialog_fragment_new_address_form_success_dialog_button_text">Close</string>
 
     <!-- IdVerificationTutorialFragment -->

@@ -7,6 +7,7 @@ import io.iohk.atala.prism.app.data.local.db.model.CredentialWithEncodedCredenti
 import io.iohk.atala.prism.app.data.local.db.model.KycRequest
 import io.iohk.atala.prism.app.data.local.db.model.PayId
 import io.iohk.atala.prism.app.data.local.db.model.PayIdAddress
+import io.iohk.atala.prism.app.data.local.db.model.PayIdPublicKey
 import io.iohk.atala.prism.app.data.local.db.model.ProofRequest
 
 interface ConnectorListenerLocalDataSourceInterface {
@@ -21,7 +22,7 @@ interface ConnectorListenerLocalDataSourceInterface {
 
     suspend fun insertProofRequest(proofRequest: ProofRequest, credentials: List<Credential>): Long
 
-    suspend fun notRepliedPayIdAddressByMessageId(messageId: String): PayIdAddress?
+    suspend fun getPayId(): PayId?
 
     suspend fun getPayIdByMessageIdAndStatus(messageId: String, status: PayId.Status): PayId?
 
@@ -29,9 +30,9 @@ interface ConnectorListenerLocalDataSourceInterface {
 
     suspend fun deletePayId(payId: PayId)
 
-    suspend fun updatePayIdAddress(payIdAddress: PayIdAddress)
+    suspend fun createPayIdAddress(payIdAddress: PayIdAddress)
 
-    suspend fun deletePayIdAddress(payIdAddress: PayIdAddress)
+    suspend fun createPayIdPublicKey(payIdPublicKey: PayIdPublicKey)
 
     suspend fun storeKycRequest(kycRequest: KycRequest)
 }

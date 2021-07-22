@@ -7,7 +7,6 @@ import androidx.lifecycle.Transformations
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import io.iohk.atala.prism.app.data.local.db.model.PayId
-import io.iohk.atala.prism.app.data.local.db.model.PayIdAddress
 import io.iohk.atala.prism.app.neo.common.EventWrapper
 import io.iohk.atala.prism.app.neo.common.softCardanoAddressValidation
 import io.iohk.atala.prism.app.neo.common.softCardanoExtendedPublicKeyValidation
@@ -26,7 +25,6 @@ class PayIdSetupFormViewModel @Inject constructor(private val repository: PayIdR
     }
 
     sealed class Error {
-        object CantLoadCurrentRegisteredPayIdName : Error()
         class PayIdNameAlreadyTaken(val payIdName: String) : Error()
         object TimeOutError : Error()
         class ServerError(val message: String?) : Error()
@@ -54,10 +52,13 @@ class PayIdSetupFormViewModel @Inject constructor(private val repository: PayIdR
 
     val error: LiveData<EventWrapper<Error>> = _error
 
-    private val firstPayIdAddress: LiveData<PayIdAddress?> = repository.firstRegisteredPayIdAddress
+    private val totalOfPayIdAddresses: LiveData<Int> = repository.totalOfPayIdAddresses
+
+    private val totalOfPayIdPublicKeys: LiveData<Int> = repository.totalOfPayIdPublicKeys
 
     val eventRegistrationIsCompleted = MediatorLiveData<EventWrapper<Boolean>>().apply {
-        addSource(firstPayIdAddress) { value = EventWrapper(computeEventRegistrationIsCompleted()) }
+        addSource(totalOfPayIdAddresses) { value = EventWrapper(computeEventRegistrationIsCompleted()) }
+        addSource(totalOfPayIdPublicKeys) { value = EventWrapper(computeEventRegistrationIsCompleted()) }
         addSource(_payId) { value = EventWrapper(computeEventRegistrationIsCompleted()) }
     }
 
@@ -115,7 +116,7 @@ class PayIdSetupFormViewModel @Inject constructor(private val repository: PayIdR
             _isLoading.value = true
             viewModelScope.launch {
                 try {
-                    repository.registerCardanoAddress(walletPublicKey)
+                    repository.registerAddressOrPublicKey(walletPublicKey)
                     _isLoading.value = false
                 } catch (ex: TimeoutCancellationException) {
                     _error.value = EventWrapper(Error.TimeOutError)
@@ -139,5 +140,8 @@ class PayIdSetupFormViewModel @Inject constructor(private val repository: PayIdR
             payIdNameLength in MIN_PAY_ID_NAME_LENGTH..MAX_PAY_ID_NAME_LENGTH
     }
 
-    private fun computeEventRegistrationIsCompleted(): Boolean = _payId.value != null && firstPayIdAddress.value != null
+    private fun computeEventRegistrationIsCompleted(): Boolean {
+        val atLeastThereIsAnAddressOrAPublicKey = totalOfPayIdAddresses.value ?: 0 > 0 || totalOfPayIdPublicKeys.value ?: 0 > 0
+        return _payId.value != null && atLeastThereIsAnAddressOrAPublicKey
+    }
 }

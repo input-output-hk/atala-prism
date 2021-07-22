@@ -12,6 +12,7 @@ import io.iohk.atala.prism.app.data.local.db.model.CredentialWithEncodedCredenti
 import io.iohk.atala.prism.app.data.local.db.model.KycRequest
 import io.iohk.atala.prism.app.data.local.db.model.PayId
 import io.iohk.atala.prism.app.data.local.db.model.PayIdAddress
+import io.iohk.atala.prism.app.data.local.db.model.PayIdPublicKey
 import io.iohk.atala.prism.app.data.local.db.model.ProofRequest
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
@@ -42,8 +43,8 @@ class ConnectorListenerLocalDataSource(
         proofRequestDao.insertSync(proofRequest, credentials)
     }
 
-    override suspend fun notRepliedPayIdAddressByMessageId(messageId: String): PayIdAddress? = withContext(Dispatchers.IO) {
-        payIdDao.notRepliedPayIdAddressByMessageId(messageId)
+    override suspend fun getPayId(): PayId? = withContext(Dispatchers.IO) {
+        payIdDao.getPayIdByStatus(PayId.Status.Registered.value)
     }
 
     override suspend fun getPayIdByMessageIdAndStatus(
@@ -61,12 +62,16 @@ class ConnectorListenerLocalDataSource(
         payIdDao.deletePayId(payId)
     }
 
-    override suspend fun updatePayIdAddress(payIdAddress: PayIdAddress) = withContext(Dispatchers.IO) {
-        payIdDao.updatePayIdAddress(payIdAddress)
+    override suspend fun createPayIdAddress(payIdAddress: PayIdAddress) {
+        withContext(Dispatchers.IO) {
+            payIdDao.createPayIdAddress(payIdAddress)
+        }
     }
 
-    override suspend fun deletePayIdAddress(payIdAddress: PayIdAddress) = withContext(Dispatchers.IO) {
-        payIdDao.deletePayIdAddress(payIdAddress)
+    override suspend fun createPayIdPublicKey(payIdPublicKey: PayIdPublicKey) {
+        withContext(Dispatchers.IO) {
+            payIdDao.createPayIdPublicKey(payIdPublicKey)
+        }
     }
 
     override suspend fun storeKycRequest(kycRequest: KycRequest) {

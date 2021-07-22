@@ -220,7 +220,6 @@ val MIGRATION_6_7 = object : Migration(6, 7) {
                 "id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, " +
                 "pay_id_local_id INTEGER NOT NULL, " +
                 "address TEXT NOT NULL, " +
-                "status INTEGER NOT NULL, " +
                 "message_id TEXT NOT NULL, " +
                 "FOREIGN KEY(pay_id_local_id) REFERENCES payIds(id) ON UPDATE NO ACTION ON DELETE CASCADE )"
         )
@@ -277,5 +276,25 @@ val MIGRATION_8_9 = object : Migration(8, 9) {
         )
         database.execSQL("CREATE INDEX IF NOT EXISTS index_kycRequests_connection_id ON kycRequests (connection_id)")
         database.execSQL("CREATE UNIQUE INDEX IF NOT EXISTS index_kycRequests_message_id ON kycRequests (message_id)")
+    }
+}
+
+/*
+* Added payIdPublicKeys table
+* */
+val MIGRATION_9_10 = object : Migration(9, 10) {
+    override fun migrate(database: SupportSQLiteDatabase) {
+
+        database.execSQL(
+            "CREATE TABLE IF NOT EXISTS payIdPublicKeys (" +
+                "id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, " +
+                "pay_id_local_id INTEGER NOT NULL, " +
+                "public_key TEXT NOT NULL, " +
+                "message_id TEXT NOT NULL, " +
+                "FOREIGN KEY(pay_id_local_id) REFERENCES payIds(id) ON UPDATE NO ACTION ON DELETE CASCADE )"
+        )
+
+        database.execSQL("CREATE INDEX IF NOT EXISTS index_payIdPublicKeys_pay_id_local_id ON payIdPublicKeys (pay_id_local_id)")
+        database.execSQL("CREATE UNIQUE INDEX IF NOT EXISTS index_payIdPublicKeys_public_key ON payIdPublicKeys (public_key)")
     }
 }

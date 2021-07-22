@@ -6,7 +6,10 @@ import io.iohk.atala.prism.app.data.local.db.model.Contact
 import io.iohk.atala.prism.app.data.local.db.model.Credential
 import io.iohk.atala.prism.app.data.local.db.model.PayId
 import io.iohk.atala.prism.app.data.local.db.model.PayIdAddress
+import io.iohk.atala.prism.app.data.local.db.model.PayIdPublicKey
 import io.iohk.atala.prism.app.neo.common.extensions.getOrAwaitValue
+import io.iohk.atala.prism.app.neo.common.softCardanoAddressValidation
+import io.iohk.atala.prism.app.neo.common.softCardanoExtendedPublicKeyValidation
 import io.iohk.atala.prism.app.neo.data.local.PayIdLocalDataSourceInterface
 import io.iohk.atala.prism.app.neo.data.local.PreferencesLocalDataSourceInterface
 import io.iohk.atala.prism.app.neo.data.local.SessionLocalDataSourceInterface
@@ -32,12 +35,16 @@ class PayIdRepository(
     ) {
 
     companion object {
-        const val DEFAULT_MAX_TIMEOUT_MILL = 10000L
+        const val DEFAULT_MAX_TIMEOUT_MILL = 20000L
     }
 
-    val firstRegisteredPayIdAddress: LiveData<PayIdAddress?> = payIdLocalDataSource.firstRegisteredPayIdAddress()
+    val totalOfPayIdAddresses: LiveData<Int> = payIdLocalDataSource.totalOfPayIdAddresses()
+
+    val totalOfPayIdPublicKeys: LiveData<Int> = payIdLocalDataSource.totalOfPayIdPublicKeys()
 
     val payIdAddresses: LiveData<List<PayIdAddress>> = payIdLocalDataSource.registeredPayIdAddresses()
+
+    val payIdPublicKeys: LiveData<List<PayIdPublicKey>> = payIdLocalDataSource.registeredPayIdPublicKeys()
 
     suspend fun getIdentityCredentials(): List<Credential> = payIdLocalDataSource.getIdentityCredentials()
 
@@ -68,27 +75,40 @@ class PayIdRepository(
         if (!payIdNameRegistrationResult) throw PayIdRepositoryException.PayIdNameAlreadyTaken(payIdName)
         return payIdLocalDataSource.getPayIdByStatusLiveData(PayId.Status.Registered).getOrAwaitValue(DEFAULT_MAX_TIMEOUT_MILL)
     }
+    suspend fun registerAddressOrPublicKey(addressOrPublicKey: String) {
+        payIdLocalDataSource.getPayIdByStatus(PayId.Status.Registered)?.let { payId ->
+            when {
+                softCardanoAddressValidation(addressOrPublicKey) -> {
+                    registerCardanoAddress(addressOrPublicKey, payId)
+                }
+                softCardanoExtendedPublicKeyValidation(addressOrPublicKey) -> {
+                    registerPublicKey(addressOrPublicKey, payId)
+                }
+                else -> throw Exception("Invalid Address Format")
+            }
+        } ?: throw Exception("There is no PayId")
+    }
+    @Throws(PayIdRepositoryException::class, ExecutionException::class, InterruptedException::class, TimeoutCancellationException::class)
+    private suspend fun registerCardanoAddress(cardanoAddress: String, payId: PayId) {
+        val mirrorContact = getMirrorContact()
+        val messageId = remoteDataSource.sendRegisterAddressMessage(cardanoAddress, mirrorContact)
+        mirrorMessageResponseHandler.awaitForResponse(messageId, DEFAULT_MAX_TIMEOUT_MILL)?.let { atalaMessage ->
+            if (atalaMessage.messageCase == AtalaMessage.MessageCase.ATALA_ERROR_MESSAGE) {
+                throw PayIdRepositoryException.AtalaError(atalaMessage.atalaErrorMessage.status.message)
+            } else if (atalaMessage.mirrorMessage?.messageCase != MirrorMessage.MessageCase.ADDRESS_REGISTERED_MESSAGE)
+                throw PayIdRepositoryException.AtalaError("Unknown API Error")
+        }
+    }
 
     @Throws(PayIdRepositoryException::class, ExecutionException::class, InterruptedException::class, TimeoutCancellationException::class)
-    suspend fun registerCardanoAddress(cardanoAddress: String): Boolean {
-        payIdLocalDataSource.getPayIdByStatus(PayId.Status.Registered)?.let { payId ->
-            val mirrorContact = getMirrorContact()
-            val messageId = remoteDataSource.sendRegisterAddressMessage(cardanoAddress, mirrorContact)
-            payIdLocalDataSource.createPayIdAddress(
-                PayIdAddress(
-                    payIdLocalId = payId.id,
-                    address = cardanoAddress,
-                    messageId = messageId,
-                    status = PayIdAddress.Status.WaitingForResponse
-                )
-            )
-            mirrorMessageResponseHandler.awaitForResponse(messageId)?.let { atalaMessage ->
-                if (atalaMessage.messageCase == AtalaMessage.MessageCase.ATALA_ERROR_MESSAGE) {
-                    throw PayIdRepositoryException.AtalaError(atalaMessage.atalaErrorMessage.status.message)
-                } else return atalaMessage.mirrorMessage?.messageCase == MirrorMessage.MessageCase.ADDRESS_REGISTERED_MESSAGE
-            }
-        } ?: kotlin.run {
-            throw Exception("There is no PayId")
+    suspend fun registerPublicKey(publicKey: String, payId: PayId) {
+        val mirrorContact = getMirrorContact()
+        val messageId = remoteDataSource.sendRegisterWalletMessage(publicKey, mirrorContact)
+        mirrorMessageResponseHandler.awaitForResponse(messageId, DEFAULT_MAX_TIMEOUT_MILL)?.let { atalaMessage ->
+            if (atalaMessage.messageCase == AtalaMessage.MessageCase.ATALA_ERROR_MESSAGE) {
+                throw PayIdRepositoryException.AtalaError(atalaMessage.atalaErrorMessage.status.message)
+            } else if (atalaMessage.mirrorMessage?.messageCase != MirrorMessage.MessageCase.WALLET_REGISTERED)
+                throw PayIdRepositoryException.AtalaError("Unknown API Error")
         }
     }
 

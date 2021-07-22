@@ -10,6 +10,7 @@ import io.iohk.atala.prism.app.data.local.db.model.Contact
 import io.iohk.atala.prism.app.data.local.db.model.Credential
 import io.iohk.atala.prism.app.data.local.db.model.PayId
 import io.iohk.atala.prism.app.data.local.db.model.PayIdAddress
+import io.iohk.atala.prism.app.data.local.db.model.PayIdPublicKey
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 
@@ -61,13 +62,11 @@ class PayIdLocalDataSource(
 
     override fun getPayIdByStatusLiveData(status: PayId.Status): LiveData<PayId?> = payIdDao.getPayIdByStatusLiveData(status.value)
 
-    override suspend fun createPayIdAddress(payIdAddress: PayIdAddress) {
-        return withContext(Dispatchers.IO) {
-            payIdDao.createPayIdAddress(payIdAddress)
-        }
-    }
-
-    override fun firstRegisteredPayIdAddress(): LiveData<PayIdAddress?> = payIdDao.firstRegisteredPayIdAddress()
+    override fun totalOfPayIdAddresses(): LiveData<Int> = payIdDao.totalOfPayIdAddresses()
 
     override fun registeredPayIdAddresses(): LiveData<List<PayIdAddress>> = payIdDao.registeredPayIdAddresses()
+
+    override fun totalOfPayIdPublicKeys(): LiveData<Int> = payIdDao.totalOfPayIdPublicKeys()
+
+    override fun registeredPayIdPublicKeys(): LiveData<List<PayIdPublicKey>> = payIdDao.registeredPayIdPublicKeys()
 }
