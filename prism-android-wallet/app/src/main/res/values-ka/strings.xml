@@ -385,6 +385,8 @@
     <string name="fragment_pay_id_select_identity_credential_instructions">Select at least one ID credential:</string>
     <string name="fragment_pay_id_select_identity_credential_optionals_instructions">Attach other credentials to your Pay ID (optional)</string>
     <string name="fragment_pay_id_select_identity_credential_next">Next</string>
+    <string name="fragment_pay_id_select_identity_credential_no_id_credential_msg">You don’t have ID Credentials yet</string>
+    <string name="fragment_pay_id_select_identity_credential_no_id_credential_button_text">Obtain a verified ID Credential</string>
 
     <!-- layout/fragment_pay_id_setup_form.xml -->
     <string name="fragment_pay_id_setup_form_title">Set up your Pay ID</string>

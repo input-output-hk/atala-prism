@@ -18,6 +18,10 @@ class PayIdSelectIdentityCredentialViewModel @Inject constructor(private val rep
 
     val identityCredentials: LiveData<List<CheckableData<Credential>>> = _identityCredentials
 
+    val showNoIdentityCredentialsMessage: LiveData<Boolean> = Transformations.map(identityCredentials) {
+        it.isEmpty()
+    }
+
     val selectedIdentityCredentials: LiveData<List<Credential>> = Transformations.map(_identityCredentials) {
         it.filter { item -> item.isChecked }.map { checkable -> checkable.data }
     }

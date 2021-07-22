@@ -1,5 +1,6 @@
 package io.iohk.atala.prism.app.ui.payid.step1
 
+import android.content.Intent
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -7,6 +8,7 @@ import android.view.ViewGroup
 import androidx.databinding.DataBindingUtil
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.ViewModelProviders
+import androidx.navigation.ActivityNavigator
 import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
 import dagger.android.support.DaggerFragment
@@ -46,7 +48,7 @@ class PayIdSelectIdentityCredentialFragment : DaggerFragment(), OnSelectItem<Che
         inflater: LayoutInflater,
         container: ViewGroup?,
         savedInstanceState: Bundle?
-    ): View? {
+    ): View {
         binding = DataBindingUtil.inflate(inflater, R.layout.fragment_pay_id_select_identity_credential, container, false)
         binding.lifecycleOwner = this
         binding.viewModel = viewModel
@@ -54,6 +56,7 @@ class PayIdSelectIdentityCredentialFragment : DaggerFragment(), OnSelectItem<Che
         setObservers()
         viewModel.loadCredentials()
         supportActionBar?.show()
+        setViewListeners()
         return binding.root
     }
 
@@ -82,5 +85,17 @@ class PayIdSelectIdentityCredentialFragment : DaggerFragment(), OnSelectItem<Che
         map[identityCredentialsHeaderText] = viewModel.identityCredentials.value?.toList() ?: listOf()
         map[otherCredentialsHeaderText] = viewModel.othersCredentials.value?.toList() ?: listOf()
         credentialsAdapter.updateAllContent(map)
+    }
+
+    private fun setViewListeners() {
+        binding.verifyIdButton.setOnClickListener {
+            // Navigate to Acuant verification flow
+            val extras = ActivityNavigator.Extras.Builder()
+                .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                .addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK)
+                .build()
+            val action = PayIdSelectIdentityCredentialFragmentDirections.actionPayIdSelectIdentityCredentialFragmentToIdVerificationNavActivity3()
+            findNavController().navigate(action, extras)
+        }
     }
 }

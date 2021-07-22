@@ -27,6 +27,10 @@
         <action
             android:id="@+id/action_payIdSelectIdentityCredentialFragment_to_payIdSetupFormFragment"
             app:destination="@id/payIdSetupFormFragment" />
+        <action
+            app:launchSingleTop="true"
+            android:id="@+id/action_payIdSelectIdentityCredentialFragment_to_idVerificationNavActivity3"
+            app:destination="@id/idVerificationNavActivity3" />
     </fragment>
     <fragment
         tools:layout="@layout/fragment_pay_id_setup_form"
@@ -70,4 +74,9 @@
         tools:layout="@layout/fragment_pay_id_public_keys_list"
         android:name="io.iohk.atala.prism.app.ui.payid.publickeyslist.PayIdPublicKeysListFragment"
         android:label="@string/fragment_pay_id_public_keys_list_title" />
+    <activity
+        tools:layout="@layout/activity_nav_id_verification"
+        android:id="@+id/idVerificationNavActivity3"
+        android:name="io.iohk.atala.prism.app.ui.idverification.IdVerificationNavActivity"
+        android:label="IdVerificationNavActivity" />
 </navigation>
