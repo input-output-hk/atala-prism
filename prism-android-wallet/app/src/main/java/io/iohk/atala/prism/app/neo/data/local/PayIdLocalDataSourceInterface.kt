@@ -22,4 +22,5 @@ interface PayIdLocalDataSourceInterface {
     suspend fun createPayIdPublicKey(payIdPublicKey: PayIdPublicKey): Long
     fun totalOfPayIdPublicKeys(): LiveData<Int>
     fun registeredPayIdPublicKeys(): LiveData<List<PayIdPublicKey>>
+    suspend fun clearPayIdData()
 }

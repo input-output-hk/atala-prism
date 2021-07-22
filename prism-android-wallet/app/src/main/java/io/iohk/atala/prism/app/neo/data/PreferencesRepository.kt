@@ -33,6 +33,7 @@ class PreferencesRepository(
         * when removing the contacts, tables ActivityHistory, Credential and ProofRequest will be remove in cascaded
         * */
         localDataSource.removeAllContacts()
+        payIdLocalDataSource.clearPayIdData()
     }
 
     suspend fun storeUserProfile(userProfile: UserProfile) = preferencesLocalDataSource.storeUserProfile(userProfile)

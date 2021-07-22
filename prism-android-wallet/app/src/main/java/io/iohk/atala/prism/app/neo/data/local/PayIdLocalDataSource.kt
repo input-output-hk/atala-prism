@@ -81,4 +81,12 @@ class PayIdLocalDataSource(
     override fun totalOfPayIdPublicKeys(): LiveData<Int> = payIdDao.totalOfPayIdPublicKeys()
 
     override fun registeredPayIdPublicKeys(): LiveData<List<PayIdPublicKey>> = payIdDao.registeredPayIdPublicKeys()
+
+    override suspend fun clearPayIdData() {
+        return withContext(Dispatchers.IO) {
+            val editor = preferences.edit()
+            editor.remove(PAY_ID_CONNECTION_ID)
+            editor.apply()
+        }
+    }
 }
