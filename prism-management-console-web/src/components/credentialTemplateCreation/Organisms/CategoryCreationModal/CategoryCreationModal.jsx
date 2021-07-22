@@ -121,13 +121,13 @@ const CategoryCreationModal = ({ api, visible, close }) => {
           hasFeedback
           rules={[{ required: true }, { validator: checkExistance }]}
         >
+          
           <Input placeholder={t(`${i18nPrefix}.categoryCreationModal.categoryNamePlaceholder`)} />
         </Form.Item>
         <Form.Item name="categoryIcon" rules={[{ validator: validateCategoryIcon }]}>
           <Radio.Group onChange={onIconChange}>
             <Form.Item
               name="categoryCustomIcons"
-              label={t(`${i18nPrefix}.categoryCreationModal.categoryIconLabel`)}
               valuePropName="file"
               getValueFromEvent={normFile}
             >
