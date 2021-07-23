@@ -71,6 +71,7 @@ object PrismBuild {
         resolvers += Resolver.mavenLocal,
         resolvers += Resolver.jcenterRepo,
         resolvers += Resolver.mavenCentral,
+        resolvers += "Artifactory" at "https://vlad107.jfrog.io/artifactory/default-maven-virtual/",
         libraryDependencies ++=
           doobieDependencies ++
             dockerDependencies ++
