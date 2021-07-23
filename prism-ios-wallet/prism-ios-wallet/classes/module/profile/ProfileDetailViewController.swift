@@ -23,6 +23,8 @@ class ProfileDetailViewController: ListingBaseViewController, UIImagePickerContr
         // Setup
         ViewControllerUtils.addTapToDismissKeyboard(view: self)
         ViewControllerUtils.addShiftKeyboardListeners(view: self)
+        // Fix: Not the best solution but solves the immediate bug until we restructure the UI
+        table.contentInset = .init(top: 0, left: 0, bottom: 70, right: 0)
     }
 
     override func onBackPressed() -> Bool {

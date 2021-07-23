@@ -21,6 +21,8 @@ class HomeViewController: ListingBaseViewController {
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
         self.presenterImpl.actionPullToRefresh()
+        // Fix: Not the best solution but solves the immediate bug until we restructure the UI
+        table.contentInset = .init(top: 0, left: 0, bottom: 70, right: 0)
     }
 
     func config(isLoading: Bool) {
