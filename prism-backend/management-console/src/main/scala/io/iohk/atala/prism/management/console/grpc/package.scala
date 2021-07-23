@@ -754,7 +754,10 @@ package object grpc {
 
   implicit val getStoredCredentialsConverter: ProtoConverter[GetStoredCredentialsForRequest, GetStoredCredentials] =
     (request: GetStoredCredentialsForRequest) => {
-      Contact.Id.from(request.individualId).map(GetStoredCredentials)
+      Contact.Id
+        .optional(request.individualId)
+        .map(GetStoredCredentials.FilterBy.apply)
+        .map(GetStoredCredentials.apply)
     }
 
   implicit val getCredentialTypesConverter: ProtoConverter[GetCredentialTypesRequest, GetCredentialTypes] =

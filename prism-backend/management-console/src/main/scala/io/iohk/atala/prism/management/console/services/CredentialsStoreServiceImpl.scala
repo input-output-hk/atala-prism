@@ -78,7 +78,7 @@ class CredentialsStoreServiceImpl(
   ): Future[console_api.GetStoredCredentialsForResponse] =
     auth[GetStoredCredentials]("getStoredCredentialsFor", request) { (participantId, query) =>
       receivedCredentials
-        .getCredentialsFor(participantId, query.individualId)
+        .getCredentialsFor(participantId, query.filterBy.contact)
         .map { credentials =>
           console_api.GetStoredCredentialsForResponse(
             credentials = credentials.map(ProtoCodecs.receivedSignedCredentialToProto)

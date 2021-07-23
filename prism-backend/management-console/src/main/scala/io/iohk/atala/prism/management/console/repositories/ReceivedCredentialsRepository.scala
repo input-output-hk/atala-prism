@@ -24,7 +24,7 @@ trait ReceivedCredentialsRepository[F[_]] {
 
   def getCredentialsFor(
       verifierId: ParticipantId,
-      contactId: Contact.Id
+      contactId: Option[Contact.Id]
   ): F[List[ReceivedSignedCredential]]
 
   def createReceivedCredential(data: ReceivedSignedCredentialData): F[Unit]
@@ -49,7 +49,7 @@ private final class ReceivedCredentialsRepositoryImpl[F[_]: BracketThrow](xa: Tr
 
   def getCredentialsFor(
       verifierId: ParticipantId,
-      contactId: Contact.Id
+      contactId: Option[Contact.Id]
   ): F[List[ReceivedSignedCredential]] =
     ReceivedCredentialsDAO
       .getReceivedCredentialsFor(verifierId, contactId)
@@ -81,7 +81,7 @@ private final class ReceivedCredentialsRepositoryMetrics[F[_]: TimeMeasureMetric
 
   override def getCredentialsFor(
       verifierId: ParticipantId,
-      contactId: Contact.Id
+      contactId: Option[Contact.Id]
   ): Mid[F, List[ReceivedSignedCredential]] = _.measureOperationTime(getCredentialsForTimer)
 
   override def createReceivedCredential(data: ReceivedSignedCredentialData): Mid[F, Unit] =

@@ -93,7 +93,7 @@ class CredentialsStoreServiceImplSpec extends RpcSpecBase with DIDUtil {
         serviceStub.storeCredential(request)
 
         val credential = ReceivedCredentialsDAO
-          .getReceivedCredentialsFor(verifierId, contactId)
+          .getReceivedCredentialsFor(verifierId, Some(contactId))
           .transact(database)
           .unsafeRunSync()
           .head
@@ -125,7 +125,7 @@ class CredentialsStoreServiceImplSpec extends RpcSpecBase with DIDUtil {
         serviceStub.storeCredential(request)
 
         val credential = ReceivedCredentialsDAO
-          .getReceivedCredentialsFor(verifierId, contactId)
+          .getReceivedCredentialsFor(verifierId, Some(contactId))
           .transact(database)
           .unsafeRunSync()
           .head
@@ -147,7 +147,7 @@ class CredentialsStoreServiceImplSpec extends RpcSpecBase with DIDUtil {
         serviceStub.storeCredential(request2)
 
         val credentials = ReceivedCredentialsDAO
-          .getReceivedCredentialsFor(verifierId, contactId)
+          .getReceivedCredentialsFor(verifierId, Some(contactId))
           .transact(database)
           .unsafeRunSync()
 
@@ -164,6 +164,38 @@ class CredentialsStoreServiceImplSpec extends RpcSpecBase with DIDUtil {
   }
 
   "getCredentialsFor" should {
+    "get all credentials when the individual argument is missing" in {
+      lazy val keyPair = EC.generateKeyPair()
+      lazy val publicKey = keyPair.publicKey
+      val did = generateDid(publicKey)
+      updateDid(verifierId, did).transact(database).unsafeRunSync()
+
+      val contactId = DataPreparation.createContact(verifierId, "Individual", None).contactId
+
+      val encodedSignedCredential = "a3cacb2d9e51bdd40264b287db15b4121ddee84eafb8c3da545c88c1d99b94d4"
+      val mockCredentialExternalId = CredentialExternalId.random()
+      val storeRequest = console_api.StoreCredentialRequest(
+        contactId.toString,
+        encodedSignedCredential,
+        mockCredentialExternalId.value
+      )
+      val rpcStoreRequest = SignedRpcRequest.generate(keyPair, did, storeRequest)
+      usingApiAs(rpcStoreRequest) { serviceStub =>
+        serviceStub.storeCredential(storeRequest)
+      }
+
+      val getStoredRequest = console_api.GetStoredCredentialsForRequest()
+      val rpcGetStoreRequest = SignedRpcRequest.generate(keyPair, did, getStoredRequest)
+      usingApiAs(rpcGetStoreRequest) { serviceStub =>
+        val response = serviceStub.getStoredCredentialsFor(getStoredRequest)
+
+        response.credentials.size mustBe 1
+        val credential = response.credentials.head
+        credential.individualId mustBe contactId.toString
+        credential.encodedSignedCredential mustBe encodedSignedCredential
+      }
+    }
+
     "get credentials for individual" in {
       lazy val keyPair = EC.generateKeyPair()
       lazy val publicKey = keyPair.publicKey
