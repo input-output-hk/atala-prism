@@ -5,10 +5,10 @@ import java.time.Instant
 
 import cats.data.EitherT
 import doobie.free.connection.ConnectionIO
-import io.iohk.atala.prism.credentials.TimestampInfo
+import io.iohk.atala.prism.kotlin.credentials.TimestampInfo
 import io.iohk.atala.prism.kotlin.crypto.keys.ECPublicKey
 import io.iohk.atala.prism.kotlin.crypto.SHA256Digest
-import io.iohk.atala.prism.identity.DIDSuffix
+import io.iohk.atala.prism.kotlin.identity.DIDSuffix
 import io.iohk.atala.prism.models.{Ledger, TransactionId}
 import io.iohk.atala.prism.node.models.nodeState.LedgerData
 import io.iohk.atala.prism.node.operations.path._
@@ -160,7 +160,7 @@ package object operations {
           Array.fill[Byte](TransactionId.config.size.toBytes.toInt)(0)
         )
         .get
-      val mockTime = TimestampInfo(Instant.now(), 1, 1)
+      val mockTime = new TimestampInfo(Instant.now().toEpochMilli, 1, 1)
       parse(signedOperation, LedgerData(mockTxId, mockLedger, mockTime))
     }
   }

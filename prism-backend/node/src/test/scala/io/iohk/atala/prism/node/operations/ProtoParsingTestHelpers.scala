@@ -2,7 +2,7 @@ package io.iohk.atala.prism.node.operations
 
 import java.time.Instant
 
-import io.iohk.atala.prism.credentials.TimestampInfo
+import io.iohk.atala.prism.kotlin.credentials.TimestampInfo
 import io.iohk.atala.prism.models.{Ledger, TransactionId}
 import io.iohk.atala.prism.node.models.nodeState.LedgerData
 import io.iohk.atala.prism.node.services.BlockProcessingServiceSpec

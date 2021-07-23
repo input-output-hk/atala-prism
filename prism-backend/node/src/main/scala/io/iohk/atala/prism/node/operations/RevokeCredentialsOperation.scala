@@ -6,7 +6,7 @@ import cats.implicits.catsSyntaxEitherId
 import cats.syntax.functor._
 import doobie.free.connection.ConnectionIO
 import doobie.implicits._
-import io.iohk.atala.prism.credentials.CredentialBatchId
+import io.iohk.atala.prism.kotlin.credentials.CredentialBatchId
 import io.iohk.atala.prism.kotlin.crypto.SHA256Digest
 import io.iohk.atala.prism.identity.DIDSuffix
 import io.iohk.atala.prism.node.models.nodeState
@@ -31,7 +31,7 @@ case class RevokeCredentialsOperation(
           .findBatch(credentialBatchId)
           .map(
             _.map(cred => (cred.issuerDIDSuffix, cred.lastOperation))
-              .toRight(StateError.EntityMissing("credential batch", credentialBatchId.id))
+              .toRight(StateError.EntityMissing("credential batch", credentialBatchId.getId))
           )
       }
       (issuer, prevOp) = issuerPrevOp
@@ -62,7 +62,7 @@ case class RevokeCredentialsOperation(
     def revokeFullBatch() = {
       CredentialBatchesDAO.revokeEntireBatch(credentialBatchId, ledgerData).map { wasUpdated =>
         if (wasUpdated) ().asRight[StateError]
-        else StateError.BatchAlreadyRevoked(credentialBatchId.id).asLeft
+        else StateError.BatchAlreadyRevoked(credentialBatchId.getId).asLeft
       }
     }
 
@@ -70,7 +70,7 @@ case class RevokeCredentialsOperation(
       CredentialBatchesDAO.findBatch(credentialBatchId).flatMap { state =>
         val isBatchAlreadyRevoked = state.fold(false)(_.revokedOn.nonEmpty)
         if (isBatchAlreadyRevoked) {
-          Free.pure((StateError.BatchAlreadyRevoked(credentialBatchId.id): StateError).asLeft[Unit])
+          Free.pure((StateError.BatchAlreadyRevoked(credentialBatchId.getId): StateError).asLeft[Unit])
         } else {
           CredentialBatchesDAO
             .revokeCredentials(credentialBatchId, credentialsToRevoke, ledgerData)

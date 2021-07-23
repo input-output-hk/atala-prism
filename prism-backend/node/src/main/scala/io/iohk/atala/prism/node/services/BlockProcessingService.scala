@@ -6,7 +6,7 @@ import cats.implicits._
 import doobie.free.connection
 import doobie.free.connection.ConnectionIO
 import io.iohk.atala.prism.connector.AtalaOperationId
-import io.iohk.atala.prism.credentials.TimestampInfo
+import io.iohk.atala.prism.kotlin.credentials.TimestampInfo
 import io.iohk.atala.prism.kotlin.crypto.EC
 import io.iohk.atala.prism.kotlin.crypto.keys.ECPublicKey
 import io.iohk.atala.prism.kotlin.crypto.signature.ECSignature
@@ -60,7 +60,7 @@ class BlockProcessingServiceImpl extends BlockProcessingService {
       case (signedOperation, osn) =>
         parseOperation(
           signedOperation,
-          LedgerData(transactionId, ledger, TimestampInfo(blockTimestamp, blockIndex, osn))
+          LedgerData(transactionId, ledger, new TimestampInfo(blockTimestamp.getEpochSecond, blockIndex, osn))
         ).left
           .map(err => (signedOperation, err))
     }

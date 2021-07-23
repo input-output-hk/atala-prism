@@ -5,10 +5,10 @@ import cats.syntax.either._
 import doobie.free.connection.ConnectionIO
 import doobie.implicits._
 import doobie.postgres.sqlstate
-import io.iohk.atala.prism.credentials.CredentialBatchId
+import io.iohk.atala.prism.kotlin.credentials.CredentialBatchId
 import io.iohk.atala.prism.kotlin.crypto.MerkleRoot
 import io.iohk.atala.prism.kotlin.crypto.SHA256Digest
-import io.iohk.atala.prism.identity.DIDSuffix
+import io.iohk.atala.prism.kotlin.identity.DIDSuffix
 import io.iohk.atala.prism.node.models.nodeState
 import io.iohk.atala.prism.node.models.nodeState.{DIDPublicKeyState, LedgerData}
 import io.iohk.atala.prism.node.operations.path.{Path, ValueAtPath}
@@ -29,7 +29,7 @@ case class IssueCredentialBatchOperation(
       keyState <- EitherT[ConnectionIO, StateError, DIDPublicKeyState] {
         PublicKeysDAO
           .find(issuerDIDSuffix, keyId)
-          .map(_.toRight(StateError.UnknownKey(issuerDIDSuffix, credentialBatchId.id)))
+          .map(_.toRight(StateError.UnknownKey(issuerDIDSuffix, credentialBatchId.getId)))
       }
       _ <- EitherT.fromEither[ConnectionIO] {
         Either.cond(
@@ -58,7 +58,7 @@ case class IssueCredentialBatchOperation(
         )
         .attemptSomeSqlState {
           case sqlstate.class23.UNIQUE_VIOLATION =>
-            StateError.EntityExists("credential", credentialBatchId.id): StateError
+            StateError.EntityExists("credential", credentialBatchId.getId): StateError
           case sqlstate.class23.FOREIGN_KEY_VIOLATION =>
             // that shouldn't happen, as key verification requires issuer in the DB,
             // but putting it here just in the case

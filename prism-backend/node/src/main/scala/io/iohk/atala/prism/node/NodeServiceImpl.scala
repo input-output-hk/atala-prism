@@ -6,7 +6,7 @@ import com.google.protobuf.ByteString
 import io.grpc.Status
 import io.iohk.atala.prism.BuildInfo
 import io.iohk.atala.prism.connector.AtalaOperationId
-import io.iohk.atala.prism.credentials.CredentialBatchId
+import io.iohk.atala.prism.kotlin.credentials.CredentialBatchId
 import io.iohk.atala.prism.kotlin.crypto.SHA256Digest
 import io.iohk.atala.prism.identity.DID
 import io.iohk.atala.prism.metrics.RequestMeasureUtil
@@ -62,7 +62,6 @@ class NodeServiceImpl(
         } yield response.withLastSyncedBlockTimestamp(lastSyncedTimestamp.toProtoTimestamp)
       }
     }
-
   }
 
   private def getDidDocument(didRequestStr: String, methodName: String)(implicit
@@ -119,7 +118,6 @@ class NodeServiceImpl(
         }
       }
     }
-
   }
 
   override def updateDID(request: node_api.UpdateDIDRequest): Future[node_api.UpdateDIDResponse] = {
@@ -156,7 +154,7 @@ class NodeServiceImpl(
           operationId <- objectManagement.publishSingleAtalaOperation(operation)
         } yield {
           node_api
-            .IssueCredentialBatchResponse(batchId = parsedOp.credentialBatchId.id)
+            .IssueCredentialBatchResponse(batchId = parsedOp.credentialBatchId.getId)
             .withOperationId(operationId.toProtoByteString)
         }
       }
@@ -187,7 +185,7 @@ class NodeServiceImpl(
 
     val lastSyncedTimestampF = objectManagement.getLastSyncedTimestamp
     val batchIdF = getFromOptionOrFailF(
-      CredentialBatchId.fromString(request.batchId),
+      Option(CredentialBatchId.fromString(request.batchId)),
       s"Invalid batch id: ${request.batchId}",
       methodName
     )
@@ -218,7 +216,7 @@ class NodeServiceImpl(
 
     val lastSyncedTimestampF = objectManagement.getLastSyncedTimestamp
     val batchIdF = getFromOptionOrFailF(
-      CredentialBatchId.fromString(request.batchId),
+      Option(CredentialBatchId.fromString(request.batchId)),
       s"Invalid batch id: ${request.batchId}",
       methodName
     )
@@ -369,7 +367,6 @@ class NodeServiceImpl(
               .withScalaVersion(BuildInfo.scalaVersion)
               .withSbtVersion(BuildInfo.sbtVersion)
           )
-
       }
     )
   }
@@ -492,7 +489,7 @@ object NodeServiceImpl {
         IssueCredentialBatchOperation.parseWithMockedLedgerData(operation).map { parsedOp =>
           OperationOutput(
             OperationOutput.Result.BatchOutput(
-              node_models.IssueCredentialBatchOutput(parsedOp.credentialBatchId.id)
+              node_models.IssueCredentialBatchOutput(parsedOp.credentialBatchId.getId)
             )
           )
         }

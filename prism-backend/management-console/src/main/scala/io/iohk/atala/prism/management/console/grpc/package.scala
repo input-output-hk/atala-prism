@@ -27,7 +27,7 @@ import io.scalaland.chimney.dsl._
 import io.scalaland.chimney.Transformer
 
 import java.time.LocalDate
-import io.iohk.atala.prism.credentials.CredentialBatchId
+import io.iohk.atala.prism.kotlin.credentials.CredentialBatchId
 import io.iohk.atala.prism.kotlin.crypto.MerkleInclusionProof
 import io.iohk.atala.prism.kotlin.crypto.SHA256Digest
 import io.iohk.atala.prism.kotlin.crypto.signature.ECSignature
@@ -612,8 +612,8 @@ package object grpc {
   implicit val getLedgerDataConverter: ProtoConverter[GetLedgerDataRequest, GetLedgerData] =
     (request: GetLedgerDataRequest) => {
       for {
-        batchId <- Try(CredentialBatchId.unsafeFromString(request.batchId))
-        credentialHash = SHA256Digest.fromBytes(request.credentialHash.toByteArray)
+        batchId <- Try(CredentialBatchId.fromString(request.batchId))
+        credentialHash = SHA256Digest.fromBytes(request.credentialHash.toByteArray.toVector)
       } yield GetLedgerData(batchId, credentialHash)
     }
 
@@ -643,8 +643,8 @@ package object grpc {
           request.encodedSignedCredential
         }
         consoleCredentialId = GenericCredential.Id.unsafeFrom(request.consoleCredentialId)
-        batchId = CredentialBatchId.unsafeFromString(request.batchId)
-        proof = Try(
+        batchId = CredentialBatchId.fromString(request.batchId)
+        proof =
           MerkleInclusionProof
             .decode(request.encodedInclusionProof)
         ).getOrElse(throw new RuntimeException(s"Invalid inclusion proof: ${request.encodedInclusionProof}"))
@@ -694,9 +694,10 @@ package object grpc {
     (response: node_api.IssueCredentialBatchResponse) => {
       for {
         batchId <- Try(
-          CredentialBatchId
-            .fromString(response.batchId)
-            .getOrElse(throw new RuntimeException("Node returned an invalid batch id"))
+          Option(
+            CredentialBatchId
+              .fromString(response.batchId)
+          ).getOrElse(throw new RuntimeException("Node returned an invalid batch id"))
         )
       } yield IssueCredentialBatchNodeResponse(
         batchId,

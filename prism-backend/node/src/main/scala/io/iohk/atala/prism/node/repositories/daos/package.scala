@@ -6,7 +6,7 @@ import doobie.util.invariant.InvalidEnum
 import doobie.{Get, Meta, Put, Read, Write}
 import doobie.implicits.legacy.instant._
 import io.iohk.atala.prism.connector.AtalaOperationId
-import io.iohk.atala.prism.credentials.{CredentialBatchId, TimestampInfo}
+import io.iohk.atala.prism.kotlin.credentials.{CredentialBatchId, TimestampInfo}
 import io.iohk.atala.prism.kotlin.crypto.EC
 import io.iohk.atala.prism.kotlin.crypto.ECConfig.{INSTANCE => ECConfig}
 import io.iohk.atala.prism.daos.BaseDAO
@@ -59,7 +59,7 @@ package object daos extends BaseDAO {
   implicit val credentialIdGet: Get[CredentialId] = Get[String].map(CredentialId(_))
 
   implicit val credentialBatchIdMeta: Meta[CredentialBatchId] =
-    Meta[String].timap(CredentialBatchId.fromString(_).get)(_.id)
+    Meta[String].timap(CredentialBatchId.fromString)(_.getId)
 
   implicit val didPublicKeyWrite: Write[DIDPublicKeyState] = {
     Write[
@@ -87,12 +87,12 @@ package object daos extends BaseDAO {
         curveName,
         point.getX.bytes(),
         point.getY.bytes(),
-        key.addedOn.atalaBlockTimestamp,
-        key.addedOn.atalaBlockSequenceNumber,
-        key.addedOn.operationSequenceNumber,
-        key.revokedOn map (_.atalaBlockTimestamp),
-        key.revokedOn map (_.atalaBlockSequenceNumber),
-        key.revokedOn map (_.operationSequenceNumber)
+        Instant.ofEpochMilli(key.addedOn.getAtalaBlockTimestamp),
+        key.addedOn.getAtalaBlockSequenceNumber,
+        key.addedOn.getOperationSequenceNumber,
+        key.revokedOn map (x => Instant.ofEpochMilli(x.getAtalaBlockTimestamp)),
+        key.revokedOn map (_.getAtalaBlockSequenceNumber),
+        key.revokedOn map (_.getOperationSequenceNumber)
       )
     }
   }
@@ -122,7 +122,7 @@ package object daos extends BaseDAO {
           keyId,
           keyUsage,
           javaPublicKey,
-          TimestampInfo(aTimestamp, aABSN, aOSN),
+          new TimestampInfo(aTimestamp.toEpochMilli, aABSN, aOSN),
           revokeTimestampInfo
         )
     }

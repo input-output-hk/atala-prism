@@ -18,21 +18,21 @@ object toScalaSDK {
   implicit class ECPublicKeyInterop(private val v: ECPublicKey) extends AnyVal {
     def asScala: ECPublicKeyScalaSDK = {
 
-      new JvmECPublicKey(v.getKey$prism_crypto)
+      new JvmECPublicKey(v.getKey$crypto)
     }
   }
 
   implicit class ECPrivateKeyInterop(private val v: ECPrivateKey) extends AnyVal {
     def asScala: ECPrivateKeyScalaSDK = {
 
-      new JvmECPrivateKey(v.getKey$prism_crypto)
+      new JvmECPrivateKey(v.getKey$crypto)
     }
   }
 
   implicit class SHA256DigestInterop(private val v: SHA256Digest) extends AnyVal {
     def asScala: SHA256DigestScalaSDK = {
 
-      SHA256DigestScalaSDK.fromVectorUnsafe(v.getValue.toVector)
+      SHA256DigestScalaSDK.compute(v.getValue)
     }
   }
 

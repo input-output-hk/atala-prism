@@ -7,7 +7,7 @@ import cats.syntax.either._
 import com.google.protobuf.ByteString
 import io.iohk.atala.prism.auth.AuthAndMiddlewareSupport
 import io.iohk.atala.prism.connector.AtalaOperationId
-import io.iohk.atala.prism.credentials.CredentialBatchId
+import io.iohk.atala.prism.kotlin.credentials.CredentialBatchId
 import io.iohk.atala.prism.kotlin.crypto.MerkleRoot
 import io.iohk.atala.prism.kotlin.crypto.SHA256Digest
 import io.iohk.atala.prism.grpc.ProtoConverter
@@ -37,6 +37,7 @@ import io.iohk.atala.prism.utils.FutureEither.FutureEitherOps
 
 import scala.concurrent.{ExecutionContext, Future}
 
+import io.iohk.atala.prism.interop.toKotlinSDK._
 import io.iohk.atala.prism.interop.toScalaSDK._
 
 class CredentialsServiceImpl(
@@ -179,7 +180,7 @@ class CredentialsServiceImpl(
             .toFutureEither(ex => wrapAsServerError(ex))
         _ <- storeBatch(response.batchId, query.signedOperation)
       } yield PublishBatchResponse()
-        .withBatchId(response.batchId.id)
+        .withBatchId(response.batchId.getId)
         .withOperationId(response.operationId.toProtoByteString)
     }
   }
@@ -240,7 +241,7 @@ class CredentialsServiceImpl(
         batchState <- nodeService.getBatchState(
           node_api
             .GetBatchStateRequest()
-            .withBatchId(query.batchId.id)
+            .withBatchId(query.batchId.getId)
         )
         credentialLedgerData <- nodeService.getCredentialRevocationTime(
           node_api

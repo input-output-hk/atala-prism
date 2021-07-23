@@ -11,7 +11,7 @@ import scalapb.GeneratedMessage
 import java.util.concurrent.{Executor, TimeUnit}
 
 import io.iohk.atala.prism.auth.SignedRpcRequest
-import io.iohk.atala.prism.identity.DID
+import io.iohk.atala.prism.kotlin.identity.DID
 
 trait ApiTestHelper[STUB] {
   def apply[T](requestNonce: Vector[Byte], signature: ECSignature, publicKey: ECPublicKey)(f: STUB => T): T

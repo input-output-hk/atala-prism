@@ -2,7 +2,7 @@ package io.iohk.atala.prism.node.poc
 
 import scala.annotation.nowarn
 import io.iohk.atala.prism.identity.{DID, DIDSuffix}
-import io.iohk.atala.prism.credentials.content.CredentialContent
+import io.iohk.atala.prism.kotlin.credentials.content.CredentialContent
 import io.iohk.atala.prism.credentials.content.syntax._
 
 // This SDK would allow to build generic credentials and manipulate them

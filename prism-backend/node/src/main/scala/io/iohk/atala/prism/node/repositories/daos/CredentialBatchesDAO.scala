@@ -7,7 +7,7 @@ import doobie.Update
 import doobie.free.connection.ConnectionIO
 import doobie.implicits._
 import doobie.implicits.legacy.instant._
-import io.iohk.atala.prism.credentials.CredentialBatchId
+import io.iohk.atala.prism.kotlin.credentials.CredentialBatchId
 import io.iohk.atala.prism.kotlin.crypto.MerkleRoot
 import io.iohk.atala.prism.kotlin.crypto.SHA256Digest
 import io.iohk.atala.prism.identity.DIDSuffix
@@ -31,8 +31,8 @@ object CredentialBatchesDAO {
     val issuedOn = data.ledgerData.timestampInfo
     sql"""
          |INSERT INTO credential_batches (batch_id, last_operation, issuer_did_suffix, merkle_root, issued_on, issued_on_absn, issued_on_osn, ledger, issued_on_transaction_id)
-         |VALUES (${data.batchId}, ${data.lastOperation}, ${data.issuerDIDSuffix}, ${data.merkleRoot.getHash}, ${issuedOn.atalaBlockTimestamp},
-         | ${issuedOn.atalaBlockSequenceNumber}, ${issuedOn.operationSequenceNumber}, ${data.ledgerData.ledger}, ${data.ledgerData.transactionId})
+         |VALUES (${data.batchId}, ${data.lastOperation}, ${data.issuerDIDSuffix}, ${data.merkleRoot}, ${issuedOn.getAtalaBlockTimestamp},
+         | ${issuedOn.getAtalaBlockSequenceNumber}, ${issuedOn.getOperationSequenceNumber}, ${data.ledgerData.ledger}, ${data.ledgerData.transactionId})
        """.stripMargin.update.run.void
   }
 
@@ -53,9 +53,9 @@ object CredentialBatchesDAO {
     val revocationTimestamp = ledgerData.timestampInfo
     sql"""
          |UPDATE credential_batches
-         |SET revoked_on = ${revocationTimestamp.atalaBlockTimestamp},
-         |    revoked_on_absn = ${revocationTimestamp.atalaBlockSequenceNumber},
-         |    revoked_on_osn = ${revocationTimestamp.operationSequenceNumber},
+         |SET revoked_on = ${revocationTimestamp.getAtalaBlockTimestamp},
+         |    revoked_on_absn = ${revocationTimestamp.getAtalaBlockSequenceNumber},
+         |    revoked_on_osn = ${revocationTimestamp.getOperationSequenceNumber},
          |    revoked_on_transaction_id = ${ledgerData.transactionId}
          |WHERE batch_id = $credentialBatchId AND
          |      revoked_on IS NULL
@@ -79,9 +79,9 @@ object CredentialBatchesDAO {
           (
             credentialBatchId,
             credentialHash,
-            revocationTimestamp.atalaBlockTimestamp,
-            revocationTimestamp.atalaBlockSequenceNumber,
-            revocationTimestamp.operationSequenceNumber,
+            Instant.ofEpochMilli(revocationTimestamp.getAtalaBlockTimestamp),
+            revocationTimestamp.getAtalaBlockSequenceNumber,
+            revocationTimestamp.getOperationSequenceNumber,
             ledgerData.ledger,
             ledgerData.transactionId
           )

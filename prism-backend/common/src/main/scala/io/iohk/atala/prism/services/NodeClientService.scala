@@ -9,14 +9,16 @@ import io.iohk.atala.prism.kotlin.crypto.ECConfig.{INSTANCE => ECConfig}
 import io.iohk.atala.prism.protos.node_api._
 import io.iohk.atala.prism.protos.node_models._
 import io.iohk.atala.prism.services.BaseGrpcClientService.DidBasedAuthConfig
-import io.iohk.atala.prism.identity.DID
-import io.iohk.atala.prism.credentials
+import io.iohk.atala.prism.kotlin.identity.DID
+import io.iohk.atala.prism.kotlin.credentials
 import io.iohk.atala.prism.protos.{node_api, node_models}
 import cats.implicits._
-import io.iohk.atala.prism.credentials.CredentialBatchId
-import io.iohk.atala.prism.interop.toScalaSDK._
+import com.google.protobuf.timestamp.Timestamp
+import io.iohk.atala.prism.kotlin.credentials.CredentialBatchId
 import io.iohk.atala.prism.kotlin.crypto.MerkleRoot
 import io.iohk.atala.prism.utils.syntax._
+import io.iohk.atala.prism.interop.toKotlinSDK._
+import io.iohk.atala.prism.interop.toScalaSDK._
 
 trait NodeClientService {
 
@@ -37,11 +39,11 @@ class NodeClientServiceImpl(node: NodeServiceGrpc.NodeServiceStub, authConfig: D
     extends NodeClientService {
 
   def getDidDocument(did: DID): Task[Option[DIDData]] =
-    Task.fromFuture(node.getDidDocument(GetDidDocumentRequest(did.value))).map(_.document)
+    Task.fromFuture(node.getDidDocument(GetDidDocumentRequest(did.getValue))).map(_.document)
 
   def getBatchState(credentialBatchId: CredentialBatchId): Task[Option[GetBatchStateResponse]] =
     Task
-      .fromFuture(node.getBatchState(GetBatchStateRequest(credentialBatchId.id)))
+      .fromFuture(node.getBatchState(GetBatchStateRequest(credentialBatchId.getId)))
       .map { response =>
         if (response.issuerDid.nonEmpty) Some(response)
         else None
@@ -86,7 +88,7 @@ object NodeClientService {
   ): EitherT[Task, String, credentials.KeyData] = {
     for {
       didData <- EitherT(
-        nodeService.getDidDocument(issuerDID).map(_.toRight(s"DID Data not found for DID ${issuerDID.value}"))
+        nodeService.getDidDocument(issuerDID).map(_.toRight(s"DID Data not found for DID ${issuerDID.getValue}"))
       )
 
       issuingKeyProto <-
@@ -126,10 +128,11 @@ object NodeClientService {
   }
 
   def fromTimestampInfoProto(timestampInfoProto: node_models.TimestampInfo): credentials.TimestampInfo = {
-    credentials.TimestampInfo(
+    new credentials.TimestampInfo(
       timestampInfoProto.blockTimestamp
         .getOrElse(throw new RuntimeException("Missing timestamp"))
-        .toInstant,
+        .toInstant
+        .toMilli,
       timestampInfoProto.blockSequenceNumber,
       timestampInfoProto.operationSequenceNumber
     )
@@ -137,9 +140,9 @@ object NodeClientService {
 
   def toInfoProto(timestampInfoProto: credentials.TimestampInfo): node_models.TimestampInfo = {
     node_models.TimestampInfo(
-      blockSequenceNumber = timestampInfoProto.atalaBlockSequenceNumber,
-      operationSequenceNumber = timestampInfoProto.operationSequenceNumber,
-      blockTimestamp = timestampInfoProto.atalaBlockTimestamp.toProtoTimestamp.some
+      blockSequenceNumber = timestampInfoProto.getAtalaBlockSequenceNumber,
+      operationSequenceNumber = timestampInfoProto.getOperationSequenceNumber,
+      blockTimestamp = Timestamp(timestampInfoProto.getAtalaBlockTimestamp).some
     )
   }
 
@@ -151,7 +154,7 @@ object NodeClientService {
             .IssueCredentialBatchOperation(
               credentialBatchData = Some(
                 node_models.CredentialBatchData(
-                  issuerDid = issuerDID.suffix.value,
+                  issuerDid = issuerDID.getSuffix.getValue,
                   merkleRoot = toByteString(merkleRoot.getHash)
                 )
               )
@@ -171,7 +174,7 @@ object NodeClientService {
           value = node_models
             .RevokeCredentialsOperation(
               previousOperationHash = toByteString(previousOperationHash),
-              credentialBatchId = batchId.id,
+              credentialBatchId = batchId.getId,
               credentialsToRevoke = credentialsToRevoke.map(toByteString)
             )
         )

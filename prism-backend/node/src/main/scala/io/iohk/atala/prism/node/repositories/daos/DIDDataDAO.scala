@@ -8,6 +8,8 @@ import io.iohk.atala.prism.kotlin.crypto.SHA256Digest
 import io.iohk.atala.prism.identity.DIDSuffix
 import io.iohk.atala.prism.node.models.nodeState.LedgerData
 
+import java.time.Instant
+
 object DIDDataDAO {
   def insert(
       didSuffix: DIDSuffix,
@@ -17,8 +19,8 @@ object DIDDataDAO {
     val publishedOn = ledgerData.timestampInfo
     sql"""
          |INSERT INTO did_data (did_suffix, last_operation, published_on, published_on_absn, published_on_osn, transaction_id, ledger)
-         |VALUES ($didSuffix, $lastOperation, ${publishedOn.atalaBlockTimestamp},
-         |  ${publishedOn.atalaBlockSequenceNumber}, ${publishedOn.operationSequenceNumber},
+         |VALUES ($didSuffix, $lastOperation, ${Instant.ofEpochMilli(publishedOn.getAtalaBlockTimestamp)},
+         |  ${publishedOn.getAtalaBlockSequenceNumber}, ${publishedOn.getOperationSequenceNumber},
          |  ${ledgerData.transactionId}, ${ledgerData.ledger})
        """.stripMargin.update.run.void
   }

@@ -14,7 +14,9 @@ import io.iohk.atala.prism.utils.syntax.DBConnectionOps
 import io.iohk.atala.prism.metrics.{TimeMeasureMetric, TimeMeasureUtil}
 import io.iohk.atala.prism.metrics.TimeMeasureUtil.MeasureOps
 import doobie.free.connection
-import io.iohk.atala.prism.credentials.utils.Mustache
+import io.iohk.atala.prism.kotlin.credentials.utils.Mustache
+import io.iohk.atala.prism.kotlin.credentials.utils.MustacheError
+//import io.iohk.atala.prism.credentials.utils.Mustache
 import org.slf4j.{Logger, LoggerFactory}
 import tofu.higherKind.Mid
 
@@ -156,10 +158,13 @@ private final class CredentialTypeRepositoryImpl[F[_]: BracketThrow](xa: Transac
       .logSQLErrors(s"getting something with credential type id - $credentialTypeId", logger)
       .transact(xa)
 
-  private def validateMustacheTemplate(template: String, fields: List[CreateCredentialTypeField]) = {
-    Mustache.render(
-      content = template,
-      context = name => fields.find(_.name == name).map(_.name)
+  private def validateMustacheTemplate(
+      template: String,
+      fields: List[CreateCredentialTypeField]
+  ): Either[MustacheError, String] = {
+    Mustache.INSTANCE.render(
+      template,
+      name => fields.find(_.name == name).map(_.name).get
     )
   }
 

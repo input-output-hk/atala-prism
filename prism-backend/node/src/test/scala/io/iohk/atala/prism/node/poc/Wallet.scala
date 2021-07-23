@@ -2,12 +2,12 @@ package io.iohk.atala.prism.node.poc
 
 import cats.data.ValidatedNel
 import com.google.protobuf.ByteString
-import io.iohk.atala.prism.credentials.{
+import io.iohk.atala.prism.kotlin.credentials.{
   BatchData,
-  Credential,
+  PrismCredential,
   CredentialBatchId,
   KeyData,
-  PrismCredentialVerification,
+  CredentialVerification,
   VerificationError
 }
 import io.iohk.atala.prism.credentials.content.CredentialContent

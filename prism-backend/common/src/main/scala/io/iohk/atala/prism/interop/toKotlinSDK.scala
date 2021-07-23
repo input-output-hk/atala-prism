@@ -5,6 +5,7 @@ import io.iohk.atala.prism.kotlin.crypto.MerkleRoot
 import io.iohk.atala.prism.kotlin.crypto.SHA256Digest
 import io.iohk.atala.prism.kotlin.crypto.MerkleInclusionProof
 import io.iohk.atala.prism.kotlin.crypto.keys.ECPublicKey
+import io.iohk.atala.prism.kotlin.identity.DIDSuffix
 
 import scala.jdk.CollectionConverters._
 
@@ -35,5 +36,15 @@ object toKotlinSDK {
       v match {
         case key: JvmECPublicKey => new ECPublicKey(key.key)
       }
+  }
+  implicit class ECPrivateKeyScalaSDKInterop(v: io.iohk.atala.prism.crypto.ECPrivateKey) {
+    def asKotlin: ECPrivateKey =
+      v match {
+        case key: JvmECPrivateKey => new ECPrivateKey(key.key)
+      }
+  }
+
+  implicit class DIDSuffixScalaSDKInterop(v: io.iohk.atala.prism.identity.DIDSuffix) {
+    def asKotlin: DIDSuffix = new DIDSuffix(v.value)
   }
 }

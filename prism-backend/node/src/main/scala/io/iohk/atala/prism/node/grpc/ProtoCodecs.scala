@@ -3,7 +3,7 @@ package io.iohk.atala.prism.node.grpc
 import java.security.PublicKey
 
 import com.google.protobuf.ByteString
-import io.iohk.atala.prism.credentials.TimestampInfo
+import io.iohk.atala.prism.kotlin.credentials.TimestampInfo
 import io.iohk.atala.prism.kotlin.crypto.EC
 import io.iohk.atala.prism.kotlin.crypto.keys.ECPublicKey
 import io.iohk.atala.prism.kotlin.crypto.ECConfig.{INSTANCE => ECConfig}
@@ -25,9 +25,9 @@ object ProtoCodecs {
   def toTimeStampInfoProto(timestampInfo: TimestampInfo): node_models.TimestampInfo = {
     node_models
       .TimestampInfo()
-      .withBlockTimestamp(timestampInfo.atalaBlockTimestamp.toProtoTimestamp)
-      .withBlockSequenceNumber(timestampInfo.atalaBlockSequenceNumber)
-      .withOperationSequenceNumber(timestampInfo.operationSequenceNumber)
+      .withBlockTimestamp(Instant.ofEpochMilli(timestampInfo.getAtalaBlockTimestamp).toProtoTimestamp)
+      .withBlockSequenceNumber(timestampInfo.getAtalaBlockSequenceNumber)
+      .withOperationSequenceNumber(timestampInfo.getOperationSequenceNumber)
   }
 
   def atalaOperationToDIDDataProto(didSuffix: DIDSuffix, op: node_models.AtalaOperation): node_models.DIDData = {
@@ -98,10 +98,11 @@ object ProtoCodecs {
   //       This implies making default values for operation sequence number to be 1
   //       (it is currently 0). The block sequence number starts at 1 already.
   def fromTimestampInfoProto(timestampInfoProto: node_models.TimestampInfo): TimestampInfo = {
-    TimestampInfo(
+    new TimestampInfo(
       timestampInfoProto.blockTimestamp
         .getOrElse(throw new RuntimeException("Missing timestamp"))
-        .toInstant,
+        .toInstant
+        .toEpochMilli,
       timestampInfoProto.blockSequenceNumber,
       timestampInfoProto.operationSequenceNumber
     )
