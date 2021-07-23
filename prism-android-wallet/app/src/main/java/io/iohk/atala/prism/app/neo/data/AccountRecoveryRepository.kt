@@ -57,7 +57,7 @@ class AccountRecoveryRepository(
                         cycleThroughMessages(contact, ecKeyPair) { atalaMessage, receivedMessage ->
                             when {
                                 // Credential Recovery
-                                CredentialMapper.isACredentialMessage(atalaMessage) -> {
+                                atalaMessage.messageCase == AtalaMessage.MessageCase.PLAIN_CREDENTIAL -> {
                                     val credential = CredentialMapper.mapToCredential(receivedMessage, receivedMessage.id, receivedMessage.connectionId, receivedMessage.received.toMilliseconds(), contact)
                                     credentials.add(credential)
                                 }

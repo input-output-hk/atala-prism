@@ -9,6 +9,10 @@ import io.iohk.atala.prism.protos.cviews_api.{GetCredentialViewTemplatesRequest,
 import io.iohk.atala.prism.protos.{cviews_api, cviews_models}
 import io.iohk.atala.prism.utils.syntax._
 import io.iohk.atala.prism.view.HtmlViewImage
+import io.iohk.atala.prism.intdemo.IdServiceImpl.IdCredentialHtmlTemplateData
+import io.iohk.atala.prism.intdemo.DegreeServiceImpl.DegreeCredentialHtmlTemplateData
+import io.iohk.atala.prism.intdemo.EmploymentServiceImpl.EmploymentCredentialHtmlTemplateData
+import io.iohk.atala.prism.intdemo.InsuranceServiceImpl.InsuranceCredentialHtmlTemplateData
 
 import scala.concurrent.{ExecutionContext, Future}
 
@@ -62,14 +66,12 @@ private object PredefinedHtmlTemplates {
       encodedLogoImage = HtmlViewImage.imageBase64(logoImage),
       logoImageMimeType = HtmlViewImage.imageMimeType(logoImage),
       htmlTemplate = IdCredential(credential =
-        Json.obj(
-          "issuer" -> Json.obj("name" -> asStringVar("issuer.name")),
-          "credentialSubject" -> Json.obj(
-            "identityNumber" -> asStringVar("credentialSubject.identityNumber"),
-            "dateOfBirth" -> asStringVar("credentialSubject.dateOfBirth"),
-            "name" -> asStringVar("credentialSubject.name")
-          ),
-          "expiryDate" -> asStringVar("expiryDate")
+        IdCredentialHtmlTemplateData(
+          issuerName = "{{issuerName}}",
+          identityNumber = "{{credentialSubject.identityNumber}}",
+          dateOfBirth = "{{credentialSubject.dateOfBirth}}",
+          fullName = "{{credentialSubject.name}}",
+          expirationDate = "{{expiryDate}}"
         )
       ).body
     )
@@ -83,15 +85,13 @@ private object PredefinedHtmlTemplates {
       encodedLogoImage = HtmlViewImage.imageBase64(logoImage),
       logoImageMimeType = HtmlViewImage.imageMimeType(logoImage),
       htmlTemplate = UniversityDegree(credential =
-        Json.obj(
-          "issuer" -> Json.obj("name" -> asStringVar("issuer.name")),
-          "credentialSubject" -> Json.obj(
-            "degreeAwarded" -> asStringVar("credentialSubject.degreeAwarded"),
-            "degreeResult" -> asStringVar("credentialSubject.degreeResult"),
-            "name" -> asStringVar("credentialSubject.name"),
-            "startDate" -> asStringVar("credentialSubject.startDate")
-          ),
-          "issuanceDate" -> asStringVar("issuanceDate")
+        DegreeCredentialHtmlTemplateData(
+          degreeAwarded = "{{credentialSubject.degreeAwarded}}",
+          issuerName = "{{issuerName}}",
+          degreeResult = "{{credentialSubject.degreeResult}}",
+          fullName = "{{credentialSubject.name}}",
+          startDate = "{{credentialSubject.startDate}}",
+          graduationDate = "{{credentialSubject.graduationDate}}"
         )
       ).body
     )
@@ -105,16 +105,12 @@ private object PredefinedHtmlTemplates {
       encodedLogoImage = HtmlViewImage.imageBase64(logoImage),
       logoImageMimeType = HtmlViewImage.imageMimeType(logoImage),
       htmlTemplate = ProofOfEmployment(credential =
-        Json.obj(
-          "issuer" -> Json.obj(
-            "name" -> asStringVar("issuer.name"),
-            "address" -> asStringVar("issuer.address")
-          ),
-          "credentialSubject" -> Json.obj(
-            "name" -> asStringVar("credentialSubject.name")
-          ),
-          "employmentStatus" -> asStringVar("employmentStatus"),
-          "employmentStartDate" -> asStringVar("employmentStartDate")
+        EmploymentCredentialHtmlTemplateData(
+          issuerName = "{{issuerName}}",
+          issuerAddress = "{{issuerAddress}}",
+          fullName = "{{credentialSubject.name}}",
+          employmentStatus = "{{employmentStatus}}",
+          employmentStartDate = "{{employmentStartDate}}"
         )
       ).body
     )
@@ -128,14 +124,12 @@ private object PredefinedHtmlTemplates {
       encodedLogoImage = HtmlViewImage.imageBase64(logoImage),
       logoImageMimeType = HtmlViewImage.imageMimeType(logoImage),
       htmlTemplate = HealthCredential(credential =
-        Json.obj(
-          "issuer" -> Json.obj("name" -> asStringVar("issuer.name")),
-          "credentialSubject" -> Json.obj(
-            "name" -> asStringVar("credentialSubject.name")
-          ),
-          "productClass" -> asStringVar("productClass"),
-          "policyNumber" -> asStringVar("policyNumber"),
-          "expiryDate" -> asStringVar("expiryDate")
+        InsuranceCredentialHtmlTemplateData(
+          issuerName = "{{issuerName}}",
+          productClass = "{{productClass}}",
+          policyNumber = "{{policyNumber}}",
+          fullName = "{{credentialSubject.name}}",
+          expirationDate = "{{expiryDate}}"
         )
       ).body
     )

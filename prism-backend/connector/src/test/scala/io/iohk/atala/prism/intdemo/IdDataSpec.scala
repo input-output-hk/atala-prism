@@ -11,9 +11,9 @@ class IdDataSpec extends AnyFlatSpec {
     val expectedFirstName = "first-name"
     val expectedDoB = LocalDate.of(1973, 6, 6)
     val credential = IdServiceImpl.getIdCredential((expectedFirstName, expectedDoB))
-    val idData = IdData.toIdData(credential)
+    val idData = IdCredentialData(credential)
 
     idData.name shouldBe expectedFirstName
-    idData.dob shouldBe expectedDoB
+    idData.dateOfBirth shouldBe expectedDoB
   }
 }

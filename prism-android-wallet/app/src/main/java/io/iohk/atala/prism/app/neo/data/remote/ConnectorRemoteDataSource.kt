@@ -45,7 +45,10 @@ import io.iohk.atala.kycbridge.protos.CreateAccountResponse as KycCreateAccountR
 import io.iohk.atala.mirror.protos.CreateAccountRequest as MirrorCreateAccountRequest
 import io.iohk.atala.mirror.protos.CreateAccountResponse as MirrorCreateAccountResponse
 
-class ConnectorRemoteDataSource(preferencesLocalDataSource: PreferencesLocalDataSourceInterface, private val sessionLocalDataSource: SessionLocalDataSourceInterface) : BaseRemoteDataSource(preferencesLocalDataSource) {
+class ConnectorRemoteDataSource(
+    preferencesLocalDataSource: PreferencesLocalDataSourceInterface,
+    private val sessionLocalDataSource: SessionLocalDataSourceInterface
+) : BaseRemoteDataSource(preferencesLocalDataSource) {
 
     private fun getChannel(
         ecKeyPair: ECKeyPair?,

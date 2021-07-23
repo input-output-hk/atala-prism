@@ -123,16 +123,4 @@ class Degree: Mappable {
         claims <- map["claims"]
     }
 
-    static func build(_ sentCredential: Io_Iohk_Atala_Prism_Protos_Credential, messageId: String,
-                      isNew: Bool) -> Degree? {
-
-        let credential = Mapper<Degree>().map(JSONString: sentCredential.credentialDocument)
-
-        credential?.intCredential = try? sentCredential.serializedData()
-        credential?.type = CredentialType(rawValue: sentCredential.typeID)
-        credential?.isNew = isNew
-        credential?.messageId = messageId
-
-        return credential
-    }
 }

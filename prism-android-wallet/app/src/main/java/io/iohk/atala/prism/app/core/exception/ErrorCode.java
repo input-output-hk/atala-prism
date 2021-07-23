@@ -14,7 +14,8 @@ public enum ErrorCode {
   CRYPTO_KEY_FACTORY_NOT_INITIALIZED(400, "Key factory failed to initialize"),
   CRYPTO_UNKNOWN_PRIVATE_KEY_TYPE(401, "Private key isn't an instance of BCECPrivateKey"),
   CRYPTO_UNKNOWN_PUBLIC_KEY_TYPE(402, "Private key isn't an instance of BCECPublicKey"),
-  ITEM_NOT_FOUND_IN_LIST(600, "The requested item wasn't found in list");
+  ITEM_NOT_FOUND_IN_LIST(600, "The requested item wasn't found in list"),
+  INVALID_ATALA_MESSAGE_CASE(601, "Atala message case is invalid");
 
   private int code;
   private String description;

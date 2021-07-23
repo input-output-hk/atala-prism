@@ -1,5 +1,6 @@
 package io.iohk.atala.prism.app.neo.data
 
+import android.util.Log
 import androidx.lifecycle.Observer
 import io.iohk.atala.prism.app.data.local.db.mappers.CredentialMapper
 import io.iohk.atala.prism.app.data.local.db.mappers.KycRequestMapper
@@ -81,32 +82,45 @@ class ConnectorListenerRepository(
     /**
      * Handles each of the new messages from multiple data streams
      * */
+
     private fun handleNewMessage(receivedMessage: ReceivedMessage, connectionId: String) {
-        CoroutineScope(Dispatchers.Default).launch {
-            localDataSource.getContactByConnectionId(connectionId)?.let { contact ->
-                val atalaMessage = AtalaMessage.parseFrom(receivedMessage.message)
-                if (CredentialMapper.isACredentialMessage(atalaMessage)) {
-                    val credential = CredentialMapper.mapToCredential(receivedMessage, receivedMessage.id, receivedMessage.connectionId, receivedMessage.received.toMilliseconds(), contact)
-                    contact.lastMessageId = receivedMessage.id
-                    localDataSource.updateContact(contact, listOf(credential))
-                } else if (atalaMessage.messageCase == AtalaMessage.MessageCase.PROOF_REQUEST) {
-                    mapProofRequest(atalaMessage.proofRequest, receivedMessage.id, contact.connectionId)?.let {
-                        localDataSource.insertProofRequest(it.first, it.second)
-                    }
-                    contact.lastMessageId = receivedMessage.id
-                    localDataSource.updateContact(contact, listOf())
-                } else if (atalaMessage.messageCase == AtalaMessage.MessageCase.KYC_BRIDGE_MESSAGE) {
-                    KycRequestMapper.map(contact.connectionId, receivedMessage.id, atalaMessage.kycBridgeMessage)?.let {
-                        localDataSource.storeKycRequest(it)
+        try {
+            CoroutineScope(Dispatchers.Default).launch {
+                localDataSource.getContactByConnectionId(connectionId)?.let { contact ->
+                    val atalaMessage = AtalaMessage.parseFrom(receivedMessage.message)
+                    if (atalaMessage.messageCase == AtalaMessage.MessageCase.PLAIN_CREDENTIAL) {
+                        val credential = CredentialMapper.mapToCredential(
+                            receivedMessage,
+                            receivedMessage.id,
+                            receivedMessage.connectionId,
+                            receivedMessage.received.toMilliseconds(),
+                            contact
+                        )
+                        contact.lastMessageId = receivedMessage.id
+                        localDataSource.updateContact(contact, listOf(credential))
+                    } else if (atalaMessage.messageCase == AtalaMessage.MessageCase.PROOF_REQUEST) {
+                        mapProofRequest(atalaMessage.proofRequest, receivedMessage.id, contact.connectionId)?.let {
+                            localDataSource.insertProofRequest(it.first, it.second)
+                        }
+                        contact.lastMessageId = receivedMessage.id
+                        localDataSource.updateContact(contact, listOf())
+                    } else if (atalaMessage.messageCase == AtalaMessage.MessageCase.KYC_BRIDGE_MESSAGE) {
+                        KycRequestMapper.map(contact.connectionId, receivedMessage.id, atalaMessage.kycBridgeMessage)
+                            ?.let {
+                                localDataSource.storeKycRequest(it)
+                                contact.lastMessageId = receivedMessage.id
+                                localDataSource.updateContact(contact, listOf())
+                            }
+                    } else {
+                        handleMirrorMessages(atalaMessage, receivedMessage.id)
                         contact.lastMessageId = receivedMessage.id
                         localDataSource.updateContact(contact, listOf())
                     }
-                } else {
-                    handleMirrorMessages(atalaMessage, receivedMessage.id)
-                    contact.lastMessageId = receivedMessage.id
-                    localDataSource.updateContact(contact, listOf())
                 }
             }
+        } catch (ex: Exception) {
+            Log.e("Error in parsePlainTextCredential:", ex.message)
+            ex.printStackTrace()
         }
     }
 
@@ -132,29 +146,39 @@ class ConnectorListenerRepository(
     private suspend fun handleMirrorMessages(atalaMessage: AtalaMessage, messageId: String) {
         // see if there is a PayId waiting for response
         if (atalaMessage.replyTo.isNotBlank()) {
-            localDataSource.getPayIdByMessageIdAndStatus(atalaMessage.replyTo, PayId.Status.WaitingForResponse)?.let { payId ->
-                if (atalaMessage.mirrorMessage.messageCase == MirrorMessage.MessageCase.PAYID_NAME_REGISTERED_MESSAGE) {
-                    payId.status = PayId.Status.Registered
-                    localDataSource.updatePayId(payId)
-                } else {
-                    localDataSource.deletePayId(payId)
+            localDataSource.getPayIdByMessageIdAndStatus(atalaMessage.replyTo, PayId.Status.WaitingForResponse)
+                ?.let { payId ->
+                    if (atalaMessage.mirrorMessage.messageCase == MirrorMessage.MessageCase.PAYID_NAME_REGISTERED_MESSAGE) {
+                        payId.status = PayId.Status.Registered
+                        localDataSource.updatePayId(payId)
+                    } else {
+                        localDataSource.deletePayId(payId)
+                    }
+                    // Message is sent to an a mirrorMessageReceiver, it will handle the scenarios in which the UI is waiting for a response
+                    mirrorMessageReceiver.handleNewReceivedMessage(atalaMessage)
+                    return@handleMirrorMessages
                 }
-                // Message is sent to an a mirrorMessageReceiver, it will handle the scenarios in which the UI is waiting for a response
-                mirrorMessageReceiver.handleNewReceivedMessage(atalaMessage)
-                return@handleMirrorMessages
-            }
         }
         localDataSource.getPayId()?.let { payId ->
             when (atalaMessage.mirrorMessage.messageCase) {
                 MirrorMessage.MessageCase.ADDRESS_REGISTERED_MESSAGE -> {
-                    val payIdAddress = PayIdAddress(payId.id, atalaMessage.mirrorMessage.addressRegisteredMessage.cardanoAddress, messageId)
+                    val payIdAddress = PayIdAddress(
+                        payId.id,
+                        atalaMessage.mirrorMessage.addressRegisteredMessage.cardanoAddress,
+                        messageId
+                    )
                     localDataSource.createPayIdAddress(payIdAddress)
                 }
                 MirrorMessage.MessageCase.WALLET_REGISTERED -> {
-                    val payIdPublicKey = PayIdPublicKey(payId.id, atalaMessage.mirrorMessage.walletRegistered.extendedPublicKey, messageId)
+                    val payIdPublicKey = PayIdPublicKey(
+                        payId.id,
+                        atalaMessage.mirrorMessage.walletRegistered.extendedPublicKey,
+                        messageId
+                    )
                     localDataSource.createPayIdPublicKey(payIdPublicKey)
                 }
-                else -> {}
+                else -> {
+                }
             }
         }
         // Message is sent to an a mirrorMessageReceiver, it will handle the scenarios in which the UI is waiting for a response

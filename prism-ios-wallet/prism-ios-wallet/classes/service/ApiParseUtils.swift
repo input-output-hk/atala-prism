@@ -11,15 +11,4 @@ class ApiParseUtils: NSObject {
         return "\(intDate.month)/\(intDate.day)/\(intDate.year)"
     }
 
-    static func parseFullName(_ intSubject: Io_Iohk_Atala_Prism_Protos_SubjectData) -> String {
-
-        var fullName = ""
-        for name in intSubject.names {
-            fullName = "\(fullName) \(name)"
-        }
-        for surname in intSubject.surnames {
-            fullName = "\(fullName) \(surname)"
-        }
-        return fullName.trim()
-    }
 }

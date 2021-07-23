@@ -23,15 +23,19 @@ class CredentialsRepository(
 
     fun allCredentials(): LiveData<List<Credential>> = credentialsLocalDataSource.allCredentials()
 
-    suspend fun clearCredentialNotifications(credentialId: String) = credentialsLocalDataSource.clearCredentialNotifications(credentialId)
+    suspend fun clearCredentialNotifications(credentialId: String) =
+        credentialsLocalDataSource.clearCredentialNotifications(credentialId)
 
-    suspend fun getCredentialByCredentialId(credentialId: String): Credential? = credentialsLocalDataSource.getCredentialByCredentialId(credentialId)
+    suspend fun getCredentialByCredentialId(credentialId: String): Credential? =
+        credentialsLocalDataSource.getCredentialByCredentialId(credentialId)
 
     suspend fun getCredentialWithEncodedCredentialByCredentialId(
         credentialId: String
-    ): CredentialWithEncodedCredential? = credentialsLocalDataSource.getCredentialWithEncodedCredentialByCredentialId(credentialId)
+    ): CredentialWithEncodedCredential? =
+        credentialsLocalDataSource.getCredentialWithEncodedCredentialByCredentialId(credentialId)
 
-    suspend fun getContactsActivityHistoriesByCredentialId(credentialId: String): List<ActivityHistoryWithContact> = credentialsLocalDataSource.getContactsActivityHistoriesByCredentialId(credentialId)
+    suspend fun getContactsActivityHistoriesByCredentialId(credentialId: String): List<ActivityHistoryWithContact> =
+        credentialsLocalDataSource.getContactsActivityHistoriesByCredentialId(credentialId)
 
     suspend fun deleteCredential(credential: Credential) = credentialsLocalDataSource.deleteCredential(credential)
 

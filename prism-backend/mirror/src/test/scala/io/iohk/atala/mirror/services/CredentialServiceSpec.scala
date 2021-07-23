@@ -207,11 +207,11 @@ class CredentialServiceSpec extends PostgresRepositorySpec[Task] with MockitoSug
     "parse unsigned credential" in new ConnectionServiceFixtures {
       val credential = RawCredential(
         credential_models
-          .Credential(
-            typeId = "typeId",
-            credentialDocument = """{"id": "did:prism:id"}"""
+          .PlainTextCredential(
+            encodedCredential = """{"id": "did:prism:id"}""",
+            encodedMerkleProof = ""
           )
-          .credentialDocument
+          .encodedCredential
       )
 
       credentialService.getIssuersDid(credential) mustBe Some(DID.buildPrismDID("id"))

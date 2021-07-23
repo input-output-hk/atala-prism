@@ -72,28 +72,6 @@ class CredentialDAO: BaseDAO {
         return nil
     }
 
-    func createCredential(sentCredential: Io_Iohk_Atala_Prism_Protos_Credential,
-                          viewed: Bool, messageId: String, connectionId: String) -> (Credential, Bool)? {
-
-        if let credential = Mapper<Degree>().map(JSONString: sentCredential.credentialDocument) {
-            var jsonStr = ""
-            if let jsonData = sentCredential.credentialDocument.data(using: String.Encoding.utf8) {
-                var jsonObject = try? JSONSerialization.jsonObject(with: jsonData,
-                                                                   options: .allowFragments) as? [String: Any]
-                jsonObject?.removeValue(forKey: "view")
-                let prettyJsonData = try? JSONSerialization.data(withJSONObject: jsonObject!, options: .prettyPrinted)
-                let prettyPrintedJson = String(data: prettyJsonData!, encoding: String.Encoding.utf8)
-                jsonStr = prettyPrintedJson ?? ""
-            }
-            return try? createCredential(type: sentCredential.typeID, credentialId: messageId,
-                                         issuerId: connectionId, issuerName: (credential.issuer?.name)!,
-                                         htmlView: (credential.view?.html)!, dateReceived: Date(),
-                                         viewed: viewed, encoded: sentCredential.serializedData(), json: jsonStr,
-                                         plainCredential: nil)
-        }
-        return nil
-    }
-
     func createCredential(message: Io_Iohk_Atala_Prism_Protos_AtalaMessage,
                           viewed: Bool, messageId: String, connectionId: String,
                           issuerName: String) -> (Credential, Bool)? {

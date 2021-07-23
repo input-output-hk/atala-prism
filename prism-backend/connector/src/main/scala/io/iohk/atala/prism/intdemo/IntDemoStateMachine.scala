@@ -16,7 +16,7 @@ import scala.util.{Failure, Success}
 
 class IntDemoStateMachine[D](
     requiredDataLoader: TokenString => Future[Option[D]],
-    getCredential: D => credential_models.Credential,
+    getCredential: D => credential_models.PlainTextCredential,
     proofRequestIssuer: Connection => Future[Unit],
     connectorIntegration: ConnectorIntegration,
     intDemoRepository: IntDemoRepository,

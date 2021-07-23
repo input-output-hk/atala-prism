@@ -14,7 +14,6 @@ import io.iohk.cvp.R
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import org.json.JSONException
-import org.json.JSONObject
 
 object CredentialUtil {
     fun getType(acceptedCredential: Credential, context: Context): String {
@@ -24,8 +23,12 @@ object CredentialUtil {
             CredentialType.DEMO_EMPLOYMENT_CREDENTIAL -> context.resources.getString(R.string.credential_employed_type_title)
             CredentialType.DEMO_INSURANCE_CREDENTIAL -> context.resources.getString(R.string.credential_insurance_type_title)
             CredentialType.ETHIOPIA_NATIONAL_ID, CredentialType.GEORGIA_NATIONAL_ID -> context.resources.getString(R.string.credential_georgia_national_id_type_title)
-            CredentialType.ETHIOPIA_EDUCATIONAL_DEGREE, CredentialType.GEORGIA_EDUCATIONAL_DEGREE -> context.resources.getString(R.string.credential_georgia_educational_degree_type_title)
-            CredentialType.ETHIOPIA_EDUCATIONAL_DEGREE_TRANSCRIPT, CredentialType.GEORGIA_EDUCATIONAL_DEGREE_TRANSCRIPT -> context.resources.getString(R.string.credential_georgia_educational_degree_transcript_type_title)
+            CredentialType.ETHIOPIA_EDUCATIONAL_DEGREE, CredentialType.GEORGIA_EDUCATIONAL_DEGREE -> context.resources.getString(
+                R.string.credential_georgia_educational_degree_type_title
+            )
+            CredentialType.ETHIOPIA_EDUCATIONAL_DEGREE_TRANSCRIPT, CredentialType.GEORGIA_EDUCATIONAL_DEGREE_TRANSCRIPT -> context.resources.getString(
+                R.string.credential_georgia_educational_degree_transcript_type_title
+            )
             CredentialType.KYC_CREDENTIAL -> context.resources.getString(R.string.credential_kyc_type_title)
             CredentialType.UNKNOWN -> ""
         }
@@ -60,9 +63,18 @@ object CredentialUtil {
             CredentialType.DEMO_DEGREE_CREDENTIAL -> context.resources.getDrawable(R.drawable.ic_id_university, null)
             CredentialType.DEMO_EMPLOYMENT_CREDENTIAL -> context.resources.getDrawable(R.drawable.ic_id_proof, null)
             CredentialType.DEMO_INSURANCE_CREDENTIAL -> context.resources.getDrawable(R.drawable.ic_id_insurance, null)
-            CredentialType.ETHIOPIA_EDUCATIONAL_DEGREE, CredentialType.GEORGIA_EDUCATIONAL_DEGREE -> context.resources.getDrawable(R.mipmap.ic_educational_degree, null)
-            CredentialType.ETHIOPIA_NATIONAL_ID, CredentialType.GEORGIA_NATIONAL_ID -> context.resources.getDrawable(R.mipmap.ic_national_id, null)
-            CredentialType.ETHIOPIA_EDUCATIONAL_DEGREE_TRANSCRIPT, CredentialType.GEORGIA_EDUCATIONAL_DEGREE_TRANSCRIPT -> context.resources.getDrawable(R.mipmap.ic_educational_degree_transcript, null)
+            CredentialType.ETHIOPIA_EDUCATIONAL_DEGREE, CredentialType.GEORGIA_EDUCATIONAL_DEGREE -> context.resources.getDrawable(
+                R.mipmap.ic_educational_degree,
+                null
+            )
+            CredentialType.ETHIOPIA_NATIONAL_ID, CredentialType.GEORGIA_NATIONAL_ID -> context.resources.getDrawable(
+                R.mipmap.ic_national_id,
+                null
+            )
+            CredentialType.ETHIOPIA_EDUCATIONAL_DEGREE_TRANSCRIPT, CredentialType.GEORGIA_EDUCATIONAL_DEGREE_TRANSCRIPT -> context.resources.getDrawable(
+                R.mipmap.ic_educational_degree_transcript,
+                null
+            )
             CredentialType.KYC_CREDENTIAL -> context.resources.getDrawable(R.drawable.ic_id_government, null)
             CredentialType.UNKNOWN -> null
         }
@@ -71,27 +83,10 @@ object CredentialUtil {
     /*
     * Logic to get the HTML String
     * */
-    suspend fun getHtmlString(credentialData: CredentialWithEncodedCredential): String? = withContext(Dispatchers.Main) {
-        if (CredentialMapper.isADemoCredential(credentialData.credential)) {
-            return@withContext getHtmlStringFromDemoCredential(credentialData.encodedCredential)
-        } else {
+    suspend fun getHtmlString(credentialData: CredentialWithEncodedCredential): String? =
+        withContext(Dispatchers.Main) {
             return@withContext getHtmlStringFromPlainTextCredential(credentialData.encodedCredential)
         }
-    }
-
-    private fun getHtmlStringFromDemoCredential(encodedCredential: EncodedCredential): String? {
-        try {
-            val credentialProto = io.iohk.atala.prism.protos.Credential.parseFrom(encodedCredential.credentialEncoded)
-            val jsonObject = JSONObject(credentialProto.credentialDocument)
-            val viewObject = jsonObject.getJSONObject("view")
-            return viewObject.getString("html")
-        } catch (ex: InvalidProtocolBufferException) {
-            ex.printStackTrace()
-        } catch (ex: JSONException) {
-            ex.printStackTrace()
-        }
-        return null
-    }
 
     private fun getHtmlStringFromPlainTextCredential(encodedCredential: EncodedCredential): String? {
         try {
