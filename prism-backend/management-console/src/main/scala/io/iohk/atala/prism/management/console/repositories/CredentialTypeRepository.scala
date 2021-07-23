@@ -7,6 +7,7 @@ import derevo.derive
 import doobie.ConnectionIO
 import doobie.implicits._
 import doobie.util.transactor.Transactor
+import io.iohk.atala.prism.interop.KotlinFunctionConverters._
 import io.iohk.atala.prism.management.console.errors._
 import io.iohk.atala.prism.management.console.models._
 import io.iohk.atala.prism.management.console.repositories.daos.CredentialTypeDao
@@ -164,7 +165,8 @@ private final class CredentialTypeRepositoryImpl[F[_]: BracketThrow](xa: Transac
   ): Either[MustacheError, String] = {
     Mustache.INSTANCE.render(
       template,
-      name => fields.find(_.name == name).map(_.name).get
+      ((name: String) => fields.find(_.name == name).map(_.name).get).asKotlin,
+      true
     )
   }
 
