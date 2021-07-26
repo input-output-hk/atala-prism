@@ -1,6 +1,6 @@
 //
 import MBProgressHUD
-import Toast_Swift
+import Toast
 
 class ViewUtils: NSObject {
 

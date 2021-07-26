@@ -1,6 +1,5 @@
 //
 
-import AlamofireObjectMapper
 import Foundation
 import ObjectMapper
 

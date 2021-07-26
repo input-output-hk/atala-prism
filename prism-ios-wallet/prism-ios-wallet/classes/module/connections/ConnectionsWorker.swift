@@ -7,7 +7,7 @@
 //
 
 import Foundation
-import SwiftGRPC
+import GRPC
 
 protocol ConnectionsWorkerDelegate: class {
 
@@ -69,8 +69,7 @@ class ConnectionsWorker: NSObject {
             }
         }, error: { error in
             var msg = "service_error".localize()
-            if let err = error as? RPCError,
-                err.callResult?.statusMessage?.contains("Unknown token") ?? false {
+            if error.localizedDescription.contains("Unknown token") ?? false {
                 msg = "connections_scan_qr_error".localize()
             }
             self.delegate?.config(isLoading: false)

@@ -1,5 +1,5 @@
 //
-import SwiftGRPC
+import GRPC
 import SwiftProtobuf
 import ObjectMapper
 

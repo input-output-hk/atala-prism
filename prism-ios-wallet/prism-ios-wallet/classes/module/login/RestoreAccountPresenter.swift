@@ -7,7 +7,7 @@
 //
 
 import UIKit
-import SwiftGRPC
+import GRPC
 import Crypto
 
 class RestoreAccountPresenter: BasePresenter {
@@ -42,8 +42,7 @@ class RestoreAccountPresenter: BasePresenter {
         }, success: {
             self.fetchCredentials(contact: contact!)
         }, error: { error in
-            if let err = error as? RPCError,
-                err.callResult?.statusMessage?.contains("Unknown encodedPublicKey") ?? false {
+            if let err = error as? Error, error.localizedDescription.contains("Unknown encodedPublicKey") {
                 self.recoveryCompleted()
             } else {
                 self.viewImpl?.showLoading(doShow: false)

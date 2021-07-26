@@ -6,7 +6,7 @@
 //  Copyright © 2020 iohk. All rights reserved.
 //
 
-import SwiftGRPC
+import GRPC
 import SwiftProtobuf
 import ObjectMapper
 

@@ -8,8 +8,6 @@
 
 /* Begin PBXBuildFile section */
 		05BDBB1B25A6D44300D56D03 /* KotlinConverters.swift in Sources */ = {isa = PBXBuildFile; fileRef = 05BDBB1A25A6D44300D56D03 /* KotlinConverters.swift */; };
-		0BAF55FE86F55EA00FAD31CE /* Pods_prism_ios_walletUITests.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = F8B88DEFB34A31C89D4D7394 /* Pods_prism_ios_walletUITests.framework */; };
-		21F3C7BA2B970749C8DC777F /* Pods_prism_ios_walletTests.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = FAEEB98D90C36BE850AF1B36 /* Pods_prism_ios_walletTests.framework */; };
 		2802995925FB8976002A5489 /* ProfileDetailHeaderCell.xib in Resources */ = {isa = PBXBuildFile; fileRef = 2802995825FB8976002A5489 /* ProfileDetailHeaderCell.xib */; };
 		2802995E25FB89F2002A5489 /* ProfileDetailHeaderCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2802995D25FB89F2002A5489 /* ProfileDetailHeaderCell.swift */; };
 		280299CA25FB920F002A5489 /* ProfileDetailCell.xib in Resources */ = {isa = PBXBuildFile; fileRef = 280299C925FB920E002A5489 /* ProfileDetailCell.xib */; };
@@ -55,8 +53,6 @@
 		28CFF93E2613527F0090A011 /* PayIDScannerViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 28CFF93D2613527F0090A011 /* PayIDScannerViewController.swift */; };
 		28FE64FC25E9553C0089B675 /* Attribute.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 28FE64FB25E9553C0089B675 /* Attribute.storyboard */; };
 		28FE650125E955590089B675 /* AttributeViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 28FE650025E955590089B675 /* AttributeViewController.swift */; };
-		386BF954863A1670AF2F333D /* (null) in Frameworks */ = {isa = PBXBuildFile; };
-		A952A3ABA5F37F460FA67215 /* Pods_prism_ios_wallet.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 322C4F1260548161F700C812 /* Pods_prism_ios_wallet.framework */; };
 		B30255012449E33D00C8E9C0 /* NotificationsViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = B30255002449E33D00C8E9C0 /* NotificationsViewController.swift */; };
 		B30255032449E36B00C8E9C0 /* NotificationsPresenter.swift in Sources */ = {isa = PBXBuildFile; fileRef = B30255022449E36B00C8E9C0 /* NotificationsPresenter.swift */; };
 		B30255062449E61900C8E9C0 /* Notifications.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = B30255052449E61900C8E9C0 /* Notifications.storyboard */; };
@@ -203,6 +199,20 @@
 		B3F94E97247455A60087EBFD /* SecurityViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = B3F94E94247455A60087EBFD /* SecurityViewController.swift */; };
 		B3F94E98247455A60087EBFD /* SecurityPresenter.swift in Sources */ = {isa = PBXBuildFile; fileRef = B3F94E95247455A60087EBFD /* SecurityPresenter.swift */; };
 		DA1B337726A9A6600033E667 /* Crypto in Frameworks */ = {isa = PBXBuildFile; productRef = DA1B337626A9A6600033E667 /* Crypto */; };
+		DA491C6626AAD90F00479526 /* Alamofire in Frameworks */ = {isa = PBXBuildFile; productRef = DA491C6526AAD90F00479526 /* Alamofire */; };
+		DA491C6926AADA4500479526 /* AlamofireImage in Frameworks */ = {isa = PBXBuildFile; productRef = DA491C6826AADA4500479526 /* AlamofireImage */; };
+		DA491C6C26AADABB00479526 /* ObjectMapper in Frameworks */ = {isa = PBXBuildFile; productRef = DA491C6B26AADABB00479526 /* ObjectMapper */; };
+		DA491C6F26AADB0C00479526 /* SwiftProtobuf in Frameworks */ = {isa = PBXBuildFile; productRef = DA491C6E26AADB0C00479526 /* SwiftProtobuf */; };
+		DA491C7226AADB5B00479526 /* SwiftyBeaver in Frameworks */ = {isa = PBXBuildFile; productRef = DA491C7126AADB5B00479526 /* SwiftyBeaver */; };
+		DA491C7526AADBA000479526 /* Tabman in Frameworks */ = {isa = PBXBuildFile; productRef = DA491C7426AADBA000479526 /* Tabman */; };
+		DA491C7826AADEE700479526 /* MBProgressHUD in Frameworks */ = {isa = PBXBuildFile; productRef = DA491C7726AADEE700479526 /* MBProgressHUD */; };
+		DA491C7B26AADF1800479526 /* Toast in Frameworks */ = {isa = PBXBuildFile; productRef = DA491C7A26AADF1800479526 /* Toast */; };
+		DA491C7E26AAE00E00479526 /* FirebaseAnalytics in Frameworks */ = {isa = PBXBuildFile; productRef = DA491C7D26AAE00E00479526 /* FirebaseAnalytics */; };
+		DA491C8026AAE00E00479526 /* FirebaseCrashlytics in Frameworks */ = {isa = PBXBuildFile; productRef = DA491C7F26AAE00E00479526 /* FirebaseCrashlytics */; };
+		DA491C8626AAEF1C00479526 /* GRPC in Frameworks */ = {isa = PBXBuildFile; productRef = DA491C8526AAEF1C00479526 /* GRPC */; };
+		E05C3363FFFB2E5C77CC493B /* Pods_prism_ios_wallet.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 5B4A1BA73EAB80A063E2BDFF /* Pods_prism_ios_wallet.framework */; };
+		E23D252F9908AAEC3957EC7A /* Pods_prism_ios_walletUITests.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 6CCBAD443846BCE6058590A0 /* Pods_prism_ios_walletUITests.framework */; };
+		EDAC7E9325CC41C5E8177638 /* Pods_prism_ios_walletTests.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = AD4544399FC94D9F41F293D1 /* Pods_prism_ios_walletTests.framework */; };
 		EE22F1F223A4AD2C003C4F87 /* CryptoUtils.swift in Sources */ = {isa = PBXBuildFile; fileRef = EE22F1F123A4AD2C003C4F87 /* CryptoUtils.swift */; };
 		EE48AC022377537200C0A441 /* Tutorial.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = EE48AC012377537200C0A441 /* Tutorial.storyboard */; };
 		EE48AC04237753A900C0A441 /* Register.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = EE48AC03237753A900C0A441 /* Register.storyboard */; };
@@ -324,7 +334,6 @@
 		EE7D4D2B236F8DE9007C31A8 /* ListingBasePresenter.swift in Sources */ = {isa = PBXBuildFile; fileRef = EE7D4D26236F8DE9007C31A8 /* ListingBasePresenter.swift */; };
 		EE7D4D30236FB379007C31A8 /* ConnectionMainViewCell.xib in Resources */ = {isa = PBXBuildFile; fileRef = EE7D4D2F236FB379007C31A8 /* ConnectionMainViewCell.xib */; };
 		EE7D4D32236FB3C1007C31A8 /* ConnectionMainViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = EE7D4D31236FB3C1007C31A8 /* ConnectionMainViewCell.swift */; };
-		EE7E753023C29D0600BE9AD1 /* PaymentUtils.swift in Sources */ = {isa = PBXBuildFile; fileRef = EE7E752F23C29D0600BE9AD1 /* PaymentUtils.swift */; };
 		EE8CD810237B691100614578 /* TextFieldTitledView.xib in Resources */ = {isa = PBXBuildFile; fileRef = EE8CD80F237B691100614578 /* TextFieldTitledView.xib */; };
 		EE8CD812237B6C7300614578 /* TextFieldTitledView.swift in Sources */ = {isa = PBXBuildFile; fileRef = EE8CD811237B6C7300614578 /* TextFieldTitledView.swift */; };
 		EE8CD814237BA29700614578 /* ScanQrUtils.swift in Sources */ = {isa = PBXBuildFile; fileRef = EE8CD813237BA29700614578 /* ScanQrUtils.swift */; };
@@ -336,7 +345,6 @@
 		EE8FD4E423726A4000EFF62E /* SettingsViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = EE8FD4E323726A4000EFF62E /* SettingsViewController.swift */; };
 		EE8FD4EA23726AC000EFF62E /* Settings.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = EE8FD4E923726AC000EFF62E /* Settings.storyboard */; };
 		EE8FD4EE23726AD000EFF62E /* Profile.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = EE8FD4ED23726AD000EFF62E /* Profile.storyboard */; };
-		EE8FD4F02372864900EFF62E /* FakeData.swift in Sources */ = {isa = PBXBuildFile; fileRef = EE8FD4EF2372864900EFF62E /* FakeData.swift */; };
 		EE904F042373AA5A00EE6344 /* DegreeViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = EE904F032373AA5A00EE6344 /* DegreeViewCell.swift */; };
 		EE904F062373AAD200EE6344 /* NotificationViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = EE904F052373AAD200EE6344 /* NotificationViewCell.swift */; };
 		EE904F082373AAE000EE6344 /* NotificationHeaderViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = EE904F072373AAE000EE6344 /* NotificationHeaderViewCell.swift */; };
@@ -375,6 +383,8 @@
 
 /* Begin PBXFileReference section */
 		05BDBB1A25A6D44300D56D03 /* KotlinConverters.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KotlinConverters.swift; sourceTree = "<group>"; };
+		0A1ACCE2F7CA00545ECCD235 /* Pods-prism-ios-walletTests.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-prism-ios-walletTests.release.xcconfig"; path = "Target Support Files/Pods-prism-ios-walletTests/Pods-prism-ios-walletTests.release.xcconfig"; sourceTree = "<group>"; };
+		0CCA5E43D22F560E543957CB /* Pods-prism-ios-walletTests.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-prism-ios-walletTests.debug.xcconfig"; path = "Target Support Files/Pods-prism-ios-walletTests/Pods-prism-ios-walletTests.debug.xcconfig"; sourceTree = "<group>"; };
 		2802995825FB8976002A5489 /* ProfileDetailHeaderCell.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = ProfileDetailHeaderCell.xib; sourceTree = "<group>"; };
 		2802995D25FB89F2002A5489 /* ProfileDetailHeaderCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProfileDetailHeaderCell.swift; sourceTree = "<group>"; };
 		280299C925FB920E002A5489 /* ProfileDetailCell.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = ProfileDetailCell.xib; sourceTree = "<group>"; };
@@ -420,13 +430,12 @@
 		28CFF93D2613527F0090A011 /* PayIDScannerViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PayIDScannerViewController.swift; sourceTree = "<group>"; };
 		28FE64FB25E9553C0089B675 /* Attribute.storyboard */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; path = Attribute.storyboard; sourceTree = "<group>"; };
 		28FE650025E955590089B675 /* AttributeViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AttributeViewController.swift; sourceTree = "<group>"; };
-		306D080251EFA59EF3645375 /* Pods-prism-ios-wallet.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-prism-ios-wallet.debug.xcconfig"; path = "Target Support Files/Pods-prism-ios-wallet/Pods-prism-ios-wallet.debug.xcconfig"; sourceTree = "<group>"; };
-		322C4F1260548161F700C812 /* Pods_prism_ios_wallet.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_prism_ios_wallet.framework; sourceTree = BUILT_PRODUCTS_DIR; };
-		370783CE00B7101BE6825D17 /* Pods-prism-ios-wallet.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-prism-ios-wallet.release.xcconfig"; path = "Target Support Files/Pods-prism-ios-wallet/Pods-prism-ios-wallet.release.xcconfig"; sourceTree = "<group>"; };
-		665E7DC1A62428CDBC1883EB /* Pods-prism-ios-walletUITests.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-prism-ios-walletUITests.release.xcconfig"; path = "Target Support Files/Pods-prism-ios-walletUITests/Pods-prism-ios-walletUITests.release.xcconfig"; sourceTree = "<group>"; };
-		8ACFFDA562E21573D1E1FF91 /* Pods-prism-ios-walletUITests.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-prism-ios-walletUITests.debug.xcconfig"; path = "Target Support Files/Pods-prism-ios-walletUITests/Pods-prism-ios-walletUITests.debug.xcconfig"; sourceTree = "<group>"; };
-		A75FF87D2A02217AA6CB5ECB /* Pods-prism-ios-walletTests.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-prism-ios-walletTests.debug.xcconfig"; path = "Target Support Files/Pods-prism-ios-walletTests/Pods-prism-ios-walletTests.debug.xcconfig"; sourceTree = "<group>"; };
-		B1490CF29DD125E822BD2F43 /* Pods-prism-ios-walletTests.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-prism-ios-walletTests.release.xcconfig"; path = "Target Support Files/Pods-prism-ios-walletTests/Pods-prism-ios-walletTests.release.xcconfig"; sourceTree = "<group>"; };
+		3E0573FA37BD9134B18A3B01 /* Pods-prism-ios-walletUITests.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-prism-ios-walletUITests.release.xcconfig"; path = "Target Support Files/Pods-prism-ios-walletUITests/Pods-prism-ios-walletUITests.release.xcconfig"; sourceTree = "<group>"; };
+		4FBAAD92EA0E277B3FE2BDA5 /* Pods-prism-ios-wallet.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-prism-ios-wallet.release.xcconfig"; path = "Target Support Files/Pods-prism-ios-wallet/Pods-prism-ios-wallet.release.xcconfig"; sourceTree = "<group>"; };
+		5B4A1BA73EAB80A063E2BDFF /* Pods_prism_ios_wallet.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_prism_ios_wallet.framework; sourceTree = BUILT_PRODUCTS_DIR; };
+		6CCBAD443846BCE6058590A0 /* Pods_prism_ios_walletUITests.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_prism_ios_walletUITests.framework; sourceTree = BUILT_PRODUCTS_DIR; };
+		9BD68DDE5DBEE2D2C515BAD4 /* Pods-prism-ios-walletUITests.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-prism-ios-walletUITests.debug.xcconfig"; path = "Target Support Files/Pods-prism-ios-walletUITests/Pods-prism-ios-walletUITests.debug.xcconfig"; sourceTree = "<group>"; };
+		AD4544399FC94D9F41F293D1 /* Pods_prism_ios_walletTests.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_prism_ios_walletTests.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		B30255002449E33D00C8E9C0 /* NotificationsViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NotificationsViewController.swift; sourceTree = "<group>"; };
 		B30255022449E36B00C8E9C0 /* NotificationsPresenter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NotificationsPresenter.swift; sourceTree = "<group>"; };
 		B30255052449E61900C8E9C0 /* Notifications.storyboard */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; path = Notifications.storyboard; sourceTree = "<group>"; };
@@ -585,6 +594,7 @@
 		B3F94E93247455A60087EBFD /* SecurityMainViewCell.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SecurityMainViewCell.swift; sourceTree = "<group>"; };
 		B3F94E94247455A60087EBFD /* SecurityViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SecurityViewController.swift; sourceTree = "<group>"; };
 		B3F94E95247455A60087EBFD /* SecurityPresenter.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SecurityPresenter.swift; sourceTree = "<group>"; };
+		D6C555640A767A9F163BB015 /* Pods-prism-ios-wallet.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-prism-ios-wallet.debug.xcconfig"; path = "Target Support Files/Pods-prism-ios-wallet/Pods-prism-ios-wallet.debug.xcconfig"; sourceTree = "<group>"; };
 		DA1B337526A99CFA0033E667 /* CryptoSDK */ = {isa = PBXFileReference; lastKnownFileType = folder; path = CryptoSDK; sourceTree = "<group>"; };
 		EE22F1F123A4AD2C003C4F87 /* CryptoUtils.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CryptoUtils.swift; sourceTree = "<group>"; };
 		EE48AC012377537200C0A441 /* Tutorial.storyboard */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; path = Tutorial.storyboard; sourceTree = "<group>"; };
@@ -716,7 +726,6 @@
 		EE7D4D26236F8DE9007C31A8 /* ListingBasePresenter.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ListingBasePresenter.swift; sourceTree = "<group>"; };
 		EE7D4D2F236FB379007C31A8 /* ConnectionMainViewCell.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = ConnectionMainViewCell.xib; sourceTree = "<group>"; };
 		EE7D4D31236FB3C1007C31A8 /* ConnectionMainViewCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ConnectionMainViewCell.swift; sourceTree = "<group>"; };
-		EE7E752F23C29D0600BE9AD1 /* PaymentUtils.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PaymentUtils.swift; sourceTree = "<group>"; };
 		EE8CD80F237B691100614578 /* TextFieldTitledView.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = TextFieldTitledView.xib; sourceTree = "<group>"; };
 		EE8CD811237B6C7300614578 /* TextFieldTitledView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TextFieldTitledView.swift; sourceTree = "<group>"; };
 		EE8CD813237BA29700614578 /* ScanQrUtils.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScanQrUtils.swift; sourceTree = "<group>"; };
@@ -728,7 +737,6 @@
 		EE8FD4E323726A4000EFF62E /* SettingsViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsViewController.swift; sourceTree = "<group>"; };
 		EE8FD4E923726AC000EFF62E /* Settings.storyboard */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; path = Settings.storyboard; sourceTree = "<group>"; };
 		EE8FD4ED23726AD000EFF62E /* Profile.storyboard */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; path = Profile.storyboard; sourceTree = "<group>"; };
-		EE8FD4EF2372864900EFF62E /* FakeData.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FakeData.swift; sourceTree = "<group>"; };
 		EE904F032373AA5A00EE6344 /* DegreeViewCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DegreeViewCell.swift; sourceTree = "<group>"; };
 		EE904F052373AAD200EE6344 /* NotificationViewCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NotificationViewCell.swift; sourceTree = "<group>"; };
 		EE904F072373AAE000EE6344 /* NotificationHeaderViewCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NotificationHeaderViewCell.swift; sourceTree = "<group>"; };
@@ -753,8 +761,6 @@
 		F5E38966234BC3500001F1E3 /* prism-ios-walletUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = "prism-ios-walletUITests.xctest"; sourceTree = BUILT_PRODUCTS_DIR; };
 		F5E3896A234BC3500001F1E3 /* prism_ios_walletUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = prism_ios_walletUITests.swift; sourceTree = "<group>"; };
 		F5E3896C234BC3500001F1E3 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
-		F8B88DEFB34A31C89D4D7394 /* Pods_prism_ios_walletUITests.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_prism_ios_walletUITests.framework; sourceTree = BUILT_PRODUCTS_DIR; };
-		FAEEB98D90C36BE850AF1B36 /* Pods_prism_ios_walletTests.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_prism_ios_walletTests.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -762,9 +768,19 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				DA491C7B26AADF1800479526 /* Toast in Frameworks */,
+				DA491C6C26AADABB00479526 /* ObjectMapper in Frameworks */,
+				DA491C7E26AAE00E00479526 /* FirebaseAnalytics in Frameworks */,
 				DA1B337726A9A6600033E667 /* Crypto in Frameworks */,
-				386BF954863A1670AF2F333D /* (null) in Frameworks */,
-				A952A3ABA5F37F460FA67215 /* Pods_prism_ios_wallet.framework in Frameworks */,
+				DA491C7826AADEE700479526 /* MBProgressHUD in Frameworks */,
+				DA491C6626AAD90F00479526 /* Alamofire in Frameworks */,
+				DA491C6926AADA4500479526 /* AlamofireImage in Frameworks */,
+				DA491C7526AADBA000479526 /* Tabman in Frameworks */,
+				DA491C8626AAEF1C00479526 /* GRPC in Frameworks */,
+				DA491C8026AAE00E00479526 /* FirebaseCrashlytics in Frameworks */,
+				DA491C6F26AADB0C00479526 /* SwiftProtobuf in Frameworks */,
+				DA491C7226AADB5B00479526 /* SwiftyBeaver in Frameworks */,
+				E05C3363FFFB2E5C77CC493B /* Pods_prism_ios_wallet.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -772,7 +788,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				21F3C7BA2B970749C8DC777F /* Pods_prism_ios_walletTests.framework in Frameworks */,
+				EDAC7E9325CC41C5E8177638 /* Pods_prism_ios_walletTests.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -780,7 +796,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				0BAF55FE86F55EA00FAD31CE /* Pods_prism_ios_walletUITests.framework in Frameworks */,
+				E23D252F9908AAEC3957EC7A /* Pods_prism_ios_walletUITests.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -858,14 +874,17 @@
 			path = attributeListing;
 			sourceTree = "<group>";
 		};
-		5DFB3703BD7EF8640F960804 /* Frameworks */ = {
+		7C349167B572DCED4A531D17 /* Pods */ = {
 			isa = PBXGroup;
 			children = (
-				FAEEB98D90C36BE850AF1B36 /* Pods_prism_ios_walletTests.framework */,
-				F8B88DEFB34A31C89D4D7394 /* Pods_prism_ios_walletUITests.framework */,
-				322C4F1260548161F700C812 /* Pods_prism_ios_wallet.framework */,
+				D6C555640A767A9F163BB015 /* Pods-prism-ios-wallet.debug.xcconfig */,
+				4FBAAD92EA0E277B3FE2BDA5 /* Pods-prism-ios-wallet.release.xcconfig */,
+				0CCA5E43D22F560E543957CB /* Pods-prism-ios-walletTests.debug.xcconfig */,
+				0A1ACCE2F7CA00545ECCD235 /* Pods-prism-ios-walletTests.release.xcconfig */,
+				9BD68DDE5DBEE2D2C515BAD4 /* Pods-prism-ios-walletUITests.debug.xcconfig */,
+				3E0573FA37BD9134B18A3B01 /* Pods-prism-ios-walletUITests.release.xcconfig */,
 			);
-			name = Frameworks;
+			path = Pods;
 			sourceTree = "<group>";
 		};
 		B30254FF2449E27600C8E9C0 /* notifications */ = {
@@ -1239,17 +1258,14 @@
 			path = cells;
 			sourceTree = "<group>";
 		};
-		BB76F1F75C3CF9AB34400C89 /* Pods */ = {
+		C6E13CBA0701020453BD91F1 /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
-				306D080251EFA59EF3645375 /* Pods-prism-ios-wallet.debug.xcconfig */,
-				A75FF87D2A02217AA6CB5ECB /* Pods-prism-ios-walletTests.debug.xcconfig */,
-				B1490CF29DD125E822BD2F43 /* Pods-prism-ios-walletTests.release.xcconfig */,
-				370783CE00B7101BE6825D17 /* Pods-prism-ios-wallet.release.xcconfig */,
-				8ACFFDA562E21573D1E1FF91 /* Pods-prism-ios-walletUITests.debug.xcconfig */,
-				665E7DC1A62428CDBC1883EB /* Pods-prism-ios-walletUITests.release.xcconfig */,
+				5B4A1BA73EAB80A063E2BDFF /* Pods_prism_ios_wallet.framework */,
+				AD4544399FC94D9F41F293D1 /* Pods_prism_ios_walletTests.framework */,
+				6CCBAD443846BCE6058590A0 /* Pods_prism_ios_walletUITests.framework */,
 			);
-			path = Pods;
+			name = Frameworks;
 			sourceTree = "<group>";
 		};
 		EE48AC07237753EB00C0A441 /* login */ = {
@@ -1439,7 +1455,6 @@
 			isa = PBXGroup;
 			children = (
 				B309C15024BF323E00AF70DF /* CoreData */,
-				EE7D4AA32366B9C2007C31A8 /* temporal_fix */,
 				EE7D4AA42366B9C2007C31A8 /* LoggedUser.swift */,
 				EEB7DD4F2395F79300C4DEA5 /* ConnectionsDtos.swift */,
 				EEEFB90F23ADBAE2005BA755 /* CredentialsDtos.swift */,
@@ -1447,14 +1462,6 @@
 				286539BE25EE9BF800523F96 /* Attribute.swift */,
 			);
 			path = model;
-			sourceTree = "<group>";
-		};
-		EE7D4AA32366B9C2007C31A8 /* temporal_fix */ = {
-			isa = PBXGroup;
-			children = (
-				EE8FD4EF2372864900EFF62E /* FakeData.swift */,
-			);
-			path = temporal_fix;
 			sourceTree = "<group>";
 		};
 		EE7D4AA82366B9C2007C31A8 /* utils */ = {
@@ -1536,7 +1543,6 @@
 				EE7D4B022366B9C3007C31A8 /* CrashReporter.swift */,
 				EEB7DD55239A153700C4DEA5 /* Tracker.swift */,
 				EE22F1F123A4AD2C003C4F87 /* CryptoUtils.swift */,
-				EE7E752F23C29D0600BE9AD1 /* PaymentUtils.swift */,
 				B3C760172489777C00AC46DC /* Env.swift */,
 				B31F0922257AB98800BCA71C /* AtomicProperty.swift */,
 				05BDBB1A25A6D44300D56D03 /* KotlinConverters.swift */,
@@ -1855,9 +1861,9 @@
 				F5E3895E234BC3500001F1E3 /* prism-ios-walletTests */,
 				F5E38969234BC3500001F1E3 /* prism-ios-walletUITests */,
 				F5E38946234BC34D0001F1E3 /* Products */,
-				BB76F1F75C3CF9AB34400C89 /* Pods */,
-				5DFB3703BD7EF8640F960804 /* Frameworks */,
 				B34DD3C2262DB95D001F1B11 /* Recovered References */,
+				7C349167B572DCED4A531D17 /* Pods */,
+				C6E13CBA0701020453BD91F1 /* Frameworks */,
 			);
 			sourceTree = "<group>";
 		};
@@ -1914,7 +1920,7 @@
 			isa = PBXNativeTarget;
 			buildConfigurationList = F5E3896F234BC3500001F1E3 /* Build configuration list for PBXNativeTarget "prism-ios-wallet" */;
 			buildPhases = (
-				5927A3EF20590950243784CC /* [CP] Check Pods Manifest.lock */,
+				7A7F60DAFDB72A3A31C7E46D /* [CP] Check Pods Manifest.lock */,
 				F5A3CB6823564D31000855C1 /* Run Protobuf Script */,
 				F5E38941234BC34D0001F1E3 /* Sources */,
 				F5E38942234BC34D0001F1E3 /* Frameworks */,
@@ -1922,7 +1928,7 @@
 				F5E38943234BC34D0001F1E3 /* Resources */,
 				EEB7DD53239A0EF500C4DEA5 /* Run Crashlytics Script */,
 				B3F4F25F248FDAE7004E570D /* Run SwiftLint Script */,
-				4A546F008C915D016CB98E60 /* [CP] Embed Pods Frameworks */,
+				AEC330EB726DFFE7AC34E2D7 /* [CP] Embed Pods Frameworks */,
 			);
 			buildRules = (
 			);
@@ -1931,6 +1937,17 @@
 			name = "prism-ios-wallet";
 			packageProductDependencies = (
 				DA1B337626A9A6600033E667 /* Crypto */,
+				DA491C6526AAD90F00479526 /* Alamofire */,
+				DA491C6826AADA4500479526 /* AlamofireImage */,
+				DA491C6B26AADABB00479526 /* ObjectMapper */,
+				DA491C6E26AADB0C00479526 /* SwiftProtobuf */,
+				DA491C7126AADB5B00479526 /* SwiftyBeaver */,
+				DA491C7426AADBA000479526 /* Tabman */,
+				DA491C7726AADEE700479526 /* MBProgressHUD */,
+				DA491C7A26AADF1800479526 /* Toast */,
+				DA491C7D26AAE00E00479526 /* FirebaseAnalytics */,
+				DA491C7F26AAE00E00479526 /* FirebaseCrashlytics */,
+				DA491C8526AAEF1C00479526 /* GRPC */,
 			);
 			productName = "credentials-verification-iOS";
 			productReference = F5E38945234BC34D0001F1E3 /* Atala PRISM.app */;
@@ -1940,7 +1957,7 @@
 			isa = PBXNativeTarget;
 			buildConfigurationList = F5E38972234BC3500001F1E3 /* Build configuration list for PBXNativeTarget "prism-ios-walletTests" */;
 			buildPhases = (
-				ED34B96700523EF9118C297F /* [CP] Check Pods Manifest.lock */,
+				B22028AD854B879FB2B4B191 /* [CP] Check Pods Manifest.lock */,
 				F5E38957234BC3500001F1E3 /* Sources */,
 				F5E38958234BC3500001F1E3 /* Frameworks */,
 				F5E38959234BC3500001F1E3 /* Resources */,
@@ -1959,7 +1976,7 @@
 			isa = PBXNativeTarget;
 			buildConfigurationList = F5E38975234BC3500001F1E3 /* Build configuration list for PBXNativeTarget "prism-ios-walletUITests" */;
 			buildPhases = (
-				B7505ED129BDA63CDF280264 /* [CP] Check Pods Manifest.lock */,
+				5B67CE69C5CEDF7BBFB87BB4 /* [CP] Check Pods Manifest.lock */,
 				F5E38962234BC3500001F1E3 /* Sources */,
 				F5E38963234BC3500001F1E3 /* Frameworks */,
 				F5E38964234BC3500001F1E3 /* Resources */,
@@ -2007,6 +2024,18 @@
 				Base,
 			);
 			mainGroup = F5E3893C234BC34D0001F1E3;
+			packageReferences = (
+				DA491C6426AAD90F00479526 /* XCRemoteSwiftPackageReference "Alamofire" */,
+				DA491C6726AADA4500479526 /* XCRemoteSwiftPackageReference "AlamofireImage" */,
+				DA491C6A26AADABB00479526 /* XCRemoteSwiftPackageReference "ObjectMapper" */,
+				DA491C6D26AADB0C00479526 /* XCRemoteSwiftPackageReference "swift-protobuf" */,
+				DA491C7026AADB5B00479526 /* XCRemoteSwiftPackageReference "SwiftyBeaver" */,
+				DA491C7326AADBA000479526 /* XCRemoteSwiftPackageReference "Tabman" */,
+				DA491C7626AADEE700479526 /* XCRemoteSwiftPackageReference "MBProgressHUD" */,
+				DA491C7926AADF1800479526 /* XCRemoteSwiftPackageReference "Toast-Swift" */,
+				DA491C7C26AAE00E00479526 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */,
+				DA491C8426AAEF1C00479526 /* XCRemoteSwiftPackageReference "grpc-swift" */,
+			);
 			productRefGroup = F5E38946234BC34D0001F1E3 /* Products */;
 			projectDirPath = "";
 			projectRoot = "";
@@ -2141,7 +2170,51 @@
 /* End PBXResourcesBuildPhase section */
 
 /* Begin PBXShellScriptBuildPhase section */
-		4A546F008C915D016CB98E60 /* [CP] Embed Pods Frameworks */ = {
+		5B67CE69C5CEDF7BBFB87BB4 /* [CP] Check Pods Manifest.lock */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+			);
+			inputPaths = (
+				"${PODS_PODFILE_DIR_PATH}/Podfile.lock",
+				"${PODS_ROOT}/Manifest.lock",
+			);
+			name = "[CP] Check Pods Manifest.lock";
+			outputFileListPaths = (
+			);
+			outputPaths = (
+				"$(DERIVED_FILE_DIR)/Pods-prism-ios-walletUITests-checkManifestLockResult.txt",
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "diff \"${PODS_PODFILE_DIR_PATH}/Podfile.lock\" \"${PODS_ROOT}/Manifest.lock\" > /dev/null\nif [ $? != 0 ] ; then\n    # print error to STDERR\n    echo \"error: The sandbox is not in sync with the Podfile.lock. Run 'pod install' or update your CocoaPods installation.\" >&2\n    exit 1\nfi\n# This output is used by Xcode 'outputs' to avoid re-running this script phase.\necho \"SUCCESS\" > \"${SCRIPT_OUTPUT_FILE_0}\"\n";
+			showEnvVarsInLog = 0;
+		};
+		7A7F60DAFDB72A3A31C7E46D /* [CP] Check Pods Manifest.lock */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+			);
+			inputPaths = (
+				"${PODS_PODFILE_DIR_PATH}/Podfile.lock",
+				"${PODS_ROOT}/Manifest.lock",
+			);
+			name = "[CP] Check Pods Manifest.lock";
+			outputFileListPaths = (
+			);
+			outputPaths = (
+				"$(DERIVED_FILE_DIR)/Pods-prism-ios-wallet-checkManifestLockResult.txt",
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "diff \"${PODS_PODFILE_DIR_PATH}/Podfile.lock\" \"${PODS_ROOT}/Manifest.lock\" > /dev/null\nif [ $? != 0 ] ; then\n    # print error to STDERR\n    echo \"error: The sandbox is not in sync with the Podfile.lock. Run 'pod install' or update your CocoaPods installation.\" >&2\n    exit 1\nfi\n# This output is used by Xcode 'outputs' to avoid re-running this script phase.\necho \"SUCCESS\" > \"${SCRIPT_OUTPUT_FILE_0}\"\n";
+			showEnvVarsInLog = 0;
+		};
+		AEC330EB726DFFE7AC34E2D7 /* [CP] Embed Pods Frameworks */ = {
 			isa = PBXShellScriptBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -2158,7 +2231,7 @@
 			shellScript = "\"${PODS_ROOT}/Target Support Files/Pods-prism-ios-wallet/Pods-prism-ios-wallet-frameworks.sh\"\n";
 			showEnvVarsInLog = 0;
 		};
-		5927A3EF20590950243784CC /* [CP] Check Pods Manifest.lock */ = {
+		B22028AD854B879FB2B4B191 /* [CP] Check Pods Manifest.lock */ = {
 			isa = PBXShellScriptBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -2173,7 +2246,7 @@
 			outputFileListPaths = (
 			);
 			outputPaths = (
-				"$(DERIVED_FILE_DIR)/Pods-prism-ios-wallet-checkManifestLockResult.txt",
+				"$(DERIVED_FILE_DIR)/Pods-prism-ios-walletTests-checkManifestLockResult.txt",
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
@@ -2216,50 +2289,6 @@
 			shellPath = /bin/sh;
 			shellScript = "\"${PODS_ROOT}/SwiftLint/swiftlint\"\n";
 		};
-		B7505ED129BDA63CDF280264 /* [CP] Check Pods Manifest.lock */ = {
-			isa = PBXShellScriptBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			inputFileListPaths = (
-			);
-			inputPaths = (
-				"${PODS_PODFILE_DIR_PATH}/Podfile.lock",
-				"${PODS_ROOT}/Manifest.lock",
-			);
-			name = "[CP] Check Pods Manifest.lock";
-			outputFileListPaths = (
-			);
-			outputPaths = (
-				"$(DERIVED_FILE_DIR)/Pods-prism-ios-walletUITests-checkManifestLockResult.txt",
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-			shellPath = /bin/sh;
-			shellScript = "diff \"${PODS_PODFILE_DIR_PATH}/Podfile.lock\" \"${PODS_ROOT}/Manifest.lock\" > /dev/null\nif [ $? != 0 ] ; then\n    # print error to STDERR\n    echo \"error: The sandbox is not in sync with the Podfile.lock. Run 'pod install' or update your CocoaPods installation.\" >&2\n    exit 1\nfi\n# This output is used by Xcode 'outputs' to avoid re-running this script phase.\necho \"SUCCESS\" > \"${SCRIPT_OUTPUT_FILE_0}\"\n";
-			showEnvVarsInLog = 0;
-		};
-		ED34B96700523EF9118C297F /* [CP] Check Pods Manifest.lock */ = {
-			isa = PBXShellScriptBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			inputFileListPaths = (
-			);
-			inputPaths = (
-				"${PODS_PODFILE_DIR_PATH}/Podfile.lock",
-				"${PODS_ROOT}/Manifest.lock",
-			);
-			name = "[CP] Check Pods Manifest.lock";
-			outputFileListPaths = (
-			);
-			outputPaths = (
-				"$(DERIVED_FILE_DIR)/Pods-prism-ios-walletTests-checkManifestLockResult.txt",
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-			shellPath = /bin/sh;
-			shellScript = "diff \"${PODS_PODFILE_DIR_PATH}/Podfile.lock\" \"${PODS_ROOT}/Manifest.lock\" > /dev/null\nif [ $? != 0 ] ; then\n    # print error to STDERR\n    echo \"error: The sandbox is not in sync with the Podfile.lock. Run 'pod install' or update your CocoaPods installation.\" >&2\n    exit 1\nfi\n# This output is used by Xcode 'outputs' to avoid re-running this script phase.\necho \"SUCCESS\" > \"${SCRIPT_OUTPUT_FILE_0}\"\n";
-			showEnvVarsInLog = 0;
-		};
 		EEB7DD53239A0EF500C4DEA5 /* Run Crashlytics Script */ = {
 			isa = PBXShellScriptBuildPhase;
 			buildActionMask = 2147483647;
@@ -2278,7 +2307,7 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "# Type a script or drag a script file from your workspace to insert its path.\n\"${PODS_ROOT}/FirebaseCrashlytics/run\"\n";
+			shellScript = "# Type a script or drag a script file from your workspace to insert its path.\n\"${BUILD_DIR%Build/*}/SourcePackages/checkouts/firebase-ios-sdk/Crashlytics/run\"\n";
 		};
 		F5A3CB6823564D31000855C1 /* Run Protobuf Script */ = {
 			isa = PBXShellScriptBuildPhase;
@@ -2296,7 +2325,7 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "# Type a script or drag a script file from your workspace to insert its pat\nexport PATH=$PATH:${SRCROOT}/protobuf/utils\nmkdir -p ./protobuf\nprotoc --proto_path=../prism-sdk/protos/src/ --swift_out=./protobuf --swiftgrpc_out=Client=true,Server=false:. ../prism-sdk/protos/src/common_models.proto\nprotoc --proto_path=../prism-sdk/protos/src/ --swift_out=./protobuf --swiftgrpc_out=Client=true,Server=false:. ../prism-sdk/protos/src/node_models.proto\nprotoc --proto_path=../prism-sdk/protos/src/ --swift_out=./protobuf --swiftgrpc_out=Client=true,Server=false:. ../prism-sdk/protos/src/console_models.proto\nprotoc --proto_path=../prism-sdk/protos/src/ --swift_out=./protobuf --swiftgrpc_out=Client=true,Server=false:. ../prism-sdk/protos/src/connector_models.proto\nprotoc --proto_path=../prism-sdk/protos/src/ --swift_out=./protobuf --swiftgrpc_out=Client=true,Server=false:. ../prism-sdk/protos/src/status.proto\nprotoc --proto_path=../prism-sdk/protos/src/ --swift_out=./protobuf --swiftgrpc_out=Client=true,Server=false:. ../prism-sdk/protos/src/credential_models.proto\nprotoc --proto_path=../prism-sdk/protos/src/ --swift_out=./protobuf --swiftgrpc_out=Client=true,Server=false:. ../prism-sdk/protos/src/ivms101.proto\nprotoc --proto_path=../prism-sdk/protos/src/ --swift_out=./protobuf --swiftgrpc_out=Client=true,Server=false:. ../prism-sdk/protos/src/mirror_models.proto\nprotoc --proto_path=../prism-sdk/protos/src/ --swift_out=./protobuf --swiftgrpc_out=Client=true,Server=false:./protobuf ../prism-sdk/protos/src/connector_api.proto\nprotoc --proto_path=../prism-sdk/protos/src/ --swift_out=./protobuf --swiftgrpc_out=Client=true,Server=false:./protobuf ../prism-sdk/protos/src/kycbridge_api.proto\nprotoc --proto_path=../prism-sdk/protos/src/ --swift_out=./protobuf --swiftgrpc_out=Client=true,Server=false:./protobuf ../prism-sdk/protos/src/mirror_api.proto\n";
+			shellScript = "# Type a script or drag a script file from your workspace to insert its pat\nexport PATH=$PATH:${SRCROOT}/protobuf/utils\nmkdir -p ./protobuf\nprotoc --proto_path=../prism-sdk/protos/src/ --swift_out=./protobuf --grpc-swift_out=Client=true,Server=false:. ../prism-sdk/protos/src/common_models.proto\nprotoc --proto_path=../prism-sdk/protos/src/ --swift_out=./protobuf --grpc-swift_out=Client=true,Server=false:. ../prism-sdk/protos/src/node_models.proto\nprotoc --proto_path=../prism-sdk/protos/src/ --swift_out=./protobuf --grpc-swift_out=Client=true,Server=false:. ../prism-sdk/protos/src/console_models.proto\nprotoc --proto_path=../prism-sdk/protos/src/ --swift_out=./protobuf --grpc-swift_out=Client=true,Server=false:. ../prism-sdk/protos/src/connector_models.proto\nprotoc --proto_path=../prism-sdk/protos/src/ --swift_out=./protobuf --grpc-swift_out=Client=true,Server=false:. ../prism-sdk/protos/src/status.proto\nprotoc --proto_path=../prism-sdk/protos/src/ --swift_out=./protobuf --grpc-swift_out=Client=true,Server=false:. ../prism-sdk/protos/src/credential_models.proto\nprotoc --proto_path=../prism-sdk/protos/src/ --swift_out=./protobuf --grpc-swift_out=Client=true,Server=false:. ../prism-sdk/protos/src/ivms101.proto\nprotoc --proto_path=../prism-sdk/protos/src/ --swift_out=./protobuf --grpc-swift_out=Client=true,Server=false:. ../prism-sdk/protos/src/mirror_models.proto\nprotoc --proto_path=../prism-sdk/protos/src/ --swift_out=./protobuf --grpc-swift_out=Client=true,Server=false:./protobuf ../prism-sdk/protos/src/connector_api.proto\nprotoc --proto_path=../prism-sdk/protos/src/ --swift_out=./protobuf --grpc-swift_out=Client=true,Server=false:./protobuf ../prism-sdk/protos/src/kycbridge_api.proto\nprotoc --proto_path=../prism-sdk/protos/src/ --swift_out=./protobuf --grpc-swift_out=Client=true,Server=false:./protobuf ../prism-sdk/protos/src/mirror_api.proto\n";
 		};
 /* End PBXShellScriptBuildPhase section */
 
@@ -2313,7 +2342,6 @@
 				EE7D4C272366B9C4007C31A8 /* LoggedUser.swift in Sources */,
 				2802995E25FB89F2002A5489 /* ProfileDetailHeaderCell.swift in Sources */,
 				B37FDB1625389CD40024766B /* connector_api.pb.swift in Sources */,
-				EE7E753023C29D0600BE9AD1 /* PaymentUtils.swift in Sources */,
 				28A3A81D25F15073006BA440 /* BaseVerificationCodeViewController.swift in Sources */,
 				B3C153F026372F4D006C5E3B /* PayIdDAO.swift in Sources */,
 				B36F2FC424DDAFBE0012FDCC /* DeleteCredentialViewController.swift in Sources */,
@@ -2528,7 +2556,6 @@
 				B367AEAF25D1845200A1BF15 /* VerifyIdResultsTableViewCell.swift in Sources */,
 				B309C16A24BF5CD600AF70DF /* Contact+CoreDataProperties.swift in Sources */,
 				EE7D4CEC23673C39007C31A8 /* UITextField+Extensions2.swift in Sources */,
-				EE8FD4F02372864900EFF62E /* FakeData.swift in Sources */,
 				B38F555C268222E100AD41F6 /* VerifyIdErrorPresenter.swift in Sources */,
 				EE7D4CE723673C39007C31A8 /* UIColor+Extensions.swift in Sources */,
 				28B55D35260A1E0700EB0C49 /* PayIDInfoListingPresenter.swift in Sources */,
@@ -2730,7 +2757,7 @@
 		};
 		F5E38970234BC3500001F1E3 /* Debug */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = 306D080251EFA59EF3645375 /* Pods-prism-ios-wallet.debug.xcconfig */;
+			baseConfigurationReference = D6C555640A767A9F163BB015 /* Pods-prism-ios-wallet.debug.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_IDENTITY = "Apple Development";
@@ -2757,7 +2784,7 @@
 		};
 		F5E38971234BC3500001F1E3 /* Release */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = 370783CE00B7101BE6825D17 /* Pods-prism-ios-wallet.release.xcconfig */;
+			baseConfigurationReference = 4FBAAD92EA0E277B3FE2BDA5 /* Pods-prism-ios-wallet.release.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_IDENTITY = "Apple Development";
@@ -2783,7 +2810,7 @@
 		};
 		F5E38973234BC3500001F1E3 /* Debug */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = A75FF87D2A02217AA6CB5ECB /* Pods-prism-ios-walletTests.debug.xcconfig */;
+			baseConfigurationReference = 0CCA5E43D22F560E543957CB /* Pods-prism-ios-walletTests.debug.xcconfig */;
 			buildSettings = {
 				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
 				BUNDLE_LOADER = "$(TEST_HOST)";
@@ -2809,7 +2836,7 @@
 		};
 		F5E38974234BC3500001F1E3 /* Release */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = B1490CF29DD125E822BD2F43 /* Pods-prism-ios-walletTests.release.xcconfig */;
+			baseConfigurationReference = 0A1ACCE2F7CA00545ECCD235 /* Pods-prism-ios-walletTests.release.xcconfig */;
 			buildSettings = {
 				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
 				BUNDLE_LOADER = "$(TEST_HOST)";
@@ -2834,7 +2861,7 @@
 		};
 		F5E38976234BC3500001F1E3 /* Debug */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = 8ACFFDA562E21573D1E1FF91 /* Pods-prism-ios-walletUITests.debug.xcconfig */;
+			baseConfigurationReference = 9BD68DDE5DBEE2D2C515BAD4 /* Pods-prism-ios-walletUITests.debug.xcconfig */;
 			buildSettings = {
 				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
 				CODE_SIGN_STYLE = Automatic;
@@ -2855,7 +2882,7 @@
 		};
 		F5E38977234BC3500001F1E3 /* Release */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = 665E7DC1A62428CDBC1883EB /* Pods-prism-ios-walletUITests.release.xcconfig */;
+			baseConfigurationReference = 3E0573FA37BD9134B18A3B01 /* Pods-prism-ios-walletUITests.release.xcconfig */;
 			buildSettings = {
 				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
 				CODE_SIGN_STYLE = Automatic;
@@ -2915,10 +2942,148 @@
 		};
 /* End XCConfigurationList section */
 
+/* Begin XCRemoteSwiftPackageReference section */
+		DA491C6426AAD90F00479526 /* XCRemoteSwiftPackageReference "Alamofire" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/Alamofire/Alamofire";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 5.0.0;
+			};
+		};
+		DA491C6726AADA4500479526 /* XCRemoteSwiftPackageReference "AlamofireImage" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/Alamofire/AlamofireImage";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 4.0.0;
+			};
+		};
+		DA491C6A26AADABB00479526 /* XCRemoteSwiftPackageReference "ObjectMapper" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/tristanhimmelman/ObjectMapper";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 3.1.0;
+			};
+		};
+		DA491C6D26AADB0C00479526 /* XCRemoteSwiftPackageReference "swift-protobuf" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/apple/swift-protobuf";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 1.7.0;
+			};
+		};
+		DA491C7026AADB5B00479526 /* XCRemoteSwiftPackageReference "SwiftyBeaver" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/SwiftyBeaver/SwiftyBeaver";
+			requirement = {
+				kind = upToNextMinorVersion;
+				minimumVersion = 1.7.0;
+			};
+		};
+		DA491C7326AADBA000479526 /* XCRemoteSwiftPackageReference "Tabman" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/uias/Tabman";
+			requirement = {
+				kind = upToNextMinorVersion;
+				minimumVersion = 2.6.0;
+			};
+		};
+		DA491C7626AADEE700479526 /* XCRemoteSwiftPackageReference "MBProgressHUD" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/jdg/MBProgressHUD";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 1.2.0;
+			};
+		};
+		DA491C7926AADF1800479526 /* XCRemoteSwiftPackageReference "Toast-Swift" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/scalessec/Toast-Swift";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 5.0.0;
+			};
+		};
+		DA491C7C26AAE00E00479526 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/firebase/firebase-ios-sdk";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 8.4.0;
+			};
+		};
+		DA491C8426AAEF1C00479526 /* XCRemoteSwiftPackageReference "grpc-swift" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/grpc/grpc-swift";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 1.3.0;
+			};
+		};
+/* End XCRemoteSwiftPackageReference section */
+
 /* Begin XCSwiftPackageProductDependency section */
 		DA1B337626A9A6600033E667 /* Crypto */ = {
 			isa = XCSwiftPackageProductDependency;
 			productName = Crypto;
+		};
+		DA491C6526AAD90F00479526 /* Alamofire */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = DA491C6426AAD90F00479526 /* XCRemoteSwiftPackageReference "Alamofire" */;
+			productName = Alamofire;
+		};
+		DA491C6826AADA4500479526 /* AlamofireImage */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = DA491C6726AADA4500479526 /* XCRemoteSwiftPackageReference "AlamofireImage" */;
+			productName = AlamofireImage;
+		};
+		DA491C6B26AADABB00479526 /* ObjectMapper */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = DA491C6A26AADABB00479526 /* XCRemoteSwiftPackageReference "ObjectMapper" */;
+			productName = ObjectMapper;
+		};
+		DA491C6E26AADB0C00479526 /* SwiftProtobuf */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = DA491C6D26AADB0C00479526 /* XCRemoteSwiftPackageReference "swift-protobuf" */;
+			productName = SwiftProtobuf;
+		};
+		DA491C7126AADB5B00479526 /* SwiftyBeaver */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = DA491C7026AADB5B00479526 /* XCRemoteSwiftPackageReference "SwiftyBeaver" */;
+			productName = SwiftyBeaver;
+		};
+		DA491C7426AADBA000479526 /* Tabman */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = DA491C7326AADBA000479526 /* XCRemoteSwiftPackageReference "Tabman" */;
+			productName = Tabman;
+		};
+		DA491C7726AADEE700479526 /* MBProgressHUD */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = DA491C7626AADEE700479526 /* XCRemoteSwiftPackageReference "MBProgressHUD" */;
+			productName = MBProgressHUD;
+		};
+		DA491C7A26AADF1800479526 /* Toast */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = DA491C7926AADF1800479526 /* XCRemoteSwiftPackageReference "Toast-Swift" */;
+			productName = Toast;
+		};
+		DA491C7D26AAE00E00479526 /* FirebaseAnalytics */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = DA491C7C26AAE00E00479526 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */;
+			productName = FirebaseAnalytics;
+		};
+		DA491C7F26AAE00E00479526 /* FirebaseCrashlytics */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = DA491C7C26AAE00E00479526 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */;
+			productName = FirebaseCrashlytics;
+		};
+		DA491C8526AAEF1C00479526 /* GRPC */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = DA491C8426AAEF1C00479526 /* XCRemoteSwiftPackageReference "grpc-swift" */;
+			productName = GRPC;
 		};
 /* End XCSwiftPackageProductDependency section */
 

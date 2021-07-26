@@ -5,9 +5,12 @@ import AlamofireImage
 extension UIImage {
 
     static func loadUrlImage(url: String, callback: @escaping (Image) -> Void) {
-        Alamofire.request(url).responseImage { response in
-            if let image = response.result.value {
+        AF.request(url).responseImage { response in
+            switch response.result {
+            case let .success(image):
                 callback(image)
+            case .failure:
+                break
             }
         }
     }
