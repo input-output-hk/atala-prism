@@ -11,12 +11,11 @@ import { useTemplateContext } from '../../../providers/TemplateContext';
 import './_style.scss';
 
 const ENABLED_STATE = 1;
-const ADD_NEW_CATEGORY_KEY = 'ADD_NEW_CATEGORY_KEY';
 
 const CategorySelector = ({ templateCategories }) => {
   const { t } = useTranslation();
-  const { form, templateSettings } = useTemplateContext();
-  const initialSelection = parseInt(templateSettings.category, 10);
+  const { templateSettings } = useTemplateContext();
+  const initialSelection = parseInt(templateSettings.category, 10) || undefined;
   const [selected, setSelected] = useState(initialSelection);
   const [showCategoryCreation, setShowCategoryCreation] = useState(false);
   const i18nPrefix = 'credentialTemplateCreation';
@@ -24,14 +23,24 @@ const CategorySelector = ({ templateCategories }) => {
   const categories = templateCategories.filter(({ state }) => state === ENABLED_STATE);
 
   const handleAddNewCategory = () => {
+    setSelected();
     setShowCategoryCreation(true);
-    form.resetFields(['category']);
   };
 
-  const onCategoryChange = ev => {
-    setSelected(ev.target.value);
-    if (ev.target.value === ADD_NEW_CATEGORY_KEY) handleAddNewCategory();
-  };
+  const onCategoryChange = ev => setSelected(ev.target.value);
+
+  const categoryRules = [
+    {
+      validator: ({ field }, value) =>
+        isInteger(value)
+          ? Promise.resolve()
+          : Promise.reject(
+              t('credentialTemplateCreation.errors.fieldIsRequired', {
+                field: t(`credentialTemplateCreation.fields.${field}`)
+              })
+            )
+    }
+  ];
 
   return (
     <div className="flex selectCategory">
@@ -42,24 +51,11 @@ const CategorySelector = ({ templateCategories }) => {
       <Form.Item
         name="category"
         label={t(`${i18nPrefix}.step1.selectCategory`)}
-        rules={[
-          {
-            validator: ({ field }, value) =>
-              isInteger(value)
-                ? Promise.resolve()
-                : Promise.reject(
-                    t('credentialTemplateCreation.errors.fieldIsRequired', {
-                      field: t(`credentialTemplateCreation.fields.${field}`)
-                    })
-                  )
-          }
-        ]}
+        rules={categoryRules}
       >
         <div className="templateCategory">
           <Radio.Group onChange={onCategoryChange}>
-            <Radio value={ADD_NEW_CATEGORY_KEY}>
-              <AddNewCategory />
-            </Radio>
+            <AddNewCategory onClick={handleAddNewCategory} />
             {categories.map(category => (
               <Radio value={category.id}>
                 <CategoryCard
