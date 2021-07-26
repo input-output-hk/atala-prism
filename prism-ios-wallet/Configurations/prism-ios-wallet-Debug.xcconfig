@@ -1,0 +1,4 @@
+// Generated using xcconfig-extractor 0.6.1 by Toshihiro Suzuki - https://github.com/toshi0383/xcconfig-extractor
+#include "prism-ios-wallet.xcconfig"
+DEBUG_INFORMATION_FORMAT = dwarf-with-dsym
+OTHER_SWIFT_FLAGS = $(inherited) -Ddebug

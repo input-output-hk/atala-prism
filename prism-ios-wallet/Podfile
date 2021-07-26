@@ -13,8 +13,6 @@ target 'prism-ios-wallet' do
   # UI components
   pod 'Presentr', '~> 1.9.0' 
   pod 'MaterialComponents/Chips'
-  # Linter
-  pod 'SwiftLint'
   # Acuant
   pod 'AcuantiOSSDKV11', '~> 11.5.1' 
   pod 'AcuantiOSSDKV11/AcuantCamera'
@@ -37,11 +35,6 @@ target 'prism-ios-wallet' do
    end
   
   target 'prism-ios-walletTests' do
-    inherit! :search_paths
-    # Pods for testing
-  end
-
-  target 'prism-ios-walletUITests' do
     inherit! :search_paths
     # Pods for testing
   end

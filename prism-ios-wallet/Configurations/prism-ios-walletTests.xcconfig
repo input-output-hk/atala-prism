@@ -1,0 +1,13 @@
+// Generated using xcconfig-extractor 0.6.1 by Toshihiro Suzuki - https://github.com/toshi0383/xcconfig-extractor
+TARGETED_DEVICE_FAMILY = 1,2
+ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES
+TEST_HOST = $(BUILT_PRODUCTS_DIR)/Atala PRISM.app/Atala PRISM
+PRODUCT_NAME = $(TARGET_NAME)
+PRODUCT_BUNDLE_IDENTIFIER = iohk.prism-ios-walletTests
+CLANG_ENABLE_MODULES = YES
+INFOPLIST_FILE = prism-ios-walletTests/Info.plist
+IPHONEOS_DEPLOYMENT_TARGET = 13.0
+SWIFT_OBJC_BRIDGING_HEADER = prism-ios-walletTests/prism-ios-walletTests-Bridging-Header.h
+BUNDLE_LOADER = $(TEST_HOST)
+LD_RUNPATH_SEARCH_PATHS = $(inherited) @executable_path/Frameworks @loader_path/Frameworks
+

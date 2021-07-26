@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>CLIENT_ID</key>
+	<string>704145305831-4lrqg9kpitne3ksaabibk1vq7jfrnqmo.apps.googleusercontent.com</string>
+	<key>REVERSED_CLIENT_ID</key>
+	<string>com.googleusercontent.apps.704145305831-4lrqg9kpitne3ksaabibk1vq7jfrnqmo</string>
+	<key>API_KEY</key>
+	<string>AIzaSyCHmYsrZ-jO62O1pPhdy4pLcXlq9c7v1KM</string>
+	<key>GCM_SENDER_ID</key>
+	<string>704145305831</string>
+	<key>PLIST_VERSION</key>
+	<string>1</string>
+	<key>BUNDLE_ID</key>
+	<string>io.iohk.atalaprism</string>
+	<key>PROJECT_ID</key>
+	<string>geud-641d6</string>
+	<key>STORAGE_BUCKET</key>
+	<string>geud-641d6.appspot.com</string>
+	<key>IS_ADS_ENABLED</key>
+	<false></false>
+	<key>IS_ANALYTICS_ENABLED</key>
+	<false></false>
+	<key>IS_APPINVITE_ENABLED</key>
+	<true></true>
+	<key>IS_GCM_ENABLED</key>
+	<true></true>
+	<key>IS_SIGNIN_ENABLED</key>
+	<true></true>
+	<key>GOOGLE_APP_ID</key>
+	<string>1:704145305831:ios:d7329f0db896694efcb242</string>
+	<key>DATABASE_URL</key>
+	<string>https://geud-641d6.firebaseio.com</string>
+</dict>
+</plist>

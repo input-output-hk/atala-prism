@@ -123,7 +123,6 @@ PODS:
   - Socket.IO-Client-Swift (15.2.0):
     - Starscream (~> 3.1)
   - Starscream (3.1.1)
-  - SwiftLint (0.39.2)
   - SwiftyJSON (5.0.1)
 
 DEPENDENCIES:
@@ -131,7 +130,6 @@ DEPENDENCIES:
   - AcuantiOSSDKV11/AcuantCamera
   - MaterialComponents/Chips
   - Presentr (~> 1.9.0)
-  - SwiftLint
 
 SPEC REPOS:
   trunk:
@@ -144,7 +142,6 @@ SPEC REPOS:
     - Presentr
     - Socket.IO-Client-Swift
     - Starscream
-    - SwiftLint
     - SwiftyJSON
 
 SPEC CHECKSUMS:
@@ -157,9 +154,8 @@ SPEC CHECKSUMS:
   Presentr: 7078d7eb5d1661ebeaae60c9e42a1e534de1b993
   Socket.IO-Client-Swift: 1e3e3a1f09f3312a167f0d781eb2f383d477357c
   Starscream: 4bb2f9942274833f7b4d296a55504dcfc7edb7b0
-  SwiftLint: 22ccbbe3b8008684be5955693bab135e0ed6a447
   SwiftyJSON: 2f33a42c6fbc52764d96f13368585094bfd8aa5e
 
-PODFILE CHECKSUM: abe7accef6864b1c7d252b81a3c8777a0f3bf4b8
+PODFILE CHECKSUM: 06e4f4805bcc36e8fe6ef4b326efb5edcef419ae
 
 COCOAPODS: 1.10.1

@@ -10,20 +10,43 @@ Prior to running the server, install the dependencies with `npm install`.
 
 Lastly, to run the server use `node simple_proto_server.js`.
 
-## Running the app
+## Prepare Environment
 
-Prior to building the app it's necessary to generate the Swift Package for the Kotlin Crypto library. For this navigate to the `prism-kotlin-sdk` directory on the Terminal and run th following command:
+The first step to prepare your development environment is to run the '''bash''' script:
 ```
+./bootstrap.sh
+```
+
+And that's it!
+
+This script will prepare your environment this includes:
+- Install development dependency [Mint](https://github.com/yonaskolb/Mint)
+- Build Kotlin Crypto SDK and create Swift Package
+- Mint will install the dependencies:
+    - [XcodeGen](https://github.com/yonaskolb/XcodeGen)
+    - [SwiftLint](https://github.com/realm/SwiftLint)
+    - [SwiftFormat](https://github.com/nicklockwood/SwiftFormat)
+- Generate protoc components/classes
+- Generate Xcode Project
+- Install Cocoapods
+
+## (Skip if you run Bootstrap) Build Crypto SDK and create Swift Packages
+
+```
+cd ../prism-kotlin-sdk
 $ ./gradlew :crypto:build :crypto:createSwiftPackage
 ```
-Then navigate to the `prism-ios-wallet` directory and run the following command to install all Cocoapods dependencies:
+
+## (Skip if you run Bootstrap) Generate XCode project
+
+This will prepare the project aswell as generating protoc classes and install cocoapods
+
 ```
-$ pod install
+$ mint run xcodegen generate
 ```
-Once th installation is completed, open the file `prism-ios-wallet.xcworkspace` with Xcode to run the app. Please for all non production runs make sure the scheme `AtalaPrism-Debug`  is useed to avoid populatig Firebase Analytics with test data.
 
 
-## Proto config
+## Running the app
 
-For now due to compilation issues all protos are added to "connector_api.proto"
-Every file is identified by a "// MARK: -" comment at the begining
+Once the installation is completed, open the file `prism-ios-wallet.xcworkspace` with Xcode to run the app. Please for all non production runs make sure the scheme `AtalaPrism-Debug`  is useed to avoid populatig Firebase Analytics with test data.
+

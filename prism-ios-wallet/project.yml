@@ -1,0 +1,137 @@
+name: prism-ios-wallet
+packages:
+  Alamofire:
+    url: https://github.com/Alamofire/Alamofire
+    from: 5.0.0
+  AlamofireImage:
+    url: https://github.com/Alamofire/AlamofireImage
+    from: 4.0.0
+  ObjectMapper:
+    url: https://github.com/tristanhimmelman/ObjectMapper
+    from: 3.1.0
+  SwiftProtobuf:
+    url: https://github.com/apple/swift-protobuf
+    from: 1.7.0
+  SwiftyBeaver:
+    url: https://github.com/SwiftyBeaver/SwiftyBeaver
+    from: 1.7.0
+  Tabman:
+    url: https://github.com/uias/Tabman
+    from: 2.6.0
+  MBProgressHUD:
+    url: https://github.com/jdg/MBProgressHUD
+    from: 1.2.0
+  Toast:
+    url: https://github.com/scalessec/Toast-Swift
+    from: 5.0.0
+  Firebase:
+    url: https://github.com/firebase/firebase-ios-sdk
+    from: 8.4.0
+  GRPCSwift:
+    url: https://github.com/grpc/grpc-swift
+    from: 1.3.0
+  CryptoSDK:
+    path: CryptoSDK
+configFiles:
+  Debug: Configurations/Debug.xcconfig
+  Release: Configurations/Release.xcconfig
+schemes:
+  AtalaPrism-Debug:
+    buildImplicitDependencies: true
+    build:
+      targets:
+        prism-ios-wallet: all
+    run:
+      config: Debug
+    test:
+      config: Debug
+      commandLineArguments: "--option testValue"
+      gatherCoverageData: true
+      coverageTargets:
+        - prism-ios-wallet
+      targets:
+        - name: prism-ios-walletTests
+          parallelizable: true
+          randomExecutionOrder: true
+    profile:
+      config: Debug
+    analyze:
+      config: Debug
+    archive:
+      config: Debug
+      customArchiveName: prism-ios-wallet
+      revealArchiveInOrganizer: true
+  AtalaPrism-Release:
+    build:
+      targets:
+        prism-ios-wallet: all
+    run:
+      config: Release
+    test:
+      config: Debug
+      commandLineArguments: "--option testValue"
+      gatherCoverageData: true
+      coverageTargets:
+        - prism-ios-wallet
+      targets:
+        - name: prism-ios-walletTests
+          parallelizable: true
+          randomExecutionOrder: true
+    profile:
+      config: Release
+    analyze:
+      config: Debug
+    archive:
+      config: Release
+      customArchiveName: prism-ios-wallet
+      revealArchiveInOrganizer: true
+targets:
+  prism-ios-wallet:
+    type: application
+    platform: iOS
+    deploymentTarget: "13.0"
+    sources: [prism-ios-wallet]
+    dependencies:
+      - package: CryptoSDK
+        product: Crypto
+      - package: Alamofire
+      - package: AlamofireImage
+      - package: ObjectMapper
+      - package: SwiftProtobuf
+      - package: SwiftyBeaver
+      - package: Tabman
+      - package: MBProgressHUD
+      - package: Toast
+      - package: Firebase
+        product: FirebaseAnalytics
+      - package: Firebase
+        product: FirebaseCrashlytics
+      - package: GRPCSwift
+        product: GRPC
+    configFiles:
+      Debug: Configurations/BasePods-prism-ios-wallet-Debug.xcconfig
+      Release: Configurations/BasePods-prism-ios-wallet-Release.xcconfig
+    preBuildScripts:
+      - path: scripts/protocGeneration.sh
+        name: Init Protoc files
+#      - script: "${PODS_ROOT}/SwiftLint/swiftlint"
+#        name: SwiftLint
+    postBuildScripts:
+      - path: scripts/setupFirebasePlistFiles.sh
+        name: Setup Firebase Plist Files
+      - script: "${BUILD_DIR%Build/*}/SourcePackages/checkouts/firebase-ios-sdk/Crashlytics/run"
+        name: Run Crashlytics script
+        inputFiles:
+          - ${DWARF_DSYM_FOLDER_PATH}/${DWARF_DSYM_FILE_NAME}/Contents/Resources/DWARF/${TARGET_NAME}
+          - $(BUILT_PRODUCTS_DIR)/$(INFOPLIST_PATH)
+
+  prism-ios-walletTests:
+    type: bundle.unit-test
+    platform: iOS
+    sources: [prism-ios-walletTests]
+    settings:
+      BUNDLE_LOADER: "$(TEST_HOST)"
+      TEST_HOST: "$(BUILT_PRODUCTS_DIR)/Atala PRISM.app/Atala PRISM"
+options:
+  preGenCommand: ./scripts/protocInit.sh
+  postGenCommand: pod install
