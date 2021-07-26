@@ -1,9 +1,8 @@
 package io.iohk.atala.prism.intdemo
 
 import java.time.LocalDate
-
 import io.circe.Json
-import io.circe.Json.{fromString}
+import io.circe.Json.fromString
 import io.grpc.stub.StreamObserver
 import io.iohk.atala.prism.intdemo.EmploymentServiceImpl.{
   RequiredEmploymentData,
@@ -23,7 +22,10 @@ import monix.execution.Scheduler.{global => scheduler}
 import scala.concurrent.duration.FiniteDuration
 import scala.concurrent.{ExecutionContext, Future}
 import io.iohk.atala.prism.identity.DID
-import io.iohk.atala.prism.credentials.Credential
+import io.iohk.atala.prism.kotlin.credentials.PrismCredential
+import io.iohk.atala.prism.kotlin.credentials.json.JsonBasedCredential
+
+import scala.util.Try
 
 class EmploymentServiceImpl(
     connectorIntegration: ConnectorIntegration,
@@ -155,7 +157,7 @@ object EmploymentServiceImpl {
     )
 
     val credentialDocument = employmentCredentialJson.printWith(jsonPrinter)
-    val credential = Credential.fromString(credentialDocument)
+    val credential = Try(JsonBasedCredential.fromString(credentialDocument)).toEither
 
     credential match {
       case Left(_) =>
@@ -164,7 +166,7 @@ object EmploymentServiceImpl {
         )
       case Right(credential) =>
         credential_models.PlainTextCredential(
-          encodedCredential = Base64Utils.encodeURL(credential.canonicalForm.getBytes)
+          encodedCredential = Base64Utils.encodeURL(credential.getCanonicalForm.getBytes)
         )
     }
   }
