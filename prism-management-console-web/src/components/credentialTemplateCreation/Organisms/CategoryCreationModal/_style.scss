@@ -1,67 +1,78 @@
 @import "../../../../css/general_styling";
 
-
 .templateModal {
-    .ant-modal-header {
-        .ant-modal-title {
-            font-variant: normal;
-        }
+  .ant-modal-header {
+    .ant-modal-title {
+      font-variant: normal;
     }
-    .ant-modal-body {
-        padding-top: 0;
+  }
+  .ant-modal-body {
+    padding-top: 0;
+  }
+  .ant-form-item-control-input-content {
+    text-align: center;
+  }
+  .ant-form-item-required::before {
+    display: none !important;
+  }
+  .inputContainer {
+    .ant-row {
+      flex-direction: column;
+      display: flex;
+      .ant-form-item-label {
+        text-align: left;
+      }
     }
-    .ant-form-item-control-input-content {
-        text-align: center;
+    .gallery {
+      margin: 0;
+      .ant-form-item-control-input-content {
+        text-align: left;
+        @include primary-text($body, $black);
+        margin: 0;
+      }
     }
-    .inputContainer {
-        .ant-row {
-            flex-direction: column;
-            display: flex;
-            .ant-form-item-label {
-                text-align: left;
-            }
-        }
-        .gallery {
-            margin:0;
-            .ant-form-item-control-input-content {
-                text-align: left;
-                @include primary-text($body, $black);
-                margin: 0;
-            }
-        }
-    }
+  }
+  .ant-upload {
+    width: 100%;
     .verticalFlex {
-        .iconSample {
-            margin: 1em auto;
-        }
-        h3 {
-            @include primary-text($h3, $black);
-            font-variant: normal;
-            font-weight: bold;
-        }
-        p {
-            @include primary-text($body, grey);
-            font-variant: normal;
-            margin-bottom: 1em;
-        }
-        button {
-            margin: 0 auto;
-        }
+      .galleryLabel {
+        width: 100%;
+        display: flex;
+        margin: 1em 0;
+      }
+      .iconSample {
+        margin: 1em auto;
+      }
+      h3 {
+        @include primary-text($h3, $black);
+        font-variant: normal;
+        font-weight: bold;
+      }
+      p {
+        @include primary-text($body, grey);
+        font-variant: normal;
+        margin-bottom: 1em;
+      }
+      button {
+        margin: 0 auto;
+        max-width: 12em;
+      }
     }
+  }
 }
 
 .imgGalleryContainer {
-    img {
-        width: 60px;
-        height: 60px;
-    }
+  img {
+    width: 60px;
+    height: 60px;
+  }
 }
 
 .buttonSection {
-    width: 100%;
-    display: flex;
-    justify-content: center;
-    button {
-        width: 260px;
-    }
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  button {
+    width: 260px;
+  }
 }

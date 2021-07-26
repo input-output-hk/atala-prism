@@ -80,7 +80,7 @@ const CategoryCreationModal = ({ api, visible, close }) => {
         );
       });
 
-  const checkExistance = useDebounce(categoryExists);
+  const checkExistence = useDebounce(categoryExists);
 
   // Nested form items cause an issue with the error message.
   // This function manually validates and generates the error messages.
@@ -117,6 +117,16 @@ const CategoryCreationModal = ({ api, visible, close }) => {
         destroyOnClose
         footer={null}
       >
+        <div className="inputContainer">
+          <Form.Item
+            name="categoryName"
+            label={t(`${i18nPrefix}.categoryCreationModal.categoryNameLabel`)}
+            hasFeedback
+            rules={[{ required: true }, { validator: checkExistence }]}
+          >
+            <Input placeholder={t(`${i18nPrefix}.categoryCreationModal.categoryNamePlaceholder`)} />
+          </Form.Item>
+        </div>
         <Form.Item name="categoryIcon" rules={[{ validator: validateCategoryIcon }]}>
           <Radio.Group onChange={onIconChange}>
             <Form.Item name="categoryCustomIcons" valuePropName="file" getValueFromEvent={normFile}>
@@ -138,26 +148,12 @@ const CategoryCreationModal = ({ api, visible, close }) => {
                     className="theme-outline"
                     buttonText={t(`${i18nPrefix}.categoryCreationModal.uploadButton`)}
                   />
+                  <div className="galleryLabel">
+                    <p>{t(`${i18nPrefix}.categoryCreationModal.gallery`)}</p>
+                  </div>
                 </div>
               </Upload>
             </Form.Item>
-
-            <div className="inputContainer">
-              <Form.Item
-                name="categoryName"
-                label={t(`${i18nPrefix}.categoryCreationModal.categoryNameLabel`)}
-                hasFeedback
-                rules={[{ required: true }, { validator: checkExistance }]}
-              >
-                <Input
-                  placeholder={t(`${i18nPrefix}.categoryCreationModal.categoryNamePlaceholder`)}
-                />
-              </Form.Item>
-              <Form.Item className="gallery">
-                <p>{t(`${i18nPrefix}.categoryCreationModal.gallery`)}</p>
-              </Form.Item>
-            </div>
-
             <div className="imgGalleryContainer">
               {defaultFileList.map(file => (
                 <IconOption icon={file} selected={file.uid === selectedIcon} />
