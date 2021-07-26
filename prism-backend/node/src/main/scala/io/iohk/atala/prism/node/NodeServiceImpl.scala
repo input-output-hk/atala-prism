@@ -8,7 +8,11 @@ import io.iohk.atala.prism.BuildInfo
 import io.iohk.atala.prism.connector.AtalaOperationId
 import io.iohk.atala.prism.kotlin.credentials.CredentialBatchId
 import io.iohk.atala.prism.kotlin.crypto.SHA256Digest
-import io.iohk.atala.prism.kotlin.identity.DID
+import io.iohk.atala.prism.kotlin.identity.DIDFormatException.{
+  CanonicalSuffixMatchStateException,
+  InvalidAtalaOperationException
+}
+import io.iohk.atala.prism.kotlin.identity.{Canonical, DID, DIDFormat, LongForm, Unknown}
 import io.iohk.atala.prism.metrics.RequestMeasureUtil
 import io.iohk.atala.prism.metrics.RequestMeasureUtil.{FutureMetricsOps, measureRequestFuture}
 import io.iohk.atala.prism.node.errors.NodeError
@@ -71,27 +75,31 @@ class NodeServiceImpl(
     didOpt match {
       case Some(did) =>
         did.getFormat match {
-          case Canonical(_) =>
+          case c: Canonical =>
             resolve(did) orElse (countAndThrowNodeError(methodName, _))
-          case longForm @ DID.DIDFormat.LongForm(stateHash, _) => // we received a long form DID
+          case longForm: LongForm => // we received a long form DID
             // we first check that the encoded initial state matches the corresponding hash
-            longForm.validate
+            Try(longForm.validate).toEither.left
+              .map {
+                case e: InvalidAtalaOperationException => e
+                case e: CanonicalSuffixMatchStateException => e
+              }
               .map { validatedLongForm =>
                 // validation succeeded, we check if the DID was published
-                resolve(DID.buildPrismDID(stateHash), did).orReturn {
+                resolve(DID.buildPrismDID(longForm.getStateHash, null), did).orReturn {
                   // if it was not published, we return the encoded initial state
                   succeedWith(
                     Some(
                       ProtoCodecs.atalaOperationToDIDDataProto(
-                        did.suffix,
-                        validatedLongForm.initialState
+                        did.getSuffix,
+                        validatedLongForm.getInitialState
                       )
                     )
                   )
                 }
               }
               .getOrElse(failWith(s"Invalid long form DID: $didRequestStr", methodName))
-          case DID.DIDFormat.Unknown =>
+          case Unknown =>
             failWith(s"DID format not supported: $didRequestStr", methodName)
         }
       case None =>
@@ -285,7 +293,6 @@ class NodeServiceImpl(
         }
       }
     }
-  }
 
   override def flushOperationsBuffer(
       request: node_api.FlushOperationsBufferRequest
@@ -367,6 +374,7 @@ class NodeServiceImpl(
               .withScalaVersion(BuildInfo.scalaVersion)
               .withSbtVersion(BuildInfo.sbtVersion)
           )
+
       }
     )
   }
@@ -436,7 +444,7 @@ object NodeServiceImpl {
     )(implicit ec: ExecutionContext, logger: Logger): Future[node_api.GetDidDocumentResponse] =
       state.flatMap {
         case Right(stMaybe) =>
-          stMaybe.fold(initialState)(st => succeedWith(Some(ProtoCodecs.toDIDDataProto(did.suffix.value, st))))
+          stMaybe.fold(initialState)(st => succeedWith(Some(ProtoCodecs.toDIDDataProto(did.getSuffix.getValue, st))))
         case Left(err: NodeError) =>
           logger.info(err.toStatus.asRuntimeException().getMessage)
           initialState
@@ -447,7 +455,7 @@ object NodeServiceImpl {
     )(implicit ec: ExecutionContext, logger: Logger): Future[node_api.GetDidDocumentResponse] =
       state.flatMap {
         case Right(stMaybe) =>
-          val didData = stMaybe.map(st => ProtoCodecs.toDIDDataProto(did.suffix.value, st))
+          val didData = stMaybe.map(st => ProtoCodecs.toDIDDataProto(did.getSuffix.getValue, st))
           succeedWith(didData)
         case Left(err: NodeError) => ifFailed(err)
       }

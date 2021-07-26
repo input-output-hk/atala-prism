@@ -1,13 +1,11 @@
 package io.iohk.atala.prism.auth.grpc
 
 import java.util.Base64
-
 import io.grpc.{Context, Metadata}
 import io.iohk.atala.prism.kotlin.crypto.{EC}
 import io.iohk.atala.prism.kotlin.crypto.signature.{ECSignature}
 import io.iohk.atala.prism.auth.model.RequestNonce
-import io.iohk.atala.prism.identity.DID
-import io.iohk.atala.prism.identity.DID.DIDFormat
+import io.iohk.atala.prism.kotlin.identity.{Canonical, DID, LongForm, Unknown}
 
 private[grpc] object GrpcAuthenticationContext {
   // Extension methods to deal with gRPC Metadata in the Scala way
@@ -110,11 +108,11 @@ private[grpc] object GrpcAuthenticationContext {
   def parseDIDAuthenticationHeader(ctx: Context): Option[GrpcAuthenticationHeader.DIDBased] = {
     (ctx.getOpt(RequestNonceKeys), ctx.getOpt(DidKeys), ctx.getOpt(DidKeyIdKeys), ctx.getOpt(DidSignatureKeys)) match {
       case (Some(requestNonce), Some(didRaw), Some(keyId), Some(signature)) =>
-        val didOpt = DID.fromString(didRaw)
+        val didOpt = Option(DID.fromString(didRaw))
         didOpt match {
           case Some(did) =>
             did.getFormat match {
-              case _: DIDFormat.Canonical =>
+              case _: Canonical =>
                 Some(
                   GrpcAuthenticationHeader.PublishedDIDBased(
                     requestNonce = RequestNonce(requestNonce.toVector),
@@ -123,7 +121,7 @@ private[grpc] object GrpcAuthenticationContext {
                     signature = new ECSignature(signature)
                   )
                 )
-              case _: DIDFormat.LongForm =>
+              case _: LongForm =>
                 Some(
                   GrpcAuthenticationHeader.UnpublishedDIDBased(
                     requestNonce = RequestNonce(requestNonce.toVector),
@@ -132,7 +130,7 @@ private[grpc] object GrpcAuthenticationContext {
                     signature = new ECSignature(signature)
                   )
                 )
-              case DIDFormat.Unknown =>
+              case _: Unknown =>
                 None
             }
           case None =>

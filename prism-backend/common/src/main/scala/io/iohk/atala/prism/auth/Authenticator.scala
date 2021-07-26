@@ -203,7 +203,7 @@ abstract class SignedRequestsAuthenticatorBase[Id](
 
       didDocumentResponse <-
         nodeClient
-          .getDidDocument(node_api.GetDidDocumentRequest(authenticationHeader.did.value))
+          .getDidDocument(node_api.GetDidDocumentRequest(authenticationHeader.did.getValue))
           .map(Right(_))
           .toFutureEither
 

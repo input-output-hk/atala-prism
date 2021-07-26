@@ -15,8 +15,9 @@ import io.iohk.atala.prism.utils.syntax.DBConnectionOps
 import io.iohk.atala.prism.metrics.{TimeMeasureMetric, TimeMeasureUtil}
 import io.iohk.atala.prism.metrics.TimeMeasureUtil.MeasureOps
 import doobie.free.connection
-import io.iohk.atala.prism.kotlin.credentials.utils.Mustache
-import io.iohk.atala.prism.kotlin.credentials.utils.MustacheError
+import io.iohk.atala.prism.kotlin.credentials.utils.{Mustache, MustacheError, MustacheParsingError}
+
+import scala.util.Try
 //import io.iohk.atala.prism.credentials.utils.Mustache
 import org.slf4j.{Logger, LoggerFactory}
 import tofu.higherKind.Mid
@@ -163,11 +164,13 @@ private final class CredentialTypeRepositoryImpl[F[_]: BracketThrow](xa: Transac
       template: String,
       fields: List[CreateCredentialTypeField]
   ): Either[MustacheError, String] = {
-    Mustache.INSTANCE.render(
-      template,
-      ((name: String) => fields.find(_.name == name).map(_.name).get).asKotlin,
-      true
-    )
+    Try(
+      Mustache.INSTANCE.render(
+        template,
+        ((name: String) => fields.find(_.name == name).map(_.name).get).asKotlin,
+        true
+      )
+    ).toEither.left.map(thr => new MustacheParsingError(thr.getMessage))
   }
 
   def find(credentialTypeId: CredentialTypeId): F[Option[CredentialTypeWithRequiredFields]] =

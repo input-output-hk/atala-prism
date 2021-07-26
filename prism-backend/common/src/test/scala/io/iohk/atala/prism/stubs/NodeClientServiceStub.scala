@@ -5,7 +5,7 @@ import io.iohk.atala.prism.kotlin.crypto.MerkleRoot
 import io.iohk.atala.prism.kotlin.crypto.SHA256Digest
 import monix.eval.Task
 import io.iohk.atala.prism.services.NodeClientService
-import io.iohk.atala.prism.identity.DID
+import io.iohk.atala.prism.kotlin.identity.DID
 import io.iohk.atala.prism.protos.node_api.{
   GetBatchStateResponse,
   GetCredentialRevocationTimeResponse,

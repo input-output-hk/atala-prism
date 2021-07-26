@@ -6,7 +6,7 @@ import io.grpc.Metadata
 import io.iohk.atala.prism.kotlin.crypto.keys.ECPublicKey
 import io.iohk.atala.prism.kotlin.crypto.signature.ECSignature
 import io.iohk.atala.prism.auth.model.RequestNonce
-import io.iohk.atala.prism.identity.DID
+import io.iohk.atala.prism.kotlin.identity.DID
 
 sealed trait GrpcAuthenticationHeader {
   import GrpcAuthenticationContext._
@@ -25,7 +25,7 @@ sealed trait GrpcAuthenticationHeader {
       case didBased: GrpcAuthenticationHeader.DIDBased =>
         val signatureStr = Base64.getUrlEncoder.encodeToString(didBased.signature.getData)
         val requestNonceStr = Base64.getUrlEncoder.encodeToString(didBased.requestNonce.bytes.toArray)
-        metadata.put(DidKeys.metadata, didBased.did.value)
+        metadata.put(DidKeys.metadata, didBased.did.getValue)
         metadata.put(DidKeyIdKeys.metadata, didBased.keyId)
         metadata.put(DidSignatureKeys.metadata, signatureStr)
         metadata.put(RequestNonceKeys.metadata, requestNonceStr)
