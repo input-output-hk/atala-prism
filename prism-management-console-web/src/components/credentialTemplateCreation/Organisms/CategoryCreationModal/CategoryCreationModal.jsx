@@ -12,6 +12,7 @@ import { exactValueExists } from '../../../../helpers/filterHelpers';
 import Logger from '../../../../helpers/Logger';
 import { withApi } from '../../../providers/withApi';
 import { credentialTypesManagerShape } from '../../../../helpers/propShapes';
+import './_style.scss';
 
 const defaultFileList = defaultCategoryIcons.map((thumbUrl, index) => ({ thumbUrl, uid: index }));
 const i18nPrefix = 'credentialTemplateCreation';
@@ -109,28 +110,16 @@ const CategoryCreationModal = ({ api, visible, close }) => {
       validateMessages={validateMessages}
     >
       <Modal
+        className="templateModal"
         visible={visible}
         onCancel={close}
         title={t(`${i18nPrefix}.categoryCreationModal.title`)}
         destroyOnClose
         footer={null}
       >
-        <Form.Item
-          name="categoryName"
-          label={t(`${i18nPrefix}.categoryCreationModal.categoryNameLabel`)}
-          hasFeedback
-          rules={[{ required: true }, { validator: checkExistance }]}
-        >
-          
-          <Input placeholder={t(`${i18nPrefix}.categoryCreationModal.categoryNamePlaceholder`)} />
-        </Form.Item>
         <Form.Item name="categoryIcon" rules={[{ validator: validateCategoryIcon }]}>
           <Radio.Group onChange={onIconChange}>
-            <Form.Item
-              name="categoryCustomIcons"
-              valuePropName="file"
-              getValueFromEvent={normFile}
-            >
+            <Form.Item name="categoryCustomIcons" valuePropName="file" getValueFromEvent={normFile}>
               <Upload
                 name="logo"
                 action="/upload.do"
@@ -140,31 +129,51 @@ const CategoryCreationModal = ({ api, visible, close }) => {
                 )}
               >
                 <div className="verticalFlex">
-                  <img src={uploadCategoryIcon} alt="upload custom icon" />
+                  <img src={uploadCategoryIcon} className="iconSample" alt="upload custom icon" />
                   <h3>{t(`${i18nPrefix}.categoryCreationModal.uploadIcon`)}</h3>
                   <p>
                     {t(`${i18nPrefix}.categoryCreationModal.allowedFormats`, { allowedFormats })}
                   </p>
                   <CustomButton
-                    className="theme-secondary"
+                    className="theme-outline"
                     buttonText={t(`${i18nPrefix}.categoryCreationModal.uploadButton`)}
                   />
-                  <p>{t(`${i18nPrefix}.categoryCreationModal.gallery`)}</p>
                 </div>
               </Upload>
             </Form.Item>
-            {defaultFileList.map(file => (
-              <IconOption icon={file} selected={file.uid === selectedIcon} />
-            ))}
+
+            <div className="inputContainer">
+              <Form.Item
+                name="categoryName"
+                label={t(`${i18nPrefix}.categoryCreationModal.categoryNameLabel`)}
+                hasFeedback
+                rules={[{ required: true }, { validator: checkExistance }]}
+              >
+                <Input
+                  placeholder={t(`${i18nPrefix}.categoryCreationModal.categoryNamePlaceholder`)}
+                />
+              </Form.Item>
+              <Form.Item className="gallery">
+                <p>{t(`${i18nPrefix}.categoryCreationModal.gallery`)}</p>
+              </Form.Item>
+            </div>
+
+            <div className="imgGalleryContainer">
+              {defaultFileList.map(file => (
+                <IconOption icon={file} selected={file.uid === selectedIcon} />
+              ))}
+            </div>
           </Radio.Group>
         </Form.Item>
-        <CustomButton
-          className="theme-secondary"
-          buttonText={t(`${i18nPrefix}.categoryCreationModal.save`)}
-          buttonProps={{
-            onClick: handleCategorySubmit
-          }}
-        />
+        <div className="buttonSection">
+          <CustomButton
+            className="theme-secondary"
+            buttonText={t(`${i18nPrefix}.categoryCreationModal.save`)}
+            buttonProps={{
+              onClick: handleCategorySubmit
+            }}
+          />
+        </div>
       </Modal>
     </Form>
   );
