@@ -4,6 +4,7 @@ import { message, Upload } from 'antd';
 import { useTranslation } from 'react-i18next';
 import PropTypes from 'prop-types';
 import CustomButton from '../../Atoms/CustomButton/CustomButton';
+import { refPropShape } from '../../../../helpers/propShapes';
 
 import './_style.scss';
 
@@ -85,8 +86,7 @@ FileUploader.propTypes = {
   accept: PropTypes.string,
   savePicture: PropTypes.func.isRequired,
   uploadText: PropTypes.string.isRequired,
-  formRef: PropTypes.oneOfType([PropTypes.func, PropTypes.shape({ current: PropTypes.object })])
-    .isRequired,
+  formRef: refPropShape.isRequired,
   initialValue: PropTypes.arrayOf(PropTypes.instanceOf(ArrayBuffer)),
   disabled: PropTypes.bool,
   updateFile: PropTypes.func

@@ -9,7 +9,8 @@ import {
   bool,
   arrayOf,
   element,
-  objectOf
+  objectOf,
+  instanceOf
 } from 'prop-types';
 import __ from 'lodash';
 import { CONNECTION_STATUSES } from './constants';
@@ -125,12 +126,7 @@ export const credentialTypeShape = {
   placeholders: objectOf(string)
 };
 
-export const credentialTypesShape = {
-  governmentId: shape(credentialTypeShape),
-  educational: shape(credentialTypeShape),
-  proofOfEmployment: shape(credentialTypeShape),
-  healthIsurance: shape(credentialTypeShape)
-};
+export const credentialTypesShape = arrayOf(credentialTypeShape);
 
 export const columnShape = arrayOf({
   label: string,
@@ -144,3 +140,21 @@ export const skeletonShape = arrayOf({
   fieldKey: string,
   rules: arrayOf(shape({ message: string }))
 });
+
+export const templateCategoryShape = shape({
+  id: number.isRequired,
+  name: string.isRequired,
+  logo: string,
+  sampleImage: string,
+  state: number.isRequired
+});
+
+export const credentialTypesManagerShape = shape({
+  getCredentialTypes: func,
+  getCredentialTypeDetails: func,
+  getTemplateCategories: func
+});
+
+export const refPropShape = oneOfType([func, shape({ current: instanceOf(Element) })]);
+
+export const antdV4FormShape = shape({ validateFields: func, resetFields: func });

@@ -531,6 +531,45 @@
     },
     "checkInfo": "Check the data below"
   },
+  "templates": {
+    "title": "Credential Templates",
+    "actions": {
+      "createTemplate": "Create Template"
+    }
+  },
+  "credentialTemplateCreation": {
+    "step1": {
+      "title": "Create a Credential Template",
+      "subtitle": "",
+      "templateName": "Template Name",
+      "templateNamePlaceholder": "Insert template name",
+      "selectCategory": "Select a Category"
+    },
+    "step2": {
+      "title": "Create a Credential Template",
+      "subtitle": "Design your Credential"
+    },
+    "messages": {
+      "selectCategoryError": "Please select a category",
+      "templateDesignError": "Invalid Template"
+    },
+    "form": {
+      "buttonText": "Save",
+      "templateNameLabel": "Type Template Name",
+      "templateCategoryLabel": "Select a Category",
+      "fields": {
+        "templateName":"Template Name",
+        "templateCategory": "Category"
+      }
+    },
+    "actions": {
+      "addCategory": "Add New"
+    },
+    "errors":  {
+      "required":"${label} is required",
+      "preExisting": "A template called '{{value}}' already exists"
+    }
+  },
   "landing": {
     "welcome": "Welcome!",
     "description": "Please log in with Atala PRISM Browser Wallet",

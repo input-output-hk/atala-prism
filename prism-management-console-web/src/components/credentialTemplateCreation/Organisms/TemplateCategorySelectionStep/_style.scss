@@ -1,0 +1,32 @@
+@import '../../../../css/general_styling';
+
+.selectCathegory {
+  .ant-row {
+    width: 100%;
+  }
+  .templateCategory {
+    width: 100%;
+    .ant-radio-group {
+      width: 100%;
+      display: flex;
+      justify-content: space-between;
+      .ant-radio-wrapper {
+        margin: 0;
+        .TypeCard, .SelectedTypeCard {
+          height: 220px;
+          display: flex;
+          flex-direction: column;
+          justify-content: flex-start;
+          align-items: center;
+          .img-credential {
+              margin-top: 1em;
+          }
+        }
+      }
+    }
+  }
+}
+
+.TypeSelectionContainer .TypeSelection .flex label {
+    margin:0;
+}

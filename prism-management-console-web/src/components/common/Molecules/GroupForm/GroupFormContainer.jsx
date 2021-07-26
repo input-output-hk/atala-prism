@@ -12,6 +12,7 @@ import { GROUP_NAME_STATES } from '../../../../helpers/constants';
 import GroupForm from './GroupForm';
 
 import './_style.scss';
+import { refPropShape } from '../../../../helpers/propShapes';
 
 const GroupName = ({
   api,
@@ -93,7 +94,7 @@ GroupName.propTypes = {
     }).isRequired
   }).isRequired,
   className: PropTypes.string,
-  formRef: PropTypes.shape().isRequired,
+  formRef: refPropShape.isRequired,
   updateForm: PropTypes.func.isRequired,
   nameState: PropTypes.oneOf(GROUP_NAME_STATES),
   setNameState: PropTypes.func.isRequired,

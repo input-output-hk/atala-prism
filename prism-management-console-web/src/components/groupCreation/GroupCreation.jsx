@@ -15,6 +15,7 @@ import GroupName from '../common/Molecules/GroupForm/GroupFormContainer';
 import { getCheckedAndIndeterminateProps, handleSelectAll } from '../../helpers/selectionHelpers';
 
 import './_style.scss';
+import { refPropShape } from '../../helpers/propShapes';
 
 const GroupCreation = ({
   api,
@@ -153,7 +154,7 @@ GroupCreation.propTypes = {
     }).isRequired
   }).isRequired,
   createGroup: PropTypes.func.isRequired,
-  formRef: PropTypes.shape().isRequired,
+  formRef: refPropShape.isRequired,
   updateForm: PropTypes.func.isRequired,
   formValues: PropTypes.shape().isRequired,
   isSaving: PropTypes.bool,

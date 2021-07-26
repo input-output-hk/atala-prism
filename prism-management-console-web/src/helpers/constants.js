@@ -8,6 +8,7 @@ export const TIMEOUT_MULTIPLIER_MS = 100; // Delay for fetching each entity
 // Delay before checking if the extension has injected its SDK
 export const BROWSER_WALLET_CHECK_INTERVAL_MS = 500;
 export const SEARCH_DELAY_MS = 1000;
+export const MOCK_API_CALL_DELAY = 500;
 export const DEFAULT_PAGE_SIZE = 10;
 export const CONTACT_PAGE_SIZE = DEFAULT_PAGE_SIZE;
 export const GROUP_PAGE_SIZE = DEFAULT_PAGE_SIZE;
@@ -234,3 +235,11 @@ export const SORTING_DIRECTIONS = {
   ascending: 'ASCENDING',
   descending: 'DESCENDING'
 };
+
+// templates
+
+// template creation steps
+export const NEW_TEMPLATE_STEP_UNIT = 1;
+export const SELECT_TEMPLATE_CATEGORY = 0;
+export const DESIGN_TEMPLATE = 1;
+export const TEMPLATE_CREATION_RESULT = 2;

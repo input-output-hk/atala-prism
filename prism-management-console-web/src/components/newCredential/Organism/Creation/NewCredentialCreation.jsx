@@ -7,6 +7,7 @@ import CredentialSummaryData from '../../../common/Atoms/CredentialData/Credenti
 import { dayMonthYearFormatter } from '../../../../helpers/formatters';
 import { getLogoAsBase64 } from '../../../../helpers/genericHelpers';
 import { useSession } from '../../../providers/SessionContext';
+import { refPropShape } from '../../../../helpers/propShapes';
 
 import './_style.scss';
 
@@ -56,7 +57,7 @@ NewCredentialCreation.defaultProps = {
 
 NewCredentialCreation.propTypes = {
   savePicture: PropTypes.func.isRequired,
-  formRef: PropTypes.shape().isRequired,
+  formRef: refPropShape.isRequired,
   credentialValues: PropTypes.shape(),
   credentialData: PropTypes.shape(),
   updateExampleCredential: PropTypes.func.isRequired

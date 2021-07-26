@@ -4,7 +4,7 @@ import {
   CredentialIssuanceServicePromiseClient
 } from '../../protos/console_api_grpc_web_pb';
 import Logger from '../../helpers/Logger';
-import credentialTypes from './credentialTypes';
+import hardcodedCredentialTypes from './mocks/hardcodedCredentialTypes';
 import { REQUEST_AUTH_TIMEOUT_MS, CREDENTIAL_PAGE_SIZE } from '../../helpers/constants';
 import { getAditionalTimeout } from '../../helpers/genericHelpers';
 import {
@@ -107,7 +107,7 @@ function generateAtalaMessage(credential) {
 }
 
 function getCredentialTypes() {
-  return credentialTypes;
+  return hardcodedCredentialTypes;
 }
 
 async function getContactCredentials(contactId) {
