@@ -27,7 +27,7 @@ const TemplateName = ({ api }) => {
         message.error(t('errors.errorGetting', { model: t('templates.title') }));
       });
 
-  const checkExistance = useDebounce(templateExists);
+  const checkExistence = useDebounce(templateExists);
 
   return (
     <div className="templateName">
@@ -37,7 +37,7 @@ const TemplateName = ({ api }) => {
         className="flex"
         name="name"
         label={t('credentialTemplateCreation.step1.templateName')}
-        rules={[{ required: true }, { validator: checkExistance }]}
+        rules={[{ required: true }, { validator: checkExistence }]}
       >
         <Input placeholder={t('credentialTemplateCreation.step1.templateNamePlaceholder')} />
       </Form.Item>
