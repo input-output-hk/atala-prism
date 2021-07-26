@@ -59,7 +59,7 @@ const insertFormChangeIntoArray = (change, oldArray) => {
   if (!change) return oldArray;
 
   // - A dense array: when there's a change in sort => return the sorted array
-  if (_.compact(change).length === oldArray.length) return change;
+  if (_.compact(change).length === change.length) return change;
 
   // - A sparse array: on any other change event => merge both arrays
   const changeArray = Array.from(change); // casting to array because it's a sparse array

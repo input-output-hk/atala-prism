@@ -11,7 +11,6 @@ import {
   TEMPLATE_CREATION_RESULT
 } from '../../helpers/constants';
 import { withRedirector } from '../providers/withRedirector';
-import { antdV4FormShape } from '../../helpers/propShapes';
 import { useTemplateContext } from '../providers/TemplateContext';
 import './_style.scss';
 
@@ -88,8 +87,7 @@ CredentialTemplateCreation.propTypes = {
   currentStep: PropTypes.number.isRequired,
   changeStep: PropTypes.func.isRequired,
   renderStep: PropTypes.func.isRequired,
-  redirector: PropTypes.shape({ redirectToCredentialTemplates: PropTypes.func }).isRequired,
-  form: antdV4FormShape.isRequired
+  redirector: PropTypes.shape({ redirectToCredentialTemplates: PropTypes.func }).isRequired
 };
 
 export default withRedirector(CredentialTemplateCreation);

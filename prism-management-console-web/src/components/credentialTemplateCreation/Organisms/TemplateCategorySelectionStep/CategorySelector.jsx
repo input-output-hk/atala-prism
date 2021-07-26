@@ -81,7 +81,7 @@ CategorySelector.defaultProps = {
 };
 
 CategorySelector.propTypes = {
-  templateCategories: PropTypes.arrayOf(templateCategoryShape),
+  templateCategories: PropTypes.arrayOf(templateCategoryShape)
 };
 
 export default CategorySelector;
