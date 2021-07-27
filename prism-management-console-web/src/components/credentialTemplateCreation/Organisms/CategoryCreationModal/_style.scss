@@ -1,6 +1,9 @@
 @import "../../../../css/general_styling";
 
 .templateModal {
+    .ant-radio-wrapper {
+        height: 60px;
+    }
   .ant-modal-header {
     .ant-modal-title {
       font-variant: normal;
@@ -11,20 +14,27 @@
   }
   .ant-form-item-control-input-content {
     text-align: center;
+    margin: 0;
   }
   .ant-form-item-required::before {
     display: none !important;
   }
   .inputContainer {
+      padding: 0 2em;
+      margin-bottom: 1em;
+      input {
+          border:1px solid $grey;
+      }
     .ant-row {
       flex-direction: column;
       display: flex;
       .ant-form-item-label {
         text-align: left;
+        @include primary-text($body, $black);
+        font-variant: normal;
       }
     }
     .gallery {
-      margin: 0;
       .ant-form-item-control-input-content {
         text-align: left;
         @include primary-text($body, $black);
@@ -32,13 +42,18 @@
       }
     }
   }
+  .ant-row {
+      margin:0
+  }
   .ant-upload {
+    display: flex;
     width: 100%;
     .verticalFlex {
+        width: 100%;
       .galleryLabel {
         width: 100%;
         display: flex;
-        margin: 1em 0;
+        margin: 1em 0 0 2em;
       }
       .iconSample {
         margin: 1em auto;
@@ -62,6 +77,9 @@
 }
 
 .imgGalleryContainer {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
   img {
     width: 60px;
     height: 60px;
@@ -74,5 +92,18 @@
   justify-content: center;
   button {
     width: 260px;
+    margin: 1em 0;
   }
+}
+
+.ant-upload-list-picture {
+    display: flex;
+    align-items: center;
+    .CategoryIconOption {
+        height: 50px;
+    }
+}
+
+span.ant-radio + * {
+    padding: 0;
 }
