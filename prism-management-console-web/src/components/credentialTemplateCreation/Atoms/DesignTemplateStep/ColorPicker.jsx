@@ -2,6 +2,7 @@ import React from 'react';
 import PropTypes from 'prop-types';
 import { Form, Radio } from 'antd';
 import ColorOption from './ColorOption';
+import { themeColors } from '../../../../helpers/colors';
 
 const ColorPicker = ({ colors, selected, ...formItemProps }) => (
   <Form.Item {...formItemProps} rules={[{ required: true }]}>
@@ -14,7 +15,7 @@ const ColorPicker = ({ colors, selected, ...formItemProps }) => (
 );
 
 ColorPicker.defaultProps = {
-  colors: []
+  colors: themeColors
 };
 
 ColorPicker.propTypes = {

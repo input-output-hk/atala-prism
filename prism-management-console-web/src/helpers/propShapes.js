@@ -169,5 +169,6 @@ export const templateBodyAttributeShape = shape({
   key: number,
   name: string,
   fieldKey: number,
-  textAttributeIndex: number
+  textAttributeIndex: number,
+  dynamicAttributeIndex: number
 });
