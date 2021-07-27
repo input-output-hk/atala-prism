@@ -10,25 +10,14 @@ import io.iohk.atala.mirror.protos.mirror_api.{
   GetCredentialForAddressResponse
 }
 import io.iohk.atala.mirror.db.{CardanoAddressInfoDao, ConnectionDao, UserCredentialDao}
-import io.iohk.atala.mirror.models.{CardanoAddress, Connection, RedlandIdCredential}
+import io.iohk.atala.mirror.models.{CardanoAddress, Connection}
 import doobie.implicits._
-import io.iohk.atala.mirror.protos.ivms101.{
-  DateAndPlaceOfBirth,
-  NationalIdentification,
-  NationalIdentifierTypeCode,
-  NaturalPerson,
-  NaturalPersonName,
-  NaturalPersonNameId,
-  NaturalPersonNameTypeCode,
-  Person
-}
+import io.iohk.atala.mirror.protos.ivms101
 import io.iohk.atala.mirror.protos.mirror_models.CredentialData.IssuersDidOption
 import io.iohk.atala.mirror.protos.mirror_models.MirrorError.ADDRESS_NOT_FOUND
 import io.iohk.atala.mirror.protos.mirror_models.{CredentialData, GetCredentialForAddressData}
 import cats.implicits._
 import doobie.ConnectionIO
-import io.iohk.atala.prism.credentials.Credential
-import io.circe.generic.auto._
 import io.iohk.atala.prism.models.{ConnectionState, ConnectionToken}
 import io.iohk.atala.prism.services.ConnectorClientService
 import io.iohk.atala.prism.utils.syntax.DBConnectionOps
@@ -39,7 +28,7 @@ trait MirrorService {
 
   def getCredentialForAddress(request: GetCredentialForAddressRequest): Task[GetCredentialForAddressResponse]
 
-  def getIdentityInfoForAddress(cardanoAddress: CardanoAddress): Task[Option[Person]]
+  def getIdentityInfoForAddress(cardanoAddress: CardanoAddress): Task[Option[ivms101.Person]]
 }
 
 class MirrorServiceImpl(tx: Transactor[Task], connectorService: ConnectorClientService) extends MirrorService {
@@ -99,52 +88,21 @@ class MirrorServiceImpl(tx: Transactor[Task], connectorService: ConnectorClientS
 
   }
 
-  override def getIdentityInfoForAddress(cardanoAddress: CardanoAddress): Task[Option[Person]] = {
+  override def getIdentityInfoForAddress(cardanoAddress: CardanoAddress): Task[Option[ivms101.Person]] = {
     (for {
       address <- OptionT(CardanoAddressInfoDao.findBy(NonEmptyList.of(cardanoAddress)).map(_.headOption))
       credentials <- OptionT.liftF(UserCredentialDao.findBy(address.connectionToken))
-      redlandCredential <-
+      person <-
         credentials
           .sortBy(_.messageReceivedDate.date)
-          .flatMap(credential =>
-            Credential
-              .fromString(credential.rawCredential.rawCredential)
+          .flatMap(
+            _.toPerson.left
+              .map(error => logger.warn(s"Error getting identity info for address: ${error.getMessage}"))
               .toOption
+              .flatten
           )
-          .flatMap(credential => RedlandIdCredential.fromCredentialContent(credential.content).toOption)
           .lastOption
           .toOptionT[ConnectionIO]
-      person = redlandIdCredentialToPerson(redlandCredential)
     } yield person).value.logSQLErrors("finding credentials", logger).transact(tx)
-  }
-
-  private def redlandIdCredentialToPerson(redlandIdCredential: RedlandIdCredential): Person = {
-
-    val naturalPersonName = NaturalPersonName(
-      nameIdentifiers = Seq(
-        NaturalPersonNameId(
-          primaryIdentifier = redlandIdCredential.name,
-          nameIdentifierType = NaturalPersonNameTypeCode.NATURAL_PERSON_NAME_TYPE_CODE_LEGL
-        )
-      )
-    )
-
-    val nationalIdentification = NationalIdentification(
-      nationalIdentifier = redlandIdCredential.identityNumber,
-      nationalIdentifierType = NationalIdentifierTypeCode.NATIONAL_IDENTIFIER_TYPE_CODE_MISC
-    )
-
-    val dateAndPlaceOfBirth = DateAndPlaceOfBirth(
-      dateOfBirth = redlandIdCredential.dateOfBirth
-    )
-
-    val naturalPerson = NaturalPerson(
-      name = Some(naturalPersonName),
-      geographicAddresses = Seq.empty,
-      nationalIdentification = Some(nationalIdentification),
-      dateAndPlaceOfBirth = Some(dateAndPlaceOfBirth)
-    )
-
-    Person(Person.Person.NaturalPerson(naturalPerson))
   }
 }

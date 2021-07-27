@@ -1,5 +1,7 @@
 package io.iohk.atala.mirror
 
+import java.time.{LocalDateTime, ZoneOffset}
+
 import cats.effect.Sync
 import cats.implicits._
 import com.google.protobuf.ByteString
@@ -9,6 +11,8 @@ import doobie.implicits._
 import doobie.util.transactor.Transactor
 import doobie.util.update.Update
 import io.circe.syntax._
+import org.scalatest.OptionValues._
+
 import io.iohk.atala.mirror.config.{CardanoConfig, HttpConfig, MirrorConfig, TrisaConfig}
 import io.iohk.atala.mirror.db._
 import io.iohk.atala.mirror.models.CardanoAddressInfo.{CardanoNetwork, RegistrationDate}
@@ -33,10 +37,9 @@ import io.iohk.atala.prism.protos.credential_models.{
 import io.iohk.atala.prism.services.ServicesFixtures
 import io.iohk.atala.prism.task.lease.system.ProcessingTaskFixtures
 import io.iohk.atala.prism.utils.GrpcUtils.{GrpcConfig, SslConfig}
-import org.scalatest.OptionValues._
-
-import java.time.{LocalDateTime, ZoneOffset}
 import io.iohk.atala.mirror.stubs.CardanoAddressServiceStub
+import io.iohk.atala.prism.credentials.content.CredentialContent
+import io.iohk.atala.prism.credentials.content.syntax._
 
 trait MirrorFixtures extends ServicesFixtures with ProcessingTaskFixtures {
 
@@ -129,6 +132,28 @@ trait MirrorFixtures extends ServicesFixtures with ProcessingTaskFixtures {
         MessageReceivedDate(LocalDateTime.of(2020, 10, 5, 0, 0).toInstant(ZoneOffset.UTC)),
         CredentialStatus.Valid
       )
+
+    val kycCredentialContent = CredentialContent(
+      CredentialContent.JsonFields.CredentialType.field -> "KYCCredential",
+      CredentialContent.JsonFields.CredentialSubject.field -> CredentialContent.Fields(
+        "name" -> "Jo Wong",
+        "birthDate" -> "1999-01-11",
+        "idDocument" -> CredentialContent.Fields(
+          "personalNumber" -> "RL-F95B27EAD"
+        )
+      )
+    )
+
+    val redlandIdCredentialContent = CredentialContent(
+      CredentialContent.JsonFields.CredentialType.field -> CredentialContent
+        .Values("VerifiableCredential", "RedlandIdCredential"),
+      CredentialContent.JsonFields.CredentialSubject.field ->
+        """{"id":"unknown","identityNumber":"RL-F95B27EAD","name":"Jo Wong","dateOfBirth":"1999-01-11"}"""
+    )
+
+    val unknownCredentialContent = CredentialContent(
+      "unknown" -> "unknown"
+    )
 
     def insertAll[F[_]: Sync](database: Transactor[F]) = {
       insertManyFixtures(
