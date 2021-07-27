@@ -190,7 +190,7 @@ class VerifyIdTypeSelectPresenter: ListingBasePresenter, ListingBaseTableUtilsPr
     func conectionAccepted(contact: Contact?) {
         self.viewImpl?.config(isLoading: true)
         self.contact = contact
-        DispatchQueue.main.asyncAfter(deadline: .now() +  15) {
+        DispatchQueue.main.asyncAfter(deadline: .now() +  10) {
             self.fetchMessages()
         }
     }

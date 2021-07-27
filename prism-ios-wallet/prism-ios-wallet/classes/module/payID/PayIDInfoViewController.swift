@@ -22,7 +22,6 @@ class PayIDInfoViewController: BaseViewController, PayIDAddAddressDelegate {
     @IBOutlet weak var keyValueLabel: UILabel!
 
     @IBOutlet weak var addAddressButton: UIButton!
-    @IBOutlet weak var addKeyButton: UIButton!
 
     @IBOutlet weak var newButton: UIButton!
 
@@ -42,8 +41,6 @@ class PayIDInfoViewController: BaseViewController, PayIDAddAddressDelegate {
         headerView.addRoundCorners(radius: AppConfigs.CORNER_RADIUS_REGULAR, onlyTops: true)
         addAddressButton.addRoundCorners(radius: 15.0, borderWidth: AppConfigs.BORDER_WIDTH_BUTTON,
                                          borderColor: UIColor.appRed.cgColor)
-        addKeyButton.addRoundCorners(radius: 15.0, borderWidth: AppConfigs.BORDER_WIDTH_BUTTON,
-                                     borderColor: UIColor.appRed.cgColor)
         newButton.addRoundCorners(radius: AppConfigs.CORNER_RADIUS_BUTTON)
     }
     

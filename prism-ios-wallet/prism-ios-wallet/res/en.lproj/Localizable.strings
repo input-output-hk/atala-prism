@@ -153,7 +153,7 @@
 "profile_attribute_title" = "Type";
 "profile_attribute_email" = "Email";
 "profile_attribute_phone" = "Phone";
-"profile_name_empty" = "Hey!";
+"profile_name_empty" = "Hello";
 "profile_mail_empty" = "This is your Profile";
 
 // <!-- Profile Detail -->
@@ -232,9 +232,9 @@
 "settings_date_title" = "Date";
 "settings_date_subtitle" = "Custom date format";
 "settings_pay_id_title" = "Pay ID";
-"settings_pay_id_subtitle" = "Get it Now!";
+"settings_pay_id_subtitle" = "View or Create Pay ID";
 "settings_verify_id_title" = "Verified Identity";
-"settings_verify_id_subtitle" = "Get it Now !";
+"settings_verify_id_subtitle" = "Get it Now!";
 
 // <!-- Login: Welcome -->
 "welcome_title" = "Welcome";
@@ -385,7 +385,7 @@
 "activitylog_empty_title" = "You don’t have any activities";
 
 // <!-- Home -->
-"home_profile_hey" = "Hey!";
+"home_profile_hey" = "Hello";
 "home_profile_hey_empty" = "Welcome to";
 "home_profile_name_empty" = "Atala PRISM";
 "home_profile_view_profile" = "VIEW PROFILE";
@@ -394,20 +394,20 @@
 "home_profile_payid" = "YOUR PAY ID NAME";
 "home_activitylog_title" = "LAST ACTIVITY";
 "home_activitylog_button" = "Activity Log";
-"home_promotional_try" = "Try Atala PRISM\nInteractive Demo &\nreceive credentials";
-"home_promotional_instructions" = "Open atalaprism.io on a\ndesktop and follow demo steps";
+"home_promotional_try" = "Visit atalaprism.io\non a desktop computer\nand try our interactive demo";
 "home_promotional_more_info" = "More Info";
-"home_promotional_share" = "Share with your Friends!";
+"home_promotional_share" = "Share Atala PRISM with your friends";
 "home_promotional_share_desc" = "Atala PRISM lorem ipsum\ndolor sit amtet";
-"home_promotional_send_invite" = "Send Invite";
+"home_promotional_send_invite" = "Share app";
 "home_payid_title" = "Get your Pay ID now!";
-"home_payid_subtitle_first" = "You can start now or do it later by goint to the ";
+"home_payid_subtitle_first" = "You can start now or do it later by going to ";
 "home_payid_subtitle_bold" = "Settings";
 "home_payid_subtitle_second" = " option on the bottom menu.";
 "home_payid" = "Pay ID";
-"home_get_now" = "Get it Now !";
-"home_verified_title" = "Get your Verified Credential!";
-"home_verified" = "Verified Credential";
+"home_get_now" = "Get it Now!";
+"home_verified_title" = "Get your identity verified";
+"home_verified" = "Verified identity";
+"home_apply_now" = "Apply now";
 
 // <!-- Verify Identity -->
 "verifyid_tutorial_title" = "Verify your identity";
@@ -419,7 +419,7 @@
 "verifyid_tutorial_step_3" = "Step 3";
 "verifyid_tutorial_step_3_desc" = "Confirm your Data";
 "verifyid_tutorial_step_4" = "Final Step";
-"verifyid_tutorial_step_4_desc" = "Get your Acuant ID";
+"verifyid_tutorial_step_4_desc" = "Receive a verified identity credential";
 "verifyid_tutorial_skip" = "Skip and do later";
 "verifyid_title" = "Identity Verification";
 "verifyid_typeselect_step" = "Step 1";
@@ -454,7 +454,7 @@
 "verifyid_pending_subtitle" = "Your status is Pending";
 "verifyid_pending_desc" = "We’ll review your information and send\nyou a notification in 48 hours.";
 "verifyid_success_title" = "Thank You!";
-"verifyid_success_subtitle" = "You will received your verified identity\ncredential on verification completion.";
+"verifyid_success_subtitle" = "You will receive your verified identity\ncredential on verification completion.";
 
 // ACUANT
 
@@ -573,13 +573,13 @@
 // <!-- Pay ID Welcome -->
 
 "pay_id_welcome_title" = "Benefits of creating a Pay ID";
-"pay_id_welcome_subtitle" = "A better way to send and receive payments.";
+"pay_id_welcome_subtitle" = "A better way to send and receive payments";
 "pay_id_welcome_simple" = "Simple";
-"pay_id_welcome_simple_message" = "Get an easy to remember payment address like your email or phone number.";
+"pay_id_welcome_simple_message" = "Get an easy to remember payment address like your email or phone number";
 "pay_id_welcome_convenient" = "Convenient";
-"pay_id_welcome_convenient_message" = "Attach multiple payment systems to your Pay ID.";
+"pay_id_welcome_convenient_message" = "Attach multiple payment systems to your Pay ID";
 "pay_id_welcome_secure" = "Secure";
-"pay_id_welcome_secure_message" = "No need to provide financially sensitive information.";
+"pay_id_welcome_secure_message" = "No need to provide financially sensitive information";
 "pay_id_welcome_continue" = "Continue";
 "pay_id_welcome_skip" = "Skip and do later";
 
@@ -608,27 +608,27 @@
 "pay_id_setup_name_field_available" = "Available Pay ID Name";
 "pay_id_setup_name_field_unavailable" = "Pay ID Name not available";
 "pay_id_setup_subtitle" = "Link your Pay ID to a Wallet or Specific Address";
-"pay_id_setup_scan_field" = "ADD OR SCAN";
-"pay_id_setup_scan_field_tip" = "* Scan the extended public key from your wallet. All the addresses in your wallet will be added.";
+"pay_id_setup_scan_field" = "Add or scan address";
+"pay_id_setup_scan_field_tip" = " Scan QR code of an address\n* Paste an address\n* Scan the extended public key from your wallet. All the addresses in your wallet will be added.";
 
 // <!-- Pay ID Alert -->
 
 "pay_id_success_title" = "Your PAY ID was";
 "pay_id_create_success_message" = "Successfully Created!";
 "pay_id_share_success_message" = "Successfully Shared!";
-"pay_id_add_address_title" = "Your address(es) was";
-"pay_id_add_address_message" = "Successfully Added";
+"pay_id_add_address_title" = "Address(es)";
+"pay_id_add_address_message" = "successfully added";
 
 // <!-- Pay ID Info -->
 
 "pay_id_info_title" = "Pay ID Information";
-"pay_id_info_subtitle" = "View all your Pay IDs, add addresses, share or remove";
+"pay_id_info_subtitle" = "Share your Pay ID, add or scan address";
 "pay_id_info_detail_title" = "Pay ID";
 "pay_id_info_detail_name" = "YOUR PAY ID NAME";
 "pay_id_info_detail_address" = "ADDRESS";
 "pay_id_info_detail_key" = "PUBLIC KEY";
-"pay_id_info_detail_key_none" = "No public key created yet";
-"pay_id_info_detail_add_address" = "Add New Address";
+"pay_id_info_detail_key_none" = "No public key added";
+"pay_id_info_detail_add_address" = "New Address";
 "pay_id_info_detail_add_key" = "Add Public Key";
 "pay_id_info_button" = "Register New Pay ID";
 "pay_id_info_delete_error" = "The Pay ID couldn't be deleted";

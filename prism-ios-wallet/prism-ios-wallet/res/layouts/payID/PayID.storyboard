@@ -711,7 +711,7 @@
                                         <rect key="frame" x="24" y="256" width="304" height="30"/>
                                         <subviews>
                                             <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="P9O-6g-rVk">
-                                                <rect key="frame" x="0.0" y="0.0" width="148" height="30"/>
+                                                <rect key="frame" x="0.0" y="0.0" width="304" height="30"/>
                                                 <fontDescription key="fontDescription" type="system" weight="medium" pointSize="12"/>
                                                 <state key="normal" title="Button"/>
                                                 <userDefinedRuntimeAttributes>
@@ -720,18 +720,6 @@
                                                 </userDefinedRuntimeAttributes>
                                                 <connections>
                                                     <action selector="addAddress:" destination="Bct-D3-lG8" eventType="touchUpInside" id="L46-Mj-Uoi"/>
-                                                </connections>
-                                            </button>
-                                            <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="MCJ-VA-YhO">
-                                                <rect key="frame" x="156" y="0.0" width="148" height="30"/>
-                                                <fontDescription key="fontDescription" type="system" weight="medium" pointSize="12"/>
-                                                <state key="normal" title="Button"/>
-                                                <userDefinedRuntimeAttributes>
-                                                    <userDefinedRuntimeAttribute type="string" keyPath="localized" value="pay_id_info_detail_add_key"/>
-                                                    <userDefinedRuntimeAttribute type="string" keyPath="textColorIB" value="appRed"/>
-                                                </userDefinedRuntimeAttributes>
-                                                <connections>
-                                                    <action selector="addKey:" destination="Bct-D3-lG8" eventType="touchUpInside" id="Gf0-tx-B7B"/>
                                                 </connections>
                                             </button>
                                         </subviews>
@@ -833,7 +821,6 @@
                     <navigationItem key="navigationItem" id="JcK-0h-pft"/>
                     <connections>
                         <outlet property="addAddressButton" destination="P9O-6g-rVk" id="929-rx-RXP"/>
-                        <outlet property="addKeyButton" destination="MCJ-VA-YhO" id="Vy6-Ms-2f2"/>
                         <outlet property="addressValueLabel" destination="19u-IX-k4m" id="Efu-m9-Kmd"/>
                         <outlet property="contentView" destination="kcb-Jg-8UZ" id="pM5-nX-dBU"/>
                         <outlet property="headerView" destination="QXd-3x-kQ0" id="T4g-Sw-QnB"/>

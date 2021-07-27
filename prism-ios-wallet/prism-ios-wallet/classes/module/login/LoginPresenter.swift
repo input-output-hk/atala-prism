@@ -117,13 +117,18 @@ class LoginPresenter: ListingBasePresenter, ListingBaseTableUtilsPresenterDelega
                 user?.apiUrl = Common.URL_API
                 user?.mnemonics = CryptoUtils.global.usedMnemonics
                 user?.dateFormat = Common.DAFAULT_DATE_FORMAT
+                
             }
 
             DispatchQueue.main.async {
-                if user == nil {
-                    self.startValidationFail()
+                if let user = user {
+                    // There is a known bug in Kotlin Native that causes an error when calling "KeyDerivation().deriveKey(seed: seed, path: path)" from a background thread, making the app crash, the suggested workaround is to invoke this Kotlin method for the first time from the Main thread
+                    let keyPath = CryptoUtils.global.getNextPublicKeyPath()
+                    _ = CryptoUtils.global.signData(data: Data(), keyPath: keyPath)
+                    
+                    self.startValidationSucess(user: user)
                 } else {
-                    self.startValidationSucess(user: user!)
+                    self.startValidationFail()
                 }
             }
         }

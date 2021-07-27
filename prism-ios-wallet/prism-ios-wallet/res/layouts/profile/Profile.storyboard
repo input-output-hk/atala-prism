@@ -102,6 +102,7 @@
                         <segue destination="8ac-Bc-rkX" kind="show" identifier="AttributeListingSegue" id="Ahc-Sd-8eE"/>
                         <segue destination="vGh-oO-VBH" kind="show" identifier="VerifyIdSegue" id="nEk-IO-hTc"/>
                         <segue destination="WTO-dG-wOH" kind="show" identifier="VerifyIdPendingSegue" id="w5U-Ty-vhu"/>
+                        <segue destination="2F4-xE-sIK" kind="show" identifier="PayIdSegue" id="SLr-F8-z3P"/>
                     </connections>
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="PRu-vJ-34t" userLabel="First Responder" customClass="UIResponder" sceneMemberID="firstResponder"/>
@@ -157,6 +158,16 @@
                 <placeholder placeholderIdentifier="IBFirstResponder" id="w5f-6s-t3U" userLabel="First Responder" customClass="UIResponder" sceneMemberID="firstResponder"/>
             </objects>
             <point key="canvasLocation" x="770" y="196"/>
+        </scene>
+        <!--PayIDInfo-->
+        <scene sceneID="h8M-m3-STq">
+            <objects>
+                <viewControllerPlaceholder storyboardName="PayID" referencedIdentifier="PayIDInfo" id="2F4-xE-sIK" sceneMemberID="viewController">
+                    <navigationItem key="navigationItem" id="hdi-nl-9S6"/>
+                </viewControllerPlaceholder>
+                <placeholder placeholderIdentifier="IBFirstResponder" id="0RN-PO-pUY" userLabel="First Responder" customClass="UIResponder" sceneMemberID="firstResponder"/>
+            </objects>
+            <point key="canvasLocation" x="744" y="244"/>
         </scene>
     </scenes>
     <resources>

@@ -317,7 +317,7 @@ class ProfilePresenter: ListingBasePresenter, ListingBaseTableUtilsPresenterDele
     }
 
     func payIdTapped(for cell: HomeCardsTableViewCell) {
-        // TODO: this will be implemented with the pay id functionality
+        viewImpl?.changeScreenToCreatePayId()
     }
 
     func dismissPayIdTapped(for cell: HomeCardsTableViewCell) {

@@ -206,7 +206,7 @@
                                                         <nil key="highlightedColor"/>
                                                         <userDefinedRuntimeAttributes>
                                                             <userDefinedRuntimeAttribute type="string" keyPath="textColorIB" value="appWhite"/>
-                                                            <userDefinedRuntimeAttribute type="string" keyPath="localized" value="home_get_now"/>
+                                                            <userDefinedRuntimeAttribute type="string" keyPath="localized" value="home_apply_now"/>
                                                         </userDefinedRuntimeAttributes>
                                                     </label>
                                                     <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFit" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="ico_caret" translatesAutoresizingMaskIntoConstraints="NO" id="pEw-9R-Bby">

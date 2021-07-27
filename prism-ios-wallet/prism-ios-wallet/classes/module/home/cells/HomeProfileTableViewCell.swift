@@ -58,7 +58,7 @@ class HomeProfileTableViewCell: BaseTableViewCell {
             heyLbl.text = "home_profile_hey_empty".localize()
             verifiedImg.isHidden = true
         } else {
-            nameLbl.text = name
+            nameLbl.text = name.trim()
             heyLbl.text = "home_profile_hey".localize()
         }
         profileImg.applyDataImage(data: picture, placeholderNamed: "ico_placeholder_user")

@@ -37,6 +37,7 @@ class PayIDAddAddressViewController: UIViewController, UITextFieldDelegate, Segu
         super.viewDidLoad()
 
         ViewControllerUtils.addTapToDismissKeyboard(view: self)
+        ViewControllerUtils.addShiftKeyboardListeners(view: self)
         topView.addOnClickListener(action: actionToDismiss)
 
         contentView.addRoundCorners(radius: AppConfigs.CORNER_RADIUS_REGULAR, onlyTops: true)

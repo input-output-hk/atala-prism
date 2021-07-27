@@ -35,7 +35,7 @@ class ProfileViewController: ListingBaseViewController, UIImagePickerControllerD
         }
         return false
     }
-    
+
     // MARK: Change tab notifications
 
     @objc func onReloadAttributes() {
@@ -171,6 +171,12 @@ class ProfileViewController: ListingBaseViewController, UIImagePickerControllerD
 
     func changeScreenToVerifyIdPending() {
         ViewControllerUtils.changeScreenSegued(caller: self, segue: "VerifyIdPendingSegue", params: nil)
+    }
+
+    func changeScreenToCreatePayId() {
+        ViewControllerUtils.changeScreenPresented(caller: self, storyboardName: "PayID",
+                                                  viewControllerIdentif: "NavigationController", params: nil,
+                                                  animated: true)
     }
 
     // MARK: Profile picture 
