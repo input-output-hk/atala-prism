@@ -5,6 +5,7 @@ import androidx.lifecycle.LiveData
 import io.iohk.atala.prism.app.data.local.db.dao.ContactDao
 import io.iohk.atala.prism.app.data.local.db.dao.KycRequestDao
 import io.iohk.atala.prism.app.data.local.db.model.Contact
+import io.iohk.atala.prism.app.data.local.db.model.Credential
 import io.iohk.atala.prism.app.data.local.db.model.KycRequest
 import io.iohk.atala.prism.app.data.local.preferences.models.AcuantUserInfo
 import io.iohk.atala.prism.app.neo.common.extensions.Bitmap
@@ -102,4 +103,6 @@ class KycLocalDataSource(private val kycRequestDao: KycRequestDao, private val c
             return@withContext null
         }
     }
+
+    override fun kycCredential(): LiveData<Credential?> = kycRequestDao.kycCredential()
 }

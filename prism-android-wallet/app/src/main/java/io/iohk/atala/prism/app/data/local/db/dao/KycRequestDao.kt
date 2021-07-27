@@ -6,6 +6,8 @@ import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
 import androidx.room.Update
+import io.iohk.atala.prism.app.core.enums.CredentialType
+import io.iohk.atala.prism.app.data.local.db.model.Credential
 import io.iohk.atala.prism.app.data.local.db.model.KycRequest
 
 @Dao
@@ -21,4 +23,9 @@ abstract class KycRequestDao {
 
     @Update
     abstract suspend fun update(kycRequest: KycRequest)
+
+    @Query("SELECT * FROM credentials WHERE credential_type = :type AND deleted = 0 order by id asc LIMIT 1")
+    abstract fun kycCredential(
+        type: String = CredentialType.KYC_CREDENTIAL.value
+    ): LiveData<Credential?>
 }

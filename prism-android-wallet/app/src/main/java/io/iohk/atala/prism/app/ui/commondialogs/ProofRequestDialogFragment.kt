@@ -101,6 +101,15 @@ class ProofRequestDialogFragment : DaggerDialogFragment(), OnSelectItem<Credenti
             adapter.addAll(it)
             adapter.notifyDataSetChanged()
         }
+
+        viewModel.isDeclined.observe(
+            viewLifecycleOwner,
+            EventWrapperObserver { isDeclined ->
+                if (isDeclined) {
+                    dismiss()
+                }
+            }
+        )
     }
 
     override fun onSelect(item: Credential) {

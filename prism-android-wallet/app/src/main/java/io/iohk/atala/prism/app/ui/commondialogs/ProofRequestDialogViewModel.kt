@@ -42,6 +42,10 @@ class ProofRequestDialogViewModel @Inject constructor(private val repository: Pr
 
     val showError: LiveData<EventWrapper<Boolean>> = _showError
 
+    private val _isDeclined = MutableLiveData<EventWrapper<Boolean>>()
+
+    val isDeclined: LiveData<EventWrapper<Boolean>> = _isDeclined
+
     fun fetchProofRequestInfo(proofRequestId: Long) {
         _showLoading.value = true
         viewModelScope.launch {
@@ -71,6 +75,7 @@ class ProofRequestDialogViewModel @Inject constructor(private val repository: Pr
             viewModelScope.launch {
                 repository.declineProofRequest(it.proofRequest)
                 _showLoading.postValue(false)
+                _isDeclined.postValue(EventWrapper(true))
             }
         }
     }

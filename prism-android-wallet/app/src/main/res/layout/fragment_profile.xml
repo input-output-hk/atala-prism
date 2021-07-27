@@ -116,6 +116,7 @@
         </androidx.constraintlayout.widget.ConstraintLayout>
 
         <ScrollView
+            android:background="?colorSurface"
             android:layout_width="match_parent"
             android:layout_height="0dp"
             app:layout_constraintBottom_toBottomOf="parent"
@@ -124,6 +125,7 @@
             app:layout_constraintTop_toBottomOf="@+id/layout_profile_header">
 
             <LinearLayout
+                android:background="?colorSurface"
                 android:orientation="vertical"
                 android:id="@+id/personal_info"
                 android:layout_width="match_parent"

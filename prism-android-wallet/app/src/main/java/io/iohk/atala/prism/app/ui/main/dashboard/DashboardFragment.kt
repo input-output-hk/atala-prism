@@ -4,7 +4,6 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.Toast
 import androidx.databinding.DataBindingUtil
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.ViewModelProviders
@@ -104,8 +103,14 @@ class DashboardFragment : DaggerFragment(), OnSelectItemAction<DashboardNotifica
             CardNotificationsAdapter.Action.Remove -> viewModel.removeDashboardNotification(item)
             CardNotificationsAdapter.Action.Select -> {
                 when (item) {
-                    DashboardNotification.PayId -> findNavController().navigate(R.id.action_dashboardFragment_to_payIdObtainingNavActivity)
-                    DashboardNotification.VerifyId -> Toast.makeText(requireContext(), "To be implemented", Toast.LENGTH_SHORT).show()
+                    DashboardNotification.PayId ->
+                        findNavController().navigate(
+                            R.id.action_dashboardFragment_to_payIdObtainingNavActivity
+                        )
+                    DashboardNotification.VerifyId ->
+                        findNavController().navigate(
+                            R.id.action_dashboardFragment_to_idVerificationNavActivity
+                        )
                 }
             }
         }

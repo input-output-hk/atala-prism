@@ -25,6 +25,9 @@
         <action
             android:id="@+id/action_dashboardFragment_to_payIdObtainingNavActivity"
             app:destination="@id/payIdObtainingNavActivity" />
+        <action
+            android:id="@+id/action_dashboardFragment_to_idVerificationNavActivity"
+            app:destination="@id/idVerificationNavActivity" />
     </fragment>
 
     <fragment
@@ -37,7 +40,7 @@
         tools:layout="@layout/fragment_profile"
         android:id="@+id/profileFragment"
         android:name="io.iohk.atala.prism.app.ui.main.dashboard.ProfileFragment"
-        android:label="@string/services" />
+        android:label="@string/profile" />
 
     <fragment
         tools:layout="@layout/fragment_notifications"
@@ -65,4 +68,9 @@
         android:id="@+id/payIdObtainingNavActivity"
         android:name="io.iohk.atala.prism.app.ui.payid.PayIdObtainingNavActivity"
         android:label="PayIdObtainingNavActivity" />
+    <activity
+        tools:layout="@layout/activity_nav_id_verification"
+        android:id="@+id/idVerificationNavActivity"
+        android:name="io.iohk.atala.prism.app.ui.idverification.IdVerificationNavActivity"
+        android:label="IdVerificationNavActivity" />
 </navigation>

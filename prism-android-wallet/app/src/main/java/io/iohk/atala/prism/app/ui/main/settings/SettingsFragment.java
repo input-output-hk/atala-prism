@@ -42,8 +42,8 @@ public class SettingsFragment extends DaggerFragment {
     @Inject
     ViewModelProvider.Factory factory;
 
-    @BindView(R.id.pay_id)
-    OptionItem payIdItem;
+    @BindView(R.id.verified_identity)
+    OptionItem verifiedIdentityItem;
 
     public SettingsViewModel getViewModel() {
         SettingsViewModel viewModel = ViewModelProviders.of(this, factory).get(SettingsViewModel.class);
@@ -105,6 +105,14 @@ public class SettingsFragment extends DaggerFragment {
 
         getViewModel().getThereIsAPayId().observe(getViewLifecycleOwner(), thereIsAPayId -> {
             // TODO change text of PayId button
+        });
+
+        getViewModel().getShouldShowVerifyIdentityButton().observe(getViewLifecycleOwner(), show -> {
+                if(show){
+                    verifiedIdentityItem.setVisibility(View.VISIBLE);
+                }else{
+                    verifiedIdentityItem.setVisibility(View.GONE);
+                }
         });
     }
 

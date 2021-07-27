@@ -254,9 +254,16 @@ public class ApplicationModule {
     @Provides
     public PreferencesRepository providePreferencesRepository(ContactsLocalDataSourceInterface localDataSource,
                                                                     PayIdLocalDataSourceInterface payIdLocalDataSource,
+                                                                    KycLocalDataSourceInterface kycLocalDataSource,
                                                                     SessionLocalDataSourceInterface sessionLocalDataSource,
                                                                     PreferencesLocalDataSourceInterface preferencesLocalDataSource){
-        return new PreferencesRepository(payIdLocalDataSource, localDataSource,sessionLocalDataSource,preferencesLocalDataSource);
+        return new PreferencesRepository(
+                payIdLocalDataSource,
+                localDataSource,
+                kycLocalDataSource,
+                sessionLocalDataSource,
+                preferencesLocalDataSource
+        );
     }
 
     /*
@@ -288,10 +295,16 @@ public class ApplicationModule {
     public DashboardRepository provideDashboardRepository(
             PayIdLocalDataSourceInterface payIdLocalDataSource,
             ActivityHistoriesLocalDataSourceInterface activityHistoriesLocalDataSource,
+            KycLocalDataSourceInterface kycLocalDataSource,
             SessionLocalDataSourceInterface sessionLocalDataSource,
             PreferencesLocalDataSourceInterface preferencesLocalDataSource
     ) {
-        return new DashboardRepository(payIdLocalDataSource, activityHistoriesLocalDataSource, sessionLocalDataSource, preferencesLocalDataSource);
+        return new DashboardRepository(
+                payIdLocalDataSource,
+                activityHistoriesLocalDataSource,
+                kycLocalDataSource,
+                sessionLocalDataSource,
+                preferencesLocalDataSource);
     }
 
     /*

@@ -19,6 +19,9 @@
     <string name="date_text_view_hour_ago_text">%1$d hour ago</string>
     <string name="date_text_view_hours_ago_text">%1$d hours ago</string>
 
+    <!-- layout/error_popup.xml -->
+    <string name="error_popup_accept">Accept</string>
+
     <!-- layout/dialog_success.xml -->
     <string name="dialog_success_ok_button">OK</string>
     <string name="generic_error_message">Something went wrong</string>

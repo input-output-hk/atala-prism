@@ -18,6 +18,11 @@ class SettingsViewModel @Inject constructor(private val repository: PreferencesR
         it != null
     }
 
+    val shouldShowVerifyIdentityButton: LiveData<Boolean> =
+        Transformations.map(repository.kycCredential) {
+            it == null
+        }
+
     fun removeAllLocalData() {
         viewModelScope.launch {
             try {
