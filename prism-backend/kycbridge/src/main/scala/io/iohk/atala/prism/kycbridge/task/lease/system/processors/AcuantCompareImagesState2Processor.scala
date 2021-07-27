@@ -68,6 +68,9 @@ class AcuantCompareImagesState2Processor(
                 )
             )
           case false =>
+            logger.warn(
+              s"Face match failed with score ${faceMatchResult.score}, document image size: ${frontScannedImage.size}, selfie image size: ${acuantData.selfieImage.value.size}"
+            )
             connectorService
               .sendResponseMessage(
                 message = FaceMatchFailedError(faceMatchResult).toAtalaMessage,
