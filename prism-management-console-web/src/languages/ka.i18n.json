@@ -8,7 +8,8 @@
     "next": "Next",
     "done": "Done",
     "save": "Save",
-    "saveForLater": "Save & Continue later"
+    "saveForLater": "Save & Continue later",
+    "sortBy": "Sort by"
   },
   "commonWords": {
     "and": "and",
@@ -311,6 +312,7 @@
         "credentialType": "Credential Type",
         "contactName": "Contact Name",
         "externalId": "External ID",
+        "createdOn": "Creation Date",
         "dateSigned": "Date Signed",
         "dateReceived": "Date Received",
         "contactStatus": "Contact Status",

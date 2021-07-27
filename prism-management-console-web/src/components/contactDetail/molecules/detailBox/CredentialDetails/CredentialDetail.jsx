@@ -5,16 +5,11 @@ import CustomButton from '../../../../common/Atoms/CustomButton/CustomButton';
 import CredentialSummaryDetail from '../../../../common/Organisms/Detail/CredentialSummaryDetail';
 import { mockHtmlCredential } from '../../../../../helpers/mockData';
 import { backendDateFormat } from '../../../../../helpers/formatters';
-import { credentialTypesShape } from '../../../../../helpers/propShapes';
+import { credentialShape } from '../../../../../helpers/propShapes';
 
 import './style.scss';
 
-const CredentialDetail = ({
-  credential,
-  credentialTypes,
-  isCredentialIssued,
-  verifyCredential
-}) => {
+const CredentialDetail = ({ credential, isCredentialIssued, verifyCredential }) => {
   const { credentialType, publicationstoredat } = credential;
   const { t } = useTranslation();
 
@@ -27,7 +22,7 @@ const CredentialDetail = ({
     setShowDrawer(true);
   };
 
-  const { name, logo: credentialLogo } = credentialTypes[credentialType];
+  const { name, logo: credentialLogo } = credential.credentialTypeDetails;
 
   const renderDateSigned = () => (
     <div className="credentialData">
@@ -87,12 +82,7 @@ CredentialDetail.defaultProps = {
 };
 
 CredentialDetail.propTypes = {
-  credential: PropTypes.shape({
-    credentialType: PropTypes.string,
-    publicationstoredat: PropTypes.number,
-    html: PropTypes.string
-  }),
-  credentialTypes: PropTypes.shape(credentialTypesShape).isRequired,
+  credential: PropTypes.shape(credentialShape),
   isCredentialIssued: PropTypes.bool,
   verifyCredential: PropTypes.func.isRequired
 };

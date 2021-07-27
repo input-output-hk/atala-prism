@@ -1,34 +1,23 @@
 import React from 'react';
 import PropTypes from 'prop-types';
-import { useTranslation } from 'react-i18next';
-import { Checkbox } from 'antd';
-import { PulseLoader } from 'react-spinners';
 import CredentialButtons from '../../Atoms/Buttons/CredentialButtons';
+import SearchBar from '../../Atoms/Buttons/SearchBar';
+import { credentialTypeShape } from '../../../../helpers/propShapes';
 
 const BulkActionsHeader = ({
   bulkActionsProps,
   loadingSelection,
-  selectedLength,
-  selectedRowKeys
+  selectedRowKeys,
+  filterProps
 }) => {
-  const { t } = useTranslation();
-  const { selectAllProps } = bulkActionsProps;
   const disableActions = !selectedRowKeys?.length || loadingSelection;
 
   return (
     <div className="BulkActionsRow">
-      <Checkbox className="checkboxCredential" {...selectAllProps}>
-        {loadingSelection ? (
-          <PulseLoader size={3} color="#FFAEB3" />
-        ) : (
-          <span>
-            {t('credentials.actions.selectAll')}
-            {selectedLength ? `  (${selectedLength})  ` : null}
-          </span>
-        )}
-      </Checkbox>
+      <SearchBar {...bulkActionsProps} filterProps={filterProps} />
       <CredentialButtons
         {...bulkActionsProps}
+        filterProps={filterProps}
         disableRevoke={disableActions}
         disableSign={disableActions}
         disableSend={disableActions}
@@ -56,7 +45,20 @@ BulkActionsHeader.propTypes = {
   }).isRequired,
   loadingSelection: PropTypes.bool,
   selectedLength: PropTypes.number,
-  selectedRowKeys: PropTypes.arrayOf(PropTypes.string)
+  selectedRowKeys: PropTypes.arrayOf(PropTypes.string),
+  filterProps: PropTypes.shape({
+    name: PropTypes.string,
+    setName: PropTypes.func,
+    credentialTypes: PropTypes.arrayOf(PropTypes.shape(credentialTypeShape)),
+    credentialType: PropTypes.string,
+    setCredentialType: PropTypes.func,
+    credentialStatus: PropTypes.number,
+    setCredentialStatus: PropTypes.func,
+    contactStatus: PropTypes.string,
+    setContactStatus: PropTypes.func,
+    date: PropTypes.string,
+    setDate: PropTypes.func
+  }).isRequired
 };
 
 export default BulkActionsHeader;

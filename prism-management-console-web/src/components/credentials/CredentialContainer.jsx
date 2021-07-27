@@ -21,12 +21,15 @@ import {
 import { getTargetCredentials } from '../../helpers/credentialActions';
 import { useCredentialActions } from '../../hooks/useCredentialActions';
 import { getCheckedAndIndeterminateProps, handleSelectAll } from '../../helpers/selectionHelpers';
+import { useCredentialTypes } from '../../hooks/useCredentialTypes';
 
 const CredentialContainer = ({ api }) => {
   const { t } = useTranslation();
 
   const [loadingSelection, setLoadingSelection] = useState(false);
   const [activeTab, setActiveTab] = useState(CREDENTIALS_ISSUED);
+
+  const { credentialTypes } = useCredentialTypes(api.credentialTypesManager);
 
   const {
     credentialsIssued,
@@ -35,10 +38,13 @@ const CredentialContainer = ({ api }) => {
     filteredCredentialsIssued,
     filtersIssued,
     hasMoreIssued,
-    noIssuedCredentials,
     isLoading: isLoadingIssued,
     isSearching: isSearchingIssued,
-    fetchAll
+    fetchAll,
+    sortingBy,
+    setSortingBy,
+    sortDirection,
+    setSortDirection
   } = useCredentialsIssuedListWithFilters(api.credentialsManager);
 
   const {
@@ -108,6 +114,12 @@ const CredentialContainer = ({ api }) => {
           selectedRowKeys: selectedCredentials,
           type: 'checkbox',
           onChange: setSelectedCredentials
+        },
+        sortingProps: {
+          sortingBy,
+          setSortingBy,
+          sortDirection,
+          setSortDirection
         }
       },
       fetchCredentials: fetchCredentialsIssued,
@@ -119,8 +131,7 @@ const CredentialContainer = ({ api }) => {
         selectAllProps
       },
       filterProps: filtersIssued,
-      showEmpty: noIssuedCredentials,
-      credentialsTypes: api.credentialsManager.getCredentialTypes(),
+      credentialTypes,
       loadingSelection
     },
     [CREDENTIALS_RECEIVED]: {
@@ -131,7 +142,7 @@ const CredentialContainer = ({ api }) => {
       bulkActionsProps: {},
       filterProps: filtersReceived,
       showEmpty: noReceivedCredentials,
-      credentialsTypes: api.credentialsManager.getCredentialTypes()
+      credentialTypes
     }
   };
 
@@ -172,6 +183,10 @@ CredentialContainer.propTypes = {
     }).isRequired,
     credentialsReceivedManager: PropTypes.shape({
       getReceivedCredentials: PropTypes.func.isRequired
+    }),
+    credentialTypesManager: PropTypes.shape({
+      getCredentialTypes: PropTypes.func.isRequired,
+      getCredentialTypeDetails: PropTypes.func.isRequired
     }),
     wallet: PropTypes.shape({
       signCredentials: PropTypes.func.isRequired,

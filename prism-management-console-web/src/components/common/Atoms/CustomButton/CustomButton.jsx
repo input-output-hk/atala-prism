@@ -11,10 +11,11 @@ import './_style.scss';
 //    - theme-outline
 //    - theme-grey
 //    - theme-link
-const CustomButton = ({ buttonText, buttonProps, loading, className }) => (
+const CustomButton = ({ buttonText, buttonProps, loading, className, ...propagatedProps }) => (
   <Button
+    {...propagatedProps}
     {...buttonProps}
-    className={`${buttonProps.className} ${className}`}
+    className={`${buttonProps?.className} ${className}`}
     disabled={buttonProps?.disabled || loading}
   >
     {loading ? <SimpleLoading /> : buttonText}

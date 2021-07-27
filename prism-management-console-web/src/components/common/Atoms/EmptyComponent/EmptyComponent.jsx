@@ -7,6 +7,7 @@ import './_style.scss';
 const EmptyComponent = ({ photoSrc, button, model, isFilter }) => {
   const { t } = useTranslation();
   const title = isFilter ? 'filterTitle' : 'title';
+
   return (
     <div className="EmptyState">
       {photoSrc && <img src={photoSrc} alt={t('emptyComponent.photoAlt', { model })} />}

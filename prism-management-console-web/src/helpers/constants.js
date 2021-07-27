@@ -60,6 +60,13 @@ export const VALID_CREDENTIAL_STATUSES = {
 
 export const CREDENTIAL_STATUSES_TRANSLATOR = __.invert(CREDENTIAL_STATUSES);
 
+export const CREDENTIAL_TYPE_STATUSES = {
+  CREDENTIAL_TYPE_UNKNOWN: 0,
+  CREDENTIAL_TYPE_DRAFT: 1,
+  CREDENTIAL_TYPE_READY: 2,
+  CREDENTIAL_TYPE_ARCHIVED: 3
+};
+
 // eslint-disable-next-line quotes
 export const EXAMPLE_DEGREE_NAME = "Bachelor's in Engineering";
 export const EXAMPLE_UNIVERSITY_NANE = 'Free University Tbilisi';
@@ -221,6 +228,12 @@ export const GROUP_SORTING_KEYS = {
   name: 'NAME',
   createdAt: 'CREATED_AT',
   numberOfContacts: 'NUMBER_OF_CONTACTS'
+};
+
+// Credentials
+export const CREDENTIAL_SORTING_KEYS = {
+  credentialType: 'CREDENTIAL_TYPE',
+  createdOn: 'CREATED_ON'
 };
 
 // Contacts

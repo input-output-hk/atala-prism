@@ -30,8 +30,6 @@ const ContactContainer = ({ api }) => {
     []
   );
 
-  const credentialTypes = api.credentialsManager.getCredentialTypes();
-
   const getContact = useCallback(() => {
     if (loading.contact) return;
     setLoadingByKey('contact', true);
@@ -174,7 +172,6 @@ const ContactContainer = ({ api }) => {
       editing={isEditing}
       issuedCredentials={issuedCredentials}
       receivedCredentials={receivedCredentials}
-      credentialTypes={credentialTypes}
       verifyCredential={verifyCredential}
       onDeleteGroup={onDeleteGroup}
       updateContact={updateContact}
@@ -188,7 +185,6 @@ ContactContainer.propTypes = {
     groupsManager: PropTypes.shape({ getGroups: PropTypes.func, updateGroup: PropTypes.func }),
     credentialsManager: PropTypes.shape({
       getContactCredentials: PropTypes.func,
-      getCredentialTypes: PropTypes.func,
       getBlockchainData: PropTypes.func
     }),
     credentialsReceivedManager: PropTypes.shape({ getReceivedCredentials: PropTypes.func }),

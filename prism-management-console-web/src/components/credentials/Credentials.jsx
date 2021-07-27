@@ -2,7 +2,6 @@ import React, { useState } from 'react';
 import { Tabs } from 'antd';
 import { useTranslation } from 'react-i18next';
 import PropTypes from 'prop-types';
-import CredentialsFilter from './Molecules/Filters/CredentialsFilter/CredentialsFilter';
 import CredentialSummaryDetail from '../common/Organisms/Detail/CredentialSummaryDetail';
 import { credentialTabShape } from '../../helpers/propShapes';
 import CreateCredentialsButton from './Atoms/Buttons/CreateCredentialsButton';
@@ -55,7 +54,6 @@ const Credentials = ({ tabProps, setActiveTab, loading, verifyCredential }) => {
       <div className="tabContent">
         <Tabs defaultActiveKey={CREDENTIALS_ISSUED} onChange={setActiveTab}>
           <TabPane key={CREDENTIALS_ISSUED} tab={t('credentials.tabs.credentialsIssued')}>
-            <CredentialsFilter {...tabProps[CREDENTIALS_ISSUED]} isIssued />
             <CredentialsIssued
               {...tabProps[CREDENTIALS_ISSUED]}
               showCredentialData={showCredentialData}
@@ -64,7 +62,6 @@ const Credentials = ({ tabProps, setActiveTab, loading, verifyCredential }) => {
             />
           </TabPane>
           <TabPane key={CREDENTIALS_RECEIVED} tab={t('credentials.tabs.credentialsReceived')}>
-            <CredentialsFilter {...tabProps[CREDENTIALS_RECEIVED]} />
             <CredentialsReceived
               {...tabProps[CREDENTIALS_RECEIVED]}
               showCredentialData={showCredentialData}

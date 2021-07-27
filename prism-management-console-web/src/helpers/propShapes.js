@@ -94,7 +94,13 @@ export const credentialTabShape = {
       selectedRowKeys: arrayOf(string)
     }),
     hasMore: bool,
-    searching: bool
+    searching: bool,
+    sortingProps: shape({
+      sortingBy: string,
+      setSortingBy: func,
+      sortDirection: string,
+      setSortDirection: func
+    }).isRequired
   }).isRequired,
   bulkActionsProps: shape({
     signSelectedCredentials: func,

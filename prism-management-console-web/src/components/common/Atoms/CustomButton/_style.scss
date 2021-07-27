@@ -1,4 +1,4 @@
-@import '../../../../css/general_styling';
+@import "../../../../css/general_styling";
 
 .ant-btn {
   @include primary-text($button, $dark-grey);
@@ -80,5 +80,13 @@
   &:focus {
     background-color: $dark-grey;
     color: $white;
+  }
+}
+
+.ButtonContent {
+  display: flex;
+  .TextContent,
+  .ChildrenContent {
+    margin: 0 .5em;
   }
 }

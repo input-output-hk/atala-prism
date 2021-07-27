@@ -10,7 +10,7 @@ import contactIcon from '../../images/holder-default-avatar.svg';
 import CredentialDetail from './molecules/detailBox/CredentialDetails/CredentialDetail';
 import SimpleLoading from '../common/Atoms/SimpleLoading/SimpleLoading';
 import { useTranslationWithPrefix } from '../../hooks/useTranslationWithPrefix';
-import { credentialShape, credentialTypesShape } from '../../helpers/propShapes';
+import { credentialShape } from '../../helpers/propShapes';
 import EditContactModal from './organisms/EditContactModal/EditContactModal';
 
 import './_style.scss';
@@ -27,7 +27,6 @@ const Contact = ({
   editing,
   issuedCredentials,
   receivedCredentials,
-  credentialTypes,
   verifyCredential,
   onDeleteGroup,
   updateContact,
@@ -102,7 +101,6 @@ const Contact = ({
                 issuedCredentials.map(credential => (
                   <CredentialDetail
                     credential={credential}
-                    credentialTypes={credentialTypes}
                     isCredentialIssued
                     verifyCredential={verifyCredential}
                   />
@@ -117,11 +115,7 @@ const Contact = ({
                 <SimpleLoading size="xs" />
               ) : (
                 receivedCredentials.map(credential => (
-                  <CredentialDetail
-                    credential={credential}
-                    credentialTypes={credentialTypes}
-                    verifyCredential={verifyCredential}
-                  />
+                  <CredentialDetail credential={credential} verifyCredential={verifyCredential} />
                 ))
               )}
             </div>
@@ -176,7 +170,6 @@ Contact.propTypes = {
   editing: PropTypes.bool,
   issuedCredentials: PropTypes.arrayOf(PropTypes.shape(credentialShape)),
   receivedCredentials: PropTypes.arrayOf(PropTypes.shape(credentialShape)),
-  credentialTypes: PropTypes.shape(credentialTypesShape).isRequired,
   verifyCredential: PropTypes.func.isRequired,
   onDeleteGroup: PropTypes.func.isRequired,
   updateContact: PropTypes.func.isRequired,
