@@ -11,6 +11,7 @@ import io.iohk.atala.prism.errors.PrismError
 import io.iohk.atala.prism.mirror.payid._
 import io.iohk.atala.prism.protos.connector_models.ReceivedMessage
 import io.iohk.atala.prism.protos.credential_models.AtalaMessage
+import io.iohk.atala.prism.protos.credential_models
 import io.iohk.atala.prism.repositories.PostgresRepositorySpec
 import io.iohk.atala.prism.stubs.NodeClientServiceStub
 import monix.eval.Task
@@ -234,6 +235,34 @@ class CardanoAddressInfoServiceSpec extends PostgresRepositorySpec[Task] with Mo
         message = messageWithAlreadyRegisteredName,
         updatedPayIdName = None,
         processingResultAssertion = _ mustBe an[Right[PrismError, Some[AtalaMessage]]]
+      )
+    }
+
+    "treat pay id names the same regardless of case" in new CardanoAddressInfoServiceFixtures {
+      val messageWithLowercaseName =
+        payIdNameRegistrationMessage1.copy(message =
+          payIdNameRegistrationToAtalaMessage(connectionPayIdName2.name.toLowerCase)
+        )
+
+      testNameRegistration(
+        connectionToUpdate = connection1,
+        message = messageWithLowercaseName,
+        updatedPayIdName = None,
+        processingResultAssertion = _ mustBe Right(
+          Some(
+            AtalaMessage().withMirrorMessage(
+              credential_models
+                .MirrorMessage()
+                .withPayIdNameTakenMessage(
+                  credential_models
+                    .PayIdNameTakenMessage()
+                    .withMessage(
+                      "Cannot register pay id name: payidname2, name has already been registered by connection token: token2"
+                    )
+                )
+            )
+          )
+        )
       )
     }
 

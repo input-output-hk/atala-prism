@@ -370,8 +370,8 @@ class CardanoAddressInfoService(tx: Transactor[Task], httpConfig: HttpConfig, no
           )
           ConnectionDao.update(connection.copy(payIdName = Some(payIdName))).as(response)
         } else {
-          val message = s"Cannot register pay id name: $payIdName, " +
-            s"name has already been registered by connection token: ${connectionWithTheSamePayIdName.map(_.token)}"
+          val message = s"Cannot register pay id name: ${payIdName.name}, " +
+            s"name has already been registered by connection token: ${connectionWithTheSamePayIdName.map(_.token.token).getOrElse("")}"
           val respone =
             AtalaMessage().withMirrorMessage(MirrorMessage().withPayIdNameTakenMessage(PayIdNameTakenMessage(message)))
           doobieConnection.pure(respone)

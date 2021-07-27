@@ -44,7 +44,7 @@ object ConnectionDao {
     sql"""
     | SELECT token, id, state, updated_at, holder_did, pay_id_name
     | FROM connections
-    | WHERE pay_id_name = $payIdName
+    | WHERE LOWER(pay_id_name) = ${payIdName.name.toLowerCase}
     """.stripMargin.query[Connection].option
   }
 

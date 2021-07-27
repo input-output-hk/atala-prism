@@ -65,6 +65,15 @@ class ConnectionDaoSpec extends PostgresRepositorySpec[Task] with MirrorFixtures
       } yield connection).transact(database).runSyncUnsafe() mustBe Some(connection2)
     }
 
+    "return connection by pay id name regardless of case" in {
+      (for {
+        _ <- ConnectionDao.insert(connection1)
+        _ <- ConnectionDao.insert(connection2)
+        connection <-
+          ConnectionDao.findByPayIdName(connectionPayIdName2.copy(name = connectionPayIdName2.name.toLowerCase))
+      } yield connection).transact(database).runSyncUnsafe() mustBe Some(connection2)
+    }
+
     "return connection by many ids" in {
       (for {
         _ <- ConnectionDao.insert(connection1)
