@@ -17,6 +17,7 @@ import io.iohk.atala.prism.logging.Util._
 import org.slf4j.{Logger, LoggerFactory}
 import tofu.higherKind.Mid
 import tofu.logging.Logging
+import tofu.syntax.monoid.TofuSemigroupOps
 
 @derive(applyK)
 trait RequestNoncesRepository[F[_]] {
@@ -26,9 +27,11 @@ trait RequestNoncesRepository[F[_]] {
 object RequestNoncesRepository {
   object PostgresImpl {
     def create[F[_]: BracketThrow: TimeMeasureMetric: Logging](xa: Transactor[F]): RequestNoncesRepository[F] = {
-      val metrics: RequestNoncesRepository[Mid[F, *]] =
-        new RequestNoncesRepositoryMetrics[F]("RequestNoncesRepositoryPostgresImpl")
-      metrics attach new PostgresImpl(xa)
+      val mid =
+        (new RequestNoncesRepositoryMetrics: RequestNoncesRepository[
+          Mid[F, *]
+        ]) |+| (new RequestNoncesRepositoryLogging: RequestNoncesRepository[Mid[F, *]])
+      mid attach new PostgresImpl(xa)
     }
   }
 }
@@ -44,8 +47,9 @@ private class PostgresImpl[F[_]: BracketThrow](xa: Transactor[F]) extends Reques
       .transact(xa)
 }
 
-private final class RequestNoncesRepositoryMetrics[F[_]: TimeMeasureMetric: BracketThrow](repoName: String)
+private final class RequestNoncesRepositoryMetrics[F[_]: TimeMeasureMetric: BracketThrow]
     extends RequestNoncesRepository[Mid[F, *]] {
+  val repoName = "RequestNoncesRepositoryPostgresImpl"
   private lazy val burnTimer = TimeMeasureUtil.createDBQueryTimer(repoName, "burn")
   override def burn(did: DID, requestNonce: RequestNonce): Mid[F, Unit] = _.measureOperationTime(burnTimer)
 }

@@ -31,7 +31,7 @@ trait EncryptedDataVaultService[F[_]] {
 
 object EncryptedDataVaultService {
   def create[F[_]: MonadThrow: Logging](payloadsRepository: PayloadsRepository[F]): EncryptedDataVaultService[F] = {
-    val logging: EncryptedDataVaultService[Mid[F, *]] = new EncyptedDataVaultServiceLogging[F]()
+    val logging: EncryptedDataVaultService[Mid[F, *]] = new EncyptedDataVaultServiceLogging
     logging attach new EncyptedDataVaultServiceImpl(payloadsRepository)
   }
 }

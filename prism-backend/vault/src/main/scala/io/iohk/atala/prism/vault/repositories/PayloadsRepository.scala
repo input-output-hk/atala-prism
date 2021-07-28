@@ -30,9 +30,9 @@ object PayloadsRepository {
   def create[F[_]: LoggingF](
       xa: Transactor[F]
   )(implicit br: Bracket[F, Throwable], m: TimeMeasureMetric[F]): PayloadsRepository[F] = {
-    val mid = (new PayloadsRepoMetrics[F](): PayloadsRepository[Mid[F, *]]) |+| (new PayloadsRepoLogging[
-      F
-    ](): PayloadsRepository[Mid[F, *]])
+    val mid = (new PayloadsRepoMetrics: PayloadsRepository[Mid[F, *]]) |+| (new PayloadsRepoLogging: PayloadsRepository[
+      Mid[F, *]
+    ])
     mid attach new PayloadsRepositoryImpl(xa)
   }
 }
