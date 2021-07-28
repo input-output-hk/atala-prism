@@ -35,6 +35,7 @@ class AcuantStartProcessForConnectionStateProcessorSpec extends PostgresReposito
 
       result mustBe ProcessingTaskResult.ProcessingTaskFinished
       connection.value.acuantDocumentInstanceId.value.id mustBe newDocumentInstanceResponseBody.documentId
+      connectorClientStub.startAcuantProcessReplyTo mustBe acuantStartProcessForConnectionData.receivedMessageId
     }
 
     "override existing Acuant data" in new Fixtures {

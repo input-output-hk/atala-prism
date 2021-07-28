@@ -25,6 +25,7 @@ class ConnectorClientServiceStub(
 ) extends ConnectorClientService {
 
   var sendMessageInvokeCount: AtomicInteger = new AtomicInteger(0)
+  var startAcuantProcessReplyTo = ""
 
   def sendMessage(message: SendMessageRequest): Task[SendMessageResponse] = {
     sendMessageInvokeCount.incrementAndGet()
@@ -62,7 +63,11 @@ class ConnectorClientServiceStub(
 
   def sendStartAcuantProcess(
       connectionId: ConnectionId,
-      startAcuantProcess: StartAcuantProcess
-  ): Task[SendMessageResponse] = Task.pure(SendMessageResponse())
+      startAcuantProcess: StartAcuantProcess,
+      replyTo: Option[String]
+  ): Task[SendMessageResponse] = {
+    startAcuantProcessReplyTo = replyTo.getOrElse("")
+    Task.pure(SendMessageResponse())
+  }
 
 }

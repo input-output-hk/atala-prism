@@ -75,7 +75,8 @@ class AcuantStartProcessForConnectionStateProcessor(
         connectorService
           .sendStartAcuantProcess(
             connectionId,
-            StartAcuantProcess(documentInstanceResponseBody.documentId, tokenResponseBody.accessToken)
+            StartAcuantProcess(documentInstanceResponseBody.documentId, tokenResponseBody.accessToken),
+            Some(acuantData.receivedMessageId)
           )
           .redeem(
             ex => Left(CannotSendConnectorMessage(ex.getMessage)),

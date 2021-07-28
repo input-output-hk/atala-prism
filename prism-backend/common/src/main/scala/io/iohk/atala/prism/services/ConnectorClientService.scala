@@ -64,7 +64,8 @@ trait ConnectorClientService {
 
   def sendStartAcuantProcess(
       connectionId: ConnectionId,
-      startAcuantProcess: StartAcuantProcess
+      startAcuantProcess: StartAcuantProcess,
+      replyTo: Option[String]
   ): Task[SendMessageResponse]
 
 }
@@ -183,12 +184,15 @@ class ConnectorClientServiceImpl(
 
   def sendStartAcuantProcess(
       connectionId: ConnectionId,
-      startAcuantProcess: StartAcuantProcess
+      startAcuantProcess: StartAcuantProcess,
+      replyTo: Option[String]
   ): Task[SendMessageResponse] = {
     val kycBridgeMessage =
-      AtalaMessage().withKycBridgeMessage(
-        KycBridgeMessage(KycBridgeMessage.Message.StartAcuantProcess(startAcuantProcess))
-      )
+      AtalaMessage()
+        .withKycBridgeMessage(
+          KycBridgeMessage(KycBridgeMessage.Message.StartAcuantProcess(startAcuantProcess))
+        )
+        .withReplyTo(replyTo.getOrElse(""))
 
     val request = SendMessageRequest(connectionId.uuid.toString, kycBridgeMessage.toByteString)
 
