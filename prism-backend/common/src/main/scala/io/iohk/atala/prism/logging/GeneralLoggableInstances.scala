@@ -5,7 +5,7 @@ import io.iohk.atala.prism.identity.DID
 import tofu.logging._
 
 /**
-  * Used for classes from the external world (Kotlin classes, for example, etc.)
+  * Used for libraries classes from the outer world (Kotlin prism-sdk classes for example etc.)
   */
 object GeneralLoggableInstances {
 
