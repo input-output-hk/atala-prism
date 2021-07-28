@@ -1,6 +1,5 @@
 package io.iohk.atala.prism.node.services
 
-import com.google.protobuf.ByteString
 import io.circe.Json
 import io.iohk.atala.prism.AtalaWithPostgresSpec
 import io.iohk.atala.prism.models.{
@@ -52,7 +51,7 @@ class CardanoLedgerServiceSpec extends AtalaWithPostgresSpec {
   "publish" should {
     val atalaObject = node_internal
       .AtalaObject()
-      .withBlock(node_internal.AtalaObject.Block.BlockContent(node_internal.AtalaBlock().withVersion("1")))
+      .withBlockContent(node_internal.AtalaBlock().withVersion("1"))
     val expectedWalletApiPath = s"v2/wallets/$walletId/transactions"
 
     "publish an object" in {
@@ -153,8 +152,8 @@ class CardanoLedgerServiceSpec extends AtalaWithPostgresSpec {
         val block = allBlocks(blockWithNotification)
         val atalaObject = node_internal
           .AtalaObject()
-          .withBlock(
-            node_internal.AtalaObject.Block.BlockHash(ByteString.copyFrom(TestCardanoBlockRepository.random32Bytes()))
+          .withBlockContent(
+            node_internal.AtalaBlock(version = "1.0", operations = Seq())
           )
         val blockIndex = block.transactions.size
         val transaction = Transaction(

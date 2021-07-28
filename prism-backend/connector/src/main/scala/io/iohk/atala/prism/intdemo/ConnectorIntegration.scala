@@ -5,7 +5,7 @@ import io.iohk.atala.prism.connector.model._
 import io.iohk.atala.prism.connector.services.{ConnectionsService, MessagesService}
 import io.iohk.atala.prism.models.ParticipantId
 import io.iohk.atala.prism.protos.credential_models
-import io.iohk.atala.prism.protos.credential_models.{AtalaMessage, IssuerSentCredential}
+import io.iohk.atala.prism.protos.credential_models.{AtalaMessage}
 import org.slf4j.{Logger, LoggerFactory}
 
 import scala.concurrent.{ExecutionContext, Future}
@@ -14,7 +14,7 @@ trait ConnectorIntegration {
   def sendCredential(
       senderId: ParticipantId,
       connectionId: ConnectionId,
-      credential: credential_models.Credential
+      credential: credential_models.PlainTextCredential
   ): Future[MessageId]
 
   def sendProofRequest(
@@ -48,12 +48,12 @@ object ConnectorIntegration {
     override def sendCredential(
         senderId: ParticipantId,
         connectionId: ConnectionId,
-        credential: credential_models.Credential
+        credential: credential_models.PlainTextCredential
     ): Future[MessageId] = {
       sendMessage(
         senderId,
         connectionId,
-        AtalaMessage().withIssuerSentCredential(IssuerSentCredential().withCredential(credential)).toByteArray
+        AtalaMessage().withPlainCredential(credential).toByteArray
       )
     }
 

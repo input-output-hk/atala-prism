@@ -11,27 +11,25 @@ import io.iohk.atala.prism.crypto.SHA256Digest
 import io.iohk.atala.prism.identity.DID
 import io.iohk.atala.prism.metrics.RequestMeasureUtil
 import io.iohk.atala.prism.metrics.RequestMeasureUtil.{FutureMetricsOps, measureRequestFuture}
-import io.iohk.atala.prism.models.ProtoCodecs._
 import io.iohk.atala.prism.node.errors.NodeError
 import io.iohk.atala.prism.node.grpc.ProtoCodecs
+import io.iohk.atala.prism.node.logging.NodeLogging.{logWithTraceId, withLog}
+import io.iohk.atala.prism.node.models.nodeState.DIDDataState
 import io.iohk.atala.prism.node.models.{
   AtalaObjectTransactionSubmissionStatus,
   AtalaOperationInfo,
   AtalaOperationStatus
 }
-import io.iohk.atala.prism.node.models.nodeState.DIDDataState
 import io.iohk.atala.prism.node.operations._
 import io.iohk.atala.prism.node.repositories.{CredentialBatchesRepository, DIDDataRepository}
-import io.iohk.atala.prism.node.services.ObjectManagementService.AtalaObjectTransactionStatus
 import io.iohk.atala.prism.node.services.ObjectManagementService
-import io.iohk.atala.prism.protos.common_models.{HealthCheckRequest, HealthCheckResponse, TransactionStatus}
+import io.iohk.atala.prism.protos.common_models.{HealthCheckRequest, HealthCheckResponse}
 import io.iohk.atala.prism.protos.node_api._
 import io.iohk.atala.prism.protos.node_models.AtalaOperation.Operation
 import io.iohk.atala.prism.protos.node_models.{OperationOutput, SignedAtalaOperation}
 import io.iohk.atala.prism.protos.{common_models, node_api, node_models}
 import io.iohk.atala.prism.utils.syntax._
 import org.slf4j.{Logger, LoggerFactory}
-import scalapb.GeneratedMessage
 
 import java.time.Instant
 import scala.concurrent.{ExecutionContext, Future}
@@ -54,15 +52,17 @@ class NodeServiceImpl(
 
   override def getDidDocument(request: node_api.GetDidDocumentRequest): Future[node_api.GetDidDocumentResponse] = {
     val methodName = "getDidDocument"
-    implicit val didDataRepositoryImplicit: DIDDataRepository[IO] = didDataRepository
 
-    logRequest(methodName, request)
+    implicit val didDataRepositoryImplicit: DIDDataRepository[IO] = didDataRepository
     measureRequestFuture(serviceName, methodName) {
-      for {
-        lastSyncedTimestamp <- objectManagement.getLastSyncedTimestamp
-        response <- getDidDocument(request.did, methodName)
-      } yield response.withLastSyncedBlockTimestamp(lastSyncedTimestamp.toProtoTimestamp)
+      withLog(methodName, request) { _ =>
+        for {
+          lastSyncedTimestamp <- objectManagement.getLastSyncedTimestamp
+          response <- getDidDocument(request.did, methodName)
+        } yield response.withLastSyncedBlockTimestamp(lastSyncedTimestamp.toProtoTimestamp)
+      }
     }
+
   }
 
   private def getDidDocument(didRequestStr: String, methodName: String)(implicit
@@ -102,87 +102,89 @@ class NodeServiceImpl(
 
   override def createDID(request: node_api.CreateDIDRequest): Future[node_api.CreateDIDResponse] = {
     val methodName = "createDID"
-    logRequest(methodName, request)
+
     val operationF = getFromOptionOrFailF(request.signedOperation, "signed_operation missing", methodName)
+
     measureRequestFuture(serviceName, methodName) {
-      for {
-        operation <- operationF
-        parsedOp <- errorEitherToFutureAndCount(methodName, CreateDIDOperation.parseWithMockedLedgerData(operation))
-        operationId <- objectManagement.publishSingleAtalaOperation(operation)
-      } yield {
-        logAndReturnResponse(
-          "createDID",
+      withLog(methodName, request) { traceId =>
+        for {
+          operation <- operationF
+          _ = logWithTraceId(methodName, traceId, "operationId" -> s"${AtalaOperationId.of(operation).toString}")
+          parsedOp <- errorEitherToFutureAndCount(methodName, CreateDIDOperation.parseWithMockedLedgerData(operation))
+          operationId <- objectManagement.publishSingleAtalaOperation(operation)
+        } yield {
           node_api
             .CreateDIDResponse(id = parsedOp.id.value)
             .withOperationId(operationId.toProtoByteString)
-        )
+        }
       }
     }
+
   }
 
   override def updateDID(request: node_api.UpdateDIDRequest): Future[node_api.UpdateDIDResponse] = {
     val methodName = "updateDID"
+
     val operationF = getFromOptionOrFailF(request.signedOperation, "signed_operation missing", methodName)
     measureRequestFuture(serviceName, methodName) {
-      for {
-        operation <- operationF
-        _ <- errorEitherToFutureAndCount(methodName, UpdateDIDOperation.validate(operation))
-        operationId <- objectManagement.publishSingleAtalaOperation(operation)
-      } yield {
-        logAndReturnResponse(
-          "updateDID",
+      withLog(methodName, request) { traceId =>
+        for {
+          operation <- operationF
+          _ = logWithTraceId(methodName, traceId, "operationId" -> s"${AtalaOperationId.of(operation).toString}")
+          _ <- errorEitherToFutureAndCount(methodName, UpdateDIDOperation.validate(operation))
+          operationId <- objectManagement.publishSingleAtalaOperation(operation)
+        } yield {
           node_api
             .UpdateDIDResponse()
             .withOperationId(operationId.toProtoByteString)
-        )
+        }
       }
     }
   }
 
   override def issueCredentialBatch(request: IssueCredentialBatchRequest): Future[IssueCredentialBatchResponse] = {
     val methodName = "issueCredentialBatch"
-    logRequest(methodName, request)
+
     val operationF = getFromOptionOrFailF(request.signedOperation, "signed_operation missing", methodName)
     measureRequestFuture(serviceName, methodName) {
-      for {
-        operation <- operationF
-        parsedOp <-
-          errorEitherToFutureAndCount(methodName, IssueCredentialBatchOperation.parseWithMockedLedgerData(operation))
-        operationId <- objectManagement.publishSingleAtalaOperation(operation)
-      } yield {
-        logAndReturnResponse(
-          methodName,
+      withLog(methodName, request) { traceId =>
+        for {
+          operation <- operationF
+          _ = logWithTraceId(methodName, traceId, "operationId" -> s"${AtalaOperationId.of(operation).toString}")
+          parsedOp <-
+            errorEitherToFutureAndCount(methodName, IssueCredentialBatchOperation.parseWithMockedLedgerData(operation))
+          operationId <- objectManagement.publishSingleAtalaOperation(operation)
+        } yield {
           node_api
             .IssueCredentialBatchResponse(batchId = parsedOp.credentialBatchId.id)
             .withOperationId(operationId.toProtoByteString)
-        )
+        }
       }
     }
   }
 
   override def revokeCredentials(request: RevokeCredentialsRequest): Future[RevokeCredentialsResponse] = {
     val methodName = "revokeCredentials"
-    logRequest(methodName, request)
     val operationF = getFromOptionOrFailF(request.signedOperation, "signed_operation missing", methodName)
     measureRequestFuture(serviceName, methodName) {
-      for {
-        operation <- operationF
-        _ <- errorEitherToFutureAndCount(methodName, RevokeCredentialsOperation.validate(operation))
-        operationId <- objectManagement.publishSingleAtalaOperation(operation)
-      } yield {
-        logAndReturnResponse(
-          "revokeCredentials",
+      withLog(methodName, request) { traceId =>
+        for {
+          operation <- operationF
+          _ = logWithTraceId(methodName, traceId, "operationId" -> s"${AtalaOperationId.of(operation).toString}")
+          _ <- errorEitherToFutureAndCount(methodName, RevokeCredentialsOperation.validate(operation))
+          operationId <- objectManagement.publishSingleAtalaOperation(operation)
+        } yield {
           node_api
             .RevokeCredentialsResponse()
             .withOperationId(operationId.toProtoByteString)
-        )
+        }
       }
     }
   }
 
   override def getBatchState(request: GetBatchStateRequest): Future[GetBatchStateResponse] = {
     val methodName = "getBatchState"
-    logRequest(methodName, request)
+
     val lastSyncedTimestampF = objectManagement.getLastSyncedTimestamp
     val batchIdF = getFromOptionOrFailF(
       CredentialBatchId.fromString(request.batchId),
@@ -191,17 +193,21 @@ class NodeServiceImpl(
     )
 
     measureRequestFuture(serviceName, methodName) {
-      for {
-        lastSyncedTimestamp <- lastSyncedTimestampF
-        batchId <- batchIdF
-        stateEither <-
-          credentialBatchesRepository
-            .getBatchState(batchId)
-            .unsafeToFuture()
-      } yield stateEither.fold(
-        countAndThrowNodeError(methodName, _),
-        toGetBatchResponse(_, lastSyncedTimestamp, methodName)
-      )
+      withLog(methodName, request) { traceId =>
+        for {
+          lastSyncedTimestamp <- lastSyncedTimestampF
+          batchId <- batchIdF
+          _ = logWithTraceId(methodName, traceId, "batchId" -> s"${batchId.id}")
+          stateEither <-
+            credentialBatchesRepository
+              .getBatchState(batchId)
+              .unsafeToFuture()
+        } yield stateEither.fold(
+          countAndThrowNodeError(methodName, _),
+          toGetBatchResponse(_, lastSyncedTimestamp)
+        )
+      }
+
     }
   }
 
@@ -209,7 +215,7 @@ class NodeServiceImpl(
       request: GetCredentialRevocationTimeRequest
   ): Future[GetCredentialRevocationTimeResponse] = {
     val methodName = "getCredentialRevocationTime"
-    logRequest(methodName, request)
+
     val lastSyncedTimestampF = objectManagement.getLastSyncedTimestamp
     val batchIdF = getFromOptionOrFailF(
       CredentialBatchId.fromString(request.batchId),
@@ -221,30 +227,31 @@ class NodeServiceImpl(
       .fromTry(Try(SHA256Digest.fromVectorUnsafe(request.credentialHash.toByteArray.toVector)))
       .countErrorOnFail(serviceName, methodName, Status.INTERNAL.getCode.value())
     measureRequestFuture(serviceName, methodName) {
-      for {
-        lastSyncedTimestamp <- lastSyncedTimestampF
-        batchId <- batchIdF
-        credentialHash <- credentialHashF
-        timeEither <-
-          credentialBatchesRepository
-            .getCredentialRevocationTime(batchId, credentialHash)
-            .unsafeToFuture()
-      } yield timeEither match {
-        case Left(error) => countAndThrowNodeError(methodName, error)
-        case Right(ledgerData) =>
-          logAndReturnResponse(
-            methodName,
+      withLog(methodName, request) { traceId =>
+        for {
+          lastSyncedTimestamp <- lastSyncedTimestampF
+          batchId <- batchIdF
+          _ = logWithTraceId(methodName, traceId, "batchId" -> s"${batchId.id}")
+          credentialHash <- credentialHashF
+          _ = logWithTraceId(methodName, traceId, "credentialHash" -> s"${credentialHash.hexValue}")
+          timeEither <-
+            credentialBatchesRepository
+              .getCredentialRevocationTime(batchId, credentialHash)
+              .unsafeToFuture()
+        } yield timeEither match {
+          case Left(error) => countAndThrowNodeError(methodName, error)
+          case Right(ledgerData) =>
             GetCredentialRevocationTimeResponse(
               revocationLedgerData = ledgerData.map(ProtoCodecs.toLedgerData)
             ).withLastSyncedBlockTimestamp(lastSyncedTimestamp.toProtoTimestamp)
-          )
+        }
       }
     }
   }
 
   override def publishAsABlock(request: PublishAsABlockRequest): Future[PublishAsABlockResponse] = {
     val methodName = "publishAsABlock"
-    logRequest(methodName, request)
+
     val operationsF = Future
       .fromTry {
         Try {
@@ -255,62 +262,42 @@ class NodeServiceImpl(
       .countErrorOnFail(serviceName, methodName, Status.INTERNAL.getCode.value())
 
     measureRequestFuture(serviceName, methodName) {
-      for {
-        operations <- operationsF
-        outputs <- Future.sequence(
-          operations.map { op =>
-            errorEitherToFutureAndCount(methodName, parseOperationWithMockData(op))
+      withLog(methodName, request) { traceId =>
+        for {
+          operations <- operationsF
+          _ = logWithTraceId(
+            methodName,
+            traceId,
+            "operations" -> s"${operations.map(AtalaOperationId.of(_).toString).mkString(",")}"
+          )
+          outputs <- Future.sequence(
+            operations.map { op =>
+              errorEitherToFutureAndCount(methodName, parseOperationWithMockData(op))
+            }
+          )
+          operationIds <- objectManagement.publishAtalaOperations(operations: _*)
+          outputsWithOperationIds = outputs.zip(operationIds).map {
+            case (out, opId) =>
+              out.withOperationId(opId.toProtoByteString)
           }
-        )
-        operationIds <- objectManagement.publishAtalaOperations(operations: _*)
-        outputsWithOperationIds = outputs.zip(operationIds).map {
-          case (out, opId) =>
-            out.withOperationId(opId.toProtoByteString)
-        }
-      } yield {
-        logAndReturnResponse(
-          methodName,
+        } yield {
           node_api
             .PublishAsABlockResponse()
             .withOutputs(outputsWithOperationIds)
-        )
+        }
       }
     }
   }
 
-  override def getTransactionStatus(request: GetTransactionStatusRequest): Future[GetTransactionStatusResponse] = {
-    val methodName = "getTransactionStatus"
-    def toTransactionStatus(status: AtalaObjectTransactionStatus): common_models.TransactionStatus = {
-      status match {
-        case AtalaObjectTransactionStatus.InLedger => common_models.TransactionStatus.IN_LEDGER
-        case AtalaObjectTransactionStatus.Pending => common_models.TransactionStatus.PENDING
-        case AtalaObjectTransactionStatus.Confirmed => common_models.TransactionStatus.CONFIRMED
-      }
-    }
+  override def flushOperationsBuffer(
+      request: node_api.FlushOperationsBufferRequest
+  ): Future[node_api.FlushOperationsBufferResponse] = {
+    val methodName = "flushOperationsBuffer"
 
-    logRequest(methodName, request)
-    val lastSyncedTimestampF = objectManagement.getLastSyncedTimestamp
-
-    val transactionF =
-      getFromOptionOrFailF(request.transactionInfo.map(fromTransactionInfo), "transaction_info is missing", methodName)
-    measureRequestFuture(serviceName, methodName) {
-      for {
-        lastSyncedTimestamp <- lastSyncedTimestampF
-        transaction <- transactionF
-        latestTransactionAndStatus <- objectManagement.getLatestTransactionAndStatus(transaction)
-        latestTransaction = latestTransactionAndStatus.map(_.transaction).getOrElse(transaction)
-        status = latestTransactionAndStatus.fold[TransactionStatus](common_models.TransactionStatus.UNKNOWN)(info =>
-          toTransactionStatus(info.status)
-        )
-      } yield {
-        logAndReturnResponse(
-          methodName,
-          node_api
-            .GetTransactionStatusResponse()
-            .withTransactionInfo(toTransactionInfo(latestTransaction))
-            .withStatus(status)
-            .withLastSyncedBlockTimestamp(lastSyncedTimestamp.toProtoTimestamp)
-        )
+    withLog(methodName, request) { _ =>
+      Future.successful {
+        objectManagement.flushOperationsBuffer()
+        node_api.FlushOperationsBufferResponse()
       }
     }
   }
@@ -318,29 +305,32 @@ class NodeServiceImpl(
   override def getOperationInfo(
       request: node_api.GetOperationInfoRequest
   ): Future[node_api.GetOperationInfoResponse] = {
-    logRequest("getOperationInfo", request)
-    for {
-      lastSyncedTimestamp <- objectManagement.getLastSyncedTimestamp
-      atalaOperationId = AtalaOperationId.fromVectorUnsafe(request.operationId.toByteArray.toVector)
-      operationInfo <- objectManagement.getOperationInfo(atalaOperationId)
-    } yield {
-      val operationStatus = operationInfo
-        .fold[common_models.OperationStatus](common_models.OperationStatus.UNKNOWN_OPERATION) {
-          case AtalaOperationInfo(_, _, opStatus, maybeTxStatus, _) =>
-            evalOperationStatus(opStatus, maybeTxStatus)
-        }
-      val response = node_api
-        .GetOperationInfoResponse()
-        .withOperationStatus(operationStatus)
-        .withLastSyncedBlockTimestamp(lastSyncedTimestamp.toProtoTimestamp)
-      val responseWithTransactionId = operationInfo
-        .flatMap(_.transactionId)
-        .map(_.toString)
-        .fold(response)(response.withTransactionId)
-      logAndReturnResponse(
-        "getOperationInfo",
+
+    val methodName = "getOperationInfo"
+
+    withLog(methodName, request) { traceId =>
+      for {
+        lastSyncedTimestamp <- objectManagement.getLastSyncedTimestamp
+        atalaOperationId = AtalaOperationId.fromVectorUnsafe(request.operationId.toByteArray.toVector)
+        _ = logWithTraceId(methodName, traceId, "atalaOperationId" -> s"${atalaOperationId.toString}")
+        operationInfo <- objectManagement.getOperationInfo(atalaOperationId)
+      } yield {
+        val operationStatus = operationInfo
+          .fold[common_models.OperationStatus](common_models.OperationStatus.UNKNOWN_OPERATION) {
+            case AtalaOperationInfo(_, _, opStatus, maybeTxStatus, _) =>
+              evalOperationStatus(opStatus, maybeTxStatus)
+          }
+        val response = node_api
+          .GetOperationInfoResponse()
+          .withOperationStatus(operationStatus)
+          .withLastSyncedBlockTimestamp(lastSyncedTimestamp.toProtoTimestamp)
+        val responseWithTransactionId = operationInfo
+          .flatMap(_.transactionId)
+          .map(_.toString)
+          .fold(response)(response.withTransactionId)
+
         responseWithTransactionId
-      )
+      }
     }
   }
 
@@ -368,19 +358,19 @@ class NodeServiceImpl(
       request: node_api.GetNodeBuildInfoRequest
   ): Future[node_api.GetNodeBuildInfoResponse] = {
     val methodName = "getNodeBuildInfo"
-    logRequest(methodName, request)
+
     measureRequestFuture(serviceName, methodName)(
-      Future
-        .successful(
-          logAndReturnResponse(
-            methodName,
+      withLog(methodName, request) { _ =>
+        Future
+          .successful(
             node_api
               .GetNodeBuildInfoResponse()
               .withVersion(BuildInfo.version)
               .withScalaVersion(BuildInfo.scalaVersion)
               .withSbtVersion(BuildInfo.sbtVersion)
           )
-        )
+
+      }
     )
   }
 
@@ -402,9 +392,8 @@ object NodeServiceImpl {
 
   private def toGetBatchResponse(
       in: Option[models.nodeState.CredentialBatchState],
-      lastSyncedTimestamp: Instant,
-      methodName: String
-  )(implicit logger: Logger) = {
+      lastSyncedTimestamp: Instant
+  ) = {
     val response = in.fold(GetBatchStateResponse()) { state =>
       val revocationLedgerData = state.revokedOn.map(ProtoCodecs.toLedgerData)
       val responseBase = GetBatchStateResponse()
@@ -413,10 +402,7 @@ object NodeServiceImpl {
         .withPublicationLedgerData(ProtoCodecs.toLedgerData(state.issuedOn))
       revocationLedgerData.fold(responseBase)(responseBase.withRevocationLedgerData)
     }
-    logAndReturnResponse(
-      methodName,
-      response.withLastSyncedBlockTimestamp(lastSyncedTimestamp.toProtoTimestamp)
-    )
+    response.withLastSyncedBlockTimestamp(lastSyncedTimestamp.toProtoTimestamp)
   }
 
   private def succeedWith(
@@ -478,17 +464,6 @@ object NodeServiceImpl {
 
   private def resolve(did: DID)(implicit didDataRepository: DIDDataRepository[IO]): OrElse = {
     OrElse(did, didDataRepository.findByDid(did).unsafeToFuture())
-  }
-
-  def logRequest[Req <: GeneratedMessage](method: String, request: Req)(implicit logger: Logger): Unit = {
-    logger.info(s"$method request = ${request.toProtoString}")
-  }
-
-  def logAndReturnResponse[Response <: GeneratedMessage](method: String, response: Response)(implicit
-      logger: Logger
-  ): Response = {
-    logger.info(s"$method response = ${response.toProtoString}")
-    response
   }
 
   private def parseOperationWithMockData(operation: SignedAtalaOperation): Either[ValidationError, OperationOutput] = {

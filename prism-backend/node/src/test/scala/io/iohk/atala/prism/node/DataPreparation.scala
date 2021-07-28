@@ -2,6 +2,7 @@ package io.iohk.atala.prism.node
 
 import cats.effect.IO
 import cats.implicits._
+import com.google.protobuf.ByteString
 import doobie.util.transactor.Transactor
 import doobie.implicits._
 import io.iohk.atala.prism.connector.AtalaOperationId
@@ -9,12 +10,22 @@ import io.iohk.atala.prism.credentials.CredentialBatchId
 import io.iohk.atala.prism.crypto.MerkleTree.MerkleRoot
 import io.iohk.atala.prism.crypto.SHA256Digest
 import io.iohk.atala.prism.identity.DIDSuffix
+import io.iohk.atala.prism.models.Ledger
 import io.iohk.atala.prism.node.cardano.{LAST_SYNCED_BLOCK_NO, LAST_SYNCED_BLOCK_TIMESTAMP}
-import io.iohk.atala.prism.node.models.{AtalaObjectId, AtalaOperationInfo, AtalaOperationStatus, DIDData, DIDPublicKey}
+import io.iohk.atala.prism.node.models.{
+  AtalaObjectId,
+  AtalaObjectTransactionSubmission,
+  AtalaObjectTransactionSubmissionStatus,
+  AtalaOperationInfo,
+  AtalaOperationStatus,
+  DIDData,
+  DIDPublicKey
+}
 import io.iohk.atala.prism.node.models.nodeState.{DIDDataState, DIDPublicKeyState, LedgerData}
 import io.iohk.atala.prism.node.repositories.daos.AtalaObjectsDAO.AtalaObjectCreateData
 import io.iohk.atala.prism.node.repositories.daos.CredentialBatchesDAO.CreateCredentialBatchData
 import io.iohk.atala.prism.node.repositories.daos.{
+  AtalaObjectTransactionSubmissionsDAO,
   AtalaObjectsDAO,
   AtalaOperationsDAO,
   CredentialBatchesDAO,
@@ -23,7 +34,7 @@ import io.iohk.atala.prism.node.repositories.daos.{
   PublicKeysDAO
 }
 import org.scalatest.OptionValues._
-import io.iohk.atala.prism.protos.node_internal
+import io.iohk.atala.prism.protos.{node_api, node_internal}
 import io.iohk.atala.prism.protos.node_models.SignedAtalaOperation
 
 import java.time.Instant
@@ -142,10 +153,11 @@ object DataPreparation {
       status: AtalaOperationStatus
   )(implicit xa: Transactor[IO]): (AtalaObjectId, List[AtalaOperationId]) = {
     val block = node_internal.AtalaBlock("1.0", atalaOperations)
-    val obj = node_internal.AtalaObject(
-      block = node_internal.AtalaObject.Block.BlockContent(block),
-      blockOperationCount = atalaOperations.size
-    )
+    val obj = node_internal
+      .AtalaObject(
+        blockOperationCount = atalaOperations.size
+      )
+      .withBlockContent(block)
     val objBytes = obj.toByteArray
     val objId = AtalaObjectId.of(objBytes)
     val atalaOperationIds = atalaOperations.map(AtalaOperationId.of)
@@ -167,5 +179,55 @@ object DataPreparation {
       .getAtalaOperationInfo(atalaOperationId)
       .transact(xa)
       .unsafeRunSync()
+  }
+
+  def getOperationsCount()(implicit xa: Transactor[IO]): Int =
+    sql"""
+    |SELECT count(*)
+    |FROM atala_operations
+    """.stripMargin.query[Int].option.transact(xa).unsafeRunSync().getOrElse(0)
+
+  def getPendingSubmissions()(implicit xa: Transactor[IO]): List[AtalaObjectTransactionSubmission] = {
+    AtalaObjectTransactionSubmissionsDAO
+      .getBy(
+        olderThan = Instant.now(),
+        status = AtalaObjectTransactionSubmissionStatus.Pending,
+        ledger = Ledger.InMemory
+      )
+      .transact(xa)
+      .unsafeRunSync()
+  }
+
+  def flushOperationsAndWaitConfirmation(
+      nodeServiceStub: node_api.NodeServiceGrpc.NodeServiceBlockingStub,
+      waitOperations: ByteString*
+  ): Unit = {
+    nodeServiceStub
+      .flushOperationsBuffer(node_api.FlushOperationsBufferRequest())
+
+    waitOperations.foreach { operationId =>
+      val operationIdHex = AtalaOperationId.fromVectorUnsafe(operationId.toByteArray.toVector)
+      while (!isOperationConfirmed(nodeServiceStub, operationId)) {
+        println(s"Waiting until operation [$operationIdHex] is applied...")
+      }
+    }
+  }
+
+  def isOperationConfirmed(
+      nodeServiceStub: node_api.NodeServiceGrpc.NodeServiceBlockingStub,
+      operationId: ByteString
+  ): Boolean = {
+    // this try-catch is only the case for InMemory ledger, because InMemory
+    // doesn't require ledger approval and executes operations immediately, so we can call getOperationInfo
+    // after operation execution, but before the corresponding transaction recorded in the database.
+    try {
+      val status = nodeServiceStub
+        .getOperationInfo(node_api.GetOperationInfoRequest(operationId))
+        .operationStatus
+      status.isConfirmedAndApplied || status.isConfirmedAndRejected
+    } catch {
+      case err: io.grpc.StatusRuntimeException if err.getMessage.contains("Unknown state of the operation") =>
+        false
+    }
   }
 }

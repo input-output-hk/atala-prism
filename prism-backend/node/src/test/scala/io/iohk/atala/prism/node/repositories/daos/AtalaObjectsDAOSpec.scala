@@ -1,10 +1,11 @@
 package io.iohk.atala.prism.node.repositories.daos
 
+import cats.syntax.functor._
 import doobie.implicits._
 import io.iohk.atala.prism.AtalaWithPostgresSpec
 import io.iohk.atala.prism.crypto.SHA256Digest
 import io.iohk.atala.prism.models.{BlockInfo, Ledger, TransactionId, TransactionInfo}
-import io.iohk.atala.prism.node.models.{AtalaObject, AtalaObjectId}
+import io.iohk.atala.prism.node.models.{AtalaObjectInfo, AtalaObjectId}
 import io.iohk.atala.prism.protos.node_internal
 import org.scalatest.OptionValues._
 
@@ -109,14 +110,34 @@ class AtalaObjectsDAOSpec extends AtalaWithPostgresSpec {
     }
   }
 
+  "AtalaObjectsDAO.getNotPublishedObjectIds" should {
+    "return object ids in the correct order" in {
+      val N = 10
+      (0 until N).foreach { count =>
+        val objId = AtalaObjectId.of(node_internal.AtalaObject(blockOperationCount = count))
+        insert(objId, byteContent)
+      }
+      val retrieved = AtalaObjectsDAO.getNotPublishedObjectIds.transact(database).unsafeRunSync()
+      retrieved.size mustBe N
+      retrieved.zipWithIndex.foreach {
+        case (objId, ind) =>
+          withClue(s"Index $ind:") {
+            objId mustBe AtalaObjectId.of(node_internal.AtalaObject(blockOperationCount = ind))
+          }
+      }
+    }
+  }
+
   private def insert(objectId: AtalaObjectId, byteContent: Array[Byte]): Unit = {
     AtalaObjectsDAO
       .insert(AtalaObjectsDAO.AtalaObjectCreateData(objectId, byteContent))
       .transact(database)
-      .unsafeRunSync()
+      .unsafeToFuture()
+      .void
+      .futureValue
   }
 
-  private def get(objectId: AtalaObjectId): AtalaObject = {
+  private def get(objectId: AtalaObjectId): AtalaObjectInfo = {
     AtalaObjectsDAO.get(objectId).transact(database).unsafeRunSync().value
   }
 }

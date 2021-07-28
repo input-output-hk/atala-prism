@@ -13,7 +13,7 @@ import monix.eval.Task
 class ProcessMessagesStateProcessor[S <: ProcessingTaskState](connectorMessagesService: ConnectorMessagesService)
     extends ProcessingTaskProcessor[S] {
 
-  def process(processingTask: ProcessingTask[S]): Task[ProcessingTaskResult[S]] = {
+  def process(processingTask: ProcessingTask[S], workerNumber: Int): Task[ProcessingTaskResult[S]] = {
     connectorMessagesService.messagesUpdatesStream.compile.drain.as(ProcessingTaskResult.ProcessingTaskRestart)
   }
 

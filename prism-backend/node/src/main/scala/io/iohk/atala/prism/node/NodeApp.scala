@@ -4,7 +4,6 @@ import cats.effect.{ContextShift, IO, Resource}
 import com.typesafe.config.{Config, ConfigFactory}
 import io.grpc.{Server, ServerBuilder}
 import io.iohk.atala.prism.metrics.UptimeReporter
-import io.iohk.atala.prism.node.objects.{ObjectStorageService, S3ObjectStorageService}
 import io.iohk.atala.prism.node.repositories.{CredentialBatchesRepository, DIDDataRepository, KeyValuesRepository}
 import io.iohk.atala.prism.node.services._
 import io.iohk.atala.prism.node.services.models.{AtalaObjectNotification, AtalaObjectNotificationHandler}
@@ -13,7 +12,6 @@ import io.iohk.atala.prism.repositories.{SchemaMigrations, TransactorFactory}
 import kamon.Kamon
 import monix.execution.Scheduler.Implicits.{global => scheduler}
 import org.slf4j.LoggerFactory
-import software.amazon.awssdk.regions.Region
 
 import scala.concurrent.duration.Duration
 import scala.concurrent.{Await, ExecutionContext, Future, Promise}
@@ -56,20 +54,6 @@ class NodeApp(executionContext: ExecutionContext) { self =>
     implicit val (transactor, releaseTransactor) =
       TransactorFactory.transactor[IO](databaseConfig).allocated.unsafeRunSync()
 
-    val storage = globalConfig.getString("storage") match {
-      case "in-memory" => new ObjectStorageService.InMemory()
-      case "filesystem" => ObjectStorageService()
-      case "s3" => {
-        val s3Config = globalConfig.getConfig("s3")
-        val bucket = s3Config.getString("bucket")
-        val keyPrefix = s3Config.getString("keyPrefix")
-        val region = if (s3Config.hasPath("region")) {
-          Some(Region.of(s3Config.getString("region")))
-        } else None
-        new S3ObjectStorageService(bucket, keyPrefix, region)
-      }
-    }
-
     val objectManagementServicePromise: Promise[ObjectManagementService] = Promise()
 
     def onAtalaObject(notification: AtalaObjectNotification): Future[Unit] = {
@@ -99,7 +83,6 @@ class NodeApp(executionContext: ExecutionContext) { self =>
     val ledgerPendingTransactionTimeout = globalConfig.getDuration("ledgerPendingTransactionTimeout")
     val objectManagementService = ObjectManagementService(
       ObjectManagementService.Config(ledgerPendingTransactionTimeout = ledgerPendingTransactionTimeout),
-      storage,
       atalaReferenceLedger,
       blockProcessingService
     )

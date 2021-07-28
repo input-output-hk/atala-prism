@@ -46,6 +46,7 @@ object AtalaObjectTransactionSubmissionsDAO {
          |SELECT atala_object_id, ledger, transaction_id, submission_timestamp, status
          |FROM atala_object_tx_submissions
          |WHERE submission_timestamp < $olderThan AND status = $status AND ledger = $ledger
+         |ORDER BY submission_timestamp ASC
        """.stripMargin.query[AtalaObjectTransactionSubmission].to[List]
   }
 

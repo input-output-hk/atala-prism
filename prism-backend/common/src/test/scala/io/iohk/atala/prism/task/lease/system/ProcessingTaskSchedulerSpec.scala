@@ -17,7 +17,8 @@ class ProcessingTaskSchedulerSpec extends AnyWordSpec with Matchers {
     "process task with ProcessingTaskFinished result" in new Fixtures {
       val processingTaskRouter = new ProcessingTaskRouter[ProcessingTaskTestState] {
         override def process(
-            processingTask: ProcessingTask[ProcessingTaskTestState]
+            processingTask: ProcessingTask[ProcessingTaskTestState],
+            workerNumber: Int
         ): Task[ProcessingTaskResult[ProcessingTaskTestState]] =
           Task.pure(ProcessingTaskResult.ProcessingTaskFinished)
       }
@@ -34,7 +35,8 @@ class ProcessingTaskSchedulerSpec extends AnyWordSpec with Matchers {
     "process task with ProcessingTaskScheduled result" in new Fixtures {
       val processingTaskRouter = new ProcessingTaskRouter[ProcessingTaskTestState] {
         override def process(
-            processingTask: ProcessingTask[ProcessingTaskTestState]
+            processingTask: ProcessingTask[ProcessingTaskTestState],
+            workerNumber: Int
         ): Task[ProcessingTaskResult[ProcessingTaskTestState]] =
           Task.pure(
             ProcessingTaskResult.ProcessingTaskScheduled(ProcessingTaskTestState.TestState1, sampleTaskData, nextAction)
@@ -54,7 +56,8 @@ class ProcessingTaskSchedulerSpec extends AnyWordSpec with Matchers {
       val processingTaskRouter = new ProcessingTaskRouter[ProcessingTaskTestState] {
         var count = 0
         override def process(
-            processingTask: ProcessingTask[ProcessingTaskTestState]
+            processingTask: ProcessingTask[ProcessingTaskTestState],
+            workerNumber: Int
         ): Task[ProcessingTaskResult[ProcessingTaskTestState]] =
           if (count < 3) {
             count = count + 1
@@ -75,7 +78,8 @@ class ProcessingTaskSchedulerSpec extends AnyWordSpec with Matchers {
     "extend lease in specified periods of time" in new Fixtures {
       val processingTaskRouter = new ProcessingTaskRouter[ProcessingTaskTestState] {
         override def process(
-            processingTask: ProcessingTask[ProcessingTaskTestState]
+            processingTask: ProcessingTask[ProcessingTaskTestState],
+            workerNumber: Int
         ): Task[ProcessingTaskResult[ProcessingTaskTestState]] =
           Task
             .pure(ProcessingTaskResult.ProcessingTaskFinished)
@@ -95,7 +99,8 @@ class ProcessingTaskSchedulerSpec extends AnyWordSpec with Matchers {
     "do not extend lease when processing of tasks fails" in new Fixtures {
       val processingTaskRouter = new ProcessingTaskRouter[ProcessingTaskTestState] {
         override def process(
-            processingTask: ProcessingTask[ProcessingTaskTestState]
+            processingTask: ProcessingTask[ProcessingTaskTestState],
+            workerNumber: Int
         ): Task[ProcessingTaskResult[ProcessingTaskTestState]] =
           Task.raiseError(new Exception("Expected error"))
       }
@@ -115,7 +120,8 @@ class ProcessingTaskSchedulerSpec extends AnyWordSpec with Matchers {
     "process tasks" in new Fixtures {
       val processingTaskRouter = new ProcessingTaskRouter[ProcessingTaskTestState] {
         override def process(
-            processingTask: ProcessingTask[ProcessingTaskTestState]
+            processingTask: ProcessingTask[ProcessingTaskTestState],
+            workerNumber: Int
         ): Task[ProcessingTaskResult[ProcessingTaskTestState]] =
           Task.pure(ProcessingTaskResult.ProcessingTaskFinished)
       }
@@ -127,7 +133,7 @@ class ProcessingTaskSchedulerSpec extends AnyWordSpec with Matchers {
 
         override def fetchTaskToProcess(
             leaseTimeSeconds: Int,
-            _workerNumber: Int
+            workerNumber: Int
         ): Task[Option[ProcessingTask[ProcessingTaskTestState]]] = {
           count = count + 1
           if (count != 3) Task.pure(None)
@@ -148,7 +154,8 @@ class ProcessingTaskSchedulerSpec extends AnyWordSpec with Matchers {
     "notify idle worker when there is a new task to be processed" in new Fixtures {
       val processingTaskRouter = new ProcessingTaskRouter[ProcessingTaskTestState] {
         override def process(
-            processingTask: ProcessingTask[ProcessingTaskTestState]
+            processingTask: ProcessingTask[ProcessingTaskTestState],
+            workerNumber: Int
         ): Task[ProcessingTaskResult[ProcessingTaskTestState]] =
           Task.pure(ProcessingTaskResult.ProcessingTaskFinished)
       }

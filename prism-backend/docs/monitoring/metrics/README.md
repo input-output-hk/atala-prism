@@ -12,7 +12,7 @@ They contain basic tags such as job/instance and custom tags which are special f
 
 Also, you can find basic JVM metrics in the Prometheus/Grafana. Basic JVM metrics can be turned off in the Kamon config.
 
-- ### jvm.uptime.seconds
+- ## jvm.uptime.seconds
     Counter in seconds. Reflects uptime from the JVM start.
   
     #### Available metrics:
@@ -22,7 +22,7 @@ Also, you can find basic JVM metrics in the Prometheus/Grafana. Basic JVM metric
     #### Available tags:
     Contains only basic tags - `ecs_cluster, ecs_task_id, ecs_task_version, instance, job, metrics_path`
 
-- ### request-time
+- ## request-time
     Histogram with a request time in seconds.
     
     #### Available metrics:
@@ -35,7 +35,7 @@ Also, you can find basic JVM metrics in the Prometheus/Grafana. Basic JVM metric
        [This](https://github.com/input-output-hk/atala-tobearchived/blob/develop/prism-backend/connector/src/main/scala/io/iohk/atala/prism/connector/ConnectorService.scala#L50) for an example.
     2. `method` - The name of a method that produces metrics can be found in the service source code. [This](https://github.com/input-output-hk/atala-tobearchived/blob/develop/prism-backend/connector/src/main/scala/io/iohk/atala/prism/connector/ConnectorService.scala#L79) for an example.
     
-- ### active-requests
+- ## active-requests
     Counter of active request at the moment.
     Increments at the start of a request, decrement at the end or on the error.
   
@@ -47,11 +47,11 @@ Also, you can find basic JVM metrics in the Prometheus/Grafana. Basic JVM metric
        [This](https://github.com/input-output-hk/atala-tobearchived/blob/develop/prism-backend/connector/src/main/scala/io/iohk/atala/prism/connector/ConnectorService.scala#L50) for an example.
     2. `method` - The name of a method that produces metrics can be found in the service source code. [This](https://github.com/input-output-hk/atala-tobearchived/blob/develop/prism-backend/connector/src/main/scala/io/iohk/atala/prism/connector/ConnectorService.scala#L79) for an example.
 
-- ### error-count
+- ## error-count
     Counter of error responses with an error code.
   
     #### Available metrics:
-    1. `active_requests` - The counter itself.
+    1. `error_count_total` - The counter itself.
 
     #### Available tags:
     1. `service` - The name of a service that produces metrics can be found in the service source code.
@@ -59,7 +59,7 @@ Also, you can find basic JVM metrics in the Prometheus/Grafana. Basic JVM metric
     2. `method` - The name of a method that produces metrics can be found in the service source code. [This](https://github.com/input-output-hk/atala-tobearchived/blob/develop/prism-backend/connector/src/main/scala/io/iohk/atala/prism/connector/ConnectorService.scala#L79) for an example.
     3. `error-code` - Response code (Only for errors). can be found [here](https://grpc.github.io/grpc/core/md_doc_statuscodes.html).
     
-- ### db-query-time
+- ## db-query-time
     Histogram with a DB query time in seconds.
   
     #### Available metrics:

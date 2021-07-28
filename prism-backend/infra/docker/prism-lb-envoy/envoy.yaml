@@ -52,38 +52,38 @@ static_resources:
                     - name: local_service
                       domains: ["*"]
                       routes:
+                        # connector
                         - match: { prefix: "/io.iohk.atala.prism.protos.ConnectorService" }
                           route: { cluster: connector_service, max_grpc_timeout: 0s }
                         - match: { prefix: "/io.iohk.atala.prism.protos.ContactConnectionService" }
                           route: { cluster: connector_service, max_grpc_timeout: 0s }
-                        - match: { prefix: "/io.iohk.atala.prism.protos.AdminService" }
-                          route: { cluster: connector_service, max_grpc_timeout: 0s }
-                        - match: { prefix: "/io.iohk.atala.prism.protos.NodeService" }
-                          route: { cluster: node_service, max_grpc_timeout: 0s }
-                        - match: { prefix: "/io.iohk.atala.prism.protos.ConsoleService" }
-                          route: { cluster: connector_service, max_grpc_timeout: 0s }
-                        - match: { prefix: "/io.iohk.atala.prism.protos.ContactsService" }
-                          route: { cluster: connector_service, max_grpc_timeout: 0s }
-                        - match: { prefix: "/io.iohk.atala.prism.protos.CredentialIssuanceService" }
-                          route: { cluster: connector_service, max_grpc_timeout: 0s }
-                        - match: { prefix: "/io.iohk.atala.prism.protos.CredentialsService" }
-                          route: { cluster: connector_service, max_grpc_timeout: 0s }
-                        - match: { prefix: "/io.iohk.atala.prism.protos.CredentialTypesService" }
-                          route: { cluster: connector_service, max_grpc_timeout: 0s }
-                        - match: { prefix: "/io.iohk.atala.prism.protos.GroupsService" }
-                          route: { cluster: connector_service, max_grpc_timeout: 0s }
-                        - match: { prefix: "/io.iohk.atala.prism.protos.CredentialsStoreService" }
-                          route: { cluster: connector_service, max_grpc_timeout: 0s }
                         - match: { prefix: "/io.iohk.atala.prism.protos.CredentialViewsService" }
                           route: { cluster: connector_service, max_grpc_timeout: 0s }
+                        - match: { prefix: "/io.iohk.atala.prism.intdemo.protos." }
+                          route: { cluster: connector_service, max_grpc_timeout: 0s }
+                        # node
                         - match: { prefix: "/io.iohk.atala.prism.protos.NodeService" }
                           route: { cluster: node_service, max_grpc_timeout: 0s }
+                        # mirror
                         - match: { prefix: "/io.iohk.atala.mirror.protos." }
                           route: { cluster: mirror_service, max_grpc_timeout: 0s }
                         - match: { prefix: "/io.iohk.atala.kycbridge.protos." }
                           route: { cluster: kycbridge_service, max_grpc_timeout: 0s }
-                        - match: { prefix: "/io.iohk.atala.prism.intdemo.protos." }
-                          route: { cluster: connector_service, max_grpc_timeout: 0s }
+                        # console
+                        - match: { prefix: "/io.iohk.atala.prism.protos.ConsoleService" }
+                          route: { cluster: management_console_service, max_grpc_timeout: 0s }
+                        - match: { prefix: "/io.iohk.atala.prism.protos.ContactsService" }
+                          route: { cluster: management_console_service, max_grpc_timeout: 0s }
+                        - match: { prefix: "/io.iohk.atala.prism.protos.CredentialIssuanceService" }
+                          route: { cluster: management_console_service, max_grpc_timeout: 0s }
+                        - match: { prefix: "/io.iohk.atala.prism.protos.CredentialsService" }
+                          route: { cluster: management_console_service, max_grpc_timeout: 0s }
+                        - match: { prefix: "/io.iohk.atala.prism.protos.CredentialTypesService" }
+                          route: { cluster: management_console_service, max_grpc_timeout: 0s }
+                        - match: { prefix: "/io.iohk.atala.prism.protos.GroupsService" }
+                          route: { cluster: management_console_service, max_grpc_timeout: 0s }
+                        - match: { prefix: "/io.iohk.atala.prism.protos.CredentialsStoreService" }
+                          route: { cluster: management_console_service, max_grpc_timeout: 0s }
                       cors:
                         allow_origin_string_match: { suffix: "$ATALA_PRISM_DOMAIN" }
                         allow_methods: GET, PUT, DELETE, POST, OPTIONS
@@ -105,43 +105,44 @@ static_resources:
                 "@type": type.googleapis.com/envoy.config.filter.network.http_connection_manager.v2.HttpConnectionManager
                 codec_type: auto
                 stat_prefix: ingress_grpc
+
                 route_config:
                   virtual_hosts:
                     - name: grpc
                       domains: ["*"]
                       routes:
+                        # connector
                         - match: { prefix: "/io.iohk.atala.prism.protos.ConnectorService" }
-                          route: { cluster: connector_service }
+                          route: { cluster: connector_service, max_grpc_timeout: 0s }
                         - match: { prefix: "/io.iohk.atala.prism.protos.ContactConnectionService" }
-                          route: { cluster: connector_service }
-                        - match: { prefix: "/io.iohk.atala.prism.protos.AdminService" }
-                          route: { cluster: connector_service }
-                        - match: { prefix: "/io.iohk.atala.prism.protos.NodeService" }
-                          route: { cluster: node_service }
-                        - match: { prefix: "/io.iohk.atala.prism.protos.ConsoleService" }
-                          route: { cluster: management_console_service }
-                        - match: { prefix: "/io.iohk.atala.prism.protos.ContactsService" }
-                          route: { cluster: management_console_service }
-                        - match: { prefix: "/io.iohk.atala.prism.protos.CredentialIssuanceService" }
-                          route: { cluster: management_console_service }
-                        - match: { prefix: "/io.iohk.atala.prism.protos.CredentialsService" }
-                          route: { cluster: management_console_service }
-                        - match: { prefix: "/io.iohk.atala.prism.protos.CredentialTypesService" }
-                          route: { cluster: management_console_service }
-                        - match: { prefix: "/io.iohk.atala.prism.protos.GroupsService" }
-                          route: { cluster: management_console_service }
-                        - match: { prefix: "/io.iohk.atala.prism.protos.CredentialsStoreService" }
-                          route: { cluster: management_console_service }
+                          route: { cluster: connector_service, max_grpc_timeout: 0s }
                         - match: { prefix: "/io.iohk.atala.prism.protos.CredentialViewsService" }
-                          route: { cluster: connector_service }
-                        - match: { prefix: "/io.iohk.atala.prism.protos.NodeService" }
-                          route: { cluster: node_service }
-                        - match: { prefix: "/io.iohk.atala.mirror.protos." }
-                          route: { cluster: mirror_service }
-                        - match: { prefix: "/io.iohk.atala.kycbridge.protos." }
-                          route: { cluster: kycbridge_service }
+                          route: { cluster: connector_service, max_grpc_timeout: 0s }
                         - match: { prefix: "/io.iohk.atala.prism.intdemo.protos." }
-                          route: { cluster: connector_service }
+                          route: { cluster: connector_service, max_grpc_timeout: 0s }
+                        # node
+                        - match: { prefix: "/io.iohk.atala.prism.protos.NodeService" }
+                          route: { cluster: node_service, max_grpc_timeout: 0s }
+                        # mirror
+                        - match: { prefix: "/io.iohk.atala.mirror.protos." }
+                          route: { cluster: mirror_service, max_grpc_timeout: 0s }
+                        - match: { prefix: "/io.iohk.atala.kycbridge.protos." }
+                          route: { cluster: kycbridge_service, max_grpc_timeout: 0s }
+                        # console
+                        - match: { prefix: "/io.iohk.atala.prism.protos.ConsoleService" }
+                          route: { cluster: management_console_service, max_grpc_timeout: 0s }
+                        - match: { prefix: "/io.iohk.atala.prism.protos.ContactsService" }
+                          route: { cluster: management_console_service, max_grpc_timeout: 0s }
+                        - match: { prefix: "/io.iohk.atala.prism.protos.CredentialIssuanceService" }
+                          route: { cluster: management_console_service, max_grpc_timeout: 0s }
+                        - match: { prefix: "/io.iohk.atala.prism.protos.CredentialsService" }
+                          route: { cluster: management_console_service, max_grpc_timeout: 0s }
+                        - match: { prefix: "/io.iohk.atala.prism.protos.CredentialTypesService" }
+                          route: { cluster: management_console_service, max_grpc_timeout: 0s }
+                        - match: { prefix: "/io.iohk.atala.prism.protos.GroupsService" }
+                          route: { cluster: management_console_service, max_grpc_timeout: 0s }
+                        - match: { prefix: "/io.iohk.atala.prism.protos.CredentialsStoreService" }
+                          route: { cluster: management_console_service, max_grpc_timeout: 0s }
                 http_filters:
                   - name: envoy.filters.http.grpc_stats
                   - name: envoy.router
@@ -161,7 +162,7 @@ static_resources:
                       domains: ["*"]
                       routes:
                         - match: { prefix: "/" }
-                          route: { cluster: connector_service }
+                          route: { cluster: connector_service, max_grpc_timeout: 0s }
                 http_filters:
                   - name: envoy.filters.http.grpc_stats
                   - name: envoy.router
@@ -181,7 +182,7 @@ static_resources:
                       domains: ["*"]
                       routes:
                         - match: { prefix: "/" }
-                          route: { cluster: node_service }
+                          route: { cluster: node_service, max_grpc_timeout: 0s }
                 http_filters:
                   - name: envoy.filters.http.grpc_stats
                   - name: envoy.router
@@ -201,7 +202,7 @@ static_resources:
                       domains: [ "*" ]
                       routes:
                         - match: { prefix: "/" }
-                          route: { cluster: management_console_service }
+                          route: { cluster: management_console_service, max_grpc_timeout: 0s }
                 http_filters:
                   - name: envoy.filters.http.grpc_stats
                   - name: envoy.router

@@ -14,7 +14,7 @@ import io.iohk.atala.prism.node.poc.{GenericCredentialsSDK, Wallet}
 import io.iohk.atala.prism.node.repositories.{CredentialBatchesRepository, DIDDataRepository}
 import io.iohk.atala.prism.node.services.models.AtalaObjectNotification
 import io.iohk.atala.prism.node.services.{BlockProcessingServiceImpl, InMemoryLedgerService, ObjectManagementService}
-import io.iohk.atala.prism.node.{NodeServiceImpl, objects}
+import io.iohk.atala.prism.node.{DataPreparation, NodeServiceImpl}
 import io.iohk.atala.prism.protos.node_api
 import io.iohk.atala.prism.services.NodeClientService.{issueBatchOperation, revokeCredentialsOperation}
 import monix.execution.Scheduler.Implicits.{global => scheduler}
@@ -36,7 +36,6 @@ class FlowPoC extends AtalaWithPostgresSpec with BeforeAndAfterEach {
   protected var atalaReferenceLedger: InMemoryLedgerService = _
   protected var blockProcessingService: BlockProcessingServiceImpl = _
   protected var objectManagementService: ObjectManagementService = _
-  protected var storage: objects.ObjectStorageService = _
   protected var objectManagementServicePromise: Promise[ObjectManagementService] = _
 
   override def beforeEach(): Unit = {
@@ -44,8 +43,6 @@ class FlowPoC extends AtalaWithPostgresSpec with BeforeAndAfterEach {
 
     didDataRepository = DIDDataRepository(database)
     credentialBatchesRepository = CredentialBatchesRepository(database)
-
-    storage = new objects.ObjectStorageService.InMemory()
 
     objectManagementServicePromise = Promise()
 
@@ -58,7 +55,6 @@ class FlowPoC extends AtalaWithPostgresSpec with BeforeAndAfterEach {
     blockProcessingService = new BlockProcessingServiceImpl
     objectManagementService = ObjectManagementService(
       ObjectManagementService.Config(ledgerPendingTransactionTimeout = Duration.ZERO),
-      storage,
       atalaReferenceLedger,
       blockProcessingService
     )
@@ -128,7 +124,13 @@ class FlowPoC extends AtalaWithPostgresSpec with BeforeAndAfterEach {
 
       // 2- she uses the connector to publish it
       val signedCreateDIDOp = wallet.signOperation(createDIDOp, masterKeyId, didSuffix)
-      connector.registerDID(signedAtalaOperation = signedCreateDIDOp)
+      val registerDIDOperationId = connector
+        .registerDID(signedAtalaOperation = signedCreateDIDOp)
+        .operationId
+      DataPreparation.flushOperationsAndWaitConfirmation(
+        nodeServiceStub,
+        registerDIDOperationId
+      )
 
       // 3. she grabs credential data from the management console
       val consoleCredentials = console.getCredentials(4)
@@ -161,8 +163,13 @@ class FlowPoC extends AtalaWithPostgresSpec with BeforeAndAfterEach {
 
       val signedIssueBatch1Op = wallet.signOperation(issueBatch1Op, issuanceKeyId, didSuffix)
       val signedIssueBatch2Op = wallet.signOperation(issueBatch2Op, issuanceKeyId, didSuffix)
-      console.issueCredentialBatch(signedIssueBatch1Op)
-      console.issueCredentialBatch(signedIssueBatch2Op)
+      val issueCredentialBatchOperationId1 = console.issueCredentialBatch(signedIssueBatch1Op).operationId
+      val issueCredentialBatchOperationId2 = console.issueCredentialBatch(signedIssueBatch2Op).operationId
+      DataPreparation.flushOperationsAndWaitConfirmation(
+        nodeServiceStub,
+        issueCredentialBatchOperationId1,
+        issueCredentialBatchOperationId2
+      )
 
       // 7. she encodes the credentials and sends them through the connector along with
       //    the corresponding proofs of inclusion
@@ -191,14 +198,20 @@ class FlowPoC extends AtalaWithPostgresSpec with BeforeAndAfterEach {
       val batchId1 = CredentialBatchId.fromBatchData(issuerDID.suffix, root1)
       val revokeBatch1Op = revokeCredentialsOperation(issueBatch1OpHash, batchId1)
       val signedRevokeBatch1Op = wallet.signOperation(revokeBatch1Op, issuanceKeyId, didSuffix)
-      console.revokeCredentialBatch(signedRevokeBatch1Op)
+      val revokeCredentialBatchOperationId = console.revokeCredentialBatch(signedRevokeBatch1Op).operationId
 
       // 11. the issuer decides to revoke the first credential from the second batch
       val issueBatch2OpHash = SHA256Digest.compute(issueBatch2Op.toByteArray)
       val batchId2 = CredentialBatchId.fromBatchData(issuerDID.suffix, root2)
       val revokeC3Op = revokeCredentialsOperation(issueBatch2OpHash, batchId2, Seq(c3.hash))
       val signedRevokeC3Op = wallet.signOperation(revokeC3Op, issuanceKeyId, didSuffix)
-      console.revokeSpecificCredentials(signedRevokeC3Op)
+      val revokeSpecificCredentialsOperationId = console.revokeSpecificCredentials(signedRevokeC3Op).operationId
+
+      DataPreparation.flushOperationsAndWaitConfirmation(
+        nodeServiceStub,
+        revokeCredentialBatchOperationId,
+        revokeSpecificCredentialsOperationId
+      )
 
       // ... later ...
       // 12. the verifier calls the wallet again to verify the credentials

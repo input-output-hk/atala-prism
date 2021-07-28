@@ -15,10 +15,11 @@ import org.scalatest.OptionValues._
 import org.scalatest.flatspec.AnyFlatSpec
 import org.scalatest.matchers.should.Matchers._
 import org.scalatest.concurrent.ScalaFutures.{PatienceConfig, convertScalaFuture}
-
+import io.iohk.atala.prism.utils.Base64Utils
 import scala.concurrent.duration._
 import scala.concurrent.{ExecutionContext, Future}
 import scala.language.postfixOps
+import io.iohk.atala.prism.identity.DID
 
 class IdServiceImplSpec extends AnyFlatSpec {
 
@@ -63,34 +64,46 @@ class IdServiceImplSpec extends AnyFlatSpec {
   }
 
   "getIdCredential" should "return a correct ID credential" in {
-    val credential = IdServiceImpl.getIdCredential(("first-name", LocalDate.of(1973, 6, 2)))
 
-    // Verify type
-    credential.typeId shouldBe "VerifiableCredential/RedlandIdCredential"
+    val (name, dateOfBirth) = ("Joe wong", LocalDate.of(1973, 6, 2))
 
-    // Verify JSON document
-    val document = parse(credential.credentialDocument).toOption.value.hcursor
-    val today = LocalDate.now().atStartOfDay().toLocalDate
-    val yesterday = today.minusDays(1)
-    val issuanceDate = LocalDate.from(DateTimeFormatter.ISO_LOCAL_DATE.parse(document.jsonStr("issuanceDate")))
-    val expiryDate = issuanceDate.plusYears(10)
-    val formattedExpiryDate = DateTimeFormatter.ISO_LOCAL_DATE.format(expiryDate)
+    val idCredential = IdServiceImpl.getIdCredential((name, dateOfBirth))
 
-    document.jsonStr("id") shouldBe "unknown"
-    document.jsonArr("type") shouldBe List("VerifiableCredential", "RedlandIdCredential")
-    document.jsonStr("issuer.id") shouldBe "did:atala:091d41cc-e8fc-4c44-9bd3-c938dcf76dff"
-    document.jsonStr("issuer.name") shouldBe "Metropol City Government"
-    // Test issuance to be today or yesterday, in case the test started to run yesterday
-    issuanceDate should (be(today) or be(yesterday))
-    document.jsonStr("expiryDate") shouldBe formattedExpiryDate
-    document.jsonStr("credentialSubject.id") shouldBe "unknown"
-    document.jsonStr("credentialSubject.identityNumber") shouldBe "RL-2DF6E5A51"
-    document.jsonStr("credentialSubject.name") shouldBe "first-name"
-    document.jsonStr("credentialSubject.dateOfBirth") shouldBe "1973-06-02"
+    val jsonString = Base64Utils.decodeUrlToString(idCredential.encodedCredential)
+    val document = parse(jsonString).toOption.value.hcursor
+
+    val issuerName = "Metropol City Government"
+    val credentialType = IdServiceImpl.credentialTypeId
+    val issuerDID = s"did:prism:${IdServiceImpl.issuerId.uuid}"
+    val issuanceKeyId = DID.masterKeyId
+    val holderName = name
+    val holderDateOfBirth = dateOfBirth
+    val identityNumber =
+      IdServiceImpl.generateSubjectIdNumber(holderName + DateTimeFormatter.ISO_LOCAL_DATE.format(holderDateOfBirth))
+    val issuanceDate = LocalDate.now()
+    val expirationDate = issuanceDate.plusYears(10)
+
+    document.jsonStr("issuerDid") shouldBe issuerDID
+    document.jsonStr("issuanceKeyId") shouldBe issuanceKeyId
+    document.jsonStr("issuerName") shouldBe issuerName
+    document.jsonStr("issuanceDate") shouldBe DateTimeFormatter.ISO_LOCAL_DATE.format(issuanceDate)
+    document.jsonStr("expiryDate") shouldBe DateTimeFormatter.ISO_LOCAL_DATE.format(expirationDate)
+    document.jsonStr("credentialSubject.credentialType") shouldBe credentialType
+    document.jsonStr("credentialSubject.name") shouldBe holderName
+    document.jsonStr("credentialSubject.dateOfBirth") shouldBe DateTimeFormatter.ISO_LOCAL_DATE.format(
+      holderDateOfBirth
+    )
+    document.jsonStr("credentialSubject.identityNumber") shouldBe identityNumber
 
     // Verify HTML view
-    val expectedHtmlView = readResource("id_credential.html").replace("@expiryDate", formattedExpiryDate)
-    document.jsonStr("view.html") shouldBe expectedHtmlView
+    val expectedHtmlView = readResource("id_credential.html")
+      .replace("@issuerName", issuerName)
+      .replace("@identityNumber", identityNumber)
+      .replace("@holderDateOfBirth", DateTimeFormatter.ISO_LOCAL_DATE.format(holderDateOfBirth))
+      .replace("@holderName", holderName)
+      .replace("@expirationDate", DateTimeFormatter.ISO_LOCAL_DATE.format(expirationDate))
+
+    document.jsonStr("credentialSubject.html") shouldBe expectedHtmlView
   }
 }
 

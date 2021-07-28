@@ -13,14 +13,18 @@ object AtalaOperationsDAO {
   type AtalaOperationData = (AtalaOperationId, AtalaObjectId, AtalaOperationStatus)
 
   private val insertSQL =
-    "INSERT INTO atala_operations (signed_atala_operation_id, atala_object_id, atala_operation_status) VALUES (?, ?, ?)"
+    """
+      |INSERT INTO atala_operations (signed_atala_operation_id, atala_object_id, atala_operation_status)
+      |VALUES (?, ?, ?)
+      |ON CONFLICT (signed_atala_operation_id) DO NOTHING
+    """.stripMargin
 
-  def insert(data: AtalaOperationData): ConnectionIO[Unit] = {
-    Update[AtalaOperationData](insertSQL).run(data).void
+  def insert(data: AtalaOperationData): ConnectionIO[Int] = {
+    Update[AtalaOperationData](insertSQL).run(data)
   }
 
-  def insertMany(dataMany: List[AtalaOperationData]): ConnectionIO[Unit] = {
-    Update[AtalaOperationData](insertSQL).updateMany(dataMany).void
+  def insertMany(dataMany: List[AtalaOperationData]): ConnectionIO[Int] = {
+    Update[AtalaOperationData](insertSQL).updateMany(dataMany)
   }
 
   def updateAtalaOperationStatus(
@@ -37,14 +41,23 @@ object AtalaOperationsDAO {
       atalaOperationIds: List[AtalaOperationId],
       atalaOperationStatus: AtalaOperationStatus
   ): ConnectionIO[Unit] = {
-    NonEmptyList.fromList(atalaOperationIds) match {
-      case Some(atalaOperationIdsNonEmpty) =>
-        val fragment = fr"UPDATE atala_operations" ++
-          fr"SET atala_operation_status = $atalaOperationStatus" ++
-          fr"WHERE" ++ in(fr"signed_atala_operation_id", atalaOperationIdsNonEmpty)
-        fragment.update.run.void
-      case None =>
-        unit
+    NonEmptyList.fromList(atalaOperationIds).fold(unit) { atalaOperationIdsNonEmpty =>
+      val fragment = fr"UPDATE atala_operations" ++
+        fr"SET atala_operation_status = $atalaOperationStatus" ++
+        fr"WHERE" ++ in(fr"signed_atala_operation_id", atalaOperationIdsNonEmpty)
+      fragment.update.run.void
+    }
+  }
+
+  def updateAtalaOperationObjectBatch(
+      atalaOperationIds: List[AtalaOperationId],
+      atalaObjectId: AtalaObjectId
+  ): ConnectionIO[Unit] = {
+    NonEmptyList.fromList(atalaOperationIds).fold(unit) { atalaOperationIdsNonEmpty =>
+      val fragment = fr"UPDATE atala_operations" ++
+        fr"SET atala_object_id = $atalaObjectId" ++
+        fr"WHERE" ++ in(fr"signed_atala_operation_id", atalaOperationIdsNonEmpty)
+      fragment.update.run.void
     }
   }
 

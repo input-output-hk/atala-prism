@@ -5,6 +5,7 @@ import io.circe.Json
 import java.time.Instant
 
 trait ProcessingTaskFixtures {
+  val workerNumber = 1
   val sampleTaskData = ProcessingTaskData(Json.fromString("sample"))
 
   val taskLeaseConfig = new ProcessingTaskLeaseConfig(

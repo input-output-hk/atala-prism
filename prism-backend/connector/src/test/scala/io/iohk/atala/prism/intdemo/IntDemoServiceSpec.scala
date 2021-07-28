@@ -8,7 +8,7 @@ import Testing.{eventually, neverEver}
 import io.iohk.atala.prism.models.ParticipantId
 import io.iohk.atala.prism.intdemo.protos.{intdemo_api, intdemo_models}
 import io.iohk.atala.prism.protos.credential_models
-import org.mockito.ArgumentMatcher
+// import org.mockito.ArgumentMatcher
 import org.mockito.ArgumentMatchersSugar.{any, argThat, eqTo}
 import org.mockito.MockitoSugar.{after, mock, verify, when}
 import org.scalatest.flatspec.AnyFlatSpec
@@ -65,7 +65,7 @@ class IntDemoServiceSpec extends AnyFlatSpec {
         verify(connectorIntegration, neverEver).sendCredential(
           any[ParticipantId],
           any[ConnectionId],
-          any[credential_models.Credential]
+          any[credential_models.PlainTextCredential]
         )
         verify(streamObserver, neverEver).onError(any)
       }
@@ -85,7 +85,7 @@ class IntDemoServiceSpec extends AnyFlatSpec {
       verify(connectorIntegration, neverEver).sendCredential(
         any[ParticipantId],
         any[ConnectionId],
-        any[credential_models.Credential]
+        any[credential_models.PlainTextCredential]
       )
     }
   }
@@ -169,7 +169,7 @@ class IntDemoServiceSpec extends AnyFlatSpec {
         verify(connectorIntegration, neverEver).sendCredential(
           any[ParticipantId],
           any[ConnectionId],
-          any[credential_models.Credential]
+          any[credential_models.PlainTextCredential]
         )
         verify(streamObserver, eventually.times(1)).onError(any[IllegalStateException])
       }
@@ -189,7 +189,7 @@ class IntDemoServiceSpec extends AnyFlatSpec {
           .sendCredential(
             any[ParticipantId],
             any[ConnectionId],
-            any[credential_models.Credential]
+            any[credential_models.PlainTextCredential]
           )
       }
     }
@@ -249,7 +249,10 @@ object IntDemoServiceSpec {
   private val token = new TokenString("a token")
   private val connection = Connection(connectionToken = token, connectionId = connectionId)
   private val userInfo = "X"
-  private val credential = credential_models.Credential("type-id", "credential-document")
+  private val credential = credential_models.PlainTextCredential(
+    encodedCredential = "some encoded credential",
+    encodedMerkleProof = "encoded proof"
+  )
   private val proofRequest = credential_models.ProofRequest(typeIds = Seq("type-id"), connectionToken = token.token)
 
   def intDemoService(testCode: (ConnectorIntegration, IntDemoRepository, IntDemoService[String]) => Any): Unit = {
@@ -289,20 +292,15 @@ object IntDemoServiceSpec {
     ()
   }
 
-  private def credentialMatcher: credential_models.Credential = {
-    argThat(new ArgumentMatcher[credential_models.Credential] {
-      override def matches(c: credential_models.Credential): Boolean = {
-        c == credential
-      }
-    })
+  private def credentialMatcher: credential_models.PlainTextCredential = {
+    argThat { c: credential_models.PlainTextCredential =>
+      c == credential
+    }
   }
 
   private def proofRequestMatcher: credential_models.ProofRequest = {
-    argThat(new ArgumentMatcher[credential_models.ProofRequest] {
-      override def matches(p: credential_models.ProofRequest): Boolean = {
-        println(s"Executing proof request matcher for $p")
-        p == proofRequest
-      }
-    })
+    argThat { p: credential_models.ProofRequest =>
+      p == proofRequest
+    }
   }
 }

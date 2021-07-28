@@ -22,8 +22,6 @@ class InMemoryLedgerService(onAtalaObject: AtalaObjectNotificationHandler)(impli
 
   override def getType: Ledger = Ledger.InMemory
 
-  override def supportsOnChainData: Boolean = true
-
   override def publish(obj: node_internal.AtalaObject): Future[PublicationInfo] = {
     for {
       objectBytes <- Future.successful(obj.toByteArray)

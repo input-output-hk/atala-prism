@@ -1,4 +1,6 @@
 <configuration>
+    <property name="log.colorPattern" value="%magenta(%d{yyyy-MM-dd HH:mm:ss}) %highlight(%-5level) %yellow(%thread) %green(%logger) %msg%n"/>
+
     <appender name="FILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
         <file>${application.home:-.}/logs/application.log</file>
 
@@ -10,15 +12,82 @@
             <maxHistory>30</maxHistory>
             <totalSizeCap>3GB</totalSizeCap>
         </rollingPolicy>
-
-        <encoder>
+        <encoder class="net.logstash.logback.encoder.LoggingEventCompositeJsonEncoder">
             <pattern>%date [%level] from %logger in %thread - %message%n%rEx%xException </pattern>
+            <providers>
+                <contextName>
+                    <fieldName>node</fieldName>
+                </contextName>
+                <timestamp>
+                    <fieldName>ts</fieldName>
+                    <timeZone>UTC</timeZone>
+                </timestamp>
+                <loggerName>
+                    <fieldName>logger</fieldName>
+                </loggerName>
+                <logLevel>
+                    <fieldName>level</fieldName>
+                </logLevel>
+                <callerData>
+                    <classFieldName>class</classFieldName>
+                    <methodFieldName>method</methodFieldName>
+                    <lineFieldName>line</lineFieldName>
+                    <fileFieldName>file</fileFieldName>
+                </callerData>
+                <threadName>
+                    <fieldName>thread</fieldName>
+                </threadName>
+                <mdc />
+                <arguments>
+                    <includeNonStructuredArguments>false</includeNonStructuredArguments>
+                </arguments>
+                <stackTrace>
+                    <fieldName>stack</fieldName>
+                </stackTrace>
+                <message>
+                    <fieldName>msg</fieldName>
+                </message>
+            </providers>
         </encoder>
     </appender>
 
     <appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">
-        <encoder>
-            <pattern>[%level] %logger{15} - %message%n%rEx%xException{10} </pattern>
+        <encoder class="net.logstash.logback.encoder.LoggingEventCompositeJsonEncoder">
+            <pattern>%date [%level] from %logger in %thread - %message%n%rEx%xException </pattern>
+            <providers>
+                <contextName>
+                    <fieldName>node</fieldName>
+                </contextName>
+                <timestamp>
+                    <fieldName>ts</fieldName>
+                    <timeZone>UTC</timeZone>
+                </timestamp>
+                <loggerName>
+                    <fieldName>logger</fieldName>
+                </loggerName>
+                <logLevel>
+                    <fieldName>level</fieldName>
+                </logLevel>
+                <callerData>
+                    <classFieldName>class</classFieldName>
+                    <methodFieldName>method</methodFieldName>
+                    <lineFieldName>line</lineFieldName>
+                    <fileFieldName>file</fileFieldName>
+                </callerData>
+                <threadName>
+                    <fieldName>thread</fieldName>
+                </threadName>
+                <mdc />
+                <arguments>
+                    <includeNonStructuredArguments>false</includeNonStructuredArguments>
+                </arguments>
+                <stackTrace>
+                    <fieldName>stack</fieldName>
+                </stackTrace>
+                <message>
+                    <fieldName>msg</fieldName>
+                </message>
+            </providers>
         </encoder>
     </appender>
 

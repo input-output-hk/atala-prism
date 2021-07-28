@@ -32,13 +32,25 @@ object ReceivedCredentialsDAO {
 
   def getReceivedCredentialsFor(
       verifierId: ParticipantId,
-      contactId: Contact.Id
+      contactIdMaybe: Option[Contact.Id]
   ): ConnectionIO[List[ReceivedSignedCredential]] = {
-    sql"""SELECT contact_id, encoded_signed_credential, received_at
-         |FROM received_credentials JOIN contacts USING (contact_id)
-         |WHERE created_by = $verifierId AND contact_id = $contactId
-         |ORDER BY received_at
-       """.stripMargin.query[ReceivedSignedCredential].to[List]
+    val statement = contactIdMaybe match {
+      case Some(contactId) =>
+        sql"""SELECT contact_id, encoded_signed_credential, received_at
+             |FROM received_credentials JOIN contacts USING (contact_id)
+             |WHERE created_by = $verifierId AND contact_id = $contactId
+             |ORDER BY received_at
+       """.stripMargin
+
+      case None =>
+        sql"""SELECT contact_id, encoded_signed_credential, received_at
+             |FROM received_credentials JOIN contacts USING (contact_id)
+             |WHERE created_by = $verifierId
+             |ORDER BY received_at
+       """.stripMargin
+    }
+
+    statement.query[ReceivedSignedCredential].to[List]
   }
 
   def getLatestCredentialExternalId(

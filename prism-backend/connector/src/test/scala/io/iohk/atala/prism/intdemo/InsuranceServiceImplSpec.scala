@@ -10,45 +10,65 @@ import org.scalatest.flatspec.AnyFlatSpec
 import org.scalatest.matchers.should.Matchers._
 import Testing._
 import org.scalatest.OptionValues._
+import io.iohk.atala.prism.utils.Base64Utils
+import io.iohk.atala.prism.identity.DID
 
 class InsuranceServiceImplSpec extends AnyFlatSpec {
 
   "getInsuranceCredential" should "return a correct insurance credential" in {
-    val idCredential = IdServiceImpl.getIdCredential(("name", LocalDate.of(1973, 6, 2)))
+    val (name, dateOfBirth) = ("Jo Wong", LocalDate.of(1973, 6, 2))
+
+    val idCredential = IdServiceImpl.getIdCredential((name, dateOfBirth))
     val degreeCredential = DegreeServiceImpl.getDegreeCredential(idCredential)
     val employmentCredential =
       EmploymentServiceImpl.getEmploymentCredential(RequiredEmploymentData(idCredential, degreeCredential))
-    val credential =
+    val insuranceCredential =
       InsuranceServiceImpl.getInsuranceCredential(RequiredInsuranceData(idCredential, employmentCredential))
 
-    // Verify type
-    credential.typeId shouldBe "VerifiableCredential/AtalaCertificateOfInsurance"
+    val employmentCredentialData = EmploymentCredentialData(employmentCredential)
 
     // Verify JSON document
-    val document = parse(credential.credentialDocument).toOption.value.hcursor
-    val issuanceDate = LocalDate.from(DateTimeFormatter.ISO_LOCAL_DATE.parse(document.jsonStr("issuanceDate")))
-    val expiryDate = DateTimeFormatter.ISO_LOCAL_DATE.format(issuanceDate.plusYears(1))
-    val today = LocalDate.now().atStartOfDay().toLocalDate
-    val yesterday = today.minusDays(1)
+    val jsonString = Base64Utils.decodeUrlToString(insuranceCredential.encodedCredential)
+    val document = parse(jsonString).toOption.value.hcursor
 
-    document.jsonStr("id") shouldBe "unknown"
-    document.jsonArr("type") shouldBe List("VerifiableCredential", "AtalaCertificateOfInsurance")
-    document.jsonStr("issuer.id") shouldBe "did:atala:a1cb7eee-65c1-4d7f-9417-db8a37a6212a"
-    document.jsonStr("issuer.name") shouldBe "Verified Insurance Ltd."
-    // Test issuance to be today or yesterday, in case the test started to run yesterday
-    issuanceDate should (be(today) or be(yesterday))
-    document.jsonStr("expiryDate") shouldBe expiryDate
-    document.jsonStr("policyNumber") shouldBe "ABC-123456789"
-    document.jsonStr("productClass") shouldBe "Health Insurance"
+    val credentialType = InsuranceServiceImpl.credentialTypeId
+    val issuerName = "Verified Insurance Ltd"
+    val issuerDID = s"did:prism:${InsuranceServiceImpl.issuerId.uuid}"
+    val issuanceKeyId = DID.masterKeyId
+    val issuanceDate = LocalDate.now()
+    val expirationDate = issuanceDate.plusYears(1)
+    val policyNumber = "ABC-123456789"
+    val productClass = "Health Insurance"
+    val holderName = name
+    val holderDateOfBirth = dateOfBirth
+    val currentEmployerName = employmentCredentialData.employerName
+    val currentEmployerAddress = employmentCredentialData.employerAddress
 
-    document.jsonStr("credentialSubject.id") shouldBe "unknown"
-    document.jsonStr("credentialSubject.name") shouldBe "name"
-    document.jsonStr("credentialSubject.dateOfBirth") shouldBe "1973-06-02"
-    document.jsonStr("credentialSubject.currentEmployer.name") shouldBe "Decentralized Inc."
-    document.jsonStr("credentialSubject.currentEmployer.address") shouldBe "67 Clasper Way, Herefoot, HF1 0AF"
+    document.jsonStr("issuerDid") shouldBe issuerDID
+    document.jsonStr("issuerName") shouldBe issuerName
+    document.jsonStr("issuanceKeyId") shouldBe issuanceKeyId
+    document.jsonStr("issuanceDate") shouldBe DateTimeFormatter.ISO_LOCAL_DATE.format(issuanceDate)
+    document.jsonStr("expiryDate") shouldBe DateTimeFormatter.ISO_LOCAL_DATE.format(expirationDate)
+    document.jsonStr("policyNumber") shouldBe policyNumber
+    document.jsonStr("productClass") shouldBe productClass
+
+    document.jsonStr("credentialSubject.credentialType") shouldBe credentialType
+    document.jsonStr("credentialSubject.name") shouldBe holderName
+    document.jsonStr("credentialSubject.dateOfBirth") shouldBe DateTimeFormatter.ISO_LOCAL_DATE.format(
+      holderDateOfBirth
+    )
+
+    document.jsonStr("credentialSubject.currentEmployer.name") shouldBe currentEmployerName
+    document.jsonStr("credentialSubject.currentEmployer.address") shouldBe currentEmployerAddress
 
     // Verify HTML view
-    val expectedHtmlView = readResource("health_credential.html").replace("@policyEndDate", expiryDate)
-    document.jsonStr("view.html") shouldBe expectedHtmlView
+    val expectedHtml = readResource("health_credential.html")
+      .replace("@issuerName", issuerName)
+      .replace("@productClass", productClass)
+      .replace("@policyNumber", policyNumber)
+      .replace("@holderName", holderName)
+      .replace("@expirationDate", DateTimeFormatter.ISO_LOCAL_DATE.format(expirationDate))
+
+    document.jsonStr("credentialSubject.html") shouldBe expectedHtml
   }
 }

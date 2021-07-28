@@ -3,7 +3,6 @@ package io.iohk.atala.prism.node.services
 import java.time.Instant
 import java.time.temporal.ChronoUnit
 
-import com.google.protobuf.ByteString
 import com.typesafe.config.ConfigFactory
 import io.iohk.atala.prism.node.NodeConfig
 import io.iohk.atala.prism.node.cardano.CardanoClient
@@ -18,7 +17,6 @@ import org.scalatest.OptionValues._
 import org.scalatest.concurrent.PatienceConfiguration.Timeout
 
 import scala.concurrent.duration._
-import scala.util.Random
 
 class CardanoLedgerServiceIntegrationSpec extends AtalaWithPostgresSpec {
   private val LAST_SYNCED_BLOCK_NO = "last_synced_block_no"
@@ -61,9 +59,7 @@ class CardanoLedgerServiceIntegrationSpec extends AtalaWithPostgresSpec {
       // Publish random object
       val atalaObject = node_internal
         .AtalaObject()
-        .withBlock(
-          node_internal.AtalaObject.Block.BlockHash(ByteString.copyFrom(random32Bytes()))
-        )
+        .withBlockContent(node_internal.AtalaBlock(version = "1.0", operations = Seq()))
       val transaction = cardanoLedgerService.publish(atalaObject).futureValue(LONG_TIMEOUT).transaction
       println(s"AtalaObject published in transaction ${transaction.transactionId} on ${transaction.ledger}")
 
@@ -83,12 +79,6 @@ class CardanoLedgerServiceIntegrationSpec extends AtalaWithPostgresSpec {
       notifiedAtalaObjects must contain(atalaObject)
       releaseCardanoClient.unsafeRunSync()
     }
-  }
-
-  private def random32Bytes(): Array[Byte] = {
-    val bytes = Array.ofDim[Byte](32)
-    Random.nextBytes(bytes)
-    bytes
   }
 
   /**

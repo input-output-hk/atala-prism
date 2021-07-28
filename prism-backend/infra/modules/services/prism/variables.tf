@@ -205,6 +205,24 @@ variable "acuant_subscription_id" {
   description = "Subscription ID for interacting with Acuant API"
 }
 
+variable "identitymind_url" {
+  description = "URL of Acuant IdentityMind API"
+  default     = "https://sandbox.identitymind.com"
+}
+
+variable "identitymind_profile" {
+  description = "Profile tu use when interacting with Acuant IdentityMind API"
+  default     = "assureid"
+}
+
+variable "identitymind_username" {
+  description = "Username for interacting with Acuant IdentityMind API"
+}
+
+variable "identitymind_password" {
+  description = "Password for interacting with Acuant IdentityMind API"
+}
+
 variable "cardano_confirmation_blocks" {
   description = "Number of blocks to wait for a particular Cardano block to be confirmed by PRISM"
 }

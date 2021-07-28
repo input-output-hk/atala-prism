@@ -32,6 +32,7 @@ import io.iohk.atala.prism.crypto.MerkleTree.MerkleInclusionProof
 import io.iohk.atala.prism.crypto.{ECSignature, SHA256Digest}
 import io.iohk.atala.prism.protos.connector_api.SendMessagesRequest
 import io.iohk.atala.prism.protos.console_models.ContactConnectionStatus
+import io.iohk.atala.prism.utils.Base64Utils
 
 import scala.util.{Failure, Success, Try}
 
@@ -269,8 +270,15 @@ package object grpc {
           .map(proto2DateTransformer.transform)
       }
 
-      val nameOrExternalId = request.filterBy.map(_.nameOrExternalId).map(_.trim).filter(_.nonEmpty)
-      val groupName = request.filterBy.map(_.groupName).map(InstitutionGroup.Name.apply)
+      val nameOrExternalId = request.filterBy
+        .map(_.nameOrExternalId)
+        .map(_.trim)
+        .filter(_.nonEmpty)
+      val groupName = request.filterBy
+        .map(_.groupName)
+        .map(_.trim)
+        .filter(_.nonEmpty)
+        .map(InstitutionGroup.Name.apply)
 
       val defaultSortBy = ResultOrdering(Contact.SortBy.createdAt)
       val sortByT = request.sortBy.map(toContactsResultOrdering).getOrElse(Try(defaultSortBy))
@@ -575,7 +583,12 @@ package object grpc {
                   GrpcAuthenticationHeader.PublishedDIDBased
                 else GrpcAuthenticationHeader.UnpublishedDIDBased
 
-              didBased(RequestNonce(nonce.getBytes.toVector), did, keyId, ECSignature(signature.getBytes))
+              didBased(
+                RequestNonce(Base64Utils.decodeURL(nonce).toVector),
+                did,
+                keyId,
+                ECSignature(Base64Utils.decodeURL(signature))
+              )
             }
       }
       .flatten
@@ -741,7 +754,10 @@ package object grpc {
 
   implicit val getStoredCredentialsConverter: ProtoConverter[GetStoredCredentialsForRequest, GetStoredCredentials] =
     (request: GetStoredCredentialsForRequest) => {
-      Contact.Id.from(request.individualId).map(GetStoredCredentials)
+      Contact.Id
+        .optional(request.individualId)
+        .map(GetStoredCredentials.FilterBy.apply)
+        .map(GetStoredCredentials.apply)
     }
 
   implicit val getCredentialTypesConverter: ProtoConverter[GetCredentialTypesRequest, GetCredentialTypes] =

@@ -10,7 +10,6 @@ import io.iohk.atala.prism.node.cardano.models.{Address, AtalaObjectMetadata, Lo
 import io.iohk.atala.prism.node.cardano.wallet.CardanoWalletApiClient
 import io.iohk.atala.prism.node.poc.estimations.CardanoFeeEstimator.{Estimation, Issuer, TotalEstimation}
 import io.iohk.atala.prism.protos.node_internal.AtalaObject
-import io.iohk.atala.prism.protos.node_internal.AtalaObject.Block
 import io.iohk.atala.prism.protos.node_models.{AtalaOperation, SignedAtalaOperation}
 import io.iohk.atala.prism.protos.{node_internal, node_models}
 import org.scalatest.OptionValues._
@@ -97,7 +96,7 @@ class CardanoFeeEstimator(walletId: WalletId, paymentAddress: Address, cardanoWa
 
   private def createAtalaObject(operations: SignedAtalaOperation*): AtalaObject = {
     val block = node_internal.AtalaBlock("1.0", operations)
-    AtalaObject(block = Block.BlockContent(block), blockOperationCount = operations.size)
+    AtalaObject(blockOperationCount = operations.size).withBlockContent(block)
   }
 
   private def signOperation(atalaOperation: AtalaOperation, privateKey: ECPrivateKey): SignedAtalaOperation = {

@@ -1,6 +1,5 @@
 package io.iohk.atala.prism.management.console.clients
 
-import io.grpc.Metadata
 import io.grpc.stub.MetadataUtils
 import io.iohk.atala.prism.auth.grpc.GrpcAuthenticationHeader
 import io.iohk.atala.prism.auth.grpc.GrpcAuthenticationHeader.PublishedDIDBased
@@ -12,10 +11,9 @@ import io.iohk.atala.prism.identity.DID.masterKeyId
 import io.iohk.atala.prism.models.ConnectionToken
 import io.iohk.atala.prism.protos.connector_api._
 import io.iohk.atala.prism.protos.connector_models.ContactConnection
-import io.iohk.atala.prism.services.BaseGrpcClientService.AuthHeaders
 import io.iohk.atala.prism.util
 import io.iohk.atala.prism.util.BytesOps
-import io.iohk.atala.prism.utils.{Base64Utils, GrpcUtils}
+import io.iohk.atala.prism.utils.GrpcUtils
 
 import scala.concurrent.{ExecutionContext, Future}
 import scala.util.{Failure, Success, Try}
@@ -25,13 +23,13 @@ trait ConnectorClient {
   // the connector request beforehand, which allows our service to invoke the connector on behalf
   // of such client.
   def generateConnectionTokens(
-      metadata: GrpcAuthenticationHeader.DIDBased,
+      header: GrpcAuthenticationHeader.DIDBased,
       count: Int
   ): Future[Seq[ConnectionToken]]
 
   def sendMessages(
       request: SendMessagesRequest,
-      metadata: GrpcAuthenticationHeader.DIDBased
+      header: GrpcAuthenticationHeader.DIDBased
   ): Future[SendMessagesResponse]
 
   def getConnectionStatus(tokens: Seq[ConnectionToken]): Future[Seq[ContactConnection]]
@@ -92,8 +90,8 @@ object ConnectorClient {
       PublishedDIDBased(
         did = DID.unsafeFromString(config.whitelistedDID.value),
         keyId = masterKeyId,
-        requestNonce = RequestNonce(signedRequest.encodedRequestNonce.getBytes.toVector),
-        signature = ECSignature(signedRequest.encodedSignature.getBytes)
+        requestNonce = RequestNonce(signedRequest.requestNonce.toVector),
+        signature = ECSignature(signedRequest.signature)
       )
     }
     new ConnectorClient.GrpcImpl(connectorService, connectorContactsService)(requestSigner)
@@ -106,11 +104,11 @@ object ConnectorClient {
       extends ConnectorClient {
 
     override def generateConnectionTokens(
-        metadata: GrpcAuthenticationHeader.DIDBased,
+        header: GrpcAuthenticationHeader.DIDBased,
         count: Int
     ): Future[Seq[ConnectionToken]] = {
-      val headers = createMetadataHeaders(metadata)
-      val newStub = MetadataUtils.attachHeaders(connectorService, headers)
+      val metadata = header.toMetadata
+      val newStub = MetadataUtils.attachHeaders(connectorService, metadata)
 
       newStub
         .generateConnectionToken(GenerateConnectionTokenRequest(count))
@@ -119,10 +117,10 @@ object ConnectorClient {
 
     override def sendMessages(
         request: SendMessagesRequest,
-        metadata: GrpcAuthenticationHeader.DIDBased
+        header: GrpcAuthenticationHeader.DIDBased
     ): Future[SendMessagesResponse] = {
-      val headers = createMetadataHeaders(metadata)
-      val newStub = MetadataUtils.attachHeaders(connectorService, headers)
+      val metadata = header.toMetadata
+      val newStub = MetadataUtils.attachHeaders(connectorService, metadata)
 
       newStub.sendMessages(request)
     }
@@ -130,28 +128,13 @@ object ConnectorClient {
     override def getConnectionStatus(tokens: Seq[ConnectionToken]): Future[Seq[ContactConnection]] = {
       val request = ConnectionsStatusRequest()
         .withConnectionTokens(tokens.map(_.token))
-      val signedMetadata = requestSigner(request)
-      val headers = createMetadataHeaders(signedMetadata)
-      val newStub = MetadataUtils.attachHeaders(contactConnectionService, headers)
+      val header = requestSigner(request)
+      val metadata = header.toMetadata
+      val newStub = MetadataUtils.attachHeaders(contactConnectionService, metadata)
 
       newStub
         .getConnectionStatus(request)
         .map(_.connections)
-    }
-
-    private def createMetadataHeaders(headers: GrpcAuthenticationHeader.DIDBased): Metadata = {
-      val metadata = new Metadata
-
-      List(
-        AuthHeaders.DID -> headers.did.toString,
-        AuthHeaders.DID_KEY_ID -> headers.keyId,
-        AuthHeaders.DID_SIGNATURE -> Base64Utils.encodeURL(headers.signature.data),
-        AuthHeaders.REQUEST_NONCE -> Base64Utils.encodeURL(headers.requestNonce.bytes.toArray)
-      ).foreach {
-        case (key, value) => metadata.put(key, value)
-      }
-
-      metadata
     }
   }
 }

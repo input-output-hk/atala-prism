@@ -1,8 +1,8 @@
 package io.iohk.atala.prism.node.operations
 
-import cats.data.{EitherT, OptionT}
+import cats.data.EitherT
 import cats.implicits._
-import doobie.free.connection.ConnectionIO
+import doobie.free.connection.{ConnectionIO, unit}
 import doobie.implicits._
 import doobie.postgres.sqlstate
 import io.iohk.atala.prism.crypto.SHA256Digest
@@ -72,8 +72,12 @@ case class UpdateDIDOperation(
     type ConnectionIOEitherTError[T] = EitherT[ConnectionIO, StateError, T]
 
     for {
-      _ <-
-        OptionT(DIDDataDAO.findByDidSuffix(didSuffix)).toRight(StateError.EntityMissing("DID Suffix", didSuffix.value))
+      countUpdated <- EitherT.right(DIDDataDAO.updateLastOperation(didSuffix, digest))
+      _ <- EitherT.cond[ConnectionIO](
+        countUpdated == 1,
+        unit,
+        StateError.EntityMissing("DID Suffix", didSuffix.value)
+      )
       _ <- actions.traverse[ConnectionIOEitherTError, Unit](applyAction)
     } yield ()
   }
@@ -103,16 +107,14 @@ object UpdateDIDOperation extends OperationCompanion[UpdateDIDOperation] {
 
   /** Parses the protobuf representation of operation
     *
-    * @param signedOperation signed operation, needs to be of the type compatible with the called companion object
+    * @param operation operation, needs to be of the type compatible with the called companion object
     * @param ledgerData ledger information provided by the caller, needed to instantiate the operation objects
     * @return parsed operation or ValidationError signifying the operation is invalid
     */
   override def parse(
-      signedOperation: node_models.SignedAtalaOperation,
+      operation: node_models.AtalaOperation,
       ledgerData: LedgerData
   ): Either[ValidationError, UpdateDIDOperation] = {
-    val operation = signedOperation.getOperation
-
     val operationDigest = SHA256Digest.compute(operation.toByteArray)
     val updateOperation = ValueAtPath(operation, Path.root).child(_.getUpdateDid, "updateDid")
 

@@ -138,7 +138,8 @@ private final class ContactsRepositoryImpl[F[_]: BracketThrow](xa: Transactor[F]
     (for {
       contact <- OptionT(ContactsDAO.findContact(institutionId, contactId))
       institutionsInvolved <- OptionT.liftF(InstitutionGroupsDAO.getBy(institutionId, contactId))
-      receivedCredentials <- OptionT.liftF(ReceivedCredentialsDAO.getReceivedCredentialsFor(institutionId, contactId))
+      receivedCredentials <-
+        OptionT.liftF(ReceivedCredentialsDAO.getReceivedCredentialsFor(institutionId, Some(contactId)))
       issuedCredentials <- OptionT.liftF(CredentialsDAO.getIssuedCredentialsBy(institutionId, contactId))
     } yield Contact.WithDetails(contact, institutionsInvolved, receivedCredentials, issuedCredentials)).value
       .logSQLErrors(s"finding contact with details, contact id - $contactId", logger)

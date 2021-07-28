@@ -21,11 +21,19 @@ connect {
 #  enable_token_persistence = true
 # }
 
-# Enable these when going to production
-# encrypt = "qDOPBEr+/oUVeOFQOnVypxwDaHzLrD+lvjo5vCEBbZ0="
-# ca_file = "/etc/consul.d/consul-agent-ca.pem"
-# cert_file = "/etc/consul.d/dc1-server-consul-0.pem"
-# key_file = "/etc/consul.d/dc1-server-consul-0-key.pem"
-# verify_incoming = true
-# verify_outgoing = true
-# verify_server_hostname = true
+{% if consul_tls_enabled == true %}
+# TLS Encryption
+ca_file = "{{ consul_config_directory }}/consul-ca.pem"
+cert_file = "{{ consul_config_directory }}/consul-{{ nomad_mode }}.pem"
+key_file = "{{ consul_config_directory }}/consul-{{ nomad_mode }}-key.pem"
+verify_server_hostname = true
+verify_incoming = true
+verify_outgoing = true
+{% endif %}
+
+{% if consul_gossip_encryption_enabled == true %}
+# Encrypt gossip communication
+encrypt = "{{ encryption.stdout }}"
+encrypt_verify_incoming = true
+encrypt_verify_outgoing = true
+{% endif %}

@@ -10,6 +10,7 @@ import sbtbuildinfo.BuildInfoPlugin.autoImport._
 import sbtdocker.DockerPlugin
 import sbtdocker.DockerPlugin.autoImport._
 import scoverage.ScoverageKeys._
+import sbtghpackages.GitHubPackagesPlugin.autoImport._
 
 object PrismBuild {
 
@@ -32,6 +33,8 @@ object PrismBuild {
         ),
         scalacOptions += "-Ymacro-annotations",
         javacOptions ++= Seq("-source", "1.8", "-target", "1.8"),
+        githubTokenSource := TokenSource.Environment("GITHUB_TOKEN"),
+        resolvers += Resolver.githubPackages("input-output-hk"),
         libraryDependencies ++= scalatestDependencies,
         addCompilerPlugin("org.typelevel" % "kind-projector" % "0.13.0" cross CrossVersion.full),
         coverageScalacPluginVersion := "1.4.1",
@@ -57,7 +60,6 @@ object PrismBuild {
       )
       .enablePlugins(GitVersioning)
 
-  lazy val cryptoLib = ProjectRef(file("../prism-sdk"), "prismCryptoJVM")
   lazy val protosLib = ProjectRef(file("../prism-sdk"), "prismProtosJVM")
   lazy val credentialsLib = ProjectRef(file("../prism-sdk"), "prismCredentialsJVM")
   lazy val connectorLib = ProjectRef(file("../prism-sdk"), "prismConnectorJVM")
@@ -66,6 +68,9 @@ object PrismBuild {
     commonProject(project in file("common"))
       .settings(
         name := "common",
+        resolvers += Resolver.mavenLocal,
+        resolvers += Resolver.jcenterRepo,
+        resolvers += Resolver.mavenCentral,
         libraryDependencies ++=
           doobieDependencies ++
             dockerDependencies ++
@@ -82,9 +87,10 @@ object PrismBuild {
               flyway,
               monix,
               typesafeConfig
-            )
+            ) ++
+            Seq(cryptoJVM)
       )
-      .dependsOn(cryptoLib, protosLib, credentialsLib, connectorLib)
+      .dependsOn(protosLib, credentialsLib, connectorLib)
 
   private def generateImageName(name: String, version: String): ImageName =
     if (sys.env.get("GITHUB").contains("1"))
@@ -142,14 +148,6 @@ object PrismBuild {
       )
       .dependsOn(common % "compile->compile;test->test", connectorLib)
 
-  lazy val nodeClient =
-    commonProject(project in file("node") / "client")
-      .settings(
-        name := "node-client",
-        libraryDependencies ++= monocleDependencies :+ scopt
-      )
-      .dependsOn(node)
-
   lazy val connector =
     commonServerProject("connector")
       .settings(
@@ -160,14 +158,6 @@ object PrismBuild {
       )
       .dependsOn(common % "compile->compile;test->test", connectorLib)
       .enablePlugins(SbtTwirl)
-
-  lazy val connectorClient =
-    commonProject(project in file("connector") / "client")
-      .settings(
-        name := "connector-client",
-        libraryDependencies ++= monocleDependencies :+ scopt
-      )
-      .dependsOn(connector)
 
   lazy val keyderivation =
     commonProject(project in file("util") / "keyderivation")
@@ -202,11 +192,9 @@ object PrismBuild {
       .aggregate(
         common,
         node,
-        nodeClient,
         connector,
-        connectorClient,
         keyderivation,
         vault,
-        managementConsole,
+        managementConsole
       )
 }

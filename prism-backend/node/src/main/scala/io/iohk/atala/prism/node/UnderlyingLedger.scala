@@ -8,8 +8,6 @@ import scala.concurrent.Future
 trait UnderlyingLedger {
   def getType: Ledger
 
-  def supportsOnChainData: Boolean
-
   def publish(obj: node_internal.AtalaObject): Future[PublicationInfo]
 
   def getTransactionDetails(transactionId: TransactionId): Future[TransactionDetails]

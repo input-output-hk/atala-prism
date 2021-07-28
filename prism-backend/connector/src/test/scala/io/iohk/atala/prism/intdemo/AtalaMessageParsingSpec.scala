@@ -1,28 +1,26 @@
 package io.iohk.atala.prism.intdemo
 
-import io.iohk.atala.prism.protos.credential_models.IssuerSentCredential
-import io.iohk.atala.prism.protos.credential_models.{AtalaMessage, Credential, ProofRequest}
-import org.scalatest.matchers.should.Matchers._
+import io.iohk.atala.prism.protos.credential_models.AtalaMessage
+import io.iohk.atala.prism.protos.credential_models.PlainTextCredential
+import io.iohk.atala.prism.protos.credential_models.ProofRequest
 import org.scalatest.flatspec.AnyFlatSpec
+import org.scalatest.matchers.should.Matchers._
 
 class AtalaMessageParsingSpec extends AnyFlatSpec {
 
   "Protobuff" should "parse a credential" in {
-    val credential = Credential("type-id", "document")
+    val encodedCredential = "some json credential"
+    val encodedMerkelProof = "encoded Merkle proof"
+    val credential = PlainTextCredential(encodedCredential, encodedMerkelProof)
 
     val credentialProto =
-      AtalaMessage().withIssuerSentCredential(IssuerSentCredential().withCredential(credential)).toByteArray
+      AtalaMessage().withPlainCredential(credential).toByteArray
 
     val parsedCredential: AtalaMessage = AtalaMessage.parseFrom(credentialProto)
 
-    parsedCredential.message.isHolderSentCredential shouldBe false
-    parsedCredential.message.isProofRequest shouldBe false
-    parsedCredential.message.isIssuerSentCredential shouldBe true
+    parsedCredential.message.isPlainCredential shouldBe true
+    parsedCredential.getPlainCredential shouldBe (credential)
 
-    parsedCredential.message.issuerSentCredential.get.value.isCredential shouldBe true
-    parsedCredential.message.issuerSentCredential.get.value.isAlphaCredential shouldBe false
-
-    parsedCredential.getIssuerSentCredential.getCredential shouldBe credential
   }
 
   it should "parse a proof request" in {
@@ -31,10 +29,7 @@ class AtalaMessageParsingSpec extends AnyFlatSpec {
 
     val parsedProofRequest = AtalaMessage.parseFrom(proofRequestProto)
 
-    parsedProofRequest.message.isHolderSentCredential shouldBe false
     parsedProofRequest.message.isProofRequest shouldBe true
-    parsedProofRequest.message.isIssuerSentCredential shouldBe false
-
     parsedProofRequest.getProofRequest shouldBe proofRequest
   }
 }

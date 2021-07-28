@@ -19,7 +19,7 @@ class IntDemoService[D](
     schedulerPeriod: FiniteDuration,
     requiredDataLoader: TokenString => Future[Option[D]],
     proofRequestIssuer: Connection => Future[Unit],
-    getCredential: D => credential_models.Credential,
+    getCredential: D => credential_models.PlainTextCredential,
     scheduler: Scheduler
 )(implicit
     ec: ExecutionContext

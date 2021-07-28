@@ -42,6 +42,13 @@ object CreateDIDOperationSpec {
   val issuingKeys: ECKeyPair = EC.generateKeyPair()
   val issuingEcKey: ECKeyData = protoECKeyFromPublicKey(issuingKeys.publicKey)
 
+  lazy val dummyTimestamp: TimestampInfo = dummyTimestampInfo
+  lazy val dummyLedgerData: LedgerData = LedgerData(
+    TransactionId.from(Array.fill[Byte](TransactionId.config.size.toBytes.toInt)(0)).value,
+    Ledger.InMemory,
+    dummyTimestamp
+  )
+
   private val dummyTimestampInfo = TimestampInfo(Instant.ofEpochMilli(0), 1, 0)
 
   val exampleOperation: node_models.AtalaOperation = node_models.AtalaOperation(
@@ -94,13 +101,6 @@ class CreateDIDOperationSpec extends AtalaWithPostgresSpec {
   import CreateDIDOperationSpec._
 
   lazy val didDataRepository: DIDDataRepository[IO] = DIDDataRepository(database)
-  lazy val dummyTimestamp: TimestampInfo = dummyTimestampInfo
-  lazy val dummyLedgerData: LedgerData = LedgerData(
-    TransactionId.from(Array.fill[Byte](TransactionId.config.size.toBytes.toInt)(0)).value,
-    Ledger.InMemory,
-    dummyTimestamp
-  )
-
   "CreateDIDOperation.parse" should {
     "parse valid CreateDid AtalaOperation" in {
       CreateDIDOperation.parse(exampleOperation, dummyLedgerData) mustBe a[Right[_, _]]

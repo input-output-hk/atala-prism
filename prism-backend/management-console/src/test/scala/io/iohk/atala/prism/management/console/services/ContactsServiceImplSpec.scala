@@ -754,6 +754,52 @@ class ContactsServiceImplSpec extends ManagementConsoleRpcSpecBase with DIDUtil 
       }
     }
 
+    "return the contacts when FilterBy is provided with no criteria" in {
+      val keyPair = EC.generateKeyPair()
+      val publicKey = keyPair.publicKey
+      val did = generateDid(publicKey)
+      val connectionToken = "some-connection-token"
+      val institutionId = createParticipant("institutionx", did)
+      val groupNameA = createInstitutionGroup(institutionId, InstitutionGroup.Name("Group A")).name
+      val contactA = createContact(
+        institutionId = institutionId,
+        name = "Alice",
+        connectionToken = connectionToken
+      )
+      val contactB = createContact(
+        institutionId = institutionId,
+        name = "Bob",
+        groupName = Some(groupNameA),
+        connectionToken = connectionToken
+      )
+      val request = console_api
+        .GetContactsRequest(
+          limit = 2
+        )
+        .withFilterBy(console_api.GetContactsRequest.FilterBy())
+      val rpcRequest = SignedRpcRequest.generate(keyPair, did, request)
+      val connectionMissingWithToken = connectionMissing(Some(connectionToken))
+      usingApiAsContacts(rpcRequest) { serviceStub =>
+        connectorMock.getConnectionStatus(*).returns {
+          Future.successful(
+            List(connectionMissingWithToken, connectionMissingWithToken)
+          )
+        }
+
+        val response = serviceStub.getContacts(request)
+        val contactsReturned = response.data.flatMap(_.contact)
+        val contactsReturnedNoJsons = contactsReturned map cleanContactData
+        val contactsReturnedJsons = contactsReturned map contactJsonData
+        contactsReturnedNoJsons.toList must be(
+          List(
+            toContactProto(contactA, connectionMissingWithToken),
+            toContactProto(contactB, connectionMissingWithToken)
+          ).map(cleanContactData)
+        )
+        contactsReturnedJsons.toList must be(List(contactA.data, contactB.data))
+      }
+    }
+
     "return first contacts matching a group" in {
       val keyPair = EC.generateKeyPair()
       val publicKey = keyPair.publicKey

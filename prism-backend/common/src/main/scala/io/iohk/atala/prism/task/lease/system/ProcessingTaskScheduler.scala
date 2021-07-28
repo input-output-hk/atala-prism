@@ -65,7 +65,7 @@ class ProcessingTaskScheduler[S <: ProcessingTaskState](
       }
 
       Task
-        .race(extendLeaseTask, processingTaskRouter.process(task))
+        .race(extendLeaseTask, processingTaskRouter.process(task, workerNumber))
         .flatMap {
           case Right(ProcessingTaskResult.ProcessingTaskFinished) =>
             processingTaskService

@@ -19,6 +19,7 @@ import io.iohk.atala.prism.protos.{node_internal, node_models}
 import org.slf4j.LoggerFactory
 
 import scala.collection.BuildFrom
+import scala.util.control.NonFatal
 
 trait BlockProcessingService {
 
@@ -50,6 +51,7 @@ class BlockProcessingServiceImpl extends BlockProcessingService {
       blockTimestamp: Instant,
       blockIndex: Int
   ): ConnectionIO[Boolean] = {
+    val methodName = "processBlock"
     val operations = block.operations.toList
     val operationsWithSeqNumbers = operations.zipWithIndex
     val parsedOperationsEither = eitherTraverse(operationsWithSeqNumbers) {
@@ -81,17 +83,37 @@ class BlockProcessingServiceImpl extends BlockProcessingService {
                 // we want operations to be atomic - either it is applied correctly or the state is not modified
                 // we are using SQL savepoints for that, which can be used to do subtransactions
                 savepoint <- connection.setSavepoint
+                atalaOperationInfo <- AtalaOperationsDAO.getAtalaOperationInfo(atalaOperationId)
                 _ <- processOperation(parsedOperation, protoOperation, atalaOperationId)
                   .flatMap {
                     case Right(_) =>
-                      logger.info(s"Operation applied:\n${parsedOperation.digest}")
+                      logRequestWithContext(
+                        methodName,
+                        s"Operation applied:\n${parsedOperation.digest}",
+                        atalaOperationId.toString,
+                        protoOperation
+                      )
                       connection.releaseSavepoint(savepoint)
                     case Left(err) =>
                       logger.warn(
                         s"Operation was not applied:\n${err.toString}\nOperation:\n${protoOperation.toProtoString}"
                       )
-                      connection.rollback(savepoint)
-                      AtalaOperationsDAO.updateAtalaOperationStatus(atalaOperationId, AtalaOperationStatus.REJECTED)
+                      logRequestWithContext(
+                        methodName,
+                        s"Operation was not applied:\n${err.toString}",
+                        atalaOperationId.toString,
+                        protoOperation
+                      )
+                      connection
+                        .rollback(savepoint)
+                        .flatMap { _ =>
+                          if (atalaOperationInfo.exists(_.operationStatus != AtalaOperationStatus.APPLIED)) {
+                            AtalaOperationsDAO
+                              .updateAtalaOperationStatus(atalaOperationId, AtalaOperationStatus.REJECTED)
+                          } else {
+                            connection.unit
+                          }
+                        }
                   }
               } yield ()
               result
@@ -151,7 +173,39 @@ class BlockProcessingServiceImpl extends BlockProcessingService {
       case ex: java.security.SignatureException =>
         logger.warn("Unable to parse signature", ex)
         Left(StateError.InvalidSignature())
+      case NonFatal(ex) =>
+        logNonFatalError(
+          "verifySignature",
+          "NonFatal Error",
+          AtalaOperationId.of(protoOperation).toString,
+          protoOperation,
+          ex
+        )
     }
+  }
+
+  private def logNonFatalError(
+      methodName: String,
+      message: String,
+      operationId: String,
+      request: node_models.SignedAtalaOperation,
+      ex: Throwable
+  ) = {
+    logger.error(
+      s"methodName:$methodName \n $message \n operationId = $operationId \n request = ${request.toProtoString}, \n Exception : $ex"
+    )
+    throw new RuntimeException(ex)
+  }
+
+  private def logRequestWithContext(
+      methodName: String,
+      message: String,
+      operationId: String,
+      request: node_models.SignedAtalaOperation
+  ): Unit = {
+    logger.info(
+      s"methodName:$methodName, \n  $message \n operationId = $operationId \n request = \n ${request.toProtoString}"
+    )
   }
 
   /** Applies function to all sequence elements, up to the point error occurs

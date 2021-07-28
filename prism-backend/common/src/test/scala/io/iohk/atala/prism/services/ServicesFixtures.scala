@@ -19,6 +19,7 @@ import io.iohk.atala.prism.crypto.MerkleTree.MerkleInclusionProof
 import io.iohk.atala.prism.protos.credential_models.PlainTextCredential
 import io.iohk.atala.prism.services.BaseGrpcClientService.DidBasedAuthConfig
 import org.scalatest.OptionValues._
+import io.iohk.atala.prism.utils.Base64Utils
 
 trait ServicesFixtures {
 
@@ -60,7 +61,7 @@ trait ServicesFixtures {
 
     def createRawMessage(json: String): ByteString = {
       credential_models
-        .Credential(typeId = "VerifiableCredential/RedlandIdCredential", credentialDocument = json)
+        .PlainTextCredential(encodedCredential = Base64Utils.encodeURL(json.getBytes))
         .toByteString
     }
 

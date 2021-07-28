@@ -13,7 +13,7 @@ import io.iohk.atala.prism.crypto.MerkleTree.MerkleRoot
 import io.iohk.atala.prism.crypto.SHA256Digest
 import io.iohk.atala.prism.identity.DID.masterKeyId
 import io.iohk.atala.prism.identity.{DID, DIDSuffix}
-import io.iohk.atala.prism.models.{Ledger, TransactionId, TransactionInfo}
+import io.iohk.atala.prism.models.{Ledger, TransactionId}
 import io.iohk.atala.prism.node.errors.NodeError
 import io.iohk.atala.prism.node.grpc.ProtoCodecs
 import io.iohk.atala.prism.node.models.nodeState.{CredentialBatchState, LedgerData}
@@ -29,10 +29,6 @@ import io.iohk.atala.prism.node.operations.path.{Path, ValueAtPath}
 import io.iohk.atala.prism.node.operations._
 import io.iohk.atala.prism.node.repositories.daos.{DIDDataDAO, PublicKeysDAO}
 import io.iohk.atala.prism.node.repositories.{CredentialBatchesRepository, DIDDataRepository}
-import io.iohk.atala.prism.node.services.ObjectManagementService.{
-  AtalaObjectTransactionInfo,
-  AtalaObjectTransactionStatus
-}
 import io.iohk.atala.prism.node.services.{BlockProcessingServiceSpec, ObjectManagementService}
 import io.iohk.atala.prism.protos.node_api._
 import io.iohk.atala.prism.protos.{common_models, node_api, node_models}
@@ -59,14 +55,6 @@ class NodeServiceSpec
 
   private val objectManagementService = mock[ObjectManagementService]
   private val credentialBatchesRepository = mock[CredentialBatchesRepository[IO]]
-
-  private val testTransactionInfo =
-    TransactionInfo(TransactionId.from(SHA256Digest.compute("test".getBytes()).value).value, Ledger.InMemory)
-  private val testTransactionInfoProto =
-    common_models
-      .TransactionInfo()
-      .withTransactionId(testTransactionInfo.transactionId.toString)
-      .withLedger(common_models.Ledger.IN_MEMORY)
 
   override def beforeEach(): Unit = {
     super.beforeEach()
@@ -612,57 +600,6 @@ class NodeServiceSpec
       val response = service.getCredentialRevocationTime(validRequest)
       response.revocationLedgerData must be(Some(revocationLedgerDataProto))
       response.lastSyncedBlockTimestamp must be(Some(dummySyncTimestamp.toProtoTimestamp))
-    }
-  }
-
-  "NodeService.getTransactionStatus" should {
-    "return the latest transaction and status" in {
-      // Use a different transaction as the original one in the request was retried
-      val testTransactionInfo2 =
-        TransactionInfo(TransactionId.from(SHA256Digest.compute("test2".getBytes()).value).value, Ledger.InMemory)
-      val atalaObjectTransaction =
-        Some(AtalaObjectTransactionInfo(testTransactionInfo2, AtalaObjectTransactionStatus.Pending))
-      doReturn(
-        Future.successful(dummySyncTimestamp)
-      ).when(objectManagementService).getLastSyncedTimestamp
-      doReturn(
-        Future.successful(atalaObjectTransaction)
-      ).when(objectManagementService).getLatestTransactionAndStatus(*)
-
-      val response =
-        service.getTransactionStatus(GetTransactionStatusRequest().withTransactionInfo(testTransactionInfoProto))
-
-      response must be(
-        GetTransactionStatusResponse()
-          .withTransactionInfo(
-            common_models
-              .TransactionInfo()
-              .withTransactionId(testTransactionInfo2.transactionId.toString)
-              .withLedger(common_models.Ledger.IN_MEMORY)
-          )
-          .withStatus(common_models.TransactionStatus.PENDING)
-          .withLastSyncedBlockTimestamp(dummySyncTimestamp.toProtoTimestamp)
-      )
-    }
-
-    "return the same transaction and UNKNOWN status when unknown" in {
-      doReturn(
-        Future.successful(dummySyncTimestamp)
-      ).when(objectManagementService).getLastSyncedTimestamp
-
-      doReturn(Future.successful(None))
-        .when(objectManagementService)
-        .getLatestTransactionAndStatus(*)
-
-      val response =
-        service.getTransactionStatus(GetTransactionStatusRequest().withTransactionInfo(testTransactionInfoProto))
-
-      response must be(
-        GetTransactionStatusResponse()
-          .withTransactionInfo(testTransactionInfoProto)
-          .withStatus(common_models.TransactionStatus.UNKNOWN)
-          .withLastSyncedBlockTimestamp(dummySyncTimestamp.toProtoTimestamp)
-      )
     }
   }
 

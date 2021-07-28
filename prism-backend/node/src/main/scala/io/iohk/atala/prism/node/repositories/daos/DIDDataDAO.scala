@@ -37,6 +37,14 @@ object DIDDataDAO {
        """.stripMargin.query[SHA256Digest].option
   }
 
+  def updateLastOperation(didSuffix: DIDSuffix, newLastOperation: SHA256Digest): ConnectionIO[Int] = {
+    sql"""
+         |UPDATE did_data
+         |SET last_operation = $newLastOperation
+         |WHERE did_suffix = $didSuffix
+       """.stripMargin.update.run
+  }
+
   def all(): ConnectionIO[Seq[DIDSuffix]] = {
     sql"""SELECT did_suffix FROM did_data"""
       .query[DIDSuffix]

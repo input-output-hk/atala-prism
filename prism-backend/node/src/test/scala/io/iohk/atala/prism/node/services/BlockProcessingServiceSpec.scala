@@ -11,7 +11,8 @@ import io.iohk.atala.prism.identity.DIDSuffix
 import io.iohk.atala.prism.models.{Ledger, TransactionId}
 import io.iohk.atala.prism.node.DataPreparation
 import io.iohk.atala.prism.node.models.{AtalaOperationInfo, AtalaOperationStatus}
-import io.iohk.atala.prism.node.operations.CreateDIDOperationSpec
+import io.iohk.atala.prism.node.operations.{CreateDIDOperation, CreateDIDOperationSpec}
+import io.iohk.atala.prism.node.operations.UpdateDIDOperationSpec.{exampleAddKeyAction, exampleRemoveKeyAction}
 import io.iohk.atala.prism.node.repositories.daos.DIDDataDAO
 import io.iohk.atala.prism.node.repositories.DIDDataRepository
 import io.iohk.atala.prism.protos.{node_internal, node_models}
@@ -84,6 +85,25 @@ class BlockProcessingServiceSpec extends AtalaWithPostgresSpec {
       val atalaOperationInfo = DataPreparation.getOperationInfo(atalaOperationId).value
       val expectedAtalaOperationInfo = AtalaOperationInfo(atalaOperationId, objId, AtalaOperationStatus.APPLIED, None)
       atalaOperationInfo must be(expectedAtalaOperationInfo)
+    }
+
+    "apply block received by other node instance" in {
+      val result = service
+        .processBlock(exampleBlock, dummyTransactionId, dummyLedger, dummyTimestamp, dummyABSequenceNumber)
+        .transact(database)
+        .unsafeToFuture()
+        .futureValue
+
+      result mustBe true
+
+      val credentials = DIDDataDAO.all().transact(database).unsafeRunSync()
+      credentials.size mustBe 1
+      val digest = SHA256Digest.compute(createDidOperation.toByteArray)
+      credentials.head mustBe DIDSuffix.unsafeFromDigest(digest)
+
+      // shouldn't add new operations to the table
+      val count = DataPreparation.getOperationsCount()
+      count must be(0)
     }
 
     "not apply operation when signature is wrong" in {
@@ -190,6 +210,159 @@ class BlockProcessingServiceSpec extends AtalaWithPostgresSpec {
         .futureValue
 
       result mustBe true
+
+      val credentials = DIDDataDAO.all().transact(database).unsafeRunSync()
+      val expectedSuffixes = Seq(signedOperation1.getOperation, operation3)
+        .map(op => DIDSuffix.unsafeFromDigest(SHA256Digest.compute(op.toByteArray)))
+      credentials must contain theSameElementsAs (expectedSuffixes)
+
+      val atalaOperationInfo1 = DataPreparation.getOperationInfo(opIds.head).value
+      val expectedAtalaOperationInfo1 = AtalaOperationInfo(opIds.head, objId, AtalaOperationStatus.APPLIED, None)
+      atalaOperationInfo1 must be(expectedAtalaOperationInfo1)
+
+      val atalaOperationInfo2 = DataPreparation.getOperationInfo(opIds(1)).value
+      val expectedAtalaOperationInfo2 = AtalaOperationInfo(opIds(1), objId, AtalaOperationStatus.REJECTED, None)
+      atalaOperationInfo2 must be(expectedAtalaOperationInfo2)
+
+      val atalaOperationInfo3 = DataPreparation.getOperationInfo(opIds.last).value
+      val expectedAtalaOperationInfo3 = AtalaOperationInfo(opIds.last, objId, AtalaOperationStatus.APPLIED, None)
+      atalaOperationInfo3 must be(expectedAtalaOperationInfo3)
+    }
+
+    "apply two update operations sequentially" in {
+      val did = CreateDIDOperation
+        .parse(CreateDIDOperationSpec.exampleOperation, CreateDIDOperationSpec.dummyLedgerData)
+        .toOption
+        .value
+        .id
+        .value
+
+      val createDidSignedOperation = signedCreateDidOperation
+
+      val updateDidOperation1 = node_models.AtalaOperation(
+        operation = node_models.AtalaOperation.Operation.UpdateDid(
+          value = node_models.UpdateDIDOperation(
+            previousOperationHash = ByteString.copyFrom(
+              SHA256Digest.compute(signedCreateDidOperation.operation.value.toByteArray).value.toArray
+            ),
+            id = did,
+            actions = Seq(exampleAddKeyAction)
+          )
+        )
+      )
+      val updateDidSignedOperation1 = signOperation(updateDidOperation1, "master", masterKeys.privateKey)
+
+      val updateDidOperation2 = node_models.AtalaOperation(
+        operation = node_models.AtalaOperation.Operation.UpdateDid(
+          value = node_models.UpdateDIDOperation(
+            previousOperationHash =
+              ByteString.copyFrom(SHA256Digest.compute(updateDidOperation1.toByteArray).value.toArray),
+            id = did,
+            actions = Seq(exampleRemoveKeyAction)
+          )
+        )
+      )
+      val updateDidSignedOperation2 = signOperation(updateDidOperation2, "master", masterKeys.privateKey)
+
+      val block = node_internal.AtalaBlock(
+        operations = Seq(createDidSignedOperation, updateDidSignedOperation1, updateDidSignedOperation2)
+      )
+
+      val (objId, opIds) = DataPreparation.insertOperationStatuses(
+        List(createDidSignedOperation, updateDidSignedOperation1, updateDidSignedOperation2),
+        AtalaOperationStatus.RECEIVED
+      )
+      opIds.size must be(3)
+
+      val result = service
+        .processBlock(block, dummyTransactionId, dummyLedger, dummyTimestamp, dummyABSequenceNumber)
+        .transact(database)
+        .unsafeToFuture()
+        .futureValue
+
+      result mustBe true
+
+      val createDidSignedOperationInfo = DataPreparation.getOperationInfo(opIds.head).value
+      val expectedAtalaOperationInfo1 = AtalaOperationInfo(opIds.head, objId, AtalaOperationStatus.APPLIED, None)
+      createDidSignedOperationInfo must be(expectedAtalaOperationInfo1)
+
+      val updateDidSignedOperation1Info = DataPreparation.getOperationInfo(opIds(1)).value
+      val expectedAtalaOperationInfo2 = AtalaOperationInfo(opIds(1), objId, AtalaOperationStatus.APPLIED, None)
+      updateDidSignedOperation1Info must be(expectedAtalaOperationInfo2)
+
+      val updateDidSignedOperation2Info = DataPreparation.getOperationInfo(opIds.last).value
+      val expectedAtalaOperationInfo3 = AtalaOperationInfo(opIds.last, objId, AtalaOperationStatus.APPLIED, None)
+      updateDidSignedOperation2Info must be(expectedAtalaOperationInfo3)
+    }
+
+    "skip duplicate operations" in {
+      val signedOperation1 = signedCreateDidOperation
+
+      val operation2 = createDidOperation
+        .copy()
+        .update(
+          _.createDid.didData.publicKeys := List(
+            node_models.PublicKey(
+              "master",
+              node_models.KeyUsage.MASTER_KEY,
+              keyData = node_models.PublicKey.KeyData
+                .EcKeyData(CreateDIDOperationSpec.protoECKeyFromPublicKey(EC.generateKeyPair().publicKey))
+            )
+          )
+        )
+      val incorrectlySignedOperation2 = signOperation(operation2, "master", masterKeys.privateKey)
+
+      val operation3Keys = EC.generateKeyPair()
+      val operation3 = createDidOperation
+        .copy()
+        .update(
+          _.createDid.didData.publicKeys := List(
+            node_models.PublicKey(
+              "rootkey",
+              node_models.KeyUsage.MASTER_KEY,
+              keyData = node_models.PublicKey.KeyData
+                .EcKeyData(CreateDIDOperationSpec.protoECKeyFromPublicKey(operation3Keys.publicKey))
+            )
+          )
+        )
+      val signedOperation3 = signOperation(operation3, "rootkey", operation3Keys.privateKey)
+
+      val block1 = node_internal.AtalaBlock( // first block contains 1 valid and 1 invalid operation
+        operations = Seq(signedOperation1, incorrectlySignedOperation2)
+      )
+      val block2 = node_internal.AtalaBlock( // second block contains 1 valid operation, and two duplications
+        operations = Seq(signedOperation3, signedOperation1, signedOperation3)
+      )
+      val block3 = node_internal.AtalaBlock( // third block contains 1 duplicate operation and 1 invalid
+        operations = Seq(signedOperation1, incorrectlySignedOperation2)
+      )
+
+      val (objId, opIds) = DataPreparation.insertOperationStatuses(
+        List(signedOperation1, incorrectlySignedOperation2, signedOperation3),
+        AtalaOperationStatus.RECEIVED
+      )
+      opIds.size must be(3)
+
+      val result1 = service
+        .processBlock(block1, dummyTransactionId, dummyLedger, dummyTimestamp, dummyABSequenceNumber)
+        .transact(database)
+        .unsafeToFuture()
+        .futureValue
+      result1 mustBe true
+
+      val result2 = service
+        .processBlock(block2, dummyTransactionId, dummyLedger, dummyTimestamp, dummyABSequenceNumber)
+        .transact(database)
+        .unsafeToFuture()
+        .futureValue
+      result2 mustBe true
+
+      val result3 = service
+        .processBlock(block3, dummyTransactionId, dummyLedger, dummyTimestamp, dummyABSequenceNumber)
+        .transact(database)
+        .unsafeToFuture()
+        .futureValue
+      result3 mustBe true
 
       val credentials = DIDDataDAO.all().transact(database).unsafeRunSync()
       val expectedSuffixes = Seq(signedOperation1.getOperation, operation3)

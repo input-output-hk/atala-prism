@@ -12,35 +12,32 @@ import org.scalatest.wordspec.AnyWordSpec
 class AtalaObjectMetadataSpec extends AnyWordSpec {
   private val atalaObject = node_internal
     .AtalaObject()
-    .withBlock(
-      node_internal.AtalaObject.Block
-        .BlockContent(
-          node_internal.AtalaBlock(
-            version = "1",
-            operations = List(
-              node_models.SignedAtalaOperation(
-                signedWith = masterKeyId,
-                signature = ByteString.copyFrom("Fake signature bytes".getBytes),
-                operation = Some(
-                  node_models.AtalaOperation(operation =
-                    node_models.AtalaOperation.Operation
-                      .CreateDid(
-                        node_models.CreateDIDOperation(didData =
-                          Some(
-                            node_models.DIDData(
-                              id = "master-did",
-                              publicKeys =
-                                List(node_models.PublicKey(id = masterKeyId, usage = node_models.KeyUsage.MASTER_KEY))
-                            )
-                          )
+    .withBlockContent(
+      node_internal.AtalaBlock(
+        version = "1",
+        operations = List(
+          node_models.SignedAtalaOperation(
+            signedWith = masterKeyId,
+            signature = ByteString.copyFrom("Fake signature bytes".getBytes),
+            operation = Some(
+              node_models.AtalaOperation(operation =
+                node_models.AtalaOperation.Operation
+                  .CreateDid(
+                    node_models.CreateDIDOperation(didData =
+                      Some(
+                        node_models.DIDData(
+                          id = "master-did",
+                          publicKeys =
+                            List(node_models.PublicKey(id = masterKeyId, usage = node_models.KeyUsage.MASTER_KEY))
                         )
                       )
+                    )
                   )
-                )
               )
             )
           )
         )
+      )
     )
   require(
     atalaObject.toByteArray.length > 64,

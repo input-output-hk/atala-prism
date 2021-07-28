@@ -55,8 +55,11 @@ final case class StoreCredential(
 final case class GetLatestCredential()
 
 final case class GetStoredCredentials(
-    individualId: Contact.Id
+    filterBy: GetStoredCredentials.FilterBy = GetStoredCredentials.FilterBy()
 )
+object GetStoredCredentials {
+  case class FilterBy(contact: Option[Contact.Id] = None)
+}
 
 case class PublicationData(
     credentialBatchId: CredentialBatchId, // the id assigned by the protocol to the batch

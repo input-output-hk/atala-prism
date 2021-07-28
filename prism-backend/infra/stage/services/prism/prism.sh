@@ -246,6 +246,14 @@ if [ -z ${TF_VAR_acuant_subscription_id:-} ] && [ -n "${KYC_BRIDGE_ACUANT_SUBSCR
   export TF_VAR_acuant_subscription_id=$KYC_BRIDGE_ACUANT_SUBSCRIPTION_ID
 fi
 
+if [ -z ${TF_VAR_identitymind_username:-} ] && [ -n "${KYC_BRIDGE_IDENTITYMIND_USERNAME:-}" ]; then
+  export TF_VAR_identitymind_username=$KYC_BRIDGE_IDENTITYMIND_USERNAME
+fi
+
+if [ -z ${TF_VAR_identitymind_password:-} ] && [ -n "${KYC_BRIDGE_IDENTITYMIND_PASSWORD:-}" ]; then
+  export TF_VAR_identitymind_password=$KYC_BRIDGE_IDENTITYMIND_PASSWORD
+fi
+
 echo "Using env name '$env_name_short'."
 echo "Performing action '$action'."
 echo "Using Capacity Provider '$capacity_provider'."

@@ -1,18 +1,19 @@
 package io.iohk.atala.prism.services
 
-import scala.concurrent.duration.{DurationInt, FiniteDuration}
-import monix.eval.Task
 import fs2.Stream
 import io.grpc.Status
-import org.slf4j.LoggerFactory
 import io.iohk.atala.prism.connector.RequestAuthenticator
 import io.iohk.atala.prism.errors.PrismError
+import io.iohk.atala.prism.models.{ConnectionId, ConnectionToken, ConnectorMessageId, CredentialProofRequestType}
 import io.iohk.atala.prism.protos.connector_api._
-import io.iohk.atala.prism.protos.credential_models.{AtalaMessage, KycBridgeMessage, ProofRequest, StartAcuantProcess}
 import io.iohk.atala.prism.protos.connector_models.{ConnectionInfo, ReceivedMessage}
-import io.iohk.atala.prism.models.{ConnectionId, ConnectionToken}
-import io.iohk.atala.prism.models.{ConnectorMessageId, CredentialProofRequestType}
-import io.iohk.atala.prism.utils.TaskUtils
+import io.iohk.atala.prism.protos.credential_models.{AtalaMessage, KycBridgeMessage, ProofRequest, StartAcuantProcess}
+import io.iohk.atala.prism.utils.{GrpcStreamsUtils, TaskUtils}
+import monix.eval.Task
+import monix.execution.Scheduler.Implicits.global
+import org.slf4j.LoggerFactory
+
+import scala.concurrent.duration.{DurationInt, FiniteDuration}
 
 trait ConnectorClientService {
 
@@ -47,10 +48,8 @@ trait ConnectorClientService {
   ): Task[GetMessagesPaginatedResponse]
 
   def getMessagesPaginatedStream(
-      lastSeenMessageId: Option[ConnectorMessageId],
-      limit: Int,
-      awakeDelay: FiniteDuration
-  ): Stream[Task, Seq[ReceivedMessage]]
+      lastSeenMessageId: Option[ConnectorMessageId]
+  ): Stream[Task, ReceivedMessage]
 
   def getConnectionsPaginated(
       lastSeenConnectionId: Option[ConnectionId],
@@ -121,32 +120,17 @@ class ConnectorClientServiceImpl(
   }
 
   def getMessagesPaginatedStream(
-      lastSeenMessageId: Option[ConnectorMessageId],
-      limit: Int,
-      awakeDelay: FiniteDuration
-  ): Stream[Task, Seq[ReceivedMessage]] = {
-    val initialAwakeDelay = false
-    Stream
-      .unfoldEval[Task, (Option[ConnectorMessageId], Boolean), Seq[ReceivedMessage]](
-        (lastSeenMessageId, initialAwakeDelay)
-      ) {
-        case (lastSeenMessageId, shouldApplyAwakeDelay) =>
-          val task = for {
-            _ <- if (shouldApplyAwakeDelay) Task.sleep(awakeDelay) else Task.unit
-            _ <- Task.pure(logger.info(s"Call GetMessagesPaginated - lastSeenMessageId: ${lastSeenMessageId}"))
-            response <- getMessagesPaginated(lastSeenMessageId, limit)
-            result = response.messages match {
-              case Nil =>
-                val applyAwakeDelay = true
-                Some(Nil -> (lastSeenMessageId -> applyAwakeDelay))
-              case messages =>
-                val applyAwakeDelay = messages.size != limit
-                Some(messages -> (Some(ConnectorMessageId(messages.last.id)) -> applyAwakeDelay))
-            }
-          } yield result
-
-          TaskUtils.retry(task, CONNECTION_MAX_RETIRES, CONNECTION_RETRY_WAIT_TIME)
-      }
+      lastSeenMessageId: Option[ConnectorMessageId]
+  ): Stream[Task, ReceivedMessage] = {
+    GrpcStreamsUtils
+      .createFs2Stream[GetMessageStreamResponse](responseObserver =>
+        authenticatedCallStream(
+          GetMessageStreamRequest(lastSeenMessageId.map(_.messageId).getOrElse("")),
+          responseObserver,
+          _.getMessageStream
+        )
+      )
+      .flatMap(_.message.map(Stream.emit).getOrElse(Stream.empty))
   }
 
   def getConnectionsPaginated(

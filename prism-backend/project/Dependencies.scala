@@ -18,6 +18,8 @@ object versions {
   val grpc = "1.33.0"
   val kamon = "2.1.11"
   val logback = "1.2.3"
+  val logbackLogstash = "6.6"
+  val jaxb = "2.3.1"
   val mockito = "1.16.0"
   val monix = "3.2.2"
   val monocle = "2.1.0"
@@ -28,7 +30,6 @@ object versions {
   val scalatest = "3.2.2"
   val scalatestplus = s"$scalatest.0"
   val scalapb = "0.10.8"
-  val scopt = "4.0.0-RC2"
   val slf4j = "1.7.30"
   val sttp = "1.7.2"
   val tofu = "0.10.2"
@@ -36,6 +37,7 @@ object versions {
   val twirl = "1.5.1"
   val typesafeConfig = "1.4.1"
   val http4s = "0.21.7"
+  val kotlinSDK = "0.1.0-081e970e"
 }
 
 object Dependencies {
@@ -63,15 +65,13 @@ object Dependencies {
   val kamonPrometheus = "io.kamon" %% "kamon-prometheus" % versions.kamon
   val logbackCore = "ch.qos.logback" % "logback-core" % versions.logback
   val logbackClassic = "ch.qos.logback" % "logback-classic" % versions.logback
+  val logbackLogstash = "net.logstash.logback" % "logstash-logback-encoder" % versions.logbackLogstash
+  val jaxb = "javax.xml.bind" % "jaxb-api" % versions.jaxb
   val monix = "io.monix" %% "monix" % versions.monix
-  val monocleCore = "com.github.julien-truffaut" %% "monocle-core" % versions.monocle
-  val monocleGeneric = "com.github.julien-truffaut" %% "monocle-generic" % versions.monocle
-  val monocleMacro = "com.github.julien-truffaut" %% "monocle-macro" % versions.monocle
   val osLib = "com.lihaoyi" %% "os-lib" % versions.osLib
   val playJson = "com.typesafe.play" %% "play-json" % versions.playJson
   val postgresql = "org.postgresql" % "postgresql" % versions.postgresql
   val scalapbRuntimeGrpc = "com.thesamet.scalapb" %% "scalapb-runtime-grpc" % versions.scalapb
-  val scopt = "com.github.scopt" %% "scopt" % versions.scopt
   val slf4j = "org.slf4j" % "slf4j-api" % versions.slf4j
   val sttpCore = "com.softwaremill.sttp" %% "core" % versions.sttp
   val sttpFuture = "com.softwaremill.sttp" %% "async-http-client-backend-future" % versions.sttp
@@ -84,6 +84,9 @@ object Dependencies {
   val http4sDsl = "org.http4s" %% "http4s-dsl" % versions.http4s
   val http4sBlazeServer = "org.http4s" %% "http4s-blaze-server" % versions.http4s
   val http4sBlazeClient = "org.http4s" %% "http4s-blaze-client" % versions.http4s
+
+  //kotlin-sdk dependencies
+  val cryptoJVM = "io.iohk.atala.prism" % "crypto-jvm" % versions.kotlinSDK
 
   // Test dependencies
   val catsScalatest = "com.ironcorelabs" %% "cats-scalatest" % versions.catsScalatest % Test
@@ -104,9 +107,8 @@ object Dependencies {
   val doobieDependencies = Seq(doobieCore, doobiePostgresCirce, doobieHikari, doobieScalatest)
   val grpcDependencies = Seq(grpcNetty, grpcServices, grpcContext)
   val kamonDependencies = Seq(kamonBundle, kamonPrometheus)
-  val logbackDependencies = Seq(logbackCore, logbackClassic)
+  val logbackDependencies = Seq(logbackCore, logbackClassic, logbackLogstash, jaxb)
   val mockitoDependencies = Seq(mockito, mockitoScalatest)
-  val monocleDependencies = Seq(monocleCore, monocleGeneric, monocleMacro)
   val scalatestDependencies = Seq(scalatest, scalatestWordspec, scalatestplus, catsScalatest)
   val sttpDependencies = Seq(sttpCore, sttpFuture)
   val http4sDependencies = Seq(http4sCirce, http4sDsl, http4sBlazeServer, http4sBlazeClient)

@@ -58,7 +58,7 @@ class ReceivedCredentialsRepositorySpec extends AtalaWithPostgresSpec {
       create(contactId, encodedSignedCredential, mockCredentialExternalId)
 
       val result =
-        receivedCredentialsRepository.getCredentialsFor(verifierId, contactId).unsafeRunSync()
+        receivedCredentialsRepository.getCredentialsFor(verifierId, Some(contactId)).unsafeRunSync()
       result.size must be(1)
       val resultCredential = result.head
 

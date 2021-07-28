@@ -13,7 +13,7 @@ import io.iohk.atala.prism.identity.DIDSuffix
 import io.iohk.atala.prism.models.{BlockInfo, Ledger, TransactionId, TransactionInfo}
 import io.iohk.atala.prism.node.models.nodeState.DIDPublicKeyState
 import io.iohk.atala.prism.node.models.{
-  AtalaObject,
+  AtalaObjectInfo,
   AtalaObjectId,
   AtalaObjectTransactionSubmissionStatus,
   AtalaOperationInfo,
@@ -141,7 +141,7 @@ package object daos extends BaseDAO {
     ].map(AtalaOperationInfo.tupled)
   }
 
-  implicit val atalaObjectRead: Read[AtalaObject] = {
+  implicit val atalaObjectRead: Read[AtalaObjectInfo] = {
     Read[
       (
           AtalaObjectId,
@@ -164,7 +164,7 @@ package object daos extends BaseDAO {
             maybeBlockTimestamp,
             maybeBlockIndex
           ) =>
-        AtalaObject(
+        AtalaObjectInfo(
           objectId,
           byteContent,
           processed,
