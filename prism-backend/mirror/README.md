@@ -68,6 +68,14 @@ jq -r '.connectionToken'| tr -d '\n\t' | qrencode -t UTF8
 
 5. Wait for credential request on the mobile app (it can take a few minutes).
 
+## Fetching identity info for address
+
+Once you successfuly obtain KYC credential, create an Mirror account (available in the PRISM Wallet as PayID account), and register your Mirror address you can query for address identity information (replace address and environment endpoint with your data):
+
+``` sh
+$ grpcurl -import-path prism-sdk/protos/src/ -proto mirror_api.proto -plaintext  -d '{"address": "addr_test1qrlxjj2szquxms2je46eqh0ydtxtms2mk92rhkc9xklmvxqpc8h8qwnecgqcm6l544k0j4tst8eu4kwfuhpqdrslfc3sjtmj6g"}' grpc-develop.atalaprism.io:8081 io.iohk.atala.mirror.protos.MirrorService/GetIdentityInfoForAddress
+```
+
 ## Trisa
 https://trisa.io/ 
 

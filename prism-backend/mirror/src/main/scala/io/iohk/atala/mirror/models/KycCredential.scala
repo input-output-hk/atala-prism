@@ -36,7 +36,7 @@ case class KycCredential(
           .left
           .map(error => UserCredentialException(error.getMessage))
 
-      nationalIdentification <-
+      nationalIdentification =
         content
           .getString(s"$credentialSubjectField.idDocument.personalNumber")
           .map(identityNumber =>
@@ -45,8 +45,7 @@ case class KycCredential(
               nationalIdentifierType = NationalIdentifierTypeCode.NATIONAL_IDENTIFIER_TYPE_CODE_MISC
             )
           )
-          .left
-          .map(error => UserCredentialException(error.getMessage))
+          .toOption
 
       dateAndPlaceOfBirth <-
         content
@@ -62,7 +61,7 @@ case class KycCredential(
       NaturalPerson(
         name = Some(naturalPersonName),
         geographicAddresses = Seq.empty,
-        nationalIdentification = Some(nationalIdentification),
+        nationalIdentification = nationalIdentification,
         dateAndPlaceOfBirth = Some(dateAndPlaceOfBirth)
       )
     )

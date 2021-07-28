@@ -34,7 +34,7 @@ import doobie.implicits._
 import io.iohk.atala.prism.crypto.MerkleTree.MerkleInclusionProof
 import io.iohk.atala.prism.errors.PrismError
 import io.iohk.atala.prism.identity.DID
-import io.iohk.atala.prism.protos.credential_models.PlainTextCredential
+import io.iohk.atala.prism.protos.credential_models.{AtalaMessage, PlainTextCredential}
 import io.iohk.atala.prism.services.{ConnectorClientService, MessageProcessor, NodeClientService}
 import io.iohk.atala.prism.services.MessageProcessor.MessageProcessorResult
 import io.iohk.atala.prism.utils.ConnectionUtils
@@ -131,8 +131,12 @@ class CredentialService(
   }
 
   private[services] def parseCredential(message: ReceivedMessage): Option[PlainTextCredential] = {
-    Try(PlainTextCredential.parseFrom(message.message.toByteArray)).toOption
+    Try(AtalaMessage.parseFrom(message.message.toByteArray).getPlainCredential).toOption
       .filter(credential => credential.encodedCredential.nonEmpty)
+      .orElse {
+        Try(PlainTextCredential.parseFrom(message.message.toByteArray)).toOption
+          .filter(credential => credential.encodedCredential.nonEmpty)
+      }
   }
 
   private[services] def getIssuersDid(rawCredential: RawCredential): Option[DID] = {
