@@ -7,9 +7,8 @@ import "node_models.proto";
 
 package io.iohk.atala.prism.protos;
 
-// @exclude
-// These models are intended for internal usage inside
-// the AtalaNode (not to be publicly accessible from the gRPC API).
+// @exclude These models are intended for internal usage inside
+// @exclude the AtalaNode (not to be publicly accessible from the gRPC API).
 
 message AtalaBlock {
   string version = 1;
@@ -17,10 +16,10 @@ message AtalaBlock {
 }
 
 message AtalaObject {
+  reserved 1;
+  reserved "block_hash";
+
   int32 block_operation_count = 2;
   int32 block_byte_length = 3;
-  oneof block {
-    bytes block_hash = 1;
-    AtalaBlock block_content = 4;
-  }
+  AtalaBlock block_content = 4;
 }

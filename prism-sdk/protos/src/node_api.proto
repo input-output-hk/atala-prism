@@ -30,9 +30,6 @@ service NodeService {
     // Revokes credentials from a batch (all, or just a subset).
     rpc RevokeCredentials(RevokeCredentialsRequest) returns (RevokeCredentialsResponse) {}
 
-    // Finds a transaction's details.
-    rpc GetTransactionStatus(GetTransactionStatusRequest) returns (GetTransactionStatusResponse) {}
-
     // Retrieves the Node version info.
     rpc GetNodeBuildInfo(GetNodeBuildInfoRequest) returns (GetNodeBuildInfoResponse) {}
 
@@ -48,6 +45,13 @@ service NodeService {
      * Retrieves the status of an operation.
      */
     rpc GetOperationInfo(GetOperationInfoRequest) returns (GetOperationInfoResponse) {}
+
+    /**
+     * AUTHENTICATED
+     *
+     * Flushes buffer of operations.
+     */
+    rpc FlushOperationsBuffer(FlushOperationsBufferRequest) returns (FlushOperationsBufferResponse) {}
 
     // Publishes a sequence of signed operations in a single underlying transaction.
     // The sequence of operations has a size limit to fit in the metadata of the transaction (approx. 15KB).
@@ -165,18 +169,6 @@ message GetCredentialRevocationTimeResponse {
     google.protobuf.Timestamp last_synced_block_timestamp = 2; // Timestamp of the latest synchronized block.
 }
 
-// Request to get the on-chain transaction status.
-message GetTransactionStatusRequest {
-    TransactionInfo transaction_info = 1; // The on-chain transaction info.
-}
-
-// Response with the transaction status.
-message GetTransactionStatusResponse {
-    TransactionInfo transaction_info = 1; // The on-chain transaction info.
-    TransactionStatus status = 2; // Whether or not the transaction has been applied.
-    google.protobuf.Timestamp last_synced_block_timestamp = 3; // Timestamp of the latest synchronized block.
-}
-
 /**
  * Request to get the operation status.
  */
@@ -191,6 +183,19 @@ message GetOperationInfoResponse {
     OperationStatus operation_status = 1; // Contains the status of this operation.
     string transaction_id = 3; // Transaction identifier containing the operation. Presented only when operation was approved by the ledger.
     google.protobuf.Timestamp last_synced_block_timestamp = 2; // Timestamp of the latest synchronized block.
+}
+
+/**
+ * Request to submit all buffered operations to the ledger.
+ */
+message FlushOperationsBufferRequest {
+}
+
+/**
+ * Response after flushing the operations buffer.
+ */
+message FlushOperationsBufferResponse {
+    int32 sent_operations_amount = 1; // Amount of operations retrieved from the buffer, and submitted to the ledger.
 }
 
 message PublishAsABlockRequest {

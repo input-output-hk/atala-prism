@@ -96,16 +96,6 @@ message TransactionInfo {
 }
 
 /**
- * The status of a PRISM transaction.
- */
-enum TransactionStatus {
-    UNKNOWN = 0; // The transaction is not an Atala PRISM transaction.
-    PENDING = 1; // The transaction is pending to be accepted by the blockchain.
-    IN_LEDGER = 2; // The transaction has been accepted by the blockchain, but is pending confirmation from Atala PRISM.
-    CONFIRMED = 3; // The transaction has been confirmed by Atala PRISM and is now considered immutable.
-}
-
-/**
  * The status of an Atala operation.
  */
 enum OperationStatus {

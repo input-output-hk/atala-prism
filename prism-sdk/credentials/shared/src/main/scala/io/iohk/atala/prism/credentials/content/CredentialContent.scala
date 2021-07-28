@@ -62,6 +62,12 @@ case class CredentialContent(fields: Fields) {
   }
 
   // Predefined fields
+  // Credential type can be provided as either single string or array of strings
+  val credentialType: Either[CredentialContentException, Seq[String]] =
+    getString(JsonFields.CredentialType.field) match {
+      case Left(value) => getSeq(JsonFields.CredentialType.field).map(_.map(_.toString))
+      case Right(value) => Right(Seq(value))
+    }
   val issuerDid: Either[CredentialContentException, DID] =
     getString(JsonFields.IssuerDid.field).flatMap(did =>
       DID.fromString(did).toRight(WrongTypeException("IssuerDid is not a string."))
