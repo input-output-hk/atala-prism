@@ -77,6 +77,7 @@ object Dependencies {
   val sttpFuture = "com.softwaremill.sttp" %% "async-http-client-backend-future" % versions.sttp
   // TODO update monix in the project
   val tofu = "tf.tofu" %% "tofu" % versions.tofu excludeAll ExclusionRule(organization = "io.monix")
+  val tofuLogging = "tf.tofu" %% "tofu-logging" % versions.tofu
   val tofuDerevoTagless = "tf.tofu" %% "derevo-cats-tagless" % versions.tofuDerevo
   val twirlApi = "com.typesafe.play" %% "twirl-api" % versions.twirl
   val typesafeConfig = "com.typesafe" % "config" % versions.typesafeConfig
@@ -112,7 +113,7 @@ object Dependencies {
   val scalatestDependencies = Seq(scalatest, scalatestWordspec, scalatestplus, catsScalatest)
   val sttpDependencies = Seq(sttpCore, sttpFuture)
   val http4sDependencies = Seq(http4sCirce, http4sDsl, http4sBlazeServer, http4sBlazeClient)
-  val tofuDependencies = Seq(tofu, tofuDerevoTagless)
+  val tofuDependencies = Seq(tofu, tofuLogging, tofuDerevoTagless)
 
   // cardano-address library binary
   val cardanoAddressBinaryUrl =

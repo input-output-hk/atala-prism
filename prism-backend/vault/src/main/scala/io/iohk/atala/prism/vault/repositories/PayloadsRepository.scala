@@ -1,6 +1,6 @@
 package io.iohk.atala.prism.vault.repositories
 
-import cats.effect.Bracket
+import cats.effect.{Bracket, BracketThrow, MonadThrow}
 import doobie.Transactor
 import doobie.implicits._
 import io.iohk.atala.prism.identity.DID
@@ -9,24 +9,31 @@ import io.iohk.atala.prism.utils.syntax.DBConnectionOps
 import io.iohk.atala.prism.metrics.TimeMeasureUtil.MeasureOps
 import io.iohk.atala.prism.vault.model.{CreatePayload, Payload}
 import io.iohk.atala.prism.vault.repositories.daos.PayloadsDAO
+import io.iohk.atala.prism.logging.GeneralLoggableInstances._
+import io.iohk.atala.prism.logging.Util._
 import org.slf4j.{Logger, LoggerFactory}
 import derevo.derive
 import derevo.tagless.applyK
+import io.iohk.atala.prism.logging.TraceId
 import tofu.higherKind.Mid
+import tofu.logging.{Logging => LoggingF}
+import tofu.syntax.monoid.TofuSemigroupOps
 
 @derive(applyK)
 trait PayloadsRepository[F[_]] {
-  def create(payloadData: CreatePayload): F[Payload]
+  def create(payloadData: CreatePayload, tId: TraceId): F[Payload]
 
-  def getByPaginated(did: DID, lastSeenIdOpt: Option[Payload.Id], limit: Int): F[List[Payload]]
+  def getByPaginated(did: DID, lastSeenIdOpt: Option[Payload.Id], limit: Int, tId: TraceId): F[List[Payload]]
 }
 
 object PayloadsRepository {
-  def apply[F[_]](
+  def create[F[_]: LoggingF](
       xa: Transactor[F]
   )(implicit br: Bracket[F, Throwable], m: TimeMeasureMetric[F]): PayloadsRepository[F] = {
-    val metrics: PayloadsRepository[Mid[F, *]] = new PayloadsRepoMetrics[F]()
-    metrics attach new PayloadsRepositoryImpl(xa)
+    val mid = (new PayloadsRepoMetrics[F](): PayloadsRepository[Mid[F, *]]) |+| (new PayloadsRepoLogging[
+      F
+    ](): PayloadsRepository[Mid[F, *]])
+    mid attach new PayloadsRepositoryImpl(xa)
   }
 }
 
@@ -35,7 +42,7 @@ private class PayloadsRepositoryImpl[F[_]](xa: Transactor[F])(implicit br: Brack
 
   val logger: Logger = LoggerFactory.getLogger(getClass)
 
-  override def create(payloadData: CreatePayload): F[Payload] =
+  override def create(payloadData: CreatePayload, tId: TraceId): F[Payload] =
     PayloadsDAO
       .createPayload(payloadData)
       .logSQLErrors("creating", logger)
@@ -44,7 +51,8 @@ private class PayloadsRepositoryImpl[F[_]](xa: Transactor[F])(implicit br: Brack
   def getByPaginated(
       did: DID,
       lastSeenIdOpt: Option[Payload.Id],
-      limit: Int
+      limit: Int,
+      tId: TraceId
   ): F[List[Payload]] =
     PayloadsDAO
       .getByPaginated(did, lastSeenIdOpt, limit)
@@ -52,15 +60,31 @@ private class PayloadsRepositoryImpl[F[_]](xa: Transactor[F])(implicit br: Brack
       .transact(xa)
 }
 
-private final class PayloadsRepoMetrics[F[_]: TimeMeasureMetric](implicit br: Bracket[F, Throwable])
-    extends PayloadsRepository[Mid[F, *]] {
+private final class PayloadsRepoMetrics[F[_]: TimeMeasureMetric: BracketThrow] extends PayloadsRepository[Mid[F, *]] {
   val repoName: String = "payloads-repository"
 
   private lazy val createTimer = TimeMeasureUtil.createDBQueryTimer(repoName, "create")
   private lazy val getByPaginatedTimer = TimeMeasureUtil.createDBQueryTimer(repoName, "getByPaginated")
 
-  override def create(payloadData: CreatePayload): Mid[F, Payload] = _.measureOperationTime(createTimer)
+  override def create(payloadData: CreatePayload, tId: TraceId): Mid[F, Payload] = _.measureOperationTime(createTimer)
 
-  override def getByPaginated(did: DID, lastSeenIdOpt: Option[Payload.Id], limit: Int): Mid[F, List[Payload]] =
+  override def getByPaginated(
+      did: DID,
+      lastSeenIdOpt: Option[Payload.Id],
+      limit: Int,
+      tId: TraceId
+  ): Mid[F, List[Payload]] =
     _.measureOperationTime(getByPaginatedTimer)
+}
+
+private final class PayloadsRepoLogging[F[_]: MonadThrow: LoggingF] extends PayloadsRepository[Mid[F, *]] {
+  override def create(payloadData: CreatePayload, tId: TraceId): Mid[F, Payload] =
+    _.logInfoAround[Payload.ExternalId, Payload.Id]("creating payload", payloadData.externalId, tId)
+
+  override def getByPaginated(
+      did: DID,
+      lastSeenIdOpt: Option[Payload.Id],
+      limit: Int,
+      tId: TraceId
+  ): Mid[F, List[Payload]] = _.logInfoAroundList("getting data by paginated", did, tId)
 }

@@ -1,10 +1,13 @@
 package io.iohk.atala.prism.vault.repositories
 
+import cats.effect.IO
 import io.iohk.atala.prism.AtalaWithPostgresSpec
 import io.iohk.atala.prism.kotlin.crypto.{EC, SHA256Digest}
 import io.iohk.atala.prism.identity.DID
+import io.iohk.atala.prism.logging.TraceId
 import io.iohk.atala.prism.vault.model.{CreatePayload, Payload}
 import org.scalatest.OptionValues
+import tofu.logging.Logs
 
 import java.time.Instant
 import java.time.temporal.ChronoUnit
@@ -12,13 +15,20 @@ import java.time.temporal.ChronoUnit
 import io.iohk.atala.prism.interop.toScalaSDK._
 
 class PayloadsRepositorySpec extends AtalaWithPostgresSpec with OptionValues {
-  lazy val repository = PayloadsRepository(database)
+
+  private lazy val vaultTestLogs: Logs[IO, IO] = Logs.sync[IO, IO]
+
+  lazy val repository =
+    vaultTestLogs
+      .forService[PayloadsRepository[IO]]
+      .map(implicit l => PayloadsRepository.create(database))
+      .unsafeRunSync()
 
   def createPayload(did: DID, content: Vector[Byte]): Payload = {
     val externalId = Payload.ExternalId.random()
     val hash = SHA256Digest.compute(content.toArray)
     val createPayload1 = CreatePayload(externalId, hash, did, content)
-    repository.create(createPayload1).unsafeRunSync()
+    repository.create(createPayload1, TraceId.generateYOLO).unsafeRunSync()
   }
 
   "create" should {
@@ -56,10 +66,10 @@ class PayloadsRepositorySpec extends AtalaWithPostgresSpec with OptionValues {
       val content3 = "encrypted_data_3".getBytes.toVector
       val payload3 = createPayload(did2, content3)
 
-      repository.getByPaginated(did1, None, 10).unsafeRunSync() mustBe List(payload1)
-      repository.getByPaginated(did2, None, 10).unsafeRunSync() mustBe List(payload2, payload3)
-      repository.getByPaginated(did2, None, 1).unsafeRunSync() mustBe List(payload2)
-      repository.getByPaginated(did2, Some(payload2.id), 1).unsafeRunSync() mustBe List(payload3)
+      repository.getByPaginated(did1, None, 10, TraceId.generateYOLO).unsafeRunSync() mustBe List(payload1)
+      repository.getByPaginated(did2, None, 10, TraceId.generateYOLO).unsafeRunSync() mustBe List(payload2, payload3)
+      repository.getByPaginated(did2, None, 1, TraceId.generateYOLO).unsafeRunSync() mustBe List(payload2)
+      repository.getByPaginated(did2, Some(payload2.id), 1, TraceId.generateYOLO).unsafeRunSync() mustBe List(payload3)
     }
   }
 

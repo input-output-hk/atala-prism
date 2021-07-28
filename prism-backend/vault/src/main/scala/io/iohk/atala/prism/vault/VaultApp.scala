@@ -8,10 +8,12 @@ import io.iohk.atala.prism.metrics.UptimeReporter
 import io.iohk.atala.prism.protos.node_api.NodeServiceGrpc
 import io.iohk.atala.prism.repositories.{SchemaMigrations, TransactorFactory}
 import io.iohk.atala.prism.protos.vault_api
+import io.iohk.atala.prism.vault.grpc.EncryptedDataVaultGRPCService
 import io.iohk.atala.prism.vault.repositories.{PayloadsRepository, RequestNoncesRepository}
-import io.iohk.atala.prism.vault.services.EncryptedDataVaultServiceImpl
+import io.iohk.atala.prism.vault.services.EncryptedDataVaultService
 import kamon.Kamon
 import org.slf4j.LoggerFactory
+import tofu.logging.Logs
 
 import scala.concurrent.duration.Duration
 import scala.concurrent.{Await, ExecutionContext}
@@ -29,12 +31,13 @@ object VaultApp {
 
 class VaultApp(executionContext: ExecutionContext) {
   self =>
+  implicit val cs: ContextShift[IO] = IO.contextShift(ExecutionContext.global)
   private val logger = LoggerFactory.getLogger(this.getClass)
+
+  private val vaultLogs: Logs[IO, IO] = Logs.sync[IO, IO]
 
   private[this] var server: Server = null
   private[this] var releaseTransactor: Option[IO[Unit]] = None
-
-  implicit val cs: ContextShift[IO] = IO.contextShift(ExecutionContext.global)
 
   private def start(): Unit = {
     Kamon.init()
@@ -63,8 +66,14 @@ class VaultApp(executionContext: ExecutionContext) {
     val node = NodeServiceGrpc.stub(nodeChannel)
 
     // Vault repositories
-    val payloadsRepository = PayloadsRepository(transactor)
-    val requestNoncesRepository = RequestNoncesRepository.PostgresImpl(transactor)
+    val payloadsRepository = vaultLogs
+      .forService[PayloadsRepository[IO]]
+      .map(implicit l => PayloadsRepository.create(transactor))
+      .unsafeRunSync()
+    val requestNoncesRepository = vaultLogs
+      .forService[RequestNoncesRepository[IO]]
+      .map(implicit l => RequestNoncesRepository.PostgresImpl.create(transactor))
+      .unsafeRunSync()
 
     val authenticator = new VaultAuthenticator(
       requestNoncesRepository,
@@ -72,14 +81,19 @@ class VaultApp(executionContext: ExecutionContext) {
       GrpcAuthenticationHeaderParser
     )
 
-    val encryptedDataVaultService = new EncryptedDataVaultServiceImpl(payloadsRepository, authenticator)(
+    val encryptedDataVaultService = vaultLogs
+      .forService[EncryptedDataVaultService[IO]]
+      .map(implicit l => EncryptedDataVaultService.create(payloadsRepository))
+      .unsafeRunSync()
+
+    val encryptedDataVaultGrpcService = new EncryptedDataVaultGRPCService(encryptedDataVaultService, authenticator)(
       executionContext
     )
 
     logger.info("Starting server")
     server = ServerBuilder
       .forPort(VaultApp.port)
-      .addService(vault_api.EncryptedDataVaultServiceGrpc.bindService(encryptedDataVaultService, executionContext))
+      .addService(vault_api.EncryptedDataVaultServiceGrpc.bindService(encryptedDataVaultGrpcService, executionContext))
       .build()
       .start()
   }
