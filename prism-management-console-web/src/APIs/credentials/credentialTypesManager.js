@@ -2,6 +2,7 @@ import { CredentialTypesServicePromiseClient } from '../../protos/console_api_gr
 import Logger from '../../helpers/Logger';
 import { GetCredentialTypesRequest, GetCredentialTypeRequest } from '../../protos/console_api_pb';
 import { adaptCredentialType } from '../helpers/credentialTypeHelpers';
+import hardcodedTemplateCategories from './mocks/hardcodedTemplateCategories';
 
 async function getCredentialTypes() {
   Logger.info('getting credential types');
@@ -37,6 +38,10 @@ async function getCredentialTypeDetails(id) {
   return mappedCredentialType;
 }
 
+function getTemplateCategories() {
+  return Promise.resolve(hardcodedTemplateCategories);
+}
+
 const mapCredentialTypeField = field => ({
   ...field,
   key: field.name,
@@ -51,5 +56,6 @@ function CredentialTypesManager(config, auth) {
 
 CredentialTypesManager.prototype.getCredentialTypes = getCredentialTypes;
 CredentialTypesManager.prototype.getCredentialTypeDetails = getCredentialTypeDetails;
+CredentialTypesManager.prototype.getTemplateCategories = getTemplateCategories;
 
 export default CredentialTypesManager;

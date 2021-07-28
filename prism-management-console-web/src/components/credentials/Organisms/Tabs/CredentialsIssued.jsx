@@ -9,16 +9,18 @@ import { credentialTabShape } from '../../../../helpers/propShapes';
 import SimpleLoading from '../../../common/Atoms/SimpleLoading/SimpleLoading';
 import BulkActionsHeader from '../../Molecules/BulkActionsHeader/BulkActionsHeader';
 import { useSession } from '../../../providers/SessionContext';
+import TableOptions from '../../Molecules/BulkActionsHeader/TableOptions';
 
 const CredentialsIssued = ({
-  showEmpty,
   tableProps,
   bulkActionsProps,
   showCredentialData,
   fetchCredentials,
   loadingSelection,
   initialLoading,
-  searchDueGeneralScroll
+  searchDueGeneralScroll,
+  filterProps,
+  credentialTypes
 }) => {
   const { t } = useTranslation();
   const [loading, setLoading] = useState(false);
@@ -26,7 +28,8 @@ const CredentialsIssued = ({
 
   const { accountStatus } = useSession();
 
-  const { credentials, selectionType, searching } = tableProps;
+  const { name, date, credentialType, credentialStatus, contactStatus } = filterProps;
+  const { credentials, selectionType, searching, sortingProps } = tableProps;
   const { selectedRowKeys } = selectionType || {};
 
   useEffect(() => {
@@ -50,28 +53,35 @@ const CredentialsIssued = ({
   const emptyProps = {
     photoSrc: noCredentialsPicture,
     model: t('credentials.title'),
-    isFilter: !showEmpty && !credentials.length,
-    button: showEmpty && accountStatus === CONFIRMED && <CreateCredentialsButton />
+    isFilter: name || date || credentialType || credentialStatus || contactStatus,
+    button: accountStatus === CONFIRMED && <CreateCredentialsButton />
   };
 
-  const renderEmptyComponent = !credentials.length || showEmpty;
-
   const renderContent = () => {
-    if (!credentials.length && (initialLoading || searching)) return <SimpleLoading size="md" />;
-    if (renderEmptyComponent) return <EmptyComponent {...emptyProps} />;
-    return <CredentialsTable getMoreData={getMoreData} loading={loading} {...expandedTableProps} />;
+    if (initialLoading || searching) return <SimpleLoading size="md" />;
+    if (!credentials.length) return <EmptyComponent {...emptyProps} />;
+    return (
+      <>
+        <TableOptions
+          bulkActionsProps={bulkActionsProps}
+          loadingSelection={loadingSelection}
+          selectedLength={selectedLength}
+          sortingProps={sortingProps}
+        />
+        <CredentialsTable getMoreData={getMoreData} loading={loading} {...expandedTableProps} />;
+      </>
+    );
   };
 
   return (
     <>
-      {!renderEmptyComponent && (
-        <BulkActionsHeader
-          bulkActionsProps={bulkActionsProps}
-          loadingSelection={loadingSelection}
-          selectedLength={selectedLength}
-          selectedRowKeys={selectedRowKeys}
-        />
-      )}
+      <BulkActionsHeader
+        bulkActionsProps={bulkActionsProps}
+        loadingSelection={loadingSelection}
+        selectedLength={selectedLength}
+        selectedRowKeys={selectedRowKeys}
+        filterProps={{ ...filterProps, credentialTypes }}
+      />
       {renderContent()}
     </>
   );

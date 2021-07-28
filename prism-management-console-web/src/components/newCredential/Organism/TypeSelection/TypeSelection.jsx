@@ -1,7 +1,7 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import TypeCard from '../../Molecules/TypeCard/TypeCard';
-import { credentialTypeShape } from '../../../../helpers/propShapes';
+import { credentialTypesShape } from '../../../../helpers/propShapes';
 import SimpleLoading from '../../../common/Atoms/SimpleLoading/SimpleLoading';
 
 import './_style.scss';
@@ -12,7 +12,7 @@ const TypeSelection = ({ credentialTypes, selectedType, onTypeSelection }) => (
   <div className="TypeSelectionWrapper">
     <div className="TypeSelectionContainer">
       <div className="TypeSelection">
-        {!credentialTypes.length ? (
+        {!credentialTypes ? (
           <SimpleLoading size="md" />
         ) : (
           credentialTypes
@@ -33,11 +33,12 @@ const TypeSelection = ({ credentialTypes, selectedType, onTypeSelection }) => (
 );
 
 TypeSelection.defaultProps = {
+  credentialTypes: undefined,
   selectedType: ''
 };
 
 TypeSelection.propTypes = {
-  credentialTypes: PropTypes.shape(credentialTypeShape).isRequired,
+  credentialTypes: credentialTypesShape,
   selectedType: PropTypes.string,
   onTypeSelection: PropTypes.func.isRequired
 };

@@ -1,9 +1,12 @@
 import { useState, useEffect, useCallback } from 'react';
 import { message } from 'antd';
 import { useTranslation } from 'react-i18next';
+import _ from 'lodash';
 import {
   CREDENTIAL_PAGE_SIZE,
+  CREDENTIAL_SORTING_KEYS,
   MAX_CREDENTIAL_PAGE_SIZE,
+  SORTING_DIRECTIONS,
   UNKNOWN_DID_SUFFIX_ERROR_CODE
 } from '../helpers/constants';
 import Logger from '../helpers/Logger';
@@ -15,6 +18,7 @@ import {
 } from '../helpers/filterHelpers';
 import { credentialMapper, credentialReceivedMapper } from '../APIs/helpers/credentialHelpers';
 import { useSession } from '../components/providers/SessionContext';
+import { useDebounce } from './useDebounce';
 
 const useCredentialsFilters = () => {
   const [name, setName] = useState();
@@ -52,15 +56,17 @@ export const useCredentialsIssuedListWithFilters = credentialsManager => {
   const [isLoading, setIsLoading] = useState(false);
   const [isSearching, setIsSearching] = useState(false);
   const [hasMore, setHasMore] = useState(true);
+  const [sortingBy, setSortingBy] = useState('createdOn');
+  const [sortDirection, setSortDirection] = useState(SORTING_DIRECTIONS.ascending);
 
   const filters = useCredentialsFilters();
   const { name, credentialStatus, credentialType, contactStatus, date } = filters.values;
 
   const { showUnconfirmedAccountError, removeUnconfirmedAccountError } = useSession();
 
-  const applyFilters = useCallback(
+  const applyFrontendFilters = useCallback(
     aCredentialsList =>
-      aCredentialsList?.filter(item => {
+      aCredentialsList.filter(item => {
         const matchName = filterByInclusion(name, item.contactData.contactName);
         const matchExternalId = filterByInclusion(name, item.contactData.externalId);
         const matchContactStatus = filterContactByStatus(
@@ -68,41 +74,39 @@ export const useCredentialsIssuedListWithFilters = credentialsManager => {
           item.contactData.connectionStatus
         );
         const matchStatus = filterByExactMatch(credentialStatus, item.status);
-        const matchType = filterByExactMatch(credentialType, item.credentialType.id);
-        const matchDate = filterByUnixDate(date, item.publicationStoredAt);
 
-        return (
-          (matchName || matchExternalId) &&
-          matchStatus &&
-          matchType &&
-          matchContactStatus &&
-          matchDate
-        );
+        return (matchName || matchExternalId) && matchStatus && matchContactStatus;
       }),
-    [name, contactStatus, credentialStatus, credentialType, date]
+    [contactStatus, credentialStatus, name]
   );
 
-  const updateFilteredCredentials = useCallback(
-    updatedCredentials => {
-      const newFilteredCredentials = applyFilters(updatedCredentials || credentials);
-      setFilteredCredentials(newFilteredCredentials);
-      return newFilteredCredentials;
-    },
-    [credentials, setFilteredCredentials, applyFilters]
+  const applyFrontendSorting = useCallback(
+    aCredentialsList =>
+      _.orderBy(
+        aCredentialsList,
+        o => o[sortingBy] || o.contactData[sortingBy],
+        sortDirection === SORTING_DIRECTIONS.ascending ? 'asc' : 'desc'
+      ),
+    [sortingBy, sortDirection]
   );
 
   const getCredentials = useCallback(
     ({ isFetchAll } = {}) => {
       if (isLoading || isSearching) return;
       setIsSearching(true);
-
       return (hasMore
         ? credentialsManager.getCredentials(
             isFetchAll ? MAX_CREDENTIAL_PAGE_SIZE : CREDENTIAL_PAGE_SIZE,
-            credentials.length
+            credentials.length,
+            filters.values,
+            sortingBy && {
+              field: sortingBy,
+              direction: sortDirection
+            }
           )
         : Promise.resolve([])
       )
+
         .then(newlyFetchedCredentials => {
           if (newlyFetchedCredentials.length < CREDENTIAL_PAGE_SIZE) setHasMore(false);
 
@@ -116,14 +120,16 @@ export const useCredentialsIssuedListWithFilters = credentialsManager => {
           removeUnconfirmedAccountError();
           return updatedCredentials;
         })
-        .then(updateFilteredCredentials)
+        .then(updatedCredentials => {
+          const newFilteredCredentials = applyFrontendFilters(updatedCredentials);
+          return newFilteredCredentials;
+        })
         .catch(error => {
           Logger.error(
             '[CredentialContainer.getCredentialsRecieved] Error while getting Credentials',
             error
           );
           if (error.code === UNKNOWN_DID_SUFFIX_ERROR_CODE) {
-            setHasMore(false);
             showUnconfirmedAccountError();
           } else {
             removeUnconfirmedAccountError();
@@ -131,6 +137,7 @@ export const useCredentialsIssuedListWithFilters = credentialsManager => {
           }
         })
         .finally(() => {
+          setHasMore(false);
           setIsLoading(false);
           setIsSearching(false);
         });
@@ -142,9 +149,12 @@ export const useCredentialsIssuedListWithFilters = credentialsManager => {
       credentialsManager,
       removeUnconfirmedAccountError,
       showUnconfirmedAccountError,
-      updateFilteredCredentials,
+      applyFrontendFilters,
       t,
-      hasMore
+      filters,
+      sortingBy,
+      hasMore,
+      sortDirection
     ]
   );
 
@@ -154,7 +164,12 @@ export const useCredentialsIssuedListWithFilters = credentialsManager => {
       setIsLoading(true);
       const refreshedCredentials = await credentialsManager.getCredentials(
         credentials.length,
-        null
+        null,
+        filters.values,
+        sortingBy && {
+          field: CREDENTIAL_SORTING_KEYS[sortingBy],
+          direction: sortDirection
+        }
       );
 
       const credentialTypes = credentialsManager.getCredentialTypes();
@@ -171,12 +186,12 @@ export const useCredentialsIssuedListWithFilters = credentialsManager => {
       );
       if (error.code === UNKNOWN_DID_SUFFIX_ERROR_CODE) {
         showUnconfirmedAccountError();
-        setHasMore(false);
       } else {
         removeUnconfirmedAccountError();
         message.error(t('errors.errorGetting', { model: 'Credentials' }));
       }
     } finally {
+      setHasMore(false);
       setIsLoading(false);
     }
   };
@@ -189,16 +204,36 @@ export const useCredentialsIssuedListWithFilters = credentialsManager => {
   }, [credentials, isLoading, isSearching, hasMore, getCredentials]);
 
   useEffect(() => {
-    updateFilteredCredentials();
+    const sortedCredentials = Object.keys(CREDENTIAL_SORTING_KEYS).includes(sortingBy)
+      ? credentials
+      : applyFrontendSorting(credentials);
+
+    const newSortedAndFilteredCredentials = applyFrontendFilters(sortedCredentials);
+    setFilteredCredentials(newSortedAndFilteredCredentials);
   }, [
     credentials,
     name,
     credentialStatus,
-    credentialType,
     contactStatus,
-    date,
-    updateFilteredCredentials
+    sortingBy,
+    sortDirection,
+    applyFrontendFilters,
+    applyFrontendSorting
   ]);
+
+  const applyBackendFilters = useDebounce(refreshCredentialsIssued, [credentialType, date]);
+
+  useEffect(() => {
+    applyBackendFilters();
+  }, [credentialType, date, applyBackendFilters]);
+
+  const applyBackendSorting = useDebounce(refreshCredentialsIssued, [sortingBy, sortDirection]);
+
+  useEffect(() => {
+    if (!sortingBy || Object.keys(CREDENTIAL_SORTING_KEYS).includes(sortingBy)) {
+      applyBackendSorting();
+    }
+  }, [sortingBy, sortDirection, applyBackendSorting]);
 
   useEffect(() => {
     /* if the amount of filtered credentials is less than the page size,
@@ -232,11 +267,14 @@ export const useCredentialsIssuedListWithFilters = credentialsManager => {
       ...filters.setters
     },
     filteredCredentialsIssued: filteredCredentials,
-    noIssuedCredentials: !credentials.length,
     hasMoreIssued: hasMore,
     isLoading,
     isSearching,
-    fetchAll
+    fetchAll,
+    sortingBy,
+    setSortingBy,
+    sortDirection,
+    setSortDirection
   };
 };
 
@@ -253,7 +291,7 @@ export const useCredentialsReceivedListWithFilters = api => {
   const credentialTypes = api.credentialsManager.getCredentialTypes();
 
   useEffect(() => {
-    const applyFilters = aCredentialsList =>
+    const applyFrontendFilters = aCredentialsList =>
       aCredentialsList.filter(item => {
         const matchName = filterByInclusion(name, item.contactData.contactName);
         const matchExternalId = filterByInclusion(name, item.contactData.externalId);
@@ -263,7 +301,7 @@ export const useCredentialsReceivedListWithFilters = api => {
         return (matchName || matchExternalId) && matchType && matchDate;
       });
 
-    const newFilteredCredentials = applyFilters(credentials);
+    const newFilteredCredentials = applyFrontendFilters(credentials);
     setFilteredCredentials(newFilteredCredentials);
   }, [credentials, name, credentialType, date]);
 

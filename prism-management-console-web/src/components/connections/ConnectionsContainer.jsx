@@ -2,35 +2,34 @@ import React from 'react';
 import PropTypes from 'prop-types';
 import Connections from './Connections';
 import { withApi } from '../providers/withApi';
-import { useContactsWithFilteredList } from '../../hooks/useContacts';
+import { useContacts } from '../../hooks/useContacts';
 
 const ConnectionsContainer = ({ api }) => {
   const {
     contacts,
-    filteredContacts,
-    filterProps,
-    getContacts,
-    handleContactsRequest,
+    refreshContacts,
+    getMoreContacts,
     hasMore,
     isLoading,
-    isSearching
-  } = useContactsWithFilteredList(api.contactsManager);
-
-  const refreshContacts = () => getContacts({ pageSize: contacts.length, isRefresh: true });
+    isSearching,
+    filterProps,
+    sortProps
+  } = useContacts(api.contactsManager);
 
   const tableProps = {
-    contacts: filteredContacts,
+    contacts,
     hasMore
   };
 
   return (
     <Connections
       tableProps={tableProps}
-      handleContactsRequest={handleContactsRequest}
+      handleContactsRequest={getMoreContacts}
       refreshContacts={refreshContacts}
       loading={isLoading}
       searching={isSearching}
       filterProps={filterProps}
+      sortProps={sortProps}
     />
   );
 };

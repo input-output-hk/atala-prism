@@ -1,8 +1,10 @@
 import { ContactsServicePromiseClient } from '../../protos/console_api_grpc_web_pb';
 import Logger from '../../helpers/Logger';
 import {
+  CONNECTED,
   CONTACT_PAGE_SIZE,
   MAX_CONTACT_PAGE_SIZE,
+  PENDING_CONNECTION,
   REQUEST_AUTH_TIMEOUT_MS
 } from '../../helpers/constants';
 import {
@@ -15,6 +17,25 @@ import {
 } from '../../protos/console_api_pb';
 import { GenerateConnectionTokenRequest } from '../../protos/connector_api_pb';
 import { getAditionalTimeout } from '../../helpers/genericHelpers';
+import { getProtoDate } from '../../helpers/formatters';
+
+const { FilterBy, SortBy } = GetContactsRequest;
+
+const fieldKeys = {
+  CREATED_AT: 1,
+  NAME: 2,
+  EXTERNAL_ID: 3
+};
+
+const sortByDirection = {
+  ASCENDING: 1,
+  DESCENDING: 2
+};
+
+const connectionStatus = {
+  [PENDING_CONNECTION]: 2,
+  [CONNECTED]: 3
+};
 
 async function createContact(groupName, jsonData, externalId) {
   Logger.info(`Creating contact with externalId = ${externalId} for group ${groupName}`, jsonData);
@@ -71,22 +92,46 @@ async function createContacts(groups, contacts) {
   return contactsCreated;
 }
 
-async function getContacts({ lastSeenContactId, limit = CONTACT_PAGE_SIZE, groupName, scrollId }) {
+async function getContacts({
+  limit = CONTACT_PAGE_SIZE,
+  groupName,
+  scrollId,
+  createdAt,
+  field,
+  direction,
+  searchText,
+  status
+}) {
   Logger.info(`Getting up to ${limit} contacts${groupName ? ` from ${groupName}` : ''}`);
   const req = new GetContactsRequest();
   req.setLimit(limit);
-  if (lastSeenContactId) req.setLastSeenContactId(lastSeenContactId);
   if (scrollId) req.setScrollId(scrollId);
-  if (groupName) req.setGroupName(groupName);
+
+  const filterBy = new FilterBy();
+  filterBy.setGroupName(groupName);
+  filterBy.setNameOrExternalId(searchText);
+  filterBy.setConnectionStatus(connectionStatus[status]);
+
+  if (createdAt) {
+    const createdAtDate = getProtoDate(createdAt);
+    filterBy.setCreatedAt(createdAtDate);
+  }
+
+  req.setFilterBy(filterBy);
+
+  const sortBy = new SortBy();
+  sortBy.setField(fieldKeys[field]);
+  sortBy.setDirection(sortByDirection[direction]);
+  req.setSortBy(sortBy);
 
   const timeout = REQUEST_AUTH_TIMEOUT_MS + getAditionalTimeout(limit);
 
   const { metadata, sessionError } = await this.auth.getMetadata(req, timeout);
-  if (sessionError) return [];
+  if (sessionError) return { contactsList: [] };
 
   const res = await this.client.getContacts(req, metadata);
 
-  const { dataList, scrollid: newScrollId } = res.toObject();
+  const { dataList, scrollId: newScrollId } = res.toObject();
 
   const contactsList = dataList.map(({ contact, ...rest }) => ({ ...contact, ...rest }));
 
@@ -117,7 +162,7 @@ async function fetchMoreContactsRecursively(scrollId, groupName, acc, onFinish) 
     limit: MAX_CONTACT_PAGE_SIZE
   });
   const partialContactsArray = acc.concat(contactsList);
-  if (!newScrollId) return onFinish(partialContactsArray);
+  if (contactsList.length < MAX_CONTACT_PAGE_SIZE) return onFinish(partialContactsArray);
   return this.fetchMoreContactsRecursively(newScrollId, groupName, partialContactsArray, onFinish);
 }
 

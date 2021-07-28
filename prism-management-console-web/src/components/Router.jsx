@@ -14,6 +14,8 @@ import GroupCreationContainer from './groupCreation/GroupCreationContainer';
 import Instructions from './instructions/instructions';
 import ImportContactsContainer from './importContacts/ImportContactsContainer';
 import GroupEditingContainer from './groupEditing/GroupEditingContainer';
+import CredentialTemplatesContainer from './credentialTemplates/CredentialTemplatesContainer';
+import CredentialTemplateCreationContainer from './credentialTemplateCreation/CredentialTemplateCreationContainer';
 
 const errorRoute = { exact: true, path: '/error', key: '/error', component: I18nError };
 
@@ -82,6 +84,18 @@ const importContacts = {
   key: 'contacts/import',
   component: withLoggedValidation(withSideBar(ImportContactsContainer))
 };
+const credentialTemplates = {
+  exact: true,
+  path: '/templates',
+  key: 'templates',
+  component: withLoggedValidation(withSideBar(CredentialTemplatesContainer))
+};
+const createCredentialTemplate = {
+  exact: true,
+  path: '/templates/create',
+  key: 'templates/create',
+  component: withLoggedValidation(withSideBar(CredentialTemplateCreationContainer))
+};
 
 const routes = [
   adminRoute,
@@ -95,6 +109,8 @@ const routes = [
   credential,
   newCredential,
   instructions,
+  credentialTemplates,
+  createCredentialTemplate,
   dashboardRoute
 ];
 

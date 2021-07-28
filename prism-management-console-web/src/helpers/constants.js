@@ -8,6 +8,7 @@ export const TIMEOUT_MULTIPLIER_MS = 100; // Delay for fetching each entity
 // Delay before checking if the extension has injected its SDK
 export const BROWSER_WALLET_CHECK_INTERVAL_MS = 500;
 export const SEARCH_DELAY_MS = 1000;
+export const MOCK_API_CALL_DELAY = 500;
 export const DEFAULT_PAGE_SIZE = 10;
 export const CONTACT_PAGE_SIZE = DEFAULT_PAGE_SIZE;
 export const GROUP_PAGE_SIZE = DEFAULT_PAGE_SIZE;
@@ -58,6 +59,13 @@ export const VALID_CREDENTIAL_STATUSES = {
 };
 
 export const CREDENTIAL_STATUSES_TRANSLATOR = __.invert(CREDENTIAL_STATUSES);
+
+export const CREDENTIAL_TYPE_STATUSES = {
+  CREDENTIAL_TYPE_UNKNOWN: 0,
+  CREDENTIAL_TYPE_DRAFT: 1,
+  CREDENTIAL_TYPE_READY: 2,
+  CREDENTIAL_TYPE_ARCHIVED: 3
+};
 
 // eslint-disable-next-line quotes
 export const EXAMPLE_DEGREE_NAME = "Bachelor's in Engineering";
@@ -222,8 +230,29 @@ export const GROUP_SORTING_KEYS = {
   numberOfContacts: 'NUMBER_OF_CONTACTS'
 };
 
+// Credentials
+export const CREDENTIAL_SORTING_KEYS = {
+  credentialType: 'CREDENTIAL_TYPE',
+  createdOn: 'CREATED_ON'
+};
+
+// Contacts
+export const CONTACT_SORTING_KEYS = {
+  name: 'NAME',
+  createdAt: 'CREATED_AT',
+  externalId: 'EXTERNAL_ID'
+};
+
 // Sorting directions
 export const SORTING_DIRECTIONS = {
   ascending: 'ASCENDING',
   descending: 'DESCENDING'
 };
+
+// templates
+
+// template creation steps
+export const NEW_TEMPLATE_STEP_UNIT = 1;
+export const SELECT_TEMPLATE_CATEGORY = 0;
+export const DESIGN_TEMPLATE = 1;
+export const TEMPLATE_CREATION_RESULT = 2;

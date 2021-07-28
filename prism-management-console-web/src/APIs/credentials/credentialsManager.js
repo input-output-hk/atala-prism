@@ -4,8 +4,13 @@ import {
   CredentialIssuanceServicePromiseClient
 } from '../../protos/console_api_grpc_web_pb';
 import Logger from '../../helpers/Logger';
-import credentialTypes from './credentialTypes';
-import { REQUEST_AUTH_TIMEOUT_MS, CREDENTIAL_PAGE_SIZE } from '../../helpers/constants';
+import {
+  REQUEST_AUTH_TIMEOUT_MS,
+  CREDENTIAL_PAGE_SIZE,
+  CREDENTIAL_SORTING_KEYS,
+  SORTING_DIRECTIONS
+} from '../../helpers/constants';
+import hardcodedCredentialTypes from './mocks/hardcodedCredentialTypes';
 import { getAditionalTimeout } from '../../helpers/genericHelpers';
 import {
   GetGenericCredentialsRequest,
@@ -14,8 +19,11 @@ import {
   GetBlockchainDataRequest,
   CreateGenericCredentialBulkRequest
 } from '../../protos/console_api_pb';
-import { AtalaMessage, PlainTextCredential } from '../../protos/credential_models_pb';
 import { adaptCredentialType } from '../helpers/credentialTypeHelpers';
+import { getProtoDate } from '../../helpers/formatters';
+import { AtalaMessage, PlainTextCredential } from '../../protos/credential_models_pb';
+
+const { FilterBy, SortBy } = GetGenericCredentialsRequest;
 
 function mapCredential(cred) {
   const credential = cred.toObject();
@@ -24,12 +32,44 @@ function mapCredential(cred) {
   return Object.assign(credential, { subjectData }, credentialData);
 }
 
-async function getCredentials(limit = CREDENTIAL_PAGE_SIZE, lastSeenCredentialId = null) {
+const fieldKeys = {
+  UNKNOWN: 0,
+  CREDENTIAL_TYPE: 1,
+  CREATED_ON: 2
+};
+
+const sortByDirection = {
+  ASCENDING: 1,
+  DESCENDING: 2
+};
+
+async function getCredentials(
+  limit = CREDENTIAL_PAGE_SIZE,
+  lastSeenCredentialId = null,
+  filter = {},
+  sort = { field: CREDENTIAL_SORTING_KEYS.createdOn, direction: SORTING_DIRECTIONS.ascending }
+) {
   Logger.info(`getting credentials from ${lastSeenCredentialId}, limit ${limit}`);
+  const { credentialType, date } = filter;
+  const { field, direction } = sort;
+
+  const filterBy = new FilterBy();
+  if (credentialType) filterBy.setCredentialType(credentialType);
+
+  if (date) {
+    const protoDate = getProtoDate(date);
+    filterBy.setCreatedBefore(protoDate);
+    filterBy.setCreatedAfter(protoDate);
+  }
+  const sortBy = new SortBy();
+  sortBy.setField(fieldKeys[field]);
+  sortBy.setDirection(sortByDirection[direction]);
 
   const getCredentialsRequest = new GetGenericCredentialsRequest();
   getCredentialsRequest.setLimit(limit);
   getCredentialsRequest.setOffset(lastSeenCredentialId);
+  getCredentialsRequest.setFilterBy(filterBy);
+  getCredentialsRequest.setSortBy(sortBy);
 
   const timeout = REQUEST_AUTH_TIMEOUT_MS + getAditionalTimeout(limit);
 
@@ -107,7 +147,7 @@ function generateAtalaMessage(credential) {
 }
 
 function getCredentialTypes() {
-  return credentialTypes;
+  return hardcodedCredentialTypes;
 }
 
 async function getContactCredentials(contactId) {

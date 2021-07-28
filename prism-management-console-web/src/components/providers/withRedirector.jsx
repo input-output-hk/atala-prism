@@ -33,6 +33,10 @@ export const withRedirector = Component => props => {
 
   const redirectToGroups = () => redirectTo('groups');
 
+  const redirectToCredentialTemplates = () => redirectTo('templates');
+
+  const redirectToCredentialTemplateCreation = () => redirectTo('templates/create');
+
   const redirector = {
     redirectToHome,
     redirectToNewCredential,
@@ -46,7 +50,9 @@ export const withRedirector = Component => props => {
     redirectToStudentCreation,
     redirectToIndividualCreation,
     redirectToGroupCreation,
-    redirectToGroups
+    redirectToGroups,
+    redirectToCredentialTemplates,
+    redirectToCredentialTemplateCreation
   };
 
   return <Component {...props} redirector={redirector} />;

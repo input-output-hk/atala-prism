@@ -9,6 +9,7 @@ import iconMenu from '../../../../images/icon-menu.svg';
 import iconGroups from '../../../../images/icon-groups.svg';
 import iconCredentials from '../../../../images/icon-credentials.svg';
 import supportIcon from '../../../../images/supportIcon.svg';
+import templatesIcon from '../../../../images/templatesIcon.svg';
 
 import './_style.scss';
 
@@ -23,7 +24,8 @@ const SideMenu = ({ location: { pathname } }) => {
     { icon: iconMenu, name: '' },
     { icon: contactsIcon, name: 'contacts' },
     { icon: iconGroups, name: 'groups' },
-    { icon: iconCredentials, name: 'credentials' }
+    { icon: iconCredentials, name: 'credentials' },
+    { icon: templatesIcon, name: 'templates' }
   ];
 
   return (

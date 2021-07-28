@@ -23,6 +23,7 @@ const Connections = ({
   loading,
   searching,
   filterProps,
+  sortProps,
   redirector: { redirectToContactDetails }
 }) => {
   const { t } = useTranslation();
@@ -77,7 +78,11 @@ const Connections = ({
           <h1>{t('contacts.title')}</h1>
         </div>
         <div className="flex spaceBetween fullWidth">
-          <ConnectionsFilter {...filterProps} fetchContacts={handleContactsRequest} />
+          <ConnectionsFilter
+            {...filterProps}
+            {...sortProps}
+            fetchContacts={handleContactsRequest}
+          />
           {accountStatus === CONFIRMED && <AddUserButtons />}
         </div>
       </div>
@@ -111,6 +116,12 @@ Connections.propTypes = {
     setSearchText: PropTypes.func,
     status: PropTypes.string,
     setStatus: PropTypes.func
+  }).isRequired,
+  sortProps: PropTypes.shape({
+    sortingField: PropTypes.string,
+    setSortingField: PropTypes.func,
+    sortingDirection: PropTypes.string,
+    setSortingDirection: PropTypes.func
   }).isRequired,
   redirector: PropTypes.shape({
     redirectToContactDetails: PropTypes.func

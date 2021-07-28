@@ -1,4 +1,4 @@
-import hardCodedCredentialTypes from '../credentials/credentialTypes';
+import hardCodedCredentialTypes from '../credentials/mocks/hardcodedCredentialTypes';
 
 const credentialTypeEquivalents = {
   id: hardCodedCredentialTypes.governmentId,

@@ -1,0 +1,40 @@
+@import '../../../src/css/general_styling';
+
+.TypeSelectionContainer {
+  .titleContainer {
+    h1 {
+      @include primary-text($h1, $black);
+      font-variant: normal;
+      font-weight: bold;
+    }
+  }
+  .TypeSelection {
+    .flex {
+      label {
+        @include primary-text($body, $black);
+        margin-top: 2em;
+      }
+    }
+    .verticalFlex {
+      .FormContainer {
+        label {
+          @include primary-text($body, $black);
+        }
+        .ant-input {
+          border: 1px solid lightgray;
+          background: white;
+        }
+        .ant-input:focus {
+          border: 1px solid #ff7875;
+        }
+        .ant-form-item-control-input-content {
+          position: relative;
+        }
+        .ant-form-item-children-icon {
+          position: absolute;
+          right: -30px;
+        }
+      }
+    }
+  }
+}

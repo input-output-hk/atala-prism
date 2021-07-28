@@ -8,7 +8,8 @@
     "next": "Next",
     "done": "Done",
     "save": "Save",
-    "saveForLater": "Save & Continue later"
+    "saveForLater": "Save & Continue later",
+    "sortBy": "Sort by"
   },
   "commonWords": {
     "and": "and",
@@ -51,7 +52,10 @@
     "filters": {
       "identityNumber": "Identity Number",
       "search": "Search",
-      "status": "Contact Status"
+      "status": "Contact Status",
+      "name": "Name",
+      "createdAt": "Date Created",
+      "externalId": "External ID"
     },
     "buttons": {
       "import": "Add New"
@@ -308,6 +312,7 @@
         "credentialType": "Credential Type",
         "contactName": "Contact Name",
         "externalId": "External ID",
+        "createdOn": "Creation Date",
         "dateSigned": "Date Signed",
         "dateReceived": "Date Received",
         "contactStatus": "Contact Status",
@@ -358,7 +363,7 @@
       "undefined": "Undefined",
       "id": "Government ID",
       "employment": "Proof of Employment",
-      "health":  "Health Insurance"
+      "health": "Health Insurance"
     },
     "status": {
       "credentialDraft": "Credential Draft",
@@ -527,6 +532,45 @@
       "title": "Check the data below"
     },
     "checkInfo": "Check the data below"
+  },
+  "templates": {
+    "title": "Credential Templates",
+    "actions": {
+      "createTemplate": "Create Template"
+    }
+  },
+  "credentialTemplateCreation": {
+    "step1": {
+      "title": "Create a Credential Template",
+      "subtitle": "",
+      "templateName": "Template Name",
+      "templateNamePlaceholder": "Insert template name",
+      "selectCategory": "Select a Category"
+    },
+    "step2": {
+      "title": "Create a Credential Template",
+      "subtitle": "Design your Credential"
+    },
+    "messages": {
+      "selectCategoryError": "Please select a category",
+      "templateDesignError": "Invalid Template"
+    },
+    "form": {
+      "buttonText": "Save",
+      "templateNameLabel": "Type Template Name",
+      "templateCategoryLabel": "Select a Category",
+      "fields": {
+        "templateName":"Template Name",
+        "templateCategory": "Category"
+      }
+    },
+    "actions": {
+      "addCategory": "Add New"
+    },
+    "errors":  {
+      "required":"${label} is required",
+      "preExisting": "A template called '{{value}}' already exists"
+    }
   },
   "landing": {
     "welcome": "Welcome!",

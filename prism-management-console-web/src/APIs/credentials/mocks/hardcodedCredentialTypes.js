@@ -1,18 +1,18 @@
-import governmentIdLogo from '../../images/government-id-logo.svg';
-import educationalLogo from '../../images/educational-credential-logo.svg';
-import proofOfEmploymentLogo from '../../images/proof-of-employment-logo.svg';
-import healthInsuranceLogo from '../../images/health-insurance-logo.svg';
-import governmentIdSample from '../../images/government-id-sample.svg';
-import educationalSample from '../../images/educational-credential-sample.svg';
-import proofOfEmploymentSample from '../../images/proof-of-employment-sample.svg';
-import healthInsuranceSample from '../../images/health-insurance-sample.svg';
-import GeorgiaEducationalDegreeLogo from '../../images/GeorgiaEducationalDegreeLogo.png';
-import GeorgiaEducationalDegreeTranscriptLogo from '../../images/GeorgiaEducationalDegreeTranscriptLogo.png';
-import GeorgiaNationalIDLogo from '../../images/GeorgiaNationalIDLogo.png';
-import GeorgiaEducationalDegreeSample from '../../images/GeorgiaEducationalDegreeSample.svg';
-import GeorgiaEducationalDegreeTranscriptSample from '../../images/GeorgiaEducationalDegreeTranscriptSample.svg';
-import GeorgiaNationalIDSample from '../../images/GeorgiaNationalIDSample.svg';
-import { georgiaCoursesView, ethiopiaCoursesView } from './credentialExtraViews';
+import governmentIdLogo from '../../../images/government-id-logo.svg';
+import educationalLogo from '../../../images/educational-credential-logo.svg';
+import proofOfEmploymentLogo from '../../../images/proof-of-employment-logo.svg';
+import healthInsuranceLogo from '../../../images/health-insurance-logo.svg';
+import governmentIdSample from '../../../images/government-id-sample.svg';
+import educationalSample from '../../../images/educational-credential-sample.svg';
+import proofOfEmploymentSample from '../../../images/proof-of-employment-sample.svg';
+import healthInsuranceSample from '../../../images/health-insurance-sample.svg';
+import georgiaEducationalDegreeLogo from '../../../images/GeorgiaEducationalDegreeLogo.png';
+import georgiaEducationalDegreeTranscriptLogo from '../../../images/GeorgiaEducationalDegreeTranscriptLogo.png';
+import georgiaNationalIDLogo from '../../../images/GeorgiaNationalIDLogo.png';
+import georgiaEducationalDegreeSample from '../../../images/GeorgiaEducationalDegreeSample.svg';
+import georgiaEducationalDegreeTranscriptSample from '../../../images/GeorgiaEducationalDegreeTranscriptSample.svg';
+import georgiaNationalIDSample from '../../../images/GeorgiaNationalIDSample.svg';
+import { georgiaCoursesView, ethiopiaCoursesView } from '../credentialExtraViews';
 
 const governmentId = {
   id: 1,
@@ -168,8 +168,8 @@ const GeorgiaNationalID = {
   enabled: false,
   isMultiRow: false,
   name: 'credentials.type.governmentId',
-  logo: GeorgiaNationalIDLogo,
-  sampleImage: GeorgiaNationalIDSample,
+  logo: georgiaNationalIDLogo,
+  sampleImage: georgiaNationalIDSample,
   fields: [
     {
       key: 'fullname',
@@ -229,8 +229,8 @@ const GeorgiaEducationalDegree = {
   enabled: false,
   isMultiRow: false,
   name: 'credentials.type.educational',
-  logo: GeorgiaEducationalDegreeLogo,
-  sampleImage: GeorgiaEducationalDegreeSample,
+  logo: georgiaEducationalDegreeLogo,
+  sampleImage: georgiaEducationalDegreeSample,
   fields: [
     {
       key: 'degreeName',
@@ -268,8 +268,8 @@ const GeorgiaEducationalDegreeTranscript = {
   multiRowKey: 'courses',
   multiRowView: georgiaCoursesView,
   name: 'credentials.type.transcript',
-  logo: GeorgiaEducationalDegreeTranscriptLogo,
-  sampleImage: GeorgiaEducationalDegreeTranscriptSample,
+  logo: georgiaEducationalDegreeTranscriptLogo,
+  sampleImage: georgiaEducationalDegreeTranscriptSample,
   fields: [
     {
       key: 'fullname',
@@ -329,8 +329,8 @@ const EthiopiaNationalID = {
   enabled: true,
   isMultiRow: false,
   name: 'credentials.type.governmentId',
-  logo: GeorgiaNationalIDLogo,
-  sampleImage: GeorgiaNationalIDSample,
+  logo: georgiaNationalIDLogo,
+  sampleImage: georgiaNationalIDSample,
   fields: [
     {
       key: 'fullname',
@@ -390,8 +390,8 @@ const EthiopiaEducationalDegree = {
   enabled: true,
   isMultiRow: false,
   name: 'credentials.type.educational',
-  logo: GeorgiaEducationalDegreeLogo,
-  sampleImage: GeorgiaEducationalDegreeSample,
+  logo: georgiaEducationalDegreeLogo,
+  sampleImage: georgiaEducationalDegreeSample,
   fields: [
     {
       key: 'degreeName',
@@ -429,8 +429,8 @@ const EthiopiaEducationalDegreeTranscript = {
   multiRowKey: 'courses',
   multiRowView: ethiopiaCoursesView,
   name: 'credentials.type.transcript',
-  logo: GeorgiaEducationalDegreeTranscriptLogo,
-  sampleImage: GeorgiaEducationalDegreeTranscriptSample,
+  logo: georgiaEducationalDegreeTranscriptLogo,
+  sampleImage: georgiaEducationalDegreeTranscriptSample,
   fields: [
     {
       key: 'fullname',

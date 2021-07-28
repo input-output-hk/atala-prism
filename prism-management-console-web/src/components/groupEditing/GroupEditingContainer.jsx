@@ -6,7 +6,7 @@ import { message } from 'antd';
 import GroupEditing from './GroupEditing';
 import { withApi } from '../providers/withApi';
 import Logger from '../../helpers/Logger';
-import { useContactsWithFilteredList } from '../../hooks/useContacts';
+import { useContacts } from '../../hooks/useContacts';
 
 const GroupEditingContainer = ({ api }) => {
   const { t } = useTranslation();
@@ -18,13 +18,12 @@ const GroupEditingContainer = ({ api }) => {
 
   const {
     contacts,
-    filteredContacts,
     filterProps,
-    handleContactsRequest,
+    getMoreContacts,
+    refreshContacts,
     hasMore,
-    isLoading: loadingContacts,
-    fetchAllContacts
-  } = useContactsWithFilteredList(api.contactsManager, false);
+    isLoading: loadingContacts
+  } = useContacts(api.contactsManager, false);
 
   useEffect(() => {
     if (!group) {
@@ -42,22 +41,23 @@ const GroupEditingContainer = ({ api }) => {
     }
   }, [group, api.groupsManager, id, t]);
 
-  const getGroupContacts = useCallback(
+  const updateGroupContacts = useCallback(
     (refreshAllContacts = false) => {
-      handleContactsRequest({ groupNameParam: group.name, isRefresh: refreshAllContacts });
+      if (refreshAllContacts) refreshContacts();
+      else getMoreContacts({ groupNameParam: group.name });
     },
-    [group, handleContactsRequest]
+    [group, getMoreContacts, refreshContacts]
   );
 
   useEffect(() => {
-    if (group && !contacts.length && hasMore) getGroupContacts();
-  }, [group, contacts, getGroupContacts, hasMore]);
+    if (group && !contacts.length && hasMore) updateGroupContacts();
+  }, [group, contacts, updateGroupContacts, hasMore]);
 
   const handleRemoveContacts = async contactIdsToRemove => {
     try {
       setIsSaving(true);
       await api.groupsManager.updateGroup(id, { contactIdsToRemove });
-      getGroupContacts(true);
+      updateGroupContacts(true);
     } catch (e) {
       message.error(t('groupEditing.errors.grpc'));
       Logger.error('groupEditing.errors.grpc', e);
@@ -70,7 +70,7 @@ const GroupEditingContainer = ({ api }) => {
     try {
       setIsSaving(true);
       await api.groupsManager.updateGroup(id, { contactIdsToAdd });
-      getGroupContacts(true);
+      updateGroupContacts(true);
     } catch (e) {
       message.error(t('groupEditing.errors.grpc'));
       Logger.error('groupEditing.errors.grpc', e);
@@ -83,7 +83,7 @@ const GroupEditingContainer = ({ api }) => {
     try {
       setIsSaving(true);
       await api.groupsManager.updateGroup(id, { newName });
-      getGroupContacts(true);
+      updateGroupContacts(true);
     } catch (e) {
       message.error(t('groupEditing.errors.grpc'));
       Logger.error('groupEditing.errors.grpc', e);
@@ -96,8 +96,8 @@ const GroupEditingContainer = ({ api }) => {
     <GroupEditing
       group={group}
       filterProps={filterProps}
-      contacts={filteredContacts}
-      handleContactsRequest={handleContactsRequest}
+      contacts={contacts}
+      handleContactsRequest={getMoreContacts}
       onGroupRename={handleGroupRename}
       onRemoveContacts={handleRemoveContacts}
       onAddContacts={handleAddContacts}
@@ -105,7 +105,7 @@ const GroupEditingContainer = ({ api }) => {
       loadingContacts={loadingContacts}
       isSaving={isSaving}
       hasMore={hasMore}
-      fetchAllContacts={fetchAllContacts}
+      fetchAllContacts={() => api.contactsManager.getAllContacts()}
     />
   );
 };
@@ -115,7 +115,8 @@ GroupEditingContainer.defaultProps = {};
 GroupEditingContainer.propTypes = {
   api: PropTypes.shape({
     contactsManager: PropTypes.shape({
-      getContacts: PropTypes.func.isRequired
+      getContacts: PropTypes.func.isRequired,
+      getAllContacts: PropTypes.func.isRequired
     }).isRequired,
     groupsManager: PropTypes.shape({
       getAllGroups: PropTypes.func.isRequired,

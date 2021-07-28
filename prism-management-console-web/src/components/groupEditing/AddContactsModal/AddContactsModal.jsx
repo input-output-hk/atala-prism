@@ -24,13 +24,12 @@ const AddContactsModal = ({ api, groupName, visible, onCancel, onConfirm }) => {
   const [loadingSelection, setLoadingSelection] = useState(false);
 
   const {
-    filteredContacts,
+    contacts,
     filterProps,
     handleContactsRequest,
     hasMore,
     isLoading,
-    isSearching,
-    fetchAllContacts
+    isSearching
   } = useContactsWithFilteredListAndNotInGroup(api.contactsManager);
 
   useEffect(() => {
@@ -45,15 +44,15 @@ const AddContactsModal = ({ api, groupName, visible, onCancel, onConfirm }) => {
     handleSelectAll({
       ev,
       setSelected: setSelectedContacts,
-      entities: filteredContacts,
+      entities: contacts,
       hasMore,
       idKey: CONTACT_ID_KEY,
-      fetchAll: fetchAllContacts,
+      fetchAll: () => api.contactsManager.getAllContacts(),
       setLoading: setLoadingSelection
     });
 
   const selectAllProps = {
-    ...getCheckedAndIndeterminateProps(filteredContacts, selectedContacts),
+    ...getCheckedAndIndeterminateProps(contacts, selectedContacts),
     disabled: loadingSelection,
     onChange: handleSelectAllContacts
   };
@@ -102,7 +101,7 @@ const AddContactsModal = ({ api, groupName, visible, onCancel, onConfirm }) => {
           </div>
         </Col>
         <Col span={17}>
-          <ConnectionsFilter {...filterProps} withStatus={false} />
+          <ConnectionsFilter {...filterProps} fullFilters={false} />
         </Col>
       </Row>
       <Row className="ModalContactsContainer">
@@ -111,7 +110,7 @@ const AddContactsModal = ({ api, groupName, visible, onCancel, onConfirm }) => {
             <SimpleLoading />
           ) : (
             <ConnectionsTable
-              contacts={filteredContacts}
+              contacts={contacts}
               selectedContacts={selectedContacts}
               setSelectedContacts={setSelectedContacts}
               searching={isSearching}
@@ -132,7 +131,8 @@ AddContactsModal.defaultProps = {
 AddContactsModal.propTypes = {
   api: PropTypes.shape({
     contactsManager: PropTypes.shape({
-      getContacts: PropTypes.func
+      getContacts: PropTypes.func,
+      getAllContacts: PropTypes.func
     })
   }).isRequired,
   onCancel: PropTypes.func.isRequired,

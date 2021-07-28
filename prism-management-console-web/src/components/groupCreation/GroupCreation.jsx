@@ -4,7 +4,7 @@ import { useTranslation } from 'react-i18next';
 import { PulseLoader } from 'react-spinners';
 import { Checkbox } from 'antd';
 import { withApi } from '../providers/withApi';
-import { useContactsWithFilteredList } from '../../hooks/useContacts';
+import { useContacts } from '../../hooks/useContacts';
 import { withRedirector } from '../providers/withRedirector';
 import CustomButton from '../common/Atoms/CustomButton/CustomButton';
 import { CONTACT_ID_KEY, GROUP_NAME_STATES } from '../../helpers/constants';
@@ -15,6 +15,7 @@ import GroupName from '../common/Molecules/GroupForm/GroupFormContainer';
 import { getCheckedAndIndeterminateProps, handleSelectAll } from '../../helpers/selectionHelpers';
 
 import './_style.scss';
+import { refPropShape } from '../../helpers/propShapes';
 
 const GroupCreation = ({
   api,
@@ -31,14 +32,13 @@ const GroupCreation = ({
   const [loadingSelection, setLoadingSelection] = useState(false);
 
   const {
-    filteredContacts,
+    contacts,
     filterProps,
     handleContactsRequest,
     hasMore,
     isLoading,
-    isSearching,
-    fetchAllContacts
-  } = useContactsWithFilteredList(api.contactsManager);
+    isSearching
+  } = useContacts(api.contactsManager);
 
   const { groupName } = formValues;
   const { t } = useTranslation();
@@ -51,15 +51,15 @@ const GroupCreation = ({
     handleSelectAll({
       ev,
       setSelected: setSelectedContacts,
-      entities: filteredContacts,
+      entities: contacts,
       hasMore,
       idKey: CONTACT_ID_KEY,
-      fetchAll: fetchAllContacts,
+      fetchAll: () => api.contactsManager.getAllContacts(),
       setLoading: setLoadingSelection
     });
 
   const selectAllProps = {
-    ...getCheckedAndIndeterminateProps(filteredContacts, selectedContacts),
+    ...getCheckedAndIndeterminateProps(contacts, selectedContacts),
     disabled: loadingSelection,
     onChange: handleSelectAllContacts
   };
@@ -74,7 +74,7 @@ const GroupCreation = ({
 
         <div className="flex">
           <div className="SearchBar">
-            <ConnectionsFilter {...filterProps} withStatus={false} />
+            <ConnectionsFilter {...filterProps} fullFilters={false} />
           </div>
 
           <div className="groupsButtonContainer">
@@ -117,11 +117,11 @@ const GroupCreation = ({
           </div>
           <div className="addContactSection">
             <div className="addContactsContainer">
-              {(isSearching && !filteredContacts.length) || isLoading ? (
+              {(isSearching && !contacts.length) || isLoading ? (
                 <SimpleLoading />
               ) : (
                 <ConnectionsTable
-                  contacts={filteredContacts}
+                  contacts={contacts}
                   selectedContacts={selectedContacts}
                   setSelectedContacts={setSelectedContacts}
                   handleContactsRequest={handleContactsRequest}
@@ -146,14 +146,15 @@ GroupCreation.propTypes = {
   api: PropTypes.shape({
     contactsManager: PropTypes.shape({
       getGroups: PropTypes.func.isRequired,
-      getContacts: PropTypes.func.isRequired
+      getContacts: PropTypes.func.isRequired,
+      getAllContacts: PropTypes.func.isRequired
     }).isRequired,
     groupsManager: PropTypes.shape({
       getGroups: PropTypes.func.isRequired
     }).isRequired
   }).isRequired,
   createGroup: PropTypes.func.isRequired,
-  formRef: PropTypes.shape().isRequired,
+  formRef: refPropShape.isRequired,
   updateForm: PropTypes.func.isRequired,
   formValues: PropTypes.shape().isRequired,
   isSaving: PropTypes.bool,
