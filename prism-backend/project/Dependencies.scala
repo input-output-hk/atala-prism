@@ -37,7 +37,7 @@ object versions {
   val twirl = "1.5.1"
   val typesafeConfig = "1.4.1"
   val http4s = "0.21.7"
-  val kotlinSDK = "0.1.0-081e970e"
+  val kotlinSDK = "0.1.0-04fde156"
 }
 
 object Dependencies {
@@ -86,7 +86,7 @@ object Dependencies {
   val http4sBlazeClient = "org.http4s" %% "http4s-blaze-client" % versions.http4s
 
   //kotlin-sdk dependencies
-  val cryptoJVM = "io.iohk.atala.prism" % "crypto-jvm" % versions.kotlinSDK
+  val cryptoJVM = "io.iohk.atala.prism.sdk" % "crypto-jvm" % versions.kotlinSDK
 
   // Test dependencies
   val catsScalatest = "com.ironcorelabs" %% "cats-scalatest" % versions.catsScalatest % Test

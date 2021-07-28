@@ -34,7 +34,7 @@ object PrismBuild {
         scalacOptions += "-Ymacro-annotations",
         javacOptions ++= Seq("-source", "1.8", "-target", "1.8"),
         githubTokenSource := TokenSource.Environment("GITHUB_TOKEN"),
-        resolvers += Resolver.githubPackages("input-output-hk"),
+        resolvers += Resolver.githubPackages("input-output-hk", "atala-prism-sdk"),
         libraryDependencies ++= scalatestDependencies,
         addCompilerPlugin("org.typelevel" % "kind-projector" % "0.13.0" cross CrossVersion.full),
         coverageScalacPluginVersion := "1.4.1",
