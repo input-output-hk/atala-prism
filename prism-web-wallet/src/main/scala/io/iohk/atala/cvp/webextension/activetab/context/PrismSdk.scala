@@ -200,8 +200,9 @@ class PrismSdk(name: String = "prism", extensionAPI: ExtensionAPI)(implicit
             "The request should only contain bytes [0, 255], some of the values aren't bytes"
           )
         )
+    } else {
+      Future.successful(scalaBytes)
     }
-    Future.successful(scalaBytes)
   }
 
   private def toJsErrorList(validations: ValidatedNel[VerificationException, Unit]): js.Array[String] = {

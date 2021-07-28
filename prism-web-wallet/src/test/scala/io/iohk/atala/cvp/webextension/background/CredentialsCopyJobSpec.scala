@@ -43,24 +43,5 @@ class CredentialsCopyJobSpec extends AnyWordSpec {
       parsed.credentialExternalId mustBe messageId
       parsed.encodedSignedCredential mustBe encodedCredential
     }
-
-    "return an error when parsing a non PlainTextCredentialMessage" in {
-      val nonPlainTextCredentialMessage =
-        credential_models
-          .AtalaMessage()
-          .withIssuerSentCredential(
-            credential_models.IssuerSentCredential()
-          )
-
-      val receivedMessage = connector_models
-        .ReceivedMessage()
-        .withConnectionId(connectionId)
-        .withId(messageId)
-        .withMessage(ByteString.copyFrom(nonPlainTextCredentialMessage.toByteArray))
-
-      val parsed = CredentialsCopyJob.buildRequestFromConnectorMessage(receivedMessage).toOption
-
-      parsed mustBe None
-    }
   }
 }
