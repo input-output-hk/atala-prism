@@ -8,7 +8,7 @@ import io.iohk.atala.prism.credentials.utils.Mustache
 import io.iohk.atala.prism.credentials.{Credential, CredentialBatches}
 import io.iohk.atala.prism.crypto.ECTrait
 import io.iohk.atala.prism.errors.PrismError
-import io.iohk.atala.prism.kycbridge.models.assureId.Document
+import io.iohk.atala.prism.kycbridge.models.assureId.{Document, DocumentDataField}
 import io.iohk.atala.prism.kycbridge.task.lease.system.KycBridgeProcessingTaskState
 import io.iohk.atala.prism.kycbridge.task.lease.system.data.AcuantCreateCredentialState3Data
 import io.iohk.atala.prism.kycbridge.task.lease.system.processors.AcuantCreateCredentialState3Processor.{
@@ -169,7 +169,7 @@ class AcuantCreateCredentialState3Processor(
         case "fullname" => document.biographic.flatMap(_.fullName)
         case "birthDate" => document.biographic.flatMap(_.birthDate).map(formatDate)
         case "age" => document.biographic.flatMap(_.age)
-        case "gender" => document.getDataField("Sex").flatMap(_.value)
+        case "gender" => document.getDataField("Sex").map(formatGender)
         case "expirationDate" => document.biographic.flatMap(_.expirationDate.map(formatDate))
         case "photoSrc" =>
           Option(frontImage)
@@ -199,6 +199,15 @@ class AcuantCreateCredentialState3Processor(
           .map(e => HtmlTemplateError(e.getMessage))
           .map(content => CredentialContent.Fields("html" -> content))
     } yield biographic ++ nationality ++ address ++ idDocument ++ html
+  }
+
+  private[processors] def formatGender(field: DocumentDataField): String = {
+    field.value match {
+      case Some("M") => "Male"
+      case Some("F") => "Female"
+      case Some(gender) => gender
+      case None => "Unknown"
+    }
   }
 
   private[processors] def formatDate(date: Instant): String =

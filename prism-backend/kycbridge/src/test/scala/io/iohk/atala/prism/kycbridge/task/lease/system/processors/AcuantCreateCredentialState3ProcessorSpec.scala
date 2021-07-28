@@ -61,7 +61,7 @@ class AcuantCreateCredentialState3ProcessorSpec
           "familyName" -> "FIKUS",
           "birthDate" -> "2020-10-04",
           "sex" -> "M",
-          "html" -> "data:image/jpg;base64, AQ== MARIUSZ BOHDAN FIKUS 2020-10-04 30 M 2025-09-05"
+          "html" -> "data:image/jpg;base64, AQ== MARIUSZ BOHDAN FIKUS 2020-10-04 30 Male 2025-09-05"
         )
       )
     }
