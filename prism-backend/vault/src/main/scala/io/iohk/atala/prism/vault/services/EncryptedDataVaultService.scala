@@ -14,7 +14,7 @@ import io.iohk.atala.prism.vault.repositories.PayloadsRepository
 import io.iohk.atala.prism.logging.GeneralLoggableInstances._
 import io.iohk.atala.prism.logging.Util._
 import tofu.higherKind.Mid
-import tofu.logging.Logging
+import tofu.logging.ServiceLogging
 import tofu.syntax.logging._
 
 @derive(applyK)
@@ -30,7 +30,9 @@ trait EncryptedDataVaultService[F[_]] {
 }
 
 object EncryptedDataVaultService {
-  def create[F[_]: MonadThrow: Logging](payloadsRepository: PayloadsRepository[F]): EncryptedDataVaultService[F] = {
+  def create[F[_]: MonadThrow](
+      payloadsRepository: PayloadsRepository[F]
+  )(implicit logs: ServiceLogging[F, EncryptedDataVaultService[F]]): EncryptedDataVaultService[F] = {
     val logging: EncryptedDataVaultService[Mid[F, *]] = new EncyptedDataVaultServiceLogging
     logging attach new EncyptedDataVaultServiceImpl(payloadsRepository)
   }
@@ -73,7 +75,9 @@ final class EncyptedDataVaultServiceImpl[F[_]](payloadsRepository: PayloadsRepos
   }
 }
 
-private class EncyptedDataVaultServiceLogging[F[_]: MonadThrow: Logging] extends EncryptedDataVaultService[Mid[F, *]] {
+private class EncyptedDataVaultServiceLogging[F[_]: MonadThrow](implicit
+    logs: ServiceLogging[F, EncryptedDataVaultService[F]]
+) extends EncryptedDataVaultService[Mid[F, *]] {
 
   override def storeData(
       externalId: Payload.ExternalId,
@@ -81,7 +85,8 @@ private class EncyptedDataVaultServiceLogging[F[_]: MonadThrow: Logging] extends
       did: DID,
       content: Vector[Byte],
       tId: TraceId
-  ): Mid[F, Payload] = _.logInfoAround[Payload.ExternalId, Payload.Id]("storing data", externalId, tId)
+  ): Mid[F, Payload] =
+    _.logInfoAround[Payload.ExternalId, Payload.Id, EncryptedDataVaultService[F]]("storing data", externalId, tId)
 
   override def getByPaginated(
       did: DID,

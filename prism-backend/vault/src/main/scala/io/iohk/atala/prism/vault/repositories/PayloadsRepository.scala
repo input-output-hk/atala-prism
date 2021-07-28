@@ -16,7 +16,7 @@ import derevo.derive
 import derevo.tagless.applyK
 import io.iohk.atala.prism.logging.TraceId
 import tofu.higherKind.Mid
-import tofu.logging.{Logging => LoggingF}
+import tofu.logging.ServiceLogging
 import tofu.syntax.monoid.TofuSemigroupOps
 
 @derive(applyK)
@@ -27,9 +27,11 @@ trait PayloadsRepository[F[_]] {
 }
 
 object PayloadsRepository {
-  def create[F[_]: LoggingF](
-      xa: Transactor[F]
-  )(implicit br: Bracket[F, Throwable], m: TimeMeasureMetric[F]): PayloadsRepository[F] = {
+  def create[F[_]](xa: Transactor[F])(implicit
+      br: Bracket[F, Throwable],
+      m: TimeMeasureMetric[F],
+      logs: ServiceLogging[F, PayloadsRepository[F]]
+  ): PayloadsRepository[F] = {
     val mid = (new PayloadsRepoMetrics: PayloadsRepository[Mid[F, *]]) |+| (new PayloadsRepoLogging: PayloadsRepository[
       Mid[F, *]
     ])
@@ -77,9 +79,14 @@ private final class PayloadsRepoMetrics[F[_]: TimeMeasureMetric: BracketThrow] e
     _.measureOperationTime(getByPaginatedTimer)
 }
 
-private final class PayloadsRepoLogging[F[_]: MonadThrow: LoggingF] extends PayloadsRepository[Mid[F, *]] {
+private final class PayloadsRepoLogging[F[_]: MonadThrow](implicit logs: ServiceLogging[F, PayloadsRepository[F]])
+    extends PayloadsRepository[Mid[F, *]] {
   override def create(payloadData: CreatePayload, tId: TraceId): Mid[F, Payload] =
-    _.logInfoAround[Payload.ExternalId, Payload.Id]("creating payload", payloadData.externalId, tId)
+    _.logInfoAround[Payload.ExternalId, Payload.Id, PayloadsRepository[F]](
+      "creating payload",
+      payloadData.externalId,
+      tId
+    )
 
   override def getByPaginated(
       did: DID,

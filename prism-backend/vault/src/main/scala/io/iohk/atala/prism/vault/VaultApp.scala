@@ -67,11 +67,11 @@ class VaultApp(executionContext: ExecutionContext) {
 
     // Vault repositories
     val payloadsRepository = vaultLogs
-      .forService[PayloadsRepository[IO]]
+      .service[PayloadsRepository[IO]]
       .map(implicit l => PayloadsRepository.create(transactor))
       .unsafeRunSync()
     val requestNoncesRepository = vaultLogs
-      .forService[RequestNoncesRepository[IO]]
+      .service[RequestNoncesRepository[IO]]
       .map(implicit l => RequestNoncesRepository.PostgresImpl.create(transactor))
       .unsafeRunSync()
 
@@ -82,7 +82,7 @@ class VaultApp(executionContext: ExecutionContext) {
     )
 
     val encryptedDataVaultService = vaultLogs
-      .forService[EncryptedDataVaultService[IO]]
+      .service[EncryptedDataVaultService[IO]]
       .map(implicit l => EncryptedDataVaultService.create(payloadsRepository))
       .unsafeRunSync()
 

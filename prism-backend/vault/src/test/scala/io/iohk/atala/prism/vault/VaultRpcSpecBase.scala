@@ -26,11 +26,11 @@ class VaultRpcSpecBase extends RpcSpecBase {
   private lazy val vaultTestLogs: Logs[IO, IO] = Logs.sync[IO, IO]
 
   lazy val requestNoncesRepository = vaultTestLogs
-    .forService[RequestNoncesRepository[IO]]
+    .service[RequestNoncesRepository[IO]]
     .map(implicit l => RequestNoncesRepository.PostgresImpl.create(database))
     .unsafeRunSync()
   lazy val payloadsRepository = vaultTestLogs
-    .forService[PayloadsRepository[IO]]
+    .service[PayloadsRepository[IO]]
     .map(implicit l => PayloadsRepository.create(database))
     .unsafeRunSync()
 
@@ -43,7 +43,7 @@ class VaultRpcSpecBase extends RpcSpecBase {
     )
 
   lazy val encryptedDataVaultService = vaultTestLogs
-    .forService[EncryptedDataVaultService[IO]]
+    .service[EncryptedDataVaultService[IO]]
     .map(implicit l => EncryptedDataVaultService.create(payloadsRepository))
     .unsafeRunSync()
 

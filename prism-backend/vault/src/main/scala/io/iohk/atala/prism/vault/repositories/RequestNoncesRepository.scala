@@ -16,7 +16,7 @@ import io.iohk.atala.prism.logging.TraceId
 import io.iohk.atala.prism.logging.Util._
 import org.slf4j.{Logger, LoggerFactory}
 import tofu.higherKind.Mid
-import tofu.logging.Logging
+import tofu.logging.ServiceLogging
 import tofu.syntax.monoid.TofuSemigroupOps
 
 @derive(applyK)
@@ -26,7 +26,9 @@ trait RequestNoncesRepository[F[_]] {
 
 object RequestNoncesRepository {
   object PostgresImpl {
-    def create[F[_]: BracketThrow: TimeMeasureMetric: Logging](xa: Transactor[F]): RequestNoncesRepository[F] = {
+    def create[F[_]: BracketThrow: TimeMeasureMetric](
+        xa: Transactor[F]
+    )(implicit logs: ServiceLogging[F, RequestNoncesRepository[F]]): RequestNoncesRepository[F] = {
       val mid =
         (new RequestNoncesRepositoryMetrics: RequestNoncesRepository[
           Mid[F, *]
@@ -54,8 +56,9 @@ private final class RequestNoncesRepositoryMetrics[F[_]: TimeMeasureMetric: Brac
   override def burn(did: DID, requestNonce: RequestNonce): Mid[F, Unit] = _.measureOperationTime(burnTimer)
 }
 
-private final class RequestNoncesRepositoryLogging[F[_]: Logging: BracketThrow]
-    extends RequestNoncesRepository[Mid[F, *]] {
+private final class RequestNoncesRepositoryLogging[F[_]: BracketThrow](implicit
+    logs: ServiceLogging[F, RequestNoncesRepository[F]]
+) extends RequestNoncesRepository[Mid[F, *]] {
   override def burn(did: DID, requestNonce: RequestNonce): Mid[F, Unit] =
     _.logInfoAroundUnit("burning", did, TraceId.generateYOLO)
 }

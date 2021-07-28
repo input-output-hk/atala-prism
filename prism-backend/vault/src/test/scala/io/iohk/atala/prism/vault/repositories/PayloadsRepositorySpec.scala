@@ -20,7 +20,7 @@ class PayloadsRepositorySpec extends AtalaWithPostgresSpec with OptionValues {
 
   lazy val repository =
     vaultTestLogs
-      .forService[PayloadsRepository[IO]]
+      .service[PayloadsRepository[IO]]
       .map(implicit l => PayloadsRepository.create(database))
       .unsafeRunSync()
 
