@@ -14,7 +14,7 @@ object GeneralLoggableInstances {
       r.addString("SHA256Digest", a.hexValue, i)
     }
 
-    override def logShow(a: SHA256Digest): String = s"SHA256Digest:${a.hexValue}"
+    override def logShow(a: SHA256Digest): String = s"{SHA256Digest=${a.hexValue}}"
   }
 
   implicit val userLoggable: DictLoggable[DID] = new DictLoggable[DID] {
