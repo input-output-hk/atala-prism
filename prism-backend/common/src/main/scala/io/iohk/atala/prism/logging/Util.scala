@@ -18,7 +18,7 @@ object Util {
   )(implicit l: ServiceLogging[F, S]): F[List[R]] =
     info"$operationDescription $arg $tId" *> result
       .flatTap(list => info"$operationDescription success, got ${list.size} entities $arg $tId")
-      .onError { e => error"encountered an error while $operationDescription ${e.getMessage} $tId" }
+      .onError { e => errorCause"encountered an error while $operationDescription $tId" (e) }
 
   def logInfoResultById[F[_]: MonadThrow, Result, ResultId: Loggable, A: Loggable, S](
       operationDescription: String,
@@ -29,7 +29,7 @@ object Util {
     info"$operationDescription $arg $tId" *> result
       .flatTap(res => info"$operationDescription success, ${lens.extract(res)} $arg $tId")
       .onError { e =>
-        error"encountered an error while $operationDescription ${e.getMessage} $tId"
+        errorCause"encountered an error while $operationDescription $tId" (e)
       }
 
   def logInfoAroundResultUnit[F[_]: MonadThrow, A: Loggable, S](
@@ -41,7 +41,7 @@ object Util {
     info"$operationDescription $arg $tId" *> result
       .flatTap(_ => info"$operationDescription success $arg $tId")
       .onError { e =>
-        error"encountered an error while $operationDescription ${e.getMessage} $tId"
+        errorCause"encountered an error while $operationDescription $tId" (e)
       }
 
   implicit class LogListOps[F[_], R](private val in: F[List[R]]) extends AnyVal {

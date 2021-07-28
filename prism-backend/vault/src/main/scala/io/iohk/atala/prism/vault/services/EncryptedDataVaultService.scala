@@ -97,5 +97,5 @@ private class EncyptedDataVaultServiceLogging[F[_]: MonadThrow](implicit
     in =>
       info"get by paginated by $did $lastSeenId $tId" *> in
         .flatTap(p => info"get by paginated successful! found ${p.size} entities $did $tId")
-        .onError { case e => error"encountered an error while getting data by paginated! $tId ${e.getMessage}" }
+        .onError { e => errorCause"encountered an error while getting data by paginated! $tId" (e) }
 }
