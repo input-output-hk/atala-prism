@@ -11,7 +11,7 @@ import org.scalatest.matchers.should.Matchers._
 import Testing._
 import org.scalatest.OptionValues._
 import io.iohk.atala.prism.utils.Base64Utils
-import io.iohk.atala.prism.identity.DID
+import io.iohk.atala.prism.kotlin.identity.DID
 
 class InsuranceServiceImplSpec extends AnyFlatSpec {
 

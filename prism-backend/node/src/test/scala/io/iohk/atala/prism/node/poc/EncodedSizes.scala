@@ -6,7 +6,7 @@ import com.google.protobuf.ByteString
 import io.iohk.atala.prism.kotlin.crypto.{EC, SHA256Digest}
 import io.iohk.atala.prism.kotlin.crypto.keys.{ECPublicKey}
 import io.iohk.atala.prism.kotlin.crypto.ECConfig.{INSTANCE => ECConfig}
-import io.iohk.atala.prism.identity.DIDSuffix
+import io.iohk.atala.prism.kotlin.identity.DIDSuffix
 import io.iohk.atala.prism.protos.node_models
 
 import io.iohk.atala.prism.interop.toScalaSDK._
@@ -62,9 +62,9 @@ object EncodedSizes {
     val atalaOp = node_models.AtalaOperation(operation = node_models.AtalaOperation.Operation.CreateDid(createDidOp))
     val operationBytes = atalaOp.toByteArray
     val operationHash = SHA256Digest.compute(operationBytes)
-    val didSuffix = DIDSuffix.unsafeFromDigest(operationHash.asScala)
+    val didSuffix: DIDSuffix = DIDSuffix.fromDigest(operationHash)
     val encodedOperation = Base64.getUrlEncoder.encodeToString(operationBytes)
-    s"did:prism:${didSuffix.value}:$encodedOperation"
+    s"did:prism:${didSuffix.getValue}:$encodedOperation"
   }
 
   private def publicKeyToProto(key: ECPublicKey): node_models.ECKeyData = {

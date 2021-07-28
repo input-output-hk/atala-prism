@@ -21,8 +21,7 @@ import monix.execution.Scheduler.{global => scheduler}
 
 import scala.concurrent.duration.FiniteDuration
 import scala.concurrent.{ExecutionContext, Future}
-import io.iohk.atala.prism.identity.DID
-import io.iohk.atala.prism.kotlin.credentials.PrismCredential
+import io.iohk.atala.prism.kotlin.identity.DID
 import io.iohk.atala.prism.kotlin.credentials.json.JsonBasedCredential
 
 import scala.util.Try

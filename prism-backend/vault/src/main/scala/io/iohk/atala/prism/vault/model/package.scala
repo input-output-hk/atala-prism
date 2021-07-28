@@ -3,7 +3,7 @@ package io.iohk.atala.prism.vault
 import java.time.Instant
 import java.util.UUID
 import io.iohk.atala.prism.kotlin.crypto.SHA256Digest
-import io.iohk.atala.prism.identity.DID
+import io.iohk.atala.prism.kotlin.identity.DID
 import io.iohk.atala.prism.models.UUIDValue
 
 package object model {

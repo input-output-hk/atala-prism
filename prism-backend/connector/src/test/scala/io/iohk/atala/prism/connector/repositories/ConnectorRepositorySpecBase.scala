@@ -7,12 +7,13 @@ import io.iohk.atala.prism.kotlin.crypto.EC
 import io.iohk.atala.prism.kotlin.crypto.keys.ECPublicKey
 import io.iohk.atala.prism.connector.model._
 import io.iohk.atala.prism.connector.repositories.daos._
-import io.iohk.atala.prism.identity.DID
+import io.iohk.atala.prism.kotlin.identity.DID
 import io.iohk.atala.prism.models.ParticipantId
 import io.iohk.atala.prism.AtalaWithPostgresSpec
 import io.iohk.atala.prism.connector.DataPreparation
 import io.iohk.atala.prism.repositories.ops.SqlTestOps.Implicits
 
+import io.iohk.atala.prism.interop.toKotlinSDK._
 import io.iohk.atala.prism.interop.toScalaSDK._
 
 trait ConnectorRepositorySpecBase extends AtalaWithPostgresSpec {

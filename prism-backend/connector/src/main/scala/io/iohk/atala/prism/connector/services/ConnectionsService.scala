@@ -8,7 +8,7 @@ import io.iohk.atala.prism.connector.repositories.ConnectionsRepository
 import io.iohk.atala.prism.kotlin.crypto.{EC}
 import io.iohk.atala.prism.kotlin.crypto.keys.{ECPublicKey}
 import io.iohk.atala.prism.kotlin.crypto.ECConfig.{INSTANCE => ECConfig}
-import io.iohk.atala.prism.identity.DID
+import io.iohk.atala.prism.kotlin.identity.DID
 import io.iohk.atala.prism.models.ParticipantId
 import io.iohk.atala.prism.protos.node_api
 import io.iohk.atala.prism.protos.node_api.NodeServiceGrpc
@@ -63,7 +63,7 @@ class ConnectionsService(connectionsRepository: ConnectionsRepository[IO], nodeS
       userId: ParticipantId
   ): FutureEither[ConnectorError, Seq[(String, ECPublicKey)]] = {
     def getDidCommunicationKeys(did: DID): FutureEither[ConnectorError, Seq[(String, ECPublicKey)]] = {
-      val request = node_api.GetDidDocumentRequest(did = did.value)
+      val request = node_api.GetDidDocumentRequest(did = did.getValue)
       val result = for {
         response <- nodeService.getDidDocument(request)
         allKeys = response.document.map(_.publicKeys).getOrElse(Seq.empty)

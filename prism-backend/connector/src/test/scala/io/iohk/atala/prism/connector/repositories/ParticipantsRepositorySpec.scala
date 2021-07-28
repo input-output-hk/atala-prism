@@ -5,7 +5,7 @@ import io.iohk.atala.prism.connector.errors.UnknownValueError
 import io.iohk.atala.prism.connector.model._
 import io.iohk.atala.prism.connector.repositories.daos._
 import io.iohk.atala.prism.connector.DataPreparation
-import io.iohk.atala.prism.identity.DID
+import io.iohk.atala.prism.kotlin.identity.DID
 import io.iohk.atala.prism.models.ParticipantId
 import org.scalatest.EitherValues._
 import org.scalatest.OptionValues._
@@ -16,7 +16,7 @@ class ParticipantsRepositorySpec extends ConnectorRepositorySpecBase {
   private val encodedStateUsed =
     "CmEKXxJdCgdtYXN0ZXIwEAFCUAoJc2VjcDI1NmsxEiAel_7KEiez4s_e0u8DyJwLkUnVmUHBuWU-0h01nerSNRohAJlR51Vbk49vagehAwQkFvW_fvyM1qa4ileIEYkXs4pF"
 
-  private val shortDID = DID.buildPrismDID(canonicalSuffix)
+  private val shortDID = DID.buildPrismDID(canonicalSuffix, null)
   private val longDID = DID.buildPrismDID(canonicalSuffix, encodedStateUsed)
 
   "getParticipant by did" should {
@@ -79,7 +79,7 @@ class ParticipantsRepositorySpec extends ConnectorRepositorySpecBase {
         .futureValue
 
       val result = participantsRepository.findBy(did).unsafeRunSync()
-      result.left.value must be(UnknownValueError("did", did.value))
+      result.left.value must be(UnknownValueError("did", did.getValue))
     }
 
     "update participant name and logo by ParticipantId" in {

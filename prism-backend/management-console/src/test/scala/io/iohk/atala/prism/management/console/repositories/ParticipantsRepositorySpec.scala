@@ -4,7 +4,7 @@ import com.typesafe.config.ConfigFactory
 import doobie.implicits._
 import io.iohk.atala.prism.AtalaWithPostgresSpec
 import io.iohk.atala.prism.kotlin.crypto.EC
-import io.iohk.atala.prism.identity.DID
+import io.iohk.atala.prism.kotlin.identity.DID
 import io.iohk.atala.prism.management.console.DataPreparation
 import io.iohk.atala.prism.management.console.config.DefaultCredentialTypeConfig
 import io.iohk.atala.prism.management.console.errors.{InvalidRequest, UnknownValueError}
@@ -18,6 +18,8 @@ import io.iohk.atala.prism.management.console.repositories.ParticipantsRepositor
 import io.iohk.atala.prism.management.console.repositories.daos.ParticipantsDAO
 import org.scalatest.EitherValues._
 import org.scalatest.OptionValues._
+
+import io.iohk.atala.prism.interop.toKotlinSDK._
 
 import io.iohk.atala.prism.interop.toScalaSDK._
 
@@ -54,7 +56,7 @@ class ParticipantsRepositorySpec extends AtalaWithPostgresSpec {
 
       val did = DataPreparation.newDID()
       val result = participantsRepository.findBy(did).unsafeRunSync()
-      result.left.value must be(UnknownValueError("did", did.value))
+      result.left.value must be(UnknownValueError("did", did.getValue))
     }
   }
 
@@ -63,7 +65,7 @@ class ParticipantsRepositorySpec extends AtalaWithPostgresSpec {
       val request = CreateParticipantRequest(
         id = ParticipantId.random(),
         name = "participant name",
-        did = DID.createUnpublishedDID(EC.generateKeyPair().getPublicKey.asScala).canonical.value,
+        did = DID.createUnpublishedDID(EC.generateKeyPair().publicKey).canonical.value,
         logo = ParticipantLogo(Vector.empty)
       )
 
@@ -81,7 +83,7 @@ class ParticipantsRepositorySpec extends AtalaWithPostgresSpec {
     }
 
     "return error while trying to create participant with the same did twice" in {
-      val did = DID.createUnpublishedDID(EC.generateKeyPair().getPublicKey.asScala).canonical.value
+      val did = DID.createUnpublishedDID(EC.generateKeyPair().publicKey.asKotlin, null)
       val request1 = CreateParticipantRequest(
         id = ParticipantId.random(),
         name = "participant name",

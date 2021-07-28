@@ -66,6 +66,7 @@ class NodeServiceImpl(
         } yield response.withLastSyncedBlockTimestamp(lastSyncedTimestamp.toProtoTimestamp)
       }
     }
+
   }
 
   private def getDidDocument(didRequestStr: String, methodName: String)(implicit
@@ -75,7 +76,7 @@ class NodeServiceImpl(
     didOpt match {
       case Some(did) =>
         did.getFormat match {
-          case c: Canonical =>
+          case _: Canonical =>
             resolve(did) orElse (countAndThrowNodeError(methodName, _))
           case longForm: LongForm => // we received a long form DID
             // we first check that the encoded initial state matches the corresponding hash
@@ -99,7 +100,7 @@ class NodeServiceImpl(
                 }
               }
               .getOrElse(failWith(s"Invalid long form DID: $didRequestStr", methodName))
-          case Unknown =>
+          case _: Unknown =>
             failWith(s"DID format not supported: $didRequestStr", methodName)
         }
       case None =>

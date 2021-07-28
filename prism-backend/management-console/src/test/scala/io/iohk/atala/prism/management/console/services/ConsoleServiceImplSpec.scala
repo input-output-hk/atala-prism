@@ -6,7 +6,7 @@ import io.grpc.{Status, StatusRuntimeException}
 import io.iohk.atala.prism.DIDUtil
 import io.iohk.atala.prism.auth.SignedRpcRequest
 import io.iohk.atala.prism.connector.AtalaOperationId
-import io.iohk.atala.prism.identity.DID
+import io.iohk.atala.prism.kotlin.identity.DID
 import io.iohk.atala.prism.kotlin.crypto.EC
 import io.iohk.atala.prism.management.console.DataPreparation._
 import io.iohk.atala.prism.management.console.models.{InstitutionGroup, ParticipantLogo}
@@ -177,7 +177,7 @@ class ConsoleServiceImplSpec extends ManagementConsoleRpcSpecBase with DIDUtil {
         nodeMock.createDID(*).returns {
           Future.successful(
             node_api
-              .CreateDIDResponse(did.suffix.value)
+              .CreateDIDResponse(did.getSuffix.getValue)
               .withOperationId(operationId.toProtoByteString)
           )
         }
@@ -190,7 +190,7 @@ class ConsoleServiceImplSpec extends ManagementConsoleRpcSpecBase with DIDUtil {
       val operationId = AtalaOperationId.random()
       val request = console_api
         .RegisterConsoleDIDRequest()
-        .withDid(did.value)
+        .withDid(did.getValue)
         .withName("iohk")
         .withLogo(ByteString.copyFrom("logo".getBytes()))
 
@@ -202,7 +202,7 @@ class ConsoleServiceImplSpec extends ManagementConsoleRpcSpecBase with DIDUtil {
       val operationId = AtalaOperationId.random()
       val request = console_api
         .RegisterConsoleDIDRequest()
-        .withDid(did.value)
+        .withDid(did.getValue)
         .withName("iohk")
 
       doTest(did, operationId, request)
@@ -238,7 +238,7 @@ class ConsoleServiceImplSpec extends ManagementConsoleRpcSpecBase with DIDUtil {
       val operationId = AtalaOperationId.random()
       val request = console_api
         .RegisterConsoleDIDRequest()
-        .withDid(did.value)
+        .withDid(did.getValue)
         .withName("iohk")
 
       doTest(did, operationId, request)

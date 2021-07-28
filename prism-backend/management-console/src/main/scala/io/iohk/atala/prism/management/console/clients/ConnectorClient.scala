@@ -9,8 +9,8 @@ import io.iohk.atala.prism.kotlin.crypto.EC
 import io.iohk.atala.prism.crypto.{EC => ECScalaSDK}
 import io.iohk.atala.prism.kotlin.crypto.keys.ECPrivateKey
 import io.iohk.atala.prism.kotlin.crypto.signature.ECSignature
-import io.iohk.atala.prism.identity.DID
-import io.iohk.atala.prism.identity.DID.masterKeyId
+import io.iohk.atala.prism.kotlin.identity.DID
+import io.iohk.atala.prism.kotlin.identity.DID.masterKeyId
 import io.iohk.atala.prism.models.ConnectionToken
 import io.iohk.atala.prism.protos.connector_api._
 import io.iohk.atala.prism.protos.connector_models.ContactConnection
@@ -56,9 +56,10 @@ object ConnectorClient {
       def unsafe = {
         val host = typesafe.getString("host")
         val port = typesafe.getInt("port")
-        val whitelistedDID = DID
-          .fromString(typesafe.getString("did"))
-          .getOrElse {
+        val whitelistedDID = Try(
+          DID
+            .fromString(typesafe.getString("did"))
+        ).getOrElse {
             throw new RuntimeException("Failed to load the connector's whitelisted DID, which is required to invoke it")
           }
 
@@ -87,13 +88,13 @@ object ConnectorClient {
     val connectorService = GrpcUtils
       .createPlaintextStub(host = config.host, port = config.port, stub = ConnectorServiceGrpc.stub)
 
-    val requestAuthenticator = new RequestAuthenticator(ECScalaSDK)
+    val requestAuthenticator = new RequestAuthenticator(EC)
 
     def requestSigner(request: scalapb.GeneratedMessage): GrpcAuthenticationHeader.DIDBased = {
 
-      val signedRequest = requestAuthenticator.signConnectorRequest(request.toByteArray, config.didPrivateKey.asScala)
+      val signedRequest = requestAuthenticator.signConnectorRequest(request.toByteArray, config.didPrivateKey)
       PublishedDIDBased(
-        did = DID.unsafeFromString(config.whitelistedDID.value),
+        did = DID.fromString(config.whitelistedDID.getValue),
         keyId = masterKeyId,
         requestNonce = RequestNonce(signedRequest.encodedRequestNonce.getBytes.toVector),
         signature = new ECSignature(signedRequest.encodedSignature.getBytes)

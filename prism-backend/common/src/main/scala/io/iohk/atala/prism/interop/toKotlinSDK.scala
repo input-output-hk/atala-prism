@@ -1,11 +1,8 @@
 package io.iohk.atala.prism.interop
 
 import io.iohk.atala.prism.crypto.{JvmECPrivateKey, JvmECPublicKey}
-import io.iohk.atala.prism.kotlin.crypto.MerkleRoot
-import io.iohk.atala.prism.kotlin.crypto.SHA256Digest
-import io.iohk.atala.prism.kotlin.crypto.MerkleInclusionProof
+import io.iohk.atala.prism.kotlin.crypto.{MerkleInclusionProof, MerkleRoot, SHA256Digest}
 import io.iohk.atala.prism.kotlin.crypto.keys.{ECPrivateKey, ECPublicKey}
-import io.iohk.atala.prism.kotlin.identity.DIDSuffix
 
 import scala.jdk.CollectionConverters._
 
@@ -42,9 +39,5 @@ object toKotlinSDK {
       v match {
         case key: JvmECPrivateKey => new ECPrivateKey(key.key)
       }
-  }
-
-  implicit class DIDSuffixScalaSDKInterop(v: io.iohk.atala.prism.identity.DIDSuffix) {
-    def asKotlin: DIDSuffix = new DIDSuffix(v.value)
   }
 }

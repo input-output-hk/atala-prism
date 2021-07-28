@@ -2,6 +2,7 @@ package io.iohk.atala.prism.node.poc
 
 import cats.data.ValidatedNel
 import com.google.protobuf.ByteString
+import io.circe.syntax.EncoderOps
 import io.iohk.atala.prism.kotlin.credentials.{
   BatchData,
   CredentialBatchId,
@@ -10,7 +11,7 @@ import io.iohk.atala.prism.kotlin.credentials.{
   PrismCredential,
   VerificationError
 }
-import io.iohk.atala.prism.credentials.content.CredentialContent
+import io.iohk.atala.prism.kotlin.credentials.content.CredentialContent
 import io.iohk.atala.prism.kotlin.crypto.{EC, SHA256Digest}
 import io.iohk.atala.prism.kotlin.crypto.keys.{ECPrivateKey, ECPublicKey}
 import io.iohk.atala.prism.kotlin.crypto.ECConfig.{INSTANCE => ECConfig}
@@ -22,6 +23,8 @@ import io.iohk.atala.prism.kotlin.crypto.MerkleInclusionProof
 import io.iohk.atala.prism.kotlin.identity.DID.masterKeyId
 import io.iohk.atala.prism.interop.toScalaSDK._
 import io.iohk.atala.prism.kotlin.crypto.signature.ECSignature
+import io.iohk.atala.prism.interop.toKotlinSDK._
+import io.iohk.atala.prism.interop.CredentialContentConverter._
 
 // We define some classes to illustrate what happens in the different components
 case class Wallet(node: node_api.NodeServiceGrpc.NodeServiceBlockingStub) {
@@ -129,7 +132,9 @@ case class Wallet(node: node_api.NodeServiceGrpc.NodeServiceBlockingStub) {
       didSuffix: DIDSuffix
   ): PrismCredential = {
     val privateKey = dids(didSuffix)(keyId)
-    JsonBasedCredential.fromString(credentialContent).sign(privateKey)
+    val credentialString = credentialContent.asString
+    kotlinx.serialization.json.JsonKt.Json(null, null).encodeToString(null, credentialContent)
+    JsonBasedCredential.fromString(credentialString).sign(privateKey.asKotlin)
   }
 
   def signKey(

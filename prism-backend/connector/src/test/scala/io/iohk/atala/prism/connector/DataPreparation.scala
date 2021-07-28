@@ -15,12 +15,14 @@ import org.scalatest.OptionValues._
 
 import io.iohk.atala.prism.interop.toScalaSDK._
 
+import io.iohk.atala.prism.interop.toKotlinSDK._
+
 object DataPreparation extends BaseDAO {
 
   import connectorDaos._
 
   def newDID(): DID = {
-    DID.createUnpublishedDID(EC.generateKeyPair().getPublicKey.asScala).canonical.value
+    DID.createUnpublishedDID(EC.generateKeyPair().publicKey.asKotlin, null)
   }
 
   def createIssuer(

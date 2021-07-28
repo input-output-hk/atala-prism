@@ -9,7 +9,7 @@ import io.iohk.atala.prism.connector.AtalaOperationId
 import io.iohk.atala.prism.kotlin.credentials.{CredentialBatchId, TimestampInfo}
 import io.iohk.atala.prism.kotlin.crypto.MerkleRoot
 import io.iohk.atala.prism.kotlin.crypto.SHA256Digest
-import io.iohk.atala.prism.identity.DIDSuffix
+import io.iohk.atala.prism.kotlin.identity.DIDSuffix
 import io.iohk.atala.prism.models.Ledger
 import io.iohk.atala.prism.node.cardano.{LAST_SYNCED_BLOCK_NO, LAST_SYNCED_BLOCK_TIMESTAMP}
 import io.iohk.atala.prism.node.grpc.ProtoCodecs

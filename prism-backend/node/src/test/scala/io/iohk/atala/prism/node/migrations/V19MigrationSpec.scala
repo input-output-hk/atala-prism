@@ -20,14 +20,14 @@ import java.time.Instant
 
 class V19MigrationSpec extends PostgresMigrationSpec("db.migration.V19") with BaseDAO {
 
-  private val dummyTimestampInfo = TimestampInfo(Instant.ofEpochMilli(0), 1, 0)
+  private val dummyTimestampInfo = new TimestampInfo(Instant.ofEpochMilli(0).toEpochMilli, 1, 0)
   private val dummyLedgerData = LedgerData(
     TransactionId.from(Array.fill[Byte](TransactionId.config.size.toBytes.toInt)(0)).get,
     Ledger.InMemory,
     dummyTimestampInfo
   )
   val didDigest = SHA256Digest.compute("test".getBytes())
-  val didSuffix = DIDSuffix.unsafeFromDigest(didDigest.asScala)
+  val didSuffix = DIDSuffix.fromDigest(didDigest)
   val didPublicKey: DIDPublicKey =
     DIDPublicKey(didSuffix, "master", KeyUsage.MasterKey, EC.generateKeyPair().getPublicKey)
 
@@ -44,7 +44,8 @@ class V19MigrationSpec extends PostgresMigrationSpec("db.migration.V19") with Ba
          |   added_on, added_on_absn, added_on_osn,
          |   added_on_transaction_id, ledger)
          |VALUES (${key.didSuffix}, ${key.keyId}, ${key.keyUsage}, $curveName, $xBytes, $yBytes,
-         |   ${addedOn.atalaBlockTimestamp}, ${addedOn.atalaBlockSequenceNumber}, ${addedOn.operationSequenceNumber},
+         |   ${Instant
+      .ofEpochMilli(addedOn.getAtalaBlockTimestamp)}, ${addedOn.getAtalaBlockSequenceNumber}, ${addedOn.getOperationSequenceNumber},
          |   ${ledgerData.transactionId}, ${ledgerData.ledger})
        """.stripMargin.runUpdate()
   }

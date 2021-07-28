@@ -3,7 +3,7 @@ package io.iohk.atala.prism.vault.repositories
 import cats.effect.Bracket
 import doobie.Transactor
 import doobie.implicits._
-import io.iohk.atala.prism.identity.DID
+import io.iohk.atala.prism.kotlin.identity.DID
 import io.iohk.atala.prism.metrics.{TimeMeasureMetric, TimeMeasureUtil}
 import io.iohk.atala.prism.utils.syntax.DBConnectionOps
 import io.iohk.atala.prism.metrics.TimeMeasureUtil.MeasureOps

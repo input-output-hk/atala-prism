@@ -5,7 +5,7 @@ import java.time.format.DateTimeFormatter
 import io.circe.parser.parse
 import io.iohk.atala.prism.intdemo.EmploymentServiceImpl.RequiredEmploymentData
 import Testing._
-import io.iohk.atala.prism.identity.DID
+import io.iohk.atala.prism.kotlin.identity.DID
 import org.scalatest.OptionValues._
 import org.scalatest.flatspec.AnyFlatSpec
 import org.scalatest.matchers.should.Matchers._

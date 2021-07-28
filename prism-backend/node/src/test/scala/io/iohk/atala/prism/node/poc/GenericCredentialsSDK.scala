@@ -1,10 +1,12 @@
 package io.iohk.atala.prism.node.poc
 
-import scala.annotation.nowarn
-import io.iohk.atala.prism.identity.{DID, DIDSuffix}
+import io.iohk.atala.prism.kotlin.identity.{DID, DIDSuffix}
 import io.iohk.atala.prism.kotlin.credentials.content.CredentialContent
-import io.iohk.atala.prism.credentials.content.syntax._
+import kotlinx.serialization.json.JsonElementKt.JsonPrimitive
+import kotlinx.serialization.json.JsonObject
 
+import scala.annotation.nowarn
+import scala.jdk.CollectionConverters._
 // This SDK would allow to build generic credentials and manipulate them
 // For this toy example, the credential model is a String that represents a JSON
 // and we didn't add nice builders, we just take fixed values for illustration
@@ -22,18 +24,19 @@ object GenericCredentialsSDK {
   ): CredentialContent = {
     issuerDIDUsed = issuerDID
     keyIdUsed = issuanceKeyId
-    CredentialContent(
-      CredentialContent.JsonFields.CredentialType.field -> credentialType,
-      CredentialContent.JsonFields.IssuerDid.field -> s"did:prism:${issuerDID.suffix}",
-      CredentialContent.JsonFields.IssuanceKeyId.field -> issuanceKeyId,
-      CredentialContent.JsonFields.CredentialSubject.field -> claims
+    val fields = Map(
+      "type" -> JsonPrimitive(credentialType),
+      "id" -> JsonPrimitive(s"did:prism:${issuerDID.getSuffix}"),
+      "keyId" -> JsonPrimitive(issuanceKeyId),
+      "credentialSubject" -> JsonPrimitive(claims)
     )
+    new CredentialContent(new JsonObject(fields.asJava))
   }
 
   @nowarn("cat=unused-params")
-  def getIssuerDID(credential: String): String = issuerDIDUsed.value
+  def getIssuerDID(credential: String): String = issuerDIDUsed.getValue
   @nowarn("cat=unused-params")
-  def getIssuerDIDSufix(credential: String): DIDSuffix = issuerDIDUsed.suffix
+  def getIssuerDIDSufix(credential: String): DIDSuffix = issuerDIDUsed.getSuffix
   @nowarn("cat=unused-params")
   def getKeyId(credential: String): String = keyIdUsed
 }

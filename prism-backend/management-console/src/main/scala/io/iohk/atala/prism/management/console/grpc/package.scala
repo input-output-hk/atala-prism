@@ -9,7 +9,7 @@ import io.iohk.atala.prism.auth.grpc.GrpcAuthenticationHeader
 import io.iohk.atala.prism.auth.model.RequestNonce
 import io.iohk.atala.prism.connector.AtalaOperationId
 import io.iohk.atala.prism.grpc.ProtoConverter
-import io.iohk.atala.prism.identity.DID
+import io.iohk.atala.prism.kotlin.identity.DID
 import io.iohk.atala.prism.management.console.grpc.ProtoCodecs.{checkListUniqueness, toTimestamp}
 import io.iohk.atala.prism.management.console.models.PaginatedQueryConstraints.ResultOrdering
 import io.iohk.atala.prism.management.console.models._
@@ -89,9 +89,10 @@ package object grpc {
     {
       for {
         did <- Try {
-          DID
-            .fromString(request.did)
-            .getOrElse(throw new RuntimeException("Missing or invalid DID"))
+          Try(
+            DID
+              .fromString(request.did)
+          ).getOrElse(throw new RuntimeException("Missing or invalid DID"))
         }
         name <- Try {
           if (request.name.trim.isEmpty) throw new RuntimeException("The name is required")
@@ -576,8 +577,10 @@ package object grpc {
       connectorRequestMetadata.map(_.didSignature)
     ).mapN {
         case (nonce, didStr, keyId, signature) =>
-          DID
-            .fromString(didStr)
+          Try(
+            DID
+              .fromString(didStr)
+          ).toOption
             .map { did =>
               val didBased =
                 if (did.isCanonicalForm)

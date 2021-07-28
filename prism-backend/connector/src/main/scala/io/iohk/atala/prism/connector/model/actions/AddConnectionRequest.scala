@@ -4,7 +4,7 @@ import cats.syntax.either._
 import io.iohk.atala.prism.auth.grpc.GrpcAuthenticationHeader
 import io.iohk.atala.prism.connector.model.TokenString
 import io.iohk.atala.prism.kotlin.crypto.keys.ECPublicKey
-import io.iohk.atala.prism.identity.DID
+import io.iohk.atala.prism.kotlin.identity.DID
 
 case class AddConnectionRequest(
     token: TokenString,

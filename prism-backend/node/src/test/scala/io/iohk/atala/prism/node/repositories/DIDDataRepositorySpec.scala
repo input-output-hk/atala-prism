@@ -11,7 +11,7 @@ import io.iohk.atala.prism.node.models.{DIDData, DIDPublicKey, KeyUsage}
 import org.scalatest.OptionValues._
 import java.time.Instant
 
-import io.iohk.atala.prism.identity.DID
+import io.iohk.atala.prism.kotlin.identity.DID
 import io.iohk.atala.prism.node.DataPreparation
 
 class DIDDataRepositorySpec extends AtalaWithPostgresSpec {
@@ -48,7 +48,7 @@ class DIDDataRepositorySpec extends AtalaWithPostgresSpec {
   )
 
   val didData = DIDData(didSuffix, keys, operationDigest)
-  val dummyTimestamp = TimestampInfo(Instant.ofEpochMilli(0), 1, 0)
+  val dummyTimestamp = new TimestampInfo(Instant.ofEpochMilli(0).toEpochMilli, 1, 0)
   val dummyLedgerData = LedgerData(
     TransactionId.from(Array.fill[Byte](TransactionId.config.size.toBytes.toInt)(0)).value,
     Ledger.InMemory,
@@ -76,7 +76,7 @@ class DIDDataRepositorySpec extends AtalaWithPostgresSpec {
     }
 
     "return error when did is in invalid format" in {
-      val did = io.iohk.atala.prism.identity.DID.buildPrismDID("11:11:11:11")
+      val did = DID.buildPrismDID("11:11:11:11", null)
       didDataRepository.findByDid(did).unsafeToFuture().futureValue mustBe a[Left[UnknownValueError, _]]
     }
   }

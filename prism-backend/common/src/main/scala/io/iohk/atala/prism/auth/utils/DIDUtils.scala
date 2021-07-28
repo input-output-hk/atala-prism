@@ -16,6 +16,7 @@ import io.iohk.atala.prism.utils.FutureEither.FutureEitherOps
 
 import scala.concurrent.{ExecutionContext, Future}
 import scala.util.{Failure, Success, Try}
+import io.iohk.atala.prism.interop.toScalaSDK._
 
 object DIDUtils {
 
@@ -33,7 +34,7 @@ object DIDUtils {
           case Success(validatedLongForm) =>
             validatedLongForm.getInitialState.getOperation match {
               case crd: CreateDid =>
-                Future.successful(Right(crd.getValue.getDidData)).toFutureEither
+                Future.successful(Right(crd.getValue.getDidData.asScala)).toFutureEither
               case _ =>
                 Future.successful(Left(NoCreateDidOperationError)).toFutureEither
             }

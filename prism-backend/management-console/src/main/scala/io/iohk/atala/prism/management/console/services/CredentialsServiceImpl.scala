@@ -11,7 +11,7 @@ import io.iohk.atala.prism.kotlin.credentials.CredentialBatchId
 import io.iohk.atala.prism.kotlin.crypto.MerkleRoot
 import io.iohk.atala.prism.kotlin.crypto.SHA256Digest
 import io.iohk.atala.prism.grpc.ProtoConverter
-import io.iohk.atala.prism.identity.DID
+import io.iohk.atala.prism.kotlin.identity.DID
 import io.iohk.atala.prism.management.console.ManagementConsoleAuthenticator
 import io.iohk.atala.prism.management.console.clients.ConnectorClient
 import io.iohk.atala.prism.management.console.errors.{
@@ -127,7 +127,7 @@ class CredentialsServiceImpl(
         opHash = SHA256Digest.compute(atalaOperation.toByteArray)
         issueCredentialBatch <- atalaOperation.operation.issueCredentialBatch
         credentialBatchData <- issueCredentialBatch.credentialBatchData
-        did = DID.buildPrismDID(credentialBatchData.issuerDid)
+        did = DID.buildPrismDID(credentialBatchData.issuerDid, null)
         merkleRoot = new MerkleRoot(SHA256Digest.fromBytes(credentialBatchData.merkleRoot.toByteArray))
       } yield (merkleRoot, did, opHash)
       maybePair.fold(
@@ -145,7 +145,7 @@ class CredentialsServiceImpl(
       for {
         value <- extractValues(signedIssueCredentialBatchOp)
         (merkleRoot, did, operationHash) = value
-        computedBatchId = CredentialBatchId.fromBatchData(did.suffix, merkleRoot.asScala)
+        computedBatchId = CredentialBatchId.fromBatchData(did.getSuffix, merkleRoot.asKotlin)
         // validation for sanity check
         // The `batchId` parameter is the id returned by the node.
         // We make this check to be sure that the node and the console are
@@ -246,7 +246,7 @@ class CredentialsServiceImpl(
         credentialLedgerData <- nodeService.getCredentialRevocationTime(
           node_api
             .GetCredentialRevocationTimeRequest()
-            .withBatchId(query.batchId.id)
+            .withBatchId(query.batchId.getId)
             .withCredentialHash(ByteString.copyFrom(query.credentialHash.getValue))
         )
       } yield GetLedgerDataResponse(

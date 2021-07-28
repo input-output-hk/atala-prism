@@ -1,8 +1,9 @@
 package io.iohk.atala.prism.node.poc.endorsements
 
+import java.time.Instant
 import com.google.protobuf.ByteString
 import io.iohk.atala.prism.credentials.{Credential, CredentialBatchId, CredentialBatches}
-import io.iohk.atala.prism.identity.DID
+import io.iohk.atala.prism.kotlin.identity.DID
 import io.iohk.atala.prism.interop.toScalaSDK._
 import io.iohk.atala.prism.kotlin.crypto.ECConfig.{INSTANCE => ECConfig}
 import io.iohk.atala.prism.kotlin.crypto.keys.ECPublicKey
@@ -19,9 +20,10 @@ import io.iohk.atala.prism.protos.node_api.{
 import io.iohk.atala.prism.protos.node_models
 import io.iohk.atala.prism.protos.node_models.{KeyUsage, SignedAtalaOperation}
 import io.iohk.atala.prism.utils.syntax.InstantToTimestampOps
+import io.iohk.atala.prism.interop.toKotlinSDK._
 
-import java.time.Instant
 import scala.concurrent.{ExecutionContext, Future}
+import scala.util.Try
 
 case class EndorsementsService(
     nodeServiceStub: NodeServiceGrpc.NodeServiceBlockingStub
@@ -67,7 +69,7 @@ case class EndorsementsService(
   // API
   def getFreshMasterKey(request: GetFreshMasterKeyRequest): Future[GetFreshMasterKeyResponse] = {
     Future.successful {
-      val requester: DID = DID.unsafeFromString(request.endorserDID)
+      val requester: DID = DID.fromString(request.endorserDID)
       val signedKey = nextKey()
       requestedBy = requestedBy.updated(signedKey.key, requester)
       println(s"assigned key: ${signedKey.key}")
@@ -80,8 +82,8 @@ case class EndorsementsService(
 
   def endorseInstitution(request: EndorseInstitutionRequest): Future[EndorseInstitutionResponse] =
     Future {
-      val parentDID: DID = DID.unsafeFromString(request.parentDID)
-      val childDID: DID = DID.unsafeFromString(request.childDID)
+      val parentDID: DID = DID.fromString(request.parentDID)
+      val childDID: DID = DID.fromString(request.childDID)
       val signedOperation: SignedAtalaOperation = request.getIssueBatch
 
       val response = nodeServiceStub.getDidDocument(
@@ -94,8 +96,8 @@ case class EndorsementsService(
 
       val parentAssociatedToKey = requestedBy.getOrElse(childMasterKey, throw new RuntimeException("unknown key"))
 
-      val credential = Credential.unsafeFromString(request.credential)
-      val credentialDID = credential.content.issuerDid.toOption.get
+      val credential = JsonBasedCredential.fromString(request.credential)
+      val credentialDID = Option(credential.getContent.getIssuerDid).get
       val operationDID =
         DID.buildPrismDID(signedOperation.getOperation.getIssueCredentialBatch.getCredentialBatchData.issuerDid)
       val operationMerkleRoot = new MerkleRoot(
@@ -119,7 +121,7 @@ case class EndorsementsService(
         parentDID == operationDID &&
         // the credential is included in the issuing operation
         operationMerkleRoot == proofDerivedRoot &&
-        CredentialBatches.verifyInclusion(credential, operationMerkleRoot.asScala, decodedProof.asScala) &&
+        CredentialBatches.verifyInclusion(credential, operationMerkleRoot, decodedProof) &&
         // the DID is not already endorsed
         !isAlreadyEndorsed(childDID)
       ) {
@@ -149,7 +151,7 @@ case class EndorsementsService(
 
   def getEndorsements(request: GetEndorsementsRequest): Future[GetEndorsementsResponse] =
     Future {
-      val did = DID.unsafeFromString(request.did)
+      val did = DID.fromString(request.did)
       val intervals = validIn(did).map { interval =>
         ValidityInterval(to = interval.to.map(_.toProtoTimestamp))
           .withFrom(interval.from.toProtoTimestamp)
@@ -162,8 +164,8 @@ case class EndorsementsService(
 
   def revokeEndorsement(request: RevokeEndorsementRequest): Future[RevokeEndorsementResponse] =
     Future {
-      val parentDID = DID.unsafeFromString(request.parentDID)
-      val childDID = DID.unsafeFromString(request.childDID)
+      val parentDID = DID.fromString(request.parentDID)
+      val childDID = DID.fromString(request.childDID)
       val revokeOperation = request.getRevokeBatch
 
       if (endorsedBy(childDID) == parentDID) {
@@ -190,12 +192,16 @@ object EndorsementsService {
       inclusionProof: String
   ) {
     def batchId: CredentialBatchId = {
-      val issuerDID = Credential
-        .unsafeFromString(verifiableCredential)
-        .content
-        .issuerDid
-        .getOrElse(throw new RuntimeException("missing issuer DID"))
-      CredentialBatchId.fromBatchData(issuerDID.suffix, MerkleInclusionProof.decode(inclusionProof).derivedRoot.asScala)
+      val issuerDID = Try(
+        JsonBasedCredential
+          .fromString(verifiableCredential)
+          .getContent
+          .getIssuerDid
+      ).getOrElse(throw new RuntimeException("missing issuer DID"))
+      CredentialBatchId.fromBatchData(
+        issuerDID.getSuffix,
+        MerkleInclusionProof.decode(inclusionProof).get.derivedRoot.asKotlin
+      )
     }
   }
 

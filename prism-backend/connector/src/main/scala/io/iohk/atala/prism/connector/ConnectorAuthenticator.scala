@@ -9,7 +9,7 @@ import io.iohk.atala.prism.auth.grpc.GrpcAuthenticationHeaderParser
 import io.iohk.atala.prism.auth.model.RequestNonce
 import io.iohk.atala.prism.connector.repositories.{ParticipantsRepository, RequestNoncesRepository}
 import io.iohk.atala.prism.kotlin.crypto.keys.ECPublicKey
-import io.iohk.atala.prism.identity.DID
+import io.iohk.atala.prism.kotlin.identity.DID
 import io.iohk.atala.prism.models.ParticipantId
 import io.iohk.atala.prism.protos.node_api
 import io.iohk.atala.prism.utils.FutureEither

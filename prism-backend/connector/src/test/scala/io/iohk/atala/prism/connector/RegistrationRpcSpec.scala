@@ -6,7 +6,7 @@ import doobie.implicits._
 import io.iohk.atala.prism.connector.model._
 import io.iohk.atala.prism.connector.repositories.daos.ParticipantsDAO
 import io.iohk.atala.prism.kotlin.crypto.{EC, SHA256Digest}
-import io.iohk.atala.prism.identity.DID
+import io.iohk.atala.prism.kotlin.identity.DID
 import io.iohk.atala.prism.models.ParticipantId
 import io.iohk.atala.prism.protos.connector_api.{RegisterDIDRequest, RegisterDIDResponse}
 import io.iohk.atala.prism.protos.node_api.{CreateDIDResponse, GetDidDocumentResponse}
@@ -20,6 +20,7 @@ import org.scalatest.OptionValues._
 
 import scala.concurrent.Future
 import scala.util.Try
+import io.iohk.atala.prism.interop.toKotlinSDK._
 
 import io.iohk.atala.prism.interop.toScalaSDK._
 
@@ -44,7 +45,7 @@ class RegistrationRpcSpec extends ConnectorRpcSpecBase {
 
         nodeMock.createDID(*).returns {
           Future.successful(
-            CreateDIDResponse(expectedDID.suffix.value)
+            CreateDIDResponse(expectedDID.getSuffix.getValue)
               .withOperationId(operationId.toProtoByteString)
           )
         }
@@ -57,19 +58,19 @@ class RegistrationRpcSpec extends ConnectorRpcSpecBase {
       usingApiAs.unlogged { blockingStub =>
         val keyId = "key-1"
         val didKeyPair = EC.generateKeyPair()
-        val did = DID.createUnpublishedDID(didKeyPair.getPublicKey.asScala).canonical.get
+        val did = DID.createUnpublishedDID(didKeyPair.publicKey.asKotlin, null)
         val name = "iohk"
         val logo = "none".getBytes()
         val request = connector_api
           .RegisterDIDRequest(name = name)
           .withLogo(ByteString.copyFrom(logo))
           .withRole(connector_api.RegisterDIDRequest.Role.issuer)
-          .withExistingDid(did.value)
+          .withExistingDid(did.getValue)
 
         nodeMock.getDidDocument(*).returns {
           Future.successful(
             GetDidDocumentResponse(
-              DIDData(id = did.suffix.value, List(createNodePublicKey(keyId, didKeyPair.getPublicKey))).some
+              DIDData(id = did.getSuffix.getValue, List(createNodePublicKey(keyId, didKeyPair.getPublicKey))).some
             )
           )
         }
@@ -82,7 +83,7 @@ class RegistrationRpcSpec extends ConnectorRpcSpecBase {
       usingApiAs.unlogged { blockingStub =>
         val keyId = "key-1"
         val didKeyPair = EC.generateKeyPair()
-        val did = DID.createUnpublishedDID(didKeyPair.getPublicKey.asScala).canonical.get
+        val did = DID.createUnpublishedDID(didKeyPair.publicKey.asKotlin, null)
         val name = "iohk"
         val participantId = ParticipantId.random()
         val participantRole = ParticipantType.Issuer
@@ -93,7 +94,7 @@ class RegistrationRpcSpec extends ConnectorRpcSpecBase {
         nodeMock.getDidDocument(*).returns {
           Future.successful(
             GetDidDocumentResponse(
-              DIDData(id = did.suffix.value, List(createNodePublicKey(keyId, didKeyPair.getPublicKey))).some
+              DIDData(id = did.getSuffix.getValue, List(createNodePublicKey(keyId, didKeyPair.publicKey))).some
             )
           )
         }
@@ -101,7 +102,7 @@ class RegistrationRpcSpec extends ConnectorRpcSpecBase {
         val request = connector_api
           .RegisterDIDRequest(name = name)
           .withRole(connector_api.RegisterDIDRequest.Role.issuer)
-          .withExistingDid(did.value)
+          .withExistingDid(did.getValue)
 
         val response = Try(blockingStub.registerDID(request))
         response.toEither.left.map(_.getMessage) mustBe Left("INVALID_ARGUMENT: DID already exists")
@@ -111,14 +112,14 @@ class RegistrationRpcSpec extends ConnectorRpcSpecBase {
     "fail when the user passed unpublished did" in {
       usingApiAs.unlogged { blockingStub =>
         val didKeyPair = EC.generateKeyPair()
-        val did = DID.createUnpublishedDID(didKeyPair.getPublicKey.asScala)
+        val did = DID.createUnpublishedDID(didKeyPair.publicKey.asKotlin, null)
         val name = "iohk"
         val logo = "none".getBytes()
         val request = connector_api
           .RegisterDIDRequest(name = name)
           .withLogo(ByteString.copyFrom(logo))
           .withRole(connector_api.RegisterDIDRequest.Role.issuer)
-          .withExistingDid(did.value)
+          .withExistingDid(did.getValue)
 
         val response = Try(blockingStub.registerDID(request))
         response.toEither.left.map(_.getMessage) mustBe Left("INVALID_ARGUMENT: Expected published did")
@@ -129,14 +130,14 @@ class RegistrationRpcSpec extends ConnectorRpcSpecBase {
     "fail when user passed did which can't be found on the node" in {
       usingApiAs.unlogged { blockingStub =>
         val didKeyPair = EC.generateKeyPair()
-        val did = DID.createUnpublishedDID(didKeyPair.getPublicKey.asScala).canonical.get
+        val did = DID.createUnpublishedDID(didKeyPair.publicKey.asKotlin, null)
         val name = "iohk"
         val logo = "none".getBytes()
         val request = connector_api
           .RegisterDIDRequest(name = name)
           .withLogo(ByteString.copyFrom(logo))
           .withRole(connector_api.RegisterDIDRequest.Role.issuer)
-          .withExistingDid(did.value)
+          .withExistingDid(did.getValue)
 
         nodeMock.getDidDocument(*).returns(Future.successful(GetDidDocumentResponse()))
 
@@ -151,8 +152,8 @@ class RegistrationRpcSpec extends ConnectorRpcSpecBase {
     "fail when user passed non-prism did" in {
       usingApiAs.unlogged { blockingStub =>
         val didKeyPair = EC.generateKeyPair()
-        val did = DID.createUnpublishedDID(didKeyPair.getPublicKey.asScala).canonical.get
-        val strangeDid = s"did:blabla:${did.suffix.value}"
+        val did = DID.createUnpublishedDID(didKeyPair.publicKey.asKotlin, null)
+        val strangeDid = s"did:blabla:${did.getSuffix.getValue}"
         val name = "iohk"
         val logo = "none".getBytes()
         val request = connector_api
@@ -193,13 +194,13 @@ class RegistrationRpcSpec extends ConnectorRpcSpecBase {
       usingApiAs.unlogged { blockingStub =>
         nodeMock.createDID(*).returns {
           Future.successful(
-            CreateDIDResponse(expectedDID.suffix.value)
+            CreateDIDResponse(expectedDID.getSuffix.getValue)
               .withOperationId(ByteString.copyFrom(operationId.toArray))
           )
         }
         val response1 = blockingStub.registerDID(request)
         val response2 = Try(blockingStub.registerDID(request))
-        response1.did must be(expectedDID.value)
+        response1.did must be(expectedDID.getValue)
         response2.toEither.left.map(_.getMessage) mustBe Left("INVALID_ARGUMENT: DID already exists")
       }
     }
@@ -214,7 +215,7 @@ class RegistrationRpcSpec extends ConnectorRpcSpecBase {
       expectedOperationId: Option[AtalaOperationId]
   ): Assertion = {
     // returns the did
-    response.did mustBe expectedDid.value
+    response.did mustBe expectedDid.getValue
 
     // the participant gets stored
     val result = ParticipantsDAO

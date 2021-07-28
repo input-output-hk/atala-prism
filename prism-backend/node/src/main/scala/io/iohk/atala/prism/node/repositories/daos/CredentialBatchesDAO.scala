@@ -1,6 +1,7 @@
 package io.iohk.atala.prism.node.repositories.daos
 
 import java.time.Instant
+
 import cats.implicits.catsStdInstancesForList
 import cats.syntax.functor._
 import doobie.Update

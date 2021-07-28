@@ -6,9 +6,9 @@ import io.iohk.atala.prism.kotlin.crypto.MerkleRoot
 import io.iohk.atala.prism.kotlin.crypto.{EC, SHA256Digest}
 import io.iohk.atala.prism.kotlin.crypto.keys.{ECPrivateKey, ECPublicKey}
 import io.iohk.atala.prism.kotlin.crypto.ECConfig.{INSTANCE => ECConfig}
-import io.iohk.atala.prism.identity.DID.{DIDFormat, masterKeyId}
+import io.iohk.atala.prism.kotlin.identity.DID.{DIDFormat, masterKeyId}
 import io.iohk.atala.prism.node.NodeConfig
-import io.iohk.atala.prism.node.cardano.models.{Address, AtalaObjectMetadata, Lovelace, Payment, WalletId}
+import io.iohk.atala.prism.node.cardano.models._
 import io.iohk.atala.prism.node.cardano.wallet.CardanoWalletApiClient
 import io.iohk.atala.prism.node.poc.estimations.CardanoFeeEstimator.{Estimation, Issuer, TotalEstimation}
 import io.iohk.atala.prism.protos.node_internal.AtalaObject
@@ -109,15 +109,15 @@ class CardanoFeeEstimator(walletId: WalletId, paymentAddress: Address, cardanoWa
     )
   }
 
-  private def createDID(id: String): DIDFormat.Canonical = {
-    DIDFormat.Canonical(SHA256Digest.compute(id.getBytes).hexValue)
+  private def createDID(id: String): Canonical = {
+    new Canonical(SHA256Digest.compute(id.getBytes).hexValue)
   }
 
-  private def addMasterKeyOperation(did: DIDFormat.Canonical, publicKey: ECPublicKey): AtalaOperation = {
+  private def addMasterKeyOperation(did: Canonical, publicKey: ECPublicKey): AtalaOperation = {
     val createDIDOp = node_models.CreateDIDOperation(
       didData = Some(
         node_models.DIDData(
-          id = did.suffix,
+          id = did.getSuffix,
           publicKeys = Seq(
             node_models.PublicKey(
               id = masterKeyId,
@@ -135,7 +135,7 @@ class CardanoFeeEstimator(walletId: WalletId, paymentAddress: Address, cardanoWa
   }
 
   private def addIssuingKeyOperation(
-      did: DIDFormat.Canonical,
+      did: Canonical,
       publicKey: ECPublicKey,
       lastOperation: AtalaOperation
   ): AtalaOperation = {
@@ -164,7 +164,7 @@ class CardanoFeeEstimator(walletId: WalletId, paymentAddress: Address, cardanoWa
     node_models.AtalaOperation(AtalaOperation.Operation.UpdateDid(createDIDOp))
   }
 
-  private def issueCredentialBatchOperation(merkleRoot: MerkleRoot, issuerDid: DIDFormat.Canonical): AtalaOperation = {
+  private def issueCredentialBatchOperation(merkleRoot: MerkleRoot, issuerDid: Canonical): AtalaOperation = {
     val issueCredentialOp = node_models.IssueCredentialBatchOperation(
       credentialBatchData = Some(
         node_models.CredentialBatchData(

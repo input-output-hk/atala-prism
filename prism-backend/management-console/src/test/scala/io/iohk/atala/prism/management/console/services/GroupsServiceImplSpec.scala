@@ -6,7 +6,7 @@ import doobie.util.transactor.Transactor
 import io.iohk.atala.prism.auth.SignedRpcRequest
 import io.iohk.atala.prism.auth.grpc.GrpcAuthenticationHeaderParser
 import io.iohk.atala.prism.kotlin.crypto.EC
-import io.iohk.atala.prism.identity.DID
+import io.iohk.atala.prism.kotlin.identity.DID
 import io.iohk.atala.prism.management.console.models.PaginatedQueryConstraints.ResultOrdering
 import io.iohk.atala.prism.management.console.models._
 import io.iohk.atala.prism.protos.common_models

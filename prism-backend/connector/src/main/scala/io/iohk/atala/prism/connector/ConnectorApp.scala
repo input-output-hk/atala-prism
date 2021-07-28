@@ -66,7 +66,7 @@ class ConnectorApp(executionContext: ExecutionContext) { self =>
     if (didWhitelist.isEmpty) {
       logger.warn(s"DID whitelist is empty, which prevents integrating the console backend")
     } else {
-      logger.info(s"DID whitelist:\n${didWhitelist.map(_.value).map("- " + _).mkString("\n")}")
+      logger.info(s"DID whitelist:\n${didWhitelist.map(_.getValue).map("- " + _).mkString("\n")}")
     }
 
     // node client
