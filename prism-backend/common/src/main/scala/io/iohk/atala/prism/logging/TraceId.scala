@@ -6,8 +6,8 @@ import tofu.logging.derivation.loggable
 import java.util.UUID
 
 @derive(loggable)
-final case class TraceId(traceId: UUID) extends AnyVal
+final case class TraceId(traceId: String) extends AnyVal
 
 object TraceId {
-  def generateYOLO: TraceId = TraceId(UUID.randomUUID())
+  def generateYOLO: TraceId = TraceId(UUID.randomUUID().toString)
 }
