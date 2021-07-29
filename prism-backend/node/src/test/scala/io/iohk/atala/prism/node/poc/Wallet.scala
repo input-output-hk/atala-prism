@@ -23,7 +23,7 @@ import io.iohk.atala.prism.identity.DID.masterKeyId
 case class Wallet(node: node_api.NodeServiceGrpc.NodeServiceBlockingStub) {
   implicit val ec = EC
 
-  private var dids: Map[DIDSuffix, Map[String, ECPrivateKey]] = Map()
+  private var dids: Map[DIDSuffix, collection.mutable.Map[String, ECPrivateKey]] = Map()
 
   def generateDID(): (DIDSuffix, node_models.AtalaOperation) = {
     val masterKeyPair = EC.generateKeyPair()
@@ -62,12 +62,47 @@ case class Wallet(node: node_api.NodeServiceGrpc.NodeServiceBlockingStub) {
     val operationHash = SHA256Digest.compute(atalaOp.toByteArray)
     val didSuffix = DIDSuffix.unsafeFromDigest(operationHash)
 
-    dids += (didSuffix -> Map(
+    dids += (didSuffix -> collection.mutable.Map(
       masterKeyId -> masterPrivateKey,
       "issuance0" -> issuancePrivateKey
     ))
 
     (didSuffix, atalaOp)
+  }
+
+  def addRevocationKeyToDid(revocationKeyId: String, previousOperationHash: ByteString, didSuffix: DIDSuffix): Unit = {
+    val revocationKeyPair = EC.generateKeyPair()
+    val publicKeyProto = node_models.PublicKey(
+      id = revocationKeyId,
+      usage = node_models.KeyUsage.REVOCATION_KEY,
+      keyData = node_models.PublicKey.KeyData.EcKeyData(
+        publicKeyToProto(revocationKeyPair.publicKey)
+      )
+    )
+
+    val updateDIDOp = node_models.UpdateDIDOperation(
+      previousOperationHash = previousOperationHash,
+      id = didSuffix.value,
+      actions = Seq(
+        node_models.UpdateDIDAction(
+          node_models.UpdateDIDAction.Action.AddKey(
+            node_models.AddKeyAction(
+              Some(publicKeyProto)
+            )
+          )
+        )
+      )
+    )
+    val updateDidOpSigned = signOperation(
+      node_models.AtalaOperation(
+        node_models.AtalaOperation.Operation.UpdateDid(updateDIDOp)
+      ),
+      masterKeyId,
+      didSuffix
+    )
+    node.updateDID(node_api.UpdateDIDRequest(Some(updateDidOpSigned)))
+    dids(didSuffix) += (revocationKeyId -> revocationKeyPair.privateKey)
+    ()
   }
 
   def signOperation(

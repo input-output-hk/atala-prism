@@ -8,7 +8,13 @@ import io.iohk.atala.prism.crypto.{EC, ECConfig, ECPublicKey, JvmECPublicKey}
 import io.iohk.atala.prism.models.{ProtoCodecs => CommonProtoCodecs}
 import io.iohk.atala.prism.identity.DIDSuffix
 import io.iohk.atala.prism.node.models
-import io.iohk.atala.prism.node.models.KeyUsage.{AuthenticationKey, CommunicationKey, IssuingKey, MasterKey}
+import io.iohk.atala.prism.node.models.KeyUsage.{
+  AuthenticationKey,
+  IssuingKey,
+  CommunicationKey,
+  RevocationKey,
+  MasterKey
+}
 import io.iohk.atala.prism.node.models.nodeState.LedgerData
 import io.iohk.atala.prism.protos.node_models
 import io.iohk.atala.prism.utils.syntax._
@@ -81,6 +87,7 @@ object ProtoCodecs {
       case MasterKey => node_models.KeyUsage.MASTER_KEY
       case IssuingKey => node_models.KeyUsage.ISSUING_KEY
       case CommunicationKey => node_models.KeyUsage.COMMUNICATION_KEY
+      case RevocationKey => node_models.KeyUsage.REVOCATION_KEY
       case AuthenticationKey => node_models.KeyUsage.AUTHENTICATION_KEY
     }
   }
