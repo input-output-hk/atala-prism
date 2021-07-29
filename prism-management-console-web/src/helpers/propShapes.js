@@ -158,7 +158,8 @@ export const templateCategoryShape = shape({
 export const credentialTypesManagerShape = shape({
   getCredentialTypes: func,
   getCredentialTypeDetails: func,
-  getTemplateCategories: func
+  getTemplateCategories: func,
+  createCategory: func
 });
 
 export const refPropShape = oneOfType([func, shape({ current: instanceOf(Element) })]);
