@@ -42,6 +42,10 @@ function getTemplateCategories() {
   return Promise.resolve(hardcodedTemplateCategories);
 }
 
+function createCategory() {
+  return Promise.resolve();
+}
+
 const mapCredentialTypeField = field => ({
   ...field,
   key: field.name,
@@ -57,5 +61,6 @@ function CredentialTypesManager(config, auth) {
 CredentialTypesManager.prototype.getCredentialTypes = getCredentialTypes;
 CredentialTypesManager.prototype.getCredentialTypeDetails = getCredentialTypeDetails;
 CredentialTypesManager.prototype.getTemplateCategories = getTemplateCategories;
+CredentialTypesManager.prototype.createCategory = createCategory;
 
 export default CredentialTypesManager;
