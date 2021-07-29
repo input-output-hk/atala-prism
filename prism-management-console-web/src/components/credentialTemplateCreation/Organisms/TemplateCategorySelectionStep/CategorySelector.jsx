@@ -6,6 +6,7 @@ import AddNewCategory from '../../Molecules/TemplateCategorySelectionStep/AddNew
 import CategoryCard from '../../Molecules/TemplateCategorySelectionStep/CategoryCard';
 import { templateCategoryShape } from '../../../../helpers/propShapes';
 import { useTemplateContext } from '../../../providers/TemplateContext';
+import { isInteger } from '../../../../helpers/genericHelpers';
 import './_style.scss';
 
 const ENABLED_STATE = 1;
@@ -37,20 +38,14 @@ const CategorySelector = ({ templateCategories }) => {
         label={t('credentialTemplateCreation.step1.selectCategory')}
         rules={[
           {
-            required: true,
-            message: t('credentialTemplateCreation.errors.fieldIsRequired', {
-              field: t('credentialTemplateCreation.fields.category')
-            })
-          },
-          {
             validator: ({ field }, value) =>
-              Number.isNaN(parseInt(value, 10))
-                ? Promise.reject(
+              isInteger(value)
+                ? Promise.resolve()
+                : Promise.reject(
                     t('credentialTemplateCreation.errors.fieldIsRequired', {
                       field: t(`credentialTemplateCreation.fields.${field}`)
                     })
                   )
-                : Promise.resolve()
           }
         ]}
       >

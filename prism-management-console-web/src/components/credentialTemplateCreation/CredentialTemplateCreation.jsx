@@ -47,7 +47,7 @@ const CredentialTemplateCreation = ({
   const advanceStep = async () => {
     const { errors } = await validateByStep(currentStep);
     const isPartiallyValid = !errors;
-    if (isPartiallyValid) changeStep(currentStep + 1);
+    if (isPartiallyValid) changeStep(currentStep + NEW_TEMPLATE_STEP_UNIT);
     else errors.map(msg => message.error(t(msg)));
   };
 

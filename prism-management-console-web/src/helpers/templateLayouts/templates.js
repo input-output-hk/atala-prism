@@ -111,11 +111,12 @@ export const updateImages = async (templateSettings, setImagesOverwrites) => {
   const newEmbeddedUserIcon = userIcon?.length
     ? await getBase64(userIcon[0].originFileObj)
     : embeddedUserIcon;
-  const images = Object.assign(
-    {},
-    { embeddedCompanyLogo: newEmbeddedCompanyLogo },
-    { embeddedUserIcon: newEmbeddedUserIcon }
-  );
+
+  const images = {
+    embeddedCompanyLogo: newEmbeddedCompanyLogo,
+    embeddedUserIcon: newEmbeddedUserIcon
+  };
+
   setImagesOverwrites(images);
 };
 
