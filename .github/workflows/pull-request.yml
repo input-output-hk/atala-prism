@@ -112,7 +112,7 @@ jobs:
 
   publish-test-results:
      name: "Publish Unit Tests Results"
-     needs: build
+     needs: build-backend
      runs-on: ubuntu-20.04
      if: success() || failure()
      steps:
