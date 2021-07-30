@@ -30,7 +30,7 @@ class KeyValuesRepositorySpec extends AtalaWithPostgresSpec {
     }
 
     "clear a KeyValue when set to None" in {
-      keyValuesRepository.upsert(KeyValue(KEY, Some("Old value"))).unsafeToFuture()
+      keyValuesRepository.upsert(KeyValue(KEY, Some("Old value"))).unsafeToFuture().futureValue
       val expectedKeyValue = KeyValue(KEY, None)
       keyValuesRepository.upsert(expectedKeyValue).unsafeToFuture().futureValue
 
