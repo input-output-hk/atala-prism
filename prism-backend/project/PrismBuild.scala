@@ -88,7 +88,7 @@ object PrismBuild {
               monix,
               typesafeConfig
             ) ++
-            Seq(cryptoJVM)
+            Seq(prismCrypto)
       )
       .dependsOn(protosLib, credentialsLib, connectorLib)
 
