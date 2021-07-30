@@ -538,7 +538,8 @@ class NodeServiceSpec
           credentialHash = ByteString.EMPTY
         )
 
-      val expectedMessage = "The given bytes does not correspond to a sha256 hash. It must have exactly 32 bytes"
+      val expectedMessage =
+        "INTERNAL: The given bytes does not correspond to a sha256 hash. It must have exactly 32 bytes"
 
       doReturn(
         Future.successful(dummySyncTimestamp)
@@ -547,6 +548,7 @@ class NodeServiceSpec
       val error = intercept[RuntimeException] {
         service.getCredentialRevocationTime(requestWithInvalidCredentialHash)
       }
+
       error.getMessage must be(expectedMessage)
     }
 
