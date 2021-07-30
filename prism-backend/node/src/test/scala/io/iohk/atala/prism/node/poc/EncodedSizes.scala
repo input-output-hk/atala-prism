@@ -71,8 +71,8 @@ object EncodedSizes {
     val point = key.getCurvePoint
     node_models.ECKeyData(
       curve = ECConfig.getCURVE_NAME,
-      x = ByteString.copyFrom(point.getX.toByteArray),
-      y = ByteString.copyFrom(point.getY.toByteArray)
+      x = ByteString.copyFrom(point.getX.bytes()),
+      y = ByteString.copyFrom(point.getY.bytes())
     )
   }
 }

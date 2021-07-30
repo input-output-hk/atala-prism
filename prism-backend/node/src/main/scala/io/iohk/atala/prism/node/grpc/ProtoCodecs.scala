@@ -108,7 +108,7 @@ object ProtoCodecs {
   }
 
   def fromProtoKeyLegacy(protoKey: node_models.PublicKey): Option[PublicKey] =
-    fromProtoKey(protoKey).map(_.getKey$crypto)
+    fromProtoKey(protoKey).map(_.getKey$prism_crypto)
 
   def toLedgerData(ledgerData: LedgerData): node_models.LedgerData = {
     node_models.LedgerData(

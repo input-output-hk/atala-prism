@@ -28,8 +28,8 @@ object CreateDIDOperationSpec {
 
     node_models.ECKeyData(
       curve = ECConfig.getCURVE_NAME,
-      x = ByteString.copyFrom(point.xBytes()),
-      y = ByteString.copyFrom(point.yBytes())
+      x = ByteString.copyFrom(point.getX.bytes()),
+      y = ByteString.copyFrom(point.getY.bytes())
     )
   }
 

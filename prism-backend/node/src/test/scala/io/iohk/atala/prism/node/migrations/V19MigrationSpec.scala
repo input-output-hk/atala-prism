@@ -35,8 +35,8 @@ class V19MigrationSpec extends PostgresMigrationSpec("db.migration.V19") with Ba
     val curveName = ECConfig.getCURVE_NAME
     val point = key.key.getCurvePoint
 
-    val xBytes = point.xBytes()
-    val yBytes = point.yBytes()
+    val xBytes = point.getX.bytes()
+    val yBytes = point.getY.bytes()
 
     val addedOn = ledgerData.timestampInfo
     sql"""
@@ -62,8 +62,8 @@ class V19MigrationSpec extends PostgresMigrationSpec("db.migration.V19") with Ba
       val inDB = selectPublicKeyCompressed(didPublicKey)
       val expected = EC
         .toPublicKey(
-          didPublicKey.key.getCurvePoint.xBytes(),
-          didPublicKey.key.getCurvePoint.yBytes()
+          didPublicKey.key.getCurvePoint.getX.bytes(),
+          didPublicKey.key.getCurvePoint.getY.bytes()
         )
         .asScala
         .getCompressed

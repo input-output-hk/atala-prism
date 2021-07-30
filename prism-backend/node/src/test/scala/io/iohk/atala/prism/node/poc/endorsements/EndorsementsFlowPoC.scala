@@ -38,7 +38,7 @@ import scala.concurrent.{Future, Promise}
 import io.iohk.atala.prism.interop.toKotlinSDK._
 
 class EndorsementsFlowPoC extends AtalaWithPostgresSpec with BeforeAndAfterEach {
-  implicit val ecTrait = EC
+//  implicit val ecTrait = EC
 
   import Utils._
 

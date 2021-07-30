@@ -538,7 +538,7 @@ class NodeServiceSpec
           credentialHash = ByteString.EMPTY
         )
 
-      val expectedMessage = "INTERNAL: Vector length doesn't correspond to expected length  - 32"
+      val expectedMessage = "The given bytes does not correspond to a sha256 hash. It must have exactly 32 bytes"
 
       doReturn(
         Future.successful(dummySyncTimestamp)

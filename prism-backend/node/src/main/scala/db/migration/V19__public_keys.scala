@@ -31,7 +31,7 @@ class V19__public_keys extends BaseJavaMigration {
     val x = row.getBytes("x")
     val y = row.getBytes("y")
 
-    val compressedX: Array[Byte] = EC.toPublicKey(x, y).getCompressed
+    val compressedX: Array[Byte] = EC.toPublicKey(x, y).getEncodedCompressed
 
     using(
       context.getConnection

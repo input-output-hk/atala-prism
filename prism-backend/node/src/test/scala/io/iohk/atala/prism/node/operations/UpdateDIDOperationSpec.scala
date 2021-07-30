@@ -6,6 +6,7 @@ import doobie.implicits._
 import io.iohk.atala.prism.AtalaWithPostgresSpec
 import io.iohk.atala.prism.credentials.TimestampInfo
 import io.iohk.atala.prism.kotlin.crypto.EC
+import io.iohk.atala.prism.kotlin.crypto.SHA256Digest
 import io.iohk.atala.prism.models.{Ledger, TransactionId}
 import io.iohk.atala.prism.node.models.nodeState.LedgerData
 import io.iohk.atala.prism.node.models.{DIDPublicKey, KeyUsage}

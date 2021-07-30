@@ -1,30 +1,22 @@
 package io.iohk.atala.prism.node.poc.endorsements
 
-import java.time.Instant
-
 import com.google.protobuf.ByteString
 import io.iohk.atala.prism.credentials.{Credential, CredentialBatchId, CredentialBatches}
-import io.iohk.atala.prism.kotlin.crypto.{MerkleInclusionProof, MerkleRoot}
-import io.iohk.atala.prism.kotlin.crypto.{EC, SHA256Digest}
+import io.iohk.atala.prism.identity.DID
+import io.iohk.atala.prism.interop.toScalaSDK._
 import io.iohk.atala.prism.kotlin.crypto.ECConfig.{INSTANCE => ECConfig}
 import io.iohk.atala.prism.kotlin.crypto.keys.ECPublicKey
 import io.iohk.atala.prism.kotlin.crypto.signature.ECSignature
-import io.iohk.atala.prism.identity.DID
+import io.iohk.atala.prism.kotlin.crypto.{MerkleInclusionProof, MerkleRoot, SHA256Digest}
 import io.iohk.atala.prism.node.grpc.ProtoCodecs
 import io.iohk.atala.prism.protos.endorsements_api._
-import io.iohk.atala.prism.protos.node_api.{
-  GetDidDocumentRequest,
-  IssueCredentialBatchRequest,
-  NodeServiceGrpc,
-  RevokeCredentialsRequest
-}
+import io.iohk.atala.prism.protos.node_api.{GetDidDocumentRequest, IssueCredentialBatchRequest, NodeServiceGrpc, RevokeCredentialsRequest}
 import io.iohk.atala.prism.protos.node_models
 import io.iohk.atala.prism.protos.node_models.{KeyUsage, SignedAtalaOperation}
 import io.iohk.atala.prism.utils.syntax.InstantToTimestampOps
 
+import java.time.Instant
 import scala.concurrent.{ExecutionContext, Future}
-
-import io.iohk.atala.prism.interop.toScalaSDK._
 
 case class EndorsementsService(
     nodeServiceStub: NodeServiceGrpc.NodeServiceBlockingStub
@@ -32,8 +24,6 @@ case class EndorsementsService(
     executionContext: ExecutionContext
 ) extends EndorsementsServiceGrpc.EndorsementsService {
   import EndorsementsService._
-
-  implicit val ec = EC
 
   // private state
   private var moeDID: DID = _

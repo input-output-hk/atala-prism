@@ -352,7 +352,7 @@ class ObjectManagementServiceSpec
         BlockProcessingServiceSpec.signOperation(
           BlockProcessingServiceSpec.createDidOperation,
           s"master$masterId",
-          CreateDIDOperationSpec.masterKeys.privateKey
+          CreateDIDOperationSpec.masterKeys.getPrivateKey
         )
       }
       val atalaObjects = atalaOperations.map { op =>
@@ -384,7 +384,7 @@ class ObjectManagementServiceSpec
       )
 
       val dummyTransactionIds = (0 to (atalaOperations.size + 2)).map { index =>
-        TransactionId.from(SHA256Digest.compute(s"id$index".getBytes).value).value
+        TransactionId.from(SHA256Digest.compute(s"id$index".getBytes).getValue).value
       }
       val dummyTransactionInfos = dummyTransactionIds.map { transactionId =>
         dummyTransactionInfo.copy(transactionId = transactionId)

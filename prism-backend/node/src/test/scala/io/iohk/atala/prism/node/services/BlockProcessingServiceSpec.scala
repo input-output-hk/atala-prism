@@ -102,7 +102,7 @@ class BlockProcessingServiceSpec extends AtalaWithPostgresSpec {
       val credentials = DIDDataDAO.all().transact(database).unsafeRunSync()
       credentials.size mustBe 1
       val digest = SHA256Digest.compute(createDidOperation.toByteArray)
-      credentials.head mustBe DIDSuffix.unsafeFromDigest(digest)
+      credentials.head mustBe DIDSuffix.unsafeFromDigest(digest.asScala)
 
       // shouldn't add new operations to the table
       val count = DataPreparation.getOperationsCount()
@@ -246,26 +246,26 @@ class BlockProcessingServiceSpec extends AtalaWithPostgresSpec {
         operation = node_models.AtalaOperation.Operation.UpdateDid(
           value = node_models.UpdateDIDOperation(
             previousOperationHash = ByteString.copyFrom(
-              SHA256Digest.compute(signedCreateDidOperation.operation.value.toByteArray).value.toArray
+              SHA256Digest.compute(signedCreateDidOperation.operation.value.toByteArray).getValue
             ),
             id = did,
             actions = Seq(exampleAddKeyAction)
           )
         )
       )
-      val updateDidSignedOperation1 = signOperation(updateDidOperation1, "master", masterKeys.privateKey)
+      val updateDidSignedOperation1 = signOperation(updateDidOperation1, "master", masterKeys.getPrivateKey)
 
       val updateDidOperation2 = node_models.AtalaOperation(
         operation = node_models.AtalaOperation.Operation.UpdateDid(
           value = node_models.UpdateDIDOperation(
             previousOperationHash =
-              ByteString.copyFrom(SHA256Digest.compute(updateDidOperation1.toByteArray).value.toArray),
+              ByteString.copyFrom(SHA256Digest.compute(updateDidOperation1.toByteArray).getValue),
             id = did,
             actions = Seq(exampleRemoveKeyAction)
           )
         )
       )
-      val updateDidSignedOperation2 = signOperation(updateDidOperation2, "master", masterKeys.privateKey)
+      val updateDidSignedOperation2 = signOperation(updateDidOperation2, "master", masterKeys.getPrivateKey)
 
       val block = node_internal.AtalaBlock(
         operations = Seq(createDidSignedOperation, updateDidSignedOperation1, updateDidSignedOperation2)
@@ -309,11 +309,11 @@ class BlockProcessingServiceSpec extends AtalaWithPostgresSpec {
               "master",
               node_models.KeyUsage.MASTER_KEY,
               keyData = node_models.PublicKey.KeyData
-                .EcKeyData(CreateDIDOperationSpec.protoECKeyFromPublicKey(EC.generateKeyPair().publicKey))
+                .EcKeyData(CreateDIDOperationSpec.protoECKeyFromPublicKey(EC.generateKeyPair().getPublicKey))
             )
           )
         )
-      val incorrectlySignedOperation2 = signOperation(operation2, "master", masterKeys.privateKey)
+      val incorrectlySignedOperation2 = signOperation(operation2, "master", masterKeys.getPrivateKey)
 
       val operation3Keys = EC.generateKeyPair()
       val operation3 = createDidOperation
@@ -324,11 +324,11 @@ class BlockProcessingServiceSpec extends AtalaWithPostgresSpec {
               "rootkey",
               node_models.KeyUsage.MASTER_KEY,
               keyData = node_models.PublicKey.KeyData
-                .EcKeyData(CreateDIDOperationSpec.protoECKeyFromPublicKey(operation3Keys.publicKey))
+                .EcKeyData(CreateDIDOperationSpec.protoECKeyFromPublicKey(operation3Keys.getPublicKey))
             )
           )
         )
-      val signedOperation3 = signOperation(operation3, "rootkey", operation3Keys.privateKey)
+      val signedOperation3 = signOperation(operation3, "rootkey", operation3Keys.getPrivateKey)
 
       val block1 = node_internal.AtalaBlock( // first block contains 1 valid and 1 invalid operation
         operations = Seq(signedOperation1, incorrectlySignedOperation2)
@@ -369,7 +369,7 @@ class BlockProcessingServiceSpec extends AtalaWithPostgresSpec {
 
       val credentials = DIDDataDAO.all().transact(database).unsafeRunSync()
       val expectedSuffixes = Seq(signedOperation1.getOperation, operation3)
-        .map(op => DIDSuffix.unsafeFromDigest(SHA256Digest.compute(op.toByteArray)))
+        .map(op => DIDSuffix.unsafeFromDigest(SHA256Digest.compute(op.toByteArray).asScala))
       credentials must contain theSameElementsAs (expectedSuffixes)
 
       val atalaOperationInfo1 = DataPreparation.getOperationInfo(opIds.head).value
