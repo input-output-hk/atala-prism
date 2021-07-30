@@ -48,7 +48,7 @@ class ManagementConsoleRpcSpecBase extends RpcSpecBase {
 
   lazy val participantsRepository = ParticipantsRepository(database)
   lazy val requestNoncesRepository = RequestNoncesRepository(database)
-  lazy val contactsRepository = ContactsRepository(database)
+  lazy val contactsRepository = ContactsRepository.create(database)
   lazy val statisticsRepository = StatisticsRepository(database)
   lazy val institutionGroupsRepository = InstitutionGroupsRepository(database)
   lazy val credentialIssuancesRepository = CredentialIssuancesRepository(database)

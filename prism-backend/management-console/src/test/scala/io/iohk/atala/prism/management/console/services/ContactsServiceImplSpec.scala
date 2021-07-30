@@ -5,6 +5,7 @@ import io.grpc.StatusRuntimeException
 import io.iohk.atala.prism.DIDUtil
 import io.iohk.atala.prism.auth.SignedRpcRequest
 import io.iohk.atala.prism.kotlin.crypto.EC
+import io.iohk.atala.prism.logging.TraceId
 import io.iohk.atala.prism.management.console.DataPreparation._
 import io.iohk.atala.prism.management.console.grpc.ProtoCodecs.toContactProto
 import io.iohk.atala.prism.management.console.models.Contact.ExternalId
@@ -101,7 +102,9 @@ class ContactsServiceImplSpec extends ManagementConsoleRpcSpecBase with DIDUtil 
 
         // the new contact needs to exist
         val result =
-          contactsRepository.getBy(institutionId, Helpers.legacyQuery(None, Some(group.name), 10)).unsafeRunSync()
+          contactsRepository
+            .getBy(institutionId, Helpers.legacyQuery(None, Some(group.name), 10), tId = TraceId.generateYOLO)
+            .unsafeRunSync()
         result.size must be(1)
         val storedContact = result.headOption.value.details
         toContactProto(storedContact, connectionMissing()).copy(jsonData = "") must be(
@@ -144,7 +147,7 @@ class ContactsServiceImplSpec extends ManagementConsoleRpcSpecBase with DIDUtil 
         response.externalId must be(request.externalId)
 
         // the new contact needs to exist
-        val result = contactsRepository.find(institutionId, contactId).unsafeRunSync()
+        val result = contactsRepository.find(institutionId, contactId, TraceId.generateYOLO).unsafeRunSync()
         val contactWithDetails = result.value
         toContactProto(contactWithDetails.contact, connectionMissing()).copy(jsonData = "") must be(
           response.copy(jsonData = "")
@@ -178,7 +181,7 @@ class ContactsServiceImplSpec extends ManagementConsoleRpcSpecBase with DIDUtil 
         response.externalId must be(request.externalId)
 
         // the new contact needs to exist
-        val result = contactsRepository.find(institutionId, contactId).unsafeRunSync()
+        val result = contactsRepository.find(institutionId, contactId, TraceId.generateYOLO).unsafeRunSync()
         val contactWithDetails = result.value
         toContactProto(contactWithDetails.contact, connectionMissing()) must be(response)
       }
@@ -217,7 +220,7 @@ class ContactsServiceImplSpec extends ManagementConsoleRpcSpecBase with DIDUtil 
 
         // the contact must not be added
         val result = contactsRepository
-          .getBy(institutionId, Helpers.legacyQuery(None, None, 10))
+          .getBy(institutionId, Helpers.legacyQuery(None, None, 10), TraceId.generateYOLO)
           .unsafeRunSync()
         result must be(empty)
       }
@@ -251,7 +254,7 @@ class ContactsServiceImplSpec extends ManagementConsoleRpcSpecBase with DIDUtil 
 
         // the new contact should not exist
         val result = contactsRepository
-          .getBy(institutionId, Helpers.legacyQuery(None, None, 10))
+          .getBy(institutionId, Helpers.legacyQuery(None, None, 10), TraceId.generateYOLO)
           .unsafeRunSync()
         result must be(empty)
       }
@@ -302,7 +305,7 @@ class ContactsServiceImplSpec extends ManagementConsoleRpcSpecBase with DIDUtil 
 
         // the contact needs to exist as originally inserted
         val result = contactsRepository
-          .getBy(institutionId, Helpers.legacyQuery(None, None, 10))
+          .getBy(institutionId, Helpers.legacyQuery(None, None, 10), TraceId.generateYOLO)
           .unsafeRunSync()
         result.size must be(1)
 
@@ -334,7 +337,7 @@ class ContactsServiceImplSpec extends ManagementConsoleRpcSpecBase with DIDUtil 
 
     def testAvailableContacts(institutionId: ParticipantId, expected: Int) = {
       val result = contactsRepository
-        .getBy(institutionId, Helpers.legacyQuery())
+        .getBy(institutionId, Helpers.legacyQuery(), TraceId.generateYOLO)
         .unsafeRunSync()
       result.size must be(expected)
     }

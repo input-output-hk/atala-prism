@@ -77,7 +77,7 @@ object ManagementConsoleApp extends IOApp {
       connector = ConnectorClient(connectorConfig)
 
       // repositories
-      contactsRepository = ContactsRepository(tx)
+      contactsRepository = ContactsRepository.create(tx)
       participantsRepository = ParticipantsRepository(tx, defaultCredentialTypeConfig)
       requestNoncesRepository = RequestNoncesRepository(tx)
       statisticsRepository = StatisticsRepository(tx)

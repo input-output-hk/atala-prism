@@ -1,5 +1,7 @@
 package io.iohk.atala.prism.management.console
 
+import cats.syntax.semigroup._
+import derevo.derive
 import io.circe.Json
 import io.grpc.Status
 import io.iohk.atala.prism.errors.{PrismError, PrismServerError}
@@ -12,8 +14,12 @@ import io.iohk.atala.prism.management.console.models.{
   ParticipantId
 }
 import io.iohk.atala.prism.management.console.validations.CredentialDataValidationError
+import tofu.logging.{DictLoggable, LogRenderer, Loggable}
+import tofu.logging.derivation.loggable
 
 package object errors {
+
+  @derive(loggable)
   sealed trait ManagementConsoleError extends PrismError
 
   case class GroupDoesNotExist(groupId: InstitutionGroup.Id) extends ManagementConsoleError {
@@ -149,6 +155,25 @@ package object errors {
       )
   }
 
+  object CredentialDataValidationFailedForContacts {
+    implicit val loggable: Loggable[CredentialDataValidationFailedForContacts] =
+      new DictLoggable[CredentialDataValidationFailedForContacts] {
+        override def fields[I, V, R, S](a: CredentialDataValidationFailedForContacts, i: I)(implicit
+            r: LogRenderer[I, V, R, S]
+        ): R =
+          r.addString("credentialTypeName", a.credentialTypeName, i) |+| r.addString(
+            "errors",
+            a.contacts.map(_._1).mkString(","),
+            i
+          )
+
+        override def logShow(a: CredentialDataValidationFailedForContacts): String =
+          s"CredentialDataValidationFailedForContacts{credentialTypeName=${a.credentialTypeName},contacts=${a.contacts
+            .map(s => s"contactId=${s._1}, error=${s._3.map(_.message).mkString(",")}")
+            .mkString(",")}}"
+      }
+  }
+
   case class CredentialDataValidationFailed(
       credentialTypeName: String,
       credentialData: Json,
@@ -159,6 +184,20 @@ package object errors {
         s"Credential type: $credentialTypeName can not be rendered with credential data $credentialData " +
           s"errors: ${errors.map(_.message).mkString("\n")}"
       )
+  }
+
+  object CredentialDataValidationFailed {
+    implicit val loggable: Loggable[CredentialDataValidationFailed] = new DictLoggable[CredentialDataValidationFailed] {
+      override def fields[I, V, R, S](a: CredentialDataValidationFailed, i: I)(implicit r: LogRenderer[I, V, R, S]): R =
+        r.addString("credentialTypeName", a.credentialTypeName, i) |+| r.addString(
+          "errors",
+          a.errors.map(_.message).mkString(","),
+          i
+        )
+
+      override def logShow(a: CredentialDataValidationFailed): String =
+        s"CredentialDataValidationFailed{credentialTypeName=${a.credentialTypeName},errors=${a.errors}}"
+    }
   }
 
   case class GetContactsInvalidRequest(reason: String) extends ManagementConsoleError {

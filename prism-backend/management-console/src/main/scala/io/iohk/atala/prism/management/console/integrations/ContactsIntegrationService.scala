@@ -18,6 +18,7 @@ import scala.concurrent.{ExecutionContext, Future}
 import cats.syntax.traverse._
 import cats.instances.future._
 import cats.instances.option._
+import io.iohk.atala.prism.logging.TraceId
 
 class ContactsIntegrationService(
     contactsRepository: ContactsRepository[IO],
@@ -52,7 +53,8 @@ class ContactsIntegrationService(
             participantId,
             request,
             group,
-            connectionToken = token
+            connectionToken = token,
+            tId = TraceId.generateYOLO
           )
           .unsafeToFuture()
           .map(_.asRight)
@@ -92,7 +94,8 @@ class ContactsIntegrationService(
           .createBatch(
             institutionId,
             request,
-            tokens.toList
+            tokens.toList,
+            TraceId.generateYOLO
           )
           .unsafeToFuture()
           .toFutureEither
@@ -103,7 +106,7 @@ class ContactsIntegrationService(
       institutionId: ParticipantId,
       request: UpdateContact
   ): Future[Either[errors.ManagementConsoleError, Unit]] = {
-    contactsRepository.updateContact(institutionId, request).unsafeToFuture().map(_.asRight)
+    contactsRepository.updateContact(institutionId, request, TraceId.generateYOLO).unsafeToFuture().map(_.asRight)
   }
 
   def getContacts(
@@ -114,7 +117,7 @@ class ContactsIntegrationService(
     val result = for {
       allContacts <-
         contactsRepository
-          .getBy(institutionId, paginatedQuery, filterByConnectionStatusSpecified)
+          .getBy(institutionId, paginatedQuery, TraceId.generateYOLO, filterByConnectionStatusSpecified)
           .unsafeToFuture()
           .map(_.asRight)
           .toFutureEither
@@ -159,7 +162,7 @@ class ContactsIntegrationService(
       for {
         contactMaybe <-
           contactsRepository
-            .find(institutionId, contactId)
+            .find(institutionId, contactId, TraceId.generateYOLO)
             .unsafeToFuture()
             .map(_.asRight)
             .toFutureEither
@@ -184,7 +187,7 @@ class ContactsIntegrationService(
       contactId: Contact.Id,
       deleteCredentials: Boolean
   ): Future[Either[ManagementConsoleError, Unit]] =
-    contactsRepository.delete(institutionId, contactId, deleteCredentials).unsafeToFuture()
+    contactsRepository.delete(institutionId, contactId, deleteCredentials, TraceId.generateYOLO).unsafeToFuture()
 }
 
 object ContactsIntegrationService {
