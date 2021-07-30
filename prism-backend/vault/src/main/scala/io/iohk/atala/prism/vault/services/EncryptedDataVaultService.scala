@@ -12,7 +12,6 @@ import io.iohk.atala.prism.logging.TraceId
 import io.iohk.atala.prism.vault.model.{CreatePayload, Payload}
 import io.iohk.atala.prism.vault.repositories.PayloadsRepository
 import io.iohk.atala.prism.logging.GeneralLoggableInstances._
-import io.iohk.atala.prism.logging.Util._
 import tofu.higherKind.Mid
 import tofu.logging.ServiceLogging
 import tofu.syntax.logging._
@@ -86,7 +85,10 @@ private class EncyptedDataVaultServiceLogging[F[_]: MonadThrow](implicit
       content: Vector[Byte],
       tId: TraceId
   ): Mid[F, Payload] =
-    _.logInfoAround[Payload.ExternalId, Payload.Id, EncryptedDataVaultService[F]]("storing data", externalId, tId)
+    in =>
+      info"storing data $externalId $did $tId" *> in
+        .flatTap(p => info"storing data - successfully done ${p.id} $tId")
+        .onError { e => errorCause"encountered an error while storing data! $tId" (e) }
 
   override def getByPaginated(
       did: DID,
@@ -95,7 +97,7 @@ private class EncyptedDataVaultServiceLogging[F[_]: MonadThrow](implicit
       tId: TraceId
   ): Mid[F, List[Payload]] =
     in =>
-      info"get by paginated by $did $lastSeenId $tId" *> in
-        .flatTap(p => info"get by paginated successful! found ${p.size} entities $did $tId")
+      info"getting paginated data $did $lastSeenId $tId" *> in
+        .flatTap(p => info"getting paginated data - successfully done found ${p.size} entities $tId")
         .onError { e => errorCause"encountered an error while getting data by paginated! $tId" (e) }
 }

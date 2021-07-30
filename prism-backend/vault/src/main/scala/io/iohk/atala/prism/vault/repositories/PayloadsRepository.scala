@@ -1,6 +1,9 @@
 package io.iohk.atala.prism.vault.repositories
 
 import cats.effect.{Bracket, BracketThrow, MonadThrow}
+import cats.syntax.apply._
+import cats.syntax.flatMap._
+import cats.syntax.applicativeError._
 import doobie.Transactor
 import doobie.implicits._
 import io.iohk.atala.prism.identity.DID
@@ -10,7 +13,6 @@ import io.iohk.atala.prism.metrics.TimeMeasureUtil.MeasureOps
 import io.iohk.atala.prism.vault.model.{CreatePayload, Payload}
 import io.iohk.atala.prism.vault.repositories.daos.PayloadsDAO
 import io.iohk.atala.prism.logging.GeneralLoggableInstances._
-import io.iohk.atala.prism.logging.Util._
 import org.slf4j.{Logger, LoggerFactory}
 import derevo.derive
 import derevo.tagless.applyK
@@ -18,6 +20,7 @@ import io.iohk.atala.prism.logging.TraceId
 import tofu.higherKind.Mid
 import tofu.logging.ServiceLogging
 import tofu.syntax.monoid.TofuSemigroupOps
+import tofu.syntax.logging._
 
 @derive(applyK)
 trait PayloadsRepository[F[_]] {
@@ -82,16 +85,19 @@ private final class PayloadsRepoMetrics[F[_]: TimeMeasureMetric: BracketThrow] e
 private final class PayloadsRepoLogging[F[_]: MonadThrow](implicit logs: ServiceLogging[F, PayloadsRepository[F]])
     extends PayloadsRepository[Mid[F, *]] {
   override def create(payloadData: CreatePayload, tId: TraceId): Mid[F, Payload] =
-    _.logInfoAround[Payload.ExternalId, Payload.Id, PayloadsRepository[F]](
-      "creating payload",
-      payloadData.externalId,
-      tId
-    )
+    in =>
+      info"creating payload ${payloadData.externalId} $tId" *> in
+        .flatTap(r => info"creating payload - successfully done ${r.id} $tId")
+        .onError(e => errorCause"an error occurred while creating payload $tId" (e))
 
   override def getByPaginated(
       did: DID,
       lastSeenIdOpt: Option[Payload.Id],
       limit: Int,
       tId: TraceId
-  ): Mid[F, List[Payload]] = _.logInfoAroundList("getting data by paginated", did, tId)
+  ): Mid[F, List[Payload]] =
+    in =>
+      info"getting paginated data $did {limit=$limit} $tId" *> in
+        .flatTap(r => info"getting paginated data - successfully done got ${r.size} entities $tId")
+        .onError(e => errorCause"an error occurred while creating payload $tId" (e))
 }
