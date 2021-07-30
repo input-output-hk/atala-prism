@@ -38,7 +38,13 @@ case class RevokeCredentialsOperation(
       keyState <- EitherT[ConnectionIO, StateError, DIDPublicKeyState] {
         PublicKeysDAO.find(issuer, keyId).map(_.toRight(StateError.UnknownKey(issuer, keyId)))
       }.subflatMap { didKey =>
-        Either.cond(didKey.keyUsage.canIssue, didKey, StateError.InvalidKeyUsed("issuing key"))
+        Either.cond(
+          didKey.keyUsage.canRevoke,
+          didKey,
+          StateError.InvalidKeyUsed(
+            s"The key type expected is Revocation key. Type used: ${didKey.keyUsage}"
+          ): StateError
+        )
       }
       _ <- EitherT.fromEither[ConnectionIO] {
         Either.cond(

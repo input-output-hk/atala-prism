@@ -6,12 +6,13 @@ import com.google.protobuf.ByteString
 import doobie.util.transactor.Transactor
 import doobie.implicits._
 import io.iohk.atala.prism.connector.AtalaOperationId
-import io.iohk.atala.prism.credentials.CredentialBatchId
+import io.iohk.atala.prism.credentials.{CredentialBatchId, TimestampInfo}
 import io.iohk.atala.prism.crypto.MerkleTree.MerkleRoot
 import io.iohk.atala.prism.crypto.SHA256Digest
 import io.iohk.atala.prism.identity.DIDSuffix
 import io.iohk.atala.prism.models.Ledger
 import io.iohk.atala.prism.node.cardano.{LAST_SYNCED_BLOCK_NO, LAST_SYNCED_BLOCK_TIMESTAMP}
+import io.iohk.atala.prism.node.grpc.ProtoCodecs
 import io.iohk.atala.prism.node.models.{
   AtalaObjectId,
   AtalaObjectTransactionSubmission,
@@ -22,6 +23,7 @@ import io.iohk.atala.prism.node.models.{
   DIDPublicKey
 }
 import io.iohk.atala.prism.node.models.nodeState.{DIDDataState, DIDPublicKeyState, LedgerData}
+import io.iohk.atala.prism.node.operations.CreateDIDOperationSpec.{issuingEcKey, masterEcKey}
 import io.iohk.atala.prism.node.repositories.daos.AtalaObjectsDAO.AtalaObjectCreateData
 import io.iohk.atala.prism.node.repositories.daos.CredentialBatchesDAO.CreateCredentialBatchData
 import io.iohk.atala.prism.node.repositories.daos.{
@@ -34,7 +36,7 @@ import io.iohk.atala.prism.node.repositories.daos.{
   PublicKeysDAO
 }
 import org.scalatest.OptionValues._
-import io.iohk.atala.prism.protos.{node_api, node_internal}
+import io.iohk.atala.prism.protos.{node_api, node_internal, node_models}
 import io.iohk.atala.prism.protos.node_models.SignedAtalaOperation
 
 import java.time.Instant
@@ -44,6 +46,35 @@ import java.time.Instant
 // We also use these tests to test DAOs (note that the methods not present here are
 // defined in corresponding repositories
 object DataPreparation {
+  val dummyTimestampInfo: TimestampInfo = TimestampInfo(Instant.ofEpochMilli(0), 1, 0)
+  val exampleOperation: node_models.AtalaOperation = node_models.AtalaOperation(
+    node_models.AtalaOperation.Operation.CreateDid(
+      value = node_models.CreateDIDOperation(
+        didData = Some(
+          node_models.DIDData(
+            id = "",
+            publicKeys = List(
+              node_models.PublicKey(
+                "master",
+                node_models.KeyUsage.MASTER_KEY,
+                Some(ProtoCodecs.toTimeStampInfoProto(dummyTimestampInfo)),
+                None,
+                node_models.PublicKey.KeyData.EcKeyData(masterEcKey)
+              ),
+              node_models
+                .PublicKey(
+                  "issuing",
+                  node_models.KeyUsage.ISSUING_KEY,
+                  Some(ProtoCodecs.toTimeStampInfoProto(dummyTimestampInfo)),
+                  None,
+                  node_models.PublicKey.KeyData.EcKeyData(issuingEcKey)
+                )
+            )
+          )
+        )
+      )
+    )
+  )
 
   // ***************************************
   // DIDs and keys

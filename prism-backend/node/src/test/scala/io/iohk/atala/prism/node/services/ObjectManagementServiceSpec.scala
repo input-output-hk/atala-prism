@@ -347,9 +347,9 @@ class ObjectManagementServiceSpec
     }
 
     "merge several operations in one transaction while retrying" in {
-      val atalaOperations = (0 to 20).toList.map { masterId =>
+      val atalaOperations = (0 to 40).toList.map { masterId =>
         BlockProcessingServiceSpec.signOperation(
-          BlockProcessingServiceSpec.createDidOperation,
+          DataPreparation.exampleOperation,
           s"master$masterId",
           CreateDIDOperationSpec.masterKeys.privateKey
         )
