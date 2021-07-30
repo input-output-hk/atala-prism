@@ -549,7 +549,40 @@
     },
     "step2": {
       "title": "Create a Credential Template",
-      "subtitle": "Design your Credential"
+      "subtitle": "Design your Credential",
+      "style": {
+        "title": "Style",
+        "themeOptions": "Theme Options",
+        "customizeHeader": "Customize Header",
+        "layout": "Layout",
+        "themeColor": "Theme Color",
+        "backgroundColor": "Background Color",
+        "companyIcon": "Background Header",
+        "userIcon": "Icon Header",
+        "chooseImage": "Choose Image"
+      },
+      "content": {
+        "title": "Content",
+        "header": "Header",
+        "body": "Body",
+        "credentialTitle": "Credential Title",
+        "credentialSubtitle": "Credential Subtitle",
+        "addAttribute": "Add Attribute",
+        "addFixedText": "Add Fixed Text",
+        "dynamicAttributeLabel": "Attribute {{index}} Label",
+        "dynamicAttributeType": "Label Type",
+        "dynamicAttributeTypeOptions": {
+          "text": "Text",
+          "date": "Date",
+          "number": "Number"
+        },
+        "fixedTextAttribute": "Fixed Text {{index}}"
+      }
+    },
+    "step3": {
+      "successTitle": "Your template was successfully created",
+      "successMessage": "You have a new credential template available",
+      "continueButton": "Continue"
     },
     "messages": {
       "selectCategoryError": "Please select a category",
@@ -567,9 +600,13 @@
     "actions": {
       "addCategory": "Add New"
     },
+    "fields" : {
+      "category": "Category"
+    },
     "errors":  {
-      "required":"${label} is required",
-      "preExisting": "A template called '{{value}}' already exists"
+      "required": "${label} is required",
+      "preExisting": "A template called '{{value}}' already exists",
+      "fieldIsRequired": "{{field}} is required"
     }
   },
   "landing": {

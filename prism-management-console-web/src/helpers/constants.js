@@ -14,7 +14,6 @@ export const CONTACT_PAGE_SIZE = DEFAULT_PAGE_SIZE;
 export const GROUP_PAGE_SIZE = DEFAULT_PAGE_SIZE;
 export const CREDENTIAL_PAGE_SIZE = DEFAULT_PAGE_SIZE;
 export const PAYMENT_PAGE_SIZE = DEFAULT_PAGE_SIZE;
-// FIXME: refactor every use of MAX constants. api limits page size to 100 tops.
 export const MAX_CONTACT_PAGE_SIZE = 100;
 export const MAX_CREDENTIAL_PAGE_SIZE = 100;
 

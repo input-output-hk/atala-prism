@@ -15,7 +15,7 @@ const TemplateName = ({ api }) => {
   const { t } = useTranslation();
   const { getCredentialTypes } = useCredentialTypes(api.credentialTypesManager);
 
-  const templateExists = (_rules, value, cb) => {
+  const templateExists = (_rules, value, cb) =>
     getCredentialTypes()
       .then(credentialTypes => {
         if (exactValueExists(credentialTypes, value, 'name'))
@@ -26,7 +26,6 @@ const TemplateName = ({ api }) => {
         Logger.error('[GroupsContainer.updateGroups] Error: ', error);
         message.error(t('errors.errorGetting', { model: t('templates.title') }));
       });
-  };
 
   const checkExistance = useDebounce(templateExists);
 
@@ -36,7 +35,7 @@ const TemplateName = ({ api }) => {
         hasFeedback
         help=""
         className="flex"
-        name="templateName"
+        name="name"
         label={t('credentialTemplateCreation.step1.templateName')}
         rules={[{ required: true }, { validator: checkExistance }]}
       >

@@ -2,12 +2,14 @@
 
 .PreviewContainer {
   padding: 1em 2em;
-  width: 35%;
+  margin: 1em 2em;
+  width: 50%;
   height: 400px;
   display: flex;
   flex-flow: column;
   align-items: center;
   position: relative;
+  overflow-y: auto;
   button {
     background-color: transparent;
     border: none;

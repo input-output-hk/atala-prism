@@ -29,6 +29,38 @@
     }
   }
 
+  .DesignTemplateStep {
+    height: calc(100vh - 18em);
+    width: 100%;
+    display: flex;
+    .ant-tabs-content-holder {
+      overflow-y: auto;
+    }
+    .templateTab {
+      width: 90%;
+      .ant-tabs-nav-wrap {
+        justify-content: flex-start !important;
+        .ant-tabs-nav-list {
+          width: 100%;
+          .ant-tabs-tab {
+            width: 50% !important;
+          }
+          .ant-tabs-tab.ant-tabs-tab-active .ant-tabs-tab-btn {
+            @include primary-text($button, $primary-color);
+          }
+          .ant-tabs-ink-bar,
+          .ant-tabs-ink-bar-animated {
+            background-color: $primary-color;
+            @include primary-text($button, $primary-color);
+          }
+          .ant-tabs-tab .ant-tabs-tab-btn {
+            @include primary-text($button, $black);
+          }
+        }
+      }
+    }
+  }
+
   .ant-input-group-addon {
     background-color: inherit;
     border: none;
@@ -40,5 +72,40 @@
 
   .StepsFooter {
     height: 5em;
+  }
+}
+
+.ThemeBoxContainer {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  .OptionsContainer {
+    display: flex;
+    width: 100%;
+    .themeOptions,
+    .templateIcons {
+      width: 50%;
+      h3 {
+        @include primary-text($h3, $black);
+      }
+    }
+    .themeOptions {
+      .ant-radio-group {
+        .ant-radio-wrapper {
+          .ant-radio-wrapper {
+            margin-right: 0;
+          }
+        }
+      }
+    }
+  }
+}
+
+.ColorPickerContainer {
+  .ant-radio-group {
+    width: 85%;
+    label {
+      margin: 0.5em 0;
+    }
   }
 }

@@ -1,6 +1,5 @@
 import React, { useState } from 'react';
 import PropTypes from 'prop-types';
-import { Form } from 'antd';
 import { useTranslation } from 'react-i18next';
 import {
   DESIGN_TEMPLATE,
@@ -10,20 +9,22 @@ import {
 import { useCredentialTypes, useTemplateCategories } from '../../hooks/useCredentialTypes';
 import { credentialTypesManagerShape } from '../../helpers/propShapes';
 import CredentialTemplateCreation from './CredentialTemplateCreation';
-import TemplateCategorySelectionStep from './Organisms/TemplateCategorySelectionStep/TemplateCategorySelectionStep';
+import DesignTemplateStep from './Organisms/DesignTemplateStep/DesignTemplateStep';
+import { useTemplateContext, withTemplateProvider } from '../providers/TemplateContext';
+import TemplateCategorySelectionStep from './Organisms/TemplateCategorySelectionStep/TemplateCategorySelector';
+import SuccessBanner from '../common/Molecules/SuccessPage/SuccessBanner';
+import { withRedirector } from '../providers/withRedirector';
 
-const CredentialTemplateCreationContainer = ({ api: { credentialTypesManager } }) => {
+const CredentialTemplateCreationContainer = ({
+  api: { credentialTypesManager },
+  redirector: { redirectToCredentialTemplates }
+}) => {
   const { t } = useTranslation();
   const [currentStep, setCurrentStep] = useState(SELECT_TEMPLATE_CATEGORY);
-
-  const [form] = Form.useForm();
+  const { templateSettings } = useTemplateContext();
 
   const { credentialTypes } = useCredentialTypes(credentialTypesManager);
   const { templateCategories } = useTemplateCategories(credentialTypesManager);
-
-  const validateMessages = {
-    required: t('credentialTemplateCreation.errors.required')
-  };
 
   const renderStep = () => {
     switch (currentStep) {
@@ -33,47 +34,39 @@ const CredentialTemplateCreationContainer = ({ api: { credentialTypesManager } }
           <TemplateCategorySelectionStep
             templateCategories={templateCategories}
             existingTemplates={credentialTypes}
-            form={form}
           />
         );
       case DESIGN_TEMPLATE:
-        return (
-          <div>
-            {/* FIXME: add design template component */}
-            (Design Template Component)
-          </div>
-        );
+        return <DesignTemplateStep templateSettings={templateSettings} />;
       case TEMPLATE_CREATION_RESULT: {
         return (
-          <div>
-            {/* FIXME: add template creation result component */}
-            (Template Creation Result Component)
-          </div>
+          <SuccessBanner
+            title={t('credentialTemplateCreation.step3.successTitle')}
+            message={t('credentialTemplateCreation.step3.successMessage')}
+            buttonText={t('credentialTemplateCreation.step3.continueButton')}
+            onContinue={redirectToCredentialTemplates}
+          />
         );
       }
     }
   };
 
   return (
-    <Form
-      form={form}
-      name="control-hooks"
-      requiredMark={false}
-      layout="vertical"
-      validateMessages={validateMessages}
-    >
-      <CredentialTemplateCreation
-        currentStep={currentStep}
-        changeStep={setCurrentStep}
-        renderStep={renderStep}
-        form={form}
-      />
-    </Form>
+    <CredentialTemplateCreation
+      currentStep={currentStep}
+      changeStep={setCurrentStep}
+      renderStep={renderStep}
+    />
   );
 };
 
 CredentialTemplateCreationContainer.propTypes = {
-  api: PropTypes.shape({ credentialTypesManager: credentialTypesManagerShape }).isRequired
+  api: PropTypes.shape({
+    credentialTypesManager: credentialTypesManagerShape
+  }).isRequired,
+  redirector: PropTypes.shape({
+    redirectToCredentialTemplates: PropTypes.func.isRequired
+  }).isRequired
 };
 
-export default CredentialTemplateCreationContainer;
+export default withTemplateProvider(withRedirector(CredentialTemplateCreationContainer));

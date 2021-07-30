@@ -11,21 +11,29 @@ import {
   TEMPLATE_CREATION_RESULT
 } from '../../helpers/constants';
 import { withRedirector } from '../providers/withRedirector';
-import { antdV4FormShape } from '../../helpers/propShapes';
+import { useTemplateContext } from '../providers/TemplateContext';
 import './_style.scss';
 
 const fieldsByStep = {
-  [SELECT_TEMPLATE_CATEGORY]: ['templateName', 'templateCategory']
+  [SELECT_TEMPLATE_CATEGORY]: ['name', 'category'],
+  [DESIGN_TEMPLATE]: [
+    'layout',
+    'themeColor',
+    'backgroundColor',
+    'credentialTitle',
+    'credentialSubtitle',
+    'credentialBody'
+  ]
 };
 
 const CredentialTemplateCreation = ({
   currentStep,
   changeStep,
   renderStep,
-  form,
   redirector: { redirectToCredentialTemplates }
 }) => {
   const { t } = useTranslation();
+  const { form } = useTemplateContext();
 
   const validateByStep = () =>
     form.validateFields().catch(({ errorFields }) => {
@@ -36,29 +44,18 @@ const CredentialTemplateCreation = ({
       return { errors: partialErrorsFields.map(errorField => errorField.errors) };
     });
 
-  const goToDesignCredential = async () => {
-    // TODO: implement design template
-    // if (selectedCategory) changeStep(DESIGN_TEMPLATE);
-    const { errors } = await validateByStep(SELECT_TEMPLATE_CATEGORY);
+  const advanceStep = async () => {
+    const { errors } = await validateByStep(currentStep);
     const isPartiallyValid = !errors;
-    if (isPartiallyValid) message.warn(t('errors.notImplementedYet'));
+    if (isPartiallyValid) changeStep(currentStep + NEW_TEMPLATE_STEP_UNIT);
     else errors.map(msg => message.error(t(msg)));
-  };
-
-  const validateCredentialTemplate = () => false;
-
-  const createTemplates = () => {
-    // TODO: implement template validation and creation
-    // if (validateCredentialTemplate) changeStep(TEMPLATE_CREATION_RESULT);
-    if (validateCredentialTemplate()) message.warn(t('errors.notImplementedYet'));
-    else message.error(t('credentialTemplateCreation.messages.templateDesignError'));
   };
 
   const goBack = () => changeStep(currentStep - NEW_TEMPLATE_STEP_UNIT);
 
   const steps = [
-    { back: redirectToCredentialTemplates, next: goToDesignCredential },
-    { back: goBack, next: createTemplates },
+    { back: redirectToCredentialTemplates, next: advanceStep },
+    { back: goBack, next: advanceStep },
     { back: goBack, next: redirectToCredentialTemplates }
   ];
 
@@ -90,8 +87,7 @@ CredentialTemplateCreation.propTypes = {
   currentStep: PropTypes.number.isRequired,
   changeStep: PropTypes.func.isRequired,
   renderStep: PropTypes.func.isRequired,
-  redirector: PropTypes.shape({ redirectToCredentialTemplates: PropTypes.func }).isRequired,
-  form: antdV4FormShape.isRequired
+  redirector: PropTypes.shape({ redirectToCredentialTemplates: PropTypes.func }).isRequired
 };
 
 export default withRedirector(CredentialTemplateCreation);

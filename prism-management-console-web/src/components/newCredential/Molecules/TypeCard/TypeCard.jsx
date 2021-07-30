@@ -11,7 +11,7 @@ const TypeCard = ({ typeKey, credentialType, isSelected, onClick }) => {
     <Col
       type="flex"
       align="middle"
-      className={isSelected ? 'SelectedTypeCard' : 'TypeCard'}
+      className={`TypeCard shadow ${isSelected ? 'selected' : ''}`}
       onClick={() => onClick(typeKey)}
     >
       <Row className="header-name">
