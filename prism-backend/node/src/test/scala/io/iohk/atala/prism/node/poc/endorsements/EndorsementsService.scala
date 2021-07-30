@@ -10,7 +10,12 @@ import io.iohk.atala.prism.kotlin.crypto.signature.ECSignature
 import io.iohk.atala.prism.kotlin.crypto.{MerkleInclusionProof, MerkleRoot, SHA256Digest}
 import io.iohk.atala.prism.node.grpc.ProtoCodecs
 import io.iohk.atala.prism.protos.endorsements_api._
-import io.iohk.atala.prism.protos.node_api.{GetDidDocumentRequest, IssueCredentialBatchRequest, NodeServiceGrpc, RevokeCredentialsRequest}
+import io.iohk.atala.prism.protos.node_api.{
+  GetDidDocumentRequest,
+  IssueCredentialBatchRequest,
+  NodeServiceGrpc,
+  RevokeCredentialsRequest
+}
 import io.iohk.atala.prism.protos.node_models
 import io.iohk.atala.prism.protos.node_models.{KeyUsage, SignedAtalaOperation}
 import io.iohk.atala.prism.utils.syntax.InstantToTimestampOps

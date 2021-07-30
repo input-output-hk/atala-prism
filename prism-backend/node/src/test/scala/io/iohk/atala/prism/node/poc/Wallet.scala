@@ -2,7 +2,14 @@ package io.iohk.atala.prism.node.poc
 
 import cats.data.ValidatedNel
 import com.google.protobuf.ByteString
-import io.iohk.atala.prism.credentials.{BatchData, Credential, CredentialBatchId, KeyData, PrismCredentialVerification, VerificationError}
+import io.iohk.atala.prism.credentials.{
+  BatchData,
+  Credential,
+  CredentialBatchId,
+  KeyData,
+  PrismCredentialVerification,
+  VerificationError
+}
 import io.iohk.atala.prism.credentials.content.CredentialContent
 import io.iohk.atala.prism.kotlin.crypto.{EC, SHA256Digest}
 import io.iohk.atala.prism.crypto.{EC => ECScalaSDK}

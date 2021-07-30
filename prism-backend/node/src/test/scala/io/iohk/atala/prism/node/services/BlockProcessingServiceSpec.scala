@@ -258,8 +258,7 @@ class BlockProcessingServiceSpec extends AtalaWithPostgresSpec {
       val updateDidOperation2 = node_models.AtalaOperation(
         operation = node_models.AtalaOperation.Operation.UpdateDid(
           value = node_models.UpdateDIDOperation(
-            previousOperationHash =
-              ByteString.copyFrom(SHA256Digest.compute(updateDidOperation1.toByteArray).getValue),
+            previousOperationHash = ByteString.copyFrom(SHA256Digest.compute(updateDidOperation1.toByteArray).getValue),
             id = did,
             actions = Seq(exampleRemoveKeyAction)
           )

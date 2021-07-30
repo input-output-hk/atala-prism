@@ -16,7 +16,12 @@ import io.iohk.atala.prism.node.cardano.LAST_SYNCED_BLOCK_TIMESTAMP
 import io.iohk.atala.prism.node.models.nodeState.getLastSyncedTimestampFromMaybe
 import io.iohk.atala.prism.node.models._
 import io.iohk.atala.prism.node.repositories.daos.AtalaObjectsDAO.{AtalaObjectCreateData, AtalaObjectSetTransactionInfo}
-import io.iohk.atala.prism.node.repositories.daos.{AtalaObjectTransactionSubmissionsDAO, AtalaObjectsDAO, AtalaOperationsDAO, KeyValuesDAO}
+import io.iohk.atala.prism.node.repositories.daos.{
+  AtalaObjectTransactionSubmissionsDAO,
+  AtalaObjectsDAO,
+  AtalaOperationsDAO,
+  KeyValuesDAO
+}
 import io.iohk.atala.prism.node.services.ObjectManagementService.Config
 import io.iohk.atala.prism.node.services.models.AtalaObjectNotification
 import io.iohk.atala.prism.protos.node_internal.AtalaBlock

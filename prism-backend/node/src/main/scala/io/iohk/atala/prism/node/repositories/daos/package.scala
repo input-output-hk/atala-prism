@@ -13,7 +13,15 @@ import io.iohk.atala.prism.daos.BaseDAO
 import io.iohk.atala.prism.identity.DIDSuffix
 import io.iohk.atala.prism.models.{BlockInfo, Ledger, TransactionId, TransactionInfo}
 import io.iohk.atala.prism.node.models.nodeState.DIDPublicKeyState
-import io.iohk.atala.prism.node.models.{AtalaObjectId, AtalaObjectInfo, AtalaObjectTransactionSubmissionStatus, AtalaOperationInfo, AtalaOperationStatus, CredentialId, KeyUsage}
+import io.iohk.atala.prism.node.models.{
+  AtalaObjectId,
+  AtalaObjectInfo,
+  AtalaObjectTransactionSubmissionStatus,
+  AtalaOperationInfo,
+  AtalaOperationStatus,
+  CredentialId,
+  KeyUsage
+}
 import io.iohk.atala.prism.kotlin.crypto.keys.ECPublicKey
 
 package object daos extends BaseDAO {
