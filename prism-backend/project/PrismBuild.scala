@@ -34,7 +34,7 @@ object PrismBuild {
         scalacOptions += "-Ymacro-annotations",
         javacOptions ++= Seq("-source", "1.8", "-target", "1.8"),
         githubTokenSource := TokenSource.Environment("GITHUB_TOKEN"),
-        resolvers += Resolver.githubPackages("input-output-hk"),
+        resolvers += Resolver.githubPackages("input-output-hk", "atala-prism-sdk"),
         libraryDependencies ++= scalatestDependencies,
         addCompilerPlugin("org.typelevel" % "kind-projector" % "0.13.0" cross CrossVersion.full),
         coverageScalacPluginVersion := "1.4.1",
@@ -88,7 +88,7 @@ object PrismBuild {
               monix,
               typesafeConfig
             ) ++
-            Seq(cryptoJVM)
+            Seq(prismCrypto)
       )
       .dependsOn(protosLib, credentialsLib, connectorLib)
 
@@ -99,7 +99,7 @@ object PrismBuild {
         repository = "prism-" + name,
         tag = sys.env.get("TAG").orElse(Some(version))
       )
-      else
+    else
       ImageName(
         namespace = Some("895947072537.dkr.ecr.us-east-2.amazonaws.com"),
         repository = name,
