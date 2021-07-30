@@ -4,8 +4,9 @@ import doobie.implicits._
 import io.circe.syntax._
 import io.iohk.atala.prism.kycbridge.KycBridgeFixtures
 import io.iohk.atala.prism.kycbridge.db.ConnectionDao
+import io.iohk.atala.prism.kycbridge.models.Connection
 import io.iohk.atala.prism.kycbridge.models.acas.AccessTokenResponseBody
-import io.iohk.atala.prism.kycbridge.models.assureId.NewDocumentInstanceResponseBody
+import io.iohk.atala.prism.kycbridge.models.assureId.{DocumentStatus, NewDocumentInstanceResponseBody}
 import io.iohk.atala.prism.kycbridge.services.AcasService.AcasServiceError
 import io.iohk.atala.prism.kycbridge.services.AssureIdService.AssureIdServiceError
 import io.iohk.atala.prism.kycbridge.stubs.{AcasServiceStub, AssureIdServiceStub}
@@ -14,11 +15,11 @@ import io.iohk.atala.prism.kycbridge.task.lease.system.data.AcuantStartProcessFo
 import io.iohk.atala.prism.repositories.PostgresRepositorySpec
 import io.iohk.atala.prism.stubs.ConnectorClientServiceStub
 import io.iohk.atala.prism.task.lease.system.{ProcessingTaskData, ProcessingTaskFixtures, ProcessingTaskResult}
-import io.iohk.atala.prism.kycbridge.models.Connection
-import io.iohk.atala.prism.kycbridge.models.assureId.DocumentStatus
 import monix.eval.Task
 import monix.execution.Scheduler.Implicits.global
 import org.scalatest.OptionValues._
+
+import java.util.UUID
 
 class AcuantStartProcessForConnectionStateProcessorSpec extends PostgresRepositorySpec[Task] with KycBridgeFixtures {
   import ConnectionFixtures._
@@ -59,6 +60,37 @@ class AcuantStartProcessForConnectionStateProcessorSpec extends PostgresReposito
       connection.value.acuantDocumentStatus mustBe None
     }
 
+    "delay task when connection is not available" in new Fixtures {
+      override val acasServiceStub = new AcasServiceStub(Left(AcasServiceError("getAccessToken", new Throwable())))
+      override val acuantStartProcessForConnectionStateProcessor = new AcuantStartProcessForConnectionStateProcessor(
+        database,
+        assureIdServiceStub,
+        acasServiceStub,
+        connectorClientStub
+      )
+
+      acuantStartProcessForConnectionStateProcessor
+        .process(processingTaskWithInvalidConnectionData, workerNumber)
+        .runSyncUnsafe() mustBe an[ProcessingTaskResult.ProcessingTaskScheduled[KycBridgeProcessingTaskState]]
+      connectorClientStub.sendMessageInvokeCount.get() mustBe 0
+    }
+
+    "fail task when connection is not available and enough attempts were done" in new Fixtures {
+      override val acasServiceStub = new AcasServiceStub(Left(AcasServiceError("getAccessToken", new Throwable())))
+      override val acuantStartProcessForConnectionStateProcessor = new AcuantStartProcessForConnectionStateProcessor(
+        database,
+        assureIdServiceStub,
+        acasServiceStub,
+        connectorClientStub
+      )
+
+      acuantStartProcessForConnectionStateProcessor
+        .process(processingTaskWithInvalidConnectionReattemptedData, workerNumber)
+        .runSyncUnsafe() mustBe ProcessingTaskResult.ProcessingTaskFinished
+
+      connectorClientStub.sendMessageInvokeCount.get() mustBe 1
+    }
+
     "delay task when acas service is not available" in new Fixtures {
       override val acasServiceStub = new AcasServiceStub(Left(AcasServiceError("getAccessToken", new Throwable())))
       override val acuantStartProcessForConnectionStateProcessor = new AcuantStartProcessForConnectionStateProcessor(
@@ -71,6 +103,8 @@ class AcuantStartProcessForConnectionStateProcessorSpec extends PostgresReposito
       acuantStartProcessForConnectionStateProcessor
         .process(processingTaskWithConnectionData, workerNumber)
         .runSyncUnsafe() mustBe an[ProcessingTaskResult.ProcessingTaskScheduled[KycBridgeProcessingTaskState]]
+
+      connectorClientStub.sendMessageInvokeCount.get() mustBe 0
     }
 
     "delay task when assure id service is not available" in new Fixtures {
@@ -87,6 +121,8 @@ class AcuantStartProcessForConnectionStateProcessorSpec extends PostgresReposito
       acuantStartProcessForConnectionStateProcessor
         .process(processingTaskWithConnectionData, workerNumber)
         .runSyncUnsafe() mustBe an[ProcessingTaskResult.ProcessingTaskScheduled[KycBridgeProcessingTaskState]]
+
+      connectorClientStub.sendMessageInvokeCount.get() mustBe 0
     }
   }
 
@@ -120,6 +156,21 @@ class AcuantStartProcessForConnectionStateProcessorSpec extends PostgresReposito
     val processingTaskWithConnectionData = createProcessingTask[KycBridgeProcessingTaskState](
       state = KycBridgeProcessingTaskState.AcuantStartProcessForConnection,
       data = ProcessingTaskData(acuantStartProcessForConnectionData.asJson)
+    )
+
+    val processingTaskWithInvalidConnectionData = createProcessingTask[KycBridgeProcessingTaskState](
+      state = KycBridgeProcessingTaskState.AcuantStartProcessForConnection,
+      data =
+        ProcessingTaskData(acuantStartProcessForConnectionData.copy(connectionId = UUID.randomUUID().toString()).asJson)
+    )
+
+    val processingTaskWithInvalidConnectionReattemptedData = createProcessingTask[KycBridgeProcessingTaskState](
+      state = KycBridgeProcessingTaskState.AcuantStartProcessForConnection,
+      data = ProcessingTaskData(
+        acuantStartProcessForConnectionData
+          .copy(connectionId = UUID.randomUUID().toString(), attemptsNumber = Some(20))
+          .asJson
+      )
     )
   }
 

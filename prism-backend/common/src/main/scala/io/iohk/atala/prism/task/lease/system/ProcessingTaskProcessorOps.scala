@@ -1,6 +1,7 @@
 package io.iohk.atala.prism.task.lease.system
 
 import cats.data.EitherT
+import cats.implicits._
 import io.circe.Decoder
 import io.iohk.atala.prism.errors.PrismError
 import io.iohk.atala.prism.services.ConnectorClientService
@@ -9,10 +10,37 @@ import org.slf4j.Logger
 
 import java.time.Instant
 import java.time.temporal.ChronoUnit
-import cats.implicits._
 
 object ProcessingTaskProcessorOps {
+
   implicit class ProcessingTasksProcessorOps[A](task: Task[Either[PrismError, A]]) {
+    def mapErrorToDelayedReattempt[S <: ProcessingTaskState](
+        processingTask: ProcessingTask[S],
+        data: ProcessingTaskData,
+        attemptNumber: Int,
+        maxAttempts: Int,
+        delayInSeconds: Long = 30,
+        onSchedule: PrismError => Task[Unit] = _ => Task.unit,
+        onFailure: PrismError => Task[Unit] = _ => Task.unit
+    )(implicit logger: Logger): Task[Either[ProcessingTaskResult[S], A]] = {
+      EitherT(task).leftSemiflatMap { err =>
+        if (attemptNumber + 1 <= maxAttempts) {
+          logger.info(
+            s"Task ${processingTask.state} failed attempt ${attemptNumber}/${maxAttempts}, scheduling reattempt"
+          )
+          val scheduledTime = Instant.now().plus(delayInSeconds, ChronoUnit.SECONDS)
+          onSchedule(err).map { _ =>
+            ProcessingTaskResult.ProcessingTaskScheduled[S](processingTask.state, data, scheduledTime)
+          }
+        } else {
+          logger.info(s"Task ${processingTask.state} failed ${attemptNumber} attempts, failing")
+          onFailure(err).map { _ =>
+            ProcessingTaskResult.ProcessingTaskFinished
+          }
+        }
+      }.value
+    }
+
     def sendResponseOnError(
         connectorService: ConnectorClientService,
         receivedMessageId: String,

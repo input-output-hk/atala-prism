@@ -28,8 +28,9 @@ class ConnectorClientServiceStub(
   var startAcuantProcessReplyTo = ""
 
   def sendMessage(message: SendMessageRequest): Task[SendMessageResponse] = {
-    sendMessageInvokeCount.incrementAndGet()
-    messageResponse
+    Task
+      .delay(sendMessageInvokeCount.incrementAndGet())
+      .flatMap(_ => messageResponse)
   }
 
   def generateConnectionToken: Task[GenerateConnectionTokenResponse] =

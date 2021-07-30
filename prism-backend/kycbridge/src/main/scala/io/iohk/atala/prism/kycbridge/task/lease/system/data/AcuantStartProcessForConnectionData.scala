@@ -5,7 +5,8 @@ import io.circe.generic.semiauto._
 
 case class AcuantStartProcessForConnectionData(
     receivedMessageId: String,
-    connectionId: String
+    connectionId: String,
+    attemptsNumber: Option[Int] = None
 )
 
 object AcuantStartProcessForConnectionData {

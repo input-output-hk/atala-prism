@@ -170,7 +170,7 @@ class AcuantCreateCredentialState3Processor(
         case "birthDate" => document.biographic.flatMap(_.birthDate).map(formatDate)
         case "age" => document.biographic.flatMap(_.age)
         case "gender" => document.getDataField("Sex").map(formatGender)
-        case "expirationDate" => document.biographic.flatMap(_.expirationDate.map(formatDate))
+        case "expirationDate" => document.biographic.flatMap(_.expirationDate.map(formatDate)).orElse(Some(""))
         case "photoSrc" =>
           Option(frontImage)
             .filter(_.nonEmpty)

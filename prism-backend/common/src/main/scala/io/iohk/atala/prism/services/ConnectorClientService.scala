@@ -163,7 +163,13 @@ class ConnectorClientServiceImpl(
         case (lastSeenConnectionId, shouldApplyAwakeDelay) =>
           val task = for {
             _ <- if (shouldApplyAwakeDelay) Task.sleep(awakeDelay) else Task.unit
-            _ <- Task.pure(logger.info(s"Call GetConnectionsPaginated - lastSeenConnectionId: ${lastSeenConnectionId}"))
+            _ <- {
+              if (shouldApplyAwakeDelay) {
+                Task.pure(logger.debug(s"Call GetConnectionsPaginated - lastSeenConnectionId: ${lastSeenConnectionId}"))
+              } else {
+                Task.pure(logger.info(s"Call GetConnectionsPaginated - lastSeenConnectionId: ${lastSeenConnectionId}"))
+              }
+            }
             response <- getConnectionsPaginated(lastSeenConnectionId, limit)
             result = response.connections match {
               case Nil =>

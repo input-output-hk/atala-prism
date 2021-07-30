@@ -3,9 +3,7 @@ package io.iohk.atala.prism.kycbridge.task.lease.system.processors
 import cats.data.EitherT
 import doobie.implicits._
 import doobie.util.transactor.Transactor
-import monix.eval.Task
-import org.slf4j.LoggerFactory
-
+import io.circe.syntax._
 import io.iohk.atala.prism.kycbridge.db.ConnectionDao
 import io.iohk.atala.prism.kycbridge.models.Connection.AcuantDocumentInstanceId
 import io.iohk.atala.prism.kycbridge.models.assureId.{Device, DeviceType}
@@ -16,9 +14,16 @@ import io.iohk.atala.prism.protos.credential_models.StartAcuantProcess
 import io.iohk.atala.prism.services.ConnectorClientService
 import io.iohk.atala.prism.services.ConnectorClientService.CannotSendConnectorMessage
 import io.iohk.atala.prism.task.lease.system.ProcessingTaskProcessorOps._
-import io.iohk.atala.prism.task.lease.system.{ProcessingTask, ProcessingTaskProcessor, ProcessingTaskResult}
-import io.iohk.atala.prism.utils.syntax.DBConnectionOps
+import io.iohk.atala.prism.task.lease.system.{
+  ProcessingTask,
+  ProcessingTaskData,
+  ProcessingTaskProcessor,
+  ProcessingTaskResult
+}
 import io.iohk.atala.prism.utils.ConnectionUtils
+import io.iohk.atala.prism.utils.syntax.DBConnectionOps
+import monix.eval.Task
+import org.slf4j.LoggerFactory
 
 class AcuantStartProcessForConnectionStateProcessor(
     tx: Transactor[Task],
@@ -26,6 +31,9 @@ class AcuantStartProcessForConnectionStateProcessor(
     acasService: AcasService,
     connectorService: ConnectorClientService
 ) extends ProcessingTaskProcessor[KycBridgeProcessingTaskState] {
+
+  val MAX_ATTEMPTS = 5
+  val REATTEMPT_SECONDS = 1L
 
   private implicit val logger = LoggerFactory.getLogger(this.getClass)
 
@@ -44,20 +52,43 @@ class AcuantStartProcessForConnectionStateProcessor(
       acuantData <-
         parseProcessingTaskData[AcuantStartProcessForConnectionData, KycBridgeProcessingTaskState](processingTask)
 
+      attemptNumber = acuantData.attemptsNumber.getOrElse(0) + 1
+
       connection <- EitherT(
         ConnectionUtils
           .fromConnectionId(acuantData.connectionId, acuantData.receivedMessageId, ConnectionDao.findByConnectionId)
           .logSQLErrors("getting connection from received message", logger)
           .transact(tx)
-          .sendResponseOnError(connectorService, acuantData.receivedMessageId, acuantData.connectionId)
-          .mapErrorToProcessingTaskFinished[KycBridgeProcessingTaskState]()
+          .mapErrorToDelayedReattempt(
+            processingTask,
+            ProcessingTaskData(acuantData.copy(attemptsNumber = Some(attemptNumber)).asJson),
+            attemptNumber,
+            MAX_ATTEMPTS,
+            REATTEMPT_SECONDS,
+            onFailure = { error =>
+              connectorService
+                .sendResponseMessage(error.toAtalaMessage, acuantData.receivedMessageId, acuantData.connectionId)
+                .void
+            }
+          )
       )
 
       documentInstanceResponseBody <- EitherT(
         assureIdService
           .createNewDocumentInstance(device)
           .logErrorIfPresent
-          .mapErrorToProcessingTaskScheduled(processingTask)
+          .mapErrorToDelayedReattempt(
+            processingTask,
+            ProcessingTaskData(acuantData.copy(attemptsNumber = Some(attemptNumber)).asJson),
+            attemptNumber,
+            MAX_ATTEMPTS,
+            REATTEMPT_SECONDS,
+            onFailure = { error =>
+              connectorService
+                .sendResponseMessage(error.toAtalaMessage, acuantData.receivedMessageId, acuantData.connectionId)
+                .void
+            }
+          )
       )
 
       tokenResponseBody <-

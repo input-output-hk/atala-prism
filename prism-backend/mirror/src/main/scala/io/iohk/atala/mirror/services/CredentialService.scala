@@ -51,7 +51,7 @@ class CredentialService(
   private val logger = LoggerFactory.getLogger(classOf[CredentialService])
 
   private val GET_CONNECTIONS_PAGINATED_LIMIT = 100
-  private val GET_CONNECTIONS_PAGINATED_AWAKE_DELAY = 11.seconds
+  private val GET_CONNECTIONS_PAGINATED_AWAKE_DELAY = 3.seconds
 
   /**
     * @param immediatelyRequestedCredential Request credential proof in this place is temporary and probably will be removed in the future.
