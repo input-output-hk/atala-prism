@@ -10,7 +10,6 @@ import doobie.util.transactor.Transactor
 import io.iohk.atala.prism.models._
 import io.iohk.atala.prism.node.cardano.models._
 import io.iohk.atala.prism.utils.DoobieImplicits._
-
 import scala.util.Random
 
 object TestCardanoBlockRepository {
