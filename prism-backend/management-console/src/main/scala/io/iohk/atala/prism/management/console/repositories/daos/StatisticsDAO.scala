@@ -21,7 +21,7 @@ object StatisticsDAO {
              |   WHERE institution_id = $participantId AND created_at BETWEEN $start AND $end
              |  ) AS numberOfGroups,
              |  (SELECT COUNT(*) FROM draft_credentials
-             |   WHERE issuer_id = $participantId AND created_on BETWEEN $start AND $end
+             |   WHERE issuer_id = $participantId AND created_at BETWEEN $start AND $end
              |  ) AS numberOfCredentials,
              |  (SELECT COUNT(*) FROM published_credentials
              |   JOIN draft_credentials USING (credential_id)
