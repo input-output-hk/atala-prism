@@ -44,11 +44,7 @@ const ConnectionsFilter = ({
           value={searchText}
         />
         {fullFilters && [
-          <Select
-            defaultValue={PENDING_CONNECTION}
-            onChange={setStatus}
-            placeholder={t('contacts.filters.status')}
-          >
+          <Select allowClear onChange={setStatus} placeholder={t('contacts.filters.status')}>
             {statuses.map(statusType => (
               <Select.Option key={statusType} value={statusType}>
                 {t(`holders.status.${statusType}`)}
