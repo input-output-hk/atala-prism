@@ -364,7 +364,6 @@ class MessagesRpcSpec extends ConnectorRpcSpecBase {
 
     "return existing messages immediately while authed by unpublished did" in {
       val messageIds = generateMessageIds(createParticipant())
-      messageIds.length
       val unpublishedDid = DID.createUnpublishedDID(keyPair.getPublicKey.asScala)
       testMessagesExisting(keyPair, unpublishedDid, messageIds)
     }
@@ -504,7 +503,8 @@ class MessagesRpcSpec extends ConnectorRpcSpecBase {
 
       service.getMessageStream(getMessageStreamRequest.request, streamObserver)
 
-      verify(streamObserver, eventually.atLeast(messageIds.size)).onNext(responseCaptor.capture)
+      val atLeastSize = messageIds.size
+      verify(streamObserver, eventually.atLeast(atLeastSize)).onNext(responseCaptor.capture)
       asMessageIds(responseCaptor.values) mustBe messageIds
     }
   }
