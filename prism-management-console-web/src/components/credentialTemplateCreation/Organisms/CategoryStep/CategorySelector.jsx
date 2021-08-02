@@ -9,6 +9,7 @@ import CategoryCard from '../../Molecules/CategoryStep/CategoryCard';
 import { templateCategoryShape } from '../../../../helpers/propShapes';
 import { useTemplateContext } from '../../../providers/TemplateContext';
 import './_style.scss';
+import CustomButton from '../../../common/Atoms/CustomButton/CustomButton';
 
 const ENABLED_STATE = 1;
 
@@ -43,19 +44,23 @@ const CategorySelector = ({ templateCategories }) => {
   ];
 
   return (
-    <div className="flex selectCategory">
+    <div className="selectCategory">
       <CategoryCreationModal
         visible={showCategoryCreation}
         close={() => setShowCategoryCreation(false)}
       />
+      <div className="selectCategoryHeader">
+        <p>Select Category</p>
+        <CustomButton onClick={handleAddNewCategory} buttonText="+ Add New" theme="theme-link" /> 
+      </div>
       <Form.Item
         name="category"
-        label={t(`${i18nPrefix}.step1.selectCategory`)}
+        //label={t(`${i18nPrefix}.step1.selectCategory`)}
         rules={categoryRules}
       >
         <div className="templateCategory">
           <Radio.Group onChange={onCategoryChange}>
-            <AddNewCategory onClick={handleAddNewCategory} />
+            {/*<AddNewCategory onClick={handleAddNewCategory} />*/}
             {categories.map(category => (
               <Radio value={category.id}>
                 <CategoryCard
