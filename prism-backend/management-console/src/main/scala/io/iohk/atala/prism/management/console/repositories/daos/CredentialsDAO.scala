@@ -113,7 +113,7 @@ object CredentialsDAO {
              |     JOIN contacts ON (c.contact_id = contacts.contact_id)
              |     LEFT JOIN PC USING (credential_id)
              |WHERE c.issuer_id = $issuedBy AND
-             |      (c.created_at > last_seen_time OR (c.created_on = last_seen_time AND credential_id > $lastSeen))
+             |      (c.created_at > last_seen_time OR (c.created_at = last_seen_time AND credential_id > $lastSeen))
              |ORDER BY c.created_at ASC, credential_id
              |LIMIT $limit
              |""".stripMargin
