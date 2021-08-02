@@ -8,6 +8,7 @@ import { withApi } from '../providers/withApi';
 import { COMMON_CREDENTIALS_HEADERS, IMPORT_CREDENTIALS_DATA } from '../../helpers/constants';
 import { validateCredentialDataBulk } from '../../helpers/credentialDataValidation';
 import { contactShape, credentialTypeShape } from '../../helpers/propShapes';
+import { DynamicFormProvider } from '../../providers/DynamicFormProvider';
 
 const ImportCredentialsData = ({
   recipients,
@@ -45,16 +46,18 @@ const ImportCredentialsData = ({
     });
 
   return (
-    <ImportDataContainer
-      recipients={recipients}
-      credentialType={credentialType}
-      bulkValidator={validatorWithCredentialType}
-      onFinish={onFinish}
-      onCancel={onCancel}
-      useCase={IMPORT_CREDENTIALS_DATA}
-      headersMapping={headersMapping}
-      hasSelectedRecipients={hasSelectedRecipients}
-    />
+    <DynamicFormProvider formName={IMPORT_CREDENTIALS_DATA}>
+      <ImportDataContainer
+        recipients={recipients}
+        credentialType={credentialType}
+        bulkValidator={validatorWithCredentialType}
+        onFinish={onFinish}
+        onCancel={onCancel}
+        useCase={IMPORT_CREDENTIALS_DATA}
+        headersMapping={headersMapping}
+        hasSelectedRecipients={hasSelectedRecipients}
+      />
+    </DynamicFormProvider>
   );
 };
 

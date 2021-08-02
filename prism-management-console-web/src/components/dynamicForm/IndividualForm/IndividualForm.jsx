@@ -12,7 +12,7 @@ const IndividualForm = ({ field, skeleton, columns, onRemove }) => {
   const { t } = useTranslation();
 
   const getWidth = item =>
-    columns.find(col => col.fieldKey === item.fieldKey).width || DEFAULT_WIDTH_INPUT;
+    columns.find(col => col.fieldKey === item.fieldKey)?.width || DEFAULT_WIDTH_INPUT;
   const getWidthStyle = item => ({ width: getWidth(item) });
 
   return (
@@ -27,7 +27,7 @@ const IndividualForm = ({ field, skeleton, columns, onRemove }) => {
           rules={item.rules}
           key={item.fieldKey}
         >
-          <Input placeholder={item.placeholder} />
+          <Input placeholder={item.placeholder} disabled={!item.editable} />
         </Form.Item>
       ))}
       <Row className="IndividualFormCol">
