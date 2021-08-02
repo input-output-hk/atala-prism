@@ -37,7 +37,7 @@ object EncryptedDataVaultService {
   }
 }
 
-final class EncyptedDataVaultServiceImpl[F[_]](payloadsRepository: PayloadsRepository[F])
+private final class EncyptedDataVaultServiceImpl[F[_]](payloadsRepository: PayloadsRepository[F])
     extends EncryptedDataVaultService[F] {
 
   override def storeData(
