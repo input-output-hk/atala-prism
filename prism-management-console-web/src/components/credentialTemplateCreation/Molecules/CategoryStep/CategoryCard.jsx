@@ -6,13 +6,11 @@ import { Col, Row } from 'antd';
 const CategoryCard = ({ category, typeKey, isSelected }) => {
   const { t } = useTranslation();
   return (
-    <Col type="flex" align="middle" className={`TypeCard shadow ${isSelected ? 'selected' : ''}`}>
+    <Col type="flex" align="middle" className={`TypeCard2 shadow ${isSelected ? 'selected' : ''}`}>
       <Row className="header-name">
         <img className="img-logo" src={category.logo} alt={`${typeKey}-logo`} />
         {t(category.name)}
       </Row>
-      <div className="line" />
-      <img className="img-credential" src={category.sampleImage} alt={`${typeKey}-sample`} />
     </Col>
   );
 };

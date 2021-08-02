@@ -9,12 +9,6 @@
     }
   }
   .TypeSelection {
-    .flex {
-      label {
-        @include primary-text($body, $black);
-        margin-top: 2em;
-      }
-    }
     .verticalFlex {
       .FormContainer {
         label {

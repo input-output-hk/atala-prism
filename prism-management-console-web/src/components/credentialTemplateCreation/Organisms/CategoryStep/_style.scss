@@ -1,6 +1,20 @@
 @import "../../../../css/general_styling";
 
 .selectCategory {
+  .selectCategoryHeader {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1em;
+    button {
+      border: none;
+      color: $primary-color;
+    }
+    p {
+      @include primary-text($body, $black);
+      margin: 0;
+    }
+  }
   .ant-row {
     width: 100%;
   }
@@ -9,12 +23,11 @@
     .ant-radio-group {
       width: 100%;
       display: flex;
-      justify-content: space-between;
+      justify-content: flex-start;
       .ant-radio-wrapper {
         margin: 0;
         .TypeCard,
         .SelectedTypeCard {
-          height: 220px;
           display: flex;
           flex-direction: column;
           justify-content: flex-start;
