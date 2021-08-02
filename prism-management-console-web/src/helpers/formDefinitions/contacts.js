@@ -25,7 +25,8 @@ export const CONTACT_FORM = (preexistingContacts, form) => [
     name: 'contactName',
     placeholder: i18n.t('contacts.table.columns.contactName'),
     fieldKey: 'contactName',
-    rules: [{ required: true, message: 'Contact Name is required.' }]
+    rules: [{ required: true, message: 'Contact Name is required.' }],
+    editable: true
   },
   {
     name: 'externalId',
@@ -49,7 +50,8 @@ export const CONTACT_FORM = (preexistingContacts, form) => [
         validator: async (_, externalId, callback) =>
           expectValueNotExist(preexistingContacts, externalId, 'externalId', callback)
       }
-    ]
+    ],
+    editable: true
   }
 ];
 

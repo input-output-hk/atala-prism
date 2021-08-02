@@ -1,12 +1,19 @@
-import React from 'react';
+import React, { useContext } from 'react';
 import PropTypes from 'prop-types';
 import _ from 'lodash';
 import { useTranslation } from 'react-i18next';
 import EditableTable from '../../../common/Organisms/Tables/EditableTable';
-import { contactCreationShape, credentialTypeShape } from '../../../../helpers/propShapes';
+import { credentialShape, credentialTypeShape } from '../../../../helpers/propShapes';
+import {
+  CREDENTIAL_FORM,
+  CREDENTIAL_FORM_COLUMNS
+} from '../../../../helpers/formDefinitions/credentials';
+import { DynamicFormContext } from '../../../../providers/DynamicFormProvider';
+import { IMPORT_CREDENTIALS_DATA } from '../../../../helpers/constants';
 
 const CredentialCreationTable = ({ tableProps, setDisableSave, credentialType }) => {
   const { t } = useTranslation();
+  const { form } = useContext(DynamicFormContext);
 
   const commonColumns = [
     {
@@ -35,12 +42,21 @@ const CredentialCreationTable = ({ tableProps, setDisableSave, credentialType })
 
   const columns = _.uniqBy(commonColumns.concat(specificColumns), e => e.dataIndex);
 
-  return <EditableTable {...tableProps} columns={columns} setDisableSave={setDisableSave} />;
+  return (
+    <EditableTable
+      {...tableProps}
+      columns={CREDENTIAL_FORM_COLUMNS(columns)}
+      skeleton={CREDENTIAL_FORM(columns, form)}
+      initialValues={tableProps.dataSource}
+      useCase={IMPORT_CREDENTIALS_DATA}
+    />
+  );
 };
 
 CredentialCreationTable.propTypes = {
   tableProps: PropTypes.shape({
-    credentialsData: PropTypes.arrayOf(contactCreationShape).isRequired,
+    // FIXME: datasource shape
+    dataSource: PropTypes.arrayOf(credentialShape).isRequired,
     updateDataSource: PropTypes.func.isRequired,
     deleteContact: PropTypes.func,
     addNewRow: PropTypes.func,
