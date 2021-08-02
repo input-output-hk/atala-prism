@@ -18,38 +18,41 @@ class PayloadsRepositorySpec extends AtalaWithPostgresSpec with OptionValues {
 
   private lazy val vaultTestLogs: Logs[IO, IO] = Logs.sync[IO, IO]
 
-  lazy val repository =
+  lazy val repository: IO[PayloadsRepository[IO]] =
     vaultTestLogs
       .service[PayloadsRepository[IO]]
       .map(implicit l => PayloadsRepository.create(database))
-      .unsafeRunSync()
 
-  def createPayload(did: DID, content: Vector[Byte]): Payload = {
+  def createPayload(did: DID, content: Vector[Byte]): IO[Payload] = {
     val externalId = Payload.ExternalId.random()
     val hash = SHA256Digest.compute(content.toArray)
     val createPayload1 = CreatePayload(externalId, hash, did, content)
-    repository.create(createPayload1, TraceId.generateYOLO).unsafeRunSync()
+    repository.flatMap(_.create(createPayload1, TraceId.generateYOLO))
   }
 
   "create" should {
     "create a new payload" in {
       val did1 = newDID()
       val content1 = "encrypted_data_1".getBytes.toVector
-      val payload1 = createPayload(did1, content1)
 
       val did2 = newDID()
       val content2 = "encrypted_data_2".getBytes.toVector
-      val payload2 = createPayload(did2, content2)
 
-      payload1.did must be(did1)
-      payload1.content must be(content1)
-      assert(payload1.createdAt.until(Instant.now(), ChronoUnit.MINUTES) <= 2)
+      val test = for {
+        payload1 <- createPayload(did1, content1)
+        payload2 <- createPayload(did2, content2)
+      } yield {
+        payload1.did must be(did1)
+        payload1.content must be(content1)
+        assert(payload1.createdAt.until(Instant.now(), ChronoUnit.MINUTES) <= 2)
 
-      payload2.did must be(did2)
-      payload2.content must be(content2)
-      assert(payload2.createdAt.until(Instant.now(), ChronoUnit.MINUTES) <= 2)
+        payload2.did must be(did2)
+        payload2.content must be(content2)
+        assert(payload2.createdAt.until(Instant.now(), ChronoUnit.MINUTES) <= 2)
 
-      assert(payload1.createdAt.isBefore(payload2.createdAt))
+        assert(payload1.createdAt.isBefore(payload2.createdAt))
+      }
+      test.unsafeRunSync()
     }
   }
 
@@ -57,19 +60,28 @@ class PayloadsRepositorySpec extends AtalaWithPostgresSpec with OptionValues {
     "return all created payloads" in {
       val did1 = newDID()
       val content1 = "encrypted_data_1".getBytes.toVector
-      val payload1 = createPayload(did1, content1)
 
       val did2 = newDID()
       val content2 = "encrypted_data_2".getBytes.toVector
-      val payload2 = createPayload(did2, content2)
 
       val content3 = "encrypted_data_3".getBytes.toVector
-      val payload3 = createPayload(did2, content3)
 
-      repository.getByPaginated(did1, None, 10, TraceId.generateYOLO).unsafeRunSync() mustBe List(payload1)
-      repository.getByPaginated(did2, None, 10, TraceId.generateYOLO).unsafeRunSync() mustBe List(payload2, payload3)
-      repository.getByPaginated(did2, None, 1, TraceId.generateYOLO).unsafeRunSync() mustBe List(payload2)
-      repository.getByPaginated(did2, Some(payload2.id), 1, TraceId.generateYOLO).unsafeRunSync() mustBe List(payload3)
+      val test = for {
+        payload1 <- createPayload(did1, content1)
+        payload2 <- createPayload(did2, content2)
+        payload3 <- createPayload(did2, content3)
+        repo <- repository
+        mustBe1Payload <- repo.getByPaginated(did1, None, 10, TraceId.generateYOLO)
+        mustBe2And3Payload <- repo.getByPaginated(did2, None, 10, TraceId.generateYOLO)
+        mustBe2Payload <- repo.getByPaginated(did2, None, 1, TraceId.generateYOLO)
+        mustBe3Payload <- repo.getByPaginated(did2, Some(payload2.id), 1, TraceId.generateYOLO)
+      } yield {
+        mustBe1Payload mustBe List(payload1)
+        mustBe2And3Payload mustBe List(payload2, payload3)
+        mustBe2Payload mustBe List(payload2)
+        mustBe3Payload mustBe List(payload3)
+      }
+      test.unsafeRunSync()
     }
   }
 
