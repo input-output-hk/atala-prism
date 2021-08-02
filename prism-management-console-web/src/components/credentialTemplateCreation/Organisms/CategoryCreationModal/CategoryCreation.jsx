@@ -32,8 +32,7 @@ const CategoryCreation = ({ api, categoryForm, close }) => {
     if (!isPartiallyValid) {
       displayErrors(errors);
     } else {
-      message.info(JSON.stringify(values));
-      await api.credentialTypesManager.createCategory();
+      await api.credentialTypesManager.createCategory(values);
       close();
     }
     setIsLoading(false);

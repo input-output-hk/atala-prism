@@ -1,11 +1,11 @@
 import React, { useState } from 'react';
 import { Form, Radio, Upload } from 'antd';
 import { useTranslation } from 'react-i18next';
+import { isInteger, isString } from 'lodash';
 import uploadCategoryIcon from '../../../../images/upload-category-icon.svg';
 import CustomButton from '../../../common/Atoms/CustomButton/CustomButton';
 import IconOption from '../../Atoms/CategorySelection/IconOption';
 import { defaultCategoryIcons } from '../../../../helpers/templateCategories/categories';
-import { isInteger } from '../../../../helpers/genericHelpers';
 
 const defaultFileList = defaultCategoryIcons.map((thumbUrl, index) => ({ thumbUrl, uid: index }));
 const i18nPrefix = 'credentialTemplateCreation';
@@ -13,22 +13,21 @@ const i18nPrefix = 'credentialTemplateCreation';
 const CategoryIconSelector = () => {
   const { t } = useTranslation();
   const [selectedIcon, setSelectedIcon] = useState(defaultFileList[0].uid);
-  const [categoryCustomIcons, setSelectedCustomIcons] = useState([]);
+  const [categoryCustomIcons, setCategotyCustomIcons] = useState([]);
 
-  const normFile = ({ file, fileList }) => {
-    const newFileList = [file].concat(fileList.filter(f => f.uid !== file.uid));
+  const normFile = ({ fileList }) => fileList;
 
-    return newFileList;
-  };
-
-  const onChange = ({ fileList }) => {
-    setSelectedCustomIcons(fileList);
+  const onChange = ({ file, fileList }) => {
+    const newFile = fileList.find(f => f.uid === file.uid);
+    const newFileList = [newFile].concat(fileList.filter(f => f.uid !== file.uid));
+    setSelectedIcon(newFile.uid);
+    setCategotyCustomIcons(newFileList);
   };
 
   const categoryIconRules = [
     {
       validator: (_rule, value) =>
-        isInteger(value)
+        isInteger(value) || isString(value)
           ? Promise.resolve()
           : Promise.reject(
               t(`${i18nPrefix}.categoryCreationModal.errors.fieldIsRequired`, {
@@ -37,10 +36,6 @@ const CategoryIconSelector = () => {
             )
     }
   ];
-
-  const onIconChange = ev => {
-    setSelectedIcon(ev.target.value);
-  };
 
   const allowedFormats = '.jpg, .jpeg, .png, .svg';
 
@@ -51,6 +46,8 @@ const CategoryIconSelector = () => {
     onChange
   };
 
+  const onIconChange = ev => setSelectedIcon(ev.target.value);
+
   return (
     <Form.Item name="categoryIcon" rules={categoryIconRules}>
       <Radio.Group onChange={onIconChange}>
@@ -59,9 +56,13 @@ const CategoryIconSelector = () => {
             name="logo"
             action="/upload.do"
             {...uploaderProps}
-            itemRender={(_originNode, file) => (
-              <IconOption icon={file} selected={file.uid === selectedIcon} />
-            )}
+            itemRender={(_originNode, file) =>
+              file.status !== 'uploading' ? (
+                <IconOption icon={file} selected={file.uid === selectedIcon} />
+              ) : (
+                <p>coso</p>
+              )
+            }
           >
             <div className="verticalFlex">
               <img src={uploadCategoryIcon} className="iconSample" alt="upload custom icon" />
