@@ -11,27 +11,32 @@ import io.iohk.atala.prism.credentials.{
   VerificationError
 }
 import io.iohk.atala.prism.credentials.content.CredentialContent
-import io.iohk.atala.prism.crypto.{EC, ECConfig, ECPrivateKey, ECPublicKey, ECSignature, SHA256Digest}
+import io.iohk.atala.prism.kotlin.crypto.{EC, SHA256Digest}
+import io.iohk.atala.prism.crypto.{EC => ECScalaSDK}
+import io.iohk.atala.prism.kotlin.crypto.keys.{ECPrivateKey, ECPublicKey}
+import io.iohk.atala.prism.kotlin.crypto.ECConfig.{INSTANCE => ECConfig}
 import io.iohk.atala.prism.node.grpc.ProtoCodecs
 import io.iohk.atala.prism.protos.{node_api, node_models}
 import org.scalatest.OptionValues._
 import io.iohk.atala.prism.identity.DIDSuffix
-import io.iohk.atala.prism.crypto.MerkleTree.MerkleInclusionProof
+import io.iohk.atala.prism.kotlin.crypto.MerkleInclusionProof
 import io.iohk.atala.prism.identity.DID.masterKeyId
+import io.iohk.atala.prism.interop.toScalaSDK._
+import io.iohk.atala.prism.kotlin.crypto.signature.ECSignature
 
 // We define some classes to illustrate what happens in the different components
 case class Wallet(node: node_api.NodeServiceGrpc.NodeServiceBlockingStub) {
-  implicit val ec = EC
+  implicit val ec = ECScalaSDK
 
   private var dids: Map[DIDSuffix, collection.mutable.Map[String, ECPrivateKey]] = Map()
 
   def generateDID(): (DIDSuffix, node_models.AtalaOperation) = {
     val masterKeyPair = EC.generateKeyPair()
-    val masterPrivateKey = masterKeyPair.privateKey
-    val masterPublicKey = masterKeyPair.publicKey
+    val masterPrivateKey = masterKeyPair.getPrivateKey
+    val masterPublicKey = masterKeyPair.getPublicKey
     val issuanceKeyPair = EC.generateKeyPair()
-    val issuancePrivateKey = issuanceKeyPair.privateKey
-    val issuancePublicKey = issuanceKeyPair.publicKey
+    val issuancePrivateKey = issuanceKeyPair.getPrivateKey
+    val issuancePublicKey = issuanceKeyPair.getPublicKey
 
     // This could be encapsulated in the "NodeSDK". I added it here for simplicity
     // Note that in our current design we cannot create a did that has two keys from start
@@ -60,7 +65,7 @@ case class Wallet(node: node_api.NodeServiceGrpc.NodeServiceBlockingStub) {
 
     val atalaOp = node_models.AtalaOperation(operation = node_models.AtalaOperation.Operation.CreateDid(createDidOp))
     val operationHash = SHA256Digest.compute(atalaOp.toByteArray)
-    val didSuffix = DIDSuffix.unsafeFromDigest(operationHash)
+    val didSuffix = DIDSuffix.unsafeFromDigest(operationHash.asScala)
 
     dids += (didSuffix -> collection.mutable.Map(
       masterKeyId -> masterPrivateKey,
@@ -76,7 +81,7 @@ case class Wallet(node: node_api.NodeServiceGrpc.NodeServiceBlockingStub) {
       id = revocationKeyId,
       usage = node_models.KeyUsage.REVOCATION_KEY,
       keyData = node_models.PublicKey.KeyData.EcKeyData(
-        publicKeyToProto(revocationKeyPair.publicKey)
+        publicKeyToProto(revocationKeyPair.getPublicKey)
       )
     )
 
@@ -101,7 +106,7 @@ case class Wallet(node: node_api.NodeServiceGrpc.NodeServiceBlockingStub) {
       didSuffix
     )
     node.updateDID(node_api.UpdateDIDRequest(Some(updateDidOpSigned)))
-    dids(didSuffix) += (revocationKeyId -> revocationKeyPair.privateKey)
+    dids(didSuffix) += (revocationKeyId -> revocationKeyPair.getPrivateKey)
     ()
   }
 
@@ -115,7 +120,7 @@ case class Wallet(node: node_api.NodeServiceGrpc.NodeServiceBlockingStub) {
     node_models.SignedAtalaOperation(
       signedWith = keyId,
       operation = Some(operation),
-      signature = ByteString.copyFrom(EC.sign(operation.toByteArray, key).data)
+      signature = ByteString.copyFrom(EC.sign(operation.toByteArray, key).getData)
     )
   }
 
@@ -125,7 +130,7 @@ case class Wallet(node: node_api.NodeServiceGrpc.NodeServiceBlockingStub) {
       didSuffix: DIDSuffix
   ): Credential = {
     val privateKey = dids(didSuffix)(keyId)
-    Credential.fromCredentialContent(credentialContent).sign(privateKey)
+    Credential.fromCredentialContent(credentialContent).sign(privateKey.asScala)
   }
 
   def signKey(
@@ -157,7 +162,7 @@ case class Wallet(node: node_api.NodeServiceGrpc.NodeServiceBlockingStub) {
 
     // request credential state to the node
     val merkleRoot = merkleProof.derivedRoot
-    val batchId = CredentialBatchId.fromBatchData(issuerDID.suffix, merkleRoot)
+    val batchId = CredentialBatchId.fromBatchData(issuerDID.suffix, merkleRoot.asScala)
 
     val batchStateProto = node.getBatchState(
       node_api.GetBatchStateRequest(
@@ -187,7 +192,7 @@ case class Wallet(node: node_api.NodeServiceGrpc.NodeServiceBlockingStub) {
     val issuanceKeyAddedOn = ProtoCodecs.fromTimestampInfoProto(issuancekeyData.addedOn.value)
     val issuanceKeyRevokedOn = issuancekeyData.revokedOn.map(ProtoCodecs.fromTimestampInfoProto)
 
-    val keyData = KeyData(issuanceKey, issuanceKeyAddedOn, issuanceKeyRevokedOn)
+    val keyData = KeyData(issuanceKey.asScala, issuanceKeyAddedOn, issuanceKeyRevokedOn)
 
     // request specific credential revocation status to the node
     val credentialHash = credential.hash
@@ -206,8 +211,8 @@ case class Wallet(node: node_api.NodeServiceGrpc.NodeServiceBlockingStub) {
         keyData,
         batchData,
         credentialRevocationTime,
-        merkleRoot,
-        merkleProof,
+        merkleRoot.asScala,
+        merkleProof.asScala,
         credential
       )
   }
@@ -215,9 +220,9 @@ case class Wallet(node: node_api.NodeServiceGrpc.NodeServiceBlockingStub) {
   private def publicKeyToProto(key: ECPublicKey): node_models.ECKeyData = {
     val point = key.getCurvePoint
     node_models.ECKeyData(
-      curve = ECConfig.CURVE_NAME,
-      x = ByteString.copyFrom(point.x.toByteArray),
-      y = ByteString.copyFrom(point.y.toByteArray)
+      curve = ECConfig.getCURVE_NAME,
+      x = ByteString.copyFrom(point.getX.bytes()),
+      y = ByteString.copyFrom(point.getY.bytes())
     )
   }
 }

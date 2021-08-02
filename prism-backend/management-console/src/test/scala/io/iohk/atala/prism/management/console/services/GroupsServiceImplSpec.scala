@@ -5,7 +5,7 @@ import doobie.implicits._
 import doobie.util.transactor.Transactor
 import io.iohk.atala.prism.auth.SignedRpcRequest
 import io.iohk.atala.prism.auth.grpc.GrpcAuthenticationHeaderParser
-import io.iohk.atala.prism.crypto.EC
+import io.iohk.atala.prism.kotlin.crypto.EC
 import io.iohk.atala.prism.identity.DID
 import io.iohk.atala.prism.management.console.models.PaginatedQueryConstraints.ResultOrdering
 import io.iohk.atala.prism.management.console.models._
@@ -51,7 +51,7 @@ class GroupsServiceImplSpec extends RpcSpecBase with DIDUtil {
   "createGroup" should {
     "create a group" in {
       val keyPair = EC.generateKeyPair()
-      val publicKey = keyPair.publicKey
+      val publicKey = keyPair.getPublicKey
       val did = generateDid(publicKey)
       val institutionId = createParticipant(did)
       val newGroup = InstitutionGroup.Name("IOHK University")
@@ -76,7 +76,7 @@ class GroupsServiceImplSpec extends RpcSpecBase with DIDUtil {
 
     "create a group with initial contact list" in {
       val keyPair = EC.generateKeyPair()
-      val publicKey = keyPair.publicKey
+      val publicKey = keyPair.getPublicKey
       val did = generateDid(publicKey)
       val institutionId = createParticipant(did)
       val newGroup = InstitutionGroup.Name("IOHK University")
@@ -108,7 +108,7 @@ class GroupsServiceImplSpec extends RpcSpecBase with DIDUtil {
 
     "fail to create a group with non-unique contact id list" in {
       val keyPair = EC.generateKeyPair()
-      val publicKey = keyPair.publicKey
+      val publicKey = keyPair.getPublicKey
       val did = generateDid(publicKey)
       val institutionId = createParticipant(did)
       val newGroup = InstitutionGroup.Name("IOHK University")
@@ -129,11 +129,11 @@ class GroupsServiceImplSpec extends RpcSpecBase with DIDUtil {
 
     "fail to create a group when one of the contacts does not belong to the group institution" in {
       val keyPair1 = EC.generateKeyPair()
-      val publicKey1 = keyPair1.publicKey
+      val publicKey1 = keyPair1.getPublicKey
       val did1 = generateDid(publicKey1)
       val institutionId1 = createParticipant(did1)
       val keyPair2 = EC.generateKeyPair()
-      val publicKey2 = keyPair2.publicKey
+      val publicKey2 = keyPair2.getPublicKey
       val did2 = generateDid(publicKey2)
       val institutionId2 = createParticipant(did2)
       val newGroup = InstitutionGroup.Name("IOHK University")
@@ -160,7 +160,7 @@ class GroupsServiceImplSpec extends RpcSpecBase with DIDUtil {
 
     "return the contact count on each group" in {
       val keyPair = EC.generateKeyPair()
-      val publicKey = keyPair.publicKey
+      val publicKey = keyPair.getPublicKey
       val did = generateDid(publicKey)
       val institutionId = createParticipant(did)
 
@@ -184,7 +184,7 @@ class GroupsServiceImplSpec extends RpcSpecBase with DIDUtil {
 
     "allows filtering by contact" in {
       val keyPair = EC.generateKeyPair()
-      val publicKey = keyPair.publicKey
+      val publicKey = keyPair.getPublicKey
       val did = generateDid(publicKey)
       val issuerId = createParticipant(did)
 
@@ -255,7 +255,7 @@ class GroupsServiceImplSpec extends RpcSpecBase with DIDUtil {
 
     def assertGetGroupsResult(request: console_api.GetGroupsRequest, expectedResult: List[String]) = {
       val keyPair = EC.generateKeyPair()
-      val publicKey = keyPair.publicKey
+      val publicKey = keyPair.getPublicKey
       val did = generateDid(publicKey)
       val institutionId = createParticipant(did)
 
@@ -306,7 +306,7 @@ class GroupsServiceImplSpec extends RpcSpecBase with DIDUtil {
 
     def assertRequestFails(request: console_api.GetGroupsRequest) = {
       val keyPair = EC.generateKeyPair()
-      val publicKey = keyPair.publicKey
+      val publicKey = keyPair.getPublicKey
       val did = generateDid(publicKey)
       createParticipant(did)
 
@@ -328,7 +328,7 @@ class GroupsServiceImplSpec extends RpcSpecBase with DIDUtil {
 
     "be able to add new contacts" in {
       val keyPair = EC.generateKeyPair()
-      val publicKey = keyPair.publicKey
+      val publicKey = keyPair.getPublicKey
       val did = generateDid(publicKey)
       val institutionId = createParticipant(did)
 
@@ -368,7 +368,7 @@ class GroupsServiceImplSpec extends RpcSpecBase with DIDUtil {
 
     "be able to remove contacts" in {
       val keyPair = EC.generateKeyPair()
-      val publicKey = keyPair.publicKey
+      val publicKey = keyPair.getPublicKey
       val did = generateDid(publicKey)
       val institutionId = createParticipant(did)
 
@@ -414,7 +414,7 @@ class GroupsServiceImplSpec extends RpcSpecBase with DIDUtil {
 
     "be able to add and remove at the same time" in {
       val keyPair = EC.generateKeyPair()
-      val publicKey = keyPair.publicKey
+      val publicKey = keyPair.getPublicKey
       val did = generateDid(publicKey)
       val institutionId = createParticipant(did)
 
@@ -468,11 +468,11 @@ class GroupsServiceImplSpec extends RpcSpecBase with DIDUtil {
 
     "reject requests with non-matching group institution" in {
       val keyPair1 = EC.generateKeyPair()
-      val publicKey1 = keyPair1.publicKey
+      val publicKey1 = keyPair1.getPublicKey
       val did1 = generateDid(publicKey1)
       val institutionId1 = createParticipant(did1)
       val keyPair2 = EC.generateKeyPair()
-      val publicKey2 = keyPair2.publicKey
+      val publicKey2 = keyPair2.getPublicKey
       val did2 = generateDid(publicKey2)
       val institutionId2 = createParticipant(did2)
 
@@ -499,11 +499,11 @@ class GroupsServiceImplSpec extends RpcSpecBase with DIDUtil {
 
     "reject requests with non-matching contact institution" in {
       val keyPair1 = EC.generateKeyPair()
-      val publicKey1 = keyPair1.publicKey
+      val publicKey1 = keyPair1.getPublicKey
       val did1 = generateDid(publicKey1)
       val institutionId1 = createParticipant(did1)
       val keyPair2 = EC.generateKeyPair()
-      val publicKey2 = keyPair2.publicKey
+      val publicKey2 = keyPair2.getPublicKey
       val did2 = generateDid(publicKey2)
       val institutionId2 = createParticipant(did2)
 
@@ -530,7 +530,7 @@ class GroupsServiceImplSpec extends RpcSpecBase with DIDUtil {
 
     "be able to change the group's name" in {
       val keyPair = EC.generateKeyPair()
-      val publicKey = keyPair.publicKey
+      val publicKey = keyPair.getPublicKey
       val did = generateDid(publicKey)
       val institutionId = createParticipant(did)
 
@@ -556,7 +556,7 @@ class GroupsServiceImplSpec extends RpcSpecBase with DIDUtil {
 
     "reject when renaming into an already existing group name" in {
       val keyPair = EC.generateKeyPair()
-      val publicKey = keyPair.publicKey
+      val publicKey = keyPair.getPublicKey
       val did = generateDid(publicKey)
       val institutionId = createParticipant(did)
 
@@ -584,7 +584,7 @@ class GroupsServiceImplSpec extends RpcSpecBase with DIDUtil {
     val newGroupName = InstitutionGroup.Name(newGroup)
     "be able to copy group with contacts in it" in {
       val keyPair = EC.generateKeyPair()
-      val publicKey = keyPair.publicKey
+      val publicKey = keyPair.getPublicKey
       val did = generateDid(publicKey)
       val institutionId = createParticipant(did)
 
@@ -616,7 +616,7 @@ class GroupsServiceImplSpec extends RpcSpecBase with DIDUtil {
 
     "be able to copy group without any contacts" in {
       val keyPair = EC.generateKeyPair()
-      val publicKey = keyPair.publicKey
+      val publicKey = keyPair.getPublicKey
       val did = generateDid(publicKey)
       val institutionId = createParticipant(did)
 
@@ -642,8 +642,8 @@ class GroupsServiceImplSpec extends RpcSpecBase with DIDUtil {
     "reject group copying if there is wrong institution id" in {
       val keyPair = EC.generateKeyPair()
       val imposterKeyPair = EC.generateKeyPair()
-      val publicKey = keyPair.publicKey
-      val imposterPublicKey = imposterKeyPair.publicKey
+      val publicKey = keyPair.getPublicKey
+      val imposterPublicKey = imposterKeyPair.getPublicKey
       val did = generateDid(publicKey)
       val imposterDid = generateDid(imposterPublicKey)
       val institutionId = createParticipant(did)
@@ -661,7 +661,7 @@ class GroupsServiceImplSpec extends RpcSpecBase with DIDUtil {
 
     "reject group copying if there is empty name" in {
       val keyPair = EC.generateKeyPair()
-      val publicKey = keyPair.publicKey
+      val publicKey = keyPair.getPublicKey
       val did = generateDid(publicKey)
       val institutionId = createParticipant(did)
 
@@ -677,7 +677,7 @@ class GroupsServiceImplSpec extends RpcSpecBase with DIDUtil {
 
     "reject group copying if the chosen name is already occupied" in {
       val keyPair = EC.generateKeyPair()
-      val publicKey = keyPair.publicKey
+      val publicKey = keyPair.getPublicKey
       val did = generateDid(publicKey)
       val institutionId = createParticipant(did)
 
@@ -701,7 +701,7 @@ class GroupsServiceImplSpec extends RpcSpecBase with DIDUtil {
 
     "be able to delete group with contacts in it" in {
       val keyPair = EC.generateKeyPair()
-      val publicKey = keyPair.publicKey
+      val publicKey = keyPair.getPublicKey
       val did = generateDid(publicKey)
       val institutionId = createParticipant(did)
 
@@ -734,8 +734,8 @@ class GroupsServiceImplSpec extends RpcSpecBase with DIDUtil {
     "reject group deleting if here is wrong institution id" in {
       val keyPair = EC.generateKeyPair()
       val imposterKeyPair = EC.generateKeyPair()
-      val publicKey = keyPair.publicKey
-      val imposterPublicKey = imposterKeyPair.publicKey
+      val publicKey = keyPair.getPublicKey
+      val imposterPublicKey = imposterKeyPair.getPublicKey
       val did = generateDid(publicKey)
       val imposterDid = generateDid(imposterPublicKey)
       val institutionId = createParticipant(did)
@@ -756,7 +756,7 @@ class GroupsServiceImplSpec extends RpcSpecBase with DIDUtil {
 
     "reject group deleting if a group doesn't exist" in {
       val keyPair = EC.generateKeyPair()
-      val publicKey = keyPair.publicKey
+      val publicKey = keyPair.getPublicKey
       val did = generateDid(publicKey)
       createParticipant(did)
 

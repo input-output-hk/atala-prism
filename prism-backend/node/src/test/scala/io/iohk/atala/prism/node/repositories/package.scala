@@ -1,15 +1,17 @@
 package io.iohk.atala.prism.node
 
-import io.iohk.atala.prism.crypto.SHA256Digest
+import io.iohk.atala.prism.kotlin.crypto.SHA256Digest
 import io.iohk.atala.prism.identity.DIDSuffix
 import io.iohk.atala.prism.node.models.CredentialId
+
+import io.iohk.atala.prism.interop.toScalaSDK._
 
 package object repositories {
 
   def digestGen(kind: Byte, i: Byte): SHA256Digest =
-    SHA256Digest.fromVectorUnsafe(kind.toByte +: Vector.fill(30)(0.toByte) :+ i.toByte)
+    SHA256Digest.fromBytes(kind.toByte +: Array.fill(30)(0.toByte) :+ i.toByte)
 
-  def didSuffixFromDigest(digest: SHA256Digest): DIDSuffix = DIDSuffix.unsafeFromDigest(digest)
+  def didSuffixFromDigest(digest: SHA256Digest): DIDSuffix = DIDSuffix.unsafeFromDigest(digest.asScala)
 
   def credentialIdFromDigest(digest: SHA256Digest): CredentialId = CredentialId(digest.hexValue)
 

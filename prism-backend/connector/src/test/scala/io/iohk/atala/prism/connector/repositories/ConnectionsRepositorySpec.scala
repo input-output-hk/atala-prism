@@ -7,7 +7,7 @@ import io.iohk.atala.prism.DIDUtil
 import io.iohk.atala.prism.connector.model._
 import io.iohk.atala.prism.connector.repositories.daos._
 import io.iohk.atala.prism.connector.DataPreparation
-import io.iohk.atala.prism.crypto.EC
+import io.iohk.atala.prism.kotlin.crypto.EC
 import io.iohk.atala.prism.models.ParticipantId
 import io.iohk.atala.prism.repositories.ops.SqlTestOps._
 import org.scalatest.Assertion
@@ -68,7 +68,7 @@ class ConnectionsRepositorySpec extends ConnectorRepositorySpecBase {
   "addConnectionFromToken" should {
     "add connection from existing token using public key auth" in {
       val issuerId = createIssuer()
-      val publicKey = EC.generateKeyPair().publicKey
+      val publicKey = EC.generateKeyPair().getPublicKey
 
       val token = new TokenString("t0k3nc0de")
       sql"""INSERT INTO connection_tokens(token, initiator) VALUES ($token, $issuerId)""".runUpdate()
@@ -106,7 +106,7 @@ class ConnectionsRepositorySpec extends ConnectorRepositorySpecBase {
   "revokeConnection" should {
     def prepare() = {
       val initiator = createIssuer()
-      val publicKey = EC.generateKeyPair().publicKey
+      val publicKey = EC.generateKeyPair().getPublicKey
 
       val token = TokenString.random()
 

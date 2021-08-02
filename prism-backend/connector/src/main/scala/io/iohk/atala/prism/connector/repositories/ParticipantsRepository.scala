@@ -14,7 +14,7 @@ import io.iohk.atala.prism.connector.errors.{ConnectorError, UnknownValueError, 
 import io.iohk.atala.prism.connector.model.{ParticipantInfo, ParticipantLogo, ParticipantType, UpdateParticipantProfile}
 import io.iohk.atala.prism.connector.repositories.ParticipantsRepository.CreateParticipantRequest
 import io.iohk.atala.prism.connector.repositories.daos.ParticipantsDAO
-import io.iohk.atala.prism.crypto.ECPublicKey
+import io.iohk.atala.prism.kotlin.crypto.keys.ECPublicKey
 import io.iohk.atala.prism.errors.LoggingContext
 import io.iohk.atala.prism.identity.DID
 import io.iohk.atala.prism.models.ParticipantId

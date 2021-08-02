@@ -6,8 +6,8 @@ import doobie.free.connection.ConnectionIO
 import doobie.implicits._
 import doobie.postgres.sqlstate
 import io.iohk.atala.prism.credentials.CredentialBatchId
-import io.iohk.atala.prism.crypto.MerkleTree.MerkleRoot
-import io.iohk.atala.prism.crypto.SHA256Digest
+import io.iohk.atala.prism.kotlin.crypto.MerkleRoot
+import io.iohk.atala.prism.kotlin.crypto.SHA256Digest
 import io.iohk.atala.prism.identity.DIDSuffix
 import io.iohk.atala.prism.node.models.nodeState
 import io.iohk.atala.prism.node.models.nodeState.{DIDPublicKeyState, LedgerData}
@@ -92,9 +92,9 @@ object IssueCredentialBatchOperation extends SimpleOperationCompanion[IssueCrede
       }
       merkleRoot <- credentialBatchData.child(_.merkleRoot, "merkleRoot").parse { merkleRoot =>
         Either.cond(
-          merkleRoot.size == SHA256Digest.BYTE_LENGTH,
-          MerkleRoot(SHA256Digest.fromVectorUnsafe(merkleRoot.toByteArray.toVector)),
-          s"Merkle root must be of ${SHA256Digest.BYTE_LENGTH} bytes"
+          merkleRoot.size == SHA256Digest.getBYTE_LENGTH,
+          new MerkleRoot(SHA256Digest.fromBytes(merkleRoot.toByteArray)),
+          s"Merkle root must be of ${SHA256Digest.getBYTE_LENGTH} bytes"
         )
       }
     } yield IssueCredentialBatchOperation(batchId, issuerDID, merkleRoot, operationDigest, ledgerData)

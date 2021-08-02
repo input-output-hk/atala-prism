@@ -6,8 +6,8 @@ import java.time.Instant
 import cats.data.EitherT
 import doobie.free.connection.ConnectionIO
 import io.iohk.atala.prism.credentials.TimestampInfo
-import io.iohk.atala.prism.crypto.ECPublicKey
-import io.iohk.atala.prism.crypto.SHA256Digest
+import io.iohk.atala.prism.kotlin.crypto.keys.ECPublicKey
+import io.iohk.atala.prism.kotlin.crypto.SHA256Digest
 import io.iohk.atala.prism.identity.DIDSuffix
 import io.iohk.atala.prism.models.{Ledger, TransactionId}
 import io.iohk.atala.prism.node.models.nodeState.LedgerData

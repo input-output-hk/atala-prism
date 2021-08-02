@@ -1,13 +1,15 @@
 package io.iohk.atala.prism.vault.repositories
 
 import io.iohk.atala.prism.AtalaWithPostgresSpec
-import io.iohk.atala.prism.crypto.{EC, SHA256Digest}
+import io.iohk.atala.prism.kotlin.crypto.{EC, SHA256Digest}
 import io.iohk.atala.prism.identity.DID
 import io.iohk.atala.prism.vault.model.{CreatePayload, Payload}
 import org.scalatest.OptionValues
 
 import java.time.Instant
 import java.time.temporal.ChronoUnit
+
+import io.iohk.atala.prism.interop.toScalaSDK._
 
 class PayloadsRepositorySpec extends AtalaWithPostgresSpec with OptionValues {
   lazy val repository = PayloadsRepository(database)
@@ -62,6 +64,6 @@ class PayloadsRepositorySpec extends AtalaWithPostgresSpec with OptionValues {
   }
 
   private def newDID(): DID = {
-    DID.createUnpublishedDID(EC.generateKeyPair().publicKey).canonical.value
+    DID.createUnpublishedDID(EC.generateKeyPair().getPublicKey.asScala).canonical.value
   }
 }

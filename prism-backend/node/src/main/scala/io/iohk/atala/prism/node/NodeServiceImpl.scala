@@ -7,7 +7,7 @@ import io.grpc.Status
 import io.iohk.atala.prism.BuildInfo
 import io.iohk.atala.prism.connector.AtalaOperationId
 import io.iohk.atala.prism.credentials.CredentialBatchId
-import io.iohk.atala.prism.crypto.SHA256Digest
+import io.iohk.atala.prism.kotlin.crypto.SHA256Digest
 import io.iohk.atala.prism.identity.DID
 import io.iohk.atala.prism.metrics.RequestMeasureUtil
 import io.iohk.atala.prism.metrics.RequestMeasureUtil.{FutureMetricsOps, measureRequestFuture}
@@ -224,7 +224,7 @@ class NodeServiceImpl(
     )
 
     val credentialHashF = Future
-      .fromTry(Try(SHA256Digest.fromVectorUnsafe(request.credentialHash.toByteArray.toVector)))
+      .fromTry(Try(SHA256Digest.fromBytes(request.credentialHash.toByteArray)))
       .countErrorOnFail(serviceName, methodName, Status.INTERNAL.getCode.value())
     measureRequestFuture(serviceName, methodName) {
       withLog(methodName, request) { traceId =>
@@ -398,7 +398,7 @@ object NodeServiceImpl {
       val revocationLedgerData = state.revokedOn.map(ProtoCodecs.toLedgerData)
       val responseBase = GetBatchStateResponse()
         .withIssuerDid(state.issuerDIDSuffix.value)
-        .withMerkleRoot(ByteString.copyFrom(state.merkleRoot.hash.value.toArray))
+        .withMerkleRoot(ByteString.copyFrom(state.merkleRoot.getHash.getValue))
         .withPublicationLedgerData(ProtoCodecs.toLedgerData(state.issuedOn))
       revocationLedgerData.fold(responseBase)(responseBase.withRevocationLedgerData)
     }

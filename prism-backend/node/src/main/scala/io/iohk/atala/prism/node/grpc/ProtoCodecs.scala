@@ -4,7 +4,9 @@ import java.security.PublicKey
 
 import com.google.protobuf.ByteString
 import io.iohk.atala.prism.credentials.TimestampInfo
-import io.iohk.atala.prism.crypto.{EC, ECConfig, ECPublicKey, JvmECPublicKey}
+import io.iohk.atala.prism.kotlin.crypto.EC
+import io.iohk.atala.prism.kotlin.crypto.keys.ECPublicKey
+import io.iohk.atala.prism.kotlin.crypto.ECConfig.{INSTANCE => ECConfig}
 import io.iohk.atala.prism.models.{ProtoCodecs => CommonProtoCodecs}
 import io.iohk.atala.prism.identity.DIDSuffix
 import io.iohk.atala.prism.node.models
@@ -77,9 +79,9 @@ object ProtoCodecs {
     val point = key.getCurvePoint
     node_models
       .ECKeyData()
-      .withCurve(ECConfig.CURVE_NAME)
-      .withX(ByteString.copyFrom(point.x.toByteArray))
-      .withY(ByteString.copyFrom(point.y.toByteArray))
+      .withCurve(ECConfig.getCURVE_NAME)
+      .withX(ByteString.copyFrom(point.getX.bytes()))
+      .withY(ByteString.copyFrom(point.getY.bytes()))
   }
 
   def toProtoKeyUsage(keyUsage: models.KeyUsage): node_models.KeyUsage = {
@@ -112,11 +114,8 @@ object ProtoCodecs {
     } yield EC.toPublicKey(maybeX.x.toByteArray, maybeY.y.toByteArray)
   }
 
-  def fromProtoKeyLegacy(protoKey: node_models.PublicKey): Option[PublicKey] = {
-    fromProtoKey(protoKey).map {
-      case jvmECPublicKey: JvmECPublicKey => jvmECPublicKey.key
-    }
-  }
+  def fromProtoKeyLegacy(protoKey: node_models.PublicKey): Option[PublicKey] =
+    fromProtoKey(protoKey).map(_.getKey$prism_crypto)
 
   def toLedgerData(ledgerData: LedgerData): node_models.LedgerData = {
     node_models.LedgerData(

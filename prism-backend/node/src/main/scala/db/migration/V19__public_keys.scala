@@ -1,6 +1,6 @@
 package db.migration
 
-import io.iohk.atala.prism.crypto.EC
+import io.iohk.atala.prism.kotlin.crypto.EC
 import io.iohk.atala.prism.utils.Using.using
 import org.flywaydb.core.api.migration.{BaseJavaMigration, Context}
 
@@ -31,7 +31,7 @@ class V19__public_keys extends BaseJavaMigration {
     val x = row.getBytes("x")
     val y = row.getBytes("y")
 
-    val compressedX = EC.toPublicKey(x, y).getCompressed
+    val compressedX: Array[Byte] = EC.toPublicKey(x, y).getEncodedCompressed
 
     using(
       context.getConnection

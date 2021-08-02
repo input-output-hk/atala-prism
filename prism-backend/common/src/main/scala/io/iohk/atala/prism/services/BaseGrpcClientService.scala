@@ -14,7 +14,9 @@ import com.google.protobuf.ByteString
 import doobie.util.transactor.Transactor
 import doobie.free.connection.ConnectionIO
 import com.typesafe.config.Config
-import io.iohk.atala.prism.crypto.{EC, ECConfig, ECKeyPair}
+import io.iohk.atala.prism.kotlin.crypto.EC
+import io.iohk.atala.prism.kotlin.crypto.keys.ECKeyPair
+import io.iohk.atala.prism.kotlin.crypto.ECConfig.{INSTANCE => ECConfig}
 import io.iohk.atala.prism.connector.RequestAuthenticator
 import io.iohk.atala.prism.services.BaseGrpcClientService.{
   AuthHeaders,
@@ -26,6 +28,8 @@ import io.iohk.atala.prism.identity.DID
 import io.iohk.atala.prism.daos.DbConfigDao
 import io.iohk.atala.prism.protos.{connector_api, node_models}
 import doobie.implicits._
+
+import io.iohk.atala.prism.interop.toScalaSDK._
 
 /**
   * Abstract service which provides support for DID based authentication for gRPC
@@ -77,7 +81,7 @@ abstract class BaseGrpcClientService[S <: AbstractStub[S]](
   private[services] def signRequest[Request <: GeneratedMessage](request: Request): Metadata = {
     val signature = requestAuthenticator.signConnectorRequest(
       request.toByteArray,
-      authConfig.keys.privateKey
+      authConfig.keys.getPrivateKey.asScala
     )
 
     authConfig match {
@@ -90,7 +94,7 @@ abstract class BaseGrpcClientService[S <: AbstractStub[S]](
         )
       case PublicKeyBasedAuthConfig(keyPair) =>
         createMetadataHeaders(
-          AuthHeaders.PUBLIC_KEY -> Base64.getUrlEncoder.encodeToString(keyPair.publicKey.getEncoded),
+          AuthHeaders.PUBLIC_KEY -> Base64.getUrlEncoder.encodeToString(keyPair.getPublicKey.getEncoded),
           AuthHeaders.SIGNATURE -> signature.encodedSignature,
           AuthHeaders.REQUEST_NONCE -> signature.encodedRequestNonce
         )
@@ -197,8 +201,8 @@ object BaseGrpcClientService {
       def getECKeyPairFromString(encodedPrivateKey: String): Option[ECKeyPair] = {
         for {
           privateKey <- Try(EC.toPrivateKey(Base64.getUrlDecoder.decode(encodedPrivateKey))).toOption
-          publicKey <- Try(EC.toPublicKeyFromPrivateKey(privateKey.getEncoded)).toOption
-        } yield ECKeyPair(privateKey, publicKey)
+          publicKey <- Try(EC.toPublicKeyFromPrivateKey(privateKey)).toOption
+        } yield new ECKeyPair(publicKey, privateKey)
       }
 
       def createNewDid: Task[DidBasedAuthConfig] = {
@@ -209,9 +213,9 @@ object BaseGrpcClientService {
           usage = node_models.KeyUsage.MASTER_KEY,
           keyData = node_models.PublicKey.KeyData.EcKeyData(
             node_models.ECKeyData(
-              curve = ECConfig.CURVE_NAME,
-              x = ByteString.copyFrom(masterKeyPair.publicKey.getCurvePoint.x.toByteArray),
-              y = ByteString.copyFrom(masterKeyPair.publicKey.getCurvePoint.y.toByteArray)
+              curve = ECConfig.getCURVE_NAME,
+              x = ByteString.copyFrom(masterKeyPair.getPublicKey.getCurvePoint.getX.bytes()),
+              y = ByteString.copyFrom(masterKeyPair.getPublicKey.getCurvePoint.getY.bytes())
             )
           )
         )
@@ -222,9 +226,9 @@ object BaseGrpcClientService {
           usage = node_models.KeyUsage.ISSUING_KEY,
           keyData = node_models.PublicKey.KeyData.EcKeyData(
             node_models.ECKeyData(
-              curve = ECConfig.CURVE_NAME,
-              x = ByteString.copyFrom(issuingKeyPair.publicKey.getCurvePoint.x.toByteArray),
-              y = ByteString.copyFrom(issuingKeyPair.publicKey.getCurvePoint.y.toByteArray)
+              curve = ECConfig.getCURVE_NAME,
+              x = ByteString.copyFrom(issuingKeyPair.getPublicKey.getCurvePoint.getX.bytes()),
+              y = ByteString.copyFrom(issuingKeyPair.getPublicKey.getCurvePoint.getY.bytes())
             )
           )
         )
@@ -242,7 +246,7 @@ object BaseGrpcClientService {
         val signedAtalaOp = node_models.SignedAtalaOperation(
           signedWith = masterKeyId,
           operation = Some(atalaOp),
-          signature = ByteString.copyFrom(EC.sign(atalaOp.toByteArray, masterKeyPair.privateKey).data)
+          signature = ByteString.copyFrom(EC.sign(atalaOp.toByteArray, masterKeyPair.getPrivateKey).getData)
         )
 
         val request = connector_api
@@ -275,12 +279,12 @@ object BaseGrpcClientService {
           _ <- DbConfigDao.setIfNotExists(ConfigKeyNames.DID_MASTER_KEY_ID, authConfig.didMasterKeyId)
           _ <- DbConfigDao.setIfNotExists(
             ConfigKeyNames.DID_MASTER_PRIVATE_KEY,
-            Base64.getUrlEncoder.encodeToString(authConfig.didMasterKeyPair.privateKey.getEncoded)
+            Base64.getUrlEncoder.encodeToString(authConfig.didMasterKeyPair.getPrivateKey.getEncoded)
           )
           _ <- DbConfigDao.setIfNotExists(ConfigKeyNames.DID_ISSUING_KEY_ID, authConfig.didIssuingKeyId)
           _ <- DbConfigDao.setIfNotExists(
             ConfigKeyNames.DID_ISSUING_PRIVATE_KEY,
-            Base64.getUrlEncoder.encodeToString(authConfig.didIssuingKeyPair.privateKey.getEncoded)
+            Base64.getUrlEncoder.encodeToString(authConfig.didIssuingKeyPair.getPrivateKey.getEncoded)
           )
           // as we want to save DID once, even after save we have to get the current value again
         } yield ()).transact(tx).flatMap(_ => getFromDb)

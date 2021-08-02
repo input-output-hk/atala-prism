@@ -5,7 +5,8 @@ import com.google.protobuf.ByteString
 import doobie.implicits._
 import io.iohk.atala.prism.AtalaWithPostgresSpec
 import io.iohk.atala.prism.credentials.TimestampInfo
-import io.iohk.atala.prism.crypto.{EC, SHA256Digest}
+import io.iohk.atala.prism.kotlin.crypto.EC
+import io.iohk.atala.prism.kotlin.crypto.SHA256Digest
 import io.iohk.atala.prism.models.{Ledger, TransactionId}
 import io.iohk.atala.prism.node.models.nodeState.LedgerData
 import io.iohk.atala.prism.node.models.{DIDPublicKey, KeyUsage}
@@ -59,7 +60,7 @@ object UpdateDIDOperationSpec {
   val exampleOperation = node_models.AtalaOperation(
     operation = node_models.AtalaOperation.Operation.UpdateDid(
       value = node_models.UpdateDIDOperation(
-        previousOperationHash = ByteString.copyFrom(createDidOperation.digest.value.toArray),
+        previousOperationHash = ByteString.copyFrom(createDidOperation.digest.getValue.toArray),
         id = createDidOperation.id.value,
         actions = Seq(exampleAddKeyAction, exampleRemoveKeyAction)
       )
@@ -174,7 +175,7 @@ class UpdateDIDOperationSpec extends AtalaWithPostgresSpec with ProtoParsingTest
         .toOption
         .value
 
-      key mustBe masterKeys.publicKey
+      key mustBe masterKeys.getPublicKey
       previousOperation mustBe Some(createDidOperation.digest)
     }
   }

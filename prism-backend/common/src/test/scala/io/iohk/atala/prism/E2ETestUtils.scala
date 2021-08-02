@@ -3,7 +3,8 @@ package io.iohk.atala.prism
 import java.io.BufferedInputStream
 
 import com.google.protobuf.ByteString
-import io.iohk.atala.prism.crypto.{EC, ECKeyPair}
+import io.iohk.atala.prism.kotlin.crypto.EC
+import io.iohk.atala.prism.kotlin.crypto.keys.ECKeyPair
 import io.iohk.atala.prism.identity.DID
 import io.iohk.atala.prism.protos.connector_api.{AddConnectionFromTokenRequest, RegisterDIDRequest}
 import io.iohk.atala.prism.protos.connector_models.EncodedPublicKey
@@ -19,12 +20,12 @@ import io.iohk.atala.prism.services.BaseGrpcClientService.DidBasedAuthConfig
 import io.iohk.atala.prism.services.NodeClientService
 
 object E2ETestUtils {
-  implicit val ecTrait = EC
+  implicit val ecTrait = EC.INSTANCE
 
   def addConnectionFromTokenRequest(token: String, clientKey: ECKeyPair): AddConnectionFromTokenRequest = {
     AddConnectionFromTokenRequest(
       token = token,
-      holderEncodedPublicKey = Some(EncodedPublicKey(ByteString.copyFrom(clientKey.publicKey.getEncoded)))
+      holderEncodedPublicKey = Some(EncodedPublicKey(ByteString.copyFrom(clientKey.getPublicKey.getEncoded)))
     )
   }
 
@@ -42,14 +43,14 @@ object E2ETestUtils {
               id = masterKeyId,
               usage = KeyUsage.MASTER_KEY,
               keyData = PublicKey.KeyData.EcKeyData(
-                NodeClientService.toTimestampInfoProto(masterKey.publicKey)
+                NodeClientService.toTimestampInfoProto(masterKey.getPublicKey)
               )
             ),
             PublicKey(
               id = issuanceKeyId,
               usage = KeyUsage.ISSUING_KEY,
               keyData = PublicKey.KeyData.EcKeyData(
-                NodeClientService.toTimestampInfoProto(issuanceKey.publicKey)
+                NodeClientService.toTimestampInfoProto(issuanceKey.getPublicKey)
               )
             )
           )
@@ -62,7 +63,7 @@ object E2ETestUtils {
     val signedAtalaOperation = SignedAtalaOperation(
       signedWith = masterKeyId,
       operation = Some(atalaOperation),
-      signature = ByteString.copyFrom(ecTrait.sign(atalaOperation.toByteArray, masterKey.privateKey).data)
+      signature = ByteString.copyFrom(EC.sign(atalaOperation.toByteArray, masterKey.getPrivateKey).getData)
     )
 
     RegisterDIDRequest()

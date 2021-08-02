@@ -5,7 +5,9 @@ import cats.implicits.catsSyntaxEitherId
 import io.iohk.atala.prism.connector.errors._
 import io.iohk.atala.prism.connector.model._
 import io.iohk.atala.prism.connector.repositories.ConnectionsRepository
-import io.iohk.atala.prism.crypto.{EC, ECConfig, ECPublicKey}
+import io.iohk.atala.prism.kotlin.crypto.{EC}
+import io.iohk.atala.prism.kotlin.crypto.keys.{ECPublicKey}
+import io.iohk.atala.prism.kotlin.crypto.ECConfig.{INSTANCE => ECConfig}
 import io.iohk.atala.prism.identity.DID
 import io.iohk.atala.prism.models.ParticipantId
 import io.iohk.atala.prism.protos.node_api
@@ -69,7 +71,7 @@ class ConnectionsService(connectionsRepository: ConnectionsRepository[IO], nodeS
         // TODO: select communication keys only, once we provision them and make frontend use them
       } yield validKeys.map { key =>
         val keyData = key.keyData.ecKeyData.getOrElse(throw new Exception("Node returned key without keyData"))
-        assert(keyData.curve == ECConfig.CURVE_NAME)
+        assert(keyData.curve == ECConfig.getCURVE_NAME)
         (key.id, EC.toPublicKey(keyData.x.toByteArray, keyData.y.toByteArray))
       }
 

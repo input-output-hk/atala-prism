@@ -5,7 +5,8 @@ import doobie.util.invariant.InvalidEnum
 import doobie.{Get, Meta, Put}
 import io.circe.Json
 import io.iohk.atala.prism.connector.AtalaOperationId
-import io.iohk.atala.prism.crypto.{EC, ECPublicKey, SHA256Digest}
+import io.iohk.atala.prism.kotlin.crypto.{EC, SHA256Digest}
+import io.iohk.atala.prism.kotlin.crypto.keys.ECPublicKey
 import io.iohk.atala.prism.identity.DID
 import io.iohk.atala.prism.models.{Ledger, TransactionId, UUIDValue}
 
@@ -20,8 +21,8 @@ trait BaseDAO {
   implicit val jsonGet: Get[Json] = doobie.postgres.circe.json.implicits.jsonGet
 
   implicit val sha256MetaBytes: Meta[SHA256Digest] = Meta[Array[Byte]].timap { value =>
-    SHA256Digest.fromVectorUnsafe(value.toVector)
-  }(_.value.toArray)
+    SHA256Digest.fromBytes(value)
+  }(_.getValue)
 
   implicit val atalaOperationIdMeta: Meta[AtalaOperationId] =
     Meta[Array[Byte]]
