@@ -42,8 +42,8 @@ function getTemplateCategories() {
   return Promise.resolve(hardcodedTemplateCategories);
 }
 
-function createCategory() {
-  return Promise.resolve();
+function createCategory(values) {
+  return Promise.resolve(values);
 }
 
 const mapCredentialTypeField = field => ({

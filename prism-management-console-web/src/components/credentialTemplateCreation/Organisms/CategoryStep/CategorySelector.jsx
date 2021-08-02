@@ -2,12 +2,12 @@ import React, { useState } from 'react';
 import PropTypes from 'prop-types';
 import { Radio, Form } from 'antd';
 import { useTranslation } from 'react-i18next';
+import { isInteger } from 'lodash';
 import AddNewCategory from '../../Molecules/CategoryStep/AddNewCategory';
 import CategoryCreationModal from '../CategoryCreationModal/CategoryCreationModal';
 import CategoryCard from '../../Molecules/CategoryStep/CategoryCard';
 import { templateCategoryShape } from '../../../../helpers/propShapes';
 import { useTemplateContext } from '../../../providers/TemplateContext';
-import { isInteger } from '../../../../helpers/genericHelpers';
 import './_style.scss';
 
 const ENABLED_STATE = 1;

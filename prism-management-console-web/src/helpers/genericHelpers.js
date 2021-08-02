@@ -41,5 +41,3 @@ export const mockDelay = timeoutMs => new Promise(resolve => setTimeout(resolve,
 
 export const getAditionalTimeout = entities =>
   entities > DEFAULT_PAGE_SIZE ? entities * TIMEOUT_MULTIPLIER_MS : 0;
-
-export const isInteger = value => Number.isInteger(parseInt(value, 10));
