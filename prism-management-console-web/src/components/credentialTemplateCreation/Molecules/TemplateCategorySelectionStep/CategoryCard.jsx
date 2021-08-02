@@ -6,7 +6,7 @@ import { Col, Row } from 'antd';
 const CategoryCard = ({ category, typeKey, isSelected }) => {
   const { t } = useTranslation();
   return (
-    <Col type="flex" align="middle" className={isSelected ? 'SelectedTypeCard' : 'TypeCard'}>
+    <Col type="flex" align="middle" className={`TypeCard shadow ${isSelected ? 'selected' : ''}`}>
       <Row className="header-name">
         <img className="img-logo" src={category.logo} alt={`${typeKey}-logo`} />
         {t(category.name)}

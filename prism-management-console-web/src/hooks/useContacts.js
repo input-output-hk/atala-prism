@@ -5,7 +5,6 @@ import {
   CONTACT_PAGE_SIZE,
   CONTACT_SORTING_KEYS,
   MAX_CONTACT_PAGE_SIZE,
-  PENDING_CONNECTION,
   SORTING_DIRECTIONS,
   UNKNOWN_DID_SUFFIX_ERROR_CODE
 } from '../helpers/constants';
@@ -24,7 +23,7 @@ export const useContacts = (contactsManager, allowPreload = true) => {
 
   const [searchText, setSearchText] = useState();
   const [createdAt, setCreatedAt] = useState();
-  const [status, setStatus] = useState(PENDING_CONNECTION);
+  const [status, setStatus] = useState();
 
   const [sortingField, setSortingField] = useState(CONTACT_SORTING_KEYS.name);
   const [sortingDirection, setSortingDirection] = useState(SORTING_DIRECTIONS.ascending);

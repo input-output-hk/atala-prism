@@ -2,6 +2,7 @@ package io.iohk.atala.prism.node.poc.batch
 
 import cats.effect.IO
 import cats.scalatest.ValidatedValues.convertValidatedToValidatable
+import com.google.protobuf.ByteString
 import io.grpc.inprocess.{InProcessChannelBuilder, InProcessServerBuilder}
 import io.grpc.{ManagedChannel, Server}
 import io.iohk.atala.prism.AtalaWithPostgresSpec
@@ -197,17 +198,24 @@ class FlowPoC extends AtalaWithPostgresSpec with BeforeAndAfterEach {
 
       // ... later ...
       // 10. the issuer decides to revoke the first batch
+      val revocationKeyId = "revocation0"
+      wallet.addRevocationKeyToDid(
+        revocationKeyId = revocationKeyId,
+        previousOperationHash = ByteString.copyFrom(SHA256Digest.compute(createDIDOp.toByteArray).getValue),
+        didSuffix = didSuffix
+      )
+
       val issueBatch1OpHash = SHA256Digest.compute(issueBatch1Op.toByteArray)
       val batchId1 = CredentialBatchId.fromBatchData(issuerDID.suffix, root1)
       val revokeBatch1Op = revokeCredentialsOperation(issueBatch1OpHash, batchId1)
-      val signedRevokeBatch1Op = wallet.signOperation(revokeBatch1Op, issuanceKeyId, didSuffix)
+      val signedRevokeBatch1Op = wallet.signOperation(revokeBatch1Op, revocationKeyId, didSuffix)
       val revokeCredentialBatchOperationId = console.revokeCredentialBatch(signedRevokeBatch1Op).operationId
 
       // 11. the issuer decides to revoke the first credential from the second batch
       val issueBatch2OpHash = SHA256Digest.compute(issueBatch2Op.toByteArray)
       val batchId2 = CredentialBatchId.fromBatchData(issuerDID.suffix, root2)
       val revokeC3Op = revokeCredentialsOperation(issueBatch2OpHash, batchId2, Seq(c3.hash.asKotlin))
-      val signedRevokeC3Op = wallet.signOperation(revokeC3Op, issuanceKeyId, didSuffix)
+      val signedRevokeC3Op = wallet.signOperation(revokeC3Op, revocationKeyId, didSuffix)
       val revokeSpecificCredentialsOperationId = console.revokeSpecificCredentials(signedRevokeC3Op).operationId
 
       DataPreparation.flushOperationsAndWaitConfirmation(

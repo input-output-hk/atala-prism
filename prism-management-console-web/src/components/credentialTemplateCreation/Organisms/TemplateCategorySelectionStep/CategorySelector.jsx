@@ -2,24 +2,28 @@ import React, { useState } from 'react';
 import PropTypes from 'prop-types';
 import { message, Radio, Form } from 'antd';
 import { useTranslation } from 'react-i18next';
-import AddNewCategory from '../../Molecules/AddNewCategory';
-import CategoryCard from '../../Molecules/CategoryCard';
-import { antdV4FormShape, templateCategoryShape } from '../../../../helpers/propShapes';
+import AddNewCategory from '../../Molecules/TemplateCategorySelectionStep/AddNewCategory';
+import CategoryCard from '../../Molecules/TemplateCategorySelectionStep/CategoryCard';
+import { templateCategoryShape } from '../../../../helpers/propShapes';
+import { useTemplateContext } from '../../../providers/TemplateContext';
+import { isInteger } from '../../../../helpers/genericHelpers';
 import './_style.scss';
 
 const ENABLED_STATE = 1;
 const ADD_NEW_CATEGORY_KEY = 'ADD_NEW_CATEGORY_KEY';
 
-const CategorySelector = ({ templateCategories, form }) => {
+const CategorySelector = ({ templateCategories }) => {
   const { t } = useTranslation();
-  const [selected, setSelected] = useState();
+  const { form, templateSettings } = useTemplateContext();
+  const initialSelection = parseInt(templateSettings.category, 10);
+  const [selected, setSelected] = useState(initialSelection);
 
   const categories = templateCategories.filter(({ state }) => state === ENABLED_STATE);
 
   const handleAddNewCategory = () => {
     // TODO: implement add new category functionality
     message.warn(t('errors.notImplementedYet'));
-    form.resetFields(['templateCategory']);
+    form.resetFields(['category']);
   };
 
   const onCategoryChange = ev => {
@@ -28,13 +32,20 @@ const CategorySelector = ({ templateCategories, form }) => {
   };
 
   return (
-    <div className="flex selectCathegory">
+    <div className="flex selectCategory">
       <Form.Item
-        name="templateCategory"
+        name="category"
         label={t('credentialTemplateCreation.step1.selectCategory')}
         rules={[
           {
-            required: true
+            validator: ({ field }, value) =>
+              isInteger(value)
+                ? Promise.resolve()
+                : Promise.reject(
+                    t('credentialTemplateCreation.errors.fieldIsRequired', {
+                      field: t(`credentialTemplateCreation.fields.${field}`)
+                    })
+                  )
           }
         ]}
       >
@@ -65,8 +76,7 @@ CategorySelector.defaultProps = {
 };
 
 CategorySelector.propTypes = {
-  templateCategories: PropTypes.arrayOf(templateCategoryShape),
-  form: antdV4FormShape.isRequired
+  templateCategories: PropTypes.arrayOf(templateCategoryShape)
 };
 
 export default CategorySelector;

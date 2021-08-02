@@ -249,8 +249,15 @@ class EndorsementsFlowPoC extends AtalaWithPostgresSpec with BeforeAndAfterEach 
       println(validityInterval.toProtoString)
 
       // We revoke the endorsement
+      val revocationKeyId = "revocation0"
+      wallet.addRevocationKeyToDid(
+        revocationKeyId = revocationKeyId,
+        previousOperationHash = ByteString.copyFrom(SHA256Digest.compute(createDIDOp.toByteArray).getValue),
+        didSuffix = moeDIDSuffix
+      )
+
       val revokeOp = revokeCredentialsOperation(issueOpHash, batchId)
-      val signedRevokeOp = wallet.signOperation(revokeOp, issuanceKeyId, moeDIDSuffix)
+      val signedRevokeOp = wallet.signOperation(revokeOp, revocationKeyId, moeDIDSuffix)
       endorsementsService
         .revokeEndorsement(
           RevokeEndorsementRequest()

@@ -4,11 +4,10 @@ import cats.effect.IO
 import com.google.protobuf.ByteString
 import doobie.implicits._
 import io.iohk.atala.prism.AtalaWithPostgresSpec
-import io.iohk.atala.prism.credentials.TimestampInfo
+import io.iohk.atala.prism.credentials.{CredentialBatchId, TimestampInfo}
 import io.iohk.atala.prism.kotlin.crypto.SHA256Digest
 import io.iohk.atala.prism.models.{Ledger, TransactionId}
 import io.iohk.atala.prism.node.models.nodeState.LedgerData
-import io.iohk.atala.prism.node.models.{DIDPublicKey, KeyUsage}
 import io.iohk.atala.prism.node.repositories.DIDDataRepository
 import io.iohk.atala.prism.node.repositories.daos.CredentialBatchesDAO
 import io.iohk.atala.prism.protos.node_models
@@ -19,39 +18,38 @@ import org.scalatest.OptionValues._
 import java.time.Instant
 
 object RevokeCredentialsOperationSpec {
-  val masterKeys = CreateDIDOperationSpec.masterKeys
-  val issuingKeys = CreateDIDOperationSpec.issuingKeys
+  private val revokingKeys = CreateDIDOperationSpec.revokingKeys
 
-  lazy val issuerDidKeys = List(
-    DIDPublicKey(issuerDIDSuffix, "master", KeyUsage.MasterKey, masterKeys.getPublicKey),
-    DIDPublicKey(issuerDIDSuffix, "issuing", KeyUsage.IssuingKey, issuingKeys.getPublicKey)
-  )
-
-  lazy val dummyTimestamp = TimestampInfo(Instant.ofEpochMilli(0), 1, 0)
-  lazy val dummyLedgerData = LedgerData(
+  lazy val dummyTimestamp: TimestampInfo = TimestampInfo(Instant.ofEpochMilli(0), 1, 0)
+  lazy val dummyLedgerData: LedgerData = LedgerData(
     TransactionId.from(Array.fill[Byte](TransactionId.config.size.toBytes.toInt)(0)).value,
     Ledger.InMemory,
     dummyTimestamp
   )
-  lazy val issuerCreateDIDOperation =
-    CreateDIDOperation.parse(CreateDIDOperationSpec.exampleOperation, dummyLedgerData).toOption.value
-  lazy val credentialIssueBatchOperation =
+
+  lazy val issuerCreateDIDOperation: CreateDIDOperation =
+    CreateDIDOperation
+      .parse(CreateDIDOperationSpec.exampleOperation, dummyLedgerData)
+      .toOption
+      .value
+
+  lazy val credentialIssueBatchOperation: IssueCredentialBatchOperation =
     IssueCredentialBatchOperation
       .parse(IssueCredentialBatchOperationSpec.exampleOperation, dummyLedgerData)
       .toOption
       .value
 
-  lazy val issuerDIDSuffix = issuerCreateDIDOperation.id
-  lazy val credentialBatchId = credentialIssueBatchOperation.credentialBatchId
+  lazy val credentialBatchId: CredentialBatchId = credentialIssueBatchOperation.credentialBatchId
 
-  val revocationDate = TimestampInfo(Instant.ofEpochMilli(0), 0, 1)
-  val revocationLedgerData = LedgerData(
-    TransactionId.from(Array.fill[Byte](TransactionId.config.size.toBytes.toInt)(0)).value,
-    Ledger.InMemory,
-    revocationDate
-  )
+  val revocationDate: TimestampInfo = TimestampInfo(Instant.ofEpochMilli(0), 0, 1)
+  val revocationLedgerData: LedgerData =
+    LedgerData(
+      TransactionId.from(Array.fill[Byte](TransactionId.config.size.toBytes.toInt)(0)).value,
+      Ledger.InMemory,
+      revocationDate
+    )
 
-  val revokeFullBatchOperation = node_models.AtalaOperation(
+  val revokeFullBatchOperation: node_models.AtalaOperation = node_models.AtalaOperation(
     operation = node_models.AtalaOperation.Operation.RevokeCredentials(
       value = node_models.RevokeCredentialsOperation(
         previousOperationHash = ByteString.copyFrom(credentialIssueBatchOperation.digest.getValue),
@@ -61,10 +59,9 @@ object RevokeCredentialsOperationSpec {
     )
   )
 
-  val credentialHashToRevoke = SHA256Digest.compute("cred 1".getBytes)
-  val credentialHashNotRevoked = SHA256Digest.compute("cred 2".getBytes)
+  val credentialHashToRevoke: SHA256Digest = SHA256Digest.compute("cred 1".getBytes)
 
-  val revokeSpecificCredentialsOperation = node_models.AtalaOperation(
+  val revokeSpecificCredentialsOperation: node_models.AtalaOperation = node_models.AtalaOperation(
     operation = node_models.AtalaOperation.Operation.RevokeCredentials(
       value = node_models.RevokeCredentialsOperation(
         previousOperationHash = ByteString.copyFrom(credentialIssueBatchOperation.digest.getValue),
@@ -156,18 +153,18 @@ class RevokeCredentialsOperationSpec extends AtalaWithPostgresSpec {
 
       val parsedOperation = RevokeCredentialsOperation.parse(revokeFullBatchOperation, dummyLedgerData).toOption.value
 
-      val CorrectnessData(key, previousOperation) = parsedOperation
-        .getCorrectnessData("issuing")
+      val corrDataE = parsedOperation
+        .getCorrectnessData("revoking")
         .transact(database)
         .value
         .unsafeRunSync()
-        .toOption
-        .value
 
-      key mustBe issuingKeys.getPublicKey
+      val CorrectnessData(key, previousOperation) = corrDataE.toOption.value
+
+      key mustBe revokingKeys.getPublicKey
       previousOperation mustBe Some(credentialIssueBatchOperation.digest)
     }
-    "return state error when there are used different key than issuing key" in {
+    "return state error when there are used different key than revocation key" in {
       issuerCreateDIDOperation.applyState().transact(database).value.unsafeRunSync()
       credentialIssueBatchOperation.applyState().transact(database).value.unsafeRunSync()
 
@@ -179,7 +176,7 @@ class RevokeCredentialsOperationSpec extends AtalaWithPostgresSpec {
         .value
         .unsafeRunSync()
 
-      result mustBe Left(StateError.InvalidKeyUsed("issuing key"))
+      result mustBe Left(StateError.InvalidKeyUsed("The key type expected is Revocation key. Type used: MasterKey"))
     }
   }
 

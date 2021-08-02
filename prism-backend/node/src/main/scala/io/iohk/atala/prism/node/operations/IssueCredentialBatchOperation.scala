@@ -9,7 +9,7 @@ import io.iohk.atala.prism.credentials.CredentialBatchId
 import io.iohk.atala.prism.kotlin.crypto.MerkleRoot
 import io.iohk.atala.prism.kotlin.crypto.SHA256Digest
 import io.iohk.atala.prism.identity.DIDSuffix
-import io.iohk.atala.prism.node.models.{KeyUsage, nodeState}
+import io.iohk.atala.prism.node.models.nodeState
 import io.iohk.atala.prism.node.models.nodeState.{DIDPublicKeyState, LedgerData}
 import io.iohk.atala.prism.node.operations.path.{Path, ValueAtPath}
 import io.iohk.atala.prism.node.repositories.daos.CredentialBatchesDAO.CreateCredentialBatchData
@@ -40,7 +40,7 @@ case class IssueCredentialBatchOperation(
       }
       data <- EitherT.fromEither[ConnectionIO] {
         Either.cond(
-          keyState.keyUsage == KeyUsage.IssuingKey,
+          keyState.keyUsage.canIssue,
           CorrectnessData(keyState.key, None),
           StateError.InvalidKeyUsed(
             s"The key type expected is Issuing key. Type used: ${keyState.keyUsage}"

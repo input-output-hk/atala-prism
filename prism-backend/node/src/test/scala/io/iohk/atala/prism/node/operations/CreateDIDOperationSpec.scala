@@ -44,6 +44,9 @@ object CreateDIDOperationSpec {
   val issuingKeys: ECKeyPair = EC.generateKeyPair()
   val issuingEcKey: ECKeyData = protoECKeyFromPublicKey(issuingKeys.getPublicKey)
 
+  val revokingKeys: ECKeyPair = EC.generateKeyPair()
+  val revokingEcKey: ECKeyData = protoECKeyFromPublicKey(revokingKeys.getPublicKey)
+
   lazy val dummyTimestamp: TimestampInfo = dummyTimestampInfo
   lazy val dummyLedgerData: LedgerData = LedgerData(
     TransactionId.from(Array.fill[Byte](TransactionId.config.size.toBytes.toInt)(0)).value,
@@ -75,16 +78,17 @@ object CreateDIDOperationSpec {
                   None,
                   node_models.PublicKey.KeyData.EcKeyData(issuingEcKey)
                 ),
+              node_models
+                .PublicKey(
+                  "revoking",
+                  node_models.KeyUsage.REVOCATION_KEY,
+                  Some(ProtoCodecs.toTimeStampInfoProto(dummyTimestampInfo)),
+                  None,
+                  node_models.PublicKey.KeyData.EcKeyData(revokingEcKey)
+                ),
               node_models.PublicKey(
                 "authentication",
                 node_models.KeyUsage.AUTHENTICATION_KEY,
-                Some(ProtoCodecs.toTimeStampInfoProto(dummyTimestampInfo)),
-                None,
-                node_models.PublicKey.KeyData.EcKeyData(randomProtoECKey)
-              ),
-              node_models.PublicKey(
-                "communication",
-                node_models.KeyUsage.COMMUNICATION_KEY,
                 Some(ProtoCodecs.toTimeStampInfoProto(dummyTimestampInfo)),
                 None,
                 node_models.PublicKey.KeyData.EcKeyData(randomProtoECKey)

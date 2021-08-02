@@ -16,6 +16,7 @@ import java.time.Instant
 package object models {
   sealed trait KeyUsage extends EnumEntry with UpperSnakecase {
     def canIssue: Boolean = this == KeyUsage.IssuingKey
+    def canRevoke: Boolean = this == KeyUsage.RevocationKey
   }
 
   object KeyUsage extends Enum[KeyUsage] {
@@ -24,6 +25,7 @@ package object models {
     case object MasterKey extends KeyUsage
     case object IssuingKey extends KeyUsage
     case object CommunicationKey extends KeyUsage
+    case object RevocationKey extends KeyUsage
     case object AuthenticationKey extends KeyUsage
 
   }
