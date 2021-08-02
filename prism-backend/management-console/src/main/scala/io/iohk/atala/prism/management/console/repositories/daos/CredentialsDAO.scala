@@ -26,7 +26,7 @@ object CredentialsDAO {
 
   private val selectGenericCredential =
     fr"""
-        |SELECT credential_id, c.issuer_id, c.contact_id, credential_data, c.created_on, c.credential_type_id,
+        |SELECT credential_id, c.issuer_id, c.contact_id, credential_data, c.created_at, c.credential_type_id,
         |       c.credential_issuance_contact_id, external_id, PTS.name AS issuer_name, contact_data, connection_token,
         |       PC.batch_id, PC.issuance_operation_hash, PC.issuance_operation_id, PC.encoded_signed_credential, PC.inclusion_proof,
         |       PC.stored_at, PC.shared_at, PC.revoked_on_operation_id
@@ -59,14 +59,14 @@ object CredentialsDAO {
       data: CreateGenericCredential
   ): doobie.ConnectionIO[GenericCredential] = {
     val id = GenericCredential.Id.random()
-    val createdOn = Instant.now()
+    val createdAt = Instant.now()
     (fr"""
          |WITH inserted AS (
          |  INSERT INTO draft_credentials (credential_id, issuer_id, contact_id, credential_data,
-         |    created_on, credential_issuance_contact_id, credential_type_id)
+         |    created_at, credential_issuance_contact_id, credential_type_id)
          |  VALUES ($id, $participantId, $contactId, ${data.credentialData},
-         |    $createdOn, ${data.credentialIssuanceContactId}, ${data.credentialTypeId})
-         |  RETURNING credential_id, issuer_id, contact_id, credential_data, created_on, credential_type_id,
+         |    $createdAt, ${data.credentialIssuanceContactId}, ${data.credentialTypeId})
+         |  RETURNING credential_id, issuer_id, contact_id, credential_data, created_at, credential_type_id,
          |    credential_issuance_contact_id
          |),""".stripMargin ++ withParticipantsPTS ++ withPublishedCredentialsPC(Some(id)) ++
       fr"""|SELECT inserted.*, contacts.external_id, PTS.name AS issuer_name, contacts.contact_data, connection_token,
@@ -103,7 +103,7 @@ object CredentialsDAO {
       case Some(lastSeen) =>
         fr"""
              |WITH CTE AS (
-             |  SELECT created_on AS last_seen_time
+             |  SELECT created_at AS last_seen_time
              |  FROM draft_credentials
              |  WHERE credential_id = $lastSeen
              |),""".stripMargin ++ withParticipantsPTS ++ withPublishedCredentialsPC() ++ selectGenericCredential ++
@@ -113,8 +113,8 @@ object CredentialsDAO {
              |     JOIN contacts ON (c.contact_id = contacts.contact_id)
              |     LEFT JOIN PC USING (credential_id)
              |WHERE c.issuer_id = $issuedBy AND
-             |      (c.created_on > last_seen_time OR (c.created_on = last_seen_time AND credential_id > $lastSeen))
-             |ORDER BY c.created_on ASC, credential_id
+             |      (c.created_at > last_seen_time OR (c.created_on = last_seen_time AND credential_id > $lastSeen))
+             |ORDER BY c.created_at ASC, credential_id
              |LIMIT $limit
              |""".stripMargin
       case None =>
@@ -125,7 +125,7 @@ object CredentialsDAO {
              |     JOIN contacts ON (c.contact_id = contacts.contact_id)
              |     LEFT JOIN PC USING (credential_id)
              |WHERE c.issuer_id = $issuedBy
-             |ORDER BY c.created_on ASC, credential_id
+             |ORDER BY c.created_at ASC, credential_id
              |LIMIT $limit
              |""".stripMargin
     }
@@ -141,7 +141,7 @@ object CredentialsDAO {
          |     LEFT JOIN PC USING (credential_id)
          |WHERE c.issuer_id = $issuedBy AND
          |      c.contact_id = $contactId
-         |ORDER BY c.created_on ASC, credential_id
+         |ORDER BY c.created_at ASC, credential_id
          |""".stripMargin)
       .query[GenericCredential]
       .to[List]
@@ -152,8 +152,8 @@ object CredentialsDAO {
       query: GenericCredential.PaginatedQuery
   ): doobie.ConnectionIO[List[GenericCredential]] = {
     val orderBy = orderByFr(query.ordering, "credential_id") {
-      case GenericCredential.SortBy.CredentialType => "c.external_id"
-      case GenericCredential.SortBy.CreatedOn => "c.created_on"
+      case GenericCredential.SortBy.CredentialType => "c.credential_type_id"
+      case GenericCredential.SortBy.CreatedOn => "c.created_at"
     }
 
     val whereCredentialType = query.filters.flatMap(_.credentialType).map { credentialType =>
@@ -194,7 +194,7 @@ object CredentialsDAO {
           |     JOIN PC USING (credential_id)
           |WHERE c.issuer_id = $issuedBy AND
           |      c.contact_id = $contactId
-          |ORDER BY c.created_on ASC, credential_id
+          |ORDER BY c.created_at ASC, credential_id
           |""".stripMargin)
       .query[GenericCredential]
       .to[List]
