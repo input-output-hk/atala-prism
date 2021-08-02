@@ -52,31 +52,29 @@ const CategoryIconSelector = () => {
     <Form.Item name="categoryIcon" rules={categoryIconRules}>
       <Radio.Group onChange={onIconChange}>
         <Form.Item name="categoryCustomIcons" valuePropName="file" getValueFromEvent={normFile}>
-          <Upload
-            name="logo"
-            action="/upload.do"
-            {...uploaderProps}
-            itemRender={(_originNode, file) =>
-              file.status !== 'uploading' ? (
+          <div className="verticalFlex">
+            <img src={uploadCategoryIcon} className="iconSample" alt="upload custom icon" />
+            <h3>{t(`${i18nPrefix}.categoryCreationModal.uploadIcon`)}</h3>
+            <p>{t(`${i18nPrefix}.categoryCreationModal.allowedFormats`, { allowedFormats })}</p>
+            <Upload
+              name="logo"
+              action="/upload.do"
+              {...uploaderProps}
+              itemRender={(_originNode, file) => (
                 <IconOption icon={file} selected={file.uid === selectedIcon} />
-              ) : (
-                <p>coso</p>
-              )
-            }
-          >
-            <div className="verticalFlex">
-              <img src={uploadCategoryIcon} className="iconSample" alt="upload custom icon" />
-              <h3>{t(`${i18nPrefix}.categoryCreationModal.uploadIcon`)}</h3>
-              <p>{t(`${i18nPrefix}.categoryCreationModal.allowedFormats`, { allowedFormats })}</p>
-              <CustomButton
-                className="theme-outline"
-                buttonText={t(`${i18nPrefix}.categoryCreationModal.uploadButton`)}
-              />
-              <div className="galleryLabel">
-                <p>{t(`${i18nPrefix}.categoryCreationModal.gallery`)}</p>
+              )}
+            >
+              <div className="verticalFlex">
+                <CustomButton
+                  className="theme-outline"
+                  buttonText={t(`${i18nPrefix}.categoryCreationModal.uploadButton`)}
+                />
+                <div className="galleryLabel">
+                  <p>{t(`${i18nPrefix}.categoryCreationModal.gallery`)}</p>
+                </div>
               </div>
-            </div>
-          </Upload>
+            </Upload>
+          </div>
         </Form.Item>
         <div className="imgGalleryContainer">
           {defaultFileList.map(file => (
