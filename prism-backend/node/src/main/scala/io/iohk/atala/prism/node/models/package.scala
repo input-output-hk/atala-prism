@@ -5,8 +5,8 @@ import enumeratum.EnumEntry.UpperSnakecase
 import enumeratum._
 import io.iohk.atala.prism.connector.AtalaOperationId
 import io.iohk.atala.prism.credentials.{CredentialBatchId, TimestampInfo}
-import io.iohk.atala.prism.crypto.MerkleTree.MerkleRoot
-import io.iohk.atala.prism.crypto.{ECPublicKey, SHA256Digest}
+import io.iohk.atala.prism.kotlin.crypto.{MerkleRoot, SHA256Digest}
+import io.iohk.atala.prism.kotlin.crypto.keys.ECPublicKey
 import io.iohk.atala.prism.identity.DIDSuffix
 import io.iohk.atala.prism.models.{Ledger, TransactionId}
 import io.iohk.atala.prism.node.repositories.daos.KeyValuesDAO

@@ -53,7 +53,7 @@ class CredentialViewsServiceSpec extends RpcSpecBase with DIDUtil {
 
     "return the predefined templates" in {
       val (keyPair, did) = createDid
-      val _ = DataPreparation.createIssuer("Great Issuer", publicKey = Some(keyPair.publicKey), did = Some(did))
+      val _ = DataPreparation.createIssuer("Great Issuer", publicKey = Some(keyPair.getPublicKey), did = Some(did))
       val rpcRequest = SignedRpcRequest.generate(keyPair, did, GetCurrentUserRequest())
 
       usingApiAs(rpcRequest) { serviceStub =>

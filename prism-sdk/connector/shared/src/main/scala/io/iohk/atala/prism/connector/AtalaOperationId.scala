@@ -8,7 +8,7 @@ import io.iohk.atala.prism.util.BytesOps
 import java.util.UUID
 
 class AtalaOperationId private (val digest: SHA256Digest) {
-  def value: Vector[Byte] = digest.value
+  def value: Vector[Byte] = digest.value.toVector
 
   def hexValue: String = BytesOps.bytesToHex(value)
 

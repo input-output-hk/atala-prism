@@ -9,24 +9,23 @@ import io.grpc.{ManagedChannel, Server, Status, StatusRuntimeException}
 import io.iohk.atala.prism.AtalaWithPostgresSpec
 import io.iohk.atala.prism.connector.AtalaOperationId
 import io.iohk.atala.prism.credentials.{CredentialBatchId, TimestampInfo}
-import io.iohk.atala.prism.crypto.MerkleTree.MerkleRoot
-import io.iohk.atala.prism.crypto.SHA256Digest
+import io.iohk.atala.prism.kotlin.crypto.MerkleRoot
+import io.iohk.atala.prism.kotlin.crypto.SHA256Digest
 import io.iohk.atala.prism.identity.DID.masterKeyId
 import io.iohk.atala.prism.identity.{DID, DIDSuffix}
 import io.iohk.atala.prism.models.{Ledger, TransactionId}
 import io.iohk.atala.prism.node.errors.NodeError
 import io.iohk.atala.prism.node.grpc.ProtoCodecs
 import io.iohk.atala.prism.node.models.nodeState.{CredentialBatchState, LedgerData}
-import io.iohk.atala.prism.node.models.{
-  AtalaObjectId,
-  AtalaObjectTransactionSubmissionStatus,
-  AtalaOperationInfo,
-  AtalaOperationStatus,
-  DIDPublicKey,
-  KeyUsage
-}
+import io.iohk.atala.prism.node.models._
 import io.iohk.atala.prism.node.operations.path.{Path, ValueAtPath}
-import io.iohk.atala.prism.node.operations._
+import io.iohk.atala.prism.node.operations.{
+  CreateDIDOperationSpec,
+  IssueCredentialBatchOperationSpec,
+  ParsingUtils,
+  RevokeCredentialsOperationSpec,
+  UpdateDIDOperationSpec
+}
 import io.iohk.atala.prism.node.repositories.daos.{DIDDataDAO, PublicKeysDAO}
 import io.iohk.atala.prism.node.repositories.{CredentialBatchesRepository, DIDDataRepository}
 import io.iohk.atala.prism.node.services.{BlockProcessingServiceSpec, ObjectManagementService}
@@ -36,12 +35,15 @@ import io.iohk.atala.prism.utils.syntax._
 import org.mockito.scalatest.{MockitoSugar, ResetMocksAfterEachTest}
 import org.scalatest.BeforeAndAfterEach
 import org.scalatest.OptionValues._
+import tofu.syntax.monadic._
 
 import java.time.Instant
 import java.util.concurrent.TimeUnit
 import io.iohk.atala.prism.protos.node_models.OperationOutput
 
 import scala.concurrent.Future
+
+import io.iohk.atala.prism.interop.toScalaSDK._
 
 class NodeServiceSpec
     extends AtalaWithPostgresSpec
@@ -105,9 +107,9 @@ class NodeServiceSpec
   "NodeService.getDidDocument" should {
     "return DID document from data in the database" in {
       val didDigest = SHA256Digest.compute("test".getBytes())
-      val didSuffix = DIDSuffix.unsafeFromDigest(didDigest)
+      val didSuffix = DIDSuffix.unsafeFromDigest(didDigest.asScala)
       DIDDataDAO.insert(didSuffix, didDigest, dummyLedgerData).transact(database).unsafeRunSync()
-      val key = DIDPublicKey(didSuffix, "master", KeyUsage.MasterKey, CreateDIDOperationSpec.masterKeys.publicKey)
+      val key = DIDPublicKey(didSuffix, "master", KeyUsage.MasterKey, CreateDIDOperationSpec.masterKeys.getPublicKey)
       PublicKeysDAO.insert(key, dummyLedgerData).transact(database).unsafeRunSync()
 
       doReturn(Future.successful(dummySyncTimestamp)).when(objectManagementService).getLastSyncedTimestamp
@@ -129,8 +131,8 @@ class NodeServiceSpec
     }
 
     "return DID document for an unpublished DID" in {
-      val masterKey = CreateDIDOperationSpec.masterKeys.publicKey
-      val longFormDID = DID.createUnpublishedDID(masterKey)
+      val masterKey = CreateDIDOperationSpec.masterKeys.getPublicKey
+      val longFormDID = DID.createUnpublishedDID(masterKey.asScala)
       doReturn(Future.successful(dummySyncTimestamp)).when(objectManagementService).getLastSyncedTimestamp
 
       val response = service.getDidDocument(node_api.GetDidDocumentRequest(longFormDID.value))
@@ -149,18 +151,19 @@ class NodeServiceSpec
     }
 
     "return DID document for a long form DID after it was published" in {
-      val masterKey = CreateDIDOperationSpec.masterKeys.publicKey
-      val issuingKey = CreateDIDOperationSpec.issuingKeys.publicKey
-      val longFormDID = DID.createUnpublishedDID(masterKey)
+      val masterKey = CreateDIDOperationSpec.masterKeys.getPublicKey
+      val issuingKey = CreateDIDOperationSpec.issuingKeys.getPublicKey
+      val longFormDID = DID.createUnpublishedDID(masterKey.asScala)
 
       // we simulate the publication of the DID and the addition of an issuing key
-      val didDigest = SHA256Digest.fromHexUnsafe(longFormDID.getCanonicalSuffix.value.value)
-      val didSuffix = DIDSuffix.unsafeFromDigest(didDigest)
-      DIDDataDAO.insert(didSuffix, didDigest, dummyLedgerData).transact(database).unsafeRunSync()
+      val didDigest = SHA256Digest.fromHex(longFormDID.getCanonicalSuffix.value.value)
+      val didSuffix = DIDSuffix.unsafeFromDigest(didDigest.asScala)
       val key1 = DIDPublicKey(didSuffix, masterKeyId, KeyUsage.MasterKey, masterKey)
       val key2 = DIDPublicKey(didSuffix, "issuance0", KeyUsage.IssuingKey, issuingKey)
-      PublicKeysDAO.insert(key1, dummyLedgerData).transact(database).unsafeRunSync()
-      PublicKeysDAO.insert(key2, dummyLedgerData).transact(database).unsafeRunSync()
+
+      (DIDDataDAO.insert(didSuffix, didDigest, dummyLedgerData).transact(database) >>
+        PublicKeysDAO.insert(key1, dummyLedgerData).transact(database) >>
+        PublicKeysDAO.insert(key2, dummyLedgerData).transact(database)).unsafeRunSync()
 
       doReturn(Future.successful(dummySyncTimestamp)).when(objectManagementService).getLastSyncedTimestamp
 
@@ -168,7 +171,7 @@ class NodeServiceSpec
       val response = service.getDidDocument(node_api.GetDidDocumentRequest(longFormDID.value))
       val document = response.document.value
       document.id mustBe longFormDID.suffix.value
-      document.publicKeys.size mustBe 2
+      document.publicKeys.length mustBe 2
 
       val publicKey1 = document.publicKeys.find(_.id == masterKeyId).value
       publicKey1.usage mustBe node_models.KeyUsage.MASTER_KEY
@@ -191,7 +194,7 @@ class NodeServiceSpec
       val operation = BlockProcessingServiceSpec.signOperation(
         CreateDIDOperationSpec.exampleOperation,
         "master",
-        CreateDIDOperationSpec.masterKeys.privateKey
+        CreateDIDOperationSpec.masterKeys.getPrivateKey
       )
       val operationId = AtalaOperationId.of(operation)
 
@@ -214,7 +217,7 @@ class NodeServiceSpec
       val operation = BlockProcessingServiceSpec.signOperation(
         CreateDIDOperationSpec.exampleOperation.update(_.createDid.didData.id := "abc"),
         "master",
-        CreateDIDOperationSpec.masterKeys.privateKey
+        CreateDIDOperationSpec.masterKeys.getPrivateKey
       )
 
       val error = intercept[StatusRuntimeException] {
@@ -229,7 +232,7 @@ class NodeServiceSpec
       val operation = BlockProcessingServiceSpec.signOperation(
         UpdateDIDOperationSpec.exampleOperation,
         "master",
-        UpdateDIDOperationSpec.masterKeys.privateKey
+        UpdateDIDOperationSpec.masterKeys.getPrivateKey
       )
       val operationId = AtalaOperationId.of(operation)
 
@@ -246,7 +249,7 @@ class NodeServiceSpec
       val operation = BlockProcessingServiceSpec.signOperation(
         UpdateDIDOperationSpec.exampleOperation.update(_.updateDid.id := "abc#@!"),
         "master",
-        UpdateDIDOperationSpec.masterKeys.privateKey
+        UpdateDIDOperationSpec.masterKeys.getPrivateKey
       )
 
       val error = intercept[StatusRuntimeException] {
@@ -261,7 +264,7 @@ class NodeServiceSpec
       val operation = BlockProcessingServiceSpec.signOperation(
         IssueCredentialBatchOperationSpec.exampleOperation,
         "master",
-        CreateDIDOperationSpec.masterKeys.privateKey
+        CreateDIDOperationSpec.masterKeys.getPrivateKey
       )
       val operationId = AtalaOperationId.of(operation)
 
@@ -287,7 +290,7 @@ class NodeServiceSpec
         IssueCredentialBatchOperationSpec.exampleOperation
           .update(_.issueCredentialBatch.credentialBatchData.merkleRoot := ByteString.copyFrom("abc".getBytes)),
         "master",
-        CreateDIDOperationSpec.masterKeys.privateKey
+        CreateDIDOperationSpec.masterKeys.getPrivateKey
       )
 
       val error = intercept[StatusRuntimeException] {
@@ -302,7 +305,7 @@ class NodeServiceSpec
       val operation = BlockProcessingServiceSpec.signOperation(
         RevokeCredentialsOperationSpec.revokeFullBatchOperation,
         "master",
-        CreateDIDOperationSpec.masterKeys.privateKey
+        CreateDIDOperationSpec.masterKeys.getPrivateKey
       )
       val operationId = AtalaOperationId.of(operation)
 
@@ -319,7 +322,7 @@ class NodeServiceSpec
       val operation = BlockProcessingServiceSpec.signOperation(
         RevokeCredentialsOperationSpec.revokeFullBatchOperation.update(_.revokeCredentials.credentialBatchId := ""),
         "master",
-        CreateDIDOperationSpec.masterKeys.privateKey
+        CreateDIDOperationSpec.masterKeys.getPrivateKey
       )
 
       val error = intercept[StatusRuntimeException] {
@@ -345,7 +348,7 @@ class NodeServiceSpec
       val validOperation = BlockProcessingServiceSpec.signOperation(
         CreateDIDOperationSpec.exampleOperation,
         "master",
-        CreateDIDOperationSpec.masterKeys.privateKey
+        CreateDIDOperationSpec.masterKeys.getPrivateKey
       )
       val operationId = AtalaOperationId.of(validOperation)
       val operationIdProto = operationId.toProtoByteString
@@ -374,7 +377,7 @@ class NodeServiceSpec
       val validOperation = BlockProcessingServiceSpec.signOperation(
         CreateDIDOperationSpec.exampleOperation,
         "master",
-        CreateDIDOperationSpec.masterKeys.privateKey
+        CreateDIDOperationSpec.masterKeys.getPrivateKey
       )
       val operationId = AtalaOperationId.of(validOperation)
       val operationIdProto = operationId.toProtoByteString
@@ -423,7 +426,7 @@ class NodeServiceSpec
     }
 
     "return an error when the CredentialBatchesRepository fails" in {
-      val validBatchId = CredentialBatchId.fromDigest(SHA256Digest.compute("valid".getBytes()))
+      val validBatchId = CredentialBatchId.fromDigest(SHA256Digest.compute("valid".getBytes()).asScala)
       val requestWithValidId = GetBatchStateRequest(batchId = validBatchId.id)
 
       val errorMsg = "an unexpected error"
@@ -440,7 +443,7 @@ class NodeServiceSpec
     }
 
     "return empty response when the CredentialBatchesRepository reports no results" in {
-      val validBatchId = CredentialBatchId.fromDigest(SHA256Digest.compute("valid".getBytes()))
+      val validBatchId = CredentialBatchId.fromDigest(SHA256Digest.compute("valid".getBytes()).asScala)
       val requestWithValidId = GetBatchStateRequest(batchId = validBatchId.id)
 
       val repositoryError = IO.pure[Either[NodeError, Option[CredentialBatchState]]](Right(None))
@@ -456,12 +459,12 @@ class NodeServiceSpec
     }
 
     "return batch state when CredentialBatchesRepository succeeds" in {
-      val validBatchId = CredentialBatchId.fromDigest(SHA256Digest.compute("valid".getBytes()))
+      val validBatchId = CredentialBatchId.fromDigest(SHA256Digest.compute("valid".getBytes()).asScala)
       val requestWithValidId = GetBatchStateRequest(batchId = validBatchId.id)
 
-      val issuerDIDSuffix = DIDSuffix.unsafeFromDigest(SHA256Digest.compute("testDID".getBytes()))
+      val issuerDIDSuffix = DIDSuffix.unsafeFromDigest(SHA256Digest.compute("testDID".getBytes()).asScala)
       val issuedOnLedgerData = dummyLedgerData
-      val merkleRoot = MerkleRoot(SHA256Digest.compute("content".getBytes()))
+      val merkleRoot = new MerkleRoot(SHA256Digest.compute("content".getBytes()))
       val credState =
         CredentialBatchState(
           merkleRoot = merkleRoot,
@@ -493,7 +496,7 @@ class NodeServiceSpec
 
       val response = service.getBatchState(requestWithValidId)
       response.issuerDid must be(issuerDIDSuffix.value)
-      response.merkleRoot.toByteArray.toVector must be(merkleRoot.hash.value)
+      response.merkleRoot.toByteArray.toVector must be(merkleRoot.getHash.getValue)
       response.publicationLedgerData must be(Some(ledgerDataProto))
       response.revocationLedgerData must be(empty)
       response.lastSyncedBlockTimestamp must be(Some(dummySyncTimestamp.toProtoTimestamp))
@@ -507,7 +510,7 @@ class NodeServiceSpec
       val requestWithInvalidId =
         GetCredentialRevocationTimeRequest(
           batchId = invalidBatchId,
-          credentialHash = ByteString.copyFrom(validCredentialHash.value.toArray)
+          credentialHash = ByteString.copyFrom(validCredentialHash.getValue)
         )
       val expectedMessage = s"INTERNAL: Invalid batch id: $invalidBatchId"
 
@@ -519,14 +522,15 @@ class NodeServiceSpec
     }
 
     "fail when credentialHash is not valid" in {
-      val validBatchId = CredentialBatchId.fromDigest(SHA256Digest.compute("random".getBytes()))
+      val validBatchId = CredentialBatchId.fromDigest(SHA256Digest.compute("random".getBytes()).asScala)
       val requestWithInvalidCredentialHash =
         GetCredentialRevocationTimeRequest(
           batchId = validBatchId.id,
           credentialHash = ByteString.EMPTY
         )
 
-      val expectedMessage = "INTERNAL: Vector length doesn't correspond to expected length  - 32"
+      val expectedMessage =
+        "INTERNAL: The given bytes does not correspond to a sha256 hash. It must have exactly 32 bytes"
 
       doReturn(
         Future.successful(dummySyncTimestamp)
@@ -535,15 +539,16 @@ class NodeServiceSpec
       val error = intercept[RuntimeException] {
         service.getCredentialRevocationTime(requestWithInvalidCredentialHash)
       }
+
       error.getMessage must be(expectedMessage)
     }
 
     "return empty timestamp when CredentialBatchesRepository succeeds returning None" in {
-      val validBatchId = CredentialBatchId.fromDigest(SHA256Digest.compute("valid".getBytes()))
+      val validBatchId = CredentialBatchId.fromDigest(SHA256Digest.compute("valid".getBytes()).asScala)
       val validCredentialHash = SHA256Digest.compute("random".getBytes())
       val validRequest = GetCredentialRevocationTimeRequest(
         batchId = validBatchId.id,
-        credentialHash = ByteString.copyFrom(validCredentialHash.value.toArray)
+        credentialHash = ByteString.copyFrom(validCredentialHash.getValue)
       )
 
       val repositoryResponse = IO.pure[Either[NodeError, Option[LedgerData]]](Right(None))
@@ -562,11 +567,11 @@ class NodeServiceSpec
     }
 
     "return correct timestamp when CredentialBatchesRepository succeeds returning a time" in {
-      val validBatchId = CredentialBatchId.fromDigest(SHA256Digest.compute("valid".getBytes()))
+      val validBatchId = CredentialBatchId.fromDigest(SHA256Digest.compute("valid".getBytes()).asScala)
       val validCredentialHash = SHA256Digest.compute("random".getBytes())
       val validRequest = GetCredentialRevocationTimeRequest(
         batchId = validBatchId.id,
-        credentialHash = ByteString.copyFrom(validCredentialHash.value.toArray)
+        credentialHash = ByteString.copyFrom(validCredentialHash.getValue)
       )
       val revocationDate = TimestampInfo(Instant.now(), 1, 1)
       val revocationLedgerData = LedgerData(
@@ -621,14 +626,14 @@ class NodeServiceSpec
       val validOperation = BlockProcessingServiceSpec.signOperation(
         CreateDIDOperationSpec.exampleOperation,
         "master",
-        CreateDIDOperationSpec.masterKeys.privateKey
+        CreateDIDOperationSpec.masterKeys.getPrivateKey
       )
 
       val invalidOperation = BlockProcessingServiceSpec.signOperation(
         IssueCredentialBatchOperationSpec.exampleOperation
           .update(_.issueCredentialBatch.credentialBatchData.merkleRoot := ByteString.copyFrom("abc".getBytes)),
         "master",
-        CreateDIDOperationSpec.masterKeys.privateKey
+        CreateDIDOperationSpec.masterKeys.getPrivateKey
       )
 
       val error = intercept[StatusRuntimeException] {
@@ -646,14 +651,14 @@ class NodeServiceSpec
       val createDIDOperation = BlockProcessingServiceSpec.signOperation(
         CreateDIDOperationSpec.exampleOperation,
         "master",
-        CreateDIDOperationSpec.masterKeys.privateKey
+        CreateDIDOperationSpec.masterKeys.getPrivateKey
       )
       val createDIDOperationId = AtalaOperationId.of(createDIDOperation)
 
       val issuanceOperation = BlockProcessingServiceSpec.signOperation(
         IssueCredentialBatchOperationSpec.exampleOperation,
         "master",
-        CreateDIDOperationSpec.masterKeys.privateKey
+        CreateDIDOperationSpec.masterKeys.getPrivateKey
       )
       val issuanceOperationId = AtalaOperationId.of(issuanceOperation)
 
@@ -695,14 +700,14 @@ class NodeServiceSpec
       val createDIDOperation = BlockProcessingServiceSpec.signOperation(
         CreateDIDOperationSpec.exampleOperation,
         "master",
-        CreateDIDOperationSpec.masterKeys.privateKey
+        CreateDIDOperationSpec.masterKeys.getPrivateKey
       )
       val createDIDOperationId = AtalaOperationId.of(createDIDOperation)
 
       val updateOperation = BlockProcessingServiceSpec.signOperation(
         UpdateDIDOperationSpec.exampleOperation,
         "master",
-        UpdateDIDOperationSpec.masterKeys.privateKey
+        UpdateDIDOperationSpec.masterKeys.getPrivateKey
       )
       val updateOperationId = AtalaOperationId.of(updateOperation)
 
@@ -736,7 +741,7 @@ class NodeServiceSpec
       val revokeOperation = BlockProcessingServiceSpec.signOperation(
         RevokeCredentialsOperationSpec.revokeFullBatchOperation,
         "master",
-        CreateDIDOperationSpec.masterKeys.privateKey
+        CreateDIDOperationSpec.masterKeys.getPrivateKey
       )
       val revokeOperationId = AtalaOperationId.of(revokeOperation)
 

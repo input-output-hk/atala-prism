@@ -1,13 +1,13 @@
 package io.iohk.atala.prism.management.console.services
 
+import cats.syntax.option._
 import com.google.protobuf.ByteString
 import io.grpc.{Status, StatusRuntimeException}
-import cats.syntax.option._
 import io.iohk.atala.prism.DIDUtil
 import io.iohk.atala.prism.auth.SignedRpcRequest
 import io.iohk.atala.prism.connector.AtalaOperationId
-import io.iohk.atala.prism.crypto.EC
 import io.iohk.atala.prism.identity.DID
+import io.iohk.atala.prism.kotlin.crypto.EC
 import io.iohk.atala.prism.management.console.DataPreparation._
 import io.iohk.atala.prism.management.console.models.{InstitutionGroup, ParticipantLogo}
 import io.iohk.atala.prism.management.console.{DataPreparation, ManagementConsoleRpcSpecBase}
@@ -36,7 +36,7 @@ class ConsoleServiceImplSpec extends ManagementConsoleRpcSpecBase with DIDUtil {
       val groupName = InstitutionGroup.Name("Grp 1")
       val contactName = "Contact 1"
       val keyPair = EC.generateKeyPair()
-      val publicKey = keyPair.publicKey
+      val publicKey = keyPair.getPublicKey
       val did = generateDid(publicKey)
       val institutionId = createParticipant(institutionName, did)
       createInstitutionGroup(institutionId, groupName)
@@ -59,7 +59,7 @@ class ConsoleServiceImplSpec extends ManagementConsoleRpcSpecBase with DIDUtil {
     "support time interval" in {
       val institutionName = "tokenizer"
       val keyPair = EC.generateKeyPair()
-      val publicKey = keyPair.publicKey
+      val publicKey = keyPair.getPublicKey
       val did = generateDid(publicKey)
       val institutionId = createParticipant(institutionName, did)
 
@@ -106,7 +106,7 @@ class ConsoleServiceImplSpec extends ManagementConsoleRpcSpecBase with DIDUtil {
     "fail when the starting interval timestamp is after the ending interval timestamp" in {
       val institutionName = "tokenizer"
       val keyPair = EC.generateKeyPair()
-      val publicKey = keyPair.publicKey
+      val publicKey = keyPair.getPublicKey
       val did = generateDid(publicKey)
       createParticipant(institutionName, did)
 
@@ -132,7 +132,7 @@ class ConsoleServiceImplSpec extends ManagementConsoleRpcSpecBase with DIDUtil {
     "fail when the time interval timestamps are not specified" in {
       val institutionName = "tokenizer"
       val keyPair = EC.generateKeyPair()
-      val publicKey = keyPair.publicKey
+      val publicKey = keyPair.getPublicKey
       val did = generateDid(publicKey)
       createParticipant(institutionName, did)
 
@@ -250,7 +250,7 @@ class ConsoleServiceImplSpec extends ManagementConsoleRpcSpecBase with DIDUtil {
   "getCurrentUser" should {
     def prepareSignedRequest() = {
       val keys = EC.generateKeyPair()
-      val did = generateDid(keys.publicKey)
+      val did = generateDid(keys.getPublicKey)
       val request = console_api.GetConsoleCurrentUserRequest()
       SignedRpcRequest.generate(keys, did, request)
     }
@@ -282,7 +282,7 @@ class ConsoleServiceImplSpec extends ManagementConsoleRpcSpecBase with DIDUtil {
   "updateParticipantProfile" should {
     def prepareSignedRequest() = {
       val keys = EC.generateKeyPair()
-      val did = generateDid(keys.publicKey)
+      val did = generateDid(keys.getPublicKey)
       val request =
         console_api
           .ConsoleUpdateProfileRequest()

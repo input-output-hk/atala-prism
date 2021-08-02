@@ -4,8 +4,8 @@ import cats.syntax.option._
 import com.google.protobuf.ByteString
 import enumeratum.EnumEntry.Lowercase
 import enumeratum._
+import io.iohk.atala.prism.kotlin.crypto.keys.ECPublicKey
 import io.iohk.atala.prism.connector.AtalaOperationId
-import io.iohk.atala.prism.crypto.ECPublicKey
 import io.iohk.atala.prism.identity.DID
 import io.iohk.atala.prism.models.{ParticipantId, UUIDValue}
 import io.iohk.atala.prism.protos.connector_models

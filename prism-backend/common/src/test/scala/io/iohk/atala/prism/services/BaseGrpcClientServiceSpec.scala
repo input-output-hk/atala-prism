@@ -11,10 +11,12 @@ import io.grpc.stub.AbstractStub
 import org.scalatest.wordspec.AnyWordSpec
 import org.scalatest.matchers.must.Matchers
 import org.mockito.{ArgumentMatchersSugar, MockitoSugar}
-import io.iohk.atala.prism.crypto.{EC, ECKeyPair, ECPrivateKey}
+import io.iohk.atala.prism.crypto.{EC => ECScalaSDK}
+import io.iohk.atala.prism.crypto.{ECPrivateKey => ECPrivateKeyScalaSDK}
 import io.iohk.atala.prism.connector.{RequestAuthenticator, RequestNonce, SignedConnectorRequest}
 import io.iohk.atala.prism.services.BaseGrpcClientService.AuthHeaders
 import io.iohk.atala.prism.identity.DID
+import io.iohk.atala.prism.kotlin.crypto.EC
 import monix.execution.Scheduler.Implicits.global
 
 // sbt "project mirror" "testOnly *services.BaseGrpcClientServiceSpec"
@@ -53,15 +55,15 @@ class BaseGrpcClientServiceSpec extends AnyWordSpec with Matchers with MockitoSu
     val authConfig = BaseGrpcClientService.DidBasedAuthConfig(
       did = DID.buildPrismDID("test"),
       didMasterKeyId = "master",
-      didMasterKeyPair = mock[ECKeyPair],
+      didMasterKeyPair = EC.generateKeyPair(),
       didIssuingKeyId = "issuance",
-      didIssuingKeyPair = mock[ECKeyPair]
+      didIssuingKeyPair = EC.generateKeyPair()
     )
 
-    val requestAuthenticator = new RequestAuthenticator(EC) {
+    val requestAuthenticator = new RequestAuthenticator(ECScalaSDK) {
       override def signConnectorRequest(
           request: Array[Byte],
-          privateKey: ECPrivateKey,
+          privateKey: ECPrivateKeyScalaSDK,
           requestNonce: RequestNonce
       ): SignedConnectorRequest = {
         SignedConnectorRequest(

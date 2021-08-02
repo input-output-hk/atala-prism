@@ -5,7 +5,7 @@ import cats.implicits._
 import doobie.free.connection.ConnectionIO
 import doobie.implicits._
 import doobie.postgres.sqlstate
-import io.iohk.atala.prism.crypto.SHA256Digest
+import io.iohk.atala.prism.kotlin.crypto.SHA256Digest
 import io.iohk.atala.prism.identity.DIDSuffix
 import io.iohk.atala.prism.node.models.KeyUsage.MasterKey
 import io.iohk.atala.prism.node.models.DIDPublicKey
@@ -14,6 +14,8 @@ import io.iohk.atala.prism.node.operations.StateError.{EntityExists, InvalidKeyU
 import io.iohk.atala.prism.node.operations.path._
 import io.iohk.atala.prism.node.repositories.daos.{DIDDataDAO, PublicKeysDAO}
 import io.iohk.atala.prism.protos.{node_models => proto}
+
+import io.iohk.atala.prism.interop.toScalaSDK._
 
 case class CreateDIDOperation(
     id: DIDSuffix,
@@ -95,7 +97,7 @@ object CreateDIDOperation extends SimpleOperationCompanion[CreateDIDOperation] {
       ledgerData: LedgerData
   ): Either[ValidationError, CreateDIDOperation] = {
     val operationDigest = SHA256Digest.compute(operation.toByteArray)
-    val didSuffix = DIDSuffix.unsafeFromDigest(operationDigest)
+    val didSuffix = DIDSuffix.unsafeFromDigest(operationDigest.asScala)
     val createOperation = ValueAtPath(operation, Path.root).child(_.getCreateDid, "createDid")
     for {
       data <- createOperation.childGet(_.didData, "didData")

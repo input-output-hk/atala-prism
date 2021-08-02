@@ -3,7 +3,7 @@ package io.iohk.atala.prism.node.repositories
 import cats.effect.IO
 import io.iohk.atala.prism.AtalaWithPostgresSpec
 import io.iohk.atala.prism.credentials.TimestampInfo
-import io.iohk.atala.prism.crypto.EC
+import io.iohk.atala.prism.kotlin.crypto.EC
 import io.iohk.atala.prism.models.{Ledger, TransactionId}
 import io.iohk.atala.prism.node.errors.NodeError.UnknownValueError
 import io.iohk.atala.prism.node.models.nodeState.LedgerData
@@ -25,25 +25,25 @@ class DIDDataRepositorySpec extends AtalaWithPostgresSpec {
       didSuffix = didSuffix,
       keyId = "master",
       keyUsage = KeyUsage.MasterKey,
-      key = EC.generateKeyPair().publicKey
+      key = EC.generateKeyPair().getPublicKey
     ),
     DIDPublicKey(
       didSuffix = didSuffix,
       keyId = "issuing",
       keyUsage = KeyUsage.IssuingKey,
-      key = EC.generateKeyPair().publicKey
+      key = EC.generateKeyPair().getPublicKey
     ),
     DIDPublicKey(
       didSuffix = didSuffix,
       keyId = "authentication",
       keyUsage = KeyUsage.AuthenticationKey,
-      key = EC.generateKeyPair().publicKey
+      key = EC.generateKeyPair().getPublicKey
     ),
     DIDPublicKey(
       didSuffix = didSuffix,
       keyId = "communication",
       keyUsage = KeyUsage.CommunicationKey,
-      key = EC.generateKeyPair().publicKey
+      key = EC.generateKeyPair().getPublicKey
     )
   )
 

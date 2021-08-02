@@ -1,9 +1,8 @@
 package io.iohk.atala.prism.node.services
 
-import java.time.{Duration, Instant}
 import cats.effect.IO
-import cats.syntax.traverse._
 import cats.syntax.functor._
+import cats.syntax.traverse._
 import doobie.free.connection
 import doobie.free.connection.ConnectionIO
 import doobie.implicits._
@@ -15,14 +14,7 @@ import io.iohk.atala.prism.models.{TransactionDetails, TransactionInfo, Transact
 import io.iohk.atala.prism.node.UnderlyingLedger
 import io.iohk.atala.prism.node.cardano.LAST_SYNCED_BLOCK_TIMESTAMP
 import io.iohk.atala.prism.node.models.nodeState.getLastSyncedTimestampFromMaybe
-import io.iohk.atala.prism.node.models.{
-  AtalaObjectInfo,
-  AtalaObjectId,
-  AtalaObjectTransactionSubmission,
-  AtalaObjectTransactionSubmissionStatus,
-  AtalaOperationInfo,
-  AtalaOperationStatus
-}
+import io.iohk.atala.prism.node.models._
 import io.iohk.atala.prism.node.repositories.daos.AtalaObjectsDAO.{AtalaObjectCreateData, AtalaObjectSetTransactionInfo}
 import io.iohk.atala.prism.node.repositories.daos.{
   AtalaObjectTransactionSubmissionsDAO,
@@ -38,6 +30,8 @@ import io.iohk.atala.prism.protos.{node_internal, node_models}
 import io.iohk.atala.prism.utils.syntax.DBConnectionOps
 import monix.execution.Scheduler
 import org.slf4j.LoggerFactory
+
+import java.time.{Duration, Instant}
 import scala.concurrent.Future
 import scala.concurrent.duration._
 

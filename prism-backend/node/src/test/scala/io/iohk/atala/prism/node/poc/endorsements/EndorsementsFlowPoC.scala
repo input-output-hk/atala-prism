@@ -10,7 +10,9 @@ import io.iohk.atala.prism.AtalaWithPostgresSpec
 import io.iohk.atala.prism.credentials.{CredentialBatchId, CredentialBatches}
 import io.iohk.atala.prism.credentials.content.CredentialContent
 import io.iohk.atala.prism.credentials.content.syntax._
-import io.iohk.atala.prism.crypto.{EC, ECPublicKey, ECSignature, SHA256Digest}
+import io.iohk.atala.prism.kotlin.crypto.{EC, SHA256Digest}
+import io.iohk.atala.prism.kotlin.crypto.keys.ECPublicKey
+import io.iohk.atala.prism.kotlin.crypto.signature.ECSignature
 import io.iohk.atala.prism.identity.{DID, DIDSuffix}
 import io.iohk.atala.prism.node.grpc.ProtoCodecs
 import io.iohk.atala.prism.node.repositories.{CredentialBatchesRepository, DIDDataRepository}
@@ -33,8 +35,10 @@ import org.scalatest.BeforeAndAfterEach
 
 import scala.concurrent.{Future, Promise}
 
+import io.iohk.atala.prism.interop.toKotlinSDK._
+
 class EndorsementsFlowPoC extends AtalaWithPostgresSpec with BeforeAndAfterEach {
-  implicit val ecTrait = EC
+//  implicit val ecTrait = EC
 
   import Utils._
 
@@ -124,7 +128,7 @@ class EndorsementsFlowPoC extends AtalaWithPostgresSpec with BeforeAndAfterEach 
       val issuanceKeyId = "issuance0"
       val signedKeys: List[SignedKey] = (1 to 100).toList.map { _ =>
         val keyPair = EC.generateKeyPair()
-        val publicKey = keyPair.publicKey
+        val publicKey = keyPair.getPublicKey
         SignedKey(publicKey, wallet.signKey(publicKey, issuanceKeyId, moeDIDSuffix), issuanceKeyId)
       }
 
@@ -145,7 +149,7 @@ class EndorsementsFlowPoC extends AtalaWithPostgresSpec with BeforeAndAfterEach 
       val retrievedKey =
         SignedKey(
           fromProtoKeyData(freshKeyProto.getKey),
-          ECSignature(freshKeyProto.signature.toByteArray),
+          new ECSignature(freshKeyProto.signature.toByteArray),
           freshKeyProto.signingKeyId
         )
 
@@ -219,7 +223,7 @@ class EndorsementsFlowPoC extends AtalaWithPostgresSpec with BeforeAndAfterEach 
         )
 
       val (root, proof) = CredentialBatches.batch(List(credential))
-      val issueOp = issueBatchOperation(moeDID, root)
+      val issueOp = issueBatchOperation(moeDID, root.asKotlin)
       val batchId = CredentialBatchId.fromBatchData(moeDIDSuffix, root)
       val issueOpHash = SHA256Digest.compute(issueOp.toByteArray)
       val signedIssuanceOp = wallet.signOperation(issueOp, issuanceKeyId, moeDIDSuffix)
@@ -248,7 +252,7 @@ class EndorsementsFlowPoC extends AtalaWithPostgresSpec with BeforeAndAfterEach 
       val revocationKeyId = "revocation0"
       wallet.addRevocationKeyToDid(
         revocationKeyId = revocationKeyId,
-        previousOperationHash = ByteString.copyFrom(SHA256Digest.compute(createDIDOp.toByteArray).value.toArray),
+        previousOperationHash = ByteString.copyFrom(SHA256Digest.compute(createDIDOp.toByteArray).getValue),
         didSuffix = moeDIDSuffix
       )
 
@@ -291,7 +295,7 @@ object Utils {
     node_models.AtalaOperation(
       operation = node_models.AtalaOperation.Operation.UpdateDid(
         node_models.UpdateDIDOperation(
-          previousOperationHash = ByteString.copyFrom(previousHash.value.toArray),
+          previousOperationHash = ByteString.copyFrom(previousHash.getValue),
           id = suffix.value,
           actions = Seq(
             node_models.UpdateDIDAction(

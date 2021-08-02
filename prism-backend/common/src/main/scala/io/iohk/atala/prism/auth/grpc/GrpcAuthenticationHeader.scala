@@ -3,7 +3,8 @@ package io.iohk.atala.prism.auth.grpc
 import java.util.Base64
 
 import io.grpc.Metadata
-import io.iohk.atala.prism.crypto.{ECPublicKey, ECSignature}
+import io.iohk.atala.prism.kotlin.crypto.keys.ECPublicKey
+import io.iohk.atala.prism.kotlin.crypto.signature.ECSignature
 import io.iohk.atala.prism.auth.model.RequestNonce
 import io.iohk.atala.prism.identity.DID
 
@@ -15,14 +16,14 @@ sealed trait GrpcAuthenticationHeader {
     this match {
       case GrpcAuthenticationHeader.PublicKeyBased(requestNonce, publicKey, signature) =>
         val publicKeyStr = Base64.getUrlEncoder.encodeToString(publicKey.getEncoded)
-        val signatureStr = Base64.getUrlEncoder.encodeToString(signature.data)
+        val signatureStr = Base64.getUrlEncoder.encodeToString(signature.getData)
         val requestNonceStr = Base64.getUrlEncoder.encodeToString(requestNonce.bytes.toArray)
         metadata.put(PublicKeyKeys.metadata, publicKeyStr)
         metadata.put(SignatureKeys.metadata, signatureStr)
         metadata.put(RequestNonceKeys.metadata, requestNonceStr)
 
       case didBased: GrpcAuthenticationHeader.DIDBased =>
-        val signatureStr = Base64.getUrlEncoder.encodeToString(didBased.signature.data)
+        val signatureStr = Base64.getUrlEncoder.encodeToString(didBased.signature.getData)
         val requestNonceStr = Base64.getUrlEncoder.encodeToString(didBased.requestNonce.bytes.toArray)
         metadata.put(DidKeys.metadata, didBased.did.value)
         metadata.put(DidKeyIdKeys.metadata, didBased.keyId)

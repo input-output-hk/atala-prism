@@ -5,7 +5,7 @@ import com.google.protobuf.ByteString
 import doobie.implicits._
 import io.iohk.atala.prism.AtalaWithPostgresSpec
 import io.iohk.atala.prism.credentials.{CredentialBatchId, TimestampInfo}
-import io.iohk.atala.prism.crypto.SHA256Digest
+import io.iohk.atala.prism.kotlin.crypto.SHA256Digest
 import io.iohk.atala.prism.models.{Ledger, TransactionId}
 import io.iohk.atala.prism.node.models.nodeState.LedgerData
 import io.iohk.atala.prism.node.repositories.DIDDataRepository
@@ -52,7 +52,7 @@ object RevokeCredentialsOperationSpec {
   val revokeFullBatchOperation: node_models.AtalaOperation = node_models.AtalaOperation(
     operation = node_models.AtalaOperation.Operation.RevokeCredentials(
       value = node_models.RevokeCredentialsOperation(
-        previousOperationHash = ByteString.copyFrom(credentialIssueBatchOperation.digest.value.toArray),
+        previousOperationHash = ByteString.copyFrom(credentialIssueBatchOperation.digest.getValue),
         credentialBatchId = credentialBatchId.id,
         credentialsToRevoke = Seq()
       )
@@ -64,9 +64,9 @@ object RevokeCredentialsOperationSpec {
   val revokeSpecificCredentialsOperation: node_models.AtalaOperation = node_models.AtalaOperation(
     operation = node_models.AtalaOperation.Operation.RevokeCredentials(
       value = node_models.RevokeCredentialsOperation(
-        previousOperationHash = ByteString.copyFrom(credentialIssueBatchOperation.digest.value.toArray),
+        previousOperationHash = ByteString.copyFrom(credentialIssueBatchOperation.digest.getValue),
         credentialBatchId = credentialBatchId.id,
-        credentialsToRevoke = Seq(ByteString.copyFrom(credentialHashToRevoke.value.toArray))
+        credentialsToRevoke = Seq(ByteString.copyFrom(credentialHashToRevoke.getValue))
       )
     )
   )
@@ -161,7 +161,7 @@ class RevokeCredentialsOperationSpec extends AtalaWithPostgresSpec {
 
       val CorrectnessData(key, previousOperation) = corrDataE.toOption.value
 
-      key mustBe revokingKeys.publicKey
+      key mustBe revokingKeys.getPublicKey
       previousOperation mustBe Some(credentialIssueBatchOperation.digest)
     }
     "return state error when there are used different key than revocation key" in {

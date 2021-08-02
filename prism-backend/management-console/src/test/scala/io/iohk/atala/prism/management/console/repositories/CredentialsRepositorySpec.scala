@@ -10,8 +10,8 @@ import io.circe.syntax._
 import io.iohk.atala.prism.AtalaWithPostgresSpec
 import io.iohk.atala.prism.connector.AtalaOperationId
 import io.iohk.atala.prism.credentials.CredentialBatchId
-import io.iohk.atala.prism.crypto.MerkleTree.MerkleInclusionProof
-import io.iohk.atala.prism.crypto.SHA256Digest
+import io.iohk.atala.prism.kotlin.crypto.MerkleInclusionProof
+import io.iohk.atala.prism.kotlin.crypto.SHA256Digest
 import io.iohk.atala.prism.management.console.DataPreparation
 import io.iohk.atala.prism.management.console.DataPreparation._
 import io.iohk.atala.prism.management.console.errors.{
@@ -23,10 +23,14 @@ import io.iohk.atala.prism.management.console.models._
 import org.scalatest.OptionValues._
 import io.iohk.atala.prism.management.console.repositories.daos.CredentialTypeDao
 
+import io.iohk.atala.prism.interop.toScalaSDK._
+import io.iohk.atala.prism.interop.toKotlinSDK._
+import scala.jdk.CollectionConverters._
+
 class CredentialsRepositorySpec extends AtalaWithPostgresSpec {
   import CredentialsRepositorySpec.publish
 
-  lazy val credentialsRepository = CredentialsRepository(database)
+  lazy val credentialsRepository = CredentialsRepository.apply[IO](database)
 
   "create" should {
     "create a new credential" in {
@@ -274,17 +278,17 @@ class CredentialsRepositorySpec extends AtalaWithPostgresSpec {
       val originalCredential = createGenericCredential(issuerId, contactId, "A")
 
       val mockOperationHash = SHA256Digest.compute("000".getBytes())
-      val mockBatchId = CredentialBatchId.fromDigest(mockOperationHash)
+      val mockBatchId = CredentialBatchId.fromDigest(mockOperationHash.asScala)
 
       /// we first publish the batch
       DataPreparation.publishBatch(
         mockBatchId,
         mockOperationHash,
-        AtalaOperationId.fromVectorUnsafe(mockOperationHash.value)
+        AtalaOperationId.fromVectorUnsafe(mockOperationHash.getValue.toVector)
       )
 
       val mockEncodedSignedCredential = "easdadgfkfñwlekrjfadf"
-      val mockMerkleProof = MerkleInclusionProof(mockOperationHash, 1, List(mockOperationHash))
+      val mockMerkleProof = new MerkleInclusionProof(mockOperationHash, 1, List(mockOperationHash).asJava)
 
       val inserted = credentialsRepository
         .storePublicationData(
@@ -320,17 +324,17 @@ class CredentialsRepositorySpec extends AtalaWithPostgresSpec {
       val issuerId = createParticipant("Issuer X")
 
       val mockOperationHash = SHA256Digest.compute("000".getBytes())
-      val mockBatchId = CredentialBatchId.fromDigest(mockOperationHash)
+      val mockBatchId = CredentialBatchId.fromDigest(mockOperationHash.asScala)
 
       /// we first publish the batch
       DataPreparation.publishBatch(
         mockBatchId,
         mockOperationHash,
-        AtalaOperationId.fromVectorUnsafe(mockOperationHash.value)
+        AtalaOperationId.fromVectorUnsafe(mockOperationHash.getValue.toVector)
       )
 
       val mockEncodedSignedCredential = "easdadgfkfñwlekrjfadf"
-      val mockMerkleProof = MerkleInclusionProof(mockOperationHash, 1, List(mockOperationHash))
+      val mockMerkleProof = new MerkleInclusionProof(mockOperationHash, 1, List(mockOperationHash).asJava)
 
       intercept[RuntimeException](
         credentialsRepository
@@ -360,17 +364,17 @@ class CredentialsRepositorySpec extends AtalaWithPostgresSpec {
       val originalCredential = createGenericCredential(issuerId, contactId, "A")
 
       val mockOperationHash = SHA256Digest.compute("000".getBytes())
-      val mockBatchId = CredentialBatchId.fromDigest(mockOperationHash)
+      val mockBatchId = CredentialBatchId.fromDigest(mockOperationHash.asScala)
 
       /// we first publish the batch
       DataPreparation.publishBatch(
         mockBatchId,
         mockOperationHash,
-        AtalaOperationId.fromVectorUnsafe(mockOperationHash.value)
+        AtalaOperationId.fromVectorUnsafe(mockOperationHash.getValue.toVector)
       )
 
       val mockEncodedSignedCredential = "easdadgfkfñwlekrjfadf"
-      val mockMerkleProof = MerkleInclusionProof(mockOperationHash, 1, List(mockOperationHash))
+      val mockMerkleProof = new MerkleInclusionProof(mockOperationHash, 1, List(mockOperationHash).asJava)
 
       intercept[RuntimeException](
         credentialsRepository
@@ -405,9 +409,9 @@ class CredentialsRepositorySpec extends AtalaWithPostgresSpec {
       val originalCredential = createGenericCredential(issuerId, contactId, "A")
 
       val mockHash = SHA256Digest.compute("000".getBytes())
-      val mockBatchId = CredentialBatchId.fromDigest(mockHash)
+      val mockBatchId = CredentialBatchId.fromDigest(mockHash.asScala)
       val mockEncodedSignedCredential = "easdadgfkfñwlekrjfadf"
-      val mockMerkleProof = MerkleInclusionProof(mockHash, 1, List(mockHash))
+      val mockMerkleProof = new MerkleInclusionProof(mockHash, 1, List(mockHash).asJava)
 
       intercept[RuntimeException](
         credentialsRepository
@@ -560,13 +564,13 @@ class CredentialsRepositorySpec extends AtalaWithPostgresSpec {
   "storeBatchData" should {
     "insert the expected data" in {
       val mockHash = SHA256Digest.compute("randomizer2021".getBytes())
-      val mockBatchId = CredentialBatchId.fromDigest(mockHash)
+      val mockBatchId = CredentialBatchId.fromDigest(mockHash.asScala)
 
       val added = credentialsRepository
         .storeBatchData(
           mockBatchId,
           mockHash,
-          AtalaOperationId.fromVectorUnsafe(mockHash.value)
+          AtalaOperationId.fromVectorUnsafe(mockHash.getValue.toVector)
         )
         .unsafeToFuture()
         .futureValue
@@ -575,7 +579,7 @@ class CredentialsRepositorySpec extends AtalaWithPostgresSpec {
       val (operationId, hash) = DataPreparation.getBatchData(mockBatchId).value
 
       hash mustBe mockHash
-      operationId.digest mustBe mockHash
+      operationId.digest.asKotlin mustBe mockHash
     }
   }
 
@@ -636,13 +640,17 @@ class CredentialsRepositorySpec extends AtalaWithPostgresSpec {
       val credential = createGenericCredential(institutionId, contactId, "A")
 
       val mockOperationHash = SHA256Digest.compute("000".getBytes())
-      val mockBatchId = CredentialBatchId.fromDigest(mockOperationHash)
+      val mockBatchId = CredentialBatchId.fromDigest(mockOperationHash.asScala)
 
       // we first publish the batch
-      publishBatch(mockBatchId, mockOperationHash, AtalaOperationId.fromVectorUnsafe(mockOperationHash.value))
+      publishBatch(
+        mockBatchId,
+        mockOperationHash,
+        AtalaOperationId.fromVectorUnsafe(mockOperationHash.getValue.toVector)
+      )
 
       val mockEncodedSignedCredential = "easdadgfkfñwlekrjfadf"
-      val mockMerkleProof = MerkleInclusionProof(mockOperationHash, 1, List(mockOperationHash))
+      val mockMerkleProof = new MerkleInclusionProof(mockOperationHash, 1, List(mockOperationHash).asJava)
 
       credentialsRepository
         .storePublicationData(
@@ -696,13 +704,17 @@ class CredentialsRepositorySpec extends AtalaWithPostgresSpec {
       val credential = createGenericCredential(institutionId, contactId, "A")
 
       val mockOperationHash = SHA256Digest.compute("000".getBytes())
-      val mockBatchId = CredentialBatchId.fromDigest(mockOperationHash)
+      val mockBatchId = CredentialBatchId.fromDigest(mockOperationHash.asScala)
 
       // we first publish the batch
-      publishBatch(mockBatchId, mockOperationHash, AtalaOperationId.fromVectorUnsafe(mockOperationHash.value))
+      publishBatch(
+        mockBatchId,
+        mockOperationHash,
+        AtalaOperationId.fromVectorUnsafe(mockOperationHash.getValue.toVector)
+      )
 
       val mockEncodedSignedCredential = "easdadgfkfñwlekrjfadf"
-      val mockMerkleProof = MerkleInclusionProof(mockOperationHash, 1, List(mockOperationHash))
+      val mockMerkleProof = new MerkleInclusionProof(mockOperationHash, 1, List(mockOperationHash).asJava)
 
       credentialsRepository
         .storePublicationData(
@@ -731,16 +743,16 @@ class CredentialsRepositorySpec extends AtalaWithPostgresSpec {
 
 object CredentialsRepositorySpec {
   private val aHash = SHA256Digest.compute("random string".getBytes())
-  private val aBatchId = CredentialBatchId.fromDigest(aHash)
+  private val aBatchId = CredentialBatchId.fromDigest(aHash.asScala)
 
-  private val aProof = MerkleInclusionProof(aHash, 1, List(aHash))
+  private val aProof = new MerkleInclusionProof(aHash, 1, List(aHash).asJava)
   private val anEncodedCred = "encodedSignedCredenital"
 
   def publish(
       issuerId: ParticipantId,
       consoleId: GenericCredential.Id
   )(implicit database: transactor.Transactor[IO]): Unit = {
-    DataPreparation.publishBatch(aBatchId, aHash, AtalaOperationId.fromVectorUnsafe(aHash.value))
+    DataPreparation.publishBatch(aBatchId, aHash, AtalaOperationId.fromVectorUnsafe(aHash.getValue.toVector))
     DataPreparation.publishCredential(issuerId, aBatchId, consoleId, anEncodedCred, aProof)
   }
 }

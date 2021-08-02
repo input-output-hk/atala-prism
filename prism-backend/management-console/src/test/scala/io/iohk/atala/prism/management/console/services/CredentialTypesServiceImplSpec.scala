@@ -5,7 +5,7 @@ import io.grpc.StatusRuntimeException
 import org.scalatest.OptionValues
 import io.iohk.atala.prism.DIDUtil
 import io.iohk.atala.prism.auth.SignedRpcRequest
-import io.iohk.atala.prism.crypto.EC
+import io.iohk.atala.prism.kotlin.crypto.EC
 import io.iohk.atala.prism.management.console.ManagementConsoleRpcSpecBase
 import io.iohk.atala.prism.protos.{console_api, console_models}
 import io.iohk.atala.prism.management.console.DataPreparation._
@@ -175,7 +175,7 @@ class CredentialTypesServiceImplSpec extends ManagementConsoleRpcSpecBase with D
 
   trait Fixtures {
     val keyPair = EC.generateKeyPair()
-    val did = generateDid(keyPair.publicKey)
+    val did = generateDid(keyPair.getPublicKey)
     val participantId = createParticipant("Institution", did)
 
     val createCredentialType = sampleCreateCredentialType(

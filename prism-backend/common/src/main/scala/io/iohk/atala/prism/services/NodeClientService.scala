@@ -3,7 +3,9 @@ package io.iohk.atala.prism.services
 import cats.data.EitherT
 import monix.eval.Task
 import com.google.protobuf.ByteString
-import io.iohk.atala.prism.crypto.{EC, ECConfig, ECPublicKey, SHA256Digest}
+import io.iohk.atala.prism.kotlin.crypto.{EC, SHA256Digest}
+import io.iohk.atala.prism.kotlin.crypto.keys.ECPublicKey
+import io.iohk.atala.prism.kotlin.crypto.ECConfig.{INSTANCE => ECConfig}
 import io.iohk.atala.prism.protos.node_api._
 import io.iohk.atala.prism.protos.node_models._
 import io.iohk.atala.prism.services.BaseGrpcClientService.DidBasedAuthConfig
@@ -12,7 +14,8 @@ import io.iohk.atala.prism.credentials
 import io.iohk.atala.prism.protos.{node_api, node_models}
 import cats.implicits._
 import io.iohk.atala.prism.credentials.CredentialBatchId
-import io.iohk.atala.prism.crypto.MerkleTree.MerkleRoot
+import io.iohk.atala.prism.interop.toScalaSDK._
+import io.iohk.atala.prism.kotlin.crypto.MerkleRoot
 import io.iohk.atala.prism.utils.syntax._
 
 trait NodeClientService {
@@ -52,7 +55,8 @@ class NodeClientServiceImpl(node: NodeServiceGrpc.NodeServiceStub, authConfig: D
       SignedAtalaOperation(
         signedWith = authConfig.didIssuingKeyId,
         operation = Some(operation),
-        signature = ByteString.copyFrom(EC.sign(operation.toByteArray, authConfig.didIssuingKeyPair.privateKey).data)
+        signature =
+          ByteString.copyFrom(EC.sign(operation.toByteArray, authConfig.didIssuingKeyPair.getPrivateKey).getData)
       )
 
     Task.fromFuture(node.issueCredentialBatch(IssueCredentialBatchRequest().withSignedOperation(signedAtalaOperation)))
@@ -67,7 +71,7 @@ class NodeClientServiceImpl(node: NodeServiceGrpc.NodeServiceStub, authConfig: D
         node_api
           .GetCredentialRevocationTimeRequest()
           .withBatchId(credentialBatchId.id)
-          .withCredentialHash(ByteString.copyFrom(credentialHash.value.toArray))
+          .withCredentialHash(ByteString.copyFrom(credentialHash.getValue))
       )
     )
   }
@@ -102,23 +106,22 @@ object NodeClientService {
           .toEitherT[Task]
 
       revokedOn = issuingKeyProto.revokedOn.map(fromTimestampInfoProto)
-    } yield credentials.KeyData(publicKey = issuingKey, addedOn = addedOn, revokedOn = revokedOn)
+    } yield credentials.KeyData(publicKey = issuingKey.asScala, addedOn = addedOn, revokedOn = revokedOn)
   }
 
-  def fromProtoKey(protoKey: node_models.PublicKey): Option[ECPublicKey] = {
+  def fromProtoKey(protoKey: node_models.PublicKey): Option[ECPublicKey] =
     for {
       maybeX <- protoKey.keyData.ecKeyData
       maybeY <- protoKey.keyData.ecKeyData
     } yield EC.toPublicKey(maybeX.x.toByteArray, maybeY.y.toByteArray)
-  }
 
   def toTimestampInfoProto(ecPublicKey: ECPublicKey): node_models.ECKeyData = {
     val point = ecPublicKey.getCurvePoint
 
     node_models.ECKeyData(
-      ECConfig.CURVE_NAME,
-      x = ByteString.copyFrom(point.x.toByteArray),
-      y = ByteString.copyFrom(point.y.toByteArray)
+      ECConfig.getCURVE_NAME,
+      x = ByteString.copyFrom(point.getX.bytes()),
+      y = ByteString.copyFrom(point.getY.bytes())
     )
   }
 
@@ -149,7 +152,7 @@ object NodeClientService {
               credentialBatchData = Some(
                 node_models.CredentialBatchData(
                   issuerDid = issuerDID.suffix.value,
-                  merkleRoot = toByteString(merkleRoot.hash)
+                  merkleRoot = toByteString(merkleRoot.getHash)
                 )
               )
             )
@@ -175,8 +178,8 @@ object NodeClientService {
       )
   }
 
-  def toByteString(hash: SHA256Digest): ByteString = ByteString.copyFrom(hash.value.toArray)
+  def toByteString(hash: SHA256Digest): ByteString = ByteString.copyFrom(hash.getValue)
 
   def toSHA256Digest(byteString: ByteString): SHA256Digest =
-    SHA256Digest.fromVectorUnsafe(byteString.toByteArray.toVector)
+    SHA256Digest.fromBytes(byteString.toByteArray)
 }

@@ -3,7 +3,7 @@ package io.iohk.atala.prism.connector.model.actions
 import cats.syntax.either._
 import io.iohk.atala.prism.auth.grpc.GrpcAuthenticationHeader
 import io.iohk.atala.prism.connector.model.TokenString
-import io.iohk.atala.prism.crypto.ECPublicKey
+import io.iohk.atala.prism.kotlin.crypto.keys.ECPublicKey
 import io.iohk.atala.prism.identity.DID
 
 case class AddConnectionRequest(

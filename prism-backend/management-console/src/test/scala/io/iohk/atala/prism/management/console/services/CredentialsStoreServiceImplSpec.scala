@@ -4,7 +4,7 @@ import cats.syntax.functor._
 import doobie.implicits._
 import io.iohk.atala.prism.auth.SignedRpcRequest
 import io.iohk.atala.prism.auth.grpc.GrpcAuthenticationHeaderParser
-import io.iohk.atala.prism.crypto.EC
+import io.iohk.atala.prism.kotlin.crypto.EC
 import io.iohk.atala.prism.identity.DID
 import io.iohk.atala.prism.management.console.models.{CredentialExternalId, ParticipantId, ParticipantLogo}
 import io.iohk.atala.prism.management.console.repositories.ParticipantsRepository.CreateParticipantRequest
@@ -73,7 +73,7 @@ class CredentialsStoreServiceImplSpec extends RpcSpecBase with DIDUtil {
   "storeCredential" should {
     "store credential in the database" in {
       lazy val keyPair = EC.generateKeyPair()
-      lazy val publicKey = keyPair.publicKey
+      lazy val publicKey = keyPair.getPublicKey
       val did = generateDid(publicKey)
       updateDid(verifierId, did).transact(database).unsafeRunSync()
 
@@ -105,7 +105,7 @@ class CredentialsStoreServiceImplSpec extends RpcSpecBase with DIDUtil {
 
     "NOT store credential in the database when there is a message id conflict" in {
       lazy val keyPair = EC.generateKeyPair()
-      lazy val publicKey = keyPair.publicKey
+      lazy val publicKey = keyPair.getPublicKey
       val did = generateDid(publicKey)
       updateDid(verifierId, did).transact(database).unsafeRunSync()
 
@@ -166,7 +166,7 @@ class CredentialsStoreServiceImplSpec extends RpcSpecBase with DIDUtil {
   "getCredentialsFor" should {
     "get all credentials when the individual argument is missing" in {
       lazy val keyPair = EC.generateKeyPair()
-      lazy val publicKey = keyPair.publicKey
+      lazy val publicKey = keyPair.getPublicKey
       val did = generateDid(publicKey)
       updateDid(verifierId, did).transact(database).unsafeRunSync()
 
@@ -198,7 +198,7 @@ class CredentialsStoreServiceImplSpec extends RpcSpecBase with DIDUtil {
 
     "get credentials for individual" in {
       lazy val keyPair = EC.generateKeyPair()
-      lazy val publicKey = keyPair.publicKey
+      lazy val publicKey = keyPair.getPublicKey
       val did = generateDid(publicKey)
       updateDid(verifierId, did).transact(database).unsafeRunSync()
 
@@ -232,7 +232,7 @@ class CredentialsStoreServiceImplSpec extends RpcSpecBase with DIDUtil {
   "getLatestCredentialExternalId" should {
     "return the last id stored" in {
       lazy val keyPair = EC.generateKeyPair()
-      lazy val publicKey = keyPair.publicKey
+      lazy val publicKey = keyPair.getPublicKey
       val did = generateDid(publicKey)
       updateDid(verifierId, did).transact(database).unsafeRunSync()
 

@@ -3,7 +3,8 @@ package io.iohk.atala.prism.auth.grpc
 import java.util.Base64
 
 import io.grpc.{Context, Metadata}
-import io.iohk.atala.prism.crypto.{EC, ECSignature}
+import io.iohk.atala.prism.kotlin.crypto.{EC}
+import io.iohk.atala.prism.kotlin.crypto.signature.{ECSignature}
 import io.iohk.atala.prism.auth.model.RequestNonce
 import io.iohk.atala.prism.identity.DID
 import io.iohk.atala.prism.identity.DID.DIDFormat
@@ -76,7 +77,7 @@ private[grpc] object GrpcAuthenticationContext {
         val header = GrpcAuthenticationHeader.PublicKeyBased(
           requestNonce = RequestNonce(requestNonce.toVector),
           publicKey = publicKey,
-          signature = ECSignature(signature)
+          signature = new ECSignature(signature)
         )
         Some(header)
 
@@ -119,7 +120,7 @@ private[grpc] object GrpcAuthenticationContext {
                     requestNonce = RequestNonce(requestNonce.toVector),
                     did = did,
                     keyId = keyId,
-                    signature = ECSignature(signature)
+                    signature = new ECSignature(signature)
                   )
                 )
               case _: DIDFormat.LongForm =>
@@ -128,7 +129,7 @@ private[grpc] object GrpcAuthenticationContext {
                     requestNonce = RequestNonce(requestNonce.toVector),
                     did = did,
                     keyId = keyId,
-                    signature = ECSignature(signature)
+                    signature = new ECSignature(signature)
                   )
                 )
               case DIDFormat.Unknown =>

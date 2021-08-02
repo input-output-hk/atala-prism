@@ -4,7 +4,7 @@ import java.time.Instant
 
 import io.iohk.atala.prism.AtalaWithPostgresSpec
 import io.iohk.atala.prism.credentials.TimestampInfo
-import io.iohk.atala.prism.crypto.EC
+import io.iohk.atala.prism.kotlin.crypto.EC
 import io.iohk.atala.prism.models.{Ledger, TransactionId}
 import io.iohk.atala.prism.node.DataPreparation
 import io.iohk.atala.prism.node.models.{DIDData, DIDPublicKey, KeyUsage}
@@ -23,25 +23,25 @@ class PublicKeysDAOSpec extends AtalaWithPostgresSpec {
       didSuffix = didSuffix,
       keyId = "master",
       keyUsage = KeyUsage.MasterKey,
-      key = EC.generateKeyPair().publicKey
+      key = EC.generateKeyPair().getPublicKey
     ),
     DIDPublicKey(
       didSuffix = didSuffix,
       keyId = "issuing",
       keyUsage = KeyUsage.IssuingKey,
-      key = EC.generateKeyPair().publicKey
+      key = EC.generateKeyPair().getPublicKey
     ),
     DIDPublicKey(
       didSuffix = didSuffix,
       keyId = "authentication",
       keyUsage = KeyUsage.AuthenticationKey,
-      key = EC.generateKeyPair().publicKey
+      key = EC.generateKeyPair().getPublicKey
     ),
     DIDPublicKey(
       didSuffix = didSuffix,
       keyId = "communication",
       keyUsage = KeyUsage.CommunicationKey,
-      key = EC.generateKeyPair().publicKey
+      key = EC.generateKeyPair().getPublicKey
     )
   )
 

@@ -5,8 +5,8 @@ import com.google.protobuf.ByteString
 import doobie.implicits._
 import io.iohk.atala.prism.AtalaWithPostgresSpec
 import io.iohk.atala.prism.credentials.TimestampInfo
-import io.iohk.atala.prism.crypto.MerkleTree.MerkleRoot
-import io.iohk.atala.prism.crypto.SHA256Digest
+import io.iohk.atala.prism.kotlin.crypto.MerkleRoot
+import io.iohk.atala.prism.kotlin.crypto.SHA256Digest
 import io.iohk.atala.prism.models.{Ledger, TransactionId}
 import io.iohk.atala.prism.node.models.nodeState.LedgerData
 import io.iohk.atala.prism.node.models.{DIDData, DIDPublicKey, KeyUsage}
@@ -25,8 +25,8 @@ object IssueCredentialBatchOperationSpec {
   val issuingKeys = CreateDIDOperationSpec.issuingKeys
 
   lazy val issuerDidKeys = List(
-    DIDPublicKey(issuerDIDSuffix, "master", KeyUsage.MasterKey, masterKeys.publicKey),
-    DIDPublicKey(issuerDIDSuffix, "issuing", KeyUsage.IssuingKey, issuingKeys.publicKey)
+    DIDPublicKey(issuerDIDSuffix, "master", KeyUsage.MasterKey, masterKeys.getPublicKey),
+    DIDPublicKey(issuerDIDSuffix, "issuing", KeyUsage.IssuingKey, issuingKeys.getPublicKey)
   )
 
   lazy val dummyTimestamp = TimestampInfo(Instant.ofEpochMilli(0), 1, 0)
@@ -40,7 +40,7 @@ object IssueCredentialBatchOperationSpec {
     CreateDIDOperation.parse(CreateDIDOperationSpec.exampleOperation, dummyLedgerData).toOption.value
   lazy val issuerDIDSuffix = issuerCreateDIDOperation.id
   val content = ""
-  val mockMerkleRoot = MerkleRoot(SHA256Digest.compute(content.getBytes))
+  val mockMerkleRoot = new MerkleRoot(SHA256Digest.compute(content.getBytes))
 
   val exampleOperation = node_models.AtalaOperation(
     operation = node_models.AtalaOperation.Operation.IssueCredentialBatch(
@@ -48,7 +48,7 @@ object IssueCredentialBatchOperationSpec {
         credentialBatchData = Some(
           node_models.CredentialBatchData(
             issuerDid = issuerDIDSuffix.value,
-            merkleRoot = ByteString.copyFrom(mockMerkleRoot.hash.value.toArray)
+            merkleRoot = ByteString.copyFrom(mockMerkleRoot.getHash.getValue)
           )
         )
       )
@@ -127,7 +127,7 @@ class IssueCredentialBatchOperationSpec extends AtalaWithPostgresSpec {
         .toOption
         .value
 
-      key mustBe issuingKeys.publicKey
+      key mustBe issuingKeys.getPublicKey
       previousOperation mustBe None
     }
     "return state error when there are used different key than issuing key" in {

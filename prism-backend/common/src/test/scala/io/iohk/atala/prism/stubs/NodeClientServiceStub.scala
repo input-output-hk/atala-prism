@@ -1,8 +1,8 @@
 package io.iohk.atala.prism.stubs
 
 import io.iohk.atala.prism.credentials.CredentialBatchId
-import io.iohk.atala.prism.crypto.MerkleTree.MerkleRoot
-import io.iohk.atala.prism.crypto.SHA256Digest
+import io.iohk.atala.prism.kotlin.crypto.MerkleRoot
+import io.iohk.atala.prism.kotlin.crypto.SHA256Digest
 import monix.eval.Task
 import io.iohk.atala.prism.services.NodeClientService
 import io.iohk.atala.prism.identity.DID

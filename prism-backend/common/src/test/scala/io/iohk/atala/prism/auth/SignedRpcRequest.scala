@@ -1,7 +1,9 @@
 package io.iohk.atala.prism.auth
 
 import java.util.UUID
-import io.iohk.atala.prism.crypto.{EC, ECKeyPair, ECSignature}
+import io.iohk.atala.prism.kotlin.crypto.EC
+import io.iohk.atala.prism.kotlin.crypto.keys.ECKeyPair
+import io.iohk.atala.prism.kotlin.crypto.signature.ECSignature
 import io.iohk.atala.prism.auth
 import io.iohk.atala.prism.auth.grpc.SignedRequestsHelper
 import io.iohk.atala.prism.identity.DID
@@ -22,7 +24,7 @@ object SignedRpcRequest {
       did: DID,
       request: R
   ): SignedRpcRequest[R] = {
-    val privateKey = keyPair.privateKey
+    val privateKey = keyPair.getPrivateKey
     val requestNonce = UUID.randomUUID().toString.getBytes.toVector
     val signature = EC.sign(
       SignedRequestsHelper.merge(auth.model.RequestNonce(requestNonce), request.toByteArray).toArray,

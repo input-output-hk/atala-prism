@@ -1,12 +1,13 @@
 package io.iohk.atala.prism.node.poc.endorsements
 
-import java.time.Instant
-
 import com.google.protobuf.ByteString
 import io.iohk.atala.prism.credentials.{Credential, CredentialBatchId, CredentialBatches}
-import io.iohk.atala.prism.crypto.MerkleTree.{MerkleInclusionProof, MerkleRoot}
-import io.iohk.atala.prism.crypto.{EC, ECConfig, ECPublicKey, ECSignature, SHA256Digest}
 import io.iohk.atala.prism.identity.DID
+import io.iohk.atala.prism.interop.toScalaSDK._
+import io.iohk.atala.prism.kotlin.crypto.ECConfig.{INSTANCE => ECConfig}
+import io.iohk.atala.prism.kotlin.crypto.keys.ECPublicKey
+import io.iohk.atala.prism.kotlin.crypto.signature.ECSignature
+import io.iohk.atala.prism.kotlin.crypto.{MerkleInclusionProof, MerkleRoot, SHA256Digest}
 import io.iohk.atala.prism.node.grpc.ProtoCodecs
 import io.iohk.atala.prism.protos.endorsements_api._
 import io.iohk.atala.prism.protos.node_api.{
@@ -19,6 +20,7 @@ import io.iohk.atala.prism.protos.node_models
 import io.iohk.atala.prism.protos.node_models.{KeyUsage, SignedAtalaOperation}
 import io.iohk.atala.prism.utils.syntax.InstantToTimestampOps
 
+import java.time.Instant
 import scala.concurrent.{ExecutionContext, Future}
 
 case class EndorsementsService(
@@ -27,8 +29,6 @@ case class EndorsementsService(
     executionContext: ExecutionContext
 ) extends EndorsementsServiceGrpc.EndorsementsService {
   import EndorsementsService._
-
-  implicit val ec = EC
 
   // private state
   private var moeDID: DID = _
@@ -73,7 +73,7 @@ case class EndorsementsService(
       println(s"assigned key: ${signedKey.key}")
       GetFreshMasterKeyResponse()
         .withKey(publicKeyToProto(signedKey.key))
-        .withSignature(ByteString.copyFrom(signedKey.signature.data))
+        .withSignature(ByteString.copyFrom(signedKey.signature.getData))
         .withSigningKeyId(signedKey.signingKeyId)
     }
   }
@@ -98,12 +98,12 @@ case class EndorsementsService(
       val credentialDID = credential.content.issuerDid.toOption.get
       val operationDID =
         DID.buildPrismDID(signedOperation.getOperation.getIssueCredentialBatch.getCredentialBatchData.issuerDid)
-      val operationMerkleRoot = MerkleRoot(
-        SHA256Digest.fromVectorUnsafe(
-          signedOperation.getOperation.getIssueCredentialBatch.getCredentialBatchData.merkleRoot.toByteArray.toVector
+      val operationMerkleRoot = new MerkleRoot(
+        SHA256Digest.fromBytes(
+          signedOperation.getOperation.getIssueCredentialBatch.getCredentialBatchData.merkleRoot.toByteArray
         )
       )
-      val decodedProof = MerkleInclusionProof.decode(request.encodedMerkleProof).get
+      val decodedProof = MerkleInclusionProof.decode(request.encodedMerkleProof)
       val proofDerivedRoot = decodedProof.derivedRoot
 
       if (
@@ -119,7 +119,7 @@ case class EndorsementsService(
         parentDID == operationDID &&
         // the credential is included in the issuing operation
         operationMerkleRoot == proofDerivedRoot &&
-        CredentialBatches.verifyInclusion(credential, operationMerkleRoot, decodedProof) &&
+        CredentialBatches.verifyInclusion(credential, operationMerkleRoot.asScala, decodedProof.asScala) &&
         // the DID is not already endorsed
         !isAlreadyEndorsed(childDID)
       ) {
@@ -195,7 +195,7 @@ object EndorsementsService {
         .content
         .issuerDid
         .getOrElse(throw new RuntimeException("missing issuer DID"))
-      CredentialBatchId.fromBatchData(issuerDID.suffix, MerkleInclusionProof.decode(inclusionProof).get.derivedRoot)
+      CredentialBatchId.fromBatchData(issuerDID.suffix, MerkleInclusionProof.decode(inclusionProof).derivedRoot.asScala)
     }
   }
 
@@ -208,9 +208,9 @@ object EndorsementsService {
   def publicKeyToProto(key: ECPublicKey): node_models.ECKeyData = {
     val point = key.getCurvePoint
     node_models.ECKeyData(
-      curve = ECConfig.CURVE_NAME,
-      x = ByteString.copyFrom(point.x.toByteArray),
-      y = ByteString.copyFrom(point.y.toByteArray)
+      curve = ECConfig.getCURVE_NAME,
+      x = ByteString.copyFrom(point.getX.bytes()),
+      y = ByteString.copyFrom(point.getY.bytes())
     )
   }
 }

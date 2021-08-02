@@ -5,7 +5,9 @@ import com.google.protobuf.ByteString
 import doobie.implicits._
 import io.iohk.atala.prism.AtalaWithPostgresSpec
 import io.iohk.atala.prism.credentials.TimestampInfo
-import io.iohk.atala.prism.crypto.{EC, ECConfig, ECKeyPair, ECPublicKey}
+import io.iohk.atala.prism.kotlin.crypto.EC
+import io.iohk.atala.prism.kotlin.crypto.keys.{ECKeyPair, ECPublicKey}
+import io.iohk.atala.prism.kotlin.crypto.ECConfig.{INSTANCE => ECConfig}
 import io.iohk.atala.prism.models.{Ledger, TransactionId}
 import io.iohk.atala.prism.node.grpc.ProtoCodecs
 import io.iohk.atala.prism.node.models.nodeState.{DIDPublicKeyState, LedgerData}
@@ -25,25 +27,25 @@ object CreateDIDOperationSpec {
     val point = key.getCurvePoint
 
     node_models.ECKeyData(
-      curve = ECConfig.CURVE_NAME,
-      x = ByteString.copyFrom(point.x.toByteArray),
-      y = ByteString.copyFrom(point.y.toByteArray)
+      curve = ECConfig.getCURVE_NAME,
+      x = ByteString.copyFrom(point.getX.bytes()),
+      y = ByteString.copyFrom(point.getY.bytes())
     )
   }
 
   def randomProtoECKey: ECKeyData = {
     val keyPair = EC.generateKeyPair()
-    protoECKeyFromPublicKey(keyPair.publicKey)
+    protoECKeyFromPublicKey(keyPair.getPublicKey)
   }
 
   val masterKeys: ECKeyPair = EC.generateKeyPair()
-  val masterEcKey: ECKeyData = protoECKeyFromPublicKey(masterKeys.publicKey)
+  val masterEcKey: ECKeyData = protoECKeyFromPublicKey(masterKeys.getPublicKey)
 
   val issuingKeys: ECKeyPair = EC.generateKeyPair()
-  val issuingEcKey: ECKeyData = protoECKeyFromPublicKey(issuingKeys.publicKey)
+  val issuingEcKey: ECKeyData = protoECKeyFromPublicKey(issuingKeys.getPublicKey)
 
   val revokingKeys: ECKeyPair = EC.generateKeyPair()
-  val revokingEcKey: ECKeyData = protoECKeyFromPublicKey(revokingKeys.publicKey)
+  val revokingEcKey: ECKeyData = protoECKeyFromPublicKey(revokingKeys.getPublicKey)
 
   lazy val dummyTimestamp: TimestampInfo = dummyTimestampInfo
   lazy val dummyLedgerData: LedgerData = LedgerData(
@@ -194,7 +196,7 @@ class CreateDIDOperationSpec extends AtalaWithPostgresSpec {
         .toOption
         .value
 
-      key mustBe masterKeys.publicKey
+      key mustBe masterKeys.getPublicKey
       previousOperation mustBe None
     }
   }
