@@ -51,8 +51,8 @@ object ProtoCodecs {
             key.keyId,
             toECKeyData(key.key),
             toProtoKeyUsage(key.keyUsage),
-            toTimeStampInfoProto(key.addedOn),
-            key.revokedOn map toTimeStampInfoProto
+            toLedgerData(key.addedOn),
+            key.revokedOn map toLedgerData
           )
         )
       )
@@ -62,8 +62,8 @@ object ProtoCodecs {
       id: String,
       ecKeyData: node_models.ECKeyData,
       keyUsage: node_models.KeyUsage,
-      addedOn: node_models.TimestampInfo,
-      revokedOn: Option[node_models.TimestampInfo]
+      addedOn: node_models.LedgerData,
+      revokedOn: Option[node_models.LedgerData]
   ): node_models.PublicKey = {
     val withoutRevKey = node_models
       .PublicKey()

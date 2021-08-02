@@ -66,7 +66,9 @@ object CreateDIDOperationSpec {
               node_models.PublicKey(
                 "master",
                 node_models.KeyUsage.MASTER_KEY,
-                Some(ProtoCodecs.toTimeStampInfoProto(dummyTimestampInfo)),
+                Some(
+                  node_models.LedgerData(timestampInfo = Some(ProtoCodecs.toTimeStampInfoProto(dummyTimestampInfo)))
+                ),
                 None,
                 node_models.PublicKey.KeyData.EcKeyData(masterEcKey)
               ),
@@ -74,7 +76,9 @@ object CreateDIDOperationSpec {
                 .PublicKey(
                   "issuing",
                   node_models.KeyUsage.ISSUING_KEY,
-                  Some(ProtoCodecs.toTimeStampInfoProto(dummyTimestampInfo)),
+                  Some(
+                    node_models.LedgerData(timestampInfo = Some(ProtoCodecs.toTimeStampInfoProto(dummyTimestampInfo)))
+                  ),
                   None,
                   node_models.PublicKey.KeyData.EcKeyData(issuingEcKey)
                 ),
@@ -82,14 +86,18 @@ object CreateDIDOperationSpec {
                 .PublicKey(
                   "revoking",
                   node_models.KeyUsage.REVOCATION_KEY,
-                  Some(ProtoCodecs.toTimeStampInfoProto(dummyTimestampInfo)),
+                  Some(
+                    node_models.LedgerData(timestampInfo = Some(ProtoCodecs.toTimeStampInfoProto(dummyTimestampInfo)))
+                  ),
                   None,
                   node_models.PublicKey.KeyData.EcKeyData(revokingEcKey)
                 ),
               node_models.PublicKey(
                 "authentication",
                 node_models.KeyUsage.AUTHENTICATION_KEY,
-                Some(ProtoCodecs.toTimeStampInfoProto(dummyTimestampInfo)),
+                Some(
+                  node_models.LedgerData(timestampInfo = Some(ProtoCodecs.toTimeStampInfoProto(dummyTimestampInfo)))
+                ),
                 None,
                 node_models.PublicKey.KeyData.EcKeyData(randomProtoECKey)
               )
@@ -231,7 +239,7 @@ class CreateDIDOperationSpec extends AtalaWithPostgresSpec {
       for (key <- parsedOperation.keys) {
         val keyState = DataPreparation.findKey(parsedOperation.id, key.keyId).value
         DIDPublicKey(keyState.didSuffix, keyState.keyId, keyState.keyUsage, keyState.key) mustBe key
-        keyState.addedOn mustBe dummyLedgerData.timestampInfo
+        keyState.addedOn.timestampInfo mustBe dummyLedgerData.timestampInfo
         keyState.revokedOn mustBe None
       }
     }

@@ -59,8 +59,27 @@ class PublicKeysDAOSpec extends AtalaWithPostgresSpec {
       val result = DataPreparation.findKey(didSuffix, "issuing").value
 
       DIDPublicKey(result.didSuffix, result.keyId, result.keyUsage, result.key) mustBe keys.tail.head
-      result.addedOn mustBe dummyLedgerData.timestampInfo
+      result.addedOn mustBe dummyLedgerData
       result.revokedOn mustBe None
+    }
+
+    "retrieve all previously inserted DID key for given suffix" in {
+      DataPreparation.createDID(didData, dummyLedgerData)
+      val results = DataPreparation.findByDidSuffix(didSuffix).keys
+
+      results
+        .map(didPublicKeyState =>
+          DIDPublicKey(
+            didPublicKeyState.didSuffix,
+            didPublicKeyState.keyId,
+            didPublicKeyState.keyUsage,
+            didPublicKeyState.key
+          )
+        )
+        .sortWith((l, r) => l.keyId < r.keyId) mustBe keys.sortWith((l, r) => l.keyId < r.keyId)
+
+      results.foreach(didPublicKeyState => didPublicKeyState.addedOn mustBe dummyLedgerData)
+      results.foreach(didPublicKeyState => didPublicKeyState.revokedOn mustBe None)
     }
 
     "return None when retrieving key for non-existing DID" in {

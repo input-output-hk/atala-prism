@@ -56,7 +56,7 @@ trait ServicesFixtures {
     val publicKey: PublicKey = PublicKey(
       id = issuanceKeyId,
       usage = KeyUsage.AUTHENTICATION_KEY,
-      addedOn = Some(NodeClientService.toInfoProto(keyAddedDate)),
+      addedOn = Some(LedgerData(timestampInfo = Some(NodeClientService.toInfoProto(keyAddedDate)))),
       revokedOn = None,
       keyData = EcKeyData(NodeClientService.toTimestampInfoProto(keys.getPublicKey))
     )

@@ -101,11 +101,15 @@ object NodeClientService {
 
       addedOn <-
         issuingKeyProto.addedOn
+          .flatMap(ledgerData => ledgerData.timestampInfo)
           .map(fromTimestampInfoProto)
           .toRight(s"Missing addedOn time:\n-Issuer DID: $issuerDID\n- keyId: $issuanceKeyId ")
           .toEitherT[Task]
 
-      revokedOn = issuingKeyProto.revokedOn.map(fromTimestampInfoProto)
+      revokedOn =
+        issuingKeyProto.revokedOn
+          .flatMap(ledgerData => ledgerData.timestampInfo)
+          .map(fromTimestampInfoProto)
     } yield credentials.KeyData(publicKey = issuingKey.asScala, addedOn = addedOn, revokedOn = revokedOn)
   }
 
