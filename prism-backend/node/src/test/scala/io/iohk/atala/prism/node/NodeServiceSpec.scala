@@ -212,11 +212,7 @@ class NodeServiceSpec
           .compute(CreateDIDOperationSpec.exampleOperation.toByteArray)
           .hexValue()
 
-      println(expectedDIDSuffix)
-      println(expectedDIDSuffixScala)
-      println(response.id)
-
-      //      response.id must be(expectedDIDSuffix)
+      response.id must be(expectedDIDSuffix)
       response.operationId mustEqual operationId.toProtoByteString
       verify(objectManagementService).publishSingleAtalaOperation(operation)
       verifyNoMoreInteractions(objectManagementService)

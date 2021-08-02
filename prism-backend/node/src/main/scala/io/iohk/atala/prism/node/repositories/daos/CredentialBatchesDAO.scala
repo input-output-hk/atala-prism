@@ -36,12 +36,6 @@ object CredentialBatchesDAO {
        """.stripMargin.update.run.void
   }
 
-  implicitly[Read[CredentialBatchId]]
-  implicitly[Read[DIDSuffix]]
-  implicitly[Read[MerkleRoot]]
-  implicitly[Read[LedgerData]]
-  implicitly[Read[SHA256Digest]]
-
   def findBatch(credentialBatchId: CredentialBatchId): ConnectionIO[Option[CredentialBatchState]] = {
     sql"""
          |SELECT batch_id, issuer_did_suffix, merkle_root, issued_on_transaction_id, ledger,
