@@ -207,11 +207,6 @@ class NodeServiceSpec
           .compute(CreateDIDOperationSpec.exampleOperation.toByteArray)
           .hexValue
 
-      val expectedDIDSuffixScala =
-        SHA256Digest
-          .compute(CreateDIDOperationSpec.exampleOperation.toByteArray)
-          .hexValue()
-
       response.id must be(expectedDIDSuffix)
       response.operationId mustEqual operationId.toProtoByteString
       verify(objectManagementService).publishSingleAtalaOperation(operation)

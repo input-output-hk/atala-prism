@@ -3,7 +3,7 @@ package io.iohk.atala.prism.node.repositories.daos
 import java.time.Instant
 import cats.implicits.catsStdInstancesForList
 import cats.syntax.functor._
-import doobie.{Read, Update}
+import doobie.Update
 import doobie.free.connection.ConnectionIO
 import doobie.implicits._
 import doobie.implicits.legacy.instant._
