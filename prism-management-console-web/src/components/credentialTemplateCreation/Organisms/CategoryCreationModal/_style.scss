@@ -1,9 +1,9 @@
 @import "../../../../css/general_styling";
 
 .templateModal {
-    .ant-radio-wrapper {
-        height: 60px;
-    }
+  .ant-radio-wrapper {
+    height: 60px;
+  }
   .ant-modal-header {
     .ant-modal-title {
       font-variant: normal;
@@ -20,11 +20,11 @@
     display: none !important;
   }
   .inputContainer {
-      padding: 0;
-      margin-bottom: 1em;
-      input {
-          border:1px solid $grey;
-      }
+    padding: 0;
+    margin-bottom: 1em;
+    input {
+      border: 1px solid $grey;
+    }
     .ant-row {
       flex-direction: column;
       display: flex;
@@ -43,43 +43,45 @@
     }
   }
   .ant-row {
-      margin:0
+    margin: 0;
   }
   .ant-upload {
     display: flex;
     width: 100%;
-    .verticalFlex {
-        width: 100%;
-      .galleryLabel {
-        width: 100%;
-        display: flex;
-        margin: 1em 0 0 0;
-      }
-      .iconSample {
-        margin: 1em auto;
-      }
-      h3 {
-        @include primary-text($h3, $black);
-        font-variant: normal;
-        font-weight: bold;
-      }
-      p {
-        @include primary-text($body, grey);
-        font-variant: normal;
-        margin-bottom: 1em;
-      }
-      button {
-        margin: 0 auto;
-        max-width: 12em;
-      }
+
+    .galleryLabel {
+      width: 100%;
+      display: flex;
+      margin: 1em 0 0 0;
+    }
+  }
+
+  .verticalFlex {
+    width: 100%;
+    .iconSample {
+      margin: 1em auto;
+    }
+    h3 {
+      @include primary-text($h3, $black);
+      font-variant: normal;
+      font-weight: bold;
+    }
+    p {
+      @include primary-text($body, grey);
+      font-variant: normal;
+      margin-bottom: 1em;
+    }
+    button {
+      margin: 0 auto;
+      max-width: 12em;
     }
   }
 }
 
 .imgGalleryContainer {
-    display: flex;
-    flex-wrap: wrap;
-    justify-content: space-between;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
   img {
     width: 60px;
     height: 60px;
@@ -97,13 +99,14 @@
 }
 
 .ant-upload-list-picture {
-    display: flex;
-    align-items: center;
-    .CategoryIconOption {
-        height: 50px;
-    }
+  display: flex;
+  align-items: center;
+  .CategoryIconOption {
+    height: 50px;
+    width: 50px;
+  }
 }
 
 span.ant-radio + * {
-    padding: 0;
+  padding: 0;
 }
