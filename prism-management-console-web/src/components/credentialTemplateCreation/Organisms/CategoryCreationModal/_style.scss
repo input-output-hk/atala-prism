@@ -3,6 +3,7 @@
 .templateModal {
   .ant-radio-wrapper {
     height: 60px;
+    margin: .5em;
   }
   .ant-modal-header {
     .ant-modal-title {
@@ -81,7 +82,7 @@
 .imgGalleryContainer {
   display: flex;
   flex-wrap: wrap;
-  justify-content: space-between;
+  justify-content: flex-start;
   img {
     width: 60px;
     height: 60px;
@@ -102,8 +103,8 @@
   display: flex;
   align-items: center;
   .CategoryIconOption {
-    height: 50px;
-    width: 50px;
+    width: 60px;
+    height: 60px;
   }
 }
 
