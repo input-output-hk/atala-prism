@@ -59,7 +59,6 @@ const ImportDataContainer = ({
   const [selectedMethod, setSelectedMethod] = useState();
   const [results, setResults] = useState();
 
-  const [manualImportDisableNext, setManualImportDisableNext] = useState(false);
   const [contacts, setContacts] = useState([createBlankContact(0)]);
   const [fileData, setFileData] = useState();
   const [skipGroupsAssignment, setSkipGroupsAssignment] = useState(false);
@@ -71,21 +70,6 @@ const ImportDataContainer = ({
   const { saveFormProviderAvailable, addEntity, form } = useContext(DynamicFormContext);
 
   const { t } = useTranslation();
-
-  useEffect(() => {
-    const shouldDisableNext = () => {
-      if (useCase === IMPORT_CONTACTS) return !saveFormProviderAvailable;
-
-      const emptyEntries = credentialsData.filter(dataRow =>
-        isEmptyCredential(dataRow, credentialType.fields)
-      );
-      const errors = credentialsData.filter(c => c.errorFields);
-
-      return emptyEntries.length || errors.length;
-    };
-
-    if (currentStep === IMPORT_STEP) setManualImportDisableNext(shouldDisableNext());
-  }, [useCase, saveFormProviderAvailable, credentialsData, credentialType.fields, currentStep]);
 
   const resetSelection = () => setSelectedMethod();
 
@@ -153,10 +137,15 @@ const ImportDataContainer = ({
     }
   };
 
+  const handleSaveCredentials = () => {
+    const data = form.getFieldValue(IMPORT_CREDENTIALS_DATA);
+    handleManualImport({ credentials: data });
+  };
+
   const handleSave = () => {
     if (selectedMethod === BULK_IMPORT) handleBulkImport();
     else if (useCase === IMPORT_CONTACTS) handleSaveContacts();
-    else handleManualImport({ credentials: processCredentials(credentialsData, credentialType) });
+    else handleSaveCredentials();
   };
 
   const useCaseProps = {
@@ -220,7 +209,7 @@ const ImportDataContainer = ({
   const isImportStep = currentStep === IMPORT_STEP;
   const isManualImport = selectedMethod === MANUAL_IMPORT;
   const shouldDisableImport = isManualImport
-    ? manualImportDisableNext
+    ? !saveFormProviderAvailable
     : !fileData ||
       fileData.errors.length ||
       (useCase === IMPORT_CONTACTS && !skipGroupsAssignment && !selectedGroups.length);

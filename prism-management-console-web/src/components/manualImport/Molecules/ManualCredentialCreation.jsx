@@ -2,10 +2,10 @@ import React from 'react';
 import PropTypes from 'prop-types';
 import CredentialCreationTable from '../Organisms/Tables/CredentialCreationTable';
 
-const ManualCredentialCreation = ({ tableProps, credentialType }) => (
+const ManualCredentialCreation = props => (
   <div className="ManualImportWrapper">
     <div className="ManualImportContent">
-      <CredentialCreationTable tableProps={tableProps} credentialType={credentialType} />
+      <CredentialCreationTable {...props} />
     </div>
   </div>
 );

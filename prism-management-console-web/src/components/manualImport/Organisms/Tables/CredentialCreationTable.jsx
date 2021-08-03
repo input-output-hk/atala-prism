@@ -2,7 +2,6 @@ import React, { useContext } from 'react';
 import PropTypes from 'prop-types';
 import _ from 'lodash';
 import { useTranslation } from 'react-i18next';
-import EditableTable from '../../../common/Organisms/Tables/EditableTable';
 import { credentialShape, credentialTypeShape } from '../../../../helpers/propShapes';
 import {
   CREDENTIAL_FORM,
@@ -10,8 +9,9 @@ import {
 } from '../../../../helpers/formDefinitions/credentials';
 import { DynamicFormContext } from '../../../../providers/DynamicFormProvider';
 import { IMPORT_CREDENTIALS_DATA } from '../../../../helpers/constants';
+import DynamicForm from '../../../dynamicForm/DynamicForm';
 
-const CredentialCreationTable = ({ tableProps, setDisableSave, credentialType }) => {
+const CredentialCreationTable = ({ initialValues, credentialType }) => {
   const { t } = useTranslation();
   const { form } = useContext(DynamicFormContext);
 
@@ -43,11 +43,10 @@ const CredentialCreationTable = ({ tableProps, setDisableSave, credentialType })
   const columns = _.uniqBy(commonColumns.concat(specificColumns), e => e.dataIndex);
 
   return (
-    <EditableTable
-      {...tableProps}
+    <DynamicForm
       columns={CREDENTIAL_FORM_COLUMNS(columns)}
       skeleton={CREDENTIAL_FORM(columns, form)}
-      initialValues={tableProps.dataSource}
+      initialValues={initialValues}
       useCase={IMPORT_CREDENTIALS_DATA}
     />
   );

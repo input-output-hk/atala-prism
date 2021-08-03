@@ -8,7 +8,7 @@ import { columnShape, skeletonShape } from '../../helpers/propShapes';
 
 import './_style.scss';
 
-const DynamicForm = ({ columns, skeleton, initialValues }) => {
+const DynamicForm = ({ columns, skeleton, initialValues, useCase }) => {
   const { form, removeEntity, formName, checkValidation } = useContext(DynamicFormContext);
 
   const lastColumn = columns.pop();
@@ -40,6 +40,7 @@ const DynamicForm = ({ columns, skeleton, initialValues }) => {
                     skeleton={skeleton}
                     columns={columns}
                     onRemove={() => removeEntity(field.key, index)}
+                    useCase={useCase}
                   />
                 ))}
               </>
