@@ -1,25 +1,25 @@
-package io.iohk.atala.prism.vault.services
+package io.iohk.atala.prism.vault.grpc
 
-import cats.effect.IO
 import cats.syntax.option._
 import com.google.protobuf.ByteString
 import io.iohk.atala.prism.auth.errors.AuthErrorSupport
 import io.iohk.atala.prism.kotlin.crypto.SHA256Digest
-import io.iohk.atala.prism.identity.DID
+import io.iohk.atala.prism.logging.TraceId
+import io.iohk.atala.prism.logging.TraceId.IOWithTraceIdContext
 import io.iohk.atala.prism.metrics.RequestMeasureUtil.measureRequestFuture
 import io.iohk.atala.prism.protos.common_models.{HealthCheckRequest, HealthCheckResponse}
 import io.iohk.atala.prism.protos.vault_api
 import io.iohk.atala.prism.protos.vault_models
 import io.iohk.atala.prism.vault.VaultAuthenticator
-import io.iohk.atala.prism.vault.model.{CreatePayload, Payload}
-import io.iohk.atala.prism.vault.repositories.PayloadsRepository
+import io.iohk.atala.prism.vault.model.Payload
+import io.iohk.atala.prism.vault.services.EncryptedDataVaultService
 import io.iohk.atala.prism.utils.syntax._
 import org.slf4j.{Logger, LoggerFactory}
 
 import scala.concurrent.{ExecutionContext, Future}
 
-class EncryptedDataVaultServiceImpl(
-    payloadsRepository: PayloadsRepository[IO],
+class EncryptedDataVaultGrpcService(
+    service: EncryptedDataVaultService[IOWithTraceIdContext],
     authenticator: VaultAuthenticator
 )(implicit
     ec: ExecutionContext
@@ -37,25 +37,38 @@ class EncryptedDataVaultServiceImpl(
 
   override def storeData(request: vault_api.StoreDataRequest): Future[vault_api.StoreDataResponse] = {
     val methodName = "storeData"
-    def f(did: DID): Future[vault_api.StoreDataResponse] = {
-      payloadsRepository
-        .create(
-          CreatePayload(
+    authenticator.authenticated(methodName, request) { did =>
+      measureRequestFuture(serviceName, methodName) {
+        val traceId = TraceId.generateYOLO
+        service
+          .storeData(
             Payload.ExternalId.unsafeFrom(request.externalId),
             SHA256Digest.fromBytes(request.payloadHash.toByteArray),
             did,
             request.payload.toByteArray.toVector
           )
-        )
-        .map(payload => vault_api.StoreDataResponse(payloadId = payload.id.toString))
-        .unsafeToFuture()
-    }
-
-    authenticator.authenticated(methodName, request) { did =>
-      measureRequestFuture(serviceName, methodName)(f(did))
+          .map(payload => vault_api.StoreDataResponse(payloadId = payload.id.toString))
+          .run(traceId)
+          .unsafeToFuture()
+      }
     }
   }
 
+  override def getPaginatedData(
+      request: vault_api.GetPaginatedDataRequest
+  ): Future[vault_api.GetPaginatedDataResponse] = {
+    val methodName = "getPaginatedData"
+    authenticator.authenticated(methodName, request) { did =>
+      measureRequestFuture(serviceName, methodName) {
+        val traceId = TraceId.generateYOLO
+        service
+          .getByPaginated(did, parseOptionalLastSeenId(request.lastSeenId), request.limit)
+          .map(toGetPaginatedDataResponse)
+          .run(traceId)
+          .unsafeToFuture()
+      }
+    }
+  }
   private def parseOptionalLastSeenId(lastSeenId: String): Option[Payload.Id] = {
     if (lastSeenId.isEmpty) {
       None
@@ -75,24 +88,4 @@ class EncryptedDataVaultServiceImpl(
         )
       )
     )
-
-  override def getPaginatedData(
-      request: vault_api.GetPaginatedDataRequest
-  ): Future[vault_api.GetPaginatedDataResponse] = {
-    val methodName = "getPaginatedData"
-    def f(did: DID): Future[vault_api.GetPaginatedDataResponse] = {
-      payloadsRepository
-        .getByPaginated(
-          did,
-          parseOptionalLastSeenId(request.lastSeenId),
-          request.limit
-        )
-        .map(toGetPaginatedDataResponse)
-        .unsafeToFuture()
-    }
-
-    authenticator.authenticated(methodName, request) { did =>
-      measureRequestFuture(serviceName, methodName)(f(did))
-    }
-  }
 }

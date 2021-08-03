@@ -5,6 +5,8 @@ import java.util.UUID
 import io.iohk.atala.prism.kotlin.crypto.SHA256Digest
 import io.iohk.atala.prism.identity.DID
 import io.iohk.atala.prism.models.UUIDValue
+import tofu.logging.derivation.loggable
+import derevo.derive
 
 package object model {
   final case class CreatePayload(
@@ -24,9 +26,10 @@ package object model {
   )
 
   object Payload {
+    @derive(loggable)
     final case class Id(uuid: UUID) extends AnyVal with UUIDValue
     object Id extends UUIDValue.Builder[Id]
-
+    @derive(loggable)
     final case class ExternalId(uuid: UUID) extends AnyVal with UUIDValue
     object ExternalId extends UUIDValue.Builder[ExternalId]
   }

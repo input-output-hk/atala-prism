@@ -11,14 +11,14 @@
             <totalSizeCap>3GB</totalSizeCap>
         </rollingPolicy>
 
-        <encoder>
-            <pattern>%date [%level] from %logger in %thread - %message%n%rEx%xException </pattern>
+        <encoder class="ch.qos.logback.core.encoder.LayoutWrappingEncoder">
+            <layout class="tofu.logging.ELKLayout"/>
         </encoder>
     </appender>
 
     <appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">
-        <encoder>
-            <pattern>[%level] %logger{15} - %message%n%rEx%xException{10} </pattern>
+        <encoder class="ch.qos.logback.core.encoder.LayoutWrappingEncoder">
+            <layout class="tofu.logging.ELKLayout"/>
         </encoder>
     </appender>
 
