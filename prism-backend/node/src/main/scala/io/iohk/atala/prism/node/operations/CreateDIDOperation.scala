@@ -6,7 +6,7 @@ import doobie.free.connection.ConnectionIO
 import doobie.implicits._
 import doobie.postgres.sqlstate
 import io.iohk.atala.prism.kotlin.crypto.SHA256Digest
-import io.iohk.atala.prism.identity.DIDSuffix
+import io.iohk.atala.prism.kotlin.identity.DIDSuffix
 import io.iohk.atala.prism.node.models.KeyUsage.MasterKey
 import io.iohk.atala.prism.node.models.DIDPublicKey
 import io.iohk.atala.prism.node.models.nodeState.LedgerData
@@ -51,7 +51,7 @@ case class CreateDIDOperation(
       _ <- EitherT {
         DIDDataDAO.insert(id, digest, ledgerData).attemptSomeSqlState {
           case sqlstate.class23.UNIQUE_VIOLATION =>
-            EntityExists("DID", id.value): StateError
+            EntityExists("DID", id.getValue): StateError
         }
       }
 
@@ -97,7 +97,7 @@ object CreateDIDOperation extends SimpleOperationCompanion[CreateDIDOperation] {
       ledgerData: LedgerData
   ): Either[ValidationError, CreateDIDOperation] = {
     val operationDigest = SHA256Digest.compute(operation.toByteArray)
-    val didSuffix = DIDSuffix.unsafeFromDigest(operationDigest.asScala)
+    val didSuffix = DIDSuffix.fromDigest(operationDigest.asScala)
     val createOperation = ValueAtPath(operation, Path.root).child(_.getCreateDid, "createDid")
     for {
       data <- createOperation.childGet(_.didData, "didData")

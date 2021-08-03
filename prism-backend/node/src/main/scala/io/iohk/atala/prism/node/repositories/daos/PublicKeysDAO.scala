@@ -5,18 +5,16 @@ import doobie.free.connection.ConnectionIO
 import doobie.implicits._
 import doobie.implicits.legacy.instant._
 import io.iohk.atala.prism.kotlin.crypto.ECConfig.{INSTANCE => ECConfig}
-import io.iohk.atala.prism.identity.DIDSuffix
+import io.iohk.atala.prism.kotlin.identity.DIDSuffix
 import io.iohk.atala.prism.node.models.nodeState.{DIDPublicKeyState, LedgerData}
 import io.iohk.atala.prism.node.models.DIDPublicKey
 
 import java.time.Instant
 
-import io.iohk.atala.prism.interop.toScalaSDK._
-
 object PublicKeysDAO {
   def insert(key: DIDPublicKey, ledgerData: LedgerData): ConnectionIO[Unit] = {
     val curveName = ECConfig.getCURVE_NAME
-    val compressed = key.key.getCompressed
+    val compressed = key.key.getEncodedCompressed
 
     val addedOn = ledgerData.timestampInfo
     sql"""

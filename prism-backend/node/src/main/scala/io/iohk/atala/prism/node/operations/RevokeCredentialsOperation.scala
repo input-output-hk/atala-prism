@@ -8,7 +8,7 @@ import doobie.free.connection.ConnectionIO
 import doobie.implicits._
 import io.iohk.atala.prism.kotlin.credentials.CredentialBatchId
 import io.iohk.atala.prism.kotlin.crypto.SHA256Digest
-import io.iohk.atala.prism.identity.DIDSuffix
+import io.iohk.atala.prism.kotlin.identity.DIDSuffix
 import io.iohk.atala.prism.node.models.nodeState
 import io.iohk.atala.prism.node.models.nodeState.{DIDPublicKeyState, LedgerData}
 import io.iohk.atala.prism.node.operations.path.{Path, ValueAtPath}
@@ -98,8 +98,8 @@ object RevokeCredentialsOperation extends SimpleOperationCompanion[RevokeCredent
 
     for {
       credentialBatchId <- revokeOperation.child(_.credentialBatchId, "credentialBatchId").parse { credentialBatchId =>
-        CredentialBatchId
-          .fromString(credentialBatchId)
+        Option(CredentialBatchId
+          .fromString(credentialBatchId))
           .fold(s"credential batch id has invalid format $credentialBatchId".asLeft[CredentialBatchId])(_.asRight)
       }
       credentialsToRevoke <-

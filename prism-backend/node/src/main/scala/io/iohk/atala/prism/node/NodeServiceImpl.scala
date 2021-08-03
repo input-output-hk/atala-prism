@@ -8,7 +8,7 @@ import io.iohk.atala.prism.BuildInfo
 import io.iohk.atala.prism.connector.AtalaOperationId
 import io.iohk.atala.prism.kotlin.credentials.CredentialBatchId
 import io.iohk.atala.prism.kotlin.crypto.SHA256Digest
-import io.iohk.atala.prism.identity.DID
+import io.iohk.atala.prism.kotlin.identity.DID
 import io.iohk.atala.prism.metrics.RequestMeasureUtil
 import io.iohk.atala.prism.metrics.RequestMeasureUtil.{FutureMetricsOps, measureRequestFuture}
 import io.iohk.atala.prism.node.errors.NodeError
@@ -67,11 +67,11 @@ class NodeServiceImpl(
   private def getDidDocument(didRequestStr: String, methodName: String)(implicit
       didDataRepository: DIDDataRepository[IO]
   ) = {
-    val didOpt = DID.fromString(didRequestStr)
+    val didOpt = Option(DID.fromString(didRequestStr))
     didOpt match {
       case Some(did) =>
         did.getFormat match {
-          case DID.DIDFormat.Canonical(_) =>
+          case Canonical(_) =>
             resolve(did) orElse (countAndThrowNodeError(methodName, _))
           case longForm @ DID.DIDFormat.LongForm(stateHash, _) => // we received a long form DID
             // we first check that the encoded initial state matches the corresponding hash
@@ -113,7 +113,7 @@ class NodeServiceImpl(
           operationId <- objectManagement.publishSingleAtalaOperation(operation)
         } yield {
           node_api
-            .CreateDIDResponse(id = parsedOp.id.value)
+            .CreateDIDResponse(id = parsedOp.id.getValue)
             .withOperationId(operationId.toProtoByteString)
         }
       }
@@ -195,7 +195,7 @@ class NodeServiceImpl(
         for {
           lastSyncedTimestamp <- lastSyncedTimestampF
           batchId <- batchIdF
-          _ = logWithTraceId(methodName, traceId, "batchId" -> s"${batchId.id}")
+          _ = logWithTraceId(methodName, traceId, "batchId" -> s"${batchId.getId}")
           stateEither <-
             credentialBatchesRepository
               .getBatchState(batchId)
@@ -229,7 +229,7 @@ class NodeServiceImpl(
         for {
           lastSyncedTimestamp <- lastSyncedTimestampF
           batchId <- batchIdF
-          _ = logWithTraceId(methodName, traceId, "batchId" -> s"${batchId.id}")
+          _ = logWithTraceId(methodName, traceId, "batchId" -> s"${batchId.getId}")
           credentialHash <- credentialHashF
           _ = logWithTraceId(methodName, traceId, "credentialHash" -> s"${credentialHash.hexValue}")
           timeEither <-
@@ -394,7 +394,7 @@ object NodeServiceImpl {
     val response = in.fold(GetBatchStateResponse()) { state =>
       val revocationLedgerData = state.revokedOn.map(ProtoCodecs.toLedgerData)
       val responseBase = GetBatchStateResponse()
-        .withIssuerDid(state.issuerDIDSuffix.value)
+        .withIssuerDid(state.issuerDIDSuffix.getValue)
         .withMerkleRoot(ByteString.copyFrom(state.merkleRoot.getHash.getValue))
         .withPublicationLedgerData(ProtoCodecs.toLedgerData(state.issuedOn))
       revocationLedgerData.fold(responseBase)(responseBase.withRevocationLedgerData)
@@ -471,7 +471,7 @@ object NodeServiceImpl {
         CreateDIDOperation.parseWithMockedLedgerData(operation).map { parsedOp =>
           OperationOutput(
             OperationOutput.Result.CreateDidOutput(
-              node_models.CreateDIDOutput(parsedOp.id.value)
+              node_models.CreateDIDOutput(parsedOp.id.getValue)
             )
           )
         }

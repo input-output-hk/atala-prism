@@ -1,10 +1,10 @@
 package io.iohk.atala.prism.interop
 
-import io.iohk.atala.prism.crypto.JvmECPublicKey
+import io.iohk.atala.prism.crypto.{JvmECPrivateKey, JvmECPublicKey}
 import io.iohk.atala.prism.kotlin.crypto.MerkleRoot
 import io.iohk.atala.prism.kotlin.crypto.SHA256Digest
 import io.iohk.atala.prism.kotlin.crypto.MerkleInclusionProof
-import io.iohk.atala.prism.kotlin.crypto.keys.ECPublicKey
+import io.iohk.atala.prism.kotlin.crypto.keys.{ECPrivateKey, ECPublicKey}
 import io.iohk.atala.prism.kotlin.identity.DIDSuffix
 
 import scala.jdk.CollectionConverters._

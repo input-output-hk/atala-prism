@@ -17,8 +17,6 @@ import com.google.protobuf.timestamp.Timestamp
 import io.iohk.atala.prism.kotlin.credentials.CredentialBatchId
 import io.iohk.atala.prism.kotlin.crypto.MerkleRoot
 import io.iohk.atala.prism.utils.syntax._
-import io.iohk.atala.prism.interop.toKotlinSDK._
-import io.iohk.atala.prism.interop.toScalaSDK._
 
 trait NodeClientService {
 
@@ -72,7 +70,7 @@ class NodeClientServiceImpl(node: NodeServiceGrpc.NodeServiceStub, authConfig: D
       node.getCredentialRevocationTime(
         node_api
           .GetCredentialRevocationTimeRequest()
-          .withBatchId(credentialBatchId.id)
+          .withBatchId(credentialBatchId.getId)
           .withCredentialHash(ByteString.copyFrom(credentialHash.getValue))
       )
     )
@@ -108,7 +106,7 @@ object NodeClientService {
           .toEitherT[Task]
 
       revokedOn = issuingKeyProto.revokedOn.map(fromTimestampInfoProto)
-    } yield credentials.KeyData(publicKey = issuingKey.asScala, addedOn = addedOn, revokedOn = revokedOn)
+    } yield new credentials.KeyData(issuingKey, addedOn, revokedOn.orNull)
   }
 
   def fromProtoKey(protoKey: node_models.PublicKey): Option[ECPublicKey] =
@@ -132,7 +130,7 @@ object NodeClientService {
       timestampInfoProto.blockTimestamp
         .getOrElse(throw new RuntimeException("Missing timestamp"))
         .toInstant
-        .toMilli,
+        .toEpochMilli,
       timestampInfoProto.blockSequenceNumber,
       timestampInfoProto.operationSequenceNumber
     )

@@ -62,7 +62,7 @@ case class IssueCredentialBatchOperation(
           case sqlstate.class23.FOREIGN_KEY_VIOLATION =>
             // that shouldn't happen, as key verification requires issuer in the DB,
             // but putting it here just in the case
-            StateError.EntityMissing("issuerDID", issuerDIDSuffix.value)
+            StateError.EntityMissing("issuerDID", issuerDIDSuffix.getValue)
         }
     }
 }
@@ -80,13 +80,13 @@ object IssueCredentialBatchOperation extends SimpleOperationCompanion[IssueCrede
     for {
       credentialBatchData <- issueCredentialBatchOperation.childGet(_.credentialBatchData, "credentialBatchData")
       batchId <- credentialBatchData.parse { _ =>
-        CredentialBatchId
-          .fromString(SHA256Digest.compute(credentialBatchData.value.toByteArray).hexValue)
+        Option(CredentialBatchId
+          .fromString(SHA256Digest.compute(credentialBatchData.value.toByteArray).hexValue))
           .fold("Credential batchId".asLeft[CredentialBatchId])(Right(_))
       }
       issuerDID <- credentialBatchData.child(_.issuerDid, "issuerDID").parse { issuerDID =>
         Either.fromOption(
-          DIDSuffix.fromString(issuerDID),
+          Option(DIDSuffix.fromString(issuerDID)),
           s"must be a valid DID suffix: $issuerDID"
         )
       }

@@ -10,7 +10,7 @@ import io.iohk.atala.prism.kotlin.credentials.{CredentialBatchId, TimestampInfo}
 import io.iohk.atala.prism.kotlin.crypto.EC
 import io.iohk.atala.prism.kotlin.crypto.ECConfig.{INSTANCE => ECConfig}
 import io.iohk.atala.prism.daos.BaseDAO
-import io.iohk.atala.prism.identity.DIDSuffix
+import io.iohk.atala.prism.kotlin.identity.DIDSuffix
 import io.iohk.atala.prism.models.{BlockInfo, Ledger, TransactionId, TransactionInfo}
 import io.iohk.atala.prism.node.models.nodeState.DIDPublicKeyState
 import io.iohk.atala.prism.node.models.{
@@ -52,8 +52,8 @@ package object daos extends BaseDAO {
       _.entryName
     )
 
-  implicit val didSuffixPut: Put[DIDSuffix] = Put[String].contramap(_.value)
-  implicit val didSuffixGet: Get[DIDSuffix] = Get[String].map(DIDSuffix.unsafeFromString)
+  implicit val didSuffixPut: Put[DIDSuffix] = Put[String].contramap(_.getValue)
+  implicit val didSuffixGet: Get[DIDSuffix] = Get[String].map(DIDSuffix.fromString)
 
   implicit val credentialIdPut: Put[CredentialId] = Put[String].contramap(_.id)
   implicit val credentialIdGet: Get[CredentialId] = Get[String].map(CredentialId(_))
@@ -116,7 +116,7 @@ package object daos extends BaseDAO {
       case (didSuffix, keyId, keyUsage, curveId, compressed, aTimestamp, aABSN, aOSN, rTimestamp, rABSN, rOSN) =>
         assert(curveId == ECConfig.getCURVE_NAME)
         val javaPublicKey: ECPublicKey = EC.toPublicKeyFromCompressed(compressed)
-        val revokeTimestampInfo = for (t <- rTimestamp; absn <- rABSN; osn <- rOSN) yield TimestampInfo(t, absn, osn)
+        val revokeTimestampInfo = for (t <- rTimestamp; absn <- rABSN; osn <- rOSN) yield new TimestampInfo(t.toEpochMilli, absn, osn)
         DIDPublicKeyState(
           didSuffix,
           keyId,

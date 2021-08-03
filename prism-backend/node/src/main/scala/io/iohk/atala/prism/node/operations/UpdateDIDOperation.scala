@@ -6,7 +6,7 @@ import doobie.free.connection.{ConnectionIO, unit}
 import doobie.implicits._
 import doobie.postgres.sqlstate
 import io.iohk.atala.prism.kotlin.crypto.SHA256Digest
-import io.iohk.atala.prism.identity.DIDSuffix
+import io.iohk.atala.prism.kotlin.identity.DIDSuffix
 import io.iohk.atala.prism.node.models.nodeState.{DIDPublicKeyState, LedgerData}
 import io.iohk.atala.prism.node.models.{DIDPublicKey, KeyUsage, nodeState}
 import io.iohk.atala.prism.node.operations.StateError.EntityExists
@@ -34,7 +34,7 @@ case class UpdateDIDOperation(
       lastOperation <- EitherT[ConnectionIO, StateError, SHA256Digest] {
         DIDDataDAO
           .getLastOperation(didSuffix)
-          .map(_.toRight(StateError.EntityMissing("did suffix", didSuffix.value)))
+          .map(_.toRight(StateError.EntityMissing("did suffix", didSuffix.getValue)))
       }
       key <- EitherT[ConnectionIO, StateError, DIDPublicKeyState] {
         PublicKeysDAO.find(didSuffix, keyId).map(_.toRight(StateError.UnknownKey(didSuffix, keyId)))
@@ -50,7 +50,7 @@ case class UpdateDIDOperation(
         EitherT {
           PublicKeysDAO.insert(key, ledgerData).attemptSomeSqlState {
             case sqlstate.class23.UNIQUE_VIOLATION =>
-              EntityExists("DID suffix", didSuffix.value): StateError
+              EntityExists("DID suffix", didSuffix.getValue): StateError
           }
         }
       case RevokeKeyAction(keyId) =>
@@ -76,7 +76,7 @@ case class UpdateDIDOperation(
       _ <- EitherT.cond[ConnectionIO](
         countUpdated == 1,
         unit,
-        StateError.EntityMissing("DID Suffix", didSuffix.value)
+        StateError.EntityMissing("DID Suffix", didSuffix.getValue)
       )
       _ <- actions.traverse[ConnectionIOEitherTError, Unit](applyAction)
     } yield ()
