@@ -3,12 +3,12 @@ package io.iohk.atala.prism.vault.services
 import java.time.Instant
 import java.time.temporal.ChronoUnit
 import java.util.{Base64, UUID}
-
 import com.google.protobuf.ByteString
 import io.iohk.atala.prism.auth.SignedRpcRequest
 import io.iohk.atala.prism.kotlin.crypto.{EC, SHA256Digest}
 import io.iohk.atala.prism.kotlin.crypto.signature.ECSignature
 import io.iohk.atala.prism.identity.DID
+import io.iohk.atala.prism.logging.TraceId
 import io.iohk.atala.prism.protos.{common_models, vault_api}
 import io.iohk.atala.prism.protos.node_models
 import io.iohk.atala.prism.protos.node_models.AtalaOperation.Operation.UpdateDid
@@ -19,7 +19,7 @@ import org.scalatest.OptionValues
 
 import io.iohk.atala.prism.interop.toScalaSDK._
 
-class EncryptedDataVaultServiceImplSpec extends VaultRpcSpecBase with OptionValues {
+class EncryptedDataVaultGrpcServiceSpec extends VaultRpcSpecBase with OptionValues {
   private def createRequest(externalId: UUID, payload: String): StoreDataRequest = {
     val payloadBytes = payload.getBytes()
     val hash = SHA256Digest.compute(payloadBytes).getValue.toArray
@@ -37,7 +37,7 @@ class EncryptedDataVaultServiceImplSpec extends VaultRpcSpecBase with OptionValu
 
   "health check" should {
     "respond" in {
-      val response = vaultService.healthCheck(common_models.HealthCheckRequest()).futureValue
+      val response = vaultGrpcService.healthCheck(common_models.HealthCheckRequest()).futureValue
       response must be(common_models.HealthCheckResponse())
     }
   }
@@ -54,7 +54,7 @@ class EncryptedDataVaultServiceImplSpec extends VaultRpcSpecBase with OptionValu
         val responsePayloadId = serviceStub.storeData(request).payloadId
 
         val storedPayloads =
-          payloadsRepository.getByPaginated(did, None, 10).unsafeRunSync()
+          payloadsRepository.getByPaginated(did, None, 10).run(TraceId.generateYOLO).unsafeRunSync()
 
         storedPayloads.size must be(1)
         val storedPayload = storedPayloads.head
@@ -85,7 +85,7 @@ class EncryptedDataVaultServiceImplSpec extends VaultRpcSpecBase with OptionValu
       id1 must be(id2)
 
       val storedPayloads =
-        payloadsRepository.getByPaginated(did, None, 10).unsafeRunSync()
+        payloadsRepository.getByPaginated(did, None, 10).run(TraceId.generateYOLO).unsafeRunSync()
 
       // There must only be one payload stored
       storedPayloads.size must be(1)

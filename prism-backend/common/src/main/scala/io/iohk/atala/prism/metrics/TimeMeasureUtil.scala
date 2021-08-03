@@ -1,10 +1,12 @@
 package io.iohk.atala.prism.metrics
 
+import cats.data.ReaderT
 import cats.effect.{Bracket, IO}
 import cats.effect.syntax.bracket._
 import cats.syntax.functor._
 import cats.syntax.flatMap._
 import cats.syntax.traverse._
+import io.iohk.atala.prism.logging.TraceId.IOWithTraceIdContext
 import io.iohk.atala.prism.metrics.TimeMeasureUtil.{DomainTimer, StartedDomainTimer}
 import kamon.Kamon
 import kamon.metric.Timer
@@ -23,6 +25,14 @@ object TimeMeasureMetric {
       IO.delay(Try(StartedDomainTimer(timer.in.start())))
     override def stopTimer(timer: StartedDomainTimer): IO[Try[Unit]] = IO.delay(Try(timer.in.stop()))
   }
+  implicit val ioWithTraceIdTimeMeasureMetric: TimeMeasureMetric[IOWithTraceIdContext] =
+    new TimeMeasureMetric[IOWithTraceIdContext] {
+      override def startTimer(timer: DomainTimer): IOWithTraceIdContext[Try[StartedDomainTimer]] =
+        ReaderT.liftF(ioTimeMeasureMetric.startTimer(timer))
+
+      override def stopTimer(timer: StartedDomainTimer): IOWithTraceIdContext[Try[Unit]] =
+        ReaderT.liftF(ioTimeMeasureMetric.stopTimer(timer))
+    }
 }
 
 object TimeMeasureUtil {
