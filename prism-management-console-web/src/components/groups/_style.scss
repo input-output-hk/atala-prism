@@ -47,8 +47,22 @@
     display: flex;
     justify-content: space-between;
     width: 100%;
+    .InputContainer {
+      margin-left: 1em;
+      .ChildrenContainer {
+        width: 150px;
+        .ant-select:not(.ant-select-customize-input) .ant-select-selector {
+          background-color: transparent;
+        }
+        .ant-select {
+          border-color: lightgray;
+        }
+      }
+    }
     .filterContainer {
-      width: 70%;
+      .w-100 div, .CredentialRawDetail .Card div {
+        margin: 0;
+      }
       .w-100 {
         display: flex;
         .InputContainer:last-child {
