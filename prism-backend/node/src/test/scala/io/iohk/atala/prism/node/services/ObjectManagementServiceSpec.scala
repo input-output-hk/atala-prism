@@ -6,7 +6,7 @@ import io.iohk.atala.prism.AtalaWithPostgresSpec
 import io.iohk.atala.prism.connector.AtalaOperationId
 import io.iohk.atala.prism.credentials.TimestampInfo
 import io.iohk.atala.prism.kotlin.crypto.{EC, SHA256Digest}
-import io.iohk.atala.prism.kotlin.crypto.keys.{ECKeyPair}
+import io.iohk.atala.prism.kotlin.crypto.keys.ECKeyPair
 import io.iohk.atala.prism.models.{
   BlockInfo,
   Ledger,
@@ -192,6 +192,40 @@ class ObjectManagementServiceSpec
       operationInfo.operationStatus must be(AtalaOperationStatus.RECEIVED)
       operationInfo.transactionId.value must be(inLedgerPublication.transaction.transactionId)
     }
+
+    "merge several operations in one transaction while submitting" in {
+      val (atalaObjects, atalaObjectsMerged, publications, ops) = setUpMultipleOperationsPublishing(numOps = 40)
+
+      atalaObjectsMerged.zip(publications.drop(atalaObjects.size)).foreach {
+        case (atalaObject, publicationInfo) =>
+          doReturn(Future.successful(publicationInfo)).when(ledger).publish(atalaObject)
+          mockTransactionStatus(publicationInfo.transaction.transactionId, TransactionStatus.Pending)
+      }
+
+      // publish operations sequentially because we want to preserve the order by timestamps
+      ops.zipWithIndex.foreach {
+        case (atalaOperation, index) =>
+          withClue(s"publishing operation #$index") {
+            objectManagementService.publishSingleAtalaOperation(atalaOperation).futureValue
+          }
+      }
+
+      objectManagementService.submitReceivedObjects().futureValue
+
+      verify(ledger, times(2))
+        .publish(*) // publish only merged objects
+
+      assert(estimateTxMetadataSize(atalaObjectsMerged.head) < cardano.TX_METADATA_MAX_SIZE)
+      assert(estimateTxMetadataSize(atalaObjectsMerged(1)) < cardano.TX_METADATA_MAX_SIZE)
+      assert(
+        estimateTxMetadataSize(atalaObjectsMerged(1)) > cardano.TX_METADATA_MAX_SIZE / 2
+      ) // check that merged object is big enough
+
+      DataPreparation.getPendingSubmissions().size must be(2)
+      val notPublishedObjectIds =
+        AtalaObjectsDAO.getNotPublishedObjectIds.transact(database).unsafeToFuture().futureValue
+      notPublishedObjectIds.size must be(0) // no pending objects
+    }
   }
 
   // needed because mockito doesn't interact too nicely with value classes
@@ -280,13 +314,6 @@ class ObjectManagementServiceSpec
     val atalaOperation = BlockProcessingServiceSpec.signedCreateDidOperation
     val atalaObject = createAtalaObject(block = createBlock(atalaOperation))
 
-    def mockTransactionStatus(transactionId: TransactionId, status: TransactionStatus): Unit = {
-      doReturn(Future.successful(TransactionDetails(transactionId, status)))
-        .when(ledger)
-        .getTransactionDetails(transactionId)
-      ()
-    }
-
     "ignore in-ledger transactions" in {
       doReturn(Future.successful(dummyPublicationInfo)).when(ledger).publish(*)
       // Publish once and update status
@@ -348,62 +375,19 @@ class ObjectManagementServiceSpec
     }
 
     "merge several operations in one transaction while retrying" in {
-      val atalaOperations = (0 to 40).toList.map { masterId =>
-        BlockProcessingServiceSpec.signOperation(
-          DataPreparation.exampleOperation,
-          s"master$masterId",
-          CreateDIDOperationSpec.masterKeys.getPrivateKey
-        )
-      }
-      val atalaObjects = atalaOperations.map { op =>
-        createAtalaObject(block = createBlock(op))
-      }
-      val objs = atalaObjects.map { obj =>
-        AtalaObjectInfo(AtalaObjectId.of(obj), obj.toByteArray, processed = false)
-      }.reverse
-      var accObj = objs.head
+      val (atalaObjects, atalaObjectsMerged, publications, ops) = setUpMultipleOperationsPublishing(numOps = 40)
 
-      val secondMergedBlockSize = 1 + objs.tail.takeWhile { obj =>
-        obj.mergeIfPossible(accObj) match {
-          case Some(mergedObj) =>
-            accObj = mergedObj
-            true
-          case None =>
-            false
-        }
-      }.size
-      val firstMergedBlockSize = atalaObjects.size - secondMergedBlockSize
-
-      val atalaObjectMerged1 = createAtalaObject(
-        block = node_internal.AtalaBlock(version = "1.0", operations = atalaOperations.take(firstMergedBlockSize)),
-        opsCount = firstMergedBlockSize
-      )
-      val atalaObjectMerged2 = createAtalaObject(
-        block = node_internal.AtalaBlock(version = "1.0", operations = atalaOperations.drop(firstMergedBlockSize)),
-        opsCount = secondMergedBlockSize
-      )
-
-      val dummyTransactionIds = (0 to (atalaOperations.size + 2)).map { index =>
-        TransactionId.from(SHA256Digest.compute(s"id$index".getBytes).getValue).value
-      }
-      val dummyTransactionInfos = dummyTransactionIds.map { transactionId =>
-        dummyTransactionInfo.copy(transactionId = transactionId)
-      }
-      val dummyPublicationInfos = dummyTransactionInfos.map { transactionInfo =>
-        dummyPublicationInfo.copy(transaction = transactionInfo)
-      }
-
-      (atalaObjects :+ atalaObjectMerged1 :+ atalaObjectMerged2).zip(dummyPublicationInfos).foreach {
+      (atalaObjects ++ atalaObjectsMerged).zip(publications).foreach {
         case (atalaObject, publicationInfo) =>
           doReturn(Future.successful(publicationInfo)).when(ledger).publish(atalaObject)
           mockTransactionStatus(publicationInfo.transaction.transactionId, TransactionStatus.Pending)
       }
-      dummyPublicationInfos.dropRight(2).foreach { publicationInfo =>
+      publications.dropRight(atalaObjectsMerged.size).foreach { publicationInfo =>
         doReturn(Future.unit).when(ledger).deleteTransaction(publicationInfo.transaction.transactionId)
       }
 
       // publish operations sequentially because we want to preserve the order by timestamps
-      atalaOperations.zipWithIndex.foreach {
+      ops.zipWithIndex.foreach {
         case (atalaOperation, index) =>
           withClue(s"publishing operation #$index") {
             publishSingleOperationAndFlush(atalaOperation).futureValue
@@ -415,13 +399,17 @@ class ObjectManagementServiceSpec
       verify(ledger, times(atalaObjects.size + 2))
         .publish(*) // publish transactions for initial objects and for two new objects
 
-      assert(estimateTxMetadataSize(atalaObjectMerged1) < cardano.TX_METADATA_MAX_SIZE)
-      assert(estimateTxMetadataSize(atalaObjectMerged2) < cardano.TX_METADATA_MAX_SIZE)
+      assert(estimateTxMetadataSize(atalaObjectsMerged.head) < cardano.TX_METADATA_MAX_SIZE)
+      assert(estimateTxMetadataSize(atalaObjectsMerged(1)) < cardano.TX_METADATA_MAX_SIZE)
       assert(
-        estimateTxMetadataSize(atalaObjectMerged2) > cardano.TX_METADATA_MAX_SIZE / 2
+        estimateTxMetadataSize(atalaObjectsMerged(1)) > cardano.TX_METADATA_MAX_SIZE / 2
       ) // check that merged object is big enough
 
       DataPreparation.getPendingSubmissions().size must be(2)
+
+      val notPublishedObjectIds =
+        AtalaObjectsDAO.getNotPublishedObjectIds.transact(database).unsafeToFuture().futureValue
+      notPublishedObjectIds.size must be(0) // no pending objects
     }
 
     "not retry new pending transactions" in {
@@ -454,6 +442,68 @@ class ObjectManagementServiceSpec
       verify(ledger).publish(atalaObject)
       verify(ledger, never).deleteTransaction(dummyTransactionInfo.transactionId)
     }
+  }
+
+  def mockTransactionStatus(transactionId: TransactionId, status: TransactionStatus): Unit = {
+    doReturn(Future.successful(TransactionDetails(transactionId, status)))
+      .when(ledger)
+      .getTransactionDetails(transactionId)
+    ()
+  }
+
+  private def setUpMultipleOperationsPublishing(
+      numOps: Int
+  ): (
+      List[node_internal.AtalaObject],
+      List[node_internal.AtalaObject],
+      List[PublicationInfo],
+      List[SignedAtalaOperation]
+  ) = {
+    val atalaOperations = (0 to numOps).toList.map { masterId =>
+      BlockProcessingServiceSpec.signOperation(
+        DataPreparation.exampleOperation,
+        s"master$masterId",
+        CreateDIDOperationSpec.masterKeys.getPrivateKey
+      )
+    }
+    val atalaObjects = atalaOperations.map { op =>
+      createAtalaObject(block = createBlock(op))
+    }
+    val objs = atalaObjects.map { obj =>
+      AtalaObjectInfo(AtalaObjectId.of(obj), obj.toByteArray, processed = false)
+    }.reverse
+    var accObj = objs.head
+
+    val secondMergedBlockSize = 1 + objs.tail.takeWhile { obj =>
+      obj.mergeIfPossible(accObj) match {
+        case Some(mergedObj) =>
+          accObj = mergedObj
+          true
+        case None =>
+          false
+      }
+    }.size
+    val firstMergedBlockSize = atalaObjects.size - secondMergedBlockSize
+
+    val atalaObjectMerged1 = createAtalaObject(
+      block = node_internal.AtalaBlock(version = "1.0", operations = atalaOperations.take(firstMergedBlockSize)),
+      opsCount = firstMergedBlockSize
+    )
+    val atalaObjectMerged2 = createAtalaObject(
+      block = node_internal.AtalaBlock(version = "1.0", operations = atalaOperations.drop(firstMergedBlockSize)),
+      opsCount = secondMergedBlockSize
+    )
+
+    val dummyTransactionIds = (0 to (atalaOperations.size + 2)).map { index =>
+      TransactionId.from(SHA256Digest.compute(s"id$index".getBytes).getValue).value
+    }
+    val dummyTransactionInfos = dummyTransactionIds.map { transactionId =>
+      dummyTransactionInfo.copy(transactionId = transactionId)
+    }
+    val dummyPublicationInfos = dummyTransactionInfos.map { transactionInfo =>
+      dummyPublicationInfo.copy(transaction = transactionInfo)
+    }
+    (atalaObjects, List(atalaObjectMerged1, atalaObjectMerged2), dummyPublicationInfos.toList, atalaOperations)
   }
 
   private def publishSingleOperationAndFlush(signedAtalaOperation: SignedAtalaOperation): Future[AtalaOperationId] = {
