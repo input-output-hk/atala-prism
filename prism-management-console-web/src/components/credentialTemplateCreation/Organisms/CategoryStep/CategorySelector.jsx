@@ -2,14 +2,14 @@ import React, { useState } from 'react';
 import PropTypes from 'prop-types';
 import { Radio, Form } from 'antd';
 import { useTranslation } from 'react-i18next';
+import { PlusOutlined } from '@ant-design/icons';
 import { isInteger } from 'lodash';
-import AddNewCategory from '../../Molecules/CategoryStep/AddNewCategory';
 import CategoryCreationModal from '../CategoryCreationModal/CategoryCreationModal';
 import CategoryCard from '../../Molecules/CategoryStep/CategoryCard';
+import CustomButton from '../../../common/Atoms/CustomButton/CustomButton';
 import { templateCategoryShape } from '../../../../helpers/propShapes';
 import { useTemplateContext } from '../../../providers/TemplateContext';
 import './_style.scss';
-import CustomButton from '../../../common/Atoms/CustomButton/CustomButton';
 
 const ENABLED_STATE = 1;
 
@@ -33,7 +33,7 @@ const CategorySelector = ({ templateCategories }) => {
   const categoryRules = [
     {
       validator: ({ field }, value) =>
-        isInteger(value)
+        isInteger(parseInt(value, 10))
           ? Promise.resolve()
           : Promise.reject(
               t('credentialTemplateCreation.errors.fieldIsRequired', {
@@ -50,17 +50,17 @@ const CategorySelector = ({ templateCategories }) => {
         close={() => setShowCategoryCreation(false)}
       />
       <div className="selectCategoryHeader">
-        <p>Select Category</p>
-        <CustomButton onClick={handleAddNewCategory} buttonText="+ Add New" theme="theme-link" /> 
+        <p>{t(`${i18nPrefix}.step1.selectCategory`)}</p>
+        <CustomButton
+          onClick={handleAddNewCategory}
+          buttonText={t(`${i18nPrefix}.actions.addCategory`)}
+          theme="theme-link"
+          icon={<PlusOutlined />}
+        />
       </div>
-      <Form.Item
-        name="category"
-        //label={t(`${i18nPrefix}.step1.selectCategory`)}
-        rules={categoryRules}
-      >
+      <Form.Item name="category" rules={categoryRules}>
         <div className="templateCategory">
           <Radio.Group onChange={onCategoryChange}>
-            {/*<AddNewCategory onClick={handleAddNewCategory} />*/}
             {categories.map(category => (
               <Radio value={category.id}>
                 <CategoryCard
