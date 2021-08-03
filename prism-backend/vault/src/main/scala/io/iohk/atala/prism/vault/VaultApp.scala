@@ -10,7 +10,7 @@ import io.iohk.atala.prism.metrics.UptimeReporter
 import io.iohk.atala.prism.protos.node_api.NodeServiceGrpc
 import io.iohk.atala.prism.repositories.{SchemaMigrations, TransactorFactory}
 import io.iohk.atala.prism.protos.vault_api
-import io.iohk.atala.prism.vault.grpc.EncryptedDataVaultGRPCService
+import io.iohk.atala.prism.vault.grpc.EncryptedDataVaultGrpcService
 import io.iohk.atala.prism.vault.repositories.{PayloadsRepository, RequestNoncesRepository}
 import io.iohk.atala.prism.vault.services.EncryptedDataVaultService
 import kamon.Kamon
@@ -90,7 +90,7 @@ class VaultApp(executionContext: ExecutionContext) {
       .map(implicit l => EncryptedDataVaultService.create(payloadsRepository))
       .unsafeRunSync()
 
-    val encryptedDataVaultGrpcService = new EncryptedDataVaultGRPCService(encryptedDataVaultService, authenticator)(
+    val encryptedDataVaultGrpcService = new EncryptedDataVaultGrpcService(encryptedDataVaultService, authenticator)(
       executionContext
     )
 

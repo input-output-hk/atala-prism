@@ -7,8 +7,6 @@ import io.iohk.atala.prism.identity.DID
 import io.iohk.atala.prism.models.UUIDValue
 import tofu.logging.derivation.loggable
 import derevo.derive
-import tofu.optics.Contains
-import tofu.optics.macros.GenContains
 
 package object model {
   final case class CreatePayload(
@@ -34,7 +32,5 @@ package object model {
     @derive(loggable)
     final case class ExternalId(uuid: UUID) extends AnyVal with UUIDValue
     object ExternalId extends UUIDValue.Builder[ExternalId]
-
-    implicit val payloadIdContains: Contains[Payload, Id] = GenContains[Payload](_.id)
   }
 }

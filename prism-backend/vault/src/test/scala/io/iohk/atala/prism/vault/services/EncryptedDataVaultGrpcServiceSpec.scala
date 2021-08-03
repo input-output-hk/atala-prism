@@ -19,7 +19,7 @@ import org.scalatest.OptionValues
 
 import io.iohk.atala.prism.interop.toScalaSDK._
 
-class EncryptedDataVaultGRPCServiceSpec extends VaultRpcSpecBase with OptionValues {
+class EncryptedDataVaultGrpcServiceSpec extends VaultRpcSpecBase with OptionValues {
   private def createRequest(externalId: UUID, payload: String): StoreDataRequest = {
     val payloadBytes = payload.getBytes()
     val hash = SHA256Digest.compute(payloadBytes).getValue.toArray

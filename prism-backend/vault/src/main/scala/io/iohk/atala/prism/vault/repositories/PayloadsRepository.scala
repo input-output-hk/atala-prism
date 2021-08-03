@@ -91,7 +91,7 @@ private final class PayloadsRepoLogging[F[_]: MonadThrow: ServiceLogging[*[_], P
       limit: Int
   ): Mid[F, List[Payload]] =
     in =>
-      info"getting paginated data $did {limit=$limit}" *> in
+      info"getting paginated data ${did.canonical} {limit=$limit}" *> in
         .flatTap(r => info"getting paginated data - successfully done got ${r.size} entities")
         .onError(e => errorCause"an error occurred while creating payload" (e))
 

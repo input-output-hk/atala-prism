@@ -18,7 +18,7 @@ import org.slf4j.{Logger, LoggerFactory}
 
 import scala.concurrent.{ExecutionContext, Future}
 
-class EncryptedDataVaultGRPCService(
+class EncryptedDataVaultGrpcService(
     service: EncryptedDataVaultService[IOWithTraceIdContext],
     authenticator: VaultAuthenticator
 )(implicit

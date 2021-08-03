@@ -6,7 +6,7 @@ import io.iohk.atala.prism.auth.grpc.GrpcAuthenticationHeaderParser
 import io.iohk.atala.prism.logging.TraceId
 import io.iohk.atala.prism.logging.TraceId.IOWithTraceIdContext
 import io.iohk.atala.prism.protos.vault_api
-import io.iohk.atala.prism.vault.grpc.EncryptedDataVaultGRPCService
+import io.iohk.atala.prism.vault.grpc.EncryptedDataVaultGrpcService
 import io.iohk.atala.prism.vault.repositories.{PayloadsRepository, RequestNoncesRepository}
 import io.iohk.atala.prism.vault.services.EncryptedDataVaultService
 import org.mockito.MockitoSugar._
@@ -50,7 +50,7 @@ class VaultRpcSpecBase extends RpcSpecBase {
     .map(implicit l => EncryptedDataVaultService.create(payloadsRepository))
     .unsafeRunSync()
 
-  lazy val vaultGrpcService = new EncryptedDataVaultGRPCService(
+  lazy val vaultGrpcService = new EncryptedDataVaultGrpcService(
     encryptedDataVaultService,
     authenticator
   )(
