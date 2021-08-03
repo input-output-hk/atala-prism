@@ -19,7 +19,7 @@ object PrismBuild {
       .settings(
         organization := "io.iohk",
         organizationName := "Input Output HK",
-        git.baseVersion := "1.1",
+        git.baseVersion := "1.2",
         git.formattedShaVersion := git.gitHeadCommit.value.map(git.baseVersion.value + "-" + _.take(8)),
         scalaVersion := "2.13.6",
         scalacOptions ~= (options =>
