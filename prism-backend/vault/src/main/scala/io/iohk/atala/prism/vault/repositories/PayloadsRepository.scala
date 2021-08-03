@@ -16,7 +16,6 @@ import io.iohk.atala.prism.logging.GeneralLoggableInstances._
 import org.slf4j.{Logger, LoggerFactory}
 import derevo.derive
 import derevo.tagless.applyK
-import io.iohk.atala.prism.logging.TraceId
 import tofu.higherKind.Mid
 import tofu.logging.ServiceLogging
 import tofu.syntax.monoid.TofuSemigroupOps
@@ -24,16 +23,14 @@ import tofu.syntax.logging._
 
 @derive(applyK)
 trait PayloadsRepository[F[_]] {
-  def create(payloadData: CreatePayload, tId: TraceId): F[Payload]
+  def create(payloadData: CreatePayload): F[Payload]
 
-  def getByPaginated(did: DID, lastSeenIdOpt: Option[Payload.Id], limit: Int, tId: TraceId): F[List[Payload]]
+  def getByPaginated(did: DID, lastSeenIdOpt: Option[Payload.Id], limit: Int): F[List[Payload]]
 }
 
 object PayloadsRepository {
-  def create[F[_]](xa: Transactor[F])(implicit
-      br: Bracket[F, Throwable],
-      m: TimeMeasureMetric[F],
-      logs: ServiceLogging[F, PayloadsRepository[F]]
+  def create[F[_]: BracketThrow: TimeMeasureMetric: ServiceLogging[*[_], PayloadsRepository[F]]](
+      xa: Transactor[F]
   ): PayloadsRepository[F] = {
     val mid = (new PayloadsRepoMetrics: PayloadsRepository[Mid[F, *]]) |+| (new PayloadsRepoLogging: PayloadsRepository[
       Mid[F, *]
@@ -47,7 +44,7 @@ private class PayloadsRepositoryImpl[F[_]](xa: Transactor[F])(implicit br: Brack
 
   val logger: Logger = LoggerFactory.getLogger(getClass)
 
-  override def create(payloadData: CreatePayload, tId: TraceId): F[Payload] =
+  override def create(payloadData: CreatePayload): F[Payload] =
     PayloadsDAO
       .createPayload(payloadData)
       .logSQLErrors("creating", logger)
@@ -56,8 +53,7 @@ private class PayloadsRepositoryImpl[F[_]](xa: Transactor[F])(implicit br: Brack
   def getByPaginated(
       did: DID,
       lastSeenIdOpt: Option[Payload.Id],
-      limit: Int,
-      tId: TraceId
+      limit: Int
   ): F[List[Payload]] =
     PayloadsDAO
       .getByPaginated(did, lastSeenIdOpt, limit)
@@ -71,33 +67,32 @@ private final class PayloadsRepoMetrics[F[_]: TimeMeasureMetric: BracketThrow] e
   private lazy val createTimer = TimeMeasureUtil.createDBQueryTimer(repoName, "create")
   private lazy val getByPaginatedTimer = TimeMeasureUtil.createDBQueryTimer(repoName, "getByPaginated")
 
-  override def create(payloadData: CreatePayload, tId: TraceId): Mid[F, Payload] = _.measureOperationTime(createTimer)
+  override def create(payloadData: CreatePayload): Mid[F, Payload] = _.measureOperationTime(createTimer)
 
   override def getByPaginated(
       did: DID,
       lastSeenIdOpt: Option[Payload.Id],
-      limit: Int,
-      tId: TraceId
+      limit: Int
   ): Mid[F, List[Payload]] =
     _.measureOperationTime(getByPaginatedTimer)
 }
 
-private final class PayloadsRepoLogging[F[_]: MonadThrow](implicit logs: ServiceLogging[F, PayloadsRepository[F]])
+private final class PayloadsRepoLogging[F[_]: MonadThrow: ServiceLogging[*[_], PayloadsRepository[F]]]
     extends PayloadsRepository[Mid[F, *]] {
-  override def create(payloadData: CreatePayload, tId: TraceId): Mid[F, Payload] =
+  override def create(payloadData: CreatePayload): Mid[F, Payload] =
     in =>
-      info"creating payload ${payloadData.externalId} $tId" *> in
-        .flatTap(r => info"creating payload - successfully done ${r.id} $tId")
-        .onError(e => errorCause"an error occurred while creating payload $tId" (e))
+      info"creating payload ${payloadData.externalId}" *> in
+        .flatTap(r => info"creating payload - successfully done ${r.id}")
+        .onError(e => errorCause"an error occurred while creating payload" (e))
 
   override def getByPaginated(
       did: DID,
       lastSeenIdOpt: Option[Payload.Id],
-      limit: Int,
-      tId: TraceId
+      limit: Int
   ): Mid[F, List[Payload]] =
     in =>
-      info"getting paginated data $did {limit=$limit} $tId" *> in
-        .flatTap(r => info"getting paginated data - successfully done got ${r.size} entities $tId")
-        .onError(e => errorCause"an error occurred while creating payload $tId" (e))
+      info"getting paginated data $did {limit=$limit}" *> in
+        .flatTap(r => info"getting paginated data - successfully done got ${r.size} entities")
+        .onError(e => errorCause"an error occurred while creating payload" (e))
+
 }

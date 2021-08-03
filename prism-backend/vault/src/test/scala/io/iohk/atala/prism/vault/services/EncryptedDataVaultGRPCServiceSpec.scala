@@ -54,7 +54,7 @@ class EncryptedDataVaultGRPCServiceSpec extends VaultRpcSpecBase with OptionValu
         val responsePayloadId = serviceStub.storeData(request).payloadId
 
         val storedPayloads =
-          payloadsRepository.getByPaginated(did, None, 10, TraceId.generateYOLO).unsafeRunSync()
+          payloadsRepository.getByPaginated(did, None, 10).run(TraceId.generateYOLO).unsafeRunSync()
 
         storedPayloads.size must be(1)
         val storedPayload = storedPayloads.head
@@ -85,7 +85,7 @@ class EncryptedDataVaultGRPCServiceSpec extends VaultRpcSpecBase with OptionValu
       id1 must be(id2)
 
       val storedPayloads =
-        payloadsRepository.getByPaginated(did, None, 10, TraceId.generateYOLO).unsafeRunSync()
+        payloadsRepository.getByPaginated(did, None, 10).run(TraceId.generateYOLO).unsafeRunSync()
 
       // There must only be one payload stored
       storedPayloads.size must be(1)

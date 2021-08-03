@@ -4,7 +4,6 @@ import cats.effect.IO
 import io.iohk.atala.prism.AtalaWithPostgresSpec
 import io.iohk.atala.prism.kotlin.crypto.{EC, SHA256Digest}
 import io.iohk.atala.prism.identity.DID
-import io.iohk.atala.prism.logging.TraceId
 import io.iohk.atala.prism.vault.model.{CreatePayload, Payload}
 import org.scalatest.OptionValues
 import tofu.logging.Logs
@@ -27,7 +26,7 @@ class PayloadsRepositorySpec extends AtalaWithPostgresSpec with OptionValues {
     val externalId = Payload.ExternalId.random()
     val hash = SHA256Digest.compute(content.toArray)
     val createPayload1 = CreatePayload(externalId, hash, did, content)
-    repository.flatMap(_.create(createPayload1, TraceId.generateYOLO))
+    repository.flatMap(_.create(createPayload1))
   }
 
   "create" should {
@@ -71,10 +70,10 @@ class PayloadsRepositorySpec extends AtalaWithPostgresSpec with OptionValues {
         payload2 <- createPayload(did2, content2)
         payload3 <- createPayload(did2, content3)
         repo <- repository
-        mustBe1Payload <- repo.getByPaginated(did1, None, 10, TraceId.generateYOLO)
-        mustBe2And3Payload <- repo.getByPaginated(did2, None, 10, TraceId.generateYOLO)
-        mustBe2Payload <- repo.getByPaginated(did2, None, 1, TraceId.generateYOLO)
-        mustBe3Payload <- repo.getByPaginated(did2, Some(payload2.id), 1, TraceId.generateYOLO)
+        mustBe1Payload <- repo.getByPaginated(did1, None, 10)
+        mustBe2And3Payload <- repo.getByPaginated(did2, None, 10)
+        mustBe2Payload <- repo.getByPaginated(did2, None, 1)
+        mustBe3Payload <- repo.getByPaginated(did2, Some(payload2.id), 1)
       } yield {
         mustBe1Payload mustBe List(payload1)
         mustBe2And3Payload mustBe List(payload2, payload3)

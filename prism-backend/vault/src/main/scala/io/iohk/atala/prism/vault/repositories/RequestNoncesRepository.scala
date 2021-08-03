@@ -15,7 +15,6 @@ import io.iohk.atala.prism.metrics.TimeMeasureUtil.MeasureOps
 import io.iohk.atala.prism.utils.syntax.DBConnectionOps
 import io.iohk.atala.prism.vault.repositories.daos.RequestNoncesDAO
 import io.iohk.atala.prism.logging.GeneralLoggableInstances._
-import io.iohk.atala.prism.logging.TraceId
 import org.slf4j.{Logger, LoggerFactory}
 import tofu.higherKind.Mid
 import tofu.logging.ServiceLogging
@@ -29,9 +28,9 @@ trait RequestNoncesRepository[F[_]] {
 
 object RequestNoncesRepository {
   object PostgresImpl {
-    def create[F[_]: BracketThrow: TimeMeasureMetric](
+    def create[F[_]: BracketThrow: TimeMeasureMetric: ServiceLogging[*[_], RequestNoncesRepository[F]]](
         xa: Transactor[F]
-    )(implicit logs: ServiceLogging[F, RequestNoncesRepository[F]]): RequestNoncesRepository[F] = {
+    ): RequestNoncesRepository[F] = {
       val mid =
         (new RequestNoncesRepositoryMetrics: RequestNoncesRepository[
           Mid[F, *]
@@ -59,14 +58,13 @@ private final class RequestNoncesRepositoryMetrics[F[_]: TimeMeasureMetric: Brac
   override def burn(did: DID, requestNonce: RequestNonce): Mid[F, Unit] = _.measureOperationTime(burnTimer)
 }
 
-private final class RequestNoncesRepositoryLogging[F[_]: BracketThrow](implicit
-    logs: ServiceLogging[F, RequestNoncesRepository[F]]
-) extends RequestNoncesRepository[Mid[F, *]] {
+private final class RequestNoncesRepositoryLogging[
+    F[_]: BracketThrow: ServiceLogging[*[_], RequestNoncesRepository[F]]
+] extends RequestNoncesRepository[Mid[F, *]] {
   override def burn(did: DID, requestNonce: RequestNonce): Mid[F, Unit] =
-    in => {
-      val tId = TraceId.generateYOLO
-      info"burning nonce $did $tId" *> in
-        .flatTap(_ => info"burning nonce - successfully done $tId")
-        .onError(e => errorCause"an error occurred while burning nonce $tId" (e))
-    }
+    in =>
+      info"burning nonce $did" *> in
+        .flatTap(_ => info"burning nonce - successfully done")
+        .onError(e => errorCause"an error occurred while burning nonce" (e))
+
 }

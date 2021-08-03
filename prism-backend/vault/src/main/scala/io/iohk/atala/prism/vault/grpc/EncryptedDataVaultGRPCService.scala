@@ -1,11 +1,11 @@
 package io.iohk.atala.prism.vault.grpc
 
-import cats.effect.IO
 import cats.syntax.option._
 import com.google.protobuf.ByteString
 import io.iohk.atala.prism.auth.errors.AuthErrorSupport
 import io.iohk.atala.prism.kotlin.crypto.SHA256Digest
 import io.iohk.atala.prism.logging.TraceId
+import io.iohk.atala.prism.logging.TraceId.IOWithTraceIdContext
 import io.iohk.atala.prism.metrics.RequestMeasureUtil.measureRequestFuture
 import io.iohk.atala.prism.protos.common_models.{HealthCheckRequest, HealthCheckResponse}
 import io.iohk.atala.prism.protos.vault_api
@@ -19,7 +19,7 @@ import org.slf4j.{Logger, LoggerFactory}
 import scala.concurrent.{ExecutionContext, Future}
 
 class EncryptedDataVaultGRPCService(
-    service: EncryptedDataVaultService[IO],
+    service: EncryptedDataVaultService[IOWithTraceIdContext],
     authenticator: VaultAuthenticator
 )(implicit
     ec: ExecutionContext
@@ -45,10 +45,10 @@ class EncryptedDataVaultGRPCService(
             Payload.ExternalId.unsafeFrom(request.externalId),
             SHA256Digest.fromBytes(request.payloadHash.toByteArray),
             did,
-            request.payload.toByteArray.toVector,
-            traceId
+            request.payload.toByteArray.toVector
           )
           .map(payload => vault_api.StoreDataResponse(payloadId = payload.id.toString))
+          .run(traceId)
           .unsafeToFuture()
       }
     }
@@ -62,8 +62,9 @@ class EncryptedDataVaultGRPCService(
       measureRequestFuture(serviceName, methodName) {
         val traceId = TraceId.generateYOLO
         service
-          .getByPaginated(did, parseOptionalLastSeenId(request.lastSeenId), request.limit, traceId)
+          .getByPaginated(did, parseOptionalLastSeenId(request.lastSeenId), request.limit)
           .map(toGetPaginatedDataResponse)
+          .run(traceId)
           .unsafeToFuture()
       }
     }

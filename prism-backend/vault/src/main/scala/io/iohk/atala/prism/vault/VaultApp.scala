@@ -4,6 +4,8 @@ import cats.effect.{ContextShift, IO}
 import com.typesafe.config.ConfigFactory
 import io.grpc.{ManagedChannelBuilder, Server, ServerBuilder}
 import io.iohk.atala.prism.auth.grpc.GrpcAuthenticationHeaderParser
+import io.iohk.atala.prism.logging.TraceId
+import io.iohk.atala.prism.logging.TraceId.IOWithTraceIdContext
 import io.iohk.atala.prism.metrics.UptimeReporter
 import io.iohk.atala.prism.protos.node_api.NodeServiceGrpc
 import io.iohk.atala.prism.repositories.{SchemaMigrations, TransactorFactory}
@@ -34,7 +36,7 @@ class VaultApp(executionContext: ExecutionContext) {
   implicit val cs: ContextShift[IO] = IO.contextShift(ExecutionContext.global)
   private val logger = LoggerFactory.getLogger(this.getClass)
 
-  private val vaultLogs: Logs[IO, IO] = Logs.sync[IO, IO]
+  private val vaultLogs: Logs[IO, IOWithTraceIdContext] = Logs.withContext[IO, IOWithTraceIdContext]
 
   private[this] var server: Server = null
   private[this] var releaseTransactor: Option[IO[Unit]] = None
@@ -55,6 +57,8 @@ class VaultApp(executionContext: ExecutionContext) {
     val (transactor, releaseTransactor) = TransactorFactory.transactor[IO](databaseConfig).allocated.unsafeRunSync()
     self.releaseTransactor = Some(releaseTransactor)
 
+    val transactorWithIOContext = transactor.mapK(TraceId.liftToIOWithTraceId)
+
     // Node client
     val nodeChannel = ManagedChannelBuilder
       .forAddress(
@@ -67,12 +71,12 @@ class VaultApp(executionContext: ExecutionContext) {
 
     // Vault repositories
     val payloadsRepository = vaultLogs
-      .service[PayloadsRepository[IO]]
-      .map(implicit l => PayloadsRepository.create(transactor))
+      .service[PayloadsRepository[IOWithTraceIdContext]]
+      .map(implicit l => PayloadsRepository.create[IOWithTraceIdContext](transactorWithIOContext))
       .unsafeRunSync()
     val requestNoncesRepository = vaultLogs
-      .service[RequestNoncesRepository[IO]]
-      .map(implicit l => RequestNoncesRepository.PostgresImpl.create(transactor))
+      .service[RequestNoncesRepository[IOWithTraceIdContext]]
+      .map(implicit l => RequestNoncesRepository.PostgresImpl.create(transactorWithIOContext))
       .unsafeRunSync()
 
     val authenticator = new VaultAuthenticator(
@@ -82,7 +86,7 @@ class VaultApp(executionContext: ExecutionContext) {
     )
 
     val encryptedDataVaultService = vaultLogs
-      .service[EncryptedDataVaultService[IO]]
+      .service[EncryptedDataVaultService[IOWithTraceIdContext]]
       .map(implicit l => EncryptedDataVaultService.create(payloadsRepository))
       .unsafeRunSync()
 

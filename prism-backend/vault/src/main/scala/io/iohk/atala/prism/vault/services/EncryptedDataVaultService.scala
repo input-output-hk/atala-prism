@@ -8,7 +8,6 @@ import derevo.derive
 import derevo.tagless.applyK
 import io.iohk.atala.prism.kotlin.crypto.SHA256Digest
 import io.iohk.atala.prism.identity.DID
-import io.iohk.atala.prism.logging.TraceId
 import io.iohk.atala.prism.vault.model.{CreatePayload, Payload}
 import io.iohk.atala.prism.vault.repositories.PayloadsRepository
 import io.iohk.atala.prism.logging.GeneralLoggableInstances._
@@ -22,16 +21,15 @@ trait EncryptedDataVaultService[F[_]] {
       externalId: Payload.ExternalId,
       hash: SHA256Digest,
       did: DID,
-      content: Vector[Byte],
-      tId: TraceId
+      content: Vector[Byte]
   ): F[Payload]
-  def getByPaginated(did: DID, lastSeenId: Option[Payload.Id], limit: Int, tId: TraceId): F[List[Payload]]
+  def getByPaginated(did: DID, lastSeenId: Option[Payload.Id], limit: Int): F[List[Payload]]
 }
 
 object EncryptedDataVaultService {
-  def create[F[_]: MonadThrow](
+  def create[F[_]: MonadThrow: ServiceLogging[*[_], EncryptedDataVaultService[F]]](
       payloadsRepository: PayloadsRepository[F]
-  )(implicit logs: ServiceLogging[F, EncryptedDataVaultService[F]]): EncryptedDataVaultService[F] = {
+  ): EncryptedDataVaultService[F] = {
     val logging: EncryptedDataVaultService[Mid[F, *]] = new EncyptedDataVaultServiceLogging
     logging attach new EncyptedDataVaultServiceImpl(payloadsRepository)
   }
@@ -44,8 +42,7 @@ private final class EncyptedDataVaultServiceImpl[F[_]](payloadsRepository: Paylo
       externalId: Payload.ExternalId,
       hash: SHA256Digest,
       did: DID,
-      content: Vector[Byte],
-      tId: TraceId
+      content: Vector[Byte]
   ): F[Payload] =
     payloadsRepository
       .create(
@@ -54,50 +51,44 @@ private final class EncyptedDataVaultServiceImpl[F[_]](payloadsRepository: Paylo
           hash,
           did,
           content
-        ),
-        tId
+        )
       )
 
   override def getByPaginated(
       did: DID,
       lastSeenId: Option[Payload.Id],
-      limit: Int,
-      tId: TraceId
+      limit: Int
   ): F[List[Payload]] = {
     payloadsRepository
       .getByPaginated(
         did,
         lastSeenId,
-        limit,
-        tId
+        limit
       )
   }
 }
 
-private class EncyptedDataVaultServiceLogging[F[_]: MonadThrow](implicit
-    logs: ServiceLogging[F, EncryptedDataVaultService[F]]
-) extends EncryptedDataVaultService[Mid[F, *]] {
+private class EncyptedDataVaultServiceLogging[F[_]: MonadThrow: ServiceLogging[*[_], EncryptedDataVaultService[F]]]
+    extends EncryptedDataVaultService[Mid[F, *]] {
 
   override def storeData(
       externalId: Payload.ExternalId,
       hash: SHA256Digest,
       did: DID,
-      content: Vector[Byte],
-      tId: TraceId
+      content: Vector[Byte]
   ): Mid[F, Payload] =
     in =>
-      info"storing data $externalId $did $tId" *> in
-        .flatTap(p => info"storing data - successfully done ${p.id} $tId")
-        .onError { e => errorCause"encountered an error while storing data! $tId" (e) }
+      info"storing data $externalId $did" *> in
+        .flatTap(p => info"storing data - successfully done ${p.id}")
+        .onError { e => errorCause"encountered an error while storing data!" (e) }
 
   override def getByPaginated(
       did: DID,
       lastSeenId: Option[Payload.Id],
-      limit: Int,
-      tId: TraceId
+      limit: Int
   ): Mid[F, List[Payload]] =
     in =>
-      info"getting paginated data $did $lastSeenId $tId" *> in
-        .flatTap(p => info"getting paginated data - successfully done found ${p.size} entities $tId")
-        .onError { e => errorCause"encountered an error while getting data by paginated! $tId" (e) }
+      info"getting paginated data $did $lastSeenId" *> in
+        .flatTap(p => info"getting paginated data - successfully done found ${p.size} entities")
+        .onError { e => errorCause"encountered an error while getting data by paginated!" (e) }
 }
