@@ -57,7 +57,8 @@ DynamicForm.defaultProps = {};
 DynamicForm.propTypes = {
   initialValues: PropTypes.shape({}).isRequired,
   columns: columnShape.isRequired,
-  skeleton: skeletonShape.isRequired
+  skeleton: skeletonShape.isRequired,
+  useCase: PropTypes.shape({}).isRequired
 };
 
 export default DynamicForm;

@@ -6,7 +6,7 @@ import { IMPORT_CONTACTS } from '../../../../helpers/constants';
 import {
   CONTACT_FORM,
   CONTACT_FORM_COLUMNS,
-  CONTACT_INITIAL_VALUE,
+  CONTACT_INITIAL_VALUE
 } from '../../../../helpers/formDefinitions/contacts';
 import { DynamicFormContext } from '../../../../providers/DynamicFormProvider';
 import DynamicForm from '../../../dynamicForm/DynamicForm';

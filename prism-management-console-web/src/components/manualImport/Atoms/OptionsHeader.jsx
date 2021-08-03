@@ -5,6 +5,7 @@ import { PlusOutlined } from '@ant-design/icons';
 import { useTranslation } from 'react-i18next';
 import CustomButton from '../../common/Atoms/CustomButton/CustomButton';
 import { IMPORT_CONTACTS } from '../../../helpers/constants';
+import { groupShape } from '../../../helpers/propShapes';
 
 const OptionsHeader = ({ groups, selectedGroups, setSelectedGroups, addEntity }) => {
   const { t } = useTranslation();
@@ -34,8 +35,17 @@ const OptionsHeader = ({ groups, selectedGroups, setSelectedGroups, addEntity })
     </div>
   );
 };
+
+OptionsHeader.defaultProps = {
+  selectedGroups: [],
+  addEntity: undefined
+};
+
 OptionsHeader.propTypes = {
-  // FIXME: add proptypes
+  groups: PropTypes.arrayOf(groupShape).isRequired,
+  selectedGroups: PropTypes.arrayOf(PropTypes.string),
+  setSelectedGroups: PropTypes.func.isRequired,
+  addEntity: PropTypes.func
 };
 
 export default OptionsHeader;

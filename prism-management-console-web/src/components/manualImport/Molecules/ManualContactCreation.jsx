@@ -14,8 +14,15 @@ const ManualContactCreation = ({ groupsProps, addEntity }) => (
   </div>
 );
 
+ManualContactCreation.defaultProps = {
+  addEntity: undefined
+};
+
 ManualContactCreation.propTypes = {
-  // FIXME: add proptypes
+  groupsProps: PropTypes.shape({
+    // TODO: add propTypes
+  }).isRequired,
+  addEntity: PropTypes.func
 };
 
 export default ManualContactCreation;
