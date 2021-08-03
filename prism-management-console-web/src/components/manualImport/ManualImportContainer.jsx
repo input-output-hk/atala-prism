@@ -7,7 +7,6 @@ import ManualImport from './ManualImport';
 import Logger from '../../helpers/Logger';
 import { IMPORT_CONTACTS, IMPORT_CREDENTIALS_DATA } from '../../helpers/constants';
 import { contactCreationShape, credentialTypeShape, groupShape } from '../../helpers/propShapes';
-import { addNewCredential, deleteCredential } from '../../helpers/importHelpers';
 
 const ManualImportContainer = ({
   api: { groupsManager },

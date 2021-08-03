@@ -1,5 +1,4 @@
 import React from 'react';
-import PropTypes from 'prop-types';
 import CredentialCreationTable from '../Organisms/Tables/CredentialCreationTable';
 
 const ManualCredentialCreation = props => (
@@ -9,9 +8,5 @@ const ManualCredentialCreation = props => (
     </div>
   </div>
 );
-
-ManualCredentialCreation.propTypes = {
-  // FIXME: add proptypes
-};
 
 export default ManualCredentialCreation;

@@ -2,7 +2,7 @@ import React, { useContext } from 'react';
 import PropTypes from 'prop-types';
 import _ from 'lodash';
 import { useTranslation } from 'react-i18next';
-import { credentialShape, credentialTypeShape } from '../../../../helpers/propShapes';
+import { credentialTypeShape } from '../../../../helpers/propShapes';
 import {
   CREDENTIAL_FORM,
   CREDENTIAL_FORM_COLUMNS
@@ -53,15 +53,9 @@ const CredentialCreationTable = ({ initialValues, credentialType }) => {
 };
 
 CredentialCreationTable.propTypes = {
-  tableProps: PropTypes.shape({
+  initialValues: PropTypes.shape({
     // FIXME: datasource shape
-    dataSource: PropTypes.arrayOf(credentialShape).isRequired,
-    updateDataSource: PropTypes.func.isRequired,
-    deleteContact: PropTypes.func,
-    addNewRow: PropTypes.func,
-    hasSelectedRecipients: PropTypes.bool
   }).isRequired,
-  setDisableSave: PropTypes.func.isRequired,
   credentialType: PropTypes.shape(credentialTypeShape).isRequired
 };
 

@@ -55,7 +55,8 @@ IndividualForm.propTypes = {
   }).isRequired,
   columns: columnShape.isRequired,
   onRemove: PropTypes.func.isRequired,
-  skeleton: skeletonShape.isRequired
+  skeleton: skeletonShape.isRequired,
+  useCase: PropTypes.shape({}).isRequired
 };
 
 export default IndividualForm;

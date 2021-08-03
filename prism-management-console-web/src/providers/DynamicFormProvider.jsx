@@ -1,4 +1,5 @@
 import React, { createContext, useState } from 'react';
+import PropTypes from 'prop-types';
 import { Form } from 'antd';
 
 /*
@@ -60,6 +61,11 @@ const DynamicFormProvider = ({ children, formName }) => {
       {children}
     </DynamicFormContext.Provider>
   );
+};
+
+DynamicFormProvider.propTypes = {
+  children: PropTypes.oneOfType([PropTypes.arrayOf(PropTypes.node), PropTypes.node]).isRequired,
+  formName: PropTypes.string.isRequired
 };
 
 export { DynamicFormContext, DynamicFormProvider };

@@ -1,4 +1,4 @@
-import React, { useContext, useEffect, useState } from 'react';
+import React, { useContext, useState } from 'react';
 import PropTypes from 'prop-types';
 import { useTranslation } from 'react-i18next';
 import { message } from 'antd';
@@ -19,12 +19,7 @@ import {
 } from '../../helpers/constants';
 import GenericStepsButtons from '../common/Molecules/GenericStepsButtons/GenericStepsButtons';
 import WizardTitle from '../common/Atoms/WizardTitle/WizardTitle';
-import {
-  createBlankContact,
-  createBlankCredential,
-  processCredentials
-} from '../../helpers/importHelpers';
-import { isEmptyCredential } from '../../helpers/credentialDataValidation';
+import { createBlankContact } from '../../helpers/importHelpers';
 import { DynamicFormContext } from '../../providers/DynamicFormProvider';
 import Logger from '../../helpers/Logger';
 import { getFirstError } from '../../helpers/formHelpers';
@@ -63,9 +58,7 @@ const ImportDataContainer = ({
   const [fileData, setFileData] = useState();
   const [skipGroupsAssignment, setSkipGroupsAssignment] = useState(false);
   const [selectedGroups, setSelectedGroups] = useState([]);
-  const [credentialsData, setCredentialsData] = useState(
-    hasSelectedRecipients ? recipients : [createBlankCredential(0)]
-  );
+  const [credentialsData, setCredentialsData] = useState(recipients);
 
   const { saveFormProviderAvailable, addEntity, form } = useContext(DynamicFormContext);
 
