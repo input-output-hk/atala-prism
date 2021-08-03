@@ -9,6 +9,7 @@ on:
     branches:
       - master
       - test*
+      - package*
   pull_request:
     paths:
       - 'prism-backend/**'
@@ -84,6 +85,12 @@ jobs:
           NODE_CARDANO_CONFIRMATION_BLOCKS: ${{ secrets.NODE_CARDANO_CONFIRMATION_BLOCKS }}
           NODE_CARDANO_PAYMENT_ADDRESS: ${{ secrets.NODE_CARDANO_PAYMENT_ADDRESS }}
 
+      - name: Upload SBT remote cache
+        uses: actions/upload-artifact@v2
+        with:
+          name: sbt-backend-remote-cache
+          path: /tmp/backend-remote-cache
+
       - name: Generate code coverage reports
         run: sbt coverageReport coverageAggregate
         if: always()
@@ -122,3 +129,40 @@ jobs:
          with:
            files: "test-reports/**/TEST-*.xml"
 
+  publish:
+    needs: build-backend
+    runs-on: ubuntu-20.04
+    if: github.ref == 'refs/heads/master' || startsWith(github.ref, 'refs/heads/package')
+    defaults:
+      run:
+        working-directory: prism-backend
+
+    steps:
+      - name: Checkout the repo
+        uses: actions/checkout@v2
+
+      - name: Setup Scala
+        uses: olafurpg/setup-scala@v10
+        with:
+          java-version: ${{ env.JAVA_VERSION }}
+
+      - name: Coursier cache
+        uses: coursier/cache-action@v6
+
+      - name: Download SBT remote cache
+        uses: actions/download-artifact@v2
+        with:
+          name: sbt-backend-remote-cache
+          path: /tmp
+
+      - name: Pull remote cache from local file
+        run: sbt pullRemoteCache
+
+      - name: Setup Github Container registry credentials
+        run: docker login ghcr.io -u atala-dev -p $GITHUB_TOKEN
+
+      - name: Build and publish Docker images
+        run: |
+          for module in 'node' 'connector' 'management-console' 'vault' ; do
+            GITHUB=1 sbt "$module/dockerBuildAndPush"
+          done
