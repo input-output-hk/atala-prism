@@ -343,39 +343,38 @@ class MessagesRpcSpec extends ConnectorRpcSpecBase {
   }
 
   "GetMessageStream" should {
-    val (keyPair, did) = createDid
+    val (globalTestKeyPair, globalTestDid) = createDid
 
-    def createParticipant(): ParticipantId = {
-      createVerifier("Participant", Some(keyPair.getPublicKey), Some(did))
+    def createParticipant(did: DID, publicKey: ECPublicKey): ParticipantId = {
+      createVerifier("Participant", Some(publicKey), Some(did))
     }
 
     def generateMessageIds(participantId: ParticipantId): Seq[String] = {
       val messageIds = createExampleMessages(participantId).map(_._1).map(_.toString)
-      // Sleep a bit to avoid race conditions with messages being in DB but still not notified to the streams
-      // (this is only needed for the tests to behave as expected)
-      Thread.sleep(500)
       messageIds
     }
 
     "return existing messages immediately" in {
-      val messageIds = generateMessageIds(createParticipant())
-      testMessagesExisting(keyPair, did, messageIds)
+      val messageIds = generateMessageIds(createParticipant(globalTestDid, globalTestKeyPair.getPublicKey))
+      testMessagesExisting(globalTestKeyPair, globalTestDid, messageIds)
     }
 
     "return existing messages immediately while authed by unpublished did" in {
-      val messageIds = generateMessageIds(createParticipant())
+      val keyPair = EC.generateKeyPair()
       val unpublishedDid = DID.createUnpublishedDID(keyPair.getPublicKey.asScala)
+      val participant = createParticipant(unpublishedDid, keyPair.getPublicKey)
+      val messageIds = generateMessageIds(participant)
       testMessagesExisting(keyPair, unpublishedDid, messageIds)
     }
 
     "return newer messages only" in {
-      val messageIds = generateMessageIds(createParticipant())
+      val messageIds = generateMessageIds(createParticipant(globalTestDid, globalTestKeyPair.getPublicKey))
       val lastSeenMessageIndex = 10
       val lastSeenMessageId = messageIds(lastSeenMessageIndex)
       val notSeenMessages = messageIds.drop(lastSeenMessageIndex + 1)
       val getMessageStreamRequest = SignedRpcRequest.generate(
-        keyPair,
-        did,
+        globalTestKeyPair,
+        globalTestDid,
         connector_api.GetMessageStreamRequest(lastSeenMessageId = lastSeenMessageId)
       )
 
@@ -391,8 +390,9 @@ class MessagesRpcSpec extends ConnectorRpcSpecBase {
     }
 
     "return new messages as they come" in {
-      val participantId = createParticipant()
-      val getMessageStreamRequest = SignedRpcRequest.generate(keyPair, did, connector_api.GetMessageStreamRequest())
+      val participantId = createParticipant(globalTestDid, globalTestKeyPair.getPublicKey)
+      val getMessageStreamRequest =
+        SignedRpcRequest.generate(globalTestKeyPair, globalTestDid, connector_api.GetMessageStreamRequest())
 
       usingAsyncApiAs(getMessageStreamRequest) { service =>
         val streamObserver = mock[StreamObserver[connector_api.GetMessageStreamResponse]]
@@ -407,9 +407,10 @@ class MessagesRpcSpec extends ConnectorRpcSpecBase {
     }
 
     "close the previous observer for the same recipient when a new observer connects" in {
-      val participantId = createParticipant()
+      val participantId = createParticipant(globalTestDid, globalTestKeyPair.getPublicKey)
       // Connect first observer
-      val getMessageStreamRequest1 = SignedRpcRequest.generate(keyPair, did, connector_api.GetMessageStreamRequest())
+      val getMessageStreamRequest1 =
+        SignedRpcRequest.generate(globalTestKeyPair, globalTestDid, connector_api.GetMessageStreamRequest())
       val streamObserver1 = mock[StreamObserver[connector_api.GetMessageStreamResponse]]
       usingAsyncApiAs(getMessageStreamRequest1) { service =>
         service.getMessageStream(getMessageStreamRequest1.request, streamObserver1)
@@ -424,8 +425,8 @@ class MessagesRpcSpec extends ConnectorRpcSpecBase {
 
       // Connect second observer, requesting new messages only
       val getMessageStreamRequest2 = SignedRpcRequest.generate(
-        keyPair,
-        did,
+        globalTestKeyPair,
+        globalTestDid,
         connector_api.GetMessageStreamRequest(lastSeenMessageId = firstMessageIds.last)
       )
       val streamObserver2 = mock[StreamObserver[connector_api.GetMessageStreamResponse]]
@@ -450,8 +451,9 @@ class MessagesRpcSpec extends ConnectorRpcSpecBase {
     }
 
     "stop sending messages after an observer fails" in {
-      val participantId = createParticipant()
-      val getMessageStreamRequest = SignedRpcRequest.generate(keyPair, did, connector_api.GetMessageStreamRequest())
+      val participantId = createParticipant(globalTestDid, globalTestKeyPair.getPublicKey)
+      val getMessageStreamRequest =
+        SignedRpcRequest.generate(globalTestKeyPair, globalTestDid, connector_api.GetMessageStreamRequest())
 
       usingAsyncApiAs(getMessageStreamRequest) { service =>
         val streamObserver = mock[StreamObserver[connector_api.GetMessageStreamResponse]]
