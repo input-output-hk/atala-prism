@@ -27,7 +27,7 @@ const CategoryIconSelector = () => {
   const categoryIconRules = [
     {
       validator: (_rule, value) =>
-        isInteger(value) || isString(value)
+        isInteger(parseInt(value, 10)) || isString(value)
           ? Promise.resolve()
           : Promise.reject(
               t(`${i18nPrefix}.categoryCreationModal.errors.fieldIsRequired`, {
