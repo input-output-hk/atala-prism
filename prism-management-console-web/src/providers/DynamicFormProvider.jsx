@@ -23,8 +23,8 @@ const DynamicFormProvider = ({ children, formName }) => {
     try {
       await form.validateFields();
       setSaveFormProviderAvailable(true);
-    } catch (errorInfo) {
-      setSaveFormProviderAvailable(!errorInfo?.errorFields?.length);
+    } catch ({ errorFields }) {
+      setSaveFormProviderAvailable(!errorFields.length);
     }
   };
 

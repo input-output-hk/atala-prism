@@ -1,23 +1,22 @@
 import React, { useContext } from 'react';
 import PropTypes from 'prop-types';
-import EditableTable from '../../../common/Organisms/Tables/EditableTable';
 import { useAllContacts } from '../../../../hooks/useContacts';
 import { withApi } from '../../../providers/withApi';
 import { IMPORT_CONTACTS } from '../../../../helpers/constants';
 import {
   CONTACT_FORM,
   CONTACT_FORM_COLUMNS,
-  CONTACT_INITIAL_VALUE
+  CONTACT_INITIAL_VALUE,
 } from '../../../../helpers/formDefinitions/contacts';
 import { DynamicFormContext } from '../../../../providers/DynamicFormProvider';
+import DynamicForm from '../../../dynamicForm/DynamicForm';
 
-const ContactCreationTable = ({ api, tableProps }) => {
+const ContactCreationTable = ({ api }) => {
   const { allContacts } = useAllContacts(api.contactsManager);
   const { form } = useContext(DynamicFormContext);
 
   return (
-    <EditableTable
-      {...tableProps}
+    <DynamicForm
       columns={CONTACT_FORM_COLUMNS()}
       skeleton={CONTACT_FORM(allContacts, form)}
       initialValues={CONTACT_INITIAL_VALUE}

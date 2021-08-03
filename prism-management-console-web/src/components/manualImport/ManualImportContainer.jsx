@@ -13,17 +13,14 @@ const ManualImportContainer = ({
   api: { groupsManager },
   useCaseProps,
   credentialType,
-  hasSelectedRecipients,
-  setContacts,
   credentialsData,
-  setCredentialsData,
   selectedGroups,
   setSelectedGroups,
   addEntity
 }) => {
   const { t } = useTranslation();
   const [groups, setGroups] = useState([]);
-  const { useCase, showGroupSelection } = useCaseProps;
+  const { showGroupSelection } = useCaseProps;
 
   useEffect(() => {
     if (showGroupSelection) {
@@ -37,27 +34,12 @@ const ManualImportContainer = ({
     }
   }, [groupsManager, showGroupSelection, t]);
 
-  const handleDeleteCredential = key => setContacts(deleteCredential(key, credentialsData));
-  const handleAddNewCredential = () => setContacts(addNewCredential(credentialsData));
-
-  const tableProps = {
-    // backward compatibility
-    [IMPORT_CONTACTS]: {},
-    [IMPORT_CREDENTIALS_DATA]: {
-      dataSource: credentialsData,
-      updateDataSource: setCredentialsData,
-      deleteRow: !hasSelectedRecipients && handleDeleteCredential,
-      addRow: !hasSelectedRecipients && handleAddNewCredential,
-      hasSelectedRecipients
-    }
-  };
-
   const groupsProps = { groups, selectedGroups, setSelectedGroups };
 
   return (
     <ManualImport
       addEntity={addEntity}
-      tableProps={tableProps[useCase]}
+      initialValues={credentialsData}
       groupsProps={groupsProps}
       credentialType={credentialType}
       {...useCaseProps}
