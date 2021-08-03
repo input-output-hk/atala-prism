@@ -28,10 +28,10 @@ object TimeMeasureMetric {
   implicit val ioWithTraceIdTimeMeasureMetric: TimeMeasureMetric[IOWithTraceIdContext] =
     new TimeMeasureMetric[IOWithTraceIdContext] {
       override def startTimer(timer: DomainTimer): IOWithTraceIdContext[Try[StartedDomainTimer]] =
-        ReaderT.liftF(IO.delay(Try(StartedDomainTimer(timer.in.start()))))
+        ReaderT.liftF(ioTimeMeasureMetric.startTimer(timer))
 
       override def stopTimer(timer: StartedDomainTimer): IOWithTraceIdContext[Try[Unit]] =
-        ReaderT.liftF(IO.delay(Try(timer.in.stop())))
+        ReaderT.liftF(ioTimeMeasureMetric.stopTimer(timer))
     }
 }
 
