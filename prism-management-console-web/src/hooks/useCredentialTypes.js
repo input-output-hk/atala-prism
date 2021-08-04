@@ -57,7 +57,7 @@ export const useTemplateCategories = credentialTypesManager => {
 
   const getTemplateCategories = useCallback(() => {
     setIsLoading(true);
-    credentialTypesManager
+    return credentialTypesManager
       .getTemplateCategories()
       .then(fetchedCategories => {
         setTemplateCategories(fetchedCategories);
