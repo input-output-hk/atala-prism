@@ -1,13 +1,13 @@
 const fixedFields = ['contactName', 'externalId'];
 
-export const CREDENTIAL_FORM_COLUMNS = columns =>
+export const getCredentialFormColumns = columns =>
   columns.map(({ title, dataIndex }) => ({
     label: title,
     fieldKey: dataIndex,
     width: 400
   }));
 
-export const CREDENTIAL_FORM = fields =>
+export const getCredentialFormSkeleton = fields =>
   fields.map(f => ({
     name: f.dataIndex,
     placeholder: f.title,

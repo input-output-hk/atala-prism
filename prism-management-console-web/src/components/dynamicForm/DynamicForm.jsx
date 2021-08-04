@@ -5,6 +5,7 @@ import { DynamicFormContext } from '../../providers/DynamicFormProvider';
 import IndividualForm from './IndividualForm/IndividualForm';
 import { DEFAULT_WIDTH_INPUT } from '../../helpers/constants';
 import { columnShape, skeletonShape } from '../../helpers/propShapes';
+import { useDebounce } from '../../hooks/useDebounce';
 
 import './_style.scss';
 
@@ -12,6 +13,8 @@ const DynamicForm = ({ columns, skeleton, initialValues, useCase }) => {
   const { form, removeEntity, formName, checkValidation } = useContext(DynamicFormContext);
 
   const lastColumn = columns.pop();
+
+  const handleValuesChange = useDebounce(checkValidation);
 
   return (
     <div className="DynamicFormContainer">
@@ -21,7 +24,7 @@ const DynamicForm = ({ columns, skeleton, initialValues, useCase }) => {
           name="dynamic_form"
           className="DynamicForm"
           autoComplete="off"
-          onValuesChange={checkValidation}
+          onValuesChange={handleValuesChange}
         >
           <Form.List name={formName} initialValue={initialValues}>
             {fields => (

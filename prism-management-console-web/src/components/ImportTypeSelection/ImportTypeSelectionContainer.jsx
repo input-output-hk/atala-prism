@@ -15,21 +15,20 @@ const ImportTypeSelectionContainer = ({
   setSelectedMethod,
   isEmbedded,
   useCase,
-  hasSelectedRecipients
+  selectedRecipientsAmount
 }) => (
   <div className={`ImportWrapper ${isEmbedded ? 'EmbeddedImportWrapper' : ''}`}>
     <ImportTypeSelector
       selected={selectedMethod}
       onSelect={setSelectedMethod}
       useCase={useCase}
-      disableManual={!hasSelectedRecipients}
+      selectedRecipientsAmount={selectedRecipientsAmount}
     />
   </div>
 );
 
 ImportTypeSelectionContainer.defaultProps = {
   isEmbedded: false,
-  hasSelectedRecipients: true,
   selectedMethod: null
 };
 
@@ -38,7 +37,7 @@ ImportTypeSelectionContainer.propTypes = {
   setSelectedMethod: PropTypes.func.isRequired,
   isEmbedded: PropTypes.bool,
   useCase: PropTypes.oneOf([IMPORT_CONTACTS, IMPORT_CREDENTIALS_DATA]).isRequired,
-  hasSelectedRecipients: PropTypes.bool
+  selectedRecipientsAmount: PropTypes.number.isRequired
 };
 
 export default ImportTypeSelectionContainer;

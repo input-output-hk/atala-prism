@@ -4,8 +4,8 @@ import { useAllContacts } from '../../../../hooks/useContacts';
 import { withApi } from '../../../providers/withApi';
 import { IMPORT_CONTACTS } from '../../../../helpers/constants';
 import {
-  CONTACT_FORM,
-  CONTACT_FORM_COLUMNS,
+  getContactFormSkeleton,
+  getContactFormColumns,
   CONTACT_INITIAL_VALUE
 } from '../../../../helpers/formDefinitions/contacts';
 import { DynamicFormContext } from '../../../../providers/DynamicFormProvider';
@@ -15,10 +15,13 @@ const ContactCreationTable = ({ api }) => {
   const { allContacts } = useAllContacts(api.contactsManager);
   const { form } = useContext(DynamicFormContext);
 
+  const contactFormColumns = getContactFormColumns();
+  const contactFormSkeleton = getContactFormSkeleton(allContacts, form);
+
   return (
     <DynamicForm
-      columns={CONTACT_FORM_COLUMNS()}
-      skeleton={CONTACT_FORM(allContacts, form)}
+      columns={contactFormColumns}
+      skeleton={contactFormSkeleton}
       initialValues={CONTACT_INITIAL_VALUE}
       preExistingEntries={allContacts}
       useCase={IMPORT_CONTACTS}

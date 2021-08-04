@@ -3,7 +3,7 @@ import { IMPORT_CONTACTS } from '../constants';
 import { expectValueNotExist, expectUniqueValue } from '../formRules';
 
 // Must be a function for translation reasons
-export const CONTACT_FORM_COLUMNS = () => [
+export const getContactFormColumns = () => [
   {
     label: i18n.t('contacts.table.columns.contactName'),
     fieldKey: 'contactName',
@@ -20,7 +20,7 @@ export const CONTACT_FORM_COLUMNS = () => [
   }
 ];
 
-export const CONTACT_FORM = (preexistingContacts, form) => [
+export const getContactFormSkeleton = (preexistingContacts, form) => [
   {
     name: 'contactName',
     placeholder: i18n.t('contacts.table.columns.contactName'),
