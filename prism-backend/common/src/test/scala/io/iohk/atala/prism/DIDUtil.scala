@@ -2,7 +2,6 @@ package io.iohk.atala.prism
 
 import com.google.protobuf.ByteString
 import io.iohk.atala.prism.auth.SignedRpcRequest
-import io.iohk.atala.prism.interop.toScalaSDK._
 import io.iohk.atala.prism.kotlin.crypto.{EC, SHA256Digest}
 import io.iohk.atala.prism.kotlin.crypto.keys.{ECKeyPair, ECPublicKey}
 import io.iohk.atala.prism.kotlin.crypto.ECConfig.{INSTANCE => ECConfig}
@@ -16,8 +15,6 @@ import org.mockito.IdiomaticMockito._
 import scalapb.GeneratedMessage
 
 import scala.concurrent.Future
-
-import io.iohk.atala.prism.interop.toKotlinSDK._
 
 trait DIDUtil {
   protected def nodeMock: NodeService
@@ -73,7 +70,7 @@ trait DIDUtil {
 
   def prepareSignedUnpublishedDidRequest[R <: GeneratedMessage](request: R): (ECPublicKey, SignedRpcRequest[R]) = {
     val keys = EC.generateKeyPair()
-    val did = DID.createUnpublishedDID(keys.getPublicKey.asScala)
+    val did = DID.createUnpublishedDID(keys.getPublicKey, null)
     (keys.getPublicKey, SignedRpcRequest.generate(keys, did, request))
   }
 
@@ -90,7 +87,7 @@ object DIDUtil {
   def createUnpublishedDid: (ECKeyPair, DID) = {
     val keyPair = EC.generateKeyPair()
     val publicKey = keyPair.getPublicKey
-    val did = DID.createUnpublishedDID(publicKey.asScala)
+    val did = DID.createUnpublishedDID(publicKey, null)
     (keyPair, did)
   }
 }

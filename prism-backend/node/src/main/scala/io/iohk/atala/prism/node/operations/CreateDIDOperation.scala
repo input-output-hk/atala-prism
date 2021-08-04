@@ -15,8 +15,6 @@ import io.iohk.atala.prism.node.operations.path._
 import io.iohk.atala.prism.node.repositories.daos.{DIDDataDAO, PublicKeysDAO}
 import io.iohk.atala.prism.protos.{node_models => proto}
 
-import io.iohk.atala.prism.interop.toScalaSDK._
-
 case class CreateDIDOperation(
     id: DIDSuffix,
     keys: List[DIDPublicKey],
@@ -97,7 +95,7 @@ object CreateDIDOperation extends SimpleOperationCompanion[CreateDIDOperation] {
       ledgerData: LedgerData
   ): Either[ValidationError, CreateDIDOperation] = {
     val operationDigest = SHA256Digest.compute(operation.toByteArray)
-    val didSuffix = DIDSuffix.fromDigest(operationDigest.asScala)
+    val didSuffix = DIDSuffix.fromDigest(operationDigest)
     val createOperation = ValueAtPath(operation, Path.root).child(_.getCreateDid, "createDid")
     for {
       data <- createOperation.childGet(_.didData, "didData")

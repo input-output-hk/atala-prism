@@ -4,7 +4,7 @@ import java.time.Instant
 import io.circe.Encoder
 import io.circe.syntax._
 import com.google.protobuf.ByteString
-import io.iohk.atala.prism.kotlin.credentials.{Credential, CredentialBatchId, CredentialBatches, TimestampInfo}
+import io.iohk.atala.prism.kotlin.credentials.{CredentialBatchId, CredentialBatches, TimestampInfo}
 import io.iohk.atala.prism.kotlin.crypto.{EC, MerkleInclusionProof}
 import io.iohk.atala.prism.kotlin.crypto.keys.ECKeyPair
 import io.iohk.atala.prism.kotlin.identity.DID
@@ -19,17 +19,12 @@ import io.iohk.atala.prism.kotlin.credentials.PrismCredential
 import io.iohk.atala.prism.kotlin.credentials.json.JsonBasedCredential
 import io.iohk.atala.prism.protos.credential_models.PlainTextCredential
 import io.iohk.atala.prism.services.BaseGrpcClientService.DidBasedAuthConfig
-import org.scalatest.OptionValues._
 import io.iohk.atala.prism.utils.Base64Utils
 
 import scala.jdk.CollectionConverters._
-import io.iohk.atala.prism.interop.toScalaSDK._
-import io.iohk.atala.prism.interop.toKotlinSDK._
+import io.iohk.atala.prism.interop.CredentialContentConverter._
 
 trait ServicesFixtures {
-
-  private implicit def ec = EC
-
   object ConnectorClientServiceFixtures {
     val defaultConnectorConfig = ConnectorConfig(
       host = "localhost",
@@ -95,26 +90,27 @@ trait ServicesFixtures {
       dateOfBirth = "1990-01-02"
     )
 
-    lazy val jsonBasedCredential1 = {
-      Credential
-        .fromCredentialContent(makeCredentialContent(redlandIdCredential1))
-        .sign(keys.getPrivateKey.asScala)
+    lazy val jsonBasedCredential1: PrismCredential = {
+      JsonBasedCredential
+        .fromString(makeCredentialContent(redlandIdCredential1).asString)
+        .sign(keys.getPrivateKey)
     }
 
-    lazy val jsonBasedCredential2 = {
-      Credential
-        .fromCredentialContent(makeCredentialContent(redlandIdCredential2))
-        .sign(keys.getPrivateKey.asScala)
+    lazy val jsonBasedCredential2: PrismCredential = {
+      JsonBasedCredential
+        .fromString(makeCredentialContent(redlandIdCredential2).asString)
+        .sign(keys.getPrivateKey)
     }
 
     val didData: DIDData = DIDData("", Seq(publicKey))
 
-    val (root, List(proof1, proof2)) = CredentialBatches.batch(List(jsonBasedCredential1, jsonBasedCredential2))
+    val batch = CredentialBatches.batch(List(jsonBasedCredential1, jsonBasedCredential2).asJava)
+    val (root, List(proof1, proof2)) = (batch.getRoot, batch.getProofs.asScala.toList)
     val credentialBatchId: CredentialBatchId = CredentialBatchId.fromBatchData(issuerDID.getSuffix, root)
     val getBatchStateResponse: GetBatchStateResponse =
       GetBatchStateResponse(
         issuerDid = issuerDID.getValue,
-        merkleRoot = NodeClientService.toByteString(root.getHash.asScala),
+        merkleRoot = NodeClientService.toByteString(root.getHash),
         publicationLedgerData = Some(
           LedgerData(
             timestampInfo = Some(NodeClientService.toInfoProto(credentialIssueDate))
@@ -138,18 +134,24 @@ trait ServicesFixtures {
         encodedMerkleProof = merkleInclusionProof.encode
       )
 
-    def makeCredentialContent(redlandIdCredential: RedlandIdCredential): CredentialContent =
-      new CredentialContent(
-        CredentialContent.Companion.JsonFields.CredentialType.field -> CredentialContent
-          .Values("VerifiableCredential", "RedlandIdCredential"),
-        CredentialContent.JsonFields.IssuerDid.field -> issuerDID.value,
-        CredentialContent.JsonFields.IssuanceKeyId.field -> issuanceKeyId,
-        CredentialContent.JsonFields.CredentialSubject.field -> redlandIdCredential.asJson.noSpaces
+    def makeCredentialContent(redlandIdCredential: RedlandIdCredential): CredentialContent = {
+      import kotlinx.serialization.json.JsonElementKt._
+      import kotlinx.serialization.json.JsonArray
+      import kotlinx.serialization.json.JsonObject
+
+      val map = Map(
+        "type" -> new JsonArray(List(JsonPrimitive("VerifiableCredential"), JsonPrimitive("RedlandIdCredential")).asJava),
+        "id" -> JsonPrimitive(issuerDID.getValue),
+        "keyId" -> JsonPrimitive(issuanceKeyId),
+        "credentialSubject" -> JsonPrimitive(redlandIdCredential.asJson.noSpaces)
       )
+
+      new CredentialContent(new JsonObject(map.asJava))
+    }
   }
 
   def newDID(): DID = {
-    DID.createUnpublishedDID(EC.generateKeyPair().publicKey.asKotlin, null)
+    DID.createUnpublishedDID(EC.generateKeyPair().getPublicKey, null)
     // where is the canon form getter?
   }
 }

@@ -88,11 +88,11 @@ object ConnectorClient {
     val connectorService = GrpcUtils
       .createPlaintextStub(host = config.host, port = config.port, stub = ConnectorServiceGrpc.stub)
 
-    val requestAuthenticator = new RequestAuthenticator(EC)
+    val requestAuthenticator = new RequestAuthenticator(ECScalaSDK)
 
     def requestSigner(request: scalapb.GeneratedMessage): GrpcAuthenticationHeader.DIDBased = {
 
-      val signedRequest = requestAuthenticator.signConnectorRequest(request.toByteArray, config.didPrivateKey)
+      val signedRequest = requestAuthenticator.signConnectorRequest(request.toByteArray, config.didPrivateKey.asScala)
       PublishedDIDBased(
         did = DID.fromString(config.whitelistedDID.getValue),
         keyId = masterKeyId,

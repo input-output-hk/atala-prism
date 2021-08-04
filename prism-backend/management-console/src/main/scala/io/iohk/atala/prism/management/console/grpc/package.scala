@@ -616,7 +616,7 @@ package object grpc {
     (request: GetLedgerDataRequest) => {
       for {
         batchId <- Try(CredentialBatchId.fromString(request.batchId))
-        credentialHash = SHA256Digest.fromBytes(request.credentialHash.toByteArray.toVector)
+        credentialHash = SHA256Digest.fromBytes(request.credentialHash.toByteArray)
       } yield GetLedgerData(batchId, credentialHash)
     }
 

@@ -12,7 +12,7 @@ import io.iohk.atala.prism.kotlin.identity.DIDFormatException.{
   CanonicalSuffixMatchStateException,
   InvalidAtalaOperationException
 }
-import io.iohk.atala.prism.kotlin.identity.{Canonical, DID, DIDFormat, LongForm, Unknown}
+import io.iohk.atala.prism.kotlin.identity.{Canonical, DID, LongForm, Unknown}
 import io.iohk.atala.prism.metrics.RequestMeasureUtil
 import io.iohk.atala.prism.metrics.RequestMeasureUtil.{FutureMetricsOps, measureRequestFuture}
 import io.iohk.atala.prism.node.errors.NodeError
@@ -38,6 +38,8 @@ import org.slf4j.{Logger, LoggerFactory}
 import java.time.Instant
 import scala.concurrent.{ExecutionContext, Future}
 import scala.util.Try
+
+import io.iohk.atala.prism.interop.toScalaSDK._
 
 class NodeServiceImpl(
     didDataRepository: DIDDataRepository[IO],
@@ -93,7 +95,7 @@ class NodeServiceImpl(
                     Some(
                       ProtoCodecs.atalaOperationToDIDDataProto(
                         did.getSuffix,
-                        validatedLongForm.getInitialState
+                        validatedLongForm.getInitialState.asScala
                       )
                     )
                   )
@@ -294,6 +296,7 @@ class NodeServiceImpl(
         }
       }
     }
+  }
 
   override def flushOperationsBuffer(
       request: node_api.FlushOperationsBufferRequest

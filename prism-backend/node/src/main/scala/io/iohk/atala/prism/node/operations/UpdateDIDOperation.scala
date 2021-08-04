@@ -121,7 +121,7 @@ object UpdateDIDOperation extends OperationCompanion[UpdateDIDOperation] {
     for {
       didSuffix <- updateOperation.child(_.id, "id").parse { didSuffix =>
         Either.fromOption(
-          DIDSuffix.fromString(didSuffix),
+          Option(DIDSuffix.fromString(didSuffix)),
           s"must be a valid DID suffix: $didSuffix"
         )
       }

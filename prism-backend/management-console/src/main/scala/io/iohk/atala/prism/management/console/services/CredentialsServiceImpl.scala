@@ -37,9 +37,6 @@ import io.iohk.atala.prism.utils.FutureEither.FutureEitherOps
 
 import scala.concurrent.{ExecutionContext, Future}
 
-import io.iohk.atala.prism.interop.toKotlinSDK._
-import io.iohk.atala.prism.interop.toScalaSDK._
-
 class CredentialsServiceImpl(
     credentialsRepository: CredentialsRepository[IO],
     credentialsIntegrationService: CredentialsIntegrationService,
@@ -145,7 +142,7 @@ class CredentialsServiceImpl(
       for {
         value <- extractValues(signedIssueCredentialBatchOp)
         (merkleRoot, did, operationHash) = value
-        computedBatchId = CredentialBatchId.fromBatchData(did.getSuffix, merkleRoot.asKotlin)
+        computedBatchId = CredentialBatchId.fromBatchData(did.getSuffix, merkleRoot)
         // validation for sanity check
         // The `batchId` parameter is the id returned by the node.
         // We make this check to be sure that the node and the console are

@@ -1,21 +1,23 @@
 package io.iohk.atala.prism.services
 
-import scala.concurrent.Future
-import scala.concurrent.duration._
-import scalapb.{GeneratedMessage, GeneratedMessageCompanion}
-import scalapb.descriptors.{FieldDescriptor, PValue}
 import com.google.protobuf.CodedOutputStream
-import io.grpc.{CallOptions, Channel, Metadata}
 import io.grpc.inprocess.InProcessChannelBuilder
 import io.grpc.stub.AbstractStub
-import org.scalatest.wordspec.AnyWordSpec
-import org.scalatest.matchers.must.Matchers
-import org.mockito.{ArgumentMatchersSugar, MockitoSugar}
-import io.iohk.atala.prism.kotlin.crypto.{EC, ECKeyPair, ECPrivateKey}
+import io.grpc.{CallOptions, Channel, Metadata}
 import io.iohk.atala.prism.connector.{RequestAuthenticator, RequestNonce, SignedConnectorRequest}
-import io.iohk.atala.prism.services.BaseGrpcClientService.AuthHeaders
+import io.iohk.atala.prism.crypto.{ECPrivateKey, EC => ECScalaSDK}
+import io.iohk.atala.prism.kotlin.crypto.EC
 import io.iohk.atala.prism.kotlin.identity.DID
+import io.iohk.atala.prism.services.BaseGrpcClientService.AuthHeaders
 import monix.execution.Scheduler.Implicits.global
+import org.mockito.{ArgumentMatchersSugar, MockitoSugar}
+import org.scalatest.matchers.must.Matchers
+import org.scalatest.wordspec.AnyWordSpec
+import scalapb.descriptors.{FieldDescriptor, PValue}
+import scalapb.{GeneratedMessage, GeneratedMessageCompanion}
+
+import scala.concurrent.Future
+import scala.concurrent.duration._
 
 // sbt "project mirror" "testOnly *services.BaseGrpcClientServiceSpec"
 class BaseGrpcClientServiceSpec extends AnyWordSpec with Matchers with MockitoSugar with ArgumentMatchersSugar {
@@ -58,7 +60,7 @@ class BaseGrpcClientServiceSpec extends AnyWordSpec with Matchers with MockitoSu
       didIssuingKeyPair = EC.generateKeyPair()
     )
 
-    val requestAuthenticator = new RequestAuthenticator(EC) {
+    val requestAuthenticator = new RequestAuthenticator(ECScalaSDK) {
       override def signConnectorRequest(
           request: Array[Byte],
           privateKey: ECPrivateKey,

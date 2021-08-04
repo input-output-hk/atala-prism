@@ -7,12 +7,12 @@ import doobie.{Get, Meta, Put, Read, Write}
 import doobie.implicits.legacy.instant._
 import io.iohk.atala.prism.connector.AtalaOperationId
 import io.iohk.atala.prism.kotlin.credentials.{CredentialBatchId, TimestampInfo}
-import io.iohk.atala.prism.kotlin.crypto.EC
+import io.iohk.atala.prism.kotlin.crypto.{EC, MerkleRoot, SHA256Digest}
 import io.iohk.atala.prism.kotlin.crypto.ECConfig.{INSTANCE => ECConfig}
 import io.iohk.atala.prism.daos.BaseDAO
 import io.iohk.atala.prism.kotlin.identity.DIDSuffix
 import io.iohk.atala.prism.models.{BlockInfo, Ledger, TransactionId, TransactionInfo}
-import io.iohk.atala.prism.node.models.nodeState.DIDPublicKeyState
+import io.iohk.atala.prism.node.models.nodeState.{CredentialBatchState, DIDPublicKeyState, LedgerData}
 import io.iohk.atala.prism.node.models.{
   AtalaObjectId,
   AtalaObjectInfo,
@@ -69,7 +69,6 @@ package object daos extends BaseDAO {
           KeyUsage,
           String,
           Array[Byte],
-          Array[Byte],
           Instant,
           Int,
           Int,
@@ -79,14 +78,13 @@ package object daos extends BaseDAO {
       )
     ].contramap { key =>
       val curveName = ECConfig.getCURVE_NAME
-      val point = key.key.getCurvePoint
+      val compressed = key.key.getEncodedCompressed
       (
         key.didSuffix,
         key.keyId,
         key.keyUsage,
         curveName,
-        point.getX.bytes(),
-        point.getY.bytes(),
+        compressed,
         Instant.ofEpochMilli(key.addedOn.getAtalaBlockTimestamp),
         key.addedOn.getAtalaBlockSequenceNumber,
         key.addedOn.getOperationSequenceNumber,
@@ -116,7 +114,8 @@ package object daos extends BaseDAO {
       case (didSuffix, keyId, keyUsage, curveId, compressed, aTimestamp, aABSN, aOSN, rTimestamp, rABSN, rOSN) =>
         assert(curveId == ECConfig.getCURVE_NAME)
         val javaPublicKey: ECPublicKey = EC.toPublicKeyFromCompressed(compressed)
-        val revokeTimestampInfo = for (t <- rTimestamp; absn <- rABSN; osn <- rOSN) yield new TimestampInfo(t.toEpochMilli, absn, osn)
+        val revokeTimestampInfo =
+          for (t <- rTimestamp; absn <- rABSN; osn <- rOSN) yield new TimestampInfo(t.toEpochMilli, absn, osn)
         DIDPublicKeyState(
           didSuffix,
           keyId,
@@ -178,4 +177,9 @@ package object daos extends BaseDAO {
         )
     }
   }
+
+  implicit val credentialBatchStateMeta: Read[CredentialBatchState] =
+    Read[(CredentialBatchId, DIDSuffix, MerkleRoot, LedgerData, Option[LedgerData], SHA256Digest)].map {
+      CredentialBatchState.tupled
+    }
 }

@@ -1,7 +1,8 @@
 package io.iohk.atala.prism.auth.utils
 
 import io.iohk.atala.prism.auth.errors._
-import io.iohk.atala.prism.kotlin.crypto.{EC, ECConfig}
+import io.iohk.atala.prism.kotlin.crypto.{EC}
+import io.iohk.atala.prism.kotlin.crypto.ECConfig.{INSTANCE => ECConfig}
 import io.iohk.atala.prism.kotlin.crypto.keys.{ECPublicKey}
 import io.iohk.atala.prism.kotlin.identity.DIDFormatException.{
   CanonicalSuffixMatchStateException,
