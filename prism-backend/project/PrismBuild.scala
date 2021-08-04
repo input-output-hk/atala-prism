@@ -32,7 +32,7 @@ object PrismBuild {
           )
         ),
         scalacOptions += "-Ymacro-annotations",
-        javacOptions ++= Seq("-source", "1.8", "-target", "1.8"),
+        javacOptions ++= Seq("-source", "1.11", "-target", "1.11"),
         githubTokenSource := TokenSource.Environment("GITHUB_TOKEN"),
         resolvers += Resolver.githubPackages("input-output-hk", "atala-prism-sdk"),
         libraryDependencies ++= scalatestDependencies,
@@ -50,7 +50,7 @@ object PrismBuild {
           // Merge service files, otherwise GRPC client doesn't work: https://github.com/grpc/grpc-java/issues/5493
           case PathList("META-INF", "services", _*) => MergeStrategy.concat
           case PathList("META-INF", "io.netty.versions.properties") => MergeStrategy.concat
-          // JDK 8 does not use module-info.class, so it is safe to discard
+          // It is safe to discard when building an uber-jar according to https://stackoverflow.com/a/55557287
           case x if x.endsWith("module-info.class") => MergeStrategy.discard
           case "logback.xml" => MergeStrategy.concat
           case x =>
@@ -114,11 +114,11 @@ object PrismBuild {
           val artifact = assembly.value
           val className = (Compile / run / mainClass).value.get
           new Dockerfile {
-            from("openjdk:8")
+            from("openjdk:11")
             add(file(name), file("/usr/app"))
             workDir("/usr/app")
             add(artifact, file(s"$name.jar"))
-            cmd("/usr/local/openjdk-8/bin/java", "-classpath", s"/usr/app/$name.jar", className)
+            cmd("/usr/local/openjdk-11/bin/java", "-classpath", s"/usr/app/$name.jar", className)
           }
         },
         docker / imageNames := Seq(generateImageName(name, version.value)),
