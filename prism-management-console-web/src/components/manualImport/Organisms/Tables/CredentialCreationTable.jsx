@@ -2,10 +2,10 @@ import React, { useContext } from 'react';
 import PropTypes from 'prop-types';
 import _ from 'lodash';
 import { useTranslation } from 'react-i18next';
-import { credentialTypeShape } from '../../../../helpers/propShapes';
+import { contactShape, credentialTypeShape } from '../../../../helpers/propShapes';
 import {
-  CREDENTIAL_FORM,
-  CREDENTIAL_FORM_COLUMNS
+  getCredentialFormSkeleton,
+  getCredentialFormColumns
 } from '../../../../helpers/formDefinitions/credentials';
 import { DynamicFormContext } from '../../../../providers/DynamicFormProvider';
 import { IMPORT_CREDENTIALS_DATA } from '../../../../helpers/constants';
@@ -42,10 +42,13 @@ const CredentialCreationTable = ({ initialValues, credentialType }) => {
 
   const columns = _.uniqBy(commonColumns.concat(specificColumns), e => e.dataIndex);
 
+  const credentialFormColumns = getCredentialFormColumns(columns);
+  const credentialFormSkeleton = getCredentialFormSkeleton(columns, form);
+
   return (
     <DynamicForm
-      columns={CREDENTIAL_FORM_COLUMNS(columns)}
-      skeleton={CREDENTIAL_FORM(columns, form)}
+      columns={credentialFormColumns}
+      skeleton={credentialFormSkeleton}
       initialValues={initialValues}
       useCase={IMPORT_CREDENTIALS_DATA}
     />
@@ -53,9 +56,7 @@ const CredentialCreationTable = ({ initialValues, credentialType }) => {
 };
 
 CredentialCreationTable.propTypes = {
-  initialValues: PropTypes.shape({
-    // FIXME: datasource shape
-  }).isRequired,
+  initialValues: PropTypes.arrayOf(contactShape).isRequired,
   credentialType: PropTypes.shape(credentialTypeShape).isRequired
 };
 

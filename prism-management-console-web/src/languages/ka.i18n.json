@@ -585,7 +585,7 @@
       "continueButton": "Continue"
     },
     "categoryCreationModal": {
-      "title": "Select Category Icon",
+      "title": "Select your Category Icon",
       "categoryNameLabel": "Category Name",
       "categoryNamePlaceholder": "Category Name",  
       "categoryIconLabel": "Select your Category Icon",
@@ -1064,7 +1064,8 @@
     "manualImportCard": {
       "title": "Add Info Manually",
       "info": "Add credential information Manually.",
-      "disabled": "This option is only available when selecting recipients"
+      "noRecipients": "This option is only available when selecting recipients",
+      "tooManyRecipients": "Too many recipients selected for this option"
     },
     "bulkImportStep": {
       "title": "Follow these steps to continue:",

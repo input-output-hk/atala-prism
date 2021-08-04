@@ -194,7 +194,7 @@ const ImportDataContainer = ({
         setSelectedMethod={setSelectedMethod}
         isEmbedded={isEmbedded[useCase]}
         useCase={useCase}
-        hasSelectedRecipients={hasSelectedRecipients}
+        selectedRecipientsAmount={recipients.length}
       />
     );
   };
