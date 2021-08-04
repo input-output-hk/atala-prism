@@ -1,5 +1,7 @@
 package io.iohk.atala.prism.node.repositories
 
+import cats.data.NonEmptyList
+
 import java.time.Instant
 import doobie.postgres.implicits._
 import doobie.util.invariant.InvalidEnum
@@ -13,15 +15,7 @@ import io.iohk.atala.prism.daos.BaseDAO
 import io.iohk.atala.prism.kotlin.identity.DIDSuffix
 import io.iohk.atala.prism.models.{BlockInfo, Ledger, TransactionId, TransactionInfo}
 import io.iohk.atala.prism.node.models.nodeState.{CredentialBatchState, DIDPublicKeyState, LedgerData}
-import io.iohk.atala.prism.node.models.{
-  AtalaObjectId,
-  AtalaObjectInfo,
-  AtalaObjectTransactionSubmissionStatus,
-  AtalaOperationInfo,
-  AtalaOperationStatus,
-  CredentialId,
-  KeyUsage
-}
+import io.iohk.atala.prism.node.models.{AtalaObjectId, AtalaObjectInfo, AtalaObjectTransactionSubmissionStatus, AtalaOperationInfo, AtalaOperationStatus, CredentialId, KeyUsage}
 import io.iohk.atala.prism.kotlin.crypto.keys.ECPublicKey
 
 package object daos extends BaseDAO {
@@ -178,8 +172,11 @@ package object daos extends BaseDAO {
     }
   }
 
-  implicit val credentialBatchStateMeta: Read[CredentialBatchState] =
-    Read[(CredentialBatchId, DIDSuffix, MerkleRoot, LedgerData, Option[LedgerData], SHA256Digest)].map {
-      CredentialBatchState.tupled
-    }
+  implicit val ledgerDataGet: Get[LedgerData] =
+    Get.Advanced.other[(TransactionId, Ledger, TimestampInfo)](NonEmptyList.of("BYTEA", "VARCHAR(32)", "TIMESTAMPTZ", "INTEGER", "INTEGER")).tmap(LedgerData.tupled)
+//
+//  implicit val credentialBatchStateMeta: Read[CredentialBatchState] =
+//    Read[(CredentialBatchId, DIDSuffix, MerkleRoot, LedgerData, Option[LedgerData], SHA256Digest)].map {
+//      CredentialBatchState.tupled
+//    }
 }

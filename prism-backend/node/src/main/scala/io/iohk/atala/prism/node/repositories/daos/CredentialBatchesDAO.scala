@@ -3,12 +3,12 @@ package io.iohk.atala.prism.node.repositories.daos
 import java.time.Instant
 import cats.implicits.catsStdInstancesForList
 import cats.syntax.functor._
-import doobie.{Meta, Read, Update}
+import doobie.{Read, Update}
 import doobie.free.connection.ConnectionIO
 import doobie.implicits.legacy.instant._
 import doobie.implicits._
 import doobie.util.Get
-import io.iohk.atala.prism.kotlin.credentials.CredentialBatchId
+import io.iohk.atala.prism.kotlin.credentials.{CredentialBatchId, TimestampInfo}
 import io.iohk.atala.prism.kotlin.crypto.MerkleRoot
 import io.iohk.atala.prism.kotlin.crypto.SHA256Digest
 import io.iohk.atala.prism.kotlin.identity.DIDSuffix
@@ -26,12 +26,14 @@ object CredentialBatchesDAO {
       ledgerData: LedgerData
   )
 
-  implicitly[Read[CredentialBatchId]]
-  implicitly[Read[SHA256Digest]]
-  implicitly[Read[DIDSuffix]]
-  implicitly[Read[MerkleRoot]]
-  implicitly[Read[LedgerData]]
-  implicitly[Read[Option[String]]]
+  implicitly[Get[CredentialBatchId]]
+  implicitly[Get[SHA256Digest]]
+  implicitly[Get[DIDSuffix]]
+  implicitly[Get[MerkleRoot]]
+  implicitly[Get[LedgerData]]
+  implicitly[Get[TransactionId]]
+  implicitly[Get[Ledger]]
+  implicitly[Read[TimestampInfo]]
   implicitly[Read[Option[LedgerData]]]
   implicitly[Read[CredentialBatchState]]
 
