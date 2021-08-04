@@ -6,7 +6,8 @@ import io.iohk.atala.prism.kotlin.crypto.MerkleRoot
 import io.iohk.atala.prism.kotlin.crypto.{EC, SHA256Digest}
 import io.iohk.atala.prism.kotlin.crypto.keys.{ECPrivateKey, ECPublicKey}
 import io.iohk.atala.prism.kotlin.crypto.ECConfig.{INSTANCE => ECConfig}
-import io.iohk.atala.prism.kotlin.identity.DID.{DIDFormat, masterKeyId}
+import io.iohk.atala.prism.kotlin.identity.Canonical
+import io.iohk.atala.prism.kotlin.identity.DID.masterKeyId
 import io.iohk.atala.prism.node.NodeConfig
 import io.iohk.atala.prism.node.cardano.models._
 import io.iohk.atala.prism.node.cardano.wallet.CardanoWalletApiClient
@@ -141,7 +142,7 @@ class CardanoFeeEstimator(walletId: WalletId, paymentAddress: Address, cardanoWa
   ): AtalaOperation = {
     val createDIDOp = node_models.UpdateDIDOperation(
       previousOperationHash = ByteString.copyFrom(SHA256Digest.compute(lastOperation.toByteArray).getValue),
-      id = did.suffix,
+      id = did.getSuffix,
       actions = List(
         node_models.UpdateDIDAction(
           action = node_models.UpdateDIDAction.Action.AddKey(
@@ -168,7 +169,7 @@ class CardanoFeeEstimator(walletId: WalletId, paymentAddress: Address, cardanoWa
     val issueCredentialOp = node_models.IssueCredentialBatchOperation(
       credentialBatchData = Some(
         node_models.CredentialBatchData(
-          issuerDid = issuerDid.suffix,
+          issuerDid = issuerDid.getSuffix,
           merkleRoot = ByteString.copyFrom(merkleRoot.getHash.getValue)
         )
       )

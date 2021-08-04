@@ -54,7 +54,7 @@ object CreateDIDOperationSpec {
     dummyTimestamp
   )
 
-  private val dummyTimestampInfo = TimestampInfo(Instant.ofEpochMilli(0), 1, 0)
+  private val dummyTimestampInfo = new TimestampInfo(Instant.ofEpochMilli(0).toEpochMilli, 1, 0)
 
   val exampleOperation: node_models.AtalaOperation = node_models.AtalaOperation(
     node_models.AtalaOperation.Operation.CreateDid(

@@ -19,7 +19,7 @@ trait ProtoParsingTestHelpers {
   protected def exampleOperation: node_models.AtalaOperation
   protected def operationCompanion: OperationCompanion[Repr]
 
-  private val dummyTimestampInfo2 = TimestampInfo(Instant.ofEpochMilli(0), 1, 0)
+  private val dummyTimestampInfo2 = new TimestampInfo(Instant.ofEpochMilli(0).toEpochMilli, 1, 0)
   private val dummyLedgerData2 = LedgerData(
     TransactionId.from(Array.fill[Byte](TransactionId.config.size.toBytes.toInt)(0)).value,
     Ledger.InMemory,

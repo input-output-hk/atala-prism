@@ -21,8 +21,6 @@ import org.scalatest.OptionValues._
 
 import java.time.Instant
 
-import io.iohk.atala.prism.interop.toScalaSDK._
-
 object BlockProcessingServiceSpec {
   import io.iohk.atala.prism.node.operations.CreateDIDOperationSpec.masterKeys
   val createDidOperation = CreateDIDOperationSpec.exampleOperation
@@ -102,7 +100,7 @@ class BlockProcessingServiceSpec extends AtalaWithPostgresSpec {
       val credentials = DIDDataDAO.all().transact(database).unsafeRunSync()
       credentials.size mustBe 1
       val digest = SHA256Digest.compute(createDidOperation.toByteArray)
-      credentials.head mustBe DIDSuffix.unsafeFromDigest(digest.asScala)
+      credentials.head mustBe DIDSuffix.fromDigest(digest)
 
       // shouldn't add new operations to the table
       val count = DataPreparation.getOperationsCount()
@@ -216,7 +214,7 @@ class BlockProcessingServiceSpec extends AtalaWithPostgresSpec {
 
       val credentials = DIDDataDAO.all().transact(database).unsafeRunSync()
       val expectedSuffixes = Seq(signedOperation1.getOperation, operation3)
-        .map(op => DIDSuffix.unsafeFromDigest(SHA256Digest.compute(op.toByteArray).asScala))
+        .map(op => DIDSuffix.fromDigest(SHA256Digest.compute(op.toByteArray)))
       credentials must contain theSameElementsAs (expectedSuffixes)
 
       val atalaOperationInfo1 = DataPreparation.getOperationInfo(opIds.head).value
@@ -368,7 +366,7 @@ class BlockProcessingServiceSpec extends AtalaWithPostgresSpec {
 
       val credentials = DIDDataDAO.all().transact(database).unsafeRunSync()
       val expectedSuffixes = Seq(signedOperation1.getOperation, operation3)
-        .map(op => DIDSuffix.unsafeFromDigest(SHA256Digest.compute(op.toByteArray).asScala))
+        .map(op => DIDSuffix.fromDigest(SHA256Digest.compute(op.toByteArray)))
       credentials must contain theSameElementsAs (expectedSuffixes)
 
       val atalaOperationInfo1 = DataPreparation.getOperationInfo(opIds.head).value

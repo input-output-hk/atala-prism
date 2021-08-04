@@ -4,8 +4,6 @@ import io.iohk.atala.prism.kotlin.crypto.SHA256Digest
 import io.iohk.atala.prism.kotlin.identity.DIDSuffix
 import io.iohk.atala.prism.node.models.CredentialId
 
-import io.iohk.atala.prism.interop.toScalaSDK._
-
 package object repositories {
 
   def digestGen(kind: Byte, i: Byte): SHA256Digest =

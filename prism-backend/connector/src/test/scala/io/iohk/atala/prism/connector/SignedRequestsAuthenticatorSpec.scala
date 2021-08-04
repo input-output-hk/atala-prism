@@ -5,6 +5,7 @@ import cats.effect.IO
 import java.util.UUID
 import io.grpc.Context
 import io.iohk.atala.prism.kotlin.crypto.EC
+import io.iohk.atala.prism.crypto.{EC => ECScalaSDK}
 import io.iohk.atala.prism.kotlin.crypto.keys.ECPublicKey
 import io.iohk.atala.prism.kotlin.crypto.signature.ECSignature
 import io.iohk.atala.prism.connector.errors.UnknownValueError

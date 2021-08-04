@@ -20,7 +20,7 @@ import java.time.Instant
 object RevokeCredentialsOperationSpec {
   private val revokingKeys = CreateDIDOperationSpec.revokingKeys
 
-  lazy val dummyTimestamp: TimestampInfo = TimestampInfo(Instant.ofEpochMilli(0), 1, 0)
+  lazy val dummyTimestamp: TimestampInfo = new TimestampInfo(Instant.ofEpochMilli(0).toEpochMilli, 1, 0)
   lazy val dummyLedgerData: LedgerData = LedgerData(
     TransactionId.from(Array.fill[Byte](TransactionId.config.size.toBytes.toInt)(0)).value,
     Ledger.InMemory,
@@ -41,7 +41,7 @@ object RevokeCredentialsOperationSpec {
 
   lazy val credentialBatchId: CredentialBatchId = credentialIssueBatchOperation.credentialBatchId
 
-  val revocationDate: TimestampInfo = TimestampInfo(Instant.ofEpochMilli(0), 0, 1)
+  val revocationDate: TimestampInfo = new TimestampInfo(Instant.ofEpochMilli(0).toEpochMilli, 0, 1)
   val revocationLedgerData: LedgerData =
     LedgerData(
       TransactionId.from(Array.fill[Byte](TransactionId.config.size.toBytes.toInt)(0)).value,
@@ -53,7 +53,7 @@ object RevokeCredentialsOperationSpec {
     operation = node_models.AtalaOperation.Operation.RevokeCredentials(
       value = node_models.RevokeCredentialsOperation(
         previousOperationHash = ByteString.copyFrom(credentialIssueBatchOperation.digest.getValue),
-        credentialBatchId = credentialBatchId.id,
+        credentialBatchId = credentialBatchId.getId,
         credentialsToRevoke = Seq()
       )
     )
@@ -65,7 +65,7 @@ object RevokeCredentialsOperationSpec {
     operation = node_models.AtalaOperation.Operation.RevokeCredentials(
       value = node_models.RevokeCredentialsOperation(
         previousOperationHash = ByteString.copyFrom(credentialIssueBatchOperation.digest.getValue),
-        credentialBatchId = credentialBatchId.id,
+        credentialBatchId = credentialBatchId.getId,
         credentialsToRevoke = Seq(ByteString.copyFrom(credentialHashToRevoke.getValue))
       )
     )

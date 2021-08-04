@@ -14,8 +14,6 @@ import io.iohk.atala.prism.node.repositories.daos._
 import io.iohk.atala.prism.repositories.ops.SqlTestOps.Implicits
 import doobie.implicits.legacy.instant._
 
-import io.iohk.atala.prism.interop.toScalaSDK._
-
 import java.time.Instant
 
 class V19MigrationSpec extends PostgresMigrationSpec("db.migration.V19") with BaseDAO {
@@ -66,7 +64,7 @@ class V19MigrationSpec extends PostgresMigrationSpec("db.migration.V19") with Ba
           didPublicKey.key.getCurvePoint.getX.bytes(),
           didPublicKey.key.getCurvePoint.getY.bytes()
         )
-        .getCompressed
+        .getEncodedCompressed
       inDB mustBe expected
       inDB.length mustBe 33
     }

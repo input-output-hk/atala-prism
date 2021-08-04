@@ -647,8 +647,8 @@ package object grpc {
         }
         consoleCredentialId = GenericCredential.Id.unsafeFrom(request.consoleCredentialId)
         batchId = CredentialBatchId.fromString(request.batchId)
-        proof =
-          Try(MerkleInclusionProof
+        proof = Try(
+          MerkleInclusionProof
             .decode(request.encodedInclusionProof)
         ).getOrElse(throw new RuntimeException(s"Invalid inclusion proof: ${request.encodedInclusionProof}"))
       } yield StorePublishedCredential(

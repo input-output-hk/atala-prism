@@ -4,6 +4,9 @@ import com.typesafe.config.ConfigFactory
 import io.iohk.atala.prism.kotlin.credentials.utils.Mustache
 import org.scalatest.matchers.must.Matchers
 import org.scalatest.wordspec.AnyWordSpec
+import io.iohk.atala.prism.interop.KotlinFunctionConverters._
+
+import scala.util.Try
 
 // Check correctness of each credential type defined in DefaultCredentialTypes/default-credential-types.conf
 // sbt "project management-console" "testOnly *DefaultCredentialTypeConfigSpec"
@@ -12,10 +15,12 @@ class DefaultCredentialTypeConfigSpec extends AnyWordSpec with Matchers {
   "defaultCredentialTypes" should {
     "be valid mustache templates" in {
       DefaultCredentialTypeConfig(ConfigFactory.load()).defaultCredentialTypes.foreach { defaultCredentialType =>
-        Mustache.INSTANCE.render(
+        val res: Either[Throwable, String] = Try(Mustache.INSTANCE.render(
           defaultCredentialType.template,
-          name => defaultCredentialType.fields.find(_.name == name).map(_.name)
-        ) mustBe a[Right[_, _]]
+          ((name: String) => defaultCredentialType.fields.find(_.name == name).map(_.name).orNull).asKotlin,
+          true
+        )).toEither
+        res mustBe a[Right[_, _]]
       }
     }
 

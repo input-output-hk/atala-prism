@@ -60,8 +60,8 @@ object ConnectorClient {
           DID
             .fromString(typesafe.getString("did"))
         ).getOrElse {
-            throw new RuntimeException("Failed to load the connector's whitelisted DID, which is required to invoke it")
-          }
+          throw new RuntimeException("Failed to load the connector's whitelisted DID, which is required to invoke it")
+        }
 
         val didPrivateKey = EC.toPrivateKey(
           BytesOps.hexToBytes(typesafe.getString("didPrivateKeyHex"))

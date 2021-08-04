@@ -1,7 +1,13 @@
 package io.iohk.atala.prism.interop
 import com.google.protobuf.ByteString
 import io.iohk.atala.prism.kotlin.crypto.keys.{ECKeyPair, ECPrivateKey, ECPublicKey}
-import io.iohk.atala.prism.crypto.{JvmECPrivateKey, JvmECPublicKey, ECKeyPair => ECKeyPairScalaSDK, ECPrivateKey => ECPrivateKeyScalaSDK, ECPublicKey => ECPublicKeyScalaSDK}
+import io.iohk.atala.prism.crypto.{
+  JvmECPrivateKey,
+  JvmECPublicKey,
+  ECKeyPair => ECKeyPairScalaSDK,
+  ECPrivateKey => ECPrivateKeyScalaSDK,
+  ECPublicKey => ECPublicKeyScalaSDK
+}
 import io.iohk.atala.prism.kotlin.crypto.{MerkleInclusionProof, MerkleRoot, SHA256Digest}
 import io.iohk.atala.prism.crypto.MerkleTree.{MerkleRoot => MerkleRootScalaSDK}
 import io.iohk.atala.prism.crypto.{SHA256Digest => SHA256DigestScalaSDK}
@@ -77,10 +83,14 @@ object toScalaSDK {
   implicit class AtalaOperationInterop(private val v: io.iohk.atala.prism.kotlin.protos.AtalaOperation) extends AnyVal {
     def asScala: node_models.AtalaOperation = {
       val op = v.getOperation match {
-        case op: AtalaOperation.Operation.CreateDid => node_models.AtalaOperation.Operation.CreateDid(op.getValue.asScala)
-        case op: AtalaOperation.Operation.IssueCredentialBatch => node_models.AtalaOperation.Operation.IssueCredentialBatch(op.getValue.asScala)
-        case op: AtalaOperation.Operation.RevokeCredentials => node_models.AtalaOperation.Operation.RevokeCredentials(op.getValue.asScala)
-        case op: AtalaOperation.Operation.UpdateDid => node_models.AtalaOperation.Operation.UpdateDid(op.getValue.asScala)
+        case op: AtalaOperation.Operation.CreateDid =>
+          node_models.AtalaOperation.Operation.CreateDid(op.getValue.asScala)
+        case op: AtalaOperation.Operation.IssueCredentialBatch =>
+          node_models.AtalaOperation.Operation.IssueCredentialBatch(op.getValue.asScala)
+        case op: AtalaOperation.Operation.RevokeCredentials =>
+          node_models.AtalaOperation.Operation.RevokeCredentials(op.getValue.asScala)
+        case op: AtalaOperation.Operation.UpdateDid =>
+          node_models.AtalaOperation.Operation.UpdateDid(op.getValue.asScala)
         case _ => node_models.AtalaOperation.Operation.Empty
       }
 
@@ -89,46 +99,52 @@ object toScalaSDK {
   }
 
   implicit class UpdateDIDOperationInterop(private val v: io.iohk.atala.prism.kotlin.protos.UpdateDIDOperation)
-    extends AnyVal {
-    def asScala: node_models.UpdateDIDOperation = node_models.UpdateDIDOperation(ByteString.copyFrom(v.getPreviousOperationHash.getArray),
-      v.getId,
-
-    )
+      extends AnyVal {
+    def asScala: node_models.UpdateDIDOperation =
+      node_models.UpdateDIDOperation(ByteString.copyFrom(v.getPreviousOperationHash.getArray), v.getId)
   }
 
-  implicit class IssueCredentialBatchInterop(private val v: io.iohk.atala.prism.kotlin.protos.IssueCredentialBatchOperation)
-    extends AnyVal {
-    def asScala: node_models.IssueCredentialBatchOperation = node_models.IssueCredentialBatchOperation(Option(v.getCredentialBatchData).map(_.asScala))
+  implicit class IssueCredentialBatchInterop(
+      private val v: io.iohk.atala.prism.kotlin.protos.IssueCredentialBatchOperation
+  ) extends AnyVal {
+    def asScala: node_models.IssueCredentialBatchOperation =
+      node_models.IssueCredentialBatchOperation(Option(v.getCredentialBatchData).map(_.asScala))
   }
 
   implicit class UpdateDIDActionInterop(private val v: io.iohk.atala.prism.kotlin.protos.UpdateDIDAction)
-    extends AnyVal {
-    def asScala: node_models.UpdateDIDAction.Action = v.getAction match {
-      case key: UpdateDIDAction.Action.AddKey => node_models.UpdateDIDAction.Action.AddKey(key.getValue.asScala)
-      case key: UpdateDIDAction.Action.RemoveKey => node_models.UpdateDIDAction.Action.RemoveKey(key.getValue.asScala)
-      case _ => node_models.UpdateDIDAction.Action.Empty
-    }
+      extends AnyVal {
+    def asScala: node_models.UpdateDIDAction.Action =
+      v.getAction match {
+        case key: UpdateDIDAction.Action.AddKey => node_models.UpdateDIDAction.Action.AddKey(key.getValue.asScala)
+        case key: UpdateDIDAction.Action.RemoveKey => node_models.UpdateDIDAction.Action.RemoveKey(key.getValue.asScala)
+        case _ => node_models.UpdateDIDAction.Action.Empty
+      }
   }
 
-  implicit class AddKeyActionInterop(private val v: io.iohk.atala.prism.kotlin.protos.AddKeyAction)
-    extends AnyVal {
+  implicit class AddKeyActionInterop(private val v: io.iohk.atala.prism.kotlin.protos.AddKeyAction) extends AnyVal {
     def asScala: node_models.AddKeyAction = node_models.AddKeyAction(key = Option(v.getKey).map(_.asScala))
   }
 
   implicit class RemoveKeyActionInterop(private val v: io.iohk.atala.prism.kotlin.protos.RemoveKeyAction)
-    extends AnyVal {
+      extends AnyVal {
     def asScala: node_models.RemoveKeyAction = node_models.RemoveKeyAction(keyId = v.getKeyId)
   }
 
-  implicit class RevokeCredentialsOperationInterop(private val v: io.iohk.atala.prism.kotlin.protos.RevokeCredentialsOperation)
-    extends AnyVal {
-    def asScala: node_models.RevokeCredentialsOperation = node_models.RevokeCredentialsOperation(ByteString.copyFrom(v.getPreviousOperationHash.getArray),
-      v.getCredentialBatchId, v.getCredentialsToRevoke.asScala.map(arr => ByteString.copyFrom(arr.getArray)).toList)
+  implicit class RevokeCredentialsOperationInterop(
+      private val v: io.iohk.atala.prism.kotlin.protos.RevokeCredentialsOperation
+  ) extends AnyVal {
+    def asScala: node_models.RevokeCredentialsOperation =
+      node_models.RevokeCredentialsOperation(
+        ByteString.copyFrom(v.getPreviousOperationHash.getArray),
+        v.getCredentialBatchId,
+        v.getCredentialsToRevoke.asScala.map(arr => ByteString.copyFrom(arr.getArray)).toList
+      )
   }
 
   implicit class CredentialBatchDataInterop(private val v: io.iohk.atala.prism.kotlin.protos.CredentialBatchData)
-    extends AnyVal {
-    def asScala: node_models.CredentialBatchData = node_models.CredentialBatchData(v.getIssuerDid, ByteString.copyFrom(v.getMerkleRoot.getArray))
+      extends AnyVal {
+    def asScala: node_models.CredentialBatchData =
+      node_models.CredentialBatchData(v.getIssuerDid, ByteString.copyFrom(v.getMerkleRoot.getArray))
   }
 
   implicit class CreateDIDOperationInterop(private val v: io.iohk.atala.prism.kotlin.protos.CreateDIDOperation)

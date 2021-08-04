@@ -148,7 +148,7 @@ package object operations {
     }
 
     /** Parses the protobuf representation of operation and report errors (if any) using a dummy time parameter
-      * (defined in (the SDK) io.iohk.atala.prism.credentials.TimestampInfo.dummyTime)
+      * (defined in (the SDK) io.iohk.atala.prism.kotlin.credentials.TimestampInfo.dummyTime)
       *
       * @param signedOperation signed operation, needs to be of the type compatible with the called companion object
       * @return parsed operation filled with TimestampInfo.dummyTime or ValidationError signifying the operation is invalid

@@ -16,16 +16,16 @@ object implicits {
     Read[(Instant, Int, Int)].map { case (abt, absn, osn) => new TimestampInfo(abt.toEpochMilli, absn, osn) }
 
   implicit val didSuffixMeta: Meta[DIDSuffix] =
-    Meta[String].timap{ new DIDSuffix(_) }(_.getValue)
+    Meta[String].timap { new DIDSuffix(_) }(_.getValue)
 
   implicit val didSuffixGet: Get[DIDSuffix] =
-    Get[String].tmap{ new DIDSuffix(_) }
+    Get[String].tmap { new DIDSuffix(_) }
 
   implicit val credentialBatchIdMeta: Meta[CredentialBatchId] =
-    Meta[String].timap{ new CredentialBatchId(_) }(_.getId)
+    Meta[String].timap { new CredentialBatchId(_) }(_.getId)
 
   implicit val credentialBatchIdGet: Get[CredentialBatchId] =
-    Get[String].tmap{ new CredentialBatchId(_) }
+    Get[String].tmap { new CredentialBatchId(_) }
 
   implicit val SHA256DigestWrite: Write[SHA256Digest] =
     Write[Array[Byte]].contramap(_.getValue)

@@ -80,9 +80,10 @@ object IssueCredentialBatchOperation extends SimpleOperationCompanion[IssueCrede
     for {
       credentialBatchData <- issueCredentialBatchOperation.childGet(_.credentialBatchData, "credentialBatchData")
       batchId <- credentialBatchData.parse { _ =>
-        Option(CredentialBatchId
-          .fromString(SHA256Digest.compute(credentialBatchData.value.toByteArray).hexValue))
-          .fold("Credential batchId".asLeft[CredentialBatchId])(Right(_))
+        Option(
+          CredentialBatchId
+            .fromString(SHA256Digest.compute(credentialBatchData.value.toByteArray).hexValue)
+        ).fold("Credential batchId".asLeft[CredentialBatchId])(Right(_))
       }
       issuerDID <- credentialBatchData.child(_.issuerDid, "issuerDID").parse { issuerDID =>
         Either.fromOption(

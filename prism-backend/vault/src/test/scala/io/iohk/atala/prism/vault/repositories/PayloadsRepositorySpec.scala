@@ -8,9 +8,6 @@ import org.scalatest.OptionValues
 
 import java.time.Instant
 import java.time.temporal.ChronoUnit
-import io.iohk.atala.prism.interop.toKotlinSDK._
-
-import io.iohk.atala.prism.interop.toScalaSDK._
 
 class PayloadsRepositorySpec extends AtalaWithPostgresSpec with OptionValues {
   lazy val repository = PayloadsRepository(database)
@@ -65,6 +62,6 @@ class PayloadsRepositorySpec extends AtalaWithPostgresSpec with OptionValues {
   }
 
   private def newDID(): DID = {
-    DID.createUnpublishedDID(EC.generateKeyPair().publicKey.asKotlin, null)
+    DID.createUnpublishedDID(EC.generateKeyPair().getPublicKey, null)
   }
 }

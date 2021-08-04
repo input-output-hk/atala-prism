@@ -98,9 +98,10 @@ object RevokeCredentialsOperation extends SimpleOperationCompanion[RevokeCredent
 
     for {
       credentialBatchId <- revokeOperation.child(_.credentialBatchId, "credentialBatchId").parse { credentialBatchId =>
-        Option(CredentialBatchId
-          .fromString(credentialBatchId))
-          .fold(s"credential batch id has invalid format $credentialBatchId".asLeft[CredentialBatchId])(_.asRight)
+        Option(
+          CredentialBatchId
+            .fromString(credentialBatchId)
+        ).fold(s"credential batch id has invalid format $credentialBatchId".asLeft[CredentialBatchId])(_.asRight)
       }
       credentialsToRevoke <-
         ParsingUtils.parseHashList(revokeOperation.child(_.credentialsToRevoke, "credentialsToRevoke"))

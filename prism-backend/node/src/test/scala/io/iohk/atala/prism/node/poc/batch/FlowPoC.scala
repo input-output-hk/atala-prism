@@ -6,8 +6,8 @@ import com.google.protobuf.ByteString
 import io.grpc.inprocess.{InProcessChannelBuilder, InProcessServerBuilder}
 import io.grpc.{ManagedChannel, Server}
 import io.iohk.atala.prism.AtalaWithPostgresSpec
-import io.iohk.atala.prism.kotlin.credentials.VerificationError.{BatchWasRevoked, CredentialWasRevoked}
-import io.iohk.atala.prism.kotlin.credentials.{Credential, CredentialBatchId, CredentialBatches}
+import io.iohk.atala.prism.kotlin.credentials.{BatchWasRevoked, CredentialWasRevoked}
+import io.iohk.atala.prism.kotlin.credentials.{CredentialBatchId, CredentialBatches}
 import io.iohk.atala.prism.kotlin.crypto.SHA256Digest
 import io.iohk.atala.prism.kotlin.identity.DID
 import io.iohk.atala.prism.kotlin.identity.DID.masterKeyId
@@ -25,12 +25,9 @@ import java.time.Duration
 import java.util.concurrent.TimeUnit
 import scala.concurrent.{Future, Promise}
 import scala.jdk.CollectionConverters._
-import io.iohk.atala.prism.interop.toScalaSDK._
-import io.iohk.atala.prism.interop.toKotlinSDK._
 import io.iohk.atala.prism.kotlin.credentials.json.JsonBasedCredential
 
 class FlowPoC extends AtalaWithPostgresSpec with BeforeAndAfterEach {
-  implicit val ecTrait = EC
 
   protected var serverName: String = _
   protected var serverHandle: Server = _
@@ -182,7 +179,7 @@ class FlowPoC extends AtalaWithPostgresSpec with BeforeAndAfterEach {
       //    the corresponding proofs of inclusion
       val credentialsToSend = signedCredentials.zip(proofs1 ++ proofs2).map {
         case (c, p) =>
-          (c.canonicalForm, p.asKotlin)
+          (c.getCanonicalForm, p)
       }
       connector.sendCredentialAndProof(credentialsToSend)
 
@@ -216,8 +213,8 @@ class FlowPoC extends AtalaWithPostgresSpec with BeforeAndAfterEach {
 
       // 11. the issuer decides to revoke the first credential from the second batch
       val issueBatch2OpHash = SHA256Digest.compute(issueBatch2Op.toByteArray)
-      val batchId2 = CredentialBatchId.fromBatchData(issuerDID.suffix, root2)
-      val revokeC3Op = revokeCredentialsOperation(issueBatch2OpHash, batchId2, Seq(c3.hash.asKotlin))
+      val batchId2 = CredentialBatchId.fromBatchData(issuerDID.getSuffix, root2)
+      val revokeC3Op = revokeCredentialsOperation(issueBatch2OpHash, batchId2, Seq(c3.hash))
       val signedRevokeC3Op = wallet.signOperation(revokeC3Op, revocationKeyId, didSuffix)
       val revokeSpecificCredentialsOperationId = console.revokeSpecificCredentials(signedRevokeC3Op).operationId
 

@@ -9,8 +9,6 @@ import io.iohk.atala.prism.kotlin.crypto.ECConfig.{INSTANCE => ECConfig}
 import io.iohk.atala.prism.kotlin.identity.DIDSuffix
 import io.iohk.atala.prism.protos.node_models
 
-import io.iohk.atala.prism.interop.toScalaSDK._
-
 object EncodedSizes {
   def main(args: Array[String]): Unit = {
     val startTime = System.currentTimeMillis()

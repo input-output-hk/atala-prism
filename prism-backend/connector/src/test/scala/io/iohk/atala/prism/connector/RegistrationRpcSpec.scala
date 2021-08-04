@@ -20,9 +20,6 @@ import org.scalatest.OptionValues._
 
 import scala.concurrent.Future
 import scala.util.Try
-import io.iohk.atala.prism.interop.toKotlinSDK._
-
-import io.iohk.atala.prism.interop.toScalaSDK._
 
 class RegistrationRpcSpec extends ConnectorRpcSpecBase {
 
@@ -58,7 +55,7 @@ class RegistrationRpcSpec extends ConnectorRpcSpecBase {
       usingApiAs.unlogged { blockingStub =>
         val keyId = "key-1"
         val didKeyPair = EC.generateKeyPair()
-        val did = DID.createUnpublishedDID(didKeyPair.publicKey.asKotlin, null)
+        val did = DID.createUnpublishedDID(didKeyPair.getPublicKey, null)
         val name = "iohk"
         val logo = "none".getBytes()
         val request = connector_api
@@ -83,7 +80,7 @@ class RegistrationRpcSpec extends ConnectorRpcSpecBase {
       usingApiAs.unlogged { blockingStub =>
         val keyId = "key-1"
         val didKeyPair = EC.generateKeyPair()
-        val did = DID.createUnpublishedDID(didKeyPair.publicKey.asKotlin, null)
+        val did = DID.createUnpublishedDID(didKeyPair.getPublicKey, null)
         val name = "iohk"
         val participantId = ParticipantId.random()
         val participantRole = ParticipantType.Issuer
@@ -94,7 +91,7 @@ class RegistrationRpcSpec extends ConnectorRpcSpecBase {
         nodeMock.getDidDocument(*).returns {
           Future.successful(
             GetDidDocumentResponse(
-              DIDData(id = did.getSuffix.getValue, List(createNodePublicKey(keyId, didKeyPair.publicKey))).some
+              DIDData(id = did.getSuffix.getValue, List(createNodePublicKey(keyId, didKeyPair.getPublicKey))).some
             )
           )
         }
@@ -112,7 +109,7 @@ class RegistrationRpcSpec extends ConnectorRpcSpecBase {
     "fail when the user passed unpublished did" in {
       usingApiAs.unlogged { blockingStub =>
         val didKeyPair = EC.generateKeyPair()
-        val did = DID.createUnpublishedDID(didKeyPair.publicKey.asKotlin, null)
+        val did = DID.createUnpublishedDID(didKeyPair.getPublicKey, null)
         val name = "iohk"
         val logo = "none".getBytes()
         val request = connector_api
@@ -130,7 +127,7 @@ class RegistrationRpcSpec extends ConnectorRpcSpecBase {
     "fail when user passed did which can't be found on the node" in {
       usingApiAs.unlogged { blockingStub =>
         val didKeyPair = EC.generateKeyPair()
-        val did = DID.createUnpublishedDID(didKeyPair.publicKey.asKotlin, null)
+        val did = DID.createUnpublishedDID(didKeyPair.getPublicKey, null)
         val name = "iohk"
         val logo = "none".getBytes()
         val request = connector_api
@@ -152,7 +149,7 @@ class RegistrationRpcSpec extends ConnectorRpcSpecBase {
     "fail when user passed non-prism did" in {
       usingApiAs.unlogged { blockingStub =>
         val didKeyPair = EC.generateKeyPair()
-        val did = DID.createUnpublishedDID(didKeyPair.publicKey.asKotlin, null)
+        val did = DID.createUnpublishedDID(didKeyPair.getPublicKey, null)
         val strangeDid = s"did:blabla:${did.getSuffix.getValue}"
         val name = "iohk"
         val logo = "none".getBytes()

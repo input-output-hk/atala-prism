@@ -11,18 +11,13 @@ import io.iohk.atala.prism.kotlin.crypto.keys.ECPublicKey
 import io.iohk.atala.prism.daos.BaseDAO
 import io.iohk.atala.prism.kotlin.identity.DID
 import io.iohk.atala.prism.models.ParticipantId
-import org.scalatest.OptionValues._
-
-import io.iohk.atala.prism.interop.toScalaSDK._
-
-import io.iohk.atala.prism.interop.toKotlinSDK._
 
 object DataPreparation extends BaseDAO {
 
   import connectorDaos._
 
   def newDID(): DID = {
-    DID.createUnpublishedDID(EC.generateKeyPair().publicKey.asKotlin, null)
+    DID.createUnpublishedDID(EC.generateKeyPair().getPublicKey, null)
   }
 
   def createIssuer(

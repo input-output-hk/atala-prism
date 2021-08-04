@@ -17,7 +17,7 @@ import io.iohk.atala.prism.protos.node_models.{
 import io.iohk.atala.prism.services.BaseGrpcClientService.DidBasedAuthConfig
 import io.iohk.atala.prism.services.NodeClientService
 
-import java.io.BufferedInputStream
+import _root_.java.io.BufferedInputStream
 
 object E2ETestUtils {
   implicit val ecTrait = EC.INSTANCE

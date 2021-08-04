@@ -7,13 +7,12 @@ import com.google.protobuf.ByteString
 import io.grpc.inprocess.{InProcessChannelBuilder, InProcessServerBuilder}
 import io.grpc.{ManagedChannel, Server}
 import io.iohk.atala.prism.AtalaWithPostgresSpec
-import io.iohk.atala.prism.credentials.{CredentialBatchId, CredentialBatches}
-import io.iohk.atala.prism.credentials.content.CredentialContent
-import io.iohk.atala.prism.credentials.content.syntax._
+import io.iohk.atala.prism.kotlin.credentials.{CredentialBatchId, CredentialBatches}
+import io.iohk.atala.prism.kotlin.credentials.content.CredentialContent
 import io.iohk.atala.prism.kotlin.crypto.{EC, SHA256Digest}
 import io.iohk.atala.prism.kotlin.crypto.keys.ECPublicKey
 import io.iohk.atala.prism.kotlin.crypto.signature.ECSignature
-import io.iohk.atala.prism.identity.{DID, DIDSuffix}
+import io.iohk.atala.prism.kotlin.identity.{DID, DIDSuffix}
 import io.iohk.atala.prism.node.grpc.ProtoCodecs
 import io.iohk.atala.prism.node.repositories.{CredentialBatchesRepository, DIDDataRepository}
 import io.iohk.atala.prism.node.services.models.AtalaObjectNotification
@@ -35,7 +34,7 @@ import org.scalatest.BeforeAndAfterEach
 
 import scala.concurrent.{Future, Promise}
 
-import io.iohk.atala.prism.interop.toKotlinSDK._
+import scala.jdk.CollectionConverters._
 
 class EndorsementsFlowPoC extends AtalaWithPostgresSpec with BeforeAndAfterEach {
 //  implicit val ecTrait = EC
@@ -117,7 +116,7 @@ class EndorsementsFlowPoC extends AtalaWithPostgresSpec with BeforeAndAfterEach 
       // the steps of the flow to implement
       //  1. the MoE generates its DID
       val (moeDIDSuffix, createDIDOp) = wallet.generateDID()
-      val moeDID = DID.unsafeFromString(s"did:prism:${moeDIDSuffix.value}")
+      val moeDID = DID.fromString(s"did:prism:${moeDIDSuffix.getValue}")
       val signedAtalaOperation = wallet.signOperation(createDIDOp, "master0", moeDIDSuffix)
       val createDIDResponse = nodeServiceStub.createDID(
         CreateDIDRequest()
@@ -142,7 +141,7 @@ class EndorsementsFlowPoC extends AtalaWithPostgresSpec with BeforeAndAfterEach 
       val freshKeyProto = endorsementsService
         .getFreshMasterKey(
           GetFreshMasterKeyRequest()
-            .withEndorserDID(moeDID.value)
+            .withEndorserDID(moeDID.getValue)
         )
         .futureValue
 
@@ -162,7 +161,7 @@ class EndorsementsFlowPoC extends AtalaWithPostgresSpec with BeforeAndAfterEach 
         .fromProtoKey(
           nodeServiceStub
             .getDidDocument(
-              GetDidDocumentRequest(moeDID.value)
+              GetDidDocumentRequest(moeDID.getValue)
             )
             .getDocument
             .publicKeys
@@ -183,7 +182,7 @@ class EndorsementsFlowPoC extends AtalaWithPostgresSpec with BeforeAndAfterEach 
       //     that adds the key shared by the MoE as master key, and removes
       //     the original master key of the DID
       val (regionDIDSuffix, regionCreateDIDOp) = wallet.generateDID()
-      val regionDID = DID.unsafeFromString(s"did:prism:${regionDIDSuffix.value}")
+      val regionDID = DID.fromString(s"did:prism:${regionDIDSuffix.getValue}")
       val updateAddMoEKeyOp = updateDIDOp(
         SHA256Digest.compute(regionCreateDIDOp.toByteArray),
         regionDIDSuffix,
@@ -213,26 +212,32 @@ class EndorsementsFlowPoC extends AtalaWithPostgresSpec with BeforeAndAfterEach 
       //  9. the MoE generates an endorsements credential and calls the endorsement RPC
       val credential =
         wallet.signCredential(
-          CredentialContent(
-            CredentialContent.JsonFields.IssuerDid.field -> moeDID.value,
-            CredentialContent.JsonFields.IssuanceKeyId.field -> issuanceKeyId,
-            CredentialContent.JsonFields.CredentialSubject.field -> s"{'endorses': ${regionDID.value}"
-          ),
+          {
+            import kotlinx.serialization.json.JsonElementKt._
+            import kotlinx.serialization.json.JsonObject
+            val map = Map(
+              "id" -> JsonPrimitive(moeDID.getValue),
+              "keyId" -> JsonPrimitive(issuanceKeyId),
+              "credentialSubject" -> JsonPrimitive(s"{'endorses': ${regionDID.getValue}")
+            )
+            new CredentialContent(new JsonObject(map.asJava))
+          },
           issuanceKeyId,
           moeDIDSuffix
         )
 
-      val (root, proof) = CredentialBatches.batch(List(credential))
-      val issueOp = issueBatchOperation(moeDID, root.asKotlin)
+      val batch = CredentialBatches.batch(List(credential).asJava)
+      val (root, proof) = (batch.getRoot, batch.getProofs.asScala.toList)
+      val issueOp = issueBatchOperation(moeDID, root)
       val batchId = CredentialBatchId.fromBatchData(moeDIDSuffix, root)
       val issueOpHash = SHA256Digest.compute(issueOp.toByteArray)
       val signedIssuanceOp = wallet.signOperation(issueOp, issuanceKeyId, moeDIDSuffix)
       endorsementsService
         .endorseInstitution(
           EndorseInstitutionRequest()
-            .withParentDID(moeDID.value)
-            .withChildDID(regionDID.value)
-            .withCredential(credential.canonicalForm)
+            .withParentDID(moeDID.getValue)
+            .withChildDID(regionDID.getValue)
+            .withCredential(credential.getCanonicalForm)
             .withEncodedMerkleProof(proof.head.encode)
             .withIssueBatch(signedIssuanceOp)
         )
@@ -242,7 +247,7 @@ class EndorsementsFlowPoC extends AtalaWithPostgresSpec with BeforeAndAfterEach 
       val validityInterval = endorsementsService
         .getEndorsements(
           GetEndorsementsRequest()
-            .withDid(regionDID.value)
+            .withDid(regionDID.getValue)
         )
         .futureValue
 
@@ -261,8 +266,8 @@ class EndorsementsFlowPoC extends AtalaWithPostgresSpec with BeforeAndAfterEach 
       endorsementsService
         .revokeEndorsement(
           RevokeEndorsementRequest()
-            .withParentDID(moeDID.value)
-            .withChildDID(regionDID.value)
+            .withParentDID(moeDID.getValue)
+            .withChildDID(regionDID.getValue)
             .withRevokeBatch(signedRevokeOp)
         )
         .futureValue
@@ -271,7 +276,7 @@ class EndorsementsFlowPoC extends AtalaWithPostgresSpec with BeforeAndAfterEach 
       val validityInterval2 = endorsementsService
         .getEndorsements(
           GetEndorsementsRequest()
-            .withDid(regionDID.value)
+            .withDid(regionDID.getValue)
         )
         .futureValue
 
@@ -296,7 +301,7 @@ object Utils {
       operation = node_models.AtalaOperation.Operation.UpdateDid(
         node_models.UpdateDIDOperation(
           previousOperationHash = ByteString.copyFrom(previousHash.getValue),
-          id = suffix.value,
+          id = suffix.getValue,
           actions = Seq(
             node_models.UpdateDIDAction(
               node_models.UpdateDIDAction.Action.AddKey(

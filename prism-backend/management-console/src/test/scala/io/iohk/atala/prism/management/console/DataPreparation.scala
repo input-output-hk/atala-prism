@@ -9,8 +9,7 @@ import io.iohk.atala.prism.auth.grpc.GrpcAuthenticationHeader
 import io.iohk.atala.prism.auth.model.RequestNonce
 import io.iohk.atala.prism.connector.AtalaOperationId
 import io.iohk.atala.prism.kotlin.credentials.CredentialBatchId
-import io.iohk.atala.prism.kotlin.crypto.MerkleInclusionProof
-import io.iohk.atala.prism.kotlin.crypto.{SHA256Digest}
+import io.iohk.atala.prism.kotlin.crypto.{EC, MerkleInclusionProof, SHA256Digest}
 import io.iohk.atala.prism.kotlin.crypto.signature.ECSignature
 import io.iohk.atala.prism.kotlin.identity.DID
 import io.iohk.atala.prism.management.console.models._
@@ -19,13 +18,11 @@ import io.iohk.atala.prism.management.console.repositories.daos._
 import io.iohk.atala.prism.models.ConnectionToken
 import io.iohk.atala.prism.protos.connector_models.ContactConnection
 import io.iohk.atala.prism.protos.console_models.{ConnectorRequestMetadata, ContactConnectionStatus}
-import org.scalatest.OptionValues._
 
 import java.time.{Instant, LocalDate}
 import scala.util.Random
 import scala.jdk.CollectionConverters._
 
-import io.iohk.atala.prism.interop.toKotlinSDK._
 
 object DataPreparation {
   def createParticipant(name: String)(implicit database: Transactor[IO]): ParticipantId = {
@@ -207,7 +204,7 @@ object DataPreparation {
   }
 
   def newDID(): DID = {
-    DID.createUnpublishedDID(EC.generateKeyPair().publicKey).canonical.value
+    DID.createUnpublishedDID(EC.generateKeyPair().getPublicKey, null)
   }
 
   def publishCredential(

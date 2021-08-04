@@ -46,7 +46,7 @@ class PublicKeysDAOSpec extends AtalaWithPostgresSpec {
   )
 
   val didData = DIDData(didSuffix, keys, operationDigest)
-  val dummyTimestamp = TimestampInfo(Instant.ofEpochMilli(0), 1, 0)
+  val dummyTimestamp = new TimestampInfo(Instant.ofEpochMilli(0).toEpochMilli, 1, 0)
   val dummyLedgerData = LedgerData(
     TransactionId.from(Array.fill[Byte](TransactionId.config.size.toBytes.toInt)(0)).value,
     Ledger.InMemory,

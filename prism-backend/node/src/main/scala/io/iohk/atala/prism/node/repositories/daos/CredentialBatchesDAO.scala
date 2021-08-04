@@ -29,7 +29,6 @@ object CredentialBatchesDAO {
   implicitly[Write[TransactionId]]
   implicitly[Write[Ledger]]
 
-
   def insert(
       data: CreateCredentialBatchData
   ): ConnectionIO[Unit] = {

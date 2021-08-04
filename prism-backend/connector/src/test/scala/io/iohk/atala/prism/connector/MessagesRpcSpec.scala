@@ -25,9 +25,6 @@ import org.mockito.verification.VerificationWithTimeout
 import org.scalatest.Assertion
 
 import java.util.UUID
-import io.iohk.atala.prism.interop.toKotlinSDK._
-
-import io.iohk.atala.prism.interop.toScalaSDK._
 
 class MessagesRpcSpec extends ConnectorRpcSpecBase {
   private def eventually: VerificationWithTimeout = Mockito.timeout(5000)
@@ -362,7 +359,7 @@ class MessagesRpcSpec extends ConnectorRpcSpecBase {
 
     "return existing messages immediately while authed by unpublished did" in {
       val keyPair = EC.generateKeyPair()
-      val unpublishedDid = DID.createUnpublishedDID(keyPair.getPublicKey.asScala)
+      val unpublishedDid = DID.createUnpublishedDID(keyPair.getPublicKey, null)
       val participant = createParticipant(unpublishedDid, keyPair.getPublicKey)
       val messageIds = generateMessageIds(participant)
       testMessagesExisting(keyPair, unpublishedDid, messageIds)

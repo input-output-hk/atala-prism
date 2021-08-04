@@ -19,10 +19,6 @@ import io.iohk.atala.prism.management.console.repositories.daos.ParticipantsDAO
 import org.scalatest.EitherValues._
 import org.scalatest.OptionValues._
 
-import io.iohk.atala.prism.interop.toKotlinSDK._
-
-import io.iohk.atala.prism.interop.toScalaSDK._
-
 //sbt "project management-console" "testOnly *ParticipantsRepositorySpec"
 class ParticipantsRepositorySpec extends AtalaWithPostgresSpec {
   lazy val participantsRepository = ParticipantsRepository(database)
@@ -65,7 +61,7 @@ class ParticipantsRepositorySpec extends AtalaWithPostgresSpec {
       val request = CreateParticipantRequest(
         id = ParticipantId.random(),
         name = "participant name",
-        did = DID.createUnpublishedDID(EC.generateKeyPair().publicKey).canonical.value,
+        did = DID.createUnpublishedDID(EC.generateKeyPair().getPublicKey, null),
         logo = ParticipantLogo(Vector.empty)
       )
 
@@ -83,7 +79,7 @@ class ParticipantsRepositorySpec extends AtalaWithPostgresSpec {
     }
 
     "return error while trying to create participant with the same did twice" in {
-      val did = DID.createUnpublishedDID(EC.generateKeyPair().publicKey.asKotlin, null)
+      val did = DID.createUnpublishedDID(EC.generateKeyPair().getPublicKey, null)
       val request1 = CreateParticipantRequest(
         id = ParticipantId.random(),
         name = "participant name",

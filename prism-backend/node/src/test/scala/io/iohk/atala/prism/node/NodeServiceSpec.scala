@@ -37,10 +37,6 @@ import io.iohk.atala.prism.protos.node_models.OperationOutput
 
 import scala.concurrent.Future
 
-import io.iohk.atala.prism.interop.toScalaSDK._
-
-import io.iohk.atala.prism.interop.toKotlinSDK._
-
 class NodeServiceSpec
     extends AtalaWithPostgresSpec
     with MockitoSugar
@@ -128,7 +124,7 @@ class NodeServiceSpec
 
     "return DID document for an unpublished DID" in {
       val masterKey = CreateDIDOperationSpec.masterKeys.getPublicKey
-      val longFormDID = DID.createUnpublishedDID(masterKey.asKotlin, null)
+      val longFormDID = DID.createUnpublishedDID(masterKey, null)
       doReturn(Future.successful(dummySyncTimestamp)).when(objectManagementService).getLastSyncedTimestamp
 
       val response = service.getDidDocument(node_api.GetDidDocumentRequest(longFormDID.getValue))
@@ -149,7 +145,7 @@ class NodeServiceSpec
     "return DID document for a long form DID after it was published" in {
       val masterKey = CreateDIDOperationSpec.masterKeys.getPublicKey
       val issuingKey = CreateDIDOperationSpec.issuingKeys.getPublicKey
-      val longFormDID = DID.createUnpublishedDID(masterKey.asKotlin, null)
+      val longFormDID = DID.createUnpublishedDID(masterKey, null)
 
       // we simulate the publication of the DID and the addition of an issuing key
       val didDigest = SHA256Digest.fromHex(longFormDID.getCanonicalSuffix.getValue)
@@ -423,7 +419,7 @@ class NodeServiceSpec
     }
 
     "return an error when the CredentialBatchesRepository fails" in {
-      val validBatchId = CredentialBatchId.fromDigest(SHA256Digest.compute("valid".getBytes()).asKotlin)
+      val validBatchId = CredentialBatchId.fromDigest(SHA256Digest.compute("valid".getBytes()))
       val requestWithValidId = GetBatchStateRequest(batchId = validBatchId.getId)
 
       val errorMsg = "an unexpected error"
@@ -440,7 +436,7 @@ class NodeServiceSpec
     }
 
     "return empty response when the CredentialBatchesRepository reports no results" in {
-      val validBatchId = CredentialBatchId.fromDigest(SHA256Digest.compute("valid".getBytes()).asKotlin)
+      val validBatchId = CredentialBatchId.fromDigest(SHA256Digest.compute("valid".getBytes()))
       val requestWithValidId = GetBatchStateRequest(batchId = validBatchId.getId)
 
       val repositoryError = IO.pure[Either[NodeError, Option[CredentialBatchState]]](Right(None))
@@ -456,7 +452,7 @@ class NodeServiceSpec
     }
 
     "return batch state when CredentialBatchesRepository succeeds" in {
-      val validBatchId = CredentialBatchId.fromDigest(SHA256Digest.compute("valid".getBytes()).asKotlin)
+      val validBatchId = CredentialBatchId.fromDigest(SHA256Digest.compute("valid".getBytes()))
       val requestWithValidId = GetBatchStateRequest(batchId = validBatchId.getId)
 
       val issuerDIDSuffix: DIDSuffix = DIDSuffix.fromDigest(SHA256Digest.compute("testDID".getBytes()))
@@ -569,7 +565,7 @@ class NodeServiceSpec
       val validBatchId = CredentialBatchId.fromDigest(SHA256Digest.compute("valid".getBytes()))
       val validCredentialHash = SHA256Digest.compute("random".getBytes())
       val validRequest = GetCredentialRevocationTimeRequest(
-        batchId = validBatchId.id,
+        batchId = validBatchId.getId,
         credentialHash = ByteString.copyFrom(validCredentialHash.getValue)
       )
       val revocationDate = new TimestampInfo(Instant.now().toEpochMilli, 1, 1)

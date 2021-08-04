@@ -13,9 +13,6 @@ import io.iohk.atala.prism.AtalaWithPostgresSpec
 import io.iohk.atala.prism.connector.DataPreparation
 import io.iohk.atala.prism.repositories.ops.SqlTestOps.Implicits
 
-import io.iohk.atala.prism.interop.toKotlinSDK._
-import io.iohk.atala.prism.interop.toScalaSDK._
-
 trait ConnectorRepositorySpecBase extends AtalaWithPostgresSpec {
   protected def createParticipant(
       tpe: ParticipantType,
@@ -62,7 +59,7 @@ trait ConnectorRepositorySpecBase extends AtalaWithPostgresSpec {
     createParticipant(
       ParticipantType.Verifier,
       name,
-      DID.createUnpublishedDID(EC.generateKeyPair().getPublicKey.asScala),
+      DID.createUnpublishedDID(EC.generateKeyPair().getPublicKey, null),
       None,
       logo
     )

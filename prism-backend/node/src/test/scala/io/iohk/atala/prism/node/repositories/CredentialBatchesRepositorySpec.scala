@@ -15,8 +15,6 @@ import doobie.util.transactor.Transactor
 import io.iohk.atala.prism.node.DataPreparation
 import io.iohk.atala.prism.node.models.DIDData
 
-import io.iohk.atala.prism.interop.toScalaSDK._
-
 class CredentialBatchesRepositorySpec extends AtalaWithPostgresSpec {
 
   import CredentialBatchesRepositorySpec._

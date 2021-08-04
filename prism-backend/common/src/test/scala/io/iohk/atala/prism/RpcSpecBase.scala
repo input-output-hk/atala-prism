@@ -8,7 +8,7 @@ import io.iohk.atala.prism.kotlin.crypto.keys.{ECKeyPair, ECPublicKey}
 import io.iohk.atala.prism.kotlin.crypto.signature.{ECSignature}
 import org.scalatest.BeforeAndAfterEach
 import scalapb.GeneratedMessage
-import java.util.concurrent.{Executor, TimeUnit}
+import _root_.java.util.concurrent.{Executor, TimeUnit}
 
 import io.iohk.atala.prism.auth.SignedRpcRequest
 import io.iohk.atala.prism.kotlin.identity.DID

@@ -18,7 +18,6 @@ import doobie.free.connection
 import io.iohk.atala.prism.kotlin.credentials.utils.{Mustache, MustacheError, MustacheParsingError}
 
 import scala.util.Try
-//import io.iohk.atala.prism.credentials.utils.Mustache
 import org.slf4j.{Logger, LoggerFactory}
 import tofu.higherKind.Mid
 
