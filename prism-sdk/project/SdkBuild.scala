@@ -44,13 +44,13 @@ object SdkBuild {
           "-feature",
           "-Xfatal-warnings"
         ),
-        scalacOptions in (Compile, doc) ++= Seq(
+        Compile / doc / scalacOptions ++= Seq(
           "-no-link-warnings" // Suppresses problems with Scaladoc links
         ),
         javacOptions ++= Seq("-source", "1.8", "-target", "1.8"),
         libraryDependencies ++= scalatestDependencies.value,
         coverageScalacPluginVersion := "1.4.1",
-        test in assembly := {},
+        assembly / test := {},
         // use short hashes while versioning
         git.formattedShaVersion := git.gitHeadCommit.value map { sha => sha.take(8) },
         autoAPIMappings := true,
@@ -66,7 +66,7 @@ object SdkBuild {
       .jvmSettings(crossScalaVersions := supportedScalaVersions)
       .jsConfigure(_.enablePlugins(ScalaJSBundlerPlugin, ScalablyTypedConverterPlugin))
       .jsSettings(
-        assembleArtifact in packageBin := false,
+        packageBin / assembleArtifact := false,
         // Scoverage has not been released for ScalaJS 1.x: https://github.com/scoverage/scalac-scoverage-plugin/issues/290
         coverageEnabled := false,
         stUseScalaJsDom := true
@@ -80,7 +80,7 @@ object SdkBuild {
       )
       .jvmSettings(
         Test / fork := true, // Avoid classloader issues during testing with `sbt ~test`
-        assemblyJarName in assembly := "prism-crypto.jar",
+        assembly / assemblyJarName := "prism-crypto.jar",
         // In order to use this library in Android, we need to bundle it with the scala stdlib
         // But we don't need the transitive dependencies/
         //
@@ -93,7 +93,7 @@ object SdkBuild {
       )
       .jsSettings(
         libraryDependencies += scalaJavaTime.value,
-        Compile / npmDependencies in Compile ++= Seq(
+        Compile / (Compile / npmDependencies) ++= Seq(
           "elliptic" -> "6.5.3",
           "hash.js" -> "1.1.7",
           "@types/elliptic" -> "6.4.12",
@@ -106,8 +106,8 @@ object SdkBuild {
     commonProject(crossProject(JSPlatform, JVMPlatform).crossType(CrossType.Pure) in file("protos"))
       .settings(
         name := "prism-protos",
-        PB.protoSources in Compile := Seq(
-          (baseDirectory in ThisBuild).value / "protos" / "src"
+        Compile / PB.protoSources := Seq(
+          (ThisBuild / baseDirectory).value / "protos" / "src"
         ),
         scalacOptions += {
           CrossVersion.partialVersion(scalaVersion.value) match {
@@ -119,15 +119,15 @@ object SdkBuild {
       )
       .jvmSettings(
         libraryDependencies += "com.thesamet.scalapb" %% "scalapb-runtime-grpc" % scalapb.compiler.Version.scalapbVersion,
-        PB.targets in Compile := Seq(
-          scalapb.gen() -> (sourceManaged in Compile).value
+        Compile / PB.targets := Seq(
+          scalapb.gen() -> (Compile / sourceManaged).value
         )
       )
       .jsSettings(
         libraryDependencies += "com.thesamet.scalapb.grpcweb" %%% "scalapb-grpcweb" % scalapb.grpcweb.BuildInfo.version,
-        PB.targets in Compile := Seq(
-          scalapb.gen(grpc = false) -> (sourceManaged in Compile).value / "scalapb",
-          scalapb.grpcweb.GrpcWebCodeGenerator -> (sourceManaged in Compile).value / "scalapb"
+        Compile / PB.targets := Seq(
+          scalapb.gen(grpc = false) -> (Compile / sourceManaged).value / "scalapb",
+          scalapb.grpcweb.GrpcWebCodeGenerator -> (Compile / sourceManaged).value / "scalapb"
         )
       )
 
@@ -138,7 +138,7 @@ object SdkBuild {
         libraryDependencies += scalaUri.value
       )
       .jvmSettings(
-        assemblyJarName in assembly := "prism-identity.jar",
+        assembly / assemblyJarName := "prism-identity.jar",
         libraryDependencies ++= bouncyDependencies.map(_ % "provided")
       )
       .dependsOn(prismCrypto, prismProtos)
