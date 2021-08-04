@@ -404,45 +404,33 @@ class ObjectManagementService private (
   }
 
   private def mergeAtalaObjects(atalaObjects: List[AtalaObjectInfo]): Future[List[AtalaObjectInfo]] = {
-    val atalaObjectsMerged = atalaObjects.foldRight(List.empty[(AtalaObjectInfo, Boolean)]) {
-      case (atalaObject, Nil) =>
-        List((atalaObject, false))
-      case (atalaObject, lst @ (accObject, _) :: rest) =>
-        atalaObject
-          .mergeIfPossible(accObject)
-          .fold((atalaObject, false) :: lst) { mergedObject =>
-            (mergedObject, true) :: rest
-          }
-    }
-    val objectIdsToRemove =
+    val atalaObjectsMerged =
       atalaObjects
-        .map(_.objectId)
-        .toSet
-        .diff(
-          atalaObjectsMerged.map(_._1.objectId).toSet
-        )
+        .foldRight(
+          List.empty[(AtalaObjectInfo, List[AtalaObjectInfo])]
+        ) {
+          case (atalaObject, Nil) =>
+            List((atalaObject, List(atalaObject)))
+          case (atalaObject, lst @ (accObject, oldObjects) :: rest) =>
+            atalaObject
+              .mergeIfPossible(accObject)
+              .fold((atalaObject, List(atalaObject)) :: lst) { mergedObject =>
+                (mergedObject, atalaObject :: oldObjects) :: rest
+              }
+        }
 
-    val createObjectsF = Future.traverse(atalaObjectsMerged) {
-      case (atalaObject, changed) =>
-        if (changed) {
+    Future.traverse(atalaObjectsMerged) {
+      case (atalaObject, oldObjects) =>
+        if (oldObjects.size != 1) {
           val changedBlock = atalaObject.getAndValidateAtalaObject.flatMap(_.blockContent).getOrElse {
             throw new RuntimeException(s"Block in object ${atalaObject.objectId} was invalidated after merge.")
           }
-          createAndUpdateAtalaObject(atalaObject, changedBlock.operations.toList)
+          createAndUpdateAtalaObject(atalaObject, changedBlock.operations.toList, oldObjects)
             .map(_ => atalaObject)
         } else {
           Future.successful(atalaObject)
         }
     }
-
-    for {
-      objects <- createObjectsF
-      _ <-
-        AtalaObjectsDAO
-          .setProcessedBatch(objectIdsToRemove.toList)
-          .transact(xa)
-          .unsafeToFuture()
-    } yield objects
   }
 
   private def parseObjectContent(atalaObjectInfo: AtalaObjectInfo): node_internal.AtalaObject =
@@ -452,7 +440,8 @@ class ObjectManagementService private (
 
   private def createAndUpdateAtalaObject(
       atalaObject: AtalaObjectInfo,
-      operations: List[SignedAtalaOperation]
+      operations: List[SignedAtalaOperation],
+      oldObjects: List[AtalaObjectInfo]
   ): Future[Unit] = {
     val query = for {
       _ <- AtalaObjectsDAO.insert(AtalaObjectCreateData(atalaObject.objectId, atalaObject.byteContent))
@@ -460,6 +449,7 @@ class ObjectManagementService private (
         operations.map(AtalaOperationId.of),
         atalaObject.objectId
       )
+      _ <- AtalaObjectsDAO.setProcessedBatch(oldObjects.map(_.objectId))
     } yield ()
 
     query
