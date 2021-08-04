@@ -343,6 +343,20 @@ class NodeServiceSpec
     }
   }
 
+  "NodeService.getLastSyncedBlockTimestamp" should {
+    "return the timestamp of the last synced block" in {
+      doReturn(Future.successful(dummySyncTimestamp))
+        .when(objectManagementService)
+        .getLastSyncedTimestamp
+
+      val response = service.getLastSyncedBlockTimestamp(
+        GetLastSyncedBlockTimestampRequest()
+      )
+
+      response.lastSyncedBlockTimestamp.value must be(dummySyncTimestamp.toProtoTimestamp)
+    }
+  }
+
   "NodeService.getOperationInfo" should {
     "return OPERATION_UNKNOWN when operation identifier was not found" in {
       val validOperation = BlockProcessingServiceSpec.signOperation(
