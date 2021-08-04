@@ -1,6 +1,9 @@
 package io.iohk.atala.prism.management.console
 
+import cats.effect.IO
 import io.iohk.atala.prism.auth.grpc.GrpcAuthenticationHeaderParser
+import io.iohk.atala.prism.logging.TraceId
+import io.iohk.atala.prism.logging.TraceId.IOWithTraceIdContext
 import io.iohk.atala.prism.management.console.clients.ConnectorClient
 import io.iohk.atala.prism.management.console.integrations.{
   ContactsIntegrationService,
@@ -13,8 +16,12 @@ import io.iohk.atala.prism.protos.console_api
 import io.iohk.atala.prism.protos.console_api.CredentialIssuanceServiceGrpc
 import io.iohk.atala.prism.{ApiTestHelper, RpcSpecBase}
 import org.mockito.MockitoSugar.mock
+import tofu.logging.Logs
 
 class ManagementConsoleRpcSpecBase extends RpcSpecBase {
+
+  private val managementConsoleTestLogs: Logs[IO, IOWithTraceIdContext] = Logs.withContext[IO, IOWithTraceIdContext]
+  private val dbLiftedToTraceIdIO = database.mapK(TraceId.liftToIOWithTraceId)
 
   override def services = {
     Seq(
@@ -48,7 +55,10 @@ class ManagementConsoleRpcSpecBase extends RpcSpecBase {
 
   lazy val participantsRepository = ParticipantsRepository(database)
   lazy val requestNoncesRepository = RequestNoncesRepository(database)
-  lazy val contactsRepository = ContactsRepository.create(database)
+  lazy val contactsRepository = managementConsoleTestLogs
+    .service[ContactsRepository[IOWithTraceIdContext]]
+    .map(implicit l => ContactsRepository(dbLiftedToTraceIdIO))
+    .unsafeRunSync()
   lazy val statisticsRepository = StatisticsRepository(database)
   lazy val institutionGroupsRepository = InstitutionGroupsRepository(database)
   lazy val credentialIssuancesRepository = CredentialIssuancesRepository(database)

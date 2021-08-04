@@ -12,13 +12,15 @@ import doobie.util.transactor.Transactor
 import io.iohk.atala.prism.management.console.errors.ManagementConsoleError
 import io.iohk.atala.prism.management.console.models._
 import io.iohk.atala.prism.management.console.repositories.daos._
+import io.iohk.atala.prism.management.console.repositories.logs.ContactsRepositoryLogs
 import io.iohk.atala.prism.management.console.repositories.metrics.ContactsRepositoryMetrics
 import io.iohk.atala.prism.metrics.TimeMeasureMetric
 import io.iohk.atala.prism.models.ConnectionToken
-import io.iohk.atala.prism.logging.TraceId
 import io.iohk.atala.prism.utils.syntax.DBConnectionOps
 import org.slf4j.{Logger, LoggerFactory}
 import tofu.higherKind.Mid
+import tofu.logging.ServiceLogging
+import tofu.syntax.monoid.TofuSemigroupOps
 
 import java.time.Instant
 
@@ -30,45 +32,45 @@ trait ContactsRepository[F[_]] {
       contactData: CreateContact,
       maybeGroupName: Option[InstitutionGroup.Name],
       createdAt: Instant = Instant.now(),
-      connectionToken: ConnectionToken,
-      tId: TraceId
+      connectionToken: ConnectionToken
   ): F[Contact]
 
   def createBatch(
       institutionId: ParticipantId,
       request: CreateContact.Batch,
-      connectionTokens: List[ConnectionToken],
-      tId: TraceId
+      connectionTokens: List[ConnectionToken]
   ): F[Either[ManagementConsoleError, Int]]
 
-  def updateContact(institutionId: ParticipantId, request: UpdateContact, tId: TraceId): F[Unit]
+  def updateContact(institutionId: ParticipantId, request: UpdateContact): F[Unit]
 
-  def find(institutionId: ParticipantId, contactId: Contact.Id, tId: TraceId): F[Option[Contact.WithDetails]]
+  def find(institutionId: ParticipantId, contactId: Contact.Id): F[Option[Contact.WithDetails]]
 
-  def find(institutionId: ParticipantId, externalId: Contact.ExternalId, tId: TraceId): F[Option[Contact]]
+  def find(institutionId: ParticipantId, externalId: Contact.ExternalId): F[Option[Contact]]
 
-  def findContacts(institutionId: ParticipantId, contactIds: List[Contact.Id], tId: TraceId): F[List[Contact]]
+  def findContacts(institutionId: ParticipantId, contactIds: List[Contact.Id]): F[List[Contact]]
 
   def getBy(
       createdBy: ParticipantId,
       constraints: Contact.PaginatedQuery,
-      tId: TraceId,
       ignoreFilterLimit: Boolean = false
   ): F[List[Contact.WithCredentialCounts]]
 
   def delete(
       institutionId: ParticipantId,
       contactId: Contact.Id,
-      deleteCredentials: Boolean,
-      tId: TraceId
+      deleteCredentials: Boolean
   ): F[Either[ManagementConsoleError, Unit]]
 
 }
 
 object ContactsRepository {
 
-  def create[F[_]: TimeMeasureMetric: BracketThrow](transactor: Transactor[F]): ContactsRepository[F] = {
-    val mid: ContactsRepository[Mid[F, *]] = new ContactsRepositoryMetrics[F]
+  def apply[F[_]: TimeMeasureMetric: BracketThrow: ServiceLogging[*[_], ContactsRepository[F]]](
+      transactor: Transactor[F]
+  ): ContactsRepository[F] = {
+    val mid: ContactsRepository[Mid[F, *]] = (new ContactsRepositoryMetrics[F]: ContactsRepository[
+      Mid[F, *]
+    ]) |+| (new ContactsRepositoryLogs[F]: ContactsRepository[Mid[F, *]])
     mid attach new ContactsRepositoryImpl[F](transactor)
   }
 
@@ -83,8 +85,7 @@ private final class ContactsRepositoryImpl[F[_]: BracketThrow](xa: Transactor[F]
       contactData: CreateContact,
       maybeGroupName: Option[InstitutionGroup.Name],
       createdAt: Instant = Instant.now(),
-      connectionToken: ConnectionToken,
-      tId: TraceId
+      connectionToken: ConnectionToken
   ): F[Contact] = {
     val query = maybeGroupName match {
       case None => // if we do not request the contact to be added to a group
@@ -106,8 +107,7 @@ private final class ContactsRepositoryImpl[F[_]: BracketThrow](xa: Transactor[F]
   def createBatch(
       institutionId: ParticipantId,
       request: CreateContact.Batch,
-      connectionTokens: List[ConnectionToken],
-      tId: TraceId
+      connectionTokens: List[ConnectionToken]
   ): F[Either[ManagementConsoleError, Int]] = {
     def unsafe = {
       for {
@@ -129,13 +129,13 @@ private final class ContactsRepositoryImpl[F[_]: BracketThrow](xa: Transactor[F]
       .transact(xa)
   }
 
-  def updateContact(institutionId: ParticipantId, request: UpdateContact, tId: TraceId): F[Unit] =
+  def updateContact(institutionId: ParticipantId, request: UpdateContact): F[Unit] =
     ContactsDAO
       .updateContact(institutionId, request)
       .logSQLErrors(s"updating contact, institution id - $institutionId", logger)
       .transact(xa)
 
-  def find(institutionId: ParticipantId, contactId: Contact.Id, tId: TraceId): F[Option[Contact.WithDetails]] =
+  def find(institutionId: ParticipantId, contactId: Contact.Id): F[Option[Contact.WithDetails]] =
     (for {
       contact <- OptionT(ContactsDAO.findContact(institutionId, contactId))
       institutionsInvolved <- OptionT.liftF(InstitutionGroupsDAO.getBy(institutionId, contactId))
@@ -146,13 +146,13 @@ private final class ContactsRepositoryImpl[F[_]: BracketThrow](xa: Transactor[F]
       .logSQLErrors(s"finding contact with details, contact id - $contactId", logger)
       .transact(xa)
 
-  def find(institutionId: ParticipantId, externalId: Contact.ExternalId, tId: TraceId): F[Option[Contact]] =
+  def find(institutionId: ParticipantId, externalId: Contact.ExternalId): F[Option[Contact]] =
     ContactsDAO
       .findContact(institutionId, externalId)
       .logSQLErrors(s"finding contact, institution id - $institutionId", logger)
       .transact(xa)
 
-  def findContacts(institutionId: ParticipantId, contactIds: List[Contact.Id], tId: TraceId): F[List[Contact]] =
+  def findContacts(institutionId: ParticipantId, contactIds: List[Contact.Id]): F[List[Contact]] =
     ContactsDAO
       .findContacts(institutionId, contactIds)
       .logSQLErrors(s"finding contacts, institution id - $institutionId", logger)
@@ -161,7 +161,6 @@ private final class ContactsRepositoryImpl[F[_]: BracketThrow](xa: Transactor[F]
   def getBy(
       createdBy: ParticipantId,
       constraints: Contact.PaginatedQuery,
-      tId: TraceId,
       ignoreFilterLimit: Boolean
   ): F[List[Contact.WithCredentialCounts]] =
     ContactsDAO
@@ -172,8 +171,7 @@ private final class ContactsRepositoryImpl[F[_]: BracketThrow](xa: Transactor[F]
   def delete(
       institutionId: ParticipantId,
       contactId: Contact.Id,
-      deleteCredentials: Boolean,
-      tId: TraceId
+      deleteCredentials: Boolean
   ): F[Either[ManagementConsoleError, Unit]] = {
     def performDeletion(): ConnectionIO[Either[ManagementConsoleError, Unit]] =
       for {
