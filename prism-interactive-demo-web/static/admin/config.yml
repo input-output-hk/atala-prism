@@ -1,0 +1,45 @@
+backend:
+  name: github
+  repo: nico-bianco/interactive-demo-posts
+
+media_folder: static/img
+public_folder: /img
+publish_mode: editorial_workflow
+
+collections:
+  - name: 'posts'
+    label: 'Blog Posts'
+    folder: 'content/blog'
+    create: true
+    slug: 'index'
+    path: '{{title}}/index'
+    editor:
+      preview: true
+    fields:
+      - { label: 'Title', name: 'title', widget: 'string' }
+      - { label: 'Publish Date', name: 'date', widget: 'datetime' }
+      - {
+          label: 'Author',
+          name: 'author',
+          widget: 'relation',
+          collection: 'authors',
+          value_field: 'name',
+          display_fields: ['name'],
+          search_fields: ['name'],
+        }
+      - { label: 'Reading time (min)', name: 'readingTime', widget: 'number' }
+      - { label: 'Description', name: 'description', widget: 'string' }
+      - { label: 'Image', name: 'image', widget: 'image', required: false }
+      - { label: 'Body', name: 'body', widget: 'markdown' }
+  - name: 'authors'
+    label: Authors
+    folder: content/authors/
+    format: json
+    create: true
+    slug: '{{name}}'
+    editor:
+      preview: true
+    fields:
+      - { label: Name, name: name, widget: string }
+      - { label: Title, name: title, widget: string }
+      - { label: Area, name: area, widget: string }

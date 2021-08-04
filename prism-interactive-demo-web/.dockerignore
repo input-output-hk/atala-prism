@@ -4,7 +4,7 @@
 # Allow directories required by the docker build
 !/.env
 !/scripts/**
-!/build/**
+!/public/**
 !/nginx/**
 
 # Ignore unnecessary files inside allowed directories
