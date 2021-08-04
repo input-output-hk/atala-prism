@@ -22,10 +22,13 @@ import io.iohk.atala.prism.management.console.repositories.CredentialIssuancesRe
   CreateCredentialBulk,
   CreateCredentialIssuance
 }
+import io.iohk.atala.prism.management.console.repositories.logs.CredentialIssuancesRepositoryLogs
 import io.iohk.atala.prism.management.console.repositories.metrics.CredentialIssuancesRepositoryMetrics
 import io.iohk.atala.prism.management.console.validations.CredentialDataValidator
 import org.slf4j.{Logger, LoggerFactory}
 import tofu.higherKind.Mid
+import tofu.logging.ServiceLogging
+import tofu.syntax.monoid.TofuSemigroupOps
 
 @derive(applyK)
 trait CredentialIssuancesRepository[F[_]] {
@@ -82,8 +85,13 @@ object CredentialIssuancesRepository {
     )
   }
 
-  def apply[F[_]: TimeMeasureMetric: BracketThrow](transactor: Transactor[F]): CredentialIssuancesRepository[F] = {
-    val metrics: CredentialIssuancesRepository[Mid[F, *]] = new CredentialIssuancesRepositoryMetrics[F]
+  def apply[F[_]: TimeMeasureMetric: BracketThrow: ServiceLogging[*[_], CredentialIssuancesRepository[F]]](
+      transactor: Transactor[F]
+  ): CredentialIssuancesRepository[F] = {
+    val metrics: CredentialIssuancesRepository[Mid[F, *]] =
+      (new CredentialIssuancesRepositoryMetrics[F]: CredentialIssuancesRepository[
+        Mid[F, *]
+      ]) |+| (new CredentialIssuancesRepositoryLogs[F]: CredentialIssuancesRepository[Mid[F, *]])
     metrics attach new CredentialIssuancesRepositoryImpl[F](transactor)
   }
 

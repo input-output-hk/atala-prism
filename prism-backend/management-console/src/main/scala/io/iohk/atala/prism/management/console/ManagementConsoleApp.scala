@@ -94,7 +94,11 @@ object ManagementConsoleApp extends IOApp {
       credentialsRepository = CredentialsRepository(tx)
       receivedCredentialsRepository = ReceivedCredentialsRepository(tx)
       institutionGroupsRepository = InstitutionGroupsRepository(tx)
-      credentialIssuancesRepository = CredentialIssuancesRepository(tx)
+      credentialIssuancesRepository <- Resource.eval(
+        managementConsoleLogs
+          .service[CredentialIssuancesRepository[IOWithTraceIdContext]]
+          .map(implicit l => CredentialIssuancesRepository(txTraceIdLifted))
+      )
       credentialTypeRepository = CredentialTypeRepository(tx)
 
       authenticator = new ManagementConsoleAuthenticator(

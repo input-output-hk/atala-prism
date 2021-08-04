@@ -4,7 +4,6 @@ import cats.effect.BracketThrow
 import cats.syntax.apply._
 import cats.syntax.applicativeError._
 import cats.syntax.flatMap._
-import io.iohk.atala.prism.logging.TraceId
 import io.iohk.atala.prism.management.console.errors.ManagementConsoleError
 import io.iohk.atala.prism.management.console.models.Contact.PaginatedQuery
 import io.iohk.atala.prism.management.console.models._

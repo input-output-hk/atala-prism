@@ -2,7 +2,6 @@ package io.iohk.atala.prism.management.console
 
 import cats.effect.IO
 import io.iohk.atala.prism.auth.grpc.GrpcAuthenticationHeaderParser
-import io.iohk.atala.prism.logging.TraceId
 import io.iohk.atala.prism.logging.TraceId.IOWithTraceIdContext
 import io.iohk.atala.prism.management.console.clients.ConnectorClient
 import io.iohk.atala.prism.management.console.integrations.{
@@ -21,7 +20,6 @@ import tofu.logging.Logs
 class ManagementConsoleRpcSpecBase extends RpcSpecBase {
 
   private val managementConsoleTestLogs: Logs[IO, IOWithTraceIdContext] = Logs.withContext[IO, IOWithTraceIdContext]
-  private val dbLiftedToTraceIdIO = database.mapK(TraceId.liftToIOWithTraceId)
 
   override def services = {
     Seq(
@@ -61,7 +59,10 @@ class ManagementConsoleRpcSpecBase extends RpcSpecBase {
     .unsafeRunSync()
   lazy val statisticsRepository = StatisticsRepository(database)
   lazy val institutionGroupsRepository = InstitutionGroupsRepository(database)
-  lazy val credentialIssuancesRepository = CredentialIssuancesRepository(database)
+  lazy val credentialIssuancesRepository = managementConsoleTestLogs
+    .service[CredentialIssuancesRepository[IOWithTraceIdContext]]
+    .map(implicit l => CredentialIssuancesRepository(dbLiftedToTraceIdIO))
+    .unsafeRunSync()
   lazy val credentialsRepository = CredentialsRepository(database)
   lazy val credentialTypeRepository = CredentialTypeRepository(database)
 
