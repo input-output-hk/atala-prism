@@ -1,20 +1,18 @@
 package io.iohk.atala.prism.node.repositories.daos
 
 import java.time.Instant
-import cats.implicits.catsStdInstancesForList
 import cats.syntax.functor._
-import doobie.{Read, Update}
+import doobie.{Update, Write}
 import doobie.free.connection.ConnectionIO
-import doobie.implicits.legacy.instant._
 import doobie.implicits._
-import doobie.util.Get
-import io.iohk.atala.prism.kotlin.credentials.{CredentialBatchId, TimestampInfo}
+import io.iohk.atala.prism.kotlin.credentials.{CredentialBatchId}
 import io.iohk.atala.prism.kotlin.crypto.MerkleRoot
 import io.iohk.atala.prism.kotlin.crypto.SHA256Digest
 import io.iohk.atala.prism.kotlin.identity.DIDSuffix
 import io.iohk.atala.prism.models.{Ledger, TransactionId}
 import io.iohk.atala.prism.node.models.nodeState.{CredentialBatchState, LedgerData}
 import io.iohk.atala.prism.node.repositories.daos._
+import doobie.implicits.legacy.instant._
 import io.iohk.atala.prism.interop.implicits._
 
 object CredentialBatchesDAO {
@@ -26,16 +24,10 @@ object CredentialBatchesDAO {
       ledgerData: LedgerData
   )
 
-  implicitly[Get[CredentialBatchId]]
-  implicitly[Get[SHA256Digest]]
-  implicitly[Get[DIDSuffix]]
-  implicitly[Get[MerkleRoot]]
-  implicitly[Get[LedgerData]]
-  implicitly[Get[TransactionId]]
-  implicitly[Get[Ledger]]
-  implicitly[Read[TimestampInfo]]
-  implicitly[Read[Option[LedgerData]]]
-  implicitly[Read[CredentialBatchState]]
+  implicitly[Write[CredentialBatchId]]
+  implicitly[Write[SHA256Digest]]
+  implicitly[Write[TransactionId]]
+  implicitly[Write[Ledger]]
 
 
   def insert(
@@ -55,7 +47,7 @@ object CredentialBatchesDAO {
          |       issued_on, issued_on_absn, issued_on_osn, revoked_on_transaction_id, ledger,
          |       revoked_on, revoked_on_absn, revoked_on_osn, last_operation
          |FROM credential_batches
-         |WHERE batch_id = $credentialBatchId
+         |WHERE batch_id = ${credentialBatchId.getId}
        """.stripMargin.query[CredentialBatchState].option
   }
 
@@ -70,7 +62,7 @@ object CredentialBatchesDAO {
          |    revoked_on_absn = ${revocationTimestamp.getAtalaBlockSequenceNumber},
          |    revoked_on_osn = ${revocationTimestamp.getOperationSequenceNumber},
          |    revoked_on_transaction_id = ${ledgerData.transactionId}
-         |WHERE batch_id = $credentialBatchId AND
+         |WHERE batch_id = ${credentialBatchId.getId} AND
          |      revoked_on IS NULL
        """.stripMargin.update.run.map(_ > 0)
   }

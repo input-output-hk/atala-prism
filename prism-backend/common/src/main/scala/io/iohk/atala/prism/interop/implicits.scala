@@ -1,9 +1,10 @@
 package io.iohk.atala.prism.interop
 
-import doobie.{Get, Meta, Read}
+import doobie.{Get, Meta, Read, Write}
 import io.iohk.atala.prism.kotlin.credentials.{CredentialBatchId, TimestampInfo}
 import io.iohk.atala.prism.kotlin.crypto.{MerkleRoot, SHA256Digest}
 import io.iohk.atala.prism.kotlin.identity.DIDSuffix
+import doobie.implicits.legacy.instant._
 
 import java.time.Instant
 
@@ -25,5 +26,11 @@ object implicits {
 
   implicit val credentialBatchIdGet: Get[CredentialBatchId] =
     Get[String].tmap{ new CredentialBatchId(_) }
+
+  implicit val SHA256DigestWrite: Write[SHA256Digest] =
+    Write[Array[Byte]].contramap(_.getValue)
+
+  implicit val credentialBatchIdWrite: Write[CredentialBatchId] =
+    Write[String].contramap(_.getId)
 
 }
