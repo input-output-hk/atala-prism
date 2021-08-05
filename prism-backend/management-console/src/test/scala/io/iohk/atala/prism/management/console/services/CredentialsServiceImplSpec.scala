@@ -37,8 +37,8 @@ import io.iohk.atala.prism.protos.console_models.ContactConnectionStatus
 
 import scala.concurrent.Future
 import scala.jdk.CollectionConverters._
-
 import io.iohk.atala.prism.interop.toScalaSDK._
+import io.iohk.atala.prism.logging.TraceId
 
 class CredentialsServiceImplSpec extends ManagementConsoleRpcSpecBase with DIDUtil {
 
@@ -82,6 +82,7 @@ class CredentialsServiceImplSpec extends ManagementConsoleRpcSpecBase with DIDUt
       val mockRevocationOperationId = AtalaOperationId.random()
       credentialsRepository
         .storeRevocationData(issuerId, originalCredential.credentialId, mockRevocationOperationId)
+        .run(TraceId.generateYOLO)
         .unsafeRunSync()
 
       val contactConnection = connector_models.ContactConnection(
@@ -295,6 +296,7 @@ class CredentialsServiceImplSpec extends ManagementConsoleRpcSpecBase with DIDUt
 
           val revokedOnOperationId = credentialsRepository
             .getBy(credential.credentialId)
+            .run(TraceId.generateYOLO)
             .unsafeRunSync()
             .value
             .revokedOnOperationId
@@ -751,10 +753,12 @@ class CredentialsServiceImplSpec extends ManagementConsoleRpcSpecBase with DIDUt
       usingApiAsCredentials(SignedRpcRequest.generate(keyPair, did, request)) { serviceStub =>
         serviceStub.shareCredentials(request)
 
-        val result1 = credentialsRepository.getBy(credential1.credentialId).unsafeRunSync().value
+        val result1 =
+          credentialsRepository.getBy(credential1.credentialId).run(TraceId.generateYOLO).unsafeRunSync().value
         result1.sharedAt mustNot be(empty)
 
-        val result2 = credentialsRepository.getBy(credential2.credentialId).unsafeRunSync().value
+        val result2 =
+          credentialsRepository.getBy(credential2.credentialId).run(TraceId.generateYOLO).unsafeRunSync().value
         result2.sharedAt mustNot be(empty)
       }
     }
@@ -830,10 +834,12 @@ class CredentialsServiceImplSpec extends ManagementConsoleRpcSpecBase with DIDUt
           serviceStub.shareCredentials(request)
         }
 
-        val result1 = credentialsRepository.getBy(credential1.credentialId).unsafeRunSync().value
+        val result1 =
+          credentialsRepository.getBy(credential1.credentialId).run(TraceId.generateYOLO).unsafeRunSync().value
         result1.sharedAt must be(empty)
 
-        val result2 = credentialsRepository.getBy(credential2.credentialId).unsafeRunSync().value
+        val result2 =
+          credentialsRepository.getBy(credential2.credentialId).run(TraceId.generateYOLO).unsafeRunSync().value
         result2.sharedAt must be(empty)
       }
     }
@@ -890,6 +896,7 @@ class CredentialsServiceImplSpec extends ManagementConsoleRpcSpecBase with DIDUt
 
         val storedPublicationData = credentialsRepository
           .getBy(originalCredential.credentialId)
+          .run(TraceId.generateYOLO)
           .unsafeRunSync()
           .value
           .publicationData
@@ -946,6 +953,7 @@ class CredentialsServiceImplSpec extends ManagementConsoleRpcSpecBase with DIDUt
 
         val storedPublicationData = credentialsRepository
           .getBy(originalCredential.credentialId)
+          .run(TraceId.generateYOLO)
           .unsafeRunSync()
           .value
           .publicationData
@@ -994,6 +1002,7 @@ class CredentialsServiceImplSpec extends ManagementConsoleRpcSpecBase with DIDUt
 
         val storedCredential = credentialsRepository
           .getBy(aRandomId)
+          .run(TraceId.generateYOLO)
           .unsafeRunSync()
 
         storedCredential mustBe empty
@@ -1049,6 +1058,7 @@ class CredentialsServiceImplSpec extends ManagementConsoleRpcSpecBase with DIDUt
 
         val storedPublicationData = credentialsRepository
           .getBy(originalCredential.credentialId)
+          .run(TraceId.generateYOLO)
           .unsafeRunSync()
           .value
           .publicationData
@@ -1091,6 +1101,7 @@ class CredentialsServiceImplSpec extends ManagementConsoleRpcSpecBase with DIDUt
 
         val storedPublicationData = credentialsRepository
           .getBy(originalCredential.credentialId)
+          .run(TraceId.generateYOLO)
           .unsafeRunSync()
           .value
           .publicationData
@@ -1115,8 +1126,8 @@ class CredentialsServiceImplSpec extends ManagementConsoleRpcSpecBase with DIDUt
 
       usingApiAsCredentials(rpcRequest) { serviceStub =>
         serviceStub.deleteCredentials(request)
-        credentialsRepository.getBy(credential1.credentialId).unsafeRunSync() mustBe None
-        credentialsRepository.getBy(credential2.credentialId).unsafeRunSync() mustBe None
+        credentialsRepository.getBy(credential1.credentialId).run(TraceId.generateYOLO).unsafeRunSync() mustBe None
+        credentialsRepository.getBy(credential2.credentialId).run(TraceId.generateYOLO).unsafeRunSync() mustBe None
       }
 
     }
@@ -1140,8 +1151,14 @@ class CredentialsServiceImplSpec extends ManagementConsoleRpcSpecBase with DIDUt
           serviceStub.deleteCredentials(request)
         )
 
-        credentialsRepository.getBy(credential1.credentialId).unsafeRunSync() mustBe a[Some[_]]
-        credentialsRepository.getBy(credential2.credentialId).unsafeRunSync() mustBe a[Some[_]]
+        credentialsRepository
+          .getBy(credential1.credentialId)
+          .run(TraceId.generateYOLO)
+          .unsafeRunSync() mustBe a[Some[_]]
+        credentialsRepository
+          .getBy(credential2.credentialId)
+          .run(TraceId.generateYOLO)
+          .unsafeRunSync() mustBe a[Some[_]]
       }
     }
 
@@ -1162,8 +1179,14 @@ class CredentialsServiceImplSpec extends ManagementConsoleRpcSpecBase with DIDUt
           serviceStub.deleteCredentials(request)
         )
 
-        credentialsRepository.getBy(credential1.credentialId).unsafeRunSync() mustBe a[Some[_]]
-        credentialsRepository.getBy(credential2.credentialId).unsafeRunSync() mustBe a[Some[_]]
+        credentialsRepository
+          .getBy(credential1.credentialId)
+          .run(TraceId.generateYOLO)
+          .unsafeRunSync() mustBe a[Some[_]]
+        credentialsRepository
+          .getBy(credential2.credentialId)
+          .run(TraceId.generateYOLO)
+          .unsafeRunSync() mustBe a[Some[_]]
       }
     }
 
@@ -1184,8 +1207,14 @@ class CredentialsServiceImplSpec extends ManagementConsoleRpcSpecBase with DIDUt
           serviceStub.deleteCredentials(request)
         )
 
-        credentialsRepository.getBy(credential1.credentialId).unsafeRunSync() mustBe a[Some[_]]
-        credentialsRepository.getBy(credential2.credentialId).unsafeRunSync() mustBe a[Some[_]]
+        credentialsRepository
+          .getBy(credential1.credentialId)
+          .run(TraceId.generateYOLO)
+          .unsafeRunSync() mustBe a[Some[_]]
+        credentialsRepository
+          .getBy(credential2.credentialId)
+          .run(TraceId.generateYOLO)
+          .unsafeRunSync() mustBe a[Some[_]]
       }
     }
   }
