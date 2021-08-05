@@ -29,36 +29,36 @@ class CardanoClient(cardanoDbSyncClient: CardanoDbSyncClient, cardanoWalletApiCl
       payments: List[Payment],
       metadata: Option[TransactionMetadata],
       passphrase: String
-  ): Result[TransactionError, TransactionId] = {
+  ): Result[CardanoWalletError, TransactionId] = {
     cardanoWalletApiClient
       .postTransaction(walletId, payments, metadata, passphrase)
       .mapLeft(e => {
-        logger.error(s"Could not post the Cardano transaction: $e")
-        TransactionError.InvalidTransaction
+        logger.error(s"Could not post the Cardano transaction: ${e.error}")
+        CardanoWalletError.errorInstance(message = e.error.message, code = e.error.code)
       })
   }
 
   def getTransaction(
       walletId: WalletId,
       transactionId: TransactionId
-  ): Result[TransactionError, TransactionDetails] = {
+  ): Result[CardanoWalletError, TransactionDetails] = {
     cardanoWalletApiClient
       .getTransaction(walletId, transactionId)
       .mapLeft(e => {
-        logger.error(s"Could not get Cardano transaction $transactionId: $e")
-        TransactionError.InvalidTransaction
+        logger.error(s"Could not get Cardano transaction $transactionId: ${e.error}")
+        CardanoWalletError.errorInstance(message = e.error.message, code = e.error.code)
       })
   }
 
   def deleteTransaction(
       walletId: WalletId,
       transactionId: TransactionId
-  ): Result[TransactionError, Unit] = {
+  ): Result[CardanoWalletError, Unit] = {
     cardanoWalletApiClient
       .deleteTransaction(walletId, transactionId)
       .mapLeft(e => {
-        logger.error(s"Could not delete Cardano transaction $transactionId: $e")
-        TransactionError.InvalidTransaction
+        logger.error(s"Could not delete Cardano transaction $transactionId: ${e.error}")
+        CardanoWalletError.errorInstance(message = e.error.message, code = e.error.code)
       })
   }
 }
