@@ -1,15 +1,14 @@
 package io.iohk.atala.prism.node.cardano.models
 
 private object CardanoWalletErrorsCollector {
-  private val codeToError =
+  private val codeToErrorMap =
     collection.mutable.Map.empty[String, Class[_ <: CardanoWalletError]]
 
-  def addError(code: String, errorClass: Class[_ <: CardanoWalletError]): Unit = {
-    codeToError.update(code, errorClass)
-  }
+  def addError(code: String, errorClass: Class[_ <: CardanoWalletError]): Unit =
+    codeToErrorMap.update(code, errorClass)
 
-  def codeToError(code: String): Class[_ <: CardanoWalletError] =
-    codeToError.getOrElse(code, CardanoWalletError.UndefinedCardanoWalletError.getClass)
+  def codeToError(code: String): Option[Class[_ <: CardanoWalletError]] =
+    codeToErrorMap.get(code)
 }
 
 sealed trait CardanoWalletError {
@@ -49,9 +48,11 @@ object CardanoWalletError {
       code: String = "undefined_cardano_wallet_error"
   ) extends CardanoWalletError
 
-  def errorInstance(message: String, code: String): CardanoWalletError =
+  def errorInstance(message: String, code: String): CardanoWalletError = {
     CardanoWalletErrorsCollector
       .codeToError(code)
+      .getOrElse(classOf[UndefinedCardanoWalletError])
       .getConstructor(classOf[String], classOf[String])
       .newInstance(message, code)
+  }
 }
