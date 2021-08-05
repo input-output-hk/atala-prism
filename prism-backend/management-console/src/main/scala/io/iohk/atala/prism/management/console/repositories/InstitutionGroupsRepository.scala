@@ -12,12 +12,11 @@ import doobie.ConnectionIO
 import doobie.implicits._
 import doobie.util.transactor.Transactor
 import io.iohk.atala.prism.management.console.errors._
-import io.iohk.atala.prism.management.console.models.InstitutionGroup.PaginatedQuery
 import io.iohk.atala.prism.management.console.models.{Contact, InstitutionGroup, ParticipantId}
 import io.iohk.atala.prism.management.console.repositories.daos.InstitutionGroupsDAO
+import io.iohk.atala.prism.management.console.repositories.metrics.InstitutionGroupsRepositoryMetrics
 import io.iohk.atala.prism.utils.syntax.DBConnectionOps
-import io.iohk.atala.prism.metrics.{TimeMeasureMetric, TimeMeasureUtil}
-import io.iohk.atala.prism.metrics.TimeMeasureUtil.MeasureOps
+import io.iohk.atala.prism.metrics.TimeMeasureMetric
 import org.slf4j.{Logger, LoggerFactory}
 import tofu.higherKind.Mid
 
@@ -206,48 +205,4 @@ private final class InstitutionGroupsRepositoryImpl[F[_]: BracketThrow](xa: Tran
       .logSQLErrors(s"deleting, group id - $groupId", logger)
       .transact(xa)
   }
-}
-
-private final class InstitutionGroupsRepositoryMetrics[F[_]: TimeMeasureMetric: BracketThrow]
-    extends InstitutionGroupsRepository[Mid[F, *]] {
-  private val repoName = "InstitutionGroupsRepository"
-  private lazy val createTimer = TimeMeasureUtil.createDBQueryTimer(repoName, "create")
-  private lazy val getByTimer = TimeMeasureUtil.createDBQueryTimer(repoName, "getBy")
-  private lazy val listContactsTimer = TimeMeasureUtil.createDBQueryTimer(repoName, "listContacts")
-  private lazy val updateGroupTimer = TimeMeasureUtil.createDBQueryTimer(repoName, "updateGroup")
-  private lazy val copyGroupTimer = TimeMeasureUtil.createDBQueryTimer(repoName, "copyGroup")
-  private lazy val deleteGroupTimer = TimeMeasureUtil.createDBQueryTimer(repoName, "deleteGroup")
-
-  override def create(
-      institutionId: ParticipantId,
-      name: InstitutionGroup.Name,
-      contactIds: Set[Contact.Id]
-  ): Mid[F, Either[ManagementConsoleError, InstitutionGroup]] = _.measureOperationTime(createTimer)
-
-  override def getBy(
-      institutionId: ParticipantId,
-      query: PaginatedQuery
-  ): Mid[F, (List[InstitutionGroup.WithContactCount], Int)] = _.measureOperationTime(getByTimer)
-
-  override def listContacts(institutionId: ParticipantId, groupName: InstitutionGroup.Name): Mid[F, List[Contact]] =
-    _.measureOperationTime(listContactsTimer)
-
-  override def updateGroup(
-      institutionId: ParticipantId,
-      groupId: InstitutionGroup.Id,
-      contactIdsToAdd: Set[Contact.Id],
-      contactIdsToRemove: Set[Contact.Id],
-      newNameMaybe: Option[InstitutionGroup.Name]
-  ): Mid[F, Either[ManagementConsoleError, Unit]] = _.measureOperationTime(updateGroupTimer)
-
-  override def copyGroup(
-      institutionId: ParticipantId,
-      originalGroupId: InstitutionGroup.Id,
-      newGroupName: InstitutionGroup.Name
-  ): Mid[F, Either[ManagementConsoleError, InstitutionGroup]] = _.measureOperationTime(copyGroupTimer)
-
-  override def deleteGroup(
-      institutionId: ParticipantId,
-      groupId: InstitutionGroup.Id
-  ): Mid[F, Either[ManagementConsoleError, Unit]] = _.measureOperationTime(deleteGroupTimer)
 }
