@@ -53,6 +53,13 @@ service NodeService {
      */
     rpc FlushOperationsBuffer(FlushOperationsBufferRequest) returns (FlushOperationsBufferResponse) {}
 
+    /**
+     * PUBLIC
+     *
+     * Retrieve the timestamp of the latest synchronized (processed by PRISM Node) block.
+     */
+    rpc GetLastSyncedBlockTimestamp(GetLastSyncedBlockTimestampRequest) returns (GetLastSyncedBlockTimestampResponse) {}
+
     // Publishes a sequence of signed operations in a single underlying transaction.
     // The sequence of operations has a size limit to fit in the metadata of the transaction (approx. 15KB).
     rpc PublishAsABlock(PublishAsABlockRequest) returns (PublishAsABlockResponse) {}
@@ -196,6 +203,19 @@ message FlushOperationsBufferRequest {
  */
 message FlushOperationsBufferResponse {
     int32 sent_operations_amount = 1; // Amount of operations retrieved from the buffer, and submitted to the ledger.
+}
+
+/**
+ * Request to retrieve the timestamp of the latest synchronized (processed by PRISM Node) block.
+ */
+message GetLastSyncedBlockTimestampRequest {
+}
+
+/**
+ * Response with the timestamp of the latest synchronized (processed by PRISM Node) block.
+ */
+message GetLastSyncedBlockTimestampResponse {
+    google.protobuf.Timestamp last_synced_block_timestamp = 1; // Timestamp of the latest synchronized (processed by PRISM Node) block.
 }
 
 message PublishAsABlockRequest {
