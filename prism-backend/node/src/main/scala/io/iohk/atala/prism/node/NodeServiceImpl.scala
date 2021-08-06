@@ -8,10 +8,6 @@ import io.iohk.atala.prism.BuildInfo
 import io.iohk.atala.prism.connector.AtalaOperationId
 import io.iohk.atala.prism.kotlin.credentials.CredentialBatchId
 import io.iohk.atala.prism.kotlin.crypto.SHA256Digest
-import io.iohk.atala.prism.kotlin.identity.DIDFormatException.{
-  CanonicalSuffixMatchStateException,
-  InvalidAtalaOperationException
-}
 import io.iohk.atala.prism.kotlin.identity.{Canonical, DID, LongForm, Unknown}
 import io.iohk.atala.prism.metrics.RequestMeasureUtil
 import io.iohk.atala.prism.metrics.RequestMeasureUtil.{FutureMetricsOps, measureRequestFuture}
@@ -82,11 +78,7 @@ class NodeServiceImpl(
             resolve(did) orElse (countAndThrowNodeError(methodName, _))
           case longForm: LongForm => // we received a long form DID
             // we first check that the encoded initial state matches the corresponding hash
-            Try(longForm.validate).toEither.left
-              .map {
-                case e: InvalidAtalaOperationException => e
-                case e: CanonicalSuffixMatchStateException => e
-              }
+            Try(longForm.validate)
               .map { validatedLongForm =>
                 // validation succeeded, we check if the DID was published
                 resolve(DID.buildPrismDID(longForm.getStateHash, null), did).orReturn {
