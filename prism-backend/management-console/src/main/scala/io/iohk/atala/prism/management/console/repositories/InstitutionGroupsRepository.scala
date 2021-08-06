@@ -1,11 +1,14 @@
 package io.iohk.atala.prism.management.console.repositories
 
+import cats.{Comonad, Functor, Monad}
 import cats.data.EitherT
-import cats.effect.BracketThrow
+import cats.effect.{BracketThrow, Resource}
 import cats.syntax.apply._
 import cats.syntax.applicative._
+import cats.syntax.comonad._
 import cats.syntax.either._
 import cats.syntax.flatMap._
+import cats.syntax.functor._
 import derevo.tagless.applyK
 import derevo.derive
 import doobie.ConnectionIO
@@ -14,11 +17,14 @@ import doobie.util.transactor.Transactor
 import io.iohk.atala.prism.management.console.errors._
 import io.iohk.atala.prism.management.console.models.{Contact, InstitutionGroup, ParticipantId}
 import io.iohk.atala.prism.management.console.repositories.daos.InstitutionGroupsDAO
+import io.iohk.atala.prism.management.console.repositories.logs.InstitutionGroupsRepositoryLogs
 import io.iohk.atala.prism.management.console.repositories.metrics.InstitutionGroupsRepositoryMetrics
 import io.iohk.atala.prism.utils.syntax.DBConnectionOps
 import io.iohk.atala.prism.metrics.TimeMeasureMetric
 import org.slf4j.{Logger, LoggerFactory}
 import tofu.higherKind.Mid
+import tofu.logging.{Logs, ServiceLogging}
+import tofu.syntax.monoid.TofuSemigroupOps
 
 @derive(applyK)
 trait InstitutionGroupsRepository[F[_]] {
@@ -61,10 +67,32 @@ trait InstitutionGroupsRepository[F[_]] {
 
 object InstitutionGroupsRepository {
 
-  def apply[F[_]: TimeMeasureMetric: BracketThrow](transactor: Transactor[F]): InstitutionGroupsRepository[F] = {
-    val metrics: InstitutionGroupsRepository[Mid[F, *]] = new InstitutionGroupsRepositoryMetrics[F]
-    metrics attach new InstitutionGroupsRepositoryImpl[F](transactor)
-  }
+  def apply[F[_]: TimeMeasureMetric: BracketThrow, R[_]: Functor](
+      transactor: Transactor[F],
+      logs: Logs[R, F]
+  ): R[InstitutionGroupsRepository[F]] =
+    for {
+      serviceLogs <- logs.service[InstitutionGroupsRepository[F]]
+    } yield {
+      implicit val implicitLogs: ServiceLogging[F, InstitutionGroupsRepository[F]] = serviceLogs
+      val metrics: InstitutionGroupsRepository[Mid[F, *]] = new InstitutionGroupsRepositoryMetrics[F]
+      val logs: InstitutionGroupsRepository[Mid[F, *]] = new InstitutionGroupsRepositoryLogs[F]
+      val mid = metrics |+| logs
+      mid attach new InstitutionGroupsRepositoryImpl[F](transactor)
+    }
+
+  def unsafe[F[_]: TimeMeasureMetric: BracketThrow, R[_]: Comonad](
+      transactor: Transactor[F],
+      logs: Logs[R, F]
+  ): InstitutionGroupsRepository[F] = InstitutionGroupsRepository(transactor, logs).extract
+
+  def makeResource[F[_]: TimeMeasureMetric: BracketThrow, R[_]: Monad](
+      transactor: Transactor[F],
+      logs: Logs[R, F]
+  ): Resource[R, InstitutionGroupsRepository[F]] =
+    Resource.eval(
+      InstitutionGroupsRepository(transactor, logs)
+    )
 
 }
 

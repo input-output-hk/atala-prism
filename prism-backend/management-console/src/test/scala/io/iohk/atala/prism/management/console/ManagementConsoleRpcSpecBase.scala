@@ -56,7 +56,8 @@ class ManagementConsoleRpcSpecBase extends RpcSpecBase {
   lazy val requestNoncesRepository = RequestNoncesRepository(database)
   lazy val contactsRepository = ContactsRepository.unsafe(dbLiftedToTraceIdIO, managementConsoleTestLogs)
   lazy val statisticsRepository = StatisticsRepository(database)
-  lazy val institutionGroupsRepository = InstitutionGroupsRepository(database)
+  lazy val institutionGroupsRepository =
+    InstitutionGroupsRepository.unsafe(dbLiftedToTraceIdIO, managementConsoleTestLogs)
   lazy val credentialIssuancesRepository =
     CredentialIssuancesRepository.unsafe(dbLiftedToTraceIdIO, managementConsoleTestLogs)
   lazy val credentialsRepository = CredentialsRepository(database)

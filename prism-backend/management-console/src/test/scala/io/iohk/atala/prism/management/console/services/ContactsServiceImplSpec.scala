@@ -420,6 +420,7 @@ class ContactsServiceImplSpec extends ManagementConsoleRpcSpecBase with DIDUtil 
       groups.foreach { group =>
         institutionGroupsRepository
           .listContacts(institutionId, group)
+          .run(TraceId.generateYOLO)
           .unsafeRunSync()
           .size must be(2)
       }

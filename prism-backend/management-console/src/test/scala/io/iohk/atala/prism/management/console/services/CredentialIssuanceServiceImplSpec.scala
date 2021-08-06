@@ -10,10 +10,11 @@ import io.iohk.atala.prism.management.console.{DataPreparation, ManagementConsol
 import io.iohk.atala.prism.protos.{console_api, console_models}
 import org.mockito.IdiomaticMockito._
 import org.scalatest.OptionValues._
+
 import java.time.Instant
 import java.util.UUID
-
 import io.circe.syntax.EncoderOps
+import io.iohk.atala.prism.logging.TraceId
 
 //sbt "project management-console" "testOnly *CredentialIssuanceServiceImplSpec"
 class CredentialIssuanceServiceImplSpec extends ManagementConsoleRpcSpecBase with DIDUtil {
@@ -224,6 +225,7 @@ class CredentialIssuanceServiceImplSpec extends ManagementConsoleRpcSpecBase wit
     val groups = List("Engineering", "Business").map { groupName =>
       institutionGroupsRepository
         .create(institutionId, InstitutionGroup.Name(groupName), Set())
+        .run(TraceId.generateYOLO)
         .unsafeRunSync()
         .toOption
         .value
@@ -265,6 +267,7 @@ class CredentialIssuanceServiceImplSpec extends ManagementConsoleRpcSpecBase wit
     val groups = List("Engineering", "Business").map { groupName =>
       institutionGroupsRepository
         .create(institutionId, InstitutionGroup.Name(groupName), Set())
+        .run(TraceId.generateYOLO)
         .unsafeRunSync()
         .toOption
         .value
