@@ -92,7 +92,7 @@ object ManagementConsoleApp extends IOApp {
       institutionGroupsRepository = InstitutionGroupsRepository(tx)
       credentialIssuancesRepository <-
         CredentialIssuancesRepository.makeResource(txTraceIdLifted, managementConsoleLogs)
-      credentialTypeRepository = CredentialTypeRepository(tx)
+      credentialTypeRepository <- CredentialTypeRepository.makeResource(txTraceIdLifted, managementConsoleLogs)
 
       authenticator = new ManagementConsoleAuthenticator(
         participantsRepository,

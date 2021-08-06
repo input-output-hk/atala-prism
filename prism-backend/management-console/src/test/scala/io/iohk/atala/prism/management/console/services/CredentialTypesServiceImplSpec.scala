@@ -6,6 +6,7 @@ import org.scalatest.OptionValues
 import io.iohk.atala.prism.DIDUtil
 import io.iohk.atala.prism.auth.SignedRpcRequest
 import io.iohk.atala.prism.kotlin.crypto.EC
+import io.iohk.atala.prism.logging.TraceId
 import io.iohk.atala.prism.management.console.ManagementConsoleRpcSpecBase
 import io.iohk.atala.prism.protos.{console_api, console_models}
 import io.iohk.atala.prism.management.console.DataPreparation._
@@ -28,7 +29,7 @@ class CredentialTypesServiceImplSpec extends ManagementConsoleRpcSpecBase with D
       }
 
       // create credential type
-      credentialTypeRepository.create(participantId, createCredentialType).unsafeRunSync()
+      credentialTypeRepository.create(participantId, createCredentialType).run(TraceId.generateYOLO).unsafeRunSync()
 
       // test with data
       usingApiAsCredentialType(SignedRpcRequest.generate(keyPair, did, request)) { stub =>
@@ -41,7 +42,11 @@ class CredentialTypesServiceImplSpec extends ManagementConsoleRpcSpecBase with D
     "return credential type" in new Fixtures {
       // create credential type
       val credentialType =
-        credentialTypeRepository.create(participantId, createCredentialType).unsafeRunSync().getOrElse(fail())
+        credentialTypeRepository
+          .create(participantId, createCredentialType)
+          .run(TraceId.generateYOLO)
+          .unsafeRunSync()
+          .getOrElse(fail())
 
       val request =
         console_api.GetCredentialTypeRequest(credentialTypeId = credentialType.credentialType.id.uuid.toString)
@@ -89,7 +94,11 @@ class CredentialTypesServiceImplSpec extends ManagementConsoleRpcSpecBase with D
     "update credential type" in new Fixtures {
       // create credential type
       val credentialType =
-        credentialTypeRepository.create(participantId, createCredentialType).unsafeRunSync().getOrElse(fail())
+        credentialTypeRepository
+          .create(participantId, createCredentialType)
+          .run(TraceId.generateYOLO)
+          .unsafeRunSync()
+          .getOrElse(fail())
 
       val model = console_models.UpdateCredentialType(
         id = credentialType.credentialType.id.uuid.toString,
@@ -108,6 +117,7 @@ class CredentialTypesServiceImplSpec extends ManagementConsoleRpcSpecBase with D
       usingApiAsCredentialType(SignedRpcRequest.generate(keyPair, did, request))(_.updateCredentialType(request))
       val result = credentialTypeRepository
         .find(credentialType.credentialType.id)
+        .run(TraceId.generateYOLO)
         .unsafeRunSync()
       result.map(_.credentialType.name) mustBe Some("credenital-type-changed")
       val fields = result.map(_.requiredFields)
@@ -134,7 +144,11 @@ class CredentialTypesServiceImplSpec extends ManagementConsoleRpcSpecBase with D
     "update credential type state to ready" in new Fixtures {
       // create credential type
       val credentialType =
-        credentialTypeRepository.create(participantId, createCredentialType).unsafeRunSync().getOrElse(fail())
+        credentialTypeRepository
+          .create(participantId, createCredentialType)
+          .run(TraceId.generateYOLO)
+          .unsafeRunSync()
+          .getOrElse(fail())
 
       val request =
         console_api.MarkAsReadyCredentialTypeRequest(credentialTypeId = credentialType.credentialType.id.uuid.toString)
@@ -145,6 +159,7 @@ class CredentialTypesServiceImplSpec extends ManagementConsoleRpcSpecBase with D
       usingApiAsCredentialType(SignedRpcRequest.generate(keyPair, did, request))(_.markAsReadyCredentialType(request))
       credentialTypeRepository
         .find(credentialType.credentialType.id)
+        .run(TraceId.generateYOLO)
         .unsafeRunSync()
         .map(_.credentialType.state) mustBe Some(CredentialTypeState.Ready)
     }
@@ -152,7 +167,11 @@ class CredentialTypesServiceImplSpec extends ManagementConsoleRpcSpecBase with D
     "update credential type state to archived" in new Fixtures {
       // create credential type
       val credentialType =
-        credentialTypeRepository.create(participantId, createCredentialType).unsafeRunSync().getOrElse(fail())
+        credentialTypeRepository
+          .create(participantId, createCredentialType)
+          .run(TraceId.generateYOLO)
+          .unsafeRunSync()
+          .getOrElse(fail())
 
       val request =
         console_api.MarkAsArchivedCredentialTypeRequest(credentialTypeId =
@@ -167,6 +186,7 @@ class CredentialTypesServiceImplSpec extends ManagementConsoleRpcSpecBase with D
       )
       credentialTypeRepository
         .find(credentialType.credentialType.id)
+        .run(TraceId.generateYOLO)
         .unsafeRunSync()
         .map(_.credentialType.state) mustBe Some(CredentialTypeState.Archived)
     }
