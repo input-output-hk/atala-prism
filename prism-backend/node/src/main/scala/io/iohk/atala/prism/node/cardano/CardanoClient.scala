@@ -34,7 +34,7 @@ class CardanoClient(cardanoDbSyncClient: CardanoDbSyncClient, cardanoWalletApiCl
       .postTransaction(walletId, payments, metadata, passphrase)
       .mapLeft(e => {
         logger.error(s"Could not post the Cardano transaction: ${e.error}")
-        CardanoWalletError.errorInstance(message = e.error.message, code = e.error.code)
+        CardanoWalletError.fromString(e.error.message, e.error.code)
       })
   }
 
@@ -46,7 +46,7 @@ class CardanoClient(cardanoDbSyncClient: CardanoDbSyncClient, cardanoWalletApiCl
       .getTransaction(walletId, transactionId)
       .mapLeft(e => {
         logger.error(s"Could not get Cardano transaction $transactionId: ${e.error}")
-        CardanoWalletError.errorInstance(message = e.error.message, code = e.error.code)
+        CardanoWalletError.fromString(e.error.message, e.error.code)
       })
   }
 
@@ -58,7 +58,7 @@ class CardanoClient(cardanoDbSyncClient: CardanoDbSyncClient, cardanoWalletApiCl
       .deleteTransaction(walletId, transactionId)
       .mapLeft(e => {
         logger.error(s"Could not delete Cardano transaction $transactionId: ${e.error}")
-        CardanoWalletError.errorInstance(message = e.error.message, code = e.error.code)
+        CardanoWalletError.fromString(e.error.message, e.error.code)
       })
   }
 }

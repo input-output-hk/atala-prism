@@ -1,58 +1,51 @@
 package io.iohk.atala.prism.node.cardano.models
+import enumeratum._
 
-private object CardanoWalletErrorsCollector {
-  private val codeToErrorMap =
-    collection.mutable.Map.empty[String, Class[_ <: CardanoWalletError]]
-
-  def addError(code: String, errorClass: Class[_ <: CardanoWalletError]): Unit =
-    codeToErrorMap.update(code, errorClass)
-
-  def codeToError(code: String): Option[Class[_ <: CardanoWalletError]] =
-    codeToErrorMap.get(code)
-}
-
-sealed trait CardanoWalletError {
-  def code: String
-  def message: String
-
-  CardanoWalletErrorsCollector.addError(code, getClass)
-}
+case class CardanoWalletError(message: String, code: CardanoWalletErrorCode)
+    extends RuntimeException(f"Status [${code.entryName}]. $message")
 
 object CardanoWalletError {
+  private val undefinedErrorDescription: String = "Undefined internal error in Cardano Wallet occurred."
+
+  def fromString(message: String, errorCode: String): CardanoWalletError = {
+    val errorCodeMaybe = CardanoWalletErrorCode.fromString(errorCode)
+    errorCodeMaybe.fold {
+      val errorDescription = f"$undefinedErrorDescription [$errorCode]"
+      CardanoWalletError(errorDescription, CardanoWalletErrorCode.UndefinedCardanoWalletError)
+    } { code =>
+      CardanoWalletError(message, code)
+    }
+  }
+}
+
+sealed trait CardanoWalletErrorCode extends EnumEntry.Snakecase
+object CardanoWalletErrorCode extends Enum[CardanoWalletErrorCode] {
+  val values: IndexedSeq[CardanoWalletErrorCode] = findValues
+
   // Errors 403 Forbidden
-  case class InvalidWalletType(message: String, code: String = "invalid_wallet_type") extends CardanoWalletError
-  case class AlreadyWithdrawing(message: String, code: String = "already_withdrawing") extends CardanoWalletError
-  case class UtxoTooSmall(message: String, code: String = "utxo_too_small") extends CardanoWalletError
-  case class CannotCoverFee(message: String, code: String = "cannot_cover_fee") extends CardanoWalletError
-  case class NotEnoughMoney(message: String, code: String = "not_enough_money") extends CardanoWalletError
-  case class TransactionIsTooBig(message: String, code: String = "transaction_is_too_big") extends CardanoWalletError
-  case class NoRootKey(message: String, code: String = "no_root_key") extends CardanoWalletError
-  case class WrongEncryptionPassphrase(message: String, code: String = "wrong_encryption_passphrase")
-      extends CardanoWalletError
-  case class TransactionAlreadyInLedger(message: String, code: String = "transaction_already_in_ledger")
-      extends CardanoWalletError
+  case object InvalidWalletType extends CardanoWalletErrorCode
+  case object AlreadyWithdrawing extends CardanoWalletErrorCode
+  case object UtxoTooSmall extends CardanoWalletErrorCode
+  case object CannotCoverFee extends CardanoWalletErrorCode
+  case object NotEnoughMoney extends CardanoWalletErrorCode
+  case object TransactionIsTooBig extends CardanoWalletErrorCode
+  case object NoRootKey extends CardanoWalletErrorCode
+  case object WrongEncryptionPassphrase extends CardanoWalletErrorCode
+  case object TransactionAlreadyInLedger extends CardanoWalletErrorCode
 
   // Errors 404 Not Found
-  case class NoSuchWallet(message: String, code: String = "no_such_wallet") extends CardanoWalletError
-  case class NoSuchTransaction(message: String, code: String = "no_such_transaction") extends CardanoWalletError
+  case object NoSuchWallet extends CardanoWalletErrorCode
+  case object NoSuchTransaction extends CardanoWalletErrorCode
 
   // Errors 406 Not Acceptable
-  case class NotAcceptable(message: String, code: String = "not_acceptable") extends CardanoWalletError
+  case object NotAcceptable extends CardanoWalletErrorCode
 
   // Errors 415 Not Supported Media Type
-  case class UnsupportedMediaType(message: String, code: String = "unsupported_media_type") extends CardanoWalletError
+  case object UnsupportedMediaType extends CardanoWalletErrorCode
 
   // Errors 400 Undefined
-  case class UndefinedCardanoWalletError(
-      message: String = "Undefined internal error in Cardano Wallet occurred.",
-      code: String = "undefined_cardano_wallet_error"
-  ) extends CardanoWalletError
+  case object UndefinedCardanoWalletError extends CardanoWalletErrorCode
 
-  def errorInstance(message: String, code: String): CardanoWalletError = {
-    CardanoWalletErrorsCollector
-      .codeToError(code)
-      .getOrElse(classOf[UndefinedCardanoWalletError])
-      .getConstructor(classOf[String], classOf[String])
-      .newInstance(message, code)
-  }
+  def fromString(errorCode: String): Option[CardanoWalletErrorCode] =
+    CardanoWalletErrorCode.withNameInsensitiveOption(errorCode)
 }
