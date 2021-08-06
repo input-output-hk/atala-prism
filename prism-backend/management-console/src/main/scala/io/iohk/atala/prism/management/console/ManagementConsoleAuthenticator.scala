@@ -1,6 +1,5 @@
 package io.iohk.atala.prism.management.console
 
-import cats.effect.IO
 import cats.syntax.either._
 import io.iohk.atala.prism.auth.errors.{AuthError, UnexpectedError, UnsupportedAuthMethod}
 import io.iohk.atala.prism.auth.grpc.GrpcAuthenticationHeaderParser
@@ -19,7 +18,7 @@ import io.iohk.atala.prism.utils.FutureEither.FutureEitherOps
 import scala.concurrent.{ExecutionContext, Future}
 
 class ManagementConsoleAuthenticator(
-    participantsRepository: ParticipantsRepository[IO],
+    participantsRepository: ParticipantsRepository[IOWithTraceIdContext],
     requestNoncesRepository: RequestNoncesRepository[IOWithTraceIdContext],
     nodeClient: node_api.NodeServiceGrpc.NodeService,
     grpcAuthenticationHeaderParser: GrpcAuthenticationHeaderParser
@@ -48,6 +47,7 @@ class ManagementConsoleAuthenticator(
   override def findByDid(did: DID)(implicit ec: ExecutionContext): FutureEither[AuthError, ParticipantId] =
     participantsRepository
       .findBy(did)
+      .run(TraceId.generateYOLO)
       .unsafeToFuture()
       .toFutureEither
       .map(_.id)

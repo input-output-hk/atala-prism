@@ -7,6 +7,7 @@ import io.iohk.atala.prism.auth.SignedRpcRequest
 import io.iohk.atala.prism.auth.grpc.GrpcAuthenticationHeaderParser
 import io.iohk.atala.prism.kotlin.crypto.EC
 import io.iohk.atala.prism.identity.DID
+import io.iohk.atala.prism.logging.TraceId
 import io.iohk.atala.prism.logging.TraceId.IOWithTraceIdContext
 import io.iohk.atala.prism.management.console.models.{CredentialExternalId, ParticipantId, ParticipantLogo}
 import io.iohk.atala.prism.management.console.repositories.ParticipantsRepository.CreateParticipantRequest
@@ -32,7 +33,8 @@ class CredentialsStoreServiceImplSpec extends RpcSpecBase with DIDUtil {
   )
 
   private val receivedCredentials = ReceivedCredentialsRepository.unsafe(dbLiftedToTraceIdIO, managementConsoleTestLogs)
-  private lazy val participantsRepository = ParticipantsRepository(database)
+  private lazy val participantsRepository =
+    ParticipantsRepository.unsafe(dbLiftedToTraceIdIO, managementConsoleTestLogs)
   private lazy val requestNoncesRepository =
     RequestNoncesRepository.unsafe(dbLiftedToTraceIdIO, managementConsoleTestLogs)
   protected lazy val nodeMock = mock[io.iohk.atala.prism.protos.node_api.NodeServiceGrpc.NodeService]
@@ -57,7 +59,7 @@ class CredentialsStoreServiceImplSpec extends RpcSpecBase with DIDUtil {
   override def beforeEach(): Unit = {
     super.beforeEach()
 
-    ParticipantsRepository(database)
+    participantsRepository
       .create(
         CreateParticipantRequest(
           verifierId,
@@ -66,6 +68,7 @@ class CredentialsStoreServiceImplSpec extends RpcSpecBase with DIDUtil {
           ParticipantLogo(Vector())
         )
       )
+      .run(TraceId.generateYOLO)
       .unsafeRunSync()
     ()
   }

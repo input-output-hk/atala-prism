@@ -29,7 +29,7 @@ class ParticipantsRepositorySpec extends AtalaWithPostgresSpec {
 
   val logs: Logs[IO, IO] = Logs.sync[IO, IO]
 
-  lazy val participantsRepository = ParticipantsRepository(database)
+  lazy val participantsRepository = ParticipantsRepository.unsafe(db, logs)
 
   "getParticipant by did" should {
     "get a participant" in {

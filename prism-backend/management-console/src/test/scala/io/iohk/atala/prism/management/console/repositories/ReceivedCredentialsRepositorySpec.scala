@@ -15,7 +15,7 @@ import java.time.temporal.ChronoUnit
 class ReceivedCredentialsRepositorySpec extends AtalaWithPostgresSpec {
   val logs: Logs[IO, IO] = Logs.sync[IO, IO]
   lazy val receivedCredentialsRepository = ReceivedCredentialsRepository.unsafe(database, logs)
-  lazy val participantsRepository = ParticipantsRepository(database)
+  lazy val participantsRepository = ParticipantsRepository.unsafe(database, logs)
 
   lazy val verifierId = ParticipantId.unsafeFrom("af45a4da-65b8-473e-aadc-aa6b346250a3")
 
