@@ -4,12 +4,13 @@ import { Form, Modal } from 'antd';
 import { useTranslation } from 'react-i18next';
 import CategoryCreation from './CategoryCreation';
 import { defaultCategoryIcons } from '../../../../helpers/templateCategories/categories';
+import { templateCategoryShape } from '../../../../helpers/propShapes';
 import './_style.scss';
 
 const defaultFileList = defaultCategoryIcons.map((thumbUrl, index) => ({ thumbUrl, uid: index }));
 const i18nPrefix = 'credentialTemplateCreation';
 
-const CategoryCreationModal = ({ visible, close }) => {
+const CategoryCreationModal = ({ visible, close, mockCategoriesProps }) => {
   const { t } = useTranslation();
   const [categoryForm] = Form.useForm();
 
@@ -18,6 +19,7 @@ const CategoryCreationModal = ({ visible, close }) => {
   };
 
   const defaultValues = {
+    categoryName: '',
     categoryIcon: defaultFileList[0].uid
   };
 
@@ -38,7 +40,11 @@ const CategoryCreationModal = ({ visible, close }) => {
         destroyOnClose
         footer={null}
       >
-        <CategoryCreation categoryForm={categoryForm} close={close} />
+        <CategoryCreation
+          categoryForm={categoryForm}
+          close={close}
+          mockCategoriesProps={mockCategoriesProps}
+        />
       </Modal>
     </Form>
   );
@@ -46,7 +52,11 @@ const CategoryCreationModal = ({ visible, close }) => {
 
 CategoryCreationModal.propTypes = {
   visible: PropTypes.bool.isRequired,
-  close: PropTypes.func.isRequired
+  close: PropTypes.func.isRequired,
+  mockCategoriesProps: PropTypes.shape({
+    mockedCategories: templateCategoryShape,
+    addMockedCategory: PropTypes.func.isRequired
+  }).isRequired
 };
 
 export default CategoryCreationModal;

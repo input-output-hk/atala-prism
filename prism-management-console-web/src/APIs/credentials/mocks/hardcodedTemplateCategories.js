@@ -9,35 +9,35 @@ import healthInsuranceSample from '../../../images/health-insurance-sample.svg';
 
 const governmentId = {
   id: 1,
-  name: 'credentials.type.governmentId',
+  name: 'Government ID',
   logo: governmentIdLogo,
   sampleImage: governmentIdSample,
   state: 1
 };
 const educational = {
   id: 2,
-  name: 'credentials.type.educational',
+  name: 'Educational',
   logo: educationalLogo,
   sampleImage: educationalSample,
   state: 1
 };
 const proofOfEmployment = {
   id: 3,
-  name: 'credentials.type.proofOfEmployment',
+  name: 'Proof Of Employment',
   logo: proofOfEmploymentLogo,
   sampleImage: proofOfEmploymentSample,
   state: 1
 };
 const healthIsurance = {
   id: 4,
-  name: 'credentials.type.healthInsurance',
+  name: 'Health Insurance',
   logo: healthInsuranceLogo,
   sampleImage: healthInsuranceSample,
   state: 0
 };
 const disabledCategory = {
   id: 5,
-  name: 'disabledCategory',
+  name: 'Disabled Category',
   state: 0
 };
 

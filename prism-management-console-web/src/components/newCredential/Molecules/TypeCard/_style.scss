@@ -1,4 +1,4 @@
-@import '../../../../css/general_styling';
+@import "../../../../css/general_styling";
 
 .TypeCard {
   border-radius: 6px;
@@ -26,6 +26,8 @@
 }
 
 .img-logo {
+  height: 35px;
+  width: 35px;
   margin-right: 10px;
 }
 

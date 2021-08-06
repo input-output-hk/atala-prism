@@ -5,7 +5,7 @@ import CategorySelector from './CategorySelector';
 import TemplateName from './TemplateName';
 import SimpleLoading from '../../../common/Atoms/SimpleLoading/SimpleLoading';
 
-const TemplateCategorySelectionStep = ({ templateCategories }) => {
+const TemplateCategorySelectionStep = ({ templateCategories, mockCategoriesProps }) => {
   if (!templateCategories.length) return <SimpleLoading size="md" />;
   return (
     <div className="TypeSelectionWrapper">
@@ -13,7 +13,10 @@ const TemplateCategorySelectionStep = ({ templateCategories }) => {
         <div className="TypeSelection">
           <div className="verticalFlex flexStart fullWidth">
             <TemplateName />
-            <CategorySelector templateCategories={templateCategories} />
+            <CategorySelector
+              templateCategories={templateCategories}
+              mockCategoriesProps={mockCategoriesProps}
+            />
           </div>
         </div>
       </div>
@@ -26,7 +29,11 @@ TemplateCategorySelectionStep.defaultProps = {
 };
 
 TemplateCategorySelectionStep.propTypes = {
-  templateCategories: PropTypes.arrayOf(PropTypes.shape({ templateCategoryShape }))
+  templateCategories: PropTypes.arrayOf(PropTypes.shape({ templateCategoryShape })),
+  mockCategoriesProps: PropTypes.shape({
+    mockedCategories: templateCategoryShape,
+    addMockedCategory: PropTypes.func.isRequired
+  }).isRequired
 };
 
 export default TemplateCategorySelectionStep;

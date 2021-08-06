@@ -534,6 +534,7 @@
     "checkInfo": "Check the data below"
   },
   "templates": {
+    "model": "Templates",
     "title": "Credential Templates",
     "actions": {
       "createTemplate": "Create Template"
@@ -585,7 +586,7 @@
       "continueButton": "Continue"
     },
     "categoryCreationModal": {
-      "title": "Select Category Icon",
+      "title": "Select your Category Icon",
       "categoryNameLabel": "Category Name",
       "categoryNamePlaceholder": "Category Name",  
       "categoryIconLabel": "Select your Category Icon",

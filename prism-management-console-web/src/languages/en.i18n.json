@@ -534,6 +534,7 @@
     "checkInfo": "Check the data below"
   },
   "templates": {
+    "model": "Templates",
     "title": "Credential Templates",
     "actions": {
       "createTemplate": "Create Template"

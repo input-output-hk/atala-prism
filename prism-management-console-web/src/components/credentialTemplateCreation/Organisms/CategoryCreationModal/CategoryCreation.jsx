@@ -1,21 +1,35 @@
-import React, { useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import PropTypes from 'prop-types';
 import { message } from 'antd';
 import { useTranslation } from 'react-i18next';
 import CustomButton from '../../../common/Atoms/CustomButton/CustomButton';
 import { useTemplateCategories } from '../../../../hooks/useCredentialTypes';
 import { withApi } from '../../../providers/withApi';
-import { antdV4FormShape, credentialTypesManagerShape } from '../../../../helpers/propShapes';
+import {
+  antdV4FormShape,
+  credentialTypesManagerShape,
+  templateCategoryShape
+} from '../../../../helpers/propShapes';
 import CategoryNameInput from '../../Molecules/CategoryCreationModal/CategoryNameInput';
 import CategoryIconSelector from '../../Molecules/CategoryCreationModal/CategoryIconSelector';
 import './_style.scss';
 
 const i18nPrefix = 'credentialTemplateCreation';
 
-const CategoryCreation = ({ api, categoryForm, close }) => {
+const CategoryCreation = ({ api, categoryForm, close, mockCategoriesProps }) => {
+  const { mockedCategories, addMockedCategory } = mockCategoriesProps;
   const { t } = useTranslation();
   const { getTemplateCategories } = useTemplateCategories(api.credentialTypesManager);
   const [isLoading, setIsLoading] = useState(false);
+
+  const inputRef = useRef(null);
+
+  useEffect(() => {
+    if (inputRef && inputRef.current) {
+      const { input } = inputRef.current;
+      input.focus();
+    }
+  });
 
   const validateNewCategory = () =>
     categoryForm.validateFields().catch(({ errorFields, values }) => ({
@@ -25,6 +39,11 @@ const CategoryCreation = ({ api, categoryForm, close }) => {
 
   const displayErrors = errors => errors.map(msg => message.error(t(msg)));
 
+  const normalizeCategoryForm = ({ categoryName, ...rest }) => ({
+    categoryName: categoryName.trim(),
+    ...rest
+  });
+
   const handleCategorySubmit = async () => {
     setIsLoading(true);
     const { errors, ...values } = await validateNewCategory();
@@ -32,7 +51,11 @@ const CategoryCreation = ({ api, categoryForm, close }) => {
     if (!isPartiallyValid) {
       displayErrors(errors);
     } else {
-      await api.credentialTypesManager.createCategory(values);
+      categoryForm.resetFields();
+      const normalizedValues = normalizeCategoryForm(values);
+      // TODO: remove when backend implements template categories
+      addMockedCategory(normalizedValues);
+      await api.credentialTypesManager.createCategory(normalizedValues);
       close();
     }
     setIsLoading(false);
@@ -40,8 +63,12 @@ const CategoryCreation = ({ api, categoryForm, close }) => {
 
   return (
     <>
-      <CategoryNameInput getTemplateCategories={getTemplateCategories} />
-      <CategoryIconSelector />
+      <CategoryNameInput
+        inputRef={inputRef}
+        getTemplateCategories={getTemplateCategories}
+        mockedCategories={mockedCategories}
+      />
+      <CategoryIconSelector categoryForm={categoryForm} />
       <div className="buttonSection">
         <CustomButton
           className="theme-secondary"
@@ -61,7 +88,11 @@ CategoryCreation.propTypes = {
     credentialTypesManager: credentialTypesManagerShape.isRequired
   }).isRequired,
   categoryForm: antdV4FormShape.isRequired,
-  close: PropTypes.func.isRequired
+  close: PropTypes.func.isRequired,
+  mockCategoriesProps: PropTypes.shape({
+    mockedCategories: templateCategoryShape,
+    addMockedCategory: PropTypes.func.isRequired
+  }).isRequired
 };
 
 export default withApi(CategoryCreation);

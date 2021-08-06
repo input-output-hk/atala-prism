@@ -48,7 +48,7 @@ const commonColumns = [
     key: 'credentialType',
     // eslint-disable-next-line react/prop-types
     render: ({ credentialTypeDetails }) => (
-      <CellRenderer title={tp('credentialType')} value={i18n.t(credentialTypeDetails?.name)} />
+      <CellRenderer title={tp('credentialType')} value={credentialTypeDetails?.name} />
     )
   },
   {

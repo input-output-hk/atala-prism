@@ -29,7 +29,6 @@ const fieldsByStep = {
 const CredentialTemplateCreation = ({
   currentStep,
   changeStep,
-  renderStep,
   redirector: { redirectToCredentialTemplates }
 }) => {
   const { t } = useTranslation();
@@ -71,22 +70,16 @@ const CredentialTemplateCreation = ({
   };
 
   return (
-    <React.Fragment>
-      <div className="TemplateMainContent">
-        <div className="TitleContainer">
-          <GenericStepsButtons steps={steps} currentStep={currentStep} />
-          <WizardTitle {...getStepText[currentStep]} />
-        </div>
-        {renderStep()}
-      </div>
-    </React.Fragment>
+    <div className="TitleContainer">
+      <GenericStepsButtons steps={steps} currentStep={currentStep} />
+      <WizardTitle {...getStepText[currentStep]} />
+    </div>
   );
 };
 
 CredentialTemplateCreation.propTypes = {
   currentStep: PropTypes.number.isRequired,
   changeStep: PropTypes.func.isRequired,
-  renderStep: PropTypes.func.isRequired,
   redirector: PropTypes.shape({ redirectToCredentialTemplates: PropTypes.func }).isRequired
 };
 

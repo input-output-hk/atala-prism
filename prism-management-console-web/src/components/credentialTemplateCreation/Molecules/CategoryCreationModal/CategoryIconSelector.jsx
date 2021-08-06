@@ -6,22 +6,23 @@ import uploadCategoryIcon from '../../../../images/upload-category-icon.svg';
 import CustomButton from '../../../common/Atoms/CustomButton/CustomButton';
 import IconOption from '../../Atoms/CategorySelection/IconOption';
 import { defaultCategoryIcons } from '../../../../helpers/templateCategories/categories';
+import { antdV4FormShape } from '../../../../helpers/propShapes';
 
 const defaultFileList = defaultCategoryIcons.map((thumbUrl, index) => ({ thumbUrl, uid: index }));
 const i18nPrefix = 'credentialTemplateCreation';
 
-const CategoryIconSelector = () => {
+const CategoryIconSelector = ({ categoryForm }) => {
   const { t } = useTranslation();
-  const [selectedIcon, setSelectedIcon] = useState(defaultFileList[0].uid);
-  const [categoryCustomIcons, setCategotyCustomIcons] = useState([]);
+  const { categoryCustomIcons } = categoryForm.getFieldsValue();
+  const [selectedIcon, setSelectedIcon] = useState(0);
 
   const normFile = ({ fileList }) => fileList;
 
   const onChange = ({ file, fileList }) => {
     const newFile = fileList.find(f => f.uid === file.uid);
     const newFileList = [newFile].concat(fileList.filter(f => f.uid !== file.uid));
+    categoryForm.setFieldsValue({ categoryIcon: newFile.uid, categoryCustomIcons: newFileList });
     setSelectedIcon(newFile.uid);
-    setCategotyCustomIcons(newFileList);
   };
 
   const categoryIconRules = [
@@ -51,11 +52,15 @@ const CategoryIconSelector = () => {
   return (
     <Form.Item name="categoryIcon" rules={categoryIconRules}>
       <Radio.Group onChange={onIconChange}>
-        <Form.Item name="categoryCustomIcons" valuePropName="file" getValueFromEvent={normFile}>
-          <div className="verticalFlex">
-            <img src={uploadCategoryIcon} className="iconSample" alt="upload custom icon" />
-            <h3>{t(`${i18nPrefix}.categoryCreationModal.uploadIcon`)}</h3>
-            <p>{t(`${i18nPrefix}.categoryCreationModal.allowedFormats`, { allowedFormats })}</p>
+        <div className="verticalFlex">
+          <img src={uploadCategoryIcon} className="iconSample" alt="upload custom icon" />
+          <h3>{t(`${i18nPrefix}.categoryCreationModal.uploadIcon`)}</h3>
+          <p>{t(`${i18nPrefix}.categoryCreationModal.allowedFormats`, { allowedFormats })}</p>
+          <Form.Item
+            name="categoryCustomIcons"
+            valuePropName="fileList"
+            getValueFromEvent={normFile}
+          >
             <Upload
               name="logo"
               action="/upload.do"
@@ -74,8 +79,8 @@ const CategoryIconSelector = () => {
                 </div>
               </div>
             </Upload>
-          </div>
-        </Form.Item>
+          </Form.Item>
+        </div>
         <div className="imgGalleryContainer">
           {defaultFileList.map(file => (
             <IconOption icon={file} selected={file.uid === selectedIcon} />
@@ -84,6 +89,10 @@ const CategoryIconSelector = () => {
       </Radio.Group>
     </Form.Item>
   );
+};
+
+CategoryIconSelector.propTypes = {
+  categoryForm: antdV4FormShape.isRequired
 };
 
 export default CategoryIconSelector;
