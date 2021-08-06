@@ -7,8 +7,8 @@ import doobie.implicits._
 import doobie.util.transactor.Transactor
 import io.iohk.atala.prism.management.console.models.{ParticipantId, Statistics, TimeInterval}
 import io.iohk.atala.prism.management.console.repositories.daos.StatisticsDAO
-import io.iohk.atala.prism.metrics.{TimeMeasureMetric, TimeMeasureUtil}
-import io.iohk.atala.prism.metrics.TimeMeasureUtil.MeasureOps
+import io.iohk.atala.prism.management.console.repositories.metrics.StatisticsRepositoryMetrics
+import io.iohk.atala.prism.metrics.TimeMeasureMetric
 import io.iohk.atala.prism.utils.syntax.DBConnectionOps
 import org.slf4j.{Logger, LoggerFactory}
 import tofu.higherKind.Mid
@@ -37,12 +37,4 @@ private final class StatisticsRepositoryImpl[F[_]: BracketThrow](xa: Transactor[
       .query(participantId, timeIntervalMaybe)
       .logSQLErrors(s"getting statistics, participant id - $participantId", logger)
       .transact(xa)
-}
-
-private final class StatisticsRepositoryMetrics[F[_]: TimeMeasureMetric: BracketThrow]
-    extends StatisticsRepository[Mid[F, *]] {
-  private val repoName = "StatisticsRepository"
-  private lazy val queryTimer = TimeMeasureUtil.createDBQueryTimer(repoName, "query")
-  override def query(participantId: ParticipantId, timeIntervalMaybe: Option[TimeInterval]): Mid[F, Statistics] =
-    _.measureOperationTime(queryTimer)
 }
