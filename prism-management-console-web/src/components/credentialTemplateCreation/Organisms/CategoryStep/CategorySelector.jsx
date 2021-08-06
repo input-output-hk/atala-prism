@@ -13,7 +13,7 @@ import './_style.scss';
 
 const ENABLED_STATE = 1;
 
-const CategorySelector = ({ templateCategories }) => {
+const CategorySelector = ({ templateCategories, mockCategoriesProps }) => {
   const { t } = useTranslation();
   const { templateSettings } = useTemplateContext();
   const initialSelection = parseInt(templateSettings.category, 10) || undefined;
@@ -48,6 +48,7 @@ const CategorySelector = ({ templateCategories }) => {
       <CategoryCreationModal
         visible={showCategoryCreation}
         close={() => setShowCategoryCreation(false)}
+        mockCategoriesProps={mockCategoriesProps}
       />
       <div className="selectCategoryHeader">
         <p>{t(`${i18nPrefix}.step1.selectCategory`)}</p>
@@ -83,7 +84,11 @@ CategorySelector.defaultProps = {
 };
 
 CategorySelector.propTypes = {
-  templateCategories: PropTypes.arrayOf(templateCategoryShape)
+  templateCategories: PropTypes.arrayOf(templateCategoryShape),
+  mockCategoriesProps: PropTypes.shape({
+    mockedCategories: templateCategoryShape,
+    addMockedCategory: PropTypes.func.isRequired
+  }).isRequired
 };
 
 export default CategorySelector;
