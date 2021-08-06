@@ -10,6 +10,14 @@ Run the Node with the default ledger:
 sbt node/run
 ```
 
+For local development, you might want to have more readable logs than ELK layout,
+for doing that, use `logback-dev.xml`
+
+For example, you can run node with `logback-dev.xml` using console by:
+``` 
+sbt "node/run" -Dlogback.configurationFile=logback-dev.xml
+```
+
 ## Node client
 
 Node comes with CLI client, allowing to interact with it. Client has simple state storage capabilities - it saves private keys and ids of last operations for the DID and credentials (as each operation modifying an entity needs the hash of the previous operation affecting it).
