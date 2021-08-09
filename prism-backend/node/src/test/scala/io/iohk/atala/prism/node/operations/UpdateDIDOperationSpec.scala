@@ -201,7 +201,7 @@ class UpdateDIDOperationSpec extends AtalaWithPostgresSpec with ProtoParsingTest
       DIDPublicKey(newKey.didSuffix, newKey.keyId, newKey.keyUsage, newKey.key) mustBe parsedOperation.actions.head
         .asInstanceOf[AddKeyAction]
         .key
-      newKey.addedOn mustBe dummyLedgerData.timestampInfo
+      newKey.addedOn.timestampInfo mustBe dummyLedgerData.timestampInfo
       newKey.revokedOn mustBe None
       didInfo.lastOperation mustBe SHA256Digest.compute(UpdateDIDOperationSpec.exampleOperation.toByteArray)
     }

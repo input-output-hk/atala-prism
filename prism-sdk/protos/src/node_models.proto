@@ -55,10 +55,11 @@ message ECKeyData {
 //
 // @exclude TODO: Consider renaming this to something more specific, like DIDPublicKey.
 message PublicKey {
+    reserved 3, 4;
     string id = 1; // The key identifier within the DID Document.
     KeyUsage usage = 2; // The key's purpose.
-    TimestampInfo added_on = 3; // The time when the key was added to the DID Document.
-    TimestampInfo revoked_on = 4; // The time when the key was revoked from the DID Document.
+    LedgerData added_on = 5; // The ledger details related to the event that added the key to the DID Document.
+    LedgerData revoked_on = 6; // The ledger details related to the event that revoked the key to the DID Document.
 
     // The key's representation.
     oneof key_data {

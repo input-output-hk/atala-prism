@@ -12,7 +12,7 @@ import io.iohk.atala.prism.kotlin.crypto.ECConfig.{INSTANCE => ECConfig}
 import io.iohk.atala.prism.daos.BaseDAO
 import io.iohk.atala.prism.identity.DIDSuffix
 import io.iohk.atala.prism.models.{BlockInfo, Ledger, TransactionId, TransactionInfo}
-import io.iohk.atala.prism.node.models.nodeState.DIDPublicKeyState
+import io.iohk.atala.prism.node.models.nodeState.{DIDPublicKeyState, LedgerData}
 import io.iohk.atala.prism.node.models.{
   AtalaObjectId,
   AtalaObjectInfo,
@@ -87,12 +87,12 @@ package object daos extends BaseDAO {
         curveName,
         point.getX.bytes(),
         point.getY.bytes(),
-        key.addedOn.atalaBlockTimestamp,
-        key.addedOn.atalaBlockSequenceNumber,
-        key.addedOn.operationSequenceNumber,
-        key.revokedOn map (_.atalaBlockTimestamp),
-        key.revokedOn map (_.atalaBlockSequenceNumber),
-        key.revokedOn map (_.operationSequenceNumber)
+        key.addedOn.timestampInfo.atalaBlockTimestamp,
+        key.addedOn.timestampInfo.atalaBlockSequenceNumber,
+        key.addedOn.timestampInfo.operationSequenceNumber,
+        key.revokedOn map (_.timestampInfo.atalaBlockTimestamp),
+        key.revokedOn map (_.timestampInfo.atalaBlockSequenceNumber),
+        key.revokedOn map (_.timestampInfo.operationSequenceNumber)
       )
     }
   }
@@ -108,25 +108,57 @@ package object daos extends BaseDAO {
           Instant,
           Int,
           Int,
+          TransactionId,
+          Ledger,
           Option[Instant],
           Option[Int],
-          Option[Int]
+          Option[Int],
+          Option[TransactionId],
+          Option[Ledger]
       )
     ].map {
-      case (didSuffix, keyId, keyUsage, curveId, compressed, aTimestamp, aABSN, aOSN, rTimestamp, rABSN, rOSN) =>
+      case (
+            didSuffix,
+            keyId,
+            keyUsage,
+            curveId,
+            compressed,
+            aTimestamp,
+            aABSN,
+            aOSN,
+            aTransactionId,
+            aLedger,
+            rTimestamp,
+            rABSN,
+            rOSN,
+            rTransactionId,
+            rLedger
+          ) =>
         assert(curveId == ECConfig.getCURVE_NAME)
         val javaPublicKey: ECPublicKey = EC.toPublicKeyFromCompressed(compressed)
-        val revokeTimestampInfo = for (t <- rTimestamp; absn <- rABSN; osn <- rOSN) yield TimestampInfo(t, absn, osn)
+        val revokeLedgerData =
+          for (transactionId <- rTransactionId; ledger <- rLedger; t <- rTimestamp; absn <- rABSN; osn <- rOSN)
+            yield LedgerData(
+              transactionId = transactionId,
+              ledger = ledger,
+              timestampInfo = TimestampInfo(t, absn, osn)
+            )
         DIDPublicKeyState(
           didSuffix,
           keyId,
           keyUsage,
           javaPublicKey,
-          TimestampInfo(aTimestamp, aABSN, aOSN),
-          revokeTimestampInfo
+          LedgerData(
+            transactionId = aTransactionId,
+            ledger = aLedger,
+            timestampInfo = TimestampInfo(aTimestamp, aABSN, aOSN)
+          ),
+          revokeLedgerData
         )
     }
   }
+
+  // added_on, added_on_absn, added_on_osn, added_on_transaction_id, ledger
 
   implicit val atalaObjectIdMeta: Meta[AtalaObjectId] =
     Meta[Array[Byte]].timap(value => AtalaObjectId(value.toVector))(_.value.toArray)
