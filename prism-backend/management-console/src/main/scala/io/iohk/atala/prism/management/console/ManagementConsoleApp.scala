@@ -85,7 +85,7 @@ object ManagementConsoleApp extends IOApp {
       // repositories
       contactsRepository <- ContactsRepository.makeResource(txTraceIdLifted, managementConsoleLogs)
       participantsRepository = ParticipantsRepository(tx, defaultCredentialTypeConfig)
-      requestNoncesRepository = RequestNoncesRepository(tx)
+      requestNoncesRepository <- RequestNoncesRepository.makeResource(txTraceIdLifted, managementConsoleLogs)
       statisticsRepository = StatisticsRepository(tx)
       credentialsRepository <- CredentialsRepository.makeResource(txTraceIdLifted, managementConsoleLogs)
       receivedCredentialsRepository <-

@@ -4,19 +4,17 @@ import cats.effect.BracketThrow
 import cats.syntax.apply._
 import cats.syntax.applicativeError._
 import cats.syntax.flatMap._
-import io.iohk.atala.prism.management.console.models.{
-  Contact,
-  CredentialExternalId,
-  ParticipantId,
-  ReceivedSignedCredential
-}
+import io.iohk.atala.prism.management.console.models._
 import io.iohk.atala.prism.management.console.repositories.ReceivedCredentialsRepository
 import io.iohk.atala.prism.management.console.repositories.daos.ReceivedCredentialsDAO.ReceivedSignedCredentialData
 import tofu.higherKind.Mid
 import tofu.logging.ServiceLogging
 import tofu.syntax.logging._
 
-class ReceivedCredentialsRepositoryLogs[F[_]: ServiceLogging[*[_], ReceivedCredentialsRepository[F]]: BracketThrow]
+final class ReceivedCredentialsRepositoryLogs[F[_]: ServiceLogging[
+  *[_],
+  ReceivedCredentialsRepository[F]
+]: BracketThrow]
     extends ReceivedCredentialsRepository[Mid[F, *]] {
 
   override def getCredentialsFor(

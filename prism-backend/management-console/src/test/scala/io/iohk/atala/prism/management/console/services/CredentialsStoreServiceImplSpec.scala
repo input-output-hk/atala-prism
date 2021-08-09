@@ -19,6 +19,7 @@ import io.iohk.atala.prism.management.console.repositories.{
 import io.iohk.atala.prism.management.console.{DataPreparation, ManagementConsoleAuthenticator}
 import io.iohk.atala.prism.protos.console_api
 import io.iohk.atala.prism.{DIDUtil, RpcSpecBase}
+import io.iohk.atala.prism.utils.IOUtils._
 import org.mockito.MockitoSugar._
 import tofu.logging.Logs
 
@@ -30,12 +31,10 @@ class CredentialsStoreServiceImplSpec extends RpcSpecBase with DIDUtil {
     new console_api.CredentialsStoreServiceGrpc.CredentialsStoreServiceBlockingStub(_, _)
   )
 
-  lazy val receivedCredentials = managementConsoleTestLogs
-    .service[ReceivedCredentialsRepository[IOWithTraceIdContext]]
-    .map(logs => ReceivedCredentialsRepository(dbLiftedToTraceIdIO, logs))
-    .unsafeRunSync()
+  private val receivedCredentials = ReceivedCredentialsRepository.unsafe(dbLiftedToTraceIdIO, managementConsoleTestLogs)
   private lazy val participantsRepository = ParticipantsRepository(database)
-  private lazy val requestNoncesRepository = RequestNoncesRepository(database)
+  private lazy val requestNoncesRepository =
+    RequestNoncesRepository.unsafe(dbLiftedToTraceIdIO, managementConsoleTestLogs)
   protected lazy val nodeMock = mock[io.iohk.atala.prism.protos.node_api.NodeServiceGrpc.NodeService]
 
   private lazy val authenticator = new ManagementConsoleAuthenticator(

@@ -1,7 +1,8 @@
 package io.iohk.atala.prism.management.console.repositories
 
-import cats.Monad
+import cats.{Comonad, Functor, Monad}
 import cats.effect.{BracketThrow, Resource}
+import cats.syntax.comonad._
 import cats.syntax.functor._
 import derevo.tagless.applyK
 import derevo.derive
@@ -35,26 +36,29 @@ trait ReceivedCredentialsRepository[F[_]] {
 
 object ReceivedCredentialsRepository {
 
-  def apply[F[_]: TimeMeasureMetric: BracketThrow](
+  def apply[F[_]: TimeMeasureMetric: BracketThrow, R[_]: Functor](
       transactor: Transactor[F],
-      logs: ServiceLogging[F, ReceivedCredentialsRepository[F]]
-  ): ReceivedCredentialsRepository[F] = {
-    implicit val implicitLogs: ServiceLogging[F, ReceivedCredentialsRepository[F]] = logs
-    val log: ReceivedCredentialsRepository[Mid[F, *]] =
-      (new ReceivedCredentialsRepositoryMetrics[F]: ReceivedCredentialsRepository[
-        Mid[F, *]
-      ]) |+| (new ReceivedCredentialsRepositoryLogs[F]: ReceivedCredentialsRepository[Mid[F, *]])
-    log attach new ReceivedCredentialsRepositoryImpl[F](transactor)
-  }
+      logs: Logs[R, F]
+  ): R[ReceivedCredentialsRepository[F]] =
+    for {
+      serviceLogs <- logs.service[ReceivedCredentialsRepository[F]]
+    } yield {
+      implicit val implicitLogs: ServiceLogging[F, ReceivedCredentialsRepository[F]] = serviceLogs
+      val metrics: ReceivedCredentialsRepository[Mid[F, *]] = new ReceivedCredentialsRepositoryMetrics[F]
+      val logs: ReceivedCredentialsRepository[Mid[F, *]] = new ReceivedCredentialsRepositoryLogs[F]
+      val mid = metrics |+| logs
+      mid attach new ReceivedCredentialsRepositoryImpl[F](transactor)
+    }
+
+  def unsafe[F[_]: TimeMeasureMetric: BracketThrow, R[_]: Comonad](
+      transactor: Transactor[F],
+      logs: Logs[R, F]
+  ): ReceivedCredentialsRepository[F] = ReceivedCredentialsRepository(transactor, logs).extract
 
   def makeResource[F[_]: TimeMeasureMetric: BracketThrow, R[_]: Monad](
       transactor: Transactor[F],
       logs: Logs[R, F]
-  ): Resource[R, ReceivedCredentialsRepository[F]] = {
-    Resource.eval(
-      logs.service[ReceivedCredentialsRepository[F]].map(logs => ReceivedCredentialsRepository(transactor, logs))
-    )
-  }
+  ): Resource[R, ReceivedCredentialsRepository[F]] = Resource.eval(ReceivedCredentialsRepository(transactor, logs))
 
 }
 

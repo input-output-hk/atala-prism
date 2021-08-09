@@ -8,6 +8,8 @@ import io.iohk.atala.prism.auth.SignedRequestsAuthenticatorBase
 import io.iohk.atala.prism.auth.model.RequestNonce
 import io.iohk.atala.prism.kotlin.crypto.keys.ECPublicKey
 import io.iohk.atala.prism.identity.DID
+import io.iohk.atala.prism.logging.TraceId
+import io.iohk.atala.prism.logging.TraceId.IOWithTraceIdContext
 import io.iohk.atala.prism.management.console.models.ParticipantId
 import io.iohk.atala.prism.management.console.repositories.{ParticipantsRepository, RequestNoncesRepository}
 import io.iohk.atala.prism.protos.node_api
@@ -18,7 +20,7 @@ import scala.concurrent.{ExecutionContext, Future}
 
 class ManagementConsoleAuthenticator(
     participantsRepository: ParticipantsRepository[IO],
-    requestNoncesRepository: RequestNoncesRepository[IO],
+    requestNoncesRepository: RequestNoncesRepository[IOWithTraceIdContext],
     nodeClient: node_api.NodeServiceGrpc.NodeService,
     grpcAuthenticationHeaderParser: GrpcAuthenticationHeaderParser
 ) extends SignedRequestsAuthenticatorBase[ParticipantId](nodeClient, grpcAuthenticationHeaderParser) {
@@ -26,7 +28,12 @@ class ManagementConsoleAuthenticator(
   override def burnNonce(id: ParticipantId, requestNonce: RequestNonce)(implicit
       ec: ExecutionContext
   ): FutureEither[AuthError, Unit] =
-    requestNoncesRepository.burn(id, requestNonce).unsafeToFuture().map(_.asRight).toFutureEither
+    requestNoncesRepository
+      .burn(id, requestNonce)
+      .run(TraceId.generateYOLO)
+      .unsafeToFuture()
+      .map(_.asRight)
+      .toFutureEither
 
   override def burnNonce(did: DID, requestNonce: RequestNonce)(implicit
       ec: ExecutionContext
