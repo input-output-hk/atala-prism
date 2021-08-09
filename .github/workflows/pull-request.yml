@@ -1,168 +1,168 @@
-name: Test Changes
+# name: Test Changes
 
-env:
-  GITHUB_TOKEN: ${{ secrets.ATALA_GITHUB_TOKEN }}
-  JAVA_VERSION: openjdk@1.11
+# env:
+#   GITHUB_TOKEN: ${{ secrets.ATALA_GITHUB_TOKEN }}
+#   JAVA_VERSION: openjdk@1.11
 
-on:
-  push:
-    branches:
-      - master
-      - test*
-      - package*
-  pull_request:
-    paths:
-      - 'prism-backend/**'
-      - '!prism-backend/docs/**'
+# on:
+#   push:
+#     branches:
+#       - master
+#       - test*
+#       - package*
+#   pull_request:
+#     paths:
+#       - 'prism-backend/**'
+#       - '!prism-backend/docs/**'
 
-jobs:
-  build-backend:
-    runs-on: ubuntu-20.04
-    defaults:
-      run:
-        working-directory: prism-backend
+# jobs:
+#   build-backend:
+#     runs-on: ubuntu-20.04
+#     defaults:
+#       run:
+#         working-directory: prism-backend
 
-    services:
-      postgres:
-        image: postgres:13.3
-        env:
-          POSTGRES_USER: postgres
-          POSTGRES_DB: postgres
-          POSTGRES_PASSWORD: postgres
-        # Set health checks to wait until postgres has started
-        options: >-
-          --health-cmd pg_isready
-          --health-interval 10s
-          --health-timeout 5s
-          --health-retries 5
-        ports:
-          - 5432:5432
+#     services:
+#       postgres:
+#         image: postgres:13.3
+#         env:
+#           POSTGRES_USER: postgres
+#           POSTGRES_DB: postgres
+#           POSTGRES_PASSWORD: postgres
+#         # Set health checks to wait until postgres has started
+#         options: >-
+#           --health-cmd pg_isready
+#           --health-interval 10s
+#           --health-timeout 5s
+#           --health-retries 5
+#         ports:
+#           - 5432:5432
 
-    steps:
-      - name: Checkout the repo
-        uses: actions/checkout@v2
+#     steps:
+#       - name: Checkout the repo
+#         uses: actions/checkout@v2
 
-      - name: Setup Scala
-        uses: olafurpg/setup-scala@v10
-        with:
-          java-version: ${{ env.JAVA_VERSION }}
+#       - name: Setup Scala
+#         uses: olafurpg/setup-scala@v10
+#         with:
+#           java-version: ${{ env.JAVA_VERSION }}
 
-      - name: Coursier cache
-        uses: coursier/cache-action@v6
+#       - name: Coursier cache
+#         uses: coursier/cache-action@v6
 
-      - name: Test Scala code is properly formatted
-        run: sbt scalafmtCheckAll
+#       - name: Test Scala code is properly formatted
+#         run: sbt scalafmtCheckAll
 
-      - name: Test Terraform code is properly formatted
-        run: terraform fmt -check -recursive
+#       - name: Test Terraform code is properly formatted
+#         run: terraform fmt -check -recursive
 
-      - name: Configure AWS Credentials
-        uses: aws-actions/configure-aws-credentials@v1
-        with:
-          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          aws-region: ${{ secrets.AWS_DEFAULT_REGION }}
+#       - name: Configure AWS Credentials
+#         uses: aws-actions/configure-aws-credentials@v1
+#         with:
+#           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+#           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+#           aws-region: ${{ secrets.AWS_DEFAULT_REGION }}
 
-      - name: Obtain Cardano db sync and wallet endpoints config
-        id: cardano
-        run: ../.github/generate_cardano_variables.sh
+#       - name: Obtain Cardano db sync and wallet endpoints config
+#         id: cardano
+#         run: ../.github/generate_cardano_variables.sh
 
-      - name: Compile and test prism-backend components
-        run: sbt compile test:compile coverage test pushRemoteCache
-        env:
-          POSTGRES_TEST_HOST: localhost:5432
-          POSTGRES_TEST_DB: postgres
-          POSTGRES_TEST_USER: postgres
-          POSTGRES_TEST_PASSWORD: postgres
-          NODE_CARDANO_DB_SYNC_HOST: ${{ steps.cardano.outputs.db-sync-host }}
-          NODE_CARDANO_DB_SYNC_DATABASE: ${{ steps.cardano.outputs.db-sync-database }}
-          NODE_CARDANO_DB_SYNC_USERNAME: ${{ steps.cardano.outputs.db-sync-username }}
-          NODE_CARDANO_DB_SYNC_PASSWORD: ${{ steps.cardano.outputs.db-sync-password }}
-          NODE_CARDANO_WALLET_API_HOST: ${{ steps.cardano.outputs.wallet-api-host }}
-          NODE_CARDANO_WALLET_API_PORT: ${{ steps.cardano.outputs.wallet-api-port }}
-          NODE_CARDANO_WALLET_ID: ${{ secrets.NODE_CARDANO_WALLET_ID }}
-          NODE_CARDANO_WALLET_PASSPHRASE: ${{ secrets.NODE_CARDANO_WALLET_PASSPHRASE }}
-          NODE_CARDANO_CONFIRMATION_BLOCKS: ${{ secrets.NODE_CARDANO_CONFIRMATION_BLOCKS }}
-          NODE_CARDANO_PAYMENT_ADDRESS: ${{ secrets.NODE_CARDANO_PAYMENT_ADDRESS }}
+#       - name: Compile and test prism-backend components
+#         run: sbt compile test:compile coverage test pushRemoteCache
+#         env:
+#           POSTGRES_TEST_HOST: localhost:5432
+#           POSTGRES_TEST_DB: postgres
+#           POSTGRES_TEST_USER: postgres
+#           POSTGRES_TEST_PASSWORD: postgres
+#           NODE_CARDANO_DB_SYNC_HOST: ${{ steps.cardano.outputs.db-sync-host }}
+#           NODE_CARDANO_DB_SYNC_DATABASE: ${{ steps.cardano.outputs.db-sync-database }}
+#           NODE_CARDANO_DB_SYNC_USERNAME: ${{ steps.cardano.outputs.db-sync-username }}
+#           NODE_CARDANO_DB_SYNC_PASSWORD: ${{ steps.cardano.outputs.db-sync-password }}
+#           NODE_CARDANO_WALLET_API_HOST: ${{ steps.cardano.outputs.wallet-api-host }}
+#           NODE_CARDANO_WALLET_API_PORT: ${{ steps.cardano.outputs.wallet-api-port }}
+#           NODE_CARDANO_WALLET_ID: ${{ secrets.NODE_CARDANO_WALLET_ID }}
+#           NODE_CARDANO_WALLET_PASSPHRASE: ${{ secrets.NODE_CARDANO_WALLET_PASSPHRASE }}
+#           NODE_CARDANO_CONFIRMATION_BLOCKS: ${{ secrets.NODE_CARDANO_CONFIRMATION_BLOCKS }}
+#           NODE_CARDANO_PAYMENT_ADDRESS: ${{ secrets.NODE_CARDANO_PAYMENT_ADDRESS }}
 
-      - name: Upload SBT remote cache
-        uses: actions/upload-artifact@v2
-        with:
-          name: sbt-backend-remote-cache
-          path: /tmp/backend-remote-cache
+#       - name: Upload SBT remote cache
+#         uses: actions/upload-artifact@v2
+#         with:
+#           name: sbt-backend-remote-cache
+#           path: /tmp/backend-remote-cache
 
-      - name: Generate code coverage reports
-        run: sbt coverageReport coverageAggregate
-        if: always()
+#       - name: Generate code coverage reports
+#         run: sbt coverageReport coverageAggregate
+#         if: always()
 
-      - name: Aggregate test reports
-        if: always()
-        run: |
-          for reports in `find -name test-reports`; do
-            project=${reports%/target/*}
-            dest=target/test-reports/$project
-            mkdir -p $dest
-            cp $reports/* $dest
-          done
+#       - name: Aggregate test reports
+#         if: always()
+#         run: |
+#           for reports in `find -name test-reports`; do
+#             project=${reports%/target/*}
+#             dest=target/test-reports/$project
+#             mkdir -p $dest
+#             cp $reports/* $dest
+#           done
 
-      - name: Upload the test reports
-        if: always()
-        uses: actions/upload-artifact@v2
-        with:
-          name: test-reports
-          path: prism-backend/target/test-reports
+#       - name: Upload the test reports
+#         if: always()
+#         uses: actions/upload-artifact@v2
+#         with:
+#           name: test-reports
+#           path: prism-backend/target/test-reports
 
-  publish-test-results:
-     name: "Publish Unit Tests Results"
-     needs: build-backend
-     runs-on: ubuntu-20.04
-     if: success() || failure()
-     steps:
-       - name: Download Artifacts
-         uses: actions/download-artifact@v2
-         with:
-           name: test-reports
-           path: test-reports
+#   publish-test-results:
+#      name: "Publish Unit Tests Results"
+#      needs: build-backend
+#      runs-on: ubuntu-20.04
+#      if: success() || failure()
+#      steps:
+#        - name: Download Artifacts
+#          uses: actions/download-artifact@v2
+#          with:
+#            name: test-reports
+#            path: test-reports
 
-       - name: Publish Unit Test Results
-         uses: EnricoMi/publish-unit-test-result-action@v1
-         with:
-           files: "test-reports/**/TEST-*.xml"
+#        - name: Publish Unit Test Results
+#          uses: EnricoMi/publish-unit-test-result-action@v1
+#          with:
+#            files: "test-reports/**/TEST-*.xml"
 
-  publish:
-    needs: build-backend
-    runs-on: ubuntu-20.04
-    if: github.ref == 'refs/heads/master' || startsWith(github.ref, 'refs/heads/package')
-    defaults:
-      run:
-        working-directory: prism-backend
+#   publish:
+#     needs: build-backend
+#     runs-on: ubuntu-20.04
+#     if: github.ref == 'refs/heads/master' || startsWith(github.ref, 'refs/heads/package')
+#     defaults:
+#       run:
+#         working-directory: prism-backend
 
-    steps:
-      - name: Checkout the repo
-        uses: actions/checkout@v2
+#     steps:
+#       - name: Checkout the repo
+#         uses: actions/checkout@v2
 
-      - name: Setup Scala
-        uses: olafurpg/setup-scala@v10
-        with:
-          java-version: ${{ env.JAVA_VERSION }}
+#       - name: Setup Scala
+#         uses: olafurpg/setup-scala@v10
+#         with:
+#           java-version: ${{ env.JAVA_VERSION }}
 
-      - name: Coursier cache
-        uses: coursier/cache-action@v6
+#       - name: Coursier cache
+#         uses: coursier/cache-action@v6
 
-      - name: Download SBT remote cache
-        uses: actions/download-artifact@v2
-        with:
-          name: sbt-backend-remote-cache
-          path: /tmp
+#       - name: Download SBT remote cache
+#         uses: actions/download-artifact@v2
+#         with:
+#           name: sbt-backend-remote-cache
+#           path: /tmp
 
-      - name: Pull remote cache from local file
-        run: sbt pullRemoteCache
+#       - name: Pull remote cache from local file
+#         run: sbt pullRemoteCache
 
-      - name: Setup Github Container registry credentials
-        run: docker login ghcr.io -u atala-dev -p $GITHUB_TOKEN
+#       - name: Setup Github Container registry credentials
+#         run: docker login ghcr.io -u atala-dev -p $GITHUB_TOKEN
 
-      - name: Build and publish Docker images
-        run: |
-          for module in 'node' 'connector' 'management-console' 'vault' ; do
-            GITHUB=1 sbt "$module/dockerBuildAndPush"
-          done
+#       - name: Build and publish Docker images
+#         run: |
+#           for module in 'node' 'connector' 'management-console' 'vault' ; do
+#             GITHUB=1 sbt "$module/dockerBuildAndPush"
+#           done
