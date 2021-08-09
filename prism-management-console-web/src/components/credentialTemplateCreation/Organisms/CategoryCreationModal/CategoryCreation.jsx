@@ -29,7 +29,7 @@ const CategoryCreation = ({ api, categoryForm, close, mockCategoriesProps }) => 
       const { input } = inputRef.current;
       input.focus();
     }
-  });
+  }, []);
 
   const validateNewCategory = () =>
     categoryForm.validateFields().catch(({ errorFields, values }) => ({
