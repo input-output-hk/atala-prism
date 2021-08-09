@@ -3,12 +3,8 @@ import PropTypes from 'prop-types';
 import { Form, Row } from 'antd';
 import { DynamicFormContext } from '../../providers/DynamicFormProvider';
 import IndividualForm from './IndividualForm/IndividualForm';
-import {
-  DEFAULT_WIDTH_INPUT,
-  IMPORT_CONTACTS,
-  IMPORT_CREDENTIALS_DATA
-} from '../../helpers/constants';
-import { columnShape, skeletonShape } from '../../helpers/propShapes';
+import { DEFAULT_WIDTH_INPUT } from '../../helpers/constants';
+import { columnShape, importUseCasePropType, skeletonShape } from '../../helpers/propShapes';
 import { useDebounce } from '../../hooks/useDebounce';
 
 import './_style.scss';
@@ -65,7 +61,7 @@ DynamicForm.propTypes = {
   initialValues: PropTypes.shape({}).isRequired,
   columns: columnShape.isRequired,
   skeleton: skeletonShape.isRequired,
-  useCase: PropTypes.oneOf([IMPORT_CONTACTS, IMPORT_CREDENTIALS_DATA]).isRequired
+  useCase: importUseCasePropType.isRequired
 };
 
 export default DynamicForm;

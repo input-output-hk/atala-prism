@@ -1,10 +1,10 @@
 import React from 'react';
-import PropTypes from 'prop-types';
-import { IMPORT_CONTACTS, IMPORT_CREDENTIALS_DATA } from '../../helpers/constants';
+import { IMPORT_CONTACTS } from '../../helpers/constants';
 import ManualContactCreation from './Molecules/ManualContactCreation';
+import ManualCredentialCreation from './Molecules/ManualCredentialCreation';
+import { importUseCasePropType } from '../../helpers/propShapes';
 
 import './_style.scss';
-import ManualCredentialCreation from './Molecules/ManualCredentialCreation';
 
 const ManualImport = ({ useCase, ...restProps }) =>
   useCase === IMPORT_CONTACTS ? (
@@ -14,7 +14,7 @@ const ManualImport = ({ useCase, ...restProps }) =>
   );
 
 ManualImport.propTypes = {
-  useCase: PropTypes.oneOf([IMPORT_CONTACTS, IMPORT_CREDENTIALS_DATA]).isRequired
+  useCase: importUseCasePropType.isRequired
 };
 
 export default ManualImport;

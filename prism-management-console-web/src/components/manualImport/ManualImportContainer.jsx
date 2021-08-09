@@ -6,13 +6,13 @@ import { withApi } from '../providers/withApi';
 import ManualImport from './ManualImport';
 import Logger from '../../helpers/Logger';
 import { IMPORT_CONTACTS, IMPORT_CREDENTIALS_DATA } from '../../helpers/constants';
-import { contactCreationShape, credentialTypeShape, groupShape } from '../../helpers/propShapes';
+import { credentialShape, credentialTypeShape, groupShape } from '../../helpers/propShapes';
 
 const ManualImportContainer = ({
   api: { groupsManager },
   useCaseProps,
   credentialType,
-  credentialsData,
+  recipients,
   selectedGroups,
   setSelectedGroups,
   addEntity
@@ -38,7 +38,7 @@ const ManualImportContainer = ({
   return (
     <ManualImport
       addEntity={addEntity}
-      initialValues={credentialsData}
+      initialValues={recipients}
       groupsProps={groupsProps}
       credentialType={credentialType}
       {...useCaseProps}
@@ -47,7 +47,8 @@ const ManualImportContainer = ({
 };
 
 ManualImportContainer.defaultProps = {
-  credentialType: {}
+  credentialType: {},
+  recipients: []
 };
 
 ManualImportContainer.propTypes = {
@@ -64,8 +65,7 @@ ManualImportContainer.propTypes = {
   credentialType: PropTypes.shape(credentialTypeShape),
   hasSelectedRecipients: PropTypes.bool.isRequired,
   setContacts: PropTypes.func.isRequired,
-  credentialsData: PropTypes.shape(contactCreationShape).isRequired,
-  setCredentialsData: PropTypes.func.isRequired,
+  recipients: PropTypes.shape(credentialShape),
   selectedGroups: PropTypes.arrayOf(PropTypes.shape(groupShape)).isRequired,
   setSelectedGroups: PropTypes.func.isRequired,
   addEntity: PropTypes.func.isRequired

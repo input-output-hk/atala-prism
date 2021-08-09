@@ -8,6 +8,7 @@ import {
   IMPORT_CONTACTS,
   IMPORT_CREDENTIALS_DATA
 } from '../../../../helpers/constants';
+import { importUseCasePropType } from '../../../../helpers/propShapes';
 import './_style.scss';
 
 const SuccessPage = ({
@@ -48,7 +49,7 @@ SuccessPage.propTypes = {
   credentialDataImported: PropTypes.number,
   continueCallback: PropTypes.func,
   importType: PropTypes.oneOf([MANUAL_IMPORT, BULK_IMPORT]).isRequired,
-  useCase: PropTypes.oneOf([IMPORT_CONTACTS, IMPORT_CREDENTIALS_DATA]).isRequired
+  useCase: importUseCasePropType.isRequired
 };
 
 export default SuccessPage;

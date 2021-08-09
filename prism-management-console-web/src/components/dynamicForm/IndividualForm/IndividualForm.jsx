@@ -3,12 +3,8 @@ import { Form, Input, Row } from 'antd';
 import PropTypes from 'prop-types';
 import { useTranslation } from 'react-i18next';
 import CustomButton from '../../common/Atoms/CustomButton/CustomButton';
-import {
-  DEFAULT_WIDTH_INPUT,
-  IMPORT_CONTACTS,
-  IMPORT_CREDENTIALS_DATA
-} from '../../../helpers/constants';
-import { columnShape, skeletonShape } from '../../../helpers/propShapes';
+import { DEFAULT_WIDTH_INPUT, IMPORT_CONTACTS } from '../../../helpers/constants';
+import { columnShape, importUseCasePropType, skeletonShape } from '../../../helpers/propShapes';
 
 import './_style.scss';
 
@@ -60,7 +56,7 @@ IndividualForm.propTypes = {
   columns: columnShape.isRequired,
   onRemove: PropTypes.func.isRequired,
   skeleton: skeletonShape.isRequired,
-  useCase: PropTypes.oneOf([IMPORT_CONTACTS, IMPORT_CREDENTIALS_DATA]).isRequired
+  useCase: importUseCasePropType.isRequired
 };
 
 export default IndividualForm;

@@ -58,7 +58,7 @@ const ImportDataContainer = ({
   const [fileData, setFileData] = useState();
   const [skipGroupsAssignment, setSkipGroupsAssignment] = useState(false);
   const [selectedGroups, setSelectedGroups] = useState([]);
-  const [credentialsData, setCredentialsData] = useState(recipients);
+  // const [credentialsData, setCredentialsData] = useState(recipients);
 
   const { saveFormProviderAvailable, addEntity, form } = useContext(DynamicFormContext);
 
@@ -181,8 +181,7 @@ const ImportDataContainer = ({
           hasSelectedRecipients={hasSelectedRecipients}
           contacts={contacts}
           setContacts={setContacts}
-          credentialsData={credentialsData}
-          setCredentialsData={setCredentialsData}
+          recipients={recipients}
           selectedGroups={selectedGroups}
           setSelectedGroups={setSelectedGroups}
         />
@@ -194,7 +193,7 @@ const ImportDataContainer = ({
         setSelectedMethod={setSelectedMethod}
         isEmbedded={isEmbedded[useCase]}
         useCase={useCase}
-        selectedRecipientsAmount={recipients.length}
+        selectedRecipientsAmount={recipients?.length}
       />
     );
   };

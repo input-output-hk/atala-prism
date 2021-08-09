@@ -16,13 +16,14 @@ import './_style.scss';
 const ImportTypeSelector = ({ selected, onSelect, useCase, selectedRecipientsAmount }) => {
   const { t } = useTranslation();
 
+  const isImportCredentials = useCase === IMPORT_CREDENTIALS_DATA;
   const noRecipients = !selectedRecipientsAmount;
   const tooManyRecipients = selectedRecipientsAmount > MAX_MANUAL_IMPORT_RECIPIENTS;
-  const shouldDisableManual = noRecipients || tooManyRecipients;
+  const shouldDisableManual = isImportCredentials && (noRecipients || tooManyRecipients);
 
-  const disabledHelp =
-    shouldDisableManual &&
-    t(`${useCase}.manualImportCard.${noRecipients ? 'noRecipients' : 'tooManyRecipients'}`);
+  const disabledHelp = shouldDisableManual
+    ? t(`${useCase}.manualImportCard.${noRecipients ? 'noRecipients' : 'tooManyRecipients'}`)
+    : '';
 
   return (
     <div className="OptionCardsContainer">

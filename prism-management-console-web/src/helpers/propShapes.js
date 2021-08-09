@@ -13,7 +13,7 @@ import {
   instanceOf
 } from 'prop-types';
 import __ from 'lodash';
-import { CONNECTION_STATUSES } from './constants';
+import { CONNECTION_STATUSES, IMPORT_CONTACTS, IMPORT_CREDENTIALS_DATA } from './constants';
 
 export const connectionStatusesShape = __.values(CONNECTION_STATUSES);
 export const connectionStatusesKeysShape = __.keys(CONNECTION_STATUSES);
@@ -172,3 +172,5 @@ export const templateBodyAttributeShape = shape({
   textAttributeIndex: number,
   dynamicAttributeIndex: number
 });
+
+export const importUseCasePropType = oneOf([IMPORT_CONTACTS, IMPORT_CREDENTIALS_DATA]);

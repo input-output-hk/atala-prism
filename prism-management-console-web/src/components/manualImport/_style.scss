@@ -1,10 +1,10 @@
-@import '../../css/general_styling';
+@import "../../css/general_styling";
 
 .ManualImportWrapper {
   display: flex;
   flex-direction: column;
   height: calc(100vh - 250px);
-  overflow-y: auto;
+  overflow: hidden;
   .ContentHeader {
     padding: 0 2em;
     display: block !important;
