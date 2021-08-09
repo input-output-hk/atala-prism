@@ -1,5 +1,6 @@
 package io.iohk.atala.prism.management.console.repositories
 
+import cats.Monad
 import cats.data.OptionT
 import cats.data.EitherT
 import cats.effect._
@@ -19,7 +20,7 @@ import io.iohk.atala.prism.models.ConnectionToken
 import io.iohk.atala.prism.utils.syntax.DBConnectionOps
 import org.slf4j.{Logger, LoggerFactory}
 import tofu.higherKind.Mid
-import tofu.logging.ServiceLogging
+import tofu.logging.{Logs, ServiceLogging}
 import tofu.syntax.monoid.TofuSemigroupOps
 
 import java.time.Instant
@@ -65,14 +66,24 @@ trait ContactsRepository[F[_]] {
 
 object ContactsRepository {
 
-  def apply[F[_]: TimeMeasureMetric: BracketThrow: ServiceLogging[*[_], ContactsRepository[F]]](
-      transactor: Transactor[F]
+  def apply[F[_]: TimeMeasureMetric: BracketThrow](
+      transactor: Transactor[F],
+      logs: ServiceLogging[F, ContactsRepository[F]]
   ): ContactsRepository[F] = {
+    implicit val serviceLogs: ServiceLogging[F, ContactsRepository[F]] = logs
     val mid: ContactsRepository[Mid[F, *]] = (new ContactsRepositoryMetrics[F]: ContactsRepository[
       Mid[F, *]
     ]) |+| (new ContactsRepositoryLogs[F]: ContactsRepository[Mid[F, *]])
     mid attach new ContactsRepositoryImpl[F](transactor)
   }
+
+  def makeResource[F[_]: TimeMeasureMetric: BracketThrow, R[_]: Monad](
+      transactor: Transactor[F],
+      logs: Logs[R, F]
+  ): Resource[R, ContactsRepository[F]] =
+    Resource.eval(
+      logs.service[ContactsRepository[F]].map(logs => ContactsRepository(transactor, logs))
+    )
 
 }
 

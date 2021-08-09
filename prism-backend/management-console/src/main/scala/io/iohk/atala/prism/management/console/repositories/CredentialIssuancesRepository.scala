@@ -1,8 +1,9 @@
 package io.iohk.atala.prism.management.console.repositories
 
+import cats.Monad
 import cats.data.EitherT
 import cats.data.Validated.{Invalid, Valid}
-import cats.effect.BracketThrow
+import cats.effect.{BracketThrow, Resource}
 import cats.implicits._
 import derevo.tagless.applyK
 import derevo.derive
@@ -27,7 +28,7 @@ import io.iohk.atala.prism.management.console.repositories.metrics.CredentialIss
 import io.iohk.atala.prism.management.console.validations.CredentialDataValidator
 import org.slf4j.{Logger, LoggerFactory}
 import tofu.higherKind.Mid
-import tofu.logging.ServiceLogging
+import tofu.logging.{Logs, ServiceLogging}
 import tofu.syntax.monoid.TofuSemigroupOps
 
 @derive(applyK)
@@ -85,15 +86,25 @@ object CredentialIssuancesRepository {
     )
   }
 
-  def apply[F[_]: TimeMeasureMetric: BracketThrow: ServiceLogging[*[_], CredentialIssuancesRepository[F]]](
-      transactor: Transactor[F]
+  def apply[F[_]: TimeMeasureMetric: BracketThrow](
+      transactor: Transactor[F],
+      logs: ServiceLogging[F, CredentialIssuancesRepository[F]]
   ): CredentialIssuancesRepository[F] = {
-    val metrics: CredentialIssuancesRepository[Mid[F, *]] =
+    implicit val serviceLogs: ServiceLogging[F, CredentialIssuancesRepository[F]] = logs
+    val mid: CredentialIssuancesRepository[Mid[F, *]] =
       (new CredentialIssuancesRepositoryMetrics[F]: CredentialIssuancesRepository[
         Mid[F, *]
       ]) |+| (new CredentialIssuancesRepositoryLogs[F]: CredentialIssuancesRepository[Mid[F, *]])
-    metrics attach new CredentialIssuancesRepositoryImpl[F](transactor)
+    mid attach new CredentialIssuancesRepositoryImpl[F](transactor)
   }
+
+  def makeResource[F[_]: TimeMeasureMetric: BracketThrow, R[_]: Monad](
+      transactor: Transactor[F],
+      logs: Logs[R, F]
+  ): Resource[R, CredentialIssuancesRepository[F]] =
+    Resource.eval(
+      logs.service[CredentialIssuancesRepository[F]].map(logs => CredentialIssuancesRepository(transactor, logs))
+    )
 
 }
 

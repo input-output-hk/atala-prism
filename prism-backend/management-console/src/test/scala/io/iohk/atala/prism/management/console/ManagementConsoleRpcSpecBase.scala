@@ -55,13 +55,13 @@ class ManagementConsoleRpcSpecBase extends RpcSpecBase {
   lazy val requestNoncesRepository = RequestNoncesRepository(database)
   lazy val contactsRepository = managementConsoleTestLogs
     .service[ContactsRepository[IOWithTraceIdContext]]
-    .map(implicit l => ContactsRepository(dbLiftedToTraceIdIO))
+    .map(l => ContactsRepository(dbLiftedToTraceIdIO, l))
     .unsafeRunSync()
   lazy val statisticsRepository = StatisticsRepository(database)
   lazy val institutionGroupsRepository = InstitutionGroupsRepository(database)
   lazy val credentialIssuancesRepository = managementConsoleTestLogs
     .service[CredentialIssuancesRepository[IOWithTraceIdContext]]
-    .map(implicit l => CredentialIssuancesRepository(dbLiftedToTraceIdIO))
+    .map(l => CredentialIssuancesRepository(dbLiftedToTraceIdIO, l))
     .unsafeRunSync()
   lazy val credentialsRepository = CredentialsRepository(database)
   lazy val credentialTypeRepository = CredentialTypeRepository(database)

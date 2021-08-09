@@ -18,7 +18,7 @@ class CredentialIssuancesRepositorySpec extends AtalaWithPostgresSpec {
   val logs: Logs[IO, IO] = Logs.sync[IO, IO]
   private lazy val credentialIssuancesRepository = logs
     .service[CredentialIssuancesRepository[IO]]
-    .map(implicit l => CredentialIssuancesRepository(database))
+    .map(CredentialIssuancesRepository(database, _))
     .unsafeRunSync()
 
   "create" should {

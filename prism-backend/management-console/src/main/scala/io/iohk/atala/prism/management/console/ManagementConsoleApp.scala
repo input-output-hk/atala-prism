@@ -83,22 +83,15 @@ object ManagementConsoleApp extends IOApp {
       connector = ConnectorClient(connectorConfig)
 
       // repositories
-      contactsRepository <- Resource.eval(
-        managementConsoleLogs
-          .service[ContactsRepository[IOWithTraceIdContext]]
-          .map(implicit l => ContactsRepository(txTraceIdLifted))
-      )
+      contactsRepository <- ContactsRepository.makeResource(txTraceIdLifted, managementConsoleLogs)
       participantsRepository = ParticipantsRepository(tx, defaultCredentialTypeConfig)
       requestNoncesRepository = RequestNoncesRepository(tx)
       statisticsRepository = StatisticsRepository(tx)
       credentialsRepository = CredentialsRepository(tx)
       receivedCredentialsRepository = ReceivedCredentialsRepository(tx)
       institutionGroupsRepository = InstitutionGroupsRepository(tx)
-      credentialIssuancesRepository <- Resource.eval(
-        managementConsoleLogs
-          .service[CredentialIssuancesRepository[IOWithTraceIdContext]]
-          .map(implicit l => CredentialIssuancesRepository(txTraceIdLifted))
-      )
+      credentialIssuancesRepository <-
+        CredentialIssuancesRepository.makeResource(txTraceIdLifted, managementConsoleLogs)
       credentialTypeRepository = CredentialTypeRepository(tx)
 
       authenticator = new ManagementConsoleAuthenticator(

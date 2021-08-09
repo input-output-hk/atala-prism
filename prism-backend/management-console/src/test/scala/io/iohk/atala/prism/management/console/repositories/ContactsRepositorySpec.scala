@@ -22,7 +22,7 @@ class ContactsRepositorySpec extends AtalaWithPostgresSpec {
 
   val logs: Logs[IO, IO] = Logs.sync[IO, IO]
   lazy val repository =
-    logs.service[ContactsRepository[IO]].map(implicit l => ContactsRepository(database)).unsafeRunSync()
+    logs.service[ContactsRepository[IO]].map(ContactsRepository(database, _)).unsafeRunSync()
   lazy val credentialsRepository = CredentialsRepository(database)
 
   "create" should {
