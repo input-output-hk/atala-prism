@@ -4,7 +4,7 @@
   "private": true,
   "dependencies": {
     "antd": "3.23.6",
-    "atala-prism-demo": "git+ssh://git@github.com/input-output-hk/atala-prism-demo.git",
+    "atala-prism-demo": "git+https://git@github.com/input-output-hk/atala-prism-demo.git",
     "env-cmd": "10.0.1",
     "faker": "4.1.0",
     "firebase": "7.14.5",
