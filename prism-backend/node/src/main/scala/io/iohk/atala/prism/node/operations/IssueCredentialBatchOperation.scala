@@ -16,6 +16,8 @@ import io.iohk.atala.prism.node.repositories.daos.CredentialBatchesDAO.CreateCre
 import io.iohk.atala.prism.node.repositories.daos.{CredentialBatchesDAO, PublicKeysDAO}
 import io.iohk.atala.prism.protos.node_models
 
+import scala.util.Try
+
 case class IssueCredentialBatchOperation(
     credentialBatchId: CredentialBatchId,
     issuerDIDSuffix: DIDSuffix,
@@ -87,7 +89,7 @@ object IssueCredentialBatchOperation extends SimpleOperationCompanion[IssueCrede
       }
       issuerDID <- credentialBatchData.child(_.issuerDid, "issuerDID").parse { issuerDID =>
         Either.fromOption(
-          Option(DIDSuffix.fromString(issuerDID)),
+          Try(DIDSuffix.fromString(issuerDID)).toOption,
           s"must be a valid DID suffix: $issuerDID"
         )
       }

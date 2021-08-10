@@ -14,6 +14,8 @@ import io.iohk.atala.prism.node.operations.path._
 import io.iohk.atala.prism.node.repositories.daos.{DIDDataDAO, PublicKeysDAO}
 import io.iohk.atala.prism.protos.node_models
 
+import scala.util.Try
+
 sealed trait UpdateDIDAction
 case class AddKeyAction(key: DIDPublicKey) extends UpdateDIDAction
 case class RevokeKeyAction(keyId: String) extends UpdateDIDAction
@@ -121,7 +123,7 @@ object UpdateDIDOperation extends OperationCompanion[UpdateDIDOperation] {
     for {
       didSuffix <- updateOperation.child(_.id, "id").parse { didSuffix =>
         Either.fromOption(
-          Option(DIDSuffix.fromString(didSuffix)),
+          Try(DIDSuffix.fromString(didSuffix)).toOption,
           s"must be a valid DID suffix: $didSuffix"
         )
       }

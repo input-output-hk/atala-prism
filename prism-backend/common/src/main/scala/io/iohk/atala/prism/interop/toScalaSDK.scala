@@ -71,11 +71,11 @@ object toScalaSDK {
     def asScala: node_models.PublicKey = {
       io.iohk.atala.prism.protos.node_models
         .PublicKey(
-          v.getId,
-          v.getUsage.asScala,
-          Option(v.getAddedOn.asScala),
-          Option(v.getRevokedOn.asScala),
-          v.getKeyData.asScala
+          id = v.getId,
+          usage = v.getUsage.asScala,
+          addedOn = Option(v.getAddedOn.getTimestampInfo).map(_.asScala),
+          revokedOn = Option(v.getRevokedOn.getTimestampInfo).map(_.asScala),
+          keyData = v.getKeyData.asScala
         )
     }
   }

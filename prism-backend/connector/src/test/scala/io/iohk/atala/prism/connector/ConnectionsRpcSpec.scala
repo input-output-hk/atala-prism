@@ -81,7 +81,7 @@ class ConnectionsRpcSpec extends ConnectorRpcSpecBase with MockitoSugar {
       val request = connector_api.GetConnectionTokenInfoRequest(token.token)
       val rpcRequest = SignedRpcRequest.generate(keyPair, did, request)
 
-      testGetConnectionToken(rpcRequest, request, did.getCanonicalSuffix.toString)
+      testGetConnectionToken(rpcRequest, request, did.canonical.toString)
     }
 
     "returns UNKNOWN if token does not exist" in {
@@ -162,7 +162,7 @@ class ConnectionsRpcSpec extends ConnectorRpcSpecBase with MockitoSugar {
 
         result.publicKey must be(empty)
         result.tpe must be(Holder)
-        result.did must be(unpublishedDID.getCanonicalSuffix)
+        result.did must be(unpublishedDID.canonical)
       }
     }
 

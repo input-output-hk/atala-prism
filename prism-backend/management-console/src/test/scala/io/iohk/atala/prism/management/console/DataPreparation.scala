@@ -204,7 +204,7 @@ object DataPreparation {
   }
 
   def newDID(): DID = {
-    DID.createUnpublishedDID(EC.generateKeyPair().getPublicKey, null)
+    DID.createUnpublishedDID(EC.generateKeyPair().getPublicKey, null).canonical
   }
 
   def publishCredential(

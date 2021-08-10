@@ -62,6 +62,6 @@ class PayloadsRepositorySpec extends AtalaWithPostgresSpec with OptionValues {
   }
 
   private def newDID(): DID = {
-    DID.createUnpublishedDID(EC.generateKeyPair().getPublicKey, null)
+    DID.createUnpublishedDID(EC.generateKeyPair().getPublicKey, null).canonical
   }
 }

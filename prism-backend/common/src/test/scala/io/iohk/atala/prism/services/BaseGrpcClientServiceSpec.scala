@@ -5,7 +5,7 @@ import io.grpc.inprocess.InProcessChannelBuilder
 import io.grpc.stub.AbstractStub
 import io.grpc.{CallOptions, Channel, Metadata}
 import io.iohk.atala.prism.connector.{RequestAuthenticator, RequestNonce, SignedConnectorRequest}
-import io.iohk.atala.prism.crypto.{ECPrivateKey, EC => ECScalaSDK}
+import io.iohk.atala.prism.crypto.{ECPrivateKey => ECPrivateKeyScalaSDK, EC => ECScalaSDK}
 import io.iohk.atala.prism.kotlin.crypto.EC
 import io.iohk.atala.prism.kotlin.identity.DID
 import io.iohk.atala.prism.services.BaseGrpcClientService.AuthHeaders
@@ -63,7 +63,7 @@ class BaseGrpcClientServiceSpec extends AnyWordSpec with Matchers with MockitoSu
     val requestAuthenticator = new RequestAuthenticator(ECScalaSDK) {
       override def signConnectorRequest(
           request: Array[Byte],
-          privateKey: ECPrivateKey,
+          privateKey: ECPrivateKeyScalaSDK,
           requestNonce: RequestNonce
       ): SignedConnectorRequest = {
         SignedConnectorRequest(

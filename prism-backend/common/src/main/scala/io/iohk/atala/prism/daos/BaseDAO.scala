@@ -41,7 +41,7 @@ trait BaseDAO {
 
   // it makes no sense to register an unpublished DID, we'd always look for the canonical DID
   implicit val didMeta: Meta[DID] = Meta[String].timap(DID.fromString) { did =>
-    Option(did.getCanonicalSuffix).getOrElse(throw new RuntimeException(s"Invalid canonical DID: $did")).getValue
+    Option(did.canonical()).getOrElse(throw new RuntimeException(s"Invalid canonical DID: $did")).getValue
   }
 
   protected def uuidValueMeta[T <: UUIDValue: TypeTag](builder: UUIDValue.Builder[T]): Meta[T] = {
