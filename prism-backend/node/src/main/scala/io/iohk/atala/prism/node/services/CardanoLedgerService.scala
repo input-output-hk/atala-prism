@@ -66,23 +66,30 @@ class CardanoLedgerService private[services] (
       .map {
         case Right(transactionId) => PublicationInfo(TransactionInfo(transactionId, getType), TransactionStatus.Pending)
         case Left(error) =>
-          logOperationIds("publish", s"FATAL: Error while publishing reference: $error", obj)(logger)
-          throw new RuntimeException(
-            s"FATAL: Error while publishing reference: $error"
-          )
+          logOperationIds("publish", s"FATAL: Error while publishing reference: ${error.code}", obj)(logger)
+          throw error
       }
   }
 
   override def getTransactionDetails(transactionId: TransactionId): Future[TransactionDetails] = {
     cardanoClient
       .getTransaction(walletId, transactionId)
-      .toFuture(_ => new RuntimeException(s"Could not get transaction $transactionId"))
+      .toFuture { cardanoWalletError =>
+        val errorMessage = s"FATAL: Error while getting transaction details: ${cardanoWalletError.code}"
+        logger.error(s"methodName: getTransactionDetails , message: $errorMessage")
+
+        throw cardanoWalletError
+      }
   }
 
   override def deleteTransaction(transactionId: TransactionId): Future[Unit] = {
     cardanoClient
       .deleteTransaction(walletId, transactionId)
-      .toFuture(_ => new RuntimeException(s"Could not delete transaction $transactionId"))
+      .toFuture { cardanoWalletError =>
+        val errorMessage = s"Could not delete transaction $transactionId"
+        logger.error(s"methodName: deleteTransaction , message: $errorMessage")
+        throw cardanoWalletError
+      }
   }
 
   private def scheduleSync(delay: FiniteDuration): Unit = {

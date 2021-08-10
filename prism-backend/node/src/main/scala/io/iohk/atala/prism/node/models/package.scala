@@ -83,8 +83,8 @@ package object models {
         keyId: String,
         keyUsage: KeyUsage,
         key: ECPublicKey,
-        addedOn: TimestampInfo,
-        revokedOn: Option[TimestampInfo]
+        addedOn: LedgerData,
+        revokedOn: Option[LedgerData]
     )
 
     case class DIDDataState(

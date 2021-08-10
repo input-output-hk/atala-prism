@@ -1,43 +1,55 @@
 package io.iohk.atala.prism.vault.repositories
 
+import cats.effect.IO
 import io.iohk.atala.prism.AtalaWithPostgresSpec
 import io.iohk.atala.prism.kotlin.crypto.{EC, SHA256Digest}
 import io.iohk.atala.prism.kotlin.identity.DID
 import io.iohk.atala.prism.vault.model.{CreatePayload, Payload}
 import org.scalatest.OptionValues
+import tofu.logging.Logs
 
 import java.time.Instant
 import java.time.temporal.ChronoUnit
 
 class PayloadsRepositorySpec extends AtalaWithPostgresSpec with OptionValues {
-  lazy val repository = PayloadsRepository(database)
 
-  def createPayload(did: DID, content: Vector[Byte]): Payload = {
+  private lazy val vaultTestLogs: Logs[IO, IO] = Logs.sync[IO, IO]
+
+  lazy val repository: IO[PayloadsRepository[IO]] =
+    vaultTestLogs
+      .service[PayloadsRepository[IO]]
+      .map(implicit l => PayloadsRepository.create(database))
+
+  def createPayload(did: DID, content: Vector[Byte]): IO[Payload] = {
     val externalId = Payload.ExternalId.random()
     val hash = SHA256Digest.compute(content.toArray)
     val createPayload1 = CreatePayload(externalId, hash, did, content)
-    repository.create(createPayload1).unsafeRunSync()
+    repository.flatMap(_.create(createPayload1))
   }
 
   "create" should {
     "create a new payload" in {
       val did1 = newDID()
       val content1 = "encrypted_data_1".getBytes.toVector
-      val payload1 = createPayload(did1, content1)
 
       val did2 = newDID()
       val content2 = "encrypted_data_2".getBytes.toVector
-      val payload2 = createPayload(did2, content2)
 
-      payload1.did must be(did1)
-      payload1.content must be(content1)
-      assert(payload1.createdAt.until(Instant.now(), ChronoUnit.MINUTES) <= 2)
+      val test = for {
+        payload1 <- createPayload(did1, content1)
+        payload2 <- createPayload(did2, content2)
+      } yield {
+        payload1.did must be(did1)
+        payload1.content must be(content1)
+        assert(payload1.createdAt.until(Instant.now(), ChronoUnit.MINUTES) <= 2)
 
-      payload2.did must be(did2)
-      payload2.content must be(content2)
-      assert(payload2.createdAt.until(Instant.now(), ChronoUnit.MINUTES) <= 2)
+        payload2.did must be(did2)
+        payload2.content must be(content2)
+        assert(payload2.createdAt.until(Instant.now(), ChronoUnit.MINUTES) <= 2)
 
-      assert(payload1.createdAt.isBefore(payload2.createdAt))
+        assert(payload1.createdAt.isBefore(payload2.createdAt))
+      }
+      test.unsafeRunSync()
     }
   }
 
@@ -45,19 +57,28 @@ class PayloadsRepositorySpec extends AtalaWithPostgresSpec with OptionValues {
     "return all created payloads" in {
       val did1 = newDID()
       val content1 = "encrypted_data_1".getBytes.toVector
-      val payload1 = createPayload(did1, content1)
 
       val did2 = newDID()
       val content2 = "encrypted_data_2".getBytes.toVector
-      val payload2 = createPayload(did2, content2)
 
       val content3 = "encrypted_data_3".getBytes.toVector
-      val payload3 = createPayload(did2, content3)
 
-      repository.getByPaginated(did1, None, 10).unsafeRunSync() mustBe List(payload1)
-      repository.getByPaginated(did2, None, 10).unsafeRunSync() mustBe List(payload2, payload3)
-      repository.getByPaginated(did2, None, 1).unsafeRunSync() mustBe List(payload2)
-      repository.getByPaginated(did2, Some(payload2.id), 1).unsafeRunSync() mustBe List(payload3)
+      val test = for {
+        payload1 <- createPayload(did1, content1)
+        payload2 <- createPayload(did2, content2)
+        payload3 <- createPayload(did2, content3)
+        repo <- repository
+        mustBe1Payload <- repo.getByPaginated(did1, None, 10)
+        mustBe2And3Payload <- repo.getByPaginated(did2, None, 10)
+        mustBe2Payload <- repo.getByPaginated(did2, None, 1)
+        mustBe3Payload <- repo.getByPaginated(did2, Some(payload2.id), 1)
+      } yield {
+        mustBe1Payload mustBe List(payload1)
+        mustBe2And3Payload mustBe List(payload2, payload3)
+        mustBe2Payload mustBe List(payload2)
+        mustBe3Payload mustBe List(payload3)
+      }
+      test.unsafeRunSync()
     }
   }
 

@@ -197,8 +197,9 @@ case class Wallet(node: node_api.NodeServiceGrpc.NodeServiceBlockingStub) {
     val issuancekeyProtoOption = didDocument.publicKeys.find(_.id == issuanceKeyId)
     val issuancekeyData = issuancekeyProtoOption.value
     val issuanceKey = issuancekeyProtoOption.flatMap(ProtoCodecs.fromProtoKey).value
-    val issuanceKeyAddedOn = ProtoCodecs.fromTimestampInfoProto(issuancekeyData.addedOn.value)
-    val issuanceKeyRevokedOn = issuancekeyData.revokedOn.map(ProtoCodecs.fromTimestampInfoProto)
+    val issuanceKeyAddedOn = ProtoCodecs.fromTimestampInfoProto(issuancekeyData.addedOn.value.timestampInfo.value)
+    val issuanceKeyRevokedOn =
+      issuancekeyData.revokedOn.flatMap(_.timestampInfo.map(ProtoCodecs.fromTimestampInfoProto))
 
     val keyData = new KeyData(issuanceKey, issuanceKeyAddedOn, issuanceKeyRevokedOn.orNull)
 

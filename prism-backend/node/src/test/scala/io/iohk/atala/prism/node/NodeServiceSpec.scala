@@ -114,7 +114,7 @@ class NodeServiceSpec
       val publicKey = document.publicKeys.headOption.value
       publicKey.id mustBe "master"
       publicKey.usage mustBe node_models.KeyUsage.MASTER_KEY
-      ProtoCodecs.fromTimestampInfoProto(publicKey.addedOn.value) mustBe dummyLedgerData.timestampInfo
+      publicKey.addedOn.value mustBe ProtoCodecs.toLedgerData(dummyLedgerData)
       publicKey.revokedOn mustBe empty
 
       ParsingUtils.parseECKey(ValueAtPath(publicKey.getEcKeyData, Path.root)) must beRight(key.key)
@@ -168,15 +168,45 @@ class NodeServiceSpec
 
       val publicKey1 = document.publicKeys.find(_.id == masterKeyId).value
       publicKey1.usage mustBe node_models.KeyUsage.MASTER_KEY
-      ProtoCodecs.fromTimestampInfoProto(publicKey1.addedOn.value) mustBe dummyLedgerData.timestampInfo
+      publicKey1.addedOn.value mustBe ProtoCodecs.toLedgerData(dummyLedgerData)
       publicKey1.revokedOn mustBe empty
       ParsingUtils.parseECKey(ValueAtPath(publicKey1.getEcKeyData, Path.root)) must beRight(masterKey)
 
       val publicKey2 = document.publicKeys.find(_.id == "issuance0").value
       publicKey2.usage mustBe node_models.KeyUsage.ISSUING_KEY
-      ProtoCodecs.fromTimestampInfoProto(publicKey2.addedOn.value) mustBe dummyLedgerData.timestampInfo
+      publicKey2.addedOn.value mustBe ProtoCodecs.toLedgerData(dummyLedgerData)
       publicKey2.revokedOn mustBe empty
       ParsingUtils.parseECKey(ValueAtPath(publicKey2.getEcKeyData, Path.root)) must beRight(issuingKey)
+
+      response.lastSyncedBlockTimestamp must be(Some(dummySyncTimestamp.toProtoTimestamp))
+    }
+
+    "return DID document for a long form DID with revoked key after it was published" in {
+      val masterKey = CreateDIDOperationSpec.masterKeys.getPublicKey
+      val longFormDID = DID.createUnpublishedDID(masterKey.asScala)
+
+      // we simulate the publication of the DID and the addition of an issuing key
+      val didDigest = SHA256Digest.fromHex(longFormDID.getCanonicalSuffix.value.value)
+      val didSuffix = DIDSuffix.unsafeFromDigest(didDigest.asScala)
+      val key = DIDPublicKey(didSuffix, masterKeyId, KeyUsage.MasterKey, masterKey)
+
+      (DIDDataDAO.insert(didSuffix, didDigest, dummyLedgerData).transact(database) >>
+        PublicKeysDAO.insert(key, dummyLedgerData).transact(database) >>
+        PublicKeysDAO.revoke(key.keyId, dummyLedgerData).transact(database)).unsafeRunSync()
+
+      doReturn(Future.successful(dummySyncTimestamp)).when(objectManagementService).getLastSyncedTimestamp
+
+      // we now resolve the long form DID
+      val response = service.getDidDocument(node_api.GetDidDocumentRequest(longFormDID.value))
+      val document = response.document.value
+      document.id mustBe longFormDID.suffix.value
+      document.publicKeys.length mustBe 1
+
+      val publicKey = document.publicKeys.find(_.id == masterKeyId).value
+      publicKey.usage mustBe node_models.KeyUsage.MASTER_KEY
+      publicKey.addedOn.value mustBe ProtoCodecs.toLedgerData(dummyLedgerData)
+      publicKey.revokedOn mustBe Some(ProtoCodecs.toLedgerData(dummyLedgerData))
+      ParsingUtils.parseECKey(ValueAtPath(publicKey.getEcKeyData, Path.root)) must beRight(masterKey)
 
       response.lastSyncedBlockTimestamp must be(Some(dummySyncTimestamp.toProtoTimestamp))
     }
@@ -333,6 +363,20 @@ class NodeServiceSpec
       buildInfo.version must not be empty
       buildInfo.scalaVersion mustBe "2.13.6"
       buildInfo.sbtVersion mustBe "1.5.3"
+    }
+  }
+
+  "NodeService.getLastSyncedBlockTimestamp" should {
+    "return the timestamp of the last synced block" in {
+      doReturn(Future.successful(dummySyncTimestamp))
+        .when(objectManagementService)
+        .getLastSyncedTimestamp
+
+      val response = service.getLastSyncedBlockTimestamp(
+        GetLastSyncedBlockTimestampRequest()
+      )
+
+      response.lastSyncedBlockTimestamp.value must be(dummySyncTimestamp.toProtoTimestamp)
     }
   }
 

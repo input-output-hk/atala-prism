@@ -355,6 +355,22 @@ class NodeServiceImpl(
     }
   }
 
+  override def getLastSyncedBlockTimestamp(
+      request: node_api.GetLastSyncedBlockTimestampRequest
+  ): Future[node_api.GetLastSyncedBlockTimestampResponse] = {
+    val methodName = "lastSyncedTimestamp"
+    measureRequestFuture(serviceName, methodName)(
+      withLog(methodName, request) { _ =>
+        objectManagement.getLastSyncedTimestamp
+          .map { lastSyncedBlockTimestamp =>
+            node_api
+              .GetLastSyncedBlockTimestampResponse()
+              .withLastSyncedBlockTimestamp(lastSyncedBlockTimestamp.toProtoTimestamp)
+          }
+      }
+    )
+  }
+
   override def getNodeBuildInfo(
       request: node_api.GetNodeBuildInfoRequest
   ): Future[node_api.GetNodeBuildInfoResponse] = {

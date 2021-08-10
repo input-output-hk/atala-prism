@@ -168,10 +168,13 @@ class ObjectManagementService private (
   }
 
   private def publishAndRecordTransaction(
-      atalaObjectId: AtalaObjectId,
+      atalaObjectInfo: AtalaObjectInfo,
       atalaObject: node_internal.AtalaObject
   ): Future[TransactionInfo] = {
     for {
+      _ <- Future.successful {
+        logger.info(s"Publish atala object [${atalaObjectInfo.objectId}]")
+      }
       // Publish object to the blockchain
       publication <- atalaReferenceLedger.publish(atalaObject)
       // Store transaction submission
@@ -179,14 +182,14 @@ class ObjectManagementService private (
         AtalaObjectTransactionSubmissionsDAO
           .insert(
             AtalaObjectTransactionSubmission(
-              atalaObjectId,
+              atalaObjectInfo.objectId,
               publication.transaction.ledger,
               publication.transaction.transactionId,
               Instant.now,
               toAtalaObjectTransactionSubmissionStatus(publication.status)
             )
           )
-          .logSQLErrors(s"publishing and record transaction for [$atalaObjectId]", logger)
+          .logSQLErrors(s"publishing and record transaction for [${atalaObjectInfo.objectId}]", logger)
           .transact(xa)
           .unsafeToFuture()
     } yield publication.transaction
@@ -297,6 +300,7 @@ class ObjectManagementService private (
   }
 
   private[services] def retryOldPendingTransactions(): Future[Unit] = {
+    logger.info("Retry old pending transactions submission")
     for {
       // Query old pending transactions
       pendingTransactions <-
@@ -356,7 +360,7 @@ class ObjectManagementService private (
     atalaObjectsWithParsedContent
       .traverse {
         case (obj, objContent) =>
-          publishAndRecordTransaction(obj.objectId, objContent)
+          publishAndRecordTransaction(obj, objContent)
       }
 
   private def deleteTransactions(
@@ -365,6 +369,7 @@ class ObjectManagementService private (
     Future
       .traverse(transactions) {
         case (transaction, _) =>
+          logger.info(s"Delete transaction [${transaction.transactionId}]")
           atalaReferenceLedger.deleteTransaction(transaction.transactionId)
           AtalaObjectTransactionSubmissionsDAO
             .updateStatus(
@@ -399,24 +404,28 @@ class ObjectManagementService private (
   }
 
   private def mergeAtalaObjects(atalaObjects: List[AtalaObjectInfo]): Future[List[AtalaObjectInfo]] = {
-    val atalaObjectsMerged = atalaObjects.foldRight(List.empty[(AtalaObjectInfo, Boolean)]) {
-      case (atalaObject, Nil) =>
-        List((atalaObject, false))
-      case (atalaObject, lst @ (accObject, _) :: rest) =>
-        atalaObject
-          .mergeIfPossible(accObject)
-          .fold((atalaObject, false) :: lst) { mergedObject =>
-            (mergedObject, true) :: rest
-          }
-    }
+    val atalaObjectsMerged =
+      atalaObjects
+        .foldRight(
+          List.empty[(AtalaObjectInfo, List[AtalaObjectInfo])]
+        ) {
+          case (atalaObject, Nil) =>
+            List((atalaObject, List(atalaObject)))
+          case (atalaObject, lst @ (accObject, oldObjects) :: rest) =>
+            atalaObject
+              .mergeIfPossible(accObject)
+              .fold((atalaObject, List(atalaObject)) :: lst) { mergedObject =>
+                (mergedObject, atalaObject :: oldObjects) :: rest
+              }
+        }
 
     Future.traverse(atalaObjectsMerged) {
-      case (atalaObject, changed) =>
-        if (changed) {
+      case (atalaObject, oldObjects) =>
+        if (oldObjects.size != 1) {
           val changedBlock = atalaObject.getAndValidateAtalaObject.flatMap(_.blockContent).getOrElse {
             throw new RuntimeException(s"Block in object ${atalaObject.objectId} was invalidated after merge.")
           }
-          createAndUpdateAtalaObject(atalaObject, changedBlock.operations.toList)
+          createAndUpdateAtalaObject(atalaObject, changedBlock.operations.toList, oldObjects)
             .map(_ => atalaObject)
         } else {
           Future.successful(atalaObject)
@@ -431,7 +440,8 @@ class ObjectManagementService private (
 
   private def createAndUpdateAtalaObject(
       atalaObject: AtalaObjectInfo,
-      operations: List[SignedAtalaOperation]
+      operations: List[SignedAtalaOperation],
+      oldObjects: List[AtalaObjectInfo]
   ): Future[Unit] = {
     val query = for {
       _ <- AtalaObjectsDAO.insert(AtalaObjectCreateData(atalaObject.objectId, atalaObject.byteContent))
@@ -439,6 +449,7 @@ class ObjectManagementService private (
         operations.map(AtalaOperationId.of),
         atalaObject.objectId
       )
+      _ <- AtalaObjectsDAO.setProcessedBatch(oldObjects.map(_.objectId))
     } yield ()
 
     query

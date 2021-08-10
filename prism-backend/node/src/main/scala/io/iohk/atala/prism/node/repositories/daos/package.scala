@@ -108,26 +108,57 @@ package object daos extends BaseDAO {
           Instant,
           Int,
           Int,
+          TransactionId,
+          Ledger,
           Option[Instant],
           Option[Int],
-          Option[Int]
+          Option[Int],
+          Option[TransactionId],
+          Option[Ledger]
       )
     ].map {
-      case (didSuffix, keyId, keyUsage, curveId, compressed, aTimestamp, aABSN, aOSN, rTimestamp, rABSN, rOSN) =>
+      case (
+            didSuffix,
+            keyId,
+            keyUsage,
+            curveId,
+            compressed,
+            aTimestamp,
+            aABSN,
+            aOSN,
+            aTransactionId,
+            aLedger,
+            rTimestamp,
+            rABSN,
+            rOSN,
+            rTransactionId,
+            rLedger
+          ) =>
         assert(curveId == ECConfig.getCURVE_NAME)
         val javaPublicKey: ECPublicKey = EC.toPublicKeyFromCompressed(compressed)
-        val revokeTimestampInfo =
-          for (t <- rTimestamp; absn <- rABSN; osn <- rOSN) yield new TimestampInfo(t.toEpochMilli, absn, osn)
+        val revokeLedgerData =
+          for (transactionId <- rTransactionId; ledger <- rLedger; t <- rTimestamp; absn <- rABSN; osn <- rOSN)
+            yield LedgerData(
+              transactionId = transactionId,
+              ledger = ledger,
+              timestampInfo = TimestampInfo(t, absn, osn)
+            )
         DIDPublicKeyState(
           didSuffix,
           keyId,
           keyUsage,
           javaPublicKey,
-          new TimestampInfo(aTimestamp.toEpochMilli, aABSN, aOSN),
-          revokeTimestampInfo
+          LedgerData(
+            transactionId = aTransactionId,
+            ledger = aLedger,
+            timestampInfo = TimestampInfo(aTimestamp, aABSN, aOSN)
+          ),
+          revokeLedgerData
         )
     }
   }
+
+  // added_on, added_on_absn, added_on_osn, added_on_transaction_id, ledger
 
   implicit val atalaObjectIdMeta: Meta[AtalaObjectId] =
     Meta[Array[Byte]].timap(value => AtalaObjectId(value.toVector))(_.value.toArray)

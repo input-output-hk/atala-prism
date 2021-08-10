@@ -1,10 +1,12 @@
 package io.iohk.atala.prism.node.repositories.daos
 
+import cats.data.NonEmptyList
 import cats.syntax.functor._
 import doobie.free.connection
-import doobie.free.connection.ConnectionIO
+import doobie.free.connection.{ConnectionIO, unit}
 import doobie.implicits._
 import doobie.implicits.legacy.instant._
+import doobie.util.fragments.in
 import io.iohk.atala.prism.models.TransactionInfo
 import io.iohk.atala.prism.node.models.{AtalaObjectId, AtalaObjectInfo}
 
@@ -54,7 +56,7 @@ object AtalaObjectsDAO {
     sql"""
        |SELECT obj.atala_object_id
        |FROM atala_objects AS obj
-       |WHERE NOT EXISTS
+       |WHERE processed = false and NOT EXISTS
        |(
        |  SELECT 1
        |    FROM atala_object_tx_submissions
@@ -71,5 +73,14 @@ object AtalaObjectsDAO {
          |UPDATE atala_objects
          |SET processed = $processed
          |WHERE atala_object_id = $objectId""".stripMargin.update.run.void
+  }
+
+  def setProcessedBatch(objectIds: List[AtalaObjectId], processed: Boolean = true): ConnectionIO[Unit] = {
+    NonEmptyList.fromList(objectIds).fold(unit) { objectIdsNonEmpty =>
+      val fragment = fr"UPDATE atala_objects" ++
+        fr"SET processed = $processed" ++
+        fr"WHERE" ++ in(fr"atala_object_id", objectIdsNonEmpty)
+      fragment.update.run.void
+    }
   }
 }

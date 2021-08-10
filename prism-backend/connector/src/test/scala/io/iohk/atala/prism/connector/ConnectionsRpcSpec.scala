@@ -17,7 +17,7 @@ import io.iohk.atala.prism.kotlin.identity.DID
 import io.iohk.atala.prism.kotlin.identity.DID.masterKeyId
 import io.iohk.atala.prism.protos.connector_api.GetConnectionTokenInfoRequest
 import io.iohk.atala.prism.protos.node_api.GetDidDocumentRequest
-import io.iohk.atala.prism.protos.node_models.KeyUsage
+import io.iohk.atala.prism.protos.node_models.{KeyUsage, LedgerData}
 import io.iohk.atala.prism.protos.{connector_api, connector_models, node_api, node_models}
 import io.iohk.atala.prism.utils.syntax._
 import org.mockito.captor.ArgCaptor
@@ -571,11 +571,16 @@ class ConnectionsRpcSpec extends ConnectorRpcSpecBase with MockitoSugar {
                 id = keyId,
                 usage = usage,
                 addedOn = Some(
-                  node_models
-                    .TimestampInfo(1, 1, earlierTimestamp.toProtoTimestamp.some)
+                  LedgerData(timestampInfo =
+                    Some(
+                      node_models
+                        .TimestampInfo(1, 1, earlierTimestamp.toProtoTimestamp.some)
+                    )
+                  )
                 ),
-                revokedOn =
-                  revokedTimestamp.map(instant => node_models.TimestampInfo(1, 1, instant.toProtoTimestamp.some)),
+                revokedOn = revokedTimestamp.map(instant =>
+                  LedgerData(timestampInfo = Some(node_models.TimestampInfo(1, 1, instant.toProtoTimestamp.some)))
+                ),
                 keyData = node_models.PublicKey.KeyData.EcKeyData(
                   node_models.ECKeyData(
                     ECConfig.getCURVE_NAME,
