@@ -73,8 +73,8 @@ object toScalaSDK {
         .PublicKey(
           id = v.getId,
           usage = v.getUsage.asScala,
-          addedOn = Option(v.getAddedOn.getTimestampInfo).map(_.asScala),
-          revokedOn = Option(v.getRevokedOn.getTimestampInfo).map(_.asScala),
+          addedOn = Option(v.getAddedOn).map(_.getTimestampInfo).map(_.asScala),
+          revokedOn = Option(v.getRevokedOn).map(_.getTimestampInfo).map(_.asScala),
           keyData = v.getKeyData.asScala
         )
     }
@@ -173,7 +173,7 @@ object toScalaSDK {
       extends AnyVal {
     def asScala: node_models.TimestampInfo = {
       io.iohk.atala.prism.protos.node_models
-        .TimestampInfo(v.getBlockSequenceNumber, v.getOperationSequenceNumber, Option(v.getBlockTimestamp.asScala))
+        .TimestampInfo(v.getBlockSequenceNumber, v.getOperationSequenceNumber, Option(v.getBlockTimestamp).map(_.asScala))
     }
   }
 

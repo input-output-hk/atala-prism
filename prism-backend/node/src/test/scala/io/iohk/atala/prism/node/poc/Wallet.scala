@@ -138,7 +138,6 @@ case class Wallet(node: node_api.NodeServiceGrpc.NodeServiceBlockingStub) {
   ): PrismCredential = {
     val privateKey = dids(didSuffix)(keyId)
     val credentialString = credentialContent.asString
-    kotlinx.serialization.json.JsonKt.Json(null, null).encodeToString(null, credentialContent)
     JsonBasedCredential.fromString(credentialString).sign(privateKey)
   }
 

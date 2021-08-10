@@ -25,7 +25,7 @@ object implicits {
     Meta[String].timap { new CredentialBatchId(_) }(_.getId)
 
   implicit val credentialBatchIdGet: Get[CredentialBatchId] =
-    Get[String].tmap { new CredentialBatchId(_) }
+    Get[String].map { CredentialBatchId.fromString }
 
   implicit val SHA256DigestWrite: Write[SHA256Digest] =
     Write[Array[Byte]].contramap(_.getValue)
