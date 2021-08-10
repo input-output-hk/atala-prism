@@ -22,7 +22,7 @@
   .ant-tabs-nav .ant-tabs-tab {
     @include primary-text($body, $dark-grey);
     font-weight: 800;
-    margin: 0 1.5em;
+    margin: 0 0.7em;
   }
   .ant-tabs-tab-active {
     .ant-tabs-tab-btn {
@@ -31,7 +31,7 @@
     }
   }
   .selectionGroups {
-    width: 15%;
+    width: 220px;
   }
   .selectionGroups {
     .ant-input:focus {
@@ -52,7 +52,7 @@
     color: $primary-color;
   }
   .ant-tabs-content-holder {
-    padding: 1em 3em;
+    padding: 1em 2em;
   }
   .selectGroupSubtitle {
     span {
@@ -72,7 +72,10 @@
     display: flex;
     justify-content: flex-start;
     align-items: center;
-    margin: 1em 0;
+    margin: 2em 0;
+    .FilterControls {
+      margin: 0 !important;
+    }
     .selectContactsCheckbox,
     .selectGroupsCheckbox {
       margin-left: 1em;

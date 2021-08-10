@@ -4,7 +4,7 @@ export const getCredentialFormColumns = columns =>
   columns.map(({ title, dataIndex }) => ({
     label: title,
     fieldKey: dataIndex,
-    width: 400
+    width: 200
   }));
 
 export const getCredentialFormSkeleton = fields =>
