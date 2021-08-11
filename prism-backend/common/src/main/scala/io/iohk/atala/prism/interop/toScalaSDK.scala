@@ -67,14 +67,29 @@ object toScalaSDK {
     }
   }
 
+  implicit class LedgerDataInterop(private val v: io.iohk.atala.prism.kotlin.protos.LedgerData) extends AnyVal {
+    def asScala: node_models.LedgerData = {
+      node_models.LedgerData(
+        v.getTransactionId,
+        ledger = v.getLedger.asScala,
+        timestampInfo = Option(v.getTimestampInfo).map(_.asScala)
+      )
+    }
+  }
+
+  implicit class LedgerInterop(private val v: io.iohk.atala.prism.kotlin.protos.Ledger) extends AnyVal {
+    def asScala: io.iohk.atala.prism.protos.common_models.Ledger =
+      io.iohk.atala.prism.protos.common_models.Ledger.fromValue(v.getValue)
+  }
+
   implicit class ProtosPublicKeyInterop(private val v: io.iohk.atala.prism.kotlin.protos.PublicKey) extends AnyVal {
     def asScala: node_models.PublicKey = {
       io.iohk.atala.prism.protos.node_models
         .PublicKey(
           id = v.getId,
           usage = v.getUsage.asScala,
-          addedOn = Option(v.getAddedOn).map(_.getTimestampInfo).map(_.asScala),
-          revokedOn = Option(v.getRevokedOn).map(_.getTimestampInfo).map(_.asScala),
+          addedOn = Option(v.getAddedOn).map(_.asScala),
+          revokedOn = Option(v.getRevokedOn).map(_.asScala),
           keyData = v.getKeyData.asScala
         )
     }
@@ -173,7 +188,11 @@ object toScalaSDK {
       extends AnyVal {
     def asScala: node_models.TimestampInfo = {
       io.iohk.atala.prism.protos.node_models
-        .TimestampInfo(v.getBlockSequenceNumber, v.getOperationSequenceNumber, Option(v.getBlockTimestamp).map(_.asScala))
+        .TimestampInfo(
+          v.getBlockSequenceNumber,
+          v.getOperationSequenceNumber,
+          Option(v.getBlockTimestamp).map(_.asScala)
+        )
     }
   }
 

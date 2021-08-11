@@ -140,7 +140,9 @@ trait ServicesFixtures {
       import kotlinx.serialization.json.JsonObject
 
       val map = Map(
-        "type" -> new JsonArray(List(JsonPrimitive("VerifiableCredential"), JsonPrimitive("RedlandIdCredential")).asJava),
+        "type" -> new JsonArray(
+          List(JsonPrimitive("VerifiableCredential"), JsonPrimitive("RedlandIdCredential")).asJava
+        ),
         "id" -> JsonPrimitive(issuerDID.getValue),
         "keyId" -> JsonPrimitive(issuanceKeyId),
         "credentialSubject" -> JsonPrimitive(redlandIdCredential.asJson.noSpaces)

@@ -150,7 +150,6 @@ class NodeServiceSpec
       // we simulate the publication of the DID and the addition of an issuing key
       val didDigest = SHA256Digest.fromHex(longFormDID.getCanonicalSuffix.getValue)
       val didSuffix: DIDSuffix = DIDSuffix.fromDigest(didDigest)
-      DIDDataDAO.insert(didSuffix, didDigest, dummyLedgerData).transact(database).unsafeRunSync()
       val key1 = DIDPublicKey(didSuffix, masterKeyId, KeyUsage.MasterKey, masterKey)
       val key2 = DIDPublicKey(didSuffix, "issuance0", KeyUsage.IssuingKey, issuingKey)
 
@@ -183,11 +182,11 @@ class NodeServiceSpec
 
     "return DID document for a long form DID with revoked key after it was published" in {
       val masterKey = CreateDIDOperationSpec.masterKeys.getPublicKey
-      val longFormDID = DID.createUnpublishedDID(masterKey.asScala)
+      val longFormDID = DID.createUnpublishedDID(masterKey, null)
 
       // we simulate the publication of the DID and the addition of an issuing key
-      val didDigest = SHA256Digest.fromHex(longFormDID.getCanonicalSuffix.value.value)
-      val didSuffix = DIDSuffix.unsafeFromDigest(didDigest.asScala)
+      val didDigest = SHA256Digest.fromHex(longFormDID.getCanonicalSuffix.getValue)
+      val didSuffix = DIDSuffix.fromDigest(didDigest)
       val key = DIDPublicKey(didSuffix, masterKeyId, KeyUsage.MasterKey, masterKey)
 
       (DIDDataDAO.insert(didSuffix, didDigest, dummyLedgerData).transact(database) >>
@@ -197,9 +196,9 @@ class NodeServiceSpec
       doReturn(Future.successful(dummySyncTimestamp)).when(objectManagementService).getLastSyncedTimestamp
 
       // we now resolve the long form DID
-      val response = service.getDidDocument(node_api.GetDidDocumentRequest(longFormDID.value))
+      val response = service.getDidDocument(node_api.GetDidDocumentRequest(longFormDID.getValue))
       val document = response.document.value
-      document.id mustBe longFormDID.suffix.value
+      document.id mustBe longFormDID.getSuffix.getValue
       document.publicKeys.length mustBe 1
 
       val publicKey = document.publicKeys.find(_.id == masterKeyId).value

@@ -2,10 +2,10 @@ package io.iohk.atala.prism.node.repositories.daos
 
 import java.time.Instant
 import cats.syntax.functor._
-import doobie.{Update}
+import doobie.{Get, Read, Update}
 import doobie.free.connection.ConnectionIO
 import doobie.implicits._
-import io.iohk.atala.prism.kotlin.credentials.{CredentialBatchId}
+import io.iohk.atala.prism.kotlin.credentials.{CredentialBatchId, TimestampInfo}
 import io.iohk.atala.prism.kotlin.crypto.MerkleRoot
 import io.iohk.atala.prism.kotlin.crypto.SHA256Digest
 import io.iohk.atala.prism.kotlin.identity.DIDSuffix
@@ -30,7 +30,8 @@ object CredentialBatchesDAO {
     val issuedOn = data.ledgerData.timestampInfo
     sql"""
          |INSERT INTO credential_batches (batch_id, last_operation, issuer_did_suffix, merkle_root, issued_on, issued_on_absn, issued_on_osn, ledger, issued_on_transaction_id)
-         |VALUES (${data.batchId}, ${data.lastOperation}, ${data.issuerDIDSuffix}, ${data.merkleRoot}, ${Instant.ofEpochMilli(issuedOn.getAtalaBlockTimestamp)},
+         |VALUES (${data.batchId}, ${data.lastOperation}, ${data.issuerDIDSuffix}, ${data.merkleRoot}, ${Instant
+      .ofEpochMilli(issuedOn.getAtalaBlockTimestamp)},
          | ${issuedOn.getAtalaBlockSequenceNumber}, ${issuedOn.getOperationSequenceNumber}, ${data.ledgerData.ledger}, ${data.ledgerData.transactionId})
        """.stripMargin.update.run.void
   }
@@ -52,7 +53,7 @@ object CredentialBatchesDAO {
     val revocationTimestamp = ledgerData.timestampInfo
     sql"""
          |UPDATE credential_batches
-         |SET revoked_on = ${revocationTimestamp.getAtalaBlockTimestamp},
+         |SET revoked_on = ${Instant.ofEpochMilli(revocationTimestamp.getAtalaBlockTimestamp)},
          |    revoked_on_absn = ${revocationTimestamp.getAtalaBlockSequenceNumber},
          |    revoked_on_osn = ${revocationTimestamp.getOperationSequenceNumber},
          |    revoked_on_transaction_id = ${ledgerData.transactionId}

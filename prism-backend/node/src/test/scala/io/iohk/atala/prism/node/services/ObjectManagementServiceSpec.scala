@@ -85,7 +85,8 @@ class ObjectManagementServiceSpec
     TransactionInfo(
       transactionId = TransactionId.from(SHA256Digest.compute("id".getBytes).getValue).value,
       ledger = Ledger.InMemory,
-      block = Some(BlockInfo(number = 1, timestamp = Instant.ofEpochMilli(dummyTimestamp), index = dummyABSequenceNumber))
+      block =
+        Some(BlockInfo(number = 1, timestamp = Instant.ofEpochMilli(dummyTimestamp), index = dummyABSequenceNumber))
     )
   private val dummyPublicationInfo = PublicationInfo(dummyTransactionInfo, TransactionStatus.Pending)
 

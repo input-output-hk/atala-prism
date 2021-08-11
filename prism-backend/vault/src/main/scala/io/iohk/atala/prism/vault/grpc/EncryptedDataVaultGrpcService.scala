@@ -4,7 +4,6 @@ import cats.syntax.option._
 import com.google.protobuf.ByteString
 import io.iohk.atala.prism.auth.errors.AuthErrorSupport
 import io.iohk.atala.prism.kotlin.crypto.SHA256Digest
-import io.iohk.atala.prism.kotlin.identity.DID
 import io.iohk.atala.prism.logging.TraceId
 import io.iohk.atala.prism.logging.TraceId.IOWithTraceIdContext
 import io.iohk.atala.prism.metrics.RequestMeasureUtil.measureRequestFuture

@@ -110,7 +110,7 @@ object NodeClientService {
         issuingKeyProto.revokedOn
           .flatMap(ledgerData => ledgerData.timestampInfo)
           .map(fromTimestampInfoProto)
-    } yield credentials.KeyData(publicKey = issuingKey.asScala, addedOn = addedOn, revokedOn = revokedOn)
+    } yield new credentials.KeyData(issuingKey, addedOn, revokedOn.orNull)
   }
 
   def fromProtoKey(protoKey: node_models.PublicKey): Option[ECPublicKey] =

@@ -1,6 +1,6 @@
 package io.iohk.atala.prism.logging
 
-import io.iohk.atala.prism.identity.DID
+import io.iohk.atala.prism.kotlin.identity.DID
 import tofu.logging._
 
 /**
@@ -10,7 +10,7 @@ object GeneralLoggableInstances {
 
   implicit val didLoggable: DictLoggable[DID] = new DictLoggable[DID] {
     override def fields[I, V, R, S](a: DID, i: I)(implicit r: LogRenderer[I, V, R, S]): R = {
-      r.addString("DID", a.value, i)
+      r.addString("DID", a.getValue, i)
     }
 
     override def logShow(a: DID): String = s"{DID=$a}"

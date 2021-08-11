@@ -15,11 +15,13 @@ class DefaultCredentialTypeConfigSpec extends AnyWordSpec with Matchers {
   "defaultCredentialTypes" should {
     "be valid mustache templates" in {
       DefaultCredentialTypeConfig(ConfigFactory.load()).defaultCredentialTypes.foreach { defaultCredentialType =>
-        val res: Either[Throwable, String] = Try(Mustache.INSTANCE.render(
-          defaultCredentialType.template,
-          ((name: String) => defaultCredentialType.fields.find(_.name == name).map(_.name).orNull).asKotlin,
-          true
-        )).toEither
+        val res: Either[Throwable, String] = Try(
+          Mustache.INSTANCE.render(
+            defaultCredentialType.template,
+            ((name: String) => defaultCredentialType.fields.find(_.name == name).map(_.name).orNull).asKotlin,
+            true
+          )
+        ).toEither
         res mustBe a[Right[_, _]]
       }
     }

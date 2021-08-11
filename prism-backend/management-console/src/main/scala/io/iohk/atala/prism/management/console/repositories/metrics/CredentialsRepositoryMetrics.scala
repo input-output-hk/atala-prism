@@ -3,7 +3,7 @@ package io.iohk.atala.prism.management.console.repositories.metrics
 import cats.data.NonEmptyList
 import cats.effect.BracketThrow
 import io.iohk.atala.prism.connector.AtalaOperationId
-import io.iohk.atala.prism.credentials.CredentialBatchId
+import io.iohk.atala.prism.kotlin.credentials.CredentialBatchId
 import io.iohk.atala.prism.kotlin.crypto.SHA256Digest
 import io.iohk.atala.prism.management.console.errors.ManagementConsoleError
 import io.iohk.atala.prism.management.console.models.GenericCredential.PaginatedQuery

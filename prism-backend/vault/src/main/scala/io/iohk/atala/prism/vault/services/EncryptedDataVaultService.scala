@@ -7,7 +7,7 @@ import cats.syntax.applicativeError._
 import derevo.derive
 import derevo.tagless.applyK
 import io.iohk.atala.prism.kotlin.crypto.SHA256Digest
-import io.iohk.atala.prism.identity.DID
+import io.iohk.atala.prism.kotlin.identity.DID
 import io.iohk.atala.prism.vault.model.{CreatePayload, Payload}
 import io.iohk.atala.prism.vault.repositories.PayloadsRepository
 import io.iohk.atala.prism.logging.GeneralLoggableInstances._

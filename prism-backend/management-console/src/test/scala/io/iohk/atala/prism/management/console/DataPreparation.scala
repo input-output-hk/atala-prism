@@ -23,7 +23,6 @@ import java.time.{Instant, LocalDate}
 import scala.util.Random
 import scala.jdk.CollectionConverters._
 
-
 object DataPreparation {
   def createParticipant(name: String)(implicit database: Transactor[IO]): ParticipantId = {
     createParticipant(name, newDID())

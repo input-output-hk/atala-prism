@@ -162,7 +162,7 @@ class ConnectionsRpcSpec extends ConnectorRpcSpecBase with MockitoSugar {
 
         result.publicKey must be(empty)
         result.tpe must be(Holder)
-        result.did must be(unpublishedDID.canonical)
+        result.did must be(Option(unpublishedDID.canonical))
       }
     }
 
