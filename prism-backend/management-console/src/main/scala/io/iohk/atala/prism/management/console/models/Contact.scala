@@ -1,9 +1,13 @@
 package io.iohk.atala.prism.management.console.models
 
+import derevo.derive
 import io.circe.Json
 import io.iohk.atala.prism.auth.grpc.GrpcAuthenticationHeader
 import io.iohk.atala.prism.models.{ConnectionToken, UUIDValue}
 import io.iohk.atala.prism.protos.console_models.ContactConnectionStatus
+import tofu.logging.derivation.loggable
+import tofu.optics.Contains
+import tofu.optics.macros.GenContains
 
 import java.time.{Instant, LocalDate}
 import java.util.UUID
@@ -57,6 +61,8 @@ final case class Contact(
 
 object Contact {
 
+  implicit val contactIdContains: Contains[Contact, Id] = GenContains[Contact](_.contactId)
+
   case class WithDetails(
       contact: Contact,
       groupsInvolved: List[InstitutionGroup.WithContactCount],
@@ -70,9 +76,11 @@ object Contact {
 
   case class CredentialCounts(numberOfCredentialsReceived: Int, numberOfCredentialsCreated: Int)
 
+  @derive(loggable)
   final case class Id(uuid: UUID) extends AnyVal with UUIDValue
   object Id extends UUIDValue.Builder[Id]
 
+  @derive(loggable)
   final case class ExternalId(value: String) extends AnyVal
   object ExternalId {
     def random(): ExternalId = ExternalId(UUID.randomUUID().toString)

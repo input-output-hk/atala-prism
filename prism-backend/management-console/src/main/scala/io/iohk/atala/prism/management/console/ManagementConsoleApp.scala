@@ -5,6 +5,8 @@ import com.typesafe.config.ConfigFactory
 import io.grpc.Server
 import io.iohk.atala.prism.auth.grpc.{GrpcAuthenticationHeaderParser, GrpcAuthenticatorInterceptor}
 import io.iohk.atala.prism.config.NodeConfig
+import io.iohk.atala.prism.logging.TraceId
+import io.iohk.atala.prism.logging.TraceId.IOWithTraceIdContext
 import io.iohk.atala.prism.management.console.clients.ConnectorClient
 import io.iohk.atala.prism.management.console.config.DefaultCredentialTypeConfig
 import io.iohk.atala.prism.management.console.integrations.{
@@ -21,6 +23,7 @@ import io.iohk.atala.prism.repositories.TransactorFactory
 import io.iohk.atala.prism.utils.GrpcUtils
 import kamon.Kamon
 import org.slf4j.LoggerFactory
+import tofu.logging.Logs
 
 import scala.concurrent.{Await, ExecutionContext}
 import scala.concurrent.duration.Duration
@@ -60,8 +63,11 @@ object ManagementConsoleApp extends IOApp {
       transactorConfig = TransactorFactory.transactorConfig(globalConfig)
       nodeConfig = NodeConfig(globalConfig)
 
+      managementConsoleLogs = Logs.withContext[IO, IOWithTraceIdContext]
+
       // db
       tx <- TransactorFactory.transactor[IO](transactorConfig)
+      txTraceIdLifted = tx.mapK(TraceId.liftToIOWithTraceId)
       _ <- TransactorFactory.runDbMigrations[IO](tx, classLoader)
 
       // node
@@ -77,14 +83,15 @@ object ManagementConsoleApp extends IOApp {
       connector = ConnectorClient(connectorConfig)
 
       // repositories
-      contactsRepository = ContactsRepository(tx)
+      contactsRepository <- ContactsRepository.makeResource(txTraceIdLifted, managementConsoleLogs)
       participantsRepository = ParticipantsRepository(tx, defaultCredentialTypeConfig)
       requestNoncesRepository = RequestNoncesRepository(tx)
       statisticsRepository = StatisticsRepository(tx)
       credentialsRepository = CredentialsRepository(tx)
       receivedCredentialsRepository = ReceivedCredentialsRepository(tx)
       institutionGroupsRepository = InstitutionGroupsRepository(tx)
-      credentialIssuancesRepository = CredentialIssuancesRepository(tx)
+      credentialIssuancesRepository <-
+        CredentialIssuancesRepository.makeResource(txTraceIdLifted, managementConsoleLogs)
       credentialTypeRepository = CredentialTypeRepository(tx)
 
       authenticator = new ManagementConsoleAuthenticator(

@@ -1,8 +1,11 @@
 package io.iohk.atala.prism.management.console.models
 
+import derevo.derive
+
 import java.util.UUID
 import enumeratum.{DoobieEnum, Enum, EnumEntry}
 import io.iohk.atala.prism.models.UUIDValue
+import tofu.logging.derivation.loggable
 
 import java.time.Instant
 
@@ -47,12 +50,13 @@ final case class CredentialTypeField(
 
 case class CredentialTypeWithRequiredFields(credentialType: CredentialType, requiredFields: List[CredentialTypeField])
 
+@derive(loggable)
 final case class CredentialTypeId(uuid: UUID) extends AnyVal with UUIDValue
 object CredentialTypeId extends UUIDValue.Builder[CredentialTypeId]
 
 final case class CredentialTypeFieldId(uuid: UUID) extends AnyVal with UUIDValue
 object CredentialTypeFieldId extends UUIDValue.Builder[CredentialTypeFieldId]
-
+@derive(loggable)
 sealed abstract class CredentialTypeState(value: String) extends EnumEntry {
   override def entryName: String = value
 }
