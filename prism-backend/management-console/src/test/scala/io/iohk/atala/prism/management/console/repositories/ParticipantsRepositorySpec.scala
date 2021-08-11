@@ -1,5 +1,6 @@
 package io.iohk.atala.prism.management.console.repositories
 
+import cats.effect.IO
 import com.typesafe.config.ConfigFactory
 import doobie.implicits._
 import io.iohk.atala.prism.AtalaWithPostgresSpec
@@ -16,13 +17,18 @@ import io.iohk.atala.prism.management.console.models.{
 }
 import io.iohk.atala.prism.management.console.repositories.ParticipantsRepository.CreateParticipantRequest
 import io.iohk.atala.prism.management.console.repositories.daos.ParticipantsDAO
+import io.iohk.atala.prism.utils.IOUtils._
 import org.scalatest.EitherValues._
 import org.scalatest.OptionValues._
 
 import io.iohk.atala.prism.interop.toScalaSDK._
+import tofu.logging.Logs
 
 //sbt "project management-console" "testOnly *ParticipantsRepositorySpec"
 class ParticipantsRepositorySpec extends AtalaWithPostgresSpec {
+
+  val logs: Logs[IO, IO] = Logs.sync[IO, IO]
+
   lazy val participantsRepository = ParticipantsRepository(database)
 
   "getParticipant by did" should {
@@ -69,7 +75,7 @@ class ParticipantsRepositorySpec extends AtalaWithPostgresSpec {
 
       participantsRepository.create(request).unsafeRunSync() mustBe a[Right[_, _]]
 
-      val credentialTypesRepository = CredentialTypeRepository(database)
+      val credentialTypesRepository = CredentialTypeRepository.unsafe(database, logs)
 
       val defaultCredentialTypes =
         credentialTypesRepository.findByInstitution(request.id).unsafeRunSync()
