@@ -23,7 +23,7 @@ class ContactsRepositorySpec extends AtalaWithPostgresSpec {
 
   val logs: Logs[IO, IO] = Logs.sync[IO, IO]
   private val repository = ContactsRepository.unsafe(database, logs)
-  lazy val credentialsRepository = CredentialsRepository.unsafe(database, logs)
+  val credentialsRepository = CredentialsRepository.unsafe(database, logs)
 
   "create" should {
     "create a new contact and assign it to an specified group" in {
