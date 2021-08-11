@@ -11,7 +11,10 @@ import tofu.higherKind.Mid
 import tofu.logging.ServiceLogging
 import tofu.syntax.logging._
 
-final class CredentialTypeRepositoryLogs[F[_]: ServiceLogging[*[_], CredentialTypeRepository[F]]: BracketThrow]
+private[repositories] final class CredentialTypeRepositoryLogs[F[_]: ServiceLogging[
+  *[_],
+  CredentialTypeRepository[F]
+]: BracketThrow]
     extends CredentialTypeRepository[Mid[F, *]] {
 
   override def create(
