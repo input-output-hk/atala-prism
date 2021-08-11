@@ -168,10 +168,14 @@ package object errors {
           )
 
         override def logShow(a: CredentialDataValidationFailedForContacts): String =
-          s"CredentialDataValidationFailedForContacts{credentialTypeName=${a.credentialTypeName},contacts=${a.contacts
-            .map(s => s"contactId=${s._1}, error=${s._3.map(_.message).mkString(",")}")
-            .mkString(",")}}"
+          s"CredentialDataValidationFailedForContacts{credentialTypeName=${a.credentialTypeName},contacts=${showContacts(a.contacts)}}"
       }
+
+    private def showContacts(in: List[(Contact.Id, Json, List[CredentialDataValidationError])]): String =
+      in.map(contact => s"contactId=${contact._1}, errors=${showValidationErrorsMessages(contact._3)}").mkString(",")
+
+    private def showValidationErrorsMessages(in: List[CredentialDataValidationError]): String =
+      in.map(_.message).mkString(",")
   }
 
   case class CredentialDataValidationFailed(
