@@ -81,9 +81,9 @@ private[repositories] final class CredentialTypeRepositoryLogs[F[_]: ServiceLogg
 
   override def find(institution: ParticipantId, name: String): Mid[F, Option[CredentialTypeWithRequiredFields]] =
     in =>
-      info"finding by name $institution $name" *> in
-        .flatTap(result => info"finding by name - ${result.fold("found nothing")(_ => "found")}")
-        .onError(errorCause"encountered an error while finding by name" (_))
+      info"finding by institution id and name $institution $name" *> in
+        .flatTap(result => info"finding by institution id and name - ${result.fold("found nothing")(_ => "found")}")
+        .onError(errorCause"encountered an error while finding by institution id and name" (_))
 
   override def find(
       institution: ParticipantId,
