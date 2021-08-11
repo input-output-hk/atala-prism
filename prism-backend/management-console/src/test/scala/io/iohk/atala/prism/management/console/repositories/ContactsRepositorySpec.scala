@@ -9,6 +9,7 @@ import io.iohk.atala.prism.management.console.errors.{ContactHasExistingCredenti
 import io.iohk.atala.prism.management.console.models._
 import io.iohk.atala.prism.management.console.repositories.daos.InstitutionGroupsDAO
 import io.iohk.atala.prism.models.ConnectionToken
+import io.iohk.atala.prism.utils.IOUtils._
 import org.scalatest.OptionValues._
 import tofu.logging.Logs
 
@@ -21,8 +22,7 @@ class ContactsRepositorySpec extends AtalaWithPostgresSpec {
   import PaginatedQueryConstraints._
 
   val logs: Logs[IO, IO] = Logs.sync[IO, IO]
-  lazy val repository =
-    logs.service[ContactsRepository[IO]].map(ContactsRepository(database, _)).unsafeRunSync()
+  private val repository = ContactsRepository.unsafe(database, logs)
   lazy val credentialsRepository = CredentialsRepository(database)
 
   "create" should {

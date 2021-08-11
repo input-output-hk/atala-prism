@@ -1,6 +1,6 @@
 package io.iohk.atala.prism.management.console.repositories
 
-import cats.Monad
+import cats.{Comonad, Functor, Monad}
 import cats.data.EitherT
 import cats.data.Validated.{Invalid, Valid}
 import cats.effect.{BracketThrow, Resource}
@@ -86,24 +86,31 @@ object CredentialIssuancesRepository {
     )
   }
 
-  def apply[F[_]: TimeMeasureMetric: BracketThrow](
+  def apply[F[_]: TimeMeasureMetric: BracketThrow, R[_]: Functor](
       transactor: Transactor[F],
-      logs: ServiceLogging[F, CredentialIssuancesRepository[F]]
-  ): CredentialIssuancesRepository[F] = {
-    implicit val serviceLogs: ServiceLogging[F, CredentialIssuancesRepository[F]] = logs
-    val mid: CredentialIssuancesRepository[Mid[F, *]] =
-      (new CredentialIssuancesRepositoryMetrics[F]: CredentialIssuancesRepository[
-        Mid[F, *]
-      ]) |+| (new CredentialIssuancesRepositoryLogs[F]: CredentialIssuancesRepository[Mid[F, *]])
-    mid attach new CredentialIssuancesRepositoryImpl[F](transactor)
-  }
+      logs: Logs[R, F]
+  ): R[CredentialIssuancesRepository[F]] =
+    for {
+      serviceLogs <- logs.service[CredentialIssuancesRepository[F]]
+    } yield {
+      implicit val implicitLogs: ServiceLogging[F, CredentialIssuancesRepository[F]] = serviceLogs
+      val metrics: CredentialIssuancesRepository[Mid[F, *]] = new CredentialIssuancesRepositoryMetrics[F]
+      val logs: CredentialIssuancesRepository[Mid[F, *]] = new CredentialIssuancesRepositoryLogs[F]
+      val mid = metrics |+| logs
+      mid attach new CredentialIssuancesRepositoryImpl[F](transactor)
+    }
+
+  def unsafe[F[_]: TimeMeasureMetric: BracketThrow, R[_]: Comonad](
+      transactor: Transactor[F],
+      logs: Logs[R, F]
+  ): CredentialIssuancesRepository[F] = CredentialIssuancesRepository(transactor, logs).extract
 
   def makeResource[F[_]: TimeMeasureMetric: BracketThrow, R[_]: Monad](
       transactor: Transactor[F],
       logs: Logs[R, F]
   ): Resource[R, CredentialIssuancesRepository[F]] =
     Resource.eval(
-      logs.service[CredentialIssuancesRepository[F]].map(logs => CredentialIssuancesRepository(transactor, logs))
+      CredentialIssuancesRepository(transactor, logs)
     )
 
 }

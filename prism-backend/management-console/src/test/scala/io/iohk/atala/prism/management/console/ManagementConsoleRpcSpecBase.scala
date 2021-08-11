@@ -14,6 +14,7 @@ import io.iohk.atala.prism.management.console.services._
 import io.iohk.atala.prism.protos.console_api
 import io.iohk.atala.prism.protos.console_api.CredentialIssuanceServiceGrpc
 import io.iohk.atala.prism.{ApiTestHelper, RpcSpecBase}
+import io.iohk.atala.prism.utils.IOUtils._
 import org.mockito.MockitoSugar.mock
 import tofu.logging.Logs
 
@@ -53,16 +54,11 @@ class ManagementConsoleRpcSpecBase extends RpcSpecBase {
 
   lazy val participantsRepository = ParticipantsRepository(database)
   lazy val requestNoncesRepository = RequestNoncesRepository(database)
-  lazy val contactsRepository = managementConsoleTestLogs
-    .service[ContactsRepository[IOWithTraceIdContext]]
-    .map(l => ContactsRepository(dbLiftedToTraceIdIO, l))
-    .unsafeRunSync()
+  lazy val contactsRepository = ContactsRepository.unsafe(dbLiftedToTraceIdIO, managementConsoleTestLogs)
   lazy val statisticsRepository = StatisticsRepository(database)
   lazy val institutionGroupsRepository = InstitutionGroupsRepository(database)
-  lazy val credentialIssuancesRepository = managementConsoleTestLogs
-    .service[CredentialIssuancesRepository[IOWithTraceIdContext]]
-    .map(l => CredentialIssuancesRepository(dbLiftedToTraceIdIO, l))
-    .unsafeRunSync()
+  lazy val credentialIssuancesRepository =
+    CredentialIssuancesRepository.unsafe(dbLiftedToTraceIdIO, managementConsoleTestLogs)
   lazy val credentialsRepository = CredentialsRepository(database)
   lazy val credentialTypeRepository = CredentialTypeRepository(database)
 

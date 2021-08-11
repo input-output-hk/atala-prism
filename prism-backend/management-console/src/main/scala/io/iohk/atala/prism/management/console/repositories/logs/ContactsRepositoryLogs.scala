@@ -15,8 +15,9 @@ import tofu.syntax.logging._
 
 import java.time.Instant
 
-final class ContactsRepositoryLogs[F[_]: BracketThrow](implicit l: ServiceLogging[F, ContactsRepository[F]])
-    extends ContactsRepository[Mid[F, *]] {
+private[repositories] final class ContactsRepositoryLogs[F[_]: BracketThrow](implicit
+    l: ServiceLogging[F, ContactsRepository[F]]
+) extends ContactsRepository[Mid[F, *]] {
 
   override def create(
       participantId: ParticipantId,

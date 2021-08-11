@@ -1,6 +1,6 @@
 package io.iohk.atala.prism.management.console.repositories
 
-import cats.Monad
+import cats.{Comonad, Functor, Monad}
 import cats.data.OptionT
 import cats.data.EitherT
 import cats.effect._
@@ -66,24 +66,29 @@ trait ContactsRepository[F[_]] {
 
 object ContactsRepository {
 
-  def apply[F[_]: TimeMeasureMetric: BracketThrow](
+  def apply[F[_]: TimeMeasureMetric: BracketThrow, R[_]: Functor](
       transactor: Transactor[F],
-      logs: ServiceLogging[F, ContactsRepository[F]]
-  ): ContactsRepository[F] = {
-    implicit val serviceLogs: ServiceLogging[F, ContactsRepository[F]] = logs
-    val mid: ContactsRepository[Mid[F, *]] = (new ContactsRepositoryMetrics[F]: ContactsRepository[
-      Mid[F, *]
-    ]) |+| (new ContactsRepositoryLogs[F]: ContactsRepository[Mid[F, *]])
-    mid attach new ContactsRepositoryImpl[F](transactor)
-  }
+      logs: Logs[R, F]
+  ): R[ContactsRepository[F]] =
+    for {
+      serviceLogs <- logs.service[ContactsRepository[F]]
+    } yield {
+      implicit val implicitLogs: ServiceLogging[F, ContactsRepository[F]] = serviceLogs
+      val metrics: ContactsRepository[Mid[F, *]] = new ContactsRepositoryMetrics[F]
+      val logs: ContactsRepository[Mid[F, *]] = new ContactsRepositoryLogs[F]
+      val mid = metrics |+| logs
+      mid attach new ContactsRepositoryImpl[F](transactor)
+    }
+
+  def unsafe[F[_]: TimeMeasureMetric: BracketThrow, R[_]: Comonad](
+      transactor: Transactor[F],
+      logs: Logs[R, F]
+  ): ContactsRepository[F] = ContactsRepository(transactor, logs).extract
 
   def makeResource[F[_]: TimeMeasureMetric: BracketThrow, R[_]: Monad](
       transactor: Transactor[F],
       logs: Logs[R, F]
-  ): Resource[R, ContactsRepository[F]] =
-    Resource.eval(
-      logs.service[ContactsRepository[F]].map(logs => ContactsRepository(transactor, logs))
-    )
+  ): Resource[R, ContactsRepository[F]] = Resource.eval(ContactsRepository(transactor, logs))
 
 }
 
