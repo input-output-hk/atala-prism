@@ -227,6 +227,7 @@ class CredentialIssuanceServiceImplSpec extends ManagementConsoleRpcSpecBase wit
     val groups = List("Engineering", "Business").map { groupName =>
       institutionGroupsRepository
         .create(institutionId, InstitutionGroup.Name(groupName), Set())
+        .run(TraceId.generateYOLO)
         .unsafeRunSync()
         .toOption
         .value
@@ -268,6 +269,7 @@ class CredentialIssuanceServiceImplSpec extends ManagementConsoleRpcSpecBase wit
     val groups = List("Engineering", "Business").map { groupName =>
       institutionGroupsRepository
         .create(institutionId, InstitutionGroup.Name(groupName), Set())
+        .run(TraceId.generateYOLO)
         .unsafeRunSync()
         .toOption
         .value

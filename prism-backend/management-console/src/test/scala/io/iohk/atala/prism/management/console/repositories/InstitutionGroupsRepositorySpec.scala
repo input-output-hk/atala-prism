@@ -1,11 +1,14 @@
 package io.iohk.atala.prism.management.console.repositories
 
+import cats.effect.IO
 import cats.syntax.option._
 import io.iohk.atala.prism.AtalaWithPostgresSpec
 import io.iohk.atala.prism.management.console.DataPreparation._
 import io.iohk.atala.prism.management.console.errors.{GroupNameIsNotFree, GroupsInstitutionDoNotMatch}
 import io.iohk.atala.prism.management.console.models.PaginatedQueryConstraints.ResultOrdering
 import io.iohk.atala.prism.management.console.models.{InstitutionGroup, PaginatedQueryConstraints}
+import io.iohk.atala.prism.utils.IOUtils._
+import tofu.logging.Logs
 
 import java.time.LocalDate
 import java.time.temporal.ChronoUnit
@@ -13,7 +16,8 @@ import java.util.UUID
 import scala.util.{Success, Try}
 
 class InstitutionGroupsRepositorySpec extends AtalaWithPostgresSpec {
-  lazy val repository = InstitutionGroupsRepository(database)
+  val logs: Logs[IO, IO] = Logs.sync[IO, IO]
+  lazy val repository = InstitutionGroupsRepository.unsafe(database, logs)
 
   "create" should {
     "allow creating different groups" in {
