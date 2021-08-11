@@ -1,6 +1,6 @@
 # The life cycle of an AtalaOperation
 
-The goal of this document is to both explain the current flow that an AtalaOperation, the issues we are discussing in the node implementation, and the
+The goal of this document is to explain the current flow that an AtalaOperation, the issues we are discussing in the node implementation, and the
 proposed solutions so far
 
 
@@ -17,15 +17,17 @@ The flow of an operations looks as follows:
 ### Operations ordering
 
 There are some operations in our protocol that have an explicit ordering required. For instance, `UpadteDID` operations point to a previous update or 
-a `CreateDID` using a `previousHash` field. `RevokeCredentials` operations also point to an `IssueBatch` operation. Now, there is also an implicit 
-order between other operations. For example, if a user submits an `IssueBatch` operation that is signed with `key1`, and then an `UpdateDID` operation
-that revokes `key1`, then the protocol will only consider the sequence of operations as valid if they are processed in that specific order. This is, 
-the user could gather operations in a single transaction in an atala block `B` of the form `[issueBatch, update]`. However, when the transaction `tx1`
-carrying `B` goes to the Cardano mempool, it is theoretically possible for an attacker to see the atala block `B`, extract the `update` operation and 
-submit it in a separate transaction `tx2`. If `tx2` is confirmed before `tx1`, then the `issueBatch` operation will be rejected by the PRISM nodes.
+a `CreateDID` using a `previousHash` field. `RevokeCredentials` operations also point to an `IssueBatch` operation. In other cases, there is an 
+implicit order between operations. For example, if a user submits an `IssueBatch` operation that is signed with `key1`, and then an `UpdateDID` 
+operation that revokes `key1`, then the protocol will only consider the sequence of operations as valid if they are processed in that specific order. 
+This is, the user could gather operations in a single transaction in an atala block `B` of the form `[issueBatch, update]`. However, when the 
+transaction `tx1` carrying `B` goes to the Cardano mempool, it is theoretically possible for an attacker to see the atala block `B`, extract the 
+`update` operation and submit it in a separate transaction `tx2`. If `tx2` is confirmed before `tx1`, then the `issueBatch` operation will be rejected
+by the PRISM nodes (because it would be signed with a revoked key).
 When could this occur?
 - Regular key rotation for security good practice
-- An issuer could issue some batches and suddenly detects a batch issued with 
+- An issuer could issue some batches, and suddenly detects a batch issued that he does not recognizes. He would like to submit an `updateDID` event 
+  revoking the issuing key while there may still be other valid `issueBatch` events waiting for confirmation
 
 The above scenario could be more problematic in cases where the atala blocks are full of dependent operations. This could happen either because of 
 sub-optimal use of batching, or due to high-throughput demand. 
@@ -47,15 +49,17 @@ Some other alternatives are:
   this could make multi-node management more complex in the future. Imagine multiple node issuing credentials using different keys that belong to the 
   same DID. 
 
-Maybe adding waiting time for the ideally not extremely frequent case of key rotation will be enough.
+For developer experience, we incline to believe that adding waiting time for the case of key rotation will be enough. We believe that in the regular 
+use patter, it won't be a frequent situation. We could also give a warning to a user when we sends an update that will cause a delay and suggest the
+user to delete operations that depend on a revoked keys, and re-sign the operations with another one.
 
 ### Wallet overload and general throughput
 
-Today we are calling the cardano wallet without properly managing errors. We created a story to improve this.
-One particular problem is that the cardano wallet may not have enough available UTxOs to send the needed number of transactions. Note that this is
+Today we are calling the Cardano wallet without properly managing errors. We created a story to improve this.
+One particular problem is that the Cardano wallet may not have enough available UTxOs to send the needed number of transactions. Note that this is
 different from not having enough funds. A Cardano transaction consumes a number of UTxO (inputs), and creates new ones (called outputs). 
 - The wallet will start with one UTxO, 
-- Imagine that the first transaction will create an output with X ADA (today 1 ADA), and the remaining ADA (minus fees) will be located   in another 
+- Imagine that the first transaction will create an output with X ADA (today 1 ADA), and the remaining ADA (minus fees) will be located in another 
   output of the transaction. This will leave us with 2 UTxOs that will be available for the next transaction. However, the two new UTxOs won't be 
   usable (as inputs of new transactions) until the transaction that creates them is confirmed. 
 
@@ -65,7 +69,7 @@ A simple rule of thumb is
 
 Now, if the node queue has enough operations to fill many transactions we have two challenges to solve
 1. Minimize the waiting time to get all operations confirmed
-1. Guarantee order of operations, which may for to add waiting time (as mentioned by an alternative in previous section)
+1. Guarantee order of operations, which may force to add waiting time (as mentioned by an alternative in previous section)
 
 There are a few important observations to tackle these challenges
 1. The time required to submit all transactions has a dependency on wallet UTxO distribution
@@ -81,8 +85,8 @@ on transaction size). This may force the wallet to break the output with M ADA i
 Unfortunately, we cannot guarantee if this will work, as the wallet uses an internal coin selection algorithm. We should refine this strategy, but it
 was a suggestion from the wallet team.
 
-
-On the second topic, in cases where the queue is big, we may have atala blocks that contain transactions one upon the other.
+On the second topic, in cases where the queue is big, we may have atala blocks that contain transactions that depend one upon the other. For example,
+an `issueBatch` operation in one block may depend on a DID update located in the other block.
 We can classify operations as follow:
 1. build a dependency graph between operations. This is, for a queue that contains the ordered operations `o1, o2,..., on` we say that `oi` depends 
    on `oj` iff
@@ -101,14 +105,29 @@ We can classify operations as follow:
      if an operation has a previousHash field that matches no know operation
      if an operation is signed with an unknown key
    Different sub-graphs will be completely independent and would be posted in any order. These could share an atala block and allow for the use of 
-   parallel transactions. We also note that the only vertexes that will generate connections to many other vertexes are UpdateDIDs.
-   Ideally, a path will fit in a single transaction. If we estimate an average operation size of 500 bytes, then we should be able to allocate ~30 
-   operations in a single atala block
-   The only case that is troublesome is when a path does not fit in a single transaction.
-     Let B1,..., Bn the Atala blocks that contain a path that does not fit in a single block.
-     Let Txi the transaction that carries block Bi.
-     We want Txj to be confirmed before Tx{j+1} for each j \in {1,..., n-1}
-     Given the limited control on transaction construction, we could send Txi and wait until fully confirmed before sending Tx{i+1}. If we do not 
-     wait, we may have issues related to rollbacks.
-     While we wait, we can still send transactions involved with other atala blocks
+   parallel transactions. We also note that the only vertexes that will generate connections to many other vertexes are:
+     + `UpdateDID`s as they can add/remove keys used in other operations
+     + `IssueBatch`s which can be the `previousHash` of multiple `RevoceCredentials`
+   Ideally, a sub-graph will fit in a single transaction and there will not exist dependencies of type 3 (a key is revoked by an update, but we need
+   to guarantee order between that update and an operation that uses the said key). If we estimate an average operation size of 500 bytes, then we 
+   should be able to allocate ~30 operations in a single atala block
+   There are then two cases that become troublesome.
+   1. when a sub-graph without type dependencies does not fit in a single transaction.
+      Let B1,..., Bn the dependent Atala blocks that contain a sub-graph that does not fit in a single block.
+      Let Txi the transaction that carries block Bi.
+      We want Txj to be confirmed before Tx{j+1} for each j \in {1,..., n-1}
+      Given the limited control on transaction construction, we could send Txi and wait until fully confirmed before sending Tx{i+1}. If we do not 
+      wait, we may have issues related to rollbacks.
+      While we wait, we can still send transactions involved with other atala blocks
+   1. When the sub-graph does fit in a single transaction, but we have dependencies of type 3. In this case, we can split the sub-graph into two 
+      blocks, treat them as dependent blocks that do not fit in a single transaction, and proceed as described before. 
+
+## Summary
+
+The problem that arises from submitting a key revocation while we have pending operations to be published that depend on the revoked key, looks 
+manageable by suggesting the user to use keys in a smarter way. If we later develop a wallet backend logic, we would be able to manage this on
+behalf of the user, as the wallet could encapsulate the logic of querying the node for dependencies and use keys in a reasonable way.
+Other submission delays caused by dependencies would only occur if there are so many dependent operations that they would not fit in a single block.
+This represents according to our tests to a number above 30 dependent operations. In practice, this looks reasonable too. Remember that the only 
+operations that could create dependencies are DID updates and credential revocations.
 
