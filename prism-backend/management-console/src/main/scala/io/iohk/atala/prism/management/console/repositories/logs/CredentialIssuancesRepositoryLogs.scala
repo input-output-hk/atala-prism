@@ -46,7 +46,7 @@ private[repositories] final class CredentialIssuancesRepositoryLogs[F[_]: Bracke
         .flatTap(
           _.fold(
             e => error"encountered an error while creating bulk credential issuance  $e",
-            r => info"creating credential issuance - successfully done $r"
+            r => info"creating bulk credential issuance - successfully done $r"
           )
         )
         .onError(errorCause"encountered an error while creating bulk credential issuance" (_))
