@@ -20,10 +20,11 @@ the user will be out of sync with respect to updated nodes. However, the user wi
 security risks.
 We could remark that it seems reasonable to conclude that all nodes running the same version will always see the same state.
 
-
-How could we mitigate the risks of cases 2 and 3? 
-A priori, we could rely on external coordination to make updates. However, there may be actors that may not follow as carefully as they should the 
-update news.
+How could we mitigate the risks of cases 2 and 3?
+- For case 2, the protocol remains unchanged, but we know that users will be out of sync with the chain, we could rely on external coordination 
+  to make updates. The incentive to update is that their PRISM nodes will likely stop working due to incompatibilities of the Cardano components with
+  the current network.
+- For case 3, it is a trickier situation, because the PRISM nodes do not have a way to detect loss of consensus.
 
 
 ## Proposal
@@ -33,7 +34,19 @@ The idea is that every node will have their own version hardcoded (or grabbed fr
 it sees a `VersionUpdate` event, it will retrieve the new version from the message and compare against its own internal version. If the node version
 is behind and incompatible with the event version, then it will stop processing further events. We could also force the node to not send new events
 to the blockchain when outdated.
-An example
+We can think of two types of updates to the protocol:
+- Major: Meaning that some existing AtalaOperations before the version will become invalid. This requires the PRISM node operator to perform an 
+         upgrade to proceed interacting with the network (it is a way to deprecate legacy events). This should likely force re-indexing the node 
+         state
+- Minor: Meaning that all the AtalaOperations that the node understands before updating remain as valid, but new ones have been added which could
+         add more state to the node. For example, the protocol adds new events to represent credential issuance or revocation. In this case, the node 
+         could opt to not upgrade. This could be helpful to simplify maintainance on systems that do not intend the use new features.
+
+We should note that:
+- Every protocol version will have a node version.
+- SDK versions could require minimal node versions, that implement protocol versions.
+
+An example of the messages for the event:
 
 ```proto
 message VersionUpdate {
@@ -43,8 +56,14 @@ message VersionUpdate {
 }
 
 message VersionInfo {
-  string new_version = 1; // new version to be announced, we can use semantic versioning
-  string effective_since = 2; // optional Cardano block number
+  string version_name = 1; // (optional) name of the version
+  // new major version to be announced, if this value is changed, the node MUST upgrade before `effective_since` because the new protocol version
+  // modifies existing events. This implies that some events _published_ by this node would stop being valid for nodes in newer version
+  int32 new_major_version = 2; 
+  // new minor version to be announced, if this value changes, the node can opt to not update. All events _published_ by this node would be also
+  // understood by other nodes with the same major version. However, there may be new events that this node won't _read_ 
+  int32 new_minor_version = 3; 
+  int32 effective_since = 4; // Cardano block number that tells since which block the update is enforced
 }
 ```
 
