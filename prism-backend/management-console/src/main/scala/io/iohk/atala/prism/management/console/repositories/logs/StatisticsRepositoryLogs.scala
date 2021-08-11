@@ -10,7 +10,10 @@ import tofu.higherKind.Mid
 import tofu.logging.ServiceLogging
 import tofu.syntax.logging._
 
-final class StatisticsRepositoryLogs[F[_]: ServiceLogging[*[_], StatisticsRepository[F]]: BracketThrow]
+private[repositories] final class StatisticsRepositoryLogs[F[_]: ServiceLogging[
+  *[_],
+  StatisticsRepository[F]
+]: BracketThrow]
     extends StatisticsRepository[Mid[F, *]] {
   override def query(participantId: ParticipantId, timeIntervalMaybe: Option[TimeInterval]): Mid[F, Statistics] =
     in =>

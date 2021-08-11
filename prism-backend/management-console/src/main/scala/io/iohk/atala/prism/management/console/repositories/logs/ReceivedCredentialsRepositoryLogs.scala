@@ -11,7 +11,7 @@ import tofu.higherKind.Mid
 import tofu.logging.ServiceLogging
 import tofu.syntax.logging._
 
-final class ReceivedCredentialsRepositoryLogs[F[_]: ServiceLogging[
+private[repositories] final class ReceivedCredentialsRepositoryLogs[F[_]: ServiceLogging[
   *[_],
   ReceivedCredentialsRepository[F]
 ]: BracketThrow]
