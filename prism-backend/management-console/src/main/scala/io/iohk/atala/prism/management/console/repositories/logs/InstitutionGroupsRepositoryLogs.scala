@@ -12,7 +12,9 @@ import tofu.higherKind.Mid
 import tofu.logging.ServiceLogging
 import tofu.syntax.logging._
 
-class InstitutionGroupsRepositoryLogs[F[_]: ServiceLogging[*[_], InstitutionGroupsRepository[F]]: BracketThrow]
+private[repositories] final class InstitutionGroupsRepositoryLogs[F[_]: ServiceLogging[*[
+  _
+], InstitutionGroupsRepository[F]]: BracketThrow]
     extends InstitutionGroupsRepository[Mid[F, *]] {
 
   override def create(
