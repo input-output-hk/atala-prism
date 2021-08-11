@@ -22,15 +22,19 @@ import io.iohk.atala.prism.management.console.errors.{
 import io.iohk.atala.prism.management.console.models._
 import org.scalatest.OptionValues._
 import io.iohk.atala.prism.management.console.repositories.daos.CredentialTypeDao
-
 import io.iohk.atala.prism.interop.toScalaSDK._
 import io.iohk.atala.prism.interop.toKotlinSDK._
+import io.iohk.atala.prism.utils.IOUtils._
+import tofu.logging.Logs
+
 import scala.jdk.CollectionConverters._
 
 class CredentialsRepositorySpec extends AtalaWithPostgresSpec {
   import CredentialsRepositorySpec.publish
 
-  lazy val credentialsRepository = CredentialsRepository.apply[IO](database)
+  val logs: Logs[IO, IO] = Logs.sync[IO, IO]
+
+  lazy val credentialsRepository = CredentialsRepository.unsafe(database, logs)
 
   "create" should {
     "create a new credential" in {

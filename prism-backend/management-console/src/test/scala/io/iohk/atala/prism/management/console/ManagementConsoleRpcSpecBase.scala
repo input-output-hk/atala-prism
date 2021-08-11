@@ -59,7 +59,7 @@ class ManagementConsoleRpcSpecBase extends RpcSpecBase {
   lazy val institutionGroupsRepository = InstitutionGroupsRepository(database)
   lazy val credentialIssuancesRepository =
     CredentialIssuancesRepository.unsafe(dbLiftedToTraceIdIO, managementConsoleTestLogs)
-  lazy val credentialsRepository = CredentialsRepository(database)
+  lazy val credentialsRepository = CredentialsRepository.unsafe(dbLiftedToTraceIdIO, managementConsoleTestLogs)
   lazy val credentialTypeRepository = CredentialTypeRepository(database)
 
   lazy val nodeMock = mock[io.iohk.atala.prism.protos.node_api.NodeServiceGrpc.NodeService]

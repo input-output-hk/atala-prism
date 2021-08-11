@@ -1,13 +1,20 @@
 package io.iohk.atala.prism.management.console.repositories
 
+import cats.effect.IO
 import io.iohk.atala.prism.AtalaWithPostgresSpec
 import io.iohk.atala.prism.management.console.DataPreparation._
 import io.iohk.atala.prism.management.console.models.{InstitutionGroup, TimeInterval}
+import io.iohk.atala.prism.utils.IOUtils._
+import tofu.logging.Logs
+
 import java.time.Instant
 
 class StatisticsRepositorySpec extends AtalaWithPostgresSpec {
+
+  val logs: Logs[IO, IO] = Logs.sync[IO, IO]
+
   lazy val repository = StatisticsRepository(database)
-  lazy val credentialsRepository = CredentialsRepository(database)
+  lazy val credentialsRepository = CredentialsRepository.unsafe(database, logs)
 
   "query" should {
     "work" in {
