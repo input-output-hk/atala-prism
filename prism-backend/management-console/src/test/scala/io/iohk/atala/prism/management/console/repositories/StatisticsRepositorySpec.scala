@@ -13,7 +13,7 @@ class StatisticsRepositorySpec extends AtalaWithPostgresSpec {
 
   val logs: Logs[IO, IO] = Logs.sync[IO, IO]
 
-  lazy val repository = StatisticsRepository(database)
+  lazy val repository = StatisticsRepository.unsafe(database, logs)
   lazy val credentialsRepository = CredentialsRepository.unsafe(database, logs)
 
   "query" should {

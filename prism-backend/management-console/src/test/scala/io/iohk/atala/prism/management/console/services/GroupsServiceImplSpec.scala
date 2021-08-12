@@ -29,13 +29,14 @@ import tofu.logging.Logs
 import java.util.UUID
 
 class GroupsServiceImplSpec extends RpcSpecBase with DIDUtil {
-  val logs: Logs[IO, IOWithTraceIdContext] = Logs.withContext[IO, IOWithTraceIdContext]
+  private val managementConsoleTestLogs: Logs[IO, IOWithTraceIdContext] = Logs.withContext[IO, IOWithTraceIdContext]
 
   private val usingApiAs = usingApiAsConstructor(new console_api.GroupsServiceGrpc.GroupsServiceBlockingStub(_, _))
-
-  private lazy val institutionGroupsRepository = InstitutionGroupsRepository.unsafe(dbLiftedToTraceIdIO, logs)
+  private lazy val institutionGroupsRepository =
+    InstitutionGroupsRepository.unsafe(dbLiftedToTraceIdIO, managementConsoleTestLogs)
   private lazy val participantsRepository = ParticipantsRepository(database)
-  private lazy val requestNoncesRepository = RequestNoncesRepository(database)
+  private lazy val requestNoncesRepository =
+    RequestNoncesRepository.unsafe(dbLiftedToTraceIdIO, managementConsoleTestLogs)
   protected lazy val nodeMock = mock[io.iohk.atala.prism.protos.node_api.NodeServiceGrpc.NodeService]
   private lazy val authenticator =
     new ManagementConsoleAuthenticator(

@@ -1,23 +1,18 @@
 package io.iohk.atala.prism.management.console.services
 
-import cats.effect.IO
 import cats.implicits.catsSyntaxEitherId
 import com.google.protobuf.ByteString
 import cats.syntax.functor._
 import io.iohk.atala.prism.auth.AuthAndMiddlewareSupport
 import io.iohk.atala.prism.errors.LoggingContext
 import io.iohk.atala.prism.grpc.ProtoConverter
+import io.iohk.atala.prism.logging.TraceId
+import io.iohk.atala.prism.logging.TraceId.IOWithTraceIdContext
 import io.iohk.atala.prism.management.console.ManagementConsoleAuthenticator
 import io.iohk.atala.prism.management.console.errors.{ManagementConsoleError, ManagementConsoleErrorSupport}
 import io.iohk.atala.prism.management.console.grpc._
 import io.iohk.atala.prism.management.console.integrations.ParticipantsIntegrationService
-import io.iohk.atala.prism.management.console.models.{
-  GetStatistics,
-  ParticipantId,
-  ParticipantLogo,
-  RegisterDID,
-  UpdateParticipantProfile
-}
+import io.iohk.atala.prism.management.console.models._
 import io.iohk.atala.prism.management.console.repositories.StatisticsRepository
 import io.iohk.atala.prism.metrics.RequestMeasureUtil.measureRequestFuture
 import io.iohk.atala.prism.protos.common_models.{HealthCheckRequest, HealthCheckResponse}
@@ -31,7 +26,7 @@ import scala.util.{Failure, Success}
 
 class ConsoleServiceImpl(
     participantsIntegrationService: ParticipantsIntegrationService,
-    statisticsRepository: StatisticsRepository[IO],
+    statisticsRepository: StatisticsRepository[IOWithTraceIdContext],
     val authenticator: ManagementConsoleAuthenticator
 )(implicit
     ec: ExecutionContext
@@ -51,6 +46,7 @@ class ConsoleServiceImpl(
       statisticsRepository
         .query(participantId, getStatistics.timeInterval)
         .map(ProtoCodecs.toStatisticsProto)
+        .run(TraceId.generateYOLO)
         .unsafeToFuture()
         .map(_.asRight)
         .toFutureEither
