@@ -34,7 +34,7 @@ In this section we will informally describe a protocol to create and manage DIDs
 For simplicity, we will define a DID as a string identifier of the form 
 
 \begin{center}
-	\emph{did:prism:<identifier>}
+	\emph{did:prism:$\langle$identifier$\rangle$}
 \end{center}
 
 Each DID is associated to a list of public keys. The list can be updated over time by adding and revoking keys. Each key has an assigned role during its lifetime. The three possible roles we describe are:
@@ -132,7 +132,7 @@ In order to issue a batch of an arbitrary number $N$ of credentials, the issuer 
 \item The issuer signs each individual encoded credential with an \emph{issuing key} associated to his publicly known DID. 
       The signing key corresponds to the key id in the credentials' claims.
 \item The issuer encodes each signature, and concatenate them to their corresponding credentials using a dot (".") as separator.
-      This produces strings of the form $<encoded\_credentials>.<encoded\_signature>$. We call these strings as \emph{signed credentials}.
+      This produces strings of the form $\langle{}encoded\_credentials\rangle{}.\langle{}encoded\_signature\rangle{}$. We call these strings as \emph{signed credentials}.
 \item Now, the issuer takes all the signed credentials, and computes a merkle root from them.
 \item The issuer creates an \emph{IssueBatch} event that contains the merkle root, and signs the event with an \emph{issuing key} associated to his publicly known DID. 
 \textbf{Note}: Today we use the same issuing key for the event signature and the individual credentials signature, but those could be different keys.
