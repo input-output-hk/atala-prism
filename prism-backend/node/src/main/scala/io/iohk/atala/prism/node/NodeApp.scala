@@ -4,7 +4,12 @@ import cats.effect.{ContextShift, IO, Resource}
 import com.typesafe.config.{Config, ConfigFactory}
 import io.grpc.{Server, ServerBuilder}
 import io.iohk.atala.prism.metrics.UptimeReporter
-import io.iohk.atala.prism.node.repositories.{CredentialBatchesRepository, DIDDataRepository, KeyValuesRepository}
+import io.iohk.atala.prism.node.repositories.{
+  AtalaOperationsRepository,
+  CredentialBatchesRepository,
+  DIDDataRepository,
+  KeyValuesRepository
+}
 import io.iohk.atala.prism.node.services._
 import io.iohk.atala.prism.node.services.models.{AtalaObjectNotification, AtalaObjectNotificationHandler}
 import io.iohk.atala.prism.protos.node_api._
@@ -79,11 +84,13 @@ class NodeApp(executionContext: ExecutionContext) { self =>
     logger.info("Creating blocks processor")
     val blockProcessingService = new BlockProcessingServiceImpl
     val didDataRepository = DIDDataRepository(transactor)
+    val atalaOperationsRepository = AtalaOperationsRepository(transactor)
 
     val ledgerPendingTransactionTimeout = globalConfig.getDuration("ledgerPendingTransactionTimeout")
     val objectManagementService = ObjectManagementService(
       ObjectManagementService.Config(ledgerPendingTransactionTimeout = ledgerPendingTransactionTimeout),
       atalaReferenceLedger,
+      atalaOperationsRepository,
       blockProcessingService
     )
     objectManagementServicePromise.success(objectManagementService)

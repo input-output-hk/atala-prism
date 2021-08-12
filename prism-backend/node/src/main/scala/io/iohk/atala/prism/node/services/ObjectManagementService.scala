@@ -12,13 +12,14 @@ import doobie.util.transactor.Transactor
 import enumeratum.EnumEntry.Snakecase
 import enumeratum.{Enum, EnumEntry}
 import io.iohk.atala.prism.connector.AtalaOperationId
-import io.iohk.atala.prism.models.{TransactionDetails, TransactionInfo, TransactionStatus}
+import io.iohk.atala.prism.models.{TransactionInfo, TransactionStatus}
 import io.iohk.atala.prism.node.{PublicationInfo, UnderlyingLedger}
 import io.iohk.atala.prism.node.cardano.LAST_SYNCED_BLOCK_TIMESTAMP
 import io.iohk.atala.prism.node.cardano.models.{CardanoWalletError, CardanoWalletErrorCode}
 import io.iohk.atala.prism.node.errors.NodeError
 import io.iohk.atala.prism.node.models.nodeState.getLastSyncedTimestampFromMaybe
 import io.iohk.atala.prism.node.models._
+import io.iohk.atala.prism.node.repositories.AtalaOperationsRepository
 import io.iohk.atala.prism.node.repositories.daos.AtalaObjectsDAO.{AtalaObjectCreateData, AtalaObjectSetTransactionInfo}
 import io.iohk.atala.prism.node.repositories.daos.{
   AtalaObjectTransactionSubmissionsDAO,
@@ -26,6 +27,7 @@ import io.iohk.atala.prism.node.repositories.daos.{
   AtalaOperationsDAO,
   KeyValuesDAO
 }
+import io.iohk.atala.prism.node.repositories.utils.connectionIOSafe
 import io.iohk.atala.prism.node.services.ObjectManagementService.Config
 import io.iohk.atala.prism.node.services.models.AtalaObjectNotification
 import io.iohk.atala.prism.protos.node_internal.AtalaBlock
@@ -45,11 +47,12 @@ private class DuplicateAtalaBlock extends Exception
 class ObjectManagementService private (
     config: Config,
     atalaReferenceLedger: UnderlyingLedger,
+    atalaOperationsRepository: AtalaOperationsRepository[IO],
     blockProcessing: BlockProcessingService
 )(implicit xa: Transactor[IO], scheduler: Scheduler) {
 
   private val logger = LoggerFactory.getLogger(this.getClass)
-  type Result[E, A] = EitherT[Future, E, A]
+  type Result[A] = Future[Either[NodeError, A]]
 
   // Schedule first run
   scheduleRetryOldPendingTransactions(config.transactionRetryPeriod)
@@ -57,19 +60,10 @@ class ObjectManagementService private (
   private var submitReceivedObjectsTask: Option[monix.execution.Cancelable] = None
   scheduleSubmitReceivedObjects(config.operationSubmissionPeriod)
 
-  private def runDbTx[E, T](connectionIO: ConnectionIO[T], wrapper: Throwable => E): Result[E, T] = {
-    val resultFE = connectionIO
+  private def dbTransactionSafe[T](connectionIO: ConnectionIO[T]): Result[T] =
+    connectionIOSafe(connectionIO)
       .transact(xa)
-      .attempt
-      .map {
-        case Left(err) =>
-          wrapper(err).asLeft[T]
-        case Right(result) =>
-          result.asRight[E]
-      }
       .unsafeToFuture()
-    EitherT(resultFE)
-  }
 
   private def setObjectTransactionDetails(notification: AtalaObjectNotification): Future[Option[AtalaObjectInfo]] = {
     val objectBytes = notification.atalaObject.toByteArray
@@ -135,35 +129,32 @@ class ObjectManagementService private (
     val objId = AtalaObjectId.of(objBytes)
 
     val atalaOperationIds = block.operations.toList.map(AtalaOperationId.of)
-    val atalaOperationData = atalaOperationIds.map((_, objId, AtalaOperationStatus.RECEIVED))
 
-    val insertObjectAndOps = for {
-      insertObject <- AtalaObjectsDAO.insert(AtalaObjectCreateData(objId, objBytes))
-      insertOperations <- AtalaOperationsDAO.insertMany(atalaOperationData)
-    } yield {
-      if (insertObject == 0) {
-        connection.raiseError(throw new DuplicateAtalaBlock())
-      }
-      (insertObject, insertOperations)
-    }
-
-    for {
+    val result = for {
       // Insert object into DB
-      insertedCounts <-
-        insertObjectAndOps
-          .logSQLErrors(
-            s"inserting object and operations \n Operations:[${atalaOperationIds.mkString("\n")}]",
-            logger
-          )
-          .transact(xa)
+      insertedCounts <- EitherT(
+        atalaOperationsRepository
+          .insertObjectAndOperations(objId, objBytes, atalaOperationIds, AtalaOperationStatus.RECEIVED)
           .unsafeToFuture()
-      (_, insertedOperationsCount) = insertedCounts
+      )
+      (numInsertedObjects, numInsertedOperations) = insertedCounts
     } yield {
-      if (insertedOperationsCount != atalaOperationIds.size) {
+      if (numInsertedObjects == 0) {
+        logger.warn(s"Object $objId was already received by PRISM Node")
+        throw new DuplicateAtalaBlock()
+      }
+      if (numInsertedOperations != atalaOperationIds.size) {
         logger.warn(s"Some operations from object with id $objId was already received by PRISM node.")
       }
       atalaOperationIds
     }
+
+    result.fold(
+      { err =>
+        throw new RuntimeException(err.toString)
+      },
+      _ => atalaOperationIds
+    )
   }
 
   def getLastSyncedTimestamp: Future[Instant] = {
@@ -189,23 +180,25 @@ class ObjectManagementService private (
   private def publishAndRecordTransaction(
       atalaObjectInfo: AtalaObjectInfo,
       atalaObject: node_internal.AtalaObject
-  ): Result[NodeError, TransactionInfo] = {
+  ): Result[TransactionInfo] = {
     logger.info(s"Publish atala object [${atalaObjectInfo.objectId}]")
-    for {
+    val publicationEitherT = for {
       // Publish object to the blockchain
       publication <- EitherT(
         atalaReferenceLedger.publish(atalaObject)
       ).leftMap(NodeError.InternalCardanoWalletError)
 
-      _ <- storeTransactionSubmission(atalaObjectInfo, publication)
+      _ <- EitherT(storeTransactionSubmission(atalaObjectInfo, publication))
     } yield publication.transaction
+
+    publicationEitherT.value
   }
 
   private def storeTransactionSubmission(
       atalaObjectInfo: AtalaObjectInfo,
       publication: PublicationInfo
-  ): Result[NodeError, AtalaObjectTransactionSubmission] = {
-    val dbTx = AtalaObjectTransactionSubmissionsDAO
+  ): Result[AtalaObjectTransactionSubmission] = {
+    val query = AtalaObjectTransactionSubmissionsDAO
       .insert(
         AtalaObjectTransactionSubmission(
           atalaObjectInfo.objectId,
@@ -216,7 +209,8 @@ class ObjectManagementService private (
         )
       )
       .logSQLErrors(s"publishing and record transaction for [${atalaObjectInfo.objectId}]", logger)
-    runDbTx(dbTx, NodeError.InternalErrorDB)
+
+    dbTransactionSafe(query)
   }
 
   private def toAtalaObjectTransactionSubmissionStatus(
@@ -269,16 +263,13 @@ class ObjectManagementService private (
     def run(): Unit = {
       submitReceivedObjectsTask = None
       // Ensure run is scheduled after completion, even if current run fails
-      val runF = for {
-        submissionResult <- submitReceivedObjects().value
-      } yield {
-        submissionResult.left.foreach { err =>
-          logger.error("Could not submit received objects", err)
+      submitReceivedObjects()
+        .map { submissionResult =>
+          submissionResult.left.foreach { err =>
+            logger.error("Could not submit received objects", err)
+          }
+          ()
         }
-        ()
-      }
-
-      runF
         .onComplete { _ =>
           scheduleSubmitReceivedObjects(config.operationSubmissionPeriod)
         }
@@ -299,7 +290,7 @@ class ObjectManagementService private (
       // Ensure run is scheduled after completion, even if current run fails
       retryOldPendingTransactions()
         .recover { err =>
-          logger.error(s"Could not retry old pending transactions", err)
+          logger.error("Could not retry old pending transactions", err)
         }
         .onComplete { _ =>
           scheduleRetryOldPendingTransactions(config.transactionRetryPeriod)
@@ -308,59 +299,53 @@ class ObjectManagementService private (
     ()
   }
 
-  private[services] def submitReceivedObjects(): Result[NodeError, Unit] = {
-    val getNotPublishedObjects = for {
-      objectIds <- AtalaObjectsDAO.getNotPublishedObjectIds
-      objectInfos <- objectIds.traverse(AtalaObjectsDAO.get)
-    } yield objectInfos.flatten
-
-    for {
-      atalaObjects <- runDbTx(
-        getNotPublishedObjects.logSQLErrors(s"Extract not submitted objects.", logger),
-        NodeError.InternalErrorDB
-      )
+  private[services] def submitReceivedObjects(): Result[Unit] = {
+    val submissionET = for {
+      atalaObjects <- EitherT(atalaOperationsRepository.getNotPublishedObjects.unsafeToFuture())
       _ = logger.info(s"Submit buffered objects. Number of objects: ${atalaObjects.size}")
-      atalaObjectsMerged <- EitherT(mergeAtalaObjects(atalaObjects).map(_.asRight))
+      atalaObjectsMerged <- EitherT.right(mergeAtalaObjects(atalaObjects))
       atalaObjectsWithParsedContent = atalaObjectsMerged.map { obj => (obj, parseObjectContent(obj)) }
-      _ <- EitherT(publishObjectsAndRecordTransaction(atalaObjectsWithParsedContent).map(_.asRight[NodeError]))
+      _ <- EitherT.right[NodeError](publishObjectsAndRecordTransaction(atalaObjectsWithParsedContent))
     } yield ()
+
+    submissionET.value
   }
 
   private def getTransactionDetails(
       transaction: AtalaObjectTransactionSubmission
-  ): Future[Option[(AtalaObjectTransactionSubmission, TransactionDetails)]] = {
+  ): Future[Option[(AtalaObjectTransactionSubmission, TransactionStatus)]] = {
     logger.info(s"Getting transaction details for transaction ${transaction.transactionId}")
     for {
       transactionDetails <- atalaReferenceLedger.getTransactionDetails(transaction.transactionId)
     } yield {
-      transactionDetails.left.foreach { err =>
-        logger.error("Could not get transaction details", err)
-      }
-      transactionDetails.toOption
-        .map((transaction, _))
+      transactionDetails.left
+        .map { err =>
+          logger.error("Could not get transaction details", err)
+        }
+        .map { transactionDetails =>
+          (transaction, transactionDetails.status)
+        }
+        .toOption
     }
   }
 
   private def syncInLedgerTransactions(
-      transactions: List[(AtalaObjectTransactionSubmission, TransactionDetails)]
+      transactions: List[AtalaObjectTransactionSubmission]
   ): Future[Int] = {
     transactions
-      .traverse {
-        case (transaction, _) =>
-          val updateStatusDb = AtalaObjectTransactionSubmissionsDAO
-            .updateStatus(
-              transaction.ledger,
-              transaction.transactionId,
-              AtalaObjectTransactionSubmissionStatus.InLedger
-            )
-            .logSQLErrors("retry transaction if pending", logger)
-          runDbTx(updateStatusDb, NodeError.InternalErrorDB).value
-            .map { dbResultEither =>
-              dbResultEither.left.foreach { err =>
-                logger.error(s"Could not update status to InLedger for transaction ${transaction.transactionId}", err)
-              }
-              dbResultEither.toOption
-            }
+      .traverse { transaction =>
+        val updateStatusDb = AtalaObjectTransactionSubmissionsDAO
+          .updateStatus(
+            transaction.ledger,
+            transaction.transactionId,
+            AtalaObjectTransactionSubmissionStatus.InLedger
+          )
+          .logSQLErrors("retry transaction if pending", logger)
+        dbTransactionSafe(updateStatusDb).map { dbResultEither =>
+          dbResultEither.left.map { err =>
+            logger.error(s"Could not update status to InLedger for transaction ${transaction.transactionId}", err)
+          }.toOption
+        }
       }
       .map(_.flatten.size)
   }
@@ -377,26 +362,26 @@ class ObjectManagementService private (
 
     for {
       // Query old pending transactions
-      pendingTransactions <-
-        runDbTx(getOldPendingTransactions, NodeError.InternalErrorDB).value
-          .map {
-            case Left(err) =>
-              logger.error("Could not get old pending transactions", err)
-              List.empty
-            case Right(transactions) =>
-              transactions
-          }
+      pendingTransactions <- dbTransactionSafe(getOldPendingTransactions)
+        .map {
+          case Left(err) =>
+            logger.error("Could not get old pending transactions", err)
+            List.empty
+          case Right(transactions) =>
+            transactions
+        }
 
       transactionsWithDetails <-
         pendingTransactions
           .traverse(getTransactionDetails)
           .map(_.flatten)
 
-      (inLedgerTransactions, pendingTransactions) = transactionsWithDetails.partition {
-        case (_, transactionDetails) =>
-          transactionDetails.status == TransactionStatus.InLedger
+      (inLedgerTransactions, pendingTransactions) = transactionsWithDetails.partitionMap {
+        case (transaction, TransactionStatus.InLedger) =>
+          Left(transaction)
+        case (transaction, _) =>
+          Right(transaction)
       }
-
       numInLedgerSynced <- syncInLedgerTransactions(inLedgerTransactions)
 
       numPublished <- mergeAndRetryPendingTransactions(pendingTransactions)
@@ -412,11 +397,11 @@ class ObjectManagementService private (
   }
 
   private def mergeAndRetryPendingTransactions(
-      transactions: List[(AtalaObjectTransactionSubmission, TransactionDetails)]
+      transactions: List[AtalaObjectTransactionSubmission]
   ): Future[Int] = {
     for {
       deletedTransactions <- deleteTransactions(transactions)
-      atalaObjects <- retrieveObjects(deletedTransactions)
+      atalaObjects <- atalaOperationsRepository.retrieveObjects(deletedTransactions).map(_.flatten).unsafeToFuture()
       atalaObjectsMerged <- mergeAtalaObjects(atalaObjects)
       atalaObjectsWithParsedContent = atalaObjectsMerged.map { obj => (obj, parseObjectContent(obj)) }
       publishedTransactions <- publishObjectsAndRecordTransaction(atalaObjectsWithParsedContent)
@@ -429,86 +414,68 @@ class ObjectManagementService private (
     atalaObjectsWithParsedContent
       .traverse {
         case (obj, objContent) =>
-          publishAndRecordTransaction(obj, objContent).value.map { transactionInfoE =>
-            transactionInfoE.left.foreach { err =>
-              logger.error(s"Was not able to publish and record transaction: $err")
-            }
-            transactionInfoE.toOption
+          publishAndRecordTransaction(obj, objContent).map { transactionInfoE =>
+            transactionInfoE.left.map { err =>
+              logger.error("Was not able to publish and record transaction", err)
+            }.toOption
           }
       }
       .map(_.flatten)
 
   private def deleteTransactions(
-      transactions: List[(AtalaObjectTransactionSubmission, TransactionDetails)]
-  ): Future[List[(AtalaObjectTransactionSubmission, TransactionDetails)]] =
+      transactions: List[AtalaObjectTransactionSubmission]
+  ): Future[List[AtalaObjectTransactionSubmission]] =
     Future
-      .traverse(transactions) {
-        case (transaction, transactionDetails) =>
-          deleteTransactionMaybe(transaction, transactionDetails).value.map(_.toOption)
+      .traverse(transactions) { transaction =>
+        deleteTransactionMaybe(transaction).map(_.toOption)
       }
       .map(_.flatten)
 
   private def deleteTransactionMaybe(
-      transaction: AtalaObjectTransactionSubmission,
-      transactionDetails: TransactionDetails
-  ): Result[NodeError, (AtalaObjectTransactionSubmission, TransactionDetails)] = {
-    logger.info(s"Trying to delete transaction [${transaction.transactionId}]")
-    val result = for {
-      maybeError <- atalaReferenceLedger.deleteTransaction(transaction.transactionId)
-      (newSubmissionStatus, transactionE) = maybeError match {
+      submission: AtalaObjectTransactionSubmission
+  ): Result[AtalaObjectTransactionSubmission] = {
+    logger.info(s"Trying to delete transaction [${submission.transactionId}]")
+    for {
+      (newSubmissionStatus, transactionE) <- atalaReferenceLedger.deleteTransaction(submission.transactionId).map {
         case Left(err @ CardanoWalletError(_, CardanoWalletErrorCode.TransactionAlreadyInLedger)) =>
           (
             AtalaObjectTransactionSubmissionStatus.InLedger,
             NodeError
               .InternalCardanoWalletError(err)
-              .asLeft[(AtalaObjectTransactionSubmission, TransactionDetails)]
+              .asLeft[AtalaObjectTransactionSubmission]
           )
-        case _ =>
-          (AtalaObjectTransactionSubmissionStatus.Deleted, Right((transaction, transactionDetails)))
+        case Left(err) =>
+          logger.error(s"Could not delete transaction ${submission.transactionId}", err)
+          (submission.status, NodeError.InternalCardanoWalletError(err).asLeft[AtalaObjectTransactionSubmission])
+        case Right(_) =>
+          (AtalaObjectTransactionSubmissionStatus.Deleted, Right(submission))
       }
-      dbUpdateE <- runDbTx(
-        AtalaObjectTransactionSubmissionsDAO
-          .updateStatus(
-            transaction.ledger,
-            transaction.transactionId,
-            newSubmissionStatus
-          )
-          .logSQLErrors(s"Setting status Deleted for transaction ${transaction.transactionId}", logger),
-        err => NodeError.InternalErrorDB(err): NodeError
-      ).value
-    } yield {
-      logger.info(s"Status for transaction [${transaction.transactionId}] updated to $newSubmissionStatus")
-      for {
-        transaction <- transactionE
-        _ <- dbUpdateE
-      } yield transaction
-    }
-    EitherT(result)
+      dbUpdateE <- updateSubmissionStatus(submission, newSubmissionStatus)
+      _ = logger.info(s"Status for transaction [${submission.transactionId}] updated to $newSubmissionStatus")
+    } yield for {
+      transactionWithDetails <- transactionE
+      _ <- dbUpdateE
+    } yield transactionWithDetails
   }
 
-  private def retrieveObjects(
-      transactions: List[(AtalaObjectTransactionSubmission, TransactionDetails)]
-  ): Future[List[AtalaObjectInfo]] = {
-    val objectsF = Future
-      .traverse(transactions) {
-        case (transaction, _) =>
-          val msg = s"Getting atala object by atalaObjectId = ${transaction.atalaObjectId}"
-          runDbTx(
-            AtalaObjectsDAO.get(transaction.atalaObjectId).logSQLErrors(msg, logger),
-            NodeError.InternalErrorDB
-          ).value
-            .map {
-              case Left(err) =>
-                logger.error(s"Could not retrieve atala object ${transaction.atalaObjectId}", err)
-                None
-              case Right(None) =>
-                logger.error(s"Atala object ${transaction.atalaObjectId} not found")
-                None
-              case Right(objectInfo) =>
-                objectInfo
-            }
-      }
-    objectsF.map(_.flatten)
+  private def updateSubmissionStatus(
+      submission: AtalaObjectTransactionSubmission,
+      newSubmissionStatus: AtalaObjectTransactionSubmissionStatus
+  ): Result[Unit] = {
+    val opDescription = s"Setting status $newSubmissionStatus for transaction ${submission.transactionId}"
+    val query = AtalaObjectTransactionSubmissionsDAO
+      .updateStatus(
+        submission.ledger,
+        submission.transactionId,
+        newSubmissionStatus
+      )
+      .logSQLErrors(opDescription, logger)
+      .void
+
+    if (submission.status != newSubmissionStatus)
+      dbTransactionSafe(query)
+    else
+      Future.successful(().asRight[NodeError])
   }
 
   private def mergeAtalaObjects(
@@ -538,8 +505,8 @@ class ObjectManagementService private (
               NodeError.InternalError(s"Block in object ${atalaObject.objectId} was invalidated after merge.")
             }
           val atalaObjectFE = for {
-            changedBlock <- EitherT(Future.successful(changedBlockE))
-            _ <- createAndUpdateAtalaObject(atalaObject, changedBlock.operations.toList, oldObjects)
+            changedBlock <- EitherT.fromEither[Future](changedBlockE)
+            _ <- EitherT(createAndUpdateAtalaObject(atalaObject, changedBlock.operations.toList, oldObjects))
           } yield atalaObject
 
           atalaObjectFE.value.map {
@@ -565,22 +532,8 @@ class ObjectManagementService private (
       atalaObject: AtalaObjectInfo,
       operations: List[SignedAtalaOperation],
       oldObjects: List[AtalaObjectInfo]
-  ): Result[NodeError, Unit] = {
-    val query = for {
-      _ <- AtalaObjectsDAO.insert(AtalaObjectCreateData(atalaObject.objectId, atalaObject.byteContent))
-      _ <- AtalaOperationsDAO.updateAtalaOperationObjectBatch(
-        operations.map(AtalaOperationId.of),
-        atalaObject.objectId
-      )
-      _ <- AtalaObjectsDAO.setProcessedBatch(oldObjects.map(_.objectId))
-    } yield ()
-
-    runDbTx(
-      query.logSQLErrors(s"record new Atala Object ${atalaObject.objectId}", logger),
-      err => NodeError.InternalErrorDB(err): NodeError
-    )
-  }
-
+  ): Result[Unit] =
+    atalaOperationsRepository.updateMergedObjects(atalaObject, operations, oldObjects).unsafeToFuture()
 }
 
 object ObjectManagementService {
@@ -604,8 +557,9 @@ object ObjectManagementService {
   def apply(
       config: Config,
       atalaReferenceLedger: UnderlyingLedger,
+      atalaOperationsRepository: AtalaOperationsRepository[IO],
       blockProcessing: BlockProcessingService
   )(implicit xa: Transactor[IO], scheduler: Scheduler): ObjectManagementService = {
-    new ObjectManagementService(config, atalaReferenceLedger, blockProcessing)
+    new ObjectManagementService(config, atalaReferenceLedger, atalaOperationsRepository, blockProcessing)
   }
 }

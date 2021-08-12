@@ -1,5 +1,6 @@
 package io.iohk.atala.prism.node.services
 
+import cats.effect.IO
 import doobie.free.connection
 import doobie.implicits._
 import io.iohk.atala.prism.AtalaWithPostgresSpec
@@ -26,6 +27,7 @@ import io.iohk.atala.prism.node.models.{
   AtalaOperationStatus
 }
 import io.iohk.atala.prism.node.operations.CreateDIDOperationSpec
+import io.iohk.atala.prism.node.repositories.AtalaOperationsRepository
 import io.iohk.atala.prism.node.repositories.daos.{AtalaObjectTransactionSubmissionsDAO, AtalaObjectsDAO}
 import io.iohk.atala.prism.node.services.models.AtalaObjectNotification
 import io.iohk.atala.prism.node.{DataPreparation, PublicationInfo, UnderlyingLedger}
@@ -41,6 +43,7 @@ import org.scalatest.concurrent.ScalaFutures
 
 import java.time.{Duration, Instant}
 import scala.concurrent.Future
+import scala.concurrent.duration._
 
 object ObjectManagementServiceSpec {
   private val newKeysPairs = List.fill(10) { EC.generateKeyPair() }
@@ -71,10 +74,17 @@ class ObjectManagementServiceSpec
   private val ledger: UnderlyingLedger = mock[UnderlyingLedger]
   private val blockProcessing: BlockProcessingService = mock[BlockProcessingService]
 
+  private val atalaOperationsRepository: AtalaOperationsRepository[IO] = AtalaOperationsRepository(database)
+
   private lazy val objectManagementService =
     ObjectManagementService(
-      ObjectManagementService.Config(ledgerPendingTransactionTimeout = Duration.ZERO),
+      ObjectManagementService.Config(
+        ledgerPendingTransactionTimeout = Duration.ZERO,
+        transactionRetryPeriod = 1.hour,
+        operationSubmissionPeriod = 1.hour
+      ),
       ledger,
+      atalaOperationsRepository,
       blockProcessing
     )
 
@@ -204,7 +214,7 @@ class ObjectManagementServiceSpec
       }
 
       publishOpsForBatching(ops)
-      objectManagementService.submitReceivedObjects().value.futureValue.toOption.nonEmpty must be(true)
+      objectManagementService.submitReceivedObjects().futureValue.toOption.nonEmpty must be(true)
 
       verify(ledger, times(2))
         .publish(*) // publish only merged objects
@@ -236,7 +246,7 @@ class ObjectManagementServiceSpec
       mockTransactionStatus(publications.last.transaction.transactionId, TransactionStatus.Pending)
 
       publishOpsForBatching(ops)
-      objectManagementService.submitReceivedObjects().value.futureValue.toOption.nonEmpty must be(true)
+      objectManagementService.submitReceivedObjects().futureValue.toOption.nonEmpty must be(true)
 
       verify(ledger, times(2))
         .publish(*) // publish only merged objects
@@ -261,7 +271,7 @@ class ObjectManagementServiceSpec
       DataPreparation.getSubmissionsByStatus(AtalaObjectTransactionSubmissionStatus.Pending).size must be(0)
 
       // resubmits object1
-      objectManagementService.submitReceivedObjects().value.futureValue.toOption.nonEmpty must be(true)
+      objectManagementService.submitReceivedObjects().futureValue.toOption.nonEmpty must be(true)
       val notPublishedObjectIds2 =
         AtalaObjectsDAO.getNotPublishedObjectIds.transact(database).unsafeToFuture().futureValue
       notPublishedObjectIds2.size must be(0) // no pending objects
@@ -487,6 +497,7 @@ class ObjectManagementServiceSpec
         ObjectManagementService(
           ObjectManagementService.Config(ledgerPendingTransactionTimeout = Duration.ofMinutes(10)),
           ledger,
+          atalaOperationsRepository,
           blockProcessing
         )
       doReturn(Future.successful(Right(dummyPublicationInfo))).when(ledger).publish(*)
@@ -581,7 +592,7 @@ class ObjectManagementServiceSpec
     if (oldObj != null) atalaObjectsMerged.append(oldObj)
 
     val dummyTransactionIds =
-      (0 to (atalaOperations.size + atalaObjectsMerged.size + numPubsAdditional))
+      (0 until (atalaOperations.size + atalaObjectsMerged.size + numPubsAdditional))
         .map { index =>
           TransactionId.from(SHA256Digest.compute(s"id$index".getBytes).getValue).value
         }
@@ -597,14 +608,14 @@ class ObjectManagementServiceSpec
   private def publishSingleOperationAndFlush(signedAtalaOperation: SignedAtalaOperation): Future[AtalaOperationId] = {
     for {
       atalaOperationId <- objectManagementService.publishSingleAtalaOperation(signedAtalaOperation)
-      _ <- objectManagementService.submitReceivedObjects().value
+      _ <- objectManagementService.submitReceivedObjects()
     } yield atalaOperationId
   }
 
   private def publishOperationsAndFlush(ops: SignedAtalaOperation*): Future[List[AtalaOperationId]] = {
     for {
       ids <- objectManagementService.publishAtalaOperations(ops: _*)
-      _ <- objectManagementService.submitReceivedObjects().value
+      _ <- objectManagementService.submitReceivedObjects()
     } yield ids
   }
 
