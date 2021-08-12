@@ -1,8 +1,10 @@
 package io.iohk.atala.prism.management.console.repositories
 
-import cats.effect.BracketThrow
+import cats.{Comonad, Functor, Monad}
+import cats.effect.{BracketThrow, Resource}
 import cats.syntax.applicative._
 import cats.syntax.applicativeError._
+import cats.syntax.comonad._
 import cats.syntax.either._
 import cats.syntax.functor._
 import com.typesafe.config.ConfigFactory
@@ -20,12 +22,15 @@ import io.iohk.atala.prism.management.console.repositories.ParticipantsRepositor
   UpdateParticipantProfileRequest
 }
 import io.iohk.atala.prism.management.console.repositories.daos.{CredentialTypeDao, ParticipantsDAO}
+import io.iohk.atala.prism.management.console.repositories.logs.ParticipantsRepositoryLogs
 import io.iohk.atala.prism.management.console.repositories.metrics.ParticipantsRepositoryMetrics
 import io.iohk.atala.prism.metrics.TimeMeasureMetric
 import io.iohk.atala.prism.utils.syntax.DBConnectionOps
 import org.postgresql.util.PSQLException
 import org.slf4j.{Logger, LoggerFactory}
 import tofu.higherKind.Mid
+import tofu.logging.{Logs, ServiceLogging}
+import tofu.syntax.monoid.TofuSemigroupOps
 
 @derive(applyK)
 trait ParticipantsRepository[F[_]] {
@@ -54,13 +59,33 @@ object ParticipantsRepository {
       participantProfile: UpdateParticipantProfile
   )
 
-  def apply[F[_]: TimeMeasureMetric: BracketThrow](
+  def apply[F[_]: TimeMeasureMetric: BracketThrow, R[_]: Functor](
       transactor: Transactor[F],
+      logs: Logs[R, F],
+      defaultCredentialTypeConfig: DefaultCredentialTypeConfig
+  ): R[ParticipantsRepository[F]] =
+    for {
+      serviceLogs <- logs.service[ParticipantsRepository[F]]
+    } yield {
+      implicit val implicitLogs: ServiceLogging[F, ParticipantsRepository[F]] = serviceLogs
+      val metrics: ParticipantsRepository[Mid[F, *]] = new ParticipantsRepositoryMetrics[F]
+      val logs: ParticipantsRepository[Mid[F, *]] = new ParticipantsRepositoryLogs[F]
+      val mid = metrics |+| logs
+      mid attach new ParticipantsRepositoryImpl[F](transactor, defaultCredentialTypeConfig)
+    }
+
+  def unsafe[F[_]: TimeMeasureMetric: BracketThrow, R[_]: Comonad](
+      transactor: Transactor[F],
+      logs: Logs[R, F],
       defaultCredentialTypeConfig: DefaultCredentialTypeConfig = DefaultCredentialTypeConfig(ConfigFactory.load())
-  ): ParticipantsRepository[F] = {
-    val metrics: ParticipantsRepository[Mid[F, *]] = new ParticipantsRepositoryMetrics[F]
-    metrics attach new ParticipantsRepositoryImpl[F](transactor, defaultCredentialTypeConfig)
-  }
+  ): ParticipantsRepository[F] = ParticipantsRepository(transactor, logs, defaultCredentialTypeConfig).extract
+
+  def makeResource[F[_]: TimeMeasureMetric: BracketThrow, R[_]: Monad](
+      transactor: Transactor[F],
+      logs: Logs[R, F],
+      defaultCredentialTypeConfig: DefaultCredentialTypeConfig = DefaultCredentialTypeConfig(ConfigFactory.load())
+  ): Resource[R, ParticipantsRepository[F]] =
+    Resource.eval(ParticipantsRepository(transactor, logs, defaultCredentialTypeConfig))
 
 }
 
