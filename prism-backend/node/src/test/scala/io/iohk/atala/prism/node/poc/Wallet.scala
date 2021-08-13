@@ -2,20 +2,7 @@ package io.iohk.atala.prism.node.poc
 
 import cats.data.{NonEmptyList, Validated, ValidatedNel}
 import com.google.protobuf.ByteString
-import io.iohk.atala.prism.kotlin.credentials.{
-  BatchData,
-  BatchWasRevoked,
-  CredentialBatchId,
-  CredentialVerification,
-  CredentialWasRevoked,
-  InvalidMerkleProof,
-  InvalidSignature,
-  KeyData,
-  KeyWasNotValid,
-  KeyWasRevoked,
-  PrismCredential,
-  VerificationException
-}
+import io.iohk.atala.prism.kotlin.credentials._
 import io.iohk.atala.prism.kotlin.credentials.json.JsonBasedCredential
 import io.iohk.atala.prism.kotlin.credentials.content.CredentialContent
 import io.iohk.atala.prism.kotlin.crypto.{EC, SHA256Digest}
@@ -209,7 +196,7 @@ case class Wallet(node: node_api.NodeServiceGrpc.NodeServiceBlockingStub) {
       node_api
         .GetCredentialRevocationTimeRequest()
         .withBatchId(batchId.getId)
-        .withCredentialHash(ByteString.copyFrom(credentialHash.getValue.toArray))
+        .withCredentialHash(ByteString.copyFrom(credentialHash.getValue))
     )
     val credentialRevocationTime =
       credentialRevocationTimeResponse.getRevocationLedgerData.timestampInfo

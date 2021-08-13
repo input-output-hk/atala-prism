@@ -18,8 +18,6 @@ import io.iohk.atala.prism.node.models.nodeState.{CredentialBatchState, DIDPubli
 import io.iohk.atala.prism.node.models._
 import io.iohk.atala.prism.kotlin.crypto.keys.ECPublicKey
 
-import scala.collection.compat.immutable.ArraySeq
-
 package object daos extends BaseDAO {
 
   implicit val pgKeyUsageMeta: Meta[KeyUsage] = pgEnumString[KeyUsage](
@@ -205,12 +203,22 @@ package object daos extends BaseDAO {
     }
   }
 
-  implicit val ledgerDataOptionGet: Get[LedgerData] =
+  implicit val ledgerDataGet: Get[LedgerData] =
     Get.Advanced
-      .other[(ArraySeq[Byte], String, Instant, Int, Int)](
+      .other[(Array[Byte], String, Instant, Int, Int)](
         NonEmptyList.of("TRANSACTION_ID", "VARCHAR(32)", "TIMESTAMPTZ", "INTEGER", "INTEGER")
       )
       .tmap {
+        case (tId, ledger, abt, absn, osn) =>
+          LedgerData(
+            TransactionId.from(tId).get,
+            Ledger.withNameInsensitive(ledger),
+            new TimestampInfo(abt.toEpochMilli, absn, osn)
+          )
+      }
+  implicit val ledgerDataRead: Read[LedgerData] =
+    Read[(Array[Byte], String, Instant, Int, Int)]
+      .map {
         case (tId, ledger, abt, absn, osn) =>
           LedgerData(
             TransactionId.from(tId).get,

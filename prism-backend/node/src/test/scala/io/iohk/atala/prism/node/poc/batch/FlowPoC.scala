@@ -159,7 +159,7 @@ class FlowPoC extends AtalaWithPostgresSpec with BeforeAndAfterEach {
       //    through the management console
       val batch1 = CredentialBatches.batch(signedCredentials.take(2).asJava)
       val (root1, proofs1) = (batch1.getRoot, batch1.getProofs.asScala.toList)
-      val batch2 = CredentialBatches.batch(signedCredentials.take(2).asJava)
+      val batch2 = CredentialBatches.batch(signedCredentials.drop(2).asJava)
       val (root2, proofs2) = (batch2.getRoot, batch2.getProofs.asScala.toList)
 
       val issueBatch1Op = issueBatchOperation(issuerDID, root1)
