@@ -8,6 +8,7 @@ import io.iohk.atala.prism.auth.SignedRpcRequest
 import io.iohk.atala.prism.connector.AtalaOperationId
 import io.iohk.atala.prism.kotlin.identity.DID
 import io.iohk.atala.prism.kotlin.crypto.EC
+import io.iohk.atala.prism.logging.TraceId
 import io.iohk.atala.prism.management.console.DataPreparation._
 import io.iohk.atala.prism.management.console.models.{InstitutionGroup, ParticipantLogo}
 import io.iohk.atala.prism.management.console.{DataPreparation, ManagementConsoleRpcSpecBase}
@@ -300,7 +301,7 @@ class ConsoleServiceImplSpec extends ManagementConsoleRpcSpecBase with DIDUtil {
 
       usingApiAsConsole(rpcRequest) { blockingStub =>
         blockingStub.updateParticipantProfile(rpcRequest.request)
-        val result = participantsRepository.findBy(participantId).unsafeRunSync()
+        val result = participantsRepository.findBy(participantId).run(TraceId.generateYOLO).unsafeRunSync()
         val participantInfo = result.toOption.value
         participantInfo.name must be("iohk updated")
         participantInfo.logo must be(Some(logo))

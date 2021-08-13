@@ -1,8 +1,9 @@
 package io.iohk.atala.prism.management.console.repositories
 
+import cats.{Comonad, Functor, Monad}
 import cats.data.EitherT
 import cats.data.Validated.{Invalid, Valid}
-import cats.effect.BracketThrow
+import cats.effect.{BracketThrow, Resource}
 import cats.implicits._
 import derevo.tagless.applyK
 import derevo.derive
@@ -22,10 +23,13 @@ import io.iohk.atala.prism.management.console.repositories.CredentialIssuancesRe
   CreateCredentialBulk,
   CreateCredentialIssuance
 }
+import io.iohk.atala.prism.management.console.repositories.logs.CredentialIssuancesRepositoryLogs
 import io.iohk.atala.prism.management.console.repositories.metrics.CredentialIssuancesRepositoryMetrics
 import io.iohk.atala.prism.management.console.validations.CredentialDataValidator
 import org.slf4j.{Logger, LoggerFactory}
 import tofu.higherKind.Mid
+import tofu.logging.{Logs, ServiceLogging}
+import tofu.syntax.monoid.TofuSemigroupOps
 
 @derive(applyK)
 trait CredentialIssuancesRepository[F[_]] {
@@ -82,10 +86,32 @@ object CredentialIssuancesRepository {
     )
   }
 
-  def apply[F[_]: TimeMeasureMetric: BracketThrow](transactor: Transactor[F]): CredentialIssuancesRepository[F] = {
-    val metrics: CredentialIssuancesRepository[Mid[F, *]] = new CredentialIssuancesRepositoryMetrics[F]
-    metrics attach new CredentialIssuancesRepositoryImpl[F](transactor)
-  }
+  def apply[F[_]: TimeMeasureMetric: BracketThrow, R[_]: Functor](
+      transactor: Transactor[F],
+      logs: Logs[R, F]
+  ): R[CredentialIssuancesRepository[F]] =
+    for {
+      serviceLogs <- logs.service[CredentialIssuancesRepository[F]]
+    } yield {
+      implicit val implicitLogs: ServiceLogging[F, CredentialIssuancesRepository[F]] = serviceLogs
+      val metrics: CredentialIssuancesRepository[Mid[F, *]] = new CredentialIssuancesRepositoryMetrics[F]
+      val logs: CredentialIssuancesRepository[Mid[F, *]] = new CredentialIssuancesRepositoryLogs[F]
+      val mid = metrics |+| logs
+      mid attach new CredentialIssuancesRepositoryImpl[F](transactor)
+    }
+
+  def unsafe[F[_]: TimeMeasureMetric: BracketThrow, R[_]: Comonad](
+      transactor: Transactor[F],
+      logs: Logs[R, F]
+  ): CredentialIssuancesRepository[F] = CredentialIssuancesRepository(transactor, logs).extract
+
+  def makeResource[F[_]: TimeMeasureMetric: BracketThrow, R[_]: Monad](
+      transactor: Transactor[F],
+      logs: Logs[R, F]
+  ): Resource[R, CredentialIssuancesRepository[F]] =
+    Resource.eval(
+      CredentialIssuancesRepository(transactor, logs)
+    )
 
 }
 

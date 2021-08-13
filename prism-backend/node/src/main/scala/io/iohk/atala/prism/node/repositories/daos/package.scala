@@ -238,49 +238,49 @@ package object daos extends BaseDAO {
           Array[Byte]
       )
     ].map {
-        case (
-              batchId,
-              suffix,
-              root,
-              issTxId,
-              issLedger,
-              issABT,
-              issABSN,
-              issOSN,
-              revTxIdOp,
-              revLedgerOp,
-              revABTOp,
-              revABSNOp,
-              revOSNOp,
-              sha
-            ) =>
-          val issuedOn = LedgerData(
-            TransactionId.from(issTxId).get,
-            Ledger.withNameInsensitive(issLedger),
-            new TimestampInfo(issABT.toEpochMilli, issABSN, issOSN)
-          )
-          val revokedOn = {
-            (revTxIdOp, revLedgerOp, revABTOp, revABSNOp, revOSNOp) match {
-              case (Some(rTrId), Some(rLedger), Some(rAbt), Some(rAbsn), Some(rOsn)) =>
-                Some(
-                  LedgerData(
-                    TransactionId.from(rTrId).get,
-                    Ledger.withNameInsensitive(rLedger),
-                    new TimestampInfo(rAbt.toEpochMilli, rAbsn, rOsn)
-                  )
+      case (
+            batchId,
+            suffix,
+            root,
+            issTxId,
+            issLedger,
+            issABT,
+            issABSN,
+            issOSN,
+            revTxIdOp,
+            revLedgerOp,
+            revABTOp,
+            revABSNOp,
+            revOSNOp,
+            sha
+          ) =>
+        val issuedOn = LedgerData(
+          TransactionId.from(issTxId).get,
+          Ledger.withNameInsensitive(issLedger),
+          new TimestampInfo(issABT.toEpochMilli, issABSN, issOSN)
+        )
+        val revokedOn = {
+          (revTxIdOp, revLedgerOp, revABTOp, revABSNOp, revOSNOp) match {
+            case (Some(rTrId), Some(rLedger), Some(rAbt), Some(rAbsn), Some(rOsn)) =>
+              Some(
+                LedgerData(
+                  TransactionId.from(rTrId).get,
+                  Ledger.withNameInsensitive(rLedger),
+                  new TimestampInfo(rAbt.toEpochMilli, rAbsn, rOsn)
                 )
-              case _ => None
-            }
+              )
+            case _ => None
           }
-          CredentialBatchState(
-            CredentialBatchId.fromString(batchId),
-            DIDSuffix.fromString(suffix),
-            new MerkleRoot(SHA256Digest.fromBytes(root)),
-            issuedOn,
-            revokedOn,
-            SHA256Digest.fromBytes(sha)
-          )
-      }
+        }
+        CredentialBatchState(
+          CredentialBatchId.fromString(batchId),
+          DIDSuffix.fromString(suffix),
+          new MerkleRoot(SHA256Digest.fromBytes(root)),
+          issuedOn,
+          revokedOn,
+          SHA256Digest.fromBytes(sha)
+        )
+    }
   }
 
 }

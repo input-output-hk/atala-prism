@@ -1,9 +1,12 @@
 package io.iohk.atala.prism.management.console.models
 
+import derevo.derive
+import tofu.logging.derivation.loggable
 import java.util.UUID
 import io.iohk.atala.prism.kotlin.identity.DID
 import io.iohk.atala.prism.models.UUIDValue
 
+@derive(loggable)
 final case class ParticipantId(uuid: UUID) extends AnyVal with UUIDValue
 object ParticipantId extends UUIDValue.Builder[ParticipantId]
 

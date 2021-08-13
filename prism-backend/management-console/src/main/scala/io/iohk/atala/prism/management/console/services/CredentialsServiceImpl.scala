@@ -2,7 +2,6 @@ package io.iohk.atala.prism.management.console.services
 
 import cats.implicits.{catsSyntaxApplicativeId, toFunctorOps}
 import cats.data.NonEmptyList
-import cats.effect.IO
 import cats.syntax.either._
 import com.google.protobuf.ByteString
 import io.iohk.atala.prism.auth.AuthAndMiddlewareSupport
@@ -36,9 +35,11 @@ import org.slf4j.{Logger, LoggerFactory}
 import io.iohk.atala.prism.utils.FutureEither.FutureEitherOps
 
 import scala.concurrent.{ExecutionContext, Future}
+import io.iohk.atala.prism.logging.TraceId
+import io.iohk.atala.prism.logging.TraceId.IOWithTraceIdContext
 
 class CredentialsServiceImpl(
-    credentialsRepository: CredentialsRepository[IO],
+    credentialsRepository: CredentialsRepository[IOWithTraceIdContext],
     credentialsIntegrationService: CredentialsIntegrationService,
     val authenticator: ManagementConsoleAuthenticator,
     nodeService: NodeServiceGrpc.NodeService,
@@ -105,6 +106,7 @@ class CredentialsServiceImpl(
     auth[ShareCredential]("shareCredential", request) { (participantId, query) =>
       credentialsRepository
         .markAsShared(participantId, NonEmptyList.of(query.credentialId))
+        .run(TraceId.generateYOLO)
         .unsafeToFuture()
         .map(_.asRight)
         .toFutureEither
@@ -157,6 +159,7 @@ class CredentialsServiceImpl(
               issuanceOperationHash = operationHash,
               AtalaOperationId.of(signedIssueCredentialBatchOp)
             )
+            .run(TraceId.generateYOLO)
             .unsafeToFuture()
             .map(_.asRight)
             .toFutureEither
@@ -198,6 +201,7 @@ class CredentialsServiceImpl(
     auth[DeleteCredentials]("deleteCredentials", request) { (participantId, query) =>
       credentialsRepository
         .deleteCredentials(participantId, query.credentialsIds)
+        .run(TraceId.generateYOLO)
         .unsafeToFuture()
         .toFutureEither
         .as(DeleteCredentialsResponse())
@@ -226,6 +230,7 @@ class CredentialsServiceImpl(
         )
       } yield StorePublishedCredentialResponse()
       result
+        .run(TraceId.generateYOLO)
         .unsafeToFuture()
         .map(_.asRight)
         .toFutureEither
@@ -264,6 +269,7 @@ class CredentialsServiceImpl(
         _ <-
           credentialsRepository
             .verifyPublishedCredentialsExist(participantId, query.credentialsIds)
+            .run(TraceId.generateYOLO)
             .unsafeToFuture()
             .toFutureEither
         _ <-
@@ -277,6 +283,7 @@ class CredentialsServiceImpl(
         _ <-
           credentialsRepository
             .markAsShared(participantId, query.credentialsIds)
+            .run(TraceId.generateYOLO)
             .unsafeToFuture()
             .map(_.asRight)
             .toFutureEither

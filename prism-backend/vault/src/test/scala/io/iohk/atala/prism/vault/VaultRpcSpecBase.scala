@@ -3,7 +3,6 @@ package io.iohk.atala.prism.vault
 import cats.effect.{ContextShift, IO}
 import io.iohk.atala.prism.{ApiTestHelper, RpcSpecBase}
 import io.iohk.atala.prism.auth.grpc.GrpcAuthenticationHeaderParser
-import io.iohk.atala.prism.logging.TraceId
 import io.iohk.atala.prism.logging.TraceId.IOWithTraceIdContext
 import io.iohk.atala.prism.protos.vault_api
 import io.iohk.atala.prism.vault.grpc.EncryptedDataVaultGrpcService
@@ -26,15 +25,14 @@ class VaultRpcSpecBase extends RpcSpecBase {
     )
   implicit lazy val cs: ContextShift[IO] = IO.contextShift(ExecutionContext.global)
   private val vaultTestLogs: Logs[IO, IOWithTraceIdContext] = Logs.withContext[IO, IOWithTraceIdContext]
-  lazy val dataBaseTraceId = database.mapK(TraceId.liftToIOWithTraceId)
 
   lazy val requestNoncesRepository = vaultTestLogs
     .service[RequestNoncesRepository[IOWithTraceIdContext]]
-    .map(implicit l => RequestNoncesRepository.PostgresImpl.create(dataBaseTraceId))
+    .map(implicit l => RequestNoncesRepository.PostgresImpl.create(dbLiftedToTraceIdIO))
     .unsafeRunSync()
   lazy val payloadsRepository = vaultTestLogs
     .service[PayloadsRepository[IOWithTraceIdContext]]
-    .map(implicit l => PayloadsRepository.create(dataBaseTraceId))
+    .map(implicit l => PayloadsRepository.create(dbLiftedToTraceIdIO))
     .unsafeRunSync()
 
   lazy val nodeMock = mock[io.iohk.atala.prism.protos.node_api.NodeServiceGrpc.NodeService]

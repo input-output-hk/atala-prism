@@ -1,5 +1,6 @@
 package io.iohk.atala.prism.management.console.repositories
 
+import cats.{Comonad, Functor, Monad}
 import cats.data.OptionT
 import cats.data.EitherT
 import cats.effect._
@@ -11,18 +12,16 @@ import doobie.implicits._
 import doobie.util.transactor.Transactor
 import io.iohk.atala.prism.management.console.errors.ManagementConsoleError
 import io.iohk.atala.prism.management.console.models._
-import io.iohk.atala.prism.management.console.repositories.daos.{
-  ContactsDAO,
-  CredentialsDAO,
-  InstitutionGroupsDAO,
-  ReceivedCredentialsDAO
-}
+import io.iohk.atala.prism.management.console.repositories.daos._
+import io.iohk.atala.prism.management.console.repositories.logs.ContactsRepositoryLogs
 import io.iohk.atala.prism.management.console.repositories.metrics.ContactsRepositoryMetrics
 import io.iohk.atala.prism.metrics.TimeMeasureMetric
 import io.iohk.atala.prism.models.ConnectionToken
 import io.iohk.atala.prism.utils.syntax.DBConnectionOps
 import org.slf4j.{Logger, LoggerFactory}
 import tofu.higherKind.Mid
+import tofu.logging.{Logs, ServiceLogging}
+import tofu.syntax.monoid.TofuSemigroupOps
 
 import java.time.Instant
 
@@ -67,10 +66,29 @@ trait ContactsRepository[F[_]] {
 
 object ContactsRepository {
 
-  def apply[F[_]: TimeMeasureMetric: BracketThrow](transactor: Transactor[F]): ContactsRepository[F] = {
-    val metrics: ContactsRepository[Mid[F, *]] = new ContactsRepositoryMetrics[F]
-    metrics attach new ContactsRepositoryImpl[F](transactor)
-  }
+  def apply[F[_]: TimeMeasureMetric: BracketThrow, R[_]: Functor](
+      transactor: Transactor[F],
+      logs: Logs[R, F]
+  ): R[ContactsRepository[F]] =
+    for {
+      serviceLogs <- logs.service[ContactsRepository[F]]
+    } yield {
+      implicit val implicitLogs: ServiceLogging[F, ContactsRepository[F]] = serviceLogs
+      val metrics: ContactsRepository[Mid[F, *]] = new ContactsRepositoryMetrics[F]
+      val logs: ContactsRepository[Mid[F, *]] = new ContactsRepositoryLogs[F]
+      val mid = metrics |+| logs
+      mid attach new ContactsRepositoryImpl[F](transactor)
+    }
+
+  def unsafe[F[_]: TimeMeasureMetric: BracketThrow, R[_]: Comonad](
+      transactor: Transactor[F],
+      logs: Logs[R, F]
+  ): ContactsRepository[F] = ContactsRepository(transactor, logs).extract
+
+  def makeResource[F[_]: TimeMeasureMetric: BracketThrow, R[_]: Monad](
+      transactor: Transactor[F],
+      logs: Logs[R, F]
+  ): Resource[R, ContactsRepository[F]] = Resource.eval(ContactsRepository(transactor, logs))
 
 }
 

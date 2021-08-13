@@ -2,10 +2,10 @@ package io.iohk.atala.prism.node.repositories.daos
 
 import java.time.Instant
 import cats.syntax.functor._
-import doobie.{Get, Read, Update}
+import doobie.{Update}
 import doobie.free.connection.ConnectionIO
 import doobie.implicits._
-import io.iohk.atala.prism.kotlin.credentials.{CredentialBatchId, TimestampInfo}
+import io.iohk.atala.prism.kotlin.credentials.{CredentialBatchId}
 import io.iohk.atala.prism.kotlin.crypto.MerkleRoot
 import io.iohk.atala.prism.kotlin.crypto.SHA256Digest
 import io.iohk.atala.prism.kotlin.identity.DIDSuffix

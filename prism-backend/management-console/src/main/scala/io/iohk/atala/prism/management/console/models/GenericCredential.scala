@@ -1,6 +1,7 @@
 package io.iohk.atala.prism.management.console.models
 
 import cats.data.NonEmptyList
+import derevo.derive
 
 import java.time.{Instant, LocalDate}
 import java.util.UUID
@@ -12,6 +13,7 @@ import io.iohk.atala.prism.kotlin.crypto.MerkleInclusionProof
 import io.iohk.atala.prism.kotlin.crypto.SHA256Digest
 import io.iohk.atala.prism.models.{ConnectionToken, UUIDValue}
 import io.iohk.atala.prism.protos.connector_api
+import tofu.logging.derivation.loggable
 
 final case class CreateGenericCredential(
     contactId: Option[Contact.Id],
@@ -88,6 +90,7 @@ final case class GenericCredential(
 )
 
 object GenericCredential {
+  @derive(loggable)
   final case class Id(uuid: UUID) extends AnyVal with UUIDValue
   object Id extends UUIDValue.Builder[Id]
 

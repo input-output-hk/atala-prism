@@ -1,6 +1,8 @@
 package io.iohk.atala.prism.management.console.models
 
+import derevo.derive
 import io.iohk.atala.prism.models.UUIDValue
+import tofu.logging.derivation.loggable
 
 import java.time.{Instant, LocalDate}
 import java.util.UUID
@@ -34,9 +36,10 @@ final case class InstitutionGroup(
 )
 
 object InstitutionGroup {
+  @derive(loggable)
   final case class Id(uuid: UUID) extends AnyVal with UUIDValue
   object Id extends UUIDValue.Builder[Id]
-
+  @derive(loggable)
   final case class Name(value: String) extends AnyVal
   final case class WithContactCount(value: InstitutionGroup, numberOfContacts: Int)
 
