@@ -7,7 +7,7 @@ import { groupShape } from '../../../helpers/propShapes';
 const ManualContactCreation = ({ groupsProps, addEntity }) => (
   <div className="ManualImportWrapper">
     <div className="ContentHeader TitleAndSubtitle">
-      <OptionsHeader {...groupsProps} addEntity={addEntity} />
+      <OptionsHeader groupsProps={groupsProps} addEntity={addEntity} />
     </div>
     <div className="ManualImportContent">
       <ContactCreationTable />

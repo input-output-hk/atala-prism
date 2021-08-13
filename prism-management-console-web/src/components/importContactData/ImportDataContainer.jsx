@@ -242,7 +242,7 @@ const ImportDataContainer = ({
   };
 
   return (
-    <div className="errorLogScroll">
+    <div className="ImportStepPageContainer">
       <div className="TitleContainer">
         <GenericStepsButtons
           steps={getSteps()}

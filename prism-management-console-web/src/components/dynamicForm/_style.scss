@@ -34,6 +34,7 @@ $last-col-width: 200px;
       background-color: $light-grey;
       color: $dark-grey;
       border-radius: $radius 0;
+      border-bottom: 1px solid $medium-grey;
       .HeaderCol {
         display: inline-block;
         padding: 1rem $cell-padding;

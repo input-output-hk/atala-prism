@@ -7,8 +7,9 @@ import CustomButton from '../../common/Atoms/CustomButton/CustomButton';
 import { IMPORT_CONTACTS } from '../../../helpers/constants';
 import { groupShape } from '../../../helpers/propShapes';
 
-const OptionsHeader = ({ groups, selectedGroups, setSelectedGroups, addEntity }) => {
+const OptionsHeader = ({ groupsProps, addEntity }) => {
   const { t } = useTranslation();
+  const { groups, selectedGroups, setSelectedGroups } = groupsProps;
   const { Option } = Select;
   const useCase = IMPORT_CONTACTS;
 
@@ -37,14 +38,15 @@ const OptionsHeader = ({ groups, selectedGroups, setSelectedGroups, addEntity })
 };
 
 OptionsHeader.defaultProps = {
-  selectedGroups: [],
   addEntity: undefined
 };
 
 OptionsHeader.propTypes = {
-  groups: PropTypes.arrayOf(groupShape).isRequired,
-  selectedGroups: PropTypes.arrayOf(PropTypes.string),
-  setSelectedGroups: PropTypes.func.isRequired,
+  groupsProps: PropTypes.shape({
+    groups: PropTypes.arrayOf(groupShape).isRequired,
+    selectedGroups: PropTypes.arrayOf(PropTypes.string),
+    setSelectedGroups: PropTypes.func.isRequired
+  }).isRequired,
   addEntity: PropTypes.func
 };
 
