@@ -336,467 +336,467 @@ jobs:
             GITHUB=1 sbt "$module/dockerBuildAndPush"
           done
   
-  build-prism-interactive-demo-web:
-    runs-on: ubuntu-20.04
-    needs: [build-prism-backend]
-    steps:
-    - name: Checkout
-      uses: actions/checkout@v2
-      with:
-        fetch-depth: 0    
+  # build-prism-interactive-demo-web:
+  #   runs-on: ubuntu-20.04
+  #   needs: [build-prism-backend]
+  #   steps:
+  #   - name: Checkout
+  #     uses: actions/checkout@v2
+  #     with:
+  #       fetch-depth: 0    
 
-    - name: Get specific changed files
-      id: changed-files-specific
-      uses: tj-actions/changed-files@v9.3
-      with:
-        files: |
-          prism-backend
-          prism-management-console-web
-          prism-sdk/protos/src
+  #   - name: Get specific changed files
+  #     id: changed-files-specific
+  #     uses: tj-actions/changed-files@v9.3
+  #     with:
+  #       files: |
+  #         prism-backend
+  #         prism-management-console-web
+  #         prism-sdk/protos/src
     
-    - name: Install protoc
-      if: steps.changed-files-specific.outputs.any_changed == 'true'
-      run: |
-        archive=protoc-"3.11.4"-linux-x86_64
-        curl -O -L https://github.com/protocolbuffers/protobuf/releases/download/v"3.11.4"/$archive.zip
-        sudo unzip -d '/usr/local' $archive.zip 'bin/*' 'include/*'
-        rm -rf ${archive}.zip
+  #   - name: Install protoc
+  #     if: steps.changed-files-specific.outputs.any_changed == 'true'
+  #     run: |
+  #       archive=protoc-"3.11.4"-linux-x86_64
+  #       curl -O -L https://github.com/protocolbuffers/protobuf/releases/download/v"3.11.4"/$archive.zip
+  #       sudo unzip -d '/usr/local' $archive.zip 'bin/*' 'include/*'
+  #       rm -rf ${archive}.zip
 
-    - name: Install protoc-gen-grpc-web
-      if: steps.changed-files-specific.outputs.any_changed == 'true'
-      run: |
-        archive=protoc-gen-grpc-web-1.0.7-linux-x86_64
-        curl -O -L https://github.com/grpc/grpc-web/releases/download/1.0.7/$archive
-        chmod +x $archive
-        sudo mv $archive /usr/local/bin/protoc-gen-grpc-web
+  #   - name: Install protoc-gen-grpc-web
+  #     if: steps.changed-files-specific.outputs.any_changed == 'true'
+  #     run: |
+  #       archive=protoc-gen-grpc-web-1.0.7-linux-x86_64
+  #       curl -O -L https://github.com/grpc/grpc-web/releases/download/1.0.7/$archive
+  #       chmod +x $archive
+  #       sudo mv $archive /usr/local/bin/protoc-gen-grpc-web
   
-  build-prism-management-console-web:
-    runs-on: ubuntu-20.04
-    needs: [build-prism-backend]
-    steps:
-    - name: Checkout
-      uses: actions/checkout@v2
-      with:
-        fetch-depth: 0
+  # build-prism-management-console-web:
+  #   runs-on: ubuntu-20.04
+  #   needs: [build-prism-backend]
+  #   steps:
+  #   - name: Checkout
+  #     uses: actions/checkout@v2
+  #     with:
+  #       fetch-depth: 0
 
-    - name: Get specific changed files
-      id: changed-files-specific
-      uses: tj-actions/changed-files@v9.3
-      with:
-        files: |
-          prism-backend
-          prism-management-console-web
+  #   - name: Get specific changed files
+  #     id: changed-files-specific
+  #     uses: tj-actions/changed-files@v9.3
+  #     with:
+  #       files: |
+  #         prism-backend
+  #         prism-management-console-web
 
-    - name: Install protoc
-      if: steps.changed-files-specific.outputs.any_changed == 'true'
-      run: |
-        archive=protoc-"3.11.4"-linux-x86_64
-        curl -O -L https://github.com/protocolbuffers/protobuf/releases/download/v"3.11.4"/$archive.zip
-        sudo unzip -d '/usr/local' $archive.zip 'bin/*' 'include/*'
-        rm -rf ${archive}.zip
+  #   - name: Install protoc
+  #     if: steps.changed-files-specific.outputs.any_changed == 'true'
+  #     run: |
+  #       archive=protoc-"3.11.4"-linux-x86_64
+  #       curl -O -L https://github.com/protocolbuffers/protobuf/releases/download/v"3.11.4"/$archive.zip
+  #       sudo unzip -d '/usr/local' $archive.zip 'bin/*' 'include/*'
+  #       rm -rf ${archive}.zip
 
-    - name: Install protoc-gen-grpc-web
-      if: steps.changed-files-specific.outputs.any_changed == 'true'
-      run: |
-        archive=protoc-gen-grpc-web-1.0.7-linux-x86_64
-        curl -O -L https://github.com/grpc/grpc-web/releases/download/1.0.7/$archive
-        chmod +x $archive
-        sudo mv $archive /usr/local/bin/protoc-gen-grpc-web
+  #   - name: Install protoc-gen-grpc-web
+  #     if: steps.changed-files-specific.outputs.any_changed == 'true'
+  #     run: |
+  #       archive=protoc-gen-grpc-web-1.0.7-linux-x86_64
+  #       curl -O -L https://github.com/grpc/grpc-web/releases/download/1.0.7/$archive
+  #       chmod +x $archive
+  #       sudo mv $archive /usr/local/bin/protoc-gen-grpc-web
 
-    - name: Move to target folder then run tests
-      if: steps.changed-files-specific.outputs.any_changed == 'true'
-      run: cd prism-management-console-web && ./web-testing-script.sh
+  #   - name: Move to target folder then run tests
+  #     if: steps.changed-files-specific.outputs.any_changed == 'true'
+  #     run: cd prism-management-console-web && ./web-testing-script.sh
 
-    - name: Move to target folder then run linting validation script
-      if: steps.changed-files-specific.outputs.any_changed == 'true'
-      run: cd prism-management-console-web && ./web-linting-validation-script.sh
+  #   - name: Move to target folder then run linting validation script
+  #     if: steps.changed-files-specific.outputs.any_changed == 'true'
+  #     run: cd prism-management-console-web && ./web-linting-validation-script.sh
 
-  build-prism-web-wallet:
-    runs-on: ubuntu-20.04
-    needs: [build-prism-backend]
-    env:
-      SBT_OPTS: -Xmx2048m
-    steps:
-    - name: Checkout
-      uses: actions/checkout@v2
-      with:
-        fetch-depth: 0
+  # build-prism-web-wallet:
+  #   runs-on: ubuntu-20.04
+  #   needs: [build-prism-backend]
+  #   env:
+  #     SBT_OPTS: -Xmx2048m
+  #   steps:
+  #   - name: Checkout
+  #     uses: actions/checkout@v2
+  #     with:
+  #       fetch-depth: 0
   
-    - name: Get specific changed files
-      id: changed-files-specific
-      uses: tj-actions/changed-files@v9.3
-      with:
-        files: |
-          prism-backend
-          prism-web-wallet
-          prism-sdk
+  #   - name: Get specific changed files
+  #     id: changed-files-specific
+  #     uses: tj-actions/changed-files@v9.3
+  #     with:
+  #       files: |
+  #         prism-backend
+  #         prism-web-wallet
+  #         prism-sdk
   
-    - name: Set environment variables
-      if: steps.changed-files-specific.outputs.any_changed == 'true'
-      run: |
-          echo "CHROME_VERSION=$(google-chrome --version)" >> $GITHUB_ENV
-          branchPrefix=$(git rev-parse --abbrev-ref HEAD | sed -E 's/(^ATA\-[0-9]+).*/\1/' | tr '[:upper:]' '[:lower:]')
-          connectorUrl="https://grpc-$branchPrefix.atalaprism.io:4433"
-          echo "CONNECTOR_URL=$connectorUrl" >> $GITHUB_ENV;
+  #   - name: Set environment variables
+  #     if: steps.changed-files-specific.outputs.any_changed == 'true'
+  #     run: |
+  #         echo "CHROME_VERSION=$(google-chrome --version)" >> $GITHUB_ENV
+  #         branchPrefix=$(git rev-parse --abbrev-ref HEAD | sed -E 's/(^ATA\-[0-9]+).*/\1/' | tr '[:upper:]' '[:lower:]')
+  #         connectorUrl="https://grpc-$branchPrefix.atalaprism.io:4433"
+  #         echo "CONNECTOR_URL=$connectorUrl" >> $GITHUB_ENV;
     
-    - name: Download and cache dependencies
-      if: steps.changed-files-specific.outputs.any_changed == 'true'
-      uses: actions/cache@v2
-      with:
-        key: webextension-cache-v2-${{ hashFiles('prism-web-wallet/build.sbt') }}-${{ hashFiles('prism-web-wallet/project/plugins.sbt') }}
-        path: |
-          ~/.cache/coursier
-          ~/.ivy2
-          ~/.m2
-          prism-web-wallet/target/scala-2.13/scalajs-bundler/main/node_modules
-          prism-web-wallet/target/scala-2.13/scalajs-bundler/test/node_modules
-        restore-keys: |
-            webextension-cache-v2-
+  #   - name: Download and cache dependencies
+  #     if: steps.changed-files-specific.outputs.any_changed == 'true'
+  #     uses: actions/cache@v2
+  #     with:
+  #       key: webextension-cache-v2-${{ hashFiles('prism-web-wallet/build.sbt') }}-${{ hashFiles('prism-web-wallet/project/plugins.sbt') }}
+  #       path: |
+  #         ~/.cache/coursier
+  #         ~/.ivy2
+  #         ~/.m2
+  #         prism-web-wallet/target/scala-2.13/scalajs-bundler/main/node_modules
+  #         prism-web-wallet/target/scala-2.13/scalajs-bundler/test/node_modules
+  #       restore-keys: |
+  #           webextension-cache-v2-
 
-    - name: Install coursier
-      if: steps.changed-files-specific.outputs.any_changed == 'true'
-      run: |
-        curl -L -o coursier https://git.io/coursier-cli-linux && chmod +x coursier
+  #   - name: Install coursier
+  #     if: steps.changed-files-specific.outputs.any_changed == 'true'
+  #     run: |
+  #       curl -L -o coursier https://git.io/coursier-cli-linux && chmod +x coursier
 
-    - name: Install scalafmt
-      if: steps.changed-files-specific.outputs.any_changed == 'true'
-      run: |
-         ./coursier bootstrap \
-                org.scalameta:scalafmt-cli_${{ env.SCALA_VERSION }}:2.5.0-RC2 \
-                -r bintray:scalameta/maven \
-                -o scalafmt \
-                --main org.scalafmt.cli.Cli
+  #   - name: Install scalafmt
+  #     if: steps.changed-files-specific.outputs.any_changed == 'true'
+  #     run: |
+  #        ./coursier bootstrap \
+  #               org.scalameta:scalafmt-cli_${{ env.SCALA_VERSION }}:2.5.0-RC2 \
+  #               -r bintray:scalameta/maven \
+  #               -o scalafmt \
+  #               --main org.scalafmt.cli.Cli
 
-    - name: Test Scala code is properly formatted
-      if: steps.changed-files-specific.outputs.any_changed == 'true'
-      run: ./scalafmt --test
+  #   - name: Test Scala code is properly formatted
+  #     if: steps.changed-files-specific.outputs.any_changed == 'true'
+  #     run: ./scalafmt --test
 
-    - name: Compile extension and its tests
-      if: steps.changed-files-specific.outputs.any_changed == 'true'
-      run: cd prism-web-wallet && sbt test:compile
+  #   - name: Compile extension and its tests
+  #     if: steps.changed-files-specific.outputs.any_changed == 'true'
+  #     run: cd prism-web-wallet && sbt test:compile
 
-    - name: Install test dependencies
-      if: steps.changed-files-specific.outputs.any_changed == 'true'
-      run: |
-        sudo apt-get update
-        sudo apt-get install -y libnss3
+  #   - name: Install test dependencies
+  #     if: steps.changed-files-specific.outputs.any_changed == 'true'
+  #     run: |
+  #       sudo apt-get update
+  #       sudo apt-get install -y libnss3
 
-    - name: Run Unit Tests
-      if: steps.changed-files-specific.outputs.any_changed == 'true'
-      run: |
-        cd prism-web-wallet
-        sbt test || sbt test
+  #   - name: Run Unit Tests
+  #     if: steps.changed-files-specific.outputs.any_changed == 'true'
+  #     run: |
+  #       cd prism-web-wallet
+  #       sbt test || sbt test
 
-    - name: Package the extension to release
-      if: steps.changed-files-specific.outputs.any_changed == 'true'
-      run: cd prism-web-wallet && PROD=true sbt chromePackage
+  #   - name: Package the extension to release
+  #     if: steps.changed-files-specific.outputs.any_changed == 'true'
+  #     run: cd prism-web-wallet && PROD=true sbt chromePackage
 
-    - name: Publish Unit Test Results
-      if: steps.changed-files-specific.outputs.any_changed == 'true'
-      uses: EnricoMi/publish-unit-test-result-action@v1
-      with:
-        files: "**/test-reports/**/TEST-*.xml"
+  #   - name: Publish Unit Test Results
+  #     if: steps.changed-files-specific.outputs.any_changed == 'true'
+  #     uses: EnricoMi/publish-unit-test-result-action@v1
+  #     with:
+  #       files: "**/test-reports/**/TEST-*.xml"
 
-    - name: Upload the build report
-      if: steps.changed-files-specific.outputs.any_changed == 'true'
-      uses: actions/upload-artifact@v2
-      with:
-        path: "prism-web-wallet/target/chrome/prism-web-wallet.zip"
-        name: prism-web-wallet-${{ runner.os }}
+  #   - name: Upload the build report
+  #     if: steps.changed-files-specific.outputs.any_changed == 'true'
+  #     uses: actions/upload-artifact@v2
+  #     with:
+  #       path: "prism-web-wallet/target/chrome/prism-web-wallet.zip"
+  #       name: prism-web-wallet-${{ runner.os }}
   
-  deploy-ecr-images:
-    runs-on: ubuntu-20.04
-    needs: [build-prism-management-console-web, build-prism-interactive-demo-web, build-prism-backend , build-prism-sdk, build-prism-web-wallet]
-    if: |
-      startsWith(github.head_ref, 'develop') ||
-      startsWith(github.head_ref, 'test') ||
-      startsWith(github.head_ref, 'demo') ||
-      startsWith(github.head_ref, 'qa') ||
-      startsWith(github.head_ref, 'sandbox')
-    permissions:
-      packages: write
-      contents: read
-    steps:
-    - name: Checkout
-      uses: actions/checkout@v2
-      with:
-        fetch-depth: 0
+  # deploy-ecr-images:
+  #   runs-on: ubuntu-20.04
+  #   needs: [build-prism-management-console-web, build-prism-interactive-demo-web, build-prism-backend , build-prism-sdk, build-prism-web-wallet]
+  #   if: |
+  #     startsWith(github.head_ref, 'develop') ||
+  #     startsWith(github.head_ref, 'test') ||
+  #     startsWith(github.head_ref, 'demo') ||
+  #     startsWith(github.head_ref, 'qa') ||
+  #     startsWith(github.head_ref, 'sandbox')
+  #   permissions:
+  #     packages: write
+  #     contents: read
+  #   steps:
+  #   - name: Checkout
+  #     uses: actions/checkout@v2
+  #     with:
+  #       fetch-depth: 0
 
-    - name: Install sudo
-      run: apt-get update && apt-get install -y sudo - install-protoc
+  #   - name: Install sudo
+  #     run: apt-get update && apt-get install -y sudo - install-protoc
 
-    - name: Restore Cache
-      uses: actions/cache@v2
-      with:
-        key: cv-cache-v5-${{ hashFiles('prism-backend/build.sbt') }}-${{ hashFiles('prism-backend/project/PrismBuild.scala') }}-${{ hashFiles('prism-backend/project/Dependencies.scala') }}-${{ hashFiles('prism-backend/project/plugins.sbt') }}
-        # path: |
-        #   ~/.cache/coursier
-        #   ~/.ivy2
-        #   ~/.m2
+  #   - name: Restore Cache
+  #     uses: actions/cache@v2
+  #     with:
+  #       key: cv-cache-v5-${{ hashFiles('prism-backend/build.sbt') }}-${{ hashFiles('prism-backend/project/PrismBuild.scala') }}-${{ hashFiles('prism-backend/project/Dependencies.scala') }}-${{ hashFiles('prism-backend/project/plugins.sbt') }}
+  #       # path: |
+  #       #   ~/.cache/coursier
+  #       #   ~/.ivy2
+  #       #   ~/.m2
     
-    - name: Configure AWS credentials
-      uses: aws-actions/configure-aws-credentials@13d241b293754004c80624b5567555c4a39ffbe3
-      with:
-        aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-        aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-        aws-region: ${{ secrets.AWS_DEFAULT_REGION }}
+  #   - name: Configure AWS credentials
+  #     uses: aws-actions/configure-aws-credentials@13d241b293754004c80624b5567555c4a39ffbe3
+  #     with:
+  #       aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+  #       aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+  #       aws-region: ${{ secrets.AWS_DEFAULT_REGION }}
 
-    - name: Login to Amazon ECR
-      id: login-ecr
-      uses: aws-actions/amazon-ecr-login@aaf69d68aa3fb14c1d5a6be9ac61fe15b48453a2
+  #   - name: Login to Amazon ECR
+  #     id: login-ecr
+  #     uses: aws-actions/amazon-ecr-login@aaf69d68aa3fb14c1d5a6be9ac61fe15b48453a2
 
-    - name: Set tag convention
-      run: |
-          branchPrefix=$(git rev-parse --abbrev-ref HEAD | sed -E 's/(^ATA\-[0-9]+).*/\1/' | tr '[:upper:]' '[:lower:]')
-          revCount=$(git rev-list HEAD --count)
-          shaShort=$(git rev-parse --short HEAD)
-          tag="${branchPrefix}-${revCount}-${shaShort}"
-          echo "export TAG=$tag" >> $GITHUB_ENV;
-          echo "export ENV=$branchPrefix" >> $GITHUB_ENV;
-          . $GITHUB_ENV && echo "Env short name set to $ENV. Image tag set to $TAG"
+  #   - name: Set tag convention
+  #     run: |
+  #         branchPrefix=$(git rev-parse --abbrev-ref HEAD | sed -E 's/(^ATA\-[0-9]+).*/\1/' | tr '[:upper:]' '[:lower:]')
+  #         revCount=$(git rev-list HEAD --count)
+  #         shaShort=$(git rev-parse --short HEAD)
+  #         tag="${branchPrefix}-${revCount}-${shaShort}"
+  #         echo "export TAG=$tag" >> $GITHUB_ENV;
+  #         echo "export ENV=$branchPrefix" >> $GITHUB_ENV;
+  #         . $GITHUB_ENV && echo "Env short name set to $ENV. Image tag set to $TAG"
 
-    - name: Create management console web assembly
-      run: |
-        cp ./workspace/prism-web-wallet.zip prism-management-console-web/public/
-        cd prism-management-console-web
-        npm ci --production
-        CI=false GENERATE_SOURCEMAP=false npm run build
+  #   - name: Create management console web assembly
+  #     run: |
+  #       cp ./workspace/prism-web-wallet.zip prism-management-console-web/public/
+  #       cd prism-management-console-web
+  #       npm ci --production
+  #       CI=false GENERATE_SOURCEMAP=false npm run build
     
-    - name: Create prism-interactive-demo-web assembly
-      run: |
-        cd prism-interactive-demo-web
-        npm ci --production
-        CI=false GENERATE_SOURCEMAP=false npm run build
+  #   - name: Create prism-interactive-demo-web assembly
+  #     run: |
+  #       cd prism-interactive-demo-web
+  #       npm ci --production
+  #       CI=false GENERATE_SOURCEMAP=false npm run build
 
-    - name: Build and push prism-management-console-web
-      run: |
-        docker build -f prism-management-console-web/Dockerfile -t 895947072537.dkr.ecr.us-east-2.amazonaws.com/web:${TAG} prism-management-console-web
-        docker push 895947072537.dkr.ecr.us-east-2.amazonaws.com/web:${TAG}
+  #   - name: Build and push prism-management-console-web
+  #     run: |
+  #       docker build -f prism-management-console-web/Dockerfile -t 895947072537.dkr.ecr.us-east-2.amazonaws.com/web:${TAG} prism-management-console-web
+  #       docker push 895947072537.dkr.ecr.us-east-2.amazonaws.com/web:${TAG}
 
-    - name: Build and push prism-interactive-demo-web
-      run: |
-        docker build -f prism-interactive-demo-web/Dockerfile -t 895947072537.dkr.ecr.us-east-2.amazonaws.com/landing:${TAG} prism-interactive-demo-web
-        docker push 895947072537.dkr.ecr.us-east-2.amazonaws.com/landing:${TAG}
+  #   - name: Build and push prism-interactive-demo-web
+  #     run: |
+  #       docker build -f prism-interactive-demo-web/Dockerfile -t 895947072537.dkr.ecr.us-east-2.amazonaws.com/landing:${TAG} prism-interactive-demo-web
+  #       docker push 895947072537.dkr.ecr.us-east-2.amazonaws.com/landing:${TAG}
 
-    - name: Build and push prism-backend/node
-      run: |
-        cd prism-backend
-        sbt node/dockerBuildAndPush
+  #   - name: Build and push prism-backend/node
+  #     run: |
+  #       cd prism-backend
+  #       sbt node/dockerBuildAndPush
 
-    - name: Build and push prism-backend/connector
-      run: |
-        cd prism-backend
-        sbt connector/dockerBuildAndPush
+  #   - name: Build and push prism-backend/connector
+  #     run: |
+  #       cd prism-backend
+  #       sbt connector/dockerBuildAndPush
     
-    - name: Build and push prism-backend/vault
-      run: |
-        cd prism-backend
-        sbt vault/dockerBuildAndPush
+  #   - name: Build and push prism-backend/vault
+  #     run: |
+  #       cd prism-backend
+  #       sbt vault/dockerBuildAndPush
 
-    - name: Build and push prism-backend/management-console
-      run: |
-        cd prism-backend
-        sbt management-console/dockerBuildAndPush
+  #   - name: Build and push prism-backend/management-console
+  #     run: |
+  #       cd prism-backend
+  #       sbt management-console/dockerBuildAndPush
 
-    # - name: Build and push prism-backend/mirror
-    #   run: |
-    #     cd prism-backend
-    #     sbt mirror/dockerBuildAndPush
+  #   # - name: Build and push prism-backend/mirror
+  #   #   run: |
+  #   #     cd prism-backend
+  #   #     sbt mirror/dockerBuildAndPush
 
-    # - name: Build and push prism-backend/kycbridge
-    #   run: |
-    #     cd prism-backend
-    #     sbt kycbridge/dockerBuildAndPush
+  #   # - name: Build and push prism-backend/kycbridge
+  #   #   run: |
+  #   #     cd prism-backend
+  #   #     sbt kycbridge/dockerBuildAndPush
 
-    - name: Build and push prism-lb-envoy
-      run: |
-        cd prism-backend/infra/docker/prism-lb-envoy
-        ./build.sh -b
-        ./build.sh -p
+  #   - name: Build and push prism-lb-envoy
+  #     run: |
+  #       cd prism-backend/infra/docker/prism-lb-envoy
+  #       ./build.sh -b
+  #       ./build.sh -p
 
-  publish-github-packages:
-    runs-on: ubuntu-20.04
-    needs: [build-prism-backend]
-    if: |
-      startsWith(github.head_ref, 'develop') ||
-      startsWith(github.head_ref, 'package')
-    steps:
-    - name: Checkout
-      uses: actions/checkout@v2
-      with:
-        fetch-depth: 0
+  # publish-github-packages:
+  #   runs-on: ubuntu-20.04
+  #   needs: [build-prism-backend]
+  #   if: |
+  #     startsWith(github.head_ref, 'develop') ||
+  #     startsWith(github.head_ref, 'package')
+  #   steps:
+  #   - name: Checkout
+  #     uses: actions/checkout@v2
+  #     with:
+  #       fetch-depth: 0
 
-    - name: Install protoc
-      run: |
-        archive=protoc-"3.11.4"-linux-x86_64
-        curl -O -L https://github.com/protocolbuffers/protobuf/releases/download/v"3.11.4"/$archive.zip
-        sudo unzip -d '/usr/local' $archive.zip 'bin/*' 'include/*'
-        rm -rf ${archive}.zip
+  #   - name: Install protoc
+  #     run: |
+  #       archive=protoc-"3.11.4"-linux-x86_64
+  #       curl -O -L https://github.com/protocolbuffers/protobuf/releases/download/v"3.11.4"/$archive.zip
+  #       sudo unzip -d '/usr/local' $archive.zip 'bin/*' 'include/*'
+  #       rm -rf ${archive}.zip
 
-    - name: Install SBT
-      run: |
-        echo "deb https://repo.scala-sbt.org/scalasbt/debian all main" | sudo tee /etc/apt/sources.list.d/sbt.list
-        echo "deb https://repo.scala-sbt.org/scalasbt/debian /" | sudo tee /etc/apt/sources.list.d/sbt_old.list
-        curl -sL "https://keyserver.ubuntu.com/pks/lookup?op=get&search=0x2EE0EA64E40A89B84B2DF73499E82A75642AC823" | sudo apt-key add
-        sudo apt-get update -y
-        sudo apt-get install -y sbt
+  #   - name: Install SBT
+  #     run: |
+  #       echo "deb https://repo.scala-sbt.org/scalasbt/debian all main" | sudo tee /etc/apt/sources.list.d/sbt.list
+  #       echo "deb https://repo.scala-sbt.org/scalasbt/debian /" | sudo tee /etc/apt/sources.list.d/sbt_old.list
+  #       curl -sL "https://keyserver.ubuntu.com/pks/lookup?op=get&search=0x2EE0EA64E40A89B84B2DF73499E82A75642AC823" | sudo apt-key add
+  #       sudo apt-get update -y
+  #       sudo apt-get install -y sbt
 
-    - name: Setup Github Container registry credentials
-      run: docker login ghcr.io -u atala-dev -p $GITHUB_TOKEN
+  #   - name: Setup Github Container registry credentials
+  #     run: docker login ghcr.io -u atala-dev -p $GITHUB_TOKEN
 
-    - name: Build and push prism-backend/node
-      run: |
-        cd prism-backend
-        GITHUB=1 sbt node/dockerBuildAndPush
+  #   - name: Build and push prism-backend/node
+  #     run: |
+  #       cd prism-backend
+  #       GITHUB=1 sbt node/dockerBuildAndPush
 
-    - name: Build and push prism-backend/connector
-      run: |
-        cd prism-backend
-        GITHUB=1 sbt connector/dockerBuildAndPush
+  #   - name: Build and push prism-backend/connector
+  #     run: |
+  #       cd prism-backend
+  #       GITHUB=1 sbt connector/dockerBuildAndPush
 
-    - name: Build and push prism-backend/vault
-      run: |
-        cd prism-backend
-        GITHUB=1 sbt vault/dockerBuildAndPush
+  #   - name: Build and push prism-backend/vault
+  #     run: |
+  #       cd prism-backend
+  #       GITHUB=1 sbt vault/dockerBuildAndPush
 
-    # - name: Build and push prism-backend/management-console
-    #   run: |
-    #     cd prism-backend
-    #     GITHUB=1 sbt management-console/dockerBuildAndPush
+  #   # - name: Build and push prism-backend/management-console
+  #   #   run: |
+  #   #     cd prism-backend
+  #   #     GITHUB=1 sbt management-console/dockerBuildAndPush
 
-  rebuild-prism-env-dev:
-    runs-on: ubuntu-20.04
-    needs: [deploy-ecr-images]
-    if: startsWith(github.head_ref, 'develop')
-    steps:
-    - name: Checkout
-      uses: actions/checkout@v2
-      with:
-        fetch-depth: 0
+  # rebuild-prism-env-dev:
+  #   runs-on: ubuntu-20.04
+  #   needs: [deploy-ecr-images]
+  #   if: startsWith(github.head_ref, 'develop')
+  #   steps:
+  #   - name: Checkout
+  #     uses: actions/checkout@v2
+  #     with:
+  #       fetch-depth: 0
 
-    - name: Download and cache dependencies
-      uses: actions/cache@v2
-      with:
-        key: cv-cache-v5-${{ hashFiles('prism-backend/build.sbt') }}-${{ hashFiles('prism-backend/project/PrismBuild.scala') }}-${{ hashFiles('prism-backend/project/Dependencies.scala') }}-${{ hashFiles('prism-backend/project/plugins.sbt') }}
+  #   - name: Download and cache dependencies
+  #     uses: actions/cache@v2
+  #     with:
+  #       key: cv-cache-v5-${{ hashFiles('prism-backend/build.sbt') }}-${{ hashFiles('prism-backend/project/PrismBuild.scala') }}-${{ hashFiles('prism-backend/project/Dependencies.scala') }}-${{ hashFiles('prism-backend/project/plugins.sbt') }}
 
-    - name: Set tag convention
-      run: |
-        branchPrefix=$(git rev-parse --abbrev-ref HEAD | sed -E 's/(^ATA\-[0-9]+).*/\1/' | tr '[:upper:]' '[:lower:]')
-        revCount=$(git rev-list HEAD --count)
-        shaShort=$(git rev-parse --short HEAD)
-        tag="${branchPrefix}-${revCount}-${shaShort}"
-        echo "export TAG=$tag" >> $GITHUB_ENV;
-        echo "export ENV=$branchPrefix" >> $GITHUB_ENV;
-        echo 'is_enabled() { if [[ ${ENABLED_COMPONENTS:-$ENV} == *"$1"* || $ENABLED_COMPONENTS == "all" ]]; then echo "true"; else echo "false"; fi }' >> $GITHUB_ENV;
-        echo 'export ENABLED_COMPONENTS="<< parameters.enabled-components >>"' >> $GITHUB_ENV;
-        echo 'export INTDEMO_ENABLED=$(is_enabled "intdemo")' >> $GITHUB_ENV;
-        echo 'export GEUD_ENABLED=$(is_enabled "geud")' >> $GITHUB_ENV;
-        echo 'export MIRROR_ENABLED=$(is_enabled "mirror")' >> $GITHUB_ENV;
-        echo 'export KYC_BRIDGE_ENABLED=$(is_enabled "kycbridge")' >> $GITHUB_ENV;
-        . $GITHUB_ENV && echo "Env short name set to $ENV. Image tag set to $TAG. Intdemo enabled: $INTDEMO_ENABLED. GEUD enabled: $GEUD_ENABLED. Mirror enabled: $MIRROR_ENABLED. KYC bridge enabled: $KYC_BRIDGE_ENABLED."
+  #   - name: Set tag convention
+  #     run: |
+  #       branchPrefix=$(git rev-parse --abbrev-ref HEAD | sed -E 's/(^ATA\-[0-9]+).*/\1/' | tr '[:upper:]' '[:lower:]')
+  #       revCount=$(git rev-list HEAD --count)
+  #       shaShort=$(git rev-parse --short HEAD)
+  #       tag="${branchPrefix}-${revCount}-${shaShort}"
+  #       echo "export TAG=$tag" >> $GITHUB_ENV;
+  #       echo "export ENV=$branchPrefix" >> $GITHUB_ENV;
+  #       echo 'is_enabled() { if [[ ${ENABLED_COMPONENTS:-$ENV} == *"$1"* || $ENABLED_COMPONENTS == "all" ]]; then echo "true"; else echo "false"; fi }' >> $GITHUB_ENV;
+  #       echo 'export ENABLED_COMPONENTS="<< parameters.enabled-components >>"' >> $GITHUB_ENV;
+  #       echo 'export INTDEMO_ENABLED=$(is_enabled "intdemo")' >> $GITHUB_ENV;
+  #       echo 'export GEUD_ENABLED=$(is_enabled "geud")' >> $GITHUB_ENV;
+  #       echo 'export MIRROR_ENABLED=$(is_enabled "mirror")' >> $GITHUB_ENV;
+  #       echo 'export KYC_BRIDGE_ENABLED=$(is_enabled "kycbridge")' >> $GITHUB_ENV;
+  #       . $GITHUB_ENV && echo "Env short name set to $ENV. Image tag set to $TAG. Intdemo enabled: $INTDEMO_ENABLED. GEUD enabled: $GEUD_ENABLED. Mirror enabled: $MIRROR_ENABLED. KYC bridge enabled: $KYC_BRIDGE_ENABLED."
     
-    - name: Rebuild prism environment
-      run: |
-        cd prism-backend/infra/stage/services/prism/
-        ./prism.sh -t $ENV
-        ./prism.sh -p $ENV
+  #   - name: Rebuild prism environment
+  #     run: |
+  #       cd prism-backend/infra/stage/services/prism/
+  #       ./prism.sh -t $ENV
+  #       ./prism.sh -p $ENV
 
-  rebuild-prism-env-qa:
-    runs-on: ubuntu-20.04
-    needs: [deploy-ecr-images]
-    if: |
-      startsWith(github.head_ref, 'qa') ||
-      startsWith(github.head_ref, 'sandbox')
-    steps:
-    - name: Checkout
-      uses: actions/checkout@v2
-      with:
-        fetch-depth: 0
+  # rebuild-prism-env-qa:
+  #   runs-on: ubuntu-20.04
+  #   needs: [deploy-ecr-images]
+  #   if: |
+  #     startsWith(github.head_ref, 'qa') ||
+  #     startsWith(github.head_ref, 'sandbox')
+  #   steps:
+  #   - name: Checkout
+  #     uses: actions/checkout@v2
+  #     with:
+  #       fetch-depth: 0
 
-    - name: Download and cache dependencies
-      uses: actions/cache@v2
-      with:
-        key: cv-cache-v5-${{ hashFiles('prism-backend/build.sbt') }}-${{ hashFiles('prism-backend/project/PrismBuild.scala') }}-${{ hashFiles('prism-backend/project/Dependencies.scala') }}-${{ hashFiles('prism-backend/project/plugins.sbt') }}
+  #   - name: Download and cache dependencies
+  #     uses: actions/cache@v2
+  #     with:
+  #       key: cv-cache-v5-${{ hashFiles('prism-backend/build.sbt') }}-${{ hashFiles('prism-backend/project/PrismBuild.scala') }}-${{ hashFiles('prism-backend/project/Dependencies.scala') }}-${{ hashFiles('prism-backend/project/plugins.sbt') }}
 
-    - name: Set tag convention
-      run: |
-        branchPrefix=$(git rev-parse --abbrev-ref HEAD | sed -E 's/(^ATA\-[0-9]+).*/\1/' | tr '[:upper:]' '[:lower:]')
-        revCount=$(git rev-list HEAD --count)
-        shaShort=$(git rev-parse --short HEAD)
-        tag="${branchPrefix}-${revCount}-${shaShort}"
-        echo "export TAG=$tag" >> $GITHUB_ENV;
-        echo "export ENV=$branchPrefix" >> $GITHUB_ENV;
-        echo 'is_enabled() { if [[ ${ENABLED_COMPONENTS:-$ENV} == *"$1"* || $ENABLED_COMPONENTS == "all" ]]; then echo "true"; else echo "false"; fi }' >> $GITHUB_ENV;
-        echo 'export ENABLED_COMPONENTS="<< parameters.enabled-components >>"' >> $GITHUB_ENV;
-        echo 'export INTDEMO_ENABLED=$(is_enabled "intdemo")' >> $GITHUB_ENV;
-        echo 'export GEUD_ENABLED=$(is_enabled "geud")' >> $GITHUB_ENV;
-        echo 'export MIRROR_ENABLED=$(is_enabled "mirror")' >> $GITHUB_ENV;
-        echo 'export KYC_BRIDGE_ENABLED=$(is_enabled "kycbridge")' >> $GITHUB_ENV;
-        . $GITHUB_ENV && echo "Env short name set to $ENV. Image tag set to $TAG. Intdemo enabled: $INTDEMO_ENABLED. GEUD enabled: $GEUD_ENABLED. Mirror enabled: $MIRROR_ENABLED. KYC bridge enabled: $KYC_BRIDGE_ENABLED."
+  #   - name: Set tag convention
+  #     run: |
+  #       branchPrefix=$(git rev-parse --abbrev-ref HEAD | sed -E 's/(^ATA\-[0-9]+).*/\1/' | tr '[:upper:]' '[:lower:]')
+  #       revCount=$(git rev-list HEAD --count)
+  #       shaShort=$(git rev-parse --short HEAD)
+  #       tag="${branchPrefix}-${revCount}-${shaShort}"
+  #       echo "export TAG=$tag" >> $GITHUB_ENV;
+  #       echo "export ENV=$branchPrefix" >> $GITHUB_ENV;
+  #       echo 'is_enabled() { if [[ ${ENABLED_COMPONENTS:-$ENV} == *"$1"* || $ENABLED_COMPONENTS == "all" ]]; then echo "true"; else echo "false"; fi }' >> $GITHUB_ENV;
+  #       echo 'export ENABLED_COMPONENTS="<< parameters.enabled-components >>"' >> $GITHUB_ENV;
+  #       echo 'export INTDEMO_ENABLED=$(is_enabled "intdemo")' >> $GITHUB_ENV;
+  #       echo 'export GEUD_ENABLED=$(is_enabled "geud")' >> $GITHUB_ENV;
+  #       echo 'export MIRROR_ENABLED=$(is_enabled "mirror")' >> $GITHUB_ENV;
+  #       echo 'export KYC_BRIDGE_ENABLED=$(is_enabled "kycbridge")' >> $GITHUB_ENV;
+  #       . $GITHUB_ENV && echo "Env short name set to $ENV. Image tag set to $TAG. Intdemo enabled: $INTDEMO_ENABLED. GEUD enabled: $GEUD_ENABLED. Mirror enabled: $MIRROR_ENABLED. KYC bridge enabled: $KYC_BRIDGE_ENABLED."
     
-    - name: Rebuild prism environment
-      run: |
-        cd prism-backend/infra/stage/services/prism/
-        ./prism.sh -t $ENV
-        ./prism.sh -p $ENV
+  #   - name: Rebuild prism environment
+  #     run: |
+  #       cd prism-backend/infra/stage/services/prism/
+  #       ./prism.sh -t $ENV
+  #       ./prism.sh -p $ENV
 
-  rebuild-prism-env-test:
-    runs-on: ubuntu-20.04
-    needs: [deploy-ecr-images]
-    if: startsWith(github.head_ref, 'test')
-    steps:
-    - name: Checkout
-      uses: actions/checkout@v2
-      with:
-        fetch-depth: 0
+  # rebuild-prism-env-test:
+  #   runs-on: ubuntu-20.04
+  #   needs: [deploy-ecr-images]
+  #   if: startsWith(github.head_ref, 'test')
+  #   steps:
+  #   - name: Checkout
+  #     uses: actions/checkout@v2
+  #     with:
+  #       fetch-depth: 0
 
-    - name: Download and cache dependencies
-      uses: actions/cache@v2
-      with:
-        key: cv-cache-v5-${{ hashFiles('prism-backend/build.sbt') }}-${{ hashFiles('prism-backend/project/PrismBuild.scala') }}-${{ hashFiles('prism-backend/project/Dependencies.scala') }}-${{ hashFiles('prism-backend/project/plugins.sbt') }}
+  #   - name: Download and cache dependencies
+  #     uses: actions/cache@v2
+  #     with:
+  #       key: cv-cache-v5-${{ hashFiles('prism-backend/build.sbt') }}-${{ hashFiles('prism-backend/project/PrismBuild.scala') }}-${{ hashFiles('prism-backend/project/Dependencies.scala') }}-${{ hashFiles('prism-backend/project/plugins.sbt') }}
 
-    - name: Set tag convention
-      run: |
-        branchPrefix=$(git rev-parse --abbrev-ref HEAD | sed -E 's/(^ATA\-[0-9]+).*/\1/' | tr '[:upper:]' '[:lower:]')
-        revCount=$(git rev-list HEAD --count)
-        shaShort=$(git rev-parse --short HEAD)
-        tag="${branchPrefix}-${revCount}-${shaShort}"
-        echo "export TAG=$tag" >> $GITHUB_ENV;
-        echo "export ENV=$branchPrefix" >> $GITHUB_ENV;
-        echo 'is_enabled() { if [[ ${ENABLED_COMPONENTS:-$ENV} == *"$1"* || $ENABLED_COMPONENTS == "all" ]]; then echo "true"; else echo "false"; fi }' >> $GITHUB_ENV;
-        echo 'export ENABLED_COMPONENTS="<< parameters.enabled-components >>"' >> $GITHUB_ENV;
-        echo 'export INTDEMO_ENABLED=$(is_enabled "intdemo")' >> $GITHUB_ENV;
-        echo 'export GEUD_ENABLED=$(is_enabled "geud")' >> $GITHUB_ENV;
-        echo 'export MIRROR_ENABLED=$(is_enabled "mirror")' >> $GITHUB_ENV;
-        echo 'export KYC_BRIDGE_ENABLED=$(is_enabled "kycbridge")' >> $GITHUB_ENV;
-        . $GITHUB_ENV && echo "Env short name set to $ENV. Image tag set to $TAG. Intdemo enabled: $INTDEMO_ENABLED. GEUD enabled: $GEUD_ENABLED. Mirror enabled: $MIRROR_ENABLED. KYC bridge enabled: $KYC_BRIDGE_ENABLED."
+  #   - name: Set tag convention
+  #     run: |
+  #       branchPrefix=$(git rev-parse --abbrev-ref HEAD | sed -E 's/(^ATA\-[0-9]+).*/\1/' | tr '[:upper:]' '[:lower:]')
+  #       revCount=$(git rev-list HEAD --count)
+  #       shaShort=$(git rev-parse --short HEAD)
+  #       tag="${branchPrefix}-${revCount}-${shaShort}"
+  #       echo "export TAG=$tag" >> $GITHUB_ENV;
+  #       echo "export ENV=$branchPrefix" >> $GITHUB_ENV;
+  #       echo 'is_enabled() { if [[ ${ENABLED_COMPONENTS:-$ENV} == *"$1"* || $ENABLED_COMPONENTS == "all" ]]; then echo "true"; else echo "false"; fi }' >> $GITHUB_ENV;
+  #       echo 'export ENABLED_COMPONENTS="<< parameters.enabled-components >>"' >> $GITHUB_ENV;
+  #       echo 'export INTDEMO_ENABLED=$(is_enabled "intdemo")' >> $GITHUB_ENV;
+  #       echo 'export GEUD_ENABLED=$(is_enabled "geud")' >> $GITHUB_ENV;
+  #       echo 'export MIRROR_ENABLED=$(is_enabled "mirror")' >> $GITHUB_ENV;
+  #       echo 'export KYC_BRIDGE_ENABLED=$(is_enabled "kycbridge")' >> $GITHUB_ENV;
+  #       . $GITHUB_ENV && echo "Env short name set to $ENV. Image tag set to $TAG. Intdemo enabled: $INTDEMO_ENABLED. GEUD enabled: $GEUD_ENABLED. Mirror enabled: $MIRROR_ENABLED. KYC bridge enabled: $KYC_BRIDGE_ENABLED."
     
-    - name: Rebuild prism environment
-      run: |
-        cd prism-backend/infra/stage/services/prism/
-        ./prism.sh -t $ENV
-        ./prism.sh -p $ENV
+  #   - name: Rebuild prism environment
+  #     run: |
+  #       cd prism-backend/infra/stage/services/prism/
+  #       ./prism.sh -t $ENV
+  #       ./prism.sh -p $ENV
 
-  trigger-integration-tests:
-    runs-on: ubuntu-20.04
-    needs: [rebuild-prism-env-qa]
-    if: startsWith(github.head_ref, 'qa')
-    steps:
-    - name: Checkout
-      uses: actions/checkout@v2
-      with:
-        fetch-depth: 0
-    # TODO: remove this part when https://jira.iohk.io/browse/ATA-3535 is implemented, maybe not needed in GHA?
-    - name: wait till environment is fully operable
-      run: sleep 9m
+  # trigger-integration-tests:
+  #   runs-on: ubuntu-20.04
+  #   needs: [rebuild-prism-env-qa]
+  #   if: startsWith(github.head_ref, 'qa')
+  #   steps:
+  #   - name: Checkout
+  #     uses: actions/checkout@v2
+  #     with:
+  #       fetch-depth: 0
+  #   # TODO: remove this part when https://jira.iohk.io/browse/ATA-3535 is implemented, maybe not needed in GHA?
+  #   - name: wait till environment is fully operable
+  #     run: sleep 9m
 
-    - name: Trigger a job in atala-qa-automation project
-      run: python trigger_tests.py
+  #   - name: Trigger a job in atala-qa-automation project
+  #     run: python trigger_tests.py
       
-    - name: Slack notification
-      uses: bryannice/gitactions-slack-notification@2.0.0
-      if: startsWith(github.head_ref, 'qa')
-      env:
-        SLACK_INCOMING_WEBHOOK: ${{ secrets.SLACK_INCOMING_WEBHOOK }}
-        SLACK_MESSAGE: 'UFHNXC9RC,UGFJQ5ZBN'
-        SLACK_TITLE: 'Slack Notification Demo'
+  #   - name: Slack notification
+  #     uses: bryannice/gitactions-slack-notification@2.0.0
+  #     if: startsWith(github.head_ref, 'qa')
+  #     env:
+  #       SLACK_INCOMING_WEBHOOK: ${{ secrets.SLACK_INCOMING_WEBHOOK }}
+  #       SLACK_MESSAGE: 'UFHNXC9RC,UGFJQ5ZBN'
+  #       SLACK_TITLE: 'Slack Notification Demo'
