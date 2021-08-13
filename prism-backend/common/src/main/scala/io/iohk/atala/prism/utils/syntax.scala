@@ -20,7 +20,7 @@ object syntax {
   implicit class InstantToTimestampOps(val value: Instant) extends AnyVal {
 
     /** converts instant to proto timestamp */
-    def toProtoTimestamp: Timestamp = Timestamp(value.getEpochSecond, value.getNano)
+    def toProtoTimestamp: Timestamp = Timestamp(value.toEpochMilli, value.getNano)
   }
 
   implicit class TimestampOps(val value: Timestamp) extends AnyVal {

@@ -60,7 +60,7 @@ class BlockProcessingServiceImpl extends BlockProcessingService {
       case (signedOperation, osn) =>
         parseOperation(
           signedOperation,
-          LedgerData(transactionId, ledger, new TimestampInfo(blockTimestamp.getEpochSecond, blockIndex, osn))
+          LedgerData(transactionId, ledger, new TimestampInfo(blockTimestamp.toEpochMilli, blockIndex, osn))
         ).left
           .map(err => (signedOperation, err))
     }

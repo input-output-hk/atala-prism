@@ -74,7 +74,7 @@ class CredentialIssuanceServiceImplSpec extends ManagementConsoleRpcSpecBase wit
           credentialIssuance.credentialTypeId mustBe createRequest.credentialTypeId
           credentialIssuance.createdAt.fold(0L)(
             _.seconds
-          ) must (be >= creationTime.getEpochSecond and be <= Instant.now.getEpochSecond)
+          ) must (be >= creationTime.toEpochMilli and be <= Instant.now.toEpochMilli)
           // Verify contacts
           val issuanceContacts =
             credentialIssuance.credentialIssuanceContacts.sortBy(_.contactId)
@@ -189,7 +189,7 @@ class CredentialIssuanceServiceImplSpec extends ManagementConsoleRpcSpecBase wit
           credentialIssuance.credentialTypeId mustBe credentialTypeWithRequiredFields.credentialType.id.uuid.toString
           credentialIssuance.createdAt.fold(0L)(
             _.seconds
-          ) must (be >= creationTime.getEpochSecond and be <= Instant.now.getEpochSecond)
+          ) must (be >= creationTime.toEpochMilli and be <= Instant.now.toEpochMilli)
           // Verify contacts
           val issuanceContacts =
             credentialIssuance.credentialIssuanceContacts.sortBy(_.contactId)

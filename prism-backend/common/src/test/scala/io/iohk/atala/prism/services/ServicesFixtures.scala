@@ -45,8 +45,8 @@ trait ServicesFixtures {
     val issuanceKeyId = "Issuance-0"
     val issuerDID = newDID()
 
-    val keyAddedDate: TimestampInfo = new TimestampInfo(Instant.now().minusSeconds(1).getEpochSecond, 1, 1)
-    val credentialIssueDate: TimestampInfo = new TimestampInfo(Instant.now().getEpochSecond, 2, 2)
+    val keyAddedDate: TimestampInfo = new TimestampInfo(Instant.now().minusSeconds(1).toEpochMilli, 1, 1)
+    val credentialIssueDate: TimestampInfo = new TimestampInfo(Instant.now().toEpochMilli, 2, 2)
 
     val keys: ECKeyPair = EC.generateKeyPair()
     val publicKey: PublicKey = PublicKey(
