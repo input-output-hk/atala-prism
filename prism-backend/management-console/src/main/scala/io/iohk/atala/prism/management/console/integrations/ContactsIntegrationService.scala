@@ -14,30 +14,31 @@ import io.iohk.atala.prism.utils.FutureEither
 import io.iohk.atala.prism.utils.FutureEither.{FutureEitherFOps, FutureEitherOps}
 
 import scala.concurrent.{ExecutionContext, Future}
-import cats.syntax.traverse._
-import cats.instances.future._
 import cats.instances.option._
 import io.iohk.atala.prism.logging.TraceId
 import io.iohk.atala.prism.logging.TraceId.IOWithTraceIdContext
 
 class ContactsIntegrationService(
     contactsRepository: ContactsRepository[IOWithTraceIdContext],
-    connector: ConnectorClient
+    connector: ConnectorClient[IOWithTraceIdContext]
 )(implicit
     ec: ExecutionContext
 ) {
 
   import ContactsIntegrationService._
-
+  import cats.syntax.traverse._
   def createContact(
       participantId: ParticipantId,
       request: CreateContact,
       group: Option[InstitutionGroup.Name]
   ): Future[Either[errors.ManagementConsoleError, ContactWithConnection]] = {
+    val traceId = TraceId.generateYOLO
     (for {
       generateTokensResponse <-
         connector
           .generateConnectionTokens(request.generateConnectionTokenRequestMetadata, count = 1)
+          .run(traceId)
+          .unsafeToFuture()
           .lift
 
       token <-
@@ -55,7 +56,7 @@ class ContactsIntegrationService(
             group,
             connectionToken = token
           )
-          .run(TraceId.generateYOLO)
+          .run(traceId)
           .unsafeToFuture()
           .map(_.asRight)
           .toFutureEither
@@ -71,11 +72,14 @@ class ContactsIntegrationService(
       institutionId: ParticipantId,
       request: CreateContact.Batch
   ): Future[Either[errors.ManagementConsoleError, Int]] = {
+    val traceId = TraceId.generateYOLO
     (for {
       tokens <-
         if (request.contacts.nonEmpty) {
           connector
             .generateConnectionTokens(request.generateConnectionTokenRequestMetadata, request.contacts.size)
+            .run(traceId)
+            .unsafeToFuture()
             .lift
         } else Future.successful(Right(Seq.empty)).toFutureEither
 
@@ -96,7 +100,7 @@ class ContactsIntegrationService(
             request,
             tokens.toList
           )
-          .run(TraceId.generateYOLO)
+          .run(traceId)
           .unsafeToFuture()
           .toFutureEither
     } yield numberOfContacts).value
@@ -113,6 +117,7 @@ class ContactsIntegrationService(
       institutionId: ParticipantId,
       paginatedQuery: Contact.PaginatedQuery
   ): Future[Either[errors.ManagementConsoleError, GetContactsResult]] = {
+    val traceId = TraceId.generateYOLO
     val filterByConnectionStatusSpecified = paginatedQuery.filters.exists(f => f.connectionStatus.isDefined)
     val result = for {
       allContacts <-
@@ -122,7 +127,8 @@ class ContactsIntegrationService(
           .unsafeToFuture()
           .map(_.asRight)
           .toFutureEither
-      allConnectionStatuses <- connector.getConnectionStatus(allContacts.map(_.details.connectionToken)).lift
+      allConnectionStatuses <-
+        connector.getConnectionStatus(allContacts.map(_.details.connectionToken)).run(traceId).unsafeToFuture().lift
       tokenToConnection = allConnectionStatuses.map(c => ConnectionToken(c.connectionToken) -> c).toMap
     } yield {
       val data = allContacts
@@ -150,7 +156,7 @@ class ContactsIntegrationService(
             .take(paginatedQuery.limit)
         })
         .getOrElse(data)
-      GetContactsResult(dataPotentiallyFilteredByConnectionStatus.toList)
+      GetContactsResult(dataPotentiallyFilteredByConnectionStatus)
     }
     result.value
   }
@@ -159,27 +165,33 @@ class ContactsIntegrationService(
       institutionId: ParticipantId,
       contactId: Contact.Id
   ): Future[Either[Nothing, Option[DetailedContactWithConnection]]] = {
+    val traceId = TraceId.generateYOLO
     val detailedContactWithConnectionFE =
       for {
         contactMaybe <-
           contactsRepository
             .find(institutionId, contactId)
-            .run(TraceId.generateYOLO)
+            .run(traceId)
             .unsafeToFuture()
             .map(_.asRight)
             .toFutureEither
-        detailedContactWithConnection <- contactMaybe.traverse { contact =>
-          val connectionTokens =
-            (contact.issuedCredentials.map(_.connectionToken) :+ contact.contact.connectionToken).distinct
-          connector
-            .getConnectionStatus(connectionTokens)
-            .map(contactConnections =>
-              DetailedContactWithConnection.from(
-                contact,
-                contactConnections.map(c => ConnectionToken(c.connectionToken) -> c).toMap
-              )
-            )
-        }.lift
+        detailedContactWithConnection <-
+          contactMaybe
+            .traverse { contact =>
+              val connectionTokens =
+                (contact.issuedCredentials.map(_.connectionToken) :+ contact.contact.connectionToken).distinct
+              connector
+                .getConnectionStatus(connectionTokens)
+                .map(contactConnections =>
+                  DetailedContactWithConnection.from(
+                    contact,
+                    contactConnections.map(c => ConnectionToken(c.connectionToken) -> c).toMap
+                  )
+                )
+            }
+            .run(traceId)
+            .unsafeToFuture()
+            .lift
       } yield detailedContactWithConnection
     detailedContactWithConnectionFE.value
   }

@@ -24,7 +24,7 @@ import scala.concurrent.{ExecutionContext, Future}
 class CredentialsIntegrationService(
     credentialsRepository: CredentialsRepository[IOWithTraceIdContext],
     nodeService: node_api.NodeServiceGrpc.NodeService,
-    connector: ConnectorClient
+    connector: ConnectorClient[IOWithTraceIdContext]
 )(implicit ec: ExecutionContext)
     extends ManagementConsoleErrorSupport {
 
@@ -106,7 +106,12 @@ class CredentialsIntegrationService(
   ): Future[Either[E, GetGenericCredentialsResult]] = {
     val result = for {
       genericCredentials <- genericCredentialSupplier
-      connectionStatuses <- connector.getConnectionStatus(genericCredentials.map(_.connectionToken)).lift
+      connectionStatuses <-
+        connector
+          .getConnectionStatus(genericCredentials.map(_.connectionToken))
+          .run(TraceId.generateYOLO)
+          .unsafeToFuture()
+          .lift
       tokenToConnection = connectionStatuses.map(c => ConnectionToken(c.connectionToken) -> c).toMap
     } yield {
       GetGenericCredentialsResult(

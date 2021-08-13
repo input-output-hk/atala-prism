@@ -80,7 +80,7 @@ object ManagementConsoleApp extends IOApp {
       // connector
       connectorConfig = ConnectorClient.Config(globalConfig.getConfig("connector"))
       _ = logger.info(s"Connector config loaded: $connectorConfig")
-      connector = ConnectorClient(connectorConfig)
+      connector <- ConnectorClient.makeResource(connectorConfig, managementConsoleLogs)
 
       // repositories
       contactsRepository <- ContactsRepository.makeResource(txTraceIdLifted, managementConsoleLogs)
