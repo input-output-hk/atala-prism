@@ -7,12 +7,12 @@ export const getContactFormColumns = () => [
   {
     label: i18n.t('contacts.table.columns.contactName'),
     fieldKey: 'contactName',
-    width: 400
+    width: 300
   },
   {
     label: i18n.t('contacts.table.columns.externalId'),
     fieldKey: 'externalId',
-    width: 500
+    width: 400
   },
   {
     label: i18n.t('contacts.table.columns.actions'),

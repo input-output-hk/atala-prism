@@ -21,18 +21,21 @@ const CredentialCreationTable = ({ initialValues, credentialType }) => {
       dataIndex: 'contactName',
       editable: false,
       type: 'string',
-      validations: ['required']
+      validations: ['required'],
+      fixed: 'left'
     },
     {
       title: t('contacts.table.columns.externalId'),
       dataIndex: 'externalId',
       editable: false,
       type: 'string',
-      validations: ['required']
+      validations: ['required'],
+      width: 350,
+      fixed: 'left'
     }
   ];
 
-  const specificColumns = credentialType?.fields.map(f => ({
+  const specificColumns = credentialType.fields.map(f => ({
     title: t(`contacts.table.columns.${f.key}`),
     dataIndex: f.key,
     editable: true,

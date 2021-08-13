@@ -1,4 +1,4 @@
-@import '../../css/general_styling';
+@import "../../css/general_styling";
 
 $cell-padding: 1.5rem;
 $radius: 5px;
@@ -24,8 +24,7 @@ $last-col-width: 200px;
     }
   }
   .DynamicForm {
-    width: 100%;
-    border: 1px solid $medium-grey;
+    overflow: unset !important;
     border-radius: $radius;
     @include horizontal-scroll();
     .HeaderRow {
@@ -46,17 +45,18 @@ $last-col-width: 200px;
       }
     }
     .IndividualFormRow {
-      .ant-input, .ant-select-selection {
-        border:1px solid $grey;
+      .ant-input,
+      .ant-select-selection {
+        border: 1px solid $grey;
       }
       .ant-input:focus {
         border-color: #f83633;
         box-shadow: 0 0 0 2px rgba(99, 99, 99, 0.2);
-    }
-    .ant-form-item-explain.ant-form-item-explain-error {
-      @include primary-text(10px, $primary-color);
-      margin-top: 0.5em;
-    }
+      }
+      .ant-form-item-explain.ant-form-item-explain-error {
+        @include primary-text(10px, $primary-color);
+        margin-top: 0.5em;
+      }
       .IndividualFormCol {
         padding: $cell-padding;
         &:last-child {

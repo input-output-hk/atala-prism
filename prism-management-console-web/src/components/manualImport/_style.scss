@@ -3,8 +3,10 @@
 .ManualImportWrapper {
   display: flex;
   flex-direction: column;
-  height: calc(100vh - 250px);
-  overflow: hidden;
+  height: calc(100vh - 20em);
+  border: 1px solid #c5d0de;
+  border-radius: 6px;
+  margin: 0 0 0 2em;
   .ContentHeader {
     padding: 0 2em;
     display: block !important;
@@ -26,21 +28,14 @@
   }
   .ManualImportContent {
     display: flex;
-    overflow-y: auto;
-    padding: 0 2em;
+    overflow: auto;
     .ant-col {
       margin: 7px;
     }
     .ant-table-container {
       width: 100%;
     }
-    .ant-table.ant-table-bordered
-      > .ant-table-container
-      > .ant-table-content
-      > table
-      > tbody
-      > tr
-      > td:last-child {
+    .ant-table.ant-table-bordered > .ant-table-container > .ant-table-content > table > tbody > tr > td:last-child {
       width: 200px !important;
     }
     .ant-table-wrapper {

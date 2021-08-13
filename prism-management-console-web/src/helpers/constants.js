@@ -177,6 +177,7 @@ export const CREDENTIALS_RECEIVED = 'CREDENTIALS_RECEIVED';
 export const UNKNOWN_DID_SUFFIX_ERROR_CODE = 2;
 
 export const DEFAULT_WIDTH_INPUT = 300;
+export const COMPACT_WIDTH_INPUT = 250;
 
 // Usefull css classes
 export const MAIN_CONTAINER_CLASS = 'MainContainer';
