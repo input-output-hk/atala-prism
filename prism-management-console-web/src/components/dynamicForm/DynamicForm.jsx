@@ -29,14 +29,14 @@ const DynamicForm = ({ columns, skeleton, initialValues, useCase }) => {
           <Form.List name={formName} initialValue={initialValues}>
             {fields => (
               <>
-                <div className="HeaderRow">
+                <Row className="HeaderRow">
                   {columns.map(col => (
                     <span style={{ width: col.width || DEFAULT_WIDTH_INPUT }} className="HeaderCol">
                       {col.label}
                     </span>
                   ))}
                   <span className="HeaderCol">{lastColumn.label}</span>
-                </div>
+                </Row>
                 {fields.map((field, index) => (
                   <IndividualForm
                     field={field}
