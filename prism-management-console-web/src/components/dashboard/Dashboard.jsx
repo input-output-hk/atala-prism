@@ -21,6 +21,7 @@ import WaitBanner from './Atoms/WaitBanner/WaitBanner';
 import { useSession } from '../providers/SessionContext';
 import SimpleLoading from '../common/Atoms/SimpleLoading/SimpleLoading';
 import './_style.scss';
+import TutorialModal from '../tutorial/tutorialModal';
 
 const Dashboard = ({ api, name, bundle }) => {
   const { t } = useTranslation();
@@ -66,6 +67,7 @@ const Dashboard = ({ api, name, bundle }) => {
       <div className="DashboardHeader">
         <h1>{tp('title')}</h1>
         <p>{longDateFormatter()}</p>
+        <TutorialModal />
       </div>
       <div className="DashboardContent">
         {accountStatus === LOADING && <SimpleLoading size="md" />}
