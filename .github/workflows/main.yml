@@ -296,6 +296,7 @@ jobs:
          uses: EnricoMi/publish-unit-test-result-action@v1
          with:
            files: "test-reports/**/TEST-*.xml"
+           pull_request_build: "commit"
 
   publish-prism-backend:
     needs: build-prism-backend
