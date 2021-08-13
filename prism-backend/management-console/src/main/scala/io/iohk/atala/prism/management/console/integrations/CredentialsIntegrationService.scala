@@ -65,51 +65,60 @@ class CredentialsIntegrationService(
       participantId: ParticipantId,
       createGenericCredential: CreateGenericCredential
   ): Future[Either[errors.ManagementConsoleError, GenericCredentialWithConnection]] = {
+    val traceId = TraceId.generateYOLO
     getAndAppendConnectionStatus(
       credentialsRepository
         .create(participantId, createGenericCredential)
         .run(TraceId.generateYOLO)
         .unsafeToFuture()
         .toFutureEither
-        .map(credential => List(credential))
+        .map(credential => List(credential)),
+      traceId
     ).map(_.map(result => result.data.head))
   }
 
   def getGenericCredentials(
       issuedBy: ParticipantId,
       query: GenericCredential.PaginatedQuery
-  ): Future[Either[Nothing, GetGenericCredentialsResult]] =
+  ): Future[Either[Nothing, GetGenericCredentialsResult]] = {
+    val traceId = TraceId.generateYOLO
     getAndAppendConnectionStatus(
       credentialsRepository
         .getBy(issuedBy, query)
         .map(_.asRight)
         .run(TraceId.generateYOLO)
         .unsafeToFuture()
-        .toFutureEither
+        .toFutureEither,
+      traceId
     )
+  }
 
   def getContactCredentials(
       issuedBy: ParticipantId,
       contactId: Contact.Id
-  ): Future[Either[Nothing, GetGenericCredentialsResult]] =
+  ): Future[Either[Nothing, GetGenericCredentialsResult]] = {
+    val traceId = TraceId.generateYOLO
     getAndAppendConnectionStatus(
       credentialsRepository
         .getBy(issuedBy, contactId)
         .map(_.asRight)
         .run(TraceId.generateYOLO)
         .unsafeToFuture()
-        .toFutureEither
+        .toFutureEither,
+      traceId
     )
+  }
 
   private def getAndAppendConnectionStatus[E](
-      genericCredentialSupplier: => FutureEither[E, List[GenericCredential]]
+      genericCredentialSupplier: => FutureEither[E, List[GenericCredential]],
+      traceId: TraceId
   ): Future[Either[E, GetGenericCredentialsResult]] = {
     val result = for {
       genericCredentials <- genericCredentialSupplier
       connectionStatuses <-
         connector
           .getConnectionStatus(genericCredentials.map(_.connectionToken))
-          .run(TraceId.generateYOLO)
+          .run(traceId)
           .unsafeToFuture()
           .lift
       tokenToConnection = connectionStatuses.map(c => ConnectionToken(c.connectionToken) -> c).toMap

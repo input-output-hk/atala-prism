@@ -1,6 +1,8 @@
 package io.iohk.atala.prism.management.console.integrations
 
-import cats.implicits.catsSyntaxEitherId
+import cats.syntax.either._
+import cats.syntax.traverse._
+import cats.instances.option._
 import io.iohk.atala.prism.management.console.clients.ConnectorClient
 import io.iohk.atala.prism.management.console.errors
 import io.iohk.atala.prism.management.console.errors.ManagementConsoleError
@@ -14,7 +16,6 @@ import io.iohk.atala.prism.utils.FutureEither
 import io.iohk.atala.prism.utils.FutureEither.{FutureEitherFOps, FutureEitherOps}
 
 import scala.concurrent.{ExecutionContext, Future}
-import cats.instances.option._
 import io.iohk.atala.prism.logging.TraceId
 import io.iohk.atala.prism.logging.TraceId.IOWithTraceIdContext
 
@@ -26,7 +27,7 @@ class ContactsIntegrationService(
 ) {
 
   import ContactsIntegrationService._
-  import cats.syntax.traverse._
+
   def createContact(
       participantId: ParticipantId,
       request: CreateContact,
