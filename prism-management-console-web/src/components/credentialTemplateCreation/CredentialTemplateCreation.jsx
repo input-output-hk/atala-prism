@@ -12,6 +12,7 @@ import {
 } from '../../helpers/constants';
 import { withRedirector } from '../providers/withRedirector';
 import { useTemplateContext } from '../providers/TemplateContext';
+import { useMockDataContext } from '../providers/MockDataProvider';
 import './_style.scss';
 
 const fieldsByStep = {
@@ -32,7 +33,8 @@ const CredentialTemplateCreation = ({
   redirector: { redirectToCredentialTemplates }
 }) => {
   const { t } = useTranslation();
-  const { form } = useTemplateContext();
+  const { form, templateSettings } = useTemplateContext();
+  const { mockDataDispatch } = useMockDataContext();
 
   const validateByStep = () =>
     form.validateFields().catch(({ errorFields }) => {
@@ -52,9 +54,17 @@ const CredentialTemplateCreation = ({
 
   const goBack = () => changeStep(currentStep - NEW_TEMPLATE_STEP_UNIT);
 
+  const createTemplate = () => {
+    mockDataDispatch({
+      type: 'ADD_MOCK_CREDENTIAL_TEMPLATE',
+      payload: { newTemplate: templateSettings }
+    });
+    advanceStep();
+  };
+
   const steps = [
     { back: redirectToCredentialTemplates, next: advanceStep },
-    { back: goBack, next: advanceStep },
+    { back: goBack, next: createTemplate },
     { back: goBack, next: redirectToCredentialTemplates }
   ];
 

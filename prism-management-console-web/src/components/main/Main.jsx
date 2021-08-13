@@ -10,6 +10,7 @@ import I18nError from '../I18nError';
 import Logger from '../../helpers/Logger';
 import '../../App.scss';
 import './_main.scss';
+import { MockDataProvider } from '../providers/MockDataProvider';
 
 const MESSAGE_DURATION = 3;
 const MAX_MESSAGES_TO_SHOW = 3;
@@ -29,7 +30,9 @@ const Main = ({ apiProvider }) => {
     <main>
       <APIContext.Provider value={apiProvider}>
         <SessionProvider>
-          <MainContent />
+          <MockDataProvider>
+            <MainContent />
+          </MockDataProvider>
         </SessionProvider>
       </APIContext.Provider>
     </main>
