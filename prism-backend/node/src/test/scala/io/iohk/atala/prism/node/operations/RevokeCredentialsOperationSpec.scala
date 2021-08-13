@@ -258,11 +258,9 @@ class RevokeCredentialsOperationSpec extends AtalaWithPostgresSpec {
       issuerCreateDIDOperation.applyState().transact(database).value.unsafeRunSync()
       credentialIssueBatchOperation.applyState().transact(database).value.unsafeRunSync()
 
-      println("before parse")
-
       val parsedRevokeBatchOperation =
         RevokeCredentialsOperation.parse(revokeFullBatchOperation, revocationLedgerData).toOption.value
-      println("before parsedRevokeBatchOperation.applyState()")
+
       parsedRevokeBatchOperation.applyState().value.transact(database).unsafeRunSync().toOption.value
 
       val credentialBatch =
