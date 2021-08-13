@@ -192,11 +192,11 @@ jobs:
     steps:
     - name: Checkout
       uses: actions/checkout@v2
-      with:
-        fetch-depth: 0
+      # with:
+      #   fetch-depth: 0
 
-    - name: Get specific changed files
-      uses: tj-actions/changed-files@v9.3
+    # - name: Get specific changed files
+    #   uses: tj-actions/changed-files@v9.3
     
     - name: Setup Scala
       uses: olafurpg/setup-scala@v10
