@@ -297,6 +297,7 @@ jobs:
          with:
            files: "test-reports/**/TEST-*.xml"
            pull_request_build: "commit"
+           check_run_annotations_branch: "*"
 
   publish-prism-backend:
     needs: build-prism-backend
