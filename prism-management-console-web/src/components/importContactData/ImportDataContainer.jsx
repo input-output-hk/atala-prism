@@ -58,7 +58,6 @@ const ImportDataContainer = ({
   const [fileData, setFileData] = useState();
   const [skipGroupsAssignment, setSkipGroupsAssignment] = useState(false);
   const [selectedGroups, setSelectedGroups] = useState([]);
-  // const [credentialsData, setCredentialsData] = useState(recipients);
 
   const { saveFormProviderAvailable, addEntity, form } = useContext(DynamicFormContext);
 
