@@ -52,3 +52,14 @@ This approach is preferable to storing the keys themselves, because having acces
 * If the issuer database is lost, the associations and keys are not restorable, every holder needs to re-connect and receive new keys.
 * If the holder loses the key, he won't be able to restore it, he needs to re-connect and receive new key.
 
+## Transition to encrypted messaging
+
+In order to simplify the transition to encrypted messaging, we will add new type of `AtalaMessage` called
+```protobuf
+message EncryptedMessage {
+    // Encrypted content of the message. After decryption, it should be deserialized as an AtalaMessage instance.
+    bytes content = 1;
+}
+```
+Participants will still be able to exchange unencrypted messages until we fully implement all parts of e2e encryption on all sides.
+
