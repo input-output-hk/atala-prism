@@ -27,14 +27,13 @@ import io.iohk.atala.prism.util.BytesOps
 import io.iohk.atala.prism.utils.GrpcUtils
 import io.iohk.atala.prism.logging.GeneralLoggableInstances._
 
-import scala.concurrent.{ExecutionContext, Future}
+import scala.concurrent.ExecutionContext
 import scala.util.{Failure, Success, Try}
 import io.iohk.atala.prism.interop.toScalaSDK._
+import tofu.Execute
 import tofu.higherKind.Mid
-import tofu.lift.Lift
 import tofu.logging.{Logs, ServiceLogging}
 import tofu.syntax.logging._
-import tofu.syntax.lift.LiftSyntax
 
 @derive(applyK)
 trait ConnectorClient[F[_]] {
@@ -91,7 +90,7 @@ object ConnectorClient {
     }
   }
 
-  def apply[F[_]: Lift[Future, *[_]]: MonadThrow, R[_]: Functor](
+  def apply[F[_]: Execute: MonadThrow, R[_]: Functor](
       config: Config,
       logs: Logs[R, F]
   )(implicit ec: ExecutionContext): R[ConnectorClient[F]] =
@@ -125,16 +124,19 @@ object ConnectorClient {
       mid attach new ConnectorClient.GrpcImpl[F](connectorService, connectorContactsService)(requestSigner)
     }
 
-  def makeResource[F[_]: Lift[Future, *[_]]: MonadThrow, R[_]: Applicative: Functor](
+  def makeResource[F[_]: Execute: MonadThrow, R[_]: Applicative: Functor](
       config: Config,
       logs: Logs[R, F]
-  )(implicit ec: ExecutionContext): Resource[R, ConnectorClient[F]] = Resource.eval(ConnectorClient[F, R](config, logs))
+  )(implicit ec: ExecutionContext): Resource[R, ConnectorClient[F]] =
+    Resource.eval(ConnectorClient[F, R](config, logs))
 
-  class GrpcImpl[F[_]: Lift[Future, *[_]]](
+  private final class GrpcImpl[F[_]: Execute](
       connectorService: ConnectorServiceGrpc.ConnectorServiceStub,
       contactConnectionService: ContactConnectionServiceGrpc.ContactConnectionServiceStub
-  )(requestSigner: scalapb.GeneratedMessage => GrpcAuthenticationHeader.DIDBased)(implicit ec: ExecutionContext)
-      extends ConnectorClient[F] {
+  )(requestSigner: scalapb.GeneratedMessage => GrpcAuthenticationHeader.DIDBased)(implicit
+      ec: ExecutionContext,
+      ex: Execute[F]
+  ) extends ConnectorClient[F] {
 
     override def generateConnectionTokens(
         header: GrpcAuthenticationHeader.DIDBased,
@@ -143,10 +145,11 @@ object ConnectorClient {
       val metadata = header.toMetadata
       val newStub = MetadataUtils.attachHeaders(connectorService, metadata)
 
-      newStub
-        .generateConnectionToken(GenerateConnectionTokenRequest(count))
-        .map(_.tokens.map(ConnectionToken.apply))
-        .lift[F]
+      ex.deferFuture(
+        newStub
+          .generateConnectionToken(GenerateConnectionTokenRequest(count))
+          .map(_.tokens.map(ConnectionToken.apply))
+      )
     }
 
     override def sendMessages(
@@ -156,7 +159,7 @@ object ConnectorClient {
       val metadata = header.toMetadata
       val newStub = MetadataUtils.attachHeaders(connectorService, metadata)
 
-      newStub.sendMessages(request).lift[F]
+      ex.deferFuture(newStub.sendMessages(request))
     }
 
     override def getConnectionStatus(tokens: Seq[ConnectionToken]): F[Seq[ContactConnection]] = {
@@ -166,10 +169,11 @@ object ConnectorClient {
       val metadata = header.toMetadata
       val newStub = MetadataUtils.attachHeaders(contactConnectionService, metadata)
 
-      newStub
-        .getConnectionStatus(request)
-        .map(_.connections)
-        .lift[F]
+      ex.deferFuture(
+        newStub
+          .getConnectionStatus(request)
+          .map(_.connections)
+      )
     }
   }
 }
