@@ -6,22 +6,11 @@ import com.google.protobuf.ByteString
 import io.iohk.atala.cvp.webextension.background.services.node.NodeUtils._
 import io.iohk.atala.cvp.webextension.util.NullableOps._
 import io.iohk.atala.prism.protos.node_api
-import io.iohk.atala.prism.protos.node_api.{
-  GetBatchStateRequest,
-  GetCredentialRevocationTimeRequest,
-  GetDidDocumentRequest
-}
+import io.iohk.atala.prism.protos.node_api.{GetBatchStateRequest, GetCredentialRevocationTimeRequest, GetDidDocumentRequest}
+import io.iohk.atala.prism.protos.node_models.LedgerData
 import scalapb.grpc.Channels
 import typings.inputOutputHkPrismSdk.mod.io.iohk.atala.prism.kotlin.credentials.json.JsonBasedCredentialCompanion
-import typings.inputOutputHkPrismSdk.mod.io.iohk.atala.prism.kotlin.credentials.{
-  BatchData,
-  CredentialBatchId,
-  CredentialBatchIdCompanion,
-  CredentialVerification,
-  KeyData,
-  TimestampInfo,
-  VerificationException
-}
+import typings.inputOutputHkPrismSdk.mod.io.iohk.atala.prism.kotlin.credentials.{BatchData, CredentialBatchId, CredentialBatchIdCompanion, CredentialVerification, KeyData, TimestampInfo, VerificationException}
 import typings.inputOutputHkPrismSdk.mod.io.iohk.atala.prism.kotlin.crypto.{MerkleInclusionProof, SHA256Digest}
 import typings.inputOutputHkPrismSdk.mod.io.iohk.atala.prism.kotlin.identity.DID
 
@@ -84,9 +73,9 @@ class NodeClientService(url: String) {
         fromProtoKey(issuingKeyProto) getOrElse (throw new Exception(s"Failed to parse proto key: $issuingKeyProto"))
       addedOn =
         issuingKeyProto.addedOn
-          .map(fromTimestampInfoProto)
           .getOrElse(throw new Exception(s"Missing addedOn time:\n-Issuer DID: $issuerDID\n- keyId: $issuanceKeyId "))
-      revokedOn = issuingKeyProto.revokedOn.map(fromTimestampInfoProto)
+          .timestampInfo.map(fromTimestampInfoProto).get
+      revokedOn = issuingKeyProto.revokedOn.getOrElse(LedgerData()).timestampInfo.map(fromTimestampInfoProto)
     } yield new KeyData(
       publicKey = issuingKey,
       addedOn = addedOn,
