@@ -1,13 +1,13 @@
 package io.iohk.atala.cvp.webextension.common
 
 import typings.bip39.{mod => bip39}
-import typings.node.Buffer
+import typings.node.bufferMod.global.{Buffer, BufferEncoding}
 
 import scala.concurrent.Future
 
 case class Mnemonic(seed: String) {
   def toHex: String = {
-    bip39.mnemonicToSeedSync(seed).toString("hex")
+    bip39.mnemonicToSeedSync(seed).toString(BufferEncoding.hex)
   }
   def toSyncBuffer: Buffer = {
     bip39.mnemonicToSeedSync(seed)
@@ -25,7 +25,7 @@ object Mnemonic {
     new Mnemonic(seed)
   }
 
-  def isValid(seed: String) = {
+  def isValid(seed: String): Boolean = {
     bip39.validateMnemonic(seed.toLowerCase.split("\\s+").mkString(" "))
   }
 }
