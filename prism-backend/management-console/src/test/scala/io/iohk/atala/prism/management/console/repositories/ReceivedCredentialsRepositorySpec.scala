@@ -1,17 +1,21 @@
 package io.iohk.atala.prism.management.console.repositories
 
+import cats.effect.IO
 import io.iohk.atala.prism.AtalaWithPostgresSpec
 import io.iohk.atala.prism.management.console.DataPreparation
 import io.iohk.atala.prism.management.console.models.{Contact, CredentialExternalId, ParticipantId, ParticipantLogo}
 import io.iohk.atala.prism.management.console.repositories.ParticipantsRepository.CreateParticipantRequest
 import io.iohk.atala.prism.management.console.repositories.daos.ReceivedCredentialsDAO.ReceivedSignedCredentialData
+import io.iohk.atala.prism.utils.IOUtils._
+import tofu.logging.Logs
 
 import java.time.Instant
 import java.time.temporal.ChronoUnit
 
 class ReceivedCredentialsRepositorySpec extends AtalaWithPostgresSpec {
-  lazy val receivedCredentialsRepository = ReceivedCredentialsRepository(database)
-  lazy val participantsRepository = ParticipantsRepository(database)
+  val logs: Logs[IO, IO] = Logs.sync[IO, IO]
+  lazy val receivedCredentialsRepository = ReceivedCredentialsRepository.unsafe(database, logs)
+  lazy val participantsRepository = ParticipantsRepository.unsafe(database, logs)
 
   lazy val verifierId = ParticipantId.unsafeFrom("af45a4da-65b8-473e-aadc-aa6b346250a3")
 

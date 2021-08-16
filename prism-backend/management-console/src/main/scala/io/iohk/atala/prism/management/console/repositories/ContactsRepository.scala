@@ -1,5 +1,6 @@
 package io.iohk.atala.prism.management.console.repositories
 
+import cats.{Comonad, Functor, Monad}
 import cats.data.OptionT
 import cats.data.EitherT
 import cats.effect._
@@ -10,20 +11,17 @@ import doobie.free._
 import doobie.implicits._
 import doobie.util.transactor.Transactor
 import io.iohk.atala.prism.management.console.errors.ManagementConsoleError
-import io.iohk.atala.prism.management.console.models.Contact.PaginatedQuery
 import io.iohk.atala.prism.management.console.models._
-import io.iohk.atala.prism.management.console.repositories.daos.{
-  ContactsDAO,
-  CredentialsDAO,
-  InstitutionGroupsDAO,
-  ReceivedCredentialsDAO
-}
-import io.iohk.atala.prism.metrics.{TimeMeasureMetric, TimeMeasureUtil}
-import io.iohk.atala.prism.metrics.TimeMeasureUtil.MeasureOps
+import io.iohk.atala.prism.management.console.repositories.daos._
+import io.iohk.atala.prism.management.console.repositories.logs.ContactsRepositoryLogs
+import io.iohk.atala.prism.management.console.repositories.metrics.ContactsRepositoryMetrics
+import io.iohk.atala.prism.metrics.TimeMeasureMetric
 import io.iohk.atala.prism.models.ConnectionToken
 import io.iohk.atala.prism.utils.syntax.DBConnectionOps
 import org.slf4j.{Logger, LoggerFactory}
 import tofu.higherKind.Mid
+import tofu.logging.{Logs, ServiceLogging}
+import tofu.syntax.monoid.TofuSemigroupOps
 
 import java.time.Instant
 
@@ -68,10 +66,29 @@ trait ContactsRepository[F[_]] {
 
 object ContactsRepository {
 
-  def apply[F[_]: TimeMeasureMetric: BracketThrow](transactor: Transactor[F]): ContactsRepository[F] = {
-    val metrics: ContactsRepository[Mid[F, *]] = new ContactsRepositoryMetrics[F]
-    metrics attach new ContactsRepositoryImpl[F](transactor)
-  }
+  def apply[F[_]: TimeMeasureMetric: BracketThrow, R[_]: Functor](
+      transactor: Transactor[F],
+      logs: Logs[R, F]
+  ): R[ContactsRepository[F]] =
+    for {
+      serviceLogs <- logs.service[ContactsRepository[F]]
+    } yield {
+      implicit val implicitLogs: ServiceLogging[F, ContactsRepository[F]] = serviceLogs
+      val metrics: ContactsRepository[Mid[F, *]] = new ContactsRepositoryMetrics[F]
+      val logs: ContactsRepository[Mid[F, *]] = new ContactsRepositoryLogs[F]
+      val mid = metrics |+| logs
+      mid attach new ContactsRepositoryImpl[F](transactor)
+    }
+
+  def unsafe[F[_]: TimeMeasureMetric: BracketThrow, R[_]: Comonad](
+      transactor: Transactor[F],
+      logs: Logs[R, F]
+  ): ContactsRepository[F] = ContactsRepository(transactor, logs).extract
+
+  def makeResource[F[_]: TimeMeasureMetric: BracketThrow, R[_]: Monad](
+      transactor: Transactor[F],
+      logs: Logs[R, F]
+  ): Resource[R, ContactsRepository[F]] = Resource.eval(ContactsRepository(transactor, logs))
 
 }
 
@@ -207,56 +224,4 @@ private final class ContactsRepositoryImpl[F[_]: BracketThrow](xa: Transactor[F]
       .logSQLErrors(s"deleting contact, institution id - $institutionId", logger)
       .transact(xa)
   }
-}
-
-private final class ContactsRepositoryMetrics[F[_]: TimeMeasureMetric: BracketThrow]
-    extends ContactsRepository[Mid[F, *]] {
-
-  private val repoName = "ContactsRepository"
-  private lazy val createTimer = TimeMeasureUtil.createDBQueryTimer(repoName, "create")
-  private lazy val createBatchTimer = TimeMeasureUtil.createDBQueryTimer(repoName, "createBatch")
-  private lazy val updateContactTimer = TimeMeasureUtil.createDBQueryTimer(repoName, "updateContact")
-  private lazy val findByContactIdTimer = TimeMeasureUtil.createDBQueryTimer(repoName, "findByContactId")
-  private lazy val findByExternalIdTimer = TimeMeasureUtil.createDBQueryTimer(repoName, "findByExternalId")
-  private lazy val findContactsTimer = TimeMeasureUtil.createDBQueryTimer(repoName, "findContacts")
-  private lazy val getByTimer = TimeMeasureUtil.createDBQueryTimer(repoName, "getBy")
-  private lazy val deleteTimer = TimeMeasureUtil.createDBQueryTimer(repoName, "delete")
-
-  override def create(
-      participantId: ParticipantId,
-      contactData: CreateContact,
-      maybeGroupName: Option[InstitutionGroup.Name],
-      createdAt: Instant,
-      connectionToken: ConnectionToken
-  ): Mid[F, Contact] = _.measureOperationTime(createTimer)
-
-  override def createBatch(
-      institutionId: ParticipantId,
-      request: CreateContact.Batch,
-      connectionTokens: List[ConnectionToken]
-  ): Mid[F, Either[ManagementConsoleError, Int]] = _.measureOperationTime(createBatchTimer)
-
-  override def updateContact(institutionId: ParticipantId, request: UpdateContact): Mid[F, Unit] =
-    _.measureOperationTime(updateContactTimer)
-
-  override def find(institutionId: ParticipantId, contactId: Contact.Id): Mid[F, Option[Contact.WithDetails]] =
-    _.measureOperationTime(findByContactIdTimer)
-
-  override def find(institutionId: ParticipantId, externalId: Contact.ExternalId): Mid[F, Option[Contact]] =
-    _.measureOperationTime(findByExternalIdTimer)
-
-  override def findContacts(institutionId: ParticipantId, contactIds: List[Contact.Id]): Mid[F, List[Contact]] =
-    _.measureOperationTime(findContactsTimer)
-
-  override def getBy(
-      createdBy: ParticipantId,
-      constraints: PaginatedQuery,
-      ignoreFilterLimit: Boolean
-  ): Mid[F, List[Contact.WithCredentialCounts]] = _.measureOperationTime(getByTimer)
-
-  override def delete(
-      institutionId: ParticipantId,
-      contactId: Contact.Id,
-      deleteCredentials: Boolean
-  ): Mid[F, Either[ManagementConsoleError, Unit]] = _.measureOperationTime(deleteTimer)
 }

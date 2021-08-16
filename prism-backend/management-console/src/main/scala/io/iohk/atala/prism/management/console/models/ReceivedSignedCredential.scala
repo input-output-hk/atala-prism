@@ -1,5 +1,8 @@
 package io.iohk.atala.prism.management.console.models
 
+import derevo.derive
+import tofu.logging.derivation.loggable
+
 import java.time.Instant
 import java.util.UUID
 import scala.util.Try
@@ -9,7 +12,7 @@ case class ReceivedSignedCredential(
     encodedSignedCredential: String,
     receivedAt: Instant
 )
-
+@derive(loggable)
 class CredentialExternalId private (val value: String) extends AnyVal
 
 object CredentialExternalId {

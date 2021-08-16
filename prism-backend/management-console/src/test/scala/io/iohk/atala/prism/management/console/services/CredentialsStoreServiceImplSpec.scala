@@ -1,11 +1,14 @@
 package io.iohk.atala.prism.management.console.services
 
+import cats.effect.IO
 import cats.syntax.functor._
 import doobie.implicits._
 import io.iohk.atala.prism.auth.SignedRpcRequest
 import io.iohk.atala.prism.auth.grpc.GrpcAuthenticationHeaderParser
 import io.iohk.atala.prism.kotlin.crypto.EC
 import io.iohk.atala.prism.identity.DID
+import io.iohk.atala.prism.logging.TraceId
+import io.iohk.atala.prism.logging.TraceId.IOWithTraceIdContext
 import io.iohk.atala.prism.management.console.models.{CredentialExternalId, ParticipantId, ParticipantLogo}
 import io.iohk.atala.prism.management.console.repositories.ParticipantsRepository.CreateParticipantRequest
 import io.iohk.atala.prism.management.console.repositories.daos._
@@ -17,16 +20,23 @@ import io.iohk.atala.prism.management.console.repositories.{
 import io.iohk.atala.prism.management.console.{DataPreparation, ManagementConsoleAuthenticator}
 import io.iohk.atala.prism.protos.console_api
 import io.iohk.atala.prism.{DIDUtil, RpcSpecBase}
+import io.iohk.atala.prism.utils.IOUtils._
 import org.mockito.MockitoSugar._
+import tofu.logging.Logs
 
 class CredentialsStoreServiceImplSpec extends RpcSpecBase with DIDUtil {
+
+  private val managementConsoleTestLogs: Logs[IO, IOWithTraceIdContext] = Logs.withContext[IO, IOWithTraceIdContext]
+
   val usingApiAs = usingApiAsConstructor(
     new console_api.CredentialsStoreServiceGrpc.CredentialsStoreServiceBlockingStub(_, _)
   )
 
-  lazy val receivedCredentials = ReceivedCredentialsRepository(database)
-  private lazy val participantsRepository = ParticipantsRepository(database)
-  private lazy val requestNoncesRepository = RequestNoncesRepository(database)
+  private val receivedCredentials = ReceivedCredentialsRepository.unsafe(dbLiftedToTraceIdIO, managementConsoleTestLogs)
+  private lazy val participantsRepository =
+    ParticipantsRepository.unsafe(dbLiftedToTraceIdIO, managementConsoleTestLogs)
+  private lazy val requestNoncesRepository =
+    RequestNoncesRepository.unsafe(dbLiftedToTraceIdIO, managementConsoleTestLogs)
   protected lazy val nodeMock = mock[io.iohk.atala.prism.protos.node_api.NodeServiceGrpc.NodeService]
 
   private lazy val authenticator = new ManagementConsoleAuthenticator(
@@ -49,7 +59,7 @@ class CredentialsStoreServiceImplSpec extends RpcSpecBase with DIDUtil {
   override def beforeEach(): Unit = {
     super.beforeEach()
 
-    ParticipantsRepository(database)
+    participantsRepository
       .create(
         CreateParticipantRequest(
           verifierId,
@@ -58,6 +68,7 @@ class CredentialsStoreServiceImplSpec extends RpcSpecBase with DIDUtil {
           ParticipantLogo(Vector())
         )
       )
+      .run(TraceId.generateYOLO)
       .unsafeRunSync()
     ()
   }

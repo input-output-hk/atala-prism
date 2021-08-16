@@ -1,6 +1,8 @@
 package io.iohk.atala.prism.management.console
 
+import cats.effect.IO
 import io.iohk.atala.prism.auth.grpc.GrpcAuthenticationHeaderParser
+import io.iohk.atala.prism.logging.TraceId.IOWithTraceIdContext
 import io.iohk.atala.prism.management.console.clients.ConnectorClient
 import io.iohk.atala.prism.management.console.integrations.{
   ContactsIntegrationService,
@@ -12,9 +14,13 @@ import io.iohk.atala.prism.management.console.services._
 import io.iohk.atala.prism.protos.console_api
 import io.iohk.atala.prism.protos.console_api.CredentialIssuanceServiceGrpc
 import io.iohk.atala.prism.{ApiTestHelper, RpcSpecBase}
+import io.iohk.atala.prism.utils.IOUtils._
 import org.mockito.MockitoSugar.mock
+import tofu.logging.Logs
 
 class ManagementConsoleRpcSpecBase extends RpcSpecBase {
+
+  private val managementConsoleTestLogs: Logs[IO, IOWithTraceIdContext] = Logs.withContext[IO, IOWithTraceIdContext]
 
   override def services = {
     Seq(
@@ -46,14 +52,16 @@ class ManagementConsoleRpcSpecBase extends RpcSpecBase {
     )
   }
 
-  lazy val participantsRepository = ParticipantsRepository(database)
-  lazy val requestNoncesRepository = RequestNoncesRepository(database)
-  lazy val contactsRepository = ContactsRepository(database)
-  lazy val statisticsRepository = StatisticsRepository(database)
-  lazy val institutionGroupsRepository = InstitutionGroupsRepository(database)
-  lazy val credentialIssuancesRepository = CredentialIssuancesRepository(database)
-  lazy val credentialsRepository = CredentialsRepository(database)
-  lazy val credentialTypeRepository = CredentialTypeRepository(database)
+  lazy val participantsRepository = ParticipantsRepository.unsafe(dbLiftedToTraceIdIO, managementConsoleTestLogs)
+  lazy val requestNoncesRepository = RequestNoncesRepository.unsafe(dbLiftedToTraceIdIO, managementConsoleTestLogs)
+  lazy val contactsRepository = ContactsRepository.unsafe(dbLiftedToTraceIdIO, managementConsoleTestLogs)
+  lazy val statisticsRepository = StatisticsRepository.unsafe(dbLiftedToTraceIdIO, managementConsoleTestLogs)
+  lazy val institutionGroupsRepository =
+    InstitutionGroupsRepository.unsafe(dbLiftedToTraceIdIO, managementConsoleTestLogs)
+  lazy val credentialIssuancesRepository =
+    CredentialIssuancesRepository.unsafe(dbLiftedToTraceIdIO, managementConsoleTestLogs)
+  lazy val credentialsRepository = CredentialsRepository.unsafe(dbLiftedToTraceIdIO, managementConsoleTestLogs)
+  lazy val credentialTypeRepository = CredentialTypeRepository.unsafe(dbLiftedToTraceIdIO, managementConsoleTestLogs)
 
   lazy val nodeMock = mock[io.iohk.atala.prism.protos.node_api.NodeServiceGrpc.NodeService]
 

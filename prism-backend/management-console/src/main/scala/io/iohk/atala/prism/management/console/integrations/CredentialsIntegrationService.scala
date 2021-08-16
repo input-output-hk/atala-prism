@@ -1,9 +1,10 @@
 package io.iohk.atala.prism.management.console.integrations
 
-import cats.effect.IO
 import cats.implicits.catsSyntaxEitherId
 import io.iohk.atala.prism.connector.AtalaOperationId
 import io.iohk.atala.prism.grpc.ProtoConverter
+import io.iohk.atala.prism.logging.TraceId
+import io.iohk.atala.prism.logging.TraceId.IOWithTraceIdContext
 import io.iohk.atala.prism.management.console.clients.ConnectorClient
 import io.iohk.atala.prism.management.console.errors
 import io.iohk.atala.prism.management.console.errors.{ManagementConsoleError, ManagementConsoleErrorSupport}
@@ -21,7 +22,7 @@ import org.slf4j.{Logger, LoggerFactory}
 import scala.concurrent.{ExecutionContext, Future}
 
 class CredentialsIntegrationService(
-    credentialsRepository: CredentialsRepository[IO],
+    credentialsRepository: CredentialsRepository[IOWithTraceIdContext],
     nodeService: node_api.NodeServiceGrpc.NodeService,
     connector: ConnectorClient
 )(implicit ec: ExecutionContext)
@@ -53,6 +54,7 @@ class CredentialsIntegrationService(
             request.credentialId,
             nodeResponse.operationId
           )
+          .run(TraceId.generateYOLO)
           .unsafeToFuture()
           .map(_.asRight)
           .toFutureEither
@@ -66,6 +68,7 @@ class CredentialsIntegrationService(
     getAndAppendConnectionStatus(
       credentialsRepository
         .create(participantId, createGenericCredential)
+        .run(TraceId.generateYOLO)
         .unsafeToFuture()
         .toFutureEither
         .map(credential => List(credential))
@@ -77,7 +80,12 @@ class CredentialsIntegrationService(
       query: GenericCredential.PaginatedQuery
   ): Future[Either[Nothing, GetGenericCredentialsResult]] =
     getAndAppendConnectionStatus(
-      credentialsRepository.getBy(issuedBy, query).map(_.asRight).unsafeToFuture().toFutureEither
+      credentialsRepository
+        .getBy(issuedBy, query)
+        .map(_.asRight)
+        .run(TraceId.generateYOLO)
+        .unsafeToFuture()
+        .toFutureEither
     )
 
   def getContactCredentials(
@@ -85,7 +93,12 @@ class CredentialsIntegrationService(
       contactId: Contact.Id
   ): Future[Either[Nothing, GetGenericCredentialsResult]] =
     getAndAppendConnectionStatus(
-      credentialsRepository.getBy(issuedBy, contactId).map(_.asRight).unsafeToFuture().toFutureEither
+      credentialsRepository
+        .getBy(issuedBy, contactId)
+        .map(_.asRight)
+        .run(TraceId.generateYOLO)
+        .unsafeToFuture()
+        .toFutureEither
     )
 
   private def getAndAppendConnectionStatus[E](

@@ -1,7 +1,7 @@
 // Colors
 $background: #f1f3f8;
 $surface: #eeeeee;
-$light-background: #FAFAFA;
+$light-background: #fafafa;
 
 $primary-color: #ff2d3b;
 $primary-color-darker: #bf222c;
@@ -14,7 +14,7 @@ $ternary-accent: #4a2dff;
 
 $success-color: #1ed69e;
 
-$black: #000000;
+$black: rgba(0, 0, 0, 0.85);
 $white: #fff;
 $dark-grey: #728099;
 $grey: #8f97a4;
@@ -39,7 +39,7 @@ $theme-color: linear-gradient(to right, #f2316a, #ed1c24);
 $shadow: 0 1px 6px rgba(147, 141, 158, 0.16), 0 2px 6px rgba(52, 53, 62, 0.16);
 $shadow-primary: 0 1px 6px rgba(255, 45, 59, 0.16), 0 2px 6px rgba(255, 45, 59, 0.16);
 $shadow-header: 0 2px 8px rgba(52, 53, 62, 0.16);
-$shadow-bubble: 0px 0px 10px 0px rgba(0,0,0,0.5);
+$shadow-bubble: 0px 0px 10px 0px rgba(0, 0, 0, 0.5);
 
 // Container
 
@@ -52,6 +52,8 @@ $shadow-bubble: 0px 0px 10px 0px rgba(0,0,0,0.5);
 
 // Theme Colors
 
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@100;200;400;500;700&display=swap');
+
 @mixin border-theme($theme-color) {
   border-left: solid;
   border-color: $theme-color;
@@ -61,12 +63,12 @@ $shadow-bubble: 0px 0px 10px 0px rgba(0,0,0,0.5);
 
 @font-face {
   font-family: 'Circular-bold';
-  src: url(../fonts/CircularStd-Bold.woff) format('woff');
+  src: url('/fonts/CircularStd-Bold.woff') format('woff');
   font-weight: bold;
 }
 @font-face {
   font-family: 'Circular-book';
-  src: url(../fonts/CircularStd-Book.woff) format('woff');
+  src: url('/fonts/CircularStd-Book.woff') format('woff');
 }
 
 // Fonts

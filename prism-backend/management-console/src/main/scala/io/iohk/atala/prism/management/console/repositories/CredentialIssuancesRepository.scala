@@ -1,8 +1,9 @@
 package io.iohk.atala.prism.management.console.repositories
 
+import cats.{Comonad, Functor, Monad}
 import cats.data.EitherT
 import cats.data.Validated.{Invalid, Valid}
-import cats.effect.BracketThrow
+import cats.effect.{BracketThrow, Resource}
 import cats.implicits._
 import derevo.tagless.applyK
 import derevo.derive
@@ -16,16 +17,19 @@ import io.iohk.atala.prism.management.console.repositories.daos.CredentialIssuan
 import io.iohk.atala.prism.management.console.repositories.daos._
 import io.iohk.atala.prism.utils.syntax.DBConnectionOps
 import io.scalaland.chimney.dsl._
-import io.iohk.atala.prism.metrics.{TimeMeasureMetric, TimeMeasureUtil}
-import io.iohk.atala.prism.metrics.TimeMeasureUtil.MeasureOps
+import io.iohk.atala.prism.metrics.TimeMeasureMetric
 import io.iohk.atala.prism.management.console.models.CredentialTypeWithRequiredFields
 import io.iohk.atala.prism.management.console.repositories.CredentialIssuancesRepository.{
   CreateCredentialBulk,
   CreateCredentialIssuance
 }
+import io.iohk.atala.prism.management.console.repositories.logs.CredentialIssuancesRepositoryLogs
+import io.iohk.atala.prism.management.console.repositories.metrics.CredentialIssuancesRepositoryMetrics
 import io.iohk.atala.prism.management.console.validations.CredentialDataValidator
 import org.slf4j.{Logger, LoggerFactory}
 import tofu.higherKind.Mid
+import tofu.logging.{Logs, ServiceLogging}
+import tofu.syntax.monoid.TofuSemigroupOps
 
 @derive(applyK)
 trait CredentialIssuancesRepository[F[_]] {
@@ -82,10 +86,32 @@ object CredentialIssuancesRepository {
     )
   }
 
-  def apply[F[_]: TimeMeasureMetric: BracketThrow](transactor: Transactor[F]): CredentialIssuancesRepository[F] = {
-    val metrics: CredentialIssuancesRepository[Mid[F, *]] = new CredentialIssuancesRepositoryMetrics[F]
-    metrics attach new CredentialIssuancesRepositoryImpl[F](transactor)
-  }
+  def apply[F[_]: TimeMeasureMetric: BracketThrow, R[_]: Functor](
+      transactor: Transactor[F],
+      logs: Logs[R, F]
+  ): R[CredentialIssuancesRepository[F]] =
+    for {
+      serviceLogs <- logs.service[CredentialIssuancesRepository[F]]
+    } yield {
+      implicit val implicitLogs: ServiceLogging[F, CredentialIssuancesRepository[F]] = serviceLogs
+      val metrics: CredentialIssuancesRepository[Mid[F, *]] = new CredentialIssuancesRepositoryMetrics[F]
+      val logs: CredentialIssuancesRepository[Mid[F, *]] = new CredentialIssuancesRepositoryLogs[F]
+      val mid = metrics |+| logs
+      mid attach new CredentialIssuancesRepositoryImpl[F](transactor)
+    }
+
+  def unsafe[F[_]: TimeMeasureMetric: BracketThrow, R[_]: Comonad](
+      transactor: Transactor[F],
+      logs: Logs[R, F]
+  ): CredentialIssuancesRepository[F] = CredentialIssuancesRepository(transactor, logs).extract
+
+  def makeResource[F[_]: TimeMeasureMetric: BracketThrow, R[_]: Monad](
+      transactor: Transactor[F],
+      logs: Logs[R, F]
+  ): Resource[R, CredentialIssuancesRepository[F]] =
+    Resource.eval(
+      CredentialIssuancesRepository(transactor, logs)
+    )
 
 }
 
@@ -334,30 +360,4 @@ private final class CredentialIssuancesRepositoryImpl[F[_]: BracketThrow](xa: Tr
       .logSQLErrors(s"getting credential, issuance id - $credentialIssuanceId", logger)
       .transact(xa)
   }
-}
-
-private final class CredentialIssuancesRepositoryMetrics[F[_]: TimeMeasureMetric: BracketThrow]
-    extends CredentialIssuancesRepository[Mid[F, *]] {
-
-  private val repoName = "CredentialIssuancesRepository"
-  private lazy val createTimer = TimeMeasureUtil.createDBQueryTimer(repoName, "create")
-  private lazy val createBulkTimer = TimeMeasureUtil.createDBQueryTimer(repoName, "createBulk")
-  private lazy val getTimer = TimeMeasureUtil.createDBQueryTimer(repoName, "get")
-
-  override def create(
-      participantId: ParticipantId,
-      createCredentialIssuance: CreateCredentialIssuance
-  ): Mid[F, Either[ManagementConsoleError, CredentialIssuance.Id]] = _.measureOperationTime(createTimer)
-
-  override def createBulk(
-      participantId: ParticipantId,
-      credentialsType: CredentialTypeId,
-      issuanceName: String,
-      drafts: List[CreateCredentialBulk.Draft]
-  ): Mid[F, Either[ManagementConsoleError, CredentialIssuance.Id]] = _.measureOperationTime(createBulkTimer)
-
-  override def get(
-      credentialIssuanceId: CredentialIssuance.Id,
-      institutionId: ParticipantId
-  ): Mid[F, CredentialIssuance] = _.measureOperationTime(getTimer)
 }

@@ -1,6 +1,5 @@
 package io.iohk.atala.prism.management.console.integrations
 
-import cats.effect.IO
 import cats.implicits.catsSyntaxEitherId
 import io.iohk.atala.prism.management.console.clients.ConnectorClient
 import io.iohk.atala.prism.management.console.errors
@@ -18,9 +17,11 @@ import scala.concurrent.{ExecutionContext, Future}
 import cats.syntax.traverse._
 import cats.instances.future._
 import cats.instances.option._
+import io.iohk.atala.prism.logging.TraceId
+import io.iohk.atala.prism.logging.TraceId.IOWithTraceIdContext
 
 class ContactsIntegrationService(
-    contactsRepository: ContactsRepository[IO],
+    contactsRepository: ContactsRepository[IOWithTraceIdContext],
     connector: ConnectorClient
 )(implicit
     ec: ExecutionContext
@@ -54,6 +55,7 @@ class ContactsIntegrationService(
             group,
             connectionToken = token
           )
+          .run(TraceId.generateYOLO)
           .unsafeToFuture()
           .map(_.asRight)
           .toFutureEither
@@ -94,6 +96,7 @@ class ContactsIntegrationService(
             request,
             tokens.toList
           )
+          .run(TraceId.generateYOLO)
           .unsafeToFuture()
           .toFutureEither
     } yield numberOfContacts).value
@@ -103,7 +106,7 @@ class ContactsIntegrationService(
       institutionId: ParticipantId,
       request: UpdateContact
   ): Future[Either[errors.ManagementConsoleError, Unit]] = {
-    contactsRepository.updateContact(institutionId, request).unsafeToFuture().map(_.asRight)
+    contactsRepository.updateContact(institutionId, request).run(TraceId.generateYOLO).unsafeToFuture().map(_.asRight)
   }
 
   def getContacts(
@@ -115,6 +118,7 @@ class ContactsIntegrationService(
       allContacts <-
         contactsRepository
           .getBy(institutionId, paginatedQuery, filterByConnectionStatusSpecified)
+          .run(TraceId.generateYOLO)
           .unsafeToFuture()
           .map(_.asRight)
           .toFutureEither
@@ -160,6 +164,7 @@ class ContactsIntegrationService(
         contactMaybe <-
           contactsRepository
             .find(institutionId, contactId)
+            .run(TraceId.generateYOLO)
             .unsafeToFuture()
             .map(_.asRight)
             .toFutureEither
@@ -184,7 +189,7 @@ class ContactsIntegrationService(
       contactId: Contact.Id,
       deleteCredentials: Boolean
   ): Future[Either[ManagementConsoleError, Unit]] =
-    contactsRepository.delete(institutionId, contactId, deleteCredentials).unsafeToFuture()
+    contactsRepository.delete(institutionId, contactId, deleteCredentials).run(TraceId.generateYOLO).unsafeToFuture()
 }
 
 object ContactsIntegrationService {

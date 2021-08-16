@@ -1,5 +1,6 @@
 package io.iohk.atala.prism.management.console.repositories
 
+import cats.effect.IO
 import io.circe.Json
 import io.iohk.atala.prism.AtalaWithPostgresSpec
 import io.iohk.atala.prism.management.console.DataPreparation
@@ -10,10 +11,13 @@ import io.iohk.atala.prism.management.console.repositories.CredentialIssuancesRe
   CreateCredentialIssuance,
   CreateCredentialIssuanceContact
 }
+import io.iohk.atala.prism.utils.IOUtils._
 import org.scalatest.OptionValues._
+import tofu.logging.Logs
 
 class CredentialIssuancesRepositorySpec extends AtalaWithPostgresSpec {
-  private lazy val credentialIssuancesRepository = CredentialIssuancesRepository(database)
+  val logs: Logs[IO, IO] = Logs.sync[IO, IO]
+  private val credentialIssuancesRepository = CredentialIssuancesRepository.unsafe(database, logs)
 
   "create" should {
     "create a CredentialIssuance" in {

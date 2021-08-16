@@ -57,7 +57,9 @@ object DataPreparation {
               node_models.PublicKey(
                 "master",
                 node_models.KeyUsage.MASTER_KEY,
-                Some(ProtoCodecs.toTimeStampInfoProto(dummyTimestampInfo)),
+                Some(
+                  node_models.LedgerData(timestampInfo = Some(ProtoCodecs.toTimeStampInfoProto(dummyTimestampInfo)))
+                ),
                 None,
                 node_models.PublicKey.KeyData.EcKeyData(masterEcKey)
               ),
@@ -65,7 +67,9 @@ object DataPreparation {
                 .PublicKey(
                   "issuing",
                   node_models.KeyUsage.ISSUING_KEY,
-                  Some(ProtoCodecs.toTimeStampInfoProto(dummyTimestampInfo)),
+                  Some(
+                    node_models.LedgerData(timestampInfo = Some(ProtoCodecs.toTimeStampInfoProto(dummyTimestampInfo)))
+                  ),
                   None,
                   node_models.PublicKey.KeyData.EcKeyData(issuingEcKey)
                 )

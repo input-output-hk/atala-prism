@@ -1,21 +1,21 @@
 package io.iohk.atala.prism.management.console.repositories
 
+import cats.effect.IO
 import io.iohk.atala.prism.AtalaWithPostgresSpec
 import io.iohk.atala.prism.management.console.DataPreparation._
-import io.iohk.atala.prism.management.console.models.{
-  CreateCredentialTypeField,
-  CredentialTypeFieldType,
-  CredentialTypeId,
-  CredentialTypeState,
-  UpdateCredentialType
-}
+import io.iohk.atala.prism.management.console.models._
+import io.iohk.atala.prism.utils.IOUtils._
 import org.scalatest.OptionValues._
+import tofu.logging.Logs
 
 import java.util.UUID
 
 //sbt "project management-console" "testOnly *CredentialTypeRepositorySpec"
 class CredentialTypeRepositorySpec extends AtalaWithPostgresSpec {
-  lazy val repository = CredentialTypeRepository(database)
+
+  val logs: Logs[IO, IO] = Logs.sync[IO, IO]
+
+  lazy val repository = CredentialTypeRepository.unsafe(database, logs)
 
   "create" should {
     "create a new credential type with required fields" in {

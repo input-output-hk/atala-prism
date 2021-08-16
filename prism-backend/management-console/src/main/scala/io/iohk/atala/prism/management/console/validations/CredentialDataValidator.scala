@@ -10,9 +10,19 @@ import io.iohk.atala.prism.management.console.models.{
   CredentialTypeWithRequiredFields
 }
 import CredentialDataValidationError._
+import tofu.logging.{DictLoggable, LogRenderer}
 
 sealed abstract class CredentialDataValidationError(val message: String) extends Exception(message)
 object CredentialDataValidationError {
+
+  implicit val loggableCredentialDataValidationError: DictLoggable[CredentialDataValidationError] =
+    new DictLoggable[CredentialDataValidationError] {
+      override def fields[I, V, R, S](a: CredentialDataValidationError, i: I)(implicit r: LogRenderer[I, V, R, S]): R =
+        r.addString("CredentialDataValidationError", a.message, i)
+
+      override def logShow(a: CredentialDataValidationError): String =
+        s"CredentialDataValidationError{message=${a.message}"
+    }
 
   case object NotJsonObject extends CredentialDataValidationError(message = s"Credential data is not a JSON object")
 

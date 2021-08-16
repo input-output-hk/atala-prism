@@ -4,7 +4,7 @@ This is the server side of PRISM.
 
 ## Install all necessary dependencies
 
-### Install coursier 
+### Install coursier
 
 Coursier is a package manager through which we will install all java/scala related dependencies. Follow the [instructions](https://get-coursier.io/docs/cli-installation.html#linux-macos) for your operating system
 
@@ -26,6 +26,15 @@ OpenJDK 64-Bit Server VM (build 11.0.11+9, mixed mode)
 ```bash
 cs install sbt
 ```
+
+## Github Packages and Personal Access Token (PAT)
+Your `sbt` will look for a `GITHUB_TOKEN` environment variable to use to authenticate on Github Packages and download all
+private dependencies from the IOHK packages archive. It may also look for a `github.token` git property. It's recommended to set
+both to make sure it works in all cases you may need.
+
+To properly set your PAT to use with packages, refer to the links below:
+- [Creating a Github Personal Access Token](https://docs.github.com/en/github/authenticating-to-github/keeping-your-account-and-data-secure/creating-a-personal-access-token)
+- [Configuring Github Packages](https://github.com/djspiewak/sbt-github-packages#manual-configuration)
 
 ## Run services
 
@@ -164,7 +173,7 @@ This occurs commonly when dealing with scalajs, because npm is required, and, so
 
 If you use VSCode, you need to first install [metals](https://scalameta.org/metals/docs/editors/vscode.html#installation) extension.
 
-Metals by default uses bloop as its build server, sometimes bloop has a problem importing this projects build. if you encounter the problem with that, you can switch to bsp. 
+Metals by default uses bloop as its build server, sometimes bloop has a problem importing this projects build. if you encounter the problem with that, you can switch to bsp.
 
 1. Open the project with vscode (`build.sbt` has to be in the root of the project)
 2. Run "Metals: import build", this might take a minute or two, depending on your machine.

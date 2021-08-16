@@ -1,23 +1,24 @@
 package io.iohk.atala.prism.management.console.repositories
 
-import cats.effect.BracketThrow
+import cats.{Comonad, Functor, Monad}
+import cats.effect.{BracketThrow, Resource}
+import cats.syntax.comonad._
+import cats.syntax.functor._
 import derevo.tagless.applyK
 import derevo.derive
 import doobie.implicits._
 import doobie.util.transactor.Transactor
-import io.iohk.atala.prism.management.console.models.{
-  Contact,
-  CredentialExternalId,
-  ParticipantId,
-  ReceivedSignedCredential
-}
+import io.iohk.atala.prism.management.console.models._
 import io.iohk.atala.prism.management.console.repositories.daos.ReceivedCredentialsDAO
 import io.iohk.atala.prism.management.console.repositories.daos.ReceivedCredentialsDAO.ReceivedSignedCredentialData
-import io.iohk.atala.prism.metrics.{TimeMeasureMetric, TimeMeasureUtil}
-import io.iohk.atala.prism.metrics.TimeMeasureUtil.MeasureOps
+import io.iohk.atala.prism.management.console.repositories.logs.ReceivedCredentialsRepositoryLogs
+import io.iohk.atala.prism.management.console.repositories.metrics.ReceivedCredentialsRepositoryMetrics
+import io.iohk.atala.prism.metrics.TimeMeasureMetric
 import io.iohk.atala.prism.utils.syntax.DBConnectionOps
 import org.slf4j.{Logger, LoggerFactory}
 import tofu.higherKind.Mid
+import tofu.logging.{Logs, ServiceLogging}
+import tofu.syntax.monoid.TofuSemigroupOps
 
 @derive(applyK)
 trait ReceivedCredentialsRepository[F[_]] {
@@ -35,10 +36,29 @@ trait ReceivedCredentialsRepository[F[_]] {
 
 object ReceivedCredentialsRepository {
 
-  def apply[F[_]: TimeMeasureMetric: BracketThrow](transactor: Transactor[F]): ReceivedCredentialsRepository[F] = {
-    val metrics: ReceivedCredentialsRepository[Mid[F, *]] = new ReceivedCredentialsRepositoryMetrics[F]
-    metrics attach new ReceivedCredentialsRepositoryImpl[F](transactor)
-  }
+  def apply[F[_]: TimeMeasureMetric: BracketThrow, R[_]: Functor](
+      transactor: Transactor[F],
+      logs: Logs[R, F]
+  ): R[ReceivedCredentialsRepository[F]] =
+    for {
+      serviceLogs <- logs.service[ReceivedCredentialsRepository[F]]
+    } yield {
+      implicit val implicitLogs: ServiceLogging[F, ReceivedCredentialsRepository[F]] = serviceLogs
+      val metrics: ReceivedCredentialsRepository[Mid[F, *]] = new ReceivedCredentialsRepositoryMetrics[F]
+      val logs: ReceivedCredentialsRepository[Mid[F, *]] = new ReceivedCredentialsRepositoryLogs[F]
+      val mid = metrics |+| logs
+      mid attach new ReceivedCredentialsRepositoryImpl[F](transactor)
+    }
+
+  def unsafe[F[_]: TimeMeasureMetric: BracketThrow, R[_]: Comonad](
+      transactor: Transactor[F],
+      logs: Logs[R, F]
+  ): ReceivedCredentialsRepository[F] = ReceivedCredentialsRepository(transactor, logs).extract
+
+  def makeResource[F[_]: TimeMeasureMetric: BracketThrow, R[_]: Monad](
+      transactor: Transactor[F],
+      logs: Logs[R, F]
+  ): Resource[R, ReceivedCredentialsRepository[F]] = Resource.eval(ReceivedCredentialsRepository(transactor, logs))
 
 }
 
@@ -67,26 +87,4 @@ private final class ReceivedCredentialsRepositoryImpl[F[_]: BracketThrow](xa: Tr
       .getLatestCredentialExternalId(verifierId)
       .logSQLErrors(s"getting latest credential external id, verifier id -  $verifierId", logger)
       .transact(xa)
-}
-
-private final class ReceivedCredentialsRepositoryMetrics[F[_]: TimeMeasureMetric: BracketThrow]
-    extends ReceivedCredentialsRepository[Mid[F, *]] {
-
-  private val repoName = "ReceivedCredentialsRepository"
-  private lazy val getCredentialsForTimer = TimeMeasureUtil.createDBQueryTimer(repoName, "getCredentialsFor")
-  private lazy val createReceivedCredentialTimer =
-    TimeMeasureUtil.createDBQueryTimer(repoName, "createReceivedCredential")
-  private lazy val getLatestCredentialExternalIdTimer =
-    TimeMeasureUtil.createDBQueryTimer(repoName, "getLatestCredentialExternalId")
-
-  override def getCredentialsFor(
-      verifierId: ParticipantId,
-      contactId: Option[Contact.Id]
-  ): Mid[F, List[ReceivedSignedCredential]] = _.measureOperationTime(getCredentialsForTimer)
-
-  override def createReceivedCredential(data: ReceivedSignedCredentialData): Mid[F, Unit] =
-    _.measureOperationTime(createReceivedCredentialTimer)
-
-  override def getLatestCredentialExternalId(verifierId: ParticipantId): Mid[F, Option[CredentialExternalId]] =
-    _.measureOperationTime(getLatestCredentialExternalIdTimer)
 }

@@ -1,5 +1,7 @@
 package io.iohk.atala.prism.management.console.repositories
 
+import cats.effect.IO
+
 import java.time.Instant
 import doobie.implicits._
 import doobie.implicits.legacy.instant._
@@ -8,7 +10,9 @@ import io.iohk.atala.prism.management.console.models.ParticipantId
 import io.iohk.atala.prism.management.console.repositories.daos._
 import io.iohk.atala.prism.AtalaWithPostgresSpec
 import io.iohk.atala.prism.repositories.ops.SqlTestOps.Implicits
+import io.iohk.atala.prism.utils.IOUtils._
 import org.scalatest.OptionValues._
+import tofu.logging.Logs
 
 import scala.util.Try
 
@@ -24,7 +28,10 @@ class RequestNoncesRepositorySpec extends AtalaWithPostgresSpec {
       .runUnique[ParticipantId]()
   }
 
-  lazy val requestNoncesRepository = RequestNoncesRepository(database)
+  val logs: Logs[IO, IO] = Logs.sync[IO, IO]
+
+  lazy val requestNoncesRepository =
+    RequestNoncesRepository.unsafe(database, logs)
 
   private def available(participantId: ParticipantId, requestNonce: RequestNonce): Boolean = {
     RequestNoncesDAO.available(participantId, requestNonce).transact(database).unsafeRunSync()

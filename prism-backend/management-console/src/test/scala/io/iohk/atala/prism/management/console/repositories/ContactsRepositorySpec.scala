@@ -1,5 +1,6 @@
 package io.iohk.atala.prism.management.console.repositories
 
+import cats.effect.IO
 import io.circe.Json
 import io.iohk.atala.prism.AtalaWithPostgresSpec
 import io.iohk.atala.prism.management.console.DataPreparation
@@ -8,7 +9,9 @@ import io.iohk.atala.prism.management.console.errors.{ContactHasExistingCredenti
 import io.iohk.atala.prism.management.console.models._
 import io.iohk.atala.prism.management.console.repositories.daos.InstitutionGroupsDAO
 import io.iohk.atala.prism.models.ConnectionToken
+import io.iohk.atala.prism.utils.IOUtils._
 import org.scalatest.OptionValues._
+import tofu.logging.Logs
 
 import java.time.{Instant, LocalDate, Period}
 import java.util.UUID
@@ -18,8 +21,9 @@ import scala.util.Try
 class ContactsRepositorySpec extends AtalaWithPostgresSpec {
   import PaginatedQueryConstraints._
 
-  lazy val repository = ContactsRepository(database)
-  lazy val credentialsRepository = CredentialsRepository(database)
+  val logs: Logs[IO, IO] = Logs.sync[IO, IO]
+  private val repository = ContactsRepository.unsafe(database, logs)
+  val credentialsRepository = CredentialsRepository.unsafe(database, logs)
 
   "create" should {
     "create a new contact and assign it to an specified group" in {
@@ -34,7 +38,12 @@ class ContactsRepositorySpec extends AtalaWithPostgresSpec {
       val request = CreateContact(externalId, json, "Dusty Here", grpcAuthenticationHeaderDIDBased)
 
       val result = repository
-        .create(institutionId, request, Some(group.name), connectionToken = ConnectionToken("connectionToken"))
+        .create(
+          institutionId,
+          request,
+          Some(group.name),
+          connectionToken = ConnectionToken("connectionToken")
+        )
         .unsafeRunSync()
       val contact = result
       contact.data must be(json)
@@ -61,7 +70,12 @@ class ContactsRepositorySpec extends AtalaWithPostgresSpec {
       val request = CreateContact(externalId, json, "Dusty Here", grpcAuthenticationHeaderDIDBased)
 
       val result = repository
-        .create(institution, request, None, connectionToken = ConnectionToken("connectionToken"))
+        .create(
+          institution,
+          request,
+          None,
+          connectionToken = ConnectionToken("connectionToken")
+        )
         .unsafeRunSync()
       val contact = result
       contact.data must be(json)
@@ -114,7 +128,12 @@ class ContactsRepositorySpec extends AtalaWithPostgresSpec {
 
       intercept[Exception](
         repository
-          .create(institutionId, request, Some(group.name), connectionToken = ConnectionToken("connectionToken"))
+          .create(
+            institutionId,
+            request,
+            Some(group.name),
+            connectionToken = ConnectionToken("connectionToken")
+          )
           .unsafeRunSync()
       )
       // no contact should be created
@@ -137,7 +156,12 @@ class ContactsRepositorySpec extends AtalaWithPostgresSpec {
       val request = CreateContact(externalId, json, "Dusty Here", grpcAuthenticationHeaderDIDBased)
 
       val initialResponse = repository
-        .create(institutionId, request, Some(group.name), connectionToken = ConnectionToken("connectionToken"))
+        .create(
+          institutionId,
+          request,
+          Some(group.name),
+          connectionToken = ConnectionToken("connectionToken")
+        )
         .unsafeRunSync()
 
       val secondJson = Json.obj(
@@ -150,7 +174,12 @@ class ContactsRepositorySpec extends AtalaWithPostgresSpec {
 
       intercept[Exception](
         repository
-          .create(institutionId, secondRequest, Some(group.name), connectionToken = ConnectionToken("connectionToken"))
+          .create(
+            institutionId,
+            secondRequest,
+            Some(group.name),
+            connectionToken = ConnectionToken("connectionToken")
+          )
           .unsafeRunSync()
       )
 
@@ -196,7 +225,10 @@ class ContactsRepositorySpec extends AtalaWithPostgresSpec {
         grpcAuthenticationHeaderDIDBased
       )
       val result =
-        repository.createBatch(institutionId, request, makeConnectionTokens(count = 3)).unsafeToFuture().futureValue
+        repository
+          .createBatch(institutionId, request, makeConnectionTokens(count = 3))
+          .unsafeToFuture()
+          .futureValue
       result.isRight must be(true)
 
       // check that the contacts were created
@@ -229,7 +261,10 @@ class ContactsRepositorySpec extends AtalaWithPostgresSpec {
         grpcAuthenticationHeaderDIDBased
       )
       val result =
-        repository.createBatch(institutionId, request, makeConnectionTokens(count = 3)).unsafeToFuture().futureValue
+        repository
+          .createBatch(institutionId, request, makeConnectionTokens(count = 3))
+          .unsafeToFuture()
+          .futureValue
       result.isRight must be(true)
 
       // we check that the contact was added to the intended group
@@ -256,7 +291,10 @@ class ContactsRepositorySpec extends AtalaWithPostgresSpec {
         grpcAuthenticationHeaderDIDBased
       )
       intercept[RuntimeException] {
-        repository.createBatch(institutionId, request, makeConnectionTokens(count = 3)).unsafeToFuture().futureValue
+        repository
+          .createBatch(institutionId, request, makeConnectionTokens(count = 3))
+          .unsafeToFuture()
+          .futureValue
       }
 
       // check that no contacts were created
@@ -303,7 +341,10 @@ class ContactsRepositorySpec extends AtalaWithPostgresSpec {
       )
 
       intercept[RuntimeException] {
-        repository.createBatch(institutionId, request, makeConnectionTokens(count = 2)).unsafeToFuture().futureValue
+        repository
+          .createBatch(institutionId, request, makeConnectionTokens(count = 2))
+          .unsafeToFuture()
+          .futureValue
       }
 
       // check that no contacts were created
@@ -337,7 +378,10 @@ class ContactsRepositorySpec extends AtalaWithPostgresSpec {
         grpcAuthenticationHeaderDIDBased
       )
       val result =
-        repository.createBatch(institutionId, request, makeConnectionTokens(count = 3)).unsafeToFuture().futureValue
+        repository
+          .createBatch(institutionId, request, makeConnectionTokens(count = 3))
+          .unsafeToFuture()
+          .futureValue
       result.isLeft must be(true)
     }
 
@@ -362,7 +406,10 @@ class ContactsRepositorySpec extends AtalaWithPostgresSpec {
         grpcAuthenticationHeaderDIDBased
       )
       val result =
-        repository.createBatch(institutionId, request, makeConnectionTokens(count = 3)).unsafeToFuture().futureValue
+        repository
+          .createBatch(institutionId, request, makeConnectionTokens(count = 3))
+          .unsafeToFuture()
+          .futureValue
       result.isLeft must be(true)
     }
   }
@@ -398,11 +445,13 @@ class ContactsRepositorySpec extends AtalaWithPostgresSpec {
         newData = newData
       )
 
-      val result = Try(repository.updateContact(institution, request).unsafeToFuture().futureValue).toEither
+      val result =
+        Try(repository.updateContact(institution, request).unsafeToFuture().futureValue).toEither
       result.isRight must be(true)
 
       // we check that the contact was updated
-      val contactWithDetails = repository.find(institution, contactId).unsafeToFuture().futureValue.value
+      val contactWithDetails =
+        repository.find(institution, contactId).unsafeToFuture().futureValue.value
       val storedContact = contactWithDetails.contact
       storedContact.name must be(request.newName)
       storedContact.externalId must be(request.newExternalId)
@@ -471,7 +520,8 @@ class ContactsRepositorySpec extends AtalaWithPostgresSpec {
       val contactA = createContact(institutionId, "Alice", Some(group.name))
       createContact(institutionId, "Bob", Some(group.name))
 
-      val contactWithDetails = repository.find(institutionId, contactA.contactId).unsafeToFuture().futureValue.value
+      val contactWithDetails =
+        repository.find(institutionId, contactA.contactId).unsafeToFuture().futureValue.value
       contactWithDetails.contact must be(contactA)
     }
 
@@ -481,7 +531,8 @@ class ContactsRepositorySpec extends AtalaWithPostgresSpec {
       val contactA = createContact(institutionId, "Alice", Some(group.name))
       createContact(institutionId, "Bob", Some(group.name))
 
-      val contactWithDetails = repository.find(institutionId, contactA.contactId).unsafeToFuture().futureValue.value
+      val contactWithDetails =
+        repository.find(institutionId, contactA.contactId).unsafeToFuture().futureValue.value
 
       contactWithDetails.groupsInvolved.size mustBe 1
       contactWithDetails.groupsInvolved.head.value mustBe group
@@ -500,7 +551,8 @@ class ContactsRepositorySpec extends AtalaWithPostgresSpec {
       )
       publishCredential(institutionId, issuedCredential)
 
-      val contactWithDetails = repository.find(institutionId, contact.contactId).unsafeToFuture().futureValue.value
+      val contactWithDetails =
+        repository.find(institutionId, contact.contactId).unsafeToFuture().futureValue.value
 
       contactWithDetails.issuedCredentials.size mustBe 1
       contactWithDetails.issuedCredentials.head.copy(publicationData = None) mustBe issuedCredential
@@ -511,7 +563,8 @@ class ContactsRepositorySpec extends AtalaWithPostgresSpec {
       val contactA = createContact(institutionId, "Alice", None)
       createReceivedCredential(contactA.contactId)
 
-      val contactWithDetails = repository.find(institutionId, contactA.contactId).unsafeToFuture().futureValue.value
+      val contactWithDetails =
+        repository.find(institutionId, contactA.contactId).unsafeToFuture().futureValue.value
 
       contactWithDetails.receivedCredentials.size mustBe 1
     }
@@ -524,7 +577,8 @@ class ContactsRepositorySpec extends AtalaWithPostgresSpec {
       val contactA = createContact(institutionXId, "Alice", Some(groupNameA))
       createContact(institutionYId, "Bob", Some(groupNameB))
 
-      val result = repository.find(institutionYId, contactA.contactId).unsafeToFuture().futureValue
+      val result =
+        repository.find(institutionYId, contactA.contactId).unsafeToFuture().futureValue
       result must be(empty)
     }
   }
@@ -535,7 +589,8 @@ class ContactsRepositorySpec extends AtalaWithPostgresSpec {
       val contactA = createContact(institutionId, "Alice", None)
       createContact(institutionId, "Bob", None)
 
-      val result = repository.find(institutionId, contactA.externalId).unsafeToFuture().futureValue.value
+      val result =
+        repository.find(institutionId, contactA.externalId).unsafeToFuture().futureValue.value
       result must be(contactA)
     }
 
@@ -547,7 +602,8 @@ class ContactsRepositorySpec extends AtalaWithPostgresSpec {
       val contactA = createContact(institutionXId, "Alice", Some(groupNameA))
       createContact(institutionYId, "Bob", Some(groupNameB))
 
-      val result = repository.find(institutionYId, contactA.externalId).unsafeToFuture().futureValue
+      val result =
+        repository.find(institutionYId, contactA.externalId).unsafeToFuture().futureValue
       result must be(empty)
     }
   }

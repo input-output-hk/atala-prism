@@ -1,9 +1,10 @@
 package io.iohk.atala.prism.management.console.services
 
-import cats.effect.IO
 import cats.implicits.catsSyntaxEitherId
 import cats.syntax.option._
 import io.iohk.atala.prism.auth.AuthAndMiddlewareSupport
+import io.iohk.atala.prism.logging.TraceId
+import io.iohk.atala.prism.logging.TraceId.IOWithTraceIdContext
 import io.iohk.atala.prism.management.console.ManagementConsoleAuthenticator
 import io.iohk.atala.prism.management.console.errors.{ManagementConsoleError, ManagementConsoleErrorSupport}
 import io.iohk.atala.prism.management.console.grpc._
@@ -20,7 +21,7 @@ import org.slf4j.{Logger, LoggerFactory}
 import scala.concurrent.{ExecutionContext, Future}
 
 class CredentialIssuanceServiceImpl(
-    credentialIssuancesRepository: CredentialIssuancesRepository[IO],
+    credentialIssuancesRepository: CredentialIssuancesRepository[IOWithTraceIdContext],
     val authenticator: ManagementConsoleAuthenticator
 )(implicit
     ec: ExecutionContext
@@ -38,6 +39,7 @@ class CredentialIssuanceServiceImpl(
     auth[CreateCredentialIssuance]("createCredentialIssuance", request) { (participantId, query) =>
       credentialIssuancesRepository
         .create(participantId, query)
+        .run(TraceId.generateYOLO)
         .unsafeToFuture()
         .toFutureEither
         .map { credentialIssuanceId =>
@@ -65,6 +67,7 @@ class CredentialIssuanceServiceImpl(
             )
           )
         }
+        .run(TraceId.generateYOLO)
         .unsafeToFuture()
         .map(_.asRight)
         .toFutureEither
@@ -81,6 +84,7 @@ class CredentialIssuanceServiceImpl(
           query.issuanceName,
           query.drafts
         )
+        .run(TraceId.generateYOLO)
         .unsafeToFuture()
         .toFutureEither
         .map { credentialIssuanceId =>
