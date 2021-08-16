@@ -77,10 +77,12 @@ class NodeClientService(url: String) {
         fromProtoKey(issuingKeyProto) getOrElse (throw new Exception(s"Failed to parse proto key: $issuingKeyProto"))
       addedOn =
         issuingKeyProto.addedOn
-          .getOrElse(throw new Exception(s"Missing addedOn time:\n-Issuer DID: $issuerDID\n- keyId: $issuanceKeyId "))
+          .getOrElse(
+            throw new Exception(s"Missing addedOn ledger data:\n-Issuer DID: $issuerDID\n- keyId: $issuanceKeyId ")
+          )
           .timestampInfo
           .map(fromTimestampInfoProto)
-          .get
+          .getOrElse(throw new Exception(s"Missing addedOn time:\n-Issuer DID: $issuerDID\n- keyId: $issuanceKeyId "))
       revokedOn = issuingKeyProto.revokedOn.getOrElse(LedgerData()).timestampInfo.map(fromTimestampInfoProto)
     } yield new KeyData(
       publicKey = issuingKey,
