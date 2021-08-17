@@ -20,9 +20,8 @@ class CardanoClient(cardanoDbSyncClient: CardanoDbSyncClient, cardanoWalletApiCl
     cardanoDbSyncClient.getFullBlock(blockNo)
   }
 
-  def getLatestBlock(): Result[BlockError.NoneAvailable.type, Block.Canonical] = {
+  def getLatestBlock(): Result[BlockError.NoneAvailable.type, Block.Canonical] =
     cardanoDbSyncClient.getLatestBlock()
-  }
 
   def postTransaction(
       walletId: WalletId,
