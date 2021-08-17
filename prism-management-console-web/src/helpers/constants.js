@@ -114,6 +114,9 @@ export const STATUS_CONNECTION_ACCEPTED = 3;
 export const BULK_IMPORT = 'bulkImport';
 export const MANUAL_IMPORT = 'manualImport';
 
+// disables manual import when selecting more than n recipients
+export const MAX_MANUAL_IMPORT_RECIPIENTS = 20;
+
 // Bulk import steps
 export const COMPLETE_SPREADSHEET_STEP = 0;
 export const ASSIGN_TO_GROUPS = 1;
@@ -174,6 +177,7 @@ export const CREDENTIALS_RECEIVED = 'CREDENTIALS_RECEIVED';
 export const UNKNOWN_DID_SUFFIX_ERROR_CODE = 2;
 
 export const DEFAULT_WIDTH_INPUT = 300;
+export const COMPACT_WIDTH_INPUT = 250;
 
 // Usefull css classes
 export const MAIN_CONTAINER_CLASS = 'MainContainer';

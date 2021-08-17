@@ -6,6 +6,7 @@ import groupLogo from '../../../../images/groupIcon.svg';
 import CellRenderer from '../../../common/Atoms/CellRenderer/CellRenderer';
 import { backendDateFormat } from '../../../../helpers/formatters';
 import { useTranslationWithPrefix } from '../../../../hooks/useTranslationWithPrefix';
+import { contactShape, groupShape } from '../../../../helpers/propShapes';
 
 import './_style.scss';
 
@@ -33,10 +34,10 @@ const RecipientsList = ({ recipients }) => {
             )
           },
           {
-            render: ({ contactName, groupName }) => (
+            render: ({ contactName, name }) => (
               <CellRenderer
                 title={contactName ? tpc('contactName') : tpg('groupName')}
-                value={contactName || groupName}
+                value={contactName || name}
               />
             )
           },
@@ -45,11 +46,11 @@ const RecipientsList = ({ recipients }) => {
               externalId && <CellRenderer title={tpc('externalId')} value={externalId} />
           },
           {
-            render: ({ createdat }) =>
-              createdat?.seconds && (
+            render: ({ createdAt }) =>
+              createdAt?.seconds && (
                 <CellRenderer
                   title={tpc('creationDate')}
-                  value={backendDateFormat(createdat?.seconds)}
+                  value={backendDateFormat(createdAt?.seconds)}
                 />
               )
           }
@@ -62,16 +63,7 @@ const RecipientsList = ({ recipients }) => {
 
 RecipientsList.propTypes = {
   recipients: PropTypes.arrayOf(
-    PropTypes.oneOf([
-      PropTypes.shape({ name: PropTypes.string }),
-      PropTypes.shape({
-        contactId: PropTypes.string,
-        contactName: PropTypes.string,
-        groupName: PropTypes.string,
-        externalId: PropTypes.string,
-        createdat: PropTypes.number
-      })
-    ])
+    PropTypes.oneOf([PropTypes.shape(groupShape), PropTypes.shape(contactShape)])
   ).isRequired
 };
 

@@ -1,4 +1,4 @@
-import React, { useContext, useEffect, useState } from 'react';
+import React, { useContext, useState } from 'react';
 import PropTypes from 'prop-types';
 import { useTranslation } from 'react-i18next';
 import { message } from 'antd';
@@ -19,12 +19,7 @@ import {
 } from '../../helpers/constants';
 import GenericStepsButtons from '../common/Molecules/GenericStepsButtons/GenericStepsButtons';
 import WizardTitle from '../common/Atoms/WizardTitle/WizardTitle';
-import {
-  createBlankContact,
-  createBlankCredential,
-  processCredentials
-} from '../../helpers/importHelpers';
-import { isEmptyCredential } from '../../helpers/credentialDataValidation';
+import { createBlankContact } from '../../helpers/importHelpers';
 import { DynamicFormContext } from '../../providers/DynamicFormProvider';
 import Logger from '../../helpers/Logger';
 import { getFirstError } from '../../helpers/formHelpers';
@@ -59,33 +54,14 @@ const ImportDataContainer = ({
   const [selectedMethod, setSelectedMethod] = useState();
   const [results, setResults] = useState();
 
-  const [manualImportDisableNext, setManualImportDisableNext] = useState(false);
   const [contacts, setContacts] = useState([createBlankContact(0)]);
   const [fileData, setFileData] = useState();
   const [skipGroupsAssignment, setSkipGroupsAssignment] = useState(false);
   const [selectedGroups, setSelectedGroups] = useState([]);
-  const [credentialsData, setCredentialsData] = useState(
-    hasSelectedRecipients ? recipients : [createBlankCredential(0)]
-  );
 
   const { saveFormProviderAvailable, addEntity, form } = useContext(DynamicFormContext);
 
   const { t } = useTranslation();
-
-  useEffect(() => {
-    const shouldDisableNext = () => {
-      if (useCase === IMPORT_CONTACTS) return !saveFormProviderAvailable;
-
-      const emptyEntries = credentialsData.filter(dataRow =>
-        isEmptyCredential(dataRow, credentialType.fields)
-      );
-      const errors = credentialsData.filter(c => c.errorFields);
-
-      return emptyEntries.length || errors.length;
-    };
-
-    if (currentStep === IMPORT_STEP) setManualImportDisableNext(shouldDisableNext());
-  }, [useCase, saveFormProviderAvailable, credentialsData, credentialType.fields, currentStep]);
 
   const resetSelection = () => setSelectedMethod();
 
@@ -153,10 +129,15 @@ const ImportDataContainer = ({
     }
   };
 
+  const handleSaveCredentials = () => {
+    const data = form.getFieldValue(IMPORT_CREDENTIALS_DATA);
+    handleManualImport({ credentials: data });
+  };
+
   const handleSave = () => {
     if (selectedMethod === BULK_IMPORT) handleBulkImport();
     else if (useCase === IMPORT_CONTACTS) handleSaveContacts();
-    else handleManualImport({ credentials: processCredentials(credentialsData, credentialType) });
+    else handleSaveCredentials();
   };
 
   const useCaseProps = {
@@ -199,8 +180,7 @@ const ImportDataContainer = ({
           hasSelectedRecipients={hasSelectedRecipients}
           contacts={contacts}
           setContacts={setContacts}
-          credentialsData={credentialsData}
-          setCredentialsData={setCredentialsData}
+          recipients={recipients}
           selectedGroups={selectedGroups}
           setSelectedGroups={setSelectedGroups}
         />
@@ -212,7 +192,7 @@ const ImportDataContainer = ({
         setSelectedMethod={setSelectedMethod}
         isEmbedded={isEmbedded[useCase]}
         useCase={useCase}
-        hasSelectedRecipients={hasSelectedRecipients}
+        selectedRecipientsAmount={recipients?.length}
       />
     );
   };
@@ -220,7 +200,7 @@ const ImportDataContainer = ({
   const isImportStep = currentStep === IMPORT_STEP;
   const isManualImport = selectedMethod === MANUAL_IMPORT;
   const shouldDisableImport = isManualImport
-    ? manualImportDisableNext
+    ? !saveFormProviderAvailable
     : !fileData ||
       fileData.errors.length ||
       (useCase === IMPORT_CONTACTS && !skipGroupsAssignment && !selectedGroups.length);
@@ -261,7 +241,7 @@ const ImportDataContainer = ({
   };
 
   return (
-    <div className="errorLogScroll">
+    <div className="ImportStepPageContainer">
       <div className="TitleContainer">
         <GenericStepsButtons
           steps={getSteps()}

@@ -2,7 +2,8 @@ import React from 'react';
 import PropTypes from 'prop-types';
 import BulkImportErrorLog from '../Molecules/Results/BulkImportErrorLog';
 import SuccessPage from '../../common/Molecules/SuccessPage/SuccessPage';
-import { BULK_IMPORT, IMPORT_CONTACTS, IMPORT_CREDENTIALS_DATA } from '../../../helpers/constants';
+import { BULK_IMPORT } from '../../../helpers/constants';
+import { importUseCasePropType } from '../../../helpers/propShapes';
 
 const BulkImportResult = ({
   fileData,
@@ -49,7 +50,7 @@ BulkImportResult.propTypes = {
   contactCreations: PropTypes.number,
   credentialDataImported: PropTypes.number,
   continueCallback: PropTypes.func,
-  useCase: PropTypes.oneOf([IMPORT_CONTACTS, IMPORT_CREDENTIALS_DATA]).isRequired
+  useCase: importUseCasePropType.isRequired
 };
 
 export default BulkImportResult;
