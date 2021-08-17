@@ -146,14 +146,9 @@ case class Wallet(node: node_api.NodeServiceGrpc.NodeServiceBlockingStub) {
       merkleProof: MerkleInclusionProof
   ): ValidatedNel[VerificationException, Unit] = {
     // extract user DIDSuffix and keyId from credential
-    val issuerDID = Option(credential.getContent.getIssuerDid) match {
-      case None => throw new Exception("getIssuerDid is null")
-      case Some(value) => value
-    }
-    val issuanceKeyId = Option(credential.getContent.getIssuanceKeyId) match {
-      case None => throw new Exception("getIssuanceKeyId is null")
-      case Some(value) => value
-    }
+    val issuerDID = Option(credential.getContent.getIssuerDid).getOrElse(throw new Exception("getIssuerDid is null"))
+    val issuanceKeyId =
+      Option(credential.getContent.getIssuanceKeyId).getOrElse(throw new Exception("getIssuanceKeyId is null"))
 
     // request credential state to the node
     val merkleRoot = merkleProof.derivedRoot

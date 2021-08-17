@@ -17,6 +17,7 @@ import io.iohk.atala.prism.models.{BlockInfo, Ledger, TransactionId, Transaction
 import io.iohk.atala.prism.node.models.nodeState.{CredentialBatchState, DIDPublicKeyState, LedgerData}
 import io.iohk.atala.prism.node.models._
 import io.iohk.atala.prism.kotlin.crypto.keys.ECPublicKey
+import io.iohk.atala.prism.utils.syntax._
 
 package object daos extends BaseDAO {
 
@@ -79,10 +80,10 @@ package object daos extends BaseDAO {
         key.keyUsage,
         curveName,
         compressed,
-        Instant.ofEpochMilli(key.addedOn.timestampInfo.getAtalaBlockTimestamp),
+        key.addedOn.timestampInfo.getAtalaBlockTimestamp.toInstant,
         key.addedOn.timestampInfo.getAtalaBlockSequenceNumber,
         key.addedOn.timestampInfo.getOperationSequenceNumber,
-        key.revokedOn map (x => Instant.ofEpochMilli(x.timestampInfo.getAtalaBlockTimestamp)),
+        key.revokedOn map (_.timestampInfo.getAtalaBlockTimestamp.toInstant),
         key.revokedOn map (_.timestampInfo.getAtalaBlockSequenceNumber),
         key.revokedOn map (_.timestampInfo.getOperationSequenceNumber)
       )
