@@ -41,7 +41,7 @@ import io.iohk.atala.prism.logging.TraceId.IOWithTraceIdContext
 
 class CredentialsServiceImpl(
     credentialsRepository: CredentialsRepository[IOWithTraceIdContext],
-    credentialsIntegrationService: CredentialsIntegrationService,
+    credentialsIntegrationService: CredentialsIntegrationService[IOWithTraceIdContext],
     val authenticator: ManagementConsoleAuthenticator,
     nodeService: NodeServiceGrpc.NodeService,
     connectorClient: ConnectorClient[IOWithTraceIdContext]
@@ -61,6 +61,8 @@ class CredentialsServiceImpl(
     auth[CreateGenericCredential]("createGenericCredential", request) { (participantId, query) =>
       credentialsIntegrationService
         .createGenericCredential(participantId, query)
+        .run(TraceId.generateYOLO)
+        .unsafeToFuture()
         .toFutureEither
         .map { genericCredentialWithConnection =>
           genericCredentialToProto(
@@ -79,7 +81,9 @@ class CredentialsServiceImpl(
     auth[GenericCredential.PaginatedQuery]("getGenericCredentials", request) { (participantId, query) =>
       credentialsIntegrationService
         .getGenericCredentials(participantId, query)
-        .toFutureEither
+        .run(TraceId.generateYOLO)
+        .unsafeToFuture()
+        .lift
         .map { result =>
           console_api.GetGenericCredentialsResponse(
             result.data.map(genericCredentialsResult =>
@@ -93,7 +97,9 @@ class CredentialsServiceImpl(
     auth[GetContactCredentials]("getContactCredentials", request) { (participantId, query) =>
       credentialsIntegrationService
         .getContactCredentials(participantId, query.contactId)
-        .toFutureEither
+        .run(TraceId.generateYOLO)
+        .unsafeToFuture()
+        .lift
         .map { result =>
           console_api.GetContactCredentialsResponse(
             result.data.map(genericCredentialsResult =>
@@ -192,6 +198,9 @@ class CredentialsServiceImpl(
     auth[RevokePublishedCredential]("revokePublishedCredential", request) { (participantId, query) =>
       credentialsIntegrationService
         .revokePublishedCredential(participantId, query)
+        .run(TraceId.generateYOLO)
+        .unsafeToFuture()
+        .toFutureEither
         .map { operationId =>
           RevokePublishedCredentialResponse().withOperationId(operationId.toProtoByteString)
         }
