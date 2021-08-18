@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Form } from 'antd';
 import { useTranslation } from 'react-i18next';
 import Logger from '../../helpers/Logger';
@@ -10,6 +10,7 @@ const TemplateProvider = props => {
   const { t } = useTranslation();
   const [form] = Form.useForm();
   const [templateSettings, setTemplateSettings] = useTemplateSettings();
+  const [templatePreview, setTemplatePreview] = useState();
 
   const validateMessages = {
     required: t('credentialTemplateCreation.errors.required')
@@ -33,7 +34,7 @@ const TemplateProvider = props => {
       onValuesChange={handleFormUpdate}
     >
       <TemplateContext.Provider
-        value={{ form, templateSettings, setTemplateSettings }}
+        value={{ form, templateSettings, setTemplateSettings, templatePreview, setTemplatePreview }}
         {...props}
       />
     </Form>

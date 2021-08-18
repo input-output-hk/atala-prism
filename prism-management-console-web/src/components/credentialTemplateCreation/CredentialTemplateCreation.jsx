@@ -33,7 +33,7 @@ const CredentialTemplateCreation = ({
   redirector: { redirectToCredentialTemplates }
 }) => {
   const { t } = useTranslation();
-  const { form, templateSettings } = useTemplateContext();
+  const { form, templateSettings, templatePreview } = useTemplateContext();
   const { mockDataDispatch } = useMockDataContext();
 
   const validateByStep = () =>
@@ -55,7 +55,11 @@ const CredentialTemplateCreation = ({
   const goBack = () => changeStep(currentStep - NEW_TEMPLATE_STEP_UNIT);
 
   const createTemplate = () => {
-    const newTemplate = { ...templateSettings, category: parseInt(templateSettings?.category, 10) };
+    const newTemplate = {
+      ...templateSettings,
+      template: templatePreview,
+      category: parseInt(templateSettings?.category, 10)
+    };
     mockDataDispatch({
       type: 'ADD_MOCK_CREDENTIAL_TEMPLATE',
       payload: { newTemplate }

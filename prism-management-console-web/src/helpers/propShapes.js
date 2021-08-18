@@ -136,7 +136,8 @@ export const credentialTypeShape = {
       isRowField: bool
     })
   ),
-  placeholders: objectOf(string)
+  placeholders: objectOf(string),
+  template: string
 };
 
 export const credentialTypesShape = arrayOf(credentialTypeShape);

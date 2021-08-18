@@ -2,24 +2,16 @@ import React from 'react';
 import PropTypes from 'prop-types';
 import { getTemplatesColumns } from '../../../helpers/tableDefinitions/templates';
 import InfiniteScrollTable from '../../common/Organisms/Tables/InfiniteScrollTable';
-import { useCredentialTypes, useTemplateCategories } from '../../../hooks/useCredentialTypes';
+import { credentialTypeShape, templateCategoryShape } from '../../../helpers/propShapes';
 import './_style.scss';
 
-const TemplatesTable = ({
-  // setGroupToDelete,
-  // groups,
-  // selectedGroups,
-  // setSelectedGroups,
-  // onCopy,
-  // shouldSelectRecipients,
-  // hasMore,
-  // searching,
-  // getMoreGroups
-  credentialTypes,
-  templateCategories
-}) => {
+const TemplatesTable = ({ credentialTypes, templateCategories, showTemplatePreview }) => {
+  const tableActions = {
+    showTemplatePreview
+  };
+
   const tableProps = {
-    columns: getTemplatesColumns(templateCategories),
+    columns: getTemplatesColumns(templateCategories, tableActions),
     data: credentialTypes,
     rowKey: 'id'
   };
@@ -31,12 +23,10 @@ const TemplatesTable = ({
   );
 };
 
-TemplatesTable.defaultProps = {
-  // TODO: Fill proptypes
-};
-
 TemplatesTable.propTypes = {
-  // TODO: Fill proptypes
+  credentialTypes: PropTypes.arrayOf(credentialTypeShape).isRequired,
+  templateCategories: PropTypes.arrayOf(templateCategoryShape).isRequired,
+  showTemplatePreview: PropTypes.func.isRequired
 };
 
 export default TemplatesTable;
