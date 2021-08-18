@@ -18,7 +18,7 @@ const TemplatesTable = ({ credentialTypes, templateCategories, showTemplatePrevi
 
   return (
     <div className="TemplatesTableContainer">
-      <InfiniteScrollTable {...tableProps} />;
+      <InfiniteScrollTable {...tableProps} />
     </div>
   );
 };
