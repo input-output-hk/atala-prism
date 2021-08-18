@@ -5,17 +5,18 @@ import { useSession } from '../providers/SessionContext';
 import { credentialTypeShape } from '../../helpers/propShapes';
 import { CONFIRMED, UNCONFIRMED } from '../../helpers/constants';
 import WaitBanner from '../dashboard/Atoms/WaitBanner/WaitBanner';
-import CreateTemplateButton from './Buttons/CreateTemplateButton';
+import CreateTemplateButton from './Atoms/Buttons/CreateTemplateButton';
 import EmptyComponent from '../common/Atoms/EmptyComponent/EmptyComponent';
 import SimpleLoading from '../common/Atoms/SimpleLoading/SimpleLoading';
 import noTemplatesPicture from '../../images/noTemplates.svg';
+import TemplatesTable from './Organisms/TemplatesTable';
 import './_style.scss';
 
 const CredentialTemplates = ({ tableProps }) => {
   const { t } = useTranslation();
   const { accountStatus } = useSession();
 
-  const { credentialTypes, isLoading } = tableProps;
+  const { credentialTypes, templateCategories, isLoading } = tableProps;
 
   const noTemplates = !credentialTypes?.length;
 
@@ -28,8 +29,9 @@ const CredentialTemplates = ({ tableProps }) => {
   const renderContent = () => {
     if (noTemplates && isLoading) return <SimpleLoading size="md" />;
     if (noTemplates) return <EmptyComponent {...emptyProps} />;
-    // FIXME: render templates table here
-    return credentialTypes.map(ct => <div>{ct.toString()}</div>);
+    return (
+      <TemplatesTable credentialTypes={credentialTypes} templateCategories={templateCategories} />
+    );
   };
 
   return (

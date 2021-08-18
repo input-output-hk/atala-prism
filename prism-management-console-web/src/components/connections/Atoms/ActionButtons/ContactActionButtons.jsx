@@ -12,7 +12,7 @@ const showQR = ({ connectionStatus }) =>
     CONNECTION_STATUSES.statusConnectionMissing
   ].includes(connectionStatus);
 
-const ActionButtons = ({ inviteContact, viewContactDetail, contact }) => {
+const ContactActionButtons = ({ inviteContact, viewContactDetail, contact }) => {
   const { t } = useTranslation();
   const { contactId } = contact;
 
@@ -54,10 +54,10 @@ const ActionButtons = ({ inviteContact, viewContactDetail, contact }) => {
   );
 };
 
-ActionButtons.propTypes = {
+ContactActionButtons.propTypes = {
   inviteContact: PropTypes.func.isRequired,
   viewContactDetail: PropTypes.func.isRequired,
   contact: PropTypes.shape(studentShape).isRequired
 };
 
-export default ActionButtons;
+export default ContactActionButtons;

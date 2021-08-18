@@ -55,9 +55,10 @@ const CredentialTemplateCreation = ({
   const goBack = () => changeStep(currentStep - NEW_TEMPLATE_STEP_UNIT);
 
   const createTemplate = () => {
+    const newTemplate = { ...templateSettings, category: parseInt(templateSettings?.category, 10) };
     mockDataDispatch({
       type: 'ADD_MOCK_CREDENTIAL_TEMPLATE',
-      payload: { newTemplate: templateSettings }
+      payload: { newTemplate }
     });
     advanceStep();
   };
