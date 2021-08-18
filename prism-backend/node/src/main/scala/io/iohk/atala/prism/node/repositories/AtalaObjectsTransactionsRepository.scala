@@ -92,9 +92,10 @@ private final class AtalaObjectsTransactionsRepositoryImpl[F[_]: BracketThrow](x
       ledgerPendingTransactionTimeout: Duration,
       ledger: Ledger
   ): F[List[AtalaObjectTransactionSubmission]] = {
+    val olderThan = Instant.now.minus(ledgerPendingTransactionTimeout)
     val query = AtalaObjectTransactionSubmissionsDAO
       .getBy(
-        olderThan = Instant.now.minus(ledgerPendingTransactionTimeout),
+        olderThan = olderThan,
         status = AtalaObjectTransactionSubmissionStatus.Pending,
         ledger = ledger
       )
@@ -104,7 +105,7 @@ private final class AtalaObjectsTransactionsRepositoryImpl[F[_]: BracketThrow](x
       .map(
         _.left
           .map { err =>
-            logger.error(s"Could not get pending transactions", err)
+            logger.error(s"Could not get pending transactions older than $olderThan.", err)
           }
           .getOrElse(List())
       )

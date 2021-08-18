@@ -14,39 +14,21 @@ import io.iohk.atala.prism.node.models.{
   AtalaObjectTransactionSubmissionStatus
 }
 import io.iohk.atala.prism.node.repositories.{AtalaObjectsTransactionsRepository, AtalaOperationsRepository}
-import io.iohk.atala.prism.node.services.SubmissionService.Config
 import io.iohk.atala.prism.protos.node_internal
-import io.iohk.atala.prism.protos.node_models.SignedAtalaOperation
 import monix.execution.Scheduler
 import org.slf4j.LoggerFactory
 
 import java.time.Duration
 import scala.concurrent.Future
-import scala.concurrent.duration.{DurationInt, FiniteDuration}
 
 class SubmissionService private (
-    config: Config,
     atalaReferenceLedger: UnderlyingLedger,
     atalaOperationsRepository: AtalaOperationsRepository[IO],
     atalaObjectsTransactionsRepository: AtalaObjectsTransactionsRepository[IO]
 )(implicit scheduler: Scheduler) {
-  type Result[A] = Future[Either[NodeError, A]]
   private val logger = LoggerFactory.getLogger(this.getClass)
 
-  // Schedule first run
-  scheduleRetryOldPendingTransactions(config.transactionRetryPeriod)
-
-  private var submitReceivedObjectsTask: Option[monix.execution.Cancelable] = None
-  scheduleSubmitReceivedObjects(config.operationSubmissionPeriod)
-
-  def flushOperationsBuffer(): Unit = {
-    submitReceivedObjectsTask.fold(
-      logger.info("Skip flushing because operations submission is already in progress.")
-    ) { task =>
-      task.cancel() // cancel a scheduled task
-      scheduleSubmitReceivedObjects(config.operationSubmissionPeriod, immediate = true)
-    }
-  }
+  type Result[A] = Future[Either[NodeError, A]]
 
   def submitReceivedObjects(): Result[Unit] = {
     val submissionET = for {
@@ -60,11 +42,11 @@ class SubmissionService private (
     submissionET.value
   }
 
-  def retryOldPendingTransactions(): Future[Int] = {
+  def retryOldPendingTransactions(ledgerPendingTransactionTimeout: Duration): Future[Int] = {
     logger.info("Retry old pending transactions submission")
     val getOldPendingTransactions =
       atalaObjectsTransactionsRepository
-        .getOldPendingTransactions(config.ledgerPendingTransactionTimeout, atalaReferenceLedger.getType)
+        .getOldPendingTransactions(ledgerPendingTransactionTimeout, atalaReferenceLedger.getType)
 
     for {
       // Query old pending transactions
@@ -93,46 +75,6 @@ class SubmissionService private (
       )
       numPublished
     }
-  }
-
-  private def scheduleRetryOldPendingTransactions(delay: FiniteDuration): Unit = {
-    scheduler.scheduleOnce(delay) {
-      // Ensure run is scheduled after completion, even if current run fails
-      retryOldPendingTransactions()
-        .recover { err =>
-          logger.error("Could not retry old pending transactions", err)
-        }
-        .onComplete { _ =>
-          scheduleRetryOldPendingTransactions(config.transactionRetryPeriod)
-        }
-    }
-    ()
-  }
-
-  private def scheduleSubmitReceivedObjects(delay: FiniteDuration, immediate: Boolean = false): Unit = {
-    def run(): Unit = {
-      submitReceivedObjectsTask = None
-      // Ensure run is scheduled after completion, even if current run fails
-      submitReceivedObjects()
-        .map { submissionResult =>
-          submissionResult.left.foreach { err =>
-            logger.error("Could not submit received objects", err)
-          }
-          ()
-        }
-        .onComplete { _ =>
-          scheduleSubmitReceivedObjects(config.operationSubmissionPeriod)
-        }
-    }
-
-    if (immediate) {
-      run()
-    } else {
-      submitReceivedObjectsTask = Some(
-        scheduler.scheduleOnce(delay)(run())
-      )
-    }
-    ()
   }
 
   private def mergeAndRetryPendingTransactions(
@@ -219,7 +161,7 @@ class SubmissionService private (
               }
         }
 
-    val objects = Future.traverse(atalaObjectsMerged) {
+    val objects = atalaObjectsMerged.traverse {
       case (atalaObject, oldObjects) =>
         if (oldObjects.size != 1) {
           val changedBlockE = atalaObject.getAndValidateAtalaObject
@@ -227,12 +169,15 @@ class SubmissionService private (
             .toRight {
               NodeError.InternalError(s"Block in object ${atalaObject.objectId} was invalidated after merge.")
             }
-          val atalaObjectFE = for {
-            changedBlock <- EitherT.fromEither[Future](changedBlockE)
-            _ <- EitherT(createAndUpdateAtalaObject(atalaObject, changedBlock.operations.toList, oldObjects))
+
+          val atalaObjectIOEither = for {
+            changedBlock <- EitherT.fromEither[IO](changedBlockE)
+            _ <- EitherT(
+              atalaOperationsRepository.updateMergedObjects(atalaObject, changedBlock.operations.toList, oldObjects)
+            )
           } yield atalaObject
 
-          atalaObjectFE.value.map {
+          atalaObjectIOEither.value.map {
             case Left(err) =>
               logger.error(err.toString)
               None
@@ -240,23 +185,16 @@ class SubmissionService private (
               Some(atalaObjectInfo)
           }
         } else {
-          Future.successful(Some(atalaObject))
+          IO.pure(Some(atalaObject))
         }
     }
-    objects.map(_.flatten)
+    objects.map(_.flatten).unsafeToFuture()
   }
 
   private def parseObjectContent(atalaObjectInfo: AtalaObjectInfo): node_internal.AtalaObject =
     atalaObjectInfo.getAndValidateAtalaObject.getOrElse {
       throw new RuntimeException(s"Can't extract AtalaObject content for objectId=${atalaObjectInfo.objectId}")
     }
-
-  private def createAndUpdateAtalaObject(
-      atalaObject: AtalaObjectInfo,
-      operations: List[SignedAtalaOperation],
-      oldObjects: List[AtalaObjectInfo]
-  ): Result[Unit] =
-    atalaOperationsRepository.updateMergedObjects(atalaObject, operations, oldObjects).unsafeToFuture()
 
   private def publishAndRecordTransaction(
       atalaObjectInfo: AtalaObjectInfo,
@@ -316,18 +254,11 @@ class SubmissionService private (
 }
 
 object SubmissionService {
-  case class Config(
-      ledgerPendingTransactionTimeout: Duration,
-      transactionRetryPeriod: FiniteDuration = 20.seconds,
-      operationSubmissionPeriod: FiniteDuration = 20.seconds
-  )
-
   def apply(
-      config: Config,
       atalaReferenceLedger: UnderlyingLedger,
       atalaOperationsRepository: AtalaOperationsRepository[IO],
       atalaObjectsTransactionsRepository: AtalaObjectsTransactionsRepository[IO]
   )(implicit scheduler: Scheduler): SubmissionService = {
-    new SubmissionService(config, atalaReferenceLedger, atalaOperationsRepository, atalaObjectsTransactionsRepository)
+    new SubmissionService(atalaReferenceLedger, atalaOperationsRepository, atalaObjectsTransactionsRepository)
   }
 }

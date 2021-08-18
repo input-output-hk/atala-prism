@@ -110,7 +110,7 @@ class ObjectManagementService private (
         keyValuesRepository
           .get(LAST_SYNCED_BLOCK_TIMESTAMP)
           .unsafeToFuture()
-      lastSyncedBlockTimestamp = getLastSyncedTimestampFromMaybe(maybeLastSyncedBlockTimestamp)
+      lastSyncedBlockTimestamp = getLastSyncedTimestampFromMaybe(maybeLastSyncedBlockTimestamp.value)
     } yield lastSyncedBlockTimestamp
   }
 
@@ -120,7 +120,7 @@ class ObjectManagementService private (
       .unsafeToFuture()
 
   private def processObject(obj: AtalaObjectInfo): IO[ConnectionIO[Boolean]] = {
-    val blockProcessedIO = for {
+    for {
       protobufObject <- IO.fromTry(node_internal.AtalaObject.validate(obj.byteContent))
       block = protobufObject.blockContent.get
       transactionInfo = obj.transaction.getOrElse(throw new RuntimeException("AtalaObject has no transaction info"))
@@ -134,12 +134,10 @@ class ObjectManagementService private (
         transactionBlock.timestamp,
         transactionBlock.index
       )
-    } yield blockProcessed
-
-    for {
-      blockProcessed <- blockProcessedIO
-      _ = AtalaObjectsDAO.setProcessed(obj.objectId)
-    } yield blockProcessed
+    } yield for {
+      wasProcessed <- blockProcessed
+      _ <- AtalaObjectsDAO.setProcessed(obj.objectId)
+    } yield wasProcessed
   }
 
   private def logBlockRequest(methodName: String, block: AtalaBlock, atalaObject: AtalaObjectInfo): Unit = {

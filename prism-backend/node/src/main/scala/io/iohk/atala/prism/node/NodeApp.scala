@@ -91,10 +91,13 @@ class NodeApp(executionContext: ExecutionContext) { self =>
 
     val ledgerPendingTransactionTimeout = globalConfig.getDuration("ledgerPendingTransactionTimeout")
     val submissionService = SubmissionService(
-      SubmissionService.Config(ledgerPendingTransactionTimeout = ledgerPendingTransactionTimeout),
       atalaReferenceLedger,
       atalaOperationsRepository,
       atalaObjectsTransactionsRepository
+    )
+    val submissionSchedulingService = SubmissionSchedulingService(
+      SubmissionSchedulingService.Config(ledgerPendingTransactionTimeout = ledgerPendingTransactionTimeout),
+      submissionService
     )
 
     val objectManagementService = ObjectManagementService(
@@ -111,7 +114,7 @@ class NodeApp(executionContext: ExecutionContext) { self =>
       new NodeServiceImpl(
         didDataRepository,
         objectManagementService,
-        submissionService,
+        submissionSchedulingService,
         credentialBatchesRepository
       )
 

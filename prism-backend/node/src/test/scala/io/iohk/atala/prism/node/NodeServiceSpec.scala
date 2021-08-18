@@ -22,7 +22,11 @@ import io.iohk.atala.prism.node.operations.path.{Path, ValueAtPath}
 import io.iohk.atala.prism.node.operations._
 import io.iohk.atala.prism.node.repositories.daos.{DIDDataDAO, PublicKeysDAO}
 import io.iohk.atala.prism.node.repositories.{CredentialBatchesRepository, DIDDataRepository}
-import io.iohk.atala.prism.node.services.{BlockProcessingServiceSpec, ObjectManagementService, SubmissionService}
+import io.iohk.atala.prism.node.services.{
+  BlockProcessingServiceSpec,
+  ObjectManagementService,
+  SubmissionSchedulingService
+}
 import io.iohk.atala.prism.protos.node_api._
 import io.iohk.atala.prism.protos.{common_models, node_api, node_models}
 import io.iohk.atala.prism.utils.syntax._
@@ -49,7 +53,7 @@ class NodeServiceSpec
 
   private val objectManagementService = mock[ObjectManagementService]
   private val credentialBatchesRepository = mock[CredentialBatchesRepository[IO]]
-  private val submissionService = mock[SubmissionService]
+  private val submissionSchedulingService = mock[SubmissionSchedulingService]
 
   override def beforeEach(): Unit = {
     super.beforeEach()
@@ -67,7 +71,7 @@ class NodeServiceSpec
             new NodeServiceImpl(
               didDataRepository,
               objectManagementService,
-              submissionService,
+              submissionSchedulingService,
               credentialBatchesRepository
             ),
             executionContext

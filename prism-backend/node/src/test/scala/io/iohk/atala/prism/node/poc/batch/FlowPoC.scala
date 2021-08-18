@@ -24,6 +24,7 @@ import io.iohk.atala.prism.node.services.{
   BlockProcessingServiceImpl,
   InMemoryLedgerService,
   ObjectManagementService,
+  SubmissionSchedulingService,
   SubmissionService
 }
 import io.iohk.atala.prism.node.{DataPreparation, NodeServiceImpl}
@@ -54,6 +55,7 @@ class FlowPoC extends AtalaWithPostgresSpec with BeforeAndAfterEach {
   protected var atalaObjectsTransactionsRepository: AtalaObjectsTransactionsRepository[IO] = _
   protected var keyValuesRepository: KeyValuesRepository[IO] = _
   protected var objectManagementServicePromise: Promise[ObjectManagementService] = _
+  protected var submissionSchedulingService: SubmissionSchedulingService = _
 
   override def beforeEach(): Unit = {
     super.beforeEach()
@@ -73,10 +75,13 @@ class FlowPoC extends AtalaWithPostgresSpec with BeforeAndAfterEach {
     atalaOperationsRepository = AtalaOperationsRepository(database)
     atalaObjectsTransactionsRepository = AtalaObjectsTransactionsRepository(database)
     submissionService = SubmissionService(
-      SubmissionService.Config(ledgerPendingTransactionTimeout = Duration.ZERO),
       atalaReferenceLedger,
       atalaOperationsRepository,
       atalaObjectsTransactionsRepository
+    )
+    submissionSchedulingService = SubmissionSchedulingService(
+      SubmissionSchedulingService.Config(ledgerPendingTransactionTimeout = Duration.ZERO),
+      submissionService
     )
     keyValuesRepository = KeyValuesRepository(database)
     objectManagementService = ObjectManagementService(
@@ -98,7 +103,7 @@ class FlowPoC extends AtalaWithPostgresSpec with BeforeAndAfterEach {
             new NodeServiceImpl(
               didDataRepository,
               objectManagementService,
-              submissionService,
+              submissionSchedulingService,
               credentialBatchesRepository
             ),
             executionContext

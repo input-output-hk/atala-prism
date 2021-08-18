@@ -35,7 +35,6 @@ import org.scalatest.concurrent.ScalaFutures
 
 import java.time.{Duration, Instant}
 import scala.concurrent.Future
-import scala.concurrent.duration._
 
 object ObjectManagementServiceSpec {
   private val newKeysPairs = List.fill(10) { EC.generateKeyPair() }
@@ -72,14 +71,9 @@ class ObjectManagementServiceSpec
 
   private implicit lazy val submissionService: SubmissionService =
     SubmissionService(
-      SubmissionService.Config(
-        ledgerPendingTransactionTimeout = Duration.ZERO,
-        transactionRetryPeriod = 1.hour,
-        operationSubmissionPeriod = 1.hour
-      ),
       ledger,
       atalaOperationsRepository,
-      atalaObjectsTransactionsRepository,
+      atalaObjectsTransactionsRepository
     )
 
   private implicit lazy val objectManagementService: ObjectManagementService =
@@ -261,7 +255,7 @@ class ObjectManagementServiceSpec
         // mockito hates value classes, so we cannot test equality to this argument
         anyTransactionIdMatcher,
         mockito.ArgumentMatchers.eq(dummyTransactionInfo.ledger),
-        mockito.ArgumentMatchers.eq(Instant.ofEpochMilli(dummyTimestamp)),
+        mockito.ArgumentMatchers.eq(Instant.ofEpochMilli(dummyTimestamp.toEpochMilli)),
         mockito.ArgumentMatchers.eq(dummyABSequenceNumber)
       )
       blockCaptor.value mustEqual block

@@ -45,14 +45,16 @@ class SubmissionServiceSpec
 
   private implicit lazy val submissionService: SubmissionService =
     SubmissionService(
-      SubmissionService.Config(
-        ledgerPendingTransactionTimeout = Duration.ZERO,
-        transactionRetryPeriod = 1.hour,
-        operationSubmissionPeriod = 1.hour
-      ),
       ledger,
       atalaOperationsRepository,
       atalaObjectsTransactionsRepository
+    )
+
+  private val config: SubmissionSchedulingService.Config =
+    SubmissionSchedulingService.Config(
+      ledgerPendingTransactionTimeout = Duration.ZERO,
+      transactionRetryPeriod = 1.hour,
+      operationSubmissionPeriod = 1.hour
     )
 
   private implicit lazy val objectManagementService: ObjectManagementService =
@@ -134,7 +136,7 @@ class SubmissionServiceSpec
 
       // updates statuses for inLedger submissions
       // note that we're not resubmitting the first object here since it wasn't published at all
-      submissionService.retryOldPendingTransactions().futureValue
+      submissionService.retryOldPendingTransactions(config.ledgerPendingTransactionTimeout).futureValue
       DataPreparation.getSubmissionsByStatus(AtalaObjectTransactionSubmissionStatus.Pending).size must be(0)
 
       // resubmits object1
@@ -176,7 +178,7 @@ class SubmissionServiceSpec
       publishOpsSequentially(ops :+ opInLedger)
 
       DataPreparation.getSubmissionsByStatus(AtalaObjectTransactionSubmissionStatus.InLedger).size must be(0)
-      submissionService.retryOldPendingTransactions().futureValue must be(1)
+      submissionService.retryOldPendingTransactions(config.ledgerPendingTransactionTimeout).futureValue must be(1)
 
       val inLedgerTxs = DataPreparation.getSubmissionsByStatus(AtalaObjectTransactionSubmissionStatus.InLedger)
       inLedgerTxs.size must be(1)
@@ -192,7 +194,7 @@ class SubmissionServiceSpec
         AtalaObjectTransactionSubmissionStatus.InLedger
       )
 
-      submissionService.retryOldPendingTransactions().futureValue
+      submissionService.retryOldPendingTransactions(config.ledgerPendingTransactionTimeout).futureValue
 
       // It should have published only once
       verify(ledger).publish(atalaObject)
@@ -206,7 +208,7 @@ class SubmissionServiceSpec
         AtalaObjectTransactionSubmissionStatus.Deleted
       )
 
-      submissionService.retryOldPendingTransactions().futureValue
+      submissionService.retryOldPendingTransactions(config.ledgerPendingTransactionTimeout).futureValue
 
       // It should have published only once
       verify(ledger).publish(atalaObject)
@@ -218,7 +220,7 @@ class SubmissionServiceSpec
       // Simulate the service is restarted with a new ledger type
       doReturn(Ledger.CardanoTestnet).when(ledger).getType
 
-      submissionService.retryOldPendingTransactions().futureValue
+      submissionService.retryOldPendingTransactions(config.ledgerPendingTransactionTimeout).futureValue
 
       // It should have published only once
       verify(ledger).publish(atalaObject)
@@ -236,7 +238,7 @@ class SubmissionServiceSpec
       publishSingleOperationAndFlush(atalaOperation).futureValue
       mockTransactionStatus(dummyTransactionInfo.transactionId, TransactionStatus.Pending)
 
-      submissionService.retryOldPendingTransactions().futureValue
+      submissionService.retryOldPendingTransactions(config.ledgerPendingTransactionTimeout).futureValue
 
       // It should have published twice and deleted the first one
       verify(ledger, times(2)).publish(atalaObject)
@@ -258,7 +260,7 @@ class SubmissionServiceSpec
       // publish operations sequentially because we want to preserve the order by timestamps
       publishOpsSequentially(ops)
 
-      submissionService.retryOldPendingTransactions().futureValue
+      submissionService.retryOldPendingTransactions(config.ledgerPendingTransactionTimeout).futureValue
 
       verify(ledger, times(atalaObjects.size + 2))
         .publish(*) // publish transactions for initial objects and for two new objects
@@ -278,18 +280,11 @@ class SubmissionServiceSpec
 
     "not retry new pending transactions" in {
       // Use a service that does have a 10-minute timeout for pending transactions
-      val submissionServiceLocal =
-        SubmissionService(
-          SubmissionService.Config(ledgerPendingTransactionTimeout = Duration.ofMinutes(10)),
-          ledger,
-          atalaOperationsRepository,
-          atalaObjectsTransactionsRepository
-        )
       doReturn(Future.successful(Right(dummyPublicationInfo))).when(ledger).publish(*)
       publishSingleOperationAndFlush(atalaOperation).futureValue
       mockTransactionStatus(dummyTransactionInfo.transactionId, TransactionStatus.Pending)
 
-      submissionServiceLocal.retryOldPendingTransactions().futureValue
+      submissionService.retryOldPendingTransactions(Duration.ofMinutes(10)).futureValue
 
       // It should have published only once
       verify(ledger).publish(atalaObject)
@@ -301,7 +296,7 @@ class SubmissionServiceSpec
       publishSingleOperationAndFlush(atalaOperation).futureValue
       mockTransactionStatus(dummyTransactionInfo.transactionId, TransactionStatus.InLedger)
 
-      submissionService.retryOldPendingTransactions().futureValue
+      submissionService.retryOldPendingTransactions(config.ledgerPendingTransactionTimeout).futureValue
 
       // It should have published only once
       verify(ledger).publish(atalaObject)

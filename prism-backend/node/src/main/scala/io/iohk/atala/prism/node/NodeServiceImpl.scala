@@ -22,7 +22,7 @@ import io.iohk.atala.prism.node.models.{
 }
 import io.iohk.atala.prism.node.operations._
 import io.iohk.atala.prism.node.repositories.{CredentialBatchesRepository, DIDDataRepository}
-import io.iohk.atala.prism.node.services.{ObjectManagementService, SubmissionService}
+import io.iohk.atala.prism.node.services.{ObjectManagementService, SubmissionSchedulingService}
 import io.iohk.atala.prism.protos.common_models.{HealthCheckRequest, HealthCheckResponse}
 import io.iohk.atala.prism.protos.node_api._
 import io.iohk.atala.prism.protos.node_models.AtalaOperation.Operation
@@ -40,7 +40,7 @@ import io.iohk.atala.prism.interop.toScalaProtos._
 class NodeServiceImpl(
     didDataRepository: DIDDataRepository[IO],
     objectManagement: ObjectManagementService,
-    submissionService: SubmissionService,
+    submissionSchedulingService: SubmissionSchedulingService,
     credentialBatchesRepository: CredentialBatchesRepository[IO]
 )(implicit
     ec: ExecutionContext
@@ -298,7 +298,7 @@ class NodeServiceImpl(
 
     withLog(methodName, request) { _ =>
       Future.successful {
-        submissionService.flushOperationsBuffer()
+        submissionSchedulingService.flushOperationsBuffer()
         node_api.FlushOperationsBufferResponse()
       }
     }

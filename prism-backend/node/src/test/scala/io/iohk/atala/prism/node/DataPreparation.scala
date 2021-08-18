@@ -48,7 +48,7 @@ import scala.concurrent.{ExecutionContext, Future}
 // We also use these tests to test DAOs (note that the methods not present here are
 // defined in corresponding repositories
 object DataPreparation {
-  val dummyTimestampInfo: TimestampInfo = new TimestampInfo(Instant.ofEpochMilli(0).toEpochMilli, 1, 0)
+  val dummyTimestampInfo: TimestampInfo = new TimestampInfo(0, 1, 0)
   val exampleOperation: node_models.AtalaOperation = node_models.AtalaOperation(
     node_models.AtalaOperation.Operation.CreateDid(
       value = node_models.CreateDIDOperation(
@@ -104,10 +104,10 @@ object DataPreparation {
     } yield ids
   }
 
-  val dummyTime: TimestampInfo = TimestampInfo(Instant.ofEpochMilli(0), 1, 0)
+  val dummyTime: TimestampInfo = new TimestampInfo(0, 1, 0)
 
-  val dummyTimestamp: Instant = dummyTime.atalaBlockTimestamp
-  val dummyABSequenceNumber: Int = dummyTime.atalaBlockSequenceNumber
+  val dummyTimestamp: Instant = Instant.ofEpochMilli(dummyTime.getAtalaBlockTimestamp)
+  val dummyABSequenceNumber: Int = dummyTime.getAtalaBlockSequenceNumber
   val dummyTransactionInfo: TransactionInfo =
     TransactionInfo(
       transactionId = TransactionId.from(SHA256Digest.compute("id".getBytes).getValue).value,
