@@ -5,7 +5,7 @@ import { Tooltip } from 'antd';
 import { IMPORT_CONTACTS, IMPORT_CREDENTIALS_DATA } from '../../../../helpers/constants';
 import './_style.scss';
 
-const OptionCard = ({ option, isSelected, onSelect, img, useCase, disabled }) => {
+const OptionCard = ({ option, isSelected, onSelect, img, useCase, disabled, disabledHelp }) => {
   const { t } = useTranslation();
 
   const optionCardClass = {
@@ -30,7 +30,7 @@ const OptionCard = ({ option, isSelected, onSelect, img, useCase, disabled }) =>
   };
 
   return (
-    <Tooltip title={disabled ? t(`${useCase}.${option}Card.disabled`) : null}>
+    <Tooltip title={disabled ? disabledHelp : null}>
       <div
         className={`OptionCard ${optionCardClass[useCase]} ${
           isSelected ? 'Selected' : 'NotSelected'
@@ -54,7 +54,8 @@ const OptionCard = ({ option, isSelected, onSelect, img, useCase, disabled }) =>
 
 OptionCard.defaultProps = {
   isSelected: false,
-  disabled: false
+  disabled: false,
+  disabledHelp: ''
 };
 
 OptionCard.propTypes = {
@@ -63,7 +64,8 @@ OptionCard.propTypes = {
   onSelect: PropTypes.func.isRequired,
   img: PropTypes.string.isRequired,
   useCase: PropTypes.oneOf([IMPORT_CONTACTS, IMPORT_CREDENTIALS_DATA]).isRequired,
-  disabled: PropTypes.bool
+  disabled: PropTypes.bool,
+  disabledHelp: PropTypes.string
 };
 
 export default OptionCard;

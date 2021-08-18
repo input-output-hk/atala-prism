@@ -12,7 +12,7 @@ import io.iohk.atala.prism.kotlin.crypto.SHA256Digest
 import io.iohk.atala.prism.kotlin.identity.DID
 import io.iohk.atala.prism.kotlin.identity.DID.masterKeyId
 import io.iohk.atala.prism.node.poc.{GenericCredentialsSDK, Wallet}
-import io.iohk.atala.prism.node.repositories.{CredentialBatchesRepository, DIDDataRepository}
+import io.iohk.atala.prism.node.repositories.{AtalaOperationsRepository, CredentialBatchesRepository, DIDDataRepository}
 import io.iohk.atala.prism.node.services.models.AtalaObjectNotification
 import io.iohk.atala.prism.node.services.{BlockProcessingServiceImpl, InMemoryLedgerService, ObjectManagementService}
 import io.iohk.atala.prism.node.{DataPreparation, NodeServiceImpl}
@@ -34,6 +34,7 @@ class FlowPoC extends AtalaWithPostgresSpec with BeforeAndAfterEach {
   protected var channelHandle: ManagedChannel = _
   protected var nodeServiceStub: node_api.NodeServiceGrpc.NodeServiceBlockingStub = _
   protected var didDataRepository: DIDDataRepository[IO] = _
+  protected var atalaOperationsRepository: AtalaOperationsRepository[IO] = _
   protected var credentialBatchesRepository: CredentialBatchesRepository[IO] = _
   protected var atalaReferenceLedger: InMemoryLedgerService = _
   protected var blockProcessingService: BlockProcessingServiceImpl = _
@@ -55,9 +56,11 @@ class FlowPoC extends AtalaWithPostgresSpec with BeforeAndAfterEach {
 
     atalaReferenceLedger = new InMemoryLedgerService(onAtalaReference)
     blockProcessingService = new BlockProcessingServiceImpl
+    atalaOperationsRepository = AtalaOperationsRepository(database)
     objectManagementService = ObjectManagementService(
       ObjectManagementService.Config(ledgerPendingTransactionTimeout = Duration.ZERO),
       atalaReferenceLedger,
+      atalaOperationsRepository,
       blockProcessingService
     )
     objectManagementServicePromise.success(objectManagementService)

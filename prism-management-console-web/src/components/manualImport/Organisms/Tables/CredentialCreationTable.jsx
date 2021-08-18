@@ -1,12 +1,19 @@
-import React from 'react';
+import React, { useContext } from 'react';
 import PropTypes from 'prop-types';
 import _ from 'lodash';
 import { useTranslation } from 'react-i18next';
-import EditableTable from '../../../common/Organisms/Tables/EditableTable';
-import { contactCreationShape, credentialTypeShape } from '../../../../helpers/propShapes';
+import { contactShape, credentialTypeShape } from '../../../../helpers/propShapes';
+import {
+  getCredentialFormSkeleton,
+  getCredentialFormColumns
+} from '../../../../helpers/formDefinitions/credentials';
+import { DynamicFormContext } from '../../../../providers/DynamicFormProvider';
+import { IMPORT_CREDENTIALS_DATA } from '../../../../helpers/constants';
+import DynamicForm from '../../../dynamicForm/DynamicForm';
 
-const CredentialCreationTable = ({ tableProps, setDisableSave, credentialType }) => {
+const CredentialCreationTable = ({ initialValues, credentialType }) => {
   const { t } = useTranslation();
+  const { form } = useContext(DynamicFormContext);
 
   const commonColumns = [
     {
@@ -14,18 +21,21 @@ const CredentialCreationTable = ({ tableProps, setDisableSave, credentialType })
       dataIndex: 'contactName',
       editable: false,
       type: 'string',
-      validations: ['required']
+      validations: ['required'],
+      fixed: 'left'
     },
     {
       title: t('contacts.table.columns.externalId'),
       dataIndex: 'externalId',
       editable: false,
       type: 'string',
-      validations: ['required']
+      validations: ['required'],
+      width: 350,
+      fixed: 'left'
     }
   ];
 
-  const specificColumns = credentialType?.fields.map(f => ({
+  const specificColumns = credentialType.fields.map(f => ({
     title: t(`contacts.table.columns.${f.key}`),
     dataIndex: f.key,
     editable: true,
@@ -35,18 +45,21 @@ const CredentialCreationTable = ({ tableProps, setDisableSave, credentialType })
 
   const columns = _.uniqBy(commonColumns.concat(specificColumns), e => e.dataIndex);
 
-  return <EditableTable {...tableProps} columns={columns} setDisableSave={setDisableSave} />;
+  const credentialFormColumns = getCredentialFormColumns(columns);
+  const credentialFormSkeleton = getCredentialFormSkeleton(columns, form);
+
+  return (
+    <DynamicForm
+      columns={credentialFormColumns}
+      skeleton={credentialFormSkeleton}
+      initialValues={initialValues}
+      useCase={IMPORT_CREDENTIALS_DATA}
+    />
+  );
 };
 
 CredentialCreationTable.propTypes = {
-  tableProps: PropTypes.shape({
-    credentialsData: PropTypes.arrayOf(contactCreationShape).isRequired,
-    updateDataSource: PropTypes.func.isRequired,
-    deleteContact: PropTypes.func,
-    addNewRow: PropTypes.func,
-    hasSelectedRecipients: PropTypes.bool
-  }).isRequired,
-  setDisableSave: PropTypes.func.isRequired,
+  initialValues: PropTypes.arrayOf(contactShape).isRequired,
   credentialType: PropTypes.shape(credentialTypeShape).isRequired
 };
 

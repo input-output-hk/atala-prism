@@ -1,4 +1,4 @@
-@import '../../../css/general_styling';
+@import "../../../css/general_styling";
 
 .IndividualFormRow {
   display: table;
@@ -24,8 +24,4 @@
       max-width: 280px;
     }
   }
-}
-
-.DynamicFormContainer .DynamicForm .IndividualFormRow .IndividualFormCol {
-  padding: 1em;
 }

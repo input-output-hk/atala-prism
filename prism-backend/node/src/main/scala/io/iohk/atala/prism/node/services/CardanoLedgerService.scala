@@ -18,7 +18,6 @@ import io.iohk.atala.prism.node.services.CardanoLedgerService.CardanoNetwork
 import io.iohk.atala.prism.node.services.models.{AtalaObjectNotification, AtalaObjectNotificationHandler}
 import io.iohk.atala.prism.node.{PublicationInfo, UnderlyingLedger}
 import io.iohk.atala.prism.protos.node_internal
-import io.iohk.atala.prism.utils.FutureEither
 import monix.execution.Scheduler
 import org.slf4j.LoggerFactory
 
@@ -58,38 +57,42 @@ class CardanoLedgerService private[services] (
   // Schedule the initial sync
   scheduleSync(30.seconds)
 
-  override def publish(obj: node_internal.AtalaObject): Future[PublicationInfo] = {
+  override def publish(obj: node_internal.AtalaObject): Future[Either[CardanoWalletError, PublicationInfo]] = {
     val metadata = AtalaObjectMetadata.toTransactionMetadata(obj)
     cardanoClient
       .postTransaction(walletId, List(Payment(paymentAddress, minUtxoDeposit)), Some(metadata), walletPassphrase)
-      .value
-      .map {
-        case Right(transactionId) => PublicationInfo(TransactionInfo(transactionId, getType), TransactionStatus.Pending)
-        case Left(error) =>
-          logOperationIds("publish", s"FATAL: Error while publishing reference: ${error.code}", obj)(logger)
-          throw error
+      .mapLeft { error =>
+        logOperationIds("publish", s"FATAL: Error while publishing reference: ${error.code}", obj)(logger)
+        error
       }
+      .map { transactionId =>
+        PublicationInfo(TransactionInfo(transactionId, getType), TransactionStatus.Pending)
+      }
+      .value
   }
 
-  override def getTransactionDetails(transactionId: TransactionId): Future[TransactionDetails] = {
+  override def getTransactionDetails(
+      transactionId: TransactionId
+  ): Future[Either[CardanoWalletError, TransactionDetails]] = {
     cardanoClient
       .getTransaction(walletId, transactionId)
-      .toFuture { cardanoWalletError =>
-        val errorMessage = s"FATAL: Error while getting transaction details: ${cardanoWalletError.code}"
-        logger.error(s"methodName: getTransactionDetails , message: $errorMessage")
-
-        throw cardanoWalletError
+      .mapLeft { error =>
+        val errorMessage = s"FATAL: Error while getting transaction details: ${error.code}"
+        logger.error(s"methodName: getTransactionDetails , message: $errorMessage", error)
+        error
       }
+      .value
   }
 
-  override def deleteTransaction(transactionId: TransactionId): Future[Unit] = {
+  override def deleteTransaction(transactionId: TransactionId): Future[Either[CardanoWalletError, Unit]] = {
     cardanoClient
       .deleteTransaction(walletId, transactionId)
-      .toFuture { cardanoWalletError =>
+      .mapLeft { error =>
         val errorMessage = s"Could not delete transaction $transactionId"
-        logger.error(s"methodName: deleteTransaction , message: $errorMessage")
-        throw cardanoWalletError
+        logger.error(s"methodName: deleteTransaction , message: $errorMessage", error)
+        error
       }
+      .value
   }
 
   private def scheduleSync(delay: FiniteDuration): Unit = {
@@ -190,7 +193,7 @@ class CardanoLedgerService private[services] (
 
 object CardanoLedgerService {
 
-  type Result[E, A] = FutureEither[E, A]
+  type Result[E, A] = Future[Either[E, A]]
 
   sealed trait CardanoNetwork extends EnumEntry
   object CardanoNetwork extends Enum[CardanoNetwork] {

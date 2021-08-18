@@ -222,11 +222,13 @@ object DataPreparation {
     |FROM atala_operations
     """.stripMargin.query[Int].option.transact(xa).unsafeRunSync().getOrElse(0)
 
-  def getPendingSubmissions()(implicit xa: Transactor[IO]): List[AtalaObjectTransactionSubmission] = {
+  def getSubmissionsByStatus(
+      status: AtalaObjectTransactionSubmissionStatus
+  )(implicit xa: Transactor[IO]): List[AtalaObjectTransactionSubmission] = {
     AtalaObjectTransactionSubmissionsDAO
       .getBy(
         olderThan = Instant.now(),
-        status = AtalaObjectTransactionSubmissionStatus.Pending,
+        status = status,
         ledger = Ledger.InMemory
       )
       .transact(xa)

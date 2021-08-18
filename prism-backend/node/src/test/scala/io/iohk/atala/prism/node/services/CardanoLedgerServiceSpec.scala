@@ -26,7 +26,6 @@ import io.iohk.atala.prism.protos.node_internal
 import io.iohk.atala.prism.util.BytesOps
 import monix.execution.schedulers.TestScheduler
 import org.scalatest.OptionValues._
-import org.scalatest.concurrent.ScalaFutures
 
 import scala.concurrent.Future
 
@@ -81,10 +80,8 @@ class CardanoLedgerServiceSpec extends AtalaWithPostgresSpec {
         )
       val cardanoLedgerService = createCardanoLedgerService(cardanoWalletApiClient)
 
-      ScalaFutures.whenReady(cardanoLedgerService.publish(atalaObject).failed) { err =>
-        err mustBe a[CardanoWalletError]
-        err.getMessage must be(exceptionDescription)
-      }
+      val err = cardanoLedgerService.publish(atalaObject).futureValue.left.toOption.value
+      err.getMessage must be(exceptionDescription)
     }
   }
 
@@ -100,7 +97,7 @@ class CardanoLedgerServiceSpec extends AtalaWithPostgresSpec {
       )
       val cardanoLedgerService = createCardanoLedgerService(cardanoWalletApiClient)
 
-      val transactionDetails = cardanoLedgerService.getTransactionDetails(transactionId).futureValue
+      val transactionDetails = cardanoLedgerService.getTransactionDetails(transactionId).futureValue.toOption.value
 
       transactionDetails must be(TransactionDetails(transactionId, TransactionStatus.InLedger))
     }
@@ -110,15 +107,8 @@ class CardanoLedgerServiceSpec extends AtalaWithPostgresSpec {
         FakeCardanoWalletApiClient.Fail(expectedWalletApiPath, "", "internal", "Internal error")
       val cardanoLedgerService = createCardanoLedgerService(cardanoWalletApiClient)
 
-      ScalaFutures.whenReady(cardanoLedgerService.getTransactionDetails(transactionId).failed) { err =>
-        err mustBe a[CardanoWalletError]
-        err match {
-          case CardanoWalletError(_, errorCode) =>
-            errorCode must be(CardanoWalletErrorCode.UndefinedCardanoWalletError)
-          case err =>
-            assert(false, s"Expected CardanoWalletError exception, but $err was thrown")
-        }
-      }
+      val err = cardanoLedgerService.getTransactionDetails(transactionId).futureValue.left.toOption.value
+      err.code must be(CardanoWalletErrorCode.UndefinedCardanoWalletError)
     }
   }
 
@@ -143,13 +133,11 @@ class CardanoLedgerServiceSpec extends AtalaWithPostgresSpec {
         )
       val cardanoLedgerService = createCardanoLedgerService(cardanoWalletApiClient)
 
-      val error = intercept[RuntimeException] {
-        cardanoLedgerService.deleteTransaction(transactionId).futureValue
-      }
+      val error = cardanoLedgerService.deleteTransaction(transactionId).futureValue.left.toOption.value
 
       val expectedErrorMessage =
         "Status [transaction_already_in_ledger]. Occurs when attempting to delete a transaction which is neither pending nor expired."
-      error.getCause.getMessage must be(expectedErrorMessage)
+      error.getMessage must be(expectedErrorMessage)
     }
   }
 
