@@ -10,6 +10,7 @@ import iconGroups from '../../../../images/icon-groups.svg';
 import iconCredentials from '../../../../images/icon-credentials.svg';
 import supportIcon from '../../../../images/supportIcon.svg';
 import templatesIcon from '../../../../images/templatesIcon.svg';
+import tutorialIcon from '../../../../images/tutorialIcon.svg';
 
 import './_style.scss';
 
@@ -25,7 +26,9 @@ const SideMenu = ({ location: { pathname } }) => {
     { icon: contactsIcon, name: 'contacts' },
     { icon: iconGroups, name: 'groups' },
     { icon: iconCredentials, name: 'credentials' },
-    { icon: templatesIcon, name: 'templates' }
+    { icon: templatesIcon, name: 'templates' },
+    { icon: tutorialIcon, name: 'tutorial' }
+
   ];
 
   return (

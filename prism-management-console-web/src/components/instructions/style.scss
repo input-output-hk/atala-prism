@@ -30,10 +30,9 @@
     @include primary-text($body, #4f4f4f);
     font-weight: 600;
   }
-}
-
-.theme-outline{
-  width: 63%;
+  .theme-outline {
+    width: 63%;
+  }
 }
 
 .instructionsImg {
@@ -66,24 +65,24 @@
   background-color: #011727 !important;
 }
 
-.italic{
+.italic {
   @include primary-text($body, #4f4f4f);
   font-style: italic;
   text-transform: none;
   margin: 20px 0 20px 22px;
 }
 
-.register-text{
+.register-text {
   @include primary-text($body, #728099);
   font-style: italic;
   text-transform: none;
-  border-top: 1px solid #D6DBE2;
+  border-top: 1px solid #d6dbe2;
   padding-top: 10px;
   margin-top: 61px;
 
-  span{
+  span {
     @include primary-text($body, $primary-color);
-  font-style: italic;
-  text-transform: none;
+    font-style: italic;
+    text-transform: none;
   }
 }

@@ -22,6 +22,8 @@ import { useSession } from '../providers/SessionContext';
 import SimpleLoading from '../common/Atoms/SimpleLoading/SimpleLoading';
 import './_style.scss';
 import TutorialModal from '../tutorial/tutorialModal';
+import TutorialTool from '../tutorial/tutorialTool/tutorialTool';
+import TutorialPopover from '../tutorial/tutorialTool/tutorialPopover';
 
 const Dashboard = ({ api, name, bundle }) => {
   const { t } = useTranslation();
@@ -80,11 +82,13 @@ const Dashboard = ({ api, name, bundle }) => {
       <div className="DashboardContentBottom">
         <h1>{tp('titleBottom')}</h1>
         <div className="dashboardCardContainer">
-          <DashboardCard data={contactsStats} loading={loading} />
+          <TutorialPopover />
           <DashboardCardGroup data={groupsStats} loading={loading} />
           <DashboardCardCredential data={credentialsStats} loading={loading} />
         </div>
       </div>
+      {/* This class to the component makes it place at the bottom right */}
+        <TutorialTool />
     </div>
   );
 };
