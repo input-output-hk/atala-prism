@@ -98,6 +98,8 @@ object ManagementConsoleApp extends IOApp {
 
       credentialIntegrationService <-
         CredentialsIntegrationService.makeResource(credentialsRepository, node, connector, managementConsoleLogs)
+      participantsIntegrationService <-
+        ParticipantsIntegrationService.makeResource(participantsRepository, managementConsoleLogs)
 
       authenticator = new ManagementConsoleAuthenticator(
         participantsRepository,
@@ -115,7 +117,6 @@ object ManagementConsoleApp extends IOApp {
       )
       credentialsStoreService = new CredentialsStoreServiceImpl(receivedCredentialsRepository, authenticator)
       groupsService = new GroupsServiceImpl(institutionGroupsRepository, authenticator)
-      participantsIntegrationService = new ParticipantsIntegrationService(participantsRepository)
       consoleService = new ConsoleServiceImpl(participantsIntegrationService, statisticsRepository, authenticator)
       contactsIntegrationService <-
         ContactsIntegrationService.makeResource(contactsRepository, connector, managementConsoleLogs)

@@ -18,14 +18,14 @@ import io.iohk.atala.prism.metrics.RequestMeasureUtil.measureRequestFuture
 import io.iohk.atala.prism.protos.common_models.{HealthCheckRequest, HealthCheckResponse}
 import io.iohk.atala.prism.protos.console_api
 import io.iohk.atala.prism.protos.console_api._
-import io.iohk.atala.prism.utils.FutureEither.FutureEitherOps
+import io.iohk.atala.prism.utils.FutureEither.{FutureEitherFOps, FutureEitherOps}
 import org.slf4j.{Logger, LoggerFactory}
 
 import scala.concurrent.{ExecutionContext, Future}
 import scala.util.{Failure, Success}
 
 class ConsoleServiceImpl(
-    participantsIntegrationService: ParticipantsIntegrationService,
+    participantsIntegrationService: ParticipantsIntegrationService[IOWithTraceIdContext],
     statisticsRepository: StatisticsRepository[IOWithTraceIdContext],
     val authenticator: ManagementConsoleAuthenticator
 )(implicit
@@ -70,6 +70,9 @@ class ConsoleServiceImpl(
         measureRequestFuture(serviceName, methodName)(
           participantsIntegrationService
             .register(query)
+            .run(TraceId.generateYOLO)
+            .unsafeToFuture()
+            .toFutureEither
             .as(RegisterConsoleDIDResponse())
             .wrapAndRegisterExceptions(serviceName, methodName)
             .flatten
@@ -81,6 +84,9 @@ class ConsoleServiceImpl(
     unitAuth("getCurrentUser", request) { (participantId, _) =>
       participantsIntegrationService
         .getDetails(participantId)
+        .run(TraceId.generateYOLO)
+        .unsafeToFuture()
+        .toFutureEither
         .map { info =>
           val logoBytes = info.logo.map(_.bytes.toArray).getOrElse(Array.empty)
           GetConsoleCurrentUserResponse()
@@ -96,6 +102,9 @@ class ConsoleServiceImpl(
       val participantProfile = UpdateParticipantProfile(request.name, Option(logo))
       participantsIntegrationService
         .update(participantId, participantProfile)
+        .run(TraceId.generateYOLO)
+        .unsafeToFuture()
+        .lift
         .as(ConsoleUpdateProfileResponse())
     }
   }
