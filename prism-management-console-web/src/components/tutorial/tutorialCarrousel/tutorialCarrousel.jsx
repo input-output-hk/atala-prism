@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { Carousel } from 'antd';
+import { useTranslation } from 'react-i18next';
 import './_style.scss';
 import onboarding1 from '../../../images/onboarding1.png';
 import onboarding2 from '../../../images/onboarding2.png';
@@ -11,35 +12,29 @@ function onChange(a, b, c) {
 }
 
 const TutorialCarrousel = () => {
+  const { t } = useTranslation();
   return (
     <Carousel className="tutorialOnboarding" afterChange={onChange}>
       <div className="contentStyle">
         <img src={onboarding1} alt="onboarding" />
-        <h2>Welcome to Atala Management Console</h2>
-        <p>
-          Click "continue" to start the tutorial and take a walkthrough of the most common features.
-        </p>
+        <h2>{t('tutorial.onboarding.title')}</h2>
+        <p>{t('tutorial.onboarding.description')}</p>
       </div>
       <div className="contentStyle">
         <img style={{ marginTop: 20, width: 220 }} src={onboarding2} alt="onboarding" />
-        <h2>This is the Progress Tutorial Bar</h2>
-        <p>
-          You will find it on the bottom right and it will guide you throughout the different
-          sections and its features.
-        </p>
+        <h2>{t('tutorial.onboarding.titleTwo')}</h2>
+        <p>{t('tutorial.onboarding.descriptionTwo')}</p>
       </div>
       <div className="contentStyle">
         <img style={{ height: 190 }} src={onboarding3} alt="onboarding" />
-        <h2>Always accessible</h2>
-        <p>
-          You can access it any time from the sidebar.
-        </p>
+        <h2>{t('tutorial.onboarding.titleThree')}</h2>
+        <p>{t('tutorial.onboarding.descriptionThree')}</p>
         <CustomButton
-        buttonProps={{
-          className: 'theme-secondary',
-        }}
-        buttonText="Start Tutorial"
-      />
+          buttonProps={{
+            className: 'theme-secondary'
+          }}
+          buttonText="Start Tutorial"
+        />
       </div>
     </Carousel>
   );
