@@ -1,5 +1,7 @@
 package io.iohk.atala.prism.management.console.services
 
+import cats.data.ReaderT
+import cats.effect.IO
 import io.circe.{Json, parser}
 import io.grpc.StatusRuntimeException
 import io.iohk.atala.prism.DIDUtil
@@ -21,7 +23,6 @@ import org.scalatest.OptionValues._
 
 import java.time.LocalDate
 import java.util.UUID
-import scala.concurrent.Future
 import scala.util.Try
 
 class ContactsServiceImplSpec extends ManagementConsoleRpcSpecBase with DIDUtil with ManagementConsoleTestUtil {
@@ -54,8 +55,10 @@ class ContactsServiceImplSpec extends ManagementConsoleRpcSpecBase with DIDUtil 
           generateConnectionTokensRequestMetadata = Some(connectorRequestMetadataProto)
         )
       connectorMock.generateConnectionTokens(*, *).returns {
-        Future.successful(
-          List(ConnectionToken(UUID.randomUUID.toString))
+        ReaderT.liftF(
+          IO.pure(
+            List(ConnectionToken(UUID.randomUUID.toString))
+          )
         )
       }
       val rpcRequest = SignedRpcRequest.generate(keyPair, did, request)
@@ -90,8 +93,10 @@ class ContactsServiceImplSpec extends ManagementConsoleRpcSpecBase with DIDUtil 
         )
       val rpcRequest = SignedRpcRequest.generate(keyPair, did, request)
       connectorMock.generateConnectionTokens(*, *).returns {
-        Future.successful(
-          List(ConnectionToken(UUID.randomUUID.toString))
+        ReaderT.liftF(
+          IO.pure(
+            List(ConnectionToken(UUID.randomUUID.toString))
+          )
         )
       }
 
@@ -137,8 +142,10 @@ class ContactsServiceImplSpec extends ManagementConsoleRpcSpecBase with DIDUtil 
         )
       val rpcRequest = SignedRpcRequest.generate(keyPair, did, request)
       connectorMock.generateConnectionTokens(*, *).returns {
-        Future.successful(
-          List(ConnectionToken(UUID.randomUUID.toString))
+        ReaderT.liftF(
+          IO.pure(
+            List(ConnectionToken(UUID.randomUUID.toString))
+          )
         )
       }
       usingApiAsContacts(rpcRequest) { serviceStub =>
@@ -171,8 +178,10 @@ class ContactsServiceImplSpec extends ManagementConsoleRpcSpecBase with DIDUtil 
         )
       val rpcRequest = SignedRpcRequest.generate(keyPair, did, request)
       connectorMock.generateConnectionTokens(*, *).returns {
-        Future.successful(
-          List(ConnectionToken(UUID.randomUUID.toString))
+        ReaderT.liftF(
+          IO.pure(
+            List(ConnectionToken(UUID.randomUUID.toString))
+          )
         )
       }
       usingApiAsContacts(rpcRequest) { serviceStub =>
@@ -210,8 +219,10 @@ class ContactsServiceImplSpec extends ManagementConsoleRpcSpecBase with DIDUtil 
         )
       val rpcRequest = SignedRpcRequest.generate(keyPair, did, request)
       connectorMock.generateConnectionTokens(*, *).returns {
-        Future.successful(
-          List(ConnectionToken(UUID.randomUUID.toString))
+        ReaderT.liftF(
+          IO.pure(
+            List(ConnectionToken(UUID.randomUUID.toString))
+          )
         )
       }
       usingApiAsContacts(rpcRequest) { serviceStub =>
@@ -286,8 +297,10 @@ class ContactsServiceImplSpec extends ManagementConsoleRpcSpecBase with DIDUtil 
         )
       val rpcRequest = SignedRpcRequest.generate(keyPair, did, request)
       connectorMock.generateConnectionTokens(*, *).returns {
-        Future.successful(
-          List(ConnectionToken(UUID.randomUUID.toString))
+        ReaderT.liftF(
+          IO.pure(
+            List(ConnectionToken(UUID.randomUUID.toString))
+          )
         )
       }
       usingApiAsContacts(rpcRequest) { serviceStub =>
@@ -373,8 +386,10 @@ class ContactsServiceImplSpec extends ManagementConsoleRpcSpecBase with DIDUtil 
         .withGroups(List.empty)
         .withGenerateConnectionTokensRequestMetadata(connectorRequestMetadataProto)
       connectorMock.generateConnectionTokens(*, *).returns {
-        Future.successful(
-          List.fill(2)(ConnectionToken(UUID.randomUUID.toString))
+        ReaderT.liftF(
+          IO.pure(
+            List.fill(2)(ConnectionToken(UUID.randomUUID.toString))
+          )
         )
       }
       val (institutionId, responseT) = runTest(_ => request)
@@ -408,8 +423,10 @@ class ContactsServiceImplSpec extends ManagementConsoleRpcSpecBase with DIDUtil 
           .withGenerateConnectionTokensRequestMetadata(connectorRequestMetadataProto)
       }
       connectorMock.generateConnectionTokens(*, *).returns {
-        Future.successful(
-          List.fill(2)(ConnectionToken(UUID.randomUUID.toString))
+        ReaderT.liftF(
+          IO.pure(
+            List.fill(2)(ConnectionToken(UUID.randomUUID.toString))
+          )
         )
       }
       val (institutionId, responseT) = runTest(request)
@@ -696,8 +713,10 @@ class ContactsServiceImplSpec extends ManagementConsoleRpcSpecBase with DIDUtil 
 
       usingApiAsContacts(rpcRequest) { serviceStub =>
         connectorMock.getConnectionStatus(*).returns {
-          Future.successful(
-            List(connectionMissingWithToken)
+          ReaderT.liftF(
+            IO.pure(
+              List(connectionMissingWithToken)
+            )
           )
         }
         val response = serviceStub.getContacts(request)
@@ -744,8 +763,10 @@ class ContactsServiceImplSpec extends ManagementConsoleRpcSpecBase with DIDUtil 
       val connectionMissingWithToken = connectionMissing(Some(connectionToken))
       usingApiAsContacts(rpcRequest) { serviceStub =>
         connectorMock.getConnectionStatus(*).returns {
-          Future.successful(
-            List(connectionMissingWithToken, connectionMissingWithToken)
+          ReaderT.liftF(
+            IO.pure(
+              List(connectionMissingWithToken, connectionMissingWithToken)
+            )
           )
         }
 
@@ -790,8 +811,10 @@ class ContactsServiceImplSpec extends ManagementConsoleRpcSpecBase with DIDUtil 
       val connectionMissingWithToken = connectionMissing(Some(connectionToken))
       usingApiAsContacts(rpcRequest) { serviceStub =>
         connectorMock.getConnectionStatus(*).returns {
-          Future.successful(
-            List(connectionMissingWithToken, connectionMissingWithToken)
+          ReaderT.liftF(
+            IO.pure(
+              List(connectionMissingWithToken, connectionMissingWithToken)
+            )
           )
         }
 
@@ -846,8 +869,10 @@ class ContactsServiceImplSpec extends ManagementConsoleRpcSpecBase with DIDUtil 
 
       usingApiAsContacts(rpcRequest) { serviceStub =>
         connectorMock.getConnectionStatus(*).returns {
-          Future.successful(
-            List(connectionMissingWithToken, connectionMissingWithToken)
+          ReaderT.liftF(
+            IO.pure(
+              List(connectionMissingWithToken, connectionMissingWithToken)
+            )
           )
         }
 
@@ -932,8 +957,10 @@ class ContactsServiceImplSpec extends ManagementConsoleRpcSpecBase with DIDUtil 
 
       usingApiAsContacts(rpcRequest) { serviceStub =>
         connectorMock.getConnectionStatus(*).returns {
-          Future.successful(
-            List(connectionStatusA, connectionStatusB, connectionStatusC, connectionStatusD, connectionStatusE)
+          ReaderT.liftF(
+            IO.pure(
+              List(connectionStatusA, connectionStatusB, connectionStatusC, connectionStatusD, connectionStatusE)
+            )
           )
         }
 
@@ -983,8 +1010,10 @@ class ContactsServiceImplSpec extends ManagementConsoleRpcSpecBase with DIDUtil 
 
       usingApiAsContacts(rpcRequest) { serviceStub =>
         connectorMock.getConnectionStatus(*).returns {
-          Future.successful(
-            List(connectionMissingWithToken)
+          ReaderT.liftF(
+            IO.pure(
+              List(connectionMissingWithToken)
+            )
           )
         }
 
@@ -1037,8 +1066,10 @@ class ContactsServiceImplSpec extends ManagementConsoleRpcSpecBase with DIDUtil 
 
       usingApiAsContacts(rpcRequest) { serviceStub =>
         connectorMock.getConnectionStatus(*).returns {
-          Future.successful(
-            List(connectionMissingWithToken)
+          ReaderT.liftF(
+            IO.pure(
+              List(connectionMissingWithToken)
+            )
           )
         }
 
@@ -1069,8 +1100,10 @@ class ContactsServiceImplSpec extends ManagementConsoleRpcSpecBase with DIDUtil 
 
       usingApiAsContacts(rpcRequest) { serviceStub =>
         connectorMock.getConnectionStatus(*).returns {
-          Future.successful(
-            List(connectionMissing(), connectionMissing())
+          ReaderT.liftF(
+            IO.pure(
+              List(connectionMissing(), connectionMissing())
+            )
           )
         }
 
@@ -1143,8 +1176,10 @@ class ContactsServiceImplSpec extends ManagementConsoleRpcSpecBase with DIDUtil 
 
       usingApiAsContacts(rpcRequest) { serviceStub =>
         connectorMock.getConnectionStatus(*).returns {
-          Future.successful(
-            List(contactConnection)
+          ReaderT.liftF(
+            IO.pure(
+              List(contactConnection)
+            )
           )
         }
 
@@ -1173,8 +1208,10 @@ class ContactsServiceImplSpec extends ManagementConsoleRpcSpecBase with DIDUtil 
 
       usingApiAsContacts(rpcRequest) { serviceStub =>
         connectorMock.getConnectionStatus(*).returns {
-          Future.successful(
-            List.empty
+          ReaderT.liftF(
+            IO.pure(
+              List.empty
+            )
           )
         }
 
@@ -1211,8 +1248,10 @@ class ContactsServiceImplSpec extends ManagementConsoleRpcSpecBase with DIDUtil 
 
       usingApiAsContacts(rpcRequest) { serviceStub =>
         connectorMock.getConnectionStatus(*).returns {
-          Future.successful(
-            List(contactConnection)
+          ReaderT.liftF(
+            IO.pure(
+              List(contactConnection)
+            )
           )
         }
 
@@ -1253,8 +1292,10 @@ class ContactsServiceImplSpec extends ManagementConsoleRpcSpecBase with DIDUtil 
 
       usingApiAsContacts(rpcRequest) { serviceStub =>
         connectorMock.getConnectionStatus(*).returns {
-          Future.successful(
-            List()
+          ReaderT.liftF(
+            IO.pure(
+              List()
+            )
           )
         }
 
@@ -1285,8 +1326,10 @@ class ContactsServiceImplSpec extends ManagementConsoleRpcSpecBase with DIDUtil 
 
       usingApiAsContacts(deleteRpcRequest) { serviceStub =>
         connectorMock.getConnectionStatus(*).returns {
-          Future.successful(
-            List(connectionMissing())
+          ReaderT.liftF(
+            IO.pure(
+              List(connectionMissing())
+            )
           )
         }
 
@@ -1317,8 +1360,10 @@ class ContactsServiceImplSpec extends ManagementConsoleRpcSpecBase with DIDUtil 
 
       usingApiAsContacts(deleteRpcRequest) { serviceStub =>
         connectorMock.getConnectionStatus(*).returns {
-          Future.successful(
-            List(connectionMissing())
+          ReaderT.liftF(
+            IO.pure(
+              List(connectionMissing())
+            )
           )
         }
 
@@ -1357,8 +1402,10 @@ class ContactsServiceImplSpec extends ManagementConsoleRpcSpecBase with DIDUtil 
 
       usingApiAsContacts(deleteRpcRequest) { serviceStub =>
         connectorMock.getConnectionStatus(*).returns {
-          Future.successful(
-            List(connectionMissing())
+          ReaderT.liftF(
+            IO.pure(
+              List(connectionMissing())
+            )
           )
         }
 

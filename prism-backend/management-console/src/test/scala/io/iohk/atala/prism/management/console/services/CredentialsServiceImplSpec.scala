@@ -1,5 +1,7 @@
 package io.iohk.atala.prism.management.console.services
 
+import cats.data.ReaderT
+import cats.effect.IO
 import com.google.protobuf.ByteString
 import io.grpc.StatusRuntimeException
 import io.iohk.atala.prism.DIDUtil
@@ -90,8 +92,10 @@ class CredentialsServiceImplSpec extends ManagementConsoleRpcSpecBase with DIDUt
         connectionToken = connectionToken
       )
       connectorMock.getConnectionStatus(*).returns {
-        Future.successful(
-          List(contactConnection)
+        ReaderT.liftF(
+          IO.pure(
+            List(contactConnection)
+          )
         )
       }
 
@@ -150,8 +154,10 @@ class CredentialsServiceImplSpec extends ManagementConsoleRpcSpecBase with DIDUt
 
       usingApiAsCredentials(rpcRequest) { serviceStub =>
         connectorMock.getConnectionStatus(*).returns {
-          Future.successful(
-            List(contactConnection)
+          ReaderT.liftF(
+            IO.pure(
+              List(contactConnection)
+            )
           )
         }
         val response = serviceStub.getGenericCredentials(request)
@@ -201,8 +207,10 @@ class CredentialsServiceImplSpec extends ManagementConsoleRpcSpecBase with DIDUt
 
       usingApiAsCredentials(rpcRequest) { serviceStub =>
         connectorMock.getConnectionStatus(*).returns {
-          Future.successful(
-            List()
+          ReaderT.liftF(
+            IO.pure(
+              List()
+            )
           )
         }
         val response = serviceStub.getGenericCredentials(request)
@@ -737,7 +745,7 @@ class CredentialsServiceImplSpec extends ManagementConsoleRpcSpecBase with DIDUt
 
   "CredentialsServiceImpl.shareCredentials" should {
     connectorMock.sendMessages(*, *).returns {
-      Future.successful(SendMessagesResponse())
+      ReaderT.liftF(IO.pure(SendMessagesResponse()))
     }
 
     "send credentials to connector and mark them as shared" in {

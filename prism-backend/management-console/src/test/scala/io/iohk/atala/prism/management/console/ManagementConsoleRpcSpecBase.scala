@@ -72,7 +72,7 @@ class ManagementConsoleRpcSpecBase extends RpcSpecBase {
     GrpcAuthenticationHeaderParser
   )
 
-  lazy val connectorMock = mock[ConnectorClient]
+  lazy val connectorMock = mock[ConnectorClient[IOWithTraceIdContext]]
   lazy val contactsIntegrationService = new ContactsIntegrationService(contactsRepository, connectorMock)
 
   lazy val participantsIntegrationService = new ParticipantsIntegrationService(participantsRepository)
