@@ -209,12 +209,7 @@ case class Wallet(node: node_api.NodeServiceGrpc.NodeServiceBlockingStub) {
             credential
           )
       ).toEither.left.map {
-        case e: BatchWasRevoked => NonEmptyList.one(e)
-        case e: KeyWasNotValid => NonEmptyList.one(e)
-        case e: KeyWasRevoked => NonEmptyList.one(e)
-        case e: InvalidSignature => NonEmptyList.one(e)
-        case e: CredentialWasRevoked => NonEmptyList.one(e)
-        case e: InvalidMerkleProof => NonEmptyList.one(e)
+        case e: VerificationException => NonEmptyList.one(e)
       }
     )
   }
