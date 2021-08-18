@@ -10,7 +10,7 @@ import io.iohk.atala.prism.kotlin.credentials.{CredentialBatchId, TimestampInfo}
 import io.iohk.atala.prism.kotlin.crypto.MerkleRoot
 import io.iohk.atala.prism.kotlin.crypto.SHA256Digest
 import io.iohk.atala.prism.kotlin.identity.DIDSuffix
-import io.iohk.atala.prism.models.Ledger
+import io.iohk.atala.prism.models.{BlockInfo, Ledger, TransactionId, TransactionInfo, TransactionStatus}
 import io.iohk.atala.prism.node.cardano.{LAST_SYNCED_BLOCK_NO, LAST_SYNCED_BLOCK_TIMESTAMP}
 import io.iohk.atala.prism.node.grpc.ProtoCodecs
 import io.iohk.atala.prism.node.models.{
@@ -35,11 +35,13 @@ import io.iohk.atala.prism.node.repositories.daos.{
   KeyValuesDAO,
   PublicKeysDAO
 }
+import io.iohk.atala.prism.node.services.{BlockProcessingServiceSpec, ObjectManagementService, SubmissionService}
 import org.scalatest.OptionValues._
 import io.iohk.atala.prism.protos.{node_api, node_internal, node_models}
 import io.iohk.atala.prism.protos.node_models.SignedAtalaOperation
 
 import java.time.Instant
+import scala.concurrent.{ExecutionContext, Future}
 
 // This class collects useful methods to populate and query the node db that are
 // not needed in the node production code, but are useful for tests.
@@ -79,6 +81,40 @@ object DataPreparation {
       )
     )
   )
+
+  def publishSingleOperationAndFlush(signedAtalaOperation: SignedAtalaOperation)(implicit
+      objectManagementService: ObjectManagementService,
+      submissionService: SubmissionService,
+      executionContext: ExecutionContext
+  ): Future[AtalaOperationId] = {
+    for {
+      atalaOperationId <- objectManagementService.sendSingleAtalaOperation(signedAtalaOperation)
+      _ <- submissionService.submitReceivedObjects()
+    } yield atalaOperationId
+  }
+
+  def publishOperationsAndFlush(ops: SignedAtalaOperation*)(implicit
+      objectManagementService: ObjectManagementService,
+      submissionService: SubmissionService,
+      executionContext: ExecutionContext
+  ): Future[List[AtalaOperationId]] = {
+    for {
+      ids <- objectManagementService.sendAtalaOperations(ops: _*)
+      _ <- submissionService.submitReceivedObjects()
+    } yield ids
+  }
+
+  val dummyTime: TimestampInfo = TimestampInfo(Instant.ofEpochMilli(0), 1, 0)
+
+  val dummyTimestamp: Instant = dummyTime.atalaBlockTimestamp
+  val dummyABSequenceNumber: Int = dummyTime.atalaBlockSequenceNumber
+  val dummyTransactionInfo: TransactionInfo =
+    TransactionInfo(
+      transactionId = TransactionId.from(SHA256Digest.compute("id".getBytes).getValue).value,
+      ledger = Ledger.InMemory,
+      block = Some(BlockInfo(number = 1, timestamp = dummyTimestamp, index = dummyABSequenceNumber))
+    )
+  val dummyPublicationInfo: PublicationInfo = PublicationInfo(dummyTransactionInfo, TransactionStatus.Pending)
 
   // ***************************************
   // DIDs and keys
@@ -170,6 +206,33 @@ object DataPreparation {
   // ***************************************
   // Other useful methods
   // ***************************************
+
+  def createBlock(
+      signedOperation: node_models.SignedAtalaOperation = BlockProcessingServiceSpec.signedCreateDidOperation
+  ): node_internal.AtalaBlock = {
+    node_internal.AtalaBlock(version = "1.0", operations = Seq(signedOperation))
+  }
+
+  def createAtalaObject(
+      block: node_internal.AtalaBlock = createBlock(),
+      opsCount: Int = 1
+  ): node_internal.AtalaObject =
+    node_internal
+      .AtalaObject(
+        blockOperationCount = opsCount
+      )
+      .withBlockContent(block)
+
+  def setAtalaObjectTransactionSubmissionStatus(
+      transaction: TransactionInfo,
+      status: AtalaObjectTransactionSubmissionStatus
+  )(implicit db: Transactor[IO]): Unit = {
+    AtalaObjectTransactionSubmissionsDAO
+      .updateStatus(transaction.ledger, transaction.transactionId, status)
+      .transact(db)
+      .unsafeRunSync()
+    ()
+  }
 
   def updateLastSyncedBlock(blockNo: Int, timestamp: Instant)(implicit xa: Transactor[IO]): Unit = {
     val query = for {

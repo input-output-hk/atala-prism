@@ -1,19 +1,13 @@
 package io.iohk.atala.prism.node.repositories
 
 import cats.effect.BracketThrow
-import cats.syntax.traverse._
 import derevo.derive
 import derevo.tagless.applyK
 import doobie.implicits._
 import doobie.util.transactor.Transactor
 import io.iohk.atala.prism.connector.AtalaOperationId
 import io.iohk.atala.prism.node.errors.NodeError
-import io.iohk.atala.prism.node.models.{
-  AtalaObjectId,
-  AtalaObjectInfo,
-  AtalaObjectTransactionSubmission,
-  AtalaOperationStatus
-}
+import io.iohk.atala.prism.node.models.{AtalaObjectId, AtalaObjectInfo, AtalaOperationInfo, AtalaOperationStatus}
 import io.iohk.atala.prism.node.repositories.daos.{AtalaObjectsDAO, AtalaOperationsDAO}
 import io.iohk.atala.prism.node.repositories.daos.AtalaObjectsDAO.AtalaObjectCreateData
 import io.iohk.atala.prism.utils.syntax.DBConnectionOps
@@ -39,9 +33,7 @@ trait AtalaOperationsRepository[F[_]] {
       oldObjects: List[AtalaObjectInfo]
   ): F[Either[NodeError, Unit]]
 
-  def getNotPublishedObjects: F[Either[NodeError, List[AtalaObjectInfo]]]
-
-  def retrieveObjects(transactions: List[AtalaObjectTransactionSubmission]): F[List[Option[AtalaObjectInfo]]]
+  def getOperationInfo(atalaOperationId: AtalaOperationId): F[Option[AtalaOperationInfo]]
 }
 
 object AtalaOperationsRepository {
@@ -91,51 +83,33 @@ private final class AtalaOperationsRepositoryImpl[F[_]: BracketThrow](xa: Transa
     connectionIOSafe(query.logSQLErrors(opDescription, logger)).transact(xa)
   }
 
-  def getNotPublishedObjects: F[Either[NodeError, List[AtalaObjectInfo]]] = {
-    val query = for {
-      objectIds <- AtalaObjectsDAO.getNotPublishedObjectIds
-      objectInfos <- objectIds.traverse(AtalaObjectsDAO.get)
-    } yield objectInfos.flatten
+  def getOperationInfo(atalaOperationId: AtalaOperationId): F[Option[AtalaOperationInfo]] = {
+    val opDescription = s"getting operation info for [$atalaOperationId]"
+    val query = AtalaOperationsDAO.getAtalaOperationInfo(atalaOperationId).logSQLErrors(opDescription, logger)
 
-    val opDescription = "Extract not submitted objects."
-    connectionIOSafe(query.logSQLErrors(opDescription, logger)).transact(xa)
+    connectionIOSafe(query)
+      .map(
+        _.left
+          .map { err =>
+            logger.error(s"Could not retrieve operation [$atalaOperationId]", err)
+          }
+          .getOrElse(None)
+      )
+      .transact(xa)
   }
-
-  def retrieveObjects(transactions: List[AtalaObjectTransactionSubmission]): F[List[Option[AtalaObjectInfo]]] =
-    transactions.traverse { transaction =>
-      val query = AtalaObjectsDAO.get(transaction.atalaObjectId)
-
-      val opDescription = s"Getting atala object by atalaObjectId = ${transaction.atalaObjectId}"
-      connectionIOSafe(query.logSQLErrors(opDescription, logger))
-        .map {
-          case Left(err) =>
-            logger.error(s"Could not retrieve atala object ${transaction.atalaObjectId}", err)
-            None
-          case Right(None) =>
-            logger.error(s"Atala object ${transaction.atalaObjectId} not found")
-            None
-          case Right(result) =>
-            result
-        }
-        .transact(xa)
-    }
 }
 
 private final class AtalaOperationsRepositoryMetrics[F[_]: TimeMeasureMetric: BracketThrow]
     extends AtalaOperationsRepository[Mid[F, *]] {
-
   private val repoName = "AtalaOperationsRepository"
 
   private lazy val insertObjectAndOperationsTimer =
-    TimeMeasureUtil.createDBQueryTimer(repoName, "insertObjectAndOperationsTimer")
+    TimeMeasureUtil.createDBQueryTimer(repoName, "insertObjectAndOperations")
 
   private lazy val mergeObjectsTimerTimer =
-    TimeMeasureUtil.createDBQueryTimer(repoName, "mergeObjectsTimer")
+    TimeMeasureUtil.createDBQueryTimer(repoName, "mergeObjects")
 
-  private lazy val getNotPublishedObjectsTimer =
-    TimeMeasureUtil.createDBQueryTimer(repoName, "getNotPublishedObjects")
-
-  private lazy val retrieveObjectsTimer = TimeMeasureUtil.createDBQueryTimer(repoName, "retrieveObjects")
+  private lazy val getOperationInfoTimer = TimeMeasureUtil.createDBQueryTimer(repoName, "getOperationInfo")
 
   def insertObjectAndOperations(
       objectId: AtalaObjectId,
@@ -150,9 +124,6 @@ private final class AtalaOperationsRepositoryMetrics[F[_]: TimeMeasureMetric: Br
       oldObjects: List[AtalaObjectInfo]
   ): Mid[F, Either[NodeError, Unit]] = _.measureOperationTime(mergeObjectsTimerTimer)
 
-  def getNotPublishedObjects: Mid[F, Either[NodeError, List[AtalaObjectInfo]]] =
-    _.measureOperationTime(getNotPublishedObjectsTimer)
-
-  def retrieveObjects(transactions: List[AtalaObjectTransactionSubmission]): Mid[F, List[Option[AtalaObjectInfo]]] =
-    _.measureOperationTime(retrieveObjectsTimer)
+  def getOperationInfo(atalaOperationId: AtalaOperationId): Mid[F, Option[AtalaOperationInfo]] =
+    _.measureOperationTime(getOperationInfoTimer)
 }

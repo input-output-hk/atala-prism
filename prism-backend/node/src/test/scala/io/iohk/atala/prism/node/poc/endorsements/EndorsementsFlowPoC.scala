@@ -14,9 +14,20 @@ import io.iohk.atala.prism.kotlin.crypto.keys.ECPublicKey
 import io.iohk.atala.prism.kotlin.crypto.signature.ECSignature
 import io.iohk.atala.prism.kotlin.identity.{DID, DIDSuffix}
 import io.iohk.atala.prism.node.grpc.ProtoCodecs
-import io.iohk.atala.prism.node.repositories.{AtalaOperationsRepository, CredentialBatchesRepository, DIDDataRepository}
+import io.iohk.atala.prism.node.repositories.{
+  AtalaObjectsTransactionsRepository,
+  AtalaOperationsRepository,
+  CredentialBatchesRepository,
+  DIDDataRepository,
+  KeyValuesRepository
+}
 import io.iohk.atala.prism.node.services.models.AtalaObjectNotification
-import io.iohk.atala.prism.node.services.{BlockProcessingServiceImpl, InMemoryLedgerService, ObjectManagementService}
+import io.iohk.atala.prism.node.services.{
+  BlockProcessingServiceImpl,
+  InMemoryLedgerService,
+  ObjectManagementService,
+  SubmissionService
+}
 import io.iohk.atala.prism.node.{DataPreparation, NodeServiceImpl}
 import io.iohk.atala.prism.protos.{node_api, node_models}
 import io.iohk.atala.prism.node.poc.Wallet
@@ -37,8 +48,6 @@ import scala.concurrent.{Future, Promise}
 import scala.jdk.CollectionConverters._
 
 class EndorsementsFlowPoC extends AtalaWithPostgresSpec with BeforeAndAfterEach {
-//  implicit val ecTrait = EC
-
   import Utils._
 
   protected var serverName: String = _
@@ -47,10 +56,13 @@ class EndorsementsFlowPoC extends AtalaWithPostgresSpec with BeforeAndAfterEach 
   protected var nodeServiceStub: node_api.NodeServiceGrpc.NodeServiceBlockingStub = _
   protected var didDataRepository: DIDDataRepository[IO] = _
   protected var atalaOperationsRepository: AtalaOperationsRepository[IO] = _
+  protected var atalaObjectsTransactionsRepository: AtalaObjectsTransactionsRepository[IO] = _
+  protected var keyValuesRepository: KeyValuesRepository[IO] = _
   protected var credentialBatchesRepository: CredentialBatchesRepository[IO] = _
   protected var atalaReferenceLedger: InMemoryLedgerService = _
   protected var blockProcessingService: BlockProcessingServiceImpl = _
   protected var objectManagementService: ObjectManagementService = _
+  protected var submissionService: SubmissionService = _
   protected var objectManagementServicePromise: Promise[ObjectManagementService] = _
 
   override def beforeEach(): Unit = {
@@ -69,11 +81,19 @@ class EndorsementsFlowPoC extends AtalaWithPostgresSpec with BeforeAndAfterEach 
     atalaReferenceLedger = new InMemoryLedgerService(onAtalaReference)
     blockProcessingService = new BlockProcessingServiceImpl
     atalaOperationsRepository = AtalaOperationsRepository(database)
+    atalaObjectsTransactionsRepository = AtalaObjectsTransactionsRepository(database)
+    keyValuesRepository = KeyValuesRepository(database)
     objectManagementService = ObjectManagementService(
-      ObjectManagementService.Config(ledgerPendingTransactionTimeout = Duration.ZERO),
+      atalaOperationsRepository,
+      atalaObjectsTransactionsRepository,
+      keyValuesRepository,
+      blockProcessingService
+    )
+    submissionService = SubmissionService(
+      SubmissionService.Config(ledgerPendingTransactionTimeout = Duration.ZERO),
       atalaReferenceLedger,
       atalaOperationsRepository,
-      blockProcessingService
+      atalaObjectsTransactionsRepository
     )
     objectManagementServicePromise.success(objectManagementService)
 
@@ -88,6 +108,7 @@ class EndorsementsFlowPoC extends AtalaWithPostgresSpec with BeforeAndAfterEach 
             new NodeServiceImpl(
               didDataRepository,
               objectManagementService,
+              submissionService,
               credentialBatchesRepository
             ),
             executionContext

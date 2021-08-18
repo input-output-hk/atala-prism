@@ -5,6 +5,7 @@ import com.typesafe.config.{Config, ConfigFactory}
 import io.grpc.{Server, ServerBuilder}
 import io.iohk.atala.prism.metrics.UptimeReporter
 import io.iohk.atala.prism.node.repositories.{
+  AtalaObjectsTransactionsRepository,
   AtalaOperationsRepository,
   CredentialBatchesRepository,
   DIDDataRepository,
@@ -41,7 +42,7 @@ class NodeApp(executionContext: ExecutionContext) { self =>
 
   private val logger = LoggerFactory.getLogger(this.getClass)
 
-  private[this] var server: Server = null
+  private[this] var server: Server = _
 
   private def start(): Unit = {
     Kamon.init()
@@ -68,7 +69,8 @@ class NodeApp(executionContext: ExecutionContext) { self =>
       }
     }
 
-    val keyValueService = new KeyValueService(KeyValuesRepository(transactor))
+    val keyValuesRepository = KeyValuesRepository(transactor)
+    val keyValueService = new KeyValueService(keyValuesRepository)
 
     val (atalaReferenceLedger, releaseAtalaReferenceLedger) = globalConfig.getString("ledger") match {
       case "cardano" =>
@@ -85,12 +87,20 @@ class NodeApp(executionContext: ExecutionContext) { self =>
     val blockProcessingService = new BlockProcessingServiceImpl
     val didDataRepository = DIDDataRepository(transactor)
     val atalaOperationsRepository = AtalaOperationsRepository(transactor)
+    val atalaObjectsTransactionsRepository = AtalaObjectsTransactionsRepository(transactor)
 
     val ledgerPendingTransactionTimeout = globalConfig.getDuration("ledgerPendingTransactionTimeout")
-    val objectManagementService = ObjectManagementService(
-      ObjectManagementService.Config(ledgerPendingTransactionTimeout = ledgerPendingTransactionTimeout),
+    val submissionService = SubmissionService(
+      SubmissionService.Config(ledgerPendingTransactionTimeout = ledgerPendingTransactionTimeout),
       atalaReferenceLedger,
       atalaOperationsRepository,
+      atalaObjectsTransactionsRepository
+    )
+
+    val objectManagementService = ObjectManagementService(
+      atalaOperationsRepository,
+      atalaObjectsTransactionsRepository,
+      keyValuesRepository,
       blockProcessingService
     )
     objectManagementServicePromise.success(objectManagementService)
@@ -101,6 +111,7 @@ class NodeApp(executionContext: ExecutionContext) { self =>
       new NodeServiceImpl(
         didDataRepository,
         objectManagementService,
+        submissionService,
         credentialBatchesRepository
       )
 

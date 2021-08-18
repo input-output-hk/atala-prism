@@ -12,6 +12,7 @@ import io.iohk.atala.prism.models.{Ledger, TransactionId}
 import io.iohk.atala.prism.node.repositories.daos.KeyValuesDAO
 
 import java.time.Instant
+import scala.util.matching.Regex
 
 package object models {
   sealed trait KeyUsage extends EnumEntry with UpperSnakecase {
@@ -45,7 +46,7 @@ package object models {
 
     def apply(digest: SHA256Digest): CredentialId = apply(digest.hexValue)
 
-    val CREDENTIAL_ID_RE = "^[0-9a-f]{64}$".r
+    val CREDENTIAL_ID_RE: Regex = "^[0-9a-f]{64}$".r
   }
 
   case class AtalaOperationInfo(
@@ -99,20 +100,18 @@ package object models {
         timestampInfo: TimestampInfo
     )
 
-    def getLastSyncedTimestampFromMaybe(maybeLastSyncedBlockTimestamp: Option[KeyValuesDAO.KeyValue]): Instant = {
-      val lastSyncedBlockTimestamp =
-        maybeLastSyncedBlockTimestamp
-          .foldMap {
-            case KeyValuesDAO.KeyValue(key, value) =>
-              value
-                .foldMap { _.toLongOption }
-                .getOrElse {
-                  throw new RuntimeException(
-                    s"DB is in invalid state: $key should be a valid long value, but found: $value"
-                  )
-                }
-          }
-      Instant.ofEpochMilli(lastSyncedBlockTimestamp)
-    }
+    def getLastSyncedTimestampFromMaybe(maybeLastSyncedBlockTimestamp: KeyValuesDAO.KeyValue): Instant =
+      maybeLastSyncedBlockTimestamp match {
+        case KeyValuesDAO.KeyValue(key, value) =>
+          val lastSyncedBlockTimestamp =
+            value
+              .foldMap { _.toLongOption }
+              .getOrElse {
+                throw new RuntimeException(
+                  s"DB is in invalid state: $key should be a valid long value, but found: $value"
+                )
+              }
+          Instant.ofEpochMilli(lastSyncedBlockTimestamp)
+      }
   }
 }
