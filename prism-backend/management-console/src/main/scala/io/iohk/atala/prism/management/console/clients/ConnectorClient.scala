@@ -130,7 +130,7 @@ object ConnectorClient {
   )(implicit ec: ExecutionContext): Resource[R, ConnectorClient[F]] =
     Resource.eval(ConnectorClient[F, R](config, logs))
 
-  private final class GrpcImpl[F[_]: Execute](
+  private final class GrpcImpl[F[_]](
       connectorService: ConnectorServiceGrpc.ConnectorServiceStub,
       contactConnectionService: ContactConnectionServiceGrpc.ContactConnectionServiceStub
   )(requestSigner: scalapb.GeneratedMessage => GrpcAuthenticationHeader.DIDBased)(implicit
