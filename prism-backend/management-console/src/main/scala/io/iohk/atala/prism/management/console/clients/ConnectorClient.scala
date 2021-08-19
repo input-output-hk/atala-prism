@@ -14,7 +14,6 @@ import io.iohk.atala.prism.auth.grpc.GrpcAuthenticationHeader.PublishedDIDBased
 import io.iohk.atala.prism.auth.model.RequestNonce
 import io.iohk.atala.prism.connector.RequestAuthenticator
 import io.iohk.atala.prism.kotlin.crypto.EC
-import io.iohk.atala.prism.crypto.{EC => ECScalaSDK}
 import io.iohk.atala.prism.kotlin.crypto.keys.ECPrivateKey
 import io.iohk.atala.prism.kotlin.crypto.signature.ECSignature
 import io.iohk.atala.prism.identity.DID
@@ -29,7 +28,6 @@ import io.iohk.atala.prism.logging.GeneralLoggableInstances._
 
 import scala.concurrent.ExecutionContext
 import scala.util.{Failure, Success, Try}
-import io.iohk.atala.prism.interop.toScalaSDK._
 import tofu.Execute
 import tofu.higherKind.Mid
 import tofu.logging.{Logs, ServiceLogging}
@@ -107,11 +105,11 @@ object ConnectorClient {
       val connectorService = GrpcUtils
         .createPlaintextStub(host = config.host, port = config.port, stub = ConnectorServiceGrpc.stub)
 
-      val requestAuthenticator = new RequestAuthenticator(ECScalaSDK)
+      val requestAuthenticator = new RequestAuthenticator
 
       def requestSigner(request: scalapb.GeneratedMessage): GrpcAuthenticationHeader.DIDBased = {
 
-        val signedRequest = requestAuthenticator.signConnectorRequest(request.toByteArray, config.didPrivateKey.asScala)
+        val signedRequest = requestAuthenticator.signConnectorRequest(request.toByteArray, config.didPrivateKey)
         PublishedDIDBased(
           did = DID.unsafeFromString(config.whitelistedDID.value),
           keyId = masterKeyId,
