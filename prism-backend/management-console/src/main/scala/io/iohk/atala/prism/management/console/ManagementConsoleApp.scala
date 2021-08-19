@@ -114,7 +114,8 @@ object ManagementConsoleApp extends IOApp {
       groupsService = new GroupsServiceImpl(institutionGroupsRepository, authenticator)
       participantsIntegrationService = new ParticipantsIntegrationService(participantsRepository)
       consoleService = new ConsoleServiceImpl(participantsIntegrationService, statisticsRepository, authenticator)
-      contactsIntegrationService = new ContactsIntegrationService(contactsRepository, connector)
+      contactsIntegrationService <-
+        ContactsIntegrationService.makeResource(contactsRepository, connector, managementConsoleLogs)
       contactsService = new ContactsServiceImpl(contactsIntegrationService, authenticator)
       credentialIssuanceService = new CredentialIssuanceServiceImpl(
         credentialIssuancesRepository,
