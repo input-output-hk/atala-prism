@@ -89,16 +89,16 @@ private final class CredentialStoreServiceLogs[F[_]: ServiceLogging[*[_], Creden
 
   override def getLatestCredentialExternalId(participantId: ParticipantId): Mid[F, Option[CredentialExternalId]] =
     in =>
-      info"getting storied credentials $participantId" *> in
-        .flatTap(_ => info"getting storied credentials - successfully done")
-        .onError(errorCause"encountered an error while getting storied credentials" (_))
+      info"getting latest stored credentials $participantId" *> in
+        .flatTap(_ => info"getting latest stored credentials - successfully done")
+        .onError(errorCause"encountered an error while getting latest stored credentials" (_))
 
   override def getStoredCredentialsFor(
       participantId: ParticipantId,
       getStoredCredentials: GetStoredCredentials
   ): Mid[F, List[ReceivedSignedCredential]] =
     in =>
-      info"getting storied credentials $participantId" *> in
-        .flatTap(_ => info"getting storied credentials - successfully done")
-        .onError(errorCause"encountered an error while getting storied credentials" (_))
+      info"getting stored credentials $participantId" *> in
+        .flatTap(_ => info"getting stored credentials - successfully done")
+        .onError(errorCause"encountered an error while getting stored credentials" (_))
 }
