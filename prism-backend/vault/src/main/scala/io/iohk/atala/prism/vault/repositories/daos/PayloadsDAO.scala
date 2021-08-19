@@ -6,7 +6,7 @@ import doobie.ConnectionIO
 import doobie.free.connection
 import doobie.implicits.toSqlInterpolator
 import doobie.implicits.legacy.instant._
-import io.iohk.atala.prism.identity.DID
+import io.iohk.atala.prism.kotlin.identity.DID
 import io.iohk.atala.prism.vault.model.{CreatePayload, Payload}
 
 object PayloadsDAO {

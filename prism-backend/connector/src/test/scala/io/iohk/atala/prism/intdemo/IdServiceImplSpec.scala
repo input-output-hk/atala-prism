@@ -19,7 +19,7 @@ import io.iohk.atala.prism.utils.Base64Utils
 import scala.concurrent.duration._
 import scala.concurrent.{ExecutionContext, Future}
 import scala.language.postfixOps
-import io.iohk.atala.prism.identity.DID
+import io.iohk.atala.prism.kotlin.identity.DID
 
 class IdServiceImplSpec extends AnyFlatSpec {
 

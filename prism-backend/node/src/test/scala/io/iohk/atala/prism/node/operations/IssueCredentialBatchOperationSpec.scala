@@ -4,7 +4,7 @@ import cats.effect.IO
 import com.google.protobuf.ByteString
 import doobie.implicits._
 import io.iohk.atala.prism.AtalaWithPostgresSpec
-import io.iohk.atala.prism.credentials.TimestampInfo
+import io.iohk.atala.prism.kotlin.credentials.TimestampInfo
 import io.iohk.atala.prism.kotlin.crypto.MerkleRoot
 import io.iohk.atala.prism.kotlin.crypto.SHA256Digest
 import io.iohk.atala.prism.models.{Ledger, TransactionId}
@@ -29,7 +29,7 @@ object IssueCredentialBatchOperationSpec {
     DIDPublicKey(issuerDIDSuffix, "issuing", KeyUsage.IssuingKey, issuingKeys.getPublicKey)
   )
 
-  lazy val dummyTimestamp = TimestampInfo(Instant.ofEpochMilli(0), 1, 0)
+  lazy val dummyTimestamp = new TimestampInfo(Instant.ofEpochMilli(0).toEpochMilli, 1, 0)
   lazy val dummyLedgerData = LedgerData(
     TransactionId.from(Array.fill[Byte](TransactionId.config.size.toBytes.toInt)(0)).value,
     Ledger.InMemory,
@@ -47,7 +47,7 @@ object IssueCredentialBatchOperationSpec {
       value = node_models.IssueCredentialBatchOperation(
         credentialBatchData = Some(
           node_models.CredentialBatchData(
-            issuerDid = issuerDIDSuffix.value,
+            issuerDid = issuerDIDSuffix.getValue,
             merkleRoot = ByteString.copyFrom(mockMerkleRoot.getHash.getValue)
           )
         )

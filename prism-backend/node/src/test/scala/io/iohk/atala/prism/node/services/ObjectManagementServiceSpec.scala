@@ -5,7 +5,7 @@ import doobie.free.connection
 import doobie.implicits._
 import io.iohk.atala.prism.AtalaWithPostgresSpec
 import io.iohk.atala.prism.connector.AtalaOperationId
-import io.iohk.atala.prism.credentials.TimestampInfo
+import io.iohk.atala.prism.kotlin.credentials.TimestampInfo
 import io.iohk.atala.prism.kotlin.crypto.{EC, SHA256Digest}
 import io.iohk.atala.prism.kotlin.crypto.keys.ECKeyPair
 import io.iohk.atala.prism.models.{
@@ -88,15 +88,16 @@ class ObjectManagementServiceSpec
       blockProcessing
     )
 
-  private val dummyTime = TimestampInfo(Instant.ofEpochMilli(0), 1, 0)
+  private val dummyTime = new TimestampInfo(Instant.ofEpochMilli(0).toEpochMilli, 1, 0)
 
-  private val dummyTimestamp = dummyTime.atalaBlockTimestamp
-  private val dummyABSequenceNumber = dummyTime.atalaBlockSequenceNumber
+  private val dummyTimestamp = dummyTime.getAtalaBlockTimestamp
+  private val dummyABSequenceNumber = dummyTime.getAtalaBlockSequenceNumber
   private val dummyTransactionInfo =
     TransactionInfo(
       transactionId = TransactionId.from(SHA256Digest.compute("id".getBytes).getValue).value,
       ledger = Ledger.InMemory,
-      block = Some(BlockInfo(number = 1, timestamp = dummyTimestamp, index = dummyABSequenceNumber))
+      block =
+        Some(BlockInfo(number = 1, timestamp = Instant.ofEpochMilli(dummyTimestamp), index = dummyABSequenceNumber))
     )
   private val dummyPublicationInfo = PublicationInfo(dummyTransactionInfo, TransactionStatus.Pending)
 
@@ -378,7 +379,7 @@ class ObjectManagementServiceSpec
         // mockito hates value classes, so we cannot test equality to this argument
         anyTransactionIdMatcher,
         mockito.ArgumentMatchers.eq(dummyTransactionInfo.ledger),
-        mockito.ArgumentMatchers.eq(dummyTimestamp),
+        mockito.ArgumentMatchers.eq(Instant.ofEpochMilli(dummyTimestamp)),
         mockito.ArgumentMatchers.eq(dummyABSequenceNumber)
       )
       blockCaptor.value mustEqual block

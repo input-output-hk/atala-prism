@@ -1,28 +1,23 @@
 package io.iohk.atala.prism.node.repositories
 
+import cats.data.NonEmptyList
+
 import java.time.Instant
 import doobie.postgres.implicits._
 import doobie.util.invariant.InvalidEnum
 import doobie.{Get, Meta, Put, Read, Write}
 import doobie.implicits.legacy.instant._
 import io.iohk.atala.prism.connector.AtalaOperationId
-import io.iohk.atala.prism.credentials.{CredentialBatchId, TimestampInfo}
-import io.iohk.atala.prism.kotlin.crypto.EC
+import io.iohk.atala.prism.kotlin.credentials.{CredentialBatchId, TimestampInfo}
+import io.iohk.atala.prism.kotlin.crypto.{EC, MerkleRoot, SHA256Digest}
 import io.iohk.atala.prism.kotlin.crypto.ECConfig.{INSTANCE => ECConfig}
 import io.iohk.atala.prism.daos.BaseDAO
-import io.iohk.atala.prism.identity.DIDSuffix
+import io.iohk.atala.prism.kotlin.identity.DIDSuffix
 import io.iohk.atala.prism.models.{BlockInfo, Ledger, TransactionId, TransactionInfo}
-import io.iohk.atala.prism.node.models.nodeState.{DIDPublicKeyState, LedgerData}
-import io.iohk.atala.prism.node.models.{
-  AtalaObjectId,
-  AtalaObjectInfo,
-  AtalaObjectTransactionSubmissionStatus,
-  AtalaOperationInfo,
-  AtalaOperationStatus,
-  CredentialId,
-  KeyUsage
-}
+import io.iohk.atala.prism.node.models.nodeState.{CredentialBatchState, DIDPublicKeyState, LedgerData}
+import io.iohk.atala.prism.node.models._
 import io.iohk.atala.prism.kotlin.crypto.keys.ECPublicKey
+import io.iohk.atala.prism.utils.syntax._
 
 package object daos extends BaseDAO {
 
@@ -52,14 +47,14 @@ package object daos extends BaseDAO {
       _.entryName
     )
 
-  implicit val didSuffixPut: Put[DIDSuffix] = Put[String].contramap(_.value)
-  implicit val didSuffixGet: Get[DIDSuffix] = Get[String].map(DIDSuffix.unsafeFromString)
+  implicit val didSuffixPut: Put[DIDSuffix] = Put[String].contramap(_.getValue)
+  implicit val didSuffixGet: Get[DIDSuffix] = Get[String].map(DIDSuffix.fromString)
 
   implicit val credentialIdPut: Put[CredentialId] = Put[String].contramap(_.id)
   implicit val credentialIdGet: Get[CredentialId] = Get[String].map(CredentialId(_))
 
   implicit val credentialBatchIdMeta: Meta[CredentialBatchId] =
-    Meta[String].timap(CredentialBatchId.fromString(_).get)(_.id)
+    Meta[String].timap(CredentialBatchId.fromString)(_.getId)
 
   implicit val didPublicKeyWrite: Write[DIDPublicKeyState] = {
     Write[
@@ -68,7 +63,6 @@ package object daos extends BaseDAO {
           String,
           KeyUsage,
           String,
-          Array[Byte],
           Array[Byte],
           Instant,
           Int,
@@ -79,20 +73,19 @@ package object daos extends BaseDAO {
       )
     ].contramap { key =>
       val curveName = ECConfig.getCURVE_NAME
-      val point = key.key.getCurvePoint
+      val compressed = key.key.getEncodedCompressed
       (
         key.didSuffix,
         key.keyId,
         key.keyUsage,
         curveName,
-        point.getX.bytes(),
-        point.getY.bytes(),
-        key.addedOn.timestampInfo.atalaBlockTimestamp,
-        key.addedOn.timestampInfo.atalaBlockSequenceNumber,
-        key.addedOn.timestampInfo.operationSequenceNumber,
-        key.revokedOn map (_.timestampInfo.atalaBlockTimestamp),
-        key.revokedOn map (_.timestampInfo.atalaBlockSequenceNumber),
-        key.revokedOn map (_.timestampInfo.operationSequenceNumber)
+        compressed,
+        key.addedOn.timestampInfo.getAtalaBlockTimestamp.toInstant,
+        key.addedOn.timestampInfo.getAtalaBlockSequenceNumber,
+        key.addedOn.timestampInfo.getOperationSequenceNumber,
+        key.revokedOn map (_.timestampInfo.getAtalaBlockTimestamp.toInstant),
+        key.revokedOn map (_.timestampInfo.getAtalaBlockSequenceNumber),
+        key.revokedOn map (_.timestampInfo.getOperationSequenceNumber)
       )
     }
   }
@@ -141,7 +134,7 @@ package object daos extends BaseDAO {
             yield LedgerData(
               transactionId = transactionId,
               ledger = ledger,
-              timestampInfo = TimestampInfo(t, absn, osn)
+              timestampInfo = new TimestampInfo(t.toEpochMilli, absn, osn)
             )
         DIDPublicKeyState(
           didSuffix,
@@ -151,7 +144,7 @@ package object daos extends BaseDAO {
           LedgerData(
             transactionId = aTransactionId,
             ledger = aLedger,
-            timestampInfo = TimestampInfo(aTimestamp, aABSN, aOSN)
+            timestampInfo = new TimestampInfo(aTimestamp.toEpochMilli, aABSN, aOSN)
           ),
           revokeLedgerData
         )
@@ -210,4 +203,93 @@ package object daos extends BaseDAO {
         )
     }
   }
+
+  implicit val ledgerDataGet: Get[LedgerData] =
+    Get.Advanced
+      .other[(Array[Byte], String, Instant, Int, Int)](
+        NonEmptyList.of("TRANSACTION_ID", "VARCHAR(32)", "TIMESTAMPTZ", "INTEGER", "INTEGER")
+      )
+      .tmap {
+        case (tId, ledger, abt, absn, osn) =>
+          LedgerData(
+            TransactionId.from(tId).get,
+            Ledger.withNameInsensitive(ledger),
+            new TimestampInfo(abt.toEpochMilli, absn, osn)
+          )
+      }
+  implicit val ledgerDataRead: Read[LedgerData] =
+    Read[(Array[Byte], String, Instant, Int, Int)]
+      .map {
+        case (tId, ledger, abt, absn, osn) =>
+          LedgerData(
+            TransactionId.from(tId).get,
+            Ledger.withNameInsensitive(ledger),
+            new TimestampInfo(abt.toEpochMilli, absn, osn)
+          )
+      }
+
+  implicit val CredentialBatchStateRead: Read[CredentialBatchState] = {
+    Read[
+      (
+          String,
+          String,
+          Array[Byte],
+          Array[Byte],
+          String,
+          Instant,
+          Int,
+          Int,
+          Option[Array[Byte]],
+          Option[String],
+          Option[Instant],
+          Option[Int],
+          Option[Int],
+          Array[Byte]
+      )
+    ].map {
+      case (
+            batchId,
+            suffix,
+            root,
+            issTxId,
+            issLedger,
+            issABT,
+            issABSN,
+            issOSN,
+            revTxIdOp,
+            revLedgerOp,
+            revABTOp,
+            revABSNOp,
+            revOSNOp,
+            sha
+          ) =>
+        val issuedOn = LedgerData(
+          TransactionId.from(issTxId).get,
+          Ledger.withNameInsensitive(issLedger),
+          new TimestampInfo(issABT.toEpochMilli, issABSN, issOSN)
+        )
+        val revokedOn = {
+          (revTxIdOp, revLedgerOp, revABTOp, revABSNOp, revOSNOp) match {
+            case (Some(rTrId), Some(rLedger), Some(rAbt), Some(rAbsn), Some(rOsn)) =>
+              Some(
+                LedgerData(
+                  TransactionId.from(rTrId).get,
+                  Ledger.withNameInsensitive(rLedger),
+                  new TimestampInfo(rAbt.toEpochMilli, rAbsn, rOsn)
+                )
+              )
+            case _ => None
+          }
+        }
+        CredentialBatchState(
+          CredentialBatchId.fromString(batchId),
+          DIDSuffix.fromString(suffix),
+          new MerkleRoot(SHA256Digest.fromBytes(root)),
+          issuedOn,
+          revokedOn,
+          SHA256Digest.fromBytes(sha)
+        )
+    }
+  }
+
 }

@@ -61,7 +61,6 @@ object PrismBuild {
       .enablePlugins(GitVersioning)
 
   lazy val protosLib = ProjectRef(file("../prism-sdk"), "prismProtosJVM")
-  lazy val credentialsLib = ProjectRef(file("../prism-sdk"), "prismCredentialsJVM")
 
   lazy val common =
     commonProject(project in file("common"))
@@ -87,9 +86,9 @@ object PrismBuild {
               monix,
               typesafeConfig
             ) ++
-            Seq(prismCrypto)
+            Seq(prismCrypto, prismCredentials)
       )
-      .dependsOn(protosLib, credentialsLib)
+      .dependsOn(protosLib)
 
   private def generateImageName(name: String, version: String): ImageName =
     if (sys.env.get("GITHUB").contains("1"))

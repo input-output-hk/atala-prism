@@ -3,7 +3,7 @@ package io.iohk.atala.prism.node.repositories.daos
 import java.time.Instant
 
 import io.iohk.atala.prism.AtalaWithPostgresSpec
-import io.iohk.atala.prism.credentials.TimestampInfo
+import io.iohk.atala.prism.kotlin.credentials.TimestampInfo
 import io.iohk.atala.prism.kotlin.crypto.EC
 import io.iohk.atala.prism.models.{Ledger, TransactionId}
 import io.iohk.atala.prism.node.DataPreparation
@@ -46,7 +46,7 @@ class PublicKeysDAOSpec extends AtalaWithPostgresSpec {
   )
 
   val didData = DIDData(didSuffix, keys, operationDigest)
-  val dummyTimestamp = TimestampInfo(Instant.ofEpochMilli(0), 1, 0)
+  val dummyTimestamp = new TimestampInfo(Instant.ofEpochMilli(0).toEpochMilli, 1, 0)
   val dummyLedgerData = LedgerData(
     TransactionId.from(Array.fill[Byte](TransactionId.config.size.toBytes.toInt)(0)).value,
     Ledger.InMemory,

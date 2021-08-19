@@ -24,7 +24,7 @@ import io.iohk.atala.prism.services.BaseGrpcClientService.{
   DidBasedAuthConfig,
   PublicKeyBasedAuthConfig
 }
-import io.iohk.atala.prism.identity.DID
+import io.iohk.atala.prism.kotlin.identity.DID
 import io.iohk.atala.prism.daos.DbConfigDao
 import io.iohk.atala.prism.protos.{connector_api, node_models}
 import doobie.implicits._
@@ -85,7 +85,7 @@ abstract class BaseGrpcClientService[S <: AbstractStub[S]](
     authConfig match {
       case DidBasedAuthConfig(did, didKeyId, _, _, _) =>
         createMetadataHeaders(
-          AuthHeaders.DID -> did.value,
+          AuthHeaders.DID -> did.getValue,
           AuthHeaders.DID_KEY_ID -> didKeyId,
           AuthHeaders.DID_SIGNATURE -> signature.encodedSignature,
           AuthHeaders.REQUEST_NONCE -> signature.encodedRequestNonce
@@ -150,7 +150,7 @@ object BaseGrpcClientService {
 
       lazy val getFromApplicationConfig: Option[DidBasedAuthConfig] = {
         for {
-          did <- Try(applicationConfig.getString(s"auth.${ConfigKeyNames.DID}")).toOption.map(DID.unsafeFromString)
+          did <- Try(applicationConfig.getString(s"auth.${ConfigKeyNames.DID}")).toOption.map(DID.fromString)
 
           didMasterKeyId <- Try(applicationConfig.getString(s"auth.${ConfigKeyNames.DID_MASTER_KEY_ID}")).toOption
           didMasterPrivateKey <- Try(
@@ -176,7 +176,7 @@ object BaseGrpcClientService {
 
       lazy val getFromDb: Task[DidBasedAuthConfig] = {
         (for {
-          did <- OptionT(DbConfigDao.get(ConfigKeyNames.DID)).map(DID.unsafeFromString)
+          did <- OptionT(DbConfigDao.get(ConfigKeyNames.DID)).map(DID.fromString)
 
           didMasterKeyId <- OptionT(DbConfigDao.get(ConfigKeyNames.DID_MASTER_KEY_ID))
           didMasterPrivateKey <- OptionT(DbConfigDao.get(ConfigKeyNames.DID_MASTER_PRIVATE_KEY))
@@ -260,7 +260,7 @@ object BaseGrpcClientService {
               .fromFuture(connector.registerDID(request))
               .map(response =>
                 DidBasedAuthConfig(
-                  did = DID.unsafeFromString(response.did),
+                  did = DID.fromString(response.did),
                   didMasterKeyId = masterKeyId,
                   didMasterKeyPair = masterKeyPair,
                   didIssuingKeyId = issuingKeyId,

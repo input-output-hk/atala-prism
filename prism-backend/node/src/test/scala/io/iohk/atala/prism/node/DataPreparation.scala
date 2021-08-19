@@ -6,10 +6,10 @@ import com.google.protobuf.ByteString
 import doobie.util.transactor.Transactor
 import doobie.implicits._
 import io.iohk.atala.prism.connector.AtalaOperationId
-import io.iohk.atala.prism.credentials.{CredentialBatchId, TimestampInfo}
+import io.iohk.atala.prism.kotlin.credentials.{CredentialBatchId, TimestampInfo}
 import io.iohk.atala.prism.kotlin.crypto.MerkleRoot
 import io.iohk.atala.prism.kotlin.crypto.SHA256Digest
-import io.iohk.atala.prism.identity.DIDSuffix
+import io.iohk.atala.prism.kotlin.identity.DIDSuffix
 import io.iohk.atala.prism.models.Ledger
 import io.iohk.atala.prism.node.cardano.{LAST_SYNCED_BLOCK_NO, LAST_SYNCED_BLOCK_TIMESTAMP}
 import io.iohk.atala.prism.node.grpc.ProtoCodecs
@@ -46,7 +46,7 @@ import java.time.Instant
 // We also use these tests to test DAOs (note that the methods not present here are
 // defined in corresponding repositories
 object DataPreparation {
-  val dummyTimestampInfo: TimestampInfo = TimestampInfo(Instant.ofEpochMilli(0), 1, 0)
+  val dummyTimestampInfo: TimestampInfo = new TimestampInfo(Instant.ofEpochMilli(0).toEpochMilli, 1, 0)
   val exampleOperation: node_models.AtalaOperation = node_models.AtalaOperation(
     node_models.AtalaOperation.Operation.CreateDid(
       value = node_models.CreateDIDOperation(

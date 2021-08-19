@@ -6,8 +6,8 @@ import io.iohk.atala.prism.kotlin.crypto.keys.ECKeyPair
 import io.iohk.atala.prism.kotlin.crypto.signature.ECSignature
 import io.iohk.atala.prism.auth
 import io.iohk.atala.prism.auth.grpc.SignedRequestsHelper
-import io.iohk.atala.prism.identity.DID
-import io.iohk.atala.prism.identity.DID.masterKeyId
+import io.iohk.atala.prism.kotlin.identity.DID
+import io.iohk.atala.prism.kotlin.identity.DID.masterKeyId
 import scalapb.GeneratedMessage
 
 final case class SignedRpcRequest[R <: GeneratedMessage](

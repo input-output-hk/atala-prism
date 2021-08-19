@@ -69,6 +69,7 @@ class EncryptedDataVaultGrpcService(
       }
     }
   }
+
   private def parseOptionalLastSeenId(lastSeenId: String): Option[Payload.Id] = {
     if (lastSeenId.isEmpty) {
       None

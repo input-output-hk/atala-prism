@@ -29,6 +29,12 @@ object syntax {
     def toInstant: Instant = Instant.ofEpochSecond(value.seconds, value.nanos.toLong)
   }
 
+  implicit class LongOps(val value: Long) extends AnyVal {
+
+    /** converts long to instant using milli value */
+    def toInstant: Instant = Instant.ofEpochMilli(value)
+  }
+
   implicit class DBConnectionOps[T](val connection: doobie.ConnectionIO[T]) extends AnyVal {
 
     /** logs SQL errors from DB, to not expose them to the user */

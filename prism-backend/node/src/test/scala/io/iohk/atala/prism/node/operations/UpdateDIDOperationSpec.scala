@@ -4,7 +4,7 @@ import cats.effect.IO
 import com.google.protobuf.ByteString
 import doobie.implicits._
 import io.iohk.atala.prism.AtalaWithPostgresSpec
-import io.iohk.atala.prism.credentials.TimestampInfo
+import io.iohk.atala.prism.kotlin.credentials.TimestampInfo
 import io.iohk.atala.prism.kotlin.crypto.EC
 import io.iohk.atala.prism.kotlin.crypto.SHA256Digest
 import io.iohk.atala.prism.models.{Ledger, TransactionId}
@@ -26,7 +26,7 @@ object UpdateDIDOperationSpec {
 
   val newMasterKeys = EC.generateKeyPair()
 
-  lazy val dummyTimestamp = TimestampInfo(Instant.ofEpochMilli(0), 1, 0)
+  lazy val dummyTimestamp = new TimestampInfo(Instant.ofEpochMilli(0).toEpochMilli, 1, 0)
   lazy val dummyLedgerData = LedgerData(
     TransactionId.from(Array.fill[Byte](TransactionId.config.size.toBytes.toInt)(0)).value,
     Ledger.InMemory,
@@ -61,7 +61,7 @@ object UpdateDIDOperationSpec {
     operation = node_models.AtalaOperation.Operation.UpdateDid(
       value = node_models.UpdateDIDOperation(
         previousOperationHash = ByteString.copyFrom(createDidOperation.digest.getValue.toArray),
-        id = createDidOperation.id.value,
+        id = createDidOperation.id.getValue,
         actions = Seq(exampleAddKeyAction, exampleRemoveKeyAction)
       )
     )

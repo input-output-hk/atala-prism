@@ -1,6 +1,6 @@
 package io.iohk.atala.prism.management.console.models
 
-import io.iohk.atala.prism.credentials.CredentialBatchId
+import io.iohk.atala.prism.kotlin.credentials.CredentialBatchId
 import io.iohk.atala.prism.kotlin.crypto.MerkleInclusionProof
 
 case class PublishCredential(

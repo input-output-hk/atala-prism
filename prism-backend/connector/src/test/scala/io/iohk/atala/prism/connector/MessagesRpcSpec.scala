@@ -11,8 +11,8 @@ import io.iohk.atala.prism.connector.model.MessageId
 import io.iohk.atala.prism.connector.repositories.daos.MessagesDAO
 import io.iohk.atala.prism.kotlin.crypto.EC
 import io.iohk.atala.prism.kotlin.crypto.keys.{ECKeyPair, ECPublicKey}
-import io.iohk.atala.prism.identity.DID
-import io.iohk.atala.prism.identity.DID.masterKeyId
+import io.iohk.atala.prism.kotlin.identity.DID
+import io.iohk.atala.prism.kotlin.identity.DID.masterKeyId
 import io.iohk.atala.prism.models.ParticipantId
 import io.iohk.atala.prism.protos.connector_api
 import io.iohk.atala.prism.protos.connector_models.MessageToSendByConnectionToken
@@ -25,8 +25,6 @@ import org.mockito.verification.VerificationWithTimeout
 import org.scalatest.Assertion
 
 import java.util.UUID
-
-import io.iohk.atala.prism.interop.toScalaSDK._
 
 class MessagesRpcSpec extends ConnectorRpcSpecBase {
   private def eventually: VerificationWithTimeout = Mockito.timeout(5000)
@@ -361,7 +359,7 @@ class MessagesRpcSpec extends ConnectorRpcSpecBase {
 
     "return existing messages immediately while authed by unpublished did" in {
       val keyPair = EC.generateKeyPair()
-      val unpublishedDid = DID.createUnpublishedDID(keyPair.getPublicKey.asScala)
+      val unpublishedDid = DID.createUnpublishedDID(keyPair.getPublicKey, null)
       val participant = createParticipant(unpublishedDid, keyPair.getPublicKey)
       val messageIds = generateMessageIds(participant)
       testMessagesExisting(keyPair, unpublishedDid, messageIds)

@@ -9,7 +9,7 @@ import io.iohk.atala.prism.auth.grpc.GrpcAuthenticationHeader
 import io.iohk.atala.prism.auth.model.RequestNonce
 import io.iohk.atala.prism.connector.AtalaOperationId
 import io.iohk.atala.prism.grpc.ProtoConverter
-import io.iohk.atala.prism.identity.DID
+import io.iohk.atala.prism.kotlin.identity.DID
 import io.iohk.atala.prism.management.console.grpc.ProtoCodecs.{checkListUniqueness, toTimestamp}
 import io.iohk.atala.prism.management.console.models.PaginatedQueryConstraints.ResultOrdering
 import io.iohk.atala.prism.management.console.models._
@@ -27,7 +27,7 @@ import io.scalaland.chimney.dsl._
 import io.scalaland.chimney.Transformer
 
 import java.time.LocalDate
-import io.iohk.atala.prism.credentials.CredentialBatchId
+import io.iohk.atala.prism.kotlin.credentials.CredentialBatchId
 import io.iohk.atala.prism.kotlin.crypto.MerkleInclusionProof
 import io.iohk.atala.prism.kotlin.crypto.SHA256Digest
 import io.iohk.atala.prism.kotlin.crypto.signature.ECSignature
@@ -89,9 +89,10 @@ package object grpc {
     {
       for {
         did <- Try {
-          DID
-            .fromString(request.did)
-            .getOrElse(throw new RuntimeException("Missing or invalid DID"))
+          Try(
+            DID
+              .fromString(request.did)
+          ).getOrElse(throw new RuntimeException("Missing or invalid DID"))
         }
         name <- Try {
           if (request.name.trim.isEmpty) throw new RuntimeException("The name is required")
@@ -576,8 +577,10 @@ package object grpc {
       connectorRequestMetadata.map(_.didSignature)
     ).mapN {
         case (nonce, didStr, keyId, signature) =>
-          DID
-            .fromString(didStr)
+          Try(
+            DID
+              .fromString(didStr)
+          ).toOption
             .map { did =>
               val didBased =
                 if (did.isCanonicalForm)
@@ -612,7 +615,7 @@ package object grpc {
   implicit val getLedgerDataConverter: ProtoConverter[GetLedgerDataRequest, GetLedgerData] =
     (request: GetLedgerDataRequest) => {
       for {
-        batchId <- Try(CredentialBatchId.unsafeFromString(request.batchId))
+        batchId <- Try(CredentialBatchId.fromString(request.batchId))
         credentialHash = SHA256Digest.fromBytes(request.credentialHash.toByteArray)
       } yield GetLedgerData(batchId, credentialHash)
     }
@@ -643,7 +646,7 @@ package object grpc {
           request.encodedSignedCredential
         }
         consoleCredentialId = GenericCredential.Id.unsafeFrom(request.consoleCredentialId)
-        batchId = CredentialBatchId.unsafeFromString(request.batchId)
+        batchId = CredentialBatchId.fromString(request.batchId)
         proof = Try(
           MerkleInclusionProof
             .decode(request.encodedInclusionProof)
@@ -694,9 +697,10 @@ package object grpc {
     (response: node_api.IssueCredentialBatchResponse) => {
       for {
         batchId <- Try(
-          CredentialBatchId
-            .fromString(response.batchId)
-            .getOrElse(throw new RuntimeException("Node returned an invalid batch id"))
+          Option(
+            CredentialBatchId
+              .fromString(response.batchId)
+          ).getOrElse(throw new RuntimeException("Node returned an invalid batch id"))
         )
       } yield IssueCredentialBatchNodeResponse(
         batchId,

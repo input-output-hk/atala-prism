@@ -13,8 +13,8 @@ import io.iohk.atala.prism.connector.repositories.daos.{ConnectionTokensDAO, Con
 import io.iohk.atala.prism.kotlin.crypto.EC
 import io.iohk.atala.prism.kotlin.crypto.keys.{ECKeyPair, ECPublicKey}
 import io.iohk.atala.prism.kotlin.crypto.ECConfig.{INSTANCE => ECConfig}
-import io.iohk.atala.prism.identity.DID
-import io.iohk.atala.prism.identity.DID.masterKeyId
+import io.iohk.atala.prism.kotlin.identity.DID
+import io.iohk.atala.prism.kotlin.identity.DID.masterKeyId
 import io.iohk.atala.prism.protos.connector_api.GetConnectionTokenInfoRequest
 import io.iohk.atala.prism.protos.node_api.GetDidDocumentRequest
 import io.iohk.atala.prism.protos.node_models.{KeyUsage, LedgerData}
@@ -81,7 +81,7 @@ class ConnectionsRpcSpec extends ConnectorRpcSpecBase with MockitoSugar {
       val request = connector_api.GetConnectionTokenInfoRequest(token.token)
       val rpcRequest = SignedRpcRequest.generate(keyPair, did, request)
 
-      testGetConnectionToken(rpcRequest, request, did.canonical.get.toString)
+      testGetConnectionToken(rpcRequest, request, did.canonical.toString)
     }
 
     "returns UNKNOWN if token does not exist" in {
@@ -162,7 +162,7 @@ class ConnectionsRpcSpec extends ConnectorRpcSpecBase with MockitoSugar {
 
         result.publicKey must be(empty)
         result.tpe must be(Holder)
-        result.did must be(unpublishedDID.canonical)
+        result.did must be(Option(unpublishedDID.canonical))
       }
     }
 
@@ -244,7 +244,6 @@ class ConnectionsRpcSpec extends ConnectorRpcSpecBase with MockitoSugar {
         val status = intercept[StatusRuntimeException] {
           blockingStub.addConnectionFromToken(request2)
         }.getStatus
-
         status.getCode mustBe Status.Code.ALREADY_EXISTS
         status.getDescription must include(holderKeys.getPublicKey.toString.takeWhile(_ != '@'))
       }
@@ -564,7 +563,7 @@ class ConnectionsRpcSpec extends ConnectorRpcSpecBase with MockitoSugar {
     val response = node_api.GetDidDocumentResponse(
       Some(
         node_models.DIDData(
-          id = issuerDID.suffix.value,
+          id = issuerDID.getSuffix.getValue,
           publicKeys = issuerCommKeys.map {
             case (keyId, key, revokedTimestamp, usage) =>
               val ecPoint = key.getPublicKey.getCurvePoint
@@ -594,7 +593,7 @@ class ConnectionsRpcSpec extends ConnectorRpcSpecBase with MockitoSugar {
         )
       )
     )
-    doReturn(Future.successful(response)).when(nodeMock).getDidDocument(GetDidDocumentRequest(issuerDID.value))
+    doReturn(Future.successful(response)).when(nodeMock).getDidDocument(GetDidDocumentRequest(issuerDID.getValue))
 
     val request = connector_api.GetConnectionCommunicationKeysRequest(connectionId = connectionId.toString)
     val rpcRequest = SignedRpcRequest.generate(holderKey, holderDID, request)
@@ -616,6 +615,6 @@ class ConnectionsRpcSpec extends ConnectorRpcSpecBase with MockitoSugar {
 
     val requestCaptor = ArgCaptor[node_api.GetDidDocumentRequest]
     verify(nodeMock, atLeast(1)).getDidDocument(requestCaptor)
-    requestCaptor.value.did mustBe issuerDID.value
+    requestCaptor.value.did mustBe issuerDID.getValue
   }
 }

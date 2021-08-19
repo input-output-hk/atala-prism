@@ -2,12 +2,11 @@ package io.iohk.atala.prism
 
 import com.google.protobuf.ByteString
 import io.iohk.atala.prism.auth.SignedRpcRequest
-import io.iohk.atala.prism.interop.toScalaSDK._
 import io.iohk.atala.prism.kotlin.crypto.{EC, SHA256Digest}
 import io.iohk.atala.prism.kotlin.crypto.keys.{ECKeyPair, ECPublicKey}
 import io.iohk.atala.prism.kotlin.crypto.ECConfig.{INSTANCE => ECConfig}
-import io.iohk.atala.prism.identity.DID
-import io.iohk.atala.prism.identity.DID.masterKeyId
+import io.iohk.atala.prism.kotlin.identity.DID
+import io.iohk.atala.prism.kotlin.identity.DID.masterKeyId
 import io.iohk.atala.prism.protos.node_api.{GetDidDocumentRequest, GetDidDocumentResponse}
 import io.iohk.atala.prism.protos.node_api.NodeServiceGrpc.NodeService
 import io.iohk.atala.prism.protos.node_models
@@ -50,9 +49,9 @@ trait DIDUtil {
     val operationBytes = atalaOp.toByteArray
     val operationHash = SHA256Digest.compute(operationBytes)
     val didCanonicalSuffix = operationHash.hexValue
-    val did = DID.buildPrismDID(didCanonicalSuffix, None)
+    val did = DID.buildPrismDID(didCanonicalSuffix, null)
 
-    nodeMock.getDidDocument(GetDidDocumentRequest(did.value)).returns {
+    nodeMock.getDidDocument(GetDidDocumentRequest(did.getValue)).returns {
       Future.successful(
         GetDidDocumentResponse(
           document = Some(DIDData(id = didCanonicalSuffix, publicKeys = Seq(publicKey)))
@@ -71,7 +70,7 @@ trait DIDUtil {
 
   def prepareSignedUnpublishedDidRequest[R <: GeneratedMessage](request: R): (ECPublicKey, SignedRpcRequest[R]) = {
     val keys = EC.generateKeyPair()
-    val did = DID.createUnpublishedDID(keys.getPublicKey.asScala)
+    val did = DID.createUnpublishedDID(keys.getPublicKey, null)
     (keys.getPublicKey, SignedRpcRequest.generate(keys, did, request))
   }
 
@@ -88,7 +87,7 @@ object DIDUtil {
   def createUnpublishedDid: (ECKeyPair, DID) = {
     val keyPair = EC.generateKeyPair()
     val publicKey = keyPair.getPublicKey
-    val did = DID.createUnpublishedDID(publicKey.asScala)
+    val did = DID.createUnpublishedDID(publicKey, null)
     (keyPair, did)
   }
 }

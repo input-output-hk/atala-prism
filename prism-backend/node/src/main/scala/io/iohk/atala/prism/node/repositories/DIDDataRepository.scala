@@ -8,7 +8,7 @@ import derevo.derive
 import derevo.tagless.applyK
 import doobie.implicits._
 import doobie.util.transactor.Transactor
-import io.iohk.atala.prism.identity.{DID, DIDSuffix}
+import io.iohk.atala.prism.kotlin.identity.{DID, DIDSuffix}
 import io.iohk.atala.prism.metrics.{TimeMeasureMetric, TimeMeasureUtil}
 import io.iohk.atala.prism.metrics.TimeMeasureUtil.MeasureOps
 import io.iohk.atala.prism.utils.syntax.DBConnectionOps
@@ -36,12 +36,12 @@ private final class DIDDataRepositoryImpl[F[_]: BracketThrow](xa: Transactor[F])
   val logger: Logger = LoggerFactory.getLogger(getClass)
 
   def findByDid(did: DID): F[Either[NodeError, Option[DIDDataState]]] =
-    did.getCanonicalSuffix
+    Option(did.getCanonicalSuffix)
       .fold[F[Either[NodeError, Option[DIDDataState]]]](logDidAndReturnUnknownValue(did))(getByCanonicalSuffix)
 
   private def logDidAndReturnUnknownValue(did: DID): F[Either[NodeError, Option[DIDDataState]]] = {
     logger.info(s"Unknown DID format: $did")
-    Either.left[NodeError, Option[DIDDataState]](UnknownValueError("did", did.value)).pure[F]
+    Either.left[NodeError, Option[DIDDataState]](UnknownValueError("did", did.getValue)).pure[F]
   }
 
   private def getByCanonicalSuffix(canonicalSuffix: DIDSuffix): F[Either[NodeError, Option[DIDDataState]]] = {

@@ -108,7 +108,7 @@ object ProtoCodecs {
       .withSharedAt(credential.sharedAt.map(_.toProtoTimestamp).getOrElse(Timestamp()))
     credential.publicationData.fold(model) { data =>
       model
-        .withBatchId(data.credentialBatchId.id)
+        .withBatchId(data.credentialBatchId.getId)
         .withIssuanceOperationHash(ByteString.copyFrom(data.issuanceOperationHash.getValue))
         .withEncodedSignedCredential(data.encodedSignedCredential)
         .withBatchInclusionProof(data.inclusionProof.encode)

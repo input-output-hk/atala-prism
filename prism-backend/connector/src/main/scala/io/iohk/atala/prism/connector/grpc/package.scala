@@ -8,7 +8,7 @@ import io.iohk.atala.prism.connector.model.actions._
 import io.iohk.atala.prism.connector.model.{ParticipantLogo, ParticipantType, TokenString, UpdateParticipantProfile}
 import io.iohk.atala.prism.kotlin.crypto.EC
 import io.iohk.atala.prism.grpc.ProtoConverter
-import io.iohk.atala.prism.identity.DID
+import io.iohk.atala.prism.kotlin.identity.DID
 import io.iohk.atala.prism.protos.connector_api.UpdateProfileRequest
 
 import scala.util.{Failure, Success, Try}
@@ -154,8 +154,10 @@ package object grpc {
     }
 
   private def parseCanonicalDid(maybeDid: String): Try[Either[DID, SignedAtalaOperation]] =
-    DID
-      .fromString(maybeDid)
+    Try(
+      DID
+        .fromString(maybeDid)
+    ).toOption
       .fold[Try[Either[DID, SignedAtalaOperation]]](Failure(new IllegalArgumentException("Invalid DID"))) { parsedDid =>
         if (parsedDid.isCanonicalForm) Success(parsedDid.asLeft)
         else Failure(new IllegalArgumentException("Expected published did"))

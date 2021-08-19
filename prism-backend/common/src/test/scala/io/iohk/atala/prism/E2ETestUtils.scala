@@ -1,11 +1,9 @@
 package io.iohk.atala.prism
 
-import java.io.BufferedInputStream
-
 import com.google.protobuf.ByteString
 import io.iohk.atala.prism.kotlin.crypto.EC
 import io.iohk.atala.prism.kotlin.crypto.keys.ECKeyPair
-import io.iohk.atala.prism.identity.DID
+import io.iohk.atala.prism.kotlin.identity.DID
 import io.iohk.atala.prism.protos.connector_api.{AddConnectionFromTokenRequest, RegisterDIDRequest}
 import io.iohk.atala.prism.protos.connector_models.EncodedPublicKey
 import io.iohk.atala.prism.protos.node_models.{
@@ -18,6 +16,8 @@ import io.iohk.atala.prism.protos.node_models.{
 }
 import io.iohk.atala.prism.services.BaseGrpcClientService.DidBasedAuthConfig
 import io.iohk.atala.prism.services.NodeClientService
+
+import _root_.java.io.BufferedInputStream
 
 object E2ETestUtils {
   implicit val ecTrait = EC.INSTANCE

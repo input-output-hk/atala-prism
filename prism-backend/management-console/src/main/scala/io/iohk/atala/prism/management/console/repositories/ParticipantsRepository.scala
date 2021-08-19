@@ -13,7 +13,7 @@ import derevo.derive
 import doobie.implicits._
 import doobie.util.transactor.Transactor
 import io.iohk.atala.prism.errors.LoggingContext
-import io.iohk.atala.prism.identity.DID
+import io.iohk.atala.prism.kotlin.identity.DID
 import io.iohk.atala.prism.management.console.config.DefaultCredentialTypeConfig
 import io.iohk.atala.prism.management.console.errors._
 import io.iohk.atala.prism.management.console.models._
@@ -139,7 +139,7 @@ private final class ParticipantsRepositoryImpl[F[_]: BracketThrow](
       .findByDID(did)
       .map(
         _.toRight(
-          UnknownValueError("did", did.value).logWarn
+          UnknownValueError("did", did.getValue).logWarn
         )
       )
       .logSQLErrors(s"finding, did - $did", logger)

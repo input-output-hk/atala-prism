@@ -9,15 +9,18 @@ import derevo.derive
 import doobie.ConnectionIO
 import doobie.implicits._
 import doobie.util.transactor.Transactor
+import io.iohk.atala.prism.interop.KotlinFunctionConverters._
 import io.iohk.atala.prism.management.console.errors._
 import io.iohk.atala.prism.management.console.models._
 import io.iohk.atala.prism.management.console.repositories.daos.CredentialTypeDao
 import io.iohk.atala.prism.utils.syntax.DBConnectionOps
 import io.iohk.atala.prism.metrics.TimeMeasureMetric
 import doobie.free.connection
-import io.iohk.atala.prism.credentials.utils.Mustache
+import io.iohk.atala.prism.kotlin.credentials.utils.{Mustache, MustacheError, MustacheParsingError}
 import io.iohk.atala.prism.management.console.repositories.logs.CredentialTypeRepositoryLogs
 import io.iohk.atala.prism.management.console.repositories.metrics.CredentialTypeRepositoryMetrics
+
+import scala.util.Try
 import org.slf4j.{Logger, LoggerFactory}
 import tofu.higherKind.Mid
 import tofu.logging.{Logs, ServiceLogging}
@@ -180,11 +183,17 @@ private final class CredentialTypeRepositoryImpl[F[_]: BracketThrow](xa: Transac
       .logSQLErrors(s"getting something with credential type id - $credentialTypeId", logger)
       .transact(xa)
 
-  private def validateMustacheTemplate(template: String, fields: List[CreateCredentialTypeField]) = {
-    Mustache.render(
-      content = template,
-      context = name => fields.find(_.name == name).map(_.name)
-    )
+  private def validateMustacheTemplate(
+      template: String,
+      fields: List[CreateCredentialTypeField]
+  ): Either[MustacheError, String] = {
+    Try(
+      Mustache.INSTANCE.render(
+        template,
+        ((name: String) => fields.find(_.name == name).map(_.name).get).asKotlin,
+        true
+      )
+    ).toEither.left.map(thr => new MustacheParsingError(thr.getMessage))
   }
 
   def find(credentialTypeId: CredentialTypeId): F[Option[CredentialTypeWithRequiredFields]] =

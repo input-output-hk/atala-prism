@@ -6,9 +6,9 @@ import com.google.protobuf.ByteString
 import io.grpc.Status
 import io.iohk.atala.prism.BuildInfo
 import io.iohk.atala.prism.connector.AtalaOperationId
-import io.iohk.atala.prism.credentials.CredentialBatchId
+import io.iohk.atala.prism.kotlin.credentials.CredentialBatchId
 import io.iohk.atala.prism.kotlin.crypto.SHA256Digest
-import io.iohk.atala.prism.identity.DID
+import io.iohk.atala.prism.kotlin.identity.{Canonical, DID, LongForm, Unknown}
 import io.iohk.atala.prism.metrics.RequestMeasureUtil
 import io.iohk.atala.prism.metrics.RequestMeasureUtil.{FutureMetricsOps, measureRequestFuture}
 import io.iohk.atala.prism.node.errors.NodeError
@@ -34,6 +34,8 @@ import org.slf4j.{Logger, LoggerFactory}
 import java.time.Instant
 import scala.concurrent.{ExecutionContext, Future}
 import scala.util.Try
+
+import io.iohk.atala.prism.interop.toScalaProtos._
 
 class NodeServiceImpl(
     didDataRepository: DIDDataRepository[IO],
@@ -68,31 +70,31 @@ class NodeServiceImpl(
   private def getDidDocument(didRequestStr: String, methodName: String)(implicit
       didDataRepository: DIDDataRepository[IO]
   ) = {
-    val didOpt = DID.fromString(didRequestStr)
+    val didOpt = Option(DID.fromString(didRequestStr))
     didOpt match {
       case Some(did) =>
         did.getFormat match {
-          case DID.DIDFormat.Canonical(_) =>
+          case _: Canonical =>
             resolve(did) orElse (countAndThrowNodeError(methodName, _))
-          case longForm @ DID.DIDFormat.LongForm(stateHash, _) => // we received a long form DID
+          case longForm: LongForm => // we received a long form DID
             // we first check that the encoded initial state matches the corresponding hash
-            longForm.validate
+            Try(longForm.validate)
               .map { validatedLongForm =>
                 // validation succeeded, we check if the DID was published
-                resolve(DID.buildPrismDID(stateHash), did).orReturn {
+                resolve(DID.buildPrismDID(longForm.getStateHash, null), did).orReturn {
                   // if it was not published, we return the encoded initial state
                   succeedWith(
                     Some(
                       ProtoCodecs.atalaOperationToDIDDataProto(
-                        did.suffix,
-                        validatedLongForm.initialState
+                        did.getSuffix,
+                        validatedLongForm.getInitialState.asScala
                       )
                     )
                   )
                 }
               }
               .getOrElse(failWith(s"Invalid long form DID: $didRequestStr", methodName))
-          case DID.DIDFormat.Unknown =>
+          case _: Unknown =>
             failWith(s"DID format not supported: $didRequestStr", methodName)
         }
       case None =>
@@ -114,12 +116,11 @@ class NodeServiceImpl(
           operationId <- objectManagement.publishSingleAtalaOperation(operation)
         } yield {
           node_api
-            .CreateDIDResponse(id = parsedOp.id.value)
+            .CreateDIDResponse(id = parsedOp.id.getValue)
             .withOperationId(operationId.toProtoByteString)
         }
       }
     }
-
   }
 
   override def updateDID(request: node_api.UpdateDIDRequest): Future[node_api.UpdateDIDResponse] = {
@@ -156,7 +157,7 @@ class NodeServiceImpl(
           operationId <- objectManagement.publishSingleAtalaOperation(operation)
         } yield {
           node_api
-            .IssueCredentialBatchResponse(batchId = parsedOp.credentialBatchId.id)
+            .IssueCredentialBatchResponse(batchId = parsedOp.credentialBatchId.getId)
             .withOperationId(operationId.toProtoByteString)
         }
       }
@@ -187,7 +188,7 @@ class NodeServiceImpl(
 
     val lastSyncedTimestampF = objectManagement.getLastSyncedTimestamp
     val batchIdF = getFromOptionOrFailF(
-      CredentialBatchId.fromString(request.batchId),
+      Option(CredentialBatchId.fromString(request.batchId)),
       s"Invalid batch id: ${request.batchId}",
       methodName
     )
@@ -197,7 +198,7 @@ class NodeServiceImpl(
         for {
           lastSyncedTimestamp <- lastSyncedTimestampF
           batchId <- batchIdF
-          _ = logWithTraceId(methodName, traceId, "batchId" -> s"${batchId.id}")
+          _ = logWithTraceId(methodName, traceId, "batchId" -> s"${batchId.getId}")
           stateEither <-
             credentialBatchesRepository
               .getBatchState(batchId)
@@ -218,7 +219,7 @@ class NodeServiceImpl(
 
     val lastSyncedTimestampF = objectManagement.getLastSyncedTimestamp
     val batchIdF = getFromOptionOrFailF(
-      CredentialBatchId.fromString(request.batchId),
+      Option(CredentialBatchId.fromString(request.batchId)),
       s"Invalid batch id: ${request.batchId}",
       methodName
     )
@@ -231,7 +232,7 @@ class NodeServiceImpl(
         for {
           lastSyncedTimestamp <- lastSyncedTimestampF
           batchId <- batchIdF
-          _ = logWithTraceId(methodName, traceId, "batchId" -> s"${batchId.id}")
+          _ = logWithTraceId(methodName, traceId, "batchId" -> s"${batchId.getId}")
           credentialHash <- credentialHashF
           _ = logWithTraceId(methodName, traceId, "credentialHash" -> s"${credentialHash.hexValue}")
           timeEither <-
@@ -413,7 +414,7 @@ object NodeServiceImpl {
     val response = in.fold(GetBatchStateResponse()) { state =>
       val revocationLedgerData = state.revokedOn.map(ProtoCodecs.toLedgerData)
       val responseBase = GetBatchStateResponse()
-        .withIssuerDid(state.issuerDIDSuffix.value)
+        .withIssuerDid(state.issuerDIDSuffix.getValue)
         .withMerkleRoot(ByteString.copyFrom(state.merkleRoot.getHash.getValue))
         .withPublicationLedgerData(ProtoCodecs.toLedgerData(state.issuedOn))
       revocationLedgerData.fold(responseBase)(responseBase.withRevocationLedgerData)
@@ -455,7 +456,7 @@ object NodeServiceImpl {
     )(implicit ec: ExecutionContext, logger: Logger): Future[node_api.GetDidDocumentResponse] =
       state.flatMap {
         case Right(stMaybe) =>
-          stMaybe.fold(initialState)(st => succeedWith(Some(ProtoCodecs.toDIDDataProto(did.suffix.value, st))))
+          stMaybe.fold(initialState)(st => succeedWith(Some(ProtoCodecs.toDIDDataProto(did.getSuffix.getValue, st))))
         case Left(err: NodeError) =>
           logger.info(err.toStatus.asRuntimeException().getMessage)
           initialState
@@ -466,7 +467,7 @@ object NodeServiceImpl {
     )(implicit ec: ExecutionContext, logger: Logger): Future[node_api.GetDidDocumentResponse] =
       state.flatMap {
         case Right(stMaybe) =>
-          val didData = stMaybe.map(st => ProtoCodecs.toDIDDataProto(did.suffix.value, st))
+          val didData = stMaybe.map(st => ProtoCodecs.toDIDDataProto(did.getSuffix.getValue, st))
           succeedWith(didData)
         case Left(err: NodeError) => ifFailed(err)
       }
@@ -490,7 +491,7 @@ object NodeServiceImpl {
         CreateDIDOperation.parseWithMockedLedgerData(operation).map { parsedOp =>
           OperationOutput(
             OperationOutput.Result.CreateDidOutput(
-              node_models.CreateDIDOutput(parsedOp.id.value)
+              node_models.CreateDIDOutput(parsedOp.id.getValue)
             )
           )
         }
@@ -508,7 +509,7 @@ object NodeServiceImpl {
         IssueCredentialBatchOperation.parseWithMockedLedgerData(operation).map { parsedOp =>
           OperationOutput(
             OperationOutput.Result.BatchOutput(
-              node_models.IssueCredentialBatchOutput(parsedOp.credentialBatchId.id)
+              node_models.IssueCredentialBatchOutput(parsedOp.credentialBatchId.getId)
             )
           )
         }

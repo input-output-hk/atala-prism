@@ -4,7 +4,7 @@ import cats.effect.IO
 import com.google.protobuf.ByteString
 import doobie.implicits._
 import io.iohk.atala.prism.AtalaWithPostgresSpec
-import io.iohk.atala.prism.credentials.TimestampInfo
+import io.iohk.atala.prism.kotlin.credentials.TimestampInfo
 import io.iohk.atala.prism.kotlin.crypto.EC
 import io.iohk.atala.prism.kotlin.crypto.keys.{ECKeyPair, ECPublicKey}
 import io.iohk.atala.prism.kotlin.crypto.ECConfig.{INSTANCE => ECConfig}
@@ -54,7 +54,7 @@ object CreateDIDOperationSpec {
     dummyTimestamp
   )
 
-  private val dummyTimestampInfo = TimestampInfo(Instant.ofEpochMilli(0), 1, 0)
+  private val dummyTimestampInfo = new TimestampInfo(Instant.ofEpochMilli(0).toEpochMilli, 1, 0)
 
   val exampleOperation: node_models.AtalaOperation = node_models.AtalaOperation(
     node_models.AtalaOperation.Operation.CreateDid(

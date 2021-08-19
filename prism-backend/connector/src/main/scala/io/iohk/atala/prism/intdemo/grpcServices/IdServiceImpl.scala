@@ -7,14 +7,14 @@ import io.grpc.Status
 import io.grpc.stub.StreamObserver
 import io.iohk.atala.prism.connector.model.Connection
 import io.iohk.atala.prism.connector.model.TokenString
-import io.iohk.atala.prism.credentials.Credential
-import io.iohk.atala.prism.identity.DID
+import io.iohk.atala.prism.kotlin.credentials.json.JsonBasedCredential
+import io.iohk.atala.prism.kotlin.identity.DID
 import io.iohk.atala.prism.intdemo.IdServiceImpl._
 import io.iohk.atala.prism.intdemo.html.IdCredential
 import io.iohk.atala.prism.intdemo.protos.intdemo_api
 import io.iohk.atala.prism.models.ParticipantId
 import io.iohk.atala.prism.protos.credential_models
-import io.iohk.atala.prism.util.BytesOps
+import io.iohk.atala.prism.utils.BytesOps
 import io.iohk.atala.prism.utils.Base64Utils
 import monix.execution.Scheduler.{global => scheduler}
 
@@ -25,6 +25,7 @@ import scala.annotation.nowarn
 import scala.concurrent.ExecutionContext
 import scala.concurrent.Future
 import scala.concurrent.duration.FiniteDuration
+import scala.util.Try
 
 class IdServiceImpl(
     connectorIntegration: ConnectorIntegration,
@@ -168,7 +169,7 @@ object IdServiceImpl {
         expirationDate = expirationDate
       )
     val credentialDocument = idCredentialJson.printWith(jsonPrinter)
-    val credential = Credential.fromString(credentialDocument)
+    val credential = Try(JsonBasedCredential.fromString(credentialDocument)).toEither
 
     credential match {
       case Left(_) =>
@@ -177,7 +178,7 @@ object IdServiceImpl {
         )
       case Right(credential) =>
         credential_models.PlainTextCredential(
-          encodedCredential = Base64Utils.encodeURL(credential.canonicalForm.getBytes)
+          encodedCredential = Base64Utils.encodeURL(credential.getCanonicalForm.getBytes)
         )
     }
 

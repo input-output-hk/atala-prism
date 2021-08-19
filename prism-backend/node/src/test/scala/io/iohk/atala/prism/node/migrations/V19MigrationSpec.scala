@@ -1,11 +1,11 @@
 package io.iohk.atala.prism.node.migrations
 
 import doobie.implicits._
-import io.iohk.atala.prism.credentials.TimestampInfo
+import io.iohk.atala.prism.kotlin.credentials.TimestampInfo
 import io.iohk.atala.prism.kotlin.crypto.{EC, SHA256Digest}
 import io.iohk.atala.prism.kotlin.crypto.ECConfig.{INSTANCE => ECConfig}
 import io.iohk.atala.prism.daos.BaseDAO
-import io.iohk.atala.prism.identity.DIDSuffix
+import io.iohk.atala.prism.kotlin.identity.DIDSuffix
 import io.iohk.atala.prism.models.{Ledger, TransactionId}
 import io.iohk.atala.prism.node.models.nodeState.LedgerData
 import io.iohk.atala.prism.node.models.{DIDPublicKey, KeyUsage}
@@ -14,20 +14,18 @@ import io.iohk.atala.prism.node.repositories.daos._
 import io.iohk.atala.prism.repositories.ops.SqlTestOps.Implicits
 import doobie.implicits.legacy.instant._
 
-import io.iohk.atala.prism.interop.toScalaSDK._
-
 import java.time.Instant
 
 class V19MigrationSpec extends PostgresMigrationSpec("db.migration.V19") with BaseDAO {
 
-  private val dummyTimestampInfo = TimestampInfo(Instant.ofEpochMilli(0), 1, 0)
+  private val dummyTimestampInfo = new TimestampInfo(Instant.ofEpochMilli(0).toEpochMilli, 1, 0)
   private val dummyLedgerData = LedgerData(
     TransactionId.from(Array.fill[Byte](TransactionId.config.size.toBytes.toInt)(0)).get,
     Ledger.InMemory,
     dummyTimestampInfo
   )
   val didDigest = SHA256Digest.compute("test".getBytes())
-  val didSuffix = DIDSuffix.unsafeFromDigest(didDigest.asScala)
+  val didSuffix = DIDSuffix.fromDigest(didDigest)
   val didPublicKey: DIDPublicKey =
     DIDPublicKey(didSuffix, "master", KeyUsage.MasterKey, EC.generateKeyPair().getPublicKey)
 
@@ -44,7 +42,8 @@ class V19MigrationSpec extends PostgresMigrationSpec("db.migration.V19") with Ba
          |   added_on, added_on_absn, added_on_osn,
          |   added_on_transaction_id, ledger)
          |VALUES (${key.didSuffix}, ${key.keyId}, ${key.keyUsage}, $curveName, $xBytes, $yBytes,
-         |   ${addedOn.atalaBlockTimestamp}, ${addedOn.atalaBlockSequenceNumber}, ${addedOn.operationSequenceNumber},
+         |   ${Instant
+      .ofEpochMilli(addedOn.getAtalaBlockTimestamp)}, ${addedOn.getAtalaBlockSequenceNumber}, ${addedOn.getOperationSequenceNumber},
          |   ${ledgerData.transactionId}, ${ledgerData.ledger})
        """.stripMargin.runUpdate()
   }
@@ -65,8 +64,7 @@ class V19MigrationSpec extends PostgresMigrationSpec("db.migration.V19") with Ba
           didPublicKey.key.getCurvePoint.getX.bytes(),
           didPublicKey.key.getCurvePoint.getY.bytes()
         )
-        .asScala
-        .getCompressed
+        .getEncodedCompressed
       inDB mustBe expected
       inDB.length mustBe 33
     }

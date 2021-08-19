@@ -2,14 +2,12 @@ package io.iohk.atala.prism.utils
 
 import java.nio.charset.StandardCharsets
 
-import io.iohk.atala.prism.util.ArrayOps._
-
 object BytesOps {
   private val HexArray = "0123456789abcdef".getBytes(StandardCharsets.US_ASCII);
 
   def hexToBytes(hexEncoded: String): Array[Byte] = {
     require(hexEncoded.length % 2 == 0, "Hex length needs to be even")
-    hexEncoded.grouped(2).toVector.map(hexToByte).toByteArray
+    hexEncoded.grouped(2).toVector.map(hexToByte).toArray
   }
 
   def bytesToHex(bytes: Iterable[Byte]): String = {

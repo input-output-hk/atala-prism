@@ -8,10 +8,10 @@ import io.iohk.atala.prism.kotlin.crypto.keys.{ECKeyPair, ECPublicKey}
 import io.iohk.atala.prism.kotlin.crypto.signature.{ECSignature}
 import org.scalatest.BeforeAndAfterEach
 import scalapb.GeneratedMessage
-import java.util.concurrent.{Executor, TimeUnit}
+import _root_.java.util.concurrent.{Executor, TimeUnit}
 
 import io.iohk.atala.prism.auth.SignedRpcRequest
-import io.iohk.atala.prism.identity.DID
+import io.iohk.atala.prism.kotlin.identity.DID
 
 trait ApiTestHelper[STUB] {
   def apply[T](requestNonce: Vector[Byte], signature: ECSignature, publicKey: ECPublicKey)(f: STUB => T): T

@@ -5,8 +5,8 @@ import io.circe.Json.fromString
 import io.grpc.stub.StreamObserver
 import io.iohk.atala.prism.connector.model.Connection
 import io.iohk.atala.prism.connector.model.TokenString
-import io.iohk.atala.prism.credentials.Credential
-import io.iohk.atala.prism.identity.DID
+import io.iohk.atala.prism.kotlin.credentials.json.JsonBasedCredential
+import io.iohk.atala.prism.kotlin.identity.DID
 import io.iohk.atala.prism.intdemo.InsuranceServiceImpl.RequiredInsuranceData
 import io.iohk.atala.prism.intdemo.InsuranceServiceImpl.getInsuranceCredential
 import io.iohk.atala.prism.intdemo.InsuranceServiceImpl.getRequiredInsuranceData
@@ -24,6 +24,7 @@ import java.time.LocalDate
 import scala.concurrent.ExecutionContext
 import scala.concurrent.Future
 import scala.concurrent.duration.FiniteDuration
+import scala.util.Try
 
 class InsuranceServiceImpl(
     connectorIntegration: ConnectorIntegration,
@@ -159,7 +160,7 @@ object InsuranceServiceImpl {
 
     val credentialDocument = insuranceCredentialJson.printWith(jsonPrinter)
 
-    val credential = Credential.fromString(credentialDocument)
+    val credential = Try(JsonBasedCredential.fromString(credentialDocument)).toEither
 
     credential match {
       case Left(_) =>
@@ -168,7 +169,7 @@ object InsuranceServiceImpl {
         )
       case Right(credential) =>
         credential_models.PlainTextCredential(
-          encodedCredential = Base64Utils.encodeURL(credential.canonicalForm.getBytes)
+          encodedCredential = Base64Utils.encodeURL(credential.getCanonicalForm.getBytes)
         )
     }
   }

@@ -2,31 +2,40 @@ package io.iohk.atala.prism.auth.utils
 
 import io.iohk.atala.prism.auth.errors._
 import io.iohk.atala.prism.kotlin.crypto.{EC}
+import io.iohk.atala.prism.kotlin.crypto.ECConfig.{INSTANCE => ECConfig}
 import io.iohk.atala.prism.kotlin.crypto.keys.{ECPublicKey}
-import io.iohk.atala.prism.identity.DID
-import io.iohk.atala.prism.identity.DID.DIDFormat
+import io.iohk.atala.prism.kotlin.identity.DIDFormatException.{
+  CanonicalSuffixMatchStateException,
+  InvalidAtalaOperationException
+}
+import io.iohk.atala.prism.kotlin.identity.{DID, LongForm}
+import io.iohk.atala.prism.kotlin.protos.AtalaOperation.Operation.CreateDid
 import io.iohk.atala.prism.protos.node_models
-import io.iohk.atala.prism.protos.node_models.{CreateDIDOperation, DIDData}
+import io.iohk.atala.prism.protos.node_models.DIDData
 import io.iohk.atala.prism.utils.FutureEither
 import io.iohk.atala.prism.utils.FutureEither.FutureEitherOps
-import io.iohk.atala.prism.kotlin.crypto.ECConfig.{INSTANCE => ECConfig}
 
 import scala.concurrent.{ExecutionContext, Future}
+import scala.util.{Failure, Success, Try}
+import io.iohk.atala.prism.interop.toScalaProtos._
 
 object DIDUtils {
 
   def validateDid(did: DID): FutureEither[AuthError, DIDData] = {
     did.getFormat match {
-      case longFormDid: DIDFormat.LongForm =>
-        longFormDid.validate match {
-          case Left(DIDFormat.CanonicalSuffixMatchStateError) =>
-            Future.successful(Left(CanonicalSuffixMatchStateError)).toFutureEither
-          case Left(DIDFormat.InvalidAtalaOperationError) =>
-            Future.successful(Left(InvalidAtalaOperationError)).toFutureEither
-          case Right(validatedLongForm) =>
-            validatedLongForm.initialState.operation.createDid match {
-              case Some(CreateDIDOperation(Some(didData), _)) =>
-                Future.successful(Right(didData)).toFutureEither
+      case longFormDid: LongForm =>
+        Try(longFormDid.validate) match {
+          case Failure(err) =>
+            err match {
+              case _: InvalidAtalaOperationException =>
+                Future.successful(Left(InvalidAtalaOperationError)).toFutureEither
+              case _: CanonicalSuffixMatchStateException =>
+                Future.successful(Left(CanonicalSuffixMatchStateError)).toFutureEither
+            }
+          case Success(validatedLongForm) =>
+            validatedLongForm.getInitialState.getOperation match {
+              case crd: CreateDid =>
+                Future.successful(Right(crd.getValue.getDidData.asScala)).toFutureEither
               case _ =>
                 Future.successful(Left(NoCreateDidOperationError)).toFutureEither
             }

@@ -16,13 +16,12 @@ import io.iohk.atala.prism.connector.RequestAuthenticator
 import io.iohk.atala.prism.kotlin.crypto.EC
 import io.iohk.atala.prism.kotlin.crypto.keys.ECPrivateKey
 import io.iohk.atala.prism.kotlin.crypto.signature.ECSignature
-import io.iohk.atala.prism.identity.DID
-import io.iohk.atala.prism.identity.DID.masterKeyId
+import io.iohk.atala.prism.kotlin.identity.DID
+import io.iohk.atala.prism.kotlin.identity.DID.masterKeyId
 import io.iohk.atala.prism.models.ConnectionToken
 import io.iohk.atala.prism.protos.connector_api._
 import io.iohk.atala.prism.protos.connector_models.ContactConnection
-import io.iohk.atala.prism.util
-import io.iohk.atala.prism.util.BytesOps
+import io.iohk.atala.prism.utils._
 import io.iohk.atala.prism.utils.GrpcUtils
 import io.iohk.atala.prism.logging.GeneralLoggableInstances._
 
@@ -59,7 +58,7 @@ object ConnectorClient {
          |host = $host
          |port = $port
          |whitelistedDID = $whitelistedDID
-         |didPrivateKey = ${util.StringUtils.masked(didPrivateKey.getHexEncoded)}""".stripMargin
+         |didPrivateKey = ${StringUtils.masked(didPrivateKey.getHexEncoded)}""".stripMargin
     }
   }
   object Config {
@@ -67,11 +66,12 @@ object ConnectorClient {
       def unsafe = {
         val host = typesafe.getString("host")
         val port = typesafe.getInt("port")
-        val whitelistedDID = DID
-          .fromString(typesafe.getString("did"))
-          .getOrElse {
-            throw new RuntimeException("Failed to load the connector's whitelisted DID, which is required to invoke it")
-          }
+        val whitelistedDID = Try(
+          DID
+            .fromString(typesafe.getString("did"))
+        ).getOrElse {
+          throw new RuntimeException("Failed to load the connector's whitelisted DID, which is required to invoke it")
+        }
 
         val didPrivateKey = EC.toPrivateKey(
           BytesOps.hexToBytes(typesafe.getString("didPrivateKeyHex"))
@@ -111,7 +111,7 @@ object ConnectorClient {
 
         val signedRequest = requestAuthenticator.signConnectorRequest(request.toByteArray, config.didPrivateKey)
         PublishedDIDBased(
-          did = DID.unsafeFromString(config.whitelistedDID.value),
+          did = DID.fromString(config.whitelistedDID.getValue),
           keyId = masterKeyId,
           requestNonce = RequestNonce(signedRequest.encodedRequestNonce.getBytes.toVector),
           signature = new ECSignature(signedRequest.encodedSignature.getBytes)

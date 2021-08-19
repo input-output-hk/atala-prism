@@ -106,7 +106,7 @@ class ConnectorService(
           connector_api.GetConnectionTokenInfoResponse(
             creatorName = participantInfo.name,
             creatorLogo = ByteString.copyFrom(participantInfo.logo.map(_.bytes).getOrElse(Vector.empty).toArray),
-            creatorDid = participantInfo.did.map(_.value).getOrElse("")
+            creatorDid = participantInfo.did.map(_.getValue).getOrElse("")
           )
         }
     }
@@ -209,7 +209,7 @@ class ConnectorService(
         .map { registerResult =>
           val response = connector_api
             .RegisterDIDResponse(
-              did = registerResult.did.value
+              did = registerResult.did.getValue
             )
           registerResult.operationId
             .map(_.toProtoByteString)

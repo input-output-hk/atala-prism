@@ -6,11 +6,11 @@ import cats.syntax.either._
 import com.google.protobuf.ByteString
 import io.iohk.atala.prism.auth.AuthAndMiddlewareSupport
 import io.iohk.atala.prism.connector.AtalaOperationId
-import io.iohk.atala.prism.credentials.CredentialBatchId
+import io.iohk.atala.prism.kotlin.credentials.CredentialBatchId
 import io.iohk.atala.prism.kotlin.crypto.MerkleRoot
 import io.iohk.atala.prism.kotlin.crypto.SHA256Digest
 import io.iohk.atala.prism.grpc.ProtoConverter
-import io.iohk.atala.prism.identity.DID
+import io.iohk.atala.prism.kotlin.identity.DID
 import io.iohk.atala.prism.management.console.ManagementConsoleAuthenticator
 import io.iohk.atala.prism.management.console.clients.ConnectorClient
 import io.iohk.atala.prism.management.console.errors.{
@@ -35,7 +35,6 @@ import org.slf4j.{Logger, LoggerFactory}
 import io.iohk.atala.prism.utils.FutureEither.FutureEitherOps
 
 import scala.concurrent.{ExecutionContext, Future}
-import io.iohk.atala.prism.interop.toScalaSDK._
 import io.iohk.atala.prism.logging.TraceId
 import io.iohk.atala.prism.logging.TraceId.IOWithTraceIdContext
 
@@ -127,7 +126,7 @@ class CredentialsServiceImpl(
         opHash = SHA256Digest.compute(atalaOperation.toByteArray)
         issueCredentialBatch <- atalaOperation.operation.issueCredentialBatch
         credentialBatchData <- issueCredentialBatch.credentialBatchData
-        did = DID.buildPrismDID(credentialBatchData.issuerDid)
+        did = DID.buildPrismDID(credentialBatchData.issuerDid, null)
         merkleRoot = new MerkleRoot(SHA256Digest.fromBytes(credentialBatchData.merkleRoot.toByteArray))
       } yield (merkleRoot, did, opHash)
       maybePair.fold(
@@ -145,7 +144,7 @@ class CredentialsServiceImpl(
       for {
         value <- extractValues(signedIssueCredentialBatchOp)
         (merkleRoot, did, operationHash) = value
-        computedBatchId = CredentialBatchId.fromBatchData(did.suffix, merkleRoot.asScala)
+        computedBatchId = CredentialBatchId.fromBatchData(did.getSuffix, merkleRoot)
         // validation for sanity check
         // The `batchId` parameter is the id returned by the node.
         // We make this check to be sure that the node and the console are
@@ -181,7 +180,7 @@ class CredentialsServiceImpl(
             .toFutureEither(ex => wrapAsServerError(ex))
         _ <- storeBatch(response.batchId, query.signedOperation)
       } yield PublishBatchResponse()
-        .withBatchId(response.batchId.id)
+        .withBatchId(response.batchId.getId)
         .withOperationId(response.operationId.toProtoByteString)
     }
   }
@@ -244,12 +243,12 @@ class CredentialsServiceImpl(
         batchState <- nodeService.getBatchState(
           node_api
             .GetBatchStateRequest()
-            .withBatchId(query.batchId.id)
+            .withBatchId(query.batchId.getId)
         )
         credentialLedgerData <- nodeService.getCredentialRevocationTime(
           node_api
             .GetCredentialRevocationTimeRequest()
-            .withBatchId(query.batchId.id)
+            .withBatchId(query.batchId.getId)
             .withCredentialHash(ByteString.copyFrom(query.credentialHash.getValue))
         )
       } yield GetLedgerDataResponse(

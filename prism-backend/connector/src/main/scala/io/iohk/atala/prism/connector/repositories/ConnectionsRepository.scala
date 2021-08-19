@@ -20,7 +20,7 @@ import io.iohk.atala.prism.connector.repositories.daos.{
   ParticipantsDAO
 }
 import io.iohk.atala.prism.errors.LoggingContext
-import io.iohk.atala.prism.identity.DID
+import io.iohk.atala.prism.kotlin.identity.DID
 import io.iohk.atala.prism.metrics.{TimeMeasureMetric, TimeMeasureUtil}
 import io.iohk.atala.prism.metrics.TimeMeasureUtil.MeasureOps
 import org.slf4j.{Logger, LoggerFactory}

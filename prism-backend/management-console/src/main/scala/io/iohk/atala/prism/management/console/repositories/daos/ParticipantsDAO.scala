@@ -3,7 +3,7 @@ package io.iohk.atala.prism.management.console.repositories.daos
 import cats.implicits._
 import doobie.implicits.{toSqlInterpolator, _}
 import doobie.{ConnectionIO, FC}
-import io.iohk.atala.prism.identity.DID
+import io.iohk.atala.prism.kotlin.identity.DID
 import io.iohk.atala.prism.management.console.models.{ParticipantId, ParticipantInfo, UpdateParticipantProfile}
 import doobie.implicits.legacy.instant._
 
