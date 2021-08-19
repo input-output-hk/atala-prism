@@ -3,50 +3,17 @@
  *
  * See: https://www.gatsbyjs.com/docs/gatsby-config/
  */
-require('dotenv').config({
-  path: `.env`
-});
-
 module.exports = {
   /* Your site config here */
   siteMetadata: {
     title: `Atala PRISM`,
     description: `Atala PRISM is a decentralized identity platform built on the Cardano blockchain.`,
-    image: '/images/atala-prism-logo-suite.svg'
+    image: '/images/atala-prism-logo.png',
+    siteUrl: 'https://www.atalaprism.io'
   },
   plugins: [
-    {
-      resolve: 'gatsby-plugin-reactfire',
-      options: {
-        firebaseConfig: {
-          apiKey: 'AIzaSyALQCJ2Qln5Js0yhW7OlNOBzlmW9J3CbyM',
-          authDomain: 'atala-test.firebaseapp.com',
-          databaseURL: 'https://atala-test.firebaseio.com',
-          projectId: 'atala-test',
-          storageBucket: 'atala-test.appspot.com',
-          messagingSenderId: '777420890876',
-          appId: '1:777420890876:web:5a0edf5a66b71df2772d79',
-          measurementId: 'G-8HRJEC3YJL'
-        }
-      }
-    },
     'gatsby-plugin-antd',
     `gatsby-plugin-netlify-cms`,
-    {
-      resolve: `gatsby-plugin-env-variables`,
-      options: {
-        allowList: [
-          'REACT_APP_GRPC_CLIENT',
-          'REACT_APP_ISSUER_ID',
-          'REACT_APP_ISSUER_NAME',
-          'REACT_APP_ISSUER_DID',
-          'REACT_APP_MAILCHIMP_URL',
-          'REACT_APP_MAILCHIMP_U',
-          'REACT_APP_MAILCHIMP_ID',
-          'REACT_APP_FIREBASE_CONFIG'
-        ]
-      }
-    },
     {
       resolve: `gatsby-plugin-create-client-paths`,
       options: { prefixes: [`/app/*`] }
@@ -152,6 +119,21 @@ module.exports = {
       }
     },
     'gatsby-plugin-react-helmet',
-    `gatsby-plugin-gatsby-cloud`
+    `gatsby-plugin-gatsby-cloud`,
+    {
+      resolve: 'gatsby-plugin-firebase',
+      options: {
+        credentials: {
+          apiKey: 'AIzaSyALQCJ2Qln5Js0yhW7OlNOBzlmW9J3CbyM',
+          authDomain: 'atala-test.firebaseapp.com',
+          databaseURL: 'https://atala-test.firebaseio.com',
+          projectId: 'atala-test',
+          storageBucket: 'atala-test.appspot.com',
+          messagingSenderId: '777420890876',
+          appId: '1:777420890876:web:5a0edf5a66b71df2772d79',
+          measurementId: 'G-8HRJEC3YJL'
+        }
+      }
+    }
   ]
 };
