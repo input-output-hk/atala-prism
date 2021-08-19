@@ -539,12 +539,13 @@
     "table": {
       "unknownValue": "Unknown",
       "columns": {
-        "templateName":"Template Name",
+        "name":"Template Name",
         "category": "Category",
         "lastEdited": "Last Edited"
       }
     },
     "actions": {
+      "searchPlaceholder": "Search",
       "createTemplate": "Create Template",
       "preview": "Preview",
       "edit": "Edit ",

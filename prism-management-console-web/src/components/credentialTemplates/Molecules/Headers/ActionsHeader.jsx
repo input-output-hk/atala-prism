@@ -7,8 +7,9 @@ import TemplateFilters from '../Filters/TemplateFilters';
 import SearchBar from '../../../common/Atoms/SearchBar/SearchBar';
 import CreateTemplateButton from '../../Atoms/Buttons/CreateTemplateButton';
 import { templateCategoryShape, templateFiltersShape } from '../../../../helpers/propShapes';
+import './_style.scss';
 
-const HeaderActions = ({ filterProps, templateCategories }) => {
+const ActionsHeader = ({ filterProps, templateCategories }) => {
   const { t } = useTranslation();
   const hasFiltersApplied = filterProps.name || filterProps.category;
 
@@ -19,11 +20,11 @@ const HeaderActions = ({ filterProps, templateCategories }) => {
   );
 
   return (
-    <>
+    <div className="ActionsHeader flex">
       <SearchBar
         searchText={filterProps.name}
         setSearchText={filterProps.setName}
-        placeholder={t('templates.table.columns.name')}
+        placeholder={t('templates.actions.searchPlaceholder')}
       />
       <CreateTemplateButton />
       <Badge dot={hasFiltersApplied} style={{ top: '1em', right: '1em', zIndex: 500 }}>
@@ -34,13 +35,13 @@ const HeaderActions = ({ filterProps, templateCategories }) => {
           icon={<FilterOutlined />}
         />
       </Badge>
-    </>
+    </div>
   );
 };
 
-HeaderActions.propTypes = {
+ActionsHeader.propTypes = {
   templateCategories: PropTypes.arrayOf(templateCategoryShape).isRequired,
   filterProps: PropTypes.shape(templateFiltersShape).isRequired
 };
 
-export default HeaderActions;
+export default ActionsHeader;

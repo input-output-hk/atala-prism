@@ -11,7 +11,7 @@ import {
 import { CONFIRMED, UNCONFIRMED } from '../../helpers/constants';
 import WaitBanner from '../dashboard/Atoms/WaitBanner/WaitBanner';
 import TemplateDetail from './Organisms/Drawers/TemplateDetail';
-import HeaderActions from './Molecules/Headers/HeaderActions';
+import ActionsHeader from './Molecules/Headers/ActionsHeader';
 import TemplatesTableContainer from './Organisms/Tables/TemplatesTableContainer';
 import './_style.scss';
 
@@ -36,7 +36,7 @@ const CredentialTemplates = ({ tableProps }) => {
           <h1>{t('templates.title')}</h1>
         </div>
         {accountStatus === CONFIRMED && (
-          <HeaderActions filterProps={filterProps} templateCategories={templateCategories} />
+          <ActionsHeader filterProps={filterProps} templateCategories={templateCategories} />
         )}
       </div>
       <TemplatesTableContainer

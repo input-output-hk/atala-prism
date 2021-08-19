@@ -545,6 +545,7 @@
       }
     },
     "actions": {
+      "searchPlaceholder": "Search",
       "createTemplate": "Create Template",
       "preview": "Preview",
       "edit": "Edit ",
