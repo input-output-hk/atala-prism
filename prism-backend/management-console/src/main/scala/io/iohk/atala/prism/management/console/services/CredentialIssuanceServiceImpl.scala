@@ -1,94 +1,129 @@
 package io.iohk.atala.prism.management.console.services
 
-import cats.implicits.catsSyntaxEitherId
-import cats.syntax.option._
-import io.iohk.atala.prism.auth.AuthAndMiddlewareSupport
-import io.iohk.atala.prism.logging.TraceId
-import io.iohk.atala.prism.logging.TraceId.IOWithTraceIdContext
-import io.iohk.atala.prism.management.console.ManagementConsoleAuthenticator
-import io.iohk.atala.prism.management.console.errors.{ManagementConsoleError, ManagementConsoleErrorSupport}
-import io.iohk.atala.prism.management.console.grpc._
-import io.iohk.atala.prism.management.console.models.ParticipantId
+import cats.{Comonad, Functor, Monad}
+import cats.effect.{BracketThrow, MonadThrow, Resource}
+import cats.syntax.apply._
+import cats.syntax.applicativeError._
+import cats.syntax.comonad._
+import cats.syntax.functor._
+import cats.syntax.flatMap._
+import derevo.derive
+import derevo.tagless.applyK
+import io.iohk.atala.prism.management.console.errors.ManagementConsoleError
+import io.iohk.atala.prism.management.console.models.{CredentialIssuance, ParticipantId}
 import io.iohk.atala.prism.management.console.repositories.CredentialIssuancesRepository
-import io.iohk.atala.prism.management.console.repositories.CredentialIssuancesRepository._
-import io.iohk.atala.prism.protos.console_api
-import io.iohk.atala.prism.protos.console_api._
-import io.iohk.atala.prism.protos.console_models.CredentialIssuanceContact
-import io.iohk.atala.prism.utils.FutureEither.FutureEitherOps
-import io.iohk.atala.prism.utils.syntax._
-import org.slf4j.{Logger, LoggerFactory}
+import io.iohk.atala.prism.management.console.repositories.CredentialIssuancesRepository.{CreateCredentialIssuance, _}
+import tofu.higherKind.Mid
+import tofu.logging.{Logs, ServiceLogging}
+import tofu.syntax.logging._
 
-import scala.concurrent.{ExecutionContext, Future}
+@derive(applyK)
+trait CredentialIssuanceService[F[_]] {
+  def createCredentialIssuance(
+      participantId: ParticipantId,
+      createCredentialIssuance: CreateCredentialIssuance
+  ): F[Either[ManagementConsoleError, CredentialIssuance.Id]]
 
-class CredentialIssuanceServiceImpl(
-    credentialIssuancesRepository: CredentialIssuancesRepository[IOWithTraceIdContext],
-    val authenticator: ManagementConsoleAuthenticator
-)(implicit
-    ec: ExecutionContext
-) extends console_api.CredentialIssuanceServiceGrpc.CredentialIssuanceService
-    with ManagementConsoleErrorSupport
-    with AuthAndMiddlewareSupport[ManagementConsoleError, ParticipantId] {
+  def getCredentialIssuance(
+      participantId: ParticipantId,
+      getCredentialIssuance: GetCredentialIssuance
+  ): F[CredentialIssuance]
 
-  override protected val serviceName: String = "credential-issuance-service"
+  def createGenericCredentialBulk(
+      participantId: ParticipantId,
+      createCredentialBulk: CreateCredentialBulk
+  ): F[Either[ManagementConsoleError, CredentialIssuance.Id]]
+}
 
-  val logger: Logger = LoggerFactory.getLogger(this.getClass)
-
-  override def createCredentialIssuance(
-      request: CreateCredentialIssuanceRequest
-  ): Future[CreateCredentialIssuanceResponse] =
-    auth[CreateCredentialIssuance]("createCredentialIssuance", request) { (participantId, query) =>
-      credentialIssuancesRepository
-        .create(participantId, query)
-        .run(TraceId.generateYOLO)
-        .unsafeToFuture()
-        .toFutureEither
-        .map { credentialIssuanceId =>
-          CreateCredentialIssuanceResponse(credentialIssuanceId = credentialIssuanceId.toString)
-        }
+object CredentialIssuanceService {
+  def apply[F[_]: MonadThrow, R[_]: Functor](
+      credentialIssuancesRepository: CredentialIssuancesRepository[F],
+      logs: Logs[R, F]
+  ): R[CredentialIssuanceService[F]] =
+    for {
+      serviceLogs <- logs.service[CredentialIssuanceService[F]]
+    } yield {
+      implicit val implicitLogs: ServiceLogging[F, CredentialIssuanceService[F]] = serviceLogs
+      val logs: CredentialIssuanceService[Mid[F, *]] = new CredentialIssuanceServiceLogs[F]
+      val mid = logs
+      mid attach new CredentialIssuanceServiceImpl[F](credentialIssuancesRepository)
     }
+
+  def unsafe[F[_]: BracketThrow, R[_]: Comonad](
+      credentialIssuancesRepository: CredentialIssuancesRepository[F],
+      logs: Logs[R, F]
+  ): CredentialIssuanceService[F] = CredentialIssuanceService(credentialIssuancesRepository, logs).extract
+
+  def makeResource[F[_]: BracketThrow, R[_]: Monad](
+      credentialIssuancesRepository: CredentialIssuancesRepository[F],
+      logs: Logs[R, F]
+  ): Resource[R, CredentialIssuanceService[F]] =
+    Resource.eval(CredentialIssuanceService(credentialIssuancesRepository, logs))
+}
+
+private final class CredentialIssuanceServiceImpl[F[_]](credentialIssuancesRepository: CredentialIssuancesRepository[F])
+    extends CredentialIssuanceService[F] {
+  override def createCredentialIssuance(
+      participantId: ParticipantId,
+      createCredentialIssuance: CreateCredentialIssuance
+  ): F[Either[ManagementConsoleError, CredentialIssuance.Id]] =
+    credentialIssuancesRepository.create(participantId, createCredentialIssuance)
 
   override def getCredentialIssuance(
-      request: GetCredentialIssuanceRequest
-  ): Future[GetCredentialIssuanceResponse] =
-    auth[GetCredentialIssuance]("getCredentialIssuance", request) { (participantId, query) =>
-      credentialIssuancesRepository
-        .get(query.credentialIssuanceId, participantId)
-        .map { credentialIssuance =>
-          GetCredentialIssuanceResponse(
-            name = credentialIssuance.name,
-            credentialTypeId = credentialIssuance.credentialTypeId.uuid.toString,
-            createdAt = credentialIssuance.createdAt.toProtoTimestamp.some,
-            credentialIssuanceContacts = credentialIssuance.contacts.map(contact =>
-              CredentialIssuanceContact(
-                contactId = contact.contactId.toString,
-                credentialData = contact.credentialData.noSpaces,
-                groupIds = contact.groupIds.map(_.toString)
-              )
-            )
-          )
-        }
-        .run(TraceId.generateYOLO)
-        .unsafeToFuture()
-        .map(_.asRight)
-        .toFutureEither
-    }
+      participantId: ParticipantId,
+      getCredentialIssuance: GetCredentialIssuance
+  ): F[CredentialIssuance] =
+    credentialIssuancesRepository
+      .get(getCredentialIssuance.credentialIssuanceId, participantId)
 
   override def createGenericCredentialBulk(
-      request: CreateGenericCredentialBulkRequest
-  ): Future[CreateGenericCredentialBulkResponse] =
-    auth[CreateCredentialBulk]("createGenericCredentialBulk", request) { (participantId, query) =>
-      credentialIssuancesRepository
-        .createBulk(
-          participantId,
-          query.credentialsType,
-          query.issuanceName,
-          query.drafts
+      participantId: ParticipantId,
+      createCredentialBulk: CreateCredentialBulk
+  ): F[Either[ManagementConsoleError, CredentialIssuance.Id]] =
+    credentialIssuancesRepository.createBulk(
+      participantId,
+      createCredentialBulk.credentialsType,
+      createCredentialBulk.issuanceName,
+      createCredentialBulk.drafts
+    )
+}
+
+private final class CredentialIssuanceServiceLogs[F[_]: ServiceLogging[*[_], CredentialIssuanceService[F]]: MonadThrow]
+    extends CredentialIssuanceService[Mid[F, *]] {
+  override def createCredentialIssuance(
+      participantId: ParticipantId,
+      createCredentialIssuance: CreateCredentialIssuance
+  ): Mid[F, Either[ManagementConsoleError, CredentialIssuance.Id]] =
+    in =>
+      info"creating credential issuance $participantId" *> in
+        .flatTap(
+          _.fold(
+            e => error"encountered an error while creating credential issuance $e",
+            _ => info"creating credential issuance - successfully done"
+          )
         )
-        .run(TraceId.generateYOLO)
-        .unsafeToFuture()
-        .toFutureEither
-        .map { credentialIssuanceId =>
-          CreateGenericCredentialBulkResponse(credentialIssuanceId.uuid.toString)
-        }
-    }
+        .onError(errorCause"encountered an error while creating credential issuance" (_))
+
+  override def getCredentialIssuance(
+      participantId: ParticipantId,
+      getCredentialIssuance: GetCredentialIssuance
+  ): Mid[F, CredentialIssuance] =
+    in =>
+      info"getting credential $participantId" *> in
+        .flatTap(_ => info"getting credential - successfully done")
+        .onError(errorCause"encountered an error while getting credential" (_))
+
+  override def createGenericCredentialBulk(
+      participantId: ParticipantId,
+      createCredentialBulk: CreateCredentialBulk
+  ): Mid[F, Either[ManagementConsoleError, CredentialIssuance.Id]] =
+    in =>
+      info"creating bulk credential issuance $participantId" *> in
+        .flatTap(
+          _.fold(
+            e => error"encountered an error while creating bulk credential issuance  $e",
+            _ => info"creating bulk credential issuance - successfully done"
+          )
+        )
+        .onError(errorCause"encountered an error while creating bulk credential issuance" (_))
 }
