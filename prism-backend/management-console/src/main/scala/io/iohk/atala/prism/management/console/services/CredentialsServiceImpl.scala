@@ -44,7 +44,7 @@ class CredentialsServiceImpl(
     credentialsIntegrationService: CredentialsIntegrationService,
     val authenticator: ManagementConsoleAuthenticator,
     nodeService: NodeServiceGrpc.NodeService,
-    connectorClient: ConnectorClient
+    connectorClient: ConnectorClient[IOWithTraceIdContext]
 )(implicit
     ec: ExecutionContext
 ) extends console_api.CredentialsServiceGrpc.CredentialsService
@@ -266,11 +266,12 @@ class CredentialsServiceImpl(
       request: console_api.ShareCredentialsRequest
   ): Future[console_api.ShareCredentialsResponse] = {
     auth[ShareCredentials]("shareCredentials", request) { (participantId, query) =>
+      val traceId = TraceId.generateYOLO
       for {
         _ <-
           credentialsRepository
             .verifyPublishedCredentialsExist(participantId, query.credentialsIds)
-            .run(TraceId.generateYOLO)
+            .run(traceId)
             .unsafeToFuture()
             .toFutureEither
         _ <-
@@ -279,12 +280,14 @@ class CredentialsServiceImpl(
               query.sendMessagesRequest,
               query.sendMessagesRequestMetadata
             )
+            .run(traceId)
+            .unsafeToFuture()
             .lift
 
         _ <-
           credentialsRepository
             .markAsShared(participantId, query.credentialsIds)
-            .run(TraceId.generateYOLO)
+            .run(traceId)
             .unsafeToFuture()
             .map(_.asRight)
             .toFutureEither

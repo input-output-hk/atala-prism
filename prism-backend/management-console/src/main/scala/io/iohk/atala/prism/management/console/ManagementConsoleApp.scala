@@ -80,7 +80,7 @@ object ManagementConsoleApp extends IOApp {
       // connector
       connectorConfig = ConnectorClient.Config(globalConfig.getConfig("connector"))
       _ = logger.info(s"Connector config loaded: $connectorConfig")
-      connector = ConnectorClient(connectorConfig)
+      connector <- ConnectorClient.makeResource(connectorConfig, managementConsoleLogs)
 
       // repositories
       contactsRepository <- ContactsRepository.makeResource(txTraceIdLifted, managementConsoleLogs)
@@ -114,7 +114,8 @@ object ManagementConsoleApp extends IOApp {
       groupsService = new GroupsServiceImpl(institutionGroupsRepository, authenticator)
       participantsIntegrationService = new ParticipantsIntegrationService(participantsRepository)
       consoleService = new ConsoleServiceImpl(participantsIntegrationService, statisticsRepository, authenticator)
-      contactsIntegrationService = new ContactsIntegrationService(contactsRepository, connector)
+      contactsIntegrationService <-
+        ContactsIntegrationService.makeResource(contactsRepository, connector, managementConsoleLogs)
       contactsService = new ContactsServiceImpl(contactsIntegrationService, authenticator)
       credentialIssuanceService = new CredentialIssuanceServiceImpl(
         credentialIssuancesRepository,
