@@ -1,14 +1,14 @@
 package io.iohk.atala.prism.connector
 
 import com.google.protobuf.ByteString
-import io.iohk.atala.prism.crypto.SHA256Digest
+import io.iohk.atala.prism.kotlin.crypto.SHA256Digest
 import io.iohk.atala.prism.protos.node_models
 import io.iohk.atala.prism.util.BytesOps
 
 import java.util.UUID
 
 class AtalaOperationId private (val digest: SHA256Digest) {
-  def value: Vector[Byte] = digest.value.toVector
+  def value: Vector[Byte] = digest.getValue.toVector
 
   def hexValue: String = BytesOps.bytesToHex(value)
 
@@ -37,12 +37,12 @@ object AtalaOperationId {
   }
 
   def fromVectorUnsafe(bytes: Vector[Byte]): AtalaOperationId = {
-    val hash = SHA256Digest.fromVectorUnsafe(bytes)
+    val hash = SHA256Digest.fromBytes(bytes.toArray)
     new AtalaOperationId(hash)
   }
 
   def fromHexUnsafe(hex: String): AtalaOperationId = {
-    val hash = SHA256Digest.fromHexUnsafe(hex)
+    val hash = SHA256Digest.fromHex(hex)
     new AtalaOperationId(hash)
   }
 }

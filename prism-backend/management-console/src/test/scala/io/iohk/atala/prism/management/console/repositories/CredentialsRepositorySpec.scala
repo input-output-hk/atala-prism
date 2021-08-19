@@ -23,7 +23,6 @@ import io.iohk.atala.prism.management.console.models._
 import org.scalatest.OptionValues._
 import io.iohk.atala.prism.management.console.repositories.daos.CredentialTypeDao
 import io.iohk.atala.prism.interop.toScalaSDK._
-import io.iohk.atala.prism.interop.toKotlinSDK._
 import io.iohk.atala.prism.utils.IOUtils._
 import tofu.logging.Logs
 
@@ -583,7 +582,7 @@ class CredentialsRepositorySpec extends AtalaWithPostgresSpec {
       val (operationId, hash) = DataPreparation.getBatchData(mockBatchId).value
 
       hash mustBe mockHash
-      operationId.digest.asKotlin mustBe mockHash
+      operationId.digest mustBe mockHash
     }
   }
 

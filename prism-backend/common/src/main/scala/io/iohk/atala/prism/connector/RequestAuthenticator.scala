@@ -2,9 +2,10 @@ package io.iohk.atala.prism.connector
 
 import java.util.Base64
 
-import io.iohk.atala.prism.crypto.{ECPrivateKey, ECTrait}
+import io.iohk.atala.prism.kotlin.crypto.keys.ECPrivateKey
+import io.iohk.atala.prism.kotlin.crypto.EC
 
-class RequestAuthenticator(ec: ECTrait) {
+class RequestAuthenticator {
 
   /**
     * Signs the connector request, returning the encoded signature and nonce.
@@ -14,8 +15,8 @@ class RequestAuthenticator(ec: ECTrait) {
       privateKey: ECPrivateKey,
       requestNonce: RequestNonce = RequestNonce()
   ): SignedConnectorRequest = {
-    val signature = ec.sign(requestNonce + request, privateKey)
-    SignedConnectorRequest(signature = signature.data, requestNonce = requestNonce.bytes)
+    val signature = EC.sign(requestNonce + request, privateKey)
+    SignedConnectorRequest(signature = signature.getData, requestNonce = requestNonce.bytes)
   }
 }
 
