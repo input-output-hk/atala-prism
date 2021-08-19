@@ -4,6 +4,7 @@ import cats.effect.{ContextShift, IO}
 import io.iohk.atala.prism.auth.grpc.GrpcAuthenticationHeaderParser
 import io.iohk.atala.prism.logging.TraceId.IOWithTraceIdContext
 import io.iohk.atala.prism.management.console.clients.ConnectorClient
+import io.iohk.atala.prism.management.console.grpc.CredentialTypesGrpcService
 import io.iohk.atala.prism.management.console.integrations.{
   ContactsIntegrationService,
   CredentialsIntegrationService,
@@ -95,7 +96,10 @@ class ManagementConsoleRpcSpecBase extends RpcSpecBase {
     executionContext
   )
 
-  lazy val credentialTypeService = new CredentialTypesServiceImpl(credentialTypeRepository, authenticator)(
+  lazy val credentialTypeService = new CredentialTypesGrpcService(
+    CredentialTypesService.unsafe(credentialTypeRepository, managementConsoleTestLogs),
+    authenticator
+  )(
     executionContext
   )
 
