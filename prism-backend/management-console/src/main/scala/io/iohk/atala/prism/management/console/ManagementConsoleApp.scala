@@ -9,6 +9,7 @@ import io.iohk.atala.prism.logging.TraceId
 import io.iohk.atala.prism.logging.TraceId.IOWithTraceIdContext
 import io.iohk.atala.prism.management.console.clients.ConnectorClient
 import io.iohk.atala.prism.management.console.config.DefaultCredentialTypeConfig
+import io.iohk.atala.prism.management.console.grpc.GroupsGrpcService
 import io.iohk.atala.prism.management.console.integrations.{
   ContactsIntegrationService,
   CredentialsIntegrationService,
@@ -108,6 +109,10 @@ object ManagementConsoleApp extends IOApp {
         GrpcAuthenticationHeaderParser
       )
 
+      groupsService <- GroupsService.makeResource(institutionGroupsRepository, managementConsoleLogs)
+      participantsIntegrationService <-
+        ParticipantsIntegrationService.makeResource(participantsRepository, managementConsoleLogs)
+
       credentialsService = new CredentialsServiceImpl(
         credentialsRepository,
         credentialIntegrationService,
@@ -116,7 +121,7 @@ object ManagementConsoleApp extends IOApp {
         connector
       )
       credentialsStoreService = new CredentialsStoreServiceImpl(receivedCredentialsRepository, authenticator)
-      groupsService = new GroupsServiceImpl(institutionGroupsRepository, authenticator)
+      groupsGrpcService = new GroupsGrpcService(groupsService, authenticator)
       consoleService = new ConsoleServiceImpl(participantsIntegrationService, statisticsRepository, authenticator)
       contactsIntegrationService <-
         ContactsIntegrationService.makeResource(contactsRepository, connector, managementConsoleLogs)
@@ -136,7 +141,7 @@ object ManagementConsoleApp extends IOApp {
         console_api.ContactsServiceGrpc.bindService(contactsService, ec),
         console_api.CredentialIssuanceServiceGrpc.bindService(credentialIssuanceService, ec),
         console_api.CredentialsServiceGrpc.bindService(credentialsService, ec),
-        console_api.GroupsServiceGrpc.bindService(groupsService, ec),
+        console_api.GroupsServiceGrpc.bindService(groupsGrpcService, ec),
         console_api.CredentialsStoreServiceGrpc.bindService(credentialsStoreService, ec),
         console_api.ConsoleServiceGrpc.bindService(consoleService, ec),
         console_api.CredentialTypesServiceGrpc.bindService(credentialTypesService, ec)
