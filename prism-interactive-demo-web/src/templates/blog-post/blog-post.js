@@ -1,17 +1,17 @@
 import * as React from 'react';
 import { graphql } from 'gatsby';
+import { Disqus } from 'gatsby-plugin-disqus';
 import FooterBlog from '../../components/footer/footer';
 import HeaderBlog from '../../components/headerBlog/headerBlog';
 import calendarIcon from '../../images/calendar.svg';
 import authorIcon from '../../images/author.svg';
 import clockIcon from '../../images/clock.svg';
 import SEO from '../../components/seo/seo';
-import BackArrow from '../../components/headerBlog/backArrow';
 
 import './_style.scss';
 import '../../pages/blog.scss';
 
-const BlogPostTemplate = ({ data }) => {
+const BlogPostTemplate = ({ data, location, pageContext }) => {
   const post = data.markdownRemark;
 
   return (
@@ -68,6 +68,13 @@ const BlogPostTemplate = ({ data }) => {
           </article>
         </div>
       </div>
+      <Disqus
+        config={{
+          url: location.href,
+          identifier: pageContext.id,
+          title: post.frontmatter.title
+        }}
+      />
       <FooterBlog />
     </div>
   );
