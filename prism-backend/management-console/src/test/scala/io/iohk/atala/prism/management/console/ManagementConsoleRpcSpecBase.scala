@@ -73,7 +73,8 @@ class ManagementConsoleRpcSpecBase extends RpcSpecBase {
   )
 
   lazy val connectorMock = mock[ConnectorClient[IOWithTraceIdContext]]
-  lazy val contactsIntegrationService = new ContactsIntegrationService(contactsRepository, connectorMock)
+  lazy val contactsIntegrationService =
+    ContactsIntegrationService.unsafe(contactsRepository, connectorMock, managementConsoleTestLogs)
 
   lazy val participantsIntegrationService = new ParticipantsIntegrationService(participantsRepository)
   lazy val consoleService = new ConsoleServiceImpl(participantsIntegrationService, statisticsRepository, authenticator)(

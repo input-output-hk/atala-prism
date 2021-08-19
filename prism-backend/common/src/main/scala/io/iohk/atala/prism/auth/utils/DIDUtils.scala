@@ -17,7 +17,7 @@ import io.iohk.atala.prism.utils.FutureEither.FutureEitherOps
 
 import scala.concurrent.{ExecutionContext, Future}
 import scala.util.{Failure, Success, Try}
-import io.iohk.atala.prism.interop.toScalaSDK._
+import io.iohk.atala.prism.interop.toScalaProtos._
 
 object DIDUtils {
 

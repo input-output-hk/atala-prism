@@ -1,23 +1,22 @@
 package io.iohk.atala.prism.services
 
-import com.google.protobuf.CodedOutputStream
-import io.grpc.inprocess.InProcessChannelBuilder
-import io.grpc.stub.AbstractStub
-import io.grpc.{CallOptions, Channel, Metadata}
-import io.iohk.atala.prism.connector.{RequestAuthenticator, RequestNonce, SignedConnectorRequest}
-import io.iohk.atala.prism.crypto.{ECPrivateKey => ECPrivateKeyScalaSDK, EC => ECScalaSDK}
-import io.iohk.atala.prism.kotlin.crypto.EC
-import io.iohk.atala.prism.kotlin.identity.DID
-import io.iohk.atala.prism.services.BaseGrpcClientService.AuthHeaders
-import monix.execution.Scheduler.Implicits.global
-import org.mockito.{ArgumentMatchersSugar, MockitoSugar}
-import org.scalatest.matchers.must.Matchers
-import org.scalatest.wordspec.AnyWordSpec
-import scalapb.descriptors.{FieldDescriptor, PValue}
-import scalapb.{GeneratedMessage, GeneratedMessageCompanion}
-
 import scala.concurrent.Future
 import scala.concurrent.duration._
+import scalapb.{GeneratedMessage, GeneratedMessageCompanion}
+import scalapb.descriptors.{FieldDescriptor, PValue}
+import com.google.protobuf.CodedOutputStream
+import io.grpc.{CallOptions, Channel, Metadata}
+import io.grpc.inprocess.InProcessChannelBuilder
+import io.grpc.stub.AbstractStub
+import org.scalatest.wordspec.AnyWordSpec
+import org.scalatest.matchers.must.Matchers
+import org.mockito.{ArgumentMatchersSugar, MockitoSugar}
+import io.iohk.atala.prism.connector.{RequestAuthenticator, RequestNonce, SignedConnectorRequest}
+import io.iohk.atala.prism.services.BaseGrpcClientService.AuthHeaders
+import io.iohk.atala.prism.kotlin.identity.DID
+import io.iohk.atala.prism.kotlin.crypto.EC
+import io.iohk.atala.prism.kotlin.crypto.keys.ECPrivateKey
+import monix.execution.Scheduler.Implicits.global
 
 // sbt "project mirror" "testOnly *services.BaseGrpcClientServiceSpec"
 class BaseGrpcClientServiceSpec extends AnyWordSpec with Matchers with MockitoSugar with ArgumentMatchersSugar {
@@ -60,10 +59,10 @@ class BaseGrpcClientServiceSpec extends AnyWordSpec with Matchers with MockitoSu
       didIssuingKeyPair = EC.generateKeyPair()
     )
 
-    val requestAuthenticator = new RequestAuthenticator(ECScalaSDK) {
+    val requestAuthenticator = new RequestAuthenticator {
       override def signConnectorRequest(
           request: Array[Byte],
-          privateKey: ECPrivateKeyScalaSDK,
+          privateKey: ECPrivateKey,
           requestNonce: RequestNonce
       ): SignedConnectorRequest = {
         SignedConnectorRequest(

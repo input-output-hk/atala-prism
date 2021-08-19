@@ -1,6 +1,8 @@
 package io.iohk.atala.prism.management.console.services
 
 import io.iohk.atala.prism.auth.AuthAndMiddlewareSupport
+import io.iohk.atala.prism.logging.TraceId
+import io.iohk.atala.prism.logging.TraceId.IOWithTraceIdContext
 import io.iohk.atala.prism.management.console.ManagementConsoleAuthenticator
 import io.iohk.atala.prism.management.console.errors.{ManagementConsoleError, ManagementConsoleErrorSupport}
 import io.iohk.atala.prism.management.console.grpc._
@@ -16,13 +18,13 @@ import io.iohk.atala.prism.management.console.models.{
 }
 import io.iohk.atala.prism.protos.console_api
 import io.iohk.atala.prism.protos.console_api._
-import io.iohk.atala.prism.utils.FutureEither.FutureEitherOps
+import io.iohk.atala.prism.utils.FutureEither.{FutureEitherFOps, FutureEitherOps}
 import org.slf4j.{Logger, LoggerFactory}
 
 import scala.concurrent.{ExecutionContext, Future}
 
 class ContactsServiceImpl(
-    contactsIntegrationService: ContactsIntegrationService,
+    contactsIntegrationService: ContactsIntegrationService[IOWithTraceIdContext],
     val authenticator: ManagementConsoleAuthenticator
 )(implicit
     ec: ExecutionContext
@@ -39,6 +41,8 @@ class ContactsServiceImpl(
       val maybeGroupName = InstitutionGroup.Name.optional(request.groupName)
       contactsIntegrationService
         .createContact(participantId, query, maybeGroupName)
+        .run(TraceId.generateYOLO)
+        .unsafeToFuture()
         .toFutureEither
         .map(c => ProtoCodecs.toContactProto(c.contact, c.connection))
         .map(console_api.CreateContactResponse().withContact)
@@ -48,7 +52,9 @@ class ContactsServiceImpl(
     auth[Contact.PaginatedQuery]("getContacts", request) { (participantId, query) =>
       contactsIntegrationService
         .getContacts(participantId, query)
-        .toFutureEither
+        .run(TraceId.generateYOLO)
+        .unsafeToFuture()
+        .lift
         .map { result =>
           val data = result.data
             .map { item =>
@@ -71,18 +77,22 @@ class ContactsServiceImpl(
     auth[GetContact]("getContact", request) { (participantId, query) =>
       contactsIntegrationService
         .getContact(participantId, query.contactId)
-        .toFutureEither
+        .run(TraceId.generateYOLO)
         .map(ProtoCodecs.toGetContactResponse)
+        .unsafeToFuture()
+        .lift
     }
 
   override def updateContact(request: UpdateContactRequest): Future[UpdateContactResponse] =
     auth[UpdateContact]("updateContact", request) { (participantId, query) =>
       contactsIntegrationService
         .updateContact(participantId, query)
-        .toFutureEither
+        .run(TraceId.generateYOLO)
+        .unsafeToFuture()
         .map { _ =>
           console_api.UpdateContactResponse()
         }
+        .lift
     }
 
   // TODO: Is this actually required?
@@ -94,6 +104,8 @@ class ContactsServiceImpl(
     auth[CreateContact.Batch]("createContacts", request) { (participantId, query) =>
       contactsIntegrationService
         .createContacts(participantId, query)
+        .run(TraceId.generateYOLO)
+        .unsafeToFuture()
         .toFutureEither
         .map { numberOfContacts =>
           console_api.CreateContactsResponse(numberOfContacts)
@@ -104,6 +116,8 @@ class ContactsServiceImpl(
     auth[DeleteContact]("deleteContact", request) { (participantId, query) =>
       contactsIntegrationService
         .deleteContact(participantId, query.contactId, request.deleteCredentials)
+        .run(TraceId.generateYOLO)
+        .unsafeToFuture()
         .toFutureEither
         .map { _ =>
           console_api.DeleteContactResponse()

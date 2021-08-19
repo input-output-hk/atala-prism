@@ -3,7 +3,7 @@ package io.iohk.atala.prism.models
 import java.util.Locale
 
 import com.typesafe.config.ConfigMemorySize
-import io.iohk.atala.prism.util.BytesOps
+import io.iohk.atala.prism.utils.BytesOps
 
 import scala.collection.compat.immutable.ArraySeq
 import scala.util.matching.Regex

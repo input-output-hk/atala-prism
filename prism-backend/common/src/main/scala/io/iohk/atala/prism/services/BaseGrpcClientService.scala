@@ -29,8 +29,6 @@ import io.iohk.atala.prism.daos.DbConfigDao
 import io.iohk.atala.prism.protos.{connector_api, node_models}
 import doobie.implicits._
 
-import io.iohk.atala.prism.interop.toScalaSDK._
-
 /**
   * Abstract service which provides support for DID based authentication for gRPC
   * and wraps response into [[monix.eval.Task]].
@@ -81,7 +79,7 @@ abstract class BaseGrpcClientService[S <: AbstractStub[S]](
   private[services] def signRequest[Request <: GeneratedMessage](request: Request): Metadata = {
     val signature = requestAuthenticator.signConnectorRequest(
       request.toByteArray,
-      authConfig.keys.getPrivateKey.asScala
+      authConfig.keys.getPrivateKey
     )
 
     authConfig match {

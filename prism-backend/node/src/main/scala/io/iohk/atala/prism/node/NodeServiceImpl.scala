@@ -35,7 +35,7 @@ import java.time.Instant
 import scala.concurrent.{ExecutionContext, Future}
 import scala.util.Try
 
-import io.iohk.atala.prism.interop.toScalaSDK._
+import io.iohk.atala.prism.interop.toScalaProtos._
 
 class NodeServiceImpl(
     didDataRepository: DIDDataRepository[IO],

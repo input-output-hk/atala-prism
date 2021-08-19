@@ -14,7 +14,7 @@ import io.iohk.atala.prism.intdemo.html.IdCredential
 import io.iohk.atala.prism.intdemo.protos.intdemo_api
 import io.iohk.atala.prism.models.ParticipantId
 import io.iohk.atala.prism.protos.credential_models
-import io.iohk.atala.prism.util.BytesOps
+import io.iohk.atala.prism.utils.BytesOps
 import io.iohk.atala.prism.utils.Base64Utils
 import monix.execution.Scheduler.{global => scheduler}
 

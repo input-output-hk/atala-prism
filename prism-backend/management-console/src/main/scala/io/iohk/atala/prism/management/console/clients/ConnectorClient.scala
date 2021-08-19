@@ -14,7 +14,6 @@ import io.iohk.atala.prism.auth.grpc.GrpcAuthenticationHeader.PublishedDIDBased
 import io.iohk.atala.prism.auth.model.RequestNonce
 import io.iohk.atala.prism.connector.RequestAuthenticator
 import io.iohk.atala.prism.kotlin.crypto.EC
-import io.iohk.atala.prism.crypto.{EC => ECScalaSDK}
 import io.iohk.atala.prism.kotlin.crypto.keys.ECPrivateKey
 import io.iohk.atala.prism.kotlin.crypto.signature.ECSignature
 import io.iohk.atala.prism.kotlin.identity.DID
@@ -22,14 +21,12 @@ import io.iohk.atala.prism.kotlin.identity.DID.masterKeyId
 import io.iohk.atala.prism.models.ConnectionToken
 import io.iohk.atala.prism.protos.connector_api._
 import io.iohk.atala.prism.protos.connector_models.ContactConnection
-import io.iohk.atala.prism.util
-import io.iohk.atala.prism.util.BytesOps
+import io.iohk.atala.prism.utils._
 import io.iohk.atala.prism.utils.GrpcUtils
 import io.iohk.atala.prism.logging.GeneralLoggableInstances._
 
 import scala.concurrent.ExecutionContext
 import scala.util.{Failure, Success, Try}
-import io.iohk.atala.prism.interop.toScalaSDK._
 import tofu.Execute
 import tofu.higherKind.Mid
 import tofu.logging.{Logs, ServiceLogging}
@@ -61,7 +58,7 @@ object ConnectorClient {
          |host = $host
          |port = $port
          |whitelistedDID = $whitelistedDID
-         |didPrivateKey = ${util.StringUtils.masked(didPrivateKey.getHexEncoded)}""".stripMargin
+         |didPrivateKey = ${StringUtils.masked(didPrivateKey.getHexEncoded)}""".stripMargin
     }
   }
   object Config {
@@ -108,11 +105,11 @@ object ConnectorClient {
       val connectorService = GrpcUtils
         .createPlaintextStub(host = config.host, port = config.port, stub = ConnectorServiceGrpc.stub)
 
-      val requestAuthenticator = new RequestAuthenticator(ECScalaSDK)
+      val requestAuthenticator = new RequestAuthenticator
 
       def requestSigner(request: scalapb.GeneratedMessage): GrpcAuthenticationHeader.DIDBased = {
 
-        val signedRequest = requestAuthenticator.signConnectorRequest(request.toByteArray, config.didPrivateKey.asScala)
+        val signedRequest = requestAuthenticator.signConnectorRequest(request.toByteArray, config.didPrivateKey)
         PublishedDIDBased(
           did = DID.fromString(config.whitelistedDID.getValue),
           keyId = masterKeyId,

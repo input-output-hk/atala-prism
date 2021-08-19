@@ -61,7 +61,6 @@ object PrismBuild {
       .enablePlugins(GitVersioning)
 
   lazy val protosLib = ProjectRef(file("../prism-sdk"), "prismProtosJVM")
-  lazy val connectorLib = ProjectRef(file("../prism-sdk"), "prismConnectorJVM")
 
   lazy val common =
     commonProject(project in file("common"))
@@ -89,7 +88,7 @@ object PrismBuild {
             ) ++
             Seq(prismCrypto, prismCredentials)
       )
-      .dependsOn(protosLib, connectorLib)
+      .dependsOn(protosLib)
 
   private def generateImageName(name: String, version: String): ImageName =
     if (sys.env.get("GITHUB").contains("1"))
@@ -143,9 +142,9 @@ object PrismBuild {
       .settings(
         name := "node",
         Compile / run / mainClass := Some("io.iohk.atala.prism.node.NodeApp"),
-        libraryDependencies ++= circeDependencies ++ Seq(awsSdk, osLib)
+        libraryDependencies ++= Seq(awsSdk, osLib)
       )
-      .dependsOn(common % "compile->compile;test->test", connectorLib)
+      .dependsOn(common % "compile->compile;test->test")
 
   lazy val connector =
     commonServerProject("connector")
@@ -155,7 +154,7 @@ object PrismBuild {
         scalacOptions ~= (_ :+ "-Wconf:src=.*twirl/.*:silent"),
         libraryDependencies ++= Seq(braintree, twirlApi)
       )
-      .dependsOn(common % "compile->compile;test->test", connectorLib)
+      .dependsOn(common % "compile->compile;test->test")
       .enablePlugins(SbtTwirl)
 
   lazy val keyderivation =
