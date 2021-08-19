@@ -1,90 +1,104 @@
 package io.iohk.atala.prism.management.console.services
 
-import cats.implicits.catsSyntaxEitherId
-import io.iohk.atala.prism.auth.AuthAndMiddlewareSupport
-import io.iohk.atala.prism.logging.TraceId
-import io.iohk.atala.prism.logging.TraceId.IOWithTraceIdContext
+import cats.{Comonad, Functor, Monad}
+import cats.effect.{BracketThrow, MonadThrow, Resource}
+import cats.syntax.apply._
+import cats.syntax.applicativeError._
+import cats.syntax.comonad._
+import cats.syntax.flatMap._
+import cats.syntax.functor._
+import derevo.derive
+import derevo.tagless.applyK
 import io.iohk.atala.prism.management.console.models._
 import io.iohk.atala.prism.management.console.repositories.daos.ReceivedCredentialsDAO.ReceivedSignedCredentialData
 import io.iohk.atala.prism.management.console.repositories.ReceivedCredentialsRepository
-import io.iohk.atala.prism.management.console.ManagementConsoleAuthenticator
-import io.iohk.atala.prism.management.console.errors.{ManagementConsoleError, ManagementConsoleErrorSupport}
-import io.iohk.atala.prism.management.console.grpc._
-import io.iohk.atala.prism.protos.console_api.{
-  GetLatestCredentialExternalIdRequest,
-  GetLatestCredentialExternalIdResponse
+import io.iohk.atala.prism.metrics.TimeMeasureMetric
+import tofu.higherKind.Mid
+import tofu.logging.{Logs, ServiceLogging}
+import tofu.syntax.logging._
+
+@derive(applyK)
+trait CredentialsStoreService[F[_]] {
+
+  def storeCredential(storeCredential: StoreCredential): F[Unit]
+
+  def getLatestCredentialExternalId(participantId: ParticipantId): F[Option[CredentialExternalId]]
+
+  def getStoredCredentialsFor(
+      participantId: ParticipantId,
+      getStoredCredentials: GetStoredCredentials
+  ): F[List[ReceivedSignedCredential]]
+
 }
-import io.iohk.atala.prism.protos.console_api
-import io.iohk.atala.prism.utils.FutureEither.FutureEitherOps
-import org.slf4j.{Logger, LoggerFactory}
 
-import scala.concurrent.{ExecutionContext, Future}
+object CredentialsStoreService {
 
-class CredentialsStoreServiceImpl(
-    receivedCredentials: ReceivedCredentialsRepository[IOWithTraceIdContext],
-    val authenticator: ManagementConsoleAuthenticator
-)(implicit
-    ec: ExecutionContext
-) extends console_api.CredentialsStoreServiceGrpc.CredentialsStoreService
-    with ManagementConsoleErrorSupport
-    with AuthAndMiddlewareSupport[ManagementConsoleError, ParticipantId] {
-
-  override protected val serviceName: String = "credentials-store-service"
-
-  override val logger: Logger = LoggerFactory.getLogger(this.getClass)
-
-  override def storeCredential(
-      request: console_api.StoreCredentialRequest
-  ): Future[console_api.StoreCredentialResponse] =
-    auth[StoreCredential]("storeCredential", request) { (_, query) =>
-      receivedCredentials
-        .createReceivedCredential(
-          ReceivedSignedCredentialData(
-            contactId = query.connectionId, // TODO: Change proto model field name to contactId
-            encodedSignedCredential = query.encodedSignedCredential,
-            credentialExternalId = query.credentialExternalId
-          )
-        )
-        .map { _ =>
-          console_api.StoreCredentialResponse()
-        }
-        .run(TraceId.generateYOLO)
-        .unsafeToFuture()
-        .map(_.asRight)
-        .toFutureEither
+  def apply[F[_]: TimeMeasureMetric: MonadThrow, R[_]: Functor](
+      receivedCredentials: ReceivedCredentialsRepository[F],
+      logs: Logs[R, F]
+  ): R[CredentialsStoreService[F]] =
+    for {
+      serviceLogs <- logs.service[CredentialsStoreService[F]]
+    } yield {
+      implicit val implicitLogs: ServiceLogging[F, CredentialsStoreService[F]] = serviceLogs
+      val logs: CredentialsStoreService[Mid[F, *]] = new CredentialStoreServiceLogs[F]
+      val mid = logs
+      mid attach new CredentialsStoreServiceImpl[F](receivedCredentials)
     }
 
-  override def getLatestCredentialExternalId(
-      request: GetLatestCredentialExternalIdRequest
-  ): Future[GetLatestCredentialExternalIdResponse] =
-    auth[GetLatestCredential]("getLatestCredentialExternalId", request) { (participantId, _) =>
-      receivedCredentials
-        .getLatestCredentialExternalId(participantId)
-        .map { maybeCredentialExternalId =>
-          console_api.GetLatestCredentialExternalIdResponse(
-            latestCredentialExternalId = maybeCredentialExternalId.fold("")(_.value.toString)
-          )
-        }
-        .run(TraceId.generateYOLO)
-        .unsafeToFuture()
-        .map(_.asRight)
-        .toFutureEither
-    }
+  def unsafe[F[_]: TimeMeasureMetric: BracketThrow, R[_]: Comonad](
+      receivedCredentials: ReceivedCredentialsRepository[F],
+      logs: Logs[R, F]
+  ): CredentialsStoreService[F] = CredentialsStoreService(receivedCredentials, logs).extract
+
+  def makeResource[F[_]: TimeMeasureMetric: BracketThrow, R[_]: Monad](
+      receivedCredentials: ReceivedCredentialsRepository[F],
+      logs: Logs[R, F]
+  ): Resource[R, CredentialsStoreService[F]] = Resource.eval(CredentialsStoreService(receivedCredentials, logs))
+}
+
+private final class CredentialsStoreServiceImpl[F[_]](
+    receivedCredentials: ReceivedCredentialsRepository[F]
+) extends CredentialsStoreService[F] {
+  override def storeCredential(storeCredential: StoreCredential): F[Unit] =
+    receivedCredentials.createReceivedCredential(
+      ReceivedSignedCredentialData(
+        contactId = storeCredential.connectionId, // TODO: Change proto model field name to contactId
+        storeCredential.encodedSignedCredential,
+        storeCredential.credentialExternalId
+      )
+    )
+
+  override def getLatestCredentialExternalId(participantId: ParticipantId): F[Option[CredentialExternalId]] =
+    receivedCredentials.getLatestCredentialExternalId(participantId)
 
   override def getStoredCredentialsFor(
-      request: console_api.GetStoredCredentialsForRequest
-  ): Future[console_api.GetStoredCredentialsForResponse] =
-    auth[GetStoredCredentials]("getStoredCredentialsFor", request) { (participantId, query) =>
-      receivedCredentials
-        .getCredentialsFor(participantId, query.filterBy.contact)
-        .map { credentials =>
-          console_api.GetStoredCredentialsForResponse(
-            credentials = credentials.map(ProtoCodecs.receivedSignedCredentialToProto)
-          )
-        }
-        .run(TraceId.generateYOLO)
-        .unsafeToFuture()
-        .map(_.asRight)
-        .toFutureEither
-    }
+      participantId: ParticipantId,
+      getStoredCredentials: GetStoredCredentials
+  ): F[List[ReceivedSignedCredential]] =
+    receivedCredentials.getCredentialsFor(participantId, getStoredCredentials.filterBy.contact)
+}
+
+private final class CredentialStoreServiceLogs[F[_]: ServiceLogging[*[_], CredentialsStoreService[F]]: MonadThrow]
+    extends CredentialsStoreService[Mid[F, *]] {
+  override def storeCredential(storeCredential: StoreCredential): Mid[F, Unit] =
+    in =>
+      info"storing credentials" *> in
+        .flatTap(_ => info"storing credentials - successfully done")
+        .onError(errorCause"encountered an error while storing credentials" (_))
+
+  override def getLatestCredentialExternalId(participantId: ParticipantId): Mid[F, Option[CredentialExternalId]] =
+    in =>
+      info"getting storied credentials $participantId" *> in
+        .flatTap(_ => info"getting storied credentials - successfully done")
+        .onError(errorCause"encountered an error while getting storied credentials" (_))
+
+  override def getStoredCredentialsFor(
+      participantId: ParticipantId,
+      getStoredCredentials: GetStoredCredentials
+  ): Mid[F, List[ReceivedSignedCredential]] =
+    in =>
+      info"getting storied credentials $participantId" *> in
+        .flatTap(_ => info"getting storied credentials - successfully done")
+        .onError(errorCause"encountered an error while getting storied credentials" (_))
 }

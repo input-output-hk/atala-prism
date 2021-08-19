@@ -9,6 +9,7 @@ import io.iohk.atala.prism.kotlin.crypto.EC
 import io.iohk.atala.prism.kotlin.identity.DID
 import io.iohk.atala.prism.logging.TraceId
 import io.iohk.atala.prism.logging.TraceId.IOWithTraceIdContext
+import io.iohk.atala.prism.management.console.grpc.CredentialsStoreGrpcService
 import io.iohk.atala.prism.management.console.models.{CredentialExternalId, ParticipantId, ParticipantLogo}
 import io.iohk.atala.prism.management.console.repositories.ParticipantsRepository.CreateParticipantRequest
 import io.iohk.atala.prism.management.console.repositories.daos._
@@ -51,7 +52,10 @@ class CredentialsStoreServiceImplSpec extends RpcSpecBase with DIDUtil {
     Seq(
       console_api.CredentialsStoreServiceGrpc
         .bindService(
-          new CredentialsStoreServiceImpl(receivedCredentials, authenticator),
+          new CredentialsStoreGrpcService(
+            CredentialsStoreService.unsafe(receivedCredentials, managementConsoleTestLogs),
+            authenticator
+          ),
           executionContext
         )
     )
