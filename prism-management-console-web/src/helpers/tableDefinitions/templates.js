@@ -4,7 +4,7 @@ import i18n from 'i18next';
 import CellRenderer from '../../components/common/Atoms/CellRenderer/CellRenderer';
 import DefaultIcon from '../../images/templates/genericUserIcon.svg';
 import { backendDateFormat } from '../formatters';
-import TemplatesActionButtons from '../../components/credentialTemplates/Atoms/TemplatesActionButtons';
+import TemplatesActionButtons from '../../components/credentialTemplates/Atoms/Buttons/TemplatesActionButtons';
 import PopOver from '../../components/common/Organisms/Detail/PopOver';
 
 const translationKeyPrefix = 'templates.table.columns';
@@ -27,7 +27,7 @@ export const getTemplatesColumns = (templateCategories, tableActions) => {
     {
       key: 'templateName',
       width: 150,
-      render: ({ name }) => <CellRenderer title={tp('templateName')} value={name} />
+      render: ({ name }) => <CellRenderer title={tp('name')} value={name} />
     },
     {
       key: 'category',

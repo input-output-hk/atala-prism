@@ -6,15 +6,24 @@ import { useCredentialTypes, useTemplateCategories } from '../../hooks/useCreden
 import { useMockDataContext } from '../providers/MockDataProvider';
 
 const CredentialTemplatesContainer = ({ api: { credentialTypesManager } }) => {
-  const { credentialTypes, isLoading, isSearching } = useCredentialTypes(credentialTypesManager);
+  const {
+    filteredCredentialTypes,
+    isLoading,
+    isSearching,
+    filterProps,
+    sortingProps
+  } = useCredentialTypes(credentialTypesManager);
   const { templateCategories } = useTemplateCategories(credentialTypesManager);
   const { mockData } = useMockDataContext();
 
   const tableProps = {
-    credentialTypes: credentialTypes && credentialTypes.concat(mockData.credentialTypes),
+    credentialTypes:
+      filteredCredentialTypes && filteredCredentialTypes.concat(mockData.credentialTypes),
     templateCategories,
     isLoading,
-    isSearching
+    isSearching,
+    filterProps,
+    sortingProps
   };
 
   return <CredentialTemplates tableProps={tableProps} />;

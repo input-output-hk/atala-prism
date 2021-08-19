@@ -2,8 +2,8 @@ import React from 'react';
 import { useTranslation } from 'react-i18next';
 import PropTypes from 'prop-types';
 import { message } from 'antd';
-import CustomButton from '../../common/Atoms/CustomButton/CustomButton';
-import { credentialTypeShape } from '../../../helpers/propShapes';
+import CustomButton from '../../../common/Atoms/CustomButton/CustomButton';
+import { credentialTypeShape } from '../../../../helpers/propShapes';
 
 const TemplatesActionButtons = ({ template, onPreview }) => {
   const { t } = useTranslation();

@@ -539,7 +539,7 @@
     "table": {
       "unknownValue": "Unknown",
       "columns": {
-        "templateName":"Template Name",
+        "name":"Template Name",
         "category": "Category",
         "lastEdited": "Last Edited"
       }

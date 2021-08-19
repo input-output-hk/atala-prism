@@ -1,8 +1,8 @@
 import React from 'react';
 import PropTypes from 'prop-types';
-import { getTemplatesColumns } from '../../../helpers/tableDefinitions/templates';
-import InfiniteScrollTable from '../../common/Organisms/Tables/InfiniteScrollTable';
-import { credentialTypeShape, templateCategoryShape } from '../../../helpers/propShapes';
+import { getTemplatesColumns } from '../../../../helpers/tableDefinitions/templates';
+import InfiniteScrollTable from '../../../common/Organisms/Tables/InfiniteScrollTable';
+import { credentialTypeShape, templateCategoryShape } from '../../../../helpers/propShapes';
 import './_style.scss';
 
 const TemplatesTable = ({ credentialTypes, templateCategories, showTemplatePreview }) => {

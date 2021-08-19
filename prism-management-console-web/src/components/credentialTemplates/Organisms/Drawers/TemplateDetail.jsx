@@ -2,9 +2,10 @@ import React from 'react';
 import PropTypes from 'prop-types';
 import _ from 'lodash';
 import { Drawer } from 'antd';
-import { drawerWidth } from '../../../helpers/constants';
-import { sanitizeView } from '../../../helpers/credentialView';
-import { credentialTypeShape } from '../../../helpers/propShapes';
+import { drawerWidth } from '../../../../helpers/constants';
+import { sanitizeView } from '../../../../helpers/credentialView';
+import { credentialTypeShape } from '../../../../helpers/propShapes';
+import './_style.scss';
 
 const TemplateDetail = ({ drawerInfo, templateData }) => {
   const { template } = templateData;

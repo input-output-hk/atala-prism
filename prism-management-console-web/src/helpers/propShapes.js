@@ -189,3 +189,16 @@ export const templateCreationStepShape = oneOf([
   DESIGN_TEMPLATE,
   TEMPLATE_CREATION_RESULT
 ]);
+export const templateFiltersShape = {
+  name: string,
+  category: string,
+  lastEdited: string,
+  setName: func,
+  setCategory: func,
+  setLastEdited: func
+};
+
+export const templateSortingShape = {
+  sortingBy: string,
+  setSortingBy: func
+};
