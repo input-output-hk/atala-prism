@@ -2,6 +2,7 @@ import React from 'react';
 import PropTypes from 'prop-types';
 import { SearchOutlined } from '@ant-design/icons';
 import { Input } from 'antd';
+import './_style.scss';
 
 const SearchBar = ({ searchText, setSearchText, placeholder }) => (
   <div className="searchBox">

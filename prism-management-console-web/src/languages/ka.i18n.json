@@ -546,7 +546,7 @@
     },
     "actions": {
       "searchPlaceholder": "Search",
-      "createTemplate": "Create Template",
+      "createTemplate": "Create",
       "preview": "Preview",
       "edit": "Edit ",
       "copy": "Copy",
