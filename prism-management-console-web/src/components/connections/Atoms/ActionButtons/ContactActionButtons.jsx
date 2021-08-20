@@ -18,38 +18,29 @@ const ContactActionButtons = ({ inviteContact, viewContactDetail, contact }) => 
 
   const showQRButton = showQR(contact);
 
+  const actions = [
+    { name: 'invite', call: () => inviteContact(contactId), hideCondition: !showQRButton },
+    { name: 'delete' },
+    { name: 'edit', call: () => viewContactDetail(contactId, true) },
+    { name: 'view', call: () => viewContactDetail(contactId) }
+  ];
+
+  const defaultAction = () => message.warn(t('errors.notImplementedYet'));
+
   return (
     <div className="ControlButtons">
-      {showQRButton && (
-        <CustomButton
-          buttonProps={{
-            onClick: () => inviteContact(contactId),
-            className: 'theme-link'
-          }}
-          buttonText={t('contacts.table.columns.invite')}
-        />
+      {actions.map(
+        a =>
+          !a.hideCondition && (
+            <CustomButton
+              buttonProps={{
+                className: 'theme-link',
+                onClick: a.call || defaultAction
+              }}
+              buttonText={t(`contacts.table.columns.${a.name}`)}
+            />
+          )
       )}
-      <CustomButton
-        buttonProps={{
-          className: 'theme-link',
-          onClick: () => message.warn('Not implemented yet')
-        }}
-        buttonText={t('contacts.table.columns.delete')}
-      />
-      <CustomButton
-        buttonProps={{
-          className: 'theme-link',
-          onClick: () => viewContactDetail(contactId, true)
-        }}
-        buttonText={t('contacts.table.columns.edit')}
-      />
-      <CustomButton
-        buttonProps={{
-          className: 'theme-link',
-          onClick: () => viewContactDetail(contactId)
-        }}
-        buttonText={t('contacts.table.columns.view')}
-      />
     </div>
   );
 };

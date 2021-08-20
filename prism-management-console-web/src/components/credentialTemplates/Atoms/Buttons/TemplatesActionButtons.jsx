@@ -8,36 +8,29 @@ import { credentialTypeShape } from '../../../../helpers/propShapes';
 const TemplatesActionButtons = ({ template, onPreview }) => {
   const { t } = useTranslation();
 
+  const actions = [
+    {
+      name: 'preview',
+      call: () => onPreview(template)
+    },
+    { name: 'edit' },
+    { name: 'copy' },
+    { name: 'delete' }
+  ];
+
+  const defaultAction = () => message.warn(t('errors.notImplementedYet'));
+
   return (
     <div className="ControlButtons">
-      <CustomButton
-        buttonProps={{
-          className: 'theme-link',
-          onClick: () => onPreview(template)
-        }}
-        buttonText={t('templates.actions.preview')}
-      />
-      <CustomButton
-        buttonProps={{
-          className: 'theme-link',
-          onClick: () => message.warn('Not implemented yet')
-        }}
-        buttonText={t('templates.actions.edit')}
-      />
-      <CustomButton
-        buttonProps={{
-          className: 'theme-link',
-          onClick: () => message.warn('Not implemented yet')
-        }}
-        buttonText={t('templates.actions.copy')}
-      />
-      <CustomButton
-        buttonProps={{
-          className: 'theme-link',
-          onClick: () => message.warn('Not implemented yet')
-        }}
-        buttonText={t('templates.actions.delete')}
-      />
+      {actions.map(a => (
+        <CustomButton
+          buttonProps={{
+            className: 'theme-link',
+            onClick: a.call || defaultAction
+          }}
+          buttonText={t(`templates.actions.${a.name}`)}
+        />
+      ))}
     </div>
   );
 };
