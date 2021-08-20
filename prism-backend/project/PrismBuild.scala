@@ -11,6 +11,7 @@ import sbtdocker.DockerPlugin
 import sbtdocker.DockerPlugin.autoImport._
 import scoverage.ScoverageKeys._
 import sbtghpackages.GitHubPackagesPlugin.autoImport._
+import sbtprotoc.ProtocPlugin.autoImport.PB
 
 object PrismBuild {
 
@@ -60,12 +61,16 @@ object PrismBuild {
       )
       .enablePlugins(GitVersioning)
 
-  lazy val protosLib = ProjectRef(file("../prism-sdk"), "prismProtosJVM")
-
   lazy val common =
     commonProject(project in file("common"))
       .settings(
         name := "common",
+        // Make ScalaPB compile protos relative to `protobuf_external_src/protos` directory.
+        // Otherwise, it will assume that `protobuf_external_src` is the root directory for proto files.
+        Compile / PB.protoSources := (Compile / PB.protoSources).value.map {
+          case externalSrc if externalSrc.toPath.endsWith("protobuf_external_src") => externalSrc / "proto"
+          case other => other
+        },
         resolvers += Resolver.mavenLocal,
         resolvers += Resolver.jcenterRepo,
         resolvers += Resolver.mavenCentral,
@@ -86,9 +91,12 @@ object PrismBuild {
               monix,
               typesafeConfig
             ) ++
-            Seq(prismCrypto, prismCredentials)
+            prismDependencies ++
+            scalapbDependencies,
+        Compile / PB.targets := Seq(
+          scalapb.gen() -> (Compile / sourceManaged).value / "proto"
+        )
       )
-      .dependsOn(protosLib)
 
   private def generateImageName(name: String, version: String): ImageName =
     if (sys.env.get("GITHUB").contains("1"))

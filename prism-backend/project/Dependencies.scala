@@ -89,6 +89,7 @@ object Dependencies {
   // SDK dependencies
   val prismCrypto = "io.iohk.atala" % "prism-crypto-jvm" % versions.prismSdk
   val prismCredentials = "io.iohk.atala" % "prism-credentials-jvm" % versions.prismSdk
+  val prismProtos = "io.iohk.atala" % "prism-protos-jvm" % versions.prismSdk % "protobuf-src" intransitive()
 
   // Test dependencies
   val catsScalatest = "com.ironcorelabs" %% "cats-scalatest" % versions.catsScalatest % Test
@@ -115,6 +116,11 @@ object Dependencies {
   val sttpDependencies = Seq(sttpCore, sttpFuture)
   val http4sDependencies = Seq(http4sCirce, http4sDsl, http4sBlazeServer, http4sBlazeClient)
   val tofuDependencies = Seq(tofu, tofuLogging, tofuDerevoTagless)
+  val prismDependencies = Seq(prismCrypto, prismCredentials, prismProtos)
+  val scalapbDependencies = Seq(
+    "com.thesamet.scalapb" %% "scalapb-runtime" % scalapb.compiler.Version.scalapbVersion % "protobuf",
+    "com.thesamet.scalapb" %% "scalapb-runtime-grpc" % scalapb.compiler.Version.scalapbVersion
+  )
 
   // cardano-address library binary
   val cardanoAddressBinaryUrl =
