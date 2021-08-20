@@ -12,9 +12,21 @@ import io.iohk.atala.prism.kotlin.crypto.SHA256Digest
 import io.iohk.atala.prism.kotlin.identity.DID
 import io.iohk.atala.prism.kotlin.identity.DID.masterKeyId
 import io.iohk.atala.prism.node.poc.{GenericCredentialsSDK, Wallet}
-import io.iohk.atala.prism.node.repositories.{AtalaOperationsRepository, CredentialBatchesRepository, DIDDataRepository}
+import io.iohk.atala.prism.node.repositories.{
+  AtalaObjectsTransactionsRepository,
+  AtalaOperationsRepository,
+  CredentialBatchesRepository,
+  DIDDataRepository,
+  KeyValuesRepository
+}
 import io.iohk.atala.prism.node.services.models.AtalaObjectNotification
-import io.iohk.atala.prism.node.services.{BlockProcessingServiceImpl, InMemoryLedgerService, ObjectManagementService}
+import io.iohk.atala.prism.node.services.{
+  BlockProcessingServiceImpl,
+  InMemoryLedgerService,
+  ObjectManagementService,
+  SubmissionSchedulingService,
+  SubmissionService
+}
 import io.iohk.atala.prism.node.{DataPreparation, NodeServiceImpl}
 import io.iohk.atala.prism.protos.node_api
 import io.iohk.atala.prism.services.NodeClientService.{issueBatchOperation, revokeCredentialsOperation}
@@ -39,7 +51,11 @@ class FlowPoC extends AtalaWithPostgresSpec with BeforeAndAfterEach {
   protected var atalaReferenceLedger: InMemoryLedgerService = _
   protected var blockProcessingService: BlockProcessingServiceImpl = _
   protected var objectManagementService: ObjectManagementService = _
+  protected var submissionService: SubmissionService = _
+  protected var atalaObjectsTransactionsRepository: AtalaObjectsTransactionsRepository[IO] = _
+  protected var keyValuesRepository: KeyValuesRepository[IO] = _
   protected var objectManagementServicePromise: Promise[ObjectManagementService] = _
+  protected var submissionSchedulingService: SubmissionSchedulingService = _
 
   override def beforeEach(): Unit = {
     super.beforeEach()
@@ -57,10 +73,21 @@ class FlowPoC extends AtalaWithPostgresSpec with BeforeAndAfterEach {
     atalaReferenceLedger = new InMemoryLedgerService(onAtalaReference)
     blockProcessingService = new BlockProcessingServiceImpl
     atalaOperationsRepository = AtalaOperationsRepository(database)
-    objectManagementService = ObjectManagementService(
-      ObjectManagementService.Config(ledgerPendingTransactionTimeout = Duration.ZERO),
+    atalaObjectsTransactionsRepository = AtalaObjectsTransactionsRepository(database)
+    submissionService = SubmissionService(
       atalaReferenceLedger,
       atalaOperationsRepository,
+      atalaObjectsTransactionsRepository
+    )
+    submissionSchedulingService = SubmissionSchedulingService(
+      SubmissionSchedulingService.Config(ledgerPendingTransactionTimeout = Duration.ZERO),
+      submissionService
+    )
+    keyValuesRepository = KeyValuesRepository(database)
+    objectManagementService = ObjectManagementService(
+      atalaOperationsRepository,
+      atalaObjectsTransactionsRepository,
+      keyValuesRepository,
       blockProcessingService
     )
     objectManagementServicePromise.success(objectManagementService)
@@ -76,6 +103,7 @@ class FlowPoC extends AtalaWithPostgresSpec with BeforeAndAfterEach {
             new NodeServiceImpl(
               didDataRepository,
               objectManagementService,
+              submissionSchedulingService,
               credentialBatchesRepository
             ),
             executionContext
