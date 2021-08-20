@@ -40,6 +40,7 @@ const connectionStatus = {
 async function createContact(groupName, jsonData, externalId) {
   Logger.info(`Creating contact with externalId = ${externalId} for group ${groupName}`, jsonData);
   const req = new CreateContactRequest();
+  if (groupName) req.setGroupName(groupName);
   req.setJsonData(JSON.stringify(jsonData));
   req.setExternalId(externalId);
 

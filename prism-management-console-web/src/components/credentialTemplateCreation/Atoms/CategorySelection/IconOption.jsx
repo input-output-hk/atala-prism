@@ -4,7 +4,7 @@ import { Radio } from 'antd';
 import './_style.scss';
 
 const IconOption = ({ icon, selected }) => (
-  <Radio value={icon.uid}>
+  <Radio value={icon}>
     <img
       className={`CategoryIconOption ${selected ? 'selected' : ''}`}
       src={icon.thumbUrl}
@@ -14,7 +14,10 @@ const IconOption = ({ icon, selected }) => (
 );
 
 IconOption.propTypes = {
-  icon: PropTypes.string.isRequired,
+  icon: PropTypes.shape({
+    uid: PropTypes.string,
+    thumbUrl: PropTypes.string
+  }).isRequired,
   selected: PropTypes.bool.isRequired
 };
 

@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Form, Radio, Upload } from 'antd';
 import { useTranslation } from 'react-i18next';
-import { isInteger, isString } from 'lodash';
+import { inRange, isInteger, isString } from 'lodash';
 import uploadCategoryIcon from '../../../../images/upload-category-icon.svg';
 import CustomButton from '../../../common/Atoms/CustomButton/CustomButton';
 import IconOption from '../../Atoms/CategorySelection/IconOption';
@@ -21,20 +21,36 @@ const CategoryIconSelector = ({ categoryForm }) => {
   const onChange = ({ file, fileList }) => {
     const newFile = fileList.find(f => f.uid === file.uid);
     const newFileList = [newFile].concat(fileList.filter(f => f.uid !== file.uid));
-    categoryForm.setFieldsValue({ categoryIcon: newFile.uid, categoryCustomIcons: newFileList });
+    categoryForm.setFieldsValue({
+      categoryIcon: { ...newFile, isCustomIcon: true },
+      categoryCustomIcons: newFileList
+    });
+    categoryForm.validateFields();
     setSelectedIcon(newFile.uid);
   };
+
+  const validateCustomIcon = value =>
+    isString(value.thumbUrl)
+      ? Promise.resolve()
+      : Promise.reject(
+          t(`${i18nPrefix}.categoryCreationModal.errors.fieldIsRequired`, {
+            field: t(`${i18nPrefix}.categoryCreationModal.categoryIcon`)
+          })
+        );
+
+  const validateDefaultGalleryIcon = value =>
+    isInteger(parseInt(value.uid, 10)) && inRange(value.uid, 0, defaultCategoryIcons.length)
+      ? Promise.resolve()
+      : Promise.reject(
+          t(`${i18nPrefix}.categoryCreationModal.errors.fieldIsRequired`, {
+            field: t(`${i18nPrefix}.categoryCreationModal.categoryIcon`)
+          })
+        );
 
   const categoryIconRules = [
     {
       validator: (_rule, value) =>
-        isInteger(parseInt(value, 10)) || isString(value)
-          ? Promise.resolve()
-          : Promise.reject(
-              t(`${i18nPrefix}.categoryCreationModal.errors.fieldIsRequired`, {
-                field: t(`${i18nPrefix}.categoryCreationModal.categoryIcon`)
-              })
-            )
+        value.isCustomIcon ? validateCustomIcon(value) : validateDefaultGalleryIcon(value)
     }
   ];
 
@@ -66,7 +82,10 @@ const CategoryIconSelector = ({ categoryForm }) => {
               action="/upload.do"
               {...uploaderProps}
               itemRender={(_originNode, file) => (
-                <IconOption icon={file} selected={file.uid === selectedIcon} />
+                <IconOption
+                  icon={{ ...file, isCustomIcon: true }}
+                  selected={file.uid === selectedIcon.uid}
+                />
               )}
             >
               <div className="verticalFlex">
@@ -83,7 +102,10 @@ const CategoryIconSelector = ({ categoryForm }) => {
         </div>
         <div className="imgGalleryContainer">
           {defaultFileList.map(file => (
-            <IconOption icon={file} selected={file.uid === selectedIcon} />
+            <IconOption
+              icon={{ ...file, isCustomIcon: false }}
+              selected={file.uid === selectedIcon.uid}
+            />
           ))}
         </div>
       </Radio.Group>

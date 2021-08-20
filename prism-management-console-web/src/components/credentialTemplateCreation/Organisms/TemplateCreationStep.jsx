@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import PropTypes from 'prop-types';
 import { useTranslation } from 'react-i18next';
-import { isInteger } from 'lodash';
 import {
   DESIGN_TEMPLATE,
   SELECT_TEMPLATE_CATEGORY,
@@ -13,6 +12,10 @@ import TemplateCategorySelectionStep from './CategoryStep/TemplateCategorySelect
 import SuccessBanner from '../../common/Molecules/SuccessPage/SuccessBanner';
 import { withRedirector } from '../../providers/withRedirector';
 import { defaultCategoryIcons } from '../../../helpers/templateCategories/categories';
+import {
+  credentialTypesManagerShape,
+  templateCreationStepShape
+} from '../../../helpers/propShapes';
 
 const TemplateCreationStep = ({
   currentStep,
@@ -28,9 +31,9 @@ const TemplateCreationStep = ({
 
   // TODO: remove when backend implements template categories
   const handleAddMockedCategory = ({ categoryName, categoryIcon, categoryCustomIcons }) => {
-    const logo = isInteger(categoryIcon)
-      ? defaultCategoryIcons[categoryIcon]
-      : categoryCustomIcons.find(c => c.uid === categoryIcon).thumbUrl;
+    const logo = categoryIcon.isCustomIcon
+      ? categoryCustomIcons.find(c => c.uid === categoryIcon).thumbUrl
+      : defaultCategoryIcons[categoryIcon];
     const newCategory = { id: Math.random(), name: categoryName, logo, state: 1 };
     setMockedCategories(mockedCategories.concat(newCategory));
   };
@@ -65,6 +68,8 @@ const TemplateCreationStep = ({
 };
 
 TemplateCreationStep.propTypes = {
+  currentStep: templateCreationStepShape,
+  credentialTypesManager: credentialTypesManagerShape,
   redirector: PropTypes.shape({
     redirectToCredentialTemplates: PropTypes.func.isRequired
   }).isRequired

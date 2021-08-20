@@ -42,8 +42,9 @@ function getTemplateCategories() {
   return Promise.resolve(hardcodedTemplateCategories);
 }
 
-function createCategory(values) {
-  return Promise.resolve(values);
+// eslint-disable-next-line no-unused-vars
+function createCategory(_values) {
+  return Promise.resolve();
 }
 
 const mapCredentialTypeField = field => ({
