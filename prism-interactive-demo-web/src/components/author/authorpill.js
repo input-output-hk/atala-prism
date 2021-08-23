@@ -35,35 +35,22 @@ const AuthorPill = ({
       <p>{position}</p>
       {company && <p>{company}</p>}
     </div>
-    {(email || twitter || linkedIn) && (
-      <div className="authorSocial">
-        {email && (
-          <a href={`mailto:${email}`}>
-            <img src={emailIcon} alt="Email" />
-          </a>
-        )}
-        {youtube && (
-          <a href={youtube}>
-            <img src={youtubeIcon} alt="Youtube" />
-          </a>
-        )}
-        {twitter && (
-          <a href={twitter}>
-            <img src={twitterIcon} alt="Twitter" />
-          </a>
-        )}
-        {linkedIn && (
-          <a href={linkedIn}>
-            <img src={linkedInIcon} alt="LinkedIn" />
-          </a>
-        )}
-        {github && (
-          <a href={github}>
-            <img src={githubIcon} alt="Github" />
-          </a>
-        )}
-      </div>
-    )}
+    <div className="authorSocial">
+      {[
+        { href: email ? `mailto:${email}` : '', src: emailIcon, alt: 'Email' },
+        { href: youtube || '', src: youtubeIcon, alt: 'Youtube' },
+        { href: twitter || '', src: twitterIcon, alt: 'Twitter' },
+        { href: linkedIn || '', src: linkedInIcon, alt: 'LinkedIn' },
+        { href: github || '', src: githubIcon, alt: 'Github' }
+      ].map(
+        ({ href, src, alt }) =>
+          href && (
+            <a href={href}>
+              <img src={src} alt={alt} />
+            </a>
+          )
+      )}
+    </div>
   </div>
 );
 
