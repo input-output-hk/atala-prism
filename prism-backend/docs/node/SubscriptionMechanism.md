@@ -2,226 +2,176 @@
 Before jumping to description of details of subscription mechanism, we will describe some sensible
 use cases which might be useful for various parties of the system.
 
-There are several roles, which might want to subscribe to some channels:
-* **DID owner** - a user who reveals their identity in order to receive only related to them events.
-A Prism node leverages this information to filter out all events and publish to the channel only related ones.
-* **Anonymous** - 
-  a user which doesn't reveal its identity, usually due to either it wants to listen to some general information or
-  it's impossible to identify related to user events without revealing some private information of the user.
-  Another desire could be unwillingness to reveal own identity.
+Use cases:
+1. Wallet wants to be notified about all operations, which have been confirmed (approved or rejected) in the Cardano network, 
+    relevant to DIDs owned by the wallet user. It's useful in order to keep Wallet's state up to date.  
+There are a lot of use cases which fall into this category, some of them:  
+   * Issuer wants to know about all credential issuance/revocations signed with their issuing key,
+     which could have been shared with some trusted party (e.g. departments at the university).
+   * Issuer wants to know about a key creation/revocation which happened from another Management Console.
+   * A system with two or more Atala nodes, whose API can be used at the same time.
+   * Wallet wants to keep track of new user's DIDs.
 
-Subscription channels and their use cases:
-1. **Anonymous** wants to be notified about _all CreateDID_ operations, which have been approved in the Cardano network.
-   * Wallet user who use several devices wants to keep all devices up to date,
-   if an operation happened on any of the devices.  
-   To achieve it, it checks if every created DID is owned by them.
+    _CreateDID_, _UpdateDID_, _IssueCredentialBatch_, _RevokeCredentials_ are operations which a wallet wants to be aware of.
 
-2. **DID owner** wants to be notified about _UpdateDID_ operations related to the DID, which have been approved in the Cardano network.
-   * Wallet user who use several devices wants to keep all devices up to date.
-   * Issuer wants to know about creation/revocation of keys which happens on another node.
+2. Verifier wants to be notified if a _particular_ credential was revoked, and it was approved in the Cardano network.
+   Verifier is interested if a credential which was provided by a holder is still valid.
 
-3. **DID owner** wants to be notified about _IssueCredentialBatch_ and _RevokeCredentials_ operations signed with one of the keys of the DID, and approved in the Cardano network.
-   * Issuer wants to know about all credentials signed with their issuing key,
-     which could have been shared with some trusted party.
-   * Issuer wants to know about all revoked credentials signed with their revocation key,
-     which could have been shared with some trusted party.
+3. Wallet wants to be notified about _particular_ `AtalaOperation`'s status
+   (_PENDING_, _CANCELLED_, _REJECTED_, _IN_BLOCK_, _CONFIRMATION_LEVEL n_, _APPROVED_),
+   in order to show a user status of operation in real time to make a wallet interface more responsive.
 
-4. **Anonymous** wants to be notified if a _particular_ credential was revoked, and it was approved in the Cardano network.
-   * Verifier is interested if a credential which was provided by a holder is still valid.
+The last case and similar ones will be out of the consideration of this document for now,
+we will mostly focus on notifications about Atala operations.
 
-5. **Anonymous** wants to be notified about _all_ `AtalaOperation`s after they are confirmed in the Cardano network.
-     An operation might be either _APPROVED_ or _REJECTED_.
-   * Anybody wants to know about some other events confirmed, and those events are not covered by the above subscriptions.
+## High level overview of the protocol
+Suggested protocol is inspired by [BIP-157](https://en.bitcoin.it/wiki/BIP_0157) and [BIP-158](https://en.bitcoin.it/wiki/BIP_0158).
 
-6. **DID owner** wants to be notified about _own_ `AtalaOperation`s after they are confirmed in the Cardano network.
-   An operation might be either _APPROVED_ or _REJECTED_.
-   * Issuer wants to know when their published operation is actually confirmed: 
-     for instance, a credential issuance or its own DID update.
-   * Wallet wants to know when published update/creation of its DID is actually confirmed.
+The core structure of this approach is Golomb Coded Set filter (GCS).
+This structure is basically compressed set that supports element insertion and element existence test.
+Testing of existence is probabilistic but the probability is close to 1.
 
-7. **Anonymous** wants to be notified about _particular_ `AtalaOperation`'s status: 
-   _PENDING_, _CANCELLED_, _REJECTED_, _IN_BLOCK_, _CONFIRMATION_LEVEL n_, _APPROVED_.
-   * Wallet wants to show a user status of operation in real time to make a wallet interface more responsive.
+The protocol in nutshell is that when a node receives an Atala block,
+it computes GCS consisting of the block operations, send the resulting GCS to a client, 
+the client tests if there is at least one element it is interested in, and if so it requests them.
 
-## Subscription mechanism approach
-I suggest the following flow for subscriptions:
-1. a subscriber initiates a subscription with list of event types it is interested in, so-called _filters_
-2. a node allocates a _subscription token_, saves filters for the subscription token, and sends the subscription token to the subscriber
-3. the subscriber saves the subscription token
-4. the node notifies a subscriber about all relevant events (which match one of the filter)
-5. the subscriber saves the last event which it has seen
+Let's move on to more detailed description.  
+Let's assume that a node has the list of subscribers, stored in memory,
+and each of those has associated gRPC stream.
+Then that will happen on new event:
+1. when an event happens, a node computes a GCS for it, and saves the event and GCS in a persistent storage, 
+   sends the GCS to all subscribers' streams
+2. when a client receives a GCS, it checks if there are entries in the GCS which a client is interested in.  
+   if there are any, in a separate connection a client requests an original event which the GCS was derived from, 
+   otherwise saves the GCS as a last known one to a local persistent storage.
+3. in case, if a client requests an event for GCS, a node responds to the client with the original event. 
+   This message is sent to the separate connection, not to the associated stream.
+4. upon receiving an event, a client handles it and saves a corresponding GCS as last known one
 
-If a subscriber reconnects (after being down):
-1. it sends corresponding subscription token and the last seen event to a node
-2. the node publishes all relevant events which have happened while the subscriber was down but after the last seen event
-3. the node keeps publishing real time events
+Pay attention, that an event in the 2nd step is a _flexible_ notion, 
+and might be any kind of thing, for example, an Atala block, an Atala operation, or even
+a node lifetime event (e.g. a node disconnected from the Cardano network).
+Hence, what an event actually is depends on implementation, and in the first version it will be just an Atala block.
 
-A subscriber can unsubscribe, then a node vanishes a corresponding subscription token and filters.
+Another subject for discussion is whether we need to store all kind of events persistently. 
+For example, a node disconnect event seems unimportant after a node connects back, 
+but let's leave this question for future discussion.
+
+Also, in the step 4th it depends on actual implementation who will respond to a client with events.
+In the simplest case, it might be a node itself, however, 
+in order to reduce load on a node, a reverse proxy or some kind of cache might be in front of the node.
+
+Let's get back to our assumption about the subscribers list on the node, 
+and describe how a client will actually connect to a node:
+1. a client initiates a stream connection to a node sending a last known GCS if any
+2. a node responds with GCSs from its persistent storage to the stream
+3. a client filters out received GCSs, and requests corresponding events from the node in a separate connection(s)
+4. a node responds with requested events
+5. a client handles them, updating its last known GCS
+6. after that, a client moves to the previously described flow
 
 ## Filters and related types
-In this section, to give a reader better understanding of happening,
-we will describe classes and types which cover mentioned in the first section cases.
-
-As for now, the last (7th) case is omitted, and it will be implemented in future 
-and the implementation will be covered in the next versions of the document.
+In this section we will outline _filter_ types, which a client leverages to specify which operations it's interested in.
 
 We start with some auxiliary and abstract definitions.
 ```scala
-trait OperationStatus
-object AppliedOperationStatus extends OperationStatus
-object RejectedOperationStatus extends OperationStatus
+sealed trait ConfirmedStatus
+case object AppliedConfirmedStatus extends ConfirmedStatus
+case object RejectedConfirmedStatus extends ConfirmedStatus
 
-abstract case class SubscriptionFilter(statuses: Array[OperationStatus])
+abstract class SubscriptionFilter(val status: Option[ConfirmedStatus]) {
+  // Hashes for Bloom-filter
+  def hashes: List[Long]
+}
+
+trait GCS {
+  def exists(g: SubscriptionFilter): Boolean
+  def insert(g: SubscriptionFilter): GCS
+}
 ```
 
-`statuses` determines which operation outcomes a filter matches.
-
+`status` determines which operation outcomes a filter matches.  
+If `None` then any outcome, otherwise only specified one.  
+We assume that `GCS` is already defined class.
 
 ```scala
-class DidOwnerAnyFilter(val didSuffix: DIDSuffix,
-                        override val statuses: Array[OperationStatus]) extends SubscriptionFilter(statuses)
-case class UpdateDidFilter(override val didSuffix: DIDSuffix,
-                           override val statuses: Array[OperationStatus]) extends DidOwnerAnyFilter(didSuffix, statuses)
-case class CredentialsIssuanceFilter(override val didSuffix: DIDSuffix,
-                                     override val statuses: Array[OperationStatus]) extends DidOwnerAnyFilter(didSuffix, statuses)
-case class CredentialsRevocationFilter(override val didSuffix: DIDSuffix,
-                                       override val statuses: Array[OperationStatus]) extends DidOwnerAnyFilter(didSuffix, statuses)
-```
-These classes describe filters which match events produced by some DID. 
-`DidOwnerAnyFilter` match any of such events, other ones match more specific events.
+sealed trait OperationTag
+case object UpdateDidTag extends OperationTag
+case object IssueCredentialBatchTag extends OperationTag
+case object RevokeCredentialsTag extends OperationTag
+case object CreateDidTag extends OperationTag
 
+case class DidOperationFilter(operationTag: OperationTag, 
+                              didSuffix: DIDSuffix, 
+                              override val status: Option[ConfirmedStatus]) extends SubscriptionFilter(status) {
 
-```scala
-class AnonymousAnyFilter(override val statuses: Array[OperationStatus]) extends SubscriptionFilter(statuses)
-case class CreateDidFilter(override val statuses: Array[OperationStatus]) extends AnonymousAnyFilter(statuses)
-case class RevokeCredentialFilter(credentialHash: SHA256Digest, 
-                                  override val statuses: Array[OperationStatus]) extends AnonymousAnyFilter(statuses)
+  override def hashes: List[Long] = {
+    // Hashes tuple (operationTag, didSuffix), status is not hashed if `None`
+  }
+}
+
+case class RevokeCredentialFilter(credentialHash: SHA256Digest,
+                                  override val status: Option[ConfirmedStatus]) extends SubscriptionFilter(status) {
+  override def hashes = {
+    // Hashes a tuple ("RevokeCredentialFilter", credentialHash, status)
+  }
+}
 ```
-These classes describe filters which match events, regardless the fact who produced related operation.
-`AnonymousAnyFilter` match arbitrary such event, other classes match more specific events.
+These filters correspond to all cases from the first chapter.
+
+The only questionable one is `DidOperationFilter(CreateDidTag, ... )` because it implies that 
+we can freely generate a next expected DID from mnemonic and that all wallets generate DIDs sequentially.
+If the latter can be required by the protocol, the former requires password input from a user.
 
 ## Implementation details
-This section will cover implementation details, in particular, the following topics:
-* new subscription
-* syncing up a reconnected subscriber with missed events
-* publishing new events to subscribers
-* unsubscription
-* operations ordering
+In this section we describe how suggest protocol will be integrated in the node codebase,
+and outline how possible SDK might look for a client.
 
-Firstly, let's clarify what "event" means and how it relates to "operation".
-As we excluded from our consideration 7th case, we have almost one to one correspondence between "event" notion and "operation".
-There are two directions for changes:
-1. include in an event only relevant set of information, which include subset of data from an operation plus some extra useful information
-2. make an event as operation plus some useful extra data
-
-The first option would introduce new classes, and most importantly new classes to gRPC, however, will reduce amount of data sent.
-The second option makes implementation easier and provide a subscriber the bigger amount of information, though, loses in message size.
-Within the scope of this document I will imply that we go with the second option, and that "event" contains an "operation" fully, maybe with some extra data.
-So will the initial implementation be, though it may be changed in the future.
-
-Let's move on to the actual details. 
-Firstly, we need to introduce SQL tables where all subscription specific data will be stored, let's describe them.
-
-`subscriptions` table contains high level information about every subscription.
-#### subscriptions table
-* `subscription_token` - a randomly generated string which identifies one subscription, primary key
-* `after_operation` - `AtalaOperationId` which corresponds to a last processed operation at the moment of the subscription. 
-  This field serves as a "lower bound" of events which a subscriber will be notified about after reconnection, 
-  if it didn't require previous ones explicitly.
-* `operations_batching_allowed` - boolean meaning 
-   if a subscriber is able to accept several events batched in order to
-   reduce communication overhead caused by individual events sent over the communication channel separately
-
-`subscription_filters` table contains information about filters and which subscription they are applied to.
-#### subscription_filters table
-* `subscription_token` - determines a subscription which subscription filter is applied to, foreign key to `subscriptions` table
-* `statuses` - an enum which determines statuses a filter matches, `null` if any status matches
-* `filter_type` - an enum corresponding to a one of 7 classes listed in the second section
-* `did_suffix` - a DID suffix of operation, which a filter matches, `null` in case of anonymous filter
-* `revoked_credential_hash` - credential hash from `RevokeCredentialFilter`, `null` if not applicable
-
-### New subscription
-Here is a flow of new subscription generation:
-1. A subscriber sends a `NewSubscriptionRequest`:
+The node implementation notes: 
+* `node_api.proto` has to be updated with the two new methods:
+    * `rpc GetGCSStream(GetGCSStreamRequest) returns (stream GetGCSStreamResponse) {}` where  
+       `case class GetGCSStreamRequest(lastKnownAtalaObjectId: Option[AtalaObjectId])`  
+       `case class GetGCSStreamResponse(GCSs: List[AtalaObjectGCS])`  
+       `case class AtalaObjectGCS(objectId: AtalaObjectId, objectGCS: GCS)`  
+       `List` is used in `GetGCSStreamResponse` in order to response with a GCSs batch on a re-subscription to reduce network overhead.
+    
+    * `rpc GetAtalaObject(GetAtalaObjectRequest) returns (GetAtalaObjectResponse) {}` where  
+      `case class GetAtalaObjectRequest(objectId: AtalaObjectId)`  
+      `case class GetAtalaObjectResponse(objectId: AtalaObjectId, objectOperations: List[OperationOutcome])`  
+      `case class OperationOutcome(val operation: Operation, val status: ConfirmedStatus)`,  
+       perhaps, in the actual implementation `OperationOutcome` will resemble `AtalaOperationInfo` with an additional field `Operation`,  
+       also a new class for Atala object with operations together with statuses will be introduced.
+* The only change needed on the database is to add `gcs` column in the `atala_objects` table,
+  and to add a corresponding a lazy field to `AtalaObjectInfo` with some additional refactoring.
+* Streaming will be implemented like `MessageNotificationService` in `connector` 
+  (which doesn't seem a proper role model but perhaps the best we have).
+* `operationsToGCS` function might be implemented like this:
 ```scala
-case class NewSubscriptionRequest(filters: Array[SubscriptionFilter], allowOperationsBatches: Boolean)
+def operationsToGCS(operations: List[OperationOutcome]): GCS = {
+  def operationToFilters(op: OperationOutcome): SubscriptionFilter = op.operation match {
+    case UpdateDIDOperation(did, _, _, _, _) => DidOperationFilter(DidUpdateTag, did, Some(op.status))
+    // the similar code here
+  }
+  operations.foldLeft(emptyGCS)((gcs, op) => gcs.insert(operationToFilters(op)))
+}
 ```
-2. A node generates `subscription_token` randomly, insert into `subscription_tokens` among with the last operation hash in `atala_operations` and `allowOperationsBatches`
-3. Then node remove repeating and merge complementary filters, and insert them into `subscription_filters`
-4. After that it responds to the subscriber `NewSubscriptionResponse`:
+* If we assume that the most of the operations are Credential issuance, 
+  we could introduce a little optimisation: to add in `GetGCSStreamResponse` 
+  an extra GCS in order to skip most of the filter tests against GCSs in the list.
+
+Sketch of possible client SDK interface:
 ```scala
-case class NewSubscriptionResponse(subscriptionToken: String, eventsAfter: AtalaOperationId)
+abstract class NodeSubscriber(nodeService: NodeService) {
+  var filters: Set[SubscriptionFilter]
+  
+  def subscribe(filters: Set[SubscriptionFilter]): fs2.Stream[OperationOutcome]
+  def removeFilter(filter: SubscriptionFilter): Unit
+  def addFilter(filter: SubscriptionFilter): Unit
+  def unsubscribe(): Unit
+}
 ```
-5. After that, the subscriber actually opens a stream with events with request `GetSubscriptionEventsStream`:
-```scala
-case class GetSubscriptionEventsStream(subscriptionToken: String, eventsAfter: Option[AtalaOperationId])
-```
-and the node starts streaming relevant events to the subscriber.
 
-Pay attention that a subscriber is allowed to specify arbitrary `eventsAfter`, even leave it `None`.
-In the last case all relevant operations, which node has, will be sent to a subscriber.
-However, this freedom might cause significant load on a node, especially in case of anonymous subscriptions,
-as a node will have to send all operations.
-
-We smoothly move to the next part.
-
-### Sync up
-The sync up happens when a subscriber connects to the node with `GetSubscriptionEventsStream`, 
-regardless if it happens after `NewSubscriptionResponse` or after a subscriber being down.
-In both of these cases we would like to sync up the subscriber with missed events if any.
-
-To be able to implement this procedure we have to extend `atala_operations` table with three extra columns:
-* `atala_operation_did_suffix` - DID suffix of an operation, `null` in case of `CreateDID`
-* `atala_operation_type` - an enum corresponding to one of 4 types of operations
-* `atala_operation_content` - serialised content of an operation needed to send an operation to a subscriber during sync up process.
-   This field introduces data redundancy with `object_contet` from `atala_objects`, which will be eliminated later.
-
-Having these additional columns the procedure will be:
-1. Select all `subscription_filters` for `subscription_token`
-2. Generate from them corresponding statement for `where` clause of `select` SQL statement: 
-   every of the filters impose potential restrictions on `atala_operation_did_suffix`, `atala_operation_type` and `atala_operation_status`, 
-filter clauses are connected with `OR`.
-3. Select all relevant operations with the above clause. 
-   `RevokeCredentialFilter` filter requires some extra care to filter out operations that don't contain a specific `credentialHash`.
-4. Return all operations to the subscriber (possibly as a batch, if a subscriber allowed batching)
-5. Go to a normal flow, when new processed operations are published to subscribers
-
-### Publishing new operations
-1. When an operation is processed by `BlockProcessingService.processOperation` either successfully or not,
-we build a corresponding SQL statement to select matching `subscription_filters`.
-This might be done in unambiguous way: every operation corresponds to set of filters which might match it.
-2. Then we select all unique `subscription_token` from `subscription_filters` matching the SQL statement and pick ones,
-that have active connection with the node (not being down).
-3. Send the operation to the picked connections
-
-### Unsubscription
-If a subscriber isn't interested in events anymore, it sends `CancelSubscription`:
-```scala
-case class CancelSubscription(subscriptionToken: String)
-```
-and a node drops all related entries from `subscriptions` and `subscription_filters` tables.
-
-### Operations ordering
-In the previous subsections we already mentioned operations ordering: we have to send all operations happened after the last seen event,
-and we have to provide them in the order of confirmation.
-
-Having current database schema, it might be done but in really tricky way:
-* join `atala_object_txs` table with `atala_objects`, 
-* select only ones which go not earlier than a block containing last seen operation,
-* sort by `(block_number, block_index)`,
-* deserialize `object_content` and traverse all operations sequentially in the object
-* match ones with subscription filters and send them to a subscriber
-
-This seems to me extremely inefficient, and two main issues are that we can't order operations within an object without prior deserialization,
-and we have to traverse them manually to match against filters.
-
-However, it could be easily fixed by adding `atala_operation_seq_no` column to `atala_operations` and 
-update it when a block is processed, among with `atala_operation_status`.
-`operation_seq_no` is a global sequential number of operation in order of confirmation, which can be updated with PostgreSQL sequences.
-
-After having that done, we could select and order all related operations as it was described in **Sync up** section, taking into account these columns:
-* `atala_operation_seq_no`
-* `atala_operation_did_suffix`
-* `atala_operation_type`
-* `atala_operation_status`
-* `atala_operation_content`
+`subscribe` is the most difficult method to implement, and 
+possibly, the trickiest part is to achieve a decent level of parallelism on a reconnection, 
+at the same time preserving the linear order of operations.  
+The obvious option could be to send `GetAtalaObjectRequest` sequentially, waiting for the corresponding response.
