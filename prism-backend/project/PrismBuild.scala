@@ -46,6 +46,13 @@ object PrismBuild {
           val argsString = args.mkString(" ")
           ("testOnly " + argsString) :: ("testOnlyUntilFailed " + argsString) :: state
         },
+        assembly / assemblyExcludedJars := {
+          val cp = (assembly / fullClasspath).value
+
+          val excludeLibs = Set("protobuf-javalite-3.12.0.jar", "kotlinx-coroutines-core-1.3.3.jar", "pbandk-protos-0.20.1.jar")
+
+          cp filter { path => excludeLibs(path.data.getName)}
+        },
         assembly / assemblyMergeStrategy := {
           // Merge service files, otherwise GRPC client doesn't work: https://github.com/grpc/grpc-java/issues/5493
           case PathList("META-INF", "services", _*) => MergeStrategy.concat
