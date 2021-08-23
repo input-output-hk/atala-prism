@@ -96,6 +96,9 @@ object ManagementConsoleApp extends IOApp {
         CredentialIssuancesRepository.makeResource(txTraceIdLifted, managementConsoleLogs)
       credentialTypeRepository <- CredentialTypeRepository.makeResource(txTraceIdLifted, managementConsoleLogs)
 
+      credentialIntegrationService <-
+        CredentialsIntegrationService.makeResource(credentialsRepository, node, connector, managementConsoleLogs)
+
       authenticator = new ManagementConsoleAuthenticator(
         participantsRepository,
         requestNoncesRepository,
@@ -105,7 +108,7 @@ object ManagementConsoleApp extends IOApp {
 
       credentialsService = new CredentialsServiceImpl(
         credentialsRepository,
-        new CredentialsIntegrationService(credentialsRepository, node, connector),
+        credentialIntegrationService,
         authenticator,
         node,
         connector

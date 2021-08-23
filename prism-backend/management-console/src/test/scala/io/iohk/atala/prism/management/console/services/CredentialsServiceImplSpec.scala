@@ -103,9 +103,8 @@ class CredentialsServiceImplSpec extends ManagementConsoleRpcSpecBase with DIDUt
           issuerId,
           new GenericCredential.PaginatedQuery(ordering = PaginatedQueryConstraints.ResultOrdering(SortBy.CreatedOn))
         )
-        .futureValue
-        .toOption
-        .value
+        .run(TraceId.generateYOLO)
+        .unsafeRunSync()
 
       results.data.head.genericCredential.revokedOnOperationId.value must be(mockRevocationOperationId)
     }
