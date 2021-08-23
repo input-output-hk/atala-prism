@@ -51,6 +51,10 @@ const Searchbar = () => {
     setWordList(sortedWordList);
   }, [posts]);
 
+  const filteredWordList = searchValue
+    ? wordList.filter(word => _.startsWith(word, searchValue.toLowerCase()))
+    : [];
+
   return (
     <div className="group">
       <h3>Search Blogs</h3>
@@ -59,9 +63,7 @@ const Searchbar = () => {
         value={searchValue}
         onSelect={searchBlogs}
         onChange={setSearchValue}
-        dataSource={
-          searchValue ? wordList.filter(word => _.startsWith(word, searchValue.toLowerCase())) : []
-        }
+        dataSource={filteredWordList}
       >
         <Search style={{ width: 250 }} onSearch={searchBlogs} />
       </AutoComplete>
