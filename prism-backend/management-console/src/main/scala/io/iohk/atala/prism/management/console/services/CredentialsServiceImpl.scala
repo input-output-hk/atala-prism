@@ -213,8 +213,10 @@ private final class CredentialsServiceImpl[F[_]: Monad](
           )
           .map(ProtoConverter[IssueCredentialBatchResponse, IssueCredentialBatchNodeResponse].fromProto)
           .map[Either[ManagementConsoleError, IssueCredentialBatchNodeResponse]](_.toEither.left.map(wrapAsServerError))
-      _ <- response.flatTraverse(response => storeBatch(response.batchId, publishBatch.signedOperation))
-    } yield response
+      result <- response.flatTraverse(response =>
+        storeBatch(response.batchId, publishBatch.signedOperation).map(_.as(response))
+      )
+    } yield result
   }
 
   override def revokePublishedCredential(
