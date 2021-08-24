@@ -16,9 +16,10 @@ const App = () => {
   // const newFirebaseConfig = JSON.parse(REACT_APP_FIREBASE_CONFIG);
   // setFirebaseConfig(newFirebaseConfig);
   // }, []);
+  console.log(config.firebaseConfig)
 
   return (
-    <FirebaseAppProvider firebaseConfig={JSON.parse(config.REACT_APP_FIREBASE_CONFIG)}>
+    <FirebaseAppProvider firebaseConfig={JSON.parse(config.firebaseConfig)}>
       <SEO />
       <Suspense fallback="">
         <Main apiProvider={{ ...api }} />

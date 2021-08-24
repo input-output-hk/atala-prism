@@ -4,9 +4,9 @@
  * See: https://www.gatsbyjs.com/docs/gatsby-config/
  */
 require('dotenv').config({
-  path: `.env`
+  path: `.env.${process.env.NODE_ENV}`
 });
-
+console.log(process.env)
 module.exports = {
   /* Your site config here */
   siteMetadata: {
@@ -32,21 +32,6 @@ module.exports = {
     },
     'gatsby-plugin-antd',
     `gatsby-plugin-netlify-cms`,
-    {
-      resolve: `gatsby-plugin-env-variables`,
-      options: {
-        allowList: [
-          'REACT_APP_GRPC_CLIENT',
-          'REACT_APP_ISSUER_ID',
-          'REACT_APP_ISSUER_NAME',
-          'REACT_APP_ISSUER_DID',
-          'REACT_APP_MAILCHIMP_URL',
-          'REACT_APP_MAILCHIMP_U',
-          'REACT_APP_MAILCHIMP_ID',
-          'REACT_APP_FIREBASE_CONFIG'
-        ]
-      }
-    },
     {
       resolve: `gatsby-plugin-create-client-paths`,
       options: { prefixes: [`/app/*`] }

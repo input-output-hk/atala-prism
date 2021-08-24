@@ -140,5 +140,7 @@ sketch
 
 ./public/env-config.js
 env-config.js
+src/app/protos/intdemo/**
+
 
 public
