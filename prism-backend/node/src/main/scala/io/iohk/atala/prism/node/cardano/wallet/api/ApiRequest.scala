@@ -47,6 +47,10 @@ private[api] object ApiRequest {
     override def requestBody: Option[Json] = None
   }
 
+  final case class GetWallet(walletId: WalletId) extends ApiRequest(s"v2/wallets/$walletId", Method.GET) {
+    override def requestBody: Option[Json] = None
+  }
+
   private def asJsonFields(fields: (String, Json)*): Array[(String, Json)] = {
     Array(fields: _*)
   }

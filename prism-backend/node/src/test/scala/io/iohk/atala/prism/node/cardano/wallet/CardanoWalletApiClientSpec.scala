@@ -6,6 +6,7 @@ import io.iohk.atala.prism.models.{TransactionDetails, TransactionId, Transactio
 import io.iohk.atala.prism.node.cardano.models._
 import io.iohk.atala.prism.node.cardano.wallet.CardanoWalletApiClient.{CardanoWalletError, ErrorResponse, EstimatedFee}
 import io.iohk.atala.prism.node.cardano.wallet.testing.FakeCardanoWalletApiClient
+import io.iohk.atala.prism.node.models.WalletStatus
 import org.scalatest.EitherValues._
 import org.scalatest.OptionValues._
 import org.scalatest.concurrent.ScalaFutures
@@ -155,6 +156,35 @@ class CardanoWalletApiClientSpec extends AnyWordSpec with ScalaFutures {
         )
 
       val error = client.deleteTransaction(walletId, transactionId).value.futureValue.left.value
+
+      error must be(ErrorResponse(expectedPath, CardanoWalletError("not_found", "Bad request")))
+    }
+  }
+
+  "getWallet" should {
+    val expectedPath = s"v2/wallets/$walletId"
+
+    "return available funds and state data" in {
+      val client = FakeCardanoWalletApiClient.Success(expectedPath, "", readResource("getWallet.json"))
+
+      val result = client.getWallet(walletId).value.futureValue
+      result.isRight mustBe true
+
+      val Right(data) = result
+      data.balance.available mustBe BigInt(42000000)
+      data.state.status mustBe WalletStatus.Ready
+    }
+
+    "fail on server error" in {
+      val client =
+        FakeCardanoWalletApiClient.Fail(
+          expectedPath,
+          "",
+          "not_found",
+          "Bad request"
+        )
+
+      val error = client.getWallet(walletId).value.futureValue.left.value
 
       error must be(ErrorResponse(expectedPath, CardanoWalletError("not_found", "Bad request")))
     }
