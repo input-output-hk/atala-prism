@@ -27,9 +27,11 @@ we will mostly focus on notifications about Atala operations.
 ## High level overview of the protocol
 Suggested protocol is inspired by [BIP-157](https://en.bitcoin.it/wiki/BIP_0157) and [BIP-158](https://en.bitcoin.it/wiki/BIP_0158).
 
-The core structure of this approach is Golomb Coded Set filter (GCS).
-This structure is basically compressed set that supports element insertion and element existence test.
-Testing of existence is probabilistic but the probability is close to 1.
+The core structure of this approach is Golomb Coded Set filter (GCS), which is a better Bloom filter.
+This structure is basically a compressed set that supports element insertion and element existence test.
+This structure is build from an elements list.
+Existence test in Golomb Coded Set is probabilistic and despite the probability is close to 1,
+a test still can give a false positive result. Hence, every positive check has to be double-checked on the original list.
 
 The protocol in nutshell is that when a node receives an Atala block,
 it computes GCS consisting of the block operations, send the resulting GCS to a client, 
@@ -67,8 +69,20 @@ and describe how a client will actually connect to a node:
 2. a node responds with GCSs from its persistent storage to the stream
 3. a client filters out received GCSs, and requests corresponding events from the node in a separate connection(s)
 4. a node responds with requested events
-5. a client handles them, updating its last known GCS
+5. a client receives them, check that they actually match its filters, and handle matched ones, updating its last known GCS
 6. after that, a client moves to the previously described flow
+
+### Alternative way
+In suggested approach, we send a GCS from node to client to keep a client private: 
+neither node nor a man in the middle can figure out DIDs which a client is interested in, therefore,
+can't reveal that those DIDs belong to the same user.  
+The disadvantage of such approach is that there might be many redundant messages with GCS from a node to a client because
+a received GCS is irrelevant to a client.
+
+However, if we introduce a message encryption between node and client, 
+in this case a man in the middle won't be able to expose a user. 
+Taking into account the fact that in our setting nodes are trusted, a client, vice versa, could share a GCS corresponding to its filters with a node,
+and node could rule out filters which don't match newly arrived Atala block. 
 
 ## Filters and related types
 In this section we will outline _filter_ types, which a client leverages to specify which operations it's interested in.
