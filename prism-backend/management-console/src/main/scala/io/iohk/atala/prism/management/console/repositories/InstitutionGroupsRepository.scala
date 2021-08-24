@@ -15,7 +15,7 @@ import doobie.ConnectionIO
 import doobie.implicits._
 import doobie.util.transactor.Transactor
 import io.iohk.atala.prism.management.console.errors._
-import io.iohk.atala.prism.management.console.models.{Contact, InstitutionGroup, ParticipantId}
+import io.iohk.atala.prism.management.console.models.{Contact, GetGroupsResult, InstitutionGroup, ParticipantId}
 import io.iohk.atala.prism.management.console.repositories.daos.InstitutionGroupsDAO
 import io.iohk.atala.prism.management.console.repositories.logs.InstitutionGroupsRepositoryLogs
 import io.iohk.atala.prism.management.console.repositories.metrics.InstitutionGroupsRepositoryMetrics
@@ -37,7 +37,7 @@ trait InstitutionGroupsRepository[F[_]] {
   def getBy(
       institutionId: ParticipantId,
       query: InstitutionGroup.PaginatedQuery
-  ): F[(List[InstitutionGroup.WithContactCount], Int)]
+  ): F[GetGroupsResult]
 
   def listContacts(
       institutionId: ParticipantId,
@@ -126,12 +126,13 @@ private final class InstitutionGroupsRepositoryImpl[F[_]: BracketThrow](xa: Tran
   def getBy(
       institutionId: ParticipantId,
       query: InstitutionGroup.PaginatedQuery
-  ): F[(List[InstitutionGroup.WithContactCount], Int)] =
+  ): F[GetGroupsResult] =
     (for {
       groups <- InstitutionGroupsDAO.getBy(institutionId, query)
       totalNumberOfRecords <- InstitutionGroupsDAO.getTotalNumberOfRecords(institutionId, query)
     } yield groups -> totalNumberOfRecords)
       .logSQLErrors(s"getting, institution id - $institutionId", logger)
+      .map(GetGroupsResult.tupled)
       .transact(xa)
 
   def listContacts(
