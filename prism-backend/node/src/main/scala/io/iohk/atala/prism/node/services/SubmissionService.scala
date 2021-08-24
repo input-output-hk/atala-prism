@@ -36,8 +36,11 @@ class SubmissionService private (
       _ = logger.info(s"Submit buffered objects. Number of objects: ${atalaObjects.size}")
       atalaObjectsMerged <- EitherT.right(mergeAtalaObjects(atalaObjects))
       atalaObjectsWithParsedContent = atalaObjectsMerged.map { obj => (obj, parseObjectContent(obj)) }
-      _ <- EitherT.right[NodeError](publishObjectsAndRecordTransaction(atalaObjectsWithParsedContent))
-    } yield ()
+      publishedTransactions <-
+        EitherT.right[NodeError](publishObjectsAndRecordTransaction(atalaObjectsWithParsedContent))
+    } yield {
+      logger.info(s"successfully published transactions: ${publishedTransactions.size}")
+    }
 
     submissionET.value
   }
@@ -68,10 +71,9 @@ class SubmissionService private (
       numPublished <- mergeAndRetryPendingTransactions(pendingTransactions)
     } yield {
       logger.info(
-        s"pending txs: ${pendingTransactions.size}; " +
-          s"new inLedger txs: ${inLedgerTransactions.size}; " +
-          s"inLedger txs synced with database: $numInLedgerSynced; " +
-          s"published txs: $numPublished"
+        s"methodName: retryOldPendingTransactions , pending transactions: ${pendingTransactions.size}; " +
+          s"InLedger transactions synced with database: $numInLedgerSynced; " +
+          s"successfully retried transactions: $numPublished"
       )
       numPublished
     }

@@ -29,6 +29,8 @@ package object models {
 
   }
 
+  val ATALA_OBJECT_VERSION: String = "1.0"
+
   case class DIDPublicKey(didSuffix: DIDSuffix, keyId: String, keyUsage: KeyUsage, key: ECPublicKey)
 
   case class DIDData(didSuffix: DIDSuffix, keys: List[DIDPublicKey], lastOperation: SHA256Digest)

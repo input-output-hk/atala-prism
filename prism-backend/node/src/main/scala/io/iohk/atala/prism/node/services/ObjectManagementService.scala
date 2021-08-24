@@ -21,6 +21,7 @@ import io.iohk.atala.prism.node.repositories.{
 import io.iohk.atala.prism.node.repositories.daos.AtalaObjectsDAO
 import io.iohk.atala.prism.node.services.models.AtalaObjectNotification
 import io.iohk.atala.prism.protos.node_internal.AtalaBlock
+import io.iohk.atala.prism.protos.node_models.SignedAtalaOperation
 import io.iohk.atala.prism.protos.{node_internal, node_models}
 import io.iohk.atala.prism.utils.syntax.DBConnectionOps
 import monix.execution.Scheduler
@@ -70,12 +71,11 @@ class ObjectManagementService private (
     sendAtalaOperations(op).map(_.head)
 
   def sendAtalaOperations(op: node_models.SignedAtalaOperation*): Future[List[AtalaOperationId]] = {
-    val block = node_internal.AtalaBlock("1.0", op.toList)
-    val obj = node_internal.AtalaObject(blockOperationCount = block.operations.size).withBlockContent(block)
+    val obj = ObjectManagementService.createAtalaObject(op.toList)
     val objBytes = obj.toByteArray
     val objId = AtalaObjectId.of(objBytes)
 
-    val atalaOperationIds = block.operations.toList.map(AtalaOperationId.of)
+    val atalaOperationIds = op.toList.map(AtalaOperationId.of)
 
     val result = for {
       // Insert object into DB
@@ -159,6 +159,11 @@ object ObjectManagementService {
   }
 
   case class AtalaObjectTransactionInfo(transaction: TransactionInfo, status: AtalaObjectTransactionStatus)
+
+  def createAtalaObject(ops: List[SignedAtalaOperation]): node_internal.AtalaObject = {
+    val block = node_internal.AtalaBlock(ATALA_OBJECT_VERSION, ops)
+    node_internal.AtalaObject(blockOperationCount = block.operations.size).withBlockContent(block)
+  }
 
   def apply(
       atalaOperationsRepository: AtalaOperationsRepository[IO],
