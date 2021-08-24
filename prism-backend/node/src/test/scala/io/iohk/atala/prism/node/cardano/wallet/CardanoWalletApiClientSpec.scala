@@ -188,6 +188,30 @@ class CardanoWalletApiClientSpec extends AnyWordSpec with ScalaFutures {
 
       error must be(ErrorResponse(expectedPath, CardanoWalletError("not_found", "Bad request")))
     }
+
+    "read not_responding status" in {
+      val response = """{
+                       |  "balance": {
+                       |    "available": {
+                       |      "quantity": 42000000,
+                       |      "unit": "lovelace"
+                       |    }
+                       |  },
+                       |  "state": {
+                       |    "status": "not_responding"
+                       |  }
+                       |}""".stripMargin
+
+      val client = FakeCardanoWalletApiClient.Success(expectedPath, "", response)
+
+      val result = client.getWallet(walletId).value.futureValue
+
+      result.isRight mustBe true
+
+      val Right(data) = result
+
+      data.state.status mustBe WalletStatus.NotResponding
+    }
   }
 
   private def readResource(resource: String): String = {
