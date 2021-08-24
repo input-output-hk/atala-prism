@@ -49,9 +49,9 @@ object PrismBuild {
         assembly / assemblyExcludedJars := {
           val cp = (assembly / fullClasspath).value
 
-          val excludeLibs = Set("protobuf-javalite-3.12.0.jar", "kotlinx-coroutines-core-1.3.3.jar", "pbandk-protos-0.20.1.jar")
+          val excludeLibs = Set("protobuf-javalite", "kotlinx-coroutines-core", "pbandk-protos")
 
-          cp filter { path => excludeLibs(path.data.getName)}
+          cp.filter{ path => excludeLibs.exists( lib => path.data.getName.startsWith(lib)) }
         },
         assembly / assemblyMergeStrategy := {
           // Merge service files, otherwise GRPC client doesn't work: https://github.com/grpc/grpc-java/issues/5493
