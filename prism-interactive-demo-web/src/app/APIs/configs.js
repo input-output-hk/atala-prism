@@ -8,7 +8,6 @@ const GATSBY_MAILCHIMP_U = process.env.GATSBY_MAILCHIMP_U
 const GATSBY_MAILCHIMP_ID = process.env.GATSBY_MAILCHIMP_ID
 const GATSBY_FIREBASE_CONFIG = process.env.GATSBY_FIREBASE_CONFIG
 
-
 export const config = {
   grpcClient: GATSBY_GRPC_CLIENT,
   issuerId: GATSBY_ISSUER_ID,
@@ -17,5 +16,5 @@ export const config = {
   mailchimpURL:  GATSBY_MAILCHIMP_URL,
   mailchimpU:  GATSBY_MAILCHIMP_U,
   mailchimpID:  GATSBY_MAILCHIMP_ID,
-  firebaseConfigConfig: GATSBY_FIREBASE_CONFIG
+  firebaseConfig: GATSBY_FIREBASE_CONFIG
 };
