@@ -1,3 +1,4 @@
+import { imageToDataURL } from '../../helpers/genericHelpers';
 import hardCodedCredentialTypes from '../credentials/mocks/hardcodedCredentialTypes';
 
 const credentialTypeEquivalents = {
@@ -45,3 +46,14 @@ export const adaptCredentialType = ({ id, name, ...rest }) => ({
   id,
   placeholders: placeholdersReplacements[name]
 });
+
+export const getSendableCredentialType = async credentialList => {
+  const { name, logo } = credentialList[0]?.credentialTypeDetails;
+
+  const icon = await imageToDataURL(logo);
+
+  return JSON.stringify({
+    name,
+    icon
+  });
+};
