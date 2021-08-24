@@ -10,6 +10,7 @@ import io.iohk.atala.prism.logging.TraceId.IOWithTraceIdContext
 import io.iohk.atala.prism.management.console.clients.ConnectorClient
 import io.iohk.atala.prism.management.console.config.DefaultCredentialTypeConfig
 import io.iohk.atala.prism.management.console.grpc.GroupsGrpcService
+import io.iohk.atala.prism.management.console.grpc.CredentialTypesGrpcService
 import io.iohk.atala.prism.management.console.integrations.{
   ContactsIntegrationService,
   CredentialsIntegrationService,
@@ -101,6 +102,7 @@ object ManagementConsoleApp extends IOApp {
         CredentialsIntegrationService.makeResource(credentialsRepository, node, connector, managementConsoleLogs)
       participantsIntegrationService <-
         ParticipantsIntegrationService.makeResource(participantsRepository, managementConsoleLogs)
+      credentialTypesService <- CredentialTypesService.makeResource(credentialTypeRepository, managementConsoleLogs)
 
       authenticator = new ManagementConsoleAuthenticator(
         participantsRepository,
@@ -110,8 +112,6 @@ object ManagementConsoleApp extends IOApp {
       )
 
       groupsService <- GroupsService.makeResource(institutionGroupsRepository, managementConsoleLogs)
-      participantsIntegrationService <-
-        ParticipantsIntegrationService.makeResource(participantsRepository, managementConsoleLogs)
 
       credentialsService = new CredentialsServiceImpl(
         credentialsRepository,
@@ -130,7 +130,7 @@ object ManagementConsoleApp extends IOApp {
         credentialIssuancesRepository,
         authenticator
       )
-      credentialTypesService = new CredentialTypesServiceImpl(credentialTypeRepository, authenticator)
+      credentialTypesGrpcService = new CredentialTypesGrpcService(credentialTypesService, authenticator)
 
       // gRPC server
       grpcServer <- GrpcUtils.createGrpcServer[IO](
@@ -144,7 +144,7 @@ object ManagementConsoleApp extends IOApp {
         console_api.GroupsServiceGrpc.bindService(groupsGrpcService, ec),
         console_api.CredentialsStoreServiceGrpc.bindService(credentialsStoreService, ec),
         console_api.ConsoleServiceGrpc.bindService(consoleService, ec),
-        console_api.CredentialTypesServiceGrpc.bindService(credentialTypesService, ec)
+        console_api.CredentialTypesServiceGrpc.bindService(credentialTypesGrpcService, ec)
       )
     } yield grpcServer
   }
