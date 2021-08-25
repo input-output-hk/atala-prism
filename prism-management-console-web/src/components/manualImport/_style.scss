@@ -1,12 +1,27 @@
 @import "../../css/general_styling";
 
-.ManualImportWrapper {
-  display: flex;
-  flex-direction: column;
-  height: calc(100vh - 20em);
+.ContactsImportWrapper {
+  max-height: calc(100vh - 20em);
+  overflow-y: auto;
+  .ManualImportContent {
+    overflow-y: auto;
+    padding: 0 2em;
+  }
+}
+
+.CredentialsImportWrapper {
+  max-height: calc(100vh - 20em);
   border: 1px solid #c5d0de;
   border-radius: 6px;
   margin: 0 1em;
+  .ManualImportContent {
+    overflow: auto;
+  }
+}
+
+.ManualImportWrapper {
+  display: flex;
+  flex-direction: column;
   .ContentHeader {
     padding: 0 2em;
     display: block !important;
@@ -28,7 +43,6 @@
   }
   .ManualImportContent {
     display: flex;
-    overflow: auto;
     .ant-col {
       margin: 7px;
     }

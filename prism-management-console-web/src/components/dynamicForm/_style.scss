@@ -9,6 +9,18 @@ $last-col-width: 200px;
   margin-top: 0.5em;
 }
 
+.ContactsImport {
+  .DynamicForm {
+    width: 100%;
+    border: 1px solid $medium-grey;
+  }
+}
+.CredentialsImport {
+  .DynamicForm {
+    overflow: unset !important;
+  }
+}
+
 .DynamicFormContainer {
   min-width: 100%;
   .DynamicFormHeader {
@@ -24,7 +36,6 @@ $last-col-width: 200px;
     }
   }
   .DynamicForm {
-    overflow: unset !important;
     border-radius: $radius;
     @include horizontal-scroll();
     .HeaderRow {

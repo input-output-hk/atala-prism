@@ -5,7 +5,7 @@ import ContactCreationTable from '../Organisms/Tables/ContactCreationTable';
 import { groupShape } from '../../../helpers/propShapes';
 
 const ManualContactCreation = ({ groupsProps, addEntity }) => (
-  <div className="ManualImportWrapper">
+  <div className="ManualImportWrapper ContactsImportWrapper">
     <div className="ContentHeader TitleAndSubtitle">
       <OptionsHeader groupsProps={groupsProps} addEntity={addEntity} />
     </div>
