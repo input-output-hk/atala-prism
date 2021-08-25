@@ -1,9 +1,11 @@
 package io.iohk.atala.prism.node
 
-import cats.effect.{ContextShift, IO, Resource}
-import com.typesafe.config.{Config, ConfigFactory}
+import cats.effect.{ContextShift, IO}
+import com.typesafe.config.ConfigFactory
 import io.grpc.{Server, ServerBuilder}
 import io.iohk.atala.prism.metrics.UptimeReporter
+import io.iohk.atala.prism.node.cardano.CardanoClient
+import io.iohk.atala.prism.node.metrics.WalletAvailableFundsReporter
 import io.iohk.atala.prism.node.repositories.{
   AtalaObjectsTransactionsRepository,
   AtalaOperationsRepository,
@@ -12,7 +14,7 @@ import io.iohk.atala.prism.node.repositories.{
   KeyValuesRepository
 }
 import io.iohk.atala.prism.node.services._
-import io.iohk.atala.prism.node.services.models.{AtalaObjectNotification, AtalaObjectNotificationHandler}
+import io.iohk.atala.prism.node.services.models.AtalaObjectNotification
 import io.iohk.atala.prism.protos.node_api._
 import io.iohk.atala.prism.repositories.{SchemaMigrations, TransactorFactory}
 import kamon.Kamon
@@ -73,12 +75,14 @@ class NodeApp(executionContext: ExecutionContext) { self =>
     val keyValuesRepository = KeyValuesRepository(transactor)
     val keyValueService = new KeyValueService(keyValuesRepository)
 
+    val config = NodeConfig.cardanoConfig(globalConfig.getConfig("cardano"))
+
     val (atalaReferenceLedger, releaseAtalaReferenceLedger) = globalConfig.getString("ledger") match {
       case "cardano" =>
-        val (cardano, releaseCardano) =
-          initializeCardano(globalConfig.getConfig("cardano"), keyValueService, onAtalaObject).allocated
-            .unsafeRunSync()
-        (cardano, Some(releaseCardano))
+        val (cardanoClient, releaseClient) = createCardanoClient(config.cardanoClientConfig)
+        Kamon.registerModule("wallet-funds", WalletAvailableFundsReporter(config, cardanoClient))
+        val cardano = CardanoLedgerService(config, cardanoClient, keyValueService, onAtalaObject)
+        (cardano, Some(releaseClient))
       case "in-memory" =>
         logger.info("Using in-memory ledger")
         (new InMemoryLedgerService(onAtalaObject), None)
@@ -155,13 +159,11 @@ class NodeApp(executionContext: ExecutionContext) { self =>
     ()
   }
 
-  private def initializeCardano(
-      config: Config,
-      keyValueService: KeyValueService,
-      onAtalaObject: AtalaObjectNotificationHandler
-  ): Resource[IO, CardanoLedgerService] = {
+  private def createCardanoClient(
+      cardanoClientConfig: CardanoClient.Config
+  ): (CardanoClient, IO[Unit]) = {
     logger.info("Creating cardano client")
-    CardanoLedgerService(NodeConfig.cardanoConfig(config), keyValueService, onAtalaObject)
+    CardanoClient(cardanoClientConfig).allocated.unsafeRunSync()
   }
 
   private def stop(): Unit = {
