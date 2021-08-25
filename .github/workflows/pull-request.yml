@@ -308,7 +308,6 @@ jobs:
       startsWith(github.ref, 'refs/heads/sandbox') ||
       github.ref == 'refs/heads/demo'
     env:
-      enabled-components: all
       ATALA_MIRROR_CONNECTOR_DID_PRIVATE_KEY: ${{ secrets.ATALA_MIRROR_CONNECTOR_DID_PRIVATE_KEY }}
       ATALA_MIRROR_CONNECTOR_DID: ${{ secrets.ATALA_MIRROR_CONNECTOR_DID}}
       KYC_BRIDGE_IDENTITYMIND_PASSWORD: ${{ secrets.KYC_BRIDGE_IDENTITYMIND_PASSWORD }}
