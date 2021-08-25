@@ -11,7 +11,7 @@ import './_style.scss';
 
 const ActionsHeader = ({ filterProps, templateCategories }) => {
   const { t } = useTranslation();
-  const hasFiltersApplied = filterProps.name || filterProps.category;
+  const hasFiltersApplied = filterProps.category || filterProps.lastEdited;
 
   const filtersMenu = (
     <Menu className="FiltersMenuContainer">

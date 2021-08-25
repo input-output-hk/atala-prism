@@ -12,35 +12,40 @@ import SortControls from '../../Molecules/Headers/SortControls';
 import {
   credentialTypeShape,
   templateCategoryShape,
+  templateFiltersShape,
   templateSortingShape
 } from '../../../../helpers/propShapes';
 
 const TemplatesTableContainer = ({ tableProps, showTemplatePreview }) => {
   const { t } = useTranslation();
   const { accountStatus } = useSession();
-  const { credentialTypes, templateCategories, isLoading, sortingProps } = tableProps;
+  const { credentialTypes, templateCategories, isLoading, filterProps, sortingProps } = tableProps;
 
   const noTemplates = !credentialTypes?.length;
 
   const emptyProps = {
     photoSrc: noTemplatesPicture,
     model: t('templates.title'),
+    isFilter: filterProps.name || filterProps.category || filterProps.lastEdited,
     button: noTemplates && accountStatus === CONFIRMED && <CreateTemplateButton />
   };
 
-  if (noTemplates && isLoading) return <SimpleLoading size="md" />;
-  if (noTemplates) return <EmptyComponent {...emptyProps} />;
+  const renderContent = () => {
+    if (noTemplates && isLoading) return <SimpleLoading size="md" />;
+    if (noTemplates) return <EmptyComponent {...emptyProps} />;
+    return (
+      <>
+        <SortControls {...sortingProps} />
+        <TemplatesTable
+          credentialTypes={credentialTypes}
+          templateCategories={templateCategories}
+          showTemplatePreview={showTemplatePreview}
+        />
+      </>
+    );
+  };
 
-  return (
-    <div className="templatesContent">
-      <SortControls {...sortingProps} />
-      <TemplatesTable
-        credentialTypes={credentialTypes}
-        templateCategories={templateCategories}
-        showTemplatePreview={showTemplatePreview}
-      />
-    </div>
-  );
+  return <div className="templatesContent">{renderContent()}</div>;
 };
 
 TemplatesTableContainer.propTypes = {
@@ -48,6 +53,7 @@ TemplatesTableContainer.propTypes = {
     credentialTypes: PropTypes.arrayOf(credentialTypeShape),
     templateCategories: PropTypes.arrayOf(templateCategoryShape).isRequired,
     isLoading: PropTypes.bool,
+    filterProps: PropTypes.shape(templateFiltersShape),
     sortingProps: PropTypes.shape(templateSortingShape)
   }).isRequired,
   showTemplatePreview: PropTypes.func.isRequired
