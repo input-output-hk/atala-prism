@@ -19,7 +19,7 @@ const CategoryCreationModal = ({ visible, close, mockCategoriesProps }) => {
 
   const defaultValues = {
     categoryName: '',
-    categoryIcon: { ...defaultCategoryIcons[0], isCustomIcon: false }
+    categoryIcon: { index: 0, src: defaultCategoryIcons[0], isCustomIcon: false }
   };
 
   return (

@@ -9,11 +9,12 @@ import { defaultCategoryIcons } from '../../../../helpers/templateCategories/cat
 import { antdV4FormShape } from '../../../../helpers/propShapes';
 
 const i18nPrefix = 'credentialTemplateCreation';
+const defaultIcon = { index: 0, src: defaultCategoryIcons[0], isCustomIcon: false };
 
 const CategoryIconSelector = ({ categoryForm }) => {
   const { t } = useTranslation();
   const { categoryCustomIcons } = categoryForm.getFieldsValue();
-  const [selectedIcon, setSelectedIcon] = useState(0);
+  const [selectedIcon, setSelectedIcon] = useState(defaultIcon);
 
   const normFile = ({ fileList }) => fileList;
 
