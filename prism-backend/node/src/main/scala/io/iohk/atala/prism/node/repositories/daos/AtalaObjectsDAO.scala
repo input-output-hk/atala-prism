@@ -52,19 +52,25 @@ object AtalaObjectsDAO {
       .option
   }
 
-  def getNotPublishedObjectIds: ConnectionIO[List[AtalaObjectId]] = {
+  def getNotPublishedObjectInfos: ConnectionIO[List[AtalaObjectInfo]] = {
     sql"""
-       |SELECT obj.atala_object_id
-       |FROM atala_objects AS obj
-       |WHERE atala_object_status = 'PENDING' and NOT EXISTS
-       |(
-       |  SELECT 1
-       |    FROM atala_object_tx_submissions
-       |    WHERE atala_object_id = obj.atala_object_id
-       |)
-       |ORDER BY obj.received_at ASC
+         |SELECT obj.atala_object_id, obj.object_content, obj.processed,
+         |       tx.transaction_id, tx.ledger, tx.block_number, tx.block_timestamp, tx.block_index
+         |FROM
+         |(
+         |  SELECT *
+         |  FROM atala_objects AS obj
+         |  WHERE atala_object_status = 'PENDING' and NOT EXISTS
+         |  (
+         |    SELECT 1
+         |      FROM atala_object_tx_submissions
+         |      WHERE atala_object_id = obj.atala_object_id
+         |  )
+         |) as obj
+         |  LEFT OUTER JOIN atala_object_txs AS tx ON tx.atala_object_id = obj.atala_object_id
+         |ORDER BY obj.received_at ASC;
        """.stripMargin
-      .query[AtalaObjectId]
+      .query[AtalaObjectInfo]
       .to[List]
   }
 

@@ -113,13 +113,8 @@ private final class AtalaObjectsTransactionsRepositoryImpl[F[_]: BracketThrow](x
   }
 
   def getNotPublishedObjects: F[Either[NodeError, List[AtalaObjectInfo]]] = {
-    val query = for {
-      objectIds <- AtalaObjectsDAO.getNotPublishedObjectIds
-      objectInfos <- objectIds.traverse(AtalaObjectsDAO.get)
-    } yield objectInfos.flatten
-
     val opDescription = "Extract not submitted objects."
-    connectionIOSafe(query.logSQLErrors(opDescription, logger)).transact(xa)
+    connectionIOSafe(AtalaObjectsDAO.getNotPublishedObjectInfos.logSQLErrors(opDescription, logger)).transact(xa)
   }
 
   def updateSubmissionStatus(
