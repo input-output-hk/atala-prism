@@ -7,17 +7,22 @@ const IconOption = ({ icon, selected }) => (
   <Radio value={icon}>
     <img
       className={`CategoryIconOption ${selected ? 'selected' : ''}`}
-      src={icon.thumbUrl}
+      src={icon.isCustomIcon ? icon.file.thumbUrl : icon.src}
       alt="categoryIcon"
     />
   </Radio>
 );
-
 IconOption.propTypes = {
-  icon: PropTypes.shape({
-    uid: PropTypes.string,
-    thumbUrl: PropTypes.string
-  }).isRequired,
+  icon: PropTypes.oneOfType([
+    PropTypes.shape({
+      isCustomIcon: PropTypes.bool,
+      src: PropTypes.string
+    }),
+    PropTypes.shape({
+      isCustomIcon: PropTypes.bool,
+      file: PropTypes.shape({ thumbUrl: PropTypes.string })
+    })
+  ]).isRequired,
   selected: PropTypes.bool.isRequired
 };
 

@@ -3,11 +3,10 @@ import PropTypes from 'prop-types';
 import { Form, Modal } from 'antd';
 import { useTranslation } from 'react-i18next';
 import CategoryCreation from './CategoryCreation';
-import { defaultCategoryIcons } from '../../../../helpers/templateCategories/categories';
 import { templateCategoryShape } from '../../../../helpers/propShapes';
 import './_style.scss';
+import { defaultCategoryIcons } from '../../../../helpers/templateCategories/categories';
 
-const defaultFileList = defaultCategoryIcons.map((thumbUrl, index) => ({ thumbUrl, uid: index }));
 const i18nPrefix = 'credentialTemplateCreation';
 
 const CategoryCreationModal = ({ visible, close, mockCategoriesProps }) => {
@@ -20,7 +19,7 @@ const CategoryCreationModal = ({ visible, close, mockCategoriesProps }) => {
 
   const defaultValues = {
     categoryName: '',
-    categoryIcon: defaultFileList[0].uid
+    categoryIcon: { ...defaultCategoryIcons[0], isCustomIcon: false }
   };
 
   return (

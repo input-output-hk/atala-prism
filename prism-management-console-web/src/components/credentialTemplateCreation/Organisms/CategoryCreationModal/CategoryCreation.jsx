@@ -22,6 +22,7 @@ const CategoryCreation = ({ api, categoryForm, close, mockCategoriesProps }) => 
   const { getTemplateCategories } = useTemplateCategories(api.credentialTypesManager);
   const [isLoading, setIsLoading] = useState(false);
 
+  // This ref is used to focus on the input field when opening the modal
   const inputRef = useRef(null);
 
   useEffect(() => {

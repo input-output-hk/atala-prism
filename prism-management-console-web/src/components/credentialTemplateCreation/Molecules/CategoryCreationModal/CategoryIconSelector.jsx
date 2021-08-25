@@ -8,7 +8,6 @@ import IconOption from '../../Atoms/CategorySelection/IconOption';
 import { defaultCategoryIcons } from '../../../../helpers/templateCategories/categories';
 import { antdV4FormShape } from '../../../../helpers/propShapes';
 
-const defaultFileList = defaultCategoryIcons.map((thumbUrl, index) => ({ thumbUrl, uid: index }));
 const i18nPrefix = 'credentialTemplateCreation';
 
 const CategoryIconSelector = ({ categoryForm }) => {
@@ -19,18 +18,31 @@ const CategoryIconSelector = ({ categoryForm }) => {
   const normFile = ({ fileList }) => fileList;
 
   const onChange = ({ file, fileList }) => {
+    if (file.status === 'uploading') return;
     const newFile = fileList.find(f => f.uid === file.uid);
     const newFileList = [newFile].concat(fileList.filter(f => f.uid !== file.uid));
-    categoryForm.setFieldsValue({
-      categoryIcon: { ...newFile, isCustomIcon: true },
-      categoryCustomIcons: newFileList
-    });
+
+    setSelectedIcon({ file: newFile, isCustomIcon: true });
+
+    // using setFields forces to only update the correct attributes
+    categoryForm.setFields([
+      {
+        name: ['categoryIcon'],
+        value: { file: newFile, isCustomIcon: true }
+      }
+    ]);
+    categoryForm.setFields([
+      {
+        name: ['categoryCustomIcons'],
+        value: newFileList
+      }
+    ]);
+
     categoryForm.validateFields();
-    setSelectedIcon(newFile.uid);
   };
 
   const validateCustomIcon = value =>
-    isString(value.thumbUrl)
+    isString(value.file.thumbUrl)
       ? Promise.resolve()
       : Promise.reject(
           t(`${i18nPrefix}.categoryCreationModal.errors.fieldIsRequired`, {
@@ -39,7 +51,7 @@ const CategoryIconSelector = ({ categoryForm }) => {
         );
 
   const validateDefaultGalleryIcon = value =>
-    isInteger(parseInt(value.uid, 10)) && inRange(value.uid, 0, defaultCategoryIcons.length)
+    isInteger(parseInt(value.index, 10)) && inRange(value.index, 0, defaultCategoryIcons.length)
       ? Promise.resolve()
       : Promise.reject(
           t(`${i18nPrefix}.categoryCreationModal.errors.fieldIsRequired`, {
@@ -50,7 +62,7 @@ const CategoryIconSelector = ({ categoryForm }) => {
   const categoryIconRules = [
     {
       validator: (_rule, value) =>
-        value.isCustomIcon ? validateCustomIcon(value) : validateDefaultGalleryIcon(value)
+        value?.isCustomIcon ? validateCustomIcon(value) : validateDefaultGalleryIcon(value)
     }
   ];
 
@@ -83,8 +95,8 @@ const CategoryIconSelector = ({ categoryForm }) => {
               {...uploaderProps}
               itemRender={(_originNode, file) => (
                 <IconOption
-                  icon={{ ...file, isCustomIcon: true }}
-                  selected={file.uid === selectedIcon.uid}
+                  icon={{ file, isCustomIcon: true }}
+                  selected={selectedIcon.isCustomIcon && file.uid === selectedIcon.file.uid}
                 />
               )}
             >
@@ -101,10 +113,10 @@ const CategoryIconSelector = ({ categoryForm }) => {
           </Form.Item>
         </div>
         <div className="imgGalleryContainer">
-          {defaultFileList.map(file => (
+          {defaultCategoryIcons.map((src, index) => (
             <IconOption
-              icon={{ ...file, isCustomIcon: false }}
-              selected={file.uid === selectedIcon.uid}
+              icon={{ src, index, isCustomIcon: false }}
+              selected={!selectedIcon.isCustomIcon && index === selectedIcon.index}
             />
           ))}
         </div>

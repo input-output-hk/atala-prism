@@ -11,7 +11,6 @@ import DesignTemplateStep from './DesignTemplateStep/DesignTemplateStep';
 import TemplateCategorySelectionStep from './CategoryStep/TemplateCategorySelector';
 import SuccessBanner from '../../common/Molecules/SuccessPage/SuccessBanner';
 import { withRedirector } from '../../providers/withRedirector';
-import { defaultCategoryIcons } from '../../../helpers/templateCategories/categories';
 import {
   credentialTypesManagerShape,
   templateCreationStepShape
@@ -30,10 +29,8 @@ const TemplateCreationStep = ({
   const { templateCategories } = useTemplateCategories(credentialTypesManager);
 
   // TODO: remove when backend implements template categories
-  const handleAddMockedCategory = ({ categoryName, categoryIcon, categoryCustomIcons }) => {
-    const logo = categoryIcon.isCustomIcon
-      ? categoryCustomIcons.find(c => c.uid === categoryIcon).thumbUrl
-      : defaultCategoryIcons[categoryIcon];
+  const handleAddMockedCategory = ({ categoryName, categoryIcon }) => {
+    const logo = categoryIcon.isCustomIcon ? categoryIcon.file.thumbUrl : categoryIcon.src;
     const newCategory = { id: Math.random(), name: categoryName, logo, state: 1 };
     setMockedCategories(mockedCategories.concat(newCategory));
   };
