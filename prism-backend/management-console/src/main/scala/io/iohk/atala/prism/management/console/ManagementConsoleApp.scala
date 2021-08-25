@@ -11,6 +11,7 @@ import io.iohk.atala.prism.management.console.clients.ConnectorClient
 import io.iohk.atala.prism.management.console.config.DefaultCredentialTypeConfig
 import io.iohk.atala.prism.management.console.grpc.GroupsGrpcService
 import io.iohk.atala.prism.management.console.grpc.CredentialTypesGrpcService
+import io.iohk.atala.prism.management.console.grpc.ContactsGrpcService
 import io.iohk.atala.prism.management.console.integrations.{
   ContactsIntegrationService,
   CredentialsIntegrationService,
@@ -98,6 +99,8 @@ object ManagementConsoleApp extends IOApp {
         CredentialIssuancesRepository.makeResource(txTraceIdLifted, managementConsoleLogs)
       credentialTypeRepository <- CredentialTypeRepository.makeResource(txTraceIdLifted, managementConsoleLogs)
 
+      contactsIntegrationService <-
+        ContactsIntegrationService.makeResource(contactsRepository, connector, managementConsoleLogs)
       credentialIntegrationService <-
         CredentialsIntegrationService.makeResource(credentialsRepository, node, connector, managementConsoleLogs)
       participantsIntegrationService <-
@@ -123,9 +126,7 @@ object ManagementConsoleApp extends IOApp {
       credentialsStoreService = new CredentialsStoreServiceImpl(receivedCredentialsRepository, authenticator)
       groupsGrpcService = new GroupsGrpcService(groupsService, authenticator)
       consoleService = new ConsoleServiceImpl(participantsIntegrationService, statisticsRepository, authenticator)
-      contactsIntegrationService <-
-        ContactsIntegrationService.makeResource(contactsRepository, connector, managementConsoleLogs)
-      contactsService = new ContactsServiceImpl(contactsIntegrationService, authenticator)
+      contactsService = new ContactsGrpcService(contactsIntegrationService, authenticator)
       credentialIssuanceService = new CredentialIssuanceServiceImpl(
         credentialIssuancesRepository,
         authenticator
