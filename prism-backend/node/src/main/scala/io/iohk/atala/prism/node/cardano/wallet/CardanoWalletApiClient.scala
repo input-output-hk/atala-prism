@@ -3,6 +3,7 @@ package io.iohk.atala.prism.node.cardano.wallet
 import io.iohk.atala.prism.models.{TransactionDetails, TransactionId}
 import io.iohk.atala.prism.node.cardano.models.{Lovelace, Payment, TransactionMetadata, WalletId}
 import io.iohk.atala.prism.node.cardano.wallet.api.ApiClient
+import io.iohk.atala.prism.node.models.WalletDetails
 import io.iohk.atala.prism.utils.FutureEither
 
 import scala.concurrent.ExecutionContext
@@ -58,6 +59,13 @@ trait CardanoWalletApiClient {
     * @see https://input-output-hk.github.io/cardano-wallet/api/edge/#operation/deleteTransaction
     */
   def deleteTransaction(walletId: WalletId, transactionId: TransactionId): Result[Unit]
+
+  /**
+    * Get detailed information about the given wallet.
+    *
+    * @see https://input-output-hk.github.io/cardano-wallet/api/edge/#operation/getWallet
+    */
+  def getWallet(walletId: WalletId): Result[WalletDetails]
 }
 
 object CardanoWalletApiClient {
