@@ -10,6 +10,7 @@ import io.iohk.atala.prism.models.{BlockInfo, Ledger, TransactionId, Transaction
 import io.iohk.atala.prism.node.models.{
   AtalaObjectId,
   AtalaObjectInfo,
+  AtalaObjectStatus,
   AtalaObjectTransactionSubmission,
   AtalaObjectTransactionSubmissionStatus,
   AtalaOperationStatus
@@ -263,7 +264,7 @@ class ObjectManagementServiceSpec
       verifyNoMoreInteractions(blockProcessing)
 
       val atalaObject = queryAtalaObject(obj)
-      atalaObject.processed mustBe true
+      atalaObject.status mustBe AtalaObjectStatus.Processed
     }
 
     def queryAtalaObject(obj: node_internal.AtalaObject): AtalaObjectInfo = {

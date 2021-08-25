@@ -17,7 +17,10 @@ class AtalaObjectInfoSpec extends AtalaWithPostgresSpec {
     )
   }
 
-  private def createAtalaObject(ops: Seq[SignedAtalaOperation], processed: Boolean = false) = {
+  private def createAtalaObject(
+      ops: Seq[SignedAtalaOperation],
+      status: AtalaObjectStatus = AtalaObjectStatus.Pending
+  ) = {
     val blockContent = node_internal
       .AtalaObject(
         blockOperationCount = ops.size
@@ -26,7 +29,7 @@ class AtalaObjectInfoSpec extends AtalaWithPostgresSpec {
     AtalaObjectInfo(
       objectId = AtalaObjectId.of(blockContent),
       blockContent.toByteArray,
-      processed = processed
+      status = status
     )
   }
 
@@ -56,7 +59,7 @@ class AtalaObjectInfoSpec extends AtalaWithPostgresSpec {
     }
 
     "not merge objects if one of them was processed" in {
-      val processedAtalaObject = createAtalaObject(dummySignedOperations.take(2), processed = true)
+      val processedAtalaObject = createAtalaObject(dummySignedOperations.take(2), status = AtalaObjectStatus.Processed)
       val atalaObject = createAtalaObject(dummySignedOperations.drop(2))
       val maybeMerged1 = processedAtalaObject.mergeIfPossible(atalaObject)
       val maybeMerged2 = atalaObject.mergeIfPossible(processedAtalaObject)
@@ -70,7 +73,7 @@ class AtalaObjectInfoSpec extends AtalaWithPostgresSpec {
       val invalidAtalaObject = AtalaObjectInfo(
         objectId = AtalaObjectId.of(invalidBlockContent),
         invalidBlockContent,
-        processed = false
+        status = AtalaObjectStatus.Pending
       )
       val atalaObject = createAtalaObject(dummySignedOperations)
       val maybeMerged1 = atalaObject.mergeIfPossible(invalidAtalaObject)

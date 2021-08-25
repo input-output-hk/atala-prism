@@ -8,7 +8,7 @@ import io.iohk.atala.prism.protos.node_internal
 case class AtalaObjectInfo(
     objectId: AtalaObjectId,
     byteContent: Array[Byte], // Serialization of a io.iohk.atala.prism.protos.node_internal.AtalaObject
-    processed: Boolean, // Whether the object has been processed (e.g., DIDs were recognized and stored in DB)
+    status: AtalaObjectStatus, // Status of an object may be processed (e.g. DIDs were recognized and stored in DB), merged (e.g. merged with another object) or pending
     transaction: Option[TransactionInfo] = None // Blockchain transaction the object was first found in
 ) {
   lazy val getAndValidateAtalaObject: Option[node_internal.AtalaObject] =
@@ -32,7 +32,7 @@ case class AtalaObjectInfo(
           blockOperationCount = mergedBlock.operations.size
         )
         .withBlockContent(mergedBlock)
-      AtalaObjectInfo(AtalaObjectId.of(obj), obj.toByteArray, processed = false, None)
+      AtalaObjectInfo(AtalaObjectId.of(obj), obj.toByteArray, status = AtalaObjectStatus.Pending, None)
     }
   }
 
@@ -48,7 +48,7 @@ case class AtalaObjectInfo(
     val sizeMaybe = for {
       thisSize <- estimateTxMetadataSize
       thatSize <- that.estimateTxMetadataSize
-    } yield (thisSize + thatSize < TX_METADATA_MAX_SIZE) && (!this.processed) && (!that.processed)
+    } yield (thisSize + thatSize < TX_METADATA_MAX_SIZE) && (this.status == AtalaObjectStatus.Pending) && (that.status == AtalaObjectStatus.Pending)
 
     val versionsMatch = for {
       thisBlock <- getAtalaBlock
@@ -65,14 +65,14 @@ case class AtalaObjectInfo(
 
   override def equals(obj: Any): Boolean =
     obj match {
-      case AtalaObjectInfo(thatObjectId, thatByteContent, thatProcessed, thatTransaction) =>
-        val thatTuple = (thatObjectId, thatByteContent.toList, thatProcessed, thatTransaction)
-        val thisTuple = (objectId, byteContent.toList, processed, transaction)
+      case AtalaObjectInfo(thatObjectId, thatByteContent, thatStatus, thatTransaction) =>
+        val thatTuple = (thatObjectId, thatByteContent.toList, thatStatus, thatTransaction)
+        val thisTuple = (objectId, byteContent.toList, status, transaction)
         thisTuple.equals(thatTuple)
       case _ =>
         false
     }
 
   override def hashCode(): Int =
-    (objectId, byteContent.toList, processed, transaction).hashCode()
+    (objectId, byteContent.toList, status, transaction).hashCode()
 }

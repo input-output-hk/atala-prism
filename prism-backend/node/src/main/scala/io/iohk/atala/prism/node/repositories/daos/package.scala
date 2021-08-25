@@ -37,6 +37,13 @@ package object daos extends BaseDAO {
       _.entryName
     )
 
+  implicit val pgAtalaObjectStatus: Meta[AtalaObjectStatus] =
+    pgEnumString[AtalaObjectStatus](
+      "ATALA_OBJECT_STATUS",
+      a => AtalaObjectStatus.withNameOption(a).getOrElse(throw InvalidEnum[AtalaObjectStatus](a)),
+      _.entryName
+    )
+
   implicit val pgOperationStatusMeta: Meta[AtalaOperationStatus] =
     pgEnumString[AtalaOperationStatus](
       "ATALA_OPERATION_STATUS",
@@ -173,7 +180,7 @@ package object daos extends BaseDAO {
       (
           AtalaObjectId,
           Array[Byte],
-          Boolean,
+          AtalaObjectStatus,
           Option[TransactionId],
           Option[Ledger],
           Option[Int],
@@ -184,7 +191,7 @@ package object daos extends BaseDAO {
       case (
             objectId,
             byteContent,
-            processed,
+            status,
             maybeTransactionId,
             maybeLedger,
             maybeBlockNumber,
@@ -194,7 +201,7 @@ package object daos extends BaseDAO {
         AtalaObjectInfo(
           objectId,
           byteContent,
-          processed,
+          status,
           (maybeTransactionId, maybeLedger, maybeBlockNumber, maybeBlockTimestamp, maybeBlockIndex) match {
             case (Some(transactionId), Some(ledger), Some(blockNumber), Some(blockTimestamp), Some(blockIndex)) =>
               Some(TransactionInfo(transactionId, ledger, Some(BlockInfo(blockNumber, blockTimestamp, blockIndex))))
