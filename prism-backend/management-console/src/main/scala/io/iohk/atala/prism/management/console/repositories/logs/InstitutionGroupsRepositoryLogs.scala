@@ -6,7 +6,7 @@ import cats.syntax.applicativeError._
 import cats.syntax.flatMap._
 import io.iohk.atala.prism.management.console.errors.ManagementConsoleError
 import io.iohk.atala.prism.management.console.models.InstitutionGroup.PaginatedQuery
-import io.iohk.atala.prism.management.console.models.{Contact, InstitutionGroup, ParticipantId}
+import io.iohk.atala.prism.management.console.models.{Contact, GetGroupsResult, InstitutionGroup, ParticipantId}
 import io.iohk.atala.prism.management.console.repositories.InstitutionGroupsRepository
 import tofu.higherKind.Mid
 import tofu.logging.ServiceLogging
@@ -35,10 +35,10 @@ private[repositories] final class InstitutionGroupsRepositoryLogs[F[_]: ServiceL
   override def getBy(
       institutionId: ParticipantId,
       query: PaginatedQuery
-  ): Mid[F, (List[InstitutionGroup.WithContactCount], Int)] =
+  ): Mid[F, GetGroupsResult] =
     in =>
       info"getting institution group by query $institutionId" *> in
-        .flatTap(res => info"getting institution group by query - found ${res._1.size} entities")
+        .flatTap(res => info"getting institution group by query - found ${res.groups.size} entities")
         .onError(errorCause"encountered an error while getting institution group by query" (_))
 
   override def listContacts(institutionId: ParticipantId, groupName: InstitutionGroup.Name): Mid[F, List[Contact]] =

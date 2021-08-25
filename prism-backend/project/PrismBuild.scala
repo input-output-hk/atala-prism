@@ -77,11 +77,10 @@ object PrismBuild {
             mockitoDependencies ++
             kamonDependencies ++
             circeDependencies ++
+            enumeratumDependencies ++
             tofuDependencies ++
             Seq(
               diffx,
-              enumeratum,
-              enumeratumDoobie,
               flyway,
               monix,
               typesafeConfig
@@ -120,13 +119,11 @@ object PrismBuild {
           }
         },
         docker / imageNames := Seq(generateImageName(name, version.value)),
-        libraryDependencies ++= circeDependencies ++ doobieDependencies ++
+        libraryDependencies ++= circeDependencies ++ enumeratumDependencies ++ doobieDependencies ++
           grpcDependencies ++ logbackDependencies ++
           sttpDependencies ++
           Seq(
             chimney,
-            enumeratum,
-            enumeratumDoobie,
             flyway,
             monix,
             postgresql,

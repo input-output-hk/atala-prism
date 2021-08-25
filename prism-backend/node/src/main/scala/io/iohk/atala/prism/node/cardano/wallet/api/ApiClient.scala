@@ -16,11 +16,13 @@ import io.iohk.atala.prism.node.cardano.wallet.CardanoWalletApiClient.{
 import io.iohk.atala.prism.node.cardano.wallet.api.ApiClient._
 import io.iohk.atala.prism.node.cardano.wallet.api.ApiRequest.{
   DeleteTransaction,
+  EstimateTransactionFee,
   GetTransaction,
-  PostTransaction,
-  EstimateTransactionFee
+  GetWallet,
+  PostTransaction
 }
 import io.iohk.atala.prism.node.cardano.wallet.api.JsonCodecs._
+import io.iohk.atala.prism.node.models.WalletDetails
 import io.iohk.atala.prism.utils.FutureEither._
 
 import scala.concurrent.{ExecutionContext, Future}
@@ -55,6 +57,10 @@ private[wallet] class ApiClient(config: ApiClient.Config)(implicit
 
   override def deleteTransaction(walletId: WalletId, transactionId: TransactionId): Result[Unit] = {
     DeleteTransaction(walletId, transactionId).run
+  }
+
+  override def getWallet(walletId: WalletId): Result[WalletDetails] = {
+    GetWallet(walletId).run
   }
 
   private def call[A: Decoder](method: ApiRequest): Result[A] = {

@@ -9,6 +9,9 @@ import io.iohk.atala.prism.logging.TraceId
 import io.iohk.atala.prism.logging.TraceId.IOWithTraceIdContext
 import io.iohk.atala.prism.management.console.clients.ConnectorClient
 import io.iohk.atala.prism.management.console.config.DefaultCredentialTypeConfig
+import io.iohk.atala.prism.management.console.grpc.GroupsGrpcService
+import io.iohk.atala.prism.management.console.grpc.CredentialTypesGrpcService
+import io.iohk.atala.prism.management.console.grpc.ContactsGrpcService
 import io.iohk.atala.prism.management.console.integrations.{
   ContactsIntegrationService,
   CredentialsIntegrationService,
@@ -96,10 +99,13 @@ object ManagementConsoleApp extends IOApp {
         CredentialIssuancesRepository.makeResource(txTraceIdLifted, managementConsoleLogs)
       credentialTypeRepository <- CredentialTypeRepository.makeResource(txTraceIdLifted, managementConsoleLogs)
 
+      contactsIntegrationService <-
+        ContactsIntegrationService.makeResource(contactsRepository, connector, managementConsoleLogs)
       credentialIntegrationService <-
         CredentialsIntegrationService.makeResource(credentialsRepository, node, connector, managementConsoleLogs)
       participantsIntegrationService <-
         ParticipantsIntegrationService.makeResource(participantsRepository, managementConsoleLogs)
+      credentialTypesService <- CredentialTypesService.makeResource(credentialTypeRepository, managementConsoleLogs)
 
       authenticator = new ManagementConsoleAuthenticator(
         participantsRepository,
@@ -107,6 +113,8 @@ object ManagementConsoleApp extends IOApp {
         node,
         GrpcAuthenticationHeaderParser
       )
+
+      groupsService <- GroupsService.makeResource(institutionGroupsRepository, managementConsoleLogs)
 
       credentialsService = new CredentialsServiceImpl(
         credentialsRepository,
@@ -116,16 +124,14 @@ object ManagementConsoleApp extends IOApp {
         connector
       )
       credentialsStoreService = new CredentialsStoreServiceImpl(receivedCredentialsRepository, authenticator)
-      groupsService = new GroupsServiceImpl(institutionGroupsRepository, authenticator)
+      groupsGrpcService = new GroupsGrpcService(groupsService, authenticator)
       consoleService = new ConsoleServiceImpl(participantsIntegrationService, statisticsRepository, authenticator)
-      contactsIntegrationService <-
-        ContactsIntegrationService.makeResource(contactsRepository, connector, managementConsoleLogs)
-      contactsService = new ContactsServiceImpl(contactsIntegrationService, authenticator)
+      contactsService = new ContactsGrpcService(contactsIntegrationService, authenticator)
       credentialIssuanceService = new CredentialIssuanceServiceImpl(
         credentialIssuancesRepository,
         authenticator
       )
-      credentialTypesService = new CredentialTypesServiceImpl(credentialTypeRepository, authenticator)
+      credentialTypesGrpcService = new CredentialTypesGrpcService(credentialTypesService, authenticator)
 
       // gRPC server
       grpcServer <- GrpcUtils.createGrpcServer[IO](
@@ -136,10 +142,10 @@ object ManagementConsoleApp extends IOApp {
         console_api.ContactsServiceGrpc.bindService(contactsService, ec),
         console_api.CredentialIssuanceServiceGrpc.bindService(credentialIssuanceService, ec),
         console_api.CredentialsServiceGrpc.bindService(credentialsService, ec),
-        console_api.GroupsServiceGrpc.bindService(groupsService, ec),
+        console_api.GroupsServiceGrpc.bindService(groupsGrpcService, ec),
         console_api.CredentialsStoreServiceGrpc.bindService(credentialsStoreService, ec),
         console_api.ConsoleServiceGrpc.bindService(consoleService, ec),
-        console_api.CredentialTypesServiceGrpc.bindService(credentialTypesService, ec)
+        console_api.CredentialTypesServiceGrpc.bindService(credentialTypesGrpcService, ec)
       )
     } yield grpcServer
   }

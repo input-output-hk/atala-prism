@@ -3,7 +3,7 @@ package io.iohk.atala.prism.management.console.repositories.metrics
 import cats.effect.BracketThrow
 import io.iohk.atala.prism.management.console.errors.ManagementConsoleError
 import io.iohk.atala.prism.management.console.models.InstitutionGroup.PaginatedQuery
-import io.iohk.atala.prism.management.console.models.{Contact, InstitutionGroup, ParticipantId}
+import io.iohk.atala.prism.management.console.models.{Contact, GetGroupsResult, InstitutionGroup, ParticipantId}
 import io.iohk.atala.prism.management.console.repositories.InstitutionGroupsRepository
 import io.iohk.atala.prism.metrics.TimeMeasureUtil.MeasureOps
 import io.iohk.atala.prism.metrics.{TimeMeasureMetric, TimeMeasureUtil}
@@ -28,7 +28,7 @@ final class InstitutionGroupsRepositoryMetrics[F[_]: TimeMeasureMetric: BracketT
   override def getBy(
       institutionId: ParticipantId,
       query: PaginatedQuery
-  ): Mid[F, (List[InstitutionGroup.WithContactCount], Int)] = _.measureOperationTime(getByTimer)
+  ): Mid[F, GetGroupsResult] = _.measureOperationTime(getByTimer)
 
   override def listContacts(institutionId: ParticipantId, groupName: InstitutionGroup.Name): Mid[F, List[Contact]] =
     _.measureOperationTime(listContactsTimer)

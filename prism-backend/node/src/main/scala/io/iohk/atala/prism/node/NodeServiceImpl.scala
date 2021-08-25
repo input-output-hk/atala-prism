@@ -34,8 +34,8 @@ import org.slf4j.{Logger, LoggerFactory}
 import java.time.Instant
 import scala.concurrent.{ExecutionContext, Future}
 import scala.util.Try
-
 import io.iohk.atala.prism.interop.toScalaProtos._
+import io.iohk.atala.prism.node.cardano.models.AtalaObjectMetadata
 
 class NodeServiceImpl(
     didDataRepository: DIDDataRepository[IO],
@@ -258,6 +258,12 @@ class NodeServiceImpl(
       .fromTry {
         Try {
           require(request.signedOperations.nonEmpty, "there must be at least one operation to be published")
+
+          val obj = ObjectManagementService.createAtalaObject(request.signedOperations.toList)
+          require(
+            AtalaObjectMetadata.estimateTxMetadataSize(obj) <= cardano.TX_METADATA_MAX_SIZE,
+            "atala object size is too big"
+          )
           request.signedOperations
         }
       }
