@@ -7,7 +7,13 @@ import doobie.implicits._
 import doobie.util.transactor.Transactor
 import io.iohk.atala.prism.connector.AtalaOperationId
 import io.iohk.atala.prism.node.errors.NodeError
-import io.iohk.atala.prism.node.models.{AtalaObjectId, AtalaObjectInfo, AtalaOperationInfo, AtalaOperationStatus}
+import io.iohk.atala.prism.node.models.{
+  AtalaObjectId,
+  AtalaObjectInfo,
+  AtalaObjectStatus,
+  AtalaOperationInfo,
+  AtalaOperationStatus
+}
 import io.iohk.atala.prism.node.repositories.daos.{AtalaObjectsDAO, AtalaOperationsDAO}
 import io.iohk.atala.prism.node.repositories.daos.AtalaObjectsDAO.AtalaObjectCreateData
 import io.iohk.atala.prism.utils.syntax.DBConnectionOps
@@ -76,7 +82,7 @@ private final class AtalaOperationsRepositoryImpl[F[_]: BracketThrow](xa: Transa
         operations.map(AtalaOperationId.of),
         atalaObject.objectId
       )
-      _ <- AtalaObjectsDAO.setProcessedBatch(oldObjects.map(_.objectId))
+      _ <- AtalaObjectsDAO.updateObjectStatusBatch(oldObjects.map(_.objectId), AtalaObjectStatus.Merged)
     } yield ()
 
     val opDescription = s"record new Atala Object ${atalaObject.objectId}"

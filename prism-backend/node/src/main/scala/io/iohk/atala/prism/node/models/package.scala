@@ -31,6 +31,15 @@ package object models {
 
   val ATALA_OBJECT_VERSION: String = "1.0"
 
+  sealed trait AtalaObjectStatus extends EnumEntry with UpperSnakecase
+  object AtalaObjectStatus extends Enum[AtalaObjectStatus] {
+    val values = findValues
+
+    case object Pending extends AtalaObjectStatus
+    case object Merged extends AtalaObjectStatus
+    case object Processed extends AtalaObjectStatus
+  }
+
   case class DIDPublicKey(didSuffix: DIDSuffix, keyId: String, keyUsage: KeyUsage, key: ECPublicKey)
 
   case class DIDData(didSuffix: DIDSuffix, keys: List[DIDPublicKey], lastOperation: SHA256Digest)

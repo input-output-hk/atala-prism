@@ -136,7 +136,7 @@ class ObjectManagementService private (
       )
     } yield for {
       wasProcessed <- blockProcessed
-      _ <- AtalaObjectsDAO.setProcessed(obj.objectId)
+      _ <- AtalaObjectsDAO.updateObjectStatus(obj.objectId, AtalaObjectStatus.Processed)
     } yield wasProcessed
   }
 
