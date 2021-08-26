@@ -51,6 +51,12 @@ message ECKeyData {
     bytes y = 3; // The y coordinate, represented as bytes.
 }
 
+// Holds the compressed representation of data needed to recover Elliptic Curve (EC)'s public key.
+message CompressedECKeyData {
+    string curve = 1; // The curve name, like secp256k1.
+    bytes data = 2; // compressed Elliptic Curve (EC) public key data.
+}
+
 // Represents a public key with metadata, necessary for a DID document.
 //
 // @exclude TODO: Consider renaming this to something more specific, like DIDPublicKey.
@@ -64,6 +70,7 @@ message PublicKey {
     // The key's representation.
     oneof key_data {
         ECKeyData ec_key_data = 8; // The Elliptic Curve (EC) key.
+        CompressedECKeyData compressed_ec_key_data =  9; // Compressed Elliptic Curve (EC) key.
     };
 }
 

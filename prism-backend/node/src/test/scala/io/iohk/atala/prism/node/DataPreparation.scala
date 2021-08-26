@@ -23,7 +23,7 @@ import io.iohk.atala.prism.node.models.{
   DIDPublicKey
 }
 import io.iohk.atala.prism.node.models.nodeState.{DIDDataState, DIDPublicKeyState, LedgerData}
-import io.iohk.atala.prism.node.operations.CreateDIDOperationSpec.{issuingEcKey, masterEcKey}
+import io.iohk.atala.prism.node.operations.CreateDIDOperationSpec.{issuingEcKeyData, masterEcKeyData}
 import io.iohk.atala.prism.node.repositories.daos.AtalaObjectsDAO.AtalaObjectCreateData
 import io.iohk.atala.prism.node.repositories.daos.CredentialBatchesDAO.CreateCredentialBatchData
 import io.iohk.atala.prism.node.repositories.daos.{
@@ -63,7 +63,7 @@ object DataPreparation {
                   node_models.LedgerData(timestampInfo = Some(ProtoCodecs.toTimeStampInfoProto(dummyTimestampInfo)))
                 ),
                 None,
-                node_models.PublicKey.KeyData.EcKeyData(masterEcKey)
+                node_models.PublicKey.KeyData.EcKeyData(masterEcKeyData)
               ),
               node_models
                 .PublicKey(
@@ -73,7 +73,7 @@ object DataPreparation {
                     node_models.LedgerData(timestampInfo = Some(ProtoCodecs.toTimeStampInfoProto(dummyTimestampInfo)))
                   ),
                   None,
-                  node_models.PublicKey.KeyData.EcKeyData(issuingEcKey)
+                  node_models.PublicKey.KeyData.EcKeyData(issuingEcKeyData)
                 )
             )
           )
