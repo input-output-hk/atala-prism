@@ -6,11 +6,11 @@ User issues new operations using one of these gRPC calls:
 1. Every operation has its corresponding gRPC call: `CreateDID`, `UpdateDID`, `IssueCredentialBatch`, `RevokeCredentials`.
 2. In addition to this, we have a gRPC call for sending several operations at once: `PublishAsABlock`.
 
-After receiving operations in any of these calls, Node service forwards them to the `objectManagementService.publishAtalaOperations` method.
+After receiving operations in any of these calls, Node service forwards them to the `objectManagementService.sendAtalaOperations` method.
 
-## How publishAtalaOperations works
+## How sendAtalaOperations works
 
-`publishAtalaOperations(op: node_models.SignedAtalaOperation*): Future[List[AtalaOperationId]]`
+`sendAtalaOperations(op: node_models.SignedAtalaOperation*): Future[List[AtalaOperationId]]`
 
 This method does the following:
 - Accepts a list of [SignedAtalaOperation](https://github.com/input-output-hk/atala-prism-sdk/blob/master/protosLib/src/main/proto/node_models.proto#L147)
@@ -20,13 +20,13 @@ This method does the following:
 - Stores every operation into `atala_operations` table with a new status `RECEIVED`
 - The method returns a list of operation identifiers. Users should use these identifiers for tracking operation statuses.
 
-**NOTE:** that publishAtalaOperations doesn't immediately publish operations to the ledger. Instead, it just stores those into Node's database for further scheduled publishing.
+**NOTE:** that sendAtalaOperations doesn't immediately publish operations to the ledger. Instead, it just stores those into Node's database for further scheduled publishing.
 
 ### Duplicate operations
 
 PRISM Node service should not corrupt databases when a user sends the same operation twice for some reason.
 
-When we insert a new operation in `publishAtalaOperations` method, we have the following line in the corresponding SQL query:
+When we insert a new operation in `sendAtalaOperations` method, we have the following line in the corresponding SQL query:
 ```sql
 ON CONFLICT (signed_atala_operation_id) DO NOTHING
 ```
@@ -34,6 +34,7 @@ It means that we do not publish this operation for the second time.
 
 ## Publishing operations to the Ledger.
 
+Another service `SubmissionService` publishes operations to the ledger periodically. 
 Before publishing operations to the public Cardano network, we merge them into blocks. This is supposed to reduce costs and to improve performance consumptions.
 Now we have two scheduled tasks for this: `SubmitReceivedObjects` and `RetryOldPendingTransactions`:
 Both of these tasks are supposed to retrieve Atala operations, merge them into larger blocks if this doesn't break the limits, and submit them to the Cardano network.
