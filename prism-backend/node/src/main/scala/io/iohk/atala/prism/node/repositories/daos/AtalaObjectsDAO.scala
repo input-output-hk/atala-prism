@@ -54,7 +54,7 @@ object AtalaObjectsDAO {
 
   def getNotPublishedObjectInfos: ConnectionIO[List[AtalaObjectInfo]] = {
     sql"""
-         |SELECT obj.atala_object_id, obj.object_content, obj.processed,
+         |SELECT obj.atala_object_id, obj.object_content, obj.atala_object_status,
          |       tx.transaction_id, tx.ledger, tx.block_number, tx.block_timestamp, tx.block_index
          |FROM
          |(
