@@ -1,10 +1,9 @@
 package io.iohk.atala.prism.node.operations
 
 import java.time.LocalDate
-
 import com.google.protobuf.ByteString
-import io.iohk.atala.prism.kotlin.crypto.{EC}
-import io.iohk.atala.prism.kotlin.crypto.keys.{ECPublicKey}
+import io.iohk.atala.prism.kotlin.crypto.EC
+import io.iohk.atala.prism.kotlin.crypto.keys.ECPublicKey
 import io.iohk.atala.prism.kotlin.crypto.ECConfig.{INSTANCE => ECConfig}
 import io.iohk.atala.prism.kotlin.crypto.SHA256Digest
 import io.iohk.atala.prism.kotlin.identity.DIDSuffix
@@ -33,6 +32,16 @@ object ParsingUtils {
   }
   val KEY_ID_RE = "^\\w+$".r
 
+  def parseKeyData(keyData: ValueAtPath[node_models.PublicKey]): Either[ValidationError, ECPublicKey] = {
+    if (keyData(_.keyData.isEcKeyData)) {
+      parseECKey(keyData.child(_.getEcKeyData, "ecKeyData"))
+    } else if (keyData(_.keyData.isCompressedEcKeyData)) {
+      parseCompressedECKey(keyData.child(_.getCompressedEcKeyData, "compressedEcKeyData"))
+    } else {
+      Left(keyData.child(_.keyData, "keyData").missing())
+    }
+  }
+
   def parseECKey(ecData: ValueAtPath[node_models.ECKeyData]): Either[ValidationError, ECPublicKey] = {
     if (ecData(_.curve) != ECConfig.getCURVE_NAME) {
       Left(ecData.child(_.curve, "curve").invalid("Unsupported curve"))
@@ -42,6 +51,17 @@ object ParsingUtils {
       Left(ecData.child(_.curve, "y").missing())
     } else {
       Try(EC.toPublicKey(ecData(_.x.toByteArray), ecData(_.y.toByteArray))).toEither.left
+        .map(ex => InvalidValue(ecData.path, "", s"Unable to initialize the key: ${ex.getMessage}"))
+    }
+  }
+
+  def parseCompressedECKey(
+      ecData: ValueAtPath[node_models.CompressedECKeyData]
+  ): Either[ValidationError, ECPublicKey] = {
+    if (ecData(_.data.toByteArray.isEmpty)) {
+      Left(ecData.child(_.data, "compressedData").missing())
+    } else {
+      Try(EC.toPublicKeyFromCompressed(ecData(_.data.toByteArray))).toEither.left
         .map(ex => InvalidValue(ecData.path, "", s"Unable to initialize the key: ${ex.getMessage}"))
     }
   }
@@ -64,7 +84,7 @@ object ParsingUtils {
       }
       keyId <- parseKeyId(key.child(_.id, "id"))
       _ <- Either.cond(key(_.keyData.isDefined), (), MissingValue(key.path / "keyData"))
-      publicKey <- parseECKey(key.child(_.getEcKeyData, "ecKeyData"))
+      publicKey <- parseKeyData(key)
     } yield DIDPublicKey(didSuffix, keyId, keyUsage, publicKey)
   }
 

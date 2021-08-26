@@ -47,7 +47,7 @@ object ObjectManagementServiceSpec {
           id = s"key$i",
           usage = node_models.KeyUsage.AUTHENTICATION_KEY,
           keyData = node_models.PublicKey.KeyData.EcKeyData(
-            CreateDIDOperationSpec.protoECKeyFromPublicKey(keyPair.getPublicKey)
+            CreateDIDOperationSpec.protoECKeyDataFromPublicKey(keyPair.getPublicKey)
           )
         )
       })

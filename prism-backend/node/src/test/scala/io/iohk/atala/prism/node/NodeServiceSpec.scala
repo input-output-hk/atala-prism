@@ -241,6 +241,29 @@ class NodeServiceSpec
       verifyNoMoreInteractions(objectManagementService)
     }
 
+    "publish CreateDID operation with compressed keys" in {
+      val operation = BlockProcessingServiceSpec.signOperation(
+        CreateDIDOperationSpec.exampleOperationWithCompressedKeys,
+        "master",
+        CreateDIDOperationSpec.masterKeys.getPrivateKey
+      )
+      val operationId = AtalaOperationId.of(operation)
+
+      doReturn(Future.successful(operationId)).when(objectManagementService).sendSingleAtalaOperation(*)
+
+      val response = service.createDID(node_api.CreateDIDRequest().withSignedOperation(operation))
+
+      val expectedDIDSuffix =
+        SHA256Digest
+          .compute(CreateDIDOperationSpec.exampleOperationWithCompressedKeys.toByteArray)
+          .hexValue
+
+      response.id must be(expectedDIDSuffix)
+      response.operationId mustEqual operationId.toProtoByteString
+      verify(objectManagementService).sendSingleAtalaOperation(operation)
+      verifyNoMoreInteractions(objectManagementService)
+    }
+
     "return error when provided operation is invalid" in {
       val operation = BlockProcessingServiceSpec.signOperation(
         CreateDIDOperationSpec.exampleOperation.update(_.createDid.didData.id := "abc"),
@@ -259,6 +282,23 @@ class NodeServiceSpec
     "publish UpdateDID operation" in {
       val operation = BlockProcessingServiceSpec.signOperation(
         UpdateDIDOperationSpec.exampleOperation,
+        "master",
+        UpdateDIDOperationSpec.masterKeys.getPrivateKey
+      )
+      val operationId = AtalaOperationId.of(operation)
+
+      doReturn(Future.successful(operationId)).when(objectManagementService).sendSingleAtalaOperation(*)
+
+      val response = service.updateDID(node_api.UpdateDIDRequest().withSignedOperation(operation))
+
+      response.operationId mustEqual operationId.toProtoByteString
+      verify(objectManagementService).sendSingleAtalaOperation(operation)
+      verifyNoMoreInteractions(objectManagementService)
+    }
+
+    "publish UpdateDID operation with compressed keys" in {
+      val operation = BlockProcessingServiceSpec.signOperation(
+        UpdateDIDOperationSpec.exampleOperationWithCompressedKeys,
         "master",
         UpdateDIDOperationSpec.masterKeys.getPrivateKey
       )
