@@ -95,9 +95,9 @@ class SubmissionServiceSpec
       ) // check that merged object is big enough
 
       DataPreparation.getSubmissionsByStatus(AtalaObjectTransactionSubmissionStatus.Pending).size must be(2)
-      val notPublishedObjectIds =
-        AtalaObjectsDAO.getNotPublishedObjectIds.transact(database).unsafeToFuture().futureValue
-      notPublishedObjectIds.size must be(0) // no pending objects
+      val notPublishedObjects =
+        AtalaObjectsDAO.getNotPublishedObjectInfos.transact(database).unsafeToFuture().futureValue
+      notPublishedObjects.size must be(0) // no pending objects
     }
 
     "record published operations even if others are failed" in {
@@ -121,9 +121,9 @@ class SubmissionServiceSpec
         .publish(*) // publish only merged objects
 
       DataPreparation.getSubmissionsByStatus(AtalaObjectTransactionSubmissionStatus.Pending).size must be(1)
-      val notPublishedObjectIds =
-        AtalaObjectsDAO.getNotPublishedObjectIds.transact(database).unsafeToFuture().futureValue
-      notPublishedObjectIds.size must be(1) // no pending objects
+      val notPublishedObjects =
+        AtalaObjectsDAO.getNotPublishedObjectInfos.transact(database).unsafeToFuture().futureValue
+      notPublishedObjects.size must be(1) // no pending objects
 
       // after publication second transaction becomes InLedger
       mockTransactionStatus(publications.last.transaction.transactionId, TransactionStatus.InLedger)
@@ -141,9 +141,9 @@ class SubmissionServiceSpec
 
       // resubmits object1
       submissionService.submitReceivedObjects().futureValue.toOption.nonEmpty must be(true)
-      val notPublishedObjectIds2 =
-        AtalaObjectsDAO.getNotPublishedObjectIds.transact(database).unsafeToFuture().futureValue
-      notPublishedObjectIds2.size must be(0) // no pending objects
+      val notPublishedObjects2 =
+        AtalaObjectsDAO.getNotPublishedObjectInfos.transact(database).unsafeToFuture().futureValue
+      notPublishedObjects2.size must be(0) // no pending objects
     }
   }
 
@@ -273,9 +273,9 @@ class SubmissionServiceSpec
 
       DataPreparation.getSubmissionsByStatus(AtalaObjectTransactionSubmissionStatus.Pending).size must be(2)
 
-      val notPublishedObjectIds =
-        AtalaObjectsDAO.getNotPublishedObjectIds.transact(database).unsafeToFuture().futureValue
-      notPublishedObjectIds.size must be(0) // no pending objects
+      val notPublishedObjects =
+        AtalaObjectsDAO.getNotPublishedObjectInfos.transact(database).unsafeToFuture().futureValue
+      notPublishedObjects.size must be(0) // no pending objects
     }
 
     "not retry new pending transactions" in {

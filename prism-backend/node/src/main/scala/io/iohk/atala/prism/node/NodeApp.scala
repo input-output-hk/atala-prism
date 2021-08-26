@@ -19,7 +19,8 @@ import kamon.Kamon
 import monix.execution.Scheduler.Implicits.{global => scheduler}
 import org.slf4j.LoggerFactory
 
-import scala.concurrent.duration.Duration
+import java.util.concurrent.TimeUnit
+import scala.concurrent.duration.{Duration, FiniteDuration}
 import scala.concurrent.{Await, ExecutionContext, Future, Promise}
 
 object NodeApp {
@@ -90,13 +91,25 @@ class NodeApp(executionContext: ExecutionContext) { self =>
     val atalaObjectsTransactionsRepository = AtalaObjectsTransactionsRepository(transactor)
 
     val ledgerPendingTransactionTimeout = globalConfig.getDuration("ledgerPendingTransactionTimeout")
+    val transactionRetryPeriod = FiniteDuration(
+      globalConfig.getDuration("transactionRetryPeriod").toNanos,
+      TimeUnit.NANOSECONDS
+    )
+    val operationSubmissionPeriod = FiniteDuration(
+      globalConfig.getDuration("operationSubmissionPeriod").toNanos,
+      TimeUnit.NANOSECONDS
+    )
     val submissionService = SubmissionService(
       atalaReferenceLedger,
       atalaOperationsRepository,
       atalaObjectsTransactionsRepository
     )
     val submissionSchedulingService = SubmissionSchedulingService(
-      SubmissionSchedulingService.Config(ledgerPendingTransactionTimeout = ledgerPendingTransactionTimeout),
+      SubmissionSchedulingService.Config(
+        ledgerPendingTransactionTimeout = ledgerPendingTransactionTimeout,
+        transactionRetryPeriod = transactionRetryPeriod,
+        operationSubmissionPeriod = operationSubmissionPeriod
+      ),
       submissionService
     )
 
