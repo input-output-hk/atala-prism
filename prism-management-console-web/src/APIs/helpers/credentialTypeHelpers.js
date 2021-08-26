@@ -46,13 +46,13 @@ export const adaptCredentialType = ({ id, name, ...rest }) => ({
   placeholders: placeholdersReplacements[name]
 });
 
-export const getSendableCredentialType = credentialList => {
+export const getCredentialTypeAttributes = credentialList => {
   const { name, logo } = credentialList[0]?.credentialTypeDetails;
 
   // TODO: add encoding svg
 
-  return JSON.stringify({
-    name,
-    icon: logo
-  });
+  return {
+    credentialTypeName: name,
+    credentialTypeIcon: logo
+  };
 };
