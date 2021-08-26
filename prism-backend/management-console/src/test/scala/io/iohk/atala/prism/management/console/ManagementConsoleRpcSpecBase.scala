@@ -6,6 +6,7 @@ import io.iohk.atala.prism.logging.TraceId.IOWithTraceIdContext
 import io.iohk.atala.prism.management.console.clients.ConnectorClient
 import io.iohk.atala.prism.management.console.grpc.CredentialTypesGrpcService
 import io.iohk.atala.prism.management.console.grpc.ContactsGrpcService
+import io.iohk.atala.prism.management.console.grpc.CredentialIssuanceGrpcService
 import io.iohk.atala.prism.management.console.integrations.{
   ContactsIntegrationService,
   CredentialsIntegrationService,
@@ -90,8 +91,8 @@ class ManagementConsoleRpcSpecBase extends RpcSpecBase {
   lazy val contactsService = new ContactsGrpcService(contactsIntegrationService, authenticator)(
     executionContext
   )
-  lazy val credentialIssuanceService = new CredentialIssuanceServiceImpl(
-    credentialIssuancesRepository,
+  lazy val credentialIssuanceService = new CredentialIssuanceGrpcService(
+    CredentialIssuanceService.unsafe(credentialIssuancesRepository, managementConsoleTestLogs),
     authenticator
   )(
     executionContext
