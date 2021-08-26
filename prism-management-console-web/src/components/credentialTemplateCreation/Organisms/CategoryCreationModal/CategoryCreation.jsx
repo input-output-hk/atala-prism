@@ -19,7 +19,7 @@ const i18nPrefix = 'credentialTemplateCreation';
 const CategoryCreation = ({ api, categoryForm, close, mockCategoriesProps }) => {
   const { mockedCategories, addMockedCategory } = mockCategoriesProps;
   const { t } = useTranslation();
-  const { getTemplateCategories } = useTemplateCategories(api.credentialTypesManager);
+  const { templateCategories } = useTemplateCategories(api.credentialTypesManager);
   const [isLoading, setIsLoading] = useState(false);
 
   // This ref is used to focus on the input field when opening the modal
@@ -66,7 +66,7 @@ const CategoryCreation = ({ api, categoryForm, close, mockCategoriesProps }) => 
     <>
       <CategoryNameInput
         inputRef={inputRef}
-        getTemplateCategories={getTemplateCategories}
+        templateCategories={templateCategories}
         mockedCategories={mockedCategories}
       />
       <CategoryIconSelector categoryForm={categoryForm} />
