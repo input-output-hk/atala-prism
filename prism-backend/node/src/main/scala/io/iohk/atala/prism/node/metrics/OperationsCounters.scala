@@ -5,7 +5,7 @@ import io.iohk.atala.prism.node.operations.StateError
 import io.iohk.atala.prism.protos.node_models.AtalaOperation
 import io.iohk.atala.prism.protos.node_models.SignedAtalaOperation
 import kamon.Kamon
-import kamon.metric.{Counter, Metric}
+import kamon.metric.Metric
 import kamon.tag.TagSet
 import org.slf4j.LoggerFactory
 
