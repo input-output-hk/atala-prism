@@ -11,6 +11,7 @@ import io.iohk.atala.prism.kotlin.crypto.EC
 import io.iohk.atala.prism.kotlin.crypto.keys.ECPublicKey
 import io.iohk.atala.prism.kotlin.crypto.signature.ECSignature
 import io.iohk.atala.prism.models.{Ledger, TransactionId}
+import io.iohk.atala.prism.node.metrics.OperationsCounters
 import io.iohk.atala.prism.node.models.AtalaOperationStatus
 import io.iohk.atala.prism.node.models.nodeState.LedgerData
 import io.iohk.atala.prism.node.operations.ValidationError.InvalidValue
@@ -95,11 +96,13 @@ class BlockProcessingServiceImpl extends BlockProcessingService {
                         atalaOperationId.toString,
                         protoOperation
                       )
+                      OperationsCounters.countProcessedBlock(protoOperation)
                       connection.releaseSavepoint(savepoint)
                     case Left(err) =>
                       logger.warn(
                         s"Operation was not applied:\n${err.toString}\nOperation:\n${protoOperation.toProtoString}"
                       )
+                      OperationsCounters.countFailedToProcessBlock(protoOperation, err)
                       logRequestWithContext(
                         methodName,
                         s"Operation was not applied:\n${err.toString}",
