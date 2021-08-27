@@ -42,24 +42,29 @@ enum KeyUsage {
     REVOCATION_KEY = 5;
 }
 
-// Holds the necessary data to recover an Elliptic Curve (EC)'s public key.
-//
-// @exclude TODO: Consider renaming this to ECPublicKeyData.
+/**
+ * Holds the necessary data to recover an Elliptic Curve (EC)'s public key.
+ * @exclude TODO: Consider renaming this to ECPublicKeyData.
+ */
 message ECKeyData {
     string curve = 1; // The curve name, like secp256k1.
     bytes x = 2; // The x coordinate, represented as bytes.
     bytes y = 3; // The y coordinate, represented as bytes.
 }
 
-// Holds the compressed representation of data needed to recover Elliptic Curve (EC)'s public key.
+/**
+ * Holds the compressed representation of data needed to recover Elliptic Curve (EC)'s public key.
+ * @exclude TODO: Consider renaming this to CompressedECPublicKeyData.
+ */
 message CompressedECKeyData {
     string curve = 1; // The curve name, like secp256k1.
     bytes data = 2; // compressed Elliptic Curve (EC) public key data.
 }
 
-// Represents a public key with metadata, necessary for a DID document.
-//
-// @exclude TODO: Consider renaming this to something more specific, like DIDPublicKey.
+/**
+ * Represents a public key with metadata, necessary for a DID document.
+ * @exclude TODO: Consider renaming this to something more specific, like DIDPublicKey.
+ */
 message PublicKey {
     reserved 3, 4;
     string id = 1; // The key identifier within the DID Document.

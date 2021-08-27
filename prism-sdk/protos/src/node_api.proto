@@ -10,44 +10,118 @@ import "node_models.proto";
 
 import "google/protobuf/timestamp.proto";
 
-// The Node API
+/**
+ * Service for PRISM Node API. Provides a way to store, retrieve and update
+ * Decentralized identifiers (DID), and Credentials into/from the underlying blockchain.
+ */
 service NodeService {
-    // Checks if the service is healthy.
+    /**
+     * PUBLIC
+     *
+     * Sends a request that can be used to check service health.
+     * All PRISM services expose an RPC that accepts this message as request.
+     */
     rpc HealthCheck(HealthCheckRequest) returns (HealthCheckResponse) {}
 
-    // Retrieves a DID Document.
+    /**
+    * PUBLIC
+    *
+    * Retrieves a DID Document after it is created via CreateDID.
+    *
+    * Errors:
+    * - Invalid long form DID
+    * - DID format not supported
+    * - Invalid DID
+    * - Unknown DID
+    */
     rpc GetDidDocument(GetDidDocumentRequest) returns (GetDidDocumentResponse) {}
 
-    // Creates a public DID.
+    /**
+    * PUBLIC
+    *
+    * Creates a DID Document.
+
+    * Errors:
+    * - Id must be empty for DID creation operation (INVALID_ARGUMENT)
+    * - Invalid PublicKey id (INVALID_ARGUMENT)
+    * - Unsupported curve (INVALID_ARGUMENT)
+    * - Unable to initialize the key (INVALID_ARGUMENT)
+    */
     rpc CreateDID(CreateDIDRequest) returns (CreateDIDResponse) {}
 
-    // Updates an existing public DID.
+    /**
+    * PUBLIC
+    *
+    * Updates a DID Document after it is created via CreateDID.
+    *
+    * Errors:
+    * - Must be a valid DID suffix (INVALID_ARGUMENT)
+    * - Unsupported curve (INVALID_ARGUMENT)
+    * - Unable to initialize the key (INVALID_ARGUMENT)
+    */
     rpc UpdateDID(UpdateDIDRequest) returns (UpdateDIDResponse) {}
 
-    // Issues a batch of credentials.
+    /**
+    * PUBLIC
+    *
+    * Issues a batch of credentials.
+    *
+    * Errors:
+    * - Invalid value credentialBatchId (INVALID_ARGUMENT)
+    * - Must be a valid DID suffix (INVALID_ARGUMENT)
+    * - Merkle root must be of X bytes (INVALID_ARGUMENT)
+    */
     rpc IssueCredentialBatch(IssueCredentialBatchRequest) returns (IssueCredentialBatchResponse) {}
 
-    // Revokes credentials from a batch (all, or just a subset).
+    /**
+    * PUBLIC
+    *
+    * Revokes credentials from a batch (all, or just a subset) that was created via IssueCredentialBatch.
+    *
+    * Errors:
+    * - Invalid value credentialBatchId has invalid format (INVALID_ARGUMENT)
+    * - previousOperationHash must be of X bytes (INVALID_ARGUMENT)
+    */
     rpc RevokeCredentials(RevokeCredentialsRequest) returns (RevokeCredentialsResponse) {}
 
-    // Retrieves the Node version info.
+    /**
+    * PUBLIC
+    *
+    * Retrieves the Node version info.
+    */
     rpc GetNodeBuildInfo(GetNodeBuildInfoRequest) returns (GetNodeBuildInfoResponse) {}
 
-    // Finds the state for a given credential's batch.
+    /**
+    * PUBLIC
+    *
+    * Finds the state for a given credential's batch.
+    *
+    * Errors:
+    * - Invalid batch id (INVALID_ARGUMENT)
+    * - Unknown batch id (INVALID_ARGUMENT)
+    */
     rpc GetBatchState(GetBatchStateRequest) returns (GetBatchStateResponse) {}
 
-    // Finds the time when a credential was revoked.
+    /**
+     * PUBLIC
+     *
+     * Finds the time when a credential was revoked.
+     *
+     * Errors:
+     * - Invalid batch id (INVALID_ARGUMENT)
+     * - Unknown batch id (INVALID_ARGUMENT)
+     */
     rpc GetCredentialRevocationTime(GetCredentialRevocationTimeRequest) returns (GetCredentialRevocationTimeResponse) {}
 
     /**
-     * AUTHENTICATED
+     * PUBLIC
      *
      * Retrieves the status of an operation.
      */
     rpc GetOperationInfo(GetOperationInfoRequest) returns (GetOperationInfoResponse) {}
 
     /**
-     * AUTHENTICATED
+     * PUBLIC
      *
      * Flushes buffer of operations.
      */
@@ -60,44 +134,62 @@ service NodeService {
      */
     rpc GetLastSyncedBlockTimestamp(GetLastSyncedBlockTimestampRequest) returns (GetLastSyncedBlockTimestampResponse) {}
 
-    // Publishes a sequence of signed operations in a single underlying transaction.
-    // The sequence of operations has a size limit to fit in the metadata of the transaction (approx. 15KB).
+    /**
+    * AUTHENTICATED
+    *
+    * Publishes a sequence of signed operations in a single underlying transaction.
+    * The sequence of operations has a size limit to fit in the metadata of the transaction (approx. 15KB).
+    */
     rpc PublishAsABlock(PublishAsABlockRequest) returns (PublishAsABlockResponse) {}
 }
 
 
-// Request to find a DID Document.
+/**
+ * Request to find a DID Document.
+ * See NodeService.GetDidDocument for more information.
+ */
 message GetDidDocumentRequest {
     string did = 1; // The DID.
 }
-// Response to a DID Document query.
+/**
+ * Response to a DID Document query.
+ * See NodeService.GetDidDocument for more information.
+ */
 message GetDidDocumentResponse {
-    DIDData document = 1; // If present, the DID Document.
-    /**
-     * Timestamp of the latest synchronized block.
-     */
-    google.protobuf.Timestamp last_synced_block_timestamp = 5;
+    DIDData document = 1; // The DID Document.
+    google.protobuf.Timestamp last_synced_block_timestamp = 5; // Timestamp of the latest synchronized block.
 }
 
-// Request to create a public DID.
+/**
+ * Request to create a public DID.
+ * See NodeService.CreateDID for more information.
+ */
 message CreateDIDRequest {
     SignedAtalaOperation signed_operation = 1; // The signed operation.
 }
-
-// Response after creating a public DID.
+/**
+ * Response after creating a public DID.
+ * See NodeService.CreateDID for more information.
+ */
 message CreateDIDResponse {
     reserved 2; // Removed "transaction_info" field.
     reserved "transaction_info";
 
-    string id = 1; // DID suffix, where DID is in form did:prism.atala:[DID suffix]
+    string id = 1; // DID suffix, where DID is in form did:prism:[DID suffix].
     bytes operation_id = 3; // Operation identifier.
 }
 
-// Request to update a public DID Document.
+/**
+ * Request to update a public DID Document.
+ * See NodeService.UpdateDID for more information.
+ */
 message UpdateDIDRequest {
     SignedAtalaOperation signed_operation = 1; // The signed operation.
 }
-// Response after updating a DID Document.
+/**
+ * Response after updating a DID Document.
+ * See NodeService.UpdateDID for more information.
+ */
 message UpdateDIDResponse {
     reserved 1; // Removed "transaction_info" field.
     reserved "transaction_info";
@@ -105,11 +197,17 @@ message UpdateDIDResponse {
     bytes operation_id = 2; // Operation identifier.
 }
 
-// Request to issue a batch of credentials.
+/**
+ * Request to issue a batch of credentials.
+ * See NodeService.IssueCredentialBatch for more information.
+ */
 message IssueCredentialBatchRequest {
     SignedAtalaOperation signed_operation = 1; // The signed operation.
 }
-// Response after issuing a batch of credentials.
+/**
+ * Response after issuing a batch of credentials.
+ * See NodeService.IssueCredentialBatch for more information.
+ */
 message IssueCredentialBatchResponse {
     reserved 2; // Removed "transaction_info" field.
     reserved "transaction_info";
@@ -118,11 +216,17 @@ message IssueCredentialBatchResponse {
     bytes operation_id = 3; // Operation identifier.
 }
 
-// Request to revoke credentials from a batch.
+/**
+ * Request to revoke credentials from a batch.
+ * See NodeService.RevokeCredentials for more information.
+ */
 message RevokeCredentialsRequest {
     SignedAtalaOperation signed_operation = 1; // The signed operation.
 }
-// Response after revoking credentials from a batch.
+/**
+ * Response after revoking credentials from a batch.
+ * See NodeService.RevokeCredentials for more information.
+ */
 message RevokeCredentialsResponse {
     reserved 1; // Removed "transaction_info" field.
     reserved "transaction_info";
@@ -130,11 +234,16 @@ message RevokeCredentialsResponse {
     bytes operation_id = 2; // Operation identifier.
 }
 
-// Request to get the Node version info.
+/**
+ * Request to get the Node version info.
+ * See NodeService.GetNodeBuildInfo for more information.
+ */
 message GetNodeBuildInfoRequest {
 }
-
-// Response with the Node version info.
+/**
+ * Response with the Node version info.
+ * See NodeService.GetNodeBuildInfo for more information.
+ */
 message GetNodeBuildInfoResponse {
     reserved 4; // buildTime
 
@@ -143,20 +252,38 @@ message GetNodeBuildInfoResponse {
     string sbt_version = 3; // The SBT version used to compile the app.
 }
 
-// Request to get the credential's batch state.
+/**
+ * Request to get the credential's batch state.
+ * See NodeService.GetBatchState for more information.
+ */
 message GetBatchStateRequest {
     string batch_id = 1; // The batch ID.
 }
-// Response with the credential's batch state.
+/**
+ * Response with the credential's batch state.
+ * See NodeService.GetBatchState for more information.
+ */
 message GetBatchStateResponse {
-    string issuer_did = 1; // DID suffix used to sign the IssueCredentialBatch operation.
-    bytes merkle_root = 2; // The Merkle root used for the IssueCredential operation.
+    /**
+     * DID suffix used to sign the IssueCredentialBatch operation.
+     */
+    string issuer_did = 1;
 
-    // If present: underlying blockchain data that refers to the transaction that
-    // contains the IssueCredential operation associated with the credential.
+    /**
+     * The Merkle root used for the IssueCredential operation.
+     */
+    bytes merkle_root = 2;
+
+    /**
+     * Underlying blockchain data that refers to the transaction that
+     * contains the IssueCredential operation associated with the credential.
+     */
     LedgerData publication_ledger_data = 3;
 
-    // If present: underlying blockchain data that refers to the transaction that contains the RevokeCredential operation associated with the credential.
+    /**
+     * Underlying blockchain data that refers to the transaction that
+     * contains the RevokeCredential operation associated with the credential.
+     */
     LedgerData revocation_ledger_data = 4;
 
     /**
@@ -165,26 +292,33 @@ message GetBatchStateResponse {
     google.protobuf.Timestamp last_synced_block_timestamp = 5;
 }
 
-// Request to get the credential's revocation time.
+/**
+ * Request to get the credential's revocation time.
+ * See NodeService.GetCredentialRevocationTime for more information.
+ */
 message GetCredentialRevocationTimeRequest {
     string batch_id = 1; // The ID corresponding to the credential to query about.
     bytes credential_hash = 2; // The hash of the credential to query about.
 }
-// Response with the credential's revocation time.
+/**
+ * Response with the credential's revocation time.
+ * See NodeService.GetCredentialRevocationTime for more information.
+ */
 message GetCredentialRevocationTimeResponse {
-    LedgerData revocation_ledger_data = 1; // If present, the ledger data when the credential was revoked.
+    LedgerData revocation_ledger_data = 1; // The ledger data when the credential was revoked.
     google.protobuf.Timestamp last_synced_block_timestamp = 2; // Timestamp of the latest synchronized block.
 }
 
 /**
  * Request to get the operation status.
+ * See NodeService.GetOperationInfo for more information.
  */
 message GetOperationInfoRequest {
     bytes operation_id = 1; // Operation identifier. The identifier is returned to the corresponding operation request.
 }
-
 /**
  * Response with the current operation status.
+ * See NodeService.GetOperationInfo for more information.
  */
 message GetOperationInfoResponse {
     OperationStatus operation_status = 1; // Contains the status of this operation.
@@ -194,39 +328,61 @@ message GetOperationInfoResponse {
 
 /**
  * Request to submit all buffered operations to the ledger.
+ * See NodeService.FlushOperationsBuffer for more information.
  */
 message FlushOperationsBufferRequest {
 }
-
 /**
  * Response after flushing the operations buffer.
+ * See NodeService.FlushOperationsBuffer for more information.
  */
 message FlushOperationsBufferResponse {
-    int32 sent_operations_amount = 1; // Amount of operations retrieved from the buffer, and submitted to the ledger.
+    /**
+     * Amount of operations retrieved from the buffer, and submitted to the ledger.
+     */
+    int32 sent_operations_amount = 1;
 }
 
 /**
  * Request to retrieve the timestamp of the latest synchronized (processed by PRISM Node) block.
+ * See NodeService.GetLastSyncedBlockTimestampRequest for more information.
  */
 message GetLastSyncedBlockTimestampRequest {
 }
-
 /**
  * Response with the timestamp of the latest synchronized (processed by PRISM Node) block.
+ * See NodeService.GetLastSyncedBlockTimestampResponse for more information.
  */
 message GetLastSyncedBlockTimestampResponse {
-    google.protobuf.Timestamp last_synced_block_timestamp = 1; // Timestamp of the latest synchronized (processed by PRISM Node) block.
+    /**
+     * Timestamp of the latest synchronized (processed by PRISM Node) block.
+     */
+    google.protobuf.Timestamp last_synced_block_timestamp = 1;
 }
 
+/**
+ * Request to retrieve transaction info and operations outputs.
+ * See NodeService.PublishAsABlockRequest for more information.
+ */
 message PublishAsABlockRequest {
-    // The sequence of operations to apply. The operations will be applied in the order specified here.
-    repeated SignedAtalaOperation signed_operations = 1; // two or more signed operations
+    /**
+     * Two or more signed operations to apply. The operations will be applied in the order specified here.
+     */
+    repeated SignedAtalaOperation signed_operations = 1;
 }
-// Response with the transaction info and operations outputs.
+/**
+ * Response with the transaction info and operations outputs.
+ * See NodeService.PublishAsABlockResponse for more information.
+ */
 message PublishAsABlockResponse {
-    reserved 1; // Removed "transaction_info" field.
+    /**
+     *  Removed "transaction_info" field.
+     */
+    reserved 1;
     reserved "transaction_info";
 
-    // The responses of every operation in the block, ordered the same as the operations sent in PublishAsABlockRequest.
+    /**
+     * The responses of every operation in the block, ordered the same as the operations sent in PublishAsABlockRequest.
+     */
     repeated OperationOutput outputs = 2;
 }
