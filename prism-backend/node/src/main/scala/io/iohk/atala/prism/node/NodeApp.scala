@@ -6,6 +6,7 @@ import io.grpc.{Server, ServerBuilder}
 import io.iohk.atala.prism.metrics.UptimeReporter
 import io.iohk.atala.prism.node.cardano.CardanoClient
 import io.iohk.atala.prism.node.metrics.WalletAvailableFundsReporter
+import io.iohk.atala.prism.node.metrics.LastSyncedBlockNumberReporter
 import io.iohk.atala.prism.node.repositories.{
   AtalaObjectsTransactionsRepository,
   AtalaOperationsRepository,
@@ -74,6 +75,8 @@ class NodeApp(executionContext: ExecutionContext) { self =>
 
     val keyValuesRepository = KeyValuesRepository(transactor)
     val keyValueService = new KeyValueService(keyValuesRepository)
+
+    Kamon.registerModule("last-synced-block", new LastSyncedBlockNumberReporter(keyValueService))
 
     val (atalaReferenceLedger, releaseAtalaReferenceLedger) = globalConfig.getString("ledger") match {
       case "cardano" => initializeCardano(keyValueService, globalConfig, onAtalaObject)
