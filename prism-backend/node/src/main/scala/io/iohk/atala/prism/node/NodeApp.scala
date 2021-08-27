@@ -1,7 +1,7 @@
 package io.iohk.atala.prism.node
 
 import cats.effect.{ContextShift, IO}
-import com.typesafe.config.ConfigFactory
+import com.typesafe.config.{Config, ConfigFactory}
 import io.grpc.{Server, ServerBuilder}
 import io.iohk.atala.prism.metrics.UptimeReporter
 import io.iohk.atala.prism.node.cardano.CardanoClient
@@ -75,19 +75,12 @@ class NodeApp(executionContext: ExecutionContext) { self =>
     val keyValuesRepository = KeyValuesRepository(transactor)
     val keyValueService = new KeyValueService(keyValuesRepository)
 
-    val config = NodeConfig.cardanoConfig(globalConfig.getConfig("cardano"))
-
     val (atalaReferenceLedger, releaseAtalaReferenceLedger) = globalConfig.getString("ledger") match {
-      case "cardano" =>
-        val (cardanoClient, releaseClient) = createCardanoClient(config.cardanoClientConfig)
-        Kamon.registerModule("wallet-funds", WalletAvailableFundsReporter(config, cardanoClient))
-        val cardano = CardanoLedgerService(config, cardanoClient, keyValueService, onAtalaObject)
-        (cardano, Some(releaseClient))
+      case "cardano" => initializeCardano(keyValueService, globalConfig, onAtalaObject)
       case "in-memory" =>
         logger.info("Using in-memory ledger")
         (new InMemoryLedgerService(onAtalaObject), None)
     }
-
     logger.info("Creating blocks processor")
     val blockProcessingService = new BlockProcessingServiceImpl
     val didDataRepository = DIDDataRepository(transactor)
@@ -157,6 +150,18 @@ class NodeApp(executionContext: ExecutionContext) { self =>
       System.err.println("*** server shut down")
     }
     ()
+  }
+
+  private def initializeCardano(
+      keyValueService: KeyValueService,
+      globalConfig: Config,
+      onAtalaObject: AtalaObjectNotification => Future[Unit]
+  ): (CardanoLedgerService, Option[IO[Unit]]) = {
+    val config = NodeConfig.cardanoConfig(globalConfig.getConfig("cardano"))
+    val (cardanoClient, releaseClient) = createCardanoClient(config.cardanoClientConfig)
+    Kamon.registerModule("wallet-funds", WalletAvailableFundsReporter(config, cardanoClient))
+    val cardano = CardanoLedgerService(config, cardanoClient, keyValueService, onAtalaObject)
+    (cardano, Some(releaseClient))
   }
 
   private def createCardanoClient(
