@@ -121,7 +121,7 @@ class CardanoLedgerService private[services] (
   private[services] def syncAtalaObjects(): Future[Boolean] = {
     for {
       maybeLastSyncedBlockNo <- keyValueService.getInt(LAST_SYNCED_BLOCK_NO)
-      lastSyncedBlockNo = math.max(maybeLastSyncedBlockNo.getOrElse(0), blockNumberSyncStart - 1)
+      lastSyncedBlockNo = CardanoLedgerService.calculateLastSyncedBlockNo(maybeLastSyncedBlockNo, blockNumberSyncStart)
       latestBlock <- cardanoClient.getLatestBlock().toFuture(_ => new RuntimeException("Cardano blockchain is empty"))
       lastConfirmedBlockNo = latestBlock.header.blockNo - blockConfirmationsToWait
       syncStart = lastSyncedBlockNo + 1
@@ -239,4 +239,8 @@ object CardanoLedgerService {
       scheduler
     )
   }
+
+  def calculateLastSyncedBlockNo(maybeLastSyncedBlockNo: Option[Int], blockNumberSyncStart: Int): Int =
+    math.max(maybeLastSyncedBlockNo.getOrElse(0), blockNumberSyncStart - 1)
+
 }

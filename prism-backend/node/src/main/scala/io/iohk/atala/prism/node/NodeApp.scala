@@ -76,8 +76,6 @@ class NodeApp(executionContext: ExecutionContext) { self =>
     val keyValuesRepository = KeyValuesRepository(transactor)
     val keyValueService = new KeyValueService(keyValuesRepository)
 
-    Kamon.registerModule("last-synced-block", new LastSyncedBlockNumberReporter(keyValueService))
-
     val (atalaReferenceLedger, releaseAtalaReferenceLedger) = globalConfig.getString("ledger") match {
       case "cardano" => initializeCardano(keyValueService, globalConfig, onAtalaObject)
       case "in-memory" =>
@@ -163,6 +161,7 @@ class NodeApp(executionContext: ExecutionContext) { self =>
     val config = NodeConfig.cardanoConfig(globalConfig.getConfig("cardano"))
     val (cardanoClient, releaseClient) = createCardanoClient(config.cardanoClientConfig)
     Kamon.registerModule("wallet-funds", WalletAvailableFundsReporter(config, cardanoClient))
+    Kamon.registerModule("last-synced-block", LastSyncedBlockNumberReporter(cardanoClient, keyValueService, config))
     val cardano = CardanoLedgerService(config, cardanoClient, keyValueService, onAtalaObject)
     (cardano, Some(releaseClient))
   }
