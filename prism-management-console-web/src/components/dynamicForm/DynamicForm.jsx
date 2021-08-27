@@ -3,7 +3,7 @@ import PropTypes from 'prop-types';
 import { Form, Row } from 'antd';
 import { DynamicFormContext } from '../../providers/DynamicFormProvider';
 import IndividualForm from './IndividualForm/IndividualForm';
-import { DEFAULT_WIDTH_INPUT } from '../../helpers/constants';
+import { DEFAULT_WIDTH_INPUT, IMPORT_CONTACTS } from '../../helpers/constants';
 import { columnShape, importUseCasePropType, skeletonShape } from '../../helpers/propShapes';
 import { useDebounce } from '../../hooks/useDebounce';
 
@@ -17,7 +17,11 @@ const DynamicForm = ({ columns, skeleton, initialValues, useCase }) => {
   const handleValuesChange = useDebounce(checkValidation);
 
   return (
-    <div className="DynamicFormContainer">
+    <div
+      className={`DynamicFormContainer ${
+        useCase === IMPORT_CONTACTS ? 'ContactsImport' : 'CredentialsImport'
+      }`}
+    >
       <Row>
         <Form
           form={form}
