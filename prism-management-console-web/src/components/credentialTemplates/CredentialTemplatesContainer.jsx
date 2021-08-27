@@ -1,33 +1,29 @@
-import React from 'react';
+import React, { useContext, useEffect } from 'react';
 import PropTypes from 'prop-types';
+import { observer } from 'mobx-react-lite';
 import { withApi } from '../providers/withApi';
 import CredentialTemplates from './CredentialTemplates';
-import { useCredentialTypes, useTemplateCategories } from '../../hooks/useCredentialTypes';
-import { useMockDataContext } from '../providers/MockDataProvider';
+import { useTemplateCategories } from '../../hooks/useCredentialTypes';
+import { PrismStoreContext } from '../../stores/PrismStore';
 
-const CredentialTemplatesContainer = ({ api: { credentialTypesManager } }) => {
-  const {
-    filteredCredentialTypes,
-    isLoading,
-    isSearching,
-    filterProps,
-    sortingProps
-  } = useCredentialTypes(credentialTypesManager);
+const CredentialTemplatesContainer = observer(({ api: { credentialTypesManager } }) => {
+  const { tempalteStore } = useContext(PrismStoreContext);
+  const { filteredCredentialTypes, fetchTemplates, isLoading } = tempalteStore;
+
+  useEffect(() => {
+    fetchTemplates();
+  }, [fetchTemplates]);
+
   const { templateCategories } = useTemplateCategories(credentialTypesManager);
-  const { mockData } = useMockDataContext();
 
   const tableProps = {
-    credentialTypes:
-      filteredCredentialTypes && filteredCredentialTypes.concat(mockData.credentialTypes),
+    credentialTypes: filteredCredentialTypes,
     templateCategories,
-    isLoading,
-    isSearching,
-    filterProps,
-    sortingProps
+    isLoading
   };
 
   return <CredentialTemplates tableProps={tableProps} />;
-};
+});
 
 CredentialTemplatesContainer.propTypes = {
   api: PropTypes.shape({
