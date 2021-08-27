@@ -116,7 +116,7 @@ jobs:
           files: "prism-backend/target/test-reports/**/TEST-*.xml"
           check_run_annotations_branch: "*"
 
-  publish-prism-backend:
+  publish-github-packages:
     name: Publish Github Packages
     needs: build-prism-backend
     runs-on: ubuntu-20.04
@@ -228,8 +228,6 @@ jobs:
             ~/.cache/coursier
             ~/.ivy2
             ~/.m2
-            prism-web-wallet/target/scala-2.13/scalajs-bundler/main/node_modules
-            prism-web-wallet/target/scala-2.13/scalajs-bundler/test/node_modules
 
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@13d241b293754004c80624b5567555c4a39ffbe3
