@@ -14,46 +14,50 @@ There are a lot of use cases which fall into this category, some of them:
 
     _CreateDID_, _UpdateDID_, _IssueCredentialBatch_, _RevokeCredentials_ are operations which a wallet wants to be aware of.
 
-2. Verifier wants to be notified if a _particular_ credential was revoked, and it was approved in the Cardano network.
+2. Verifier wants to be notified if a _particular_ credential is revoked, and it was approved in the Cardano network.
    Verifier is interested if a credential which was provided by a holder is still valid.
 
 3. Wallet wants to be notified about _particular_ `AtalaOperation`'s status
    (_PENDING_, _CANCELLED_, _REJECTED_, _IN_BLOCK_, _CONFIRMATION_LEVEL n_, _APPROVED_),
    in order to show a user status of operation in real time to make a wallet interface more responsive.
 
-The last case and similar ones will be out of the consideration of this document for now,
+4. Wallet wants to be notified when a node went offline mode and get back to online.
+
+The last two cases and similar ones will be out of the consideration of this document for now,
 we will mostly focus on notifications about Atala operations.
 
 ## High level overview of the protocol
 Suggested protocol is inspired by [BIP-157](https://en.bitcoin.it/wiki/BIP_0157) and [BIP-158](https://en.bitcoin.it/wiki/BIP_0158).
 
-The core structure of this approach is Golomb Coded Set filter (GCS), which is a better Bloom filter.
-This structure is basically a compressed set that supports element insertion and element existence test.
-This structure is build from an elements list.
-Existence test in Golomb Coded Set is probabilistic and despite the probability is close to 1,
-a test still can give a false positive result. Hence, every positive check has to be double-checked on the original list.
+The core structure of this approach is Golomb Coded Set filter (GCS), which is akin a Bloom filter
+with smaller serialisation size but slower query time.  
+This structure is basically a compressed set (built from a list) that supports element insertion and element existence test.
+Existence test is probabilistic and despite the probability is close to 1,
+a test still can give a false positive result. 
+Hence, every positive check has to be double-checked on the original list.
 
-The protocol in nutshell is that when a node receives an Atala block,
-it computes GCS consisting of the block operations, send the resulting GCS to a client, 
-the client tests if there is at least one element it is interested in, and if so it requests them.
+The protocol in nutshell: when a node receives an Atala block,
+it computes GCS for relevant data of the block operations, sends the resulting GCS to a client,
+the client tests if there is at least one event it listens to, and if so the client requests them.  
+We offload the testing logic to clients in order to reduce load on a node.
 
 Let's move on to more detailed description.  
 Let's assume that a node has the list of subscribers, stored in memory,
 and each of those has associated gRPC stream.
 Then that will happen on new event:
-1. when an event happens, a node computes a GCS for it, and saves the event and GCS in a persistent storage, 
+1. when a block arrives, a node computes a GCS for it, and saves it and GCS in a persistent storage, 
    sends the GCS to all subscribers' streams
 2. when a client receives a GCS, it checks if there are entries in the GCS which a client is interested in.  
-   if there are any, in a separate connection a client requests an original event which the GCS was derived from, 
-   otherwise saves the GCS as a last known one to a local persistent storage.
-3. in case, if a client requests an event for GCS, a node responds to the client with the original event. 
+   If there are any, in a separate connection a client requests an original block which the GCS was derived from, 
+   otherwise it saves a corresponding Atala block id as the last known to a local persistent storage.
+3. in case, if a client requests a block for GCS, a node responds to the client with it.
    This message is sent to the separate connection, not to the associated stream.
-4. upon receiving an event, a client handles it and saves a corresponding GCS as last known one
+4. upon receiving a block, a client handles it and saves a corresponding Atala block id as the last known.
 
-Pay attention, that an event in the 2nd step is a _flexible_ notion, 
-and might be any kind of thing, for example, an Atala block, an Atala operation, or even
-a node lifetime event (e.g. a node disconnected from the Cardano network).
-Hence, what an event actually is depends on implementation, and in the first version it will be just an Atala block.
+Pay attention, that instead of building GCS for an Atala block, node could build it for 
+any kind of thing, for example, for sequence of block, for an Atala operation, or even
+for a node lifetime event (e.g. a node disconnected from the Cardano network).  
+This flexibility might be used in future versions of the protocol.
 
 Another subject for discussion is whether we need to store all kind of events persistently. 
 For example, a node disconnect event seems unimportant after a node connects back, 
@@ -69,38 +73,33 @@ and describe how a client will actually connect to a node:
 2. a node responds with GCSs from its persistent storage to the stream
 3. a client filters out received GCSs, and requests corresponding events from the node in a separate connection(s)
 4. a node responds with requested events
-5. a client receives them, check that they actually match its filters, and handle matched ones, updating its last known GCS
+5. a client receives them, update its last known GCS, then check that they actually match its filters, and handle matched ones
 6. after that, a client moves to the previously described flow
 
-### Alternative way
-In suggested approach, we send a GCS from node to client to keep a client private: 
-neither node nor a man in the middle can figure out DIDs which a client is interested in, therefore,
-can't reveal that those DIDs belong to the same user.  
-The disadvantage of such approach is that there might be many redundant messages with GCS from a node to a client because
-a received GCS is irrelevant to a client.
-
-However, if we introduce a message encryption between node and client, 
-in this case a man in the middle won't be able to expose a user. 
-Taking into account the fact that in our setting nodes are trusted, a client, vice versa, could share a GCS corresponding to its filters with a node,
-and node could rule out filters which don't match newly arrived Atala block. 
-
 ## Filters and related types
-In this section we will outline _filter_ types, which a client leverages to specify which operations it's interested in.
+In this section we will outline _filter_ types, 
+which a client leverages to specify which operations it's interested in.
 
 We start with some auxiliary and abstract definitions.
 ```scala
-sealed trait ConfirmedStatus
-case object AppliedConfirmedStatus extends ConfirmedStatus
-case object RejectedConfirmedStatus extends ConfirmedStatus
+sealed trait ConfirmedStatus extends EnumEntry with Snakecase
+object ConfirmedStatus extends Enum[ConfirmedStatus] {
+  val values = findValues
 
-abstract class SubscriptionFilter(val status: Option[ConfirmedStatus]) {
-  // Hashes for Bloom-filter
-  def hashes: List[Long]
+  case object AppliedConfirmedStatus extends ConfirmedStatus
+  case object RejectedConfirmedStatus extends ConfirmedStatus
 }
 
-trait GCS {
+abstract class SubscriptionFilter(val status: Option[ConfirmedStatus]) {
+  // Hash for GCS filter
+  def sipHash: Long
+}
+
+// GCS doesn't support insertion, it can be built only for fixed number of elements
+class GCS(val operations: List[Operation], val p: Int) {
+  val m: Long = 1L<<p
+  // ... here code to build a GCS from the passed list on creation ...
   def exists(g: SubscriptionFilter): Boolean
-  def insert(g: SubscriptionFilter): GCS
 }
 ```
 
@@ -119,23 +118,24 @@ case class DidOperationFilter(operationTag: OperationTag,
                               didSuffix: DIDSuffix, 
                               override val status: Option[ConfirmedStatus]) extends SubscriptionFilter(status) {
 
-  override def hashes: List[Long] = {
-    // Hashes tuple (operationTag, didSuffix), status is not hashed if `None`
+  override def sipHash: Long = {
+    // Hashes tuple (operationTag, didSuffix)
   }
 }
 
 case class RevokeCredentialFilter(credentialHash: SHA256Digest,
                                   override val status: Option[ConfirmedStatus]) extends SubscriptionFilter(status) {
-  override def hashes = {
-    // Hashes a tuple ("RevokeCredentialFilter", credentialHash, status)
+  override def sipHash: Long = {
+    // Hashes a tuple ("RevokeCredentialFilter", credentialHash)
   }
 }
 ```
 These filters correspond to all cases from the first chapter.
 
-The only questionable one is `DidOperationFilter(CreateDidTag, ... )` because it implies that 
-we can freely generate a next expected DID from mnemonic and that all wallets generate DIDs sequentially.
-If the latter can be required by the protocol, the former requires password input from a user.
+The only questionable one is `DidOperationFilter(CreateDidTag, ... )` because it implies that
+wallet (Issuer) derives and publishes its DIDs from sequential indexes, and knowing the last published
+user's DID wallet is able to predict the next one. However, DID derivation requires a user password,
+and I don't know if it's realistically to have access to the password whenever a wallet needs.
 
 ## Implementation details
 In this section we describe how suggest protocol will be integrated in the node codebase,
@@ -145,9 +145,8 @@ The node implementation notes:
 * `node_api.proto` has to be updated with the two new methods:
     * `rpc GetGCSStream(GetGCSStreamRequest) returns (stream GetGCSStreamResponse) {}` where  
        `case class GetGCSStreamRequest(lastKnownAtalaObjectId: Option[AtalaObjectId])`  
-       `case class GetGCSStreamResponse(GCSs: List[AtalaObjectGCS])`  
-       `case class AtalaObjectGCS(objectId: AtalaObjectId, objectGCS: GCS)`  
-       `List` is used in `GetGCSStreamResponse` in order to response with a GCSs batch on a re-subscription to reduce network overhead.
+       `case class GetGCSStreamResponse(GCSs: AtalaObjectGCS)`  
+       `case class AtalaObjectGCS(objectId: AtalaObjectId, objectGCS: GCS)`.
     
     * `rpc GetAtalaObject(GetAtalaObjectRequest) returns (GetAtalaObjectResponse) {}` where  
       `case class GetAtalaObjectRequest(objectId: AtalaObjectId)`  
@@ -166,14 +165,14 @@ def operationsToGCS(operations: List[OperationOutcome]): GCS = {
     case UpdateDIDOperation(did, _, _, _, _) => DidOperationFilter(DidUpdateTag, did, Some(op.status))
     // the similar code here
   }
-  operations.foldLeft(emptyGCS)((gcs, op) => gcs.insert(operationToFilters(op)))
+  new GCS(operationToFilters(op), P) // P here is a parameter of GCS, will be specified during the implementation
 }
 ```
 * If we assume that the most of the operations are Credential issuance, 
   we could introduce a little optimisation: to add in `GetGCSStreamResponse` 
   an extra GCS in order to skip most of the filter tests against GCSs in the list.
 
-Sketch of possible client SDK interface:
+Sketch of a possible low-level client SDK interface:
 ```scala
 abstract class NodeSubscriber(nodeService: NodeService) {
   var filters: Set[SubscriptionFilter]
@@ -189,3 +188,49 @@ abstract class NodeSubscriber(nodeService: NodeService) {
 possibly, the trickiest part is to achieve a decent level of parallelism on a reconnection, 
 at the same time preserving the linear order of operations.  
 The obvious option could be to send `GetAtalaObjectRequest` sequentially, waiting for the corresponding response.
+
+Interface above is a low-level and is unlikely to be used directly by an SDK user 
+because the main use case is to be notified about DID document updates and operations with credential issuance/revocation.  
+The high level interface might look like:
+```scala
+abstract class DidEventsSubscriber(nodeService: NodeService, val didSuffix: String) {
+  var filters: Set[SubscriptionFilter]
+  
+  // All APPROVED operations related to the passed DID
+  def didOperations(): fs2.Stream[Operation]
+  
+  // All APPROVED DID updates (without issuance and revocations)
+  def didDocumentUpdates(): fs2.Stream[Operation]
+}
+```
+
+Implementation of `DidEventsSubscriber` will use an implementation of low level `NodeSubscriber`.
+
+## Advantages, disadvantages and alternatives
+Several advantages of the suggested approach are:
+* No persistent data on a node, no IO overhead
+* As GCSs are sent to clients, clients' DIDs are kept private and can't be exposed easily
+* In-memory data size is `O(N)`, where `N` is number of clients, as only connections with subscribers are held
+* Smaller load on a node, as all CPU consuming tasks are performed by clients
+* Load on a node can be easily reduced by setting up reverse proxies in front of the node  
+Disadvantages:
+* Communication overhead on unrelated to a client GCSs notifications
+* Requires implementation and maintenance of the code on both sides: node and client SDK
+
+Alternative obvious approach could be sending a client's GCS to a node in order to reduce communication overhead.
+In this case, a node would have to merge all received GCSs to some advanced structure
+to be able to look up relevant subscribers quickly for every confirmed Atala block.
+But this approach would require some sophisticated structures to be implemented, 
+what will cause huge amount of data kept in memory and much bigger load on a node due to searches in the structure.  
+Another disadvantage is that such structure can't be easily updated with new filter: it would require `O(K * F)`
+operations on every update on every subscriber,
+where `K` is the number of filters a client is interested in, `F` - time which needed to insert one hash in the structure
+(something logarithmic).
+
+Next idea which might come into mind: not use GCS, explicitly send filters to a node, 
+keep all the information in SQL to reduce size of in-memory stored data and to perform searches 
+of relevant subscribers quicker. But this makes client exposed to the man-in-the middle attack (message encryption needed),
+still might cause hig load on a node, and moreover cause IO load which could be even worse than CPU load.
+
+All in all, after long consideration the suggested approach was deemed as a good trade-off between
+higher performance and implementation complexity.
