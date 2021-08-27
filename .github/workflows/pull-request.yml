@@ -1,27 +1,31 @@
-name: Test Changes
-
-env:
-  GITHUB_TOKEN: ${{ secrets.ATALA_GITHUB_TOKEN }}
-  JAVA_VERSION: openjdk@1.11
-
+name: "Main Workflow"
 on:
   push:
     branches:
       - master
+      - develop*
       - test*
+      - demo*
+      - qa*
+      - sandbox*
       - package*
   pull_request:
     paths:
-      - 'prism-backend/**'
-      - '!prism-backend/docs/**'
+      - prism-backend/**'
+      - "!prism-backend/docs/**"
+
+env:
+  GITHUB_TOKEN: ${{ secrets.ATALA_GITHUB_TOKEN }}
+  JAVA_VERSION: openjdk@1.11
+  SCALA_VERSION: "2.13"
 
 jobs:
-  build-backend:
+  build-prism-backend:
+    name: "Build Prism Backend"
     runs-on: ubuntu-20.04
     defaults:
       run:
         working-directory: prism-backend
-
     services:
       postgres:
         image: postgres:13.3
@@ -39,7 +43,7 @@ jobs:
           - 5432:5432
 
     steps:
-      - name: Checkout the repo
+      - name: Checkout
         uses: actions/checkout@v2
 
       - name: Setup Scala
@@ -53,7 +57,7 @@ jobs:
       - name: Test Scala code is properly formatted
         run: sbt scalafmtCheckAll
 
-      - name: Test Terraform code is properly formatted
+      - name: Test terraform code format
         run: terraform fmt -check -recursive
 
       - name: Configure AWS Credentials
@@ -92,8 +96,8 @@ jobs:
           path: /tmp/backend-remote-cache
 
       - name: Generate code coverage reports
-        run: sbt coverageReport coverageAggregate
         if: always()
+        run: sbt coverageReport coverageAggregate
 
       - name: Aggregate test reports
         if: always()
@@ -105,38 +109,21 @@ jobs:
             cp $reports/* $dest
           done
 
-      - name: Upload the test reports
+      - name: Publish Backend Unit Test Results
         if: always()
-        uses: actions/upload-artifact@v2
+        uses: EnricoMi/publish-unit-test-result-action@v1
         with:
-          name: test-reports
-          path: prism-backend/target/test-reports
+          files: "prism-backend/target/test-reports/**/TEST-*.xml"
+          check_run_annotations_branch: "*"
 
-  publish-test-results:
-     name: "Publish Unit Tests Results"
-     needs: build-backend
-     runs-on: ubuntu-20.04
-     if: success() || failure()
-     steps:
-       - name: Download Artifacts
-         uses: actions/download-artifact@v2
-         with:
-           name: test-reports
-           path: test-reports
-
-       - name: Publish Unit Test Results
-         uses: EnricoMi/publish-unit-test-result-action@v1
-         with:
-           files: "test-reports/**/TEST-*.xml"
-
-  publish:
-    needs: build-backend
+  publish-github-packages:
+    name: Publish Github Packages
+    needs: build-prism-backend
     runs-on: ubuntu-20.04
     if: github.ref == 'refs/heads/master' || startsWith(github.ref, 'refs/heads/package')
     defaults:
       run:
         working-directory: prism-backend
-
     steps:
       - name: Checkout the repo
         uses: actions/checkout@v2
@@ -166,3 +153,243 @@ jobs:
           for module in 'node' 'connector' 'management-console' 'vault' ; do
             GITHUB=1 sbt "$module/dockerBuildAndPush"
           done
+
+  build-prism-management-console-web:
+    name: "Build Prism MC Web"
+    if: |
+      startsWith(github.ref, 'refs/heads/develop') ||
+      startsWith(github.ref, 'refs/heads/test') ||
+      startsWith(github.ref, 'refs/heads/geud-test') ||
+      startsWith(github.ref, 'refs/heads/demo') ||
+      startsWith(github.ref, 'refs/heads/qa') ||
+      startsWith(github.ref, 'refs/heads/sandbox')
+    runs-on: ubuntu-20.04
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+
+      - name: Install protoc
+        run: |
+          archive=protoc-"3.11.4"-linux-x86_64
+          curl -O -L https://github.com/protocolbuffers/protobuf/releases/download/v"3.11.4"/$archive.zip
+          sudo unzip -d '/usr/local' $archive.zip 'bin/*' 'include/*'
+          rm -rf ${archive}.zip
+
+      - name: Install protoc-gen-grpc-web
+        run: |
+          archive=protoc-gen-grpc-web-1.0.7-linux-x86_64
+          curl -O -L https://github.com/grpc/grpc-web/releases/download/1.0.7/$archive
+          chmod +x $archive
+          sudo mv $archive /usr/local/bin/protoc-gen-grpc-web
+
+      - name: Move to target folder then run tests
+        run: cd prism-management-console-web && ./web-testing-script.sh
+
+      - name: Move to target folder then run linting validation script
+        run: cd prism-management-console-web && ./web-linting-validation-script.sh
+
+  deploy-ecr-images:
+    name: Deploy ECR Images
+    runs-on: ubuntu-20.04
+    needs: [build-prism-management-console-web, build-prism-backend]
+    if: |
+      startsWith(github.ref, 'refs/heads/develop') ||
+      startsWith(github.ref, 'refs/heads/test') ||
+      startsWith(github.ref, 'refs/heads/geud-test') ||
+      startsWith(github.ref, 'refs/heads/demo') ||
+      startsWith(github.ref, 'refs/heads/qa') ||
+      startsWith(github.ref, 'refs/heads/sandbox')
+    permissions:
+      packages: write
+      contents: read
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+
+      - name: Install protoc
+        run: |
+          archive=protoc-"3.11.4"-linux-x86_64
+          curl -O -L https://github.com/protocolbuffers/protobuf/releases/download/v"3.11.4"/$archive.zip
+          sudo unzip -d '/usr/local' $archive.zip 'bin/*' 'include/*'
+          rm -rf ${archive}.zip
+
+      - name: Install protoc-gen-grpc-web
+        run: |
+          archive=protoc-gen-grpc-web-1.0.7-linux-x86_64
+          curl -O -L https://github.com/grpc/grpc-web/releases/download/1.0.7/$archive
+          chmod +x $archive
+          sudo mv $archive /usr/local/bin/protoc-gen-grpc-web
+
+      - name: Restore Cache
+        uses: actions/cache@v2
+        with:
+          key: cv-cache-v5-${{ hashFiles('prism-backend/build.sbt') }}-${{ hashFiles('prism-backend/project/PrismBuild.scala') }}-${{ hashFiles('prism-backend/project/Dependencies.scala') }}-${{ hashFiles('prism-backend/project/plugins.sbt') }}
+          path: |
+            ~/.cache/coursier
+            ~/.ivy2
+            ~/.m2
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@13d241b293754004c80624b5567555c4a39ffbe3
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ secrets.AWS_DEFAULT_REGION }}
+
+      - name: Login to Amazon ECR
+        id: login-ecr
+        uses: aws-actions/amazon-ecr-login@aaf69d68aa3fb14c1d5a6be9ac61fe15b48453a2
+
+      - name: Set tag convention
+        run: |
+          branchPrefix=$(git rev-parse --abbrev-ref HEAD | sed -E 's/(^ATA\-[0-9]+).*/\1/' | tr '[:upper:]' '[:lower:]')
+          revCount=$(git rev-list HEAD --count)
+          shaShort=$(git rev-parse --short HEAD)
+          tag="${branchPrefix}-${revCount}-${shaShort}"
+          echo "TAG=$tag" >> $GITHUB_ENV;
+          echo "ENV=$branchPrefix" >> $GITHUB_ENV;
+          . $GITHUB_ENV && echo "Env short name set to $ENV. Image tag set to $TAG"
+
+      - name: Download wallet build
+        uses: dawidd6/action-download-artifact@v2
+        with:
+          github_token: ${{secrets.ATALA_GITHUB_TOKEN}}
+          workflow: main.yml
+          workflow_conclusion: success
+          branch: master
+          name: prism-web-wallet-zip
+          path: prism-management-console-web/public/
+          repo: input-output-hk/atala-prism-browser-extension-wallet
+
+      - name: Create management console web assembly
+        run: |
+          cd prism-management-console-web
+          npm ci --production
+          CI=false GENERATE_SOURCEMAP=false npm run build
+
+      - name: Create prism-interactive-demo-web assembly
+        run: |
+          cd prism-interactive-demo-web
+          npm ci --production
+          CI=false GENERATE_SOURCEMAP=false npm run build
+
+      - name: Build and push prism-interactive-demo-web
+        run: |
+          docker build -f prism-interactive-demo-web/Dockerfile -t 895947072537.dkr.ecr.us-east-2.amazonaws.com/landing:${TAG} prism-interactive-demo-web
+          docker push 895947072537.dkr.ecr.us-east-2.amazonaws.com/landing:${TAG}
+
+      - name: Build and push prism-management-console-web
+        run: |
+          docker build -f prism-management-console-web/Dockerfile -t 895947072537.dkr.ecr.us-east-2.amazonaws.com/web:${TAG} prism-management-console-web
+          docker push 895947072537.dkr.ecr.us-east-2.amazonaws.com/web:${TAG}
+
+      - name: Build and publish Docker images
+        run: |
+          cd prism-backend
+          for module in 'node' 'connector' 'management-console' 'vault' ; do
+            sbt "$module/dockerBuildAndPush"
+          done
+
+      - name: Build and push prism-lb-envoy
+        run: |
+          cd prism-backend/infra/docker/prism-lb-envoy
+          ./build.sh -b
+          ./build.sh -p
+
+  rebuild-prism-env:
+    runs-on: ubuntu-20.04
+    needs: [deploy-ecr-images]
+    if: |
+      startsWith(github.ref, 'refs/heads/develop') ||
+      startsWith(github.ref, 'refs/heads/test') ||
+      startsWith(github.ref, 'refs/heads/qa') ||
+      startsWith(github.ref, 'refs/heads/sandbox') ||
+      github.ref == 'refs/heads/demo'
+    env:
+      ATALA_MIRROR_CONNECTOR_DID_PRIVATE_KEY: ${{ secrets.ATALA_MIRROR_CONNECTOR_DID_PRIVATE_KEY }}
+      ATALA_MIRROR_CONNECTOR_DID: ${{ secrets.ATALA_MIRROR_CONNECTOR_DID}}
+      KYC_BRIDGE_IDENTITYMIND_PASSWORD: ${{ secrets.KYC_BRIDGE_IDENTITYMIND_PASSWORD }}
+      KYC_BRIDGE_ACUANT_PASSWORD: ${{ secrets.KYC_BRIDGE_ACUANT_PASSWORD }}
+      KYC_BRIDGE_ACUANT_SUBSCRIPTION_ID: ${{ secrets.KYC_BRIDGE_ACUANT_SUBSCRIPTION_ID }}
+      KYC_BRIDGE_ACUANT_USERNAME: ${{ secrets.KYC_BRIDGE_ACUANT_USERNAME }}
+      KYC_BRIDGE_CONNECTOR_DID: ${{ secrets.KYC_BRIDGE_CONNECTOR_DID }}
+      KYC_BRIDGE_CONNECTOR_DID_PRIVATE_KEY: ${{ secrets.KYC_BRIDGE_CONNECTOR_DID_PRIVATE_KEY }}
+      KYC_BRIDGE_IDENTITYMIND_USERNAME: ${{ secrets.KYC_BRIDGE_IDENTITYMIND_USERNAME }}
+      TF_VAR_postgres_password: ${{ secrets.TF_VAR_POSTGRES_PASSWORD }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+
+      - name: Set Dev Environment
+        if: startsWith(github.ref, 'refs/heads/develop')
+        run: echo "ENABLED_COMPONENTS=\"all\"" >> $GITHUB_ENV;
+
+      - name: Set Test Environment
+        if: startsWith(github.ref, 'refs/heads/test')
+        run: echo "ENABLED_COMPONENTS=\"\"" >> $GITHUB_ENV;
+
+      - name: Set QA Environment
+        if: |
+          startsWith(github.ref, 'refs/heads/qa') ||
+          startsWith(github.ref, 'refs/heads/sandbox')
+        run: echo "ENABLED_COMPONENTS=\"geud,intdemo\"" >> $GITHUB_ENV;
+
+      - name: Set Demo Environment
+        if: github.ref == 'refs/heads/demo'
+        run: echo "ENABLED_COMPONENTS=\"geud\"" >> $GITHUB_ENV;
+
+      - name: Set tag convention
+        run: |
+          branchPrefix=$(git rev-parse --abbrev-ref HEAD | sed -E 's/(^ATA\-[0-9]+).*/\1/' | tr '[:upper:]' '[:lower:]')
+          revCount=$(git rev-list HEAD --count)
+          shaShort=$(git rev-parse --short HEAD)
+          tag="${branchPrefix}-${revCount}-${shaShort}"
+          echo "TAG=$tag" >> $GITHUB_ENV;
+          echo "ENV=$branchPrefix" >> $GITHUB_ENV;
+          echo 'is_enabled() { if [[ ${ENABLED_COMPONENTS:-$ENV} == *"$1"* || $ENABLED_COMPONENTS == "all" ]]; then echo "true"; else echo "false"; fi }' >> $GITHUB_ENV;
+          . $GITHUB_ENV
+          echo "INTDEMO_ENABLED=$(is_enabled "intdemo")" >> $GITHUB_ENV;
+          echo "GEUD_ENABLED=$(is_enabled "geud")" >> $GITHUB_ENV;
+          echo "MIRROR_ENABLED=$(is_enabled "mirror")" >> $GITHUB_ENV;
+          echo "KYC_BRIDGE_ENABLED=$(is_enabled "kycbridge")" >> $GITHUB_ENV;
+          . $GITHUB_ENV && echo "Env short name set to $ENV. Image tag set to $TAG. Intdemo enabled: $INTDEMO_ENABLED. GEUD enabled: $GEUD_ENABLED. Mirror enabled: $MIRROR_ENABLED. KYC bridge enabled: $KYC_BRIDGE_ENABLED."
+
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ secrets.AWS_DEFAULT_REGION }}
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v1
+        with:
+          terraform_version: 0.14.5
+
+      - name: Rebuild prism environment
+        run: |
+          cd prism-backend/infra/stage/services/prism/
+          ./prism.sh -t $ENV
+          ./prism.sh -p $ENV
+
+  trigger-integration-tests:
+    runs-on: ubuntu-20.04
+    needs: [rebuild-prism-env]
+    if: github.head_ref == 'qa'
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+
+      # TODO: remove this part when https://jira.iohk.io/browse/ATA-3535 is implemented, maybe not needed in GHA?
+      - name: wait till environment is fully operable
+        run: sleep 9m
+
+      - name: Trigger a job in atala-qa-automation project
+        run: python trigger_tests.py
+
+      - name: Slack notification
+        uses: bryannice/gitactions-slack-notification@2.0.0
+        env:
+          SLACK_INCOMING_WEBHOOK: ${{ secrets.SLACK_INCOMING_WEBHOOK }}
+          SLACK_MESSAGE: "UFHNXC9RC,UGFJQ5ZBN"
+          SLACK_TITLE: "Slack Notification Demo"

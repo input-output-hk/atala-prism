@@ -31,7 +31,7 @@ get_branch_prefix() {
 get_tag() {
   component=$1
   tag=$2
-  tag=$(aws --output json ecr describe-images --filter tagStatus=TAGGED --repository-name "$component" | jq "[[.imageDetails[]] | sort_by(-.imagePushedAt)[] | .imageTags[]] | map(select(test(\"$tag\")))[]" | head -1)
+  tag=$(aws --output json ecr describe-images --filter tagStatus=TAGGED --repository-name "$component" | jq "[[.imageDetails[]] | sort_by(.imagePushedAt)[] | .imageTags[]] | map(select(test(\"$tag\")))[]" | tail -1)
   tag=$(sed -e 's/^"//' -e 's/"$//' <<< "$tag")
   echo -n "$tag"
 }
