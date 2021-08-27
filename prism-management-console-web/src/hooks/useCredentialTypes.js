@@ -92,9 +92,9 @@ export const useCredentialTypes = credentialTypesManager => {
 
   const getCredentialTypeDetails = id => credentialTypesManager.getCredentialTypeDetails(id);
 
-  useEffect(() => {
-    getCredentialTypes();
-  }, [getCredentialTypes]);
+  // useEffect(() => {
+  //   getCredentialTypes();
+  // }, [getCredentialTypes]);
 
   useEffect(() => {
     const sortedCredentials = applyFrontendSorting(credentialTypes);
