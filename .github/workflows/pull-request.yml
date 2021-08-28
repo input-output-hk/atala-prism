@@ -157,6 +157,7 @@ jobs:
   build-prism-management-console-web:
     name: "Build Prism MC Web"
     if: |
+      github.ref == 'refs/heads/master' ||
       startsWith(github.ref, 'refs/heads/develop') ||
       startsWith(github.ref, 'refs/heads/test') ||
       startsWith(github.ref, 'refs/heads/geud-test') ||
@@ -193,6 +194,7 @@ jobs:
     runs-on: ubuntu-20.04
     needs: [build-prism-management-console-web, build-prism-backend]
     if: |
+      github.ref == 'refs/heads/master' ||
       startsWith(github.ref, 'refs/heads/develop') ||
       startsWith(github.ref, 'refs/heads/test') ||
       startsWith(github.ref, 'refs/heads/geud-test') ||
@@ -300,6 +302,7 @@ jobs:
     runs-on: ubuntu-20.04
     needs: [deploy-ecr-images]
     if: |
+      github.ref == 'refs/heads/master' ||
       startsWith(github.ref, 'refs/heads/develop') ||
       startsWith(github.ref, 'refs/heads/test') ||
       startsWith(github.ref, 'refs/heads/qa') ||
@@ -319,6 +322,10 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v2
+
+      - name: Set Master Environment
+        if: github.ref == 'refs/heads/master')
+        run: echo "ENABLED_COMPONENTS=\"all\"" >> $GITHUB_ENV;
 
       - name: Set Dev Environment
         if: startsWith(github.ref, 'refs/heads/develop')
@@ -370,7 +377,7 @@ jobs:
         run: |
           cd prism-backend/infra/stage/services/prism/
           ./prism.sh -t $ENV
-          ./prism.sh -p $ENV
+          ./prism.sh -A $ENV
 
   trigger-integration-tests:
     runs-on: ubuntu-20.04
