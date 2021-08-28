@@ -117,6 +117,9 @@ jobs:
           check_run_annotations_branch: "*"
 
   publish-github-packages:
+    strategy:
+      matrix:
+        image: ["node", "connector", "management-console", "vault"]
     name: Publish Github Packages
     needs: build-prism-backend
     runs-on: ubuntu-20.04
@@ -150,9 +153,7 @@ jobs:
 
       - name: Build and publish Docker images
         run: |
-          for module in 'node' 'connector' 'management-console' 'vault' ; do
-            GITHUB=1 sbt "$module/dockerBuildAndPush"
-          done
+          GITHUB=1 sbt "${{ matrix.image }}/dockerBuildAndPush"
 
   build-prism-management-console-web:
     name: "Build Prism MC Web"
@@ -190,6 +191,9 @@ jobs:
         run: cd prism-management-console-web && ./web-linting-validation-script.sh
 
   deploy-ecr-images:
+    strategy:
+      matrix:
+        image: ["web", "landing", "node", "connector", "management-console", "vault", "prism-lb-envoy"]
     name: Deploy ECR Images
     runs-on: ubuntu-20.04
     needs: [build-prism-management-console-web, build-prism-backend]
@@ -253,6 +257,7 @@ jobs:
           . $GITHUB_ENV && echo "Env short name set to $ENV. Image tag set to $TAG"
 
       - name: Download wallet build
+        if: matrix.image == 'web'
         uses: dawidd6/action-download-artifact@v2
         with:
           github_token: ${{secrets.ATALA_GITHUB_TOKEN}}
@@ -264,35 +269,43 @@ jobs:
           repo: input-output-hk/atala-prism-browser-extension-wallet
 
       - name: Create management console web assembly
+        if: matrix.image == 'web'
         run: |
           cd prism-management-console-web
           npm ci --production
           CI=false GENERATE_SOURCEMAP=false npm run build
 
+      - name: Build and push prism-management-console-web
+        if: matrix.image == 'web'
+        run: |
+          docker build -f prism-management-console-web/Dockerfile -t 895947072537.dkr.ecr.us-east-2.amazonaws.com/web:${TAG} prism-management-console-web
+          docker push 895947072537.dkr.ecr.us-east-2.amazonaws.com/web:${TAG}
+
       - name: Create prism-interactive-demo-web assembly
+        if: matrix.image == 'landing'
         run: |
           cd prism-interactive-demo-web
           npm ci --production
           CI=false GENERATE_SOURCEMAP=false npm run build
 
       - name: Build and push prism-interactive-demo-web
+        if: matrix.image == 'landing'
         run: |
           docker build -f prism-interactive-demo-web/Dockerfile -t 895947072537.dkr.ecr.us-east-2.amazonaws.com/landing:${TAG} prism-interactive-demo-web
           docker push 895947072537.dkr.ecr.us-east-2.amazonaws.com/landing:${TAG}
 
-      - name: Build and push prism-management-console-web
-        run: |
-          docker build -f prism-management-console-web/Dockerfile -t 895947072537.dkr.ecr.us-east-2.amazonaws.com/web:${TAG} prism-management-console-web
-          docker push 895947072537.dkr.ecr.us-east-2.amazonaws.com/web:${TAG}
-
-      - name: Build and publish Docker images
+      - name: Build and publish Docker image
+        if: |
+          matrix.image == 'node' ||
+          matrix.image == 'connector' ||
+          matrix.image == 'management-console' ||
+          matrix.image == 'vault'
         run: |
           cd prism-backend
-          for module in 'node' 'connector' 'management-console' 'vault' ; do
-            sbt "$module/dockerBuildAndPush"
-          done
+          sbt "${{ matrix.image }}/dockerBuildAndPush"
 
       - name: Build and push prism-lb-envoy
+        if: matrix.image == 'prism-lb-envoy'
         run: |
           cd prism-backend/infra/docker/prism-lb-envoy
           ./build.sh -b
