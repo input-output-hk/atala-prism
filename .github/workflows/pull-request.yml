@@ -324,7 +324,7 @@ jobs:
         uses: actions/checkout@v2
 
       - name: Set Master Environment
-        if: github.ref == 'refs/heads/master')
+        if: github.ref == 'refs/heads/master'
         run: echo "ENABLED_COMPONENTS=\"all\"" >> $GITHUB_ENV;
 
       - name: Set Dev Environment
