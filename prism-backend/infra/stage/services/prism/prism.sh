@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-set -euxvo pipefail
+set -euo pipefail
 
 usage () {
   echo "Usage: prism.sh [[-a] [-A] [-d] [-D] [-p] [-s] [-w] [-g] [-c] [-m]] <env name>
