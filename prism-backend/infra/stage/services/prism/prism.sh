@@ -75,7 +75,7 @@ taint_env () {
 
     # read lines with active modules in state into a bash array
     # https://stackoverflow.com/questions/11426529/reading-output-of-a-command-into-an-array-in-bash
-    mapfile -t aws_services_paths < <(terraform show -no-color| grep -Po '(?<=# )(.*aws_ecs_service.[^.:]+)')
+    mapfile -t aws_services_paths < <(terraform state list | grep "aws_ecs_service")
     echo ${aws_services_paths[*]}
 
     if [ ${#aws_services_paths[@]} -eq 0 ]; then
