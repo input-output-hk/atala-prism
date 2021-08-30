@@ -168,7 +168,7 @@ const NewCredentialContainer = ({ api, redirector: { redirectToCredentials } }) 
           const { contactId } = allContacts.find(
             ({ externalId }) => externalId === data.externalId
           );
-          const html = _.escape(credentialViews[index]);
+          const html = credentialViews[index];
           return Object.assign(_.omit(data, 'originalArray'), {
             credentialTypeDetails,
             contactId,
