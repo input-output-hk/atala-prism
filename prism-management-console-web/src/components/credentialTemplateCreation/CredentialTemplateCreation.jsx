@@ -12,7 +12,7 @@ import {
 } from '../../helpers/constants';
 import { withRedirector } from '../providers/withRedirector';
 import { useTemplateContext } from '../providers/TemplateContext';
-import { PrismStoreContext } from '../../stores/PrismStore';
+import { PrismStoreContext } from '../../stores/domain/PrismStore';
 import './_style.scss';
 
 const fieldsByStep = {
@@ -34,7 +34,7 @@ const CredentialTemplateCreation = ({
 }) => {
   const { t } = useTranslation();
   const { form, templateSettings, templatePreview } = useTemplateContext();
-  const { addCredentialTemplate } = useContext(PrismStoreContext).tempalteStore;
+  const { addCredentialTemplate } = useContext(PrismStoreContext).templateStore;
 
   const validateByStep = () =>
     form.validateFields().catch(({ errorFields }) => {
