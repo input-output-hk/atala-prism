@@ -25,7 +25,7 @@ const TemplateProvider = props => {
   return (
     <Form
       form={form}
-      name="control-hooks"
+      name="template-form"
       requiredMark={false}
       layout="vertical"
       validateMessages={validateMessages}

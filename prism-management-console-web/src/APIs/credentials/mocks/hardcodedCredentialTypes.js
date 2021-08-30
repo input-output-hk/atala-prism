@@ -18,7 +18,7 @@ const governmentId = {
   id: 1,
   enabled: false,
   isMultiRow: false,
-  name: 'credentials.type.governmentId',
+  name: 'Government Id',
   logo: governmentIdLogo,
   sampleImage: governmentIdSample,
   fields: [
@@ -60,7 +60,7 @@ const educational = {
   id: 2,
   enabled: false,
   isMultiRow: false,
-  name: 'credentials.type.educational',
+  name: 'Educational',
   logo: educationalLogo,
   sampleImage: educationalSample,
   fields: [
@@ -103,7 +103,7 @@ const proofOfEmployment = {
   id: 3,
   enabled: false,
   isMultiRow: false,
-  name: 'credentials.type.proofOfEmployment',
+  name: 'Proof Of Employment',
   logo: proofOfEmploymentLogo,
   sampleImage: proofOfEmploymentSample,
   fields: [
@@ -135,7 +135,7 @@ const healthIsurance = {
   id: 4,
   enabled: false,
   isMultiRow: false,
-  name: 'credentials.type.healthInsurance',
+  name: 'Health Insurance',
   logo: healthInsuranceLogo,
   sampleImage: healthInsuranceSample,
   fields: [

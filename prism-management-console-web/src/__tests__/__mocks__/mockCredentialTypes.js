@@ -1,5 +1,5 @@
 export const mockGovernmentId = {
-  name: 'credentials.type.governmentId',
+  name: 'Government Id',
   fields: [
     {
       key: 'idNumber',
@@ -30,7 +30,7 @@ export const mockGovernmentId = {
 };
 
 export const mockEducational = {
-  name: 'credentials.type.educational',
+  name: 'Educational',
   fields: [
     {
       key: 'degree',
@@ -61,7 +61,7 @@ export const mockEducational = {
 };
 
 export const mockProofOfEmployment = {
-  name: 'credentials.type.proofOfEmployment',
+  name: 'Proof Of Employment',
   fields: [
     {
       key: 'adress',
@@ -82,7 +82,7 @@ export const mockProofOfEmployment = {
 };
 
 export const mockHealthIsurance = {
-  name: 'credentials.type.healthInsurance',
+  name: 'Health Insurance',
   fields: [
     {
       key: 'class',
