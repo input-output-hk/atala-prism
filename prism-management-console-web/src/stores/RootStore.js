@@ -1,6 +1,5 @@
-import { makeAutoObservable } from 'mobx';
-import { PrismStore } from './PrismStore';
-import { UiState } from './UiState';
+import { PrismStore } from './domain/PrismStore';
+import { UiState } from './ui/UiState';
 
 export class RootStore {
   constructor(api) {

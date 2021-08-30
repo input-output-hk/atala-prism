@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useContext } from 'react';
 import PropTypes from 'prop-types';
 import { useTranslation } from 'react-i18next';
 import { useSession } from '../../../providers/SessionContext';
@@ -15,18 +15,20 @@ import {
   templateFiltersShape,
   templateSortingShape
 } from '../../../../helpers/propShapes';
+import { UiStateContext } from '../../../../stores/ui/UiState';
 
 const TemplatesTableContainer = ({ tableProps, showTemplatePreview }) => {
   const { t } = useTranslation();
   const { accountStatus } = useSession();
-  const { credentialTypes, templateCategories, isLoading, filterProps, sortingProps } = tableProps;
+  const { credentialTemplates, templateCategories, isLoading } = tableProps;
+  const { hasFiltersApplied, filteredTemplates } = useContext(UiStateContext).templateUiState;
 
-  const noTemplates = !credentialTypes?.length;
+  const noTemplates = !credentialTemplates?.length;
 
   const emptyProps = {
     photoSrc: noTemplatesPicture,
     model: t('templates.title'),
-    isFilter: filterProps.name || filterProps.category || filterProps.lastEdited,
+    isFilter: hasFiltersApplied,
     button: noTemplates && accountStatus === CONFIRMED && <CreateTemplateButton />
   };
 
@@ -35,9 +37,9 @@ const TemplatesTableContainer = ({ tableProps, showTemplatePreview }) => {
     if (noTemplates) return <EmptyComponent {...emptyProps} />;
     return (
       <>
-        <SortControls {...sortingProps} />
+        {/* <SortControls {...sortingProps} /> */}
         <TemplatesTable
-          credentialTypes={credentialTypes}
+          credentialTemplates={filteredTemplates}
           templateCategories={templateCategories}
           showTemplatePreview={showTemplatePreview}
         />
@@ -50,7 +52,7 @@ const TemplatesTableContainer = ({ tableProps, showTemplatePreview }) => {
 
 TemplatesTableContainer.propTypes = {
   tableProps: PropTypes.shape({
-    credentialTypes: PropTypes.arrayOf(credentialTypeShape),
+    credentialTemplates: PropTypes.arrayOf(credentialTypeShape),
     templateCategories: PropTypes.arrayOf(templateCategoryShape).isRequired,
     isLoading: PropTypes.bool,
     filterProps: PropTypes.shape(templateFiltersShape),

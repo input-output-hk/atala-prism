@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useContext } from 'react';
 import PropTypes from 'prop-types';
 import { Badge, Dropdown, Menu } from 'antd';
 import { FilterOutlined } from '@ant-design/icons';
@@ -6,24 +6,24 @@ import { useTranslation } from 'react-i18next';
 import TemplateFilters from '../Filters/TemplateFilters';
 import SearchBar from '../../../common/Atoms/SearchBar/SearchBar';
 import CreateTemplateButton from '../../Atoms/Buttons/CreateTemplateButton';
-import { templateCategoryShape, templateFiltersShape } from '../../../../helpers/propShapes';
+import { templateCategoryShape } from '../../../../helpers/propShapes';
+import { UiStateContext } from '../../../../stores/ui/UiState';
 import './_style.scss';
 
-const ActionsHeader = ({ filterProps, templateCategories }) => {
+const ActionsHeader = ({ templateCategories }) => {
   const { t } = useTranslation();
-  const hasFiltersApplied = filterProps.category || filterProps.lastEdited;
+  const { nameFilter, setNameFilter, hasFiltersApplied } = useContext(UiStateContext).templateUiState;
 
   const filtersMenu = (
     <Menu className="FiltersMenuContainer">
-      <TemplateFilters filterProps={filterProps} templateCategories={templateCategories} />
+      <TemplateFilters templateCategories={templateCategories} />
     </Menu>
   );
-
   return (
     <div className="ActionsHeader flex">
       <SearchBar
-        searchText={filterProps.name}
-        setSearchText={filterProps.setName}
+        searchText={nameFilter}
+        setSearchText={setNameFilter}
         placeholder={t('templates.actions.searchPlaceholder')}
       />
       <CreateTemplateButton />
@@ -40,8 +40,7 @@ const ActionsHeader = ({ filterProps, templateCategories }) => {
 };
 
 ActionsHeader.propTypes = {
-  templateCategories: PropTypes.arrayOf(templateCategoryShape).isRequired,
-  filterProps: PropTypes.shape(templateFiltersShape).isRequired
+  templateCategories: PropTypes.arrayOf(templateCategoryShape).isRequired
 };
 
 export default ActionsHeader;

@@ -4,11 +4,11 @@ import { observer } from 'mobx-react-lite';
 import { withApi } from '../providers/withApi';
 import CredentialTemplates from './CredentialTemplates';
 import { useTemplateCategories } from '../../hooks/useCredentialTypes';
-import { PrismStoreContext } from '../../stores/PrismStore';
+import { PrismStoreContext } from '../../stores/domain/PrismStore';
 
 const CredentialTemplatesContainer = observer(({ api: { credentialTypesManager } }) => {
-  const { tempalteStore } = useContext(PrismStoreContext);
-  const { filteredCredentialTypes, fetchTemplates, isLoading } = tempalteStore;
+  const { templateStore } = useContext(PrismStoreContext);
+  const { credentialTemplates, fetchTemplates, isLoading } = templateStore;
 
   useEffect(() => {
     fetchTemplates();
@@ -17,7 +17,7 @@ const CredentialTemplatesContainer = observer(({ api: { credentialTypesManager }
   const { templateCategories } = useTemplateCategories(credentialTypesManager);
 
   const tableProps = {
-    credentialTypes: filteredCredentialTypes,
+    credentialTemplates,
     templateCategories,
     isLoading
   };

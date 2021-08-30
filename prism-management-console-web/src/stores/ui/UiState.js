@@ -1,14 +1,9 @@
 import { createContext } from 'react';
+import { TemplateUiState } from './TemplateUiState';
 
 export class UiState {
-  credentialTemplate = {
-    filters: {
-      name: 'go'
-    }
-  };
-
   constructor(rootStore) {
-    this.rootStore = rootStore;
+    this.templateUiState = new TemplateUiState(rootStore);
   }
 }
 
