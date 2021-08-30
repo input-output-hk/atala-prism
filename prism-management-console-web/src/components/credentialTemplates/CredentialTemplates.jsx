@@ -8,7 +8,7 @@ import {
   templateFiltersShape,
   templateSortingShape
 } from '../../helpers/propShapes';
-import { CONFIRMED, UNCONFIRMED } from '../../helpers/constants';
+import { UNCONFIRMED } from '../../helpers/constants';
 import WaitBanner from '../dashboard/Atoms/WaitBanner/WaitBanner';
 import TemplateDetail from './Organisms/Drawers/TemplateDetail';
 import ActionsHeader from './Molecules/Headers/ActionsHeader';
