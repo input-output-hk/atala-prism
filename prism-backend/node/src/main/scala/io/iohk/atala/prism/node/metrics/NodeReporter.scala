@@ -2,6 +2,7 @@ package io.iohk.atala.prism.node.metrics
 
 import com.typesafe.config.Config
 import io.iohk.atala.prism.node.cardano.{CardanoClient, LAST_SYNCED_BLOCK_NO}
+import io.iohk.atala.prism.node.cardano.models.WalletId
 import io.iohk.atala.prism.node.services.{CardanoLedgerService, KeyValueService}
 import kamon.Kamon
 import kamon.metric.{Gauge, PeriodSnapshot}
@@ -11,7 +12,8 @@ import org.slf4j.LoggerFactory
 import scala.concurrent.ExecutionContext
 import scala.util.Try
 
-class LastSyncedBlockNumberReporter(
+class NodeReporter(
+    walletId: WalletId,
     cardanoClient: CardanoClient,
     keyValueService: KeyValueService,
     blockNumberSyncStart: Int
@@ -23,15 +25,23 @@ class LastSyncedBlockNumberReporter(
 
   private val nextBlockToSyncGauge: Gauge = Kamon.gauge("node.next.block.to.sync.by.prism").withoutTags()
   private val lastSyncedBlockByWallet: Gauge = Kamon.gauge("node.last.synced.block.by.wallet").withoutTags()
+  private val walletFunds: Gauge = Kamon.gauge("node.wallet.available.funds").withoutTags()
 
   override def reportPeriodSnapshot(snapshot: PeriodSnapshot): Unit = {
     postNextBlockToSync()
     postWalletLastBlock()
+    reportWalletFunds()
   }
 
   override def stop(): Unit = ()
 
   override def reconfigure(newConfig: Config): Unit = ()
+
+  private def reportWalletFunds(): Unit =
+    cardanoClient
+      .getWalletDetails(walletId)
+      .value
+      .foreach(_.foreach(details => walletFunds.update(details.balance.available.doubleValue)))
 
   private def postNextBlockToSync(): Unit =
     keyValueService
@@ -54,9 +64,14 @@ class LastSyncedBlockNumberReporter(
     )
 }
 
-object LastSyncedBlockNumberReporter {
-  def apply(cardanoClient: CardanoClient, keyValueService: KeyValueService, config: CardanoLedgerService.Config)(
+object NodeReporter {
+  def apply(config: CardanoLedgerService.Config, cardanoClient: CardanoClient, keyValueService: KeyValueService)(
       implicit ec: ExecutionContext
-  ): LastSyncedBlockNumberReporter =
-    new LastSyncedBlockNumberReporter(cardanoClient, keyValueService, config.blockNumberSyncStart)
+  ): NodeReporter = {
+    val walletId = WalletId
+      .from(config.walletId)
+      .getOrElse(throw new IllegalArgumentException(s"Wallet ID ${config.walletId} is invalid"))
+
+    new NodeReporter(walletId, cardanoClient, keyValueService, config.blockNumberSyncStart)
+  }
 }
