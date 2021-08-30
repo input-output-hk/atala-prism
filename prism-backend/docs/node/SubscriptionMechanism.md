@@ -31,9 +31,10 @@ Suggested protocol is inspired by [BIP-157](https://en.bitcoin.it/wiki/BIP_0157)
 
 The core structure of this approach is Golomb Coded Set filter (GCS), which is akin a Bloom filter
 with smaller serialisation size but slower query time.  
-This structure is basically a compressed set (built from a list) that supports element insertion and element existence test.
-Existence test is probabilistic and despite the probability is close to 1,
-a test still can give a false positive result. 
+This structure is basically a compressed sorted list of hashes computed for original entries.  
+In such list we can check if an entry hash exists, however as we rely on hashes but not on the original entries,
+such existence test is probabilistic (despite the probability is close to 1),
+consequently, a test can give a false positive result.
 Hence, every positive check has to be double-checked on the original list.
 
 The protocol in nutshell: when a node receives an Atala block,
@@ -49,10 +50,10 @@ Then that will happen on new event:
    sends the GCS to all subscribers' streams
 2. when a client receives a GCS, it checks if there are entries in the GCS which a client is interested in.  
    If there are any, in a separate connection a client requests an original block which the GCS was derived from, 
-   otherwise it saves a corresponding Atala block id as the last known to a local persistent storage.
+   otherwise it saves a corresponding Atala object id as the last known to a local persistent storage.
 3. in case, if a client requests a block for GCS, a node responds to the client with it.
    This message is sent to the separate connection, not to the associated stream.
-4. upon receiving a block, a client handles it and saves a corresponding Atala block id as the last known.
+4. upon receiving a block, a client handles it and saves a corresponding Atala object id as the last known.
 
 Pay attention, that instead of building GCS for an Atala block, node could build it for 
 any kind of thing, for example, for sequence of block, for an Atala operation, or even
@@ -69,11 +70,11 @@ in order to reduce load on a node, a reverse proxy or some kind of cache might b
 
 Let's get back to our assumption about the subscribers list on the node, 
 and describe how a client will actually connect to a node:
-1. a client initiates a stream connection to a node sending a last known GCS if any
+1. a client initiates a stream connection to a node sending a last known Atala object id if any
 2. a node responds with GCSs from its persistent storage to the stream
 3. a client filters out received GCSs, and requests corresponding events from the node in a separate connection(s)
 4. a node responds with requested events
-5. a client receives them, update its last known GCS, then check that they actually match its filters, and handle matched ones
+5. a client receives them, update its last known Atala object id, then check that they actually match its filters, and handle matched ones
 6. after that, a client moves to the previously described flow
 
 ## Filters and related types
@@ -86,8 +87,8 @@ sealed trait ConfirmedStatus extends EnumEntry with Snakecase
 object ConfirmedStatus extends Enum[ConfirmedStatus] {
   val values = findValues
 
-  case object AppliedConfirmedStatus extends ConfirmedStatus
-  case object RejectedConfirmedStatus extends ConfirmedStatus
+  final case object AppliedConfirmedStatus extends ConfirmedStatus
+  final case object RejectedConfirmedStatus extends ConfirmedStatus
 }
 
 abstract class SubscriptionFilter(val status: Option[ConfirmedStatus]) {
@@ -99,7 +100,9 @@ abstract class SubscriptionFilter(val status: Option[ConfirmedStatus]) {
 class GCS(val operations: List[Operation], val p: Int) {
   val m: Long = 1L<<p
   // ... here code to build a GCS from the passed list on creation ...
-  def exists(g: SubscriptionFilter): Boolean
+  def exists(g: SubscriptionFilter): Boolean = {
+    // ... here code to check GCS existence ...
+  }
 }
 ```
 
@@ -145,7 +148,7 @@ The node implementation notes:
 * `node_api.proto` has to be updated with the two new methods:
     * `rpc GetGCSStream(GetGCSStreamRequest) returns (stream GetGCSStreamResponse) {}` where  
        `case class GetGCSStreamRequest(lastKnownAtalaObjectId: Option[AtalaObjectId])`  
-       `case class GetGCSStreamResponse(GCSs: AtalaObjectGCS)`  
+       `case class GetGCSStreamResponse(objectGCS: AtalaObjectGCS)`  
        `case class AtalaObjectGCS(objectId: AtalaObjectId, objectGCS: GCS)`.
     
     * `rpc GetAtalaObject(GetAtalaObjectRequest) returns (GetAtalaObjectResponse) {}` where  
@@ -168,9 +171,9 @@ def operationsToGCS(operations: List[OperationOutcome]): GCS = {
   new GCS(operationToFilters(op), P) // P here is a parameter of GCS, will be specified during the implementation
 }
 ```
-* If we assume that the most of the operations are Credential issuance, 
-  we could introduce a little optimisation: to add in `GetGCSStreamResponse` 
-  an extra GCS in order to skip most of the filter tests against GCSs in the list.
+* As an optimization we could respond with a batch of several Atala objects `GCS` in `GetGCSStreamResponse`.
+  Also, we could add an extra `GCS` built for all operations from all the objects in the batch, 
+  then a client could quickly skip bigger batches of irrelevant operations.
 
 Sketch of a possible low-level client SDK interface:
 ```scala
