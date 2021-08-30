@@ -22,7 +22,7 @@ import io.iohk.atala.prism.node.models.{
 }
 import io.iohk.atala.prism.node.operations._
 import io.iohk.atala.prism.node.repositories.{CredentialBatchesRepository, DIDDataRepository}
-import io.iohk.atala.prism.node.services.ObjectManagementService
+import io.iohk.atala.prism.node.services.{ObjectManagementService, SubmissionSchedulingService}
 import io.iohk.atala.prism.protos.common_models.{HealthCheckRequest, HealthCheckResponse}
 import io.iohk.atala.prism.protos.node_api._
 import io.iohk.atala.prism.protos.node_models.AtalaOperation.Operation
@@ -34,12 +34,13 @@ import org.slf4j.{Logger, LoggerFactory}
 import java.time.Instant
 import scala.concurrent.{ExecutionContext, Future}
 import scala.util.Try
-
 import io.iohk.atala.prism.interop.toScalaProtos._
+import io.iohk.atala.prism.node.cardano.models.AtalaObjectMetadata
 
 class NodeServiceImpl(
     didDataRepository: DIDDataRepository[IO],
     objectManagement: ObjectManagementService,
+    submissionSchedulingService: SubmissionSchedulingService,
     credentialBatchesRepository: CredentialBatchesRepository[IO]
 )(implicit
     ec: ExecutionContext
@@ -113,7 +114,7 @@ class NodeServiceImpl(
           operation <- operationF
           _ = logWithTraceId(methodName, traceId, "operationId" -> s"${AtalaOperationId.of(operation).toString}")
           parsedOp <- errorEitherToFutureAndCount(methodName, CreateDIDOperation.parseWithMockedLedgerData(operation))
-          operationId <- objectManagement.publishSingleAtalaOperation(operation)
+          operationId <- objectManagement.sendSingleAtalaOperation(operation)
         } yield {
           node_api
             .CreateDIDResponse(id = parsedOp.id.getValue)
@@ -133,7 +134,7 @@ class NodeServiceImpl(
           operation <- operationF
           _ = logWithTraceId(methodName, traceId, "operationId" -> s"${AtalaOperationId.of(operation).toString}")
           _ <- errorEitherToFutureAndCount(methodName, UpdateDIDOperation.validate(operation))
-          operationId <- objectManagement.publishSingleAtalaOperation(operation)
+          operationId <- objectManagement.sendSingleAtalaOperation(operation)
         } yield {
           node_api
             .UpdateDIDResponse()
@@ -154,7 +155,7 @@ class NodeServiceImpl(
           _ = logWithTraceId(methodName, traceId, "operationId" -> s"${AtalaOperationId.of(operation).toString}")
           parsedOp <-
             errorEitherToFutureAndCount(methodName, IssueCredentialBatchOperation.parseWithMockedLedgerData(operation))
-          operationId <- objectManagement.publishSingleAtalaOperation(operation)
+          operationId <- objectManagement.sendSingleAtalaOperation(operation)
         } yield {
           node_api
             .IssueCredentialBatchResponse(batchId = parsedOp.credentialBatchId.getId)
@@ -173,7 +174,7 @@ class NodeServiceImpl(
           operation <- operationF
           _ = logWithTraceId(methodName, traceId, "operationId" -> s"${AtalaOperationId.of(operation).toString}")
           _ <- errorEitherToFutureAndCount(methodName, RevokeCredentialsOperation.validate(operation))
-          operationId <- objectManagement.publishSingleAtalaOperation(operation)
+          operationId <- objectManagement.sendSingleAtalaOperation(operation)
         } yield {
           node_api
             .RevokeCredentialsResponse()
@@ -257,6 +258,12 @@ class NodeServiceImpl(
       .fromTry {
         Try {
           require(request.signedOperations.nonEmpty, "there must be at least one operation to be published")
+
+          val obj = ObjectManagementService.createAtalaObject(request.signedOperations.toList)
+          require(
+            AtalaObjectMetadata.estimateTxMetadataSize(obj) <= cardano.TX_METADATA_MAX_SIZE,
+            "atala object size is too big"
+          )
           request.signedOperations
         }
       }
@@ -276,7 +283,7 @@ class NodeServiceImpl(
               errorEitherToFutureAndCount(methodName, parseOperationWithMockData(op))
             }
           )
-          operationIds <- objectManagement.publishAtalaOperations(operations: _*)
+          operationIds <- objectManagement.sendAtalaOperations(operations: _*)
           outputsWithOperationIds = outputs.zip(operationIds).map {
             case (out, opId) =>
               out.withOperationId(opId.toProtoByteString)
@@ -297,7 +304,7 @@ class NodeServiceImpl(
 
     withLog(methodName, request) { _ =>
       Future.successful {
-        objectManagement.flushOperationsBuffer()
+        submissionSchedulingService.flushOperationsBuffer()
         node_api.FlushOperationsBufferResponse()
       }
     }

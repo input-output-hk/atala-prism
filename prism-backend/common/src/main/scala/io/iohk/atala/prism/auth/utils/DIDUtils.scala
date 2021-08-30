@@ -1,9 +1,9 @@
 package io.iohk.atala.prism.auth.utils
 
 import io.iohk.atala.prism.auth.errors._
-import io.iohk.atala.prism.kotlin.crypto.{EC}
+import io.iohk.atala.prism.kotlin.crypto.EC
 import io.iohk.atala.prism.kotlin.crypto.ECConfig.{INSTANCE => ECConfig}
-import io.iohk.atala.prism.kotlin.crypto.keys.{ECPublicKey}
+import io.iohk.atala.prism.kotlin.crypto.keys.ECPublicKey
 import io.iohk.atala.prism.kotlin.identity.DIDFormatException.{
   CanonicalSuffixMatchStateException,
   InvalidAtalaOperationException
@@ -18,6 +18,7 @@ import io.iohk.atala.prism.utils.FutureEither.FutureEitherOps
 import scala.concurrent.{ExecutionContext, Future}
 import scala.util.{Failure, Success, Try}
 import io.iohk.atala.prism.interop.toScalaProtos._
+import io.iohk.atala.prism.protos.node_models.PublicKey.KeyData.{CompressedEcKeyData, EcKeyData, Empty}
 
 object DIDUtils {
 
@@ -55,10 +56,13 @@ object DIDUtils {
       // we haven't defined which keys can sign requests, and the model doesn't specify when a key is revoked
       val publicKeyOpt = didData.publicKeys
         .find(_.id == keyId)
-        .flatMap(_.keyData.ecKeyData)
-        .flatMap { data =>
-          val pubk = EC.toPublicKey(data.x.toByteArray, data.y.toByteArray)
-          verifyPublicKey(data.curve, pubk)
+        .map(_.keyData)
+        .flatMap {
+          case EcKeyData(data) =>
+            verifyPublicKey(data.curve, EC.toPublicKey(data.x.toByteArray, data.y.toByteArray))
+          case CompressedEcKeyData(data) =>
+            verifyPublicKey(data.curve, EC.toPublicKeyFromCompressed(data.data.toByteArray))
+          case Empty => None
         }
 
       publicKeyOpt.toRight(UnknownPublicKeyId())

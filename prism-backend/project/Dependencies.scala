@@ -15,7 +15,7 @@ object versions {
   val doobie = "0.9.2"
   val enumeratum = "1.6.0"
   val flyway = "7.10.0"
-  val grpc = "1.33.0"
+  val grpc = "1.36.0"
   val kamon = "2.1.11"
   val logback = "1.2.3"
   val logbackLogstash = "6.6"
@@ -56,6 +56,7 @@ object Dependencies {
   val doobiePostgresCirce = "org.tpolecat" %% "doobie-postgres-circe" % versions.doobie
   val doobieHikari = "org.tpolecat" %% "doobie-hikari" % versions.doobie
   val enumeratum = "com.beachape" %% "enumeratum" % versions.enumeratum
+  val enumeratumCirce = "com.beachape" %% "enumeratum-circe" % versions.enumeratum
   val enumeratumDoobie = "com.beachape" %% "enumeratum-doobie" % versions.enumeratum
   val flyway = "org.flywaydb" % "flyway-core" % versions.flyway
   val grpcNetty = "io.grpc" % "grpc-netty" % versions.grpc
@@ -108,6 +109,7 @@ object Dependencies {
   val circeDependencies = Seq(circeCore, circeGeneric, circeGenericExtras, circeParser, circeOptics)
   val dockerDependencies = Seq(dockerClient, dockerTestkitScalatest, dockerTestkitSpotify)
   val doobieDependencies = Seq(doobieCore, doobiePostgresCirce, doobieHikari, doobieScalatest)
+  val enumeratumDependencies = Seq(enumeratum, enumeratumCirce, enumeratumDoobie)
   val grpcDependencies = Seq(grpcNetty, grpcServices, grpcContext)
   val kamonDependencies = Seq(kamonBundle, kamonPrometheus)
   val logbackDependencies = Seq(logbackCore, logbackClassic, logbackLogstash, jaxb)

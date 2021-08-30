@@ -20,10 +20,10 @@ import org.scalatest.OptionValues._
 
 import java.time.Instant
 import io.iohk.atala.prism.node.DataPreparation
-import io.iohk.atala.prism.protos.node_models.ECKeyData
+import io.iohk.atala.prism.protos.node_models.{CompressedECKeyData, ECKeyData}
 
 object CreateDIDOperationSpec {
-  def protoECKeyFromPublicKey(key: ECPublicKey): ECKeyData = {
+  def protoECKeyDataFromPublicKey(key: ECPublicKey): ECKeyData = {
     val point = key.getCurvePoint
 
     node_models.ECKeyData(
@@ -33,19 +33,35 @@ object CreateDIDOperationSpec {
     )
   }
 
-  def randomProtoECKey: ECKeyData = {
+  def protoCompressedECKeyDataFromPublicKey(key: ECPublicKey): CompressedECKeyData =
+    node_models.CompressedECKeyData(
+      curve = ECConfig.getCURVE_NAME,
+      data = ByteString.copyFrom(key.getEncodedCompressed)
+    )
+
+  def randomECKeyData: ECKeyData = {
     val keyPair = EC.generateKeyPair()
-    protoECKeyFromPublicKey(keyPair.getPublicKey)
+    protoECKeyDataFromPublicKey(keyPair.getPublicKey)
+  }
+
+  def randomCompressedECKeyData: CompressedECKeyData = {
+    val keyPair = EC.generateKeyPair()
+    protoCompressedECKeyDataFromPublicKey(keyPair.getPublicKey)
   }
 
   val masterKeys: ECKeyPair = EC.generateKeyPair()
-  val masterEcKey: ECKeyData = protoECKeyFromPublicKey(masterKeys.getPublicKey)
+  val masterEcKeyData: ECKeyData = protoECKeyDataFromPublicKey(masterKeys.getPublicKey)
+  val masterCompressedEcKeyData: CompressedECKeyData = protoCompressedECKeyDataFromPublicKey(masterKeys.getPublicKey)
 
   val issuingKeys: ECKeyPair = EC.generateKeyPair()
-  val issuingEcKey: ECKeyData = protoECKeyFromPublicKey(issuingKeys.getPublicKey)
+  val issuingEcKeyData: ECKeyData = protoECKeyDataFromPublicKey(issuingKeys.getPublicKey)
+  val issuingCompressedEcKeyData: CompressedECKeyData = protoCompressedECKeyDataFromPublicKey(issuingKeys.getPublicKey)
 
   val revokingKeys: ECKeyPair = EC.generateKeyPair()
-  val revokingEcKey: ECKeyData = protoECKeyFromPublicKey(revokingKeys.getPublicKey)
+  val revokingEcKeyData: ECKeyData = protoECKeyDataFromPublicKey(revokingKeys.getPublicKey)
+  val revokingCompressedEcKeyData: CompressedECKeyData = protoCompressedECKeyDataFromPublicKey(
+    revokingKeys.getPublicKey
+  )
 
   lazy val dummyTimestamp: TimestampInfo = dummyTimestampInfo
   lazy val dummyLedgerData: LedgerData = LedgerData(
@@ -70,7 +86,7 @@ object CreateDIDOperationSpec {
                   node_models.LedgerData(timestampInfo = Some(ProtoCodecs.toTimeStampInfoProto(dummyTimestampInfo)))
                 ),
                 None,
-                node_models.PublicKey.KeyData.EcKeyData(masterEcKey)
+                node_models.PublicKey.KeyData.EcKeyData(masterEcKeyData)
               ),
               node_models
                 .PublicKey(
@@ -80,7 +96,7 @@ object CreateDIDOperationSpec {
                     node_models.LedgerData(timestampInfo = Some(ProtoCodecs.toTimeStampInfoProto(dummyTimestampInfo)))
                   ),
                   None,
-                  node_models.PublicKey.KeyData.EcKeyData(issuingEcKey)
+                  node_models.PublicKey.KeyData.EcKeyData(issuingEcKeyData)
                 ),
               node_models
                 .PublicKey(
@@ -90,7 +106,7 @@ object CreateDIDOperationSpec {
                     node_models.LedgerData(timestampInfo = Some(ProtoCodecs.toTimeStampInfoProto(dummyTimestampInfo)))
                   ),
                   None,
-                  node_models.PublicKey.KeyData.EcKeyData(revokingEcKey)
+                  node_models.PublicKey.KeyData.EcKeyData(revokingEcKeyData)
                 ),
               node_models.PublicKey(
                 "authentication",
@@ -99,7 +115,59 @@ object CreateDIDOperationSpec {
                   node_models.LedgerData(timestampInfo = Some(ProtoCodecs.toTimeStampInfoProto(dummyTimestampInfo)))
                 ),
                 None,
-                node_models.PublicKey.KeyData.EcKeyData(randomProtoECKey)
+                node_models.PublicKey.KeyData.EcKeyData(randomECKeyData)
+              )
+            )
+          )
+        )
+      )
+    )
+  )
+
+  val exampleOperationWithCompressedKeys: node_models.AtalaOperation = node_models.AtalaOperation(
+    node_models.AtalaOperation.Operation.CreateDid(
+      value = node_models.CreateDIDOperation(
+        didData = Some(
+          node_models.DIDData(
+            id = "",
+            publicKeys = List(
+              node_models.PublicKey(
+                "master",
+                node_models.KeyUsage.MASTER_KEY,
+                Some(
+                  node_models.LedgerData(timestampInfo = Some(ProtoCodecs.toTimeStampInfoProto(dummyTimestampInfo)))
+                ),
+                None,
+                node_models.PublicKey.KeyData.EcKeyData(masterEcKeyData)
+              ),
+              node_models
+                .PublicKey(
+                  "issuing",
+                  node_models.KeyUsage.ISSUING_KEY,
+                  Some(
+                    node_models.LedgerData(timestampInfo = Some(ProtoCodecs.toTimeStampInfoProto(dummyTimestampInfo)))
+                  ),
+                  None,
+                  node_models.PublicKey.KeyData.CompressedEcKeyData(issuingCompressedEcKeyData)
+                ),
+              node_models
+                .PublicKey(
+                  "revoking",
+                  node_models.KeyUsage.REVOCATION_KEY,
+                  Some(
+                    node_models.LedgerData(timestampInfo = Some(ProtoCodecs.toTimeStampInfoProto(dummyTimestampInfo)))
+                  ),
+                  None,
+                  node_models.PublicKey.KeyData.CompressedEcKeyData(revokingCompressedEcKeyData)
+                ),
+              node_models.PublicKey(
+                "authentication",
+                node_models.KeyUsage.AUTHENTICATION_KEY,
+                Some(
+                  node_models.LedgerData(timestampInfo = Some(ProtoCodecs.toTimeStampInfoProto(dummyTimestampInfo)))
+                ),
+                None,
+                node_models.PublicKey.KeyData.CompressedEcKeyData(randomCompressedECKeyData)
               )
             )
           )

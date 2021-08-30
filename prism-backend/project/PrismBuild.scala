@@ -47,6 +47,13 @@ object PrismBuild {
           val argsString = args.mkString(" ")
           ("testOnly " + argsString) :: ("testOnlyUntilFailed " + argsString) :: state
         },
+        assembly / assemblyExcludedJars := {
+          val cp = (assembly / fullClasspath).value
+
+          val excludeLibs = Set("protobuf-javalite", "kotlinx-coroutines-core", "pbandk-protos")
+
+          cp.filter{ path => excludeLibs.exists( lib => path.data.getName.startsWith(lib)) }
+        },
         assembly / assemblyMergeStrategy := {
           // Merge service files, otherwise GRPC client doesn't work: https://github.com/grpc/grpc-java/issues/5493
           case PathList("META-INF", "services", _*) => MergeStrategy.concat
@@ -82,11 +89,10 @@ object PrismBuild {
             mockitoDependencies ++
             kamonDependencies ++
             circeDependencies ++
+            enumeratumDependencies ++
             tofuDependencies ++
             Seq(
               diffx,
-              enumeratum,
-              enumeratumDoobie,
               flyway,
               monix,
               typesafeConfig
@@ -128,13 +134,11 @@ object PrismBuild {
           }
         },
         docker / imageNames := Seq(generateImageName(name, version.value)),
-        libraryDependencies ++= circeDependencies ++ doobieDependencies ++
+        libraryDependencies ++= circeDependencies ++ enumeratumDependencies ++ doobieDependencies ++
           grpcDependencies ++ logbackDependencies ++
           sttpDependencies ++
           Seq(
             chimney,
-            enumeratum,
-            enumeratumDoobie,
             flyway,
             monix,
             postgresql,

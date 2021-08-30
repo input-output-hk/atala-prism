@@ -5,7 +5,7 @@ import doobie.implicits._
 import io.iohk.atala.prism.AtalaWithPostgresSpec
 import io.iohk.atala.prism.kotlin.crypto.SHA256Digest
 import io.iohk.atala.prism.models.{BlockInfo, Ledger, TransactionId, TransactionInfo}
-import io.iohk.atala.prism.node.models.{AtalaObjectInfo, AtalaObjectId}
+import io.iohk.atala.prism.node.models.{AtalaObjectId, AtalaObjectInfo, AtalaObjectStatus}
 import io.iohk.atala.prism.protos.node_internal
 import org.scalatest.OptionValues._
 
@@ -28,7 +28,7 @@ class AtalaObjectsDAOSpec extends AtalaWithPostgresSpec {
       retrieved.objectId mustBe objectId
       retrieved.byteContent mustBe byteContent
       retrieved.transaction mustBe None
-      retrieved.processed mustBe false
+      retrieved.status mustBe AtalaObjectStatus.Pending
     }
   }
 
@@ -45,7 +45,7 @@ class AtalaObjectsDAOSpec extends AtalaWithPostgresSpec {
       retrieved.objectId mustBe objectId
       retrieved.byteContent mustBe byteContent
       retrieved.transaction.value mustBe transactionInfo
-      retrieved.processed mustBe false
+      retrieved.status mustBe AtalaObjectStatus.Pending
     }
 
     "fail to set the transaction info of a nonexistent object" in {
@@ -80,7 +80,7 @@ class AtalaObjectsDAOSpec extends AtalaWithPostgresSpec {
       retrieved.objectId mustBe objectId
       retrieved.byteContent mustBe byteContent
       retrieved.transaction mustBe None
-      retrieved.processed mustBe false
+      retrieved.status mustBe AtalaObjectStatus.Pending
     }
 
     "get an object with transaction info" in {
@@ -95,7 +95,7 @@ class AtalaObjectsDAOSpec extends AtalaWithPostgresSpec {
       retrieved.objectId mustBe objectId
       retrieved.byteContent mustBe byteContent
       retrieved.transaction.value mustBe transactionInfo
-      retrieved.processed mustBe false
+      retrieved.status mustBe AtalaObjectStatus.Pending
     }
   }
 
@@ -103,10 +103,10 @@ class AtalaObjectsDAOSpec extends AtalaWithPostgresSpec {
     "mark object as processed" in {
       insert(objectId, byteContent)
 
-      AtalaObjectsDAO.setProcessed(objectId).transact(database).unsafeRunSync()
+      AtalaObjectsDAO.updateObjectStatus(objectId, AtalaObjectStatus.Processed).transact(database).unsafeRunSync()
 
       val retrieved = get(objectId)
-      retrieved.processed mustBe true
+      retrieved.status mustBe AtalaObjectStatus.Processed
     }
   }
 
@@ -117,12 +117,12 @@ class AtalaObjectsDAOSpec extends AtalaWithPostgresSpec {
         val objId = AtalaObjectId.of(node_internal.AtalaObject(blockOperationCount = count))
         insert(objId, byteContent)
       }
-      val retrieved = AtalaObjectsDAO.getNotPublishedObjectIds.transact(database).unsafeRunSync()
+      val retrieved = AtalaObjectsDAO.getNotPublishedObjectInfos.transact(database).unsafeRunSync()
       retrieved.size mustBe N
       retrieved.zipWithIndex.foreach {
-        case (objId, ind) =>
+        case (objInfo, ind) =>
           withClue(s"Index $ind:") {
-            objId mustBe AtalaObjectId.of(node_internal.AtalaObject(blockOperationCount = ind))
+            objInfo.objectId mustBe AtalaObjectId.of(node_internal.AtalaObject(blockOperationCount = ind))
           }
       }
     }

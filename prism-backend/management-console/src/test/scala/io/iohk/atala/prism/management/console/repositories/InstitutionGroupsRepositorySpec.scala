@@ -107,10 +107,10 @@ class InstitutionGroupsRepositorySpec extends AtalaWithPostgresSpec {
       val query: InstitutionGroup.PaginatedQuery =
         PaginatedQueryConstraints(ordering = ResultOrdering(InstitutionGroup.SortBy.Name))
 
-      val (result, totalNumberOfGroups) =
+      val result =
         repository.getBy(institutionId1, query).unsafeRunSync()
-      result.map(_.value.name) must be(groups)
-      totalNumberOfGroups mustBe groups.size
+      result.groups.map(_.value.name) must be(groups)
+      result.totalNumberOfRecords mustBe groups.size
     }
 
     "includes the contact count" in {
@@ -126,8 +126,8 @@ class InstitutionGroupsRepositorySpec extends AtalaWithPostgresSpec {
         PaginatedQueryConstraints(ordering = ResultOrdering(InstitutionGroup.SortBy.Name))
 
       val result =
-        repository.getBy(institutionId, query).map { case (groups, _) => groups }
-      result.map(_.map(_.numberOfContacts)).unsafeRunSync() mustBe List(2, 1)
+        repository.getBy(institutionId, query).unsafeRunSync().groups
+      result.map(_.numberOfContacts) mustBe List(2, 1)
     }
 
     "allows filtering by contact" in {
@@ -144,11 +144,11 @@ class InstitutionGroupsRepositorySpec extends AtalaWithPostgresSpec {
           filters = Some(InstitutionGroup.FilterBy(contactId = Some(contact.contactId)))
         )
 
-      val (result, _) = repository.getBy(issuerId, query).unsafeRunSync()
+      val result = repository.getBy(issuerId, query).unsafeRunSync().groups
       result.size must be(1)
 
       val resultGroup = result.head
-      resultGroup.value.name must be(groups(0))
+      resultGroup.value.name must be(groups.head)
       resultGroup.numberOfContacts must be(2)
     }
 
@@ -165,7 +165,7 @@ class InstitutionGroupsRepositorySpec extends AtalaWithPostgresSpec {
             filters = Some(InstitutionGroup.FilterBy(name = Some(InstitutionGroup.Name(name))))
           )
 
-        val (result, _) = repository.getBy(institutionId, query).unsafeRunSync()
+        val result = repository.getBy(institutionId, query).unsafeRunSync().groups
         result.size mustBe 1
         result.head.value.name.value mustBe groupName
       }
@@ -187,7 +187,7 @@ class InstitutionGroupsRepositorySpec extends AtalaWithPostgresSpec {
             filters = Some(InstitutionGroup.FilterBy(createdAfter = Some(date)))
           )
 
-        val (result, _) = repository.getBy(institutionId, query).unsafeRunSync()
+        val result = repository.getBy(institutionId, query).unsafeRunSync().groups
         result.size mustBe expectedCount
       }
 
@@ -207,7 +207,7 @@ class InstitutionGroupsRepositorySpec extends AtalaWithPostgresSpec {
             filters = Some(InstitutionGroup.FilterBy(createdBefore = Some(date)))
           )
 
-        val (result, _) = repository.getBy(institutionId, query).unsafeRunSync()
+        val result = repository.getBy(institutionId, query).unsafeRunSync().groups
         result.size mustBe expectedCount
       }
 
@@ -240,7 +240,7 @@ class InstitutionGroupsRepositorySpec extends AtalaWithPostgresSpec {
           )
         )
 
-      val (result, _) = repository.getBy(institutionId, query).unsafeRunSync()
+      val result = repository.getBy(institutionId, query).unsafeRunSync().groups
       result.map(_.value.name.value) must be(List("Group 2", "Group 1"))
     }
 
@@ -255,7 +255,7 @@ class InstitutionGroupsRepositorySpec extends AtalaWithPostgresSpec {
       val query: InstitutionGroup.PaginatedQuery =
         PaginatedQueryConstraints(ordering = ResultOrdering(InstitutionGroup.SortBy.NumberOfContacts))
 
-      val (result, _) = repository.getBy(institutionId, query).unsafeRunSync()
+      val result = repository.getBy(institutionId, query).unsafeRunSync().groups
       result.map(_.value.name) must be(groups.reverse)
     }
 
@@ -294,11 +294,11 @@ class InstitutionGroupsRepositorySpec extends AtalaWithPostgresSpec {
           ordering = ResultOrdering(InstitutionGroup.SortBy.Name)
         )
 
-      val (result, totalNumberOfGroups) =
+      val result =
         repository.getBy(institutionId, query).unsafeRunSync()
-      result.size mustBe 1
-      result.head.value.name mustBe groups.head
-      totalNumberOfGroups mustBe groups.size
+      result.groups.size mustBe 1
+      result.groups.head.value.name mustBe groups.head
+      result.totalNumberOfRecords mustBe groups.size
     }
 
     def assertGetByResult(query: InstitutionGroup.PaginatedQuery, expectedResult: List[String]) = {
@@ -306,7 +306,7 @@ class InstitutionGroupsRepositorySpec extends AtalaWithPostgresSpec {
       val institutionId = createParticipant("Institution-1")
       groups.foreach { g => createInstitutionGroup(institutionId, g) }
 
-      val (result, _) = repository.getBy(institutionId, query).unsafeRunSync()
+      val result = repository.getBy(institutionId, query).unsafeRunSync().groups
       result.map(_.value.name.value) must be(expectedResult)
     }
   }
@@ -437,7 +437,7 @@ class InstitutionGroupsRepositorySpec extends AtalaWithPostgresSpec {
       val query: InstitutionGroup.PaginatedQuery =
         PaginatedQueryConstraints(ordering = ResultOrdering(InstitutionGroup.SortBy.Name))
 
-      repository.getBy(institutionId, query).unsafeRunSync()._1 mustBe Nil
+      repository.getBy(institutionId, query).unsafeRunSync().groups mustBe Nil
       //Guarantee that we removed contacts and group
       intercept[RuntimeException](repository.listContacts(institutionId, groupName).unsafeToFuture().futureValue)
       succeed

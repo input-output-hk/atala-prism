@@ -10,7 +10,7 @@ import io.iohk.atala.prism.kotlin.crypto.SHA256Digest
 import io.iohk.atala.prism.models.{Ledger, TransactionId}
 import io.iohk.atala.prism.node.models.nodeState.LedgerData
 import io.iohk.atala.prism.node.models.{DIDPublicKey, KeyUsage}
-import io.iohk.atala.prism.node.operations.CreateDIDOperationSpec.randomProtoECKey
+import io.iohk.atala.prism.node.operations.CreateDIDOperationSpec.{randomCompressedECKeyData, randomECKeyData}
 import io.iohk.atala.prism.node.repositories.DIDDataRepository
 import io.iohk.atala.prism.node.services.BlockProcessingServiceSpec
 import io.iohk.atala.prism.protos.node_models
@@ -42,7 +42,21 @@ object UpdateDIDOperationSpec {
           node_models.PublicKey(
             id = "new_master",
             usage = node_models.KeyUsage.MASTER_KEY,
-            keyData = node_models.PublicKey.KeyData.EcKeyData(randomProtoECKey)
+            keyData = node_models.PublicKey.KeyData.EcKeyData(randomECKeyData)
+          )
+        )
+      )
+    )
+  )
+
+  val exampleAddKeyActionWithCompressedKeys = node_models.UpdateDIDAction(
+    node_models.UpdateDIDAction.Action.AddKey(
+      node_models.AddKeyAction(
+        key = Some(
+          node_models.PublicKey(
+            id = "new_master",
+            usage = node_models.KeyUsage.MASTER_KEY,
+            keyData = node_models.PublicKey.KeyData.CompressedEcKeyData(randomCompressedECKeyData)
           )
         )
       )
@@ -63,6 +77,16 @@ object UpdateDIDOperationSpec {
         previousOperationHash = ByteString.copyFrom(createDidOperation.digest.getValue.toArray),
         id = createDidOperation.id.getValue,
         actions = Seq(exampleAddKeyAction, exampleRemoveKeyAction)
+      )
+    )
+  )
+
+  val exampleOperationWithCompressedKeys = node_models.AtalaOperation(
+    operation = node_models.AtalaOperation.Operation.UpdateDid(
+      value = node_models.UpdateDIDOperation(
+        previousOperationHash = ByteString.copyFrom(createDidOperation.digest.getValue.toArray),
+        id = createDidOperation.id.getValue,
+        actions = Seq(exampleAddKeyActionWithCompressedKeys, exampleRemoveKeyAction)
       )
     )
   )

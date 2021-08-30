@@ -1,6 +1,5 @@
 package io.iohk.atala.prism.node
 
-import cats.syntax.foldable._
 import enumeratum.EnumEntry.UpperSnakecase
 import enumeratum._
 import io.iohk.atala.prism.connector.AtalaOperationId
@@ -9,9 +8,9 @@ import io.iohk.atala.prism.kotlin.crypto.{MerkleRoot, SHA256Digest}
 import io.iohk.atala.prism.kotlin.crypto.keys.ECPublicKey
 import io.iohk.atala.prism.kotlin.identity.DIDSuffix
 import io.iohk.atala.prism.models.{Ledger, TransactionId}
-import io.iohk.atala.prism.node.repositories.daos.KeyValuesDAO
 
 import java.time.Instant
+import scala.util.matching.Regex
 
 package object models {
   sealed trait KeyUsage extends EnumEntry with UpperSnakecase {
@@ -30,6 +29,17 @@ package object models {
 
   }
 
+  val ATALA_OBJECT_VERSION: String = "1.0"
+
+  sealed trait AtalaObjectStatus extends EnumEntry with UpperSnakecase
+  object AtalaObjectStatus extends Enum[AtalaObjectStatus] {
+    val values = findValues
+
+    case object Pending extends AtalaObjectStatus
+    case object Merged extends AtalaObjectStatus
+    case object Processed extends AtalaObjectStatus
+  }
+
   case class DIDPublicKey(didSuffix: DIDSuffix, keyId: String, keyUsage: KeyUsage, key: ECPublicKey)
 
   case class DIDData(didSuffix: DIDSuffix, keys: List[DIDPublicKey], lastOperation: SHA256Digest)
@@ -45,7 +55,7 @@ package object models {
 
     def apply(digest: SHA256Digest): CredentialId = apply(digest.hexValue)
 
-    val CREDENTIAL_ID_RE = "^[0-9a-f]{64}$".r
+    val CREDENTIAL_ID_RE: Regex = "^[0-9a-f]{64}$".r
   }
 
   case class AtalaOperationInfo(
@@ -99,19 +109,11 @@ package object models {
         timestampInfo: TimestampInfo
     )
 
-    def getLastSyncedTimestampFromMaybe(maybeLastSyncedBlockTimestamp: Option[KeyValuesDAO.KeyValue]): Instant = {
+    def getLastSyncedTimestampFromMaybe(maybeLastSyncedBlockTimestamp: Option[String]): Instant = {
       val lastSyncedBlockTimestamp =
         maybeLastSyncedBlockTimestamp
-          .foldMap {
-            case KeyValuesDAO.KeyValue(key, value) =>
-              value
-                .foldMap { _.toLongOption }
-                .getOrElse {
-                  throw new RuntimeException(
-                    s"DB is in invalid state: $key should be a valid long value, but found: $value"
-                  )
-                }
-          }
+          .flatMap(_.toLongOption)
+          .getOrElse(0L)
       Instant.ofEpochMilli(lastSyncedBlockTimestamp)
     }
   }

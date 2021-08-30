@@ -173,7 +173,7 @@ class BlockProcessingServiceSpec extends AtalaWithPostgresSpec {
               "master",
               node_models.KeyUsage.MASTER_KEY,
               keyData = node_models.PublicKey.KeyData
-                .EcKeyData(CreateDIDOperationSpec.protoECKeyFromPublicKey(EC.generateKeyPair().getPublicKey))
+                .EcKeyData(CreateDIDOperationSpec.protoECKeyDataFromPublicKey(EC.generateKeyPair().getPublicKey))
             )
           )
         )
@@ -188,7 +188,7 @@ class BlockProcessingServiceSpec extends AtalaWithPostgresSpec {
               "rootkey",
               node_models.KeyUsage.MASTER_KEY,
               keyData = node_models.PublicKey.KeyData
-                .EcKeyData(CreateDIDOperationSpec.protoECKeyFromPublicKey(operation3Keys.getPublicKey))
+                .EcKeyData(CreateDIDOperationSpec.protoECKeyDataFromPublicKey(operation3Keys.getPublicKey))
             )
           )
         )
@@ -306,7 +306,7 @@ class BlockProcessingServiceSpec extends AtalaWithPostgresSpec {
               "master",
               node_models.KeyUsage.MASTER_KEY,
               keyData = node_models.PublicKey.KeyData
-                .EcKeyData(CreateDIDOperationSpec.protoECKeyFromPublicKey(EC.generateKeyPair().getPublicKey))
+                .EcKeyData(CreateDIDOperationSpec.protoECKeyDataFromPublicKey(EC.generateKeyPair().getPublicKey))
             )
           )
         )
@@ -321,7 +321,7 @@ class BlockProcessingServiceSpec extends AtalaWithPostgresSpec {
               "rootkey",
               node_models.KeyUsage.MASTER_KEY,
               keyData = node_models.PublicKey.KeyData
-                .EcKeyData(CreateDIDOperationSpec.protoECKeyFromPublicKey(operation3Keys.getPublicKey))
+                .EcKeyData(CreateDIDOperationSpec.protoECKeyDataFromPublicKey(operation3Keys.getPublicKey))
             )
           )
         )

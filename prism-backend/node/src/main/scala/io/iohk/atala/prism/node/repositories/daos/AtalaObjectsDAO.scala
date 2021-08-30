@@ -8,7 +8,7 @@ import doobie.implicits._
 import doobie.implicits.legacy.instant._
 import doobie.util.fragments.in
 import io.iohk.atala.prism.models.TransactionInfo
-import io.iohk.atala.prism.node.models.{AtalaObjectId, AtalaObjectInfo}
+import io.iohk.atala.prism.node.models.{AtalaObjectId, AtalaObjectInfo, AtalaObjectStatus}
 
 import java.time.Instant
 
@@ -42,7 +42,7 @@ object AtalaObjectsDAO {
 
   def get(objectId: AtalaObjectId): ConnectionIO[Option[AtalaObjectInfo]] = {
     sql"""
-         |SELECT obj.atala_object_id, obj.object_content, obj.processed,
+         |SELECT obj.atala_object_id, obj.object_content, obj.atala_object_status,
          |       tx.transaction_id, tx.ledger, tx.block_number, tx.block_timestamp, tx.block_index
          |FROM atala_objects AS obj
          |  LEFT OUTER JOIN atala_object_txs AS tx ON tx.atala_object_id = obj.atala_object_id
@@ -52,33 +52,40 @@ object AtalaObjectsDAO {
       .option
   }
 
-  def getNotPublishedObjectIds: ConnectionIO[List[AtalaObjectId]] = {
+  def getNotPublishedObjectInfos: ConnectionIO[List[AtalaObjectInfo]] = {
     sql"""
-       |SELECT obj.atala_object_id
-       |FROM atala_objects AS obj
-       |WHERE processed = false and NOT EXISTS
-       |(
-       |  SELECT 1
-       |    FROM atala_object_tx_submissions
-       |    WHERE atala_object_id = obj.atala_object_id
-       |)
-       |ORDER BY obj.received_at ASC
+         |SELECT obj.atala_object_id, obj.object_content, obj.atala_object_status,
+         |       tx.transaction_id, tx.ledger, tx.block_number, tx.block_timestamp, tx.block_index
+         |FROM
+         |(
+         |  SELECT *
+         |  FROM atala_objects AS obj
+         |  WHERE atala_object_status = 'PENDING' and NOT EXISTS
+         |  (
+         |    SELECT 1
+         |      FROM atala_object_tx_submissions
+         |      WHERE atala_object_id = obj.atala_object_id
+         |  )
+         |) as obj
+         |  LEFT OUTER JOIN atala_object_txs AS tx ON tx.atala_object_id = obj.atala_object_id
+         |ORDER BY obj.received_at ASC;
        """.stripMargin
-      .query[AtalaObjectId]
+      .query[AtalaObjectInfo]
       .to[List]
   }
 
-  def setProcessed(objectId: AtalaObjectId, processed: Boolean = true): ConnectionIO[Unit] = {
+  def updateObjectStatus(objectId: AtalaObjectId, newStatus: AtalaObjectStatus): ConnectionIO[Unit] = {
     sql"""
          |UPDATE atala_objects
-         |SET processed = $processed
-         |WHERE atala_object_id = $objectId""".stripMargin.update.run.void
+         |SET atala_object_status = $newStatus
+         |WHERE atala_object_id = $objectId
+      """.stripMargin.update.run.void
   }
 
-  def setProcessedBatch(objectIds: List[AtalaObjectId], processed: Boolean = true): ConnectionIO[Unit] = {
+  def updateObjectStatusBatch(objectIds: List[AtalaObjectId], newStatus: AtalaObjectStatus): ConnectionIO[Unit] = {
     NonEmptyList.fromList(objectIds).fold(unit) { objectIdsNonEmpty =>
       val fragment = fr"UPDATE atala_objects" ++
-        fr"SET processed = $processed" ++
+        fr"SET atala_object_status = $newStatus" ++
         fr"WHERE" ++ in(fr"atala_object_id", objectIdsNonEmpty)
       fragment.update.run.void
     }

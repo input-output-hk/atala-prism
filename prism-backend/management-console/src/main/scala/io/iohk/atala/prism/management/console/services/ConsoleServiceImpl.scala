@@ -1,102 +1,119 @@
 package io.iohk.atala.prism.management.console.services
 
-import cats.implicits.catsSyntaxEitherId
-import com.google.protobuf.ByteString
+import cats.{Comonad, Functor, Monad}
+import cats.effect.{MonadThrow, Resource}
+import cats.syntax.apply._
+import cats.syntax.applicativeError._
+import cats.syntax.comonad._
+import cats.syntax.flatMap._
 import cats.syntax.functor._
-import io.iohk.atala.prism.auth.AuthAndMiddlewareSupport
-import io.iohk.atala.prism.errors.LoggingContext
-import io.iohk.atala.prism.grpc.ProtoConverter
-import io.iohk.atala.prism.logging.TraceId
-import io.iohk.atala.prism.logging.TraceId.IOWithTraceIdContext
-import io.iohk.atala.prism.management.console.ManagementConsoleAuthenticator
-import io.iohk.atala.prism.management.console.errors.{ManagementConsoleError, ManagementConsoleErrorSupport}
-import io.iohk.atala.prism.management.console.grpc._
+import derevo.derive
+import derevo.tagless.applyK
+import io.iohk.atala.prism.management.console.errors.ManagementConsoleError
 import io.iohk.atala.prism.management.console.integrations.ParticipantsIntegrationService
 import io.iohk.atala.prism.management.console.models._
 import io.iohk.atala.prism.management.console.repositories.StatisticsRepository
-import io.iohk.atala.prism.metrics.RequestMeasureUtil.measureRequestFuture
-import io.iohk.atala.prism.protos.common_models.{HealthCheckRequest, HealthCheckResponse}
-import io.iohk.atala.prism.protos.console_api
-import io.iohk.atala.prism.protos.console_api._
-import io.iohk.atala.prism.utils.FutureEither.FutureEitherOps
-import org.slf4j.{Logger, LoggerFactory}
+import io.iohk.atala.prism.logging.GeneralLoggableInstances._
+import tofu.higherKind.Mid
+import tofu.logging.{Logs, ServiceLogging}
+import tofu.syntax.logging._
 
-import scala.concurrent.{ExecutionContext, Future}
-import scala.util.{Failure, Success}
+@derive(applyK)
+trait ConsoleService[F[_]] {
+  def getStatistics(participantId: ParticipantId, getStatistics: GetStatistics): F[Statistics]
 
-class ConsoleServiceImpl(
-    participantsIntegrationService: ParticipantsIntegrationService,
-    statisticsRepository: StatisticsRepository[IOWithTraceIdContext],
-    val authenticator: ManagementConsoleAuthenticator
-)(implicit
-    ec: ExecutionContext
-) extends console_api.ConsoleServiceGrpc.ConsoleService
-    with ManagementConsoleErrorSupport
-    with AuthAndMiddlewareSupport[ManagementConsoleError, ParticipantId] {
+  def registerDID(registerDID: RegisterDID): F[Either[ManagementConsoleError, Unit]]
 
-  override protected val serviceName: String = "console-service"
+  def getCurrentUser(participantId: ParticipantId): F[Either[ManagementConsoleError, ParticipantInfo]]
 
-  val logger: Logger = LoggerFactory.getLogger(this.getClass)
+  def updateParticipantProfile(participantId: ParticipantId, participantProfile: UpdateParticipantProfile): F[Unit]
+}
 
-  override def healthCheck(request: HealthCheckRequest): Future[HealthCheckResponse] =
-    measureRequestFuture(serviceName, "healthCheck")(Future.successful(HealthCheckResponse()))
-
-  override def getStatistics(request: GetStatisticsRequest): Future[GetStatisticsResponse] =
-    auth[GetStatistics]("getStatistics", request) { (participantId, getStatistics) =>
-      statisticsRepository
-        .query(participantId, getStatistics.timeInterval)
-        .map(ProtoCodecs.toStatisticsProto)
-        .run(TraceId.generateYOLO)
-        .unsafeToFuture()
-        .map(_.asRight)
-        .toFutureEither
+object ConsoleService {
+  def apply[F[_]: MonadThrow, R[_]: Functor](
+      participantsIntegrationService: ParticipantsIntegrationService[F],
+      statisticsRepository: StatisticsRepository[F],
+      logs: Logs[R, F]
+  ): R[ConsoleService[F]] =
+    for {
+      serviceLogs <- logs.service[ConsoleService[F]]
+    } yield {
+      implicit val implicitLogs: ServiceLogging[F, ConsoleService[F]] = serviceLogs
+      val logs: ConsoleService[Mid[F, *]] = new ConsoleServiceLogs[F]
+      val mid = logs
+      mid attach new ConsoleServiceImpl[F](participantsIntegrationService, statisticsRepository)
     }
 
-  override def registerDID(request: RegisterConsoleDIDRequest): Future[RegisterConsoleDIDResponse] = {
-    val methodName = "registerDID"
-    implicit val codec = implicitly[ProtoConverter[RegisterConsoleDIDRequest, RegisterDID]]
-    codec.fromProto(request) match {
-      case Failure(exception) =>
-        val response = invalidRequest(exception.getMessage)
-        respondWith(request, response, serviceName, methodName)
+  def unsafe[F[_]: MonadThrow, R[_]: Comonad](
+      participantsIntegrationService: ParticipantsIntegrationService[F],
+      statisticsRepository: StatisticsRepository[F],
+      logs: Logs[R, F]
+  ): ConsoleService[F] = ConsoleService(participantsIntegrationService, statisticsRepository, logs).extract
 
-      case Success(query) =>
-        // Assemble LoggingContext out of the case class fields
-        implicit val lc: LoggingContext = LoggingContext(
-          (0 until query.productArity)
-            .map(i => query.productElementName(i) -> query.productElement(i).toString)
-            .toMap
+  def makeResource[F[_]: MonadThrow, R[_]: Monad](
+      participantsIntegrationService: ParticipantsIntegrationService[F],
+      statisticsRepository: StatisticsRepository[F],
+      logs: Logs[R, F]
+  ): Resource[R, ConsoleService[F]] =
+    Resource.eval(ConsoleService(participantsIntegrationService, statisticsRepository, logs))
+}
+
+private final class ConsoleServiceImpl[F[_]](
+    participantsIntegrationService: ParticipantsIntegrationService[F],
+    statisticsRepository: StatisticsRepository[F]
+) extends ConsoleService[F] {
+
+  override def getStatistics(participantId: ParticipantId, getStatistics: GetStatistics): F[Statistics] =
+    statisticsRepository.query(participantId, getStatistics.timeInterval)
+
+  override def registerDID(registerDID: RegisterDID): F[Either[ManagementConsoleError, Unit]] =
+    participantsIntegrationService.register(registerDID)
+
+  override def getCurrentUser(participantId: ParticipantId): F[Either[ManagementConsoleError, ParticipantInfo]] =
+    participantsIntegrationService.getDetails(participantId)
+
+  override def updateParticipantProfile(
+      participantId: ParticipantId,
+      participantProfile: UpdateParticipantProfile
+  ): F[Unit] = participantsIntegrationService.update(participantId, participantProfile)
+}
+
+private final class ConsoleServiceLogs[F[_]: ServiceLogging[*[_], ConsoleService[F]]: MonadThrow]
+    extends ConsoleService[Mid[F, *]] {
+  override def getStatistics(participantId: ParticipantId, getStatistics: GetStatistics): Mid[F, Statistics] =
+    in =>
+      info"getting statistics $participantId" *> in
+        .flatTap(_ => info"getting statistics - successfully done")
+        .onError(errorCause"encountered an error while getting statistics" (_))
+
+  override def registerDID(registerDID: RegisterDID): Mid[F, Either[ManagementConsoleError, Unit]] =
+    in =>
+      info"registering DID ${registerDID.did.getCanonicalSuffix}" *> in
+        .flatTap(
+          _.fold(
+            er => error"encountered an error while registering DID $er",
+            _ => info"registering DID - successfully done"
+          )
         )
-        measureRequestFuture(serviceName, methodName)(
-          participantsIntegrationService
-            .register(query)
-            .as(RegisterConsoleDIDResponse())
-            .wrapAndRegisterExceptions(serviceName, methodName)
-            .flatten
+        .onError(errorCause"encountered an error while registering DID" (_))
+
+  override def getCurrentUser(participantId: ParticipantId): Mid[F, Either[ManagementConsoleError, ParticipantInfo]] =
+    in =>
+      info"getting current user $participantId" *> in
+        .flatTap(
+          _.fold(
+            er => error"encountered an error while getting current user $er",
+            _ => info"getting current user - successfully done"
+          )
         )
-    }
-  }
+        .onError(errorCause"encountered an error while getting current user" (_))
 
-  override def getCurrentUser(request: GetConsoleCurrentUserRequest): Future[GetConsoleCurrentUserResponse] = {
-    unitAuth("getCurrentUser", request) { (participantId, _) =>
-      participantsIntegrationService
-        .getDetails(participantId)
-        .map { info =>
-          val logoBytes = info.logo.map(_.bytes.toArray).getOrElse(Array.empty)
-          GetConsoleCurrentUserResponse()
-            .withName(info.name)
-            .withLogo(ByteString.copyFrom(logoBytes))
-        }
-    }
-  }
-
-  override def updateParticipantProfile(request: ConsoleUpdateProfileRequest): Future[ConsoleUpdateProfileResponse] = {
-    auth[UpdateParticipantProfile]("updateParticipantProfile", request) { (participantId, _) =>
-      val logo = ParticipantLogo(request.logo.toByteArray.toVector)
-      val participantProfile = UpdateParticipantProfile(request.name, Option(logo))
-      participantsIntegrationService
-        .update(participantId, participantProfile)
-        .as(ConsoleUpdateProfileResponse())
-    }
-  }
+  override def updateParticipantProfile(
+      participantId: ParticipantId,
+      participantProfile: UpdateParticipantProfile
+  ): Mid[F, Unit] =
+    in =>
+      info"updating participant profile $participantId" *> in
+        .flatTap(_ => info"updating participant profile - successfully done")
+        .onError(errorCause"encountered an error while updating participant profile" (_))
 }

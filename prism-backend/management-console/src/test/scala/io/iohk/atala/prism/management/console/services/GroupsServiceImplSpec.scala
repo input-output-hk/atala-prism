@@ -9,6 +9,7 @@ import io.iohk.atala.prism.kotlin.crypto.EC
 import io.iohk.atala.prism.logging.TraceId
 import io.iohk.atala.prism.logging.TraceId.IOWithTraceIdContext
 import io.iohk.atala.prism.kotlin.identity.DID
+import io.iohk.atala.prism.management.console.grpc.GroupsGrpcService
 import io.iohk.atala.prism.management.console.models.PaginatedQueryConstraints.ResultOrdering
 import io.iohk.atala.prism.management.console.models._
 import io.iohk.atala.prism.protos.common_models
@@ -50,7 +51,13 @@ class GroupsServiceImplSpec extends RpcSpecBase with DIDUtil {
   override def services =
     Seq(
       console_api.GroupsServiceGrpc
-        .bindService(new GroupsServiceImpl(institutionGroupsRepository, authenticator), executionContext)
+        .bindService(
+          new GroupsGrpcService(
+            GroupsService.unsafe(institutionGroupsRepository, managementConsoleTestLogs),
+            authenticator
+          ),
+          executionContext
+        )
     )
 
   private val getGroupsQuery: InstitutionGroup.PaginatedQuery =
@@ -76,8 +83,12 @@ class GroupsServiceImplSpec extends RpcSpecBase with DIDUtil {
         response.group.value.numberOfContacts must be(0)
 
         // the new group needs to exist
-        val (groups, _) =
-          institutionGroupsRepository.getBy(institutionId, getGroupsQuery).run(TraceId.generateYOLO).unsafeRunSync()
+        val groups =
+          institutionGroupsRepository
+            .getBy(institutionId, getGroupsQuery)
+            .run(TraceId.generateYOLO)
+            .unsafeRunSync()
+            .groups
         groups.map(_.value.name) must contain(newGroup)
       }
     }
@@ -106,8 +117,12 @@ class GroupsServiceImplSpec extends RpcSpecBase with DIDUtil {
         response.group.value.numberOfContacts must be(2)
 
         // the new group needs to exist
-        val (groups, _) =
-          institutionGroupsRepository.getBy(institutionId, getGroupsQuery).run(TraceId.generateYOLO).unsafeRunSync()
+        val groups =
+          institutionGroupsRepository
+            .getBy(institutionId, getGroupsQuery)
+            .run(TraceId.generateYOLO)
+            .unsafeRunSync()
+            .groups
         val result = groups.find(_.value.name == newGroup).value
         result.value.name must be(newGroup)
         result.numberOfContacts must be(2)
@@ -583,8 +598,12 @@ class GroupsServiceImplSpec extends RpcSpecBase with DIDUtil {
         serviceStub.updateGroup(request)
 
         // Check that the group was indeed renamed
-        val (groups, _) =
-          institutionGroupsRepository.getBy(institutionId, getGroupsQuery).run(TraceId.generateYOLO).unsafeRunSync()
+        val groups =
+          institutionGroupsRepository
+            .getBy(institutionId, getGroupsQuery)
+            .run(TraceId.generateYOLO)
+            .unsafeRunSync()
+            .groups
         groups.map(_.value.name.value) must contain(newName)
       }
     }
@@ -832,10 +851,11 @@ class GroupsServiceImplSpec extends RpcSpecBase with DIDUtil {
   }
 
   private def getInstitutionGroups(institutionId: ParticipantId): List[InstitutionGroup.WithContactCount] = {
-    val (groups, _) = institutionGroupsRepository
+    val groups = institutionGroupsRepository
       .getBy(institutionId, getGroupsQuery)
       .run(TraceId.generateYOLO)
       .unsafeRunSync()
+      .groups
 
     groups
   }

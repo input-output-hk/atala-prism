@@ -1,9 +1,14 @@
 package io.iohk.atala.prism.management.console
 
-import cats.effect.IO
+import cats.effect.{ContextShift, IO}
 import io.iohk.atala.prism.auth.grpc.GrpcAuthenticationHeaderParser
 import io.iohk.atala.prism.logging.TraceId.IOWithTraceIdContext
 import io.iohk.atala.prism.management.console.clients.ConnectorClient
+import io.iohk.atala.prism.management.console.grpc.CredentialTypesGrpcService
+import io.iohk.atala.prism.management.console.grpc.ContactsGrpcService
+import io.iohk.atala.prism.management.console.grpc.CredentialIssuanceGrpcService
+import io.iohk.atala.prism.management.console.grpc.CredentialsGrpcService
+import io.iohk.atala.prism.management.console.grpc.ConsoleGrpcService
 import io.iohk.atala.prism.management.console.integrations.{
   ContactsIntegrationService,
   CredentialsIntegrationService,
@@ -18,7 +23,11 @@ import io.iohk.atala.prism.utils.IOUtils._
 import org.mockito.MockitoSugar.mock
 import tofu.logging.Logs
 
+import scala.concurrent.ExecutionContext
+
 class ManagementConsoleRpcSpecBase extends RpcSpecBase {
+
+  implicit val cs: ContextShift[IO] = IO.contextShift(ExecutionContext.global)
 
   private val managementConsoleTestLogs: Logs[IO, IOWithTraceIdContext] = Logs.withContext[IO, IOWithTraceIdContext]
 
@@ -76,33 +85,44 @@ class ManagementConsoleRpcSpecBase extends RpcSpecBase {
   lazy val contactsIntegrationService =
     ContactsIntegrationService.unsafe(contactsRepository, connectorMock, managementConsoleTestLogs)
 
-  lazy val participantsIntegrationService = new ParticipantsIntegrationService(participantsRepository)
-  lazy val consoleService = new ConsoleServiceImpl(participantsIntegrationService, statisticsRepository, authenticator)(
+  lazy val participantsIntegrationService =
+    ParticipantsIntegrationService.unsafe(participantsRepository, managementConsoleTestLogs)
+  lazy val consoleService = new ConsoleGrpcService(
+    ConsoleService.unsafe(participantsIntegrationService, statisticsRepository, managementConsoleTestLogs),
+    authenticator
+  )(
     executionContext
   )
-  lazy val contactsService = new ContactsServiceImpl(contactsIntegrationService, authenticator)(
+  lazy val contactsService = new ContactsGrpcService(contactsIntegrationService, authenticator)(
     executionContext
   )
-  lazy val credentialIssuanceService = new CredentialIssuanceServiceImpl(
-    credentialIssuancesRepository,
+  lazy val credentialIssuanceService = new CredentialIssuanceGrpcService(
+    CredentialIssuanceService.unsafe(credentialIssuancesRepository, managementConsoleTestLogs),
     authenticator
   )(
     executionContext
   )
 
-  lazy val credentialTypeService = new CredentialTypesServiceImpl(credentialTypeRepository, authenticator)(
+  lazy val credentialTypeService = new CredentialTypesGrpcService(
+    CredentialTypesService.unsafe(credentialTypeRepository, managementConsoleTestLogs),
+    authenticator
+  )(
     executionContext
   )
 
   lazy val credentialsIntegrationService =
-    new CredentialsIntegrationService(credentialsRepository, nodeMock, connectorMock)
+    CredentialsIntegrationService.unsafe(credentialsRepository, nodeMock, connectorMock, managementConsoleTestLogs)
   lazy val credentialsService =
-    new CredentialsServiceImpl(
-      credentialsRepository,
-      credentialsIntegrationService,
-      authenticator,
-      nodeMock,
-      connectorMock
+    new CredentialsGrpcService(
+      CredentialsService
+        .unsafe(
+          credentialsRepository,
+          credentialsIntegrationService,
+          nodeMock,
+          connectorMock,
+          managementConsoleTestLogs
+        ),
+      authenticator
     )(
       executionContext
     )
