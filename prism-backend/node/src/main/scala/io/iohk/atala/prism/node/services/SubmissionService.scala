@@ -60,15 +60,20 @@ class SubmissionService private (
           .traverse(getTransactionDetails)
           .map(_.flatten)
 
-      (inLedgerTransactions, pendingTransactions) = transactionsWithDetails.partitionMap {
+      (inLedgerTransactions, notInLedgerTransactions) = transactionsWithDetails.partitionMap {
         case (transaction, TransactionStatus.InLedger) =>
           Left(transaction)
-        case (transaction, _) =>
-          Right(transaction)
+        case txWithStatus =>
+          Right(txWithStatus)
       }
       numInLedgerSynced <- syncInLedgerTransactions(inLedgerTransactions)
 
-      numPublished <- mergeAndRetryPendingTransactions(pendingTransactions)
+      transactionsToRetry = notInLedgerTransactions.collect {
+        case (transaction, status) if status != TransactionStatus.Submitted =>
+          transaction
+      }
+
+      numPublished <- mergeAndRetryPendingTransactions(transactionsToRetry)
     } yield {
       logger.info(
         s"methodName: retryOldPendingTransactions , pending transactions: ${pendingTransactions.size}; " +

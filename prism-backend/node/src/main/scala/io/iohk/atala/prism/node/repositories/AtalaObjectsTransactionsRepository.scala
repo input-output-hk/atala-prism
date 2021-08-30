@@ -195,8 +195,10 @@ private final class AtalaObjectsTransactionsRepositoryImpl[F[_]: BracketThrow](x
       status: TransactionStatus
   ): AtalaObjectTransactionSubmissionStatus = {
     status match {
-      case TransactionStatus.Pending => AtalaObjectTransactionSubmissionStatus.Pending
       case TransactionStatus.InLedger => AtalaObjectTransactionSubmissionStatus.InLedger
+      case TransactionStatus.Submitted => AtalaObjectTransactionSubmissionStatus.Pending
+      case TransactionStatus.Expired => AtalaObjectTransactionSubmissionStatus.Pending
+      case TransactionStatus.Pending => AtalaObjectTransactionSubmissionStatus.Pending
     }
   }
 }
