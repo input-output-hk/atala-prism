@@ -5,14 +5,18 @@ import { withApi } from '../providers/withApi';
 import CredentialTemplates from './CredentialTemplates';
 import { useTemplateCategories } from '../../hooks/useCredentialTypes';
 import { PrismStoreContext } from '../../stores/domain/PrismStore';
+import { UiStateContext } from '../../stores/ui/UiState';
 
 const CredentialTemplatesContainer = observer(({ api: { credentialTypesManager } }) => {
   const { templateStore } = useContext(PrismStoreContext);
+  const { templateUiState } = useContext(UiStateContext);
   const { credentialTemplates, fetchTemplates, isLoading } = templateStore;
+  const { resetState } = templateUiState;
 
   useEffect(() => {
+    resetState();
     fetchTemplates();
-  }, [fetchTemplates]);
+  }, [resetState, fetchTemplates]);
 
   const { templateCategories } = useTemplateCategories(credentialTypesManager);
 

@@ -36,7 +36,7 @@ const TemplatesTableContainer = observer(({ tableProps, showTemplatePreview }) =
   };
 
   const renderContent = () => {
-    if (noTemplates && isLoading) return <SimpleLoading size="md" />;
+    if (isLoading) return <SimpleLoading size="md" />;
     if (noTemplates) return <EmptyComponent {...emptyProps} />;
     return (
       <>

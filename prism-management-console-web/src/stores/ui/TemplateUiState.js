@@ -4,16 +4,24 @@ import { filterByExactMatch, filterByInclusion } from '../../helpers/filterHelpe
 import { SORTING_DIRECTIONS, TEMPLATES_SORTING_KEYS } from '../../helpers/constants';
 
 const { ascending, descending } = SORTING_DIRECTIONS;
+
+const defaultValues = {
+  nameFilter: '',
+  categoryFilter: null,
+  lastEditedFilter: null,
+  sortDirection: ascending,
+  sortingBy: TEMPLATES_SORTING_KEYS.name
+};
 export class TemplateUiState {
-  nameFilter = '';
+  nameFilter = defaultValues.nameFilter;
 
-  categoryFilter = null;
+  categoryFilter = defaultValues.categoryFilter;
 
-  lastEditedFilter = null;
+  lastEditedFilter = defaultValues.lastEditedFilter;
 
-  sortDirection = ascending;
+  sortDirection = defaultValues.sortDirection;
 
-  sortingBy = TEMPLATES_SORTING_KEYS.name;
+  sortingBy = defaultValues.sortingBy;
 
   constructor(rootStore) {
     this.rootStore = rootStore;
@@ -25,8 +33,12 @@ export class TemplateUiState {
       hasNameFilterApplied: computed,
       hasAditionalFiltersApplied: computed,
       filteredTemplates: computed({ requiresReaction: true }),
+      toggleSortDirection: action,
       setNameFilter: action,
+      resetState: action,
       applyFilters: false,
+      applySorting: false,
+      sortingIsCaseSensitive: false,
       rootStore: false
     });
   }
@@ -41,7 +53,13 @@ export class TemplateUiState {
 
   get filteredTemplates() {
     const templates = this.rootStore.prismStore.templateStore.credentialTemplates;
-    const filteredTemplates = templates.filter(item => {
+    const filteredTemplates = this.applyFilters(templates);
+    const sortedAndFilteredTemplates = this.applySorting(filteredTemplates);
+    return sortedAndFilteredTemplates;
+  }
+
+  applyFilters = templates =>
+    templates.filter(item => {
       const matchName = filterByInclusion(this.nameFilter, item.name);
       const matchCategory = filterByExactMatch(this.categoryFilter, item.category);
       const matchDate = filterByExactMatch(this.lastEditedFilter, item.lastEdited);
@@ -49,15 +67,22 @@ export class TemplateUiState {
       return matchName && matchCategory && matchDate;
     });
 
-    const sortedAndFilteredTemplates = _.orderBy(
-      filteredTemplates,
+  applySorting = templates =>
+    _.orderBy(
+      templates,
       [o => (this.sortingIsCaseSensitive() ? o[this.sortingBy].toLowerCase() : o[this.sortingBy])],
       this.sortDirection === ascending ? 'asc' : 'desc'
     );
-    return sortedAndFilteredTemplates;
-  }
 
   sortingIsCaseSensitive = () => this.sortingBy === TEMPLATES_SORTING_KEYS.name;
+
+  resetState = () => {
+    this.nameFilter = defaultValues.nameFilter;
+    this.categoryFilter = defaultValues.categoryFilter;
+    this.lastEditedFilter = defaultValues.lastEditedFilter;
+    this.sortDirection = defaultValues.sortDirection;
+    this.sortingBy = defaultValues.sortingBy;
+  };
 
   setFilterValue = (key, value) => {
     this[key] = value;
