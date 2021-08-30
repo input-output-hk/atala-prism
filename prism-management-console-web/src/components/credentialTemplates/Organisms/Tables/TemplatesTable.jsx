@@ -5,14 +5,14 @@ import InfiniteScrollTable from '../../../common/Organisms/Tables/InfiniteScroll
 import { credentialTypeShape, templateCategoryShape } from '../../../../helpers/propShapes';
 import './_style.scss';
 
-const TemplatesTable = ({ credentialTypes, templateCategories, showTemplatePreview }) => {
+const TemplatesTable = ({ credentialTemplates, templateCategories, showTemplatePreview }) => {
   const tableActions = {
     showTemplatePreview
   };
 
   const tableProps = {
     columns: getTemplatesColumns(templateCategories, tableActions),
-    data: credentialTypes,
+    data: credentialTemplates,
     rowKey: 'id'
   };
 
@@ -24,7 +24,7 @@ const TemplatesTable = ({ credentialTypes, templateCategories, showTemplatePrevi
 };
 
 TemplatesTable.propTypes = {
-  credentialTypes: PropTypes.arrayOf(credentialTypeShape).isRequired,
+  credentialTemplates: PropTypes.arrayOf(credentialTypeShape).isRequired,
   templateCategories: PropTypes.arrayOf(templateCategoryShape).isRequired,
   showTemplatePreview: PropTypes.func.isRequired
 };

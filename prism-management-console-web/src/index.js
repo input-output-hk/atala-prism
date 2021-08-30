@@ -7,10 +7,10 @@ import * as serviceWorker from './serviceWorker';
 import { config } from './APIs/config';
 import { DIDBased } from './APIs/auth';
 import Api, { hardcodedApi } from './APIs';
-import { PrismStoreContext } from './stores/PrismStore';
+import { PrismStoreContext } from './stores/domain/PrismStore';
 import { APIContext } from './components/providers/ApiContext';
 import { RootStore } from './stores/RootStore';
-import { UiStateContext } from './stores/UiState';
+import { UiStateContext } from './stores/ui/UiState';
 
 const supremeApi = Object.assign(new Api(config, DIDBased), hardcodedApi);
 const rootStore = new RootStore(supremeApi);

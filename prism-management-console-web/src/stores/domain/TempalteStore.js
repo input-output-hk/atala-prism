@@ -1,4 +1,4 @@
-import { makeAutoObservable, observable, computed, action } from 'mobx';
+import { makeAutoObservable, observable, action } from 'mobx';
 
 export class TemplateStore {
   isLoading = false;
@@ -13,7 +13,6 @@ export class TemplateStore {
     makeAutoObservable(this, {
       isLoading: observable,
       credentialTemplates: observable,
-      filteredCredentialTemplates: computed,
       addCredentialTemplate: action,
       fetchTemplates: action,
       rootStore: false
