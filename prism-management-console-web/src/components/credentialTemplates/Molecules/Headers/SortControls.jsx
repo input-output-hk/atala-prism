@@ -1,13 +1,18 @@
-import React from 'react';
+import React, { useContext } from 'react';
+import { observer } from 'mobx-react-lite';
 import { useTranslation } from 'react-i18next';
 import { Button, Dropdown, Menu } from 'antd';
 import { DownOutlined, SortAscendingOutlined, SortDescendingOutlined } from '@ant-design/icons';
 import { SORTING_DIRECTIONS, TEMPLATES_SORTING_KEYS } from '../../../../helpers/constants';
 import CustomButton from '../../../common/Atoms/CustomButton/CustomButton';
-import { templateSortingShape } from '../../../../helpers/propShapes';
+import { UiStateContext } from '../../../../stores/ui/UiState';
 
-const SortControls = ({ sortingBy, setSortingBy, sortDirection, setSortDirection }) => {
+const { ascending } = SORTING_DIRECTIONS;
+
+const SortControls = observer(() => {
   const { t } = useTranslation();
+  const { templateUiState } = useContext(UiStateContext);
+  const { sortDirection, toggleSortDirection, sortingBy, setSortingBy } = templateUiState;
 
   const sortingOptions = Object.keys(TEMPLATES_SORTING_KEYS);
 
@@ -19,17 +24,14 @@ const SortControls = ({ sortingBy, setSortingBy, sortDirection, setSortDirection
     </Menu>
   );
 
-  const sortAscending = sortDirection === SORTING_DIRECTIONS.ascending;
-
-  const toggleSorting = () =>
-    setSortDirection(sortAscending ? SORTING_DIRECTIONS.descending : SORTING_DIRECTIONS.ascending);
+  const sortAscending = sortDirection === ascending;
 
   return (
     <div className="TableOptions">
       <div className="LeftOptions">
         <Button
           className="TableOptionButton no-border"
-          onClick={toggleSorting}
+          onClick={toggleSortDirection}
           large
           icon={
             sortAscending ? (
@@ -50,8 +52,6 @@ const SortControls = ({ sortingBy, setSortingBy, sortDirection, setSortDirection
       </div>
     </div>
   );
-};
-
-SortControls.propTypes = templateSortingShape;
+});
 
 export default SortControls;

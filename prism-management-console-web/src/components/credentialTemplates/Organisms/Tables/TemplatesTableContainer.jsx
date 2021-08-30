@@ -1,6 +1,7 @@
 import React, { useContext } from 'react';
 import PropTypes from 'prop-types';
 import { useTranslation } from 'react-i18next';
+import { observer } from 'mobx-react-lite';
 import { useSession } from '../../../providers/SessionContext';
 import { CONFIRMED } from '../../../../helpers/constants';
 import CreateTemplateButton from '../../Atoms/Buttons/CreateTemplateButton';
@@ -17,13 +18,15 @@ import {
 } from '../../../../helpers/propShapes';
 import { UiStateContext } from '../../../../stores/ui/UiState';
 
-const TemplatesTableContainer = ({ tableProps, showTemplatePreview }) => {
+const TemplatesTableContainer = observer(({ tableProps, showTemplatePreview }) => {
   const { t } = useTranslation();
   const { accountStatus } = useSession();
-  const { credentialTemplates, templateCategories, isLoading } = tableProps;
-  const { hasFiltersApplied, filteredTemplates } = useContext(UiStateContext).templateUiState;
+  const { templateCategories, isLoading } = tableProps;
 
-  const noTemplates = !credentialTemplates?.length;
+  const { templateUiState } = useContext(UiStateContext);
+  const { hasFiltersApplied, filteredTemplates } = templateUiState;
+
+  const noTemplates = !filteredTemplates?.length;
 
   const emptyProps = {
     photoSrc: noTemplatesPicture,
@@ -37,7 +40,7 @@ const TemplatesTableContainer = ({ tableProps, showTemplatePreview }) => {
     if (noTemplates) return <EmptyComponent {...emptyProps} />;
     return (
       <>
-        {/* <SortControls {...sortingProps} /> */}
+        <SortControls />
         <TemplatesTable
           credentialTemplates={filteredTemplates}
           templateCategories={templateCategories}
@@ -48,7 +51,7 @@ const TemplatesTableContainer = ({ tableProps, showTemplatePreview }) => {
   };
 
   return <div className="templatesContent">{renderContent()}</div>;
-};
+});
 
 TemplatesTableContainer.propTypes = {
   tableProps: PropTypes.shape({

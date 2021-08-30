@@ -3,17 +3,19 @@ import PropTypes from 'prop-types';
 import { Select } from 'antd';
 import { useTranslation } from 'react-i18next';
 import { DownOutlined } from '@ant-design/icons';
+import { observer } from 'mobx-react-lite';
 import CustomInputGroup from '../../../common/Atoms/CustomInputGroup/CustomInputGroup';
 import CustomDatePicker from '../../../common/Atoms/CustomDatePicker/CustomDatePicker';
-import { templateCategoryShape, templateFiltersShape } from '../../../../helpers/propShapes';
+import { templateCategoryShape } from '../../../../helpers/propShapes';
 import { UiStateContext } from '../../../../stores/ui/UiState';
 
 const ENABLED_STATE = 1;
 
-const TemplateFilters = ({ templateCategories }) => {
+const TemplateFilters = observer(({ templateCategories }) => {
   const { t } = useTranslation();
   const { Option } = Select;
-  const { categoryFilter, lastEditedFilter } = useContext(UiStateContext).templateUiState;
+  const { templateUiState } = useContext(UiStateContext);
+  const { categoryFilter, lastEditedFilter, setFilterValue } = templateUiState;
 
   const allowedTemplateCategories = templateCategories.filter(
     ({ state }) => state === ENABLED_STATE
@@ -26,9 +28,7 @@ const TemplateFilters = ({ templateCategories }) => {
         value={categoryFilter}
         placeholder={t('templates.table.columns.category')}
         allowClear
-        onChange={value => {
-          categoryFilter = value;
-        }}
+        onChange={value => setFilterValue('categoryFilter', value)}
       >
         {allowedTemplateCategories.map(category => (
           <Option key={category.id} value={category.id}>
@@ -38,16 +38,16 @@ const TemplateFilters = ({ templateCategories }) => {
       </Select>
       <CustomInputGroup prefixIcon="calendar">
         <CustomDatePicker
+          value={lastEditedFilter}
           placeholder={t('templates.table.columns.lastEdited')}
           suffixIcon={<DownOutlined />}
-          onChange={(_, dateString) => {
-            lastEditedFilter = dateString;
-          }}
+          onChange={value => setFilterValue('lastEditedFilter', value)}
         />
       </CustomInputGroup>
     </div>
   );
-};
+});
+
 TemplateFilters.propTypes = {
   templateCategories: PropTypes.arrayOf(templateCategoryShape).isRequired
 };
