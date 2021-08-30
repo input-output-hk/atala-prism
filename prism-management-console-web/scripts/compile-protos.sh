@@ -3,7 +3,7 @@ set -e
 
 OUT_DIR="./src/protos"
 
-PROTOS_DIR="../prism-sdk/protos/src"
+PROTOS_DIR="./node_modules/@input-output-hk/atala-prism-protos"
 
 DEPENDENCIES_DIR="/usr/local/include"
 

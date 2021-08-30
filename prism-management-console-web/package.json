@@ -20,6 +20,7 @@
     "test:debug": "react-scripts --inspect-brk test --runInBand --no-cache"
   },
   "dependencies": {
+    "@input-output-hk/atala-prism-protos": "0.1.0-ff1968f",
     "@ant-design/compatible": "1.0.0",
     "@ant-design/icons": "4.4.0",
     "antd": "4.10.2",
