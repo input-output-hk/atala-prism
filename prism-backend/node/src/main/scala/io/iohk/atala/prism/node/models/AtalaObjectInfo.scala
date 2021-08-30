@@ -3,14 +3,30 @@ package io.iohk.atala.prism.node.models
 import io.iohk.atala.prism.models.TransactionInfo
 import io.iohk.atala.prism.node.cardano.TX_METADATA_MAX_SIZE
 import io.iohk.atala.prism.node.cardano.models.AtalaObjectMetadata
+import io.iohk.atala.prism.node.operations.{Operation, parseOperationsFromByteContent}
 import io.iohk.atala.prism.protos.node_internal
 
 case class AtalaObjectInfo(
     objectId: AtalaObjectId,
     byteContent: Array[Byte], // Serialization of a io.iohk.atala.prism.protos.node_internal.AtalaObject
+    operations: List[Operation], // List of parsed operations
     status: AtalaObjectStatus, // Status of an object may be processed (e.g. DIDs were recognized and stored in DB), merged (e.g. merged with another object) or pending
-    transaction: Option[TransactionInfo] = None // Blockchain transaction the object was first found in
+    transaction: Option[TransactionInfo] // Blockchain transaction the object was first found in
 ) {
+  def this(
+      objectId: AtalaObjectId,
+      byteContent: Array[Byte],
+      status: AtalaObjectStatus,
+      transaction: Option[TransactionInfo] = None
+  ) =
+    this(
+      objectId,
+      byteContent,
+      parseOperationsFromByteContent(byteContent),
+      status,
+      transaction
+    )
+
   lazy val getAndValidateAtalaObject: Option[node_internal.AtalaObject] =
     node_internal.AtalaObject.validate(byteContent).toOption
 
@@ -32,7 +48,13 @@ case class AtalaObjectInfo(
           blockOperationCount = mergedBlock.operations.size
         )
         .withBlockContent(mergedBlock)
-      AtalaObjectInfo(AtalaObjectId.of(obj), obj.toByteArray, status = AtalaObjectStatus.Pending, None)
+      AtalaObjectInfo(
+        AtalaObjectId.of(obj),
+        obj.toByteArray,
+        operations ++ that.operations,
+        status = AtalaObjectStatus.Pending,
+        None
+      )
     }
   }
 
@@ -65,7 +87,7 @@ case class AtalaObjectInfo(
 
   override def equals(obj: Any): Boolean =
     obj match {
-      case AtalaObjectInfo(thatObjectId, thatByteContent, thatStatus, thatTransaction) =>
+      case AtalaObjectInfo(thatObjectId, thatByteContent, _, thatStatus, thatTransaction) =>
         val thatTuple = (thatObjectId, thatByteContent.toList, thatStatus, thatTransaction)
         val thisTuple = (objectId, byteContent.toList, status, transaction)
         thisTuple.equals(thatTuple)
@@ -75,4 +97,13 @@ case class AtalaObjectInfo(
 
   override def hashCode(): Int =
     (objectId, byteContent.toList, status, transaction).hashCode()
+}
+
+object AtalaObjectInfo {
+  def apply(
+      objectId: AtalaObjectId,
+      byteContent: Array[Byte],
+      status: AtalaObjectStatus,
+      transaction: Option[TransactionInfo] = None
+  ) = new AtalaObjectInfo(objectId, byteContent, status, transaction)
 }
