@@ -338,25 +338,25 @@ jobs:
 
       - name: Set Master Environment
         if: github.ref == 'refs/heads/master'
-        run: echo "ENABLED_COMPONENTS=\"all\"" >> $GITHUB_ENV;
+        run: echo "ENABLED_COMPONENTS=geud,intdemo" >> $GITHUB_ENV;
 
       - name: Set Dev Environment
         if: startsWith(github.ref, 'refs/heads/develop')
-        run: echo "ENABLED_COMPONENTS=\"all\"" >> $GITHUB_ENV;
+        run: echo "ENABLED_COMPONENTS=all" >> $GITHUB_ENV;
 
       - name: Set Test Environment
         if: startsWith(github.ref, 'refs/heads/test')
-        run: echo "ENABLED_COMPONENTS=\"\"" >> $GITHUB_ENV;
+        run: echo "ENABLED_COMPONENTS=" >> $GITHUB_ENV;
 
       - name: Set QA Environment
         if: |
           startsWith(github.ref, 'refs/heads/qa') ||
           startsWith(github.ref, 'refs/heads/sandbox')
-        run: echo "ENABLED_COMPONENTS=\"geud,intdemo\"" >> $GITHUB_ENV;
+        run: echo "ENABLED_COMPONENTS=geud,intdemo" >> $GITHUB_ENV;
 
       - name: Set Demo Environment
         if: github.ref == 'refs/heads/demo'
-        run: echo "ENABLED_COMPONENTS=\"geud\"" >> $GITHUB_ENV;
+        run: echo "ENABLED_COMPONENTS=geud" >> $GITHUB_ENV;
 
       - name: Set tag convention
         run: |
