@@ -7,6 +7,7 @@ import io.iohk.atala.prism.management.console.clients.ConnectorClient
 import io.iohk.atala.prism.management.console.grpc.CredentialTypesGrpcService
 import io.iohk.atala.prism.management.console.grpc.ContactsGrpcService
 import io.iohk.atala.prism.management.console.grpc.CredentialIssuanceGrpcService
+import io.iohk.atala.prism.management.console.grpc.CredentialsGrpcService
 import io.iohk.atala.prism.management.console.integrations.{
   ContactsIntegrationService,
   CredentialsIntegrationService,
@@ -108,12 +109,16 @@ class ManagementConsoleRpcSpecBase extends RpcSpecBase {
   lazy val credentialsIntegrationService =
     CredentialsIntegrationService.unsafe(credentialsRepository, nodeMock, connectorMock, managementConsoleTestLogs)
   lazy val credentialsService =
-    new CredentialsServiceImpl(
-      credentialsRepository,
-      credentialsIntegrationService,
-      authenticator,
-      nodeMock,
-      connectorMock
+    new CredentialsGrpcService(
+      CredentialsService
+        .unsafe(
+          credentialsRepository,
+          credentialsIntegrationService,
+          nodeMock,
+          connectorMock,
+          managementConsoleTestLogs
+        ),
+      authenticator
     )(
       executionContext
     )
