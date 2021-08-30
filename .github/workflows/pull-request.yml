@@ -385,6 +385,8 @@ jobs:
         uses: hashicorp/setup-terraform@v1
         with:
           terraform_version: 0.14.5
+          terraform_wrapper: false
+
 
       - name: Rebuild prism environment
         run: |
