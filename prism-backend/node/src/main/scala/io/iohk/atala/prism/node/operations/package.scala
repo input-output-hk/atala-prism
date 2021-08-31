@@ -8,7 +8,6 @@ import doobie.free.connection.ConnectionIO
 import io.iohk.atala.prism.kotlin.credentials.TimestampInfo
 import io.iohk.atala.prism.kotlin.crypto.keys.ECPublicKey
 import io.iohk.atala.prism.kotlin.crypto.SHA256Digest
-import io.iohk.atala.prism.kotlin.identity.DIDSuffix
 import io.iohk.atala.prism.models.{Ledger, TransactionId}
 import io.iohk.atala.prism.node.models.nodeState.LedgerData
 import io.iohk.atala.prism.node.operations.path._
@@ -25,7 +24,7 @@ package object operations {
     case class IncludedKey(key: PublicKey) extends OperationKey
 
     /** Key needs to be fetched from the state */
-    case class DeferredKey(owner: DIDSuffix, keyId: String) extends OperationKey
+    case class DeferredKey(owner: String, keyId: String) extends OperationKey
 
   }
 
@@ -75,7 +74,7 @@ package object operations {
     case class EntityExists(tpe: String, identifier: String) extends StateError
 
     /** Error signifying that key that was supposed to be used to verify the signature does not exist */
-    case class UnknownKey(didSuffix: DIDSuffix, keyId: String) extends StateError
+    case class UnknownKey(didSuffix: String, keyId: String) extends StateError
 
     case class InvalidKeyUsed(requirement: String) extends StateError
 

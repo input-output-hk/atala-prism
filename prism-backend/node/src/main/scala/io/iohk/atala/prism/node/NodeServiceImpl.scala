@@ -8,7 +8,7 @@ import io.iohk.atala.prism.BuildInfo
 import io.iohk.atala.prism.connector.AtalaOperationId
 import io.iohk.atala.prism.kotlin.credentials.CredentialBatchId
 import io.iohk.atala.prism.kotlin.crypto.SHA256Digest
-import io.iohk.atala.prism.kotlin.identity.{Canonical, DID, LongForm, Unknown}
+import io.iohk.atala.prism.kotlin.identity.{CanonicalPrismDid, PrismDid, LongFormPrismDid}
 import io.iohk.atala.prism.metrics.RequestMeasureUtil
 import io.iohk.atala.prism.metrics.RequestMeasureUtil.{FutureMetricsOps, measureRequestFuture}
 import io.iohk.atala.prism.node.errors.NodeError
@@ -71,31 +71,30 @@ class NodeServiceImpl(
   private def getDidDocument(didRequestStr: String, methodName: String)(implicit
       didDataRepository: DIDDataRepository[IO]
   ) = {
-    val didOpt = Option(DID.fromString(didRequestStr))
+    val didOpt = Option(PrismDid.fromString(didRequestStr))
     didOpt match {
       case Some(did) =>
-        did.getFormat match {
-          case _: Canonical =>
+        did match {
+          case _: CanonicalPrismDid =>
             resolve(did) orElse (countAndThrowNodeError(methodName, _))
-          case longForm: LongForm => // we received a long form DID
+          case longForm: LongFormPrismDid => // we received a long form DID
             // we first check that the encoded initial state matches the corresponding hash
-            Try(longForm.validate)
-              .map { validatedLongForm =>
+            Try{
                 // validation succeeded, we check if the DID was published
-                resolve(DID.buildPrismDID(longForm.getStateHash, null), did).orReturn {
+                resolve(PrismDid.buildCanonical(longForm.getStateHash), did).orReturn {
                   // if it was not published, we return the encoded initial state
                   succeedWith(
                     Some(
                       ProtoCodecs.atalaOperationToDIDDataProto(
                         did.getSuffix,
-                        validatedLongForm.getInitialState.asScala
+                        longForm.getInitialState.asScala
                       )
                     )
                   )
                 }
               }
               .getOrElse(failWith(s"Invalid long form DID: $didRequestStr", methodName))
-          case _: Unknown =>
+          case _ =>
             failWith(s"DID format not supported: $didRequestStr", methodName)
         }
       case None =>
@@ -117,7 +116,7 @@ class NodeServiceImpl(
           operationId <- objectManagement.sendSingleAtalaOperation(operation)
         } yield {
           node_api
-            .CreateDIDResponse(id = parsedOp.id.getValue)
+            .CreateDIDResponse(id = parsedOp.id)
             .withOperationId(operationId.toProtoByteString)
         }
       }
@@ -421,7 +420,7 @@ object NodeServiceImpl {
     val response = in.fold(GetBatchStateResponse()) { state =>
       val revocationLedgerData = state.revokedOn.map(ProtoCodecs.toLedgerData)
       val responseBase = GetBatchStateResponse()
-        .withIssuerDid(state.issuerDIDSuffix.getValue)
+        .withIssuerDid(state.issuerDIDSuffix)
         .withMerkleRoot(ByteString.copyFrom(state.merkleRoot.getHash.getValue))
         .withPublicationLedgerData(ProtoCodecs.toLedgerData(state.issuedOn))
       revocationLedgerData.fold(responseBase)(responseBase.withRevocationLedgerData)
@@ -457,13 +456,13 @@ object NodeServiceImpl {
     Future.failed(new RuntimeException(msg))
   }
 
-  private case class OrElse(did: DID, state: Future[Either[NodeError, Option[DIDDataState]]]) {
+  private case class OrElse(did: PrismDid, state: Future[Either[NodeError, Option[DIDDataState]]]) {
     def orReturn(
         initialState: => Future[node_api.GetDidDocumentResponse]
     )(implicit ec: ExecutionContext, logger: Logger): Future[node_api.GetDidDocumentResponse] =
       state.flatMap {
         case Right(stMaybe) =>
-          stMaybe.fold(initialState)(st => succeedWith(Some(ProtoCodecs.toDIDDataProto(did.getSuffix.getValue, st))))
+          stMaybe.fold(initialState)(st => succeedWith(Some(ProtoCodecs.toDIDDataProto(did.getSuffix, st))))
         case Left(err: NodeError) =>
           logger.info(err.toStatus.asRuntimeException().getMessage)
           initialState
@@ -474,19 +473,19 @@ object NodeServiceImpl {
     )(implicit ec: ExecutionContext, logger: Logger): Future[node_api.GetDidDocumentResponse] =
       state.flatMap {
         case Right(stMaybe) =>
-          val didData = stMaybe.map(st => ProtoCodecs.toDIDDataProto(did.getSuffix.getValue, st))
+          val didData = stMaybe.map(st => ProtoCodecs.toDIDDataProto(did.getSuffix, st))
           succeedWith(didData)
         case Left(err: NodeError) => ifFailed(err)
       }
   }
 
-  private def resolve(did: DID, butShowInDIDDocument: DID)(implicit
+  private def resolve(did: PrismDid, butShowInDIDDocument: PrismDid)(implicit
       didDataRepository: DIDDataRepository[IO]
   ): OrElse = {
     OrElse(butShowInDIDDocument, didDataRepository.findByDid(did).unsafeToFuture())
   }
 
-  private def resolve(did: DID)(implicit didDataRepository: DIDDataRepository[IO]): OrElse = {
+  private def resolve(did: PrismDid)(implicit didDataRepository: DIDDataRepository[IO]): OrElse = {
     OrElse(did, didDataRepository.findByDid(did).unsafeToFuture())
   }
 
@@ -498,7 +497,7 @@ object NodeServiceImpl {
         CreateDIDOperation.parseWithMockedLedgerData(operation).map { parsedOp =>
           OperationOutput(
             OperationOutput.Result.CreateDidOutput(
-              node_models.CreateDIDOutput(parsedOp.id.getValue)
+              node_models.CreateDIDOutput(parsedOp.id)
             )
           )
         }

@@ -8,7 +8,7 @@ import derevo.derive
 import derevo.tagless.applyK
 import doobie.implicits._
 import doobie.util.transactor.Transactor
-import io.iohk.atala.prism.kotlin.identity.{DID, DIDSuffix}
+import io.iohk.atala.prism.kotlin.identity.{PrismDid}
 import io.iohk.atala.prism.metrics.{TimeMeasureMetric, TimeMeasureUtil}
 import io.iohk.atala.prism.metrics.TimeMeasureUtil.MeasureOps
 import io.iohk.atala.prism.utils.syntax.DBConnectionOps
@@ -21,7 +21,7 @@ import tofu.higherKind.Mid
 
 @derive(applyK)
 trait DIDDataRepository[F[_]] {
-  def findByDid(did: DID): F[Either[NodeError, Option[DIDDataState]]]
+  def findByDid(did: PrismDid): F[Either[NodeError, Option[DIDDataState]]]
 }
 
 object DIDDataRepository {
@@ -35,16 +35,16 @@ private final class DIDDataRepositoryImpl[F[_]: BracketThrow](xa: Transactor[F])
 
   val logger: Logger = LoggerFactory.getLogger(getClass)
 
-  def findByDid(did: DID): F[Either[NodeError, Option[DIDDataState]]] =
-    Option(did.getCanonicalSuffix)
+  def findByDid(did: PrismDid): F[Either[NodeError, Option[DIDDataState]]] =
+    Option(did.asCanonical().toString)
       .fold[F[Either[NodeError, Option[DIDDataState]]]](logDidAndReturnUnknownValue(did))(getByCanonicalSuffix)
 
-  private def logDidAndReturnUnknownValue(did: DID): F[Either[NodeError, Option[DIDDataState]]] = {
+  private def logDidAndReturnUnknownValue(did: PrismDid): F[Either[NodeError, Option[DIDDataState]]] = {
     logger.info(s"Unknown DID format: $did")
     Either.left[NodeError, Option[DIDDataState]](UnknownValueError("did", did.getValue)).pure[F]
   }
 
-  private def getByCanonicalSuffix(canonicalSuffix: DIDSuffix): F[Either[NodeError, Option[DIDDataState]]] = {
+  private def getByCanonicalSuffix(canonicalSuffix: String): F[Either[NodeError, Option[DIDDataState]]] = {
     val query = for {
       lastOperationMaybe <- DIDDataDAO.getLastOperation(canonicalSuffix)
       keys <- PublicKeysDAO.findAll(canonicalSuffix)
@@ -63,6 +63,6 @@ private final class DIDDataRepositoryImpl[F[_]: BracketThrow](xa: Transactor[F])
 private final class DIDDataRepositoryMetrics[F[_]: TimeMeasureMetric: BracketThrow]
     extends DIDDataRepository[Mid[F, *]] {
   private lazy val findByDidTimer = TimeMeasureUtil.createDBQueryTimer("DIDDataRepository", "findByDid")
-  override def findByDid(did: DID): Mid[F, Either[NodeError, Option[DIDDataState]]] =
+  override def findByDid(did: PrismDid): Mid[F, Either[NodeError, Option[DIDDataState]]] =
     _.measureOperationTime(findByDidTimer)
 }

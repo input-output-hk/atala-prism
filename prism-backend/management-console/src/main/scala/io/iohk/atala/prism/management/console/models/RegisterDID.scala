@@ -1,5 +1,5 @@
 package io.iohk.atala.prism.management.console.models
 
-import io.iohk.atala.prism.kotlin.identity.DID
+import io.iohk.atala.prism.kotlin.identity.PrismDid
 
-case class RegisterDID(did: DID, name: String, logo: ParticipantLogo)
+case class RegisterDID(did: PrismDid, name: String, logo: ParticipantLogo)

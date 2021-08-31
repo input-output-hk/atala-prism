@@ -6,13 +6,12 @@ import cats.syntax.flatMap._
 import cats.syntax.applicativeError._
 import doobie.Transactor
 import doobie.implicits._
-import io.iohk.atala.prism.kotlin.identity.DID
+import io.iohk.atala.prism.kotlin.identity.PrismDid
 import io.iohk.atala.prism.metrics.{TimeMeasureMetric, TimeMeasureUtil}
 import io.iohk.atala.prism.utils.syntax.DBConnectionOps
 import io.iohk.atala.prism.metrics.TimeMeasureUtil.MeasureOps
 import io.iohk.atala.prism.vault.model.{CreatePayload, Payload}
 import io.iohk.atala.prism.vault.repositories.daos.PayloadsDAO
-import io.iohk.atala.prism.logging.GeneralLoggableInstances._
 import org.slf4j.{Logger, LoggerFactory}
 import derevo.derive
 import derevo.tagless.applyK
@@ -25,7 +24,7 @@ import tofu.syntax.logging._
 trait PayloadsRepository[F[_]] {
   def create(payloadData: CreatePayload): F[Payload]
 
-  def getByPaginated(did: DID, lastSeenIdOpt: Option[Payload.Id], limit: Int): F[List[Payload]]
+  def getByPaginated(did: PrismDid, lastSeenIdOpt: Option[Payload.Id], limit: Int): F[List[Payload]]
 }
 
 object PayloadsRepository {
@@ -51,7 +50,7 @@ private class PayloadsRepositoryImpl[F[_]](xa: Transactor[F])(implicit br: Brack
       .transact(xa)
 
   def getByPaginated(
-      did: DID,
+      did: PrismDid,
       lastSeenIdOpt: Option[Payload.Id],
       limit: Int
   ): F[List[Payload]] =
@@ -70,7 +69,7 @@ private final class PayloadsRepoMetrics[F[_]: TimeMeasureMetric: BracketThrow] e
   override def create(payloadData: CreatePayload): Mid[F, Payload] = _.measureOperationTime(createTimer)
 
   override def getByPaginated(
-      did: DID,
+      did: PrismDid,
       lastSeenIdOpt: Option[Payload.Id],
       limit: Int
   ): Mid[F, List[Payload]] =
@@ -86,12 +85,12 @@ private final class PayloadsRepoLogging[F[_]: MonadThrow: ServiceLogging[*[_], P
         .onError(e => errorCause"an error occurred while creating payload" (e))
 
   override def getByPaginated(
-      did: DID,
+      did: PrismDid,
       lastSeenIdOpt: Option[Payload.Id],
       limit: Int
   ): Mid[F, List[Payload]] =
     in =>
-      info"getting paginated data ${did.canonical} {limit=$limit}" *> in
+      info"getting paginated data ${did.asCanonical().toString} {limit=$limit}" *> in
         .flatTap(r => info"getting paginated data - successfully done got ${r.size} entities")
         .onError(e => errorCause"an error occurred while creating payload" (e))
 

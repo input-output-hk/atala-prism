@@ -7,7 +7,7 @@ import io.circe.Json
 import io.iohk.atala.prism.connector.AtalaOperationId
 import io.iohk.atala.prism.kotlin.crypto.{EC, SHA256Digest}
 import io.iohk.atala.prism.kotlin.crypto.keys.ECPublicKey
-import io.iohk.atala.prism.kotlin.identity.DID
+import io.iohk.atala.prism.kotlin.identity.PrismDid
 import io.iohk.atala.prism.models.{Ledger, TransactionId, UUIDValue}
 
 import java.util.UUID
@@ -40,8 +40,8 @@ trait BaseDAO {
     Meta[String].timap(b => Ledger.withNameInsensitiveOption(b).getOrElse(throw InvalidEnum[Ledger](b)))(_.entryName)
 
   // it makes no sense to register an unpublished DID, we'd always look for the canonical DID
-  implicit val didMeta: Meta[DID] = Meta[String].timap(DID.fromString) { did =>
-    Option(did.canonical()).getOrElse(throw new RuntimeException(s"Invalid canonical DID: $did")).getValue
+  implicit val didMeta: Meta[PrismDid] = Meta[String].timap(PrismDid.fromString) { did =>
+    Option(did.asCanonical().getValue).getOrElse(throw new RuntimeException(s"Invalid canonical DID: $did"))
   }
 
   protected def uuidValueMeta[T <: UUIDValue: TypeTag](builder: UUIDValue.Builder[T]): Meta[T] = {

@@ -3,7 +3,7 @@ package io.iohk.atala.prism.management.console.repositories.daos
 import cats.implicits._
 import doobie.implicits.{toSqlInterpolator, _}
 import doobie.{ConnectionIO, FC}
-import io.iohk.atala.prism.kotlin.identity.DID
+import io.iohk.atala.prism.kotlin.identity.PrismDid
 import io.iohk.atala.prism.management.console.models.{ParticipantId, ParticipantInfo, UpdateParticipantProfile}
 import doobie.implicits.legacy.instant._
 
@@ -27,7 +27,7 @@ object ParticipantsDAO {
       """.stripMargin.query[ParticipantInfo].option
   }
 
-  def findByDID(did: DID): ConnectionIO[Option[ParticipantInfo]] = {
+  def findByDID(did: PrismDid): ConnectionIO[Option[ParticipantInfo]] = {
     sql"""
          |SELECT participant_id, name, did, logo, created_at
          |FROM participants

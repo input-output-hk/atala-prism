@@ -9,16 +9,12 @@ import io.iohk.atala.prism.auth.grpc.GrpcAuthenticationHeader
 import io.iohk.atala.prism.auth.model.RequestNonce
 import io.iohk.atala.prism.connector.AtalaOperationId
 import io.iohk.atala.prism.grpc.ProtoConverter
-import io.iohk.atala.prism.kotlin.identity.DID
+import io.iohk.atala.prism.kotlin.identity.{CanonicalPrismDid, PrismDid}
 import io.iohk.atala.prism.management.console.grpc.ProtoCodecs.{checkListUniqueness, toTimestamp}
 import io.iohk.atala.prism.management.console.models.PaginatedQueryConstraints.ResultOrdering
 import io.iohk.atala.prism.management.console.models._
 import io.iohk.atala.prism.management.console.repositories.CredentialIssuancesRepository
-import io.iohk.atala.prism.management.console.repositories.CredentialIssuancesRepository.{
-  CreateCredentialBulk,
-  CreateCredentialIssuance,
-  GetCredentialIssuance
-}
+import io.iohk.atala.prism.management.console.repositories.CredentialIssuancesRepository.{CreateCredentialBulk, CreateCredentialIssuance, GetCredentialIssuance}
 import io.iohk.atala.prism.management.console.validations.JsonValidator
 import io.iohk.atala.prism.protos.{common_models, console_models, node_api}
 import io.iohk.atala.prism.protos.common_models.SortByDirection
@@ -90,7 +86,7 @@ package object grpc {
       for {
         did <- Try {
           Try(
-            DID
+            PrismDid
               .fromString(request.did)
           ).getOrElse(throw new RuntimeException("Missing or invalid DID"))
         }
@@ -578,15 +574,14 @@ package object grpc {
     ).mapN {
         case (nonce, didStr, keyId, signature) =>
           Try(
-            DID
+            PrismDid
               .fromString(didStr)
           ).toOption
             .map { did =>
-              val didBased =
-                if (did.isCanonicalForm)
-                  GrpcAuthenticationHeader.PublishedDIDBased
-                else GrpcAuthenticationHeader.UnpublishedDIDBased
-
+              val didBased = did match {
+                  case _: CanonicalPrismDid => GrpcAuthenticationHeader.PublishedDIDBased
+                  case _ => GrpcAuthenticationHeader.UnpublishedDIDBased
+                }
               didBased(
                 RequestNonce(Base64Utils.decodeURL(nonce).toVector),
                 did,

@@ -1,7 +1,7 @@
 package io.iohk.atala.prism.management.console.repositories.metrics
 
 import cats.effect.BracketThrow
-import io.iohk.atala.prism.kotlin.identity.DID
+import io.iohk.atala.prism.kotlin.identity.PrismDid
 import io.iohk.atala.prism.management.console.errors.ManagementConsoleError
 import io.iohk.atala.prism.management.console.models.{ParticipantId, ParticipantInfo}
 import io.iohk.atala.prism.management.console.repositories.ParticipantsRepository
@@ -28,7 +28,7 @@ final class ParticipantsRepositoryMetrics[F[_]: TimeMeasureMetric: BracketThrow]
   override def findBy(id: ParticipantId): Mid[F, Either[ManagementConsoleError, ParticipantInfo]] =
     _.measureOperationTime(findByParticipantIdTimer)
 
-  override def findBy(did: DID): Mid[F, Either[ManagementConsoleError, ParticipantInfo]] =
+  override def findBy(did: PrismDid): Mid[F, Either[ManagementConsoleError, ParticipantInfo]] =
     _.measureOperationTime(findByDidTimer)
 
   override def update(request: UpdateParticipantProfileRequest): Mid[F, Unit] = _.measureOperationTime(updateTimer)

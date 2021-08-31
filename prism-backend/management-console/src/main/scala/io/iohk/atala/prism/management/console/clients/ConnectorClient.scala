@@ -16,14 +16,12 @@ import io.iohk.atala.prism.connector.RequestAuthenticator
 import io.iohk.atala.prism.kotlin.crypto.EC
 import io.iohk.atala.prism.kotlin.crypto.keys.ECPrivateKey
 import io.iohk.atala.prism.kotlin.crypto.signature.ECSignature
-import io.iohk.atala.prism.kotlin.identity.DID
-import io.iohk.atala.prism.kotlin.identity.DID.masterKeyId
+import io.iohk.atala.prism.kotlin.identity.PrismDid
 import io.iohk.atala.prism.models.ConnectionToken
 import io.iohk.atala.prism.protos.connector_api._
 import io.iohk.atala.prism.protos.connector_models.ContactConnection
 import io.iohk.atala.prism.utils._
 import io.iohk.atala.prism.utils.GrpcUtils
-import io.iohk.atala.prism.logging.GeneralLoggableInstances._
 
 import scala.concurrent.ExecutionContext
 import scala.util.{Failure, Success, Try}
@@ -52,7 +50,7 @@ trait ConnectorClient[F[_]] {
 
 object ConnectorClient {
 
-  case class Config(host: String, port: Int, whitelistedDID: DID, didPrivateKey: ECPrivateKey) {
+  case class Config(host: String, port: Int, whitelistedDID: PrismDid, didPrivateKey: ECPrivateKey) {
     override def toString: String = {
       s"""ConnectorClient.Config:
          |host = $host
@@ -67,7 +65,7 @@ object ConnectorClient {
         val host = typesafe.getString("host")
         val port = typesafe.getInt("port")
         val whitelistedDID = Try(
-          DID
+          PrismDid
             .fromString(typesafe.getString("did"))
         ).getOrElse {
           throw new RuntimeException("Failed to load the connector's whitelisted DID, which is required to invoke it")
@@ -111,7 +109,7 @@ object ConnectorClient {
 
         val signedRequest = requestAuthenticator.signConnectorRequest(request.toByteArray, config.didPrivateKey)
         PublishedDIDBased(
-          did = DID.fromString(config.whitelistedDID.getValue),
+          did = PrismDid.fromString(config.whitelistedDID.getValue),
           keyId = masterKeyId,
           requestNonce = RequestNonce(signedRequest.encodedRequestNonce.getBytes.toVector),
           signature = new ECSignature(signedRequest.encodedSignature.getBytes)
@@ -183,7 +181,7 @@ private[clients] final class ConnectorClientLogs[F[_]: ServiceLogging[*[_], Conn
       count: Int
   ): Mid[F, Seq[ConnectionToken]] =
     in =>
-      info"generating connection tokens for ${header.did.getCanonicalSuffix}" *> in
+      info"generating connection tokens for ${header.did.asCanonical().getSuffix}" *> in
         .flatTap(list => info"generating connection tokens - successfully done got ${list.size} entities")
         .onError(errorCause"encountered an error while generating connection tokens" (_))
 
@@ -192,7 +190,7 @@ private[clients] final class ConnectorClientLogs[F[_]: ServiceLogging[*[_], Conn
       header: GrpcAuthenticationHeader.DIDBased
   ): Mid[F, SendMessagesResponse] =
     in =>
-      info"sending messages ${header.did.getCanonicalSuffix}" *> in
+      info"sending messages ${header.did.asCanonical().getSuffix}" *> in
         .flatTap(response => info"sending messages - successfully done got ${response.ids.size} ids")
         .onError(errorCause"encountered an error while sending messages" (_))
 

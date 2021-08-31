@@ -4,11 +4,11 @@ import io.iohk.atala.prism.auth.errors._
 import io.iohk.atala.prism.kotlin.crypto.EC
 import io.iohk.atala.prism.kotlin.crypto.ECConfig.{INSTANCE => ECConfig}
 import io.iohk.atala.prism.kotlin.crypto.keys.ECPublicKey
-import io.iohk.atala.prism.kotlin.identity.DIDFormatException.{
+import io.iohk.atala.prism.kotlin.identity.PrismDidFormatException.{
   CanonicalSuffixMatchStateException,
   InvalidAtalaOperationException
 }
-import io.iohk.atala.prism.kotlin.identity.{DID, LongForm}
+import io.iohk.atala.prism.kotlin.identity.{PrismDid, LongFormPrismDid}
 import io.iohk.atala.prism.kotlin.protos.AtalaOperation.Operation.CreateDid
 import io.iohk.atala.prism.protos.node_models
 import io.iohk.atala.prism.protos.node_models.DIDData
@@ -22,10 +22,10 @@ import io.iohk.atala.prism.protos.node_models.PublicKey.KeyData.{CompressedEcKey
 
 object DIDUtils {
 
-  def validateDid(did: DID): FutureEither[AuthError, DIDData] = {
-    did.getFormat match {
-      case longFormDid: LongForm =>
-        Try(longFormDid.validate) match {
+  def validateDid(did: PrismDid): FutureEither[AuthError, DIDData] = {
+    did match {
+      case longFormDid: LongFormPrismDid =>
+        Try(longFormDid) match {
           case Failure(err) =>
             err match {
               case _: InvalidAtalaOperationException =>

@@ -9,7 +9,7 @@ import derevo.tagless.applyK
 import doobie.implicits._
 import doobie.util.transactor.Transactor
 import io.iohk.atala.prism.auth.model.RequestNonce
-import io.iohk.atala.prism.kotlin.identity.DID
+import io.iohk.atala.prism.kotlin.identity.PrismDid
 import io.iohk.atala.prism.metrics.{TimeMeasureMetric, TimeMeasureUtil}
 import io.iohk.atala.prism.metrics.TimeMeasureUtil.MeasureOps
 import io.iohk.atala.prism.utils.syntax.DBConnectionOps
@@ -23,7 +23,7 @@ import tofu.syntax.logging._
 
 @derive(applyK)
 trait RequestNoncesRepository[F[_]] {
-  def burn(did: DID, requestNonce: RequestNonce): F[Unit]
+  def burn(did: PrismDid, requestNonce: RequestNonce): F[Unit]
 }
 
 object RequestNoncesRepository {
@@ -44,7 +44,7 @@ private class PostgresImpl[F[_]: BracketThrow](xa: Transactor[F]) extends Reques
 
   val logger: Logger = LoggerFactory.getLogger(getClass)
 
-  override def burn(did: DID, requestNonce: RequestNonce): F[Unit] =
+  override def burn(did: PrismDid, requestNonce: RequestNonce): F[Unit] =
     RequestNoncesDAO
       .burn(did, requestNonce)
       .logSQLErrors("burning", logger)
@@ -55,13 +55,13 @@ private final class RequestNoncesRepositoryMetrics[F[_]: TimeMeasureMetric: Brac
     extends RequestNoncesRepository[Mid[F, *]] {
   val repoName = "RequestNoncesRepositoryPostgresImpl"
   private lazy val burnTimer = TimeMeasureUtil.createDBQueryTimer(repoName, "burn")
-  override def burn(did: DID, requestNonce: RequestNonce): Mid[F, Unit] = _.measureOperationTime(burnTimer)
+  override def burn(did: PrismDid, requestNonce: RequestNonce): Mid[F, Unit] = _.measureOperationTime(burnTimer)
 }
 
 private final class RequestNoncesRepositoryLogging[
     F[_]: BracketThrow: ServiceLogging[*[_], RequestNoncesRepository[F]]
 ] extends RequestNoncesRepository[Mid[F, *]] {
-  override def burn(did: DID, requestNonce: RequestNonce): Mid[F, Unit] =
+  override def burn(did: PrismDid, requestNonce: RequestNonce): Mid[F, Unit] =
     in =>
       info"burning nonce $did" *> in
         .flatTap(_ => info"burning nonce - successfully done")

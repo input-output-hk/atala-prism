@@ -3,7 +3,7 @@ package io.iohk.atala.prism
 import com.google.protobuf.ByteString
 import io.iohk.atala.prism.kotlin.crypto.EC
 import io.iohk.atala.prism.kotlin.crypto.keys.ECKeyPair
-import io.iohk.atala.prism.kotlin.identity.DID
+import io.iohk.atala.prism.kotlin.identity.PrismDid
 import io.iohk.atala.prism.protos.connector_api.{AddConnectionFromTokenRequest, RegisterDIDRequest}
 import io.iohk.atala.prism.protos.connector_models.EncodedPublicKey
 import io.iohk.atala.prism.protos.node_models.{
@@ -74,7 +74,7 @@ object E2ETestUtils {
   }
 
   def createAuthConfig(
-      did: DID,
+      did: PrismDid,
       masterKeys: ECKeyPair,
       masterKeyId: String,
       issuingKeys: ECKeyPair,

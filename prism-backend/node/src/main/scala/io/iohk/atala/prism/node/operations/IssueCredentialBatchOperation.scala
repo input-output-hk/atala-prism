@@ -8,7 +8,6 @@ import doobie.postgres.sqlstate
 import io.iohk.atala.prism.kotlin.credentials.CredentialBatchId
 import io.iohk.atala.prism.kotlin.crypto.MerkleRoot
 import io.iohk.atala.prism.kotlin.crypto.SHA256Digest
-import io.iohk.atala.prism.kotlin.identity.DIDSuffix
 import io.iohk.atala.prism.node.models.nodeState
 import io.iohk.atala.prism.node.models.nodeState.{DIDPublicKeyState, LedgerData}
 import io.iohk.atala.prism.node.operations.path.{Path, ValueAtPath}
@@ -16,11 +15,9 @@ import io.iohk.atala.prism.node.repositories.daos.CredentialBatchesDAO.CreateCre
 import io.iohk.atala.prism.node.repositories.daos.{CredentialBatchesDAO, PublicKeysDAO}
 import io.iohk.atala.prism.protos.node_models
 
-import scala.util.Try
-
 case class IssueCredentialBatchOperation(
     credentialBatchId: CredentialBatchId,
-    issuerDIDSuffix: DIDSuffix,
+    issuerDIDSuffix: String,
     merkleRoot: MerkleRoot,
     digest: SHA256Digest,
     ledgerData: nodeState.LedgerData
@@ -64,7 +61,7 @@ case class IssueCredentialBatchOperation(
           case sqlstate.class23.FOREIGN_KEY_VIOLATION =>
             // that shouldn't happen, as key verification requires issuer in the DB,
             // but putting it here just in the case
-            StateError.EntityMissing("issuerDID", issuerDIDSuffix.getValue)
+            StateError.EntityMissing("issuerDID", issuerDIDSuffix)
         }
     }
 }
@@ -89,7 +86,7 @@ object IssueCredentialBatchOperation extends SimpleOperationCompanion[IssueCrede
       }
       issuerDID <- credentialBatchData.child(_.issuerDid, "issuerDID").parse { issuerDID =>
         Either.fromOption(
-          Try(DIDSuffix.fromString(issuerDID)).toOption,
+          Option(issuerDID),
           s"must be a valid DID suffix: $issuerDID"
         )
       }

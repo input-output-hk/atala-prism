@@ -5,8 +5,7 @@ import io.iohk.atala.prism.auth.SignedRpcRequest
 import io.iohk.atala.prism.kotlin.crypto.{EC, SHA256Digest}
 import io.iohk.atala.prism.kotlin.crypto.keys.{ECKeyPair, ECPublicKey}
 import io.iohk.atala.prism.kotlin.crypto.ECConfig.{INSTANCE => ECConfig}
-import io.iohk.atala.prism.kotlin.identity.DID
-import io.iohk.atala.prism.kotlin.identity.DID.masterKeyId
+import io.iohk.atala.prism.kotlin.identity.PrismDid
 import io.iohk.atala.prism.protos.node_api.{GetDidDocumentRequest, GetDidDocumentResponse}
 import io.iohk.atala.prism.protos.node_api.NodeServiceGrpc.NodeService
 import io.iohk.atala.prism.protos.node_models
@@ -28,7 +27,7 @@ trait DIDUtil {
     )
   }
 
-  def generateDid(masterPublicKey: ECPublicKey): DID = {
+  def generateDid(masterPublicKey: ECPublicKey): PrismDid = {
     val publicKey = node_models.PublicKey(
       id = masterKeyId,
       usage = node_models.KeyUsage.MASTER_KEY,
@@ -49,7 +48,7 @@ trait DIDUtil {
     val operationBytes = atalaOp.toByteArray
     val operationHash = SHA256Digest.compute(operationBytes)
     val didCanonicalSuffix = operationHash.hexValue
-    val did = DID.buildPrismDID(didCanonicalSuffix, null)
+    val did = PrismDid.fromString(didCanonicalSuffix)
 
     nodeMock.getDidDocument(GetDidDocumentRequest(did.getValue)).returns {
       Future.successful(
@@ -70,11 +69,11 @@ trait DIDUtil {
 
   def prepareSignedUnpublishedDidRequest[R <: GeneratedMessage](request: R): (ECPublicKey, SignedRpcRequest[R]) = {
     val keys = EC.generateKeyPair()
-    val did = DID.createUnpublishedDID(keys.getPublicKey, null)
+    val did = PrismDid.buildLongFormFromMasterKey(keys.getPublicKey)
     (keys.getPublicKey, SignedRpcRequest.generate(keys, did, request))
   }
 
-  def createDid: (ECKeyPair, DID) = {
+  def createDid: (ECKeyPair, PrismDid) = {
     val keyPair = EC.generateKeyPair()
     val publicKey = keyPair.getPublicKey
     val did = generateDid(publicKey)
@@ -84,10 +83,10 @@ trait DIDUtil {
 }
 
 object DIDUtil {
-  def createUnpublishedDid: (ECKeyPair, DID) = {
+  def createUnpublishedDid: (ECKeyPair, PrismDid) = {
     val keyPair = EC.generateKeyPair()
     val publicKey = keyPair.getPublicKey
-    val did = DID.createUnpublishedDID(publicKey, null)
+    val did = PrismDid.buildLongFormFromMasterKey(publicKey)
     (keyPair, did)
   }
 }

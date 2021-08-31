@@ -7,7 +7,7 @@ import io.iohk.atala.prism.connector.AtalaOperationId
 import io.iohk.atala.prism.connector.errors.{ConnectorError, InvalidRequest}
 import io.iohk.atala.prism.connector.model.{ParticipantLogo, ParticipantType}
 import io.iohk.atala.prism.connector.repositories.ParticipantsRepository
-import io.iohk.atala.prism.kotlin.identity.DID
+import io.iohk.atala.prism.kotlin.identity.PrismDid
 import io.iohk.atala.prism.models.ParticipantId
 import io.iohk.atala.prism.utils.FutureEither
 import io.iohk.atala.prism.utils.FutureEither.FutureEitherOps
@@ -27,7 +27,7 @@ class RegistrationService(participantsRepository: ParticipantsRepository[IO], no
       tpe: ParticipantType,
       name: String,
       logo: ParticipantLogo,
-      didOrOperation: Either[DID, SignedAtalaOperation]
+      didOrOperation: Either[PrismDid, SignedAtalaOperation]
   ): FutureEither[ConnectorError, RegistrationResult] = {
 
     for {
@@ -48,7 +48,7 @@ class RegistrationService(participantsRepository: ParticipantsRepository[IO], no
   ): FutureEither[ConnectorError, ParticipantsRepository.CreateParticipantRequest] = {
     val result = for {
       createDIDResponse <- nodeService.createDID(node_api.CreateDIDRequest().withSignedOperation(createDIDOperation))
-      did = DID.buildPrismDID(createDIDResponse.id, null)
+      did = PrismDid.fromString(createDIDResponse.id)
       createRequest =
         ParticipantsRepository
           .CreateParticipantRequest(
@@ -69,7 +69,7 @@ class RegistrationService(participantsRepository: ParticipantsRepository[IO], no
   }
 
   private def checkAndUseExistingDID(
-      did: DID,
+      did: PrismDid,
       tpe: ParticipantType,
       name: String,
       logo: ParticipantLogo
@@ -92,5 +92,5 @@ class RegistrationService(participantsRepository: ParticipantsRepository[IO], no
 }
 
 object RegistrationService {
-  case class RegistrationResult(id: ParticipantId, did: DID, operationId: Option[AtalaOperationId])
+  case class RegistrationResult(id: ParticipantId, did: PrismDid, operationId: Option[AtalaOperationId])
 }

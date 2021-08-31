@@ -8,7 +8,6 @@ import io.iohk.atala.prism.kotlin.crypto.EC
 import io.iohk.atala.prism.kotlin.crypto.keys.ECPublicKey
 import io.iohk.atala.prism.kotlin.crypto.ECConfig.{INSTANCE => ECConfig}
 import io.iohk.atala.prism.models.{ProtoCodecs => CommonProtoCodecs}
-import io.iohk.atala.prism.kotlin.identity.DIDSuffix
 import io.iohk.atala.prism.node.models
 import io.iohk.atala.prism.node.models.KeyUsage.{
   AuthenticationKey,
@@ -31,10 +30,10 @@ object ProtoCodecs {
       .withOperationSequenceNumber(timestampInfo.getOperationSequenceNumber)
   }
 
-  def atalaOperationToDIDDataProto(didSuffix: DIDSuffix, op: node_models.AtalaOperation): node_models.DIDData = {
+  def atalaOperationToDIDDataProto(didSuffix: String, op: node_models.AtalaOperation): node_models.DIDData = {
     node_models
       .DIDData()
-      .withId(didSuffix.getValue)
+      .withId(didSuffix)
       .withPublicKeys(
         op.getCreateDid.didData
           .getOrElse(throw new RuntimeException("DID document with no keys"))

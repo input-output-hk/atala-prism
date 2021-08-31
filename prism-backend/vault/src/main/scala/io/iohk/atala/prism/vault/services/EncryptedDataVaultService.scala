@@ -7,7 +7,7 @@ import cats.syntax.applicativeError._
 import derevo.derive
 import derevo.tagless.applyK
 import io.iohk.atala.prism.kotlin.crypto.SHA256Digest
-import io.iohk.atala.prism.kotlin.identity.DID
+import io.iohk.atala.prism.kotlin.identity.PrismDid
 import io.iohk.atala.prism.vault.model.{CreatePayload, Payload}
 import io.iohk.atala.prism.vault.repositories.PayloadsRepository
 import io.iohk.atala.prism.logging.GeneralLoggableInstances._
@@ -20,10 +20,10 @@ trait EncryptedDataVaultService[F[_]] {
   def storeData(
       externalId: Payload.ExternalId,
       hash: SHA256Digest,
-      did: DID,
+      did: PrismDid,
       content: Vector[Byte]
   ): F[Payload]
-  def getByPaginated(did: DID, lastSeenId: Option[Payload.Id], limit: Int): F[List[Payload]]
+  def getByPaginated(did: PrismDid, lastSeenId: Option[Payload.Id], limit: Int): F[List[Payload]]
 }
 
 object EncryptedDataVaultService {
@@ -41,7 +41,7 @@ private final class EncyptedDataVaultServiceImpl[F[_]](payloadsRepository: Paylo
   override def storeData(
       externalId: Payload.ExternalId,
       hash: SHA256Digest,
-      did: DID,
+      did: PrismDid,
       content: Vector[Byte]
   ): F[Payload] =
     payloadsRepository
@@ -55,7 +55,7 @@ private final class EncyptedDataVaultServiceImpl[F[_]](payloadsRepository: Paylo
       )
 
   override def getByPaginated(
-      did: DID,
+      did: PrismDid,
       lastSeenId: Option[Payload.Id],
       limit: Int
   ): F[List[Payload]] = {
@@ -74,7 +74,7 @@ private class EncyptedDataVaultServiceLogging[F[_]: MonadThrow: ServiceLogging[*
   override def storeData(
       externalId: Payload.ExternalId,
       hash: SHA256Digest,
-      did: DID,
+      did: PrismDid,
       content: Vector[Byte]
   ): Mid[F, Payload] =
     in =>
@@ -83,7 +83,7 @@ private class EncyptedDataVaultServiceLogging[F[_]: MonadThrow: ServiceLogging[*
         .onError { e => errorCause"encountered an error while storing data!" (e) }
 
   override def getByPaginated(
-      did: DID,
+      did: PrismDid,
       lastSeenId: Option[Payload.Id],
       limit: Int
   ): Mid[F, List[Payload]] =

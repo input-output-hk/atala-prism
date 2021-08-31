@@ -6,7 +6,7 @@ import io.iohk.atala.prism.connector.grpc.ProtoCodecs
 import io.iohk.atala.prism.connector.model.TokenString
 import io.iohk.atala.prism.connector.services.ConnectionsService
 import io.iohk.atala.prism.errors.LoggingContext
-import io.iohk.atala.prism.kotlin.identity.DID
+import io.iohk.atala.prism.kotlin.identity.PrismDid
 import io.iohk.atala.prism.metrics.RequestMeasureUtil.measureRequestFuture
 import io.iohk.atala.prism.models.ParticipantId
 import io.iohk.atala.prism.protos.connector_api.{
@@ -21,7 +21,7 @@ import scala.concurrent.{ExecutionContext, Future}
 class ContactConnectionService(
     connectionsService: ConnectionsService,
     authenticator: AuthenticatorWithGrpcHeaderParser[ParticipantId],
-    didWhitelist: Set[DID]
+    didWhitelist: Set[PrismDid]
 )(implicit
     executionContext: ExecutionContext
 ) extends ContactConnectionServiceGrpc.ContactConnectionService
@@ -33,7 +33,7 @@ class ContactConnectionService(
 
   override def getConnectionStatus(request: ConnectionsStatusRequest): Future[ConnectionsStatusResponse] = {
     val methodName = "getConnectionStatus"
-    def f(did: DID): Future[ConnectionsStatusResponse] = {
+    def f(did: PrismDid): Future[ConnectionsStatusResponse] = {
       implicit val loggingContext: LoggingContext =
         LoggingContext("request" -> request, "did" -> did)
 

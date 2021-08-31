@@ -8,7 +8,6 @@ import doobie.implicits._
 import io.iohk.atala.prism.kotlin.credentials.CredentialBatchId
 import io.iohk.atala.prism.kotlin.crypto.MerkleRoot
 import io.iohk.atala.prism.kotlin.crypto.SHA256Digest
-import io.iohk.atala.prism.kotlin.identity.DIDSuffix
 import io.iohk.atala.prism.models.{Ledger, TransactionId}
 import io.iohk.atala.prism.node.models.nodeState.{CredentialBatchState, LedgerData}
 import io.iohk.atala.prism.node.repositories.daos._
@@ -20,7 +19,7 @@ object CredentialBatchesDAO {
   case class CreateCredentialBatchData(
       batchId: CredentialBatchId,
       lastOperation: SHA256Digest,
-      issuerDIDSuffix: DIDSuffix,
+      issuerDIDSuffix: String,
       merkleRoot: MerkleRoot,
       ledgerData: LedgerData
   )

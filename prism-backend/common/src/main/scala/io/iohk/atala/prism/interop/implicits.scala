@@ -4,7 +4,6 @@ import cats.data.NonEmptyList
 import doobie.{Get, Meta, Read, Write}
 import io.iohk.atala.prism.kotlin.credentials.{CredentialBatchId, TimestampInfo}
 import io.iohk.atala.prism.kotlin.crypto.{MerkleRoot, SHA256Digest}
-import io.iohk.atala.prism.kotlin.identity.DIDSuffix
 import doobie.implicits.legacy.instant._
 import io.iohk.atala.prism.models.{Ledger, TransactionId}
 import io.iohk.atala.prism.utils.DoobieImplicits.byteArraySeqMeta
@@ -17,13 +16,6 @@ object implicits {
     Meta[Array[Byte]].timap(arr => new MerkleRoot(SHA256Digest.fromBytes(arr)))(_.getHash.getValue)
   implicit val merkleRootRead: Read[MerkleRoot] =
     Read[Array[Byte]].map(arr => new MerkleRoot(SHA256Digest.fromBytes(arr)))
-
-  implicit val didSuffixMeta: Meta[DIDSuffix] =
-    Meta[String].timap { new DIDSuffix(_) }(_.getValue)
-  implicit val didSuffixGet: Get[DIDSuffix] =
-    Get[String].tmap { new DIDSuffix(_) }
-  implicit val didSuffixRead: Read[DIDSuffix] =
-    Read[String].map { new DIDSuffix(_) }
 
   implicit val transactionIdGet: Get[TransactionId] =
     Get[ArraySeq[Byte]].tmap { TransactionId.from(_).get }

@@ -5,7 +5,7 @@ import io.iohk.atala.prism.connector.model.{ConnectionId, MessageId, TokenString
 import io.iohk.atala.prism.errors.{PrismError, PrismServerError}
 import io.iohk.atala.prism.models.ParticipantId
 import io.iohk.atala.prism.kotlin.crypto.keys.ECPublicKey
-import io.iohk.atala.prism.kotlin.identity.DID
+import io.iohk.atala.prism.kotlin.identity.PrismDid
 
 package object errors {
 
@@ -16,7 +16,7 @@ package object errors {
       Status.UNKNOWN.withDescription(s"Unknown $tpe: $value")
     }
   }
-  case class DidConnectionExist(did: DID) extends ConnectorError {
+  case class DidConnectionExist(did: PrismDid) extends ConnectorError {
     override def toStatus: Status = {
       Status.ALREADY_EXISTS.withDescription(
         s"Attempting to accept a connection with a DID: $did. DID is already used for a connection, use a different DID"

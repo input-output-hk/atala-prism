@@ -24,7 +24,7 @@ import io.iohk.atala.prism.services.BaseGrpcClientService.{
   DidBasedAuthConfig,
   PublicKeyBasedAuthConfig
 }
-import io.iohk.atala.prism.kotlin.identity.DID
+import io.iohk.atala.prism.kotlin.identity.PrismDid
 import io.iohk.atala.prism.daos.DbConfigDao
 import io.iohk.atala.prism.protos.{connector_api, node_models}
 import doobie.implicits._
@@ -121,7 +121,7 @@ object BaseGrpcClientService {
   abstract sealed class BaseGrpcAuthConfig(val keys: ECKeyPair)
 
   case class DidBasedAuthConfig(
-      did: DID,
+      did: PrismDid,
       didMasterKeyId: String,
       didMasterKeyPair: ECKeyPair,
       didIssuingKeyId: String,
@@ -150,7 +150,7 @@ object BaseGrpcClientService {
 
       lazy val getFromApplicationConfig: Option[DidBasedAuthConfig] = {
         for {
-          did <- Try(applicationConfig.getString(s"auth.${ConfigKeyNames.DID}")).toOption.map(DID.fromString)
+          did <- Try(applicationConfig.getString(s"auth.${ConfigKeyNames.DID}")).toOption.map(PrismDid.fromString)
 
           didMasterKeyId <- Try(applicationConfig.getString(s"auth.${ConfigKeyNames.DID_MASTER_KEY_ID}")).toOption
           didMasterPrivateKey <- Try(
@@ -176,7 +176,7 @@ object BaseGrpcClientService {
 
       lazy val getFromDb: Task[DidBasedAuthConfig] = {
         (for {
-          did <- OptionT(DbConfigDao.get(ConfigKeyNames.DID)).map(DID.fromString)
+          did <- OptionT(DbConfigDao.get(ConfigKeyNames.DID)).map(PrismDid.fromString)
 
           didMasterKeyId <- OptionT(DbConfigDao.get(ConfigKeyNames.DID_MASTER_KEY_ID))
           didMasterPrivateKey <- OptionT(DbConfigDao.get(ConfigKeyNames.DID_MASTER_PRIVATE_KEY))
@@ -260,7 +260,7 @@ object BaseGrpcClientService {
               .fromFuture(connector.registerDID(request))
               .map(response =>
                 DidBasedAuthConfig(
-                  did = DID.fromString(response.did),
+                  did = PrismDid.fromString(response.did),
                   didMasterKeyId = masterKeyId,
                   didMasterKeyPair = masterKeyPair,
                   didIssuingKeyId = issuingKeyId,

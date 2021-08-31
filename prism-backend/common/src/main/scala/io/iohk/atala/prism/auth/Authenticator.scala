@@ -9,7 +9,7 @@ import io.iohk.atala.prism.auth.utils.DIDUtils
 import io.iohk.atala.prism.kotlin.crypto.EC
 import io.iohk.atala.prism.kotlin.crypto.keys.ECPublicKey
 import io.iohk.atala.prism.kotlin.crypto.signature.ECSignature
-import io.iohk.atala.prism.kotlin.identity.DID
+import io.iohk.atala.prism.kotlin.identity.PrismDid
 import io.iohk.atala.prism.protos.node_api
 import io.iohk.atala.prism.utils.FutureEither
 import io.iohk.atala.prism.utils.FutureEither._
@@ -24,10 +24,10 @@ trait Authenticator[Id] {
   def logger: Logger
 
   def whitelistedDid[Request <: GeneratedMessage, Response](
-      whitelist: Set[DID],
+      whitelist: Set[PrismDid],
       methodName: String,
       request: Request
-  )(f: DID => Future[Response])(implicit ec: ExecutionContext): Future[Response]
+  )(f: PrismDid => Future[Response])(implicit ec: ExecutionContext): Future[Response]
 
   def authenticated[Request <: GeneratedMessage, Response](
       methodName: String,
@@ -60,7 +60,7 @@ abstract class SignedRequestsAuthenticatorBase[Id](
   /**
     * Burns given nonce for DID, so that the request can not be cloned by a malicious agent
     */
-  def burnNonce(did: DID, requestNonce: RequestNonce)(implicit ec: ExecutionContext): FutureEither[AuthError, Unit]
+  def burnNonce(did: PrismDid, requestNonce: RequestNonce)(implicit ec: ExecutionContext): FutureEither[AuthError, Unit]
 
   /**
     * Finds a user associated with the given public key
@@ -70,7 +70,7 @@ abstract class SignedRequestsAuthenticatorBase[Id](
   /**
     * Finds a user associated with the given DID
     */
-  def findByDid(did: DID)(implicit ec: ExecutionContext): FutureEither[AuthError, Id]
+  def findByDid(did: PrismDid)(implicit ec: ExecutionContext): FutureEither[AuthError, Id]
 
   private def withLogging[Request <: GeneratedMessage, Response](
       methodName: String,
@@ -153,12 +153,12 @@ abstract class SignedRequestsAuthenticatorBase[Id](
   }
 
   private def verifyRequestSignature(
-      did: DID,
+      did: PrismDid,
       publicKey: ECPublicKey,
       request: Array[Byte],
       requestNonce: model.RequestNonce,
       signature: ECSignature
-  )(implicit ec: ExecutionContext): FutureEither[AuthError, DID] = {
+  )(implicit ec: ExecutionContext): FutureEither[AuthError, PrismDid] = {
     for {
       _ <- verifyRequestSignature(publicKey, request, requestNonce, signature)
       _ <- burnNonce(did, requestNonce)
@@ -276,10 +276,10 @@ abstract class SignedRequestsAuthenticatorBase[Id](
     withLogging(methodName, request)(f)
 
   override def whitelistedDid[Request <: GeneratedMessage, Response](
-      whitelist: Set[DID],
+      whitelist: Set[PrismDid],
       methodName: String,
       request: Request
-  )(f: DID => Future[Response])(implicit ec: ExecutionContext): Future[Response] = {
+  )(f: PrismDid => Future[Response])(implicit ec: ExecutionContext): Future[Response] = {
     val ctx = Context.current()
     val result = grpcAuthenticationHeaderParser.parse(ctx)
     result match {

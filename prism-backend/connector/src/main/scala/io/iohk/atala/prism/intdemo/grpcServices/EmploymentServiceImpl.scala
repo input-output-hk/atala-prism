@@ -21,7 +21,7 @@ import monix.execution.Scheduler.{global => scheduler}
 
 import scala.concurrent.duration.FiniteDuration
 import scala.concurrent.{ExecutionContext, Future}
-import io.iohk.atala.prism.kotlin.identity.DID
+import io.iohk.atala.prism.kotlin.identity.PrismDid
 import io.iohk.atala.prism.kotlin.credentials.json.JsonBasedCredential
 
 import scala.util.Try
@@ -130,7 +130,7 @@ object EmploymentServiceImpl {
     val employmentStatus = "Full-time"
     val employmentStartDate = LocalDate.now().minusMonths(1)
     val issuanceDate = LocalDate.now()
-    val issuanceKeyId = DID.masterKeyId
+    val issuanceKeyId = PrismDid.masterKeyId
 
     val credentialHtml = employmentCredentialHtmlTemplate(
       EmploymentCredentialHtmlTemplateData(

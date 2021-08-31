@@ -1,7 +1,7 @@
 package io.iohk.atala.prism.logging
 
 import io.iohk.atala.prism.kotlin.credentials.CredentialBatchId
-import io.iohk.atala.prism.kotlin.identity.{DID, DIDSuffix}
+import io.iohk.atala.prism.kotlin.identity.PrismDid
 import tofu.logging._
 
 /**
@@ -9,20 +9,12 @@ import tofu.logging._
   */
 object GeneralLoggableInstances {
 
-  implicit val didLoggable: DictLoggable[DID] = new DictLoggable[DID] {
-    override def fields[I, V, R, S](a: DID, i: I)(implicit r: LogRenderer[I, V, R, S]): R = {
+  implicit val didLoggable: DictLoggable[PrismDid] = new DictLoggable[PrismDid] {
+    override def fields[I, V, R, S](a: PrismDid, i: I)(implicit r: LogRenderer[I, V, R, S]): R = {
       r.addString("DID", a.getValue, i)
     }
 
-    override def logShow(a: DID): String = s"{DID=$a}"
-  }
-
-  implicit val didSuffixLoggable: DictLoggable[DIDSuffix] = new DictLoggable[DIDSuffix] {
-    override def fields[I, V, R, S](a: DIDSuffix, i: I)(implicit r: LogRenderer[I, V, R, S]): R = {
-      r.addString("DIDSuffix", a.getValue, i)
-    }
-
-    override def logShow(a: DIDSuffix): String = s"{DIDSuffix=${a.getValue}}"
+    override def logShow(a: PrismDid): String = s"{DID=$a}"
   }
 
   implicit val credentialBatchIdLoggable: DictLoggable[CredentialBatchId] = new DictLoggable[CredentialBatchId] {

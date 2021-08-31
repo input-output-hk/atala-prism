@@ -16,7 +16,7 @@ import io.iohk.atala.prism.connector.repositories.ParticipantsRepository.CreateP
 import io.iohk.atala.prism.connector.repositories.daos.ParticipantsDAO
 import io.iohk.atala.prism.kotlin.crypto.keys.ECPublicKey
 import io.iohk.atala.prism.errors.LoggingContext
-import io.iohk.atala.prism.kotlin.identity.DID
+import io.iohk.atala.prism.kotlin.identity.PrismDid
 import io.iohk.atala.prism.models.ParticipantId
 import io.iohk.atala.prism.metrics.TimeMeasureUtil.MeasureOps
 import io.iohk.atala.prism.utils.syntax.DBConnectionOps
@@ -36,7 +36,7 @@ trait ParticipantsRepository[F[_]] {
 
   def findBy(publicKey: ECPublicKey): F[Either[ConnectorError, ParticipantInfo]]
 
-  def findBy(did: DID): F[Either[ConnectorError, ParticipantInfo]]
+  def findBy(did: PrismDid): F[Either[ConnectorError, ParticipantInfo]]
 
   def updateParticipantProfileBy(
       id: ParticipantId,
@@ -58,7 +58,7 @@ object ParticipantsRepository {
       id: ParticipantId,
       tpe: ParticipantType,
       name: String,
-      did: DID,
+      did: PrismDid,
       logo: ParticipantLogo,
       operationId: Option[AtalaOperationId]
   )
@@ -124,7 +124,7 @@ private final class ParticipantsRepositoryImpl[F[_]: BracketThrow](xa: Transacto
       .transact(xa)
   }
 
-  def findBy(did: DID): F[Either[ConnectorError, ParticipantInfo]] = {
+  def findBy(did: PrismDid): F[Either[ConnectorError, ParticipantInfo]] = {
     implicit val loggingContext = LoggingContext("did" -> did)
 
     ParticipantsDAO
@@ -167,7 +167,7 @@ private final class ParticipantsRepositoryMetrics[F[_]: TimeMeasureMetric](impli
   override def findBy(publicKey: ECPublicKey): Mid[F, Either[ConnectorError, ParticipantInfo]] =
     _.measureOperationTime(findByPublicKeyTimer)
 
-  override def findBy(did: DID): Mid[F, Either[ConnectorError, ParticipantInfo]] =
+  override def findBy(did: PrismDid): Mid[F, Either[ConnectorError, ParticipantInfo]] =
     _.measureOperationTime(findByDidTimer)
 
   override def updateParticipantProfileBy(

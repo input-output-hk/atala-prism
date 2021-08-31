@@ -6,7 +6,7 @@ import enumeratum.EnumEntry.Lowercase
 import enumeratum._
 import io.iohk.atala.prism.kotlin.crypto.keys.ECPublicKey
 import io.iohk.atala.prism.connector.AtalaOperationId
-import io.iohk.atala.prism.kotlin.identity.DID
+import io.iohk.atala.prism.kotlin.identity.PrismDid
 import io.iohk.atala.prism.models.{ParticipantId, UUIDValue}
 import io.iohk.atala.prism.protos.connector_models
 import io.iohk.atala.prism.utils.syntax._
@@ -38,7 +38,7 @@ case class ParticipantInfo(
     tpe: ParticipantType,
     publicKey: Option[ECPublicKey],
     name: String,
-    did: Option[DID],
+    did: Option[PrismDid],
     logo: Option[ParticipantLogo],
     operationId: Option[AtalaOperationId]
 )

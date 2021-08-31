@@ -7,7 +7,7 @@ import com.google.protobuf.ByteString
 import io.iohk.atala.prism.kotlin.credentials.{CredentialBatchId, CredentialBatches, TimestampInfo}
 import io.iohk.atala.prism.kotlin.crypto.{EC, MerkleInclusionProof}
 import io.iohk.atala.prism.kotlin.crypto.keys.ECKeyPair
-import io.iohk.atala.prism.kotlin.identity.DID
+import io.iohk.atala.prism.kotlin.identity.PrismDid
 import io.iohk.atala.prism.protos.node_api.GetBatchStateResponse
 import io.iohk.atala.prism.protos.node_models.PublicKey.KeyData.EcKeyData
 import io.iohk.atala.prism.protos.node_models.{DIDData, KeyUsage, LedgerData, PublicKey}
@@ -32,7 +32,7 @@ trait ServicesFixtures {
     )
 
     val defaultDidBasedAuthConfig = DidBasedAuthConfig(
-      did = DID.buildPrismDID("did", null),
+      did = PrismDid.fromString("did"),
       didMasterKeyId = "master",
       didMasterKeyPair = EC.generateKeyPair(),
       didIssuingKeyId = "issuance",
@@ -152,8 +152,7 @@ trait ServicesFixtures {
     }
   }
 
-  def newDID(): DID = {
-    DID.createUnpublishedDID(EC.generateKeyPair().getPublicKey, null)
-    // where is the canon form getter?
+  def newDID(): PrismDid = {
+    PrismDid.buildCanonicalFromMasterKey(EC.generateKeyPair().getPublicKey)
   }
 }

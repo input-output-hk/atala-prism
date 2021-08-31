@@ -2,10 +2,10 @@ package io.iohk.atala.prism.vault.repositories.daos
 
 import doobie.implicits.toSqlInterpolator
 import io.iohk.atala.prism.auth.model.RequestNonce
-import io.iohk.atala.prism.kotlin.identity.DID
+import io.iohk.atala.prism.kotlin.identity.PrismDid
 
 object RequestNoncesDAO {
-  def burn(did: DID, requestNonce: RequestNonce): doobie.ConnectionIO[Unit] = {
+  def burn(did: PrismDid, requestNonce: RequestNonce): doobie.ConnectionIO[Unit] = {
     sql"""
          |INSERT INTO request_nonces (request_nonce, did)
          |VALUES ($requestNonce, $did)
@@ -17,7 +17,7 @@ object RequestNoncesDAO {
     }
   }
 
-  def available(did: DID, requestNonce: RequestNonce): doobie.ConnectionIO[Boolean] = {
+  def available(did: PrismDid, requestNonce: RequestNonce): doobie.ConnectionIO[Boolean] = {
     sql"""
          |SELECT request_nonce
          |FROM request_nonces

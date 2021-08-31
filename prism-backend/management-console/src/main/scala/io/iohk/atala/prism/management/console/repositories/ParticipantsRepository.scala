@@ -13,7 +13,7 @@ import derevo.derive
 import doobie.implicits._
 import doobie.util.transactor.Transactor
 import io.iohk.atala.prism.errors.LoggingContext
-import io.iohk.atala.prism.kotlin.identity.DID
+import io.iohk.atala.prism.kotlin.identity.PrismDid
 import io.iohk.atala.prism.management.console.config.DefaultCredentialTypeConfig
 import io.iohk.atala.prism.management.console.errors._
 import io.iohk.atala.prism.management.console.models._
@@ -39,7 +39,7 @@ trait ParticipantsRepository[F[_]] {
 
   def findBy(id: ParticipantId): F[Either[ManagementConsoleError, ParticipantInfo]]
 
-  def findBy(did: DID): F[Either[ManagementConsoleError, ParticipantInfo]]
+  def findBy(did: PrismDid): F[Either[ManagementConsoleError, ParticipantInfo]]
 
   def update(request: UpdateParticipantProfileRequest): F[Unit]
 
@@ -50,7 +50,7 @@ object ParticipantsRepository {
   final case class CreateParticipantRequest(
       id: ParticipantId,
       name: String,
-      did: DID,
+      did: PrismDid,
       logo: ParticipantLogo
   )
 
@@ -132,7 +132,7 @@ private final class ParticipantsRepositoryImpl[F[_]: BracketThrow](
       .transact(xa)
   }
 
-  def findBy(did: DID): F[Either[ManagementConsoleError, ParticipantInfo]] = {
+  def findBy(did: PrismDid): F[Either[ManagementConsoleError, ParticipantInfo]] = {
     implicit val loggingContext = LoggingContext("did" -> did)
 
     ParticipantsDAO

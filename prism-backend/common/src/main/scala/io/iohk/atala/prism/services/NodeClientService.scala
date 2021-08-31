@@ -9,7 +9,7 @@ import io.iohk.atala.prism.kotlin.crypto.ECConfig.{INSTANCE => ECConfig}
 import io.iohk.atala.prism.protos.node_api._
 import io.iohk.atala.prism.protos.node_models._
 import io.iohk.atala.prism.services.BaseGrpcClientService.DidBasedAuthConfig
-import io.iohk.atala.prism.kotlin.identity.DID
+import io.iohk.atala.prism.kotlin.identity.PrismDid
 import io.iohk.atala.prism.kotlin.credentials
 import io.iohk.atala.prism.protos.{node_api, node_models}
 import cats.implicits._
@@ -20,7 +20,7 @@ import io.iohk.atala.prism.utils.syntax._
 
 trait NodeClientService {
 
-  def getDidDocument(did: DID): Task[Option[DIDData]]
+  def getDidDocument(did: PrismDid): Task[Option[DIDData]]
 
   def getBatchState(credentialBatchId: CredentialBatchId): Task[Option[GetBatchStateResponse]]
 
@@ -36,7 +36,7 @@ trait NodeClientService {
 class NodeClientServiceImpl(node: NodeServiceGrpc.NodeServiceStub, authConfig: DidBasedAuthConfig)
     extends NodeClientService {
 
-  def getDidDocument(did: DID): Task[Option[DIDData]] =
+  def getDidDocument(did: PrismDid): Task[Option[DIDData]] =
     Task.fromFuture(node.getDidDocument(GetDidDocumentRequest(did.getValue))).map(_.document)
 
   def getBatchState(credentialBatchId: CredentialBatchId): Task[Option[GetBatchStateResponse]] =
@@ -80,9 +80,9 @@ class NodeClientServiceImpl(node: NodeServiceGrpc.NodeServiceStub, authConfig: D
 object NodeClientService {
 
   def getKeyData(
-      issuerDID: DID,
-      issuanceKeyId: String,
-      nodeService: NodeClientService
+                  issuerDID: PrismDid,
+                  issuanceKeyId: String,
+                  nodeService: NodeClientService
   ): EitherT[Task, String, credentials.KeyData] = {
     for {
       didData <- EitherT(
@@ -148,7 +148,7 @@ object NodeClientService {
     )
   }
 
-  def issueBatchOperation(issuerDID: DID, merkleRoot: MerkleRoot): node_models.AtalaOperation = {
+  def issueBatchOperation(issuerDID: PrismDid, merkleRoot: MerkleRoot): node_models.AtalaOperation = {
     node_models
       .AtalaOperation(
         operation = node_models.AtalaOperation.Operation.IssueCredentialBatch(
@@ -156,7 +156,7 @@ object NodeClientService {
             .IssueCredentialBatchOperation(
               credentialBatchData = Some(
                 node_models.CredentialBatchData(
-                  issuerDid = issuerDID.getSuffix.getValue,
+                  issuerDid = issuerDID.getSuffix,
                   merkleRoot = toByteString(merkleRoot.getHash)
                 )
               )

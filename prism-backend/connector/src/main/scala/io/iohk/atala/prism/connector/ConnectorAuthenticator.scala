@@ -9,7 +9,7 @@ import io.iohk.atala.prism.auth.grpc.GrpcAuthenticationHeaderParser
 import io.iohk.atala.prism.auth.model.RequestNonce
 import io.iohk.atala.prism.connector.repositories.{ParticipantsRepository, RequestNoncesRepository}
 import io.iohk.atala.prism.kotlin.crypto.keys.ECPublicKey
-import io.iohk.atala.prism.kotlin.identity.DID
+import io.iohk.atala.prism.kotlin.identity.PrismDid
 import io.iohk.atala.prism.models.ParticipantId
 import io.iohk.atala.prism.protos.node_api
 import io.iohk.atala.prism.utils.FutureEither
@@ -31,7 +31,7 @@ class ConnectorAuthenticator(
     requestNoncesRepository.burn(id, requestNonce).unsafeToFuture().map(_.asRight).toFutureEither
 
   override def burnNonce(
-      did: DID,
+      did: PrismDid,
       requestNonce: RequestNonce
   )(implicit
       ec: ExecutionContext
@@ -48,7 +48,7 @@ class ConnectorAuthenticator(
       .map(_.id)
       .mapLeft(e => UnexpectedError(e.toStatus))
 
-  override def findByDid(did: DID)(implicit ec: ExecutionContext): FutureEither[AuthError, ParticipantId] =
+  override def findByDid(did: PrismDid)(implicit ec: ExecutionContext): FutureEither[AuthError, ParticipantId] =
     participantsRepository
       .findBy(did)
       .unsafeToFuture()

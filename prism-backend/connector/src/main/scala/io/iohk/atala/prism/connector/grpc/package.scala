@@ -8,7 +8,7 @@ import io.iohk.atala.prism.connector.model.actions._
 import io.iohk.atala.prism.connector.model.{ParticipantLogo, ParticipantType, TokenString, UpdateParticipantProfile}
 import io.iohk.atala.prism.kotlin.crypto.EC
 import io.iohk.atala.prism.grpc.ProtoConverter
-import io.iohk.atala.prism.kotlin.identity.DID
+import io.iohk.atala.prism.kotlin.identity.{CanonicalPrismDid, PrismDid}
 import io.iohk.atala.prism.protos.connector_api.UpdateProfileRequest
 
 import scala.util.{Failure, Success, Try}
@@ -146,21 +146,21 @@ package object grpc {
 
   private def parseRegisterWith(
       in: connector_api.RegisterDIDRequest.RegisterWith
-  ): Try[Either[DID, SignedAtalaOperation]] =
+  ): Try[Either[PrismDid, SignedAtalaOperation]] =
     in match {
       case RegisterWith.CreateDidOperation(operation) => Success(operation.asRight)
       case RegisterWith.ExistingDid(maybeDid) => parseCanonicalDid(maybeDid)
       case _ => Failure(new IllegalArgumentException("Expected existing DID or atala operation"))
     }
 
-  private def parseCanonicalDid(maybeDid: String): Try[Either[DID, SignedAtalaOperation]] =
+  private def parseCanonicalDid(maybeDid: String): Try[Either[PrismDid, SignedAtalaOperation]] =
     Try(
-      DID
+      PrismDid
         .fromString(maybeDid)
     ).toOption
-      .fold[Try[Either[DID, SignedAtalaOperation]]](Failure(new IllegalArgumentException("Invalid DID"))) { parsedDid =>
-        if (parsedDid.isCanonicalForm) Success(parsedDid.asLeft)
-        else Failure(new IllegalArgumentException("Expected published did"))
+      .fold[Try[Either[PrismDid, SignedAtalaOperation]]](Failure(new IllegalArgumentException("Invalid DID"))) {
+        case parsedDid@(_: CanonicalPrismDid) => Success(parsedDid.asLeft)
+        case _ => Failure(new IllegalArgumentException("Expected published did"))
       }
 
 }

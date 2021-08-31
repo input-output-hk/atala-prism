@@ -6,7 +6,6 @@ import doobie.free.connection.ConnectionIO
 import doobie.implicits._
 import doobie.postgres.sqlstate
 import io.iohk.atala.prism.kotlin.crypto.SHA256Digest
-import io.iohk.atala.prism.kotlin.identity.DIDSuffix
 import io.iohk.atala.prism.node.models.KeyUsage.MasterKey
 import io.iohk.atala.prism.node.models.DIDPublicKey
 import io.iohk.atala.prism.node.models.nodeState.LedgerData
@@ -16,7 +15,7 @@ import io.iohk.atala.prism.node.repositories.daos.{DIDDataDAO, PublicKeysDAO}
 import io.iohk.atala.prism.protos.{node_models => proto}
 
 case class CreateDIDOperation(
-    id: DIDSuffix,
+    id: String,
     keys: List[DIDPublicKey],
     digest: SHA256Digest,
     ledgerData: LedgerData
@@ -49,7 +48,7 @@ case class CreateDIDOperation(
       _ <- EitherT {
         DIDDataDAO.insert(id, digest, ledgerData).attemptSomeSqlState {
           case sqlstate.class23.UNIQUE_VIOLATION =>
-            EntityExists("DID", id.getValue): StateError
+            EntityExists("DID", id): StateError
         }
       }
 
@@ -67,7 +66,7 @@ case class CreateDIDOperation(
 
 object CreateDIDOperation extends SimpleOperationCompanion[CreateDIDOperation] {
 
-  def parseData(data: ValueAtPath[proto.DIDData], didSuffix: DIDSuffix): Either[ValidationError, List[DIDPublicKey]] = {
+  def parseData(data: ValueAtPath[proto.DIDData], didSuffix: String): Either[ValidationError, List[DIDPublicKey]] = {
     for {
       _ <-
         data
@@ -95,7 +94,7 @@ object CreateDIDOperation extends SimpleOperationCompanion[CreateDIDOperation] {
       ledgerData: LedgerData
   ): Either[ValidationError, CreateDIDOperation] = {
     val operationDigest = SHA256Digest.compute(operation.toByteArray)
-    val didSuffix = DIDSuffix.fromDigest(operationDigest)
+    val didSuffix: String = operationDigest.hexValue() // or toString?
     val createOperation = ValueAtPath(operation, Path.root).child(_.getCreateDid, "createDid")
     for {
       data <- createOperation.childGet(_.didData, "didData")

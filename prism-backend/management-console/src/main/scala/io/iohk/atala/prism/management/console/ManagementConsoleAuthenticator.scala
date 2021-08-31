@@ -8,7 +8,7 @@ import io.iohk.atala.prism.auth.model.RequestNonce
 import io.iohk.atala.prism.kotlin.crypto.keys.ECPublicKey
 import io.iohk.atala.prism.logging.TraceId
 import io.iohk.atala.prism.logging.TraceId.IOWithTraceIdContext
-import io.iohk.atala.prism.kotlin.identity.DID
+import io.iohk.atala.prism.kotlin.identity.PrismDid
 import io.iohk.atala.prism.management.console.models.ParticipantId
 import io.iohk.atala.prism.management.console.repositories.{ParticipantsRepository, RequestNoncesRepository}
 import io.iohk.atala.prism.protos.node_api
@@ -34,7 +34,7 @@ class ManagementConsoleAuthenticator(
       .map(_.asRight)
       .toFutureEither
 
-  override def burnNonce(did: DID, requestNonce: RequestNonce)(implicit
+  override def burnNonce(did: PrismDid, requestNonce: RequestNonce)(implicit
       ec: ExecutionContext
   ): FutureEither[AuthError, Unit] =
     throw new NotImplementedError()
@@ -44,7 +44,7 @@ class ManagementConsoleAuthenticator(
   ): FutureEither[AuthError, ParticipantId] =
     Future.successful(UnsupportedAuthMethod().asLeft[ParticipantId]).toFutureEither
 
-  override def findByDid(did: DID)(implicit ec: ExecutionContext): FutureEither[AuthError, ParticipantId] =
+  override def findByDid(did: PrismDid)(implicit ec: ExecutionContext): FutureEither[AuthError, ParticipantId] =
     participantsRepository
       .findBy(did)
       .run(TraceId.generateYOLO)

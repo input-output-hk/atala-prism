@@ -4,13 +4,13 @@ import cats.syntax.either._
 import io.iohk.atala.prism.auth.grpc.GrpcAuthenticationHeader
 import io.iohk.atala.prism.connector.model.TokenString
 import io.iohk.atala.prism.kotlin.crypto.keys.ECPublicKey
-import io.iohk.atala.prism.kotlin.identity.DID
+import io.iohk.atala.prism.kotlin.identity.PrismDid
 
 case class AddConnectionRequest(
     token: TokenString,
     basedOn: Either[UnpublishedDidBasedAddConnectionRequest, PublicKeyBasedAddConnectionRequest]
 ) {
-  def didOrPublicKey: Either[DID, ECPublicKey] = basedOn.bimap(_.authHeader.did, _.publicKey)
+  def didOrPublicKey: Either[PrismDid, ECPublicKey] = basedOn.bimap(_.authHeader.did, _.publicKey)
 }
 
 final case class PublicKeyBasedAddConnectionRequest(

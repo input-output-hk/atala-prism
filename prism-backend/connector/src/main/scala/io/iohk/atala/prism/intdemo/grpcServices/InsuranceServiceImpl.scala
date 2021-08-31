@@ -6,13 +6,12 @@ import io.grpc.stub.StreamObserver
 import io.iohk.atala.prism.connector.model.Connection
 import io.iohk.atala.prism.connector.model.TokenString
 import io.iohk.atala.prism.kotlin.credentials.json.JsonBasedCredential
-import io.iohk.atala.prism.kotlin.identity.DID
+import io.iohk.atala.prism.kotlin.identity.PrismDid
 import io.iohk.atala.prism.intdemo.InsuranceServiceImpl.RequiredInsuranceData
 import io.iohk.atala.prism.intdemo.InsuranceServiceImpl.getInsuranceCredential
 import io.iohk.atala.prism.intdemo.InsuranceServiceImpl.getRequiredInsuranceData
 import io.iohk.atala.prism.intdemo.InsuranceServiceImpl.requestIdAndEmploymentCredentials
 import io.iohk.atala.prism.intdemo.SharedCredentials.formatDate
-import io.iohk.atala.prism.intdemo.SharedCredentials.jsonPrinter
 import io.iohk.atala.prism.intdemo.html.HealthCredential
 import io.iohk.atala.prism.intdemo.protos.intdemo_api
 import io.iohk.atala.prism.models.ParticipantId
@@ -147,7 +146,7 @@ object InsuranceServiceImpl {
       credentialHtml = credentialHtml,
       issuerName = issuerName,
       issuerDID = s"did:prism:${issuerId.uuid}",
-      issuanceKeyId = DID.masterKeyId,
+      issuanceKeyId = PrismDid.masterKeyId,
       issuanceDate = issuanceDate,
       expirationDate = expirationDate,
       policyNumber = policyNumber,

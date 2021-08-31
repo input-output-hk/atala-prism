@@ -20,7 +20,7 @@ import io.iohk.atala.prism.connector.repositories.daos.{
   ParticipantsDAO
 }
 import io.iohk.atala.prism.errors.LoggingContext
-import io.iohk.atala.prism.kotlin.identity.DID
+import io.iohk.atala.prism.kotlin.identity.PrismDid
 import io.iohk.atala.prism.metrics.{TimeMeasureMetric, TimeMeasureUtil}
 import io.iohk.atala.prism.metrics.TimeMeasureUtil.MeasureOps
 import org.slf4j.{Logger, LoggerFactory}
@@ -35,7 +35,7 @@ trait ConnectionsRepository[F[_]] {
 
   def addConnectionFromToken(
       token: TokenString,
-      didOrPublicKey: Either[DID, ECPublicKey]
+      didOrPublicKey: Either[PrismDid, ECPublicKey]
   ): F[Either[ConnectorError, ConnectionInfo]]
 
   def revokeConnection(participantId: ParticipantId, connectionId: ConnectionId): F[Either[ConnectorError, Unit]]
@@ -94,7 +94,7 @@ private final class ConnectionsRepositoryPostgresImpl[F[_]: BracketThrow](xa: Tr
 
   override def addConnectionFromToken(
       token: TokenString,
-      didOrPublicKey: Either[DID, ECPublicKey]
+      didOrPublicKey: Either[PrismDid, ECPublicKey]
   ): F[Either[ConnectorError, ConnectionInfo]] = {
 
     val maybeDid = didOrPublicKey.left.toOption
@@ -285,7 +285,7 @@ private final class ConnectionsRepositoryMetrics[F[_]: TimeMeasureMetric: Bracke
 
   override def addConnectionFromToken(
       token: TokenString,
-      didOrPublicKey: Either[DID, ECPublicKey]
+      didOrPublicKey: Either[PrismDid, ECPublicKey]
   ): Mid[F, Either[ConnectorError, ConnectionInfo]] =
     _.measureOperationTime(addConnectionFromTokenTimer)
 
