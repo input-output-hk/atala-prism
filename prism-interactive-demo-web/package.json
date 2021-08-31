@@ -3,7 +3,6 @@
   "version": "0.1.0",
   "private": true,
   "dependencies": {
-    "@input-output-hk/atala-prism-protos": "0.1.0-ff1968f",
     "antd": "3.23.6",
     "atala-prism-demo": "git+https://git@github.com/input-output-hk/atala-prism-demo.git",
     "env-cmd": "10.0.1",
@@ -56,6 +55,7 @@
     "reactfire": "2.0.3"
   },
   "devDependencies": {
+    "@input-output-hk/atala-prism-protos": "0.1.0-ff1968f",
     "env-cmd": "10.0.1",
     "eslint": "7.24.0",
     "eslint-config-airbnb": "17.1.0",
