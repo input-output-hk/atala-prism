@@ -54,6 +54,7 @@ export const getCredentialTypeAttributes = async credentialList => {
 
   return {
     credentialTypeName: name,
-    credentialTypeIcon: encodedIcon
+    credentialTypeIcon: encodedIcon,
+    credentialTypeIconFormat: 'svg'
   };
 };
