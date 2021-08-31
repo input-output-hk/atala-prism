@@ -272,8 +272,7 @@ jobs:
         if: matrix.image == 'web'
         run: |
           cd prism-management-console-web
-          # is there any alternative?
-          # npm ci --production
+          yarn --frozen-lockfile
           CI=false GENERATE_SOURCEMAP=false yarn run build
 
       - name: Build and push prism-management-console-web
