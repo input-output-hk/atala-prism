@@ -41,3 +41,16 @@ export const mockDelay = timeoutMs => new Promise(resolve => setTimeout(resolve,
 
 export const getAditionalTimeout = entities =>
   entities > DEFAULT_PAGE_SIZE ? entities * TIMEOUT_MULTIPLIER_MS : 0;
+
+export const svgPathToEncodedBase64 = async path => {
+  const logoBlob = new File([await (await fetch(path)).blob()], path, { type: 'image/svg+xml' });
+  return blobToBase64(logoBlob);
+}
+
+const blobToBase64 = (blob) => {
+  return new Promise((resolve, _) => {
+    const reader = new FileReader();
+    reader.onloadend = () => resolve(reader.result);
+    reader.readAsDataURL(blob);
+  });
+};

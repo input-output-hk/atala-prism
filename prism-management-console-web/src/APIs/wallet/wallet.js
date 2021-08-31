@@ -1,7 +1,7 @@
 import { v4 as uuidv4 } from 'uuid';
 import { fromByteArray } from 'base64-js';
 import { retry } from '../../helpers/promises';
-
+import { getCredentialTypeAttributes } from '../helpers/credentialTypeHelpers';
 import {
   UNLOCKED,
   LOCKED,
@@ -122,10 +122,12 @@ async function signMessage(unsignedRequest, timeout) {
 
 async function signCredentials(unsignedCredentials) {
   const { sessionId } = this.session;
+  const credentialTypeAttributes = await getCredentialTypeAttributes(unsignedCredentials);
+
   const signRequests = unsignedCredentials.map(({ credentialId, html }) => {
     const payload = {
       id: credentialId,
-      properties: { html }
+      properties: { html, ...credentialTypeAttributes }
     };
 
     return window.prism.requestSignature(sessionId, JSON.stringify(payload));

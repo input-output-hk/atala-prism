@@ -1,5 +1,4 @@
 import React, { useState } from 'react';
-import _ from 'lodash';
 import { Drawer, Tabs, Alert, Divider } from 'antd';
 import { Trans, useTranslation } from 'react-i18next';
 import PropTypes from 'prop-types';
@@ -107,8 +106,7 @@ const CredentialSummaryDetail = ({ drawerInfo, credentialData }) => {
   );
 
   const renderHtmlCredential = ({ html }) => {
-    const unescapedHtml = _.unescape(html);
-    const cleanHtml = sanitizeView(unescapedHtml);
+    const cleanHtml = sanitizeView(html);
     /* eslint-disable-next-line react/no-danger */
     return <div dangerouslySetInnerHTML={{ __html: cleanHtml }} />;
   };
