@@ -122,7 +122,7 @@ async function signMessage(unsignedRequest, timeout) {
 
 async function signCredentials(unsignedCredentials) {
   const { sessionId } = this.session;
-  const credentialTypeAttributes = getCredentialTypeAttributes(unsignedCredentials);
+  const credentialTypeAttributes = await getCredentialTypeAttributes(unsignedCredentials);
 
   const signRequests = unsignedCredentials.map(({ credentialId, html }) => {
     const payload = {
