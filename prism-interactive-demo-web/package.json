@@ -3,6 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "dependencies": {
+    "@input-output-hk/atala-prism-protos": "0.1.0-ff1968f",
     "antd": "3.23.6",
     "atala-prism-demo": "git+https://git@github.com/input-output-hk/atala-prism-demo.git",
     "env-cmd": "10.0.1",
@@ -72,6 +73,11 @@
     "prettier": "1.16.1"
   },
   "scripts": {
+    "prestart": "./scripts/compile-protos.sh",
+    "prestart-test-server": "./scripts/compile-protos.sh",
+    "prebuild": "./scripts/compile-protos.sh",
+    "pretest": "./scripts/compile-protos.sh",
+    "pretest-no-watch": "./scripts/compile-protos.sh",
     "start": "./scripts/copyEnvVarsToWindow.sh && cp env-config.js ./public/ && gatsby develop -p 3000",
     "build": "gatsby build"
   },
