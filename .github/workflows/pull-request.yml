@@ -11,8 +11,11 @@ on:
       - package*
   pull_request:
     paths:
-      - prism-backend/**'
+      - 'prism-backend/**'
       - "!prism-backend/docs/**"
+      - 'prism-management-console-web/src/**'
+      - 'prism-management-console-web/package.json'
+
 
 env:
   GITHUB_TOKEN: ${{ secrets.ATALA_GITHUB_TOKEN }}
@@ -157,14 +160,6 @@ jobs:
 
   build-prism-management-console-web:
     name: "Build Prism MC Web"
-    if: |
-      github.ref == 'refs/heads/master' ||
-      startsWith(github.ref, 'refs/heads/develop') ||
-      startsWith(github.ref, 'refs/heads/test') ||
-      startsWith(github.ref, 'refs/heads/geud-test') ||
-      startsWith(github.ref, 'refs/heads/demo') ||
-      startsWith(github.ref, 'refs/heads/qa') ||
-      startsWith(github.ref, 'refs/heads/sandbox')
     runs-on: ubuntu-20.04
     steps:
       - name: Checkout
