@@ -246,6 +246,13 @@ export const CONTACT_SORTING_KEYS = {
   externalId: 'EXTERNAL_ID'
 };
 
+// Templates
+export const TEMPLATES_SORTING_KEYS = {
+  name: 'NAME',
+  category: 'CATEGORY',
+  lastEdited: 'LAST_EDITED'
+};
+
 // Sorting directions
 export const SORTING_DIRECTIONS = {
   ascending: 'ASCENDING',

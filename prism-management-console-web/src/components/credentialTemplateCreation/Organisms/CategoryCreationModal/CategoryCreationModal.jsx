@@ -4,8 +4,8 @@ import { Form, Modal } from 'antd';
 import { useTranslation } from 'react-i18next';
 import CategoryCreation from './CategoryCreation';
 import { templateCategoryShape } from '../../../../helpers/propShapes';
-import './_style.scss';
 import { defaultCategoryIcons } from '../../../../helpers/templateCategories/categories';
+import './_style.scss';
 
 const i18nPrefix = 'credentialTemplateCreation';
 

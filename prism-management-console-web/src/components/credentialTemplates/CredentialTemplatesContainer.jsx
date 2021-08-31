@@ -2,15 +2,28 @@ import React from 'react';
 import PropTypes from 'prop-types';
 import { withApi } from '../providers/withApi';
 import CredentialTemplates from './CredentialTemplates';
-import { useCredentialTypes } from '../../hooks/useCredentialTypes';
+import { useCredentialTypes, useTemplateCategories } from '../../hooks/useCredentialTypes';
+import { useMockDataContext } from '../providers/MockDataProvider';
 
 const CredentialTemplatesContainer = ({ api: { credentialTypesManager } }) => {
-  const { credentialTypes, isLoading, isSearching } = useCredentialTypes(credentialTypesManager);
+  const {
+    filteredCredentialTypes,
+    isLoading,
+    isSearching,
+    filterProps,
+    sortingProps
+  } = useCredentialTypes(credentialTypesManager);
+  const { templateCategories } = useTemplateCategories(credentialTypesManager);
+  const { mockData } = useMockDataContext();
 
   const tableProps = {
-    credentialTypes,
+    credentialTypes:
+      filteredCredentialTypes && filteredCredentialTypes.concat(mockData.credentialTypes),
+    templateCategories,
     isLoading,
-    isSearching
+    isSearching,
+    filterProps,
+    sortingProps
   };
 
   return <CredentialTemplates tableProps={tableProps} />;

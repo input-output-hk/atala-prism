@@ -536,8 +536,21 @@
   "templates": {
     "model": "Templates",
     "title": "Credential Templates",
+    "table": {
+      "unknownValue": "Unknown",
+      "columns": {
+        "name":"Template Name",
+        "category": "Category",
+        "lastEdited": "Last Edited"
+      }
+    },
     "actions": {
-      "createTemplate": "Create Template"
+      "searchPlaceholder": "Search",
+      "createTemplate": "Create",
+      "preview": "Preview",
+      "edit": "Edit ",
+      "copy": "Copy",
+      "delete":"Delete"
     }
   },
   "credentialTemplateCreation": {

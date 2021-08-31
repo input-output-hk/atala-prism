@@ -8,8 +8,7 @@ import {
 } from '../../../../helpers/templateLayouts/templates';
 
 const TemplatePreview = () => {
-  const { templateSettings } = useTemplateContext();
-  const { form } = useTemplateContext();
+  const { templateSettings, form, setTemplatePreview } = useTemplateContext();
   const [imageOverwrites, setImagesOverwrites] = useState();
   const [displayHtml, setDisplayHtml] = useState('');
 
@@ -28,7 +27,8 @@ const TemplatePreview = () => {
     const configuredHtmlTemplate = configureHtmlTemplate(currentConfig.layout, currentConfig);
 
     setDisplayHtml(configuredHtmlTemplate);
-  }, [templateSettings, form, imageOverwrites]);
+    setTemplatePreview(configuredHtmlTemplate);
+  }, [templateSettings, form, imageOverwrites, setTemplatePreview]);
 
   return <CredentialsViewer credentialViews={[displayHtml]} showBrowseControls={false} />;
 };

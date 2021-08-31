@@ -1,8 +1,9 @@
 import React from 'react';
 import PropTypes from 'prop-types';
+import { useTranslation } from 'react-i18next';
 import CredentialButtons from '../../Atoms/Buttons/CredentialButtons';
-import SearchBar from '../../Atoms/Buttons/SearchBar';
 import { credentialTypeShape } from '../../../../helpers/propShapes';
+import SearchBar from '../../../common/Atoms/SearchBar/SearchBar';
 
 const BulkActionsHeader = ({
   bulkActionsProps,
@@ -10,11 +11,16 @@ const BulkActionsHeader = ({
   selectedRowKeys,
   filterProps
 }) => {
+  const { t } = useTranslation();
   const disableActions = !selectedRowKeys?.length || loadingSelection;
 
   return (
     <div className="BulkActionsRow">
-      <SearchBar {...bulkActionsProps} filterProps={filterProps} />
+      <SearchBar
+        searchText={filterProps.name}
+        setSearchText={filterProps.setName}
+        placeholder={t('credentials.filters.search')}
+      />
       <CredentialButtons
         {...bulkActionsProps}
         filterProps={filterProps}

@@ -5,7 +5,7 @@ import PopOver from '../../components/common/Organisms/Detail/PopOver';
 import CellRenderer from '../../components/common/Atoms/CellRenderer/CellRenderer';
 import StatusBadge from '../../components/connections/Atoms/StatusBadge/StatusBadge';
 import holderDefaultAvatar from '../../images/holder-default-avatar.svg';
-import ActionButtons from '../../components/connections/Atoms/ActionButtons/ActionButtons';
+import ContactActionButtons from '../../components/connections/Atoms/ActionButtons/ContactActionButtons';
 import ActionGroupButtons from '../../components/groupEditing/ActionButtons';
 import { backendDateFormat } from '../formatters';
 
@@ -77,7 +77,7 @@ const getExtendedColumns = ({ inviteContact, viewContactDetail }) => [
     width: 200,
     render: contact => {
       const actionButtons = (
-        <ActionButtons
+        <ContactActionButtons
           contact={contact}
           inviteContact={inviteContact}
           viewContactDetail={viewContactDetail}
