@@ -15,6 +15,8 @@ import io.iohk.atala.prism.node.cardano.{LAST_SYNCED_BLOCK_NO, LAST_SYNCED_BLOCK
 import io.iohk.atala.prism.node.grpc.ProtoCodecs
 import io.iohk.atala.prism.node.models.{
   AtalaObjectId,
+  AtalaObjectInfo,
+  AtalaObjectStatus,
   AtalaObjectTransactionSubmission,
   AtalaObjectTransactionSubmissionStatus,
   AtalaOperationInfo,
@@ -222,6 +224,15 @@ object DataPreparation {
         blockOperationCount = opsCount
       )
       .withBlockContent(block)
+
+  def createAtalaObjectInfo(operations: List[SignedAtalaOperation]): AtalaObjectInfo = {
+    val block = node_internal.AtalaBlock(version = "1.0", operations = operations)
+    val atalaObject = createAtalaObject(block, operations.size)
+    AtalaObjectInfo(AtalaObjectId.of(atalaObject), atalaObject.toByteArray, AtalaObjectStatus.Pending)
+  }
+
+  def createAtalaObjectInfos(operationBlocks: List[List[SignedAtalaOperation]]): List[AtalaObjectInfo] =
+    operationBlocks.map(createAtalaObjectInfo)
 
   def setAtalaObjectTransactionSubmissionStatus(
       transaction: TransactionInfo,
