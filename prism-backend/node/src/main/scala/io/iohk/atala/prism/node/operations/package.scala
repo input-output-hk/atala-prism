@@ -2,7 +2,6 @@ package io.iohk.atala.prism.node
 
 import java.security.PublicKey
 import java.time.Instant
-
 import cats.data.EitherT
 import doobie.free.connection.ConnectionIO
 import io.iohk.atala.prism.kotlin.credentials.TimestampInfo
@@ -12,7 +11,9 @@ import io.iohk.atala.prism.kotlin.identity.DIDSuffix
 import io.iohk.atala.prism.models.{Ledger, TransactionId}
 import io.iohk.atala.prism.node.models.nodeState.LedgerData
 import io.iohk.atala.prism.node.operations.path._
-import io.iohk.atala.prism.protos.node_models
+import io.iohk.atala.prism.protos.{node_internal, node_models}
+import io.iohk.atala.prism.protos.node_models.AtalaOperation
+import io.iohk.atala.prism.protos.node_models.SignedAtalaOperation
 
 package object operations {
 
@@ -171,4 +172,28 @@ package object operations {
         ledgerData: LedgerData
     ): Either[ValidationError, Repr]
   }
+
+  def parseOperationWithMockedLedger(operation: SignedAtalaOperation): Either[ValidationError, Operation] =
+    operation.getOperation.operation match {
+      case AtalaOperation.Operation.CreateDid(_) =>
+        CreateDIDOperation.parseWithMockedLedgerData(operation)
+      case AtalaOperation.Operation.UpdateDid(_) =>
+        UpdateDIDOperation.parseWithMockedLedgerData(operation)
+      case AtalaOperation.Operation.IssueCredentialBatch(_) =>
+        IssueCredentialBatchOperation.parseWithMockedLedgerData(operation)
+      case AtalaOperation.Operation.RevokeCredentials(_) =>
+        RevokeCredentialsOperation.parseWithMockedLedgerData(operation)
+      case AtalaOperation.Operation.Empty => // should not happen
+        throw new RuntimeException("Unexpected empty AtalaOperation")
+    }
+
+  def parseOperationsFromByteContent(byteContent: Array[Byte]): List[Operation] =
+    node_internal.AtalaObject
+      .validate(byteContent)
+      .toOption
+      .fold(List[Operation]()) { obj =>
+        obj.getBlockContent.operations.toList.flatMap { op =>
+          parseOperationWithMockedLedger(op).toOption
+        }
+      }
 }

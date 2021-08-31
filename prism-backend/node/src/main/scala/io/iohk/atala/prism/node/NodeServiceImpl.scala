@@ -25,7 +25,6 @@ import io.iohk.atala.prism.node.repositories.{CredentialBatchesRepository, DIDDa
 import io.iohk.atala.prism.node.services.{ObjectManagementService, SubmissionSchedulingService}
 import io.iohk.atala.prism.protos.common_models.{HealthCheckRequest, HealthCheckResponse}
 import io.iohk.atala.prism.protos.node_api._
-import io.iohk.atala.prism.protos.node_models.AtalaOperation.Operation
 import io.iohk.atala.prism.protos.node_models.{OperationOutput, SignedAtalaOperation}
 import io.iohk.atala.prism.protos.{common_models, node_api, node_models}
 import io.iohk.atala.prism.utils.syntax._
@@ -280,7 +279,7 @@ class NodeServiceImpl(
           )
           outputs <- Future.sequence(
             operations.map { op =>
-              errorEitherToFutureAndCount(methodName, parseOperationWithMockData(op))
+              errorEitherToFutureAndCount(methodName, getOperationOutput(op))
             }
           )
           operationIds <- objectManagement.sendAtalaOperations(operations: _*)
@@ -490,48 +489,31 @@ object NodeServiceImpl {
     OrElse(did, didDataRepository.findByDid(did).unsafeToFuture())
   }
 
-  private def parseOperationWithMockData(operation: SignedAtalaOperation): Either[ValidationError, OperationOutput] = {
-    val operationEither = operation.getOperation.operation match {
-      case Operation.Empty => // should not happen
-        throw new RuntimeException("Unexpected empty AtalaOperation")
-      case Operation.CreateDid(_) =>
-        CreateDIDOperation.parseWithMockedLedgerData(operation).map { parsedOp =>
-          OperationOutput(
-            OperationOutput.Result.CreateDidOutput(
-              node_models.CreateDIDOutput(parsedOp.id.getValue)
-            )
+  private def getOperationOutput(operation: SignedAtalaOperation): Either[ValidationError, OperationOutput] =
+    parseOperationWithMockedLedger(operation).map {
+      case CreateDIDOperation(id, _, _, _) =>
+        OperationOutput(
+          OperationOutput.Result.CreateDidOutput(
+            node_models.CreateDIDOutput(id.getValue)
           )
-        }
-      case Operation.UpdateDid(_) =>
-        UpdateDIDOperation
-          .parseWithMockedLedgerData(operation)
-          .map { _ =>
-            OperationOutput(
-              OperationOutput.Result.UpdateDidOutput(
-                node_models.UpdateDIDOutput()
-              )
-            )
-          }
-      case Operation.IssueCredentialBatch(_) =>
-        IssueCredentialBatchOperation.parseWithMockedLedgerData(operation).map { parsedOp =>
-          OperationOutput(
-            OperationOutput.Result.BatchOutput(
-              node_models.IssueCredentialBatchOutput(parsedOp.credentialBatchId.getId)
-            )
+        )
+      case UpdateDIDOperation(_, _, _, _, _) =>
+        OperationOutput(
+          OperationOutput.Result.UpdateDidOutput(
+            node_models.UpdateDIDOutput()
           )
-        }
-      case Operation.RevokeCredentials(_) =>
-        RevokeCredentialsOperation
-          .parseWithMockedLedgerData(operation)
-          .map { _ =>
-            OperationOutput(
-              OperationOutput.Result.RevokeCredentialsOutput(
-                node_models.RevokeCredentialsOutput()
-              )
-            )
-          }
+        )
+      case IssueCredentialBatchOperation(credentialBatchId, _, _, _, _) =>
+        OperationOutput(
+          OperationOutput.Result.BatchOutput(
+            node_models.IssueCredentialBatchOutput(credentialBatchId.getId)
+          )
+        )
+      case RevokeCredentialsOperation(_, _, _, _, _) =>
+        OperationOutput(
+          OperationOutput.Result.RevokeCredentialsOutput(
+            node_models.RevokeCredentialsOutput()
+          )
+        )
     }
-
-    operationEither
-  }
 }
