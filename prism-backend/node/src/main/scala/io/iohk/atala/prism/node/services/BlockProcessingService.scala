@@ -96,13 +96,13 @@ class BlockProcessingServiceImpl extends BlockProcessingService {
                         atalaOperationId.toString,
                         protoOperation
                       )
-                      OperationsCounters.countProcessedBlock(protoOperation)
+                      OperationsCounters.countOperationApplied(protoOperation)
                       connection.releaseSavepoint(savepoint)
                     case Left(err) =>
                       logger.warn(
                         s"Operation was not applied:\n${err.toString}\nOperation:\n${protoOperation.toProtoString}"
                       )
-                      OperationsCounters.countFailedToProcessBlock(protoOperation, err)
+                      OperationsCounters.countOperationRejected(protoOperation, err)
                       logRequestWithContext(
                         methodName,
                         s"Operation was not applied:\n${err.toString}",

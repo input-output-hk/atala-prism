@@ -100,11 +100,11 @@ class ObjectManagementService private (
 
     result.fold(
       { err =>
-        OperationsCounters.countFailedToSendAtalaOperations(atalaOperations, err)
+        OperationsCounters.failedToStoreToDbAtalaOperations(atalaOperations, err)
         throw new RuntimeException(err.toString)
       },
       { _ =>
-        OperationsCounters.countSentAtalaOperations(atalaOperations)
+        OperationsCounters.countReceivedAtalaOperations(atalaOperations)
         atalaOperationIds
       }
     )
