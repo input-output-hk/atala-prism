@@ -65,35 +65,57 @@ package object operations {
   }
 
   /** Error during applying an operation to the state */
-  sealed trait StateError
+  sealed trait StateError {
+    def name: String
+  }
 
   object StateError {
 
     /** Error signifying that operation cannot be applied as it tries to access an entity that does not exist */
-    case class EntityMissing(tpe: String, identifier: String) extends StateError
+    final case class EntityMissing(tpe: String, identifier: String) extends StateError {
+      override def name: String = "entity-missing"
+    }
 
     /** Error signifying that operation cannot be applied as it tries to create an entity that already exists */
-    case class EntityExists(tpe: String, identifier: String) extends StateError
+    final case class EntityExists(tpe: String, identifier: String) extends StateError {
+      override def name: String = "entity-exists"
+    }
 
     /** Error signifying that key that was supposed to be used to verify the signature does not exist */
-    case class UnknownKey(didSuffix: DIDSuffix, keyId: String) extends StateError
+    final case class UnknownKey(didSuffix: DIDSuffix, keyId: String) extends StateError {
+      override def name: String = "unknown-key"
+    }
 
-    case class InvalidKeyUsed(requirement: String) extends StateError
+    final case class InvalidKeyUsed(requirement: String) extends StateError {
+      override def name: String = "invalid-key-used"
+    }
 
-    case class InvalidPreviousOperation() extends StateError
+    final case class InvalidPreviousOperation() extends StateError {
+      override def name: String = "invalid-previous-operation"
+    }
 
-    case class InvalidSignature() extends StateError
+    final case class InvalidSignature() extends StateError {
+      override def name: String = "invalid-signature"
+    }
 
     // Error signifying that the update operation is attempting to revoke the key signing the operation
-    case class InvalidRevocation() extends StateError
+    final case class InvalidRevocation() extends StateError {
+      override def name: String = "invalid-revocation"
+    }
 
     // Error signifying that the key used has been revoked already
-    case class KeyAlreadyRevoked() extends StateError
+    final case class KeyAlreadyRevoked() extends StateError {
+      override def name: String = "key-already-revoked"
+    }
 
     // Error signifying that the associated batch is already revoked
-    case class BatchAlreadyRevoked(batchId: String) extends StateError
+    final case class BatchAlreadyRevoked(batchId: String) extends StateError {
+      override def name: String = "batch-already-revoked"
+    }
 
-    case class DuplicateOperation() extends StateError
+    final case class DuplicateOperation() extends StateError {
+      override def name: String = "duplicate-operation"
+    }
   }
 
   /** Data required to verify the correctness of the operation */

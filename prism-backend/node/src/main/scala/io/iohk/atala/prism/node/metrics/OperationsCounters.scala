@@ -36,7 +36,7 @@ object OperationsCounters {
     increaseOperationsOccurrencesCounter(
       in,
       failedToSendObjectsCounter,
-      TagSet.builder().add(NODE_ERROR_TAG, nodeErrorToTagString(error))
+      TagSet.builder().add(NODE_ERROR_TAG, error.name)
     )
 
   def countOperationApplied(op: SignedAtalaOperation): Unit =
@@ -46,7 +46,7 @@ object OperationsCounters {
     increaseBlockOperationsCounter(
       op.getOperation.operation,
       failedToProcessBlocksCounter,
-      TagSet.builder().add(STATE_ERROR_TAG, stateErrorToTagString(stateError))
+      TagSet.builder().add(STATE_ERROR_TAG, stateError.name)
     )
 
   private def increaseBlockOperationsCounter(
@@ -70,26 +70,6 @@ object OperationsCounters {
         case (operation, occurrences) => countAtalaDidOperations(operation, occurrences, counter, tagSetBuilder)
       }
     }.toEither.left.foreach(error => logger.error(s"${counter.name} counter just blew up", error))
-
-  private def stateErrorToTagString: PartialFunction[StateError, String] = {
-    case StateError.EntityExists(_, _) => "entity-exists"
-    case StateError.InvalidSignature() => "invalid-signature"
-    case StateError.EntityMissing(_, _) => "entity-missing"
-    case StateError.InvalidPreviousOperation() => "invalid-previous-operation"
-    case StateError.InvalidKeyUsed(_) => "invalid-key-used"
-    case StateError.InvalidRevocation() => "invalid-revocation"
-    case StateError.KeyAlreadyRevoked() => "key-already-revoked"
-    case StateError.DuplicateOperation() => "duplicate-operation"
-    case StateError.BatchAlreadyRevoked(_) => "batch-already-revoked"
-    case StateError.UnknownKey(_, _) => "unknown-key"
-  }
-
-  private def nodeErrorToTagString: PartialFunction[NodeError, String] = {
-    case NodeError.UnknownValueError(_, _) => "unknown-value"
-    case NodeError.InternalError(_) => "internal"
-    case NodeError.InternalCardanoWalletError(_) => "internal-cardano-wallet"
-    case NodeError.InternalErrorDB(_) => "internal-db"
-  }
 
   private def countAtalaDidOperations(
       in: AtalaOperation.Operation,
