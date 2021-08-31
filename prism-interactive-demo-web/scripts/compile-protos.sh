@@ -3,7 +3,7 @@ set -e
 
 OUT_DIR="./src/app/protos/demo"
 
-PROTOS_DIR="../credentials-verification/protos/intdemo"
+PROTOS_DIR="./node_modules/@input-output-hk/atala-prism-protos/intdemo"
 
 # clean protos directory first to avoid keeping dust
 rm -rf $OUT_DIR
