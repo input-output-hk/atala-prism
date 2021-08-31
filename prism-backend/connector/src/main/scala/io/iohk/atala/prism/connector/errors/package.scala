@@ -81,13 +81,31 @@ package object errors {
     }
   }
 
-  case class ConnectionNotFound(tokenString: TokenString) extends ConnectorError {
+  case class ConnectionNotFound(connection: Either[TokenString, ConnectionId]) extends ConnectorError {
     override def toStatus: Status = {
       Status.NOT_FOUND.withDescription(
-        s"Connection with token $tokenString doesn't exist. " +
+        s"Connection with ${connection.fold("token " + _, "id " + _)} doesn't exist. " +
           s"Other side might not have accepted connection yet or connection token is invalid"
       )
     }
+  }
+
+  object ConnectionNotFound {
+    def apply(s: TokenString): ConnectionNotFound = ConnectionNotFound(Left(s))
+    def apply(c: ConnectionId): ConnectionNotFound = ConnectionNotFound(Right(c))
+  }
+
+  case class ConnectionRevoked(connection: Either[TokenString, ConnectionId]) extends ConnectorError {
+    override def toStatus: Status = {
+      Status.FAILED_PRECONDITION.withDescription(
+        s"Connection with ${connection.fold("token " + _, "id " + _)} has been revoked."
+      )
+    }
+  }
+
+  object ConnectionRevoked {
+    def apply(s: TokenString): ConnectionRevoked = ConnectionRevoked(Left(s))
+    def apply(c: ConnectionId): ConnectionRevoked = ConnectionRevoked(Right(c))
   }
 
   case class ConnectionNotFoundByConnectionIdAndSender(sender: ParticipantId, connection: ConnectionId)

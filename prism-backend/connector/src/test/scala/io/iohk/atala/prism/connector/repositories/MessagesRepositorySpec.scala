@@ -298,6 +298,39 @@ class MessagesRepositorySpec extends ConnectorRepositorySpecBase {
     result mustBe a[Left[_, _]]
   }
 
+  "fail to insert many messages if one of the connection tokens is revoked" in {
+    val issuer = createIssuer()
+    val holder1 = createHolder()
+    val holder2 = createHolder()
+    val token1 = createToken(issuer)
+    val token2 = createToken(issuer)
+    createConnection(issuer, holder1, token1, ConnectionStatus.ConnectionAccepted)
+    createConnection(issuer, holder2, token2, ConnectionStatus.ConnectionRevoked)
+
+    val message = credential_models.AtalaMessage()
+
+    val messages =
+      NonEmptyList.of(
+        SendMessagesRequest.MessageToSend(token1, message.toByteArray, None),
+        SendMessagesRequest.MessageToSend(token2, message.toByteArray, None)
+      )
+
+    val result = messagesRepository.insertMessages(issuer, messages).unsafeRunSync()
+    result mustBe a[Left[_, _]]
+  }
+
+  "fail to insert one message if a connection token is revoked" in {
+    val issuer = createIssuer()
+    val holder = createHolder()
+    val token = createToken(issuer)
+    val connectionId = createConnection(issuer, holder, token, ConnectionStatus.ConnectionRevoked)
+
+    val message = credential_models.AtalaMessage()
+
+    val result = messagesRepository.insertMessage(issuer, connectionId, message.toByteArray).unsafeRunSync()
+    result mustBe a[Left[_, _]]
+  }
+
   "getMessagesPaginated" should {
     "select subset of messages according to since and limit" in {
       val issuer = createIssuer()
