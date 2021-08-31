@@ -272,8 +272,8 @@ jobs:
         if: matrix.image == 'web'
         run: |
           cd prism-management-console-web
-          npm ci --production
-          CI=false GENERATE_SOURCEMAP=false npm run build
+          yarn --frozen-lockfile
+          CI=false GENERATE_SOURCEMAP=false yarn run build
 
       - name: Build and push prism-management-console-web
         if: matrix.image == 'web'
