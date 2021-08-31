@@ -5,14 +5,8 @@ import com.typesafe.config.{Config, ConfigFactory}
 import io.grpc.{Server, ServerBuilder}
 import io.iohk.atala.prism.metrics.UptimeReporter
 import io.iohk.atala.prism.node.cardano.CardanoClient
-import io.iohk.atala.prism.node.metrics.WalletAvailableFundsReporter
-import io.iohk.atala.prism.node.repositories.{
-  AtalaObjectsTransactionsRepository,
-  AtalaOperationsRepository,
-  CredentialBatchesRepository,
-  DIDDataRepository,
-  KeyValuesRepository
-}
+import io.iohk.atala.prism.node.metrics.NodeReporter
+import io.iohk.atala.prism.node.repositories._
 import io.iohk.atala.prism.node.services._
 import io.iohk.atala.prism.node.services.models.AtalaObjectNotification
 import io.iohk.atala.prism.protos.node_api._
@@ -159,7 +153,7 @@ class NodeApp(executionContext: ExecutionContext) { self =>
   ): (CardanoLedgerService, Option[IO[Unit]]) = {
     val config = NodeConfig.cardanoConfig(globalConfig.getConfig("cardano"))
     val (cardanoClient, releaseClient) = createCardanoClient(config.cardanoClientConfig)
-    Kamon.registerModule("wallet-funds", WalletAvailableFundsReporter(config, cardanoClient))
+    Kamon.registerModule("node-reporter", NodeReporter(config, cardanoClient, keyValueService))
     val cardano = CardanoLedgerService(config, cardanoClient, keyValueService, onAtalaObject)
     (cardano, Some(releaseClient))
   }
