@@ -141,4 +141,5 @@ sketch
 ./public/env-config.js
 env-config.js
 
-public
+/public
+src/app/protos/

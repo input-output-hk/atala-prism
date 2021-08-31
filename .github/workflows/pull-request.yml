@@ -285,8 +285,8 @@ jobs:
         if: matrix.image == 'landing'
         run: |
           cd prism-interactive-demo-web
-          npm ci --production
-          CI=false GENERATE_SOURCEMAP=false npm run build
+          yarn --frozen-lockfile
+          CI=false GENERATE_SOURCEMAP=false yarn run build
 
       - name: Build and push prism-interactive-demo-web
         if: matrix.image == 'landing'
