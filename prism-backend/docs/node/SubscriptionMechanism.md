@@ -135,11 +135,6 @@ case class RevokeCredentialFilter(credentialHash: SHA256Digest,
 ```
 These filters correspond to all cases from the first chapter.
 
-The only questionable one is `DidOperationFilter(CreateDidTag, ... )` because it implies that
-wallet (Issuer) derives and publishes its DIDs from sequential indexes, and knowing the last published
-user's DID wallet is able to predict the next one. However, DID derivation requires a user password,
-and I don't know if it's realistically to have access to the password whenever a wallet needs.
-
 ## Implementation details
 In this section we describe how suggest protocol will be integrated in the node codebase,
 and outline how possible SDK might look for a client.
