@@ -1,6 +1,18 @@
+import React from 'react';
 import App from '../app/app';
+import SEO from '../components/seo/seo';
 
-export default App;
+const InteractiveDemoApp = () => {
+  const isSsr = typeof window === 'undefined';
+  return (
+    <div>
+      <SEO />
+      {!isSsr && <App />}
+    </div>
+  );
+};
+
+export default InteractiveDemoApp;
 
 // `src/app` is not "special", it is re-exported by `src/pages/app.js`
 // and contains all the clientside dynamic App pages that we dont want to be statically generated.

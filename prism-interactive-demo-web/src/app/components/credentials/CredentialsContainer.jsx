@@ -3,7 +3,7 @@ import PropTypes from 'prop-types';
 import { message } from 'antd';
 import _ from 'lodash';
 import { useTranslation } from 'react-i18next';
-import { useAnalytics } from 'reactfire';
+import firebase from 'gatsby-plugin-firebase';
 import FinishInfo from './Molecules/FinishInfo/FinishInfo';
 import CongratsStep from './Molecules/CongratsStep/CongratsStep';
 import CreatedCredential from './Organisms/CreatedCredential/CreatedCredential';
@@ -58,7 +58,6 @@ const lastCredential = Object.keys(CREDENTIAL_TYPES).length - 1;
 const CredentialsContainer = ({
   api: { getConnectionToken, startSubjectStatusStream, setPersonalData }
 }) => {
-  const firebase = useAnalytics();
   const { t } = useTranslation();
 
   const { user, setUser } = useContext(UserContext);
@@ -121,13 +120,13 @@ const CredentialsContainer = ({
     const notIdCredential = currentCredential !== GOVERNMENT_ISSUED_DIGITAL_IDENTITY;
     if (isQRStep && isConnected && notIdCredential) {
       setCurrentStep(currentStep + 1);
-      firebase.logEvent(eventLogger[currentCredential]);
+      firebase.analytics().logEvent(eventLogger[currentCredential]);
       const msg = t(`credential.generic.${SUBJECT_STATUSES[connectionStatus]}`);
       return message.success(msg);
     }
     if (isQRStep && isCredentialSended) {
       setCurrentStep(currentStep + 2);
-      firebase.logEvent(STEP_1_EVENT);
+      firebase.analytics().logEvent(STEP_1_EVENT);
       const msg = t(`credential.generic.${SUBJECT_STATUSES[connectionStatus]}`);
       return message.success(msg);
     }
