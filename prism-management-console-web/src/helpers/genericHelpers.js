@@ -1,3 +1,4 @@
+import fetch from 'isomorphic-fetch';
 import { DEFAULT_PAGE_SIZE, TIMEOUT_MULTIPLIER_MS } from './constants';
 
 const firstLetterAsUpperCase = word => customUpperCase(word.charAt(0));
@@ -43,14 +44,15 @@ export const getAditionalTimeout = entities =>
   entities > DEFAULT_PAGE_SIZE ? entities * TIMEOUT_MULTIPLIER_MS : 0;
 
 export const svgPathToEncodedBase64 = async path => {
-  const logoBlob = new File([await (await fetch(path)).blob()], path, { type: 'image/svg+xml' });
+  const fetchedData = await fetch(path);
+  const blob = await fetchedData.blob();
+  const logoBlob = new File([blob], path, { type: 'image/svg+xml' });
   return blobToBase64(logoBlob);
-}
+};
 
-const blobToBase64 = (blob) => {
-  return new Promise((resolve, _) => {
+export const blobToBase64 = blob =>
+  new Promise(resolve => {
     const reader = new FileReader();
     reader.onloadend = () => resolve(reader.result);
     reader.readAsDataURL(blob);
   });
-};

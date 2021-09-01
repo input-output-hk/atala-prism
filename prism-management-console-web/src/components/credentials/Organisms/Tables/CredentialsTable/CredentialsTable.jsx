@@ -92,7 +92,7 @@ const getCredentialsIssuedColumns = (
   {
     key: 'contactStatus',
     // eslint-disable-next-line react/prop-types
-    render: ({ contactData: { connectionStatus } }) => (
+    render: ({ connectionStatus }) => (
       <CellRenderer title={tp('contactStatus')}>
         <StatusBadge status={connectionStatus} useCase={CONTACT_STATUS} />
       </CellRenderer>
