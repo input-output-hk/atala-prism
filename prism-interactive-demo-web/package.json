@@ -38,6 +38,7 @@
     "i18next": "17.0.18",
     "js-search": "2.0.0",
     "jsonp": "0.2.1",
+    "keyword-extractor": "0.0.20",
     "lodash": "4.17.15",
     "md5-hex": "3.0.1",
     "moment": "2.24.0",

@@ -29,8 +29,6 @@
     box-shadow: 0 0 0 2px #ffe8e8ce;
   }
   .group {
-    margin: 1em 0;
-    padding: 1em 0;
     border-bottom: 1px solid #ffe7e7;
   }
   .group:last-child {
@@ -67,6 +65,7 @@
     text-transform: uppercase;
     letter-spacing: 2px;
     font-weight: 700;
+    margin: 1em 0;
   }
   a {
     @include primary-text(12px, #606060);
@@ -90,9 +89,6 @@
   }
   .date {
     @include primary-text(12px, rgb(189, 189, 189));
-    margin-bottom: 1em;
-  }
-  .ant-input-affix-wrapper {
     margin-bottom: 1em;
   }
 }
