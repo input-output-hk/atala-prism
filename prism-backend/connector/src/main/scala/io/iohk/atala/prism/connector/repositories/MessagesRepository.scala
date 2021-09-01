@@ -1,8 +1,11 @@
 package io.iohk.atala.prism.connector.repositories
 
+import cats.{Comonad, Functor}
 import cats.data.{EitherT, NonEmptyList}
 import cats.syntax.applicative._
+import cats.syntax.comonad._
 import cats.syntax.either._
+import cats.syntax.functor._
 import cats.syntax.traverse._
 import cats.effect.BracketThrow
 import cats.tagless.ApplyK
@@ -14,6 +17,7 @@ import io.iohk.atala.prism.connector.errors._
 import io.iohk.atala.prism.connector.model._
 import io.iohk.atala.prism.connector.model.actions.SendMessagesRequest
 import io.iohk.atala.prism.connector.repositories.daos.{ConnectionsDAO, MessagesDAO}
+import io.iohk.atala.prism.connector.repositories.logs.MessagesRepositoryLogs
 import io.iohk.atala.prism.connector.repositories.metrics.MessagesRepositoryMetrics
 import io.iohk.atala.prism.errors.LoggingContext
 import io.iohk.atala.prism.models.ParticipantId
@@ -21,6 +25,8 @@ import io.iohk.atala.prism.utils.syntax.DBConnectionOps
 import io.iohk.atala.prism.metrics.TimeMeasureMetric
 import org.slf4j.{Logger, LoggerFactory}
 import tofu.higherKind.Mid
+import tofu.logging.{Logs, ServiceLogging}
+import tofu.syntax.monoid.TofuSemigroupOps
 import java.time.Instant
 
 // S - Stream, needed different type because we don't want to have mid for a stream
@@ -55,13 +61,24 @@ object MessagesRepository {
   implicit def applyK[E[_]]: ApplyK[MessagesRepository[E, *[_]]] =
     cats.tagless.Derive.applyK[MessagesRepository[E, *[_]]]
 
-  def apply[F[_]: TimeMeasureMetric: BracketThrow, G[_]](
-      transactor: Transactor[F]
-  ): MessagesRepository[Stream[F, *], F] = {
-    val metrics: MessagesRepository[Stream[F, *], Mid[F, *]] = new MessagesRepositoryMetrics[F, Stream[F, *]]
+  def apply[F[_]: TimeMeasureMetric: BracketThrow, R[_]: Functor](
+      transactor: Transactor[F],
+      logs: Logs[R, F]
+  ): R[MessagesRepository[Stream[F, *], F]] =
+    for {
+      serviceLogs <- logs.service[MessagesRepository[Stream[F, *], F]]
+    } yield {
+      implicit val implicitLogs: ServiceLogging[F, MessagesRepository[Stream[F, *], F]] = serviceLogs
+      val metrics: MessagesRepository[Stream[F, *], Mid[F, *]] = new MessagesRepositoryMetrics[Stream[F, *], F]
+      val logs: MessagesRepository[Stream[F, *], Mid[F, *]] = new MessagesRepositoryLogs[Stream[F, *], F]
+      val mid = metrics |+| logs
+      mid attach new MessagesRepositoryImpl[F](transactor)
+    }
 
-    metrics attach new MessagesRepositoryImpl(transactor)
-  }
+  def unsafe[F[_]: TimeMeasureMetric: BracketThrow, R[_]: Comonad](
+      transactor: Transactor[F],
+      logs: Logs[R, F]
+  ): MessagesRepository[Stream[F, *], F] = MessagesRepository(transactor, logs).extract
 }
 
 private final class MessagesRepositoryImpl[F[_]: BracketThrow](xa: Transactor[F])

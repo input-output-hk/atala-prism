@@ -13,15 +13,17 @@ import io.iohk.atala.prism.connector.errors.{
 import io.iohk.atala.prism.connector.model.actions.SendMessagesRequest
 import io.iohk.atala.prism.connector.model.{ConnectionId, ConnectionStatus, MessageId, TokenString}
 import io.iohk.atala.prism.connector.repositories.daos._
+import io.iohk.atala.prism.logging.TraceId
 import io.iohk.atala.prism.models.ParticipantId
 import io.iohk.atala.prism.protos.credential_models
 import io.iohk.atala.prism.repositories.ops.SqlTestOps.Implicits
+import io.iohk.atala.prism.utils.IOUtils._
 import org.scalatest.OptionValues._
 
 import java.time.{Instant, LocalDateTime, ZoneOffset}
 
 class MessagesRepositorySpec extends ConnectorRepositorySpecBase {
-  lazy val messagesRepository = MessagesRepository(database)
+  lazy val messagesRepository = MessagesRepository.unsafe(dbLiftedToTraceIdIO, connectorRepoSpecLogs)
 
   "insertMessage" should {
     "insert message from the initiator to the acceptor" in {
@@ -30,7 +32,8 @@ class MessagesRepositorySpec extends ConnectorRepositorySpecBase {
       val connection = createConnection(issuer, holder)
       val message = "hello".getBytes
 
-      val result = messagesRepository.insertMessage(issuer, connection, message).unsafeRunSync()
+      val result =
+        messagesRepository.insertMessage(issuer, connection, message).run(TraceId.generateYOLO).unsafeRunSync()
       val messageId = result.toOption.value
 
       val (sender, recipient, content) =
@@ -51,7 +54,8 @@ class MessagesRepositorySpec extends ConnectorRepositorySpecBase {
       val connection = createConnection(issuer, holder)
       val message = "hello".getBytes
 
-      val result = messagesRepository.insertMessage(holder, connection, message).unsafeRunSync()
+      val result =
+        messagesRepository.insertMessage(holder, connection, message).run(TraceId.generateYOLO).unsafeRunSync()
       val messageId = result.toOption.value
 
       val (sender, recipient, content) =
@@ -71,7 +75,8 @@ class MessagesRepositorySpec extends ConnectorRepositorySpecBase {
       val connection = ConnectionId.random()
       val message = "hello".getBytes
 
-      val result = messagesRepository.insertMessage(issuer, connection, message).unsafeRunSync()
+      val result =
+        messagesRepository.insertMessage(issuer, connection, message).run(TraceId.generateYOLO).unsafeRunSync()
 
       result mustBe an[Left[ConnectionNotFoundByConnectionIdAndSender, MessageId]]
     }
@@ -84,7 +89,10 @@ class MessagesRepositorySpec extends ConnectorRepositorySpecBase {
       val messageId = MessageId.random()
 
       val result =
-        messagesRepository.insertMessage(issuer, connection, message, Some(messageId)).unsafeRunSync()
+        messagesRepository
+          .insertMessage(issuer, connection, message, Some(messageId))
+          .run(TraceId.generateYOLO)
+          .unsafeRunSync()
       result.toOption.value mustBe messageId
 
       val (sender, recipient, content) =
@@ -109,12 +117,14 @@ class MessagesRepositorySpec extends ConnectorRepositorySpecBase {
 
     messagesRepository
       .insertMessage(issuer, connection, message, Some(messageId))
+      .run(TraceId.generateYOLO)
       .unsafeToFuture()
       .futureValue mustBe Right(
       messageId
     )
     messagesRepository
       .insertMessage(issuer, connection, message, Some(messageId))
+      .run(TraceId.generateYOLO)
       .unsafeToFuture()
       .futureValue mustBe an[Left[MessagesAlreadyExist, MessageId]]
   }
@@ -136,7 +146,7 @@ class MessagesRepositorySpec extends ConnectorRepositorySpecBase {
         SendMessagesRequest.MessageToSend(token2, message.toByteArray, None)
       )
 
-    val result = messagesRepository.insertMessages(issuer, messages).unsafeRunSync()
+    val result = messagesRepository.insertMessages(issuer, messages).run(TraceId.generateYOLO).unsafeRunSync()
     val messagesIds = NonEmptyList.fromList(result.toOption.value).get
 
     val insertedMessages =
@@ -177,7 +187,7 @@ class MessagesRepositorySpec extends ConnectorRepositorySpecBase {
         SendMessagesRequest.MessageToSend(token, message2.toByteArray, None)
       )
 
-    val result = messagesRepository.insertMessages(holder, messages).unsafeRunSync()
+    val result = messagesRepository.insertMessages(holder, messages).run(TraceId.generateYOLO).unsafeRunSync()
     val messagesIds = NonEmptyList.fromList(result.toOption.value).get
 
     val insertedMessages =
@@ -219,7 +229,7 @@ class MessagesRepositorySpec extends ConnectorRepositorySpecBase {
         SendMessagesRequest.MessageToSend(token2, message.toByteArray, Some(messageId2))
       )
 
-    val result = messagesRepository.insertMessages(issuer, messages).unsafeRunSync()
+    val result = messagesRepository.insertMessages(issuer, messages).run(TraceId.generateYOLO).unsafeRunSync()
     val messagesIds = NonEmptyList.fromList(result.toOption.value).get
 
     messagesIds.toList.toSet mustBe Set(messageId1, messageId2)
@@ -244,7 +254,7 @@ class MessagesRepositorySpec extends ConnectorRepositorySpecBase {
         SendMessagesRequest.MessageToSend(token2, message.toByteArray, Some(messageId1))
       )
 
-    val result = messagesRepository.insertMessages(issuer, messages).unsafeRunSync()
+    val result = messagesRepository.insertMessages(issuer, messages).run(TraceId.generateYOLO).unsafeRunSync()
     result mustBe an[Left[MessageIdsNotUnique, List[MessageId]]]
   }
 
@@ -270,10 +280,11 @@ class MessagesRepositorySpec extends ConnectorRepositorySpecBase {
 
     messagesRepository
       .insertMessages(issuer, messages)
+      .run(TraceId.generateYOLO)
       .unsafeToFuture()
       .futureValue mustBe an[Right[ConnectorError, List[MessageId]]]
 
-    val result = messagesRepository.insertMessages(issuer, messages).unsafeRunSync()
+    val result = messagesRepository.insertMessages(issuer, messages).run(TraceId.generateYOLO).unsafeRunSync()
     result mustBe an[Left[MessagesAlreadyExist, List[MessageId]]]
   }
 
@@ -294,7 +305,7 @@ class MessagesRepositorySpec extends ConnectorRepositorySpecBase {
         SendMessagesRequest.MessageToSend(TokenString("invalidConnectionToken"), message.toByteArray, None)
       )
 
-    val result = messagesRepository.insertMessages(issuer, messages).unsafeRunSync()
+    val result = messagesRepository.insertMessages(issuer, messages).run(TraceId.generateYOLO).unsafeRunSync()
     result mustBe a[Left[_, _]]
   }
 
@@ -315,7 +326,7 @@ class MessagesRepositorySpec extends ConnectorRepositorySpecBase {
         SendMessagesRequest.MessageToSend(token2, message.toByteArray, None)
       )
 
-    val result = messagesRepository.insertMessages(issuer, messages).unsafeRunSync()
+    val result = messagesRepository.insertMessages(issuer, messages).run(TraceId.generateYOLO).unsafeRunSync()
     result mustBe a[Left[_, _]]
   }
 
@@ -327,7 +338,10 @@ class MessagesRepositorySpec extends ConnectorRepositorySpecBase {
 
     val message = credential_models.AtalaMessage()
 
-    val result = messagesRepository.insertMessage(issuer, connectionId, message.toByteArray).unsafeRunSync()
+    val result = messagesRepository
+      .insertMessage(issuer, connectionId, message.toByteArray)
+      .run(TraceId.generateYOLO)
+      .unsafeRunSync()
     result mustBe a[Left[_, _]]
   }
 
@@ -346,6 +360,7 @@ class MessagesRepositorySpec extends ConnectorRepositorySpecBase {
 
       val all = messagesRepository
         .getMessagesPaginated(holder, 20, Option.empty)
+        .run(TraceId.generateYOLO)
         .unsafeToFuture()
         .futureValue
         .toOption
@@ -356,11 +371,14 @@ class MessagesRepositorySpec extends ConnectorRepositorySpecBase {
       val nextTenExpected = all.slice(10, 20)
 
       val firstTenResult =
-        messagesRepository.getMessagesPaginated(holder, 10, Option.empty).unsafeRunSync()
+        messagesRepository.getMessagesPaginated(holder, 10, Option.empty).run(TraceId.generateYOLO).unsafeRunSync()
       firstTenResult.toOption.value.map(_.id) must matchTo(firstTenExpected)
 
       val nextTenResult =
-        messagesRepository.getMessagesPaginated(holder, 10, Some(firstTenExpected.last)).unsafeRunSync()
+        messagesRepository
+          .getMessagesPaginated(holder, 10, Some(firstTenExpected.last))
+          .run(TraceId.generateYOLO)
+          .unsafeRunSync()
       nextTenResult.toOption.value.map(_.id) must matchTo(nextTenExpected)
     }
   }
