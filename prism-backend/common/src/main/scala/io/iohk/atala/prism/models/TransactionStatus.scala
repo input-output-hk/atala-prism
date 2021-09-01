@@ -8,5 +8,7 @@ object TransactionStatus extends Enum[TransactionStatus] {
   val values = findValues
 
   case object Pending extends TransactionStatus
+  case object Submitted extends TransactionStatus
+  case object Expired extends TransactionStatus
   case object InLedger extends TransactionStatus
 }
