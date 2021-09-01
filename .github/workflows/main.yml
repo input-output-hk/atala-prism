@@ -11,8 +11,8 @@ on:
       - package*
   pull_request:
     paths:
-      - prism-backend/**'
-      - "!prism-backend/docs/**"
+      - 'prism-backend/**'
+      - '!prism-backend/docs/**'
 
 env:
   GITHUB_TOKEN: ${{ secrets.ATALA_GITHUB_TOKEN }}
