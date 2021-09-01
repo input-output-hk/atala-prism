@@ -4,7 +4,7 @@ import cats.data.{EitherT, NonEmptyList}
 import cats.syntax.applicative._
 import cats.syntax.either._
 import cats.syntax.traverse._
-import cats.effect.{Bracket, BracketThrow}
+import cats.effect.BracketThrow
 import cats.tagless.ApplyK
 import doobie.ConnectionIO
 import doobie.implicits._
@@ -14,11 +14,11 @@ import io.iohk.atala.prism.connector.errors._
 import io.iohk.atala.prism.connector.model._
 import io.iohk.atala.prism.connector.model.actions.SendMessagesRequest
 import io.iohk.atala.prism.connector.repositories.daos.{ConnectionsDAO, MessagesDAO}
+import io.iohk.atala.prism.connector.repositories.metrics.MessagesRepositoryMetrics
 import io.iohk.atala.prism.errors.LoggingContext
 import io.iohk.atala.prism.models.ParticipantId
 import io.iohk.atala.prism.utils.syntax.DBConnectionOps
-import io.iohk.atala.prism.metrics.{TimeMeasureMetric, TimeMeasureUtil}
-import io.iohk.atala.prism.metrics.TimeMeasureUtil.MeasureOps
+import io.iohk.atala.prism.metrics.TimeMeasureMetric
 import org.slf4j.{Logger, LoggerFactory}
 import tofu.higherKind.Mid
 
@@ -205,40 +205,4 @@ private final class MessagesRepositoryImpl[F[_]: BracketThrow](xa: Transactor[F]
       .getConnectionMessages(recipientId, connectionId)
       .logSQLErrors(s"getting connection messages, connection id - $connectionId", logger)
       .transact(xa)
-}
-
-private final class MessagesRepositoryMetrics[F[_]: TimeMeasureMetric, S[_]](implicit br: Bracket[F, Throwable])
-    extends MessagesRepository[S, Mid[F, *]] {
-
-  private val repoName = "MessagesRepository"
-  private lazy val insertMessageTimer = TimeMeasureUtil.createDBQueryTimer(repoName, "insertMessage")
-  private lazy val insertMessagesTimer = TimeMeasureUtil.createDBQueryTimer(repoName, "upsertMany")
-  private lazy val getMessagesPaginatedTimer = TimeMeasureUtil.createDBQueryTimer(repoName, "getMessagesPaginated")
-  private lazy val getConnectionMessagesTimer =
-    TimeMeasureUtil.createDBQueryTimer(repoName, "getConnectionMessages")
-
-  override def insertMessage(
-      sender: ParticipantId,
-      connection: ConnectionId,
-      content: Array[Byte],
-      messageIdOption: Option[MessageId]
-  ): Mid[F, Either[ConnectorError, MessageId]] = _.measureOperationTime(insertMessageTimer)
-
-  override def insertMessages(
-      sender: ParticipantId,
-      messages: NonEmptyList[SendMessagesRequest.MessageToSend]
-  ): Mid[F, Either[ConnectorError, List[MessageId]]] = _.measureOperationTime(insertMessagesTimer)
-
-  override def getMessagesPaginated(
-      recipientId: ParticipantId,
-      limit: Int,
-      lastSeenMessageId: Option[MessageId]
-  ): Mid[F, Either[ConnectorError, List[Message]]] = _.measureOperationTime(getMessagesPaginatedTimer)
-
-  override def getConnectionMessages(recipientId: ParticipantId, connectionId: ConnectionId): Mid[F, List[Message]] =
-    _.measureOperationTime(getConnectionMessagesTimer)
-
-  // Won't be called since it's not mid but S[_]
-  override def getMessageStream(recipientId: ParticipantId, lastSeenMessageId: Option[MessageId]): S[Message] =
-    ???
 }

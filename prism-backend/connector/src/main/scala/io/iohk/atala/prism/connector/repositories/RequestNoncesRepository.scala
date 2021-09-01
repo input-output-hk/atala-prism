@@ -9,11 +9,10 @@ import io.iohk.atala.prism.auth.model.RequestNonce
 import io.iohk.atala.prism.models.ParticipantId
 import io.iohk.atala.prism.utils.syntax.DBConnectionOps
 import io.iohk.atala.prism.connector.repositories.daos.RequestNoncesDAO
+import io.iohk.atala.prism.connector.repositories.metrics.RequestNoncesRepositoryMetrics
 import io.iohk.atala.prism.kotlin.identity.DID
-import io.iohk.atala.prism.metrics.{TimeMeasureMetric, TimeMeasureUtil}
-import io.iohk.atala.prism.metrics.TimeMeasureUtil.MeasureOps
+import io.iohk.atala.prism.metrics.TimeMeasureMetric
 import org.slf4j.{Logger, LoggerFactory}
-import tofu.higherKind.Mid
 
 @derive(applyK)
 trait RequestNoncesRepository[F[_]] {
@@ -48,16 +47,4 @@ private final class RequestNoncesRepositoryPostgresImpl[F[_]: BracketThrow](xa: 
       .logSQLErrors(s"burning, did - $did", logger)
       .transact(xa)
   }
-}
-
-private final class RequestNoncesRepositoryMetrics[F[_]: TimeMeasureMetric](implicit ce: Bracket[F, Throwable])
-    extends RequestNoncesRepository[Mid[F, *]] {
-  private val repoName = "ParticipantsRepository"
-  private lazy val burnById = TimeMeasureUtil.createDBQueryTimer(repoName, "burnById")
-  private lazy val burnByDid = TimeMeasureUtil.createDBQueryTimer(repoName, "burnByDid")
-
-  override def burn(participantId: ParticipantId, requestNonce: RequestNonce): Mid[F, Unit] =
-    _.measureOperationTime(burnById)
-
-  override def burn(did: DID, requestNonce: RequestNonce): Mid[F, Unit] = _.measureOperationTime(burnByDid)
 }
