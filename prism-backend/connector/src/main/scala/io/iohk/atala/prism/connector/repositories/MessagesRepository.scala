@@ -73,7 +73,7 @@ private final class MessagesRepositoryImpl[F[_]: BracketThrow](xa: Transactor[F]
 
   def insertMessage(
       sender: ParticipantId,
-      connection: ConnectionId,
+      connectionId: ConnectionId,
       content: Array[Byte],
       messageIdOption: Option[MessageId] = None
   ): F[Either[ConnectorError, MessageId]] = {
@@ -82,20 +82,28 @@ private final class MessagesRepositoryImpl[F[_]: BracketThrow](xa: Transactor[F]
     val query = for {
       _ <- assertUserProvidedIdsNotExist(messageIdOption.toList)
 
-      recipientOption <- EitherT.liftF(ConnectionsDAO.getOtherSide(connection, sender))
+      rawConnection <- EitherT(ConnectionsDAO.getRawConnection(connectionId)
+        .map(_.toRight(ConnectionNotFound(connectionId))))
+
+      _ <- EitherT.fromEither[ConnectionIO] {
+        if (rawConnection.status == ConnectionStatus.ConnectionRevoked) Left(ConnectionRevoked(connectionId))
+        else Right(())
+      }
+
+      recipientOption <- EitherT.liftF(ConnectionsDAO.getOtherSide(connectionId, sender))
 
       recipient <-
         recipientOption
-          .toRight(ConnectionNotFoundByConnectionIdAndSender(sender, connection))
+          .toRight(ConnectionNotFoundByConnectionIdAndSender(sender, connectionId))
           .toEitherT[ConnectionIO]
 
       _ <- EitherT.liftF[ConnectionIO, ConnectorError, Unit](
-        MessagesDAO.insert(messageId, connection, sender, recipient, content)
+        MessagesDAO.insert(messageId, connectionId, sender, recipient, content)
       )
     } yield messageId
 
     query.value
-      .logSQLErrors(s"insert messages, connection id - $connection", logger)
+      .logSQLErrors(s"insert messages, connection id - $connectionId", logger)
       .transact(xa)
   }
 
@@ -107,6 +115,13 @@ private final class MessagesRepositoryImpl[F[_]: BracketThrow](xa: Transactor[F]
 
     val query = for {
       _ <- assertUserProvidedIdsNotExist(messages.toList.flatMap(_.id))
+
+      _ <- EitherT(ConnectionsDAO.getConnectionsByConnectionTokens(connectionTokens.toList)
+        .map { connections =>
+          connections.find(_.connectionStatus == ConnectionStatus.ConnectionRevoked)
+            // We can be sure that a found revoked connection has a corresponding token, so .get is safe
+            .toLeft(()).leftMap(revoked => ConnectionRevoked(revoked.contactToken.get))
+        })
 
       otherSidesAndIds <- EitherT.liftF(ConnectionsDAO.getOtherSideAndIdByConnectionTokens(connectionTokens, sender))
       otherSidesAndIdsMap = otherSidesAndIds.map { case (token, id, participant) => token -> (id -> participant) }.toMap
