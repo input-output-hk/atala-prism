@@ -1,5 +1,7 @@
 package io.iohk.atala.prism.connector.repositories
 
+import cats.effect.IO
+
 import java.time.Instant
 import doobie.implicits._
 import doobie.implicits.legacy.instant._
@@ -11,9 +13,14 @@ import io.iohk.atala.prism.kotlin.identity.{PrismDid => DID}
 import io.iohk.atala.prism.models.ParticipantId
 import io.iohk.atala.prism.AtalaWithPostgresSpec
 import io.iohk.atala.prism.connector.DataPreparation
+import io.iohk.atala.prism.logging.TraceId.IOWithTraceIdContext
 import io.iohk.atala.prism.repositories.ops.SqlTestOps.Implicits
+import tofu.logging.Logs
 
 trait ConnectorRepositorySpecBase extends AtalaWithPostgresSpec {
+
+  val connectorRepoSpecLogs: Logs[IO, IOWithTraceIdContext] = Logs.withContext[IO, IOWithTraceIdContext]
+
   protected def createParticipant(
       tpe: ParticipantType,
       name: String,
