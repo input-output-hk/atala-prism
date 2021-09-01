@@ -13,7 +13,10 @@ import tofu.higherKind.Mid
 import tofu.logging.ServiceLogging
 import tofu.syntax.logging._
 
-class ConnectionsRepositoryLogs[F[_]: ServiceLogging[*[_], ConnectionsRepository[F]]: MonadThrow]
+private[repositories] final class ConnectionsRepositoryLogs[F[_]: ServiceLogging[
+  *[_],
+  ConnectionsRepository[F]
+]: MonadThrow]
     extends ConnectionsRepository[Mid[F, *]] {
   override def insertTokens(initiator: ParticipantId, tokens: List[TokenString]): Mid[F, List[TokenString]] =
     in =>
