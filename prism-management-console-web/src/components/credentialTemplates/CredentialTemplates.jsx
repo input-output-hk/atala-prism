@@ -8,7 +8,7 @@ import {
   templateFiltersShape,
   templateSortingShape
 } from '../../helpers/propShapes';
-import { UNCONFIRMED } from '../../helpers/constants';
+import { CONFIRMED, UNCONFIRMED } from '../../helpers/constants';
 import WaitBanner from '../dashboard/Atoms/WaitBanner/WaitBanner';
 import TemplateDetail from './Organisms/Drawers/TemplateDetail';
 import ActionsHeader from './Molecules/Headers/ActionsHeader';
@@ -35,7 +35,7 @@ const CredentialTemplates = ({ tableProps }) => {
         <div>
           <h1>{t('templates.title')}</h1>
         </div>
-        <ActionsHeader templateCategories={templateCategories} />
+        {accountStatus === CONFIRMED && <ActionsHeader templateCategories={templateCategories} />}
       </div>
       <TemplatesTableContainer
         tableProps={tableProps}
