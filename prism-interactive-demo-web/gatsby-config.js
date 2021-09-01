@@ -12,6 +12,12 @@ module.exports = {
     siteUrl: 'https://www.atalaprism.io'
   },
   plugins: [
+    {
+      resolve: `gatsby-plugin-disqus`,
+      options: {
+        shortname: `atalaprism-io`
+      }
+    },
     'gatsby-plugin-antd',
     `gatsby-plugin-netlify-cms`,
     {
