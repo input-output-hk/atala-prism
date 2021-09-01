@@ -110,6 +110,35 @@ exports.createPages = async ({ graphql, actions, reporter }) => {
       context: { year: Number(year), month: Number(month) }
     });
   });
+
+  // Get all authors
+  const authorResults = await graphql(
+    `
+      {
+        allAuthorsJson {
+          nodes {
+            name
+          }
+        }
+      }
+    `
+  );
+
+  if (authorResults.errors) {
+    reporter.panicOnBuild(`There was an error loading your blog posts`, authorResults.errors);
+    return;
+  }
+
+  const authors = authorResults.data.allAuthorsJson.nodes;
+
+  authors.forEach(({ name }) => {
+    const author = name.toLowerCase().replace(' ', '-');
+    createPage({
+      path: `/authors/${author}`,
+      component: filterResults,
+      context: { authorName: name }
+    });
+  });
 };
 
 exports.onCreateNode = ({ node, actions, getNode }) => {

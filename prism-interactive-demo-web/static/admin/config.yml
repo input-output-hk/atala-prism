@@ -42,4 +42,11 @@ collections:
     fields:
       - { label: Name, name: name, widget: string }
       - { label: Title, name: title, widget: string }
-      - { label: Area, name: area, widget: string }
+      - { label: Position, name: position, widget: string }
+      - { label: Company, name: company, widget: string, required: false }
+      - { label: Photo, name: photo, widget: image, required: false }
+      - { label: Email, name: email, widget: string, required: false }
+      - { label: Youtube, name: youtube, widget: string, required: false }
+      - { label: Twitter, name: twitter, widget: string, required: false }
+      - { label: LinkedIn, name: linkedIn, widget: string, required: false }
+      - { label: Github, name: github, widget: string, required: false }
