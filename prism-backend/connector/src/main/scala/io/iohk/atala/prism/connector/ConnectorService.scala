@@ -278,6 +278,7 @@ class ConnectorService(
         .run(TraceId.generateYOLO)
         .unsafeToFuture()
         .toFutureEither
+        .mapLeft(_.unify)
         .map(msgs => connector_api.GetMessagesPaginatedResponse(msgs.map(_.toProto)))
     }
   }
@@ -365,7 +366,7 @@ class ConnectorService(
     * Connection closed (FAILED_PRECONDITION)
     */
   override def sendMessage(request: connector_api.SendMessageRequest): Future[connector_api.SendMessageResponse] =
-    auth[SendMessageRequest]("sendMessage", request) { (participantId, _, sendMessageRequest) =>
+    authCo[SendMessageRequest]("sendMessage", request) { (participantId, _, sendMessageRequest) =>
       messages
         .insertMessage(
           sender = participantId,
@@ -449,6 +450,7 @@ class ConnectorService(
           .run(TraceId.generateYOLO)
           .unsafeToFuture()
           .toFutureEither
+          .mapLeft(_.unify)
           .map(messageIds => connector_api.SendMessagesResponse(ids = messageIds.map(_.uuid.toString)))
       }
     }
