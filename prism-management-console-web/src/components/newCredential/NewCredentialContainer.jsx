@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useContext } from 'react';
 import { message } from 'antd';
 import { useTranslation } from 'react-i18next';
 import PropTypes from 'prop-types';
@@ -22,9 +22,11 @@ import { useSession } from '../providers/SessionContext';
 import { fillHTMLCredential } from '../../helpers/credentialView';
 import { useContacts } from '../../hooks/useContacts';
 import { useGroups } from '../../hooks/useGroups';
-import { useCredentialTypes } from '../../hooks/useCredentialTypes';
+import { PrismStoreContext } from '../../stores/domain/PrismStore';
+import { useTemplatesInit } from '../../hooks/useTemplatesInit';
 
 const NewCredentialContainer = ({ api, redirector: { redirectToCredentials } }) => {
+  useTemplatesInit();
   const { t } = useTranslation();
   const { session } = useSession();
 
@@ -48,9 +50,12 @@ const NewCredentialContainer = ({ api, redirector: { redirectToCredentials } }) 
     hasMore: hasMoreContacts
   } = useContacts(api.contactsManager);
 
-  const { credentialTypes, getCredentialTypeDetails } = useCredentialTypes(
-    api.credentialTypesManager
-  );
+  const { templateStore } = useContext(PrismStoreContext);
+  const {
+    credentialTemplates: credentialTypes,
+    getCredentialTemplateDetails: getCredentialTypeDetails,
+    templateCategories
+  } = templateStore;
 
   const [shouldSelectRecipients, setShouldSelectRecipients] = useState(true);
   const [recipients, setRecipients] = useState([]);
@@ -244,6 +249,7 @@ const NewCredentialContainer = ({ api, redirector: { redirectToCredentials } }) 
         return (
           <TypeSelection
             credentialTypes={credentialTypes}
+            templateCategories={templateCategories}
             onTypeSelection={handleTypeSelection}
             selectedType={selectedCredentialTypeId}
           />

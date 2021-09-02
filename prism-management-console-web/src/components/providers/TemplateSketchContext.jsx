@@ -4,9 +4,9 @@ import { useTranslation } from 'react-i18next';
 import Logger from '../../helpers/Logger';
 import { UPDATE_FIELDS, useTemplateSettings } from '../../hooks/useTemplateSettings';
 
-const TemplateContext = React.createContext();
+const TemplateSketchContext = React.createContext();
 
-const TemplateProvider = props => {
+const TemplateSketchProvider = props => {
   const { t } = useTranslation();
   const [form] = Form.useForm();
   const [templateSettings, setTemplateSettings] = useTemplateSettings();
@@ -33,7 +33,7 @@ const TemplateProvider = props => {
       initialValues={templateSettings}
       onValuesChange={handleFormUpdate}
     >
-      <TemplateContext.Provider
+      <TemplateSketchContext.Provider
         value={{ form, templateSettings, setTemplateSettings, templatePreview, setTemplatePreview }}
         {...props}
       />
@@ -41,12 +41,12 @@ const TemplateProvider = props => {
   );
 };
 
-const useTemplateContext = () => React.useContext(TemplateContext);
+const useTemplateSketchContext = () => React.useContext(TemplateSketchContext);
 
-const withTemplateProvider = Component => props => (
-  <TemplateProvider>
+const withTemplateSketchProvider = Component => props => (
+  <TemplateSketchProvider>
     <Component {...props} />
-  </TemplateProvider>
+  </TemplateSketchProvider>
 );
 
-export { TemplateProvider, useTemplateContext, withTemplateProvider };
+export { TemplateSketchProvider, useTemplateSketchContext, withTemplateSketchProvider };

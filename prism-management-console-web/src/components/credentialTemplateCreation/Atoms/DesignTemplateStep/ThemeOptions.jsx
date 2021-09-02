@@ -1,13 +1,13 @@
 import React from 'react';
 import { useTranslation } from 'react-i18next';
 import { backgroundColors, themeColors } from '../../../../helpers/colors';
-import { useTemplateContext } from '../../../providers/TemplateContext';
+import { useTemplateSketchContext } from '../../../providers/TemplateSketchContext';
 import ColorPicker from './ColorPicker';
 import './_style.scss';
 
 const ThemeOptions = () => {
   const { t } = useTranslation();
-  const { templateSettings } = useTemplateContext();
+  const { templateSettings } = useTemplateSketchContext();
 
   return (
     <>

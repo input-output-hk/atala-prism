@@ -1,19 +1,22 @@
 import React, { useContext } from 'react';
-import PropTypes from 'prop-types';
 import { Select } from 'antd';
 import { useTranslation } from 'react-i18next';
 import { DownOutlined } from '@ant-design/icons';
 import { observer } from 'mobx-react-lite';
 import CustomInputGroup from '../../../common/Atoms/CustomInputGroup/CustomInputGroup';
 import CustomDatePicker from '../../../common/Atoms/CustomDatePicker/CustomDatePicker';
-import { templateCategoryShape } from '../../../../helpers/propShapes';
 import { UiStateContext } from '../../../../stores/ui/UiState';
+import { PrismStoreContext } from '../../../../stores/domain/PrismStore';
 
 const ENABLED_STATE = 1;
 
-const TemplateFilters = observer(({ templateCategories }) => {
+const TemplateFilters = observer(() => {
   const { t } = useTranslation();
   const { Option } = Select;
+
+  const { templateStore } = useContext(PrismStoreContext);
+  const { templateCategories } = templateStore;
+
   const { templateUiState } = useContext(UiStateContext);
   const { categoryFilter, lastEditedFilter, setFilterValue } = templateUiState;
 
@@ -47,9 +50,5 @@ const TemplateFilters = observer(({ templateCategories }) => {
     </div>
   );
 });
-
-TemplateFilters.propTypes = {
-  templateCategories: PropTypes.arrayOf(templateCategoryShape).isRequired
-};
 
 export default TemplateFilters;

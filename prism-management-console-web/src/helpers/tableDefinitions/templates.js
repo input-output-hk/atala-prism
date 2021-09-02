@@ -21,7 +21,11 @@ export const getTemplatesColumns = (templateCategories, tableActions) => {
       key: 'icon',
       width: 25,
       render: ({ category }) => (
-        <img src={getCategoryIcon(category) || DefaultIcon} alt="template-icon" />
+        <img
+          className="template-icon"
+          src={getCategoryIcon(category) || DefaultIcon}
+          alt="template-icon"
+        />
       )
     },
     {

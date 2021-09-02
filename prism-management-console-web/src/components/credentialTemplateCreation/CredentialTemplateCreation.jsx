@@ -1,7 +1,8 @@
-import React, { useContext } from 'react';
+import React, { useContext, useState } from 'react';
 import PropTypes from 'prop-types';
 import { useTranslation } from 'react-i18next';
 import { message } from 'antd';
+import { nanoid } from 'nanoid';
 import GenericStepsButtons from '../common/Molecules/GenericStepsButtons/GenericStepsButtons';
 import WizardTitle from '../common/Atoms/WizardTitle/WizardTitle';
 import {
@@ -11,7 +12,7 @@ import {
   TEMPLATE_CREATION_RESULT
 } from '../../helpers/constants';
 import { withRedirector } from '../providers/withRedirector';
-import { useTemplateContext } from '../providers/TemplateContext';
+import { useTemplateSketchContext } from '../providers/TemplateSketchContext';
 import { PrismStoreContext } from '../../stores/domain/PrismStore';
 import './_style.scss';
 
@@ -33,8 +34,9 @@ const CredentialTemplateCreation = ({
   redirector: { redirectToCredentialTemplates }
 }) => {
   const { t } = useTranslation();
-  const { form, templateSettings, templatePreview } = useTemplateContext();
+  const { form, templateSettings, templatePreview } = useTemplateSketchContext();
   const { addCredentialTemplate } = useContext(PrismStoreContext).templateStore;
+  const [loadingNext, setLoadingNext] = useState(false);
 
   const validateByStep = () =>
     form.validateFields().catch(({ errorFields }) => {
@@ -54,13 +56,17 @@ const CredentialTemplateCreation = ({
 
   const goBack = () => changeStep(currentStep - NEW_TEMPLATE_STEP_UNIT);
 
-  const createTemplate = () => {
+  const createTemplate = async () => {
+    setLoadingNext(true);
     const newTemplate = {
       ...templateSettings,
       template: templatePreview,
-      category: parseInt(templateSettings?.category, 10)
+      category: templateSettings?.category,
+      state: 1,
+      id: nanoid()
     };
-    addCredentialTemplate(newTemplate);
+    await addCredentialTemplate(newTemplate);
+    setLoadingNext(false);
     advanceStep();
   };
 
@@ -83,7 +89,7 @@ const CredentialTemplateCreation = ({
 
   return (
     <div className="TitleContainer">
-      <GenericStepsButtons steps={steps} currentStep={currentStep} />
+      <GenericStepsButtons steps={steps} currentStep={currentStep} loading={loadingNext} />
       <WizardTitle {...getStepText[currentStep]} />
     </div>
   );

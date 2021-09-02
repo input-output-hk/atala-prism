@@ -9,7 +9,7 @@ import './_style.scss';
 
 const i18nPrefix = 'credentialTemplateCreation';
 
-const CategoryCreationModal = ({ visible, close, mockCategoriesProps }) => {
+const CategoryCreationModal = ({ visible, close }) => {
   const { t } = useTranslation();
   const [categoryForm] = Form.useForm();
 
@@ -39,11 +39,7 @@ const CategoryCreationModal = ({ visible, close, mockCategoriesProps }) => {
         destroyOnClose
         footer={null}
       >
-        <CategoryCreation
-          categoryForm={categoryForm}
-          close={close}
-          mockCategoriesProps={mockCategoriesProps}
-        />
+        <CategoryCreation categoryForm={categoryForm} close={close} />
       </Modal>
     </Form>
   );

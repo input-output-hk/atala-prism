@@ -1,5 +1,4 @@
 import React, { useContext } from 'react';
-import PropTypes from 'prop-types';
 import { observer } from 'mobx-react-lite';
 import { Badge, Dropdown, Menu } from 'antd';
 import { FilterOutlined } from '@ant-design/icons';
@@ -7,18 +6,18 @@ import { useTranslation } from 'react-i18next';
 import TemplateFilters from '../Filters/TemplateFilters';
 import SearchBar from '../../../common/Atoms/SearchBar/SearchBar';
 import CreateTemplateButton from '../../Atoms/Buttons/CreateTemplateButton';
-import { templateCategoryShape } from '../../../../helpers/propShapes';
 import { UiStateContext } from '../../../../stores/ui/UiState';
 import './_style.scss';
 
-const ActionsHeader = observer(({ templateCategories }) => {
+const ActionsHeader = observer(() => {
   const { t } = useTranslation();
+
   const { templateUiState } = useContext(UiStateContext);
   const { nameFilter, setFilterValue, hasAditionalFiltersApplied } = templateUiState;
 
   const filtersMenu = (
     <Menu className="FiltersMenuContainer">
-      <TemplateFilters templateCategories={templateCategories} />
+      <TemplateFilters />
     </Menu>
   );
 
@@ -41,9 +40,5 @@ const ActionsHeader = observer(({ templateCategories }) => {
     </div>
   );
 });
-
-ActionsHeader.propTypes = {
-  templateCategories: PropTypes.arrayOf(templateCategoryShape).isRequired
-};
 
 export default ActionsHeader;

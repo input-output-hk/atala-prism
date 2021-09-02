@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import CredentialsViewer from '../../../newCredential/Molecules/CredentialsViewer/CredentialsViewer';
-import { useTemplateContext } from '../../../providers/TemplateContext';
+import { useTemplateSketchContext } from '../../../providers/TemplateSketchContext';
 import {
   getContrastColorSettings,
   configureHtmlTemplate,
@@ -8,7 +8,7 @@ import {
 } from '../../../../helpers/templateLayouts/templates';
 
 const TemplatePreview = () => {
-  const { templateSettings, form, setTemplatePreview } = useTemplateContext();
+  const { templateSettings, form, setTemplatePreview } = useTemplateSketchContext();
   const [imageOverwrites, setImagesOverwrites] = useState();
   const [displayHtml, setDisplayHtml] = useState('');
 

@@ -2,12 +2,12 @@ import React from 'react';
 import { useTranslation } from 'react-i18next';
 import { Form, Radio } from 'antd';
 import { templateLayouts } from '../../../../helpers/templateLayouts/templates';
-import { useTemplateContext } from '../../../providers/TemplateContext';
+import { useTemplateSketchContext } from '../../../providers/TemplateSketchContext';
 import './_style.scss';
 
 const LayoutSelector = () => {
   const { t } = useTranslation();
-  const { templateSettings } = useTemplateContext();
+  const { templateSettings } = useTemplateSketchContext();
 
   return (
     <Form.Item
