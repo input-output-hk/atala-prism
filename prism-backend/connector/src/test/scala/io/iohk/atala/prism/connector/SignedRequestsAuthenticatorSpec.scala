@@ -1,5 +1,6 @@
 package io.iohk.atala.prism.connector
 
+import cats.data.ReaderT
 import cats.effect.IO
 
 import java.util.UUID
@@ -14,6 +15,7 @@ import io.iohk.atala.prism.{DIDUtil, auth}
 import io.iohk.atala.prism.auth.grpc.{GrpcAuthenticationHeader, GrpcAuthenticationHeaderParser}
 import io.iohk.atala.prism.kotlin.crypto.Sha256
 import io.iohk.atala.prism.kotlin.identity.{PrismDid => DID}
+import io.iohk.atala.prism.logging.TraceId.IOWithTraceIdContext
 import io.iohk.atala.prism.models.ParticipantId
 import io.iohk.atala.prism.protos.node_api._
 import io.iohk.atala.prism.protos.{connector_api, node_api, node_models}
@@ -249,9 +251,9 @@ class SignedRequestsAuthenticatorSpec extends AnyWordSpec {
       val keys = EC.generateKeyPair()
       val signedRequest = requestAuthenticator.signConnectorRequest(request.toByteArray, keys.getPrivateKey)
 
-      val participantsRepository = mock[ParticipantsRepository[IO]]
+      val participantsRepository = mock[ParticipantsRepository[IOWithTraceIdContext]]
       participantsRepository.findBy(any[DID](defaultValueDID)).returns {
-        IO.pure(Left(UnknownValueError("did", "not found")))
+        ReaderT.liftF(IO.pure(Left(UnknownValueError("did", "not found"))))
       }
 
       val customParser = new GrpcAuthenticationHeaderParser {
@@ -386,20 +388,18 @@ class SignedRequestsAuthenticatorSpec extends AnyWordSpec {
       burnNonce: () => Unit = () => (),
       getDidResponse: () => Option[node_api.GetDidDocumentResponse] = () => None
   ): ConnectorAuthenticator = {
-    val participantsRepository = mock[ParticipantsRepository[IO]]
+    val participantsRepository = mock[ParticipantsRepository[IOWithTraceIdContext]]
     participantsRepository.findBy(any[DID](defaultValueDID)).returns {
       getuserId() match {
-        case Some(userId) =>
-          IO.pure(Right(dummyParticipantInfo(userId)))
-        case None => IO.raiseError(new RuntimeException("Missing user"))
+        case Some(userId) => ReaderT.liftF(IO.pure(Right(dummyParticipantInfo(userId))))
+        case None => ReaderT.liftF(IO.raiseError(new RuntimeException("Missing user")))
       }
     }
 
     participantsRepository.findBy(any[ECPublicKey]).returns {
       getuserId() match {
-        case Some(userId) =>
-          IO.pure(Right(dummyParticipantInfo(userId)))
-        case None => IO.raiseError(new RuntimeException("Missing user"))
+        case Some(userId) => ReaderT.liftF(IO.pure(Right(dummyParticipantInfo(userId))))
+        case None => ReaderT.liftF(IO.raiseError(new RuntimeException("Missing user")))
       }
     }
 

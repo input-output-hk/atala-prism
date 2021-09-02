@@ -1,7 +1,9 @@
 package io.iohk.atala.prism.connector.repositories
 
-import cats.effect.{Bracket, BracketThrow}
+import cats.{Comonad, Functor}
+import cats.effect.BracketThrow
 import cats.syntax.applicative._
+import cats.syntax.comonad._
 import cats.syntax.either._
 import cats.syntax.functor._
 import cats.syntax.applicativeError._
@@ -14,6 +16,7 @@ import io.iohk.atala.prism.connector.errors.{ConnectorError, UnknownValueError, 
 import io.iohk.atala.prism.connector.model.{ParticipantInfo, ParticipantLogo, ParticipantType, UpdateParticipantProfile}
 import io.iohk.atala.prism.connector.repositories.ParticipantsRepository.CreateParticipantRequest
 import io.iohk.atala.prism.connector.repositories.daos.ParticipantsDAO
+import io.iohk.atala.prism.connector.repositories.logs.ParticipantsRepositoryLogs
 import io.iohk.atala.prism.connector.repositories.metrics.ParticipantsRepositoryMetrics
 import io.iohk.atala.prism.kotlin.crypto.keys.ECPublicKey
 import io.iohk.atala.prism.errors.LoggingContext
@@ -24,6 +27,8 @@ import io.iohk.atala.prism.metrics.TimeMeasureMetric
 import org.postgresql.util.PSQLException
 import org.slf4j.{Logger, LoggerFactory}
 import tofu.higherKind.Mid
+import tofu.logging.{Logs, ServiceLogging}
+import tofu.syntax.monoid.TofuSemigroupOps
 
 import java.util.Base64
 
@@ -47,12 +52,24 @@ trait ParticipantsRepository[F[_]] {
 
 object ParticipantsRepository {
 
-  def apply[F[_]: TimeMeasureMetric](
-      transactor: Transactor[F]
-  )(implicit br: Bracket[F, Throwable]): ParticipantsRepository[F] = {
-    val metrics: ParticipantsRepository[Mid[F, *]] = new ParticipantsRepositoryMetrics[F]
-    metrics attach new ParticipantsRepositoryImpl[F](transactor)
-  }
+  def apply[F[_]: TimeMeasureMetric: BracketThrow, R[_]: Functor](
+      transactor: Transactor[F],
+      logs: Logs[R, F]
+  ): R[ParticipantsRepository[F]] =
+    for {
+      serviceLogs <- logs.service[ParticipantsRepository[F]]
+    } yield {
+      implicit val implicitLogs: ServiceLogging[F, ParticipantsRepository[F]] = serviceLogs
+      val metrics: ParticipantsRepository[Mid[F, *]] = new ParticipantsRepositoryMetrics[F]
+      val logs: ParticipantsRepository[Mid[F, *]] = new ParticipantsRepositoryLogs[F]
+      val mid = metrics |+| logs
+      mid attach new ParticipantsRepositoryImpl[F](transactor)
+    }
+
+  def unsafe[F[_]: TimeMeasureMetric: BracketThrow, R[_]: Comonad](
+      transactor: Transactor[F],
+      logs: Logs[R, F]
+  ): ParticipantsRepository[F] = ParticipantsRepository(transactor, logs).extract
 
   case class CreateParticipantRequest(
       id: ParticipantId,

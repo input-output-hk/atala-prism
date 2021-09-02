@@ -1,5 +1,6 @@
 package io.iohk.atala.prism.connector.repositories
 
+import cats.effect.IO
 import doobie.implicits._
 import io.iohk.atala.prism.connector.errors.UnknownValueError
 import io.iohk.atala.prism.connector.model._
@@ -9,11 +10,14 @@ import io.iohk.atala.prism.kotlin.crypto.Sha256Digest
 import io.iohk.atala.prism.kotlin.identity.{PrismDid => DID}
 import io.iohk.atala.prism.models.ParticipantId
 import io.iohk.atala.prism.utils.Base64Utils.decodeURL
+import io.iohk.atala.prism.utils.IOUtils._
 import org.scalatest.EitherValues._
 import org.scalatest.OptionValues._
+import tofu.logging.Logs
 
 class ParticipantsRepositorySpec extends ConnectorRepositorySpecBase {
-  lazy val participantsRepository = ParticipantsRepository(database)
+  val logs: Logs[IO, IO] = Logs.sync[IO, IO]
+  lazy val participantsRepository = ParticipantsRepository.unsafe(database, logs)
   private val canonicalSuffix = "0f753f41e0f3488ba56bd581d153ae9b3c9040cbcc7a63245b4644a265eb3b77"
   private val encodedStateUsed =
     "CmEKXxJdCgdtYXN0ZXIwEAFCUAoJc2VjcDI1NmsxEiAel_7KEiez4s_e0u8DyJwLkUnVmUHBuWU-0h01nerSNRohAJlR51Vbk49vagehAwQkFvW_fvyM1qa4ileIEYkXs4pF"

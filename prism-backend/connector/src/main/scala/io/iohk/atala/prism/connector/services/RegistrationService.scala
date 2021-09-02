@@ -1,6 +1,5 @@
 package io.iohk.atala.prism.connector.services
 
-import cats.effect.IO
 import cats.syntax.either._
 import cats.syntax.option._
 import io.iohk.atala.prism.connector.AtalaOperationId
@@ -8,7 +7,10 @@ import io.iohk.atala.prism.connector.errors.{ConnectorError, InvalidRequest}
 import io.iohk.atala.prism.connector.model.{ParticipantLogo, ParticipantType}
 import io.iohk.atala.prism.connector.repositories.ParticipantsRepository
 import io.iohk.atala.prism.kotlin.identity.{PrismDid => DID}
-import io.iohk.atala.prism.models.{DidSuffix, ParticipantId}
+import io.iohk.atala.prism.logging.TraceId
+import io.iohk.atala.prism.models.DidSuffix
+import io.iohk.atala.prism.logging.TraceId.IOWithTraceIdContext
+import io.iohk.atala.prism.models.ParticipantId
 import io.iohk.atala.prism.utils.FutureEither
 import io.iohk.atala.prism.utils.FutureEither.FutureEitherOps
 import io.iohk.atala.prism.protos.node_api.{GetDidDocumentRequest, NodeServiceGrpc}
@@ -17,8 +19,11 @@ import io.iohk.atala.prism.protos.node_api
 
 import scala.concurrent.ExecutionContext
 
-class RegistrationService(participantsRepository: ParticipantsRepository[IO], nodeService: NodeServiceGrpc.NodeService)(
-    implicit ec: ExecutionContext
+class RegistrationService(
+    participantsRepository: ParticipantsRepository[IOWithTraceIdContext],
+    nodeService: NodeServiceGrpc.NodeService
+)(implicit
+    ec: ExecutionContext
 ) {
 
   import RegistrationService._
@@ -32,7 +37,7 @@ class RegistrationService(participantsRepository: ParticipantsRepository[IO], no
 
     for {
       createRequest <- didOrOperation.fold(checkAndUseExistingDID(_, tpe, name, logo), createDID(tpe, name, logo, _))
-      _ <- participantsRepository.create(createRequest).unsafeToFuture().toFutureEither
+      _ <- participantsRepository.create(createRequest).run(TraceId.generateYOLO).unsafeToFuture().toFutureEither
     } yield RegistrationResult(
       did = createRequest.did,
       id = createRequest.id,
