@@ -21,7 +21,6 @@ import io.iohk.atala.prism.utils.syntax.DBConnectionOps
 import io.iohk.atala.prism.metrics.TimeMeasureMetric
 import org.slf4j.{Logger, LoggerFactory}
 import tofu.higherKind.Mid
-
 import java.time.Instant
 
 // S - Stream, needed different type because we don't want to have mid for a stream
