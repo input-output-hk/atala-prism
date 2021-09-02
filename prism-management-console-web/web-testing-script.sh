@@ -4,6 +4,8 @@
 set -e
 
 function run_npm_tests {
+  # Don't generate a lockfile and fail if an update is needed
+  yarn --frozen-lockfile
   # Install dependencies
   yarn install
   # Delete all dependencies, on exit, so it won't use space needlessly
