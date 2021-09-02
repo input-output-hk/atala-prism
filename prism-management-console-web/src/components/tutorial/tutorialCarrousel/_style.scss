@@ -19,28 +19,41 @@
   }
 }
 
-.contentStyle {
-  display: flex;
-  width: 100%;
+.containerStyle {
+  display: flex !important;
+  align-items: center;
   justify-content: center;
-  text-align: center;
-  h2 {
-    @include primary-text($h2, $primary-color);
-    font-variant: normal;
-    font-weight: bold;
-    margin: 0.5em 0;
-  }
-  p {
-    @include primary-text($body, $dark-grey);
-    font-variant: normal;
-    font-weight: bold;
-  }
-  img {
-    margin: 0 auto;
-  }
 
-  button {
-    margin-top: 1em;
+  .contentStyle {
+    display: flex;
+    flex-flow: column;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+    width: 90%;
+    h2 {
+      @include primary-text($h2, $primary-color);
+      font-variant: normal;
+      font-weight: bold;
+      margin: 0.5em 0;
+    }
+    p {
+      @include primary-text($body, $dark-grey);
+      font-variant: normal;
+      font-weight: bold;
+    }
+    img {
+      margin: 0 auto;
+    }
+
+    button {
+      width: fit-content;
+      margin-top: 1em;
+    }
+  }
+  .noButton,
+  .navButton {
+    width: 5%;
   }
 }
 

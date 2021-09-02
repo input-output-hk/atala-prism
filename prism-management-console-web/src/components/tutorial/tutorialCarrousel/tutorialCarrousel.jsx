@@ -19,55 +19,67 @@ const TutorialCarrousel = ({ onStart }) => {
 
   return (
     <Carousel className="tutorialOnboarding" ref={carousel}>
-      <div className="contentStyle">
-        <img src={onboarding1} alt="onboarding" />
-        <h2>{t('tutorial.onboarding.title')}</h2>
-        <p>{t('tutorial.onboarding.description')}</p>
+      <div className="containerStyle">
+        <div className="noButton" />
+        <div className="contentStyle">
+          <img src={onboarding1} alt="onboarding" />
+          <h2>{t('tutorial.onboarding.title')}</h2>
+          <p>{t('tutorial.onboarding.description')}</p>
+        </div>
         <CustomButton
           buttonProps={{
             className: 'theme-text',
             onClick: next
           }}
+          className="navButton"
           buttonText={<RightOutlined />}
         />
       </div>
-      <div className="contentStyle">
+      <div className="containerStyle">
         <CustomButton
           buttonProps={{
             className: 'theme-text',
             onClick: prev
           }}
+          className="navButton"
           buttonText={<LeftOutlined />}
         />
-        <img style={{ marginTop: 20, width: 220 }} src={onboarding2} alt="onboarding" />
-        <h2>{t('tutorial.onboarding.titleTwo')}</h2>
-        <p>{t('tutorial.onboarding.descriptionTwo')}</p>
+        <div className="contentStyle">
+          <img style={{ marginTop: 20, width: 220 }} src={onboarding2} alt="onboarding" />
+          <h2>{t('tutorial.onboarding.titleTwo')}</h2>
+          <p>{t('tutorial.onboarding.descriptionTwo')}</p>
+        </div>
         <CustomButton
           buttonProps={{
             className: 'theme-text',
             onClick: next
           }}
+          className="navButton"
           buttonText={<RightOutlined />}
         />
       </div>
-      <div className="contentStyle">
+      <div className="containerStyle">
         <CustomButton
           buttonProps={{
             className: 'theme-text',
             onClick: prev
           }}
+          className="navButton"
           buttonText={<LeftOutlined />}
         />
-        <img style={{ height: 190 }} src={onboarding3} alt="onboarding" />
-        <h2>{t('tutorial.onboarding.titleThree')}</h2>
-        <p>{t('tutorial.onboarding.descriptionThree')}</p>
-        <CustomButton
-          buttonProps={{
-            className: 'theme-secondary',
-            onClick: onStart
-          }}
-          buttonText={t('tutorial.onboarding.buttonText.continue')}
-        />
+        <div className="contentStyle">
+          <img style={{ height: 190 }} src={onboarding3} alt="onboarding" />
+          <h2>{t('tutorial.onboarding.titleThree')}</h2>
+          <p>{t('tutorial.onboarding.descriptionThree')}</p>
+          <CustomButton
+            buttonProps={{
+              className: 'theme-secondary',
+              onClick: onStart
+            }}
+            buttonText={t('tutorial.onboarding.buttonText.continue')}
+          />
+        </div>
+        <div className="noButton" />
       </div>
     </Carousel>
   );
