@@ -3,19 +3,20 @@ import PropTypes from 'prop-types';
 import { Radio, Form } from 'antd';
 import { useTranslation } from 'react-i18next';
 import { PlusOutlined } from '@ant-design/icons';
-import { isInteger } from 'lodash';
+import { isString } from 'lodash';
+import { observer } from 'mobx-react-lite';
 import CategoryCreationModal from '../CategoryCreationModal/CategoryCreationModal';
 import CategoryCard from '../../Molecules/CategoryStep/CategoryCard';
 import CustomButton from '../../../common/Atoms/CustomButton/CustomButton';
 import { templateCategoryShape } from '../../../../helpers/propShapes';
-import { useTemplateContext } from '../../../providers/TemplateContext';
+import { useTemplateSketchContext } from '../../../providers/TemplateSketchContext';
 import './_style.scss';
 
 const ENABLED_STATE = 1;
 
-const CategorySelector = ({ templateCategories, mockCategoriesProps }) => {
+const CategorySelector = observer(({ templateCategories }) => {
   const { t } = useTranslation();
-  const { templateSettings } = useTemplateContext();
+  const { templateSettings } = useTemplateSketchContext();
   const initialSelection = parseInt(templateSettings.category, 10) || undefined;
   const [selected, setSelected] = useState(initialSelection);
   const [showCategoryCreation, setShowCategoryCreation] = useState(false);
@@ -23,7 +24,7 @@ const CategorySelector = ({ templateCategories, mockCategoriesProps }) => {
 
   const categories = templateCategories.filter(({ state }) => state === ENABLED_STATE);
 
-  const handleAddNewCategory = () => {
+  const openNewCategoryModal = () => {
     setSelected();
     setShowCategoryCreation(true);
   };
@@ -33,7 +34,7 @@ const CategorySelector = ({ templateCategories, mockCategoriesProps }) => {
   const categoryRules = [
     {
       validator: ({ field }, value) =>
-        isInteger(parseInt(value, 10))
+        isString(value)
           ? Promise.resolve()
           : Promise.reject(
               t('credentialTemplateCreation.errors.fieldIsRequired', {
@@ -48,12 +49,11 @@ const CategorySelector = ({ templateCategories, mockCategoriesProps }) => {
       <CategoryCreationModal
         visible={showCategoryCreation}
         close={() => setShowCategoryCreation(false)}
-        mockCategoriesProps={mockCategoriesProps}
       />
       <div className="selectCategoryHeader">
         <p>{t(`${i18nPrefix}.step1.selectCategory`)}</p>
         <CustomButton
-          onClick={handleAddNewCategory}
+          onClick={openNewCategoryModal}
           buttonText={t(`${i18nPrefix}.actions.addCategory`)}
           theme="theme-link"
           icon={<PlusOutlined />}
@@ -77,18 +77,10 @@ const CategorySelector = ({ templateCategories, mockCategoriesProps }) => {
       </Form.Item>
     </div>
   );
-};
-
-CategorySelector.defaultProps = {
-  templateCategories: []
-};
+});
 
 CategorySelector.propTypes = {
-  templateCategories: PropTypes.arrayOf(templateCategoryShape),
-  mockCategoriesProps: PropTypes.shape({
-    mockedCategories: templateCategoryShape,
-    addMockedCategory: PropTypes.func.isRequired
-  }).isRequired
+  templateCategories: PropTypes.arrayOf(templateCategoryShape).isRequired
 };
 
 export default CategorySelector;

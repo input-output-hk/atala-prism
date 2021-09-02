@@ -2,13 +2,13 @@ import React from 'react';
 import { Button, Form, Upload } from 'antd';
 import { PictureOutlined } from '@ant-design/icons';
 import { useTranslation } from 'react-i18next';
-import { useTemplateContext } from '../../../providers/TemplateContext';
+import { useTemplateSketchContext } from '../../../providers/TemplateSketchContext';
 import { templateLayouts } from '../../../../helpers/templateLayouts/templates';
 import './_style.scss';
 
 const TemplateIcons = () => {
   const { t } = useTranslation();
-  const { templateSettings } = useTemplateContext();
+  const { templateSettings } = useTemplateSketchContext();
 
   const { images } = templateLayouts[templateSettings.layout];
 

@@ -1,25 +1,23 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useContext, useEffect, useRef, useState } from 'react';
 import PropTypes from 'prop-types';
 import { message } from 'antd';
 import { useTranslation } from 'react-i18next';
+import { observer } from 'mobx-react-lite';
 import CustomButton from '../../../common/Atoms/CustomButton/CustomButton';
-import { useTemplateCategories } from '../../../../hooks/useCredentialTypes';
-import { withApi } from '../../../providers/withApi';
-import {
-  antdV4FormShape,
-  credentialTypesManagerShape,
-  templateCategoryShape
-} from '../../../../helpers/propShapes';
+import { antdV4FormShape } from '../../../../helpers/propShapes';
 import CategoryNameInput from '../../Molecules/CategoryCreationModal/CategoryNameInput';
 import CategoryIconSelector from '../../Molecules/CategoryCreationModal/CategoryIconSelector';
+import { PrismStoreContext } from '../../../../stores/domain/PrismStore';
 import './_style.scss';
 
 const i18nPrefix = 'credentialTemplateCreation';
 
-const CategoryCreation = ({ api, categoryForm, close, mockCategoriesProps }) => {
-  const { mockedCategories, addMockedCategory } = mockCategoriesProps;
+const CategoryCreation = observer(({ categoryForm, close }) => {
   const { t } = useTranslation();
-  const { templateCategories } = useTemplateCategories(api.credentialTypesManager);
+
+  const { templateStore } = useContext(PrismStoreContext);
+  const { templateCategories, addTemplateCategory } = templateStore;
+
   const [isLoading, setIsLoading] = useState(false);
 
   // This ref is used to focus on the input field when opening the modal
@@ -54,9 +52,7 @@ const CategoryCreation = ({ api, categoryForm, close, mockCategoriesProps }) => 
     } else {
       categoryForm.resetFields();
       const normalizedValues = normalizeCategoryForm(values);
-      // TODO: remove when backend implements template categories
-      addMockedCategory(normalizedValues);
-      await api.credentialTypesManager.createCategory(normalizedValues);
+      await addTemplateCategory(normalizedValues);
       close();
     }
     setIsLoading(false);
@@ -64,11 +60,7 @@ const CategoryCreation = ({ api, categoryForm, close, mockCategoriesProps }) => 
 
   return (
     <>
-      <CategoryNameInput
-        inputRef={inputRef}
-        templateCategories={templateCategories}
-        mockedCategories={mockedCategories}
-      />
+      <CategoryNameInput inputRef={inputRef} templateCategories={templateCategories} />
       <CategoryIconSelector categoryForm={categoryForm} />
       <div className="buttonSection">
         <CustomButton
@@ -82,18 +74,11 @@ const CategoryCreation = ({ api, categoryForm, close, mockCategoriesProps }) => 
       </div>
     </>
   );
-};
+});
 
 CategoryCreation.propTypes = {
-  api: PropTypes.shape({
-    credentialTypesManager: credentialTypesManagerShape.isRequired
-  }).isRequired,
   categoryForm: antdV4FormShape.isRequired,
-  close: PropTypes.func.isRequired,
-  mockCategoriesProps: PropTypes.shape({
-    mockedCategories: templateCategoryShape,
-    addMockedCategory: PropTypes.func.isRequired
-  }).isRequired
+  close: PropTypes.func.isRequired
 };
 
-export default withApi(CategoryCreation);
+export default CategoryCreation;

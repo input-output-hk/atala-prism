@@ -8,11 +8,11 @@ import {
   getNewFixedTextAttribute
 } from '../../../../hooks/useTemplateSettings';
 import SortableAttributes from './SortableAttributes';
-import { useTemplateContext } from '../../../providers/TemplateContext';
+import { useTemplateSketchContext } from '../../../providers/TemplateSketchContext';
 
 const BodyEditor = () => {
   const { t } = useTranslation();
-  const { templateSettings } = useTemplateContext();
+  const { templateSettings } = useTemplateSketchContext();
 
   return (
     <Form.List name="credentialBody">
