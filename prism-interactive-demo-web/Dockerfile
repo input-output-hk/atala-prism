@@ -7,10 +7,9 @@ EXPOSE 80
 
 # Copy .env file and shell script to container
 WORKDIR /usr/share/nginx/html
-COPY ./scripts/copyEnvVarsToWindow.sh .
 COPY .env .
 
 # Copy password file for preview
 COPY nginx/htpasswd /etc/nginx/htpasswd
 
-CMD ["/bin/bash", "-c", "/usr/share/nginx/html/copyEnvVarsToWindow.sh && nginx -g \"daemon off;\""]
+CMD ["/bin/bash", "-c", "nginx -g \"daemon off;\""]
