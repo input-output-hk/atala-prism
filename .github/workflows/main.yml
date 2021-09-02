@@ -396,7 +396,7 @@ jobs:
         run: |
           cd prism-backend/infra/stage/services/prism/
           ./prism.sh -t $ENV
-          ./prism.sh -p $ENV
+          ./prism.sh -A $ENV
 
   trigger-integration-tests:
     runs-on: ubuntu-20.04
