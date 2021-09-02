@@ -6,6 +6,6 @@ object KotlinFunctionConverters {
       (p1: A) => underlying(p1)
   }
 
-  implicit def enrichAsKotlinFunction[A, B](sf: scala.Function1[A, B]): RichFunction1AsKotlinFunction[A, B] =
+  implicit def enrichAsKotlinFunction1[A, B](sf: scala.Function1[A, B]): RichFunction1AsKotlinFunction[A, B] =
     new RichFunction1AsKotlinFunction(sf)
 }

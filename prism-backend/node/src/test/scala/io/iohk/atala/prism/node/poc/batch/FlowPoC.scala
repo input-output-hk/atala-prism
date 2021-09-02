@@ -11,21 +11,9 @@ import io.iohk.atala.prism.kotlin.credentials.{CredentialBatchId, CredentialBatc
 import io.iohk.atala.prism.kotlin.crypto.SHA256Digest
 import io.iohk.atala.prism.kotlin.identity.PrismDid
 import io.iohk.atala.prism.node.poc.{GenericCredentialsSDK, Wallet}
-import io.iohk.atala.prism.node.repositories.{
-  AtalaObjectsTransactionsRepository,
-  AtalaOperationsRepository,
-  CredentialBatchesRepository,
-  DIDDataRepository,
-  KeyValuesRepository
-}
+import io.iohk.atala.prism.node.repositories.{AtalaObjectsTransactionsRepository, AtalaOperationsRepository, CredentialBatchesRepository, DIDDataRepository, KeyValuesRepository}
 import io.iohk.atala.prism.node.services.models.AtalaObjectNotification
-import io.iohk.atala.prism.node.services.{
-  BlockProcessingServiceImpl,
-  InMemoryLedgerService,
-  ObjectManagementService,
-  SubmissionSchedulingService,
-  SubmissionService
-}
+import io.iohk.atala.prism.node.services.{BlockProcessingServiceImpl, InMemoryLedgerService, ObjectManagementService, SubmissionSchedulingService, SubmissionService}
 import io.iohk.atala.prism.node.{DataPreparation, NodeServiceImpl}
 import io.iohk.atala.prism.protos.node_api
 import io.iohk.atala.prism.services.NodeClientService.{issueBatchOperation, revokeCredentialsOperation}
@@ -37,6 +25,7 @@ import java.util.concurrent.TimeUnit
 import scala.concurrent.{Future, Promise}
 import scala.jdk.CollectionConverters._
 import io.iohk.atala.prism.kotlin.credentials.json.JsonBasedCredential
+import io.iohk.atala.prism.utils.StringUtils.encodeToByteArray
 
 class FlowPoC extends AtalaWithPostgresSpec with BeforeAndAfterEach {
 
@@ -170,7 +159,7 @@ class FlowPoC extends AtalaWithPostgresSpec with BeforeAndAfterEach {
       // 4. she builds 4 generic credentials
       val issuanceKeyId = "issuance0"
 
-      val issuerDID = PrismDid.fromString(didSuffix)
+      val issuerDID = PrismDid.buildCanonical(SHA256Digest.compute(encodeToByteArray(didSuffix)))
       val credentialsToSign = consoleCredentials.map { credential =>
         GenericCredentialsSDK.buildGenericCredential(
           "university-degree",

@@ -2,7 +2,7 @@ package io.iohk.atala.prism.vault.services
 
 import java.time.Instant
 import java.time.temporal.ChronoUnit
-import java.util.UUID
+import java.util.{Base64, UUID}
 import com.google.protobuf.ByteString
 import io.iohk.atala.prism.auth.SignedRpcRequest
 import io.iohk.atala.prism.kotlin.crypto.{EC, SHA256Digest}
@@ -14,6 +14,8 @@ import io.iohk.atala.prism.protos.node_models
 import io.iohk.atala.prism.protos.node_models.AtalaOperation.Operation.UpdateDid
 import io.iohk.atala.prism.protos.node_models.UpdateDIDOperation
 import io.iohk.atala.prism.protos.vault_api.StoreDataRequest
+import io.iohk.atala.prism.utils.StringUtils.encodeToByteArray
+import io.iohk.atala.prism.utils.Base64Utils._
 import io.iohk.atala.prism.vault.VaultRpcSpecBase
 import org.scalatest.OptionValues
 
@@ -192,9 +194,9 @@ class EncryptedDataVaultGrpcServiceSpec extends VaultRpcSpecBase with OptionValu
       val keys2 = EC.generateKeyPair()
       val did1 = PrismDid.buildLongFormFromMasterKey(keys1.getPublicKey)
       val did2 = PrismDid.buildLongFormFromMasterKey(keys2.getPublicKey)
-      val fakeDid = PrismDid.fromString(
-        did1.asCanonical().getSuffix +
-        did2.getSuffix.dropWhile(_ != ':').tail
+      val fakeDid = PrismDid.buildLongForm(
+        SHA256Digest.compute(encodeToByteArray(did1.asCanonical().getSuffix)),
+        decodeURL(did2.getSuffix.dropWhile(_ != ':').tail)
       )
       val request = vault_api.GetPaginatedDataRequest()
       val rpcRequest = SignedRpcRequest.generate(keys1, fakeDid, request)
@@ -210,7 +212,8 @@ class EncryptedDataVaultGrpcServiceSpec extends VaultRpcSpecBase with OptionValu
       val operationBytes = Array(100.toByte, 200.toByte)
       val operationHash = SHA256Digest.compute(operationBytes)
       val didCanonicalSuffix = operationHash.hexValue
-      val did = PrismDid.fromString(didCanonicalSuffix)
+      val encodedOperation = Base64.getUrlEncoder.withoutPadding().encode(operationBytes)
+      val did = PrismDid.buildLongForm(SHA256Digest.compute(encodeToByteArray(didCanonicalSuffix)), encodedOperation)
       val request = vault_api.GetPaginatedDataRequest()
       val rpcRequest = SignedRpcRequest.generate(keys, did, request)
       usingApiAs(rpcRequest) { blockingStub =>
@@ -226,7 +229,8 @@ class EncryptedDataVaultGrpcServiceSpec extends VaultRpcSpecBase with OptionValu
       val operationBytes = operation.toByteArray
       val operationHash = SHA256Digest.compute(operationBytes)
       val didCanonicalSuffix = operationHash.hexValue
-      val did = PrismDid.fromString(didCanonicalSuffix)
+      val encodedOperation = Base64.getUrlEncoder.withoutPadding().encode(operationBytes)
+      val did = PrismDid.buildLongForm(SHA256Digest.compute(encodeToByteArray(didCanonicalSuffix)), encodedOperation)
       val request = vault_api.GetPaginatedDataRequest()
       val rpcRequest = SignedRpcRequest.generate(keys, did, request)
       usingApiAs(rpcRequest) { blockingStub =>

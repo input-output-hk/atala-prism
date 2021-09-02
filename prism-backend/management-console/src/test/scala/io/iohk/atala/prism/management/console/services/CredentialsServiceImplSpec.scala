@@ -691,7 +691,7 @@ class CredentialsServiceImplSpec extends ManagementConsoleRpcSpecBase with DIDUt
       val did = generateDid(publicKey)
       createParticipant(issuerName, did)
 
-      val mockDIDSuffix = PrismDid.fromString(SHA256Digest.compute("issuerDIDSuffix".getBytes()).hexValue).getSuffix
+      val mockDIDSuffix = PrismDid.buildCanonical(SHA256Digest.compute("issuerDIDSuffix".getBytes())).getSuffix
       val mockEncodedSignedCredential = "easdadgfkfñwlekrjfadf"
       val mockEncodedSignedCredentialHash = SHA256Digest.compute(mockEncodedSignedCredential.getBytes())
 

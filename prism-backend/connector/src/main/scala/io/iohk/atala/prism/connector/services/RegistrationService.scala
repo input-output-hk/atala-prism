@@ -7,6 +7,7 @@ import io.iohk.atala.prism.connector.AtalaOperationId
 import io.iohk.atala.prism.connector.errors.{ConnectorError, InvalidRequest}
 import io.iohk.atala.prism.connector.model.{ParticipantLogo, ParticipantType}
 import io.iohk.atala.prism.connector.repositories.ParticipantsRepository
+import io.iohk.atala.prism.kotlin.crypto.SHA256Digest
 import io.iohk.atala.prism.kotlin.identity.PrismDid
 import io.iohk.atala.prism.models.ParticipantId
 import io.iohk.atala.prism.utils.FutureEither
@@ -14,6 +15,7 @@ import io.iohk.atala.prism.utils.FutureEither.FutureEitherOps
 import io.iohk.atala.prism.protos.node_api.{GetDidDocumentRequest, NodeServiceGrpc}
 import io.iohk.atala.prism.protos.node_models.SignedAtalaOperation
 import io.iohk.atala.prism.protos.node_api
+import io.iohk.atala.prism.utils.StringUtils.encodeToByteArray
 
 import scala.concurrent.ExecutionContext
 
@@ -48,7 +50,7 @@ class RegistrationService(participantsRepository: ParticipantsRepository[IO], no
   ): FutureEither[ConnectorError, ParticipantsRepository.CreateParticipantRequest] = {
     val result = for {
       createDIDResponse <- nodeService.createDID(node_api.CreateDIDRequest().withSignedOperation(createDIDOperation))
-      did = PrismDid.fromString(createDIDResponse.id)
+      did = PrismDid.buildCanonical(SHA256Digest.compute(encodeToByteArray(createDIDResponse.id)))
       createRequest =
         ParticipantsRepository
           .CreateParticipantRequest(

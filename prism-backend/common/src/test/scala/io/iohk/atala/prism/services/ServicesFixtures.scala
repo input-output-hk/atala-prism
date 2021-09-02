@@ -5,7 +5,7 @@ import io.circe.Encoder
 import io.circe.syntax._
 import com.google.protobuf.ByteString
 import io.iohk.atala.prism.kotlin.credentials.{CredentialBatchId, CredentialBatches, TimestampInfo}
-import io.iohk.atala.prism.kotlin.crypto.{EC, MerkleInclusionProof}
+import io.iohk.atala.prism.kotlin.crypto.{EC, MerkleInclusionProof, SHA256Digest}
 import io.iohk.atala.prism.kotlin.crypto.keys.ECKeyPair
 import io.iohk.atala.prism.kotlin.identity.PrismDid
 import io.iohk.atala.prism.protos.node_api.GetBatchStateResponse
@@ -23,6 +23,7 @@ import io.iohk.atala.prism.utils.Base64Utils
 
 import scala.jdk.CollectionConverters._
 import io.iohk.atala.prism.interop.CredentialContentConverter._
+import io.iohk.atala.prism.utils.StringUtils.encodeToByteArray
 
 trait ServicesFixtures {
   object ConnectorClientServiceFixtures {
@@ -32,7 +33,7 @@ trait ServicesFixtures {
     )
 
     val defaultDidBasedAuthConfig = DidBasedAuthConfig(
-      did = PrismDid.fromString("did"),
+      did = PrismDid.buildCanonical(SHA256Digest.compute(encodeToByteArray( "did"))),
       didMasterKeyId = "master",
       didMasterKeyPair = EC.generateKeyPair(),
       didIssuingKeyId = "issuance",

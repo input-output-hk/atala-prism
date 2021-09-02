@@ -21,11 +21,7 @@ import io.iohk.atala.prism.grpc.ProtoConverter
 import io.iohk.atala.prism.kotlin.identity.PrismDid
 import io.iohk.atala.prism.management.console.errors
 import io.iohk.atala.prism.management.console.clients.ConnectorClient
-import io.iohk.atala.prism.management.console.errors.{
-  InternalServerError,
-  ManagementConsoleError,
-  ManagementConsoleErrorSupport
-}
+import io.iohk.atala.prism.management.console.errors.{InternalServerError, ManagementConsoleError, ManagementConsoleErrorSupport}
 import io.iohk.atala.prism.management.console.grpc._
 import io.iohk.atala.prism.management.console.integrations.CredentialsIntegrationService
 import io.iohk.atala.prism.management.console.models._
@@ -34,12 +30,10 @@ import io.iohk.atala.prism.protos.node_api.{IssueCredentialBatchResponse, NodeSe
 import io.iohk.atala.prism.protos.node_models.SignedAtalaOperation
 import io.iohk.atala.prism.protos.node_api
 import org.slf4j.{Logger, LoggerFactory}
-import io.iohk.atala.prism.management.console.integrations.CredentialsIntegrationService.{
-  GenericCredentialWithConnection,
-  GetGenericCredentialsResult
-}
+import io.iohk.atala.prism.management.console.integrations.CredentialsIntegrationService.{GenericCredentialWithConnection, GetGenericCredentialsResult}
 import io.iohk.atala.prism.management.console.models.GenericCredential.PaginatedQuery
 import io.iohk.atala.prism.logging.GeneralLoggableInstances._
+import io.iohk.atala.prism.utils.StringUtils.encodeToByteArray
 import tofu.Execute
 import tofu.higherKind.Mid
 import tofu.logging.{Logs, ServiceLogging}
@@ -172,7 +166,7 @@ private final class CredentialsServiceImpl[F[_]: Monad](
         opHash = SHA256Digest.compute(atalaOperation.toByteArray)
         issueCredentialBatch <- atalaOperation.operation.issueCredentialBatch
         credentialBatchData <- issueCredentialBatch.credentialBatchData
-        did = PrismDid.fromString(credentialBatchData.issuerDid)
+        did = PrismDid.buildCanonical(SHA256Digest.compute(encodeToByteArray(credentialBatchData.issuerDid)))
         merkleRoot = new MerkleRoot(SHA256Digest.fromBytes(credentialBatchData.merkleRoot.toByteArray))
       } yield (merkleRoot, did, opHash)
       maybePair.toRight(InternalServerError(new RuntimeException("Failed to extract content hash and issuer DID")))

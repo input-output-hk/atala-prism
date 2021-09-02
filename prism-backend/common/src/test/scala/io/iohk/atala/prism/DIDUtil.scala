@@ -10,6 +10,7 @@ import io.iohk.atala.prism.protos.node_api.{GetDidDocumentRequest, GetDidDocumen
 import io.iohk.atala.prism.protos.node_api.NodeServiceGrpc.NodeService
 import io.iohk.atala.prism.protos.node_models
 import io.iohk.atala.prism.protos.node_models.DIDData
+import io.iohk.atala.prism.utils.StringUtils.encodeToByteArray
 import org.mockito.IdiomaticMockito._
 import scalapb.GeneratedMessage
 
@@ -48,7 +49,7 @@ trait DIDUtil {
     val operationBytes = atalaOp.toByteArray
     val operationHash = SHA256Digest.compute(operationBytes)
     val didCanonicalSuffix = operationHash.hexValue
-    val did = PrismDid.fromString(didCanonicalSuffix)
+    val did = PrismDid.buildCanonical(SHA256Digest.compute(encodeToByteArray(didCanonicalSuffix)))
 
     nodeMock.getDidDocument(GetDidDocumentRequest(did.getValue)).returns {
       Future.successful(
