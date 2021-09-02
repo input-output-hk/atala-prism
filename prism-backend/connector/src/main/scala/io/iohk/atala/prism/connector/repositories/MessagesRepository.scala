@@ -82,8 +82,11 @@ private final class MessagesRepositoryImpl[F[_]: BracketThrow](xa: Transactor[F]
     val query = for {
       _ <- assertUserProvidedIdsNotExist(messageIdOption.toList)
 
-      rawConnection <- EitherT(ConnectionsDAO.getRawConnection(connectionId)
-        .map(_.toRight(ConnectionNotFound(connectionId))))
+      rawConnection <- EitherT(
+        ConnectionsDAO
+          .getRawConnection(connectionId)
+          .map(_.toRight(ConnectionNotFound(connectionId)))
+      )
 
       _ <- EitherT.fromEither[ConnectionIO] {
         if (rawConnection.status == ConnectionStatus.ConnectionRevoked) Left(ConnectionRevoked(connectionId))
@@ -116,12 +119,17 @@ private final class MessagesRepositoryImpl[F[_]: BracketThrow](xa: Transactor[F]
     val query = for {
       _ <- assertUserProvidedIdsNotExist(messages.toList.flatMap(_.id))
 
-      _ <- EitherT(ConnectionsDAO.getConnectionsByConnectionTokens(connectionTokens.toList)
-        .map { connections =>
-          connections.find(_.connectionStatus == ConnectionStatus.ConnectionRevoked)
-            // We can be sure that a found revoked connection has a corresponding token, so .get is safe
-            .toLeft(()).leftMap(revoked => ConnectionRevoked(revoked.contactToken.get))
-        })
+      _ <- EitherT(
+        ConnectionsDAO
+          .getConnectionsByConnectionTokens(connectionTokens.toList)
+          .map { connections =>
+            connections
+              .find(_.connectionStatus == ConnectionStatus.ConnectionRevoked)
+              // We can be sure that a found revoked connection has a corresponding token, so .get is safe
+              .toLeft(())
+              .leftMap(revoked => ConnectionRevoked(revoked.contactToken.get))
+          }
+      )
 
       otherSidesAndIds <- EitherT.liftF(ConnectionsDAO.getOtherSideAndIdByConnectionTokens(connectionTokens, sender))
       otherSidesAndIdsMap = otherSidesAndIds.map { case (token, id, participant) => token -> (id -> participant) }.toMap
