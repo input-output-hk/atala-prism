@@ -2,7 +2,7 @@ package io.iohk.atala.prism.connector.repositories.metrics
 
 import cats.data.NonEmptyList
 import cats.effect.Bracket
-import io.iohk.atala.prism.connector.errors.ConnectorError
+import io.iohk.atala.prism.connector.errors.MessagesError
 import io.iohk.atala.prism.connector.model.{ConnectionId, Message, MessageId}
 import io.iohk.atala.prism.connector.model.actions.SendMessagesRequest
 import io.iohk.atala.prism.connector.repositories.MessagesRepository
@@ -27,18 +27,18 @@ private[repositories] final class MessagesRepositoryMetrics[F[_]: TimeMeasureMet
       connection: ConnectionId,
       content: Array[Byte],
       messageIdOption: Option[MessageId]
-  ): Mid[F, Either[ConnectorError, MessageId]] = _.measureOperationTime(insertMessageTimer)
+  ): Mid[F, Either[MessagesError, MessageId]] = _.measureOperationTime(insertMessageTimer)
 
   override def insertMessages(
       sender: ParticipantId,
       messages: NonEmptyList[SendMessagesRequest.MessageToSend]
-  ): Mid[F, Either[ConnectorError, List[MessageId]]] = _.measureOperationTime(insertMessagesTimer)
+  ): Mid[F, Either[MessagesError, List[MessageId]]] = _.measureOperationTime(insertMessagesTimer)
 
   override def getMessagesPaginated(
       recipientId: ParticipantId,
       limit: Int,
       lastSeenMessageId: Option[MessageId]
-  ): Mid[F, Either[ConnectorError, List[Message]]] = _.measureOperationTime(getMessagesPaginatedTimer)
+  ): Mid[F, Either[MessagesError, List[Message]]] = _.measureOperationTime(getMessagesPaginatedTimer)
 
   override def getConnectionMessages(recipientId: ParticipantId, connectionId: ConnectionId): Mid[F, List[Message]] =
     _.measureOperationTime(getConnectionMessagesTimer)

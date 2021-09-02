@@ -11,6 +11,7 @@ import doobie.implicits._
 import fs2.Stream
 import doobie.util.transactor.Transactor
 import io.iohk.atala.prism.connector.errors._
+import io.iohk.atala.prism.connector.errors.MessagesError._
 import io.iohk.atala.prism.connector.model._
 import io.iohk.atala.prism.connector.model.actions.SendMessagesRequest
 import io.iohk.atala.prism.connector.repositories.daos.{ConnectionsDAO, MessagesDAO}
@@ -32,23 +33,22 @@ trait MessagesRepository[S[_], F[_]] {
       connection: ConnectionId,
       content: Array[Byte],
       messageIdOption: Option[MessageId] = None
-  ): F[Either[ConnectorError, MessageId]]
+  ): F[Either[MessagesError, MessageId]]
 
   def insertMessages(
       sender: ParticipantId,
       messages: NonEmptyList[SendMessagesRequest.MessageToSend]
-  ): F[Either[ConnectorError, List[MessageId]]]
+  ): F[Either[MessagesError, List[MessageId]]]
 
   def getMessagesPaginated(
       recipientId: ParticipantId,
       limit: Int,
       lastSeenMessageId: Option[MessageId]
-  ): F[Either[ConnectorError, List[Message]]]
+  ): F[Either[MessagesError, List[Message]]]
 
   def getMessageStream(recipientId: ParticipantId, lastSeenMessageId: Option[MessageId]): S[Message]
 
   def getConnectionMessages(recipientId: ParticipantId, connectionId: ConnectionId): F[List[Message]]
-
 }
 
 object MessagesRepository {
@@ -67,7 +67,9 @@ object MessagesRepository {
 
 private final class MessagesRepositoryImpl[F[_]: BracketThrow](xa: Transactor[F])
     extends MessagesRepository[Stream[F, *], F]
-    with ConnectorErrorSupport {
+    with ConnectorErrorSupportNew[MessagesError] {
+
+  override def fromConnectorError(ce: ConnectorError): MessagesError = toMessagesError(ce)
 
   val logger: Logger = LoggerFactory.getLogger(getClass)
 
@@ -76,7 +78,7 @@ private final class MessagesRepositoryImpl[F[_]: BracketThrow](xa: Transactor[F]
       connectionId: ConnectionId,
       content: Array[Byte],
       messageIdOption: Option[MessageId] = None
-  ): F[Either[ConnectorError, MessageId]] = {
+  ): F[Either[MessagesError, MessageId]] = {
     val messageId = messageIdOption.getOrElse(MessageId.random())
 
     val query = for {
@@ -97,7 +99,7 @@ private final class MessagesRepositoryImpl[F[_]: BracketThrow](xa: Transactor[F]
           .toRight(ConnectionNotFoundByConnectionIdAndSender(sender, connectionId))
           .toEitherT[ConnectionIO]
 
-      _ <- EitherT.liftF[ConnectionIO, ConnectorError, Unit](
+      _ <- EitherT.liftF[ConnectionIO, MessagesError, Unit](
         MessagesDAO.insert(messageId, connectionId, sender, recipient, content)
       )
     } yield messageId
@@ -110,7 +112,7 @@ private final class MessagesRepositoryImpl[F[_]: BracketThrow](xa: Transactor[F]
   def insertMessages(
       sender: ParticipantId,
       messages: NonEmptyList[SendMessagesRequest.MessageToSend]
-  ): F[Either[ConnectorError, List[MessageId]]] = {
+  ): F[Either[MessagesError, List[MessageId]]] = {
     val connectionTokens = messages.map(_.connectionToken)
 
     val query = for {
@@ -132,7 +134,7 @@ private final class MessagesRepositoryImpl[F[_]: BracketThrow](xa: Transactor[F]
             val token = message.connectionToken
             otherSidesAndIdsMap
               .get(token)
-              .fold[Either[ConnectorError, CreateMessage]](Left(ConnectionNotFound(token))) {
+              .fold[Either[MessagesError, CreateMessage]](Left(ConnectionNotFound(token))) {
                 case (connectionId, recipientId) =>
                   Right(
                     CreateMessage(
@@ -150,7 +152,7 @@ private final class MessagesRepositoryImpl[F[_]: BracketThrow](xa: Transactor[F]
           .sequence
       )
 
-      _ <- EitherT.liftF[doobie.ConnectionIO, ConnectorError, Unit](MessagesDAO.insert(messagesToInsert))
+      _ <- EitherT.liftF[doobie.ConnectionIO, MessagesError, Unit](MessagesDAO.insert(messagesToInsert))
     } yield messagesToInsert.map(_.id)
 
     query
@@ -158,7 +160,7 @@ private final class MessagesRepositoryImpl[F[_]: BracketThrow](xa: Transactor[F]
       .value
   }
 
-  private def assertUserProvidedIdsNotExist(ids: List[MessageId]): EitherT[ConnectionIO, ConnectorError, Unit] = {
+  private def assertUserProvidedIdsNotExist(ids: List[MessageId]): EitherT[ConnectionIO, MessagesError, Unit] = {
     val distinctIds = ids.distinct
     for {
       _ <-
@@ -177,7 +179,7 @@ private final class MessagesRepositoryImpl[F[_]: BracketThrow](xa: Transactor[F]
 
       _ <-
         Either
-          .cond[ConnectorError, Unit](
+          .cond[MessagesError, Unit](
             test = alreadyExistingMessages.isEmpty,
             right = (),
             left = MessagesAlreadyExist(alreadyExistingMessages)
@@ -190,7 +192,7 @@ private final class MessagesRepositoryImpl[F[_]: BracketThrow](xa: Transactor[F]
       recipientId: ParticipantId,
       limit: Int,
       lastSeenMessageId: Option[MessageId]
-  ): F[Either[ConnectorError, List[Message]]] = {
+  ): F[Either[MessagesError, List[Message]]] = {
     implicit val loggingContext: LoggingContext = LoggingContext(
       "recipientId" -> recipientId,
       "limit" -> limit,
@@ -198,12 +200,12 @@ private final class MessagesRepositoryImpl[F[_]: BracketThrow](xa: Transactor[F]
     )
 
     if (limit <= 0)
-      InvalidArgumentError("limit", "positive value", limit.toString).logWarn.asLeft[List[Message]].pure[F]
+      invalidArgumentError("limit", "positive value", limit.toString).logWarn.asLeft[List[Message]].pure[F]
     else
       MessagesDAO
         .getMessagesPaginated(recipientId, limit, lastSeenMessageId)
         .logSQLErrors(s"getting messages paginated, recipient id - $recipientId", logger)
-        .map(_.asRight[ConnectorError])
+        .map(_.asRight[MessagesError])
         .transact(xa)
   }
 

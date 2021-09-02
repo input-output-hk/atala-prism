@@ -16,6 +16,13 @@ package object errors {
       Status.UNKNOWN.withDescription(s"Unknown $tpe: $value")
     }
   }
+
+  case class InvalidArgumentError(tpe: String, requirement: String, value: String) extends ConnectorError {
+    override def toStatus: Status = {
+      Status.INVALID_ARGUMENT.withDescription(s"Invalid value for $tpe, expected $requirement, got $value")
+    }
+  }
+
   case class DidConnectionExist(did: DID) extends ConnectorError {
     override def toStatus: Status = {
       Status.ALREADY_EXISTS.withDescription(
@@ -28,12 +35,6 @@ package object errors {
       Status.ALREADY_EXISTS.withDescription(
         s"Attempting to accept a connection with a public key: $pk. Public key is already used for a connection, use a different Public key"
       )
-    }
-  }
-
-  case class InvalidArgumentError(tpe: String, requirement: String, value: String) extends ConnectorError {
-    override def toStatus: Status = {
-      Status.INVALID_ARGUMENT.withDescription(s"Invalid value for $tpe, expected $requirement, got $value")
     }
   }
 
@@ -81,55 +82,67 @@ package object errors {
     }
   }
 
-  case class ConnectionNotFound(connection: Either[TokenString, ConnectionId]) extends ConnectorError {
-    override def toStatus: Status = {
-      Status.NOT_FOUND.withDescription(
-        s"Connection with ${connection.fold("token " + _, "id " + _)} doesn't exist. " +
-          s"Other side might not have accepted connection yet or connection token is invalid"
-      )
+  sealed trait MessagesError extends ConnectorError
+
+  object MessagesError {
+    case class ConnectionNotFound(connection: Either[TokenString, ConnectionId]) extends MessagesError {
+      override def toStatus: Status = {
+        Status.NOT_FOUND.withDescription(
+          s"Connection with ${connection.fold("token " + _, "id " + _)} doesn't exist. " +
+            s"Other side might not have accepted connection yet or connection token is invalid"
+        )
+      }
     }
-  }
 
-  object ConnectionNotFound {
-    def apply(s: TokenString): ConnectionNotFound = ConnectionNotFound(Left(s))
-    def apply(c: ConnectionId): ConnectionNotFound = ConnectionNotFound(Right(c))
-  }
+    object ConnectionNotFound {
+      def apply(s: TokenString): ConnectionNotFound = ConnectionNotFound(Left(s))
 
-  case class ConnectionRevoked(connection: Either[TokenString, ConnectionId]) extends ConnectorError {
-    override def toStatus: Status = {
-      Status.FAILED_PRECONDITION.withDescription(
-        s"Connection with ${connection.fold("token " + _, "id " + _)} has been revoked."
-      )
+      def apply(c: ConnectionId): ConnectionNotFound = ConnectionNotFound(Right(c))
     }
-  }
 
-  object ConnectionRevoked {
-    def apply(s: TokenString): ConnectionRevoked = ConnectionRevoked(Left(s))
-    def apply(c: ConnectionId): ConnectionRevoked = ConnectionRevoked(Right(c))
-  }
-
-  case class ConnectionNotFoundByConnectionIdAndSender(sender: ParticipantId, connection: ConnectionId)
-      extends ConnectorError {
-    override def toStatus: Status = {
-      Status.NOT_FOUND.withDescription(
-        s"Failed to send message, the connection $connection with sender $sender doesn't exist"
-      )
+    case class ConnectionRevoked(connection: Either[TokenString, ConnectionId]) extends MessagesError {
+      override def toStatus: Status = {
+        Status.FAILED_PRECONDITION.withDescription(
+          s"Connection with ${connection.fold("token " + _, "id " + _)} has been revoked."
+        )
+      }
     }
-  }
 
-  case class MessagesAlreadyExist(ids: List[MessageId]) extends ConnectorError {
-    override def toStatus: Status = {
-      Status.ALREADY_EXISTS.withDescription(
-        s"Messages with provided ids already exist: ${ids.map(_.uuid.toString).mkString(", ")}"
-      )
-    }
-  }
+    object ConnectionRevoked {
+      def apply(s: TokenString): ConnectionRevoked = ConnectionRevoked(Left(s))
 
-  case class MessageIdsNotUnique(ids: List[MessageId]) extends ConnectorError {
-    override def toStatus: Status = {
-      Status.ALREADY_EXISTS.withDescription(
-        s"All user provided messages ids must be unique, duplicates: ${ids.map(_.uuid.toString).mkString(", ")}"
-      )
+      def apply(c: ConnectionId): ConnectionRevoked = ConnectionRevoked(Right(c))
     }
+
+    case class ConnectionNotFoundByConnectionIdAndSender(sender: ParticipantId, connection: ConnectionId)
+      extends MessagesError {
+      override def toStatus: Status = {
+        Status.NOT_FOUND.withDescription(
+          s"Failed to send message, the connection $connection with sender $sender doesn't exist"
+        )
+      }
+    }
+
+    case class MessagesAlreadyExist(ids: List[MessageId]) extends MessagesError {
+      override def toStatus: Status = {
+        Status.ALREADY_EXISTS.withDescription(
+          s"Messages with provided ids already exist: ${ids.map(_.uuid.toString).mkString(", ")}"
+        )
+      }
+    }
+
+    case class MessageIdsNotUnique(ids: List[MessageId]) extends MessagesError {
+      override def toStatus: Status = {
+        Status.ALREADY_EXISTS.withDescription(
+          s"All user provided messages ids must be unique, duplicates: ${ids.map(_.uuid.toString).mkString(", ")}"
+        )
+      }
+    }
+
+    case class GeneralMessageError(e: ConnectorError) extends MessagesError {
+      override def toStatus: Status = e.toStatus
+    }
+
+    def toMessagesError(e: ConnectorError): MessagesError = GeneralMessageError(e)
   }
 }
