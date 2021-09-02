@@ -1451,6 +1451,111 @@
       "timeShift": null,
       "title": "Wallet available funds",
       "type": "stat"
+    },
+    {
+      "aliasColors": {},
+      "bars": false,
+      "dashLength": 10,
+      "dashes": false,
+      "datasource": null,
+      "description": "Contains a number of the last synced block by the wallet and the next block number to sync by the prism node",
+      "fieldConfig": {
+        "defaults": {
+          "unit": "block"
+        },
+        "overrides": []
+      },
+      "fill": 1,
+      "fillGradient": 0,
+      "gridPos": {
+        "h": 9,
+        "w": 12,
+        "x": 12,
+        "y": 62
+      },
+      "hiddenSeries": false,
+      "id": 31,
+      "legend": {
+        "avg": false,
+        "current": false,
+        "max": false,
+        "min": false,
+        "show": true,
+        "total": false,
+        "values": false
+      },
+      "lines": true,
+      "linewidth": 1,
+      "nullPointMode": "null",
+      "options": {
+        "alertThreshold": true
+      },
+      "percentage": false,
+      "pluginVersion": "7.5.4",
+      "pointradius": 2,
+      "points": false,
+      "renderer": "flot",
+      "seriesOverrides": [],
+      "spaceLength": 10,
+      "stack": false,
+      "steppedLine": false,
+      "targets": [
+        {
+          "exemplar": true,
+          "expr": "node_next_block_to_sync_by_prism{job=~\".*$Env-$ComponentName.*\"}",
+          "interval": "",
+          "legendFormat": "Next block to sync by prism-node Job:[{{job}}] Instance:[{{instance}}]",
+          "refId": "A"
+        },
+        {
+          "exemplar": true,
+          "expr": "node_last_synced_block_by_wallet{job=~\".*$Env-$ComponentName.*\"}",
+          "hide": false,
+          "interval": "",
+          "legendFormat": "Last block synced by wallet Job:[{{job}}] Instance:[{{instance}}]",
+          "refId": "B"
+        }
+      ],
+      "thresholds": [],
+      "timeFrom": null,
+      "timeRegions": [],
+      "timeShift": null,
+      "title": "Block sync status",
+      "tooltip": {
+        "shared": true,
+        "sort": 0,
+        "value_type": "individual"
+      },
+      "type": "graph",
+      "xaxis": {
+        "buckets": null,
+        "mode": "time",
+        "name": null,
+        "show": true,
+        "values": []
+      },
+      "yaxes": [
+        {
+          "format": "block",
+          "label": null,
+          "logBase": 1,
+          "max": null,
+          "min": null,
+          "show": true
+        },
+        {
+          "format": "short",
+          "label": null,
+          "logBase": 1,
+          "max": null,
+          "min": null,
+          "show": true
+        }
+      ],
+      "yaxis": {
+        "align": false,
+        "alignLevel": null
+      }
     }
   ],
   "refresh": false,
@@ -1654,5 +1759,5 @@
   "timezone": "",
   "title": "Node",
   "uid": "5CpJH5W7k",
-  "version": 8
+  "version": 10
 }
