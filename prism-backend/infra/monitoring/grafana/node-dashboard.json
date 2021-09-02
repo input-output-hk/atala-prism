@@ -1409,7 +1409,7 @@
               }
             ]
           },
-          "unit": "short"
+          "unit": "lovelace"
         },
         "overrides": []
       },
@@ -1654,5 +1654,5 @@
   "timezone": "",
   "title": "Node",
   "uid": "5CpJH5W7k",
-  "version": 7
+  "version": 8
 }
