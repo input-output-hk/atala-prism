@@ -70,6 +70,17 @@ Also, you can find basic JVM metrics in the Prometheus/Grafana. Basic JVM metric
     #### Available tags:
     1. `repository` - The name of a repository that produces metrics, can be found in the repository source code. [This](https://github.com/input-output-hk/atala-tobearchived/blob/develop/prism-backend/node/src/main/scala/io/iohk/atala/prism/node/repositories/CredentialBatchesRepository.scala#L62) for an example.
     2. `method` - The name of a method that produces metrics, can be found in the repository source code. [This](https://github.com/input-output-hk/atala-tobearchived/blob/develop/prism-backend/node/src/main/scala/io/iohk/atala/prism/node/repositories/CredentialBatchesRepository.scala#L63) for an example.
+
+## Prism node specific metrics
+
+- ## node-wallet-available-funds
+    Gauge which reflects wallet available funds in `lovelace`.
+
+  #### Available metrics:
+    1. `node_wallet_available_funds` - gauge with available funds value retrieved from the wallet.
+
+  #### Available tags:
+  1. only basic tags.
   
 ### Note: After restarting the service, all of these metrics will be reset.
 
