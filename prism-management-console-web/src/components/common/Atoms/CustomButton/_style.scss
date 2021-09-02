@@ -1,4 +1,4 @@
-@import "../../../../css/general_styling";
+@import '../../../../css/general_styling';
 
 .ant-btn {
   @include primary-text($button, $dark-grey);
@@ -71,6 +71,14 @@
   color: $primary-color;
 }
 
+.theme-text,
+.theme-text:hover,
+.theme-text:focus {
+  background-color: transparent;
+  border-color: transparent;
+  color: $black;
+}
+
 .theme-filter {
   height: 32px;
   background-color: $grey;
@@ -87,6 +95,6 @@
   display: flex;
   .TextContent,
   .ChildrenContent {
-    margin: 0 .5em;
+    margin: 0 0.5em;
   }
 }
