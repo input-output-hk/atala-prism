@@ -131,7 +131,7 @@ object DegreeServiceImpl {
       issuanceDate = LocalDate.now(),
       holderName = idCredentialData.name,
       graduationDate = graduationDate,
-      issuanceKeyId = PrismDid.masterKeyId,
+      issuanceKeyId = PrismDid.getMASTER_KEY_ID,
       credentialType = credentialTypeId,
       holderDateOfBirth = idCredentialData.dateOfBirth,
       credentialHtml = credentialHtml

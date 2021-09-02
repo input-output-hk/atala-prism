@@ -12,7 +12,7 @@ import io.iohk.atala.prism.kotlin.credentials.content.CredentialContent
 import io.iohk.atala.prism.kotlin.crypto.{EC, SHA256Digest}
 import io.iohk.atala.prism.kotlin.crypto.keys.ECPublicKey
 import io.iohk.atala.prism.kotlin.crypto.signature.ECSignature
-import io.iohk.atala.prism.kotlin.identity.{DID, DIDSuffix}
+import io.iohk.atala.prism.kotlin.identity.PrismDid
 import io.iohk.atala.prism.node.grpc.ProtoCodecs
 import io.iohk.atala.prism.node.repositories.{
   AtalaObjectsTransactionsRepository,
@@ -145,7 +145,7 @@ class EndorsementsFlowPoC extends AtalaWithPostgresSpec with BeforeAndAfterEach 
       // the steps of the flow to implement
       //  1. the MoE generates its DID
       val (moeDIDSuffix, createDIDOp) = wallet.generateDID()
-      val moeDID = DID.fromString(s"did:prism:${moeDIDSuffix.getValue}")
+      val moeDID = PrismDid.fromString(s"did:prism:${moeDIDSuffix}")
       val signedAtalaOperation = wallet.signOperation(createDIDOp, "master0", moeDIDSuffix)
       val createDIDResponse = nodeServiceStub.createDID(
         CreateDIDRequest()
@@ -211,7 +211,7 @@ class EndorsementsFlowPoC extends AtalaWithPostgresSpec with BeforeAndAfterEach 
       //     that adds the key shared by the MoE as master key, and removes
       //     the original master key of the DID
       val (regionDIDSuffix, regionCreateDIDOp) = wallet.generateDID()
-      val regionDID = DID.fromString(s"did:prism:${regionDIDSuffix.getValue}")
+      val regionDID = PrismDid.fromString(s"did:prism:${regionDIDSuffix}")
       val updateAddMoEKeyOp = updateDIDOp(
         SHA256Digest.compute(regionCreateDIDOp.toByteArray),
         regionDIDSuffix,
@@ -322,7 +322,7 @@ object Utils {
 
   def updateDIDOp(
       previousHash: SHA256Digest,
-      suffix: DIDSuffix,
+      suffix: String,
       keyToAdd: ECPublicKey,
       keyIdToRemove: String
   ): node_models.AtalaOperation = {
@@ -330,7 +330,7 @@ object Utils {
       operation = node_models.AtalaOperation.Operation.UpdateDid(
         node_models.UpdateDIDOperation(
           previousOperationHash = ByteString.copyFrom(previousHash.getValue),
-          id = suffix.getValue,
+          id = suffix,
           actions = Seq(
             node_models.UpdateDIDAction(
               node_models.UpdateDIDAction.Action.AddKey(

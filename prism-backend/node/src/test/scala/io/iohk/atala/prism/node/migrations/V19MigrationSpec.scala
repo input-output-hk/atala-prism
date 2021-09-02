@@ -5,7 +5,6 @@ import io.iohk.atala.prism.kotlin.credentials.TimestampInfo
 import io.iohk.atala.prism.kotlin.crypto.{EC, SHA256Digest}
 import io.iohk.atala.prism.kotlin.crypto.ECConfig.{INSTANCE => ECConfig}
 import io.iohk.atala.prism.daos.BaseDAO
-import io.iohk.atala.prism.kotlin.identity.DIDSuffix
 import io.iohk.atala.prism.models.{Ledger, TransactionId}
 import io.iohk.atala.prism.node.models.nodeState.LedgerData
 import io.iohk.atala.prism.node.models.{DIDPublicKey, KeyUsage}
@@ -25,7 +24,7 @@ class V19MigrationSpec extends PostgresMigrationSpec("db.migration.V19") with Ba
     dummyTimestampInfo
   )
   val didDigest = SHA256Digest.compute("test".getBytes())
-  val didSuffix = DIDSuffix.fromDigest(didDigest)
+  val didSuffix = didDigest.hexValue()
   val didPublicKey: DIDPublicKey =
     DIDPublicKey(didSuffix, "master", KeyUsage.MasterKey, EC.generateKeyPair().getPublicKey)
 

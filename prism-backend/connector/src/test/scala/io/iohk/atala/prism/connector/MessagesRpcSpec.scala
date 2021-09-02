@@ -11,8 +11,7 @@ import io.iohk.atala.prism.connector.model.MessageId
 import io.iohk.atala.prism.connector.repositories.daos.MessagesDAO
 import io.iohk.atala.prism.kotlin.crypto.EC
 import io.iohk.atala.prism.kotlin.crypto.keys.{ECKeyPair, ECPublicKey}
-import io.iohk.atala.prism.kotlin.identity.DID
-import io.iohk.atala.prism.kotlin.identity.DID.masterKeyId
+import io.iohk.atala.prism.kotlin.identity.PrismDid
 import io.iohk.atala.prism.models.ParticipantId
 import io.iohk.atala.prism.protos.connector_api
 import io.iohk.atala.prism.protos.connector_models.MessageToSendByConnectionToken
@@ -275,7 +274,7 @@ class MessagesRpcSpec extends ConnectorRpcSpecBase {
 
       val messages = createExampleMessages(issuerId)
 
-      usingApiAs(requestNonce, signature, did, masterKeyId) { blockingStub =>
+      usingApiAs(requestNonce, signature, did, PrismDid.getMASTER_KEY_ID) { blockingStub =>
         val response = blockingStub.getMessagesPaginated(request)
         response.messages.map(m => (m.id, m.connectionId)) mustBe
           messages.take(10).map { case (messageId, connectionId) => (messageId.toString, connectionId.toString) }
@@ -343,7 +342,7 @@ class MessagesRpcSpec extends ConnectorRpcSpecBase {
   "GetMessageStream" should {
     val (globalTestKeyPair, globalTestDid) = createDid
 
-    def createParticipant(did: DID, publicKey: ECPublicKey): ParticipantId = {
+    def createParticipant(did: PrismDid, publicKey: ECPublicKey): ParticipantId = {
       createVerifier("Participant", Some(publicKey), Some(did))
     }
 
@@ -359,7 +358,7 @@ class MessagesRpcSpec extends ConnectorRpcSpecBase {
 
     "return existing messages immediately while authed by unpublished did" in {
       val keyPair = EC.generateKeyPair()
-      val unpublishedDid = DID.createUnpublishedDID(keyPair.getPublicKey, null)
+      val unpublishedDid = PrismDid.buildLongFormFromMasterKey(keyPair.getPublicKey)
       val participant = createParticipant(unpublishedDid, keyPair.getPublicKey)
       val messageIds = generateMessageIds(participant)
       testMessagesExisting(keyPair, unpublishedDid, messageIds)
@@ -474,7 +473,7 @@ class MessagesRpcSpec extends ConnectorRpcSpecBase {
     }
   }
 
-  private def testSendMessage(publicKey: ECPublicKey, keyPair: ECKeyPair, did: DID): Assertion = {
+  private def testSendMessage(publicKey: ECPublicKey, keyPair: ECKeyPair, did: PrismDid): Assertion = {
     val issuerId = createIssuer("Issuer", Some(publicKey), Some(did))
     val holderId = createHolder("Holder")
     val connectionId = createConnection(issuerId, holderId)
@@ -495,7 +494,7 @@ class MessagesRpcSpec extends ConnectorRpcSpecBase {
     }
   }
 
-  private def testMessagesExisting(keyPair: ECKeyPair, did: DID, messageIds: Seq[String]): Assertion = {
+  private def testMessagesExisting(keyPair: ECKeyPair, did: PrismDid, messageIds: Seq[String]): Assertion = {
     val getMessageStreamRequest = SignedRpcRequest.generate(keyPair, did, connector_api.GetMessageStreamRequest())
     usingAsyncApiAs(getMessageStreamRequest) { service =>
       val streamObserver = mock[StreamObserver[connector_api.GetMessageStreamResponse]]

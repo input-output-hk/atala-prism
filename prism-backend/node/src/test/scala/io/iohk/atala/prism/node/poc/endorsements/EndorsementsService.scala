@@ -4,7 +4,7 @@ import java.time.Instant
 import com.google.protobuf.ByteString
 import io.iohk.atala.prism.kotlin.credentials.json.JsonBasedCredential
 import io.iohk.atala.prism.kotlin.credentials.{CredentialBatchId, CredentialBatches}
-import io.iohk.atala.prism.kotlin.identity.DID
+import io.iohk.atala.prism.kotlin.identity.PrismDid
 import io.iohk.atala.prism.kotlin.crypto.ECConfig.{INSTANCE => ECConfig}
 import io.iohk.atala.prism.kotlin.crypto.keys.ECPublicKey
 import io.iohk.atala.prism.kotlin.crypto.signature.ECSignature
@@ -27,13 +27,13 @@ case class EndorsementsService(
   import EndorsementsService._
 
   // private state
-  private var moeDID: DID = _
-  private var trustedDIDs: Set[DID] = Set.empty
+  private var moePrismDid: PrismDid = _
+  private var trustedPrismDids: Set[PrismDid] = Set.empty
   private var signedKeys: List[SignedKey] = List.empty
-  private var requestedBy: Map[ECPublicKey, DID] = Map.empty
-  private var endorsedBy: Map[DID, DID] = Map.empty
-  private var keyAssigned: Map[DID, ECPublicKey] = Map.empty
-  private var validIn: Map[DID, List[ValidInterval]] = Map.empty.withDefaultValue(Nil)
+  private var requestedBy: Map[ECPublicKey, PrismDid] = Map.empty
+  private var endorsedBy: Map[PrismDid, PrismDid] = Map.empty
+  private var keyAssigned: Map[PrismDid, ECPublicKey] = Map.empty
+  private var validIn: Map[PrismDid, List[ValidInterval]] = Map.empty.withDefaultValue(Nil)
 
   private var lastRequested: Int = -1
   private def nextKey(): SignedKey = {
@@ -41,29 +41,29 @@ case class EndorsementsService(
     if (lastRequested < signedKeys.size) signedKeys(lastRequested)
     else throw new RuntimeException("Ran out of keys. Please add more keys")
   }
-  private def isAlreadyEndorsed(did: DID): Boolean = {
+  private def isAlreadyEndorsed(did: PrismDid): Boolean = {
     validIn(did).lastOption.exists(_.to.isEmpty)
   }
-  private def updatedValidInterval(did: DID, timestamp: Instant): List[ValidInterval] = {
+  private def updatedValidInterval(did: PrismDid, timestamp: Instant): List[ValidInterval] = {
     val periods = validIn(did)
     val newValidInterval = periods.last.copy(to = Some(timestamp))
     periods.init :+ newValidInterval
   }
 
   // management related api
-  def initialize(initialDID: DID, keys: List[SignedKey]): Future[Unit] =
+  def initialize(initialPrismDid: PrismDid, keys: List[SignedKey]): Future[Unit] =
     Future {
-      moeDID = initialDID
+      moePrismDid = initialPrismDid
       signedKeys = keys
-      trustedDIDs = Set(initialDID)
+      trustedPrismDids = Set(initialPrismDid)
     }
 
-  def getMoEDID(): Future[DID] = Future.successful(moeDID)
+  def getMoEPrismDid(): Future[PrismDid] = Future.successful(moePrismDid)
 
   // API
   def getFreshMasterKey(request: GetFreshMasterKeyRequest): Future[GetFreshMasterKeyResponse] = {
     Future.successful {
-      val requester: DID = DID.fromString(request.endorserDID)
+      val requester: PrismDid = PrismDid.fromString(request.endorserDID)
       val signedKey = nextKey()
       requestedBy = requestedBy.updated(signedKey.key, requester)
       println(s"assigned key: ${signedKey.key}")
@@ -76,12 +76,12 @@ case class EndorsementsService(
 
   def endorseInstitution(request: EndorseInstitutionRequest): Future[EndorseInstitutionResponse] =
     Future {
-      val parentDID: DID = DID.fromString(request.parentDID)
-      val childDID: DID = DID.fromString(request.childDID)
+      val parentPrismDid: PrismDid = PrismDid.fromString(request.parentDID)
+      val childPrismDid: PrismDid = PrismDid.fromString(request.childDID)
       val signedOperation: SignedAtalaOperation = request.getIssueBatch
 
       val response = nodeServiceStub.getDidDocument(
-        GetDidDocumentRequest(childDID.toString)
+        GetDidDocumentRequest(childPrismDid.toString)
       )
       val childMasterKeyList =
         response.getDocument.publicKeys.filter(k => k.usage == KeyUsage.MASTER_KEY && k.revokedOn.isEmpty)
@@ -91,9 +91,9 @@ case class EndorsementsService(
       val parentAssociatedToKey = requestedBy.getOrElse(childMasterKey, throw new RuntimeException("unknown key"))
 
       val credential = JsonBasedCredential.fromString(request.credential)
-      val credentialDID = Option(credential.getContent.getIssuerDid).get
-      val operationDID =
-        DID.buildPrismDID(signedOperation.getOperation.getIssueCredentialBatch.getCredentialBatchData.issuerDid, null)
+      val credentialPrismDid = Option(credential.getContent.getIssuerDid).get
+      val operationPrismDid =
+        PrismDid.fromString(signedOperation.getOperation.getIssueCredentialBatch.getCredentialBatchData.issuerDid)
       val operationMerkleRoot = new MerkleRoot(
         SHA256Digest.fromBytes(
           signedOperation.getOperation.getIssueCredentialBatch.getCredentialBatchData.merkleRoot.toByteArray
@@ -103,21 +103,21 @@ case class EndorsementsService(
       val proofDerivedRoot = decodedProof.derivedRoot
 
       if (
-        // there should be a check that the parentDID represents a role that can onboard the child DID
+        // there should be a check that the parentPrismDid represents a role that can onboard the child PrismDid
 
         // tne child institution has only one active master key
         childMasterKeyList.size == 1 &&
         // the key was requested by the parent institution
-        parentDID == parentAssociatedToKey &&
-        // the credential issuer matches the requester DID
-        parentDID == credentialDID &&
-        // the parent DID is the same than the one signing the operation
-        parentDID == operationDID &&
+        parentPrismDid == parentAssociatedToKey &&
+        // the credential issuer matches the requester PrismDid
+        parentPrismDid == credentialPrismDid &&
+        // the parent PrismDid is the same than the one signing the operation
+        parentPrismDid == operationPrismDid &&
         // the credential is included in the issuing operation
         operationMerkleRoot == proofDerivedRoot &&
         CredentialBatches.verifyInclusion(credential, operationMerkleRoot, decodedProof) &&
-        // the DID is not already endorsed
-        !isAlreadyEndorsed(childDID)
+        // the PrismDid is not already endorsed
+        !isAlreadyEndorsed(childPrismDid)
       ) {
 
         //if all checks are valid we issue the credential
@@ -133,10 +133,10 @@ case class EndorsementsService(
           inclusionProof = request.encodedMerkleProof
         )
 
-        trustedDIDs = trustedDIDs + childDID
-        endorsedBy = endorsedBy.updated(childDID, parentDID)
-        keyAssigned = keyAssigned.updated(childDID, childMasterKey)
-        validIn = validIn.updated(childDID, validIn.getOrElse(childDID, Nil) :+ interval)
+        trustedPrismDids = trustedPrismDids + childPrismDid
+        endorsedBy = endorsedBy.updated(childPrismDid, parentPrismDid)
+        keyAssigned = keyAssigned.updated(childPrismDid, childMasterKey)
+        validIn = validIn.updated(childPrismDid, validIn.getOrElse(childPrismDid, Nil) :+ interval)
         EndorseInstitutionResponse()
       } else {
         throw new RuntimeException("Endorsement validation failed")
@@ -145,7 +145,7 @@ case class EndorsementsService(
 
   def getEndorsements(request: GetEndorsementsRequest): Future[GetEndorsementsResponse] =
     Future {
-      val did = DID.fromString(request.did)
+      val did = PrismDid.fromString(request.did)
       val intervals = validIn(did).map { interval =>
         ValidityInterval(to = interval.to.map(_.toProtoTimestamp))
           .withFrom(interval.from.toProtoTimestamp)
@@ -158,19 +158,19 @@ case class EndorsementsService(
 
   def revokeEndorsement(request: RevokeEndorsementRequest): Future[RevokeEndorsementResponse] =
     Future {
-      val parentDID = DID.fromString(request.parentDID)
-      val childDID = DID.fromString(request.childDID)
+      val parentPrismDid = PrismDid.fromString(request.parentDID)
+      val childPrismDid = PrismDid.fromString(request.childDID)
       val revokeOperation = request.getRevokeBatch
 
-      if (endorsedBy(childDID) == parentDID) {
+      if (endorsedBy(childPrismDid) == parentPrismDid) {
         nodeServiceStub.revokeCredentials(
           RevokeCredentialsRequest()
             .withSignedOperation(revokeOperation)
         )
 
         val revocationTime = Instant.now()
-        trustedDIDs = trustedDIDs - childDID
-        validIn = validIn.updated(childDID, updatedValidInterval(childDID, revocationTime))
+        trustedPrismDids = trustedPrismDids - childPrismDid
+        validIn = validIn.updated(childPrismDid, updatedValidInterval(childPrismDid, revocationTime))
         RevokeEndorsementResponse()
       } else {
         throw new RuntimeException("Revocation failed")
@@ -186,14 +186,14 @@ object EndorsementsService {
       inclusionProof: String
   ) {
     def batchId: CredentialBatchId = {
-      val issuerDID = Try(
+      val issuerPrismDid = Try(
         JsonBasedCredential
           .fromString(verifiableCredential)
           .getContent
           .getIssuerDid
-      ).getOrElse(throw new RuntimeException("missing issuer DID"))
+      ).getOrElse(throw new RuntimeException("missing issuer PrismDid"))
       CredentialBatchId.fromBatchData(
-        issuerDID.getSuffix,
+        issuerPrismDid.getSuffix,
         MerkleInclusionProof.decode(inclusionProof).derivedRoot
       )
     }

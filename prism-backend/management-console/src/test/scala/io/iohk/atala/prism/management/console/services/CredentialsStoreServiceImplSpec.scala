@@ -6,7 +6,7 @@ import doobie.implicits._
 import io.iohk.atala.prism.auth.SignedRpcRequest
 import io.iohk.atala.prism.auth.grpc.GrpcAuthenticationHeaderParser
 import io.iohk.atala.prism.kotlin.crypto.EC
-import io.iohk.atala.prism.kotlin.identity.DID
+import io.iohk.atala.prism.kotlin.identity.PrismDid
 import io.iohk.atala.prism.logging.TraceId
 import io.iohk.atala.prism.logging.TraceId.IOWithTraceIdContext
 import io.iohk.atala.prism.management.console.grpc.CredentialsStoreGrpcService
@@ -77,7 +77,7 @@ class CredentialsStoreServiceImplSpec extends RpcSpecBase with DIDUtil {
     ()
   }
 
-  def updateDid(participantId: ParticipantId, did: DID): doobie.ConnectionIO[Unit] = {
+  def updateDid(participantId: ParticipantId, did: PrismDid): doobie.ConnectionIO[Unit] = {
     sql"""
          |UPDATE participants
          |SET did = $did

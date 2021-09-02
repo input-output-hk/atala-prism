@@ -6,8 +6,8 @@ import io.iohk.atala.prism.kotlin.crypto.MerkleRoot
 import io.iohk.atala.prism.kotlin.crypto.{EC, SHA256Digest}
 import io.iohk.atala.prism.kotlin.crypto.keys.{ECPrivateKey, ECPublicKey}
 import io.iohk.atala.prism.kotlin.crypto.ECConfig.{INSTANCE => ECConfig}
-import io.iohk.atala.prism.kotlin.identity.Canonical
-import io.iohk.atala.prism.kotlin.identity.DID.masterKeyId
+import io.iohk.atala.prism.kotlin.identity.CanonicalPrismDid
+import io.iohk.atala.prism.kotlin.identity.PrismDid
 import io.iohk.atala.prism.node.NodeConfig
 import io.iohk.atala.prism.node.cardano.models._
 import io.iohk.atala.prism.node.cardano.wallet.CardanoWalletApiClient
@@ -104,24 +104,24 @@ class CardanoFeeEstimator(walletId: WalletId, paymentAddress: Address, cardanoWa
 
   private def signOperation(atalaOperation: AtalaOperation, privateKey: ECPrivateKey): SignedAtalaOperation = {
     node_models.SignedAtalaOperation(
-      signedWith = masterKeyId,
+      signedWith = PrismDid.getMASTER_KEY_ID,
       operation = Some(atalaOperation),
       signature = ByteString.copyFrom(EC.sign(atalaOperation.toByteArray, privateKey).getData)
     )
   }
 
-  private def createDID(id: String): Canonical = {
-    new Canonical(SHA256Digest.compute(id.getBytes).hexValue)
+  private def createDID(id: String): CanonicalPrismDid = {
+    PrismDid.buildCanonical(SHA256Digest.compute(id.getBytes))
   }
 
-  private def addMasterKeyOperation(did: Canonical, publicKey: ECPublicKey): AtalaOperation = {
+  private def addMasterKeyOperation(did: CanonicalPrismDid, publicKey: ECPublicKey): AtalaOperation = {
     val createDIDOp = node_models.CreateDIDOperation(
       didData = Some(
         node_models.DIDData(
           id = did.getSuffix,
           publicKeys = Seq(
             node_models.PublicKey(
-              id = masterKeyId,
+              id = PrismDid.getMASTER_KEY_ID,
               usage = node_models.KeyUsage.MASTER_KEY,
               keyData = node_models.PublicKey.KeyData.EcKeyData(
                 publicKeyToProto(publicKey)
@@ -136,7 +136,7 @@ class CardanoFeeEstimator(walletId: WalletId, paymentAddress: Address, cardanoWa
   }
 
   private def addIssuingKeyOperation(
-      did: Canonical,
+      did: CanonicalPrismDid,
       publicKey: ECPublicKey,
       lastOperation: AtalaOperation
   ): AtalaOperation = {
@@ -165,7 +165,7 @@ class CardanoFeeEstimator(walletId: WalletId, paymentAddress: Address, cardanoWa
     node_models.AtalaOperation(AtalaOperation.Operation.UpdateDid(createDIDOp))
   }
 
-  private def issueCredentialBatchOperation(merkleRoot: MerkleRoot, issuerDid: Canonical): AtalaOperation = {
+  private def issueCredentialBatchOperation(merkleRoot: MerkleRoot, issuerDid: CanonicalPrismDid): AtalaOperation = {
     val issueCredentialOp = node_models.IssueCredentialBatchOperation(
       credentialBatchData = Some(
         node_models.CredentialBatchData(

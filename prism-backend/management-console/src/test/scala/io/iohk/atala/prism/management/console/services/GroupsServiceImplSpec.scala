@@ -8,7 +8,7 @@ import io.iohk.atala.prism.auth.grpc.GrpcAuthenticationHeaderParser
 import io.iohk.atala.prism.kotlin.crypto.EC
 import io.iohk.atala.prism.logging.TraceId
 import io.iohk.atala.prism.logging.TraceId.IOWithTraceIdContext
-import io.iohk.atala.prism.kotlin.identity.DID
+import io.iohk.atala.prism.kotlin.identity.PrismDid
 import io.iohk.atala.prism.management.console.grpc.GroupsGrpcService
 import io.iohk.atala.prism.management.console.models.PaginatedQueryConstraints.ResultOrdering
 import io.iohk.atala.prism.management.console.models._
@@ -833,7 +833,7 @@ class GroupsServiceImplSpec extends RpcSpecBase with DIDUtil {
   private def listContacts(institutionId: ParticipantId, groupName: InstitutionGroup.Name): List[Contact] =
     institutionGroupsRepository.listContacts(institutionId, groupName).run(TraceId.generateYOLO).unsafeRunSync()
 
-  private def createParticipant(did: DID)(implicit
+  private def createParticipant(did: PrismDid)(implicit
       database: Transactor[IO]
   ): ParticipantId = {
     val id = ParticipantId.random()

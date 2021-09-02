@@ -10,7 +10,7 @@ import io.iohk.atala.prism.kotlin.credentials.CredentialBatchId
 import io.iohk.atala.prism.kotlin.crypto.{MerkleInclusionProof, MerkleRoot}
 import io.iohk.atala.prism.kotlin.crypto.{EC, SHA256Digest}
 import io.iohk.atala.prism.kotlin.crypto.keys.ECKeyPair
-import io.iohk.atala.prism.kotlin.identity.{DID, DIDSuffix}
+import io.iohk.atala.prism.kotlin.identity.PrismDid
 import io.iohk.atala.prism.management.console.ManagementConsoleRpcSpecBase
 import io.iohk.atala.prism.management.console.models.{GenericCredential, InstitutionGroup, PaginatedQueryConstraints}
 import io.iohk.atala.prism.management.console.DataPreparation.{
@@ -218,7 +218,7 @@ class CredentialsServiceImplSpec extends ManagementConsoleRpcSpecBase with DIDUt
   }
 
   "CredentialsServiceImpl.revokePublishedCredential" should {
-    def withPublishedCredential[T](f: (GenericCredential, ECKeyPair, DID) => T) = {
+    def withPublishedCredential[T](f: (GenericCredential, ECKeyPair, PrismDid) => T) = {
       val issuerName = "Issuer 1"
       val keyPair = EC.generateKeyPair()
       val publicKey = keyPair.getPublicKey
@@ -662,7 +662,7 @@ class CredentialsServiceImplSpec extends ManagementConsoleRpcSpecBase with DIDUt
   "CredentialsServiceImpl.publishBatch" should {
     def buildSignedIssueCredentialOp(
         credentialHash: SHA256Digest,
-        didSuffix: DIDSuffix
+        didSuffix: String
     ): node_models.SignedAtalaOperation = {
       node_models.SignedAtalaOperation(
         signedWith = "mockKey",
@@ -673,7 +673,7 @@ class CredentialsServiceImplSpec extends ManagementConsoleRpcSpecBase with DIDUt
               node_models.IssueCredentialBatchOperation(
                 credentialBatchData = Some(
                   node_models.CredentialBatchData(
-                    issuerDid = didSuffix.getValue,
+                    issuerDid = didSuffix,
                     merkleRoot = ByteString.copyFrom(credentialHash.getValue)
                   )
                 )
@@ -691,7 +691,7 @@ class CredentialsServiceImplSpec extends ManagementConsoleRpcSpecBase with DIDUt
       val did = generateDid(publicKey)
       createParticipant(issuerName, did)
 
-      val mockDIDSuffix = DID.buildPrismDID(SHA256Digest.compute("issuerDIDSuffix".getBytes()).hexValue, null).getSuffix
+      val mockDIDSuffix = PrismDid.fromString(SHA256Digest.compute("issuerDIDSuffix".getBytes()).hexValue).getSuffix
       val mockEncodedSignedCredential = "easdadgfkfñwlekrjfadf"
       val mockEncodedSignedCredentialHash = SHA256Digest.compute(mockEncodedSignedCredential.getBytes())
 

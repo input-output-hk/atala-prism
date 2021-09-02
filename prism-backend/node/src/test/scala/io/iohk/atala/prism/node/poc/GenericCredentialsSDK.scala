@@ -1,6 +1,6 @@
 package io.iohk.atala.prism.node.poc
 
-import io.iohk.atala.prism.kotlin.identity.{DID, DIDSuffix}
+import io.iohk.atala.prism.kotlin.identity.PrismDid
 import io.iohk.atala.prism.kotlin.credentials.content.CredentialContent
 import kotlinx.serialization.json.JsonElementKt.JsonPrimitive
 import kotlinx.serialization.json.JsonObject
@@ -13,20 +13,20 @@ import scala.jdk.CollectionConverters._
 // to build a degree credential
 object GenericCredentialsSDK {
 
-  private var issuerDIDUsed: DID = _
+  private var issuerPrismDidUsed: PrismDid = _
   private var keyIdUsed: String = ""
 
   def buildGenericCredential(
       credentialType: String,
-      issuerDID: DID,
+      issuerPrismDid: PrismDid,
       issuanceKeyId: String,
       claims: String
   ): CredentialContent = {
-    issuerDIDUsed = issuerDID
+    issuerPrismDidUsed = issuerPrismDid
     keyIdUsed = issuanceKeyId
     val fields = Map(
       "type" -> JsonPrimitive(credentialType),
-      "id" -> JsonPrimitive(s"did:prism:${issuerDID.getSuffix}"),
+      "id" -> JsonPrimitive(s"did:prism:${issuerPrismDid.getSuffix}"),
       "keyId" -> JsonPrimitive(issuanceKeyId),
       "credentialSubject" -> JsonPrimitive(claims)
     )
@@ -34,9 +34,9 @@ object GenericCredentialsSDK {
   }
 
   @nowarn("cat=unused-params")
-  def getIssuerDID(credential: String): String = issuerDIDUsed.getValue
+  def getIssuerPrismDid(credential: String): String = issuerPrismDidUsed.getValue
   @nowarn("cat=unused-params")
-  def getIssuerDIDSufix(credential: String): DIDSuffix = issuerDIDUsed.getSuffix
+  def getIssuerPrismDidSufix(credential: String): String = issuerPrismDidUsed.getSuffix
   @nowarn("cat=unused-params")
   def getKeyId(credential: String): String = keyIdUsed
 }

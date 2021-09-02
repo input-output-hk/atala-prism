@@ -9,7 +9,6 @@ import io.iohk.atala.prism.connector.AtalaOperationId
 import io.iohk.atala.prism.kotlin.credentials.{CredentialBatchId, TimestampInfo}
 import io.iohk.atala.prism.kotlin.crypto.MerkleRoot
 import io.iohk.atala.prism.kotlin.crypto.SHA256Digest
-import io.iohk.atala.prism.kotlin.identity.DIDSuffix
 import io.iohk.atala.prism.models.{BlockInfo, Ledger, TransactionId, TransactionInfo, TransactionStatus}
 import io.iohk.atala.prism.node.cardano.{LAST_SYNCED_BLOCK_NO, LAST_SYNCED_BLOCK_TIMESTAMP}
 import io.iohk.atala.prism.node.grpc.ProtoCodecs
@@ -134,7 +133,7 @@ object DataPreparation {
       .unsafeRunSync()
   }
 
-  def findByDidSuffix(didSuffix: DIDSuffix)(implicit xa: Transactor[IO]): DIDDataState = {
+  def findByDidSuffix(didSuffix: String)(implicit xa: Transactor[IO]): DIDDataState = {
     val query = for {
       maybeLastOperation <- DIDDataDAO.getLastOperation(didSuffix)
       keys <- PublicKeysDAO.findAll(didSuffix)
@@ -145,7 +144,7 @@ object DataPreparation {
       .unsafeRunSync()
   }
 
-  def findKey(didSuffix: DIDSuffix, keyId: String)(implicit xa: Transactor[IO]): Option[DIDPublicKeyState] = {
+  def findKey(didSuffix: String, keyId: String)(implicit xa: Transactor[IO]): Option[DIDPublicKeyState] = {
     PublicKeysDAO
       .find(didSuffix, keyId)
       .transact(xa)
@@ -159,7 +158,7 @@ object DataPreparation {
   def createBatch(
       batchId: CredentialBatchId,
       lastOperation: SHA256Digest,
-      issuerDIDSuffix: DIDSuffix,
+      issuerDIDSuffix: String,
       merkleRoot: MerkleRoot,
       issuedOn: LedgerData
   )(implicit database: Transactor[IO]): Unit = {

@@ -18,7 +18,7 @@ import io.iohk.atala.prism.connector.services.{
   RegistrationService
 }
 import io.iohk.atala.prism.kotlin.crypto.keys.ECPublicKey
-import io.iohk.atala.prism.kotlin.identity.DID
+import io.iohk.atala.prism.kotlin.identity.PrismDid
 import io.iohk.atala.prism.models.ParticipantId
 import io.iohk.atala.prism.protos.connector_api
 import io.iohk.atala.prism.{ApiTestHelper, DIDUtil, RpcSpecBase}
@@ -92,7 +92,7 @@ class ConnectorRpcSpecBase extends RpcSpecBase with DIDUtil {
       tpe: ParticipantType,
       logo: Option[ParticipantLogo] = None,
       publicKey: Option[ECPublicKey] = None,
-      did: Option[DID] = None,
+      did: Option[PrismDid] = None,
       operationId: Option[AtalaOperationId] = None
   ): ParticipantId = {
     val id = ParticipantId.random()
@@ -108,7 +108,7 @@ class ConnectorRpcSpecBase extends RpcSpecBase with DIDUtil {
   protected def createHolder(
       name: String,
       publicKey: Option[ECPublicKey] = None,
-      did: Option[DID] = None
+      did: Option[PrismDid] = None
   ): ParticipantId = {
     createParticipant(name, ParticipantType.Holder, publicKey = publicKey, did = did)
   }
@@ -116,7 +116,7 @@ class ConnectorRpcSpecBase extends RpcSpecBase with DIDUtil {
   protected def createIssuer(
       name: String,
       publicKey: Option[ECPublicKey] = None,
-      did: Option[DID] = None
+      did: Option[PrismDid] = None
   ): ParticipantId = {
     createParticipant(name, ParticipantType.Issuer, Some(ParticipantLogo(Vector(10.toByte, 5.toByte))), publicKey, did)
   }
@@ -124,7 +124,7 @@ class ConnectorRpcSpecBase extends RpcSpecBase with DIDUtil {
   protected def createVerifier(
       name: String,
       publicKey: Option[ECPublicKey] = None,
-      did: Option[DID] = None
+      did: Option[PrismDid] = None
   ): ParticipantId = {
     createParticipant(name, ParticipantType.Verifier, Some(ParticipantLogo(Vector(1.toByte, 3.toByte))), publicKey, did)
   }

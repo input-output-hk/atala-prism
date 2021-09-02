@@ -75,7 +75,7 @@ object UpdateDIDOperationSpec {
     operation = node_models.AtalaOperation.Operation.UpdateDid(
       value = node_models.UpdateDIDOperation(
         previousOperationHash = ByteString.copyFrom(createDidOperation.digest.getValue.toArray),
-        id = createDidOperation.id.getValue,
+        id = createDidOperation.id,
         actions = Seq(exampleAddKeyAction, exampleRemoveKeyAction)
       )
     )
@@ -85,7 +85,7 @@ object UpdateDIDOperationSpec {
     operation = node_models.AtalaOperation.Operation.UpdateDid(
       value = node_models.UpdateDIDOperation(
         previousOperationHash = ByteString.copyFrom(createDidOperation.digest.getValue.toArray),
-        id = createDidOperation.id.getValue,
+        id = createDidOperation.id,
         actions = Seq(exampleAddKeyActionWithCompressedKeys, exampleRemoveKeyAction)
       )
     )

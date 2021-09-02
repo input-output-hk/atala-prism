@@ -6,7 +6,7 @@ import doobie.implicits._
 import io.iohk.atala.prism.connector.model._
 import io.iohk.atala.prism.connector.repositories.daos.ParticipantsDAO
 import io.iohk.atala.prism.kotlin.crypto.{EC, SHA256Digest}
-import io.iohk.atala.prism.kotlin.identity.DID
+import io.iohk.atala.prism.kotlin.identity.PrismDid
 import io.iohk.atala.prism.models.ParticipantId
 import io.iohk.atala.prism.protos.connector_api.{RegisterDIDRequest, RegisterDIDResponse}
 import io.iohk.atala.prism.protos.node_api.{CreateDIDResponse, GetDidDocumentResponse}
@@ -42,7 +42,7 @@ class RegistrationRpcSpec extends ConnectorRpcSpecBase {
 
         nodeMock.createDID(*).returns {
           Future.successful(
-            CreateDIDResponse(expectedDID.getSuffix.getValue)
+            CreateDIDResponse(expectedDID.getSuffix)
               .withOperationId(operationId.toProtoByteString)
           )
         }
@@ -55,7 +55,7 @@ class RegistrationRpcSpec extends ConnectorRpcSpecBase {
       usingApiAs.unlogged { blockingStub =>
         val keyId = "key-1"
         val didKeyPair = EC.generateKeyPair()
-        val did: DID = DID.createUnpublishedDID(didKeyPair.getPublicKey, null).canonical
+        val did: PrismDid = PrismDid.buildCanonicalFromMasterKey(didKeyPair.getPublicKey)
         val name = "iohk"
         val logo = "none".getBytes()
         val request = connector_api
@@ -67,7 +67,7 @@ class RegistrationRpcSpec extends ConnectorRpcSpecBase {
         nodeMock.getDidDocument(*).returns {
           Future.successful(
             GetDidDocumentResponse(
-              DIDData(id = did.getSuffix.getValue, List(createNodePublicKey(keyId, didKeyPair.getPublicKey))).some
+              DIDData(id = did.getSuffix, List(createNodePublicKey(keyId, didKeyPair.getPublicKey))).some
             )
           )
         }
@@ -80,7 +80,7 @@ class RegistrationRpcSpec extends ConnectorRpcSpecBase {
       usingApiAs.unlogged { blockingStub =>
         val keyId = "key-1"
         val didKeyPair = EC.generateKeyPair()
-        val did: DID = DID.createUnpublishedDID(didKeyPair.getPublicKey, null).canonical
+        val did: PrismDid = PrismDid.buildCanonicalFromMasterKey(didKeyPair.getPublicKey)
         val name = "iohk"
         val participantId = ParticipantId.random()
         val participantRole = ParticipantType.Issuer
@@ -91,7 +91,7 @@ class RegistrationRpcSpec extends ConnectorRpcSpecBase {
         nodeMock.getDidDocument(*).returns {
           Future.successful(
             GetDidDocumentResponse(
-              DIDData(id = did.getSuffix.getValue, List(createNodePublicKey(keyId, didKeyPair.getPublicKey))).some
+              DIDData(id = did.getSuffix, List(createNodePublicKey(keyId, didKeyPair.getPublicKey))).some
             )
           )
         }
@@ -109,7 +109,7 @@ class RegistrationRpcSpec extends ConnectorRpcSpecBase {
     "fail when the user passed unpublished did" in {
       usingApiAs.unlogged { blockingStub =>
         val didKeyPair = EC.generateKeyPair()
-        val did = DID.createUnpublishedDID(didKeyPair.getPublicKey, null)
+        val did = PrismDid.buildLongFormFromMasterKey(didKeyPair.getPublicKey)
         val name = "iohk"
         val logo = "none".getBytes()
         val request = connector_api
@@ -127,7 +127,7 @@ class RegistrationRpcSpec extends ConnectorRpcSpecBase {
     "fail when user passed did which can't be found on the node" in {
       usingApiAs.unlogged { blockingStub =>
         val didKeyPair = EC.generateKeyPair()
-        val did: DID = DID.createUnpublishedDID(didKeyPair.getPublicKey, null).canonical
+        val did: PrismDid = PrismDid.buildLongFormFromMasterKey(didKeyPair.getPublicKey).asCanonical()
         val name = "iohk"
         val logo = "none".getBytes()
         val request = connector_api
@@ -149,8 +149,8 @@ class RegistrationRpcSpec extends ConnectorRpcSpecBase {
     "fail when user passed non-prism did" in {
       usingApiAs.unlogged { blockingStub =>
         val didKeyPair = EC.generateKeyPair()
-        val did: DID = DID.createUnpublishedDID(didKeyPair.getPublicKey, null).canonical
-        val strangeDid = s"did:blabla:${did.getSuffix.getValue}"
+        val did: PrismDid = PrismDid.buildLongFormFromMasterKey(didKeyPair.getPublicKey).asCanonical()
+        val strangeDid = s"did:blabla:${did.getSuffix}"
         val name = "iohk"
         val logo = "none".getBytes()
         val request = connector_api
@@ -191,8 +191,8 @@ class RegistrationRpcSpec extends ConnectorRpcSpecBase {
       usingApiAs.unlogged { blockingStub =>
         nodeMock.createDID(*).returns {
           Future.successful(
-            CreateDIDResponse(expectedDID.getSuffix.getValue)
-              .withOperationId(ByteString.copyFrom(operationId.toArray))
+            CreateDIDResponse(expectedDID.getSuffix)
+              .withOperationId(ByteString.copyFrom(operationId))
           )
         }
         val response1 = blockingStub.registerDID(request)
@@ -206,7 +206,7 @@ class RegistrationRpcSpec extends ConnectorRpcSpecBase {
   // to ensure proper storing of participant
   private def checkParticipantProperlyStored(
       response: RegisterDIDResponse,
-      expectedDid: DID,
+      expectedDid: PrismDid,
       expectedName: String,
       logo: Array[Byte],
       expectedOperationId: Option[AtalaOperationId]
@@ -231,7 +231,7 @@ class RegistrationRpcSpec extends ConnectorRpcSpecBase {
   }
 
   // to ensure that service didn't add participant
-  private def checkParticipantNotAdded(did: DID): Assertion = {
+  private def checkParticipantNotAdded(did: PrismDid): Assertion = {
     val result = ParticipantsDAO
       .findByDID(did)
       .transact(database)

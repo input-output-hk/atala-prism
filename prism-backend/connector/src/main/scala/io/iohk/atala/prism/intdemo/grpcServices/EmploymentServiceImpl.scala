@@ -130,7 +130,7 @@ object EmploymentServiceImpl {
     val employmentStatus = "Full-time"
     val employmentStartDate = LocalDate.now().minusMonths(1)
     val issuanceDate = LocalDate.now()
-    val issuanceKeyId = PrismDid.masterKeyId
+    val issuanceKeyId = PrismDid.getMASTER_KEY_ID
 
     val credentialHtml = employmentCredentialHtmlTemplate(
       EmploymentCredentialHtmlTemplateData(

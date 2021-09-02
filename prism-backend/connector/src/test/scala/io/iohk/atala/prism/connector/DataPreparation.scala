@@ -9,22 +9,22 @@ import io.iohk.atala.prism.kotlin.credentials.CredentialBatchId
 import io.iohk.atala.prism.kotlin.crypto.{EC, SHA256Digest}
 import io.iohk.atala.prism.kotlin.crypto.keys.ECPublicKey
 import io.iohk.atala.prism.daos.BaseDAO
-import io.iohk.atala.prism.kotlin.identity.DID
+import io.iohk.atala.prism.kotlin.identity.PrismDid
 import io.iohk.atala.prism.models.ParticipantId
 
 object DataPreparation extends BaseDAO {
 
   import connectorDaos._
 
-  def newDID(): DID = {
-    DID.createUnpublishedDID(EC.generateKeyPair().getPublicKey, null).canonical
+  def newDID(): PrismDid = {
+    PrismDid.buildLongFormFromMasterKey(EC.generateKeyPair().getPublicKey).asCanonical()
   }
 
   def createIssuer(
       name: String = "Issuer",
       tag: String = "",
       publicKey: Option[ECPublicKey] = None,
-      did: Option[DID] = None
+      did: Option[PrismDid] = None
   )(implicit
       database: Transactor[IO]
   ): ParticipantId = {

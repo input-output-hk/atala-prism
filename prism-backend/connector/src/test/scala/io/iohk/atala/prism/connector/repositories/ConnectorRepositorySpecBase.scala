@@ -7,7 +7,7 @@ import io.iohk.atala.prism.kotlin.crypto.EC
 import io.iohk.atala.prism.kotlin.crypto.keys.ECPublicKey
 import io.iohk.atala.prism.connector.model._
 import io.iohk.atala.prism.connector.repositories.daos._
-import io.iohk.atala.prism.kotlin.identity.DID
+import io.iohk.atala.prism.kotlin.identity.PrismDid
 import io.iohk.atala.prism.models.ParticipantId
 import io.iohk.atala.prism.AtalaWithPostgresSpec
 import io.iohk.atala.prism.connector.DataPreparation
@@ -17,7 +17,7 @@ trait ConnectorRepositorySpecBase extends AtalaWithPostgresSpec {
   protected def createParticipant(
       tpe: ParticipantType,
       name: String,
-      did: DID,
+      did: PrismDid,
       publicKey: Option[ECPublicKey],
       logo: Option[ParticipantLogo]
   ): ParticipantId = {
@@ -30,7 +30,7 @@ trait ConnectorRepositorySpecBase extends AtalaWithPostgresSpec {
   protected def createIssuer(
       name: String = "Issuer",
       logo: Option[ParticipantLogo] = None,
-      did: DID = DataPreparation.newDID()
+      did: PrismDid = DataPreparation.newDID()
   ): ParticipantId = {
     createParticipant(
       ParticipantType.Issuer,
@@ -44,7 +44,7 @@ trait ConnectorRepositorySpecBase extends AtalaWithPostgresSpec {
   protected def createHolder(
       name: String = "Holder",
       publicKey: Option[ECPublicKey] = None,
-      did: DID = DataPreparation.newDID()
+      did: PrismDid = DataPreparation.newDID()
   ): ParticipantId = {
     createParticipant(
       ParticipantType.Holder,
@@ -59,7 +59,7 @@ trait ConnectorRepositorySpecBase extends AtalaWithPostgresSpec {
     createParticipant(
       ParticipantType.Verifier,
       name,
-      DID.createUnpublishedDID(EC.generateKeyPair().getPublicKey, null),
+      PrismDid.buildLongFormFromMasterKey(EC.generateKeyPair().getPublicKey),
       None,
       logo
     )

@@ -11,7 +11,7 @@ import io.iohk.atala.prism.connector.AtalaOperationId
 import io.iohk.atala.prism.kotlin.credentials.CredentialBatchId
 import io.iohk.atala.prism.kotlin.crypto.{EC, MerkleInclusionProof, SHA256Digest}
 import io.iohk.atala.prism.kotlin.crypto.signature.ECSignature
-import io.iohk.atala.prism.kotlin.identity.DID
+import io.iohk.atala.prism.kotlin.identity.PrismDid
 import io.iohk.atala.prism.management.console.models._
 import io.iohk.atala.prism.management.console.repositories.daos.ReceivedCredentialsDAO.ReceivedSignedCredentialData
 import io.iohk.atala.prism.management.console.repositories.daos._
@@ -30,7 +30,7 @@ object DataPreparation {
 
   def createParticipant(
       name: String,
-      did: DID
+      did: PrismDid
   )(implicit
       database: Transactor[IO]
   ): ParticipantId = {
@@ -202,8 +202,8 @@ object DataPreparation {
     ReceivedCredentialsDAO.insertSignedCredential(request).transact(database).unsafeRunSync()
   }
 
-  def newDID(): DID = {
-    DID.createUnpublishedDID(EC.generateKeyPair().getPublicKey, null).canonical
+  def newDID(): PrismDid = {
+    PrismDid.buildCanonicalFromMasterKey(EC.generateKeyPair().getPublicKey)
   }
 
   def publishCredential(

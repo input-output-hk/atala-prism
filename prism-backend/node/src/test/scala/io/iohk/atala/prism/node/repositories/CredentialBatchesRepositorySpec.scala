@@ -4,7 +4,6 @@ import io.iohk.atala.prism.AtalaWithPostgresSpec
 import io.iohk.atala.prism.kotlin.credentials.{CredentialBatchId, TimestampInfo}
 import io.iohk.atala.prism.kotlin.crypto.MerkleRoot
 import io.iohk.atala.prism.kotlin.crypto.SHA256Digest
-import io.iohk.atala.prism.kotlin.identity.DIDSuffix
 import io.iohk.atala.prism.models.{Ledger, TransactionId}
 import io.iohk.atala.prism.node.models.nodeState.{CredentialBatchState, LedgerData}
 import org.scalatest.OptionValues._
@@ -47,7 +46,7 @@ class CredentialBatchesRepositorySpec extends AtalaWithPostgresSpec {
         randomRevocationTime
       )
 
-      val randomIssuerDIDSuffix = DIDSuffix.fromDigest(SHA256Digest.compute("did".getBytes()))
+      val randomIssuerDIDSuffix = SHA256Digest.compute("did".getBytes()).hexValue()
       val randomLastOperation = SHA256Digest.compute("lastOperation".getBytes())
       val randomMerkleRoot = new MerkleRoot(SHA256Digest.compute("merkleRoot".getBytes()))
       val randomIssuedOnTime = LedgerData(
@@ -96,7 +95,7 @@ class CredentialBatchesRepositorySpec extends AtalaWithPostgresSpec {
 
     "return proper data when there is non-revoked batch data" in {
       val randomBatchId = CredentialBatchId.random()
-      val randomIssuerDIDSuffix = DIDSuffix.fromDigest(SHA256Digest.compute("did".getBytes()))
+      val randomIssuerDIDSuffix = SHA256Digest.compute("did".getBytes()).hexValue()
       val randomLastOperation = SHA256Digest.compute("lastOperation".getBytes())
       val randomMerkleRoot = new MerkleRoot(SHA256Digest.compute("merkleRoot".getBytes()))
       val randomIssuedOnLedgerData = LedgerData(
@@ -133,7 +132,7 @@ class CredentialBatchesRepositorySpec extends AtalaWithPostgresSpec {
 
     "return proper data when the batch was revoked" in {
       val randomBatchId = CredentialBatchId.random()
-      val randomIssuerDIDSuffix = DIDSuffix.fromDigest(SHA256Digest.compute("did".getBytes()))
+      val randomIssuerDIDSuffix = SHA256Digest.compute("did".getBytes()).hexValue()
       val randomLastOperation = SHA256Digest.compute("lastOperation".getBytes())
       val randomMerkleRoot = new MerkleRoot(SHA256Digest.compute("merkleRoot".getBytes()))
       val randomIssuedOnLedgerData = dummyLedgerData
@@ -176,7 +175,7 @@ class CredentialBatchesRepositorySpec extends AtalaWithPostgresSpec {
 }
 
 object CredentialBatchesRepositorySpec {
-  private def registerDID(didSuffix: DIDSuffix)(implicit database: Transactor[IO]): Unit = {
+  private def registerDID(didSuffix: String)(implicit database: Transactor[IO]): Unit = {
     val lastOperation = SHA256Digest.compute("a random did create operation".getBytes())
     val dummyTimestampInfo = new TimestampInfo(Instant.ofEpochMilli(0).toEpochMilli, 1, 0)
     val dummyLedgerData = LedgerData(

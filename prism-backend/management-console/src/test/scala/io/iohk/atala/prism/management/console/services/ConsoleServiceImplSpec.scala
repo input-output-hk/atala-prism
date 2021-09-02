@@ -6,7 +6,7 @@ import io.grpc.{Status, StatusRuntimeException}
 import io.iohk.atala.prism.DIDUtil
 import io.iohk.atala.prism.auth.SignedRpcRequest
 import io.iohk.atala.prism.connector.AtalaOperationId
-import io.iohk.atala.prism.kotlin.identity.DID
+import io.iohk.atala.prism.kotlin.identity.PrismDid
 import io.iohk.atala.prism.kotlin.crypto.EC
 import io.iohk.atala.prism.logging.TraceId
 import io.iohk.atala.prism.management.console.DataPreparation._
@@ -173,12 +173,12 @@ class ConsoleServiceImplSpec extends ManagementConsoleRpcSpecBase with DIDUtil {
   }
 
   "registerDID" should {
-    def doTest(did: DID, operationId: AtalaOperationId, request: console_api.RegisterConsoleDIDRequest) = {
+    def doTest(did: PrismDid, operationId: AtalaOperationId, request: console_api.RegisterConsoleDIDRequest) = {
       usingApiAsConsole.unlogged { serviceStub =>
         nodeMock.createDID(*).returns {
           Future.successful(
             node_api
-              .CreateDIDResponse(did.getSuffix.getValue)
+              .CreateDIDResponse(did.getSuffix)
               .withOperationId(operationId.toProtoByteString)
           )
         }

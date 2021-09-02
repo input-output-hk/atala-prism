@@ -144,7 +144,7 @@ object IdServiceImpl {
     val issuanceDate = LocalDate.now()
     val expirationDate = issuanceDate.plusYears(10)
     val issuerDID = s"did:prism:${issuerId.uuid}"
-    val issuanceKeyId = PrismDid.masterKeyId
+    val issuanceKeyId = PrismDid.getMASTER_KEY_ID
 
     val credentialHtml = idCredentialHtmlTemplate(
       IdCredentialHtmlTemplateData(

@@ -33,7 +33,7 @@ object SignedRpcRequest {
       nonce = requestNonce,
       signature = signature,
       did = did,
-      keyId = masterKeyId,
+      keyId = PrismDid.getMASTER_KEY_ID,
       request = request
     )
   }

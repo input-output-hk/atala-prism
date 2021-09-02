@@ -110,7 +110,7 @@ object ConnectorClient {
         val signedRequest = requestAuthenticator.signConnectorRequest(request.toByteArray, config.didPrivateKey)
         PublishedDIDBased(
           did = PrismDid.fromString(config.whitelistedDID.getValue),
-          keyId = masterKeyId,
+          keyId = PrismDid.getMASTER_KEY_ID,
           requestNonce = RequestNonce(signedRequest.encodedRequestNonce.getBytes.toVector),
           signature = new ECSignature(signedRequest.encodedSignature.getBytes)
         )

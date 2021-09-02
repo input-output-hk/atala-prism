@@ -2,7 +2,7 @@ package io.iohk.atala.prism.node.cardano.models
 
 import com.google.protobuf.ByteString
 import io.circe.{Json, parser}
-import io.iohk.atala.prism.kotlin.identity.DID.masterKeyId
+import io.iohk.atala.prism.kotlin.identity.PrismDid
 import io.iohk.atala.prism.node.cardano.models.AtalaObjectMetadata.METADATA_PRISM_INDEX
 import io.iohk.atala.prism.protos.{node_internal, node_models}
 import org.scalatest.OptionValues._
@@ -17,7 +17,7 @@ class AtalaObjectMetadataSpec extends AnyWordSpec {
         version = "1",
         operations = List(
           node_models.SignedAtalaOperation(
-            signedWith = masterKeyId,
+            signedWith = PrismDid.getMASTER_KEY_ID,
             signature = ByteString.copyFrom("Fake signature bytes".getBytes),
             operation = Some(
               node_models.AtalaOperation(operation =
@@ -28,7 +28,7 @@ class AtalaObjectMetadataSpec extends AnyWordSpec {
                         node_models.DIDData(
                           id = "master-did",
                           publicKeys =
-                            List(node_models.PublicKey(id = masterKeyId, usage = node_models.KeyUsage.MASTER_KEY))
+                            List(node_models.PublicKey(id = PrismDid.getMASTER_KEY_ID, usage = node_models.KeyUsage.MASTER_KEY))
                         )
                       )
                     )

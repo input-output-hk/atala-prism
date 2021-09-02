@@ -2,14 +2,14 @@ package io.iohk.atala.prism.management.console
 
 import io.iohk.atala.prism.auth.SignedRpcRequest
 import io.iohk.atala.prism.kotlin.crypto.keys.ECKeyPair
-import io.iohk.atala.prism.kotlin.identity.DID
+import io.iohk.atala.prism.kotlin.identity.PrismDid
 import io.iohk.atala.prism.management.console.models.{Contact, GenericCredential}
 import io.iohk.atala.prism.protos.console_api
 
 trait ManagementConsoleTestUtil {
   self: ManagementConsoleRpcSpecBase =>
 
-  def checkContactExists(keyPair: ECKeyPair, did: DID, contact: Contact): Boolean = {
+  def checkContactExists(keyPair: ECKeyPair, did: PrismDid, contact: Contact): Boolean = {
     val getRequest = console_api.GetContactRequest(
       contactId = contact.contactId.toString
     )
@@ -23,7 +23,7 @@ trait ManagementConsoleTestUtil {
 
   def checkCredentialExists(
       keyPair: ECKeyPair,
-      did: DID,
+      did: PrismDid,
       contact: Contact,
       credential: GenericCredential
   ): Boolean = {

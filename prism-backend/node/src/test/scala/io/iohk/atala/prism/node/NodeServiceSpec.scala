@@ -11,8 +11,7 @@ import io.iohk.atala.prism.connector.AtalaOperationId
 import io.iohk.atala.prism.kotlin.credentials.{CredentialBatchId, TimestampInfo}
 import io.iohk.atala.prism.kotlin.crypto.MerkleRoot
 import io.iohk.atala.prism.kotlin.crypto.SHA256Digest
-import io.iohk.atala.prism.kotlin.identity.DID.masterKeyId
-import io.iohk.atala.prism.kotlin.identity.{DID, DIDSuffix}
+import io.iohk.atala.prism.kotlin.identity.PrismDid
 import io.iohk.atala.prism.models.{Ledger, TransactionId}
 import io.iohk.atala.prism.node.errors.NodeError
 import io.iohk.atala.prism.node.grpc.ProtoCodecs
@@ -105,16 +104,16 @@ class NodeServiceSpec
   "NodeService.getDidDocument" should {
     "return DID document from data in the database" in {
       val didDigest = SHA256Digest.compute("test".getBytes())
-      val didSuffix: DIDSuffix = DIDSuffix.fromDigest(didDigest)
+      val didSuffix: String = didDigest.hexValue()
       DIDDataDAO.insert(didSuffix, didDigest, dummyLedgerData).transact(database).unsafeRunSync()
       val key = DIDPublicKey(didSuffix, "master", KeyUsage.MasterKey, CreateDIDOperationSpec.masterKeys.getPublicKey)
       PublicKeysDAO.insert(key, dummyLedgerData).transact(database).unsafeRunSync()
 
       doReturn(Future.successful(dummySyncTimestamp)).when(objectManagementService).getLastSyncedTimestamp
 
-      val response = service.getDidDocument(node_api.GetDidDocumentRequest(s"did:prism:${didSuffix.getValue}"))
+      val response = service.getDidDocument(node_api.GetDidDocumentRequest(s"did:prism:${didSuffix}"))
       val document = response.document.value
-      document.id mustBe didSuffix.getValue
+      document.id mustBe didSuffix
       document.publicKeys.size mustBe 1
 
       val publicKey = document.publicKeys.headOption.value
@@ -130,16 +129,16 @@ class NodeServiceSpec
 
     "return DID document for an unpublished DID" in {
       val masterKey = CreateDIDOperationSpec.masterKeys.getPublicKey
-      val longFormDID = DID.createUnpublishedDID(masterKey, null)
+      val longFormDID = PrismDid.buildLongFormFromMasterKey(masterKey)
       doReturn(Future.successful(dummySyncTimestamp)).when(objectManagementService).getLastSyncedTimestamp
 
       val response = service.getDidDocument(node_api.GetDidDocumentRequest(longFormDID.getValue))
       val document = response.document.value
-      document.id mustBe longFormDID.getSuffix.getValue
+      document.id mustBe longFormDID.getSuffix
       document.publicKeys.size mustBe 1
 
       val publicKey = document.publicKeys.headOption.value
-      publicKey.id mustBe masterKeyId
+      publicKey.id mustBe PrismDid.getMASTER_KEY_ID
       publicKey.usage mustBe node_models.KeyUsage.MASTER_KEY
       publicKey.addedOn mustBe empty
       publicKey.revokedOn mustBe empty
@@ -151,12 +150,12 @@ class NodeServiceSpec
     "return DID document for a long form DID after it was published" in {
       val masterKey = CreateDIDOperationSpec.masterKeys.getPublicKey
       val issuingKey = CreateDIDOperationSpec.issuingKeys.getPublicKey
-      val longFormDID = DID.createUnpublishedDID(masterKey, null)
+      val longFormDID = PrismDid.buildLongFormFromMasterKey(masterKey)
 
       // we simulate the publication of the DID and the addition of an issuing key
-      val didDigest = SHA256Digest.fromHex(longFormDID.getCanonicalSuffix.getValue)
-      val didSuffix: DIDSuffix = DIDSuffix.fromDigest(didDigest)
-      val key1 = DIDPublicKey(didSuffix, masterKeyId, KeyUsage.MasterKey, masterKey)
+      val didDigest = SHA256Digest.fromHex(longFormDID.asCanonical().getSuffix)
+      val didSuffix: String = didDigest.hexValue()
+      val key1 = DIDPublicKey(didSuffix, PrismDid.getMASTER_KEY_ID, KeyUsage.MasterKey, masterKey)
       val key2 = DIDPublicKey(didSuffix, "issuance0", KeyUsage.IssuingKey, issuingKey)
 
       (DIDDataDAO.insert(didSuffix, didDigest, dummyLedgerData).transact(database) >>
@@ -168,10 +167,10 @@ class NodeServiceSpec
       // we now resolve the long form DID
       val response = service.getDidDocument(node_api.GetDidDocumentRequest(longFormDID.getValue))
       val document = response.document.value
-      document.id mustBe longFormDID.getSuffix.getValue
+      document.id mustBe longFormDID.getSuffix
       document.publicKeys.length mustBe 2
 
-      val publicKey1 = document.publicKeys.find(_.id == masterKeyId).value
+      val publicKey1 = document.publicKeys.find(_.id == PrismDid.getMASTER_KEY_ID).value
       publicKey1.usage mustBe node_models.KeyUsage.MASTER_KEY
       publicKey1.addedOn.value mustBe ProtoCodecs.toLedgerData(dummyLedgerData)
       publicKey1.revokedOn mustBe empty
@@ -188,12 +187,12 @@ class NodeServiceSpec
 
     "return DID document for a long form DID with revoked key after it was published" in {
       val masterKey = CreateDIDOperationSpec.masterKeys.getPublicKey
-      val longFormDID = DID.createUnpublishedDID(masterKey, null)
+      val longFormDID = PrismDid.buildLongFormFromMasterKey(masterKey)
 
       // we simulate the publication of the DID and the addition of an issuing key
-      val didDigest = SHA256Digest.fromHex(longFormDID.getCanonicalSuffix.getValue)
-      val didSuffix = DIDSuffix.fromDigest(didDigest)
-      val key = DIDPublicKey(didSuffix, masterKeyId, KeyUsage.MasterKey, masterKey)
+      val didDigest = SHA256Digest.fromHex(longFormDID.asCanonical().getSuffix)
+      val didSuffix = didDigest.hexValue()
+      val key = DIDPublicKey(didSuffix, PrismDid.getMASTER_KEY_ID, KeyUsage.MasterKey, masterKey)
 
       (DIDDataDAO.insert(didSuffix, didDigest, dummyLedgerData).transact(database) >>
         PublicKeysDAO.insert(key, dummyLedgerData).transact(database) >>
@@ -204,10 +203,10 @@ class NodeServiceSpec
       // we now resolve the long form DID
       val response = service.getDidDocument(node_api.GetDidDocumentRequest(longFormDID.getValue))
       val document = response.document.value
-      document.id mustBe longFormDID.getSuffix.getValue
+      document.id mustBe longFormDID.getSuffix
       document.publicKeys.length mustBe 1
 
-      val publicKey = document.publicKeys.find(_.id == masterKeyId).value
+      val publicKey = document.publicKeys.find(_.id == PrismDid.getMASTER_KEY_ID).value
       publicKey.usage mustBe node_models.KeyUsage.MASTER_KEY
       publicKey.addedOn.value mustBe ProtoCodecs.toLedgerData(dummyLedgerData)
       publicKey.revokedOn mustBe Some(ProtoCodecs.toLedgerData(dummyLedgerData))
@@ -544,7 +543,7 @@ class NodeServiceSpec
       val validBatchId = CredentialBatchId.fromDigest(SHA256Digest.compute("valid".getBytes()))
       val requestWithValidId = GetBatchStateRequest(batchId = validBatchId.getId)
 
-      val issuerDIDSuffix: DIDSuffix = DIDSuffix.fromDigest(SHA256Digest.compute("testDID".getBytes()))
+      val issuerDIDSuffix: String = SHA256Digest.compute("testDID".getBytes()).hexValue()
       val issuedOnLedgerData = dummyLedgerData
       val merkleRoot = new MerkleRoot(SHA256Digest.compute("content".getBytes()))
       val credState =
@@ -579,7 +578,7 @@ class NodeServiceSpec
       doReturn(repositoryResponse).when(credentialBatchesRepository).getBatchState(validBatchId)
 
       val response = service.getBatchState(requestWithValidId)
-      response.issuerDid must be(issuerDIDSuffix.getValue)
+      response.issuerDid must be(issuerDIDSuffix)
       response.merkleRoot.toByteArray.toVector must be(merkleRoot.getHash.getValue)
       response.publicationLedgerData must be(Some(ledgerDataProto))
       response.revocationLedgerData must be(empty)

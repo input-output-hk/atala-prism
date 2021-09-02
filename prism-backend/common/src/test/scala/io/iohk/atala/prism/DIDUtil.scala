@@ -29,7 +29,7 @@ trait DIDUtil {
 
   def generateDid(masterPublicKey: ECPublicKey): PrismDid = {
     val publicKey = node_models.PublicKey(
-      id = masterKeyId,
+      id = PrismDid.getMASTER_KEY_ID,
       usage = node_models.KeyUsage.MASTER_KEY,
       keyData = node_models.PublicKey.KeyData.EcKeyData(
         publicKeyToProto(masterPublicKey)

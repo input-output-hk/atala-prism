@@ -11,7 +11,7 @@ import io.iohk.atala.prism.intdemo.InsuranceServiceImpl.RequiredInsuranceData
 import io.iohk.atala.prism.intdemo.InsuranceServiceImpl.getInsuranceCredential
 import io.iohk.atala.prism.intdemo.InsuranceServiceImpl.getRequiredInsuranceData
 import io.iohk.atala.prism.intdemo.InsuranceServiceImpl.requestIdAndEmploymentCredentials
-import io.iohk.atala.prism.intdemo.SharedCredentials.formatDate
+import io.iohk.atala.prism.intdemo.SharedCredentials.{formatDate, jsonPrinter}
 import io.iohk.atala.prism.intdemo.html.HealthCredential
 import io.iohk.atala.prism.intdemo.protos.intdemo_api
 import io.iohk.atala.prism.models.ParticipantId
@@ -146,7 +146,7 @@ object InsuranceServiceImpl {
       credentialHtml = credentialHtml,
       issuerName = issuerName,
       issuerDID = s"did:prism:${issuerId.uuid}",
-      issuanceKeyId = PrismDid.masterKeyId,
+      issuanceKeyId = PrismDid.getMASTER_KEY_ID,
       issuanceDate = issuanceDate,
       expirationDate = expirationDate,
       policyNumber = policyNumber,

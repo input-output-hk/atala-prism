@@ -8,7 +8,7 @@ import org.scalatest.OptionValues._
 import org.scalatest.flatspec.AnyFlatSpec
 import org.scalatest.matchers.should.Matchers._
 import io.iohk.atala.prism.utils.Base64Utils
-import io.iohk.atala.prism.kotlin.identity.DID
+import io.iohk.atala.prism.kotlin.identity.PrismDid
 
 class DegreeServiceImplSpec extends AnyFlatSpec {
 
@@ -29,7 +29,7 @@ class DegreeServiceImplSpec extends AnyFlatSpec {
     val issuanceDate = LocalDate.now()
     val holderName = name
     val graduationDate = dateOfBirth.plusYears(20)
-    val issuanceKeyId = DID.masterKeyId
+    val issuanceKeyId = PrismDid.getMASTER_KEY_ID
     val credentialType = DegreeServiceImpl.credentialTypeId
     val holderDateOfBirth = dateOfBirth
 
