@@ -24,6 +24,18 @@ object OperationsCounters {
   private val NODE_ERROR_TAG = "node-error"
   private val STATE_ERROR_TAG = "state-error"
 
+  //Values for operations tags
+  private val EMPTY_OPERATION_TAG_VALUE = "empty"
+  private val REVOKE_CREDENTIALS_TAG_VALUE = "revoke-credentials"
+  private val CREATE_DID_TAG_VALUE = "create-did"
+  private val ISSUE_CREDENTIAL_BATCH_TAG_VALUE = "issue-credential-batch"
+  private val UPDATE_DID_OPERATION_TAG_VALUE = "did-update"
+
+  //Values for atala update did operations
+  private val EMPTY_ACTION_TAG_VALUE = "empty-did-update"
+  private val ADD_KEY_ACTION_TAG_VALUE = "add-key"
+  private val REMOVE_KEY_ACTION_TAG_VALUE = "remove-key"
+
   private lazy val sentObjectsCounter: Metric.Counter = Kamon.counter(SENT_OPERATION_METRIC_NAME)
   private lazy val failedToSendObjectsCounter = Kamon.counter(FAILED_TO_SEND_OPERATION_METRIC_NAME)
   private lazy val processedBlocksCounter = Kamon.counter(PROCESSED_BLOCKS_METRIC_NAME)
@@ -90,7 +102,7 @@ object OperationsCounters {
       counter: Metric.Counter,
       tagSetBuilder: TagSet.Builder
   ): Unit = {
-    val updateOperationTag = tagSetBuilder.add(OPERATION_TAG, "update-did")
+    val updateOperationTag = tagSetBuilder.add(OPERATION_TAG, UPDATE_DID_OPERATION_TAG_VALUE)
     actions
       .map(updateDidAction => atalaUpdateDidActionToTag(updateDidAction.action))
       .groupBy(identity)
@@ -115,18 +127,18 @@ object OperationsCounters {
   }
 
   private def atalaOperationToTagString: PartialFunction[AtalaOperation.Operation, String] = {
-    case AtalaOperation.Operation.Empty => "empty"
-    case AtalaOperation.Operation.RevokeCredentials(_) => "revoke-credentials"
-    case AtalaOperation.Operation.CreateDid(_) => "create-did"
-    case AtalaOperation.Operation.IssueCredentialBatch(_) => "issue-credential-batch"
+    case AtalaOperation.Operation.Empty => EMPTY_OPERATION_TAG_VALUE
+    case AtalaOperation.Operation.RevokeCredentials(_) => REVOKE_CREDENTIALS_TAG_VALUE
+    case AtalaOperation.Operation.CreateDid(_) => CREATE_DID_TAG_VALUE
+    case AtalaOperation.Operation.IssueCredentialBatch(_) => ISSUE_CREDENTIAL_BATCH_TAG_VALUE
     // Just in case, must be impossible
-    case AtalaOperation.Operation.UpdateDid(_) => "update-did"
+    case AtalaOperation.Operation.UpdateDid(_) => UPDATE_DID_OPERATION_TAG_VALUE
   }
 
   private def atalaUpdateDidActionToTag: PartialFunction[UpdateDIDAction.Action, String] = {
-    case Action.Empty => "empty-did-update"
-    case Action.AddKey(_) => "add-key"
-    case Action.RemoveKey(_) => "remove-key"
+    case Action.Empty => EMPTY_ACTION_TAG_VALUE
+    case Action.AddKey(_) => ADD_KEY_ACTION_TAG_VALUE
+    case Action.RemoveKey(_) => REMOVE_KEY_ACTION_TAG_VALUE
   }
 
 }
