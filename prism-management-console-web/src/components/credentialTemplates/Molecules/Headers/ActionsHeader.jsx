@@ -1,33 +1,36 @@
-import React from 'react';
+import React, { useContext } from 'react';
 import PropTypes from 'prop-types';
+import { observer } from 'mobx-react-lite';
 import { Badge, Dropdown, Menu } from 'antd';
 import { FilterOutlined } from '@ant-design/icons';
 import { useTranslation } from 'react-i18next';
 import TemplateFilters from '../Filters/TemplateFilters';
 import SearchBar from '../../../common/Atoms/SearchBar/SearchBar';
 import CreateTemplateButton from '../../Atoms/Buttons/CreateTemplateButton';
-import { templateCategoryShape, templateFiltersShape } from '../../../../helpers/propShapes';
+import { templateCategoryShape } from '../../../../helpers/propShapes';
+import { UiStateContext } from '../../../../stores/ui/UiState';
 import './_style.scss';
 
-const ActionsHeader = ({ filterProps, templateCategories }) => {
+const ActionsHeader = observer(({ templateCategories }) => {
   const { t } = useTranslation();
-  const hasFiltersApplied = filterProps.category || filterProps.lastEdited;
+  const { templateUiState } = useContext(UiStateContext);
+  const { nameFilter, setFilterValue, hasAditionalFiltersApplied } = templateUiState;
 
   const filtersMenu = (
     <Menu className="FiltersMenuContainer">
-      <TemplateFilters filterProps={filterProps} templateCategories={templateCategories} />
+      <TemplateFilters templateCategories={templateCategories} />
     </Menu>
   );
 
   return (
     <div className="ActionsHeader flex">
       <SearchBar
-        searchText={filterProps.name}
-        setSearchText={filterProps.setName}
+        searchText={nameFilter}
+        setSearchText={value => setFilterValue('nameFilter', value)}
         placeholder={t('templates.actions.searchPlaceholder')}
       />
       <CreateTemplateButton />
-      <Badge dot={hasFiltersApplied} style={{ top: '1em', right: '1em', zIndex: 500 }}>
+      <Badge dot={hasAditionalFiltersApplied} style={{ top: '1em', right: '1em', zIndex: 500 }}>
         <Dropdown.Button
           overlay={filtersMenu}
           trigger={['click']}
@@ -37,11 +40,10 @@ const ActionsHeader = ({ filterProps, templateCategories }) => {
       </Badge>
     </div>
   );
-};
+});
 
 ActionsHeader.propTypes = {
-  templateCategories: PropTypes.arrayOf(templateCategoryShape).isRequired,
-  filterProps: PropTypes.shape(templateFiltersShape).isRequired
+  templateCategories: PropTypes.arrayOf(templateCategoryShape).isRequired
 };
 
 export default ActionsHeader;

@@ -248,9 +248,9 @@ export const CONTACT_SORTING_KEYS = {
 
 // Templates
 export const TEMPLATES_SORTING_KEYS = {
-  name: 'NAME',
-  category: 'CATEGORY',
-  lastEdited: 'LAST_EDITED'
+  name: 'name',
+  category: 'category',
+  lastEdited: 'lastEdited'
 };
 
 // Sorting directions

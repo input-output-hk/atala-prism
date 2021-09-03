@@ -57,8 +57,8 @@ export const placeholders = {
   text: '{{text}}'
 };
 
-export const configureHtmlTemplate = (tempalteId, currentConfig) => {
-  const htmlTemplate = templateLayouts[tempalteId];
+export const configureHtmlTemplate = (templateId, currentConfig) => {
+  const htmlTemplate = templateLayouts[templateId];
   const configuredHeader = updateHeader(htmlTemplate, currentConfig);
   const configuredBody = updateBody(htmlTemplate, currentConfig);
   const mergedHtml = replacePlaceholdersFromObject(

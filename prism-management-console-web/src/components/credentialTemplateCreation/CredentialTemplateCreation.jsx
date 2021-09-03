@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useContext } from 'react';
 import PropTypes from 'prop-types';
 import { useTranslation } from 'react-i18next';
 import { message } from 'antd';
@@ -12,7 +12,7 @@ import {
 } from '../../helpers/constants';
 import { withRedirector } from '../providers/withRedirector';
 import { useTemplateContext } from '../providers/TemplateContext';
-import { useMockDataContext } from '../providers/MockDataProvider';
+import { PrismStoreContext } from '../../stores/domain/PrismStore';
 import './_style.scss';
 
 const fieldsByStep = {
@@ -34,7 +34,7 @@ const CredentialTemplateCreation = ({
 }) => {
   const { t } = useTranslation();
   const { form, templateSettings, templatePreview } = useTemplateContext();
-  const { mockDataDispatch } = useMockDataContext();
+  const { addCredentialTemplate } = useContext(PrismStoreContext).templateStore;
 
   const validateByStep = () =>
     form.validateFields().catch(({ errorFields }) => {
@@ -60,10 +60,7 @@ const CredentialTemplateCreation = ({
       template: templatePreview,
       category: parseInt(templateSettings?.category, 10)
     };
-    mockDataDispatch({
-      type: 'ADD_MOCK_CREDENTIAL_TEMPLATE',
-      payload: { newTemplate }
-    });
+    addCredentialTemplate(newTemplate);
     advanceStep();
   };
 

@@ -21,7 +21,7 @@ const CredentialTemplates = ({ tableProps }) => {
   const [currentTemplate, setCurrentTemplate] = useState(false);
   const [showDrawer, setShowDrawer] = useState(false);
 
-  const { templateCategories, filterProps } = tableProps;
+  const { templateCategories } = tableProps;
 
   const handleShowTemplatePreview = template => {
     setCurrentTemplate(template);
@@ -35,9 +35,7 @@ const CredentialTemplates = ({ tableProps }) => {
         <div>
           <h1>{t('templates.title')}</h1>
         </div>
-        {accountStatus === CONFIRMED && (
-          <ActionsHeader filterProps={filterProps} templateCategories={templateCategories} />
-        )}
+        {accountStatus === CONFIRMED && <ActionsHeader templateCategories={templateCategories} />}
       </div>
       <TemplatesTableContainer
         tableProps={tableProps}
@@ -56,7 +54,7 @@ const CredentialTemplates = ({ tableProps }) => {
 
 CredentialTemplates.propTypes = {
   tableProps: PropTypes.shape({
-    credentialTypes: PropTypes.arrayOf(credentialTypeShape),
+    CredentialTemplates: PropTypes.arrayOf(credentialTypeShape),
     templateCategories: PropTypes.arrayOf(templateCategoryShape),
     isLoading: PropTypes.bool,
     filterProps: PropTypes.shape(templateFiltersShape),
