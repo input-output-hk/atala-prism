@@ -10,14 +10,10 @@ import derevo.tagless.applyK
 import derevo.derive
 import io.grpc.stub.MetadataUtils
 import io.iohk.atala.prism.auth.grpc.GrpcAuthenticationHeader
-import io.iohk.atala.prism.auth.grpc.GrpcAuthenticationHeader.PublishedDIDBased
-import io.iohk.atala.prism.auth.model.RequestNonce
 import io.iohk.atala.prism.connector.RequestAuthenticator
 import io.iohk.atala.prism.kotlin.crypto.EC
 import io.iohk.atala.prism.kotlin.crypto.keys.ECPrivateKey
-import io.iohk.atala.prism.kotlin.crypto.signature.ECSignature
 import io.iohk.atala.prism.kotlin.identity.DID
-import io.iohk.atala.prism.kotlin.identity.DID.masterKeyId
 import io.iohk.atala.prism.models.ConnectionToken
 import io.iohk.atala.prism.protos.connector_api._
 import io.iohk.atala.prism.protos.connector_models.ContactConnection
@@ -106,17 +102,7 @@ object ConnectorClient {
         .createPlaintextStub(host = config.host, port = config.port, stub = ConnectorServiceGrpc.stub)
 
       val requestAuthenticator = new RequestAuthenticator
-
-      def requestSigner(request: scalapb.GeneratedMessage): GrpcAuthenticationHeader.DIDBased = {
-
-        val signedRequest = requestAuthenticator.signConnectorRequest(request.toByteArray, config.didPrivateKey)
-        PublishedDIDBased(
-          did = DID.fromString(config.whitelistedDID.getValue),
-          keyId = masterKeyId,
-          requestNonce = RequestNonce(signedRequest.encodedRequestNonce.getBytes.toVector),
-          signature = new ECSignature(signedRequest.encodedSignature.getBytes)
-        )
-      }
+      val requestSigner = ClientHelper.requestSigner(requestAuthenticator, config.whitelistedDID, config.didPrivateKey)
 
       val mid: ConnectorClient[Mid[F, *]] = new ConnectorClientLogs[F]
       mid attach new ConnectorClient.GrpcImpl[F](connectorService, connectorContactsService)(requestSigner)
