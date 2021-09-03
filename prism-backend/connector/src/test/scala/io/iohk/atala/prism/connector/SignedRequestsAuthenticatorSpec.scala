@@ -390,17 +390,17 @@ class SignedRequestsAuthenticatorSpec extends AnyWordSpec {
   ): ConnectorAuthenticator = {
     val participantsRepository = mock[ParticipantsRepository[IOWithTraceIdContext]]
     participantsRepository.findBy(any[DID](defaultValueDID)).returns {
-      getuserId() match {
-        case Some(userId) => ReaderT.liftF(IO.pure(Right(dummyParticipantInfo(userId))))
-        case None => ReaderT.liftF(IO.raiseError(new RuntimeException("Missing user")))
-      }
+      ReaderT.liftF(getuserId() match {
+        case Some(userId) => IO.pure(Right(dummyParticipantInfo(userId)))
+        case None => IO.raiseError(new RuntimeException("Missing user"))
+      })
     }
 
     participantsRepository.findBy(any[ECPublicKey]).returns {
-      getuserId() match {
-        case Some(userId) => ReaderT.liftF(IO.pure(Right(dummyParticipantInfo(userId))))
-        case None => ReaderT.liftF(IO.raiseError(new RuntimeException("Missing user")))
-      }
+      ReaderT.liftF(getuserId() match {
+        case Some(userId) => IO.pure(Right(dummyParticipantInfo(userId)))
+        case None => IO.raiseError(new RuntimeException("Missing user"))
+      })
     }
 
     val customParser = new GrpcAuthenticationHeaderParser {
