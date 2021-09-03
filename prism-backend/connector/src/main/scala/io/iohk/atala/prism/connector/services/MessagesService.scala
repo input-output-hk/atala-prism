@@ -5,6 +5,7 @@ import cats.effect.IO
 import cats.implicits.catsSyntaxEitherId
 import fs2.Stream
 import io.iohk.atala.prism.connector.errors.ConnectorError
+import io.iohk.atala.prism.connector.errors.MessagesError._
 import io.iohk.atala.prism.connector.model._
 import io.iohk.atala.prism.connector.model.actions.SendMessagesRequest
 import io.iohk.atala.prism.connector.repositories.MessagesRepository
@@ -13,25 +14,38 @@ import io.iohk.atala.prism.utils.FutureEither
 import io.iohk.atala.prism.utils.FutureEither.FutureEitherOps
 
 class MessagesService(messagesRepository: MessagesRepository[Stream[IO, *], IO]) {
-  def insertMessage(
+  def insertMessage[
+    E
+    : ConnectionNotFound <:< *
+    : ConnectionRevoked <:< *
+    : ConnectionNotFoundByConnectionIdAndSender <:< *
+    : MessagesAlreadyExist <:< *
+    : MessageIdsNotUnique <:< *
+  ](
       sender: ParticipantId,
       connection: ConnectionId,
       content: Array[Byte],
       messageId: Option[MessageId] = None
-  ): FutureEither[ConnectorError, MessageId] =
-    messagesRepository.insertMessage(sender, connection, content, messageId).unsafeToFuture().toFutureEither
+  ): FutureEither[E, MessageId] =
+    messagesRepository.insertMessage[E](sender, connection, content, messageId).unsafeToFuture().toFutureEither
 
-  def insertMessages(
+  def insertMessages[
+    E
+    : ConnectionNotFound <:< *
+    : ConnectionRevoked <:< *
+    : MessagesAlreadyExist <:< *
+    : MessageIdsNotUnique <:< *
+  ](
       sender: ParticipantId,
       messages: NonEmptyList[SendMessagesRequest.MessageToSend]
-  ): FutureEither[ConnectorError, List[MessageId]] =
-    messagesRepository.insertMessages(sender, messages).unsafeToFuture().toFutureEither
+  ): FutureEither[E, List[MessageId]] =
+    messagesRepository.insertMessages[E](sender, messages).unsafeToFuture().toFutureEither
 
-  def getMessagesPaginated(
+  def getMessagesPaginated[E : InvalidLimitError <:< *](
       recipientId: ParticipantId,
       limit: Int,
       lastSeenMessageId: Option[MessageId]
-  ): FutureEither[ConnectorError, Seq[Message]] =
+  ): FutureEither[E, Seq[Message]] =
     messagesRepository.getMessagesPaginated(recipientId, limit, lastSeenMessageId).unsafeToFuture().toFutureEither
 
   def getMessageStream(

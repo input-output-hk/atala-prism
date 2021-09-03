@@ -1,6 +1,6 @@
 package io.iohk.atala.prism.connector.errors
 
-import io.iohk.atala.prism.errors.ErrorSupport
+import io.iohk.atala.prism.errors.{ErrorSupport, LoggingContext, PrismError}
 
 trait ConnectorErrorSupport extends ErrorSupport[ConnectorError] {
   override def wrapAsServerError(cause: Throwable): InternalServerError =
@@ -10,14 +10,21 @@ trait ConnectorErrorSupport extends ErrorSupport[ConnectorError] {
     InvalidRequest(message)
 }
 
-trait ConnectorErrorSupportNew[E <: ConnectorError] extends ErrorSupport[E] {
-  def fromConnectorError(ce: ConnectorError): E
+trait ConnectorErrorSupportNew extends ErrorSupport[ConnectorError] {
 
-  override def wrapAsServerError(cause: Throwable): E = fromConnectorError(InternalServerError(cause))
+  override def wrapAsServerError(cause: Throwable): ConnectorError = InternalServerError(cause)
 
-  override def invalidRequest(message: String): E = fromConnectorError(InvalidRequest(message))
+  override def invalidRequest(message: String): ConnectorError = InvalidRequest(message)
 
-  def unknownValueError(tpe: String, value: String): E = fromConnectorError(UnknownValueError(tpe, value))
+  def invalidArgumentError[
+    E <: PrismError
+    : InvalidArgumentError <:< *](tpe: String, requirement: String, value: String): E = InvalidArgumentError(tpe, requirement, value)
 
-  def invalidArgumentError(tpe: String, requirement: String, value: String): E = fromConnectorError(InvalidArgumentError(tpe, requirement, value))
+  implicit class ErrorLoggingOpsNew[E <: PrismError](error: E) {
+    def logWarnNew(implicit lc: LoggingContext): E = {
+      val status = error.toStatus
+      logger.warn(s"Issuing ${error.getClass.getSimpleName}: ${status.getCode} ${status.getDescription} ($lc)")
+      error
+    }
+  }
 }

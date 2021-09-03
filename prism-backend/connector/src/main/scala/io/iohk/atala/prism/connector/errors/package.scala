@@ -17,10 +17,15 @@ package object errors {
     }
   }
 
-  case class InvalidArgumentError(tpe: String, requirement: String, value: String) extends ConnectorError {
+  class InvalidArgumentError(val tpe: String, val requirement: String, val value: String) extends ConnectorError {
     override def toStatus: Status = {
       Status.INVALID_ARGUMENT.withDescription(s"Invalid value for $tpe, expected $requirement, got $value")
     }
+  }
+
+  object InvalidArgumentError {
+    def apply(tpe: String, requirement: String, value: String): InvalidArgumentError =
+      new InvalidArgumentError(tpe, requirement, value)
   }
 
   case class DidConnectionExist(did: DID) extends ConnectorError {
@@ -139,10 +144,8 @@ package object errors {
       }
     }
 
-    case class GeneralMessageError(e: ConnectorError) extends MessagesError {
-      override def toStatus: Status = e.toStatus
-    }
-
-    def toMessagesError(e: ConnectorError): MessagesError = GeneralMessageError(e)
+    case class InvalidLimitError(override val value: String)
+      extends InvalidArgumentError("limit", "positive value", value)
+        with MessagesError
   }
 }

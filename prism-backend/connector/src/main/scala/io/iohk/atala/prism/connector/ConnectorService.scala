@@ -328,7 +328,7 @@ class ConnectorService(
   override def sendMessage(request: connector_api.SendMessageRequest): Future[connector_api.SendMessageResponse] =
     auth[SendMessageRequest]("sendMessage", request) { (participantId, sendMessageRequest) =>
       messages
-        .insertMessage(
+        .insertMessage[ConnectorError](
           sender = participantId,
           connection = sendMessageRequest.connectionId,
           content = sendMessageRequest.message,
@@ -401,7 +401,7 @@ class ConnectorService(
         FutureEither.right[ConnectorError, connector_api.SendMessagesResponse](connector_api.SendMessagesResponse())
       ) { messagesToInsert =>
         messages
-          .insertMessages(participantId, messagesToInsert)
+          .insertMessages[ConnectorError](participantId, messagesToInsert)
           .map(messageIds => connector_api.SendMessagesResponse(ids = messageIds.map(_.uuid.toString)))
       }
     }

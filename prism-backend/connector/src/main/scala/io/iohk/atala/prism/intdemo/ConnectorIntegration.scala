@@ -1,11 +1,11 @@
 package io.iohk.atala.prism.intdemo
 
-import io.iohk.atala.prism.connector.errors.{ConnectorError, ConnectorErrorSupport}
+import io.iohk.atala.prism.connector.errors.{ConnectorError, ConnectorErrorSupport, MessagesError}
 import io.iohk.atala.prism.connector.model._
 import io.iohk.atala.prism.connector.services.{ConnectionsService, MessagesService}
 import io.iohk.atala.prism.models.ParticipantId
 import io.iohk.atala.prism.protos.credential_models
-import io.iohk.atala.prism.protos.credential_models.{AtalaMessage}
+import io.iohk.atala.prism.protos.credential_models.AtalaMessage
 import org.slf4j.{Logger, LoggerFactory}
 
 import scala.concurrent.{ExecutionContext, Future}
@@ -71,7 +71,7 @@ object ConnectorIntegration {
         message: Array[Byte]
     ): Future[MessageId] = {
       messagesService
-        .insertMessage(senderId, connectionId, message)
+        .insertMessage[MessagesError](senderId, connectionId, message)
         .toFuture(toRuntimeException(senderId, connectionId))
     }
 
