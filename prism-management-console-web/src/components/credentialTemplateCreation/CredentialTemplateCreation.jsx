@@ -6,6 +6,7 @@ import { nanoid } from 'nanoid';
 import GenericStepsButtons from '../common/Molecules/GenericStepsButtons/GenericStepsButtons';
 import WizardTitle from '../common/Atoms/WizardTitle/WizardTitle';
 import {
+  CREDENTIAL_TYPE_STATUSES,
   DESIGN_TEMPLATE,
   NEW_TEMPLATE_STEP_UNIT,
   SELECT_TEMPLATE_CATEGORY,
@@ -62,7 +63,7 @@ const CredentialTemplateCreation = ({
       ...templateSettings,
       template: templatePreview,
       category: templateSettings?.category,
-      state: 1,
+      state: CREDENTIAL_TYPE_STATUSES.MOCKED,
       id: nanoid()
     };
     await addCredentialTemplate(newTemplate);

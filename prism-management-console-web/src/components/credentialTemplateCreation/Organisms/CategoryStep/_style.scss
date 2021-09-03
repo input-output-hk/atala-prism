@@ -42,8 +42,19 @@
   }
 }
 
-.TypeSelectionContainer .TypeSelection .flex label {
-  margin: 0;
+.TypeSelectionContainer .TypeSelection {
+  flex-wrap: wrap;
+  justify-content: flex-start;
+  align-items: center;
+  .SimpleLoadingContainer {
+    width: 100%;
+  }
+  .TypeCard {
+    margin: 0 1.5em;
+  }
+  label {
+    margin: 0;
+  }
 }
 
 .templateName {
