@@ -23,6 +23,18 @@ object syntax {
     def toProtoTimestamp: Timestamp = Timestamp(value.getEpochSecond, value.getNano)
   }
 
+  implicit class PbankInstantToTimestampOps(val value: Instant) extends AnyVal {
+
+    /** converts instant to proto timestamp */
+    def toTimestamp: pbandk.wkt.Timestamp = new pbandk.wkt.Timestamp(value.getEpochSecond, value.getNano, java.util.Map.of())
+  }
+
+  implicit class TimestampToInstantOps(val value: pbandk.wkt.Timestamp) extends AnyVal {
+
+    /** converts instant to proto timestamp */
+    def toInstant: Instant = Instant.ofEpochSecond(value.getSeconds, value.getNanos.toLong)
+  }
+
   implicit class TimestampOps(val value: Timestamp) extends AnyVal {
 
     /** converts timestamp to instant using seconds value */

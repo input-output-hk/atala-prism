@@ -3,15 +3,8 @@ package io.iohk.atala.prism.node.services
 import cats.implicits._
 
 import java.time.Instant
-import io.iohk.atala.prism.kotlin.crypto.SHA256Digest
-import io.iohk.atala.prism.models.{
-  BlockInfo,
-  Ledger,
-  TransactionDetails,
-  TransactionId,
-  TransactionInfo,
-  TransactionStatus
-}
+import io.iohk.atala.prism.kotlin.crypto.Sha256
+import io.iohk.atala.prism.models.{BlockInfo, Ledger, TransactionDetails, TransactionId, TransactionInfo, TransactionStatus}
 import io.iohk.atala.prism.node.cardano.models.{CardanoWalletError, CardanoWalletErrorCode}
 import io.iohk.atala.prism.node.services.models.{AtalaObjectNotification, AtalaObjectNotificationHandler}
 import io.iohk.atala.prism.node.{PublicationInfo, UnderlyingLedger}
@@ -29,7 +22,7 @@ class InMemoryLedgerService(onAtalaObject: AtalaObjectNotificationHandler)(impli
     val publcationInfoF = for {
       objectBytes <- Future.successful(obj.toByteArray)
       // Use a hash of the bytes as their in-memory transaction ID
-      hash = SHA256Digest.compute(objectBytes)
+      hash = Sha256.compute(objectBytes)
       transactionId = TransactionId.from(hash.getValue).getOrElse(throw new RuntimeException("Unexpected invalid hash"))
       transactionInfo = TransactionInfo(
         transactionId = transactionId,

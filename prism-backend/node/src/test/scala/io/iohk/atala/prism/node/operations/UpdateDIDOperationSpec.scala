@@ -92,7 +92,7 @@ object UpdateDIDOperationSpec {
   )
 }
 
-class UpdateDIDOperationSpec extends AtalaWithPostgresSpec with ProtoParsingTestHelpers {
+class EwaUpdateDIDOperationSpec extends AtalaWithPostgresSpec with ProtoParsingTestHelpers {
   import UpdateDIDOperationSpec._
 
   lazy val didDataRepository: DIDDataRepository[IO] = DIDDataRepository(database)

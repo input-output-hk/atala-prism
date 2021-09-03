@@ -9,8 +9,6 @@ import io.iohk.atala.prism.node.models.nodeState.{DIDPublicKeyState, LedgerData}
 import io.iohk.atala.prism.node.models.DIDPublicKey
 import io.iohk.atala.prism.utils.syntax._
 
-import java.time.Instant
-
 object PublicKeysDAO {
   def insert(key: DIDPublicKey, ledgerData: LedgerData): ConnectionIO[Unit] = {
     val curveName = ECConfig.getCURVE_NAME
@@ -22,7 +20,7 @@ object PublicKeysDAO {
          |   added_on, added_on_absn, added_on_osn,
          |   added_on_transaction_id, ledger)
          |VALUES (${key.didSuffix}, ${key.keyId}, ${key.keyUsage}, $curveName, $compressed,
-         |   ${addedOn.getAtalaBlockTimestamp.toInstant}, ${addedOn.getAtalaBlockSequenceNumber}, ${addedOn.getOperationSequenceNumber},
+         |   ${addedOn.getBlockTimestamp.toInstant}, ${addedOn.getBlockSequenceNumber}, ${addedOn.getOperationSequenceNumber},
          |   ${ledgerData.transactionId}, ${ledgerData.ledger})
        """.stripMargin.update.run.void
   }
@@ -51,8 +49,8 @@ object PublicKeysDAO {
     val revokedOn = ledgerData.timestampInfo
     sql"""
          |UPDATE public_keys
-         |SET revoked_on = ${Instant.ofEpochMilli(revokedOn.getAtalaBlockTimestamp)},
-         |    revoked_on_absn = ${revokedOn.getAtalaBlockSequenceNumber},
+         |SET revoked_on = ${revokedOn.getBlockTimestamp.toInstant},
+         |    revoked_on_absn = ${revokedOn.getBlockSequenceNumber},
          |    revoked_on_osn = ${revokedOn.getOperationSequenceNumber},
          |    revoked_on_transaction_id = ${ledgerData.transactionId}
          |WHERE key_id = $keyId

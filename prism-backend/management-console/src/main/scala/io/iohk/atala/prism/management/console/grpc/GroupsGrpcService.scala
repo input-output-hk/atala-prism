@@ -11,7 +11,7 @@ import io.iohk.atala.prism.management.console.models._
 import io.iohk.atala.prism.management.console.services.GroupsService
 import io.iohk.atala.prism.protos.{console_api, console_models}
 import io.iohk.atala.prism.utils.FutureEither.FutureEitherOps
-import io.iohk.atala.prism.utils.syntax.InstantToTimestampOps
+import io.iohk.atala.prism.utils.syntax._
 import org.slf4j.{Logger, LoggerFactory}
 
 import scala.concurrent.{ExecutionContext, Future}

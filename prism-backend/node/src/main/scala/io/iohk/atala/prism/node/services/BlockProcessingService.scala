@@ -6,8 +6,8 @@ import cats.implicits._
 import doobie.free.connection
 import doobie.free.connection.ConnectionIO
 import io.iohk.atala.prism.connector.AtalaOperationId
-import io.iohk.atala.prism.kotlin.credentials.TimestampInfo
-import io.iohk.atala.prism.kotlin.crypto.EC
+import io.iohk.atala.prism.kotlin.protos.TimestampInfo
+import io.iohk.atala.prism.kotlin.crypto.EC.{INSTANCE => EC}
 import io.iohk.atala.prism.kotlin.crypto.keys.ECPublicKey
 import io.iohk.atala.prism.kotlin.crypto.signature.ECSignature
 import io.iohk.atala.prism.models.{Ledger, TransactionId}
@@ -18,6 +18,7 @@ import io.iohk.atala.prism.node.operations._
 import io.iohk.atala.prism.node.operations.path.Path
 import io.iohk.atala.prism.node.repositories.daos.AtalaOperationsDAO
 import io.iohk.atala.prism.protos.{node_internal, node_models}
+import io.iohk.atala.prism.utils.syntax._
 import org.slf4j.LoggerFactory
 
 import scala.collection.BuildFrom
@@ -60,7 +61,7 @@ class BlockProcessingServiceImpl extends BlockProcessingService {
       case (signedOperation, osn) =>
         parseOperation(
           signedOperation,
-          LedgerData(transactionId, ledger, new TimestampInfo(blockTimestamp.toEpochMilli, blockIndex, osn))
+          LedgerData(transactionId, ledger, new TimestampInfo(blockIndex, osn, blockTimestamp.toTimestamp, java.util.Map.of()))
         ).left
           .map(err => (signedOperation, err))
     }
@@ -167,7 +168,7 @@ class BlockProcessingServiceImpl extends BlockProcessingService {
   def verifySignature(key: ECPublicKey, protoOperation: node_models.SignedAtalaOperation): Either[StateError, Unit] = {
     try {
       Either.cond(
-        EC.verify(protoOperation.getOperation.toByteArray, key, new ECSignature(protoOperation.signature.toByteArray)),
+        EC.verifyBytes(protoOperation.getOperation.toByteArray, key, new ECSignature(protoOperation.signature.toByteArray)),
         (),
         StateError.InvalidSignature()
       )

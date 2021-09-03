@@ -5,7 +5,8 @@ import cats.syntax.option._
 import doobie.implicits._
 import io.iohk.atala.prism.connector.model._
 import io.iohk.atala.prism.connector.repositories.daos.ParticipantsDAO
-import io.iohk.atala.prism.kotlin.crypto.{EC, SHA256Digest}
+import io.iohk.atala.prism.kotlin.crypto.EC.{INSTANCE => EC}
+import io.iohk.atala.prism.kotlin.crypto.Sha256
 import io.iohk.atala.prism.kotlin.identity.PrismDid
 import io.iohk.atala.prism.models.ParticipantId
 import io.iohk.atala.prism.protos.connector_api.{RegisterDIDRequest, RegisterDIDResponse}
@@ -185,7 +186,7 @@ class RegistrationRpcSpec extends ConnectorRpcSpecBase {
       val expectedDID = DataPreparation.newDID()
       val name = "iohk"
       val logo = "none".getBytes()
-      val operationId = SHA256Digest.compute("id".getBytes).getValue
+      val operationId = Sha256.compute("id".getBytes).getValue
       val request = createRequest(name, logo)
 
       usingApiAs.unlogged { blockingStub =>

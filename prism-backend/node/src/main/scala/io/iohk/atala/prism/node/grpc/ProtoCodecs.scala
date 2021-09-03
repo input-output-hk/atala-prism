@@ -3,8 +3,8 @@ package io.iohk.atala.prism.node.grpc
 import java.security.PublicKey
 
 import com.google.protobuf.ByteString
-import io.iohk.atala.prism.kotlin.credentials.TimestampInfo
-import io.iohk.atala.prism.kotlin.crypto.EC
+import io.iohk.atala.prism.kotlin.protos.TimestampInfo
+import io.iohk.atala.prism.kotlin.crypto.EC.{INSTANCE => EC}
 import io.iohk.atala.prism.kotlin.crypto.keys.ECPublicKey
 import io.iohk.atala.prism.kotlin.crypto.ECConfig.{INSTANCE => ECConfig}
 import io.iohk.atala.prism.models.{ProtoCodecs => CommonProtoCodecs}
@@ -19,14 +19,13 @@ import io.iohk.atala.prism.node.models.KeyUsage.{
 import io.iohk.atala.prism.node.models.nodeState.LedgerData
 import io.iohk.atala.prism.protos.node_models
 import io.iohk.atala.prism.utils.syntax._
-import java.time.Instant
 
 object ProtoCodecs {
   def toTimeStampInfoProto(timestampInfo: TimestampInfo): node_models.TimestampInfo = {
     node_models
       .TimestampInfo()
-      .withBlockTimestamp(Instant.ofEpochMilli(timestampInfo.getAtalaBlockTimestamp).toProtoTimestamp)
-      .withBlockSequenceNumber(timestampInfo.getAtalaBlockSequenceNumber)
+      .withBlockTimestamp(timestampInfo.getBlockTimestamp.toInstant.toProtoTimestamp)
+      .withBlockSequenceNumber(timestampInfo.getBlockSequenceNumber)
       .withOperationSequenceNumber(timestampInfo.getOperationSequenceNumber)
   }
 
@@ -99,12 +98,12 @@ object ProtoCodecs {
   //       (it is currently 0). The block sequence number starts at 1 already.
   def fromTimestampInfoProto(timestampInfoProto: node_models.TimestampInfo): TimestampInfo = {
     new TimestampInfo(
+      timestampInfoProto.blockSequenceNumber,
+      timestampInfoProto.operationSequenceNumber,
       timestampInfoProto.blockTimestamp
         .getOrElse(throw new RuntimeException("Missing timestamp"))
-        .toInstant
-        .toEpochMilli,
-      timestampInfoProto.blockSequenceNumber,
-      timestampInfoProto.operationSequenceNumber
+        .toInstant.toTimestamp,
+      java.util.Map.of()
     )
   }
 
@@ -112,7 +111,7 @@ object ProtoCodecs {
     for {
       maybeX <- protoKey.keyData.ecKeyData
       maybeY <- protoKey.keyData.ecKeyData
-    } yield EC.toPublicKey(maybeX.x.toByteArray, maybeY.y.toByteArray)
+    } yield EC.toPublicKeyFromByteCoordinates(maybeX.x.toByteArray, maybeY.y.toByteArray)
   }
 
   def fromProtoKeyLegacy(protoKey: node_models.PublicKey): Option[PublicKey] =

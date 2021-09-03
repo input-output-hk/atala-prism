@@ -6,7 +6,8 @@ import doobie.util.transactor.Transactor
 import io.iohk.atala.prism.connector.model.{ParticipantInfo, ParticipantType}
 import io.iohk.atala.prism.connector.repositories.{daos => connectorDaos}
 import io.iohk.atala.prism.kotlin.credentials.CredentialBatchId
-import io.iohk.atala.prism.kotlin.crypto.{EC, SHA256Digest}
+import io.iohk.atala.prism.kotlin.crypto.EC.{INSTANCE => EC}
+import io.iohk.atala.prism.kotlin.crypto.Sha256Digest
 import io.iohk.atala.prism.kotlin.crypto.keys.ECPublicKey
 import io.iohk.atala.prism.daos.BaseDAO
 import io.iohk.atala.prism.kotlin.identity.PrismDid
@@ -62,13 +63,13 @@ object DataPreparation extends BaseDAO {
 
   def getBatchData(
       batchId: CredentialBatchId
-  )(implicit database: Transactor[IO]): Option[SHA256Digest] = {
+  )(implicit database: Transactor[IO]): Option[Sha256Digest] = {
     sql"""
          |SELECT issuance_operation_hash
          |FROM published_batches
          |WHERE batch_id = $batchId
          |""".stripMargin
-      .query[SHA256Digest]
+      .query[Sha256Digest]
       .option
       .transact(database)
       .unsafeRunSync()

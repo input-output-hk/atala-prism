@@ -4,7 +4,8 @@ import cats.effect.IO
 
 import java.util.UUID
 import io.grpc.Context
-import io.iohk.atala.prism.kotlin.crypto.{EC, SHA256Digest}
+import io.iohk.atala.prism.kotlin.crypto.EC.{INSTANCE => EC}
+import io.iohk.atala.prism.kotlin.crypto.Sha256
 import io.iohk.atala.prism.kotlin.crypto.keys.ECPublicKey
 import io.iohk.atala.prism.kotlin.crypto.signature.ECSignature
 import io.iohk.atala.prism.connector.errors.UnknownValueError
@@ -32,7 +33,7 @@ import io.iohk.atala.prism.utils.StringUtils._
 
 class SignedRequestsAuthenticatorSpec extends AnyWordSpec {
   val defaultValueDID = new DefaultValueProvider[PrismDid] {
-    override def default: PrismDid = PrismDid.buildCanonical(SHA256Digest.compute(encodeToByteArray("default")))
+    override def default: PrismDid = PrismDid.buildCanonical(Sha256.compute(encodeToByteArray("default")))
   }
 
   private implicit def patienceConfig: PatienceConfig = PatienceConfig(20.seconds, 50.millis)
@@ -146,7 +147,7 @@ class SignedRequestsAuthenticatorSpec extends AnyWordSpec {
     }
 
     "accept the DID authentication" in {
-      val did = PrismDid.buildCanonical(SHA256Digest.compute(encodeToByteArray("test")))
+      val did = PrismDid.buildCanonical(Sha256.compute(encodeToByteArray("test")))
       val keyId = "key-1"
       val keys = EC.generateKeyPair()
       val signedRequest = requestAuthenticator.signConnectorRequest(request.toByteArray, keys.getPrivateKey)
@@ -177,7 +178,7 @@ class SignedRequestsAuthenticatorSpec extends AnyWordSpec {
     }
 
     "reject wrong DID authentication" in {
-      val did = PrismDid.buildCanonical(SHA256Digest.compute(encodeToByteArray("test")))
+      val did = PrismDid.buildCanonical(Sha256.compute(encodeToByteArray("test")))
       val keyId = "key-1"
       val keys = EC.generateKeyPair()
       // The request is signed with a different key
@@ -211,7 +212,7 @@ class SignedRequestsAuthenticatorSpec extends AnyWordSpec {
     }
 
     "reject wrong nonce in DID authentication" in {
-      val did = PrismDid.buildCanonical(SHA256Digest.compute(encodeToByteArray("test")))
+      val did = PrismDid.buildCanonical(Sha256.compute(encodeToByteArray("test")))
       val keyId = "key-1"
       val keys = EC.generateKeyPair()
       val signedRequest = requestAuthenticator.signConnectorRequest(request.toByteArray, keys.getPrivateKey)
@@ -244,7 +245,7 @@ class SignedRequestsAuthenticatorSpec extends AnyWordSpec {
     }
 
     "fail when the did is not in our database" in {
-      val did = PrismDid.buildCanonical(SHA256Digest.compute(encodeToByteArray("test")))
+      val did = PrismDid.buildCanonical(Sha256.compute(encodeToByteArray("test")))
       val keyId = "key-1"
       val keys = EC.generateKeyPair()
       val signedRequest = requestAuthenticator.signConnectorRequest(request.toByteArray, keys.getPrivateKey)
@@ -283,7 +284,7 @@ class SignedRequestsAuthenticatorSpec extends AnyWordSpec {
     }
 
     "fail when the did is not in the node" in {
-      val did = PrismDid.buildCanonical(SHA256Digest.compute(encodeToByteArray("test")))
+      val did = PrismDid.buildCanonical(Sha256.compute(encodeToByteArray("test")))
       val keyId = "key-1"
       val keys = EC.generateKeyPair()
       val signedRequest = requestAuthenticator.signConnectorRequest(request.toByteArray, keys.getPrivateKey)
@@ -306,7 +307,7 @@ class SignedRequestsAuthenticatorSpec extends AnyWordSpec {
     }
 
     "fail when the key doesn't belong to the did" in {
-      val did = PrismDid.buildCanonical(SHA256Digest.compute(encodeToByteArray("test")))
+      val did = PrismDid.buildCanonical(Sha256.compute(encodeToByteArray("test")))
       val keyId = "key-1"
       val keys = EC.generateKeyPair()
       val signedRequest = requestAuthenticator.signConnectorRequest(request.toByteArray, keys.getPrivateKey)
@@ -338,7 +339,7 @@ class SignedRequestsAuthenticatorSpec extends AnyWordSpec {
     }
 
     "fail when the nonce is reused" in {
-      val did = PrismDid.buildCanonical(SHA256Digest.compute(encodeToByteArray("test")))
+      val did = PrismDid.buildCanonical(Sha256.compute(encodeToByteArray("test")))
       val keyId = "key-1"
       val keys = EC.generateKeyPair()
       val signedRequest = requestAuthenticator.signConnectorRequest(request.toByteArray, keys.getPrivateKey)

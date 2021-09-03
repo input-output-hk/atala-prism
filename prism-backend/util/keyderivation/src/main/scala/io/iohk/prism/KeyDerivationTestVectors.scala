@@ -2,7 +2,6 @@ package io.iohk.prism
 
 import java.io.{File, FileWriter}
 import java.math.BigInteger
-
 import com.google.protobuf.ByteString
 import enumeratum.values._
 import fr.acinq.bitcoin.DeterministicWallet._
@@ -10,7 +9,7 @@ import fr.acinq.bitcoin.MnemonicCode._
 import io.circe.syntax._
 import io.circe.{Json, Printer}
 import io.iohk.atala.prism.kotlin.crypto.ECConfig.{INSTANCE => ECConfig}
-import io.iohk.atala.prism.kotlin.crypto.SHA256Digest
+import io.iohk.atala.prism.kotlin.crypto.Sha256
 import io.iohk.atala.prism.protos.node_models
 import org.spongycastle.math.ec.ECFieldElement
 import scodec.bits._
@@ -94,7 +93,7 @@ object KeyDerivationTestVectors {
       )
     )
 
-    val didSuffix = SHA256Digest.compute(createOperation.toByteArray).hexValue
+    val didSuffix = Sha256.compute(createOperation.toByteArray).getHexValue
     val did = s"did:prism:$didSuffix"
 
     val derivedKeys = for {

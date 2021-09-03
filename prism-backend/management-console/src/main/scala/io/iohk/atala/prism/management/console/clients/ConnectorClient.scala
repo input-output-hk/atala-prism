@@ -13,7 +13,7 @@ import io.iohk.atala.prism.auth.grpc.GrpcAuthenticationHeader
 import io.iohk.atala.prism.auth.grpc.GrpcAuthenticationHeader.PublishedDIDBased
 import io.iohk.atala.prism.auth.model.RequestNonce
 import io.iohk.atala.prism.connector.RequestAuthenticator
-import io.iohk.atala.prism.kotlin.crypto.EC
+import io.iohk.atala.prism.kotlin.crypto.EC.{INSTANCE => EC}
 import io.iohk.atala.prism.kotlin.crypto.keys.ECPrivateKey
 import io.iohk.atala.prism.kotlin.crypto.signature.ECSignature
 import io.iohk.atala.prism.kotlin.identity.PrismDid
@@ -71,7 +71,7 @@ object ConnectorClient {
           throw new RuntimeException("Failed to load the connector's whitelisted DID, which is required to invoke it")
         }
 
-        val didPrivateKey = EC.toPrivateKey(
+        val didPrivateKey = EC.toPrivateKeyFromBytes(
           BytesOps.hexToBytes(typesafe.getString("didPrivateKeyHex"))
         )
 

@@ -5,7 +5,7 @@ import cats.implicits._
 import doobie.free.connection.ConnectionIO
 import doobie.implicits._
 import doobie.postgres.sqlstate
-import io.iohk.atala.prism.kotlin.crypto.SHA256Digest
+import io.iohk.atala.prism.kotlin.crypto.{Sha256, Sha256Digest}
 import io.iohk.atala.prism.node.models.KeyUsage.MasterKey
 import io.iohk.atala.prism.node.models.DIDPublicKey
 import io.iohk.atala.prism.node.models.nodeState.LedgerData
@@ -17,7 +17,7 @@ import io.iohk.atala.prism.protos.{node_models => proto}
 case class CreateDIDOperation(
     id: String,
     keys: List[DIDPublicKey],
-    digest: SHA256Digest,
+    digest: Sha256Digest,
     ledgerData: LedgerData
 ) extends Operation {
 
@@ -93,8 +93,8 @@ object CreateDIDOperation extends SimpleOperationCompanion[CreateDIDOperation] {
       operation: proto.AtalaOperation,
       ledgerData: LedgerData
   ): Either[ValidationError, CreateDIDOperation] = {
-    val operationDigest = SHA256Digest.compute(operation.toByteArray)
-    val didSuffix: String = operationDigest.hexValue() // or toString?
+    val operationDigest = Sha256.compute(operation.toByteArray)
+    val didSuffix: String = operationDigest.getHexValue
     val createOperation = ValueAtPath(operation, Path.root).child(_.getCreateDid, "createDid")
     for {
       data <- createOperation.childGet(_.didData, "didData")

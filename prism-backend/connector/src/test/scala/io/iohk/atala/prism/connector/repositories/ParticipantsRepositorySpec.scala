@@ -5,11 +5,10 @@ import io.iohk.atala.prism.connector.errors.UnknownValueError
 import io.iohk.atala.prism.connector.model._
 import io.iohk.atala.prism.connector.repositories.daos._
 import io.iohk.atala.prism.connector.DataPreparation
-import io.iohk.atala.prism.kotlin.crypto.SHA256Digest
+import io.iohk.atala.prism.kotlin.crypto.Sha256Digest
 import io.iohk.atala.prism.kotlin.identity.PrismDid
 import io.iohk.atala.prism.models.ParticipantId
 import io.iohk.atala.prism.utils.Base64Utils._
-import io.iohk.atala.prism.utils.StringUtils._
 import org.scalatest.EitherValues._
 import org.scalatest.OptionValues._
 
@@ -19,34 +18,39 @@ class ParticipantsRepositorySpec extends ConnectorRepositorySpecBase {
   private val encodedStateUsed =
     "CmEKXxJdCgdtYXN0ZXIwEAFCUAoJc2VjcDI1NmsxEiAel_7KEiez4s_e0u8DyJwLkUnVmUHBuWU-0h01nerSNRohAJlR51Vbk49vagehAwQkFvW_fvyM1qa4ileIEYkXs4pF"
 
-  private val shortDID = PrismDid.buildCanonical(SHA256Digest.compute(encodeToByteArray(canonicalSuffix)))
-  private val longDID = PrismDid.buildLongForm(SHA256Digest.compute(encodeToByteArray(canonicalSuffix)), decodeURL(encodedStateUsed))
+  private val shortDID = PrismDid.buildCanonical(Sha256Digest.fromHex(canonicalSuffix))
+  private val longDID = PrismDid.buildLongForm(Sha256Digest.fromHex(canonicalSuffix), decodeURL(encodedStateUsed))
 
   "getParticipant by did" should {
     "get a participant" in {
       val id = ParticipantId.random()
       val did = DataPreparation.newDID()
       val info = ParticipantInfo(id, ParticipantType.Issuer, None, "issuer", Some(did), None, None)
-      ParticipantsDAO
-        .insert(info)
-        .transact(database)
-        .unsafeToFuture()
-        .futureValue
+      val resultIO = for {
+        _ <- ParticipantsDAO
+          .insert(info)
+          .transact(database)
+        res <- participantsRepository.findBy(did)
+      } yield res
 
-      val result = participantsRepository.findBy(did).unsafeRunSync()
+      val result = resultIO.unsafeRunSync()
       result.toOption.value must be(info)
     }
 
     "get a participant by unpublished DID" in {
       val id = ParticipantId.random()
       val info = ParticipantInfo(id, ParticipantType.Issuer, None, "issuer", Some(shortDID), None, None)
-      ParticipantsDAO
-        .insert(info)
-        .transact(database)
-        .unsafeToFuture()
-        .futureValue
+      val resultIO = for {
+        _ <- ParticipantsDAO
+          .insert(info)
+          .transact(database)
+        res <- participantsRepository.findBy(longDID)
+      } yield res
 
-      val result = participantsRepository.findBy(longDID).unsafeRunSync()
+      val result = resultIO.unsafeRunSync()
+
+      println(result)
+
       result.toOption.value must be(info)
     }
 

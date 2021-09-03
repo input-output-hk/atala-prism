@@ -1,13 +1,18 @@
 package io.iohk.atala.prism.services
 
+import cats.implicits.catsSyntaxOptionId
+
 import java.time.Instant
 import io.circe.Encoder
 import io.circe.syntax._
 import com.google.protobuf.ByteString
-import io.iohk.atala.prism.kotlin.credentials.{CredentialBatchId, CredentialBatches, TimestampInfo}
-import io.iohk.atala.prism.kotlin.crypto.{EC, MerkleInclusionProof, SHA256Digest}
+import io.iohk.atala.prism.kotlin.credentials.CredentialBatchId
+import io.iohk.atala.prism.kotlin.extras.CredentialBatches
+import io.iohk.atala.prism.kotlin.crypto.{MerkleInclusionProof, Sha256}
+import io.iohk.atala.prism.kotlin.crypto.EC.{INSTANCE => EC}
 import io.iohk.atala.prism.kotlin.crypto.keys.ECKeyPair
 import io.iohk.atala.prism.kotlin.identity.PrismDid
+import io.iohk.atala.prism.protos.node_models.TimestampInfo
 import io.iohk.atala.prism.protos.node_api.GetBatchStateResponse
 import io.iohk.atala.prism.protos.node_models.PublicKey.KeyData.EcKeyData
 import io.iohk.atala.prism.protos.node_models.{DIDData, KeyUsage, LedgerData, PublicKey}
@@ -20,6 +25,7 @@ import io.iohk.atala.prism.kotlin.credentials.json.JsonBasedCredential
 import io.iohk.atala.prism.protos.credential_models.PlainTextCredential
 import io.iohk.atala.prism.services.BaseGrpcClientService.DidBasedAuthConfig
 import io.iohk.atala.prism.utils.Base64Utils
+import io.iohk.atala.prism.utils.syntax._
 
 import scala.jdk.CollectionConverters._
 import io.iohk.atala.prism.interop.CredentialContentConverter._
@@ -33,7 +39,7 @@ trait ServicesFixtures {
     )
 
     val defaultDidBasedAuthConfig = DidBasedAuthConfig(
-      did = PrismDid.buildCanonical(SHA256Digest.compute(encodeToByteArray( "did"))),
+      did = PrismDid.buildCanonical(Sha256.compute(encodeToByteArray( "did"))),
       didMasterKeyId = "master",
       didMasterKeyPair = EC.generateKeyPair(),
       didIssuingKeyId = "issuance",
@@ -46,8 +52,8 @@ trait ServicesFixtures {
     val issuanceKeyId = "Issuance-0"
     val issuerDID = newDID()
 
-    val keyAddedDate: TimestampInfo = new TimestampInfo(Instant.now().minusSeconds(1).toEpochMilli, 1, 1)
-    val credentialIssueDate: TimestampInfo = new TimestampInfo(Instant.now().toEpochMilli, 2, 2)
+    val keyAddedDate: TimestampInfo = new TimestampInfo(1, 1, Instant.now().minusSeconds(1).toProtoTimestamp.some)
+    val credentialIssueDate: TimestampInfo = new TimestampInfo(2, 2, Instant.now().toProtoTimestamp.some)
 
     val keys: ECKeyPair = EC.generateKeyPair()
     val publicKey: PublicKey = PublicKey(
@@ -154,6 +160,6 @@ trait ServicesFixtures {
   }
 
   def newDID(): PrismDid = {
-    PrismDid.buildCanonicalFromMasterKey(EC.generateKeyPair().getPublicKey)
+    PrismDid.buildLongFormFromMasterKey(EC.generateKeyPair().getPublicKey)
   }
 }

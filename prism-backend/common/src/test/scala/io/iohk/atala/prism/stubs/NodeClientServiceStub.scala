@@ -2,7 +2,7 @@ package io.iohk.atala.prism.stubs
 
 import io.iohk.atala.prism.kotlin.credentials.CredentialBatchId
 import io.iohk.atala.prism.kotlin.crypto.MerkleRoot
-import io.iohk.atala.prism.kotlin.crypto.SHA256Digest
+import io.iohk.atala.prism.kotlin.crypto.Sha256Digest
 import monix.eval.Task
 import io.iohk.atala.prism.services.NodeClientService
 import io.iohk.atala.prism.kotlin.identity.PrismDid
@@ -17,7 +17,7 @@ class NodeClientServiceStub(
     didDocument: Map[PrismDid, DIDData] = Map.empty,
     getBatchStateResponse: Map[CredentialBatchId, GetBatchStateResponse] = Map.empty,
     issueCredentialBatchResponse: Task[IssueCredentialBatchResponse] = Task.pure(IssueCredentialBatchResponse()),
-    credentialRevocationTimeResponse: Map[(CredentialBatchId, SHA256Digest), GetCredentialRevocationTimeResponse] =
+    credentialRevocationTimeResponse: Map[(CredentialBatchId, Sha256Digest), GetCredentialRevocationTimeResponse] =
       Map.empty
 ) extends NodeClientService {
 
@@ -31,7 +31,7 @@ class NodeClientServiceStub(
 
   def getCredentialRevocationTime(
       credentialBatchId: CredentialBatchId,
-      credentialHash: SHA256Digest
+      credentialHash: Sha256Digest
   ): Task[GetCredentialRevocationTimeResponse] =
     Task.pure {
       credentialRevocationTimeResponse.getOrElse(

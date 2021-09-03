@@ -25,7 +25,7 @@ import io.scalaland.chimney.Transformer
 import java.time.LocalDate
 import io.iohk.atala.prism.kotlin.credentials.CredentialBatchId
 import io.iohk.atala.prism.kotlin.crypto.MerkleInclusionProof
-import io.iohk.atala.prism.kotlin.crypto.SHA256Digest
+import io.iohk.atala.prism.kotlin.crypto.Sha256Digest
 import io.iohk.atala.prism.kotlin.crypto.signature.ECSignature
 import io.iohk.atala.prism.protos.connector_api.SendMessagesRequest
 import io.iohk.atala.prism.protos.console_models.ContactConnectionStatus
@@ -611,7 +611,7 @@ package object grpc {
     (request: GetLedgerDataRequest) => {
       for {
         batchId <- Try(CredentialBatchId.fromString(request.batchId))
-        credentialHash = SHA256Digest.fromBytes(request.credentialHash.toByteArray)
+        credentialHash = Sha256Digest.fromBytes(request.credentialHash.toByteArray)
       } yield GetLedgerData(batchId, credentialHash)
     }
 

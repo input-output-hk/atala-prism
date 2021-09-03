@@ -6,7 +6,7 @@ import cats.syntax.flatMap._
 import cats.syntax.applicativeError._
 import derevo.derive
 import derevo.tagless.applyK
-import io.iohk.atala.prism.kotlin.crypto.SHA256Digest
+import io.iohk.atala.prism.kotlin.crypto.Sha256Digest
 import io.iohk.atala.prism.kotlin.identity.PrismDid
 import io.iohk.atala.prism.vault.model.{CreatePayload, Payload}
 import io.iohk.atala.prism.vault.repositories.PayloadsRepository
@@ -19,7 +19,7 @@ import tofu.syntax.logging._
 trait EncryptedDataVaultService[F[_]] {
   def storeData(
       externalId: Payload.ExternalId,
-      hash: SHA256Digest,
+      hash: Sha256Digest,
       did: PrismDid,
       content: Vector[Byte]
   ): F[Payload]
@@ -40,7 +40,7 @@ private final class EncyptedDataVaultServiceImpl[F[_]](payloadsRepository: Paylo
 
   override def storeData(
       externalId: Payload.ExternalId,
-      hash: SHA256Digest,
+      hash: Sha256Digest,
       did: PrismDid,
       content: Vector[Byte]
   ): F[Payload] =
@@ -73,7 +73,7 @@ private class EncyptedDataVaultServiceLogging[F[_]: MonadThrow: ServiceLogging[*
 
   override def storeData(
       externalId: Payload.ExternalId,
-      hash: SHA256Digest,
+      hash: Sha256Digest,
       did: PrismDid,
       content: Vector[Byte]
   ): Mid[F, Payload] =

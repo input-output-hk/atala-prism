@@ -14,7 +14,8 @@ import org.mockito.{ArgumentMatchersSugar, MockitoSugar}
 import io.iohk.atala.prism.connector.{RequestAuthenticator, RequestNonce, SignedConnectorRequest}
 import io.iohk.atala.prism.services.BaseGrpcClientService.AuthHeaders
 import io.iohk.atala.prism.kotlin.identity.PrismDid
-import io.iohk.atala.prism.kotlin.crypto.{EC, SHA256Digest}
+import io.iohk.atala.prism.kotlin.crypto.{Sha256}
+import io.iohk.atala.prism.kotlin.crypto.EC.{INSTANCE => EC}
 import io.iohk.atala.prism.kotlin.crypto.keys.ECPrivateKey
 import io.iohk.atala.prism.utils.StringUtils.encodeToByteArray
 import monix.execution.Scheduler.Implicits.global
@@ -38,7 +39,7 @@ class BaseGrpcClientServiceSpec extends AnyWordSpec with Matchers with MockitoSu
 
     "sign request with did's private key" in new GrpcClientStubs {
       val metadata = new Metadata
-      metadata.put(AuthHeaders.DID, PrismDid.buildCanonical(SHA256Digest.compute(encodeToByteArray("test"))).getValue)
+      metadata.put(AuthHeaders.DID, PrismDid.buildCanonical(Sha256.compute(encodeToByteArray("test"))).getValue)
       metadata.put(AuthHeaders.DID_KEY_ID, "master")
       metadata.put(AuthHeaders.DID_SIGNATURE, "c2lnbmF0dXJl")
       metadata.put(AuthHeaders.REQUEST_NONCE, "bm9uY2U=")
@@ -53,7 +54,7 @@ class BaseGrpcClientServiceSpec extends AnyWordSpec with Matchers with MockitoSu
 
   trait GrpcClientStubs {
     val authConfig = BaseGrpcClientService.DidBasedAuthConfig(
-      did = PrismDid.buildCanonical(SHA256Digest.compute(encodeToByteArray("test"))),
+      did = PrismDid.buildCanonical(Sha256.compute(encodeToByteArray("test"))),
       didMasterKeyId = "master",
       didMasterKeyPair = EC.generateKeyPair(),
       didIssuingKeyId = "issuance",

@@ -8,7 +8,8 @@ import io.iohk.atala.prism.DIDUtil
 import io.iohk.atala.prism.auth.SignedRpcRequest
 import io.iohk.atala.prism.kotlin.credentials.CredentialBatchId
 import io.iohk.atala.prism.kotlin.crypto.{MerkleInclusionProof, MerkleRoot}
-import io.iohk.atala.prism.kotlin.crypto.{EC, SHA256Digest}
+import io.iohk.atala.prism.kotlin.crypto.{Sha256, Sha256Digest}
+import io.iohk.atala.prism.kotlin.crypto.EC.{INSTANCE => EC}
 import io.iohk.atala.prism.kotlin.crypto.keys.ECKeyPair
 import io.iohk.atala.prism.kotlin.identity.PrismDid
 import io.iohk.atala.prism.management.console.ManagementConsoleRpcSpecBase
@@ -60,9 +61,9 @@ class CredentialsServiceImplSpec extends ManagementConsoleRpcSpecBase with DIDUt
 
       val mockEncodedSignedCredential = "easdadgfkfñwlekrjfadf"
 
-      val issuanceOpHash = SHA256Digest.compute("opHash".getBytes())
+      val issuanceOpHash = Sha256.compute("opHash".getBytes())
       val mockCredentialBatchId =
-        CredentialBatchId.fromDigest(SHA256Digest.compute("SomeRandomHash".getBytes()))
+        CredentialBatchId.fromDigest(Sha256.compute("SomeRandomHash".getBytes()))
 
       // we need to first store the batch data in the db
       publishBatch(
@@ -70,7 +71,7 @@ class CredentialsServiceImplSpec extends ManagementConsoleRpcSpecBase with DIDUt
         issuanceOpHash,
         AtalaOperationId.fromVectorUnsafe(issuanceOpHash.getValue.toVector)
       )
-      val mockHash = SHA256Digest.compute("".getBytes())
+      val mockHash = Sha256.compute("".getBytes())
       val mockMerkleProof = new MerkleInclusionProof(mockHash, 1, List(mockHash).asJava)
       publishCredential(
         issuerId,
@@ -122,9 +123,9 @@ class CredentialsServiceImplSpec extends ManagementConsoleRpcSpecBase with DIDUt
 
       val mockEncodedSignedCredential = "easdadgfkfñwlekrjfadf"
 
-      val issuanceOpHash = SHA256Digest.compute("opHash".getBytes())
+      val issuanceOpHash = Sha256.compute("opHash".getBytes())
       val mockCredentialBatchId =
-        CredentialBatchId.fromDigest(SHA256Digest.compute("SomeRandomHash".getBytes()))
+        CredentialBatchId.fromDigest(Sha256.compute("SomeRandomHash".getBytes()))
 
       // we need to first store the batch data in the db
       publishBatch(
@@ -132,7 +133,7 @@ class CredentialsServiceImplSpec extends ManagementConsoleRpcSpecBase with DIDUt
         issuanceOpHash,
         AtalaOperationId.fromVectorUnsafe(issuanceOpHash.getValue.toVector)
       )
-      val mockHash = SHA256Digest.compute("".getBytes())
+      val mockHash = Sha256.compute("".getBytes())
       val mockMerkleProof = new MerkleInclusionProof(mockHash, 1, List(mockHash).asJava)
       publishCredential(
         issuerId,
@@ -175,9 +176,9 @@ class CredentialsServiceImplSpec extends ManagementConsoleRpcSpecBase with DIDUt
 
       val mockEncodedSignedCredential = "easdadgfkfñwlekrjfadf"
 
-      val issuanceOpHash = SHA256Digest.compute("opHash".getBytes())
+      val issuanceOpHash = Sha256.compute("opHash".getBytes())
       val mockCredentialBatchId =
-        CredentialBatchId.fromDigest(SHA256Digest.compute("SomeRandomHash".getBytes()))
+        CredentialBatchId.fromDigest(Sha256.compute("SomeRandomHash".getBytes()))
 
       // we need to first store the batch data in the db
       publishBatch(
@@ -185,7 +186,7 @@ class CredentialsServiceImplSpec extends ManagementConsoleRpcSpecBase with DIDUt
         issuanceOpHash,
         AtalaOperationId.fromVectorUnsafe(issuanceOpHash.getValue.toVector)
       )
-      val mockHash = SHA256Digest.compute("".getBytes())
+      val mockHash = Sha256.compute("".getBytes())
       val mockMerkleProof = new MerkleInclusionProof(mockHash, 1, List(mockHash).asJava)
       publishCredential(
         issuerId,
@@ -229,9 +230,9 @@ class CredentialsServiceImplSpec extends ManagementConsoleRpcSpecBase with DIDUt
 
       val mockEncodedSignedCredential = "easdadgfkfñwlekrjfadf"
 
-      val issuanceOpHash = SHA256Digest.compute("opHash".getBytes())
+      val issuanceOpHash = Sha256.compute("opHash".getBytes())
       val mockCredentialBatchId =
-        CredentialBatchId.fromDigest(SHA256Digest.compute("SomeRandomHash".getBytes()))
+        CredentialBatchId.fromDigest(Sha256.compute("SomeRandomHash".getBytes()))
 
       // we need to first store the batch data in the db
       publishBatch(
@@ -239,7 +240,7 @@ class CredentialsServiceImplSpec extends ManagementConsoleRpcSpecBase with DIDUt
         issuanceOpHash,
         AtalaOperationId.fromVectorUnsafe(issuanceOpHash.getValue.toVector)
       )
-      val mockHash = SHA256Digest.compute("".getBytes())
+      val mockHash = Sha256.compute("".getBytes())
       val mockMerkleProof = new MerkleInclusionProof(mockHash, 1, List(mockHash).asJava)
       publishCredential(
         issuerId,
@@ -253,9 +254,9 @@ class CredentialsServiceImplSpec extends ManagementConsoleRpcSpecBase with DIDUt
 
     "return the generated transaction id" in {
       withPublishedCredential { (credential, keyPair, did) =>
-        val mockHash = SHA256Digest.compute("".getBytes())
+        val mockHash = Sha256.compute("".getBytes())
         val mockCredentialBatchId =
-          CredentialBatchId.fromDigest(SHA256Digest.compute("SomeRandomHash".getBytes()))
+          CredentialBatchId.fromDigest(Sha256.compute("SomeRandomHash".getBytes()))
 
         val revokeCredentialOp = node_models.SignedAtalaOperation(
           signedWith = "mockKey",
@@ -314,9 +315,9 @@ class CredentialsServiceImplSpec extends ManagementConsoleRpcSpecBase with DIDUt
 
     "fail when the credentialId is missing" in {
       withPublishedCredential { (_, keyPair, did) =>
-        val mockHash = SHA256Digest.compute("".getBytes())
+        val mockHash = Sha256.compute("".getBytes())
         val mockCredentialBatchId =
-          CredentialBatchId.fromDigest(SHA256Digest.compute("SomeRandomHash".getBytes()))
+          CredentialBatchId.fromDigest(Sha256.compute("SomeRandomHash".getBytes()))
 
         val revokeCredentialOp = node_models.SignedAtalaOperation(
           signedWith = "mockKey",
@@ -389,9 +390,9 @@ class CredentialsServiceImplSpec extends ManagementConsoleRpcSpecBase with DIDUt
 
     "fail when the whole batch is being revoked" in {
       withPublishedCredential { (credential, keyPair, did) =>
-        val mockHash = SHA256Digest.compute("".getBytes())
+        val mockHash = Sha256.compute("".getBytes())
         val mockCredentialBatchId =
-          CredentialBatchId.fromDigest(SHA256Digest.compute("SomeRandomHash".getBytes()))
+          CredentialBatchId.fromDigest(Sha256.compute("SomeRandomHash".getBytes()))
 
         val revokeCredentialOp = node_models.SignedAtalaOperation(
           signedWith = "mockKey",
@@ -425,9 +426,9 @@ class CredentialsServiceImplSpec extends ManagementConsoleRpcSpecBase with DIDUt
 
     "fail when the more than 1 credentials are being revoked" in {
       withPublishedCredential { (credential, keyPair, did) =>
-        val mockHash = SHA256Digest.compute("".getBytes())
+        val mockHash = Sha256.compute("".getBytes())
         val mockCredentialBatchId =
-          CredentialBatchId.fromDigest(SHA256Digest.compute("SomeRandomHash".getBytes()))
+          CredentialBatchId.fromDigest(Sha256.compute("SomeRandomHash".getBytes()))
 
         val revokeCredentialOp = node_models.SignedAtalaOperation(
           signedWith = "mockKey",
@@ -467,9 +468,9 @@ class CredentialsServiceImplSpec extends ManagementConsoleRpcSpecBase with DIDUt
 
     "fail when the credentialId doesn't belong to the authenticated institution" in {
       withPublishedCredential { (credential, _, _) =>
-        val mockHash = SHA256Digest.compute("".getBytes())
+        val mockHash = Sha256.compute("".getBytes())
         val mockCredentialBatchId =
-          CredentialBatchId.fromDigest(SHA256Digest.compute("SomeRandomHash".getBytes()))
+          CredentialBatchId.fromDigest(Sha256.compute("SomeRandomHash".getBytes()))
 
         val revokeCredentialOp = node_models.SignedAtalaOperation(
           signedWith = "mockKey",
@@ -525,7 +526,7 @@ class CredentialsServiceImplSpec extends ManagementConsoleRpcSpecBase with DIDUt
   }
 
   "CredentialsServiceImpl.getLedgerData" should {
-    val aHash = SHA256Digest.compute("random".getBytes())
+    val aHash = Sha256.compute("random".getBytes())
     val aCredentialHash = ByteString.copyFrom(aHash.getValue)
     val illegalCredentialHash = ByteString.copyFrom(aHash.getValue.drop(1))
     val aBatchId = CredentialBatchId.random().getId
@@ -577,7 +578,7 @@ class CredentialsServiceImplSpec extends ManagementConsoleRpcSpecBase with DIDUt
         batchRevocationLedgerData: Option[node_models.LedgerData],
         credentialRevocationLedgerData: Option[node_models.LedgerData]
     ): Unit = {
-      val aMerkleRoot = ByteString.copyFrom(SHA256Digest.compute("root".getBytes()).getValue)
+      val aMerkleRoot = ByteString.copyFrom(Sha256.compute("root".getBytes()).getValue)
       nodeMock
         .getBatchState(node_api.GetBatchStateRequest(aBatchId))
         .returns(
@@ -661,7 +662,7 @@ class CredentialsServiceImplSpec extends ManagementConsoleRpcSpecBase with DIDUt
 
   "CredentialsServiceImpl.publishBatch" should {
     def buildSignedIssueCredentialOp(
-        credentialHash: SHA256Digest,
+        credentialHash: Sha256Digest,
         didSuffix: String
     ): node_models.SignedAtalaOperation = {
       node_models.SignedAtalaOperation(
@@ -691,9 +692,9 @@ class CredentialsServiceImplSpec extends ManagementConsoleRpcSpecBase with DIDUt
       val did = generateDid(publicKey)
       createParticipant(issuerName, did)
 
-      val mockDIDSuffix = PrismDid.buildCanonical(SHA256Digest.compute("issuerDIDSuffix".getBytes())).getSuffix
+      val mockDIDSuffix = PrismDid.buildCanonical(Sha256.compute("issuerDIDSuffix".getBytes())).getSuffix
       val mockEncodedSignedCredential = "easdadgfkfñwlekrjfadf"
-      val mockEncodedSignedCredentialHash = SHA256Digest.compute(mockEncodedSignedCredential.getBytes())
+      val mockEncodedSignedCredentialHash = Sha256.compute(mockEncodedSignedCredential.getBytes())
 
       val issuanceOp = buildSignedIssueCredentialOp(
         mockEncodedSignedCredentialHash,
@@ -734,7 +735,7 @@ class CredentialsServiceImplSpec extends ManagementConsoleRpcSpecBase with DIDUt
         publishResponse.operationId mustBe mockOperationId.toProtoByteString
 
         val (operationId, hash) = getBatchData(mockCredentialBatchId).value
-        hash mustBe SHA256Digest.compute(issuanceOp.operation.value.toByteArray)
+        hash mustBe Sha256.compute(issuanceOp.operation.value.toByteArray)
         operationId mustBe mockOperationId
       }
     }
@@ -877,15 +878,15 @@ class CredentialsServiceImplSpec extends ManagementConsoleRpcSpecBase with DIDUt
 
       val mockEncodedSignedCredential = "easdadgfkfñwlekrjfadf"
 
-      val issuanceOpHash = SHA256Digest.compute("opHash".getBytes())
+      val issuanceOpHash = Sha256.compute("opHash".getBytes())
       val atalaOperationId = AtalaOperationId.fromVectorUnsafe(issuanceOpHash.getValue.toVector)
       val mockCredentialBatchId =
-        CredentialBatchId.fromDigest(SHA256Digest.compute("SomeRandomHash".getBytes()))
+        CredentialBatchId.fromDigest(Sha256.compute("SomeRandomHash".getBytes()))
 
       // we need to first store the batch data in the db
       publishBatch(mockCredentialBatchId, issuanceOpHash, atalaOperationId)
 
-      val mockHash = SHA256Digest.compute("".getBytes())
+      val mockHash = Sha256.compute("".getBytes())
       val mockMerkleProof = new MerkleInclusionProof(mockHash, 1, List(mockHash).asJava)
 
       val request = console_api
@@ -927,9 +928,9 @@ class CredentialsServiceImplSpec extends ManagementConsoleRpcSpecBase with DIDUt
 
       val mockEmptyEncodedSignedCredential = ""
 
-      val issuanceOpHash = SHA256Digest.compute("opHash".getBytes())
+      val issuanceOpHash = Sha256.compute("opHash".getBytes())
       val mockCredentialBatchId =
-        CredentialBatchId.fromDigest(SHA256Digest.compute("SomeRandomHash".getBytes()))
+        CredentialBatchId.fromDigest(Sha256.compute("SomeRandomHash".getBytes()))
 
       // we need to first store the batch data in the db
       publishBatch(
@@ -938,7 +939,7 @@ class CredentialsServiceImplSpec extends ManagementConsoleRpcSpecBase with DIDUt
         AtalaOperationId.fromVectorUnsafe(issuanceOpHash.getValue.toVector)
       )
 
-      val mockHash = SHA256Digest.compute("".getBytes())
+      val mockHash = Sha256.compute("".getBytes())
       val mockMerkleProof = new MerkleInclusionProof(mockHash, 1, List(mockHash).asJava)
 
       val request = console_api
@@ -977,9 +978,9 @@ class CredentialsServiceImplSpec extends ManagementConsoleRpcSpecBase with DIDUt
 
       val mockEncodedSignedCredential = "easdadgfkfñwlekrjfadf"
 
-      val issuanceOpHash = SHA256Digest.compute("opHash".getBytes())
+      val issuanceOpHash = Sha256.compute("opHash".getBytes())
       val mockCredentialBatchId =
-        CredentialBatchId.fromDigest(SHA256Digest.compute("SomeRandomHash".getBytes()))
+        CredentialBatchId.fromDigest(Sha256.compute("SomeRandomHash".getBytes()))
 
       // we need to first store the batch data in the db
       publishBatch(
@@ -988,7 +989,7 @@ class CredentialsServiceImplSpec extends ManagementConsoleRpcSpecBase with DIDUt
         AtalaOperationId.fromVectorUnsafe(issuanceOpHash.getValue.toVector)
       )
 
-      val mockHash = SHA256Digest.compute("".getBytes())
+      val mockHash = Sha256.compute("".getBytes())
       val mockMerkleProof = new MerkleInclusionProof(mockHash, 1, List(mockHash).asJava)
 
       val aRandomId = GenericCredential.Id.random()
@@ -1027,9 +1028,9 @@ class CredentialsServiceImplSpec extends ManagementConsoleRpcSpecBase with DIDUt
 
       val mockEncodedSignedCredential = "easdadgfkfñwlekrjfadf"
 
-      val issuanceOpHash = SHA256Digest.compute("opHash".getBytes())
+      val issuanceOpHash = Sha256.compute("opHash".getBytes())
       val mockCredentialBatchId =
-        CredentialBatchId.fromDigest(SHA256Digest.compute("SomeRandomHash".getBytes()))
+        CredentialBatchId.fromDigest(Sha256.compute("SomeRandomHash".getBytes()))
 
       // we need to first store the batch data in the db
       publishBatch(
@@ -1038,7 +1039,7 @@ class CredentialsServiceImplSpec extends ManagementConsoleRpcSpecBase with DIDUt
         AtalaOperationId.fromVectorUnsafe(issuanceOpHash.getValue.toVector)
       )
 
-      val mockHash = SHA256Digest.compute("".getBytes())
+      val mockHash = Sha256.compute("".getBytes())
       val mockMerkleProof = new MerkleInclusionProof(mockHash, 1, List(mockHash).asJava)
 
       // another issuer's data
@@ -1086,9 +1087,9 @@ class CredentialsServiceImplSpec extends ManagementConsoleRpcSpecBase with DIDUt
       val mockEncodedSignedCredential = "easdadgfkfñwlekrjfadf"
 
       val mockCredentialBatchId =
-        CredentialBatchId.fromDigest(SHA256Digest.compute("SomeRandomHash".getBytes()))
+        CredentialBatchId.fromDigest(Sha256.compute("SomeRandomHash".getBytes()))
 
-      val mockHash = SHA256Digest.compute("".getBytes())
+      val mockHash = Sha256.compute("".getBytes())
       val mockMerkleProof = new MerkleInclusionProof(mockHash, 1, List(mockHash).asJava)
 
       val request = console_api

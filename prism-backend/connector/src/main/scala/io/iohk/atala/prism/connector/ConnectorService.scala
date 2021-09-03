@@ -20,8 +20,8 @@ import io.iohk.atala.prism.connector.services.{
   MessagesService,
   RegistrationService
 }
-import io.iohk.atala.prism.kotlin.crypto.{EC}
-import io.iohk.atala.prism.kotlin.crypto.keys.{ECPublicKey}
+import io.iohk.atala.prism.kotlin.crypto.EC.{INSTANCE => EC}
+import io.iohk.atala.prism.kotlin.crypto.keys.ECPublicKey
 import io.iohk.atala.prism.metrics.RequestMeasureUtil.measureRequestFuture
 import io.iohk.atala.prism.models.ParticipantId
 import io.iohk.atala.prism.protos.common_models.{HealthCheckRequest, HealthCheckResponse}
@@ -134,7 +134,7 @@ class ConnectorService(
               InvalidArgumentError("publicKey", "key matching one in GRPC header", "different key")
             )
             _ <- Either.cond(
-              EC.verify(payload, publicKey, authHeader.signature),
+              EC.verifyBytes(payload, publicKey, authHeader.signature),
               (),
               SignatureVerificationError()
             )
@@ -153,7 +153,7 @@ class ConnectorService(
                 .mapLeft(_ => InvalidArgumentError("did", "unpublished did with public key", "invalid"))
             _ <-
               Either
-                .cond(EC.verify(payload, publicKey, authHeader.signature), (), SignatureVerificationError())
+                .cond(EC.verifyBytes(payload, publicKey, authHeader.signature), (), SignatureVerificationError())
                 .toFutureEither
           } yield ()
       }

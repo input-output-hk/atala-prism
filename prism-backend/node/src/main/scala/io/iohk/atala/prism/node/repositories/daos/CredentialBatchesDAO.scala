@@ -7,7 +7,7 @@ import doobie.free.connection.ConnectionIO
 import doobie.implicits._
 import io.iohk.atala.prism.kotlin.credentials.CredentialBatchId
 import io.iohk.atala.prism.kotlin.crypto.MerkleRoot
-import io.iohk.atala.prism.kotlin.crypto.SHA256Digest
+import io.iohk.atala.prism.kotlin.crypto.Sha256Digest
 import io.iohk.atala.prism.models.{Ledger, TransactionId}
 import io.iohk.atala.prism.node.models.nodeState.{CredentialBatchState, LedgerData}
 import io.iohk.atala.prism.node.repositories.daos._
@@ -18,7 +18,7 @@ import io.iohk.atala.prism.utils.syntax._
 object CredentialBatchesDAO {
   case class CreateCredentialBatchData(
       batchId: CredentialBatchId,
-      lastOperation: SHA256Digest,
+      lastOperation: Sha256Digest,
       issuerDIDSuffix: String,
       merkleRoot: MerkleRoot,
       ledgerData: LedgerData
@@ -30,9 +30,8 @@ object CredentialBatchesDAO {
     val issuedOn = data.ledgerData.timestampInfo
     sql"""
          |INSERT INTO credential_batches (batch_id, last_operation, issuer_did_suffix, merkle_root, issued_on, issued_on_absn, issued_on_osn, ledger, issued_on_transaction_id)
-         |VALUES (${data.batchId}, ${data.lastOperation}, ${data.issuerDIDSuffix}, ${data.merkleRoot}, ${Instant
-      .ofEpochMilli(issuedOn.getAtalaBlockTimestamp)},
-         | ${issuedOn.getAtalaBlockSequenceNumber}, ${issuedOn.getOperationSequenceNumber}, ${data.ledgerData.ledger}, ${data.ledgerData.transactionId})
+         |VALUES (${data.batchId}, ${data.lastOperation}, ${data.issuerDIDSuffix}, ${data.merkleRoot}, ${issuedOn.getBlockTimestamp.toInstant},
+         | ${issuedOn.getBlockSequenceNumber}, ${issuedOn.getOperationSequenceNumber}, ${data.ledgerData.ledger}, ${data.ledgerData.transactionId})
        """.stripMargin.update.run.void
   }
 
@@ -53,8 +52,8 @@ object CredentialBatchesDAO {
     val revocationTimestamp = ledgerData.timestampInfo
     sql"""
          |UPDATE credential_batches
-         |SET revoked_on = ${revocationTimestamp.getAtalaBlockTimestamp.toInstant},
-         |    revoked_on_absn = ${revocationTimestamp.getAtalaBlockSequenceNumber},
+         |SET revoked_on = ${revocationTimestamp.getBlockTimestamp.toInstant},
+         |    revoked_on_absn = ${revocationTimestamp.getBlockSequenceNumber},
          |    revoked_on_osn = ${revocationTimestamp.getOperationSequenceNumber},
          |    revoked_on_transaction_id = ${ledgerData.transactionId}
          |WHERE batch_id = ${credentialBatchId.getId} AND
@@ -64,7 +63,7 @@ object CredentialBatchesDAO {
 
   def revokeCredentials(
       credentialBatchId: CredentialBatchId,
-      credentials: List[SHA256Digest],
+      credentials: List[Sha256Digest],
       ledgerData: LedgerData
   ): ConnectionIO[Unit] = {
     val revocationTimestamp = ledgerData.timestampInfo
@@ -73,14 +72,14 @@ object CredentialBatchesDAO {
         |VALUES (?, ?, ?, ?, ?, ?, ?)
         |ON CONFLICT (batch_id, credential_id) DO NOTHING
         |""".stripMargin
-    Update[(CredentialBatchId, SHA256Digest, Instant, Int, Int, Ledger, TransactionId)](sql)
+    Update[(CredentialBatchId, Sha256Digest, Instant, Int, Int, Ledger, TransactionId)](sql)
       .updateMany(
         credentials.map(credentialHash =>
           (
             credentialBatchId,
             credentialHash,
-            revocationTimestamp.getAtalaBlockTimestamp.toInstant,
-            revocationTimestamp.getAtalaBlockSequenceNumber,
+            revocationTimestamp.getBlockTimestamp.toInstant,
+            revocationTimestamp.getBlockSequenceNumber,
             revocationTimestamp.getOperationSequenceNumber,
             ledgerData.ledger,
             ledgerData.transactionId
@@ -92,7 +91,7 @@ object CredentialBatchesDAO {
 
   def findRevokedCredentialLedgerData(
       batchId: CredentialBatchId,
-      credentialHash: SHA256Digest
+      credentialHash: Sha256Digest
   ): ConnectionIO[Option[LedgerData]] = {
     sql"""SELECT transaction_id, ledger, revoked_on, revoked_on_absn, revoked_on_osn
          |FROM revoked_credentials
@@ -102,10 +101,10 @@ object CredentialBatchesDAO {
   }
 
   // only for testing
-  def findRevokedCredentials(batchId: CredentialBatchId): ConnectionIO[List[(SHA256Digest, LedgerData)]] = {
+  def findRevokedCredentials(batchId: CredentialBatchId): ConnectionIO[List[(Sha256Digest, LedgerData)]] = {
     sql"""SELECT credential_id, transaction_id, ledger, revoked_on, revoked_on_absn, revoked_on_osn
          |FROM revoked_credentials
          |WHERE batch_id = $batchId
-         |""".stripMargin.query[(SHA256Digest, LedgerData)].to[List]
+         |""".stripMargin.query[(Sha256Digest, LedgerData)].to[List]
   }
 }

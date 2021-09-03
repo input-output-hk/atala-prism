@@ -4,7 +4,7 @@ import cats.effect.IO
 import com.typesafe.config.ConfigFactory
 import doobie.implicits._
 import io.iohk.atala.prism.AtalaWithPostgresSpec
-import io.iohk.atala.prism.kotlin.crypto.EC
+import io.iohk.atala.prism.kotlin.crypto.EC.{INSTANCE => EC}
 import io.iohk.atala.prism.kotlin.identity.PrismDid
 import io.iohk.atala.prism.management.console.DataPreparation
 import io.iohk.atala.prism.management.console.config.DefaultCredentialTypeConfig

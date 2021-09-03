@@ -7,7 +7,7 @@ import io.grpc.Status
 import io.iohk.atala.prism.BuildInfo
 import io.iohk.atala.prism.connector.AtalaOperationId
 import io.iohk.atala.prism.kotlin.credentials.CredentialBatchId
-import io.iohk.atala.prism.kotlin.crypto.SHA256Digest
+import io.iohk.atala.prism.kotlin.crypto.Sha256Digest
 import io.iohk.atala.prism.kotlin.identity.{CanonicalPrismDid, PrismDid, LongFormPrismDid}
 import io.iohk.atala.prism.metrics.RequestMeasureUtil
 import io.iohk.atala.prism.metrics.RequestMeasureUtil.{FutureMetricsOps, measureRequestFuture}
@@ -225,7 +225,7 @@ class NodeServiceImpl(
     )
 
     val credentialHashF = Future
-      .fromTry(Try(SHA256Digest.fromBytes(request.credentialHash.toByteArray)))
+      .fromTry(Try(Sha256Digest.fromBytes(request.credentialHash.toByteArray)))
       .countErrorOnFail(serviceName, methodName, Status.INTERNAL.getCode.value())
     measureRequestFuture(serviceName, methodName) {
       withLog(methodName, request) { traceId =>
@@ -234,7 +234,7 @@ class NodeServiceImpl(
           batchId <- batchIdF
           _ = logWithTraceId(methodName, traceId, "batchId" -> s"${batchId.getId}")
           credentialHash <- credentialHashF
-          _ = logWithTraceId(methodName, traceId, "credentialHash" -> s"${credentialHash.hexValue}")
+          _ = logWithTraceId(methodName, traceId, "credentialHash" -> s"${credentialHash.getHexValue}")
           timeEither <-
             credentialBatchesRepository
               .getCredentialRevocationTime(batchId, credentialHash)

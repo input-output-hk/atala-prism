@@ -6,7 +6,7 @@ import io.grpc.Context
 import io.iohk.atala.prism.auth.grpc.{GrpcAuthenticationHeader, GrpcAuthenticationHeaderParser}
 import io.iohk.atala.prism.connector.model.actions._
 import io.iohk.atala.prism.connector.model.{ParticipantLogo, ParticipantType, TokenString, UpdateParticipantProfile}
-import io.iohk.atala.prism.kotlin.crypto.EC
+import io.iohk.atala.prism.kotlin.crypto.EC.{INSTANCE => EC}
 import io.iohk.atala.prism.grpc.ProtoConverter
 import io.iohk.atala.prism.kotlin.identity.{CanonicalPrismDid, PrismDid}
 import io.iohk.atala.prism.protos.connector_api.UpdateProfileRequest
@@ -86,7 +86,7 @@ package object grpc {
         new RuntimeException("The encoded public key is required to accept a connection")
       )
       for {
-        parsedKey <- Try(in.holderEncodedPublicKey.map(encodedKey => EC.toPublicKey(encodedKey.publicKey.toByteArray)))
+        parsedKey <- Try(in.holderEncodedPublicKey.map(encodedKey => EC.toPublicKeyFromBytes(encodedKey.publicKey.toByteArray)))
         token = TokenString(in.token)
         maybeHeader = GrpcAuthenticationHeaderParser.parse(Context.current())
         basedOn <- maybeHeader match {

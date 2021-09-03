@@ -8,14 +8,16 @@ import doobie.util.invariant.InvalidEnum
 import doobie.{Get, Meta, Put, Read, Write}
 import doobie.implicits.legacy.instant._
 import io.iohk.atala.prism.connector.AtalaOperationId
-import io.iohk.atala.prism.kotlin.credentials.{CredentialBatchId, TimestampInfo}
-import io.iohk.atala.prism.kotlin.crypto.{EC, MerkleRoot, SHA256Digest}
+import io.iohk.atala.prism.kotlin.credentials.CredentialBatchId
+import io.iohk.atala.prism.kotlin.crypto.EC.{INSTANCE => EC}
+import io.iohk.atala.prism.kotlin.crypto.{MerkleRoot, Sha256Digest}
 import io.iohk.atala.prism.kotlin.crypto.ECConfig.{INSTANCE => ECConfig}
 import io.iohk.atala.prism.daos.BaseDAO
 import io.iohk.atala.prism.models.{BlockInfo, Ledger, TransactionId, TransactionInfo}
 import io.iohk.atala.prism.node.models.nodeState.{CredentialBatchState, DIDPublicKeyState, LedgerData}
 import io.iohk.atala.prism.node.models._
 import io.iohk.atala.prism.kotlin.crypto.keys.ECPublicKey
+import io.iohk.atala.prism.kotlin.protos.TimestampInfo
 import io.iohk.atala.prism.utils.syntax._
 
 package object daos extends BaseDAO {
@@ -83,11 +85,11 @@ package object daos extends BaseDAO {
         key.keyUsage,
         curveName,
         compressed,
-        key.addedOn.timestampInfo.getAtalaBlockTimestamp.toInstant,
-        key.addedOn.timestampInfo.getAtalaBlockSequenceNumber,
+        key.addedOn.timestampInfo.getBlockTimestamp.toInstant,
+        key.addedOn.timestampInfo.getBlockSequenceNumber,
         key.addedOn.timestampInfo.getOperationSequenceNumber,
-        key.revokedOn map (_.timestampInfo.getAtalaBlockTimestamp.toInstant),
-        key.revokedOn map (_.timestampInfo.getAtalaBlockSequenceNumber),
+        key.revokedOn map (_.timestampInfo.getBlockTimestamp.toInstant),
+        key.revokedOn map (_.timestampInfo.getBlockSequenceNumber),
         key.revokedOn map (_.timestampInfo.getOperationSequenceNumber)
       )
     }
@@ -137,7 +139,7 @@ package object daos extends BaseDAO {
             yield LedgerData(
               transactionId = transactionId,
               ledger = ledger,
-              timestampInfo = new TimestampInfo(t.toEpochMilli, absn, osn)
+              timestampInfo = new TimestampInfo(absn, osn, t.toTimestamp, java.util.Map.of())
             )
         DIDPublicKeyState(
           didSuffix,
@@ -147,7 +149,7 @@ package object daos extends BaseDAO {
           LedgerData(
             transactionId = aTransactionId,
             ledger = aLedger,
-            timestampInfo = new TimestampInfo(aTimestamp.toEpochMilli, aABSN, aOSN)
+            timestampInfo = new TimestampInfo(aABSN, aOSN, aTimestamp.toTimestamp, java.util.Map.of())
           ),
           revokeLedgerData
         )
@@ -217,7 +219,7 @@ package object daos extends BaseDAO {
           LedgerData(
             TransactionId.from(tId).get,
             Ledger.withNameInsensitive(ledger),
-            new TimestampInfo(abt.toEpochMilli, absn, osn)
+            new TimestampInfo(absn, osn, abt.toTimestamp, java.util.Map.of())
           )
       }
   implicit val ledgerDataRead: Read[LedgerData] =
@@ -227,7 +229,7 @@ package object daos extends BaseDAO {
           LedgerData(
             TransactionId.from(tId).get,
             Ledger.withNameInsensitive(ledger),
-            new TimestampInfo(abt.toEpochMilli, absn, osn)
+            new TimestampInfo(absn, osn, abt.toTimestamp, java.util.Map.of())
           )
       }
 
@@ -269,7 +271,7 @@ package object daos extends BaseDAO {
         val issuedOn = LedgerData(
           TransactionId.from(issTxId).get,
           Ledger.withNameInsensitive(issLedger),
-          new TimestampInfo(issABT.toEpochMilli, issABSN, issOSN)
+          new TimestampInfo(issABSN, issOSN, issABT.toTimestamp, java.util.Map.of())
         )
         val revokedOn = {
           (revTxIdOp, revLedgerOp, revABTOp, revABSNOp, revOSNOp) match {
@@ -278,7 +280,7 @@ package object daos extends BaseDAO {
                 LedgerData(
                   TransactionId.from(rTrId).get,
                   Ledger.withNameInsensitive(rLedger),
-                  new TimestampInfo(rAbt.toEpochMilli, rAbsn, rOsn)
+                  new TimestampInfo(rAbsn, rOsn, rAbt.toTimestamp, java.util.Map.of())
                 )
               )
             case _ => None
@@ -287,10 +289,10 @@ package object daos extends BaseDAO {
         CredentialBatchState(
           CredentialBatchId.fromString(batchId),
           suffix,
-          new MerkleRoot(SHA256Digest.fromBytes(root)),
+          new MerkleRoot(Sha256Digest.fromBytes(root)),
           issuedOn,
           revokedOn,
-          SHA256Digest.fromBytes(sha)
+          Sha256Digest.fromBytes(sha)
         )
     }
   }

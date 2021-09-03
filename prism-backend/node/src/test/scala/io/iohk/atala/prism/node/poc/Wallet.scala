@@ -9,12 +9,20 @@ import io.iohk.atala.prism.kotlin.credentials.json.JsonBasedCredential
 import io.iohk.atala.prism.kotlin.crypto.ECConfig.{INSTANCE => ECConfig}
 import io.iohk.atala.prism.kotlin.crypto.keys.{ECPrivateKey, ECPublicKey}
 import io.iohk.atala.prism.kotlin.crypto.signature.ECSignature
-import io.iohk.atala.prism.kotlin.crypto.{EC, MerkleInclusionProof, SHA256Digest}
-import io.iohk.atala.prism.kotlin.extras.{CredentialVerificationService, ProtoClientUtils, VerificationError}
+import io.iohk.atala.prism.kotlin.crypto.{MerkleInclusionProof, Sha256Digest}
+import io.iohk.atala.prism.kotlin.crypto.EC.{INSTANCE => EC}
+import io.iohk.atala.prism.kotlin.crypto.Sha256
+import io.iohk.atala.prism.kotlin.extras.{
+  CredentialVerificationService,
+  CredentialVerificationServiceAsync,
+  ProtoClientUtils,
+  VerificationError
+}
 import io.iohk.atala.prism.kotlin.identity.PrismDid
 import io.iohk.atala.prism.protos.{node_api, node_models}
-import kotlin.coroutines.EmptyCoroutineContext
-import kotlinx.coroutines.{BuildersKt, CoroutineStart, GlobalScope}
+import kotlinx.coroutines.{BuildersKt, CoroutineStart, Deferred, GlobalScope}
+
+import scala.util.Try
 
 // We define some classes to illustrate what happens in the different components
 case class Wallet(node: node_api.NodeServiceGrpc.NodeServiceBlockingStub) {
@@ -55,8 +63,8 @@ case class Wallet(node: node_api.NodeServiceGrpc.NodeServiceBlockingStub) {
     )
 
     val atalaOp = node_models.AtalaOperation(operation = node_models.AtalaOperation.Operation.CreateDid(createDidOp))
-    val operationHash = SHA256Digest.compute(atalaOp.toByteArray)
-    val didSuffix: String = operationHash.hexValue()
+    val operationHash = Sha256.compute(atalaOp.toByteArray)
+    val didSuffix: String = operationHash.getHexValue()
 
     dids += (didSuffix -> collection.mutable.Map(
       PrismDid.getMASTER_KEY_ID -> masterPrivateKey,
@@ -111,7 +119,7 @@ case class Wallet(node: node_api.NodeServiceGrpc.NodeServiceBlockingStub) {
     node_models.SignedAtalaOperation(
       signedWith = keyId,
       operation = Some(operation),
-      signature = ByteString.copyFrom(EC.sign(operation.toByteArray, key).getData)
+      signature = ByteString.copyFrom(EC.signBytes(operation.toByteArray, key).getData)
     )
   }
 
@@ -131,11 +139,11 @@ case class Wallet(node: node_api.NodeServiceGrpc.NodeServiceBlockingStub) {
       didSuffix: String
   ): ECSignature = {
     val privateKey = dids(didSuffix)(keyId)
-    EC.sign(publicKey.getEncoded, privateKey)
+    EC.signBytes(publicKey.getEncoded, privateKey)
   }
 
   def verifySignedKey(publicKey: ECPublicKey, signature: ECSignature, signingKey: ECPublicKey): Boolean = {
-    EC.verify(publicKey.getEncoded, signingKey, signature)
+    EC.verifyBytes(publicKey.getEncoded, signingKey, signature)
   }
 
   def verifyCredential(
@@ -145,21 +153,12 @@ case class Wallet(node: node_api.NodeServiceGrpc.NodeServiceBlockingStub) {
 
     val nodeKotlin = ProtoClientUtils.INSTANCE.nodeClient("localhost", 50053)
     val credentialVerificationService = new CredentialVerificationService(nodeKotlin)
-
-    val deferred = BuildersKt.async(
-      GlobalScope.INSTANCE,
-      EmptyCoroutineContext.INSTANCE,
-      CoroutineStart.DEFAULT, // CoroutineStart.LAZY, or other strategies
-      (_, continuation) => {
-        credentialVerificationService.verify(credential, merkleProof, continuation)
-      }
-    )
+    val credentialVerificationServiceAsync = new CredentialVerificationServiceAsync(credentialVerificationService)
+    val result = credentialVerificationServiceAsync.verify(credential, merkleProof)
+    val errors = result.join().getVerificationErrors
 
     import scala.jdk.CollectionConverters._
-
     Validated.fromEither {
-      val result = deferred.getCompleted
-      val errors = result.getVerificationErrors
 
       Either.cond(errors.isEmpty, (), NonEmptyList.fromListUnsafe(errors.asScala.toList))
     }

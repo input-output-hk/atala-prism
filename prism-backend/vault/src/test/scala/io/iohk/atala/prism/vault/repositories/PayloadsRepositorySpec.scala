@@ -2,7 +2,8 @@ package io.iohk.atala.prism.vault.repositories
 
 import cats.effect.IO
 import io.iohk.atala.prism.AtalaWithPostgresSpec
-import io.iohk.atala.prism.kotlin.crypto.{EC, SHA256Digest}
+import io.iohk.atala.prism.kotlin.crypto.EC.{INSTANCE => EC}
+import io.iohk.atala.prism.kotlin.crypto.Sha256
 import io.iohk.atala.prism.kotlin.identity.PrismDid
 import io.iohk.atala.prism.vault.model.{CreatePayload, Payload}
 import org.scalatest.OptionValues
@@ -22,7 +23,7 @@ class PayloadsRepositorySpec extends AtalaWithPostgresSpec with OptionValues {
 
   def createPayload(did: PrismDid, content: Vector[Byte]): IO[Payload] = {
     val externalId = Payload.ExternalId.random()
-    val hash = SHA256Digest.compute(content.toArray)
+    val hash = Sha256.compute(content.toArray)
     val createPayload1 = CreatePayload(externalId, hash, did, content)
     repository.flatMap(_.create(createPayload1))
   }

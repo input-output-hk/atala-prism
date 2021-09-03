@@ -5,7 +5,8 @@ import doobie.util.invariant.InvalidEnum
 import doobie.{Get, Meta, Put}
 import io.circe.Json
 import io.iohk.atala.prism.connector.AtalaOperationId
-import io.iohk.atala.prism.kotlin.crypto.{EC, SHA256Digest}
+import io.iohk.atala.prism.kotlin.crypto.Sha256Digest
+import io.iohk.atala.prism.kotlin.crypto.EC.{INSTANCE => EC}
 import io.iohk.atala.prism.kotlin.crypto.keys.ECPublicKey
 import io.iohk.atala.prism.kotlin.identity.PrismDid
 import io.iohk.atala.prism.models.{Ledger, TransactionId, UUIDValue}
@@ -20,8 +21,8 @@ trait BaseDAO {
   implicit val jsonPut: Put[Json] = doobie.postgres.circe.json.implicits.jsonPut
   implicit val jsonGet: Get[Json] = doobie.postgres.circe.json.implicits.jsonGet
 
-  implicit val sha256MetaBytes: Meta[SHA256Digest] = Meta[Array[Byte]].timap { value =>
-    SHA256Digest.fromBytes(value)
+  implicit val sha256MetaBytes: Meta[Sha256Digest] = Meta[Array[Byte]].timap { value =>
+    Sha256Digest.fromBytes(value)
   }(_.getValue)
 
   implicit val atalaOperationIdMeta: Meta[AtalaOperationId] =
@@ -29,7 +30,7 @@ trait BaseDAO {
       .timap(value => AtalaOperationId.fromVectorUnsafe(value.toVector))(_.value.toArray)
 
   implicit val ecPublicKeyMeta: Meta[ECPublicKey] =
-    Meta[Array[Byte]].timap(b => EC.toPublicKey(b))(_.getEncoded)
+    Meta[Array[Byte]].timap(b => EC.toPublicKeyFromCompressed(b))(_.getEncoded)
 
   implicit val transactionIdMeta: Meta[TransactionId] =
     Meta[Array[Byte]].timap(b =>

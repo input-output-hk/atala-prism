@@ -1,7 +1,7 @@
 package io.iohk.atala.prism.auth.utils
 
 import io.iohk.atala.prism.auth.errors._
-import io.iohk.atala.prism.kotlin.crypto.EC
+import io.iohk.atala.prism.kotlin.crypto.EC.{INSTANCE => EC}
 import io.iohk.atala.prism.kotlin.crypto.ECConfig.{INSTANCE => ECConfig}
 import io.iohk.atala.prism.kotlin.crypto.keys.ECPublicKey
 import io.iohk.atala.prism.kotlin.identity.PrismDidFormatException.{
@@ -59,7 +59,7 @@ object DIDUtils {
         .map(_.keyData)
         .flatMap {
           case EcKeyData(data) =>
-            verifyPublicKey(data.curve, EC.toPublicKey(data.x.toByteArray, data.y.toByteArray))
+            verifyPublicKey(data.curve, EC.toPublicKeyFromByteCoordinates(data.x.toByteArray, data.y.toByteArray))
           case CompressedEcKeyData(data) =>
             verifyPublicKey(data.curve, EC.toPublicKeyFromCompressed(data.data.toByteArray))
           case Empty => None
