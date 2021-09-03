@@ -156,7 +156,7 @@ export const skeletonShape = arrayOf({
 });
 
 export const templateCategoryShape = shape({
-  id: number.isRequired,
+  id: string.isRequired,
   name: string.isRequired,
   logo: string,
   sampleImage: string,

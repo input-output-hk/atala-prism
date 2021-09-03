@@ -50,10 +50,10 @@ const CategoryCreation = observer(({ categoryForm, close }) => {
     if (!isPartiallyValid) {
       displayErrors(errors);
     } else {
-      categoryForm.resetFields();
       const normalizedValues = normalizeCategoryForm(values);
       await addTemplateCategory(normalizedValues);
       close();
+      categoryForm.resetFields();
     }
     setIsLoading(false);
   };
