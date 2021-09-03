@@ -551,6 +551,9 @@
       "edit": "Edit ",
       "copy": "Copy",
       "delete":"Delete"
+    },
+    "messages": {
+      "customTypeWarning": "Custom types are not available"
     }
   },
   "credentialTemplateCreation": {
