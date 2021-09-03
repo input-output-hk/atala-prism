@@ -7,8 +7,10 @@ import io.iohk.atala.prism.errors.{PrismError, PrismServerError}
 import io.iohk.atala.prism.models.ParticipantId
 import io.iohk.atala.prism.kotlin.crypto.keys.ECPublicKey
 import io.iohk.atala.prism.kotlin.identity.{PrismDid => DID}
+import tofu.logging.{DictLoggable, LogRenderer, Loggable}
 import io.iohk.atala.prism.logging.GeneralLoggableInstances._
 import tofu.logging.derivation.loggable
+import tofu.syntax.loggable.TofuLoggableOps
 
 package object errors {
 
@@ -95,6 +97,15 @@ package object errors {
   }
 
   object ConnectionNotFound {
+
+    implicit val connectionNotFoundLoggable: Loggable[ConnectionNotFound] = new DictLoggable[ConnectionNotFound] {
+      override def fields[I, V, R, S](a: ConnectionNotFound, i: I)(implicit r: LogRenderer[I, V, R, S]): R =
+        r.addString("ConnectionNotFound", a.connection.fold(_.logShow, _.logShow), i)
+
+      override def logShow(a: ConnectionNotFound): String =
+        s"{ConnectionNotFound=${a.connection.fold(_.logShow, _.logShow)})}"
+    }
+
     def apply(s: TokenString): ConnectionNotFound = ConnectionNotFound(Left(s))
     def apply(c: ConnectionId): ConnectionNotFound = ConnectionNotFound(Right(c))
   }
@@ -108,6 +119,15 @@ package object errors {
   }
 
   object ConnectionRevoked {
+
+    implicit val connectionRevokedLoggable: Loggable[ConnectionRevoked] = new DictLoggable[ConnectionRevoked] {
+      override def fields[I, V, R, S](a: ConnectionRevoked, i: I)(implicit r: LogRenderer[I, V, R, S]): R =
+        r.addString("ConnectionRevoked", a.connection.fold(_.logShow, _.logShow), i)
+
+      override def logShow(a: ConnectionRevoked): String =
+        s"{ConnectionRevoked=${a.connection.fold(_.logShow, _.logShow)})}"
+    }
+
     def apply(s: TokenString): ConnectionRevoked = ConnectionRevoked(Left(s))
     def apply(c: ConnectionId): ConnectionRevoked = ConnectionRevoked(Right(c))
   }

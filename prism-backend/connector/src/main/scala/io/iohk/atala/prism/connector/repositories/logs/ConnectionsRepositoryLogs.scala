@@ -7,6 +7,7 @@ import cats.syntax.flatMap._
 import io.iohk.atala.prism.connector.errors
 import io.iohk.atala.prism.connector.model._
 import io.iohk.atala.prism.connector.repositories.ConnectionsRepository
+import io.iohk.atala.prism.kotlin.identity.{PrismDid => DID}
 import io.iohk.atala.prism.kotlin.crypto.keys.ECPublicKey
 import io.iohk.atala.prism.models.ParticipantId
 import tofu.higherKind.Mid
