@@ -29,6 +29,29 @@ I have also thought about adding those keys to a DID and letting another party r
 
 The elephant in the room with this approach is obviously the implementation. When it comes to security and cryptography, implementing things yourself is can be dangerous, and more complicated the protocol is, the more ways there are to introduce an exploit which are not present in battle tested libraries. The official signal implementation of this protocols is AGPL licensed and not really a "library", so there will be a need to introduce and maintain a custom building script that build java, swift and TS libraries and integrate them In KMM.
 
+### Key exchange protocol 2
+
+After the connection has been established (holder has scanned a connection token and registered itself in a connector), key exchange can start. Both the issuer and holder need to have their DIDs published on chain and both of them should know each others DIDs.
+
+We will add new type of kay in a DID document called `key-agreement`
+
+steps:
+1. Issuer generates a symmetric secret key
+2. Issuer will resolve a holders DID, take a `key-agreement` public key and encrypt a symmetric key with it
+3. Issuer will sign this encrypted key with his `key-agreement` private key
+4. Issuer sends a message to a holder
+```protobuf
+message KeyAgreementMessage { // name to be determined
+    encrypted_key = 1;
+    signature = 2;
+}
+```
+5. Holder receives the message
+6. Holder will resolve an issuers DID, take `key-agreement` public key
+7. Holder will verify a signature in received message using Issuers `key-agreement` public key. If verification has failed, abort the process.
+8. Holder will decrypt the encrypted key using his `key-agreement` private key.
+9. At this point, both issuer and holder have established a common secret
+
 ### Message encryption protocol
 
 Let's assume both Issuer and Holder have derived a common secret key. Both parties are responsible for storing the keys in a secure manner, both parties should store the keys and associate it to a specific `connection_id` which will be accessible after the connection has been established. We will introduce a new type of `AtalaMessage`
