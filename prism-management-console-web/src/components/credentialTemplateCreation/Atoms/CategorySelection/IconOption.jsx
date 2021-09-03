@@ -12,6 +12,7 @@ const IconOption = ({ icon, selected }) => (
     />
   </Radio>
 );
+
 IconOption.propTypes = {
   icon: PropTypes.oneOfType([
     PropTypes.shape({
