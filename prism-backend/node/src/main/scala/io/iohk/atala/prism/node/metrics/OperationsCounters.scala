@@ -78,7 +78,7 @@ object OperationsCounters {
       tagSetBuilder: TagSet.Builder
   ): Unit =
     in match {
-      // Since UpdateDid contains a list of operations - we want to count them one by one
+      // Since UpdateDid contains a list of actions - we want to count them one by one
       case AtalaOperation.Operation.UpdateDid(subOperation) =>
         countDidUpdateOperations(subOperation.actions, counter, tagSetBuilder)
       case anythingElse =>
