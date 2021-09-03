@@ -20,8 +20,8 @@ import io.iohk.atala.prism.connector.services.{
   MessagesService,
   RegistrationService
 }
-import io.iohk.atala.prism.kotlin.crypto.{EC}
-import io.iohk.atala.prism.kotlin.crypto.keys.{ECPublicKey}
+import io.iohk.atala.prism.kotlin.crypto.EC
+import io.iohk.atala.prism.kotlin.crypto.keys.ECPublicKey
 import io.iohk.atala.prism.metrics.RequestMeasureUtil.measureRequestFuture
 import io.iohk.atala.prism.models.ParticipantId
 import io.iohk.atala.prism.protos.common_models.{HealthCheckRequest, HealthCheckResponse}
@@ -247,6 +247,7 @@ class ConnectorService(
           messagesPaginatedRequest.limit,
           messagesPaginatedRequest.lastSeenMessageId
         )
+        .mapLeft(_.unify)
         .map(msgs => connector_api.GetMessagesPaginatedResponse(msgs.map(_.toProto)))
     }
   }
@@ -328,12 +329,13 @@ class ConnectorService(
   override def sendMessage(request: connector_api.SendMessageRequest): Future[connector_api.SendMessageResponse] =
     auth[SendMessageRequest]("sendMessage", request) { (participantId, sendMessageRequest) =>
       messages
-        .insertMessage[ConnectorError](
+        .insertMessage(
           sender = participantId,
           connection = sendMessageRequest.connectionId,
           content = sendMessageRequest.message,
           messageId = sendMessageRequest.id
         )
+        .mapLeft(_.unify)
         .map(messageId => connector_api.SendMessageResponse(id = messageId.uuid.toString))
     }
 
@@ -401,7 +403,8 @@ class ConnectorService(
         FutureEither.right[ConnectorError, connector_api.SendMessagesResponse](connector_api.SendMessagesResponse())
       ) { messagesToInsert =>
         messages
-          .insertMessages[ConnectorError](participantId, messagesToInsert)
+          .insertMessages(participantId, messagesToInsert)
+          .mapLeft(_.unify)
           .map(messageIds => connector_api.SendMessagesResponse(ids = messageIds.map(_.uuid.toString)))
       }
     }

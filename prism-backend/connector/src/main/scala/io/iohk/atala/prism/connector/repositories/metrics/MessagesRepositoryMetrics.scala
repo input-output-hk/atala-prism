@@ -2,11 +2,10 @@ package io.iohk.atala.prism.connector.repositories.metrics
 
 import cats.data.NonEmptyList
 import cats.effect.Bracket
-import io.iohk.atala.prism.connector.errors.InvalidArgumentError
-import io.iohk.atala.prism.connector.errors.MessagesError._
 import io.iohk.atala.prism.connector.model.{ConnectionId, Message, MessageId}
 import io.iohk.atala.prism.connector.model.actions.SendMessagesRequest
 import io.iohk.atala.prism.connector.repositories.MessagesRepository
+import io.iohk.atala.prism.connector.repositories.MessagesRepository._
 import io.iohk.atala.prism.metrics.TimeMeasureUtil.MeasureOps
 import io.iohk.atala.prism.metrics.{TimeMeasureMetric, TimeMeasureUtil}
 import io.iohk.atala.prism.models.ParticipantId
@@ -23,34 +22,23 @@ private[repositories] final class MessagesRepositoryMetrics[F[_]: TimeMeasureMet
   private lazy val getConnectionMessagesTimer =
     TimeMeasureUtil.createDBQueryTimer(repoName, "getConnectionMessages")
 
-  override def insertMessage[E
-  : ConnectionNotFound <:< *
-  : ConnectionRevoked <:< *
-  : ConnectionNotFoundByConnectionIdAndSender <:< *
-  : MessagesAlreadyExist <:< *
-  : MessageIdsNotUnique <:< *
-  ](
+  override def insertMessage(
       sender: ParticipantId,
       connection: ConnectionId,
       content: Array[Byte],
       messageIdOption: Option[MessageId]
-  ): Mid[F, Either[E, MessageId]] = _.measureOperationTime(insertMessageTimer)
+  ): Mid[F, Either[InsertMessageError, MessageId]] = _.measureOperationTime(insertMessageTimer)
 
-  override def insertMessages[E
-  : ConnectionNotFound <:< *
-  : ConnectionRevoked <:< *
-  : MessagesAlreadyExist <:< *
-  : MessageIdsNotUnique <:< *
-  ](
+  override def insertMessages(
       sender: ParticipantId,
       messages: NonEmptyList[SendMessagesRequest.MessageToSend]
-  ): Mid[F, Either[E, List[MessageId]]] = _.measureOperationTime(insertMessagesTimer)
+  ): Mid[F, Either[InsertMessagesError, List[MessageId]]] = _.measureOperationTime(insertMessagesTimer)
 
-  override def getMessagesPaginated[E : InvalidArgumentError <:< *](
+  override def getMessagesPaginated(
       recipientId: ParticipantId,
       limit: Int,
       lastSeenMessageId: Option[MessageId]
-  ): Mid[F, Either[E, List[Message]]] = _.measureOperationTime(getMessagesPaginatedTimer)
+  ): Mid[F, Either[GetMessagesPaginatedError, List[Message]]] = _.measureOperationTime(getMessagesPaginatedTimer)
 
   override def getConnectionMessages(recipientId: ParticipantId, connectionId: ConnectionId): Mid[F, List[Message]] =
     _.measureOperationTime(getConnectionMessagesTimer)

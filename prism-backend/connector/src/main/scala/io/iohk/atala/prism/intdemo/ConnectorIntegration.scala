@@ -1,6 +1,6 @@
 package io.iohk.atala.prism.intdemo
 
-import io.iohk.atala.prism.connector.errors.{ConnectorError, ConnectorErrorSupport, MessagesError}
+import io.iohk.atala.prism.connector.errors.{ConnectorError, ConnectorErrorSupport}
 import io.iohk.atala.prism.connector.model._
 import io.iohk.atala.prism.connector.services.{ConnectionsService, MessagesService}
 import io.iohk.atala.prism.models.ParticipantId
@@ -71,7 +71,7 @@ object ConnectorIntegration {
         message: Array[Byte]
     ): Future[MessageId] = {
       messagesService
-        .insertMessage[MessagesError](senderId, connectionId, message)
+        .insertMessage(senderId, connectionId, message)
         .toFuture(toRuntimeException(senderId, connectionId))
     }
 

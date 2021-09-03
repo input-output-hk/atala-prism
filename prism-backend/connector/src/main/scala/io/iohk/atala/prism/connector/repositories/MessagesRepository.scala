@@ -14,6 +14,7 @@ import io.iohk.atala.prism.connector.errors._
 import io.iohk.atala.prism.connector.errors.MessagesError._
 import io.iohk.atala.prism.connector.model._
 import io.iohk.atala.prism.connector.model.actions.SendMessagesRequest
+import io.iohk.atala.prism.connector.repositories.MessagesRepository._
 import io.iohk.atala.prism.connector.repositories.daos.{ConnectionsDAO, MessagesDAO}
 import io.iohk.atala.prism.connector.repositories.metrics.MessagesRepositoryMetrics
 import io.iohk.atala.prism.errors.LoggingContext
@@ -21,43 +22,30 @@ import io.iohk.atala.prism.models.ParticipantId
 import io.iohk.atala.prism.utils.syntax.DBConnectionOps
 import io.iohk.atala.prism.metrics.TimeMeasureMetric
 import org.slf4j.{Logger, LoggerFactory}
+import shapeless.{:+:, CNil, Coproduct}
 import tofu.higherKind.Mid
 
 import java.time.Instant
 
 // S - Stream, needed different type because we don't want to have mid for a stream
 trait MessagesRepository[S[_], F[_]] {
-
-  def insertMessage[
-    E
-    : ConnectionNotFound <:< *
-    : ConnectionRevoked <:< *
-    : ConnectionNotFoundByConnectionIdAndSender <:< *
-    : MessagesAlreadyExist <:< *
-    : MessageIdsNotUnique <:< *
-  ](
+  def insertMessage(
       sender: ParticipantId,
       connection: ConnectionId,
       content: Array[Byte],
       messageIdOption: Option[MessageId] = None
-  ): F[Either[E, MessageId]]
+  ): F[Either[InsertMessageError, MessageId]]
 
-  def insertMessages[
-    E
-    : ConnectionNotFound <:< *
-    : ConnectionRevoked <:< *
-    : MessagesAlreadyExist <:< *
-    : MessageIdsNotUnique <:< *
-  ](
+  def insertMessages(
       sender: ParticipantId,
       messages: NonEmptyList[SendMessagesRequest.MessageToSend]
-  ): F[Either[E, List[MessageId]]]
+  ): F[Either[InsertMessagesError, List[MessageId]]]
 
-  def getMessagesPaginated[E : InvalidLimitError <:< *](
+  def getMessagesPaginated(
       recipientId: ParticipantId,
       limit: Int,
       lastSeenMessageId: Option[MessageId]
-  ): F[Either[E, List[Message]]]
+  ): F[Either[GetMessagesPaginatedError, List[Message]]]
 
   def getMessageStream(recipientId: ParticipantId, lastSeenMessageId: Option[MessageId]): S[Message]
 
@@ -65,6 +53,22 @@ trait MessagesRepository[S[_], F[_]] {
 }
 
 object MessagesRepository {
+  type InsertMessageError =
+      ConnectionNotFound :+:
+      ConnectionRevoked :+:
+      ConnectionNotFoundByConnectionIdAndSender :+:
+      MessagesAlreadyExist :+:
+      MessageIdsNotUnique :+:
+      CNil
+
+  type InsertMessagesError =
+      ConnectionNotFound :+:
+      ConnectionRevoked :+:
+      MessagesAlreadyExist :+:
+      MessageIdsNotUnique :+:
+      CNil
+
+  type GetMessagesPaginatedError = InvalidLimitError :+: CNil
 
   implicit def applyK[S[_]]: ApplyK[MessagesRepository[S, *[_]]] =
     cats.tagless.Derive.applyK[MessagesRepository[S, *[_]]]
@@ -84,42 +88,36 @@ private final class MessagesRepositoryImpl[F[_]: BracketThrow](xa: Transactor[F]
 
   val logger: Logger = LoggerFactory.getLogger(getClass)
 
-  def insertMessage[E
-      : ConnectionNotFound <:< *
-      : ConnectionRevoked <:< *
-      : ConnectionNotFoundByConnectionIdAndSender <:< *
-      : MessagesAlreadyExist <:< *
-      : MessageIdsNotUnique <:< *
-  ](
+  def insertMessage(
       sender: ParticipantId,
       connectionId: ConnectionId,
       content: Array[Byte],
       messageIdOption: Option[MessageId] = None
-  ): F[Either[E, MessageId]] = {
+  ): F[Either[InsertMessageError, MessageId]] = {
     val messageId = messageIdOption.getOrElse(MessageId.random())
 
-    val query = for {
-      _ <- assertUserProvidedIdsNotExist[E](messageIdOption.toList)
+    val query: EitherT[ConnectionIO, InsertMessageError, MessageId] = for {
+      _ <- assertUserProvidedIdsNotExist(messageIdOption.toList).leftMap(e => e.embed[InsertMessageError])
 
-      rawConnection <- EitherT[ConnectionIO, E, RawConnection](
+      rawConnection <- EitherT[ConnectionIO, InsertMessageError, RawConnection](
         ConnectionsDAO.getRawConnection(connectionId)
-        .map(_.toRight(ConnectionNotFound(connectionId))))
+        .map(_.toRight(Coproduct[InsertMessageError](ConnectionNotFound(connectionId)))))
 
       _ <- EitherT.fromEither[ConnectionIO] {
-        Either.cond[E, Unit](
+        Either.cond[InsertMessageError, Unit](
           rawConnection.status != ConnectionStatus.ConnectionRevoked,
           right = (),
-          left = ConnectionRevoked(connectionId))
+          left = Coproduct[InsertMessageError](ConnectionRevoked(connectionId)))
       }
 
       recipientOption <- EitherT.liftF(ConnectionsDAO.getOtherSide(connectionId, sender))
 
       recipient <-
         recipientOption
-          .toRight[E](ConnectionNotFoundByConnectionIdAndSender(sender, connectionId))
+          .toRight(Coproduct[InsertMessageError](ConnectionNotFoundByConnectionIdAndSender(sender, connectionId)))
           .toEitherT[ConnectionIO]
 
-      _ <- EitherT.liftF[ConnectionIO, E, Unit](
+      _ <- EitherT.liftF[ConnectionIO, InsertMessageError, Unit](
         MessagesDAO.insert(messageId, connectionId, sender, recipient, content)
       )
     } yield messageId
@@ -129,26 +127,20 @@ private final class MessagesRepositoryImpl[F[_]: BracketThrow](xa: Transactor[F]
       .transact(xa)
   }
 
-  def insertMessages[
-    E
-    : ConnectionNotFound <:< *
-    : ConnectionRevoked <:< *
-    : MessagesAlreadyExist <:< *
-    : MessageIdsNotUnique <:< *
-  ](
+  def insertMessages(
       sender: ParticipantId,
       messages: NonEmptyList[SendMessagesRequest.MessageToSend]
-  ): F[Either[E, List[MessageId]]] = {
+  ): F[Either[InsertMessagesError, List[MessageId]]] = {
     val connectionTokens = messages.map(_.connectionToken)
 
     val query = for {
-      _ <- assertUserProvidedIdsNotExist[E](messages.toList.flatMap(_.id))
+      _ <- assertUserProvidedIdsNotExist(messages.toList.flatMap(_.id)).leftMap(e => e.embed[InsertMessagesError])
 
       _ <- EitherT(ConnectionsDAO.getConnectionsByConnectionTokens(connectionTokens.toList)
         .map { connections =>
           connections.find(_.connectionStatus == ConnectionStatus.ConnectionRevoked)
             // We can be sure that a found revoked connection has a corresponding token, so .get is safe
-            .toLeft(()).leftMap[E](revoked => ConnectionRevoked(revoked.contactToken.get))
+            .toLeft(()).leftMap(revoked => Coproduct[InsertMessagesError](ConnectionRevoked(revoked.contactToken.get)))
         })
 
       otherSidesAndIds <- EitherT.liftF(ConnectionsDAO.getOtherSideAndIdByConnectionTokens(connectionTokens, sender))
@@ -160,7 +152,7 @@ private final class MessagesRepositoryImpl[F[_]: BracketThrow](xa: Transactor[F]
             val token = message.connectionToken
             otherSidesAndIdsMap
               .get(token)
-              .fold[Either[E, CreateMessage]](Left(ConnectionNotFound(token))) {
+              .fold[Either[InsertMessagesError, CreateMessage]](Left(Coproduct(ConnectionNotFound(token)))) {
                 case (connectionId, recipientId) =>
                   Right(
                     CreateMessage(
@@ -178,7 +170,7 @@ private final class MessagesRepositoryImpl[F[_]: BracketThrow](xa: Transactor[F]
           .sequence
       )
 
-      _ <- EitherT.liftF[ConnectionIO, E, Unit](MessagesDAO.insert(messagesToInsert))
+      _ <- EitherT.liftF[doobie.ConnectionIO, InsertMessagesError, Unit](MessagesDAO.insert(messagesToInsert))
     } yield messagesToInsert.map(_.id)
 
     query
@@ -186,18 +178,20 @@ private final class MessagesRepositoryImpl[F[_]: BracketThrow](xa: Transactor[F]
       .value
   }
 
-  private def assertUserProvidedIdsNotExist[
-    E : MessagesAlreadyExist <:< *
-      : MessageIdsNotUnique <:< *
-  ](ids: List[MessageId]): EitherT[ConnectionIO, E, Unit] = {
+  type AssertUserProvidedIdsNotExistError =
+      MessagesAlreadyExist :+:
+      MessageIdsNotUnique :+:
+      CNil
+
+  private def assertUserProvidedIdsNotExist(ids: List[MessageId]): EitherT[ConnectionIO, AssertUserProvidedIdsNotExistError, Unit] = {
     val distinctIds = ids.distinct
     for {
       _ <-
         Either
-          .cond[E, Unit](
+          .cond(
             test = distinctIds.size == ids.size,
             right = (),
-            left = MessageIdsNotUnique(ids.diff(distinctIds))
+            left = Coproduct[AssertUserProvidedIdsNotExistError](MessageIdsNotUnique(ids.diff(distinctIds)))
           )
           .toEitherT[ConnectionIO]
 
@@ -208,20 +202,20 @@ private final class MessagesRepositoryImpl[F[_]: BracketThrow](xa: Transactor[F]
 
       _ <-
         Either
-          .cond[E, Unit](
+          .cond[AssertUserProvidedIdsNotExistError, Unit](
             test = alreadyExistingMessages.isEmpty,
             right = (),
-            left = MessagesAlreadyExist(alreadyExistingMessages)
+            left = Coproduct(MessagesAlreadyExist(alreadyExistingMessages))
           )
           .toEitherT[ConnectionIO]
     } yield ()
   }
 
-  def getMessagesPaginated[E : InvalidLimitError <:< *](
+  def getMessagesPaginated(
       recipientId: ParticipantId,
       limit: Int,
       lastSeenMessageId: Option[MessageId]
-  ): F[Either[E, List[Message]]] = {
+  ): F[Either[GetMessagesPaginatedError, List[Message]]] = {
     implicit val loggingContext: LoggingContext = LoggingContext(
       "recipientId" -> recipientId,
       "limit" -> limit,
@@ -232,13 +226,13 @@ private final class MessagesRepositoryImpl[F[_]: BracketThrow](xa: Transactor[F]
       InvalidLimitError(limit.toString)
         .logWarnNew
         .asLeft[List[Message]]
-        .leftMap[E](x => x)
+        .leftMap[GetMessagesPaginatedError](Coproduct(_))
         .pure[F]
     else
       MessagesDAO
         .getMessagesPaginated(recipientId, limit, lastSeenMessageId)
         .logSQLErrors(s"getting messages paginated, recipient id - $recipientId", logger)
-        .map(_.asRight[E])
+        .map(_.asRight[GetMessagesPaginatedError])
         .transact(xa)
   }
 
