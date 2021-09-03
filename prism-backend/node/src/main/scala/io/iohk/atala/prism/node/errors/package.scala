@@ -6,6 +6,7 @@ import io.iohk.atala.prism.node.cardano.models.CardanoWalletError
 package object errors {
   sealed trait NodeError {
     def toStatus: Status
+    def name: String
 
     override def toString: String = toStatus.getDescription
   }
@@ -21,24 +22,32 @@ package object errors {
       override def toStatus: Status = {
         Status.UNKNOWN.withDescription(s"Unknown $tpe: $identifier")
       }
+
+      override def name: String = "unknown-value"
     }
 
     case class InternalError(msg: String) extends NodeError {
       override def toStatus: Status = {
         Status.INTERNAL.withDescription(s"Node internal error: $msg")
       }
+
+      override def name: String = "internal"
     }
 
     case class InternalCardanoWalletError(cardanoWalletError: CardanoWalletError) extends NodeError {
       override def toStatus: Status = {
         Status.INTERNAL.withDescription(s"CardanoWalletError: ${cardanoWalletError.getMessage}")
       }
+
+      override def name: String = "internal-cardano-wallet"
     }
 
     case class InternalErrorDB(cause: Throwable) extends NodeError {
       override def toStatus: Status = {
         Status.INTERNAL.withDescription(cause.getMessage)
       }
+
+      override def name: String = "internal-cardano-wallet"
     }
   }
 
