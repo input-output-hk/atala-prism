@@ -1,10 +1,15 @@
-@import '../../../../css/general_styling';
+@import "../../../../css/general_styling";
 
 .ant-select {
   background: transparent;
-  border:transparent;
+  border: transparent;
 }
 
+.ant-select-selection-item {
+  .LanguageOption {
+    @include primary-text(11px, white);
+  }
+}
 
 .LanguageOption {
   @include primary-text(11px, $secondary-color);
@@ -16,6 +21,10 @@
 }
 
 .LanguageMenu {
+  width: 11em;
+  .ant-select{
+    width: 100%;
+  }
   .ant-select-arrow {
     color: white;
   }
