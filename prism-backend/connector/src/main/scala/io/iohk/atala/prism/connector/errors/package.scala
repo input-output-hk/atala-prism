@@ -87,10 +87,10 @@ package object errors {
     }
   }
 
-  sealed trait MessagesError extends ConnectorError
+  trait MessagesError extends ConnectorError
 
   object MessagesError {
-    case class ConnectionNotFound(connection: Either[TokenString, ConnectionId]) extends MessagesError {
+    class ConnectionNotFound(val connection: Either[TokenString, ConnectionId]) extends MessagesError {
       override def toStatus: Status = {
         Status.NOT_FOUND.withDescription(
           s"Connection with ${connection.fold("token " + _, "id " + _)} doesn't exist. " +
@@ -99,13 +99,7 @@ package object errors {
       }
     }
 
-    object ConnectionNotFound {
-      def apply(s: TokenString): ConnectionNotFound = ConnectionNotFound(Left(s))
-
-      def apply(c: ConnectionId): ConnectionNotFound = ConnectionNotFound(Right(c))
-    }
-
-    case class ConnectionRevoked(connection: Either[TokenString, ConnectionId]) extends MessagesError {
+    class ConnectionRevoked(val connection: Either[TokenString, ConnectionId]) extends MessagesError {
       override def toStatus: Status = {
         Status.FAILED_PRECONDITION.withDescription(
           s"Connection with ${connection.fold("token " + _, "id " + _)} has been revoked."
@@ -113,13 +107,7 @@ package object errors {
       }
     }
 
-    object ConnectionRevoked {
-      def apply(s: TokenString): ConnectionRevoked = ConnectionRevoked(Left(s))
-
-      def apply(c: ConnectionId): ConnectionRevoked = ConnectionRevoked(Right(c))
-    }
-
-    case class ConnectionNotFoundByConnectionIdAndSender(sender: ParticipantId, connection: ConnectionId)
+    class ConnectionNotFoundByConnectionIdAndSender(val sender: ParticipantId, val connection: ConnectionId)
       extends MessagesError {
       override def toStatus: Status = {
         Status.NOT_FOUND.withDescription(
@@ -128,7 +116,7 @@ package object errors {
       }
     }
 
-    case class MessagesAlreadyExist(ids: List[MessageId]) extends MessagesError {
+    class MessagesAlreadyExist(val ids: List[MessageId]) extends MessagesError {
       override def toStatus: Status = {
         Status.ALREADY_EXISTS.withDescription(
           s"Messages with provided ids already exist: ${ids.map(_.uuid.toString).mkString(", ")}"
@@ -136,16 +124,12 @@ package object errors {
       }
     }
 
-    case class MessageIdsNotUnique(ids: List[MessageId]) extends MessagesError {
+    class MessageIdsNotUnique(val ids: List[MessageId]) extends MessagesError {
       override def toStatus: Status = {
         Status.ALREADY_EXISTS.withDescription(
           s"All user provided messages ids must be unique, duplicates: ${ids.map(_.uuid.toString).mkString(", ")}"
         )
       }
     }
-
-    case class InvalidLimitError(override val value: String)
-      extends InvalidArgumentError("limit", "positive value", value)
-        with MessagesError
   }
 }

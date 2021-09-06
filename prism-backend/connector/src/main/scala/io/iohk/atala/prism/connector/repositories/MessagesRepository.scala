@@ -14,6 +14,8 @@ import io.iohk.atala.prism.connector.errors._
 import io.iohk.atala.prism.connector.errors.MessagesError._
 import io.iohk.atala.prism.connector.model._
 import io.iohk.atala.prism.connector.model.actions.SendMessagesRequest
+import io.iohk.atala.prism.connector.repositories.MessagesRepository.InsertMessageError._
+import io.iohk.atala.prism.connector.repositories.MessagesRepository.InsertMessagesError._
 import io.iohk.atala.prism.connector.repositories.MessagesRepository._
 import io.iohk.atala.prism.connector.repositories.daos.{ConnectionsDAO, MessagesDAO}
 import io.iohk.atala.prism.connector.repositories.metrics.MessagesRepositoryMetrics
@@ -22,7 +24,6 @@ import io.iohk.atala.prism.models.ParticipantId
 import io.iohk.atala.prism.utils.syntax.DBConnectionOps
 import io.iohk.atala.prism.metrics.TimeMeasureMetric
 import org.slf4j.{Logger, LoggerFactory}
-import shapeless.{:+:, CNil, Coproduct}
 import tofu.higherKind.Mid
 
 import java.time.Instant
@@ -53,22 +54,75 @@ trait MessagesRepository[S[_], F[_]] {
 }
 
 object MessagesRepository {
-  type InsertMessageError =
-      ConnectionNotFound :+:
-      ConnectionRevoked :+:
-      ConnectionNotFoundByConnectionIdAndSender :+:
-      MessagesAlreadyExist :+:
-      MessageIdsNotUnique :+:
-      CNil
+  // Repository public methods errors
+  // A trait per method
+  sealed trait InsertMessageError extends MessagesError
+  object InsertMessageError {
+    final case class MessagesAlreadyExistErrorIME(override val ids: List[MessageId])
+      extends MessagesAlreadyExist(ids)
+        with InsertMessageError
 
-  type InsertMessagesError =
-      ConnectionNotFound :+:
-      ConnectionRevoked :+:
-      MessagesAlreadyExist :+:
-      MessageIdsNotUnique :+:
-      CNil
+    final case class MessageIdsNotUniqueErrorIME(override val ids: List[MessageId])
+      extends MessageIdsNotUnique(ids)
+        with InsertMessageError
 
-  type GetMessagesPaginatedError = InvalidLimitError :+: CNil
+    final case class ConnectionNotFoundErrorIME(connectionId: ConnectionId)
+      extends ConnectionNotFound(Right(connectionId))
+        with InsertMessageError
+
+    final case class ConnectionRevokedErrorIME(connectionId: ConnectionId)
+      extends ConnectionRevoked(Right(connectionId))
+        with InsertMessageError
+
+    final case class ConnectionNotFoundByConnectionIdAndSenderErrorIME(override val sender: ParticipantId,
+                                                                       override val connection: ConnectionId)
+      extends ConnectionNotFoundByConnectionIdAndSender(sender, connection)
+        with InsertMessageError
+
+    def fromAssertUserProvidedIdsNotExistError(err: AssertUserProvidedIdsNotExistError): InsertMessageError = err match {
+      case MessagesAlreadyExistError(ids) => MessagesAlreadyExistErrorIME(ids)
+      case MessageIdsNotUniqueError(ids) => MessageIdsNotUniqueErrorIME(ids)
+    }
+  }
+
+  sealed trait InsertMessagesError extends MessagesError
+  object InsertMessagesError {
+    final case class MessagesAlreadyExistErrorIMEs(override val ids: List[MessageId])
+      extends MessagesAlreadyExist(ids)
+        with InsertMessagesError
+
+    final case class MessageIdsNotUniqueErrorIMEs(override val ids: List[MessageId])
+      extends MessageIdsNotUnique(ids)
+       with InsertMessagesError
+
+    final case class ConnectionNotFoundErrorIMEs(token: TokenString)
+      extends ConnectionNotFound(Left(token))
+        with InsertMessagesError
+
+    final case class ConnectionRevokedErrorIMEs(token: TokenString)
+      extends ConnectionRevoked(Left(token))
+        with InsertMessagesError
+
+    def fromAssertUserProvidedIdsNotExistError(err: AssertUserProvidedIdsNotExistError): InsertMessagesError = err match {
+      case MessagesAlreadyExistError(ids) => MessagesAlreadyExistErrorIMEs(ids)
+      case MessageIdsNotUniqueError(ids) => MessageIdsNotUniqueErrorIMEs(ids)
+    }
+  }
+
+  sealed trait GetMessagesPaginatedError extends MessagesError
+  final case class InvalidLimitError(override val value: String)
+    extends InvalidArgumentError("limit", "positive value", value)
+      with GetMessagesPaginatedError
+
+  // Auxiliary methods errors
+  sealed trait AssertUserProvidedIdsNotExistError extends MessagesError
+  final case class MessagesAlreadyExistError(override val ids: List[MessageId])
+    extends MessagesAlreadyExist(ids)
+      with AssertUserProvidedIdsNotExistError
+
+  final case class MessageIdsNotUniqueError(override val ids: List[MessageId])
+    extends MessageIdsNotUnique(ids)
+      with AssertUserProvidedIdsNotExistError
 
   implicit def applyK[S[_]]: ApplyK[MessagesRepository[S, *[_]]] =
     cats.tagless.Derive.applyK[MessagesRepository[S, *[_]]]
@@ -97,24 +151,24 @@ private final class MessagesRepositoryImpl[F[_]: BracketThrow](xa: Transactor[F]
     val messageId = messageIdOption.getOrElse(MessageId.random())
 
     val query: EitherT[ConnectionIO, InsertMessageError, MessageId] = for {
-      _ <- assertUserProvidedIdsNotExist(messageIdOption.toList).leftMap(e => e.embed[InsertMessageError])
+      _ <- assertUserProvidedIdsNotExist(messageIdOption.toList).leftMap(InsertMessageError.fromAssertUserProvidedIdsNotExistError)
 
       rawConnection <- EitherT[ConnectionIO, InsertMessageError, RawConnection](
         ConnectionsDAO.getRawConnection(connectionId)
-        .map(_.toRight(Coproduct[InsertMessageError](ConnectionNotFound(connectionId)))))
+        .map(_.toRight(ConnectionNotFoundErrorIME(connectionId))))
 
       _ <- EitherT.fromEither[ConnectionIO] {
         Either.cond[InsertMessageError, Unit](
           rawConnection.status != ConnectionStatus.ConnectionRevoked,
           right = (),
-          left = Coproduct[InsertMessageError](ConnectionRevoked(connectionId)))
+          left = ConnectionRevokedErrorIME(connectionId))
       }
 
       recipientOption <- EitherT.liftF(ConnectionsDAO.getOtherSide(connectionId, sender))
 
       recipient <-
         recipientOption
-          .toRight(Coproduct[InsertMessageError](ConnectionNotFoundByConnectionIdAndSender(sender, connectionId)))
+          .toRight(ConnectionNotFoundByConnectionIdAndSenderErrorIME(sender, connectionId))
           .toEitherT[ConnectionIO]
 
       _ <- EitherT.liftF[ConnectionIO, InsertMessageError, Unit](
@@ -134,13 +188,13 @@ private final class MessagesRepositoryImpl[F[_]: BracketThrow](xa: Transactor[F]
     val connectionTokens = messages.map(_.connectionToken)
 
     val query = for {
-      _ <- assertUserProvidedIdsNotExist(messages.toList.flatMap(_.id)).leftMap(e => e.embed[InsertMessagesError])
+      _ <- assertUserProvidedIdsNotExist(messages.toList.flatMap(_.id)).leftMap(InsertMessagesError.fromAssertUserProvidedIdsNotExistError)
 
       _ <- EitherT(ConnectionsDAO.getConnectionsByConnectionTokens(connectionTokens.toList)
         .map { connections =>
           connections.find(_.connectionStatus == ConnectionStatus.ConnectionRevoked)
             // We can be sure that a found revoked connection has a corresponding token, so .get is safe
-            .toLeft(()).leftMap(revoked => Coproduct[InsertMessagesError](ConnectionRevoked(revoked.contactToken.get)))
+            .toLeft(()).leftMap(revoked => ConnectionRevokedErrorIMEs(revoked.contactToken.get))
         })
 
       otherSidesAndIds <- EitherT.liftF(ConnectionsDAO.getOtherSideAndIdByConnectionTokens(connectionTokens, sender))
@@ -152,7 +206,7 @@ private final class MessagesRepositoryImpl[F[_]: BracketThrow](xa: Transactor[F]
             val token = message.connectionToken
             otherSidesAndIdsMap
               .get(token)
-              .fold[Either[InsertMessagesError, CreateMessage]](Left(Coproduct(ConnectionNotFound(token)))) {
+              .fold[Either[InsertMessagesError, CreateMessage]](Left(ConnectionNotFoundErrorIMEs(token))) {
                 case (connectionId, recipientId) =>
                   Right(
                     CreateMessage(
@@ -178,11 +232,6 @@ private final class MessagesRepositoryImpl[F[_]: BracketThrow](xa: Transactor[F]
       .value
   }
 
-  type AssertUserProvidedIdsNotExistError =
-      MessagesAlreadyExist :+:
-      MessageIdsNotUnique :+:
-      CNil
-
   private def assertUserProvidedIdsNotExist(ids: List[MessageId]): EitherT[ConnectionIO, AssertUserProvidedIdsNotExistError, Unit] = {
     val distinctIds = ids.distinct
     for {
@@ -191,7 +240,7 @@ private final class MessagesRepositoryImpl[F[_]: BracketThrow](xa: Transactor[F]
           .cond(
             test = distinctIds.size == ids.size,
             right = (),
-            left = Coproduct[AssertUserProvidedIdsNotExistError](MessageIdsNotUnique(ids.diff(distinctIds)))
+            left = MessageIdsNotUniqueError(ids.diff(distinctIds))
           )
           .toEitherT[ConnectionIO]
 
@@ -205,7 +254,7 @@ private final class MessagesRepositoryImpl[F[_]: BracketThrow](xa: Transactor[F]
           .cond[AssertUserProvidedIdsNotExistError, Unit](
             test = alreadyExistingMessages.isEmpty,
             right = (),
-            left = Coproduct(MessagesAlreadyExist(alreadyExistingMessages))
+            left = MessagesAlreadyExistError(alreadyExistingMessages)
           )
           .toEitherT[ConnectionIO]
     } yield ()
@@ -226,7 +275,7 @@ private final class MessagesRepositoryImpl[F[_]: BracketThrow](xa: Transactor[F]
       InvalidLimitError(limit.toString)
         .logWarnNew
         .asLeft[List[Message]]
-        .leftMap[GetMessagesPaginatedError](Coproduct(_))
+        .leftMap[GetMessagesPaginatedError](x => x)
         .pure[F]
     else
       MessagesDAO

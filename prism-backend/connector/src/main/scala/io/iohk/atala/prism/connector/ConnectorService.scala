@@ -247,7 +247,6 @@ class ConnectorService(
           messagesPaginatedRequest.limit,
           messagesPaginatedRequest.lastSeenMessageId
         )
-        .mapLeft(_.unify)
         .map(msgs => connector_api.GetMessagesPaginatedResponse(msgs.map(_.toProto)))
     }
   }
@@ -335,7 +334,6 @@ class ConnectorService(
           content = sendMessageRequest.message,
           messageId = sendMessageRequest.id
         )
-        .mapLeft(_.unify)
         .map(messageId => connector_api.SendMessageResponse(id = messageId.uuid.toString))
     }
 
@@ -404,7 +402,6 @@ class ConnectorService(
       ) { messagesToInsert =>
         messages
           .insertMessages(participantId, messagesToInsert)
-          .mapLeft(_.unify)
           .map(messageIds => connector_api.SendMessagesResponse(ids = messageIds.map(_.uuid.toString)))
       }
     }
