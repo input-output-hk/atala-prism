@@ -1,7 +1,7 @@
 import { makeAutoObservable, observable, action, computed } from 'mobx';
 import { v4 as uuidv4 } from 'uuid';
 
-export class TemplateStore {
+export default class TemplateStore {
   isLoadingTemplates = false;
 
   isLoadingCategories = false;

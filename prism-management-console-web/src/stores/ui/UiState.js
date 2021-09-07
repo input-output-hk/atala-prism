@@ -1,5 +1,5 @@
 import { createContext } from 'react';
-import { TemplateUiState } from './TemplateUiState';
+import TemplateUiState from './TemplateUiState';
 
 export class UiState {
   constructor(rootStore) {
