@@ -5,8 +5,8 @@ import cats.implicits._
 import doobie.free.connection.{ConnectionIO, unit}
 import doobie.implicits._
 import doobie.postgres.sqlstate
-import io.iohk.atala.prism.kotlin.crypto.SHA256Digest
-import io.iohk.atala.prism.kotlin.identity.DIDSuffix
+import io.iohk.atala.prism.kotlin.crypto.{Sha256, Sha256Digest}
+import io.iohk.atala.prism.models.DIDSuffix
 import io.iohk.atala.prism.node.models.nodeState.{DIDPublicKeyState, LedgerData}
 import io.iohk.atala.prism.node.models.{DIDPublicKey, KeyUsage, nodeState}
 import io.iohk.atala.prism.node.operations.StateError.EntityExists
@@ -23,17 +23,17 @@ case class RevokeKeyAction(keyId: String) extends UpdateDIDAction
 case class UpdateDIDOperation(
     didSuffix: DIDSuffix,
     actions: List[UpdateDIDAction],
-    previousOperation: SHA256Digest,
-    digest: SHA256Digest,
+    previousOperation: Sha256Digest,
+    digest: Sha256Digest,
     ledgerData: nodeState.LedgerData
 ) extends Operation {
 
-  override def linkedPreviousOperation: Option[SHA256Digest] = Some(previousOperation)
+  override def linkedPreviousOperation: Option[Sha256Digest] = Some(previousOperation)
 
   /** Fetches key and possible previous operation reference from database */
   override def getCorrectnessData(keyId: String): EitherT[ConnectionIO, StateError, CorrectnessData] = {
     for {
-      lastOperation <- EitherT[ConnectionIO, StateError, SHA256Digest] {
+      lastOperation <- EitherT[ConnectionIO, StateError, Sha256Digest] {
         DIDDataDAO
           .getLastOperation(didSuffix)
           .map(_.toRight(StateError.EntityMissing("did suffix", didSuffix.getValue)))
@@ -117,13 +117,13 @@ object UpdateDIDOperation extends OperationCompanion[UpdateDIDOperation] {
       operation: node_models.AtalaOperation,
       ledgerData: LedgerData
   ): Either[ValidationError, UpdateDIDOperation] = {
-    val operationDigest = SHA256Digest.compute(operation.toByteArray)
+    val operationDigest = Sha256.compute(operation.toByteArray)
     val updateOperation = ValueAtPath(operation, Path.root).child(_.getUpdateDid, "updateDid")
 
     for {
       didSuffix <- updateOperation.child(_.id, "id").parse { didSuffix =>
         Either.fromOption(
-          Try(DIDSuffix.fromString(didSuffix)).toOption,
+          Try(DIDSuffix(didSuffix)).toOption,
           s"must be a valid DID suffix: $didSuffix"
         )
       }

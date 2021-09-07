@@ -13,7 +13,6 @@ import io.iohk.atala.prism.management.console.errors.ManagementConsoleError
 import io.iohk.atala.prism.management.console.integrations.ParticipantsIntegrationService
 import io.iohk.atala.prism.management.console.models._
 import io.iohk.atala.prism.management.console.repositories.StatisticsRepository
-import io.iohk.atala.prism.logging.GeneralLoggableInstances._
 import tofu.higherKind.Mid
 import tofu.logging.{Logs, ServiceLogging}
 import tofu.syntax.logging._
@@ -88,7 +87,7 @@ private final class ConsoleServiceLogs[F[_]: ServiceLogging[*[_], ConsoleService
 
   override def registerDID(registerDID: RegisterDID): Mid[F, Either[ManagementConsoleError, Unit]] =
     in =>
-      info"registering DID ${registerDID.did.getCanonicalSuffix}" *> in
+      info"registering DID ${registerDID.did.getSuffix}" *> in
         .flatTap(
           _.fold(
             er => error"encountered an error while registering DID $er",

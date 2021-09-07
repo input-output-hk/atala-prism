@@ -1,15 +1,14 @@
 package io.iohk.atala.prism.node.repositories.migrations
 
 import java.time.Instant
-
 import doobie.implicits._
 import doobie.implicits.legacy.instant._
-import io.iohk.atala.prism.kotlin.crypto.SHA256Digest
+import io.iohk.atala.prism.kotlin.crypto.Sha256
 import io.iohk.atala.prism.repositories.PostgresMigrationSpec
 import io.iohk.atala.prism.repositories.ops.SqlTestOps.Implicits
 
 class V6MigrationSpec extends PostgresMigrationSpec("V6") {
-  private val objectId = SHA256Digest.compute("objectId".getBytes).getValue
+  private val objectId = Sha256.compute("objectId".getBytes).getValue
   private val sequenceNumber = 1337
   private val objectTimestamp = Instant.now()
 

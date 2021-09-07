@@ -4,11 +4,10 @@ import java.security.PublicKey
 import java.time.Instant
 import cats.data.EitherT
 import doobie.free.connection.ConnectionIO
-import io.iohk.atala.prism.kotlin.credentials.TimestampInfo
 import io.iohk.atala.prism.kotlin.crypto.keys.ECPublicKey
-import io.iohk.atala.prism.kotlin.crypto.SHA256Digest
-import io.iohk.atala.prism.kotlin.identity.DIDSuffix
-import io.iohk.atala.prism.models.{Ledger, TransactionId}
+import io.iohk.atala.prism.kotlin.crypto.Sha256Digest
+import io.iohk.atala.prism.kotlin.protos.models.TimestampInfo
+import io.iohk.atala.prism.models.{DIDSuffix, Ledger, TransactionId}
 import io.iohk.atala.prism.node.models.nodeState.LedgerData
 import io.iohk.atala.prism.node.operations.path._
 import io.iohk.atala.prism.protos.{node_internal, node_models}
@@ -119,7 +118,7 @@ package object operations {
   }
 
   /** Data required to verify the correctness of the operation */
-  case class CorrectnessData(key: ECPublicKey, previousOperation: Option[SHA256Digest])
+  case class CorrectnessData(key: ECPublicKey, previousOperation: Option[Sha256Digest])
 
   /** Representation of already parsed valid operation, common for operations */
   trait Operation {
@@ -133,9 +132,9 @@ package object operations {
       */
     def applyState(): EitherT[ConnectionIO, StateError, Unit]
 
-    def digest: SHA256Digest
+    def digest: Sha256Digest
 
-    def linkedPreviousOperation: Option[SHA256Digest] = None
+    def linkedPreviousOperation: Option[Sha256Digest] = None
 
     def ledgerData: LedgerData
   }

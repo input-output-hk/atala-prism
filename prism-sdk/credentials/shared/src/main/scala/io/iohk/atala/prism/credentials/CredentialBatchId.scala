@@ -4,7 +4,7 @@ import java.util.UUID
 
 import com.google.protobuf.ByteString
 import io.iohk.atala.prism.crypto.MerkleTree.MerkleRoot
-import io.iohk.atala.prism.crypto.SHA256Digest
+import io.iohk.atala.prism.crypto.Sha256Digest
 import io.iohk.atala.prism.identity.DIDSuffix
 import io.iohk.atala.prism.protos.node_models
 
@@ -24,12 +24,12 @@ object CredentialBatchId {
     fromString(string).getOrElse(throw new IllegalArgumentException(s"Invalid CredentialBatchId $string"))
   }
 
-  def fromDigest(digest: SHA256Digest): CredentialBatchId = {
+  def fromDigest(digest: Sha256Digest): CredentialBatchId = {
     new CredentialBatchId(digest.hexValue)
   }
 
   def fromBatchData(issuerDIDSuffix: DIDSuffix, merkleRoot: MerkleRoot): CredentialBatchId = {
-    val digest = SHA256Digest
+    val digest = Sha256Digest
       .compute(
         node_models
           .CredentialBatchData()
@@ -42,5 +42,5 @@ object CredentialBatchId {
   }
 
   def random(): CredentialBatchId =
-    new CredentialBatchId(SHA256Digest.compute(UUID.randomUUID().toString.getBytes()).hexValue)
+    new CredentialBatchId(Sha256.compute(UUID.randomUUID().toString.getBytes()).hexValue)
 }

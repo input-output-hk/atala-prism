@@ -5,8 +5,10 @@ import io.iohk.atala.prism.connector.errors.UnknownValueError
 import io.iohk.atala.prism.connector.model._
 import io.iohk.atala.prism.connector.repositories.daos._
 import io.iohk.atala.prism.connector.DataPreparation
-import io.iohk.atala.prism.kotlin.identity.DID
+import io.iohk.atala.prism.kotlin.crypto.Sha256Digest
+import io.iohk.atala.prism.kotlin.identity.{PrismDid => DID}
 import io.iohk.atala.prism.models.ParticipantId
+import io.iohk.atala.prism.utils.Base64Utils.decodeURL
 import org.scalatest.EitherValues._
 import org.scalatest.OptionValues._
 
@@ -16,8 +18,8 @@ class ParticipantsRepositorySpec extends ConnectorRepositorySpecBase {
   private val encodedStateUsed =
     "CmEKXxJdCgdtYXN0ZXIwEAFCUAoJc2VjcDI1NmsxEiAel_7KEiez4s_e0u8DyJwLkUnVmUHBuWU-0h01nerSNRohAJlR51Vbk49vagehAwQkFvW_fvyM1qa4ileIEYkXs4pF"
 
-  private val shortDID = DID.buildPrismDID(canonicalSuffix, null)
-  private val longDID = DID.buildPrismDID(canonicalSuffix, encodedStateUsed)
+  private val shortDID = DID.fromString(canonicalSuffix)
+  private val longDID = DID.buildLongForm(Sha256Digest.fromHex(canonicalSuffix), decodeURL(encodedStateUsed))
 
   "getParticipant by did" should {
     "get a participant" in {

@@ -15,10 +15,9 @@ import derevo.derive
 import derevo.tagless.applyK
 import io.iohk.atala.prism.connector.AtalaOperationId
 import io.iohk.atala.prism.kotlin.credentials.CredentialBatchId
-import io.iohk.atala.prism.kotlin.crypto.MerkleRoot
-import io.iohk.atala.prism.kotlin.crypto.SHA256Digest
+import io.iohk.atala.prism.kotlin.crypto.{MerkleRoot, Sha256, Sha256Digest}
 import io.iohk.atala.prism.grpc.ProtoConverter
-import io.iohk.atala.prism.kotlin.identity.DID
+import io.iohk.atala.prism.kotlin.identity.{PrismDid => DID}
 import io.iohk.atala.prism.management.console.errors
 import io.iohk.atala.prism.management.console.clients.ConnectorClient
 import io.iohk.atala.prism.management.console.errors.{
@@ -166,14 +165,14 @@ private final class CredentialsServiceImpl[F[_]: Monad](
   ): F[Either[ManagementConsoleError, IssueCredentialBatchNodeResponse]] = {
     def extractValues(
         signedAtalaOperation: SignedAtalaOperation
-    ): Either[ManagementConsoleError, (MerkleRoot, DID, SHA256Digest)] = {
+    ): Either[ManagementConsoleError, (MerkleRoot, DID, Sha256Digest)] = {
       val maybePair = for {
         atalaOperation <- signedAtalaOperation.operation
-        opHash = SHA256Digest.compute(atalaOperation.toByteArray)
+        opHash = Sha256.compute(atalaOperation.toByteArray)
         issueCredentialBatch <- atalaOperation.operation.issueCredentialBatch
         credentialBatchData <- issueCredentialBatch.credentialBatchData
-        did = DID.buildPrismDID(credentialBatchData.issuerDid, null)
-        merkleRoot = new MerkleRoot(SHA256Digest.fromBytes(credentialBatchData.merkleRoot.toByteArray))
+        did = DID.fromString(credentialBatchData.issuerDid)
+        merkleRoot = new MerkleRoot(Sha256Digest.fromBytes(credentialBatchData.merkleRoot.toByteArray))
       } yield (merkleRoot, did, opHash)
       maybePair.toRight(InternalServerError(new RuntimeException("Failed to extract content hash and issuer DID")))
     }

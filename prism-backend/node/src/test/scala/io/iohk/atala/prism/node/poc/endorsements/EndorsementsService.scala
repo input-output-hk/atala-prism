@@ -3,17 +3,19 @@ package io.iohk.atala.prism.node.poc.endorsements
 import java.time.Instant
 import com.google.protobuf.ByteString
 import io.iohk.atala.prism.kotlin.credentials.json.JsonBasedCredential
-import io.iohk.atala.prism.kotlin.credentials.{CredentialBatchId, CredentialBatches}
-import io.iohk.atala.prism.kotlin.identity.DID
+import io.iohk.atala.prism.kotlin.credentials.CredentialBatchId
+import io.iohk.atala.prism.kotlin.identity.{PrismDid => DID}
 import io.iohk.atala.prism.kotlin.crypto.ECConfig.{INSTANCE => ECConfig}
 import io.iohk.atala.prism.kotlin.crypto.keys.ECPublicKey
 import io.iohk.atala.prism.kotlin.crypto.signature.ECSignature
-import io.iohk.atala.prism.kotlin.crypto.{MerkleInclusionProof, MerkleRoot, SHA256Digest}
+import io.iohk.atala.prism.kotlin.crypto.{MerkleInclusionProof, MerkleRoot, Sha256, Sha256Digest}
+import io.iohk.atala.prism.kotlin.extras.CredentialBatches
 import io.iohk.atala.prism.node.grpc.ProtoCodecs
 import io.iohk.atala.prism.protos.endorsements_api._
 import io.iohk.atala.prism.protos.node_api._
 import io.iohk.atala.prism.protos.node_models
 import io.iohk.atala.prism.protos.node_models.{KeyUsage, SignedAtalaOperation}
+import io.iohk.atala.prism.utils.StringUtils.encodeToByteArray
 import io.iohk.atala.prism.utils.syntax.InstantToTimestampOps
 
 import scala.concurrent.{ExecutionContext, Future}
@@ -93,9 +95,13 @@ case class EndorsementsService(
       val credential = JsonBasedCredential.fromString(request.credential)
       val credentialDID = Option(credential.getContent.getIssuerDid).get
       val operationDID =
-        DID.buildPrismDID(signedOperation.getOperation.getIssueCredentialBatch.getCredentialBatchData.issuerDid, null)
+        DID.buildCanonical(
+          Sha256.compute(
+            encodeToByteArray(signedOperation.getOperation.getIssueCredentialBatch.getCredentialBatchData.issuerDid)
+          )
+        )
       val operationMerkleRoot = new MerkleRoot(
-        SHA256Digest.fromBytes(
+        Sha256Digest.fromBytes(
           signedOperation.getOperation.getIssueCredentialBatch.getCredentialBatchData.merkleRoot.toByteArray
         )
       )

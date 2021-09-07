@@ -11,14 +11,14 @@ import scala.math.{ceil, log}
 class MerkleTreeSpec extends AnyWordSpec {
   implicit def noShrink[T]: Shrink[T] = Shrink.shrinkAny
 
-  val hashGen: Gen[SHA256Digest] =
-    Gen.asciiStr.map(str => SHA256Digest.compute(str.getBytes))
-  val hashNonEmptyListGen: Gen[List[SHA256Digest]] =
+  val hashGen: Gen[Sha256Digest] =
+    Gen.asciiStr.map(str => Sha256.compute(str.getBytes))
+  val hashNonEmptyListGen: Gen[List[Sha256Digest]] =
     Gen.nonEmptyListOf(hashGen).suchThat(list => list.distinct.size == list.size)
 
   "MerkleTree" should {
     "build proofs for all supplied hashes" in {
-      forAll(hashNonEmptyListGen) { hashes: List[SHA256Digest] =>
+      forAll(hashNonEmptyListGen) { hashes: List[Sha256Digest] =>
         val (_, proofs) = MerkleTree.generateProofs(hashes)
 
         assert(hashes.forall(h => proofs.exists(_.hash == h)))
@@ -26,7 +26,7 @@ class MerkleTreeSpec extends AnyWordSpec {
     }
 
     "build proofs of limited length" in {
-      forAll(hashNonEmptyListGen) { hashes: List[SHA256Digest] =>
+      forAll(hashNonEmptyListGen) { hashes: List[Sha256Digest] =>
         val (_, proofs) = MerkleTree.generateProofs(hashes)
 
         val maxLength = ceil(log(hashes.length) / log(2.0)).toInt
@@ -35,7 +35,7 @@ class MerkleTreeSpec extends AnyWordSpec {
     }
 
     "build verifiable proofs" in {
-      forAll(hashNonEmptyListGen) { hashes: List[SHA256Digest] =>
+      forAll(hashNonEmptyListGen) { hashes: List[Sha256Digest] =>
         val (root, proofs) = MerkleTree.generateProofs(hashes)
 
         for (proof <- proofs) {
@@ -69,14 +69,14 @@ class MerkleTreeSpec extends AnyWordSpec {
     }
 
     "be resistant to second-preimage attacks" in {
-      forAll(hashNonEmptyListGen.suchThat(_.size > 1)) { hashes: List[SHA256Digest] =>
+      forAll(hashNonEmptyListGen.suchThat(_.size > 1)) { hashes: List[Sha256Digest] =>
         val (root, proofs) = MerkleTree.generateProofs(hashes)
         val proofNumber = Gen.chooseNum[Int](0, proofs.size - 1).sample.get
         val proof = proofs(proofNumber)
 
         val firstSibling = proof.siblings.head
         val newHash =
-          SHA256Digest.compute(
+          Sha256.compute(
             MerkleTree.NodePrefix +: (firstSibling.value ++ proof.hash.value).toArray
           )
         val newSiblings = proof.siblings.tail
@@ -90,7 +90,7 @@ class MerkleTreeSpec extends AnyWordSpec {
 
   "MerkleInclusionProof" should {
     "derive consistent root" in {
-      forAll(hashNonEmptyListGen) { hashes: List[SHA256Digest] =>
+      forAll(hashNonEmptyListGen) { hashes: List[Sha256Digest] =>
         val (root, proofs) = MerkleTree.generateProofs(hashes)
 
         assert(proofs.forall(_.derivedRoot == root))
@@ -98,7 +98,7 @@ class MerkleTreeSpec extends AnyWordSpec {
     }
 
     "decode an encoded proof" in {
-      forAll(hashNonEmptyListGen) { hashes: List[SHA256Digest] =>
+      forAll(hashNonEmptyListGen) { hashes: List[Sha256Digest] =>
         val (root, proofs) = MerkleTree.generateProofs(hashes)
 
         assert(proofs.forall(p => MerkleTree.MerkleInclusionProof.decode(p.encode).value == p))

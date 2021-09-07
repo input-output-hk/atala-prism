@@ -4,7 +4,7 @@ import typings.hashJs.{mod => hash}
 
 import scala.scalajs.js.typedarray.{Uint8Array, _}
 
-private[crypto] object SHA256DigestImpl {
+private[crypto] object Sha256DigestImpl {
   def compute(bytes: Array[Byte]): Array[Byte] = {
     val byteArray = bytes.toTypedArray
     val uint8Array = new Uint8Array(byteArray.buffer, byteArray.byteOffset, byteArray.length)

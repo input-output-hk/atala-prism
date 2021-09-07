@@ -5,9 +5,10 @@ import doobie.util.invariant.InvalidEnum
 import doobie.{Get, Meta, Put}
 import io.circe.Json
 import io.iohk.atala.prism.connector.AtalaOperationId
-import io.iohk.atala.prism.kotlin.crypto.{EC, SHA256Digest}
+import io.iohk.atala.prism.kotlin.crypto.{Sha256Digest => SHA256Digest}
+import io.iohk.atala.prism.kotlin.crypto.EC.{INSTANCE => EC}
 import io.iohk.atala.prism.kotlin.crypto.keys.ECPublicKey
-import io.iohk.atala.prism.kotlin.identity.DID
+import io.iohk.atala.prism.kotlin.identity.{PrismDid => DID}
 import io.iohk.atala.prism.models.{Ledger, TransactionId, UUIDValue}
 
 import java.util.UUID
@@ -29,7 +30,7 @@ trait BaseDAO {
       .timap(value => AtalaOperationId.fromVectorUnsafe(value.toVector))(_.value.toArray)
 
   implicit val ecPublicKeyMeta: Meta[ECPublicKey] =
-    Meta[Array[Byte]].timap(b => EC.toPublicKey(b))(_.getEncoded)
+    Meta[Array[Byte]].timap(b => EC.toPublicKeyFromCompressed(b))(_.getEncoded)
 
   implicit val transactionIdMeta: Meta[TransactionId] =
     Meta[Array[Byte]].timap(b =>
@@ -41,7 +42,7 @@ trait BaseDAO {
 
   // it makes no sense to register an unpublished DID, we'd always look for the canonical DID
   implicit val didMeta: Meta[DID] = Meta[String].timap(DID.fromString) { did =>
-    Option(did.canonical()).getOrElse(throw new RuntimeException(s"Invalid canonical DID: $did")).getValue
+    Option(did.asCanonical()).getOrElse(throw new RuntimeException(s"Invalid canonical DID: $did")).getValue
   }
 
   protected def uuidValueMeta[T <: UUIDValue: TypeTag](builder: UUIDValue.Builder[T]): Meta[T] = {

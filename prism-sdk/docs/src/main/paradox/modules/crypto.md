@@ -10,9 +10,9 @@ libraryDependencies += "io.iohk" %% "prism-crypto" % "@VERSION@"
 
 The Crypto module provides a SHA256 hash function that can be used as follows:
 ```scala mdoc:to-string
-import io.iohk.atala.prism.crypto.SHA256Digest
+import io.iohk.atala.prism.crypto.Sha256Digest
 
-SHA256Digest.compute(Array(0.toByte))
+Sha256.compute(Array(0.toByte))
 ```
 
 ## Elliptic-curve Cryptography
@@ -96,8 +96,8 @@ It is possible to build and verify Merkle tree proofs of inclusion by using `Mer
 ```scala mdoc:to-string
 import io.iohk.atala.prism.crypto.MerkleTree
 
-val hash1 = SHA256Digest.compute(Array(0.toByte))
-val hash2 = SHA256Digest.compute(Array(1.toByte))
+val hash1 = Sha256.compute(Array(0.toByte))
+val hash2 = Sha256.compute(Array(1.toByte))
 
 val (root, List(proof1, proof2)) = MerkleTree.generateProofs(List(hash1, hash2))
 

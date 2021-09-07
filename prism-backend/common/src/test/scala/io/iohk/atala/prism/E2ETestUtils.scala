@@ -1,9 +1,9 @@
 package io.iohk.atala.prism
 
 import com.google.protobuf.ByteString
-import io.iohk.atala.prism.kotlin.crypto.EC
+import io.iohk.atala.prism.kotlin.crypto.EC.{INSTANCE => EC}
 import io.iohk.atala.prism.kotlin.crypto.keys.ECKeyPair
-import io.iohk.atala.prism.kotlin.identity.DID
+import io.iohk.atala.prism.kotlin.identity.{PrismDid => DID}
 import io.iohk.atala.prism.protos.connector_api.{AddConnectionFromTokenRequest, RegisterDIDRequest}
 import io.iohk.atala.prism.protos.connector_models.EncodedPublicKey
 import io.iohk.atala.prism.protos.node_models.{
@@ -20,7 +20,7 @@ import io.iohk.atala.prism.services.NodeClientService
 import _root_.java.io.BufferedInputStream
 
 object E2ETestUtils {
-  implicit val ecTrait = EC.INSTANCE
+  implicit val ecTrait = EC
 
   def addConnectionFromTokenRequest(token: String, clientKey: ECKeyPair): AddConnectionFromTokenRequest = {
     AddConnectionFromTokenRequest(
@@ -63,7 +63,7 @@ object E2ETestUtils {
     val signedAtalaOperation = SignedAtalaOperation(
       signedWith = masterKeyId,
       operation = Some(atalaOperation),
-      signature = ByteString.copyFrom(EC.sign(atalaOperation.toByteArray, masterKey.getPrivateKey).getData)
+      signature = ByteString.copyFrom(EC.signBytes(atalaOperation.toByteArray, masterKey.getPrivateKey).getData)
     )
 
     RegisterDIDRequest()

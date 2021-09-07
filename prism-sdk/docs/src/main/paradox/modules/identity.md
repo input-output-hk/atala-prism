@@ -12,7 +12,7 @@ This module provides the necessary tools to work with DIDs.
 All DIDs start with the URI scheme identifier `did`, and PRISM's DIDs are no exception. But they also have a specific [DID method](https://www.w3.org/TR/did-core/#dfn-did-methods) attached to them:
 
 ```scala mdoc
-import io.iohk.atala.prism.kotlin.identity.DID
+import io.iohk.atala.prism.kotlin.identity.{PrismDid => DID}
 
 DID.prismPrefix
 ```

@@ -5,22 +5,26 @@ import java.time.temporal.ChronoUnit
 import java.util.{Base64, UUID}
 import com.google.protobuf.ByteString
 import io.iohk.atala.prism.auth.SignedRpcRequest
-import io.iohk.atala.prism.kotlin.crypto.{EC, SHA256Digest}
+import io.iohk.atala.prism.kotlin.crypto.{Sha256, Sha256Digest}
+import io.iohk.atala.prism.kotlin.crypto.EC.{INSTANCE => EC}
 import io.iohk.atala.prism.kotlin.crypto.signature.ECSignature
-import io.iohk.atala.prism.kotlin.identity.DID
+import io.iohk.atala.prism.kotlin.identity.{PrismDid => DID}
 import io.iohk.atala.prism.logging.TraceId
 import io.iohk.atala.prism.protos.{common_models, vault_api}
 import io.iohk.atala.prism.protos.node_models
 import io.iohk.atala.prism.protos.node_models.AtalaOperation.Operation.UpdateDid
 import io.iohk.atala.prism.protos.node_models.UpdateDIDOperation
 import io.iohk.atala.prism.protos.vault_api.StoreDataRequest
+import io.iohk.atala.prism.utils.Base64Utils.decodeURL
 import io.iohk.atala.prism.vault.VaultRpcSpecBase
 import org.scalatest.OptionValues
+
+import scala.util.Try
 
 class EncryptedDataVaultGrpcServiceSpec extends VaultRpcSpecBase with OptionValues {
   private def createRequest(externalId: UUID, payload: String): StoreDataRequest = {
     val payloadBytes = payload.getBytes()
-    val hash = SHA256Digest.compute(payloadBytes).getValue.toArray
+    val hash = Sha256.compute(payloadBytes).getValue.toArray
     vault_api.StoreDataRequest(
       externalId = externalId.toString,
       payloadHash = ByteString.copyFrom(hash),
@@ -43,7 +47,7 @@ class EncryptedDataVaultGrpcServiceSpec extends VaultRpcSpecBase with OptionValu
   "store" should {
     "create a payload" in {
       val keys = EC.generateKeyPair()
-      val did = DID.createUnpublishedDID(keys.getPublicKey, null)
+      val did = DID.buildLongFormFromMasterKey(keys.getPublicKey)
       val payload = "encrypted_data"
       val request = createRequest(payload)
       val rpcRequest = SignedRpcRequest.generate(keys, did, request)
@@ -58,7 +62,7 @@ class EncryptedDataVaultGrpcServiceSpec extends VaultRpcSpecBase with OptionValu
         val storedPayload = storedPayloads.head
 
         storedPayload.id.toString must be(responsePayloadId)
-        storedPayload.did must be(did.canonical)
+        storedPayload.did must be(did.asCanonical())
         storedPayload.content must be(payload.toVector)
         assert(storedPayload.createdAt.until(Instant.now(), ChronoUnit.MINUTES) <= 2)
       }
@@ -66,7 +70,7 @@ class EncryptedDataVaultGrpcServiceSpec extends VaultRpcSpecBase with OptionValu
 
     "be idempotent on the exact same request" in {
       val keys = EC.generateKeyPair()
-      val did = DID.createUnpublishedDID(keys.getPublicKey, null)
+      val did = DID.buildLongFormFromMasterKey(keys.getPublicKey)
       val payload = "encrypted_data"
       val request = createRequest(payload)
       val rpcRequest1 = SignedRpcRequest.generate(keys, did, request)
@@ -90,14 +94,14 @@ class EncryptedDataVaultGrpcServiceSpec extends VaultRpcSpecBase with OptionValu
       val storedPayload = storedPayloads.head
 
       storedPayload.id.toString must be(id1)
-      storedPayload.did must be(did.canonical)
+      storedPayload.did must be(did.asCanonical())
       storedPayload.content must be(payload.toVector)
       assert(storedPayload.createdAt.until(Instant.now(), ChronoUnit.MINUTES) <= 2)
     }
 
     "fail on the multiple different requests with the same id" in {
       val keys = EC.generateKeyPair()
-      val did = DID.createUnpublishedDID(keys.getPublicKey, null)
+      val did = DID.buildLongFormFromMasterKey(keys.getPublicKey)
       val externalId = UUID.randomUUID()
       val request1 = createRequest(externalId, "encrypted_data_1")
       val rpcRequest1 = SignedRpcRequest.generate(keys, did, request1)
@@ -119,7 +123,7 @@ class EncryptedDataVaultGrpcServiceSpec extends VaultRpcSpecBase with OptionValu
   "get" should {
     "return all created payloads" in {
       val keys = EC.generateKeyPair()
-      val did = DID.createUnpublishedDID(keys.getPublicKey, null)
+      val did = DID.buildLongFormFromMasterKey(keys.getPublicKey)
       val payload1 = "encrypted_data_1"
       val request1 = createRequest(payload1)
       val rpcRequest1 = SignedRpcRequest.generate(keys, did, request1)
@@ -178,7 +182,7 @@ class EncryptedDataVaultGrpcServiceSpec extends VaultRpcSpecBase with OptionValu
   "authentication" should {
     "support unpublished DID authentication" in {
       val keys = EC.generateKeyPair()
-      val did = DID.createUnpublishedDID(keys.getPublicKey, null)
+      val did = DID.buildLongFormFromMasterKey(keys.getPublicKey)
       val request = vault_api.GetPaginatedDataRequest()
       val rpcRequest = SignedRpcRequest.generate(keys, did, request)
       usingApiAs(rpcRequest) { blockingStub =>
@@ -190,57 +194,65 @@ class EncryptedDataVaultGrpcServiceSpec extends VaultRpcSpecBase with OptionValu
     "reject DIDs with non-matching hash" in {
       val keys1 = EC.generateKeyPair()
       val keys2 = EC.generateKeyPair()
-      val did1 = DID.createUnpublishedDID(keys1.getPublicKey, null)
-      val did2 = DID.createUnpublishedDID(keys2.getPublicKey, null)
-      val fakeDid = DID.buildPrismDID(
-        did1.getCanonicalSuffix.getValue,
-        did2.getSuffix.getValue.dropWhile(_ != ':').tail
+      val did1 = DID.buildLongFormFromMasterKey(keys1.getPublicKey)
+      val did2 = DID.buildLongFormFromMasterKey(keys2.getPublicKey)
+      val fakeDid = Try(
+        DID.buildLongForm(
+          Sha256Digest.fromHex(did1.asCanonical().getSuffix),
+          decodeURL(did2.getSuffix.dropWhile(_ != ':').tail)
+        )
       )
       val request = vault_api.GetPaginatedDataRequest()
-      val rpcRequest = SignedRpcRequest.generate(keys1, fakeDid, request)
-      usingApiAs(rpcRequest) { blockingStub =>
-        intercept[RuntimeException] {
-          blockingStub.getPaginatedData(request)
+      val rpcRequest = fakeDid.map(fake => SignedRpcRequest.generate(keys1, fake, request))
+      rpcRequest.map { req =>
+        usingApiAs(req) { blockingStub =>
+          intercept[RuntimeException] {
+            blockingStub.getPaginatedData(request)
+          }
         }
-      }
+      }.isFailure must be(true)
     }
 
     "reject DIDs with malformed encoded operation inside" in {
       val keys = EC.generateKeyPair()
       val operationBytes = Array(100.toByte, 200.toByte)
-      val operationHash = SHA256Digest.compute(operationBytes)
-      val didCanonicalSuffix = operationHash.hexValue
-      val encodedOperation = Base64.getUrlEncoder.withoutPadding().encodeToString(operationBytes)
-      val did = DID.buildPrismDID(didCanonicalSuffix, encodedOperation)
+      val operationHash = Sha256Digest.fromBytes(operationBytes)
+      val didCanonicalSuffix = operationHash.getHexValue
+      val encodedOperation = Base64.getUrlEncoder.withoutPadding().encode(operationBytes)
+      val did = Try(DID.buildLongForm(Sha256Digest.fromHex(didCanonicalSuffix), encodedOperation))
       val request = vault_api.GetPaginatedDataRequest()
-      val rpcRequest = SignedRpcRequest.generate(keys, did, request)
-      usingApiAs(rpcRequest) { blockingStub =>
-        intercept[RuntimeException] {
-          blockingStub.getPaginatedData(request)
+      val rpcRequest = did.map(lDid => SignedRpcRequest.generate(keys, lDid, request))
+      rpcRequest.map { req =>
+        usingApiAs(req) { blockingStub =>
+          intercept[RuntimeException] {
+            blockingStub.getPaginatedData(request)
+          }
         }
-      }
+      }.isFailure must be(true)
     }
 
     "reject DIDs with no CreateDID operation inside" in {
       val keys = EC.generateKeyPair()
       val operation = node_models.AtalaOperation(UpdateDid(UpdateDIDOperation()))
       val operationBytes = operation.toByteArray
-      val operationHash = SHA256Digest.compute(operationBytes)
-      val didCanonicalSuffix = operationHash.hexValue
-      val encodedOperation = Base64.getUrlEncoder.withoutPadding().encodeToString(operationBytes)
-      val did = DID.buildPrismDID(didCanonicalSuffix, encodedOperation)
+      val operationHash = Sha256.compute(operationBytes)
+      val didCanonicalSuffix = operationHash.getHexValue
+      val encodedOperation = Base64.getUrlEncoder.withoutPadding().encode(operationBytes)
+      val did = Try(DID.buildLongForm(Sha256Digest.fromHex(didCanonicalSuffix), encodedOperation))
       val request = vault_api.GetPaginatedDataRequest()
-      val rpcRequest = SignedRpcRequest.generate(keys, did, request)
-      usingApiAs(rpcRequest) { blockingStub =>
-        intercept[RuntimeException] {
-          blockingStub.getPaginatedData(request)
+      val rpcRequest = did.map(lDid => SignedRpcRequest.generate(keys, lDid, request))
+      rpcRequest.map { req =>
+        usingApiAs(req) { blockingStub =>
+          intercept[RuntimeException] {
+            blockingStub.getPaginatedData(request)
+          }
         }
-      }
+      }.isFailure must be(true)
     }
 
     "reject DIDs with invalid key id" in {
       val keys = EC.generateKeyPair()
-      val did = DID.createUnpublishedDID(keys.getPublicKey, null)
+      val did = DID.buildLongFormFromMasterKey(keys.getPublicKey)
       val request = vault_api.GetPaginatedDataRequest()
       val rpcRequest = SignedRpcRequest.generate(keys, did, request).copy(keyId = "missing0")
       usingApiAs(rpcRequest) { blockingStub =>
@@ -252,7 +264,7 @@ class EncryptedDataVaultGrpcServiceSpec extends VaultRpcSpecBase with OptionValu
 
     "reject invalid signatures" in {
       val keys1 = EC.generateKeyPair()
-      val did1 = DID.createUnpublishedDID(keys1.getPublicKey, null)
+      val did1 = DID.buildLongFormFromMasterKey(keys1.getPublicKey)
       val request = vault_api.GetPaginatedDataRequest()
       val rpcRequest1 = SignedRpcRequest.generate(keys1, did1, request)
       val malformedSignature = Array(100.toByte, 200.toByte)
@@ -265,7 +277,7 @@ class EncryptedDataVaultGrpcServiceSpec extends VaultRpcSpecBase with OptionValu
       }
 
       val keys2 = EC.generateKeyPair()
-      val did2 = DID.createUnpublishedDID(keys2.getPublicKey, null)
+      val did2 = DID.buildLongFormFromMasterKey(keys2.getPublicKey)
       val rpcRequest2 = SignedRpcRequest.generate(keys2, did2, request)
       val invalidSignatureRpcRequest = rpcRequest1.copy(signature = rpcRequest2.signature)
       usingApiAs(invalidSignatureRpcRequest) { blockingStub =>

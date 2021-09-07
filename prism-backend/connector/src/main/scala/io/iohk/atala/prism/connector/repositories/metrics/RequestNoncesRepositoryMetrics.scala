@@ -3,7 +3,7 @@ package io.iohk.atala.prism.connector.repositories.metrics
 import cats.effect.Bracket
 import io.iohk.atala.prism.auth.model.RequestNonce
 import io.iohk.atala.prism.connector.repositories.RequestNoncesRepository
-import io.iohk.atala.prism.kotlin.identity.DID
+import io.iohk.atala.prism.kotlin.identity.{PrismDid => DID}
 import io.iohk.atala.prism.metrics.TimeMeasureUtil.MeasureOps
 import io.iohk.atala.prism.metrics.{TimeMeasureMetric, TimeMeasureUtil}
 import io.iohk.atala.prism.models.ParticipantId

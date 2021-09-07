@@ -1,6 +1,6 @@
 package io.iohk.atala.prism.credentials
 
-import io.iohk.atala.prism.crypto.SHA256Digest
+import io.iohk.atala.prism.crypto.Sha256Digest
 
 import io.iohk.atala.prism.crypto.{ECTrait, ECSignature, ECPublicKey, ECPrivateKey}
 import io.iohk.atala.prism.util.ArrayOps._
@@ -16,7 +16,7 @@ abstract class Credential {
   def isVerifiable: Boolean = signature.isDefined
 
   def canonicalForm: String
-  def hash: SHA256Digest = SHA256Digest.compute(canonicalForm.getBytes)
+  def hash: Sha256Digest = Sha256.compute(canonicalForm.getBytes)
 
   def sign(privateKey: ECPrivateKey)(implicit ec: ECTrait): Credential
 

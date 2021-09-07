@@ -11,15 +11,14 @@ import derevo.derive
 import io.grpc.stub.MetadataUtils
 import io.iohk.atala.prism.auth.grpc.GrpcAuthenticationHeader
 import io.iohk.atala.prism.connector.RequestAuthenticator
-import io.iohk.atala.prism.kotlin.crypto.EC
+import io.iohk.atala.prism.kotlin.crypto.EC.{INSTANCE => EC}
 import io.iohk.atala.prism.kotlin.crypto.keys.ECPrivateKey
-import io.iohk.atala.prism.kotlin.identity.DID
+import io.iohk.atala.prism.kotlin.identity.{PrismDid => DID}
 import io.iohk.atala.prism.models.ConnectionToken
 import io.iohk.atala.prism.protos.connector_api._
 import io.iohk.atala.prism.protos.connector_models.ContactConnection
 import io.iohk.atala.prism.utils._
 import io.iohk.atala.prism.utils.GrpcUtils
-import io.iohk.atala.prism.logging.GeneralLoggableInstances._
 
 import scala.concurrent.ExecutionContext
 import scala.util.{Failure, Success, Try}
@@ -69,7 +68,7 @@ object ConnectorClient {
           throw new RuntimeException("Failed to load the connector's whitelisted DID, which is required to invoke it")
         }
 
-        val didPrivateKey = EC.toPrivateKey(
+        val didPrivateKey = EC.toPrivateKeyFromBytes(
           BytesOps.hexToBytes(typesafe.getString("didPrivateKeyHex"))
         )
 
@@ -169,7 +168,7 @@ private[clients] final class ConnectorClientLogs[F[_]: ServiceLogging[*[_], Conn
       count: Int
   ): Mid[F, Seq[ConnectionToken]] =
     in =>
-      info"generating connection tokens for ${header.did.getCanonicalSuffix}" *> in
+      info"generating connection tokens for ${header.did.asCanonical().getSuffix}" *> in
         .flatTap(list => info"generating connection tokens - successfully done got ${list.size} entities")
         .onError(errorCause"encountered an error while generating connection tokens" (_))
 
@@ -178,7 +177,7 @@ private[clients] final class ConnectorClientLogs[F[_]: ServiceLogging[*[_], Conn
       header: GrpcAuthenticationHeader.DIDBased
   ): Mid[F, SendMessagesResponse] =
     in =>
-      info"sending messages ${header.did.getCanonicalSuffix}" *> in
+      info"sending messages ${header.did.asCanonical().getSuffix}" *> in
         .flatTap(response => info"sending messages - successfully done got ${response.ids.size} ids")
         .onError(errorCause"encountered an error while sending messages" (_))
 

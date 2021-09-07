@@ -6,11 +6,10 @@ import com.google.protobuf.ByteString
 import io.grpc.inprocess.{InProcessChannelBuilder, InProcessServerBuilder}
 import io.grpc.{ManagedChannel, Server}
 import io.iohk.atala.prism.AtalaWithPostgresSpec
-import io.iohk.atala.prism.kotlin.credentials.{BatchWasRevoked, CredentialWasRevoked}
-import io.iohk.atala.prism.kotlin.credentials.{CredentialBatchId, CredentialBatches}
-import io.iohk.atala.prism.kotlin.crypto.SHA256Digest
-import io.iohk.atala.prism.kotlin.identity.DID
-import io.iohk.atala.prism.kotlin.identity.DID.masterKeyId
+import io.iohk.atala.prism.kotlin.credentials.CredentialBatchId
+import io.iohk.atala.prism.kotlin.crypto.Sha256
+import io.iohk.atala.prism.kotlin.identity.{PrismDid => DID}
+import io.iohk.atala.prism.kotlin.identity.PrismDid.{getMASTER_KEY_ID => masterKeyId}
 import io.iohk.atala.prism.node.poc.{GenericCredentialsSDK, Wallet}
 import io.iohk.atala.prism.node.repositories.{
   AtalaObjectsTransactionsRepository,
@@ -38,6 +37,9 @@ import java.util.concurrent.TimeUnit
 import scala.concurrent.{Future, Promise}
 import scala.jdk.CollectionConverters._
 import io.iohk.atala.prism.kotlin.credentials.json.JsonBasedCredential
+import io.iohk.atala.prism.kotlin.extras.CredentialBatches
+import io.iohk.atala.prism.kotlin.extras.VerificationError.{BatchWasRevokedOn, CredentialWasRevokedOn}
+import io.iohk.atala.prism.utils.StringUtils.encodeToByteArray
 
 class FlowPoC extends AtalaWithPostgresSpec with BeforeAndAfterEach {
 
@@ -171,7 +173,7 @@ class FlowPoC extends AtalaWithPostgresSpec with BeforeAndAfterEach {
       // 4. she builds 4 generic credentials
       val issuanceKeyId = "issuance0"
 
-      val issuerDID = DID.buildPrismDID(didSuffix)
+      val issuerDID = DID.buildCanonical(Sha256.compute(encodeToByteArray(didSuffix.value)))
       val credentialsToSign = consoleCredentials.map { credential =>
         GenericCredentialsSDK.buildGenericCredential(
           "university-degree",
@@ -232,18 +234,18 @@ class FlowPoC extends AtalaWithPostgresSpec with BeforeAndAfterEach {
       val revocationKeyId = "revocation0"
       wallet.addRevocationKeyToDid(
         revocationKeyId = revocationKeyId,
-        previousOperationHash = ByteString.copyFrom(SHA256Digest.compute(createDIDOp.toByteArray).getValue),
+        previousOperationHash = ByteString.copyFrom(Sha256.compute(createDIDOp.toByteArray).getValue),
         didSuffix = didSuffix
       )
 
-      val issueBatch1OpHash = SHA256Digest.compute(issueBatch1Op.toByteArray)
+      val issueBatch1OpHash = Sha256.compute(issueBatch1Op.toByteArray)
       val batchId1 = CredentialBatchId.fromBatchData(issuerDID.getSuffix, root1)
       val revokeBatch1Op = revokeCredentialsOperation(issueBatch1OpHash, batchId1)
       val signedRevokeBatch1Op = wallet.signOperation(revokeBatch1Op, revocationKeyId, didSuffix)
       val revokeCredentialBatchOperationId = console.revokeCredentialBatch(signedRevokeBatch1Op).operationId
 
       // 11. the issuer decides to revoke the first credential from the second batch
-      val issueBatch2OpHash = SHA256Digest.compute(issueBatch2Op.toByteArray)
+      val issueBatch2OpHash = Sha256.compute(issueBatch2Op.toByteArray)
       val batchId2 = CredentialBatchId.fromBatchData(issuerDID.getSuffix, root2)
       val revokeC3Op = revokeCredentialsOperation(issueBatch2OpHash, batchId2, Seq(c3.hash))
       val signedRevokeC3Op = wallet.signOperation(revokeC3Op, revocationKeyId, didSuffix)
@@ -260,15 +262,15 @@ class FlowPoC extends AtalaWithPostgresSpec with BeforeAndAfterEach {
       //     and the verification fails for all but the second credential of the second batch
       val e1 = wallet.verifyCredential(c1, p1).invalid.e
       e1.size mustBe 1
-      e1.head mustBe a[BatchWasRevoked]
+      e1.head mustBe a[BatchWasRevokedOn]
 
       val e2 = wallet.verifyCredential(c2, p2).invalid.e
       e2.size mustBe 1
-      e2.head mustBe a[BatchWasRevoked]
+      e2.head mustBe a[BatchWasRevokedOn]
 
       val e3 = wallet.verifyCredential(c3, p3).invalid.e
       e3.size mustBe 1
-      e3.head mustBe a[CredentialWasRevoked]
+      e3.head mustBe a[CredentialWasRevokedOn]
 
       wallet.verifyCredential(c4, p4).isValid mustBe true
     }

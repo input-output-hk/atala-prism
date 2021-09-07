@@ -3,7 +3,7 @@ package io.iohk.atala.prism.node.repositories.daos
 import cats.syntax.functor._
 import doobie.implicits._
 import io.iohk.atala.prism.AtalaWithPostgresSpec
-import io.iohk.atala.prism.kotlin.crypto.SHA256Digest
+import io.iohk.atala.prism.kotlin.crypto.Sha256
 import io.iohk.atala.prism.models.{BlockInfo, Ledger, TransactionId, TransactionInfo}
 import io.iohk.atala.prism.node.models.{AtalaObjectId, AtalaObjectInfo, AtalaObjectStatus}
 import io.iohk.atala.prism.protos.node_internal
@@ -15,7 +15,7 @@ class AtalaObjectsDAOSpec extends AtalaWithPostgresSpec {
   private val objectId = AtalaObjectId.of(node_internal.AtalaObject())
   private val byteContent = "byteContent".getBytes
   private val transactionInfo = TransactionInfo(
-    transactionId = TransactionId.from(SHA256Digest.compute("transactionId".getBytes).getValue).value,
+    transactionId = TransactionId.from(Sha256.compute("transactionId".getBytes).getValue).value,
     ledger = Ledger.InMemory,
     block = Some(BlockInfo(number = 1, timestamp = Instant.ofEpochMilli(133713371337L), index = 0))
   )

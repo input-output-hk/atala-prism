@@ -1,7 +1,8 @@
 package io.iohk.atala.prism.node.poc
 
-import io.iohk.atala.prism.kotlin.identity.{DID, DIDSuffix}
 import io.iohk.atala.prism.kotlin.credentials.content.CredentialContent
+import io.iohk.atala.prism.kotlin.identity.{PrismDid => DID}
+import io.iohk.atala.prism.models.DIDSuffix
 import kotlinx.serialization.json.JsonElementKt.JsonPrimitive
 import kotlinx.serialization.json.JsonObject
 
@@ -36,7 +37,7 @@ object GenericCredentialsSDK {
   @nowarn("cat=unused-params")
   def getIssuerDID(credential: String): String = issuerDIDUsed.getValue
   @nowarn("cat=unused-params")
-  def getIssuerDIDSufix(credential: String): DIDSuffix = issuerDIDUsed.getSuffix
+  def getIssuerDIDSufix(credential: String): DIDSuffix = DIDSuffix(issuerDIDUsed.getSuffix)
   @nowarn("cat=unused-params")
   def getKeyId(credential: String): String = keyIdUsed
 }

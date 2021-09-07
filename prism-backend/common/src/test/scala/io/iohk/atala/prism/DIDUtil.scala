@@ -2,11 +2,12 @@ package io.iohk.atala.prism
 
 import com.google.protobuf.ByteString
 import io.iohk.atala.prism.auth.SignedRpcRequest
-import io.iohk.atala.prism.kotlin.crypto.{EC, SHA256Digest}
+import io.iohk.atala.prism.kotlin.crypto.{Sha256, Sha256Digest}
+import io.iohk.atala.prism.kotlin.crypto.EC.{INSTANCE => EC}
 import io.iohk.atala.prism.kotlin.crypto.keys.{ECKeyPair, ECPublicKey}
 import io.iohk.atala.prism.kotlin.crypto.ECConfig.{INSTANCE => ECConfig}
-import io.iohk.atala.prism.kotlin.identity.DID
-import io.iohk.atala.prism.kotlin.identity.DID.masterKeyId
+import io.iohk.atala.prism.kotlin.identity.{PrismDid => DID}
+import io.iohk.atala.prism.kotlin.identity.PrismDid.{getMASTER_KEY_ID => masterKeyId}
 import io.iohk.atala.prism.protos.node_api.{GetDidDocumentRequest, GetDidDocumentResponse}
 import io.iohk.atala.prism.protos.node_api.NodeServiceGrpc.NodeService
 import io.iohk.atala.prism.protos.node_models
@@ -47,9 +48,9 @@ trait DIDUtil {
 
     val atalaOp = node_models.AtalaOperation(operation = node_models.AtalaOperation.Operation.CreateDid(createDidOp))
     val operationBytes = atalaOp.toByteArray
-    val operationHash = SHA256Digest.compute(operationBytes)
-    val didCanonicalSuffix = operationHash.hexValue
-    val did = DID.buildPrismDID(didCanonicalSuffix, null)
+    val operationHash = Sha256.compute(operationBytes)
+    val didCanonicalSuffix = operationHash.getHexValue
+    val did = DID.buildCanonical(Sha256Digest.fromHex(didCanonicalSuffix))
 
     nodeMock.getDidDocument(GetDidDocumentRequest(did.getValue)).returns {
       Future.successful(
@@ -70,7 +71,7 @@ trait DIDUtil {
 
   def prepareSignedUnpublishedDidRequest[R <: GeneratedMessage](request: R): (ECPublicKey, SignedRpcRequest[R]) = {
     val keys = EC.generateKeyPair()
-    val did = DID.createUnpublishedDID(keys.getPublicKey, null)
+    val did = DID.buildLongFormFromMasterKey(keys.getPublicKey)
     (keys.getPublicKey, SignedRpcRequest.generate(keys, did, request))
   }
 
@@ -87,7 +88,7 @@ object DIDUtil {
   def createUnpublishedDid: (ECKeyPair, DID) = {
     val keyPair = EC.generateKeyPair()
     val publicKey = keyPair.getPublicKey
-    val did = DID.createUnpublishedDID(publicKey, null)
+    val did = DID.buildLongFormFromMasterKey(publicKey)
     (keyPair, did)
   }
 }

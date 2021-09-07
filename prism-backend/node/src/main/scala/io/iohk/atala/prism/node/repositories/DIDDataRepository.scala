@@ -8,9 +8,10 @@ import derevo.derive
 import derevo.tagless.applyK
 import doobie.implicits._
 import doobie.util.transactor.Transactor
-import io.iohk.atala.prism.kotlin.identity.{DID, DIDSuffix}
+import io.iohk.atala.prism.kotlin.identity.{PrismDid => DID}
 import io.iohk.atala.prism.metrics.{TimeMeasureMetric, TimeMeasureUtil}
 import io.iohk.atala.prism.metrics.TimeMeasureUtil.MeasureOps
+import io.iohk.atala.prism.models.DIDSuffix
 import io.iohk.atala.prism.utils.syntax.DBConnectionOps
 import io.iohk.atala.prism.node.errors.NodeError
 import io.iohk.atala.prism.node.errors.NodeError.UnknownValueError
@@ -36,7 +37,7 @@ private final class DIDDataRepositoryImpl[F[_]: BracketThrow](xa: Transactor[F])
   val logger: Logger = LoggerFactory.getLogger(getClass)
 
   def findByDid(did: DID): F[Either[NodeError, Option[DIDDataState]]] =
-    Option(did.getCanonicalSuffix)
+    Option(DIDSuffix(did.getSuffix))
       .fold[F[Either[NodeError, Option[DIDDataState]]]](logDidAndReturnUnknownValue(did))(getByCanonicalSuffix)
 
   private def logDidAndReturnUnknownValue(did: DID): F[Either[NodeError, Option[DIDDataState]]] = {

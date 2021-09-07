@@ -5,19 +5,21 @@ import com.google.protobuf.ByteString
 import io.iohk.atala.prism.kotlin.credentials._
 import io.iohk.atala.prism.kotlin.credentials.json.JsonBasedCredential
 import io.iohk.atala.prism.kotlin.credentials.content.CredentialContent
-import io.iohk.atala.prism.kotlin.crypto.{EC, SHA256Digest}
+import io.iohk.atala.prism.kotlin.crypto.{MerkleInclusionProof, Sha256}
+import io.iohk.atala.prism.kotlin.crypto.EC.{INSTANCE => EC}
 import io.iohk.atala.prism.kotlin.crypto.keys.{ECPrivateKey, ECPublicKey}
 import io.iohk.atala.prism.kotlin.crypto.ECConfig.{INSTANCE => ECConfig}
-import io.iohk.atala.prism.node.grpc.ProtoCodecs
 import io.iohk.atala.prism.protos.{node_api, node_models}
-import org.scalatest.OptionValues._
-import io.iohk.atala.prism.kotlin.identity.DIDSuffix
-import io.iohk.atala.prism.kotlin.crypto.MerkleInclusionProof
-import io.iohk.atala.prism.kotlin.identity.DID.masterKeyId
 import io.iohk.atala.prism.kotlin.crypto.signature.ECSignature
 import io.iohk.atala.prism.interop.CredentialContentConverter._
-
-import scala.util.Try
+import io.iohk.atala.prism.kotlin.extras.{
+  CredentialVerificationService,
+  CredentialVerificationServiceAsync,
+  ProtoClientUtils,
+  VerificationError
+}
+import io.iohk.atala.prism.kotlin.identity.PrismDid
+import io.iohk.atala.prism.models.DIDSuffix
 
 // We define some classes to illustrate what happens in the different components
 case class Wallet(node: node_api.NodeServiceGrpc.NodeServiceBlockingStub) {
@@ -39,7 +41,7 @@ case class Wallet(node: node_api.NodeServiceGrpc.NodeServiceBlockingStub) {
         node_models.DIDData(
           publicKeys = Seq(
             node_models.PublicKey(
-              id = masterKeyId,
+              id = PrismDid.getMASTER_KEY_ID,
               usage = node_models.KeyUsage.MASTER_KEY,
               keyData = node_models.PublicKey.KeyData.EcKeyData(
                 publicKeyToProto(masterPublicKey)
@@ -58,11 +60,11 @@ case class Wallet(node: node_api.NodeServiceGrpc.NodeServiceBlockingStub) {
     )
 
     val atalaOp = node_models.AtalaOperation(operation = node_models.AtalaOperation.Operation.CreateDid(createDidOp))
-    val operationHash = SHA256Digest.compute(atalaOp.toByteArray)
-    val didSuffix: DIDSuffix = DIDSuffix.fromDigest(operationHash)
+    val operationHash = Sha256.compute(atalaOp.toByteArray)
+    val didSuffix: DIDSuffix = DIDSuffix(operationHash.getHexValue)
 
     dids += (didSuffix -> collection.mutable.Map(
-      masterKeyId -> masterPrivateKey,
+      PrismDid.getMASTER_KEY_ID -> masterPrivateKey,
       "issuance0" -> issuancePrivateKey
     ))
 
@@ -96,7 +98,7 @@ case class Wallet(node: node_api.NodeServiceGrpc.NodeServiceBlockingStub) {
       node_models.AtalaOperation(
         node_models.AtalaOperation.Operation.UpdateDid(updateDIDOp)
       ),
-      masterKeyId,
+      PrismDid.getMASTER_KEY_ID,
       didSuffix
     )
     node.updateDID(node_api.UpdateDIDRequest(Some(updateDidOpSigned)))
@@ -114,7 +116,7 @@ case class Wallet(node: node_api.NodeServiceGrpc.NodeServiceBlockingStub) {
     node_models.SignedAtalaOperation(
       signedWith = keyId,
       operation = Some(operation),
-      signature = ByteString.copyFrom(EC.sign(operation.toByteArray, key).getData)
+      signature = ByteString.copyFrom(EC.signBytes(operation.toByteArray, key).getData)
     )
   }
 
@@ -134,84 +136,29 @@ case class Wallet(node: node_api.NodeServiceGrpc.NodeServiceBlockingStub) {
       didSuffix: DIDSuffix
   ): ECSignature = {
     val privateKey = dids(didSuffix)(keyId)
-    EC.sign(publicKey.getEncoded, privateKey)
+    EC.signBytes(publicKey.getEncoded, privateKey)
   }
 
   def verifySignedKey(publicKey: ECPublicKey, signature: ECSignature, signingKey: ECPublicKey): Boolean = {
-    EC.verify(publicKey.getEncoded, signingKey, signature)
+    EC.verifyBytes(publicKey.getEncoded, signingKey, signature)
   }
 
   def verifyCredential(
       credential: PrismCredential,
       merkleProof: MerkleInclusionProof
-  ): ValidatedNel[VerificationException, Unit] = {
-    // extract user DIDSuffix and keyId from credential
-    val issuerDID = Option(credential.getContent.getIssuerDid).getOrElse(throw new Exception("getIssuerDid is null"))
-    val issuanceKeyId =
-      Option(credential.getContent.getIssuanceKeyId).getOrElse(throw new Exception("getIssuanceKeyId is null"))
+  ): ValidatedNel[VerificationError, Unit] = {
 
-    // request credential state to the node
-    val merkleRoot = merkleProof.derivedRoot
-    val batchId = CredentialBatchId.fromBatchData(issuerDID.getSuffix, merkleRoot)
+    val nodeKotlin = ProtoClientUtils.INSTANCE.nodeClient("localhost", 50053)
+    val credentialVerificationService = new CredentialVerificationService(nodeKotlin)
+    val credentialVerificationServiceAsync = new CredentialVerificationServiceAsync(credentialVerificationService)
+    val result = credentialVerificationServiceAsync.verify(credential, merkleProof)
+    val errors = result.join().getVerificationErrors
 
-    val batchStateProto = node.getBatchState(
-      node_api.GetBatchStateRequest(
-        batchId.getId
-      )
-    )
-    val batchIssuanceDate =
-      ProtoCodecs.fromTimestampInfoProto(batchStateProto.getPublicationLedgerData.timestampInfo.value)
-    val batchRevocationDate =
-      batchStateProto.getRevocationLedgerData.timestampInfo.map(ProtoCodecs.fromTimestampInfoProto)
-    val batchData = new BatchData(batchIssuanceDate, batchRevocationDate.orNull)
+    import scala.jdk.CollectionConverters._
+    Validated.fromEither {
 
-    // resolve DID through the node
-    val didDocumentOption = node
-      .getDidDocument(
-        node_api.GetDidDocumentRequest(
-          did = issuerDID.getValue
-        )
-      )
-      .document
-    val didDocument = didDocumentOption.value
-
-    // get verification key
-    val issuancekeyProtoOption = didDocument.publicKeys.find(_.id == issuanceKeyId)
-    val issuancekeyData = issuancekeyProtoOption.value
-    val issuanceKey = issuancekeyProtoOption.flatMap(ProtoCodecs.fromProtoKey).value
-    val issuanceKeyAddedOn = ProtoCodecs.fromTimestampInfoProto(issuancekeyData.addedOn.value.timestampInfo.value)
-    val issuanceKeyRevokedOn =
-      issuancekeyData.revokedOn.flatMap(_.timestampInfo.map(ProtoCodecs.fromTimestampInfoProto))
-
-    val keyData = new KeyData(issuanceKey, issuanceKeyAddedOn, issuanceKeyRevokedOn.orNull)
-
-    // request specific credential revocation status to the node
-    val credentialHash = credential.hash
-    val credentialRevocationTimeResponse = node.getCredentialRevocationTime(
-      node_api
-        .GetCredentialRevocationTimeRequest()
-        .withBatchId(batchId.getId)
-        .withCredentialHash(ByteString.copyFrom(credentialHash.getValue))
-    )
-    val credentialRevocationTime =
-      credentialRevocationTimeResponse.getRevocationLedgerData.timestampInfo
-        .map(ProtoCodecs.fromTimestampInfoProto)
-
-    Validated.fromEither(
-      Try(
-        CredentialVerification.INSTANCE
-          .verify(
-            keyData,
-            batchData,
-            credentialRevocationTime.orNull,
-            merkleRoot,
-            merkleProof,
-            credential
-          )
-      ).toEither.left.map {
-        case e: VerificationException => NonEmptyList.one(e)
-      }
-    )
+      Either.cond(errors.isEmpty, (), NonEmptyList.fromListUnsafe(errors.asScala.toList))
+    }
   }
 
   private def publicKeyToProto(key: ECPublicKey): node_models.ECKeyData = {

@@ -21,7 +21,7 @@ import io.iohk.atala.prism.connector.repositories.daos.{
 }
 import io.iohk.atala.prism.connector.repositories.metrics.ConnectionsRepositoryMetrics
 import io.iohk.atala.prism.errors.LoggingContext
-import io.iohk.atala.prism.kotlin.identity.DID
+import io.iohk.atala.prism.kotlin.identity.{PrismDid => DID}
 import io.iohk.atala.prism.metrics.TimeMeasureMetric
 import org.slf4j.{Logger, LoggerFactory}
 import tofu.higherKind.Mid

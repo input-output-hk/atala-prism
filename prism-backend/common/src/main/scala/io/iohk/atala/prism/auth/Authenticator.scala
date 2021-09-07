@@ -6,10 +6,10 @@ import io.iohk.atala.prism.auth.errors.{AuthError, AuthErrorSupport, SignatureVe
 import io.iohk.atala.prism.auth.grpc.{GrpcAuthenticationHeader, GrpcAuthenticationHeaderParser, SignedRequestsHelper}
 import io.iohk.atala.prism.auth.model.RequestNonce
 import io.iohk.atala.prism.auth.utils.DIDUtils
-import io.iohk.atala.prism.kotlin.crypto.EC
+import io.iohk.atala.prism.kotlin.crypto.EC.{INSTANCE => EC}
 import io.iohk.atala.prism.kotlin.crypto.keys.ECPublicKey
 import io.iohk.atala.prism.kotlin.crypto.signature.ECSignature
-import io.iohk.atala.prism.kotlin.identity.DID
+import io.iohk.atala.prism.kotlin.identity.{PrismDid => DID}
 import io.iohk.atala.prism.protos.node_api
 import io.iohk.atala.prism.utils.FutureEither
 import io.iohk.atala.prism.utils.FutureEither._
@@ -125,7 +125,7 @@ abstract class SignedRequestsAuthenticatorBase[Id](
     Future {
       Either
         .cond[AuthError, Unit](
-          EC.verify(payload, publicKey, signature),
+          EC.verifyBytes(payload, publicKey, signature),
           (),
           SignatureVerificationError()
         )
@@ -180,7 +180,7 @@ abstract class SignedRequestsAuthenticatorBase[Id](
   ): FutureEither[AuthError, Id] = {
 
     for {
-      // first we verify that we know the DID to avoid performing costly calls if we don't know it
+      // first we verify that we know the PrismDid to avoid performing costly calls if we don't know it
       id <- findByPublicKey(authenticationHeader.publicKey)
       signature = authenticationHeader.signature
       publicKey = authenticationHeader.publicKey
@@ -198,7 +198,7 @@ abstract class SignedRequestsAuthenticatorBase[Id](
       implicit ec: ExecutionContext
   ): FutureEither[AuthError, Id] = {
     for {
-      // first we verify that we know the DID to avoid performing costly calls if we don't know it
+      // first we verify that we know the PrismDid to avoid performing costly calls if we don't know it
       id <- findByDid(authenticationHeader.did)
 
       didDocumentResponse <-
@@ -207,7 +207,7 @@ abstract class SignedRequestsAuthenticatorBase[Id](
           .map(Right(_))
           .toFutureEither
 
-      didDocument = didDocumentResponse.document.getOrElse(throw new RuntimeException("Unknown DID"))
+      didDocument = didDocumentResponse.document.getOrElse(throw new RuntimeException("Unknown PrismDid"))
       publicKey <- DIDUtils.findPublicKey(didDocument, authenticationHeader.keyId)
 
       // Verify the actual signature
@@ -310,10 +310,10 @@ abstract class SignedRequestsAuthenticatorBase[Id](
         result
       case Some(GrpcAuthenticationHeader.UnpublishedDIDBased(_, _, _, _)) =>
         logger.error(s"$methodName - unauthenticated, request = ${request.toProtoString}")
-        Future.failed(throw new RuntimeException("The supplied DID is not whitelisted"))
+        Future.failed(throw new RuntimeException("The supplied PrismDid is not whitelisted"))
       case Some(_) =>
         logger.error(s"$methodName - unauthenticated, request = ${request.toProtoString}")
-        Future.failed(throw new RuntimeException("Invalid authentication method: unpublished DID is required"))
+        Future.failed(throw new RuntimeException("Invalid authentication method: unpublished PrismDid is required"))
       case None =>
         logger.error(s"$methodName - unauthenticated, request = ${request.toProtoString}")
         Future.failed(throw new RuntimeException("Missing or bad authentication"))

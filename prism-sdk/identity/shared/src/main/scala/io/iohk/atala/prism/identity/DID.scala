@@ -3,7 +3,7 @@ package io.iohk.atala.prism.identity
 import java.util.Base64
 
 import com.google.protobuf.ByteString
-import io.iohk.atala.prism.crypto.{ECConfig, ECPublicKey, SHA256Digest}
+import io.iohk.atala.prism.crypto.{ECConfig, ECPublicKey, Sha256Digest}
 import io.iohk.atala.prism.protos.node_models
 
 import scala.util.matching.Regex
@@ -127,7 +127,7 @@ object DID {
     case class LongForm(stateHash: String, encodedState: String) extends DIDFormat {
       def validate: Either[DIDLongFormError, ValidatedLongForm] = {
         val atalaOperationBytes = Base64.getUrlDecoder.decode(encodedState)
-        if (stateHash == SHA256Digest.compute(atalaOperationBytes).hexValue) {
+        if (stateHash == Sha256.compute(atalaOperationBytes).hexValue) {
           node_models.AtalaOperation
             .validate(atalaOperationBytes)
             .toOption
@@ -179,7 +179,7 @@ object DID {
 
     val atalaOp = node_models.AtalaOperation(operation = node_models.AtalaOperation.Operation.CreateDid(createDidOp))
     val operationBytes = atalaOp.toByteArray
-    val operationHash = SHA256Digest.compute(operationBytes)
+    val operationHash = Sha256.compute(operationBytes)
     val didCanonicalSuffix = operationHash.hexValue
     // DID method-specific id must consist out of alpha-digit characters plus '.', '-' and '_'.
     // Hence we are using URL-safe Base64 encoder without padding (i.e. no trailing '='s).

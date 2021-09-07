@@ -37,7 +37,7 @@ object versions {
   val twirl = "1.5.1"
   val typesafeConfig = "1.4.1"
   val http4s = "0.21.7"
-  val prismSdk = "0.1.0-103f0785"
+  val prismSdk = "0.1.0-b562e793"
 }
 
 object Dependencies {
@@ -90,6 +90,7 @@ object Dependencies {
   // SDK dependencies
   val prismCrypto = "io.iohk.atala" % "prism-crypto-jvm" % versions.prismSdk
   val prismCredentials = "io.iohk.atala" % "prism-credentials-jvm" % versions.prismSdk
+  val prismExtras = "io.iohk.atala" % "prism-extras-jvm" % versions.prismSdk
 
   // Test dependencies
   val catsScalatest = "com.ironcorelabs" %% "cats-scalatest" % versions.catsScalatest % Test

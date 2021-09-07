@@ -3,11 +3,11 @@ package io.iohk.atala.prism.connector.repositories
 import java.time.Instant
 import doobie.implicits._
 import doobie.implicits.legacy.instant._
-import io.iohk.atala.prism.kotlin.crypto.EC
+import io.iohk.atala.prism.kotlin.crypto.EC.{INSTANCE => EC}
 import io.iohk.atala.prism.kotlin.crypto.keys.ECPublicKey
 import io.iohk.atala.prism.connector.model._
 import io.iohk.atala.prism.connector.repositories.daos._
-import io.iohk.atala.prism.kotlin.identity.DID
+import io.iohk.atala.prism.kotlin.identity.{PrismDid => DID}
 import io.iohk.atala.prism.models.ParticipantId
 import io.iohk.atala.prism.AtalaWithPostgresSpec
 import io.iohk.atala.prism.connector.DataPreparation
@@ -59,7 +59,7 @@ trait ConnectorRepositorySpecBase extends AtalaWithPostgresSpec {
     createParticipant(
       ParticipantType.Verifier,
       name,
-      DID.createUnpublishedDID(EC.generateKeyPair().getPublicKey, null),
+      DID.buildLongFormFromMasterKey(EC.generateKeyPair().getPublicKey),
       None,
       logo
     )
