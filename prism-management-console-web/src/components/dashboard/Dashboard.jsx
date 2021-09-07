@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import { useTranslation } from 'react-i18next';
 import PropTypes from 'prop-types';
+import { useTranslation } from 'react-i18next';
+import { observer } from 'mobx-react-lite';
 import { message } from 'antd';
 import { withApi } from '../providers/withApi';
 import Welcome from './Atoms/Welcome/Welcome';
@@ -18,11 +19,11 @@ import {
   UNKNOWN_DID_SUFFIX_ERROR_CODE
 } from '../../helpers/constants';
 import WaitBanner from './Atoms/WaitBanner/WaitBanner';
-import { useSession } from '../providers/SessionContext';
+import { useSession } from '../../hooks/useSession';
 import SimpleLoading from '../common/Atoms/SimpleLoading/SimpleLoading';
 import './_style.scss';
 
-const Dashboard = ({ api, name, bundle }) => {
+const Dashboard = observer(({ api, name, bundle }) => {
   const { t } = useTranslation();
   const tp = useTranslationWithPrefix('dashboard');
   const [contactsStats, setContactsStats] = useState();
@@ -85,7 +86,7 @@ const Dashboard = ({ api, name, bundle }) => {
       </div>
     </div>
   );
-};
+});
 
 Dashboard.defaultProps = {
   bundle: undefined,

@@ -8,7 +8,7 @@ import { withApi } from '../providers/withApi';
 import { COMMON_CREDENTIALS_HEADERS, IMPORT_CREDENTIALS_DATA } from '../../helpers/constants';
 import { validateCredentialDataBulk } from '../../helpers/credentialDataValidation';
 import { contactShape, credentialTypeShape } from '../../helpers/propShapes';
-import { DynamicFormProvider } from '../../providers/DynamicFormProvider';
+import { DynamicFormProvider } from '../providers/DynamicFormProvider';
 
 const ImportCredentialsData = ({
   recipients,

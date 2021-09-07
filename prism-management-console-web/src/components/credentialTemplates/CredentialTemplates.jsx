@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { useSession } from '../providers/SessionContext';
+import { useSession } from '../../hooks/useSession';
 import { CONFIRMED, UNCONFIRMED } from '../../helpers/constants';
 import WaitBanner from '../dashboard/Atoms/WaitBanner/WaitBanner';
 import TemplateDetail from './Organisms/Drawers/TemplateDetail';

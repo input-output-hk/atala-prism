@@ -7,7 +7,7 @@ import {
   getCredentialFormSkeleton,
   getCredentialFormColumns
 } from '../../../../helpers/formDefinitions/credentials';
-import { DynamicFormContext } from '../../../../providers/DynamicFormProvider';
+import { DynamicFormContext } from '../../../providers/DynamicFormProvider';
 import { IMPORT_CREDENTIALS_DATA } from '../../../../helpers/constants';
 import DynamicForm from '../../../dynamicForm/DynamicForm';
 

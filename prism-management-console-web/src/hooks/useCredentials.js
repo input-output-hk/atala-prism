@@ -17,7 +17,7 @@ import {
   filterContactByStatus
 } from '../helpers/filterHelpers';
 import { credentialMapper, credentialReceivedMapper } from '../APIs/helpers/credentialHelpers';
-import { useSession } from '../components/providers/SessionContext';
+import { useSession } from '../hooks/useSession';
 import { useDebounce } from './useDebounce';
 
 const useCredentialsFilters = () => {
@@ -96,14 +96,14 @@ export const useCredentialsIssuedListWithFilters = credentialsManager => {
       setIsSearching(true);
       return (hasMore
         ? credentialsManager.getCredentials(
-            isFetchAll ? MAX_CREDENTIAL_PAGE_SIZE : CREDENTIAL_PAGE_SIZE,
-            credentials.length,
-            filters.values,
-            sortingBy && {
-              field: sortingBy,
-              direction: sortDirection
-            }
-          )
+          isFetchAll ? MAX_CREDENTIAL_PAGE_SIZE : CREDENTIAL_PAGE_SIZE,
+          credentials.length,
+          filters.values,
+          sortingBy && {
+            field: sortingBy,
+            direction: sortDirection
+          }
+        )
         : Promise.resolve([])
       )
 

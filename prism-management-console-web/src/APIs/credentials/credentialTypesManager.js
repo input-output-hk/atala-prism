@@ -7,6 +7,8 @@ import { mockDelay } from '../../helpers/genericHelpers';
 import { MOCK_API_CALL_DELAY } from '../../helpers/constants';
 
 async function getCredentialTypes() {
+  throw new Error();
+
   Logger.info('getting credential types');
   const getCredentialTypesRequest = new GetCredentialTypesRequest();
 

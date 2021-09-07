@@ -1,14 +1,15 @@
 import React from 'react';
 import { Row, Col } from 'antd';
 import { useTranslation } from 'react-i18next';
+import { observer } from 'mobx-react-lite';
 import UserAvatar from '../../Atoms/UserAvatar/UserAvatar';
 import { getLogoAsBase64 } from '../../../../helpers/genericHelpers';
 import LanguageSelector from '../LanguageSelector/LanguageSelector';
-import { useSession } from '../../../providers/SessionContext';
+import { useSession } from '../../../../hooks/useSession';
 
 import './_style.scss';
 
-const Header = () => {
+const Header = observer(() => {
   const { t } = useTranslation();
   const { session } = useSession();
 
@@ -30,6 +31,6 @@ const Header = () => {
       </Col>
     </Row>
   );
-};
+});
 
 export default Header;

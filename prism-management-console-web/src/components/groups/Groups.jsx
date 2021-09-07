@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { observer } from 'mobx-react-lite';
 import { PlusOutlined } from '@ant-design/icons';
 import PropTypes from 'prop-types';
 import { useTranslation } from 'react-i18next';
@@ -12,7 +13,7 @@ import CustomButton from '../common/Atoms/CustomButton/CustomButton';
 import { withRedirector } from '../providers/withRedirector';
 import SimpleLoading from '../common/Atoms/SimpleLoading/SimpleLoading';
 import WaitBanner from '../dashboard/Atoms/WaitBanner/WaitBanner';
-import { useSession } from '../providers/SessionContext';
+import { useSession } from '../../hooks/useSession';
 import CopyGroupModal from './Organisms/Modals/CopyGroupModal/CopyGroupModal';
 import { CONFIRMED, UNCONFIRMED } from '../../helpers/constants';
 
@@ -32,119 +33,121 @@ const NewGroupButton = ({ onClick }) => {
   );
 };
 
-const Groups = ({
-  groups,
-  handleGroupDeletion,
-  copyGroup,
-  loading,
-  searching,
-  hasMore,
-  isFilter,
-  setName,
-  setDateRange,
-  setSortingKey,
-  setSortingDirection,
-  sortingDirection,
-  getMoreGroups,
-  redirector: { redirectToGroupCreation }
-}) => {
-  const { t } = useTranslation();
-
-  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
-  const [isCopyModalOpen, setIsCopyModalOpen] = useState(false);
-  const [selectedGroup, setSelectedGroup] = useState(null);
-  const [groupToDelete, setGroupToDelete] = useState({});
-
-  const { accountStatus } = useSession();
-
-  const closeDeleteModal = () => {
-    setIsDeleteModalOpen(false);
-    setGroupToDelete({});
-  };
-  const closeCopyModal = () => setIsCopyModalOpen(false);
-
-  useEffect(() => {
-    const hasValues = Object.keys(groupToDelete).length !== 0;
-    setIsDeleteModalOpen(hasValues);
-  }, [groupToDelete]);
-
-  const handleConfirmedGroupDeletion = () => {
-    handleGroupDeletion(groupToDelete);
-    setIsDeleteModalOpen(false);
-  };
-
-  const deleteModalProps = {
-    group: groupToDelete,
-    open: isDeleteModalOpen,
-    closeModal: closeDeleteModal,
-    handleGroupDeletion: handleConfirmedGroupDeletion,
-    prefix: 'groups'
-  };
-
-  const copyModalProps = {
-    open: isCopyModalOpen,
-    closeModal: closeCopyModal,
-    prefix: 'groups',
-    group: selectedGroup,
-    onSave: copyName => copyGroup(selectedGroup, copyName).then(closeCopyModal)
-  };
-
-  const onCopy = group => {
-    setSelectedGroup(group);
-    setIsCopyModalOpen(true);
-  };
-
-  const tableProps = {
-    onCopy,
-    setGroupToDelete,
+const Groups = observer(
+  ({
     groups,
+    handleGroupDeletion,
+    copyGroup,
+    loading,
     searching,
     hasMore,
-    getMoreGroups
-  };
+    isFilter,
+    setName,
+    setDateRange,
+    setSortingKey,
+    setSortingDirection,
+    sortingDirection,
+    getMoreGroups,
+    redirector: { redirectToGroupCreation }
+  }) => {
+    const { t } = useTranslation();
 
-  const newGroupButton = <NewGroupButton onClick={redirectToGroupCreation} />;
+    const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+    const [isCopyModalOpen, setIsCopyModalOpen] = useState(false);
+    const [selectedGroup, setSelectedGroup] = useState(null);
+    const [groupToDelete, setGroupToDelete] = useState({});
 
-  const emptyProps = {
-    photoSrc: noGroups,
-    model: t('groups.title')
-  };
+    const { accountStatus } = useSession();
 
-  const renderContent = () => {
-    if (loading) return <SimpleLoading size="md" />;
-    if (groups.length) return <GroupsTable {...tableProps} groups={groups} />;
-    if (isFilter) return <EmptyComponent {...emptyProps} isFilter />;
+    const closeDeleteModal = () => {
+      setIsDeleteModalOpen(false);
+      setGroupToDelete({});
+    };
+    const closeCopyModal = () => setIsCopyModalOpen(false);
+
+    useEffect(() => {
+      const hasValues = Object.keys(groupToDelete).length !== 0;
+      setIsDeleteModalOpen(hasValues);
+    }, [groupToDelete]);
+
+    const handleConfirmedGroupDeletion = () => {
+      handleGroupDeletion(groupToDelete);
+      setIsDeleteModalOpen(false);
+    };
+
+    const deleteModalProps = {
+      group: groupToDelete,
+      open: isDeleteModalOpen,
+      closeModal: closeDeleteModal,
+      handleGroupDeletion: handleConfirmedGroupDeletion,
+      prefix: 'groups'
+    };
+
+    const copyModalProps = {
+      open: isCopyModalOpen,
+      closeModal: closeCopyModal,
+      prefix: 'groups',
+      group: selectedGroup,
+      onSave: copyName => copyGroup(selectedGroup, copyName).then(closeCopyModal)
+    };
+
+    const onCopy = group => {
+      setSelectedGroup(group);
+      setIsCopyModalOpen(true);
+    };
+
+    const tableProps = {
+      onCopy,
+      setGroupToDelete,
+      groups,
+      searching,
+      hasMore,
+      getMoreGroups
+    };
+
+    const newGroupButton = <NewGroupButton onClick={redirectToGroupCreation} />;
+
+    const emptyProps = {
+      photoSrc: noGroups,
+      model: t('groups.title')
+    };
+
+    const renderContent = () => {
+      if (loading) return <SimpleLoading size="md" />;
+      if (groups.length) return <GroupsTable {...tableProps} groups={groups} />;
+      if (isFilter) return <EmptyComponent {...emptyProps} isFilter />;
+      return (
+        <EmptyComponent {...emptyProps} button={accountStatus === CONFIRMED && newGroupButton} />
+      );
+    };
+
     return (
-      <EmptyComponent {...emptyProps} button={accountStatus === CONFIRMED && newGroupButton} />
-    );
-  };
-
-  return (
-    <div className="Wrapper Groups">
-      {accountStatus === UNCONFIRMED && <WaitBanner />}
-      <DeleteGroupModal {...deleteModalProps} />
-      <CopyGroupModal {...copyModalProps} />
-      <div className="ContentHeader">
-        <div className="title">
-          <h1>{t('groups.title')}</h1>
-        </div>
-        <div className="filterSection">
-          <div className="filterContainer">
-            <GroupFilters
-              setName={setName}
-              setDateRange={setDateRange}
-              setSortingKey={setSortingKey}
-              setSortingDirection={setSortingDirection}
-              sortingDirection={sortingDirection}
-            />
+      <div className="Wrapper Groups">
+        {accountStatus === UNCONFIRMED && <WaitBanner />}
+        <DeleteGroupModal {...deleteModalProps} />
+        <CopyGroupModal {...copyModalProps} />
+        <div className="ContentHeader">
+          <div className="title">
+            <h1>{t('groups.title')}</h1>
           </div>
-          {accountStatus === CONFIRMED && newGroupButton}
+          <div className="filterSection">
+            <div className="filterContainer">
+              <GroupFilters
+                setName={setName}
+                setDateRange={setDateRange}
+                setSortingKey={setSortingKey}
+                setSortingDirection={setSortingDirection}
+                sortingDirection={sortingDirection}
+              />
+            </div>
+            {accountStatus === CONFIRMED && newGroupButton}
+          </div>
         </div>
+        <div className="GroupContentContainer">{renderContent()}</div>
       </div>
-      <div className="GroupContentContainer">{renderContent()}</div>
-    </div>
-  );
-};
+    );
+  }
+);
 
 Groups.defaultProps = {
   groups: [],
