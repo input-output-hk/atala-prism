@@ -1,9 +1,9 @@
-import React, { useContext } from 'react';
+import React from 'react';
 import { useTranslation } from 'react-i18next';
 import { Form, Input } from 'antd';
 import { observer } from 'mobx-react-lite';
 import { exactValueExists } from '../../../../helpers/filterHelpers';
-import { PrismStoreContext } from '../../../../stores/domain/PrismStore';
+import { useTemplateStore } from '../../../../hooks/useStore';
 
 import './_style.scss';
 
@@ -11,8 +11,7 @@ const normalize = input => input.trim();
 
 const TemplateName = observer(() => {
   const { t } = useTranslation();
-  const { templateStore } = useContext(PrismStoreContext);
-  const { credentialTemplates } = templateStore;
+  const { credentialTemplates } = useTemplateStore();
 
   const templateExists = async (_rule, value) => {
     const normalizedValue = normalize(value);

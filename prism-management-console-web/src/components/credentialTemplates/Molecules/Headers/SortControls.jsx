@@ -1,18 +1,17 @@
-import React, { useContext } from 'react';
+import React from 'react';
 import { observer } from 'mobx-react-lite';
 import { useTranslation } from 'react-i18next';
 import { Button, Dropdown, Menu } from 'antd';
 import { DownOutlined, SortAscendingOutlined, SortDescendingOutlined } from '@ant-design/icons';
 import { SORTING_DIRECTIONS, TEMPLATES_SORTING_KEYS } from '../../../../helpers/constants';
 import CustomButton from '../../../common/Atoms/CustomButton/CustomButton';
-import { UiStateContext } from '../../../../stores/ui/UiState';
+import { useTemplateUiState } from '../../../../hooks/useStore';
 
 const { ascending } = SORTING_DIRECTIONS;
 
 const SortControls = observer(() => {
   const { t } = useTranslation();
-  const { templateUiState } = useContext(UiStateContext);
-  const { sortDirection, toggleSortDirection, sortingBy, setSortingBy } = templateUiState;
+  const { sortDirection, toggleSortDirection, sortingBy, setSortingBy } = useTemplateUiState();
 
   const sortingOptions = Object.keys(TEMPLATES_SORTING_KEYS);
 

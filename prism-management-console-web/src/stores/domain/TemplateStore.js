@@ -1,5 +1,5 @@
 import { makeAutoObservable, observable, action, computed } from 'mobx';
-import { nanoid } from 'nanoid';
+import { v4 as uuidv4 } from 'uuid';
 
 export class TemplateStore {
   isLoadingTemplates = false;
@@ -54,7 +54,7 @@ export class TemplateStore {
   addTemplateCategory = async newCategoryData => {
     const { categoryName, categoryIcon } = newCategoryData;
     const logo = categoryIcon.isCustomIcon ? categoryIcon.file.thumbUrl : categoryIcon.src;
-    const newCategory = { id: nanoid(), name: categoryName, logo, state: 1 };
+    const newCategory = { id: uuidv4(), name: categoryName, logo, state: 1 };
     await this.api.credentialTypesManager.createCategory(newCategory);
     this.mockedTemplateCategories.push(newCategory);
     this.fetchCategories();

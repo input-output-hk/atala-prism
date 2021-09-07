@@ -1,4 +1,4 @@
-import React, { useContext } from 'react';
+import React from 'react';
 import { observer } from 'mobx-react-lite';
 import { Badge, Dropdown, Menu } from 'antd';
 import { FilterOutlined } from '@ant-design/icons';
@@ -6,14 +6,12 @@ import { useTranslation } from 'react-i18next';
 import TemplateFilters from '../Filters/TemplateFilters';
 import SearchBar from '../../../common/Atoms/SearchBar/SearchBar';
 import CreateTemplateButton from '../../Atoms/Buttons/CreateTemplateButton';
-import { UiStateContext } from '../../../../stores/ui/UiState';
+import { useTemplateUiState } from '../../../../hooks/useStore';
 import './_style.scss';
 
 const ActionsHeader = observer(() => {
   const { t } = useTranslation();
-
-  const { templateUiState } = useContext(UiStateContext);
-  const { nameFilter, setFilterValue, hasAditionalFiltersApplied } = templateUiState;
+  const { nameFilter, setFilterValue, hasAditionalFiltersApplied } = useTemplateUiState();
 
   const filtersMenu = (
     <Menu className="FiltersMenuContainer">

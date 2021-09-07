@@ -1,15 +1,14 @@
-import React, { useContext } from 'react';
+import React from 'react';
 import PropTypes from 'prop-types';
 import { observer } from 'mobx-react-lite';
 import { templateCategoryShape } from '../../../../helpers/propShapes';
 import CategorySelector from './CategorySelector';
 import TemplateName from './TemplateName';
 import SimpleLoading from '../../../common/Atoms/SimpleLoading/SimpleLoading';
-import { PrismStoreContext } from '../../../../stores/domain/PrismStore';
+import { useTemplateStore } from '../../../../hooks/useStore';
 
 const TemplateCategorySelectionStep = observer(() => {
-  const { templateStore } = useContext(PrismStoreContext);
-  const { templateCategories } = templateStore;
+  const { templateCategories } = useTemplateStore();
 
   if (!templateCategories.length) return <SimpleLoading size="md" />;
   return (

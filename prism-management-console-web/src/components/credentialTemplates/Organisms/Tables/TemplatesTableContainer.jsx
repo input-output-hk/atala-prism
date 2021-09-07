@@ -1,4 +1,4 @@
-import React, { useContext } from 'react';
+import React from 'react';
 import PropTypes from 'prop-types';
 import { useTranslation } from 'react-i18next';
 import { observer } from 'mobx-react-lite';
@@ -16,15 +16,14 @@ import {
   templateFiltersShape,
   templateSortingShape
 } from '../../../../helpers/propShapes';
-import { UiStateContext } from '../../../../stores/ui/UiState';
+import { useTemplateUiState } from '../../../../hooks/useStore';
 
 const TemplatesTableContainer = observer(({ tableProps, showTemplatePreview }) => {
   const { t } = useTranslation();
   const { accountStatus } = useSession();
   const { templateCategories, isLoading } = tableProps;
 
-  const { templateUiState } = useContext(UiStateContext);
-  const { hasFiltersApplied, filteredTemplates } = templateUiState;
+  const { hasFiltersApplied, filteredTemplates } = useTemplateUiState();
 
   const noTemplates = !filteredTemplates?.length;
 

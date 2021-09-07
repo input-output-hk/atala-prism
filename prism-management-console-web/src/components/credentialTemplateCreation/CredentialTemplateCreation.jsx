@@ -1,8 +1,8 @@
-import React, { useContext, useState } from 'react';
+import React, { useState } from 'react';
 import PropTypes from 'prop-types';
 import { useTranslation } from 'react-i18next';
 import { message } from 'antd';
-import { nanoid } from 'nanoid';
+import { v4 as uuidv4 } from 'uuid';
 import GenericStepsButtons from '../common/Molecules/GenericStepsButtons/GenericStepsButtons';
 import WizardTitle from '../common/Atoms/WizardTitle/WizardTitle';
 import {
@@ -14,7 +14,7 @@ import {
 } from '../../helpers/constants';
 import { withRedirector } from '../providers/withRedirector';
 import { useTemplateSketchContext } from '../providers/TemplateSketchContext';
-import { PrismStoreContext } from '../../stores/domain/PrismStore';
+import { useTemplateStore } from '../../hooks/useStore';
 import './_style.scss';
 
 const fieldsByStep = {
@@ -36,7 +36,7 @@ const CredentialTemplateCreation = ({
 }) => {
   const { t } = useTranslation();
   const { form, templateSettings, templatePreview } = useTemplateSketchContext();
-  const { addCredentialTemplate } = useContext(PrismStoreContext).templateStore;
+  const { addCredentialTemplate } = useTemplateStore();
   const [loadingNext, setLoadingNext] = useState(false);
 
   const validateByStep = () =>
@@ -64,7 +64,7 @@ const CredentialTemplateCreation = ({
       template: templatePreview,
       category: templateSettings?.category,
       state: CREDENTIAL_TYPE_STATUSES.MOCKED,
-      id: nanoid()
+      id: uuidv4()
     };
     await addCredentialTemplate(newTemplate);
     setLoadingNext(false);
