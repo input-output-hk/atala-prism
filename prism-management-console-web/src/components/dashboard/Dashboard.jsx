@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 import PropTypes from 'prop-types';
+import { observer } from 'mobx-react-lite';
 import { message } from 'antd';
 import { withApi } from '../providers/withApi';
 import Welcome from './Atoms/Welcome/Welcome';
@@ -17,7 +18,7 @@ import {
   UNKNOWN_DID_SUFFIX_ERROR_CODE
 } from '../../helpers/constants';
 import WaitBanner from './Atoms/WaitBanner/WaitBanner';
-import { useSession } from '../providers/SessionContext';
+import { useSession } from '../../hooks/useSession';
 import SimpleLoading from '../common/Atoms/SimpleLoading/SimpleLoading';
 import TutorialModal from '../tutorial/tutorialModal';
 import TutorialTool from '../tutorial/tutorialTool/tutorialTool';
@@ -25,7 +26,7 @@ import TutorialPopover from '../tutorial/tutorialTool/tutorialPopover';
 
 import './_style.scss';
 
-const Dashboard = ({ api, name, bundle }) => {
+const Dashboard = observer(({ api, name, bundle }) => {
   const { t } = useTranslation();
   const tp = useTranslationWithPrefix('dashboard');
 
@@ -118,7 +119,7 @@ const Dashboard = ({ api, name, bundle }) => {
       {tutorialIsRunning && <TutorialTool {...tutorialProgress} onSkip={onPauseTutorial} />}
     </div>
   );
-};
+});
 
 Dashboard.defaultProps = {
   bundle: undefined,

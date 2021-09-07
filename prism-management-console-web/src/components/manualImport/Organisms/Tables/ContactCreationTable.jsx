@@ -8,7 +8,7 @@ import {
   getContactFormColumns,
   CONTACT_INITIAL_VALUE
 } from '../../../../helpers/formDefinitions/contacts';
-import { DynamicFormContext } from '../../../../providers/DynamicFormProvider';
+import { DynamicFormContext } from '../../../providers/DynamicFormProvider';
 import DynamicForm from '../../../dynamicForm/DynamicForm';
 
 const ContactCreationTable = ({ api }) => {

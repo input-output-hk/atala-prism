@@ -10,7 +10,7 @@ import {
 } from '../helpers/constants';
 import { contactMapper } from '../APIs/helpers/contactHelpers';
 import Logger from '../helpers/Logger';
-import { useSession } from '../components/providers/SessionContext';
+import { useSession } from '../hooks/useSession';
 import { useDebounce } from './useDebounce';
 
 export const useContacts = (contactsManager, allowPreload = true) => {

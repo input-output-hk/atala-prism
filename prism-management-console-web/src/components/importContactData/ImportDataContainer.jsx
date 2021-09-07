@@ -20,7 +20,7 @@ import {
 import GenericStepsButtons from '../common/Molecules/GenericStepsButtons/GenericStepsButtons';
 import WizardTitle from '../common/Atoms/WizardTitle/WizardTitle';
 import { createBlankContact } from '../../helpers/importHelpers';
-import { DynamicFormContext } from '../../providers/DynamicFormProvider';
+import { DynamicFormContext } from '../providers/DynamicFormProvider';
 import Logger from '../../helpers/Logger';
 import { getFirstError } from '../../helpers/formHelpers';
 import BulkImportSteps from '../bulkImport/Organisms/BulkImportSteps';
