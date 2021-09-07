@@ -1,14 +1,11 @@
-import React, { useContext } from 'react';
+import React from 'react';
 import { observer } from 'mobx-react-lite';
 import CredentialTemplates from './CredentialTemplates';
-import { PrismStoreContext } from '../../stores/domain/PrismStore';
-import { useTemplatesInit } from '../../hooks/useTemplatesInit';
+import { useTemplateStore, useTemplateUiState } from '../../hooks/useStore';
 
 const CredentialTemplatesContainer = observer(() => {
-  const { templateStore } = useContext(PrismStoreContext);
-  const { credentialTemplates, templateCategories, isLoading } = templateStore;
-
-  useTemplatesInit();
+  const { credentialTemplates, templateCategories, isLoading } = useTemplateStore({ fetch: true });
+  useTemplateUiState({ reset: true });
 
   const tableProps = {
     credentialTemplates,

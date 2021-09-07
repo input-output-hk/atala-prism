@@ -1,4 +1,4 @@
-import React, { useContext, useEffect, useRef, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import PropTypes from 'prop-types';
 import { message } from 'antd';
 import { useTranslation } from 'react-i18next';
@@ -7,7 +7,7 @@ import CustomButton from '../../../common/Atoms/CustomButton/CustomButton';
 import { antdV4FormShape } from '../../../../helpers/propShapes';
 import CategoryNameInput from '../../Molecules/CategoryCreationModal/CategoryNameInput';
 import CategoryIconSelector from '../../Molecules/CategoryCreationModal/CategoryIconSelector';
-import { PrismStoreContext } from '../../../../stores/domain/PrismStore';
+import { useTemplateStore } from '../../../../hooks/useStore';
 import './_style.scss';
 
 const i18nPrefix = 'credentialTemplateCreation';
@@ -15,8 +15,7 @@ const i18nPrefix = 'credentialTemplateCreation';
 const CategoryCreation = observer(({ categoryForm, close }) => {
   const { t } = useTranslation();
 
-  const { templateStore } = useContext(PrismStoreContext);
-  const { templateCategories, addTemplateCategory } = templateStore;
+  const { templateCategories, addTemplateCategory } = useTemplateStore();
 
   const [isLoading, setIsLoading] = useState(false);
 

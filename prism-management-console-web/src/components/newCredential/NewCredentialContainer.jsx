@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback, useContext } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { message } from 'antd';
 import { useTranslation } from 'react-i18next';
 import PropTypes from 'prop-types';
@@ -22,11 +22,9 @@ import { useSession } from '../providers/SessionContext';
 import { fillHTMLCredential } from '../../helpers/credentialView';
 import { useContacts } from '../../hooks/useContacts';
 import { useGroups } from '../../hooks/useGroups';
-import { PrismStoreContext } from '../../stores/domain/PrismStore';
-import { useTemplatesInit } from '../../hooks/useTemplatesInit';
+import { useTemplateStore } from '../../hooks/useStore';
 
 const NewCredentialContainer = ({ api, redirector: { redirectToCredentials } }) => {
-  useTemplatesInit();
   const { t } = useTranslation();
   const { session } = useSession();
 
@@ -50,12 +48,11 @@ const NewCredentialContainer = ({ api, redirector: { redirectToCredentials } }) 
     hasMore: hasMoreContacts
   } = useContacts(api.contactsManager);
 
-  const { templateStore } = useContext(PrismStoreContext);
   const {
     credentialTemplates: credentialTypes,
     getCredentialTemplateDetails: getCredentialTypeDetails,
     templateCategories
-  } = templateStore;
+  } = useTemplateStore({ fetch: true });
 
   const [shouldSelectRecipients, setShouldSelectRecipients] = useState(true);
   const [recipients, setRecipients] = useState([]);
