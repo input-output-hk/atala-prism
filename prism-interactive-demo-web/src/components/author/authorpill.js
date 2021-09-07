@@ -6,6 +6,7 @@ import youtubeIcon from '../../images/youtube.svg';
 import twitterIcon from '../../images/twitter.svg';
 import linkedInIcon from '../../images/linkedin.svg';
 import githubIcon from '../../images/github.svg';
+import fernando from '../../../static/images/fernando.png';
 
 import './_style.scss';
 
