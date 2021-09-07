@@ -12,7 +12,8 @@ const defaultValues = {
   sortDirection: ascending,
   sortingBy: TEMPLATES_SORTING_KEYS.name
 };
-export class TemplateUiState {
+
+export default class TemplateUiState {
   nameFilter = defaultValues.nameFilter;
 
   categoryFilter = defaultValues.categoryFilter;

@@ -6,7 +6,7 @@ import CustomButton from '../../../common/Atoms/CustomButton/CustomButton';
 import {
   getNewDynamicAttribute,
   getNewFixedTextAttribute
-} from '../../../../hooks/useTemplateSettings';
+} from '../../../../helpers/templateHelpers';
 import SortableAttributes from './SortableAttributes';
 import { useTemplateSketchContext } from '../../../providers/TemplateSketchContext';
 

@@ -1,5 +1,5 @@
 import { createContext } from 'react';
-import { TemplateStore } from './TemplateStore';
+import TemplateStore from './TemplateStore';
 
 export class PrismStore {
   constructor(api, rootStore) {
