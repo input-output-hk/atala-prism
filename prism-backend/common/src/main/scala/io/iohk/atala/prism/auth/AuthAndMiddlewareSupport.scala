@@ -5,6 +5,8 @@ import io.iohk.atala.prism.grpc.ProtoConverter
 import io.iohk.atala.prism.metrics.RequestMeasureUtil.measureRequestFuture
 import io.iohk.atala.prism.utils.FutureEither
 import scalapb.GeneratedMessage
+import shapeless.Coproduct
+import shapeless.ops.coproduct.Unifier
 
 import scala.concurrent.{ExecutionContext, Future}
 import scala.util.{Failure, Success, Try}
@@ -18,11 +20,11 @@ trait AuthAndMiddlewareSupport[Err <: PrismError, Id] {
 
   final class AuthPartiallyApplied[Query <: Product] {
     def apply[Proto <: GeneratedMessage, Result](
-        methodName: String,
-        request: Proto
+      methodName: String,
+      request: Proto
     )(f: (Id, Query) => FutureEither[Err, Result])(implicit
-        ec: ExecutionContext,
-        protoConverter: ProtoConverter[Proto, Query]
+      ec: ExecutionContext,
+      protoConverter: ProtoConverter[Proto, Query]
     ): Future[Result] = {
       authenticator
         .authenticated(methodName, request) { participantId =>
@@ -34,6 +36,31 @@ trait AuthAndMiddlewareSupport[Err <: PrismError, Id] {
             )
             measureRequestFuture(serviceName, methodName)(
               f(participantId, query).wrapAndRegisterExceptions(serviceName, methodName).flatten
+            )
+          }
+        }
+    }
+  }
+
+  final class AuthCoproductPartiallyApplied[Query <: Product] {
+    def apply[C <: Coproduct, Proto <: GeneratedMessage, Result](
+      methodName: String,
+      request: Proto
+    )(f: (Id, Query) => FutureEither[C, Result])(implicit
+      ec: ExecutionContext,
+      protoConverter: ProtoConverter[Proto, Query],
+      unifier: Unifier.Aux[C, Err]
+    ): Future[Result] = {
+      authenticator
+        .authenticated(methodName, request) { participantId =>
+          convertFromRequest[Proto, Result, Query](request, methodName).flatMap { query =>
+            implicit val lc: LoggingContext = LoggingContext(
+              (0 until query.productArity)
+                .map(i => query.productElementName(i) -> query.productElement(i).toString)
+                .toMap + ("participantId" -> participantId.toString)
+            )
+            measureRequestFuture(serviceName, methodName)(
+              f(participantId, query).mapLeft(_.unify).wrapAndRegisterExceptions(serviceName, methodName).flatten
             )
           }
         }
@@ -86,6 +113,9 @@ trait AuthAndMiddlewareSupport[Err <: PrismError, Id] {
   // parameter Query and all other type parameters can usually be inferred by Scala.
   def auth[Query <: Product]: AuthPartiallyApplied[Query] =
     new AuthPartiallyApplied[Query]()
+
+  def authCoproduct[Query <: Product]: AuthCoproductPartiallyApplied[Query] =
+    new AuthCoproductPartiallyApplied[Query]()
 
   // Query needs to be a Product (which all case class instances are) for easy access to its fields.
   // Partial application helps with Scala type inference. You can specify just a single type

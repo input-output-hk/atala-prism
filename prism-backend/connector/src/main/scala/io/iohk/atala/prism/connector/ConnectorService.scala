@@ -327,7 +327,7 @@ class ConnectorService(
     * Connection closed (FAILED_PRECONDITION)
     */
   override def sendMessage(request: connector_api.SendMessageRequest): Future[connector_api.SendMessageResponse] =
-    auth[SendMessageRequest]("sendMessage", request) { (participantId, sendMessageRequest) =>
+    authCoproduct[SendMessageRequest]("sendMessage", request) { (participantId, sendMessageRequest) =>
       messages
         .insertMessage(
           sender = participantId,
@@ -335,7 +335,6 @@ class ConnectorService(
           content = sendMessageRequest.message,
           messageId = sendMessageRequest.id
         )
-        .mapLeft(_.unify)
         .map(messageId => connector_api.SendMessageResponse(id = messageId.uuid.toString))
     }
 
