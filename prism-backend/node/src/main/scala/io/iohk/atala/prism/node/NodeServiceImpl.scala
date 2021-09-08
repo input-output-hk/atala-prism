@@ -30,7 +30,7 @@ import org.slf4j.{Logger, LoggerFactory}
 
 import java.time.Instant
 import scala.concurrent.{ExecutionContext, Future}
-import scala.util.Try
+import scala.util.{Failure, Success, Try}
 import io.iohk.atala.prism.interop.toScalaProtos._
 import io.iohk.atala.prism.kotlin.crypto.{Sha256Digest => SHA256Digest}
 import io.iohk.atala.prism.kotlin.identity.{CanonicalPrismDid, LongFormPrismDid, PrismDid}
@@ -72,20 +72,24 @@ class NodeServiceImpl(
   private def getDidDocument(didRequestStr: String, methodName: String)(implicit
       didDataRepository: DIDDataRepository[IO]
   ) = {
-    val didOpt = Option(PrismDid.fromString(didRequestStr))
-    didOpt match {
-      case Some(did) =>
+    val didTry = Try(PrismDid.fromString(didRequestStr))
+    didTry match {
+      case Success(did) =>
         did match {
           case _: CanonicalPrismDid => resolve(did) orElse (countAndThrowNodeError(methodName, _))
           case longForm: LongFormPrismDid => // we received a long form DID
-            // we first check that the encoded initial state matches the corresponding hash
-            succeedWith(
-              Some(ProtoCodecs.atalaOperationToDIDDataProto(DIDSuffix(did.getSuffix), longForm.getInitialState.asScala))
-            )
+            // we check if the DID was published
+            resolve(did.asCanonical(), longForm).orReturn {
+              // if it was not published, we return the encoded initial state
+              succeedWith(
+                Some(
+                  ProtoCodecs.atalaOperationToDIDDataProto(DIDSuffix(did.getSuffix), longForm.getInitialState.asScala)
+                )
+              )
+            }
           case _ => failWith(s"Invalid DID: $didRequestStr", methodName)
         }
-      case None =>
-        failWith(s"Invalid DID: $didRequestStr", methodName)
+      case Failure(_) => failWith(s"Invalid DID: $didRequestStr", methodName)
     }
   }
 
@@ -444,6 +448,17 @@ object NodeServiceImpl {
   }
 
   private case class OrElse(did: DID, state: Future[Either[NodeError, Option[DIDDataState]]]) {
+    def orReturn(
+        initialState: => Future[node_api.GetDidDocumentResponse]
+    )(implicit ec: ExecutionContext, logger: Logger): Future[node_api.GetDidDocumentResponse] =
+      state.flatMap {
+        case Right(stMaybe) =>
+          stMaybe.fold(initialState)(st => succeedWith(Some(ProtoCodecs.toDIDDataProto(did.getSuffix, st))))
+        case Left(err: NodeError) =>
+          logger.info(err.toStatus.asRuntimeException().getMessage)
+          initialState
+      }
+
     def orElse(
         ifFailed: NodeError => Future[node_api.GetDidDocumentResponse]
     )(implicit ec: ExecutionContext, logger: Logger): Future[node_api.GetDidDocumentResponse] =
@@ -453,6 +468,12 @@ object NodeServiceImpl {
           succeedWith(didData)
         case Left(err: NodeError) => ifFailed(err)
       }
+  }
+
+  private def resolve(did: DID, butShowInDIDDocument: DID)(implicit
+      didDataRepository: DIDDataRepository[IO]
+  ): OrElse = {
+    OrElse(butShowInDIDDocument, didDataRepository.findByDid(did).unsafeToFuture())
   }
 
   private def resolve(did: DID)(implicit didDataRepository: DIDDataRepository[IO]): OrElse = {

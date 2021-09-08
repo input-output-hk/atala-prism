@@ -216,7 +216,7 @@ class EncryptedDataVaultGrpcServiceSpec extends VaultRpcSpecBase with OptionValu
     "reject DIDs with malformed encoded operation inside" in {
       val keys = EC.generateKeyPair()
       val operationBytes = Array(100.toByte, 200.toByte)
-      val operationHash = Sha256Digest.fromBytes(operationBytes)
+      val operationHash = Sha256.compute(operationBytes)
       val didCanonicalSuffix = operationHash.getHexValue
       val encodedOperation = Base64.getUrlEncoder.withoutPadding().encode(operationBytes)
       val did = Try(DID.buildLongForm(Sha256Digest.fromHex(didCanonicalSuffix), encodedOperation))

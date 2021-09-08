@@ -113,20 +113,20 @@ private[grpc] object GrpcAuthenticationContext {
         didOpt match {
           case Success(did) =>
             did match {
-              case canonical: CanonicalPrismDid =>
+              case _: CanonicalPrismDid =>
                 Some(
                   GrpcAuthenticationHeader.PublishedDIDBased(
                     requestNonce = RequestNonce(requestNonce.toVector),
-                    did = canonical,
+                    did = did,
                     keyId = keyId,
                     signature = new ECSignature(signature)
                   )
                 )
-              case long: LongFormPrismDid =>
+              case _: LongFormPrismDid =>
                 Some(
                   GrpcAuthenticationHeader.UnpublishedDIDBased(
                     requestNonce = RequestNonce(requestNonce.toVector),
-                    did = long,
+                    did = did,
                     keyId = keyId,
                     signature = new ECSignature(signature)
                   )

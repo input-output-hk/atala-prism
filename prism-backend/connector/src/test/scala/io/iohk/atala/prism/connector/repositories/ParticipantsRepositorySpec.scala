@@ -18,7 +18,7 @@ class ParticipantsRepositorySpec extends ConnectorRepositorySpecBase {
   private val encodedStateUsed =
     "CmEKXxJdCgdtYXN0ZXIwEAFCUAoJc2VjcDI1NmsxEiAel_7KEiez4s_e0u8DyJwLkUnVmUHBuWU-0h01nerSNRohAJlR51Vbk49vagehAwQkFvW_fvyM1qa4ileIEYkXs4pF"
 
-  private val shortDID = DID.fromString(canonicalSuffix)
+  private val shortDID = DID.buildCanonical(Sha256Digest.fromHex(canonicalSuffix))
   private val longDID = DID.buildLongForm(Sha256Digest.fromHex(canonicalSuffix), decodeURL(encodedStateUsed))
 
   "getParticipant by did" should {

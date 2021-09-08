@@ -692,17 +692,17 @@ class CredentialsServiceImplSpec extends ManagementConsoleRpcSpecBase with DIDUt
       val did = generateDid(publicKey)
       createParticipant(issuerName, did)
 
-      val mockDIDSuffix = DID.buildCanonical(Sha256.compute("issuerDIDSuffix".getBytes())).getSuffix
+      val mockDIDSuffix = DID.buildCanonical(Sha256.compute("issuerDIDSuffix".getBytes()))
       val mockEncodedSignedCredential = "easdadgfkfñwlekrjfadf"
       val mockEncodedSignedCredentialHash = Sha256.compute(mockEncodedSignedCredential.getBytes())
 
       val issuanceOp = buildSignedIssueCredentialOp(
         mockEncodedSignedCredentialHash,
-        DIDSuffix(mockDIDSuffix)
+        DIDSuffix(mockDIDSuffix.getSuffix)
       )
 
       val mockCredentialBatchId =
-        CredentialBatchId.fromBatchData(mockDIDSuffix, new MerkleRoot(mockEncodedSignedCredentialHash))
+        CredentialBatchId.fromBatchData(mockDIDSuffix.getSuffix, new MerkleRoot(mockEncodedSignedCredentialHash))
       val mockOperationId = AtalaOperationId.of(issuanceOp)
 
       val nodeRequest = node_api

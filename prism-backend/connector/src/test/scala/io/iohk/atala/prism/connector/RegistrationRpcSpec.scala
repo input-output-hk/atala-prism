@@ -81,7 +81,7 @@ class RegistrationRpcSpec extends ConnectorRpcSpecBase {
       usingApiAs.unlogged { blockingStub =>
         val keyId = "key-1"
         val didKeyPair = EC.generateKeyPair()
-        val did: DID = DID.buildLongFormFromMasterKey(didKeyPair.getPublicKey).asCanonical()
+        val did: DID = DID.buildCanonicalFromMasterKey(didKeyPair.getPublicKey).asCanonical()
         val name = "iohk"
         val participantId = ParticipantId.random()
         val participantRole = ParticipantType.Issuer

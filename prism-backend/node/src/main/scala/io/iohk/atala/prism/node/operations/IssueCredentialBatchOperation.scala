@@ -87,10 +87,7 @@ object IssueCredentialBatchOperation extends SimpleOperationCompanion[IssueCrede
         ).fold("Credential batchId".asLeft[CredentialBatchId])(Right(_))
       }
       issuerDID <- credentialBatchData.child(_.issuerDid, "issuerDID").parse { issuerDID =>
-        Either.fromOption(
-          Try(DIDSuffix(issuerDID)).toOption,
-          s"must be a valid DID suffix: $issuerDID"
-        )
+        DIDSuffix.fromString(issuerDID).toEither.left.map(_.getMessage)
       }
       merkleRoot <- credentialBatchData.child(_.merkleRoot, "merkleRoot").parse { merkleRoot =>
         Try(new MerkleRoot(Sha256Digest.fromBytes(merkleRoot.toByteArray))).toEither.left.map(_.getMessage)

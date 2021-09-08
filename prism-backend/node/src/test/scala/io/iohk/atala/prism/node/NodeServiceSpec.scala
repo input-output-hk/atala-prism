@@ -608,7 +608,7 @@ class NodeServiceSpec
         )
 
       val expectedMessage =
-        "INTERNAL: The given bytes does not correspond to a sha256 hash. It must have exactly 32 bytes"
+        "INTERNAL: The given byte array does not correspond to a SHA256 hash. It must have exactly 32 bytes"
 
       doReturn(
         Future.successful(dummySyncTimestamp)

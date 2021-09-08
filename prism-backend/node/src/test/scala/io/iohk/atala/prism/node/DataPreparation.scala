@@ -133,6 +133,8 @@ object DataPreparation {
       .unsafeRunSync()
   }
 
+  def gimiAll()(implicit xa: Transactor[IO]) = DIDDataDAO.all().transact(xa).unsafeRunSync()
+
   def findByDidSuffix(didSuffix: DIDSuffix)(implicit xa: Transactor[IO]): DIDDataState = {
     val query = for {
       maybeLastOperation <- DIDDataDAO.getLastOperation(didSuffix)

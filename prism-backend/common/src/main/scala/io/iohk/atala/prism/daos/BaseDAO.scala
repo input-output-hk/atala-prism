@@ -30,7 +30,7 @@ trait BaseDAO {
       .timap(value => AtalaOperationId.fromVectorUnsafe(value.toVector))(_.value.toArray)
 
   implicit val ecPublicKeyMeta: Meta[ECPublicKey] =
-    Meta[Array[Byte]].timap(b => EC.toPublicKeyFromCompressed(b))(_.getEncoded)
+    Meta[Array[Byte]].timap(b => EC.toPublicKeyFromCompressed(b))(_.getEncodedCompressed)
 
   implicit val transactionIdMeta: Meta[TransactionId] =
     Meta[Array[Byte]].timap(b =>

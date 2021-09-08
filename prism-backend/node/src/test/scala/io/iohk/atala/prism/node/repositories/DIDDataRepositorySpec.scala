@@ -5,7 +5,6 @@ import io.iohk.atala.prism.AtalaWithPostgresSpec
 import io.iohk.atala.prism.kotlin.crypto.EC.{INSTANCE => EC}
 import io.iohk.atala.prism.kotlin.crypto.Sha256
 import io.iohk.atala.prism.models.{Ledger, TransactionId}
-import io.iohk.atala.prism.node.errors.NodeError.UnknownValueError
 import io.iohk.atala.prism.node.models.nodeState.LedgerData
 import io.iohk.atala.prism.node.models.{DIDData, DIDPublicKey, KeyUsage}
 import org.scalatest.OptionValues._
@@ -61,7 +60,7 @@ class DIDDataRepositorySpec extends AtalaWithPostgresSpec {
     "retrieve previously inserted DID data" in {
       DataPreparation.createDID(didData, dummyLedgerData)
       val did = didDataRepository
-        .findByDid(DID.buildCanonical(Sha256.compute(encodeToByteArray(didSuffix.value))))
+        .findByDid(DID.buildCanonical(operationDigest))
         .unsafeRunSync()
         .toOption
         .value
@@ -81,10 +80,6 @@ class DIDDataRepositorySpec extends AtalaWithPostgresSpec {
       result must be(empty)
     }
 
-    "return error when did is in invalid format" in {
-      val did = DID.buildCanonical(Sha256.compute(encodeToByteArray("11:11:11:11")))
-      didDataRepository.findByDid(did).unsafeToFuture().futureValue mustBe a[Left[UnknownValueError, _]]
-    }
   }
 
 }

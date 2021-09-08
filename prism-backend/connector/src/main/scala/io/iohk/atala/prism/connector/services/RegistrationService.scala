@@ -48,7 +48,7 @@ class RegistrationService(participantsRepository: ParticipantsRepository[IO], no
   ): FutureEither[ConnectorError, ParticipantsRepository.CreateParticipantRequest] = {
     val result = for {
       createDIDResponse <- nodeService.createDID(node_api.CreateDIDRequest().withSignedOperation(createDIDOperation))
-      did = DID.fromString(createDIDResponse.id)
+      did = DID.fromString("did:prism:" + createDIDResponse.id)
       createRequest =
         ParticipantsRepository
           .CreateParticipantRequest(
