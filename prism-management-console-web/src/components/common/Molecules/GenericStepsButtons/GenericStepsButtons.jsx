@@ -22,8 +22,8 @@ const GenericStepsButtons = ({ steps, currentStep, disableBack, disableNext, loa
             disabled: disableBack || !back
           }}
           buttonText={[
-            <LeftOutlined key="0" />,
-            <React.Fragment key="1">{t('actions.back')}</React.Fragment>
+            <LeftOutlined key="back-icon" />,
+            <React.Fragment key="back-text">{t('actions.back')}</React.Fragment>
           ]}
         />
       </div>
@@ -42,8 +42,8 @@ const GenericStepsButtons = ({ steps, currentStep, disableBack, disableNext, loa
             disabled: disableNext || !next
           }}
           buttonText={[
-            <React.Fragment key="2">{t('actions.next')}</React.Fragment>,
-            <RightOutlined key="3" />
+            <React.Fragment key="next-text">{t('actions.next')}</React.Fragment>,
+            <RightOutlined key="next-icon" />
           ]}
           loading={loading}
         />
