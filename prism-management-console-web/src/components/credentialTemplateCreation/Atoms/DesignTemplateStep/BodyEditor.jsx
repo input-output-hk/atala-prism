@@ -15,7 +15,17 @@ const BodyEditor = () => {
   const { templateSettings } = useTemplateSketchContext();
 
   return (
-    <Form.List name="credentialBody">
+    <Form.List
+      name="credentialBody"
+      rules={[
+        {
+          required: true,
+          message: t('credentialTemplateCreation.errors.fieldIsRequired', {
+            field: t('credentialTemplateCreation.step2.content.body')
+          })
+        }
+      ]}
+    >
       {(attributes, { add, move, remove }) => {
         const attributesWithValues = templateSettings.credentialBody;
 

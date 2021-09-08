@@ -2,6 +2,7 @@ import React from 'react';
 import { Button } from 'antd';
 import PropTypes from 'prop-types';
 import SimpleLoading from '../SimpleLoading/SimpleLoading';
+import { childrenType } from '../../../../helpers/propShapes';
 
 import './_style.scss';
 
@@ -23,6 +24,7 @@ const CustomButton = ({ buttonText, buttonProps, loading, className, ...propagat
 );
 
 CustomButton.defaultProps = {
+  buttonProps: {},
   buttonText: '',
   className: '',
   loading: false
@@ -40,8 +42,8 @@ CustomButton.propTypes = {
     ]),
     onClick: PropTypes.func,
     disabled: PropTypes.bool
-  }).isRequired,
-  buttonText: PropTypes.string,
+  }),
+  buttonText: childrenType,
   className: PropTypes.string,
   loading: PropTypes.bool
 };

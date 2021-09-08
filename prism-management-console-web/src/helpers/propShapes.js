@@ -176,7 +176,7 @@ export const antdV4FormShape = shape({ validateFields: func, resetFields: func }
 
 export const templateBodyAttributeShape = shape({
   key: number,
-  name: string,
+  name: number,
   fieldKey: number,
   textAttributeIndex: number,
   dynamicAttributeIndex: number
@@ -202,3 +202,5 @@ export const templateSortingShape = {
   sortingBy: string,
   setSortingBy: func
 };
+
+export const childrenType = oneOfType([string, arrayOf(element)]);

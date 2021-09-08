@@ -3,7 +3,6 @@ import PropTypes from 'prop-types';
 import { Form, Modal } from 'antd';
 import { useTranslation } from 'react-i18next';
 import CategoryCreation from './CategoryCreation';
-import { templateCategoryShape } from '../../../../helpers/propShapes';
 import { defaultCategoryIcons } from '../../../../helpers/templateCategories/categories';
 import './_style.scss';
 
@@ -25,6 +24,7 @@ const CategoryCreationModal = ({ visible, close }) => {
   return (
     <Form
       form={categoryForm}
+      component={false}
       initialValues={defaultValues}
       name="category-form"
       requiredMark={false}
@@ -47,11 +47,7 @@ const CategoryCreationModal = ({ visible, close }) => {
 
 CategoryCreationModal.propTypes = {
   visible: PropTypes.bool.isRequired,
-  close: PropTypes.func.isRequired,
-  mockCategoriesProps: PropTypes.shape({
-    mockedCategories: templateCategoryShape,
-    addMockedCategory: PropTypes.func.isRequired
-  }).isRequired
+  close: PropTypes.func.isRequired
 };
 
 export default CategoryCreationModal;

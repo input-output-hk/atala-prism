@@ -1,9 +1,12 @@
+import _ from 'lodash';
 import embeddedCompanyLogo from '../images/templates/genericCompanyLogo.svg';
 import embeddedUserIcon from '../images/templates/genericUserIcon.svg';
 
+const getNextIndexByKey = (array, key) => _.maxBy(array, item => item[key])?.[key] + 1 || 0;
+
 export const getNewDynamicAttribute = attributes => {
   const index = attributes.length;
-  const dynamicAttributeIndex = attributes.filter(attr => !attr.isFixedText).length;
+  const dynamicAttributeIndex = getNextIndexByKey(attributes, 'dynamicAttributeIndex');
   return {
     attributeLabel: `Attribute ${dynamicAttributeIndex + 1}`,
     attributeType: undefined,
@@ -14,7 +17,7 @@ export const getNewDynamicAttribute = attributes => {
 
 export const getNewFixedTextAttribute = attributes => {
   const index = attributes.length;
-  const textAttributeIndex = attributes.filter(attr => attr.isFixedText).length;
+  const textAttributeIndex = getNextIndexByKey(attributes, 'textAttributeIndex');
   return {
     text: `Text Field ${textAttributeIndex + 1}`,
     isFixedText: true,
@@ -46,3 +49,20 @@ export const defaultTemplateSketch = {
     .fill(undefined)
     .map((_item, index) => getDefaultAttribute(index))
 };
+
+export const insertFormChangeIntoArray = (change, oldArray) => {
+  const changeArray = Array.from(change); // casting to array because it's a sparse array
+
+  // change event is adding / deleting an item or a change in sort
+  const isArrayChange = changeArray.every(item => Boolean(item?.key));
+  if (isArrayChange) return changeArray;
+
+  // change event is updating an item's attribute
+  const newPartialArray = mergeChangeWithArray(changeArray, oldArray);
+  const oldArrayTail = oldArray.slice(newPartialArray.length);
+  const newArray = newPartialArray.concat(oldArrayTail);
+  return newArray;
+};
+
+const mergeChangeWithArray = (changeArray, oldArray) =>
+  changeArray.map((ch, index) => Object.assign({ ...oldArray[index] }, ch));

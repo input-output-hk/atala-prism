@@ -16,7 +16,7 @@ const CategoryCard = ({ category, typeKey, isSelected }) => {
 };
 
 CategoryCard.propTypes = {
-  category: PropTypes.number.isRequired,
+  category: PropTypes.shape({ name: PropTypes.string, logo: PropTypes.string }).isRequired,
   typeKey: PropTypes.string.isRequired,
   isSelected: PropTypes.bool.isRequired
 };

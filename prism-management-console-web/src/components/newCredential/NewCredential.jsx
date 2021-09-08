@@ -39,10 +39,10 @@ const NewCredential = ({
   const goBack = () => changeStep(currentStep - NEW_CREDENTIALS_STEP_UNIT);
 
   const steps = [
-    { back: redirectToCredentials, next: goToSelectTargets },
-    { back: goBack, next: goToDataInput },
-    { back: goBack, next: goToCredentialsPreview },
-    { back: goBack, next: onSuccess }
+    { key: '0', back: redirectToCredentials, next: goToSelectTargets },
+    { key: '1', back: goBack, next: goToDataInput },
+    { key: '2', back: goBack, next: goToCredentialsPreview },
+    { key: '3', back: goBack, next: onSuccess }
   ];
 
   const isLastStep = currentStep + 1 === steps.length;
