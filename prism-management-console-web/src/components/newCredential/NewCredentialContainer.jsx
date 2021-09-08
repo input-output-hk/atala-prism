@@ -1,8 +1,8 @@
-import React, { useState, useEffect, useCallback, useContext } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import PropTypes from 'prop-types';
-import { useTranslation } from 'react-i18next';
 import { observer } from 'mobx-react-lite';
 import { message } from 'antd';
+import { useTranslation } from 'react-i18next';
 import _ from 'lodash';
 import NewCredential from './NewCredential';
 import { withApi } from '../providers/withApi';
@@ -26,7 +26,6 @@ import { useGroups } from '../../hooks/useGroups';
 import { useTemplateStore } from '../../hooks/useTemplateStore';
 
 const NewCredentialContainer = observer(({ api, redirector: { redirectToCredentials } }) => {
-  useTemplatesInit();
   const { t } = useTranslation();
   const { session } = useSession();
 

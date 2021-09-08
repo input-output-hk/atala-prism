@@ -16,7 +16,6 @@ import {
   isWalletUnlocked,
   getSessionFromExtension,
   clearSession,
-  verifyRegistration,
   setSessionState,
   setSessionErrorHandler
 } from './login';
@@ -48,7 +47,6 @@ export const mockApi = {
     isWalletUnlocked,
     getSessionFromExtension,
     clearSession,
-    verifyRegistration,
     setSessionState,
     setSessionErrorHandler
   }

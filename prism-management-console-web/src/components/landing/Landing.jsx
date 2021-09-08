@@ -18,7 +18,6 @@ const Landing = observer(() => {
   const handleLogin = async () => {
     setLoading(true);
     try {
-      debugger;
       await login();
       setLoading(false);
     } catch (error) {
