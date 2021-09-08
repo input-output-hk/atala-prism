@@ -15,7 +15,9 @@ import scala.util.matching.Regex
 package object models {
   sealed trait KeyUsage extends EnumEntry with UpperSnakecase {
     def canIssue: Boolean = this == KeyUsage.IssuingKey
-    def canRevoke: Boolean = this == KeyUsage.RevocationKey
+    // TODO: Once the wallet is able to use the revocation key, make sure that credentials
+    // can be revoked only with the revocation key.
+    def canRevoke: Boolean = this == KeyUsage.RevocationKey || this == KeyUsage.IssuingKey
   }
 
   object KeyUsage extends Enum[KeyUsage] {
