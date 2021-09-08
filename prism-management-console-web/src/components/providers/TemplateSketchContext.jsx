@@ -2,7 +2,11 @@ import React, { useEffect, useState } from 'react';
 import { Form } from 'antd';
 import { useTranslation } from 'react-i18next';
 import Logger from '../../helpers/Logger';
-import { UPDATE_FIELDS, useTemplateSettings } from '../../hooks/useTemplateSettings';
+import {
+  UPDATE_CREDENTIAL_BODY,
+  UPDATE_FIELDS,
+  useTemplateSettings
+} from '../../hooks/useTemplateSettings';
 
 const TemplateSketchContext = React.createContext();
 
@@ -16,8 +20,13 @@ const TemplateSketchProvider = props => {
     required: t('credentialTemplateCreation.errors.required')
   };
 
-  const handleFormUpdate = newSetting =>
-    setTemplateSettings({ type: UPDATE_FIELDS, payload: newSetting });
+  const handleFormUpdate = newSetting => {
+    if (newSetting.credentialBody) {
+      setTemplateSettings({ type: UPDATE_CREDENTIAL_BODY, payload: newSetting });
+    } else {
+      setTemplateSettings({ type: UPDATE_FIELDS, payload: newSetting });
+    }
+  };
 
   useEffect(() => {
     Logger.debug('[Template Creation] partial template settings:', templateSettings);

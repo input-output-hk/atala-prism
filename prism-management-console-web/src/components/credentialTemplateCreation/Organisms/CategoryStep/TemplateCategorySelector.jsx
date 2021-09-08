@@ -30,11 +30,7 @@ TemplateCategorySelectionStep.defaultProps = {
 };
 
 TemplateCategorySelectionStep.propTypes = {
-  templateCategories: PropTypes.arrayOf(PropTypes.shape({ templateCategoryShape })),
-  mockCategoriesProps: PropTypes.shape({
-    mockedCategories: templateCategoryShape,
-    addMockedCategory: PropTypes.func.isRequired
-  }).isRequired
+  templateCategories: PropTypes.arrayOf(PropTypes.shape({ templateCategoryShape }))
 };
 
 export default TemplateCategorySelectionStep;

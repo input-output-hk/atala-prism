@@ -21,13 +21,16 @@ const GenericStepsButtons = ({ steps, currentStep, disableBack, disableNext, loa
             className: 'theme-link',
             disabled: disableBack || !back
           }}
-          buttonText={[<LeftOutlined />, t('actions.back')]}
+          buttonText={[
+            <LeftOutlined key="0" />,
+            <React.Fragment key="1">{t('actions.back')}</React.Fragment>
+          ]}
         />
       </div>
       <div className="stepsContainer">
         <Steps size="small" current={currentStep}>
-          {steps.map(({ title }) => (
-            <Step title={title} />
+          {steps.map(({ key, title }) => (
+            <Step key={key} title={title} />
           ))}
         </Steps>
       </div>
@@ -38,7 +41,10 @@ const GenericStepsButtons = ({ steps, currentStep, disableBack, disableNext, loa
             className: 'theme-link',
             disabled: disableNext || !next
           }}
-          buttonText={[t('actions.next'), <RightOutlined />]}
+          buttonText={[
+            <React.Fragment key="2">{t('actions.next')}</React.Fragment>,
+            <RightOutlined key="3" />
+          ]}
           loading={loading}
         />
       </div>

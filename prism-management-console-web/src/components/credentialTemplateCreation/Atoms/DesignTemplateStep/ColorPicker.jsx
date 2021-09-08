@@ -8,7 +8,7 @@ const ColorPicker = ({ colors, selected, ...formItemProps }) => (
   <Form.Item {...formItemProps} rules={[{ required: true }]}>
     <Radio.Group>
       {colors.map(c => (
-        <ColorOption color={c} showCheckmark={c === selected} />
+        <ColorOption key={c} color={c} showCheckmark={c === selected} />
       ))}
     </Radio.Group>
   </Form.Item>

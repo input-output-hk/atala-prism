@@ -72,9 +72,9 @@ const CredentialTemplateCreation = ({
   };
 
   const steps = [
-    { back: redirectToCredentialTemplates, next: advanceStep },
-    { back: goBack, next: createTemplate },
-    { back: goBack, next: redirectToCredentialTemplates }
+    { key: '0', back: redirectToCredentialTemplates, next: advanceStep },
+    { key: '1', back: goBack, next: createTemplate },
+    { key: '2', back: goBack, next: redirectToCredentialTemplates }
   ];
 
   const defaultStepText = {

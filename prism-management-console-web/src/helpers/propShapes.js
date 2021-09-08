@@ -190,7 +190,7 @@ export const antdV4FormShape = shape({ validateFields: func, resetFields: func }
 
 export const templateBodyAttributeShape = shape({
   key: number,
-  name: string,
+  name: number,
   fieldKey: number,
   textAttributeIndex: number,
   dynamicAttributeIndex: number

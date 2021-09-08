@@ -21,15 +21,20 @@ const LayoutSelector = () => {
       ]}
     >
       <Radio.Group>
-        {templateLayouts.map((l, idx) => (
-          <Radio value={idx}>
-            <div
-              className={`LayoutOption shadow ${templateSettings.layout === idx ? 'selected' : ''}`}
-            >
-              <img className="layout-thumb" src={l.thumb} alt={`LayoutTemplate_${idx}`} />
-            </div>
-          </Radio>
-        ))}
+        {templateLayouts.map((l, idx) => {
+          const layoutKey = `LayoutTemplate_${idx}`;
+          return (
+            <Radio key={layoutKey} value={idx}>
+              <div
+                className={`LayoutOption shadow ${
+                  templateSettings.layout === idx ? 'selected' : ''
+                }`}
+              >
+                <img className="layout-thumb" src={l.thumb} alt={layoutKey} />
+              </div>
+            </Radio>
+          );
+        })}
       </Radio.Group>
     </Form.Item>
   );

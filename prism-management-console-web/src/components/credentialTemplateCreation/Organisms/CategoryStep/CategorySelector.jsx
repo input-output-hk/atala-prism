@@ -63,7 +63,7 @@ const CategorySelector = observer(({ templateCategories }) => {
         <div className="templateCategory">
           <Radio.Group onChange={onCategoryChange}>
             {categories.map(category => (
-              <Radio value={category.id}>
+              <Radio key={category.id} value={category.id}>
                 <CategoryCard
                   category={category}
                   typeKey={category.id}

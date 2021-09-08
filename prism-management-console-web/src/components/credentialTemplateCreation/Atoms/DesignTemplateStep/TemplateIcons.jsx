@@ -26,6 +26,7 @@ const TemplateIcons = () => {
         <h3>{t('credentialTemplateCreation.step2.style.customizeHeader')}</h3>
         {images.map(key => (
           <Form.Item
+            key={key}
             name={key}
             label={t(`credentialTemplateCreation.step2.style.${key}`)}
             valuePropName="file"
