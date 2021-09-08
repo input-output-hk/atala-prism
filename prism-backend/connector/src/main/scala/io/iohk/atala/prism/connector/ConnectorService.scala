@@ -9,6 +9,7 @@ import io.iohk.atala.prism.BuildInfo
 import io.iohk.atala.prism.auth.AuthAndMiddlewareSupport
 import io.iohk.atala.prism.auth.grpc.SignedRequestsHelper
 import io.iohk.atala.prism.auth.utils.DIDUtils
+import io.iohk.atala.prism.connector.errors.MessagesError._
 import io.iohk.atala.prism.connector.errors._
 import io.iohk.atala.prism.connector.grpc._
 import io.iohk.atala.prism.connector.model._
@@ -31,6 +32,7 @@ import io.iohk.atala.prism.protos.{connector_api, connector_models, node_api}
 import io.iohk.atala.prism.utils.FutureEither
 import io.iohk.atala.prism.utils.FutureEither._
 import org.slf4j.{Logger, LoggerFactory}
+import shapeless.Poly1
 
 import scala.concurrent.{ExecutionContext, Future}
 import scala.util.{Failure, Success}
@@ -240,15 +242,24 @@ class ConnectorService(
   override def getMessagesPaginated(
       request: connector_api.GetMessagesPaginatedRequest
   ): Future[connector_api.GetMessagesPaginatedResponse] = {
-    auth[MessagesPaginatedRequest]("getMessagesPaginated", request) { (participantId, messagesPaginatedRequest) =>
+    auth[MessagesPaginatedRequest]("getMessagesPaginated", request) { (participantId, messagesPaginatedRequest) => {
+      object ErrorHandler extends Poly1 {
+        implicit def caseInvalidLimitError: Case.Aux[InvalidLimitError, MessagesError] =
+          at[InvalidLimitError](e => {
+            println("Invalid limit error")
+            e
+          })
+      }
+
       messages
         .getMessagesPaginated(
           participantId,
           messagesPaginatedRequest.limit,
           messagesPaginatedRequest.lastSeenMessageId
         )
-        .mapLeft(_.unify)
+        .mapLeft(_.fold(ErrorHandler))
         .map(msgs => connector_api.GetMessagesPaginatedResponse(msgs.map(_.toProto)))
+    }
     }
   }
 
@@ -327,7 +338,34 @@ class ConnectorService(
     * Connection closed (FAILED_PRECONDITION)
     */
   override def sendMessage(request: connector_api.SendMessageRequest): Future[connector_api.SendMessageResponse] =
-    auth[SendMessageRequest]("sendMessage", request) { (participantId, sendMessageRequest) =>
+    auth[SendMessageRequest]("sendMessage", request) { (participantId, sendMessageRequest) => {
+
+      object ErrorHandler extends Poly1 {
+        implicit def caseConnectionNotFound: Case.Aux[ConnectionNotFound, MessagesError] =
+          at[ConnectionNotFound](e => {
+            println("Connection not found")
+            e
+          })
+
+        implicit def caseConnectionRevoked: Case.Aux[ConnectionRevoked, MessagesError] =
+          at[ConnectionRevoked](e => {
+            println("Connection revoked")
+            e
+          })
+
+        implicit def caseMessagesAlreadyExist: Case.Aux[MessagesAlreadyExist, MessagesError] =
+          at[MessagesAlreadyExist](e => {
+            println("Messages already exist")
+            e
+          })
+
+        implicit def defaultHandler[T <: MessagesError]: Case.Aux[T, MessagesError] =
+          at[T](e => {
+            println("Any other error")
+            e
+          })
+      }
+
       messages
         .insertMessage(
           sender = participantId,
@@ -335,9 +373,9 @@ class ConnectorService(
           content = sendMessageRequest.message,
           messageId = sendMessageRequest.id
         )
-        .mapLeft(_.unify)
+        .mapLeft(_.fold(ErrorHandler))
         .map(messageId => connector_api.SendMessageResponse(id = messageId.uuid.toString))
-    }
+    }}
 
   override def getBuildInfo(request: connector_api.GetBuildInfoRequest): Future[connector_api.GetBuildInfoResponse] = {
     nodeService
