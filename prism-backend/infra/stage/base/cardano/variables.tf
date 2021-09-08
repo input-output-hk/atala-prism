@@ -1,7 +1,7 @@
 variable "aws_instance_type" {
   description = "Type of AWS instance to use"
   type        = string
-  default     = "t2.large"
+  default     = "c5.xlarge"
 }
 
 variable "aws_profile" {
