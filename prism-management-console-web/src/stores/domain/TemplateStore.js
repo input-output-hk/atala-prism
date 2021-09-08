@@ -75,7 +75,7 @@ export default class TemplateStore {
         customMessage: `[${
           this.storeName
         }.getCredentialTemplateDetails] Error while getting template details`,
-        model: 'Template'
+        model: 'Templates'
       };
       this.rootStore.handleTransportLayerError(error, metadata);
     }

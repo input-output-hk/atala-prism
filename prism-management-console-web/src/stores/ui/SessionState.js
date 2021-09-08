@@ -3,7 +3,7 @@ import { makeAutoObservable, observable, action } from 'mobx';
 import i18n from 'i18next';
 import { CONFIRMED, LOADING, LOCKED, SESSION, UNCONFIRMED } from '../../helpers/constants';
 
-export class SessionState {
+export default class SessionState {
   session = { sessionState: LOADING };
 
   accountStatus = LOADING;

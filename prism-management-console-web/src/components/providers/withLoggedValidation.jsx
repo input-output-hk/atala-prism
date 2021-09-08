@@ -9,7 +9,6 @@ import { LOADING, UNLOCKED } from '../../helpers/constants';
 const withLoggedValidationComponent = Component =>
   observer(props => {
     const { session } = useSession();
-    debugger;
     if (session?.sessionState === LOADING) return <Loading />;
 
     // Here is where the validations are made
