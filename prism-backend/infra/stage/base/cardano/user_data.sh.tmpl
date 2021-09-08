@@ -1,5 +1,5 @@
 #!/bin/bash
-set -e
+set -exv
 
 # Add team SSH keys
 cat << EOF >> /home/ubuntu/.ssh/authorized_keys
@@ -18,13 +18,46 @@ curl -fsSL https://download.docker.com/linux/ubuntu/gpg | apt-key add -
 add-apt-repository 'deb [arch=amd64] https://download.docker.com/linux/ubuntu bionic stable'
 apt update
 
-apt -y install docker-ce docker-compose
+apt -y install docker-ce docker-compose awscli
+
+# Read metadata
+IR="$(curl -s http://169.254.169.254/latest/meta-data/placement/region)"
+EC2_INSTANCE_ID="$(curl -s http://169.254.169.254/latest/meta-data/instance-id)"
+EC2_INSTANCE_TYPE="$(curl -s http://169.254.169.254/latest/meta-data/instance-type)"
+
+# Vars
+disc="sdh"
+label="cardano"
+dir="/data"
 
 # wait until block device is attached
-until ls /dev/xvdh; do sleep 5; done
+DATA_STATE="unknown"
+  until [ "$${DATA_STATE}" == "attached" ]; do
+    DATA_STATE="$(aws ec2 describe-volumes \
+              --region $${IR} \
+              --filters \
+              Name=attachment.instance-id,Values="$${EC2_INSTANCE_ID}" \
+              Name=attachment.device,Values=/dev/"$${disc}" \
+              --query Volumes[].Attachments[].State \
+              --output text)"
+    sleep 5
+  done
 
-mkdir /data
-mount /dev/xvdh /data || (mkfs.ext4 /dev/xvdh && mount /dev/xvdh /data)
+ mkdir -p $${dir}
+
+if [[ "$${EC2_INSTANCE_TYPE}" =~ t3|t4|c5|c6|m5|m6|r5|r6 ]]; then
+  VOLUME_ID="$(aws ec2 describe-volumes --region $${IR} --filters Name=attachment.instance-id,Values="$${EC2_INSTANCE_ID}" Name=attachment.device,Values=/dev/$${disc} --query Volumes[].VolumeId --output text)"
+  VOLUME_SERIAL="$(echo $VOLUME_ID | sed -e 's/-//g')"
+  disc="$(lsblk -o NAME,SERIAL | grep -e $VOLUME_SERIAL | awk '{ print $1 }')"
+fi
+
+device="$(readlink -f /dev/"$${disc}")"
+
+blkid $${device} || mkfs.ext4 $${device}
+e2label $${device} $${label}
+sed  -e "/^[\/][^ \t]*[ \t]*$${label}[ \t]/d" /etc/fstab
+grep -q ^LABEL=$${label} /etc/fstab || echo "LABEL=$${label} $${dir} ext4 defaults" >> /etc/fstab
+grep -q "^$${device} "$${dir}" " /proc/mounts || mount "$${dir}"
 
 # Docker compose
 mkdir /cardano
@@ -70,6 +103,7 @@ WantedBy=multi-user.target
 EOF
 
 systemctl daemon-reload
+systemctl enable cardano
 systemctl start cardano
 
 # Prometheus node exporter
