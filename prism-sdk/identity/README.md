@@ -12,5 +12,5 @@ There is an SDK version that runs on JavaScript, try it with:
 The library is prepared to run on Android, to do so, you need to build a fat-jar manually which includes the Scala stdlib, then, import such jar in the Android project:
 - Run `sbt "project identityJVM" "assembly"`
 - Then, grab the jar from `jvm/target/scala-2.12/prism-identity.jar`
-- On your Android project, invoke `io.iohk.atala.prism.identity.PrismDid.createUnpublishedDID` to verify the integration works.
+- On your Android project, invoke `io.iohk.atala.prism.identity.DID.createUnpublishedDID` to verify the integration works.
 
