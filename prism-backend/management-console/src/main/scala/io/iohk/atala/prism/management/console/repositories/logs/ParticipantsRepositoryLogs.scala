@@ -42,7 +42,7 @@ private[repositories] final class ParticipantsRepositoryLogs[F[_]: BracketThrow:
 
   override def findBy(did: DID): Mid[F, Either[errors.ManagementConsoleError, ParticipantInfo]] =
     in =>
-      info"finding participant ${Option(did.getSuffix)}" *> in
+      info"finding participant ${Option(did.asCanonical().getSuffix)}" *> in
         .flatTap(
           _.fold(
             e => error"encountered an error while finding participant $e",

@@ -68,7 +68,7 @@ class ParticipantsRepositorySpec extends AtalaWithPostgresSpec {
       val request = CreateParticipantRequest(
         id = ParticipantId.random(),
         name = "participant name",
-        did = DID.buildLongFormFromMasterKey(EC.generateKeyPair().getPublicKey).asCanonical(),
+        did = DID.buildCanonicalFromMasterKey(EC.generateKeyPair().getPublicKey),
         logo = ParticipantLogo(Vector.empty)
       )
 
@@ -86,7 +86,7 @@ class ParticipantsRepositorySpec extends AtalaWithPostgresSpec {
     }
 
     "return error while trying to create participant with the same did twice" in {
-      val did = DID.buildLongFormFromMasterKey(EC.generateKeyPair().getPublicKey).asCanonical()
+      val did = DID.buildCanonicalFromMasterKey(EC.generateKeyPair().getPublicKey)
       val request1 = CreateParticipantRequest(
         id = ParticipantId.random(),
         name = "participant name",
