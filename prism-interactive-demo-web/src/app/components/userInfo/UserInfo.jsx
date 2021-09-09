@@ -4,7 +4,7 @@ import { Icon, Row } from 'antd';
 import PropTypes from 'prop-types';
 import { withRedirector } from '../providers/withRedirector';
 import CustomButton from '../common/Atoms/CustomButton/CustomButton';
-import { LEFT } from '../../helpers/constants';
+import { LEFT } from '../../../helpers/constants';
 
 import './_style.scss';
 

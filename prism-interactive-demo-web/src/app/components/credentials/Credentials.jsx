@@ -7,7 +7,7 @@ import SplittedPage from './Organisms/SplittedPage/SplittedPage';
 import CredentialsList from './Organisms/CredentialList/CredentialsList';
 import { withRedirector } from '../providers/withRedirector';
 import CustomButton from '../common/Atoms/CustomButton/CustomButton';
-import { LEFT, RESET_DEMO_EVENT } from '../../helpers/constants';
+import { LEFT, RESET_DEMO_EVENT } from '../../../helpers/constants';
 import buttonReset from '../../images/icon-reset.svg';
 import { UserContext } from '../providers/userContext';
 

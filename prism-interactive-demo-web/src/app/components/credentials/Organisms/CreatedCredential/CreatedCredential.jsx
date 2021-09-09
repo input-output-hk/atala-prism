@@ -16,7 +16,8 @@ import {
   CARD_INSURANCE_CLASS,
   CARD_INSURANCE_POLICY_NUMBER,
   INSURANCE_POLICY
-} from '../../../../helpers/constants';
+} from '../../../../../helpers/constants';
+
 import './_style.scss';
 
 const currentCredentialCard = {

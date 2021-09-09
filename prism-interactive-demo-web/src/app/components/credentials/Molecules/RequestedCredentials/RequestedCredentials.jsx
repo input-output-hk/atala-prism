@@ -6,7 +6,8 @@ import {
   UNIVERSITY_DEGREE,
   PROOF_OF_EMPLOYMENT,
   INSURANCE_POLICY
-} from '../../../../helpers/constants';
+} from '../../../../../helpers/constants';
+
 import './_style.scss';
 
 const RequestedCredentials = ({ currentCredential }) => {

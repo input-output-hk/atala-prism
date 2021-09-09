@@ -1,6 +1,6 @@
 import React from 'react';
+import { Link } from 'gatsby';
 import { useTranslation } from 'react-i18next';
-import { scrollToTop } from '../../../../helpers/genericHelpers';
 
 import './_style.scss';
 
@@ -10,9 +10,9 @@ const Footer = () => {
   return (
     <div className="Footer">
       <div className="FooterContent">
-        <button type="button" onClick={scrollToTop}>
+        <Link to="/app">
           <img src="/images/atala-prism-logo-suite.svg" alt={t('atalaLogo')} />
-        </button>
+        </Link>
         <div className="FooterText">
           <p>
             <a
