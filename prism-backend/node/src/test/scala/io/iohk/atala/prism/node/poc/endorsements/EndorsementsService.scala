@@ -8,14 +8,13 @@ import io.iohk.atala.prism.kotlin.identity.{PrismDid => DID}
 import io.iohk.atala.prism.kotlin.crypto.ECConfig.{INSTANCE => ECConfig}
 import io.iohk.atala.prism.kotlin.crypto.keys.ECPublicKey
 import io.iohk.atala.prism.kotlin.crypto.signature.ECSignature
-import io.iohk.atala.prism.kotlin.crypto.{MerkleInclusionProof, MerkleRoot, Sha256, Sha256Digest}
+import io.iohk.atala.prism.kotlin.crypto.{MerkleInclusionProof, MerkleRoot, Sha256Digest}
 import io.iohk.atala.prism.kotlin.extras.CredentialBatches
 import io.iohk.atala.prism.node.grpc.ProtoCodecs
 import io.iohk.atala.prism.protos.endorsements_api._
 import io.iohk.atala.prism.protos.node_api._
 import io.iohk.atala.prism.protos.node_models
 import io.iohk.atala.prism.protos.node_models.{KeyUsage, SignedAtalaOperation}
-import io.iohk.atala.prism.utils.StringUtils.encodeToByteArray
 import io.iohk.atala.prism.utils.syntax.InstantToTimestampOps
 
 import scala.concurrent.{ExecutionContext, Future}
@@ -96,9 +95,7 @@ case class EndorsementsService(
       val credentialDID = Option(credential.getContent.getIssuerDid).get
       val operationDID =
         DID.buildCanonical(
-          Sha256.compute(
-            encodeToByteArray(signedOperation.getOperation.getIssueCredentialBatch.getCredentialBatchData.issuerDid)
-          )
+          Sha256Digest.fromHex(signedOperation.getOperation.getIssueCredentialBatch.getCredentialBatchData.issuerDid)
         )
       val operationMerkleRoot = new MerkleRoot(
         Sha256Digest.fromBytes(

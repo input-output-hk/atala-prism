@@ -3,7 +3,7 @@ package io.iohk.atala.prism.node.repositories
 import cats.effect.IO
 import io.iohk.atala.prism.AtalaWithPostgresSpec
 import io.iohk.atala.prism.kotlin.crypto.EC.{INSTANCE => EC}
-import io.iohk.atala.prism.kotlin.crypto.Sha256
+import io.iohk.atala.prism.kotlin.crypto.Sha256Digest
 import io.iohk.atala.prism.models.{Ledger, TransactionId}
 import io.iohk.atala.prism.node.models.nodeState.LedgerData
 import io.iohk.atala.prism.node.models.{DIDData, DIDPublicKey, KeyUsage}
@@ -13,7 +13,6 @@ import java.time.Instant
 import io.iohk.atala.prism.kotlin.identity.{PrismDid => DID}
 import io.iohk.atala.prism.kotlin.protos.models.TimestampInfo
 import io.iohk.atala.prism.node.DataPreparation
-import io.iohk.atala.prism.utils.StringUtils.encodeToByteArray
 
 class DIDDataRepositorySpec extends AtalaWithPostgresSpec {
   lazy val didDataRepository: DIDDataRepository[IO] = DIDDataRepository(database)
@@ -72,7 +71,7 @@ class DIDDataRepositorySpec extends AtalaWithPostgresSpec {
       DataPreparation.createDID(didData, dummyLedgerData)
 
       val result = didDataRepository
-        .findByDid(DID.buildCanonical(Sha256.compute(encodeToByteArray(didSuffixFromDigest(digestGen(0, 2)).value))))
+        .findByDid(DID.buildCanonical(Sha256Digest.fromHex(didSuffixFromDigest(digestGen(0, 2)).value)))
         .unsafeRunSync()
         .toOption
         .value

@@ -7,7 +7,7 @@ import io.grpc.inprocess.{InProcessChannelBuilder, InProcessServerBuilder}
 import io.grpc.{ManagedChannel, Server}
 import io.iohk.atala.prism.AtalaWithPostgresSpec
 import io.iohk.atala.prism.kotlin.credentials.CredentialBatchId
-import io.iohk.atala.prism.kotlin.crypto.Sha256
+import io.iohk.atala.prism.kotlin.crypto.{Sha256, Sha256Digest}
 import io.iohk.atala.prism.kotlin.identity.{PrismDid => DID}
 import io.iohk.atala.prism.kotlin.identity.PrismDid.{getMASTER_KEY_ID => masterKeyId}
 import io.iohk.atala.prism.node.poc.{GenericCredentialsSDK, Wallet}
@@ -38,8 +38,7 @@ import scala.concurrent.{Future, Promise}
 import scala.jdk.CollectionConverters._
 import io.iohk.atala.prism.kotlin.credentials.json.JsonBasedCredential
 import io.iohk.atala.prism.kotlin.extras.CredentialBatches
-import io.iohk.atala.prism.kotlin.extras.VerificationError.{BatchWasRevokedOn, CredentialWasRevokedOn}
-import io.iohk.atala.prism.utils.StringUtils.encodeToByteArray
+import io.iohk.atala.prism.node.poc.CredVerification.VerificationError._
 
 class FlowPoC extends AtalaWithPostgresSpec with BeforeAndAfterEach {
 
@@ -173,7 +172,7 @@ class FlowPoC extends AtalaWithPostgresSpec with BeforeAndAfterEach {
       // 4. she builds 4 generic credentials
       val issuanceKeyId = "issuance0"
 
-      val issuerDID = DID.buildCanonical(Sha256.compute(encodeToByteArray(didSuffix.value)))
+      val issuerDID = DID.buildCanonical(Sha256Digest.fromHex(didSuffix.value))
       val credentialsToSign = consoleCredentials.map { credential =>
         GenericCredentialsSDK.buildGenericCredential(
           "university-degree",
@@ -262,15 +261,15 @@ class FlowPoC extends AtalaWithPostgresSpec with BeforeAndAfterEach {
       //     and the verification fails for all but the second credential of the second batch
       val e1 = wallet.verifyCredential(c1, p1).invalid.e
       e1.size mustBe 1
-      e1.head mustBe a[BatchWasRevokedOn]
+      e1.head mustBe a[BatchWasRevoked]
 
       val e2 = wallet.verifyCredential(c2, p2).invalid.e
       e2.size mustBe 1
-      e2.head mustBe a[BatchWasRevokedOn]
+      e2.head mustBe a[BatchWasRevoked]
 
       val e3 = wallet.verifyCredential(c3, p3).invalid.e
       e3.size mustBe 1
-      e3.head mustBe a[CredentialWasRevokedOn]
+      e3.head mustBe a[CredentialWasRevoked]
 
       wallet.verifyCredential(c4, p4).isValid mustBe true
     }

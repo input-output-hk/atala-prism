@@ -25,6 +25,4 @@ object StringUtils {
       s"${string.take(2)}$mask${string.takeRight(2)}"
     }
   }
-
-  def encodeToByteArray(string: String) = string.getBytes("UTF-8")
 }
