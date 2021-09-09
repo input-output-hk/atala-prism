@@ -1,24 +1,23 @@
 import React, { useState } from 'react';
 import PropTypes from 'prop-types';
+import { observer } from 'mobx-react-lite';
 import { Radio, Form } from 'antd';
 import { useTranslation } from 'react-i18next';
 import { PlusOutlined } from '@ant-design/icons';
 import { isString } from 'lodash';
-import { observer } from 'mobx-react-lite';
 import CategoryCreationModal from '../CategoryCreationModal/CategoryCreationModal';
 import CategoryCard from '../../Molecules/CategoryStep/CategoryCard';
 import CustomButton from '../../../common/Atoms/CustomButton/CustomButton';
 import { templateCategoryShape } from '../../../../helpers/propShapes';
-import { useTemplateSketchContext } from '../../../providers/TemplateSketchContext';
+import { useTemplateSketch } from '../../../../hooks/useTemplateSketch';
 import './_style.scss';
 
 const ENABLED_STATE = 1;
 
 const CategorySelector = observer(({ templateCategories }) => {
   const { t } = useTranslation();
-  const { templateSettings } = useTemplateSketchContext();
-  const initialSelection = parseInt(templateSettings.category, 10) || undefined;
-  const [selected, setSelected] = useState(initialSelection);
+  const { templateSketch } = useTemplateSketch();
+  const [selected, setSelected] = useState(templateSketch.category);
   const [showCategoryCreation, setShowCategoryCreation] = useState(false);
   const i18nPrefix = 'credentialTemplateCreation';
 

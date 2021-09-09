@@ -25,7 +25,7 @@ export default class TemplateStore {
       fetchTemplates: action,
       getCredentialTemplateDetails: action,
       templateCategories: observable,
-      addTemplateCategory: action,
+      createCredentialTemplate: action,
       fetchCategories: action,
       isLoading: computed,
       rootStore: false
@@ -36,7 +36,7 @@ export default class TemplateStore {
     return this.isLoadingTemplates || this.isLoadingCategories;
   }
 
-  addCredentialTemplate = async newTemplate => {
+  createCredentialTemplate = async newTemplate => {
     this.mockedCredentialTemplates.push(newTemplate);
     await this.api.credentialTypesManager.createTemplate(newTemplate);
   };

@@ -37,7 +37,7 @@ const defaultCredentialBodyLength = 2;
 
 export const defaultTemplateSketch = {
   name: '',
-  category: undefined,
+  category: '1',
   layout: 0,
   themeColor: '#D8D8D8',
   backgroundColor: '#FFFFFF',
@@ -54,7 +54,7 @@ export const insertFormChangeIntoArray = (change, oldArray) => {
   const changeArray = Array.from(change); // casting to array because it's a sparse array
 
   // change event is adding / deleting an item or a change in sort
-  const isArrayChange = changeArray.every(item => Boolean(item?.key));
+  const isArrayChange = changeArray.every(item => Boolean(item?.key) || item?.key === 0);
   if (isArrayChange) return changeArray;
 
   // change event is updating an item's attribute
