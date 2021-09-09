@@ -79,7 +79,7 @@ class NodeServiceImpl(
           case _: CanonicalPrismDid => resolve(did) orElse (countAndThrowNodeError(methodName, _))
           case longForm: LongFormPrismDid => // we received a long form DID
             // we check if the DID was published
-            resolve(did.asCanonical(), longForm).orReturn {
+            resolve(did.asCanonical(), did).orReturn {
               // if it was not published, we return the encoded initial state
               succeedWith(
                 Some(

@@ -143,7 +143,9 @@ class NodeServiceSpec
       publicKey.addedOn mustBe empty
       publicKey.revokedOn mustBe empty
 
-      ParsingUtils.parseECKey(ValueAtPath(publicKey.getEcKeyData, Path.root)) must beRight(masterKey)
+      ParsingUtils.parseCompressedECKey(ValueAtPath(publicKey.getCompressedEcKeyData, Path.root)) must beRight(
+        masterKey
+      )
       response.lastSyncedBlockTimestamp must be(Some(dummySyncTimestamp.toProtoTimestamp))
     }
 
