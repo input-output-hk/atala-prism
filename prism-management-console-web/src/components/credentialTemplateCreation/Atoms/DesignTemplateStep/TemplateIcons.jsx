@@ -1,16 +1,17 @@
 import React from 'react';
+import { observer } from 'mobx-react-lite';
 import { Button, Form, Upload } from 'antd';
 import { PictureOutlined } from '@ant-design/icons';
 import { useTranslation } from 'react-i18next';
-import { useTemplateSketchContext } from '../../../providers/TemplateSketchContext';
+import { useTemplateSketch } from '../../../../hooks/useTemplateSketch';
 import { templateLayouts } from '../../../../helpers/templateLayouts/templates';
 import './_style.scss';
 
-const TemplateIcons = () => {
+const TemplateIcons = observer(() => {
   const { t } = useTranslation();
-  const { templateSettings } = useTemplateSketchContext();
+  const { templateSketch } = useTemplateSketch();
 
-  const { images } = templateLayouts[templateSettings.layout];
+  const { images } = templateLayouts[templateSketch.layout];
 
   const normFile = ({ file }) => [file];
 
@@ -42,6 +43,6 @@ const TemplateIcons = () => {
       </div>
     </>
   );
-};
+});
 
 export default TemplateIcons;

@@ -1,4 +1,5 @@
 import React from 'react';
+import { observer } from 'mobx-react-lite';
 import { useTranslation } from 'react-i18next';
 import { Form } from 'antd';
 import { PlusOutlined } from '@ant-design/icons';
@@ -8,11 +9,11 @@ import {
   getNewFixedTextAttribute
 } from '../../../../helpers/templateHelpers';
 import SortableAttributes from './SortableAttributes';
-import { useTemplateSketchContext } from '../../../providers/TemplateSketchContext';
+import { useTemplateSketch } from '../../../../hooks/useTemplateSketch';
 
-const BodyEditor = () => {
+const BodyEditor = observer(() => {
   const { t } = useTranslation();
-  const { templateSettings } = useTemplateSketchContext();
+  const { templateSketch } = useTemplateSketch();
 
   return (
     <Form.List
@@ -27,7 +28,7 @@ const BodyEditor = () => {
       ]}
     >
       {(attributes, { add, move, remove }) => {
-        const attributesWithValues = templateSettings.credentialBody;
+        const attributesWithValues = templateSketch.credentialBody;
 
         const mergedAttributes = attributes.map((attr, index) => ({
           ...attr,
@@ -67,6 +68,6 @@ const BodyEditor = () => {
       }}
     </Form.List>
   );
-};
+});
 
 export default BodyEditor;

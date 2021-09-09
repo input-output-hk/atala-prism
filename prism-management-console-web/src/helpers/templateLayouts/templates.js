@@ -102,8 +102,8 @@ const fillBody = ({ dynamicAttribute, fixedText }, currentSettings) => {
   return bodyParts.reduce((compilation, part) => compilation.concat(part), '');
 };
 
-export const updateImages = async (templateSettings, setImagesOverwrites) => {
-  const { companyIcon, userIcon, embeddedCompanyLogo, embeddedUserIcon } = templateSettings;
+export const updateImages = async templateSketch => {
+  const { companyIcon, userIcon, embeddedCompanyLogo, embeddedUserIcon } = templateSketch;
   if (!companyIcon && !userIcon) return;
   const newEmbeddedCompanyLogo = companyIcon?.length
     ? await getBase64(companyIcon[0].originFileObj)
@@ -117,7 +117,7 @@ export const updateImages = async (templateSettings, setImagesOverwrites) => {
     embeddedUserIcon: newEmbeddedUserIcon
   };
 
-  setImagesOverwrites(images);
+  return images;
 };
 
 const getBase64 = file =>
