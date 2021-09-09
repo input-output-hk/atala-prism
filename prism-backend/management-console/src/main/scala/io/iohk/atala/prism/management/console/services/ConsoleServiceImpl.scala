@@ -87,7 +87,7 @@ private final class ConsoleServiceLogs[F[_]: ServiceLogging[*[_], ConsoleService
 
   override def registerDID(registerDID: RegisterDID): Mid[F, Either[ManagementConsoleError, Unit]] =
     in =>
-      info"registering DID ${registerDID.did.getSuffix}" *> in
+      info"registering DID ${registerDID.did.asCanonical().getSuffix}" *> in
         .flatTap(
           _.fold(
             er => error"encountered an error while registering DID $er",

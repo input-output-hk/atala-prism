@@ -31,8 +31,6 @@ case class Wallet(node: node_api.NodeServiceGrpc.NodeServiceBlockingStub) {
     val issuancePrivateKey = issuanceKeyPair.getPrivateKey
     val issuancePublicKey = issuanceKeyPair.getPublicKey
 
-    PrismDid.buildLongFormFromMasterKey()
-
     // This could be encapsulated in the "NodeSDK". I added it here for simplicity
     // Note that in our current design we cannot create a did that has two keys from start
     val createDidOp = node_models.CreateDIDOperation(

@@ -39,6 +39,7 @@ import io.iohk.atala.prism.management.console.integrations.CredentialsIntegratio
 }
 import io.iohk.atala.prism.management.console.models.GenericCredential.PaginatedQuery
 import io.iohk.atala.prism.logging.GeneralLoggableInstances._
+import io.iohk.atala.prism.models.DidSuffix
 import tofu.Execute
 import tofu.higherKind.Mid
 import tofu.logging.{Logs, ServiceLogging}
@@ -171,7 +172,7 @@ private final class CredentialsServiceImpl[F[_]: Monad](
         opHash = Sha256.compute(atalaOperation.toByteArray)
         issueCredentialBatch <- atalaOperation.operation.issueCredentialBatch
         credentialBatchData <- issueCredentialBatch.credentialBatchData
-        did = DID.fromString("did:prism:" + credentialBatchData.issuerDid)
+        did = DID.fromString(DidSuffix.didFromStringSuffix(credentialBatchData.issuerDid))
         merkleRoot = new MerkleRoot(Sha256Digest.fromBytes(credentialBatchData.merkleRoot.toByteArray))
       } yield (merkleRoot, did, opHash)
       maybePair.toRight(InternalServerError(new RuntimeException("Failed to extract content hash and issuer DID")))

@@ -13,6 +13,8 @@ object DidSuffix {
 
   private val suffixRegex: Regex = "[:A-Za-z0-9_-]+$".r
 
+  def didFromStringSuffix(in: String): String = "did:prism:" + in
+
   def fromDigest(in: Sha256Digest): DidSuffix = DidSuffix(in.getHexValue)
 
   def fromString(string: String): Try[DidSuffix] = {
