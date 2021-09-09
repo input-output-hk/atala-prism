@@ -13,7 +13,7 @@ import io.iohk.atala.prism.kotlin.crypto.{MerkleRoot, Sha256Digest}
 import io.iohk.atala.prism.kotlin.crypto.EC.{INSTANCE => EC}
 import io.iohk.atala.prism.kotlin.crypto.ECConfig.{INSTANCE => ECConfig}
 import io.iohk.atala.prism.daos.BaseDAO
-import io.iohk.atala.prism.models.{BlockInfo, DIDSuffix, Ledger, TransactionId, TransactionInfo}
+import io.iohk.atala.prism.models.{BlockInfo, DidSuffix, Ledger, TransactionId, TransactionInfo}
 import io.iohk.atala.prism.node.models.nodeState.{CredentialBatchState, DIDPublicKeyState, LedgerData}
 import io.iohk.atala.prism.node.models._
 import io.iohk.atala.prism.kotlin.crypto.keys.ECPublicKey
@@ -55,8 +55,8 @@ package object daos extends BaseDAO {
       _.entryName
     )
 
-  implicit val didSuffixPut: Put[DIDSuffix] = Put[String].contramap(_.getValue)
-  implicit val didSuffixGet: Get[DIDSuffix] = Get[String].map(DIDSuffix.apply)
+  implicit val didSuffixPut: Put[DidSuffix] = Put[String].contramap(_.getValue)
+  implicit val didSuffixGet: Get[DidSuffix] = Get[String].map(DidSuffix.apply)
 
   implicit val credentialIdPut: Put[CredentialId] = Put[String].contramap(_.id)
   implicit val credentialIdGet: Get[CredentialId] = Get[String].map(CredentialId(_))
@@ -67,7 +67,7 @@ package object daos extends BaseDAO {
   implicit val didPublicKeyWrite: Write[DIDPublicKeyState] = {
     Write[
       (
-          DIDSuffix,
+          DidSuffix,
           String,
           KeyUsage,
           String,
@@ -101,7 +101,7 @@ package object daos extends BaseDAO {
   implicit val didPublicKeyRead: Read[DIDPublicKeyState] = {
     Read[
       (
-          DIDSuffix,
+          DidSuffix,
           String,
           KeyUsage,
           String,
@@ -291,7 +291,7 @@ package object daos extends BaseDAO {
         }
         CredentialBatchState(
           CredentialBatchId.fromString(batchId),
-          DIDSuffix(suffix),
+          DidSuffix(suffix),
           new MerkleRoot(Sha256Digest.fromBytes(root)),
           issuedOn,
           revokedOn,

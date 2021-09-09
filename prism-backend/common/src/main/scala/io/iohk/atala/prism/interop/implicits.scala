@@ -6,7 +6,7 @@ import io.iohk.atala.prism.kotlin.credentials.CredentialBatchId
 import io.iohk.atala.prism.kotlin.crypto.{MerkleRoot, Sha256Digest}
 import doobie.implicits.legacy.instant._
 import io.iohk.atala.prism.kotlin.protos.models.TimestampInfo
-import io.iohk.atala.prism.models.{DIDSuffix, Ledger, TransactionId}
+import io.iohk.atala.prism.models.{DidSuffix, Ledger, TransactionId}
 import io.iohk.atala.prism.utils.DoobieImplicits.byteArraySeqMeta
 
 import java.time.Instant
@@ -18,12 +18,12 @@ object implicits {
   implicit val merkleRootRead: Read[MerkleRoot] =
     Read[Array[Byte]].map(arr => new MerkleRoot(Sha256Digest.fromBytes(arr)))
 
-  implicit val didSuffixMeta: Meta[DIDSuffix] =
-    Meta[String].timap { DIDSuffix.apply }(_.value)
-  implicit val didSuffixGet: Get[DIDSuffix] =
-    Get[String].tmap { DIDSuffix.apply }
-  implicit val didSuffixRead: Read[DIDSuffix] =
-    Read[String].map { DIDSuffix.apply }
+  implicit val didSuffixMeta: Meta[DidSuffix] =
+    Meta[String].timap { DidSuffix.apply }(_.value)
+  implicit val didSuffixGet: Get[DidSuffix] =
+    Get[String].tmap { DidSuffix.apply }
+  implicit val didSuffixRead: Read[DidSuffix] =
+    Read[String].map { DidSuffix.apply }
 
   implicit val transactionIdGet: Get[TransactionId] =
     Get[ArraySeq[Byte]].tmap { TransactionId.from(_).get }

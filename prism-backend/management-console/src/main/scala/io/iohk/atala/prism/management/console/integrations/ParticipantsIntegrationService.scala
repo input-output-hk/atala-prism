@@ -89,7 +89,7 @@ private final class ParticipantsIntegrationServiceLogs[F[_]: ServiceLogging[
     extends ParticipantsIntegrationService[Mid[F, *]] {
   override def register(request: RegisterDID): Mid[F, Either[ManagementConsoleError, Unit]] =
     in =>
-      info"registering participant ${request.name} ${request.did.getSuffix}" *> in
+      info"registering participant ${request.name} ${request.did.asCanonical().getSuffix}" *> in
         .flatTap(
           _.fold(
             er => error"encountered an error while registering participant $er",

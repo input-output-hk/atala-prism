@@ -7,7 +7,7 @@ import io.iohk.atala.prism.kotlin.credentials.CredentialBatchId
 import io.iohk.atala.prism.kotlin.crypto.{MerkleRoot, Sha256Digest}
 import io.iohk.atala.prism.kotlin.crypto.keys.ECPublicKey
 import io.iohk.atala.prism.kotlin.protos.models.TimestampInfo
-import io.iohk.atala.prism.models.{DIDSuffix, Ledger, TransactionId}
+import io.iohk.atala.prism.models.{DidSuffix, Ledger, TransactionId}
 
 import java.time.Instant
 import scala.util.matching.Regex
@@ -40,9 +40,9 @@ package object models {
     case object Processed extends AtalaObjectStatus
   }
 
-  case class DIDPublicKey(didSuffix: DIDSuffix, keyId: String, keyUsage: KeyUsage, key: ECPublicKey)
+  case class DIDPublicKey(didSuffix: DidSuffix, keyId: String, keyUsage: KeyUsage, key: ECPublicKey)
 
-  case class DIDData(didSuffix: DIDSuffix, keys: List[DIDPublicKey], lastOperation: Sha256Digest)
+  case class DIDData(didSuffix: DidSuffix, keys: List[DIDPublicKey], lastOperation: Sha256Digest)
 
   class CredentialId private (val id: String) extends AnyVal
 
@@ -81,7 +81,7 @@ package object models {
 
     case class CredentialBatchState(
         batchId: CredentialBatchId,
-        issuerDIDSuffix: DIDSuffix,
+        issuerDIDSuffix: DidSuffix,
         merkleRoot: MerkleRoot,
         issuedOn: LedgerData,
         revokedOn: Option[LedgerData] = None,
@@ -89,7 +89,7 @@ package object models {
     )
 
     case class DIDPublicKeyState(
-        didSuffix: DIDSuffix,
+        didSuffix: DidSuffix,
         keyId: String,
         keyUsage: KeyUsage,
         key: ECPublicKey,
@@ -98,7 +98,7 @@ package object models {
     )
 
     case class DIDDataState(
-        didSuffix: DIDSuffix,
+        didSuffix: DidSuffix,
         keys: List[DIDPublicKeyState],
         lastOperation: Sha256Digest
     )

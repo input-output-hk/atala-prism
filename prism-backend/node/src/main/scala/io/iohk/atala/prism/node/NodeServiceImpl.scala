@@ -35,7 +35,7 @@ import io.iohk.atala.prism.interop.toScalaProtos._
 import io.iohk.atala.prism.kotlin.crypto.{Sha256Digest => SHA256Digest}
 import io.iohk.atala.prism.kotlin.identity.{CanonicalPrismDid, LongFormPrismDid, PrismDid}
 import io.iohk.atala.prism.kotlin.identity.{PrismDid => DID}
-import io.iohk.atala.prism.models.DIDSuffix
+import io.iohk.atala.prism.models.DidSuffix
 import io.iohk.atala.prism.node.cardano.models.AtalaObjectMetadata
 
 class NodeServiceImpl(
@@ -76,14 +76,14 @@ class NodeServiceImpl(
     didTry match {
       case Success(did) =>
         did match {
-          case _: CanonicalPrismDid => resolve(did) orElse (countAndThrowNodeError(methodName, _))
+          case canon: CanonicalPrismDid => resolve(canon.asCanonical()) orElse (countAndThrowNodeError(methodName, _))
           case longForm: LongFormPrismDid => // we received a long form DID
             // we check if the DID was published
             resolve(did.asCanonical(), did).orReturn {
               // if it was not published, we return the encoded initial state
               succeedWith(
                 Some(
-                  ProtoCodecs.atalaOperationToDIDDataProto(DIDSuffix(did.getSuffix), longForm.getInitialState.asScala)
+                  ProtoCodecs.atalaOperationToDIDDataProto(DidSuffix(did.getSuffix), longForm.getInitialState.asScala)
                 )
               )
             }
@@ -470,13 +470,13 @@ object NodeServiceImpl {
       }
   }
 
-  private def resolve(did: DID, butShowInDIDDocument: DID)(implicit
+  private def resolve(did: CanonicalPrismDid, butShowInDIDDocument: DID)(implicit
       didDataRepository: DIDDataRepository[IO]
   ): OrElse = {
     OrElse(butShowInDIDDocument, didDataRepository.findByDid(did).unsafeToFuture())
   }
 
-  private def resolve(did: DID)(implicit didDataRepository: DIDDataRepository[IO]): OrElse = {
+  private def resolve(did: CanonicalPrismDid)(implicit didDataRepository: DIDDataRepository[IO]): OrElse = {
     OrElse(did, didDataRepository.findByDid(did).unsafeToFuture())
   }
 

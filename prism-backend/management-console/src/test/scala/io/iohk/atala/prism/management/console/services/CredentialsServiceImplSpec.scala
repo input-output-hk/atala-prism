@@ -40,7 +40,7 @@ import io.iohk.atala.prism.protos.console_models.ContactConnectionStatus
 import scala.concurrent.Future
 import scala.jdk.CollectionConverters._
 import io.iohk.atala.prism.logging.TraceId
-import io.iohk.atala.prism.models.DIDSuffix
+import io.iohk.atala.prism.models.DidSuffix
 
 class CredentialsServiceImplSpec extends ManagementConsoleRpcSpecBase with DIDUtil {
 
@@ -663,7 +663,7 @@ class CredentialsServiceImplSpec extends ManagementConsoleRpcSpecBase with DIDUt
   "CredentialsServiceImpl.publishBatch" should {
     def buildSignedIssueCredentialOp(
         credentialHash: Sha256Digest,
-        didSuffix: DIDSuffix
+        didSuffix: DidSuffix
     ): node_models.SignedAtalaOperation = {
       node_models.SignedAtalaOperation(
         signedWith = "mockKey",
@@ -698,7 +698,7 @@ class CredentialsServiceImplSpec extends ManagementConsoleRpcSpecBase with DIDUt
 
       val issuanceOp = buildSignedIssueCredentialOp(
         mockEncodedSignedCredentialHash,
-        DIDSuffix(mockDIDSuffix.getSuffix)
+        DidSuffix(mockDIDSuffix.getSuffix)
       )
 
       val mockCredentialBatchId =

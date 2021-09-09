@@ -6,7 +6,7 @@ import io.iohk.atala.prism.kotlin.protos.models.TimestampInfo
 import io.iohk.atala.prism.kotlin.crypto.EC.{INSTANCE => EC}
 import io.iohk.atala.prism.kotlin.crypto.keys.ECPublicKey
 import io.iohk.atala.prism.kotlin.crypto.ECConfig.{INSTANCE => ECConfig}
-import io.iohk.atala.prism.models.{DIDSuffix, ProtoCodecs => CommonProtoCodecs}
+import io.iohk.atala.prism.models.{DidSuffix, ProtoCodecs => CommonProtoCodecs}
 import io.iohk.atala.prism.node.models
 import io.iohk.atala.prism.node.models.KeyUsage.{
   AuthenticationKey,
@@ -30,7 +30,7 @@ object ProtoCodecs {
       .withOperationSequenceNumber(timestampInfo.getOperationSequenceNumber)
   }
 
-  def atalaOperationToDIDDataProto(didSuffix: DIDSuffix, op: node_models.AtalaOperation): node_models.DIDData = {
+  def atalaOperationToDIDDataProto(didSuffix: DidSuffix, op: node_models.AtalaOperation): node_models.DIDData = {
     node_models
       .DIDData()
       .withId(didSuffix.getValue)

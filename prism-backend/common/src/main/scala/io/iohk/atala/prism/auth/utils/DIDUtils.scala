@@ -14,34 +14,18 @@ import io.iohk.atala.prism.utils.FutureEither.FutureEitherOps
 
 import scala.concurrent.{ExecutionContext, Future}
 import io.iohk.atala.prism.interop.toScalaProtos._
-import io.iohk.atala.prism.kotlin.identity.PrismDidFormatException.{
-  CanonicalSuffixMatchStateException,
-  InvalidAtalaOperationException
-}
 import io.iohk.atala.prism.protos.node_models.PublicKey.KeyData.{CompressedEcKeyData, EcKeyData, Empty}
-
-import scala.util.{Failure, Success, Try}
 
 object DIDUtils {
 
   def validateDid(did: DID): FutureEither[AuthError, DIDData] = {
     did match {
       case longFormDid: LongFormPrismDid =>
-        Try(longFormDid) match {
-          case Failure(err) =>
-            err match {
-              case _: InvalidAtalaOperationException =>
-                Future.successful(Left(InvalidAtalaOperationError)).toFutureEither
-              case _: CanonicalSuffixMatchStateException =>
-                Future.successful(Left(CanonicalSuffixMatchStateError)).toFutureEither
-            }
-          case Success(validatedLongForm) =>
-            validatedLongForm.getInitialState.getOperation match {
-              case crd: CreateDid =>
-                Future.successful(Right(crd.getValue.getDidData.asScala)).toFutureEither
-              case _ =>
-                Future.successful(Left(NoCreateDidOperationError)).toFutureEither
-            }
+        longFormDid.getInitialState.getOperation match {
+          case crd: CreateDid =>
+            Future.successful(Right(crd.getValue.getDidData.asScala)).toFutureEither
+          case _ =>
+            Future.successful(Left(NoCreateDidOperationError)).toFutureEither
         }
       case _ => throw new IllegalStateException("Unreachable state")
     }

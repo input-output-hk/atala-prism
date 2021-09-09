@@ -13,7 +13,7 @@ import io.iohk.atala.prism.protos.{node_api, node_models}
 import io.iohk.atala.prism.kotlin.crypto.signature.ECSignature
 import io.iohk.atala.prism.interop.CredentialContentConverter._
 import io.iohk.atala.prism.kotlin.identity.PrismDid
-import io.iohk.atala.prism.models.{DIDSuffix, KeyData}
+import io.iohk.atala.prism.models.{DidSuffix, KeyData}
 import io.iohk.atala.prism.node.grpc.ProtoCodecs
 import io.iohk.atala.prism.node.poc.CredVerification.{BatchData, VerificationError}
 import org.scalatest.OptionValues.convertOptionToValuable
@@ -21,15 +21,17 @@ import org.scalatest.OptionValues.convertOptionToValuable
 // We define some classes to illustrate what happens in the different components
 case class Wallet(node: node_api.NodeServiceGrpc.NodeServiceBlockingStub) {
 
-  private var dids: Map[DIDSuffix, collection.mutable.Map[String, ECPrivateKey]] = Map()
+  private var dids: Map[DidSuffix, collection.mutable.Map[String, ECPrivateKey]] = Map()
 
-  def generateDID(): (DIDSuffix, node_models.AtalaOperation) = {
+  def generateDID(): (DidSuffix, node_models.AtalaOperation) = {
     val masterKeyPair = EC.generateKeyPair()
     val masterPrivateKey = masterKeyPair.getPrivateKey
     val masterPublicKey = masterKeyPair.getPublicKey
     val issuanceKeyPair = EC.generateKeyPair()
     val issuancePrivateKey = issuanceKeyPair.getPrivateKey
     val issuancePublicKey = issuanceKeyPair.getPublicKey
+
+    PrismDid.buildLongFormFromMasterKey()
 
     // This could be encapsulated in the "NodeSDK". I added it here for simplicity
     // Note that in our current design we cannot create a did that has two keys from start
@@ -58,7 +60,7 @@ case class Wallet(node: node_api.NodeServiceGrpc.NodeServiceBlockingStub) {
 
     val atalaOp = node_models.AtalaOperation(operation = node_models.AtalaOperation.Operation.CreateDid(createDidOp))
     val operationHash = Sha256.compute(atalaOp.toByteArray)
-    val didSuffix: DIDSuffix = DIDSuffix(operationHash.getHexValue)
+    val didSuffix: DidSuffix = DidSuffix(operationHash.getHexValue)
 
     dids += (didSuffix -> collection.mutable.Map(
       PrismDid.getMASTER_KEY_ID -> masterPrivateKey,
@@ -68,7 +70,7 @@ case class Wallet(node: node_api.NodeServiceGrpc.NodeServiceBlockingStub) {
     (didSuffix, atalaOp)
   }
 
-  def addRevocationKeyToDid(revocationKeyId: String, previousOperationHash: ByteString, didSuffix: DIDSuffix): Unit = {
+  def addRevocationKeyToDid(revocationKeyId: String, previousOperationHash: ByteString, didSuffix: DidSuffix): Unit = {
     val revocationKeyPair = EC.generateKeyPair()
     val publicKeyProto = node_models.PublicKey(
       id = revocationKeyId,
@@ -106,7 +108,7 @@ case class Wallet(node: node_api.NodeServiceGrpc.NodeServiceBlockingStub) {
   def signOperation(
       operation: node_models.AtalaOperation,
       keyId: String,
-      didSuffix: DIDSuffix
+      didSuffix: DidSuffix
   ): node_models.SignedAtalaOperation = {
     // TODO: This logic should also live eventually in the crypto library
     val key = dids(didSuffix)(keyId)
@@ -120,7 +122,7 @@ case class Wallet(node: node_api.NodeServiceGrpc.NodeServiceBlockingStub) {
   def signCredential(
       credentialContent: CredentialContent,
       keyId: String,
-      didSuffix: DIDSuffix
+      didSuffix: DidSuffix
   ): PrismCredential = {
     val privateKey = dids(didSuffix)(keyId)
     val credentialString = credentialContent.asString
@@ -130,7 +132,7 @@ case class Wallet(node: node_api.NodeServiceGrpc.NodeServiceBlockingStub) {
   def signKey(
       publicKey: ECPublicKey,
       keyId: String,
-      didSuffix: DIDSuffix
+      didSuffix: DidSuffix
   ): ECSignature = {
     val privateKey = dids(didSuffix)(keyId)
     EC.signBytes(publicKey.getEncoded, privateKey)

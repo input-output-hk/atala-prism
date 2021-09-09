@@ -8,7 +8,7 @@ import doobie.implicits._
 import io.iohk.atala.prism.kotlin.credentials.CredentialBatchId
 import io.iohk.atala.prism.kotlin.crypto.MerkleRoot
 import io.iohk.atala.prism.kotlin.crypto.Sha256Digest
-import io.iohk.atala.prism.models.{DIDSuffix, Ledger, TransactionId}
+import io.iohk.atala.prism.models.{DidSuffix, Ledger, TransactionId}
 import io.iohk.atala.prism.node.models.nodeState.{CredentialBatchState, LedgerData}
 import io.iohk.atala.prism.node.repositories.daos._
 import doobie.implicits.legacy.instant._
@@ -19,7 +19,7 @@ object CredentialBatchesDAO {
   case class CreateCredentialBatchData(
       batchId: CredentialBatchId,
       lastOperation: Sha256Digest,
-      issuerDIDSuffix: DIDSuffix,
+      issuerDIDSuffix: DidSuffix,
       merkleRoot: MerkleRoot,
       ledgerData: LedgerData
   )

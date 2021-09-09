@@ -6,10 +6,10 @@ import derevo.derive
 import derevo.tagless.applyK
 import doobie.implicits._
 import doobie.util.transactor.Transactor
-import io.iohk.atala.prism.kotlin.identity.{PrismDid => DID}
+import io.iohk.atala.prism.kotlin.identity.{CanonicalPrismDid => DID}
 import io.iohk.atala.prism.metrics.{TimeMeasureMetric, TimeMeasureUtil}
 import io.iohk.atala.prism.metrics.TimeMeasureUtil.MeasureOps
-import io.iohk.atala.prism.models.DIDSuffix
+import io.iohk.atala.prism.models.DidSuffix
 import io.iohk.atala.prism.utils.syntax.DBConnectionOps
 import io.iohk.atala.prism.node.errors.NodeError
 import io.iohk.atala.prism.node.models.nodeState.DIDDataState
@@ -34,9 +34,9 @@ private final class DIDDataRepositoryImpl[F[_]: BracketThrow](xa: Transactor[F])
   val logger: Logger = LoggerFactory.getLogger(getClass)
 
   def findByDid(did: DID): F[Either[NodeError, Option[DIDDataState]]] =
-    getByCanonicalSuffix(DIDSuffix(did.getSuffix))
+    getByCanonicalSuffix(DidSuffix(did.getSuffix))
 
-  private def getByCanonicalSuffix(canonicalSuffix: DIDSuffix): F[Either[NodeError, Option[DIDDataState]]] = {
+  private def getByCanonicalSuffix(canonicalSuffix: DidSuffix): F[Either[NodeError, Option[DIDDataState]]] = {
     val query = for {
       lastOperationMaybe <- DIDDataDAO.getLastOperation(canonicalSuffix)
       keys <- PublicKeysDAO.findAll(canonicalSuffix)

@@ -6,7 +6,7 @@ import io.iohk.atala.prism.kotlin.crypto.EC.{INSTANCE => EC}
 import io.iohk.atala.prism.kotlin.crypto.keys.ECPublicKey
 import io.iohk.atala.prism.kotlin.crypto.ECConfig.{INSTANCE => ECConfig}
 import io.iohk.atala.prism.kotlin.crypto.Sha256
-import io.iohk.atala.prism.models.DIDSuffix
+import io.iohk.atala.prism.models.DidSuffix
 import io.iohk.atala.prism.protos.node_models
 
 object EncodedSizes {
@@ -60,7 +60,7 @@ object EncodedSizes {
     val atalaOp = node_models.AtalaOperation(operation = node_models.AtalaOperation.Operation.CreateDid(createDidOp))
     val operationBytes = atalaOp.toByteArray
     val operationHash = Sha256.compute(operationBytes)
-    val didSuffix: DIDSuffix = DIDSuffix.fromDigest(operationHash)
+    val didSuffix: DidSuffix = DidSuffix.fromDigest(operationHash)
     val encodedOperation = Base64.getUrlEncoder.encodeToString(operationBytes)
     s"did:prism:${didSuffix.getValue}:$encodedOperation"
   }

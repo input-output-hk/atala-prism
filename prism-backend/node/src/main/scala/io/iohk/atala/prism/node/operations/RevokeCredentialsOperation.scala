@@ -8,7 +8,7 @@ import doobie.free.connection.ConnectionIO
 import doobie.implicits._
 import io.iohk.atala.prism.kotlin.credentials.CredentialBatchId
 import io.iohk.atala.prism.kotlin.crypto.{Sha256, Sha256Digest}
-import io.iohk.atala.prism.models.DIDSuffix
+import io.iohk.atala.prism.models.DidSuffix
 import io.iohk.atala.prism.node.models.nodeState
 import io.iohk.atala.prism.node.models.nodeState.{DIDPublicKeyState, LedgerData}
 import io.iohk.atala.prism.node.operations.path.{Path, ValueAtPath}
@@ -26,7 +26,7 @@ case class RevokeCredentialsOperation(
 
   override def getCorrectnessData(keyId: String): EitherT[ConnectionIO, StateError, CorrectnessData] = {
     for {
-      issuerPrevOp <- EitherT[ConnectionIO, StateError, (DIDSuffix, Sha256Digest)] {
+      issuerPrevOp <- EitherT[ConnectionIO, StateError, (DidSuffix, Sha256Digest)] {
         CredentialBatchesDAO
           .findBatch(credentialBatchId)
           .map(

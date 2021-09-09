@@ -5,19 +5,19 @@ import io.iohk.atala.prism.kotlin.crypto.Sha256Digest
 import scala.util.{Failure, Success, Try}
 import scala.util.matching.Regex
 
-case class DIDSuffix(value: String) extends AnyVal {
+case class DidSuffix(value: String) extends AnyVal {
   def getValue: String = value
 }
 
-object DIDSuffix {
+object DidSuffix {
 
   private val suffixRegex: Regex = "[:A-Za-z0-9_-]+$".r
 
-  def fromDigest(in: Sha256Digest): DIDSuffix = DIDSuffix(in.getHexValue)
+  def fromDigest(in: Sha256Digest): DidSuffix = DidSuffix(in.getHexValue)
 
-  def fromString(string: String): Try[DIDSuffix] = {
+  def fromString(string: String): Try[DidSuffix] = {
     if (string.nonEmpty && suffixRegex.pattern.matcher(string).matches())
-      Success(DIDSuffix(string))
+      Success(DidSuffix(string))
     else Failure(new IllegalArgumentException(s"invalid DID Suffix format: $string"))
   }
 

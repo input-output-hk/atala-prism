@@ -11,7 +11,7 @@ import io.iohk.atala.prism.connector.AtalaOperationId
 import io.iohk.atala.prism.kotlin.credentials.CredentialBatchId
 import io.iohk.atala.prism.kotlin.crypto.{MerkleRoot, Sha256, Sha256Digest}
 import io.iohk.atala.prism.kotlin.protos.models.TimestampInfo
-import io.iohk.atala.prism.models.{DIDSuffix, Ledger, TransactionId}
+import io.iohk.atala.prism.models.{DidSuffix, Ledger, TransactionId}
 import io.iohk.atala.prism.kotlin.identity.{PrismDid => DID}
 import io.iohk.atala.prism.node.errors.NodeError
 import io.iohk.atala.prism.node.grpc.ProtoCodecs
@@ -104,7 +104,7 @@ class NodeServiceSpec
   "NodeService.getDidDocument" should {
     "return DID document from data in the database" in {
       val didDigest = Sha256.compute("test".getBytes())
-      val didSuffix: DIDSuffix = DIDSuffix(didDigest.getHexValue)
+      val didSuffix: DidSuffix = DidSuffix(didDigest.getHexValue)
       DIDDataDAO.insert(didSuffix, didDigest, dummyLedgerData).transact(database).unsafeRunSync()
       val key = DIDPublicKey(didSuffix, "master", KeyUsage.MasterKey, CreateDIDOperationSpec.masterKeys.getPublicKey)
       PublicKeysDAO.insert(key, dummyLedgerData).transact(database).unsafeRunSync()
@@ -156,7 +156,7 @@ class NodeServiceSpec
 
       // we simulate the publication of the DID and the addition of an issuing key
       val didDigest = Sha256Digest.fromHex(longFormDID.asCanonical().getSuffix)
-      val didSuffix: DIDSuffix = DIDSuffix(didDigest.getHexValue)
+      val didSuffix: DidSuffix = DidSuffix(didDigest.getHexValue)
       val key1 = DIDPublicKey(didSuffix, DID.getMASTER_KEY_ID, KeyUsage.MasterKey, masterKey)
       val key2 = DIDPublicKey(didSuffix, "issuance0", KeyUsage.IssuingKey, issuingKey)
 
@@ -193,7 +193,7 @@ class NodeServiceSpec
 
       // we simulate the publication of the DID and the addition of an issuing key
       val didDigest = Sha256Digest.fromHex(longFormDID.asCanonical().getSuffix)
-      val didSuffix = DIDSuffix(didDigest.getHexValue)
+      val didSuffix = DidSuffix(didDigest.getHexValue)
       val key = DIDPublicKey(didSuffix, DID.getMASTER_KEY_ID, KeyUsage.MasterKey, masterKey)
 
       (DIDDataDAO.insert(didSuffix, didDigest, dummyLedgerData).transact(database) >>
@@ -540,7 +540,7 @@ class NodeServiceSpec
       val validBatchId = CredentialBatchId.fromDigest(Sha256.compute("valid".getBytes()))
       val requestWithValidId = GetBatchStateRequest(batchId = validBatchId.getId)
 
-      val issuerDIDSuffix: DIDSuffix = DIDSuffix(Sha256.compute("testDID".getBytes()).getHexValue)
+      val issuerDIDSuffix: DidSuffix = DidSuffix(Sha256.compute("testDID".getBytes()).getHexValue)
       val issuedOnLedgerData = dummyLedgerData
       val merkleRoot = new MerkleRoot(Sha256.compute("content".getBytes()))
       val credState =

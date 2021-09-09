@@ -6,7 +6,7 @@ import doobie.free.connection.{ConnectionIO, unit}
 import doobie.implicits._
 import doobie.postgres.sqlstate
 import io.iohk.atala.prism.kotlin.crypto.{Sha256, Sha256Digest}
-import io.iohk.atala.prism.models.DIDSuffix
+import io.iohk.atala.prism.models.DidSuffix
 import io.iohk.atala.prism.node.models.nodeState.{DIDPublicKeyState, LedgerData}
 import io.iohk.atala.prism.node.models.{DIDPublicKey, KeyUsage, nodeState}
 import io.iohk.atala.prism.node.operations.StateError.EntityExists
@@ -19,7 +19,7 @@ case class AddKeyAction(key: DIDPublicKey) extends UpdateDIDAction
 case class RevokeKeyAction(keyId: String) extends UpdateDIDAction
 
 case class UpdateDIDOperation(
-    didSuffix: DIDSuffix,
+    didSuffix: DidSuffix,
     actions: List[UpdateDIDAction],
     previousOperation: Sha256Digest,
     digest: Sha256Digest,
@@ -87,7 +87,7 @@ object UpdateDIDOperation extends OperationCompanion[UpdateDIDOperation] {
 
   protected def parseAction(
       action: ValueAtPath[node_models.UpdateDIDAction],
-      didSuffix: DIDSuffix
+      didSuffix: DidSuffix
   ): Either[ValidationError, UpdateDIDAction] = {
     if (action(_.action.isAddKey)) {
       val addKeyAction = action.child(_.getAddKey, "addKey")
@@ -120,7 +120,7 @@ object UpdateDIDOperation extends OperationCompanion[UpdateDIDOperation] {
 
     for {
       didSuffix <- updateOperation.child(_.id, "id").parse { didSuffix =>
-        DIDSuffix.fromString(didSuffix).toEither.left.map(_.getMessage)
+        DidSuffix.fromString(didSuffix).toEither.left.map(_.getMessage)
       }
       previousOperation <- ParsingUtils.parseHash(
         updateOperation.child(_.previousOperationHash, "previousOperationHash")

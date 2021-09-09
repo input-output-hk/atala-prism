@@ -7,7 +7,7 @@ import doobie.implicits._
 import doobie.postgres.sqlstate
 import io.iohk.atala.prism.kotlin.credentials.CredentialBatchId
 import io.iohk.atala.prism.kotlin.crypto.{MerkleRoot, Sha256, Sha256Digest}
-import io.iohk.atala.prism.models.DIDSuffix
+import io.iohk.atala.prism.models.DidSuffix
 import io.iohk.atala.prism.node.models.nodeState
 import io.iohk.atala.prism.node.models.nodeState.{DIDPublicKeyState, LedgerData}
 import io.iohk.atala.prism.node.operations.path.{Path, ValueAtPath}
@@ -19,7 +19,7 @@ import scala.util.Try
 
 case class IssueCredentialBatchOperation(
     credentialBatchId: CredentialBatchId,
-    issuerDIDSuffix: DIDSuffix,
+    issuerDIDSuffix: DidSuffix,
     merkleRoot: MerkleRoot,
     digest: Sha256Digest,
     ledgerData: nodeState.LedgerData
@@ -87,7 +87,7 @@ object IssueCredentialBatchOperation extends SimpleOperationCompanion[IssueCrede
         ).fold("Credential batchId".asLeft[CredentialBatchId])(Right(_))
       }
       issuerDID <- credentialBatchData.child(_.issuerDid, "issuerDID").parse { issuerDID =>
-        DIDSuffix.fromString(issuerDID).toEither.left.map(_.getMessage)
+        DidSuffix.fromString(issuerDID).toEither.left.map(_.getMessage)
       }
       merkleRoot <- credentialBatchData.child(_.merkleRoot, "merkleRoot").parse { merkleRoot =>
         Try(new MerkleRoot(Sha256Digest.fromBytes(merkleRoot.toByteArray))).toEither.left.map(_.getMessage)

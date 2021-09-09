@@ -15,7 +15,7 @@ import io.iohk.atala.prism.kotlin.crypto.keys.ECPublicKey
 import io.iohk.atala.prism.kotlin.crypto.signature.ECSignature
 import io.iohk.atala.prism.kotlin.extras.CredentialBatches
 import io.iohk.atala.prism.kotlin.identity.{PrismDid => DID}
-import io.iohk.atala.prism.models.DIDSuffix
+import io.iohk.atala.prism.models.DidSuffix
 import io.iohk.atala.prism.node.grpc.ProtoCodecs
 import io.iohk.atala.prism.node.repositories.{
   AtalaObjectsTransactionsRepository,
@@ -324,7 +324,7 @@ object Utils {
 
   def updateDIDOp(
       previousHash: Sha256Digest,
-      suffix: DIDSuffix,
+      suffix: DidSuffix,
       keyToAdd: ECPublicKey,
       keyIdToRemove: String
   ): node_models.AtalaOperation = {
