@@ -86,12 +86,12 @@ object IssueCredentialBatchOperation extends SimpleOperationCompanion[IssueCrede
             .fromString(Sha256.compute(credentialBatchData.value.toByteArray).getHexValue)
         ).fold("Credential batchId".asLeft[CredentialBatchId])(Right(_))
       }
-      issuerDID <- credentialBatchData.child(_.issuerDid, "issuerDID").parse { issuerDID =>
+      issuerDIDSuffix <- credentialBatchData.child(_.issuerDid, "issuerDID").parse { issuerDID =>
         DidSuffix.fromString(issuerDID).toEither.left.map(_.getMessage)
       }
       merkleRoot <- credentialBatchData.child(_.merkleRoot, "merkleRoot").parse { merkleRoot =>
         Try(new MerkleRoot(Sha256Digest.fromBytes(merkleRoot.toByteArray))).toEither.left.map(_.getMessage)
       }
-    } yield IssueCredentialBatchOperation(batchId, issuerDID, merkleRoot, operationDigest, ledgerData)
+    } yield IssueCredentialBatchOperation(batchId, issuerDIDSuffix, merkleRoot, operationDigest, ledgerData)
   }
 }
