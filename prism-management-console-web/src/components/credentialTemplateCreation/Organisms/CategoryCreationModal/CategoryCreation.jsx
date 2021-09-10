@@ -15,7 +15,7 @@ const i18nPrefix = 'credentialTemplateCreation';
 const CategoryCreation = observer(({ categoryForm, close }) => {
   const { t } = useTranslation();
 
-  const { templateCategories, addTemplateCategory } = useTemplateStore();
+  const { templateCategories, createTemplateCategory } = useTemplateStore();
 
   const [isLoading, setIsLoading] = useState(false);
 
@@ -50,7 +50,7 @@ const CategoryCreation = observer(({ categoryForm, close }) => {
       displayErrors(errors);
     } else {
       const normalizedValues = normalizeCategoryForm(values);
-      await addTemplateCategory(normalizedValues);
+      await createTemplateCategory(normalizedValues);
       close();
       categoryForm.resetFields();
     }

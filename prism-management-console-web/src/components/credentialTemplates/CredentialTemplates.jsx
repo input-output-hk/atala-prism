@@ -1,13 +1,6 @@
 import React, { useState } from 'react';
-import PropTypes from 'prop-types';
 import { useTranslation } from 'react-i18next';
 import { useSession } from '../providers/SessionContext';
-import {
-  credentialTypeShape,
-  templateCategoryShape,
-  templateFiltersShape,
-  templateSortingShape
-} from '../../helpers/propShapes';
 import { CONFIRMED, UNCONFIRMED } from '../../helpers/constants';
 import WaitBanner from '../dashboard/Atoms/WaitBanner/WaitBanner';
 import TemplateDetail from './Organisms/Drawers/TemplateDetail';
@@ -18,7 +11,7 @@ import './_style.scss';
 const CredentialTemplates = () => {
   const { t } = useTranslation();
   const { accountStatus } = useSession();
-  const [currentTemplate, setCurrentTemplate] = useState(false);
+  const [currentTemplate, setCurrentTemplate] = useState();
   const [showDrawer, setShowDrawer] = useState(false);
 
   const handleShowTemplatePreview = template => {
@@ -45,16 +38,6 @@ const CredentialTemplates = () => {
       />
     </div>
   );
-};
-
-CredentialTemplates.propTypes = {
-  tableProps: PropTypes.shape({
-    CredentialTemplates: PropTypes.arrayOf(credentialTypeShape),
-    templateCategories: PropTypes.arrayOf(templateCategoryShape),
-    isLoading: PropTypes.bool,
-    filterProps: PropTypes.shape(templateFiltersShape),
-    sortingProps: PropTypes.shape(templateSortingShape)
-  }).isRequired
 };
 
 export default CredentialTemplates;

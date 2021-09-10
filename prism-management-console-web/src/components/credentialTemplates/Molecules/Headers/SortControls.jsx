@@ -31,7 +31,6 @@ const SortControls = observer(() => {
         <Button
           className="TableOptionButton no-border"
           onClick={toggleSortDirection}
-          large
           icon={
             sortAscending ? (
               <SortAscendingOutlined style={{ fontSize: '16px' }} />
@@ -43,8 +42,9 @@ const SortControls = observer(() => {
         <Dropdown overlay={sortingOptionsMenu} trigger={['click']}>
           {
             <CustomButton
+              className="TableOptionButton"
               buttonText={t(sortingBy ? `templates.table.columns.${sortingBy}` : 'actions.sortBy')}
-              buttonProps={{ className: 'theme-link TableOptionButton', icon: <DownOutlined /> }}
+              buttonProps={{ className: 'theme-link', icon: <DownOutlined /> }}
             />
           }
         </Dropdown>
