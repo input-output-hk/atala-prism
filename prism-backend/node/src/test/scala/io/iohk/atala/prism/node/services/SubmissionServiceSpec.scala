@@ -14,7 +14,9 @@ import io.iohk.atala.prism.node.DataPreparation._
 import io.iohk.atala.prism.node.repositories.{
   AtalaObjectsTransactionsRepository,
   AtalaOperationsRepository,
-  KeyValuesRepository
+  CredentialBatchesRepository,
+  KeyValuesRepository,
+  OperationsVerificationRepository
 }
 import io.iohk.atala.prism.node.repositories.daos.AtalaObjectsDAO
 import io.iohk.atala.prism.protos.node_internal
@@ -42,6 +44,11 @@ class SubmissionServiceSpec
     AtalaObjectsTransactionsRepository(database)
   private val keyValuesRepository: KeyValuesRepository[IO] = KeyValuesRepository(database)
   private val blockProcessing: BlockProcessingService = mock[BlockProcessingService]
+  private val operationsVerificationRepository: OperationsVerificationRepository[IO] =
+    OperationsVerificationRepository(database)
+  private val credentialBatchesRepository: CredentialBatchesRepository[IO] = CredentialBatchesRepository(database)
+  private val offChainVerificationService =
+    OffChainVerificationService(credentialBatchesRepository, operationsVerificationRepository)
 
   private implicit lazy val submissionService: SubmissionService =
     SubmissionService(
@@ -62,7 +69,8 @@ class SubmissionServiceSpec
       atalaOperationsRepository,
       atalaObjectsTransactionsRepository,
       keyValuesRepository,
-      blockProcessing
+      blockProcessing,
+      offChainVerificationService
     )
 
   override def beforeEach(): Unit = {

@@ -80,6 +80,7 @@ class NodeApp(executionContext: ExecutionContext) { self =>
     val didDataRepository = DIDDataRepository(transactor)
     val atalaOperationsRepository = AtalaOperationsRepository(transactor)
     val atalaObjectsTransactionsRepository = AtalaObjectsTransactionsRepository(transactor)
+    val operationsVerificationRepository = OperationsVerificationRepository(transactor)
 
     val ledgerPendingTransactionTimeout = globalConfig.getDuration("ledgerPendingTransactionTimeout")
     val transactionRetryPeriod = FiniteDuration(
@@ -103,16 +104,18 @@ class NodeApp(executionContext: ExecutionContext) { self =>
       ),
       submissionService
     )
+    val credentialBatchesRepository = CredentialBatchesRepository(transactor)
 
+    val offChainVerifierService =
+      OffChainVerificationService(credentialBatchesRepository, operationsVerificationRepository)
     val objectManagementService = ObjectManagementService(
       atalaOperationsRepository,
       atalaObjectsTransactionsRepository,
       keyValuesRepository,
-      blockProcessingService
+      blockProcessingService,
+      offChainVerifierService
     )
     objectManagementServicePromise.success(objectManagementService)
-
-    val credentialBatchesRepository = CredentialBatchesRepository(transactor)
 
     val nodeService =
       new NodeServiceImpl(

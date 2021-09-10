@@ -2,6 +2,7 @@ package io.iohk.atala.prism.node
 
 import java.time.Instant
 import cats.data.EitherT
+import cats.effect.IO
 import doobie.free.connection.ConnectionIO
 import io.iohk.atala.prism.crypto.keys.ECPublicKey
 import io.iohk.atala.prism.crypto.Sha256Digest
@@ -14,6 +15,7 @@ import io.iohk.atala.prism.node.operations.ValidationError.InvalidValue
 import io.iohk.atala.prism.node.operations.path._
 import io.iohk.atala.prism.node.operations.protocolVersion.SupportedOperations
 import io.iohk.atala.prism.node.repositories.daos.ProtocolVersionsDAO
+import io.iohk.atala.prism.node.repositories.{CredentialBatchesRepository, OperationsVerificationRepository}
 import io.iohk.atala.prism.protos.{node_internal, node_models}
 import io.iohk.atala.prism.protos.node_models.SignedAtalaOperation
 
@@ -157,6 +159,16 @@ package object operations {
         _ <- isSupported()
         _ <- applyStateImpl()
       } yield ()
+
+    def verifyOffChain(signedWithKeyId: String)(implicit
+        operationsVerificationRepository: OperationsVerificationRepository[IO],
+        credentialBatchesRepository: CredentialBatchesRepository[IO]
+    ): EitherT[IO, errors.NodeError, Unit]
+
+    def applyOffChain(signedWithKeyId: String)(implicit
+        operationsVerificationRepository: OperationsVerificationRepository[IO],
+        credentialBatchesRepository: CredentialBatchesRepository[IO]
+    ): EitherT[IO, errors.NodeError, Unit]
 
     def digest: Sha256Digest
 

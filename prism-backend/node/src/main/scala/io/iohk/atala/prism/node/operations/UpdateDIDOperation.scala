@@ -1,16 +1,19 @@
 package io.iohk.atala.prism.node.operations
 
 import cats.data.EitherT
+import cats.effect.IO
 import cats.implicits._
 import doobie.free.connection.{ConnectionIO, unit}
 import doobie.implicits._
 import doobie.postgres.sqlstate
 import io.iohk.atala.prism.crypto.{Sha256, Sha256Digest}
 import io.iohk.atala.prism.models.DidSuffix
+import io.iohk.atala.prism.node.errors
 import io.iohk.atala.prism.node.models.nodeState.{DIDPublicKeyState, LedgerData}
 import io.iohk.atala.prism.node.models.{DIDPublicKey, KeyUsage, nodeState}
 import io.iohk.atala.prism.node.operations.StateError.EntityExists
 import io.iohk.atala.prism.node.operations.path._
+import io.iohk.atala.prism.node.repositories.{CredentialBatchesRepository, OperationsVerificationRepository}
 import io.iohk.atala.prism.node.repositories.daos.{DIDDataDAO, PublicKeysDAO}
 import io.iohk.atala.prism.protos.node_models
 
@@ -88,6 +91,37 @@ case class UpdateDIDOperation(
       )
       _ <- actions.traverse[ConnectionIOEitherTError, Unit](applyAction)
     } yield ()
+  }
+
+  override def verifyOffChain(signedWithKeyId: String)(implicit
+      operationsVerificationRepository: OperationsVerificationRepository[IO],
+      credentialBatchesRepository: CredentialBatchesRepository[IO]
+  ): EitherT[IO, errors.NodeError, Unit] = {
+    for {
+      _ <- VerificationUtils.notRevokedBefore(didSuffix, signedWithKeyId)
+      _ <- VerificationUtils.checkPreviousOperationDuplication(previousOperation)
+
+      (keyAdditions, keyRevocations) = actions.partitionMap {
+        case AddKeyAction(key) =>
+          Left(key)
+        case RevokeKeyAction(keyId) =>
+          Right(keyId)
+      }
+      _ <- keyAdditions traverse { key => VerificationUtils.keyNotUsedBefore(didSuffix, key.keyId) }
+      _ <- keyRevocations traverse { keyId => VerificationUtils.notRevokedBefore(didSuffix, keyId) }
+    } yield ()
+  }
+
+  override def applyOffChain(signedWithKeyId: String)(implicit
+      operationsVerificationRepository: OperationsVerificationRepository[IO],
+      credentialBatchesRepository: CredentialBatchesRepository[IO]
+  ): EitherT[IO, errors.NodeError, Unit] = {
+    EitherT(
+      operationsVerificationRepository
+        .insert(Some(previousOperation), didSuffix, signedWithKeyId)
+        .map { _.asRight }
+    )
+    // todo: updated revoked keys
   }
 }
 

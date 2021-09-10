@@ -1,6 +1,7 @@
 package io.iohk.atala.prism.node.operations
 
 import cats.data.EitherT
+import cats.effect.IO
 import cats.syntax.either._
 import doobie.free.connection.ConnectionIO
 import doobie.implicits._
@@ -8,9 +9,11 @@ import doobie.postgres.sqlstate
 import io.iohk.atala.prism.credentials.CredentialBatchId
 import io.iohk.atala.prism.crypto.{MerkleRoot, Sha256, Sha256Digest}
 import io.iohk.atala.prism.models.DidSuffix
+import io.iohk.atala.prism.node.errors
 import io.iohk.atala.prism.node.models.nodeState
 import io.iohk.atala.prism.node.models.nodeState.{DIDPublicKeyState, LedgerData}
 import io.iohk.atala.prism.node.operations.path.{Path, ValueAtPath}
+import io.iohk.atala.prism.node.repositories.{CredentialBatchesRepository, OperationsVerificationRepository}
 import io.iohk.atala.prism.node.repositories.daos.CredentialBatchesDAO.CreateCredentialBatchData
 import io.iohk.atala.prism.node.repositories.daos.{CredentialBatchesDAO, PublicKeysDAO}
 import io.iohk.atala.prism.protos.node_models
@@ -66,6 +69,21 @@ case class IssueCredentialBatchOperation(
             StateError.EntityMissing("issuerDID", issuerDIDSuffix.getValue)
         }
     }
+
+  override def verifyOffChain(signedWithKeyId: String)(implicit
+      operationsVerificationRepository: OperationsVerificationRepository[IO],
+      credentialBatchesRepository: CredentialBatchesRepository[IO]
+  ): EitherT[IO, errors.NodeError, Unit] =
+    for {
+      _ <- VerificationUtils.notRevokedBefore(issuerDIDSuffix, signedWithKeyId)
+    } yield ()
+
+  override def applyOffChain(signedWithKeyId: String)(implicit
+      operationsVerificationRepository: OperationsVerificationRepository[IO],
+      credentialBatchesRepository: CredentialBatchesRepository[IO]
+  ): EitherT[IO, errors.NodeError, Unit] = {
+    EitherT(operationsVerificationRepository.insert(None, issuerDIDSuffix, signedWithKeyId) map { _.asRight })
+  }
 }
 
 object IssueCredentialBatchOperation extends SimpleOperationCompanion[IssueCredentialBatchOperation] {

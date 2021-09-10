@@ -1,5 +1,6 @@
 package io.iohk.atala.prism.node.services
 
+import cats.data.EitherT
 import cats.effect.IO
 import cats.implicits._
 import doobie.free.connection.ConnectionIO
@@ -39,7 +40,8 @@ class ObjectManagementService private (
     atalaOperationsRepository: AtalaOperationsRepository[IO],
     atalaObjectsTransactionsRepository: AtalaObjectsTransactionsRepository[IO],
     keyValuesRepository: KeyValuesRepository[IO],
-    blockProcessing: BlockProcessingService
+    blockProcessing: BlockProcessingService,
+    offChainVerifierService: OffChainVerificationService
 )(implicit xa: Transactor[IO], scheduler: Scheduler) {
 
   private val logger = LoggerFactory.getLogger(this.getClass)
@@ -89,15 +91,22 @@ class ObjectManagementService private (
     }
 
     val queryIO = opsWithObjects traverse {
-      case (op, obj) =>
+      case (signedAtalaOperation, obj) =>
         val objBytes = obj.toByteArray
-        atalaOperationsRepository
-          .insertOperation(
-            AtalaObjectId.of(objBytes),
-            objBytes,
-            AtalaOperationId.of(op),
-            AtalaOperationStatus.RECEIVED
+        val resEitherT = for {
+          _ <- offChainVerifierService.verifyOffChain(signedAtalaOperation)
+
+          countInserted <- EitherT(
+            atalaOperationsRepository
+              .insertOperation(
+                AtalaObjectId.of(objBytes),
+                objBytes,
+                AtalaOperationId.of(signedAtalaOperation),
+                AtalaOperationStatus.RECEIVED
+              )
           )
+        } yield countInserted
+        resEitherT.value
     }
 
     val resultIO = for {
@@ -184,13 +193,15 @@ object ObjectManagementService {
       atalaOperationsRepository: AtalaOperationsRepository[IO],
       atalaObjectsTransactionsRepository: AtalaObjectsTransactionsRepository[IO],
       keyValuesRepository: KeyValuesRepository[IO],
-      blockProcessing: BlockProcessingService
+      blockProcessing: BlockProcessingService,
+      offChainVerifierService: OffChainVerificationService
   )(implicit xa: Transactor[IO], scheduler: Scheduler): ObjectManagementService = {
     new ObjectManagementService(
       atalaOperationsRepository,
       atalaObjectsTransactionsRepository,
       keyValuesRepository,
-      blockProcessing
+      blockProcessing,
+      offChainVerifierService
     )
   }
 }

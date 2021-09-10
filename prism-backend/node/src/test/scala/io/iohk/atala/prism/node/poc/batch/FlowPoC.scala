@@ -16,13 +16,15 @@ import io.iohk.atala.prism.node.repositories.{
   AtalaOperationsRepository,
   CredentialBatchesRepository,
   DIDDataRepository,
-  KeyValuesRepository
+  KeyValuesRepository,
+  OperationsVerificationRepository
 }
 import io.iohk.atala.prism.node.services.models.AtalaObjectNotification
 import io.iohk.atala.prism.node.services.{
   BlockProcessingServiceImpl,
   InMemoryLedgerService,
   ObjectManagementService,
+  OffChainVerificationService,
   SubmissionSchedulingService,
   SubmissionService
 }
@@ -57,6 +59,8 @@ class FlowPoC extends AtalaWithPostgresSpec with BeforeAndAfterEach {
   protected var keyValuesRepository: KeyValuesRepository[IO] = _
   protected var objectManagementServicePromise: Promise[ObjectManagementService] = _
   protected var submissionSchedulingService: SubmissionSchedulingService = _
+  protected var operationsVerificationRepository: OperationsVerificationRepository[IO] = _
+  protected var offChainVerificationService: OffChainVerificationService = _
 
   override def beforeEach(): Unit = {
     super.beforeEach()
@@ -85,11 +89,15 @@ class FlowPoC extends AtalaWithPostgresSpec with BeforeAndAfterEach {
       submissionService
     )
     keyValuesRepository = KeyValuesRepository(database)
+    operationsVerificationRepository = OperationsVerificationRepository(database)
+    offChainVerificationService =
+      OffChainVerificationService(credentialBatchesRepository, operationsVerificationRepository)
     objectManagementService = ObjectManagementService(
       atalaOperationsRepository,
       atalaObjectsTransactionsRepository,
       keyValuesRepository,
-      blockProcessingService
+      blockProcessingService,
+      offChainVerificationService
     )
     objectManagementServicePromise.success(objectManagementService)
 

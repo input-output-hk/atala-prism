@@ -1,6 +1,7 @@
 package io.iohk.atala.prism.node.operations
 
 import cats.data.EitherT
+import cats.effect.IO
 import cats.free.Free
 import cats.implicits.catsSyntaxEitherId
 import cats.syntax.functor._
@@ -9,9 +10,11 @@ import doobie.implicits._
 import io.iohk.atala.prism.credentials.CredentialBatchId
 import io.iohk.atala.prism.crypto.{Sha256, Sha256Digest}
 import io.iohk.atala.prism.models.DidSuffix
+import io.iohk.atala.prism.node.errors
 import io.iohk.atala.prism.node.models.nodeState
 import io.iohk.atala.prism.node.models.nodeState.{DIDPublicKeyState, LedgerData}
 import io.iohk.atala.prism.node.operations.path.{Path, ValueAtPath}
+import io.iohk.atala.prism.node.repositories.{CredentialBatchesRepository, OperationsVerificationRepository}
 import io.iohk.atala.prism.node.repositories.daos.{CredentialBatchesDAO, PublicKeysDAO}
 import io.iohk.atala.prism.protos.node_models
 
@@ -83,6 +86,36 @@ case class RevokeCredentialsOperation(
       if (weShouldRevokeTheFullBatch) revokeFullBatch()
       else revokeSpecificCredentials()
     }
+  }
+
+  override def verifyOffChain(signedWithKeyId: String)(implicit
+      operationsVerificationRepository: OperationsVerificationRepository[IO],
+      credentialBatchesRepository: CredentialBatchesRepository[IO]
+  ): EitherT[IO, errors.NodeError, Unit] = {
+    for {
+      batchStateMaybe <- EitherT(credentialBatchesRepository.getBatchState(credentialBatchId))
+      _ <- batchStateMaybe.fold(EitherT.pure[IO, errors.NodeError](())) { batchState =>
+        VerificationUtils.notRevokedBefore(batchState.issuerDIDSuffix, signedWithKeyId)
+      }
+    } yield ()
+  }
+
+  override def applyOffChain(signedWithKeyId: String)(implicit
+      operationsVerificationRepository: OperationsVerificationRepository[IO],
+      credentialBatchesRepository: CredentialBatchesRepository[IO]
+  ): EitherT[IO, errors.NodeError, Unit] = {
+    for {
+      batchStateMaybe <- EitherT(credentialBatchesRepository.getBatchState(credentialBatchId))
+      _ <- EitherT {
+        batchStateMaybe.fold(IO(().asRight[errors.NodeError])) { batchState =>
+          operationsVerificationRepository
+            .insert(None, batchState.issuerDIDSuffix, signedWithKeyId)
+            .map {
+              _.asRight[errors.NodeError]
+            }
+        }
+      }
+    } yield ()
   }
 }
 

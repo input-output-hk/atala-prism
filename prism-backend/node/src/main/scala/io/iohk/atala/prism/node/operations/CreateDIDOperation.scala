@@ -1,17 +1,20 @@
 package io.iohk.atala.prism.node.operations
 
 import cats.data.EitherT
+import cats.effect.IO
 import cats.implicits._
 import doobie.free.connection.ConnectionIO
 import doobie.implicits._
 import doobie.postgres.sqlstate
 import io.iohk.atala.prism.crypto.{Sha256, Sha256Digest}
 import io.iohk.atala.prism.models.DidSuffix
+import io.iohk.atala.prism.node.errors
 import io.iohk.atala.prism.node.models.KeyUsage.MasterKey
 import io.iohk.atala.prism.node.models.DIDPublicKey
 import io.iohk.atala.prism.node.models.nodeState.LedgerData
 import io.iohk.atala.prism.node.operations.StateError.{EntityExists, InvalidKeyUsed, UnknownKey}
 import io.iohk.atala.prism.node.operations.path._
+import io.iohk.atala.prism.node.repositories.{CredentialBatchesRepository, OperationsVerificationRepository}
 import io.iohk.atala.prism.node.repositories.daos.{DIDDataDAO, PublicKeysDAO}
 import io.iohk.atala.prism.protos.{node_models => proto}
 
@@ -62,6 +65,21 @@ case class CreateDIDOperation(
         }
       }
     } yield ()
+  }
+
+  override def verifyOffChain(signedWithKeyId: String)(implicit
+      operationsVerificationRepository: OperationsVerificationRepository[IO],
+      credentialBatchesRepository: CredentialBatchesRepository[IO]
+  ): EitherT[IO, errors.NodeError, Unit] = {
+    VerificationUtils.didNotUsedBefore(id)
+    // TODO: check no key duplication
+  }
+
+  override def applyOffChain(signedWithKeyId: String)(implicit
+      operationsVerificationRepository: OperationsVerificationRepository[IO],
+      credentialBatchesRepository: CredentialBatchesRepository[IO]
+  ): EitherT[IO, errors.NodeError, Unit] = {
+    EitherT(operationsVerificationRepository.insert(None, id, signedWithKeyId) map { _.asRight })
   }
 }
 
