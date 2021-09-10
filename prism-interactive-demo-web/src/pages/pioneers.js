@@ -5,8 +5,10 @@ import pioneers from '../images/pioneers.svg';
 import FormPioneers from '../components/form/form';
 import video from '../../static/images/video.png';
 import triangle from '../../static/images/triangle.png';
+import triangleWhite from '../../static/images/triangleWhite.png';
 import Collapsable from '../components/collapsable/collapsable';
 import CustomButton from '../components/customButton/CustomButton';
+import PionnersFooter from '../components/pioneersFooter/footer';
 import './pioneers.scss';
 
 const BlogIndex = () => {
@@ -74,19 +76,14 @@ const BlogIndex = () => {
         <Collapsable />
       </div>
       <div className="banner">
-        <div>
+          <img className="whiteTriangle" src={triangleWhite} />
+        <div className="logo">
           <img src={logo} alt="logo" />
         </div>
         <h2>Pioneers Program</h2>
         <CustomButton buttonText="Register Interest" buttonProps={{ className: 'theme-primary' }} />
       </div>
-      <div className="footer">
-        <div>
-          <a>hola</a>
-          <a>hola</a>
-        </div>
-        <a>hola</a>
-      </div>
+      <PionnersFooter />
     </div>
   );
 };
