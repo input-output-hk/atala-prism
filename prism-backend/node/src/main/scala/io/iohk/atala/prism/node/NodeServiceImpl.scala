@@ -76,7 +76,7 @@ class NodeServiceImpl(
     didTry match {
       case Success(did) =>
         did match {
-          case canon: CanonicalPrismDid => resolve(canon.asCanonical()) orElse (countAndThrowNodeError(methodName, _))
+          case canon: CanonicalPrismDid => resolve(canon) orElse (countAndThrowNodeError(methodName, _))
           case longForm: LongFormPrismDid => // we received a long form DID
             // we check if the DID was published
             resolve(did.asCanonical(), did).orReturn {

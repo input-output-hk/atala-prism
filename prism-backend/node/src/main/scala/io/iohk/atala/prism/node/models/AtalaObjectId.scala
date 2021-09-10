@@ -15,8 +15,9 @@ object AtalaObjectId {
   def apply(value: Vector[Byte]): AtalaObjectId = {
     // temporary replace for require(value.length == SHA256Digest.getBYTE_LENGTH)
     // rewrite to safe version pls
-    val canThrowException = Sha256Digest.fromBytes(value.toArray).getValue
-    new AtalaObjectId(canThrowException.toVector)
+    // will throw an error if something is wrong with the value
+    val digestUnsafe = Sha256Digest.fromBytes(value.toArray).getValue
+    new AtalaObjectId(digestUnsafe.toVector)
   }
 
   def of(atalaObject: node_internal.AtalaObject): AtalaObjectId = {
