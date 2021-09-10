@@ -14,7 +14,10 @@ const CredentialTemplateCreationContainer = observer(() => {
 
   useTemplateStore({ fetch: true });
 
-  const { form, setSketchState: handleValuesUpdate } = useTemplateSketch({ reset: true });
+  const { setForm, setSketchState: handleValuesUpdate } = useTemplateSketch({ reset: true });
+
+  const [form] = Form.useForm();
+  setForm(form);
 
   const validateMessages = {
     required: t('credentialTemplateCreation.errors.required')

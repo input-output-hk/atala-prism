@@ -1,13 +1,10 @@
 import { useContext, useEffect } from 'react';
-import { Form } from 'antd';
 import { UiStateContext } from '../stores/ui/UiState';
 
 export const useTemplateSketch = ({ reset } = {}) => {
   const { templateSketchState } = useContext(UiStateContext);
-  const { resetSketch, setForm } = templateSketchState;
 
-  const [form] = Form.useForm();
-  setForm(form);
+  const { resetSketch } = templateSketchState;
 
   useEffect(() => {
     if (reset) resetSketch();
