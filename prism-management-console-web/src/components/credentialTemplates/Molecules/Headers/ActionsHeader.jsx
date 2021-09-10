@@ -6,7 +6,7 @@ import { useTranslation } from 'react-i18next';
 import TemplateFilters from '../Filters/TemplateFilters';
 import SearchBar from '../../../common/Atoms/SearchBar/SearchBar';
 import CreateTemplateButton from '../../Atoms/Buttons/CreateTemplateButton';
-import { useTemplateUiState } from '../../../../hooks/useStore';
+import { useTemplateUiState } from '../../../../hooks/useTemplateStore';
 import './_style.scss';
 
 const ActionsHeader = observer(() => {

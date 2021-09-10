@@ -10,19 +10,12 @@ import EmptyComponent from '../../../common/Atoms/EmptyComponent/EmptyComponent'
 import TemplatesTable from './TemplatesTable';
 import noTemplatesPicture from '../../../../images/noTemplates.svg';
 import SortControls from '../../Molecules/Headers/SortControls';
-import {
-  credentialTypeShape,
-  templateCategoryShape,
-  templateFiltersShape,
-  templateSortingShape
-} from '../../../../helpers/propShapes';
-import { useTemplateUiState } from '../../../../hooks/useStore';
+import { useTemplateStore, useTemplateUiState } from '../../../../hooks/useTemplateStore';
 
-const TemplatesTableContainer = observer(({ tableProps, showTemplatePreview }) => {
+const TemplatesTableContainer = observer(({ showTemplatePreview }) => {
   const { t } = useTranslation();
   const { accountStatus } = useSession();
-  const { templateCategories, isLoading } = tableProps;
-
+  const { templateCategories, isLoading } = useTemplateStore();
   const { hasFiltersApplied, filteredTemplates } = useTemplateUiState();
 
   const noTemplates = !filteredTemplates?.length;
@@ -53,13 +46,6 @@ const TemplatesTableContainer = observer(({ tableProps, showTemplatePreview }) =
 });
 
 TemplatesTableContainer.propTypes = {
-  tableProps: PropTypes.shape({
-    credentialTemplates: PropTypes.arrayOf(credentialTypeShape),
-    templateCategories: PropTypes.arrayOf(templateCategoryShape).isRequired,
-    isLoading: PropTypes.bool,
-    filterProps: PropTypes.shape(templateFiltersShape),
-    sortingProps: PropTypes.shape(templateSortingShape)
-  }).isRequired,
   showTemplatePreview: PropTypes.func.isRequired
 };
 

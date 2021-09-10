@@ -22,7 +22,7 @@ import { useSession } from '../providers/SessionContext';
 import { fillHTMLCredential } from '../../helpers/credentialView';
 import { useContacts } from '../../hooks/useContacts';
 import { useGroups } from '../../hooks/useGroups';
-import { useTemplateStore } from '../../hooks/useStore';
+import { useTemplateStore } from '../../hooks/useTemplateStore';
 
 const NewCredentialContainer = ({ api, redirector: { redirectToCredentials } }) => {
   const { t } = useTranslation();

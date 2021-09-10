@@ -1,19 +1,13 @@
 import React from 'react';
 import { observer } from 'mobx-react-lite';
 import CredentialTemplates from './CredentialTemplates';
-import { useTemplateStore, useTemplateUiState } from '../../hooks/useStore';
+import { useTemplateStore, useTemplateUiState } from '../../hooks/useTemplateStore';
 
 const CredentialTemplatesContainer = observer(() => {
-  const { credentialTemplates, templateCategories, isLoading } = useTemplateStore({ fetch: true });
+  useTemplateStore({ fetch: true });
   useTemplateUiState({ reset: true });
 
-  const tableProps = {
-    credentialTemplates,
-    templateCategories,
-    isLoading
-  };
-
-  return <CredentialTemplates tableProps={tableProps} />;
+  return <CredentialTemplates />;
 });
 
 export default CredentialTemplatesContainer;
