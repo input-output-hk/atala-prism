@@ -1,0 +1,34 @@
+@import '../../css/general_styling.scss';
+
+form {
+  display: flex;
+  justify-content: flex-start;
+  .ant-col-offset-8 {
+    width: 100%;
+    margin:0;
+    button {
+      width: 100%;
+      @include primary-text($body, $white);
+      height: 56px;
+      font-weight: bold;
+    }
+  }
+  .ant-checkbox-wrapper {
+    span {
+      line-height: 15px;
+      @include primary-text($label, $dark-grey);
+      .link {
+        color: $primary-color;
+      }
+    }
+  }
+}
+
+.ant-form .ant-form-item {
+  margin-bottom: 2em;
+}
+
+.ant-checkbox-checked .ant-checkbox-inner {
+  background-color: $primary-color;
+  border-color: $primary-color;
+}
