@@ -1,5 +1,5 @@
 import { message } from 'antd';
-import { makeAutoObservable, observable, action } from 'mobx';
+import { makeAutoObservable, observable, action, flow } from 'mobx';
 import i18n from 'i18next';
 import { CONFIRMED, LOADING, LOCKED, SESSION, UNCONFIRMED } from '../../helpers/constants';
 
@@ -20,7 +20,7 @@ export default class SessionState {
       accountStatus: observable,
       acceptedModal: observable,
       modalIsVisible: observable,
-      login: action,
+      login: flow.bound,
       logout: action,
       showUnconfirmedAccountError: action,
       removeUnconfirmedAccountError: action,
@@ -43,13 +43,13 @@ export default class SessionState {
     this.api.wallet.setSessionState(this.session);
   };
 
-  login = () =>
-    this.api.wallet.getSessionFromExtension({ timeout: 5000 }).then(({ sessionData, error }) => {
-      if (error) {
-        this.setSession({ sessionState: LOCKED });
-        message.error(i18n.t(error.message));
-      } else this.setSession(sessionData);
-    });
+  *login() {
+    const { sessionData, error } = yield this.api.wallet.getSessionFromExtension({ timeout: 5000 });
+    if (error) {
+      this.setSession({ sessionState: LOCKED });
+      message.error(i18n.t(error.message));
+    } else this.setSession(sessionData);
+  }
 
   logout = () => {
     this.setSession({ sessionState: LOCKED });

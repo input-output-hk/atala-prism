@@ -11,6 +11,12 @@ export class RootStore {
     this.uiState = new UiState(api, this);
   }
 
+  handleTransportLayerSuccess = logMessage => {
+    const { removeUnconfirmedAccountError } = this.uiState.sessionState;
+    removeUnconfirmedAccountError();
+    if (logMessage) Logger.info(logMessage);
+  };
+
   handleTransportLayerError = (error, metadata) => {
     const {
       showUnconfirmedAccountError,
