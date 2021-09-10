@@ -15,13 +15,11 @@ import ActionsHeader from './Molecules/Headers/ActionsHeader';
 import TemplatesTableContainer from './Organisms/Tables/TemplatesTableContainer';
 import './_style.scss';
 
-const CredentialTemplates = ({ tableProps }) => {
+const CredentialTemplates = () => {
   const { t } = useTranslation();
   const { accountStatus } = useSession();
   const [currentTemplate, setCurrentTemplate] = useState(false);
   const [showDrawer, setShowDrawer] = useState(false);
-
-  const { templateCategories } = tableProps;
 
   const handleShowTemplatePreview = template => {
     setCurrentTemplate(template);
@@ -35,12 +33,9 @@ const CredentialTemplates = ({ tableProps }) => {
         <div>
           <h1>{t('templates.title')}</h1>
         </div>
-        {accountStatus === CONFIRMED && <ActionsHeader templateCategories={templateCategories} />}
+        {accountStatus === CONFIRMED && <ActionsHeader />}
       </div>
-      <TemplatesTableContainer
-        tableProps={tableProps}
-        showTemplatePreview={handleShowTemplatePreview}
-      />
+      <TemplatesTableContainer showTemplatePreview={handleShowTemplatePreview} />
       <TemplateDetail
         drawerInfo={{
           visible: showDrawer,

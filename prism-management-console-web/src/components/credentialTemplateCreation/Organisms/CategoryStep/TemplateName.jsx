@@ -3,7 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { Form, Input } from 'antd';
 import { observer } from 'mobx-react-lite';
 import { exactValueExists } from '../../../../helpers/filterHelpers';
-import { useTemplateStore } from '../../../../hooks/useStore';
+import { useTemplateStore } from '../../../../hooks/useTemplateStore';
 
 import './_style.scss';
 

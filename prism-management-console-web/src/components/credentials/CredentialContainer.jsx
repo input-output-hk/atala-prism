@@ -21,7 +21,7 @@ import {
 import { getTargetCredentials } from '../../helpers/credentialActions';
 import { useCredentialActions } from '../../hooks/useCredentialActions';
 import { getCheckedAndIndeterminateProps, handleSelectAll } from '../../helpers/selectionHelpers';
-import { useTemplateStore } from '../../hooks/useStore';
+import { useTemplateStore } from '../../hooks/useTemplateStore';
 
 const CredentialContainer = ({ api }) => {
   const { t } = useTranslation();

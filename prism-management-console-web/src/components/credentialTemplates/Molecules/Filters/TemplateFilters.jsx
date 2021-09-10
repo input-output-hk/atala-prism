@@ -5,7 +5,7 @@ import { DownOutlined } from '@ant-design/icons';
 import { observer } from 'mobx-react-lite';
 import CustomInputGroup from '../../../common/Atoms/CustomInputGroup/CustomInputGroup';
 import CustomDatePicker from '../../../common/Atoms/CustomDatePicker/CustomDatePicker';
-import { useTemplateStore, useTemplateUiState } from '../../../../hooks/useStore';
+import { useTemplateStore, useTemplateUiState } from '../../../../hooks/useTemplateStore';
 
 const ENABLED_STATE = 1;
 

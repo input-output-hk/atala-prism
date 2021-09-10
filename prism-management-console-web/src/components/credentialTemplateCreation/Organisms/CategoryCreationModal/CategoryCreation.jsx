@@ -7,7 +7,7 @@ import CustomButton from '../../../common/Atoms/CustomButton/CustomButton';
 import { antdV4FormShape } from '../../../../helpers/propShapes';
 import CategoryNameInput from '../../Molecules/CategoryCreationModal/CategoryNameInput';
 import CategoryIconSelector from '../../Molecules/CategoryCreationModal/CategoryIconSelector';
-import { useTemplateStore } from '../../../../hooks/useStore';
+import { useTemplateStore } from '../../../../hooks/useTemplateStore';
 import './_style.scss';
 
 const i18nPrefix = 'credentialTemplateCreation';

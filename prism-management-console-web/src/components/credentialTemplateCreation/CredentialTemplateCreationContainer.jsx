@@ -5,7 +5,7 @@ import { Form } from 'antd';
 import { SELECT_TEMPLATE_CATEGORY } from '../../helpers/constants';
 import CredentialTemplateCreation from './CredentialTemplateCreation';
 import TemplateCreationStep from './Organisms/TemplateCreationStep';
-import { useTemplateStore } from '../../hooks/useStore';
+import { useTemplateStore } from '../../hooks/useTemplateStore';
 import { defaultTemplateSketch } from '../../helpers/templateHelpers';
 import { useTemplateSketch } from '../../hooks/useTemplateSketch';
 
@@ -13,10 +13,8 @@ const CredentialTemplateCreationContainer = observer(() => {
   const { t } = useTranslation();
 
   useTemplateStore({ fetch: true });
-  const { setForm, setSketchState: handleValuesUpdate } = useTemplateSketch({ reset: true });
 
-  const [form] = Form.useForm();
-  setForm(form);
+  const { form, setSketchState: handleValuesUpdate } = useTemplateSketch({ reset: true });
 
   const validateMessages = {
     required: t('credentialTemplateCreation.errors.required')

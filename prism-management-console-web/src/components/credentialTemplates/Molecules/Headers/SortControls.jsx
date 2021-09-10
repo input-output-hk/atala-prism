@@ -5,7 +5,7 @@ import { Button, Dropdown, Menu } from 'antd';
 import { DownOutlined, SortAscendingOutlined, SortDescendingOutlined } from '@ant-design/icons';
 import { SORTING_DIRECTIONS, TEMPLATES_SORTING_KEYS } from '../../../../helpers/constants';
 import CustomButton from '../../../common/Atoms/CustomButton/CustomButton';
-import { useTemplateUiState } from '../../../../hooks/useStore';
+import { useTemplateUiState } from '../../../../hooks/useTemplateStore';
 
 const { ascending } = SORTING_DIRECTIONS;
 

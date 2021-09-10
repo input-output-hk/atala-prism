@@ -5,7 +5,7 @@ import { templateCategoryShape } from '../../../../helpers/propShapes';
 import CategorySelector from './CategorySelector';
 import TemplateName from './TemplateName';
 import SimpleLoading from '../../../common/Atoms/SimpleLoading/SimpleLoading';
-import { useTemplateStore } from '../../../../hooks/useStore';
+import { useTemplateStore } from '../../../../hooks/useTemplateStore';
 
 const TemplateCategorySelectionStep = observer(() => {
   const { templateCategories } = useTemplateStore();
