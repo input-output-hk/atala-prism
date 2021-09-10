@@ -11,11 +11,10 @@ import { useTemplateSketch } from '../../hooks/useTemplateSketch';
 
 const CredentialTemplateCreationContainer = observer(() => {
   const { t } = useTranslation();
-
   useTemplateStore({ fetch: true });
-
   const { setForm, setSketchState: handleValuesUpdate } = useTemplateSketch({ reset: true });
 
+  const [currentStep, setCurrentStep] = useState(SELECT_TEMPLATE_CATEGORY);
   const [form] = Form.useForm();
   setForm(form);
 
@@ -23,7 +22,6 @@ const CredentialTemplateCreationContainer = observer(() => {
     required: t('credentialTemplateCreation.errors.required')
   };
 
-  const [currentStep, setCurrentStep] = useState(SELECT_TEMPLATE_CATEGORY);
   return (
     <div className="TemplateMainContent">
       <Form
