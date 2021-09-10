@@ -48,7 +48,6 @@ const TableOptions = ({ bulkActionsProps, loadingSelection, selectedLength, sort
         <Button
           className="TableOptionButton no-border"
           onClick={toggleSorting}
-          large
           icon={
             sortAscending ? (
               <SortAscendingOutlined style={{ fontSize: '16px' }} />
@@ -70,7 +69,8 @@ const TableOptions = ({ bulkActionsProps, loadingSelection, selectedLength, sort
         <Dropdown overlay={sortingOptionsMenu} trigger={['click']}>
           {
             <CustomButton
-              buttonProps={{ className: 'theme-link TableOptionButton', icon: <DownOutlined /> }}
+              className="TableOptionButton"
+              buttonProps={{ className: 'theme-link', icon: <DownOutlined /> }}
               buttonText={t(
                 sortingBy ? `credentials.table.columns.${sortingBy}` : 'actions.sortBy'
               )}

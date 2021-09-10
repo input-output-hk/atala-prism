@@ -125,7 +125,7 @@ CompleteSpreadSheetStep.defaultProps = {
 
 CompleteSpreadSheetStep.propTypes = {
   recipients: PropTypes.arrayOf(PropTypes.shape(contactShape)),
-  credentialType: PropTypes.shape(credentialTypeShape),
+  credentialType: credentialTypeShape,
   currentStep: PropTypes.number.isRequired,
   setCurrentStep: PropTypes.func,
   inputData: PropTypes.shape({

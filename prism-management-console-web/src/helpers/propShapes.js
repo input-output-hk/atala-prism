@@ -135,13 +135,13 @@ export const credentialTabShape = {
   searchDueGeneralScroll: bool
 };
 
-export const credentialTypeShape = {
-  id: number,
+export const credentialTypeShape = shape({
+  id: string,
   enabled: bool,
   isMultiRow: bool,
   name: string,
-  logo: element,
-  sampleImage: element,
+  logo: oneOfType([element, string]),
+  sampleImage: oneOfType([element, string]),
   fields: arrayOf(
     shape({
       key: string,
@@ -152,7 +152,7 @@ export const credentialTypeShape = {
   ),
   placeholders: objectOf(string),
   template: string
-};
+});
 
 export const credentialTypesShape = arrayOf(credentialTypeShape);
 

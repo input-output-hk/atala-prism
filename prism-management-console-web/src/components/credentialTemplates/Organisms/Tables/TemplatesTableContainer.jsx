@@ -15,7 +15,7 @@ import { useTemplateStore, useTemplateUiState } from '../../../../hooks/useTempl
 const TemplatesTableContainer = observer(({ showTemplatePreview }) => {
   const { t } = useTranslation();
   const { accountStatus } = useSession();
-  const { templateCategories, isLoading } = useTemplateStore();
+  const { templateCategories, isLoading, fetchTemplates } = useTemplateStore();
   const { hasFiltersApplied, filteredTemplates } = useTemplateUiState();
 
   const noTemplates = !filteredTemplates?.length;
@@ -24,7 +24,7 @@ const TemplatesTableContainer = observer(({ showTemplatePreview }) => {
     photoSrc: noTemplatesPicture,
     model: t('templates.title'),
     isFilter: hasFiltersApplied,
-    button: noTemplates && accountStatus === CONFIRMED && <CreateTemplateButton />
+    button: noTemplates && accountStatus === CONFIRMED ? <CreateTemplateButton /> : null
   };
 
   const renderContent = () => {
@@ -36,6 +36,8 @@ const TemplatesTableContainer = observer(({ showTemplatePreview }) => {
         <TemplatesTable
           credentialTemplates={filteredTemplates}
           templateCategories={templateCategories}
+          getMoreTemplates={fetchTemplates}
+          isLoading={isLoading}
           showTemplatePreview={showTemplatePreview}
         />
       </>

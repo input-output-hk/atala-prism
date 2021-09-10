@@ -80,7 +80,7 @@ BulkImportSteps.defaultProps = {
 
 BulkImportSteps.propTypes = {
   recipients: PropTypes.arrayOf(PropTypes.shape(contactShape)),
-  credentialType: PropTypes.shape(credentialTypeShape),
+  credentialType: credentialTypeShape,
   fileData: PropTypes.shape({
     data: PropTypes.arrayOf(PropTypes.arrayOf(PropTypes.string)),
     errors: PropTypes.arrayOf(PropTypes.arrayOf(PropTypes.shape({ type: PropTypes.string })))
