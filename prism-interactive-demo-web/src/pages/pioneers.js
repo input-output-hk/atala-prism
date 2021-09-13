@@ -26,7 +26,7 @@ const BlogIndex = () => {
             <div className="Container">
               <h3>Atala PRISM</h3>
               <h2>
-                Pioneers <br /> Program
+                Pioneers Program
               </h2>
               <p className="subtitle">What is the Atala PRISM Pioneer Program</p>
               <p>
