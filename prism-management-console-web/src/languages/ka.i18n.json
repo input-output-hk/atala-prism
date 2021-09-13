@@ -534,9 +534,23 @@
     "checkInfo": "Check the data below"
   },
   "templates": {
+    "model": "Templates",
     "title": "Credential Templates",
+    "table": {
+      "unknownValue": "Unknown",
+      "columns": {
+        "name":"Template Name",
+        "category": "Category",
+        "lastEdited": "Last Edited"
+      }
+    },
     "actions": {
-      "createTemplate": "Create Template"
+      "searchPlaceholder": "Search",
+      "createTemplate": "Create",
+      "preview": "Preview",
+      "edit": "Edit ",
+      "copy": "Copy",
+      "delete":"Delete"
     }
   },
   "credentialTemplateCreation": {
@@ -583,6 +597,23 @@
       "successTitle": "Your template was successfully created",
       "successMessage": "You have a new credential template available",
       "continueButton": "Continue"
+    },
+    "categoryCreationModal": {
+      "title": "Select your Category Icon",
+      "categoryNameLabel": "Category Name",
+      "categoryNamePlaceholder": "Category Name",  
+      "categoryIconLabel": "Select your Category Icon",
+      "categoryIcon": "Category Icon",
+      "uploadIcon": "Upload Your Icon",
+      "uploadButton":"Browse",
+      "gallery": "Gallery",
+      "save": "Save",
+      "allowedFormats": "Allowed formats are {{allowedFormats}}",
+      "errors": {
+        "required": "${label} is required",
+        "preExisting": "A category called '{{value}}' already exists",
+        "fieldIsRequired": "{{field}} is required"
+      }
     },
     "messages": {
       "selectCategoryError": "Please select a category",

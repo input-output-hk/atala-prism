@@ -2,17 +2,17 @@ package io.iohk.atala.prism.node
 
 import java.security.PublicKey
 import java.time.Instant
-
 import cats.data.EitherT
 import doobie.free.connection.ConnectionIO
-import io.iohk.atala.prism.kotlin.credentials.TimestampInfo
 import io.iohk.atala.prism.kotlin.crypto.keys.ECPublicKey
-import io.iohk.atala.prism.kotlin.crypto.SHA256Digest
-import io.iohk.atala.prism.kotlin.identity.DIDSuffix
-import io.iohk.atala.prism.models.{Ledger, TransactionId}
+import io.iohk.atala.prism.kotlin.crypto.Sha256Digest
+import io.iohk.atala.prism.kotlin.protos.models.TimestampInfo
+import io.iohk.atala.prism.models.{DidSuffix, Ledger, TransactionId}
 import io.iohk.atala.prism.node.models.nodeState.LedgerData
 import io.iohk.atala.prism.node.operations.path._
-import io.iohk.atala.prism.protos.node_models
+import io.iohk.atala.prism.protos.{node_internal, node_models}
+import io.iohk.atala.prism.protos.node_models.AtalaOperation
+import io.iohk.atala.prism.protos.node_models.SignedAtalaOperation
 
 package object operations {
 
@@ -25,7 +25,7 @@ package object operations {
     case class IncludedKey(key: PublicKey) extends OperationKey
 
     /** Key needs to be fetched from the state */
-    case class DeferredKey(owner: DIDSuffix, keyId: String) extends OperationKey
+    case class DeferredKey(owner: DidSuffix, keyId: String) extends OperationKey
 
   }
 
@@ -64,39 +64,61 @@ package object operations {
   }
 
   /** Error during applying an operation to the state */
-  sealed trait StateError
+  sealed trait StateError {
+    def name: String
+  }
 
   object StateError {
 
     /** Error signifying that operation cannot be applied as it tries to access an entity that does not exist */
-    case class EntityMissing(tpe: String, identifier: String) extends StateError
+    final case class EntityMissing(tpe: String, identifier: String) extends StateError {
+      override def name: String = "entity-missing"
+    }
 
     /** Error signifying that operation cannot be applied as it tries to create an entity that already exists */
-    case class EntityExists(tpe: String, identifier: String) extends StateError
+    final case class EntityExists(tpe: String, identifier: String) extends StateError {
+      override def name: String = "entity-exists"
+    }
 
     /** Error signifying that key that was supposed to be used to verify the signature does not exist */
-    case class UnknownKey(didSuffix: DIDSuffix, keyId: String) extends StateError
+    final case class UnknownKey(didSuffix: DidSuffix, keyId: String) extends StateError {
+      override def name: String = "unknown-key"
+    }
 
-    case class InvalidKeyUsed(requirement: String) extends StateError
+    final case class InvalidKeyUsed(requirement: String) extends StateError {
+      override def name: String = "invalid-key-used"
+    }
 
-    case class InvalidPreviousOperation() extends StateError
+    final case class InvalidPreviousOperation() extends StateError {
+      override def name: String = "invalid-previous-operation"
+    }
 
-    case class InvalidSignature() extends StateError
+    final case class InvalidSignature() extends StateError {
+      override def name: String = "invalid-signature"
+    }
 
     // Error signifying that the update operation is attempting to revoke the key signing the operation
-    case class InvalidRevocation() extends StateError
+    final case class InvalidRevocation() extends StateError {
+      override def name: String = "invalid-revocation"
+    }
 
     // Error signifying that the key used has been revoked already
-    case class KeyAlreadyRevoked() extends StateError
+    final case class KeyAlreadyRevoked() extends StateError {
+      override def name: String = "key-already-revoked"
+    }
 
     // Error signifying that the associated batch is already revoked
-    case class BatchAlreadyRevoked(batchId: String) extends StateError
+    final case class BatchAlreadyRevoked(batchId: String) extends StateError {
+      override def name: String = "batch-already-revoked"
+    }
 
-    case class DuplicateOperation() extends StateError
+    final case class DuplicateOperation() extends StateError {
+      override def name: String = "duplicate-operation"
+    }
   }
 
   /** Data required to verify the correctness of the operation */
-  case class CorrectnessData(key: ECPublicKey, previousOperation: Option[SHA256Digest])
+  case class CorrectnessData(key: ECPublicKey, previousOperation: Option[Sha256Digest])
 
   /** Representation of already parsed valid operation, common for operations */
   trait Operation {
@@ -110,9 +132,9 @@ package object operations {
       */
     def applyState(): EitherT[ConnectionIO, StateError, Unit]
 
-    def digest: SHA256Digest
+    def digest: Sha256Digest
 
-    def linkedPreviousOperation: Option[SHA256Digest] = None
+    def linkedPreviousOperation: Option[Sha256Digest] = None
 
     def ledgerData: LedgerData
   }
@@ -171,4 +193,28 @@ package object operations {
         ledgerData: LedgerData
     ): Either[ValidationError, Repr]
   }
+
+  def parseOperationWithMockedLedger(operation: SignedAtalaOperation): Either[ValidationError, Operation] =
+    operation.getOperation.operation match {
+      case AtalaOperation.Operation.CreateDid(_) =>
+        CreateDIDOperation.parseWithMockedLedgerData(operation)
+      case AtalaOperation.Operation.UpdateDid(_) =>
+        UpdateDIDOperation.parseWithMockedLedgerData(operation)
+      case AtalaOperation.Operation.IssueCredentialBatch(_) =>
+        IssueCredentialBatchOperation.parseWithMockedLedgerData(operation)
+      case AtalaOperation.Operation.RevokeCredentials(_) =>
+        RevokeCredentialsOperation.parseWithMockedLedgerData(operation)
+      case AtalaOperation.Operation.Empty => // should not happen
+        throw new RuntimeException("Unexpected empty AtalaOperation")
+    }
+
+  def parseOperationsFromByteContent(byteContent: Array[Byte]): List[Operation] =
+    node_internal.AtalaObject
+      .validate(byteContent)
+      .toOption
+      .fold(List[Operation]()) { obj =>
+        obj.getBlockContent.operations.toList.flatMap { op =>
+          parseOperationWithMockedLedger(op).toOption
+        }
+      }
 }

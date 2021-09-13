@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useContext } from 'react';
 import PropTypes from 'prop-types';
 import { useTranslation } from 'react-i18next';
 import { message } from 'antd';
@@ -12,6 +12,7 @@ import {
 } from '../../helpers/constants';
 import { withRedirector } from '../providers/withRedirector';
 import { useTemplateContext } from '../providers/TemplateContext';
+import { PrismStoreContext } from '../../stores/domain/PrismStore';
 import './_style.scss';
 
 const fieldsByStep = {
@@ -29,11 +30,11 @@ const fieldsByStep = {
 const CredentialTemplateCreation = ({
   currentStep,
   changeStep,
-  renderStep,
   redirector: { redirectToCredentialTemplates }
 }) => {
   const { t } = useTranslation();
-  const { form } = useTemplateContext();
+  const { form, templateSettings, templatePreview } = useTemplateContext();
+  const { addCredentialTemplate } = useContext(PrismStoreContext).templateStore;
 
   const validateByStep = () =>
     form.validateFields().catch(({ errorFields }) => {
@@ -53,9 +54,19 @@ const CredentialTemplateCreation = ({
 
   const goBack = () => changeStep(currentStep - NEW_TEMPLATE_STEP_UNIT);
 
+  const createTemplate = () => {
+    const newTemplate = {
+      ...templateSettings,
+      template: templatePreview,
+      category: parseInt(templateSettings?.category, 10)
+    };
+    addCredentialTemplate(newTemplate);
+    advanceStep();
+  };
+
   const steps = [
     { back: redirectToCredentialTemplates, next: advanceStep },
-    { back: goBack, next: advanceStep },
+    { back: goBack, next: createTemplate },
     { back: goBack, next: redirectToCredentialTemplates }
   ];
 
@@ -71,22 +82,16 @@ const CredentialTemplateCreation = ({
   };
 
   return (
-    <React.Fragment>
-      <div className="TemplateMainContent">
-        <div className="TitleContainer">
-          <GenericStepsButtons steps={steps} currentStep={currentStep} />
-          <WizardTitle {...getStepText[currentStep]} />
-        </div>
-        {renderStep()}
-      </div>
-    </React.Fragment>
+    <div className="TitleContainer">
+      <GenericStepsButtons steps={steps} currentStep={currentStep} />
+      <WizardTitle {...getStepText[currentStep]} />
+    </div>
   );
 };
 
 CredentialTemplateCreation.propTypes = {
   currentStep: PropTypes.number.isRequired,
   changeStep: PropTypes.func.isRequired,
-  renderStep: PropTypes.func.isRequired,
   redirector: PropTypes.shape({ redirectToCredentialTemplates: PropTypes.func }).isRequired
 };
 

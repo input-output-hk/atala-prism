@@ -5,10 +5,10 @@ import cats.implicits.catsSyntaxEitherId
 import io.iohk.atala.prism.connector.errors._
 import io.iohk.atala.prism.connector.model._
 import io.iohk.atala.prism.connector.repositories.ConnectionsRepository
-import io.iohk.atala.prism.kotlin.crypto.{EC}
+import io.iohk.atala.prism.kotlin.crypto.EC.{INSTANCE => EC}
 import io.iohk.atala.prism.kotlin.crypto.keys.{ECPublicKey}
 import io.iohk.atala.prism.kotlin.crypto.ECConfig.{INSTANCE => ECConfig}
-import io.iohk.atala.prism.kotlin.identity.DID
+import io.iohk.atala.prism.kotlin.identity.{PrismDid => DID}
 import io.iohk.atala.prism.models.ParticipantId
 import io.iohk.atala.prism.protos.node_api
 import io.iohk.atala.prism.protos.node_api.NodeServiceGrpc
@@ -72,7 +72,7 @@ class ConnectionsService(connectionsRepository: ConnectionsRepository[IO], nodeS
       } yield validKeys.map { key =>
         val keyData = key.keyData.ecKeyData.getOrElse(throw new Exception("Node returned key without keyData"))
         assert(keyData.curve == ECConfig.getCURVE_NAME)
-        (key.id, EC.toPublicKey(keyData.x.toByteArray, keyData.y.toByteArray))
+        (key.id, EC.toPublicKeyFromByteCoordinates(keyData.x.toByteArray, keyData.y.toByteArray))
       }
 
       result.map(Right(_)).recover { case ex => Left(InternalServerError(ex)) }.toFutureEither

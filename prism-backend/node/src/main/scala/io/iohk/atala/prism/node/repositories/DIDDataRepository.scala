@@ -2,18 +2,16 @@ package io.iohk.atala.prism.node.repositories
 
 import cats.data.EitherT
 import cats.effect.BracketThrow
-import cats.syntax.applicative._
-import cats.syntax.either._
 import derevo.derive
 import derevo.tagless.applyK
 import doobie.implicits._
 import doobie.util.transactor.Transactor
-import io.iohk.atala.prism.kotlin.identity.{DID, DIDSuffix}
+import io.iohk.atala.prism.kotlin.identity.{CanonicalPrismDid => DID}
 import io.iohk.atala.prism.metrics.{TimeMeasureMetric, TimeMeasureUtil}
 import io.iohk.atala.prism.metrics.TimeMeasureUtil.MeasureOps
+import io.iohk.atala.prism.models.DidSuffix
 import io.iohk.atala.prism.utils.syntax.DBConnectionOps
 import io.iohk.atala.prism.node.errors.NodeError
-import io.iohk.atala.prism.node.errors.NodeError.UnknownValueError
 import io.iohk.atala.prism.node.models.nodeState.DIDDataState
 import io.iohk.atala.prism.node.repositories.daos.{DIDDataDAO, PublicKeysDAO}
 import org.slf4j.{Logger, LoggerFactory}
@@ -36,15 +34,9 @@ private final class DIDDataRepositoryImpl[F[_]: BracketThrow](xa: Transactor[F])
   val logger: Logger = LoggerFactory.getLogger(getClass)
 
   def findByDid(did: DID): F[Either[NodeError, Option[DIDDataState]]] =
-    Option(did.getCanonicalSuffix)
-      .fold[F[Either[NodeError, Option[DIDDataState]]]](logDidAndReturnUnknownValue(did))(getByCanonicalSuffix)
+    getByCanonicalSuffix(DidSuffix(did.getSuffix))
 
-  private def logDidAndReturnUnknownValue(did: DID): F[Either[NodeError, Option[DIDDataState]]] = {
-    logger.info(s"Unknown DID format: $did")
-    Either.left[NodeError, Option[DIDDataState]](UnknownValueError("did", did.getValue)).pure[F]
-  }
-
-  private def getByCanonicalSuffix(canonicalSuffix: DIDSuffix): F[Either[NodeError, Option[DIDDataState]]] = {
+  private def getByCanonicalSuffix(canonicalSuffix: DidSuffix): F[Either[NodeError, Option[DIDDataState]]] = {
     val query = for {
       lastOperationMaybe <- DIDDataDAO.getLastOperation(canonicalSuffix)
       keys <- PublicKeysDAO.findAll(canonicalSuffix)

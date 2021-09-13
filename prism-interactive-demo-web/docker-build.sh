@@ -6,7 +6,7 @@ revCount=$(git rev-list HEAD --count)
 shaShort=$(git rev-parse --short HEAD)
 tag="${branchPrefix}-${revCount}-${shaShort}"
 
-npm run build && \
+yarn run build && \
 docker build -t 895947072537.dkr.ecr.us-east-2.amazonaws.com/landing:${tag} . && \
 $(aws ecr get-login --no-include-email) && \
 docker push 895947072537.dkr.ecr.us-east-2.amazonaws.com/landing:${tag}

@@ -4,7 +4,8 @@ import cats.effect.IO
 import doobie.free.connection
 import doobie.implicits._
 import io.iohk.atala.prism.AtalaWithPostgresSpec
-import io.iohk.atala.prism.kotlin.crypto.{EC, SHA256Digest}
+import io.iohk.atala.prism.kotlin.crypto.EC.{INSTANCE => EC}
+import io.iohk.atala.prism.kotlin.crypto.Sha256
 import io.iohk.atala.prism.kotlin.crypto.keys.ECKeyPair
 import io.iohk.atala.prism.models.{BlockInfo, Ledger, TransactionId, TransactionInfo, TransactionStatus}
 import io.iohk.atala.prism.node.models.{
@@ -230,7 +231,7 @@ class ObjectManagementServiceSpec
 
       objectManagementService.saveObject(AtalaObjectNotification(obj, dummyTransactionInfo)).futureValue
       val dummyTransactionInfo2 = TransactionInfo(
-        transactionId = TransactionId.from(SHA256Digest.compute("id".getBytes).getValue).value,
+        transactionId = TransactionId.from(Sha256.compute("id".getBytes).getValue).value,
         ledger = Ledger.InMemory,
         block = Some(BlockInfo(number = 100, timestamp = Instant.now, index = 100))
       )

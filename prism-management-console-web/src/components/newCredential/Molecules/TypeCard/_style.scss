@@ -1,4 +1,4 @@
-@import '../../../../css/general_styling';
+@import "../../../../css/general_styling";
 
 .TypeCard {
   border-radius: 6px;
@@ -7,13 +7,27 @@
   height: 260px;
 }
 
+.TypeCard2 {
+  border-radius: 6px;
+  padding: 0.5em 1em;
+  height: 50px;
+  width: 260px;
+  margin: 0.5em;
+}
+.TypeCard2:first-child {
+  margin-left: 0;
+}
+
 .header-name {
   display: flex;
   align-items: center;
   @include primary-text($button, $black);
+  font-variant: normal;
 }
 
 .img-logo {
+  height: 35px;
+  width: 35px;
   margin-right: 10px;
 }
 

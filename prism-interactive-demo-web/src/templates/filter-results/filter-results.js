@@ -110,14 +110,17 @@ const BlogIndex = ({ data, pageContext }) => {
 export default BlogIndex;
 
 export const pageQuery = graphql`
-  query FilterResults($year: Int, $month: Int) {
+  query FilterResults($year: Int, $month: Int, $authorName: String) {
     site {
       siteMetadata {
         title
       }
     }
     posts: allMarkdownRemark(
-      filter: { fields: { year: { eq: $year }, month: { eq: $month } } }
+      filter: {
+        fields: { year: { eq: $year }, month: { eq: $month } }
+        frontmatter: { author: { eq: $authorName } }
+      }
       sort: { fields: [frontmatter___date], order: DESC }
     ) {
       nodes {

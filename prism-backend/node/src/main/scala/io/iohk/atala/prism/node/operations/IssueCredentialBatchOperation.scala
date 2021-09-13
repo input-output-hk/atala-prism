@@ -6,9 +6,8 @@ import doobie.free.connection.ConnectionIO
 import doobie.implicits._
 import doobie.postgres.sqlstate
 import io.iohk.atala.prism.kotlin.credentials.CredentialBatchId
-import io.iohk.atala.prism.kotlin.crypto.MerkleRoot
-import io.iohk.atala.prism.kotlin.crypto.SHA256Digest
-import io.iohk.atala.prism.kotlin.identity.DIDSuffix
+import io.iohk.atala.prism.kotlin.crypto.{MerkleRoot, Sha256, Sha256Digest}
+import io.iohk.atala.prism.models.DidSuffix
 import io.iohk.atala.prism.node.models.nodeState
 import io.iohk.atala.prism.node.models.nodeState.{DIDPublicKeyState, LedgerData}
 import io.iohk.atala.prism.node.operations.path.{Path, ValueAtPath}
@@ -20,9 +19,9 @@ import scala.util.Try
 
 case class IssueCredentialBatchOperation(
     credentialBatchId: CredentialBatchId,
-    issuerDIDSuffix: DIDSuffix,
+    issuerDIDSuffix: DidSuffix,
     merkleRoot: MerkleRoot,
-    digest: SHA256Digest,
+    digest: Sha256Digest,
     ledgerData: nodeState.LedgerData
 ) extends Operation {
 
@@ -75,7 +74,7 @@ object IssueCredentialBatchOperation extends SimpleOperationCompanion[IssueCrede
       operation: node_models.AtalaOperation,
       ledgerData: LedgerData
   ): Either[ValidationError, IssueCredentialBatchOperation] = {
-    val operationDigest = SHA256Digest.compute(operation.toByteArray)
+    val operationDigest = Sha256.compute(operation.toByteArray)
     val issueCredentialBatchOperation =
       ValueAtPath(operation, Path.root).child(_.getIssueCredentialBatch, "issueCredentialBatch")
 
@@ -84,22 +83,15 @@ object IssueCredentialBatchOperation extends SimpleOperationCompanion[IssueCrede
       batchId <- credentialBatchData.parse { _ =>
         Option(
           CredentialBatchId
-            .fromString(SHA256Digest.compute(credentialBatchData.value.toByteArray).hexValue)
+            .fromString(Sha256.compute(credentialBatchData.value.toByteArray).getHexValue)
         ).fold("Credential batchId".asLeft[CredentialBatchId])(Right(_))
       }
-      issuerDID <- credentialBatchData.child(_.issuerDid, "issuerDID").parse { issuerDID =>
-        Either.fromOption(
-          Try(DIDSuffix.fromString(issuerDID)).toOption,
-          s"must be a valid DID suffix: $issuerDID"
-        )
+      issuerDIDSuffix <- credentialBatchData.child(_.issuerDid, "issuerDID").parse { issuerDID =>
+        DidSuffix.fromString(issuerDID).toEither.left.map(_.getMessage)
       }
       merkleRoot <- credentialBatchData.child(_.merkleRoot, "merkleRoot").parse { merkleRoot =>
-        Either.cond(
-          merkleRoot.size == SHA256Digest.getBYTE_LENGTH,
-          new MerkleRoot(SHA256Digest.fromBytes(merkleRoot.toByteArray)),
-          s"Merkle root must be of ${SHA256Digest.getBYTE_LENGTH} bytes"
-        )
+        Try(new MerkleRoot(Sha256Digest.fromBytes(merkleRoot.toByteArray))).toEither.left.map(_.getMessage)
       }
-    } yield IssueCredentialBatchOperation(batchId, issuerDID, merkleRoot, operationDigest, ledgerData)
+    } yield IssueCredentialBatchOperation(batchId, issuerDIDSuffix, merkleRoot, operationDigest, ledgerData)
   }
 }

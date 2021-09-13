@@ -1,5 +1,12 @@
 {
   "name": "Fernando Sanchez",
   "title": "Technical Writer",
-  "area": "Marketing and Communications"
+  "position": "Marketing and Communications",
+  "company": "",
+  "photo": "images/fernando.png",
+  "email": "fernando.sanchez@iohk.io",
+  "youtube": "",
+  "twitter": "",
+  "linkedIn": "https://www.linkedin.com/in/linkedinsanchezf",
+  "github": ""
 }

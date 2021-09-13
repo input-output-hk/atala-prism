@@ -11,6 +11,7 @@ import io.iohk.atala.prism.connector.AtalaOperationId
 import io.iohk.atala.prism.models.TransactionInfo
 import io.iohk.atala.prism.node.cardano.LAST_SYNCED_BLOCK_TIMESTAMP
 import io.iohk.atala.prism.node.errors.NodeError
+import io.iohk.atala.prism.node.metrics.OperationsCounters
 import io.iohk.atala.prism.node.models.nodeState.getLastSyncedTimestampFromMaybe
 import io.iohk.atala.prism.node.models._
 import io.iohk.atala.prism.node.repositories.{
@@ -75,7 +76,8 @@ class ObjectManagementService private (
     val objBytes = obj.toByteArray
     val objId = AtalaObjectId.of(objBytes)
 
-    val atalaOperationIds = op.toList.map(AtalaOperationId.of)
+    val atalaOperations: List[SignedAtalaOperation] = op.toList
+    val atalaOperationIds = atalaOperations.map(AtalaOperationId.of)
 
     val result = for {
       // Insert object into DB
@@ -98,9 +100,13 @@ class ObjectManagementService private (
 
     result.fold(
       { err =>
+        OperationsCounters.failedToStoreToDbAtalaOperations(atalaOperations, err)
         throw new RuntimeException(err.toString)
       },
-      _ => atalaOperationIds
+      { _ =>
+        OperationsCounters.countReceivedAtalaOperations(atalaOperations)
+        atalaOperationIds
+      }
     )
   }
 

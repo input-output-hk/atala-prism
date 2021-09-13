@@ -1,3 +1,4 @@
+import { svgPathToEncodedBase64 } from '../../helpers/genericHelpers';
 import hardCodedCredentialTypes from '../credentials/mocks/hardcodedCredentialTypes';
 
 const credentialTypeEquivalents = {
@@ -45,3 +46,15 @@ export const adaptCredentialType = ({ id, name, ...rest }) => ({
   id,
   placeholders: placeholdersReplacements[name]
 });
+
+export const getCredentialTypeAttributes = async credentialList => {
+  const { name, logo } = credentialList[0]?.credentialTypeDetails;
+
+  const encodedIcon = await svgPathToEncodedBase64(logo);
+
+  return {
+    credentialTypeName: name,
+    credentialTypeIcon: encodedIcon,
+    credentialTypeIconFormat: 'svg'
+  };
+};

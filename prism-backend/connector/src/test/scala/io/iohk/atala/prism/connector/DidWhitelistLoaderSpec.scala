@@ -1,7 +1,7 @@
 package io.iohk.atala.prism.connector
 
 import com.typesafe.config.ConfigFactory
-import io.iohk.atala.prism.kotlin.identity.DID
+import io.iohk.atala.prism.kotlin.identity.{PrismDid => DID}
 import org.scalatest.matchers.must.Matchers
 import org.scalatest.wordspec.AnyWordSpec
 

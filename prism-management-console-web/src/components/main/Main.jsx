@@ -1,9 +1,7 @@
 import React from 'react';
 import { message } from 'antd';
 import 'antd/dist/antd.css';
-import PropTypes from 'prop-types';
 import Router from '../Router';
-import { APIContext } from '../providers/ApiContext';
 import { SessionProvider } from '../providers/SessionContext';
 import i18nInitialise from '../../i18nInitialisator';
 import I18nError from '../I18nError';
@@ -19,7 +17,7 @@ message.config({
   maxCount: MAX_MESSAGES_TO_SHOW
 });
 
-const Main = ({ apiProvider }) => {
+const Main = () => {
   i18nInitialise().catch(error => {
     Logger.error('[index.i18nInitialise] Error while initialising i18n', error);
     return <I18nError />;
@@ -27,11 +25,9 @@ const Main = ({ apiProvider }) => {
 
   return (
     <main>
-      <APIContext.Provider value={apiProvider}>
-        <SessionProvider>
-          <MainContent />
-        </SessionProvider>
-      </APIContext.Provider>
+      <SessionProvider>
+        <MainContent />
+      </SessionProvider>
     </main>
   );
 };
@@ -41,9 +37,5 @@ const MainContent = () => (
     <Router />
   </div>
 );
-
-Main.propTypes = {
-  apiProvider: PropTypes.shape().isRequired
-};
 
 export default Main;

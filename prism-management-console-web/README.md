@@ -9,6 +9,7 @@
 ```bash
 brew install nvm
 ```
+
 #### Linux & Windows
 
 Download and install [nvm](https://github.com/nvm-sh/nvm) for your operating system from github
@@ -18,7 +19,13 @@ To ensure the nodejs version is standardized, run
 ```bash
 nvm use
 ```
-which will set the node version to 10.16.3, if installed, otherwise install it via nvm and then run the command again.
+
+which will set the node version to the correct one, if installed, otherwise install it via nvm and then run the command again.
+
+#### Install yarn
+Install [yarn](https://yarnpkg.com/): `npm install -g yarn`
+
+**NOTE**: Tested with yarn `1.22.11`
 
 #### Set local env file
 
@@ -30,13 +37,17 @@ mv .env .env.local
 
 ### Install protoc and grpc-web
 
+**NOTE** Make sure to use the same version from our [CI workflows](../github/workflows/pull-request.yml) to avoid unexpected issues.
+
 #### Mac
 protoc
 
 ```bash
 brew install protobuf
 ```
+
 grpc-web
+
 ```bash
 brew install protoc-gen-grpc-web
 ```
@@ -47,14 +58,6 @@ Download [protoc](https://github.com/protocolbuffers/protobuf/releases) and [grp
 
 Tested versions of this libraries are specified in [CircleCI config](../.circleci/config.yml)
 
-#### Compiling proto files
-
-```bash
-./scripts/compile-protos.sh
-```
-This will compile all proto files and put them in `src/protos` directory.
-
-*NOTE:* Usually you won't have to do it manually, because this script runs every time you run the app via `npm run`
 
 ### Install Envoy
 
@@ -81,28 +84,32 @@ brew install envoy
 Run
 
 ```bash
-
 envoy -c $PWD/envoy/envoy.yaml # use envoy-console.yaml if you interact with console backend
 ```
+
 *NOTE:* There is a bug in envoy on mac, sometimes the DNS resolution does not work, so it can not translate `localhost` to `127.0.0.1` described in `.yaml` config file, see the [stackOverflow post](https://stackoverflow.com/questions/66910297/envoy-assert-failure-interface-index-0).
 
 If needed, configure envoy proxy "listening port" at `.env.local` file.
 For more information about environment variables see [Configurations](#Configurations)
 
 
+### Github Personal Access Token
+Get a Personal Access Token and set it to the `GITHUB_TOKEN` environment variable, it must be able to read packages from the [prism-sdk](https://github.com/input-output-hk/atala-prism-sdk).
+
 ### Start the server
 
-First install npm dependencies
+First install yarn dependencies
 
 ```bash
-npm install
+yarn install
 ```
 
 Start the server
 
 ```bash
-npm start
+yarn start
 ```
+
 The management console will be available on http://localhost:3000/
 
 

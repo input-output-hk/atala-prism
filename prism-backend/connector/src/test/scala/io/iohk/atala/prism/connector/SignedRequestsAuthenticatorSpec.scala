@@ -4,7 +4,7 @@ import cats.effect.IO
 
 import java.util.UUID
 import io.grpc.Context
-import io.iohk.atala.prism.kotlin.crypto.EC
+import io.iohk.atala.prism.kotlin.crypto.EC.{INSTANCE => EC}
 import io.iohk.atala.prism.kotlin.crypto.keys.ECPublicKey
 import io.iohk.atala.prism.kotlin.crypto.signature.ECSignature
 import io.iohk.atala.prism.connector.errors.UnknownValueError
@@ -12,8 +12,8 @@ import io.iohk.atala.prism.connector.model._
 import io.iohk.atala.prism.connector.repositories.{ParticipantsRepository, RequestNoncesRepository}
 import io.iohk.atala.prism.{DIDUtil, auth}
 import io.iohk.atala.prism.auth.grpc.{GrpcAuthenticationHeader, GrpcAuthenticationHeaderParser}
-import io.iohk.atala.prism.kotlin.identity.DID
-import io.iohk.atala.prism.kotlin.identity.DID.masterKeyId
+import io.iohk.atala.prism.kotlin.crypto.Sha256
+import io.iohk.atala.prism.kotlin.identity.{PrismDid => DID}
 import io.iohk.atala.prism.models.ParticipantId
 import io.iohk.atala.prism.protos.node_api._
 import io.iohk.atala.prism.protos.{connector_api, node_api, node_models}
@@ -32,7 +32,7 @@ import scala.concurrent.duration._
 
 class SignedRequestsAuthenticatorSpec extends AnyWordSpec {
   val defaultValueDID = new DefaultValueProvider[DID] {
-    override def default: DID = DID.buildPrismDID("default", null)
+    override def default: DID = DID.buildCanonical(Sha256.compute("default".getBytes("UTF-8")))
   }
 
   private implicit def patienceConfig: PatienceConfig = PatienceConfig(20.seconds, 50.millis)
@@ -75,7 +75,7 @@ class SignedRequestsAuthenticatorSpec extends AnyWordSpec {
         .UnpublishedDIDBased(
           requestNonce = auth.model.RequestNonce(signedRequest.requestNonce.toVector),
           did = unpublishedDid,
-          masterKeyId,
+          DID.getMASTER_KEY_ID,
           signature = new ECSignature(signedRequest.signature)
         )
 
@@ -146,7 +146,7 @@ class SignedRequestsAuthenticatorSpec extends AnyWordSpec {
     }
 
     "accept the DID authentication" in {
-      val did = DID.buildPrismDID("test", null)
+      val did = DID.buildCanonical(Sha256.compute("test".getBytes("UTF-8")))
       val keyId = "key-1"
       val keys = EC.generateKeyPair()
       val signedRequest = requestAuthenticator.signConnectorRequest(request.toByteArray, keys.getPrivateKey)
@@ -177,7 +177,7 @@ class SignedRequestsAuthenticatorSpec extends AnyWordSpec {
     }
 
     "reject wrong DID authentication" in {
-      val did = DID.buildPrismDID("test", null)
+      val did = DID.buildCanonical(Sha256.compute("test".getBytes("UTF-8")))
       val keyId = "key-1"
       val keys = EC.generateKeyPair()
       // The request is signed with a different key
@@ -211,7 +211,7 @@ class SignedRequestsAuthenticatorSpec extends AnyWordSpec {
     }
 
     "reject wrong nonce in DID authentication" in {
-      val did = DID.buildPrismDID("test", null)
+      val did = DID.buildCanonical(Sha256.compute("test".getBytes("UTF-8")))
       val keyId = "key-1"
       val keys = EC.generateKeyPair()
       val signedRequest = requestAuthenticator.signConnectorRequest(request.toByteArray, keys.getPrivateKey)
@@ -244,7 +244,7 @@ class SignedRequestsAuthenticatorSpec extends AnyWordSpec {
     }
 
     "fail when the did is not in our database" in {
-      val did = DID.buildPrismDID("test", null)
+      val did = DID.buildCanonical(Sha256.compute("test".getBytes("UTF-8")))
       val keyId = "key-1"
       val keys = EC.generateKeyPair()
       val signedRequest = requestAuthenticator.signConnectorRequest(request.toByteArray, keys.getPrivateKey)
@@ -283,7 +283,7 @@ class SignedRequestsAuthenticatorSpec extends AnyWordSpec {
     }
 
     "fail when the did is not in the node" in {
-      val did = DID.buildPrismDID("test", null)
+      val did = DID.buildCanonical(Sha256.compute("test".getBytes("UTF-8")))
       val keyId = "key-1"
       val keys = EC.generateKeyPair()
       val signedRequest = requestAuthenticator.signConnectorRequest(request.toByteArray, keys.getPrivateKey)
@@ -306,7 +306,7 @@ class SignedRequestsAuthenticatorSpec extends AnyWordSpec {
     }
 
     "fail when the key doesn't belong to the did" in {
-      val did = DID.buildPrismDID("test", null)
+      val did = DID.buildCanonical(Sha256.compute("test".getBytes("UTF-8")))
       val keyId = "key-1"
       val keys = EC.generateKeyPair()
       val signedRequest = requestAuthenticator.signConnectorRequest(request.toByteArray, keys.getPrivateKey)
@@ -338,7 +338,7 @@ class SignedRequestsAuthenticatorSpec extends AnyWordSpec {
     }
 
     "fail when the nonce is reused" in {
-      val did = DID.buildPrismDID("test", null)
+      val did = DID.buildCanonical(Sha256.compute("test".getBytes("UTF-8")))
       val keyId = "key-1"
       val keys = EC.generateKeyPair()
       val signedRequest = requestAuthenticator.signConnectorRequest(request.toByteArray, keys.getPrivateKey)

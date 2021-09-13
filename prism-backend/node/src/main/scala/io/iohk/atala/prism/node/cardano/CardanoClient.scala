@@ -7,6 +7,7 @@ import io.iohk.atala.prism.node.cardano.CardanoClient.Result
 import io.iohk.atala.prism.node.cardano.dbsync.CardanoDbSyncClient
 import io.iohk.atala.prism.node.cardano.models._
 import io.iohk.atala.prism.node.cardano.wallet.CardanoWalletApiClient
+import io.iohk.atala.prism.node.models.WalletDetails
 import org.slf4j.{Logger, LoggerFactory}
 
 import scala.concurrent.ExecutionContext
@@ -31,10 +32,10 @@ class CardanoClient(cardanoDbSyncClient: CardanoDbSyncClient, cardanoWalletApiCl
   ): Result[CardanoWalletError, TransactionId] = {
     cardanoWalletApiClient
       .postTransaction(walletId, payments, metadata, passphrase)
-      .mapLeft(e => {
+      .mapLeft { e =>
         logger.error(s"Could not post the Cardano transaction: ${e.error}")
         CardanoWalletError.fromString(e.error.message, e.error.code)
-      })
+      }
   }
 
   def getTransaction(
@@ -43,10 +44,10 @@ class CardanoClient(cardanoDbSyncClient: CardanoDbSyncClient, cardanoWalletApiCl
   ): Result[CardanoWalletError, TransactionDetails] = {
     cardanoWalletApiClient
       .getTransaction(walletId, transactionId)
-      .mapLeft(e => {
+      .mapLeft { e =>
         logger.error(s"Could not get Cardano transaction $transactionId: ${e.error}")
         CardanoWalletError.fromString(e.error.message, e.error.code)
-      })
+      }
   }
 
   def deleteTransaction(
@@ -55,10 +56,19 @@ class CardanoClient(cardanoDbSyncClient: CardanoDbSyncClient, cardanoWalletApiCl
   ): Result[CardanoWalletError, Unit] = {
     cardanoWalletApiClient
       .deleteTransaction(walletId, transactionId)
-      .mapLeft(e => {
+      .mapLeft { e =>
         logger.error(s"Could not delete Cardano transaction $transactionId: ${e.error}")
         CardanoWalletError.fromString(e.error.message, e.error.code)
-      })
+      }
+  }
+
+  def getWalletDetails(walletId: WalletId): Result[CardanoWalletError, WalletDetails] = {
+    cardanoWalletApiClient
+      .getWallet(walletId)
+      .mapLeft { e =>
+        logger.error(s"Could not get cardano wallet $walletId: ${e.error}")
+        CardanoWalletError.fromString(e.error.message, e.error.code)
+      }
   }
 }
 

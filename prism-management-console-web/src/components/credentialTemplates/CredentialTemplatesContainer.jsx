@@ -1,20 +1,33 @@
-import React from 'react';
+import React, { useContext, useEffect } from 'react';
 import PropTypes from 'prop-types';
+import { observer } from 'mobx-react-lite';
 import { withApi } from '../providers/withApi';
 import CredentialTemplates from './CredentialTemplates';
-import { useCredentialTypes } from '../../hooks/useCredentialTypes';
+import { useTemplateCategories } from '../../hooks/useCredentialTypes';
+import { PrismStoreContext } from '../../stores/domain/PrismStore';
+import { UiStateContext } from '../../stores/ui/UiState';
 
-const CredentialTemplatesContainer = ({ api: { credentialTypesManager } }) => {
-  const { credentialTypes, isLoading, isSearching } = useCredentialTypes(credentialTypesManager);
+const CredentialTemplatesContainer = observer(({ api: { credentialTypesManager } }) => {
+  const { templateStore } = useContext(PrismStoreContext);
+  const { templateUiState } = useContext(UiStateContext);
+  const { credentialTemplates, fetchTemplates, isLoading } = templateStore;
+  const { resetState } = templateUiState;
+
+  useEffect(() => {
+    resetState();
+    fetchTemplates();
+  }, [resetState, fetchTemplates]);
+
+  const { templateCategories } = useTemplateCategories(credentialTypesManager);
 
   const tableProps = {
-    credentialTypes,
-    isLoading,
-    isSearching
+    credentialTemplates,
+    templateCategories,
+    isLoading
   };
 
   return <CredentialTemplates tableProps={tableProps} />;
-};
+});
 
 CredentialTemplatesContainer.propTypes = {
   api: PropTypes.shape({

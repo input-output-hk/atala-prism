@@ -3,7 +3,7 @@ package io.iohk.atala.prism.connector
 import java.util.Base64
 
 import io.iohk.atala.prism.kotlin.crypto.keys.ECPrivateKey
-import io.iohk.atala.prism.kotlin.crypto.EC
+import io.iohk.atala.prism.kotlin.crypto.EC.{INSTANCE => EC}
 
 class RequestAuthenticator {
 
@@ -15,7 +15,7 @@ class RequestAuthenticator {
       privateKey: ECPrivateKey,
       requestNonce: RequestNonce = RequestNonce()
   ): SignedConnectorRequest = {
-    val signature = EC.sign(requestNonce + request, privateKey)
+    val signature = EC.signBytes(requestNonce + request, privateKey)
     SignedConnectorRequest(signature = signature.getData, requestNonce = requestNonce.bytes)
   }
 }

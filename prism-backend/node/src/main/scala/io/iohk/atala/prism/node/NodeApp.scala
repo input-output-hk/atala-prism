@@ -1,18 +1,14 @@
 package io.iohk.atala.prism.node
 
-import cats.effect.{ContextShift, IO, Resource}
+import cats.effect.{ContextShift, IO}
 import com.typesafe.config.{Config, ConfigFactory}
 import io.grpc.{Server, ServerBuilder}
 import io.iohk.atala.prism.metrics.UptimeReporter
-import io.iohk.atala.prism.node.repositories.{
-  AtalaObjectsTransactionsRepository,
-  AtalaOperationsRepository,
-  CredentialBatchesRepository,
-  DIDDataRepository,
-  KeyValuesRepository
-}
+import io.iohk.atala.prism.node.cardano.CardanoClient
+import io.iohk.atala.prism.node.metrics.NodeReporter
+import io.iohk.atala.prism.node.repositories._
 import io.iohk.atala.prism.node.services._
-import io.iohk.atala.prism.node.services.models.{AtalaObjectNotification, AtalaObjectNotificationHandler}
+import io.iohk.atala.prism.node.services.models.AtalaObjectNotification
 import io.iohk.atala.prism.protos.node_api._
 import io.iohk.atala.prism.repositories.{SchemaMigrations, TransactorFactory}
 import kamon.Kamon
@@ -74,16 +70,11 @@ class NodeApp(executionContext: ExecutionContext) { self =>
     val keyValueService = new KeyValueService(keyValuesRepository)
 
     val (atalaReferenceLedger, releaseAtalaReferenceLedger) = globalConfig.getString("ledger") match {
-      case "cardano" =>
-        val (cardano, releaseCardano) =
-          initializeCardano(globalConfig.getConfig("cardano"), keyValueService, onAtalaObject).allocated
-            .unsafeRunSync()
-        (cardano, Some(releaseCardano))
+      case "cardano" => initializeCardano(keyValueService, globalConfig, onAtalaObject)
       case "in-memory" =>
         logger.info("Using in-memory ledger")
         (new InMemoryLedgerService(onAtalaObject), None)
     }
-
     logger.info("Creating blocks processor")
     val blockProcessingService = new BlockProcessingServiceImpl
     val didDataRepository = DIDDataRepository(transactor)
@@ -156,12 +147,22 @@ class NodeApp(executionContext: ExecutionContext) { self =>
   }
 
   private def initializeCardano(
-      config: Config,
       keyValueService: KeyValueService,
-      onAtalaObject: AtalaObjectNotificationHandler
-  ): Resource[IO, CardanoLedgerService] = {
+      globalConfig: Config,
+      onAtalaObject: AtalaObjectNotification => Future[Unit]
+  ): (CardanoLedgerService, Option[IO[Unit]]) = {
+    val config = NodeConfig.cardanoConfig(globalConfig.getConfig("cardano"))
+    val (cardanoClient, releaseClient) = createCardanoClient(config.cardanoClientConfig)
+    Kamon.registerModule("node-reporter", NodeReporter(config, cardanoClient, keyValueService))
+    val cardano = CardanoLedgerService(config, cardanoClient, keyValueService, onAtalaObject)
+    (cardano, Some(releaseClient))
+  }
+
+  private def createCardanoClient(
+      cardanoClientConfig: CardanoClient.Config
+  ): (CardanoClient, IO[Unit]) = {
     logger.info("Creating cardano client")
-    CardanoLedgerService(NodeConfig.cardanoConfig(config), keyValueService, onAtalaObject)
+    CardanoClient(cardanoClientConfig).allocated.unsafeRunSync()
   }
 
   private def stop(): Unit = {

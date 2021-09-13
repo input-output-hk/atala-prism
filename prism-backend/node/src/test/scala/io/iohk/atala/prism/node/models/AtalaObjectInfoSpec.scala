@@ -6,6 +6,8 @@ import io.iohk.atala.prism.node.services.BlockProcessingServiceSpec
 import io.iohk.atala.prism.protos.node_models.SignedAtalaOperation
 import io.iohk.atala.prism.protos.node_internal
 
+import org.scalatest.OptionValues._
+
 class AtalaObjectInfoSpec extends AtalaWithPostgresSpec {
 
   private val dummyAtalaOperation = BlockProcessingServiceSpec.createDidOperation
@@ -37,7 +39,7 @@ class AtalaObjectInfoSpec extends AtalaWithPostgresSpec {
     "merge two valid objects" in {
       val atalaObject1 = createAtalaObject(dummySignedOperations.take(2))
       val atalaObject2 = createAtalaObject(dummySignedOperations.drop(2))
-      val atalaObjectMerged = atalaObject1.mergeIfPossible(atalaObject2).get
+      val atalaObjectMerged = atalaObject1.mergeIfPossible(atalaObject2).value
       val expectedAtalaObject = createAtalaObject(dummySignedOperations)
 
       atalaObjectMerged must be(expectedAtalaObject)

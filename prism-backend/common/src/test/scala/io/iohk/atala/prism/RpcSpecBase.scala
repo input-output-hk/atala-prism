@@ -3,22 +3,22 @@ package io.iohk.atala.prism
 import io.grpc.{CallCredentials, CallOptions, ManagedChannel, Metadata, Server, ServerServiceDefinition}
 import io.grpc.inprocess.{InProcessChannelBuilder, InProcessServerBuilder}
 import io.iohk.atala.prism.auth.grpc.{GrpcAuthenticationHeader, GrpcAuthenticatorInterceptor, SignedRequestsHelper}
-import io.iohk.atala.prism.kotlin.crypto.{EC}
+import io.iohk.atala.prism.kotlin.crypto.EC.{INSTANCE => EC}
 import io.iohk.atala.prism.kotlin.crypto.keys.{ECKeyPair, ECPublicKey}
 import io.iohk.atala.prism.kotlin.crypto.signature.{ECSignature}
+import io.iohk.atala.prism.kotlin.identity.{PrismDid => DID}
 import org.scalatest.BeforeAndAfterEach
 import scalapb.GeneratedMessage
 import _root_.java.util.concurrent.{Executor, TimeUnit}
 
 import io.iohk.atala.prism.auth.SignedRpcRequest
-import io.iohk.atala.prism.kotlin.identity.DID
 
 trait ApiTestHelper[STUB] {
   def apply[T](requestNonce: Vector[Byte], signature: ECSignature, publicKey: ECPublicKey)(f: STUB => T): T
   def apply[T](requestNonce: Vector[Byte], signature: ECSignature, did: DID, keyId: String)(f: STUB => T): T
   def apply[T](requestNonce: Vector[Byte], keys: ECKeyPair, request: GeneratedMessage)(f: STUB => T): T = {
     val payload = SignedRequestsHelper.merge(auth.model.RequestNonce(requestNonce), request.toByteArray).toArray
-    val signature = EC.sign(payload.array, keys.getPrivateKey)
+    val signature = EC.signBytes(payload.array, keys.getPrivateKey)
     apply(requestNonce, signature, keys.getPublicKey)(f)
   }
   def apply[T, R <: GeneratedMessage](rpcRequest: SignedRpcRequest[R])(f: STUB => T): T =

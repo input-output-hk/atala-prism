@@ -30,10 +30,10 @@
     @include primary-text($body, #4f4f4f);
     font-weight: 600;
   }
-}
+  .theme-outline{
+    width: 63%;
+  }
 
-.theme-outline{
-  width: 63%;
 }
 
 .instructionsImg {

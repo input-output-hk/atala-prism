@@ -25,6 +25,9 @@ const Sidebar = ({ selectedYear, recentPosts, postsPerYear, postsPerMonth }) => 
         <li className="red">
           <Link to="/blog">All Posts</Link>
         </li>
+        <li className="red">
+          <Link to="/authors">Authors</Link>
+        </li>
       </ul>
       <ul className="dashed">
         {postsPerYear.map(({ totalCount: postsPerYearCount, fieldValue: year }) => (

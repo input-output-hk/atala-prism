@@ -14,13 +14,13 @@ import io.iohk.atala.prism.connector.errors.{ConnectorError, UnknownValueError, 
 import io.iohk.atala.prism.connector.model.{ParticipantInfo, ParticipantLogo, ParticipantType, UpdateParticipantProfile}
 import io.iohk.atala.prism.connector.repositories.ParticipantsRepository.CreateParticipantRequest
 import io.iohk.atala.prism.connector.repositories.daos.ParticipantsDAO
+import io.iohk.atala.prism.connector.repositories.metrics.ParticipantsRepositoryMetrics
 import io.iohk.atala.prism.kotlin.crypto.keys.ECPublicKey
 import io.iohk.atala.prism.errors.LoggingContext
-import io.iohk.atala.prism.kotlin.identity.DID
+import io.iohk.atala.prism.kotlin.identity.{PrismDid => DID}
 import io.iohk.atala.prism.models.ParticipantId
-import io.iohk.atala.prism.metrics.TimeMeasureUtil.MeasureOps
 import io.iohk.atala.prism.utils.syntax.DBConnectionOps
-import io.iohk.atala.prism.metrics.{TimeMeasureMetric, TimeMeasureUtil}
+import io.iohk.atala.prism.metrics.TimeMeasureMetric
 import org.postgresql.util.PSQLException
 import org.slf4j.{Logger, LoggerFactory}
 import tofu.higherKind.Mid
@@ -145,33 +145,4 @@ private final class ParticipantsRepositoryImpl[F[_]: BracketThrow](xa: Transacto
       .updateParticipantByID(id, participantProfile)
       .transact(xa)
   }
-}
-
-private final class ParticipantsRepositoryMetrics[F[_]: TimeMeasureMetric](implicit br: Bracket[F, Throwable])
-    extends ParticipantsRepository[Mid[F, *]] {
-
-  private val repoName = "ParticipantsRepository"
-  private lazy val createTimer = TimeMeasureUtil.createDBQueryTimer(repoName, "create")
-  private lazy val findByIdTimer = TimeMeasureUtil.createDBQueryTimer(repoName, "findById")
-  private lazy val findByPublicKeyTimer = TimeMeasureUtil.createDBQueryTimer(repoName, "findByPublicKey")
-  private lazy val findByDidTimer = TimeMeasureUtil.createDBQueryTimer(repoName, "findByDid")
-  private lazy val updateParticipantProfileByTimer =
-    TimeMeasureUtil.createDBQueryTimer(repoName, "updateParticipantProfileBy")
-
-  override def create(request: CreateParticipantRequest): Mid[F, Either[ConnectorError, Unit]] =
-    _.measureOperationTime(createTimer)
-
-  override def findBy(id: ParticipantId): Mid[F, Either[ConnectorError, ParticipantInfo]] =
-    _.measureOperationTime(findByIdTimer)
-
-  override def findBy(publicKey: ECPublicKey): Mid[F, Either[ConnectorError, ParticipantInfo]] =
-    _.measureOperationTime(findByPublicKeyTimer)
-
-  override def findBy(did: DID): Mid[F, Either[ConnectorError, ParticipantInfo]] =
-    _.measureOperationTime(findByDidTimer)
-
-  override def updateParticipantProfileBy(
-      id: ParticipantId,
-      participantProfile: UpdateParticipantProfile
-  ): Mid[F, Unit] = _.measureOperationTime(updateParticipantProfileByTimer)
 }

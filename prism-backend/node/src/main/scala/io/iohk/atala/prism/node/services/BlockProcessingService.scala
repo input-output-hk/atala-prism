@@ -6,11 +6,12 @@ import cats.implicits._
 import doobie.free.connection
 import doobie.free.connection.ConnectionIO
 import io.iohk.atala.prism.connector.AtalaOperationId
-import io.iohk.atala.prism.kotlin.credentials.TimestampInfo
-import io.iohk.atala.prism.kotlin.crypto.EC
+import io.iohk.atala.prism.kotlin.protos.models.TimestampInfo
+import io.iohk.atala.prism.kotlin.crypto.EC.{INSTANCE => EC}
 import io.iohk.atala.prism.kotlin.crypto.keys.ECPublicKey
 import io.iohk.atala.prism.kotlin.crypto.signature.ECSignature
 import io.iohk.atala.prism.models.{Ledger, TransactionId}
+import io.iohk.atala.prism.node.metrics.OperationsCounters
 import io.iohk.atala.prism.node.models.AtalaOperationStatus
 import io.iohk.atala.prism.node.models.nodeState.LedgerData
 import io.iohk.atala.prism.node.operations.ValidationError.InvalidValue
@@ -95,11 +96,13 @@ class BlockProcessingServiceImpl extends BlockProcessingService {
                         atalaOperationId.toString,
                         protoOperation
                       )
+                      OperationsCounters.countOperationApplied(protoOperation)
                       connection.releaseSavepoint(savepoint)
                     case Left(err) =>
                       logger.warn(
                         s"Operation was not applied:\n${err.toString}\nOperation:\n${protoOperation.toProtoString}"
                       )
+                      OperationsCounters.countOperationRejected(protoOperation, err)
                       logRequestWithContext(
                         methodName,
                         s"Operation was not applied:\n${err.toString}",
@@ -167,7 +170,11 @@ class BlockProcessingServiceImpl extends BlockProcessingService {
   def verifySignature(key: ECPublicKey, protoOperation: node_models.SignedAtalaOperation): Either[StateError, Unit] = {
     try {
       Either.cond(
-        EC.verify(protoOperation.getOperation.toByteArray, key, new ECSignature(protoOperation.signature.toByteArray)),
+        EC.verifyBytes(
+          protoOperation.getOperation.toByteArray,
+          key,
+          new ECSignature(protoOperation.signature.toByteArray)
+        ),
         (),
         StateError.InvalidSignature()
       )

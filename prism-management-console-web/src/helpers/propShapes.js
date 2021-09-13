@@ -13,7 +13,14 @@ import {
   instanceOf
 } from 'prop-types';
 import __ from 'lodash';
-import { CONNECTION_STATUSES, IMPORT_CONTACTS, IMPORT_CREDENTIALS_DATA } from './constants';
+import {
+  CONNECTION_STATUSES,
+  IMPORT_CONTACTS,
+  IMPORT_CREDENTIALS_DATA,
+  DESIGN_TEMPLATE,
+  SELECT_TEMPLATE_CATEGORY,
+  TEMPLATE_CREATION_RESULT
+} from './constants';
 
 export const connectionStatusesShape = __.values(CONNECTION_STATUSES);
 export const connectionStatusesKeysShape = __.keys(CONNECTION_STATUSES);
@@ -129,7 +136,8 @@ export const credentialTypeShape = {
       isRowField: bool
     })
   ),
-  placeholders: objectOf(string)
+  placeholders: objectOf(string),
+  template: string
 };
 
 export const credentialTypesShape = arrayOf(credentialTypeShape);
@@ -158,7 +166,8 @@ export const templateCategoryShape = shape({
 export const credentialTypesManagerShape = shape({
   getCredentialTypes: func,
   getCredentialTypeDetails: func,
-  getTemplateCategories: func
+  getTemplateCategories: func,
+  createCategory: func
 });
 
 export const refPropShape = oneOfType([func, shape({ current: instanceOf(Element) })]);
@@ -174,3 +183,22 @@ export const templateBodyAttributeShape = shape({
 });
 
 export const importUseCasePropType = oneOf([IMPORT_CONTACTS, IMPORT_CREDENTIALS_DATA]);
+
+export const templateCreationStepShape = oneOf([
+  SELECT_TEMPLATE_CATEGORY,
+  DESIGN_TEMPLATE,
+  TEMPLATE_CREATION_RESULT
+]);
+export const templateFiltersShape = {
+  name: string,
+  category: string,
+  lastEdited: string,
+  setName: func,
+  setCategory: func,
+  setLastEdited: func
+};
+
+export const templateSortingShape = {
+  sortingBy: string,
+  setSortingBy: func
+};

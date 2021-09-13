@@ -1,8 +1,8 @@
 // eslint-disable-next-line no-unused-vars
 import _React, { useReducer } from 'react';
 import _ from 'lodash';
-import embeddedCompanyLogo from '../images/generic-icon-01.svg';
-import embeddedUserIcon from '../images/genericUserIcon.svg';
+import embeddedCompanyLogo from '../images/templates/genericCompanyLogo.svg';
+import embeddedUserIcon from '../images/templates/genericUserIcon.svg';
 
 export const getNewDynamicAttribute = attributes => {
   const index = attributes.length;

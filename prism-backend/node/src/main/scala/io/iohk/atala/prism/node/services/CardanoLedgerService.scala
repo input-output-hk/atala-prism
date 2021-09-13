@@ -1,6 +1,5 @@
 package io.iohk.atala.prism.node.services
 
-import cats.effect.{IO, Resource}
 import enumeratum.{Enum, EnumEntry}
 import io.iohk.atala.prism.models.{
   BlockInfo,
@@ -122,7 +121,7 @@ class CardanoLedgerService private[services] (
   private[services] def syncAtalaObjects(): Future[Boolean] = {
     for {
       maybeLastSyncedBlockNo <- keyValueService.getInt(LAST_SYNCED_BLOCK_NO)
-      lastSyncedBlockNo = math.max(maybeLastSyncedBlockNo.getOrElse(0), blockNumberSyncStart - 1)
+      lastSyncedBlockNo = CardanoLedgerService.calculateLastSyncedBlockNo(maybeLastSyncedBlockNo, blockNumberSyncStart)
       latestBlock <- cardanoClient.getLatestBlock().toFuture(_ => new RuntimeException("Cardano blockchain is empty"))
       lastConfirmedBlockNo = latestBlock.header.blockNo - blockConfirmationsToWait
       syncStart = lastSyncedBlockNo + 1
@@ -213,29 +212,35 @@ object CardanoLedgerService {
       cardanoClientConfig: CardanoClient.Config
   )
 
-  def apply(config: Config, keyValueService: KeyValueService, onAtalaObject: AtalaObjectNotificationHandler)(implicit
+  def apply(
+      config: Config,
+      cardanoClient: CardanoClient,
+      keyValueService: KeyValueService,
+      onAtalaObject: AtalaObjectNotificationHandler
+  )(implicit
       scheduler: Scheduler
-  ): Resource[IO, CardanoLedgerService] = {
+  ): CardanoLedgerService = {
     val walletId = WalletId
       .from(config.walletId)
       .getOrElse(throw new IllegalArgumentException(s"Wallet ID ${config.walletId} is invalid"))
     val walletPassphrase = config.walletPassphrase
     val paymentAddress = Address(config.paymentAddress)
-    val cardanoClientResource = CardanoClient(config.cardanoClientConfig)
 
-    cardanoClientResource.map(cardanoClient => {
-      new CardanoLedgerService(
-        config.network,
-        walletId,
-        walletPassphrase,
-        paymentAddress,
-        config.blockNumberSyncStart,
-        config.blockConfirmationsToWait,
-        cardanoClient,
-        keyValueService,
-        onAtalaObject,
-        scheduler
-      )
-    })
+    new CardanoLedgerService(
+      config.network,
+      walletId,
+      walletPassphrase,
+      paymentAddress,
+      config.blockNumberSyncStart,
+      config.blockConfirmationsToWait,
+      cardanoClient,
+      keyValueService,
+      onAtalaObject,
+      scheduler
+    )
   }
+
+  def calculateLastSyncedBlockNo(maybeLastSyncedBlockNo: Option[Int], blockNumberSyncStart: Int): Int =
+    math.max(maybeLastSyncedBlockNo.getOrElse(0), blockNumberSyncStart - 1)
+
 }

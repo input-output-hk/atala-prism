@@ -174,12 +174,12 @@ object ConnectionsDAO {
             val contactConnectionOption = contactConnectionMap
               .getOrElse(
                 connectionToken,
-                // there is no such a connection token in connection_tokens table
+                // there is no such connection token in connection_tokens table
                 Some(ContactConnection(None, None, ConnectionStatus.InvitationMissing))
               )
 
             contactConnectionOption.getOrElse(
-              // there is connection token in connection_tokens table, but connection has not yet been added
+              // there is a connection token in connection_tokens table, but connection has not yet been added
               ContactConnection(None, None, ConnectionStatus.ConnectionMissing)
             )
           }
