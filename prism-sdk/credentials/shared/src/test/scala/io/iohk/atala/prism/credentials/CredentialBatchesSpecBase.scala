@@ -5,7 +5,7 @@ import org.scalatest.matchers.must.Matchers.convertToAnyMustWrapper
 import org.scalatest.wordspec.AnyWordSpec
 import io.iohk.atala.prism.credentials.content.CredentialContent
 import io.iohk.atala.prism.credentials.content.syntax._
-import io.iohk.atala.prism.identity.DID
+import io.iohk.atala.prism.identity.PrismDid
 
 abstract class CredentialBatchesSpecBase(implicit ec: ECTrait) extends AnyWordSpec {
   private val keys1 = ec.generateKeyPair()
@@ -14,7 +14,7 @@ abstract class CredentialBatchesSpecBase(implicit ec: ECTrait) extends AnyWordSp
 
   private val unsignedCredential = Credential.fromCredentialContent(
     CredentialContent(
-      "issuerDid" -> DID.buildPrismDID("123456678abcdefg").value,
+      "issuerDid" -> PrismDid.buildCanonical(Sha256.compute(encodeToByteArray("123456678abcdefg").value,
       "issuanceKeyId" -> "Issuance-0"
     )
   )

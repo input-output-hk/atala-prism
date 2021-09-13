@@ -126,7 +126,7 @@ case class DidOperationFilter(operationTag: OperationTag,
   }
 }
 
-case class RevokeCredentialFilter(credentialHash: SHA256Digest,
+case class RevokeCredentialFilter(credentialHash: Sha256Digest,
                                   override val status: Option[ConfirmedStatus]) extends SubscriptionFilter(status) {
   override def sipHash: Long = {
     // Hashes a tuple ("RevokeCredentialFilter", credentialHash)

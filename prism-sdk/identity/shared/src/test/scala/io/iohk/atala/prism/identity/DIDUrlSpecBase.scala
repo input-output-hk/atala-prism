@@ -1,6 +1,6 @@
 package io.iohk.atala.prism.identity
 
-import io.iohk.atala.prism.identity.DID.masterKeyId
+import io.iohk.atala.prism.identity.PrismDid.masterKeyId
 import io.iohk.atala.prism.identity.DIDUrl.{EmptyDidScheme, EmptyDidSuffix, InvalidDid, InvalidUrl}
 import org.scalatest.matchers.must.Matchers.convertToAnyMustWrapper
 import org.scalatest.wordspec.AnyWordSpec

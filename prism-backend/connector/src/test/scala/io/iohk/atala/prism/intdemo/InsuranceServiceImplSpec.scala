@@ -11,7 +11,7 @@ import org.scalatest.matchers.should.Matchers._
 import Testing._
 import org.scalatest.OptionValues._
 import io.iohk.atala.prism.utils.Base64Utils
-import io.iohk.atala.prism.kotlin.identity.DID
+import io.iohk.atala.prism.kotlin.identity.{PrismDid => DID}
 
 class InsuranceServiceImplSpec extends AnyFlatSpec {
 
@@ -34,7 +34,7 @@ class InsuranceServiceImplSpec extends AnyFlatSpec {
     val credentialType = InsuranceServiceImpl.credentialTypeId
     val issuerName = "Verified Insurance Ltd"
     val issuerDID = s"did:prism:${InsuranceServiceImpl.issuerId.uuid}"
-    val issuanceKeyId = DID.masterKeyId
+    val issuanceKeyId = DID.getMASTER_KEY_ID
     val issuanceDate = LocalDate.now()
     val expirationDate = issuanceDate.plusYears(1)
     val policyNumber = "ABC-123456789"

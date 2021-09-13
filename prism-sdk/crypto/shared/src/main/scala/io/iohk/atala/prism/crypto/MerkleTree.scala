@@ -6,7 +6,7 @@ import io.circe.syntax.EncoderOps
 import scala.annotation.tailrec
 
 object MerkleTree {
-  type Hash = SHA256Digest
+  type Hash = Sha256Digest
   // Bitmask index representing leaf position in a tree where unset i-th bit means that the leaf is
   // located in the left branch of the i-th node starting from the root and vice-versa
   type Index = Int
@@ -81,9 +81,9 @@ object MerkleTree {
         case Left(_) => None
         case Right(parsedProof) =>
           val tryProof = for {
-            h <- parsedProof.hcursor.get[String](json.hashField).toTry.map(SHA256Digest.fromHexUnsafe)
+            h <- parsedProof.hcursor.get[String](json.hashField).toTry.map(Sha256Digest.fromHexUnsafe)
             i <- parsedProof.hcursor.get[Int](json.indexField).toTry
-            s <- parsedProof.hcursor.get[List[String]](json.siblingsField).toTry.map(_.map(SHA256Digest.fromHexUnsafe))
+            s <- parsedProof.hcursor.get[List[String]](json.siblingsField).toTry.map(_.map(Sha256Digest.fromHexUnsafe))
           } yield MerkleInclusionProof(h, i, s)
           tryProof.toOption
       }
@@ -91,10 +91,10 @@ object MerkleTree {
   }
 
   private def combineHashes(left: Hash, right: Hash): Hash =
-    SHA256Digest.compute((NodePrefix +: (left.value ++ right.value)).toArray)
+    Sha256.compute((NodePrefix +: (left.value ++ right.value)).toArray)
 
   private def prefixHash(data: Hash): Hash =
-    SHA256Digest.compute((LeafPrefix +: data.value).toArray)
+    Sha256.compute((LeafPrefix +: data.value).toArray)
 
   def generateProofs(hashes: List[Hash]): (MerkleRoot, List[MerkleInclusionProof]) = {
     @tailrec

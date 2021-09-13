@@ -2,7 +2,7 @@ package io.iohk.atala.prism.management.console
 
 import io.iohk.atala.prism.auth.SignedRpcRequest
 import io.iohk.atala.prism.kotlin.crypto.keys.ECKeyPair
-import io.iohk.atala.prism.kotlin.identity.DID
+import io.iohk.atala.prism.kotlin.identity.{PrismDid => DID}
 import io.iohk.atala.prism.management.console.models.{Contact, GenericCredential}
 import io.iohk.atala.prism.protos.console_api
 

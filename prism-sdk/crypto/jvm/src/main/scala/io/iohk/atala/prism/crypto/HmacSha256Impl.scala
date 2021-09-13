@@ -1,7 +1,7 @@
 package io.iohk.atala.prism.crypto
 
 import org.bouncycastle.crypto.macs.HMac
-import org.bouncycastle.crypto.digests.SHA256Digest
+import org.bouncycastle.crypto.digests.Sha256Digest
 import org.bouncycastle.crypto.params.KeyParameter
 
 /**
@@ -13,7 +13,7 @@ private[crypto] object HmacSha256Impl {
     * Compute HMAC-SHA-256 data authentication code using shared key.
     */
   def compute(data: Array[Byte], key: Array[Byte]): Array[Byte] = {
-    val hmac = new HMac(new SHA256Digest)
+    val hmac = new HMac(new Sha256Digest)
     hmac.init(new KeyParameter(key))
     hmac.update(data, 0, data.size)
     val out = new Array[Byte](32)

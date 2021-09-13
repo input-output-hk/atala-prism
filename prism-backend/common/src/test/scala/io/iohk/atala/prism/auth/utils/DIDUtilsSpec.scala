@@ -2,7 +2,7 @@ package io.iohk.atala.prism.auth.utils
 
 import com.google.protobuf.ByteString
 import io.iohk.atala.prism.auth.errors.UnknownPublicKeyId
-import io.iohk.atala.prism.kotlin.crypto.EC
+import io.iohk.atala.prism.kotlin.crypto.EC.{INSTANCE => EC}
 import io.iohk.atala.prism.kotlin.crypto.keys.{ECKeyPair, ECPublicKey}
 import io.iohk.atala.prism.protos.node_models
 import io.iohk.atala.prism.protos.node_models.{CompressedECKeyData, DIDData, ECKeyData}

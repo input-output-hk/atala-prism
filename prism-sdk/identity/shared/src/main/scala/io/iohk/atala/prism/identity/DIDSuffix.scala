@@ -1,6 +1,6 @@
 package io.iohk.atala.prism.identity
 
-import io.iohk.atala.prism.crypto.SHA256Digest
+import io.iohk.atala.prism.crypto.Sha256Digest
 
 import scala.util.Try
 
@@ -13,7 +13,7 @@ object DIDSuffix {
     Try(DIDSuffix(suffix)).toOption
   }
 
-  def unsafeFromDigest(digest: SHA256Digest): DIDSuffix = apply(digest.hexValue)
+  def unsafeFromDigest(digest: Sha256Digest): DIDSuffix = apply(digest.hexValue)
 
   def unsafeFromString(didSuffix: String): DIDSuffix = apply(didSuffix)
 

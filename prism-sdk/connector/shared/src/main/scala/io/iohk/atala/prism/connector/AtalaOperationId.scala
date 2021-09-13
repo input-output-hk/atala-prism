@@ -1,13 +1,13 @@
 package io.iohk.atala.prism.connector
 
 import com.google.protobuf.ByteString
-import io.iohk.atala.prism.crypto.SHA256Digest
+import io.iohk.atala.prism.crypto.Sha256Digest
 import io.iohk.atala.prism.protos.node_models
 import io.iohk.atala.prism.util.BytesOps
 
 import java.util.UUID
 
-class AtalaOperationId private (val digest: SHA256Digest) {
+class AtalaOperationId private (val digest: Sha256Digest) {
   def value: Vector[Byte] = digest.value.toVector
 
   def hexValue: String = BytesOps.bytesToHex(value)
@@ -27,22 +27,22 @@ class AtalaOperationId private (val digest: SHA256Digest) {
 
 object AtalaOperationId {
   def of(atalaOperation: node_models.SignedAtalaOperation): AtalaOperationId = {
-    val hash = SHA256Digest.compute(atalaOperation.toByteArray)
+    val hash = Sha256.compute(atalaOperation.toByteArray)
     new AtalaOperationId(hash)
   }
 
   def random(): AtalaOperationId = {
-    val hash = SHA256Digest.compute(UUID.randomUUID().toString.getBytes())
+    val hash = Sha256.compute(UUID.randomUUID().toString.getBytes())
     new AtalaOperationId(hash)
   }
 
   def fromVectorUnsafe(bytes: Vector[Byte]): AtalaOperationId = {
-    val hash = SHA256Digest.fromVectorUnsafe(bytes)
+    val hash = Sha256Digest.fromVectorUnsafe(bytes)
     new AtalaOperationId(hash)
   }
 
   def fromHexUnsafe(hex: String): AtalaOperationId = {
-    val hash = SHA256Digest.fromHexUnsafe(hex)
+    val hash = Sha256Digest.fromHexUnsafe(hex)
     new AtalaOperationId(hash)
   }
 }

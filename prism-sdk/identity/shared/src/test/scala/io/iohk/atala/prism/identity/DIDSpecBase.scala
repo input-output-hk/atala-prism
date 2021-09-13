@@ -1,7 +1,7 @@
 package io.iohk.atala.prism.identity
 
 import io.iohk.atala.prism.crypto.ECTrait
-import io.iohk.atala.prism.identity.DID.{DIDFormat, masterKeyId, publicKeyToProto}
+import io.iohk.atala.prism.identity.PrismDid.{DIDFormat, masterKeyId, publicKeyToProto}
 import io.iohk.atala.prism.protos.node_models
 import org.scalatest.OptionValues.convertOptionToValuable
 import org.scalatest.matchers.must.Matchers.convertToAnyMustWrapper

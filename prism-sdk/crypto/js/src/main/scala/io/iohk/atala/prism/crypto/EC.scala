@@ -44,7 +44,7 @@ object EC extends ECTrait {
   override def sign(data: Array[Byte], privateKey: ECPrivateKey): ECSignature = {
     privateKey match {
       case key: JsECPrivateKey =>
-        val signature = nativeEc.sign(SHA256Digest.compute(data).hexValue, asKeyPair(key.privateKey))
+        val signature = nativeEc.sign(Sha256.compute(data).hexValue, asKeyPair(key.privateKey))
         val hexSignature = signature.toDER(HEX_ENC).toString
         ECSignature(BigIntOps.toUnsignedByteArray(BigIntOps.toBigInt(hexSignature)))
     }
@@ -54,7 +54,7 @@ object EC extends ECTrait {
     publicKey match {
       case key: JsECPublicKey =>
         nativeEc.verify(
-          SHA256Digest.compute(data).hexValue,
+          Sha256.compute(data).hexValue,
           BytesOps.bytesToHex(signature.data),
           asKeyPair(key.publicKey)
         )

@@ -1,12 +1,11 @@
 package io.iohk.atala.prism.auth.grpc
 
 import java.util.Base64
-
 import io.grpc.Metadata
 import io.iohk.atala.prism.kotlin.crypto.keys.ECPublicKey
 import io.iohk.atala.prism.kotlin.crypto.signature.ECSignature
 import io.iohk.atala.prism.auth.model.RequestNonce
-import io.iohk.atala.prism.kotlin.identity.DID
+import io.iohk.atala.prism.kotlin.identity.{PrismDid => DID}
 
 sealed trait GrpcAuthenticationHeader {
   import GrpcAuthenticationContext._
@@ -45,8 +44,16 @@ object GrpcAuthenticationHeader {
     val keyId: String
     val signature: ECSignature
   }
-  final case class PublishedDIDBased(requestNonce: RequestNonce, did: DID, keyId: String, signature: ECSignature)
-      extends DIDBased
-  final case class UnpublishedDIDBased(requestNonce: RequestNonce, did: DID, keyId: String, signature: ECSignature)
-      extends DIDBased
+  final case class PublishedDIDBased(
+      requestNonce: RequestNonce,
+      did: DID,
+      keyId: String,
+      signature: ECSignature
+  ) extends DIDBased
+  final case class UnpublishedDIDBased(
+      requestNonce: RequestNonce,
+      did: DID,
+      keyId: String,
+      signature: ECSignature
+  ) extends DIDBased
 }

@@ -4,9 +4,8 @@ import cats.effect.IO
 import com.google.protobuf.ByteString
 import doobie.implicits._
 import io.iohk.atala.prism.AtalaWithPostgresSpec
-import io.iohk.atala.prism.kotlin.credentials.TimestampInfo
-import io.iohk.atala.prism.kotlin.crypto.MerkleRoot
-import io.iohk.atala.prism.kotlin.crypto.SHA256Digest
+import io.iohk.atala.prism.kotlin.crypto.{MerkleRoot, Sha256}
+import io.iohk.atala.prism.kotlin.protos.models.TimestampInfo
 import io.iohk.atala.prism.models.{Ledger, TransactionId}
 import io.iohk.atala.prism.node.models.nodeState.LedgerData
 import io.iohk.atala.prism.node.models.{DIDData, DIDPublicKey, KeyUsage}
@@ -40,7 +39,7 @@ object IssueCredentialBatchOperationSpec {
     CreateDIDOperation.parse(CreateDIDOperationSpec.exampleOperation, dummyLedgerData).toOption.value
   lazy val issuerDIDSuffix = issuerCreateDIDOperation.id
   val content = ""
-  val mockMerkleRoot = new MerkleRoot(SHA256Digest.compute(content.getBytes))
+  val mockMerkleRoot = new MerkleRoot(Sha256.compute(content.getBytes))
 
   val exampleOperation = node_models.AtalaOperation(
     operation = node_models.AtalaOperation.Operation.IssueCredentialBatch(

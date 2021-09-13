@@ -92,7 +92,7 @@ object PrismBuild {
               monix,
               typesafeConfig
             ) ++
-            Seq(prismCrypto, prismCredentials)
+            Seq(prismCrypto, prismCredentials, prismExtras)
       )
       .dependsOn(protosLib)
 

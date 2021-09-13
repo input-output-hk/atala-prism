@@ -1,7 +1,7 @@
 package io.iohk.atala.prism.credentials.content
 
 import io.iohk.atala.prism.credentials.content.CredentialContent.JsonFields
-import io.iohk.atala.prism.identity.DID
+import io.iohk.atala.prism.identity.PrismDid
 
 import io.iohk.atala.prism.credentials.content.CredentialContent._
 

@@ -8,12 +8,11 @@ import io.grpc.inprocess.{InProcessChannelBuilder, InProcessServerBuilder}
 import io.grpc.{ManagedChannel, Server, Status, StatusRuntimeException}
 import io.iohk.atala.prism.AtalaWithPostgresSpec
 import io.iohk.atala.prism.connector.AtalaOperationId
-import io.iohk.atala.prism.kotlin.credentials.{CredentialBatchId, TimestampInfo}
-import io.iohk.atala.prism.kotlin.crypto.MerkleRoot
-import io.iohk.atala.prism.kotlin.crypto.SHA256Digest
-import io.iohk.atala.prism.kotlin.identity.DID.masterKeyId
-import io.iohk.atala.prism.kotlin.identity.{DID, DIDSuffix}
-import io.iohk.atala.prism.models.{Ledger, TransactionId}
+import io.iohk.atala.prism.kotlin.credentials.CredentialBatchId
+import io.iohk.atala.prism.kotlin.crypto.{MerkleRoot, Sha256, Sha256Digest}
+import io.iohk.atala.prism.kotlin.protos.models.TimestampInfo
+import io.iohk.atala.prism.models.{DidSuffix, Ledger, TransactionId}
+import io.iohk.atala.prism.kotlin.identity.{PrismDid => DID}
 import io.iohk.atala.prism.node.errors.NodeError
 import io.iohk.atala.prism.node.grpc.ProtoCodecs
 import io.iohk.atala.prism.node.models.nodeState.{CredentialBatchState, LedgerData}
@@ -104,8 +103,8 @@ class NodeServiceSpec
 
   "NodeService.getDidDocument" should {
     "return DID document from data in the database" in {
-      val didDigest = SHA256Digest.compute("test".getBytes())
-      val didSuffix: DIDSuffix = DIDSuffix.fromDigest(didDigest)
+      val didDigest = Sha256.compute("test".getBytes())
+      val didSuffix: DidSuffix = DidSuffix(didDigest.getHexValue)
       DIDDataDAO.insert(didSuffix, didDigest, dummyLedgerData).transact(database).unsafeRunSync()
       val key = DIDPublicKey(didSuffix, "master", KeyUsage.MasterKey, CreateDIDOperationSpec.masterKeys.getPublicKey)
       PublicKeysDAO.insert(key, dummyLedgerData).transact(database).unsafeRunSync()
@@ -130,33 +129,35 @@ class NodeServiceSpec
 
     "return DID document for an unpublished DID" in {
       val masterKey = CreateDIDOperationSpec.masterKeys.getPublicKey
-      val longFormDID = DID.createUnpublishedDID(masterKey, null)
+      val longFormDID = DID.buildLongFormFromMasterKey(masterKey)
       doReturn(Future.successful(dummySyncTimestamp)).when(objectManagementService).getLastSyncedTimestamp
 
       val response = service.getDidDocument(node_api.GetDidDocumentRequest(longFormDID.getValue))
       val document = response.document.value
-      document.id mustBe longFormDID.getSuffix.getValue
+      document.id mustBe longFormDID.getSuffix
       document.publicKeys.size mustBe 1
 
       val publicKey = document.publicKeys.headOption.value
-      publicKey.id mustBe masterKeyId
+      publicKey.id mustBe DID.getMASTER_KEY_ID
       publicKey.usage mustBe node_models.KeyUsage.MASTER_KEY
       publicKey.addedOn mustBe empty
       publicKey.revokedOn mustBe empty
 
-      ParsingUtils.parseECKey(ValueAtPath(publicKey.getEcKeyData, Path.root)) must beRight(masterKey)
+      ParsingUtils.parseCompressedECKey(ValueAtPath(publicKey.getCompressedEcKeyData, Path.root)) must beRight(
+        masterKey
+      )
       response.lastSyncedBlockTimestamp must be(Some(dummySyncTimestamp.toProtoTimestamp))
     }
 
     "return DID document for a long form DID after it was published" in {
       val masterKey = CreateDIDOperationSpec.masterKeys.getPublicKey
       val issuingKey = CreateDIDOperationSpec.issuingKeys.getPublicKey
-      val longFormDID = DID.createUnpublishedDID(masterKey, null)
+      val longFormDID = DID.buildLongFormFromMasterKey(masterKey)
 
       // we simulate the publication of the DID and the addition of an issuing key
-      val didDigest = SHA256Digest.fromHex(longFormDID.getCanonicalSuffix.getValue)
-      val didSuffix: DIDSuffix = DIDSuffix.fromDigest(didDigest)
-      val key1 = DIDPublicKey(didSuffix, masterKeyId, KeyUsage.MasterKey, masterKey)
+      val didDigest = Sha256Digest.fromHex(longFormDID.asCanonical().getSuffix)
+      val didSuffix: DidSuffix = DidSuffix(didDigest.getHexValue)
+      val key1 = DIDPublicKey(didSuffix, DID.getMASTER_KEY_ID, KeyUsage.MasterKey, masterKey)
       val key2 = DIDPublicKey(didSuffix, "issuance0", KeyUsage.IssuingKey, issuingKey)
 
       (DIDDataDAO.insert(didSuffix, didDigest, dummyLedgerData).transact(database) >>
@@ -168,10 +169,10 @@ class NodeServiceSpec
       // we now resolve the long form DID
       val response = service.getDidDocument(node_api.GetDidDocumentRequest(longFormDID.getValue))
       val document = response.document.value
-      document.id mustBe longFormDID.getSuffix.getValue
+      document.id mustBe longFormDID.getSuffix
       document.publicKeys.length mustBe 2
 
-      val publicKey1 = document.publicKeys.find(_.id == masterKeyId).value
+      val publicKey1 = document.publicKeys.find(_.id == DID.getMASTER_KEY_ID).value
       publicKey1.usage mustBe node_models.KeyUsage.MASTER_KEY
       publicKey1.addedOn.value mustBe ProtoCodecs.toLedgerData(dummyLedgerData)
       publicKey1.revokedOn mustBe empty
@@ -188,12 +189,12 @@ class NodeServiceSpec
 
     "return DID document for a long form DID with revoked key after it was published" in {
       val masterKey = CreateDIDOperationSpec.masterKeys.getPublicKey
-      val longFormDID = DID.createUnpublishedDID(masterKey, null)
+      val longFormDID = DID.buildLongFormFromMasterKey(masterKey)
 
       // we simulate the publication of the DID and the addition of an issuing key
-      val didDigest = SHA256Digest.fromHex(longFormDID.getCanonicalSuffix.getValue)
-      val didSuffix = DIDSuffix.fromDigest(didDigest)
-      val key = DIDPublicKey(didSuffix, masterKeyId, KeyUsage.MasterKey, masterKey)
+      val didDigest = Sha256Digest.fromHex(longFormDID.asCanonical().getSuffix)
+      val didSuffix = DidSuffix(didDigest.getHexValue)
+      val key = DIDPublicKey(didSuffix, DID.getMASTER_KEY_ID, KeyUsage.MasterKey, masterKey)
 
       (DIDDataDAO.insert(didSuffix, didDigest, dummyLedgerData).transact(database) >>
         PublicKeysDAO.insert(key, dummyLedgerData).transact(database) >>
@@ -204,10 +205,10 @@ class NodeServiceSpec
       // we now resolve the long form DID
       val response = service.getDidDocument(node_api.GetDidDocumentRequest(longFormDID.getValue))
       val document = response.document.value
-      document.id mustBe longFormDID.getSuffix.getValue
+      document.id mustBe longFormDID.getSuffix
       document.publicKeys.length mustBe 1
 
-      val publicKey = document.publicKeys.find(_.id == masterKeyId).value
+      val publicKey = document.publicKeys.find(_.id == DID.getMASTER_KEY_ID).value
       publicKey.usage mustBe node_models.KeyUsage.MASTER_KEY
       publicKey.addedOn.value mustBe ProtoCodecs.toLedgerData(dummyLedgerData)
       publicKey.revokedOn mustBe Some(ProtoCodecs.toLedgerData(dummyLedgerData))
@@ -231,9 +232,7 @@ class NodeServiceSpec
       val response = service.createDID(node_api.CreateDIDRequest().withSignedOperation(operation))
 
       val expectedDIDSuffix =
-        SHA256Digest
-          .compute(CreateDIDOperationSpec.exampleOperation.toByteArray)
-          .hexValue
+        Sha256.compute(CreateDIDOperationSpec.exampleOperation.toByteArray).getHexValue
 
       response.id must be(expectedDIDSuffix)
       response.operationId mustEqual operationId.toProtoByteString
@@ -254,9 +253,7 @@ class NodeServiceSpec
       val response = service.createDID(node_api.CreateDIDRequest().withSignedOperation(operation))
 
       val expectedDIDSuffix =
-        SHA256Digest
-          .compute(CreateDIDOperationSpec.exampleOperationWithCompressedKeys.toByteArray)
-          .hexValue
+        Sha256.compute(CreateDIDOperationSpec.exampleOperationWithCompressedKeys.toByteArray).getHexValue
 
       response.id must be(expectedDIDSuffix)
       response.operationId mustEqual operationId.toProtoByteString
@@ -340,12 +337,11 @@ class NodeServiceSpec
 
       val response = service.issueCredentialBatch(node_api.IssueCredentialBatchRequest().withSignedOperation(operation))
 
-      val expectedBatchId =
-        SHA256Digest
-          .compute(
-            IssueCredentialBatchOperationSpec.exampleOperation.getIssueCredentialBatch.getCredentialBatchData.toByteArray
-          )
-          .hexValue
+      val expectedBatchId = Sha256
+        .compute(
+          IssueCredentialBatchOperationSpec.exampleOperation.getIssueCredentialBatch.getCredentialBatchData.toByteArray
+        )
+        .getHexValue
 
       response.batchId mustBe expectedBatchId
       response.operationId mustEqual operationId.toProtoByteString
@@ -508,7 +504,7 @@ class NodeServiceSpec
     }
 
     "return an error when the CredentialBatchesRepository fails" in {
-      val validBatchId = CredentialBatchId.fromDigest(SHA256Digest.compute("valid".getBytes()))
+      val validBatchId = CredentialBatchId.fromDigest(Sha256.compute("valid".getBytes()))
       val requestWithValidId = GetBatchStateRequest(batchId = validBatchId.getId)
 
       val errorMsg = "an unexpected error"
@@ -525,7 +521,7 @@ class NodeServiceSpec
     }
 
     "return empty response when the CredentialBatchesRepository reports no results" in {
-      val validBatchId = CredentialBatchId.fromDigest(SHA256Digest.compute("valid".getBytes()))
+      val validBatchId = CredentialBatchId.fromDigest(Sha256.compute("valid".getBytes()))
       val requestWithValidId = GetBatchStateRequest(batchId = validBatchId.getId)
 
       val repositoryError = IO.pure[Either[NodeError, Option[CredentialBatchState]]](Right(None))
@@ -541,12 +537,12 @@ class NodeServiceSpec
     }
 
     "return batch state when CredentialBatchesRepository succeeds" in {
-      val validBatchId = CredentialBatchId.fromDigest(SHA256Digest.compute("valid".getBytes()))
+      val validBatchId = CredentialBatchId.fromDigest(Sha256.compute("valid".getBytes()))
       val requestWithValidId = GetBatchStateRequest(batchId = validBatchId.getId)
 
-      val issuerDIDSuffix: DIDSuffix = DIDSuffix.fromDigest(SHA256Digest.compute("testDID".getBytes()))
+      val issuerDIDSuffix: DidSuffix = DidSuffix(Sha256.compute("testDID".getBytes()).getHexValue)
       val issuedOnLedgerData = dummyLedgerData
-      val merkleRoot = new MerkleRoot(SHA256Digest.compute("content".getBytes()))
+      val merkleRoot = new MerkleRoot(Sha256.compute("content".getBytes()))
       val credState =
         CredentialBatchState(
           merkleRoot = merkleRoot,
@@ -554,7 +550,7 @@ class NodeServiceSpec
           issuerDIDSuffix = issuerDIDSuffix,
           issuedOn = issuedOnLedgerData,
           revokedOn = None,
-          lastOperation = SHA256Digest.compute("lastOp".getBytes())
+          lastOperation = Sha256.compute("lastOp".getBytes())
         )
 
       val repositoryResponse = IO.pure[Either[NodeError, Option[CredentialBatchState]]](Right(Some(credState)))
@@ -590,7 +586,7 @@ class NodeServiceSpec
   "NodeService.getCredentialRevocationTime" should {
     "fail when batchId is not valid" in {
       val invalidBatchId = "invalid@_?"
-      val validCredentialHash = SHA256Digest.compute("random".getBytes())
+      val validCredentialHash = Sha256.compute("random".getBytes())
       val requestWithInvalidId =
         GetCredentialRevocationTimeRequest(
           batchId = invalidBatchId,
@@ -606,7 +602,7 @@ class NodeServiceSpec
     }
 
     "fail when credentialHash is not valid" in {
-      val validBatchId = CredentialBatchId.fromDigest(SHA256Digest.compute("random".getBytes()))
+      val validBatchId = CredentialBatchId.fromDigest(Sha256.compute("random".getBytes()))
       val requestWithInvalidCredentialHash =
         GetCredentialRevocationTimeRequest(
           batchId = validBatchId.getId,
@@ -614,7 +610,7 @@ class NodeServiceSpec
         )
 
       val expectedMessage =
-        "INTERNAL: The given bytes does not correspond to a sha256 hash. It must have exactly 32 bytes"
+        "INTERNAL: The given byte array does not correspond to a SHA256 hash. It must have exactly 32 bytes"
 
       doReturn(
         Future.successful(dummySyncTimestamp)
@@ -628,8 +624,8 @@ class NodeServiceSpec
     }
 
     "return empty timestamp when CredentialBatchesRepository succeeds returning None" in {
-      val validBatchId = CredentialBatchId.fromDigest(SHA256Digest.compute("valid".getBytes()))
-      val validCredentialHash = SHA256Digest.compute("random".getBytes())
+      val validBatchId = CredentialBatchId.fromDigest(Sha256.compute("valid".getBytes()))
+      val validCredentialHash = Sha256.compute("random".getBytes())
       val validRequest = GetCredentialRevocationTimeRequest(
         batchId = validBatchId.getId,
         credentialHash = ByteString.copyFrom(validCredentialHash.getValue)
@@ -651,8 +647,8 @@ class NodeServiceSpec
     }
 
     "return correct timestamp when CredentialBatchesRepository succeeds returning a time" in {
-      val validBatchId = CredentialBatchId.fromDigest(SHA256Digest.compute("valid".getBytes()))
-      val validCredentialHash = SHA256Digest.compute("random".getBytes())
+      val validBatchId = CredentialBatchId.fromDigest(Sha256.compute("valid".getBytes()))
+      val validCredentialHash = Sha256.compute("random".getBytes())
       val validRequest = GetCredentialRevocationTimeRequest(
         batchId = validBatchId.getId,
         credentialHash = ByteString.copyFrom(validCredentialHash.getValue)
@@ -757,16 +753,16 @@ class NodeServiceSpec
       )
 
       val expectedBatchId =
-        SHA256Digest
+        Sha256
           .compute(
             IssueCredentialBatchOperationSpec.exampleOperation.getIssueCredentialBatch.getCredentialBatchData.toByteArray
           )
-          .hexValue
+          .getHexValue
 
       val expectedDIDSuffix =
-        SHA256Digest
+        Sha256
           .compute(CreateDIDOperationSpec.exampleOperation.toByteArray)
-          .hexValue
+          .getHexValue
 
       response.outputs.size mustBe (2)
 
@@ -806,9 +802,9 @@ class NodeServiceSpec
       )
 
       val expectedDIDSuffix =
-        SHA256Digest
+        Sha256
           .compute(CreateDIDOperationSpec.exampleOperation.toByteArray)
-          .hexValue
+          .getHexValue
 
       response.outputs.size mustBe (2)
       response.outputs.head.getCreateDidOutput.didSuffix mustBe expectedDIDSuffix

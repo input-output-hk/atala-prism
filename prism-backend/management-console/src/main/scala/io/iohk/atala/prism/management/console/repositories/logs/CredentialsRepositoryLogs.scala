@@ -7,7 +7,7 @@ import cats.syntax.applicativeError._
 import cats.syntax.flatMap._
 import io.iohk.atala.prism.connector.AtalaOperationId
 import io.iohk.atala.prism.kotlin.credentials.CredentialBatchId
-import io.iohk.atala.prism.kotlin.crypto.SHA256Digest
+import io.iohk.atala.prism.kotlin.crypto.Sha256Digest
 import io.iohk.atala.prism.management.console.errors.ManagementConsoleError
 import io.iohk.atala.prism.management.console.models._
 import io.iohk.atala.prism.management.console.repositories.CredentialsRepository
@@ -92,7 +92,7 @@ private[repositories] final class CredentialsRepositoryLogs[F[_]: MonadThrow: Se
 
   override def storeBatchData(
       batchId: CredentialBatchId,
-      issuanceOperationHash: SHA256Digest,
+      issuanceOperationHash: Sha256Digest,
       atalaOperationId: AtalaOperationId
   ): Mid[F, Int] =
     in =>

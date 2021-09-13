@@ -3,7 +3,7 @@ package io.iohk.atala.prism.node.services
 import cats.effect.IO
 import doobie.implicits._
 import io.iohk.atala.prism.AtalaWithPostgresSpec
-import io.iohk.atala.prism.kotlin.crypto.SHA256Digest
+import io.iohk.atala.prism.kotlin.crypto.Sha256
 import io.iohk.atala.prism.models.{Ledger, TransactionDetails, TransactionId, TransactionStatus}
 import io.iohk.atala.prism.node.cardano.models.AtalaObjectMetadata.estimateTxMetadataSize
 import io.iohk.atala.prism.node.cardano.models.{CardanoWalletError, CardanoWalletErrorCode}
@@ -227,7 +227,7 @@ class SubmissionServiceSpec
     }
 
     "retry old pending transactions" in {
-      val dummyTransactionId2 = TransactionId.from(SHA256Digest.compute("id2".getBytes).getValue).value
+      val dummyTransactionId2 = TransactionId.from(Sha256.compute("id2".getBytes).getValue).value
       val dummyTransactionInfo2 = dummyTransactionInfo.copy(transactionId = dummyTransactionId2)
       val dummyPublicationInfo2 = dummyPublicationInfo.copy(transaction = dummyTransactionInfo2)
       // Return dummyTransactionInfo and then dummyTransactionInfo2
@@ -367,7 +367,7 @@ class SubmissionServiceSpec
     val dummyTransactionIds =
       (0 until (atalaOperations.size + atalaObjectsMerged.size + numPubsAdditional))
         .map { index =>
-          TransactionId.from(SHA256Digest.compute(s"id$index".getBytes).getValue).value
+          TransactionId.from(Sha256.compute(s"id$index".getBytes).getValue).value
         }
     val dummyTransactionInfos = dummyTransactionIds.map { transactionId =>
       dummyTransactionInfo.copy(transactionId = transactionId)

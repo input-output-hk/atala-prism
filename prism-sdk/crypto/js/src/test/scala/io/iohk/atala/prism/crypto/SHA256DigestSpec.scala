@@ -3,8 +3,8 @@ package io.iohk.atala.prism.crypto
 import org.scalatest.matchers.must.Matchers._
 import org.scalatest.wordspec.AnyWordSpec
 
-class SHA256DigestSpec extends AnyWordSpec {
-  "SHA256Digest" should {
+class Sha256DigestSpec extends AnyWordSpec {
+  "Sha256Digest" should {
     "return the proper bytes array" in {
 
       /** The test cases in this file were created by running the code below
@@ -12,9 +12,9 @@ class SHA256DigestSpec extends AnyWordSpec {
         * for(i <- 0 until 10) {
         *   val input = Array.fill(20)((scala.util.Random.nextInt(256) - 128).toByte)
         *   println(s"val input$i = " + input.toVector.mkString("Array[Byte](",", ",")"))
-        *   println(s"val expectedBytes$i = " + SHA256Digest.compute(input).value.mkString("Vector[Byte](",", ",")"))
-        *   println(s"""val expectedHex$i = """" + SHA256Digest.compute(input).hexValue + """"""")
-        *   println(s"\nval digest$i = SHA256Digest.compute(input$i)")
+        *   println(s"val expectedBytes$i = " + Sha256.compute(input).value.mkString("Vector[Byte](",", ",")"))
+        *   println(s"""val expectedHex$i = """" + Sha256.compute(input).hexValue + """"""")
+        *   println(s"\nval digest$i = Sha256.compute(input$i)")
         *   println(s"digest$i.value.toVector must be(expectedBytes$i)")
         *   println(s"""digest$i.hexValue must be(expectedHex$i)\n""")
         * }
@@ -25,7 +25,7 @@ class SHA256DigestSpec extends AnyWordSpec {
         -18, 3, -75, -88, 100, 19, 44, -11, 55, -67, 83, 35, 89, -112, -97)
       val expectedHex0 = "5e36487740811c5797bd29c8e4335d2487ee03b5a864132cf537bd532359909f"
 
-      val digest0 = SHA256Digest.compute(input0)
+      val digest0 = Sha256.compute(input0)
       digest0.value.toVector must be(expectedBytes0)
       digest0.hexValue must be(expectedHex0)
 
@@ -34,7 +34,7 @@ class SHA256DigestSpec extends AnyWordSpec {
         -19, 99, -87, -98, 31, -99, -22, 89, 58, -50, -13, -64, 10, 39, -17)
       val expectedHex1 = "c91091e359a514e505616a0df5975e7ff5ed63a99e1f9dea593acef3c00a27ef"
 
-      val digest1 = SHA256Digest.compute(input1)
+      val digest1 = Sha256.compute(input1)
       digest1.value.toVector must be(expectedBytes1)
       digest1.hexValue must be(expectedHex1)
 
@@ -43,7 +43,7 @@ class SHA256DigestSpec extends AnyWordSpec {
         16, -67, 99, -95, -108, 13, 90, -52, -61, 65, -28, -3, -104, -51)
       val expectedHex2 = "1804c12d22ff1b717e0c76bf544d6c22ded610bd63a1940d5accc341e4fd98cd"
 
-      val digest2 = SHA256Digest.compute(input2)
+      val digest2 = Sha256.compute(input2)
       digest2.value.toVector must be(expectedBytes2)
       digest2.hexValue must be(expectedHex2)
 
@@ -53,7 +53,7 @@ class SHA256DigestSpec extends AnyWordSpec {
         -73, -123, 63, 24, 102, 98, 76, -83, -126, 104, 8, 1, 2, -101, 34, 83)
       val expectedHex3 = "eb72e67788bf98c503550cd5727bc151b7853f1866624cad82680801029b2253"
 
-      val digest3 = SHA256Digest.compute(input3)
+      val digest3 = Sha256.compute(input3)
       digest3.value.toVector must be(expectedBytes3)
       digest3.hexValue must be(expectedHex3)
 
@@ -62,7 +62,7 @@ class SHA256DigestSpec extends AnyWordSpec {
         55, 7, -4, -39, -20, -11, -79, -113, -84, 120, 58, -104, 45, 121, -67)
       val expectedHex4 = "ae412d809cf6a820819a685e3bcf2f74063707fcd9ecf5b18fac783a982d79bd"
 
-      val digest4 = SHA256Digest.compute(input4)
+      val digest4 = Sha256.compute(input4)
       digest4.value.toVector must be(expectedBytes4)
       digest4.hexValue must be(expectedHex4)
 
@@ -71,7 +71,7 @@ class SHA256DigestSpec extends AnyWordSpec {
         79, -59, 127, 0, 65, -86, 109, 18, 17, 74, 61, 72, -82, -5, 79, -46)
       val expectedHex5 = "a8ea20f575d485517af5a39067fd7ae84fc57f0041aa6d12114a3d48aefb4fd2"
 
-      val digest5 = SHA256Digest.compute(input5)
+      val digest5 = Sha256.compute(input5)
       digest5.value.toVector must be(expectedBytes5)
       digest5.hexValue must be(expectedHex5)
 
@@ -81,7 +81,7 @@ class SHA256DigestSpec extends AnyWordSpec {
         -63, 77, -53, -71, 35, 97, -95, -124, -127, 1, -99, -21, -66, 50, 24)
       val expectedHex6 = "b2b9a794503a42f653885e8d365cec8f4ac14dcbb92361a18481019debbe3218"
 
-      val digest6 = SHA256Digest.compute(input6)
+      val digest6 = Sha256.compute(input6)
       digest6.value.toVector must be(expectedBytes6)
       digest6.hexValue must be(expectedHex6)
 
@@ -91,7 +91,7 @@ class SHA256DigestSpec extends AnyWordSpec {
         63, -4, -118, -21, 81, 113, -73, -105, 92, 10, 111, 19, -104, 73, 88)
       val expectedHex7 = "15604515f2816ac6b229305bacc44b9a353ffc8aeb5171b7975c0a6f13984958"
 
-      val digest7 = SHA256Digest.compute(input7)
+      val digest7 = Sha256.compute(input7)
       digest7.value.toVector must be(expectedBytes7)
       digest7.hexValue must be(expectedHex7)
 
@@ -101,7 +101,7 @@ class SHA256DigestSpec extends AnyWordSpec {
         -124, 82, -62, -41, 78, -117, -50, 5, -34, 36, -82, 123, 81, 61, -86)
       val expectedHex8 = "640a2abc360f86c22904ccc22f572e7fe38452c2d74e8bce05de24ae7b513daa"
 
-      val digest8 = SHA256Digest.compute(input8)
+      val digest8 = Sha256.compute(input8)
       digest8.value.toVector must be(expectedBytes8)
       digest8.hexValue must be(expectedHex8)
 
@@ -111,7 +111,7 @@ class SHA256DigestSpec extends AnyWordSpec {
         -21, -98, 112, -15, -106, 96, 93, -42, 98, -27, 30, -94, 22, 111, -18)
       val expectedHex9 = "a788736b8a6e473b9a3a0353f1d46d100feb9e70f196605dd662e51ea2166fee"
 
-      val digest9 = SHA256Digest.compute(input9)
+      val digest9 = Sha256.compute(input9)
       digest9.value.toVector must be(expectedBytes9)
       digest9.hexValue must be(expectedHex9)
     }
