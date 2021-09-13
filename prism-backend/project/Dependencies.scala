@@ -90,7 +90,8 @@ object Dependencies {
   // SDK dependencies
   val prismCrypto = "io.iohk.atala" % "prism-crypto-jvm" % versions.prismSdk
   val prismCredentials = "io.iohk.atala" % "prism-credentials-jvm" % versions.prismSdk
-  val prismExtras = "io.iohk.atala" % "prism-extras-jvm" % versions.prismSdk
+  //Can be used only in tests!
+  val prismExtras = "io.iohk.atala" % "prism-extras-jvm" % versions.prismSdk % Test
 
   // Test dependencies
   val catsScalatest = "com.ironcorelabs" %% "cats-scalatest" % versions.catsScalatest % Test
