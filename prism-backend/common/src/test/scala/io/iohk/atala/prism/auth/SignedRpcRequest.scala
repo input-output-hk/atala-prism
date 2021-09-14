@@ -33,7 +33,7 @@ object SignedRpcRequest {
       nonce = requestNonce,
       signature = signature,
       did = did,
-      keyId = DID.getMASTER_KEY_ID,
+      keyId = DID.getDEFAULT_MASTER_KEY_ID,
       request = request
     )
   }

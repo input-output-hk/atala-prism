@@ -16,7 +16,7 @@ object ClientHelper {
     val signedRequest = authenticator.signConnectorRequest(request.toByteArray, didPrivateKey)
     GrpcAuthenticationHeader.UnpublishedDIDBased(
       did = whitelistedDID,
-      keyId = DID.getMASTER_KEY_ID,
+      keyId = DID.getDEFAULT_MASTER_KEY_ID,
       requestNonce = RequestNonce(signedRequest.requestNonce.toVector),
       signature = new ECSignature(signedRequest.signature)
     )

@@ -131,7 +131,7 @@ object DegreeServiceImpl {
       issuanceDate = LocalDate.now(),
       holderName = idCredentialData.name,
       graduationDate = graduationDate,
-      issuanceKeyId = DID.getMASTER_KEY_ID,
+      issuanceKeyId = DID.getDEFAULT_MASTER_KEY_ID,
       credentialType = credentialTypeId,
       holderDateOfBirth = idCredentialData.dateOfBirth,
       credentialHtml = credentialHtml

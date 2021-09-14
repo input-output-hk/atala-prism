@@ -7,7 +7,7 @@ import io.iohk.atala.prism.kotlin.crypto.EC.{INSTANCE => EC}
 import io.iohk.atala.prism.kotlin.crypto.keys.{ECKeyPair, ECPublicKey}
 import io.iohk.atala.prism.kotlin.crypto.ECConfig.{INSTANCE => ECConfig}
 import io.iohk.atala.prism.kotlin.identity.{PrismDid => DID}
-import io.iohk.atala.prism.kotlin.identity.PrismDid.{getMASTER_KEY_ID => masterKeyId}
+import io.iohk.atala.prism.kotlin.identity.PrismDid.{getDEFAULT_MASTER_KEY_ID => masterKeyId}
 import io.iohk.atala.prism.protos.node_api.{GetDidDocumentRequest, GetDidDocumentResponse}
 import io.iohk.atala.prism.protos.node_api.NodeServiceGrpc.NodeService
 import io.iohk.atala.prism.protos.node_models

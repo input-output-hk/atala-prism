@@ -375,7 +375,7 @@ class ConnectionsRpcSpec extends ConnectorRpcSpecBase with MockitoSugar {
       val zeroTime = System.currentTimeMillis()
       val connections = createExampleConnections(verifierId, zeroTime)
 
-      usingApiAs(requestNonce, signature, did, DID.getMASTER_KEY_ID) { blockingStub =>
+      usingApiAs(requestNonce, signature, did, DID.getDEFAULT_MASTER_KEY_ID) { blockingStub =>
         val response = blockingStub.getConnectionsPaginated(request)
         response.connections.map(_.connectionId).toSet mustBe connections.map(_._2.toString).take(10).toList.toSet
       }
