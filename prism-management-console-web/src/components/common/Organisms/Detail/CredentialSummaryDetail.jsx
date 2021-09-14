@@ -14,6 +14,7 @@ import DataDetail from './DataDetail';
 import { sanitizeView } from '../../../../helpers/credentialView';
 import CredentialRawDetail from './CredentialRawDetail/CredentialRawDetail';
 import revokedIconSrc from '../../../../images/revokeIcon.svg';
+import { credentialShape } from '../../../../helpers/propShapes';
 
 const { TabPane } = Tabs;
 
@@ -28,7 +29,7 @@ const getCardanoExplorerUrl = (txId, ledger) => {
   return baseUrl.concat(txId);
 };
 
-const CredentialSummaryDetail = ({ drawerInfo, credentialData }) => {
+const CredentialSummaryDetail = ({ drawerInfo, credential }) => {
   const { t } = useTranslation();
   const [rawVisible, setRawVisible] = useState(false);
 
@@ -43,7 +44,7 @@ const CredentialSummaryDetail = ({ drawerInfo, credentialData }) => {
       keyRevoked,
       invalidSignature
     } = {}
-  } = credentialData;
+  } = credential;
 
   const tabs = {
     summary: {
@@ -96,7 +97,7 @@ const CredentialSummaryDetail = ({ drawerInfo, credentialData }) => {
     <>
       <div className="credentialStatusContent">
         <span>{t('credentials.detail.source')}</span>
-        <p>{credentialData?.issuer}</p>
+        <p>{credential?.issuer}</p>
       </div>
       <div className="credentialStatusContent">
         <span>{t('credentials.detail.integrity.title')}</span>
@@ -105,8 +106,8 @@ const CredentialSummaryDetail = ({ drawerInfo, credentialData }) => {
     </>
   );
 
-  const renderHtmlCredential = ({ html }) => {
-    const cleanHtml = sanitizeView(html);
+  const renderHtmlCredential = ({ credentialData }) => {
+    const cleanHtml = sanitizeView(credentialData?.html);
     /* eslint-disable-next-line react/no-danger */
     return <div dangerouslySetInnerHTML={{ __html: cleanHtml }} />;
   };
@@ -118,7 +119,7 @@ const CredentialSummaryDetail = ({ drawerInfo, credentialData }) => {
     </div>
   );
 
-  const { transactionid, ledger } = credentialData?.issuanceProof || {};
+  const { transactionid, ledger } = credential?.issuanceProof || {};
 
   const revokedIcon = <img className="revokedIcon" src={revokedIconSrc} alt="revoked icon" />;
 
@@ -138,8 +139,8 @@ const CredentialSummaryDetail = ({ drawerInfo, credentialData }) => {
     >
       <Tabs defaultActiveKey={tabs.details.key} centered>
         <TabPane tab={tabs.summary.title} key={tabs.summary.key}>
-          <div className="credentialContainer">{renderHtmlCredential({ ...credentialData })}</div>
-          {credentialData.status === CREDENTIAL_STATUSES.credentialRevoked && (
+          <div className="credentialContainer">{renderHtmlCredential({ ...credential })}</div>
+          {credential.status === CREDENTIAL_STATUSES.credentialRevoked && (
             <div className="revokedAlertContainer">
               <Divider />
               <Alert message={revokedMessage} type="error" showIcon icon={revokedIcon} />
@@ -175,7 +176,7 @@ const CredentialSummaryDetail = ({ drawerInfo, credentialData }) => {
 
       <CredentialRawDetail
         visible={rawVisible}
-        credentialString={credentialData.credentialData}
+        credentialString={credential.credentialString}
         onClose={() => setRawVisible(false)}
       />
     </Drawer>
@@ -184,20 +185,7 @@ const CredentialSummaryDetail = ({ drawerInfo, credentialData }) => {
 
 CredentialSummaryDetail.propTypes = {
   drawerInfo: PropTypes.shape().isRequired,
-  credentialData: PropTypes.shape({
-    html: PropTypes.string,
-    credentialData: PropTypes.string,
-    issuanceProof: PropTypes.shape({ transactionid: PropTypes.string }),
-    status: PropTypes.number.isRequired,
-    verificationResult: PropTypes.shape({
-      credentialRevoked: PropTypes.bool,
-      batchRevoked: PropTypes.bool,
-      invalidMerkleProof: PropTypes.bool,
-      invalidKey: PropTypes.bool,
-      keyRevoked: PropTypes.bool,
-      invalidSignature: PropTypes.bool
-    })
-  }).isRequired
+  credential: credentialShape.isRequired
 };
 
 export default CredentialSummaryDetail;

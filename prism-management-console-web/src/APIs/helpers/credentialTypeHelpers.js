@@ -40,7 +40,7 @@ const placeholdersReplacements = {
   }
 };
 
-export const adaptCredentialType = ({ id, name, ...rest }) => ({
+export const adaptCredentialType = ({ id, name, ...rest } = {}) => ({
   ...rest,
   ...credentialTypeEquivalents[name],
   id,

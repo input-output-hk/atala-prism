@@ -22,7 +22,7 @@ const { TabPane } = Tabs;
 
 const Credentials = ({ tabProps, setActiveTab, loading, verifyCredential }) => {
   const { t } = useTranslation();
-  const [currentCredential, setCurrentCredential] = useState({});
+  const [currentCredential, setCurrentCredential] = useState();
   const [showDrawer, setShowDrawer] = useState(false);
 
   const { accountStatus } = useSession();
@@ -36,14 +36,16 @@ const Credentials = ({ tabProps, setActiveTab, loading, verifyCredential }) => {
   return (
     <div className="Wrapper PageContainer CredentialsTableContainer">
       {accountStatus === UNCONFIRMED && <WaitBanner />}
-      <CredentialSummaryDetail
-        drawerInfo={{
-          title: t('credentials.detail.title'),
-          onClose: () => setShowDrawer(false),
-          visible: showDrawer
-        }}
-        credentialData={currentCredential}
-      />
+      {currentCredential && (
+        <CredentialSummaryDetail
+          drawerInfo={{
+            title: t('credentials.detail.title'),
+            onClose: () => setShowDrawer(false),
+            visible: showDrawer
+          }}
+          credential={currentCredential}
+        />
+      )}
       <div className="ContentHeader">
         <div>
           <h1>{t('credentials.title')}</h1>

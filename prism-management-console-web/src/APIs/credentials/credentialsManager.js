@@ -20,7 +20,6 @@ import {
   GetBlockchainDataRequest,
   CreateGenericCredentialBulkRequest
 } from '../../protos/console_api_pb';
-import { adaptCredentialType } from '../helpers/credentialTypeHelpers';
 import { getProtoDate } from '../../helpers/formatters';
 import { AtalaMessage, PlainTextCredential } from '../../protos/credential_models_pb';
 
@@ -28,9 +27,9 @@ const { FilterBy, SortBy } = GetGenericCredentialsRequest;
 
 function mapCredential(cred) {
   const credential = cred.toObject();
-  const credentialData = JSON.parse(cred.getCredentialData());
-  const subjectData = JSON.parse(cred.getContactData());
-  return Object.assign(credential, { subjectData }, credentialData);
+  const credentialString = cred.getCredentialData();
+  const credentialData = JSON.parse(credentialString);
+  return Object.assign(credential, { credentialData, credentialString });
 }
 
 const fieldKeys = {
@@ -78,18 +77,12 @@ async function getCredentials(
   if (sessionError) return [];
 
   const result = await this.client.getGenericCredentials(getCredentialsRequest, metadata);
+  const credentialsList = result.getCredentialsList();
+  const mappedCredentialsList = credentialsList.map(mapCredential);
+  Logger.info('Got credentials:', mappedCredentialsList);
 
-  const credentialsList = result.getCredentialsList().map(mapCredential);
-  const adaptedCredentialsList = credentialsList.map(adaptCredential);
-  Logger.info('Got credentials:', adaptedCredentialsList);
-
-  return adaptedCredentialsList;
+  return mappedCredentialsList;
 }
-
-const adaptCredential = ({ credentialTypeDetails, ...rest }) => ({
-  ...rest,
-  credentialType: adaptCredentialType(credentialTypeDetails)
-});
 
 async function createBatchOfCredentials(credentialsData, credentialType, groups) {
   Logger.info(`Creating ${credentialsData.length} credential(s):`);

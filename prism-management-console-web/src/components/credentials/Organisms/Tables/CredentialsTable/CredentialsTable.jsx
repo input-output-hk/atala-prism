@@ -36,25 +36,27 @@ const commonColumns = [
   {
     key: 'icon',
     // eslint-disable-next-line react/prop-types
-    render: ({ credentialTypeDetails }) => (
+    render: ({ credentialData: { credentialTypeDetails } }) => (
       <img
         style={{ width: '40px', height: '40px' }}
-        src={credentialTypeDetails?.logo || freeUniLogo}
-        alt={`${credentialTypeDetails?.key} icon`}
+        src={credentialTypeDetails.logo || freeUniLogo}
+        alt={`${credentialTypeDetails.name} icon`}
       />
     )
   },
   {
     key: 'credentialType',
     // eslint-disable-next-line react/prop-types
-    render: ({ credentialTypeDetails }) => (
-      <CellRenderer title={tp('credentialType')} value={credentialTypeDetails?.name} />
+    render: ({ credentialData: { credentialTypeDetails } }) => (
+      <CellRenderer title={tp('credentialType')} value={credentialTypeDetails.name} />
     )
   },
   {
     key: 'contactName',
     // eslint-disable-next-line react/prop-types
-    render: ({ contactName }) => <CellRenderer title={tp('contactName')} value={contactName} />
+    render: ({ credentialData: { contactName } }) => (
+      <CellRenderer title={tp('contactName')} value={contactName} />
+    )
   },
   {
     key: 'externalId',
@@ -92,7 +94,7 @@ const getCredentialsIssuedColumns = (
   {
     key: 'contactStatus',
     // eslint-disable-next-line react/prop-types
-    render: ({ connectionStatus }) => (
+    render: ({ contactData: { connectionStatus } }) => (
       <CellRenderer title={tp('contactStatus')}>
         <StatusBadge status={connectionStatus} useCase={CONTACT_STATUS} />
       </CellRenderer>
@@ -281,7 +283,7 @@ CredentialsTable.defaultProps = {
 };
 
 CredentialsTable.propTypes = {
-  credentials: PropTypes.arrayOf(PropTypes.shape(credentialShape)),
+  credentials: PropTypes.arrayOf(credentialShape),
   getMoreData: PropTypes.func.isRequired,
   loading: PropTypes.bool.isRequired,
   hasMore: PropTypes.bool.isRequired,

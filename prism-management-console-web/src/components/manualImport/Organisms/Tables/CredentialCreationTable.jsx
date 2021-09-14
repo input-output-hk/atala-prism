@@ -14,7 +14,7 @@ import {
 } from '../../../../helpers/constants';
 import DynamicForm from '../../../dynamicForm/DynamicForm';
 
-const CredentialCreationTable = ({ initialValues, credentialType }) => {
+const CredentialCreationTable = ({ recipients, credentialType }) => {
   const { t } = useTranslation();
   const { form } = useContext(DynamicFormContext);
 
@@ -51,6 +51,9 @@ const CredentialCreationTable = ({ initialValues, credentialType }) => {
   const credentialFormColumns = getCredentialFormColumns(columns);
   const credentialFormSkeleton = getCredentialFormSkeleton(columns, form);
 
+  const credentialFieldKeys = columns.map(c => c.dataIndex);
+  const initialValues = recipients.map(r => _.pick(r, credentialFieldKeys));
+
   return (
     <DynamicForm
       columns={credentialFormColumns}
@@ -62,7 +65,7 @@ const CredentialCreationTable = ({ initialValues, credentialType }) => {
 };
 
 CredentialCreationTable.propTypes = {
-  initialValues: PropTypes.arrayOf(contactShape).isRequired,
+  recipients: PropTypes.arrayOf(contactShape).isRequired,
   credentialType: PropTypes.shape(credentialTypeShape).isRequired
 };
 
