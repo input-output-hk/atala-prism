@@ -4,21 +4,19 @@ import { templateCategoryShape } from '../../../../helpers/propShapes';
 import CategorySelector from './CategorySelector';
 import TemplateName from './TemplateName';
 import SimpleLoading from '../../../common/Atoms/SimpleLoading/SimpleLoading';
+import UploadTemplateIcon from '../../Molecules/UploadTemplateIcon/UploadTemplateIcon';
 
 const TemplateCategorySelectionStep = ({ templateCategories, mockCategoriesProps }) => {
   if (!templateCategories.length) return <SimpleLoading size="md" />;
   return (
-    <div className="TypeSelectionWrapper">
-      <div className="TypeSelectionContainer">
-        <div className="TypeSelection">
-          <div className="verticalFlex flexStart fullWidth">
-            <TemplateName />
-            <CategorySelector
-              templateCategories={templateCategories}
-              mockCategoriesProps={mockCategoriesProps}
-            />
-          </div>
-        </div>
+    <div className="templateCreation">
+      <UploadTemplateIcon />
+      <div className="categoryAssign">
+        <TemplateName />
+        <CategorySelector
+          templateCategories={templateCategories}
+          mockCategoriesProps={mockCategoriesProps}
+        />
       </div>
     </div>
   );

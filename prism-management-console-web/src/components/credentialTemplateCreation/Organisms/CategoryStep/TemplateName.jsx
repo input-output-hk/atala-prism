@@ -35,6 +35,7 @@ const TemplateName = ({ api }) => {
         label={t('credentialTemplateCreation.step1.templateName')}
         rules={[{ required: true }, { validator: templateExists }]}
       >
+        <p className="greyText">Create a name for your credential’s template.</p>
         <Input placeholder={t('credentialTemplateCreation.step1.templateNamePlaceholder')} />
       </Form.Item>
     </div>

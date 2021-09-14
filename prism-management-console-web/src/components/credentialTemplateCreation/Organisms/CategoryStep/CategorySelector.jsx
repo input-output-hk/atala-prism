@@ -1,12 +1,8 @@
 import React, { useState } from 'react';
 import PropTypes from 'prop-types';
-import { Radio, Form } from 'antd';
+import { Select, Form, Checkbox, message } from 'antd';
 import { useTranslation } from 'react-i18next';
-import { PlusOutlined } from '@ant-design/icons';
 import { isInteger } from 'lodash';
-import CategoryCreationModal from '../CategoryCreationModal/CategoryCreationModal';
-import CategoryCard from '../../Molecules/CategoryStep/CategoryCard';
-import CustomButton from '../../../common/Atoms/CustomButton/CustomButton';
 import { templateCategoryShape } from '../../../../helpers/propShapes';
 import { useTemplateContext } from '../../../providers/TemplateContext';
 import './_style.scss';
@@ -23,12 +19,7 @@ const CategorySelector = ({ templateCategories, mockCategoriesProps }) => {
 
   const categories = templateCategories.filter(({ state }) => state === ENABLED_STATE);
 
-  const handleAddNewCategory = () => {
-    setSelected();
-    setShowCategoryCreation(true);
-  };
-
-  const onCategoryChange = ev => setSelected(ev.target.value);
+  const { Option } = Select;
 
   const categoryRules = [
     {
@@ -45,34 +36,16 @@ const CategorySelector = ({ templateCategories, mockCategoriesProps }) => {
 
   return (
     <div className="selectCategory">
-      <CategoryCreationModal
-        visible={showCategoryCreation}
-        close={() => setShowCategoryCreation(false)}
-        mockCategoriesProps={mockCategoriesProps}
-      />
       <div className="selectCategoryHeader">
         <p>{t(`${i18nPrefix}.step1.selectCategory`)}</p>
-        <CustomButton
-          onClick={handleAddNewCategory}
-          buttonText={t(`${i18nPrefix}.actions.addCategory`)}
-          theme="theme-link"
-          icon={<PlusOutlined />}
-        />
+        <p className="greyText">Once selected click next on the upper right side of the page.</p>
       </div>
       <Form.Item name="category" rules={categoryRules}>
         <div className="templateCategory">
-          <Radio.Group onChange={onCategoryChange}>
-            {categories.map(category => (
-              <Radio value={category.id}>
-                <CategoryCard
-                  category={category}
-                  typeKey={category.id}
-                  key={category.id}
-                  isSelected={selected === category.id}
-                />
-              </Radio>
-            ))}
-          </Radio.Group>
+          <Select placeholder="Category" >
+            <Option>category</Option>
+            <Option>category</Option>
+          </Select>
         </div>
       </Form.Item>
     </div>

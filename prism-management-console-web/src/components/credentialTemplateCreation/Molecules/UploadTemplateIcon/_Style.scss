@@ -1,0 +1,45 @@
+@import '../../../../css/general_styling';
+
+.ant-upload.ant-upload-select-picture-card > .ant-upload {
+  flex-direction: column;
+  justify-content: flex-start;
+  align-items: flex-start;
+}
+
+.ant-upload.ant-upload-select-picture-card {
+  border: 1px solid transparent;
+  background: transparent;
+  width: auto;
+  margin: 0;
+  text-align: left !important;
+}
+
+.ant-upload.ant-upload-select-picture-card:hover {
+  border: 1px solid transparent;
+}
+
+.ant-upload { 
+.subtitle {
+  @include primary-text($body, $black);
+  font-weight: bold;
+  margin-bottom: 0.5em;
+}
+p {
+    @include primary-text($body, $grey);
+    font-variant: normal;
+    margin-bottom: 0.5em;
+  }
+  button {
+      border-color: $black;
+      @include primary-text($body, $black);
+  }
+  button:hover {
+      border: 1px solid $black;
+      color: $black;
+      opacity: 0.5;
+  }
+}
+
+.ant-upload-picture-card-wrapper {
+    width: 40%;
+}
