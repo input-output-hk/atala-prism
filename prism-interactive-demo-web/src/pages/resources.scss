@@ -10,6 +10,7 @@
 
   .container-middle-section {
     display: flex;
+    flex-flow: column;
     padding: 8em;
 
     .videos-section {
@@ -61,6 +62,7 @@
         width: 100%;
         display: flex;
         justify-content: space-between;
+        flex-wrap: wrap;
 
         .video-container {
           width: 30%;
@@ -94,6 +96,117 @@
                 }
               }
             }
+          }
+        }
+      }
+    }
+
+    .brochures-section {
+      width: 100%;
+
+      h1 {
+        font-weight: bold;
+      }
+
+      .featured-brochure-container {
+        display: flex;
+        justify-content: space-between;
+        margin-bottom: 2em;
+
+        .thumbnail {
+          width: 45%;
+        }
+
+        .brochure-info-container {
+          width: 45%;
+
+          .brochure-info {
+            display: flex;
+            justify-content: space-between;
+
+            a p {
+              color: $primary-color;
+              font-weight: bold;
+            }
+
+            .read {
+              display: flex;
+
+              img {
+                width: fit-content;
+                height: 100%;
+                margin-right: 0.5em;
+              }
+
+              p {
+                margin: 0;
+              }
+            }
+          }
+        }
+      }
+      .brochures-container {
+        width: 100%;
+        display: flex;
+        justify-content: space-between;
+        flex-wrap: wrap;
+
+        .brochure-container {
+          width: 30%;
+
+          .thumbnail {
+            width: 100%;
+          }
+
+          .brochure-info-container {
+            .brochure-info {
+              display: flex;
+              justify-content: space-between;
+
+              a p {
+                color: $primary-color;
+                font-weight: bold;
+              }
+
+              .read {
+                display: flex;
+
+                img {
+                  width: fit-content;
+                  height: 100%;
+                  margin-right: 0.5em;
+                }
+
+                p {
+                  margin: 0;
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+
+    .blog-section-container {
+      width: 100%;
+
+      h1 {
+        font-weight: bold;
+      }
+
+      .latest-post-container {
+        display: flex;
+        justify-content: space-between;
+
+        .blog-preview {
+          width: 45%;
+        }
+
+        .latest-post-info {
+          width: 45%;
+
+          h2 {
+            font-weight: bold;
           }
         }
       }

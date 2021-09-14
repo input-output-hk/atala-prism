@@ -1,5 +1,6 @@
 import React from 'react';
 import { graphql } from 'gatsby';
+import _ from 'lodash';
 import Header from '../components/Header/Header';
 import FooterBlog from '../components/footer/footer';
 import SEO from '../components/seo/seo';
@@ -9,7 +10,21 @@ import { RESOURCES_NAME } from '../helpers/constants';
 
 import './resources.scss';
 
-const Resources = ({}) => {
+const Resources = ({ data }) => {
+  const {
+    allVideosJson: { nodes: videos },
+    allBrochuresJson: { nodes: brochures },
+    allMarkdownRemark: {
+      nodes: [latestPost]
+    }
+  } = data;
+
+  const featuredVideo = _.head(videos);
+  const otherVideos = _.tail(videos);
+
+  const featuredBrochure = _.head(brochures);
+  const otherBrochures = _.tail(brochures);
+
   return (
     <div className="ResourcesContainer">
       <SEO title="Resources" />
@@ -18,17 +33,14 @@ const Resources = ({}) => {
         <div className="videos-section">
           <h1>Video</h1>
           <div className="featured-video-container">
-            <img className="thumbnail" src="/images/thumbnail.png" alt="Thumbnail" />
+            <img className="thumbnail" src={featuredVideo.thumbnail} alt="Thumbnail" />
             <div className="video-info-container">
-              <h2>Cardano Africa: Atala PRISM an explainer</h2>
-              <p>
-                Here's David with the lowdown on our DID (Decentralized ID) solution, deployed as
-                part of our partnership with the Government of Ethiopia.
-              </p>
+              <h2>{featuredVideo.title}</h2>
+              <p>{featuredVideo.description}</p>
               <div className="video-info">
                 <a
                   className="watch-now"
-                  href="https://www.youtube.com"
+                  href={featuredVideo.url}
                   target="_blank"
                   rel="noopener noreferrer"
                 >
@@ -37,100 +49,87 @@ const Resources = ({}) => {
                 </a>
                 <div className="watch-time">
                   <img src="/images/watch-time.svg" alt="watch-time" />
-                  <p>6:15 mins run time</p>
+                  <p>{featuredVideo.watchTime} mins run time</p>
                 </div>
               </div>
             </div>
           </div>
           <div className="videos-container">
-            <div className="video-container">
-              <img className="thumbnail" src="/images/thumbnail.png" alt="Thumbnail" />
-              <div className="video-info-container">
-                <h2>CardanoAfrica: Atala PRISM and digital identity</h2>
-                <p>
-                  Atala PRISM is a decentralized identity solution developed by Input Output for
-                  Cardano.
-                </p>
-                <div className="video-info">
-                  <a
-                    className="watch-now"
-                    href="https://www.youtube.com"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                  >
-                    <img src="/images/play.svg" alt="play" />
-                    <p>Watch now</p>
-                  </a>
-                  <div className="watch-time">
-                    <img src="/images/watch-time.svg" alt="watch-time" />
-                    <p>6:15 mins run time</p>
+            {otherVideos.map(({ title, description, url, thumbnail, watchTime }) => (
+              <div className="video-container">
+                <img className="thumbnail" src={thumbnail} alt="Thumbnail" />
+                <div className="video-info-container">
+                  <h2>{title}</h2>
+                  <p>{description}</p>
+                  <div className="video-info">
+                    <a className="watch-now" href={url} target="_blank" rel="noopener noreferrer">
+                      <img src="/images/play.svg" alt="play" />
+                      <p>Watch now</p>
+                    </a>
+                    <div className="watch-time">
+                      <img src="/images/watch-time.svg" alt="watch-time" />
+                      <p>{watchTime} mins run time</p>
+                    </div>
                   </div>
                 </div>
+              </div>
+            ))}
+          </div>
+        </div>
+        <div className="brochures-section">
+          <h1>Brochures</h1>
+          <div className="featured-brochure-container">
+            <div className="brochure-info-container">
+              <h2>{featuredBrochure.title}</h2>
+              <p>{featuredBrochure.description}</p>
+              <div className="brochure-info">
+                <a
+                  className="read"
+                  href={featuredBrochure.url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  <img src="/images/pdf.svg" alt="pdf" />
+                  <p>Read</p>
+                </a>
               </div>
             </div>
-            <div className="video-container">
-              <img className="thumbnail" src="/images/thumbnail.png" alt="Thumbnail" />
-              <div className="video-info-container">
-                <h2>CardanoAfrica: our partnership with Ethiopia’s Ministry of Education</h2>
-                <p>
-                  Atala PRISM is a decentralized identity solution developed by Input Output for
-                  Cardano.
-                </p>
-                <div className="video-info">
-                  <a
-                    className="watch-now"
-                    href="https://www.youtube.com"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                  >
-                    <img src="/images/play.svg" alt="play" />
-                    <p>Watch now</p>
-                  </a>
-                  <div className="watch-time">
-                    <img src="/images/watch-time.svg" alt="watch-time" />
-                    <p>6:15 mins run time</p>
+            <img className="thumbnail" src={featuredBrochure.thumbnail} alt="Thumbnail" />
+          </div>
+          <div className="brochures-container">
+            {otherBrochures.map(({ title, description, url, thumbnail }) => (
+              <div className="brochure-container">
+                <img className="thumbnail" src={thumbnail} alt="Thumbnail" />
+                <div className="brochure-info-container">
+                  <h2>{title}</h2>
+                  <p>{description}</p>
+                  <div className="brochure-info">
+                    <a className="read" href={url} target="_blank" rel="noopener noreferrer">
+                      <img src="/images/pdf.svg" alt="pdf" />
+                      <p>Read</p>
+                    </a>
                   </div>
                 </div>
               </div>
-            </div>
-            <div className="video-container">
-              <img className="thumbnail" src="/images/thumbnail.png" alt="Thumbnail" />
-              <div className="video-info-container">
-                <h2>Cardano Africa - Atala DID technical walkthrough</h2>
-                <p>
-                  In this video, technical architect Alexis Hernandez shows Atala PRISM being used.
-                </p>
-                <div className="video-info">
-                  <a
-                    className="watch-now"
-                    href="https://www.youtube.com"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                  >
-                    <img src="/images/play.svg" alt="play" />
-                    <p>Watch now</p>
-                  </a>
-                  <div className="watch-time">
-                    <img src="/images/watch-time.svg" alt="watch-time" />
-                    <p>6:15 mins run time</p>
-                  </div>
-                </div>
-              </div>
+            ))}
+          </div>
+        </div>
+        <div className="blog-section-container">
+          <h1>Blog</h1>
+          <div className="latest-post-container">
+            <img
+              className="blog-preview"
+              src={latestPost.frontmatter.image.publicURL}
+              alt="Blog preview"
+            />
+            <div className="latest-post-info">
+              <h3>Latest post</h3>
+              <h2>{latestPost.frontmatter.title}</h2>
+              <p>{latestPost.frontmatter.description}</p>
+              <a href={latestPost.fields.slug}>Blog</a>
             </div>
           </div>
         </div>
-        {/* <video controls>
-          <source src="videos/Atix.webm" type="video/webm" />
-        </video>
-        <iframe
-          src="https://www.youtube.com/embed/nrUsyw8cacA"
-          title="Wellcome to our space!"
-          allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture"
-          frameBorder="0"
-          webkitallowfullscreen="true"
-          mozallowfullscreen="true"
-          allowFullScreen
-        /> */}
       </div>
       <FaqPanel />
       <ContactPanel />
@@ -146,6 +145,37 @@ export const pageQuery = graphql`
     site {
       siteMetadata {
         title
+      }
+    }
+    allBrochuresJson {
+      nodes {
+        title
+        url
+        thumbnail
+        description
+      }
+    }
+    allVideosJson {
+      nodes {
+        description
+        thumbnail
+        title
+        url
+        watchTime
+      }
+    }
+    allMarkdownRemark(sort: { fields: [frontmatter___date], order: DESC }, limit: 1) {
+      nodes {
+        fields {
+          slug
+        }
+        frontmatter {
+          title
+          description
+          image {
+            publicURL
+          }
+        }
       }
     }
   }

@@ -47,6 +47,20 @@ module.exports = {
         name: `authors`
       }
     },
+    {
+      resolve: `gatsby-source-filesystem`,
+      options: {
+        path: `${__dirname}/content/videos`,
+        name: `videos`
+      }
+    },
+    {
+      resolve: `gatsby-source-filesystem`,
+      options: {
+        path: `${__dirname}/content/brochures`,
+        name: `brochures`
+      }
+    },
     `gatsby-transformer-json`,
     {
       resolve: `gatsby-transformer-remark`,
