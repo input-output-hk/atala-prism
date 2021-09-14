@@ -274,3 +274,10 @@ export const NEW_TEMPLATE_STEP_UNIT = 1;
 export const SELECT_TEMPLATE_CATEGORY = 0;
 export const DESIGN_TEMPLATE = 1;
 export const TEMPLATE_CREATION_RESULT = 2;
+
+export const VALIDATION_KEYS = {
+  REQUIRED: 'required',
+  IS_DATE: 'isDate',
+  FUTURE_DATE: 'futureDate',
+  PAST_DATE: 'pastDate'
+};

@@ -10,7 +10,8 @@ import {
 import { DynamicFormContext } from '../../../../providers/DynamicFormProvider';
 import {
   CREDENTIAL_TYPE_FIELD_TYPES,
-  IMPORT_CREDENTIALS_DATA
+  IMPORT_CREDENTIALS_DATA,
+  VALIDATION_KEYS
 } from '../../../../helpers/constants';
 import DynamicForm from '../../../dynamicForm/DynamicForm';
 
@@ -24,7 +25,7 @@ const CredentialCreationTable = ({ recipients, credentialType }) => {
       dataIndex: 'contactName',
       editable: false,
       type: CREDENTIAL_TYPE_FIELD_TYPES.STRING,
-      validations: ['required'],
+      validations: [VALIDATION_KEYS.REQUIRED],
       fixed: 'left'
     },
     {
@@ -32,7 +33,7 @@ const CredentialCreationTable = ({ recipients, credentialType }) => {
       dataIndex: 'externalId',
       editable: false,
       type: CREDENTIAL_TYPE_FIELD_TYPES.STRING,
-      validations: ['required'],
+      validations: [VALIDATION_KEYS.REQUIRED],
       width: 350,
       fixed: 'left'
     }
