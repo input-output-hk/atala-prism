@@ -8,7 +8,10 @@ import {
   getCredentialFormColumns
 } from '../../../../helpers/formDefinitions/credentials';
 import { DynamicFormContext } from '../../../../providers/DynamicFormProvider';
-import { IMPORT_CREDENTIALS_DATA } from '../../../../helpers/constants';
+import {
+  CREDENTIAL_TYPE_FIELD_TYPES,
+  IMPORT_CREDENTIALS_DATA
+} from '../../../../helpers/constants';
 import DynamicForm from '../../../dynamicForm/DynamicForm';
 
 const CredentialCreationTable = ({ initialValues, credentialType }) => {
@@ -20,7 +23,7 @@ const CredentialCreationTable = ({ initialValues, credentialType }) => {
       title: t('contacts.table.columns.contactName'),
       dataIndex: 'contactName',
       editable: false,
-      type: 'string',
+      type: CREDENTIAL_TYPE_FIELD_TYPES.STRING,
       validations: ['required'],
       fixed: 'left'
     },
@@ -28,7 +31,7 @@ const CredentialCreationTable = ({ initialValues, credentialType }) => {
       title: t('contacts.table.columns.externalId'),
       dataIndex: 'externalId',
       editable: false,
-      type: 'string',
+      type: CREDENTIAL_TYPE_FIELD_TYPES.STRING,
       validations: ['required'],
       width: 350,
       fixed: 'left'

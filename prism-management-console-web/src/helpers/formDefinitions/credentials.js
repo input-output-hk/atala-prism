@@ -1,12 +1,13 @@
 import { COMPACT_WIDTH_INPUT } from '../constants';
 
 export const getCredentialFormColumns = columns =>
-  columns.map(({ title, dataIndex, editable, width, fixed }) => ({
+  columns.map(({ title, dataIndex, editable, width, fixed, type }) => ({
     label: title,
     fieldKey: dataIndex,
     width: width || COMPACT_WIDTH_INPUT,
     fixed,
-    editable
+    editable,
+    type
   }));
 
 export const getCredentialFormSkeleton = fields =>

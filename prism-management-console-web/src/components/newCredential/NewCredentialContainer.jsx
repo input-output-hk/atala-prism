@@ -128,7 +128,7 @@ const NewCredentialContainer = ({ api, redirector: { redirectToCredentials } }) 
     });
   };
 
-  const handleImportedData = ({ credentials }, setResults) => {
+  const handleImportedData = ({ credentials, ...rest }, setResults) => {
     const { isMultiRow, multiRowKey, fields } = credentialTypeDetails;
     const credentialsData = isMultiRow
       ? parseMultiRowCredentials(credentials, multiRowKey, fields)

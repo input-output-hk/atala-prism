@@ -1,4 +1,5 @@
 import _ from 'lodash';
+import { v4 as uuid } from 'uuid';
 import {
   CredentialsServicePromiseClient,
   CredentialIssuanceServicePromiseClient
@@ -92,20 +93,15 @@ const adaptCredential = ({ credentialTypeDetails, ...rest }) => ({
 
 async function createBatchOfCredentials(credentialsData, credentialType, groups) {
   Logger.info(`Creating ${credentialsData.length} credential(s):`);
-  const draftsToSend = credentialsData.map(({ policyNumber, ...c }) => ({
+  const draftsToSend = credentialsData.map(c => ({
     external_id: c.externalId,
-    // policyNumber is rejected as a string by the BE
-    credential_data: _.omit({ ...c, policyNumber: parseInt(policyNumber, 10) }, [
-      'externalId',
-      'issuer',
-      'credentialType'
-    ]),
+    credential_data: _.omit(c, ['externalId', 'issuer', 'credentialType']),
     group_ids: groups.map(g => g.id)
   }));
   const jsonToSend = {
     // FIXME: issuance_name is required to be unique by the backend.
     // Remove random value when it's no longer required.
-    issuance_name: Math.random().toString(),
+    issuance_name: uuid(),
     credential_type_id: credentialType.id,
     drafts: draftsToSend
   };
