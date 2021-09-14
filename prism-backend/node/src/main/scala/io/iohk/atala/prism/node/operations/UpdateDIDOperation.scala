@@ -54,9 +54,17 @@ case class UpdateDIDOperation(
           }
         }
       case RevokeKeyAction(keyId) =>
-        EitherT.right[StateError](PublicKeysDAO.revoke(keyId, ledgerData)).subflatMap { wasRemoved =>
-          Either.cond(wasRemoved, (), StateError.EntityMissing("key", keyId))
-        }
+        for {
+          _ <- EitherT[ConnectionIO, StateError, DIDPublicKeyState] {
+            PublicKeysDAO.find(didSuffix, keyId).map(_.toRight(StateError.EntityMissing("key", keyId)))
+          }.subflatMap { didKey =>
+            Either.cond(didKey.revokedOn.isEmpty, didKey.key, StateError.KeyAlreadyRevoked())
+          }
+          result <- EitherT.right[StateError](PublicKeysDAO.revoke(didSuffix, keyId, ledgerData)).subflatMap {
+            wasRemoved =>
+              Either.cond(wasRemoved, (), StateError.EntityMissing("key", keyId))
+          }
+        } yield result
     }
   }
 

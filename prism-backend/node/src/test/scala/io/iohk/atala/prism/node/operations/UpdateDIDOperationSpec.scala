@@ -71,12 +71,22 @@ object UpdateDIDOperationSpec {
     )
   )
 
-  val exampleOperation = node_models.AtalaOperation(
+  val exampleAddAndRemoveOperation = node_models.AtalaOperation(
     operation = node_models.AtalaOperation.Operation.UpdateDid(
       value = node_models.UpdateDIDOperation(
         previousOperationHash = ByteString.copyFrom(createDidOperation.digest.getValue.toArray),
         id = createDidOperation.id.getValue,
         actions = Seq(exampleAddKeyAction, exampleRemoveKeyAction)
+      )
+    )
+  )
+
+  val exampleRemoveOperation = node_models.AtalaOperation(
+    operation = node_models.AtalaOperation.Operation.UpdateDid(
+      value = node_models.UpdateDIDOperation(
+        previousOperationHash = ByteString.copyFrom(createDidOperation.digest.getValue.toArray),
+        id = createDidOperation.id.getValue,
+        actions = Seq(exampleRemoveKeyAction)
       )
     )
   )
@@ -98,7 +108,7 @@ class UpdateDIDOperationSpec extends AtalaWithPostgresSpec with ProtoParsingTest
   lazy val didDataRepository: DIDDataRepository[IO] = DIDDataRepository(database)
 
   override type Repr = UpdateDIDOperation
-  override val exampleOperation = UpdateDIDOperationSpec.exampleOperation
+  override val exampleOperation = UpdateDIDOperationSpec.exampleAddAndRemoveOperation
   val signedExampleOperation = BlockProcessingServiceSpec.signOperation(exampleOperation, signingKeyId, signingKey)
   override def operationCompanion: OperationCompanion[UpdateDIDOperation] = UpdateDIDOperation
 
@@ -227,7 +237,7 @@ class UpdateDIDOperationSpec extends AtalaWithPostgresSpec with ProtoParsingTest
         .key
       newKey.addedOn.timestampInfo mustBe dummyLedgerData.timestampInfo
       newKey.revokedOn mustBe None
-      didInfo.lastOperation mustBe Sha256.compute(UpdateDIDOperationSpec.exampleOperation.toByteArray)
+      didInfo.lastOperation mustBe Sha256.compute(UpdateDIDOperationSpec.exampleAddAndRemoveOperation.toByteArray)
     }
 
     "return error when issuer is missing in the DB" in {
