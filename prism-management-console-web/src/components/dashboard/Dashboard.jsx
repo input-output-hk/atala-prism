@@ -1,11 +1,10 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 import PropTypes from 'prop-types';
 import { message } from 'antd';
 import { withApi } from '../providers/withApi';
 import Welcome from './Atoms/Welcome/Welcome';
 import CurrentBundle from './Atoms/CurrentBundle/CurrentBundle';
-import DashboardCard from './organism/DashboardCard';
 import DashboardCardGroup from './organism/DashboardCardGroup';
 import DashboardCardCredential from './organism/DashboardCardCredential';
 import Logger from '../../helpers/Logger';
@@ -20,12 +19,18 @@ import {
 import WaitBanner from './Atoms/WaitBanner/WaitBanner';
 import { useSession } from '../providers/SessionContext';
 import SimpleLoading from '../common/Atoms/SimpleLoading/SimpleLoading';
+import TutorialModal from '../tutorial/tutorialModal';
+import TutorialTool from '../tutorial/tutorialTool/tutorialTool';
+import TutorialPopover from '../tutorial/tutorialTool/tutorialPopover';
+
 import './_style.scss';
 
 const Dashboard = ({ api, name, bundle }) => {
   const { t } = useTranslation();
   const tp = useTranslationWithPrefix('dashboard');
-  const [contactsStats, setContactsStats] = useState();
+
+  const [tutorialProgress, setTutorialProgress] = useState(api.configuration.tutorialProgress);
+  const [, setContactsStats] = useState();
   const [groupsStats, setGroupsStats] = useState();
   const [credentialsStats, setCredentialsStats] = useState();
   const [loading, setLoading] = useState(false);
@@ -61,11 +66,34 @@ const Dashboard = ({ api, name, bundle }) => {
     getStatistics();
   }, [api.summaryManager, removeUnconfirmedAccountError, showUnconfirmedAccountError, t]);
 
+  useEffect(() => {
+    api.configuration.saveTutorialProgress(tutorialProgress);
+  }, [tutorialProgress]);
+
+  const updateTutorialProgress = useCallback(
+    update => {
+      const newTutorialProgress = Object.assign({}, tutorialProgress, update);
+      setTutorialProgress(newTutorialProgress);
+    },
+    [tutorialProgress]
+  );
+
+  const onStartTutorial = () => updateTutorialProgress({ started: true });
+  const onPauseTutorial = () => updateTutorialProgress({ paused: true });
+
+  const tutorialIsRunning =
+    tutorialProgress.started && !tutorialProgress.paused && !tutorialProgress.finished;
+
   return (
     <div className="DashboardContainer Wrapper">
       <div className="DashboardHeader">
         <h1>{tp('title')}</h1>
         <p>{longDateFormatter()}</p>
+        <TutorialModal
+          isOpen={!tutorialProgress.started && !tutorialProgress.paused}
+          onStart={onStartTutorial}
+          onPause={onPauseTutorial}
+        />
       </div>
       <div className="DashboardContent">
         {accountStatus === LOADING && <SimpleLoading size="md" />}
@@ -78,11 +106,12 @@ const Dashboard = ({ api, name, bundle }) => {
       <div className="DashboardContentBottom">
         <h1>{tp('titleBottom')}</h1>
         <div className="dashboardCardContainer">
-          <DashboardCard data={contactsStats} loading={loading} />
+          <TutorialPopover currentStep={tutorialProgress.basicSteps} />
           <DashboardCardGroup data={groupsStats} loading={loading} />
           <DashboardCardCredential data={credentialsStats} loading={loading} />
         </div>
       </div>
+      {tutorialIsRunning && <TutorialTool {...tutorialProgress} onSkip={onPauseTutorial} />}
     </div>
   );
 };
@@ -96,6 +125,18 @@ Dashboard.propTypes = {
   api: PropTypes.shape({
     summaryManager: PropTypes.shape({
       getStatistics: PropTypes.func.isRequired
+    }).isRequired,
+    configuration: PropTypes.shape({
+      tutorialProgress: PropTypes.shape({
+        started: PropTypes.bool.isRequired,
+        paused: PropTypes.bool.isRequired,
+        finished: PropTypes.bool.isRequired,
+        basicSteps: PropTypes.number.isRequired,
+        contacts: PropTypes.number.isRequired,
+        groups: PropTypes.number.isRequired,
+        credentials: PropTypes.number.isRequired
+      }).isRequired,
+      saveTutorialProgress: PropTypes.func.isRequired
     }).isRequired
   }).isRequired,
   name: PropTypes.string,

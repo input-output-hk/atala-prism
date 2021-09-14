@@ -11,6 +11,8 @@ import './_style.scss';
 //    - theme-outline
 //    - theme-grey
 //    - theme-link
+//    - theme-filter
+//    - theme-text
 const CustomButton = ({ buttonText, buttonProps, loading, className, ...propagatedProps }) => (
   <Button
     {...propagatedProps}
@@ -36,7 +38,8 @@ CustomButton.propTypes = {
       'theme-outline',
       'theme-grey',
       'theme-link',
-      'theme-filter'
+      'theme-filter',
+      'theme-text'
     ]),
     onClick: PropTypes.func,
     disabled: PropTypes.bool
