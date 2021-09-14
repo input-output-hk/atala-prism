@@ -68,6 +68,19 @@ class DIDUtilsSpec extends AnyWordSpec with Matchers {
       val didData = DIDData(publicKeys = Seq(masterEcKeyDataPublicKey))
       DIDUtils.findPublicKey(didData, "unknown").value.futureValue mustBe Left(UnknownPublicKeyId())
     }
+
+    "work fine when you pass compressed key as uncompressed" in {
+      val compressedAsUncompressedKey = masterCompressedEcKeyDataPublicKey.copy(keyData =
+        node_models.PublicKey.KeyData.EcKeyData(
+          node_models.ECKeyData(
+            curve = ECConfig.getCURVE_NAME,
+            x = masterCompressedEcKeyData.data
+          )
+        )
+      )
+      val didData = DIDData(publicKeys = Seq(compressedAsUncompressedKey))
+      DIDUtils.findPublicKey(didData, "master").value.futureValue mustBe Right(masterKeys.getPublicKey)
+    }
   }
 
 }
