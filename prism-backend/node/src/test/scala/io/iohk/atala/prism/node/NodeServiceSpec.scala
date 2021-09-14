@@ -198,7 +198,7 @@ class NodeServiceSpec
 
       (DIDDataDAO.insert(didSuffix, didDigest, dummyLedgerData).transact(database) >>
         PublicKeysDAO.insert(key, dummyLedgerData).transact(database) >>
-        PublicKeysDAO.revoke(key.keyId, dummyLedgerData).transact(database)).unsafeRunSync()
+        PublicKeysDAO.revoke(didSuffix, key.keyId, dummyLedgerData).transact(database)).unsafeRunSync()
 
       doReturn(Future.successful(dummySyncTimestamp)).when(objectManagementService).getLastSyncedTimestamp
 
@@ -278,7 +278,7 @@ class NodeServiceSpec
   "NodeService.updateDID" should {
     "publish UpdateDID operation" in {
       val operation = BlockProcessingServiceSpec.signOperation(
-        UpdateDIDOperationSpec.exampleOperation,
+        UpdateDIDOperationSpec.exampleAddAndRemoveOperation,
         "master",
         UpdateDIDOperationSpec.masterKeys.getPrivateKey
       )
@@ -312,7 +312,7 @@ class NodeServiceSpec
 
     "return error when provided operation is invalid" in {
       val operation = BlockProcessingServiceSpec.signOperation(
-        UpdateDIDOperationSpec.exampleOperation.update(_.updateDid.id := "abc#@!"),
+        UpdateDIDOperationSpec.exampleAddAndRemoveOperation.update(_.updateDid.id := "abc#@!"),
         "master",
         UpdateDIDOperationSpec.masterKeys.getPrivateKey
       )
@@ -785,7 +785,7 @@ class NodeServiceSpec
       val createDIDOperationId = AtalaOperationId.of(createDIDOperation)
 
       val updateOperation = BlockProcessingServiceSpec.signOperation(
-        UpdateDIDOperationSpec.exampleOperation,
+        UpdateDIDOperationSpec.exampleAddAndRemoveOperation,
         "master",
         UpdateDIDOperationSpec.masterKeys.getPrivateKey
       )

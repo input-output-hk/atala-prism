@@ -48,7 +48,7 @@ object PublicKeysDAO {
        """.stripMargin.query[DIDPublicKeyState].to[List]
   }
 
-  def revoke(keyId: String, ledgerData: LedgerData): ConnectionIO[Boolean] = {
+  def revoke(didSuffix: DidSuffix, keyId: String, ledgerData: LedgerData): ConnectionIO[Boolean] = {
     val revokedOn = ledgerData.timestampInfo
     sql"""
          |UPDATE public_keys
@@ -56,7 +56,7 @@ object PublicKeysDAO {
          |    revoked_on_absn = ${revokedOn.getAtalaBlockSequenceNumber},
          |    revoked_on_osn = ${revokedOn.getOperationSequenceNumber},
          |    revoked_on_transaction_id = ${ledgerData.transactionId}
-         |WHERE key_id = $keyId
+         |WHERE did_suffix = $didSuffix AND key_id = $keyId
          |""".stripMargin.update.run.map(_ > 0)
   }
 }
