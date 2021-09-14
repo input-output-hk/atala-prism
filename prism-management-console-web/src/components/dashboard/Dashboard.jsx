@@ -29,7 +29,11 @@ const Dashboard = ({ api, name, bundle }) => {
   const { t } = useTranslation();
   const tp = useTranslationWithPrefix('dashboard');
 
-  const [tutorialProgress, setTutorialProgress] = useState(api.configuration.tutorialProgress);
+  const {
+    configuration: { tutorialProgress: storedTutorialProgress, saveTutorialProgress }
+  } = api;
+
+  const [tutorialProgress, setTutorialProgress] = useState(storedTutorialProgress);
   const [, setContactsStats] = useState();
   const [groupsStats, setGroupsStats] = useState();
   const [credentialsStats, setCredentialsStats] = useState();
@@ -67,8 +71,8 @@ const Dashboard = ({ api, name, bundle }) => {
   }, [api.summaryManager, removeUnconfirmedAccountError, showUnconfirmedAccountError, t]);
 
   useEffect(() => {
-    api.configuration.saveTutorialProgress(tutorialProgress);
-  }, [tutorialProgress]);
+    saveTutorialProgress(tutorialProgress);
+  }, [tutorialProgress, saveTutorialProgress]);
 
   const updateTutorialProgress = useCallback(
     update => {
