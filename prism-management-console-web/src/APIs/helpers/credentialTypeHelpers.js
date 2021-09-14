@@ -48,7 +48,7 @@ export const adaptCredentialType = ({ id, name, ...rest } = {}) => ({
 });
 
 export const getCredentialTypeAttributes = async credentialList => {
-  const { name, logo } = credentialList[0]?.credentialTypeDetails;
+  const { name, logo } = credentialList[0]?.credentialData.credentialTypeDetails;
 
   const encodedIcon = await svgPathToEncodedBase64(logo);
 

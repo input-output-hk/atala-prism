@@ -7,14 +7,11 @@ import CustomButton from '../../../Atoms/CustomButton/CustomButton';
 import JsonView from '../../../Atoms/JsonView/JsonView';
 import './_style.scss';
 
-const CredentialRawDetail = ({ credentialString, visible, onClose }) => {
+const CredentialRawDetail = ({ credentialString, visible, onClose, downloadProps }) => {
   const tp = useTranslationWithPrefix('credentials.drawer.raw');
+  const { downloadHref, downloadName } = downloadProps;
 
   const credentialJson = JSON.parse(credentialString);
-
-  const { contactName, credentialType, cardNumber } = credentialJson;
-  const downloadHref = `data:text/plain;charset=utf-8,${encodeURIComponent(credentialString)}`;
-  const downloadName = `${contactName}-${credentialType}-${cardNumber}.txt`.replace(' ', '_');
 
   return (
     <Drawer
@@ -45,7 +42,6 @@ const CredentialRawDetail = ({ credentialString, visible, onClose }) => {
             </Col>
           </Row>
         </Card>
-
         <a href={downloadHref} download={downloadName}>
           <CustomButton
             buttonText={tp('downloadFile')}
@@ -60,7 +56,11 @@ const CredentialRawDetail = ({ credentialString, visible, onClose }) => {
 CredentialRawDetail.propTypes = {
   credentialString: PropTypes.string.isRequired,
   visible: PropTypes.bool.isRequired,
-  onClose: PropTypes.func.isRequired
+  onClose: PropTypes.func.isRequired,
+  downloadProps: PropTypes.shape({
+    downloadHref: PropTypes.string,
+    downloadName: PropTypes.string
+  }).isRequired
 };
 
 export default CredentialRawDetail;

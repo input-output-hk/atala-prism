@@ -34,6 +34,7 @@ const CredentialSummaryDetail = ({ drawerInfo, credential }) => {
   const [rawVisible, setRawVisible] = useState(false);
 
   const {
+    credentialData: { contactName, credentialTypeDetails },
     verificationResult: {
       credentialSigned,
       credentialPublished,
@@ -57,14 +58,22 @@ const CredentialSummaryDetail = ({ drawerInfo, credential }) => {
     }
   };
 
+  const downloadHref = `data:text/plain;charset=utf-8,${encodeURIComponent(
+    credential.credentialString
+  )}`;
+
+  const downloadName = `${contactName}-${credentialTypeDetails?.name}.txt`.replace(' ', '_');
+
   const content = (
     <div>
-      <CustomButton
-        buttonProps={{
-          className: 'theme-link'
-        }}
-        buttonText="Download"
-      />
+      <a href={downloadHref} download={downloadName}>
+        <CustomButton
+          buttonProps={{
+            className: 'theme-link'
+          }}
+          buttonText={t('credentials.drawer.raw.downloadFile')}
+        />
+      </a>
       <CustomButton
         buttonProps={{
           className: 'theme-link',
@@ -177,6 +186,7 @@ const CredentialSummaryDetail = ({ drawerInfo, credential }) => {
       <CredentialRawDetail
         visible={rawVisible}
         credentialString={credential.credentialString}
+        downloadProps={{ downloadHref, downloadName }}
         onClose={() => setRawVisible(false)}
       />
     </Drawer>
