@@ -45,10 +45,13 @@ object DIDUtils {
         .map(_.keyData)
         .flatMap {
           case EcKeyData(data) =>
-            verifyPublicKey(
-              data.curve,
-              EC.toPublicKeyFromByteCoordinates(data.x.toByteArray, data.y.toByteArray)
-            )
+            // FIXME: remove that if statement after fixing whitelist DID's (they should use really uncompressed keys or really compressed ones)
+            if (data.x.size() > 32) verifyPublicKey(data.curve, EC.toPublicKeyFromCompressed(data.x.toByteArray))
+            else
+              verifyPublicKey(
+                data.curve,
+                EC.toPublicKeyFromByteCoordinates(data.x.toByteArray, data.y.toByteArray)
+              )
           case CompressedEcKeyData(data) =>
             verifyPublicKey(data.curve, EC.toPublicKeyFromCompressed(data.data.toByteArray))
           case Empty => None
