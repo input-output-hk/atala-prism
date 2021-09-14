@@ -9,7 +9,7 @@ import io.iohk.atala.prism.AtalaWithPostgresSpec
 import io.iohk.atala.prism.kotlin.credentials.CredentialBatchId
 import io.iohk.atala.prism.kotlin.crypto.{Sha256, Sha256Digest}
 import io.iohk.atala.prism.kotlin.identity.{PrismDid => DID}
-import io.iohk.atala.prism.kotlin.identity.PrismDid.{getMASTER_KEY_ID => masterKeyId}
+import io.iohk.atala.prism.kotlin.identity.PrismDid.{getDEFAULT_MASTER_KEY_ID => masterKeyId}
 import io.iohk.atala.prism.node.poc.{GenericCredentialsSDK, Wallet}
 import io.iohk.atala.prism.node.repositories.{
   AtalaObjectsTransactionsRepository,

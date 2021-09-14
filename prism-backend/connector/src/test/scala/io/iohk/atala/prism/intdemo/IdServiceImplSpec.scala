@@ -75,7 +75,7 @@ class IdServiceImplSpec extends AnyFlatSpec {
     val issuerName = "Metropol City Government"
     val credentialType = IdServiceImpl.credentialTypeId
     val issuerDID = s"did:prism:${IdServiceImpl.issuerId.uuid}"
-    val issuanceKeyId = DID.getMASTER_KEY_ID
+    val issuanceKeyId = DID.getDEFAULT_MASTER_KEY_ID
     val holderName = name
     val holderDateOfBirth = dateOfBirth
     val identityNumber =

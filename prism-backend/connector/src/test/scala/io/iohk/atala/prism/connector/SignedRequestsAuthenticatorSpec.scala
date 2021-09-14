@@ -75,7 +75,7 @@ class SignedRequestsAuthenticatorSpec extends AnyWordSpec {
         .UnpublishedDIDBased(
           requestNonce = auth.model.RequestNonce(signedRequest.requestNonce.toVector),
           did = unpublishedDid,
-          DID.getMASTER_KEY_ID,
+          DID.getDEFAULT_MASTER_KEY_ID,
           signature = new ECSignature(signedRequest.signature)
         )
 

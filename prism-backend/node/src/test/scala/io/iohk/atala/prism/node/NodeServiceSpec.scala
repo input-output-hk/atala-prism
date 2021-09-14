@@ -138,7 +138,7 @@ class NodeServiceSpec
       document.publicKeys.size mustBe 1
 
       val publicKey = document.publicKeys.headOption.value
-      publicKey.id mustBe DID.getMASTER_KEY_ID
+      publicKey.id mustBe DID.getDEFAULT_MASTER_KEY_ID
       publicKey.usage mustBe node_models.KeyUsage.MASTER_KEY
       publicKey.addedOn mustBe empty
       publicKey.revokedOn mustBe empty
@@ -157,7 +157,7 @@ class NodeServiceSpec
       // we simulate the publication of the DID and the addition of an issuing key
       val didDigest = Sha256Digest.fromHex(longFormDID.asCanonical().getSuffix)
       val didSuffix: DidSuffix = DidSuffix(didDigest.getHexValue)
-      val key1 = DIDPublicKey(didSuffix, DID.getMASTER_KEY_ID, KeyUsage.MasterKey, masterKey)
+      val key1 = DIDPublicKey(didSuffix, DID.getDEFAULT_MASTER_KEY_ID, KeyUsage.MasterKey, masterKey)
       val key2 = DIDPublicKey(didSuffix, "issuance0", KeyUsage.IssuingKey, issuingKey)
 
       (DIDDataDAO.insert(didSuffix, didDigest, dummyLedgerData).transact(database) >>
@@ -172,7 +172,7 @@ class NodeServiceSpec
       document.id mustBe longFormDID.getSuffix
       document.publicKeys.length mustBe 2
 
-      val publicKey1 = document.publicKeys.find(_.id == DID.getMASTER_KEY_ID).value
+      val publicKey1 = document.publicKeys.find(_.id == DID.getDEFAULT_MASTER_KEY_ID).value
       publicKey1.usage mustBe node_models.KeyUsage.MASTER_KEY
       publicKey1.addedOn.value mustBe ProtoCodecs.toLedgerData(dummyLedgerData)
       publicKey1.revokedOn mustBe empty
@@ -194,7 +194,7 @@ class NodeServiceSpec
       // we simulate the publication of the DID and the addition of an issuing key
       val didDigest = Sha256Digest.fromHex(longFormDID.asCanonical().getSuffix)
       val didSuffix = DidSuffix(didDigest.getHexValue)
-      val key = DIDPublicKey(didSuffix, DID.getMASTER_KEY_ID, KeyUsage.MasterKey, masterKey)
+      val key = DIDPublicKey(didSuffix, DID.getDEFAULT_MASTER_KEY_ID, KeyUsage.MasterKey, masterKey)
 
       (DIDDataDAO.insert(didSuffix, didDigest, dummyLedgerData).transact(database) >>
         PublicKeysDAO.insert(key, dummyLedgerData).transact(database) >>
@@ -208,7 +208,7 @@ class NodeServiceSpec
       document.id mustBe longFormDID.getSuffix
       document.publicKeys.length mustBe 1
 
-      val publicKey = document.publicKeys.find(_.id == DID.getMASTER_KEY_ID).value
+      val publicKey = document.publicKeys.find(_.id == DID.getDEFAULT_MASTER_KEY_ID).value
       publicKey.usage mustBe node_models.KeyUsage.MASTER_KEY
       publicKey.addedOn.value mustBe ProtoCodecs.toLedgerData(dummyLedgerData)
       publicKey.revokedOn mustBe Some(ProtoCodecs.toLedgerData(dummyLedgerData))

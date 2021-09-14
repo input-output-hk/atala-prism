@@ -29,7 +29,7 @@ class DegreeServiceImplSpec extends AnyFlatSpec {
     val issuanceDate = LocalDate.now()
     val holderName = name
     val graduationDate = dateOfBirth.plusYears(20)
-    val issuanceKeyId = DID.getMASTER_KEY_ID
+    val issuanceKeyId = DID.getDEFAULT_MASTER_KEY_ID
     val credentialType = DegreeServiceImpl.credentialTypeId
     val holderDateOfBirth = dateOfBirth
 

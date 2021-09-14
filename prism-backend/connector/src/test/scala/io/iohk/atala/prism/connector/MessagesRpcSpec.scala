@@ -274,7 +274,7 @@ class MessagesRpcSpec extends ConnectorRpcSpecBase {
 
       val messages = createExampleMessages(issuerId)
 
-      usingApiAs(requestNonce, signature, did, DID.getMASTER_KEY_ID) { blockingStub =>
+      usingApiAs(requestNonce, signature, did, DID.getDEFAULT_MASTER_KEY_ID) { blockingStub =>
         val response = blockingStub.getMessagesPaginated(request)
         response.messages.map(m => (m.id, m.connectionId)) mustBe
           messages.take(10).map { case (messageId, connectionId) => (messageId.toString, connectionId.toString) }

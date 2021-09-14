@@ -103,7 +103,7 @@ class CardanoFeeEstimator(walletId: WalletId, paymentAddress: Address, cardanoWa
 
   private def signOperation(atalaOperation: AtalaOperation, privateKey: ECPrivateKey): SignedAtalaOperation = {
     node_models.SignedAtalaOperation(
-      signedWith = DID.getMASTER_KEY_ID,
+      signedWith = DID.getDEFAULT_MASTER_KEY_ID,
       operation = Some(atalaOperation),
       signature = ByteString.copyFrom(EC.signBytes(atalaOperation.toByteArray, privateKey).getData)
     )
@@ -120,7 +120,7 @@ class CardanoFeeEstimator(walletId: WalletId, paymentAddress: Address, cardanoWa
           id = did.getSuffix,
           publicKeys = Seq(
             node_models.PublicKey(
-              id = DID.getMASTER_KEY_ID,
+              id = DID.getDEFAULT_MASTER_KEY_ID,
               usage = node_models.KeyUsage.MASTER_KEY,
               keyData = node_models.PublicKey.KeyData.EcKeyData(
                 publicKeyToProto(publicKey)

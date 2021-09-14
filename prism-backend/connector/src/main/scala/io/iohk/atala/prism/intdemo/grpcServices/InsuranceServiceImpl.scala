@@ -147,7 +147,7 @@ object InsuranceServiceImpl {
       credentialHtml = credentialHtml,
       issuerName = issuerName,
       issuerDID = s"did:prism:${issuerId.uuid}",
-      issuanceKeyId = DID.getMASTER_KEY_ID,
+      issuanceKeyId = DID.getDEFAULT_MASTER_KEY_ID,
       issuanceDate = issuanceDate,
       expirationDate = expirationDate,
       policyNumber = policyNumber,

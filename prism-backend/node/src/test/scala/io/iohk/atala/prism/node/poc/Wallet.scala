@@ -38,7 +38,7 @@ case class Wallet(node: node_api.NodeServiceGrpc.NodeServiceBlockingStub) {
         node_models.DIDData(
           publicKeys = Seq(
             node_models.PublicKey(
-              id = PrismDid.getMASTER_KEY_ID,
+              id = PrismDid.getDEFAULT_MASTER_KEY_ID,
               usage = node_models.KeyUsage.MASTER_KEY,
               keyData = node_models.PublicKey.KeyData.EcKeyData(
                 publicKeyToProto(masterPublicKey)
@@ -61,7 +61,7 @@ case class Wallet(node: node_api.NodeServiceGrpc.NodeServiceBlockingStub) {
     val didSuffix: DidSuffix = DidSuffix(operationHash.getHexValue)
 
     dids += (didSuffix -> collection.mutable.Map(
-      PrismDid.getMASTER_KEY_ID -> masterPrivateKey,
+      PrismDid.getDEFAULT_MASTER_KEY_ID -> masterPrivateKey,
       "issuance0" -> issuancePrivateKey
     ))
 
@@ -95,7 +95,7 @@ case class Wallet(node: node_api.NodeServiceGrpc.NodeServiceBlockingStub) {
       node_models.AtalaOperation(
         node_models.AtalaOperation.Operation.UpdateDid(updateDIDOp)
       ),
-      PrismDid.getMASTER_KEY_ID,
+      PrismDid.getDEFAULT_MASTER_KEY_ID,
       didSuffix
     )
     node.updateDID(node_api.UpdateDIDRequest(Some(updateDidOpSigned)))
