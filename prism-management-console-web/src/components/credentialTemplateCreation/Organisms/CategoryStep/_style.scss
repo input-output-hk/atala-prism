@@ -25,7 +25,7 @@
   }
   .ant-form-item .ant-select, .ant-form-item .ant-cascader-picker {
     width: 290px;
-    margin: 1em 0;
+    margin: 1em 0 0 0;
   }
 }
 
@@ -36,6 +36,9 @@
 .templateName {
   display: flex;
   flex-direction: column;
+  .ant-form-item-has-error.ant-form-item-has-feedback .ant-form-item-children-icon {
+    margin-top: 0.3em;
+  }
   .ant-row {
     margin: 0;
     .ant-col {
