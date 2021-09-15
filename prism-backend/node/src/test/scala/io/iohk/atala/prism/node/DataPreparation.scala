@@ -49,6 +49,11 @@ import scala.concurrent.{ExecutionContext, Future}
 // defined in corresponding repositories
 object DataPreparation {
   val dummyTimestampInfo: TimestampInfo = new TimestampInfo(0, 1, 0)
+  lazy val dummyLedgerData: LedgerData = LedgerData(
+    TransactionId.from(Array.fill[Byte](TransactionId.config.size.toBytes.toInt)(0)).value,
+    Ledger.InMemory,
+    dummyTimestampInfo
+  )
   val exampleOperation: node_models.AtalaOperation = node_models.AtalaOperation(
     node_models.AtalaOperation.Operation.CreateDid(
       value = node_models.CreateDIDOperation(

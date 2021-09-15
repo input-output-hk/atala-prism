@@ -8,6 +8,7 @@ import io.iohk.atala.prism.crypto.EC.{INSTANCE => EC}
 import io.iohk.atala.prism.crypto.Sha256
 import io.iohk.atala.prism.protos.models.TimestampInfo
 import io.iohk.atala.prism.models.{Ledger, TransactionId}
+import io.iohk.atala.prism.node.DataPreparation.dummyLedgerData
 import io.iohk.atala.prism.node.models.nodeState.LedgerData
 import io.iohk.atala.prism.node.models.{DIDPublicKey, KeyUsage}
 import io.iohk.atala.prism.node.operations.CreateDIDOperationSpec.{randomCompressedECKeyData, randomECKeyData}
@@ -17,21 +18,12 @@ import io.iohk.atala.prism.protos.node_models
 import org.scalatest.EitherValues._
 import org.scalatest.OptionValues._
 
-import java.time.Instant
-import io.iohk.atala.prism.node.DataPreparation
-
 object UpdateDIDOperationSpec {
   val masterKeys = CreateDIDOperationSpec.masterKeys
   val issuingKeys = CreateDIDOperationSpec.issuingKeys
 
   val newMasterKeys = EC.generateKeyPair()
 
-  lazy val dummyTimestamp = new TimestampInfo(Instant.ofEpochMilli(0).toEpochMilli, 1, 0)
-  lazy val dummyLedgerData = LedgerData(
-    TransactionId.from(Array.fill[Byte](TransactionId.config.size.toBytes.toInt)(0)).value,
-    Ledger.InMemory,
-    dummyTimestamp
-  )
   lazy val createDidOperation =
     CreateDIDOperation.parse(CreateDIDOperationSpec.exampleOperation, dummyLedgerData).toOption.value
 

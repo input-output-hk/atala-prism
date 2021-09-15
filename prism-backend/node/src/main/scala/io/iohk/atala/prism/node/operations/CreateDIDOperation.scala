@@ -38,7 +38,7 @@ case class CreateDIDOperation(
     } yield data
   }
 
-  override def applyState(): EitherT[ConnectionIO, StateError, Unit] = {
+  override def applyStateImpl(): EitherT[ConnectionIO, StateError, Unit] = {
     // type lambda T => EitherT[ConnectionIO, StateError, T]
     // in .traverse we need to express what Monad is to be used
     // as EitherT has 3 type parameters, it cannot be deduced from the context

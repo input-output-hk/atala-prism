@@ -225,6 +225,7 @@ package object daos extends BaseDAO {
             new TimestampInfo(abt.toEpochMilli, absn, osn)
           )
       }
+
   implicit val ledgerDataRead: Read[LedgerData] =
     Read[(Array[Byte], String, Instant, Int, Int)]
       .map {
@@ -300,4 +301,16 @@ package object daos extends BaseDAO {
     }
   }
 
+  implicit val protocolVersionRead: Read[ProtocolVersion] =
+    Read[(Int, Int)]
+      .map {
+        case (major, minor) => ProtocolVersion(major, minor)
+      }
+
+  implicit val protocolVersionInfoRead: Read[ProtocolVersionInfo] =
+    Read[(Int, Int, Option[String], Int)]
+      .map {
+        case (major, minor, versionName, effectiveSince) =>
+          ProtocolVersionInfo(ProtocolVersion(major, minor), versionName, effectiveSince)
+      }
 }
