@@ -86,7 +86,7 @@ class ConnectorApp(executionContext: ExecutionContext) { self =>
     // connector repositories
     val connectionsRepository = ConnectionsRepository.unsafe(txTraceIdLifted, connectorLogs)
     val messagesRepository = MessagesRepository.unsafe(txTraceIdLifted, connectorLogs)
-    val requestNoncesRepository = RequestNoncesRepository(xa)
+    val requestNoncesRepository = RequestNoncesRepository.unsafe(txTraceIdLifted, connectorLogs)
     val participantsRepository = ParticipantsRepository.unsafe[IOWithTraceIdContext, IO](txTraceIdLifted, connectorLogs)
 
     // authenticator

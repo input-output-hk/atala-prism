@@ -26,7 +26,7 @@ class ContactConnectionServiceSpec extends RpcSpecBase with DIDUtil with Connect
   protected lazy val nodeMock = mock[io.iohk.atala.prism.protos.node_api.NodeServiceGrpc.NodeService]
 
   private lazy val connectionsRepository = ConnectionsRepository.unsafe(dbLiftedToTraceIdIO, testLogs)
-  lazy val requestNoncesRepository = RequestNoncesRepository(database)
+  lazy val requestNoncesRepository = RequestNoncesRepository.unsafe(dbLiftedToTraceIdIO, testLogs)
   lazy val participantsRepository = ParticipantsRepository.unsafe(dbLiftedToTraceIdIO, testLogs)
 
   val (keyPair, did) = DIDUtil.createUnpublishedDid

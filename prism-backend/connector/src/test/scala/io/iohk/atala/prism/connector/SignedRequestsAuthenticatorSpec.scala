@@ -273,7 +273,7 @@ class SignedRequestsAuthenticatorSpec extends AnyWordSpec {
       }
       val authenticator = new ConnectorAuthenticator(
         participantsRepository,
-        mock[RequestNoncesRepository[IO]],
+        mock[RequestNoncesRepository[IOWithTraceIdContext]],
         mock[NodeServiceGrpc.NodeService],
         customParser
       )
@@ -439,10 +439,10 @@ class SignedRequestsAuthenticatorSpec extends AnyWordSpec {
       override def getTraceId(ctx: Context): TraceId = getTraceIdFromHeader()
     }
 
-    val requestNoncesRepository = mock[RequestNoncesRepository[IO]]
+    val requestNoncesRepository = mock[RequestNoncesRepository[IOWithTraceIdContext]]
     requestNoncesRepository
       .burn(any[ParticipantId], any[auth.model.RequestNonce])
-      .returns(IO(burnNonce()))
+      .returns(ReaderT.liftF(IO(burnNonce())))
 
     val customNode = mock[NodeServiceGrpc.NodeService]
     customNode.getDidDocument(*).returns {

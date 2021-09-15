@@ -1,5 +1,6 @@
 package io.iohk.atala.prism.connector.repositories
 
+import cats.effect.IO
 import doobie.implicits._
 import io.iohk.atala.prism.auth.model.RequestNonce
 import io.iohk.atala.prism.connector.model.ParticipantType
@@ -7,12 +8,15 @@ import io.iohk.atala.prism.connector.repositories.daos.RequestNoncesDAO
 import io.iohk.atala.prism.connector.DataPreparation
 import io.iohk.atala.prism.models.ParticipantId
 import org.scalatest.OptionValues._
+import tofu.logging.Logs
 
 import scala.util.Try
 
 class RequestNoncesRepositorySpec extends ConnectorRepositorySpecBase {
 
-  lazy val requestNoncesRepository = RequestNoncesRepository(database)
+  val logs = Logs.sync[IO, IO]
+
+  lazy val requestNoncesRepository = RequestNoncesRepository(database, logs).unsafeRunSync()
 
   private def available(participantId: ParticipantId, requestNonce: RequestNonce): Boolean = {
     RequestNoncesDAO.available(participantId, requestNonce).transact(database).unsafeRunSync()
