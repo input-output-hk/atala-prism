@@ -1,7 +1,7 @@
 package io.iohk.atala.prism.node.services
 
-import cats.data.EitherT
 import cats.effect.IO
+import cats.implicits._
 import doobie.free.connection.ConnectionIO
 import doobie.implicits._
 import doobie.util.transactor.Transactor
@@ -33,6 +33,7 @@ import java.time.Instant
 import scala.concurrent.Future
 
 private class DuplicateAtalaBlock extends Exception
+private class DuplicateAtalaOperation extends Exception
 
 class ObjectManagementService private (
     atalaOperationsRepository: AtalaOperationsRepository[IO],
@@ -78,45 +79,49 @@ class ObjectManagementService private (
   }
 
   def sendSingleAtalaOperation(op: node_models.SignedAtalaOperation): Future[AtalaOperationId] =
-    sendAtalaOperations(op).map(_.head)
-
-  def sendAtalaOperations(op: node_models.SignedAtalaOperation*): Future[List[AtalaOperationId]] = {
-    val obj = ObjectManagementService.createAtalaObject(op.toList)
-    val objBytes = obj.toByteArray
-    val objId = AtalaObjectId.of(objBytes)
-
-    val atalaOperations: List[SignedAtalaOperation] = op.toList
-    val atalaOperationIds = atalaOperations.map(AtalaOperationId.of)
-
-    val result = for {
-      // Insert object into DB
-      insertedCounts <- EitherT(
-        atalaOperationsRepository
-          .insertObjectAndOperations(objId, objBytes, atalaOperationIds, AtalaOperationStatus.RECEIVED)
-          .unsafeToFuture()
+    sendAtalaOperations(op) map { resultList =>
+      resultList.head.fold(
+        err => throw new RuntimeException(err.toString),
+        atalaOperationId => atalaOperationId
       )
-      (numInsertedObjects, numInsertedOperations) = insertedCounts
-    } yield {
-      if (numInsertedObjects == 0) {
-        logger.warn(s"Object $objId was already received by PRISM Node")
-        throw new DuplicateAtalaBlock()
-      }
-      if (numInsertedOperations != atalaOperationIds.size) {
-        logger.warn(s"Some operations from object with id $objId was already received by PRISM node.")
-      }
-      atalaOperationIds
     }
 
-    result.fold(
-      { err =>
-        OperationsCounters.failedToStoreToDbAtalaOperations(atalaOperations, err)
-        throw new RuntimeException(err.toString)
-      },
-      { _ =>
-        OperationsCounters.countReceivedAtalaOperations(atalaOperations)
-        atalaOperationIds
+  def sendAtalaOperations(
+      ops: node_models.SignedAtalaOperation*
+  ): Future[List[Either[NodeError, AtalaOperationId]]] = {
+    val opsWithObjects = ops.toList.map { op =>
+      (op, ObjectManagementService.createAtalaObject(List(op)))
+    }
+
+    val queryIO = opsWithObjects traverse {
+      case (op, obj) =>
+        val objBytes = obj.toByteArray
+        atalaOperationsRepository
+          .insertOperation(
+            AtalaObjectId.of(objBytes),
+            objBytes,
+            AtalaOperationId.of(op),
+            AtalaOperationStatus.RECEIVED
+          )
+    }
+
+    val resultIO = for {
+      operationInsertions <- queryIO
+    } yield {
+      opsWithObjects.zip(operationInsertions).map {
+        case ((atalaOperation, _), Left(err)) =>
+          OperationsCounters.failedToStoreToDbAtalaOperations(List(atalaOperation), err)
+          err.asLeft[AtalaOperationId]
+        case ((atalaOperation, _), Right(cntAdded)) if cntAdded == ((0, 0)) =>
+          val err = NodeError.DuplicateAtalaOperation(AtalaOperationId.of(atalaOperation))
+          OperationsCounters.failedToStoreToDbAtalaOperations(List(atalaOperation), err)
+          err.asLeft[AtalaOperationId]
+        case ((atalaOperation, _), Right(_)) =>
+          OperationsCounters.countReceivedAtalaOperations(List(atalaOperation))
+          AtalaOperationId.of(atalaOperation).asRight[NodeError]
       }
-    )
+    }
+    resultIO.unsafeToFuture()
   }
 
   def getLastSyncedTimestamp: Future[Instant] = {

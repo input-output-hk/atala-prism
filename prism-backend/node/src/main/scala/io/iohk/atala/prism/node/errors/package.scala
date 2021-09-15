@@ -1,6 +1,7 @@
 package io.iohk.atala.prism.node
 
 import io.grpc.Status
+import io.iohk.atala.prism.connector.AtalaOperationId
 import io.iohk.atala.prism.node.cardano.models.CardanoWalletError
 
 package object errors {
@@ -48,6 +49,16 @@ package object errors {
       }
 
       override def name: String = "internal-cardano-wallet"
+    }
+
+    case class DuplicateAtalaOperation(atalaOperationId: AtalaOperationId) extends NodeError {
+      override def toStatus: Status = {
+        Status.ALREADY_EXISTS.withDescription(
+          s"Atala operation atalaOperationId was already received by PRISM node."
+        )
+      }
+
+      override def name: String = "duplicate-atala-operation"
     }
   }
 

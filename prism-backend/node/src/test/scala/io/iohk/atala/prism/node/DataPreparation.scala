@@ -100,7 +100,12 @@ object DataPreparation {
     for {
       ids <- objectManagementService.sendAtalaOperations(ops: _*)
       _ <- submissionService.submitReceivedObjects()
-    } yield ids
+    } yield ids.map(
+      _.fold(
+        err => throw new RuntimeException(err.toString),
+        op => op
+      )
+    )
   }
 
   val dummyTime: TimestampInfo = new TimestampInfo(0, 1, 0)

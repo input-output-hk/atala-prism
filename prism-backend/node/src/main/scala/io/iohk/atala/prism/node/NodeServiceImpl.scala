@@ -242,20 +242,27 @@ class NodeServiceImpl(
     }
   }
 
-  override def publishAsABlock(request: PublishAsABlockRequest): Future[PublishAsABlockResponse] = {
-    val methodName = "publishAsABlock"
+  override def publishAsABlock(request: PublishAsABlockRequest): Future[PublishAsABlockResponse] = ???
+
+  override def scheduleOperations(
+      request: node_api.ScheduleOperationsRequest
+  ): Future[node_api.ScheduleOperationsResponse] = {
+    val methodName = "scheduleOperations"
 
     val operationsF = Future
       .fromTry {
         Try {
           require(request.signedOperations.nonEmpty, "there must be at least one operation to be published")
 
-          val obj = ObjectManagementService.createAtalaObject(request.signedOperations.toList)
-          require(
-            AtalaObjectMetadata.estimateTxMetadataSize(obj) <= cardano.TX_METADATA_MAX_SIZE,
-            "atala object size is too big"
-          )
-          request.signedOperations
+          request.signedOperations.map { signedAtalaOperation =>
+            val obj = ObjectManagementService.createAtalaObject(List(signedAtalaOperation))
+            val operationId = AtalaOperationId.of(signedAtalaOperation)
+            require(
+              AtalaObjectMetadata.estimateTxMetadataSize(obj) <= cardano.TX_METADATA_MAX_SIZE,
+              s"atala operation $operationId is too big"
+            )
+            signedAtalaOperation
+          }
         }
       }
       .countErrorOnFail(serviceName, methodName, Status.INTERNAL.getCode.value())
@@ -264,10 +271,11 @@ class NodeServiceImpl(
       withLog(methodName, request) { traceId =>
         for {
           operations <- operationsF
+          operationIds = operations.map(AtalaOperationId.of)
           _ = logWithTraceId(
             methodName,
             traceId,
-            "operations" -> s"${operations.map(AtalaOperationId.of(_).toString).mkString(",")}"
+            "operations" -> operationIds.map(_.toString).mkString(",")
           )
           outputs <- Future.sequence(
             operations.map { op =>
@@ -276,12 +284,14 @@ class NodeServiceImpl(
           )
           operationIds <- objectManagement.sendAtalaOperations(operations: _*)
           outputsWithOperationIds = outputs.zip(operationIds).map {
-            case (out, opId) =>
+            case (out, Right(opId)) =>
               out.withOperationId(opId.toProtoByteString)
+            case (out, Left(err)) =>
+              out.withError(err.toString)
           }
         } yield {
           node_api
-            .PublishAsABlockResponse()
+            .ScheduleOperationsResponse()
             .withOutputs(outputsWithOperationIds)
         }
       }
