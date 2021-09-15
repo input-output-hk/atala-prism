@@ -30,7 +30,7 @@ case class IssueCredentialBatchOperation(
       keyState <- EitherT[ConnectionIO, StateError, DIDPublicKeyState] {
         PublicKeysDAO
           .find(issuerDIDSuffix, keyId)
-          .map(_.toRight(StateError.UnknownKey(issuerDIDSuffix, credentialBatchId.getId)))
+          .map(_.toRight(StateError.UnknownKey(issuerDIDSuffix, keyId)))
       }
       _ <- EitherT.fromEither[ConnectionIO] {
         Either.cond(
