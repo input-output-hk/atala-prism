@@ -172,7 +172,7 @@ resource "aws_ebs_volume" "cardano_data" {
     # delete single resources (e.g. the instance instead) or taint and re-apply
     # if you *really* want to destroy the deployment with all the data
     # just comment this line
-    prevent_destroy = true
+    # prevent_destroy = true
   }
 }
 
@@ -223,5 +223,5 @@ resource "aws_route53_record" "this" {
   name    = "${var.name}-cardano-node.${var.atala_prism_domain}"
   type    = "A"
   ttl     = "300"
-  records = [aws_instance.cardano_instance.private_ip]
+  records = [aws_instance.cardano_instance.public_ip]
 }

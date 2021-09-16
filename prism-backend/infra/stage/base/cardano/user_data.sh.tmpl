@@ -103,8 +103,8 @@ WantedBy=multi-user.target
 EOF
 
 systemctl daemon-reload
-systemctl enable cardano
 systemctl start cardano
+systemctl enable cardano
 
 # Prometheus node exporter
 
