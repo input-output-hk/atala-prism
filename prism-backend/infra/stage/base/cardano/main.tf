@@ -152,7 +152,7 @@ resource "aws_instance" "cardano_instance" {
   vpc_security_group_ids = [module.security_group.this_security_group_id]
   subnet_id              = local.subnet_id
 
-  user_data = local.user_data
+  user_data            = local.user_data
   iam_instance_profile = aws_iam_instance_profile.this.name
 
   tags = {
@@ -187,8 +187,8 @@ resource "aws_volume_attachment" "cardano_data" {
 # IAM Role
 ########################################################################
 resource "aws_iam_role" "this" {
-  name = "${var.name}-cardano-node"
-  description = "Allows EC2 instances to call AWS services on your behalf."
+  name               = "${var.name}-cardano-node"
+  description        = "Allows EC2 instances to call AWS services on your behalf."
   assume_role_policy = <<EOF
 {
     "Version": "2012-10-17",
