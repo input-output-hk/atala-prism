@@ -1,7 +1,7 @@
 variable "aws_instance_type" {
   description = "Type of AWS instance to use"
   type        = string
-  default     = "t2.large"
+  default     = "c5.xlarge"
 }
 
 variable "aws_profile" {
@@ -41,4 +41,9 @@ variable "postgres_password" {
 variable "atala_prism_domain" {
   description = "Domain name of atala prism"
   default     = "atalaprism.io"
+}
+
+variable "atala_prism_zoneid" {
+  description = "Route53 ZoneId for the domain"
+  default     = "Z04196731VMWR6G5290VG"
 }

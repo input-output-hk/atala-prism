@@ -8,6 +8,10 @@ locals {
   # if config is not overriden using variable, use default one
   vpc_name      = coalesce(var.vpc_name, var.name)
   vpc_state_key = coalesce(var.vpc_state_key, "infra/stage/vpc/${local.vpc_name}/terraform.tfstate")
+  policy_arns = toset([
+    "arn:aws:iam::aws:policy/AmazonSSMManagedInstanceCore",
+    "arn:aws:iam::aws:policy/CloudWatchAgentServerPolicy"
+  ])
 }
 
 data "terraform_remote_state" "vpc" {
@@ -148,7 +152,8 @@ resource "aws_instance" "cardano_instance" {
   vpc_security_group_ids = [module.security_group.this_security_group_id]
   subnet_id              = local.subnet_id
 
-  user_data = local.user_data
+  user_data            = local.user_data
+  iam_instance_profile = aws_iam_instance_profile.this.name
 
   tags = {
     Name       = "${var.name}-cardano-node"
@@ -160,7 +165,7 @@ resource "aws_instance" "cardano_instance" {
 
 resource "aws_ebs_volume" "cardano_data" {
   availability_zone = local.availability_zone
-  size              = 50
+  size              = 200
 
   lifecycle {
     # this is to prevent accidental destruction of the data
@@ -176,4 +181,47 @@ resource "aws_volume_attachment" "cardano_data" {
   volume_id    = aws_ebs_volume.cardano_data.id
   instance_id  = aws_instance.cardano_instance.id
   force_detach = true # TODO: another solution
+}
+
+########################################################################
+# IAM Role
+########################################################################
+resource "aws_iam_role" "this" {
+  name               = "${var.name}-cardano-node"
+  description        = "Allows EC2 instances to call AWS services on your behalf."
+  assume_role_policy = <<EOF
+{
+    "Version": "2012-10-17",
+    "Statement": [
+        {
+            "Action": "sts:AssumeRole",
+            "Principal": {
+               "Service": "ec2.amazonaws.com"
+            },
+            "Effect": "Allow",
+            "Sid": ""
+        }
+    ]
+}
+EOF
+}
+
+resource "aws_iam_role_policy_attachment" "this" {
+  for_each   = local.policy_arns
+  role       = aws_iam_role.this.name
+  policy_arn = each.value
+}
+
+resource "aws_iam_instance_profile" "this" {
+  name = "${var.name}-cardano-node"
+  role = aws_iam_role.this.name
+}
+
+# Cardano Node DNS entry
+resource "aws_route53_record" "this" {
+  zone_id = var.atala_prism_zoneid
+  name    = "${var.name}-cardano-node.${var.atala_prism_domain}"
+  type    = "A"
+  ttl     = "300"
+  records = [aws_instance.cardano_instance.public_ip]
 }
