@@ -47,14 +47,15 @@ async function createTemplate(_values) {
   return Promise.resolve();
 }
 
-function getTemplateCategories() {
+async function getTemplateCategories() {
+  await mockDelay(MOCK_API_CALL_DELAY);
   return Promise.resolve(hardcodedTemplateCategories);
 }
 
 // eslint-disable-next-line no-unused-vars
-async function createCategory(_values) {
+async function createCategory(values) {
   await mockDelay(MOCK_API_CALL_DELAY);
-  return Promise.resolve();
+  return Promise.resolve(values);
 }
 
 const mapCredentialTypeField = field => ({

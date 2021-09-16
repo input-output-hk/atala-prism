@@ -1,7 +1,7 @@
 import React from 'react';
 import LayoutSelector from '../../Atoms/DesignTemplateStep/LayoutSelector';
 import ThemeOptions from '../../Atoms/DesignTemplateStep/ThemeOptions';
-import TemplateIcons from '../../Atoms/DesignTemplateStep/TemplateIcons';
+import TemplateContentIcons from '../../Atoms/DesignTemplateStep/TemplateContentIcons';
 import '../../_style.scss';
 
 const StylingSettings = () => (
@@ -14,7 +14,7 @@ const StylingSettings = () => (
         <ThemeOptions />
       </div>
       <div className="templateIcons">
-        <TemplateIcons />
+        <TemplateContentIcons />
       </div>
     </div>
   </div>

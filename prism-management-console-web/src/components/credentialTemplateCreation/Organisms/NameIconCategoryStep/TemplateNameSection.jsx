@@ -9,7 +9,7 @@ import './_style.scss';
 
 const normalize = input => input.trim();
 
-const TemplateName = observer(() => {
+const TemplateNameSection = observer(() => {
   const { t } = useTranslation();
   const { credentialTemplates } = useTemplateStore();
 
@@ -26,11 +26,13 @@ const TemplateName = observer(() => {
 
   return (
     <div className="templateName">
+      <p>{t('credentialTemplateCreation.step1.templateName')}</p>
       <Form.Item
+        // TODO: add i18n
+        label="Create a name for your credential’s template."
         hasFeedback
         className="flex"
         name="name"
-        label={t('credentialTemplateCreation.step1.templateName')}
         rules={[{ required: true }, { validator: templateExists }]}
       >
         <Input placeholder={t('credentialTemplateCreation.step1.templateNamePlaceholder')} />
@@ -39,4 +41,4 @@ const TemplateName = observer(() => {
   );
 });
 
-export default TemplateName;
+export default TemplateNameSection;

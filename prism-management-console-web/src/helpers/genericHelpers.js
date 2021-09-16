@@ -48,9 +48,10 @@ export const svgPathToEncodedBase64 = async path => {
   return blobToBase64(logoBlob);
 };
 
-export const blobToBase64 = blob =>
-  new Promise(resolve => {
+export const blobToBase64 = file =>
+  new Promise((resolve, reject) => {
     const reader = new FileReader();
-    reader.onloadend = () => resolve(reader.result);
-    reader.readAsDataURL(blob);
+    reader.readAsDataURL(file);
+    reader.onload = () => resolve(reader.result);
+    reader.onerror = error => reject(error);
   });

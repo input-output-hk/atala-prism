@@ -4,8 +4,7 @@ import { CREDENTIAL_TYPE_STATUSES } from '../../helpers/constants';
 import { defaultTemplateSketch, insertFormChangeIntoArray } from '../../helpers/templateHelpers';
 import {
   configureHtmlTemplate,
-  getContrastColorSettings,
-  updateImages
+  getContrastColorSettings
 } from '../../helpers/templateLayouts/templates';
 
 export default class TemplateSketchState {
@@ -41,17 +40,7 @@ export default class TemplateSketchState {
   }
 
   setSketchState = async stateChange => {
-    if (stateChange.userIcon || stateChange.companyIcon) {
-      this.templateSketch = {
-        ...this.templateSketch,
-        ...stateChange
-      };
-      const updatedImages = await updateImages(this.templateSketch);
-      this.templateSketch = {
-        ...this.templateSketch,
-        ...updatedImages
-      };
-    } else if (stateChange.credentialBody) {
+    if (stateChange.credentialBody) {
       this.updateCredentialBody(stateChange);
     } else {
       this.templateSketch = {

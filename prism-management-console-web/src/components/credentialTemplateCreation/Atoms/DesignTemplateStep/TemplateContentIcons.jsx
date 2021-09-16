@@ -1,19 +1,18 @@
 import React from 'react';
 import { observer } from 'mobx-react-lite';
-import { Button, Form, Upload } from 'antd';
+import { Button, Upload } from 'antd';
 import { PictureOutlined } from '@ant-design/icons';
 import { useTranslation } from 'react-i18next';
 import { useTemplateSketch } from '../../../../hooks/useTemplateSketch';
 import { templateLayouts } from '../../../../helpers/templateLayouts/templates';
+import { blobToBase64 } from '../../../../helpers/genericHelpers';
 import './_style.scss';
 
-const TemplateIcons = observer(() => {
+const TemplateContentIcons = observer(() => {
   const { t } = useTranslation();
-  const { templateSketch } = useTemplateSketch();
+  const { templateSketch, setSketchState } = useTemplateSketch();
 
   const { images } = templateLayouts[templateSketch.layout];
-
-  const normFile = ({ file }) => [file];
 
   const uploaderProps = {
     accept: '.svg',
@@ -21,28 +20,31 @@ const TemplateIcons = observer(() => {
     fileList: []
   };
 
+  const setImagePreview = async (file, key) => {
+    const src = await blobToBase64(file);
+    setSketchState({ [key]: src });
+    return src;
+  };
+
   return (
     <>
       <div className="customizeHeaderContainer">
         <h3>{t('credentialTemplateCreation.step2.style.customizeHeader')}</h3>
         {images.map(key => (
-          <Form.Item
-            key={key}
-            name={key}
-            label={t(`credentialTemplateCreation.step2.style.${key}`)}
-            valuePropName="file"
-            getValueFromEvent={normFile}
+          <Upload
+            name="logo"
+            action="/upload.do"
+            beforeUpload={file => setImagePreview(file, key)}
+            {...uploaderProps}
           >
-            <Upload name="logo" action="/upload.do" {...uploaderProps}>
-              <Button icon={<PictureOutlined />}>
-                {t('credentialTemplateCreation.step2.style.chooseImage')}
-              </Button>
-            </Upload>
-          </Form.Item>
+            <Button icon={<PictureOutlined />}>
+              {t('credentialTemplateCreation.step2.style.chooseImage')}
+            </Button>
+          </Upload>
         ))}
       </div>
     </>
   );
 });
 
-export default TemplateIcons;
+export default TemplateContentIcons;
