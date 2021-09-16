@@ -143,3 +143,4 @@ env-config.js
 
 /public
 src/app/protos/
+!**/*.pdf
