@@ -105,11 +105,16 @@ class NodeServiceImpl(
           operation <- operationF
           _ = logWithTraceId(methodName, traceId, "operationId" -> s"${AtalaOperationId.of(operation).toString}")
           parsedOp <- errorEitherToFutureAndCount(methodName, CreateDIDOperation.parseWithMockedLedgerData(operation))
-          operationId <- objectManagement.sendSingleAtalaOperation(operation)
+          operationIdE <- objectManagement.sendSingleAtalaOperation(operation)
         } yield {
-          node_api
-            .CreateDIDResponse(id = parsedOp.id.getValue)
-            .withOperationId(operationId.toProtoByteString)
+          val response = node_api.CreateDIDResponse(id = parsedOp.id.getValue)
+          operationIdE.fold(
+            { err =>
+              logger.warn(s"DID wasn't created, error: $err")
+              response
+            },
+            operationId => response.withOperationId(operationId.toProtoByteString)
+          )
         }
       }
     }
@@ -125,11 +130,16 @@ class NodeServiceImpl(
           operation <- operationF
           _ = logWithTraceId(methodName, traceId, "operationId" -> s"${AtalaOperationId.of(operation).toString}")
           _ <- errorEitherToFutureAndCount(methodName, UpdateDIDOperation.validate(operation))
-          operationId <- objectManagement.sendSingleAtalaOperation(operation)
+          operationIdE <- objectManagement.sendSingleAtalaOperation(operation)
         } yield {
-          node_api
-            .UpdateDIDResponse()
-            .withOperationId(operationId.toProtoByteString)
+          val response = node_api.UpdateDIDResponse()
+          operationIdE.fold(
+            { err =>
+              logger.warn(s"DID wasn't updated, error: $err")
+              response
+            },
+            operationId => response.withOperationId(operationId.toProtoByteString)
+          )
         }
       }
     }
@@ -146,11 +156,16 @@ class NodeServiceImpl(
           _ = logWithTraceId(methodName, traceId, "operationId" -> s"${AtalaOperationId.of(operation).toString}")
           parsedOp <-
             errorEitherToFutureAndCount(methodName, IssueCredentialBatchOperation.parseWithMockedLedgerData(operation))
-          operationId <- objectManagement.sendSingleAtalaOperation(operation)
+          operationIdE <- objectManagement.sendSingleAtalaOperation(operation)
         } yield {
-          node_api
-            .IssueCredentialBatchResponse(batchId = parsedOp.credentialBatchId.getId)
-            .withOperationId(operationId.toProtoByteString)
+          val response = node_api.IssueCredentialBatchResponse(batchId = parsedOp.credentialBatchId.getId)
+          operationIdE.fold(
+            { err =>
+              logger.warn(s"Credentials weren't issued, error: $err")
+              response
+            },
+            operationId => response.withOperationId(operationId.toProtoByteString)
+          )
         }
       }
     }
@@ -165,11 +180,16 @@ class NodeServiceImpl(
           operation <- operationF
           _ = logWithTraceId(methodName, traceId, "operationId" -> s"${AtalaOperationId.of(operation).toString}")
           _ <- errorEitherToFutureAndCount(methodName, RevokeCredentialsOperation.validate(operation))
-          operationId <- objectManagement.sendSingleAtalaOperation(operation)
+          operationIdE <- objectManagement.sendSingleAtalaOperation(operation)
         } yield {
-          node_api
-            .RevokeCredentialsResponse()
-            .withOperationId(operationId.toProtoByteString)
+          val response = node_api.RevokeCredentialsResponse()
+          operationIdE.fold(
+            { err =>
+              logger.warn(s"Credentials weren't revoked, error: $err")
+              response
+            },
+            operationId => response.withOperationId(operationId.toProtoByteString)
+          )
         }
       }
     }

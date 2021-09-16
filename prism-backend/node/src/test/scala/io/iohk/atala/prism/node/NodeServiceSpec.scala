@@ -227,7 +227,7 @@ class NodeServiceSpec
       )
       val operationId = AtalaOperationId.of(operation)
 
-      doReturn(Future.successful(operationId)).when(objectManagementService).sendSingleAtalaOperation(*)
+      doReturn(Future.successful(Right(operationId))).when(objectManagementService).sendSingleAtalaOperation(*)
 
       val response = service.createDID(node_api.CreateDIDRequest().withSignedOperation(operation))
 
@@ -248,7 +248,7 @@ class NodeServiceSpec
       )
       val operationId = AtalaOperationId.of(operation)
 
-      doReturn(Future.successful(operationId)).when(objectManagementService).sendSingleAtalaOperation(*)
+      doReturn(Future.successful(Right(operationId))).when(objectManagementService).sendSingleAtalaOperation(*)
 
       val response = service.createDID(node_api.CreateDIDRequest().withSignedOperation(operation))
 
@@ -284,7 +284,7 @@ class NodeServiceSpec
       )
       val operationId = AtalaOperationId.of(operation)
 
-      doReturn(Future.successful(operationId)).when(objectManagementService).sendSingleAtalaOperation(*)
+      doReturn(Future.successful(Right(operationId))).when(objectManagementService).sendSingleAtalaOperation(*)
 
       val response = service.updateDID(node_api.UpdateDIDRequest().withSignedOperation(operation))
 
@@ -301,7 +301,7 @@ class NodeServiceSpec
       )
       val operationId = AtalaOperationId.of(operation)
 
-      doReturn(Future.successful(operationId)).when(objectManagementService).sendSingleAtalaOperation(*)
+      doReturn(Future.successful(Right(operationId))).when(objectManagementService).sendSingleAtalaOperation(*)
 
       val response = service.updateDID(node_api.UpdateDIDRequest().withSignedOperation(operation))
 
@@ -333,7 +333,7 @@ class NodeServiceSpec
       )
       val operationId = AtalaOperationId.of(operation)
 
-      doReturn(Future.successful(operationId)).when(objectManagementService).sendSingleAtalaOperation(*)
+      doReturn(Future.successful(Right(operationId))).when(objectManagementService).sendSingleAtalaOperation(*)
 
       val response = service.issueCredentialBatch(node_api.IssueCredentialBatchRequest().withSignedOperation(operation))
 
@@ -373,7 +373,7 @@ class NodeServiceSpec
       )
       val operationId = AtalaOperationId.of(operation)
 
-      doReturn(Future.successful(operationId)).when(objectManagementService).sendSingleAtalaOperation(*)
+      doReturn(Future.successful(Right(operationId))).when(objectManagementService).sendSingleAtalaOperation(*)
 
       val response = service.revokeCredentials(node_api.RevokeCredentialsRequest().withSignedOperation(operation))
 

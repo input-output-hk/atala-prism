@@ -20,6 +20,8 @@ import io.iohk.atala.prism.node.repositories.{
 }
 import io.iohk.atala.prism.node.services.models.AtalaObjectNotification
 import io.iohk.atala.prism.node.{PublicationInfo, UnderlyingLedger}
+import io.iohk.atala.prism.node.DataPreparation._
+import io.iohk.atala.prism.node.errors.NodeError
 import io.iohk.atala.prism.protos.{node_internal, node_models}
 import monix.execution.Scheduler.Implicits.{global => scheduler}
 import org.mockito
@@ -27,7 +29,6 @@ import org.mockito.captor.ArgCaptor
 import org.mockito.scalatest.{MockitoSugar, ResetMocksAfterEachTest}
 import org.scalatest.BeforeAndAfterEach
 import org.scalatest.OptionValues._
-import org.scalatest.concurrent.ScalaFutures
 
 import java.time.{Duration, Instant}
 import scala.concurrent.Future
@@ -93,7 +94,7 @@ class ObjectManagementServiceSpec
 
       val atalaOperation = BlockProcessingServiceSpec.signedCreateDidOperation
       val atalaOperationId = BlockProcessingServiceSpec.signedCreateDidOperationId
-      val returnedOperationId = publishSingleOperationAndFlush(atalaOperation).futureValue
+      val returnedOperationId = publishSingleOperationAndFlush(atalaOperation).futureValue.toOption.get
       returnedOperationId mustBe atalaOperationId
 
       val atalaOperationInfo = objectManagementService.getOperationInfo(atalaOperationId).futureValue.value
@@ -109,11 +110,10 @@ class ObjectManagementServiceSpec
       val atalaOperation = BlockProcessingServiceSpec.signedCreateDidOperation
       val atalaOperationId = BlockProcessingServiceSpec.signedCreateDidOperationId
       val returnedAtalaOperation = publishSingleOperationAndFlush(atalaOperation).futureValue
-      returnedAtalaOperation mustBe atalaOperationId
+      returnedAtalaOperation must be(Right(atalaOperationId))
 
-      ScalaFutures.whenReady(publishSingleOperationAndFlush(atalaOperation).failed) { err =>
-        err mustBe a[DuplicateAtalaBlock]
-      }
+      val err = publishSingleOperationAndFlush(atalaOperation).futureValue
+      err must be(Left(NodeError.DuplicateAtalaOperation(atalaOperationId)))
 
       val atalaOperationInfo = objectManagementService.getOperationInfo(atalaOperationId).futureValue.value
 
@@ -131,8 +131,8 @@ class ObjectManagementServiceSpec
       val opIds = publishOperationsAndFlush(atalaOperation, atalaOperation).futureValue
 
       opIds.size mustBe 2
-      opIds.head mustBe atalaOperationId
-      opIds.last mustBe atalaOperationId
+      opIds.head mustBe Right(atalaOperationId)
+      opIds.last mustBe Left(NodeError.DuplicateAtalaOperation(atalaOperationId))
 
       val atalaOperationInfo = objectManagementService.getOperationInfo(atalaOperationId).futureValue.value
 
@@ -144,7 +144,7 @@ class ObjectManagementServiceSpec
       doReturn(Future.successful(Right(dummyPublicationInfo))).when(ledger).publish(*)
 
       val returnedOperationId =
-        publishSingleOperationAndFlush(BlockProcessingServiceSpec.signedCreateDidOperation).futureValue
+        publishSingleOperationAndFlush(BlockProcessingServiceSpec.signedCreateDidOperation).futureValue.toOption.get
 
       returnedOperationId mustBe BlockProcessingServiceSpec.signedCreateDidOperationId
       // Verify published AtalaObject
@@ -169,7 +169,7 @@ class ObjectManagementServiceSpec
       doReturn(Future.successful(Right(inLedgerPublication))).when(ledger).publish(*)
 
       val returnedOperationId =
-        publishSingleOperationAndFlush(BlockProcessingServiceSpec.signedCreateDidOperation).futureValue
+        publishSingleOperationAndFlush(BlockProcessingServiceSpec.signedCreateDidOperation).futureValue.toOption.get
 
       returnedOperationId must be(BlockProcessingServiceSpec.signedCreateDidOperationId)
 

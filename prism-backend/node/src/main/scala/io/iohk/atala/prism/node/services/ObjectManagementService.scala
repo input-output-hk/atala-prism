@@ -78,13 +78,8 @@ class ObjectManagementService private (
       .unsafeToFuture()
   }
 
-  def sendSingleAtalaOperation(op: node_models.SignedAtalaOperation): Future[AtalaOperationId] =
-    sendAtalaOperations(op) map { resultList =>
-      resultList.head.fold(
-        err => throw new RuntimeException(err.toString),
-        atalaOperationId => atalaOperationId
-      )
-    }
+  def sendSingleAtalaOperation(op: node_models.SignedAtalaOperation): Future[Either[NodeError, AtalaOperationId]] =
+    sendAtalaOperations(op).map(_.head)
 
   def sendAtalaOperations(
       ops: node_models.SignedAtalaOperation*

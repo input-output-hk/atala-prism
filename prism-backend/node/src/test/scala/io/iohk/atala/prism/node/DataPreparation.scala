@@ -11,6 +11,7 @@ import io.iohk.atala.prism.kotlin.crypto.{MerkleRoot, Sha256, Sha256Digest}
 import io.iohk.atala.prism.kotlin.protos.models.TimestampInfo
 import io.iohk.atala.prism.models.{BlockInfo, DidSuffix, Ledger, TransactionId, TransactionInfo, TransactionStatus}
 import io.iohk.atala.prism.node.cardano.{LAST_SYNCED_BLOCK_NO, LAST_SYNCED_BLOCK_TIMESTAMP}
+import io.iohk.atala.prism.node.errors.NodeError
 import io.iohk.atala.prism.node.grpc.ProtoCodecs
 import io.iohk.atala.prism.node.models.{
   AtalaObjectId,
@@ -85,27 +86,22 @@ object DataPreparation {
       objectManagementService: ObjectManagementService,
       submissionService: SubmissionService,
       executionContext: ExecutionContext
-  ): Future[AtalaOperationId] = {
+  ): Future[Either[NodeError, AtalaOperationId]] = {
     for {
-      atalaOperationId <- objectManagementService.sendSingleAtalaOperation(signedAtalaOperation)
+      atalaOperationIdE <- objectManagementService.sendSingleAtalaOperation(signedAtalaOperation)
       _ <- submissionService.submitReceivedObjects()
-    } yield atalaOperationId
+    } yield atalaOperationIdE
   }
 
   def publishOperationsAndFlush(ops: SignedAtalaOperation*)(implicit
       objectManagementService: ObjectManagementService,
       submissionService: SubmissionService,
       executionContext: ExecutionContext
-  ): Future[List[AtalaOperationId]] = {
+  ): Future[List[Either[NodeError, AtalaOperationId]]] = {
     for {
       ids <- objectManagementService.sendAtalaOperations(ops: _*)
       _ <- submissionService.submitReceivedObjects()
-    } yield ids.map(
-      _.fold(
-        err => throw new RuntimeException(err.toString),
-        op => op
-      )
-    )
+    } yield ids
   }
 
   val dummyTime: TimestampInfo = new TimestampInfo(0, 1, 0)
