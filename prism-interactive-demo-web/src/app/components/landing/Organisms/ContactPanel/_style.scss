@@ -136,8 +136,14 @@
   }
 }
 
-@media only screen and (max-width: 450px) {
+@media only screen and (max-width: 650px) {
   .ContactPanel {
     padding: 8em 2em 0 2em;
+     .ContactPanelForm .contactInformation button {
+       margin: 1em auto;
+     }
+  }
+  .contactInformation .ant-form .itemFormInfo {
+    width: 100%;
   }
 }

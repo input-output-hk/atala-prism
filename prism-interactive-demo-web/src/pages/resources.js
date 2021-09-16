@@ -121,18 +121,18 @@ const Resources = ({ data }) => {
       <div className="blog-section-container">
         <h1>Blog</h1>
         <div className="latest-post-container">
-          <img
-            className="blog-preview"
-            src={latestPost.frontmatter.image.publicURL}
-            alt="Blog preview"
-          />
+          <div className="blog-preview">
+            <img src={latestPost.frontmatter.image.publicURL} alt="Blog preview" />
+          </div>
           <div className="latest-post-info">
             <div>
-            <h3>Latest post</h3>
-            <h2>{latestPost.frontmatter.title}</h2>
-            <p>{latestPost.frontmatter.description}</p>
+              <h3>Latest post</h3>
+              <h2>{latestPost.frontmatter.title}</h2>
+              <p>{latestPost.frontmatter.description}</p>
             </div>
-            <a className="buttn" href={latestPost.fields.slug}>Blog</a>
+            <a className="buttn" href={latestPost.fields.slug}>
+              Blog
+            </a>
           </div>
         </div>
       </div>
