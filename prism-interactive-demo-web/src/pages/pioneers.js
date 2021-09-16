@@ -1,23 +1,25 @@
 import React from 'react';
-import { Link, graphql } from 'gatsby';
+import { graphql, Link } from 'gatsby';
 import logo from '../../static/images/logo-pioneer.svg';
 import pioneers from '../images/pioneers.svg';
 import FormPioneers from '../components/form/form';
-import video from '../../static/images/video.png';
 import triangle from '../../static/images/triangle.png';
 import triangleWhite from '../../static/images/triangleWhite.png';
 import Collapsable from '../components/collapsable/collapsable';
 import CustomButton from '../components/customButton/CustomButton';
 import PionnersFooter from '../components/pioneersFooter/footer';
+import SEO from '../components/seo/seo';
+
 import './pioneers.scss';
 
 const BlogIndex = () => {
   return (
     <div className="ContainerPioneers">
+      <SEO title="Pioneers" />
       <div className="Pioneers">
         <div className="header">
           <img src={logo} alt="atala" />
-          <a className="link" href="#">
+          <a className="link" href="/">
             AtalaPRISM.io
           </a>
         </div>
@@ -25,9 +27,7 @@ const BlogIndex = () => {
           <div className="Description">
             <div className="Container">
               <h3>Atala PRISM</h3>
-              <h2>
-                Pioneers Program
-              </h2>
+              <h2>Pioneers Program</h2>
               <p className="subtitle">What is the Atala PRISM Pioneer Program</p>
               <p>
                 It is a program to recruit and train developers in the Atala PRISM environment,
@@ -53,7 +53,7 @@ const BlogIndex = () => {
             </div>
           </div>
           <div className="Form">
-            <div className="WhiteBox">
+            <div id="registerInterest" className="WhiteBox">
               <div className="Container">
                 <h2>Register interest</h2>
                 <p>Please share your details and we will be in touch.</p>
@@ -65,7 +65,9 @@ const BlogIndex = () => {
         </div>
         <div className="VideoContainer">
           <h3>About the Atala PRISM pioneer program</h3>
-          <img src={video} alt="video" />
+          <video controls>
+            <source src="/videos/prism-pioneer-program-course-overview.mp4" type="video/mp4" />
+          </video>
         </div>
       </div>
       <div className="center">
@@ -76,12 +78,19 @@ const BlogIndex = () => {
         <Collapsable />
       </div>
       <div className="banner">
-          <img className="whiteTriangle" src={triangleWhite} />
+        <img className="whiteTriangle" src={triangleWhite} />
         <div className="logo">
           <img src={logo} alt="logo" />
         </div>
         <h2>Pioneers Program</h2>
-        <CustomButton buttonText="Register Interest" buttonProps={{ className: 'theme-primary' }} />
+        <Link to={`/pioneers#registerInterest`}>
+          <CustomButton
+            buttonProps={{
+              className: 'theme-primary'
+            }}
+            buttonText="Register Interest"
+          />
+        </Link>
       </div>
       <PionnersFooter />
     </div>

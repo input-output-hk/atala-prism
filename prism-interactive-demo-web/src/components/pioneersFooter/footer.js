@@ -6,10 +6,22 @@ const PionnersFooter = () => {
     <footer className="footer">
       <div className="footerLinks">
         <div>
-          <a>Privacy</a>
-          <a>Terms</a>
+          <a
+            href="https://legal.atalaprism.io/privacy-policy.html "
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            Privacy
+          </a>
+          <a
+            href="https://legal.atalaprism.io/terms-and-conditions.html "
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            Terms
+          </a>
         </div>
-        <a>AtalaPrism.io</a>
+        <a href="/">AtalaPrism.io</a>
       </div>
     </footer>
   );
