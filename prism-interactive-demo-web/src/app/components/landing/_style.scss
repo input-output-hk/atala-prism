@@ -11,35 +11,33 @@ html {
 
     .LadingHeaderContent {
       display: flex;
-      justify-content: space-between;
+      justify-content: center;
       align-items: center;
-      padding: 4em 2em 0 8em;
+      padding-top: 4em;
       position: relative;
-
-      .HeaderImages {
-        display: flex;
-        padding-right: 4em;
-        width: 70%;
-        justify-content: flex-end;
-
-        img {
-          width: 100%;
-        }
-      }
+      background-image: url('/images/atala-header-background.png');
 
       .HeaderText {
         width: 30%;
-        margin-top: 8em;
+        margin: 4em 0;
+        text-align: center;
 
         h1 {
           @include secondary-text($large-title, $white);
           line-height: 44px;
-          width: 350px;
           margin: 0.5em 0;
         }
 
         h3 {
           @include primary-text($h3, $white);
+        }
+
+        h4 {
+          @include secondary-text($body, $primary-color);
+        }
+
+        p {
+          @include primary-text($label, $white);
         }
       }
     }

@@ -89,7 +89,7 @@
         font-weight: bold;
         margin-bottom: 1em;
       }
-      img {
+      video {
         width: 765px;
         margin-bottom: 2em;
       }
@@ -208,13 +208,13 @@
       background: #273245;
       padding: 2em 5em;
       .header {
-          flex-direction: column-reverse;
-          img {
-              margin:1em 0;
-          }
-          .link {
-              font-size: $subtitle;
-          }
+        flex-direction: column-reverse;
+        img {
+          margin: 1em 0;
+        }
+        .link {
+          font-size: $subtitle;
+        }
       }
       .FormContainer {
         margin-top: 2em;
@@ -284,13 +284,13 @@
     .FAQs {
       padding: 3em;
       .ant-collapse-header {
-          font-size: $subtitle;
+        font-size: $subtitle;
       }
       .ant-collapse-content-box {
-          width: 100%;
-          p {
-              font-size: $subtitle;
-          }
+        width: 100%;
+        p {
+          font-size: $subtitle;
+        }
       }
     }
     .banner {
@@ -300,85 +300,83 @@
       }
     }
     .footer .footerLinks div {
-        display: flex;
-        flex-direction: column;
-        justify-content: center;
-        width: 100%;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      width: 100%;
     }
     .footer .footerLinks a {
-        font-size: $subtitle;
-        margin: 0;
+      font-size: $subtitle;
+      margin: 0;
     }
   }
 }
 
-
 @media only screen and (max-width: 500px) {
-    .ContainerPioneers {
-      .Pioneers {
-        padding: 2em;
-        .header {
-            img {
-                height: 50px;
-            }
-            .link {
-                font-size: $subtitle;
-            }
+  .ContainerPioneers {
+    .Pioneers {
+      padding: 2em;
+      .header {
+        img {
+          height: 50px;
         }
-        .FormContainer {
-          margin-top: 2em;
-          flex-direction: column;
-          .Description {
-            justify-content: center;
-            width: 100%;
-            .Container {
-              word-break: break-all;
-              width: 100%;
-              h3 {
-                @include primary-text($subtitle, $white);
-                margin-bottom: 1em;
-              }
-              h2 {
-                @include primary-text(5rem, $white);
-                font-weight: bold;
-                line-height: 5rem;
-                margin-bottom: 0.5em;
-              }
-            }
-          }
-        }
-        .VideoContainer {
-          img {
-            width: 100%;
-            margin-bottom: 2em;
-          }
-        }
-      }
-      .FAQs {
-        padding: 2em;
-        h3 {
-            margin-bottom: 0;
-        }
-        .Collapsable {
-            padding: 0;
-        }
-      }
-      .banner {
-        button {
-          width: 300px;
+        .link {
           font-size: $subtitle;
         }
       }
-      .footer .footerLinks div {
-          display: flex;
-          flex-direction: column;
+      .FormContainer {
+        margin-top: 2em;
+        flex-direction: column;
+        .Description {
           justify-content: center;
           width: 100%;
+          .Container {
+            word-break: break-all;
+            width: 100%;
+            h3 {
+              @include primary-text($subtitle, $white);
+              margin-bottom: 1em;
+            }
+            h2 {
+              @include primary-text(5rem, $white);
+              font-weight: bold;
+              line-height: 5rem;
+              margin-bottom: 0.5em;
+            }
+          }
+        }
       }
-      .footer .footerLinks a {
-          font-size: $subtitle;
-          margin: 0;
+      .VideoContainer {
+        img {
+          width: 100%;
+          margin-bottom: 2em;
+        }
       }
     }
+    .FAQs {
+      padding: 2em;
+      h3 {
+        margin-bottom: 0;
+      }
+      .Collapsable {
+        padding: 0;
+      }
+    }
+    .banner {
+      button {
+        width: 300px;
+        font-size: $subtitle;
+      }
+    }
+    .footer .footerLinks div {
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      width: 100%;
+    }
+    .footer .footerLinks a {
+      font-size: $subtitle;
+      margin: 0;
+    }
   }
-  
+}

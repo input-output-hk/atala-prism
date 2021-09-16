@@ -22,25 +22,25 @@ const FormPioneers = () => {
       <Form.Item className="form">
         <Form.Item
           label="Full Name"
-          name="username"
-          rules={[{ required: true, message: 'Please input your username!' }]}
+          name="fullName"
+          rules={[{ required: true, message: 'Please input your full name' }]}
         >
           <Input />
         </Form.Item>
         <Form.Item
           label="E-mail Address"
-          name="password"
-          rules={[{ required: true, message: 'Please input your password!' }]}
+          name="email"
+          rules={[{ required: true, message: 'Please input your email address' }]}
         >
-          <Input.Password />
+          <Input />
         </Form.Item>
         <Form.Item name="remember" valuePropName="checked" wrapperCol={{ offset: 8, span: 16 }}>
           <Checkbox>
             Yes, I have read and agree to the{' '}
             <a href="#" className="link">
               Atala PRISM Terms
-            </a>{' '}
-            &{' '}
+            </a>
+            {' & '}
             <a href="#" className="link">
               Conditions and Privacy Policy.
             </a>
