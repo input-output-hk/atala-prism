@@ -42,3 +42,8 @@ variable "atala_prism_domain" {
   description = "Domain name of atala prism"
   default     = "atalaprism.io"
 }
+
+variable "atala_prism_zoneid" {
+  description = "Route53 ZoneId for the domain"
+  default     = "Z04196731VMWR6G5290VG"
+}

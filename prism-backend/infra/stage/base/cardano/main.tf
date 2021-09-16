@@ -165,7 +165,7 @@ resource "aws_instance" "cardano_instance" {
 
 resource "aws_ebs_volume" "cardano_data" {
   availability_zone = local.availability_zone
-  size              = 50
+  size              = 200
 
   lifecycle {
     # this is to prevent accidental destruction of the data
@@ -215,4 +215,13 @@ resource "aws_iam_role_policy_attachment" "this" {
 resource "aws_iam_instance_profile" "this" {
   name = "${var.name}-cardano-node"
   role = aws_iam_role.this.name
+}
+
+# Cardano Node DNS entry
+resource "aws_route53_record" "this" {
+  zone_id = var.atala_prism_zoneid
+  name    = "${var.name}-cardano-node.${var.atala_prism_domain}"
+  type    = "A"
+  ttl     = "300"
+  records = [aws_instance.cardano_instance.private_ip]
 }

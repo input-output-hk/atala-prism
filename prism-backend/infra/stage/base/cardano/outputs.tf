@@ -18,6 +18,11 @@ output "cardano_instance_private_ip" {
   value       = aws_instance.cardano_instance.private_ip
 }
 
+output "cardano_instance_domain" {
+  description = "Cardano Instance Domain Name"
+  value       = aws_route53_record.this.fqdn
+}
+
 output "psql_username" {
   value = local.psql_username
 }
@@ -39,7 +44,7 @@ output "psql_jdbc" {
 }
 
 output "wallet_host" {
-  value = aws_instance.cardano_instance.public_ip
+  value = aws_route53_record.this.fqdn
 }
 
 output "wallet_port" {
