@@ -7,6 +7,7 @@ import SEO from '../components/seo/seo';
 import FaqPanel from '../app/components/landing/Molecules/FaqPanel/FaqPanel';
 import ContactPanel from '../app/components/landing/Organisms/ContactPanel/ContactPanel';
 import { RESOURCES_NAME } from '../helpers/constants';
+import Play from '../images/play.svg';
 
 import './resources.scss';
 
@@ -31,9 +32,11 @@ const Resources = ({ data }) => {
       <Header currentSection={RESOURCES_NAME} />
       <div className="container-middle-section">
         <div className="videos-section">
-          <h1>Video</h1>
+          <h1 className="title">Video</h1>
           <div className="featured-video-container">
-            <img className="thumbnail" src={featuredVideo.thumbnail} alt="Thumbnail" />
+            <div className="thumbnail">
+              <img src={featuredVideo.thumbnail} alt="Thumbnail" />
+            </div>
             <div className="video-info-container">
               <h2>{featuredVideo.title}</h2>
               <p>{featuredVideo.description}</p>
@@ -44,12 +47,12 @@ const Resources = ({ data }) => {
                   target="_blank"
                   rel="noopener noreferrer"
                 >
-                  <img src="/images/play.svg" alt="play" />
+                  <img src={Play} alt="play" />
                   <p>Watch now</p>
                 </a>
                 <div className="watch-time">
                   <img src="/images/watch-time.svg" alt="watch-time" />
-                  <p>{featuredVideo.watchTime} mins run time</p>
+                  <p className="data">{featuredVideo.watchTime} mins run time</p>
                 </div>
               </div>
             </div>
@@ -63,12 +66,12 @@ const Resources = ({ data }) => {
                   <p>{description}</p>
                   <div className="video-info">
                     <a className="watch-now" href={url} target="_blank" rel="noopener noreferrer">
-                      <img src="/images/play.svg" alt="play" />
+                      <img src={Play} alt="play" />
                       <p>Watch now</p>
                     </a>
                     <div className="watch-time">
                       <img src="/images/watch-time.svg" alt="watch-time" />
-                      <p>{watchTime} mins run time</p>
+                      <p className="data">{watchTime} mins run time</p>
                     </div>
                   </div>
                 </div>
@@ -77,7 +80,7 @@ const Resources = ({ data }) => {
           </div>
         </div>
         <div className="brochures-section">
-          <h1>Brochures</h1>
+          <h1 className="title">Brochures</h1>
           <div className="featured-brochure-container">
             <div className="brochure-info-container">
               <h2>{featuredBrochure.title}</h2>
@@ -99,35 +102,37 @@ const Resources = ({ data }) => {
           <div className="brochures-container">
             {otherBrochures.map(({ title, description, url, thumbnail }) => (
               <div className="brochure-container">
-                <img className="thumbnail" src={thumbnail} alt="Thumbnail" />
                 <div className="brochure-info-container">
+                  <img className="thumbnail" src={thumbnail} alt="Thumbnail" />
                   <h2>{title}</h2>
                   <p>{description}</p>
-                  <div className="brochure-info">
-                    <a className="read" href={url} target="_blank" rel="noopener noreferrer">
-                      <img src="/images/pdf.svg" alt="pdf" />
-                      <p>Read</p>
-                    </a>
-                  </div>
+                </div>
+                <div className="brochure-info">
+                  <a className="read" href={url} target="_blank" rel="noopener noreferrer">
+                    <img src="/images/pdf.svg" alt="pdf" />
+                    <p>Read</p>
+                  </a>
                 </div>
               </div>
             ))}
           </div>
         </div>
-        <div className="blog-section-container">
-          <h1>Blog</h1>
-          <div className="latest-post-container">
-            <img
-              className="blog-preview"
-              src={latestPost.frontmatter.image.publicURL}
-              alt="Blog preview"
-            />
-            <div className="latest-post-info">
-              <h3>Latest post</h3>
-              <h2>{latestPost.frontmatter.title}</h2>
-              <p>{latestPost.frontmatter.description}</p>
-              <a href={latestPost.fields.slug}>Blog</a>
+      </div>
+      <div className="blog-section-container">
+        <h1>Blog</h1>
+        <div className="latest-post-container">
+          <img
+            className="blog-preview"
+            src={latestPost.frontmatter.image.publicURL}
+            alt="Blog preview"
+          />
+          <div className="latest-post-info">
+            <div>
+            <h3>Latest post</h3>
+            <h2>{latestPost.frontmatter.title}</h2>
+            <p>{latestPost.frontmatter.description}</p>
             </div>
+            <a className="buttn" href={latestPost.fields.slug}>Blog</a>
           </div>
         </div>
       </div>

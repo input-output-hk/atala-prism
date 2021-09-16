@@ -6,12 +6,10 @@
   padding: 8em;
   background: $surface;
 
-  .MiniDetailText {
-    color: $primary-color;
-  }
-
   .TextContainer {
-    width: 70%;
+    width: 100%;
+    display: flex;
+    flex-direction: column;
 
     h1 {
       @include secondary-text($h1, $black);
@@ -19,9 +17,11 @@
     }
 
     .FaqContainer {
-      width: 90%;
-
+      width: 100%;
+      display: flex;
+      flex-wrap: wrap;
       .FaqItem {
+        width: 50%;
         margin-top: 3em;
         padding-left: 1em;
         border-left: 1px solid $primary-color;

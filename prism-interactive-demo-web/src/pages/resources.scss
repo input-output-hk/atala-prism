@@ -2,11 +2,12 @@
 
 .ResourcesContainer {
   display: flex;
-  flex-wrap: nowrap;
+  //flex-wrap: nowrap;
   width: 100%;
   height: 100vh;
   flex-direction: column;
   justify-content: flex-start;
+  word-break: break-all;
 
   .container-middle-section {
     display: flex;
@@ -16,8 +17,10 @@
     .videos-section {
       width: 100%;
 
-      h1 {
+      .title {
+        @include primary-text(48px, $black);
         font-weight: bold;
+        margin-bottom: 1em;
       }
 
       .featured-video-container {
@@ -26,32 +29,51 @@
         margin-bottom: 2em;
 
         .thumbnail {
-          width: 45%;
+          width: 48%;
+          height: 343px;
+          overflow: hidden;
+          img {
+            height: 100%;
+          }
         }
 
         .video-info-container {
-          width: 45%;
+          width: 48%;
+
+          h2 {
+            @include primary-text(24px, $black);
+            font-weight: bold;
+            line-height: 32px;
+            margin-bottom: 0.5em;
+          }
+
+          p {
+            @include primary-text($body, $black);
+            line-height: 24px;
+            margin-bottom: 1.5em;
+          }
 
           .video-info {
             display: flex;
             justify-content: space-between;
 
             a p {
-              color: $primary-color;
+              @include primary-text($body, $primary-color);
               font-weight: bold;
             }
 
             .watch-now,
             .watch-time {
               display: flex;
-
+              align-items: center;
               img {
                 width: fit-content;
                 height: 100%;
                 margin-right: 0.5em;
               }
 
-              p {
+              .data {
+                @include primary-text($label, $grey);
                 margin: 0;
               }
             }
@@ -64,6 +86,19 @@
         justify-content: space-between;
         flex-wrap: wrap;
 
+        h2 {
+          @include primary-text($h2, $black);
+          font-weight: bold;
+          margin: 1em 0;
+          line-height: 24px;
+        }
+
+        p {
+          @include primary-text($label, $black);
+          line-height: 18px;
+          margin-bottom: 1em;
+        }
+
         .video-container {
           width: 30%;
 
@@ -72,6 +107,11 @@
           }
 
           .video-info-container {
+            margin-bottom: 2em;
+            min-height: 170px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
             .video-info {
               display: flex;
               justify-content: space-between;
@@ -84,13 +124,16 @@
               .watch-now,
               .watch-time {
                 display: flex;
-
+                align-items: center;
                 img {
                   width: fit-content;
                   height: 100%;
                   margin-right: 0.5em;
                 }
-
+                .data {
+                  @include primary-text($label, $grey);
+                  margin: 0;
+                }
                 p {
                   margin: 0;
                 }
@@ -103,15 +146,28 @@
 
     .brochures-section {
       width: 100%;
-
-      h1 {
+      margin-top: 2em;
+      .title {
+        @include primary-text(48px, $black);
         font-weight: bold;
+      }
+
+      h2 {
+        @include primary-text(24px, $black);
+        font-weight: bold;
+        line-height: 32px;
+        margin: 0.5em 0;
+      }
+      p {
+        @include primary-text($body, $black);
+        line-height: 24px;
+        margin-bottom: 1.5em;
       }
 
       .featured-brochure-container {
         display: flex;
         justify-content: space-between;
-        margin-bottom: 2em;
+        margin: 0 0 2em 0;
 
         .thumbnail {
           width: 45%;
@@ -119,7 +175,6 @@
 
         .brochure-info-container {
           width: 45%;
-
           .brochure-info {
             display: flex;
             justify-content: space-between;
@@ -150,65 +205,107 @@
         display: flex;
         justify-content: space-between;
         flex-wrap: wrap;
+        h2 {
+          @include primary-text($h2, $black);
+          font-weight: bold;
+          line-height: 24px;
+          margin: 1em 0;
+        }
+
+        p {
+          @include primary-text($label, $black);
+          line-height: 18px;
+          margin-bottom: 1em;
+        }
 
         .brochure-container {
           width: 30%;
-
+          display: flex;
+          flex-direction: column;
+          justify-content: space-between;
+          min-height: 300px;
           .thumbnail {
             width: 100%;
           }
+          .brochure-info {
+            display: flex;
+            justify-content: space-between;
 
-          .brochure-info-container {
-            .brochure-info {
+            a p {
+              color: $primary-color;
+              font-weight: bold;
+            }
+
+            .read {
               display: flex;
-              justify-content: space-between;
 
-              a p {
-                color: $primary-color;
-                font-weight: bold;
+              img {
+                width: fit-content;
+                height: 100%;
+                margin-right: 0.5em;
               }
 
-              .read {
-                display: flex;
-
-                img {
-                  width: fit-content;
-                  height: 100%;
-                  margin-right: 0.5em;
-                }
-
-                p {
-                  margin: 0;
-                }
+              p {
+                margin: 0;
               }
             }
           }
         }
       }
     }
+  }
+  .blog-section-container {
+    width: 100%;
+    background-color: #eeeeee;
+    padding: 4em 8em;
+    margin-bottom: 4em;
+    h1 {
+      font-weight: bold;
+    }
 
-    .blog-section-container {
-      width: 100%;
+    .latest-post-container {
+      display: flex;
+      justify-content: space-between;
 
-      h1 {
-        font-weight: bold;
+      .latest-post-info {
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
       }
 
-      .latest-post-container {
+      h3 {
+        @include primary-text($h3, $black);
+        font-weight: bold;
+      }
+      h2 {
+        @include primary-text(24px, $black);
+        margin-bottom: 1em;
+        font-weight: bold;
+      }
+      p {
+        @include primary-text($body, $black);
+        margin-bottom: 2em;
+      }
+
+      .buttn {
         display: flex;
-        justify-content: space-between;
+        width: 140px;
+        height: 39px;
+        color: white;
+        border-radius: 19.5px;
+        background-color: $primary-color;
+        justify-content: center;
+        align-items: center;
+        @include primary-text($body, $white);
+        font-weight: bold;
+      }
+      .blog-preview {
+        width: 45%;
+      }
 
-        .blog-preview {
-          width: 45%;
-        }
+      .latest-post-info {
+        width: 45%;
 
-        .latest-post-info {
-          width: 45%;
-
-          h2 {
-            font-weight: bold;
-          }
-        }
       }
     }
   }

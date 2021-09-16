@@ -32,11 +32,6 @@ const ContactPanel = () => {
       <div className="ContactPanelForm">
         <Contact />
       </div>
-      <img
-        src="/images/illustration-footer.svg"
-        alt={t('atalaLogo')}
-        className="IllustrationFooter"
-      />
     </div>
   );
 };
