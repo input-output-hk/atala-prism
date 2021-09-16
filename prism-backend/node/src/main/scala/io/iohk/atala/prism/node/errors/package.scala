@@ -54,7 +54,7 @@ package object errors {
     case class DuplicateAtalaOperation(atalaOperationId: AtalaOperationId) extends NodeError {
       override def toStatus: Status = {
         Status.ALREADY_EXISTS.withDescription(
-          s"Atala operation atalaOperationId was already received by PRISM node."
+          s"Atala operation $atalaOperationId was already received by PRISM node."
         )
       }
 
