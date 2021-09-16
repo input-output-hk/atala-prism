@@ -172,7 +172,7 @@ resource "aws_ebs_volume" "cardano_data" {
     # delete single resources (e.g. the instance instead) or taint and re-apply
     # if you *really* want to destroy the deployment with all the data
     # just comment this line
-    # prevent_destroy = true
+    prevent_destroy = true
   }
 }
 
