@@ -10,8 +10,12 @@
     .header {
       width: 100%;
       display: flex;
-      align-items: center;
-      justify-content: space-between;
+      flex-direction: column;
+      justify-content: flex-start;
+      img {
+        width: 100px;
+        margin-bottom: 1em;
+      }
       .link {
         @include primary-text($label, $primary-color);
         font-weight: bold;
@@ -43,6 +47,10 @@
             line-height: 32px;
             font-weight: bold;
             margin-bottom: 1em;
+          }
+          .bigger {
+            font-size: 20px;
+            line-height: 30px;
           }
           p {
             @include primary-text($body, $white);

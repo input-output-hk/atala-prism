@@ -20,7 +20,7 @@ const BlogIndex = () => {
         <div className="header">
           <img src={logo} alt="atala" />
           <a className="link" href="/">
-            AtalaPRISM.io
+            Back
           </a>
         </div>
         <div className="FormContainer">
@@ -29,26 +29,23 @@ const BlogIndex = () => {
               <h3>Atala PRISM</h3>
               <h2>Pioneers Program</h2>
               <p className="subtitle">What is the Atala PRISM Pioneer Program</p>
-              <p>
-                It is a program to recruit and train developers in the Atala PRISM environment,
-                which is part of the greater Cardano environment.
+              <p className="bigger">
+                It is a program to train developers to use the PRISM SDK to build solutions in the
+                Cardano ecosystem.
               </p>
               <br />
               <p>
                 Upon joining, you will become part of a select group with early access to a set of
                 courses that will teach you the core principles of Atala PRISM, including
-                Self-sovereign identity, decentralized identifiers (DIDs), and current digital
-                identity standards.
+                Self-sovereign identity, decentralized identifiers (DIDs), verifiable credentials
+                and current digital identity standards.
               </p>
               <br />
               <p>
                 The course materials are highly interactive, with weekly videos, exercises, and Q&A
-                sessions, along with exclusive access to the creators and key experts.
-              </p>
-              <br />
-              <p>
-                You will also be able to join a dedicated community channel, created to help
-                Pioneers connect to each other as you learn.
+                sessions, along with exclusive access to the course creators and key experts. You
+                will also be able to join a dedicated community channel, created to help Pioneers
+                connect to each other.
               </p>
             </div>
           </div>
@@ -64,7 +61,7 @@ const BlogIndex = () => {
           </div>
         </div>
         <div className="VideoContainer">
-          <h3>About the Atala PRISM pioneer program</h3>
+          <h3>About the Atala PRISM Pioneer Program</h3>
           <video controls>
             <source src="/videos/prism-pioneer-program-course-overview.mp4" type="video/mp4" />
           </video>

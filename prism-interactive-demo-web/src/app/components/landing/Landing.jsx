@@ -23,7 +23,6 @@ import QuotesPanel from './Molecules/QuotesPanel/QuotesPanel';
 import CaseStudy from './Molecules/CaseStudy/CaseStudy';
 import GetStarted from './Molecules/GetStarted/GetStarted';
 import FaqPanel from './Molecules/FaqPanel/FaqPanel';
-import PioneersBanner from './Molecules/PioneersBanner/PioneersBanner';
 import ContactPanel from './Organisms/ContactPanel/ContactPanel';
 import UseCasesPanel from './Organisms/UseCasesPanel/UseCasesPanel';
 import { useState } from 'react';
@@ -85,7 +84,6 @@ const Landing = () => {
         </div>
       </div>
       <div ref={visionSection} onMouseOver={() => setCurrentSection(VISION_NAME)}>
-      <PioneersBanner />
         <IntroSection />
         <QuotesPanel />
       </div>
