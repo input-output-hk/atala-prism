@@ -79,7 +79,7 @@
               margin-bottom: 1em;
             }
             p {
-              @include primary-text($h3, $secondary-color);
+              @include primary-text(14px, $secondary-color);
               margin-bottom: 1em;
             }
           }
@@ -273,7 +273,7 @@
                 margin-bottom: 1em;
               }
               label {
-                font-size: $body !important;
+                font-size: $body;
               }
               button {
                 font-size: $subtitle;
@@ -329,11 +329,11 @@
           height: 50px;
         }
         .link {
-          font-size: $subtitle;
+          font-size: $body;
         }
       }
       .FormContainer {
-        margin-top: 2em;
+        margin-top: 1em;
         flex-direction: column;
         .Description {
           justify-content: center;
@@ -342,19 +342,53 @@
             word-break: break-all;
             width: 100%;
             h3 {
-              @include primary-text($subtitle, $white);
+              @include primary-text($h2, $white);
               margin-bottom: 1em;
             }
             h2 {
-              @include primary-text(5rem, $white);
+              @include primary-text(4rem, $white);
               font-weight: bold;
-              line-height: 5rem;
+              line-height: 4rem;
               margin-bottom: 0.5em;
+            }
+            .subtitle,
+            p {
+              font-size: $body;
+            }
+            .bigger {
+              font-size: 14px;
+            }
+          }
+        }
+      }
+      .Form {
+        margin-top: 0;
+        .WhiteBox {
+          .Container {
+            h2 {
+              font-size: $subtitle!important;
+            }
+            p {
+              font-size: $body!important;
+            }
+            label {
+              font-size: $label!important;
+            }
+            button {
+              height: 40px;
+              font-size: $body!important;
             }
           }
         }
       }
       .VideoContainer {
+        h3 {
+          text-align: center;
+          font-size: $subtitle;
+        }
+        video {
+          width: 100%;
+        }
         img {
           width: 100%;
           margin-bottom: 2em;
@@ -365,15 +399,39 @@
       padding: 2em;
       h3 {
         margin-bottom: 0;
+        font-size: $subtitle;
       }
       .Collapsable {
         padding: 0;
+        .ant-collapse-header {
+          font-size: $body;
+        }
+        p {
+          font-size: $body;
+        }
       }
     }
     .banner {
-      button {
-        width: 300px;
+      padding: 2em;
+      height: 300px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      .whiteTriangle {
+        width: 20px;
+      }
+      .logo {
+        width: 90px;
+        margin: 0 auto;
+      }
+      h2 {
         font-size: $subtitle;
+      }
+      button {
+        width: 200px;
+        height: 40px;
+        font-size: $body;
       }
     }
     .footer .footerLinks div {
@@ -383,7 +441,7 @@
       width: 100%;
     }
     .footer .footerLinks a {
-      font-size: $subtitle;
+      font-size: $body;
       margin: 0;
     }
   }
