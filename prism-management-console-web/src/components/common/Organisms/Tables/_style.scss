@@ -7,6 +7,34 @@
   }
 }
 
+.AppContainer
+  .MainContent
+  .MainContainer
+  .WrapperGroupCreation
+  .GroupCreationContent
+  .box
+  .addContactSection
+  .addContactsContainer
+  .ConnectionsTable {
+  .PaginatedTable {
+    table {
+      .ant-table-thead {
+        display: none;
+      }
+      .ant-table-tbody > tr > td {
+        background: $light-grey;
+        border-bottom: 6px solid $white;
+      }
+      tr td.ant-table-selection-column {
+        padding-right: 8px;
+        padding-left: 16px;
+        text-align: center;
+      }
+    }
+  }
+}
+
+/*
 .PaginatedTable,
 .PaginatedTableHeader {
   table {
@@ -61,3 +89,4 @@
     }
   }
 }
+*/

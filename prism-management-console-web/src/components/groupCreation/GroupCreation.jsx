@@ -72,12 +72,12 @@ const GroupCreation = ({
           <h3 className="groupsSubtitle">{t('groupCreation.subtitle')}</h3>
         </div>
 
-        <div className="flex">
+        <div className="searchAndSaveBtn">
           <div className="SearchBar">
             <ConnectionsFilter {...filterProps} fullFilters={false} />
           </div>
 
-          <div className="groupsButtonContainer">
+          <div>
             <CustomButton
               buttonProps={{
                 className: 'theme-primary',

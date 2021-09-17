@@ -1,24 +1,56 @@
 @import '../../css/general_styling';
 
-.RecipientsHeader {
-  display: flex;
-  justify-content: space-between;
-  h1 {
-    @include primary-text($h1, $secondary-color);
-    font-feature-settings: normal !important;
-    font-variant: normal;
-  }
+//create credential input
+
+.AppContainer
+  .MainContent
+  .MainContainer
+  .FilterControls
+  .ant-select:not(.ant-select-customize-input)
+  .ant-select-selector {
+  background-color: transparent;
+  width: 200px;
 }
 
-.ButtonControls {
-  display: flex;
+// Groups Page
 
-  button {
-    margin-left: 1em;
+.AppContainer .MainContent .MainContainer .Groups {
+  .ContentHeader {
+    display: flex;
+    flex-wrap: wrap;
+    .title {
+      width: 100%;
+      h1 {
+        @include primary-text($h1, $black);
+        font-weight: bold;
+        margin-top: 1em;
+      }
+      h3 {
+        @include primary-text($h3, $grey);
+      }
+    }
+    .filterSection {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      width: 100%;
+      .InputContainer {
+        margin-left: 1em;
+      }
+      .filterContainer {
+        .w-100 div,
+        .CredentialRawDetail .Card div {
+          margin: 0;
+        }
+        .w-100 {
+          display: flex;
+          .InputContainer:last-child {
+            margin-left: 1em;
+          }
+        }
+      }
+    }
   }
-}
-
-.Groups {
   .GroupContentContainer {
     height: calc(100vh - 220px);
     margin-top: 1em;
@@ -29,46 +61,3 @@
   }
 }
 
-.ContentHeader {
-  display: flex;
-  flex-wrap: wrap;
-  .title {
-    width: 100%;
-    h1 {
-      @include primary-text($h1, $black);
-      font-weight: bold;
-      margin-top: 1em;
-    }
-    h3 {
-      @include primary-text($h3, $grey);
-    }
-  }
-  .filterSection {
-    display: flex;
-    justify-content: space-between;
-    width: 100%;
-    .InputContainer {
-      margin-left: 1em;
-      .ChildrenContainer {
-        width: 150px;
-        .ant-select:not(.ant-select-customize-input) .ant-select-selector {
-          background-color: transparent;
-        }
-        .ant-select {
-          border-color: lightgray;
-        }
-      }
-    }
-    .filterContainer {
-      .w-100 div, .CredentialRawDetail .Card div {
-        margin: 0;
-      }
-      .w-100 {
-        display: flex;
-        .InputContainer:last-child {
-          margin-left: 1em;
-        }
-      }
-    }
-  }
-}

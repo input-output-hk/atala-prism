@@ -1,132 +1,168 @@
 @import '../../css/general_styling';
 
-.WrapperGroupCreation {
-  padding: 2em 2em 0 2em;
-  .Header {
-    margin-top: 1em;
-    padding-bottom: 1em;
-    display: flex;
-    justify-content: space-between;
-    border-bottom: 1px solid $light-grey;
-    .Title {
-      h1 {
-        @include primary-text($h1, $black);
-        font-weight: bold;
-        margin-bottom: 0.5em;
-      }
-      h3 {
-        @include primary-text($h3, $grey);
-      }
-    }
-  }
-  .flex {
-    display: flex;
-    justify-content: flex-start;
-    align-content: center;
-    .SearchBar {
-      margin: 0.1em 1em 0 0;
-      .FilterControls {
-        margin: 0 !important;
-        .ContactFilters {
-          width: 100%;
+// General Form Style
+
+.ant-input-affix-wrapper:hover {
+  border-color: $primary-color;
+}
+
+.ant-input-affix-wrapper:focus, .ant-input-affix-wrapper-focused {
+  border-color: $primary-color;
+  -webkit-box-shadow: 0 0 0 2px rgb(255, 224, 224);
+  box-shadow: 0 0 0 2px rgb(255, 224, 224);
+}
+
+// Group Creation Page
+
+.AppContainer .MainContent .MainContainer {
+
+  .WrapperGroupCreation {
+    padding: 2em;
+    .Header {
+      margin:1em 0;
+      display: flex;
+      justify-content: space-between;
+      border-bottom: 1px solid $light-grey;
+      .Title {
+        h1 {
+          @include primary-text($h1, $black);
+          font-weight: bold;
+          margin: 0 0 1em 0;
+        }
+        h3 {
+          @include primary-text($h3, $grey);
+          margin: 0 0 1em 0;
         }
       }
     }
-    .groupsButtonContainer {
+    .searchAndSaveBtn {
       display: flex;
-      justify-content: flex-end;
+      justify-content: flex-start;
       align-content: center;
-    }
-  }
-}
-
-.GroupCreationContent {
-  width: 100%;
-  padding-top: 0.5em;
-  height: calc(100vh - 200px);
-  overflow-y: auto;
-
-  .box {
-    .ai-center {
-      margin: 0;
-      display: flex;
-      .anticon svg {
-        margin-left: 1em;
+      .SearchBar {
+        margin: 0.1em 1em 0 0;
+        .FilterControls {
+          margin: 0 !important;
+          .ContactFilters {
+            width: 100%;
+          }
+        }
       }
     }
   }
-
-  .ant {
-    &-form {
-      &-item {
-        margin-bottom: 0em;
-      }
-    }
-  }
-
-  .UtilsContainer {
-    display: flex;
+  
+  .GroupCreationContent {
     width: 100%;
-    align-items: center;
-    margin-bottom: 20px;
-    .SelectAll {
-      margin-right: 1em;
+    padding-top: 0.5em;
+    height: calc(100vh - 200px);
+    overflow-y: auto;
+  
+    .box {
+      .ai-center {
+        margin: 0;
+        display: flex;
+        .FormContainer {
+          .ant-legacy-form-item {
+            margin: 0;
+          }
+          .ant-legacy-form-explain {
+            padding: 0.5em 0 0 0.5em;
+            @include primary-text($label, $primary-color);
+          }
+        }
+        .anticon svg {
+          margin-left: 1em;
+        }
+      }
     }
-    .SearchBar {
-      margin-top: 0.5em;
+  
+    .ant {
+      &-form {
+        &-item {
+          margin-bottom: 0em;
+        }
+      }
+    }
+  
+    .UtilsContainer {
+      display: flex;
+      width: 100%;
+      align-items: center;
+    }
+    .groupsCheckbox {
+      margin-bottom: 1.5em;
+      display: flex;
+      align-items: flex-end;
+      span {
+        @include body-text($label, $secondary-color, 400);
+      }
+    }
+    h3 {
+      @include secondary-text($h3, $secondary-color);
+      font-variant: normal;
+      font-feature-settings: normal;
+      margin-bottom: 1em;
+      position: relative; 
     }
   }
-  .groupsCheckbox {
-    display: flex;
-    align-items: flex-end;
-    margin: 0 20px 20px 0;
-    span {
-      @include body-text($body, $secondary-color, 400);
-    }
+  
+  .groupsSubtitle {
+    @include primary-text($h3, #728099);
   }
-  .searchInput {
-    .ant-input:focus {
-      border-color: $primary-color !important;
-      box-shadow: 0 0 0 2px rgba(255, 0, 0, 0.2);
+  .addContactsContainer {
+    .ConnectionsTable {
+      height: calc(100% - 10px);
     }
-    .ant-input:hover {
-      border-color: $primary-color !important;
+    .textContactData {
+      margin-right: 40px;
+      h4 {
+        @include primary-text($body, #728099);
+      }
+      span {
+        @include primary-text($body, $secondary-color);
+      }
     }
-  }
-  h3 {
-    @include secondary-text($h3, $secondary-color);
-    font-variant: normal;
-    font-feature-settings: normal;
-    margin-bottom: 1em;
-    position: relative;
+    .imgContactData {
+      margin-right: 30px;
+    }
+    .contactsDataGroups {
+      display: flex;
+      align-items: center;
+      background-color: #f8f9f9;
+      border-radius: 6px;
+      padding: 20px;
+      margin-bottom: 10px;
+    }
   }
 }
 
-.groupsSubtitle {
-  @include primary-text($h3, #728099);
-}
-.addContactsContainer {
+// Group Creation Table Style
+
+/*
+.AppContainer
+  .MainContent
+  .MainContainer
+  .WrapperGroupCreation
+  .GroupCreationContent
+  .box
+  .addContactSection
+  .addContactsContainer
   .ConnectionsTable {
-    height: calc(100% - 10px);
-  }
-  .textContactData {
-    margin-right: 40px;
-    h4 {
-      @include primary-text($body, #728099);
+  .PaginatedTable {
+    table {
+      .ant-table-thead {
+        display: none;
+      }
+      .ant-table-tbody > tr > td {
+        background: $light-grey;
+        border-bottom: 6px solid $white;
+      }
+      tr td.ant-table-selection-column {
+        padding-right: 8px;
+        padding-left: 16px;
+        text-align: center;
+      }
     }
-    span {
-      @include primary-text($body, $secondary-color);
-    }
-  }
-  .imgContactData {
-    margin-right: 30px;
-  }
-  .contactsDataGroups {
-    display: flex;
-    align-items: center;
-    background-color: #f8f9f9;
-    border-radius: 6px;
-    padding: 20px;
-    margin-bottom: 10px;
   }
 }
+*/
