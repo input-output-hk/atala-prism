@@ -32,7 +32,7 @@ class ContactConnectionServiceSpec extends RpcSpecBase with DIDUtil with Connect
   val (keyPair, did) = DIDUtil.createUnpublishedDid
   val publicKey: ECPublicKey = keyPair.getPublicKey
 
-  lazy val connectionsService = ConnectionsService(connectionsRepository, nodeMock)
+  lazy val connectionsService = ConnectionsService.unsafe(connectionsRepository, nodeMock, testLogs)
 
   private lazy val authenticator =
     new ConnectorAuthenticator(
