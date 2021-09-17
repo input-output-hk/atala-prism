@@ -16,14 +16,18 @@ object AtalaObjectsDAO {
 
   case class AtalaObjectCreateData(
       objectId: AtalaObjectId,
-      byteContent: Array[Byte]
+      byteContent: Array[Byte],
+      status: AtalaObjectStatus = AtalaObjectStatus.Pending
   )
-  case class AtalaObjectSetTransactionInfo(objectId: AtalaObjectId, transactionInfo: TransactionInfo)
+  case class AtalaObjectSetTransactionInfo(
+      objectId: AtalaObjectId,
+      transactionInfo: TransactionInfo
+  )
 
   def insert(data: AtalaObjectCreateData): ConnectionIO[Int] = {
     sql"""
-         |INSERT INTO atala_objects (atala_object_id, object_content, received_at)
-         |VALUES (${data.objectId}, ${data.byteContent}, ${Instant.now()})
+         |INSERT INTO atala_objects (atala_object_id, object_content, atala_object_status, received_at)
+         |VALUES (${data.objectId}, ${data.byteContent}, ${data.status}, ${Instant.now()})
          |ON CONFLICT (atala_object_id) DO NOTHING
        """.stripMargin.update.run
   }

@@ -17,6 +17,7 @@ import io.iohk.atala.prism.utils.syntax.DBConnectionOps
 import io.iohk.atala.prism.node.models.{
   AtalaObjectId,
   AtalaObjectInfo,
+  AtalaObjectStatus,
   AtalaObjectTransactionSubmission,
   AtalaObjectTransactionSubmissionStatus
 }
@@ -167,7 +168,7 @@ private final class AtalaObjectsTransactionsRepositoryImpl[F[_]: BracketThrow](x
           // Object previously saved in DB, but not in the blockchain
           case Some(_) => connection.unit
           // Object was not in DB, save it to populate transaction data below
-          case None => AtalaObjectsDAO.insert(AtalaObjectCreateData(objId, objectBytes))
+          case None => AtalaObjectsDAO.insert(AtalaObjectCreateData(objId, objectBytes, AtalaObjectStatus.Processed))
         }
       }
 
