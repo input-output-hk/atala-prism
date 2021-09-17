@@ -49,7 +49,7 @@ class ConnectorRpcSpecBase extends RpcSpecBase with DIDUtil {
     )
 
   lazy val connectionsRepository = ConnectionsRepository.unsafe(dbLiftedToTraceIdIO, testLogs)
-  lazy val connectionsService = new ConnectionsService(connectionsRepository, nodeMock)
+  lazy val connectionsService = ConnectionsService(connectionsRepository, nodeMock)
   lazy val messagesRepository = MessagesRepository(database)
   lazy val requestNoncesRepository = RequestNoncesRepository(database)
   lazy val participantsRepository = ParticipantsRepository.unsafe(dbLiftedToTraceIdIO, testLogs)

@@ -4,6 +4,7 @@ import io.iohk.atala.prism.connector.model.{ConnectionId, MessageId}
 import io.iohk.atala.prism.connector.services.{ConnectionsService, MessagesService}
 import io.iohk.atala.prism.intdemo.ConnectorIntegration.ConnectorIntegrationImpl
 import ConnectorIntegrationImplSpec._
+import io.iohk.atala.prism.logging.TraceId.IOWithTraceIdContext
 import io.iohk.atala.prism.models.ParticipantId
 import io.iohk.atala.prism.utils.FutureEither._
 import io.iohk.atala.prism.protos.credential_models
@@ -56,7 +57,7 @@ object ConnectorIntegrationImplSpec {
   val messageId = MessageId.random()
 
   private def connectorIntegration(testCode: (ConnectorIntegration, MessagesService) => Any): Unit = {
-    val connectionsService = mock[ConnectionsService]
+    val connectionsService = mock[ConnectionsService[IOWithTraceIdContext]]
     val messagesService = mock[MessagesService]
     val connectorIntegration = new ConnectorIntegrationImpl(connectionsService, messagesService)
     when(messagesService.insertMessage(eqTo(senderId), eqTo(connectionId), any[Array[Byte]], any[Option[MessageId]]))
