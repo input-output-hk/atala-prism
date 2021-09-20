@@ -30,7 +30,7 @@ case class ProtocolVersionUpdateOperation(
     override val ledgerData: LedgerData
 ) extends Operation {
 
-  // TODO Check here that a trusted party subscribed it
+  // TODO ATA-5519 Check here that a trusted party signed it
   override def getCorrectnessData(keyId: String): EitherT[ConnectionIO, StateError, CorrectnessData] = {
     for {
       keyState <- EitherT {
@@ -65,7 +65,7 @@ case class ProtocolVersionUpdateOperation(
       _ <-
         EitherT
           .cond[ConnectionIO](
-            lastKnown.protocolVersion followedBy protocolVersion,
+            lastKnown.protocolVersion isFollowedBy protocolVersion,
             (),
             NonSequentialProtocolVersion(lastKnown.protocolVersion, protocolVersion): StateError
           )
@@ -118,7 +118,7 @@ object ProtocolVersionUpdateOperation extends SimpleOperationCompanion[ProtocolV
       }
       versionInfo <- updateProtocolOperation.childGet(_.version, "version")
       versionName <- versionInfo.child(_.versionName, "versionName").parse { name =>
-        if (name == "") None.asRight
+        if (name.isEmpty) None.asRight
         else Some(name).asRight
       }
       major <-

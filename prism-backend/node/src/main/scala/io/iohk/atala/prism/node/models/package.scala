@@ -80,7 +80,7 @@ package object models {
   case class ProtocolVersion(major: Int, minor: Int) {
     override def toString: String = s"$major.$minor"
 
-    def followedBy(next: ProtocolVersion): Boolean =
+    def isFollowedBy(next: ProtocolVersion): Boolean =
       major == next.major && minor + 1 == next.minor ||
         major + 1 == next.major && next.minor == 0
   }

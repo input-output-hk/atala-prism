@@ -12,6 +12,5 @@ create table protocol_versions(
   is_effective bool not null,
   proposer_did id_type not null,
 
-  CONSTRAINT protocol_version_pk PRIMARY KEY  (major_version, minor_version),
-  CONSTRAINT proposer_fk FOREIGN KEY (proposer_did) REFERENCES did_data (did_suffix)
+  CONSTRAINT protocol_version_pk PRIMARY KEY  (major_version, minor_version)
 );
