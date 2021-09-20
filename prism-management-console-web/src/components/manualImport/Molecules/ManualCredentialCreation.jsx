@@ -1,5 +1,6 @@
 import React from 'react';
 import CredentialCreationTable from '../Organisms/Tables/CredentialCreationTable';
+import './_style.scss';
 
 const ManualCredentialCreation = props => (
   <div className="ManualImportWrapper CredentialsImportWrapper">
