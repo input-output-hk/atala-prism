@@ -2,7 +2,7 @@ let grpcClient;
 
 if (process.env.NODE_ENV === 'production') {
   if (process.env.GATSBY_BRANCH) {
-    grpcClient = `http://${process.env.GATSBY_BRANCH}.atalaprism.io:4433`;
+    grpcClient = `https://${process.env.GATSBY_BRANCH}.atalaprism.io:4433`;
   } else {
     grpcClient = 'https://www.atalaprism.io:4433';
   }
