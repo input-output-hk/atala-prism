@@ -1,5 +1,6 @@
-import * as React from 'react';
+import React from 'react';
 import { Form, Input, Button, Checkbox } from 'antd';
+
 import './_style.scss';
 
 const FormPioneers = () => {
@@ -7,18 +8,8 @@ const FormPioneers = () => {
     console.log('Success:', values);
   };
 
-  const onFinishFailed = () => {
-    console.log('Failed:', errorInfo);
-  };
-
   return (
-    <Form
-      name="basic"
-      initialValues={{ remember: true }}
-      onFinish={onFinish}
-      onFinishFailed={onFinishFailed}
-      autoComplete="off"
-    >
+    <Form name="basic" initialValues={{ remember: true }} onFinish={onFinish} autoComplete="off">
       <Form.Item className="form">
         <Form.Item
           label="Full Name"
@@ -37,11 +28,21 @@ const FormPioneers = () => {
         <Form.Item name="remember" valuePropName="checked" wrapperCol={{ offset: 8, span: 16 }}>
           <Checkbox>
             Yes, I have read and agree to the{' '}
-            <a href="#" className="link">
+            <a
+              href="https://legal.atalaprism.io/terms-and-conditions.html "
+              target="_blank"
+              rel="noopener noreferrer"
+              className="link"
+            >
               Atala PRISM Terms
             </a>
             {' & '}
-            <a href="#" className="link">
+            <a
+              href="https://legal.atalaprism.io/privacy-policy.html "
+              target="_blank"
+              rel="noopener noreferrer"
+              className="link"
+            >
               Conditions and Privacy Policy.
             </a>
           </Checkbox>
