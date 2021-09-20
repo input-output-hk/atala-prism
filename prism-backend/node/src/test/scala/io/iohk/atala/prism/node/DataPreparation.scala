@@ -88,7 +88,7 @@ object DataPreparation {
       executionContext: ExecutionContext
   ): Future[Either[NodeError, AtalaOperationId]] = {
     for {
-      atalaOperationIdE <- objectManagementService.sendSingleAtalaOperation(signedAtalaOperation)
+      atalaOperationIdE <- objectManagementService.scheduleSingleAtalaOperation(signedAtalaOperation)
       _ <- submissionService.submitReceivedObjects()
     } yield atalaOperationIdE
   }
@@ -99,7 +99,7 @@ object DataPreparation {
       executionContext: ExecutionContext
   ): Future[List[Either[NodeError, AtalaOperationId]]] = {
     for {
-      ids <- objectManagementService.sendAtalaOperations(ops: _*)
+      ids <- objectManagementService.scheduleAtalaOperations(ops: _*)
       _ <- submissionService.submitReceivedObjects()
     } yield ids
   }

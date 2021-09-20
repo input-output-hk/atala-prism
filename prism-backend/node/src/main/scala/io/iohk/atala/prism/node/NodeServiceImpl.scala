@@ -105,7 +105,7 @@ class NodeServiceImpl(
           operation <- operationF
           _ = logWithTraceId(methodName, traceId, "operationId" -> s"${AtalaOperationId.of(operation).toString}")
           parsedOp <- errorEitherToFutureAndCount(methodName, CreateDIDOperation.parseWithMockedLedgerData(operation))
-          operationIdE <- objectManagement.sendSingleAtalaOperation(operation)
+          operationIdE <- objectManagement.scheduleSingleAtalaOperation(operation)
         } yield {
           val response = node_api.CreateDIDResponse(id = parsedOp.id.getValue)
           operationIdE.fold(
@@ -130,7 +130,7 @@ class NodeServiceImpl(
           operation <- operationF
           _ = logWithTraceId(methodName, traceId, "operationId" -> s"${AtalaOperationId.of(operation).toString}")
           _ <- errorEitherToFutureAndCount(methodName, UpdateDIDOperation.validate(operation))
-          operationIdE <- objectManagement.sendSingleAtalaOperation(operation)
+          operationIdE <- objectManagement.scheduleSingleAtalaOperation(operation)
         } yield {
           val response = node_api.UpdateDIDResponse()
           operationIdE.fold(
@@ -156,7 +156,7 @@ class NodeServiceImpl(
           _ = logWithTraceId(methodName, traceId, "operationId" -> s"${AtalaOperationId.of(operation).toString}")
           parsedOp <-
             errorEitherToFutureAndCount(methodName, IssueCredentialBatchOperation.parseWithMockedLedgerData(operation))
-          operationIdE <- objectManagement.sendSingleAtalaOperation(operation)
+          operationIdE <- objectManagement.scheduleSingleAtalaOperation(operation)
         } yield {
           val response = node_api.IssueCredentialBatchResponse(batchId = parsedOp.credentialBatchId.getId)
           operationIdE.fold(
@@ -180,7 +180,7 @@ class NodeServiceImpl(
           operation <- operationF
           _ = logWithTraceId(methodName, traceId, "operationId" -> s"${AtalaOperationId.of(operation).toString}")
           _ <- errorEitherToFutureAndCount(methodName, RevokeCredentialsOperation.validate(operation))
-          operationIdE <- objectManagement.sendSingleAtalaOperation(operation)
+          operationIdE <- objectManagement.scheduleSingleAtalaOperation(operation)
         } yield {
           val response = node_api.RevokeCredentialsResponse()
           operationIdE.fold(
@@ -302,7 +302,7 @@ class NodeServiceImpl(
               errorEitherToFutureAndCount(methodName, getOperationOutput(op))
             }
           )
-          operationIds <- objectManagement.sendAtalaOperations(operations: _*)
+          operationIds <- objectManagement.scheduleAtalaOperations(operations: _*)
           outputsWithOperationIds = outputs.zip(operationIds).map {
             case (out, Right(opId)) =>
               out.withOperationId(opId.toProtoByteString)

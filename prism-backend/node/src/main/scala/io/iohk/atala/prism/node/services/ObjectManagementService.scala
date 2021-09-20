@@ -78,10 +78,10 @@ class ObjectManagementService private (
       .unsafeToFuture()
   }
 
-  def sendSingleAtalaOperation(op: node_models.SignedAtalaOperation): Future[Either[NodeError, AtalaOperationId]] =
-    sendAtalaOperations(op).map(_.head)
+  def scheduleSingleAtalaOperation(op: node_models.SignedAtalaOperation): Future[Either[NodeError, AtalaOperationId]] =
+    scheduleAtalaOperations(op).map(_.head)
 
-  def sendAtalaOperations(
+  def scheduleAtalaOperations(
       ops: node_models.SignedAtalaOperation*
   ): Future[List[Either[NodeError, AtalaOperationId]]] = {
     val opsWithObjects = ops.toList.map { op =>
