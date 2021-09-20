@@ -5,9 +5,11 @@ form {
   justify-content: flex-start;
   .ant-col-offset-8 {
     width: 100%;
-    margin:0;
+    display: flex;
+    justify-content: center;
+    margin-left: 0;
     button {
-      width: 100%;
+      width: 150px;
       @include primary-text($body, $white);
       height: 56px;
       font-weight: bold;
@@ -27,6 +29,7 @@ form {
 
 .ant-form .ant-form-item {
   margin-bottom: 2em;
+  width: 100%;
 }
 
 .ant-checkbox-checked .ant-checkbox-inner {
