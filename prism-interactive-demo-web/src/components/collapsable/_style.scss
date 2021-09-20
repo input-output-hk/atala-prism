@@ -11,6 +11,7 @@
 
 .ant-collapse > .ant-collapse-item > .ant-collapse-header {
     @include primary-text($h3, $secondary-color);
+    word-break: normal;
     font-weight: bold;
     padding: 1.5em 1em;
     .anticon-right {
@@ -28,4 +29,9 @@
     padding: 3em 1em!important;
     width: 70%;
     @include primary-text($body, $secondary-color);
+    word-break: normal;
+    a {
+        color: $primary-color;
+        margin: 0;
+    }
 }

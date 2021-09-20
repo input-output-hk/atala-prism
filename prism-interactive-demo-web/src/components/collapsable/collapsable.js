@@ -18,14 +18,17 @@ const FAQs = [
   },
   {
     title: 'What prior experience do I need?',
-    content: ['A basic experience of Java would be required.']
+    content: [
+      'A basic experience of Kotlin would be required.',
+      'To participate in the first cohort of the Atala PRISM Pioneer Program, you must be familiar with Kotlin. Subsequent cohorts will be required to have experience with Java.'
+    ]
   },
   {
     title: 'What can I expect to learn?',
     content: [
       'The Atala PRISM Pioneers Program offers a broad range of subjects and concepts. You will learn about the following:',
-      '• 	Creation of  Verifiable credentials',
-      '• 	Creation of  Decentralised Identifiers (DIDs)'
+      '• 	How to use the SDK to create, sign and issue verifiable credentials',
+      '• 	How to use the SDK to create, publish decentralised Identifiers (DIDs)'
     ]
   },
   {
@@ -52,6 +55,19 @@ const FAQs = [
     title: 'How will I receive my certificate?',
     content: [
       'You will receive instructions upon course completion on how to receive your certificate.'
+    ]
+  },
+  {
+    title:
+      'Are there any funding opportunities for solutions built as part of the Atala PRISM Pioneer program?',
+    content: [
+      'Project Catalyst offers funding opportunities to the best solution ideas that can drive mass-scale adoption of decentralized IDs on Cardano.',
+      <>
+        {'Everyone is invited to submit their proposal in '}
+        <a href="https://cardano.ideascale.com/">
+          Project Catalyst’s DID Mass-Scale Adoption Challenge and apply for funding.
+        </a>
+      </>
     ]
   }
 ];
