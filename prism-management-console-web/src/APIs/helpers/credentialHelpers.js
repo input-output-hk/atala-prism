@@ -2,46 +2,11 @@ import { CREDENTIAL_STATUSES } from '../../helpers/constants';
 import { contactMapper } from './contactHelpers';
 
 export function credentialMapper(credential) {
-  const {
-    batchId,
-    credentialId,
-    credentialData,
-    contactId,
-    externalId,
-    contactData,
-    connectionStatus,
-    encodedSignedCredential,
-    publicationStoredAt,
-    issuanceProof,
-    issuanceOperationHash,
-    batchInclusionProof,
-    sharedAt,
-    revocationProof,
-    credentialType
-  } = credential;
-
-  const parsedCredentialJson = JSON.parse(credentialData);
-
   return {
-    ...parsedCredentialJson,
-    batchId,
-    credentialId,
-    credentialData,
-    encodedSignedCredential,
-    publicationStoredAt,
-    issuanceProof,
-    issuanceOperationHash,
-    batchInclusionProof,
-    sharedAt,
-    revocationProof,
-    credentialType,
+    ...credential,
     status: getCredentialStatus(credential),
-    contactData: contactMapper({
-      contactId,
-      externalId,
-      connectionStatus,
-      jsonData: contactData
-    })
+    contactData: contactMapper(credential),
+    proof: getCredentialProof(credential)
   };
 }
 
@@ -51,6 +16,10 @@ function getCredentialStatus(credential) {
   if (sharedAt?.seconds) return CREDENTIAL_STATUSES.credentialSent;
   if (publicationStoredAt?.seconds) return CREDENTIAL_STATUSES.credentialSigned;
   return CREDENTIAL_STATUSES.credentialDraft;
+}
+
+function getCredentialProof(credential) {
+  return credential.batchInclusionProof ? JSON.parse(credential.batchInclusionProof) : undefined;
 }
 
 export function credentialReceivedMapper(credentialReceived, credentialTypes) {

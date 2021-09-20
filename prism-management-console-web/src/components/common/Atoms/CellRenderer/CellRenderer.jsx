@@ -1,6 +1,6 @@
 import React from 'react';
 import PropTypes from 'prop-types';
-
+import { childrenType } from '../../../../helpers/propShapes';
 import './_style.scss';
 
 const CellRenderer = ({ title, value, firstValue, children, light }) => (
@@ -14,15 +14,16 @@ const CellRenderer = ({ title, value, firstValue, children, light }) => (
 
 CellRenderer.defaultProps = {
   children: null,
+  value: null,
   light: false,
   firstValue: ''
 };
 
 CellRenderer.propTypes = {
   title: PropTypes.string.isRequired,
-  value: PropTypes.oneOfType([PropTypes.string, PropTypes.number]).isRequired,
+  value: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
   firstValue: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
-  children: PropTypes.arrayOf(PropTypes.element),
+  children: childrenType,
   light: PropTypes.bool
 };
 

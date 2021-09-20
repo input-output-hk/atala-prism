@@ -66,6 +66,14 @@ export const CREDENTIAL_TYPE_STATUSES = {
   CREDENTIAL_TYPE_ARCHIVED: 3
 };
 
+export const CREDENTIAL_TYPE_FIELD_TYPES = {
+  UNKNOWN: 0,
+  STRING: 1,
+  INT: 2,
+  BOOLEAN: 3,
+  DATE: 4
+};
+
 // eslint-disable-next-line quotes
 export const EXAMPLE_DEGREE_NAME = "Bachelor's in Engineering";
 export const EXAMPLE_UNIVERSITY_NANE = 'Free University Tbilisi';
@@ -266,3 +274,10 @@ export const NEW_TEMPLATE_STEP_UNIT = 1;
 export const SELECT_TEMPLATE_CATEGORY = 0;
 export const DESIGN_TEMPLATE = 1;
 export const TEMPLATE_CREATION_RESULT = 2;
+
+export const VALIDATION_KEYS = {
+  REQUIRED: 'required',
+  IS_DATE: 'isDate',
+  FUTURE_DATE: 'futureDate',
+  PAST_DATE: 'pastDate'
+};

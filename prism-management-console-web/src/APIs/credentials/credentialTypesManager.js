@@ -3,6 +3,7 @@ import Logger from '../../helpers/Logger';
 import { GetCredentialTypesRequest, GetCredentialTypeRequest } from '../../protos/console_api_pb';
 import { adaptCredentialType } from '../helpers/credentialTypeHelpers';
 import hardcodedTemplateCategories from './mocks/hardcodedTemplateCategories';
+import { VALIDATION_KEYS } from '../../helpers/constants';
 
 async function getCredentialTypes() {
   Logger.info('getting credential types');
@@ -50,7 +51,7 @@ function createCategory(_values) {
 const mapCredentialTypeField = field => ({
   ...field,
   key: field.name,
-  validations: ['required']
+  validations: [VALIDATION_KEYS.REQUIRED]
 });
 
 function CredentialTypesManager(config, auth) {

@@ -5,17 +5,17 @@ import { message } from 'antd';
 import { arrayOfArraysToObjects } from '../../helpers/fileHelpers';
 import { contactShape, credentialTypeShape } from '../../helpers/propShapes';
 import ImportTypeSelectionContainer from '../ImportTypeSelection/ImportTypeSelectionContainer';
-import BulkImport from '../bulkImport/BulkImport';
 import ManualImportContainer from '../manualImport/ManualImportContainer';
 import { ImportResults } from './Molecules/ImportResults';
 import { translateBackSpreadsheetNamesToContactKeys } from '../../helpers/contactValidations';
-import './_style.scss';
 import {
   BULK_IMPORT,
   MANUAL_IMPORT,
   IMPORT_CONTACTS,
   IMPORT_CREDENTIALS_DATA,
-  IMPORT_CREDENTIAL_DATA_STEP
+  IMPORT_CREDENTIAL_DATA_STEP,
+  CREDENTIAL_TYPE_FIELD_TYPES,
+  DEFAULT_DATE_FORMAT
 } from '../../helpers/constants';
 import GenericStepsButtons from '../common/Molecules/GenericStepsButtons/GenericStepsButtons';
 import WizardTitle from '../common/Atoms/WizardTitle/WizardTitle';
@@ -23,6 +23,8 @@ import { createBlankContact } from '../../helpers/importHelpers';
 import { DynamicFormContext } from '../../providers/DynamicFormProvider';
 import Logger from '../../helpers/Logger';
 import { getFirstError } from '../../helpers/formHelpers';
+import BulkImportSteps from '../bulkImport/Organisms/BulkImportSteps';
+import './_style.scss';
 
 const showGroupSelection = {
   [IMPORT_CONTACTS]: true,
@@ -131,7 +133,18 @@ const ImportDataContainer = ({
 
   const handleSaveCredentials = () => {
     const data = form.getFieldValue(IMPORT_CREDENTIALS_DATA);
-    handleManualImport({ credentials: data });
+    const dateFieldKeys = credentialType.fields.filter(
+      ({ type }) => type === CREDENTIAL_TYPE_FIELD_TYPES.DATE
+    );
+
+    const credentialsWithParsedDates = data.map(cred =>
+      dateFieldKeys.reduce(
+        (acc, { key }) => Object.assign(acc, { [key]: cred[key].format(DEFAULT_DATE_FORMAT) }),
+        cred
+      )
+    );
+
+    handleManualImport({ credentials: credentialsWithParsedDates });
   };
 
   const handleSave = () => {
@@ -158,11 +171,10 @@ const ImportDataContainer = ({
 
     if (currentStep === IMPORT_STEP)
       return selectedMethod === BULK_IMPORT ? (
-        <BulkImport
+        <BulkImportSteps
           cancelImport={resetSelection}
           recipients={recipients}
           credentialType={credentialType}
-          useCaseProps={useCaseProps}
           headersMapping={headersMapping}
           loading={loading}
           fileData={fileData}
@@ -171,6 +183,7 @@ const ImportDataContainer = ({
           setSelectedGroups={setSelectedGroups}
           skipGroupsAssignment={skipGroupsAssignment}
           setSkipGroupsAssignment={setSkipGroupsAssignment}
+          {...useCaseProps}
         />
       ) : (
         <ManualImportContainer

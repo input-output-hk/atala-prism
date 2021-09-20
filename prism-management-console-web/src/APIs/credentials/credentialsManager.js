@@ -1,4 +1,5 @@
 import _ from 'lodash';
+import { v4 as uuid } from 'uuid';
 import {
   CredentialsServicePromiseClient,
   CredentialIssuanceServicePromiseClient
@@ -19,7 +20,6 @@ import {
   GetBlockchainDataRequest,
   CreateGenericCredentialBulkRequest
 } from '../../protos/console_api_pb';
-import { adaptCredentialType } from '../helpers/credentialTypeHelpers';
 import { getProtoDate } from '../../helpers/formatters';
 import { AtalaMessage, PlainTextCredential } from '../../protos/credential_models_pb';
 
@@ -27,9 +27,9 @@ const { FilterBy, SortBy } = GetGenericCredentialsRequest;
 
 function mapCredential(cred) {
   const credential = cred.toObject();
-  const credentialData = JSON.parse(cred.getCredentialData());
-  const subjectData = JSON.parse(cred.getContactData());
-  return Object.assign(credential, { subjectData }, credentialData);
+  const credentialString = cred.getCredentialData();
+  const credentialData = JSON.parse(credentialString);
+  return Object.assign(credential, { credentialData, credentialString });
 }
 
 const fieldKeys = {
@@ -77,35 +77,24 @@ async function getCredentials(
   if (sessionError) return [];
 
   const result = await this.client.getGenericCredentials(getCredentialsRequest, metadata);
+  const credentialsList = result.getCredentialsList();
+  const mappedCredentialsList = credentialsList.map(mapCredential);
+  Logger.info('Got credentials:', mappedCredentialsList);
 
-  const credentialsList = result.getCredentialsList().map(mapCredential);
-  const adaptedCredentialsList = credentialsList.map(adaptCredential);
-  Logger.info('Got credentials:', adaptedCredentialsList);
-
-  return adaptedCredentialsList;
+  return mappedCredentialsList;
 }
-
-const adaptCredential = ({ credentialTypeDetails, ...rest }) => ({
-  ...rest,
-  credentialType: adaptCredentialType(credentialTypeDetails)
-});
 
 async function createBatchOfCredentials(credentialsData, credentialType, groups) {
   Logger.info(`Creating ${credentialsData.length} credential(s):`);
-  const draftsToSend = credentialsData.map(({ policyNumber, ...c }) => ({
+  const draftsToSend = credentialsData.map(c => ({
     external_id: c.externalId,
-    // policyNumber is rejected as a string by the BE
-    credential_data: _.omit({ ...c, policyNumber: parseInt(policyNumber, 10) }, [
-      'externalId',
-      'issuer',
-      'credentialType'
-    ]),
+    credential_data: _.omit(c, ['externalId', 'issuer', 'credentialType']),
     group_ids: groups.map(g => g.id)
   }));
   const jsonToSend = {
     // FIXME: issuance_name is required to be unique by the backend.
     // Remove random value when it's no longer required.
-    issuance_name: Math.random().toString(),
+    issuance_name: uuid(),
     credential_type_id: credentialType.id,
     drafts: draftsToSend
   };

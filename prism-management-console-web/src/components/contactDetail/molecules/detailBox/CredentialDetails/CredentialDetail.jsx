@@ -13,7 +13,7 @@ const CredentialDetail = ({ credential, isCredentialIssued, verifyCredential }) 
   const { credentialType, publicationstoredat } = credential;
   const { t } = useTranslation();
 
-  const [currentCredential, setCurrentCredential] = useState({});
+  const [currentCredential, setCurrentCredential] = useState();
   const [showDrawer, setShowDrawer] = useState(false);
 
   const showCredentialData = async clickedCredential => {
@@ -37,14 +37,16 @@ const CredentialDetail = ({ credential, isCredentialIssued, verifyCredential }) 
 
   return (
     <div className="credentialDetailContainer">
-      <CredentialSummaryDetail
-        drawerInfo={{
-          title: t('credentials.detail.title'),
-          onClose: () => setShowDrawer(false),
-          visible: showDrawer
-        }}
-        credentialData={currentCredential}
-      />
+      {currentCredential && (
+        <CredentialSummaryDetail
+          drawerInfo={{
+            title: t('credentials.detail.title'),
+            onClose: () => setShowDrawer(false),
+            visible: showDrawer
+          }}
+          credential={currentCredential}
+        />
+      )}
       <div className="credentialDataContainer">
         <div className="img">
           <img className="icons" src={credentialLogo} alt={credentialType?.name || ''} />
@@ -82,7 +84,7 @@ CredentialDetail.defaultProps = {
 };
 
 CredentialDetail.propTypes = {
-  credential: PropTypes.shape(credentialShape),
+  credential: credentialShape,
   isCredentialIssued: PropTypes.bool,
   verifyCredential: PropTypes.func.isRequired
 };

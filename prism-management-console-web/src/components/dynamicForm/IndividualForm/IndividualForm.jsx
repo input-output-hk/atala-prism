@@ -1,12 +1,19 @@
 import React from 'react';
-import { Form, Input, Row } from 'antd';
+import { Form, Input, InputNumber, Row } from 'antd';
 import PropTypes from 'prop-types';
 import { useTranslation } from 'react-i18next';
+import { DownOutlined } from '@ant-design/icons';
 import CustomButton from '../../common/Atoms/CustomButton/CustomButton';
-import { DEFAULT_WIDTH_INPUT, IMPORT_CONTACTS } from '../../../helpers/constants';
+import {
+  DEFAULT_WIDTH_INPUT,
+  IMPORT_CONTACTS,
+  CREDENTIAL_TYPE_FIELD_TYPES
+} from '../../../helpers/constants';
 import { columnShape, importUseCasePropType, skeletonShape } from '../../../helpers/propShapes';
-
+import CustomDatePicker from '../../common/Atoms/CustomDatePicker/CustomDatePicker';
 import './_style.scss';
+
+const { INT, DATE } = CREDENTIAL_TYPE_FIELD_TYPES;
 
 const IndividualForm = ({ field, skeleton, columns, onRemove, useCase }) => {
   const { t } = useTranslation();
@@ -15,6 +22,21 @@ const IndividualForm = ({ field, skeleton, columns, onRemove, useCase }) => {
     columns.find(col => col.fieldKey === item.fieldKey)?.width || DEFAULT_WIDTH_INPUT;
 
   const getWidthStyle = item => ({ width: getWidth(item) });
+
+  const getInputByType = ({ type, placeholder, editable }) => {
+    if (type === INT)
+      return <InputNumber type="number" placeholder={placeholder} disabled={!editable} />;
+    if (type === DATE) {
+      return (
+        <CustomDatePicker
+          placeholder={placeholder}
+          suffixIcon={<DownOutlined />}
+          disabled={!editable}
+        />
+      );
+    }
+    return <Input placeholder={placeholder} disabled={!editable} />;
+  };
 
   return (
     <div key={field.key} className="IndividualFormRow">
@@ -28,7 +50,7 @@ const IndividualForm = ({ field, skeleton, columns, onRemove, useCase }) => {
           rules={item.rules}
           key={item.fieldKey}
         >
-          <Input placeholder={item.placeholder} disabled={!item.editable} />
+          {getInputByType(item)}
         </Form.Item>
       ))}
       {useCase === IMPORT_CONTACTS && (

@@ -124,7 +124,7 @@ async function signCredentials(unsignedCredentials) {
   const { sessionId } = this.session;
   const credentialTypeAttributes = await getCredentialTypeAttributes(unsignedCredentials);
 
-  const signRequests = unsignedCredentials.map(({ credentialId, html }) => {
+  const signRequests = unsignedCredentials.map(({ credentialId, credentialData: { html } }) => {
     const payload = {
       id: credentialId,
       properties: { html, ...credentialTypeAttributes }
