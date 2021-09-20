@@ -32,7 +32,7 @@ const Resources = ({ data }) => {
       <Header currentSection={RESOURCES_NAME} />
       <div className="container-middle-section">
         <div className="videos-section">
-          <h1 className="title">Video</h1>
+          <h1 className="title">Videos</h1>
           <div className="featured-video-container">
             <div className="thumbnail">
               <img src={featuredVideo.thumbnail} alt="Thumbnail" />
