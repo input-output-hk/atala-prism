@@ -34,6 +34,8 @@ const CredentialSummaryDetail = ({ drawerInfo, credential }) => {
   const [rawVisible, setRawVisible] = useState(false);
 
   const {
+    encodedSignedCredential,
+    proof,
     credentialData: { contactName, credentialTypeDetails },
     verificationResult: {
       credentialSigned,
@@ -58,9 +60,12 @@ const CredentialSummaryDetail = ({ drawerInfo, credential }) => {
     }
   };
 
-  const downloadHref = `data:text/plain;charset=utf-8,${encodeURIComponent(
-    credential.credentialString
-  )}`;
+  const credentialToDownload = JSON.stringify({
+    encodedSignedCredential,
+    proof
+  });
+
+  const downloadHref = `data:text/plain;charset=utf-8,${encodeURIComponent(credentialToDownload)}`;
 
   const downloadName = `${contactName}-${credentialTypeDetails?.name}.txt`.replace(' ', '_');
 
