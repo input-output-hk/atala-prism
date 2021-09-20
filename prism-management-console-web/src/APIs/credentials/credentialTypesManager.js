@@ -42,6 +42,7 @@ async function getCredentialTypeDetails(id) {
 
 // eslint-disable-next-line no-unused-vars
 async function createTemplate(_values) {
+  // TODO: add implementation for creating credential types
   await mockDelay(MOCK_API_CALL_DELAY);
   return Promise.resolve();
 }

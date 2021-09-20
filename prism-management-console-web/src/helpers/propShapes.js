@@ -140,7 +140,7 @@ export const credentialTypeShape = shape({
   enabled: bool,
   isMultiRow: bool,
   name: string,
-  logo: oneOfType([element, string]),
+  logo: string,
   sampleImage: oneOfType([element, string]),
   fields: arrayOf(
     shape({
