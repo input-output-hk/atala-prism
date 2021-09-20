@@ -20,9 +20,10 @@ object ProtocolVersionsDAO {
       ledgerData: LedgerData
   ): ConnectionIO[Unit] = {
     val publishedIn = ledgerData.transactionId
+    val isEffective = false
     sql"""
          |INSERT INTO protocol_versions (major_version, minor_version, version_name, effective_since, published_in, is_effective, proposer_did)
-         |VALUES (${protocolVersion.major}, ${protocolVersion.minor}, $versionName, $effectiveSinceBlockIndex, $publishedIn, false, $proposerDID)
+         |VALUES (${protocolVersion.major}, ${protocolVersion.minor}, $versionName, $effectiveSinceBlockIndex, $publishedIn, $isEffective, $proposerDID)
        """.stripMargin.update.run.void
   }
 

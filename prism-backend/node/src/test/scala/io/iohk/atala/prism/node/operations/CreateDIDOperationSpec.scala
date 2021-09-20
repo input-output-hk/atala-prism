@@ -5,10 +5,8 @@ import com.google.protobuf.ByteString
 import doobie.implicits._
 import io.iohk.atala.prism.AtalaWithPostgresSpec
 import io.iohk.atala.prism.crypto.EC.{INSTANCE => EC}
-import io.iohk.atala.prism.crypto.keys.{ECKeyPair, ECPublicKey}
 import io.iohk.atala.prism.crypto.ECConfig.{INSTANCE => ECConfig}
-import io.iohk.atala.prism.protos.models.TimestampInfo
-import io.iohk.atala.prism.models.{Ledger, TransactionId}
+import io.iohk.atala.prism.crypto.keys.{ECKeyPair, ECPublicKey}
 import io.iohk.atala.prism.node.DataPreparation.{dummyLedgerData, dummyTimestampInfo}
 import io.iohk.atala.prism.node.grpc.ProtoCodecs
 import io.iohk.atala.prism.node.models.nodeState.DIDPublicKeyState

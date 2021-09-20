@@ -6,10 +6,8 @@ import doobie.implicits._
 import io.iohk.atala.prism.AtalaWithPostgresSpec
 import io.iohk.atala.prism.crypto.EC.{INSTANCE => EC}
 import io.iohk.atala.prism.crypto.Sha256
-import io.iohk.atala.prism.protos.models.TimestampInfo
-import io.iohk.atala.prism.models.{Ledger, TransactionId}
+import io.iohk.atala.prism.node.DataPreparation
 import io.iohk.atala.prism.node.DataPreparation.dummyLedgerData
-import io.iohk.atala.prism.node.models.nodeState.LedgerData
 import io.iohk.atala.prism.node.models.{DIDPublicKey, KeyUsage}
 import io.iohk.atala.prism.node.operations.CreateDIDOperationSpec.{randomCompressedECKeyData, randomECKeyData}
 import io.iohk.atala.prism.node.repositories.DIDDataRepository

@@ -418,13 +418,6 @@ class NodeServiceImpl(
       }
     )
   }
-
-  /** *
-    * PUBLIC
-    *
-   * Schedules a list of operations for further publication.
-    */
-  override def scheduleOperations(request: ScheduleOperationsRequest): Future[ScheduleOperationsResponse] = ???
 }
 
 object NodeServiceImpl {
