@@ -1,7 +1,7 @@
 import React, { useContext } from 'react';
 import PropTypes from 'prop-types';
 import { Icon, Row } from 'antd';
-import { useTranslation } from 'react-i18next';
+import { useTranslation } from 'gatsby-plugin-react-i18next';
 import firebase from 'gatsby-plugin-firebase';
 import SplittedPage from './Organisms/SplittedPage/SplittedPage';
 import CredentialsList from './Organisms/CredentialList/CredentialsList';

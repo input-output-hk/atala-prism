@@ -1,5 +1,5 @@
 import React, { useRef } from 'react';
-import { useTranslation } from 'react-i18next';
+import { useTranslation } from 'gatsby-plugin-react-i18next';
 import Header from '../../../components/Header/Header';
 import IntroSection from './Organisms/IntroSection/IntroSection';
 import CredentialSection from './Organisms/CredentialSection/CredentialSection';

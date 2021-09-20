@@ -1,7 +1,7 @@
 import React from 'react';
 
 import './_style.scss';
-import { useTranslation } from 'react-i18next';
+import { useTranslation } from 'gatsby-plugin-react-i18next';
 
 const TrustItem = () => {
   const { t } = useTranslation();

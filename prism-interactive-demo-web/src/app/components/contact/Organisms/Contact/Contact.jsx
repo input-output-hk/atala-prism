@@ -2,7 +2,7 @@ import React, { useRef, useState } from 'react';
 import jsonp from 'jsonp';
 import queryString from 'query-string';
 import { message } from 'antd';
-import { useTranslation } from 'react-i18next';
+import { useTranslation } from 'gatsby-plugin-react-i18next';
 import firebase from 'gatsby-plugin-firebase';
 import ContactForm from '../ContactInformation/ContactInformation';
 import { config } from '../../../../APIs/configs';

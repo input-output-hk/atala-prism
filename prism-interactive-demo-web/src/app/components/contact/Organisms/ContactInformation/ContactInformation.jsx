@@ -1,7 +1,7 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import { Checkbox, Icon } from 'antd';
-import { useTranslation } from 'react-i18next';
+import { useTranslation } from 'gatsby-plugin-react-i18next';
 import CustomButton from '../../../common/Atoms/CustomButton/CustomButton';
 import ContactInformationForm from '../ContactInformationForm/ContactInformationForm';
 import './_style.scss';

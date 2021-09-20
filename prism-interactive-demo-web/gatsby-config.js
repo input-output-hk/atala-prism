@@ -61,6 +61,30 @@ module.exports = {
         name: `brochures`
       }
     },
+    {
+      resolve: `gatsby-source-filesystem`,
+      options: {
+        path: `${__dirname}/locales`,
+        name: `locale`
+      }
+    },
+    {
+      resolve: `gatsby-plugin-react-i18next`,
+      options: {
+        localeJsonSourceName: `locale`,
+        languages: [`en`, `ka`],
+        defaultLanguage: `en`,
+        redirect: false,
+        siteUrl: `https://www.atalaprism.io`,
+        i18nextOptions: {
+          interpolation: {
+            escapeValue: false
+          },
+          keySeparator: '.',
+          nsSeparator: false
+        }
+      }
+    },
     `gatsby-transformer-json`,
     {
       resolve: `gatsby-transformer-remark`,

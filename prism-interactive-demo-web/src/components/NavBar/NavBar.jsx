@@ -1,7 +1,7 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import { Menu } from 'antd';
-import { useTranslation } from 'react-i18next';
+import { useTranslation } from 'gatsby-plugin-react-i18next';
 import { Link } from 'gatsby';
 import CustomButton from '../../app/components/common/Atoms/CustomButton/CustomButton';
 import {

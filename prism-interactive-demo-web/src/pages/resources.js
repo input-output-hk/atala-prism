@@ -147,6 +147,15 @@ export default Resources;
 
 export const pageQuery = graphql`
   query {
+    locales: allLocale(filter: { language: { eq: "en" } }) {
+      edges {
+        node {
+          ns
+          data
+          language
+        }
+      }
+    }
     site {
       siteMetadata {
         title

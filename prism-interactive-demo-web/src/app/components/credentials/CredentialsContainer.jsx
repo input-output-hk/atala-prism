@@ -2,7 +2,7 @@ import React, { useState, useEffect, useContext } from 'react';
 import PropTypes from 'prop-types';
 import { message } from 'antd';
 import _ from 'lodash';
-import { useTranslation } from 'react-i18next';
+import { useTranslation } from 'gatsby-plugin-react-i18next';
 import firebase from 'gatsby-plugin-firebase';
 import FinishInfo from './Molecules/FinishInfo/FinishInfo';
 import CongratsStep from './Molecules/CongratsStep/CongratsStep';

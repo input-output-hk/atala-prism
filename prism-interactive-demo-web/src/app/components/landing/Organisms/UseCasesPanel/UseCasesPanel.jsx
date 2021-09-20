@@ -1,6 +1,6 @@
 import React from 'react';
 import { Tabs } from 'antd';
-import { useTranslation } from 'react-i18next';
+import { useTranslation } from 'gatsby-plugin-react-i18next';
 
 import './_style.scss';
 

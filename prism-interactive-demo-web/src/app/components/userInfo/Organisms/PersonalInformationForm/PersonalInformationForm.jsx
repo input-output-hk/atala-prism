@@ -1,5 +1,5 @@
 import React from 'react';
-import { useTranslation } from 'react-i18next';
+import { useTranslation } from 'gatsby-plugin-react-i18next';
 import { DatePicker, Input } from 'antd';
 import moment from 'moment';
 import localeKa from 'moment/locale/ka';
@@ -32,7 +32,7 @@ const TemplateForm = React.forwardRef((_props, ref) => {
       label: t('credential.personalInformation.form.lastName'),
       key: 'lastName',
       className: 'itemFormInfo',
-      input: <Input size="large" disabled={true} />,
+      input: <Input size="large" disabled={true} />
     },
     {
       fieldDecoratorData: {
