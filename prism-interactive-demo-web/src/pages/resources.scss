@@ -22,6 +22,7 @@
         @include primary-text(48px, $black);
         font-weight: bold;
         margin-bottom: 1em;
+        word-break: normal;
       }
 
       .featured-video-container {
@@ -46,12 +47,14 @@
             font-weight: bold;
             line-height: 32px;
             margin-bottom: 0.5em;
+            word-break: normal;
           }
 
           p {
             @include primary-text($body, $black);
             line-height: 24px;
             margin-bottom: 1.5em;
+            word-break: normal;
           }
 
           .video-info {
@@ -61,6 +64,7 @@
             a p {
               @include primary-text($body, $primary-color);
               font-weight: bold;
+              word-break: normal;
             }
 
             .watch-now,
@@ -76,6 +80,7 @@
               .data {
                 @include primary-text($label, $grey);
                 margin: 0;
+                word-break: normal;
               }
             }
           }
@@ -92,12 +97,14 @@
           font-weight: bold;
           margin: 1em 0;
           line-height: 24px;
+          word-break: normal;
         }
 
         p {
           @include primary-text($label, $black);
           line-height: 18px;
           margin-bottom: 1em;
+          word-break: normal;
         }
 
         .video-container {
@@ -120,6 +127,7 @@
               a p {
                 color: $primary-color;
                 font-weight: bold;
+                word-break: normal;
               }
 
               .watch-now,
@@ -137,6 +145,7 @@
                 }
                 p {
                   margin: 0;
+                  word-break: normal;
                 }
               }
             }
@@ -150,17 +159,20 @@
       margin-top: 2em;
       .title {
         @include primary-text(48px, $black);
+        word-break: normal;
         font-weight: bold;
       }
 
       h2 {
         @include primary-text(24px, $black);
+        word-break: normal;
         font-weight: bold;
         line-height: 32px;
         margin: 0.5em 0;
       }
       p {
         @include primary-text($body, $black);
+        word-break: normal;
         line-height: 24px;
         margin-bottom: 1.5em;
       }
@@ -183,6 +195,7 @@
             a p {
               color: $primary-color;
               font-weight: bold;
+              word-break: normal;
             }
 
             .read {
@@ -208,6 +221,7 @@
         flex-wrap: wrap;
         h2 {
           @include primary-text($h2, $black);
+          word-break: normal;
           font-weight: bold;
           line-height: 24px;
           margin: 1em 0;
@@ -215,6 +229,7 @@
 
         p {
           @include primary-text($label, $black);
+          word-break: normal;
           line-height: 18px;
           margin-bottom: 1em;
         }
@@ -234,6 +249,7 @@
 
             a p {
               color: $primary-color;
+              word-break: normal;
               font-weight: bold;
             }
 
@@ -272,40 +288,42 @@
         display: flex;
         flex-direction: column;
         justify-content: space-between;
-      }
-
-      h3 {
-        @include primary-text($h3, $black);
-        font-weight: bold;
-      }
-      h2 {
-        @include primary-text(24px, $black);
-        margin-bottom: 1em;
-        font-weight: bold;
-      }
-      p {
-        @include primary-text($body, $black);
-        margin-bottom: 2em;
-      }
-
-      .buttn {
-        display: flex;
-        width: 140px;
-        height: 39px;
-        color: white;
-        border-radius: 19.5px;
-        background-color: $primary-color;
-        justify-content: center;
-        align-items: center;
-        @include primary-text($body, $white);
-        font-weight: bold;
+        width: 45%;
+          h3 {
+            @include primary-text($h3, $black);
+            font-weight: bold;
+            word-break: normal;
+          }
+          h2 {
+            @include primary-text(24px, $black);
+            margin-bottom: 1em;
+            font-weight: bold;
+            word-break: normal;
+          }
+          p {
+            @include primary-text($body, $black);
+            margin-bottom: 2em;
+            word-break: normal;
+          }
+    
+          .buttn {
+            display: flex;
+            width: 140px;
+            height: 39px;
+            color: white;
+            border-radius: 19.5px;
+            background-color: $primary-color;
+            justify-content: center;
+            align-items: center;
+            @include primary-text($body, $white);
+            font-weight: bold;
+          }
       }
       .blog-preview {
         width: 45%;
-      }
-
-      .latest-post-info {
-        width: 45%;
+        img {
+          width: 100%;
+        }
       }
     }
   }

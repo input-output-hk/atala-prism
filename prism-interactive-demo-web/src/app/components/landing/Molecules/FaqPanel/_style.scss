@@ -14,23 +14,27 @@
     h1 {
       @include secondary-text($h1, $black);
       line-height: 30px;
+      word-break: normal;
     }
 
     .FaqContainer {
       width: 100%;
       display: flex;
       flex-wrap: wrap;
+      justify-content: space-between;
       .FaqItem {
-        width: 50%;
+        width: 48%;
         margin-top: 3em;
         padding-left: 1em;
         border-left: 1px solid $primary-color;
         h3 {
           @include primary-text($body, $black);
           font-weight: 600;
+          word-break: normal;
         }
         p {
           @include primary-text($label, $black);
+          word-break: normal;
         }
       }
     }
