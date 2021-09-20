@@ -11,6 +11,7 @@ form {
       @include primary-text($body, $white);
       height: 56px;
       font-weight: bold;
+      margin: 0 auto;
     }
   }
   .ant-checkbox-wrapper {

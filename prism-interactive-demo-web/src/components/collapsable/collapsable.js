@@ -42,13 +42,13 @@ const FAQs = [
     content: [
       'Upon completion of the course pioneers will be eligible to receive a certificate. In order to be eligible you must:',
       '1. 	Have registered for the program using the registration form',
-      '2. 	Join the discord group and have participated'
+      '2. 	Join the Discord group and have participated'
     ]
   },
   {
     title: 'What will be the certificate format?',
     content: [
-      'You will receive an NFT that will be a class photo (from a zoom call).In future, we aim to issue certificates via the Atala PRISM app (issued by IOG).'
+      'You will receive an NFT that will be a class photo (from a zoom call). In future, we aim to issue certificates via the Atala PRISM app (issued by IOG).'
     ]
   },
   {
@@ -61,7 +61,7 @@ const FAQs = [
     title:
       'Are there any funding opportunities for solutions built as part of the Atala PRISM Pioneer program?',
     content: [
-      'Project Catalyst offers funding opportunities to the best solution ideas that can drive mass-scale adoption of decentralized IDs on Cardano.',
+      'Project Catalyst offers funding opportunities for the best solution ideas that can drive mass-scale adoption of decentralized IDs on Cardano.',
       <>
         {'Everyone is invited to submit their proposal in '}
         <a href="https://cardano.ideascale.com/">

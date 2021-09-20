@@ -27,8 +27,8 @@ const BlogIndex = () => {
           <div className="Description">
             <div className="Container">
               <h3>Atala PRISM</h3>
-              <h2>Pioneers Program</h2>
-              <p className="subtitle">What is the Atala PRISM Pioneer Program</p>
+              <h2>Pioneer Program</h2>
+              <p className="subtitle">What is the Atala PRISM Pioneer Program?</p>
               <p className="bigger">
                 It is a program to train developers to use the PRISM SDK to build solutions in the
                 Cardano ecosystem.

@@ -50,12 +50,12 @@ const PioneersForm = ({ form }) => {
 
   return (
     <Form name="basic" onSubmit={submitForm} autoComplete="off">
-      <Form.Item label="Full Name" name="fullName">
+      <Form.Item label="Full name" name="fullName">
         {getFieldDecorator('fullName', {
           rules: [{ required: true, message: 'Please input your full name' }]
         })(<Input />)}
       </Form.Item>
-      <Form.Item label="E-mail Address" name="email">
+      <Form.Item label="E-mail address" name="email">
         {getFieldDecorator('email', {
           rules: [
             {
@@ -76,7 +76,7 @@ const PioneersForm = ({ form }) => {
           ]
         })(
           <Checkbox>
-            Yes, I have read and agree to the Atala PRISM{' '}
+            Yes, I have read and agreed to the Atala PRISM{' '}
             <a
               href="https://legal.atalaprism.io/terms-and-conditions.html "
               target="_blank"
@@ -99,7 +99,7 @@ const PioneersForm = ({ form }) => {
       </Form.Item>
       <Form.Item wrapperCol={{ offset: 8, span: 16 }}>
         <Button type="primary" htmlType="submit">
-          Submit interest
+          Submit
         </Button>
       </Form.Item>
     </Form>
