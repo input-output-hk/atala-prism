@@ -29,6 +29,7 @@ import org.slf4j.LoggerFactory
 import tofu.logging.Logs
 
 import scala.concurrent.{Await, ExecutionContext}
+import scala.concurrent.ExecutionContext.Implicits._
 import scala.concurrent.duration._
 import scala.util.Try
 
@@ -105,7 +106,7 @@ class ConnectorApp(executionContext: ExecutionContext) { self =>
     // connector services
     val connectionsService = new ConnectionsService(connectionsRepository, node)(executionContext)
     val messagesService = new MessagesService(messagesRepository)
-    val registrationService = new RegistrationService(participantsRepository, node)(executionContext)
+    val registrationService = RegistrationService(participantsRepository, node)
     val contactConnectionService = new ContactConnectionService(connectionsService, authenticator, didWhitelist)(
       executionContext
     )
