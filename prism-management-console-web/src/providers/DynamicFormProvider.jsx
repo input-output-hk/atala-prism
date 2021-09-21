@@ -64,7 +64,7 @@ const DynamicFormProvider = ({ children, formName }) => {
 };
 
 DynamicFormProvider.propTypes = {
-  children: PropTypes.oneOfType([PropTypes.arrayOf(PropTypes.node), PropTypes.node]).isRequired,
+  children: PropTypes.node.isRequired,
   formName: PropTypes.string.isRequired
 };
 

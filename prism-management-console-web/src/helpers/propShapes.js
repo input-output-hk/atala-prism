@@ -216,5 +216,3 @@ export const templateSortingShape = {
   sortingBy: string,
   setSortingBy: func
 };
-
-export const childrenType = oneOfType([string, element, arrayOf(element)]);
