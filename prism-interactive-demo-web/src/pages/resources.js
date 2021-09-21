@@ -1,5 +1,5 @@
 import React from 'react';
-import { graphql } from 'gatsby';
+import { graphql, Link } from 'gatsby';
 import _ from 'lodash';
 import Header from '../components/Header/Header';
 import FooterBlog from '../components/footer/footer';
@@ -130,9 +130,9 @@ const Resources = ({ data }) => {
               <h2>{latestPost.frontmatter.title}</h2>
               <p>{latestPost.frontmatter.description}</p>
             </div>
-            <a className="buttn" href={latestPost.fields.slug}>
+            <Link className="buttn" to={latestPost.fields.slug} state={{ fromResources: true }}>
               Blog
-            </a>
+            </Link>
           </div>
         </div>
       </div>

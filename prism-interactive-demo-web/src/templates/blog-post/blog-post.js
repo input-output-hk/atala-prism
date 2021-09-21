@@ -14,10 +14,12 @@ import '../../pages/blog.scss';
 const BlogPostTemplate = ({ data, location, pageContext }) => {
   const post = data.markdownRemark;
 
+  const backTo = location.state.fromResources ? '/resources' : '/blog';
+
   return (
     <div className="BlogContainer">
       <SEO title={post.frontmatter.title} description={post.excerpt} />
-      <HeaderBlog backTo="/blog" />
+      <HeaderBlog backTo={backTo} />
       <div className="middleSectionContainer">
         <div className="mainSectionContainer">
           <article className="postSection" itemScope itemType="http://schema.org/Article">
