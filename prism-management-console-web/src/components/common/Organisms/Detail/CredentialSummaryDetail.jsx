@@ -30,6 +30,8 @@ const getCardanoExplorerUrl = (txId, ledger) => {
   return baseUrl.concat(txId);
 };
 
+const SPACING = 2;
+
 const CredentialSummaryDetail = ({ drawerInfo, credential }) => {
   const { t } = useTranslation();
   const [rawVisible, setRawVisible] = useState(false);
@@ -61,14 +63,13 @@ const CredentialSummaryDetail = ({ drawerInfo, credential }) => {
     }
   };
 
-  const credentialToDownload = JSON.stringify({
-    encodedSignedCredential,
-    proof
-  });
+  const credentialToDownload = JSON.stringify({ encodedSignedCredential, proof }, null, SPACING);
 
-  const downloadHref = `data:text/plain;charset=utf-8,${encodeURIComponent(credentialToDownload)}`;
+  const downloadHref = `data:application/json;charset=utf-8,${encodeURIComponent(
+    credentialToDownload
+  )}`;
 
-  const downloadName = `${contactName}-${credentialTypeDetails?.name}.txt`.replace(' ', '_');
+  const downloadName = `${contactName}-${credentialTypeDetails?.name}.json`.replace(' ', '_');
 
   const disableDownload = !encodedSignedCredential;
 
