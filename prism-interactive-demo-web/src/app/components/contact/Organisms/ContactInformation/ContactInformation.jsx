@@ -13,10 +13,6 @@ const ContactInformation = ({ submit, contactInfoRef, onConsent }) => {
     <div className="contactInformation">
       <ContactInformationForm ref={contactInfoRef} />
       <Checkbox onChange={event => onConsent(event.target.checked)}>
-        {t('credential.contactInformation.consent')}
-      </Checkbox>
-      <hr />
-      <Checkbox onChange={event => onConsent(event.target.checked)}>
         {t('credential.contactInformation.consent2')}
         <a
           href="https://legal.atalaprism.io/terms-and-conditions.html "
