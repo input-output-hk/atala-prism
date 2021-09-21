@@ -72,10 +72,10 @@ const CategoryCreation = ({ api, categoryForm, close, mockCategoriesProps }) => 
       <CategoryIconSelector categoryForm={categoryForm} />
       <div className="buttonSection">
         <CustomButton
-          className="theme-secondary"
           buttonText={t(`${i18nPrefix}.categoryCreationModal.save`)}
           loading={isLoading}
           buttonProps={{
+            className: 'theme-secondary',
             onClick: handleCategorySubmit
           }}
         />

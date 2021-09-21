@@ -103,7 +103,7 @@ const CategoryIconSelector = ({ categoryForm }) => {
             >
               <div className="verticalFlex">
                 <CustomButton
-                  className="theme-outline"
+                  buttonProps={{ className: 'theme-outline' }}
                   buttonText={t(`${i18nPrefix}.categoryCreationModal.uploadButton`)}
                 />
                 <div className="galleryLabel">

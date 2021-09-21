@@ -13,11 +13,18 @@ import './_style.scss';
 //    - theme-link
 //    - theme-filter
 //    - theme-text
-const CustomButton = ({ buttonText, buttonProps, loading, className, ...propagatedProps }) => (
+// alternatively it can be overriden with overrideClassName.
+const CustomButton = ({
+  buttonText,
+  buttonProps,
+  loading,
+  overrideClassName,
+  ...propagatedProps
+}) => (
   <Button
     {...propagatedProps}
     {...buttonProps}
-    className={`${buttonProps?.className} ${className}`}
+    className={overrideClassName || buttonProps?.className}
     disabled={buttonProps?.disabled || loading}
   >
     {loading ? <SimpleLoading /> : buttonText}
@@ -26,7 +33,7 @@ const CustomButton = ({ buttonText, buttonProps, loading, className, ...propagat
 
 CustomButton.defaultProps = {
   buttonText: '',
-  className: '',
+  overrideClassName: '',
   loading: false
 };
 
@@ -45,7 +52,7 @@ CustomButton.propTypes = {
     disabled: PropTypes.bool
   }).isRequired,
   buttonText: PropTypes.string,
-  className: PropTypes.string,
+  overrideClassName: PropTypes.string,
   loading: PropTypes.bool
 };
 

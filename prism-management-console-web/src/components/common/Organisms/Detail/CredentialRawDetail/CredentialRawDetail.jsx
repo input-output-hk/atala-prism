@@ -3,13 +3,12 @@ import { InfoCircleOutlined } from '@ant-design/icons';
 import { Drawer, Card, Row, Col, Divider } from 'antd';
 import PropTypes from 'prop-types';
 import { useTranslationWithPrefix } from '../../../../../hooks/useTranslationWithPrefix';
-import CustomButton from '../../../Atoms/CustomButton/CustomButton';
 import JsonView from '../../../Atoms/JsonView/JsonView';
 import './_style.scss';
+import DownloadRawButton from '../../../Atoms/DownloadRawButton/DownloadRawButton';
 
 const CredentialRawDetail = ({ credentialString, visible, onClose, downloadProps }) => {
   const tp = useTranslationWithPrefix('credentials.drawer.raw');
-  const { downloadHref, downloadName } = downloadProps;
 
   const credentialJson = JSON.parse(credentialString);
 
@@ -42,12 +41,7 @@ const CredentialRawDetail = ({ credentialString, visible, onClose, downloadProps
             </Col>
           </Row>
         </Card>
-        <a href={downloadHref} download={downloadName}>
-          <CustomButton
-            buttonText={tp('downloadFile')}
-            buttonProps={{ className: 'theme-primary w-100' }}
-          />
-        </a>
+        <DownloadRawButton overrideClassName="theme-primary full-width" {...downloadProps} />
       </div>
     </Drawer>
   );
@@ -59,7 +53,8 @@ CredentialRawDetail.propTypes = {
   onClose: PropTypes.func.isRequired,
   downloadProps: PropTypes.shape({
     downloadHref: PropTypes.string,
-    downloadName: PropTypes.string
+    downloadName: PropTypes.string,
+    disabled: PropTypes.bool
   }).isRequired
 };
 
