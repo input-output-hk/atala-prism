@@ -64,13 +64,11 @@ const TemplateCategorySection = observer(() => {
 
   return (
     <div className="TemplateCategorySection">
+      {/* TODO: @ana-alleva check styling */}
       <p>{t(`${i18nPrefix}.step1.selectCategory`)}</p>
-      <Form.Item
-        name="category"
-        // TODO: add i18n
-        label="Once selected click next on the upper right side of the page."
-        rules={[{ required: true }]}
-      >
+      {/* TODO: add i18n */}
+      <p>{t('Once selected click next on the upper right side of the page.')}</p>
+      <Form.Item name="category" label="." rules={[{ required: true }]}>
         <Select
           open={open}
           showSearch

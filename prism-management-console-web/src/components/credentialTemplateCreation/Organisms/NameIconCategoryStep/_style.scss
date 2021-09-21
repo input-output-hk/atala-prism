@@ -47,10 +47,11 @@
   }
 }
 
-.template-icon-container {
-  .template-icon-wrapper {
+// TODO: @ana-alleva check styling
+.TemplateIconContainer {
+  .TemplateIconWrapper {
     margin-right: 1em;
-    .template-icon {
+    .TemplateIcon {
       height: 8em;
       width: 8em;
     }
@@ -58,7 +59,7 @@
 }
 
 .TemplateNameIconCategoryStep {
-  // TODO: fix styles @ana
+  // TODO: @ana-alleva check styling
   flex-wrap: wrap;
   justify-content: flex-start;
   margin: 1em 1.5em;

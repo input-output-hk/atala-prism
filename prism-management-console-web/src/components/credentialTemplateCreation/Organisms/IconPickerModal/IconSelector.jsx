@@ -38,6 +38,7 @@ const IconSelector = ({ selectedIcon, setSelectedIcon }) => {
   const iconPreview = selectedIcon.isCustomIcon ? selectedIcon.file.thumbUrl : selectedIcon.src;
 
   return (
+    // TODO: @ana-alleva check styling
     <div className="TemplateIconSelector verticalFlex">
       <Radio.Group onChange={onIconChange}>
         <img className="IconPreview" src={iconPreview} alt="upload custom icon" />

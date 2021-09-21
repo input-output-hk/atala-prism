@@ -10,11 +10,12 @@ const TemplateNameSection = observer(() => {
   const [showIconPickerModal, setShowIconPickerModal] = useState(false);
 
   return (
-    <div className="template-icon-container flex">
-      <div className="template-icon-wrapper">
-        <img className="template-icon" src={templateSketch.icon} alt="templateIcon" />
+    <div className="TemplateIconContainer flex">
+      <div className="TemplateIconWrapper">
+        <img className="TemplateIcon" src={templateSketch.icon} alt="template icon" />
       </div>
       <div className="verticalFlex">
+        {/* TODO: add i18n */}
         <p>Temple Icon</p>
         <p>Select an Icon for your template</p>
         <CustomButton
