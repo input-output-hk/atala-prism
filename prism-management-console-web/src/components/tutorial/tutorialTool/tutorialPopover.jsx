@@ -33,7 +33,7 @@ const TutorialPopover = () => {
     </div>
   );
   return (
-    <Popover placement="right" content={content}>
+    <Popover overlayClassName="TutorialPopover" placement="right" content={content}>
       <div className="step1">
         <DashboardCard />
       </div>
