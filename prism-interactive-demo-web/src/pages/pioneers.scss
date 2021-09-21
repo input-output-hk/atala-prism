@@ -26,6 +26,8 @@
       display: flex;
       justify-content: center;
       margin-top: 5em;
+      max-width: 1200px;
+      margin: 0 auto;
       .Description {
         display: flex;
         justify-content: center;
@@ -115,6 +117,7 @@
   .center {
     width: 100%;
     text-align: center;
+    margin-top: -2px;
   }
   .FAQs {
     padding: 2em 5em;
@@ -134,12 +137,11 @@
     background-image: url('../images/bgDark.png');
     background-position: right center;
     background-repeat: no-repeat;
-    padding: 2em 5em;
+    padding: 0 5em 2em 5em;
     text-align: center;
     position: relative;
     .whiteTriangle {
-      position: absolute;
-      top: 0;
+      margin: -2px 2em 0 2em;
     }
     .logo {
       margin-top: 2em;
@@ -298,6 +300,9 @@
           width: 100%;
           margin-bottom: 2em;
         }
+        video {
+          width: 100%!important;
+        }
       }
     }
     .FAQs {
@@ -316,6 +321,13 @@
       button {
         width: 300px;
         font-size: $subtitle;
+      }
+    }
+    .footer {
+      .footerLinks {
+        flex-wrap: wrap;
+        justify-content: center;
+        text-align: center;
       }
     }
     .footer .footerLinks div {
@@ -397,9 +409,6 @@
           text-align: center;
           font-size: $subtitle;
         }
-        video {
-          width: 100%;
-        }
         img {
           width: 100%;
           margin-bottom: 2em;
@@ -423,7 +432,7 @@
       }
     }
     .banner {
-      padding: 2em;
+      padding: 0 2em 2em 2em;
       height: 300px;
       display: flex;
       flex-direction: column;
@@ -431,6 +440,7 @@
       justify-content: center;
       .whiteTriangle {
         width: 20px;
+        margin-top: -2px;
       }
       .logo {
         width: 90px;
