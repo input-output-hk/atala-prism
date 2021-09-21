@@ -37,6 +37,7 @@ import io.iohk.atala.prism.kotlin.identity.{CanonicalPrismDid, LongFormPrismDid,
 import io.iohk.atala.prism.kotlin.identity.{PrismDid => DID}
 import io.iohk.atala.prism.models.DidSuffix
 import io.iohk.atala.prism.node.cardano.models.AtalaObjectMetadata
+import io.iohk.atala.prism.node.models.AtalaObjectTransactionSubmissionStatus.InLedger
 
 class NodeServiceImpl(
     didDataRepository: DIDDataRepository[IO],
@@ -339,11 +340,17 @@ class NodeServiceImpl(
     (opStatus, maybeTxStatus) match {
       case (AtalaOperationStatus.RECEIVED, None) =>
         common_models.OperationStatus.PENDING_SUBMISSION
-      case (AtalaOperationStatus.RECEIVED, _) =>
+      case (AtalaOperationStatus.RECEIVED, Some(_)) =>
         common_models.OperationStatus.AWAIT_CONFIRMATION
-      case (AtalaOperationStatus.APPLIED, Some(AtalaObjectTransactionSubmissionStatus.InLedger)) =>
+      // If the operation has been sent by another node
+      case (AtalaOperationStatus.APPLIED, None)
+          // If the operation has been sent by us
+          | (AtalaOperationStatus.APPLIED, Some(InLedger)) =>
         common_models.OperationStatus.CONFIRMED_AND_APPLIED
-      case (AtalaOperationStatus.REJECTED, Some(AtalaObjectTransactionSubmissionStatus.InLedger)) =>
+      // If the operation has been sent by another node
+      case (AtalaOperationStatus.REJECTED, None)
+          // If the operation has been sent by us
+          | (AtalaOperationStatus.APPLIED, Some(InLedger)) =>
         common_models.OperationStatus.CONFIRMED_AND_REJECTED
       case _ =>
         throw new RuntimeException(

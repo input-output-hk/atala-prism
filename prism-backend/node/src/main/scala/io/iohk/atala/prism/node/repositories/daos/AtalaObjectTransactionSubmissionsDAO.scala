@@ -4,6 +4,7 @@ import java.time.Instant
 
 import doobie.free.connection.ConnectionIO
 import doobie.implicits._
+import cats.syntax.functor._
 import doobie.implicits.legacy.instant._
 import io.iohk.atala.prism.models.{Ledger, TransactionId}
 import io.iohk.atala.prism.node.models.{AtalaObjectTransactionSubmission, AtalaObjectTransactionSubmissionStatus}
@@ -62,5 +63,18 @@ object AtalaObjectTransactionSubmissionsDAO {
          |    AND transaction_id = $transactionId
          |RETURNING atala_object_id, ledger, transaction_id, submission_timestamp, status
        """.stripMargin.query[AtalaObjectTransactionSubmission].unique
+  }
+
+  def updateStatusIfTxExists(
+      ledger: Ledger,
+      transactionId: TransactionId,
+      status: AtalaObjectTransactionSubmissionStatus
+  ): ConnectionIO[Unit] = {
+    sql"""
+         |UPDATE atala_object_tx_submissions
+         |  SET status = $status
+         |  WHERE ledger = $ledger
+         |    AND transaction_id = $transactionId
+       """.stripMargin.update.run.void
   }
 }

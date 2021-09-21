@@ -7,25 +7,19 @@ import io.iohk.atala.prism.AtalaWithPostgresSpec
 import io.iohk.atala.prism.kotlin.crypto.EC.{INSTANCE => EC}
 import io.iohk.atala.prism.kotlin.crypto.Sha256
 import io.iohk.atala.prism.kotlin.crypto.keys.ECKeyPair
-import io.iohk.atala.prism.models.{BlockInfo, Ledger, TransactionId, TransactionInfo, TransactionStatus}
-import io.iohk.atala.prism.node.models.{
-  AtalaObjectId,
-  AtalaObjectInfo,
-  AtalaObjectStatus,
-  AtalaObjectTransactionSubmission,
-  AtalaObjectTransactionSubmissionStatus,
-  AtalaOperationStatus
-}
+import io.iohk.atala.prism.models._
+import io.iohk.atala.prism.node.DataPreparation._
+import io.iohk.atala.prism.node.models.AtalaObjectTransactionSubmissionStatus.InLedger
+import io.iohk.atala.prism.node.models._
 import io.iohk.atala.prism.node.operations.CreateDIDOperationSpec
+import io.iohk.atala.prism.node.repositories.daos.{AtalaObjectTransactionSubmissionsDAO, AtalaObjectsDAO}
 import io.iohk.atala.prism.node.repositories.{
   AtalaObjectsTransactionsRepository,
   AtalaOperationsRepository,
   KeyValuesRepository
 }
-import io.iohk.atala.prism.node.repositories.daos.{AtalaObjectTransactionSubmissionsDAO, AtalaObjectsDAO}
 import io.iohk.atala.prism.node.services.models.AtalaObjectNotification
-import io.iohk.atala.prism.node.UnderlyingLedger
-import io.iohk.atala.prism.node.DataPreparation._
+import io.iohk.atala.prism.node.{PublicationInfo, UnderlyingLedger}
 import io.iohk.atala.prism.protos.{node_internal, node_models}
 import monix.execution.Scheduler.Implicits.{global => scheduler}
 import org.mockito
@@ -212,15 +206,25 @@ class ObjectManagementServiceSpec
       doReturn(connection.pure(true))
         .when(blockProcessing)
         .processBlock(*, anyTransactionIdMatcher, *, *, *)
+
+      doReturn(Future.successful(Right(PublicationInfo(dummyTransactionInfo, TransactionStatus.InLedger))))
+        .when(ledger)
+        .publish(*)
+
       val signedOperation = BlockProcessingServiceSpec.signedCreateDidOperation
       val obj = createAtalaObject(createBlock(signedOperation))
-      publishSingleOperationAndFlush(signedOperation)
+      val operationId = publishSingleOperationAndFlush(signedOperation).futureValue
 
       objectManagementService.saveObject(AtalaObjectNotification(obj, dummyTransactionInfo)).futureValue
 
       val atalaObject = queryAtalaObject(obj)
+      val operationInfo = objectManagementService.getOperationInfo(operationId).futureValue
+
       atalaObject.transaction.value mustBe dummyTransactionInfo
-      // TODO: Once processing is async, test the object is not processed
+      // We don't check the whole returned AtalaOperationInfo because `operationStatus`
+      // has to be APPLIED but it's RECEIVED due to blockService doesn't do any real actions and db updates
+      operationInfo.value.transactionSubmissionStatus mustBe Some(InLedger)
+      operationInfo.value.transactionId mustBe Some(dummyTransactionInfo.transactionId)
     }
 
     "not update the object when existing with transaction info (confirmed)" in {

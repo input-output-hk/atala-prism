@@ -12,14 +12,15 @@ import io.iohk.atala.prism.models.TransactionInfo
 import io.iohk.atala.prism.node.cardano.LAST_SYNCED_BLOCK_TIMESTAMP
 import io.iohk.atala.prism.node.errors.NodeError
 import io.iohk.atala.prism.node.metrics.OperationsCounters
-import io.iohk.atala.prism.node.models.nodeState.getLastSyncedTimestampFromMaybe
+import io.iohk.atala.prism.node.models.AtalaObjectTransactionSubmissionStatus.InLedger
 import io.iohk.atala.prism.node.models._
+import io.iohk.atala.prism.node.models.nodeState.getLastSyncedTimestampFromMaybe
+import io.iohk.atala.prism.node.repositories.daos.AtalaObjectsDAO
 import io.iohk.atala.prism.node.repositories.{
   AtalaObjectsTransactionsRepository,
   AtalaOperationsRepository,
   KeyValuesRepository
 }
-import io.iohk.atala.prism.node.repositories.daos.AtalaObjectsDAO
 import io.iohk.atala.prism.node.services.models.AtalaObjectNotification
 import io.iohk.atala.prism.protos.node_internal.AtalaBlock
 import io.iohk.atala.prism.protos.node_models.SignedAtalaOperation
@@ -49,18 +50,26 @@ class ObjectManagementService private (
       .setObjectTransactionDetails(notification)
       .flatMap {
         case Some(obj) =>
-          processObject(obj).flatMap { transaction =>
-            transaction
-              .logSQLErrors("saving object", logger)
-              .attemptSql
-              .transact(xa)
-              .map { resultEither =>
-                resultEither.left.map { err =>
-                  logger.warn(s"Could not process object $obj", err)
+          for {
+            _ <- atalaObjectsTransactionsRepository.updateSubmissionStatusIfExists(
+              obj.transaction.get.ledger,
+              obj.transaction.get.transactionId,
+              InLedger
+            )
+            transaction <- processObject(obj)
+            result <-
+              transaction
+                .logSQLErrors("saving object", logger)
+                .attemptSql
+                .transact(xa)
+                .map { resultEither =>
+                  resultEither.left.map { err =>
+                    logger.warn(s"Could not process object $obj", err)
+                  }
+                  ()
                 }
-                ()
-              }
-          }
+          } yield result
+
         case None =>
           logger.warn(s"Could not save object from notification $notification")
           IO.unit
