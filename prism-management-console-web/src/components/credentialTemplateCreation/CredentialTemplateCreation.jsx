@@ -34,13 +34,17 @@ const CredentialTemplateCreation = observer(
     const [loadingNext, setLoadingNext] = useState(false);
 
     const validateByStep = () =>
-      form.validateFields().catch(({ errorFields }) => {
-        const stepFields = fieldsByStep[currentStep];
-        const partialErrorsFields = errorFields.filter(errField =>
-          stepFields.includes(...errField.name)
-        );
-        return { errors: partialErrorsFields.map(errorField => errorField.errors) };
-      });
+      form
+        .validateFields()
+        .then(() => ({ errors: [] }))
+        .catch(({ errorFields }) => {
+          const stepFields = fieldsByStep[currentStep];
+          const partialErrorsFields = errorFields.filter(errField =>
+            stepFields.includes(...errField.name)
+          );
+          const errors = partialErrorsFields.map(errorField => errorField.errors);
+          return { errors };
+        });
 
     const advanceStep = () => changeStep(currentStep + NEW_TEMPLATE_STEP_UNIT);
 
@@ -48,8 +52,9 @@ const CredentialTemplateCreation = observer(
 
     const validate = async () => {
       const { errors } = await validateByStep(currentStep);
-      if (errors) errors.map(msg => message.error(t(msg)));
-      return !errors;
+      const hasPartialErrors = Boolean(errors.length);
+      if (hasPartialErrors) errors.forEach(msg => message.error(t(msg)));
+      return !hasPartialErrors;
     };
 
     const createTemplateAndAdvance = async () => {
