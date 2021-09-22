@@ -21,7 +21,7 @@ class ContactConnectionServiceSpec extends RpcSpecBase with DIDUtil with Connect
 
   private lazy val connectionsRepository = ConnectionsRepository.unsafe(dbLiftedToTraceIdIO, testLogs)
   lazy val requestNoncesRepository = RequestNoncesRepository(database)
-  lazy val participantsRepository = ParticipantsRepository(database)
+  lazy val participantsRepository = ParticipantsRepository.unsafe(dbLiftedToTraceIdIO, testLogs)
 
   val (keyPair, did) = DIDUtil.createUnpublishedDid
   val publicKey: ECPublicKey = keyPair.getPublicKey

@@ -3,6 +3,7 @@ package io.iohk.atala.prism.connector
 import com.google.protobuf.ByteString
 import io.grpc.{Status, StatusRuntimeException}
 import io.iohk.atala.prism.connector.model.ParticipantLogo
+import io.iohk.atala.prism.logging.TraceId
 import io.iohk.atala.prism.protos.{connector_api, node_api}
 import org.mockito.ArgumentMatchersSugar.*
 import org.mockito.IdiomaticMockito._
@@ -98,7 +99,7 @@ class ConnectorServiceSpec extends ConnectorRpcSpecBase {
 
       usingApiAs(rpcRequest) { blockingStub =>
         val _ = blockingStub.updateParticipantProfile(rpcRequest.request)
-        val result = participantsRepository.findBy(participantId).unsafeRunSync()
+        val result = participantsRepository.findBy(participantId).run(TraceId.generateYOLO).unsafeRunSync()
 
         val participantInfo = result.toOption.value
         participantInfo.name must be("Update Issuer")
@@ -117,7 +118,7 @@ class ConnectorServiceSpec extends ConnectorRpcSpecBase {
 
       usingApiAs(rpcRequest) { blockingStub =>
         val _ = blockingStub.updateParticipantProfile(rpcRequest.request)
-        val result = participantsRepository.findBy(participantId).unsafeRunSync()
+        val result = participantsRepository.findBy(participantId).run(TraceId.generateYOLO).unsafeRunSync()
 
         val participantInfo = result.toOption.value
         participantInfo.name must be("Update Issuer")

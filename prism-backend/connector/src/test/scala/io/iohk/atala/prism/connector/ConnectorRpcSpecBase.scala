@@ -52,7 +52,7 @@ class ConnectorRpcSpecBase extends RpcSpecBase with DIDUtil {
   lazy val connectionsService = new ConnectionsService(connectionsRepository, nodeMock)
   lazy val messagesRepository = MessagesRepository(database)
   lazy val requestNoncesRepository = RequestNoncesRepository(database)
-  lazy val participantsRepository = ParticipantsRepository(database)
+  lazy val participantsRepository = ParticipantsRepository.unsafe(dbLiftedToTraceIdIO, testLogs)
 
   lazy val nodeMock = mock[io.iohk.atala.prism.protos.node_api.NodeServiceGrpc.NodeService]
   lazy val authenticator =

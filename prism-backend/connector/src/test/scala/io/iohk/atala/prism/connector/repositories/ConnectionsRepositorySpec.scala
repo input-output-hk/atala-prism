@@ -19,7 +19,7 @@ import java.time.{Instant, LocalDateTime, ZoneOffset}
 
 class ConnectionsRepositorySpec extends ConnectorRepositorySpecBase {
   lazy val connectionsRepository = ConnectionsRepository.unsafe(dbLiftedToTraceIdIO, connectorRepoSpecLogs)
-  lazy val contactsRepository = ParticipantsRepository(database)
+  lazy val contactsRepository = ParticipantsRepository.unsafe(dbLiftedToTraceIdIO, connectorRepoSpecLogs)
 
   private def checkConnection(connectionId: ConnectionId, token: TokenString): Assertion = {
     sql"""SELECT COUNT(1) FROM connections WHERE id=$connectionId""".runUnique[Int]() mustBe 1
