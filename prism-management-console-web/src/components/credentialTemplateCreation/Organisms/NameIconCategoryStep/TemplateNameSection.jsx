@@ -26,9 +26,7 @@ const TemplateNameSection = observer(() => {
 
   return (
     <div className="templateName">
-      {/* TODO: @ana-alleva check styling */}
       <p className="TitleSmall">{t('credentialTemplateCreation.step1.templateName')}</p>
-      {/* TODO: add i18n */}
       <p className="SubtitleGray">{t('Create a name for your credential’s template')}</p>
       <Form.Item
         hasFeedback

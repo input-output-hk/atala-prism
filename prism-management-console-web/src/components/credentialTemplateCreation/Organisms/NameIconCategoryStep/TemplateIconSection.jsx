@@ -15,7 +15,6 @@ const TemplateNameSection = observer(() => {
         <img className="TemplateIcon" src={templateSketch.icon} alt="template icon" />
       </div>
       <div className="verticalFlex">
-        {/* TODO: add i18n */}
         <p className="TitleSmall">Temple Icon</p>
         <p className="SubtitleGray">Select an Icon for your template</p>
         <CustomButton
@@ -23,7 +22,6 @@ const TemplateNameSection = observer(() => {
             onClick: () => setShowIconPickerModal(true),
             className: 'theme-outline'
           }}
-          // TODO: add i18n
           buttonText="Upload"
         />
       </div>

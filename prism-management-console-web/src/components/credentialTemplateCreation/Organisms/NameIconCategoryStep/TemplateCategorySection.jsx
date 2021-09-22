@@ -46,7 +46,6 @@ const TemplateCategorySection = observer(() => {
         onClick: () => handleCreateCategory(searchValue),
         loading: isLoadingCategories
       }}
-      // TODO: add i18n
       buttonText={`Add ${searchValue}`}
     />
   );
@@ -65,9 +64,7 @@ const TemplateCategorySection = observer(() => {
 
   return (
     <div className="TemplateCategorySection">
-      {/* TODO: @ana-alleva check styling */}
       <p className="TitleSmall">{t(`${i18nPrefix}.step1.selectCategory`)}</p>
-      {/* TODO: add i18n */}
       <p className="SubtitleGray">
         {t('Once selected click next on the upper right side of the page.')}
       </p>
