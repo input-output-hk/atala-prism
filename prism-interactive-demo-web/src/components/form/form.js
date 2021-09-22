@@ -50,12 +50,12 @@ const PioneersForm = ({ form }) => {
 
   return (
     <Form name="basic" onSubmit={submitForm} autoComplete="off">
-      <Form.Item label="Full name" name="fullName">
+      <Form.Item label="Full name" colon={false} name="fullName">
         {getFieldDecorator('fullName', {
           rules: [{ required: true, message: 'Please input your full name' }]
         })(<Input />)}
       </Form.Item>
-      <Form.Item label="E-mail address" name="email">
+      <Form.Item label="E-mail address" colon={false} name="email">
         {getFieldDecorator('email', {
           rules: [
             {
