@@ -161,7 +161,7 @@ export const pageQuery = graphql`
         title
       }
     }
-    allBrochuresJson {
+    allBrochuresJson(sort: { fields: date, order: DESC }) {
       nodes {
         title
         url
@@ -169,7 +169,7 @@ export const pageQuery = graphql`
         description
       }
     }
-    allVideosJson {
+    allVideosJson(sort: { fields: date, order: DESC }) {
       nodes {
         description
         thumbnail

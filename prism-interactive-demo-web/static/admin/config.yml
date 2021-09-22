@@ -73,3 +73,4 @@ collections:
       - { label: Description, name: description, widget: string }
       - { label: URL, name: url, widget: string }
       - { label: Thumbnail, name: thumbnail, widget: image }
+      - { label: Date, name: date, widget: 'datetime' }
