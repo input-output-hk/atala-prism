@@ -4,12 +4,25 @@ import java.time.Instant
 
 import doobie.free.connection.ConnectionIO
 import doobie.implicits._
+import doobie.util.fragment.Fragment
 import cats.syntax.functor._
 import doobie.implicits.legacy.instant._
 import io.iohk.atala.prism.models.{Ledger, TransactionId}
 import io.iohk.atala.prism.node.models.{AtalaObjectTransactionSubmission, AtalaObjectTransactionSubmissionStatus}
 
 object AtalaObjectTransactionSubmissionsDAO {
+  private def updateStatusSql(
+      ledger: Ledger,
+      transactionId: TransactionId,
+      status: AtalaObjectTransactionSubmissionStatus
+  ): Fragment =
+    fr"""
+         |UPDATE atala_object_tx_submissions
+         |  SET status = $status
+         |  WHERE ledger = $ledger
+         |    AND transaction_id = $transactionId
+       """.stripMargin
+
   def insert(submission: AtalaObjectTransactionSubmission): ConnectionIO[AtalaObjectTransactionSubmission] = {
     sql"""
          |INSERT INTO atala_object_tx_submissions
@@ -56,25 +69,15 @@ object AtalaObjectTransactionSubmissionsDAO {
       transactionId: TransactionId,
       status: AtalaObjectTransactionSubmissionStatus
   ): ConnectionIO[AtalaObjectTransactionSubmission] = {
-    sql"""
-         |UPDATE atala_object_tx_submissions
-         |  SET status = $status
-         |  WHERE ledger = $ledger
-         |    AND transaction_id = $transactionId
-         |RETURNING atala_object_id, ledger, transaction_id, submission_timestamp, status
-       """.stripMargin.query[AtalaObjectTransactionSubmission].unique
+    val fragment =
+      updateStatusSql(ledger, transactionId, status) ++
+        fr"RETURNING atala_object_id, ledger, transaction_id, submission_timestamp, status"
+    fragment.query[AtalaObjectTransactionSubmission].unique
   }
 
   def updateStatusIfTxExists(
       ledger: Ledger,
       transactionId: TransactionId,
       status: AtalaObjectTransactionSubmissionStatus
-  ): ConnectionIO[Unit] = {
-    sql"""
-         |UPDATE atala_object_tx_submissions
-         |  SET status = $status
-         |  WHERE ledger = $ledger
-         |    AND transaction_id = $transactionId
-       """.stripMargin.update.run.void
-  }
+  ): ConnectionIO[Unit] = updateStatusSql(ledger, transactionId, status).update.run.void
 }

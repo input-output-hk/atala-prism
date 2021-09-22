@@ -222,7 +222,7 @@ class ObjectManagementServiceSpec
 
       atalaObject.transaction.value mustBe dummyTransactionInfo
       // We don't check the whole returned AtalaOperationInfo because `operationStatus`
-      // has to be APPLIED but it's RECEIVED due to blockService doesn't do any real actions and db updates
+      // has to be APPLIED but it's RECEIVED due to blockService mock doesn't perform any real actions and db updates
       operationInfo.value.transactionSubmissionStatus mustBe Some(InLedger)
       operationInfo.value.transactionId mustBe Some(dummyTransactionInfo.transactionId)
     }
