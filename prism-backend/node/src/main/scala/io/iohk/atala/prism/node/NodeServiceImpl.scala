@@ -333,6 +333,8 @@ class NodeServiceImpl(
     }
   }
 
+  // This method returns statuses only for operations
+  // which the node sent to the Cardano chain itself.
   private def evalOperationStatus(
       opStatus: AtalaOperationStatus,
       maybeTxStatus: Option[AtalaObjectTransactionSubmissionStatus]
@@ -342,15 +344,9 @@ class NodeServiceImpl(
         common_models.OperationStatus.PENDING_SUBMISSION
       case (AtalaOperationStatus.RECEIVED, Some(_)) =>
         common_models.OperationStatus.AWAIT_CONFIRMATION
-      // If the operation has been sent by another node
-      case (AtalaOperationStatus.APPLIED, None)
-          // If the operation has been sent by us
-          | (AtalaOperationStatus.APPLIED, Some(InLedger)) =>
+      case (AtalaOperationStatus.APPLIED, Some(InLedger)) =>
         common_models.OperationStatus.CONFIRMED_AND_APPLIED
-      // If the operation has been sent by another node
-      case (AtalaOperationStatus.REJECTED, None)
-          // If the operation has been sent by us
-          | (AtalaOperationStatus.APPLIED, Some(InLedger)) =>
+      case (AtalaOperationStatus.REJECTED, Some(InLedger)) =>
         common_models.OperationStatus.CONFIRMED_AND_REJECTED
       case _ =>
         throw new RuntimeException(
