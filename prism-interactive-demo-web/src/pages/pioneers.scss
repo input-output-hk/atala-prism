@@ -425,6 +425,7 @@
         padding: 0;
         .ant-collapse-header {
           font-size: $body;
+          padding-right: 2em;
         }
         p {
           font-size: $body;
@@ -432,27 +433,31 @@
       }
     }
     .banner {
-      padding: 0 2em 2em 2em;
-      height: 300px;
+      padding: 0;
       display: flex;
       flex-direction: column;
-      align-items: center;
-      justify-content: center;
       .whiteTriangle {
         width: 20px;
-        margin-top: -2px;
+        margin: -2px auto;
       }
       .logo {
-        width: 90px;
-        margin: 0 auto;
+        width: 100%;
+        display: flex;
+        align-items: center;
+        img {
+          text-align: center;
+          margin: 0 auto;
+        }
       }
       h2 {
         font-size: $subtitle;
+        margin-top: 1em;
       }
       button {
         width: 200px;
         height: 40px;
         font-size: $body;
+        margin-bottom: 4em;
       }
     }
     .footer .footerLinks div {
@@ -465,5 +470,8 @@
       font-size: $body;
       margin: 0;
     }
+  }
+  .ant-collapse {
+    margin: 2em 0!important;
   }
 }
