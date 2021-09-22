@@ -16,7 +16,7 @@
   "gnetId": null,
   "graphTooltip": 0,
   "id": 12,
-  "iteration": 1632291728599,
+  "iteration": 1632291728603,
   "links": [],
   "panels": [
     {
@@ -1802,7 +1802,9 @@
         }
       ],
       "thresholds": [],
+      "timeFrom": null,
       "timeRegions": [],
+      "timeShift": null,
       "title": "Processed Atala block operations",
       "tooltip": {
         "shared": true,
@@ -1955,12 +1957,13 @@
       {
         "allValue": "",
         "current": {
-          "selected": false,
+          "selected": true,
+          "tags": [],
           "text": [
-            "master"
+            "All"
           ],
           "value": [
-            "master"
+            "$__all"
           ]
         },
         "datasource": null,
@@ -1990,7 +1993,7 @@
       {
         "allValue": null,
         "current": {
-          "selected": false,
+          "selected": true,
           "text": [
             "All"
           ],
@@ -2025,7 +2028,7 @@
       {
         "allValue": null,
         "current": {
-          "selected": false,
+          "selected": true,
           "text": [
             "All"
           ],
@@ -2060,7 +2063,7 @@
       {
         "allValue": null,
         "current": {
-          "selected": false,
+          "selected": true,
           "text": [
             "All"
           ],
@@ -2095,7 +2098,7 @@
       {
         "allValue": null,
         "current": {
-          "selected": false,
+          "selected": true,
           "text": [
             "All"
           ],
@@ -2137,5 +2140,5 @@
   "timezone": "",
   "title": "Node",
   "uid": "5CpJH5W7k",
-  "version": 11
+  "version": 12
 }
