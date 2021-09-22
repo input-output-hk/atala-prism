@@ -81,6 +81,15 @@ Also, you can find basic JVM metrics in the Prometheus/Grafana. Basic JVM metric
 
   #### Available tags:
   1. only basic tags.
+
+- ## block-sync-status
+    Two gauges with a number of the last synced block by the wallet and the next block number to sync by the prism-node.
+  #### Available metrics:
+  1. `node_last_synced_block_by_wallet` - gauge with the number of the last synced block by the wallet.
+  2. `node_next_block_to_sync_by_prism` - gauge with the next to sync block number (by the prism-node).
+
+    #### Available tags:
+  1. only basic tags.
   
 ### Note: After restarting the service, all of these metrics will be reset.
 
