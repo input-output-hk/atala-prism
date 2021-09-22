@@ -27,9 +27,9 @@ const TemplateNameSection = observer(() => {
   return (
     <div className="templateName">
       {/* TODO: @ana-alleva check styling */}
-      <p>{t('credentialTemplateCreation.step1.templateName')}</p>
+      <p className="TitleSmall">{t('credentialTemplateCreation.step1.templateName')}</p>
       {/* TODO: add i18n */}
-      <p>{t('Create a name for your credential’s template')}</p>
+      <p className="SubtitleGray">{t('Create a name for your credential’s template')}</p>
       <Form.Item
         hasFeedback
         className="flex"

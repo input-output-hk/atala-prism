@@ -16,14 +16,15 @@ const TemplateNameSection = observer(() => {
       </div>
       <div className="verticalFlex">
         {/* TODO: add i18n */}
-        <p>Temple Icon</p>
-        <p>Select an Icon for your template</p>
+        <p className="TitleSmall">Temple Icon</p>
+        <p className="SubtitleGray">Select an Icon for your template</p>
         <CustomButton
           buttonProps={{
-            onClick: () => setShowIconPickerModal(true)
+            onClick: () => setShowIconPickerModal(true),
+            className: 'theme-outline'
           }}
           // TODO: add i18n
-          buttonText="Change Icon"
+          buttonText="Upload"
         />
       </div>
 

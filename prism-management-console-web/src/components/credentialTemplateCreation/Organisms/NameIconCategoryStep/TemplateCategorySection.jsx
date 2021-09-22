@@ -65,16 +65,16 @@ const TemplateCategorySection = observer(() => {
   return (
     <div className="TemplateCategorySection">
       {/* TODO: @ana-alleva check styling */}
-      <p>{t(`${i18nPrefix}.step1.selectCategory`)}</p>
+      <p className="TitleSmall">{t(`${i18nPrefix}.step1.selectCategory`)}</p>
       {/* TODO: add i18n */}
-      <p>{t('Once selected click next on the upper right side of the page.')}</p>
-      <Form.Item name="category" label="." rules={[{ required: true }]}>
+      <p className="SubtitleGray">{t('Once selected click next on the upper right side of the page.')}</p>
+      <Form.Item name="category" rules={[{ required: true }]}>
         <Select
           open={open}
           showSearch
           allowClear
           placeholder="Category"
-          style={{ width: 200 }}
+          style={{ width: 260 }}
           optionFilterProp="label"
           value={templateSketch.category}
           onDropdownVisibleChange={setOpen}

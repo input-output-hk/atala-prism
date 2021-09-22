@@ -1,4 +1,4 @@
-@import "../../../../css/general_styling";
+@import '../../../../css/general_styling';
 
 .TemplateCategorySection {
   .selectCategoryHeader {
@@ -20,24 +20,41 @@
   }
 }
 
+.ant-select-focused .ant-select-selector,
+.ant-select-selector:focus,
+.ant-select-selector:active,
+.ant-select-open .ant-select-selector {
+  border-color: $primary-color !important;
+  box-shadow: rgb(255, 181, 181) !important;
+}
+
+.ant-select:hover .ant-select-selector {
+  box-shadow: rgb(255, 181, 181) !important;
+}
+
 .templateName {
   display: flex;
   flex-direction: column;
+
+
+
+  .ant-form-item-control:first-child:not([class^='ant-col-']):not([class*=' ant-col-']) {
+    width: 260px;
+} 
   .ant-row {
     margin: 0;
     .ant-col {
-      width: 290px;
       line-height: 15px !important;
       label {
         margin: 0;
       }
       .ant-form-item-control-input-content {
-        input {
-          width: 250px;
+        .ant-input {
+          width: 260px;
         }
         .ant-input,
         .ant-select-selection {
-          border: 1px solid rgb(196, 195, 195) !important;
+          border: 1px solid lightgray !important;
         }
         .ant-input:hover {
           border-color: $primary-color;
@@ -50,10 +67,25 @@
 // TODO: @ana-alleva check styling
 .TemplateIconContainer {
   .TemplateIconWrapper {
-    margin-right: 1em;
+    margin-right: 1.5em;
     .TemplateIcon {
-      height: 8em;
-      width: 8em;
+      height: 85px;
+      width: 85px;
+    }
+  }
+  .verticalFlex {
+    .TitleSmall {
+      @include primary-text($body, $black);
+      font-weight: bold;
+      font-variant: normal;
+    }
+    .SubtitleGray {
+      @include primary-text($body, $grey);
+      font-variant: normal;
+    }
+    button {
+      width: 100px;
+      margin-top: 1em;
     }
   }
 }
@@ -62,13 +94,43 @@
   // TODO: @ana-alleva check styling
   flex-wrap: wrap;
   justify-content: flex-start;
-  margin: 1em 1.5em;
+  margin: 2em 1.5em;
   .LeftPanel {
-    margin-right: 3em;
     width: 40%;
   }
-  .RightPanel {
-    margin-left: 2em;
+  .RighPanel {
     width: 60%;
+    .templateName {
+      .TitleSmall {
+        @include primary-text($body, $black);
+        font-weight: bold;
+        font-variant: normal;
+      }
+      .SubtitleGray {
+        @include primary-text($body, $grey);
+        font-variant: normal;
+      }
+      .ant-row .ant-col .ant-form-item-control-input-content .ant-input {
+        margin: 1em 0;
+        .ant-input:focus {
+          border: 1px solid $primary-color!important;
+        }
+      }
+    }
+    .TemplateCategorySection {
+      .ant-row .ant-form-item .ant-form .ant-form-item-label {
+        display: none;
+      }
+      .TitleSmall {
+        @include primary-text($body, $black);
+        font-weight: bold;
+        font-variant: normal;
+      }
+      .SubtitleGray {
+        @include primary-text($body, $grey);
+        font-variant: normal;
+        margin-bottom: 1em;
+      }
+    }
   }
 }
