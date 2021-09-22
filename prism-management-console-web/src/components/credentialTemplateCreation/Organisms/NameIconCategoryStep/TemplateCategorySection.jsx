@@ -40,9 +40,8 @@ const TemplateCategorySection = observer(() => {
   // eslint-disable-next-line react/prop-types
   const renderCreateCategoryButton = ({ searchValue }) => (
     <CustomButton
-      className="AddCategoryButton"
+      overrideClassName="theme-link AddCategoryButton"
       buttonProps={{
-        className: 'theme-link',
         icon: <PlusOutlined />,
         onClick: () => handleCreateCategory(searchValue),
         loading: isLoadingCategories
