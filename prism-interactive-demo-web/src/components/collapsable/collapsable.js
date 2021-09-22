@@ -9,7 +9,7 @@ const FAQs = [
   {
     title: 'How can I register for the Program?',
     content: [
-      'If you are interested in joining the Atala PRISM Pioneers Program, please complete the registration form. You will receive a short application form, and we will be in touch when the commencement dates for the course are confirmed.'
+      'If you are interested in joining the Atala PRISM Pioneer Program, please complete the registration form. If you are selected to join the Program, we will be in touch when the commencement dates for the course are confirmed.'
     ]
   },
   {
@@ -19,16 +19,15 @@ const FAQs = [
   {
     title: 'What prior experience do I need?',
     content: [
-      'A basic experience of Kotlin would be required.',
       'To participate in the first cohort of the Atala PRISM Pioneer Program, you must be familiar with Kotlin. Subsequent cohorts will be required to have experience with Java.'
     ]
   },
   {
     title: 'What can I expect to learn?',
     content: [
-      'The Atala PRISM Pioneers Program offers a broad range of subjects and concepts. You will learn about the following:',
-      '• 	How to use the SDK to create, sign and issue verifiable credentials',
-      '• 	How to use the SDK to create, publish decentralised Identifiers (DIDs)'
+      'The Atala PRISM Pioneer Program offers a broad range of subjects and concepts. You will learn about the following:',
+      '• 	How to use the SDK to create, sign, and issue verifiable credentials',
+      '• 	How to use the SDK to create and publish decentralized Identifiers (DIDs)'
     ]
   },
   {
@@ -40,7 +39,7 @@ const FAQs = [
   {
     title: 'What is the criteria for certification?',
     content: [
-      'Upon completion of the course pioneers will be eligible to receive a certificate. In order to be eligible you must:',
+      'Upon completion of the course, Pioneers will be eligible to receive a certificate. In order to be eligible you must:',
       '1. 	Have registered for the program using the registration form',
       '2. 	Join the Discord group and have participated'
     ]
@@ -48,7 +47,7 @@ const FAQs = [
   {
     title: 'What will be the certificate format?',
     content: [
-      'You will receive an NFT that will be a class photo (from a zoom call). In future, we aim to issue certificates via the Atala PRISM app (issued by IOG).'
+      'You will receive an NFT that will be a class photo (from a Zoom call). In future, we aim to issue certificates via the Atala PRISM app (issued by IOG).'
     ]
   },
   {
@@ -61,7 +60,7 @@ const FAQs = [
     title:
       'Are there any funding opportunities for solutions built as part of the Atala PRISM Pioneer program?',
     content: [
-      'Project Catalyst offers funding opportunities for the best solution ideas that can drive mass-scale adoption of decentralized IDs on Cardano.',
+      'Project Catalyst offers funding opportunities for the best solution ideas that can drive mass-scale adoption of DIDs on Cardano.',
       <>
         {'Everyone is invited to submit their proposal in '}
         <a href="https://cardano.ideascale.com/">

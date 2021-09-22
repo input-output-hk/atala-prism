@@ -38,7 +38,7 @@ const BlogIndex = () => {
                 Upon joining, you will become part of a select group with early access to a set of
                 courses that will teach you the core principles of Atala PRISM, including
                 Self-sovereign identity, decentralized identifiers (DIDs), verifiable credentials
-                and current digital identity standards.
+                (VCs), and current digital identity standards.
               </p>
               <br />
               <p>
