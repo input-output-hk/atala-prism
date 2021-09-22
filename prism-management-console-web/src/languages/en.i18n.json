@@ -234,6 +234,7 @@
         "title": "Raw credential",
         "important": "Important",
         "downloadFile": "Download file",
+        "disabledDownloadHelp": "Credential must be signed",
         "descriptionFirst": "Download the file, which is in raw JSON using the download option below.",
         "descriptionSecond": "You can unzip the file and read instructions on how to independently verify the authenticity of the credential."
       }

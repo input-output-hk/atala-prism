@@ -15,6 +15,7 @@ import { sanitizeView } from '../../../../helpers/credentialView';
 import CredentialRawDetail from './CredentialRawDetail/CredentialRawDetail';
 import revokedIconSrc from '../../../../images/revokeIcon.svg';
 import { credentialShape } from '../../../../helpers/propShapes';
+import DownloadRawButton from '../../Atoms/DownloadRawButton/DownloadRawButton';
 
 const { TabPane } = Tabs;
 
@@ -28,6 +29,8 @@ const getCardanoExplorerUrl = (txId, ledger) => {
     : 'https://explorer.cardano-testnet.iohkdev.io/en/transaction?id=';
   return baseUrl.concat(txId);
 };
+
+const SPACING = 2;
 
 const CredentialSummaryDetail = ({ drawerInfo, credential }) => {
   const { t } = useTranslation();
@@ -60,25 +63,26 @@ const CredentialSummaryDetail = ({ drawerInfo, credential }) => {
     }
   };
 
-  const credentialToDownload = JSON.stringify({
-    encodedSignedCredential,
-    proof
-  });
+  const credentialToDownload = JSON.stringify({ encodedSignedCredential, proof }, null, SPACING);
 
-  const downloadHref = `data:text/plain;charset=utf-8,${encodeURIComponent(credentialToDownload)}`;
+  const downloadHref = `data:application/json;charset=utf-8,${encodeURIComponent(
+    credentialToDownload
+  )}`;
 
-  const downloadName = `${contactName}-${credentialTypeDetails?.name}.txt`.replace(' ', '_');
+  const downloadName = `${contactName}-${credentialTypeDetails?.name}.json`.replace(' ', '_');
+
+  const disableDownload = !encodedSignedCredential;
+
+  const downloadProps = {
+    downloadHref,
+    downloadName,
+    disabled: disableDownload,
+    helpText: disableDownload ? t('credentials.drawer.raw.disabledDownloadHelp') : ''
+  };
 
   const content = (
     <div>
-      <a href={downloadHref} download={downloadName}>
-        <CustomButton
-          buttonProps={{
-            className: 'theme-link'
-          }}
-          buttonText={t('credentials.drawer.raw.downloadFile')}
-        />
-      </a>
+      <DownloadRawButton {...downloadProps} />
       <CustomButton
         buttonProps={{
           className: 'theme-link',
@@ -191,7 +195,7 @@ const CredentialSummaryDetail = ({ drawerInfo, credential }) => {
       <CredentialRawDetail
         visible={rawVisible}
         credentialString={credential.credentialString}
-        downloadProps={{ downloadHref, downloadName }}
+        downloadProps={downloadProps}
         onClose={() => setRawVisible(false)}
       />
     </Drawer>
