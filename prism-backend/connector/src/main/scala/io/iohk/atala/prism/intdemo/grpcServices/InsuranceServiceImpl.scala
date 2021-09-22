@@ -6,7 +6,7 @@ import io.grpc.stub.StreamObserver
 import io.iohk.atala.prism.connector.model.Connection
 import io.iohk.atala.prism.connector.model.TokenString
 import io.iohk.atala.prism.kotlin.credentials.json.JsonBasedCredential
-import io.iohk.atala.prism.kotlin.identity.DID
+import io.iohk.atala.prism.kotlin.identity.{PrismDid => DID}
 import io.iohk.atala.prism.intdemo.InsuranceServiceImpl.RequiredInsuranceData
 import io.iohk.atala.prism.intdemo.InsuranceServiceImpl.getInsuranceCredential
 import io.iohk.atala.prism.intdemo.InsuranceServiceImpl.getRequiredInsuranceData
@@ -147,7 +147,7 @@ object InsuranceServiceImpl {
       credentialHtml = credentialHtml,
       issuerName = issuerName,
       issuerDID = s"did:prism:${issuerId.uuid}",
-      issuanceKeyId = DID.masterKeyId,
+      issuanceKeyId = DID.getDEFAULT_MASTER_KEY_ID,
       issuanceDate = issuanceDate,
       expirationDate = expirationDate,
       policyNumber = policyNumber,

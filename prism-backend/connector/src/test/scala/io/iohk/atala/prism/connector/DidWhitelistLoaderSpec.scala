@@ -1,7 +1,7 @@
 package io.iohk.atala.prism.connector
 
 import com.typesafe.config.ConfigFactory
-import io.iohk.atala.prism.kotlin.identity.DID
+import io.iohk.atala.prism.kotlin.identity.{PrismDid => DID}
 import org.scalatest.matchers.must.Matchers
 import org.scalatest.wordspec.AnyWordSpec
 
@@ -12,7 +12,7 @@ class DidWhitelistLoaderSpec extends AnyWordSpec with Matchers {
       DidWhitelistLoader.load(globalConfig) must be(
         Set(
           DID.fromString(
-            "did:prism:1e8777cf1e014563b123d6eed984ff35d235f64497e6736b7b9647649b6afe8f:CmIKYBJeCgdtYXN0ZXIwEAFCUQoJc2VjcDI1NmsxEiEAwCb_BYvKwhcOIAWiguHbdBfRgJWVO9EvBgWGHPKn9wYaIQDYr0B_6ZsLlfhdE9Nv8-_sZP-l-u8UeUCSbucNiDrrrg"
+            "did:prism:5f0ffa312e8c6f260dbe6dbaa1e4e0d685aba03297c4e4f9ae80fa8d3fd7c0b0:Cj8KPRI7CgdtYXN0ZXIwEAFKLgoJc2VjcDI1NmsxEiEDhyJiYbQZs28bivj9PXsitEWca1MDg3yeW9ziiNcG-Cs"
           )
         )
       )

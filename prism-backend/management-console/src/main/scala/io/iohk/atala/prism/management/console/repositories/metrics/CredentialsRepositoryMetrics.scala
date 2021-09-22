@@ -4,7 +4,7 @@ import cats.data.NonEmptyList
 import cats.effect.BracketThrow
 import io.iohk.atala.prism.connector.AtalaOperationId
 import io.iohk.atala.prism.kotlin.credentials.CredentialBatchId
-import io.iohk.atala.prism.kotlin.crypto.SHA256Digest
+import io.iohk.atala.prism.kotlin.crypto.Sha256Digest
 import io.iohk.atala.prism.management.console.errors.ManagementConsoleError
 import io.iohk.atala.prism.management.console.models.GenericCredential.PaginatedQuery
 import io.iohk.atala.prism.management.console.models._
@@ -64,7 +64,7 @@ final class CredentialsRepositoryMetrics[F[_]: TimeMeasureMetric: BracketThrow]
 
   override def storeBatchData(
       batchId: CredentialBatchId,
-      issuanceOperationHash: SHA256Digest,
+      issuanceOperationHash: Sha256Digest,
       atalaOperationId: AtalaOperationId
   ): Mid[F, Int] = _.measureOperationTime(storeBatchDataTimer)
 

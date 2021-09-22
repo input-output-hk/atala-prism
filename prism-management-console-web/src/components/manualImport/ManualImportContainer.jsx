@@ -38,7 +38,7 @@ const ManualImportContainer = ({
   return (
     <ManualImport
       addEntity={addEntity}
-      initialValues={recipients}
+      recipients={recipients}
       groupsProps={groupsProps}
       credentialType={credentialType}
       {...useCaseProps}
@@ -65,7 +65,7 @@ ManualImportContainer.propTypes = {
   credentialType: PropTypes.shape(credentialTypeShape),
   hasSelectedRecipients: PropTypes.bool.isRequired,
   setContacts: PropTypes.func.isRequired,
-  recipients: PropTypes.shape(credentialShape),
+  recipients: PropTypes.arrayOf(credentialShape),
   selectedGroups: PropTypes.arrayOf(PropTypes.shape(groupShape)).isRequired,
   setSelectedGroups: PropTypes.func.isRequired,
   addEntity: PropTypes.func.isRequired

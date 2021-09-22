@@ -10,11 +10,10 @@ import io.iohk.atala.prism.auth.grpc.SignedRequestsHelper
 import io.iohk.atala.prism.connector.model.ParticipantType.Holder
 import io.iohk.atala.prism.connector.model._
 import io.iohk.atala.prism.connector.repositories.daos.{ConnectionTokensDAO, ConnectionsDAO, ParticipantsDAO}
-import io.iohk.atala.prism.kotlin.crypto.EC
+import io.iohk.atala.prism.kotlin.crypto.EC.{INSTANCE => EC}
 import io.iohk.atala.prism.kotlin.crypto.keys.{ECKeyPair, ECPublicKey}
 import io.iohk.atala.prism.kotlin.crypto.ECConfig.{INSTANCE => ECConfig}
-import io.iohk.atala.prism.kotlin.identity.DID
-import io.iohk.atala.prism.kotlin.identity.DID.masterKeyId
+import io.iohk.atala.prism.kotlin.identity.{PrismDid => DID}
 import io.iohk.atala.prism.protos.connector_api.GetConnectionTokenInfoRequest
 import io.iohk.atala.prism.protos.node_api.GetDidDocumentRequest
 import io.iohk.atala.prism.protos.node_models.{KeyUsage, LedgerData}
@@ -81,7 +80,7 @@ class ConnectionsRpcSpec extends ConnectorRpcSpecBase with MockitoSugar {
       val request = connector_api.GetConnectionTokenInfoRequest(token.token)
       val rpcRequest = SignedRpcRequest.generate(keyPair, did, request)
 
-      testGetConnectionToken(rpcRequest, request, did.canonical.toString)
+      testGetConnectionToken(rpcRequest, request, did.asCanonical().toString)
     }
 
     "returns UNKNOWN if token does not exist" in {
@@ -162,7 +161,7 @@ class ConnectionsRpcSpec extends ConnectorRpcSpecBase with MockitoSugar {
 
         result.publicKey must be(empty)
         result.tpe must be(Holder)
-        result.did must be(Option(unpublishedDID.canonical))
+        result.did must be(Option(unpublishedDID.asCanonical()))
       }
     }
 
@@ -366,7 +365,7 @@ class ConnectionsRpcSpec extends ConnectorRpcSpecBase with MockitoSugar {
       val request = connector_api.GetConnectionsPaginatedRequest("", 10)
       val requestNonce = UUID.randomUUID().toString.getBytes.toVector
       val signature =
-        EC.sign(
+        EC.signBytes(
           SignedRequestsHelper.merge(auth.model.RequestNonce(requestNonce), request.toByteArray).toArray,
           keys.getPrivateKey
         )
@@ -376,7 +375,7 @@ class ConnectionsRpcSpec extends ConnectorRpcSpecBase with MockitoSugar {
       val zeroTime = System.currentTimeMillis()
       val connections = createExampleConnections(verifierId, zeroTime)
 
-      usingApiAs(requestNonce, signature, did, masterKeyId) { blockingStub =>
+      usingApiAs(requestNonce, signature, did, DID.getDEFAULT_MASTER_KEY_ID) { blockingStub =>
         val response = blockingStub.getConnectionsPaginated(request)
         response.connections.map(_.connectionId).toSet mustBe connections.map(_._2.toString).take(10).toList.toSet
       }
@@ -563,7 +562,7 @@ class ConnectionsRpcSpec extends ConnectorRpcSpecBase with MockitoSugar {
     val response = node_api.GetDidDocumentResponse(
       Some(
         node_models.DIDData(
-          id = issuerDID.getSuffix.getValue,
+          id = issuerDID.getSuffix,
           publicKeys = issuerCommKeys.map {
             case (keyId, key, revokedTimestamp, usage) =>
               val ecPoint = key.getPublicKey.getCurvePoint

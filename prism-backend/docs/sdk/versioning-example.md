@@ -14,7 +14,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 - A new proto class `AtalaErrorMessage` that represents a gRPC error. `AtalaMessage` can now contain `AtalaErrorMessage` as an underlying message.
 - Added a new snippet to Kotlin examples that was used for Africa Special video walkthrough.
 - A new method `EC.isSecp256k1` can be used to validate whether the point lies on the curve.
-- A new constant `DID.masterKeyId` is introduced.
+- A new constant `DID.getMASTER_KEY_ID` is introduced.
 - A new convenience API `CreateContacts` for creating contacts in bulk from CSV has been introduced.
 - New ways to create DIDs from mnemonic phrase: `DID.deriveKeyFromFullPath` and `DID.createDIDFromMnemonic`.
 - [JS] Expose all the remaining pieces of SDK to JavaScript (including gRPC remoting).

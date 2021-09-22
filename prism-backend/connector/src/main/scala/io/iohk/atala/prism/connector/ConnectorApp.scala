@@ -15,14 +15,18 @@ import io.iohk.atala.prism.intdemo.protos.intdemo_api.{
   IDServiceGrpc,
   InsuranceServiceGrpc
 }
+import io.iohk.atala.prism.logging.TraceId
+import io.iohk.atala.prism.logging.TraceId.IOWithTraceIdContext
 import io.iohk.atala.prism.protos.connector_api
 import io.iohk.atala.prism.protos.connector_api.ContactConnectionServiceGrpc
 import io.iohk.atala.prism.protos.cviews_api.CredentialViewsServiceGrpc
 import io.iohk.atala.prism.protos.node_api.NodeServiceGrpc
 import io.iohk.atala.prism.repositories.{SchemaMigrations, TransactorFactory}
 import io.iohk.atala.prism.metrics.UptimeReporter
+import io.iohk.atala.prism.utils.IOUtils._
 import kamon.Kamon
 import org.slf4j.LoggerFactory
+import tofu.logging.Logs
 
 import scala.concurrent.{Await, ExecutionContext}
 import scala.concurrent.duration._
@@ -52,6 +56,8 @@ class ConnectorApp(executionContext: ExecutionContext) { self =>
     val globalConfig = ConfigFactory.load()
     val databaseConfig = TransactorFactory.transactorConfig(globalConfig)
 
+    val connectorLogs = Logs.withContext[IO, IOWithTraceIdContext]
+
     logger.info("Setting-up uptime metrics")
     Kamon.registerModule("uptime", new UptimeReporter(globalConfig))
 
@@ -60,6 +66,7 @@ class ConnectorApp(executionContext: ExecutionContext) { self =>
 
     logger.info("Connecting to the database")
     val (xa, releaseXa) = TransactorFactory.transactor[IO](databaseConfig).allocated.unsafeRunSync()
+    val txTraceIdLifted = xa.mapK(TraceId.liftToIOWithTraceId)
 
     logger.info("Loading DID whitelist")
     val didWhitelist = DidWhitelistLoader.load(globalConfig)
@@ -76,10 +83,10 @@ class ConnectorApp(executionContext: ExecutionContext) { self =>
     val node = NodeServiceGrpc.stub(nodeChannel)
 
     // connector repositories
-    val connectionsRepository = ConnectionsRepository(xa)
+    val connectionsRepository = ConnectionsRepository.unsafe[IOWithTraceIdContext, IO](txTraceIdLifted, connectorLogs)
     val messagesRepository = MessagesRepository(xa)
     val requestNoncesRepository = RequestNoncesRepository(xa)
-    val participantsRepository = ParticipantsRepository(xa)
+    val participantsRepository = ParticipantsRepository.unsafe[IOWithTraceIdContext, IO](txTraceIdLifted, connectorLogs)
 
     // authenticator
     val authenticator = new ConnectorAuthenticator(

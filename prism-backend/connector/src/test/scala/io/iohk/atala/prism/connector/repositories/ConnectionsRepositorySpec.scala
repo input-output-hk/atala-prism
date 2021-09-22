@@ -7,17 +7,19 @@ import io.iohk.atala.prism.DIDUtil
 import io.iohk.atala.prism.connector.model._
 import io.iohk.atala.prism.connector.repositories.daos._
 import io.iohk.atala.prism.connector.DataPreparation
-import io.iohk.atala.prism.kotlin.crypto.EC
+import io.iohk.atala.prism.kotlin.crypto.EC.{INSTANCE => EC}
+import io.iohk.atala.prism.logging.TraceId
 import io.iohk.atala.prism.models.ParticipantId
 import io.iohk.atala.prism.repositories.ops.SqlTestOps._
+import io.iohk.atala.prism.utils.IOUtils._
 import org.scalatest.Assertion
 import org.scalatest.OptionValues._
 
 import java.time.{Instant, LocalDateTime, ZoneOffset}
 
 class ConnectionsRepositorySpec extends ConnectorRepositorySpecBase {
-  lazy val connectionsRepository = ConnectionsRepository(database)
-  lazy val contactsRepository = ParticipantsRepository(database)
+  lazy val connectionsRepository = ConnectionsRepository.unsafe(dbLiftedToTraceIdIO, connectorRepoSpecLogs)
+  lazy val contactsRepository = ParticipantsRepository.unsafe(dbLiftedToTraceIdIO, connectorRepoSpecLogs)
 
   private def checkConnection(connectionId: ConnectionId, token: TokenString): Assertion = {
     sql"""SELECT COUNT(1) FROM connections WHERE id=$connectionId""".runUnique[Int]() mustBe 1
@@ -37,7 +39,8 @@ class ConnectionsRepositorySpec extends ConnectorRepositorySpecBase {
       val token1 = TokenString.random()
       val token2 = TokenString.random()
 
-      val result = connectionsRepository.insertTokens(issuerId, List(token1, token2)).unsafeRunSync()
+      val result =
+        connectionsRepository.insertTokens(issuerId, List(token1, token2)).run(TraceId.generateYOLO).unsafeRunSync()
       result.nonEmpty mustBe true
 
       sql"""SELECT COUNT(1) FROM connection_tokens WHERE token=$token1 OR token=$token2""".runUnique[Int]() mustBe 2
@@ -52,7 +55,7 @@ class ConnectionsRepositorySpec extends ConnectorRepositorySpecBase {
       val token = new TokenString("t0k3nc0de")
       sql"""INSERT INTO connection_tokens(token, initiator) VALUES ($token, $issuerId)""".runUpdate()
 
-      val result = connectionsRepository.getTokenInfo(token).unsafeRunSync()
+      val result = connectionsRepository.getTokenInfo(token).run(TraceId.generateYOLO).unsafeRunSync()
       result.toOption.value mustBe ParticipantInfo(
         issuerId,
         ParticipantType.Issuer,
@@ -73,7 +76,8 @@ class ConnectionsRepositorySpec extends ConnectorRepositorySpecBase {
       val token = new TokenString("t0k3nc0de")
       sql"""INSERT INTO connection_tokens(token, initiator) VALUES ($token, $issuerId)""".runUpdate()
 
-      val result = connectionsRepository.addConnectionFromToken(token, publicKey.asRight).unsafeRunSync()
+      val result =
+        connectionsRepository.addConnectionFromToken(token, publicKey.asRight).run(TraceId.generateYOLO).unsafeRunSync()
       val connectionId = result.toOption.value.id
 
       checkConnection(connectionId, token)
@@ -91,7 +95,8 @@ class ConnectionsRepositorySpec extends ConnectorRepositorySpecBase {
       val token = new TokenString("t0k3nc0de")
       sql"""INSERT INTO connection_tokens(token, initiator) VALUES ($token, $issuerId)""".runUpdate()
 
-      val result = connectionsRepository.addConnectionFromToken(token, did.asLeft).unsafeRunSync()
+      val result =
+        connectionsRepository.addConnectionFromToken(token, did.asLeft).run(TraceId.generateYOLO).unsafeRunSync()
       val connectionId = result.toOption.value.id
 
       checkConnection(connectionId, token)
@@ -112,16 +117,19 @@ class ConnectionsRepositorySpec extends ConnectorRepositorySpecBase {
 
       connectionsRepository
         .insertTokens(initiator, List(token))
+        .run(TraceId.generateYOLO)
         .unsafeRunSync()
 
       val connection = connectionsRepository
         .addConnectionFromToken(token, publicKey.asRight)
+        .run(TraceId.generateYOLO)
         .unsafeRunSync()
         .toOption
         .value
 
       val acceptor = connectionsRepository
         .getOtherSideInfo(connection.id, initiator)
+        .run(TraceId.generateYOLO)
         .unsafeRunSync()
         .value
         .id
@@ -131,20 +139,22 @@ class ConnectionsRepositorySpec extends ConnectorRepositorySpecBase {
 
     "work when the initiator revokes the connection" in {
       val (connectionId, initiator, _) = prepare()
-      val result = connectionsRepository.revokeConnection(initiator, connectionId).unsafeRunSync()
+      val result =
+        connectionsRepository.revokeConnection(initiator, connectionId).run(TraceId.generateYOLO).unsafeRunSync()
 
       result.isRight must be(true)
     }
 
     "work when the acceptor revokes the connection" in {
       val (connectionId, _, acceptor) = prepare()
-      val result = connectionsRepository.revokeConnection(acceptor, connectionId).unsafeRunSync()
+      val result =
+        connectionsRepository.revokeConnection(acceptor, connectionId).run(TraceId.generateYOLO).unsafeRunSync()
       result.isRight must be(true)
     }
 
     "marks the connection as revoked" in {
       val (connectionId, initiator, _) = prepare()
-      connectionsRepository.revokeConnection(initiator, connectionId).unsafeRunSync()
+      connectionsRepository.revokeConnection(initiator, connectionId).run(TraceId.generateYOLO).unsafeRunSync()
       val result = ConnectionsDAO
         .getRawConnection(connectionId)
         .unsafeRun()
@@ -157,7 +167,7 @@ class ConnectionsRepositorySpec extends ConnectorRepositorySpecBase {
       val (connectionId, initiator, acceptor) = prepare()
       MessagesDAO.insert(MessageId.random(), connectionId, initiator, acceptor, "Hello".getBytes).unsafeRun()
       MessagesDAO.insert(MessageId.random(), connectionId, acceptor, initiator, "ACK".getBytes).unsafeRun()
-      connectionsRepository.revokeConnection(initiator, connectionId).unsafeRunSync()
+      connectionsRepository.revokeConnection(initiator, connectionId).run(TraceId.generateYOLO).unsafeRunSync()
 
       MessagesDAO.getConnectionMessages(initiator, connectionId).unsafeRun().isEmpty must be(true)
       MessagesDAO.getConnectionMessages(acceptor, connectionId).unsafeRun().isEmpty must be(true)
@@ -167,13 +177,17 @@ class ConnectionsRepositorySpec extends ConnectorRepositorySpecBase {
       val (connectionId, _, _) = prepare()
 
       val initiator = createIssuer()
-      val result = connectionsRepository.revokeConnection(initiator, connectionId).unsafeRunSync()
+      val result =
+        connectionsRepository.revokeConnection(initiator, connectionId).run(TraceId.generateYOLO).unsafeRunSync()
       result.isLeft must be(true)
     }
 
     "fail when the connection doesn't exist" in {
       val initiator = createIssuer()
-      val result = connectionsRepository.revokeConnection(initiator, ConnectionId.random()).unsafeRunSync()
+      val result = connectionsRepository
+        .revokeConnection(initiator, ConnectionId.random())
+        .run(TraceId.generateYOLO)
+        .unsafeRunSync()
       result.isLeft must be(true)
     }
 
@@ -183,7 +197,8 @@ class ConnectionsRepositorySpec extends ConnectorRepositorySpecBase {
 
         sql"""UPDATE connections SET status = $status::CONTACT_CONNECTION_STATUS_TYPE WHERE id=$connectionId"""
           .runUpdate()
-        val result = connectionsRepository.revokeConnection(initiator, connectionId).unsafeRunSync()
+        val result =
+          connectionsRepository.revokeConnection(initiator, connectionId).run(TraceId.generateYOLO).unsafeRunSync()
         result.isLeft must be(true)
       }
     }
@@ -201,7 +216,10 @@ class ConnectionsRepositorySpec extends ConnectorRepositorySpecBase {
       )
 
       val result =
-        connectionsRepository.getConnectionsPaginated(verifierId, 10, Option.empty).unsafeRunSync()
+        connectionsRepository
+          .getConnectionsPaginated(verifierId, 10, Option.empty)
+          .run(TraceId.generateYOLO)
+          .unsafeRunSync()
       result.toOption.value.map(_.id).toSet must matchTo(connections.toSet)
     }
 
@@ -232,6 +250,7 @@ class ConnectionsRepositorySpec extends ConnectorRepositorySpecBase {
 
       val all = connectionsRepository
         .getConnectionsPaginated(verifierId, 20, Option.empty)
+        .run(TraceId.generateYOLO)
         .unsafeToFuture()
         .futureValue
         .toOption
@@ -242,12 +261,16 @@ class ConnectionsRepositorySpec extends ConnectorRepositorySpecBase {
       val nextTenExpected = all.slice(10, 20)
 
       val firstTenResult =
-        connectionsRepository.getConnectionsPaginated(verifierId, 10, Option.empty).unsafeRunSync()
+        connectionsRepository
+          .getConnectionsPaginated(verifierId, 10, Option.empty)
+          .run(TraceId.generateYOLO)
+          .unsafeRunSync()
       firstTenResult.toOption.value.map(_.id) must matchTo(firstTenExpected)
 
       val nextTenResult =
         connectionsRepository
           .getConnectionsPaginated(verifierId, 10, Some(firstTenExpected.last))
+          .run(TraceId.generateYOLO)
           .unsafeToFuture()
           .futureValue
       nextTenResult.toOption.value.map(_.id) must matchTo(nextTenExpected)
@@ -262,7 +285,7 @@ class ConnectionsRepositorySpec extends ConnectorRepositorySpecBase {
       val connectionId: ConnectionId = createConnection(h1, h2, token, ConnectionStatus.InvitationMissing)
 
       val connection: Connection =
-        connectionsRepository.getConnectionByToken(token).unsafeRunSync().value
+        connectionsRepository.getConnectionByToken(token).run(TraceId.generateYOLO).unsafeRunSync().value
 
       connection.connectionId mustBe connectionId
       connection.connectionToken mustBe token
@@ -282,7 +305,10 @@ class ConnectionsRepositorySpec extends ConnectorRepositorySpecBase {
       val connectionId2 = createConnection(initiator2, acceptor2, token2, ConnectionStatus.ConnectionAccepted)
 
       val connectionStatuses =
-        connectionsRepository.getConnectionsByConnectionTokens(List(token1, token2)).unsafeRunSync()
+        connectionsRepository
+          .getConnectionsByConnectionTokens(List(token1, token2))
+          .run(TraceId.generateYOLO)
+          .unsafeRunSync()
 
       val contactConnection1 = ContactConnection(Some(connectionId1), Some(token1), ConnectionStatus.InvitationMissing)
       val contactConnection2 = ContactConnection(Some(connectionId2), Some(token2), ConnectionStatus.ConnectionAccepted)
@@ -294,6 +320,7 @@ class ConnectionsRepositorySpec extends ConnectorRepositorySpecBase {
       val connectionStatuses =
         connectionsRepository
           .getConnectionsByConnectionTokens(List(TokenString("tokenString1"), TokenString("tokenString2")))
+          .run(TraceId.generateYOLO)
           .unsafeToFuture()
           .futureValue
 
@@ -313,6 +340,7 @@ class ConnectionsRepositorySpec extends ConnectorRepositorySpecBase {
       val connectionStatuses =
         connectionsRepository
           .getConnectionsByConnectionTokens(List(token1, token2))
+          .run(TraceId.generateYOLO)
           .unsafeToFuture()
           .futureValue
 

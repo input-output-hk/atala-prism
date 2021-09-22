@@ -3,19 +3,20 @@ package io.iohk.atala.prism.services
 import cats.data.EitherT
 import monix.eval.Task
 import com.google.protobuf.ByteString
-import io.iohk.atala.prism.kotlin.crypto.{EC, SHA256Digest}
+import io.iohk.atala.prism.kotlin.crypto.{MerkleRoot, Sha256Digest}
+import io.iohk.atala.prism.kotlin.crypto.EC.{INSTANCE => EC}
 import io.iohk.atala.prism.kotlin.crypto.keys.ECPublicKey
 import io.iohk.atala.prism.kotlin.crypto.ECConfig.{INSTANCE => ECConfig}
 import io.iohk.atala.prism.protos.node_api._
 import io.iohk.atala.prism.protos.node_models._
 import io.iohk.atala.prism.services.BaseGrpcClientService.DidBasedAuthConfig
-import io.iohk.atala.prism.kotlin.identity.DID
-import io.iohk.atala.prism.kotlin.credentials
+import io.iohk.atala.prism.kotlin.identity.{PrismDid => DID}
+import io.iohk.atala.prism.kotlin.protos.models.{TimestampInfo => DomainTimestamp}
 import io.iohk.atala.prism.protos.{node_api, node_models}
 import cats.implicits._
 import com.google.protobuf.timestamp.Timestamp
 import io.iohk.atala.prism.kotlin.credentials.CredentialBatchId
-import io.iohk.atala.prism.kotlin.crypto.MerkleRoot
+import io.iohk.atala.prism.models.KeyData
 import io.iohk.atala.prism.utils.syntax._
 
 trait NodeClientService {
@@ -28,7 +29,7 @@ trait NodeClientService {
 
   def getCredentialRevocationTime(
       credentialBatchId: CredentialBatchId,
-      credentialHash: SHA256Digest
+      credentialHash: Sha256Digest
   ): Task[GetCredentialRevocationTimeResponse]
 
 }
@@ -55,8 +56,9 @@ class NodeClientServiceImpl(node: NodeServiceGrpc.NodeServiceStub, authConfig: D
       SignedAtalaOperation(
         signedWith = authConfig.didIssuingKeyId,
         operation = Some(operation),
-        signature =
-          ByteString.copyFrom(EC.sign(operation.toByteArray, authConfig.didIssuingKeyPair.getPrivateKey).getData)
+        signature = ByteString.copyFrom(
+          EC.signBytes(operation.toByteArray, authConfig.didIssuingKeyPair.getPrivateKey).getData
+        )
       )
 
     Task.fromFuture(node.issueCredentialBatch(IssueCredentialBatchRequest().withSignedOperation(signedAtalaOperation)))
@@ -64,7 +66,7 @@ class NodeClientServiceImpl(node: NodeServiceGrpc.NodeServiceStub, authConfig: D
 
   def getCredentialRevocationTime(
       credentialBatchId: CredentialBatchId,
-      credentialHash: SHA256Digest
+      credentialHash: Sha256Digest
   ): Task[GetCredentialRevocationTimeResponse] = {
     Task.fromFuture(
       node.getCredentialRevocationTime(
@@ -83,7 +85,7 @@ object NodeClientService {
       issuerDID: DID,
       issuanceKeyId: String,
       nodeService: NodeClientService
-  ): EitherT[Task, String, credentials.KeyData] = {
+  ): EitherT[Task, String, KeyData] = {
     for {
       didData <- EitherT(
         nodeService.getDidDocument(issuerDID).map(_.toRight(s"DID Data not found for DID ${issuerDID.getValue}"))
@@ -110,14 +112,14 @@ object NodeClientService {
         issuingKeyProto.revokedOn
           .flatMap(ledgerData => ledgerData.timestampInfo)
           .map(fromTimestampInfoProto)
-    } yield new credentials.KeyData(issuingKey, addedOn, revokedOn.orNull)
+    } yield KeyData(issuingKey, addedOn, revokedOn)
   }
 
   def fromProtoKey(protoKey: node_models.PublicKey): Option[ECPublicKey] =
     for {
       maybeX <- protoKey.keyData.ecKeyData
       maybeY <- protoKey.keyData.ecKeyData
-    } yield EC.toPublicKey(maybeX.x.toByteArray, maybeY.y.toByteArray)
+    } yield EC.toPublicKeyFromByteCoordinates(maybeX.x.toByteArray, maybeY.y.toByteArray)
 
   def toTimestampInfoProto(ecPublicKey: ECPublicKey): node_models.ECKeyData = {
     val point = ecPublicKey.getCurvePoint
@@ -129,8 +131,8 @@ object NodeClientService {
     )
   }
 
-  def fromTimestampInfoProto(timestampInfoProto: node_models.TimestampInfo): credentials.TimestampInfo = {
-    new credentials.TimestampInfo(
+  def fromTimestampInfoProto(timestampInfoProto: node_models.TimestampInfo): DomainTimestamp = {
+    new DomainTimestamp(
       timestampInfoProto.blockTimestamp
         .getOrElse(throw new RuntimeException("Missing timestamp"))
         .toInstant
@@ -140,7 +142,7 @@ object NodeClientService {
     )
   }
 
-  def toInfoProto(timestampInfoProto: credentials.TimestampInfo): node_models.TimestampInfo = {
+  def toInfoProto(timestampInfoProto: DomainTimestamp): node_models.TimestampInfo = {
     node_models.TimestampInfo(
       blockSequenceNumber = timestampInfoProto.getAtalaBlockSequenceNumber,
       operationSequenceNumber = timestampInfoProto.getOperationSequenceNumber,
@@ -156,7 +158,7 @@ object NodeClientService {
             .IssueCredentialBatchOperation(
               credentialBatchData = Some(
                 node_models.CredentialBatchData(
-                  issuerDid = issuerDID.getSuffix.getValue,
+                  issuerDid = issuerDID.getSuffix,
                   merkleRoot = toByteString(merkleRoot.getHash)
                 )
               )
@@ -166,9 +168,9 @@ object NodeClientService {
   }
 
   def revokeCredentialsOperation(
-      previousOperationHash: SHA256Digest,
+      previousOperationHash: Sha256Digest,
       batchId: CredentialBatchId,
-      credentialsToRevoke: Seq[SHA256Digest] = Nil
+      credentialsToRevoke: Seq[Sha256Digest] = Nil
   ): node_models.AtalaOperation = {
     node_models
       .AtalaOperation(
@@ -183,8 +185,8 @@ object NodeClientService {
       )
   }
 
-  def toByteString(hash: SHA256Digest): ByteString = ByteString.copyFrom(hash.getValue)
+  def toByteString(hash: Sha256Digest): ByteString = ByteString.copyFrom(hash.getValue)
 
-  def toSHA256Digest(byteString: ByteString): SHA256Digest =
-    SHA256Digest.fromBytes(byteString.toByteArray)
+  def toSha256Digest(byteString: ByteString): Sha256Digest =
+    Sha256Digest.fromBytes(byteString.toByteArray)
 }

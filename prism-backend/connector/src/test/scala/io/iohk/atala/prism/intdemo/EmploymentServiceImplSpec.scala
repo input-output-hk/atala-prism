@@ -5,7 +5,7 @@ import java.time.format.DateTimeFormatter
 import io.circe.parser.parse
 import io.iohk.atala.prism.intdemo.EmploymentServiceImpl.RequiredEmploymentData
 import Testing._
-import io.iohk.atala.prism.kotlin.identity.DID
+import io.iohk.atala.prism.kotlin.identity.{PrismDid => DID}
 import org.scalatest.OptionValues._
 import org.scalatest.flatspec.AnyFlatSpec
 import org.scalatest.matchers.should.Matchers._
@@ -26,7 +26,7 @@ class EmploymentServiceImplSpec extends AnyFlatSpec {
     val issuanceDate = LocalDate.now()
     val issuerName = "Decentralized Inc."
     val issuerAddress = "67 Clasper Way, Herefoot, HF1 0AF"
-    val issuanceKeyId = DID.masterKeyId
+    val issuanceKeyId = DID.getDEFAULT_MASTER_KEY_ID
     val holderName = name
     val credentialType = EmploymentServiceImpl.credentialTypeId
     val employmentStartDate = LocalDate.now().minusMonths(1)

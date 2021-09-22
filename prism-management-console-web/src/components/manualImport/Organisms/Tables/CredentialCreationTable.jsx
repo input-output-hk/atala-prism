@@ -8,10 +8,14 @@ import {
   getCredentialFormColumns
 } from '../../../../helpers/formDefinitions/credentials';
 import { DynamicFormContext } from '../../../../providers/DynamicFormProvider';
-import { IMPORT_CREDENTIALS_DATA } from '../../../../helpers/constants';
+import {
+  CREDENTIAL_TYPE_FIELD_TYPES,
+  IMPORT_CREDENTIALS_DATA,
+  VALIDATION_KEYS
+} from '../../../../helpers/constants';
 import DynamicForm from '../../../dynamicForm/DynamicForm';
 
-const CredentialCreationTable = ({ initialValues, credentialType }) => {
+const CredentialCreationTable = ({ recipients, credentialType }) => {
   const { t } = useTranslation();
   const { form } = useContext(DynamicFormContext);
 
@@ -20,16 +24,16 @@ const CredentialCreationTable = ({ initialValues, credentialType }) => {
       title: t('contacts.table.columns.contactName'),
       dataIndex: 'contactName',
       editable: false,
-      type: 'string',
-      validations: ['required'],
+      type: CREDENTIAL_TYPE_FIELD_TYPES.STRING,
+      validations: [VALIDATION_KEYS.REQUIRED],
       fixed: 'left'
     },
     {
       title: t('contacts.table.columns.externalId'),
       dataIndex: 'externalId',
       editable: false,
-      type: 'string',
-      validations: ['required'],
+      type: CREDENTIAL_TYPE_FIELD_TYPES.STRING,
+      validations: [VALIDATION_KEYS.REQUIRED],
       width: 350,
       fixed: 'left'
     }
@@ -48,6 +52,9 @@ const CredentialCreationTable = ({ initialValues, credentialType }) => {
   const credentialFormColumns = getCredentialFormColumns(columns);
   const credentialFormSkeleton = getCredentialFormSkeleton(columns, form);
 
+  const credentialFieldKeys = columns.map(c => c.dataIndex);
+  const initialValues = recipients.map(r => _.pick(r, credentialFieldKeys));
+
   return (
     <DynamicForm
       columns={credentialFormColumns}
@@ -59,7 +66,7 @@ const CredentialCreationTable = ({ initialValues, credentialType }) => {
 };
 
 CredentialCreationTable.propTypes = {
-  initialValues: PropTypes.arrayOf(contactShape).isRequired,
+  recipients: PropTypes.arrayOf(contactShape).isRequired,
   credentialType: PropTypes.shape(credentialTypeShape).isRequired
 };
 

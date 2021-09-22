@@ -6,7 +6,7 @@ import doobie.FC
 import doobie.implicits._
 import io.iohk.atala.prism.connector.model.{ParticipantInfo, UpdateParticipantProfile, TokenString}
 import io.iohk.atala.prism.kotlin.crypto.keys.ECPublicKey
-import io.iohk.atala.prism.kotlin.identity.DID
+import io.iohk.atala.prism.kotlin.identity.{PrismDid => DID}
 import io.iohk.atala.prism.models.ParticipantId
 
 object ParticipantsDAO {

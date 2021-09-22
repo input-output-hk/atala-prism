@@ -1,5 +1,5 @@
 import _ from 'lodash';
-import { EXTERNAL_ID_KEY } from './constants';
+import { EXTERNAL_ID_KEY, VALIDATION_KEYS } from './constants';
 import { isEmptyRow, trimEmptyRows } from './fileHelpers';
 
 // Contact's bulk-import validations
@@ -186,7 +186,7 @@ const generateExcessHeaderError = (inputHeaders, idx) => ({
 });
 
 const generateRequiredFieldError = (contact, header, expectedHeaders) => ({
-  error: 'required',
+  error: VALIDATION_KEYS.REQUIRED,
   row: { index: contact.index },
   col: { index: expectedHeaders.indexOf(header), name: header }
 });

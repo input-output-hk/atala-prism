@@ -19,7 +19,7 @@ import io.iohk.atala.prism.utils.Base64Utils
 import scala.concurrent.duration._
 import scala.concurrent.{ExecutionContext, Future}
 import scala.language.postfixOps
-import io.iohk.atala.prism.kotlin.identity.DID
+import io.iohk.atala.prism.kotlin.identity.{PrismDid => DID}
 
 class IdServiceImplSpec extends AnyFlatSpec {
 
@@ -75,7 +75,7 @@ class IdServiceImplSpec extends AnyFlatSpec {
     val issuerName = "Metropol City Government"
     val credentialType = IdServiceImpl.credentialTypeId
     val issuerDID = s"did:prism:${IdServiceImpl.issuerId.uuid}"
-    val issuanceKeyId = DID.masterKeyId
+    val issuanceKeyId = DID.getDEFAULT_MASTER_KEY_ID
     val holderName = name
     val holderDateOfBirth = dateOfBirth
     val identityNumber =

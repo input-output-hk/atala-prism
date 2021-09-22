@@ -286,7 +286,7 @@ jobs:
         run: |
           cd prism-interactive-demo-web
           yarn --frozen-lockfile
-          CI=false GENERATE_SOURCEMAP=false yarn run build
+          echo "GATSBY_BRANCH=$ENV" >> .env.production && CI=false GENERATE_SOURCEMAP=false yarn run build
 
       - name: Build and push prism-interactive-demo-web
         if: matrix.image == 'landing'

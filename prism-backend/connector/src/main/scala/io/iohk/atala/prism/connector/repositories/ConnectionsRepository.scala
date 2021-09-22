@@ -1,8 +1,10 @@
 package io.iohk.atala.prism.connector.repositories
 
+import cats.{Comonad, Functor}
 import cats.data.{EitherT, OptionT}
 import cats.effect.BracketThrow
 import cats.implicits.{catsSyntaxApplicativeId, catsSyntaxEitherId, catsSyntaxOptionId}
+import cats.syntax.comonad._
 import cats.syntax.functor._
 import derevo.derive
 import derevo.tagless.applyK
@@ -19,12 +21,15 @@ import io.iohk.atala.prism.connector.repositories.daos.{
   MessagesDAO,
   ParticipantsDAO
 }
+import io.iohk.atala.prism.connector.repositories.logs.ConnectionsRepositoryLogs
 import io.iohk.atala.prism.connector.repositories.metrics.ConnectionsRepositoryMetrics
 import io.iohk.atala.prism.errors.LoggingContext
-import io.iohk.atala.prism.kotlin.identity.DID
+import io.iohk.atala.prism.kotlin.identity.{PrismDid => DID}
 import io.iohk.atala.prism.metrics.TimeMeasureMetric
 import org.slf4j.{Logger, LoggerFactory}
 import tofu.higherKind.Mid
+import tofu.logging.{Logs, ServiceLogging}
+import tofu.syntax.monoid.TofuSemigroupOps
 
 @derive(applyK)
 trait ConnectionsRepository[F[_]] {
@@ -59,10 +64,25 @@ trait ConnectionsRepository[F[_]] {
 }
 
 object ConnectionsRepository {
-  def apply[F[_]: BracketThrow: TimeMeasureMetric](transactor: Transactor[F]): ConnectionsRepository[F] = {
-    val metrics: ConnectionsRepository[Mid[F, *]] = new ConnectionsRepositoryMetrics[F]
-    metrics attach new ConnectionsRepositoryPostgresImpl[F](transactor)
-  }
+  def apply[F[_]: TimeMeasureMetric: BracketThrow, R[_]: Functor](
+      transactor: Transactor[F],
+      logs: Logs[R, F]
+  ): R[ConnectionsRepository[F]] =
+    for {
+      serviceLogs <- logs.service[ConnectionsRepository[F]]
+    } yield {
+      implicit val implicitLogs: ServiceLogging[F, ConnectionsRepository[F]] = serviceLogs
+      val metrics: ConnectionsRepository[Mid[F, *]] = new ConnectionsRepositoryMetrics[F]
+      val logs: ConnectionsRepository[Mid[F, *]] = new ConnectionsRepositoryLogs[F]
+      val mid = metrics |+| logs
+      mid attach new ConnectionsRepositoryPostgresImpl[F](transactor)
+    }
+
+  def unsafe[F[_]: TimeMeasureMetric: BracketThrow, R[_]: Comonad](
+      transactor: Transactor[F],
+      logs: Logs[R, F]
+  ): ConnectionsRepository[F] = ConnectionsRepository(transactor, logs).extract
+
 }
 
 private final class ConnectionsRepositoryPostgresImpl[F[_]: BracketThrow](xa: Transactor[F])

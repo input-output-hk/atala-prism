@@ -4,7 +4,7 @@ import cats.syntax.functor._
 import doobie.free.connection.ConnectionIO
 import doobie.implicits._
 import io.iohk.atala.prism.AtalaWithPostgresSpec
-import io.iohk.atala.prism.kotlin.crypto.SHA256Digest
+import io.iohk.atala.prism.kotlin.crypto.Sha256
 import io.iohk.atala.prism.models.{Ledger, TransactionId}
 import io.iohk.atala.prism.node.models.{
   AtalaObjectId,
@@ -23,8 +23,8 @@ class AtalaObjectTransactionSubmissionsDAOSpec extends AtalaWithPostgresSpec {
   private val atalaObjectId2 = AtalaObjectId.of(node_internal.AtalaObject(blockOperationCount = 2))
   private val byteContent = "byteContent".getBytes
   private val ledger = Ledger.InMemory
-  private val transactionId1 = TransactionId.from(SHA256Digest.compute("transactionId1".getBytes).getValue).value
-  private val transactionId2 = TransactionId.from(SHA256Digest.compute("transactionId2".getBytes).getValue).value
+  private val transactionId1 = TransactionId.from(Sha256.compute("transactionId1".getBytes).getValue).value
+  private val transactionId2 = TransactionId.from(Sha256.compute("transactionId2".getBytes).getValue).value
   private val submissionTimestamp = Instant.now
 
   "AtalaObjectTransactionSubmissionsDAO.insert" should {

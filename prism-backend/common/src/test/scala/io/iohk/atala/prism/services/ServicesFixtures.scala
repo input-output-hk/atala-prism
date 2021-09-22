@@ -4,10 +4,11 @@ import java.time.Instant
 import io.circe.Encoder
 import io.circe.syntax._
 import com.google.protobuf.ByteString
-import io.iohk.atala.prism.kotlin.credentials.{CredentialBatchId, CredentialBatches, TimestampInfo}
-import io.iohk.atala.prism.kotlin.crypto.{EC, MerkleInclusionProof}
+import io.iohk.atala.prism.kotlin.credentials.CredentialBatchId
+import io.iohk.atala.prism.kotlin.crypto.MerkleInclusionProof
+import io.iohk.atala.prism.kotlin.crypto.EC.{INSTANCE => EC}
 import io.iohk.atala.prism.kotlin.crypto.keys.ECKeyPair
-import io.iohk.atala.prism.kotlin.identity.DID
+import io.iohk.atala.prism.kotlin.identity.{PrismDid => DID}
 import io.iohk.atala.prism.protos.node_api.GetBatchStateResponse
 import io.iohk.atala.prism.protos.node_models.PublicKey.KeyData.EcKeyData
 import io.iohk.atala.prism.protos.node_models.{DIDData, KeyUsage, LedgerData, PublicKey}
@@ -23,6 +24,8 @@ import io.iohk.atala.prism.utils.Base64Utils
 
 import scala.jdk.CollectionConverters._
 import io.iohk.atala.prism.interop.CredentialContentConverter._
+import io.iohk.atala.prism.kotlin.extras.CredentialBatches
+import io.iohk.atala.prism.kotlin.protos.models.TimestampInfo
 
 trait ServicesFixtures {
   object ConnectorClientServiceFixtures {
@@ -32,7 +35,7 @@ trait ServicesFixtures {
     )
 
     val defaultDidBasedAuthConfig = DidBasedAuthConfig(
-      did = DID.buildPrismDID("did", null),
+      did = DID.fromString("did"),
       didMasterKeyId = "master",
       didMasterKeyPair = EC.generateKeyPair(),
       didIssuingKeyId = "issuance",
@@ -153,7 +156,7 @@ trait ServicesFixtures {
   }
 
   def newDID(): DID = {
-    DID.createUnpublishedDID(EC.generateKeyPair().getPublicKey, null)
+    DID.buildLongFormFromMasterKey(EC.generateKeyPair().getPublicKey)
     // where is the canon form getter?
   }
 }

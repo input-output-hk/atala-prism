@@ -9,7 +9,9 @@ import io.iohk.atala.prism.auth.grpc.GrpcAuthenticationHeaderParser
 import io.iohk.atala.prism.auth.model.RequestNonce
 import io.iohk.atala.prism.connector.repositories.{ParticipantsRepository, RequestNoncesRepository}
 import io.iohk.atala.prism.kotlin.crypto.keys.ECPublicKey
-import io.iohk.atala.prism.kotlin.identity.DID
+import io.iohk.atala.prism.kotlin.identity.{PrismDid => DID}
+import io.iohk.atala.prism.logging.TraceId
+import io.iohk.atala.prism.logging.TraceId.IOWithTraceIdContext
 import io.iohk.atala.prism.models.ParticipantId
 import io.iohk.atala.prism.protos.node_api
 import io.iohk.atala.prism.utils.FutureEither
@@ -18,7 +20,7 @@ import io.iohk.atala.prism.utils.FutureEither.FutureEitherOps
 import scala.concurrent.ExecutionContext
 
 class ConnectorAuthenticator(
-    participantsRepository: ParticipantsRepository[IO],
+    participantsRepository: ParticipantsRepository[IOWithTraceIdContext],
     requestNoncesRepository: RequestNoncesRepository[IO],
     nodeClient: node_api.NodeServiceGrpc.NodeService,
     grpcAuthenticationHeaderParser: GrpcAuthenticationHeaderParser
@@ -43,6 +45,7 @@ class ConnectorAuthenticator(
   )(implicit ec: ExecutionContext): FutureEither[AuthError, ParticipantId] =
     participantsRepository
       .findBy(publicKey)
+      .run(TraceId.generateYOLO)
       .unsafeToFuture()
       .toFutureEither
       .map(_.id)
@@ -51,6 +54,7 @@ class ConnectorAuthenticator(
   override def findByDid(did: DID)(implicit ec: ExecutionContext): FutureEither[AuthError, ParticipantId] =
     participantsRepository
       .findBy(did)
+      .run(TraceId.generateYOLO)
       .unsafeToFuture()
       .toFutureEither
       .map(_.id)

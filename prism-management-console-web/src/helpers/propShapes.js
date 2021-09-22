@@ -83,15 +83,29 @@ export const infiniteTableProps = {
   hasMore: bool.isRequired
 };
 
-export const credentialShape = {
-  icon: string,
-  name: string,
-  identityNumber: number,
-  admissionDate: number,
-  email: string,
-  status: oneOf(['PENDING_CONNECTION', 'CONNECTED']),
-  id: string
-};
+export const credentialTypeDetailsShape = shape({
+  id: string,
+  logo: string.isRequired,
+  name: string.isRequired,
+  state: number
+});
+
+export const credentialDataShape = shape({
+  contactId: string,
+  contactName: string,
+  credentialTypeDetails: credentialTypeDetailsShape.isRequired,
+  html: string
+});
+
+export const credentialShape = shape({
+  contactId: string,
+  credentialData: credentialDataShape.isRequired,
+  credentialId: string.isRequired,
+  credentialString: string.isRequired,
+  encodedSignedCredential: string,
+  externalId: string.isRequired,
+  connectionStatus: oneOf(Object.values(CONNECTION_STATUSES))
+});
 
 export const credentialTabShape = {
   fetchCredentials: func.isRequired,
@@ -202,3 +216,5 @@ export const templateSortingShape = {
   sortingBy: string,
   setSortingBy: func
 };
+
+export const childrenType = oneOfType([string, element, arrayOf(element)]);

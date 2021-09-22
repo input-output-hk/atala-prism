@@ -1,6 +1,6 @@
 export const getCheckedAndIndeterminateProps = (rows, selectedRows) => ({
   checked: rows.length && selectedRows.length === rows.length,
-  indeterminate: selectedRows.length && selectedRows.length !== rows.length
+  indeterminate: Boolean(selectedRows.length && selectedRows.length !== rows.length)
 });
 
 export const handleSelectAll = async ({
