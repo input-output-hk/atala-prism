@@ -22,7 +22,6 @@ const TypeSelection = ({ credentialTypes, templateCategories, selectedType, onTy
   const showWarning = () => message.warn(t('templates.messages.customTypeWarning'));
 
   return (
-    // TODO: @ana-alleva update to new mockups
     <div className="TypeSelectionWrapper">
       <div className="TypeSelectionContainer">
         <div className="TypeSelection">

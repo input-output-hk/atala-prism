@@ -28,7 +28,7 @@ const IconPicker = observer(({ close }) => {
       <div className="buttonSection">
         <CustomButton
           className="theme-secondary"
-          buttonText={t(`${i18nPrefix}.categoryCreationModal.save`)}
+          buttonText={t(`${i18nPrefix}.iconPicker.save`)}
           buttonProps={{
             onClick: handleSaveIcon
           }}

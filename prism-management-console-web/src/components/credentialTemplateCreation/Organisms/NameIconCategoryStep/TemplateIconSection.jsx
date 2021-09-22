@@ -1,11 +1,15 @@
 import React, { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { observer } from 'mobx-react-lite';
 import IconPickerModal from '../IconPickerModal/IconPickerModal';
 import { useTemplateSketch } from '../../../../hooks/useTemplateSketch';
 import CustomButton from '../../../common/Atoms/CustomButton/CustomButton';
 import './_style.scss';
 
-const TemplateNameSection = observer(() => {
+const i18nPrefix = 'credentialTemplateCreation.templateIcon';
+
+const TemplateIconSection = observer(() => {
+  const { t } = useTranslation();
   const { templateSketch } = useTemplateSketch();
   const [showIconPickerModal, setShowIconPickerModal] = useState(false);
 
@@ -15,14 +19,14 @@ const TemplateNameSection = observer(() => {
         <img className="TemplateIcon" src={templateSketch.icon} alt="template icon" />
       </div>
       <div className="verticalFlex">
-        <p className="TitleSmall">Temple Icon</p>
-        <p className="SubtitleGray">Select an Icon for your template</p>
+        <p className="TitleSmall">{t(`${i18nPrefix}.title`)}</p>
+        <p className="SubtitleGray">{t(`${i18nPrefix}.info`)}</p>
         <CustomButton
           buttonProps={{
             onClick: () => setShowIconPickerModal(true),
             className: 'theme-outline'
           }}
-          buttonText="Upload"
+          buttonText={t(`${i18nPrefix}.changeIcon`)}
         />
       </div>
 
@@ -31,4 +35,4 @@ const TemplateNameSection = observer(() => {
   );
 });
 
-export default TemplateNameSection;
+export default TemplateIconSection;

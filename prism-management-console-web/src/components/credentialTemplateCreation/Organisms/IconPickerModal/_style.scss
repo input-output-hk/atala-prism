@@ -1,4 +1,4 @@
-@import '../../../../css/general_styling';
+@import "../../../../css/general_styling";
 
 .IconPickerModal {
   .ant-radio-wrapper {
@@ -9,9 +9,6 @@
     .ant-modal-title {
       font-variant: normal;
     }
-  }
-  .ant-modal-body {
-    padding-top: 0;
   }
   .ant-form-item-control-input-content {
     text-align: center;
@@ -26,13 +23,6 @@
   .ant-upload {
     display: flex;
     width: 100%;
-
-    .galleryLabel {
-      width: 100%;
-      display: flex;
-      margin: 1em 0 0 0;
-      text-align: center;
-    }
   }
 
   .verticalFlex {
@@ -48,7 +38,6 @@
     p {
       @include primary-text($body, grey);
       font-variant: normal;
-      margin: 1em auto;
     }
     button {
       margin: 0 auto;
@@ -70,8 +59,37 @@
     padding: 0;
   }
 
-  // TODO: @ana-alleva check styling
   .TemplateIconSelector {
+    .IconSelectorContainer {
+      .ModalTitle {
+        margin-top: 1em;
+      }
+      .UploaderContainer {
+        width: 100%;
+      }
+
+      .UploaderContent {
+        margin-top: 1em;
+        width: 100%;
+        .GalleryLabel {
+          width: 100%;
+          display: flex;
+          margin: 1em 0 0 0;
+          text-align: center;
+        }
+      }
+
+      .DefaultGalleryContainer {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: space-between;
+        img {
+          width: 60px;
+          height: 60px;
+        }
+      }
+    }
+
     .ant-radio-group {
       display: flex;
       flex-direction: column;
@@ -81,6 +99,12 @@
       height: 100px;
       width: 100px;
       text-align: center;
+    }
+
+    .IconPreviewPlaceholder {
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
     }
 
     .ant-radio {
@@ -94,20 +118,16 @@
 
     .ant-upload-list-picture {
       display: flex;
-      align-items: center;
+      flex-wrap: wrap;
+      justify-content: flex-start;
       .IconOption {
         width: 60px;
         height: 60px;
       }
-    }
-
-    .DefaultGalleryContainer {
-      display: flex;
-      flex-wrap: wrap;
-      justify-content: flex-start;
-      img {
-        width: 60px;
-        height: 60px;
+      .IconOptionPlaceholder {
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
       }
     }
   }

@@ -9,6 +9,8 @@ import './_style.scss';
 
 const normalize = input => input.trim();
 
+const i18nPrefix = 'credentialTemplateCreation';
+
 const TemplateNameSection = observer(() => {
   const { t } = useTranslation();
   const { credentialTemplates } = useTemplateStore();
@@ -17,7 +19,7 @@ const TemplateNameSection = observer(() => {
     const normalizedValue = normalize(value);
 
     if (exactValueExists(credentialTemplates, normalizedValue, 'name')) {
-      const errorMessage = t('credentialTemplateCreation.errors.preExisting', {
+      const errorMessage = t(`${i18nPrefix}.errors.preExisting`, {
         value: normalizedValue
       });
       throw new Error(errorMessage);
@@ -25,16 +27,17 @@ const TemplateNameSection = observer(() => {
   };
 
   return (
-    <div className="templateName">
-      <p className="TitleSmall">{t('credentialTemplateCreation.step1.templateName')}</p>
-      <p className="SubtitleGray">{t('Create a name for your credential’s template')}</p>
+    <div className="TemplateName">
+      <p className="TitleSmall">{t(`${i18nPrefix}.templateName.title`)}</p>
+      <p className="SubtitleGray">{t(`${i18nPrefix}.templateName.info`)}</p>
       <Form.Item
         hasFeedback
         className="flex"
         name="name"
+        label={t(`${i18nPrefix}.templateName.label`)}
         rules={[{ required: true }, { validator: templateExists }]}
       >
-        <Input placeholder={t('credentialTemplateCreation.step1.templateNamePlaceholder')} />
+        <Input placeholder={t(`${i18nPrefix}.templateName.placeholder`)} />
       </Form.Item>
     </div>
   );

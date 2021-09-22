@@ -16,13 +16,13 @@ const { Option } = Select;
 
 const normalize = input => input.trim();
 
+const i18nPrefix = 'credentialTemplateCreation.templateCategory';
+
 const TemplateCategorySection = observer(() => {
   const { t } = useTranslation();
   const { templateCategories, isLoadingCategories, createTemplateCategory } = useTemplateStore();
   const { templateSketch } = useTemplateSketch();
   const [open, setOpen] = useState(false);
-
-  const i18nPrefix = 'credentialTemplateCreation';
 
   const handleCreateCategory = newCategoryName => {
     const categoryName = normalize(newCategoryName);
@@ -37,16 +37,17 @@ const TemplateCategorySection = observer(() => {
   const handleFilter = (input, optionLabel) =>
     optionLabel?.toLowerCase().includes(input?.toLowerCase());
 
+  // eslint-disable-next-line react/prop-types
   const renderCreateCategoryButton = ({ searchValue }) => (
     <CustomButton
-      className="FullWith"
+      className="AddCategoryButton"
       buttonProps={{
         className: 'theme-link',
         icon: <PlusOutlined />,
         onClick: () => handleCreateCategory(searchValue),
         loading: isLoadingCategories
       }}
-      buttonText={`Add ${searchValue}`}
+      buttonText={t(`${i18nPrefix}.addCategoryButton`, { searchValue })}
     />
   );
 
@@ -55,26 +56,23 @@ const TemplateCategorySection = observer(() => {
     const showAddButton = normalize(searchValue) && !categories.find(c => c.name === searchValue);
 
     return (
-      <>
+      <div className="CategoriesDropDown">
         {hasPickableOption(menu.props) && menu}
         {showAddButton && renderCreateCategoryButton(menu.props)}
-      </>
+      </div>
     );
   };
 
   return (
     <div className="TemplateCategorySection">
-      <p className="TitleSmall">{t(`${i18nPrefix}.step1.selectCategory`)}</p>
-      <p className="SubtitleGray">
-        {t('Once selected click next on the upper right side of the page.')}
-      </p>
-      <Form.Item name="category" rules={[{ required: true }]}>
+      <p className="TitleSmall">{t(`${i18nPrefix}.title`)}</p>
+      <p className="SubtitleGray">{t(`${i18nPrefix}.info`)}</p>
+      <Form.Item name="category" label={t(`${i18nPrefix}.label`)} rules={[{ required: true }]}>
         <Select
           open={open}
           showSearch
           allowClear
-          placeholder="Category"
-          style={{ width: 260 }}
+          placeholder={t(`${i18nPrefix}.placeholder`)}
           optionFilterProp="label"
           value={templateSketch.category}
           onDropdownVisibleChange={setOpen}

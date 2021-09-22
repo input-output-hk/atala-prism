@@ -1,13 +1,15 @@
 import React from 'react';
+import PropTypes from 'prop-types';
 import { Radio, Upload } from 'antd';
 import { useTranslation } from 'react-i18next';
 import CustomButton from '../../../common/Atoms/CustomButton/CustomButton';
 import IconOption from '../../Atoms/CategorySelection/IconOption';
 import { defaultTemplatesIconGallery } from '../../../../helpers/templateIcons/gallery';
 import { blobToBase64 } from '../../../../helpers/genericHelpers';
+import SimpleLoading from '../../../common/Atoms/SimpleLoading/SimpleLoading';
 import './_style.scss';
 
-const i18nPrefix = 'credentialTemplateCreation';
+const i18nPrefix = 'credentialTemplateCreation.iconPicker';
 
 const IconSelector = ({ selectedIcon, setSelectedIcon }) => {
   const { t } = useTranslation();
@@ -38,32 +40,40 @@ const IconSelector = ({ selectedIcon, setSelectedIcon }) => {
   const iconPreview = selectedIcon.isCustomIcon ? selectedIcon.file.thumbUrl : selectedIcon.src;
 
   return (
-    // TODO: @ana-alleva check styling
     <div className="TemplateIconSelector verticalFlex">
-      <Radio.Group onChange={onIconChange}>
-        <img className="IconPreview" src={iconPreview} alt="upload custom icon" />
-        <h3>{t(`${i18nPrefix}.categoryCreationModal.uploadIcon`)}</h3>
-        <p>{t(`${i18nPrefix}.categoryCreationModal.allowedFormats`, { allowedFormats })}</p>
-
+      <Radio.Group className="IconSelectorContainer" onChange={onIconChange}>
+        {iconPreview ? (
+          <img className="IconPreview" src={iconPreview} alt="upload custom icon" />
+        ) : (
+          <div className="IconPreview IconPreviewPlaceholder">
+            <SimpleLoading />
+          </div>
+        )}
+        <h3 className="ModalTitle">{t(`${i18nPrefix}.title`)}</h3>
+        <p className="ModalSubtitle">{t(`${i18nPrefix}.allowedFormats`, { allowedFormats })}</p>
         <Upload
           name="logo"
           action="/upload.do"
+          className="UploaderContainer"
           {...uploaderProps}
-          itemRender={(_originNode, file) => (
-            <IconOption
-              key={file.uid}
-              icon={{ file, isCustomIcon: true }}
-              selected={selectedIcon.isCustomIcon && file.uid === selectedIcon.file.uid}
-            />
-          )}
+          itemRender={(_originNode, file) =>
+            file.thumbUrl ? (
+              <IconOption
+                key={file.uid}
+                icon={{ file, isCustomIcon: true }}
+                selected={selectedIcon.isCustomIcon && file.uid === selectedIcon.file.uid}
+              />
+            ) : (
+              <div className="IconOption IconOptionPlaceholder">
+                <SimpleLoading />
+              </div>
+            )
+          }
         >
-          <div className="verticalFlex">
-            <CustomButton
-              className="theme-outline"
-              buttonText={t(`${i18nPrefix}.categoryCreationModal.uploadButton`)}
-            />
-            <div className="galleryLabel">
-              <p>{t(`${i18nPrefix}.categoryCreationModal.gallery`)}</p>
+          <div className="UploaderContent verticalFlex">
+            <CustomButton className="theme-outline" buttonText={t(`${i18nPrefix}.uploadButton`)} />
+            <div className="GalleryLabel">
+              <p>{t(`${i18nPrefix}.gallery`)}</p>
             </div>
           </div>
         </Upload>
@@ -79,6 +89,19 @@ const IconSelector = ({ selectedIcon, setSelectedIcon }) => {
       </Radio.Group>
     </div>
   );
+};
+
+IconSelector.propTypes = {
+  selectedIcon: PropTypes.shape({
+    isCustomIcon: PropTypes.bool,
+    file: PropTypes.shape({
+      uid: PropTypes.string,
+      thumbUrl: PropTypes.string
+    }),
+    index: PropTypes.number,
+    src: PropTypes.string
+  }).isRequired,
+  setSelectedIcon: PropTypes.func.isRequired
 };
 
 export default IconSelector;
