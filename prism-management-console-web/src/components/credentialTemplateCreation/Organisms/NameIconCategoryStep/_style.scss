@@ -1,92 +1,12 @@
 @import '../../../../css/general_styling';
 
-.TemplateCategorySection {
-  .selectCategoryHeader {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 1em;
-    button {
-      border: none;
-      color: $primary-color;
-    }
-    p {
-      @include primary-text($body, $black);
-      margin: 0;
-    }
-  }
-  .ant-row {
-    width: 100%;
-  }
-}
 
+.ant-select-focused:not(.ant-select-disabled).ant-select:not(.ant-select-customize-input) .ant-select-selector {
+  border: 1px solid $primary-color;
+  box-shadow: 0px 0px 2px 1px rgb(255, 164, 164) !important;
+}
 .FullWith {
   width: 100%;
-}
-
-.ant-input:focus, .ant-input-focused {
-  border-color: $primary-color!important;
-  border-right-width: 1px !important;
-  outline: 0;
-  -webkit-box-shadow: rgb(255, 181, 181) !important;
-  box-shadow: rgb(255, 181, 181) !important;
-}
-
-.ant-select-focused:not(.ant-select-disabled).ant-select:not(.ant-select-customize-input) .ant-select-selector {
-  border-color: $primary-color;
-  border-right-width: 1px !important;
-  outline: 0;
-  -webkit-box-shadow: rgb(255, 181, 181) !important;
-  box-shadow: rgb(255, 181, 181) !important;
-}
-
-.ant-select-focused .ant-select-selector,
-.ant-select-selector:focus,
-.ant-select-selector:active,
-.ant-select-open .ant-select-selector {
-  border-color: $primary-color !important;
-  box-shadow: rgb(255, 181, 181) !important;
-  -webkit-box-shadow: rgb(255, 181, 181) !important;
-}
-
-.ant-select:hover .ant-select-selector {
-  box-shadow: rgb(255, 181, 181) !important;
-}
-
-.ant-select-focused:not(.ant-select-disabled).ant-select:not(.ant-select-customize-input) .ant-select-selector {
-  box-shadow: rgb(255, 181, 181) !important; 
-}
-
-.templateName {
-  display: flex;
-  flex-direction: column;
-
-
-
-  .ant-form-item-control:first-child:not([class^='ant-col-']):not([class*=' ant-col-']) {
-    width: 260px;
-} 
-  .ant-row {
-    margin: 0;
-    .ant-col {
-      line-height: 15px !important;
-      label {
-        margin: 0;
-      }
-      .ant-form-item-control-input-content {
-        .ant-input {
-          width: 260px;
-        }
-        .ant-input,
-        .ant-select-selection {
-          border: 1px solid lightgray !important;
-        }
-        .ant-input:hover {
-          border: 1px solid $primary-color !important;
-        }
-      }
-    }
-  }
 }
 
 // TODO: @ana-alleva check styling
@@ -126,6 +46,39 @@
   .RighPanel {
     width: 60%;
     .templateName {
+      .ant-form-item-control:first-child:not([class^='ant-col-']):not([class*=' ant-col-']) {
+        width: 260px;
+      }
+      .ant-row {
+        margin: 0;
+        .ant-col {
+          line-height: 15px !important;
+          label {
+            margin: 0;
+          }
+          .ant-form-item-control-input-content {
+            .ant-input {
+              width: 260px;
+            }
+            .ant-input,
+            .ant-select-selection {
+              border: 1px solid lightgray !important;
+            }
+            .ant-input:hover {
+              border: 1px solid $primary-color !important;
+            }
+            .ant-input:focus {
+              border: 1px solid $primary-color !important;
+            }
+          }
+        }
+      }
+      .ant-form-item-has-success.ant-form-item-has-feedback .ant-form-item-children-icon {
+        margin-top: -1.3em;
+      }
+      .ant-form-item-has-error.ant-form-item-has-feedback .ant-form-item-children-icon {
+        margin-top: -1.3em;
+      }
       .TitleSmall {
         @include primary-text($body, $black);
         font-weight: bold;
@@ -136,16 +89,13 @@
         font-variant: normal;
       }
       .ant-row .ant-col .ant-form-item-control-input-content .ant-input {
-        margin: 1em 0;
+        margin: 1em 0 2em 0;
         .ant-input:focus {
-          border: 1px solid $primary-color!important;
+          border: 1px solid $primary-color !important;
         }
       }
     }
     .TemplateCategorySection {
-      .ant-row .ant-form-item .ant-form .ant-form-item-label {
-        display: none;
-      }
       .TitleSmall {
         @include primary-text($body, $black);
         font-weight: bold;
