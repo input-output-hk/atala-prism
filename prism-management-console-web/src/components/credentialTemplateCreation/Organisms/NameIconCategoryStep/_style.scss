@@ -20,16 +20,41 @@
   }
 }
 
+.FullWith {
+  width: 100%;
+}
+
+.ant-input:focus, .ant-input-focused {
+  border-color: $primary-color!important;
+  border-right-width: 1px !important;
+  outline: 0;
+  -webkit-box-shadow: rgb(255, 181, 181) !important;
+  box-shadow: rgb(255, 181, 181) !important;
+}
+
+.ant-select-focused:not(.ant-select-disabled).ant-select:not(.ant-select-customize-input) .ant-select-selector {
+  border-color: $primary-color;
+  border-right-width: 1px !important;
+  outline: 0;
+  -webkit-box-shadow: rgb(255, 181, 181) !important;
+  box-shadow: rgb(255, 181, 181) !important;
+}
+
 .ant-select-focused .ant-select-selector,
 .ant-select-selector:focus,
 .ant-select-selector:active,
 .ant-select-open .ant-select-selector {
   border-color: $primary-color !important;
   box-shadow: rgb(255, 181, 181) !important;
+  -webkit-box-shadow: rgb(255, 181, 181) !important;
 }
 
 .ant-select:hover .ant-select-selector {
   box-shadow: rgb(255, 181, 181) !important;
+}
+
+.ant-select-focused:not(.ant-select-disabled).ant-select:not(.ant-select-customize-input) .ant-select-selector {
+  box-shadow: rgb(255, 181, 181) !important; 
 }
 
 .templateName {
@@ -57,7 +82,7 @@
           border: 1px solid lightgray !important;
         }
         .ant-input:hover {
-          border-color: $primary-color;
+          border: 1px solid $primary-color !important;
         }
       }
     }
@@ -67,10 +92,10 @@
 // TODO: @ana-alleva check styling
 .TemplateIconContainer {
   .TemplateIconWrapper {
-    margin-right: 1.5em;
+    margin-right: 2em;
     .TemplateIcon {
-      height: 85px;
-      width: 85px;
+      height: 100%;
+      width: 98px;
     }
   }
   .verticalFlex {

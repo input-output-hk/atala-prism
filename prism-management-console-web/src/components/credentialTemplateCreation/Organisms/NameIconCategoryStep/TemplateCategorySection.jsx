@@ -39,6 +39,7 @@ const TemplateCategorySection = observer(() => {
 
   const renderCreateCategoryButton = ({ searchValue }) => (
     <CustomButton
+      className="FullWith"
       buttonProps={{
         className: 'theme-link',
         icon: <PlusOutlined />,
@@ -67,7 +68,9 @@ const TemplateCategorySection = observer(() => {
       {/* TODO: @ana-alleva check styling */}
       <p className="TitleSmall">{t(`${i18nPrefix}.step1.selectCategory`)}</p>
       {/* TODO: add i18n */}
-      <p className="SubtitleGray">{t('Once selected click next on the upper right side of the page.')}</p>
+      <p className="SubtitleGray">
+        {t('Once selected click next on the upper right side of the page.')}
+      </p>
       <Form.Item name="category" rules={[{ required: true }]}>
         <Select
           open={open}
