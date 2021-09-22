@@ -308,7 +308,8 @@
     .FAQs {
       padding: 3em;
       .ant-collapse-header {
-        font-size: $subtitle;
+        font-size: $body;
+        padding-right: 5em;
       }
       .ant-collapse-content-box {
         width: 100%;
