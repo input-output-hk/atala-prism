@@ -18,10 +18,11 @@ import io.iohk.atala.prism.connector.services.{
   RegistrationService
 }
 import io.iohk.atala.prism.kotlin.crypto.keys.ECPublicKey
-import io.iohk.atala.prism.kotlin.identity.DID
+import io.iohk.atala.prism.kotlin.identity.{PrismDid => DID}
 import io.iohk.atala.prism.models.ParticipantId
 import io.iohk.atala.prism.protos.connector_api
 import io.iohk.atala.prism.{ApiTestHelper, DIDUtil, RpcSpecBase}
+import io.iohk.atala.prism.utils.IOUtils._
 import org.mockito.MockitoSugar._
 
 import java.time.Instant
@@ -47,11 +48,11 @@ class ConnectorRpcSpecBase extends RpcSpecBase with DIDUtil {
       new connector_api.ConnectorServiceGrpc.ConnectorServiceStub(_, _)
     )
 
-  lazy val connectionsRepository = ConnectionsRepository(database)
+  lazy val connectionsRepository = ConnectionsRepository.unsafe(dbLiftedToTraceIdIO, testLogs)
   lazy val connectionsService = new ConnectionsService(connectionsRepository, nodeMock)
   lazy val messagesRepository = MessagesRepository(database)
   lazy val requestNoncesRepository = RequestNoncesRepository(database)
-  lazy val participantsRepository = ParticipantsRepository(database)
+  lazy val participantsRepository = ParticipantsRepository.unsafe(dbLiftedToTraceIdIO, testLogs)
 
   lazy val nodeMock = mock[io.iohk.atala.prism.protos.node_api.NodeServiceGrpc.NodeService]
   lazy val authenticator =

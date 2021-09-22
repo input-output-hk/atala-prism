@@ -1,6 +1,11 @@
 import _ from 'lodash';
 import moment from 'moment';
-import { COMMON_CREDENTIALS_HEADERS, DEFAULT_DATE_FORMAT, EXTERNAL_ID_KEY } from './constants';
+import {
+  COMMON_CREDENTIALS_HEADERS,
+  DEFAULT_DATE_FORMAT,
+  EXTERNAL_ID_KEY,
+  VALIDATION_KEYS
+} from './constants';
 import { isEmptyRow, trimEmptyRows } from './fileHelpers';
 
 // Credentials data bulk-import validations
@@ -145,7 +150,12 @@ const validateCommonFields = (
       const importedExternalID = dataRow[translatedHeader];
 
       if (!importedValue)
-        return generateCommonFieldError('required', dataRow, header, allExpectedHeaders);
+        return generateCommonFieldError(
+          VALIDATION_KEYS.REQUIRED,
+          dataRow,
+          header,
+          allExpectedHeaders
+        );
 
       if (!recipients.length) {
         return validateContactExistence(
@@ -234,16 +244,16 @@ const validateCredentialFields = (
 
 const getValidationByName = validationName => {
   switch (validationName) {
-    case 'required': {
+    case VALIDATION_KEYS.REQUIRED: {
       return requiredValidation;
     }
-    case 'isDate': {
+    case VALIDATION_KEYS.IS_DATE: {
       return isDateValidation;
     }
-    case 'pastDate': {
+    case VALIDATION_KEYS.PAST_DATE: {
       return pastDateValidation;
     }
-    case 'futureDate': {
+    case VALIDATION_KEYS.FUTURE_DATE: {
       return futureDateValidation;
     }
     default: {
@@ -381,7 +391,7 @@ const generateExcessHeaderError = (inputHeaders, idx) => ({
 });
 
 const generateRequiredFieldError = (row, col, translatedKey) => ({
-  error: 'required',
+  error: VALIDATION_KEYS.REQUIRED,
   row: { index: row },
   col: { index: col, name: translatedKey }
 });

@@ -6,13 +6,12 @@ import cats.syntax.flatMap._
 import cats.syntax.applicativeError._
 import doobie.Transactor
 import doobie.implicits._
-import io.iohk.atala.prism.kotlin.identity.DID
+import io.iohk.atala.prism.kotlin.identity.{PrismDid => DID}
 import io.iohk.atala.prism.metrics.{TimeMeasureMetric, TimeMeasureUtil}
 import io.iohk.atala.prism.utils.syntax.DBConnectionOps
 import io.iohk.atala.prism.metrics.TimeMeasureUtil.MeasureOps
 import io.iohk.atala.prism.vault.model.{CreatePayload, Payload}
 import io.iohk.atala.prism.vault.repositories.daos.PayloadsDAO
-import io.iohk.atala.prism.logging.GeneralLoggableInstances._
 import org.slf4j.{Logger, LoggerFactory}
 import derevo.derive
 import derevo.tagless.applyK
@@ -91,7 +90,7 @@ private final class PayloadsRepoLogging[F[_]: MonadThrow: ServiceLogging[*[_], P
       limit: Int
   ): Mid[F, List[Payload]] =
     in =>
-      info"getting paginated data ${did.canonical} {limit=$limit}" *> in
+      info"getting paginated data ${did.asCanonical().toString} {limit=$limit}" *> in
         .flatTap(r => info"getting paginated data - successfully done got ${r.size} entities")
         .onError(e => errorCause"an error occurred while creating payload" (e))
 

@@ -5,7 +5,7 @@ import doobie.free.connection.ConnectionIO
 import doobie.implicits._
 import doobie.implicits.legacy.instant._
 import io.iohk.atala.prism.kotlin.crypto.ECConfig.{INSTANCE => ECConfig}
-import io.iohk.atala.prism.kotlin.identity.DIDSuffix
+import io.iohk.atala.prism.models.DidSuffix
 import io.iohk.atala.prism.node.models.nodeState.{DIDPublicKeyState, LedgerData}
 import io.iohk.atala.prism.node.models.DIDPublicKey
 import io.iohk.atala.prism.utils.syntax._
@@ -28,7 +28,7 @@ object PublicKeysDAO {
        """.stripMargin.update.run.void
   }
 
-  def find(didSuffix: DIDSuffix, keyId: String): ConnectionIO[Option[DIDPublicKeyState]] = {
+  def find(didSuffix: DidSuffix, keyId: String): ConnectionIO[Option[DIDPublicKeyState]] = {
     sql"""
          |SELECT did_suffix, key_id, key_usage, curve, compressed, added_on, added_on_absn, added_on_osn, added_on_transaction_id, ledger,
          |       added_on, added_on_absn, added_on_osn, revoked_on_transaction_id, ledger,
@@ -38,7 +38,7 @@ object PublicKeysDAO {
        """.stripMargin.query[DIDPublicKeyState].option
   }
 
-  def findAll(didSuffix: DIDSuffix): ConnectionIO[List[DIDPublicKeyState]] = {
+  def findAll(didSuffix: DidSuffix): ConnectionIO[List[DIDPublicKeyState]] = {
     sql"""
          |SELECT did_suffix, key_id, key_usage, curve, compressed, added_on, added_on_absn, added_on_osn, added_on_transaction_id, ledger,
          |       added_on, added_on_absn, added_on_osn, revoked_on_transaction_id, ledger,
@@ -48,7 +48,7 @@ object PublicKeysDAO {
        """.stripMargin.query[DIDPublicKeyState].to[List]
   }
 
-  def revoke(keyId: String, ledgerData: LedgerData): ConnectionIO[Boolean] = {
+  def revoke(didSuffix: DidSuffix, keyId: String, ledgerData: LedgerData): ConnectionIO[Boolean] = {
     val revokedOn = ledgerData.timestampInfo
     sql"""
          |UPDATE public_keys
@@ -56,7 +56,7 @@ object PublicKeysDAO {
          |    revoked_on_absn = ${revokedOn.getAtalaBlockSequenceNumber},
          |    revoked_on_osn = ${revokedOn.getOperationSequenceNumber},
          |    revoked_on_transaction_id = ${ledgerData.transactionId}
-         |WHERE key_id = $keyId
+         |WHERE did_suffix = $didSuffix AND key_id = $keyId
          |""".stripMargin.update.run.map(_ > 0)
   }
 }

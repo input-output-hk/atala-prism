@@ -37,7 +37,7 @@ object versions {
   val twirl = "1.5.1"
   val typesafeConfig = "1.4.1"
   val http4s = "0.21.7"
-  val prismSdk = "0.1.0-103f0785"
+  val prismSdk = "0.1.0-73d03538"
 }
 
 object Dependencies {
@@ -90,6 +90,9 @@ object Dependencies {
   // SDK dependencies
   val prismCrypto = "io.iohk.atala" % "prism-crypto-jvm" % versions.prismSdk
   val prismCredentials = "io.iohk.atala" % "prism-credentials-jvm" % versions.prismSdk
+  val prismProtos = "io.iohk.atala" % "prism-protos-jvm" % versions.prismSdk % "protobuf-src" intransitive ()
+  //Can be used only in tests!
+  val prismExtras = "io.iohk.atala" % "prism-extras-jvm" % versions.prismSdk % Test
 
   // Test dependencies
   val catsScalatest = "com.ironcorelabs" %% "cats-scalatest" % versions.catsScalatest % Test
@@ -117,6 +120,11 @@ object Dependencies {
   val sttpDependencies = Seq(sttpCore, sttpFuture)
   val http4sDependencies = Seq(http4sCirce, http4sDsl, http4sBlazeServer, http4sBlazeClient)
   val tofuDependencies = Seq(tofu, tofuLogging, tofuDerevoTagless)
+  val prismDependencies = Seq(prismCrypto, prismCredentials, prismProtos, prismExtras)
+  val scalapbDependencies = Seq(
+    "com.thesamet.scalapb" %% "scalapb-runtime" % scalapb.compiler.Version.scalapbVersion % "protobuf",
+    "com.thesamet.scalapb" %% "scalapb-runtime-grpc" % scalapb.compiler.Version.scalapbVersion
+  )
 
   // cardano-address library binary
   val cardanoAddressBinaryUrl =

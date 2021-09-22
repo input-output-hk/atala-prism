@@ -4,15 +4,15 @@ import doobie.free.connection.ConnectionIO
 import doobie.implicits._
 import doobie.implicits.legacy.instant._
 import cats.syntax.functor._
-import io.iohk.atala.prism.kotlin.crypto.SHA256Digest
-import io.iohk.atala.prism.kotlin.identity.DIDSuffix
+import io.iohk.atala.prism.kotlin.crypto.Sha256Digest
+import io.iohk.atala.prism.models.DidSuffix
 import io.iohk.atala.prism.node.models.nodeState.LedgerData
 import io.iohk.atala.prism.utils.syntax._
 
 object DIDDataDAO {
   def insert(
-      didSuffix: DIDSuffix,
-      lastOperation: SHA256Digest,
+      didSuffix: DidSuffix,
+      lastOperation: Sha256Digest,
       ledgerData: LedgerData
   ): ConnectionIO[Unit] = {
     val publishedOn = ledgerData.timestampInfo
@@ -24,21 +24,21 @@ object DIDDataDAO {
        """.stripMargin.update.run.void
   }
 
-  def findByDidSuffix(didSuffix: DIDSuffix): ConnectionIO[Option[DIDSuffix]] = {
+  def findByDidSuffix(didSuffix: DidSuffix): ConnectionIO[Option[DidSuffix]] = {
     sql"""
          |SELECT 1 FROM did_data
          |WHERE did_suffix = $didSuffix
        """.stripMargin.query[Int].option.map(_.as(didSuffix))
   }
 
-  def getLastOperation(didSuffix: DIDSuffix): ConnectionIO[Option[SHA256Digest]] = {
+  def getLastOperation(didSuffix: DidSuffix): ConnectionIO[Option[Sha256Digest]] = {
     sql"""
          |SELECT last_operation FROM did_data
          |WHERE did_suffix = $didSuffix
-       """.stripMargin.query[SHA256Digest].option
+       """.stripMargin.query[Sha256Digest].option
   }
 
-  def updateLastOperation(didSuffix: DIDSuffix, newLastOperation: SHA256Digest): ConnectionIO[Int] = {
+  def updateLastOperation(didSuffix: DidSuffix, newLastOperation: Sha256Digest): ConnectionIO[Int] = {
     sql"""
          |UPDATE did_data
          |SET last_operation = $newLastOperation
@@ -46,9 +46,9 @@ object DIDDataDAO {
        """.stripMargin.update.run
   }
 
-  def all(): ConnectionIO[Seq[DIDSuffix]] = {
+  def all(): ConnectionIO[Seq[DidSuffix]] = {
     sql"""SELECT did_suffix FROM did_data"""
-      .query[DIDSuffix]
+      .query[DidSuffix]
       .to[Seq]
   }
 }

@@ -25,11 +25,11 @@ const SettingsMenu = ({ logout, name, logo }) => {
     </div>
   );
 
-  const nameIsTruncated = name?.length > MAX_DISPLAY_LENGTH;
+  const isLongName = name?.length > MAX_DISPLAY_LENGTH;
 
   return (
     <div className="SettingsMenu RightSide">
-      <Popover content={content}>
+      <Popover content={content} trigger="click">
         <div className="userInfo">
           <div className="flex verticalAlign">
             {logo ? (
@@ -44,7 +44,7 @@ const SettingsMenu = ({ logout, name, logo }) => {
               </div>
             )}
             <div className="textContainer">
-              <Tooltip title={nameIsTruncated ? name : ''}>
+              <Tooltip title={isLongName ? name : ''}>
                 <p className="UserName">{name}</p>
               </Tooltip>
             </div>

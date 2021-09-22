@@ -5,19 +5,25 @@ import io.iohk.atala.prism.connector.errors.UnknownValueError
 import io.iohk.atala.prism.connector.model._
 import io.iohk.atala.prism.connector.repositories.daos._
 import io.iohk.atala.prism.connector.DataPreparation
-import io.iohk.atala.prism.kotlin.identity.DID
+import io.iohk.atala.prism.kotlin.crypto.Sha256Digest
+import io.iohk.atala.prism.kotlin.identity.{PrismDid => DID}
+import io.iohk.atala.prism.utils.Base64Utils.decodeURL
+import io.iohk.atala.prism.logging.TraceId
+import io.iohk.atala.prism.logging.TraceId.IOWithTraceIdContext
 import io.iohk.atala.prism.models.ParticipantId
+import io.iohk.atala.prism.utils.IOUtils._
 import org.scalatest.EitherValues._
 import org.scalatest.OptionValues._
 
 class ParticipantsRepositorySpec extends ConnectorRepositorySpecBase {
-  lazy val participantsRepository = ParticipantsRepository(database)
+  lazy val participantsRepository: ParticipantsRepository[IOWithTraceIdContext] =
+    ParticipantsRepository.unsafe(dbLiftedToTraceIdIO, connectorRepoSpecLogs)
   private val canonicalSuffix = "0f753f41e0f3488ba56bd581d153ae9b3c9040cbcc7a63245b4644a265eb3b77"
   private val encodedStateUsed =
     "CmEKXxJdCgdtYXN0ZXIwEAFCUAoJc2VjcDI1NmsxEiAel_7KEiez4s_e0u8DyJwLkUnVmUHBuWU-0h01nerSNRohAJlR51Vbk49vagehAwQkFvW_fvyM1qa4ileIEYkXs4pF"
 
-  private val shortDID = DID.buildPrismDID(canonicalSuffix, null)
-  private val longDID = DID.buildPrismDID(canonicalSuffix, encodedStateUsed)
+  private val shortDID = DID.buildCanonical(Sha256Digest.fromHex(canonicalSuffix))
+  private val longDID = DID.buildLongForm(Sha256Digest.fromHex(canonicalSuffix), decodeURL(encodedStateUsed))
 
   "getParticipant by did" should {
     "get a participant" in {
@@ -30,7 +36,7 @@ class ParticipantsRepositorySpec extends ConnectorRepositorySpecBase {
         .unsafeToFuture()
         .futureValue
 
-      val result = participantsRepository.findBy(did).unsafeRunSync()
+      val result = participantsRepository.findBy(did).run(TraceId.generateYOLO).unsafeRunSync()
       result.toOption.value must be(info)
     }
 
@@ -43,7 +49,7 @@ class ParticipantsRepositorySpec extends ConnectorRepositorySpecBase {
         .unsafeToFuture()
         .futureValue
 
-      val result = participantsRepository.findBy(longDID).unsafeRunSync()
+      val result = participantsRepository.findBy(longDID).run(TraceId.generateYOLO).unsafeRunSync()
       result.toOption.value must be(info)
     }
 
@@ -56,7 +62,7 @@ class ParticipantsRepositorySpec extends ConnectorRepositorySpecBase {
         .unsafeToFuture()
         .futureValue
 
-      val result = participantsRepository.findBy(shortDID).unsafeRunSync()
+      val result = participantsRepository.findBy(shortDID).run(TraceId.generateYOLO).unsafeRunSync()
       result.toOption.value must be(info.copy(did = Some(shortDID)))
     }
 
@@ -78,7 +84,7 @@ class ParticipantsRepositorySpec extends ConnectorRepositorySpecBase {
         .unsafeToFuture()
         .futureValue
 
-      val result = participantsRepository.findBy(did).unsafeRunSync()
+      val result = participantsRepository.findBy(did).run(TraceId.generateYOLO).unsafeRunSync()
       result.left.value must be(UnknownValueError("did", did.getValue))
     }
 
@@ -102,7 +108,7 @@ class ParticipantsRepositorySpec extends ConnectorRepositorySpecBase {
 
       val expectedParticipant = info.copy(did = Some(shortDID), name = "Updated Issuer", logo = Some(logo))
 
-      val result = participantsRepository.findBy(longDID).unsafeRunSync()
+      val result = participantsRepository.findBy(longDID).run(TraceId.generateYOLO).unsafeRunSync()
       result.toOption.value must be(expectedParticipant)
     }
 
@@ -126,7 +132,7 @@ class ParticipantsRepositorySpec extends ConnectorRepositorySpecBase {
 
       val expectedParticipant = info.copy(did = Some(shortDID), name = "", logo = None)
 
-      val result = participantsRepository.findBy(longDID).unsafeRunSync()
+      val result = participantsRepository.findBy(longDID).run(TraceId.generateYOLO).unsafeRunSync()
       result.toOption.value must be(expectedParticipant)
     }
 
@@ -150,7 +156,7 @@ class ParticipantsRepositorySpec extends ConnectorRepositorySpecBase {
 
       val expectedParticipant = info.copy(did = Some(shortDID), name = "Updated Issuer", logo = None)
 
-      val result = participantsRepository.findBy(longDID).unsafeRunSync()
+      val result = participantsRepository.findBy(longDID).run(TraceId.generateYOLO).unsafeRunSync()
       result.toOption.value must be(expectedParticipant)
     }
 
@@ -175,7 +181,7 @@ class ParticipantsRepositorySpec extends ConnectorRepositorySpecBase {
       }
 
       val expectedParticipant = info.copy(did = Some(shortDID))
-      val result = participantsRepository.findBy(longDID).unsafeRunSync()
+      val result = participantsRepository.findBy(longDID).run(TraceId.generateYOLO).unsafeRunSync()
       result.toOption.value must be(expectedParticipant)
     }
   }

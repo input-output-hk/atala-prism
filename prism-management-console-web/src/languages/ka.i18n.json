@@ -624,17 +624,17 @@
       "templateNameLabel": "Type Template Name",
       "templateCategoryLabel": "Select a Category",
       "fields": {
-        "templateName":"Template Name",
+        "templateName": "Template Name",
         "templateCategory": "Category"
       }
     },
     "actions": {
       "addCategory": "Add New"
     },
-    "fields" : {
+    "fields": {
       "category": "Category"
     },
-    "errors":  {
+    "errors": {
       "required": "${label} is required",
       "preExisting": "A template called '{{value}}' already exists",
       "fieldIsRequired": "{{field}} is required"
@@ -1098,5 +1098,47 @@
   "modelNames": {
     "contacts": "Contacts",
     "groups": "Groups"
+  },
+  "tutorial": {
+    "title": "Product Tour",
+    "onboarding": {
+      "title": "Welcome to Atala Management Console",
+      "titleTwo": "This is the Progress Tutorial Bar",
+      "titleThree": "Always accessible",
+      "description": "Click 'continue' to start the tutorial and take a walkthrough of the most common features.",
+      "descriptionTwo": "You will find it on the bottom right and it will guide you throughout the different sections and its features.",
+      "descriptionThree": "You can access it any time from the sidebar.",
+      "buttonText": {
+        "continue": "Start Tutorial"
+      }
+    },
+    "modal": {
+      "basicStep": "Basic Step",
+      "description": "You have completed this unit",
+      "buttonText": {
+        "skip": "Skip",
+        "continue": "Continue"
+      }
+    },
+    "stepsBox": {
+      "steps": "1 of 7",
+      "section": "Basic Steps",
+      "stepName": "Dashboard Analytics",
+      "description": "Here you can take a look at the latests stats of your different contacts and groups",
+      "buttonText": {
+        "back": "Back",
+        "next": "Next"
+      }
+    },
+    "tutorialChecklist": {
+      "title": "Tutorial Checklist",
+      "stepName": {
+        "basicSteps": "Basic Steps",
+        "contacts": "Contacts",
+        "groups": "Groups",
+        "credentials": "Credentials"
+      },
+      "skip": "Skip and do later"
+    }
   }
 }

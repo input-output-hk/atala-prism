@@ -4,7 +4,7 @@ import io.iohk.atala.prism.DIDUtil
 import io.iohk.atala.prism.auth.grpc.SignedRequestsHelper
 import io.iohk.atala.prism.auth.utils.DIDUtils
 import io.iohk.atala.prism.connector.RequestAuthenticator
-import io.iohk.atala.prism.kotlin.crypto.EC
+import io.iohk.atala.prism.kotlin.crypto.EC.{INSTANCE => EC}
 import io.iohk.atala.prism.protos.connector_api
 import org.scalatest.OptionValues._
 import org.scalatest.concurrent.ScalaFutures._
@@ -29,7 +29,7 @@ class ClientHelperSpec extends AnyWordSpec {
       val didData = DIDUtils.validateDid(header.did).value.futureValue.toOption.value
       val publicKey = DIDUtils.findPublicKey(didData, header.keyId).value.futureValue.toOption.value
 
-      val verified = EC.verify(payload, publicKey, header.signature)
+      val verified = EC.verifyBytes(payload, publicKey, header.signature)
       verified must be(true)
     }
   }

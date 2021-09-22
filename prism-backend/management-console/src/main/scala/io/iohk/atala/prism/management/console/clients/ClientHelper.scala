@@ -5,7 +5,7 @@ import io.iohk.atala.prism.auth.model.RequestNonce
 import io.iohk.atala.prism.connector.RequestAuthenticator
 import io.iohk.atala.prism.kotlin.crypto.keys.ECPrivateKey
 import io.iohk.atala.prism.kotlin.crypto.signature.ECSignature
-import io.iohk.atala.prism.kotlin.identity.DID
+import io.iohk.atala.prism.kotlin.identity.{PrismDid => DID}
 
 object ClientHelper {
   def requestSigner(
@@ -16,7 +16,7 @@ object ClientHelper {
     val signedRequest = authenticator.signConnectorRequest(request.toByteArray, didPrivateKey)
     GrpcAuthenticationHeader.UnpublishedDIDBased(
       did = whitelistedDID,
-      keyId = DID.masterKeyId,
+      keyId = DID.getDEFAULT_MASTER_KEY_ID,
       requestNonce = RequestNonce(signedRequest.requestNonce.toVector),
       signature = new ECSignature(signedRequest.signature)
     )

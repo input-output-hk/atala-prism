@@ -1,9 +1,9 @@
 package io.iohk.atala.prism.management.console.models
 
 import io.iohk.atala.prism.kotlin.credentials.CredentialBatchId
-import io.iohk.atala.prism.kotlin.crypto.SHA256Digest
+import io.iohk.atala.prism.kotlin.crypto.Sha256Digest
 
 final case class GetLedgerData(
     batchId: CredentialBatchId,
-    credentialHash: SHA256Digest
+    credentialHash: Sha256Digest
 )

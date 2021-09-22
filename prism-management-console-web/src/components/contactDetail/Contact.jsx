@@ -168,8 +168,8 @@ Contact.propTypes = {
     receivedCredentials: PropTypes.bool
   }),
   editing: PropTypes.bool,
-  issuedCredentials: PropTypes.arrayOf(PropTypes.shape(credentialShape)),
-  receivedCredentials: PropTypes.arrayOf(PropTypes.shape(credentialShape)),
+  issuedCredentials: PropTypes.arrayOf(credentialShape),
+  receivedCredentials: PropTypes.arrayOf(credentialShape),
   verifyCredential: PropTypes.func.isRequired,
   onDeleteGroup: PropTypes.func.isRequired,
   updateContact: PropTypes.func.isRequired,

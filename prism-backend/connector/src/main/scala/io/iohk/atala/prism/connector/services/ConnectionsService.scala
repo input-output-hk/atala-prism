@@ -1,14 +1,15 @@
 package io.iohk.atala.prism.connector.services
 
-import cats.effect.IO
 import cats.implicits.catsSyntaxEitherId
 import io.iohk.atala.prism.connector.errors._
 import io.iohk.atala.prism.connector.model._
 import io.iohk.atala.prism.connector.repositories.ConnectionsRepository
-import io.iohk.atala.prism.kotlin.crypto.{EC}
-import io.iohk.atala.prism.kotlin.crypto.keys.{ECPublicKey}
+import io.iohk.atala.prism.kotlin.crypto.EC.{INSTANCE => EC}
+import io.iohk.atala.prism.kotlin.identity.{PrismDid => DID}
+import io.iohk.atala.prism.kotlin.crypto.keys.ECPublicKey
 import io.iohk.atala.prism.kotlin.crypto.ECConfig.{INSTANCE => ECConfig}
-import io.iohk.atala.prism.kotlin.identity.DID
+import io.iohk.atala.prism.logging.TraceId
+import io.iohk.atala.prism.logging.TraceId.IOWithTraceIdContext
 import io.iohk.atala.prism.models.ParticipantId
 import io.iohk.atala.prism.protos.node_api
 import io.iohk.atala.prism.protos.node_api.NodeServiceGrpc
@@ -18,45 +19,66 @@ import org.slf4j.LoggerFactory
 
 import scala.concurrent.{ExecutionContext, Future}
 
-class ConnectionsService(connectionsRepository: ConnectionsRepository[IO], nodeService: NodeServiceGrpc.NodeService)(
-    implicit ec: ExecutionContext
+class ConnectionsService(
+    connectionsRepository: ConnectionsRepository[IOWithTraceIdContext],
+    nodeService: NodeServiceGrpc.NodeService
+)(implicit
+    ec: ExecutionContext
 ) {
 
   private val logger = LoggerFactory.getLogger(this.getClass)
 
   def getConnectionByToken(token: TokenString): FutureEither[ConnectorError, Option[Connection]] = {
-    connectionsRepository.getConnectionByToken(token).map(_.asRight).unsafeToFuture().toFutureEither
+    connectionsRepository
+      .getConnectionByToken(token)
+      .run(TraceId.generateYOLO)
+      .map(_.asRight)
+      .unsafeToFuture()
+      .toFutureEither
   }
 
   def generateTokens(userId: ParticipantId, tokensCount: Int): FutureEither[ConnectorError, List[TokenString]] = {
     connectionsRepository
       .insertTokens(userId, List.fill(tokensCount)(TokenString.random()))
+      .run(TraceId.generateYOLO)
       .map(_.asRight)
       .unsafeToFuture()
       .toFutureEither
   }
 
   def getTokenInfo(token: TokenString): FutureEither[ConnectorError, ParticipantInfo] =
-    connectionsRepository.getTokenInfo(token).unsafeToFuture().toFutureEither
+    connectionsRepository.getTokenInfo(token).run(TraceId.generateYOLO).unsafeToFuture().toFutureEither
 
   def addConnectionFromToken(
       tokenString: TokenString,
       didOrPublicKey: Either[DID, ECPublicKey]
   ): FutureEither[ConnectorError, ConnectionInfo] =
-    connectionsRepository.addConnectionFromToken(tokenString, didOrPublicKey).unsafeToFuture().toFutureEither
+    connectionsRepository
+      .addConnectionFromToken(tokenString, didOrPublicKey)
+      .run(TraceId.generateYOLO)
+      .unsafeToFuture()
+      .toFutureEither
 
   def revokeConnection(
       participantId: ParticipantId,
       connectionId: ConnectionId
   ): FutureEither[ConnectorError, Unit] =
-    connectionsRepository.revokeConnection(participantId, connectionId).unsafeToFuture().toFutureEither
+    connectionsRepository
+      .revokeConnection(participantId, connectionId)
+      .run(TraceId.generateYOLO)
+      .unsafeToFuture()
+      .toFutureEither
 
   def getConnectionsPaginated(
       userId: ParticipantId,
       limit: Int,
       lastSeenConnectionId: Option[ConnectionId]
   ): FutureEither[ConnectorError, Seq[ConnectionInfo]] =
-    connectionsRepository.getConnectionsPaginated(userId, limit, lastSeenConnectionId).unsafeToFuture().toFutureEither
+    connectionsRepository
+      .getConnectionsPaginated(userId, limit, lastSeenConnectionId)
+      .run(TraceId.generateYOLO)
+      .unsafeToFuture()
+      .toFutureEither
 
   def getConnectionCommunicationKeys(
       connectionId: ConnectionId,
@@ -72,7 +94,7 @@ class ConnectionsService(connectionsRepository: ConnectionsRepository[IO], nodeS
       } yield validKeys.map { key =>
         val keyData = key.keyData.ecKeyData.getOrElse(throw new Exception("Node returned key without keyData"))
         assert(keyData.curve == ECConfig.getCURVE_NAME)
-        (key.id, EC.toPublicKey(keyData.x.toByteArray, keyData.y.toByteArray))
+        (key.id, EC.toPublicKeyFromByteCoordinates(keyData.x.toByteArray, keyData.y.toByteArray))
       }
 
       result.map(Right(_)).recover { case ex => Left(InternalServerError(ex)) }.toFutureEither
@@ -80,7 +102,12 @@ class ConnectionsService(connectionsRepository: ConnectionsRepository[IO], nodeS
 
     for {
       participantInfo <-
-        connectionsRepository.getOtherSideInfo(connectionId, userId).map(_.get.asRight).unsafeToFuture().toFutureEither
+        connectionsRepository
+          .getOtherSideInfo(connectionId, userId)
+          .map(_.get.asRight)
+          .run(TraceId.generateYOLO)
+          .unsafeToFuture()
+          .toFutureEither
       keys <- (participantInfo.did, participantInfo.publicKey) match {
         case (Some(did), keyOpt) =>
           if (keyOpt.isDefined) {
@@ -98,6 +125,7 @@ class ConnectionsService(connectionsRepository: ConnectionsRepository[IO], nodeS
   ): FutureEither[ConnectorError, List[ContactConnection]] =
     connectionsRepository
       .getConnectionsByConnectionTokens(connectionTokens)
+      .run(TraceId.generateYOLO)
       .map(_.asRight)
       .unsafeToFuture()
       .toFutureEither

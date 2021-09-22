@@ -1,14 +1,11 @@
 package io.iohk.atala.prism.auth.utils
 
 import io.iohk.atala.prism.auth.errors._
-import io.iohk.atala.prism.kotlin.crypto.EC
+import io.iohk.atala.prism.kotlin.crypto.EC.{INSTANCE => EC}
 import io.iohk.atala.prism.kotlin.crypto.ECConfig.{INSTANCE => ECConfig}
 import io.iohk.atala.prism.kotlin.crypto.keys.ECPublicKey
-import io.iohk.atala.prism.kotlin.identity.DIDFormatException.{
-  CanonicalSuffixMatchStateException,
-  InvalidAtalaOperationException
-}
-import io.iohk.atala.prism.kotlin.identity.{DID, LongForm}
+import io.iohk.atala.prism.kotlin.identity.LongFormPrismDid
+import io.iohk.atala.prism.kotlin.identity.{PrismDid => DID}
 import io.iohk.atala.prism.kotlin.protos.AtalaOperation.Operation.CreateDid
 import io.iohk.atala.prism.protos.node_models
 import io.iohk.atala.prism.protos.node_models.DIDData
@@ -16,30 +13,19 @@ import io.iohk.atala.prism.utils.FutureEither
 import io.iohk.atala.prism.utils.FutureEither.FutureEitherOps
 
 import scala.concurrent.{ExecutionContext, Future}
-import scala.util.{Failure, Success, Try}
 import io.iohk.atala.prism.interop.toScalaProtos._
 import io.iohk.atala.prism.protos.node_models.PublicKey.KeyData.{CompressedEcKeyData, EcKeyData, Empty}
 
 object DIDUtils {
 
   def validateDid(did: DID): FutureEither[AuthError, DIDData] = {
-    did.getFormat match {
-      case longFormDid: LongForm =>
-        Try(longFormDid.validate) match {
-          case Failure(err) =>
-            err match {
-              case _: InvalidAtalaOperationException =>
-                Future.successful(Left(InvalidAtalaOperationError)).toFutureEither
-              case _: CanonicalSuffixMatchStateException =>
-                Future.successful(Left(CanonicalSuffixMatchStateError)).toFutureEither
-            }
-          case Success(validatedLongForm) =>
-            validatedLongForm.getInitialState.getOperation match {
-              case crd: CreateDid =>
-                Future.successful(Right(crd.getValue.getDidData.asScala)).toFutureEither
-              case _ =>
-                Future.successful(Left(NoCreateDidOperationError)).toFutureEither
-            }
+    did match {
+      case longFormDid: LongFormPrismDid =>
+        longFormDid.getInitialState.getOperation match {
+          case crd: CreateDid =>
+            Future.successful(Right(crd.getValue.getDidData.asScala)).toFutureEither
+          case _ =>
+            Future.successful(Left(NoCreateDidOperationError)).toFutureEither
         }
       case _ => throw new IllegalStateException("Unreachable state")
     }
@@ -59,7 +45,13 @@ object DIDUtils {
         .map(_.keyData)
         .flatMap {
           case EcKeyData(data) =>
-            verifyPublicKey(data.curve, EC.toPublicKey(data.x.toByteArray, data.y.toByteArray))
+            // FIXME: remove that if statement after fixing whitelist DID's (they should use really uncompressed keys or really compressed ones)
+            if (data.x.size() > 32) verifyPublicKey(data.curve, EC.toPublicKeyFromCompressed(data.x.toByteArray))
+            else
+              verifyPublicKey(
+                data.curve,
+                EC.toPublicKeyFromByteCoordinates(data.x.toByteArray, data.y.toByteArray)
+              )
           case CompressedEcKeyData(data) =>
             verifyPublicKey(data.curve, EC.toPublicKeyFromCompressed(data.data.toByteArray))
           case Empty => None
