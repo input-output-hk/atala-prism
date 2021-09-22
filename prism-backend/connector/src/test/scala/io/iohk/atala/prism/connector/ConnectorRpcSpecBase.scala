@@ -22,6 +22,7 @@ import io.iohk.atala.prism.kotlin.identity.{PrismDid => DID}
 import io.iohk.atala.prism.models.ParticipantId
 import io.iohk.atala.prism.protos.connector_api
 import io.iohk.atala.prism.{ApiTestHelper, DIDUtil, RpcSpecBase}
+import io.iohk.atala.prism.utils.IOUtils._
 import org.mockito.MockitoSugar._
 
 import java.time.Instant
@@ -47,7 +48,7 @@ class ConnectorRpcSpecBase extends RpcSpecBase with DIDUtil {
       new connector_api.ConnectorServiceGrpc.ConnectorServiceStub(_, _)
     )
 
-  lazy val connectionsRepository = ConnectionsRepository(database)
+  lazy val connectionsRepository = ConnectionsRepository.unsafe(dbLiftedToTraceIdIO, testLogs)
   lazy val connectionsService = new ConnectionsService(connectionsRepository, nodeMock)
   lazy val messagesRepository = MessagesRepository(database)
   lazy val requestNoncesRepository = RequestNoncesRepository(database)

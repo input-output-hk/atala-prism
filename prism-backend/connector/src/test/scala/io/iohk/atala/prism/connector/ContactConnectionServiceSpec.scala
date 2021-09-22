@@ -9,6 +9,7 @@ import io.iohk.atala.prism.kotlin.crypto.keys.ECPublicKey
 import io.iohk.atala.prism.connector.DataPreparation
 import io.iohk.atala.prism.protos.{connector_api, connector_models, console_models}
 import io.iohk.atala.prism.{DIDUtil, RpcSpecBase}
+import io.iohk.atala.prism.utils.IOUtils._
 import org.mockito.MockitoSugar.mock
 
 class ContactConnectionServiceSpec extends RpcSpecBase with DIDUtil with ConnectorRepositorySpecBase {
@@ -18,7 +19,7 @@ class ContactConnectionServiceSpec extends RpcSpecBase with DIDUtil with Connect
 
   protected lazy val nodeMock = mock[io.iohk.atala.prism.protos.node_api.NodeServiceGrpc.NodeService]
 
-  private lazy val connectionsRepository = ConnectionsRepository(database)
+  private lazy val connectionsRepository = ConnectionsRepository.unsafe(dbLiftedToTraceIdIO, testLogs)
   lazy val requestNoncesRepository = RequestNoncesRepository(database)
   lazy val participantsRepository = ParticipantsRepository(database)
 
