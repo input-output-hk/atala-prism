@@ -67,18 +67,12 @@ case class CreateDIDOperation(
 
 object CreateDIDOperation extends SimpleOperationCompanion[CreateDIDOperation] {
 
-  def parseData(data: ValueAtPath[proto.DIDData], didSuffix: DidSuffix): Either[ValidationError, List[DIDPublicKey]] = {
+  def parseData(
+      data: ValueAtPath[proto.CreateDIDOperation.DIDCreationData],
+      didSuffix: DidSuffix
+  ): Either[ValidationError, List[DIDPublicKey]] = {
+    val keysValue = data.child(_.publicKeys, "publicKeys")
     for {
-      _ <-
-        data
-          .child(_.id, "id")
-          .parse { id =>
-            Either.cond(id.isEmpty, (), "Id must be empty for DID creation operation")
-          }
-          .asInstanceOf[Either[ValidationError, Unit]]
-
-      keysValue = data.child(_.publicKeys, "publicKeys")
-
       reversedKeys <- keysValue { keys =>
         keys.zipWithIndex.foldLeft(Either.right[ValidationError, List[DIDPublicKey]](List.empty)) { (acc, keyi) =>
           val (key, i) = keyi

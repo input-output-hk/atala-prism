@@ -86,7 +86,7 @@ object KeyDerivationTestVectors {
       operation = node_models.AtalaOperation.Operation.CreateDid(
         node_models.CreateDIDOperation(
           didData = Some(
-            node_models.DIDData(
+            node_models.CreateDIDOperation.DIDCreationData(
               publicKeys = Seq(masterKeyProto)
             )
           )

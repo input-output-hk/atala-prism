@@ -232,7 +232,7 @@ object BaseGrpcClientService {
         )
         val createDidOp = node_models.CreateDIDOperation(
           didData = Some(
-            node_models.DIDData(
+            node_models.CreateDIDOperation.DIDCreationData(
               publicKeys = Seq(publicMasterKey, publicIssuingKey)
             )
           )
