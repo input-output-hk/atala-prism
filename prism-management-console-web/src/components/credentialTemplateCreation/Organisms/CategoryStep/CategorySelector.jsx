@@ -40,8 +40,10 @@ const CategorySelector = observer(({ templateCategories }) => {
         <CustomButton
           onClick={openNewCategoryModal}
           buttonText={t(`${i18nPrefix}.actions.addCategory`)}
-          theme="theme-link"
-          icon={<PlusOutlined />}
+          buttonProps={{
+            className: 'theme-link',
+            icon: <PlusOutlined />
+          }}
         />
       </div>
       <Form.Item name="category" rules={[{ required: true }]}>
