@@ -1,5 +1,5 @@
 import React from 'react';
-import { useTranslation } from 'react-i18next';
+import { useTranslation } from 'gatsby-plugin-react-i18next';
 import PropTypes from 'prop-types';
 import congratsIcon from '../../../../images/button_congrats.svg';
 import alertIcon from '../../../../images/icon_alert.svg';
@@ -25,7 +25,7 @@ const ContactButton = ({ toContactForm }) => {
         </div>
       </button>
       <div className="DisclaimerMessage">
-      <img src={alertIcon} alt="alert message" className="AlertIcon" />
+        <img src={alertIcon} alt="alert message" className="AlertIcon" />
         <p>{t('credential.contactFormButton.disclaimerMessage')}</p>
       </div>
     </div>

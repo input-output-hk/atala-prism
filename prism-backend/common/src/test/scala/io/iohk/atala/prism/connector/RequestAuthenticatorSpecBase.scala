@@ -1,7 +1,7 @@
 package io.iohk.atala.prism.connector
 
-import io.iohk.atala.prism.kotlin.crypto.signature.ECSignature
-import io.iohk.atala.prism.kotlin.crypto.EC
+import io.iohk.atala.prism.crypto.signature.ECSignature
+import io.iohk.atala.prism.crypto.EC.{INSTANCE => EC}
 import org.scalatest.matchers.must.Matchers._
 import org.scalatest.wordspec.AnyWordSpec
 
@@ -24,7 +24,7 @@ abstract class RequestAuthenticatorSpecBase extends AnyWordSpec {
       val requestNonce = Base64.getUrlDecoder.decode(signedRequest.encodedRequestNonce)
       signedRequest.requestNonce must contain theSameElementsInOrderAs requestNonce
       val requestWithNonce = requestNonce ++ request
-      EC.verify(requestWithNonce, keyPair.getPublicKey, new ECSignature(signature)) mustBe true
+      EC.verifyBytes(requestWithNonce, keyPair.getPublicKey, new ECSignature(signature)) mustBe true
     }
 
     "return random nonces" in {

@@ -2,10 +2,11 @@ package io.iohk.atala.prism.auth.grpc
 
 import java.util.Base64
 import io.grpc.{Context, Metadata}
-import io.iohk.atala.prism.kotlin.crypto.{EC}
-import io.iohk.atala.prism.kotlin.crypto.signature.{ECSignature}
+import io.iohk.atala.prism.crypto.EC.{INSTANCE => EC}
+import io.iohk.atala.prism.crypto.signature.ECSignature
 import io.iohk.atala.prism.auth.model.RequestNonce
-import io.iohk.atala.prism.kotlin.identity.{Canonical, DID, LongForm, Unknown}
+import io.iohk.atala.prism.identity.{CanonicalPrismDid, LongFormPrismDid, PrismDid}
+import scala.util.{Failure, Success, Try}
 
 private[grpc] object GrpcAuthenticationContext {
   // Extension methods to deal with gRPC Metadata in the Scala way
@@ -71,7 +72,7 @@ private[grpc] object GrpcAuthenticationContext {
   def parsePublicKeyAuthenticationHeader(ctx: Context): Option[GrpcAuthenticationHeader.PublicKeyBased] = {
     (ctx.getOpt(RequestNonceKeys), ctx.getOpt(SignatureKeys), ctx.getOpt(PublicKeyKeys)) match {
       case (Some(requestNonce), Some(signature), Some(encodedPublicKey)) =>
-        val publicKey = EC.toPublicKey(encodedPublicKey)
+        val publicKey = EC.toPublicKeyFromBytes(encodedPublicKey)
         val header = GrpcAuthenticationHeader.PublicKeyBased(
           requestNonce = RequestNonce(requestNonce.toVector),
           publicKey = publicKey,
@@ -108,11 +109,11 @@ private[grpc] object GrpcAuthenticationContext {
   def parseDIDAuthenticationHeader(ctx: Context): Option[GrpcAuthenticationHeader.DIDBased] = {
     (ctx.getOpt(RequestNonceKeys), ctx.getOpt(DidKeys), ctx.getOpt(DidKeyIdKeys), ctx.getOpt(DidSignatureKeys)) match {
       case (Some(requestNonce), Some(didRaw), Some(keyId), Some(signature)) =>
-        val didOpt = Option(DID.fromString(didRaw))
+        val didOpt = Try(PrismDid.fromString(didRaw))
         didOpt match {
-          case Some(did) =>
-            did.getFormat match {
-              case _: Canonical =>
+          case Success(did) =>
+            did match {
+              case _: CanonicalPrismDid =>
                 Some(
                   GrpcAuthenticationHeader.PublishedDIDBased(
                     requestNonce = RequestNonce(requestNonce.toVector),
@@ -121,7 +122,7 @@ private[grpc] object GrpcAuthenticationContext {
                     signature = new ECSignature(signature)
                   )
                 )
-              case _: LongForm =>
+              case _: LongFormPrismDid =>
                 Some(
                   GrpcAuthenticationHeader.UnpublishedDIDBased(
                     requestNonce = RequestNonce(requestNonce.toVector),
@@ -130,10 +131,8 @@ private[grpc] object GrpcAuthenticationContext {
                     signature = new ECSignature(signature)
                   )
                 )
-              case _: Unknown =>
-                None
             }
-          case None =>
+          case Failure(_) =>
             None
         }
       case _ => None

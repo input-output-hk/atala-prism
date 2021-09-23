@@ -4,7 +4,7 @@ import cats.effect.BracketThrow
 import cats.syntax.apply._
 import cats.syntax.applicativeError._
 import cats.syntax.flatMap._
-import io.iohk.atala.prism.kotlin.identity.DID
+import io.iohk.atala.prism.identity.{PrismDid => DID}
 import io.iohk.atala.prism.management.console.errors
 import io.iohk.atala.prism.management.console.models.{ParticipantId, ParticipantInfo}
 import io.iohk.atala.prism.management.console.repositories.ParticipantsRepository
@@ -42,7 +42,7 @@ private[repositories] final class ParticipantsRepositoryLogs[F[_]: BracketThrow:
 
   override def findBy(did: DID): Mid[F, Either[errors.ManagementConsoleError, ParticipantInfo]] =
     in =>
-      info"finding participant ${Option(did.getCanonicalSuffix).map(_.getValue)}" *> in
+      info"finding participant ${Option(did.asCanonical().getSuffix)}" *> in
         .flatTap(
           _.fold(
             e => error"encountered an error while finding participant $e",

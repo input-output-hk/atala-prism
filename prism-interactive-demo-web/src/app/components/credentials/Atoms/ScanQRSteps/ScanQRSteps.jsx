@@ -1,5 +1,5 @@
 import React from 'react';
-import { useTranslation } from 'react-i18next';
+import { useTranslation } from 'gatsby-plugin-react-i18next';
 import iconContacts from '../../../../images/touch-connections.svg';
 
 import './_style.scss';
@@ -11,7 +11,7 @@ const ScanQRSteps = () => {
   const steps = [];
 
   const iconedStep = i => (
-    <div className={"secondStep"}>
+    <div className={'secondStep'}>
       <div className="LineStep">
         <p>{t(`credential.scanQRInfo.step${i}.part1`)}</p>
         <img src={iconContacts} alt={t(`credential.scanQRInfo.step${i}.alt`)} />

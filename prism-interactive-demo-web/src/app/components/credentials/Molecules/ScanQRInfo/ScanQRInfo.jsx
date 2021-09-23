@@ -1,6 +1,6 @@
 import React from 'react';
 import PropTypes from 'prop-types';
-import { useTranslation } from 'react-i18next';
+import { useTranslation } from 'gatsby-plugin-react-i18next';
 import ScanQRSteps from '../../Atoms/ScanQRSteps/ScanQRSteps';
 
 import './_style.scss';

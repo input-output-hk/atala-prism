@@ -20,8 +20,10 @@ import io.iohk.atala.prism.connector.services.{
   MessagesService,
   RegistrationService
 }
-import io.iohk.atala.prism.kotlin.crypto.{EC}
-import io.iohk.atala.prism.kotlin.crypto.keys.{ECPublicKey}
+import io.iohk.atala.prism.crypto.EC.{INSTANCE => EC}
+import io.iohk.atala.prism.crypto.keys.ECPublicKey
+import io.iohk.atala.prism.logging.TraceId
+import io.iohk.atala.prism.logging.TraceId.IOWithTraceIdContext
 import io.iohk.atala.prism.metrics.RequestMeasureUtil.measureRequestFuture
 import io.iohk.atala.prism.models.ParticipantId
 import io.iohk.atala.prism.protos.common_models.{HealthCheckRequest, HealthCheckResponse}
@@ -42,7 +44,7 @@ class ConnectorService(
     messageNotificationService: MessageNotificationService,
     val authenticator: ConnectorAuthenticator,
     nodeService: NodeServiceGrpc.NodeService,
-    participantsRepository: ParticipantsRepository[IO]
+    participantsRepository: ParticipantsRepository[IOWithTraceIdContext]
 )(implicit
     executionContext: ExecutionContext
 ) extends connector_api.ConnectorServiceGrpc.ConnectorService
@@ -134,7 +136,7 @@ class ConnectorService(
               InvalidArgumentError("publicKey", "key matching one in GRPC header", "different key")
             )
             _ <- Either.cond(
-              EC.verify(payload, publicKey, authHeader.signature),
+              EC.verifyBytes(payload, publicKey, authHeader.signature),
               (),
               SignatureVerificationError()
             )
@@ -153,7 +155,11 @@ class ConnectorService(
                 .mapLeft(_ => InvalidArgumentError("did", "unpublished did with public key", "invalid"))
             _ <-
               Either
-                .cond(EC.verify(payload, publicKey, authHeader.signature), (), SignatureVerificationError())
+                .cond(
+                  EC.verifyBytes(payload, publicKey, authHeader.signature),
+                  (),
+                  SignatureVerificationError()
+                )
                 .toFutureEither
           } yield ()
       }
@@ -356,6 +362,7 @@ class ConnectorService(
     unitAuth("getCurrentUser", request) { (participantId, _) =>
       participantsRepository
         .findBy(participantId)
+        .run(TraceId.generateYOLO)
         .unsafeToFuture()
         .toFutureEither
         .map { info =>
@@ -381,6 +388,7 @@ class ConnectorService(
     auth[UpdateParticipantProfile]("updateParticipantProfile", request) { (participantId, updateProfile) =>
       participantsRepository
         .updateParticipantProfileBy(participantId, updateProfile)
+        .run(TraceId.generateYOLO)
         .unsafeToFuture()
         .as(connector_api.UpdateProfileResponse())
         .map(_.asRight)

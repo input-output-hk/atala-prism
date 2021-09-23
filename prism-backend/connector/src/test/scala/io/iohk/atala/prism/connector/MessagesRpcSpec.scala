@@ -9,10 +9,9 @@ import io.iohk.atala.prism.auth.SignedRpcRequest
 import io.iohk.atala.prism.auth.grpc.SignedRequestsHelper
 import io.iohk.atala.prism.connector.model.MessageId
 import io.iohk.atala.prism.connector.repositories.daos.MessagesDAO
-import io.iohk.atala.prism.kotlin.crypto.EC
-import io.iohk.atala.prism.kotlin.crypto.keys.{ECKeyPair, ECPublicKey}
-import io.iohk.atala.prism.kotlin.identity.DID
-import io.iohk.atala.prism.kotlin.identity.DID.masterKeyId
+import io.iohk.atala.prism.crypto.EC.{INSTANCE => EC}
+import io.iohk.atala.prism.crypto.keys.{ECKeyPair, ECPublicKey}
+import io.iohk.atala.prism.identity.{PrismDid => DID}
 import io.iohk.atala.prism.models.ParticipantId
 import io.iohk.atala.prism.protos.connector_api
 import io.iohk.atala.prism.protos.connector_models.MessageToSendByConnectionToken
@@ -267,7 +266,7 @@ class MessagesRpcSpec extends ConnectorRpcSpecBase {
 
       val requestNonce = UUID.randomUUID().toString.getBytes.toVector
       val signature =
-        EC.sign(
+        EC.signBytes(
           SignedRequestsHelper.merge(auth.model.RequestNonce(requestNonce), request.toByteArray).toArray,
           keyPair.getPrivateKey
         )
@@ -275,7 +274,7 @@ class MessagesRpcSpec extends ConnectorRpcSpecBase {
 
       val messages = createExampleMessages(issuerId)
 
-      usingApiAs(requestNonce, signature, did, masterKeyId) { blockingStub =>
+      usingApiAs(requestNonce, signature, did, DID.getDEFAULT_MASTER_KEY_ID) { blockingStub =>
         val response = blockingStub.getMessagesPaginated(request)
         response.messages.map(m => (m.id, m.connectionId)) mustBe
           messages.take(10).map { case (messageId, connectionId) => (messageId.toString, connectionId.toString) }
@@ -341,7 +340,6 @@ class MessagesRpcSpec extends ConnectorRpcSpecBase {
   }
 
   "GetMessageStream" should {
-    val (globalTestKeyPair, globalTestDid) = createDid
 
     def createParticipant(did: DID, publicKey: ECPublicKey): ParticipantId = {
       createVerifier("Participant", Some(publicKey), Some(did))
@@ -353,26 +351,28 @@ class MessagesRpcSpec extends ConnectorRpcSpecBase {
     }
 
     "return existing messages immediately" in {
-      val messageIds = generateMessageIds(createParticipant(globalTestDid, globalTestKeyPair.getPublicKey))
-      testMessagesExisting(globalTestKeyPair, globalTestDid, messageIds)
+      val (testKeyPair, testDid) = createDid
+      val messageIds = generateMessageIds(createParticipant(testDid, testKeyPair.getPublicKey))
+      testMessagesExisting(testKeyPair, testDid, messageIds)
     }
 
     "return existing messages immediately while authed by unpublished did" in {
       val keyPair = EC.generateKeyPair()
-      val unpublishedDid = DID.createUnpublishedDID(keyPair.getPublicKey, null)
+      val unpublishedDid = DID.buildLongFormFromMasterKey(keyPair.getPublicKey)
       val participant = createParticipant(unpublishedDid, keyPair.getPublicKey)
       val messageIds = generateMessageIds(participant)
       testMessagesExisting(keyPair, unpublishedDid, messageIds)
     }
 
     "return newer messages only" in {
-      val messageIds = generateMessageIds(createParticipant(globalTestDid, globalTestKeyPair.getPublicKey))
+      val (testKeyPair, testDid) = createDid
+      val messageIds = generateMessageIds(createParticipant(testDid, testKeyPair.getPublicKey))
       val lastSeenMessageIndex = 10
       val lastSeenMessageId = messageIds(lastSeenMessageIndex)
       val notSeenMessages = messageIds.drop(lastSeenMessageIndex + 1)
       val getMessageStreamRequest = SignedRpcRequest.generate(
-        globalTestKeyPair,
-        globalTestDid,
+        testKeyPair,
+        testDid,
         connector_api.GetMessageStreamRequest(lastSeenMessageId = lastSeenMessageId)
       )
 
@@ -388,9 +388,10 @@ class MessagesRpcSpec extends ConnectorRpcSpecBase {
     }
 
     "return new messages as they come" in {
-      val participantId = createParticipant(globalTestDid, globalTestKeyPair.getPublicKey)
+      val (testKeyPair, testDid) = createDid
+      val participantId = createParticipant(testDid, testKeyPair.getPublicKey)
       val getMessageStreamRequest =
-        SignedRpcRequest.generate(globalTestKeyPair, globalTestDid, connector_api.GetMessageStreamRequest())
+        SignedRpcRequest.generate(testKeyPair, testDid, connector_api.GetMessageStreamRequest())
 
       usingAsyncApiAs(getMessageStreamRequest) { service =>
         val streamObserver = mock[StreamObserver[connector_api.GetMessageStreamResponse]]
@@ -405,10 +406,11 @@ class MessagesRpcSpec extends ConnectorRpcSpecBase {
     }
 
     "close the previous observer for the same recipient when a new observer connects" in {
-      val participantId = createParticipant(globalTestDid, globalTestKeyPair.getPublicKey)
+      val (testKeyPair, testDid) = createDid
+      val participantId = createParticipant(testDid, testKeyPair.getPublicKey)
       // Connect first observer
       val getMessageStreamRequest1 =
-        SignedRpcRequest.generate(globalTestKeyPair, globalTestDid, connector_api.GetMessageStreamRequest())
+        SignedRpcRequest.generate(testKeyPair, testDid, connector_api.GetMessageStreamRequest())
       val streamObserver1 = mock[StreamObserver[connector_api.GetMessageStreamResponse]]
       usingAsyncApiAs(getMessageStreamRequest1) { service =>
         service.getMessageStream(getMessageStreamRequest1.request, streamObserver1)
@@ -423,8 +425,8 @@ class MessagesRpcSpec extends ConnectorRpcSpecBase {
 
       // Connect second observer, requesting new messages only
       val getMessageStreamRequest2 = SignedRpcRequest.generate(
-        globalTestKeyPair,
-        globalTestDid,
+        testKeyPair,
+        testDid,
         connector_api.GetMessageStreamRequest(lastSeenMessageId = firstMessageIds.last)
       )
       val streamObserver2 = mock[StreamObserver[connector_api.GetMessageStreamResponse]]
@@ -449,9 +451,10 @@ class MessagesRpcSpec extends ConnectorRpcSpecBase {
     }
 
     "stop sending messages after an observer fails" in {
-      val participantId = createParticipant(globalTestDid, globalTestKeyPair.getPublicKey)
+      val (testKeyPair, testDid) = createDid
+      val participantId = createParticipant(testDid, testKeyPair.getPublicKey)
       val getMessageStreamRequest =
-        SignedRpcRequest.generate(globalTestKeyPair, globalTestDid, connector_api.GetMessageStreamRequest())
+        SignedRpcRequest.generate(testKeyPair, testDid, connector_api.GetMessageStreamRequest())
 
       usingAsyncApiAs(getMessageStreamRequest) { service =>
         val streamObserver = mock[StreamObserver[connector_api.GetMessageStreamResponse]]

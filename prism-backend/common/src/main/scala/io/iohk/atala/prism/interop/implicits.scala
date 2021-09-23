@@ -2,11 +2,11 @@ package io.iohk.atala.prism.interop
 
 import cats.data.NonEmptyList
 import doobie.{Get, Meta, Read, Write}
-import io.iohk.atala.prism.kotlin.credentials.{CredentialBatchId, TimestampInfo}
-import io.iohk.atala.prism.kotlin.crypto.{MerkleRoot, SHA256Digest}
-import io.iohk.atala.prism.kotlin.identity.DIDSuffix
+import io.iohk.atala.prism.credentials.CredentialBatchId
+import io.iohk.atala.prism.crypto.{MerkleRoot, Sha256Digest}
 import doobie.implicits.legacy.instant._
-import io.iohk.atala.prism.models.{Ledger, TransactionId}
+import io.iohk.atala.prism.protos.models.TimestampInfo
+import io.iohk.atala.prism.models.{DidSuffix, Ledger, TransactionId}
 import io.iohk.atala.prism.utils.DoobieImplicits.byteArraySeqMeta
 
 import java.time.Instant
@@ -14,16 +14,16 @@ import scala.collection.compat.immutable.ArraySeq
 
 object implicits {
   implicit val merkleRootMeta: Meta[MerkleRoot] =
-    Meta[Array[Byte]].timap(arr => new MerkleRoot(SHA256Digest.fromBytes(arr)))(_.getHash.getValue)
+    Meta[Array[Byte]].timap(arr => new MerkleRoot(Sha256Digest.fromBytes(arr)))(_.getHash.getValue)
   implicit val merkleRootRead: Read[MerkleRoot] =
-    Read[Array[Byte]].map(arr => new MerkleRoot(SHA256Digest.fromBytes(arr)))
+    Read[Array[Byte]].map(arr => new MerkleRoot(Sha256Digest.fromBytes(arr)))
 
-  implicit val didSuffixMeta: Meta[DIDSuffix] =
-    Meta[String].timap { new DIDSuffix(_) }(_.getValue)
-  implicit val didSuffixGet: Get[DIDSuffix] =
-    Get[String].tmap { new DIDSuffix(_) }
-  implicit val didSuffixRead: Read[DIDSuffix] =
-    Read[String].map { new DIDSuffix(_) }
+  implicit val didSuffixMeta: Meta[DidSuffix] =
+    Meta[String].timap { DidSuffix.apply }(_.value)
+  implicit val didSuffixGet: Get[DidSuffix] =
+    Get[String].tmap { DidSuffix.apply }
+  implicit val didSuffixRead: Read[DidSuffix] =
+    Read[String].map { DidSuffix.apply }
 
   implicit val transactionIdGet: Get[TransactionId] =
     Get[ArraySeq[Byte]].tmap { TransactionId.from(_).get }
@@ -42,12 +42,12 @@ object implicits {
   implicit val credentialBatchIdWrite: Write[CredentialBatchId] =
     Write[String].contramap(_.getId)
 
-  implicit val SHA256DigestWrite: Write[SHA256Digest] =
+  implicit val Sha256DigestWrite: Write[Sha256Digest] =
     Write[Array[Byte]].contramap(_.getValue)
-  implicit val SHA256DigestRead: Read[SHA256Digest] =
-    Read[Array[Byte]].map(SHA256Digest.fromBytes)
-  implicit val SHA256DigestGet: Get[SHA256Digest] =
-    Get[Array[Byte]].map(SHA256Digest.fromBytes)
+  implicit val Sha256DigestRead: Read[Sha256Digest] =
+    Read[Array[Byte]].map(Sha256Digest.fromBytes)
+  implicit val Sha256DigestGet: Get[Sha256Digest] =
+    Get[Array[Byte]].map(Sha256Digest.fromBytes)
 
   implicit val timestampInfoRead: Read[TimestampInfo] =
     Read[(Instant, Int, Int)].map { case (abt, absn, osn) => new TimestampInfo(abt.toEpochMilli, absn, osn) }

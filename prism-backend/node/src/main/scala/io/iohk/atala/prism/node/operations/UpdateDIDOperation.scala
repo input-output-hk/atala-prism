@@ -5,8 +5,8 @@ import cats.implicits._
 import doobie.free.connection.{ConnectionIO, unit}
 import doobie.implicits._
 import doobie.postgres.sqlstate
-import io.iohk.atala.prism.kotlin.crypto.SHA256Digest
-import io.iohk.atala.prism.kotlin.identity.DIDSuffix
+import io.iohk.atala.prism.crypto.{Sha256, Sha256Digest}
+import io.iohk.atala.prism.models.DidSuffix
 import io.iohk.atala.prism.node.models.nodeState.{DIDPublicKeyState, LedgerData}
 import io.iohk.atala.prism.node.models.{DIDPublicKey, KeyUsage, nodeState}
 import io.iohk.atala.prism.node.operations.StateError.EntityExists
@@ -14,26 +14,24 @@ import io.iohk.atala.prism.node.operations.path._
 import io.iohk.atala.prism.node.repositories.daos.{DIDDataDAO, PublicKeysDAO}
 import io.iohk.atala.prism.protos.node_models
 
-import scala.util.Try
-
 sealed trait UpdateDIDAction
 case class AddKeyAction(key: DIDPublicKey) extends UpdateDIDAction
 case class RevokeKeyAction(keyId: String) extends UpdateDIDAction
 
 case class UpdateDIDOperation(
-    didSuffix: DIDSuffix,
+    didSuffix: DidSuffix,
     actions: List[UpdateDIDAction],
-    previousOperation: SHA256Digest,
-    digest: SHA256Digest,
+    previousOperation: Sha256Digest,
+    digest: Sha256Digest,
     ledgerData: nodeState.LedgerData
 ) extends Operation {
 
-  override def linkedPreviousOperation: Option[SHA256Digest] = Some(previousOperation)
+  override def linkedPreviousOperation: Option[Sha256Digest] = Some(previousOperation)
 
   /** Fetches key and possible previous operation reference from database */
   override def getCorrectnessData(keyId: String): EitherT[ConnectionIO, StateError, CorrectnessData] = {
     for {
-      lastOperation <- EitherT[ConnectionIO, StateError, SHA256Digest] {
+      lastOperation <- EitherT[ConnectionIO, StateError, Sha256Digest] {
         DIDDataDAO
           .getLastOperation(didSuffix)
           .map(_.toRight(StateError.EntityMissing("did suffix", didSuffix.getValue)))
@@ -56,9 +54,17 @@ case class UpdateDIDOperation(
           }
         }
       case RevokeKeyAction(keyId) =>
-        EitherT.right[StateError](PublicKeysDAO.revoke(keyId, ledgerData)).subflatMap { wasRemoved =>
-          Either.cond(wasRemoved, (), StateError.EntityMissing("key", keyId))
-        }
+        for {
+          _ <- EitherT[ConnectionIO, StateError, DIDPublicKeyState] {
+            PublicKeysDAO.find(didSuffix, keyId).map(_.toRight(StateError.EntityMissing("key", keyId)))
+          }.subflatMap { didKey =>
+            Either.cond(didKey.revokedOn.isEmpty, didKey.key, StateError.KeyAlreadyRevoked())
+          }
+          result <- EitherT.right[StateError](PublicKeysDAO.revoke(didSuffix, keyId, ledgerData)).subflatMap {
+            wasRemoved =>
+              Either.cond(wasRemoved, (), StateError.EntityMissing("key", keyId))
+          }
+        } yield result
     }
   }
 
@@ -89,7 +95,7 @@ object UpdateDIDOperation extends OperationCompanion[UpdateDIDOperation] {
 
   protected def parseAction(
       action: ValueAtPath[node_models.UpdateDIDAction],
-      didSuffix: DIDSuffix
+      didSuffix: DidSuffix
   ): Either[ValidationError, UpdateDIDAction] = {
     if (action(_.action.isAddKey)) {
       val addKeyAction = action.child(_.getAddKey, "addKey")
@@ -117,15 +123,12 @@ object UpdateDIDOperation extends OperationCompanion[UpdateDIDOperation] {
       operation: node_models.AtalaOperation,
       ledgerData: LedgerData
   ): Either[ValidationError, UpdateDIDOperation] = {
-    val operationDigest = SHA256Digest.compute(operation.toByteArray)
+    val operationDigest = Sha256.compute(operation.toByteArray)
     val updateOperation = ValueAtPath(operation, Path.root).child(_.getUpdateDid, "updateDid")
 
     for {
       didSuffix <- updateOperation.child(_.id, "id").parse { didSuffix =>
-        Either.fromOption(
-          Try(DIDSuffix.fromString(didSuffix)).toOption,
-          s"must be a valid DID suffix: $didSuffix"
-        )
+        DidSuffix.fromString(didSuffix).toEither.left.map(_.getMessage)
       }
       previousOperation <- ParsingUtils.parseHash(
         updateOperation.child(_.previousOperationHash, "previousOperationHash")

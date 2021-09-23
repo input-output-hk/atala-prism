@@ -2,7 +2,7 @@ package io.iohk.atala.prism.vault.repositories.daos
 
 import doobie.implicits.toSqlInterpolator
 import io.iohk.atala.prism.auth.model.RequestNonce
-import io.iohk.atala.prism.kotlin.identity.DID
+import io.iohk.atala.prism.identity.{PrismDid => DID}
 
 object RequestNoncesDAO {
   def burn(did: DID, requestNonce: RequestNonce): doobie.ConnectionIO[Unit] = {

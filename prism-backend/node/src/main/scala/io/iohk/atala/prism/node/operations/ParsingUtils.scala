@@ -1,12 +1,15 @@
 package io.iohk.atala.prism.node.operations
 
 import java.time.LocalDate
+import cats.syntax.traverse._
+import cats.instances.list._
+import cats.instances.either._
 import com.google.protobuf.ByteString
-import io.iohk.atala.prism.kotlin.crypto.EC
-import io.iohk.atala.prism.kotlin.crypto.keys.ECPublicKey
-import io.iohk.atala.prism.kotlin.crypto.ECConfig.{INSTANCE => ECConfig}
-import io.iohk.atala.prism.kotlin.crypto.SHA256Digest
-import io.iohk.atala.prism.kotlin.identity.DIDSuffix
+import io.iohk.atala.prism.crypto.EC.{INSTANCE => EC}
+import io.iohk.atala.prism.crypto.keys.ECPublicKey
+import io.iohk.atala.prism.crypto.ECConfig.{INSTANCE => ECConfig}
+import io.iohk.atala.prism.crypto.Sha256Digest
+import io.iohk.atala.prism.models.DidSuffix
 import io.iohk.atala.prism.node.models.{DIDPublicKey, KeyUsage}
 import io.iohk.atala.prism.node.operations.ValidationError.{InvalidValue, MissingValue}
 import io.iohk.atala.prism.node.operations.path.ValueAtPath
@@ -50,7 +53,7 @@ object ParsingUtils {
     } else if (ecData(_.y.toByteArray.isEmpty)) {
       Left(ecData.child(_.curve, "y").missing())
     } else {
-      Try(EC.toPublicKey(ecData(_.x.toByteArray), ecData(_.y.toByteArray))).toEither.left
+      Try(EC.toPublicKeyFromByteCoordinates(ecData(_.x.toByteArray), ecData(_.y.toByteArray))).toEither.left
         .map(ex => InvalidValue(ecData.path, "", s"Unable to initialize the key: ${ex.getMessage}"))
     }
   }
@@ -72,7 +75,7 @@ object ParsingUtils {
     }
   }
 
-  def parseKey(key: ValueAtPath[node_models.PublicKey], didSuffix: DIDSuffix): Either[ValidationError, DIDPublicKey] = {
+  def parseKey(key: ValueAtPath[node_models.PublicKey], didSuffix: DidSuffix): Either[ValidationError, DIDPublicKey] = {
     for {
       keyUsage <- key.child(_.usage, "usage").parse {
         case node_models.KeyUsage.MASTER_KEY => Right(KeyUsage.MasterKey)
@@ -88,23 +91,15 @@ object ParsingUtils {
     } yield DIDPublicKey(didSuffix, keyId, keyUsage, publicKey)
   }
 
-  def parseHash(hash: ValueAtPath[ByteString]): Either[ValidationError, SHA256Digest] = {
+  def parseHash(hash: ValueAtPath[ByteString]): Either[ValidationError, Sha256Digest] = {
     hash.parse { hash =>
-      Either.cond(
-        hash.size() == SHA256Digest.getBYTE_LENGTH,
-        SHA256Digest.fromBytes(hash.toByteArray),
-        s"must have ${SHA256Digest.getBYTE_LENGTH} bytes"
-      )
+      Try(Sha256Digest.fromBytes(hash.toByteArray)).toEither.left.map(_.getMessage)
     }
   }
 
-  def parseHashList(hashesV: ValueAtPath[Seq[ByteString]]): Either[ValidationError, List[SHA256Digest]] = {
+  def parseHashList(hashesV: ValueAtPath[Seq[ByteString]]): Either[ValidationError, List[Sha256Digest]] = {
     hashesV.parse { hashes =>
-      Either.cond(
-        hashes.forall(_.size() == SHA256Digest.getBYTE_LENGTH),
-        hashes.map(h => SHA256Digest.fromBytes(h.toByteArray)).to(List),
-        s"must have ${SHA256Digest.getBYTE_LENGTH} bytes"
-      )
+      hashes.toList.traverse(h => Try(Sha256Digest.fromBytes(h.toByteArray)).toEither.left.map(_.getMessage))
     }
   }
 }

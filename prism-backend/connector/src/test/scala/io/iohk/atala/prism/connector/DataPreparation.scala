@@ -5,11 +5,11 @@ import doobie.implicits._
 import doobie.util.transactor.Transactor
 import io.iohk.atala.prism.connector.model.{ParticipantInfo, ParticipantType}
 import io.iohk.atala.prism.connector.repositories.{daos => connectorDaos}
-import io.iohk.atala.prism.kotlin.credentials.CredentialBatchId
-import io.iohk.atala.prism.kotlin.crypto.{EC, SHA256Digest}
-import io.iohk.atala.prism.kotlin.crypto.keys.ECPublicKey
+import io.iohk.atala.prism.credentials.CredentialBatchId
+import io.iohk.atala.prism.crypto.{EC, Sha256Digest}
+import io.iohk.atala.prism.crypto.keys.ECPublicKey
 import io.iohk.atala.prism.daos.BaseDAO
-import io.iohk.atala.prism.kotlin.identity.DID
+import io.iohk.atala.prism.identity.{PrismDid => DID}
 import io.iohk.atala.prism.models.ParticipantId
 
 object DataPreparation extends BaseDAO {
@@ -17,7 +17,7 @@ object DataPreparation extends BaseDAO {
   import connectorDaos._
 
   def newDID(): DID = {
-    DID.createUnpublishedDID(EC.generateKeyPair().getPublicKey, null).canonical
+    DID.buildLongFormFromMasterKey(EC.INSTANCE.generateKeyPair().getPublicKey).asCanonical()
   }
 
   def createIssuer(
@@ -62,13 +62,13 @@ object DataPreparation extends BaseDAO {
 
   def getBatchData(
       batchId: CredentialBatchId
-  )(implicit database: Transactor[IO]): Option[SHA256Digest] = {
+  )(implicit database: Transactor[IO]): Option[Sha256Digest] = {
     sql"""
          |SELECT issuance_operation_hash
          |FROM published_batches
          |WHERE batch_id = $batchId
          |""".stripMargin
-      .query[SHA256Digest]
+      .query[Sha256Digest]
       .option
       .transact(database)
       .unsafeRunSync()

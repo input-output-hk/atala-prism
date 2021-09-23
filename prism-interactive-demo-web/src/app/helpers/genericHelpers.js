@@ -1,4 +1,4 @@
-import { LOGO } from './constants';
+import { LOGO } from '../../helpers/constants';
 
 const firstLetterAsUpperCase = word => word.charAt(0).toUpperCase();
 

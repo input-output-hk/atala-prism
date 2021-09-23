@@ -11,11 +11,20 @@ import './_style.scss';
 //    - theme-outline
 //    - theme-grey
 //    - theme-link
-const CustomButton = ({ buttonText, buttonProps, loading, className, ...propagatedProps }) => (
+//    - theme-filter
+//    - theme-text
+// alternatively it can be overriden with overrideClassName.
+const CustomButton = ({
+  buttonText,
+  buttonProps,
+  loading,
+  overrideClassName,
+  ...propagatedProps
+}) => (
   <Button
     {...propagatedProps}
     {...buttonProps}
-    className={`${buttonProps?.className} ${className}`}
+    className={overrideClassName || buttonProps?.className}
     disabled={buttonProps?.disabled || loading}
   >
     {loading ? <SimpleLoading /> : buttonText}
@@ -24,7 +33,7 @@ const CustomButton = ({ buttonText, buttonProps, loading, className, ...propagat
 
 CustomButton.defaultProps = {
   buttonText: '',
-  className: '',
+  overrideClassName: '',
   loading: false
 };
 
@@ -36,13 +45,14 @@ CustomButton.propTypes = {
       'theme-outline',
       'theme-grey',
       'theme-link',
-      'theme-filter'
+      'theme-filter',
+      'theme-text'
     ]),
     onClick: PropTypes.func,
     disabled: PropTypes.bool
   }).isRequired,
   buttonText: PropTypes.string,
-  className: PropTypes.string,
+  overrideClassName: PropTypes.string,
   loading: PropTypes.bool
 };
 

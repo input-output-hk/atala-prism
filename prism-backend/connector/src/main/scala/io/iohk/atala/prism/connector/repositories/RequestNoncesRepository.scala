@@ -10,7 +10,7 @@ import io.iohk.atala.prism.models.ParticipantId
 import io.iohk.atala.prism.utils.syntax.DBConnectionOps
 import io.iohk.atala.prism.connector.repositories.daos.RequestNoncesDAO
 import io.iohk.atala.prism.connector.repositories.metrics.RequestNoncesRepositoryMetrics
-import io.iohk.atala.prism.kotlin.identity.DID
+import io.iohk.atala.prism.identity.{PrismDid => DID}
 import io.iohk.atala.prism.metrics.TimeMeasureMetric
 import org.slf4j.{Logger, LoggerFactory}
 

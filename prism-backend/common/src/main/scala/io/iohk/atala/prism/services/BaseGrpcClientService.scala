@@ -14,9 +14,9 @@ import com.google.protobuf.ByteString
 import doobie.util.transactor.Transactor
 import doobie.free.connection.ConnectionIO
 import com.typesafe.config.Config
-import io.iohk.atala.prism.kotlin.crypto.EC
-import io.iohk.atala.prism.kotlin.crypto.keys.ECKeyPair
-import io.iohk.atala.prism.kotlin.crypto.ECConfig.{INSTANCE => ECConfig}
+import io.iohk.atala.prism.crypto.EC.{INSTANCE => EC}
+import io.iohk.atala.prism.crypto.keys.ECKeyPair
+import io.iohk.atala.prism.crypto.ECConfig.{INSTANCE => ECConfig}
 import io.iohk.atala.prism.connector.RequestAuthenticator
 import io.iohk.atala.prism.services.BaseGrpcClientService.{
   AuthHeaders,
@@ -24,7 +24,7 @@ import io.iohk.atala.prism.services.BaseGrpcClientService.{
   DidBasedAuthConfig,
   PublicKeyBasedAuthConfig
 }
-import io.iohk.atala.prism.kotlin.identity.DID
+import io.iohk.atala.prism.identity.{PrismDid => DID}
 import io.iohk.atala.prism.daos.DbConfigDao
 import io.iohk.atala.prism.protos.{connector_api, node_models}
 import doobie.implicits._
@@ -198,7 +198,7 @@ object BaseGrpcClientService {
 
       def getECKeyPairFromString(encodedPrivateKey: String): Option[ECKeyPair] = {
         for {
-          privateKey <- Try(EC.toPrivateKey(Base64.getUrlDecoder.decode(encodedPrivateKey))).toOption
+          privateKey <- Try(EC.toPrivateKeyFromBytes(Base64.getUrlDecoder.decode(encodedPrivateKey))).toOption
           publicKey <- Try(EC.toPublicKeyFromPrivateKey(privateKey)).toOption
         } yield new ECKeyPair(publicKey, privateKey)
       }
@@ -244,7 +244,7 @@ object BaseGrpcClientService {
         val signedAtalaOp = node_models.SignedAtalaOperation(
           signedWith = masterKeyId,
           operation = Some(atalaOp),
-          signature = ByteString.copyFrom(EC.sign(atalaOp.toByteArray, masterKeyPair.getPrivateKey).getData)
+          signature = ByteString.copyFrom(EC.signBytes(atalaOp.toByteArray, masterKeyPair.getPrivateKey).getData)
         )
 
         val request = connector_api

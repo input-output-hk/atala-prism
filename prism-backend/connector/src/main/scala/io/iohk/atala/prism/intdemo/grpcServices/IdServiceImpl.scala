@@ -7,8 +7,8 @@ import io.grpc.Status
 import io.grpc.stub.StreamObserver
 import io.iohk.atala.prism.connector.model.Connection
 import io.iohk.atala.prism.connector.model.TokenString
-import io.iohk.atala.prism.kotlin.credentials.json.JsonBasedCredential
-import io.iohk.atala.prism.kotlin.identity.DID
+import io.iohk.atala.prism.credentials.json.JsonBasedCredential
+import io.iohk.atala.prism.identity.{PrismDid => DID}
 import io.iohk.atala.prism.intdemo.IdServiceImpl._
 import io.iohk.atala.prism.intdemo.html.IdCredential
 import io.iohk.atala.prism.intdemo.protos.intdemo_api
@@ -144,7 +144,7 @@ object IdServiceImpl {
     val issuanceDate = LocalDate.now()
     val expirationDate = issuanceDate.plusYears(10)
     val issuerDID = s"did:prism:${issuerId.uuid}"
-    val issuanceKeyId = DID.masterKeyId
+    val issuanceKeyId = DID.getDEFAULT_MASTER_KEY_ID
 
     val credentialHtml = idCredentialHtmlTemplate(
       IdCredentialHtmlTemplateData(

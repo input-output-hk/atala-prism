@@ -12,7 +12,6 @@ import io.iohk.atala.prism.protos.connector_api.{
   SendMessageResponse
 }
 import io.iohk.atala.prism.protos.connector_models.{ConnectionInfo, ReceivedMessage}
-import io.iohk.atala.prism.protos.credential_models.StartAcuantProcess
 import monix.eval.Task
 
 import java.util.concurrent.atomic.AtomicInteger
@@ -59,10 +58,5 @@ class ConnectorClientServiceStub(
       limit: Int,
       awakeDelay: FiniteDuration
   ): Stream[Task, ConnectionInfo] = Stream.emits(connectionInfos)
-
-  def sendStartAcuantProcess(
-      connectionId: ConnectionId,
-      startAcuantProcess: StartAcuantProcess
-  ): Task[SendMessageResponse] = Task.pure(SendMessageResponse())
 
 }

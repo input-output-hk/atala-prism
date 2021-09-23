@@ -2,7 +2,7 @@ import { omit } from 'lodash';
 
 // TODO: adapt the rest of the frontend so this isn't necessary
 export function contactMapper(contact) {
-  const jsondata = JSON.parse(contact.jsonData);
+  const jsondata = JSON.parse(contact.jsonData || '{}');
   const { connectionStatus, contactId, ...rest } = {
     ...omit(contact, ['jsondata', 'holderid']),
     ...jsondata,

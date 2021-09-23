@@ -6,8 +6,8 @@ import io.grpc.{Status, StatusRuntimeException}
 import io.iohk.atala.prism.DIDUtil
 import io.iohk.atala.prism.auth.SignedRpcRequest
 import io.iohk.atala.prism.connector.AtalaOperationId
-import io.iohk.atala.prism.kotlin.identity.DID
-import io.iohk.atala.prism.kotlin.crypto.EC
+import io.iohk.atala.prism.identity.{PrismDid => DID}
+import io.iohk.atala.prism.crypto.EC.{INSTANCE => EC}
 import io.iohk.atala.prism.logging.TraceId
 import io.iohk.atala.prism.management.console.DataPreparation._
 import io.iohk.atala.prism.management.console.models.{InstitutionGroup, ParticipantLogo}
@@ -178,7 +178,7 @@ class ConsoleServiceImplSpec extends ManagementConsoleRpcSpecBase with DIDUtil {
         nodeMock.createDID(*).returns {
           Future.successful(
             node_api
-              .CreateDIDResponse(did.getSuffix.getValue)
+              .CreateDIDResponse(did.getSuffix)
               .withOperationId(operationId.toProtoByteString)
           )
         }

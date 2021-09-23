@@ -2,16 +2,16 @@ package io.iohk.atala.prism.node.repositories
 
 import cats.effect.IO
 import io.iohk.atala.prism.AtalaWithPostgresSpec
-import io.iohk.atala.prism.kotlin.credentials.TimestampInfo
-import io.iohk.atala.prism.kotlin.crypto.EC
+import io.iohk.atala.prism.crypto.EC.{INSTANCE => EC}
+import io.iohk.atala.prism.crypto.Sha256Digest
 import io.iohk.atala.prism.models.{Ledger, TransactionId}
-import io.iohk.atala.prism.node.errors.NodeError.UnknownValueError
 import io.iohk.atala.prism.node.models.nodeState.LedgerData
 import io.iohk.atala.prism.node.models.{DIDData, DIDPublicKey, KeyUsage}
 import org.scalatest.OptionValues._
-import java.time.Instant
 
-import io.iohk.atala.prism.kotlin.identity.DID
+import java.time.Instant
+import io.iohk.atala.prism.identity.{PrismDid => DID}
+import io.iohk.atala.prism.protos.models.TimestampInfo
 import io.iohk.atala.prism.node.DataPreparation
 
 class DIDDataRepositorySpec extends AtalaWithPostgresSpec {
@@ -58,7 +58,11 @@ class DIDDataRepositorySpec extends AtalaWithPostgresSpec {
   "DIDDataRepository" should {
     "retrieve previously inserted DID data" in {
       DataPreparation.createDID(didData, dummyLedgerData)
-      val did = didDataRepository.findByDid(DID.buildPrismDID(didSuffix)).unsafeRunSync().toOption.value
+      val did = didDataRepository
+        .findByDid(DID.buildCanonical(operationDigest))
+        .unsafeRunSync()
+        .toOption
+        .value
 
       did.value.didSuffix mustBe didSuffix
     }
@@ -67,7 +71,7 @@ class DIDDataRepositorySpec extends AtalaWithPostgresSpec {
       DataPreparation.createDID(didData, dummyLedgerData)
 
       val result = didDataRepository
-        .findByDid(DID.buildPrismDID(didSuffixFromDigest(digestGen(0, 2))))
+        .findByDid(DID.buildCanonical(Sha256Digest.fromHex(didSuffixFromDigest(digestGen(0, 2)).value)))
         .unsafeRunSync()
         .toOption
         .value
@@ -75,10 +79,6 @@ class DIDDataRepositorySpec extends AtalaWithPostgresSpec {
       result must be(empty)
     }
 
-    "return error when did is in invalid format" in {
-      val did = DID.buildPrismDID("11:11:11:11", null)
-      didDataRepository.findByDid(did).unsafeToFuture().futureValue mustBe a[Left[UnknownValueError, _]]
-    }
   }
 
 }

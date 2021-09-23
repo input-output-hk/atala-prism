@@ -9,7 +9,7 @@ import io.iohk.atala.prism.auth.grpc.GrpcAuthenticationHeader
 import io.iohk.atala.prism.auth.model.RequestNonce
 import io.iohk.atala.prism.connector.AtalaOperationId
 import io.iohk.atala.prism.grpc.ProtoConverter
-import io.iohk.atala.prism.kotlin.identity.DID
+import io.iohk.atala.prism.identity.{CanonicalPrismDid, LongFormPrismDid, PrismDid}
 import io.iohk.atala.prism.management.console.grpc.ProtoCodecs.{checkListUniqueness, toTimestamp}
 import io.iohk.atala.prism.management.console.models.PaginatedQueryConstraints.ResultOrdering
 import io.iohk.atala.prism.management.console.models._
@@ -27,10 +27,10 @@ import io.scalaland.chimney.dsl._
 import io.scalaland.chimney.Transformer
 
 import java.time.LocalDate
-import io.iohk.atala.prism.kotlin.credentials.CredentialBatchId
-import io.iohk.atala.prism.kotlin.crypto.MerkleInclusionProof
-import io.iohk.atala.prism.kotlin.crypto.SHA256Digest
-import io.iohk.atala.prism.kotlin.crypto.signature.ECSignature
+import io.iohk.atala.prism.credentials.CredentialBatchId
+import io.iohk.atala.prism.crypto.MerkleInclusionProof
+import io.iohk.atala.prism.crypto.Sha256Digest
+import io.iohk.atala.prism.crypto.signature.ECSignature
 import io.iohk.atala.prism.protos.connector_api.SendMessagesRequest
 import io.iohk.atala.prism.protos.console_models.ContactConnectionStatus
 import io.iohk.atala.prism.utils.Base64Utils
@@ -90,7 +90,7 @@ package object grpc {
       for {
         did <- Try {
           Try(
-            DID
+            PrismDid
               .fromString(request.did)
           ).getOrElse(throw new RuntimeException("Missing or invalid DID"))
         }
@@ -578,14 +578,15 @@ package object grpc {
     ).mapN {
         case (nonce, didStr, keyId, signature) =>
           Try(
-            DID
+            PrismDid
               .fromString(didStr)
           ).toOption
             .map { did =>
-              val didBased =
-                if (did.isCanonicalForm)
-                  GrpcAuthenticationHeader.PublishedDIDBased
-                else GrpcAuthenticationHeader.UnpublishedDIDBased
+              val didBased = did match {
+                case _: CanonicalPrismDid => GrpcAuthenticationHeader.PublishedDIDBased
+                case _: LongFormPrismDid => GrpcAuthenticationHeader.UnpublishedDIDBased
+                case _ => throw new RuntimeException("Unknown Did")
+              }
 
               didBased(
                 RequestNonce(Base64Utils.decodeURL(nonce).toVector),
@@ -616,7 +617,7 @@ package object grpc {
     (request: GetLedgerDataRequest) => {
       for {
         batchId <- Try(CredentialBatchId.fromString(request.batchId))
-        credentialHash = SHA256Digest.fromBytes(request.credentialHash.toByteArray)
+        credentialHash = Sha256Digest.fromBytes(request.credentialHash.toByteArray)
       } yield GetLedgerData(batchId, credentialHash)
     }
 

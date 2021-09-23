@@ -1,6 +1,6 @@
 import React from 'react';
 import PropTypes from 'prop-types';
-import { useTranslation } from 'react-i18next';
+import { useTranslation } from 'gatsby-plugin-react-i18next';
 import { Modal } from 'antd';
 
 import modalUserIcon from '../../../../images/modal-user.png';
@@ -17,10 +17,7 @@ const IdentityVerifierModal = ({ showModal, onOk, onCancel, user }) => {
         <img src={modalUserIcon} alt="Modal User Icon" />
         <h2>
           {t('userInfo.identityVerifierModal.question')}
-          <strong>
-            {firstName}
-          </strong>
-          ?
+          <strong>{firstName}</strong>?
         </h2>
         <p>Continue to pick up where you left off!</p>
         <span> If not, cancel and complete the form to start over.</span>

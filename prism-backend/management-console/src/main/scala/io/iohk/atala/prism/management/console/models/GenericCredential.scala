@@ -8,9 +8,9 @@ import java.util.UUID
 import io.circe.Json
 import io.iohk.atala.prism.auth.grpc.GrpcAuthenticationHeader
 import io.iohk.atala.prism.connector.AtalaOperationId
-import io.iohk.atala.prism.kotlin.credentials.CredentialBatchId
-import io.iohk.atala.prism.kotlin.crypto.MerkleInclusionProof
-import io.iohk.atala.prism.kotlin.crypto.SHA256Digest
+import io.iohk.atala.prism.credentials.CredentialBatchId
+import io.iohk.atala.prism.crypto.MerkleInclusionProof
+import io.iohk.atala.prism.crypto.Sha256Digest
 import io.iohk.atala.prism.models.{ConnectionToken, UUIDValue}
 import io.iohk.atala.prism.protos.connector_api
 import tofu.logging.derivation.loggable
@@ -65,7 +65,7 @@ object GetStoredCredentials {
 
 case class PublicationData(
     credentialBatchId: CredentialBatchId, // the id assigned by the protocol to the batch
-    issuanceOperationHash: SHA256Digest, // the hex representation of the associated issuance operation hash
+    issuanceOperationHash: Sha256Digest, // the hex representation of the associated issuance operation hash
     atalaOperationId: AtalaOperationId, // the identifier of the corresponding node operation
     encodedSignedCredential: String, // the actual published credential
     inclusionProof: MerkleInclusionProof, // the proof that the encodedSignedCredential belongs to the associated batch

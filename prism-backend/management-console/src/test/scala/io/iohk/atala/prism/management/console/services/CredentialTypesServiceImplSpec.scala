@@ -5,7 +5,7 @@ import io.grpc.StatusRuntimeException
 import org.scalatest.OptionValues
 import io.iohk.atala.prism.DIDUtil
 import io.iohk.atala.prism.auth.SignedRpcRequest
-import io.iohk.atala.prism.kotlin.crypto.EC
+import io.iohk.atala.prism.crypto.EC.{INSTANCE => EC}
 import io.iohk.atala.prism.logging.TraceId
 import io.iohk.atala.prism.management.console.ManagementConsoleRpcSpecBase
 import io.iohk.atala.prism.protos.{console_api, console_models}

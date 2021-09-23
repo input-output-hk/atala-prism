@@ -14,8 +14,8 @@ import scala.util.Try
 object OperationsCounters {
 
   private val logger = LoggerFactory.getLogger(this.getClass)
-  private val SENT_OPERATION_METRIC_NAME = "received-atala-operations"
-  private val FAILED_TO_SEND_OPERATION_METRIC_NAME = "failed-to-store-atala-objects"
+  private val RECEIVED_OPERATION_METRIC_NAME = "received-atala-operations"
+  private val FAILED_TO_STORE_OPERATION_METRIC_NAME = "failed-to-store-atala-objects"
   private val PROCESSED_BLOCKS_METRIC_NAME = "processed-atala-block-operations"
   private val FAILED_TO_PROCESS_BLOCKS_METRIC_NAME = "failed-to-process-atala-block-operations"
 
@@ -36,18 +36,18 @@ object OperationsCounters {
   private val ADD_KEY_ACTION_TAG_VALUE = "add-key"
   private val REMOVE_KEY_ACTION_TAG_VALUE = "remove-key"
 
-  private lazy val sentObjectsCounter: Metric.Counter = Kamon.counter(SENT_OPERATION_METRIC_NAME)
-  private lazy val failedToSendObjectsCounter = Kamon.counter(FAILED_TO_SEND_OPERATION_METRIC_NAME)
+  private lazy val receivedObjectsCounter: Metric.Counter = Kamon.counter(RECEIVED_OPERATION_METRIC_NAME)
+  private lazy val failedToStoreObjectsCounter = Kamon.counter(FAILED_TO_STORE_OPERATION_METRIC_NAME)
   private lazy val processedBlocksCounter = Kamon.counter(PROCESSED_BLOCKS_METRIC_NAME)
   private lazy val failedToProcessBlocksCounter = Kamon.counter(FAILED_TO_PROCESS_BLOCKS_METRIC_NAME)
 
   def countReceivedAtalaOperations(in: List[SignedAtalaOperation]): Unit =
-    increaseOperationsOccurrencesCounter(in, sentObjectsCounter, TagSet.builder())
+    increaseOperationsOccurrencesCounter(in, receivedObjectsCounter, TagSet.builder())
 
   def failedToStoreToDbAtalaOperations(in: List[SignedAtalaOperation], error: NodeError): Unit =
     increaseOperationsOccurrencesCounter(
       in,
-      failedToSendObjectsCounter,
+      failedToStoreObjectsCounter,
       TagSet.builder().add(NODE_ERROR_TAG, error.name)
     )
 

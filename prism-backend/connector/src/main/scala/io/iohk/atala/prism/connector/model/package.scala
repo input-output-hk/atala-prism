@@ -2,14 +2,16 @@ package io.iohk.atala.prism.connector.model
 
 import cats.syntax.option._
 import com.google.protobuf.ByteString
+import derevo.derive
 import enumeratum.EnumEntry.Lowercase
 import enumeratum._
-import io.iohk.atala.prism.kotlin.crypto.keys.ECPublicKey
+import io.iohk.atala.prism.crypto.keys.ECPublicKey
 import io.iohk.atala.prism.connector.AtalaOperationId
-import io.iohk.atala.prism.kotlin.identity.DID
+import io.iohk.atala.prism.identity.{PrismDid => DID}
 import io.iohk.atala.prism.models.{ParticipantId, UUIDValue}
 import io.iohk.atala.prism.protos.connector_models
 import io.iohk.atala.prism.utils.syntax._
+import tofu.logging.derivation.loggable
 
 import java.time.Instant
 import java.util.{Base64, UUID}
@@ -24,9 +26,11 @@ object ParticipantType extends Enum[ParticipantType] {
   case object Verifier extends ParticipantType
 }
 
+@derive(loggable)
 case class ConnectionId(uuid: UUID) extends AnyVal with UUIDValue
 object ConnectionId extends UUIDValue.Builder[ConnectionId]
 
+@derive(loggable)
 case class MessageId(uuid: UUID) extends AnyVal with UUIDValue
 object MessageId extends UUIDValue.Builder[MessageId]
 
@@ -93,6 +97,7 @@ case class RawConnection(
   }
 }
 
+@derive(loggable)
 case class TokenString(token: String) extends AnyVal
 
 object TokenString {

@@ -1,12 +1,10 @@
 import React, { useRef } from 'react';
-import { useTranslation } from 'react-i18next';
-import Header from '../common/Molecules/Header/Header';
+import { useTranslation } from 'gatsby-plugin-react-i18next';
+import Header from '../../../components/Header/Header';
 import IntroSection from './Organisms/IntroSection/IntroSection';
 import CredentialSection from './Organisms/CredentialSection/CredentialSection';
 import FindCredential from './Molecules/FindCredential/FindCredential';
-import './_style.scss';
 import Footer from '../common/Molecules/Footer/Footer';
-import { scrollToRef } from '../../helpers/genericHelpers';
 import {
   VISION_NAME,
   DEMO_NAME,
@@ -17,7 +15,7 @@ import {
   GET_STARTED_NAME,
   FAQ_NAME,
   CONTACT_US_NAME
-} from '../../helpers/constants';
+} from '../../../helpers/constants';
 import TrustSection from './Organisms/TrustSection/TrustSection';
 import QuotesPanel from './Molecules/QuotesPanel/QuotesPanel';
 import CaseStudy from './Molecules/CaseStudy/CaseStudy';
@@ -29,6 +27,8 @@ import { useState } from 'react';
 import SupportButton from '../common/Atoms/SupportButton/SupportButton';
 import CustomButton from '../common/Atoms/CustomButton/CustomButton';
 import { Link } from 'gatsby';
+
+import './_style.scss';
 
 const Landing = () => {
   const { t } = useTranslation();
@@ -45,28 +45,10 @@ const Landing = () => {
   const faqSection = useRef(null);
   const contactUsSection = useRef(null);
 
-  const refTranslator = {
-    [VISION_NAME]: visionSection,
-    [DEMO_NAME]: demoSection,
-    [COMPONENTS_NAME]: componentsSection,
-    [BENEFITS_NAME]: benefitsSection,
-    [USE_CASES_NAME]: useCasesSection,
-    [CASE_STUDY_NAME]: caseStudySection,
-    [GET_STARTED_NAME]: getStartedSection,
-    [FAQ_NAME]: faqSection,
-    [CONTACT_US_NAME]: contactUsSection
-  };
-
-  const executeScroll = ref => scrollToRef(refTranslator[ref]);
-
   return (
     <div className="LandingContainer">
       <div className="LandingHeader">
-        <Header
-          executeScroll={executeScroll}
-          currentSection={currentSection}
-          setCurrent={key => setCurrentSection(key)}
-        />
+        <Header currentSection={currentSection} />
         <div className="LadingHeaderContent" onMouseOver={() => setCurrentSection(null)}>
           <div className="HeaderText">
             <h1>{t('landing.start.info')}</h1>
@@ -83,38 +65,59 @@ const Landing = () => {
           </div>
         </div>
       </div>
-      <div ref={visionSection} onMouseOver={() => setCurrentSection(VISION_NAME)}>
+      <div id={VISION_NAME} ref={visionSection} onMouseOver={() => setCurrentSection(VISION_NAME)}>
         <IntroSection />
         <QuotesPanel />
       </div>
-
-      <div ref={demoSection} onMouseOver={() => setCurrentSection(DEMO_NAME)}>
+      <div id={DEMO_NAME} ref={demoSection} onMouseOver={() => setCurrentSection(DEMO_NAME)}>
         <FindCredential />
       </div>
-
-      <div ref={componentsSection} onMouseOver={() => setCurrentSection(COMPONENTS_NAME)}>
+      <div
+        id={COMPONENTS_NAME}
+        ref={componentsSection}
+        onMouseOver={() => setCurrentSection(COMPONENTS_NAME)}
+      >
         <CredentialSection />
       </div>
-      <div ref={benefitsSection} onMouseOver={() => setCurrentSection(BENEFITS_NAME)}>
+      <div
+        id={BENEFITS_NAME}
+        ref={benefitsSection}
+        onMouseOver={() => setCurrentSection(BENEFITS_NAME)}
+      >
         <TrustSection />
       </div>
-      <div ref={useCasesSection} onMouseOver={() => setCurrentSection(USE_CASES_NAME)}>
+      <div
+        id={USE_CASES_NAME}
+        ref={useCasesSection}
+        onMouseOver={() => setCurrentSection(USE_CASES_NAME)}
+      >
         <UseCasesPanel />
       </div>
-      <div ref={caseStudySection} onMouseOver={() => setCurrentSection(CASE_STUDY_NAME)}>
+      <div
+        id={CASE_STUDY_NAME}
+        ref={caseStudySection}
+        onMouseOver={() => setCurrentSection(CASE_STUDY_NAME)}
+      >
         <CaseStudy />
       </div>
-      <div ref={getStartedSection} onMouseOver={() => setCurrentSection(GET_STARTED_NAME)}>
-        <GetStarted executeScroll={executeScroll} />
+      <div
+        id={GET_STARTED_NAME}
+        ref={getStartedSection}
+        onMouseOver={() => setCurrentSection(GET_STARTED_NAME)}
+      >
+        <GetStarted />
       </div>
-      <div ref={faqSection} onMouseOver={() => setCurrentSection(FAQ_NAME)}>
+      <div id={FAQ_NAME} ref={faqSection} onMouseOver={() => setCurrentSection(FAQ_NAME)}>
         <FaqPanel />
       </div>
-      <div ref={contactUsSection} onMouseOver={() => setCurrentSection(CONTACT_US_NAME)}>
+      <div
+        id={CONTACT_US_NAME}
+        ref={contactUsSection}
+        onMouseOver={() => setCurrentSection(CONTACT_US_NAME)}
+      >
         <ContactPanel />
       </div>
-      <Footer executeScroll={executeScroll} />
-
+      <Footer />
       <SupportButton />
     </div>
   );

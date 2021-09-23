@@ -1,6 +1,6 @@
 package io.iohk.atala.prism.node.poc.batch
 
-import io.iohk.atala.prism.kotlin.crypto.MerkleInclusionProof
+import io.iohk.atala.prism.crypto.MerkleInclusionProof
 import io.iohk.atala.prism.protos.node_api
 import io.iohk.atala.prism.protos.node_api.{CreateDIDRequest, CreateDIDResponse}
 import io.iohk.atala.prism.protos.node_models.SignedAtalaOperation

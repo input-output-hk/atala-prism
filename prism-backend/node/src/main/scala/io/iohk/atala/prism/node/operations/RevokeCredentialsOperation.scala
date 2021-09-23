@@ -6,9 +6,9 @@ import cats.implicits.catsSyntaxEitherId
 import cats.syntax.functor._
 import doobie.free.connection.ConnectionIO
 import doobie.implicits._
-import io.iohk.atala.prism.kotlin.credentials.CredentialBatchId
-import io.iohk.atala.prism.kotlin.crypto.SHA256Digest
-import io.iohk.atala.prism.kotlin.identity.DIDSuffix
+import io.iohk.atala.prism.credentials.CredentialBatchId
+import io.iohk.atala.prism.crypto.{Sha256, Sha256Digest}
+import io.iohk.atala.prism.models.DidSuffix
 import io.iohk.atala.prism.node.models.nodeState
 import io.iohk.atala.prism.node.models.nodeState.{DIDPublicKeyState, LedgerData}
 import io.iohk.atala.prism.node.operations.path.{Path, ValueAtPath}
@@ -17,16 +17,16 @@ import io.iohk.atala.prism.protos.node_models
 
 case class RevokeCredentialsOperation(
     credentialBatchId: CredentialBatchId,
-    credentialsToRevoke: List[SHA256Digest],
-    previousOperation: SHA256Digest,
-    digest: SHA256Digest,
+    credentialsToRevoke: List[Sha256Digest],
+    previousOperation: Sha256Digest,
+    digest: Sha256Digest,
     ledgerData: nodeState.LedgerData
 ) extends Operation {
-  override def linkedPreviousOperation: Option[SHA256Digest] = Some(previousOperation)
+  override def linkedPreviousOperation: Option[Sha256Digest] = Some(previousOperation)
 
   override def getCorrectnessData(keyId: String): EitherT[ConnectionIO, StateError, CorrectnessData] = {
     for {
-      issuerPrevOp <- EitherT[ConnectionIO, StateError, (DIDSuffix, SHA256Digest)] {
+      issuerPrevOp <- EitherT[ConnectionIO, StateError, (DidSuffix, Sha256Digest)] {
         CredentialBatchesDAO
           .findBatch(credentialBatchId)
           .map(
@@ -93,7 +93,7 @@ object RevokeCredentialsOperation extends SimpleOperationCompanion[RevokeCredent
       ledgerData: LedgerData
   ): Either[ValidationError, RevokeCredentialsOperation] = {
 
-    val operationDigest = SHA256Digest.compute(operation.toByteArray)
+    val operationDigest = Sha256.compute(operation.toByteArray)
     val revokeOperation = ValueAtPath(operation, Path.root).child(_.getRevokeCredentials, "revokeCredentials")
 
     for {

@@ -1,11 +1,11 @@
 package io.iohk.atala.prism.stubs
 
-import io.iohk.atala.prism.kotlin.credentials.CredentialBatchId
-import io.iohk.atala.prism.kotlin.crypto.MerkleRoot
-import io.iohk.atala.prism.kotlin.crypto.SHA256Digest
+import io.iohk.atala.prism.credentials.CredentialBatchId
+import io.iohk.atala.prism.crypto.MerkleRoot
+import io.iohk.atala.prism.crypto.{Sha256Digest => SHA256Digest}
 import monix.eval.Task
 import io.iohk.atala.prism.services.NodeClientService
-import io.iohk.atala.prism.kotlin.identity.DID
+import io.iohk.atala.prism.identity.{PrismDid => DID}
 import io.iohk.atala.prism.protos.node_api.{
   GetBatchStateResponse,
   GetCredentialRevocationTimeResponse,

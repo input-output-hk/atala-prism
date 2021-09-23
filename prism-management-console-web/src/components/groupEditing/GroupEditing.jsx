@@ -132,9 +132,8 @@ const GroupEditing = ({
         </Col>
         <Col {...secondColProps}>
           <CustomButton
-            className="custom"
+            overrideClassName="theme-secondary custom"
             buttonProps={{
-              className: 'theme-secondary',
               onClick: () => setModalVisible(true)
             }}
             buttonText={t('groupEditing.buttons.addContacts')}
@@ -176,9 +175,8 @@ const GroupEditing = ({
           </Col>
           <Col {...secondColProps}>
             <CustomButton
-              className="custom"
+              overrideClassName="theme-outline custom"
               buttonProps={{
-                className: 'theme-outline',
                 disabled: !selectedGroupContacts.length,
                 onClick: () => handleRemoveContactRequest(selectedGroupContacts)
               }}

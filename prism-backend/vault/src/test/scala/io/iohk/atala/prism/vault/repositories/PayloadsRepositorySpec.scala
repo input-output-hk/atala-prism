@@ -2,8 +2,8 @@ package io.iohk.atala.prism.vault.repositories
 
 import cats.effect.IO
 import io.iohk.atala.prism.AtalaWithPostgresSpec
-import io.iohk.atala.prism.kotlin.crypto.{EC, SHA256Digest}
-import io.iohk.atala.prism.kotlin.identity.DID
+import io.iohk.atala.prism.crypto.{EC, Sha256}
+import io.iohk.atala.prism.identity.{PrismDid => DID}
 import io.iohk.atala.prism.vault.model.{CreatePayload, Payload}
 import org.scalatest.OptionValues
 import tofu.logging.Logs
@@ -22,7 +22,7 @@ class PayloadsRepositorySpec extends AtalaWithPostgresSpec with OptionValues {
 
   def createPayload(did: DID, content: Vector[Byte]): IO[Payload] = {
     val externalId = Payload.ExternalId.random()
-    val hash = SHA256Digest.compute(content.toArray)
+    val hash = Sha256.compute(content.toArray)
     val createPayload1 = CreatePayload(externalId, hash, did, content)
     repository.flatMap(_.create(createPayload1))
   }
@@ -83,6 +83,6 @@ class PayloadsRepositorySpec extends AtalaWithPostgresSpec with OptionValues {
   }
 
   private def newDID(): DID = {
-    DID.createUnpublishedDID(EC.generateKeyPair().getPublicKey, null).canonical
+    DID.buildLongFormFromMasterKey(EC.INSTANCE.generateKeyPair().getPublicKey).asCanonical()
   }
 }

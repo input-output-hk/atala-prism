@@ -13,7 +13,6 @@ import io.iohk.atala.prism.management.console.errors
 import io.iohk.atala.prism.management.console.errors.ManagementConsoleError
 import io.iohk.atala.prism.management.console.models._
 import io.iohk.atala.prism.management.console.repositories.ParticipantsRepository
-import io.iohk.atala.prism.logging.GeneralLoggableInstances._
 import tofu.higherKind.Mid
 import tofu.logging.{Logs, ServiceLogging}
 import tofu.syntax.logging._
@@ -90,7 +89,7 @@ private final class ParticipantsIntegrationServiceLogs[F[_]: ServiceLogging[
     extends ParticipantsIntegrationService[Mid[F, *]] {
   override def register(request: RegisterDID): Mid[F, Either[ManagementConsoleError, Unit]] =
     in =>
-      info"registering participant ${request.name} ${request.did.getCanonicalSuffix}" *> in
+      info"registering participant ${request.name} ${request.did.asCanonical().getSuffix}" *> in
         .flatTap(
           _.fold(
             er => error"encountered an error while registering participant $er",

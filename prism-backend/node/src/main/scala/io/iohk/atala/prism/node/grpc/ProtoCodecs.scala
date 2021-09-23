@@ -1,25 +1,24 @@
 package io.iohk.atala.prism.node.grpc
 
 import java.security.PublicKey
-
 import com.google.protobuf.ByteString
-import io.iohk.atala.prism.kotlin.credentials.TimestampInfo
-import io.iohk.atala.prism.kotlin.crypto.EC
-import io.iohk.atala.prism.kotlin.crypto.keys.ECPublicKey
-import io.iohk.atala.prism.kotlin.crypto.ECConfig.{INSTANCE => ECConfig}
-import io.iohk.atala.prism.models.{ProtoCodecs => CommonProtoCodecs}
-import io.iohk.atala.prism.kotlin.identity.DIDSuffix
+import io.iohk.atala.prism.protos.models.TimestampInfo
+import io.iohk.atala.prism.crypto.EC.{INSTANCE => EC}
+import io.iohk.atala.prism.crypto.keys.ECPublicKey
+import io.iohk.atala.prism.crypto.ECConfig.{INSTANCE => ECConfig}
+import io.iohk.atala.prism.models.{DidSuffix, ProtoCodecs => CommonProtoCodecs}
 import io.iohk.atala.prism.node.models
 import io.iohk.atala.prism.node.models.KeyUsage.{
   AuthenticationKey,
-  IssuingKey,
   CommunicationKey,
-  RevocationKey,
-  MasterKey
+  IssuingKey,
+  MasterKey,
+  RevocationKey
 }
 import io.iohk.atala.prism.node.models.nodeState.LedgerData
 import io.iohk.atala.prism.protos.node_models
 import io.iohk.atala.prism.utils.syntax._
+
 import java.time.Instant
 
 object ProtoCodecs {
@@ -31,7 +30,7 @@ object ProtoCodecs {
       .withOperationSequenceNumber(timestampInfo.getOperationSequenceNumber)
   }
 
-  def atalaOperationToDIDDataProto(didSuffix: DIDSuffix, op: node_models.AtalaOperation): node_models.DIDData = {
+  def atalaOperationToDIDDataProto(didSuffix: DidSuffix, op: node_models.AtalaOperation): node_models.DIDData = {
     node_models
       .DIDData()
       .withId(didSuffix.getValue)
@@ -113,7 +112,7 @@ object ProtoCodecs {
     for {
       maybeX <- protoKey.keyData.ecKeyData
       maybeY <- protoKey.keyData.ecKeyData
-    } yield EC.toPublicKey(maybeX.x.toByteArray, maybeY.y.toByteArray)
+    } yield EC.toPublicKeyFromByteCoordinates(maybeX.x.toByteArray, maybeY.y.toByteArray)
   }
 
   def fromProtoKeyLegacy(protoKey: node_models.PublicKey): Option[PublicKey] =

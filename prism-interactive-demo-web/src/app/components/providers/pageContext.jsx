@@ -1,6 +1,6 @@
 import React, { createContext, useReducer, useEffect } from 'react';
 import { setStoredItem, getStoredItem, removeStoredItem } from './Storage';
-import { PAGE } from '../../helpers/constants';
+import { PAGE } from '../../../helpers/constants';
 
 const initialState = {};
 

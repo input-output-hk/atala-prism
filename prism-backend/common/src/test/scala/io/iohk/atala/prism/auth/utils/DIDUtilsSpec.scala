@@ -2,14 +2,14 @@ package io.iohk.atala.prism.auth.utils
 
 import com.google.protobuf.ByteString
 import io.iohk.atala.prism.auth.errors.UnknownPublicKeyId
-import io.iohk.atala.prism.kotlin.crypto.EC
-import io.iohk.atala.prism.kotlin.crypto.keys.{ECKeyPair, ECPublicKey}
+import io.iohk.atala.prism.crypto.EC.{INSTANCE => EC}
+import io.iohk.atala.prism.crypto.keys.{ECKeyPair, ECPublicKey}
 import io.iohk.atala.prism.protos.node_models
 import io.iohk.atala.prism.protos.node_models.{CompressedECKeyData, DIDData, ECKeyData}
 import monix.execution.Scheduler.Implicits.global
 import org.scalatest.matchers.must.Matchers
 import org.scalatest.wordspec.AnyWordSpec
-import io.iohk.atala.prism.kotlin.crypto.ECConfig.{INSTANCE => ECConfig}
+import io.iohk.atala.prism.crypto.ECConfig.{INSTANCE => ECConfig}
 import org.scalatest.concurrent.ScalaFutures.convertScalaFuture
 
 class DIDUtilsSpec extends AnyWordSpec with Matchers {
@@ -67,6 +67,19 @@ class DIDUtilsSpec extends AnyWordSpec with Matchers {
     "return AuthError given key not found" in {
       val didData = DIDData(publicKeys = Seq(masterEcKeyDataPublicKey))
       DIDUtils.findPublicKey(didData, "unknown").value.futureValue mustBe Left(UnknownPublicKeyId())
+    }
+
+    "work fine when you pass compressed key as uncompressed" in {
+      val compressedAsUncompressedKey = masterCompressedEcKeyDataPublicKey.copy(keyData =
+        node_models.PublicKey.KeyData.EcKeyData(
+          node_models.ECKeyData(
+            curve = ECConfig.getCURVE_NAME,
+            x = masterCompressedEcKeyData.data
+          )
+        )
+      )
+      val didData = DIDData(publicKeys = Seq(compressedAsUncompressedKey))
+      DIDUtils.findPublicKey(didData, "master").value.futureValue mustBe Right(masterKeys.getPublicKey)
     }
   }
 

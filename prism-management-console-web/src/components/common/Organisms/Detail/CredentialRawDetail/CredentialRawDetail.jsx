@@ -3,18 +3,14 @@ import { InfoCircleOutlined } from '@ant-design/icons';
 import { Drawer, Card, Row, Col, Divider } from 'antd';
 import PropTypes from 'prop-types';
 import { useTranslationWithPrefix } from '../../../../../hooks/useTranslationWithPrefix';
-import CustomButton from '../../../Atoms/CustomButton/CustomButton';
 import JsonView from '../../../Atoms/JsonView/JsonView';
 import './_style.scss';
+import DownloadRawButton from '../../../Atoms/DownloadRawButton/DownloadRawButton';
 
-const CredentialRawDetail = ({ credentialString, visible, onClose }) => {
+const CredentialRawDetail = ({ credentialString, visible, onClose, downloadProps }) => {
   const tp = useTranslationWithPrefix('credentials.drawer.raw');
 
   const credentialJson = JSON.parse(credentialString);
-
-  const { contactName, credentialType, cardNumber } = credentialJson;
-  const downloadHref = `data:text/plain;charset=utf-8,${encodeURIComponent(credentialString)}`;
-  const downloadName = `${contactName}-${credentialType}-${cardNumber}.txt`.replace(' ', '_');
 
   return (
     <Drawer
@@ -45,13 +41,7 @@ const CredentialRawDetail = ({ credentialString, visible, onClose }) => {
             </Col>
           </Row>
         </Card>
-
-        <a href={downloadHref} download={downloadName}>
-          <CustomButton
-            buttonText={tp('downloadFile')}
-            buttonProps={{ className: 'theme-primary w-100' }}
-          />
-        </a>
+        <DownloadRawButton overrideClassName="theme-primary full-width" {...downloadProps} />
       </div>
     </Drawer>
   );
@@ -60,7 +50,12 @@ const CredentialRawDetail = ({ credentialString, visible, onClose }) => {
 CredentialRawDetail.propTypes = {
   credentialString: PropTypes.string.isRequired,
   visible: PropTypes.bool.isRequired,
-  onClose: PropTypes.func.isRequired
+  onClose: PropTypes.func.isRequired,
+  downloadProps: PropTypes.shape({
+    downloadHref: PropTypes.string,
+    downloadName: PropTypes.string,
+    disabled: PropTypes.bool
+  }).isRequired
 };
 
 export default CredentialRawDetail;

@@ -10,6 +10,7 @@ import io.iohk.atala.prism.protos.connector_api.GetCurrentUserRequest
 import io.iohk.atala.prism.protos.cviews_api.{CredentialViewsServiceGrpc, GetCredentialViewTemplatesRequest}
 import io.iohk.atala.prism.view.HtmlViewImage.imageBase64
 import io.iohk.atala.prism.{DIDUtil, RpcSpecBase}
+import io.iohk.atala.prism.utils.IOUtils._
 import org.mockito.MockitoSugar._
 
 import java.io.{File, PrintWriter}
@@ -19,7 +20,7 @@ class CredentialViewsServiceSpec extends RpcSpecBase with DIDUtil {
     new CredentialViewsServiceGrpc.CredentialViewsServiceBlockingStub(_, _)
   )
 
-  private lazy val participantsRepository = ParticipantsRepository(database)
+  private lazy val participantsRepository = ParticipantsRepository.unsafe(dbLiftedToTraceIdIO, testLogs)
   private lazy val requestNoncesRepository = RequestNoncesRepository(database)
   protected lazy val nodeMock = mock[io.iohk.atala.prism.protos.node_api.NodeServiceGrpc.NodeService]
   private lazy val authenticator = new ConnectorAuthenticator(

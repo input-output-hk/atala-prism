@@ -1,5 +1,21 @@
+let grpcClient;
+
+if (process.env.NODE_ENV === 'production') {
+  if (process.env.GATSBY_BRANCH) {
+    grpcClient = `https://${process.env.GATSBY_BRANCH}.atalaprism.io:4433`;
+  } else {
+    grpcClient = 'https://www.atalaprism.io:4433';
+  }
+} else if (process.env.NODE_ENV === 'development') {
+  grpcClient = 'http://localhost:10000';
+} else {
+  throw new Error('process.env.NODE_ENV is neither production nor development');
+}
+
+console.log('grpcClient: ', grpcClient);
+
 export const config = {
-  grpcClient: 'https://www.atalaprism.io:4433',
+  grpcClient,
   issuerId: '091d41cc-e8fc-4c44-9bd3-c938dcf76dff',
   issuerName: 'Department of Interior, Replublic of Redland',
   issuerDid: 'did:iohk:test',

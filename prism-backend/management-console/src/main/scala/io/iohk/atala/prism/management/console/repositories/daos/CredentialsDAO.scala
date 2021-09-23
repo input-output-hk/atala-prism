@@ -10,8 +10,8 @@ import doobie.util.fragments._
 import doobie.implicits.legacy.instant._
 import doobie.implicits.legacy.localdate._
 import io.iohk.atala.prism.connector.AtalaOperationId
-import io.iohk.atala.prism.kotlin.credentials.CredentialBatchId
-import io.iohk.atala.prism.kotlin.crypto.SHA256Digest
+import io.iohk.atala.prism.credentials.CredentialBatchId
+import io.iohk.atala.prism.crypto.Sha256Digest
 import io.iohk.atala.prism.management.console.models._
 import io.iohk.atala.prism.management.console.repositories.daos.queries._
 
@@ -219,7 +219,7 @@ object CredentialsDAO {
 
   def storeBatchData(
       batchId: CredentialBatchId,
-      issuanceOperationHash: SHA256Digest,
+      issuanceOperationHash: Sha256Digest,
       atalaOperationId: AtalaOperationId
   ): doobie.ConnectionIO[Int] = {
     sql"""

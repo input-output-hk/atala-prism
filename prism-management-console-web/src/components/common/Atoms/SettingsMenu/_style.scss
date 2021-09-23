@@ -1,7 +1,7 @@
 @import '../../../../css/general_styling';
 
 .SettingsMenu {
-  width: 150px;
+  width: 11em;
   color: white;
   .userInfo {
     width: 100%;
@@ -14,8 +14,11 @@
         margin-right: 0.5em;
       }
       .UserName {
-        margin: 0 1em;
         @include primary-text($body, white);
+        width: 7em; 
+        text-overflow: ellipsis;
+        white-space: nowrap;
+        overflow: hidden;
       }
     }
   }

@@ -6,7 +6,7 @@ import io.circe.{Json, parser}
 import io.grpc.StatusRuntimeException
 import io.iohk.atala.prism.DIDUtil
 import io.iohk.atala.prism.auth.SignedRpcRequest
-import io.iohk.atala.prism.kotlin.crypto.EC
+import io.iohk.atala.prism.crypto.EC.{INSTANCE => EC}
 import io.iohk.atala.prism.logging.TraceId
 import io.iohk.atala.prism.management.console.DataPreparation._
 import io.iohk.atala.prism.management.console.grpc.ProtoCodecs.toContactProto

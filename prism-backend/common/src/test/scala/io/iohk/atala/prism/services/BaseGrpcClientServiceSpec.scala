@@ -13,13 +13,15 @@ import org.scalatest.matchers.must.Matchers
 import org.mockito.{ArgumentMatchersSugar, MockitoSugar}
 import io.iohk.atala.prism.connector.{RequestAuthenticator, RequestNonce, SignedConnectorRequest}
 import io.iohk.atala.prism.services.BaseGrpcClientService.AuthHeaders
-import io.iohk.atala.prism.kotlin.identity.DID
-import io.iohk.atala.prism.kotlin.crypto.EC
-import io.iohk.atala.prism.kotlin.crypto.keys.ECPrivateKey
+import io.iohk.atala.prism.identity.{PrismDid => DID}
+import io.iohk.atala.prism.crypto.EC.{INSTANCE => EC}
+import io.iohk.atala.prism.crypto.keys.{ECKeyPair, ECPrivateKey}
 import monix.execution.Scheduler.Implicits.global
 
 // sbt "project mirror" "testOnly *services.BaseGrpcClientServiceSpec"
 class BaseGrpcClientServiceSpec extends AnyWordSpec with Matchers with MockitoSugar with ArgumentMatchersSugar {
+
+  val keys: ECKeyPair = EC.generateKeyPair()
 
   "BaseGrpcClientService" should {
     "create metadata headers" in new GrpcClientStubs {
@@ -37,7 +39,7 @@ class BaseGrpcClientServiceSpec extends AnyWordSpec with Matchers with MockitoSu
 
     "sign request with did's private key" in new GrpcClientStubs {
       val metadata = new Metadata
-      metadata.put(AuthHeaders.DID, DID.buildPrismDID("test", null).getValue)
+      metadata.put(AuthHeaders.DID, DID.buildCanonicalFromMasterKey(keys.getPublicKey).toString)
       metadata.put(AuthHeaders.DID_KEY_ID, "master")
       metadata.put(AuthHeaders.DID_SIGNATURE, "c2lnbmF0dXJl")
       metadata.put(AuthHeaders.REQUEST_NONCE, "bm9uY2U=")
@@ -52,9 +54,9 @@ class BaseGrpcClientServiceSpec extends AnyWordSpec with Matchers with MockitoSu
 
   trait GrpcClientStubs {
     val authConfig = BaseGrpcClientService.DidBasedAuthConfig(
-      did = DID.buildPrismDID("test", null),
+      did = DID.buildCanonicalFromMasterKey(keys.getPublicKey),
       didMasterKeyId = "master",
-      didMasterKeyPair = EC.generateKeyPair(),
+      didMasterKeyPair = keys,
       didIssuingKeyId = "issuance",
       didIssuingKeyPair = EC.generateKeyPair()
     )

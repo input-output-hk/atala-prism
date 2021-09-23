@@ -2,12 +2,11 @@ package io.iohk.atala.prism.node.poc.estimations
 
 import com.google.protobuf.ByteString
 import com.typesafe.config.ConfigFactory
-import io.iohk.atala.prism.kotlin.crypto.MerkleRoot
-import io.iohk.atala.prism.kotlin.crypto.{EC, SHA256Digest}
-import io.iohk.atala.prism.kotlin.crypto.keys.{ECPrivateKey, ECPublicKey}
-import io.iohk.atala.prism.kotlin.crypto.ECConfig.{INSTANCE => ECConfig}
-import io.iohk.atala.prism.kotlin.identity.Canonical
-import io.iohk.atala.prism.kotlin.identity.DID.masterKeyId
+import io.iohk.atala.prism.crypto.{MerkleRoot, Sha256}
+import io.iohk.atala.prism.crypto.EC.{INSTANCE => EC}
+import io.iohk.atala.prism.crypto.keys.{ECPrivateKey, ECPublicKey}
+import io.iohk.atala.prism.crypto.ECConfig.{INSTANCE => ECConfig}
+import io.iohk.atala.prism.identity.{CanonicalPrismDid => Canonical, PrismDid => DID}
 import io.iohk.atala.prism.node.NodeConfig
 import io.iohk.atala.prism.node.cardano.models._
 import io.iohk.atala.prism.node.cardano.wallet.CardanoWalletApiClient
@@ -53,7 +52,7 @@ class CardanoFeeEstimator(walletId: WalletId, paymentAddress: Address, cardanoWa
       issuer.credentialsToIssue.foreach { credentialsToIssue =>
         val batches = math.ceil(credentialsToIssue / MAX_CREDENTIAL_BATCH_SIZE.toDouble).toInt
         for (batchId <- 0 until batches) {
-          val merkleRoot = new MerkleRoot(SHA256Digest.compute(s"Issuer ${issuer.id}, batch $batchId".getBytes))
+          val merkleRoot = new MerkleRoot(Sha256.compute(s"Issuer ${issuer.id}, batch $batchId".getBytes))
           issueCredentialBatchAtalaObjects += createAtalaObject(
             signOperation(issueCredentialBatchOperation(merkleRoot, did), issuingKey.getPrivateKey)
           )
@@ -104,14 +103,14 @@ class CardanoFeeEstimator(walletId: WalletId, paymentAddress: Address, cardanoWa
 
   private def signOperation(atalaOperation: AtalaOperation, privateKey: ECPrivateKey): SignedAtalaOperation = {
     node_models.SignedAtalaOperation(
-      signedWith = masterKeyId,
+      signedWith = DID.getDEFAULT_MASTER_KEY_ID,
       operation = Some(atalaOperation),
-      signature = ByteString.copyFrom(EC.sign(atalaOperation.toByteArray, privateKey).getData)
+      signature = ByteString.copyFrom(EC.signBytes(atalaOperation.toByteArray, privateKey).getData)
     )
   }
 
   private def createDID(id: String): Canonical = {
-    new Canonical(SHA256Digest.compute(id.getBytes).hexValue)
+    DID.buildCanonical(Sha256.compute(id.getBytes))
   }
 
   private def addMasterKeyOperation(did: Canonical, publicKey: ECPublicKey): AtalaOperation = {
@@ -121,7 +120,7 @@ class CardanoFeeEstimator(walletId: WalletId, paymentAddress: Address, cardanoWa
           id = did.getSuffix,
           publicKeys = Seq(
             node_models.PublicKey(
-              id = masterKeyId,
+              id = DID.getDEFAULT_MASTER_KEY_ID,
               usage = node_models.KeyUsage.MASTER_KEY,
               keyData = node_models.PublicKey.KeyData.EcKeyData(
                 publicKeyToProto(publicKey)
@@ -141,7 +140,7 @@ class CardanoFeeEstimator(walletId: WalletId, paymentAddress: Address, cardanoWa
       lastOperation: AtalaOperation
   ): AtalaOperation = {
     val createDIDOp = node_models.UpdateDIDOperation(
-      previousOperationHash = ByteString.copyFrom(SHA256Digest.compute(lastOperation.toByteArray).getValue),
+      previousOperationHash = ByteString.copyFrom(Sha256.compute(lastOperation.toByteArray).getValue),
       id = did.getSuffix,
       actions = List(
         node_models.UpdateDIDAction(

@@ -5,11 +5,11 @@ import com.google.protobuf.ByteString
 import doobie.implicits._
 import io.iohk.atala.prism.AtalaWithPostgresSpec
 import io.iohk.atala.prism.connector.AtalaOperationId
-import io.iohk.atala.prism.kotlin.credentials.TimestampInfo
-import io.iohk.atala.prism.kotlin.crypto.{EC, SHA256Digest}
-import io.iohk.atala.prism.kotlin.crypto.keys.ECPrivateKey
-import io.iohk.atala.prism.kotlin.identity.DIDSuffix
-import io.iohk.atala.prism.models.{Ledger, TransactionId}
+import io.iohk.atala.prism.crypto.EC.{INSTANCE => EC}
+import io.iohk.atala.prism.crypto.Sha256
+import io.iohk.atala.prism.crypto.keys.ECPrivateKey
+import io.iohk.atala.prism.protos.models.TimestampInfo
+import io.iohk.atala.prism.models.{DidSuffix, Ledger, TransactionId}
 import io.iohk.atala.prism.node.DataPreparation
 import io.iohk.atala.prism.node.models.{AtalaOperationInfo, AtalaOperationStatus}
 import io.iohk.atala.prism.node.operations.{CreateDIDOperation, CreateDIDOperationSpec}
@@ -33,7 +33,7 @@ object BlockProcessingServiceSpec {
     node_models.SignedAtalaOperation(
       signedWith = keyId,
       operation = Some(operation),
-      signature = ByteString.copyFrom(EC.sign(operation.toByteArray, key).getData)
+      signature = ByteString.copyFrom(EC.signBytes(operation.toByteArray, key).getData)
     )
   }
 
@@ -80,8 +80,8 @@ class BlockProcessingServiceSpec extends AtalaWithPostgresSpec {
 
       val credentials = DIDDataDAO.all().transact(database).unsafeRunSync()
       credentials.size mustBe 1
-      val digest = SHA256Digest.compute(createDidOperation.toByteArray)
-      credentials.head mustBe DIDSuffix.fromDigest(digest)
+      val digest = Sha256.compute(createDidOperation.toByteArray)
+      credentials.head mustBe DidSuffix(digest.getHexValue)
 
       val atalaOperationInfo = DataPreparation.getOperationInfo(atalaOperationId).value
       val expectedAtalaOperationInfo = AtalaOperationInfo(atalaOperationId, objId, AtalaOperationStatus.APPLIED, None)
@@ -99,8 +99,8 @@ class BlockProcessingServiceSpec extends AtalaWithPostgresSpec {
 
       val credentials = DIDDataDAO.all().transact(database).unsafeRunSync()
       credentials.size mustBe 1
-      val digest = SHA256Digest.compute(createDidOperation.toByteArray)
-      credentials.head mustBe DIDSuffix.fromDigest(digest)
+      val digest = Sha256.compute(createDidOperation.toByteArray)
+      credentials.head mustBe DidSuffix(digest.getHexValue)
 
       // shouldn't add new operations to the table
       val count = DataPreparation.getOperationsCount()
@@ -214,7 +214,7 @@ class BlockProcessingServiceSpec extends AtalaWithPostgresSpec {
 
       val credentials = DIDDataDAO.all().transact(database).unsafeRunSync()
       val expectedSuffixes = Seq(signedOperation1.getOperation, operation3)
-        .map(op => DIDSuffix.fromDigest(SHA256Digest.compute(op.toByteArray)))
+        .map(op => DidSuffix(Sha256.compute(op.toByteArray).getHexValue))
       credentials must contain theSameElementsAs (expectedSuffixes)
 
       val atalaOperationInfo1 = DataPreparation.getOperationInfo(opIds.head).value
@@ -244,7 +244,7 @@ class BlockProcessingServiceSpec extends AtalaWithPostgresSpec {
         operation = node_models.AtalaOperation.Operation.UpdateDid(
           value = node_models.UpdateDIDOperation(
             previousOperationHash = ByteString.copyFrom(
-              SHA256Digest.compute(signedCreateDidOperation.operation.value.toByteArray).getValue
+              Sha256.compute(signedCreateDidOperation.operation.value.toByteArray).getValue
             ),
             id = did,
             actions = Seq(exampleAddKeyAction)
@@ -256,7 +256,7 @@ class BlockProcessingServiceSpec extends AtalaWithPostgresSpec {
       val updateDidOperation2 = node_models.AtalaOperation(
         operation = node_models.AtalaOperation.Operation.UpdateDid(
           value = node_models.UpdateDIDOperation(
-            previousOperationHash = ByteString.copyFrom(SHA256Digest.compute(updateDidOperation1.toByteArray).getValue),
+            previousOperationHash = ByteString.copyFrom(Sha256.compute(updateDidOperation1.toByteArray).getValue),
             id = did,
             actions = Seq(exampleRemoveKeyAction)
           )
@@ -366,7 +366,7 @@ class BlockProcessingServiceSpec extends AtalaWithPostgresSpec {
 
       val credentials = DIDDataDAO.all().transact(database).unsafeRunSync()
       val expectedSuffixes = Seq(signedOperation1.getOperation, operation3)
-        .map(op => DIDSuffix.fromDigest(SHA256Digest.compute(op.toByteArray)))
+        .map(op => DidSuffix(Sha256.compute(op.toByteArray).getHexValue))
       credentials must contain theSameElementsAs (expectedSuffixes)
 
       val atalaOperationInfo1 = DataPreparation.getOperationInfo(opIds.head).value

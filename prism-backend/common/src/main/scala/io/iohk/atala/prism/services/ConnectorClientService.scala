@@ -7,7 +7,7 @@ import io.iohk.atala.prism.errors.PrismError
 import io.iohk.atala.prism.models.{ConnectionId, ConnectionToken, ConnectorMessageId, CredentialProofRequestType}
 import io.iohk.atala.prism.protos.connector_api._
 import io.iohk.atala.prism.protos.connector_models.{ConnectionInfo, ReceivedMessage}
-import io.iohk.atala.prism.protos.credential_models.{AtalaMessage, KycBridgeMessage, ProofRequest, StartAcuantProcess}
+import io.iohk.atala.prism.protos.credential_models.{AtalaMessage, ProofRequest}
 import io.iohk.atala.prism.utils.{GrpcStreamsUtils, TaskUtils}
 import monix.eval.Task
 import monix.execution.Scheduler.Implicits.global
@@ -61,11 +61,6 @@ trait ConnectorClientService {
       limit: Int,
       awakeDelay: FiniteDuration
   ): Stream[Task, ConnectionInfo]
-
-  def sendStartAcuantProcess(
-      connectionId: ConnectionId,
-      startAcuantProcess: StartAcuantProcess
-  ): Task[SendMessageResponse]
 
 }
 
@@ -179,20 +174,6 @@ class ConnectorClientServiceImpl(
           TaskUtils.retry(task, CONNECTION_MAX_RETIRES, CONNECTION_RETRY_WAIT_TIME)
       }
       .flatMap(Stream.emits) // convert Seq[ConnectionInfo] to ConnectionInfo
-  }
-
-  def sendStartAcuantProcess(
-      connectionId: ConnectionId,
-      startAcuantProcess: StartAcuantProcess
-  ): Task[SendMessageResponse] = {
-    val kycBridgeMessage =
-      AtalaMessage().withKycBridgeMessage(
-        KycBridgeMessage(KycBridgeMessage.Message.StartAcuantProcess(startAcuantProcess))
-      )
-
-    val request = SendMessageRequest(connectionId.uuid.toString, kycBridgeMessage.toByteString)
-
-    authenticatedCall(request, _.sendMessage)
   }
 
 }

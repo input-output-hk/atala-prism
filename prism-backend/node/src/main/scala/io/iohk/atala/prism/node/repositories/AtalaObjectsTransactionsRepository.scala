@@ -10,13 +10,14 @@ import doobie.implicits._
 import doobie.util.transactor.Transactor
 import io.iohk.atala.prism.metrics.{TimeMeasureMetric, TimeMeasureUtil}
 import io.iohk.atala.prism.metrics.TimeMeasureUtil.MeasureOps
-import io.iohk.atala.prism.models.{Ledger, TransactionStatus}
+import io.iohk.atala.prism.models.{Ledger, TransactionId, TransactionStatus}
 import io.iohk.atala.prism.node.PublicationInfo
 import io.iohk.atala.prism.node.errors.NodeError
 import io.iohk.atala.prism.utils.syntax.DBConnectionOps
 import io.iohk.atala.prism.node.models.{
   AtalaObjectId,
   AtalaObjectInfo,
+  AtalaObjectStatus,
   AtalaObjectTransactionSubmission,
   AtalaObjectTransactionSubmissionStatus
 }
@@ -44,6 +45,12 @@ trait AtalaObjectsTransactionsRepository[F[_]] {
 
   def updateSubmissionStatus(
       submission: AtalaObjectTransactionSubmission,
+      newSubmissionStatus: AtalaObjectTransactionSubmissionStatus
+  ): F[Either[NodeError, Unit]]
+
+  def updateSubmissionStatusIfExists(
+      ledger: Ledger,
+      transactionId: TransactionId,
       newSubmissionStatus: AtalaObjectTransactionSubmissionStatus
   ): F[Either[NodeError, Unit]]
 
@@ -133,6 +140,17 @@ private final class AtalaObjectsTransactionsRepositoryImpl[F[_]: BracketThrow](x
       ().asRight[NodeError].pure[F]
     }
 
+  def updateSubmissionStatusIfExists(
+      ledger: Ledger,
+      transactionId: TransactionId,
+      newSubmissionStatus: AtalaObjectTransactionSubmissionStatus
+  ): F[Either[NodeError, Unit]] = {
+    val query = AtalaObjectTransactionSubmissionsDAO
+      .updateStatusIfTxExists(ledger, transactionId, newSubmissionStatus)
+    val opDescription = s"Setting status $newSubmissionStatus for transaction ${transactionId}"
+    connectionIOSafe(query.logSQLErrors(opDescription, logger).void).transact(xa)
+  }
+
   def storeTransactionSubmission(
       atalaObjectInfo: AtalaObjectInfo,
       publication: PublicationInfo
@@ -167,7 +185,7 @@ private final class AtalaObjectsTransactionsRepositoryImpl[F[_]: BracketThrow](x
           // Object previously saved in DB, but not in the blockchain
           case Some(_) => connection.unit
           // Object was not in DB, save it to populate transaction data below
-          case None => AtalaObjectsDAO.insert(AtalaObjectCreateData(objId, objectBytes))
+          case None => AtalaObjectsDAO.insert(AtalaObjectCreateData(objId, objectBytes, AtalaObjectStatus.Processed))
         }
       }
 
@@ -218,6 +236,9 @@ private final class AtalaObjectsTransactionsRepositoryMetrics[F[_]: TimeMeasureM
   private lazy val updateSubmissionStatusTimer =
     TimeMeasureUtil.createDBQueryTimer(repoName, "updateSubmissionStatus")
 
+  private lazy val updateSubmissionStatusIfExistsTimer =
+    TimeMeasureUtil.createDBQueryTimer(repoName, "updateSubmissionStatusIfExists")
+
   private lazy val storeTransactionSubmissionTimer =
     TimeMeasureUtil.createDBQueryTimer(repoName, "storeTransactionSubmission")
 
@@ -241,6 +262,12 @@ private final class AtalaObjectsTransactionsRepositoryMetrics[F[_]: TimeMeasureM
       newSubmissionStatus: AtalaObjectTransactionSubmissionStatus
   ): Mid[F, Either[NodeError, Unit]] =
     _.measureOperationTime(updateSubmissionStatusTimer)
+
+  override def updateSubmissionStatusIfExists(
+      ledger: Ledger,
+      transactionId: TransactionId,
+      newSubmissionStatus: AtalaObjectTransactionSubmissionStatus
+  ): Mid[F, Either[NodeError, Unit]] = _.measureOperationTime(updateSubmissionStatusIfExistsTimer)
 
   def storeTransactionSubmission(
       atalaObjectInfo: AtalaObjectInfo,

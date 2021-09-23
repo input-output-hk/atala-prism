@@ -1,5 +1,5 @@
 import React from 'react';
-import { APP_STORE_URL, GOOGLE_PLAY_STORE_URL } from '../../../../helpers/constants';
+import { APP_STORE_URL, GOOGLE_PLAY_STORE_URL } from '../../../../../helpers/constants';
 
 import './_style.scss';
 

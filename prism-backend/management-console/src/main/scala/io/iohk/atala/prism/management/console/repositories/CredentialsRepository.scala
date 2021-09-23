@@ -12,8 +12,8 @@ import doobie.{ConnectionIO, FC}
 import doobie.util.transactor.Transactor
 import doobie.implicits._
 import io.iohk.atala.prism.connector.AtalaOperationId
-import io.iohk.atala.prism.kotlin.credentials.CredentialBatchId
-import io.iohk.atala.prism.kotlin.crypto.SHA256Digest
+import io.iohk.atala.prism.credentials.CredentialBatchId
+import io.iohk.atala.prism.crypto.Sha256Digest
 import io.iohk.atala.prism.management.console.errors._
 import io.iohk.atala.prism.management.console.models._
 import io.iohk.atala.prism.management.console.repositories.daos.{ContactsDAO, CredentialTypeDao, CredentialsDAO}
@@ -64,7 +64,7 @@ trait CredentialsRepository[F[_]] {
 
   def storeBatchData(
       batchId: CredentialBatchId,
-      issuanceOperationHash: SHA256Digest,
+      issuanceOperationHash: Sha256Digest,
       atalaOperationId: AtalaOperationId
   ): F[Int]
 
@@ -239,7 +239,7 @@ private final class CredentialsRepositoryImpl[F[_]: BracketThrow](xa: Transactor
 
   def storeBatchData(
       batchId: CredentialBatchId,
-      issuanceOperationHash: SHA256Digest,
+      issuanceOperationHash: Sha256Digest,
       atalaOperationId: AtalaOperationId
   ): F[Int] =
     CredentialsDAO

@@ -3,6 +3,7 @@ import PropTypes from 'prop-types';
 import OptionsHeader from '../Atoms/OptionsHeader';
 import ContactCreationTable from '../Organisms/Tables/ContactCreationTable';
 import { groupShape } from '../../../helpers/propShapes';
+import './_style.scss';
 
 const ManualContactCreation = ({ groupsProps, addEntity }) => (
   <div className="ManualImportWrapper ContactsImportWrapper">

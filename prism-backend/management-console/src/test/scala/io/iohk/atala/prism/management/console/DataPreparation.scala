@@ -8,10 +8,10 @@ import io.circe.syntax._
 import io.iohk.atala.prism.auth.grpc.GrpcAuthenticationHeader
 import io.iohk.atala.prism.auth.model.RequestNonce
 import io.iohk.atala.prism.connector.AtalaOperationId
-import io.iohk.atala.prism.kotlin.credentials.CredentialBatchId
-import io.iohk.atala.prism.kotlin.crypto.{EC, MerkleInclusionProof, SHA256Digest}
-import io.iohk.atala.prism.kotlin.crypto.signature.ECSignature
-import io.iohk.atala.prism.kotlin.identity.DID
+import io.iohk.atala.prism.credentials.CredentialBatchId
+import io.iohk.atala.prism.crypto.{EC, MerkleInclusionProof, Sha256, Sha256Digest}
+import io.iohk.atala.prism.crypto.signature.ECSignature
+import io.iohk.atala.prism.identity.{PrismDid => DID}
 import io.iohk.atala.prism.management.console.models._
 import io.iohk.atala.prism.management.console.repositories.daos.ReceivedCredentialsDAO.ReceivedSignedCredentialData
 import io.iohk.atala.prism.management.console.repositories.daos._
@@ -203,7 +203,7 @@ object DataPreparation {
   }
 
   def newDID(): DID = {
-    DID.createUnpublishedDID(EC.generateKeyPair().getPublicKey, null).canonical
+    DID.buildLongFormFromMasterKey(EC.INSTANCE.generateKeyPair().getPublicKey).asCanonical()
   }
 
   def publishCredential(
@@ -233,13 +233,13 @@ object DataPreparation {
   }
   def getBatchData(
       batchId: CredentialBatchId
-  )(implicit database: Transactor[IO]): Option[(AtalaOperationId, SHA256Digest)] = {
+  )(implicit database: Transactor[IO]): Option[(AtalaOperationId, Sha256Digest)] = {
     sql"""
          |SELECT issuance_operation_id, issuance_operation_hash
          |FROM published_batches
          |WHERE batch_id = ${batchId.getId}
          |""".stripMargin
-      .query[(AtalaOperationId, SHA256Digest)]
+      .query[(AtalaOperationId, Sha256Digest)]
       .option
       .transact(database)
       .unsafeRunSync()
@@ -247,7 +247,7 @@ object DataPreparation {
 
   def publishBatch(
       batchId: CredentialBatchId,
-      previousOperationHash: SHA256Digest,
+      previousOperationHash: Sha256Digest,
       atalaOperationId: AtalaOperationId
   )(implicit database: Transactor[IO]): Unit = {
     CredentialsDAO
@@ -267,7 +267,7 @@ object DataPreparation {
   )(implicit
       database: Transactor[IO]
   ): Unit = {
-    val aHash = SHA256Digest.compute("test".getBytes)
+    val aHash = Sha256.compute("test".getBytes)
     val aBatchId = CredentialBatchId.random()
     val anEncodedSignedCredential = "mockEncodedSignedCredential"
     val aMerkleProof = new MerkleInclusionProof(aHash, 0, List().asJava)

@@ -6,10 +6,10 @@ import io.iohk.atala.prism.auth.errors.{AuthError, AuthErrorSupport, SignatureVe
 import io.iohk.atala.prism.auth.grpc.{GrpcAuthenticationHeader, GrpcAuthenticationHeaderParser, SignedRequestsHelper}
 import io.iohk.atala.prism.auth.model.RequestNonce
 import io.iohk.atala.prism.auth.utils.DIDUtils
-import io.iohk.atala.prism.kotlin.crypto.EC
-import io.iohk.atala.prism.kotlin.crypto.keys.ECPublicKey
-import io.iohk.atala.prism.kotlin.crypto.signature.ECSignature
-import io.iohk.atala.prism.kotlin.identity.DID
+import io.iohk.atala.prism.crypto.EC.{INSTANCE => EC}
+import io.iohk.atala.prism.crypto.keys.ECPublicKey
+import io.iohk.atala.prism.crypto.signature.ECSignature
+import io.iohk.atala.prism.identity.{PrismDid => DID}
 import io.iohk.atala.prism.protos.node_api
 import io.iohk.atala.prism.utils.FutureEither
 import io.iohk.atala.prism.utils.FutureEither._
@@ -125,7 +125,7 @@ abstract class SignedRequestsAuthenticatorBase[Id](
     Future {
       Either
         .cond[AuthError, Unit](
-          EC.verify(payload, publicKey, signature),
+          EC.verifyBytes(payload, publicKey, signature),
           (),
           SignatureVerificationError()
         )

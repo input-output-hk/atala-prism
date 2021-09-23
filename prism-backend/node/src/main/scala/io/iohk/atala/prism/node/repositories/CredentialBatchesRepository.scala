@@ -6,8 +6,8 @@ import derevo.derive
 import derevo.tagless.applyK
 import doobie.implicits._
 import doobie.util.transactor.Transactor
-import io.iohk.atala.prism.kotlin.credentials.CredentialBatchId
-import io.iohk.atala.prism.kotlin.crypto.SHA256Digest
+import io.iohk.atala.prism.credentials.CredentialBatchId
+import io.iohk.atala.prism.crypto.Sha256Digest
 import io.iohk.atala.prism.node.errors.NodeError
 import io.iohk.atala.prism.node.models.nodeState.{CredentialBatchState, LedgerData}
 import io.iohk.atala.prism.node.repositories.daos.CredentialBatchesDAO
@@ -22,7 +22,7 @@ trait CredentialBatchesRepository[F[_]] {
   def getBatchState(batchId: CredentialBatchId): F[Either[NodeError, Option[CredentialBatchState]]]
   def getCredentialRevocationTime(
       batchId: CredentialBatchId,
-      credentialHash: SHA256Digest
+      credentialHash: Sha256Digest
   ): F[Either[NodeError, Option[LedgerData]]]
 }
 
@@ -47,7 +47,7 @@ private final class CredentialBatchesRepositoryImpl[F[_]: BracketThrow](xa: Tran
 
   def getCredentialRevocationTime(
       batchId: CredentialBatchId,
-      credentialHash: SHA256Digest
+      credentialHash: Sha256Digest
   ): F[Either[NodeError, Option[LedgerData]]] =
     EitherT
       .right[NodeError](CredentialBatchesDAO.findRevokedCredentialLedgerData(batchId, credentialHash))
@@ -68,6 +68,6 @@ private final class CredentialBatchesRepositoryMetrics[F[_]: TimeMeasureMetric: 
     _.measureOperationTime(getBatchStateTimer)
   override def getCredentialRevocationTime(
       batchId: CredentialBatchId,
-      credentialHash: SHA256Digest
+      credentialHash: Sha256Digest
   ): Mid[F, Either[NodeError, Option[LedgerData]]] = _.measureOperationTime(getCredentialRevocationTimeTimer)
 }

@@ -20,7 +20,7 @@ package object errors {
 
   case object CanonicalSuffixMatchStateError extends AuthError {
     override def toStatus: Status = {
-      Status.UNAUTHENTICATED.withDescription("DID canonical suffix does not match the state content")
+      Status.UNAUTHENTICATED.withDescription("PrismDid canonical suffix does not match the state content")
     }
   }
 
@@ -32,7 +32,7 @@ package object errors {
 
   case object NoCreateDidOperationError extends AuthError {
     override def toStatus: Status = {
-      Status.UNAUTHENTICATED.withDescription("Encoded operation does not create a fresh DID")
+      Status.UNAUTHENTICATED.withDescription("Encoded operation does not create a fresh PrismDid")
     }
   }
 

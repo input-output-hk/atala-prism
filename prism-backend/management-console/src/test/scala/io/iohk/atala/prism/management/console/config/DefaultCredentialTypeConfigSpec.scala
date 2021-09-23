@@ -1,7 +1,7 @@
 package io.iohk.atala.prism.management.console.config
 
 import com.typesafe.config.ConfigFactory
-import io.iohk.atala.prism.kotlin.credentials.utils.Mustache
+import io.iohk.atala.prism.credentials.utils.Mustache
 import org.scalatest.matchers.must.Matchers
 import org.scalatest.wordspec.AnyWordSpec
 import io.iohk.atala.prism.interop.KotlinFunctionConverters._

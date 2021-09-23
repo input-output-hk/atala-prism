@@ -2,8 +2,8 @@ package io.iohk.atala.prism.vault
 
 import java.time.Instant
 import java.util.UUID
-import io.iohk.atala.prism.kotlin.crypto.SHA256Digest
-import io.iohk.atala.prism.kotlin.identity.DID
+import io.iohk.atala.prism.crypto.Sha256Digest
+import io.iohk.atala.prism.identity.{PrismDid => DID}
 import io.iohk.atala.prism.models.UUIDValue
 import tofu.logging.derivation.loggable
 import derevo.derive
@@ -11,7 +11,7 @@ import derevo.derive
 package object model {
   final case class CreatePayload(
       externalId: Payload.ExternalId,
-      hash: SHA256Digest,
+      hash: Sha256Digest,
       did: DID,
       content: Vector[Byte]
   )
@@ -19,7 +19,7 @@ package object model {
   final case class Payload(
       id: Payload.Id,
       externalId: Payload.ExternalId,
-      hash: SHA256Digest,
+      hash: Sha256Digest,
       did: DID,
       content: Vector[Byte],
       createdAt: Instant
