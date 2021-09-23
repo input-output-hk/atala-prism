@@ -5,8 +5,8 @@ import io.grpc.Status
 import io.iohk.atala.prism.connector.model.{ConnectionId, MessageId, TokenString}
 import io.iohk.atala.prism.errors.{PrismError, PrismServerError}
 import io.iohk.atala.prism.models.ParticipantId
-import io.iohk.atala.prism.kotlin.crypto.keys.ECPublicKey
-import io.iohk.atala.prism.kotlin.identity.{PrismDid => DID}
+import io.iohk.atala.prism.crypto.keys.ECPublicKey
+import io.iohk.atala.prism.identity.{PrismDid => DID}
 import tofu.logging.{DictLoggable, LogRenderer, Loggable}
 import io.iohk.atala.prism.logging.GeneralLoggableInstances._
 import tofu.logging.derivation.loggable

@@ -1,8 +1,8 @@
 package io.iohk.atala.prism.util
 
 import com.google.protobuf.ByteString
-import io.iohk.atala.prism.kotlin.crypto.keys.ECPublicKey
-import io.iohk.atala.prism.kotlin.crypto.ECConfig.{INSTANCE => ECConfig}
+import io.iohk.atala.prism.crypto.keys.ECPublicKey
+import io.iohk.atala.prism.crypto.ECConfig.{INSTANCE => ECConfig}
 import io.iohk.atala.prism.protos.node_models
 
 object KeyUtils {

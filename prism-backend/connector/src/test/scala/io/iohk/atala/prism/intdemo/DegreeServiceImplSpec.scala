@@ -8,7 +8,7 @@ import org.scalatest.OptionValues._
 import org.scalatest.flatspec.AnyFlatSpec
 import org.scalatest.matchers.should.Matchers._
 import io.iohk.atala.prism.utils.Base64Utils
-import io.iohk.atala.prism.kotlin.identity.{PrismDid => DID}
+import io.iohk.atala.prism.identity.{PrismDid => DID}
 
 class DegreeServiceImplSpec extends AnyFlatSpec {
 

@@ -4,10 +4,10 @@ import cats.implicits.catsSyntaxEitherId
 import io.iohk.atala.prism.connector.errors._
 import io.iohk.atala.prism.connector.model._
 import io.iohk.atala.prism.connector.repositories.ConnectionsRepository
-import io.iohk.atala.prism.kotlin.crypto.EC.{INSTANCE => EC}
-import io.iohk.atala.prism.kotlin.identity.{PrismDid => DID}
-import io.iohk.atala.prism.kotlin.crypto.keys.ECPublicKey
-import io.iohk.atala.prism.kotlin.crypto.ECConfig.{INSTANCE => ECConfig}
+import io.iohk.atala.prism.crypto.EC.{INSTANCE => EC}
+import io.iohk.atala.prism.identity.{PrismDid => DID}
+import io.iohk.atala.prism.crypto.keys.ECPublicKey
+import io.iohk.atala.prism.crypto.ECConfig.{INSTANCE => ECConfig}
 import io.iohk.atala.prism.logging.TraceId
 import io.iohk.atala.prism.logging.TraceId.IOWithTraceIdContext
 import io.iohk.atala.prism.models.ParticipantId

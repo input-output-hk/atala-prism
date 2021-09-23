@@ -5,8 +5,8 @@ import io.iohk.atala.prism.connector.errors.UnknownValueError
 import io.iohk.atala.prism.connector.model._
 import io.iohk.atala.prism.connector.repositories.daos._
 import io.iohk.atala.prism.connector.DataPreparation
-import io.iohk.atala.prism.kotlin.crypto.Sha256Digest
-import io.iohk.atala.prism.kotlin.identity.{PrismDid => DID}
+import io.iohk.atala.prism.crypto.Sha256Digest
+import io.iohk.atala.prism.identity.{PrismDid => DID}
 import io.iohk.atala.prism.utils.Base64Utils.decodeURL
 import io.iohk.atala.prism.logging.TraceId
 import io.iohk.atala.prism.logging.TraceId.IOWithTraceIdContext

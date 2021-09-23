@@ -9,9 +9,9 @@ import io.iohk.atala.prism.auth.SignedRpcRequest
 import io.iohk.atala.prism.auth.grpc.SignedRequestsHelper
 import io.iohk.atala.prism.connector.model.MessageId
 import io.iohk.atala.prism.connector.repositories.daos.MessagesDAO
-import io.iohk.atala.prism.kotlin.crypto.EC.{INSTANCE => EC}
-import io.iohk.atala.prism.kotlin.crypto.keys.{ECKeyPair, ECPublicKey}
-import io.iohk.atala.prism.kotlin.identity.{PrismDid => DID}
+import io.iohk.atala.prism.crypto.EC.{INSTANCE => EC}
+import io.iohk.atala.prism.crypto.keys.{ECKeyPair, ECPublicKey}
+import io.iohk.atala.prism.identity.{PrismDid => DID}
 import io.iohk.atala.prism.models.ParticipantId
 import io.iohk.atala.prism.protos.connector_api
 import io.iohk.atala.prism.protos.connector_models.MessageToSendByConnectionToken

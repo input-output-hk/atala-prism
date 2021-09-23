@@ -5,9 +5,9 @@ import cats.syntax.option._
 import doobie.implicits._
 import io.iohk.atala.prism.connector.model._
 import io.iohk.atala.prism.connector.repositories.daos.ParticipantsDAO
-import io.iohk.atala.prism.kotlin.crypto.EC.{INSTANCE => EC}
-import io.iohk.atala.prism.kotlin.crypto.Sha256
-import io.iohk.atala.prism.kotlin.identity.{PrismDid => DID}
+import io.iohk.atala.prism.crypto.EC.{INSTANCE => EC}
+import io.iohk.atala.prism.crypto.Sha256
+import io.iohk.atala.prism.identity.{PrismDid => DID}
 import io.iohk.atala.prism.models.ParticipantId
 import io.iohk.atala.prism.protos.connector_api.{RegisterDIDRequest, RegisterDIDResponse}
 import io.iohk.atala.prism.protos.node_api.{CreateDIDResponse, GetDidDocumentResponse}

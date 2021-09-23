@@ -5,11 +5,11 @@ import doobie.implicits._
 import doobie.util.transactor.Transactor
 import io.iohk.atala.prism.connector.model.{ParticipantInfo, ParticipantType}
 import io.iohk.atala.prism.connector.repositories.{daos => connectorDaos}
-import io.iohk.atala.prism.kotlin.credentials.CredentialBatchId
-import io.iohk.atala.prism.kotlin.crypto.{EC, Sha256Digest}
-import io.iohk.atala.prism.kotlin.crypto.keys.ECPublicKey
+import io.iohk.atala.prism.credentials.CredentialBatchId
+import io.iohk.atala.prism.crypto.{EC, Sha256Digest}
+import io.iohk.atala.prism.crypto.keys.ECPublicKey
 import io.iohk.atala.prism.daos.BaseDAO
-import io.iohk.atala.prism.kotlin.identity.{PrismDid => DID}
+import io.iohk.atala.prism.identity.{PrismDid => DID}
 import io.iohk.atala.prism.models.ParticipantId
 
 object DataPreparation extends BaseDAO {

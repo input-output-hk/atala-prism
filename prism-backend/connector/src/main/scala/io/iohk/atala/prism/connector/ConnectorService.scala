@@ -20,8 +20,8 @@ import io.iohk.atala.prism.connector.services.{
   MessagesService,
   RegistrationService
 }
-import io.iohk.atala.prism.kotlin.crypto.EC.{INSTANCE => EC}
-import io.iohk.atala.prism.kotlin.crypto.keys.ECPublicKey
+import io.iohk.atala.prism.crypto.EC.{INSTANCE => EC}
+import io.iohk.atala.prism.crypto.keys.ECPublicKey
 import io.iohk.atala.prism.logging.TraceId
 import io.iohk.atala.prism.logging.TraceId.IOWithTraceIdContext
 import io.iohk.atala.prism.metrics.RequestMeasureUtil.measureRequestFuture
