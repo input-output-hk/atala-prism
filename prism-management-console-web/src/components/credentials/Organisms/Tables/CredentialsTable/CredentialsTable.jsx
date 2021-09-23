@@ -262,7 +262,7 @@ const CredentialsTable = ({
   };
 
   return (
-    <div className={`CredentialsTable ${tableClassName[tab]}`}>
+    <div className={`CredentialsTable InfiniteScrollTableContainer ${tableClassName[tab]}`}>
       <InfiniteScrollTable
         columns={columns[tab]}
         data={credentials}

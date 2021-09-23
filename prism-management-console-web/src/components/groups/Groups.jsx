@@ -18,6 +18,7 @@ import CopyGroupModal from './Organisms/Modals/CopyGroupModal/CopyGroupModal';
 import { CONFIRMED, UNCONFIRMED } from '../../helpers/constants';
 
 import './_style.scss';
+import { useGroupStore, useGroupUiState } from '../../hooks/useGroupStore';
 
 const NewGroupButton = ({ onClick }) => {
   const { t } = useTranslation();
@@ -34,22 +35,7 @@ const NewGroupButton = ({ onClick }) => {
 };
 
 const Groups = observer(
-  ({
-    groups,
-    handleGroupDeletion,
-    copyGroup,
-    loading,
-    searching,
-    hasMore,
-    isFilter,
-    setName,
-    setDateRange,
-    setSortingKey,
-    setSortingDirection,
-    sortingDirection,
-    getMoreGroups,
-    redirector: { redirectToGroupCreation }
-  }) => {
+  ({ handleGroupDeletion, copyGroup, redirector: { redirectToGroupCreation } }) => {
     const { t } = useTranslation();
 
     const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
@@ -58,6 +44,8 @@ const Groups = observer(
     const [groupToDelete, setGroupToDelete] = useState({});
 
     const { accountStatus } = useSession();
+    const { groups, hasMore, isLoadingFirstPage } = useGroupStore();
+    const { hasFiltersApplied } = useGroupUiState();
 
     const closeDeleteModal = () => {
       setIsDeleteModalOpen(false);
@@ -99,10 +87,7 @@ const Groups = observer(
     const tableProps = {
       onCopy,
       setGroupToDelete,
-      groups,
-      searching,
-      hasMore,
-      getMoreGroups
+      hasMore
     };
 
     const newGroupButton = <NewGroupButton onClick={redirectToGroupCreation} />;
@@ -113,9 +98,9 @@ const Groups = observer(
     };
 
     const renderContent = () => {
-      if (loading) return <SimpleLoading size="md" />;
-      if (groups.length) return <GroupsTable {...tableProps} groups={groups} />;
-      if (isFilter) return <EmptyComponent {...emptyProps} isFilter />;
+      if (isLoadingFirstPage) return <SimpleLoading size="md" />;
+      if (groups.length) return <GroupsTable {...tableProps} />;
+      if (hasFiltersApplied) return <EmptyComponent {...emptyProps} isFilter />;
       return (
         <EmptyComponent {...emptyProps} button={accountStatus === CONFIRMED && newGroupButton} />
       );
@@ -132,18 +117,12 @@ const Groups = observer(
           </div>
           <div className="filterSection">
             <div className="filterContainer">
-              <GroupFilters
-                setName={setName}
-                setDateRange={setDateRange}
-                setSortingKey={setSortingKey}
-                setSortingDirection={setSortingDirection}
-                sortingDirection={sortingDirection}
-              />
+              <GroupFilters />
             </div>
             {accountStatus === CONFIRMED && newGroupButton}
           </div>
         </div>
-        <div className="GroupContentContainer">{renderContent()}</div>
+        <div className="GroupContentContainer InfiniteScrollTableContainer">{renderContent()}</div>
       </div>
     );
   }
@@ -151,7 +130,6 @@ const Groups = observer(
 
 Groups.defaultProps = {
   groups: [],
-  loading: false,
   searching: false,
   hasMore: true
 };
@@ -160,7 +138,6 @@ Groups.propTypes = {
   groups: PropTypes.arrayOf(PropTypes.shape(groupShape)),
   handleGroupDeletion: PropTypes.func.isRequired,
   copyGroup: PropTypes.func.isRequired,
-  loading: PropTypes.bool,
   searching: PropTypes.bool,
   hasMore: PropTypes.bool,
   isFilter: PropTypes.bool.isRequired,

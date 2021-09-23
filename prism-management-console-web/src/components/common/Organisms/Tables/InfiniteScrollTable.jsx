@@ -1,5 +1,5 @@
 import React, { useEffect } from 'react';
-import { Table } from 'antd';
+import { ConfigProvider, Empty, Table } from 'antd';
 import PropTypes from 'prop-types';
 import SimpleLoading from '../../Atoms/SimpleLoading/SimpleLoading';
 import './_style.scss';
@@ -30,19 +30,27 @@ const InfiniteScrollTable = ({
     return () => tableContent.removeEventListener('scroll', scrollListener);
   }, [hasMore, loading, getMoreData]);
 
+  const showFooter = Boolean(data.length && (searching || loading));
+
+  const renderLoadingRow = () => <SimpleLoading size="xs" />;
+  // TODO: add i18n
+  const renderEmpty = () => <Empty description="No results" />;
+
   return (
-    <div className={`InfiniteScrollTableContainer ${handleSort ? '' : 'PaginatedTable'}`}>
-      <Table
-        rowSelection={selectionType}
-        columns={columns}
-        dataSource={data}
-        onChange={(_pagination, _filters, sorter) => {
-          if (handleSort) return handleSort(sorter);
-        }}
-        pagination={false}
-        rowKey={rowKey}
-        footer={searching || loading ? () => <SimpleLoading size="xs" /> : null}
-      />
+    <div className={`InfiniteScrollTable ${handleSort ? '' : 'PaginatedTable'}`}>
+      <ConfigProvider renderEmpty={searching ? renderLoadingRow : renderEmpty}>
+        <Table
+          rowSelection={selectionType}
+          columns={columns}
+          dataSource={data}
+          onChange={(_pagination, _filters, sorter) => {
+            if (handleSort) return handleSort(sorter);
+          }}
+          pagination={false}
+          rowKey={rowKey}
+          footer={showFooter && renderLoadingRow}
+        />
+      </ConfigProvider>
     </div>
   );
 };
