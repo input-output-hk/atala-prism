@@ -16,7 +16,7 @@ import io.iohk.atala.prism.management.console.repositories.daos.CredentialTypeDa
 import io.iohk.atala.prism.utils.syntax.DBConnectionOps
 import io.iohk.atala.prism.metrics.TimeMeasureMetric
 import doobie.free.connection
-import io.iohk.atala.prism.kotlin.credentials.utils.{Mustache, MustacheError, MustacheParsingError}
+import io.iohk.atala.prism.credentials.utils.{Mustache, MustacheError, MustacheParsingError}
 import io.iohk.atala.prism.management.console.repositories.logs.CredentialTypeRepositoryLogs
 import io.iohk.atala.prism.management.console.repositories.metrics.CredentialTypeRepositoryMetrics
 

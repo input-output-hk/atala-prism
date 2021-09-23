@@ -3,7 +3,7 @@ package io.iohk.atala.prism.management.console.models
 import derevo.derive
 import tofu.logging.derivation.loggable
 import java.util.UUID
-import io.iohk.atala.prism.kotlin.identity.{PrismDid => DID}
+import io.iohk.atala.prism.identity.{PrismDid => DID}
 import io.iohk.atala.prism.models.UUIDValue
 
 @derive(loggable)
