@@ -14,7 +14,8 @@ import '../../pages/blog.scss';
 const BlogPostTemplate = ({ data, location, pageContext }) => {
   const post = data.markdownRemark;
 
-  const backTo = location.state?.fromResources ? '/resources' : '/blog';
+  const backTo =
+    location && location.state && location.state.fromResources ? '/resources' : '/blog';
 
   return (
     <div className="BlogContainer">

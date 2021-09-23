@@ -15,7 +15,8 @@ import {
   FAQ_NAME,
   CONTACT_US_NAME,
   BLOG_NAME,
-  RESOURCES_NAME
+  RESOURCES_NAME,
+  PIONEERS_NAME
 } from '../../helpers/constants';
 
 import './_style.scss';
@@ -43,6 +44,11 @@ const NavBar = ({ currentSection }) => {
       ))}
       <Menu.Item key={RESOURCES_NAME}>
         <Link to="/resources">{t(`navBar.menuItems.${RESOURCES_NAME}`)}</Link>
+      </Menu.Item>
+      <Menu.Item key={PIONEERS_NAME}>
+        <Link to="/pioneers" state={{ fromResources: currentSection === RESOURCES_NAME }}>
+          {t(`navBar.menuItems.${PIONEERS_NAME}`)}
+        </Link>
       </Menu.Item>
       <Menu.Item key={BLOG_NAME}>
         <Link to="/blog">{t(`navBar.menuItems.${BLOG_NAME}`)}</Link>

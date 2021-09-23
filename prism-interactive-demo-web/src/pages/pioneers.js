@@ -11,14 +11,16 @@ import SEO from '../components/seo/seo';
 
 import './pioneers.scss';
 
-const BlogIndex = () => {
+const Pioneers = ({ location }) => {
+  const backTo = location && location.state && location.state.fromResources ? '/resources' : '/';
+
   return (
     <div className="ContainerPioneers">
       <SEO title="Pioneers" />
       <div className="Pioneers">
         <div className="header">
           <img src={logo} alt="atala" />
-          <a className="link" href="/">
+          <a className="link" href={backTo}>
             Back
           </a>
         </div>
@@ -52,7 +54,7 @@ const BlogIndex = () => {
             <div id="registerInterest" className="WhiteBox">
               <div className="Container">
                 <h2>Register your interest</h2>
-                <p>After clicking register you will be asked to answer some questions.</p>
+                <p>After clicking Register, you will be asked to answer some questions.</p>
                 <p>We will be in touch in due course.</p>
                 <a
                   href="https://input-output.typeform.com/to/dhnOj4gT"
@@ -103,7 +105,7 @@ const BlogIndex = () => {
   );
 };
 
-export default BlogIndex;
+export default Pioneers;
 
 export const pageQuery = graphql`
   query {
