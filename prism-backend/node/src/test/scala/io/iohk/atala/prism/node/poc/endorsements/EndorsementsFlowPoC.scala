@@ -42,10 +42,11 @@ import io.iohk.atala.prism.protos.endorsements_api.{
   GetFreshMasterKeyRequest,
   RevokeEndorsementRequest
 }
-import io.iohk.atala.prism.protos.node_api.{CreateDIDRequest, GetDidDocumentRequest, PublishAsABlockRequest}
+import io.iohk.atala.prism.protos.node_api.{CreateDIDRequest, GetDidDocumentRequest, ScheduleOperationsRequest}
 import io.iohk.atala.prism.services.NodeClientService.{issueBatchOperation, revokeCredentialsOperation}
 import monix.execution.Scheduler.Implicits.{global => scheduler}
 import org.scalatest.BeforeAndAfterEach
+import org.scalatest.OptionValues.convertOptionToValuable
 
 import scala.concurrent.{Future, Promise}
 import scala.jdk.CollectionConverters._
@@ -225,18 +226,18 @@ class EndorsementsFlowPoC extends AtalaWithPostgresSpec with BeforeAndAfterEach 
       val signedAddKeyOp = wallet.signOperation(updateAddMoEKeyOp, "master0", regionDIDSuffix)
 
       // the region now published the CreateDID and UpdateDID operations
-      val publishAsABlockResponse = nodeServiceStub.publishAsABlock(
-        PublishAsABlockRequest(
+      val scheduleOperationsResponse = nodeServiceStub.scheduleOperations(
+        ScheduleOperationsRequest(
           Seq(
             signedRegionCreateDIDOp,
             signedAddKeyOp
           )
         )
       )
-      publishAsABlockResponse.outputs.size must be(2)
+      scheduleOperationsResponse.outputs.size must be(2)
       DataPreparation.flushOperationsAndWaitConfirmation(
         nodeServiceStub,
-        publishAsABlockResponse.outputs.map(_.operationId): _*
+        scheduleOperationsResponse.outputs.map(_.operationMaybe.operationId.value): _*
       )
 
       //  8. the region shares back its DID

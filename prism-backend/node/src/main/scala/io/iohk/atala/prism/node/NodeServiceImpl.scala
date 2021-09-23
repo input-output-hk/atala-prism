@@ -105,11 +105,16 @@ class NodeServiceImpl(
           operation <- operationF
           _ = logWithTraceId(methodName, traceId, "operationId" -> s"${AtalaOperationId.of(operation).toString}")
           parsedOp <- errorEitherToFutureAndCount(methodName, CreateDIDOperation.parseWithMockedLedgerData(operation))
-          operationId <- objectManagement.sendSingleAtalaOperation(operation)
+          operationIdE <- objectManagement.scheduleSingleAtalaOperation(operation)
         } yield {
-          node_api
-            .CreateDIDResponse(id = parsedOp.id.getValue)
-            .withOperationId(operationId.toProtoByteString)
+          val response = node_api.CreateDIDResponse(id = parsedOp.id.getValue)
+          operationIdE.fold(
+            { err =>
+              logger.warn(s"DID wasn't created, error: $err")
+              response
+            },
+            operationId => response.withOperationId(operationId.toProtoByteString)
+          )
         }
       }
     }
@@ -125,11 +130,16 @@ class NodeServiceImpl(
           operation <- operationF
           _ = logWithTraceId(methodName, traceId, "operationId" -> s"${AtalaOperationId.of(operation).toString}")
           _ <- errorEitherToFutureAndCount(methodName, UpdateDIDOperation.validate(operation))
-          operationId <- objectManagement.sendSingleAtalaOperation(operation)
+          operationIdE <- objectManagement.scheduleSingleAtalaOperation(operation)
         } yield {
-          node_api
-            .UpdateDIDResponse()
-            .withOperationId(operationId.toProtoByteString)
+          val response = node_api.UpdateDIDResponse()
+          operationIdE.fold(
+            { err =>
+              logger.warn(s"DID wasn't updated, error: $err")
+              response
+            },
+            operationId => response.withOperationId(operationId.toProtoByteString)
+          )
         }
       }
     }
@@ -146,11 +156,16 @@ class NodeServiceImpl(
           _ = logWithTraceId(methodName, traceId, "operationId" -> s"${AtalaOperationId.of(operation).toString}")
           parsedOp <-
             errorEitherToFutureAndCount(methodName, IssueCredentialBatchOperation.parseWithMockedLedgerData(operation))
-          operationId <- objectManagement.sendSingleAtalaOperation(operation)
+          operationIdE <- objectManagement.scheduleSingleAtalaOperation(operation)
         } yield {
-          node_api
-            .IssueCredentialBatchResponse(batchId = parsedOp.credentialBatchId.getId)
-            .withOperationId(operationId.toProtoByteString)
+          val response = node_api.IssueCredentialBatchResponse(batchId = parsedOp.credentialBatchId.getId)
+          operationIdE.fold(
+            { err =>
+              logger.warn(s"Credentials weren't issued, error: $err")
+              response
+            },
+            operationId => response.withOperationId(operationId.toProtoByteString)
+          )
         }
       }
     }
@@ -165,11 +180,16 @@ class NodeServiceImpl(
           operation <- operationF
           _ = logWithTraceId(methodName, traceId, "operationId" -> s"${AtalaOperationId.of(operation).toString}")
           _ <- errorEitherToFutureAndCount(methodName, RevokeCredentialsOperation.validate(operation))
-          operationId <- objectManagement.sendSingleAtalaOperation(operation)
+          operationIdE <- objectManagement.scheduleSingleAtalaOperation(operation)
         } yield {
-          node_api
-            .RevokeCredentialsResponse()
-            .withOperationId(operationId.toProtoByteString)
+          val response = node_api.RevokeCredentialsResponse()
+          operationIdE.fold(
+            { err =>
+              logger.warn(s"Credentials weren't revoked, error: $err")
+              response
+            },
+            operationId => response.withOperationId(operationId.toProtoByteString)
+          )
         }
       }
     }
@@ -242,20 +262,27 @@ class NodeServiceImpl(
     }
   }
 
-  override def publishAsABlock(request: PublishAsABlockRequest): Future[PublishAsABlockResponse] = {
-    val methodName = "publishAsABlock"
+  override def publishAsABlock(request: PublishAsABlockRequest): Future[PublishAsABlockResponse] = ???
+
+  override def scheduleOperations(
+      request: node_api.ScheduleOperationsRequest
+  ): Future[node_api.ScheduleOperationsResponse] = {
+    val methodName = "scheduleOperations"
 
     val operationsF = Future
       .fromTry {
         Try {
           require(request.signedOperations.nonEmpty, "there must be at least one operation to be published")
 
-          val obj = ObjectManagementService.createAtalaObject(request.signedOperations.toList)
-          require(
-            AtalaObjectMetadata.estimateTxMetadataSize(obj) <= cardano.TX_METADATA_MAX_SIZE,
-            "atala object size is too big"
-          )
-          request.signedOperations
+          request.signedOperations.map { signedAtalaOperation =>
+            val obj = ObjectManagementService.createAtalaObject(List(signedAtalaOperation))
+            val operationId = AtalaOperationId.of(signedAtalaOperation)
+            require(
+              AtalaObjectMetadata.estimateTxMetadataSize(obj) <= cardano.TX_METADATA_MAX_SIZE,
+              s"atala operation $operationId is too big"
+            )
+            signedAtalaOperation
+          }
         }
       }
       .countErrorOnFail(serviceName, methodName, Status.INTERNAL.getCode.value())
@@ -264,24 +291,27 @@ class NodeServiceImpl(
       withLog(methodName, request) { traceId =>
         for {
           operations <- operationsF
+          operationIds = operations.map(AtalaOperationId.of)
           _ = logWithTraceId(
             methodName,
             traceId,
-            "operations" -> s"${operations.map(AtalaOperationId.of(_).toString).mkString(",")}"
+            "operations" -> operationIds.map(_.toString).mkString(",")
           )
           outputs <- Future.sequence(
             operations.map { op =>
               errorEitherToFutureAndCount(methodName, getOperationOutput(op))
             }
           )
-          operationIds <- objectManagement.sendAtalaOperations(operations: _*)
+          operationIds <- objectManagement.scheduleAtalaOperations(operations: _*)
           outputsWithOperationIds = outputs.zip(operationIds).map {
-            case (out, opId) =>
+            case (out, Right(opId)) =>
               out.withOperationId(opId.toProtoByteString)
+            case (out, Left(err)) =>
+              out.withError(err.toString)
           }
         } yield {
           node_api
-            .PublishAsABlockResponse()
+            .ScheduleOperationsResponse()
             .withOutputs(outputsWithOperationIds)
         }
       }

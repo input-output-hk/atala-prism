@@ -82,7 +82,7 @@ class SubmissionServiceSpec
           mockTransactionStatus(publicationInfo.transaction.transactionId, TransactionStatus.Pending)
       }
 
-      publishOpsForBatching(ops)
+      scheduleOpsForBatching(ops)
       submissionService.submitReceivedObjects().futureValue.toOption.nonEmpty must be(true)
 
       verify(ledger, times(2))
@@ -114,7 +114,7 @@ class SubmissionServiceSpec
         .publish(atalaObjectsMerged.last)
       mockTransactionStatus(publications.last.transaction.transactionId, TransactionStatus.Pending)
 
-      publishOpsForBatching(ops)
+      scheduleOpsForBatching(ops)
       submissionService.submitReceivedObjects().futureValue.toOption.nonEmpty must be(true)
 
       verify(ledger, times(2))
@@ -304,11 +304,11 @@ class SubmissionServiceSpec
     }
   }
 
-  private def publishOpsForBatching(ops: List[SignedAtalaOperation]): Unit =
+  private def scheduleOpsForBatching(ops: List[SignedAtalaOperation]): Unit =
     ops.zipWithIndex.foreach {
       case (atalaOperation, index) =>
-        withClue(s"publishing operation #$index") {
-          objectManagementService.sendSingleAtalaOperation(atalaOperation).futureValue
+        withClue(s"scheduling operation #$index") {
+          objectManagementService.scheduleSingleAtalaOperation(atalaOperation).futureValue
         }
     }
 
