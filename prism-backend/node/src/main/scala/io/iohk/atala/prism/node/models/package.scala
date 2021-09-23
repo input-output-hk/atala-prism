@@ -77,6 +77,31 @@ package object models {
     case object REJECTED extends AtalaOperationStatus // Confirmed, but rejected by PRISM
   }
 
+  case class ProtocolVersion(major: Int, minor: Int) {
+    override def toString: String = s"$major.$minor"
+
+    def isFollowedBy(next: ProtocolVersion): Boolean =
+      major == next.major && minor + 1 == next.minor ||
+        major + 1 == next.major && next.minor == 0
+  }
+
+  object ProtocolVersion {
+    // All existing so far protocol versions here
+    val ProtocolVersion1_0: ProtocolVersion = ProtocolVersion(1, 0)
+    val InitialProtocolVersion: ProtocolVersion = ProtocolVersion1_0
+  }
+
+  case class ProtocolVersionInfo(
+      protocolVersion: ProtocolVersion,
+      versionName: Option[String],
+      effectiveSinceBlockIndex: Int
+  )
+
+  object ProtocolVersionInfo {
+    val InitialProtocolVersionInfo: ProtocolVersionInfo =
+      ProtocolVersionInfo(ProtocolVersion.InitialProtocolVersion, None, 0)
+  }
+
   object nodeState {
 
     case class CredentialBatchState(

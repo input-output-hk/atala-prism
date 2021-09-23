@@ -5,22 +5,21 @@ import com.google.protobuf.ByteString
 import doobie.implicits._
 import io.iohk.atala.prism.AtalaWithPostgresSpec
 import io.iohk.atala.prism.crypto.EC.{INSTANCE => EC}
-import io.iohk.atala.prism.crypto.keys.{ECKeyPair, ECPublicKey}
 import io.iohk.atala.prism.crypto.ECConfig.{INSTANCE => ECConfig}
-import io.iohk.atala.prism.protos.models.TimestampInfo
-import io.iohk.atala.prism.models.{Ledger, TransactionId}
+import io.iohk.atala.prism.crypto.keys.{ECKeyPair, ECPublicKey}
+import io.iohk.atala.prism.node.DataPreparation.{dummyLedgerData, dummyTimestampInfo}
 import io.iohk.atala.prism.node.grpc.ProtoCodecs
-import io.iohk.atala.prism.node.models.nodeState.{DIDPublicKeyState, LedgerData}
+import io.iohk.atala.prism.node.models.nodeState.DIDPublicKeyState
 import io.iohk.atala.prism.node.models.{DIDData, DIDPublicKey}
+import io.iohk.atala.prism.node.operations.StateError.UnsupportedOperation
+import io.iohk.atala.prism.node.operations.protocolVersion.SupportedOperations
 import io.iohk.atala.prism.node.repositories.DIDDataRepository
+import io.iohk.atala.prism.node.{DataPreparation, models}
 import io.iohk.atala.prism.protos.node_models
+import io.iohk.atala.prism.protos.node_models.{CompressedECKeyData, ECKeyData}
 import org.scalatest.EitherValues._
 import org.scalatest.Inside._
 import org.scalatest.OptionValues._
-
-import java.time.Instant
-import io.iohk.atala.prism.node.DataPreparation
-import io.iohk.atala.prism.protos.node_models.{CompressedECKeyData, ECKeyData}
 
 object CreateDIDOperationSpec {
   def protoECKeyDataFromPublicKey(key: ECPublicKey): ECKeyData = {
@@ -62,15 +61,6 @@ object CreateDIDOperationSpec {
   val revokingCompressedEcKeyData: CompressedECKeyData = protoCompressedECKeyDataFromPublicKey(
     revokingKeys.getPublicKey
   )
-
-  lazy val dummyTimestamp: TimestampInfo = dummyTimestampInfo
-  lazy val dummyLedgerData: LedgerData = LedgerData(
-    TransactionId.from(Array.fill[Byte](TransactionId.config.size.toBytes.toInt)(0)).value,
-    Ledger.InMemory,
-    dummyTimestamp
-  )
-
-  private val dummyTimestampInfo = new TimestampInfo(Instant.ofEpochMilli(0).toEpochMilli, 1, 0)
 
   val exampleOperation: node_models.AtalaOperation = node_models.AtalaOperation(
     node_models.AtalaOperation.Operation.CreateDid(
@@ -287,6 +277,7 @@ class CreateDIDOperationSpec extends AtalaWithPostgresSpec {
   }
 
   "CreateDIDOperation.applyState" should {
+
     "create the DID information in the database" in {
       val parsedOperation = CreateDIDOperation.parse(exampleOperation, dummyLedgerData).toOption.value
 
@@ -329,8 +320,23 @@ class CreateDIDOperationSpec extends AtalaWithPostgresSpec {
         case StateError.EntityExists(tpe, _) =>
           tpe mustBe "DID"
       }
+    }
 
+    "return error when CreateDID operation is not supported by the current protocol" in {
+      // Let's pretend that none of operations are supported
+      val fakeSupportedOperations: SupportedOperations =
+        (_: Operation, _: models.ProtocolVersion) => false
+      val parsedOperation = CreateDIDOperation.parse(exampleOperation, dummyLedgerData).toOption.value
+
+      val result = parsedOperation
+        .applyState()(fakeSupportedOperations)
+        .transact(database)
+        .value
+        .unsafeToFuture()
+        .futureValue
+        .left
+        .value
+      result mustBe a[UnsupportedOperation]
     }
   }
-
 }

@@ -56,7 +56,7 @@ case class RevokeCredentialsOperation(
     } yield CorrectnessData(keyState.key, Some(prevOp))
   }
 
-  override def applyState(): EitherT[ConnectionIO, StateError, Unit] = {
+  override def applyStateImpl(): EitherT[ConnectionIO, StateError, Unit] = {
     def weShouldRevokeTheFullBatch: Boolean = credentialsToRevoke.isEmpty
 
     def revokeFullBatch() = {

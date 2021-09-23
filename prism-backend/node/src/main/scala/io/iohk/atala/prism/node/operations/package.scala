@@ -1,6 +1,5 @@
 package io.iohk.atala.prism.node
 
-import java.security.PublicKey
 import java.time.Instant
 import cats.data.EitherT
 import doobie.free.connection.ConnectionIO
@@ -8,26 +7,17 @@ import io.iohk.atala.prism.crypto.keys.ECPublicKey
 import io.iohk.atala.prism.crypto.Sha256Digest
 import io.iohk.atala.prism.protos.models.TimestampInfo
 import io.iohk.atala.prism.models.{DidSuffix, Ledger, TransactionId}
+import io.iohk.atala.prism.node.models.ProtocolVersion
 import io.iohk.atala.prism.node.models.nodeState.LedgerData
+import io.iohk.atala.prism.node.operations.StateError.UnsupportedOperation
+import io.iohk.atala.prism.node.operations.ValidationError.InvalidValue
 import io.iohk.atala.prism.node.operations.path._
+import io.iohk.atala.prism.node.operations.protocolVersion.SupportedOperations
+import io.iohk.atala.prism.node.repositories.daos.ProtocolVersionsDAO
 import io.iohk.atala.prism.protos.{node_internal, node_models}
-import io.iohk.atala.prism.protos.node_models.AtalaOperation
 import io.iohk.atala.prism.protos.node_models.SignedAtalaOperation
 
 package object operations {
-
-  /** Handle of key that should be used to verify the signature of the operation */
-  sealed trait OperationKey
-
-  object OperationKey {
-
-    /** Key to be used is defined by the operation itself */
-    case class IncludedKey(key: PublicKey) extends OperationKey
-
-    /** Key needs to be fetched from the state */
-    case class DeferredKey(owner: DidSuffix, keyId: String) extends OperationKey
-
-  }
 
   /** Error during parsing of an encoded operation
     *
@@ -115,6 +105,24 @@ package object operations {
     final case class DuplicateOperation() extends StateError {
       override def name: String = "duplicate-operation"
     }
+
+    final case class UnsupportedOperation() extends StateError {
+      override def name: String = "unsupported-operation"
+    }
+
+    final case class NonSequentialProtocolVersion(lastKnownVersion: ProtocolVersion, version: ProtocolVersion)
+        extends StateError {
+      override def name: String = "non-sequential-protocol-version"
+    }
+
+    final case class NonAscendingEffectiveSince(lastKnownEffectiveSince: Int, effectiveSince: Int) extends StateError {
+      override def name: String = "non-ascending-effective-since"
+    }
+
+    final case class EffectiveSinceNotGreaterThanCurrentCardanoBlockNo(currentBlockNo: Int, effectiveSince: Int)
+        extends StateError {
+      override def name: String = "effective-since-not-greater-than-current-cardano-block-no"
+    }
   }
 
   /** Data required to verify the correctness of the operation */
@@ -126,17 +134,46 @@ package object operations {
     /** Fetches key and possible previous operation reference from database */
     def getCorrectnessData(keyId: String): EitherT[ConnectionIO, StateError, CorrectnessData]
 
-    /** Applies operation to the state
+    final def isSupported()(implicit updateOracle: SupportedOperations): EitherT[ConnectionIO, StateError, Unit] =
+      EitherT {
+        for {
+          currentVersion <- ProtocolVersionsDAO.getCurrentProtocolVersion
+        } yield Either
+          .cond(
+            updateOracle.isOperationSupportedInVersion(this, currentVersion),
+            (),
+            UnsupportedOperation(): StateError
+          )
+      }
+
+    protected def applyStateImpl(): EitherT[ConnectionIO, StateError, Unit]
+
+    /** Applies operation to the state checking that the operation is supported
       *
-      * It's the responsibility of the caller to manage transaction, in order to ensure atomicity of the operation.
+     * It's the responsibility of the caller to manage transaction, in order to ensure atomicity of the operation.
       */
-    def applyState(): EitherT[ConnectionIO, StateError, Unit]
+    final def applyState()(implicit updateOracle: SupportedOperations): EitherT[ConnectionIO, StateError, Unit] =
+      for {
+        _ <- isSupported()
+        _ <- applyStateImpl()
+      } yield ()
 
     def digest: Sha256Digest
 
     def linkedPreviousOperation: Option[Sha256Digest] = None
 
     def ledgerData: LedgerData
+  }
+
+  lazy val mockLedgerData: LedgerData = {
+    val mockLedger = Ledger.InMemory
+    val mockTxId: TransactionId = TransactionId
+      .from(
+        Array.fill[Byte](TransactionId.config.size.toBytes.toInt)(0)
+      )
+      .get
+    val mockTime = new TimestampInfo(Instant.now().toEpochMilli, 1, 1)
+    LedgerData(mockTxId, mockLedger, mockTime)
   }
 
   /** Companion object for operation */
@@ -155,7 +192,7 @@ package object operations {
       parse(signedOperation.getOperation, ledgerData)
     }
 
-    def parse(
+    protected def parse(
         operation: node_models.AtalaOperation,
         ledgerData: LedgerData
     ): Either[ValidationError, Repr]
@@ -175,16 +212,8 @@ package object operations {
       * @param signedOperation signed operation, needs to be of the type compatible with the called companion object
       * @return parsed operation filled with TimestampInfo.dummyTime or ValidationError signifying the operation is invalid
       */
-    def parseWithMockedLedgerData(signedOperation: node_models.SignedAtalaOperation): Either[ValidationError, Repr] = {
-      val mockLedger = Ledger.InMemory
-      val mockTxId: TransactionId = TransactionId
-        .from(
-          Array.fill[Byte](TransactionId.config.size.toBytes.toInt)(0)
-        )
-        .get
-      val mockTime = new TimestampInfo(Instant.now().toEpochMilli, 1, 1)
-      parse(signedOperation, LedgerData(mockTxId, mockLedger, mockTime))
-    }
+    def parseWithMockedLedgerData(signedOperation: node_models.SignedAtalaOperation): Either[ValidationError, Repr] =
+      parse(signedOperation, mockLedgerData)
   }
 
   trait SimpleOperationCompanion[Repr <: Operation] extends OperationCompanion[Repr] {
@@ -195,20 +224,27 @@ package object operations {
   }
 
   def parseOperationWithMockedLedger(operation: SignedAtalaOperation): Either[ValidationError, Operation] =
-    operation.getOperation.operation match {
-      case AtalaOperation.Operation.CreateDid(_) =>
-        CreateDIDOperation.parseWithMockedLedgerData(operation)
-      case AtalaOperation.Operation.UpdateDid(_) =>
-        UpdateDIDOperation.parseWithMockedLedgerData(operation)
-      case AtalaOperation.Operation.IssueCredentialBatch(_) =>
-        IssueCredentialBatchOperation.parseWithMockedLedgerData(operation)
-      case AtalaOperation.Operation.RevokeCredentials(_) =>
-        RevokeCredentialsOperation.parseWithMockedLedgerData(operation)
-      case AtalaOperation.Operation.ProtocolVersionUpdate(_) =>
-        throw new NotImplementedError("ProtocolVersionUpdate operation isn't supported by PRISM Node yet")
-      case AtalaOperation.Operation.Empty => // should not happen
-        throw new RuntimeException("Unexpected empty AtalaOperation")
+    parseOperation(operation, mockLedgerData)
+
+  def parseOperation(
+      signedOperation: node_models.SignedAtalaOperation,
+      ledgerData: LedgerData
+  ): Either[ValidationError, Operation] = {
+    signedOperation.getOperation.operation match {
+      case _: node_models.AtalaOperation.Operation.CreateDid =>
+        CreateDIDOperation.parse(signedOperation, ledgerData)
+      case _: node_models.AtalaOperation.Operation.UpdateDid =>
+        UpdateDIDOperation.parse(signedOperation, ledgerData)
+      case _: node_models.AtalaOperation.Operation.IssueCredentialBatch =>
+        IssueCredentialBatchOperation.parse(signedOperation, ledgerData)
+      case _: node_models.AtalaOperation.Operation.RevokeCredentials =>
+        RevokeCredentialsOperation.parse(signedOperation, ledgerData)
+      case _: node_models.AtalaOperation.Operation.ProtocolVersionUpdate =>
+        ProtocolVersionUpdateOperation.parse(signedOperation, ledgerData)
+      case empty @ node_models.AtalaOperation.Operation.Empty =>
+        Left(InvalidValue(Path.root, empty.getClass.getSimpleName, "Empty operation"))
     }
+  }
 
   def parseOperationsFromByteContent(byteContent: Array[Byte]): List[Operation] =
     node_internal.AtalaObject

@@ -232,7 +232,7 @@ class BlockProcessingServiceSpec extends AtalaWithPostgresSpec {
 
     "apply two update operations sequentially" in {
       val did = CreateDIDOperation
-        .parse(CreateDIDOperationSpec.exampleOperation, CreateDIDOperationSpec.dummyLedgerData)
+        .parse(CreateDIDOperationSpec.exampleOperation, DataPreparation.dummyLedgerData)
         .toOption
         .value
         .id
