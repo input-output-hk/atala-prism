@@ -9,7 +9,7 @@ import io.iohk.atala.prism.crypto.ECConfig.{INSTANCE => ECConfig}
 import io.iohk.atala.prism.crypto.keys.ECPublicKey
 import io.iohk.atala.prism.crypto.signature.ECSignature
 import io.iohk.atala.prism.crypto.{MerkleInclusionProof, MerkleRoot, Sha256Digest}
-import io.iohk.atala.prism.extras.CredentialBatches
+import io.iohk.atala.prism.api.CredentialBatches
 import io.iohk.atala.prism.node.grpc.ProtoCodecs
 import io.iohk.atala.prism.protos.endorsements_api._
 import io.iohk.atala.prism.protos.node_api._

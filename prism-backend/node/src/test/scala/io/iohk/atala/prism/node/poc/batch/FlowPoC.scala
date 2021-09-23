@@ -37,7 +37,7 @@ import java.util.concurrent.TimeUnit
 import scala.concurrent.{Future, Promise}
 import scala.jdk.CollectionConverters._
 import io.iohk.atala.prism.credentials.json.JsonBasedCredential
-import io.iohk.atala.prism.extras.CredentialBatches
+import io.iohk.atala.prism.api.CredentialBatches
 import io.iohk.atala.prism.node.poc.CredVerification.VerificationError._
 
 class FlowPoC extends AtalaWithPostgresSpec with BeforeAndAfterEach {

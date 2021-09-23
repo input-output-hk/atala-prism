@@ -204,6 +204,8 @@ package object operations {
         IssueCredentialBatchOperation.parseWithMockedLedgerData(operation)
       case AtalaOperation.Operation.RevokeCredentials(_) =>
         RevokeCredentialsOperation.parseWithMockedLedgerData(operation)
+      case AtalaOperation.Operation.ProtocolVersionUpdate(_) =>
+        throw new NotImplementedError("ProtocolVersionUpdate operation isn't supported by PRISM Node yet")
       case AtalaOperation.Operation.Empty => // should not happen
         throw new RuntimeException("Unexpected empty AtalaOperation")
     }

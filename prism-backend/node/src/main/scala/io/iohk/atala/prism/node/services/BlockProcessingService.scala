@@ -140,6 +140,8 @@ class BlockProcessingServiceImpl extends BlockProcessingService {
         IssueCredentialBatchOperation.parse(signedOperation, ledgerData)
       case _: node_models.AtalaOperation.Operation.RevokeCredentials =>
         RevokeCredentialsOperation.parse(signedOperation, ledgerData)
+      case _: node_models.AtalaOperation.Operation.ProtocolVersionUpdate =>
+        throw new NotImplementedError("ProtocolVersionUpdate operation isn't supported by PRISM Node yet")
       case empty @ node_models.AtalaOperation.Operation.Empty =>
         Left(InvalidValue(Path.root, empty.getClass.getSimpleName, "Empty operation"))
     }

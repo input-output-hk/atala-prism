@@ -24,7 +24,7 @@ import io.iohk.atala.prism.utils.Base64Utils
 
 import scala.jdk.CollectionConverters._
 import io.iohk.atala.prism.interop.CredentialContentConverter._
-import io.iohk.atala.prism.extras.CredentialBatches
+import io.iohk.atala.prism.api.CredentialBatches
 import io.iohk.atala.prism.protos.models.TimestampInfo
 
 trait ServicesFixtures {

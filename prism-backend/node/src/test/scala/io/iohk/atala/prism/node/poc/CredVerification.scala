@@ -4,7 +4,7 @@ import cats.data.{Validated, ValidatedNel}
 import cats.implicits.{catsSyntaxTuple6Semigroupal, catsSyntaxValidatedId}
 import io.iohk.atala.prism.credentials.PrismCredential
 import io.iohk.atala.prism.crypto.{MerkleInclusionProof, MerkleRoot}
-import io.iohk.atala.prism.extras.CredentialBatches
+import io.iohk.atala.prism.api.CredentialBatches
 import io.iohk.atala.prism.protos.models.TimestampInfo
 import io.iohk.atala.prism.models.KeyData
 
