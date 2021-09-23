@@ -57,8 +57,8 @@ const CredentialButtons = ({
   return (
     <div className="ControlButtons CredentialsOptions">
       <CustomButton
+        overrideClassName="BulkActionButton theme-outline"
         buttonProps={{
-          className: 'BulkActionButton theme-outline',
           onClick: handleRevokeSelectedCredentials,
           disabled: disableRevoke
         }}
@@ -66,8 +66,8 @@ const CredentialButtons = ({
         buttonText={t('credentials.actions.revokeSelectedCredentials')}
       />
       <CustomButton
+        overrideClassName="BulkActionButton theme-outline"
         buttonProps={{
-          className: 'BulkActionButton theme-outline',
           onClick: handleSignSelectedCredentials,
           disabled: disableSign
         }}
@@ -75,8 +75,8 @@ const CredentialButtons = ({
         buttonText={t('credentials.actions.signSelectedCredentials')}
       />
       <CustomButton
+        overrideClassName="BulkActionButton theme-outline"
         buttonProps={{
-          className: 'BulkActionButton theme-outline',
           onClick: handleSendSelectedCredentials,
           disabled: disableSend
         }}
