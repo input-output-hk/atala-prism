@@ -7,7 +7,8 @@
     "view": "View",
     "back": "Back",
     "next": "Next",
-    "saveForLater": "Save & Continue later"
+    "saveForLater": "Save & Continue later",
+    "register": "Register now"
   },
   "generic": {
     "step": "Step {{step}}"
@@ -157,9 +158,11 @@
       "title2": "Credentials"
     },
     "start": {
-      "info": "Powering the Trust Economy",
+      "info": "Powering the trust economy",
       "subtitle": "Atala PRISM is a decentralized identity solution that enables people to own their personal data and interact with organizations seamlessly, privately, and securely.",
-      "welcome": "Welcome"
+      "welcome": "Welcome",
+      "join": "Join our Pioneers Program",
+      "earlyAccess": "Become part of a select group with early access to a set of courses explaining the core principles of Atala PRISM"
     },
     "downloadAndroidAlt": "Download Android",
     "intro": {

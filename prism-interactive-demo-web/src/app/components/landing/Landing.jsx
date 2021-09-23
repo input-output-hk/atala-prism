@@ -25,6 +25,8 @@ import ContactPanel from './Organisms/ContactPanel/ContactPanel';
 import UseCasesPanel from './Organisms/UseCasesPanel/UseCasesPanel';
 import { useState } from 'react';
 import SupportButton from '../common/Atoms/SupportButton/SupportButton';
+import CustomButton from '../common/Atoms/CustomButton/CustomButton';
+import { Link } from 'gatsby';
 
 import './_style.scss';
 
@@ -51,9 +53,15 @@ const Landing = () => {
           <div className="HeaderText">
             <h1>{t('landing.start.info')}</h1>
             <h3>{t('landing.start.subtitle')}</h3>
-          </div>
-          <div className="HeaderImages">
-            <img src="/images/atala-prism-graph.svg" alt={t('landing.downloadAndroidAlt')} />
+            <img src="/images/pioneer-icon.svg" alt="pioneer" />
+            <h4>{t('landing.start.join')}</h4>
+            <p>{t('landing.start.earlyAccess')}</p>
+            <Link to="/pioneers">
+              <CustomButton
+                buttonText={t('actions.register')}
+                buttonProps={{ className: 'theme-link' }}
+              />
+            </Link>
           </div>
         </div>
       </div>
