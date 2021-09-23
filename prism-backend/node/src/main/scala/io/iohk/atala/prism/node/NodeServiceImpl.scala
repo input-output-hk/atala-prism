@@ -262,6 +262,8 @@ class NodeServiceImpl(
     }
   }
 
+  override def publishAsABlock(request: PublishAsABlockRequest): Future[PublishAsABlockResponse] = ???
+
   override def scheduleOperations(
       request: node_api.ScheduleOperationsRequest
   ): Future[node_api.ScheduleOperationsResponse] = {
