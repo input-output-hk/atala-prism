@@ -1,5 +1,6 @@
 import React from 'react';
 import jsonp from 'jsonp';
+import queryString from 'query-string';
 import { useTranslation } from 'react-i18next';
 import { Form, Input, Button, Checkbox, message } from 'antd';
 import { config } from '../../app/APIs/configs';
@@ -18,11 +19,8 @@ const PioneersForm = ({ form }) => {
     form.validateFields(['fullName', 'email', 'consent'], (errors, { fullName, email }) => {
       if (errors) return;
 
-      const atIndex = email.indexOf('@');
-      const finalEmail = `${email.slice(0, atIndex)}+ppp${email.slice(atIndex)}`;
-
       subscribeToNewsLetter({
-        EMAIL: finalEmail,
+        EMAIL: email,
         FULLNAME: fullName
       });
       form.resetFields();
@@ -36,11 +34,11 @@ const PioneersForm = ({ form }) => {
       )}`,
       { param: 'c' },
       (err, data) => {
-        if (err) return message.error(t('contact.unexpectedError'));
+        if (err) return message.error('There has been an error');
         if (data) {
           data.result === 'success'
-            ? message.success(t('contact.mail.success'))
-            : message.error(t('contact.mail.error'));
+            ? message.success('Thanks for registering!')
+            : message.error('Your email is already registered');
         }
       }
     );
