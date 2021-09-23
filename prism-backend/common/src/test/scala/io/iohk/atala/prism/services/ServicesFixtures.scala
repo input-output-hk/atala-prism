@@ -4,28 +4,28 @@ import java.time.Instant
 import io.circe.Encoder
 import io.circe.syntax._
 import com.google.protobuf.ByteString
-import io.iohk.atala.prism.kotlin.credentials.CredentialBatchId
-import io.iohk.atala.prism.kotlin.crypto.MerkleInclusionProof
-import io.iohk.atala.prism.kotlin.crypto.EC.{INSTANCE => EC}
-import io.iohk.atala.prism.kotlin.crypto.keys.ECKeyPair
-import io.iohk.atala.prism.kotlin.identity.{PrismDid => DID}
+import io.iohk.atala.prism.credentials.CredentialBatchId
+import io.iohk.atala.prism.crypto.MerkleInclusionProof
+import io.iohk.atala.prism.crypto.EC.{INSTANCE => EC}
+import io.iohk.atala.prism.crypto.keys.ECKeyPair
+import io.iohk.atala.prism.identity.{PrismDid => DID}
 import io.iohk.atala.prism.protos.node_api.GetBatchStateResponse
 import io.iohk.atala.prism.protos.node_models.PublicKey.KeyData.EcKeyData
 import io.iohk.atala.prism.protos.node_models.{DIDData, KeyUsage, LedgerData, PublicKey}
 import io.iohk.atala.prism.protos.credential_models
-import io.iohk.atala.prism.kotlin.credentials.content.CredentialContent
+import io.iohk.atala.prism.credentials.content.CredentialContent
 import io.iohk.atala.prism.stubs.NodeClientServiceStub
 import io.iohk.atala.prism.config.ConnectorConfig
-import io.iohk.atala.prism.kotlin.credentials.PrismCredential
-import io.iohk.atala.prism.kotlin.credentials.json.JsonBasedCredential
+import io.iohk.atala.prism.credentials.PrismCredential
+import io.iohk.atala.prism.credentials.json.JsonBasedCredential
 import io.iohk.atala.prism.protos.credential_models.PlainTextCredential
 import io.iohk.atala.prism.services.BaseGrpcClientService.DidBasedAuthConfig
 import io.iohk.atala.prism.utils.Base64Utils
 
 import scala.jdk.CollectionConverters._
 import io.iohk.atala.prism.interop.CredentialContentConverter._
-import io.iohk.atala.prism.kotlin.extras.CredentialBatches
-import io.iohk.atala.prism.kotlin.protos.models.TimestampInfo
+import io.iohk.atala.prism.extras.CredentialBatches
+import io.iohk.atala.prism.protos.models.TimestampInfo
 
 trait ServicesFixtures {
   object ConnectorClientServiceFixtures {

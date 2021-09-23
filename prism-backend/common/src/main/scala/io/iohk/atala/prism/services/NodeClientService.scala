@@ -3,19 +3,19 @@ package io.iohk.atala.prism.services
 import cats.data.EitherT
 import monix.eval.Task
 import com.google.protobuf.ByteString
-import io.iohk.atala.prism.kotlin.crypto.{MerkleRoot, Sha256Digest}
-import io.iohk.atala.prism.kotlin.crypto.EC.{INSTANCE => EC}
-import io.iohk.atala.prism.kotlin.crypto.keys.ECPublicKey
-import io.iohk.atala.prism.kotlin.crypto.ECConfig.{INSTANCE => ECConfig}
+import io.iohk.atala.prism.crypto.{MerkleRoot, Sha256Digest}
+import io.iohk.atala.prism.crypto.EC.{INSTANCE => EC}
+import io.iohk.atala.prism.crypto.keys.ECPublicKey
+import io.iohk.atala.prism.crypto.ECConfig.{INSTANCE => ECConfig}
 import io.iohk.atala.prism.protos.node_api._
 import io.iohk.atala.prism.protos.node_models._
 import io.iohk.atala.prism.services.BaseGrpcClientService.DidBasedAuthConfig
-import io.iohk.atala.prism.kotlin.identity.{PrismDid => DID}
-import io.iohk.atala.prism.kotlin.protos.models.{TimestampInfo => DomainTimestamp}
+import io.iohk.atala.prism.identity.{PrismDid => DID}
+import io.iohk.atala.prism.protos.models.{TimestampInfo => DomainTimestamp}
 import io.iohk.atala.prism.protos.{node_api, node_models}
 import cats.implicits._
 import com.google.protobuf.timestamp.Timestamp
-import io.iohk.atala.prism.kotlin.credentials.CredentialBatchId
+import io.iohk.atala.prism.credentials.CredentialBatchId
 import io.iohk.atala.prism.models.KeyData
 import io.iohk.atala.prism.utils.syntax._
 

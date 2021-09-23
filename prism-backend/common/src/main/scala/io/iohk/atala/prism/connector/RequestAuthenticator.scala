@@ -2,8 +2,8 @@ package io.iohk.atala.prism.connector
 
 import java.util.Base64
 
-import io.iohk.atala.prism.kotlin.crypto.keys.ECPrivateKey
-import io.iohk.atala.prism.kotlin.crypto.EC.{INSTANCE => EC}
+import io.iohk.atala.prism.crypto.keys.ECPrivateKey
+import io.iohk.atala.prism.crypto.EC.{INSTANCE => EC}
 
 class RequestAuthenticator {
 
