@@ -17,7 +17,7 @@ export class RootStore {
     if (logMessage) Logger.info(logMessage);
   };
 
-  handleTransportLayerError = (error, metadata) => {
+  handleTransportLayerError = (error, metadata = {}) => {
     const {
       showUnconfirmedAccountError,
       removeUnconfirmedAccountError
@@ -27,8 +27,11 @@ export class RootStore {
       showUnconfirmedAccountError();
     } else {
       removeUnconfirmedAccountError();
-      Logger.error(metadata?.customMessage, error);
-      message.error(i18n.t('errors.errorGetting', { model: metadata?.model }));
+      const customMessage = `[${metadata.store}.${metadata.method}] 
+        Error while ${metadata.verb} ${metadata.model}`;
+
+      Logger.error(customMessage, error);
+      message.error(i18n.t(`errors.${metadata.verb}`, { model: metadata.model }));
     }
   };
 }
