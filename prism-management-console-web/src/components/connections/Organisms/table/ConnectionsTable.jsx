@@ -41,7 +41,7 @@ const ConnectionsTable = ({
   }, [timesScrolledToBottom, lastUpdated, searchDueGeneralScroll, getMoreData]);
 
   return (
-    <div className="ConnectionsTable">
+    <div className="ConnectionsTable InfiniteScrollTableContainer">
       <InfiniteScrollTable
         columns={columns || getContactColumns({ inviteContact, viewContactDetail })}
         data={contacts}
