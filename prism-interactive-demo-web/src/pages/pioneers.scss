@@ -24,10 +24,9 @@
     }
     .FormContainer {
       display: flex;
-      justify-content: center;
+      justify-content: flex-start;
       margin-top: 5em;
       max-width: 1200px;
-      align-items: center;
       margin: 2em auto 0 auto;
       .Description {
         display: flex;
@@ -158,7 +157,7 @@
       margin: 0.5em 0 1em 0;
     }
     button {
-      height: 56px;
+      height: 46px;
       width: 226px;
       margin: 0 auto 2em auto;
     }
@@ -377,14 +376,8 @@
             h2 {
               font-size: $subtitle!important;
             }
-            p {
-              font-size: $body!important;
-            }
-            label {
-              font-size: $label!important;
-            }
             button {
-              height: 40px;
+              width: 100%;
               font-size: $body!important;
             }
           }
