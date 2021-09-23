@@ -1,6 +1,6 @@
 import React, { Fragment } from 'react';
 import { Drawer, Icon } from 'antd';
-import { useTranslation } from 'react-i18next';
+import { useTranslation } from 'gatsby-plugin-react-i18next';
 import PropTypes from 'prop-types';
 import CredentialSummaryData from '../CredentialData/CredentialSummaryData';
 import CustomButton from '../CustomButton/CustomButton';

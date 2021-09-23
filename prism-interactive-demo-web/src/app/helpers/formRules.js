@@ -1,5 +1,5 @@
 import moment from 'moment';
-import { ISSUER, VERIFIER } from './constants';
+import { ISSUER, VERIFIER } from '../../helpers/constants';
 
 export const futureDate = (value, cb, compareTo) => {
   const isAfter = moment(value).isSameOrAfter(compareTo);

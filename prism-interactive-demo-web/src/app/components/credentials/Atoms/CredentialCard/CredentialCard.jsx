@@ -1,7 +1,7 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import './_style.scss';
-import { useTranslation } from 'react-i18next';
+import { useTranslation } from 'gatsby-plugin-react-i18next';
 
 const CredentialCard = ({ icon, alt, credential, authority }) => {
   const { t } = useTranslation();

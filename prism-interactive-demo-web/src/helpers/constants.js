@@ -87,6 +87,7 @@ export const GET_STARTED_NAME = 'getStarted';
 export const FAQ_NAME = 'faq';
 export const CONTACT_US_NAME = 'contactUs';
 export const BLOG_NAME = 'blog';
+export const RESOURCES_NAME = 'resources';
 
 export const APP_STORE_URL = 'https://apps.apple.com/app/atala-prism/id1515523675';
 export const GOOGLE_PLAY_STORE_URL = 'https://play.google.com/store/apps/details?id=io.iohk.cvp';

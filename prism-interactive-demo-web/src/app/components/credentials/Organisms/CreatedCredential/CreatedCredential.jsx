@@ -1,7 +1,7 @@
 import React, { useContext } from 'react';
 import PropTypes from 'prop-types';
 import moment from 'moment';
-import { useTranslation } from 'react-i18next';
+import { useTranslation } from 'gatsby-plugin-react-i18next';
 import CredentialData from '../../../common/Atoms/CredentialData/CredentialData';
 import { UserContext } from '../../../providers/userContext';
 import CredentialIDTemplate from '../../Molecules/CredentialIdTemplate/CredentialIdTemplate';
@@ -16,7 +16,8 @@ import {
   CARD_INSURANCE_CLASS,
   CARD_INSURANCE_POLICY_NUMBER,
   INSURANCE_POLICY
-} from '../../../../helpers/constants';
+} from '../../../../../helpers/constants';
+
 import './_style.scss';
 
 const currentCredentialCard = {

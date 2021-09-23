@@ -125,6 +125,7 @@
       "caseStudy": "Case Study",
       "getStarted": "Get Started",
       "faq": "FAQ",
+      "resources": "Resources",
       "blog": "Blog",
       "contactUs": "Contact Us"
     }
@@ -317,7 +318,7 @@
       "detailText": "Contact",
       "part1": "Atala PRISM is powered by",
       "part2": "Cardano",
-      "part3": " which is built by a decentralized community of scientists, engineers, and thought leaders united in a common purpose: to create a technology platform that will ignite the positive change the world needs. It is the first blockchain platform to be built through peer-reviewed research, to be secure enough to protect the data of billions, scalable enough to accommodate global systems, and robust enough to support foundational change.",
+      "part3": ", which is built by a decentralized community of scientists, engineers, and thought leaders united in a common purpose: to create a technology platform that will ignite the positive change the world needs. It is the first blockchain platform to be built through peer-reviewed research, to be secure enough to protect the data of billions, scalable enough to accommodate global systems, and robust enough to support foundational change.",
       "part4": "Cardano is developed by ",
       "part5": "IOHK,",
       "part6": " a blockchain technology company and industry leader in the fields of cryptography and distributed systems.",
@@ -788,14 +789,14 @@
       "send": "Send",
       "disable": "Contact Us functionality will be enabled for public launch.",
       "consent": "Yes, I would like to subscribe to newsletters from Atala PRISM.",
-      "consent2": "Yes, I have read and agree to the Atala PRISM ",
+      "consent2": "Yes, I have read and agreed to the Atala PRISM ",
       "faq1": "Check out our",
       "faq2": "FAQs",
       "faq3": " for answers to any other questions you may have.",
       "form": {
-        "fullName": "Full Name",
+        "fullName": "Full name",
         "email": "Email address",
-        "inquiryType": "Inquiry type",
+        "inquiryType": "Query type",
         "formMessage": "Message",
         "inquiryTypeOptions": {
           "Product": "Product",

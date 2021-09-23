@@ -2,7 +2,7 @@ import React, { useState, useEffect, useContext } from 'react';
 import PropTypes from 'prop-types';
 import { message } from 'antd';
 import _ from 'lodash';
-import { useTranslation } from 'react-i18next';
+import { useTranslation } from 'gatsby-plugin-react-i18next';
 import firebase from 'gatsby-plugin-firebase';
 import FinishInfo from './Molecules/FinishInfo/FinishInfo';
 import CongratsStep from './Molecules/CongratsStep/CongratsStep';
@@ -25,7 +25,7 @@ import {
   STEP_2_EVENT,
   STEP_3_EVENT,
   STEP_4_EVENT
-} from '../../helpers/constants';
+} from '../../../helpers/constants';
 import Credentials from './Credentials';
 import SplittedPageInside from './Organisms/SplittedPageInside/SplittedPageInside';
 import { UserContext } from '../providers/userContext';

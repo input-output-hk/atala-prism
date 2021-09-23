@@ -1,5 +1,5 @@
 import React from 'react';
-import { useTranslation } from 'react-i18next';
+import { useTranslation } from 'gatsby-plugin-react-i18next';
 import PropTypes from 'prop-types';
 import employmentIcon from '../../../../images/shared-proof.png';
 import universityIcon from '../../../../images/shared-university.png';
@@ -9,7 +9,7 @@ import {
   UNIVERSITY_DEGREE,
   PROOF_OF_EMPLOYMENT,
   INSURANCE_POLICY
-} from '../../../../helpers/constants';
+} from '../../../../../helpers/constants';
 
 const shareIcon = {
   [UNIVERSITY_DEGREE]: universityIcon,

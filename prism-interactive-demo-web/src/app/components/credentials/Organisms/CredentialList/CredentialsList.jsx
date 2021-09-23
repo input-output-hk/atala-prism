@@ -1,9 +1,9 @@
 import React from 'react';
-import { useTranslation } from 'react-i18next';
+import { useTranslation } from 'gatsby-plugin-react-i18next';
 import PropTypes from 'prop-types';
 import CustomButton from '../../../common/Atoms/CustomButton/CustomButton';
 import ContactButton from '../../Atoms/ContactButton/ContactButton';
-import { CREDENTIAL_TYPES } from '../../../../helpers/constants';
+import { CREDENTIAL_TYPES } from '../../../../../helpers/constants';
 import checkIcon from '../../../../images/icon-verified.svg';
 
 import './_style.scss';

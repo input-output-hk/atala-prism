@@ -1,7 +1,7 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import moment from 'moment';
-import { useTranslation } from 'react-i18next';
+import { useTranslation } from 'gatsby-plugin-react-i18next';
 import { Col, Row } from 'antd';
 import md5Hex from 'md5-hex';
 import flagIcon from '../../../../images/icon-flag.svg';

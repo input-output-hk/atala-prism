@@ -6,31 +6,37 @@
   padding: 8em;
   background: $surface;
 
-  .MiniDetailText {
-    color: $primary-color;
-  }
-
   .TextContainer {
-    width: 70%;
+    max-width: 1200px;
+    margin:0 auto;
+    width: 100%;
+    display: flex;
+    flex-direction: column;
 
     h1 {
       @include secondary-text($h1, $black);
       line-height: 30px;
+      word-break: normal;
     }
 
     .FaqContainer {
-      width: 90%;
-
+      width: 100%;
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: space-between;
       .FaqItem {
+        width: 48%;
         margin-top: 3em;
         padding-left: 1em;
         border-left: 1px solid $primary-color;
         h3 {
           @include primary-text($body, $black);
           font-weight: 600;
+          word-break: normal;
         }
         p {
           @include primary-text($label, $black);
+          word-break: normal;
         }
       }
     }
@@ -54,6 +60,9 @@
       margin-left: 0;
       .FaqContainer {
         width: 90%;
+        .FaqItem {
+          width: 100%;
+        }
       }
     }
   }
