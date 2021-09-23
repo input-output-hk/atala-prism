@@ -3,7 +3,7 @@ package io.iohk.atala.prism.node.services
 import cats.implicits._
 
 import java.time.Instant
-import io.iohk.atala.prism.kotlin.crypto.Sha256
+import io.iohk.atala.prism.crypto.Sha256
 import io.iohk.atala.prism.models.{
   BlockInfo,
   Ledger,

@@ -2,14 +2,14 @@ package io.iohk.atala.prism.node.poc.endorsements
 
 import java.time.Instant
 import com.google.protobuf.ByteString
-import io.iohk.atala.prism.kotlin.credentials.json.JsonBasedCredential
-import io.iohk.atala.prism.kotlin.credentials.CredentialBatchId
-import io.iohk.atala.prism.kotlin.identity.{PrismDid => DID}
-import io.iohk.atala.prism.kotlin.crypto.ECConfig.{INSTANCE => ECConfig}
-import io.iohk.atala.prism.kotlin.crypto.keys.ECPublicKey
-import io.iohk.atala.prism.kotlin.crypto.signature.ECSignature
-import io.iohk.atala.prism.kotlin.crypto.{MerkleInclusionProof, MerkleRoot, Sha256Digest}
-import io.iohk.atala.prism.kotlin.extras.CredentialBatches
+import io.iohk.atala.prism.credentials.json.JsonBasedCredential
+import io.iohk.atala.prism.credentials.CredentialBatchId
+import io.iohk.atala.prism.identity.{PrismDid => DID}
+import io.iohk.atala.prism.crypto.ECConfig.{INSTANCE => ECConfig}
+import io.iohk.atala.prism.crypto.keys.ECPublicKey
+import io.iohk.atala.prism.crypto.signature.ECSignature
+import io.iohk.atala.prism.crypto.{MerkleInclusionProof, MerkleRoot, Sha256Digest}
+import io.iohk.atala.prism.extras.CredentialBatches
 import io.iohk.atala.prism.node.grpc.ProtoCodecs
 import io.iohk.atala.prism.protos.endorsements_api._
 import io.iohk.atala.prism.protos.node_api._

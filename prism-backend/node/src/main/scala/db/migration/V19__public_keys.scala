@@ -1,6 +1,6 @@
 package db.migration
 
-import io.iohk.atala.prism.kotlin.crypto.EC.{INSTANCE => EC}
+import io.iohk.atala.prism.crypto.EC.{INSTANCE => EC}
 import io.iohk.atala.prism.utils.Using.using
 import org.flywaydb.core.api.migration.{BaseJavaMigration, Context}
 

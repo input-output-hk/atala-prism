@@ -1,8 +1,8 @@
 package io.iohk.atala.prism.node.migrations
 
 import doobie.implicits._
-import io.iohk.atala.prism.kotlin.crypto.EC.{INSTANCE => EC}
-import io.iohk.atala.prism.kotlin.crypto.ECConfig.{INSTANCE => ECConfig}
+import io.iohk.atala.prism.crypto.EC.{INSTANCE => EC}
+import io.iohk.atala.prism.crypto.ECConfig.{INSTANCE => ECConfig}
 import io.iohk.atala.prism.daos.BaseDAO
 import io.iohk.atala.prism.models.{DidSuffix, Ledger, TransactionId}
 import io.iohk.atala.prism.node.models.nodeState.LedgerData
@@ -11,8 +11,8 @@ import io.iohk.atala.prism.repositories.PostgresMigrationSpec
 import io.iohk.atala.prism.node.repositories.daos._
 import io.iohk.atala.prism.repositories.ops.SqlTestOps.Implicits
 import doobie.implicits.legacy.instant._
-import io.iohk.atala.prism.kotlin.crypto.Sha256
-import io.iohk.atala.prism.kotlin.protos.models.TimestampInfo
+import io.iohk.atala.prism.crypto.Sha256
+import io.iohk.atala.prism.protos.models.TimestampInfo
 
 import java.time.Instant
 

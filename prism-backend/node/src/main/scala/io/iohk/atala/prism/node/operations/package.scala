@@ -4,9 +4,9 @@ import java.security.PublicKey
 import java.time.Instant
 import cats.data.EitherT
 import doobie.free.connection.ConnectionIO
-import io.iohk.atala.prism.kotlin.crypto.keys.ECPublicKey
-import io.iohk.atala.prism.kotlin.crypto.Sha256Digest
-import io.iohk.atala.prism.kotlin.protos.models.TimestampInfo
+import io.iohk.atala.prism.crypto.keys.ECPublicKey
+import io.iohk.atala.prism.crypto.Sha256Digest
+import io.iohk.atala.prism.protos.models.TimestampInfo
 import io.iohk.atala.prism.models.{DidSuffix, Ledger, TransactionId}
 import io.iohk.atala.prism.node.models.nodeState.LedgerData
 import io.iohk.atala.prism.node.operations.path._
@@ -170,7 +170,7 @@ package object operations {
     }
 
     /** Parses the protobuf representation of operation and report errors (if any) using a dummy time parameter
-      * (defined in (the SDK) io.iohk.atala.prism.kotlin.credentials.TimestampInfo.dummyTime)
+      * (defined in (the SDK) io.iohk.atala.prism.credentials.TimestampInfo.dummyTime)
       *
       * @param signedOperation signed operation, needs to be of the type compatible with the called companion object
       * @return parsed operation filled with TimestampInfo.dummyTime or ValidationError signifying the operation is invalid

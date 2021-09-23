@@ -6,10 +6,10 @@ import com.google.protobuf.ByteString
 import io.grpc.inprocess.{InProcessChannelBuilder, InProcessServerBuilder}
 import io.grpc.{ManagedChannel, Server}
 import io.iohk.atala.prism.AtalaWithPostgresSpec
-import io.iohk.atala.prism.kotlin.credentials.CredentialBatchId
-import io.iohk.atala.prism.kotlin.crypto.{Sha256, Sha256Digest}
-import io.iohk.atala.prism.kotlin.identity.{PrismDid => DID}
-import io.iohk.atala.prism.kotlin.identity.PrismDid.{getDEFAULT_MASTER_KEY_ID => masterKeyId}
+import io.iohk.atala.prism.credentials.CredentialBatchId
+import io.iohk.atala.prism.crypto.{Sha256, Sha256Digest}
+import io.iohk.atala.prism.identity.{PrismDid => DID}
+import io.iohk.atala.prism.identity.PrismDid.{getDEFAULT_MASTER_KEY_ID => masterKeyId}
 import io.iohk.atala.prism.node.poc.{GenericCredentialsSDK, Wallet}
 import io.iohk.atala.prism.node.repositories.{
   AtalaObjectsTransactionsRepository,
@@ -36,8 +36,8 @@ import java.time.Duration
 import java.util.concurrent.TimeUnit
 import scala.concurrent.{Future, Promise}
 import scala.jdk.CollectionConverters._
-import io.iohk.atala.prism.kotlin.credentials.json.JsonBasedCredential
-import io.iohk.atala.prism.kotlin.extras.CredentialBatches
+import io.iohk.atala.prism.credentials.json.JsonBasedCredential
+import io.iohk.atala.prism.extras.CredentialBatches
 import io.iohk.atala.prism.node.poc.CredVerification.VerificationError._
 
 class FlowPoC extends AtalaWithPostgresSpec with BeforeAndAfterEach {

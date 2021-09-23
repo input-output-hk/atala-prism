@@ -2,17 +2,17 @@ package io.iohk.atala.prism.node.poc
 
 import cats.data.ValidatedNel
 import com.google.protobuf.ByteString
-import io.iohk.atala.prism.kotlin.credentials._
-import io.iohk.atala.prism.kotlin.credentials.json.JsonBasedCredential
-import io.iohk.atala.prism.kotlin.credentials.content.CredentialContent
-import io.iohk.atala.prism.kotlin.crypto.{MerkleInclusionProof, Sha256}
-import io.iohk.atala.prism.kotlin.crypto.EC.{INSTANCE => EC}
-import io.iohk.atala.prism.kotlin.crypto.keys.{ECPrivateKey, ECPublicKey}
-import io.iohk.atala.prism.kotlin.crypto.ECConfig.{INSTANCE => ECConfig}
+import io.iohk.atala.prism.credentials._
+import io.iohk.atala.prism.credentials.json.JsonBasedCredential
+import io.iohk.atala.prism.credentials.content.CredentialContent
+import io.iohk.atala.prism.crypto.{MerkleInclusionProof, Sha256}
+import io.iohk.atala.prism.crypto.EC.{INSTANCE => EC}
+import io.iohk.atala.prism.crypto.keys.{ECPrivateKey, ECPublicKey}
+import io.iohk.atala.prism.crypto.ECConfig.{INSTANCE => ECConfig}
 import io.iohk.atala.prism.protos.{node_api, node_models}
-import io.iohk.atala.prism.kotlin.crypto.signature.ECSignature
+import io.iohk.atala.prism.crypto.signature.ECSignature
 import io.iohk.atala.prism.interop.CredentialContentConverter._
-import io.iohk.atala.prism.kotlin.identity.PrismDid
+import io.iohk.atala.prism.identity.PrismDid
 import io.iohk.atala.prism.models.{DidSuffix, KeyData}
 import io.iohk.atala.prism.node.grpc.ProtoCodecs
 import io.iohk.atala.prism.node.poc.CredVerification.{BatchData, VerificationError}
