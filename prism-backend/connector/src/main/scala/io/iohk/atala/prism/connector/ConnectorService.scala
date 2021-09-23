@@ -39,7 +39,7 @@ import scala.util.{Failure, Success}
 
 class ConnectorService(
     connections: ConnectionsService[IOWithTraceIdContext],
-    messages: MessagesService,
+    messages: MessagesService[IO, IO],
     registrationService: RegistrationService[IOWithTraceIdContext],
     messageNotificationService: MessageNotificationService,
     val authenticator: ConnectorAuthenticator,
@@ -275,6 +275,8 @@ class ConnectorService(
           messagesPaginatedRequest.limit,
           messagesPaginatedRequest.lastSeenMessageId
         )
+        .unsafeToFuture()
+        .toFutureEither
         .map(msgs => connector_api.GetMessagesPaginatedResponse(msgs.map(_.toProto)))
     }
   }
@@ -316,6 +318,9 @@ class ConnectorService(
         messages
           .getConnectionMessages(participantId, getMessagesForConnectionRequest.connectionId)
           .map(msgs => connector_api.GetMessagesForConnectionResponse(msgs.map(_.toProto)))
+          .unsafeToFuture()
+          .map(_.asRight)
+          .toFutureEither
     }
 
   /** Returns public keys that can be used for secure communication with the other end of connection
@@ -367,6 +372,8 @@ class ConnectorService(
           content = sendMessageRequest.message,
           messageId = sendMessageRequest.id
         )
+        .unsafeToFuture()
+        .toFutureEither
         .map(messageId => connector_api.SendMessageResponse(id = messageId.uuid.toString))
     }
 
@@ -437,6 +444,8 @@ class ConnectorService(
       ) { messagesToInsert =>
         messages
           .insertMessages(participantId, messagesToInsert)
+          .unsafeToFuture()
+          .toFutureEither
           .map(messageIds => connector_api.SendMessagesResponse(ids = messageIds.map(_.uuid.toString)))
       }
     }
