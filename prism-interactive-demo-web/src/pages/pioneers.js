@@ -54,10 +54,16 @@ const BlogIndex = () => {
                 <h2>Register your interest</h2>
                 <p>After clicking register you will be asked to answer some questions.</p>
                 <p>We will be in touch in due course.</p>
-                <CustomButton
-                  buttonProps={{ className: 'theme-primary'}}
-                  buttonText="Register"
-                />
+                <a
+                  href="https://input-output.typeform.com/to/dhnOj4gT"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  <CustomButton
+                    buttonProps={{ className: 'theme-primary' }}
+                    buttonText="Register"
+                  />
+                </a>
               </div>
               <img src={pioneers} alt="illus" />
             </div>

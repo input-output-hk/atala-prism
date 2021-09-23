@@ -7,6 +7,7 @@ import { config } from '../../app/APIs/configs';
 import { emailFormatValidation } from '../../app/helpers/formRules';
 
 import './_style.scss';
+import Logger from '../../app/helpers/Logger';
 
 const { mailchimpURL, mailchimpU, mailchimpID } = config;
 
@@ -34,7 +35,10 @@ const PioneersForm = ({ form }) => {
       )}`,
       { param: 'c' },
       (err, data) => {
-        if (err) return message.error('There has been an error');
+        if (err) {
+          Logger.error('There has been an error', err);
+          return message.error('There has been an error');
+        }
         if (data) {
           data.result === 'success'
             ? message.success('Thanks for registering!')

@@ -10,7 +10,7 @@ const CustomButton = ({ icon: img, buttonText, buttonProps, optImg }) => {
   return (
     <Button {...buttonProps}>
       {img.src && <img src={img.src} alt={t(img.alt)} className="CredentialIcon" />}
-      {buttonText}{' '}
+      {buttonText}
       {optImg.src && <img src={optImg.src} alt={t(optImg.alt)} className="VerifiedIcon" />}
     </Button>
   );
