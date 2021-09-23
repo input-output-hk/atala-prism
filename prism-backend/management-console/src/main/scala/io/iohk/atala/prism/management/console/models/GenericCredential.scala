@@ -8,9 +8,9 @@ import java.util.UUID
 import io.circe.Json
 import io.iohk.atala.prism.auth.grpc.GrpcAuthenticationHeader
 import io.iohk.atala.prism.connector.AtalaOperationId
-import io.iohk.atala.prism.kotlin.credentials.CredentialBatchId
-import io.iohk.atala.prism.kotlin.crypto.MerkleInclusionProof
-import io.iohk.atala.prism.kotlin.crypto.Sha256Digest
+import io.iohk.atala.prism.credentials.CredentialBatchId
+import io.iohk.atala.prism.crypto.MerkleInclusionProof
+import io.iohk.atala.prism.crypto.Sha256Digest
 import io.iohk.atala.prism.models.{ConnectionToken, UUIDValue}
 import io.iohk.atala.prism.protos.connector_api
 import tofu.logging.derivation.loggable

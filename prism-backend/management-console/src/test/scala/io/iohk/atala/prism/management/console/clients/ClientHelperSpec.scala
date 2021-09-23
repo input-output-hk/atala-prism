@@ -4,7 +4,7 @@ import io.iohk.atala.prism.DIDUtil
 import io.iohk.atala.prism.auth.grpc.SignedRequestsHelper
 import io.iohk.atala.prism.auth.utils.DIDUtils
 import io.iohk.atala.prism.connector.RequestAuthenticator
-import io.iohk.atala.prism.kotlin.crypto.EC.{INSTANCE => EC}
+import io.iohk.atala.prism.crypto.EC.{INSTANCE => EC}
 import io.iohk.atala.prism.protos.connector_api
 import org.scalatest.OptionValues._
 import org.scalatest.concurrent.ScalaFutures._

@@ -5,10 +5,10 @@ import cats.syntax.traverse._
 import cats.instances.list._
 import cats.instances.either._
 import com.google.protobuf.ByteString
-import io.iohk.atala.prism.kotlin.crypto.EC.{INSTANCE => EC}
-import io.iohk.atala.prism.kotlin.crypto.keys.ECPublicKey
-import io.iohk.atala.prism.kotlin.crypto.ECConfig.{INSTANCE => ECConfig}
-import io.iohk.atala.prism.kotlin.crypto.Sha256Digest
+import io.iohk.atala.prism.crypto.EC.{INSTANCE => EC}
+import io.iohk.atala.prism.crypto.keys.ECPublicKey
+import io.iohk.atala.prism.crypto.ECConfig.{INSTANCE => ECConfig}
+import io.iohk.atala.prism.crypto.Sha256Digest
 import io.iohk.atala.prism.models.DidSuffix
 import io.iohk.atala.prism.node.models.{DIDPublicKey, KeyUsage}
 import io.iohk.atala.prism.node.operations.ValidationError.{InvalidValue, MissingValue}

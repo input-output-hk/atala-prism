@@ -17,8 +17,8 @@ import io.iohk.atala.prism.connector.services.{
   MessagesService,
   RegistrationService
 }
-import io.iohk.atala.prism.kotlin.crypto.keys.ECPublicKey
-import io.iohk.atala.prism.kotlin.identity.{PrismDid => DID}
+import io.iohk.atala.prism.crypto.keys.ECPublicKey
+import io.iohk.atala.prism.identity.{PrismDid => DID}
 import io.iohk.atala.prism.models.ParticipantId
 import io.iohk.atala.prism.protos.connector_api
 import io.iohk.atala.prism.{ApiTestHelper, DIDUtil, RpcSpecBase}

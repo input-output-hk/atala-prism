@@ -6,7 +6,7 @@ import com.google.protobuf.ByteString
 import io.grpc.Status
 import io.iohk.atala.prism.BuildInfo
 import io.iohk.atala.prism.connector.AtalaOperationId
-import io.iohk.atala.prism.kotlin.credentials.CredentialBatchId
+import io.iohk.atala.prism.credentials.CredentialBatchId
 import io.iohk.atala.prism.metrics.RequestMeasureUtil
 import io.iohk.atala.prism.metrics.RequestMeasureUtil.{FutureMetricsOps, measureRequestFuture}
 import io.iohk.atala.prism.node.errors.NodeError
@@ -32,9 +32,9 @@ import java.time.Instant
 import scala.concurrent.{ExecutionContext, Future}
 import scala.util.{Failure, Success, Try}
 import io.iohk.atala.prism.interop.toScalaProtos._
-import io.iohk.atala.prism.kotlin.crypto.{Sha256Digest => SHA256Digest}
-import io.iohk.atala.prism.kotlin.identity.{CanonicalPrismDid, LongFormPrismDid, PrismDid}
-import io.iohk.atala.prism.kotlin.identity.{PrismDid => DID}
+import io.iohk.atala.prism.crypto.{Sha256Digest => SHA256Digest}
+import io.iohk.atala.prism.identity.{CanonicalPrismDid, LongFormPrismDid, PrismDid}
+import io.iohk.atala.prism.identity.{PrismDid => DID}
 import io.iohk.atala.prism.models.DidSuffix
 import io.iohk.atala.prism.node.cardano.models.AtalaObjectMetadata
 import io.iohk.atala.prism.node.models.AtalaObjectTransactionSubmissionStatus.InLedger
@@ -261,8 +261,6 @@ class NodeServiceImpl(
       }
     }
   }
-
-  override def publishAsABlock(request: PublishAsABlockRequest): Future[PublishAsABlockResponse] = ???
 
   override def scheduleOperations(
       request: node_api.ScheduleOperationsRequest

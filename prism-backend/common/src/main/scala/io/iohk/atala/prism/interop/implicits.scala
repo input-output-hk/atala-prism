@@ -2,10 +2,10 @@ package io.iohk.atala.prism.interop
 
 import cats.data.NonEmptyList
 import doobie.{Get, Meta, Read, Write}
-import io.iohk.atala.prism.kotlin.credentials.CredentialBatchId
-import io.iohk.atala.prism.kotlin.crypto.{MerkleRoot, Sha256Digest}
+import io.iohk.atala.prism.credentials.CredentialBatchId
+import io.iohk.atala.prism.crypto.{MerkleRoot, Sha256Digest}
 import doobie.implicits.legacy.instant._
-import io.iohk.atala.prism.kotlin.protos.models.TimestampInfo
+import io.iohk.atala.prism.protos.models.TimestampInfo
 import io.iohk.atala.prism.models.{DidSuffix, Ledger, TransactionId}
 import io.iohk.atala.prism.utils.DoobieImplicits.byteArraySeqMeta
 

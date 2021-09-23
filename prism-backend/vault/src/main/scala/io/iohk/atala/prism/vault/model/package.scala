@@ -2,8 +2,8 @@ package io.iohk.atala.prism.vault
 
 import java.time.Instant
 import java.util.UUID
-import io.iohk.atala.prism.kotlin.crypto.Sha256Digest
-import io.iohk.atala.prism.kotlin.identity.{PrismDid => DID}
+import io.iohk.atala.prism.crypto.Sha256Digest
+import io.iohk.atala.prism.identity.{PrismDid => DID}
 import io.iohk.atala.prism.models.UUIDValue
 import tofu.logging.derivation.loggable
 import derevo.derive

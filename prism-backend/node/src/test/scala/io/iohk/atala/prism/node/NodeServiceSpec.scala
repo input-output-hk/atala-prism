@@ -8,11 +8,11 @@ import io.grpc.inprocess.{InProcessChannelBuilder, InProcessServerBuilder}
 import io.grpc.{ManagedChannel, Server, Status, StatusRuntimeException}
 import io.iohk.atala.prism.AtalaWithPostgresSpec
 import io.iohk.atala.prism.connector.AtalaOperationId
-import io.iohk.atala.prism.kotlin.credentials.CredentialBatchId
-import io.iohk.atala.prism.kotlin.crypto.{MerkleRoot, Sha256, Sha256Digest}
-import io.iohk.atala.prism.kotlin.protos.models.TimestampInfo
+import io.iohk.atala.prism.credentials.CredentialBatchId
+import io.iohk.atala.prism.crypto.{MerkleRoot, Sha256, Sha256Digest}
+import io.iohk.atala.prism.protos.models.TimestampInfo
 import io.iohk.atala.prism.models.{DidSuffix, Ledger, TransactionId}
-import io.iohk.atala.prism.kotlin.identity.{PrismDid => DID}
+import io.iohk.atala.prism.identity.{PrismDid => DID}
 import io.iohk.atala.prism.node.errors.NodeError
 import io.iohk.atala.prism.node.grpc.ProtoCodecs
 import io.iohk.atala.prism.node.models.nodeState.{CredentialBatchState, LedgerData}

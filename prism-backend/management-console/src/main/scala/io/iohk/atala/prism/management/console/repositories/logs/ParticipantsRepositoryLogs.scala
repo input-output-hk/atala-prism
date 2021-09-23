@@ -4,7 +4,7 @@ import cats.effect.BracketThrow
 import cats.syntax.apply._
 import cats.syntax.applicativeError._
 import cats.syntax.flatMap._
-import io.iohk.atala.prism.kotlin.identity.{PrismDid => DID}
+import io.iohk.atala.prism.identity.{PrismDid => DID}
 import io.iohk.atala.prism.management.console.errors
 import io.iohk.atala.prism.management.console.models.{ParticipantId, ParticipantInfo}
 import io.iohk.atala.prism.management.console.repositories.ParticipantsRepository

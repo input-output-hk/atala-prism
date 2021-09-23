@@ -4,10 +4,10 @@ import cats.effect.IO
 import io.grpc.{CallCredentials, CallOptions, ManagedChannel, Metadata, Server, ServerServiceDefinition}
 import io.grpc.inprocess.{InProcessChannelBuilder, InProcessServerBuilder}
 import io.iohk.atala.prism.auth.grpc.{GrpcAuthenticationHeader, GrpcAuthenticatorInterceptor, SignedRequestsHelper}
-import io.iohk.atala.prism.kotlin.crypto.EC.{INSTANCE => EC}
-import io.iohk.atala.prism.kotlin.crypto.keys.{ECKeyPair, ECPublicKey}
-import io.iohk.atala.prism.kotlin.crypto.signature.ECSignature
-import io.iohk.atala.prism.kotlin.identity.{PrismDid => DID}
+import io.iohk.atala.prism.crypto.EC.{INSTANCE => EC}
+import io.iohk.atala.prism.crypto.keys.{ECKeyPair, ECPublicKey}
+import io.iohk.atala.prism.crypto.signature.ECSignature
+import io.iohk.atala.prism.identity.{PrismDid => DID}
 import org.scalatest.BeforeAndAfterEach
 import scalapb.GeneratedMessage
 import _root_.java.util.concurrent.{Executor, TimeUnit}

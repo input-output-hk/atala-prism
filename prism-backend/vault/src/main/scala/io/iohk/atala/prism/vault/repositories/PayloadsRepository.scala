@@ -6,7 +6,7 @@ import cats.syntax.flatMap._
 import cats.syntax.applicativeError._
 import doobie.Transactor
 import doobie.implicits._
-import io.iohk.atala.prism.kotlin.identity.{PrismDid => DID}
+import io.iohk.atala.prism.identity.{PrismDid => DID}
 import io.iohk.atala.prism.metrics.{TimeMeasureMetric, TimeMeasureUtil}
 import io.iohk.atala.prism.utils.syntax.DBConnectionOps
 import io.iohk.atala.prism.metrics.TimeMeasureUtil.MeasureOps

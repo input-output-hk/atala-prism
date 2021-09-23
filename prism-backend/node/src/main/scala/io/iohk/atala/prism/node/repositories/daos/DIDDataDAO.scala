@@ -4,7 +4,7 @@ import doobie.free.connection.ConnectionIO
 import doobie.implicits._
 import doobie.implicits.legacy.instant._
 import cats.syntax.functor._
-import io.iohk.atala.prism.kotlin.crypto.Sha256Digest
+import io.iohk.atala.prism.crypto.Sha256Digest
 import io.iohk.atala.prism.models.DidSuffix
 import io.iohk.atala.prism.node.models.nodeState.LedgerData
 import io.iohk.atala.prism.utils.syntax._

@@ -1,6 +1,6 @@
 package io.iohk.atala.prism.node
 
-import io.iohk.atala.prism.kotlin.crypto.Sha256Digest
+import io.iohk.atala.prism.crypto.Sha256Digest
 import io.iohk.atala.prism.models.DidSuffix
 import io.iohk.atala.prism.node.models.CredentialId
 

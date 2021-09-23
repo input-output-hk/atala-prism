@@ -18,9 +18,9 @@ import io.iohk.atala.prism.connector.repositories.ParticipantsRepository.CreateP
 import io.iohk.atala.prism.connector.repositories.daos.ParticipantsDAO
 import io.iohk.atala.prism.connector.repositories.logs.ParticipantsRepositoryLogs
 import io.iohk.atala.prism.connector.repositories.metrics.ParticipantsRepositoryMetrics
-import io.iohk.atala.prism.kotlin.crypto.keys.ECPublicKey
+import io.iohk.atala.prism.crypto.keys.ECPublicKey
 import io.iohk.atala.prism.errors.LoggingContext
-import io.iohk.atala.prism.kotlin.identity.{PrismDid => DID}
+import io.iohk.atala.prism.identity.{PrismDid => DID}
 import io.iohk.atala.prism.models.ParticipantId
 import io.iohk.atala.prism.utils.syntax.DBConnectionOps
 import io.iohk.atala.prism.metrics.TimeMeasureMetric

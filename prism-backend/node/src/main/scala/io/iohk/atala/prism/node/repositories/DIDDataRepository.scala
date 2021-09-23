@@ -6,7 +6,7 @@ import derevo.derive
 import derevo.tagless.applyK
 import doobie.implicits._
 import doobie.util.transactor.Transactor
-import io.iohk.atala.prism.kotlin.identity.{CanonicalPrismDid => DID}
+import io.iohk.atala.prism.identity.{CanonicalPrismDid => DID}
 import io.iohk.atala.prism.metrics.{TimeMeasureMetric, TimeMeasureUtil}
 import io.iohk.atala.prism.metrics.TimeMeasureUtil.MeasureOps
 import io.iohk.atala.prism.models.DidSuffix

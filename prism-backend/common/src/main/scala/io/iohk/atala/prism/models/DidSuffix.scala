@@ -1,6 +1,6 @@
 package io.iohk.atala.prism.models
 
-import io.iohk.atala.prism.kotlin.crypto.Sha256Digest
+import io.iohk.atala.prism.crypto.Sha256Digest
 
 import scala.util.{Failure, Success, Try}
 import scala.util.matching.Regex

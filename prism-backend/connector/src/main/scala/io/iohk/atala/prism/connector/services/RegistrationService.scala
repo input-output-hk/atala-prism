@@ -6,7 +6,7 @@ import io.iohk.atala.prism.connector.AtalaOperationId
 import io.iohk.atala.prism.connector.errors.{ConnectorError, InvalidRequest}
 import io.iohk.atala.prism.connector.model.{ParticipantLogo, ParticipantType}
 import io.iohk.atala.prism.connector.repositories.ParticipantsRepository
-import io.iohk.atala.prism.kotlin.identity.{PrismDid => DID}
+import io.iohk.atala.prism.identity.{PrismDid => DID}
 import io.iohk.atala.prism.logging.TraceId
 import io.iohk.atala.prism.models.DidSuffix
 import io.iohk.atala.prism.logging.TraceId.IOWithTraceIdContext

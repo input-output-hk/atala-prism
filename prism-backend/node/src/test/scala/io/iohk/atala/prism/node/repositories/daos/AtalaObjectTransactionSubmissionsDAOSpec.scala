@@ -4,7 +4,7 @@ import cats.syntax.functor._
 import doobie.free.connection.ConnectionIO
 import doobie.implicits._
 import io.iohk.atala.prism.AtalaWithPostgresSpec
-import io.iohk.atala.prism.kotlin.crypto.Sha256
+import io.iohk.atala.prism.crypto.Sha256
 import io.iohk.atala.prism.models.{Ledger, TransactionId}
 import io.iohk.atala.prism.node.models.{
   AtalaObjectId,

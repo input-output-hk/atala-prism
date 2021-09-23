@@ -1,7 +1,7 @@
 package io.iohk.atala.prism.management.console.repositories
 
 import doobie.Meta
-import io.iohk.atala.prism.kotlin.crypto.MerkleInclusionProof
+import io.iohk.atala.prism.crypto.MerkleInclusionProof
 import io.iohk.atala.prism.daos.BaseDAO
 import io.iohk.atala.prism.management.console.models.{
   Contact,

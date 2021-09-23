@@ -6,9 +6,9 @@ import com.google.protobuf.ByteString
 import doobie.util.transactor.Transactor
 import doobie.implicits._
 import io.iohk.atala.prism.connector.AtalaOperationId
-import io.iohk.atala.prism.kotlin.credentials.CredentialBatchId
-import io.iohk.atala.prism.kotlin.crypto.{MerkleRoot, Sha256, Sha256Digest}
-import io.iohk.atala.prism.kotlin.protos.models.TimestampInfo
+import io.iohk.atala.prism.credentials.CredentialBatchId
+import io.iohk.atala.prism.crypto.{MerkleRoot, Sha256, Sha256Digest}
+import io.iohk.atala.prism.protos.models.TimestampInfo
 import io.iohk.atala.prism.models.{BlockInfo, DidSuffix, Ledger, TransactionId, TransactionInfo, TransactionStatus}
 import io.iohk.atala.prism.node.cardano.{LAST_SYNCED_BLOCK_NO, LAST_SYNCED_BLOCK_TIMESTAMP}
 import io.iohk.atala.prism.node.errors.NodeError

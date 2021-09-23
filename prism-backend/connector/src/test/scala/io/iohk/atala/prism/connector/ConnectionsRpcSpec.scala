@@ -10,10 +10,10 @@ import io.iohk.atala.prism.auth.grpc.SignedRequestsHelper
 import io.iohk.atala.prism.connector.model.ParticipantType.Holder
 import io.iohk.atala.prism.connector.model._
 import io.iohk.atala.prism.connector.repositories.daos.{ConnectionTokensDAO, ConnectionsDAO, ParticipantsDAO}
-import io.iohk.atala.prism.kotlin.crypto.EC.{INSTANCE => EC}
-import io.iohk.atala.prism.kotlin.crypto.keys.{ECKeyPair, ECPublicKey}
-import io.iohk.atala.prism.kotlin.crypto.ECConfig.{INSTANCE => ECConfig}
-import io.iohk.atala.prism.kotlin.identity.{PrismDid => DID}
+import io.iohk.atala.prism.crypto.EC.{INSTANCE => EC}
+import io.iohk.atala.prism.crypto.keys.{ECKeyPair, ECPublicKey}
+import io.iohk.atala.prism.crypto.ECConfig.{INSTANCE => ECConfig}
+import io.iohk.atala.prism.identity.{PrismDid => DID}
 import io.iohk.atala.prism.protos.connector_api.GetConnectionTokenInfoRequest
 import io.iohk.atala.prism.protos.node_api.GetDidDocumentRequest
 import io.iohk.atala.prism.protos.node_models.{KeyUsage, LedgerData}

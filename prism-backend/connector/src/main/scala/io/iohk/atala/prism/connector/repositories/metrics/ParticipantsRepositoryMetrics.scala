@@ -5,8 +5,8 @@ import io.iohk.atala.prism.connector.errors.ConnectorError
 import io.iohk.atala.prism.connector.model.{ParticipantInfo, UpdateParticipantProfile}
 import io.iohk.atala.prism.connector.repositories.ParticipantsRepository
 import io.iohk.atala.prism.connector.repositories.ParticipantsRepository.CreateParticipantRequest
-import io.iohk.atala.prism.kotlin.crypto.keys.ECPublicKey
-import io.iohk.atala.prism.kotlin.identity.{PrismDid => DID}
+import io.iohk.atala.prism.crypto.keys.ECPublicKey
+import io.iohk.atala.prism.identity.{PrismDid => DID}
 import io.iohk.atala.prism.metrics.TimeMeasureUtil.MeasureOps
 import io.iohk.atala.prism.metrics.{TimeMeasureMetric, TimeMeasureUtil}
 import io.iohk.atala.prism.models.ParticipantId

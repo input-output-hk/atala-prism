@@ -1,6 +1,6 @@
 package io.iohk.atala.prism.interop
 
-import io.iohk.atala.prism.kotlin.credentials.content.CredentialContent
+import io.iohk.atala.prism.credentials.content.CredentialContent
 import scala.jdk.CollectionConverters._
 import io.circe.syntax.EncoderOps
 

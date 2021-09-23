@@ -1,8 +1,8 @@
 package io.iohk.atala.prism.node.repositories
 
 import io.iohk.atala.prism.AtalaWithPostgresSpec
-import io.iohk.atala.prism.kotlin.credentials.CredentialBatchId
-import io.iohk.atala.prism.kotlin.crypto.{MerkleRoot, Sha256, Sha256Digest}
+import io.iohk.atala.prism.credentials.CredentialBatchId
+import io.iohk.atala.prism.crypto.{MerkleRoot, Sha256, Sha256Digest}
 import io.iohk.atala.prism.models.{DidSuffix, Ledger, TransactionId}
 import io.iohk.atala.prism.node.models.nodeState.{CredentialBatchState, LedgerData}
 import org.scalatest.OptionValues._
@@ -10,7 +10,7 @@ import org.scalatest.OptionValues._
 import java.time.Instant
 import cats.effect.IO
 import doobie.util.transactor.Transactor
-import io.iohk.atala.prism.kotlin.protos.models.TimestampInfo
+import io.iohk.atala.prism.protos.models.TimestampInfo
 import io.iohk.atala.prism.node.DataPreparation
 import io.iohk.atala.prism.node.models.DIDData
 

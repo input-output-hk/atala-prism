@@ -13,7 +13,7 @@ import derevo.derive
 import doobie.implicits._
 import doobie.util.transactor.Transactor
 import io.iohk.atala.prism.errors.LoggingContext
-import io.iohk.atala.prism.kotlin.identity.{PrismDid => DID}
+import io.iohk.atala.prism.identity.{PrismDid => DID}
 import io.iohk.atala.prism.management.console.config.DefaultCredentialTypeConfig
 import io.iohk.atala.prism.management.console.errors._
 import io.iohk.atala.prism.management.console.models._
