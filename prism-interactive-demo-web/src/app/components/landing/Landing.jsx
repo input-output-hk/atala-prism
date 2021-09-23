@@ -1,4 +1,5 @@
-import React, { useRef } from 'react';
+import React, { useRef, useState } from 'react';
+import { Link } from 'gatsby';
 import { useTranslation } from 'gatsby-plugin-react-i18next';
 import Header from '../../../components/Header/Header';
 import IntroSection from './Organisms/IntroSection/IntroSection';
@@ -23,10 +24,8 @@ import GetStarted from './Molecules/GetStarted/GetStarted';
 import FaqPanel from './Molecules/FaqPanel/FaqPanel';
 import ContactPanel from './Organisms/ContactPanel/ContactPanel';
 import UseCasesPanel from './Organisms/UseCasesPanel/UseCasesPanel';
-import { useState } from 'react';
 import SupportButton from '../common/Atoms/SupportButton/SupportButton';
 import CustomButton from '../common/Atoms/CustomButton/CustomButton';
-import { Link } from 'gatsby';
 
 import './_style.scss';
 
