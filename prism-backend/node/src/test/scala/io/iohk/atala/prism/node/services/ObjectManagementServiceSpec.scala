@@ -8,7 +8,6 @@ import io.iohk.atala.prism.kotlin.crypto.EC.{INSTANCE => EC}
 import io.iohk.atala.prism.kotlin.crypto.Sha256
 import io.iohk.atala.prism.kotlin.crypto.keys.ECKeyPair
 import io.iohk.atala.prism.models._
-import io.iohk.atala.prism.node.DataPreparation._
 import io.iohk.atala.prism.node.models.AtalaObjectTransactionSubmissionStatus.InLedger
 import io.iohk.atala.prism.node.models._
 import io.iohk.atala.prism.node.operations.CreateDIDOperationSpec
@@ -212,7 +211,7 @@ class ObjectManagementServiceSpec
 
       val signedOperation = BlockProcessingServiceSpec.signedCreateDidOperation
       val obj = createAtalaObject(createBlock(signedOperation))
-      val operationId = publishSingleOperationAndFlush(signedOperation).futureValue
+      val operationId = publishSingleOperationAndFlush(signedOperation).futureValue.toOption.get
 
       objectManagementService.saveObject(AtalaObjectNotification(obj, dummyTransactionInfo)).futureValue
 
