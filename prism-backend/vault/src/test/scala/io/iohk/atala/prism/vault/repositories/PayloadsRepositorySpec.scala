@@ -2,8 +2,8 @@ package io.iohk.atala.prism.vault.repositories
 
 import cats.effect.IO
 import io.iohk.atala.prism.AtalaWithPostgresSpec
-import io.iohk.atala.prism.kotlin.crypto.{EC, Sha256}
-import io.iohk.atala.prism.kotlin.identity.{PrismDid => DID}
+import io.iohk.atala.prism.crypto.{EC, Sha256}
+import io.iohk.atala.prism.identity.{PrismDid => DID}
 import io.iohk.atala.prism.vault.model.{CreatePayload, Payload}
 import org.scalatest.OptionValues
 import tofu.logging.Logs
