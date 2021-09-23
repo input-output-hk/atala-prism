@@ -110,7 +110,7 @@ class ObjectManagementService private (
         case ((atalaOperation, _), Right(cntAdded)) if cntAdded == ((0, 0)) =>
           val err = NodeError.DuplicateAtalaOperation(AtalaOperationId.of(atalaOperation))
           OperationsCounters.failedToStoreToDbAtalaOperations(List(atalaOperation), err)
-          err.asLeft[AtalaOperationId]
+          AtalaOperationId.of(atalaOperation).asRight[NodeError]
         case ((atalaOperation, _), Right(_)) =>
           OperationsCounters.countReceivedAtalaOperations(List(atalaOperation))
           AtalaOperationId.of(atalaOperation).asRight[NodeError]

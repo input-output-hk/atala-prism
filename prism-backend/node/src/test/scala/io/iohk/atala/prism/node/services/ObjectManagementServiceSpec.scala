@@ -21,7 +21,6 @@ import io.iohk.atala.prism.node.repositories.{
 import io.iohk.atala.prism.node.services.models.AtalaObjectNotification
 import io.iohk.atala.prism.node.{PublicationInfo, UnderlyingLedger}
 import io.iohk.atala.prism.node.DataPreparation._
-import io.iohk.atala.prism.node.errors.NodeError
 import io.iohk.atala.prism.protos.{node_internal, node_models}
 import monix.execution.Scheduler.Implicits.{global => scheduler}
 import org.mockito
@@ -112,8 +111,8 @@ class ObjectManagementServiceSpec
       val returnedAtalaOperation = publishSingleOperationAndFlush(atalaOperation).futureValue
       returnedAtalaOperation must be(Right(atalaOperationId))
 
-      val err = publishSingleOperationAndFlush(atalaOperation).futureValue
-      err must be(Left(NodeError.DuplicateAtalaOperation(atalaOperationId)))
+      val operationId = publishSingleOperationAndFlush(atalaOperation).futureValue
+      operationId must be(Right(atalaOperationId))
 
       val atalaOperationInfo = objectManagementService.getOperationInfo(atalaOperationId).futureValue.value
 
@@ -132,7 +131,7 @@ class ObjectManagementServiceSpec
 
       opIds.size mustBe 2
       opIds.head mustBe Right(atalaOperationId)
-      opIds.last mustBe Left(NodeError.DuplicateAtalaOperation(atalaOperationId))
+      opIds.last mustBe Right(atalaOperationId)
 
       val atalaOperationInfo = objectManagementService.getOperationInfo(atalaOperationId).futureValue.value
 
