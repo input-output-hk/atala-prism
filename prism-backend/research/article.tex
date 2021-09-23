@@ -204,6 +204,73 @@ Once they receive credentials from issuers, subjects will present them to intere
 %----------------------------------------------------------------------------------------
 
 % \section{Ideas to add missing properties}
+\section{Further thoughts}
 
+\subsection{Scaling} 
 
+In the previous sections we described a protocol that allows transparent management of decentralized identifiers and credentials.
+The protocol usage of a blockchain facilitates the solution to three points:
+\begin{itemize}
+\item Events ordering: All participants can agree on the order in which any pair of events occurred 
+\item Fork protection (safety): There is no point in time where a valid sequence of processed protocol events could become invalid, nor replaced by 
+      another sequence
+\item Data transmission: All participants receive the same sequence of protocol events as they are transmitted through the blockchain
+\end{itemize}
+
+The second point has particular relevance to guarantee that the history of events can be trusted. For instance, imagine Alice controls a DID (its 
+associated master keys) that represents a real world object, like a car. If Alice's wants to sell the car and transfer the corresponding DID, she 
+would perform a DID update that revokes all the master keys controlled by her, and adds a new master key controlled by the new car owner. If Alice 
+could later "undo" this update, the DID ownership transfer could not be trusted.
+
+The properties brought by the blockchain come at a cost. Namely, the protocol throughput (number of events that participants can attach in 
+transactions per unit of time) is bounded to the blockchain throughput. In order to scale the throughput, we have reviewed Sidetree's approach. The 
+idea behind Sidetree is to not publish individual events attached to blockchain transactions, but to publish a hash-link to an off-chain content 
+addressable storage (CAS), like IPFS. The CAS will contain the file referenced by the hash-link, which contains a batch of many protocol events 
+(allowing to transcend the size limits imposed by blockchain transactions).
+
+We identify a non-ideal drawback about this approach, which is a loss of the safety property. In the setting defined by Sidetree, participants can 
+control changes to the past of their identifiers. This is, if Alice desires, she could create a DID by posting a file, $F_{1}$ on the CAS, and its 
+hash on-chain, $F_{1}$ would contain Alice $CreateDID$ event. Later, Alice can create a file $F_{2}$, containing an $UpdateDID$ event, post the hash 
+of $F_{2}$ on-chain, but intentionally not posting $F_{2}$ on the CAS. Then, Alice can create a third file $F_{3}$ which contains an new $UpdateDID$
+event that would be invalid if $F_{2}$ were revealed in the CAS (e.g. $F_{2}$ event could revoke the key that signs the update in $F_{3}$). However, 
+Alice can post both $F_{3}$ in the CAS and the hash of $F_{3}$ on-chain. In Sidetree, this sequence of actions would lead all protocol participants 
+to believe that Alice's DID is in certain state, produced by the $CreateDID$ of $F_{1}$ and the $UpdateDID$ from $F_{3}$.
+
+Alice has the power to reveal at any point $F_{2}$, making the update from $F_{3}$ as invalid, and forcing all participants to update Alice's
+DID to the state reflected by $F_{2}$. This is known as \textbf{late publish attack}, and makes technically impossible to trust the past history 
+history of events in Sidetree implementations. As an example consequence, it is not possible to transfer ownership of a DID when using Sidetree.
+
+In order to avoid introducing this issue, we considered two options. 
+
+The first one is to add a permissioned actor (or a federation of them) that are allowed to batch protocol events and publish both on-chain hash-links,
+and files in corresponding CAS. The special actor introduces a trust model that assumes that it will always reveal files. If the actor fails to 
+reveal a file, the protocol participants stop processing further batches until the missing file is revealed. This is not possible in Sidetree because
+any participant would be able to freeze the system by not revealing a file. The protocol would still allow users to publish events on-chain directly, 
+leaving space for some decentralization for those participants that do not want to depend on the centralized batcher. 
+
+In order to use the batcher to publish the $UpdateDID$ events associated to a DID $D$, the owner of $D$ will have to declare on-chain that future 
+updates for $D$ will be found on the off-chain batches. This public declaration is needed to avoid race conditions when a hash is on-chain but
+a file is not revealed.
+
+A second option consist of a more decentralized variation of the previous approach. Namely, allow any participant to propose itself as an event 
+batcher. The proposal is performed by submitting an on-chain event declaring the batcher DID. Every user that would like to batch its events 
+off-chain should publicly notify the batcher they will use. Only one batcher can be assigned to each DID, this is, the $UpdateDID$ events associated 
+to a DID will be published by at most one batcher. The objective is once again, to be able to identify missing files in a sequence, allowing 
+participants to stop processing files out of order. 
+
+In any of the approaches, if the associated batcher stops publishing files, the DID registered to the batcher is "frozen" until the file is revealed.
+We could re-introduce some liveness protection to DID owners by requesting batches from a same batcher to be separated at least $N$ underlying 
+blockchain blocks, in order to provide that time for users to send a $Contention$ event that invalidates the events associated to a DID published in
+the previous batch. During the processing of batches, participants will wait the contention period (the $N$ blocks) before applying events from a 
+batch in order to not apply the updates to contended DIDs.
+
+Notes:
+\begin{itemize}
+\item we could change the $CreateDID$ event to incorporate an optional batcher DID from start, the batcher DID would be part of the initial state, 
+      bounding the batcher to the DID suffix. 
+\item we could support events to de-register from a batcher, and to switch batcher too.
+\item a user is free to batch his own DIDs' related events. This could be useful for a case like a car manufacturer that would like to batch all DIDs
+      associated to their cars, allowing car owners to de-register from a batcher at will.
+\item a priori, we do not see a need to batch credential issuance/revocation events
+\end{itemize}
 \end{document}
