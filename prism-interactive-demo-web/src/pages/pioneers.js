@@ -2,7 +2,6 @@ import React from 'react';
 import { graphql, Link } from 'gatsby';
 import logo from '../../static/images/logo-pioneer.svg';
 import pioneers from '../images/pioneers.svg';
-import FormPioneers from '../components/form/form';
 import triangle from '../../static/images/triangle.svg';
 import triangleWhite from '../../static/images/triangleWhite.svg';
 import Collapsable from '../components/collapsable/collapsable';
@@ -52,9 +51,13 @@ const BlogIndex = () => {
           <div className="Form">
             <div id="registerInterest" className="WhiteBox">
               <div className="Container">
-                <h2>Register interest</h2>
-                <p>Please share your details and we will be in touch.</p>
-                <FormPioneers />
+                <h2>Register your interest</h2>
+                <p>After clicking register you will be asked to answer some questions.</p>
+                <p>We will be in touch in due course.</p>
+                <CustomButton
+                  buttonProps={{ className: 'theme-primary'}}
+                  buttonText="Register"
+                />
               </div>
               <img src={pioneers} alt="illus" />
             </div>

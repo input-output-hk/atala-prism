@@ -27,7 +27,8 @@
       justify-content: center;
       margin-top: 5em;
       max-width: 1200px;
-      margin: 0 auto;
+      align-items: center;
+      margin: 2em auto 0 auto;
       .Description {
         display: flex;
         justify-content: center;
@@ -48,14 +49,14 @@
             margin-bottom: 0.5em;
           }
           .subtitle {
-            @include primary-text($h1, $white);
+            @include primary-text($h2, $white);
             word-break: normal;
             line-height: 32px;
             font-weight: bold;
             margin-bottom: 1em;
           }
           .bigger {
-            font-size: 20px;
+            font-size: $h2;
             line-height: 30px;
             word-break: normal;
           }
@@ -72,7 +73,7 @@
         justify-content: center;
         .WhiteBox {
           width: 553px;
-          height: 720px;
+          max-height: 500px;
           padding: 3em 5em;
           background: white;
           box-shadow: 0px 9px 30px 10px rgba(0, 0, 0, 0.32);
@@ -81,6 +82,7 @@
           justify-content: space-between;
           align-items: center;
           .Container {
+            padding: 0 2em 0 0;
             h2 {
               @include primary-text($h1, $secondary-color);
               font-weight: bold;
@@ -91,6 +93,9 @@
               @include primary-text(14px, $secondary-color);
               margin-bottom: 1em;
               word-break: normal;
+            }
+            button {
+              margin-top: 1em;
             }
           }
         }
@@ -187,6 +192,9 @@
             width: 100%;
             height: auto;
             padding: 2em;
+            .Container {
+              padding: 0 1em;
+            }
           }
         }
       }
@@ -262,10 +270,6 @@
               font-weight: bold;
               margin-bottom: 1em;
             }
-            p {
-              @include primary-text($subtitle, $white);
-              line-height: $title;
-            }
           }
         }
         .Form {
@@ -276,21 +280,7 @@
             width: 553px;
             height: auto;
             .Container {
-              h2 {
-                @include primary-text($title, $secondary-color);
-                font-weight: bold;
-                margin-bottom: 1em;
-              }
-              p {
-                @include primary-text($subtitle, $secondary-color);
-                margin-bottom: 1em;
-              }
-              label {
-                font-size: $body;
-              }
-              button {
-                font-size: $subtitle;
-              }
+              padding: 2em;
             }
           }
         }
@@ -313,15 +303,11 @@
       }
       .ant-collapse-content-box {
         width: 100%;
-        p {
-          font-size: $subtitle;
-        }
       }
     }
     .banner {
       button {
         width: 300px;
-        font-size: $subtitle;
       }
     }
     .footer {
@@ -338,7 +324,6 @@
       width: 100%;
     }
     .footer .footerLinks a {
-      font-size: $subtitle;
       margin: 0;
     }
   }
@@ -367,7 +352,7 @@
             width: 100%;
             h3 {
               @include primary-text($h2, $white);
-              margin-bottom: 1em;
+              margin-bottom: 0em;
             }
             h2 {
               @include primary-text(4rem, $white);
