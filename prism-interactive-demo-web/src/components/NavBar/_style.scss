@@ -47,6 +47,7 @@
     color: $dark-grey;
     border-bottom: transparent;
     @include primary-text($body, $dark-grey);
+    letter-spacing: -1px;
     -webkit-transition: 500ms ease-out;
     -moz-transition: 500ms ease-out;
     -o-transition: 500ms ease-out;

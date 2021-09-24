@@ -68,7 +68,6 @@ const NavBar = ({ currentSection }) => {
 };
 
 NavBar.propTypes = {
-  onSelect: PropTypes.func.isRequired,
   currentSection: PropTypes.oneOf(keys).isRequired
 };
 
