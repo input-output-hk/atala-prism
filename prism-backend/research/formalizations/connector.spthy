@@ -1,0 +1,121 @@
+/**
+ * Description: Model for e2e based on ECIES
+ * Date: 20210922
+ * Authors: Jesus Diaz Vico, IOHK Atala and Research teams.
+ */
+
+theory Connector
+begin
+
+/*
+ The protocol we want to model is, in Alice and Bob notation, as follows:
+
+ (I stands for Issuer, H for Holder, C for connector)
+ ( => is secure channel; -> is normal channel )
+
+ 1. I => H: pk_iss, code // Shared via QR, i.e., secure channel
+ 2. H -> C: aenc(pk_iss, <pk_hol, code>) // pk_iss = g^v, pk_hol = g^u
+ 3. C -> I: aenc(pk_iss, <pk_hol, code>)
+ 4. I:      r = Fresh(Z)
+            s = (pk_hol)^r
+            k_1 || k_2 = kdf(s)
+            c = senc(k_1, data)
+            m = senc(k_2, Hash(c))
+ 5. I -> C: <c, m, g^r>
+ 6. C -> H: <c, m, g^r>
+ 7. H:      s = (g^r)^u
+            k_1 || k_2 = kdf(s)
+            m' = senc(k_2, Hash(c))
+            Assert m = m'
+            data = sdec(k_1, c)
+*/
+
+builtins: hashing, symmetric-encryption, asymmetric-encryption, signing, diffie-hellman
+
+/* Note: splitL, splitR and merge functions are aimed to be used for
+   splitting bitstrings to be used as keys. However, they do not model
+   that leaking part of a key *does* leak much information about that
+   key. Hence, for this modelling to be valid, we should check that all
+   the larger bitstring and its splits are kept secret. */
+functions: kdf/1, splitL/1, splitR/1, merge/2, mac/2
+
+equations:
+	merge(splitL(v),splitR(v)) = v
+
+/* Rule for sending a message through a secure (confidential & authenticated) 
+   channel. Used here for QR code sharing. */
+rule ChanOut_S:
+        [ Out_S($A,$B,x) ]
+      --[ ChanOut_S($A,$B,x) ]->
+        [ !Sec($A,$B,x) ]
+
+/* Rule for sending a message from a secure (confidential & authenticated) 
+   channel.  Used here for QR code sharing. */
+rule ChanIn_S:
+        [ !Sec($A,$B,x) ]
+      --[ ChanIn_S($A,$B,x) ]->
+        [ In_S($A,$B,x) ]
+
+/* Rule for generating keypairs of DH type. */
+rule Generate_DH_key_pair:
+  [ Fr(~x) ] 
+  --> 
+  [ !Pk($A,'g'^~x)
+  , Out('g'^~x)
+  , !Ltk($A,~x)
+  ]
+
+/* The issuer shares the QR code via the secure channel. */
+rule ConnectorI_1:
+     [ Fr(~secret), !Ltk($I, ~lkI), !Pk($I, pkI) ]
+     --[ Send($I, <~secret, pkI>), Secret_I(~secret) ]->
+     [ Out_S($I, $H, <~secret, pkI>), State_I_1($I, $H, ~lkI, ~secret) ]
+
+/* The holder receives the QR code through the secure channel, and responds. */
+rule ConnectorH_2:
+     [ In_S($I, $H, <~secret, pkI>), !Ltk($H, ~lkH), !Pk($H, pkH) ]
+     --[ Recv($H, <~secret, pkI>), Secret_H(~secret), Send1($H, <~secret, pkH>) ]->
+     [ Out(<$C, aenc(<$H, ~secret, pkH>, pkI)>), State_H_2($I, $H, pkI, ~lkH, ~secret) ]
+
+/* The connector forwards to the issuer the message sent in step 3 by the 
+   holder. */
+rule ConnectorC_3:
+     [ In(<$C, c1>) ]
+     -->
+     [ Out(<$I, c1>) ]
+
+/* The issuer receives the message forwarded by the connector, and initiates the
+   ECIES protocol. */
+rule ConnectorI_4:
+     let pkH = snd(snd(adec(c1, ~lkI)))
+         secretp = fst(snd(adec(c1, ~lkI)))
+         k = kdf(pkH^~r)
+         k1 = splitL(k)
+	 k2 = splitR(k)
+     in
+     [ State_I_1($I, $H, ~lkI, ~secret)
+     , In(<$I, c1>)
+     , Fr(~r)     
+     , Fr(~m1) // Create a fresh message, simulating private data to be sent
+     ]
+     --[
+	Recv1($I, <~secret, pkH>)
+     	, Secret_I2(~secret, ~r)
+	, Send($I, <senc(~m1, k1), mac(h(~m1), k2), 'g'^~r>)
+	]->
+     [ Out(<senc(~m1, k1), mac(h(~m1), k), 'g'^~r>) ]
+
+/* Safety check */
+lemma executable:
+      exists-trace
+	"Ex A B m #i #j. Send1(A,m)@i & Recv1(B,m) @j"
+
+/* The secret value shared by the Issuer is actually secret. */
+lemma secret_issuer:
+     "All n #i #j. Secret_I(n) @i & K(n) @j ==> F"
+
+/* The secret value received by the Holder is actually secret. */
+lemma secret_holder:
+     "All n #i #j. Secret_H(n) @i & K(n) @j ==> F"
+     
+end
