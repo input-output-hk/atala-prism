@@ -293,7 +293,7 @@
       "title": "Your questions, answered",
       "detailText": "FAQ",
       "titlefaq1": "What is Atala PRISM?",
-      "faq1": "Atala PRISM is a decentralized identity solution built on the Cardano blockchain. It creates a new approach to identity management, where users own their identity and have complete control over how their personal data is used and accessed. Data is shared with other individuals or organizations over secure, private peer-to-peer communication channels. Atala PRISM is designed for businesses, governments, and individuals.",
+      "faq1": "Atala PRISM is a decentralized identity solution built on the Cardano blockchain. It creates a new approach to identity management, where users own their identity and have complete control over how their personal data is used and accessed. Data is shared with other individuals or organizations over secure, private peer-to-peer communication channels.",
       "titlefaq2": "What problems does Atala PRISM solve?",
       "faq2": "Current identity management mechanisms create significant risks and costs for businesses, as these platforms store and secure sensitive information. Governments face inefficiencies in their paper-based, bureaucratic processes, as well as personal data frauds. Individuals lack trust about how their information might be misused or sold to third parties without their consent. Atala PRISM solves these problems by enabling a new approach for digital identity where people have ownership of their personal information, and only share what is required with businesses or institutions in an easy, secure, and private way.",
       "titlefaq3": "Who is Atala PRISM for?",
@@ -311,7 +311,7 @@
       "titlefaq9": "Are identity and credentials shareable only within the Atala PRISM ecosystem?",
       "faq9": "Anyone can integrate with Atala PRISM. Since it is built using industry standards, third-party apps will be able to connect easily.",
       "titlefaq10": "What happens if an individual loses their phone?",
-      "faq10": "With Atala PRISM, everyone can restore their account and personal data by using their seed phrase. People just need to make sure they keep their seed phrase safe. If they lose it, they will need to create a new account and get their credentials reissued."
+      "faq10": "With Atala PRISM, everyone can restore their account and personal data on any device by using their seed phrase. People just need to make sure they keep their seed phrase safe. If they lose it, they will need to create a new account and get their credentials reissued."
     },
     "credentialsView": {
       "title": "These are the Credentials",
@@ -350,7 +350,7 @@
       "listItem16": "Invoices",
       "listItem17": "Account Details",
       "listItem18": "Asset Ownership",
-      "listItem19": "KYC compliance",
+      "listItem19": "KYC Compliance",
       "listItem20": "Statements",
       "listItem21": "Agreements",
       "listItem22": "Car Sharing Membership",
