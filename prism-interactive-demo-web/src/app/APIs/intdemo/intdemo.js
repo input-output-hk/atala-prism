@@ -41,7 +41,7 @@ export const getConnectionToken = async currentCredential => {
   const result = await ServiceByCredential[currentCredential].getConnectionToken(request, {
     userId: getUserId()
   });
-  return result.getConnectionToken();
+  return result.getConnectiontoken();
 };
 
 export const startSubjectStatusStream = (
@@ -53,14 +53,14 @@ export const startSubjectStatusStream = (
 ) => {
   Logger.info('Getting subject status', connectionToken);
   const request = new GetSubjectStatusRequest();
-  request.setConnectionToken(connectionToken);
+  request.setConnectiontoken(connectionToken);
   const stream = ServiceByCredential[currentCredential].getSubjectStatusStream(request, {
     userId: getUserId()
   });
   stream.on('data', response => {
     Logger.info('stream data:', response);
-    Logger.info(response.getSubjectStatus());
-    onData(response.getSubjectStatus());
+    Logger.info(response.getSubjectstatus());
+    onData(response.getSubjectstatus());
   });
   stream.on('end', end => {
     Logger.info('ending stream:', end);
@@ -81,8 +81,8 @@ export const setPersonalData = data => {
   date.setMonth(dateOfBirth.month);
   date.setDay(dateOfBirth.day);
   const request = new SetPersonalDataRequest();
-  request.setConnectionToken(connectionToken);
-  request.setFirstName(firstName);
-  request.setDateOfBirth(date);
+  request.setConnectiontoken(connectionToken);
+  request.setFirstname(firstName);
+  request.setDateofbirth(date);
   idService.setPersonalData(request, { userId: getUserId() });
 };
