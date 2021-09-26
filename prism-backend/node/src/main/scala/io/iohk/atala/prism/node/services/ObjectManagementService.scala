@@ -90,7 +90,7 @@ class ObjectManagementService private (
         case Left(currentVersion) => {
           logger.warn(
             s"Node supports $SUPPORTED_VERSION but current protocol version is $currentVersion." +
-              s" Therefore saving Atala object from the blockchain can't be performed."
+              s" Therefore saving Atala object received from the blockchain can't be performed."
           )
           ReaderT.liftF(IO.unit)
         }
@@ -147,7 +147,7 @@ class ObjectManagementService private (
             s"Node supports $SUPPORTED_VERSION but current protocol version is $currentVersion. Update your node " +
               s"in order to be able to schedule operations to the blockchain"
           )
-          throw new RuntimeException("Upgrade your node to support ")
+          throw new RuntimeException(s"Upgrade your node to support $currentVersion")
         }
       }
       .run(TraceId.generateYOLO)
