@@ -18,11 +18,13 @@ import io.iohk.atala.prism.node.metrics.OperationsCounters
 import io.iohk.atala.prism.node.models.AtalaObjectTransactionSubmissionStatus.InLedger
 import io.iohk.atala.prism.node.models._
 import io.iohk.atala.prism.node.models.nodeState.getLastSyncedTimestampFromMaybe
+import io.iohk.atala.prism.node.operations.protocolVersion.SUPPORTED_VERSION
 import io.iohk.atala.prism.node.repositories.daos.AtalaObjectsDAO
 import io.iohk.atala.prism.node.repositories.{
   AtalaObjectsTransactionsRepository,
   AtalaOperationsRepository,
-  KeyValuesRepository
+  KeyValuesRepository,
+  ProtocolVersionRepository
 }
 import io.iohk.atala.prism.node.services.models.AtalaObjectNotification
 import io.iohk.atala.prism.protos.node_internal.AtalaBlock
@@ -42,6 +44,7 @@ class ObjectManagementService private (
     atalaOperationsRepository: AtalaOperationsRepository[IOWithTraceIdContext],
     atalaObjectsTransactionsRepository: AtalaObjectsTransactionsRepository[IOWithTraceIdContext],
     keyValuesRepository: KeyValuesRepository[IOWithTraceIdContext],
+    protocolVersionsRepository: ProtocolVersionRepository[IOWithTraceIdContext],
     blockProcessing: BlockProcessingService
 )(implicit xa: Transactor[IO], scheduler: Scheduler) {
 
@@ -50,7 +53,7 @@ class ObjectManagementService private (
 
   def saveObject(notification: AtalaObjectNotification): Future[Unit] = {
     // TODO: just add the object to processing queue, instead of processing here
-    atalaObjectsTransactionsRepository
+    val updateAction = atalaObjectsTransactionsRepository
       .setObjectTransactionDetails(notification)
       .flatMap {
         case Some(obj) =>
@@ -78,6 +81,19 @@ class ObjectManagementService private (
         case None =>
           logger.warn(s"Could not save object from notification $notification")
           ReaderT.liftF(IO.unit)
+      }
+
+    protocolVersionsRepository
+      .ifNodeSupportsCurrentProtocol()
+      .flatMap {
+        case Right(_) => updateAction
+        case Left(currentVersion) => {
+          logger.warn(
+            s"Node supports $SUPPORTED_VERSION but current protocol version is $currentVersion." +
+              s" Therefore saving Atala object from the blockchain can't be performed."
+          )
+          ReaderT.liftF(IO.unit)
+        }
       }
       .run(TraceId.generateYOLO)
       .unsafeToFuture()
@@ -121,7 +137,21 @@ class ObjectManagementService private (
           AtalaOperationId.of(atalaOperation).asRight[NodeError]
       }
     }
-    resultIO.run(TraceId.generateYOLO).unsafeToFuture()
+
+    protocolVersionsRepository
+      .ifNodeSupportsCurrentProtocol()
+      .flatMap {
+        case Right(_) => resultIO
+        case Left(currentVersion) => {
+          logger.error(
+            s"Node supports $SUPPORTED_VERSION but current protocol version is $currentVersion. Update your node " +
+              s"in order to be able to schedule operations to the blockchain"
+          )
+          throw new RuntimeException("Upgrade your node to support ")
+        }
+      }
+      .run(TraceId.generateYOLO)
+      .unsafeToFuture()
   }
 
   def getLastSyncedTimestamp: Future[Instant] = {
@@ -191,12 +221,14 @@ object ObjectManagementService {
       atalaOperationsRepository: AtalaOperationsRepository[IOWithTraceIdContext],
       atalaObjectsTransactionsRepository: AtalaObjectsTransactionsRepository[IOWithTraceIdContext],
       keyValuesRepository: KeyValuesRepository[IOWithTraceIdContext],
+      protocolVersionsRepository: ProtocolVersionRepository[IOWithTraceIdContext],
       blockProcessing: BlockProcessingService
   )(implicit xa: Transactor[IO], scheduler: Scheduler): ObjectManagementService = {
     new ObjectManagementService(
       atalaOperationsRepository,
       atalaObjectsTransactionsRepository,
       keyValuesRepository,
+      protocolVersionsRepository,
       blockProcessing
     )
   }
