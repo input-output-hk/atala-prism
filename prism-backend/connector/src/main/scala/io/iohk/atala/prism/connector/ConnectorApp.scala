@@ -29,7 +29,6 @@ import org.slf4j.LoggerFactory
 import tofu.logging.Logs
 
 import scala.concurrent.{Await, ExecutionContext}
-import scala.concurrent.ExecutionContext.Implicits._
 import scala.concurrent.duration._
 import scala.util.Try
 
@@ -46,6 +45,7 @@ object ConnectorApp {
 class ConnectorApp(executionContext: ExecutionContext) { self =>
   private val logger = LoggerFactory.getLogger(this.getClass)
 
+  implicit val ec = ExecutionContext.global
   implicit val cs: ContextShift[IO] = IO.contextShift(ExecutionContext.global)
 
   private[this] var server: Server = null
@@ -104,7 +104,7 @@ class ConnectorApp(executionContext: ExecutionContext) { self =>
     messageNotificationService.start()
 
     // connector services
-    val connectionsService = new ConnectionsService(connectionsRepository, node)(executionContext)
+    val connectionsService = ConnectionsService.unsafe(connectionsRepository, node, connectorLogs)
     val messagesService = new MessagesService(messagesRepository)
     val registrationService =
       RegistrationService.unsafe[IOWithTraceIdContext, IO](participantsRepository, node, connectorLogs)

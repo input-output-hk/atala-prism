@@ -1,11 +1,15 @@
 package io.iohk.atala.prism.intdemo
 
+import cats.implicits.catsSyntaxEitherId
 import io.iohk.atala.prism.connector.errors.{ConnectorError, ConnectorErrorSupport}
 import io.iohk.atala.prism.connector.model._
 import io.iohk.atala.prism.connector.services.{ConnectionsService, MessagesService}
+import io.iohk.atala.prism.logging.TraceId
+import io.iohk.atala.prism.logging.TraceId.IOWithTraceIdContext
 import io.iohk.atala.prism.models.ParticipantId
 import io.iohk.atala.prism.protos.credential_models
-import io.iohk.atala.prism.protos.credential_models.{AtalaMessage}
+import io.iohk.atala.prism.protos.credential_models.AtalaMessage
+import io.iohk.atala.prism.utils.FutureEither.FutureEitherOps
 import org.slf4j.{Logger, LoggerFactory}
 
 import scala.concurrent.{ExecutionContext, Future}
@@ -35,7 +39,10 @@ trait ConnectorIntegration {
 
 object ConnectorIntegration {
 
-  class ConnectorIntegrationImpl(connectionsService: ConnectionsService, messagesService: MessagesService)(implicit
+  class ConnectorIntegrationImpl(
+      connectionsService: ConnectionsService[IOWithTraceIdContext],
+      messagesService: MessagesService
+  )(implicit
       ec: ExecutionContext
   ) extends ConnectorIntegration
       with ConnectorErrorSupport {
@@ -78,12 +85,20 @@ object ConnectorIntegration {
     override def getConnectionByToken(token: TokenString): Future[Option[Connection]] = {
       connectionsService
         .getConnectionByToken(token)
+        .run(TraceId.generateYOLO)
+        .unsafeToFuture()
+        .map(_.asRight)
+        .toFutureEither
         .toFuture(toRuntimeException)
     }
 
     override def generateConnectionToken(senderId: ParticipantId): Future[TokenString] = {
       connectionsService
         .generateTokens(senderId, tokensCount = 1)
+        .run(TraceId.generateYOLO)
+        .unsafeToFuture()
+        .map(_.asRight)
+        .toFutureEither
         .toFuture(toRuntimeException)
         .flatMap(
           _.headOption
