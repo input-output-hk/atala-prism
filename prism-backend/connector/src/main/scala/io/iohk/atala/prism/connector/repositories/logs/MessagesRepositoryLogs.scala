@@ -14,11 +14,9 @@ import tofu.higherKind.Mid
 import tofu.logging.ServiceLogging
 import tofu.syntax.logging._
 
-private[repositories] final class MessagesRepositoryLogs[S[_], F[_]: ServiceLogging[
-  *[_],
-  MessagesRepository[S, F]
-]: MonadThrow]
-    extends MessagesRepository[S, Mid[F, *]] {
+private[repositories] final class MessagesRepositoryLogs[S[_], F[_]: ServiceLogging[*[_], MessagesRepository[S, F]]](
+    implicit monadThrow: MonadThrow[F]
+) extends MessagesRepository[S, Mid[F, *]] {
   override def insertMessage(
       sender: ParticipantId,
       connection: ConnectionId,
