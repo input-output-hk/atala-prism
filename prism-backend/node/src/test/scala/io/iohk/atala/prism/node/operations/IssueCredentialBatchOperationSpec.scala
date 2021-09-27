@@ -131,6 +131,19 @@ class IssueCredentialBatchOperationSpec extends AtalaWithPostgresSpec {
 
       result mustBe Left(StateError.InvalidKeyUsed("The key type expected is Issuing key. Type used: MasterKey"))
     }
+    "return state error when unknown keyId is used" in {
+      DataPreparation
+        .createDID(DIDData(issuerDIDSuffix, issuerDidKeys, issuerCreateDIDOperation.digest), dummyLedgerData)
+      val parsedOperation = IssueCredentialBatchOperation.parse(exampleOperation, dummyLedgerData).toOption.value
+
+      val result = parsedOperation
+        .getCorrectnessData("issuing3")
+        .transact(database)
+        .value
+        .unsafeRunSync()
+
+      result mustBe Left(StateError.UnknownKey(issuerDIDSuffix, "issuing3"))
+    }
   }
 
   "IssueCredentialBatchOperation.applyState" should {
