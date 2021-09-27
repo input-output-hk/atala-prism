@@ -4,7 +4,6 @@ import { observer } from 'mobx-react-lite';
 import { Radio, Form } from 'antd';
 import { useTranslation } from 'react-i18next';
 import { PlusOutlined } from '@ant-design/icons';
-import { isString } from 'lodash';
 import CategoryCreationModal from '../CategoryCreationModal/CategoryCreationModal';
 import CategoryCard from '../../Molecules/CategoryStep/CategoryCard';
 import CustomButton from '../../../common/Atoms/CustomButton/CustomButton';
@@ -30,19 +29,6 @@ const CategorySelector = observer(({ templateCategories }) => {
 
   const onCategoryChange = ev => setSelected(ev.target.value);
 
-  const categoryRules = [
-    {
-      validator: ({ field }, value) =>
-        isString(value)
-          ? Promise.resolve()
-          : Promise.reject(
-              t('credentialTemplateCreation.errors.fieldIsRequired', {
-                field: t(`credentialTemplateCreation.fields.${field}`)
-              })
-            )
-    }
-  ];
-
   return (
     <div className="selectCategory">
       <CategoryCreationModal
@@ -58,7 +44,7 @@ const CategorySelector = observer(({ templateCategories }) => {
           icon={<PlusOutlined />}
         />
       </div>
-      <Form.Item name="category" rules={categoryRules}>
+      <Form.Item name="category" rules={[{ required: true }]}>
         <div className="templateCategory">
           <Radio.Group onChange={onCategoryChange}>
             {categories.map(category => (
