@@ -1,6 +1,5 @@
 package io.iohk.atala.prism.intdemo
 
-import cats.effect.IO
 import cats.implicits.catsSyntaxEitherId
 import io.iohk.atala.prism.connector.errors.{ConnectorError, ConnectorErrorSupport}
 import io.iohk.atala.prism.connector.model._
@@ -42,7 +41,7 @@ object ConnectorIntegration {
 
   class ConnectorIntegrationImpl(
       connectionsService: ConnectionsService[IOWithTraceIdContext],
-      messagesService: MessagesService[IO, IO]
+      messagesService: MessagesService[fs2.Stream[IOWithTraceIdContext, *], IOWithTraceIdContext]
   )(implicit
       ec: ExecutionContext
   ) extends ConnectorIntegration
@@ -78,6 +77,7 @@ object ConnectorIntegration {
     ): Future[MessageId] =
       messagesService
         .insertMessage(senderId, connectionId, message)
+        .run(TraceId.generateYOLO)
         .unsafeToFuture()
         .toFutureEither
         .toFuture(toRuntimeException(senderId, connectionId))
@@ -111,6 +111,7 @@ object ConnectorIntegration {
     ): Future[Seq[Message]] =
       messagesService
         .getConnectionMessages(recipientId, connectionId)
+        .run(TraceId.generateYOLO)
         .unsafeToFuture()
 
     private def toRuntimeException(senderId: ParticipantId, connectionId: ConnectionId): Any => RuntimeException =

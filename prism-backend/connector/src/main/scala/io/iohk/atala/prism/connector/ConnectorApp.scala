@@ -105,7 +105,7 @@ class ConnectorApp(executionContext: ExecutionContext) { self =>
 
     // connector services
     val connectionsService = ConnectionsService.unsafe(connectionsRepository, node, connectorLogs)
-    val messagesService = MessagesService(messagesRepository)
+    val messagesService = MessagesService.unsafe[IOWithTraceIdContext, IO](messagesRepository, connectorLogs)
     val registrationService =
       RegistrationService.unsafe[IOWithTraceIdContext, IO](participantsRepository, node, connectorLogs)
     val contactConnectionService = new ContactConnectionService(connectionsService, authenticator, didWhitelist)(

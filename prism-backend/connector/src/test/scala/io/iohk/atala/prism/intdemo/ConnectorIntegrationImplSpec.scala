@@ -4,7 +4,6 @@ import io.iohk.atala.prism.connector.model.{ConnectionId, MessageId}
 import io.iohk.atala.prism.connector.services.{ConnectionsService, MessagesService}
 import io.iohk.atala.prism.intdemo.ConnectorIntegration.ConnectorIntegrationImpl
 import ConnectorIntegrationImplSpec._
-import cats.effect.IO
 import cats.syntax.applicative._
 import cats.syntax.either._
 import io.iohk.atala.prism.connector.errors.ConnectorError
@@ -59,12 +58,17 @@ object ConnectorIntegrationImplSpec {
   val connectionId = ConnectionId.random()
   val messageId = MessageId.random()
 
-  private def connectorIntegration(testCode: (ConnectorIntegration, MessagesService[IO, IO]) => Any): Unit = {
+  private def connectorIntegration(
+      testCode: (
+          ConnectorIntegration,
+          MessagesService[fs2.Stream[IOWithTraceIdContext, *], IOWithTraceIdContext]
+      ) => Any
+  ): Unit = {
     val connectionsService = mock[ConnectionsService[IOWithTraceIdContext]]
-    val messagesService = mock[MessagesService[IO, IO]]
+    val messagesService = mock[MessagesService[fs2.Stream[IOWithTraceIdContext, *], IOWithTraceIdContext]]
     val connectorIntegration = new ConnectorIntegrationImpl(connectionsService, messagesService)
     when(messagesService.insertMessage(eqTo(senderId), eqTo(connectionId), any[Array[Byte]], any[Option[MessageId]]))
-      .thenReturn(messageId.asRight[ConnectorError].pure[IO])
+      .thenReturn(messageId.asRight[ConnectorError].pure[IOWithTraceIdContext])
     testCode(connectorIntegration, messagesService)
     ()
   }

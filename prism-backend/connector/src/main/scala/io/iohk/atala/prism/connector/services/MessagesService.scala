@@ -1,13 +1,20 @@
 package io.iohk.atala.prism.connector.services
 
+import cats.{Comonad, Functor}
 import cats.data.NonEmptyList
+import cats.effect.MonadThrow
 import cats.tagless.ApplyK
+import cats.syntax.comonad._
+import cats.syntax.functor._
 import fs2.Stream
 import io.iohk.atala.prism.connector.errors.ConnectorError
 import io.iohk.atala.prism.connector.model._
 import io.iohk.atala.prism.connector.model.actions.SendMessagesRequest
 import io.iohk.atala.prism.connector.repositories.MessagesRepository
+import io.iohk.atala.prism.connector.services.logs.MessagesServiceLogs
 import io.iohk.atala.prism.models.ParticipantId
+import tofu.higherKind.Mid
+import tofu.logging.{Logs, ServiceLogging}
 
 trait MessagesService[S[_], F[_]] {
   def insertMessage(
@@ -31,7 +38,7 @@ trait MessagesService[S[_], F[_]] {
   def getMessageStream(
       recipientId: ParticipantId,
       lastSeenMessageId: Option[MessageId]
-  ): Stream[S, Message]
+  ): S[Message]
 
   def getConnectionMessages(
       recipientId: ParticipantId,
@@ -43,11 +50,26 @@ trait MessagesService[S[_], F[_]] {
 object MessagesService {
   implicit def applyK[E[_]]: ApplyK[MessagesService[E, *[_]]] = cats.tagless.Derive.applyK[MessagesService[E, *[_]]]
 
-  def apply[S[_], F[_]](messagesRepository: MessagesRepository[Stream[S, *], F]): MessagesService[S, F] =
-    new MessagesServiceImpl(messagesRepository)
+  def apply[F[_]: MonadThrow, R[_]: Functor](
+      messagesRepository: MessagesRepository[Stream[F, *], F],
+      logs: Logs[R, F]
+  ): R[MessagesService[Stream[F, *], F]] =
+    for {
+      serviceLogs <- logs.service[MessagesService[Stream[F, *], F]]
+    } yield {
+      implicit val implicitLogs: ServiceLogging[F, MessagesService[Stream[F, *], F]] = serviceLogs
+      val logs: MessagesService[Stream[F, *], Mid[F, *]] = new MessagesServiceLogs[Stream[F, *], F]
+      val mid = logs
+      mid attach new MessagesServiceImpl[Stream[F, *], F](messagesRepository)
+    }
+
+  def unsafe[F[_]: MonadThrow, R[_]: Comonad](
+      messagesRepository: MessagesRepository[Stream[F, *], F],
+      logs: Logs[R, F]
+  ): MessagesService[Stream[F, *], F] = MessagesService(messagesRepository, logs).extract
 }
 
-private class MessagesServiceImpl[S[_], F[_]](messagesRepository: MessagesRepository[Stream[S, *], F])
+private class MessagesServiceImpl[S[_], F[_]](messagesRepository: MessagesRepository[S, F])
     extends MessagesService[S, F] {
   def insertMessage(
       sender: ParticipantId,
@@ -73,7 +95,7 @@ private class MessagesServiceImpl[S[_], F[_]](messagesRepository: MessagesReposi
   def getMessageStream(
       recipientId: ParticipantId,
       lastSeenMessageId: Option[MessageId]
-  ): Stream[S, Message] =
+  ): S[Message] =
     messagesRepository.getMessageStream(recipientId, lastSeenMessageId)
 
   def getConnectionMessages(
