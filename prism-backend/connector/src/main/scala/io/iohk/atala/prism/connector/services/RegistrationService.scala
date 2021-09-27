@@ -7,6 +7,7 @@ import cats.syntax.either._
 import cats.syntax.functor._
 import cats.syntax.flatMap._
 import cats.syntax.option._
+import cats.syntax.traverse._
 import derevo.derive
 import derevo.tagless.applyK
 import io.iohk.atala.prism.connector.AtalaOperationId
@@ -54,14 +55,16 @@ private class RegistrationServiceImpl[F[_]: MonadThrow](
     for {
       maybeCreateRequest <-
         didOrOperation.fold(checkAndUseExistingDID(_, tpe, name, logo), createDID(tpe, name, logo, _))
-      _ <- maybeCreateRequest.traverse(participantsRepository.create)
-      result = maybeCreateRequest.map { createRequest =>
-        RegistrationResult(
-          did = createRequest.did,
-          id = createRequest.id,
-          operationId = createRequest.operationId
-        )
-      }
+      createResult <- maybeCreateRequest.flatTraverse(participantsRepository.create)
+      result = createResult.flatMap(_ =>
+        maybeCreateRequest.map { createRequest =>
+          RegistrationResult(
+            did = createRequest.did,
+            id = createRequest.id,
+            operationId = createRequest.operationId
+          )
+        }
+      )
     } yield result
   }
 
