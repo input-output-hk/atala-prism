@@ -40,7 +40,7 @@ import scala.util.{Failure, Success}
 class ConnectorService(
     connections: ConnectionsService,
     messages: MessagesService,
-    registrationService: RegistrationService,
+    registrationService: RegistrationService[IOWithTraceIdContext],
     messageNotificationService: MessageNotificationService,
     val authenticator: ConnectorAuthenticator,
     nodeService: NodeServiceGrpc.NodeService,
@@ -212,6 +212,9 @@ class ConnectorService(
           registerDidRequest.logo,
           registerDidRequest.didOrOperation
         )
+        .run(TraceId.generateYOLO)
+        .unsafeToFuture()
+        .toFutureEither
         .map { registerResult =>
           val response = connector_api
             .RegisterDIDResponse(
