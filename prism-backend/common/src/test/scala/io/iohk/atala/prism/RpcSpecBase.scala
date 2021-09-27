@@ -10,22 +10,27 @@ import io.iohk.atala.prism.kotlin.crypto.signature.ECSignature
 import io.iohk.atala.prism.kotlin.identity.{PrismDid => DID}
 import org.scalatest.BeforeAndAfterEach
 import scalapb.GeneratedMessage
-import _root_.java.util.concurrent.{Executor, TimeUnit}
 
+import _root_.java.util.concurrent.{Executor, TimeUnit}
 import io.iohk.atala.prism.auth.SignedRpcRequest
+import io.iohk.atala.prism.logging.TraceId
 import io.iohk.atala.prism.logging.TraceId.IOWithTraceIdContext
 import tofu.logging.Logs
 
 trait ApiTestHelper[STUB] {
-  def apply[T](requestNonce: Vector[Byte], signature: ECSignature, publicKey: ECPublicKey)(f: STUB => T): T
-  def apply[T](requestNonce: Vector[Byte], signature: ECSignature, did: DID, keyId: String)(f: STUB => T): T
+  def apply[T](requestNonce: Vector[Byte], signature: ECSignature, publicKey: ECPublicKey, traceId: TraceId)(
+      f: STUB => T
+  ): T
+  def apply[T](requestNonce: Vector[Byte], signature: ECSignature, did: DID, keyId: String, traceId: TraceId)(
+      f: STUB => T
+  ): T
   def apply[T](requestNonce: Vector[Byte], keys: ECKeyPair, request: GeneratedMessage)(f: STUB => T): T = {
     val payload = SignedRequestsHelper.merge(auth.model.RequestNonce(requestNonce), request.toByteArray).toArray
     val signature = EC.signBytes(payload.array, keys.getPrivateKey)
-    apply(requestNonce, signature, keys.getPublicKey)(f)
+    apply(requestNonce, signature, keys.getPublicKey, TraceId.generateYOLO)(f)
   }
   def apply[T, R <: GeneratedMessage](rpcRequest: SignedRpcRequest[R])(f: STUB => T): T =
-    apply(rpcRequest.nonce, rpcRequest.signature, rpcRequest.did, rpcRequest.keyId)(f)
+    apply(rpcRequest.nonce, rpcRequest.signature, rpcRequest.did, rpcRequest.keyId, TraceId.generateYOLO)(f)
   def unlogged[T](f: STUB => T): T
 }
 
@@ -97,7 +102,12 @@ abstract class RpcSpecBase extends AtalaWithPostgresSpec with BeforeAndAfterEach
         f(blockingStub)
       }
 
-      override def apply[T](requestNonce: Vector[Byte], signature: ECSignature, publicKey: ECPublicKey)(
+      override def apply[T](
+          requestNonce: Vector[Byte],
+          signature: ECSignature,
+          publicKey: ECPublicKey,
+          traceId: TraceId
+      )(
           f: STUB => T
       ): T = {
         apply(
@@ -107,7 +117,13 @@ abstract class RpcSpecBase extends AtalaWithPostgresSpec with BeforeAndAfterEach
         )(f)
       }
 
-      override def apply[T](requestNonce: Vector[Byte], signature: ECSignature, did: DID, keyId: String)(
+      override def apply[T](
+          requestNonce: Vector[Byte],
+          signature: ECSignature,
+          did: DID,
+          keyId: String,
+          traceId: TraceId
+      )(
           f: STUB => T
       ): T = {
         apply(

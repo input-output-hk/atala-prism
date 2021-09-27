@@ -6,6 +6,8 @@ import io.iohk.atala.prism.kotlin.crypto.EC.{INSTANCE => EC}
 import io.iohk.atala.prism.kotlin.crypto.signature.ECSignature
 import io.iohk.atala.prism.auth.model.RequestNonce
 import io.iohk.atala.prism.kotlin.identity.{CanonicalPrismDid, LongFormPrismDid, PrismDid}
+import io.iohk.atala.prism.logging.TraceId
+
 import scala.util.{Failure, Success, Try}
 
 private[grpc] object GrpcAuthenticationContext {
@@ -52,17 +54,25 @@ private[grpc] object GrpcAuthenticationContext {
   // on different languages, like a string.
   val RequestNonceKeys: GrpcMetadataContextKeys[Array[Byte]] = GrpcMetadataContextKeys("requestNonce")
 
+  //tracing
+  val TraceIdKeys: GrpcMetadataContextKeys[String] = GrpcMetadataContextKeys("t")
+
+  def getTraceIdFromContext(ctx: Context): TraceId =
+    ctx.getOpt(TraceIdKeys).map(TraceId(_)).getOrElse(TraceId.generateYOLO)
+
   def getPublicKeySignatureContext(headers: Metadata): Option[Context] = {
     (headers.getOpt(RequestNonceKeys), headers.getOpt(SignatureKeys), headers.getOpt(PublicKeyKeys)) match {
       case (Some(requestNonceStr), Some(signatureStr), Some(publicKeyStr)) =>
         val signature = Base64.getUrlDecoder.decode(signatureStr)
         val publicKey = Base64.getUrlDecoder.decode(publicKeyStr)
         val requestNonce = Base64.getUrlDecoder.decode(requestNonceStr)
+        val traceId = headers.getOpt(TraceIdKeys).map(TraceId(_)).getOrElse(TraceId.generateYOLO)
         val ctx = Context
           .current()
           .withValue(RequestNonceKeys.context, requestNonce)
           .withValue(SignatureKeys.context, signature)
           .withValue(PublicKeyKeys.context, publicKey)
+          .withValue(TraceIdKeys.context, traceId.traceId)
         Some(ctx)
 
       case _ => None
@@ -94,12 +104,14 @@ private[grpc] object GrpcAuthenticationContext {
       case (Some(requestNonceStr), Some(did), Some(keyId), Some(signatureStr)) =>
         val signature = Base64.getUrlDecoder.decode(signatureStr)
         val requestNonce = Base64.getUrlDecoder.decode(requestNonceStr)
+        val traceId = headers.getOpt(TraceIdKeys).map(TraceId(_)).getOrElse(TraceId.generateYOLO)
         val ctx = Context
           .current()
           .addValue(RequestNonceKeys, requestNonce)
           .addValue(DidKeys, did)
           .addValue(DidKeyIdKeys, keyId)
           .addValue(DidSignatureKeys, signature)
+          .addValue(TraceIdKeys, traceId.traceId)
         Some(ctx)
 
       case _ => None

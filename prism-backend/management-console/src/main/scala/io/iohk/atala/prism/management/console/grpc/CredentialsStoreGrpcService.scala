@@ -2,7 +2,6 @@ package io.iohk.atala.prism.management.console.grpc
 
 import cats.syntax.either._
 import io.iohk.atala.prism.auth.AuthAndMiddlewareSupport
-import io.iohk.atala.prism.logging.TraceId
 import io.iohk.atala.prism.logging.TraceId.IOWithTraceIdContext
 import io.iohk.atala.prism.management.console.ManagementConsoleAuthenticator
 import io.iohk.atala.prism.management.console.errors.{ManagementConsoleError, ManagementConsoleErrorSupport}
@@ -39,13 +38,13 @@ class CredentialsStoreGrpcService(
   override def storeCredential(
       request: console_api.StoreCredentialRequest
   ): Future[console_api.StoreCredentialResponse] =
-    auth[StoreCredential]("storeCredential", request) { (_, query) =>
+    auth[StoreCredential]("storeCredential", request) { (_, traceId, query) =>
       credentialsStoreService
         .storeCredential(query)
         .map { _ =>
           console_api.StoreCredentialResponse()
         }
-        .run(TraceId.generateYOLO)
+        .run(traceId)
         .unsafeToFuture()
         .map(_.asRight)
         .toFutureEither
@@ -54,7 +53,7 @@ class CredentialsStoreGrpcService(
   override def getLatestCredentialExternalId(
       request: GetLatestCredentialExternalIdRequest
   ): Future[GetLatestCredentialExternalIdResponse] =
-    auth[GetLatestCredential]("getLatestCredentialExternalId", request) { (participantId, _) =>
+    auth[GetLatestCredential]("getLatestCredentialExternalId", request) { (participantId, traceId, _) =>
       credentialsStoreService
         .getLatestCredentialExternalId(participantId)
         .map { maybeCredentialExternalId =>
@@ -62,7 +61,7 @@ class CredentialsStoreGrpcService(
             latestCredentialExternalId = maybeCredentialExternalId.fold("")(_.value.toString)
           )
         }
-        .run(TraceId.generateYOLO)
+        .run(traceId)
         .unsafeToFuture()
         .map(_.asRight)
         .toFutureEither
@@ -71,7 +70,7 @@ class CredentialsStoreGrpcService(
   override def getStoredCredentialsFor(
       request: console_api.GetStoredCredentialsForRequest
   ): Future[console_api.GetStoredCredentialsForResponse] =
-    auth[GetStoredCredentials]("getStoredCredentialsFor", request) { (participantId, query) =>
+    auth[GetStoredCredentials]("getStoredCredentialsFor", request) { (participantId, traceId, query) =>
       credentialsStoreService
         .getStoredCredentialsFor(participantId, query)
         .map { credentials =>
@@ -79,7 +78,7 @@ class CredentialsStoreGrpcService(
             credentials = credentials.map(ProtoCodecs.receivedSignedCredentialToProto)
           )
         }
-        .run(TraceId.generateYOLO)
+        .run(traceId)
         .unsafeToFuture()
         .map(_.asRight)
         .toFutureEither

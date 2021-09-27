@@ -39,10 +39,10 @@ class ConsoleGrpcService(
     measureRequestFuture(serviceName, "healthCheck")(Future.successful(HealthCheckResponse()))
 
   override def getStatistics(request: GetStatisticsRequest): Future[GetStatisticsResponse] =
-    auth[GetStatistics]("getStatistics", request) { (participantId, getStatistics) =>
+    auth[GetStatistics]("getStatistics", request) { (participantId, traceId, getStatistics) =>
       consoleService
         .getStatistics(participantId, getStatistics)
-        .run(TraceId.generateYOLO)
+        .run(traceId)
         .unsafeToFuture()
         .map(stats => ProtoCodecs.toStatisticsProto(stats).asRight)
         .toFutureEither
@@ -77,10 +77,10 @@ class ConsoleGrpcService(
   }
 
   override def getCurrentUser(request: GetConsoleCurrentUserRequest): Future[GetConsoleCurrentUserResponse] = {
-    unitAuth("getCurrentUser", request) { (participantId, _) =>
+    unitAuth("getCurrentUser", request) { (participantId, traceId, _) =>
       consoleService
         .getCurrentUser(participantId)
-        .run(TraceId.generateYOLO)
+        .run(traceId)
         .unsafeToFuture()
         .toFutureEither
         .map { info =>
@@ -93,12 +93,12 @@ class ConsoleGrpcService(
   }
 
   override def updateParticipantProfile(request: ConsoleUpdateProfileRequest): Future[ConsoleUpdateProfileResponse] = {
-    auth[UpdateParticipantProfile]("updateParticipantProfile", request) { (participantId, _) =>
+    auth[UpdateParticipantProfile]("updateParticipantProfile", request) { (participantId, traceId, _) =>
       val logo = ParticipantLogo(request.logo.toByteArray.toVector)
       val participantProfile = UpdateParticipantProfile(request.name, Option(logo))
       consoleService
         .updateParticipantProfile(participantId, participantProfile)
-        .run(TraceId.generateYOLO)
+        .run(traceId)
         .unsafeToFuture()
         .lift
         .as(ConsoleUpdateProfileResponse())

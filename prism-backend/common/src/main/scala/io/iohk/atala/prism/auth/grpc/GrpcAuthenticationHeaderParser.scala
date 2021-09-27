@@ -1,6 +1,7 @@
 package io.iohk.atala.prism.auth.grpc
 
 import io.grpc.Context
+import io.iohk.atala.prism.logging.TraceId
 
 trait GrpcAuthenticationHeaderParser {
 
@@ -12,6 +13,9 @@ trait GrpcAuthenticationHeaderParser {
       .parseDIDAuthenticationHeader(ctx)
       .orElse(GrpcAuthenticationContext.parsePublicKeyAuthenticationHeader(ctx))
   }
+
+  def getTraceId(ctx: Context): TraceId = GrpcAuthenticationContext.getTraceIdFromContext(ctx)
+
 }
 
 object GrpcAuthenticationHeaderParser extends GrpcAuthenticationHeaderParser
