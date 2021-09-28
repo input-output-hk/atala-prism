@@ -1,10 +1,13 @@
 package io.iohk.atala.prism.node
 
+import derevo.derive
 import io.grpc.Status
 import io.iohk.atala.prism.connector.AtalaOperationId
 import io.iohk.atala.prism.node.cardano.models.CardanoWalletError
+import tofu.logging.derivation.loggable
 
 package object errors {
+  @derive(loggable)
   sealed trait NodeError {
     def toStatus: Status
     def name: String
