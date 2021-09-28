@@ -4,13 +4,13 @@ import pbandk.MessageKt
 
 object toScalaProtos {
 
-  implicit class DIDDataInterop(private val v: io.iohk.atala.prism.kotlin.protos.DIDData) extends AnyVal {
+  implicit class DIDDataInterop(private val v: io.iohk.atala.prism.protos.DIDData) extends AnyVal {
     def asScala: node_models.DIDData = {
       node_models.DIDData.parseFrom(MessageKt.encodeToByteArray(v))
     }
   }
 
-  implicit class AtalaOperationInterop(private val v: io.iohk.atala.prism.kotlin.protos.AtalaOperation) extends AnyVal {
+  implicit class AtalaOperationInterop(private val v: io.iohk.atala.prism.protos.AtalaOperation) extends AnyVal {
     def asScala: node_models.AtalaOperation =
       node_models.AtalaOperation.parseFrom(MessageKt.encodeToByteArray(v))
   }

@@ -3,7 +3,7 @@ package io.iohk.atala.prism.management.console.services
 import io.circe.{Json, JsonObject, parser}
 import io.iohk.atala.prism.DIDUtil
 import io.iohk.atala.prism.auth.SignedRpcRequest
-import io.iohk.atala.prism.kotlin.crypto.EC.{INSTANCE => EC}
+import io.iohk.atala.prism.crypto.EC.{INSTANCE => EC}
 import io.iohk.atala.prism.management.console.DataPreparation._
 import io.iohk.atala.prism.management.console.models.{Contact, CredentialTypeId, InstitutionGroup, ParticipantId}
 import io.iohk.atala.prism.management.console.{DataPreparation, ManagementConsoleRpcSpecBase}

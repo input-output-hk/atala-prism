@@ -61,11 +61,12 @@ export NODE_CARDANO_DB_SYNC_HOST="credentials-database-test.co3l80tftzq2.us-east
 export NODE_CARDANO_DB_SYNC_DATABASE="prism-test-cardano"
 export NODE_CARDANO_DB_SYNC_USERNAME="prism-test-cardano"
 export NODE_CARDANO_DB_SYNC_PASSWORD="ask-for-it"
-export NODE_CARDANO_WALLET_API_HOST="3.21.97.253"
+
+export NODE_CARDANO_WALLET_API_HOST="prism-test-cardano-node.atalaprism.io"
 export NODE_CARDANO_WALLET_API_PORT="8090"
 
-export NODE_CARDANO_PAYMENT_ADDRESS= "addr1qrlh7p9th5c9ps938ry05vq96j92lzuhqr29v46caydf2wzkvlatzplcfr8afde6wsr6weskqr8k3u80e957ecmkvkhqe4n2hn"
-export NODE_CARDANO_WALLET_ID="b8b1d9cba6582a2730a09ea704e84712dc6c1167"
+export NODE_CARDANO_PAYMENT_ADDRESS="addr_test1qppsn57kv28v0qzju4k8ru0zslzzagwglqn048s44aacfqnlx6jsrz9qkca6h7mj4mkhq7j5zyh067fj7mk935eqsmfqxwxqzj"
+export NODE_CARDANO_WALLET_ID="3b5d0baba0ca44573647614800818edd56d9b8e4"
 export NODE_CARDANO_WALLET_PASSPHRASE="ask-for-it"
 
 export NODE_CARDANO_CONFIRMATION_BLOCKS="1"

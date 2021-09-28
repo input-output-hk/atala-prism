@@ -8,16 +8,16 @@ import doobie.util.invariant.InvalidEnum
 import doobie.{Get, Meta, Put, Read, Write}
 import doobie.implicits.legacy.instant._
 import io.iohk.atala.prism.connector.AtalaOperationId
-import io.iohk.atala.prism.kotlin.credentials.CredentialBatchId
-import io.iohk.atala.prism.kotlin.crypto.{MerkleRoot, Sha256Digest}
-import io.iohk.atala.prism.kotlin.crypto.EC.{INSTANCE => EC}
-import io.iohk.atala.prism.kotlin.crypto.ECConfig.{INSTANCE => ECConfig}
+import io.iohk.atala.prism.credentials.CredentialBatchId
+import io.iohk.atala.prism.crypto.{MerkleRoot, Sha256Digest}
+import io.iohk.atala.prism.crypto.EC.{INSTANCE => EC}
+import io.iohk.atala.prism.crypto.ECConfig.{INSTANCE => ECConfig}
 import io.iohk.atala.prism.daos.BaseDAO
 import io.iohk.atala.prism.models.{BlockInfo, DidSuffix, Ledger, TransactionId, TransactionInfo}
 import io.iohk.atala.prism.node.models.nodeState.{CredentialBatchState, DIDPublicKeyState, LedgerData}
 import io.iohk.atala.prism.node.models._
-import io.iohk.atala.prism.kotlin.crypto.keys.ECPublicKey
-import io.iohk.atala.prism.kotlin.protos.models.TimestampInfo
+import io.iohk.atala.prism.crypto.keys.ECPublicKey
+import io.iohk.atala.prism.protos.models.TimestampInfo
 import io.iohk.atala.prism.utils.syntax._
 
 package object daos extends BaseDAO {
@@ -225,6 +225,7 @@ package object daos extends BaseDAO {
             new TimestampInfo(abt.toEpochMilli, absn, osn)
           )
       }
+
   implicit val ledgerDataRead: Read[LedgerData] =
     Read[(Array[Byte], String, Instant, Int, Int)]
       .map {
@@ -300,4 +301,16 @@ package object daos extends BaseDAO {
     }
   }
 
+  implicit val protocolVersionRead: Read[ProtocolVersion] =
+    Read[(Int, Int)]
+      .map {
+        case (major, minor) => ProtocolVersion(major, minor)
+      }
+
+  implicit val protocolVersionInfoRead: Read[ProtocolVersionInfo] =
+    Read[(Int, Int, Option[String], Int)]
+      .map {
+        case (major, minor, versionName, effectiveSince) =>
+          ProtocolVersionInfo(ProtocolVersion(major, minor), versionName, effectiveSince)
+      }
 }

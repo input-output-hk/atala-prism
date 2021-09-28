@@ -1,7 +1,7 @@
 import React from 'react';
 import { Col, Row } from 'antd';
 import PropTypes from 'prop-types';
-import { useTranslation } from 'react-i18next';
+import { useTranslation } from 'gatsby-plugin-react-i18next';
 import { withRedirector } from '../../../providers/withRedirector';
 import ContactButton from '../../Atoms/ContactButton/ContactButton';
 import './_style.scss';

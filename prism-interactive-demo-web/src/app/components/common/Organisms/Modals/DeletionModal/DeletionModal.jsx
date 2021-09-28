@@ -1,6 +1,6 @@
 import React from 'react';
 import { Button, Col, Modal, Row } from 'antd';
-import { useTranslation } from 'react-i18next';
+import { useTranslation } from 'gatsby-plugin-react-i18next';
 import PropTypes from 'prop-types';
 
 const DeletionModal = ({ toDelete: { name, id }, open, closeModal, handleDeletion, prefix }) => {

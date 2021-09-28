@@ -5,9 +5,9 @@ import com.google.protobuf.ByteString
 import derevo.derive
 import enumeratum.EnumEntry.Lowercase
 import enumeratum._
-import io.iohk.atala.prism.kotlin.crypto.keys.ECPublicKey
+import io.iohk.atala.prism.crypto.keys.ECPublicKey
 import io.iohk.atala.prism.connector.AtalaOperationId
-import io.iohk.atala.prism.kotlin.identity.{PrismDid => DID}
+import io.iohk.atala.prism.identity.{PrismDid => DID}
 import io.iohk.atala.prism.models.{ParticipantId, UUIDValue}
 import io.iohk.atala.prism.protos.connector_models
 import io.iohk.atala.prism.utils.syntax._

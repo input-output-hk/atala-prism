@@ -4,20 +4,16 @@ import cats.effect.IO
 import com.google.protobuf.ByteString
 import doobie.implicits._
 import io.iohk.atala.prism.AtalaWithPostgresSpec
-import io.iohk.atala.prism.kotlin.crypto.{MerkleRoot, Sha256}
-import io.iohk.atala.prism.kotlin.protos.models.TimestampInfo
-import io.iohk.atala.prism.models.{Ledger, TransactionId}
-import io.iohk.atala.prism.node.models.nodeState.LedgerData
+import io.iohk.atala.prism.crypto.{MerkleRoot, Sha256}
+import io.iohk.atala.prism.node.DataPreparation
+import io.iohk.atala.prism.node.DataPreparation.dummyLedgerData
 import io.iohk.atala.prism.node.models.{DIDData, DIDPublicKey, KeyUsage}
-import io.iohk.atala.prism.node.repositories.daos.CredentialBatchesDAO
 import io.iohk.atala.prism.node.repositories.DIDDataRepository
+import io.iohk.atala.prism.node.repositories.daos.CredentialBatchesDAO
 import io.iohk.atala.prism.protos.node_models
 import org.scalatest.EitherValues._
 import org.scalatest.Inside.inside
 import org.scalatest.OptionValues.convertOptionToValuable
-
-import java.time.Instant
-import io.iohk.atala.prism.node.DataPreparation
 
 object IssueCredentialBatchOperationSpec {
   val masterKeys = CreateDIDOperationSpec.masterKeys
@@ -26,13 +22,6 @@ object IssueCredentialBatchOperationSpec {
   lazy val issuerDidKeys = List(
     DIDPublicKey(issuerDIDSuffix, "master", KeyUsage.MasterKey, masterKeys.getPublicKey),
     DIDPublicKey(issuerDIDSuffix, "issuing", KeyUsage.IssuingKey, issuingKeys.getPublicKey)
-  )
-
-  lazy val dummyTimestamp = new TimestampInfo(Instant.ofEpochMilli(0).toEpochMilli, 1, 0)
-  lazy val dummyLedgerData = LedgerData(
-    TransactionId.from(Array.fill[Byte](TransactionId.config.size.toBytes.toInt)(0)).value,
-    Ledger.InMemory,
-    dummyTimestamp
   )
 
   lazy val issuerCreateDIDOperation =
@@ -141,6 +130,19 @@ class IssueCredentialBatchOperationSpec extends AtalaWithPostgresSpec {
         .unsafeRunSync()
 
       result mustBe Left(StateError.InvalidKeyUsed("The key type expected is Issuing key. Type used: MasterKey"))
+    }
+    "return state error when unknown keyId is used" in {
+      DataPreparation
+        .createDID(DIDData(issuerDIDSuffix, issuerDidKeys, issuerCreateDIDOperation.digest), dummyLedgerData)
+      val parsedOperation = IssueCredentialBatchOperation.parse(exampleOperation, dummyLedgerData).toOption.value
+
+      val result = parsedOperation
+        .getCorrectnessData("issuing3")
+        .transact(database)
+        .value
+        .unsafeRunSync()
+
+      result mustBe Left(StateError.UnknownKey(issuerDIDSuffix, "issuing3"))
     }
   }
 

@@ -2,10 +2,10 @@ package io.iohk.atala.prism.node.poc
 
 import java.util.Base64
 import com.google.protobuf.ByteString
-import io.iohk.atala.prism.kotlin.crypto.EC.{INSTANCE => EC}
-import io.iohk.atala.prism.kotlin.crypto.keys.ECPublicKey
-import io.iohk.atala.prism.kotlin.crypto.ECConfig.{INSTANCE => ECConfig}
-import io.iohk.atala.prism.kotlin.crypto.Sha256
+import io.iohk.atala.prism.crypto.EC.{INSTANCE => EC}
+import io.iohk.atala.prism.crypto.keys.ECPublicKey
+import io.iohk.atala.prism.crypto.ECConfig.{INSTANCE => ECConfig}
+import io.iohk.atala.prism.crypto.Sha256
 import io.iohk.atala.prism.models.DidSuffix
 import io.iohk.atala.prism.protos.node_models
 

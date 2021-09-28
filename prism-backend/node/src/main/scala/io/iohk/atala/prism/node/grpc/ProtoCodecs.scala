@@ -2,10 +2,10 @@ package io.iohk.atala.prism.node.grpc
 
 import java.security.PublicKey
 import com.google.protobuf.ByteString
-import io.iohk.atala.prism.kotlin.protos.models.TimestampInfo
-import io.iohk.atala.prism.kotlin.crypto.EC.{INSTANCE => EC}
-import io.iohk.atala.prism.kotlin.crypto.keys.ECPublicKey
-import io.iohk.atala.prism.kotlin.crypto.ECConfig.{INSTANCE => ECConfig}
+import io.iohk.atala.prism.protos.models.TimestampInfo
+import io.iohk.atala.prism.crypto.EC.{INSTANCE => EC}
+import io.iohk.atala.prism.crypto.keys.ECPublicKey
+import io.iohk.atala.prism.crypto.ECConfig.{INSTANCE => ECConfig}
 import io.iohk.atala.prism.models.{DidSuffix, ProtoCodecs => CommonProtoCodecs}
 import io.iohk.atala.prism.node.models
 import io.iohk.atala.prism.node.models.KeyUsage.{

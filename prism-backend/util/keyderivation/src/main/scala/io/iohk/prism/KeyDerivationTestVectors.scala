@@ -9,8 +9,8 @@ import fr.acinq.bitcoin.DeterministicWallet._
 import fr.acinq.bitcoin.MnemonicCode._
 import io.circe.syntax._
 import io.circe.{Json, Printer}
-import io.iohk.atala.prism.kotlin.crypto.ECConfig.{INSTANCE => ECConfig}
-import io.iohk.atala.prism.kotlin.crypto.Sha256
+import io.iohk.atala.prism.crypto.ECConfig.{INSTANCE => ECConfig}
+import io.iohk.atala.prism.crypto.Sha256
 import io.iohk.atala.prism.protos.node_models
 import org.spongycastle.math.ec.ECFieldElement
 import scodec.bits._

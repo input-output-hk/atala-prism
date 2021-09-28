@@ -6,8 +6,8 @@ import io.circe._
 import io.grpc.stub.StreamObserver
 import io.iohk.atala.prism.connector.model.Connection
 import io.iohk.atala.prism.connector.model.TokenString
-import io.iohk.atala.prism.kotlin.credentials.json.JsonBasedCredential
-import io.iohk.atala.prism.kotlin.identity.{PrismDid => DID}
+import io.iohk.atala.prism.credentials.json.JsonBasedCredential
+import io.iohk.atala.prism.identity.{PrismDid => DID}
 import io.iohk.atala.prism.intdemo.DegreeServiceImpl.getDegreeCredential
 import io.iohk.atala.prism.intdemo.DegreeServiceImpl.getSharedIdCredential
 import io.iohk.atala.prism.intdemo.DegreeServiceImpl.issuerId

@@ -5,10 +5,10 @@ import com.google.protobuf.ByteString
 import doobie.implicits._
 import io.iohk.atala.prism.AtalaWithPostgresSpec
 import io.iohk.atala.prism.connector.AtalaOperationId
-import io.iohk.atala.prism.kotlin.crypto.EC.{INSTANCE => EC}
-import io.iohk.atala.prism.kotlin.crypto.Sha256
-import io.iohk.atala.prism.kotlin.crypto.keys.ECPrivateKey
-import io.iohk.atala.prism.kotlin.protos.models.TimestampInfo
+import io.iohk.atala.prism.crypto.EC.{INSTANCE => EC}
+import io.iohk.atala.prism.crypto.Sha256
+import io.iohk.atala.prism.crypto.keys.ECPrivateKey
+import io.iohk.atala.prism.protos.models.TimestampInfo
 import io.iohk.atala.prism.models.{DidSuffix, Ledger, TransactionId}
 import io.iohk.atala.prism.node.DataPreparation
 import io.iohk.atala.prism.node.models.{AtalaOperationInfo, AtalaOperationStatus}
@@ -232,7 +232,7 @@ class BlockProcessingServiceSpec extends AtalaWithPostgresSpec {
 
     "apply two update operations sequentially" in {
       val did = CreateDIDOperation
-        .parse(CreateDIDOperationSpec.exampleOperation, CreateDIDOperationSpec.dummyLedgerData)
+        .parse(CreateDIDOperationSpec.exampleOperation, DataPreparation.dummyLedgerData)
         .toOption
         .value
         .id

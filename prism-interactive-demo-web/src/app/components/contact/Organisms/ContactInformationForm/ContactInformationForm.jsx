@@ -1,5 +1,5 @@
 import React from 'react';
-import { useTranslation } from 'react-i18next';
+import { useTranslation } from 'gatsby-plugin-react-i18next';
 import { Input, Select } from 'antd';
 import { noEmptyInput, emailFormatValidation } from '../../../../helpers/formRules';
 import CustomForm from '../../../common/Organisms/Forms/CustomForm';

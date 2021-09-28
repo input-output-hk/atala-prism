@@ -3,7 +3,7 @@ package io.iohk.atala.prism.node.services
 import cats.effect.IO
 import doobie.implicits._
 import io.iohk.atala.prism.AtalaWithPostgresSpec
-import io.iohk.atala.prism.kotlin.crypto.Sha256
+import io.iohk.atala.prism.crypto.Sha256
 import io.iohk.atala.prism.models.{Ledger, TransactionDetails, TransactionId, TransactionStatus}
 import io.iohk.atala.prism.node.cardano.models.AtalaObjectMetadata.estimateTxMetadataSize
 import io.iohk.atala.prism.node.cardano.models.{CardanoWalletError, CardanoWalletErrorCode}
@@ -82,7 +82,7 @@ class SubmissionServiceSpec
           mockTransactionStatus(publicationInfo.transaction.transactionId, TransactionStatus.Pending)
       }
 
-      publishOpsForBatching(ops)
+      scheduleOpsForBatching(ops)
       submissionService.submitReceivedObjects().futureValue.toOption.nonEmpty must be(true)
 
       verify(ledger, times(2))
@@ -114,7 +114,7 @@ class SubmissionServiceSpec
         .publish(atalaObjectsMerged.last)
       mockTransactionStatus(publications.last.transaction.transactionId, TransactionStatus.Pending)
 
-      publishOpsForBatching(ops)
+      scheduleOpsForBatching(ops)
       submissionService.submitReceivedObjects().futureValue.toOption.nonEmpty must be(true)
 
       verify(ledger, times(2))
@@ -304,11 +304,11 @@ class SubmissionServiceSpec
     }
   }
 
-  private def publishOpsForBatching(ops: List[SignedAtalaOperation]): Unit =
+  private def scheduleOpsForBatching(ops: List[SignedAtalaOperation]): Unit =
     ops.zipWithIndex.foreach {
       case (atalaOperation, index) =>
-        withClue(s"publishing operation #$index") {
-          objectManagementService.sendSingleAtalaOperation(atalaOperation).futureValue
+        withClue(s"scheduling operation #$index") {
+          objectManagementService.scheduleSingleAtalaOperation(atalaOperation).futureValue
         }
     }
 

@@ -9,7 +9,7 @@ import io.iohk.atala.prism.auth.grpc.GrpcAuthenticationHeader
 import io.iohk.atala.prism.auth.model.RequestNonce
 import io.iohk.atala.prism.connector.AtalaOperationId
 import io.iohk.atala.prism.grpc.ProtoConverter
-import io.iohk.atala.prism.kotlin.identity.{CanonicalPrismDid, LongFormPrismDid, PrismDid}
+import io.iohk.atala.prism.identity.{CanonicalPrismDid, LongFormPrismDid, PrismDid}
 import io.iohk.atala.prism.management.console.grpc.ProtoCodecs.{checkListUniqueness, toTimestamp}
 import io.iohk.atala.prism.management.console.models.PaginatedQueryConstraints.ResultOrdering
 import io.iohk.atala.prism.management.console.models._
@@ -27,10 +27,10 @@ import io.scalaland.chimney.dsl._
 import io.scalaland.chimney.Transformer
 
 import java.time.LocalDate
-import io.iohk.atala.prism.kotlin.credentials.CredentialBatchId
-import io.iohk.atala.prism.kotlin.crypto.MerkleInclusionProof
-import io.iohk.atala.prism.kotlin.crypto.Sha256Digest
-import io.iohk.atala.prism.kotlin.crypto.signature.ECSignature
+import io.iohk.atala.prism.credentials.CredentialBatchId
+import io.iohk.atala.prism.crypto.MerkleInclusionProof
+import io.iohk.atala.prism.crypto.Sha256Digest
+import io.iohk.atala.prism.crypto.signature.ECSignature
 import io.iohk.atala.prism.protos.connector_api.SendMessagesRequest
 import io.iohk.atala.prism.protos.console_models.ContactConnectionStatus
 import io.iohk.atala.prism.utils.Base64Utils

@@ -90,6 +90,53 @@ Also, you can find basic JVM metrics in the Prometheus/Grafana. Basic JVM metric
 
     #### Available tags:
   1. only basic tags.
+
+- ## received-atala-operations
+    Counter with received atala operations.
+
+  #### Available metrics:
+    1. `received_atala_operations_total` - counter with received atala operations.
+
+  #### Available tags:
+    1. `atala_operation_type` - The name of received atala operation, can be one of 
+    (`empty`, `revoke-credentials`, `create-did`, `issue-credential-batch`, `did-update`)
+    2. `update_did_sub_operation` - The name of `did-update` sub-operation, can be one of 
+    (`empty-did-update`, `add-key`, `remove-key`)
+
+- ## failed-to-store-atala-objects
+    Counter with failed to store atala objects.
+
+  #### Available metrics:
+    1. `failed_to_store_atala_objects_total` - counter with failed to store atala objects.
+
+  #### Available tags:
+    1. `atala_operation_type` - The name of received atala operation, can be one of
+       (`empty`, `revoke-credentials`, `create-did`, `issue-credential-batch`, `did-update`)
+    2. `update_did_sub_operation` - The name of `did-update` sub-operation, can be one of
+       (`empty-did-update`, `add-key`, `remove-key`)
+    3. `node_error_tag` - The name of the error, names can be found 
+    [here](https://github.com/input-output-hk/atala-prism/blob/master/prism-backend/node/src/main/scala/io/iohk/atala/prism/node/errors/package.scala) (field - name)
+
+- ## processed-atala-block-operations
+    Counter with processed atala block operations.
+
+  #### Available metrics:
+    1. `processed_atala_block_operations_total` - counter with processed atala block operations.
+
+  #### Available tags:
+    1. `atala_operation_type` - The name of the processed atala operation, can be one of
+       (`empty`, `revoke-credentials`, `create-did`, `issue-credential-batch`, `did-update`)
+
+- ## failed-to-process-atala-block-operations
+  Counter with processed atala block operations.
+
+  #### Available metrics:
+    1. `failed-to-process-atala-block-operations-total` - counter with failed to store atala objects.
+
+  #### Available tags:
+    1. `atala_operation_type` - The name of the processed atala operation, can be one of
+       (`empty`, `revoke-credentials`, `create-did`, `issue-credential-batch`, `did-update`)
+    2. `state_error` - The name of the process error, can be found [here](https://github.com/input-output-hk/atala-prism/blob/master/prism-backend/node/src/main/scala/io/iohk/atala/prism/node/operations/package.scala#L67) (field - name)
   
 ### Note: After restarting the service, all of these metrics will be reset.
 

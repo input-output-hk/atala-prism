@@ -6,17 +6,15 @@ import cats.implicits._
 import doobie.free.connection
 import doobie.free.connection.ConnectionIO
 import io.iohk.atala.prism.connector.AtalaOperationId
-import io.iohk.atala.prism.kotlin.protos.models.TimestampInfo
-import io.iohk.atala.prism.kotlin.crypto.EC.{INSTANCE => EC}
-import io.iohk.atala.prism.kotlin.crypto.keys.ECPublicKey
-import io.iohk.atala.prism.kotlin.crypto.signature.ECSignature
+import io.iohk.atala.prism.protos.models.TimestampInfo
+import io.iohk.atala.prism.crypto.EC.{INSTANCE => EC}
+import io.iohk.atala.prism.crypto.keys.ECPublicKey
+import io.iohk.atala.prism.crypto.signature.ECSignature
 import io.iohk.atala.prism.models.{Ledger, TransactionId}
 import io.iohk.atala.prism.node.metrics.OperationsCounters
 import io.iohk.atala.prism.node.models.AtalaOperationStatus
 import io.iohk.atala.prism.node.models.nodeState.LedgerData
-import io.iohk.atala.prism.node.operations.ValidationError.InvalidValue
 import io.iohk.atala.prism.node.operations._
-import io.iohk.atala.prism.node.operations.path.Path
 import io.iohk.atala.prism.node.repositories.daos.AtalaOperationsDAO
 import io.iohk.atala.prism.protos.{node_internal, node_models}
 import org.slf4j.LoggerFactory
@@ -124,24 +122,6 @@ class BlockProcessingServiceImpl extends BlockProcessingService {
               result
           }
           .as(true)
-    }
-  }
-
-  def parseOperation(
-      signedOperation: node_models.SignedAtalaOperation,
-      ledgerData: LedgerData
-  ): Either[ValidationError, Operation] = {
-    signedOperation.getOperation.operation match {
-      case _: node_models.AtalaOperation.Operation.CreateDid =>
-        CreateDIDOperation.parse(signedOperation, ledgerData)
-      case _: node_models.AtalaOperation.Operation.UpdateDid =>
-        UpdateDIDOperation.parse(signedOperation, ledgerData)
-      case _: node_models.AtalaOperation.Operation.IssueCredentialBatch =>
-        IssueCredentialBatchOperation.parse(signedOperation, ledgerData)
-      case _: node_models.AtalaOperation.Operation.RevokeCredentials =>
-        RevokeCredentialsOperation.parse(signedOperation, ledgerData)
-      case empty @ node_models.AtalaOperation.Operation.Empty =>
-        Left(InvalidValue(Path.root, empty.getClass.getSimpleName, "Empty operation"))
     }
   }
 

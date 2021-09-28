@@ -17,8 +17,8 @@ import io.iohk.atala.prism.connector.services.{
   MessagesService,
   RegistrationService
 }
-import io.iohk.atala.prism.kotlin.crypto.keys.ECPublicKey
-import io.iohk.atala.prism.kotlin.identity.{PrismDid => DID}
+import io.iohk.atala.prism.crypto.keys.ECPublicKey
+import io.iohk.atala.prism.identity.{PrismDid => DID}
 import io.iohk.atala.prism.models.ParticipantId
 import io.iohk.atala.prism.protos.connector_api
 import io.iohk.atala.prism.{ApiTestHelper, DIDUtil, RpcSpecBase}
@@ -49,7 +49,7 @@ class ConnectorRpcSpecBase extends RpcSpecBase with DIDUtil {
     )
 
   lazy val connectionsRepository = ConnectionsRepository.unsafe(dbLiftedToTraceIdIO, testLogs)
-  lazy val connectionsService = new ConnectionsService(connectionsRepository, nodeMock)
+  lazy val connectionsService = ConnectionsService.unsafe(connectionsRepository, nodeMock, testLogs)
   lazy val messagesRepository = MessagesRepository(database)
   lazy val requestNoncesRepository = RequestNoncesRepository(database)
   lazy val participantsRepository = ParticipantsRepository.unsafe(dbLiftedToTraceIdIO, testLogs)
@@ -64,7 +64,7 @@ class ConnectorRpcSpecBase extends RpcSpecBase with DIDUtil {
     )
 
   lazy val messagesService = new MessagesService(messagesRepository)
-  lazy val registrationService = new RegistrationService(participantsRepository, nodeMock)(executionContext)
+  lazy val registrationService = RegistrationService.unsafe(participantsRepository, nodeMock, testLogs)
   lazy val messageNotificationService = MessageNotificationService(database)
   lazy val connectorService = new ConnectorService(
     connectionsService,

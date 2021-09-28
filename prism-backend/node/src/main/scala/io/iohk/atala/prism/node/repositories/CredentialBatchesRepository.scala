@@ -6,8 +6,8 @@ import derevo.derive
 import derevo.tagless.applyK
 import doobie.implicits._
 import doobie.util.transactor.Transactor
-import io.iohk.atala.prism.kotlin.credentials.CredentialBatchId
-import io.iohk.atala.prism.kotlin.crypto.Sha256Digest
+import io.iohk.atala.prism.credentials.CredentialBatchId
+import io.iohk.atala.prism.crypto.Sha256Digest
 import io.iohk.atala.prism.node.errors.NodeError
 import io.iohk.atala.prism.node.models.nodeState.{CredentialBatchState, LedgerData}
 import io.iohk.atala.prism.node.repositories.daos.CredentialBatchesDAO

@@ -2,10 +2,10 @@ package io.iohk.atala.prism.node.poc
 
 import cats.data.{Validated, ValidatedNel}
 import cats.implicits.{catsSyntaxTuple6Semigroupal, catsSyntaxValidatedId}
-import io.iohk.atala.prism.kotlin.credentials.PrismCredential
-import io.iohk.atala.prism.kotlin.crypto.{MerkleInclusionProof, MerkleRoot}
-import io.iohk.atala.prism.kotlin.extras.CredentialBatches
-import io.iohk.atala.prism.kotlin.protos.models.TimestampInfo
+import io.iohk.atala.prism.credentials.PrismCredential
+import io.iohk.atala.prism.crypto.{MerkleInclusionProof, MerkleRoot}
+import io.iohk.atala.prism.api.CredentialBatches
+import io.iohk.atala.prism.protos.models.TimestampInfo
 import io.iohk.atala.prism.models.KeyData
 
 object CredVerification {

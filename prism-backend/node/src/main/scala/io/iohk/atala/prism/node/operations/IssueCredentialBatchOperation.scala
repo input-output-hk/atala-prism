@@ -5,8 +5,8 @@ import cats.syntax.either._
 import doobie.free.connection.ConnectionIO
 import doobie.implicits._
 import doobie.postgres.sqlstate
-import io.iohk.atala.prism.kotlin.credentials.CredentialBatchId
-import io.iohk.atala.prism.kotlin.crypto.{MerkleRoot, Sha256, Sha256Digest}
+import io.iohk.atala.prism.credentials.CredentialBatchId
+import io.iohk.atala.prism.crypto.{MerkleRoot, Sha256, Sha256Digest}
 import io.iohk.atala.prism.models.DidSuffix
 import io.iohk.atala.prism.node.models.nodeState
 import io.iohk.atala.prism.node.models.nodeState.{DIDPublicKeyState, LedgerData}
@@ -30,7 +30,7 @@ case class IssueCredentialBatchOperation(
       keyState <- EitherT[ConnectionIO, StateError, DIDPublicKeyState] {
         PublicKeysDAO
           .find(issuerDIDSuffix, keyId)
-          .map(_.toRight(StateError.UnknownKey(issuerDIDSuffix, credentialBatchId.getId)))
+          .map(_.toRight(StateError.UnknownKey(issuerDIDSuffix, keyId)))
       }
       _ <- EitherT.fromEither[ConnectionIO] {
         Either.cond(
@@ -51,7 +51,7 @@ case class IssueCredentialBatchOperation(
     } yield data
   }
 
-  override def applyState(): EitherT[ConnectionIO, StateError, Unit] =
+  override def applyStateImpl(): EitherT[ConnectionIO, StateError, Unit] =
     EitherT {
       CredentialBatchesDAO
         .insert(

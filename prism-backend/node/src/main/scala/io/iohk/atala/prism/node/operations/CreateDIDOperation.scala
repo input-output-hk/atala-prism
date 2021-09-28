@@ -5,7 +5,7 @@ import cats.implicits._
 import doobie.free.connection.ConnectionIO
 import doobie.implicits._
 import doobie.postgres.sqlstate
-import io.iohk.atala.prism.kotlin.crypto.{Sha256, Sha256Digest}
+import io.iohk.atala.prism.crypto.{Sha256, Sha256Digest}
 import io.iohk.atala.prism.models.DidSuffix
 import io.iohk.atala.prism.node.models.KeyUsage.MasterKey
 import io.iohk.atala.prism.node.models.DIDPublicKey
@@ -38,7 +38,7 @@ case class CreateDIDOperation(
     } yield data
   }
 
-  override def applyState(): EitherT[ConnectionIO, StateError, Unit] = {
+  override def applyStateImpl(): EitherT[ConnectionIO, StateError, Unit] = {
     // type lambda T => EitherT[ConnectionIO, StateError, T]
     // in .traverse we need to express what Monad is to be used
     // as EitherT has 3 type parameters, it cannot be deduced from the context

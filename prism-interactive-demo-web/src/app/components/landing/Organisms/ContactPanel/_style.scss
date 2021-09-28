@@ -2,8 +2,9 @@
 
 .ContactPanel {
   background: $white;
-  width: 100%;
-  padding: 8em 8em 0 8em;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 8em 0;
   display: flex;
   flex-direction: column;
 
@@ -136,8 +137,14 @@
   }
 }
 
-@media only screen and (max-width: 450px) {
+@media only screen and (max-width: 650px) {
   .ContactPanel {
     padding: 8em 2em 0 2em;
+    .ContactPanelForm .contactInformation button {
+      margin: 1em auto;
+    }
+  }
+  .contactInformation .ant-form .itemFormInfo {
+    width: 100%;
   }
 }

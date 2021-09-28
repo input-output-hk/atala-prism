@@ -4,10 +4,11 @@ import cats.effect.IO
 import com.google.protobuf.ByteString
 import doobie.implicits._
 import io.iohk.atala.prism.AtalaWithPostgresSpec
-import io.iohk.atala.prism.kotlin.credentials.CredentialBatchId
-import io.iohk.atala.prism.kotlin.crypto.{Sha256, Sha256Digest}
-import io.iohk.atala.prism.kotlin.protos.models.TimestampInfo
+import io.iohk.atala.prism.credentials.CredentialBatchId
+import io.iohk.atala.prism.crypto.{Sha256, Sha256Digest}
+import io.iohk.atala.prism.protos.models.TimestampInfo
 import io.iohk.atala.prism.models.{Ledger, TransactionId}
+import io.iohk.atala.prism.node.DataPreparation.dummyLedgerData
 import io.iohk.atala.prism.node.models.nodeState.LedgerData
 import io.iohk.atala.prism.node.repositories.DIDDataRepository
 import io.iohk.atala.prism.node.repositories.daos.CredentialBatchesDAO
@@ -20,13 +21,6 @@ import java.time.Instant
 
 object RevokeCredentialsOperationSpec {
   private val revokingKeys = CreateDIDOperationSpec.revokingKeys
-
-  lazy val dummyTimestamp: TimestampInfo = new TimestampInfo(Instant.ofEpochMilli(0).toEpochMilli, 1, 0)
-  lazy val dummyLedgerData: LedgerData = LedgerData(
-    TransactionId.from(Array.fill[Byte](TransactionId.config.size.toBytes.toInt)(0)).value,
-    Ledger.InMemory,
-    dummyTimestamp
-  )
 
   lazy val issuerCreateDIDOperation: CreateDIDOperation =
     CreateDIDOperation

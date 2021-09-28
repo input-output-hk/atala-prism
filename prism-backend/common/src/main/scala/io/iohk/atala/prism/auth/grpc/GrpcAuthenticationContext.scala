@@ -2,13 +2,12 @@ package io.iohk.atala.prism.auth.grpc
 
 import java.util.Base64
 import io.grpc.{Context, Metadata}
-import io.iohk.atala.prism.kotlin.crypto.EC.{INSTANCE => EC}
-import io.iohk.atala.prism.kotlin.crypto.signature.ECSignature
+import io.iohk.atala.prism.crypto.EC.{INSTANCE => EC}
+import io.iohk.atala.prism.crypto.signature.ECSignature
 import io.iohk.atala.prism.auth.model.RequestNonce
-import io.iohk.atala.prism.kotlin.identity.{CanonicalPrismDid, LongFormPrismDid, PrismDid}
-import io.iohk.atala.prism.logging.TraceId
-
+import io.iohk.atala.prism.identity.{CanonicalPrismDid, LongFormPrismDid, PrismDid}
 import scala.util.{Failure, Success, Try}
+import io.iohk.atala.prism.logging.TraceId
 
 private[grpc] object GrpcAuthenticationContext {
   // Extension methods to deal with gRPC Metadata in the Scala way

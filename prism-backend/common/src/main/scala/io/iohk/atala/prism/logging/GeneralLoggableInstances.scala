@@ -1,9 +1,9 @@
 package io.iohk.atala.prism.logging
 
-import io.iohk.atala.prism.kotlin.credentials.CredentialBatchId
-import io.iohk.atala.prism.kotlin.identity.{PrismDid => DID}
+import io.iohk.atala.prism.credentials.CredentialBatchId
+import io.iohk.atala.prism.identity.{PrismDid => DID}
 import io.iohk.atala.prism.models.DidSuffix
-import io.iohk.atala.prism.kotlin.crypto.keys.ECPublicKey
+import io.iohk.atala.prism.crypto.keys.ECPublicKey
 import tofu.logging._
 import tofu.syntax.monoid.TofuSemigroupOps
 

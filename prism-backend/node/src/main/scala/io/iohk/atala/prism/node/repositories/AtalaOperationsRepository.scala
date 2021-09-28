@@ -26,11 +26,11 @@ import tofu.higherKind.Mid
 
 @derive(applyK)
 trait AtalaOperationsRepository[F[_]] {
-  def insertObjectAndOperations(
+  def insertOperation(
       objectId: AtalaObjectId,
       objectBytes: Array[Byte],
-      atalaOperationIds: List[AtalaOperationId],
-      atalaOperationsStatus: AtalaOperationStatus
+      atalaOperationId: AtalaOperationId,
+      atalaOperationStatus: AtalaOperationStatus
   ): F[Either[NodeError, (Int, Int)]]
 
   def updateMergedObjects(
@@ -54,20 +54,18 @@ private final class AtalaOperationsRepositoryImpl[F[_]: BracketThrow](xa: Transa
 
   val logger: Logger = LoggerFactory.getLogger(getClass)
 
-  def insertObjectAndOperations(
+  def insertOperation(
       objectId: AtalaObjectId,
       objectBytes: Array[Byte],
-      atalaOperationIds: List[AtalaOperationId],
-      atalaOperationsStatus: AtalaOperationStatus
+      atalaOperationId: AtalaOperationId,
+      atalaOperationStatus: AtalaOperationStatus
   ): F[Either[NodeError, (Int, Int)]] = {
-    val atalaOperationData = atalaOperationIds.map((_, objectId, atalaOperationsStatus))
-
     val query = for {
       numInsertObject <- AtalaObjectsDAO.insert(AtalaObjectCreateData(objectId, objectBytes))
-      numInsertOperations <- AtalaOperationsDAO.insertMany(atalaOperationData)
+      numInsertOperations <- AtalaOperationsDAO.insert((atalaOperationId, objectId, atalaOperationStatus))
     } yield (numInsertObject, numInsertOperations)
 
-    val opDescription = s"inserting object and operations \n Operations:[${atalaOperationIds.mkString("\n")}]"
+    val opDescription = s"inserting operation: [$atalaOperationId]"
     connectionIOSafe(query.logSQLErrors(opDescription, logger)).transact(xa)
   }
 
@@ -117,10 +115,10 @@ private final class AtalaOperationsRepositoryMetrics[F[_]: TimeMeasureMetric: Br
 
   private lazy val getOperationInfoTimer = TimeMeasureUtil.createDBQueryTimer(repoName, "getOperationInfo")
 
-  def insertObjectAndOperations(
+  def insertOperation(
       objectId: AtalaObjectId,
       objectBytes: Array[Byte],
-      atalaOperationIds: List[AtalaOperationId],
+      atalaOperationIds: AtalaOperationId,
       atalaOperationsStatus: AtalaOperationStatus
   ): Mid[F, Either[NodeError, (Int, Int)]] = _.measureOperationTime(insertObjectAndOperationsTimer)
 

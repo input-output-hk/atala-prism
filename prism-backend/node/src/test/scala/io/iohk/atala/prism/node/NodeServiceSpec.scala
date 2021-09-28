@@ -8,11 +8,11 @@ import io.grpc.inprocess.{InProcessChannelBuilder, InProcessServerBuilder}
 import io.grpc.{ManagedChannel, Server, Status, StatusRuntimeException}
 import io.iohk.atala.prism.AtalaWithPostgresSpec
 import io.iohk.atala.prism.connector.AtalaOperationId
-import io.iohk.atala.prism.kotlin.credentials.CredentialBatchId
-import io.iohk.atala.prism.kotlin.crypto.{MerkleRoot, Sha256, Sha256Digest}
-import io.iohk.atala.prism.kotlin.protos.models.TimestampInfo
+import io.iohk.atala.prism.credentials.CredentialBatchId
+import io.iohk.atala.prism.crypto.{MerkleRoot, Sha256, Sha256Digest}
+import io.iohk.atala.prism.protos.models.TimestampInfo
 import io.iohk.atala.prism.models.{DidSuffix, Ledger, TransactionId}
-import io.iohk.atala.prism.kotlin.identity.{PrismDid => DID}
+import io.iohk.atala.prism.identity.{PrismDid => DID}
 import io.iohk.atala.prism.node.errors.NodeError
 import io.iohk.atala.prism.node.grpc.ProtoCodecs
 import io.iohk.atala.prism.node.models.nodeState.{CredentialBatchState, LedgerData}
@@ -219,7 +219,7 @@ class NodeServiceSpec
   }
 
   "NodeService.createDID" should {
-    "publish CreateDID operation" in {
+    "schedule CreateDID operation" in {
       val operation = BlockProcessingServiceSpec.signOperation(
         CreateDIDOperationSpec.exampleOperation,
         "master",
@@ -227,7 +227,7 @@ class NodeServiceSpec
       )
       val operationId = AtalaOperationId.of(operation)
 
-      doReturn(Future.successful(operationId)).when(objectManagementService).sendSingleAtalaOperation(*)
+      doReturn(Future.successful(Right(operationId))).when(objectManagementService).scheduleSingleAtalaOperation(*)
 
       val response = service.createDID(node_api.CreateDIDRequest().withSignedOperation(operation))
 
@@ -236,11 +236,11 @@ class NodeServiceSpec
 
       response.id must be(expectedDIDSuffix)
       response.operationId mustEqual operationId.toProtoByteString
-      verify(objectManagementService).sendSingleAtalaOperation(operation)
+      verify(objectManagementService).scheduleSingleAtalaOperation(operation)
       verifyNoMoreInteractions(objectManagementService)
     }
 
-    "publish CreateDID operation with compressed keys" in {
+    "schedule CreateDID operation with compressed keys" in {
       val operation = BlockProcessingServiceSpec.signOperation(
         CreateDIDOperationSpec.exampleOperationWithCompressedKeys,
         "master",
@@ -248,7 +248,7 @@ class NodeServiceSpec
       )
       val operationId = AtalaOperationId.of(operation)
 
-      doReturn(Future.successful(operationId)).when(objectManagementService).sendSingleAtalaOperation(*)
+      doReturn(Future.successful(Right(operationId))).when(objectManagementService).scheduleSingleAtalaOperation(*)
 
       val response = service.createDID(node_api.CreateDIDRequest().withSignedOperation(operation))
 
@@ -257,7 +257,7 @@ class NodeServiceSpec
 
       response.id must be(expectedDIDSuffix)
       response.operationId mustEqual operationId.toProtoByteString
-      verify(objectManagementService).sendSingleAtalaOperation(operation)
+      verify(objectManagementService).scheduleSingleAtalaOperation(operation)
       verifyNoMoreInteractions(objectManagementService)
     }
 
@@ -276,7 +276,7 @@ class NodeServiceSpec
   }
 
   "NodeService.updateDID" should {
-    "publish UpdateDID operation" in {
+    "schedule UpdateDID operation" in {
       val operation = BlockProcessingServiceSpec.signOperation(
         UpdateDIDOperationSpec.exampleAddAndRemoveOperation,
         "master",
@@ -284,16 +284,16 @@ class NodeServiceSpec
       )
       val operationId = AtalaOperationId.of(operation)
 
-      doReturn(Future.successful(operationId)).when(objectManagementService).sendSingleAtalaOperation(*)
+      doReturn(Future.successful(Right(operationId))).when(objectManagementService).scheduleSingleAtalaOperation(*)
 
       val response = service.updateDID(node_api.UpdateDIDRequest().withSignedOperation(operation))
 
       response.operationId mustEqual operationId.toProtoByteString
-      verify(objectManagementService).sendSingleAtalaOperation(operation)
+      verify(objectManagementService).scheduleSingleAtalaOperation(operation)
       verifyNoMoreInteractions(objectManagementService)
     }
 
-    "publish UpdateDID operation with compressed keys" in {
+    "schedule UpdateDID operation with compressed keys" in {
       val operation = BlockProcessingServiceSpec.signOperation(
         UpdateDIDOperationSpec.exampleOperationWithCompressedKeys,
         "master",
@@ -301,12 +301,12 @@ class NodeServiceSpec
       )
       val operationId = AtalaOperationId.of(operation)
 
-      doReturn(Future.successful(operationId)).when(objectManagementService).sendSingleAtalaOperation(*)
+      doReturn(Future.successful(Right(operationId))).when(objectManagementService).scheduleSingleAtalaOperation(*)
 
       val response = service.updateDID(node_api.UpdateDIDRequest().withSignedOperation(operation))
 
       response.operationId mustEqual operationId.toProtoByteString
-      verify(objectManagementService).sendSingleAtalaOperation(operation)
+      verify(objectManagementService).scheduleSingleAtalaOperation(operation)
       verifyNoMoreInteractions(objectManagementService)
     }
 
@@ -325,7 +325,7 @@ class NodeServiceSpec
   }
 
   "NodeService.issueCredentialBatch" should {
-    "publish IssueCredentialBatch operation" in {
+    "schedule IssueCredentialBatch operation" in {
       val operation = BlockProcessingServiceSpec.signOperation(
         IssueCredentialBatchOperationSpec.exampleOperation,
         "master",
@@ -333,7 +333,7 @@ class NodeServiceSpec
       )
       val operationId = AtalaOperationId.of(operation)
 
-      doReturn(Future.successful(operationId)).when(objectManagementService).sendSingleAtalaOperation(*)
+      doReturn(Future.successful(Right(operationId))).when(objectManagementService).scheduleSingleAtalaOperation(*)
 
       val response = service.issueCredentialBatch(node_api.IssueCredentialBatchRequest().withSignedOperation(operation))
 
@@ -345,7 +345,7 @@ class NodeServiceSpec
 
       response.batchId mustBe expectedBatchId
       response.operationId mustEqual operationId.toProtoByteString
-      verify(objectManagementService).sendSingleAtalaOperation(operation)
+      verify(objectManagementService).scheduleSingleAtalaOperation(operation)
       verifyNoMoreInteractions(objectManagementService)
     }
 
@@ -365,7 +365,7 @@ class NodeServiceSpec
   }
 
   "NodeService.revokeCredentials" should {
-    "publish RevokeCredentials operation" in {
+    "schedule RevokeCredentials operation" in {
       val operation = BlockProcessingServiceSpec.signOperation(
         RevokeCredentialsOperationSpec.revokeFullBatchOperation,
         "master",
@@ -373,12 +373,12 @@ class NodeServiceSpec
       )
       val operationId = AtalaOperationId.of(operation)
 
-      doReturn(Future.successful(operationId)).when(objectManagementService).sendSingleAtalaOperation(*)
+      doReturn(Future.successful(Right(operationId))).when(objectManagementService).scheduleSingleAtalaOperation(*)
 
       val response = service.revokeCredentials(node_api.RevokeCredentialsRequest().withSignedOperation(operation))
 
       response.operationId mustEqual operationId.toProtoByteString
-      verify(objectManagementService).sendSingleAtalaOperation(operation)
+      verify(objectManagementService).scheduleSingleAtalaOperation(operation)
       verifyNoMoreInteractions(objectManagementService)
     }
 
@@ -688,12 +688,12 @@ class NodeServiceSpec
     }
   }
 
-  "NodeService.publishAsABlock" should {
+  "NodeService.scheduleOperations" should {
     "fail when called with an empty sequence of operations" in {
       val error = intercept[StatusRuntimeException] {
-        service.publishAsABlock(
+        service.scheduleOperations(
           node_api
-            .PublishAsABlockRequest()
+            .ScheduleOperationsRequest()
             .withSignedOperations(Seq())
         )
       }
@@ -717,9 +717,9 @@ class NodeServiceSpec
       )
 
       val error = intercept[StatusRuntimeException] {
-        service.publishAsABlock(
+        service.scheduleOperations(
           node_api
-            .PublishAsABlockRequest()
+            .ScheduleOperationsRequest()
             .withSignedOperations(Seq(validOperation, invalidOperation))
         )
       }
@@ -742,13 +742,13 @@ class NodeServiceSpec
       )
       val issuanceOperationId = AtalaOperationId.of(issuanceOperation)
 
-      doReturn(Future.successful(List(createDIDOperationId, issuanceOperationId)))
+      doReturn(Future.successful(List(Right(createDIDOperationId), Right(issuanceOperationId))))
         .when(objectManagementService)
-        .sendAtalaOperations(*)
+        .scheduleAtalaOperations(*)
 
-      val response = service.publishAsABlock(
+      val response = service.scheduleOperations(
         node_api
-          .PublishAsABlockRequest()
+          .ScheduleOperationsRequest()
           .withSignedOperations(Seq(createDIDOperation, issuanceOperation))
       )
 
@@ -767,12 +767,14 @@ class NodeServiceSpec
       response.outputs.size mustBe (2)
 
       response.outputs.head.getCreateDidOutput.didSuffix mustBe expectedDIDSuffix
-      response.outputs.head.operationId mustEqual createDIDOperationId.toProtoByteString
+      response.outputs.head.operationMaybe.operationId.value mustEqual createDIDOperationId.toProtoByteString
+      response.outputs.head.operationMaybe.error mustBe None
 
       response.outputs.last.getBatchOutput.batchId mustBe expectedBatchId
-      response.outputs.last.operationId mustBe issuanceOperationId.toProtoByteString
+      response.outputs.last.operationMaybe.operationId.value mustBe issuanceOperationId.toProtoByteString
+      response.outputs.last.operationMaybe.error mustBe None
 
-      verify(objectManagementService).sendAtalaOperations(createDIDOperation, issuanceOperation)
+      verify(objectManagementService).scheduleAtalaOperations(createDIDOperation, issuanceOperation)
       verifyNoMoreInteractions(objectManagementService)
     }
 
@@ -791,13 +793,13 @@ class NodeServiceSpec
       )
       val updateOperationId = AtalaOperationId.of(updateOperation)
 
-      doReturn(Future.successful(List(createDIDOperationId, updateOperationId)))
+      doReturn(Future.successful(List(Right(createDIDOperationId), Right(updateOperationId))))
         .when(objectManagementService)
-        .sendAtalaOperations(*)
+        .scheduleAtalaOperations(*)
 
-      val response = service.publishAsABlock(
+      val response = service.scheduleOperations(
         node_api
-          .PublishAsABlockRequest()
+          .ScheduleOperationsRequest()
           .withSignedOperations(Seq(createDIDOperation, updateOperation))
       )
 
@@ -808,12 +810,14 @@ class NodeServiceSpec
 
       response.outputs.size mustBe (2)
       response.outputs.head.getCreateDidOutput.didSuffix mustBe expectedDIDSuffix
-      response.outputs.head.operationId mustEqual createDIDOperationId.toProtoByteString
+      response.outputs.head.operationMaybe.operationId.value mustEqual createDIDOperationId.toProtoByteString
+      response.outputs.head.operationMaybe.error mustBe None
 
       response.outputs.last.result mustBe OperationOutput.Result.UpdateDidOutput(node_models.UpdateDIDOutput())
-      response.outputs.last.operationId mustEqual updateOperationId.toProtoByteString
+      response.outputs.last.operationMaybe.operationId.value mustEqual updateOperationId.toProtoByteString
+      response.outputs.last.operationMaybe.error mustBe None
 
-      verify(objectManagementService).sendAtalaOperations(createDIDOperation, updateOperation)
+      verify(objectManagementService).scheduleAtalaOperations(createDIDOperation, updateOperation)
       verifyNoMoreInteractions(objectManagementService)
     }
 
@@ -825,19 +829,22 @@ class NodeServiceSpec
       )
       val revokeOperationId = AtalaOperationId.of(revokeOperation)
 
-      doReturn(Future.successful(List(revokeOperationId))).when(objectManagementService).sendAtalaOperations(*)
+      doReturn(Future.successful(List(Right(revokeOperationId))))
+        .when(objectManagementService)
+        .scheduleAtalaOperations(*)
 
-      val response = service.publishAsABlock(
+      val response = service.scheduleOperations(
         node_api
-          .PublishAsABlockRequest()
+          .ScheduleOperationsRequest()
           .withSignedOperations(Seq(revokeOperation))
       )
 
       response.outputs.size mustBe (1)
       response.outputs.head.getRevokeCredentialsOutput mustBe node_models.RevokeCredentialsOutput()
-      response.outputs.head.operationId mustEqual revokeOperationId.toProtoByteString
+      response.outputs.head.operationMaybe.operationId.value mustEqual revokeOperationId.toProtoByteString
+      response.outputs.head.operationMaybe.error mustBe None
 
-      verify(objectManagementService).sendAtalaOperations(revokeOperation)
+      verify(objectManagementService).scheduleAtalaOperations(revokeOperation)
       verifyNoMoreInteractions(objectManagementService)
     }
   }

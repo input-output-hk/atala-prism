@@ -6,8 +6,8 @@ import cats.implicits.catsSyntaxEitherId
 import cats.syntax.functor._
 import doobie.free.connection.ConnectionIO
 import doobie.implicits._
-import io.iohk.atala.prism.kotlin.credentials.CredentialBatchId
-import io.iohk.atala.prism.kotlin.crypto.{Sha256, Sha256Digest}
+import io.iohk.atala.prism.credentials.CredentialBatchId
+import io.iohk.atala.prism.crypto.{Sha256, Sha256Digest}
 import io.iohk.atala.prism.models.DidSuffix
 import io.iohk.atala.prism.node.models.nodeState
 import io.iohk.atala.prism.node.models.nodeState.{DIDPublicKeyState, LedgerData}
@@ -56,7 +56,7 @@ case class RevokeCredentialsOperation(
     } yield CorrectnessData(keyState.key, Some(prevOp))
   }
 
-  override def applyState(): EitherT[ConnectionIO, StateError, Unit] = {
+  override def applyStateImpl(): EitherT[ConnectionIO, StateError, Unit] = {
     def weShouldRevokeTheFullBatch: Boolean = credentialsToRevoke.isEmpty
 
     def revokeFullBatch() = {

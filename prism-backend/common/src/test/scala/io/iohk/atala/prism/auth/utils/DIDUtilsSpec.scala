@@ -2,14 +2,14 @@ package io.iohk.atala.prism.auth.utils
 
 import com.google.protobuf.ByteString
 import io.iohk.atala.prism.auth.errors.UnknownPublicKeyId
-import io.iohk.atala.prism.kotlin.crypto.EC.{INSTANCE => EC}
-import io.iohk.atala.prism.kotlin.crypto.keys.{ECKeyPair, ECPublicKey}
+import io.iohk.atala.prism.crypto.EC.{INSTANCE => EC}
+import io.iohk.atala.prism.crypto.keys.{ECKeyPair, ECPublicKey}
 import io.iohk.atala.prism.protos.node_models
 import io.iohk.atala.prism.protos.node_models.{CompressedECKeyData, DIDData, ECKeyData}
 import monix.execution.Scheduler.Implicits.global
 import org.scalatest.matchers.must.Matchers
 import org.scalatest.wordspec.AnyWordSpec
-import io.iohk.atala.prism.kotlin.crypto.ECConfig.{INSTANCE => ECConfig}
+import io.iohk.atala.prism.crypto.ECConfig.{INSTANCE => ECConfig}
 import org.scalatest.concurrent.ScalaFutures.convertScalaFuture
 
 class DIDUtilsSpec extends AnyWordSpec with Matchers {

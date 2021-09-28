@@ -1,6 +1,6 @@
 package io.iohk.atala.prism.node.models
 
-import io.iohk.atala.prism.kotlin.crypto.{Sha256, Sha256Digest}
+import io.iohk.atala.prism.crypto.{Sha256, Sha256Digest}
 import io.iohk.atala.prism.protos.node_internal
 import io.iohk.atala.prism.utils.BytesOps
 

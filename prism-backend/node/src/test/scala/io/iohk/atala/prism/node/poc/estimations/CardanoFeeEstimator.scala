@@ -2,11 +2,11 @@ package io.iohk.atala.prism.node.poc.estimations
 
 import com.google.protobuf.ByteString
 import com.typesafe.config.ConfigFactory
-import io.iohk.atala.prism.kotlin.crypto.{MerkleRoot, Sha256}
-import io.iohk.atala.prism.kotlin.crypto.EC.{INSTANCE => EC}
-import io.iohk.atala.prism.kotlin.crypto.keys.{ECPrivateKey, ECPublicKey}
-import io.iohk.atala.prism.kotlin.crypto.ECConfig.{INSTANCE => ECConfig}
-import io.iohk.atala.prism.kotlin.identity.{CanonicalPrismDid => Canonical, PrismDid => DID}
+import io.iohk.atala.prism.crypto.{MerkleRoot, Sha256}
+import io.iohk.atala.prism.crypto.EC.{INSTANCE => EC}
+import io.iohk.atala.prism.crypto.keys.{ECPrivateKey, ECPublicKey}
+import io.iohk.atala.prism.crypto.ECConfig.{INSTANCE => ECConfig}
+import io.iohk.atala.prism.identity.{CanonicalPrismDid => Canonical, PrismDid => DID}
 import io.iohk.atala.prism.node.NodeConfig
 import io.iohk.atala.prism.node.cardano.models._
 import io.iohk.atala.prism.node.cardano.wallet.CardanoWalletApiClient

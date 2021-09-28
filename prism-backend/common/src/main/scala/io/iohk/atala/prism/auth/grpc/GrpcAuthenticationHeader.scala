@@ -2,10 +2,10 @@ package io.iohk.atala.prism.auth.grpc
 
 import java.util.Base64
 import io.grpc.Metadata
-import io.iohk.atala.prism.kotlin.crypto.keys.ECPublicKey
-import io.iohk.atala.prism.kotlin.crypto.signature.ECSignature
+import io.iohk.atala.prism.crypto.keys.ECPublicKey
+import io.iohk.atala.prism.crypto.signature.ECSignature
 import io.iohk.atala.prism.auth.model.RequestNonce
-import io.iohk.atala.prism.kotlin.identity.{PrismDid => DID}
+import io.iohk.atala.prism.identity.{PrismDid => DID}
 
 sealed trait GrpcAuthenticationHeader {
   import GrpcAuthenticationContext._

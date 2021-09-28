@@ -20,8 +20,8 @@ import io.iohk.atala.prism.connector.services.{
   MessagesService,
   RegistrationService
 }
-import io.iohk.atala.prism.kotlin.crypto.EC.{INSTANCE => EC}
-import io.iohk.atala.prism.kotlin.crypto.keys.ECPublicKey
+import io.iohk.atala.prism.crypto.EC.{INSTANCE => EC}
+import io.iohk.atala.prism.crypto.keys.ECPublicKey
 import io.iohk.atala.prism.logging.TraceId
 import io.iohk.atala.prism.logging.TraceId.IOWithTraceIdContext
 import io.iohk.atala.prism.metrics.RequestMeasureUtil.measureRequestFuture
@@ -38,9 +38,9 @@ import scala.concurrent.{ExecutionContext, Future}
 import scala.util.{Failure, Success}
 
 class ConnectorService(
-    connections: ConnectionsService,
+    connections: ConnectionsService[IOWithTraceIdContext],
     messages: MessagesService,
-    registrationService: RegistrationService,
+    registrationService: RegistrationService[IOWithTraceIdContext],
     messageNotificationService: MessageNotificationService,
     val authenticator: ConnectorAuthenticator,
     nodeService: NodeServiceGrpc.NodeService,
@@ -71,6 +71,9 @@ class ConnectorService(
       connections
         .getConnectionByToken(new TokenString(request.token))
         .map(maybeConnection => connector_api.GetConnectionByTokenResponse(maybeConnection.map(_.toProto)))
+        .run(TraceId.generateYOLO)
+        .unsafeToFuture()
+        .lift[ConnectorError]
     }
 
   /** Get active connections for current participant
@@ -88,6 +91,9 @@ class ConnectorService(
             connectionsPaginatedRequest.limit,
             connectionsPaginatedRequest.lastSeenConnectionId
           )
+          .run(TraceId.generateYOLO)
+          .unsafeToFuture()
+          .toFutureEither
           .map(conns => connector_api.GetConnectionsPaginatedResponse(conns.map(_.toProto)))
     }
 
@@ -104,6 +110,9 @@ class ConnectorService(
     unitPublic("getConnectionTokenInfo", request) { _ =>
       connections
         .getTokenInfo(new model.TokenString(request.token))
+        .run(TraceId.generateYOLO)
+        .unsafeToFuture()
+        .toFutureEither
         .map { participantInfo =>
           connector_api.GetConnectionTokenInfoResponse(
             creatorName = participantInfo.name,
@@ -168,7 +177,11 @@ class ConnectorService(
       val result = for {
         _ <- verifyRequestSignature(addConnectionRequest)
         connectionCreationResult <-
-          connections.addConnectionFromToken(addConnectionRequest.token, addConnectionRequest.didOrPublicKey)
+          connections
+            .addConnectionFromToken(addConnectionRequest.token, addConnectionRequest.didOrPublicKey)
+            .run(TraceId.generateYOLO)
+            .unsafeToFuture()
+            .toFutureEither
       } yield connectionCreationResult
 
       result.map { connectionInfo =>
@@ -191,6 +204,9 @@ class ConnectorService(
     auth[RevokeConnectionRequest]("revokeConnection", request) { (participantId, _, revokeConnectionRequest) =>
       connections
         .revokeConnection(participantId, revokeConnectionRequest.connectionId)
+        .run(TraceId.generateYOLO)
+        .unsafeToFuture()
+        .toFutureEither
         .as(connector_api.RevokeConnectionResponse())
     }
 
@@ -212,6 +228,9 @@ class ConnectorService(
           registerDidRequest.logo,
           registerDidRequest.didOrOperation
         )
+        .run(TraceId.generateYOLO)
+        .unsafeToFuture()
+        .toFutureEither
         .map { registerResult =>
           val response = connector_api
             .RegisterDIDResponse(
@@ -236,6 +255,9 @@ class ConnectorService(
     unitAuth("generateConnectionToken", request) { (participantId, _, _) =>
       connections
         .generateTokens(participantId, if (request.count == 0) 1 else request.count)
+        .run(TraceId.generateYOLO)
+        .unsafeToFuture()
+        .lift
         .map(tokenStrings => connector_api.GenerateConnectionTokenResponse(tokenStrings.map(_.token)))
     }
 
@@ -319,6 +341,9 @@ class ConnectorService(
       (participantId, _, getConnectionCommunicationKeysRequest) =>
         connections
           .getConnectionCommunicationKeys(getConnectionCommunicationKeysRequest.connectionId, participantId)
+          .run(TraceId.generateYOLO)
+          .unsafeToFuture()
+          .toFutureEither
           .map(toResponse)
     }
   }

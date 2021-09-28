@@ -1,13 +1,13 @@
 import React, { useContext } from 'react';
 import PropTypes from 'prop-types';
 import { Icon, Row } from 'antd';
-import { useTranslation } from 'react-i18next';
+import { useTranslation } from 'gatsby-plugin-react-i18next';
 import firebase from 'gatsby-plugin-firebase';
 import SplittedPage from './Organisms/SplittedPage/SplittedPage';
 import CredentialsList from './Organisms/CredentialList/CredentialsList';
 import { withRedirector } from '../providers/withRedirector';
 import CustomButton from '../common/Atoms/CustomButton/CustomButton';
-import { LEFT, RESET_DEMO_EVENT } from '../../helpers/constants';
+import { LEFT, RESET_DEMO_EVENT } from '../../../helpers/constants';
 import buttonReset from '../../images/icon-reset.svg';
 import { UserContext } from '../providers/userContext';
 
