@@ -7,6 +7,7 @@ import io.iohk.atala.prism.AtalaWithPostgresSpec
 import io.iohk.atala.prism.crypto.EC.{INSTANCE => EC}
 import io.iohk.atala.prism.crypto.Sha256
 import io.iohk.atala.prism.crypto.keys.ECKeyPair
+import io.iohk.atala.prism.logging.TraceId.IOWithTraceIdContext
 import io.iohk.atala.prism.models._
 import io.iohk.atala.prism.node.models.AtalaObjectTransactionSubmissionStatus.InLedger
 import io.iohk.atala.prism.node.models._
@@ -21,12 +22,14 @@ import io.iohk.atala.prism.node.services.models.AtalaObjectNotification
 import io.iohk.atala.prism.node.{PublicationInfo, UnderlyingLedger}
 import io.iohk.atala.prism.node.DataPreparation._
 import io.iohk.atala.prism.protos.{node_internal, node_models}
+import io.iohk.atala.prism.utils.IOUtils._
 import monix.execution.Scheduler.Implicits.{global => scheduler}
 import org.mockito
 import org.mockito.captor.ArgCaptor
 import org.mockito.scalatest.{MockitoSugar, ResetMocksAfterEachTest}
 import org.scalatest.BeforeAndAfterEach
 import org.scalatest.OptionValues._
+import tofu.logging.Logs
 
 import java.time.{Duration, Instant}
 import scala.concurrent.Future
@@ -57,10 +60,11 @@ class ObjectManagementServiceSpec
     with MockitoSugar
     with ResetMocksAfterEachTest
     with BeforeAndAfterEach {
+  private val logs = Logs.withContext[IO, IOWithTraceIdContext]
   private val ledger: UnderlyingLedger = mock[UnderlyingLedger]
   private val atalaOperationsRepository: AtalaOperationsRepository[IO] = AtalaOperationsRepository(database)
-  private val atalaObjectsTransactionsRepository: AtalaObjectsTransactionsRepository[IO] =
-    AtalaObjectsTransactionsRepository(database)
+  private val atalaObjectsTransactionsRepository: AtalaObjectsTransactionsRepository[IOWithTraceIdContext] =
+    AtalaObjectsTransactionsRepository.unsafe(dbLiftedToTraceIdIO, logs)
   private val keyValuesRepository: KeyValuesRepository[IO] = KeyValuesRepository(database)
   private val blockProcessing: BlockProcessingService = mock[BlockProcessingService]
 
