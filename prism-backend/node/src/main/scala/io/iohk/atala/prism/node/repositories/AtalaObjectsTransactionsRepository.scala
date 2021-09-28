@@ -1,6 +1,6 @@
 package io.iohk.atala.prism.node.repositories
 
-import cats.Applicative
+import cats.{Comonad, Functor}
 import cats.effect.BracketThrow
 import cats.implicits._
 import derevo.derive
@@ -22,11 +22,14 @@ import io.iohk.atala.prism.node.models.{
 }
 import io.iohk.atala.prism.node.repositories.daos.AtalaObjectsDAO.{AtalaObjectCreateData, AtalaObjectSetTransactionInfo}
 import io.iohk.atala.prism.node.repositories.daos.{AtalaObjectTransactionSubmissionsDAO, AtalaObjectsDAO}
+import io.iohk.atala.prism.node.repositories.logs.AtalaObjectsTransactionsRepositoryLogs
 import io.iohk.atala.prism.node.repositories.metrics.AtalaObjectsTransactionsRepositoryMetrics
 import io.iohk.atala.prism.node.repositories.utils.connectionIOSafe
 import io.iohk.atala.prism.node.services.models.AtalaObjectNotification
 import org.slf4j.{Logger, LoggerFactory}
 import tofu.higherKind.Mid
+import tofu.logging.{Logs, ServiceLogging}
+import tofu.syntax.monoid.TofuSemigroupOps
 
 import java.time.{Duration, Instant}
 
@@ -63,12 +66,24 @@ trait AtalaObjectsTransactionsRepository[F[_]] {
 }
 
 object AtalaObjectsTransactionsRepository {
-  def apply[F[_]: TimeMeasureMetric: BracketThrow: Applicative](
-      transactor: Transactor[F]
-  ): AtalaObjectsTransactionsRepository[F] = {
-    val metrics: AtalaObjectsTransactionsRepository[Mid[F, *]] = new AtalaObjectsTransactionsRepositoryMetrics[F]()
-    metrics attach new AtalaObjectsTransactionsRepositoryImpl[F](transactor)
-  }
+  def apply[F[_]: BracketThrow: TimeMeasureMetric, R[_]: Functor](
+      transactor: Transactor[F],
+      logs: Logs[R, F]
+  ): R[AtalaObjectsTransactionsRepository[F]] =
+    for {
+      serviceLogs <- logs.service[AtalaObjectsTransactionsRepository[F]]
+    } yield {
+      implicit val implicitLogs: ServiceLogging[F, AtalaObjectsTransactionsRepository[F]] = serviceLogs
+      val metrics: AtalaObjectsTransactionsRepository[Mid[F, *]] = new AtalaObjectsTransactionsRepositoryMetrics[F]()
+      val logs: AtalaObjectsTransactionsRepository[Mid[F, *]] = new AtalaObjectsTransactionsRepositoryLogs[F]
+      val mid = metrics |+| logs
+      mid attach new AtalaObjectsTransactionsRepositoryImpl[F](transactor)
+    }
+
+  def unsafe[F[_]: BracketThrow: TimeMeasureMetric, R[_]: Comonad](
+      transactor: Transactor[F],
+      logs: Logs[R, F]
+  ): AtalaObjectsTransactionsRepository[F] = AtalaObjectsTransactionsRepository(transactor, logs).extract
 }
 
 private final class AtalaObjectsTransactionsRepositoryImpl[F[_]: BracketThrow](xa: Transactor[F])

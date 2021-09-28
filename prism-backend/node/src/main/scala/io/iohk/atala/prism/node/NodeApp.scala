@@ -3,6 +3,8 @@ package io.iohk.atala.prism.node
 import cats.effect.{ContextShift, IO}
 import com.typesafe.config.{Config, ConfigFactory}
 import io.grpc.{Server, ServerBuilder}
+import io.iohk.atala.prism.logging.TraceId
+import io.iohk.atala.prism.logging.TraceId.IOWithTraceIdContext
 import io.iohk.atala.prism.metrics.UptimeReporter
 import io.iohk.atala.prism.node.cardano.CardanoClient
 import io.iohk.atala.prism.node.metrics.NodeReporter
@@ -11,9 +13,11 @@ import io.iohk.atala.prism.node.services._
 import io.iohk.atala.prism.node.services.models.AtalaObjectNotification
 import io.iohk.atala.prism.protos.node_api._
 import io.iohk.atala.prism.repositories.{SchemaMigrations, TransactorFactory}
+import io.iohk.atala.prism.utils.IOUtils._
 import kamon.Kamon
 import monix.execution.Scheduler.Implicits.{global => scheduler}
 import org.slf4j.LoggerFactory
+import tofu.logging.Logs
 
 import java.util.concurrent.TimeUnit
 import scala.concurrent.duration.{Duration, FiniteDuration}
@@ -39,6 +43,8 @@ class NodeApp(executionContext: ExecutionContext) { self =>
 
   private val logger = LoggerFactory.getLogger(this.getClass)
 
+  private val logs = Logs.withContext[IO, IOWithTraceIdContext]
+
   private[this] var server: Server = _
 
   private def start(): Unit = {
@@ -56,6 +62,8 @@ class NodeApp(executionContext: ExecutionContext) { self =>
     logger.info("Connecting to the database")
     implicit val (transactor, releaseTransactor) =
       TransactorFactory.transactor[IO](databaseConfig).allocated.unsafeRunSync()
+
+    val liftedTransactor = transactor.mapK(TraceId.liftToIOWithTraceId)
 
     val objectManagementServicePromise: Promise[ObjectManagementService] = Promise()
 
@@ -79,7 +87,7 @@ class NodeApp(executionContext: ExecutionContext) { self =>
     val blockProcessingService = new BlockProcessingServiceImpl
     val didDataRepository = DIDDataRepository(transactor)
     val atalaOperationsRepository = AtalaOperationsRepository(transactor)
-    val atalaObjectsTransactionsRepository = AtalaObjectsTransactionsRepository(transactor)
+    val atalaObjectsTransactionsRepository = AtalaObjectsTransactionsRepository.unsafe(liftedTransactor, logs)
 
     val ledgerPendingTransactionTimeout = globalConfig.getDuration("ledgerPendingTransactionTimeout")
     val transactionRetryPeriod = FiniteDuration(

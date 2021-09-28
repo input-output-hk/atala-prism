@@ -5,10 +5,13 @@ import io.iohk.atala.prism.AtalaWithPostgresSpec
 import io.iohk.atala.prism.node.DataPreparation
 import io.iohk.atala.prism.node.services.BlockProcessingServiceSpec
 import io.iohk.atala.prism.node.services.models.AtalaObjectNotification
+import io.iohk.atala.prism.utils.IOUtils._
+import tofu.logging.Logs
 
 class AtalaObjectsTransactionsRepositorySpec extends AtalaWithPostgresSpec {
+  private val testLogs = Logs.sync[IO, IO]
   private lazy implicit val repository: AtalaObjectsTransactionsRepository[IO] =
-    AtalaObjectsTransactionsRepository(database)
+    AtalaObjectsTransactionsRepository.unsafe(database, testLogs)
 
   private val signedOperationDummy = BlockProcessingServiceSpec.signedCreateDidOperation
   private val blockDummy = DataPreparation.createBlock(signedOperationDummy)
