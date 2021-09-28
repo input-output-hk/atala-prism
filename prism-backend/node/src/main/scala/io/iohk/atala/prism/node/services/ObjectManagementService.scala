@@ -1,6 +1,7 @@
 package io.iohk.atala.prism.node.services
 
 import cats.data.ReaderT
+import cats.data.EitherT
 import cats.effect.IO
 import cats.implicits._
 import doobie.free.connection.ConnectionIO
@@ -14,6 +15,7 @@ import io.iohk.atala.prism.logging.TraceId.IOWithTraceIdContext
 import io.iohk.atala.prism.models.TransactionInfo
 import io.iohk.atala.prism.node.cardano.LAST_SYNCED_BLOCK_TIMESTAMP
 import io.iohk.atala.prism.node.errors.NodeError
+import io.iohk.atala.prism.node.errors.NodeError.UnsupportedProtocolVersion
 import io.iohk.atala.prism.node.metrics.OperationsCounters
 import io.iohk.atala.prism.node.models.AtalaObjectTransactionSubmissionStatus.InLedger
 import io.iohk.atala.prism.node.models._
@@ -49,7 +51,6 @@ class ObjectManagementService private (
 )(implicit xa: Transactor[IO], scheduler: Scheduler) {
 
   private val logger = LoggerFactory.getLogger(this.getClass)
-  type Result[A] = Future[Either[NodeError, A]]
 
   def saveObject(notification: AtalaObjectNotification): Future[Unit] = {
     // TODO: just add the object to processing queue, instead of processing here
@@ -121,8 +122,13 @@ class ObjectManagementService private (
           )
     }
 
-    val resultIO = for {
-      operationInsertions <- queryIO
+    val resultEitherT: EitherT[IOWithTraceIdContext, NodeError, List[Either[NodeError, AtalaOperationId]]] = for {
+      _ <- EitherT(
+        protocolVersionsRepository
+          .ifNodeSupportsCurrentProtocol()
+          .map(_.left.map(UnsupportedProtocolVersion))
+      )
+      operationInsertions <- EitherT.liftF(queryIO)
     } yield {
       opsWithObjects.zip(operationInsertions).map {
         case ((atalaOperation, _), Left(err)) =>
@@ -138,20 +144,10 @@ class ObjectManagementService private (
       }
     }
 
-    protocolVersionsRepository
-      .ifNodeSupportsCurrentProtocol()
-      .flatMap {
-        case Right(_) => resultIO
-        case Left(currentVersion) => {
-          logger.error(
-            s"Node supports $SUPPORTED_VERSION but current protocol version is $currentVersion. Update your node " +
-              s"in order to be able to schedule operations to the blockchain"
-          )
-          throw new RuntimeException(s"Upgrade your node to support $currentVersion")
-        }
-      }
-      .run(TraceId.generateYOLO)
-      .unsafeToFuture()
+    resultEitherT.value.run(TraceId.generateYOLO).unsafeToFuture().flatMap {
+      case Left(e) => Future.failed(e.toStatus.asRuntimeException)
+      case Right(r) => Future.successful(r)
+    }
   }
 
   def getLastSyncedTimestamp: Future[Instant] = {

@@ -11,6 +11,7 @@ import io.iohk.atala.prism.logging.TraceId
 import io.iohk.atala.prism.logging.TraceId.IOWithTraceIdContext
 import io.iohk.atala.prism.models._
 import io.iohk.atala.prism.node.DataPreparation._
+import io.iohk.atala.prism.node.errors.NodeError.UnsupportedProtocolVersion
 import io.iohk.atala.prism.node.models.AtalaObjectTransactionSubmissionStatus.InLedger
 import io.iohk.atala.prism.node.models._
 import io.iohk.atala.prism.node.operations.CreateDIDOperationSpec
@@ -201,7 +202,7 @@ class ObjectManagementServiceSpec
 
       val atalaOperation = BlockProcessingServiceSpec.signedCreateDidOperation
       val currentVersion = ProtocolVersion(2, 0)
-      val expectedException = new RuntimeException(s"Upgrade your node to support $currentVersion")
+      val expectedException = UnsupportedProtocolVersion(currentVersion).toStatus.asRuntimeException
 
       ScalaFutures.whenReady(publishSingleOperationAndFlush(atalaOperation).failed) { err =>
         err.toString mustBe expectedException.toString
