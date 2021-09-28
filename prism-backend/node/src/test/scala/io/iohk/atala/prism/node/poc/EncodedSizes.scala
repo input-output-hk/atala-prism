@@ -50,7 +50,7 @@ object EncodedSizes {
 
     val createDidOp = node_models.CreateDIDOperation(
       didData = Some(
-        node_models.DIDData(
+        node_models.CreateDIDOperation.DIDCreationData(
           publicKeys =
             masterPublicKeys.zipWithIndex map { case (k, i) => keyElement(k, i) }
         )

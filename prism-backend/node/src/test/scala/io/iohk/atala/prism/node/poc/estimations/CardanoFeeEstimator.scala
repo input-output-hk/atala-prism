@@ -42,7 +42,7 @@ class CardanoFeeEstimator(walletId: WalletId, paymentAddress: Address, cardanoWa
       val masterKey = EC.generateKeyPair()
       val issuingKey = EC.generateKeyPair()
       val did = createDID(s"Issuer ${issuer.id}")
-      val masterKeyOperation = addMasterKeyOperation(did, masterKey.getPublicKey)
+      val masterKeyOperation = addMasterKeyOperation(masterKey.getPublicKey)
       createDidAtalaObjects += createAtalaObject(
         signOperation(masterKeyOperation, masterKey.getPrivateKey),
         signOperation(addIssuingKeyOperation(did, issuingKey.getPublicKey, masterKeyOperation), masterKey.getPrivateKey)
@@ -113,11 +113,10 @@ class CardanoFeeEstimator(walletId: WalletId, paymentAddress: Address, cardanoWa
     DID.buildCanonical(Sha256.compute(id.getBytes))
   }
 
-  private def addMasterKeyOperation(did: Canonical, publicKey: ECPublicKey): AtalaOperation = {
+  private def addMasterKeyOperation(publicKey: ECPublicKey): AtalaOperation = {
     val createDIDOp = node_models.CreateDIDOperation(
       didData = Some(
-        node_models.DIDData(
-          id = did.getSuffix,
+        node_models.CreateDIDOperation.DIDCreationData(
           publicKeys = Seq(
             node_models.PublicKey(
               id = DID.getDEFAULT_MASTER_KEY_ID,

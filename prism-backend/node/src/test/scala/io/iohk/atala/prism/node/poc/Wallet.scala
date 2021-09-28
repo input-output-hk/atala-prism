@@ -35,7 +35,7 @@ case class Wallet(node: node_api.NodeServiceGrpc.NodeServiceBlockingStub) {
     // Note that in our current design we cannot create a did that has two keys from start
     val createDidOp = node_models.CreateDIDOperation(
       didData = Some(
-        node_models.DIDData(
+        node_models.CreateDIDOperation.DIDCreationData(
           publicKeys = Seq(
             node_models.PublicKey(
               id = PrismDid.getDEFAULT_MASTER_KEY_ID,

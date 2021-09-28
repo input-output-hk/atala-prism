@@ -58,8 +58,7 @@ object DataPreparation {
     node_models.AtalaOperation.Operation.CreateDid(
       value = node_models.CreateDIDOperation(
         didData = Some(
-          node_models.DIDData(
-            id = "",
+          node_models.CreateDIDOperation.DIDCreationData(
             publicKeys = List(
               node_models.PublicKey(
                 "master",
