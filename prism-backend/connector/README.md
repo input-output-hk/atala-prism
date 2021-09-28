@@ -15,6 +15,10 @@ is already running and is bound to the latter. Now you are ready to run the conn
 ```sh
 CONNECTOR_PSQL_HOST=localhost:5433 sbt connector/run
 ```
+For example, you can run connector with `logback-dev.xml` using console by:
+``` sh
+CONNECTOR_PSQL_HOST=localhost:5433 sbt "connector/run" -Dlogback.configurationFile=logback-dev.xml
+```
 
 
 ## Connector client
