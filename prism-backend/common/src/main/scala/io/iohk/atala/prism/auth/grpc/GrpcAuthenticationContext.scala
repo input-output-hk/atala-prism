@@ -54,7 +54,7 @@ private[grpc] object GrpcAuthenticationContext {
   val RequestNonceKeys: GrpcMetadataContextKeys[Array[Byte]] = GrpcMetadataContextKeys("requestNonce")
 
   //tracing
-  val TraceIdKeys: GrpcMetadataContextKeys[String] = GrpcMetadataContextKeys("t")
+  val TraceIdKeys: GrpcMetadataContextKeys[String] = GrpcMetadataContextKeys("traceId")
 
   def getTraceIdFromContext(ctx: Context): TraceId =
     ctx.getOpt(TraceIdKeys).map(TraceId(_)).getOrElse(TraceId.generateYOLO)
