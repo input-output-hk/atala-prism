@@ -27,6 +27,7 @@ const IconPicker = observer(({ close }) => {
       <IconSelector selectedIcon={selectedIcon} setSelectedIcon={setSelectedIcon} />
       <div className="buttonSection">
         <CustomButton
+          className="theme-secondary"
           buttonText={t(`${i18nPrefix}.iconPicker.save`)}
           buttonProps={{
             className: 'theme-secondary',
