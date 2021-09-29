@@ -58,11 +58,10 @@ export const insertFormChangeIntoArray = (change, oldArray) => {
   if (isArrayChange) return changeArray;
 
   // change event is updating an item's attribute
-  const newPartialArray = mergeChangeWithArray(changeArray, oldArray);
+  // an empty array as first parameter is needed to prevent mutating the `oldArray` directly
+  const newPartialArray = _.merge([], oldArray, changeArray);
+
   const oldArrayTail = oldArray.slice(newPartialArray.length);
   const newArray = newPartialArray.concat(oldArrayTail);
   return newArray;
 };
-
-const mergeChangeWithArray = (changeArray, oldArray) =>
-  changeArray.map((ch, index) => Object.assign({ ...oldArray[index] }, ch));

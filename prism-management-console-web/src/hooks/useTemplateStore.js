@@ -2,7 +2,7 @@ import { useContext, useEffect } from 'react';
 import { PrismStoreContext } from '../stores/domain/PrismStore';
 import { UiStateContext } from '../stores/ui/UiState';
 
-export const useTemplateStore = ({ fetch } = {}) => {
+export const useTemplateStore = ({ fetch } = { fetch: false }) => {
   const { templateStore } = useContext(PrismStoreContext);
   const { fetchTemplates, fetchCategories } = templateStore;
 
@@ -16,7 +16,7 @@ export const useTemplateStore = ({ fetch } = {}) => {
   return templateStore;
 };
 
-export const useTemplateUiState = ({ reset } = {}) => {
+export const useTemplateUiState = ({ reset } = { reset: false }) => {
   const { templateUiState } = useContext(UiStateContext);
   const { resetState } = templateUiState;
 
