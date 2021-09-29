@@ -39,7 +39,7 @@ private class DuplicateAtalaBlock extends Exception
 private class DuplicateAtalaOperation extends Exception
 
 class ObjectManagementService private (
-    atalaOperationsRepository: AtalaOperationsRepository[IO],
+    atalaOperationsRepository: AtalaOperationsRepository[IOWithTraceIdContext],
     atalaObjectsTransactionsRepository: AtalaObjectsTransactionsRepository[IOWithTraceIdContext],
     keyValuesRepository: KeyValuesRepository[IO],
     blockProcessing: BlockProcessingService
@@ -121,7 +121,7 @@ class ObjectManagementService private (
           AtalaOperationId.of(atalaOperation).asRight[NodeError]
       }
     }
-    resultIO.unsafeToFuture()
+    resultIO.run(TraceId.generateYOLO).unsafeToFuture()
   }
 
   def getLastSyncedTimestamp: Future[Instant] = {
@@ -137,6 +137,7 @@ class ObjectManagementService private (
   def getOperationInfo(atalaOperationId: AtalaOperationId): Future[Option[AtalaOperationInfo]] =
     atalaOperationsRepository
       .getOperationInfo(atalaOperationId)
+      .run(TraceId.generateYOLO)
       .unsafeToFuture()
 
   private def processObject(obj: AtalaObjectInfo): IO[ConnectionIO[Boolean]] = {
@@ -186,7 +187,7 @@ object ObjectManagementService {
   }
 
   def apply(
-      atalaOperationsRepository: AtalaOperationsRepository[IO],
+      atalaOperationsRepository: AtalaOperationsRepository[IOWithTraceIdContext],
       atalaObjectsTransactionsRepository: AtalaObjectsTransactionsRepository[IOWithTraceIdContext],
       keyValuesRepository: KeyValuesRepository[IO],
       blockProcessing: BlockProcessingService

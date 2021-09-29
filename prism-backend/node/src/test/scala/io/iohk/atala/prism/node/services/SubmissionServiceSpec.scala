@@ -41,7 +41,8 @@ class SubmissionServiceSpec
 
   private val logs = Logs.withContext[IO, IOWithTraceIdContext]
   private val ledger: UnderlyingLedger = mock[UnderlyingLedger]
-  private val atalaOperationsRepository: AtalaOperationsRepository[IO] = AtalaOperationsRepository(database)
+  private val atalaOperationsRepository: AtalaOperationsRepository[IOWithTraceIdContext] =
+    AtalaOperationsRepository.unsafe(dbLiftedToTraceIdIO, logs)
   private val atalaObjectsTransactionsRepository: AtalaObjectsTransactionsRepository[IOWithTraceIdContext] =
     AtalaObjectsTransactionsRepository.unsafe(dbLiftedToTraceIdIO, logs)
   private val keyValuesRepository: KeyValuesRepository[IO] = KeyValuesRepository(database)

@@ -86,7 +86,7 @@ class NodeApp(executionContext: ExecutionContext) { self =>
     logger.info("Creating blocks processor")
     val blockProcessingService = new BlockProcessingServiceImpl
     val didDataRepository = DIDDataRepository(transactor)
-    val atalaOperationsRepository = AtalaOperationsRepository(transactor)
+    val atalaOperationsRepository = AtalaOperationsRepository.unsafe(liftedTransactor, logs)
     val atalaObjectsTransactionsRepository = AtalaObjectsTransactionsRepository.unsafe(liftedTransactor, logs)
 
     val ledgerPendingTransactionTimeout = globalConfig.getDuration("ledgerPendingTransactionTimeout")
