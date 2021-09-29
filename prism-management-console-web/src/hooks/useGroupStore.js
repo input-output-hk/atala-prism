@@ -3,7 +3,7 @@ import { useContext, useEffect } from 'react';
 import { PrismStoreContext } from '../stores/domain/PrismStore';
 import { UiStateContext } from '../stores/ui/UiState';
 
-export const useGroupStore = ({ fetch, reset } = {}) => {
+export const useGroupStore = ({ fetch, reset } = { fetch: false, reset: false }) => {
   const { groupStore } = useContext(PrismStoreContext);
   const { fetchGroupsNextPage, resetGroups } = groupStore;
 
@@ -15,7 +15,7 @@ export const useGroupStore = ({ fetch, reset } = {}) => {
   return groupStore;
 };
 
-export const useGroupUiState = ({ reset } = {}) => {
+export const useGroupUiState = ({ reset } = { reset: false }) => {
   const { groupUiState } = useContext(UiStateContext);
   const { triggerSearch, resetState } = groupUiState;
 
