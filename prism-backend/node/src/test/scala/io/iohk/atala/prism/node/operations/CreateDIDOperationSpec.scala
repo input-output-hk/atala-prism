@@ -66,8 +66,7 @@ object CreateDIDOperationSpec {
     node_models.AtalaOperation.Operation.CreateDid(
       value = node_models.CreateDIDOperation(
         didData = Some(
-          node_models.DIDData(
-            id = "",
+          node_models.CreateDIDOperation.DIDCreationData(
             publicKeys = List(
               node_models.PublicKey(
                 "master",
@@ -118,8 +117,7 @@ object CreateDIDOperationSpec {
     node_models.AtalaOperation.Operation.CreateDid(
       value = node_models.CreateDIDOperation(
         didData = Some(
-          node_models.DIDData(
-            id = "",
+          node_models.CreateDIDOperation.DIDCreationData(
             publicKeys = List(
               node_models.PublicKey(
                 "master",
@@ -176,18 +174,6 @@ class CreateDIDOperationSpec extends AtalaWithPostgresSpec {
   "CreateDIDOperation.parse" should {
     "parse valid CreateDid AtalaOperation" in {
       CreateDIDOperation.parse(exampleOperation, dummyLedgerData) mustBe a[Right[_, _]]
-    }
-
-    "return error when id is provided" in {
-      val providedDidSuffix = Array.fill(32)("00").mkString("")
-      val invalidOperation = exampleOperation
-        .update(_.createDid.didData.id := providedDidSuffix)
-
-      inside(CreateDIDOperation.parse(invalidOperation, dummyLedgerData)) {
-        case Left(ValidationError.InvalidValue(path, value, _)) =>
-          path.path mustBe Vector("createDid", "didData", "id")
-          value mustBe providedDidSuffix
-      }
     }
 
     "return error when a key has missing curve name" in {

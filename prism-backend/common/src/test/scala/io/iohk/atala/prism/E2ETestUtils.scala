@@ -6,10 +6,10 @@ import io.iohk.atala.prism.crypto.keys.ECKeyPair
 import io.iohk.atala.prism.identity.{PrismDid => DID}
 import io.iohk.atala.prism.protos.connector_api.{AddConnectionFromTokenRequest, RegisterDIDRequest}
 import io.iohk.atala.prism.protos.connector_models.EncodedPublicKey
+import io.iohk.atala.prism.protos.node_models
 import io.iohk.atala.prism.protos.node_models.{
   AtalaOperation,
   CreateDIDOperation,
-  DIDData,
   KeyUsage,
   PublicKey,
   SignedAtalaOperation
@@ -37,7 +37,7 @@ object E2ETestUtils {
   ): RegisterDIDRequest = {
     val createDidOp = CreateDIDOperation(
       didData = Some(
-        DIDData(
+        node_models.CreateDIDOperation.DIDCreationData(
           publicKeys = Seq(
             PublicKey(
               id = masterKeyId,

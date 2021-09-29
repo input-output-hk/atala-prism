@@ -25,10 +25,11 @@ class AtalaObjectMetadataSpec extends AnyWordSpec {
                   .CreateDid(
                     node_models.CreateDIDOperation(didData =
                       Some(
-                        node_models.DIDData(
-                          id = "master-did",
-                          publicKeys =
-                            List(node_models.PublicKey(id = masterKeyId, usage = node_models.KeyUsage.MASTER_KEY))
+                        node_models.CreateDIDOperation.DIDCreationData(
+                          publicKeys = List(
+                            node_models.PublicKey(id = masterKeyId, usage = node_models.KeyUsage.MASTER_KEY),
+                            node_models.PublicKey(id = "issuing0", usage = node_models.KeyUsage.ISSUING_KEY)
+                          )
                         )
                       )
                     )
@@ -45,8 +46,8 @@ class AtalaObjectMetadataSpec extends AnyWordSpec {
   )
 
   private val atalaObjectByteStrings = List(
-    "22430a0131123e0a076d617374657230121446616b65207369676e61747572652062797465731a1d0a1b0a190a0a6d61737465722d646964120b0a076d617374",
-    "6572301001"
+    "22450a013112400a076d617374657230121446616b65207369676e61747572652062797465731a1f0a1d0a1b120b0a076d6173746572301001120c0a08697373",
+    "75696e67301002"
   )
 
   "fromTransactionMetadata" should {

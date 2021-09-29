@@ -12,7 +12,7 @@ import io.iohk.atala.prism.protos.models.TimestampInfo
 import io.iohk.atala.prism.models.{DidSuffix, Ledger, TransactionId}
 import io.iohk.atala.prism.node.DataPreparation
 import io.iohk.atala.prism.node.models.{AtalaOperationInfo, AtalaOperationStatus}
-import io.iohk.atala.prism.node.operations.{CreateDIDOperation, CreateDIDOperationSpec}
+import io.iohk.atala.prism.node.operations.{CreateDIDOperation, CreateDIDOperationSpec, UpdateDIDOperationSpec}
 import io.iohk.atala.prism.node.operations.UpdateDIDOperationSpec.{exampleAddKeyAction, exampleRemoveKeyAction}
 import io.iohk.atala.prism.node.repositories.daos.DIDDataDAO
 import io.iohk.atala.prism.node.repositories.DIDDataRepository
@@ -24,6 +24,7 @@ import java.time.Instant
 object BlockProcessingServiceSpec {
   import io.iohk.atala.prism.node.operations.CreateDIDOperationSpec.masterKeys
   val createDidOperation = CreateDIDOperationSpec.exampleOperation
+  val updateDidOperation = UpdateDIDOperationSpec.exampleAddAndRemoveOperation
 
   def signOperation(
       operation: node_models.AtalaOperation,
@@ -135,7 +136,7 @@ class BlockProcessingServiceSpec extends AtalaWithPostgresSpec {
     }
 
     "ignore block when it contains invalid operations" in {
-      val invalidOperation = createDidOperation.update(_.createDid.didData.id := "id")
+      val invalidOperation = updateDidOperation.update(_.updateDid.actions(0).addKey.key.id := "")
       val signedInvalidOperation = signOperation(invalidOperation, "master", masterKeys.getPrivateKey)
 
       val invalidBlock = node_internal.AtalaBlock(

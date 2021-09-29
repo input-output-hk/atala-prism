@@ -22,8 +22,10 @@ object DIDUtils {
     did match {
       case longFormDid: LongFormPrismDid =>
         longFormDid.getInitialState.getOperation match {
-          case crd: CreateDid =>
-            Future.successful(Right(crd.getValue.getDidData.asScala)).toFutureEither
+          case crd: CreateDid => {
+            val creationData = crd.getValue.getDidData.asScala
+            Future.successful(Right(DIDData(longFormDid.getDid.toString, creationData.publicKeys))).toFutureEither
+          }
           case _ =>
             Future.successful(Left(NoCreateDidOperationError)).toFutureEither
         }

@@ -263,7 +263,7 @@ class NodeServiceSpec
 
     "return error when provided operation is invalid" in {
       val operation = BlockProcessingServiceSpec.signOperation(
-        CreateDIDOperationSpec.exampleOperation.update(_.createDid.didData.id := "abc"),
+        UpdateDIDOperationSpec.exampleAddAndRemoveOperation.update(_.updateDid.actions(0).addKey.key.id := ""),
         "master",
         CreateDIDOperationSpec.masterKeys.getPrivateKey
       )
