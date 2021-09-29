@@ -14,8 +14,8 @@ begin
  ( => is secure channel; -> is normal channel )
 
  1. I => H: pk_iss, code // Shared via QR, i.e., secure channel
- 2. H -> C: aenc(pk_iss, <pk_hol, code>) // pk_iss = g^v, pk_hol = g^u
- 3. C -> I: aenc(pk_iss, <pk_hol, code>)
+ 2. H -> C: aenc(<pk_hol, code>, pk_iss) // pk_iss = g^v, pk_hol = g^u
+ 3. C -> I: aenc(<pk_hol, code>, pk_iss)
  4. I:      r = Fresh(Z)
             s = (pk_hol)^r
             k_1 || k_2 = kdf(s)
@@ -39,8 +39,7 @@ builtins: hashing, symmetric-encryption, asymmetric-encryption, signing, diffie-
    the larger bitstring and its splits are kept secret. */
 functions: kdf/1, splitL/1, splitR/1, merge/2, mac/2
 
-equations:
-	merge(splitL(v),splitR(v)) = v
+equations: merge(splitL(v),splitR(v)) = v
 
 /* Rule for sending a message through a secure (confidential & authenticated) 
    channel. Used here for QR code sharing. */
@@ -56,56 +55,66 @@ rule ChanIn_S:
       --[ ChanIn_S($A,$B,x) ]->
         [ In_S($A,$B,x) ]
 
-/* Rule for generating keypairs of DH type. */
-rule Generate_DH_key_pair:
+/* Rule for generating keypairs. */
+rule Register_pk:
   [ Fr(~x) ] 
   --> 
-  [ !Pk($A,'g'^~x),
-    Out('g'^~x),
-    !Ltk($A,~x) ]
+  [ !Pk($A, 'g'^~x),//pk(~x)),
+    !Ltk($A, ~x) ]
+
+/* Rule for fetching an existing public key. */
+rule Get_pk:
+  [ !Pk(A, pk) ] 
+  --> 
+  [ Out(pk) ]
 
 /* The issuer shares the QR code via the secure channel. */
 rule Issuer_1:
      [ Fr(~secret),
        !Ltk($I, ~lkI) ]
-     --[ Send1($I, ~secret),
-         Secret_I(~secret) ]->
-     [ Out_S($I, $H, <~secret, $I>),
-       State_I_1($I, ~lkI, ~secret) ]
+     --[ Step('1'),
+         Role($I, 'Issuer'),
+	 Secret(~secret),
+         Send($I, <~secret, pk(~lkI)>) ]->
+     [ Out_S($I, $H, <~secret, pk(~lkI)>),
+       State_I_1($I, $H, ~secret, ~lkI) ]
 
 /* The holder receives the QR code through the secure channel, and responds. */
 rule Holder_2:
-     [ In_S($I, $H, <~secret, $I>),
-       !Pk($I, pkI), // Fetch issuer's pk
-       !Ltk($H, ~lkH),
-       !Pk($H, pkH) ]
-     --[ Recv1($H, ~secret),
-         Secret_H(~secret),
-	 Send2($H, $H) ]->
-     [ Out(aenc(<~secret, $H>, pkI)),
-       State_H_2($I, $H, pkI, ~lkH, ~secret)
-     ]
+     [ In_S($I, $H, <~secret, pkI>),
+       !Ltk($H, ~lkH) ]
+     --[ Step('2'),
+         Role($H, 'Holder'),
+	 Recv($H, <~secret, pkI>),         
+         Secret(~secret),
+	 Send($H, <~secret, pk(~lkH)>) ]->
+     [ State_H_2($I, $H, ~lkH, pkI),
+       Out(aenc(<~secret, pk(~lkH)>, pkI)) ]
 
 /* The issuer receives the message forwarded by the connector, and initiates the
    ECIES protocol. */
 rule Issuer_3:
-     let mIn = adec(c1, ~lkI)
-         secretp = fst(mIn)
+     let pkH = snd(adec(cIn, ~lkI))
+         secretp = fst(adec(cIn, ~lkI))
          k = kdf(pkH^~r)
          k1 = splitL(k)
 	 k2 = splitR(k)
+	 sig = sign(~mOut, ~lkI)
+ 	 mc = mac(h(<~mOut, sig, pkH^~r>), k2)	
+ 	 c = senc(<~mOut, sig>, k1)	 
      in
-     [ State_I_1($I, ~lkI, ~secret),
-       In(aenc(<secretp, $H>, 'g'^~lkI)),
-       !Pk($H, pkH),
+     [ State_I_1($I, $H, ~secret, ~lkI),
+       In(cIn),
        Fr(~r),     
        Fr(~mOut)
      ]
-     --[ Eq(secretp, ~secret),
-         Recv2($I, $H),
-	 Send3($I, ~mOut),
-	 Secret_M_I(~mOut) ]->
-     [ Out(<senc(~mOut, k1), mac(h(~mOut), k2), 'g'^~r>) ]
+     --[ Step('3'),
+         Role($I, 'Issuer'),
+         Recv($I, <~secret, pkH>),
+         Eq(secretp, ~secret),
+	 Secret(~mOut),
+	 Send($I, ~mOut) ]->
+     [ Out(<c, mc, 'g'^~r>) ]
 
 /* The holder receives the ECIES-encrypted message by the issuer, and 
    decrypts it. */
@@ -113,34 +122,42 @@ rule Holder_4:
      let k = kdf(R^~lkH)
          k1 = splitL(k)
 	 k2 = splitR(k)
-	 mIn = sdec(cIn,k1)
+	 mIn = fst(sdec(cIn, k1))
+	 sig = snd(sdec(cIn, k1))
      in
-     [ In(<cIn, mac(h(mIn), k2), R>),
-       State_H_2($I, $H, pkI, ~lkH, ~secret) 
-     ]
-     --[ Recv3($H, mIn),
-         Secret_M_H(mIn) ]->
+     [ State_H_2($I, $H, ~lkH, pkI),
+       In(<cIn, mac(h(<mIn,sig, R>), k2), R>) ]
+     --[ Step('4'),
+         Role($H, 'Holder'),
+         Recv($H, mIn),
+	 Eq(verify(sig, mIn, pkI), true),
+         Secret(mIn),
+	 SessionKey($I, $H, R^~lkH)]->
      []
+
+restriction Equality:
+	    "All x y #i. Eq(x,y) @i ==> x = y"
 
 /* Safety check */
 lemma executable:
       exists-trace
-	"Ex A B m #i #j. Send3(A,m)@i & Recv3(B,m) @j"
+	"Ex A B m #i #j. Send(A,m) @i & Step('3') @i &
+	      	    	 Recv(B,m) @j & Step('4') @j"
 
-/* The secret value shared by the Issuer is actually secret. */
-lemma secret_issuer:
-     "All n #i #j. Secret_I(n) @i & K(n) @j ==> F"
+/* The secret code sent by the Issuer at step 1 is secret w.r.t. the Issuer. */
+lemma secret_code_issuer:
+     "All n #i #j. Secret(n) @i & Step('1') @i & K(n) @j ==> F"
 
-/* The secret value received by the Holder is actually secret. */
-lemma secret_holder:
-     "All n #i #j. Secret_H(n) @i & K(n) @j ==> F"
+/* The secret code received by the Holder at step 2 is secret w.r.t. the Holder. */
+lemma secret_code_holder:
+     "All n #i #j. Secret(n) @i & Step('2') @i & K(n) @j ==> F"
 
-/* The ECIES-protected message sent by the Issuer is actually secret. */
+/* The ECIES-protected message sent by the Issuer is secret w.r.t. the Issuer. */
 lemma secret_ecies_issuer:
-     "All m #i #j. Secret_M_I(m) @i & K(m) @j ==> F"
+     "All m #i #j. Secret(m) @i & Step('3') @i & K(m) @j ==> F"
 
-/* The ECIES-protected message received by the Holder is actually secret. */
+/* The ECIES-protected message received by the Holder is secret w.r.t. the Holder. */
 lemma secret_ecies_holder:
-     "All m #i #j. Secret_M_H(m) @i & K(m) @j ==> F"
+     "All m #i #j. Secret(m) @i & Step('4') @i & K(m) @j ==> F"
      
 end
