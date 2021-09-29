@@ -32,7 +32,7 @@ const TemplateCategorySection = observer(() => {
   const categories = templateCategories.filter(({ state }) => state === ENABLED_STATE);
 
   const hasPickableOption = ({ options, searchValue }) =>
-    options.filter(op => handleFilter(searchValue, op.label)).length !== 0;
+    Boolean(options.filter(op => handleFilter(searchValue, op.label)).length);
 
   const handleFilter = (input, optionLabel) =>
     optionLabel?.toLowerCase().includes(input?.toLowerCase());

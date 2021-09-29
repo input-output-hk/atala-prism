@@ -12,7 +12,7 @@ import {
 
 import './_style.scss';
 
-// TODO: refactor this page based on new mockups
+// TODO: refactor this page based on new mockups (ATA-5547)
 // eslint-disable-next-line no-unused-vars
 const TypeSelection = ({ credentialTypes, templateCategories, selectedType, onTypeSelection }) => {
   const { t } = useTranslation();
