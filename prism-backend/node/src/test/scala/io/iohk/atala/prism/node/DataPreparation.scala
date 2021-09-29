@@ -35,6 +35,7 @@ import io.iohk.atala.prism.node.repositories.daos.{
   CredentialBatchesDAO,
   DIDDataDAO,
   KeyValuesDAO,
+  ProtocolVersionsDAO,
   PublicKeysDAO
 }
 import io.iohk.atala.prism.node.services.{BlockProcessingServiceSpec, ObjectManagementService, SubmissionService}
@@ -335,5 +336,12 @@ object DataPreparation {
       case err: io.grpc.StatusRuntimeException if err.getMessage.contains("Unknown state of the operation") =>
         false
     }
+  }
+
+  def insertTrustedProposer(proposerDIDSuffix: DidSuffix)(implicit xa: Transactor[IO]) = {
+    ProtocolVersionsDAO
+      .insertTrustedProposer(proposerDIDSuffix)
+      .transact(xa)
+      .unsafeRunSync()
   }
 }

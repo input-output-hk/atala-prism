@@ -341,18 +341,21 @@ class ObjectManagementServiceSpec
         ),
         dummyLedgerData
       )
+    DataPreparation.insertTrustedProposer(proposerDIDSuffix)
 
-    parsedProtocolUpdateOperation1
+    val protUpd1 = parsedProtocolUpdateOperation1
       .applyState()
       .transact(database)
       .value
       .unsafeToFuture()
       .futureValue
+    protUpd1 mustBe Right(())
 
-    protocolVersionRepository
+    val effectiveVers = protocolVersionRepository
       .markEffective(10)
       .run(TraceId.generateYOLO)
       .unsafeToFuture()
       .futureValue
+    effectiveVers mustBe Some(protocolVersionInfo1)
   }
 }
