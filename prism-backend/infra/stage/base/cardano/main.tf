@@ -155,6 +155,10 @@ resource "aws_instance" "cardano_instance" {
   user_data            = local.user_data
   iam_instance_profile = aws_iam_instance_profile.this.name
 
+  root_block_device {
+    volume_size = 60
+  }
+
   tags = {
     Name       = "${var.name}-cardano-node"
     Prometheus = "true"
