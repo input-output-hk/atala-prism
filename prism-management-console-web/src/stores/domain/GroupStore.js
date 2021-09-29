@@ -68,7 +68,7 @@ export default class GroupStore {
     this.searchResults = groupsList;
     this.numberOfResults = totalNumberOfGroups;
     return this.searchResults;
-  };
+  }
 
   *fetchSearchResultsNextPage() {
     if (!this.hasMoreResults) return;
@@ -77,7 +77,7 @@ export default class GroupStore {
     });
     this.numberOfResults = totalNumberOfGroups;
     this.searchResults = this.searchResults.concat(groupsList);
-  };
+  }
 
   fetchGroups = async ({ offset = 0 }) => {
     try {
@@ -109,5 +109,5 @@ export default class GroupStore {
       };
       this.rootStore.handleTransportLayerError(error, metadata);
     }
-  }
+  };
 }
