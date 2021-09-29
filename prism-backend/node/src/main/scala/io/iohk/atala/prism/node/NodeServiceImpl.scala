@@ -35,6 +35,8 @@ import io.iohk.atala.prism.interop.toScalaProtos._
 import io.iohk.atala.prism.crypto.{Sha256Digest => SHA256Digest}
 import io.iohk.atala.prism.identity.{CanonicalPrismDid, LongFormPrismDid, PrismDid}
 import io.iohk.atala.prism.identity.{PrismDid => DID}
+import io.iohk.atala.prism.logging.TraceId
+import io.iohk.atala.prism.logging.TraceId.IOWithTraceIdContext
 import io.iohk.atala.prism.models.DidSuffix
 import io.iohk.atala.prism.node.cardano.models.AtalaObjectMetadata
 import io.iohk.atala.prism.node.models.AtalaObjectTransactionSubmissionStatus.InLedger
@@ -43,7 +45,7 @@ class NodeServiceImpl(
     didDataRepository: DIDDataRepository[IO],
     objectManagement: ObjectManagementService,
     submissionSchedulingService: SubmissionSchedulingService,
-    credentialBatchesRepository: CredentialBatchesRepository[IO]
+    credentialBatchesRepository: CredentialBatchesRepository[IOWithTraceIdContext]
 )(implicit
     ec: ExecutionContext
 ) extends node_api.NodeServiceGrpc.NodeService {
@@ -214,6 +216,7 @@ class NodeServiceImpl(
           stateEither <-
             credentialBatchesRepository
               .getBatchState(batchId)
+              .run(TraceId.generateYOLO)
               .unsafeToFuture()
         } yield stateEither.fold(
           countAndThrowNodeError(methodName, _),
@@ -250,6 +253,7 @@ class NodeServiceImpl(
           timeEither <-
             credentialBatchesRepository
               .getCredentialRevocationTime(batchId, credentialHash)
+              .run(TraceId.generateYOLO)
               .unsafeToFuture()
         } yield timeEither match {
           case Left(error) => countAndThrowNodeError(methodName, error)

@@ -120,7 +120,7 @@ class NodeApp(executionContext: ExecutionContext) { self =>
     )
     objectManagementServicePromise.success(objectManagementService)
 
-    val credentialBatchesRepository = CredentialBatchesRepository(transactor)
+    val credentialBatchesRepository = CredentialBatchesRepository.unsafe(liftedTransactor, logs)
 
     val nodeService =
       new NodeServiceImpl(
