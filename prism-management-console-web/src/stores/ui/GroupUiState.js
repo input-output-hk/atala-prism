@@ -30,22 +30,31 @@ export default class GroupUiState {
   constructor(rootStore) {
     this.rootStore = rootStore;
     makeAutoObservable(this, {
+      isSearching: observable,
       nameFilter: observable,
       dateFilter: observable,
-      isSearching: observable,
-      filteredGroups: computed({ requiresReaction: true }),
+      sortDirection: observable,
+      sortingBy: observable,
       hasFiltersApplied: computed,
       hasNameFilterApplied: computed,
       hasAditionalFiltersApplied: computed,
-      toggleSortDirection: action,
-      setNameFilter: action,
-      resetState: action,
+      filteredGroups: computed({ requiresReaction: true }),
+      triggerSearch: action,
+      triggerBackendSearch: false,
       applyFilters: false,
       applySorting: false,
       sortingIsCaseSensitive: false,
+      resetState: action,
+      setFilterValue: action,
+      toggleSortDirection: action,
+      setSortingBy: action,
       rootStore: false
     });
     this.triggerBackendSearch = this.triggerBackendSearch.bind(this);
+  }
+
+  get hasFiltersApplied() {
+    return this.hasNameFilterApplied || this.hasAditionalFiltersApplied;
   }
 
   get hasNameFilterApplied() {
@@ -54,10 +63,6 @@ export default class GroupUiState {
 
   get hasAditionalFiltersApplied() {
     return Boolean(this.dateFilter);
-  }
-
-  get hasFiltersApplied() {
-    return this.hasNameFilterApplied || this.hasAditionalFiltersApplied;
   }
 
   get filteredGroups() {
@@ -78,7 +83,7 @@ export default class GroupUiState {
     await fetchSearchResults();
     runInAction(() => {
       this.isSearching = false;
-    })
+    });
   }, SEARCH_DELAY_MS);
 
   applyFilters = templates =>
