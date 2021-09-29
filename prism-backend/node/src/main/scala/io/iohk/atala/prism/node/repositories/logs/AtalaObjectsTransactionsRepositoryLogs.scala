@@ -20,9 +20,10 @@ import tofu.syntax.logging._
 
 import java.time.Duration
 
-class AtalaObjectsTransactionsRepositoryLogs[F[_]: MonadThrow: ServiceLogging[*[_], AtalaObjectsTransactionsRepository[
-  F
-]]] extends AtalaObjectsTransactionsRepository[Mid[F, *]] {
+private[repositories] final class AtalaObjectsTransactionsRepositoryLogs[F[_]: MonadThrow: ServiceLogging[*[
+  _
+], AtalaObjectsTransactionsRepository[F]]]
+    extends AtalaObjectsTransactionsRepository[Mid[F, *]] {
 
   def retrieveObjects(transactions: List[AtalaObjectTransactionSubmission]): Mid[F, List[Option[AtalaObjectInfo]]] =
     in =>
