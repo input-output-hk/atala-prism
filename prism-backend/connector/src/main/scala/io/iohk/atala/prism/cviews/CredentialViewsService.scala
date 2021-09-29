@@ -36,7 +36,7 @@ class CredentialViewsService(authenticator: ConnectorAuthenticator)(implicit ec:
   )(
       block: ParticipantId => Future[Response]
   ): Future[Response] = {
-    authenticator.authenticated(methodName, request) { participantId =>
+    authenticator.authenticated(methodName, request) { (participantId, _) =>
       measureRequestFuture("credential-views-service-service", getCredsViewTemplatesMethodName)(
         block(participantId)
       )

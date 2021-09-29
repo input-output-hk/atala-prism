@@ -3,7 +3,6 @@ package io.iohk.atala.prism.management.console.grpc
 import cats.syntax.either._
 import cats.syntax.functor._
 import io.iohk.atala.prism.auth.AuthAndMiddlewareSupport
-import io.iohk.atala.prism.logging.TraceId
 import io.iohk.atala.prism.logging.TraceId.IOWithTraceIdContext
 import io.iohk.atala.prism.management.console.ManagementConsoleAuthenticator
 import io.iohk.atala.prism.management.console.errors.{ManagementConsoleError, ManagementConsoleErrorSupport}
@@ -30,10 +29,10 @@ class GroupsGrpcService(
   val logger: Logger = LoggerFactory.getLogger(this.getClass)
 
   override def createGroup(request: console_api.CreateGroupRequest): Future[console_api.CreateGroupResponse] =
-    auth[CreateInstitutionGroup]("createGroup", request) { (institutionId, request) =>
+    auth[CreateInstitutionGroup]("createGroup", request) { (institutionId, traceId, request) =>
       groupsService
         .createGroup(institutionId, request)
-        .run(TraceId.generateYOLO)
+        .run(traceId)
         .unsafeToFuture()
         .toFutureEither
         .map { group =>
@@ -51,12 +50,12 @@ class GroupsGrpcService(
     }
 
   override def getGroups(request: console_api.GetGroupsRequest): Future[console_api.GetGroupsResponse] =
-    auth[InstitutionGroup.PaginatedQuery]("getGroups", request) { (institutionId, query) =>
+    auth[InstitutionGroup.PaginatedQuery]("getGroups", request) { (institutionId, traceId, query) =>
       for {
         result <-
           groupsService
             .getGroups(institutionId, query)
-            .run(TraceId.generateYOLO)
+            .run(traceId)
             .unsafeToFuture()
             .map(_.asRight)
             .toFutureEither
@@ -67,23 +66,23 @@ class GroupsGrpcService(
     }
 
   override def updateGroup(request: console_api.UpdateGroupRequest): Future[console_api.UpdateGroupResponse] =
-    auth[UpdateInstitutionGroup]("updateGroup", request) { (institutionId, updateInstitutionGroup) =>
+    auth[UpdateInstitutionGroup]("updateGroup", request) { (institutionId, traceId, updateInstitutionGroup) =>
       groupsService
         .updateGroup(
           institutionId,
           updateInstitutionGroup
         )
-        .run(TraceId.generateYOLO)
+        .run(traceId)
         .unsafeToFuture()
         .toFutureEither
         .as(console_api.UpdateGroupResponse())
     }
 
   override def copyGroup(request: console_api.CopyGroupRequest): Future[console_api.CopyGroupResponse] =
-    auth[CopyInstitutionGroup]("copyGroup", request) { (institutionId, copyInstitutionGroup) =>
+    auth[CopyInstitutionGroup]("copyGroup", request) { (institutionId, traceId, copyInstitutionGroup) =>
       groupsService
         .copyGroup(institutionId, copyInstitutionGroup)
-        .run(TraceId.generateYOLO)
+        .run(traceId)
         .unsafeToFuture()
         .toFutureEither
         .map { createdGroup =>
@@ -92,10 +91,10 @@ class GroupsGrpcService(
     }
 
   override def deleteGroup(request: console_api.DeleteGroupRequest): Future[console_api.DeleteGroupResponse] = {
-    auth[DeleteInstitutionGroup]("deleteGroup", request) { (institutionId, deleteInstitutionGroup) =>
+    auth[DeleteInstitutionGroup]("deleteGroup", request) { (institutionId, traceId, deleteInstitutionGroup) =>
       groupsService
         .deleteGroup(institutionId, deleteInstitutionGroup)
-        .run(TraceId.generateYOLO)
+        .run(traceId)
         .unsafeToFuture()
         .toFutureEither
         .as(console_api.DeleteGroupResponse())

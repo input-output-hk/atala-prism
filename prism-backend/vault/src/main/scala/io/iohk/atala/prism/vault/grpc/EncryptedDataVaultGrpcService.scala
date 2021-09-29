@@ -4,7 +4,6 @@ import cats.syntax.option._
 import com.google.protobuf.ByteString
 import io.iohk.atala.prism.auth.errors.AuthErrorSupport
 import io.iohk.atala.prism.crypto.Sha256Digest
-import io.iohk.atala.prism.logging.TraceId
 import io.iohk.atala.prism.logging.TraceId.IOWithTraceIdContext
 import io.iohk.atala.prism.metrics.RequestMeasureUtil.measureRequestFuture
 import io.iohk.atala.prism.protos.common_models.{HealthCheckRequest, HealthCheckResponse}
@@ -37,9 +36,8 @@ class EncryptedDataVaultGrpcService(
 
   override def storeData(request: vault_api.StoreDataRequest): Future[vault_api.StoreDataResponse] = {
     val methodName = "storeData"
-    authenticator.authenticated(methodName, request) { did =>
+    authenticator.authenticated(methodName, request) { (did, traceId) =>
       measureRequestFuture(serviceName, methodName) {
-        val traceId = TraceId.generateYOLO
         service
           .storeData(
             Payload.ExternalId.unsafeFrom(request.externalId),
@@ -58,9 +56,8 @@ class EncryptedDataVaultGrpcService(
       request: vault_api.GetPaginatedDataRequest
   ): Future[vault_api.GetPaginatedDataResponse] = {
     val methodName = "getPaginatedData"
-    authenticator.authenticated(methodName, request) { did =>
+    authenticator.authenticated(methodName, request) { (did, traceId) =>
       measureRequestFuture(serviceName, methodName) {
-        val traceId = TraceId.generateYOLO
         service
           .getByPaginated(did, parseOptionalLastSeenId(request.lastSeenId), request.limit)
           .map(toGetPaginatedDataResponse)

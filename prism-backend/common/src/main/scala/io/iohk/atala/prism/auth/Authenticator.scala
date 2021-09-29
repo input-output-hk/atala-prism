@@ -10,6 +10,7 @@ import io.iohk.atala.prism.crypto.EC.{INSTANCE => EC}
 import io.iohk.atala.prism.crypto.keys.ECPublicKey
 import io.iohk.atala.prism.crypto.signature.ECSignature
 import io.iohk.atala.prism.identity.{PrismDid => DID}
+import io.iohk.atala.prism.logging.TraceId
 import io.iohk.atala.prism.protos.node_api
 import io.iohk.atala.prism.utils.FutureEither
 import io.iohk.atala.prism.utils.FutureEither._
@@ -32,7 +33,7 @@ trait Authenticator[Id] {
   def authenticated[Request <: GeneratedMessage, Response](
       methodName: String,
       request: Request
-  )(f: Id => Future[Response])(implicit ec: ExecutionContext): Future[Response]
+  )(f: (Id, TraceId) => Future[Response])(implicit ec: ExecutionContext): Future[Response]
 
   def public[Request <: GeneratedMessage, Response](
       methodName: String,
@@ -75,20 +76,21 @@ abstract class SignedRequestsAuthenticatorBase[Id](
   private def withLogging[Request <: GeneratedMessage, Response](
       methodName: String,
       request: Request,
-      id: Id
+      id: Id,
+      traceId: TraceId
   )(run: => Future[Response])(implicit ec: ExecutionContext): Future[Response] =
     run.andThen {
       case Success(response: GeneratedMessage) =>
         logger.info(
-          s"$methodName, id = $id, request = ${request.toProtoString}, response = ${response.toProtoString}"
+          s"$traceId: $methodName, id = $id, request = ${request.toProtoString}, response = ${response.toProtoString}"
         )
       case Success(response) =>
         logger.info(
-          s"$methodName, id = $id, request = ${request.toProtoString}, response = $response"
+          s"$traceId: $methodName, id = $id, request = ${request.toProtoString}, response = $response"
         )
       case Failure(ex) =>
         logger.error(
-          s"$methodName, id = $id, request = ${request.toProtoString}",
+          s"$traceId: $methodName, id = $id, request = ${request.toProtoString}",
           ex
         )
     }
@@ -165,19 +167,21 @@ abstract class SignedRequestsAuthenticatorBase[Id](
     } yield did
   }
 
-  private def authenticate(request: Array[Byte], authenticationHeader: GrpcAuthenticationHeader)(implicit
-      executionContext: ExecutionContext
-  ): FutureEither[AuthError, Id] = {
+  private def authenticate(request: Array[Byte], authenticationHeader: GrpcAuthenticationHeader, traceId: TraceId)(
+      implicit executionContext: ExecutionContext
+  ): FutureEither[AuthError, (Id, TraceId)] = {
     authenticationHeader match {
-      case h: GrpcAuthenticationHeader.PublicKeyBased => authenticate(request, h)
-      case h: GrpcAuthenticationHeader.PublishedDIDBased => authenticate(request, h)
-      case h: GrpcAuthenticationHeader.UnpublishedDIDBased => authenticate(request, h)
+      case h: GrpcAuthenticationHeader.PublicKeyBased => authenticate(request, h, traceId)
+      case h: GrpcAuthenticationHeader.PublishedDIDBased => authenticate(request, h, traceId)
+      case h: GrpcAuthenticationHeader.UnpublishedDIDBased => authenticate(request, h, traceId)
     }
   }
 
-  private def authenticate(request: Array[Byte], authenticationHeader: GrpcAuthenticationHeader.PublicKeyBased)(implicit
-      ec: ExecutionContext
-  ): FutureEither[AuthError, Id] = {
+  private def authenticate(
+      request: Array[Byte],
+      authenticationHeader: GrpcAuthenticationHeader.PublicKeyBased,
+      traceId: TraceId
+  )(implicit ec: ExecutionContext): FutureEither[AuthError, (Id, TraceId)] = {
 
     for {
       // first we verify that we know the DID to avoid performing costly calls if we don't know it
@@ -191,12 +195,16 @@ abstract class SignedRequestsAuthenticatorBase[Id](
         request = request,
         requestNonce = authenticationHeader.requestNonce
       )
-    } yield id
+    } yield (id, traceId)
   }
 
-  private def authenticate(request: Array[Byte], authenticationHeader: GrpcAuthenticationHeader.PublishedDIDBased)(
-      implicit ec: ExecutionContext
-  ): FutureEither[AuthError, Id] = {
+  private def authenticate(
+      request: Array[Byte],
+      authenticationHeader: GrpcAuthenticationHeader.PublishedDIDBased,
+      traceId: TraceId
+  )(implicit
+      ec: ExecutionContext
+  ): FutureEither[AuthError, (Id, TraceId)] = {
     for {
       // first we verify that we know the DID to avoid performing costly calls if we don't know it
       id <- findByDid(authenticationHeader.did)
@@ -218,12 +226,16 @@ abstract class SignedRequestsAuthenticatorBase[Id](
         request = request,
         requestNonce = authenticationHeader.requestNonce
       )
-    } yield id
+    } yield (id, traceId)
   }
 
-  private def authenticate(request: Array[Byte], authenticationHeader: GrpcAuthenticationHeader.UnpublishedDIDBased)(
-      implicit ec: ExecutionContext
-  ): FutureEither[AuthError, Id] = {
+  private def authenticate(
+      request: Array[Byte],
+      authenticationHeader: GrpcAuthenticationHeader.UnpublishedDIDBased,
+      traceId: TraceId
+  )(implicit
+      ec: ExecutionContext
+  ): FutureEither[AuthError, (Id, TraceId)] = {
     DIDUtils.validateDid(authenticationHeader.did).flatMap { didData =>
       for {
         publicKey <- DIDUtils.findPublicKey(didData, authenticationHeader.keyId)
@@ -235,31 +247,32 @@ abstract class SignedRequestsAuthenticatorBase[Id](
           request = request,
           requestNonce = authenticationHeader.requestNonce
         )
-      } yield id
+      } yield (id, traceId)
     }
   }
 
   override def authenticated[Request <: GeneratedMessage, Response](
       methodName: String,
       request: Request
-  )(f: Id => Future[Response])(implicit ec: ExecutionContext): Future[Response] = {
+  )(f: (Id, TraceId) => Future[Response])(implicit ec: ExecutionContext): Future[Response] = {
     try {
       val ctx = Context.current()
+      val traceId = grpcAuthenticationHeaderParser.getTraceId(ctx)
       val result = grpcAuthenticationHeaderParser
         .parse(ctx)
-        .map(authenticate(request.toByteArray, _))
+        .map(authenticate(request.toByteArray, _, traceId))
         .map { value =>
-          value.map(v => withLogging(methodName, request, v) { f(v) }).flatten
+          value.map(v => withLogging(methodName, request, v._1, v._2) { f(v._1, v._2) }).flatten
         }
         .getOrElse {
-          logger.error(s"$methodName - unauthenticated, request = ${request.toProtoString}")
+          logger.error(s"$traceId: $methodName - unauthenticated, request = ${request.toProtoString}")
           Future.failed(throw new RuntimeException("Missing or bad authentication"))
         }
         .flatten
 
       result.onComplete {
         case Success(_) => () // This case is already handled above on the `withLogging` call
-        case Failure(ex) => logger.error(s"$methodName FAILED request = ${request.toProtoString}", ex)
+        case Failure(ex) => logger.error(s"$traceId: $methodName FAILED request = ${request.toProtoString}", ex)
       }
       result
     } catch {
@@ -282,6 +295,7 @@ abstract class SignedRequestsAuthenticatorBase[Id](
   )(f: DID => Future[Response])(implicit ec: ExecutionContext): Future[Response] = {
     val ctx = Context.current()
     val result = grpcAuthenticationHeaderParser.parse(ctx)
+    val traceId = grpcAuthenticationHeaderParser.getTraceId(ctx)
     result match {
       case Some(GrpcAuthenticationHeader.UnpublishedDIDBased(requestNonce, did, keyId, signature))
           if whitelist.contains(did) =>
@@ -305,17 +319,17 @@ abstract class SignedRequestsAuthenticatorBase[Id](
 
         result.onComplete {
           case Success(_) => () // This case is already handled above on the `withLogging` call
-          case Failure(ex) => logger.error(s"$methodName FAILED request = ${request.toProtoString}", ex)
+          case Failure(ex) => logger.error(s"$traceId: $methodName FAILED request = ${request.toProtoString}", ex)
         }
         result
       case Some(GrpcAuthenticationHeader.UnpublishedDIDBased(_, _, _, _)) =>
-        logger.error(s"$methodName - unauthenticated, request = ${request.toProtoString}")
+        logger.error(s"$traceId: $methodName - unauthenticated, request = ${request.toProtoString}")
         Future.failed(throw new RuntimeException("The supplied DID is not whitelisted"))
       case Some(_) =>
-        logger.error(s"$methodName - unauthenticated, request = ${request.toProtoString}")
+        logger.error(s"$traceId: $methodName - unauthenticated, request = ${request.toProtoString}")
         Future.failed(throw new RuntimeException("Invalid authentication method: unpublished DID is required"))
       case None =>
-        logger.error(s"$methodName - unauthenticated, request = ${request.toProtoString}")
+        logger.error(s"$traceId: $methodName - unauthenticated, request = ${request.toProtoString}")
         Future.failed(throw new RuntimeException("Missing or bad authentication"))
     }
   }

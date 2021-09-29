@@ -2,7 +2,6 @@ package io.iohk.atala.prism.management.console.grpc
 
 import cats.implicits.{catsSyntaxEitherId, catsSyntaxOptionId}
 import io.iohk.atala.prism.auth.AuthAndMiddlewareSupport
-import io.iohk.atala.prism.logging.TraceId
 import io.iohk.atala.prism.logging.TraceId.IOWithTraceIdContext
 import io.iohk.atala.prism.management.console.ManagementConsoleAuthenticator
 import io.iohk.atala.prism.management.console.errors._
@@ -38,10 +37,10 @@ class CredentialIssuanceGrpcService(
   override def createCredentialIssuance(
       request: CreateCredentialIssuanceRequest
   ): Future[CreateCredentialIssuanceResponse] =
-    auth[CreateCredentialIssuance]("createCredentialIssuance", request) { (participantId, query) =>
+    auth[CreateCredentialIssuance]("createCredentialIssuance", request) { (participantId, traceId, query) =>
       credentialIssuanceService
         .createCredentialIssuance(participantId, query)
-        .run(TraceId.generateYOLO)
+        .run(traceId)
         .unsafeToFuture()
         .toFutureEither
         .map { credentialIssuanceId =>
@@ -52,7 +51,7 @@ class CredentialIssuanceGrpcService(
   override def getCredentialIssuance(
       request: GetCredentialIssuanceRequest
   ): Future[GetCredentialIssuanceResponse] =
-    auth[GetCredentialIssuance]("getCredentialIssuance", request) { (participantId, query) =>
+    auth[GetCredentialIssuance]("getCredentialIssuance", request) { (participantId, traceId, query) =>
       credentialIssuanceService
         .getCredentialIssuance(participantId, query)
         .map { credentialIssuance =>
@@ -69,7 +68,7 @@ class CredentialIssuanceGrpcService(
             )
           )
         }
-        .run(TraceId.generateYOLO)
+        .run(traceId)
         .unsafeToFuture()
         .map(_.asRight)
         .toFutureEither
@@ -78,10 +77,10 @@ class CredentialIssuanceGrpcService(
   override def createGenericCredentialBulk(
       request: CreateGenericCredentialBulkRequest
   ): Future[CreateGenericCredentialBulkResponse] =
-    auth[CreateCredentialBulk]("createGenericCredentialBulk", request) { (participantId, query) =>
+    auth[CreateCredentialBulk]("createGenericCredentialBulk", request) { (participantId, traceId, query) =>
       credentialIssuanceService
         .createGenericCredentialBulk(participantId, query)
-        .run(TraceId.generateYOLO)
+        .run(traceId)
         .unsafeToFuture()
         .toFutureEither
         .map { credentialIssuanceId =>

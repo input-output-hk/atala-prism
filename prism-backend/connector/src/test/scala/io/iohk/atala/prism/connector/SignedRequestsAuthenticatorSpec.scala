@@ -15,6 +15,7 @@ import io.iohk.atala.prism.{DIDUtil, auth}
 import io.iohk.atala.prism.auth.grpc.{GrpcAuthenticationHeader, GrpcAuthenticationHeaderParser}
 import io.iohk.atala.prism.crypto.Sha256
 import io.iohk.atala.prism.identity.{PrismDid => DID}
+import io.iohk.atala.prism.logging.TraceId
 import io.iohk.atala.prism.logging.TraceId.IOWithTraceIdContext
 import io.iohk.atala.prism.models.ParticipantId
 import io.iohk.atala.prism.protos.node_api._
@@ -41,6 +42,7 @@ class SignedRequestsAuthenticatorSpec extends AnyWordSpec {
 
   private val request = connector_api.GetConnectionTokenInfoRequest()
   private val response = connector_api.GetConnectionTokenInfoResponse()
+  private val testTraceId = TraceId("testTraceId")
 
   "public" should {
     "accept the request without authentication" in {
@@ -98,7 +100,7 @@ class SignedRequestsAuthenticatorSpec extends AnyWordSpec {
 
       val authenticator = buildAuthenticator(getHeader = () => Some(header))
 
-      val result = authenticator.authenticated("test", request) { _ =>
+      val result = authenticator.authenticated("test", request) { (_, _) =>
         Future.successful(response)
       }
       intercept[Exception] {
@@ -119,7 +121,7 @@ class SignedRequestsAuthenticatorSpec extends AnyWordSpec {
 
       val authenticator = buildAuthenticator(getHeader = () => Some(header))
 
-      val result = authenticator.authenticated("test", request) { _ =>
+      val result = authenticator.authenticated("test", request) { (_, _) =>
         Future.successful(response)
       }
       intercept[Exception] {
@@ -139,7 +141,7 @@ class SignedRequestsAuthenticatorSpec extends AnyWordSpec {
       val authenticator =
         buildAuthenticator(getHeader = () => Some(header), burnNonce = () => throw new RuntimeException("Nonce reused"))
 
-      val result = authenticator.authenticated("test", request) { _ =>
+      val result = authenticator.authenticated("test", request) { (_, _) =>
         Future.successful(response)
       }
       intercept[Exception] {
@@ -172,7 +174,7 @@ class SignedRequestsAuthenticatorSpec extends AnyWordSpec {
 
       val authenticator = buildAuthenticator(getHeader = () => Some(header), getDidResponse = () => Some(nodeResponse))
 
-      val result = authenticator.authenticated("test", request) { _ =>
+      val result = authenticator.authenticated("test", request) { (_, _) =>
         Future.successful(response)
       }
       result.futureValue must be(response)
@@ -204,7 +206,7 @@ class SignedRequestsAuthenticatorSpec extends AnyWordSpec {
         )
 
       val authenticator = buildAuthenticator(getHeader = () => Some(header), getDidResponse = () => Some(nodeResponse))
-      val result = authenticator.authenticated("test", request) { _ =>
+      val result = authenticator.authenticated("test", request) { (_, _) =>
         Future.successful(response)
       }
       intercept[RuntimeException] {
@@ -237,7 +239,7 @@ class SignedRequestsAuthenticatorSpec extends AnyWordSpec {
         )
 
       val authenticator = buildAuthenticator(getHeader = () => Some(header), getDidResponse = () => Some(nodeResponse))
-      val result = authenticator.authenticated("test", request) { _ =>
+      val result = authenticator.authenticated("test", request) { (_, _) =>
         Future.successful(response)
       }
       intercept[RuntimeException] {
@@ -276,7 +278,7 @@ class SignedRequestsAuthenticatorSpec extends AnyWordSpec {
         customParser
       )
 
-      val result = authenticator.authenticated("test", request) { _ =>
+      val result = authenticator.authenticated("test", request) { (_, _) =>
         Future.successful(response)
       }
       intercept[RuntimeException] {
@@ -299,7 +301,7 @@ class SignedRequestsAuthenticatorSpec extends AnyWordSpec {
         )
       val authenticator = buildAuthenticator(getHeader = () => Some(header), getDidResponse = () => None)
 
-      val result = authenticator.authenticated("test", request) { _ =>
+      val result = authenticator.authenticated("test", request) { (_, _) =>
         Future.successful(response)
       }
       intercept[RuntimeException] {
@@ -331,7 +333,7 @@ class SignedRequestsAuthenticatorSpec extends AnyWordSpec {
         )
 
       val authenticator = buildAuthenticator(getHeader = () => Some(header), getDidResponse = () => Some(nodeResponse))
-      val result = authenticator.authenticated("test", request) { _ =>
+      val result = authenticator.authenticated("test", request) { (_, _) =>
         Future.successful(response)
       }
       intercept[RuntimeException] {
@@ -367,13 +369,38 @@ class SignedRequestsAuthenticatorSpec extends AnyWordSpec {
         getDidResponse = () => Some(nodeResponse),
         burnNonce = () => throw new RuntimeException("Nonce already used")
       )
-      val result = authenticator.authenticated("test", request) { _ =>
+      val result = authenticator.authenticated("test", request) { (_, _) =>
         Future.successful(response)
       }
       intercept[RuntimeException] {
         result.futureValue
       }
     }
+
+    "parse trace id from header" in {
+      val keys = EC.generateKeyPair()
+      // signed with the wrong key
+      val signedRequest =
+        requestAuthenticator.signConnectorRequest(request.toByteArray, keys.getPrivateKey)
+      val header = GrpcAuthenticationHeader
+        .PublicKeyBased(
+          requestNonce = auth.model.RequestNonce(signedRequest.requestNonce.toVector),
+          publicKey = keys.getPublicKey,
+          signature = new ECSignature(signedRequest.signature)
+        )
+
+      val externalTraceId = TraceId("exactlyThisTraceId123")
+
+      val authenticator =
+        buildAuthenticator(getHeader = () => Some(header), getTraceIdFromHeader = () => externalTraceId)
+
+      val currentTraceId = authenticator.authenticated("test", request) { (_, traceId) =>
+        Future.successful(traceId)
+      }
+
+      currentTraceId.futureValue must be(externalTraceId)
+    }
+
   }
 
   // NOTE: To meet the repository interface we need to return the whole participant details while the authenticator
@@ -385,6 +412,7 @@ class SignedRequestsAuthenticatorSpec extends AnyWordSpec {
   private def buildAuthenticator(
       getuserId: () => Option[ParticipantId] = () => Some(ParticipantId.random()),
       getHeader: () => Option[GrpcAuthenticationHeader],
+      getTraceIdFromHeader: () => TraceId = () => testTraceId,
       burnNonce: () => Unit = () => (),
       getDidResponse: () => Option[node_api.GetDidDocumentResponse] = () => None
   ): ConnectorAuthenticator = {
@@ -407,6 +435,8 @@ class SignedRequestsAuthenticatorSpec extends AnyWordSpec {
       override def parse(ctx: Context): Option[GrpcAuthenticationHeader] = {
         getHeader()
       }
+
+      override def getTraceId(ctx: Context): TraceId = getTraceIdFromHeader()
     }
 
     val requestNoncesRepository = mock[RequestNoncesRepository[IO]]
@@ -428,7 +458,7 @@ class SignedRequestsAuthenticatorSpec extends AnyWordSpec {
   private def testAuthentication(header: GrpcAuthenticationHeader): Assertion = {
     val authenticator = buildAuthenticator(getHeader = () => Some(header))
 
-    val result = authenticator.authenticated("test", request) { _ =>
+    val result = authenticator.authenticated("test", request) { (_, _) =>
       Future.successful(response)
     }
     result.futureValue must be(response)

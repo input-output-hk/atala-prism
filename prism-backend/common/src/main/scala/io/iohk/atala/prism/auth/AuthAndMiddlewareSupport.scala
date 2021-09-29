@@ -2,6 +2,7 @@ package io.iohk.atala.prism.auth
 
 import io.iohk.atala.prism.errors.{ErrorSupport, LoggingContext, PrismError}
 import io.iohk.atala.prism.grpc.ProtoConverter
+import io.iohk.atala.prism.logging.TraceId
 import io.iohk.atala.prism.metrics.RequestMeasureUtil.measureRequestFuture
 import io.iohk.atala.prism.utils.FutureEither
 import scalapb.GeneratedMessage
@@ -20,12 +21,12 @@ trait AuthAndMiddlewareSupport[Err <: PrismError, Id] {
     def apply[Proto <: GeneratedMessage, Result](
         methodName: String,
         request: Proto
-    )(f: (Id, Query) => FutureEither[Err, Result])(implicit
+    )(f: (Id, TraceId, Query) => FutureEither[Err, Result])(implicit
         ec: ExecutionContext,
         protoConverter: ProtoConverter[Proto, Query]
     ): Future[Result] = {
       authenticator
-        .authenticated(methodName, request) { participantId =>
+        .authenticated(methodName, request) { (participantId, traceId) =>
           convertFromRequest[Proto, Result, Query](request, methodName).flatMap { query =>
             implicit val lc: LoggingContext = LoggingContext(
               (0 until query.productArity)
@@ -33,7 +34,7 @@ trait AuthAndMiddlewareSupport[Err <: PrismError, Id] {
                 .toMap + ("participantId" -> participantId.toString)
             )
             measureRequestFuture(serviceName, methodName)(
-              f(participantId, query).wrapAndRegisterExceptions(serviceName, methodName).flatten
+              f(participantId, traceId, query).wrapAndRegisterExceptions(serviceName, methodName).flatten
             )
           }
         }

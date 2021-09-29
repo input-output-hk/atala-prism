@@ -14,6 +14,7 @@ import io.iohk.atala.prism.crypto.EC.{INSTANCE => EC}
 import io.iohk.atala.prism.crypto.keys.{ECKeyPair, ECPublicKey}
 import io.iohk.atala.prism.crypto.ECConfig.{INSTANCE => ECConfig}
 import io.iohk.atala.prism.identity.{PrismDid => DID}
+import io.iohk.atala.prism.logging.TraceId
 import io.iohk.atala.prism.protos.connector_api.GetConnectionTokenInfoRequest
 import io.iohk.atala.prism.protos.node_api.GetDidDocumentRequest
 import io.iohk.atala.prism.protos.node_models.{KeyUsage, LedgerData}
@@ -375,7 +376,7 @@ class ConnectionsRpcSpec extends ConnectorRpcSpecBase with MockitoSugar {
       val zeroTime = System.currentTimeMillis()
       val connections = createExampleConnections(verifierId, zeroTime)
 
-      usingApiAs(requestNonce, signature, did, DID.getDEFAULT_MASTER_KEY_ID) { blockingStub =>
+      usingApiAs(requestNonce, signature, did, DID.getDEFAULT_MASTER_KEY_ID, TraceId.generateYOLO) { blockingStub =>
         val response = blockingStub.getConnectionsPaginated(request)
         response.connections.map(_.connectionId).toSet mustBe connections.map(_._2.toString).take(10).toList.toSet
       }

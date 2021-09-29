@@ -3,7 +3,6 @@ package io.iohk.atala.prism.management.console.grpc
 import cats.implicits.catsSyntaxEitherId
 import io.iohk.atala.prism.auth.AuthAndMiddlewareSupport
 import cats.syntax.functor._
-import io.iohk.atala.prism.logging.TraceId
 import io.iohk.atala.prism.logging.TraceId.IOWithTraceIdContext
 
 import scala.concurrent.{ExecutionContext, Future}
@@ -31,11 +30,11 @@ class CredentialTypesGrpcService(
   override def getCredentialTypes(
       request: console_api.GetCredentialTypesRequest
   ): Future[console_api.GetCredentialTypesResponse] =
-    auth[GetCredentialTypes]("getCredentialTypes", request) { (participantId, _) =>
+    auth[GetCredentialTypes]("getCredentialTypes", request) { (participantId, traceId, _) =>
       credentialTypesService
         .getCredentialTypes(participantId)
         .map(result => console_api.GetCredentialTypesResponse(result.map(ProtoCodecs.toCredentialTypeProto)))
-        .run(TraceId.generateYOLO)
+        .run(traceId)
         .unsafeToFuture()
         .map(_.asRight)
         .toFutureEither
@@ -44,12 +43,12 @@ class CredentialTypesGrpcService(
   override def getCredentialType(
       request: console_api.GetCredentialTypeRequest
   ): Future[console_api.GetCredentialTypeResponse] =
-    auth[GetCredentialType]("getCredentialType", request) { (participantId, query) =>
+    auth[GetCredentialType]("getCredentialType", request) { (participantId, traceId, query) =>
       credentialTypesService
         .getCredentialType(participantId, query)
         .map(_.map(ProtoCodecs.toCredentialTypeWithRequiredFieldsProto))
         .map(console_api.GetCredentialTypeResponse(_))
-        .run(TraceId.generateYOLO)
+        .run(traceId)
         .unsafeToFuture()
         .map(_.asRight)
         .toFutureEither
@@ -58,10 +57,10 @@ class CredentialTypesGrpcService(
   override def createCredentialType(
       request: console_api.CreateCredentialTypeRequest
   ): Future[console_api.CreateCredentialTypeResponse] =
-    auth[CreateCredentialType]("createCredentialType", request) { (participantId, query) =>
+    auth[CreateCredentialType]("createCredentialType", request) { (participantId, traceId, query) =>
       credentialTypesService
         .createCredentialType(participantId, query)
-        .run(TraceId.generateYOLO)
+        .run(traceId)
         .unsafeToFuture()
         .toFutureEither
         .map(result =>
@@ -73,10 +72,10 @@ class CredentialTypesGrpcService(
   override def updateCredentialType(
       request: console_api.UpdateCredentialTypeRequest
   ): Future[console_api.UpdateCredentialTypeResponse] =
-    auth[UpdateCredentialType]("updateCredentialType", request) { (participantId, query) =>
+    auth[UpdateCredentialType]("updateCredentialType", request) { (participantId, traceId, query) =>
       credentialTypesService
         .updateCredentialType(participantId, query)
-        .run(TraceId.generateYOLO)
+        .run(traceId)
         .unsafeToFuture()
         .toFutureEither
         .as(console_api.UpdateCredentialTypeResponse())
@@ -85,10 +84,10 @@ class CredentialTypesGrpcService(
   override def markAsReadyCredentialType(
       request: console_api.MarkAsReadyCredentialTypeRequest
   ): Future[console_api.MarkAsReadyCredentialTypeResponse] =
-    auth[MarkAsReadyCredentialType]("markAsReadyCredentialType", request) { (participantId, query) =>
+    auth[MarkAsReadyCredentialType]("markAsReadyCredentialType", request) { (participantId, traceId, query) =>
       credentialTypesService
         .markAsReady(participantId, query)
-        .run(TraceId.generateYOLO)
+        .run(traceId)
         .unsafeToFuture()
         .toFutureEither
         .as(console_api.MarkAsReadyCredentialTypeResponse())
@@ -97,10 +96,10 @@ class CredentialTypesGrpcService(
   override def markAsArchivedCredentialType(
       request: console_api.MarkAsArchivedCredentialTypeRequest
   ): Future[console_api.MarkAsArchivedCredentialTypeResponse] =
-    auth[MarkAsArchivedCredentialType]("markAsArchivedCredentialType", request) { (participantId, _) =>
+    auth[MarkAsArchivedCredentialType]("markAsArchivedCredentialType", request) { (participantId, traceId, _) =>
       credentialTypesService
         .markAsArchived(participantId, CredentialTypeId.unsafeFrom(request.credentialTypeId))
-        .run(TraceId.generateYOLO)
+        .run(traceId)
         .unsafeToFuture()
         .toFutureEither
         .as(console_api.MarkAsArchivedCredentialTypeResponse())

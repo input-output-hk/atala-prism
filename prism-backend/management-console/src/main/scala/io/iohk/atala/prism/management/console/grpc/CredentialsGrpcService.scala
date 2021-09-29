@@ -14,7 +14,6 @@ import org.slf4j.{Logger, LoggerFactory}
 import io.iohk.atala.prism.utils.FutureEither.FutureEitherOps
 
 import scala.concurrent.{ExecutionContext, Future}
-import io.iohk.atala.prism.logging.TraceId
 import io.iohk.atala.prism.logging.TraceId.IOWithTraceIdContext
 import io.iohk.atala.prism.management.console.services.CredentialsService
 
@@ -34,10 +33,10 @@ class CredentialsGrpcService(
   override def createGenericCredential(
       request: CreateGenericCredentialRequest
   ): Future[CreateGenericCredentialResponse] =
-    auth[CreateGenericCredential]("createGenericCredential", request) { (participantId, query) =>
+    auth[CreateGenericCredential]("createGenericCredential", request) { (participantId, traceId, query) =>
       credentialsService
         .createGenericCredential(participantId, query)
-        .run(TraceId.generateYOLO)
+        .run(traceId)
         .unsafeToFuture()
         .toFutureEither
         .map { genericCredentialWithConnection =>
@@ -54,10 +53,10 @@ class CredentialsGrpcService(
   override def getGenericCredentials(
       request: GetGenericCredentialsRequest
   ): Future[GetGenericCredentialsResponse] =
-    auth[GenericCredential.PaginatedQuery]("getGenericCredentials", request) { (participantId, query) =>
+    auth[GenericCredential.PaginatedQuery]("getGenericCredentials", request) { (participantId, traceId, query) =>
       credentialsService
         .getGenericCredentials(participantId, query)
-        .run(TraceId.generateYOLO)
+        .run(traceId)
         .unsafeToFuture()
         .lift
         .map { result =>
@@ -70,10 +69,10 @@ class CredentialsGrpcService(
     }
 
   override def getContactCredentials(request: GetContactCredentialsRequest): Future[GetContactCredentialsResponse] =
-    auth[GetContactCredentials]("getContactCredentials", request) { (participantId, query) =>
+    auth[GetContactCredentials]("getContactCredentials", request) { (participantId, traceId, query) =>
       credentialsService
         .getContactCredentials(participantId, query)
-        .run(TraceId.generateYOLO)
+        .run(traceId)
         .unsafeToFuture()
         .lift
         .map { result =>
@@ -86,10 +85,10 @@ class CredentialsGrpcService(
     }
 
   override def shareCredential(request: ShareCredentialRequest): Future[ShareCredentialResponse] =
-    auth[ShareCredential]("shareCredential", request) { (participantId, query) =>
+    auth[ShareCredential]("shareCredential", request) { (participantId, traceId, query) =>
       credentialsService
         .shareCredential(participantId, NonEmptyList.of(query.credentialId))
-        .run(TraceId.generateYOLO)
+        .run(traceId)
         .unsafeToFuture()
         .map(_.asRight)
         .toFutureEither
@@ -101,10 +100,10 @@ class CredentialsGrpcService(
   override def getBlockchainData(request: GetBlockchainDataRequest): Future[GetBlockchainDataResponse] = ???
 
   override def publishBatch(request: PublishBatchRequest): Future[PublishBatchResponse] = {
-    auth[PublishBatch]("publishBatch", request) { (_, query) =>
+    auth[PublishBatch]("publishBatch", request) { (_, traceId, query) =>
       credentialsService
         .publishBatch(query)
-        .run(TraceId.generateYOLO)
+        .run(traceId)
         .unsafeToFuture()
         .toFutureEither
         .map(response =>
@@ -118,10 +117,10 @@ class CredentialsGrpcService(
   override def revokePublishedCredential(
       request: RevokePublishedCredentialRequest
   ): Future[RevokePublishedCredentialResponse] = {
-    auth[RevokePublishedCredential]("revokePublishedCredential", request) { (participantId, query) =>
+    auth[RevokePublishedCredential]("revokePublishedCredential", request) { (participantId, traceId, query) =>
       credentialsService
         .revokePublishedCredential(participantId, query)
-        .run(TraceId.generateYOLO)
+        .run(traceId)
         .unsafeToFuture()
         .toFutureEither
         .map { operationId =>
@@ -131,10 +130,10 @@ class CredentialsGrpcService(
   }
 
   override def deleteCredentials(request: DeleteCredentialsRequest): Future[DeleteCredentialsResponse] = {
-    auth[DeleteCredentials]("deleteCredentials", request) { (participantId, query) =>
+    auth[DeleteCredentials]("deleteCredentials", request) { (participantId, traceId, query) =>
       credentialsService
         .deleteCredentials(participantId, query)
-        .run(TraceId.generateYOLO)
+        .run(traceId)
         .unsafeToFuture()
         .toFutureEither
         .as(DeleteCredentialsResponse())
@@ -144,10 +143,10 @@ class CredentialsGrpcService(
   override def storePublishedCredential(
       request: StorePublishedCredentialRequest
   ): Future[StorePublishedCredentialResponse] = {
-    auth[StorePublishedCredential]("storePublishedCredential", request) { (participantId, query) =>
+    auth[StorePublishedCredential]("storePublishedCredential", request) { (participantId, traceId, query) =>
       credentialsService
         .storePublishedCredential(participantId, query)
-        .run(TraceId.generateYOLO)
+        .run(traceId)
         .unsafeToFuture()
         .lift
         .as(StorePublishedCredentialResponse())
@@ -155,10 +154,10 @@ class CredentialsGrpcService(
   }
 
   override def getLedgerData(request: GetLedgerDataRequest): Future[GetLedgerDataResponse] =
-    auth[GetLedgerData]("getLedgerData", request) { (_, query) =>
+    auth[GetLedgerData]("getLedgerData", request) { (_, traceId, query) =>
       credentialsService
         .getLedgerData(query)
-        .run(TraceId.generateYOLO)
+        .run(traceId)
         .unsafeToFuture()
         .lift
         .map(result =>
@@ -173,10 +172,10 @@ class CredentialsGrpcService(
   override def shareCredentials(
       request: console_api.ShareCredentialsRequest
   ): Future[console_api.ShareCredentialsResponse] = {
-    auth[ShareCredentials]("shareCredentials", request) { (participantId, query) =>
+    auth[ShareCredentials]("shareCredentials", request) { (participantId, traceId, query) =>
       credentialsService
         .shareCredentials(participantId, query)
-        .run(TraceId.generateYOLO)
+        .run(traceId)
         .unsafeToFuture()
         .toFutureEither
         .as(ShareCredentialsResponse())

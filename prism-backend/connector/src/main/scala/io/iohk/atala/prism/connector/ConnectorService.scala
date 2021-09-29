@@ -67,7 +67,7 @@ class ConnectorService(
   override def getConnectionByToken(
       request: connector_api.GetConnectionByTokenRequest
   ): Future[connector_api.GetConnectionByTokenResponse] =
-    unitAuth("getConnectionByToken", request) { (_, _) =>
+    unitAuth("getConnectionByToken", request) { (_, _, _) =>
       connections
         .getConnectionByToken(new TokenString(request.token))
         .map(maybeConnection => connector_api.GetConnectionByTokenResponse(maybeConnection.map(_.toProto)))
@@ -84,7 +84,7 @@ class ConnectorService(
       request: connector_api.GetConnectionsPaginatedRequest
   ): Future[connector_api.GetConnectionsPaginatedResponse] =
     auth[ConnectionsPaginatedRequest]("getConnectionsPaginated", request) {
-      (participantId, connectionsPaginatedRequest) =>
+      (participantId, _, connectionsPaginatedRequest) =>
         connections
           .getConnectionsPaginated(
             participantId,
@@ -201,7 +201,7 @@ class ConnectorService(
   override def revokeConnection(
       request: connector_api.RevokeConnectionRequest
   ): Future[connector_api.RevokeConnectionResponse] =
-    auth[RevokeConnectionRequest]("revokeConnection", request) { (participantId, revokeConnectionRequest) =>
+    auth[RevokeConnectionRequest]("revokeConnection", request) { (participantId, _, revokeConnectionRequest) =>
       connections
         .revokeConnection(participantId, revokeConnectionRequest.connectionId)
         .run(TraceId.generateYOLO)
@@ -252,7 +252,7 @@ class ConnectorService(
   override def generateConnectionToken(
       request: connector_api.GenerateConnectionTokenRequest
   ): Future[connector_api.GenerateConnectionTokenResponse] =
-    unitAuth("generateConnectionToken", request) { (participantId, _) =>
+    unitAuth("generateConnectionToken", request) { (participantId, _, _) =>
       connections
         .generateTokens(participantId, if (request.count == 0) 1 else request.count)
         .run(TraceId.generateYOLO)
@@ -268,7 +268,7 @@ class ConnectorService(
   override def getMessagesPaginated(
       request: connector_api.GetMessagesPaginatedRequest
   ): Future[connector_api.GetMessagesPaginatedResponse] = {
-    auth[MessagesPaginatedRequest]("getMessagesPaginated", request) { (participantId, messagesPaginatedRequest) =>
+    auth[MessagesPaginatedRequest]("getMessagesPaginated", request) { (participantId, _, messagesPaginatedRequest) =>
       messages
         .getMessagesPaginated(
           participantId,
@@ -300,7 +300,7 @@ class ConnectorService(
         }
     }
 
-    auth[GetMessageStreamRequest]("getMessageStream", request) { (participantId, getMessageStreamRequest) =>
+    auth[GetMessageStreamRequest]("getMessageStream", request) { (participantId, _, getMessageStreamRequest) =>
       FutureEither.right(streamMessages(participantId, getMessageStreamRequest.lastSeenMessageId))
     }
     ()
@@ -310,7 +310,7 @@ class ConnectorService(
       request: connector_api.GetMessagesForConnectionRequest
   ): Future[connector_api.GetMessagesForConnectionResponse] =
     auth[GetMessagesForConnectionRequest]("getMessagesForConnection", request) {
-      (participantId, getMessagesForConnectionRequest) =>
+      (participantId, _, getMessagesForConnectionRequest) =>
         messages
           .getConnectionMessages(participantId, getMessagesForConnectionRequest.connectionId)
           .map(msgs => connector_api.GetMessagesForConnectionResponse(msgs.map(_.toProto)))
@@ -338,7 +338,7 @@ class ConnectorService(
       )
 
     auth[GetConnectionCommunicationKeysRequest]("getConnectionCommunicationKeys", request) {
-      (participantId, getConnectionCommunicationKeysRequest) =>
+      (participantId, _, getConnectionCommunicationKeysRequest) =>
         connections
           .getConnectionCommunicationKeys(getConnectionCommunicationKeysRequest.connectionId, participantId)
           .run(TraceId.generateYOLO)
@@ -357,7 +357,7 @@ class ConnectorService(
     * Connection closed (FAILED_PRECONDITION)
     */
   override def sendMessage(request: connector_api.SendMessageRequest): Future[connector_api.SendMessageResponse] =
-    auth[SendMessageRequest]("sendMessage", request) { (participantId, sendMessageRequest) =>
+    auth[SendMessageRequest]("sendMessage", request) { (participantId, _, sendMessageRequest) =>
       messages
         .insertMessage(
           sender = participantId,
@@ -384,7 +384,7 @@ class ConnectorService(
   override def getCurrentUser(
       request: connector_api.GetCurrentUserRequest
   ): Future[connector_api.GetCurrentUserResponse] =
-    unitAuth("getCurrentUser", request) { (participantId, _) =>
+    unitAuth("getCurrentUser", request) { (participantId, _, _) =>
       participantsRepository
         .findBy(participantId)
         .run(TraceId.generateYOLO)
@@ -410,7 +410,7 @@ class ConnectorService(
   override def updateParticipantProfile(
       request: UpdateProfileRequest
   ): Future[UpdateProfileResponse] =
-    auth[UpdateParticipantProfile]("updateParticipantProfile", request) { (participantId, updateProfile) =>
+    auth[UpdateParticipantProfile]("updateParticipantProfile", request) { (participantId, _, updateProfile) =>
       participantsRepository
         .updateParticipantProfileBy(participantId, updateProfile)
         .run(TraceId.generateYOLO)
@@ -429,7 +429,7 @@ class ConnectorService(
     * Connection closed (FAILED_PRECONDITION)
     */
   override def sendMessages(request: connector_api.SendMessagesRequest): Future[connector_api.SendMessagesResponse] =
-    auth[SendMessagesRequest]("sendMessages", request) { (participantId, query) =>
+    auth[SendMessagesRequest]("sendMessages", request) { (participantId, _, query) =>
       query.messages.fold(
         FutureEither.right[ConnectorError, connector_api.SendMessagesResponse](connector_api.SendMessagesResponse())
       ) { messagesToInsert =>

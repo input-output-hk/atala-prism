@@ -1,7 +1,6 @@
 package io.iohk.atala.prism.management.console.grpc
 
 import io.iohk.atala.prism.auth.AuthAndMiddlewareSupport
-import io.iohk.atala.prism.logging.TraceId
 import io.iohk.atala.prism.logging.TraceId.IOWithTraceIdContext
 import io.iohk.atala.prism.management.console.ManagementConsoleAuthenticator
 import io.iohk.atala.prism.management.console.errors.{ManagementConsoleError, ManagementConsoleErrorSupport}
@@ -28,11 +27,11 @@ class ContactsGrpcService(
   val logger: Logger = LoggerFactory.getLogger(this.getClass)
 
   override def createContact(request: CreateContactRequest): Future[CreateContactResponse] =
-    auth[CreateContact]("createContact", request) { (participantId, query) =>
+    auth[CreateContact]("createContact", request) { (participantId, traceId, query) =>
       val maybeGroupName = InstitutionGroup.Name.optional(request.groupName)
       contactsIntegrationService
         .createContact(participantId, query, maybeGroupName)
-        .run(TraceId.generateYOLO)
+        .run(traceId)
         .unsafeToFuture()
         .toFutureEither
         .map(c => ProtoCodecs.toContactProto(c.contact, c.connection))
@@ -40,10 +39,10 @@ class ContactsGrpcService(
     }
 
   override def getContacts(request: GetContactsRequest): Future[GetContactsResponse] =
-    auth[Contact.PaginatedQuery]("getContacts", request) { (participantId, query) =>
+    auth[Contact.PaginatedQuery]("getContacts", request) { (participantId, traceId, query) =>
       contactsIntegrationService
         .getContacts(participantId, query)
-        .run(TraceId.generateYOLO)
+        .run(traceId)
         .unsafeToFuture()
         .lift
         .map { result =>
@@ -65,20 +64,20 @@ class ContactsGrpcService(
     }
 
   override def getContact(request: GetContactRequest): Future[GetContactResponse] =
-    auth[GetContact]("getContact", request) { (participantId, query) =>
+    auth[GetContact]("getContact", request) { (participantId, traceId, query) =>
       contactsIntegrationService
         .getContact(participantId, query.contactId)
-        .run(TraceId.generateYOLO)
+        .run(traceId)
         .map(ProtoCodecs.toGetContactResponse)
         .unsafeToFuture()
         .lift
     }
 
   override def updateContact(request: UpdateContactRequest): Future[UpdateContactResponse] =
-    auth[UpdateContact]("updateContact", request) { (participantId, query) =>
+    auth[UpdateContact]("updateContact", request) { (participantId, traceId, query) =>
       contactsIntegrationService
         .updateContact(participantId, query)
-        .run(TraceId.generateYOLO)
+        .run(traceId)
         .unsafeToFuture()
         .map { _ =>
           console_api.UpdateContactResponse()
@@ -92,10 +91,10 @@ class ContactsGrpcService(
   ): Future[GenerateConnectionTokenForContactResponse] = ???
 
   override def createContacts(request: CreateContactsRequest): Future[CreateContactsResponse] =
-    auth[CreateContact.Batch]("createContacts", request) { (participantId, query) =>
+    auth[CreateContact.Batch]("createContacts", request) { (participantId, traceId, query) =>
       contactsIntegrationService
         .createContacts(participantId, query)
-        .run(TraceId.generateYOLO)
+        .run(traceId)
         .unsafeToFuture()
         .toFutureEither
         .map { numberOfContacts =>
@@ -104,10 +103,10 @@ class ContactsGrpcService(
     }
 
   override def deleteContact(request: DeleteContactRequest): Future[DeleteContactResponse] =
-    auth[DeleteContact]("deleteContact", request) { (participantId, query) =>
+    auth[DeleteContact]("deleteContact", request) { (participantId, traceId, query) =>
       contactsIntegrationService
         .deleteContact(participantId, query.contactId, request.deleteCredentials)
-        .run(TraceId.generateYOLO)
+        .run(traceId)
         .unsafeToFuture()
         .toFutureEither
         .map { _ =>
