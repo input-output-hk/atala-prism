@@ -63,7 +63,8 @@ private[repositories] final class MessagesRepositoryLogs[S[_], F[_]: ServiceLogg
         .onError(errorCause"encountered an error while getting messages paginated" (_))
 
   // Won't be called since not mid
-  override def getMessageStream(recipientId: ParticipantId, lastSeenMessageId: Option[MessageId]): S[Message] = ???
+  override def getMessageStream(recipientId: ParticipantId, lastSeenMessageId: Option[MessageId]): S[Message] =
+    this.getMessageStream(recipientId, lastSeenMessageId)
 
   override def getConnectionMessages(recipientId: ParticipantId, connectionId: ConnectionId): Mid[F, List[Message]] =
     in =>
