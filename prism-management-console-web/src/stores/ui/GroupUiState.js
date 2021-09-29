@@ -1,4 +1,4 @@
-import { makeAutoObservable, observable, computed, action } from 'mobx';
+import { makeAutoObservable, observable, computed, action, runInAction } from 'mobx';
 import _ from 'lodash';
 import { filterByExactMatch, filterByInclusion } from '../../helpers/filterHelpers';
 import {
@@ -76,7 +76,9 @@ export default class GroupUiState {
   triggerBackendSearch = _.debounce(async () => {
     const { fetchSearchResults } = this.rootStore.prismStore.groupStore;
     await fetchSearchResults();
-    this.isSearching = false;
+    runInAction(() => {
+      this.isSearching = false;
+    })
   }, SEARCH_DELAY_MS);
 
   applyFilters = templates =>

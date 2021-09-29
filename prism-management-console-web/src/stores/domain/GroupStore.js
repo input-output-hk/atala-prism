@@ -24,10 +24,10 @@ export default class GroupStore {
       isLoadingFirstPage: computed,
       hasMore: computed,
       resetGroups: action,
-      fetchGroupsNextPage: action,
-      fetchSearchResultsNextPage: action,
-      fetchGroups: flow.bound,
-      fetchSearchResults: false,
+      fetchGroupsNextPage: flow.bound,
+      fetchSearchResults: flow.bound,
+      fetchSearchResultsNextPage: flow.bound,
+      fetchGroups: false,
       rootStore: false
     });
   }
@@ -49,18 +49,37 @@ export default class GroupStore {
     this.numberOfGroups = 0;
   };
 
-  fetchGroupsNextPage = async () => {
+  *fetchGroupsNextPage() {
     this.isLoading = true;
-    const { groupsList, totalNumberOfGroups } = await this.fetchGroups({
+    const { groupsList, totalNumberOfGroups } = yield this.fetchGroups({
       offset: this.groups.length
     });
-
     this.groups = this.groups.concat(groupsList);
     this.numberOfGroups = totalNumberOfGroups;
     this.isLoading = false;
+  }
+
+  *fetchSearchResults() {
+    const { hasFiltersApplied } = this.rootStore.uiState.groupUiState;
+    if (!hasFiltersApplied) return;
+    this.searchResults = [];
+    this.numberOfResults = 0;
+    const { groupsList, totalNumberOfGroups } = yield this.fetchGroups({ offset: 0 });
+    this.searchResults = groupsList;
+    this.numberOfResults = totalNumberOfGroups;
+    return this.searchResults;
   };
 
-  *fetchGroups({ offset = 0 }) {
+  *fetchSearchResultsNextPage() {
+    if (!this.hasMoreResults) return;
+    const { groupsList = [], totalNumberOfGroups } = yield this.fetchGroups({
+      offset: this.searchResults.length
+    });
+    this.numberOfResults = totalNumberOfGroups;
+    this.searchResults = this.searchResults.concat(groupsList);
+  };
+
+  fetchGroups = async ({ offset = 0 }) => {
     try {
       const {
         nameFilter,
@@ -70,7 +89,7 @@ export default class GroupStore {
       } = this.rootStore.uiState.groupUiState;
       const [createdAfter, createdBefore] = dateFilter;
 
-      const response = yield this.api.groupsManager.getGroups({
+      const response = await this.api.groupsManager.getGroups({
         offset,
         pageSize: GROUP_PAGE_SIZE,
         sort: { field: sortingBy, direction: sortDirection },
@@ -91,21 +110,4 @@ export default class GroupStore {
       this.rootStore.handleTransportLayerError(error, metadata);
     }
   }
-
-  fetchSearchResults = async () => {
-    this.searchResults = [];
-    this.numberOfResults = 0;
-    const { groupsList, totalNumberOfGroups } = await this.fetchGroups({ offset: 0 });
-    this.searchResults = groupsList;
-    this.numberOfResults = totalNumberOfGroups;
-    return this.searchResults;
-  };
-
-  fetchSearchResultsNextPage = async () => {
-    if (!this.hasMoreResults) return;
-    const { groupsList = [] } = await this.fetchGroups({
-      offset: this.searchResults.length
-    });
-    this.searchResults = this.searchResults.concat(groupsList);
-  };
 }
