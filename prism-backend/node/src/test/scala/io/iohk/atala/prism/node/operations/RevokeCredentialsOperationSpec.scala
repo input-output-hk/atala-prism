@@ -1,6 +1,5 @@
 package io.iohk.atala.prism.node.operations
 
-import cats.effect.IO
 import com.google.protobuf.ByteString
 import doobie.implicits._
 import io.iohk.atala.prism.AtalaWithPostgresSpec
@@ -10,13 +9,11 @@ import io.iohk.atala.prism.protos.models.TimestampInfo
 import io.iohk.atala.prism.models.{Ledger, TransactionId}
 import io.iohk.atala.prism.node.DataPreparation.dummyLedgerData
 import io.iohk.atala.prism.node.models.nodeState.LedgerData
-import io.iohk.atala.prism.node.repositories.DIDDataRepository
 import io.iohk.atala.prism.node.repositories.daos.CredentialBatchesDAO
 import io.iohk.atala.prism.protos.node_models
 import org.scalatest.EitherValues._
 import org.scalatest.Inside._
 import org.scalatest.OptionValues._
-
 import java.time.Instant
 
 object RevokeCredentialsOperationSpec {
@@ -70,8 +67,6 @@ object RevokeCredentialsOperationSpec {
 class RevokeCredentialsOperationSpec extends AtalaWithPostgresSpec {
 
   import RevokeCredentialsOperationSpec._
-
-  lazy val didDataRepository: DIDDataRepository[IO] = DIDDataRepository(database)
 
   "RevokeCredentialsOperation.parse" should {
     "parse valid RevokeCredentials AtalaOperation to revoke a full batch" in {

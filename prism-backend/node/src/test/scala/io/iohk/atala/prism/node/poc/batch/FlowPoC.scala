@@ -50,7 +50,7 @@ class FlowPoC extends AtalaWithPostgresSpec with BeforeAndAfterEach {
   protected var serverHandle: Server = _
   protected var channelHandle: ManagedChannel = _
   protected var nodeServiceStub: node_api.NodeServiceGrpc.NodeServiceBlockingStub = _
-  protected var didDataRepository: DIDDataRepository[IO] = _
+  protected var didDataRepository: DIDDataRepository[IOWithTraceIdContext] = _
   protected var atalaOperationsRepository: AtalaOperationsRepository[IOWithTraceIdContext] = _
   protected var credentialBatchesRepository: CredentialBatchesRepository[IOWithTraceIdContext] = _
   protected var atalaReferenceLedger: InMemoryLedgerService = _
@@ -65,7 +65,7 @@ class FlowPoC extends AtalaWithPostgresSpec with BeforeAndAfterEach {
   override def beforeEach(): Unit = {
     super.beforeEach()
 
-    didDataRepository = DIDDataRepository(database)
+    didDataRepository = DIDDataRepository.unsafe(dbLiftedToTraceIdIO, flowPocTestLogs)
     credentialBatchesRepository = CredentialBatchesRepository.unsafe(dbLiftedToTraceIdIO, flowPocTestLogs)
 
     objectManagementServicePromise = Promise()

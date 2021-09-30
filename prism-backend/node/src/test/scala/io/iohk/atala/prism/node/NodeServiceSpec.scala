@@ -28,6 +28,7 @@ import io.iohk.atala.prism.node.services.{
   ObjectManagementService,
   SubmissionSchedulingService
 }
+import io.iohk.atala.prism.utils.IOUtils._
 import io.iohk.atala.prism.protos.node_api._
 import io.iohk.atala.prism.protos.{common_models, node_api, node_models}
 import io.iohk.atala.prism.utils.syntax._
@@ -39,6 +40,7 @@ import tofu.syntax.monadic._
 import java.time.Instant
 import java.util.concurrent.TimeUnit
 import io.iohk.atala.prism.protos.node_models.OperationOutput
+import tofu.logging.Logs
 
 import scala.concurrent.Future
 
@@ -52,6 +54,7 @@ class NodeServiceSpec
   protected var channelHandle: ManagedChannel = _
   protected var service: node_api.NodeServiceGrpc.NodeServiceBlockingStub = _
 
+  private val logs = Logs.withContext[IO, IOWithTraceIdContext]
   private val objectManagementService = mock[ObjectManagementService]
   private val credentialBatchesRepository = mock[CredentialBatchesRepository[IOWithTraceIdContext]]
   private val submissionSchedulingService = mock[SubmissionSchedulingService]
@@ -59,7 +62,7 @@ class NodeServiceSpec
   override def beforeEach(): Unit = {
     super.beforeEach()
 
-    val didDataRepository = DIDDataRepository(database)
+    val didDataRepository = DIDDataRepository.unsafe(dbLiftedToTraceIdIO, logs)
 
     serverName = InProcessServerBuilder.generateName()
 
