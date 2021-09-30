@@ -52,6 +52,15 @@ class SignedRequestsAuthenticatorSpec extends AnyWordSpec {
       }
       result.futureValue must be(response)
     }
+
+    "parse trace id from header" in {
+      val externalTraceId = TraceId("exactlyThisTraceId123")
+      val authenticator = buildAuthenticator(getHeader = () => None, getTraceIdFromHeader = () => externalTraceId)
+      val result = authenticator.public("test", request) { traceId =>
+        Future.successful(traceId)
+      }
+      result.futureValue must be(externalTraceId)
+    }
   }
 
   "authenticated" should {
