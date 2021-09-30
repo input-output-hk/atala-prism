@@ -22,7 +22,6 @@ import io.iohk.atala.prism.connector.services.{
 }
 import io.iohk.atala.prism.crypto.EC.{INSTANCE => EC}
 import io.iohk.atala.prism.crypto.keys.ECPublicKey
-import io.iohk.atala.prism.logging.TraceId
 import io.iohk.atala.prism.logging.TraceId.IOWithTraceIdContext
 import io.iohk.atala.prism.metrics.RequestMeasureUtil.measureRequestFuture
 import io.iohk.atala.prism.models.ParticipantId
@@ -67,11 +66,11 @@ class ConnectorService(
   override def getConnectionByToken(
       request: connector_api.GetConnectionByTokenRequest
   ): Future[connector_api.GetConnectionByTokenResponse] =
-    unitAuth("getConnectionByToken", request) { (_, _, _) =>
+    unitAuth("getConnectionByToken", request) { (_, traceId, _) =>
       connections
         .getConnectionByToken(new TokenString(request.token))
         .map(maybeConnection => connector_api.GetConnectionByTokenResponse(maybeConnection.map(_.toProto)))
-        .run(TraceId.generateYOLO)
+        .run(traceId)
         .unsafeToFuture()
         .lift[ConnectorError]
     }
@@ -84,14 +83,14 @@ class ConnectorService(
       request: connector_api.GetConnectionsPaginatedRequest
   ): Future[connector_api.GetConnectionsPaginatedResponse] =
     auth[ConnectionsPaginatedRequest]("getConnectionsPaginated", request) {
-      (participantId, _, connectionsPaginatedRequest) =>
+      (participantId, traceId, connectionsPaginatedRequest) =>
         connections
           .getConnectionsPaginated(
             participantId,
             connectionsPaginatedRequest.limit,
             connectionsPaginatedRequest.lastSeenConnectionId
           )
-          .run(TraceId.generateYOLO)
+          .run(traceId)
           .unsafeToFuture()
           .toFutureEither
           .map(conns => connector_api.GetConnectionsPaginatedResponse(conns.map(_.toProto)))
@@ -107,10 +106,10 @@ class ConnectorService(
   override def getConnectionTokenInfo(
       request: connector_api.GetConnectionTokenInfoRequest
   ): Future[connector_api.GetConnectionTokenInfoResponse] = {
-    unitPublic("getConnectionTokenInfo", request) { _ =>
+    unitPublic("getConnectionTokenInfo", request) { (traceId, _) =>
       connections
         .getTokenInfo(new model.TokenString(request.token))
-        .run(TraceId.generateYOLO)
+        .run(traceId)
         .unsafeToFuture()
         .toFutureEither
         .map { participantInfo =>
@@ -173,13 +172,13 @@ class ConnectorService(
           } yield ()
       }
 
-    public[AddConnectionRequest]("addConnectionFromToken", request) { addConnectionRequest =>
+    public[AddConnectionRequest]("addConnectionFromToken", request) { (traceId, addConnectionRequest) =>
       val result = for {
         _ <- verifyRequestSignature(addConnectionRequest)
         connectionCreationResult <-
           connections
             .addConnectionFromToken(addConnectionRequest.token, addConnectionRequest.didOrPublicKey)
-            .run(TraceId.generateYOLO)
+            .run(traceId)
             .unsafeToFuture()
             .toFutureEither
       } yield connectionCreationResult
@@ -201,10 +200,10 @@ class ConnectorService(
   override def revokeConnection(
       request: connector_api.RevokeConnectionRequest
   ): Future[connector_api.RevokeConnectionResponse] =
-    auth[RevokeConnectionRequest]("revokeConnection", request) { (participantId, _, revokeConnectionRequest) =>
+    auth[RevokeConnectionRequest]("revokeConnection", request) { (participantId, traceId, revokeConnectionRequest) =>
       connections
         .revokeConnection(participantId, revokeConnectionRequest.connectionId)
-        .run(TraceId.generateYOLO)
+        .run(traceId)
         .unsafeToFuture()
         .toFutureEither
         .as(connector_api.RevokeConnectionResponse())
@@ -220,7 +219,7 @@ class ConnectorService(
     * DID Document does not match DID (INVALID_ARGUMENT)
     */
   override def registerDID(request: connector_api.RegisterDIDRequest): Future[connector_api.RegisterDIDResponse] =
-    public[RegisterDIDRequest]("registerDID", request) { registerDidRequest =>
+    public[RegisterDIDRequest]("registerDID", request) { (traceId, registerDidRequest) =>
       registrationService
         .register(
           registerDidRequest.tpe,
@@ -228,7 +227,7 @@ class ConnectorService(
           registerDidRequest.logo,
           registerDidRequest.didOrOperation
         )
-        .run(TraceId.generateYOLO)
+        .run(traceId)
         .unsafeToFuture()
         .toFutureEither
         .map { registerResult =>
@@ -252,10 +251,10 @@ class ConnectorService(
   override def generateConnectionToken(
       request: connector_api.GenerateConnectionTokenRequest
   ): Future[connector_api.GenerateConnectionTokenResponse] =
-    unitAuth("generateConnectionToken", request) { (participantId, _, _) =>
+    unitAuth("generateConnectionToken", request) { (participantId, traceId, _) =>
       connections
         .generateTokens(participantId, if (request.count == 0) 1 else request.count)
-        .run(TraceId.generateYOLO)
+        .run(traceId)
         .unsafeToFuture()
         .lift
         .map(tokenStrings => connector_api.GenerateConnectionTokenResponse(tokenStrings.map(_.token)))
@@ -338,10 +337,10 @@ class ConnectorService(
       )
 
     auth[GetConnectionCommunicationKeysRequest]("getConnectionCommunicationKeys", request) {
-      (participantId, _, getConnectionCommunicationKeysRequest) =>
+      (participantId, traceId, getConnectionCommunicationKeysRequest) =>
         connections
           .getConnectionCommunicationKeys(getConnectionCommunicationKeysRequest.connectionId, participantId)
-          .run(TraceId.generateYOLO)
+          .run(traceId)
           .unsafeToFuture()
           .toFutureEither
           .map(toResponse)
@@ -384,10 +383,10 @@ class ConnectorService(
   override def getCurrentUser(
       request: connector_api.GetCurrentUserRequest
   ): Future[connector_api.GetCurrentUserResponse] =
-    unitAuth("getCurrentUser", request) { (participantId, _, _) =>
+    unitAuth("getCurrentUser", request) { (participantId, traceId, _) =>
       participantsRepository
         .findBy(participantId)
-        .run(TraceId.generateYOLO)
+        .run(traceId)
         .unsafeToFuture()
         .toFutureEither
         .map { info =>
@@ -410,10 +409,10 @@ class ConnectorService(
   override def updateParticipantProfile(
       request: UpdateProfileRequest
   ): Future[UpdateProfileResponse] =
-    auth[UpdateParticipantProfile]("updateParticipantProfile", request) { (participantId, _, updateProfile) =>
+    auth[UpdateParticipantProfile]("updateParticipantProfile", request) { (participantId, traceId, updateProfile) =>
       participantsRepository
         .updateParticipantProfileBy(participantId, updateProfile)
-        .run(TraceId.generateYOLO)
+        .run(traceId)
         .unsafeToFuture()
         .as(connector_api.UpdateProfileResponse())
         .map(_.asRight)

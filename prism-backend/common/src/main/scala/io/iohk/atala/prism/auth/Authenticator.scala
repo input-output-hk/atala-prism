@@ -38,7 +38,7 @@ trait Authenticator[Id] {
   def public[Request <: GeneratedMessage, Response](
       methodName: String,
       request: Request
-  )(f: => Future[Response])(implicit ec: ExecutionContext): Future[Response]
+  )(f: TraceId => Future[Response])(implicit ec: ExecutionContext): Future[Response]
 }
 
 trait AuthenticatorWithGrpcHeaderParser[Id] extends Authenticator[Id] {
@@ -97,22 +97,23 @@ abstract class SignedRequestsAuthenticatorBase[Id](
 
   private def withLogging[Request <: GeneratedMessage, Response](
       methodName: String,
-      request: Request
+      request: Request,
+      traceId: TraceId
   )(
       run: => Future[Response]
   )(implicit ec: ExecutionContext): Future[Response] =
     run.andThen {
       case Success(response: GeneratedMessage) =>
         logger.info(
-          s"$methodName, request = ${request.toProtoString}, response = ${response.toProtoString}"
+          s"$traceId: $methodName, request = ${request.toProtoString}, response = ${response.toProtoString}"
         )
       case Success(response) =>
         logger.info(
-          s"$methodName, request = ${request.toProtoString}, response = $response"
+          s"$traceId: $methodName, request = ${request.toProtoString}, response = $response"
         )
       case Failure(ex) =>
         logger.error(
-          s"$methodName, request = ${request.toProtoString}",
+          s"$traceId: $methodName, request = ${request.toProtoString}",
           ex
         )
     }
@@ -285,8 +286,11 @@ abstract class SignedRequestsAuthenticatorBase[Id](
   override def public[Request <: GeneratedMessage, Response](
       methodName: String,
       request: Request
-  )(f: => Future[Response])(implicit ec: ExecutionContext): Future[Response] =
-    withLogging(methodName, request)(f)
+  )(f: TraceId => Future[Response])(implicit ec: ExecutionContext): Future[Response] = {
+    val ctx = Context.current()
+    val traceId = grpcAuthenticationHeaderParser.getTraceId(ctx)
+    withLogging(methodName, request, traceId)(f(traceId))
+  }
 
   override def whitelistedDid[Request <: GeneratedMessage, Response](
       whitelist: Set[DID],

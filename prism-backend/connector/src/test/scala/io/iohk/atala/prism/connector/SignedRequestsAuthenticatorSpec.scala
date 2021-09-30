@@ -47,7 +47,7 @@ class SignedRequestsAuthenticatorSpec extends AnyWordSpec {
   "public" should {
     "accept the request without authentication" in {
       val authenticator = buildAuthenticator(getHeader = () => None)
-      val result = authenticator.public("test", request) {
+      val result = authenticator.public("test", request) { _ =>
         Future.successful(response)
       }
       result.futureValue must be(response)
