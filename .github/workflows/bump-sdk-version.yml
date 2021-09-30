@@ -3,6 +3,9 @@
 on:
   repository_dispatch:
     types: [bump-sdk-version]
+  push:
+    branches:
+      - bump-sdk-version-workflow*
 
 jobs:
   create-pull-request:
