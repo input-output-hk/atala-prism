@@ -1,0 +1,137 @@
+/**
+ * Description: Model for e2e based on ECIES
+ * Date: 20210922
+ * Authors: Jesus Diaz Vico, IOHK Atala and Research teams.
+ */
+
+theory qrdid
+begin
+
+/*
+ The protocol we want to model is, in Alice and Bob notation, as follows:
+
+ (I stands for Issuer, H for Holder, C for connector)
+ ( => is secure channel; -> is normal channel )
+
+ 1. I => H: pk_iss, code // Shared via QR, i.e., secure channel
+ 2. H -> C: aenc(<pk_hol, code>, pk_iss) // pk_iss = g^v, pk_hol = g^u
+ 3. C -> I: aenc(<pk_hol, code>, pk_iss)
+
+ After this, I should trust that H's public key (~ DID Document) is indeed
+ pk_hol.
+
+*/
+
+builtins: asymmetric-encryption, diffie-hellman
+
+/* Rule for sending a message through a secure (confidential & authenticated) 
+   channel. Used here for QR code sharing. */
+rule ChanOut_S:
+        [ Out_S($A,$B,x) ]
+      --[ ChanOut_S($A,$B,x) ]->
+        [ !Sec($A,$B,x) ]
+
+/* Rule for sending a message from a secure (confidential & authenticated) 
+   channel. Used here for QR code sharing. */
+rule ChanIn_S:
+        [ !Sec($A,$B,x) ]
+      --[ ChanIn_S($A,$B,x) ]->
+        [ In_S($A,$B,x) ]
+
+/* Rule for generating keypairs. */
+rule Register_pk:
+  [ Fr(~x) ] 
+  --> 
+  [ !Pk($A, pk(~x)),
+    !Ltk($A, ~x) ]
+
+/* Rule for fetching an existing public key. */
+rule Get_pk:
+  [ !Pk(A, pk) ] 
+  --> 
+  [ Out(pk) ]
+
+/* Rule for compromising a private key. */
+rule Reveal_ltk:
+    [ !Ltk(A, ltk) ]
+  --[ LtkReveal(A) ]->
+    [ Out(ltk) ]
+
+/* The issuer shares the QR code via the secure channel. */
+rule Issuer_1:
+     [ Fr(~code),
+       !Ltk($I, ~lkI)]
+     --[ Step('1'),
+         Issuer($I),
+         Send($I, <~code, pk(~lkI)>) ]->
+     [ Out_S($I, $H, <~code, pk(~lkI)>),
+       State_I($I, $H, ~code, ~lkI) ]
+
+/* The holder receives the QR code through the secure channel, and responds. */
+rule Holder_2:
+     [ In_S($I, $H, <~code, pkI>),
+       !Ltk($H, ~lkH) ]
+     --[ Step('2'),
+	 Recv($H, <~code, pkI>),
+	 Honest($H),
+	 Send($H, <~code, pk(~lkH)>) ]->
+     [ Out(aenc(<~code, pk(~lkH)>, pkI)) ]
+
+/* The issuer receives back encrypted the QR code, via an insecure channel, 
+   plus the Holder's public key. */
+rule Issuer_3:
+     let pkH = snd(adec(cIn, ~lkI))
+         codep = fst(adec(cIn, ~lkI))
+     in
+     [ State_I($I, $H, ~code, ~lkI),
+       In(cIn) 	   ]
+     --[ Step('3'),
+         Secret($I, $H, ~code),
+         Recv($I, <~code, pkH>),
+         Eq(codep, ~code) ]->
+     [ ]
+
+restriction Equality:
+	    "All x y #i. Eq(x,y) @i ==> x = y"
+
+/* Safety check */
+lemma executable:
+      exists-trace
+	"Ex A B m #i #j. Send(A,m) @i & Step('2') @i &
+	      	    	 Recv(B,m) @j & Step('3') @j"
+
+/*
+ * Code secrecy
+ * It cannot be that an issuer has shared a code with an honest holder, and
+ * the adversary knows the code, without having corrupted the issuer.
+ */
+lemma code_secrecy:
+      /* It cannot be that an */
+      "not(
+	/* issuer has shared a code with */
+	Ex I H c #i #j #k. Secret(I, H, c) @ #i
+	/* an honest holder */
+	& Honest(H) @j
+	/* and the adversary knows the code */
+	& K(c) @ #k
+	/* without having corrupted the issuer */
+	& not(Ex #r. LtkReveal(I) @ #r)
+      )"
+
+/*
+ * Holder PK authenticity
+ * It cannot be that an issuer has shared a code with an honest holder,
+ * the holder sends back the code along with its public key, the issuer
+ * receives the same code, but different public key.
+ */
+lemma pkH_auth:
+      /* It cannot be that */
+      "not(
+        /* an issuer has shared a code with an honest holder */
+	Ex I H c k kp #i #j #l. Secret(I, H, c) @ #i & Honest(H) @ #j
+	/* the holder sends back the code along with its public key */
+	& Send(H, <c, k>) @ #j
+	/* the issuer receives the same code, but different public key */
+	& Recv(I, <c, kp>) @ #l
+      )"
+end
