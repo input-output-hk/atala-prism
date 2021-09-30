@@ -31,5 +31,5 @@ private[repositories] final class KeyValuesRepositoryLogs[F[_]: ServiceLogging[
     in =>
       info"getting by key $key" *> in
         .flatTap(_ => info"getting by key - successfully done")
-        .onError(errorCause"Encountered an error while ugetting by key" (_))
+        .onError(errorCause"Encountered an error while getting by key" (_))
 }
