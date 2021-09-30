@@ -1,0 +1,58 @@
+# `on repository_dispatch` means that the job gets triggered by external events.
+# In our case it gets triggered by master pushes to PRISM SDK repository.
+on:
+  repository_dispatch:
+    types: [bump-sdk-version]
+
+jobs:
+  create-pull-request:
+    runs-on: ubuntu-20.04
+
+    steps:
+      - name: Checkout the repo
+        uses: actions/checkout@v2
+
+      - name: Fetch the latest SDK version
+        uses: actions/github-script@v5
+        id: sdk-version
+        with:
+          github-token: ${{ secrets.ATALA_GITHUB_TOKEN }}
+          script: |
+            const query = `query($owner:String!, $name:String!, $packageName:String!) {
+              repository(owner:$owner, name:$name) {
+                packages(first:1, names: [$packageName]) {
+                  nodes {
+                    id
+                    versions(first:1) {
+                      nodes {
+                        id
+                        version
+                      }
+                    }
+                  }
+                }
+              }
+            }`;
+            const variables = {
+              owner: 'input-output-hk',
+              name: 'atala-prism-sdk',
+              packageName: 'io.iohk.atala.prism-api-jvm'
+            }
+            const result = await github.graphql(query, variables)
+
+            # Access the latest package version and trim double quotes from it
+            return result.repository.packages.nodes[0].versions.nodes[0].version.slice(1, -1)
+
+      - name: Upgrade SDK version
+        run: sed -i -E "s/val prismSdk = \"[^\"]+\"/val prismSdk = \"$SDK_VERSION\"/g" prism-backend/project/Dependencies.scala
+        env:
+          SDK_VERSION: ${{ steps.sdk-version.outputs.result }}
+
+      - name: Create prism-backend pull request
+        uses: peter-evans/create-pull-request@v3
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          branch: bump-sdk-version-${{ steps.sdk-version.outputs.result }}
+          delete-branch: true
+          commit-message: Bump SDK version to ${{ steps.sdk-version.outputs.result }}
+          title: Bump SDK version to ${{ steps.sdk-version.outputs.result }}
