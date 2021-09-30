@@ -1,5 +1,6 @@
 /**
- * Description: Model for e2e based on ECIES
+ * Description: Model for one-time authenticated exchange based on a QR code
+ * sent via a secure channel.
  * Date: 20210922
  * Authors: Jesus Diaz Vico, IOHK Atala and Research teams.
  */
