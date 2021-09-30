@@ -17,6 +17,8 @@ object TraceId {
 
   def liftToIOWithTraceId: IO ~> IOWithTraceIdContext = λ[IO ~> IOWithTraceIdContext](i => ReaderT.liftF(i))
 
+  def ioWithTraceIdToIO: IOWithTraceIdContext ~> IO = λ[IOWithTraceIdContext ~> IO](io => io.run(TraceId.generateYOLO))
+
   def generateYOLO: TraceId = TraceId(UUID.randomUUID().toString)
 
   implicit lazy val myctxLoggableCtxIO: LoggableContext[IOWithTraceIdContext] =

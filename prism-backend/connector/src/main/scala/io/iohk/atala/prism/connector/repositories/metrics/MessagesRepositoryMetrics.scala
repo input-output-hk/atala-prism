@@ -11,7 +11,7 @@ import io.iohk.atala.prism.metrics.{TimeMeasureMetric, TimeMeasureUtil}
 import io.iohk.atala.prism.models.ParticipantId
 import tofu.higherKind.Mid
 
-private[repositories] final class MessagesRepositoryMetrics[F[_]: TimeMeasureMetric, S[_]](implicit
+private[repositories] final class MessagesRepositoryMetrics[S[_], F[_]: TimeMeasureMetric](implicit
     br: Bracket[F, Throwable]
 ) extends MessagesRepository[S, Mid[F, *]] {
 

@@ -285,7 +285,9 @@ class ConnectorService(
   ): Unit = {
     def streamMessages(recipientId: ParticipantId, lastSeenMessageId: Option[MessageId]): Unit = {
       val existingMessageStream =
-        messages.getMessageStream(recipientId = recipientId, lastSeenMessageId = lastSeenMessageId)
+        messages
+          .getMessageStream(recipientId = recipientId, lastSeenMessageId = lastSeenMessageId)
+          .translate(TraceId.ioWithTraceIdToIO)
       val newMessageStream = messageNotificationService.stream(recipientId)
       (existingMessageStream ++ newMessageStream)
         .map(message => responseObserver.onNext(connector_api.GetMessageStreamResponse().withMessage(message.toProto)))

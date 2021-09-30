@@ -84,8 +84,8 @@ class ConnectorApp(executionContext: ExecutionContext) { self =>
     val node = NodeServiceGrpc.stub(nodeChannel)
 
     // connector repositories
-    val connectionsRepository = ConnectionsRepository.unsafe[IOWithTraceIdContext, IO](txTraceIdLifted, connectorLogs)
-    val messagesRepository = MessagesRepository(xa)
+    val connectionsRepository = ConnectionsRepository.unsafe(txTraceIdLifted, connectorLogs)
+    val messagesRepository = MessagesRepository.unsafe(txTraceIdLifted, connectorLogs)
     val requestNoncesRepository = RequestNoncesRepository(xa)
     val participantsRepository = ParticipantsRepository.unsafe[IOWithTraceIdContext, IO](txTraceIdLifted, connectorLogs)
 
