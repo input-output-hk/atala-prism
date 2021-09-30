@@ -3,6 +3,9 @@
 on:
   repository_dispatch:
     types: [bump-sdk-version]
+  push:
+    branches:
+      - bump-sdk-version-workflow*
 
 jobs:
   create-pull-request:
@@ -39,8 +42,6 @@ jobs:
               packageName: 'io.iohk.atala.prism-api-jvm'
             }
             const result = await github.graphql(query, variables)
-
-            # Access the latest package version and trim double quotes from it
             return result.repository.packages.nodes[0].versions.nodes[0].version.slice(1, -1)
 
       - name: Upgrade SDK version
