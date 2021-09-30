@@ -45,7 +45,8 @@ class SubmissionServiceSpec
     AtalaOperationsRepository.unsafe(dbLiftedToTraceIdIO, logs)
   private val atalaObjectsTransactionsRepository: AtalaObjectsTransactionsRepository[IOWithTraceIdContext] =
     AtalaObjectsTransactionsRepository.unsafe(dbLiftedToTraceIdIO, logs)
-  private val keyValuesRepository: KeyValuesRepository[IO] = KeyValuesRepository(database)
+  private val keyValuesRepository: KeyValuesRepository[IOWithTraceIdContext] =
+    KeyValuesRepository.unsafe(dbLiftedToTraceIdIO, logs)
   private val blockProcessing: BlockProcessingService = mock[BlockProcessingService]
 
   private implicit lazy val submissionService: SubmissionService =

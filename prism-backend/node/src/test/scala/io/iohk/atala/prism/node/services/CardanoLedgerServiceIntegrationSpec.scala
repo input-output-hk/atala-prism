@@ -3,6 +3,7 @@ package io.iohk.atala.prism.node.services
 import java.time.Instant
 import java.time.temporal.ChronoUnit
 
+import cats.effect.IO
 import com.typesafe.config.ConfigFactory
 import io.iohk.atala.prism.node.NodeConfig
 import io.iohk.atala.prism.node.cardano.CardanoClient
@@ -12,13 +13,17 @@ import io.iohk.atala.prism.node.services.CardanoLedgerService.CardanoNetwork
 import io.iohk.atala.prism.node.services.models.testing.TestAtalaObjectNotificationHandler
 import io.iohk.atala.prism.protos.node_internal
 import io.iohk.atala.prism.AtalaWithPostgresSpec
+import io.iohk.atala.prism.logging.TraceId.IOWithTraceIdContext
+import io.iohk.atala.prism.utils.IOUtils._
 import monix.execution.schedulers.TestScheduler
 import org.scalatest.OptionValues._
 import org.scalatest.concurrent.PatienceConfiguration.Timeout
+import tofu.logging.Logs
 
 import scala.concurrent.duration._
 
 class CardanoLedgerServiceIntegrationSpec extends AtalaWithPostgresSpec {
+  private val logs = Logs.withContext[IO, IOWithTraceIdContext]
   private val LAST_SYNCED_BLOCK_NO = "last_synced_block_no"
   private val LONG_TIMEOUT = Timeout(1.minute)
   private val RETRY_TIMEOUT = 2.minutes
@@ -36,7 +41,7 @@ class CardanoLedgerServiceIntegrationSpec extends AtalaWithPostgresSpec {
       val paymentAddress = Address(clientConfig.paymentAddress)
       val (cardanoClient, releaseCardanoClient) =
         CardanoClient(clientConfig.cardanoClientConfig).allocated.unsafeRunSync()
-      val keyValueService = new KeyValueService(KeyValuesRepository(database))
+      val keyValueService = new KeyValueService(KeyValuesRepository.unsafe(dbLiftedToTraceIdIO, logs))
       val notificationHandler = new TestAtalaObjectNotificationHandler()
       val cardanoLedgerService = new CardanoLedgerService(
         CardanoNetwork.Testnet,

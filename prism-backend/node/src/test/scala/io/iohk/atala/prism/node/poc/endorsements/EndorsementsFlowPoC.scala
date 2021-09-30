@@ -65,7 +65,7 @@ class EndorsementsFlowPoC extends AtalaWithPostgresSpec with BeforeAndAfterEach 
   protected var didDataRepository: DIDDataRepository[IOWithTraceIdContext] = _
   protected var atalaOperationsRepository: AtalaOperationsRepository[IOWithTraceIdContext] = _
   protected var atalaObjectsTransactionsRepository: AtalaObjectsTransactionsRepository[IOWithTraceIdContext] = _
-  protected var keyValuesRepository: KeyValuesRepository[IO] = _
+  protected var keyValuesRepository: KeyValuesRepository[IOWithTraceIdContext] = _
   protected var credentialBatchesRepository: CredentialBatchesRepository[IOWithTraceIdContext] = _
   protected var atalaReferenceLedger: InMemoryLedgerService = _
   protected var blockProcessingService: BlockProcessingServiceImpl = _
@@ -92,7 +92,7 @@ class EndorsementsFlowPoC extends AtalaWithPostgresSpec with BeforeAndAfterEach 
     atalaOperationsRepository = AtalaOperationsRepository.unsafe(dbLiftedToTraceIdIO, endorsementsFlowPoCLogs)
     atalaObjectsTransactionsRepository =
       AtalaObjectsTransactionsRepository.unsafe(dbLiftedToTraceIdIO, endorsementsFlowPoCLogs)
-    keyValuesRepository = KeyValuesRepository(database)
+    keyValuesRepository = KeyValuesRepository.unsafe(dbLiftedToTraceIdIO, endorsementsFlowPoCLogs)
     objectManagementService = ObjectManagementService(
       atalaOperationsRepository,
       atalaObjectsTransactionsRepository,

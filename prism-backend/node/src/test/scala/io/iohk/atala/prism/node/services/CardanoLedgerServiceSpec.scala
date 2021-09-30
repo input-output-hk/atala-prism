@@ -1,7 +1,9 @@
 package io.iohk.atala.prism.node.services
 
+import cats.effect.IO
 import io.circe.Json
 import io.iohk.atala.prism.AtalaWithPostgresSpec
+import io.iohk.atala.prism.logging.TraceId.IOWithTraceIdContext
 import io.iohk.atala.prism.models.{
   BlockInfo,
   Ledger,
@@ -24,12 +26,15 @@ import io.iohk.atala.prism.node.services.models.testing.TestAtalaObjectNotificat
 import io.iohk.atala.prism.node.services.models.{AtalaObjectNotification, AtalaObjectNotificationHandler}
 import io.iohk.atala.prism.protos.node_internal
 import io.iohk.atala.prism.utils.BytesOps
+import io.iohk.atala.prism.utils.IOUtils._
 import monix.execution.schedulers.TestScheduler
 import org.scalatest.OptionValues._
+import tofu.logging.Logs
 
 import scala.concurrent.Future
 
 class CardanoLedgerServiceSpec extends AtalaWithPostgresSpec {
+  private val logs = Logs.withContext[IO, IOWithTraceIdContext]
   private val network = CardanoNetwork.Testnet
   private val ledger = Ledger.CardanoTestnet
   private val walletId: WalletId = WalletId.from("bf098c001609ad7b76a0239e27f2a6bf9f09fd71").value
@@ -39,7 +44,7 @@ class CardanoLedgerServiceSpec extends AtalaWithPostgresSpec {
 
   private val noOpObjectHandler: AtalaObjectNotificationHandler = _ => Future.unit
   private val scheduler: TestScheduler = TestScheduler()
-  private lazy val keyValueService = new KeyValueService(KeyValuesRepository(database))
+  private lazy val keyValueService = new KeyValueService(KeyValuesRepository.unsafe(dbLiftedToTraceIdIO, logs))
   private lazy val cardanoBlockRepository = new CardanoBlockRepository(database)
 
   override def beforeAll(): Unit = {

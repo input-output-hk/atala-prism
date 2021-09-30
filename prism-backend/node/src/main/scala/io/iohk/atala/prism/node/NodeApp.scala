@@ -74,7 +74,7 @@ class NodeApp(executionContext: ExecutionContext) { self =>
       }
     }
 
-    val keyValuesRepository = KeyValuesRepository(transactor)
+    val keyValuesRepository = KeyValuesRepository.unsafe(liftedTransactor, logs)
     val keyValueService = new KeyValueService(keyValuesRepository)
 
     val (atalaReferenceLedger, releaseAtalaReferenceLedger) = globalConfig.getString("ledger") match {

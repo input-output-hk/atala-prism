@@ -1,18 +1,22 @@
 package io.iohk.atala.prism.node.repositories
 
+import cats.{Comonad, Functor}
 import cats.effect.BracketThrow
 import cats.implicits._
 import derevo.derive
 import derevo.tagless.applyK
 import doobie.implicits._
 import doobie.util.transactor.Transactor
-import io.iohk.atala.prism.metrics.{TimeMeasureMetric, TimeMeasureUtil}
-import io.iohk.atala.prism.metrics.TimeMeasureUtil.MeasureOps
+import io.iohk.atala.prism.metrics.TimeMeasureMetric
 import io.iohk.atala.prism.utils.syntax.DBConnectionOps
 import io.iohk.atala.prism.node.repositories.daos.KeyValuesDAO
 import io.iohk.atala.prism.node.repositories.daos.KeyValuesDAO.KeyValue
+import io.iohk.atala.prism.node.repositories.logs.KeyValuesRepositoryLogs
+import io.iohk.atala.prism.node.repositories.metrics.KeyValuesRepositoryMetrics
 import org.slf4j.{Logger, LoggerFactory}
 import tofu.higherKind.Mid
+import tofu.logging.{Logs, ServiceLogging}
+import tofu.syntax.monoid.TofuSemigroupOps
 
 @derive(applyK)
 trait KeyValuesRepository[F[_]] {
@@ -35,10 +39,24 @@ trait KeyValuesRepository[F[_]] {
 }
 
 object KeyValuesRepository {
-  def apply[F[_]: TimeMeasureMetric: BracketThrow](transactor: Transactor[F]): KeyValuesRepository[F] = {
-    val metrics: KeyValuesRepository[Mid[F, *]] = new KeyValuesRepositoryMetrics[F]()
-    metrics attach new KeyValuesRepositoryImpl[F](transactor)
-  }
+  def apply[F[_]: BracketThrow: TimeMeasureMetric, R[_]: Functor](
+      transactor: Transactor[F],
+      logs: Logs[R, F]
+  ): R[KeyValuesRepository[F]] =
+    for {
+      serviceLogs <- logs.service[KeyValuesRepository[F]]
+    } yield {
+      implicit val implicitLogs: ServiceLogging[F, KeyValuesRepository[F]] = serviceLogs
+      val metrics: KeyValuesRepository[Mid[F, *]] = new KeyValuesRepositoryMetrics[F]()
+      val logs: KeyValuesRepository[Mid[F, *]] = new KeyValuesRepositoryLogs[F]
+      val mid = metrics |+| logs
+      mid attach new KeyValuesRepositoryImpl[F](transactor)
+    }
+
+  def unsafe[F[_]: BracketThrow: TimeMeasureMetric, R[_]: Comonad](
+      transactor: Transactor[F],
+      logs: Logs[R, F]
+  ): KeyValuesRepository[F] = KeyValuesRepository(transactor, logs).extract
 }
 
 private final class KeyValuesRepositoryImpl[F[_]: BracketThrow](xa: Transactor[F]) extends KeyValuesRepository[F] {
@@ -77,21 +95,4 @@ private final class KeyValuesRepositoryImpl[F[_]: BracketThrow](xa: Transactor[F
       .transact(xa)
       .map(_.getOrElse(KeyValue(key, None)))
   }
-}
-
-private final class KeyValuesRepositoryMetrics[F[_]: TimeMeasureMetric: BracketThrow]
-    extends KeyValuesRepository[Mid[F, *]] {
-
-  private val repoName = "KeyValuesRepository"
-  private lazy val upsertTimer = TimeMeasureUtil.createDBQueryTimer(repoName, "upsert")
-  private lazy val upsertManyTimer =
-    TimeMeasureUtil.createDBQueryTimer(repoName, "upsertMany")
-  private lazy val getTimer =
-    TimeMeasureUtil.createDBQueryTimer(repoName, "get")
-
-  override def upsert(keyValue: KeyValue): Mid[F, Unit] = _.measureOperationTime(upsertTimer)
-
-  override def upsertMany(keyValues: List[KeyValue]): Mid[F, Unit] = _.measureOperationTime(upsertManyTimer)
-
-  override def get(key: String): Mid[F, KeyValue] = _.measureOperationTime(getTimer)
 }

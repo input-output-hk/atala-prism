@@ -2,6 +2,7 @@ package io.iohk.atala.prism.node.operations
 
 import doobie.implicits._
 import io.iohk.atala.prism.AtalaWithPostgresSpec
+import io.iohk.atala.prism.logging.TraceId.IOWithTraceIdContext
 import io.iohk.atala.prism.node.DataPreparation
 import io.iohk.atala.prism.node.DataPreparation.dummyLedgerData
 import io.iohk.atala.prism.node.cardano.LAST_SYNCED_BLOCK_NO
@@ -15,10 +16,12 @@ import io.iohk.atala.prism.protos.node_models
 import org.scalatest.EitherValues._
 import org.scalatest.Inside.inside
 import org.scalatest.OptionValues._
+import tofu.logging.Logs
 
 class ProtocolVersionUpdateOperationSpec extends AtalaWithPostgresSpec {
 
   val masterKeys = CreateDIDOperationSpec.masterKeys
+  val logs = Logs.universal[IOWithTraceIdContext]
 
   lazy val proposerDidKeys = List(
     DIDPublicKey(proposerDIDSuffix, "master", KeyUsage.MasterKey, masterKeys.getPublicKey)
@@ -240,7 +243,7 @@ class ProtocolVersionUpdateOperationSpec extends AtalaWithPostgresSpec {
     }
 
     "return error when an effectiveSince is less than last Cardano block level" in {
-      val keyValueService = new KeyValueService(KeyValuesRepository(database))
+      val keyValueService = new KeyValueService(KeyValuesRepository.unsafe(dbLiftedToTraceIdIO, logs))
       keyValueService.set(LAST_SYNCED_BLOCK_NO, Some(11)).futureValue
 
       DataPreparation
