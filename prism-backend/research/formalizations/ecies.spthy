@@ -54,6 +54,16 @@ rule Register_pks:
   [ !Pks($A, pk(~x)),
     !Ltks($A, ~x) ]
 
+rule Reveal_ltke:
+  [ !Ltke(A, ltke) ]
+  --[ LtkeReveal(A) ]->
+  [ Out(ltke) ]
+
+rule Reveal_ltks:
+  [ !Ltks(A, ltks) ]
+  --[ LtksReveal(A) ]->
+  [ Out(ltks) ]
+
 /* Rule for fetching an existing public key. */
 //rule Get_pke:
 //  [ !Pk(A, pk) ] 
@@ -74,7 +84,7 @@ rule Issuer_1:
        Fr(~r),
        Fr(~cred)
      ]
-     --[ SendI($I, $H, ~cred) ]->
+     --[ SendI($I, ~cred) ]->
      [ Out(<ccred, mc, sig, 'g'^~r>) ]
 
 /* The holder receives the ECIES-encrypted message by the issuer, and 
@@ -88,10 +98,9 @@ rule Holder_2:
      [ !Ltke($H, ~lkH),
        !Pks($I, pkI),
        In(<ccred, mac(h(cred), k2), sig, R>) ]
-     --[ RecvH($I, $H, cred),
+     --[ RecvH($H, cred),
 	 Eq(verify(sig, h(cred), pkI), true),
-         Secret(cred)/*,
-	 SessionKey($I, $H, R^~lkH)*/]->
+         Secret(cred)]->
      []
 
 restriction Equality:
@@ -100,7 +109,24 @@ restriction Equality:
 /* Safety check */
 lemma executable:
       exists-trace
-	"Ex A B m #i #j. SendI(A,B,m) @i & RecvH(A,B,m) @j"
+	"Ex A B m #i #j. SendI(A,m) @i & RecvH(B,m) @j"
 
+/* Credential secrecy: only the issuer and the holder learn it. */
+// There is something odd here. In this protocol, the attacker should be able to
+// learn the credential by compromising the issuer's signing key.
+// i.e., the adversary creates a credential, and signs it with the compromised
+// signing key.
+lemma cred_secrecy:
+      /* It cannot be that a */
+      "not(
+	/* Holder 'H' has received a credential 'c' */
+	Ex H c #i #j. RecvH(H, c) @ #i
+	/* and the adversary knows 'c' */
+	& K(c) @ #j
+	/* Without having compromised the holder or the issuer. */
+	& not(Ex #r. LtkeReveal(H) @ #r)	
+      )"
+
+/* Credential authenticity: it comes from the Issuer. */
      
 end
