@@ -1,6 +1,5 @@
 package io.iohk.atala.prism.connector
 
-import cats.effect.IO
 import cats.syntax.either._
 import io.iohk.atala.prism.auth.errors.{AuthError, UnexpectedError}
 import io.iohk.atala.prism.auth
@@ -21,7 +20,7 @@ import scala.concurrent.ExecutionContext
 
 class ConnectorAuthenticator(
     participantsRepository: ParticipantsRepository[IOWithTraceIdContext],
-    requestNoncesRepository: RequestNoncesRepository[IO],
+    requestNoncesRepository: RequestNoncesRepository[IOWithTraceIdContext],
     nodeClient: node_api.NodeServiceGrpc.NodeService,
     grpcAuthenticationHeaderParser: GrpcAuthenticationHeaderParser
 ) extends SignedRequestsAuthenticatorBase[ParticipantId](nodeClient, grpcAuthenticationHeaderParser) {
@@ -30,7 +29,12 @@ class ConnectorAuthenticator(
       id: ParticipantId,
       requestNonce: auth.model.RequestNonce
   )(implicit ec: ExecutionContext): FutureEither[AuthError, Unit] =
-    requestNoncesRepository.burn(id, requestNonce).unsafeToFuture().map(_.asRight).toFutureEither
+    requestNoncesRepository
+      .burn(id, requestNonce)
+      .run(TraceId.generateYOLO)
+      .unsafeToFuture()
+      .map(_.asRight)
+      .toFutureEither
 
   override def burnNonce(
       did: DID,
@@ -38,7 +42,12 @@ class ConnectorAuthenticator(
   )(implicit
       ec: ExecutionContext
   ): FutureEither[AuthError, Unit] =
-    requestNoncesRepository.burn(did, requestNonce).unsafeToFuture().map(_.asRight).toFutureEither
+    requestNoncesRepository
+      .burn(did, requestNonce)
+      .run(TraceId.generateYOLO)
+      .unsafeToFuture()
+      .map(_.asRight)
+      .toFutureEither
 
   override def findByPublicKey(
       publicKey: ECPublicKey

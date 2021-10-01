@@ -21,7 +21,7 @@ class CredentialViewsServiceSpec extends RpcSpecBase with DIDUtil {
   )
 
   private lazy val participantsRepository = ParticipantsRepository.unsafe(dbLiftedToTraceIdIO, testLogs)
-  private lazy val requestNoncesRepository = RequestNoncesRepository(database)
+  private lazy val requestNoncesRepository = RequestNoncesRepository.unsafe(dbLiftedToTraceIdIO, testLogs)
   protected lazy val nodeMock = mock[io.iohk.atala.prism.protos.node_api.NodeServiceGrpc.NodeService]
   private lazy val authenticator = new ConnectorAuthenticator(
     participantsRepository,
