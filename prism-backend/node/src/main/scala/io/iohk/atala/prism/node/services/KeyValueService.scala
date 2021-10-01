@@ -1,10 +1,18 @@
 package io.iohk.atala.prism.node.services
 
-import cats.Functor
+import cats.effect.MonadThrow
+import cats.{Comonad, Functor}
+import cats.syntax.comonad._
 import cats.syntax.functor._
+import derevo.derive
+import derevo.tagless.applyK
 import io.iohk.atala.prism.node.repositories.KeyValuesRepository
 import io.iohk.atala.prism.node.repositories.daos.KeyValuesDAO.KeyValue
+import io.iohk.atala.prism.node.services.logs.KeyValueServiceLogs
+import tofu.higherKind.Mid
+import tofu.logging.{Logs, ServiceLogging}
 
+@derive(applyK)
 trait KeyValueService[F[_]] {
   def get(key: String): F[Option[String]]
   def getInt(key: String): F[Option[Int]]
@@ -13,9 +21,23 @@ trait KeyValueService[F[_]] {
 }
 
 object KeyValueService {
-  def apply[F[_]: Functor](keyValueRepository: KeyValuesRepository[F]): KeyValueService[F] = {
-    new KeyValueServiceImpl(keyValueRepository)
-  }
+  def apply[F[_]: MonadThrow, R[_]: Functor](
+      keyValueRepository: KeyValuesRepository[F],
+      logs: Logs[R, F]
+  ): R[KeyValueService[F]] =
+    for {
+      serviceLogs <- logs.service[KeyValueService[F]]
+    } yield {
+      implicit val implicitLogs: ServiceLogging[F, KeyValueService[F]] = serviceLogs
+      val logs: KeyValueService[Mid[F, *]] = new KeyValueServiceLogs[F]
+      val mid = logs
+      mid attach new KeyValueServiceImpl[F](keyValueRepository)
+    }
+
+  def unsafe[F[_]: MonadThrow, R[_]: Comonad](
+      keyValueRepository: KeyValuesRepository[F],
+      logs: Logs[R, F]
+  ): KeyValueService[F] = KeyValueService(keyValueRepository, logs).extract
 }
 
 private final class KeyValueServiceImpl[F[_]: Functor](keyValueRepository: KeyValuesRepository[F])

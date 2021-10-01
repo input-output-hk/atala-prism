@@ -244,7 +244,7 @@ class ProtocolVersionUpdateOperationSpec extends AtalaWithPostgresSpec {
     }
 
     "return error when an effectiveSince is less than last Cardano block level" in {
-      val keyValueService = KeyValueService(KeyValuesRepository.unsafe(dbLiftedToTraceIdIO, logs))
+      val keyValueService = KeyValueService.unsafe(KeyValuesRepository.unsafe(dbLiftedToTraceIdIO, logs), logs)
       keyValueService.set(LAST_SYNCED_BLOCK_NO, Some(11)).run(TraceId.generateYOLO).unsafeRunSync()
 
       DataPreparation

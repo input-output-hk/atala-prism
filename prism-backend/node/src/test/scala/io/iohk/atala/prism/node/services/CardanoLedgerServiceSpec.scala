@@ -44,7 +44,7 @@ class CardanoLedgerServiceSpec extends AtalaWithPostgresSpec {
 
   private val noOpObjectHandler: AtalaObjectNotificationHandler = _ => Future.unit
   private val scheduler: TestScheduler = TestScheduler()
-  private lazy val keyValueService = KeyValueService(KeyValuesRepository.unsafe(dbLiftedToTraceIdIO, logs))
+  private lazy val keyValueService = KeyValueService.unsafe(KeyValuesRepository.unsafe(dbLiftedToTraceIdIO, logs), logs)
   private lazy val cardanoBlockRepository = new CardanoBlockRepository(database)
 
   override def beforeAll(): Unit = {
