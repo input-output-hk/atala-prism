@@ -47,10 +47,19 @@ class SignedRequestsAuthenticatorSpec extends AnyWordSpec {
   "public" should {
     "accept the request without authentication" in {
       val authenticator = buildAuthenticator(getHeader = () => None)
-      val result = authenticator.public("test", request) {
+      val result = authenticator.public("test", request) { _ =>
         Future.successful(response)
       }
       result.futureValue must be(response)
+    }
+
+    "parse trace id from header" in {
+      val externalTraceId = TraceId("exactlyThisTraceId123")
+      val authenticator = buildAuthenticator(getHeader = () => None, getTraceIdFromHeader = () => externalTraceId)
+      val result = authenticator.public("test", request) { traceId =>
+        Future.successful(traceId)
+      }
+      result.futureValue must be(externalTraceId)
     }
   }
 

@@ -59,13 +59,16 @@ private[grpc] object GrpcAuthenticationContext {
   def getTraceIdFromContext(ctx: Context): TraceId =
     ctx.getOpt(TraceIdKeys).map(TraceId(_)).getOrElse(TraceId.generateYOLO)
 
+  def getTraceIdFromMetadata(headers: Metadata): TraceId =
+    headers.getOpt(TraceIdKeys).map(TraceId(_)).getOrElse(TraceId.generateYOLO)
+
   def getPublicKeySignatureContext(headers: Metadata): Option[Context] = {
     (headers.getOpt(RequestNonceKeys), headers.getOpt(SignatureKeys), headers.getOpt(PublicKeyKeys)) match {
       case (Some(requestNonceStr), Some(signatureStr), Some(publicKeyStr)) =>
         val signature = Base64.getUrlDecoder.decode(signatureStr)
         val publicKey = Base64.getUrlDecoder.decode(publicKeyStr)
         val requestNonce = Base64.getUrlDecoder.decode(requestNonceStr)
-        val traceId = headers.getOpt(TraceIdKeys).map(TraceId(_)).getOrElse(TraceId.generateYOLO)
+        val traceId = getTraceIdFromMetadata(headers)
         val ctx = Context
           .current()
           .withValue(RequestNonceKeys.context, requestNonce)
@@ -103,7 +106,7 @@ private[grpc] object GrpcAuthenticationContext {
       case (Some(requestNonceStr), Some(did), Some(keyId), Some(signatureStr)) =>
         val signature = Base64.getUrlDecoder.decode(signatureStr)
         val requestNonce = Base64.getUrlDecoder.decode(requestNonceStr)
-        val traceId = headers.getOpt(TraceIdKeys).map(TraceId(_)).getOrElse(TraceId.generateYOLO)
+        val traceId = getTraceIdFromMetadata(headers)
         val ctx = Context
           .current()
           .addValue(RequestNonceKeys, requestNonce)

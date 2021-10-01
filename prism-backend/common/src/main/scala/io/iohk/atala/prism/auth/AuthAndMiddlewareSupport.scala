@@ -45,11 +45,11 @@ trait AuthAndMiddlewareSupport[Err <: PrismError, Id] {
     def apply[Proto <: GeneratedMessage, Result](
         methodName: String,
         request: Proto
-    )(f: Query => FutureEither[Err, Result])(implicit
+    )(f: (TraceId, Query) => FutureEither[Err, Result])(implicit
         ec: ExecutionContext,
         protoConverter: ProtoConverter[Proto, Query]
     ): Future[Result] = {
-      authenticator.public(methodName, request) {
+      authenticator.public(methodName, request) { traceId =>
         convertFromRequest[Proto, Result, Query](request, methodName).flatMap { query =>
           // Assemble LoggingContext out of the case class fields
           implicit val lc: LoggingContext = LoggingContext(
@@ -58,7 +58,7 @@ trait AuthAndMiddlewareSupport[Err <: PrismError, Id] {
               .toMap
           )
           measureRequestFuture(serviceName, methodName)(
-            f(query).wrapAndRegisterExceptions(serviceName, methodName).flatten
+            f(traceId, query).wrapAndRegisterExceptions(serviceName, methodName).flatten
           )
         }
       }
