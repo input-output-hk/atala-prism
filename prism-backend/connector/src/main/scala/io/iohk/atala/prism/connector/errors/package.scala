@@ -39,18 +39,25 @@ package object errors {
       InvalidLimitError(InvalidArgumentError("limit", "positive value", value))
   }
 
-  case class DidConnectionExist(did: DID) extends ConnectorError {
-    override def toStatus: Status = {
-      Status.ALREADY_EXISTS.withDescription(
-        s"Attempting to accept a connection with a DID: $did. DID is already used for a connection, use a different DID"
-      )
+  @derive(loggable)
+  sealed trait ConnectionsError extends ConnectorError
+
+  object ConnectionsError {
+
+    case class DidConnectionExist(did: DID) extends ConnectionsError {
+      override def toStatus: Status = {
+        Status.ALREADY_EXISTS.withDescription(
+          s"Attempting to accept a connection with a DID: $did. DID is already used for a connection, use a different DID"
+        )
+      }
     }
-  }
-  case class PkConnectionExist(pk: ECPublicKey) extends ConnectorError {
-    override def toStatus: Status = {
-      Status.ALREADY_EXISTS.withDescription(
-        s"Attempting to accept a connection with a public key: $pk. Public key is already used for a connection, use a different Public key"
-      )
+
+    case class PkConnectionExist(pk: ECPublicKey) extends ConnectionsError {
+      override def toStatus: Status = {
+        Status.ALREADY_EXISTS.withDescription(
+          s"Attempting to accept a connection with a public key: $pk. Public key is already used for a connection, use a different Public key"
+        )
+      }
     }
   }
 

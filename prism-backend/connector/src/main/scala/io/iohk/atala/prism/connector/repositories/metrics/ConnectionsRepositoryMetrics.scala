@@ -1,9 +1,9 @@
 package io.iohk.atala.prism.connector.repositories.metrics
 
 import cats.effect.BracketThrow
-import io.iohk.atala.prism.connector.errors.ConnectorError
 import io.iohk.atala.prism.connector.model._
 import io.iohk.atala.prism.connector.repositories.ConnectionsRepository
+import io.iohk.atala.prism.connector.repositories.ConnectionsRepository._
 import io.iohk.atala.prism.crypto.keys.ECPublicKey
 import io.iohk.atala.prism.identity.{PrismDid => DID}
 import io.iohk.atala.prism.metrics.TimeMeasureUtil.MeasureOps
@@ -29,25 +29,26 @@ private[repositories] final class ConnectionsRepositoryMetrics[F[_]: TimeMeasure
   override def insertTokens(initiator: ParticipantId, tokens: List[TokenString]): Mid[F, List[TokenString]] =
     _.measureOperationTime(insertTokensTimer)
 
-  override def getTokenInfo(token: TokenString): Mid[F, Either[ConnectorError, ParticipantInfo]] =
+  override def getTokenInfo(token: TokenString): Mid[F, Either[GetTokenInfoError, ParticipantInfo]] =
     _.measureOperationTime(getTokenInfoTimer)
 
   override def addConnectionFromToken(
       token: TokenString,
       didOrPublicKey: Either[DID, ECPublicKey]
-  ): Mid[F, Either[ConnectorError, ConnectionInfo]] =
+  ): Mid[F, Either[AddConnectionFromTokenError, ConnectionInfo]] =
     _.measureOperationTime(addConnectionFromTokenTimer)
 
   override def revokeConnection(
       participantId: ParticipantId,
       connectionId: ConnectionId
-  ): Mid[F, Either[ConnectorError, Unit]] = _.measureOperationTime(revokeConnectionsTimer)
+  ): Mid[F, Either[RevokeConnectionError, Unit]] = _.measureOperationTime(revokeConnectionsTimer)
 
   override def getConnectionsPaginated(
       participant: ParticipantId,
       limit: Int,
       lastSeenConnectionId: Option[ConnectionId]
-  ): Mid[F, Either[ConnectorError, List[ConnectionInfo]]] = _.measureOperationTime(getConnectionsPaginatedTimer)
+  ): Mid[F, Either[GetConnectionsPaginatedError, List[ConnectionInfo]]] =
+    _.measureOperationTime(getConnectionsPaginatedTimer)
 
   override def getOtherSideInfo(id: ConnectionId, participant: ParticipantId): Mid[F, Option[ParticipantInfo]] =
     _.measureOperationTime(getOtherSideInfoTimer)

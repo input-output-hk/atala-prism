@@ -95,6 +95,31 @@ trait AuthAndMiddlewareSupport[Err <: PrismError, Id] {
     }
   }
 
+  final class WithoutAuthCoproductPartiallyApplied[Query <: Product] {
+    def apply[C <: Coproduct, Proto <: GeneratedMessage, Result](
+        methodName: String,
+        request: Proto
+    )(f: (TraceId, Query) => FutureEither[C, Result])(implicit
+        ec: ExecutionContext,
+        protoConverter: ProtoConverter[Proto, Query],
+        unifier: Unifier.Aux[C, Err]
+    ): Future[Result] = {
+      authenticator.public(methodName, request) { traceId =>
+        convertFromRequest[Proto, Result, Query](request, methodName).flatMap { query =>
+          // Assemble LoggingContext out of the case class fields
+          implicit val lc: LoggingContext = LoggingContext(
+            (0 until query.productArity)
+              .map(i => query.productElementName(i) -> query.productElement(i).toString)
+              .toMap
+          )
+          measureRequestFuture(serviceName, methodName)(
+            f(traceId, query).mapLeft(_.unify).wrapAndRegisterExceptions(serviceName, methodName).flatten
+          )
+        }
+      }
+    }
+  }
+
   // Just converts query from proto in our representation, on failure, responds with a thrown error
   private def convertFromRequest[Proto <: GeneratedMessage, Result, Query <: Product](
       request: Proto,
@@ -126,6 +151,9 @@ trait AuthAndMiddlewareSupport[Err <: PrismError, Id] {
   // parameter Query and all other type parameters can usually be inferred by Scala.
   def public[Query <: Product]: WithoutAuthPartiallyApplied[Query] =
     new WithoutAuthPartiallyApplied[Query]()
+
+  def publicCo[Query <: Product]: WithoutAuthCoproductPartiallyApplied[Query] =
+    new WithoutAuthCoproductPartiallyApplied[Query]()
 
   def unitAuth: AuthPartiallyApplied[EmptyQuery.type] = auth[EmptyQuery.type]
 

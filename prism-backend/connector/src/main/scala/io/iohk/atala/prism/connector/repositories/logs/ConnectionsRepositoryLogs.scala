@@ -4,9 +4,10 @@ import cats.effect.MonadThrow
 import cats.syntax.apply._
 import cats.syntax.applicativeError._
 import cats.syntax.flatMap._
-import io.iohk.atala.prism.connector.errors
+import io.iohk.atala.prism.connector.errors.ConnectorError
 import io.iohk.atala.prism.connector.model._
 import io.iohk.atala.prism.connector.repositories.ConnectionsRepository
+import io.iohk.atala.prism.connector.repositories.ConnectionsRepository._
 import io.iohk.atala.prism.identity.{PrismDid => DID}
 import io.iohk.atala.prism.crypto.keys.ECPublicKey
 import io.iohk.atala.prism.models.ParticipantId
@@ -25,12 +26,12 @@ private[repositories] final class ConnectionsRepositoryLogs[F[_]: ServiceLogging
         .flatTap(result => info"inserting tokens - successfully done, inserted ${result.size} tokens")
         .onError(errorCause"encountered an error while inserting tokens" (_))
 
-  override def getTokenInfo(token: TokenString): Mid[F, Either[errors.ConnectorError, ParticipantInfo]] =
+  override def getTokenInfo(token: TokenString): Mid[F, Either[GetTokenInfoError, ParticipantInfo]] =
     in =>
       info"getting token info $token" *> in
         .flatTap(
           _.fold(
-            er => error"encountered an error while getting token info $er",
+            er => error"encountered an error while getting token info ${er.unify: ConnectorError}",
             info => info"getting token info - successfully done ${info.id}"
           )
         )
@@ -39,12 +40,12 @@ private[repositories] final class ConnectionsRepositoryLogs[F[_]: ServiceLogging
   override def addConnectionFromToken(
       token: TokenString,
       didOrPublicKey: Either[DID, ECPublicKey]
-  ): Mid[F, Either[errors.ConnectorError, ConnectionInfo]] =
+  ): Mid[F, Either[AddConnectionFromTokenError, ConnectionInfo]] =
     in =>
       info"adding connection from token $token" *> in
         .flatTap(
           _.fold(
-            er => error"encountered an error while adding connection from token $er",
+            er => error"encountered an error while adding connection from token ${er.unify: ConnectorError}",
             info => info"adding connection from token - successfully done ${info.id}"
           )
         )
@@ -53,12 +54,12 @@ private[repositories] final class ConnectionsRepositoryLogs[F[_]: ServiceLogging
   override def revokeConnection(
       participantId: ParticipantId,
       connectionId: ConnectionId
-  ): Mid[F, Either[errors.ConnectorError, Unit]] =
+  ): Mid[F, Either[RevokeConnectionError, Unit]] =
     in =>
       info"revoking connection $participantId $connectionId" *> in
         .flatTap(
           _.fold(
-            er => error"encountered an error while revoking connection $er",
+            er => error"encountered an error while revoking connection ${er.unify: ConnectorError}",
             _ => info"revoking connection - successfully done"
           )
         )
@@ -68,12 +69,12 @@ private[repositories] final class ConnectionsRepositoryLogs[F[_]: ServiceLogging
       participant: ParticipantId,
       limit: Int,
       lastSeenConnectionId: Option[ConnectionId]
-  ): Mid[F, Either[errors.ConnectorError, List[ConnectionInfo]]] =
+  ): Mid[F, Either[GetConnectionsPaginatedError, List[ConnectionInfo]]] =
     in =>
       info"getting connections paginated $participant $lastSeenConnectionId" *> in
         .flatTap(
           _.fold(
-            er => error"encountered an error while getting connections paginated $er",
+            er => error"encountered an error while getting connections paginated ${er.unify: ConnectorError}",
             list => info"getting connections paginated - successfully done, got ${list.size} entities"
           )
         )
