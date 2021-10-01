@@ -1,11 +1,12 @@
 /**
- * Description: Model for one-time authenticated exchange based on a QR code
+ * Description: Model for authenticated exchange based on a QR code
  * sent via a secure channel.
+ *
  * Date: 20210922
  * Authors: Jesus Diaz Vico, IOHK Atala and Research teams.
  */
 
-theory qrdid
+theory QRdid
 begin
 
 /*
@@ -62,9 +63,8 @@ rule Reveal_ltk:
 rule Issuer_1:
      [ Fr(~code),
        !Ltk($I, ~lkI)]
-     --[ Step('1'),
-         Issuer($I),
-         Send($I, <~code, pk(~lkI)>) ]->
+     --[ Issuer($I),
+         SendI($I, <~code, pk(~lkI)>) ]->
      [ Out_S($I, $H, <~code, pk(~lkI)>),
        State_I($I, $H, ~code, ~lkI) ]
 
@@ -72,10 +72,9 @@ rule Issuer_1:
 rule Holder_2:
      [ In_S($I, $H, <~code, pkI>),
        !Ltk($H, ~lkH) ]
-     --[ Step('2'),
-	 Recv($H, <~code, pkI>),
+     --[ RecvH($H, <~code, pkI>),
 	 Honest($H),
-	 Send($H, <~code, pk(~lkH)>) ]->
+	 SendH($H, <~code, pk(~lkH)>) ]->
      [ Out(aenc(<~code, pk(~lkH)>, pkI)) ]
 
 /* The issuer receives back encrypted the QR code, via an insecure channel, 
@@ -86,9 +85,8 @@ rule Issuer_3:
      in
      [ State_I($I, $H, ~code, ~lkI),
        In(cIn) 	   ]
-     --[ Step('3'),
-         Secret($I, $H, ~code),
-         Recv($I, <~code, pkH>),
+     --[ Secret($I, $H, ~code),
+         RecvI($I, <~code, pkH>),
          Eq(codep, ~code) ]->
      [ ]
 
@@ -98,8 +96,7 @@ restriction Equality:
 /* Safety check */
 lemma executable:
       exists-trace
-	"Ex A B m #i #j. Send(A,m) @i & Step('2') @i &
-	      	    	 Recv(B,m) @j & Step('3') @j"
+	"Ex A B m #i #j. SendH(A,m) @i & RecvI(B,m) @j"
 
 /*
  * Code secrecy
@@ -121,18 +118,17 @@ lemma code_secrecy:
 
 /*
  * Holder PK authenticity
- * It cannot be that an issuer has shared a code with an honest holder,
- * the holder sends back the code along with its public key, the issuer
- * receives the same code, but different public key.
+ * For all keys received by I associated with code c, that come from H,
+ * the issuer previously shared code c with H.
  */
 lemma pkH_auth:
-      /* It cannot be that */
-      "not(
-        /* an issuer has shared a code with an honest holder */
-	Ex I H c k kp #i #j #l. Secret(I, H, c) @ #i & Honest(H) @ #j
-	/* the holder sends back the code along with its public key */
-	& Send(H, <c, k>) @ #j
-	/* the issuer receives the same code, but different public key */
-	& Recv(I, <c, kp>) @ #l
+
+      "(
+        /* For all keys received by I associated with c, that come from H */
+	All I c H kH #s #t. RecvI(I, <c, kH>) @ #s & SendH(H, <c, kH>) @ #t & #t < #s 
+	==>
+	/* the issuer previously shared the code c with H */
+	(Ex I H c #i. ChanOut_S(I,H,c) @ #i & i < t)
       )"
+
 end
