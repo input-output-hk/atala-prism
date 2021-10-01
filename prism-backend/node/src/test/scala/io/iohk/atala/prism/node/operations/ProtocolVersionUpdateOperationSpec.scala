@@ -2,6 +2,7 @@ package io.iohk.atala.prism.node.operations
 
 import doobie.implicits._
 import io.iohk.atala.prism.AtalaWithPostgresSpec
+import io.iohk.atala.prism.logging.TraceId
 import io.iohk.atala.prism.logging.TraceId.IOWithTraceIdContext
 import io.iohk.atala.prism.node.DataPreparation
 import io.iohk.atala.prism.node.DataPreparation.dummyLedgerData
@@ -243,8 +244,8 @@ class ProtocolVersionUpdateOperationSpec extends AtalaWithPostgresSpec {
     }
 
     "return error when an effectiveSince is less than last Cardano block level" in {
-      val keyValueService = new KeyValueService(KeyValuesRepository.unsafe(dbLiftedToTraceIdIO, logs))
-      keyValueService.set(LAST_SYNCED_BLOCK_NO, Some(11)).futureValue
+      val keyValueService = KeyValueService(KeyValuesRepository.unsafe(dbLiftedToTraceIdIO, logs))
+      keyValueService.set(LAST_SYNCED_BLOCK_NO, Some(11)).run(TraceId.generateYOLO).unsafeRunSync()
 
       DataPreparation
         .createDID(DIDData(proposerDIDSuffix, proposerDidKeys, proposerCreateDIDOperation.digest), dummyLedgerData)

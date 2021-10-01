@@ -75,7 +75,7 @@ class NodeApp(executionContext: ExecutionContext) { self =>
     }
 
     val keyValuesRepository = KeyValuesRepository.unsafe(liftedTransactor, logs)
-    val keyValueService = new KeyValueService(keyValuesRepository)
+    val keyValueService = KeyValueService(keyValuesRepository)
 
     val (atalaReferenceLedger, releaseAtalaReferenceLedger) = globalConfig.getString("ledger") match {
       case "cardano" => initializeCardano(keyValueService, globalConfig, onAtalaObject)
@@ -155,7 +155,7 @@ class NodeApp(executionContext: ExecutionContext) { self =>
   }
 
   private def initializeCardano(
-      keyValueService: KeyValueService,
+      keyValueService: KeyValueService[IOWithTraceIdContext],
       globalConfig: Config,
       onAtalaObject: AtalaObjectNotification => Future[Unit]
   ): (CardanoLedgerService, Option[IO[Unit]]) = {

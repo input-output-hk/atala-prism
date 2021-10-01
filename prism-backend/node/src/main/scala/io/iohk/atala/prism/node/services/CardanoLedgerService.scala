@@ -1,6 +1,8 @@
 package io.iohk.atala.prism.node.services
 
 import enumeratum.{Enum, EnumEntry}
+import io.iohk.atala.prism.logging.TraceId
+import io.iohk.atala.prism.logging.TraceId.IOWithTraceIdContext
 import io.iohk.atala.prism.models.{
   BlockInfo,
   Ledger,
@@ -31,7 +33,7 @@ class CardanoLedgerService private[services] (
     blockNumberSyncStart: Int,
     blockConfirmationsToWait: Int,
     cardanoClient: CardanoClient,
-    keyValueService: KeyValueService,
+    keyValueService: KeyValueService[IOWithTraceIdContext],
     onAtalaObject: AtalaObjectNotificationHandler,
     scheduler: Scheduler
 )(implicit
@@ -120,7 +122,7 @@ class CardanoLedgerService private[services] (
     */
   private[services] def syncAtalaObjects(): Future[Boolean] = {
     for {
-      maybeLastSyncedBlockNo <- keyValueService.getInt(LAST_SYNCED_BLOCK_NO)
+      maybeLastSyncedBlockNo <- keyValueService.getInt(LAST_SYNCED_BLOCK_NO).run(TraceId.generateYOLO).unsafeToFuture()
       lastSyncedBlockNo = CardanoLedgerService.calculateLastSyncedBlockNo(maybeLastSyncedBlockNo, blockNumberSyncStart)
       latestBlock <- cardanoClient.getLatestBlock().toFuture(_ => new RuntimeException("Cardano blockchain is empty"))
       lastConfirmedBlockNo = latestBlock.header.blockNo - blockConfirmationsToWait
@@ -187,6 +189,8 @@ class CardanoLedgerService private[services] (
           KeyValue(LAST_SYNCED_BLOCK_TIMESTAMP, Some(timestampEpochMilli.toString))
         )
       )
+      .run(TraceId.generateYOLO)
+      .unsafeToFuture()
   }
 }
 
@@ -215,7 +219,7 @@ object CardanoLedgerService {
   def apply(
       config: Config,
       cardanoClient: CardanoClient,
-      keyValueService: KeyValueService,
+      keyValueService: KeyValueService[IOWithTraceIdContext],
       onAtalaObject: AtalaObjectNotificationHandler
   )(implicit
       scheduler: Scheduler
