@@ -63,8 +63,7 @@ rule Reveal_ltk:
 rule Issuer_1:
      [ Fr(~code),
        !Ltk($I, ~lkI)]
-     --[ Issuer($I),
-         SendI($I, <~code, pk(~lkI)>) ]->
+     --[ SendI($I, <~code, pk(~lkI)>) ]->
      [ Out_S($I, $H, <~code, pk(~lkI)>),
        State_I($I, $H, ~code, ~lkI) ]
 

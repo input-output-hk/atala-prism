@@ -1,0 +1,106 @@
+/**
+ * Description: Model for e2e based on ECIES
+ * Date: 20210922
+ * Authors: Jesus Diaz Vico, IOHK Atala and Research teams.
+ */
+
+theory ECIES
+begin
+
+/*
+ 
+ Assumption: Prior to start the protocol, the Issuer has certainty that
+ the Holder's public key is pkH, and the Holder has certainty that the
+ Issuer's public key is pkI. This is achieved via the QRdid protocol,
+ modelled separately.
+
+ The protocol we want to model is, in Alice and Bob notation, as follows:
+
+ 1. I:      r = Fresh(Z)
+            s = (pk_hol)^r
+            k_1 || k_2 = kdf(s)
+            c = senc(k_1, data)
+            m = senc(k_2, Hash(c))
+ 2. I -> C: <c, m, g^r>
+ 3. C -> H: <c, m, g^r>
+ 4. H:      s = (g^r)^u
+            k_1 || k_2 = kdf(s)
+            m' = senc(k_2, Hash(c))
+            Assert m = m'
+            data = sdec(k_1, c)
+*/
+
+builtins: hashing, symmetric-encryption, signing, diffie-hellman
+
+/* Note: splitL, splitR and merge functions are aimed to be used for
+   splitting bitstrings to be used as keys. However, they do not model
+   that leaking part of a key *does* leak much information about that
+   key. Hence, for this modelling to be valid, we should check that all
+   the larger bitstring and its splits are kept secret. */
+functions: kdf/1, splitL/1, splitR/1, merge/2, mac/2
+
+equations: merge(splitL(v),splitR(v)) = v
+
+/* Rule for generating keypairs for key exchange. */
+rule Register_pke:
+  [ Fr(~x) ] 
+  --> 
+  [ !Pke($A, 'g'^~x),
+    !Ltke($A, ~x) ]
+
+rule Register_pks:
+  [ Fr(~x) ]
+  -->
+  [ !Pks($A, pk(~x)),
+    !Ltks($A, ~x) ]
+
+/* Rule for fetching an existing public key. */
+//rule Get_pke:
+//  [ !Pk(A, pk) ] 
+//  --> 
+//  [ Out(pk) ]
+
+/* The issuer generates the credential and initiates the ECIES protocol. */
+rule Issuer_1:
+     let k = kdf(pkH^~r)
+         k1 = splitL(k)
+	 k2 = splitR(k)
+	 sig = sign(h(~cred), ~lkIs)
+ 	 mc = mac(h(~cred), k2)	
+ 	 ccred = senc(~cred, k1)	 
+     in
+     [ !Ltks($I, ~lkIs),
+       !Pke($H, pkH),
+       Fr(~r),
+       Fr(~cred)
+     ]
+     --[ SendI($I, $H, ~cred) ]->
+     [ Out(<ccred, mc, sig, 'g'^~r>) ]
+
+/* The holder receives the ECIES-encrypted message by the issuer, and 
+   decrypts it. */
+rule Holder_2:
+     let k = kdf(R^~lkH)
+         k1 = splitL(k)
+	 k2 = splitR(k)
+	 cred = sdec(ccred, k1)
+     in
+     [ !Ltke($H, ~lkH),
+       !Pks($I, pkI),
+       In(<ccred, mac(h(cred), k2), sig, R>) ]
+     --[ RecvH($I, $H, cred),
+	 Eq(verify(sig, h(cred), pkI), true),
+         Secret(cred)/*,
+	 SessionKey($I, $H, R^~lkH)*/]->
+     []
+
+restriction Equality:
+	    "All x y #i. Eq(x,y) @i ==> x = y"
+
+/* Safety check */
+lemma executable:
+      exists-trace
+	"Ex A B m #i #j. SendI(A,B,m) @i & RecvH(A,B,m) @j"
+
+     
+end
