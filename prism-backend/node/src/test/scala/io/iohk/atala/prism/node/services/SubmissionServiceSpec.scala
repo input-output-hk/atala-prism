@@ -61,8 +61,8 @@ class SubmissionServiceSpec
       operationSubmissionPeriod = 1.hour
     )
 
-  private implicit lazy val objectManagementService: ObjectManagementService =
-    ObjectManagementService(
+  private implicit lazy val objectManagementService: ObjectManagementServiceImpl =
+    ObjectManagementServiceImpl(
       atalaOperationsRepository,
       atalaObjectsTransactionsRepository,
       keyValuesRepository,

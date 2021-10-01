@@ -20,7 +20,7 @@ import io.iohk.atala.prism.node.models.{
 }
 import io.iohk.atala.prism.node.operations._
 import io.iohk.atala.prism.node.repositories.{CredentialBatchesRepository, DIDDataRepository}
-import io.iohk.atala.prism.node.services.{ObjectManagementService, SubmissionSchedulingService}
+import io.iohk.atala.prism.node.services.{ObjectManagementServiceImpl, SubmissionSchedulingService}
 import io.iohk.atala.prism.protos.common_models.{HealthCheckRequest, HealthCheckResponse}
 import io.iohk.atala.prism.protos.node_api._
 import io.iohk.atala.prism.protos.node_models.{OperationOutput, SignedAtalaOperation}
@@ -41,7 +41,7 @@ import io.iohk.atala.prism.node.models.AtalaObjectTransactionSubmissionStatus.In
 
 class NodeServiceImpl(
     didDataRepository: DIDDataRepository[IO],
-    objectManagement: ObjectManagementService,
+    objectManagement: ObjectManagementServiceImpl,
     submissionSchedulingService: SubmissionSchedulingService,
     credentialBatchesRepository: CredentialBatchesRepository[IO]
 )(implicit
@@ -273,7 +273,7 @@ class NodeServiceImpl(
           require(request.signedOperations.nonEmpty, "there must be at least one operation to be published")
 
           request.signedOperations.map { signedAtalaOperation =>
-            val obj = ObjectManagementService.createAtalaObject(List(signedAtalaOperation))
+            val obj = ObjectManagementServiceImpl.createAtalaObject(List(signedAtalaOperation))
             val operationId = AtalaOperationId.of(signedAtalaOperation)
             require(
               AtalaObjectMetadata.estimateTxMetadataSize(obj) <= cardano.TX_METADATA_MAX_SIZE,

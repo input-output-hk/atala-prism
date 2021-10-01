@@ -23,7 +23,7 @@ import io.iohk.atala.prism.node.repositories.daos.{DIDDataDAO, PublicKeysDAO}
 import io.iohk.atala.prism.node.repositories.{CredentialBatchesRepository, DIDDataRepository}
 import io.iohk.atala.prism.node.services.{
   BlockProcessingServiceSpec,
-  ObjectManagementService,
+  ObjectManagementServiceImpl,
   SubmissionSchedulingService
 }
 import io.iohk.atala.prism.protos.node_api._
@@ -50,7 +50,7 @@ class NodeServiceSpec
   protected var channelHandle: ManagedChannel = _
   protected var service: node_api.NodeServiceGrpc.NodeServiceBlockingStub = _
 
-  private val objectManagementService = mock[ObjectManagementService]
+  private val objectManagementService = mock[ObjectManagementServiceImpl]
   private val credentialBatchesRepository = mock[CredentialBatchesRepository[IO]]
   private val submissionSchedulingService = mock[SubmissionSchedulingService]
 

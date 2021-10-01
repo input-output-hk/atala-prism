@@ -65,7 +65,7 @@ class NodeApp(executionContext: ExecutionContext) { self =>
 
     val liftedTransactor = transactor.mapK(TraceId.liftToIOWithTraceId)
 
-    val objectManagementServicePromise: Promise[ObjectManagementService] = Promise()
+    val objectManagementServicePromise: Promise[ObjectManagementService[IO]] = Promise()
 
     def onAtalaObject(notification: AtalaObjectNotification): Future[Unit] = {
       objectManagementServicePromise.future.map { objectManagementService =>
@@ -74,7 +74,7 @@ class NodeApp(executionContext: ExecutionContext) { self =>
       }
     }
 
-    val keyValuesRepository = KeyValuesRepository(transactor)
+    val keyValuesRepository = KeyValuesRepository(liftedTransactor)
     val keyValueService = new KeyValueService(keyValuesRepository)
 
     val (atalaReferenceLedger, releaseAtalaReferenceLedger) = globalConfig.getString("ledger") match {
@@ -86,7 +86,7 @@ class NodeApp(executionContext: ExecutionContext) { self =>
     logger.info("Creating blocks processor")
     val blockProcessingService = new BlockProcessingServiceImpl
     val didDataRepository = DIDDataRepository(transactor)
-    val atalaOperationsRepository = AtalaOperationsRepository(transactor)
+    val atalaOperationsRepository = AtalaOperationsRepository(liftedTransactor)
     val atalaObjectsTransactionsRepository = AtalaObjectsTransactionsRepository.unsafe(liftedTransactor, logs)
 
     val ledgerPendingTransactionTimeout = globalConfig.getDuration("ledgerPendingTransactionTimeout")
@@ -112,11 +112,12 @@ class NodeApp(executionContext: ExecutionContext) { self =>
       submissionService
     )
 
-    val objectManagementService = ObjectManagementService(
+    val objectManagementService = ObjectManagementService[IOWithTraceIdContext](
       atalaOperationsRepository,
       atalaObjectsTransactionsRepository,
       keyValuesRepository,
-      blockProcessingService
+      blockProcessingService,
+      liftedTransactor
     )
     objectManagementServicePromise.success(objectManagementService)
 

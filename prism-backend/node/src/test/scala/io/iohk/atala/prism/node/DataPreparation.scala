@@ -35,7 +35,7 @@ import io.iohk.atala.prism.node.repositories.daos.{
   KeyValuesDAO,
   PublicKeysDAO
 }
-import io.iohk.atala.prism.node.services.{BlockProcessingServiceSpec, ObjectManagementService, SubmissionService}
+import io.iohk.atala.prism.node.services.{BlockProcessingServiceSpec, ObjectManagementServiceImpl, SubmissionService}
 import org.scalatest.OptionValues._
 import io.iohk.atala.prism.protos.{node_api, node_internal, node_models}
 import io.iohk.atala.prism.protos.node_models.SignedAtalaOperation
@@ -87,7 +87,7 @@ object DataPreparation {
   )
 
   def publishSingleOperationAndFlush(signedAtalaOperation: SignedAtalaOperation)(implicit
-      objectManagementService: ObjectManagementService,
+      objectManagementService: ObjectManagementServiceImpl,
       submissionService: SubmissionService,
       executionContext: ExecutionContext
   ): Future[Either[NodeError, AtalaOperationId]] = {
@@ -98,7 +98,7 @@ object DataPreparation {
   }
 
   def publishOperationsAndFlush(ops: SignedAtalaOperation*)(implicit
-      objectManagementService: ObjectManagementService,
+      objectManagementService: ObjectManagementServiceImpl,
       submissionService: SubmissionService,
       executionContext: ExecutionContext
   ): Future[List[Either[NodeError, AtalaOperationId]]] = {
