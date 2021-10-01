@@ -65,7 +65,7 @@ class MessagesServiceLogs[S[_], F[_]: ServiceLogging[*[_], MessagesService[S, F]
   override def getMessageStream(
       recipientId: ParticipantId,
       lastSeenMessageId: Option[MessageId]
-  ): S[Message] = ???
+  ): S[Message] = super.getMessageStream(recipientId, lastSeenMessageId)
 
   override def getConnectionMessages(recipientId: ParticipantId, connectionId: ConnectionId): Mid[F, List[Message]] =
     in =>
