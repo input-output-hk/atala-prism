@@ -242,6 +242,7 @@ class ConnectorService(
         .run(traceId)
         .unsafeToFuture()
         .toFutureEither
+        .mapLeft(_.unify)
         .map { registerResult =>
           val response = connector_api
             .RegisterDIDResponse(
@@ -414,6 +415,7 @@ class ConnectorService(
         .run(traceId)
         .unsafeToFuture()
         .toFutureEither
+        .mapLeft(_.unify)
         .map { info =>
           val role = info.tpe match {
             case ParticipantType.Holder =>
