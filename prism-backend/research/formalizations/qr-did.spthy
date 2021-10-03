@@ -17,7 +17,7 @@ begin
 
  1. I => H: tid, pk_iss, code // Shared via QR, i.e., secure channel
  2. H -> C: <tid, pk_hol>, mac(<tid, pk_hol>, code)
- 3. C -> I: <tid, pk_hol> mac(pk_hol, code)
+ 3. C -> I: <tid, pk_hol> mac(<tid, pk_hol>, code)
 
  After this, I should trust that H's public key (~ DID Document) is indeed
  pk_hol.
