@@ -12,6 +12,21 @@ const { Step } = Steps;
 const GenericStepsButtons = ({ steps, currentStep, disableBack, disableNext, loading }) => {
   const { t } = useTranslation();
   const { back, next } = steps[currentStep];
+
+  const nextButton = (
+    <>
+      {t('actions.next')}
+      <RightOutlined />
+    </>
+  );
+
+  const backButton = (
+    <>
+      <LeftOutlined />
+      {t('actions.back')}
+    </>
+  );
+
   return (
     <div className="GenericStepsButtons">
       <div className="ControlButtons">
@@ -21,13 +36,13 @@ const GenericStepsButtons = ({ steps, currentStep, disableBack, disableNext, loa
             className: 'theme-link',
             disabled: disableBack || !back
           }}
-          buttonText={[<LeftOutlined />, t('actions.back')]}
+          buttonText={backButton}
         />
       </div>
       <div className="stepsContainer">
         <Steps size="small" current={currentStep}>
-          {steps.map(({ title }) => (
-            <Step title={title} />
+          {steps.map(({ key, title }) => (
+            <Step key={key} title={title} />
           ))}
         </Steps>
       </div>
@@ -38,7 +53,7 @@ const GenericStepsButtons = ({ steps, currentStep, disableBack, disableNext, loa
             className: 'theme-link',
             disabled: disableNext || !next
           }}
-          buttonText={[t('actions.next'), <RightOutlined />]}
+          buttonText={nextButton}
           loading={loading}
         />
       </div>

@@ -1,24 +1,22 @@
 import React from 'react';
-import PropTypes from 'prop-types';
 import { useTranslation } from 'react-i18next';
 import { Form, Input } from 'antd';
+import { observer } from 'mobx-react-lite';
 import { exactValueExists } from '../../../../helpers/filterHelpers';
-import { withApi } from '../../../providers/withApi';
-import { useCredentialTypes } from '../../../../hooks/useCredentialTypes';
-import { credentialTypesManagerShape } from '../../../../helpers/propShapes';
+import { useTemplateStore } from '../../../../hooks/useTemplateStore';
 
 import './_style.scss';
 
 const normalize = input => input.trim();
 
-const TemplateName = ({ api }) => {
+const TemplateName = observer(() => {
   const { t } = useTranslation();
-  const { credentialTypes } = useCredentialTypes(api.credentialTypesManager);
+  const { credentialTemplates } = useTemplateStore();
 
   const templateExists = async (_rule, value) => {
     const normalizedValue = normalize(value);
 
-    if (exactValueExists(credentialTypes, normalizedValue, 'name')) {
+    if (exactValueExists(credentialTemplates, normalizedValue, 'name')) {
       const errorMessage = t('credentialTemplateCreation.errors.preExisting', {
         value: normalizedValue
       });
@@ -39,12 +37,6 @@ const TemplateName = ({ api }) => {
       </Form.Item>
     </div>
   );
-};
+});
 
-TemplateName.propTypes = {
-  api: PropTypes.shape({
-    credentialTypesManager: credentialTypesManagerShape
-  }).isRequired
-};
-
-export default withApi(TemplateName);
+export default TemplateName;

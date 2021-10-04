@@ -3,7 +3,8 @@ import Logger from '../../helpers/Logger';
 import { GetCredentialTypesRequest, GetCredentialTypeRequest } from '../../protos/console_api_pb';
 import { adaptCredentialType } from '../helpers/credentialTypeHelpers';
 import hardcodedTemplateCategories from './mocks/hardcodedTemplateCategories';
-import { VALIDATION_KEYS } from '../../helpers/constants';
+import { mockDelay } from '../../helpers/genericHelpers';
+import { VALIDATION_KEYS, MOCK_API_CALL_DELAY } from '../../helpers/constants';
 
 async function getCredentialTypes() {
   Logger.info('getting credential types');
@@ -39,12 +40,20 @@ async function getCredentialTypeDetails(id) {
   return mappedCredentialType;
 }
 
+// eslint-disable-next-line no-unused-vars
+async function createTemplate(_values) {
+  // TODO: add implementation for creating credential types
+  await mockDelay(MOCK_API_CALL_DELAY);
+  return Promise.resolve();
+}
+
 function getTemplateCategories() {
   return Promise.resolve(hardcodedTemplateCategories);
 }
 
 // eslint-disable-next-line no-unused-vars
-function createCategory(_values) {
+async function createCategory(_values) {
+  await mockDelay(MOCK_API_CALL_DELAY);
   return Promise.resolve();
 }
 
@@ -62,6 +71,7 @@ function CredentialTypesManager(config, auth) {
 
 CredentialTypesManager.prototype.getCredentialTypes = getCredentialTypes;
 CredentialTypesManager.prototype.getCredentialTypeDetails = getCredentialTypeDetails;
+CredentialTypesManager.prototype.createTemplate = createTemplate;
 CredentialTypesManager.prototype.getTemplateCategories = getTemplateCategories;
 CredentialTypesManager.prototype.createCategory = createCategory;
 

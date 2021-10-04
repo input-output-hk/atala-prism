@@ -96,6 +96,7 @@ const CategoryIconSelector = ({ categoryForm }) => {
               {...uploaderProps}
               itemRender={(_originNode, file) => (
                 <IconOption
+                  key={file.uid}
                   icon={{ file, isCustomIcon: true }}
                   selected={selectedIcon.isCustomIcon && file.uid === selectedIcon.file.uid}
                 />
@@ -116,6 +117,7 @@ const CategoryIconSelector = ({ categoryForm }) => {
         <div className="imgGalleryContainer">
           {defaultCategoryIcons.map((src, index) => (
             <IconOption
+              key={src}
               icon={{ src, index, isCustomIcon: false }}
               selected={!selectedIcon.isCustomIcon && index === selectedIcon.index}
             />

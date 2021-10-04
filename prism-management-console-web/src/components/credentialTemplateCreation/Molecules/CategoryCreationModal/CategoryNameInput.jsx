@@ -9,15 +9,13 @@ const i18nPrefix = 'credentialTemplateCreation';
 
 const normalize = input => input.trim();
 
-const CategoryNameInput = ({ inputRef, templateCategories, mockedCategories }) => {
+const CategoryNameInput = ({ inputRef, templateCategories }) => {
   const { t } = useTranslation();
 
   const categoryExists = async (_rule, value) => {
     const normalizedValue = normalize(value);
-    // TODO: remove when backend implements template categories
-    const allCategories = templateCategories.concat(mockedCategories);
 
-    if (exactValueExists(allCategories, normalizedValue, 'name')) {
+    if (exactValueExists(templateCategories, normalizedValue, 'name')) {
       const errorMessage = t(`${i18nPrefix}.categoryCreationModal.errors.preExisting`, {
         value: normalizedValue
       });
@@ -44,8 +42,7 @@ const CategoryNameInput = ({ inputRef, templateCategories, mockedCategories }) =
 
 CategoryNameInput.propTypes = {
   inputRef: refShape.isRequired,
-  templateCategories: PropTypes.arrayOf(templateCategoryShape).isRequired,
-  mockedCategories: PropTypes.arrayOf(templateCategoryShape).isRequired
+  templateCategories: PropTypes.arrayOf(templateCategoryShape).isRequired
 };
 
 export default CategoryNameInput;

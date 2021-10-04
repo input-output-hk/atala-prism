@@ -5,11 +5,10 @@ import { templateBodyAttributeShape } from '../../../../helpers/propShapes';
 
 const FixedTextInput = ({ value }) => {
   const { t } = useTranslation();
-  const { key, name, fieldKey, textAttributeIndex, ...restField } = value;
+  const { name, fieldKey, textAttributeIndex } = value;
   return (
     <Form.Item
       className="fixedTextInputContainer"
-      {...restField}
       name={[name, 'text']}
       fieldKey={[fieldKey, 'text']}
       label={t('credentialTemplateCreation.step2.content.fixedTextAttribute', {

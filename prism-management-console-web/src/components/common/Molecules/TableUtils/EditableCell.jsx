@@ -122,8 +122,15 @@ EditableCell.defaultProps = {
 
 EditableCell.propTypes = {
   EditableContext: PropTypes.element.isRequired,
-  record: PropTypes.shape({ key: PropTypes.number }),
-  children: PropTypes.oneOf([PropTypes.bool, PropTypes.string]).isRequired,
+  record: PropTypes.shape({
+    key: PropTypes.number,
+    errorFields: PropTypes.arrayOfType(
+      PropTypes.shape({
+        name: PropTypes.string
+      })
+    )
+  }),
+  children: PropTypes.node.isRequired,
   dataIndex: PropTypes.string,
   type: PropTypes.string.isRequired,
   editable: PropTypes.bool,

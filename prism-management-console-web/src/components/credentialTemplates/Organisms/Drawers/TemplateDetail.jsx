@@ -39,7 +39,7 @@ TemplateDetail.propTypes = {
     visible: PropTypes.bool,
     onClose: PropTypes.func
   }).isRequired,
-  templateData: PropTypes.shape(credentialTypeShape)
+  templateData: credentialTypeShape
 };
 
 export default TemplateDetail;

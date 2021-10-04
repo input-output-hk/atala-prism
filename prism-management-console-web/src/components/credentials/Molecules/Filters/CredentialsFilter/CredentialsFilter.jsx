@@ -120,7 +120,7 @@ CredentialsFilter.propTypes = {
   filterProps: PropTypes.shape({
     name: PropTypes.string,
     setName: PropTypes.func,
-    credentialTypes: PropTypes.arrayOf(PropTypes.shape(credentialTypeShape)),
+    credentialTypes: PropTypes.arrayOf(credentialTypeShape),
     credentialType: PropTypes.string,
     setCredentialType: PropTypes.func,
     credentialStatus: PropTypes.number,

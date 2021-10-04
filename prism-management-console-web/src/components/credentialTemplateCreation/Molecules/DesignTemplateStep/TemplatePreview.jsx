@@ -1,36 +1,12 @@
-import React, { useEffect, useState } from 'react';
+import React from 'react';
+import { observer } from 'mobx-react-lite';
 import CredentialsViewer from '../../../newCredential/Molecules/CredentialsViewer/CredentialsViewer';
-import { useTemplateContext } from '../../../providers/TemplateContext';
-import {
-  getContrastColorSettings,
-  configureHtmlTemplate,
-  updateImages
-} from '../../../../helpers/templateLayouts/templates';
+import { useTemplateSketch } from '../../../../hooks/useTemplateSketch';
 
-const TemplatePreview = () => {
-  const { templateSettings, form, setTemplatePreview } = useTemplateContext();
-  const [imageOverwrites, setImagesOverwrites] = useState();
-  const [displayHtml, setDisplayHtml] = useState('');
+const TemplatePreview = observer(() => {
+  const { preview } = useTemplateSketch();
 
-  useEffect(() => {
-    updateImages(templateSettings, setImagesOverwrites);
-  }, [templateSettings]);
-
-  useEffect(() => {
-    const contrastColorSettings = getContrastColorSettings(templateSettings);
-    const currentConfig = {
-      ...templateSettings,
-      ...imageOverwrites,
-      ...contrastColorSettings
-    };
-
-    const configuredHtmlTemplate = configureHtmlTemplate(currentConfig.layout, currentConfig);
-
-    setDisplayHtml(configuredHtmlTemplate);
-    setTemplatePreview(configuredHtmlTemplate);
-  }, [templateSettings, form, imageOverwrites, setTemplatePreview]);
-
-  return <CredentialsViewer credentialViews={[displayHtml]} showBrowseControls={false} />;
-};
+  return <CredentialsViewer credentialViews={[preview]} showBrowseControls={false} />;
+});
 
 export default TemplatePreview;

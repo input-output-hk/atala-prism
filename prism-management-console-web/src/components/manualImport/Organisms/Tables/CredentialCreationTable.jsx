@@ -67,7 +67,7 @@ const CredentialCreationTable = ({ recipients, credentialType }) => {
 
 CredentialCreationTable.propTypes = {
   recipients: PropTypes.arrayOf(contactShape).isRequired,
-  credentialType: PropTypes.shape(credentialTypeShape).isRequired
+  credentialType: credentialTypeShape.isRequired
 };
 
 export default CredentialCreationTable;

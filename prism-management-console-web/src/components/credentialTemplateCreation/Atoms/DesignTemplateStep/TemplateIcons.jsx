@@ -1,16 +1,17 @@
 import React from 'react';
+import { observer } from 'mobx-react-lite';
 import { Button, Form, Upload } from 'antd';
 import { PictureOutlined } from '@ant-design/icons';
 import { useTranslation } from 'react-i18next';
-import { useTemplateContext } from '../../../providers/TemplateContext';
+import { useTemplateSketch } from '../../../../hooks/useTemplateSketch';
 import { templateLayouts } from '../../../../helpers/templateLayouts/templates';
 import './_style.scss';
 
-const TemplateIcons = () => {
+const TemplateIcons = observer(() => {
   const { t } = useTranslation();
-  const { templateSettings } = useTemplateContext();
+  const { templateSketch } = useTemplateSketch();
 
-  const { images } = templateLayouts[templateSettings.layout];
+  const { images } = templateLayouts[templateSketch.layout];
 
   const normFile = ({ file }) => [file];
 
@@ -26,6 +27,7 @@ const TemplateIcons = () => {
         <h3>{t('credentialTemplateCreation.step2.style.customizeHeader')}</h3>
         {images.map(key => (
           <Form.Item
+            key={key}
             name={key}
             label={t(`credentialTemplateCreation.step2.style.${key}`)}
             valuePropName="file"
@@ -41,6 +43,6 @@ const TemplateIcons = () => {
       </div>
     </>
   );
-};
+});
 
 export default TemplateIcons;

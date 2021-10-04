@@ -22,7 +22,7 @@ import { useSession } from '../providers/SessionContext';
 import { fillHTMLCredential } from '../../helpers/credentialView';
 import { useContacts } from '../../hooks/useContacts';
 import { useGroups } from '../../hooks/useGroups';
-import { useCredentialTypes } from '../../hooks/useCredentialTypes';
+import { useTemplateStore } from '../../hooks/useTemplateStore';
 
 const NewCredentialContainer = ({ api, redirector: { redirectToCredentials } }) => {
   const { t } = useTranslation();
@@ -48,9 +48,11 @@ const NewCredentialContainer = ({ api, redirector: { redirectToCredentials } }) 
     hasMore: hasMoreContacts
   } = useContacts(api.contactsManager);
 
-  const { credentialTypes, getCredentialTypeDetails } = useCredentialTypes(
-    api.credentialTypesManager
-  );
+  const {
+    credentialTemplates: credentialTypes,
+    getCredentialTemplateDetails: getCredentialTypeDetails,
+    templateCategories
+  } = useTemplateStore({ fetch: true });
 
   const [shouldSelectRecipients, setShouldSelectRecipients] = useState(true);
   const [recipients, setRecipients] = useState([]);
@@ -244,6 +246,7 @@ const NewCredentialContainer = ({ api, redirector: { redirectToCredentials } }) 
         return (
           <TypeSelection
             credentialTypes={credentialTypes}
+            templateCategories={templateCategories}
             onTypeSelection={handleTypeSelection}
             selectedType={selectedCredentialTypeId}
           />
