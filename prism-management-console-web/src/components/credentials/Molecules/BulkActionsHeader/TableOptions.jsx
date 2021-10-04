@@ -69,8 +69,8 @@ const TableOptions = ({ bulkActionsProps, loadingSelection, selectedLength, sort
         <Dropdown overlay={sortingOptionsMenu} trigger={['click']}>
           {
             <CustomButton
-              className="TableOptionButton"
-              buttonProps={{ className: 'theme-link', icon: <DownOutlined /> }}
+              overrideClassName="theme-link TableOptionButton"
+              buttonProps={{ icon: <DownOutlined /> }}
               buttonText={t(
                 sortingBy ? `credentials.table.columns.${sortingBy}` : 'actions.sortBy'
               )}

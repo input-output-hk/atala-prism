@@ -25,10 +25,10 @@ const NewGroupButton = ({ onClick }) => {
     <CustomButton
       buttonProps={{
         onClick,
-        className: 'theme-secondary'
+        className: 'theme-secondary',
+        icon: <PlusOutlined />
       }}
       buttonText={t('groups.createNewGroup')}
-      icon={<PlusOutlined />}
     />
   );
 };

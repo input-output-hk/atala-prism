@@ -6,7 +6,6 @@ import Contacts from './connections/ConnectionsContainer';
 import Groups from './groups/GroupsContainer';
 import Credential from './credentials/CredentialContainer';
 import NewCredential from './newCredential/NewCredentialContainer';
-import Admin from './admin/AdminContainer';
 import { withSideBar } from './providers/withSideBar';
 import { withLoggedValidation } from './providers/withLoggedValidation';
 import Contact from './contactDetail/ContactContainer';
@@ -54,12 +53,6 @@ const dashboardRoute = {
   key: 'dashboard',
   component: withLoggedValidation(withSideBar(Dashboard))
 };
-const adminRoute = {
-  exact: true,
-  path: '/admin',
-  key: 'admin',
-  component: withLoggedValidation(withSideBar(Admin))
-};
 const groupCreationRoute = {
   exact: true,
   path: '/groups/creation',
@@ -98,7 +91,6 @@ const createCredentialTemplate = {
 };
 
 const routes = [
-  adminRoute,
   errorRoute,
   contacts,
   importContacts,
