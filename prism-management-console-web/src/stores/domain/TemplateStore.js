@@ -44,10 +44,10 @@ export default class TemplateStore {
       this.rootStore.handleTransportLayerSuccess();
     } catch (error) {
       const metadata = {
-        customMessage: `[${
-          this.storeName
-        }.createCredentialTemplate] Error while creating credential template`,
-        model: 'Templates'
+        store: this.storeName,
+        method: 'createCredentialTemplate',
+        verb: 'saving',
+        model: 'Template'
       };
       this.rootStore.handleTransportLayerError(error, metadata);
     }
@@ -61,7 +61,9 @@ export default class TemplateStore {
       this.rootStore.handleTransportLayerSuccess();
     } catch (error) {
       const metadata = {
-        customMessage: `[${this.storeName}.fetchTemplates] Error while getting templates`,
+        store: this.storeName,
+        method: 'fetchTemplates',
+        verb: 'getting',
         model: 'Templates'
       };
       this.rootStore.handleTransportLayerError(error, metadata);
@@ -76,10 +78,10 @@ export default class TemplateStore {
       return result;
     } catch (error) {
       const metadata = {
-        customMessage: `[${
-          this.storeName
-        }.getCredentialTemplateDetails] Error while getting template details`,
-        model: 'Templates'
+        store: this.storeName,
+        method: 'getCredentialTemplateDetails',
+        verb: 'getting',
+        model: 'Template Details'
       };
       this.rootStore.handleTransportLayerError(error, metadata);
     }
@@ -96,10 +98,10 @@ export default class TemplateStore {
       this.fetchCategories();
     } catch (error) {
       const metadata = {
-        customMessage: `[${
-          this.storeName
-        }.createTemplateCategory] Error while creating tempalte category`,
-        model: 'Categories'
+        store: this.storeName,
+        method: 'createTemplateCategory',
+        verb: 'saving',
+        model: 'Template Category'
       };
       this.rootStore.handleTransportLayerError(error, metadata);
     }
@@ -113,10 +115,10 @@ export default class TemplateStore {
       this.templateCategories = response.concat(this.mockedTemplateCategories);
     } catch (error) {
       const metadata = {
-        customMessage: `[${
-          this.storeName
-        }.fetchCategories] Error while getting template categories`,
-        model: 'Categories'
+        store: this.storeName,
+        method: 'fetchCategories',
+        verb: 'getting',
+        model: 'Template Categories'
       };
       this.rootStore.handleTransportLayerError(error, metadata);
     }
