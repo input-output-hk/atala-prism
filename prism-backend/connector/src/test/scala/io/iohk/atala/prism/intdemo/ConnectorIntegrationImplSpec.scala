@@ -4,9 +4,11 @@ import io.iohk.atala.prism.connector.model.{ConnectionId, MessageId}
 import io.iohk.atala.prism.connector.services.{ConnectionsService, MessagesService}
 import io.iohk.atala.prism.intdemo.ConnectorIntegration.ConnectorIntegrationImpl
 import ConnectorIntegrationImplSpec._
+import cats.syntax.applicative._
+import cats.syntax.either._
+import io.iohk.atala.prism.connector.errors.ConnectorError
 import io.iohk.atala.prism.logging.TraceId.IOWithTraceIdContext
 import io.iohk.atala.prism.models.ParticipantId
-import io.iohk.atala.prism.utils.FutureEither._
 import io.iohk.atala.prism.protos.credential_models
 import org.mockito.ArgumentMatchersSugar.{any, argThat, eqTo}
 import org.mockito.MockitoSugar.{mock, times, verify, when}
@@ -56,12 +58,17 @@ object ConnectorIntegrationImplSpec {
   val connectionId = ConnectionId.random()
   val messageId = MessageId.random()
 
-  private def connectorIntegration(testCode: (ConnectorIntegration, MessagesService) => Any): Unit = {
+  private def connectorIntegration(
+      testCode: (
+          ConnectorIntegration,
+          MessagesService[fs2.Stream[IOWithTraceIdContext, *], IOWithTraceIdContext]
+      ) => Any
+  ): Unit = {
     val connectionsService = mock[ConnectionsService[IOWithTraceIdContext]]
-    val messagesService = mock[MessagesService]
+    val messagesService = mock[MessagesService[fs2.Stream[IOWithTraceIdContext, *], IOWithTraceIdContext]]
     val connectorIntegration = new ConnectorIntegrationImpl(connectionsService, messagesService)
     when(messagesService.insertMessage(eqTo(senderId), eqTo(connectionId), any[Array[Byte]], any[Option[MessageId]]))
-      .thenReturn(Right(messageId).toFutureEither)
+      .thenReturn(messageId.asRight[ConnectorError].pure[IOWithTraceIdContext])
     testCode(connectorIntegration, messagesService)
     ()
   }

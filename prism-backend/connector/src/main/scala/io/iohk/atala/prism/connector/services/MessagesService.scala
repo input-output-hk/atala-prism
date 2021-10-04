@@ -1,62 +1,106 @@
 package io.iohk.atala.prism.connector.services
 
+import cats.{Comonad, Functor}
 import cats.data.NonEmptyList
-import cats.implicits.catsSyntaxEitherId
+import cats.effect.MonadThrow
+import cats.tagless.ApplyK
+import cats.syntax.comonad._
+import cats.syntax.functor._
 import fs2.Stream
 import io.iohk.atala.prism.connector.errors.ConnectorError
 import io.iohk.atala.prism.connector.model._
 import io.iohk.atala.prism.connector.model.actions.SendMessagesRequest
 import io.iohk.atala.prism.connector.repositories.MessagesRepository
-import io.iohk.atala.prism.logging.TraceId
-import io.iohk.atala.prism.logging.TraceId.IOWithTraceIdContext
+import io.iohk.atala.prism.connector.services.logs.MessagesServiceLogs
 import io.iohk.atala.prism.models.ParticipantId
-import io.iohk.atala.prism.utils.FutureEither
-import io.iohk.atala.prism.utils.FutureEither.FutureEitherOps
+import tofu.higherKind.Mid
+import tofu.logging.{Logs, ServiceLogging}
 
-class MessagesService(messagesRepository: MessagesRepository[Stream[IOWithTraceIdContext, *], IOWithTraceIdContext]) {
+trait MessagesService[S[_], F[_]] {
   def insertMessage(
       sender: ParticipantId,
       connection: ConnectionId,
       content: Array[Byte],
       messageId: Option[MessageId] = None
-  ): FutureEither[ConnectorError, MessageId] =
-    messagesRepository
-      .insertMessage(sender, connection, content, messageId)
-      .run(TraceId.generateYOLO)
-      .unsafeToFuture()
-      .toFutureEither
+  ): F[Either[ConnectorError, MessageId]]
 
   def insertMessages(
       sender: ParticipantId,
       messages: NonEmptyList[SendMessagesRequest.MessageToSend]
-  ): FutureEither[ConnectorError, List[MessageId]] =
-    messagesRepository.insertMessages(sender, messages).run(TraceId.generateYOLO).unsafeToFuture().toFutureEither
+  ): F[Either[ConnectorError, List[MessageId]]]
 
   def getMessagesPaginated(
       recipientId: ParticipantId,
       limit: Int,
       lastSeenMessageId: Option[MessageId]
-  ): FutureEither[ConnectorError, Seq[Message]] =
-    messagesRepository
-      .getMessagesPaginated(recipientId, limit, lastSeenMessageId)
-      .run(TraceId.generateYOLO)
-      .unsafeToFuture()
-      .toFutureEither
+  ): F[Either[ConnectorError, List[Message]]]
 
   def getMessageStream(
       recipientId: ParticipantId,
       lastSeenMessageId: Option[MessageId]
-  ): Stream[IOWithTraceIdContext, Message] =
+  ): S[Message]
+
+  def getConnectionMessages(
+      recipientId: ParticipantId,
+      connectionId: ConnectionId
+  ): F[List[Message]]
+
+}
+
+object MessagesService {
+  implicit def applyK[E[_]]: ApplyK[MessagesService[E, *[_]]] = cats.tagless.Derive.applyK[MessagesService[E, *[_]]]
+
+  def apply[F[_]: MonadThrow, R[_]: Functor](
+      messagesRepository: MessagesRepository[Stream[F, *], F],
+      logs: Logs[R, F]
+  ): R[MessagesService[Stream[F, *], F]] =
+    for {
+      serviceLogs <- logs.service[MessagesService[Stream[F, *], F]]
+    } yield {
+      implicit val implicitLogs: ServiceLogging[F, MessagesService[Stream[F, *], F]] = serviceLogs
+      val logs: MessagesService[Stream[F, *], Mid[F, *]] = new MessagesServiceLogs[Stream[F, *], F]
+      val mid = logs
+      mid attach new MessagesServiceImpl[Stream[F, *], F](messagesRepository)
+    }
+
+  def unsafe[F[_]: MonadThrow, R[_]: Comonad](
+      messagesRepository: MessagesRepository[Stream[F, *], F],
+      logs: Logs[R, F]
+  ): MessagesService[Stream[F, *], F] = MessagesService(messagesRepository, logs).extract
+}
+
+private class MessagesServiceImpl[S[_], F[_]](messagesRepository: MessagesRepository[S, F])
+    extends MessagesService[S, F] {
+  def insertMessage(
+      sender: ParticipantId,
+      connection: ConnectionId,
+      content: Array[Byte],
+      messageId: Option[MessageId] = None
+  ): F[Either[ConnectorError, MessageId]] =
+    messagesRepository.insertMessage(sender, connection, content, messageId)
+
+  def insertMessages(
+      sender: ParticipantId,
+      messages: NonEmptyList[SendMessagesRequest.MessageToSend]
+  ): F[Either[ConnectorError, List[MessageId]]] =
+    messagesRepository.insertMessages(sender, messages)
+
+  def getMessagesPaginated(
+      recipientId: ParticipantId,
+      limit: Int,
+      lastSeenMessageId: Option[MessageId]
+  ): F[Either[ConnectorError, List[Message]]] =
+    messagesRepository.getMessagesPaginated(recipientId, limit, lastSeenMessageId)
+
+  def getMessageStream(
+      recipientId: ParticipantId,
+      lastSeenMessageId: Option[MessageId]
+  ): S[Message] =
     messagesRepository.getMessageStream(recipientId, lastSeenMessageId)
 
   def getConnectionMessages(
       recipientId: ParticipantId,
       connectionId: ConnectionId
-  ): FutureEither[ConnectorError, Seq[Message]] =
-    messagesRepository
-      .getConnectionMessages(recipientId, connectionId)
-      .map(_.asRight)
-      .run(TraceId.generateYOLO)
-      .unsafeToFuture()
-      .toFutureEither
+  ): F[List[Message]] =
+    messagesRepository.getConnectionMessages(recipientId, connectionId)
 }

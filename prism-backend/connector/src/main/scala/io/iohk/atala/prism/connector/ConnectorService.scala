@@ -39,7 +39,7 @@ import scala.util.{Failure, Success}
 
 class ConnectorService(
     connections: ConnectionsService[IOWithTraceIdContext],
-    messages: MessagesService,
+    messages: MessagesService[fs2.Stream[IOWithTraceIdContext, *], IOWithTraceIdContext],
     registrationService: RegistrationService[IOWithTraceIdContext],
     messageNotificationService: MessageNotificationService,
     val authenticator: ConnectorAuthenticator,
@@ -275,6 +275,9 @@ class ConnectorService(
           messagesPaginatedRequest.limit,
           messagesPaginatedRequest.lastSeenMessageId
         )
+        .run(TraceId.generateYOLO)
+        .unsafeToFuture()
+        .toFutureEither
         .map(msgs => connector_api.GetMessagesPaginatedResponse(msgs.map(_.toProto)))
     }
   }
@@ -285,14 +288,13 @@ class ConnectorService(
   ): Unit = {
     def streamMessages(recipientId: ParticipantId, lastSeenMessageId: Option[MessageId]): Unit = {
       val existingMessageStream =
-        messages
-          .getMessageStream(recipientId = recipientId, lastSeenMessageId = lastSeenMessageId)
-          .translate(TraceId.ioWithTraceIdToIO)
-      val newMessageStream = messageNotificationService.stream(recipientId)
+        messages.getMessageStream(recipientId = recipientId, lastSeenMessageId = lastSeenMessageId)
+      val newMessageStream = messageNotificationService.stream(recipientId).translate(TraceId.liftToIOWithTraceId)
       (existingMessageStream ++ newMessageStream)
         .map(message => responseObserver.onNext(connector_api.GetMessageStreamResponse().withMessage(message.toProto)))
         .compile
         .drain
+        .run(TraceId.generateYOLO)
         .unsafeToFuture()
         .onComplete {
           case Success(_) => responseObserver.onCompleted()
@@ -316,6 +318,10 @@ class ConnectorService(
         messages
           .getConnectionMessages(participantId, getMessagesForConnectionRequest.connectionId)
           .map(msgs => connector_api.GetMessagesForConnectionResponse(msgs.map(_.toProto)))
+          .run(TraceId.generateYOLO)
+          .unsafeToFuture()
+          .map(_.asRight)
+          .toFutureEither
     }
 
   /** Returns public keys that can be used for secure communication with the other end of connection
@@ -367,6 +373,9 @@ class ConnectorService(
           content = sendMessageRequest.message,
           messageId = sendMessageRequest.id
         )
+        .run(TraceId.generateYOLO)
+        .unsafeToFuture()
+        .toFutureEither
         .map(messageId => connector_api.SendMessageResponse(id = messageId.uuid.toString))
     }
 
@@ -437,6 +446,9 @@ class ConnectorService(
       ) { messagesToInsert =>
         messages
           .insertMessages(participantId, messagesToInsert)
+          .run(TraceId.generateYOLO)
+          .unsafeToFuture()
+          .toFutureEither
           .map(messageIds => connector_api.SendMessagesResponse(ids = messageIds.map(_.uuid.toString)))
       }
     }

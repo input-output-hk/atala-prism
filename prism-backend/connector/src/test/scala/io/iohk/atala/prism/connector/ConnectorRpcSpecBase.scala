@@ -63,7 +63,7 @@ class ConnectorRpcSpecBase extends RpcSpecBase with DIDUtil {
       GrpcAuthenticationHeaderParser
     )
 
-  lazy val messagesService = new MessagesService(messagesRepository)
+  lazy val messagesService = MessagesService.unsafe(messagesRepository, testLogs)
   lazy val registrationService = RegistrationService.unsafe(participantsRepository, nodeMock, testLogs)
   lazy val messageNotificationService = MessageNotificationService(database)
   lazy val connectorService = new ConnectorService(
