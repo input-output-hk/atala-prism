@@ -45,7 +45,7 @@ class CardanoLedgerServiceSpec extends AtalaWithPostgresSpec {
   private val noOpObjectHandler: AtalaObjectNotificationHandler = _ => Future.unit
   private val scheduler: TestScheduler = TestScheduler()
   private lazy val keyValueService = KeyValueService.unsafe(KeyValuesRepository.unsafe(dbLiftedToTraceIdIO, logs), logs)
-  private lazy val cardanoBlockRepository = new CardanoBlockRepository(database)
+  private lazy val cardanoBlockRepository = CardanoBlockRepository(database)
 
   override def beforeAll(): Unit = {
     super.beforeAll()
@@ -286,7 +286,7 @@ class CardanoLedgerServiceSpec extends AtalaWithPostgresSpec {
 
       // Append a new block
       val lastBlock =
-        cardanoBlockRepository.getFullBlock(totalBlockCount).value.futureValue.toOption.value
+        cardanoBlockRepository.getFullBlock(totalBlockCount).unsafeRunSync().toOption.value
       TestCardanoBlockRepository.insertBlock(TestCardanoBlockRepository.createNextRandomBlock(Some(lastBlock)))
 
       // Test #2: all objects are now synced
