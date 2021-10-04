@@ -7,13 +7,13 @@ import {
   getCredentialFormSkeleton,
   getCredentialFormColumns
 } from '../../../../helpers/formDefinitions/credentials';
-import { DynamicFormContext } from '../../../../providers/DynamicFormProvider';
 import {
   CREDENTIAL_TYPE_FIELD_TYPES,
   IMPORT_CREDENTIALS_DATA,
   VALIDATION_KEYS
 } from '../../../../helpers/constants';
 import DynamicForm from '../../../dynamicForm/DynamicForm';
+import { DynamicFormContext } from '../../../providers/DynamicFormProvider';
 
 const CredentialCreationTable = ({ recipients, credentialType }) => {
   const { t } = useTranslation();

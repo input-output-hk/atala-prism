@@ -41,6 +41,7 @@ export default class TemplateStore {
     try {
       this.mockedCredentialTemplates.push(newTemplate);
       yield this.api.credentialTypesManager.createTemplate(newTemplate);
+      this.rootStore.handleTransportLayerSuccess();
     } catch (error) {
       const metadata = {
         customMessage: `[${
@@ -57,6 +58,7 @@ export default class TemplateStore {
     try {
       const response = yield this.api.credentialTypesManager.getCredentialTypes();
       this.credentialTemplates = response.concat(this.mockedCredentialTemplates);
+      this.rootStore.handleTransportLayerSuccess();
     } catch (error) {
       const metadata = {
         customMessage: `[${this.storeName}.fetchTemplates] Error while getting templates`,
@@ -69,13 +71,15 @@ export default class TemplateStore {
 
   *getCredentialTemplateDetails(id) {
     try {
-      return yield this.api.credentialTypesManager.getCredentialTypeDetails(id);
+      const result = yield this.api.credentialTypesManager.getCredentialTypeDetails(id);
+      this.rootStore.handleTransportLayerSuccess();
+      return result;
     } catch (error) {
       const metadata = {
         customMessage: `[${
           this.storeName
         }.getCredentialTemplateDetails] Error while getting template details`,
-        model: 'Template'
+        model: 'Templates'
       };
       this.rootStore.handleTransportLayerError(error, metadata);
     }
@@ -87,6 +91,7 @@ export default class TemplateStore {
       const logo = categoryIcon.isCustomIcon ? categoryIcon.file.thumbUrl : categoryIcon.src;
       const newCategory = { id: uuidv4(), name: categoryName, logo, state: 1 };
       yield this.api.credentialTypesManager.createCategory(newCategory);
+      this.rootStore.handleTransportLayerSuccess();
       this.mockedTemplateCategories.push(newCategory);
       this.fetchCategories();
     } catch (error) {
@@ -104,6 +109,7 @@ export default class TemplateStore {
     this.isLoadingCategories = true;
     try {
       const response = yield this.api.credentialTypesManager.getTemplateCategories();
+      this.rootStore.handleTransportLayerSuccess();
       this.templateCategories = response.concat(this.mockedTemplateCategories);
     } catch (error) {
       const metadata = {

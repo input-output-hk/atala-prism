@@ -17,7 +17,7 @@ import {
   filterContactByStatus
 } from '../helpers/filterHelpers';
 import { credentialMapper, credentialReceivedMapper } from '../APIs/helpers/credentialHelpers';
-import { useSession } from '../components/providers/SessionContext';
+import { useSession } from './useSession';
 import { useDebounce } from './useDebounce';
 
 const useCredentialsFilters = () => {

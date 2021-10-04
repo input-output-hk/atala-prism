@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { useSession } from '../providers/SessionContext';
+import { observer } from 'mobx-react-lite';
+import { useSession } from '../../hooks/useSession';
 import { CONFIRMED, UNCONFIRMED } from '../../helpers/constants';
 import WaitBanner from '../dashboard/Atoms/WaitBanner/WaitBanner';
 import TemplateDetail from './Organisms/Drawers/TemplateDetail';
@@ -8,7 +9,7 @@ import ActionsHeader from './Molecules/Headers/ActionsHeader';
 import TemplatesTableContainer from './Organisms/Tables/TemplatesTableContainer';
 import './_style.scss';
 
-const CredentialTemplates = () => {
+const CredentialTemplates = observer(() => {
   const { t } = useTranslation();
   const { accountStatus } = useSession();
   const [currentTemplate, setCurrentTemplate] = useState();
@@ -38,6 +39,6 @@ const CredentialTemplates = () => {
       />
     </div>
   );
-};
+});
 
 export default CredentialTemplates;

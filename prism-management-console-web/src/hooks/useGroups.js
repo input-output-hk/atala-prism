@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import { message } from 'antd';
-import { useSession } from '../components/providers/SessionContext';
+import { useSession } from './useSession';
 import {
   GROUP_PAGE_SIZE,
   SORTING_DIRECTIONS,

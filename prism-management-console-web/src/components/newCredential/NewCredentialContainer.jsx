@@ -1,7 +1,8 @@
 import React, { useState, useEffect, useCallback } from 'react';
+import PropTypes from 'prop-types';
+import { observer } from 'mobx-react-lite';
 import { message } from 'antd';
 import { useTranslation } from 'react-i18next';
-import PropTypes from 'prop-types';
 import _ from 'lodash';
 import NewCredential from './NewCredential';
 import { withApi } from '../providers/withApi';
@@ -18,13 +19,13 @@ import {
 import Logger from '../../helpers/Logger';
 import { contactMapper } from '../../APIs/helpers/contactHelpers';
 import ImportCredentialsData from '../importCredentialsData/ImportCredentialsData';
-import { useSession } from '../providers/SessionContext';
+import { useSession } from '../../hooks/useSession';
 import { fillHTMLCredential } from '../../helpers/credentialView';
 import { useContacts } from '../../hooks/useContacts';
 import { useGroups } from '../../hooks/useGroups';
 import { useTemplateStore } from '../../hooks/useTemplateStore';
 
-const NewCredentialContainer = ({ api, redirector: { redirectToCredentials } }) => {
+const NewCredentialContainer = observer(({ api, redirector: { redirectToCredentials } }) => {
   const { t } = useTranslation();
   const { session } = useSession();
 
@@ -299,7 +300,7 @@ const NewCredentialContainer = ({ api, redirector: { redirectToCredentials } }) 
       isLoading={isLoading}
     />
   );
-};
+});
 
 NewCredentialContainer.propTypes = {
   api: PropTypes.shape({

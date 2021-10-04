@@ -2,7 +2,7 @@ import React from 'react';
 import PropTypes from 'prop-types';
 import { useTranslation } from 'react-i18next';
 import { observer } from 'mobx-react-lite';
-import { useSession } from '../../../providers/SessionContext';
+import { useSession } from '../../../../hooks/useSession';
 import { CONFIRMED } from '../../../../helpers/constants';
 import CreateTemplateButton from '../../Atoms/Buttons/CreateTemplateButton';
 import SimpleLoading from '../../../common/Atoms/SimpleLoading/SimpleLoading';
