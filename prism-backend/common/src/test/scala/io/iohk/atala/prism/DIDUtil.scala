@@ -71,7 +71,7 @@ trait DIDUtil {
 
   def prepareSignedUnpublishedDidRequest[R <: GeneratedMessage](request: R): (ECPublicKey, SignedRpcRequest[R]) = {
     val keys = EC.generateKeyPair()
-    val did = DID.buildLongFormFromMasterKey(keys.getPublicKey)
+    val did = DID.buildLongFormFromMasterPublicKey(keys.getPublicKey)
     (keys.getPublicKey, SignedRpcRequest.generate(keys, did, request))
   }
 
@@ -88,7 +88,7 @@ object DIDUtil {
   def createUnpublishedDid: (ECKeyPair, DID) = {
     val keyPair = EC.generateKeyPair()
     val publicKey = keyPair.getPublicKey
-    val did = DID.buildLongFormFromMasterKey(publicKey)
+    val did = DID.buildLongFormFromMasterPublicKey(publicKey)
     (keyPair, did)
   }
 }
