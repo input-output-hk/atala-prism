@@ -20,12 +20,12 @@ begin
             s = (pk_hol)^r
             k_1 || k_2 = kdf(s)
             c = senc(k_1, data)
-            m = senc(k_2, Hash(c))
+            m = mac(k_2, c)
  2. I -> C: <c, m, g^r>
  3. C -> H: <c, m, g^r>
  4. H:      s = (g^r)^u
             k_1 || k_2 = kdf(s)
-            m' = senc(k_2, Hash(c))
+            m' = mac(k_2, c)
             Assert m = m'
             data = sdec(k_1, c)
 */
@@ -82,8 +82,8 @@ rule Issuer_1:
          k1 = splitL(k)
 	 k2 = splitR(k)
 	 sig = sign(h(~cred), ~lkIs)
- 	 mc = mac(h(~cred), k2)	
- 	 ccred = senc(~cred, k1)	 
+ 	 ccred = senc(~cred, k1)
+ 	 mc = mac(ccred, k2)		 
      in
      [ !Ltks($I, ~lkIs),
        !Pke($H, pkH),
@@ -104,7 +104,7 @@ rule Holder_2:
      in
      [ !Ltke($H, ~lkH),
        !Pks($I, pkI),
-       In(<ccred, mac(h(cred), k2), sig, R>) ]
+       In(<ccred, mac(ccred, k2), sig, R>) ]
      --[ RecvH($H, cred),
 	 Eq(verify(sig, h(cred), pkI), true),
          Secret(cred)]->

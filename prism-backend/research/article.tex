@@ -1,6 +1,9 @@
 \documentclass[10pt,a4paper]{article}
 \usepackage[margin=1in]{geometry}
 
+\newcommand{\todo}[1]{{\colorbox{red}{\bf TODO:}\textcolor{red}{#1}}}
+
+
 \title{PRISM protocol v0.3} 
 
 \author{Atala PRISM team - IOG} 
@@ -179,6 +182,43 @@ Once they receive credentials from issuers, subjects will present them to intere
 \item The verifier now checks the signature and concludes that the credential subject is indeed the person presenting it.
 \end{itemize}
 
+\subsection{Specific Sub-Protocols}
+\label{ssec:subproto}
+
+\subsubsection{End-to-End Encrypted Data Exchange via the Connector}
+\label{sssec:e2eeconnector}
+
+Assuming each participant of the system owns a (set of) DIDs, we want to let
+holders receive new credentials from issuers, in a secure -- yet convenient --
+manner. We describe a protocol for this purpose.  At the moment, we require
+that issuer and prospective holder can perform a one-time physical interaction
+with each other or, alternatively, that they have a secure channel at their
+avail (although possibly cumbersome to use, hence we only require to use it
+once).
+
+In a nutshell, the proposed protocol is composed essentially of two phases. In
+the first phase, the issuer shares a QR code with the holder. This QR code
+contains the issuer's public key (or, maybe, its DID), a random value, and a
+session identifier. This exchange takes place through a secure (i.e.,
+confidential and authenticated) channel, such as physical exchange. Probably
+immediately, although also possibly at a later point in time, the prospective
+holder sends back her own public key (or, alternatively, her DID) and the
+session identifier, all authenticated with a MAC, where we use the random value
+in the QR code as secret key. The issuer uses the session identifier to locate
+the corresponding session and, now that it received in an authenticated manner
+the public key of the holder, can leverage hybrid encryption techniques to
+establish an end-to-end encrypted session, e.g., using ECIES \cite{abr01}.
+Ensuring end-to-end encryption and authentication is important at this point, as
+all the information exchanged between issuer and holder is routed through the
+connector: an entity or set of entities who ensure that asynchronous
+communication can take place between issuer and holder. Thus, ECIES is crucial
+to ensure the secrecy and authenticity of the information, end-to-end.
+
+We have modelled this protocol using Tamarin%
+\footnote{https://tamarin-prover.github.io/ (Last access, October 5th, 2021.)}
+
+
+
 %----------------------------------------------------------------------------------------
 %	PROPERTIES
 %----------------------------------------------------------------------------------------
@@ -273,4 +313,8 @@ Notes:
       associated to their cars, allowing car owners to de-register from a batcher at will.
 \item a priori, we do not see a need to batch credential issuance/revocation events
 \end{itemize}
+
+\bibliographystyle{plain}
+\bibliography{article}
+
 \end{document}
