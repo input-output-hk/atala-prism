@@ -6,9 +6,11 @@ import io.circe.Json
 import io.iohk.atala.prism.AtalaWithPostgresSpec
 import io.iohk.atala.prism.node.cardano.dbsync.repositories.testing.TestCardanoBlockRepository
 import io.iohk.atala.prism.node.cardano.models._
+import tofu.logging.Logs
 
 class CardanoBlockRepositorySpec extends AtalaWithPostgresSpec {
-  lazy val blockRepository: CardanoBlockRepository[IO] = CardanoBlockRepository(database)
+  val logs = Logs.universal[IO]
+  lazy val blockRepository: CardanoBlockRepository[IO] = CardanoBlockRepository(database, logs)
 
   override def beforeAll(): Unit = {
     super.beforeAll()

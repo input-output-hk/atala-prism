@@ -78,7 +78,7 @@ class NodeApp(executionContext: ExecutionContext) { self =>
     val keyValueService = KeyValueService.unsafe(keyValuesRepository, logs)
 
     val (atalaReferenceLedger, releaseAtalaReferenceLedger) = globalConfig.getString("ledger") match {
-      case "cardano" => initializeCardano(keyValueService, globalConfig, onAtalaObject)
+      case "cardano" => initializeCardano(keyValueService, globalConfig, onAtalaObject, logs)
       case "in-memory" =>
         logger.info("Using in-memory ledger")
         (new InMemoryLedgerService(onAtalaObject), None)
@@ -157,20 +157,22 @@ class NodeApp(executionContext: ExecutionContext) { self =>
   private def initializeCardano(
       keyValueService: KeyValueService[IOWithTraceIdContext],
       globalConfig: Config,
-      onAtalaObject: AtalaObjectNotification => Future[Unit]
+      onAtalaObject: AtalaObjectNotification => Future[Unit],
+      logs: Logs[IO, IOWithTraceIdContext]
   ): (CardanoLedgerService, Option[IO[Unit]]) = {
     val config = NodeConfig.cardanoConfig(globalConfig.getConfig("cardano"))
-    val (cardanoClient, releaseClient) = createCardanoClient(config.cardanoClientConfig)
+    val (cardanoClient, releaseClient) = createCardanoClient(config.cardanoClientConfig, logs)
     Kamon.registerModule("node-reporter", NodeReporter(config, cardanoClient, keyValueService))
     val cardano = CardanoLedgerService(config, cardanoClient, keyValueService, onAtalaObject)
     (cardano, Some(releaseClient))
   }
 
   private def createCardanoClient(
-      cardanoClientConfig: CardanoClient.Config
+      cardanoClientConfig: CardanoClient.Config,
+      logs: Logs[IO, IOWithTraceIdContext]
   ): (CardanoClient, IO[Unit]) = {
     logger.info("Creating cardano client")
-    CardanoClient(cardanoClientConfig).allocated.unsafeRunSync()
+    CardanoClient(cardanoClientConfig, logs).mapK(TraceId.unLiftIOWithTraceId()).allocated.unsafeRunSync()
   }
 
   private def stop(): Unit = {
