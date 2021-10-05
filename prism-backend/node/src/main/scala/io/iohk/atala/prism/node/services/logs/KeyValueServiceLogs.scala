@@ -10,7 +10,7 @@ import tofu.higherKind.Mid
 import tofu.logging.ServiceLogging
 import tofu.syntax.logging._
 
-class KeyValueServiceLogs[F[_]: ServiceLogging[*[_], KeyValueService[F]]: MonadThrow]
+private[services] class KeyValueServiceLogs[F[_]: ServiceLogging[*[_], KeyValueService[F]]: MonadThrow]
     extends KeyValueService[Mid[F, *]] {
   override def get(key: String): Mid[F, Option[String]] =
     in =>
