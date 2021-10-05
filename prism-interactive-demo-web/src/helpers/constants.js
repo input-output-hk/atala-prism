@@ -115,3 +115,4 @@ export const STEP_4_EVENT = 'step_4_event';
 export const BLOG_EVENT = 'blog';
 export const BLOG_POST_EVENT = 'blog_post_';
 export const RESOURCES_EVENT = 'resources_menu';
+export const PIONEERS_EVENT = 'pioneers';
