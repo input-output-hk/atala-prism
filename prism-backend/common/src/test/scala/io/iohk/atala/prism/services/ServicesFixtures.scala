@@ -156,7 +156,7 @@ trait ServicesFixtures {
   }
 
   def newDID(): DID = {
-    DID.buildLongFormFromMasterKey(EC.generateKeyPair().getPublicKey)
+    DID.buildLongFormFromMasterPublicKey(EC.generateKeyPair().getPublicKey)
     // where is the canon form getter?
   }
 }

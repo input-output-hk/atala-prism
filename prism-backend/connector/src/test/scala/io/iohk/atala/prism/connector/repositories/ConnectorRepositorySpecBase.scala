@@ -66,7 +66,7 @@ trait ConnectorRepositorySpecBase extends AtalaWithPostgresSpec {
     createParticipant(
       ParticipantType.Verifier,
       name,
-      DID.buildLongFormFromMasterKey(EC.generateKeyPair().getPublicKey),
+      DID.buildLongFormFromMasterPublicKey(EC.generateKeyPair().getPublicKey),
       None,
       logo
     )

@@ -359,7 +359,7 @@ class MessagesRpcSpec extends ConnectorRpcSpecBase {
 
     "return existing messages immediately while authed by unpublished did" in {
       val keyPair = EC.generateKeyPair()
-      val unpublishedDid = DID.buildLongFormFromMasterKey(keyPair.getPublicKey)
+      val unpublishedDid = DID.buildLongFormFromMasterPublicKey(keyPair.getPublicKey)
       val participant = createParticipant(unpublishedDid, keyPair.getPublicKey)
       val messageIds = generateMessageIds(participant)
       testMessagesExisting(keyPair, unpublishedDid, messageIds)
