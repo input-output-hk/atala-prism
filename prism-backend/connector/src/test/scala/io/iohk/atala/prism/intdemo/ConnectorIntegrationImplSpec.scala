@@ -6,7 +6,7 @@ import io.iohk.atala.prism.intdemo.ConnectorIntegration.ConnectorIntegrationImpl
 import ConnectorIntegrationImplSpec._
 import cats.syntax.applicative._
 import cats.syntax.either._
-import io.iohk.atala.prism.connector.errors.ConnectorError
+import io.iohk.atala.prism.connector.repositories.MessagesRepository.InsertMessageError
 import io.iohk.atala.prism.logging.TraceId.IOWithTraceIdContext
 import io.iohk.atala.prism.models.ParticipantId
 import io.iohk.atala.prism.protos.credential_models
@@ -68,7 +68,7 @@ object ConnectorIntegrationImplSpec {
     val messagesService = mock[MessagesService[fs2.Stream[IOWithTraceIdContext, *], IOWithTraceIdContext]]
     val connectorIntegration = new ConnectorIntegrationImpl(connectionsService, messagesService)
     when(messagesService.insertMessage(eqTo(senderId), eqTo(connectionId), any[Array[Byte]], any[Option[MessageId]]))
-      .thenReturn(messageId.asRight[ConnectorError].pure[IOWithTraceIdContext])
+      .thenReturn(messageId.asRight[InsertMessageError].pure[IOWithTraceIdContext])
     testCode(connectorIntegration, messagesService)
     ()
   }
