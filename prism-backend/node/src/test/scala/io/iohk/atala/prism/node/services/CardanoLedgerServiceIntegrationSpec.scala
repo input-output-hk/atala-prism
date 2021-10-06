@@ -40,7 +40,7 @@ class CardanoLedgerServiceIntegrationSpec extends AtalaWithPostgresSpec {
       val walletId = WalletId.from(clientConfig.walletId).value
       val paymentAddress = Address(clientConfig.paymentAddress)
       val (cardanoClient, releaseCardanoClient) =
-        CardanoClient(clientConfig.cardanoClientConfig).allocated.unsafeRunSync()
+        CardanoClient(clientConfig.cardanoClientConfig, logs).allocated.run(TraceId.generateYOLO).unsafeRunSync()
       val keyValueService = KeyValueService.unsafe(KeyValuesRepository.unsafe(dbLiftedToTraceIdIO, logs), logs)
       val notificationHandler = new TestAtalaObjectNotificationHandler()
       val cardanoLedgerService = new CardanoLedgerService(
@@ -58,7 +58,8 @@ class CardanoLedgerServiceIntegrationSpec extends AtalaWithPostgresSpec {
       )
 
       // Avoid syncing pre-existing blocks
-      val latestBlock = cardanoClient.getLatestBlock().value.futureValue(LONG_TIMEOUT).toOption.value
+      val latestBlock =
+        cardanoClient.getLatestBlock(TraceId.generateYOLO).value.futureValue(LONG_TIMEOUT).toOption.value
       keyValueService
         .set(LAST_SYNCED_BLOCK_NO, Some(latestBlock.header.blockNo))
         .run(TraceId.generateYOLO)
@@ -85,7 +86,7 @@ class CardanoLedgerServiceIntegrationSpec extends AtalaWithPostgresSpec {
 
       // Verify object has been notified
       notifiedAtalaObjects must contain(atalaObject)
-      releaseCardanoClient.unsafeRunSync()
+      releaseCardanoClient.run(TraceId.generateYOLO).unsafeRunSync()
     }
   }
 

@@ -57,7 +57,7 @@ class NodeReporter(
 
   private def postWalletLastBlock(): Unit = {
     cardanoClient
-      .getLatestBlock()
+      .getLatestBlock(TraceId.generateYOLO)
       .value
       .foreach(_.foreach(block => updateGauge(lastSyncedBlockByWallet, block.header.blockNo)))
   }

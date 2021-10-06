@@ -17,7 +17,8 @@ object TraceId {
 
   def liftToIOWithTraceId: IO ~> IOWithTraceIdContext = λ[IO ~> IOWithTraceIdContext](i => ReaderT.liftF(i))
 
-  def ioWithTraceIdToIO: IOWithTraceIdContext ~> IO = λ[IOWithTraceIdContext ~> IO](io => io.run(TraceId.generateYOLO))
+  def unLiftIOWithTraceId(traceId: TraceId = generateYOLO): IOWithTraceIdContext ~> IO =
+    λ[IOWithTraceIdContext ~> IO](_.run(traceId))
 
   def generateYOLO: TraceId = TraceId(UUID.randomUUID().toString)
 

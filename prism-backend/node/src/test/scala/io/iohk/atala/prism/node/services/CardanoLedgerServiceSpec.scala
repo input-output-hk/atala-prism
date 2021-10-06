@@ -3,6 +3,7 @@ package io.iohk.atala.prism.node.services
 import cats.effect.IO
 import io.circe.Json
 import io.iohk.atala.prism.AtalaWithPostgresSpec
+import io.iohk.atala.prism.logging.TraceId
 import io.iohk.atala.prism.logging.TraceId.IOWithTraceIdContext
 import io.iohk.atala.prism.models.{
   BlockInfo,
@@ -13,7 +14,7 @@ import io.iohk.atala.prism.models.{
   TransactionStatus
 }
 import io.iohk.atala.prism.node.cardano.CardanoClient
-import io.iohk.atala.prism.node.cardano.dbsync.CardanoDbSyncClient
+import io.iohk.atala.prism.node.cardano.dbsync.CardanoDbSyncClientImpl
 import io.iohk.atala.prism.node.cardano.dbsync.repositories.CardanoBlockRepository
 import io.iohk.atala.prism.node.cardano.dbsync.repositories.testing.TestCardanoBlockRepository
 import io.iohk.atala.prism.node.cardano.models.AtalaObjectMetadata.METADATA_PRISM_INDEX
@@ -45,7 +46,7 @@ class CardanoLedgerServiceSpec extends AtalaWithPostgresSpec {
   private val noOpObjectHandler: AtalaObjectNotificationHandler = _ => Future.unit
   private val scheduler: TestScheduler = TestScheduler()
   private lazy val keyValueService = KeyValueService.unsafe(KeyValuesRepository.unsafe(dbLiftedToTraceIdIO, logs), logs)
-  private lazy val cardanoBlockRepository = new CardanoBlockRepository(database)
+  private lazy val cardanoBlockRepository = CardanoBlockRepository.unsafe(dbLiftedToTraceIdIO, logs)
 
   override def beforeAll(): Unit = {
     super.beforeAll()
@@ -286,7 +287,7 @@ class CardanoLedgerServiceSpec extends AtalaWithPostgresSpec {
 
       // Append a new block
       val lastBlock =
-        cardanoBlockRepository.getFullBlock(totalBlockCount).value.futureValue.toOption.value
+        cardanoBlockRepository.getFullBlock(totalBlockCount).run(TraceId.generateYOLO).unsafeRunSync().toOption.value
       TestCardanoBlockRepository.insertBlock(TestCardanoBlockRepository.createNextRandomBlock(Some(lastBlock)))
 
       // Test #2: all objects are now synced
@@ -316,7 +317,7 @@ class CardanoLedgerServiceSpec extends AtalaWithPostgresSpec {
   }
 
   private def createCardanoClient(cardanoWalletApiClient: CardanoWalletApiClient): CardanoClient = {
-    new CardanoClient(new CardanoDbSyncClient(cardanoBlockRepository), cardanoWalletApiClient)
+    new CardanoClient(new CardanoDbSyncClientImpl(cardanoBlockRepository), cardanoWalletApiClient)
   }
 
   private def readResource(resource: String): String = {
