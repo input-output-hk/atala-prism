@@ -9,7 +9,7 @@ import CustomDateRangePicker from '../../../common/Atoms/CustomDatePicker/Custom
 import { GROUP_SORTING_KEYS, SORTING_DIRECTIONS } from '../../../../helpers/constants';
 import { useGroupUiState } from '../../../../hooks/useGroupStore';
 
-const GroupFilters = observer(() => {
+const GroupFilters = observer(({ showDateFilter }) => {
   const { t } = useTranslation();
 
   const { sortingDirection, setSortingBy, setFilterValue, toggleSortDirection } = useGroupUiState();
@@ -32,12 +32,13 @@ const GroupFilters = observer(() => {
             onChange={({ target: { value } }) => setFilterValue('nameFilter', value)}
           />
         </div>
-        <div>
-          <CustomInputGroup prefixIcon="calendar">
-            <CustomDateRangePicker {...datePickerProps} />
-          </CustomInputGroup>
-        </div>
-
+        {showDateFilter && (
+          <div>
+            <CustomInputGroup prefixIcon="calendar">
+              <CustomDateRangePicker {...datePickerProps} />
+            </CustomInputGroup>
+          </div>
+        )}
         <div>
           <CustomInputGroup
             onClick={toggleSortDirection}
@@ -62,15 +63,11 @@ const GroupFilters = observer(() => {
 });
 
 GroupFilters.defaultProps = {
-  setDateRange: null
+  showDateFilter: false
 };
 
 GroupFilters.propTypes = {
-  setName: PropTypes.func.isRequired,
-  setDateRange: PropTypes.func,
-  setSortingKey: PropTypes.func.isRequired,
-  setSortingDirection: PropTypes.func.isRequired,
-  sortingDirection: PropTypes.string.isRequired
+  showDateFilter: PropTypes.bool
 };
 
 export default GroupFilters;
