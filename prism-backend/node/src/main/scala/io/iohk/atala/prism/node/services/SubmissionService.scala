@@ -1,6 +1,6 @@
 package io.iohk.atala.prism.node.services
 
-import cats.data.EitherT
+import cats.data.{EitherT, ReaderT}
 import cats.implicits.catsSyntaxEitherId
 import cats.syntax.traverse._
 import cats.effect.IO
@@ -25,7 +25,7 @@ import scala.concurrent.Future
 
 class SubmissionService private (
     atalaReferenceLedger: UnderlyingLedger,
-    atalaOperationsRepository: AtalaOperationsRepository[IO],
+    atalaOperationsRepository: AtalaOperationsRepository[IOWithTraceIdContext],
     atalaObjectsTransactionsRepository: AtalaObjectsTransactionsRepository[IOWithTraceIdContext]
 )(implicit scheduler: Scheduler) {
   private val logger = LoggerFactory.getLogger(this.getClass)
@@ -187,7 +187,7 @@ class SubmissionService private (
             }
 
           val atalaObjectIOEither = for {
-            changedBlock <- EitherT.fromEither[IO](changedBlockE)
+            changedBlock <- EitherT.fromEither[IOWithTraceIdContext](changedBlockE)
             _ <- EitherT(
               atalaOperationsRepository.updateMergedObjects(atalaObject, changedBlock.operations.toList, oldObjects)
             )
@@ -201,10 +201,10 @@ class SubmissionService private (
               Some(atalaObjectInfo)
           }
         } else {
-          IO.pure(Some(atalaObject))
+          ReaderT.liftF[IO, TraceId, Option[AtalaObjectInfo]](IO.pure(Some(atalaObject)))
         }
     }
-    objects.map(_.flatten).unsafeToFuture()
+    objects.map(_.flatten).run(TraceId.generateYOLO).unsafeToFuture()
   }
 
   private def parseObjectContent(atalaObjectInfo: AtalaObjectInfo): node_internal.AtalaObject =
@@ -274,7 +274,7 @@ class SubmissionService private (
 object SubmissionService {
   def apply(
       atalaReferenceLedger: UnderlyingLedger,
-      atalaOperationsRepository: AtalaOperationsRepository[IO],
+      atalaOperationsRepository: AtalaOperationsRepository[IOWithTraceIdContext],
       atalaObjectsTransactionsRepository: AtalaObjectsTransactionsRepository[IOWithTraceIdContext]
   )(implicit scheduler: Scheduler): SubmissionService = {
     new SubmissionService(atalaReferenceLedger, atalaOperationsRepository, atalaObjectsTransactionsRepository)
