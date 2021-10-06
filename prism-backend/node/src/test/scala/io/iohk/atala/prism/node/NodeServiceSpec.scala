@@ -1,5 +1,6 @@
 package io.iohk.atala.prism.node
 
+import cats.data.ReaderT
 import cats.effect.IO
 import cats.scalatest.EitherMatchers._
 import com.google.protobuf.ByteString
@@ -13,6 +14,7 @@ import io.iohk.atala.prism.crypto.{MerkleRoot, Sha256, Sha256Digest}
 import io.iohk.atala.prism.protos.models.TimestampInfo
 import io.iohk.atala.prism.models.{DidSuffix, Ledger, TransactionId}
 import io.iohk.atala.prism.identity.{PrismDid => DID}
+import io.iohk.atala.prism.logging.TraceId.IOWithTraceIdContext
 import io.iohk.atala.prism.node.errors.NodeError
 import io.iohk.atala.prism.node.grpc.ProtoCodecs
 import io.iohk.atala.prism.node.models.nodeState.{CredentialBatchState, LedgerData}
@@ -51,7 +53,7 @@ class NodeServiceSpec
   protected var service: node_api.NodeServiceGrpc.NodeServiceBlockingStub = _
 
   private val objectManagementService = mock[ObjectManagementService]
-  private val credentialBatchesRepository = mock[CredentialBatchesRepository[IO]]
+  private val credentialBatchesRepository = mock[CredentialBatchesRepository[IOWithTraceIdContext]]
   private val submissionSchedulingService = mock[SubmissionSchedulingService]
 
   override def beforeEach(): Unit = {
@@ -509,7 +511,7 @@ class NodeServiceSpec
 
       val errorMsg = "an unexpected error"
       val repositoryError =
-        IO.raiseError[Either[NodeError, Option[CredentialBatchState]]](new RuntimeException(errorMsg))
+        ReaderT.liftF(IO.raiseError[Either[NodeError, Option[CredentialBatchState]]](new RuntimeException(errorMsg)))
 
       doReturn(repositoryError).when(credentialBatchesRepository).getBatchState(validBatchId)
       doReturn(Future.successful(dummySyncTimestamp)).when(objectManagementService).getLastSyncedTimestamp
@@ -524,7 +526,7 @@ class NodeServiceSpec
       val validBatchId = CredentialBatchId.fromDigest(Sha256.compute("valid".getBytes()))
       val requestWithValidId = GetBatchStateRequest(batchId = validBatchId.getId)
 
-      val repositoryError = IO.pure[Either[NodeError, Option[CredentialBatchState]]](Right(None))
+      val repositoryError = ReaderT.liftF(IO.pure[Either[NodeError, Option[CredentialBatchState]]](Right(None)))
 
       doReturn(repositoryError).when(credentialBatchesRepository).getBatchState(validBatchId)
       doReturn(Future.successful(dummySyncTimestamp)).when(objectManagementService).getLastSyncedTimestamp
@@ -553,7 +555,8 @@ class NodeServiceSpec
           lastOperation = Sha256.compute("lastOp".getBytes())
         )
 
-      val repositoryResponse = IO.pure[Either[NodeError, Option[CredentialBatchState]]](Right(Some(credState)))
+      val repositoryResponse =
+        ReaderT.liftF(IO.pure[Either[NodeError, Option[CredentialBatchState]]](Right(Some(credState))))
 
       val ledgerDataProto = node_models
         .LedgerData()
@@ -631,7 +634,7 @@ class NodeServiceSpec
         credentialHash = ByteString.copyFrom(validCredentialHash.getValue)
       )
 
-      val repositoryResponse = IO.pure[Either[NodeError, Option[LedgerData]]](Right(None))
+      val repositoryResponse = ReaderT.liftF(IO.pure[Either[NodeError, Option[LedgerData]]](Right(None)))
 
       doReturn(
         Future.successful(dummySyncTimestamp)
@@ -660,7 +663,8 @@ class NodeServiceSpec
         revocationDate
       )
 
-      val repositoryResponse = IO.pure[Either[NodeError, Option[LedgerData]]](Right(Some(revocationLedgerData)))
+      val repositoryResponse =
+        ReaderT.liftF(IO.pure[Either[NodeError, Option[LedgerData]]](Right(Some(revocationLedgerData))))
 
       val timestampInfoProto = node_models
         .TimestampInfo()
