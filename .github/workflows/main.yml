@@ -9,6 +9,7 @@ on:
       - qa*
       - sandbox*
       - package*
+      - 1.2.x
   pull_request:
     paths:
       - 'prism-backend/**'
