@@ -15,6 +15,7 @@ import io.iohk.atala.prism.crypto.keys.ECPublicKey
 import io.iohk.atala.prism.crypto.signature.ECSignature
 import io.iohk.atala.prism.api.CredentialBatches
 import io.iohk.atala.prism.identity.{PrismDid => DID}
+import io.iohk.atala.prism.logging.TraceId.IOWithTraceIdContext
 import io.iohk.atala.prism.models.DidSuffix
 import io.iohk.atala.prism.node.grpc.ProtoCodecs
 import io.iohk.atala.prism.node.repositories.{
@@ -44,9 +45,11 @@ import io.iohk.atala.prism.protos.endorsements_api.{
 }
 import io.iohk.atala.prism.protos.node_api.{CreateDIDRequest, GetDidDocumentRequest, ScheduleOperationsRequest}
 import io.iohk.atala.prism.services.NodeClientService.{issueBatchOperation, revokeCredentialsOperation}
+import io.iohk.atala.prism.utils.IOUtils._
 import monix.execution.Scheduler.Implicits.{global => scheduler}
 import org.scalatest.BeforeAndAfterEach
 import org.scalatest.OptionValues.convertOptionToValuable
+import tofu.logging.Logs
 
 import scala.concurrent.{Future, Promise}
 import scala.jdk.CollectionConverters._
@@ -54,13 +57,14 @@ import scala.jdk.CollectionConverters._
 class EndorsementsFlowPoC extends AtalaWithPostgresSpec with BeforeAndAfterEach {
   import Utils._
 
+  private val endorsementsFlowPoCLogs = Logs.withContext[IO, IOWithTraceIdContext]
   protected var serverName: String = _
   protected var serverHandle: Server = _
   protected var channelHandle: ManagedChannel = _
   protected var nodeServiceStub: node_api.NodeServiceGrpc.NodeServiceBlockingStub = _
   protected var didDataRepository: DIDDataRepository[IO] = _
   protected var atalaOperationsRepository: AtalaOperationsRepository[IO] = _
-  protected var atalaObjectsTransactionsRepository: AtalaObjectsTransactionsRepository[IO] = _
+  protected var atalaObjectsTransactionsRepository: AtalaObjectsTransactionsRepository[IOWithTraceIdContext] = _
   protected var keyValuesRepository: KeyValuesRepository[IO] = _
   protected var credentialBatchesRepository: CredentialBatchesRepository[IO] = _
   protected var atalaReferenceLedger: InMemoryLedgerService = _
@@ -86,7 +90,8 @@ class EndorsementsFlowPoC extends AtalaWithPostgresSpec with BeforeAndAfterEach 
     atalaReferenceLedger = new InMemoryLedgerService(onAtalaReference)
     blockProcessingService = new BlockProcessingServiceImpl
     atalaOperationsRepository = AtalaOperationsRepository(database)
-    atalaObjectsTransactionsRepository = AtalaObjectsTransactionsRepository(database)
+    atalaObjectsTransactionsRepository =
+      AtalaObjectsTransactionsRepository.unsafe(dbLiftedToTraceIdIO, endorsementsFlowPoCLogs)
     keyValuesRepository = KeyValuesRepository(database)
     objectManagementService = ObjectManagementService(
       atalaOperationsRepository,
