@@ -70,7 +70,10 @@ async function getGroups({
 
   const response = await this.client.getGroups(groupRequest, metadata);
   const { groupsList, totalNumberOfGroups } = response.toObject();
-  Logger.info(`got (${groupsList.length}/${totalNumberOfGroups}) groups: `, groupsList);
+  Logger.info(
+    `got groups (from ${offset} to ${groupsList.length + offset} out of ${totalNumberOfGroups}): `,
+    groupsList
+  );
 
   return { groupsList, totalNumberOfGroups };
 }
