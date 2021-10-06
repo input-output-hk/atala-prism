@@ -26,7 +26,7 @@ private[services] class KeyValueServiceLogs[F[_]: ServiceLogging[*[_], KeyValueS
 
   override def set(key: String, value: Option[Any]): Mid[F, Unit] =
     in =>
-      info"setting value for the key $key" *> in
+      info"setting value for the key $key with value ${value.map(_.toString)}" *> in
         .flatTap(_ => info"setting value for the key - successfully done")
         .onError(errorCause"Encountered an error while setting value for the key" (_))
 
