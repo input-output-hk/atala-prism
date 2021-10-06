@@ -62,7 +62,7 @@ class EndorsementsFlowPoC extends AtalaWithPostgresSpec with BeforeAndAfterEach 
   protected var serverHandle: Server = _
   protected var channelHandle: ManagedChannel = _
   protected var nodeServiceStub: node_api.NodeServiceGrpc.NodeServiceBlockingStub = _
-  protected var didDataRepository: DIDDataRepository[IO] = _
+  protected var didDataRepository: DIDDataRepository[IOWithTraceIdContext] = _
   protected var atalaOperationsRepository: AtalaOperationsRepository[IOWithTraceIdContext] = _
   protected var atalaObjectsTransactionsRepository: AtalaObjectsTransactionsRepository[IOWithTraceIdContext] = _
   protected var keyValuesRepository: KeyValuesRepository[IO] = _
@@ -77,7 +77,7 @@ class EndorsementsFlowPoC extends AtalaWithPostgresSpec with BeforeAndAfterEach 
   override def beforeEach(): Unit = {
     super.beforeEach()
 
-    didDataRepository = DIDDataRepository(database)
+    didDataRepository = DIDDataRepository.unsafe(dbLiftedToTraceIdIO, endorsementsFlowPoCLogs)
     credentialBatchesRepository = CredentialBatchesRepository.unsafe(dbLiftedToTraceIdIO, endorsementsFlowPoCLogs)
 
     objectManagementServicePromise = Promise()

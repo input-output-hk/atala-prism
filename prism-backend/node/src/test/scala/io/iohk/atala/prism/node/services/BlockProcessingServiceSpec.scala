@@ -1,6 +1,5 @@
 package io.iohk.atala.prism.node.services
 
-import cats.effect.IO
 import com.google.protobuf.ByteString
 import doobie.implicits._
 import io.iohk.atala.prism.AtalaWithPostgresSpec
@@ -15,7 +14,6 @@ import io.iohk.atala.prism.node.models.{AtalaOperationInfo, AtalaOperationStatus
 import io.iohk.atala.prism.node.operations.{CreateDIDOperation, CreateDIDOperationSpec, UpdateDIDOperationSpec}
 import io.iohk.atala.prism.node.operations.UpdateDIDOperationSpec.{exampleAddKeyAction, exampleRemoveKeyAction}
 import io.iohk.atala.prism.node.repositories.daos.DIDDataDAO
-import io.iohk.atala.prism.node.repositories.DIDDataRepository
 import io.iohk.atala.prism.protos.{node_internal, node_models}
 import org.scalatest.OptionValues._
 
@@ -51,8 +49,6 @@ class BlockProcessingServiceSpec extends AtalaWithPostgresSpec {
 
   import BlockProcessingServiceSpec._
   import io.iohk.atala.prism.node.operations.CreateDIDOperationSpec.masterKeys
-
-  lazy val didDataRepository: DIDDataRepository[IO] = DIDDataRepository(database)
 
   private val dummyTimestampInfo = new TimestampInfo(Instant.ofEpochMilli(0).toEpochMilli, 1, 0)
 
