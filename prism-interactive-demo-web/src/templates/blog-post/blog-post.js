@@ -3,7 +3,7 @@ import _ from 'lodash';
 import { graphql } from 'gatsby';
 import firebase from 'gatsby-plugin-firebase';
 import { Disqus } from 'gatsby-plugin-disqus';
-import FooterBlog from '../../components/footer/footer';
+import FooterBlog from '../../components/footer/BlogFooter';
 import HeaderBlog from '../../components/headerBlog/headerBlog';
 import calendarIcon from '../../images/calendar.svg';
 import authorIcon from '../../images/author.svg';

@@ -11,7 +11,7 @@ const ScanQRSteps = () => {
   const steps = [];
 
   const iconedStep = i => (
-    <div className={'secondStep'}>
+    <div className="secondStep">
       <div className="LineStep">
         <p>{t(`credential.scanQRInfo.step${i}.part1`)}</p>
         <img src={iconContacts} alt={t(`credential.scanQRInfo.step${i}.alt`)} />

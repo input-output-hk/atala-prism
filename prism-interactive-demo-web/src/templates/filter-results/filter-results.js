@@ -1,7 +1,7 @@
 import React from 'react';
 import { Link, graphql } from 'gatsby';
 import HeaderBlog from '../../components/headerBlog/headerBlog';
-import FooterBlog from '../../components/footer/footer';
+import FooterBlog from '../../components/footer/BlogFooter';
 import calendarIcon from '../../images/calendar.svg';
 import authorIcon from '../../images/author.svg';
 import clockIcon from '../../images/clock.svg';
