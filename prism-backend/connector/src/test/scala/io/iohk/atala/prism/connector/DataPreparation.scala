@@ -17,7 +17,7 @@ object DataPreparation extends BaseDAO {
   import connectorDaos._
 
   def newDID(): DID = {
-    DID.buildLongFormFromMasterKey(EC.INSTANCE.generateKeyPair().getPublicKey).asCanonical()
+    DID.buildLongFormFromMasterPublicKey(EC.INSTANCE.generateKeyPair().getPublicKey).asCanonical()
   }
 
   def createIssuer(

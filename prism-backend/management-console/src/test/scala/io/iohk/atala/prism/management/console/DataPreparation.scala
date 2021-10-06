@@ -203,7 +203,7 @@ object DataPreparation {
   }
 
   def newDID(): DID = {
-    DID.buildLongFormFromMasterKey(EC.INSTANCE.generateKeyPair().getPublicKey).asCanonical()
+    DID.buildLongFormFromMasterPublicKey(EC.INSTANCE.generateKeyPair().getPublicKey).asCanonical()
   }
 
   def publishCredential(

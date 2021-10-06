@@ -134,7 +134,7 @@ class NodeServiceSpec
 
     "return DID document for an unpublished DID" in {
       val masterKey = CreateDIDOperationSpec.masterKeys.getPublicKey
-      val longFormDID = DID.buildLongFormFromMasterKey(masterKey)
+      val longFormDID = DID.buildLongFormFromMasterPublicKey(masterKey)
       doReturn(Future.successful(dummySyncTimestamp)).when(objectManagementService).getLastSyncedTimestamp
 
       val response = service.getDidDocument(node_api.GetDidDocumentRequest(longFormDID.getValue))
@@ -157,7 +157,7 @@ class NodeServiceSpec
     "return DID document for a long form DID after it was published" in {
       val masterKey = CreateDIDOperationSpec.masterKeys.getPublicKey
       val issuingKey = CreateDIDOperationSpec.issuingKeys.getPublicKey
-      val longFormDID = DID.buildLongFormFromMasterKey(masterKey)
+      val longFormDID = DID.buildLongFormFromMasterPublicKey(masterKey)
 
       // we simulate the publication of the DID and the addition of an issuing key
       val didDigest = Sha256Digest.fromHex(longFormDID.asCanonical().getSuffix)
@@ -194,7 +194,7 @@ class NodeServiceSpec
 
     "return DID document for a long form DID with revoked key after it was published" in {
       val masterKey = CreateDIDOperationSpec.masterKeys.getPublicKey
-      val longFormDID = DID.buildLongFormFromMasterKey(masterKey)
+      val longFormDID = DID.buildLongFormFromMasterPublicKey(masterKey)
 
       // we simulate the publication of the DID and the addition of an issuing key
       val didDigest = Sha256Digest.fromHex(longFormDID.asCanonical().getSuffix)
