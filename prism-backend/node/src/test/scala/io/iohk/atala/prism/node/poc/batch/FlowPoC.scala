@@ -58,7 +58,7 @@ class FlowPoC extends AtalaWithPostgresSpec with BeforeAndAfterEach {
   protected var objectManagementService: ObjectManagementService = _
   protected var submissionService: SubmissionService = _
   protected var atalaObjectsTransactionsRepository: AtalaObjectsTransactionsRepository[IOWithTraceIdContext] = _
-  protected var keyValuesRepository: KeyValuesRepository[IO] = _
+  protected var keyValuesRepository: KeyValuesRepository[IOWithTraceIdContext] = _
   protected var objectManagementServicePromise: Promise[ObjectManagementService] = _
   protected var submissionSchedulingService: SubmissionSchedulingService = _
 
@@ -88,7 +88,7 @@ class FlowPoC extends AtalaWithPostgresSpec with BeforeAndAfterEach {
       SubmissionSchedulingService.Config(ledgerPendingTransactionTimeout = Duration.ZERO),
       submissionService
     )
-    keyValuesRepository = KeyValuesRepository(database)
+    keyValuesRepository = KeyValuesRepository.unsafe(dbLiftedToTraceIdIO, flowPocTestLogs)
     objectManagementService = ObjectManagementService(
       atalaOperationsRepository,
       atalaObjectsTransactionsRepository,

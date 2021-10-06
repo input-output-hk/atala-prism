@@ -41,7 +41,7 @@ private class DuplicateAtalaOperation extends Exception
 class ObjectManagementService private (
     atalaOperationsRepository: AtalaOperationsRepository[IOWithTraceIdContext],
     atalaObjectsTransactionsRepository: AtalaObjectsTransactionsRepository[IOWithTraceIdContext],
-    keyValuesRepository: KeyValuesRepository[IO],
+    keyValuesRepository: KeyValuesRepository[IOWithTraceIdContext],
     blockProcessing: BlockProcessingService
 )(implicit xa: Transactor[IO], scheduler: Scheduler) {
 
@@ -129,6 +129,7 @@ class ObjectManagementService private (
       maybeLastSyncedBlockTimestamp <-
         keyValuesRepository
           .get(LAST_SYNCED_BLOCK_TIMESTAMP)
+          .run(TraceId.generateYOLO)
           .unsafeToFuture()
       lastSyncedBlockTimestamp = getLastSyncedTimestampFromMaybe(maybeLastSyncedBlockTimestamp.value)
     } yield lastSyncedBlockTimestamp
@@ -189,7 +190,7 @@ object ObjectManagementService {
   def apply(
       atalaOperationsRepository: AtalaOperationsRepository[IOWithTraceIdContext],
       atalaObjectsTransactionsRepository: AtalaObjectsTransactionsRepository[IOWithTraceIdContext],
-      keyValuesRepository: KeyValuesRepository[IO],
+      keyValuesRepository: KeyValuesRepository[IOWithTraceIdContext],
       blockProcessing: BlockProcessingService
   )(implicit xa: Transactor[IO], scheduler: Scheduler): ObjectManagementService = {
     new ObjectManagementService(
