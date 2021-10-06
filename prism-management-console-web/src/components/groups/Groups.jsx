@@ -5,20 +5,16 @@ import PropTypes from 'prop-types';
 import { useTranslation } from 'react-i18next';
 import GroupsTable from './Organisms/Tables/GroupsTable';
 import GroupFilters from './Molecules/Filters/GroupFilters';
-import EmptyComponent from '../common/Atoms/EmptyComponent/EmptyComponent';
 import DeleteGroupModal from './Organisms/Modals/DeleteGroupModal/DeleteGroupModal';
 import { groupShape } from '../../helpers/propShapes';
-import noGroups from '../../images/noGroups.svg';
 import CustomButton from '../common/Atoms/CustomButton/CustomButton';
 import { withRedirector } from '../providers/withRedirector';
-import SimpleLoading from '../common/Atoms/SimpleLoading/SimpleLoading';
 import WaitBanner from '../dashboard/Atoms/WaitBanner/WaitBanner';
 import { useSession } from '../../hooks/useSession';
 import CopyGroupModal from './Organisms/Modals/CopyGroupModal/CopyGroupModal';
 import { CONFIRMED, UNCONFIRMED } from '../../helpers/constants';
 
 import './_style.scss';
-import { useGroupStore, useGroupUiState } from '../../hooks/useGroupStore';
 
 const NewGroupButton = ({ onClick }) => {
   const { t } = useTranslation();
@@ -44,8 +40,6 @@ const Groups = observer(
     const [groupToDelete, setGroupToDelete] = useState({});
 
     const { accountStatus } = useSession();
-    const { groups, hasMore, isLoadingFirstPage } = useGroupStore();
-    const { hasFiltersApplied } = useGroupUiState();
 
     const closeDeleteModal = () => {
       setIsDeleteModalOpen(false);
@@ -79,32 +73,12 @@ const Groups = observer(
       onSave: copyName => copyGroup(selectedGroup, copyName).then(closeCopyModal)
     };
 
-    const onCopy = group => {
+    const handleCopy = group => {
       setSelectedGroup(group);
       setIsCopyModalOpen(true);
     };
 
-    const tableProps = {
-      onCopy,
-      setGroupToDelete,
-      hasMore
-    };
-
     const newGroupButton = <NewGroupButton onClick={redirectToGroupCreation} />;
-
-    const emptyProps = {
-      photoSrc: noGroups,
-      model: t('groups.title')
-    };
-
-    const renderContent = () => {
-      if (isLoadingFirstPage) return <SimpleLoading size="md" />;
-      if (groups.length) return <GroupsTable {...tableProps} />;
-      if (hasFiltersApplied) return <EmptyComponent {...emptyProps} isFilter />;
-      return (
-        <EmptyComponent {...emptyProps} button={accountStatus === CONFIRMED && newGroupButton} />
-      );
-    };
 
     return (
       <div className="Wrapper Groups">
@@ -122,7 +96,13 @@ const Groups = observer(
             {accountStatus === CONFIRMED && newGroupButton}
           </div>
         </div>
-        <div className="GroupContentContainer InfiniteScrollTableContainer">{renderContent()}</div>
+        <div className="GroupContentContainer InfiniteScrollTableContainer">
+          <GroupsTable
+            onCopy={handleCopy}
+            setGroupToDelete={setGroupToDelete}
+            newGroupButton={newGroupButton}
+          />
+        </div>
       </div>
     );
   }

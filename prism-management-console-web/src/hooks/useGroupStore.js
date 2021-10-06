@@ -10,7 +10,7 @@ export const useGroupStore = ({ fetch, reset } = { fetch: false, reset: false })
   useEffect(() => {
     if (reset) resetGroups();
     if (fetch) fetchGroupsNextPage();
-  }, [fetch, fetchGroupsNextPage]);
+  }, [reset, fetch, resetGroups, fetchGroupsNextPage]);
 
   return groupStore;
 };
@@ -26,8 +26,17 @@ export const useGroupUiState = ({ reset } = { reset: false }) => {
   }, [reset, resetState]);
 
   useEffect(() => {
-    reaction(() => groupUiState.nameFilter || groupUiState.searchResults, () => triggerSearch());
-  }, []);
+    reaction(() => groupUiState.nameFilter, () => triggerSearch());
+    reaction(() => groupUiState.dateFilter, () => triggerSearch());
+    reaction(() => groupUiState.sortingKey, () => triggerSearch());
+    reaction(() => groupUiState.sortDirection, () => triggerSearch());
+  }, [
+    groupUiState.nameFilter,
+    groupUiState.dateFilter,
+    groupUiState.sortingKey,
+    groupUiState.sortDirection,
+    triggerSearch
+  ]);
 
   return groupUiState;
 };

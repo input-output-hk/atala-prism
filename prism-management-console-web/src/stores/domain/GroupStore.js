@@ -1,16 +1,28 @@
-import { makeAutoObservable, observable, flow, computed, action } from 'mobx';
+import { makeAutoObservable, observable, flow, computed, action, runInAction } from 'mobx';
 import { GROUP_PAGE_SIZE } from '../../helpers/constants';
 
+const defaultValues = {
+  isFetching: false,
+  groups: [],
+  numberOfGroups: undefined,
+  searchResults: [],
+  numberOfResults: undefined
+};
+
+const fallback = {
+  groupsList: [],
+  totalNumberOfGroups: undefined
+};
 export default class GroupStore {
-  isLoading = false;
+  isFetching = defaultValues.isFetching;
 
-  groups = [];
+  groups = defaultValues.groups;
 
-  numberOfGroups = 0;
+  numberOfGroups = defaultValues.numberOfGroups;
 
-  searchResults = [];
+  searchResults = defaultValues.searchResults;
 
-  numberOfResults = 0;
+  numberOfResults = defaultValues.numberOfResults;
 
   constructor(api, rootStore) {
     this.api = api;
@@ -18,25 +30,34 @@ export default class GroupStore {
     this.storeName = this.constructor.name;
 
     makeAutoObservable(this, {
-      isLoading: observable,
+      isFetching: observable,
       groups: observable,
       searchResults: observable,
       isLoadingFirstPage: computed,
       hasMore: computed,
+      hasMoreGroups: computed,
+      hasMoreResults: computed,
+      fetchMoreData: computed,
       resetGroups: action,
       fetchGroupsNextPage: flow.bound,
       fetchSearchResults: flow.bound,
       fetchSearchResultsNextPage: flow.bound,
-      fetchGroups: false,
+      updateFetchedResults: action,
+      fetchGroups: action,
       rootStore: false
     });
   }
 
   get isLoadingFirstPage() {
-    return this.isLoading && this.numberOfGroups === 0;
+    return this.isFetching && this.numberOfGroups === undefined;
   }
 
   get hasMore() {
+    const { hasFiltersApplied } = this.rootStore.uiState.groupUiState;
+    return hasFiltersApplied ? this.hasMoreResults : this.hasMoreGroups;
+  }
+
+  get hasMoreGroups() {
     return this.numberOfGroups > this.groups.length;
   }
 
@@ -44,42 +65,53 @@ export default class GroupStore {
     return this.numberOfResults > this.searchResults.length;
   }
 
+  get fetchMoreData() {
+    const { hasFiltersApplied, hasCustomSorting } = this.rootStore.uiState.groupUiState;
+    return hasFiltersApplied || hasCustomSorting
+      ? this.fetchSearchResultsNextPage
+      : this.fetchGroupsNextPage;
+  }
+
   resetGroups = () => {
-    this.groups = [];
-    this.numberOfGroups = 0;
+    this.isFetching = defaultValues.isFetching;
+    this.groups = defaultValues.groups;
+    this.numberOfGroups = defaultValues.numberOfGroups;
+    this.searchResults = defaultValues.searchResults;
+    this.numberOfResults = defaultValues.numberOfResults;
   };
 
   *fetchGroupsNextPage() {
-    this.isLoading = true;
-    const { groupsList, totalNumberOfGroups } = yield this.fetchGroups({
-      offset: this.groups.length
-    });
-    this.groups = this.groups.concat(groupsList);
-    this.numberOfGroups = totalNumberOfGroups;
-    this.isLoading = false;
+    if (!this.hasMoreGroups && this.isLoadingFirstPage) return;
+    const response = yield this.fetchGroups({ offset: this.groups.length });
+    this.groups = this.groups.concat(response.groupsList);
+    this.searchResults = this.groups;
+    this.numberOfGroups = response.totalNumberOfGroups;
+    this.numberOfResults = this.numberOfGroups;
   }
 
   *fetchSearchResults() {
-    const { hasFiltersApplied } = this.rootStore.uiState.groupUiState;
-    if (!hasFiltersApplied) return;
+    const { hasFiltersApplied, hasCustomSorting } = this.rootStore.uiState.groupUiState;
+    if (!hasFiltersApplied && !hasCustomSorting) return;
+
     this.searchResults = [];
     this.numberOfResults = 0;
-    const { groupsList, totalNumberOfGroups } = yield this.fetchGroups({ offset: 0 });
-    this.searchResults = groupsList;
-    this.numberOfResults = totalNumberOfGroups;
+    const response = yield this.fetchGroups({ offset: 0 });
+    this.searchResults = response.groupsList;
+    this.numberOfResults = response.totalNumberOfGroups;
     return this.searchResults;
   }
 
   *fetchSearchResultsNextPage() {
     if (!this.hasMoreResults) return;
-    const { groupsList = [], totalNumberOfGroups } = yield this.fetchGroups({
-      offset: this.searchResults.length
-    });
-    this.numberOfResults = totalNumberOfGroups;
-    this.searchResults = this.searchResults.concat(groupsList);
+    const response = yield this.fetchGroups({ offset: this.searchResults.length });
+    const { updateFetchedResults } = this.rootStore.uiState.groupUiState;
+    this.numberOfResults = response?.totalNumberOfGroups;
+    this.searchResults = this.searchResults.concat(response.groupsList);
+    updateFetchedResults();
   }
 
   fetchGroups = async ({ offset = 0 }) => {
+    this.isFetching = true;
     try {
       const {
         nameFilter,
@@ -99,7 +131,11 @@ export default class GroupStore {
           createdAfter
         }
       });
-      return response;
+      runInAction(() => {
+        this.rootStore.handleTransportLayerSuccess();
+        this.isFetching = false;
+      });
+      return response || fallback;
     } catch (error) {
       const metadata = {
         store: this.storeName,
@@ -107,7 +143,10 @@ export default class GroupStore {
         verb: 'getting',
         model: 'Groups'
       };
-      this.rootStore.handleTransportLayerError(error, metadata);
+      runInAction(() => {
+        this.rootStore.handleTransportLayerError(error, metadata);
+        this.isFetching = false;
+      });
     }
   };
 }

@@ -249,6 +249,8 @@ export const GROUP_SORTING_KEYS = {
   numberOfContacts: 'NUMBER_OF_CONTACTS'
 };
 
+export const GROUP_SORTING_KEYS_TRANSLATOR = __.invert(GROUP_SORTING_KEYS);
+
 // Credentials
 export const CREDENTIAL_SORTING_KEYS = {
   credentialType: 'CREDENTIAL_TYPE',

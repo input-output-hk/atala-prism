@@ -1,29 +1,46 @@
 import React from 'react';
 import PropTypes from 'prop-types';
+import { useTranslation } from 'react-i18next';
 import { observer } from 'mobx-react-lite';
 import InfiniteScrollTable from '../../../common/Organisms/Tables/InfiniteScrollTable';
 import { getGroupColumns } from '../../../../helpers/tableDefinitions/groups';
 import { useGroupStore, useGroupUiState } from '../../../../hooks/useGroupStore';
+import noGroups from '../../../../images/noGroups.svg';
+import EmptyComponent from '../../../common/Atoms/EmptyComponent/EmptyComponent';
+import { useSession } from '../../../../hooks/useSession';
+import { CONFIRMED } from '../../../../helpers/constants';
+import SimpleLoading from '../../../common/Atoms/SimpleLoading/SimpleLoading';
 
 import './_style.scss';
 
 const GroupsTable = observer(
   ({
+    onCopy,
     setGroupToDelete,
+    newGroupButton,
     selectedGroups,
     setSelectedGroups,
-    onCopy,
-    shouldSelectRecipients,
-    hasMore
+    shouldSelectRecipients
   }) => {
-    const { groups, fetchGroupsNextPage, fetchSearchResultsNextPage, isLoading } = useGroupStore();
-    const { hasFiltersApplied, filteredGroups, isSearching } = useGroupUiState();
+    const { t } = useTranslation();
+    const { accountStatus } = useSession();
+    const { fetchMoreData, isLoadingFirstPage, isFetching, hasMore } = useGroupStore();
+    const { displayedGroups, hasFiltersApplied, isSearching, isSorting } = useGroupUiState();
 
-    const getDataSource = hasFiltersApplied ? filteredGroups : groups;
+    const emptyProps = {
+      photoSrc: noGroups,
+      model: t('groups.title'),
+      isFilter: hasFiltersApplied,
+      button: newGroupButton
+    };
+
+    const renderEmpty = () => (
+      <EmptyComponent {...emptyProps} button={accountStatus === CONFIRMED && newGroupButton} />
+    );
 
     const tableProps = {
       columns: getGroupColumns({ onCopy, setGroupToDelete, setSelectedGroups }),
-      data: getDataSource,
+      data: displayedGroups,
       selectionType: !setSelectedGroups
         ? null
         : {
@@ -35,13 +52,14 @@ const GroupsTable = observer(
             })
           },
       rowKey: 'name',
+      getMoreData: fetchMoreData,
+      loading: isLoadingFirstPage || isSorting,
+      fetchingMore: isFetching || isSearching,
       hasMore,
-      getMoreData: hasFiltersApplied ? fetchSearchResultsNextPage : fetchGroupsNextPage,
-      searching: isSearching,
-      loading: isLoading
+      renderEmpty
     };
 
-    return <InfiniteScrollTable {...tableProps} />;
+    return isLoadingFirstPage ? <SimpleLoading /> : <InfiniteScrollTable {...tableProps} />;
   }
 );
 
