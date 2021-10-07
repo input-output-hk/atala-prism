@@ -9,7 +9,7 @@ on:
       - qa*
       - sandbox*
       - package*
-      - 1.2.x
+      - 1.*
   pull_request:
     paths:
       - 'prism-backend/**'
@@ -201,7 +201,7 @@ jobs:
     needs: [build-prism-management-console-web, build-prism-backend]
     if: |
       github.ref == 'refs/heads/master' ||
-      github.ref == 'refs/heads/1.2.x' ||
+      startsWith(github.ref, 'refs/heads/1.')
       startsWith(github.ref, 'refs/heads/develop') ||
       startsWith(github.ref, 'refs/heads/test') ||
       startsWith(github.ref, 'refs/heads/geud-test') ||
@@ -319,7 +319,7 @@ jobs:
     needs: [deploy-ecr-images]
     if: |
       github.ref == 'refs/heads/master' ||
-      github.ref == 'refs/heads/1.2.x' ||
+      startsWith(github.ref, 'refs/heads/1.') ||
       startsWith(github.ref, 'refs/heads/develop') ||
       startsWith(github.ref, 'refs/heads/test') ||
       startsWith(github.ref, 'refs/heads/qa') ||
@@ -348,8 +348,8 @@ jobs:
         if: github.ref == 'refs/heads/master'
         run: echo "ENABLED_COMPONENTS=geud,intdemo" >> $GITHUB_ENV;
 
-      - name: Set 1.2.x Environment
-        if: github.ref == 'refs/heads/1.2.x'
+      - name: Set 1. Release Environment
+        if: startsWith(github.ref, 'refs/heads/1.')
         run: echo "ENABLED_COMPONENTS=geud,intdemo" >> $GITHUB_ENV;
 
       - name: Set Dev Environment
@@ -404,7 +404,7 @@ jobs:
         run: |
           cd prism-backend/infra/stage/services/prism/
           ./prism.sh -t $ENV
-          ./prism.sh -A $ENV
+          ./prism.sh -p $ENV
 
   trigger-integration-tests:
     runs-on: ubuntu-20.04
