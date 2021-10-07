@@ -41,3 +41,8 @@ scrape_configs:
     regex: (.+)
   scrape_interval: 15s
   scrape_timeout: 15s
+- job_name: 'cardano' # To scrape data from the cardano node
+  scrape_interval: 15s
+  scrape_timeout: 15s
+  static_configs:
+    - targets: ['prism-test-cardano-node.atalaprism.io:12798']

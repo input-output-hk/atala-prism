@@ -9,6 +9,8 @@ services:
     volumes:
       - node-db:/data/db
       - node-ipc:/ipc
+    ports:
+      - "12798:12798"
 
   cardano-db-sync:
     image: inputoutput/cardano-db-sync:11.0.2
