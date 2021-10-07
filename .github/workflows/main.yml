@@ -9,7 +9,7 @@ on:
       - qa*
       - sandbox*
       - package*
-      - 1.*
+      - 1-*
   pull_request:
     paths:
       - 'prism-backend/**'
@@ -160,7 +160,7 @@ jobs:
     name: "Build Prism MC Web"
     if: |
       github.ref == 'refs/heads/master' ||
-      startsWith(github.ref, 'refs/heads/1.') ||
+      startsWith(github.ref, 'refs/heads/1-') ||
       startsWith(github.ref, 'refs/heads/develop') ||
       startsWith(github.ref, 'refs/heads/test') ||
       startsWith(github.ref, 'refs/heads/geud-test') ||
@@ -201,7 +201,7 @@ jobs:
     needs: [build-prism-management-console-web, build-prism-backend]
     if: |
       github.ref == 'refs/heads/master' ||
-      startsWith(github.ref, 'refs/heads/1.') ||
+      startsWith(github.ref, 'refs/heads/1-') ||
       startsWith(github.ref, 'refs/heads/develop') ||
       startsWith(github.ref, 'refs/heads/test') ||
       startsWith(github.ref, 'refs/heads/geud-test') ||
@@ -319,7 +319,7 @@ jobs:
     needs: [deploy-ecr-images]
     if: |
       github.ref == 'refs/heads/master' ||
-      startsWith(github.ref, 'refs/heads/1.') ||
+      startsWith(github.ref, 'refs/heads/1-') ||
       startsWith(github.ref, 'refs/heads/develop') ||
       startsWith(github.ref, 'refs/heads/test') ||
       startsWith(github.ref, 'refs/heads/qa') ||
@@ -349,7 +349,7 @@ jobs:
         run: echo "ENABLED_COMPONENTS=geud,intdemo" >> $GITHUB_ENV;
 
       - name: Set 1. Release Environment
-        if: startsWith(github.ref, 'refs/heads/1.')
+        if: startsWith(github.ref, 'refs/heads/1-')
         run: echo "ENABLED_COMPONENTS=geud,intdemo" >> $GITHUB_ENV;
 
       - name: Set Dev Environment
