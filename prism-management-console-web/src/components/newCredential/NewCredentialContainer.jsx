@@ -50,7 +50,6 @@ const NewCredentialContainer = observer(({ api, redirector: { redirectToCredenti
   } = useContacts(api.contactsManager);
 
   const {
-    credentialTemplates: credentialTypes,
     getCredentialTemplateDetails: getCredentialTypeDetails,
     templateCategories
   } = useTemplateStore({ fetch: true });
@@ -131,7 +130,7 @@ const NewCredentialContainer = observer(({ api, redirector: { redirectToCredenti
     });
   };
 
-  const handleImportedData = ({ credentials, ...rest }, setResults) => {
+  const handleImportedData = ({ credentials }, setResults) => {
     const { isMultiRow, multiRowKey, fields } = credentialTypeDetails;
     const credentialsData = isMultiRow
       ? parseMultiRowCredentials(credentials, multiRowKey, fields)
@@ -246,7 +245,6 @@ const NewCredentialContainer = observer(({ api, redirector: { redirectToCredenti
       case SELECT_CREDENTIAL_TYPE_STEP:
         return (
           <TypeSelection
-            credentialTypes={credentialTypes}
             templateCategories={templateCategories}
             onTypeSelection={handleTypeSelection}
             selectedType={selectedCredentialTypeId}

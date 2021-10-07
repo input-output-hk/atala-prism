@@ -10,6 +10,7 @@ import {
   SELECT_RECIPIENTS_STEP,
   IMPORT_CREDENTIAL_DATA_STEP
 } from '../../helpers/constants';
+import TemplateFiltersContainer from '../credentialTemplates/Molecules/Filters/TemplateFiltersContainer';
 
 import './_style.scss';
 
@@ -47,6 +48,18 @@ const NewCredential = ({
 
   const isLastStep = currentStep + 1 === steps.length;
 
+  const renderStepHeader = () => (
+    <div className="StepHeader">
+      <WizardTitle
+        title={t(`newCredential.title.step${currentStep + 1}`)}
+        subtitle={t(`newCredential.subtitle.step${currentStep + 1}`)}
+      />
+      <div className="ActionsHeader EmbeddedTempalteFilters flex">
+        <TemplateFiltersContainer />
+      </div>
+    </div>
+  );
+
   return (
     <React.Fragment>
       <div className="CredentialMainContent">
@@ -59,10 +72,7 @@ const NewCredential = ({
               disableNext={isLoading}
               loading={isLoading && isLastStep}
             />,
-            <WizardTitle
-              title={t(`newCredential.title.step${currentStep + 1}`)}
-              subtitle={t(`newCredential.subtitle.step${currentStep + 1}`)}
-            />
+            renderStepHeader()
           ]}
         </div>
         <div

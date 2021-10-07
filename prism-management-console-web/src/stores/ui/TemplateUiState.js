@@ -1,4 +1,5 @@
 import { makeAutoObservable, observable, computed, action } from 'mobx';
+import { computedFn } from 'mobx-utils';
 import _ from 'lodash';
 import { filterByExactMatch, filterByInclusion } from '../../helpers/filterHelpers';
 import { SORTING_DIRECTIONS, TEMPLATES_SORTING_KEYS } from '../../helpers/constants';
@@ -34,6 +35,7 @@ export default class TemplateUiState {
       hasNameFilterApplied: computed,
       hasAditionalFiltersApplied: computed,
       filteredTemplates: computed({ requiresReaction: true }),
+      // filteredTemplatesByCategory: computedFn,
       toggleSortDirection: action,
       setNameFilter: action,
       resetState: action,
@@ -42,10 +44,15 @@ export default class TemplateUiState {
       sortingIsCaseSensitive: false,
       rootStore: false
     });
+    this.filteredTemplatesByCategory = this.filteredTemplatesByCategory.bind(this);
   }
 
   get hasAditionalFiltersApplied() {
     return Boolean(this.categoryFilter || this.lastEditedFilter);
+  }
+
+  get hasNameFilterApplied() {
+    return Boolean(this.nameFilter);
   }
 
   get hasFiltersApplied() {
@@ -57,6 +64,10 @@ export default class TemplateUiState {
     const filteredTemplates = this.applyFilters(templates);
     return this.applySorting(filteredTemplates);
   }
+
+  filteredTemplatesByCategory = computedFn(category =>
+    this.filteredTemplates.filter(ct => category.id === ct.category)
+  ).bind(this);
 
   applyFilters = templates =>
     templates.filter(item => {
