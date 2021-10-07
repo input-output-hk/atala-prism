@@ -160,7 +160,7 @@ jobs:
     name: "Build Prism MC Web"
     if: |
       github.ref == 'refs/heads/master' ||
-      github.ref == 'refs/heads/1.2.x' ||
+      startsWith(github.ref, 'refs/heads/1.') ||
       startsWith(github.ref, 'refs/heads/develop') ||
       startsWith(github.ref, 'refs/heads/test') ||
       startsWith(github.ref, 'refs/heads/geud-test') ||
