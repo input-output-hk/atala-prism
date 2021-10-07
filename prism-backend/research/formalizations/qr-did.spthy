@@ -24,7 +24,7 @@ begin
 
 */
 
-builtins: asymmetric-encryption, diffie-hellman
+builtins: asymmetric-encryption
 
 functions: mac/2
 
@@ -33,18 +33,18 @@ functions: mac/2
 rule ChanOut_S:
         [ Out_S($A,$B,x) ]
       --[ ChanOut_S($A,$B,x) ]->
-        [ !Sec($A,$B,x) ]
+        [ Sec($A,$B,x) ]
 
 /* Rule for sending a message from a secure (confidential & authenticated) 
    channel. Used here for QR code sharing. */
 rule ChanIn_S:
-        [ !Sec($A,$B,x) ]
+        [ Sec($A,$B,x) ]
       --[ ChanIn_S($A,$B,x) ]->
         [ In_S($A,$B,x) ]
 
 /* Rule for generating keypairs. */
 rule Register_pk:
-  [ Fr(~x) ] 
+  [ Fr(~x) ]
   --> 
   [ !Pk($A, pk(~x)),
     !Ltk($A, ~x) ]
@@ -61,70 +61,87 @@ rule Reveal_ltk:
   --[ LtkReveal(A) ]->
     [ Out(ltk) ]
 
+/* Rule for initializing the issuer */
+rule Issuer_Init:
+     [ Fr(~id), !Ltk($I, ~lkI) ]
+     --[ Create($I, ~id), Role('I') ]->
+     [ St_Issuer_0($I, ~id, ~lkI) ]
+
+/* Rule for initializing the holder */
+rule Holder_Init:
+     [ Fr(~id), !Ltk($H, ~lkH) ]
+     --[ Create($H, ~id), Role('H') ]->
+     [ St_Holder_0($H, ~id, ~lkH) ]
+
 /* The issuer shares the QR code via the secure channel. */
 rule Issuer_1:
      [ Fr(~code),
        Fr(~tid),
-       !Ltk($I, ~lkI)]
-     --[ SendI($I, <~tid, ~code, pk(~lkI)>) ]->
+       St_Issuer_0($I, ~id, ~lkI) ]
+     --[ Running_I($I, $H, <'H', 'I', <~tid, ~code, pk(~lkI)>>) ]->
      [ Out_S($I, $H, <~tid, ~code, pk(~lkI)>),
-       State_I($I, $H, ~tid, ~code, ~lkI) ]
+       St_Issuer_1($I, ~id, ~lkI, $H, ~tid, ~code) ]
 
 /* The holder receives the QR code through the secure channel, and responds. */
 rule Holder_2:
+     let mc = mac(<~tid, pk(~lkH)>, ~code) in
      [ In_S($I, $H, <~tid, ~code, pkI>),
-       !Ltk($H, ~lkH) ]
-     --[ RecvH($H, <~tid, ~code, pkI>),
-	 Honest($H),
-	 SendH($H, <~code, pk(~lkH)>) ]->
-     [ Out(<<~tid, pk(~lkH)>, mac(<~tid, pk(~lkH)>, ~code)>) ]
+       St_Holder_0($H, ~id, ~lkH) ]
+       --[ Secret(~code), Honest($H), Honest($I),
+           Commit_H($H, $I, <'H', 'I', <~tid, ~code, pkI>>),
+	   Running_H($H, $I, <'H', 'I', <~tid, pk(~lkH), mc>>)]->
+     [ Out(<<~tid, pk(~lkH)>, mc>) ]
 
-/* The issuer receives back encrypted the QR code, via an insecure channel, 
+/* The issuer receives back the MAC'ed QR code, via an insecure channel, 
    plus the Holder's public key. */
 rule Issuer_3:
-     [ State_I($I, $H, ~tid, ~code, ~lkI),
-       In(<<~tid, pkH>, mac(<~tid, pkH>, ~code)>) ]
-     --[ Secret($I, $H, ~code),
-         RecvI($I, <~code, pkH>) ]-> 
+     let mc = mac(<~tid, pkH>, ~code) in    
+     [ St_Issuer_1($I, ~id, ~lkI, $H, ~tid, ~code),
+       In(<<~tid, pkH>, mc>) ]
+     --[ Secret(~code), Honest($H), Honest($I),
+         Authentic($H, <'H', 'I', ~tid, pkH, mc>),
+	 Commit_I($I, $H, <'H', 'I', <~tid, pkH, mc>>) ]->
      [ ]
 
 
+/*
+ * Note: in the following, we do not consider key compromises
+ * because (asymmetric) keys are not used in this protocol.
+ */
+ 
 /* Safety check */
 lemma executable:
       exists-trace
-	"Ex A B m #i #j. SendH(A,m) @i & RecvI(B,m) @j"
+	"Ex A B m #i #j. Running_H(A, B, m) @i & Commit_I(B, A, m) @j & #i < #j"
 
-/*
- * Code secrecy
- * It cannot be that an issuer has shared a code with an honest holder, and
- * the adversary knows the code, without having corrupted the issuer.
- */
+/* Secrecy of the code sent by the Issuer and back by the Holder */
 lemma code_secrecy:
-      /* It cannot be that an */
-      "not(
-	/* issuer has shared a code with */
-	Ex I H c #i #j #k. Secret(I, H, c) @ #i
-	/* an honest holder */
-	& Honest(H) @j
-	/* and the adversary knows the code */
-	& K(c) @ #k
-	/* without having corrupted the issuer */
-	& not(Ex #r. LtkReveal(I) @ #r)
-      )"
+      "All c #i. Secret(c) @ #i ==> not (Ex #j. K(c) @ #j)"
 
-/*
- * Holder PK authenticity
- * For all keys received by I associated with code c, that come from H,
- * the issuer previously shared code c with H.
- */
-lemma pkH_auth:
+/* Authenticity of the public key received by the Issuer from the Holder */
+lemma pkH_authenticity:
+      "All H m #i. Authentic(H, m) @ #i
+      	   ==>
+	   (Ex I #j. Running_H(H, I, m) @ #j & #j < #i)"
 
-      "(
-        /* For all keys received by I associated with c, that come from H */
-	All I c H kH #s #t. RecvI(I, <c, kH>) @ #s & SendH(H, <c, kH>) @ #t & #t < #s 
-	==>
-	/* the issuer previously shared the code c with H */
-	(Ex I H c #i. ChanOut_S(I,H,c) @ #i & i < t)
-      )"
+/* Injective agreement for secret code message exchange */
+lemma code_injective_agreement:
+      "All H I t #i.
+      	   Commit_H(H, I, t) @ i
+      	   ==>
+	   (Ex #j. Running_I(I, H, t) @j
+		& j < i
+		& not (Ex H2 I2 #i2. Commit_H(H2, I2, t) @i2
+		  & not (#i2 = #i)))"
+
+/* Injective agreement for Holder's pk message exchange */
+lemma pkH_injective_agreement:
+      "All H I t #i.
+      	   Commit_I(I, H, t) @ i
+      	   ==>
+	   (Ex #j. Running_H(H, I, t) @j
+		& j < i
+		& not (Ex H2 I2 #i2. Commit_I(I2, H2, t) @i2
+		  & not (#i2 = #i)))"
 
 end
