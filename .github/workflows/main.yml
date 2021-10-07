@@ -201,7 +201,7 @@ jobs:
     needs: [build-prism-management-console-web, build-prism-backend]
     if: |
       github.ref == 'refs/heads/master' ||
-      startsWith(github.ref, 'refs/heads/1.')
+      startsWith(github.ref, 'refs/heads/1.') ||
       startsWith(github.ref, 'refs/heads/develop') ||
       startsWith(github.ref, 'refs/heads/test') ||
       startsWith(github.ref, 'refs/heads/geud-test') ||
