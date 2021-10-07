@@ -1,5 +1,5 @@
 import { makeAutoObservable, observable, flow, computed, action, runInAction } from 'mobx';
-import { GROUP_PAGE_SIZE } from '../../helpers/constants';
+import { GROUP_PAGE_SIZE, MAX_GROUP_PAGE_SIZE } from '../../helpers/constants';
 
 const defaultValues = {
   isFetching: false,
@@ -43,6 +43,8 @@ export default class GroupStore {
       fetchSearchResults: flow.bound,
       fetchSearchResultsNextPage: flow.bound,
       updateFetchedResults: action,
+      fetchAllGroups: flow.bound,
+      fetchAllFilteredGroups: flow.bound,
       fetchGroups: action,
       rootStore: false
     });
@@ -84,9 +86,7 @@ export default class GroupStore {
     if (!this.hasMoreGroups && this.isLoadingFirstPage) return;
     const response = yield this.fetchGroups({ offset: this.groups.length });
     this.groups = this.groups.concat(response.groupsList);
-    this.searchResults = this.groups;
     this.numberOfGroups = response.totalNumberOfGroups;
-    this.numberOfResults = this.numberOfGroups;
   }
 
   *fetchSearchResults() {
@@ -110,7 +110,53 @@ export default class GroupStore {
     updateFetchedResults();
   }
 
-  fetchGroups = async ({ offset = 0 }) => {
+  *fetchAllGroups() {
+    if (!this.hasMoreGroups) return this.groups;
+    let groupsAcc = this.groups;
+    const fetchRecursively = async () => {
+      const response = await this.fetchGroups({
+        offset: groupsAcc.length,
+        pageSize: MAX_GROUP_PAGE_SIZE
+      });
+      groupsAcc = groupsAcc.concat(response.groupsList);
+      if (groupsAcc.length >= response.totalNumberOfGroups)
+        return { groupsList: groupsAcc, totalNumberOfGroups: response.totalNumberOfGroups };
+      return fetchRecursively();
+    };
+
+    const response = yield fetchRecursively();
+    runInAction(() => {
+      this.groups = response.groupsList;
+      this.numberOfGroups = response.totalNumberOfGroups;
+    });
+    return this.groups;
+  }
+
+  *fetchAllFilteredGroups() {
+    if (!this.hasMoreResults) return this.searchResults;
+    let groupsAcc = this.searchResults;
+    const fetchRecursively = async () => {
+      const response = await this.fetchGroups({
+        offset: groupsAcc.length,
+        pageSize: MAX_GROUP_PAGE_SIZE
+      });
+      groupsAcc = groupsAcc.concat(response.groupsList);
+      if (groupsAcc.length >= response.totalNumberOfGroups)
+        return { groupsList: groupsAcc, totalNumberOfGroups: response.totalNumberOfGroups };
+      return fetchRecursively();
+    };
+
+    const response = yield fetchRecursively();
+    runInAction(() => {
+      this.searchResults = response.groupsList;
+      this.numberOfResults = response.totalNumberOfGroups;
+      const { updateFetchedResults } = this.rootStore.uiState.groupUiState;
+      updateFetchedResults();
+    });
+    return this.searchResults;
+  }
+
+  fetchGroups = async ({ offset = 0, pageSize = GROUP_PAGE_SIZE }) => {
     this.isFetching = true;
     try {
       const {
@@ -123,7 +169,7 @@ export default class GroupStore {
 
       const response = await this.api.groupsManager.getGroups({
         offset,
-        pageSize: GROUP_PAGE_SIZE,
+        pageSize,
         sort: { field: sortingBy, direction: sortDirection },
         filter: {
           name: nameFilter,

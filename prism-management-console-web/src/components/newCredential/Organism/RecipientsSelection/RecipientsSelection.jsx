@@ -14,7 +14,7 @@ import {
   handleSelectAll
 } from '../../../../helpers/selectionHelpers';
 import { CONTACT_ID_KEY } from '../../../../helpers/constants';
-import { useGroupStore } from '../../../../hooks/useGroupStore';
+import { useGroupStore, useGroupUiState } from '../../../../hooks/useGroupStore';
 
 import './_style.scss';
 
@@ -25,7 +25,8 @@ const SUBJECTS_KEY = 'subjects';
 
 const RecipientsSelection = observer(
   ({ groupsProps, contactsProps, toggleShouldSelectRecipients, shouldSelectRecipients }) => {
-    const { groups } = useGroupStore();
+    const { fetchAllGroups, fetchAllFilteredGroups } = useGroupStore();
+    const { sortedFilteredGroups, hasFiltersApplied } = useGroupUiState();
 
     const { selectedGroups, setSelectedGroups } = groupsProps;
     const {
@@ -40,7 +41,6 @@ const RecipientsSelection = observer(
     const { t } = useTranslation();
     const [loadingSelection, setLoadingSelection] = useState(false);
 
-    // FIXME: fix select all
     const handleSelectAllContacts = ev =>
       handleSelectAll({
         ev,
@@ -52,9 +52,21 @@ const RecipientsSelection = observer(
         setLoading: setLoadingSelection
       });
 
-    const handleSelectAllGroups = ev => {
+    const handleSelectAllGroups = async ev => {
+      setLoadingSelection(true);
       const { checked } = ev.target;
-      setSelectedGroups(checked ? groups.map(g => g.name) : []);
+      const groupsToSelect = await getGroupsToSelect();
+      handleSetGroupSelection(checked, groupsToSelect);
+      setLoadingSelection(false);
+    };
+
+    const getGroupsToSelect = () => {
+      if (hasFiltersApplied) return fetchAllFilteredGroups();
+      return fetchAllGroups();
+    };
+
+    const handleSetGroupSelection = (checked, groupsList) => {
+      setSelectedGroups(checked ? groupsList.map(g => g.name) : []);
     };
 
     // This allows to only render the table that's currently visible
@@ -64,8 +76,8 @@ const RecipientsSelection = observer(
     const selectedLabel = selectedContacts.length ? `  (${selectedContacts.length})  ` : null;
 
     const selectAllGroupsProps = {
-      ...getCheckedAndIndeterminateProps(groups, selectedGroups),
-      disabled: !shouldSelectRecipients,
+      ...getCheckedAndIndeterminateProps(sortedFilteredGroups, selectedGroups),
+      disabled: !shouldSelectRecipients || !sortedFilteredGroups.length,
       onChange: handleSelectAllGroups
     };
 
@@ -86,10 +98,16 @@ const RecipientsSelection = observer(
               <GroupFilters fullFilters={false} />
               <div className="selectGroupsCheckbox">
                 <Checkbox className="groupsCheckbox" {...selectAllGroupsProps}>
-                  <span>
-                    {t('newCredential.targetsSelection.selectAll')}
-                    {selectedLabel}
-                  </span>
+                  {loadingSelection ? (
+                    <div className="loadingSelection">
+                      <PulseLoader size={3} color="#FFAEB3" />
+                    </div>
+                  ) : (
+                    <span>
+                      {t('newCredential.targetsSelection.selectAll')}
+                      {selectedLabel}
+                    </span>
+                  )}
                 </Checkbox>
               </div>
               <div className="selectGroupCheckbox noRecipientsCheckbox">
