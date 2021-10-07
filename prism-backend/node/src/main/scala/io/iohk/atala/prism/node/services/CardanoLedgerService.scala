@@ -1,5 +1,6 @@
 package io.iohk.atala.prism.node.services
 
+import cats.implicits.catsSyntaxEitherId
 import enumeratum.{Enum, EnumEntry}
 import io.iohk.atala.prism.logging.TraceId
 import io.iohk.atala.prism.logging.TraceId.IOWithTraceIdContext
@@ -17,7 +18,7 @@ import io.iohk.atala.prism.node.logging.NodeLogging.logOperationIds
 import io.iohk.atala.prism.node.repositories.daos.KeyValuesDAO.KeyValue
 import io.iohk.atala.prism.node.services.CardanoLedgerService.CardanoNetwork
 import io.iohk.atala.prism.node.services.models.{AtalaObjectNotification, AtalaObjectNotificationHandler}
-import io.iohk.atala.prism.node.{PublicationInfo, UnderlyingLedger}
+import io.iohk.atala.prism.node.{PublicationInfo, UnderlyingLedger, cardano}
 import io.iohk.atala.prism.protos.node_internal
 import monix.execution.Scheduler
 import org.slf4j.LoggerFactory
@@ -53,6 +54,22 @@ class CardanoLedgerService private[services] (
     } else {
       Ledger.CardanoMainnet
     }
+  }
+
+  override def isAvailable: Future[Either[CardanoWalletError, Unit]] = {
+    cardanoClient
+      .getWalletDetails(walletId)
+      .value
+      .map {
+        case Left(err) =>
+          err.asLeft
+        case Right(walletDetails) if walletDetails.balance.available < cardano.MIN_AVAILABLE_BALANCE_LOVELACE =>
+          CardanoWalletError(
+            f"Cardano client is unavailable: ${walletDetails.balance.available} is too low",
+            CardanoWalletErrorCode.WalletBalanceIsTooLow
+          ).asLeft
+        case _ => ().asRight
+      }
   }
 
   // Schedule the initial sync

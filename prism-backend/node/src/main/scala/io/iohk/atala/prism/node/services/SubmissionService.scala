@@ -34,6 +34,7 @@ class SubmissionService private (
 
   def submitReceivedObjects(): Result[Unit] = {
     val submissionET = for {
+      _ <- EitherT(atalaReferenceLedger.isAvailable).leftMap(NodeError.InternalCardanoWalletError)
       atalaObjects <- EitherT(
         atalaObjectsTransactionsRepository.getNotPublishedObjects.run(TraceId.generateYOLO).unsafeToFuture()
       )
@@ -51,13 +52,14 @@ class SubmissionService private (
 
   def retryOldPendingTransactions(ledgerPendingTransactionTimeout: Duration): Future[Int] = {
     logger.info("Retry old pending transactions submission")
-    val getOldPendingTransactions =
-      atalaObjectsTransactionsRepository
-        .getOldPendingTransactions(ledgerPendingTransactionTimeout, atalaReferenceLedger.getType)
 
     for {
       // Query old pending transactions
-      pendingTransactions <- getOldPendingTransactions.run(TraceId.generateYOLO).unsafeToFuture()
+      pendingTransactions <-
+        atalaObjectsTransactionsRepository
+          .getOldPendingTransactions(ledgerPendingTransactionTimeout, atalaReferenceLedger.getType)
+          .run(TraceId.generateYOLO)
+          .unsafeToFuture()
 
       transactionsWithDetails <-
         pendingTransactions
@@ -76,8 +78,17 @@ class SubmissionService private (
         case (transaction, status) if status != TransactionStatus.Submitted =>
           transaction
       }
+      isAvailable <- atalaReferenceLedger.isAvailable
 
-      numPublished <- mergeAndRetryPendingTransactions(transactionsToRetry)
+      numPublished <- isAvailable.fold(
+        { err =>
+          logger.warn(s"Resubmission skipped, cardano wallet is unavailable: $err")
+          Future.successful(0)
+        },
+        { _ =>
+          mergeAndRetryPendingTransactions(transactionsToRetry)
+        }
+      )
     } yield {
       logger.info(
         s"methodName: retryOldPendingTransactions , pending transactions: ${pendingTransactions.size}; " +

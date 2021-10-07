@@ -49,6 +49,8 @@ object CardanoWalletErrorCode extends Enum[CardanoWalletErrorCode] {
   // Errors 400 Undefined
   case object UndefinedCardanoWalletError extends CardanoWalletErrorCode
 
+  case object WalletBalanceIsTooLow extends CardanoWalletErrorCode
+
   def fromString(errorCode: String): Option[CardanoWalletErrorCode] =
     CardanoWalletErrorCode.withNameInsensitiveOption(errorCode)
 }

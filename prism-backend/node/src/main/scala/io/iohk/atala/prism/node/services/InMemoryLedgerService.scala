@@ -25,6 +25,8 @@ class InMemoryLedgerService(onAtalaObject: AtalaObjectNotificationHandler)(impli
 
   override def getType: Ledger = Ledger.InMemory
 
+  override def isAvailable: Future[Either[CardanoWalletError, Unit]] = ().asRight.pure[Future]
+
   override def publish(obj: node_internal.AtalaObject): Future[Either[CardanoWalletError, PublicationInfo]] = {
     val publcationInfoF = for {
       objectBytes <- Future.successful(obj.toByteArray)
