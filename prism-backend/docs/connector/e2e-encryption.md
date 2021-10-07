@@ -1,17 +1,113 @@
 # End to End Encryption
 
-End to End Encryption is a mechanism that provides security in a way that not even the service provider can decipher the data sent between participants. In the context of Atala PRISM it means, for example, issuers being able to send credentials to holders without us (PRISM Connector) learning its contents, including Personally Identifiable Information.
-
-## Implementation
-
-One the of available message (`AtalaMessage`) types is `EncryptedMessage` which contains `keyId` field identifying which key has been used for encryption and `encryptedContent` which is encrypted bytes of the message itself - which is serialized `AtalaMessage` as well. `keyId` should be one of keys returned by `ConnectorService.GetConnectionCommunicationKeys`. In case of protocol participants that have DID (for now issuers and verifiers) it should be one of communication keys associated with the DID. For holders it should be the key that is provided by the mobile wallet when accepting the connection.
+End to End Encryption is a mechanism that provides security in a way that not even the service provider can decipher the data sent between participants.
+In the context of Atala PRISM it means, for example, issuers being able to send credentials to holders without us (PRISM Connector) learning its contents,
+including Personally Identifiable Information.
 
 ## Man in the middle attack
 
-In cryptographic communication protocols one attack vector is third party in the middle controlling the communication between participants. Generally it is impossible to prevent such attacks without using some information shared between participants or another communication channel: the attacker can communicate with participand B pretending to be A and communicating with A pretending to be B - with neither of them being able to detect it.
+In cryptographic communication protocols one attack vector is third party in the middle controlling the communication between participants.
+Generally it is impossible to prevent such attacks without using some information shared between participants or another communication channel.
+The attacker can communicate with participant B pretending to be A and communicating with A pretending to be B - with neither of them being able to detect it.
 
-There exist protocols that are generally secure against MITM attack, e.g. TLS which we are using for communication betwen Issuer and Connector or Holder and Connector - so that part of communication should not be vulnerable. The only missing link is the Connector itself - if the attacker controls it, they could use such power to run MITM attack.
+Protocols exist that are generally secure against MITM attack, e.g. TLS which we are using for communication between Issuer and Connector or Holder and Connector - so that part of communication should not be vulnerable.
+The only missing link is the Connector itself - if the attacker controls it, they could use such power to run MITM attack.
 
-Another potential problem, similar to MITM attack, is the possibility of the attacker impersonating the holder using information known to Connector. In such scenario, the attacker uses a connection token stolen from the Connector to instantiate a connection to the issuer and download credentials, including Personally Identifiable Information. It is slightly different from MITM attack, as the latter involves transparently intercepting communication between parties, while described impersonation attack can be started without any action from the holder side.
+Another potential problem, similar to MITM attack, is the possibility of the attacker impersonating the holder using information known to Connector. In such scenario, the attacker uses a connection token stolen from the Connector to instantiate a connection to the issuer and download credentials, including Personally Identifiable Information.
+It is slightly different from MITM attack, as the latter involves transparently intercepting communication between parties, while described impersonation attack can be started without any action from the holder side.
 
-Solution proposed to these issues is treating the connection QR code as safe one-way communication channel from the Issuer to the Holder. It can be used to share secret bits between both ends, without disclosing them to the Connector. Such shared secret can be then used to perform a handshake between the Issuer and the Holder at the beginning of connection: messages containing their public keys, signed using [JSON Web Token](https://en.wikipedia.org/wiki/JSON_Web_Token). For now such solution is not specified or implemented, it might be added later.
+Solution proposed to these issues is treating the connection QR code as safe one-way communication channel from the Issuer to the Holder. It can be used to share secret bits between both ends, without disclosing them to the Connector.
+Such shared secret can be then used to perform a handshake between the Issuer and the Holder at the beginning of connection.
+
+## Phase one: Key exchange
+
+This phase describes the protocol of exchanging a common secret and other information between issuer and holder that are necessary for the next stage - encryption.
+
+### Prerequisites
+
+In the following description of the protocol, when participants need to store EC key pair, they will only store private key, because public can be generated from private one. 
+
+Issuer will have an association table in a local database with following fields:
+
+```
+| connection_id                            | key_agreement_derivation_path                            | recipient_pk                    | nonce                                | token                                                |   |
+|------------------------------------------|----------------------------------------------------------|---------------------------------|--------------------------------------|------------------------------------------------------|---|
+| <Connection id generated by a connector> | <Key derivation path to derive a key for e2e encryption> | <Public key sent by the holder> | <nonce sent to this specific holder> | <connection token used to establish this connection> |   |
+```
+
+Holder will have an association table in a local database with this fields:
+```
+| connection_id                            | key_agreement_derivation_path                            | recipient_pk                    | nonce                                | token                                                |   |
+|------------------------------------------|----------------------------------------------------------|---------------------------------|--------------------------------------|------------------------------------------------------|---|
+| <Connection id generated by a connector> | <Key derivation path to derive a key for e2e encryption> | <Public key sent from a holder> | <nonce sent to this specific holder> | <connection token used to establish this connection> |   |
+```
+->> remark
+
+Holder already has a table where he stores information for every contact, fields are:
+public Long id;
+
+* connectionId;
+* dateCreated;
+* did;
+* lastMessageId;
+* name;
+* token;
+* keyDerivationPath;
+* logo;
+* deleted = false;
+
+we will need to add `key_agreement_derivation_path` and `key_agreement_derivation_path` and `nonce` there as well.
+
+Right now holder keeps track of a counter that he uses to generate a new key derivation path which then is used to derive the authentication key for the connector,
+every new key has an index `m/counter+1'/0'/0'`, `key_agreement_derivation_path` will be generated in a similar way, with path being `m/counter+1'/2'/0'`, 
+where `2` indicates a key agreement key type.
+
+private key generated from this path will be used to decrypt messages received from the holder, and sign messages sent to a holder.
+`recipient_pk` is a public key of the holder that will be used to encrypt messages intended for the holder
+
+The `did` here is a part of `addConnectionFromToken` response, right now when holder scans the QR code and obtains a token
+he sends `addConnectionFromToken` request and the response from this request contains this information. The response is coming
+from a connector, so in the context of e2e encryption, this `did` can not be trusted because connector can replace the did.
+
+`keyDerivationPath` is used to generate the authentication key. request will be signed with private key,
+unpublished did will be generated which includes the public key, and sent alongside the request in request metadata.
+The connector can verify the request using this key, Connector has access to this public key.
+
+It is worth mentioning that `connectionId` is also sent back by the connector, and it could be replaced as well, 
+in this case messages won't be delivered to the recipient but if they are encrypted, attacker won't be able to read them anyway.
+
+->> end remark
+
+### Key exchange steps
+
+1. Issuer will generate a new key derivation path, and then key pair from it, a random 256 bit nonce and a connection token, Issuer creates a record in connector/connection_tokens table.
+2. Issuer will create a new record with token, nonce and key derivation path generated in step 1 in a database.
+3. Issuer will generate a QR code by concatenating newly generated PK, nonce and token like this: `<Base64Url(PK)>.<Base64Url(Nonce)>.<Base64Url(token)>`
+4. Holder scans the QR code and obtains the aforementioned information
+5. Holder creates an entry for a new contact in his database, stores token and recipients public key, holder will also generate a new key derivation path association with this contact. After step 5 connection has been established, now parties will communicate with each other via connector.
+6. Holder will send a message to an issuer containing a public portion of the key pair he has generated in part 4 and associated with this specific issuer.
+   1. this message will also include MAC calculated with the nonce sent by the issuer in step 3
+7. Holder will receive the message, since he has the nonce he will be able to validate the message authenticity 
+   1. He will be able to know which nonce to use by messages connectionId, he can get a connection token by knowing a connection id, and then use the token to retrieve a nonce that he stored in step 2
+8. Issuer will update a record by nonce (which he has extracted in step 7.1) in his database and add received public key and connectionId, 
+
+After successfully completing the protocol, Issuer and holder have the following information:
+
+Issuer:
+* Holders public key
+* nonce
+* key derivation path, which is associated to a particular holder and will be used for e2e encryption for this contact only
+
+Holder:
+* Issuers public key
+* nonce
+* key derivation path, which is associated to a particular Issuer and will be used for e2e encryption for this contact only
+
+->> remark
+
+In step one "Issuer creates a record in connector/connection_tokens table". This is already happening, other steps need to be implemented.
+
+Right now holder already has a counter for every new connection, which he will use to generate a unique key derivation path, issuer will need to implement such counter for every contact as well.
+
+
+->> end remark
