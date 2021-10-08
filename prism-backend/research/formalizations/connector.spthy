@@ -17,17 +17,19 @@ begin
  2. H -> C: <tid, pk_hol>, mac(<tid, pk_hol>, code)
  3. C -> I: <tid, pk_hol> mac(<tid, pk_hol>, code)
  4. I:      r = Fresh(Z)
-            s = (pk_hol)^r
-            k_1 || k_2 = kdf(s)
-            c = senc(k_1, cred)
-            m = mac(k_2, c)
+            k = (pk_hol)^r
+            k_1 || k_2 = kdf(k)
+            c = senc(cred, k_1)
+	    s = sig(h(c), sk_iss)
+            m = mac(c, k_2)
  5. I -> C: <c, m, g^r>
  6. C -> H: <c, m, g^r>
- 7. H:      s = (g^r)^u
-            k_1 || k_2 = kdf(s)
-            m' = mac(k_2, c)
+ 7. H:      k = (g^r)^u
+            k_1 || k_2 = kdf(k)
+            m' = mac(c, k_2)
             Assert m = m'
-            cred = sdec(k_1, c)
+	    verify(sig, h(c), pk_iss)?
+            cred = sdec(c, k_1)
 
  Steps 1-3 are the QRdid protocol, whereby the Issuer gets assured that 
  the holder's public key is pkH. It needs a secure channel.
@@ -144,15 +146,15 @@ rule Issuer_3:
      	 k = kdf(pkHe^~r)
          k1 = splitL(k)
 	 k2 = splitR(k)
-	 sig = sign(h(~cred), ~lkIs)
  	 ccred = senc(~cred, k1)
   	 mc_cred = mac(ccred, k2)
+	 sig = sign(h(ccred), ~lkIs)
      in    
      [ St_Issuer_1($I, ~id, ~lkIs, $H, ~tid, ~code),
        In(<<~tid, pkHe>, mc_pkh>),
        Fr(~r), Fr(~cred) ]
-     --[ SecretCode(~code), Honest($H), Honest($I),
-         SendCred($I, ~cred),
+     --[ SecretCode(~code), SecretCred(~cred), Role('I'),
+     	 Honest($H), Honest($I),     	 
          AuthenticPK($H, <'H', 'I', ~tid, pkHe, mc_pkh>),
 	 Commit_I_1($I, $H, <'H', 'I', <~tid, pkHe, mc_pkh>>),
 	 Running_I_2($I, $H, <'H', 'I', <ccred, mc_cred, sig, 'g'^~r>>) ]->
@@ -169,10 +171,9 @@ rule Holder_4:
      in
      [ St_Holder_1($H, ~id, ~lkHe, pkHe, $I, pkIs),
        In(<ccred, mc_cred, sig, R>) ]
-     --[ Eq(verify(sig, h(cred), pkIs), true),
+     --[ Eq(verify(sig, h(senc(cred, k1)), pkIs), true),
          SecretCred(cred),
-	 AuthenticCred($H, cred),
-//	 AuthenticCred($H, <'H', 'I', <ccred, mc_cred, sig, R>>),
+	 AuthenticCred($H, <'H', 'I', <ccred, mc_cred, sig, R>>),
 	 Honest($H), Honest($I), Role('H'),
 	 Commit_H_2($H, $I, <'H', 'I', <ccred, mc_cred, sig, R>>)]->
      []
@@ -184,7 +185,7 @@ restriction Equality:
 lemma executable:
       exists-trace
 	"
-	Ex I H idi idh #i1 #j1. //SendI(A, m) @i & RecvH(B, m) @j"
+	Ex I H idi idh #i1 #j1.
 	    Create(I, idi) @i1 & Create(H, idh) @j1
 	    & ( Ex m #i2 #j2. Running_I_1(I, H, m) @i2 & i1 < i2
 	        & Commit_H_1(H, I, m) @j2 & j1 < j2
@@ -233,10 +234,12 @@ lemma cred_secrecy_issuer:
       "(All c #i. SecretCred(c) @ #i & Role('I') @ #i
       	   ==>
 	   (not (Ex #j. K(c) @ #j)) |
+	   (Ex I #j. LtksReveal(I) @ #j & Honest(I) @ #i) |
 	   (Ex H #j. LtkeReveal(H) @ #j & Honest(H) @ #i)
       )"
 
-/* Credential secrecy from the point of view of an honest holder */
+/* Credential secrecy from the point of view of an honest holder
+   -- Requires also that the signing key of the issuer is not leaked! */
 lemma cred_secrecy_holder:
       all-traces
       "(All c #i. SecretCred(c) @ #i & Role('H') @ #i
@@ -246,13 +249,14 @@ lemma cred_secrecy_holder:
 	   (Ex I #j. LtksReveal(I) @ #j & Honest(I) @ #i)
       )"
 
-/* Credential authenticity: it comes from the Issuer. */
+/* Credential authenticity: it comes from the Issuer
+   -- unless issuer and receiving holder are compromised. */
 lemma cred_auth:
       "All H m #i. AuthenticCred(H, m) @i
       	   ==>
-	   //((Ex I #j. Running_I_2(I, H, m) @j & j < i) |
-	   ((Ex I #j. SendCred(I, m) @j & j < i) |
-	    (Ex I #j. LtksReveal(I) @j))"
+	   ((Ex I #j. Running_I_2(I, H, m) @j & j < i) |
+	    (Ex I #j. LtksReveal(I) @j) |
+	    (Ex #j. LtkeReveal(H) @j))"
 
 /* Injective agreement for credential message exchange */
 lemma cred_injective_agreement:
@@ -288,37 +292,5 @@ lemma cred_aliveness:
 	   ==> (Ex id #j. Create(I, id) @j)
 	       | (Ex I #r. LtksReveal(I) @r & Honest(I) @i)
 	       | (Ex H #r. LtkeReveal(H) @r & Honest(H) @i)"
-
-/* Secrecy of the code sent by the Issuer and back by the Holder */
-//lemma code_secrecy:
-//      "All c #i. Secret(c) @ #i ==> not (Ex #j. K(c) @ #j)"
-
-/* Authenticity of the public key received by the Issuer from the Holder */
-//lemma pkH_authenticity:
-//      "All H m #i. Authentic(H, m) @ #i
-//      	   ==>
-//	   (Ex #j. SendPkh(H, m) @ #j & #j < #i)"	   
-
-/* Credential secrecy  */
-//lemma cred_secrecy:
-      /* It cannot be that a */
-//      "not(
-	/* Holder 'H' has received a credential 'c' generated honestly for him */
-//	Ex H c #i #j #k. Gencred(H, c) @ #i & RecvH(H, c) @ #j
-//	/* and the adversary knows 'c' */
-//	& K(c) @ #k
-//	/* without having compromised the holder's key. */
-//	& not(Ex #r. LtkeReveal(H) @ #r)	
-//      )"
-
-/* Credential authenticity: it comes from the Issuer. */
-//lemma cred_auth:
-//      "(
-//        /* For all credentials 'c' received by a holder 'H' */
-//	All H c #i. RecvH(H, c) @ #i
-//      	==>
-//	/* were sent by an honest issuer 'I', or the adversary compromised 'I''s key */
-//	((Ex I #j. SendI(I, c) @ #j) | (Ex I #k. LtksReveal(I) @ #k))	
-//      )"
 
 end

@@ -93,9 +93,9 @@ rule Issuer_1:
      let k = kdf(pkHe^~r)
          k1 = splitL(k)
 	 k2 = splitR(k)
-	 sig = sign(h(~cred), ~lkIs)
  	 ccred = senc(~cred, k1)
- 	 mc = mac(ccred, k2)		 
+ 	 mc = mac(ccred, k2)
+	 sig = sign(h(ccred), ~lkIs)	 
      in
      [ St_Issuer_0($I, ~id, ~lkIs),
        !Pke($H, pkHe),
@@ -120,8 +120,7 @@ rule Holder_2:
      [ St_Holder_0($H, ~id, ~lkHe),
        !Pks($I, pkIs),
        In(<ccred, mc, sig, R>) ]
-     --[ Eq(verify(sig, h(cred), pkIs), true),
-//	 Authentic($H, cred),
+     --[ Eq(verify(sig, h(senc(cred, k1)), pkIs), true),
 	 Authentic($H, <'I', 'H', <ccred, mc, sig, R>>),
          Secret(cred), Role('H'), Honest($H), Honest($I),
 	 Commit_H($H, $I, <'I', 'H', <ccred, mc, sig, R>>)]->
@@ -138,27 +137,27 @@ lemma executable:
 /* Credential secrecy from the point of view of an honest issuer */
 lemma cred_secrecy_issuer:
       all-traces
-      "(All c #i. Secret(c) @ #i & Role('I') @ #i
+      "(All c #i. Secret(c) @i & Role('I') @i
       	   ==>
-	   (not (Ex #j. K(c) @ #j)) |
-	   (Ex H #j. LtkeReveal(H) @ #j & Honest(H) @ #i)
+	   (not (Ex #j. K(c) @j)) |
+	   (Ex I #j. LtksReveal(I) @j & Honest(I) @i) |
+   	   (Ex H #j. LtkeReveal(H) @j & Honest(H) @i)
       )"
 
 /* Credential secrecy from the point of view of an honest holder */
 lemma cred_secrecy_holder:
       all-traces
-      "(All c #i. Secret(c) @ #i & Role('H') @ #i
+      "(All c #i. Secret(c) @i & Role('H') @i
       	   ==>
-	   (not (Ex #j. K(c) @ #j)) |
-	   (Ex H #j. LtkeReveal(H) @ #j & Honest(H) @ #i) |
-	   (Ex I #j. LtksReveal(I) @ #j & Honest(I) @ #i)
+	   (not (Ex #j. K(c) @j)) |
+	   (Ex H #j. LtkeReveal(H) @j & Honest(H) @i) |
+	   (Ex I #j. LtksReveal(I) @j & Honest(I) @i)
       )"
 
 /* Credential authenticity: it comes from the Issuer. */
 lemma cred_auth:
       "All H m #i. Authentic(H, m) @i
       	   ==>
-//	   ((Ex I #j. SendI(I, m) @j & j < i) |
 	   ((Ex I #j. Running_I(I, H, m) @j & j < i) |
 	    (Ex I #j. LtksReveal(I) @j) |
 	    (Ex #j. LtkeReveal(H) @j))"
@@ -172,5 +171,30 @@ lemma cred_injective_agreement:
 		& j < i
 		& not (Ex H2 I2 #i2. Commit_H(H2, I2, t) @i2
 		  & not (#i2 = #i)))"
+
+/* Non-Injective agreement for credential message exchange */
+lemma cred_noninjective_agreement:
+      "All H I t #i.
+      	   Commit_H(H, I, t) @ i
+      	   ==>
+	   (Ex #j. Running_I(I, H, t) @j)
+	   | (Ex I #r. LtksReveal(I) @r & Honest(I) @i)
+	   | (Ex H #r. LtkeReveal(H) @r & Honest(H) @i)"
+
+/* Weak agreement for credential message exchange */
+lemma cred_weak_agreement:
+      "All H I t1 #i.
+      	   Commit_H(H, I, t1) @i
+	   ==> (Ex t2 #j. Running_I(I, H, t2) @j)
+	       | (Ex I #r. LtksReveal(I) @r & Honest(I) @i)
+	       | (Ex H #r. LtkeReveal(H) @r & Honest(H) @i)"
+
+/* Aliveness for credential message exchange */
+lemma cred_aliveness:
+      "All H I t #i.
+      	   Commit_H(H, I, t) @i
+	   ==> (Ex id #j. Create(I, id) @j)
+	       | (Ex I #r. LtksReveal(I) @r & Honest(I) @i)
+	       | (Ex H #r. LtkeReveal(H) @r & Honest(H) @i)"
       
 end
