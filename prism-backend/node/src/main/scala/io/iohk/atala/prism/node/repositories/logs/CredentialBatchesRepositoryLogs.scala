@@ -25,7 +25,7 @@ private[repositories] final class CredentialBatchesRepositoryLogs[F[_]: MonadThr
       info"getting batch state $batchId" *> in
         .flatTap(
           _.fold(
-            err => error"Encountered an error while getting batch state ${err.toString}",
+            err => error"Encountered an error while getting batch state $err",
             res => info"getting batch state - successfully done, state found - ${res.isDefined}"
           )
         )
@@ -39,7 +39,7 @@ private[repositories] final class CredentialBatchesRepositoryLogs[F[_]: MonadThr
       info"getting credential revocation time $batchId" *> in
         .flatTap(
           _.fold(
-            err => error"Encountered an error while getting credential revocation time ${err.toString}",
+            err => error"Encountered an error while getting credential revocation time $err",
             res => info"getting credential revocation time - successfully done ${res.map(_.transactionId)}"
           )
         )
