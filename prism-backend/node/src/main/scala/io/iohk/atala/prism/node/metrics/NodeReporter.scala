@@ -16,7 +16,7 @@ import scala.util.Try
 
 class NodeReporter(
     walletId: WalletId,
-    cardanoClient: CardanoClient,
+    cardanoClient: CardanoClient[IOWithTraceIdContext],
     keyValueService: KeyValueService[IOWithTraceIdContext],
     blockNumberSyncStart: Int
 )(implicit
@@ -42,7 +42,8 @@ class NodeReporter(
   private def reportWalletFunds(): Unit =
     cardanoClient
       .getWalletDetails(walletId)
-      .value
+      .run(TraceId.generateYOLO)
+      .unsafeToFuture()
       .foreach(_.foreach(details => walletFunds.update(details.balance.available.doubleValue)))
 
   private def postNextBlockToSync(): Unit =
@@ -56,9 +57,9 @@ class NodeReporter(
       }
 
   private def postWalletLastBlock(): Unit = {
-    cardanoClient
-      .getLatestBlock(TraceId.generateYOLO)
-      .value
+    cardanoClient.getLatestBlock
+      .run(TraceId.generateYOLO)
+      .unsafeToFuture()
       .foreach(_.foreach(block => updateGauge(lastSyncedBlockByWallet, block.header.blockNo)))
   }
 
@@ -71,7 +72,7 @@ class NodeReporter(
 object NodeReporter {
   def apply(
       config: CardanoLedgerService.Config,
-      cardanoClient: CardanoClient,
+      cardanoClient: CardanoClient[IOWithTraceIdContext],
       keyValueService: KeyValueService[IOWithTraceIdContext]
   )(implicit
       ec: ExecutionContext

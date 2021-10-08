@@ -21,6 +21,8 @@ import io.iohk.atala.prism.node.{PublicationInfo, UnderlyingLedger}
 import io.iohk.atala.prism.protos.node_internal
 import monix.execution.Scheduler
 import org.slf4j.LoggerFactory
+import cats.syntax.either._
+import io.iohk.atala.prism.utils.FutureEither.FutureEitherOps
 
 import scala.concurrent.duration._
 import scala.concurrent.{ExecutionContext, Future}
@@ -32,7 +34,7 @@ class CardanoLedgerService private[services] (
     paymentAddress: Address,
     blockNumberSyncStart: Int,
     blockConfirmationsToWait: Int,
-    cardanoClient: CardanoClient,
+    cardanoClient: CardanoClient[IOWithTraceIdContext],
     keyValueService: KeyValueService[IOWithTraceIdContext],
     onAtalaObject: AtalaObjectNotificationHandler,
     scheduler: Scheduler
@@ -62,14 +64,14 @@ class CardanoLedgerService private[services] (
     val metadata = AtalaObjectMetadata.toTransactionMetadata(obj)
     cardanoClient
       .postTransaction(walletId, List(Payment(paymentAddress, minUtxoDeposit)), Some(metadata), walletPassphrase)
-      .mapLeft { error =>
+      .map(_.leftMap { error =>
         logOperationIds("publish", s"FATAL: Error while publishing reference: ${error.code}", obj)(logger)
         error
-      }
-      .map { transactionId =>
+      }.map { transactionId =>
         PublicationInfo(TransactionInfo(transactionId, getType), TransactionStatus.Pending)
-      }
-      .value
+      })
+      .run(TraceId.generateYOLO)
+      .unsafeToFuture()
   }
 
   override def getTransactionDetails(
@@ -77,23 +79,27 @@ class CardanoLedgerService private[services] (
   ): Future[Either[CardanoWalletError, TransactionDetails]] = {
     cardanoClient
       .getTransaction(walletId, transactionId)
-      .mapLeft { error =>
-        val errorMessage = s"FATAL: Error while getting transaction details: ${error.code}"
-        logger.error(s"methodName: getTransactionDetails , message: $errorMessage", error)
-        error
-      }
-      .value
+      .map(
+        _.leftMap { error =>
+          val errorMessage = s"FATAL: Error while getting transaction details: ${error.code}"
+          logger.error(s"methodName: getTransactionDetails , message: $errorMessage", error)
+          error
+        }
+      )
+      .run(TraceId.generateYOLO)
+      .unsafeToFuture()
   }
 
   override def deleteTransaction(transactionId: TransactionId): Future[Either[CardanoWalletError, Unit]] = {
     cardanoClient
       .deleteTransaction(walletId, transactionId)
-      .mapLeft { error =>
+      .map(_.leftMap { error =>
         val errorMessage = s"Could not delete transaction $transactionId"
         logger.error(s"methodName: deleteTransaction , message: $errorMessage", error)
         error
-      }
-      .value
+      })
+      .run(TraceId.generateYOLO)
+      .unsafeToFuture()
   }
 
   private def scheduleSync(delay: FiniteDuration): Unit = {
@@ -126,7 +132,11 @@ class CardanoLedgerService private[services] (
       maybeLastSyncedBlockNo <- keyValueService.getInt(LAST_SYNCED_BLOCK_NO).run(tId).unsafeToFuture()
       lastSyncedBlockNo = CardanoLedgerService.calculateLastSyncedBlockNo(maybeLastSyncedBlockNo, blockNumberSyncStart)
       latestBlock <-
-        cardanoClient.getLatestBlock(tId).toFuture(_ => new RuntimeException("Cardano blockchain is empty"))
+        cardanoClient.getLatestBlock
+          .run(TraceId.generateYOLO)
+          .unsafeToFuture()
+          .toFutureEither
+          .toFuture(_ => new RuntimeException("Cardano blockchain is empty"))
       lastConfirmedBlockNo = latestBlock.header.blockNo - blockConfirmationsToWait
       syncStart = lastSyncedBlockNo + 1
       syncEnd = math.min(lastConfirmedBlockNo, lastSyncedBlockNo + MAX_SYNC_BLOCKS)
@@ -152,7 +162,10 @@ class CardanoLedgerService private[services] (
     for {
       block <-
         cardanoClient
-          .getFullBlock(blockNo, TraceId.generateYOLO)
+          .getFullBlock(blockNo)
+          .run(TraceId.generateYOLO)
+          .unsafeToFuture()
+          .toFutureEither
           .toFuture(_ => new RuntimeException(s"Block $blockNo was not found"))
       _ <- processAtalaObjects(block)
     } yield ()
@@ -223,7 +236,7 @@ object CardanoLedgerService {
 
   def apply(
       config: Config,
-      cardanoClient: CardanoClient,
+      cardanoClient: CardanoClient[IOWithTraceIdContext],
       keyValueService: KeyValueService[IOWithTraceIdContext],
       onAtalaObject: AtalaObjectNotificationHandler
   )(implicit

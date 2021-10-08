@@ -22,7 +22,7 @@ import tofu.logging.Logs
 
 import scala.concurrent.duration._
 
-class CardanoLedgerServiceIntegrationSpec extends AtalaWithPostgresSpec {
+class CardanoLedgerServiceIntegrationSpec extends AtalaWithPostgresSpec with CatsEffectBase {
   private val logs = Logs.withContext[IO, IOWithTraceIdContext]
   private val LAST_SYNCED_BLOCK_NO = "last_synced_block_no"
   private val LONG_TIMEOUT = Timeout(1.minute)
@@ -40,7 +40,7 @@ class CardanoLedgerServiceIntegrationSpec extends AtalaWithPostgresSpec {
       val walletId = WalletId.from(clientConfig.walletId).value
       val paymentAddress = Address(clientConfig.paymentAddress)
       val (cardanoClient, releaseCardanoClient) =
-        CardanoClient(clientConfig.cardanoClientConfig, logs).allocated.run(TraceId.generateYOLO).unsafeRunSync()
+        CardanoClient.make(clientConfig.cardanoClientConfig, logs).allocated.run(TraceId.generateYOLO).unsafeRunSync()
       val keyValueService = KeyValueService.unsafe(KeyValuesRepository.unsafe(dbLiftedToTraceIdIO, logs), logs)
       val notificationHandler = new TestAtalaObjectNotificationHandler()
       val cardanoLedgerService = new CardanoLedgerService(
@@ -59,7 +59,7 @@ class CardanoLedgerServiceIntegrationSpec extends AtalaWithPostgresSpec {
 
       // Avoid syncing pre-existing blocks
       val latestBlock =
-        cardanoClient.getLatestBlock(TraceId.generateYOLO).value.futureValue(LONG_TIMEOUT).toOption.value
+        cardanoClient.getLatestBlock(TraceId.generateYOLO).unsafeToFuture().futureValue(LONG_TIMEOUT).toOption.value
       keyValueService
         .set(LAST_SYNCED_BLOCK_NO, Some(latestBlock.header.blockNo))
         .run(TraceId.generateYOLO)
