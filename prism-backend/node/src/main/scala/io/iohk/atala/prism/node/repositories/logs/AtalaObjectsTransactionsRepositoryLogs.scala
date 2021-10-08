@@ -45,7 +45,7 @@ private[repositories] final class AtalaObjectsTransactionsRepositoryLogs[F[_]: M
       info"getting not published objects" *> in
         .flatTap(
           _.fold(
-            err => error"Encountered an error while getting not published objects $err",
+            err => error"Encountered an error while getting not published objects ${err.toString}",
             list => info"getting not published objects - successfully done, got ${list.size} entities"
           )
         )
