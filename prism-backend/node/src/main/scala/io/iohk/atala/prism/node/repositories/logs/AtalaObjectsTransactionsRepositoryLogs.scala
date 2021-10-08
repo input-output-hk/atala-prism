@@ -45,7 +45,7 @@ private[repositories] final class AtalaObjectsTransactionsRepositoryLogs[F[_]: M
       info"getting not published objects" *> in
         .flatTap(
           _.fold(
-            err => error"Encountered an error while getting not published objects ${err.toString}",
+            err => error"Encountered an error while getting not published objects $err",
             list => info"getting not published objects - successfully done, got ${list.size} entities"
           )
         )
@@ -60,7 +60,7 @@ private[repositories] final class AtalaObjectsTransactionsRepositoryLogs[F[_]: M
             new status - ${newSubmissionStatus.entryName} ${submission.ledger.entryName}""" *> in
         .flatTap(
           _.fold(
-            err => error"Encountered an error while updating submission status ${err.toString}",
+            err => error"Encountered an error while updating submission status $err",
             _ => info"updating submission status - successfully done"
           )
         )
@@ -75,8 +75,8 @@ private[repositories] final class AtalaObjectsTransactionsRepositoryLogs[F[_]: M
       info"updating submission status new status - ${newSubmissionStatus.entryName}, ${ledger.entryName}" *> in
         .flatTap(
           _.fold(
-            _ => info"updating submission status - successfully done",
-            err => error"Encountered an error while updating submission status ${err.toString}"
+            err => error"Encountered an error while updating submission status $err",
+            _ => info"updating submission status - successfully done"
           )
         )
         .onError(errorCause"Encountered an error while updating submission status" (_))
@@ -89,7 +89,7 @@ private[repositories] final class AtalaObjectsTransactionsRepositoryLogs[F[_]: M
       info"storing transaction submission - ${atalaObjectInfo.objectId.toString}" *> in
         .flatTap(
           _.fold(
-            err => error"Encountered an error while storing transaction submission ${err.toString}",
+            err => error"Encountered an error while storing transaction submission $err",
             result =>
               info"storing transaction submission - successfully done ${result.ledger.entryName} ${result.transactionId}"
           )

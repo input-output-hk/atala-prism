@@ -28,7 +28,7 @@ private[repositories] final class AtalaOperationsRepositoryLogs[F[_]: ServiceLog
       info"inserting operation $objectId $atalaOperationId status - ${atalaOperationStatus.entryName}" *>
         in.flatTap(
             _.fold(
-              err => error"Encountered an error while inserting operation ${err.toString}",
+              err => error"Encountered an error while inserting operation $err",
               _ => info"inserting operation - successfully done"
             )
           )
@@ -43,7 +43,7 @@ private[repositories] final class AtalaOperationsRepositoryLogs[F[_]: ServiceLog
       info"updating merged objects ${atalaObject.objectId} operations - ${operations.size} old objects - ${oldObjects.size}" *>
         in.flatTap(
             _.fold(
-              err => error"Encountered an error while updating merged objects ${err.toString}",
+              err => error"Encountered an error while updating merged objects $err",
               _ => info"updating merged objects - successfully done"
             )
           )
