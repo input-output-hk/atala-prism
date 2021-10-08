@@ -60,7 +60,7 @@ private[repositories] final class AtalaObjectsTransactionsRepositoryLogs[F[_]: M
             new status - ${newSubmissionStatus.entryName} ${submission.ledger.entryName}""" *> in
         .flatTap(
           _.fold(
-            err => error"Encountered an error while updating submission status $err",
+            err => error"Encountered an error while updating submission status ${err.toString}",
             _ => info"updating submission status - successfully done"
           )
         )
@@ -76,7 +76,7 @@ private[repositories] final class AtalaObjectsTransactionsRepositoryLogs[F[_]: M
         .flatTap(
           _.fold(
             _ => info"updating submission status - successfully done",
-            err => error"Encountered an error while updating submission status $err"
+            err => error"Encountered an error while updating submission status ${err.toString}"
           )
         )
         .onError(errorCause"Encountered an error while updating submission status" (_))
@@ -89,7 +89,7 @@ private[repositories] final class AtalaObjectsTransactionsRepositoryLogs[F[_]: M
       info"storing transaction submission - ${atalaObjectInfo.objectId.toString}" *> in
         .flatTap(
           _.fold(
-            err => error"Encountered an error while storing transaction submission $err",
+            err => error"Encountered an error while storing transaction submission ${err.toString}",
             result =>
               info"storing transaction submission - successfully done ${result.ledger.entryName} ${result.transactionId}"
           )

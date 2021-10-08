@@ -19,7 +19,7 @@ private[repositories] final class DIDDataRepositoryLogs[F[_]: ServiceLogging[*[_
       info"finding by did ${did.getSuffix}" *> in
         .flatTap(
           _.fold(
-            err => error"Encountered an error while finding by did $err",
+            err => error"Encountered an error while finding by did ${err.toString}",
             res => info"finding by did - successfully done, found - ${res.isDefined}"
           )
         )
