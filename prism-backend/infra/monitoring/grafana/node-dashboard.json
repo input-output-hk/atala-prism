@@ -16,7 +16,7 @@
   "gnetId": null,
   "graphTooltip": 0,
   "id": 12,
-  "iteration": 1633509124073,
+  "iteration": 1634633318699,
   "links": [],
   "panels": [
     {
@@ -1297,7 +1297,7 @@
       "dashLength": 10,
       "dashes": false,
       "datasource": null,
-      "description": "Just total number of current requests - total number of requests by offset",
+      "description": "Just rate the number of requests",
       "fieldConfig": {
         "defaults": {},
         "overrides": []
@@ -1340,7 +1340,7 @@
       "targets": [
         {
           "exemplar": true,
-          "expr": "(request_time_seconds_count{job=~\".*$Env-$ComponentName.*\", service=~\"$Service\", method=~\"$ServiceMethod\"} - (request_time_seconds_count{job=~\".*$Env-$ComponentName.*\", service=~\"$Service\", method=~\"$ServiceMethod\"} offset $__interval)) > 0",
+          "expr": "rate(request_time_seconds_count{job=~\".*$Env-$ComponentName.*\", service=~\"$Service\", method=~\"$ServiceMethod\"}[$__rate_interval])",
           "interval": "",
           "legendFormat": "Service:[{{service}}] Method:[{{method}}] Job:[{{job}}]",
           "refId": "A"
@@ -1350,7 +1350,7 @@
       "timeFrom": null,
       "timeRegions": [],
       "timeShift": null,
-      "title": "Number of requests",
+      "title": "Rate of requests",
       "tooltip": {
         "shared": true,
         "sort": 0,
@@ -1597,7 +1597,7 @@
       "dashLength": 10,
       "dashes": false,
       "datasource": null,
-      "description": "Counters of received Atala operations by the prism node",
+      "description": "Rate of received Atala operations by the prism node",
       "fieldConfig": {
         "defaults": {},
         "overrides": []
@@ -1612,6 +1612,7 @@
       },
       "hiddenSeries": false,
       "id": 33,
+      "interval": "30s",
       "legend": {
         "avg": false,
         "current": false,
@@ -1639,7 +1640,7 @@
       "targets": [
         {
           "exemplar": true,
-          "expr": "received_atala_operations_total{job=~\".*$Env-$ComponentName.*\"}",
+          "expr": "rate(received_atala_operations_total{job=~\".*$Env-$ComponentName.*\"}[$__rate_interval])",
           "interval": "",
           "legendFormat": "Operation:[{{atala_operation_type}}] Update Suboperation:[{{update_did_sub_operation}}] Job:[{{job}}] Instance:[{{instance}}]",
           "refId": "A"
@@ -1692,7 +1693,7 @@
       "dashLength": 10,
       "dashes": false,
       "datasource": null,
-      "description": "The counter with the number of errors caused by storing Atala objects",
+      "description": "The rate of the number of errors caused by storing Atala objects",
       "fieldConfig": {
         "defaults": {},
         "overrides": []
@@ -1734,7 +1735,7 @@
       "targets": [
         {
           "exemplar": true,
-          "expr": "failed_to_store_atala_objects_total{job=~\".*$Env-$ComponentName.*\"}",
+          "expr": "rate(failed_to_store_atala_objects_total{job=~\".*$Env-$ComponentName.*\"}[$__rate_interval])",
           "interval": "",
           "legendFormat": "Error:[{{node_error_tag}}] Operation:[{{atala_operation_type}}] Update Suboperation:[{{update_did_sub_operation}}] Job:[{{job}}] Instance:[{{instance}}]",
           "refId": "A"
@@ -1787,7 +1788,7 @@
       "dashLength": 10,
       "dashes": false,
       "datasource": null,
-      "description": "The number of processed Atala blocks opeartions",
+      "description": "The rate of processed Atala blocks operations",
       "fieldConfig": {
         "defaults": {},
         "overrides": []
@@ -1802,6 +1803,7 @@
       },
       "hiddenSeries": false,
       "id": 37,
+      "interval": "30s",
       "legend": {
         "avg": false,
         "current": false,
@@ -1829,7 +1831,7 @@
       "targets": [
         {
           "exemplar": true,
-          "expr": "processed_atala_block_operations_total{job=~\".*$Env-$ComponentName.*\"}",
+          "expr": "rate(processed_atala_block_operations_total{job=~\".*$Env-$ComponentName.*\"}[$__rate_interval])",
           "interval": "",
           "legendFormat": "Operation:[{{atala_operation_type}}] Job:[{{job}}] Instance:[{{instance}}]",
           "refId": "A"
@@ -1882,7 +1884,7 @@
       "dashLength": 10,
       "dashes": false,
       "datasource": null,
-      "description": "The number of failed to process Atala block operations",
+      "description": "The rate of failed to process Atala block operations",
       "fieldConfig": {
         "defaults": {},
         "overrides": []
@@ -1924,7 +1926,7 @@
       "targets": [
         {
           "exemplar": true,
-          "expr": "failed_to_process_atala_block_operations_total{job=~\".*$Env-$ComponentName.*\"}",
+          "expr": "rate(failed_to_process_atala_block_operations_total{job=~\".*$Env-$ComponentName.*\"}[$__rate_interval])",
           "interval": "",
           "legendFormat": "Operation:[{{atala_operation_type}}] State error:[{{state_error}}] Job:[{{job}}] Instance:[{{instance}}]",
           "refId": "A"
@@ -2028,7 +2030,6 @@
         "allValue": null,
         "current": {
           "selected": true,
-          "tags": [],
           "text": [
             "All"
           ],
@@ -2175,5 +2176,5 @@
   "timezone": "",
   "title": "Node",
   "uid": "5CpJH5W7k",
-  "version": 14
+  "version": 16
 }
