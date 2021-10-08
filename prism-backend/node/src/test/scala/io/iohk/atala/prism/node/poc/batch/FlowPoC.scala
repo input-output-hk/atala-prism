@@ -83,10 +83,11 @@ class FlowPoC extends AtalaWithPostgresSpec with BeforeAndAfterEach {
     blockProcessingService = new BlockProcessingServiceImpl
     atalaOperationsRepository = AtalaOperationsRepository.unsafe(dbLiftedToTraceIdIO, flowPocTestLogs)
     atalaObjectsTransactionsRepository = AtalaObjectsTransactionsRepository.unsafe(dbLiftedToTraceIdIO, flowPocTestLogs)
-    submissionService = SubmissionService(
+    submissionService = SubmissionService.unsafe(
       atalaReferenceLedger,
       atalaOperationsRepository,
-      atalaObjectsTransactionsRepository
+      atalaObjectsTransactionsRepository,
+      logs = flowPocTestLogs
     )
     submissionSchedulingService = SubmissionSchedulingService(
       SubmissionSchedulingService.Config(ledgerPendingTransactionTimeout = Duration.ZERO),

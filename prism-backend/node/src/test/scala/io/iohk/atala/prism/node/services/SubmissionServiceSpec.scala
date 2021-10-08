@@ -58,10 +58,11 @@ class SubmissionServiceSpec
   private val blockProcessing: BlockProcessingService = mock[BlockProcessingService]
 
   private implicit lazy val submissionService: SubmissionService[IOWithTraceIdContext] =
-    SubmissionService(
+    SubmissionService.unsafe(
       ledger,
       atalaOperationsRepository,
-      atalaObjectsTransactionsRepository
+      atalaObjectsTransactionsRepository,
+      logs = logs
     )
 
   private val config: SubmissionSchedulingService.Config =

@@ -82,10 +82,11 @@ class ObjectManagementServiceSpec
     )
 
   private implicit lazy val submissionService: SubmissionService[IOWithTraceIdContext] =
-    SubmissionService(
+    SubmissionService.unsafe(
       ledger,
       atalaOperationsRepository,
-      atalaObjectsTransactionsRepository
+      atalaObjectsTransactionsRepository,
+      logs = logs
     )
 
   private implicit lazy val objectManagementService: ObjectManagementService =

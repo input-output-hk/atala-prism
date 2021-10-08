@@ -1,13 +1,17 @@
 package io.iohk.atala.prism.node.services
 
-import cats.Monad
+import cats.{Comonad, Functor, Monad}
 import cats.data.EitherT
+import cats.effect.MonadThrow
 import cats.syntax.applicative._
+import cats.syntax.comonad._
 import cats.syntax.either._
 import cats.syntax.functor._
 import cats.syntax.traverse._
 import cats.syntax.flatMap._
 import cats.syntax.option._
+import derevo.derive
+import derevo.tagless.applyK
 import io.iohk.atala.prism.models.{TransactionInfo, TransactionStatus}
 import io.iohk.atala.prism.node.UnderlyingLedger
 import io.iohk.atala.prism.node.cardano.models.{CardanoWalletError, CardanoWalletErrorCode}
@@ -19,12 +23,16 @@ import io.iohk.atala.prism.node.models.{
 }
 import io.iohk.atala.prism.node.repositories.{AtalaObjectsTransactionsRepository, AtalaOperationsRepository}
 import io.iohk.atala.prism.node.services.SubmissionService.Config
+import io.iohk.atala.prism.node.services.logs.SubmissionServiceLogs
 import io.iohk.atala.prism.protos.node_internal
 import org.slf4j.LoggerFactory
 import tofu.Execute
+import tofu.higherKind.Mid
+import tofu.logging.{Logs, ServiceLogging}
 
 import java.time.Duration
 
+@derive(applyK)
 trait SubmissionService[F[_]] {
 
   def submitReceivedObjects(): F[Either[NodeError, Unit]]
@@ -37,19 +45,41 @@ object SubmissionService {
 
   case class Config(maxNumberTransactionsToSubmit: Int, maxNumberTransactionsToRetry: Int)
 
-  def apply[F[_]: Monad: Execute](
+  def apply[F[_]: MonadThrow: Execute, R[_]: Functor](
       atalaReferenceLedger: UnderlyingLedger,
       atalaOperationsRepository: AtalaOperationsRepository[F],
       atalaObjectsTransactionsRepository: AtalaObjectsTransactionsRepository[F],
-      config: Config = Config(Int.MaxValue, Int.MaxValue)
-  ): SubmissionService[F] = {
-    new SubmissionServiceImpl[F](
+      config: Config = Config(Int.MaxValue, Int.MaxValue),
+      logs: Logs[R, F]
+  ): R[SubmissionService[F]] =
+    for {
+      serviceLogs <- logs.service[SubmissionService[F]]
+    } yield {
+      implicit val implicitLogs: ServiceLogging[F, SubmissionService[F]] = serviceLogs
+      val logs: SubmissionService[Mid[F, *]] = new SubmissionServiceLogs[F]
+      val mid = logs
+      mid attach new SubmissionServiceImpl[F](
+        atalaReferenceLedger,
+        atalaOperationsRepository,
+        atalaObjectsTransactionsRepository,
+        config
+      )
+    }
+
+  def unsafe[F[_]: MonadThrow: Execute, R[_]: Comonad](
+      atalaReferenceLedger: UnderlyingLedger,
+      atalaOperationsRepository: AtalaOperationsRepository[F],
+      atalaObjectsTransactionsRepository: AtalaObjectsTransactionsRepository[F],
+      config: Config = Config(Int.MaxValue, Int.MaxValue),
+      logs: Logs[R, F]
+  ): SubmissionService[F] =
+    SubmissionService(
       atalaReferenceLedger,
       atalaOperationsRepository,
       atalaObjectsTransactionsRepository,
-      config
-    )
-  }
+      config,
+      logs
+    ).extract
 }
 
 private class SubmissionServiceImpl[F[_]: Monad](
