@@ -31,7 +31,7 @@ object versions {
   val scalatestplus = s"$scalatest.0"
   val scalapb = "0.10.8"
   val slf4j = "1.7.30"
-  val sttp = "1.7.2"
+  val sttp = "3.3.15"
   val tofu = "0.10.2"
   val tofuDerevo = "0.12.5"
   val twirl = "1.5.1"
@@ -74,8 +74,8 @@ object Dependencies {
   val postgresql = "org.postgresql" % "postgresql" % versions.postgresql
   val scalapbRuntimeGrpc = "com.thesamet.scalapb" %% "scalapb-runtime-grpc" % versions.scalapb
   val slf4j = "org.slf4j" % "slf4j-api" % versions.slf4j
-  val sttpCore = "com.softwaremill.sttp" %% "core" % versions.sttp
-  val sttpFuture = "com.softwaremill.sttp" %% "async-http-client-backend-future" % versions.sttp
+  val sttpCore = "com.softwaremill.sttp.client3" %% "core" % versions.sttp
+  val sttpCE2 = "com.softwaremill.sttp.client3" %% "async-http-client-backend-cats-ce2" % versions.sttp
   // TODO update monix in the project
   val tofu = "tf.tofu" %% "tofu" % versions.tofu excludeAll ExclusionRule(organization = "io.monix")
   val tofuLogging = "tf.tofu" %% "tofu-logging" % versions.tofu
@@ -117,7 +117,7 @@ object Dependencies {
   val logbackDependencies = Seq(logbackCore, logbackClassic, logbackLogstash, jaxb)
   val mockitoDependencies = Seq(mockito, mockitoScalatest)
   val scalatestDependencies = Seq(scalatest, scalatestWordspec, scalatestplus, catsScalatest)
-  val sttpDependencies = Seq(sttpCore, sttpFuture)
+  val sttpDependencies = Seq(sttpCore, sttpCE2)
   val http4sDependencies = Seq(http4sCirce, http4sDsl, http4sBlazeServer, http4sBlazeClient)
   val tofuDependencies = Seq(tofu, tofuLogging, tofuDerevoTagless)
   val prismDependencies = Seq(prismCrypto, prismCredentials, prismProtos, prismApi)

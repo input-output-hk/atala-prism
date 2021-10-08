@@ -1,12 +1,12 @@
 package io.iohk.atala.prism.node.cardano.wallet
 
+import cats.Comonad
+import cats.effect.{Concurrent, ContextShift, Resource, Sync}
+import cats.syntax.comonad._
 import io.iohk.atala.prism.models.{TransactionDetails, TransactionId}
 import io.iohk.atala.prism.node.cardano.models.{Lovelace, Payment, TransactionMetadata, WalletId}
 import io.iohk.atala.prism.node.cardano.wallet.api.ApiClient
 import io.iohk.atala.prism.node.models.WalletDetails
-import io.iohk.atala.prism.utils.FutureEither
-
-import scala.concurrent.ExecutionContext
 
 /**
   * Client for the Cardano Wallet API.
@@ -17,7 +17,7 @@ import scala.concurrent.ExecutionContext
   * <a href="https://github.com/input-output-hk/cardano-wallet/blob/master/specifications/api/swagger.yaml">spec</a>
   * for the complete API.
   */
-trait CardanoWalletApiClient {
+trait CardanoWalletApiClient[F[_]] {
   import CardanoWalletApiClient._
 
   /**
@@ -29,7 +29,7 @@ trait CardanoWalletApiClient {
       walletId: WalletId,
       payments: List[Payment],
       metadata: Option[TransactionMetadata]
-  ): Result[EstimatedFee]
+  ): F[Result[EstimatedFee]]
 
   /**
     * Post a new transaction and return its ID.
@@ -41,14 +41,14 @@ trait CardanoWalletApiClient {
       payments: List[Payment],
       metadata: Option[TransactionMetadata],
       passphrase: String
-  ): Result[TransactionId]
+  ): F[Result[TransactionId]]
 
   /**
     * Get the details of the given transaction.
     *
     * @see https://input-output-hk.github.io/cardano-wallet/api/edge/#operation/getTransaction
     */
-  def getTransaction(walletId: WalletId, transactionId: TransactionId): Result[TransactionDetails]
+  def getTransaction(walletId: WalletId, transactionId: TransactionId): F[Result[TransactionDetails]]
 
   /**
     * Forget pending transaction. Importantly, a transaction, when sent, cannot be cancelled.
@@ -58,14 +58,14 @@ trait CardanoWalletApiClient {
     *
     * @see https://input-output-hk.github.io/cardano-wallet/api/edge/#operation/deleteTransaction
     */
-  def deleteTransaction(walletId: WalletId, transactionId: TransactionId): Result[Unit]
+  def deleteTransaction(walletId: WalletId, transactionId: TransactionId): F[Result[Unit]]
 
   /**
     * Get detailed information about the given wallet.
     *
     * @see https://input-output-hk.github.io/cardano-wallet/api/edge/#operation/getWallet
     */
-  def getWallet(walletId: WalletId): Result[WalletDetails]
+  def getWallet(walletId: WalletId): F[Result[WalletDetails]]
 }
 
 object CardanoWalletApiClient {
@@ -73,11 +73,18 @@ object CardanoWalletApiClient {
   type Config = ApiClient.Config
   val Config = ApiClient.Config
 
-  def apply(config: Config)(implicit ec: ExecutionContext): CardanoWalletApiClient = {
-    new ApiClient(config)(ApiClient.DefaultBackend, ec)
+  def make[F[_]: Concurrent: ContextShift](config: Config): F[CardanoWalletApiClient[F]] = {
+    ApiClient.defaultBackend.use(backend => Sync[F].delay(new ApiClient(config)(backend)))
   }
 
-  type Result[A] = FutureEither[ErrorResponse, A]
+  def makeResource[F[_]: Concurrent: ContextShift](config: Config): Resource[F, ApiClient[F]] = {
+    ApiClient.defaultBackend.map(backend => new ApiClient(config)(backend))
+  }
+
+  def unsafe[F[_]: Concurrent: ContextShift: Comonad](config: Config): CardanoWalletApiClient[F] =
+    make(config).extract
+
+  type Result[A] = Either[ErrorResponse, A]
 
   final case class CardanoWalletError(code: String, message: String)
   final case class ErrorResponse(requestPath: String, error: CardanoWalletError)
