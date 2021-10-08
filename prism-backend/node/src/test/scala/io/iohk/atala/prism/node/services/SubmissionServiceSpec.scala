@@ -80,6 +80,7 @@ class SubmissionServiceSpec
 
   "SubmissionService.submitReceivedObjects" should {
     "merge several operations in one transaction while submitting" in {
+      doReturn(Future.successful(Right(()))).when(ledger).isAvailable
       val (atalaObjects, atalaObjectsMerged, publications, ops) = setUpMultipleOperationsPublishing(numOps = 40)
 
       atalaObjectsMerged.zip(publications.drop(atalaObjects.size)).foreach {
@@ -113,6 +114,7 @@ class SubmissionServiceSpec
       doReturn(Future.successful(Left(CardanoWalletError("UtxoTooSmall", CardanoWalletErrorCode.UtxoTooSmall))))
         .when(ledger)
         .publish(atalaObjectsMerged.head)
+      doReturn(Future.successful(Right(()))).when(ledger).isAvailable
 
       // second is ok
       doReturn(Future.successful(Right(publications.last)))
@@ -158,6 +160,7 @@ class SubmissionServiceSpec
     val atalaObject = createAtalaObject(block = createBlock(atalaOperation))
 
     "not delete already published transaction" in {
+      doReturn(Future.successful(Right(()))).when(ledger).isAvailable
       val (atalaObjects, atalaObjectsMerged, publications, ops) =
         setUpMultipleOperationsPublishing(numOps = 3, numPubsAdditional = 1)
       val opInLedger = BlockProcessingServiceSpec.signOperation(
@@ -192,6 +195,7 @@ class SubmissionServiceSpec
     }
 
     "ignore in-ledger transactions" in {
+      doReturn(Future.successful(Right(()))).when(ledger).isAvailable
       doReturn(Future.successful(Right(dummyPublicationInfo))).when(ledger).publish(*)
       // Publish once and update status
       publishSingleOperationAndFlush(atalaOperation).futureValue
@@ -207,6 +211,7 @@ class SubmissionServiceSpec
     }
 
     "ignore deleted transactions" in {
+      doReturn(Future.successful(Right(()))).when(ledger).isAvailable
       doReturn(Future.successful(Right(dummyPublicationInfo))).when(ledger).publish(*)
       publishSingleOperationAndFlush(atalaOperation).futureValue
       setAtalaObjectTransactionSubmissionStatus(
@@ -221,6 +226,7 @@ class SubmissionServiceSpec
     }
 
     "ignore other ledger's transactions" in {
+      doReturn(Future.successful(Right(()))).when(ledger).isAvailable
       doReturn(Future.successful(Right(dummyPublicationInfo))).when(ledger).publish(*)
       publishSingleOperationAndFlush(atalaOperation).futureValue
       // Simulate the service is restarted with a new ledger type
@@ -233,6 +239,7 @@ class SubmissionServiceSpec
     }
 
     "retry old pending transactions" in {
+      doReturn(Future.successful(Right(()))).when(ledger).isAvailable
       val dummyTransactionId2 = TransactionId.from(Sha256.compute("id2".getBytes).getValue).value
       val dummyTransactionInfo2 = dummyTransactionInfo.copy(transactionId = dummyTransactionId2)
       val dummyPublicationInfo2 = dummyPublicationInfo.copy(transaction = dummyTransactionInfo2)
@@ -252,6 +259,7 @@ class SubmissionServiceSpec
     }
 
     "merge several operations in one transaction while retrying" in {
+      doReturn(Future.successful(Right(()))).when(ledger).isAvailable
       val (atalaObjects, atalaObjectsMerged, publications, ops) = setUpMultipleOperationsPublishing(numOps = 40)
 
       (atalaObjects ++ atalaObjectsMerged).zip(publications).foreach {
@@ -285,6 +293,7 @@ class SubmissionServiceSpec
     }
 
     "not retry new pending transactions" in {
+      doReturn(Future.successful(Right(()))).when(ledger).isAvailable
       // Use a service that does have a 10-minute timeout for pending transactions
       doReturn(Future.successful(Right(dummyPublicationInfo))).when(ledger).publish(*)
       publishSingleOperationAndFlush(atalaOperation).futureValue
@@ -298,6 +307,7 @@ class SubmissionServiceSpec
     }
 
     "not retry in-ledger transactions" in {
+      doReturn(Future.successful(Right(()))).when(ledger).isAvailable
       doReturn(Future.successful(Right(dummyPublicationInfo))).when(ledger).publish(*)
       publishSingleOperationAndFlush(atalaOperation).futureValue
       mockTransactionStatus(dummyTransactionInfo.transactionId, TransactionStatus.InLedger)

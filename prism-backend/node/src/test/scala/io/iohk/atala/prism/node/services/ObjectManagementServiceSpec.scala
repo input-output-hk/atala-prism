@@ -95,6 +95,7 @@ class ObjectManagementServiceSpec
   "ObjectManagementService.publishAtalaOperation" should {
     "update status to received when operation was received, but haven't processed yet" in {
       doReturn(Future.successful(Right(dummyPublicationInfo))).when(ledger).publish(*)
+      doReturn(Future.successful(Right(()))).when(ledger).isAvailable
 
       val atalaOperation = BlockProcessingServiceSpec.signedCreateDidOperation
       val atalaOperationId = BlockProcessingServiceSpec.signedCreateDidOperationId
@@ -110,6 +111,7 @@ class ObjectManagementServiceSpec
 
     "ignore publishing duplicate operation" in {
       doReturn(Future.successful(Right(dummyPublicationInfo))).when(ledger).publish(*)
+      doReturn(Future.successful(Right(()))).when(ledger).isAvailable
 
       val atalaOperation = BlockProcessingServiceSpec.signedCreateDidOperation
       val atalaOperationId = BlockProcessingServiceSpec.signedCreateDidOperationId
@@ -128,6 +130,7 @@ class ObjectManagementServiceSpec
 
     "ignore publishing duplicate operation in the same block" in {
       doReturn(Future.successful(Right(dummyPublicationInfo))).when(ledger).publish(*)
+      doReturn(Future.successful(Right(()))).when(ledger).isAvailable
 
       val atalaOperation = BlockProcessingServiceSpec.signedCreateDidOperation
       val atalaOperationId = BlockProcessingServiceSpec.signedCreateDidOperationId
@@ -146,6 +149,7 @@ class ObjectManagementServiceSpec
 
     "put block content onto the ledger when supported" in {
       doReturn(Future.successful(Right(dummyPublicationInfo))).when(ledger).publish(*)
+      doReturn(Future.successful(Right(()))).when(ledger).isAvailable
 
       val returnedOperationId =
         publishSingleOperationAndFlush(BlockProcessingServiceSpec.signedCreateDidOperation).futureValue.toOption.get
@@ -171,6 +175,7 @@ class ObjectManagementServiceSpec
     "record immediate in-ledger transactions" in {
       val inLedgerPublication = dummyPublicationInfo.copy(status = TransactionStatus.InLedger)
       doReturn(Future.successful(Right(inLedgerPublication))).when(ledger).publish(*)
+      doReturn(Future.successful(Right(()))).when(ledger).isAvailable
 
       val returnedOperationId =
         publishSingleOperationAndFlush(BlockProcessingServiceSpec.signedCreateDidOperation).futureValue.toOption.get
@@ -214,6 +219,8 @@ class ObjectManagementServiceSpec
       doReturn(Future.successful(Right(PublicationInfo(dummyTransactionInfo, TransactionStatus.InLedger))))
         .when(ledger)
         .publish(*)
+
+      doReturn(Future.successful(Right(()))).when(ledger).isAvailable
 
       val signedOperation = BlockProcessingServiceSpec.signedCreateDidOperation
       val obj = createAtalaObject(createBlock(signedOperation))
