@@ -90,7 +90,7 @@ class NodeApp(executionContext: ExecutionContext) { self =>
       case "cardano" => initializeCardano(keyValueService, globalConfig, onCardanoBlock, onAtalaObject, logs)
       case "in-memory" =>
         logger.info("Using in-memory ledger")
-        (new InMemoryLedgerService(onAtalaObject), None)
+        (new InMemoryLedgerService[IOWithTraceIdContext](onAtalaObject), None)
     }
     logger.info("Creating blocks processor")
     val blockProcessingService = new BlockProcessingServiceImpl
@@ -176,11 +176,12 @@ class NodeApp(executionContext: ExecutionContext) { self =>
       onCardanoBlock: CardanoBlockHandler,
       onAtalaObject: AtalaObjectNotification => Future[Unit],
       logs: Logs[IO, IOWithTraceIdContext]
-  ): (CardanoLedgerService, Option[IO[Unit]]) = {
+  ): (CardanoLedgerService[IOWithTraceIdContext], Option[IO[Unit]]) = {
     val config = NodeConfig.cardanoConfig(globalConfig.getConfig("cardano"))
     val (cardanoClient, releaseClient) = createCardanoClient(config.cardanoClientConfig, logs)
     Kamon.registerModule("node-reporter", NodeReporter(config, cardanoClient, keyValueService))
-    val cardano = CardanoLedgerService(config, cardanoClient, keyValueService, onCardanoBlock, onAtalaObject)
+    val cardano =
+      CardanoLedgerService[IOWithTraceIdContext](config, cardanoClient, keyValueService, onCardanoBlock, onAtalaObject)
     (cardano, Some(releaseClient))
   }
 

@@ -4,16 +4,14 @@ import io.iohk.atala.prism.models.{Ledger, TransactionDetails, TransactionId, Tr
 import io.iohk.atala.prism.node.cardano.models.CardanoWalletError
 import io.iohk.atala.prism.protos.node_internal
 
-import scala.concurrent.Future
-
-trait UnderlyingLedger {
+trait UnderlyingLedger[F[_]] {
   def getType: Ledger
 
-  def publish(obj: node_internal.AtalaObject): Future[Either[CardanoWalletError, PublicationInfo]]
+  def publish(obj: node_internal.AtalaObject): F[Either[CardanoWalletError, PublicationInfo]]
 
-  def getTransactionDetails(transactionId: TransactionId): Future[Either[CardanoWalletError, TransactionDetails]]
+  def getTransactionDetails(transactionId: TransactionId): F[Either[CardanoWalletError, TransactionDetails]]
 
-  def deleteTransaction(transactionId: TransactionId): Future[Either[CardanoWalletError, Unit]]
+  def deleteTransaction(transactionId: TransactionId): F[Either[CardanoWalletError, Unit]]
 }
 
 case class PublicationInfo(transaction: TransactionInfo, status: TransactionStatus)

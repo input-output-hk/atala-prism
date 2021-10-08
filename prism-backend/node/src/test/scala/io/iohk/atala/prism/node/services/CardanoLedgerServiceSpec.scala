@@ -1,6 +1,6 @@
 package io.iohk.atala.prism.node.services
 
-import cats.effect.IO
+import cats.effect.{ContextShift, IO}
 import io.circe.Json
 import io.iohk.atala.prism.AtalaWithPostgresSpec
 import io.iohk.atala.prism.logging.TraceId
@@ -32,9 +32,10 @@ import monix.execution.schedulers.TestScheduler
 import org.scalatest.OptionValues._
 import tofu.logging.Logs
 
-import scala.concurrent.Future
+import scala.concurrent.{ExecutionContext, Future}
 
 class CardanoLedgerServiceSpec extends AtalaWithPostgresSpec {
+  private implicit val contextShift: ContextShift[IO] = IO.contextShift(ExecutionContext.global)
   private val logs = Logs.withContext[IO, IOWithTraceIdContext]
   private val network = CardanoNetwork.Testnet
   private val ledger = Ledger.CardanoTestnet
@@ -70,7 +71,7 @@ class CardanoLedgerServiceSpec extends AtalaWithPostgresSpec {
       val cardanoLedgerService = createCardanoLedgerService(cardanoWalletApiClient)
 
       // Only test that it doesn't fail, as calling the wrong endpoint with the wrong params fails
-      cardanoLedgerService.publish(atalaObject).futureValue
+      cardanoLedgerService.publish(atalaObject)
     }
 
     "fail with the CannotCoverFee when no money for publishing the transaction" in {
@@ -87,7 +88,7 @@ class CardanoLedgerServiceSpec extends AtalaWithPostgresSpec {
         )
       val cardanoLedgerService = createCardanoLedgerService(cardanoWalletApiClient)
 
-      val err = cardanoLedgerService.publish(atalaObject).futureValue.left.toOption.value
+      val err = cardanoLedgerService.publish(atalaObject).run(TraceId.generateYOLO).unsafeRunSync().left.toOption.value
       err.getMessage must be(exceptionDescription)
     }
   }
@@ -104,7 +105,12 @@ class CardanoLedgerServiceSpec extends AtalaWithPostgresSpec {
       )
       val cardanoLedgerService = createCardanoLedgerService(cardanoWalletApiClient)
 
-      val transactionDetails = cardanoLedgerService.getTransactionDetails(transactionId).futureValue.toOption.value
+      val transactionDetails = cardanoLedgerService
+        .getTransactionDetails(transactionId)
+        .run(TraceId.generateYOLO)
+        .unsafeRunSync()
+        .toOption
+        .value
 
       transactionDetails must be(TransactionDetails(transactionId, TransactionStatus.InLedger))
     }
@@ -114,7 +120,13 @@ class CardanoLedgerServiceSpec extends AtalaWithPostgresSpec {
         FakeCardanoWalletApiClient.Fail(expectedWalletApiPath, "", "internal", "Internal error")
       val cardanoLedgerService = createCardanoLedgerService(cardanoWalletApiClient)
 
-      val err = cardanoLedgerService.getTransactionDetails(transactionId).futureValue.left.toOption.value
+      val err = cardanoLedgerService
+        .getTransactionDetails(transactionId)
+        .run(TraceId.generateYOLO)
+        .unsafeRunSync()
+        .left
+        .toOption
+        .value
       err.code must be(CardanoWalletErrorCode.UndefinedCardanoWalletError)
     }
   }
@@ -127,7 +139,7 @@ class CardanoLedgerServiceSpec extends AtalaWithPostgresSpec {
       val cardanoWalletApiClient = FakeCardanoWalletApiClient.Success(expectedWalletApiPath, "", "")
       val cardanoLedgerService = createCardanoLedgerService(cardanoWalletApiClient)
 
-      cardanoLedgerService.deleteTransaction(transactionId).futureValue
+      cardanoLedgerService.deleteTransaction(transactionId).run(TraceId.generateYOLO).unsafeRunSync()
     }
 
     "fail to delete a transaction when the wallet fails" in {
@@ -140,7 +152,13 @@ class CardanoLedgerServiceSpec extends AtalaWithPostgresSpec {
         )
       val cardanoLedgerService = createCardanoLedgerService(cardanoWalletApiClient)
 
-      val error = cardanoLedgerService.deleteTransaction(transactionId).futureValue.left.toOption.value
+      val error = cardanoLedgerService
+        .deleteTransaction(transactionId)
+        .run(TraceId.generateYOLO)
+        .unsafeRunSync()
+        .left
+        .toOption
+        .value
 
       val expectedErrorMessage =
         "Status [transaction_already_in_ledger]. Occurs when attempting to delete a transaction which is neither pending nor expired."
@@ -215,7 +233,7 @@ class CardanoLedgerServiceSpec extends AtalaWithPostgresSpec {
           onAtalaObject = notificationHandler.asAtalaObjectHandler
         )
 
-      val pendingBlocks = cardanoLedgerService.syncAtalaObjects().futureValue
+      val pendingBlocks = cardanoLedgerService.syncAtalaObjects().run(TraceId.generateYOLO).unsafeRunSync()
 
       pendingBlocks must be(false)
       notificationHandler.receivedNotifications must be(allNotifications)
@@ -232,7 +250,7 @@ class CardanoLedgerServiceSpec extends AtalaWithPostgresSpec {
           onAtalaObject = notificationHandler.asAtalaObjectHandler
         )
 
-      val pendingBlocks = cardanoLedgerService.syncAtalaObjects().futureValue
+      val pendingBlocks = cardanoLedgerService.syncAtalaObjects().run(TraceId.generateYOLO).unsafeRunSync()
 
       pendingBlocks must be(true)
       // Only notification for block #100 should be received, as block #101 is not yet synced
@@ -253,7 +271,7 @@ class CardanoLedgerServiceSpec extends AtalaWithPostgresSpec {
           onAtalaObject = notificationHandler.asAtalaObjectHandler
         )
 
-      val pendingBlocks = cardanoLedgerService.syncAtalaObjects().futureValue
+      val pendingBlocks = cardanoLedgerService.syncAtalaObjects().run(TraceId.generateYOLO).unsafeRunSync()
 
       pendingBlocks must be(false)
       // Block #9 should be skipped over
@@ -272,7 +290,7 @@ class CardanoLedgerServiceSpec extends AtalaWithPostgresSpec {
           onAtalaObject = notificationHandler.asAtalaObjectHandler
         )
 
-      val pendingBlocks = cardanoLedgerService.syncAtalaObjects().futureValue
+      val pendingBlocks = cardanoLedgerService.syncAtalaObjects().run(TraceId.generateYOLO).unsafeRunSync()
 
       pendingBlocks must be(false)
       notificationHandler.receivedNotifications must be(List())
@@ -295,7 +313,7 @@ class CardanoLedgerServiceSpec extends AtalaWithPostgresSpec {
         )
 
       // Test #1: only the first object is synced
-      cardanoLedgerService.syncAtalaObjects().futureValue
+      cardanoLedgerService.syncAtalaObjects().run(TraceId.generateYOLO).unsafeRunSync()
       notificationHandler.receivedNotifications must be(notifications.take(1))
 
       // Append a new block
@@ -304,7 +322,7 @@ class CardanoLedgerServiceSpec extends AtalaWithPostgresSpec {
       TestCardanoBlockRepository.insertBlock(TestCardanoBlockRepository.createNextRandomBlock(Some(lastBlock)))
 
       // Test #2: all objects are now synced
-      cardanoLedgerService.syncAtalaObjects().futureValue
+      cardanoLedgerService.syncAtalaObjects().run(TraceId.generateYOLO).unsafeRunSync()
       notificationHandler.receivedNotifications must be(notifications)
     }
   }
@@ -313,7 +331,7 @@ class CardanoLedgerServiceSpec extends AtalaWithPostgresSpec {
       cardanoWalletApiClient: CardanoWalletApiClient,
       blockNumberSyncStart: Int = 0,
       onAtalaObject: AtalaObjectNotificationHandler = noOpObjectHandler
-  ): CardanoLedgerService = {
+  ): CardanoLedgerService[IOWithTraceIdContext] = {
     val cardanoClient = createCardanoClient(cardanoWalletApiClient)
     new CardanoLedgerService(
       network,

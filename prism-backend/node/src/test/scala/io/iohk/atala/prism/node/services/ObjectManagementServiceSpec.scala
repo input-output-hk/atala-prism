@@ -67,7 +67,7 @@ class ObjectManagementServiceSpec
     with BeforeAndAfterEach {
   private implicit val ce: ContextShift[IO] = IO.contextShift(ExecutionContext.global)
   private val logs = Logs.withContext[IO, IOWithTraceIdContext]
-  private val ledger: UnderlyingLedger = mock[UnderlyingLedger]
+  private val ledger: UnderlyingLedger[IOWithTraceIdContext] = mock[UnderlyingLedger[IOWithTraceIdContext]]
   private val atalaOperationsRepository: AtalaOperationsRepository[IOWithTraceIdContext] =
     AtalaOperationsRepository.unsafe(dbLiftedToTraceIdIO, logs)
   private val atalaObjectsTransactionsRepository: AtalaObjectsTransactionsRepository[IOWithTraceIdContext] =

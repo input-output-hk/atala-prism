@@ -26,7 +26,6 @@ import io.iohk.atala.prism.node.services.SubmissionService.Config
 import io.iohk.atala.prism.node.services.logs.SubmissionServiceLogs
 import io.iohk.atala.prism.protos.node_internal
 import org.slf4j.LoggerFactory
-import tofu.Execute
 import tofu.higherKind.Mid
 import tofu.logging.{Logs, ServiceLogging}
 
@@ -45,8 +44,8 @@ object SubmissionService {
 
   case class Config(maxNumberTransactionsToSubmit: Int, maxNumberTransactionsToRetry: Int)
 
-  def apply[F[_]: MonadThrow: Execute, R[_]: Functor](
-      atalaReferenceLedger: UnderlyingLedger,
+  def apply[F[_]: MonadThrow, R[_]: Functor](
+      atalaReferenceLedger: UnderlyingLedger[F],
       atalaOperationsRepository: AtalaOperationsRepository[F],
       atalaObjectsTransactionsRepository: AtalaObjectsTransactionsRepository[F],
       config: Config = Config(Int.MaxValue, Int.MaxValue),
@@ -66,8 +65,8 @@ object SubmissionService {
       )
     }
 
-  def unsafe[F[_]: MonadThrow: Execute, R[_]: Comonad](
-      atalaReferenceLedger: UnderlyingLedger,
+  def unsafe[F[_]: MonadThrow, R[_]: Comonad](
+      atalaReferenceLedger: UnderlyingLedger[F],
       atalaOperationsRepository: AtalaOperationsRepository[F],
       atalaObjectsTransactionsRepository: AtalaObjectsTransactionsRepository[F],
       config: Config = Config(Int.MaxValue, Int.MaxValue),
@@ -83,12 +82,11 @@ object SubmissionService {
 }
 
 private class SubmissionServiceImpl[F[_]: Monad](
-    atalaReferenceLedger: UnderlyingLedger,
+    atalaReferenceLedger: UnderlyingLedger[F],
     atalaOperationsRepository: AtalaOperationsRepository[F],
     atalaObjectsTransactionsRepository: AtalaObjectsTransactionsRepository[F],
     config: Config
-)(implicit ex: Execute[F])
-    extends SubmissionService[F] {
+) extends SubmissionService[F] {
   private val logger = LoggerFactory.getLogger(this.getClass)
 
   def submitReceivedObjects(): F[Either[NodeError, Unit]] = {
@@ -188,7 +186,8 @@ private class SubmissionServiceImpl[F[_]: Monad](
     logger.info(s"Trying to delete transaction [${submission.transactionId}]")
     for {
       deletionResult <-
-        ex.deferFuture(atalaReferenceLedger.deleteTransaction(submission.transactionId))
+        atalaReferenceLedger
+          .deleteTransaction(submission.transactionId)
           .map(handleTransactionDeletion(submission, _))
       dbUpdateE <-
         atalaObjectsTransactionsRepository
@@ -286,9 +285,7 @@ private class SubmissionServiceImpl[F[_]: Monad](
     logger.info(s"Publish atala object [${atalaObjectInfo.objectId}]")
     val publicationEitherT = for {
       // Publish object to the blockchain
-      publication <- EitherT(
-        ex.deferFuture(atalaReferenceLedger.publish(atalaObject))
-      ).leftMap(NodeError.InternalCardanoWalletError)
+      publication <- EitherT(atalaReferenceLedger.publish(atalaObject)).leftMap(NodeError.InternalCardanoWalletError)
 
       _ <- EitherT(
         atalaObjectsTransactionsRepository
@@ -304,7 +301,7 @@ private class SubmissionServiceImpl[F[_]: Monad](
   ): F[Option[(AtalaObjectTransactionSubmission, TransactionStatus)]] = {
     logger.info(s"Getting transaction details for transaction ${transaction.transactionId}")
     for {
-      transactionDetails <- ex.deferFuture(atalaReferenceLedger.getTransactionDetails(transaction.transactionId))
+      transactionDetails <- atalaReferenceLedger.getTransactionDetails(transaction.transactionId)
     } yield {
       transactionDetails.left
         .map { err =>

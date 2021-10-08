@@ -55,7 +55,7 @@ class FlowPoC extends AtalaWithPostgresSpec with BeforeAndAfterEach {
   protected var didDataRepository: DIDDataRepository[IOWithTraceIdContext] = _
   protected var atalaOperationsRepository: AtalaOperationsRepository[IOWithTraceIdContext] = _
   protected var credentialBatchesRepository: CredentialBatchesRepository[IOWithTraceIdContext] = _
-  protected var atalaReferenceLedger: InMemoryLedgerService = _
+  protected var atalaReferenceLedger: InMemoryLedgerService[IOWithTraceIdContext] = _
   protected var blockProcessingService: BlockProcessingServiceImpl = _
   protected var objectManagementService: ObjectManagementService = _
   protected var submissionService: SubmissionService[IOWithTraceIdContext] = _
