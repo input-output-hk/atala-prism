@@ -181,9 +181,13 @@ class NodeApp(executionContext: ExecutionContext) { self =>
   private def createCardanoClient(
       cardanoClientConfig: CardanoClient.Config,
       logs: Logs[IO, IOWithTraceIdContext]
-  ): (CardanoClient, IO[Unit]) = {
+  ): (CardanoClient[IOWithTraceIdContext], IO[Unit]) = {
     logger.info("Creating cardano client")
-    CardanoClient(cardanoClientConfig, logs).mapK(TraceId.unLiftIOWithTraceId()).allocated.unsafeRunSync()
+    CardanoClient
+      .make[IO, IOWithTraceIdContext](cardanoClientConfig, logs)
+      .mapK(TraceId.unLiftIOWithTraceId())
+      .allocated
+      .unsafeRunSync()
   }
 
   private def stop(): Unit = {
