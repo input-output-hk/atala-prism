@@ -10,7 +10,11 @@ import io.iohk.atala.prism.models.{TransactionInfo, TransactionStatus}
 import io.iohk.atala.prism.node.UnderlyingLedger
 import io.iohk.atala.prism.node.cardano.models.{CardanoWalletError, CardanoWalletErrorCode}
 import io.iohk.atala.prism.node.errors.NodeError
-import io.iohk.atala.prism.node.models.{AtalaObjectInfo, AtalaObjectTransactionSubmission, AtalaObjectTransactionSubmissionStatus}
+import io.iohk.atala.prism.node.models.{
+  AtalaObjectInfo,
+  AtalaObjectTransactionSubmission,
+  AtalaObjectTransactionSubmissionStatus
+}
 import io.iohk.atala.prism.node.repositories.{AtalaObjectsTransactionsRepository, AtalaOperationsRepository}
 import io.iohk.atala.prism.node.services.SubmissionService.Config
 import io.iohk.atala.prism.protos.node_internal
