@@ -158,7 +158,7 @@ rule Issuer_3:
          AuthenticPK($H, <'H', 'I', ~tid, pkHe, mc_pkh>),
 	 Commit_I_1($I, $H, <'H', 'I', <~tid, pkHe, mc_pkh>>),
 	 Running_I_2($I, $H, <'H', 'I', <ccred, mc_cred, sig, 'g'^~r>>) ]->
-     [ Out(<ccred, mc_cred, sig, 'g'^~r>) ]       
+     [ Out(<ccred, mc_cred, 'g'^~r>) ]       
 
 /* The holder receives the ECIES-encrypted message by the issuer, and 
    decrypts it. */

@@ -146,9 +146,9 @@ rule Issuer_3:
      	 k = kdf(pkHe^~r)
          k1 = splitL(k)
 	 k2 = splitR(k)
- 	 ccred = senc(~cred, k1)
+ 	 ccred = senc(<pk(~lkIs), ~cred>, k1)
   	 mc_cred = mac(ccred, k2)
-	 sig = sign(h(<~cred, pkHe>), ~lkIs)
+	 sig = sign(h(<~cred, ccred>), ~lkIs)
      in    
      [ St_Issuer_1($I, ~id, ~lkIs, $H, ~tid, ~code),
        In(<<~tid, pkHe>, mc_pkh>),
@@ -166,12 +166,13 @@ rule Holder_4:
      let k = kdf(R^~lkHe)
          k1 = splitL(k)
 	 k2 = splitR(k)
-	 cred = sdec(ccred, k1)
+	 cred = snd(sdec(ccred, k1))
 	 mc_cred = mac(ccred, k2)
      in
      [ St_Holder_1($H, ~id, ~lkHe, pkHe, $I, pkIs),
        In(<ccred, mc_cred, sig, R>) ]
-     --[ Eq(verify(sig, h(<cred, pkHe>), pkIs), true),
+     --[ Eq(pkIs, fst(sdec(ccred, k1))),
+	 Eq(verify(sig, h(<cred, ccred>), pkIs), true),
          SecretCred(cred),
 	 AuthenticCred($H, <'H', 'I', <ccred, mc_cred, sig, R>>),
 	 Honest($H), Honest($I), Role('H'),
