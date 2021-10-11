@@ -1,5 +1,6 @@
 package io.iohk.atala.prism.node.services
 
+import cats.data.ReaderT
 import cats.effect.{ContextShift, IO}
 import doobie.implicits._
 import io.iohk.atala.prism.AtalaWithPostgresSpec
@@ -31,7 +32,7 @@ import tofu.logging.Logs
 
 import scala.concurrent.duration._
 import java.time.Duration
-import scala.concurrent.{ExecutionContext, Future}
+import scala.concurrent.ExecutionContext
 
 object SubmissionServiceSpec {}
 
@@ -94,7 +95,9 @@ class SubmissionServiceSpec
 
       atalaObjectsMerged.zip(publications.drop(atalaObjects.size)).foreach {
         case (atalaObject, publicationInfo) =>
-          doReturn(Future.successful(Right(publicationInfo))).when(ledger).publish(atalaObject)
+          doReturn(ReaderT.pure[IO, TraceId, Either[CardanoWalletError, PublicationInfo]](Right(publicationInfo)))
+            .when(ledger)
+            .publish(atalaObject)
           mockTransactionStatus(publicationInfo.transaction.transactionId, TransactionStatus.Pending)
       }
 
@@ -122,12 +125,15 @@ class SubmissionServiceSpec
       val (_, atalaObjectsMerged, publications, ops) = setUpMultipleOperationsPublishing(numOps = 40)
 
       // first publishing is failed
-      doReturn(Future.successful(Left(CardanoWalletError("UtxoTooSmall", CardanoWalletErrorCode.UtxoTooSmall))))
-        .when(ledger)
+      doReturn(
+        ReaderT.pure[IO, TraceId, Either[CardanoWalletError, PublicationInfo]](
+          Left(CardanoWalletError("UtxoTooSmall", CardanoWalletErrorCode.UtxoTooSmall))
+        )
+      ).when(ledger)
         .publish(atalaObjectsMerged.head)
 
       // second is ok
-      doReturn(Future.successful(Right(publications.last)))
+      doReturn(ReaderT.pure[IO, TraceId, Either[CardanoWalletError, PublicationInfo]](Right(publications.last)))
         .when(ledger)
         .publish(atalaObjectsMerged.last)
       mockTransactionStatus(publications.last.transaction.transactionId, TransactionStatus.Pending)
@@ -149,8 +155,9 @@ class SubmissionServiceSpec
       mockTransactionStatus(publications.last.transaction.transactionId, TransactionStatus.InLedger)
 
       // publishing the first operation while retrying becomes ok
-      doReturn(Future.successful(Right(publications.dropRight(1).last)))
-        .when(ledger)
+      doReturn(
+        ReaderT.pure[IO, TraceId, Either[CardanoWalletError, PublicationInfo]](Right(publications.dropRight(1).last))
+      ).when(ledger)
         .publish(atalaObjectsMerged.head)
       mockTransactionStatus(publications.dropRight(1).last.transaction.transactionId, TransactionStatus.Pending)
 
@@ -188,16 +195,22 @@ class SubmissionServiceSpec
 
       (atalaObjects ++ atalaObjectsMerged :+ objInLedger).zip(publications).foreach {
         case (atalaObject, publicationInfo) =>
-          doReturn(Future.successful(Right(publicationInfo))).when(ledger).publish(atalaObject)
+          doReturn(ReaderT.pure[IO, TraceId, Either[CardanoWalletError, PublicationInfo]](Right(publicationInfo)))
+            .when(ledger)
+            .publish(atalaObject)
           mockTransactionStatus(publicationInfo.transaction.transactionId, TransactionStatus.Pending)
       }
       publications.take(atalaObjects.size).foreach { publicationInfo =>
-        doReturn(Future.successful(Right(()))).when(ledger).deleteTransaction(publicationInfo.transaction.transactionId)
+        doReturn(ReaderT.pure[IO, TraceId, Either[CardanoWalletError, Unit]](Right(())))
+          .when(ledger)
+          .deleteTransaction(publicationInfo.transaction.transactionId)
       }
       val inLedgerTransactionId =
         publications.drop(atalaObjects.size + atalaObjectsMerged.size).head.transaction.transactionId
       doReturn(
-        Future.successful(Left(CardanoWalletError("Too late", CardanoWalletErrorCode.TransactionAlreadyInLedger)))
+        ReaderT.pure[IO, TraceId, Either[CardanoWalletError, Unit]](
+          Left(CardanoWalletError("Too late", CardanoWalletErrorCode.TransactionAlreadyInLedger))
+        )
       ).when(ledger).deleteTransaction(inLedgerTransactionId)
 
       publishOpsSequentially(ops :+ opInLedger)
@@ -214,7 +227,9 @@ class SubmissionServiceSpec
     }
 
     "ignore in-ledger transactions" in {
-      doReturn(Future.successful(Right(dummyPublicationInfo))).when(ledger).publish(*)
+      doReturn(ReaderT.pure[IO, TraceId, Either[CardanoWalletError, PublicationInfo]](Right(dummyPublicationInfo)))
+        .when(ledger)
+        .publish(*)
       // Publish once and update status
       publishSingleOperationAndFlush(atalaOperation).futureValue
       setAtalaObjectTransactionSubmissionStatus(
@@ -232,7 +247,9 @@ class SubmissionServiceSpec
     }
 
     "ignore deleted transactions" in {
-      doReturn(Future.successful(Right(dummyPublicationInfo))).when(ledger).publish(*)
+      doReturn(ReaderT.pure[IO, TraceId, Either[CardanoWalletError, PublicationInfo]](Right(dummyPublicationInfo)))
+        .when(ledger)
+        .publish(*)
       publishSingleOperationAndFlush(atalaOperation).futureValue
       setAtalaObjectTransactionSubmissionStatus(
         dummyPublicationInfo.transaction,
@@ -249,7 +266,9 @@ class SubmissionServiceSpec
     }
 
     "ignore other ledger's transactions" in {
-      doReturn(Future.successful(Right(dummyPublicationInfo))).when(ledger).publish(*)
+      doReturn(ReaderT.pure[IO, TraceId, Either[CardanoWalletError, PublicationInfo]](Right(dummyPublicationInfo)))
+        .when(ledger)
+        .publish(*)
       publishSingleOperationAndFlush(atalaOperation).futureValue
       // Simulate the service is restarted with a new ledger type
       doReturn(Ledger.CardanoTestnet).when(ledger).getType
@@ -268,10 +287,14 @@ class SubmissionServiceSpec
       val dummyTransactionInfo2 = dummyTransactionInfo.copy(transactionId = dummyTransactionId2)
       val dummyPublicationInfo2 = dummyPublicationInfo.copy(transaction = dummyTransactionInfo2)
       // Return dummyTransactionInfo and then dummyTransactionInfo2
-      doReturn(Future.successful(Right(dummyPublicationInfo)), Future.successful(Right(dummyPublicationInfo2)))
-        .when(ledger)
+      doReturn(
+        ReaderT.pure[IO, TraceId, Either[CardanoWalletError, PublicationInfo]](Right(dummyPublicationInfo)),
+        ReaderT.pure[IO, TraceId, Either[CardanoWalletError, PublicationInfo]](Right(dummyPublicationInfo2))
+      ).when(ledger)
         .publish(*)
-      doReturn(Future.successful(Right(()))).when(ledger).deleteTransaction(dummyTransactionInfo.transactionId)
+      doReturn(ReaderT.pure[IO, TraceId, Either[CardanoWalletError, Unit]](Right(())))
+        .when(ledger)
+        .deleteTransaction(dummyTransactionInfo.transactionId)
       publishSingleOperationAndFlush(atalaOperation).futureValue
       mockTransactionStatus(dummyTransactionInfo.transactionId, TransactionStatus.Pending)
 
@@ -290,11 +313,15 @@ class SubmissionServiceSpec
 
       (atalaObjects ++ atalaObjectsMerged).zip(publications).foreach {
         case (atalaObject, publicationInfo) =>
-          doReturn(Future.successful(Right(publicationInfo))).when(ledger).publish(atalaObject)
+          doReturn(ReaderT.pure[IO, TraceId, Either[CardanoWalletError, PublicationInfo]](Right(publicationInfo)))
+            .when(ledger)
+            .publish(atalaObject)
           mockTransactionStatus(publicationInfo.transaction.transactionId, TransactionStatus.Pending)
       }
       publications.dropRight(atalaObjectsMerged.size).foreach { publicationInfo =>
-        doReturn(Future.successful(Right(()))).when(ledger).deleteTransaction(publicationInfo.transaction.transactionId)
+        doReturn(ReaderT.pure[IO, TraceId, Either[CardanoWalletError, Unit]](Right(())))
+          .when(ledger)
+          .deleteTransaction(publicationInfo.transaction.transactionId)
       }
 
       // publish operations sequentially because we want to preserve the order by timestamps
@@ -323,7 +350,9 @@ class SubmissionServiceSpec
 
     "not retry new pending transactions" in {
       // Use a service that does have a 10-minute timeout for pending transactions
-      doReturn(Future.successful(Right(dummyPublicationInfo))).when(ledger).publish(*)
+      doReturn(ReaderT.pure[IO, TraceId, Either[CardanoWalletError, PublicationInfo]](Right(dummyPublicationInfo)))
+        .when(ledger)
+        .publish(*)
       publishSingleOperationAndFlush(atalaOperation).futureValue
       mockTransactionStatus(dummyTransactionInfo.transactionId, TransactionStatus.Pending)
 
@@ -335,7 +364,9 @@ class SubmissionServiceSpec
     }
 
     "not retry in-ledger transactions" in {
-      doReturn(Future.successful(Right(dummyPublicationInfo))).when(ledger).publish(*)
+      doReturn(ReaderT.pure[IO, TraceId, Either[CardanoWalletError, PublicationInfo]](Right(dummyPublicationInfo)))
+        .when(ledger)
+        .publish(*)
       publishSingleOperationAndFlush(atalaOperation).futureValue
       mockTransactionStatus(dummyTransactionInfo.transactionId, TransactionStatus.InLedger)
 
@@ -425,9 +456,11 @@ class SubmissionServiceSpec
   }
 
   def mockTransactionStatus(transactionId: TransactionId, status: TransactionStatus): Unit = {
-    doReturn(Future.successful(Right(TransactionDetails(transactionId, status))))
-      .when(ledger)
-      .getTransactionDetails(transactionId)
+    doReturn(
+      ReaderT.pure[IO, TraceId, Either[CardanoWalletError, TransactionDetails]](
+        Right(TransactionDetails(transactionId, status))
+      )
+    ).when(ledger).getTransactionDetails(transactionId)
     ()
   }
 }

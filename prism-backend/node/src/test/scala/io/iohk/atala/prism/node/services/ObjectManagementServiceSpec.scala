@@ -1,5 +1,6 @@
 package io.iohk.atala.prism.node.services
 
+import cats.data.ReaderT
 import cats.effect.{ContextShift, IO}
 import doobie.free.connection
 import doobie.implicits._
@@ -10,7 +11,6 @@ import io.iohk.atala.prism.crypto.keys.ECKeyPair
 import io.iohk.atala.prism.logging.TraceId
 import io.iohk.atala.prism.logging.TraceId.IOWithTraceIdContext
 import io.iohk.atala.prism.models._
-import io.iohk.atala.prism.node.DataPreparation._
 import io.iohk.atala.prism.node.errors.NodeError.UnsupportedProtocolVersion
 import io.iohk.atala.prism.node.models.AtalaObjectTransactionSubmissionStatus.InLedger
 import io.iohk.atala.prism.node.models._
@@ -24,7 +24,10 @@ import io.iohk.atala.prism.node.repositories.{
   ProtocolVersionRepository
 }
 import io.iohk.atala.prism.node.services.models.AtalaObjectNotification
-import io.iohk.atala.prism.node.{DataPreparation, PublicationInfo, UnderlyingLedger}
+import io.iohk.atala.prism.node.DataPreparation
+import io.iohk.atala.prism.node.{PublicationInfo, UnderlyingLedger}
+import io.iohk.atala.prism.node.DataPreparation._
+import io.iohk.atala.prism.node.cardano.models.CardanoWalletError
 import io.iohk.atala.prism.protos.{node_internal, node_models}
 import io.iohk.atala.prism.utils.IOUtils._
 import monix.execution.Scheduler.Implicits.{global => scheduler}
@@ -37,7 +40,7 @@ import tofu.logging.Logs
 import org.scalatest.concurrent.ScalaFutures
 
 import java.time.{Duration, Instant}
-import scala.concurrent.{ExecutionContext, Future}
+import scala.concurrent.ExecutionContext
 
 object ObjectManagementServiceSpec {
   private val newKeysPairs = List.fill(10) { EC.generateKeyPair() }
@@ -107,7 +110,10 @@ class ObjectManagementServiceSpec
 
   "ObjectManagementService.publishAtalaOperation" should {
     "update status to received when operation was received, but haven't processed yet" in {
-      doReturn(Future.successful(Right(dummyPublicationInfo))).when(ledger).publish(*)
+      doReturn(
+        ReaderT
+          .pure[IO, TraceId, Either[CardanoWalletError, PublicationInfo]](Right(dummyPublicationInfo))
+      ).when(ledger).publish(*)
 
       val atalaOperation = BlockProcessingServiceSpec.signedCreateDidOperation
       val atalaOperationId = BlockProcessingServiceSpec.signedCreateDidOperationId
@@ -122,7 +128,10 @@ class ObjectManagementServiceSpec
     }
 
     "ignore publishing duplicate operation" in {
-      doReturn(Future.successful(Right(dummyPublicationInfo))).when(ledger).publish(*)
+      doReturn(
+        ReaderT
+          .pure[IO, TraceId, Either[CardanoWalletError, PublicationInfo]](Right(dummyPublicationInfo))
+      ).when(ledger).publish(*)
 
       val atalaOperation = BlockProcessingServiceSpec.signedCreateDidOperation
       val atalaOperationId = BlockProcessingServiceSpec.signedCreateDidOperationId
@@ -140,7 +149,10 @@ class ObjectManagementServiceSpec
     }
 
     "ignore publishing duplicate operation in the same block" in {
-      doReturn(Future.successful(Right(dummyPublicationInfo))).when(ledger).publish(*)
+      doReturn(
+        ReaderT
+          .pure[IO, TraceId, Either[CardanoWalletError, PublicationInfo]](Right(dummyPublicationInfo))
+      ).when(ledger).publish(*)
 
       val atalaOperation = BlockProcessingServiceSpec.signedCreateDidOperation
       val atalaOperationId = BlockProcessingServiceSpec.signedCreateDidOperationId
@@ -158,7 +170,10 @@ class ObjectManagementServiceSpec
     }
 
     "put block content onto the ledger when supported" in {
-      doReturn(Future.successful(Right(dummyPublicationInfo))).when(ledger).publish(*)
+      doReturn(
+        ReaderT
+          .pure[IO, TraceId, Either[CardanoWalletError, PublicationInfo]](Right(dummyPublicationInfo))
+      ).when(ledger).publish(*)
 
       val returnedOperationId =
         publishSingleOperationAndFlush(BlockProcessingServiceSpec.signedCreateDidOperation).futureValue.toOption.get
@@ -183,7 +198,10 @@ class ObjectManagementServiceSpec
 
     "record immediate in-ledger transactions" in {
       val inLedgerPublication = dummyPublicationInfo.copy(status = TransactionStatus.InLedger)
-      doReturn(Future.successful(Right(inLedgerPublication))).when(ledger).publish(*)
+      doReturn(
+        ReaderT
+          .pure[IO, TraceId, Either[CardanoWalletError, PublicationInfo]](Right(inLedgerPublication))
+      ).when(ledger).publish(*)
 
       val returnedOperationId =
         publishSingleOperationAndFlush(BlockProcessingServiceSpec.signedCreateDidOperation).futureValue.toOption.get
@@ -236,8 +254,12 @@ class ObjectManagementServiceSpec
         .when(blockProcessing)
         .processBlock(*, anyTransactionIdMatcher, *, *, *)
 
-      doReturn(Future.successful(Right(PublicationInfo(dummyTransactionInfo, TransactionStatus.InLedger))))
-        .when(ledger)
+      doReturn(
+        ReaderT
+          .pure[IO, TraceId, Either[CardanoWalletError, PublicationInfo]](
+            Right(PublicationInfo(dummyTransactionInfo, TransactionStatus.InLedger))
+          )
+      ).when(ledger)
         .publish(*)
 
       val signedOperation = BlockProcessingServiceSpec.signedCreateDidOperation
