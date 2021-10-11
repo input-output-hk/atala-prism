@@ -10,12 +10,9 @@ import io.iohk.atala.prism.models.{TransactionInfo, TransactionStatus}
 import io.iohk.atala.prism.node.UnderlyingLedger
 import io.iohk.atala.prism.node.cardano.models.{CardanoWalletError, CardanoWalletErrorCode}
 import io.iohk.atala.prism.node.errors.NodeError
-import io.iohk.atala.prism.node.models.{
-  AtalaObjectInfo,
-  AtalaObjectTransactionSubmission,
-  AtalaObjectTransactionSubmissionStatus
-}
+import io.iohk.atala.prism.node.models.{AtalaObjectInfo, AtalaObjectTransactionSubmission, AtalaObjectTransactionSubmissionStatus}
 import io.iohk.atala.prism.node.repositories.{AtalaObjectsTransactionsRepository, AtalaOperationsRepository}
+import io.iohk.atala.prism.node.services.SubmissionService.Config
 import io.iohk.atala.prism.protos.node_internal
 import monix.execution.Scheduler
 import org.slf4j.LoggerFactory
@@ -26,7 +23,8 @@ import scala.concurrent.Future
 class SubmissionService private (
     atalaReferenceLedger: UnderlyingLedger,
     atalaOperationsRepository: AtalaOperationsRepository[IOWithTraceIdContext],
-    atalaObjectsTransactionsRepository: AtalaObjectsTransactionsRepository[IOWithTraceIdContext]
+    atalaObjectsTransactionsRepository: AtalaObjectsTransactionsRepository[IOWithTraceIdContext],
+    config: Config
 )(implicit scheduler: Scheduler) {
   private val logger = LoggerFactory.getLogger(this.getClass)
 
@@ -86,7 +84,7 @@ class SubmissionService private (
           Future.successful(0)
         },
         { _ =>
-          mergeAndRetryPendingTransactions(transactionsToRetry)
+          mergeAndRetryPendingTransactions(transactionsToRetry.take(config.maxNumberTransactionsToRetry))
         }
       )
     } yield {
@@ -120,6 +118,7 @@ class SubmissionService private (
       atalaObjectsWithParsedContent: List[(AtalaObjectInfo, node_internal.AtalaObject)]
   ): Future[List[TransactionInfo]] =
     atalaObjectsWithParsedContent
+      .take(config.maxNumberTransactionsToSubmit)
       .traverse {
         case (obj, objContent) =>
           publishAndRecordTransaction(obj, objContent).map { transactionInfoE =>
@@ -283,11 +282,14 @@ class SubmissionService private (
 }
 
 object SubmissionService {
+  case class Config(maxNumberTransactionsToSubmit: Int, maxNumberTransactionsToRetry: Int)
+
   def apply(
       atalaReferenceLedger: UnderlyingLedger,
       atalaOperationsRepository: AtalaOperationsRepository[IOWithTraceIdContext],
-      atalaObjectsTransactionsRepository: AtalaObjectsTransactionsRepository[IOWithTraceIdContext]
+      atalaObjectsTransactionsRepository: AtalaObjectsTransactionsRepository[IOWithTraceIdContext],
+      config: Config = Config(Int.MaxValue, Int.MaxValue)
   )(implicit scheduler: Scheduler): SubmissionService = {
-    new SubmissionService(atalaReferenceLedger, atalaOperationsRepository, atalaObjectsTransactionsRepository)
+    new SubmissionService(atalaReferenceLedger, atalaOperationsRepository, atalaObjectsTransactionsRepository, config)
   }
 }
