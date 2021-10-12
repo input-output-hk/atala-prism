@@ -33,7 +33,19 @@ private[api] object ApiRequest {
       passphrase: String
   ) extends ApiRequest(s"v2/wallets/$walletId/transactions", Method.POST) {
     override def requestBody: Option[Json] = {
-      Some(Json.fromFields(asJsonFields("payments" -> payments, "passphrase" -> passphrase) ++ asJsonField(metadata)))
+      Some(
+        Json.fromFields(
+          asJsonFields(
+            "payments" -> payments,
+            "passphrase" -> passphrase,
+            "time_to_live" -> asJsonFields(
+              "quantity" -> 600,
+              "unit" -> "second"
+            )
+          ) ++
+            asJsonField(metadata)
+        )
+      )
     }
   }
 
