@@ -120,18 +120,23 @@ class SubmissionService private (
 
   private def publishObjectsAndRecordTransaction(
       atalaObjectsWithParsedContent: List[(AtalaObjectInfo, node_internal.AtalaObject)]
-  ): Future[List[TransactionInfo]] =
-    atalaObjectsWithParsedContent
-      .take(config.maxNumberTransactionsToSubmit)
-      .traverse {
-        case (obj, objContent) =>
+  ): Future[List[TransactionInfo]] = {
+    val lst = atalaObjectsWithParsedContent.take(config.maxNumberTransactionsToSubmit)
+    var accF = Future.successful(List.empty[Option[TransactionInfo]])
+    lst.foreach {
+      case (obj, objContent) =>
+        accF = accF.flatMap { acc =>
           publishAndRecordTransaction(obj, objContent).map { transactionInfoE =>
-            transactionInfoE.left.map { err =>
+            logger.info(s"Publishing object id [${obj.objectId}]: $transactionInfoE")
+            acc :+ transactionInfoE.left.map { err =>
               logger.error("Was not able to publish and record transaction", err)
             }.toOption
           }
-      }
-      .map(_.flatten)
+        }
+    }
+
+    accF.map(_.flatten)
+  }
 
   private def deleteTransactions(
       transactions: List[AtalaObjectTransactionSubmission]

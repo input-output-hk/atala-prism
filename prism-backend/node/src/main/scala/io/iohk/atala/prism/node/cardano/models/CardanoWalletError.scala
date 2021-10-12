@@ -2,6 +2,7 @@ package io.iohk.atala.prism.node.cardano.models
 import derevo.derive
 import enumeratum._
 import tofu.logging.derivation.loggable
+
 @derive(loggable)
 case class CardanoWalletError(message: String, code: CardanoWalletErrorCode)
     extends RuntimeException(f"Status [${code.entryName}]. $message")
@@ -50,6 +51,8 @@ object CardanoWalletErrorCode extends Enum[CardanoWalletErrorCode] {
   case object UndefinedCardanoWalletError extends CardanoWalletErrorCode
 
   case object WalletBalanceIsTooLow extends CardanoWalletErrorCode
+
+  case object SttpFailure extends CardanoWalletErrorCode
 
   def fromString(errorCode: String): Option[CardanoWalletErrorCode] =
     CardanoWalletErrorCode.withNameInsensitiveOption(errorCode)

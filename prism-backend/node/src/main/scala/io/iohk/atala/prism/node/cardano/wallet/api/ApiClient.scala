@@ -26,6 +26,7 @@ import io.iohk.atala.prism.node.models.WalletDetails
 import io.iohk.atala.prism.utils.FutureEither._
 
 import scala.concurrent.{ExecutionContext, Future}
+import scala.util.{Failure, Success}
 
 /**
   * Implementation of the `CardanoWalletApiClient` that accesses the REST API provided by `cardano-wallet`.
@@ -70,9 +71,11 @@ private[wallet] class ApiClient(config: ApiClient.Config)(implicit
       .method(method.httpMethod, Uri.apply(config.host, config.port).path(method.path))
       .body(method.requestBody.map(_.noSpaces).getOrElse(""))
       .send()
-      .map { response =>
-        getResult[A](response).left
-          .map(e => ErrorResponse(method.path, e))
+      .transform {
+        case Success(response) =>
+          Success(getResult[A](response).left.map(e => ErrorResponse(method.path, e)))
+        case Failure(err) =>
+          Success(Left(ErrorResponse(method.path, CardanoWalletError("sttp_failure", err.toString))))
       }
       .toFutureEither
   }
