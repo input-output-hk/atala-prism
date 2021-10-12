@@ -1,5 +1,6 @@
 package io.iohk.atala.prism.node.services
 
+import cats.{Comonad, Functor}
 import cats.effect.MonadThrow
 import cats.implicits._
 import enumeratum.{Enum, EnumEntry}
@@ -17,13 +18,16 @@ import io.iohk.atala.prism.node.cardano.{CardanoClient, LAST_SYNCED_BLOCK_NO, LA
 import io.iohk.atala.prism.node.cardano.models._
 import io.iohk.atala.prism.node.repositories.daos.KeyValuesDAO.KeyValue
 import io.iohk.atala.prism.node.services.CardanoLedgerService.{CardanoBlockHandler, CardanoNetwork}
+import io.iohk.atala.prism.node.services.logs.UnderlyingLedgerLogs
 import io.iohk.atala.prism.node.services.models.{AtalaObjectNotification, AtalaObjectNotificationHandler}
 import io.iohk.atala.prism.node.{PublicationInfo, UnderlyingLedger}
 import io.iohk.atala.prism.protos.node_internal
 import monix.execution.Scheduler
 import org.slf4j.LoggerFactory
 import tofu.Execute
+import tofu.higherKind.Mid
 import tofu.lift.Lift
+import tofu.logging.{Logs, ServiceLogging}
 
 import scala.concurrent.duration._
 import scala.concurrent.{ExecutionContext, Future}
@@ -194,8 +198,6 @@ object CardanoLedgerService {
 
   type CardanoBlockHandler = Canonical => Future[Unit]
 
-  type Result[E, A] = Future[Either[E, A]]
-
   sealed trait CardanoNetwork extends EnumEntry
   object CardanoNetwork extends Enum[CardanoNetwork] {
     val values = findValues
@@ -214,23 +216,59 @@ object CardanoLedgerService {
       cardanoClientConfig: CardanoClient.Config
   )
 
-  def apply[F[_]: MonadThrow: Execute](
+  def apply[F[_]: MonadThrow: Execute: Lift[*[_], Future], R[_]: Functor](
+      network: CardanoNetwork,
+      walletId: WalletId,
+      walletPassphrase: String,
+      paymentAddress: Address,
+      blockNumberSyncStart: Int,
+      blockConfirmationsToWait: Int,
+      cardanoClient: CardanoClient,
+      keyValueService: KeyValueService[F],
+      onCardanoBlock: CardanoBlockHandler,
+      onAtalaObject: AtalaObjectNotificationHandler,
+      scheduler: Scheduler,
+      logs: Logs[R, F]
+  )(implicit ec: ExecutionContext): R[UnderlyingLedger[F]] =
+    for {
+      serviceLogs <- logs.service[UnderlyingLedger[F]]
+    } yield {
+      implicit val implicitLogs: ServiceLogging[F, UnderlyingLedger[F]] = serviceLogs
+      val logs: UnderlyingLedger[Mid[F, *]] = new UnderlyingLedgerLogs[F]
+      val mid = logs
+      mid attach new CardanoLedgerService[F](
+        network,
+        walletId,
+        walletPassphrase,
+        paymentAddress,
+        blockNumberSyncStart,
+        blockConfirmationsToWait,
+        cardanoClient,
+        keyValueService,
+        onCardanoBlock,
+        onAtalaObject,
+        scheduler
+      )
+    }
+
+  def unsafe[F[_]: MonadThrow: Execute, R[_]: Comonad](
       config: Config,
       cardanoClient: CardanoClient,
       keyValueService: KeyValueService[F],
       onCardanoBlock: CardanoBlockHandler,
-      onAtalaObject: AtalaObjectNotificationHandler
+      onAtalaObject: AtalaObjectNotificationHandler,
+      logs: Logs[R, F]
   )(implicit
       scheduler: Scheduler,
       liftToFuture: Lift[F, Future]
-  ): CardanoLedgerService[F] = {
+  ): UnderlyingLedger[F] = {
     val walletId = WalletId
       .from(config.walletId)
       .getOrElse(throw new IllegalArgumentException(s"Wallet ID ${config.walletId} is invalid"))
     val walletPassphrase = config.walletPassphrase
     val paymentAddress = Address(config.paymentAddress)
 
-    new CardanoLedgerService(
+    CardanoLedgerService(
       config.network,
       walletId,
       walletPassphrase,
@@ -241,8 +279,9 @@ object CardanoLedgerService {
       keyValueService,
       onCardanoBlock,
       onAtalaObject,
-      scheduler
-    )
+      scheduler,
+      logs
+    ).extract
   }
 
   def calculateLastSyncedBlockNo(maybeLastSyncedBlockNo: Option[Int], blockNumberSyncStart: Int): Int =

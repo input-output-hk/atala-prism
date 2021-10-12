@@ -1,5 +1,6 @@
 package io.iohk.atala.prism.node.services
 
+import cats.{Comonad, Functor}
 import cats.effect.MonadThrow
 import cats.implicits._
 
@@ -14,13 +15,17 @@ import io.iohk.atala.prism.models.{
   TransactionStatus
 }
 import io.iohk.atala.prism.node.cardano.models.{CardanoWalletError, CardanoWalletErrorCode}
+import io.iohk.atala.prism.node.services.logs.UnderlyingLedgerLogs
 import io.iohk.atala.prism.node.services.models.{AtalaObjectNotification, AtalaObjectNotificationHandler}
 import io.iohk.atala.prism.node.{PublicationInfo, UnderlyingLedger}
 import io.iohk.atala.prism.protos.node_internal
 import tofu.Execute
+import tofu.higherKind.Mid
+import tofu.logging.{Logs, ServiceLogging}
 
-class InMemoryLedgerService[F[_]: MonadThrow](onAtalaObject: AtalaObjectNotificationHandler)(implicit ex: Execute[F])
-    extends UnderlyingLedger[F] {
+private final class InMemoryLedgerService[F[_]: MonadThrow](onAtalaObject: AtalaObjectNotificationHandler)(implicit
+    ex: Execute[F]
+) extends UnderlyingLedger[F] {
 
   override def getType: Ledger = Ledger.InMemory
 
@@ -61,4 +66,24 @@ class InMemoryLedgerService[F[_]: MonadThrow](onAtalaObject: AtalaObjectNotifica
       "In-memory transactions cannot be deleted",
       CardanoWalletErrorCode.TransactionAlreadyInLedger
     ).asLeft[Unit].pure[F]
+}
+
+object InMemoryLedgerService {
+  def apply[F[_]: MonadThrow: Execute, R[_]: Functor](
+      onAtalaObject: AtalaObjectNotificationHandler,
+      logs: Logs[R, F]
+  ): R[UnderlyingLedger[F]] =
+    for {
+      serviceLogs <- logs.service[UnderlyingLedger[F]]
+    } yield {
+      implicit val implicitLogs: ServiceLogging[F, UnderlyingLedger[F]] = serviceLogs
+      val logs: UnderlyingLedger[Mid[F, *]] = new UnderlyingLedgerLogs[F]
+      val mid = logs
+      mid attach new InMemoryLedgerService[F](onAtalaObject)
+    }
+
+  def unsafe[F[_]: MonadThrow: Execute, R[_]: Comonad](
+      onAtalaObject: AtalaObjectNotificationHandler,
+      logs: Logs[R, F]
+  ): UnderlyingLedger[F] = InMemoryLedgerService(onAtalaObject, logs).extract
 }
