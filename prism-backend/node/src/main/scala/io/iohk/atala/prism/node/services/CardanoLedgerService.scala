@@ -2,7 +2,12 @@ package io.iohk.atala.prism.node.services
 
 import cats.{Comonad, Functor}
 import cats.effect.MonadThrow
-import cats.implicits._
+import cats.syntax.applicativeError._
+import cats.syntax.applicative._
+import cats.syntax.comonad._
+import cats.syntax.flatMap._
+import cats.syntax.functor._
+import cats.syntax.traverse._
 import enumeratum.{Enum, EnumEntry}
 import io.iohk.atala.prism.logging.TraceId
 import io.iohk.atala.prism.models.{
