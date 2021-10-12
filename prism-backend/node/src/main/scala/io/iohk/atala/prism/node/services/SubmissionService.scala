@@ -237,6 +237,8 @@ class SubmissionService private (
         atalaReferenceLedger.publish(atalaObject)
       ).leftMap(NodeError.InternalCardanoWalletError)
 
+      _ = logger.info(s"Publish atala object [${atalaObjectInfo.objectId}]: $publication")
+
       _ <- EitherT(
         atalaObjectsTransactionsRepository
           .storeTransactionSubmission(atalaObjectInfo, publication)

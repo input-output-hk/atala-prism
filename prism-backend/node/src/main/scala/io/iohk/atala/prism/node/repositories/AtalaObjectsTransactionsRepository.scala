@@ -170,6 +170,7 @@ private final class AtalaObjectsTransactionsRepositoryImpl[F[_]: BracketThrow](x
       atalaObjectInfo: AtalaObjectInfo,
       publication: PublicationInfo
   ): F[Either[NodeError, AtalaObjectTransactionSubmission]] = {
+    logger.info(s"Storing transaction submission for [${atalaObjectInfo.objectId}]: $publication")
     val opDescription = s"publishing and record transaction for [${atalaObjectInfo.objectId}]"
     val query = AtalaObjectTransactionSubmissionsDAO
       .insert(
