@@ -1,70 +1,67 @@
-import React, { useCallback, useEffect, useState } from 'react';
+import React from 'react';
 import PropTypes from 'prop-types';
+import { useTranslation } from 'react-i18next';
+import { observer } from 'mobx-react-lite';
 import { contactShape } from '../../../../helpers/propShapes';
 import InfiniteScrollTable from '../../../common/Organisms/Tables/InfiniteScrollTable';
 import { getContactColumns } from '../../../../helpers/tableDefinitions/contacts';
-import { useScrolledToBottom } from '../../../../hooks/useScrolledToBottom';
+import EmptyComponent from '../../../common/Atoms/EmptyComponent/EmptyComponent';
+import noContacts from '../../../../images/noConnections.svg';
+import SimpleLoading from '../../../common/Atoms/SimpleLoading/SimpleLoading';
+import { useContactStore, useContactUiState } from '../../../../hooks/useContactStore';
+import { useSession } from '../../../../hooks/useSession';
+import { CONFIRMED } from '../../../../helpers/constants';
 
 import './_style.scss';
 
-const ConnectionsTable = ({
-  contacts,
-  setSelectedContacts,
-  selectedContacts,
-  inviteContact,
-  handleContactsRequest,
-  hasMore,
-  viewContactDetail,
-  columns,
-  searching,
-  shouldSelectRecipients,
-  searchDueGeneralScroll
-}) => {
-  const [loading, setLoading] = useState(false);
-  const { timesScrolledToBottom } = useScrolledToBottom(hasMore, loading, 'ConnectionsTable ');
-  const [lastUpdated, setLastUpdated] = useState(timesScrolledToBottom);
+const ConnectionsTable = observer(
+  ({
+    columns,
+    setSelectedContacts,
+    selectedContacts,
+    inviteContact,
+    viewContactDetail,
+    shouldSelectRecipients,
+    newContactButton
+  }) => {
+    const { t } = useTranslation();
+    const { accountStatus } = useSession();
+    const { isLoadingFirstPage, fetchMoreData, isFetching, hasMore } = useContactStore();
+    const { displayedContacts, hasFiltersApplied, isSearching, isSorting } = useContactUiState();
 
-  // leave this trigger for backward compatibility, when all tables uses useScrolledToBottom remove
-  // searchDueGeneralScroll
-  const handleGetMoreData = () => !searchDueGeneralScroll && getMoreData();
+    const emptyProps = {
+      photoSrc: noContacts,
+      model: t('groups.title'),
+      isFilter: hasFiltersApplied,
+      button: newContactButton
+    };
 
-  const getMoreData = useCallback(() => {
-    if (loading) return;
-    setLoading(true);
-    handleContactsRequest({ onFinish: () => setLoading(false) });
-  }, [loading, handleContactsRequest]);
+    const renderEmpty = () => (
+      <EmptyComponent {...emptyProps} button={accountStatus === CONFIRMED && newContactButton} />
+    );
 
-  useEffect(() => {
-    if (timesScrolledToBottom !== lastUpdated && searchDueGeneralScroll) {
-      setLastUpdated(timesScrolledToBottom);
-      getMoreData();
-    }
-  }, [timesScrolledToBottom, lastUpdated, searchDueGeneralScroll, getMoreData]);
+    const tableProps = {
+      columns: columns || getContactColumns({ inviteContact, viewContactDetail }),
+      data: displayedContacts,
+      selectionType: setSelectedContacts && {
+        selectedRowKeys: selectedContacts,
+        type: 'checkbox',
+        onChange: setSelectedContacts,
+        getCheckboxProps: () => ({
+          disabled: !shouldSelectRecipients
+        })
+      },
+      rowKey: 'contactId',
+      getMoreData: fetchMoreData,
+      loading: isLoadingFirstPage || isSorting,
+      fetchingMore: isFetching || isSearching,
+      hasMore,
+      renderEmpty
+    };
 
-  return (
-    <div className="ConnectionsTable InfiniteScrollTableContainer">
-      <InfiniteScrollTable
-        columns={columns || getContactColumns({ inviteContact, viewContactDetail })}
-        data={contacts}
-        loading={loading}
-        getMoreData={handleGetMoreData}
-        hasMore={hasMore}
-        rowKey="contactId"
-        searching={searching}
-        selectionType={
-          setSelectedContacts && {
-            selectedRowKeys: selectedContacts,
-            type: 'checkbox',
-            onChange: setSelectedContacts,
-            getCheckboxProps: () => ({
-              disabled: !shouldSelectRecipients
-            })
-          }
-        }
-      />
-    </div>
-  );
-};
+    return isLoadingFirstPage ? <SimpleLoading /> : <InfiniteScrollTable {...tableProps} />;
+  }
+);
 
 ConnectionsTable.defaultProps = {
   contacts: [],

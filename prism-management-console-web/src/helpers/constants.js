@@ -265,6 +265,8 @@ export const CONTACT_SORTING_KEYS = {
   externalId: 'EXTERNAL_ID'
 };
 
+export const CONTACT_SORTING_KEYS_TRANSLATION = __.invert(CONTACT_SORTING_KEYS);
+
 // Templates
 export const TEMPLATES_SORTING_KEYS = {
   name: 'name',

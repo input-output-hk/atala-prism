@@ -1,28 +1,29 @@
 import { makeAutoObservable, observable, flow, computed, action, runInAction } from 'mobx';
-import { GROUP_PAGE_SIZE, MAX_GROUP_PAGE_SIZE } from '../../helpers/constants';
+import { contactMapper } from '../../APIs/helpers/contactHelpers';
+import { CONTACT_PAGE_SIZE, MAX_GROUP_PAGE_SIZE } from '../../helpers/constants';
 
 const defaultValues = {
   isFetching: false,
   contacts: [],
-  numberOfContacts: undefined,
   searchResults: [],
-  numberOfResults: undefined
+  contactsScrollId: undefined,
+  resultsScrollId: undefined
 };
 
 const fallback = {
   contactsList: [],
-  totalNumberOfContacts: undefined
+  newScrollId: undefined
 };
 export default class ContactStore {
   isFetching = defaultValues.isFetching;
 
   contacts = defaultValues.contacts;
 
-  numberOfContacts = defaultValues.numberOfContacts;
+  contactsScrollId = defaultValues.contactsScrollId;
 
   searchResults = defaultValues.searchResults;
 
-  numberOfResults = defaultValues.numberOfResults;
+  resultsScrollId = defaultValues.resultsScrollId;
 
   constructor(api, rootStore) {
     this.api = api;
@@ -32,8 +33,11 @@ export default class ContactStore {
     makeAutoObservable(this, {
       isFetching: observable,
       contacts: observable,
+      contactsScrollId: observable,
       searchResults: observable,
+      resultsScrollId: observable,
       isLoadingFirstPage: computed,
+      scrollId: computed,
       hasMore: computed,
       hasMoreContacts: computed,
       hasMoreResults: computed,
@@ -51,24 +55,29 @@ export default class ContactStore {
   }
 
   get isLoadingFirstPage() {
-    return this.isFetching && this.numberOfContacts === undefined;
+    return this.isFetching && this.scrollId === undefined;
+  }
+
+  get scrollId() {
+    const { hasFiltersApplied } = this.rootStore.uiState.contactUiState;
+    return hasFiltersApplied ? this.resultsScrollId : this.contactsScrollId;
   }
 
   get hasMore() {
-    const { hasFiltersApplied } = this.rootStore.uiState.groupUiState;
+    const { hasFiltersApplied } = this.rootStore.uiState.contactUiState;
     return hasFiltersApplied ? this.hasMoreResults : this.hasMoreContacts;
   }
 
   get hasMoreContacts() {
-    return this.numberOfContacts > this.contacts.length;
+    return Boolean(this.contactsScrollId);
   }
 
   get hasMoreResults() {
-    return this.numberOfResults > this.searchResults.length;
+    return Boolean(this.resultsScrollId);
   }
 
   get fetchMoreData() {
-    const { hasFiltersApplied, hasCustomSorting } = this.rootStore.uiState.groupUiState;
+    const { hasFiltersApplied, hasCustomSorting } = this.rootStore.uiState.contactUiState;
     return hasFiltersApplied || hasCustomSorting
       ? this.fetchSearchResultsNextPage
       : this.fetchContactsNextPage;
@@ -77,36 +86,39 @@ export default class ContactStore {
   resetContacts = () => {
     this.isFetching = defaultValues.isFetching;
     this.contacts = defaultValues.contacts;
-    this.numberOfContacts = defaultValues.numberOfContacts;
     this.searchResults = defaultValues.searchResults;
-    this.numberOfResults = defaultValues.numberOfResults;
+  };
+
+  refreshContacts = () => {
+    // TODO: implement
   };
 
   *fetchContactsNextPage() {
     if (!this.hasMoreContacts && this.isLoadingFirstPage) return;
     const response = yield this.fetchContacts({ offset: this.contacts.length });
-    this.contacts = this.contacts.concat(response.contactsList);
-    this.numberOfContacts = response.totalNumberOfContacts;
+    const contactsWithKey = response.contactsList.map(contactMapper);
+    this.contacts = this.contacts.concat(contactsWithKey);
+    this.contactsScrollId = response.newScrollId;
   }
 
   *fetchSearchResults() {
-    const { hasFiltersApplied, hasCustomSorting } = this.rootStore.uiState.groupUiState;
+    const { hasFiltersApplied, hasCustomSorting } = this.rootStore.uiState.contactUiState;
     if (!hasFiltersApplied && !hasCustomSorting) return;
 
     this.searchResults = [];
     this.numberOfResults = 0;
     const response = yield this.fetchContacts({ offset: 0 });
     this.searchResults = response.contactsList;
-    this.numberOfResults = response.totalNumberOfContacts;
+    this.resultsScrollId = response.resultsScrollId;
     return this.searchResults;
   }
 
   *fetchSearchResultsNextPage() {
     if (!this.hasMoreResults) return;
     const response = yield this.fetchContacts({ offset: this.searchResults.length });
-    const { updateFetchedResults } = this.rootStore.uiState.groupUiState;
-    this.numberOfResults = response?.totalNumberOfContacts;
+    const { updateFetchedResults } = this.rootStore.uiState.contactUiState;
     this.searchResults = this.searchResults.concat(response.contactsList);
+    this.resultsScrollId = response.resultsScrollId;
     updateFetchedResults();
   }
 
@@ -150,13 +162,13 @@ export default class ContactStore {
     runInAction(() => {
       this.searchResults = response.contactsList;
       this.numberOfResults = response.totalNumberOfContacts;
-      const { updateFetchedResults } = this.rootStore.uiState.groupUiState;
+      const { updateFetchedResults } = this.rootStore.uiState.contactUiState;
       updateFetchedResults();
     });
     return this.searchResults;
   }
 
-  fetchContacts = async ({ offset = 0, pageSize = GROUP_PAGE_SIZE }) => {
+  fetchContacts = async ({ pageSize = CONTACT_PAGE_SIZE }) => {
     this.isFetching = true;
     try {
       const {
@@ -164,11 +176,11 @@ export default class ContactStore {
         dateFilter = [],
         sortDirection,
         sortingBy
-      } = this.rootStore.uiState.groupUiState;
+      } = this.rootStore.uiState.contactUiState;
       const [createdAfter, createdBefore] = dateFilter;
 
       const response = await this.api.contactsManager.getContacts({
-        offset,
+        scrollId: this.scrollId,
         pageSize,
         sort: { field: sortingBy, direction: sortDirection },
         filter: {
