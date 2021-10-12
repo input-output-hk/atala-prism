@@ -20,8 +20,8 @@ resource "aws_service_discovery_service" "node_discovery" {
 }
 
 locals {
-  cpu    = 512
-  memory = 1024
+  cpu    = 2048
+  memory = 4096
 }
 
 module "node_container_definition" {
