@@ -2,8 +2,8 @@ import { makeAutoObservable, observable, computed, action } from 'mobx';
 import _ from 'lodash';
 import { filterByDateRange, filterByInclusion } from '../../helpers/filterHelpers';
 import {
-  GROUP_SORTING_KEYS,
-  GROUP_SORTING_KEYS_TRANSLATOR,
+  CONTACT_SORTING_KEYS,
+  CONTACT_SORTING_KEYS_TRANSLATION,
   SEARCH_DELAY_MS,
   SORTING_DIRECTIONS
 } from '../../helpers/constants';
@@ -16,7 +16,7 @@ const defaultValues = {
   nameFilter: '',
   dateFilter: [],
   sortDirection: ascending,
-  sortingBy: GROUP_SORTING_KEYS.name,
+  sortingBy: CONTACT_SORTING_KEYS.name,
   fetchedResults: null
 };
 export default class ContactUiState {
@@ -65,7 +65,7 @@ export default class ContactUiState {
   }
 
   get sortingKey() {
-    return GROUP_SORTING_KEYS_TRANSLATOR[this.sortingBy];
+    return CONTACT_SORTING_KEYS_TRANSLATION[this.sortingBy];
   }
 
   get hasFiltersApplied() {
@@ -140,7 +140,7 @@ export default class ContactUiState {
       this.sortDirection === ascending ? 'asc' : 'desc'
     );
 
-  sortingIsCaseSensitive = () => this.sortingBy === GROUP_SORTING_KEYS.name;
+  sortingIsCaseSensitive = () => this.sortingBy === CONTACT_SORTING_KEYS.name;
 
   resetState = () => {
     this.isSearching = defaultValues.isSearching;

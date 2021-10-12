@@ -93,7 +93,7 @@ async function createContacts(groups, contacts) {
 }
 
 async function getContacts({
-  limit = CONTACT_PAGE_SIZE,
+  pageSize = CONTACT_PAGE_SIZE,
   groupName,
   scrollId,
   createdAt,
@@ -103,9 +103,9 @@ async function getContacts({
   status
 }) {
   const groupMessage = groupName ? ` from ${groupName}` : '';
-  Logger.info(`Getting up to ${limit} contacts${groupMessage}`);
+  Logger.info(`Getting up to ${pageSize} contacts${groupMessage}`);
   const req = new GetContactsRequest();
-  req.setLimit(limit);
+  req.setLimit(pageSize);
   if (scrollId) req.setScrollId(scrollId);
 
   const filterBy = new FilterBy();
@@ -125,7 +125,7 @@ async function getContacts({
   sortBy.setDirection(sortByDirection[direction]);
   req.setSortBy(sortBy);
 
-  const timeout = REQUEST_AUTH_TIMEOUT_MS + getAditionalTimeout(limit);
+  const timeout = REQUEST_AUTH_TIMEOUT_MS + getAditionalTimeout(pageSize);
 
   const { metadata, sessionError } = await this.auth.getMetadata(req, timeout);
   if (sessionError) return { contactsList: [] };
