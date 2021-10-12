@@ -38,7 +38,7 @@ private[api] object ApiRequest {
           asJsonFields(
             "payments" -> payments,
             "passphrase" -> passphrase,
-            "time_to_live" -> asJsonFields(
+            "time_to_live" -> Json.obj(
               "quantity" -> 600,
               "unit" -> "second"
             )

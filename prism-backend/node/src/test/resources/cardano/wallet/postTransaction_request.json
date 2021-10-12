@@ -9,6 +9,10 @@
     }
   ],
   "passphrase": "Secure Passphrase",
+  "time_to_live": {
+    "quantity": 600,
+    "unit": "second"
+  },
   "metadata": {
     "0": "0x1234567890abcdef"
   }
