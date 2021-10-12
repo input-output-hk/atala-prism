@@ -1,9 +1,11 @@
 package io.iohk.atala.prism.node.services
 
-import cats.data.EitherT
+import cats.data.{EitherT, ReaderT}
 import cats.implicits.catsSyntaxEitherId
 import cats.syntax.traverse._
 import cats.effect.IO
+import io.iohk.atala.prism.logging.TraceId
+import io.iohk.atala.prism.logging.TraceId.IOWithTraceIdContext
 import io.iohk.atala.prism.models.{TransactionInfo, TransactionStatus}
 import io.iohk.atala.prism.node.UnderlyingLedger
 import io.iohk.atala.prism.node.cardano.models.{CardanoWalletError, CardanoWalletErrorCode}
@@ -23,8 +25,8 @@ import scala.concurrent.Future
 
 class SubmissionService private (
     atalaReferenceLedger: UnderlyingLedger,
-    atalaOperationsRepository: AtalaOperationsRepository[IO],
-    atalaObjectsTransactionsRepository: AtalaObjectsTransactionsRepository[IO]
+    atalaOperationsRepository: AtalaOperationsRepository[IOWithTraceIdContext],
+    atalaObjectsTransactionsRepository: AtalaObjectsTransactionsRepository[IOWithTraceIdContext]
 )(implicit scheduler: Scheduler) {
   private val logger = LoggerFactory.getLogger(this.getClass)
 
@@ -32,7 +34,9 @@ class SubmissionService private (
 
   def submitReceivedObjects(): Result[Unit] = {
     val submissionET = for {
-      atalaObjects <- EitherT(atalaObjectsTransactionsRepository.getNotPublishedObjects.unsafeToFuture())
+      atalaObjects <- EitherT(
+        atalaObjectsTransactionsRepository.getNotPublishedObjects.run(TraceId.generateYOLO).unsafeToFuture()
+      )
       _ = logger.info(s"Submit buffered objects. Number of objects: ${atalaObjects.size}")
       atalaObjectsMerged <- EitherT.right(mergeAtalaObjects(atalaObjects))
       atalaObjectsWithParsedContent = atalaObjectsMerged.map { obj => (obj, parseObjectContent(obj)) }
@@ -53,7 +57,7 @@ class SubmissionService private (
 
     for {
       // Query old pending transactions
-      pendingTransactions <- getOldPendingTransactions.unsafeToFuture()
+      pendingTransactions <- getOldPendingTransactions.run(TraceId.generateYOLO).unsafeToFuture()
 
       transactionsWithDetails <-
         pendingTransactions
@@ -90,7 +94,11 @@ class SubmissionService private (
     for {
       deletedTransactions <- deleteTransactions(transactions)
       atalaObjects <-
-        atalaObjectsTransactionsRepository.retrieveObjects(deletedTransactions).map(_.flatten).unsafeToFuture()
+        atalaObjectsTransactionsRepository
+          .retrieveObjects(deletedTransactions)
+          .map(_.flatten)
+          .run(TraceId.generateYOLO)
+          .unsafeToFuture()
       atalaObjectsMerged <- mergeAtalaObjects(atalaObjects)
       atalaObjectsWithParsedContent = atalaObjectsMerged.map { obj => (obj, parseObjectContent(obj)) }
       publishedTransactions <- publishObjectsAndRecordTransaction(atalaObjectsWithParsedContent)
@@ -142,6 +150,7 @@ class SubmissionService private (
       dbUpdateE <-
         atalaObjectsTransactionsRepository
           .updateSubmissionStatus(submission, newSubmissionStatus)
+          .run(TraceId.generateYOLO)
           .unsafeToFuture()
       _ = logger.info(s"Status for transaction [${submission.transactionId}] updated to $newSubmissionStatus")
     } yield for {
@@ -178,7 +187,7 @@ class SubmissionService private (
             }
 
           val atalaObjectIOEither = for {
-            changedBlock <- EitherT.fromEither[IO](changedBlockE)
+            changedBlock <- EitherT.fromEither[IOWithTraceIdContext](changedBlockE)
             _ <- EitherT(
               atalaOperationsRepository.updateMergedObjects(atalaObject, changedBlock.operations.toList, oldObjects)
             )
@@ -192,10 +201,10 @@ class SubmissionService private (
               Some(atalaObjectInfo)
           }
         } else {
-          IO.pure(Some(atalaObject))
+          ReaderT.liftF[IO, TraceId, Option[AtalaObjectInfo]](IO.pure(Some(atalaObject)))
         }
     }
-    objects.map(_.flatten).unsafeToFuture()
+    objects.map(_.flatten).run(TraceId.generateYOLO).unsafeToFuture()
   }
 
   private def parseObjectContent(atalaObjectInfo: AtalaObjectInfo): node_internal.AtalaObject =
@@ -217,6 +226,7 @@ class SubmissionService private (
       _ <- EitherT(
         atalaObjectsTransactionsRepository
           .storeTransactionSubmission(atalaObjectInfo, publication)
+          .run(TraceId.generateYOLO)
           .unsafeToFuture()
       )
     } yield publication.transaction
@@ -256,6 +266,7 @@ class SubmissionService private (
           }
       }
       .map(_.flatten.size)
+      .run(TraceId.generateYOLO)
       .unsafeToFuture()
   }
 }
@@ -263,8 +274,8 @@ class SubmissionService private (
 object SubmissionService {
   def apply(
       atalaReferenceLedger: UnderlyingLedger,
-      atalaOperationsRepository: AtalaOperationsRepository[IO],
-      atalaObjectsTransactionsRepository: AtalaObjectsTransactionsRepository[IO]
+      atalaOperationsRepository: AtalaOperationsRepository[IOWithTraceIdContext],
+      atalaObjectsTransactionsRepository: AtalaObjectsTransactionsRepository[IOWithTraceIdContext]
   )(implicit scheduler: Scheduler): SubmissionService = {
     new SubmissionService(atalaReferenceLedger, atalaOperationsRepository, atalaObjectsTransactionsRepository)
   }

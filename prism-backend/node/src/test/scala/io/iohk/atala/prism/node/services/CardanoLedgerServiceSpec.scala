@@ -1,7 +1,10 @@
 package io.iohk.atala.prism.node.services
 
+import cats.effect.IO
 import io.circe.Json
 import io.iohk.atala.prism.AtalaWithPostgresSpec
+import io.iohk.atala.prism.logging.TraceId
+import io.iohk.atala.prism.logging.TraceId.IOWithTraceIdContext
 import io.iohk.atala.prism.models.{
   BlockInfo,
   Ledger,
@@ -11,7 +14,7 @@ import io.iohk.atala.prism.models.{
   TransactionStatus
 }
 import io.iohk.atala.prism.node.cardano.CardanoClient
-import io.iohk.atala.prism.node.cardano.dbsync.CardanoDbSyncClient
+import io.iohk.atala.prism.node.cardano.dbsync.CardanoDbSyncClientImpl
 import io.iohk.atala.prism.node.cardano.dbsync.repositories.CardanoBlockRepository
 import io.iohk.atala.prism.node.cardano.dbsync.repositories.testing.TestCardanoBlockRepository
 import io.iohk.atala.prism.node.cardano.models.AtalaObjectMetadata.METADATA_PRISM_INDEX
@@ -24,12 +27,15 @@ import io.iohk.atala.prism.node.services.models.testing.TestAtalaObjectNotificat
 import io.iohk.atala.prism.node.services.models.{AtalaObjectNotification, AtalaObjectNotificationHandler}
 import io.iohk.atala.prism.protos.node_internal
 import io.iohk.atala.prism.utils.BytesOps
+import io.iohk.atala.prism.utils.IOUtils._
 import monix.execution.schedulers.TestScheduler
 import org.scalatest.OptionValues._
+import tofu.logging.Logs
 
 import scala.concurrent.Future
 
 class CardanoLedgerServiceSpec extends AtalaWithPostgresSpec {
+  private val logs = Logs.withContext[IO, IOWithTraceIdContext]
   private val network = CardanoNetwork.Testnet
   private val ledger = Ledger.CardanoTestnet
   private val walletId: WalletId = WalletId.from("bf098c001609ad7b76a0239e27f2a6bf9f09fd71").value
@@ -39,8 +45,8 @@ class CardanoLedgerServiceSpec extends AtalaWithPostgresSpec {
 
   private val noOpObjectHandler: AtalaObjectNotificationHandler = _ => Future.unit
   private val scheduler: TestScheduler = TestScheduler()
-  private lazy val keyValueService = new KeyValueService(KeyValuesRepository(database))
-  private lazy val cardanoBlockRepository = new CardanoBlockRepository(database)
+  private lazy val keyValueService = KeyValueService.unsafe(KeyValuesRepository.unsafe(dbLiftedToTraceIdIO, logs), logs)
+  private lazy val cardanoBlockRepository = CardanoBlockRepository.unsafe(dbLiftedToTraceIdIO, logs)
 
   override def beforeAll(): Unit = {
     super.beforeAll()
@@ -281,7 +287,7 @@ class CardanoLedgerServiceSpec extends AtalaWithPostgresSpec {
 
       // Append a new block
       val lastBlock =
-        cardanoBlockRepository.getFullBlock(totalBlockCount).value.futureValue.toOption.value
+        cardanoBlockRepository.getFullBlock(totalBlockCount).run(TraceId.generateYOLO).unsafeRunSync().toOption.value
       TestCardanoBlockRepository.insertBlock(TestCardanoBlockRepository.createNextRandomBlock(Some(lastBlock)))
 
       // Test #2: all objects are now synced
@@ -311,7 +317,7 @@ class CardanoLedgerServiceSpec extends AtalaWithPostgresSpec {
   }
 
   private def createCardanoClient(cardanoWalletApiClient: CardanoWalletApiClient): CardanoClient = {
-    new CardanoClient(new CardanoDbSyncClient(cardanoBlockRepository), cardanoWalletApiClient)
+    new CardanoClient(new CardanoDbSyncClientImpl(cardanoBlockRepository), cardanoWalletApiClient)
   }
 
   private def readResource(resource: String): String = {

@@ -1,6 +1,5 @@
 package io.iohk.atala.prism.node
 
-import cats.effect.IO
 import cats.syntax.applicative._
 import com.google.protobuf.ByteString
 import io.grpc.Status
@@ -35,15 +34,17 @@ import io.iohk.atala.prism.interop.toScalaProtos._
 import io.iohk.atala.prism.crypto.{Sha256Digest => SHA256Digest}
 import io.iohk.atala.prism.identity.{CanonicalPrismDid, LongFormPrismDid, PrismDid}
 import io.iohk.atala.prism.identity.{PrismDid => DID}
+import io.iohk.atala.prism.logging.TraceId
+import io.iohk.atala.prism.logging.TraceId.IOWithTraceIdContext
 import io.iohk.atala.prism.models.DidSuffix
 import io.iohk.atala.prism.node.cardano.models.AtalaObjectMetadata
 import io.iohk.atala.prism.node.models.AtalaObjectTransactionSubmissionStatus.InLedger
 
 class NodeServiceImpl(
-    didDataRepository: DIDDataRepository[IO],
+    didDataRepository: DIDDataRepository[IOWithTraceIdContext],
     objectManagement: ObjectManagementService,
     submissionSchedulingService: SubmissionSchedulingService,
-    credentialBatchesRepository: CredentialBatchesRepository[IO]
+    credentialBatchesRepository: CredentialBatchesRepository[IOWithTraceIdContext]
 )(implicit
     ec: ExecutionContext
 ) extends node_api.NodeServiceGrpc.NodeService {
@@ -58,7 +59,7 @@ class NodeServiceImpl(
   override def getDidDocument(request: node_api.GetDidDocumentRequest): Future[node_api.GetDidDocumentResponse] = {
     val methodName = "getDidDocument"
 
-    implicit val didDataRepositoryImplicit: DIDDataRepository[IO] = didDataRepository
+    implicit val didDataRepositoryImplicit: DIDDataRepository[IOWithTraceIdContext] = didDataRepository
     measureRequestFuture(serviceName, methodName) {
       withLog(methodName, request) { _ =>
         for {
@@ -71,16 +72,17 @@ class NodeServiceImpl(
   }
 
   private def getDidDocument(didRequestStr: String, methodName: String)(implicit
-      didDataRepository: DIDDataRepository[IO]
+      didDataRepository: DIDDataRepository[IOWithTraceIdContext]
   ) = {
     val didTry = Try(PrismDid.fromString(didRequestStr))
+    val tid = TraceId.generateYOLO
     didTry match {
       case Success(did) =>
         did match {
-          case canon: CanonicalPrismDid => resolve(canon) orElse (countAndThrowNodeError(methodName, _))
+          case canon: CanonicalPrismDid => resolve(canon, tid) orElse (countAndThrowNodeError(methodName, _))
           case longForm: LongFormPrismDid => // we received a long form DID
             // we check if the DID was published
-            resolve(did.asCanonical(), did).orReturn {
+            resolve(did.asCanonical(), did, tid).orReturn {
               // if it was not published, we return the encoded initial state
               succeedWith(
                 Some(
@@ -214,6 +216,7 @@ class NodeServiceImpl(
           stateEither <-
             credentialBatchesRepository
               .getBatchState(batchId)
+              .run(TraceId.generateYOLO)
               .unsafeToFuture()
         } yield stateEither.fold(
           countAndThrowNodeError(methodName, _),
@@ -250,6 +253,7 @@ class NodeServiceImpl(
           timeEither <-
             credentialBatchesRepository
               .getCredentialRevocationTime(batchId, credentialHash)
+              .run(TraceId.generateYOLO)
               .unsafeToFuture()
         } yield timeEither match {
           case Left(error) => countAndThrowNodeError(methodName, error)
@@ -500,14 +504,17 @@ object NodeServiceImpl {
       }
   }
 
-  private def resolve(did: CanonicalPrismDid, butShowInDIDDocument: DID)(implicit
-      didDataRepository: DIDDataRepository[IO]
+  private def resolve(did: CanonicalPrismDid, butShowInDIDDocument: DID, tId: TraceId)(implicit
+      didDataRepository: DIDDataRepository[IOWithTraceIdContext]
   ): OrElse = {
-    OrElse(butShowInDIDDocument, didDataRepository.findByDid(did).unsafeToFuture())
+    OrElse(butShowInDIDDocument, didDataRepository.findByDid(did).run(tId).unsafeToFuture())
   }
 
-  private def resolve(did: CanonicalPrismDid)(implicit didDataRepository: DIDDataRepository[IO]): OrElse = {
-    OrElse(did, didDataRepository.findByDid(did).unsafeToFuture())
+  private def resolve(
+      did: CanonicalPrismDid,
+      tId: TraceId
+  )(implicit didDataRepository: DIDDataRepository[IOWithTraceIdContext]): OrElse = {
+    OrElse(did, didDataRepository.findByDid(did).run(tId).unsafeToFuture())
   }
 
   private def getOperationOutput(operation: SignedAtalaOperation): Either[ValidationError, OperationOutput] =

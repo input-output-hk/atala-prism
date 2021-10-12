@@ -3,6 +3,8 @@ package io.iohk.atala.prism.node
 import cats.effect.{ContextShift, IO}
 import com.typesafe.config.{Config, ConfigFactory}
 import io.grpc.{Server, ServerBuilder}
+import io.iohk.atala.prism.logging.TraceId
+import io.iohk.atala.prism.logging.TraceId.IOWithTraceIdContext
 import io.iohk.atala.prism.metrics.UptimeReporter
 import io.iohk.atala.prism.node.cardano.CardanoClient
 import io.iohk.atala.prism.node.metrics.NodeReporter
@@ -11,9 +13,11 @@ import io.iohk.atala.prism.node.services._
 import io.iohk.atala.prism.node.services.models.AtalaObjectNotification
 import io.iohk.atala.prism.protos.node_api._
 import io.iohk.atala.prism.repositories.{SchemaMigrations, TransactorFactory}
+import io.iohk.atala.prism.utils.IOUtils._
 import kamon.Kamon
 import monix.execution.Scheduler.Implicits.{global => scheduler}
 import org.slf4j.LoggerFactory
+import tofu.logging.Logs
 
 import java.util.concurrent.TimeUnit
 import scala.concurrent.duration.{Duration, FiniteDuration}
@@ -39,6 +43,8 @@ class NodeApp(executionContext: ExecutionContext) { self =>
 
   private val logger = LoggerFactory.getLogger(this.getClass)
 
+  private val logs = Logs.withContext[IO, IOWithTraceIdContext]
+
   private[this] var server: Server = _
 
   private def start(): Unit = {
@@ -57,6 +63,8 @@ class NodeApp(executionContext: ExecutionContext) { self =>
     implicit val (transactor, releaseTransactor) =
       TransactorFactory.transactor[IO](databaseConfig).allocated.unsafeRunSync()
 
+    val liftedTransactor = transactor.mapK(TraceId.liftToIOWithTraceId)
+
     val objectManagementServicePromise: Promise[ObjectManagementService] = Promise()
 
     def onAtalaObject(notification: AtalaObjectNotification): Future[Unit] = {
@@ -66,20 +74,20 @@ class NodeApp(executionContext: ExecutionContext) { self =>
       }
     }
 
-    val keyValuesRepository = KeyValuesRepository(transactor)
-    val keyValueService = new KeyValueService(keyValuesRepository)
+    val keyValuesRepository = KeyValuesRepository.unsafe(liftedTransactor, logs)
+    val keyValueService = KeyValueService.unsafe(keyValuesRepository, logs)
 
     val (atalaReferenceLedger, releaseAtalaReferenceLedger) = globalConfig.getString("ledger") match {
-      case "cardano" => initializeCardano(keyValueService, globalConfig, onAtalaObject)
+      case "cardano" => initializeCardano(keyValueService, globalConfig, onAtalaObject, logs)
       case "in-memory" =>
         logger.info("Using in-memory ledger")
         (new InMemoryLedgerService(onAtalaObject), None)
     }
     logger.info("Creating blocks processor")
     val blockProcessingService = new BlockProcessingServiceImpl
-    val didDataRepository = DIDDataRepository(transactor)
-    val atalaOperationsRepository = AtalaOperationsRepository(transactor)
-    val atalaObjectsTransactionsRepository = AtalaObjectsTransactionsRepository(transactor)
+    val didDataRepository = DIDDataRepository.unsafe(liftedTransactor, logs)
+    val atalaOperationsRepository = AtalaOperationsRepository.unsafe(liftedTransactor, logs)
+    val atalaObjectsTransactionsRepository = AtalaObjectsTransactionsRepository.unsafe(liftedTransactor, logs)
 
     val ledgerPendingTransactionTimeout = globalConfig.getDuration("ledgerPendingTransactionTimeout")
     val transactionRetryPeriod = FiniteDuration(
@@ -112,7 +120,7 @@ class NodeApp(executionContext: ExecutionContext) { self =>
     )
     objectManagementServicePromise.success(objectManagementService)
 
-    val credentialBatchesRepository = CredentialBatchesRepository(transactor)
+    val credentialBatchesRepository = CredentialBatchesRepository.unsafe(liftedTransactor, logs)
 
     val nodeService =
       new NodeServiceImpl(
@@ -147,22 +155,24 @@ class NodeApp(executionContext: ExecutionContext) { self =>
   }
 
   private def initializeCardano(
-      keyValueService: KeyValueService,
+      keyValueService: KeyValueService[IOWithTraceIdContext],
       globalConfig: Config,
-      onAtalaObject: AtalaObjectNotification => Future[Unit]
+      onAtalaObject: AtalaObjectNotification => Future[Unit],
+      logs: Logs[IO, IOWithTraceIdContext]
   ): (CardanoLedgerService, Option[IO[Unit]]) = {
     val config = NodeConfig.cardanoConfig(globalConfig.getConfig("cardano"))
-    val (cardanoClient, releaseClient) = createCardanoClient(config.cardanoClientConfig)
+    val (cardanoClient, releaseClient) = createCardanoClient(config.cardanoClientConfig, logs)
     Kamon.registerModule("node-reporter", NodeReporter(config, cardanoClient, keyValueService))
     val cardano = CardanoLedgerService(config, cardanoClient, keyValueService, onAtalaObject)
     (cardano, Some(releaseClient))
   }
 
   private def createCardanoClient(
-      cardanoClientConfig: CardanoClient.Config
+      cardanoClientConfig: CardanoClient.Config,
+      logs: Logs[IO, IOWithTraceIdContext]
   ): (CardanoClient, IO[Unit]) = {
     logger.info("Creating cardano client")
-    CardanoClient(cardanoClientConfig).allocated.unsafeRunSync()
+    CardanoClient(cardanoClientConfig, logs).mapK(TraceId.unLiftIOWithTraceId()).allocated.unsafeRunSync()
   }
 
   private def stop(): Unit = {

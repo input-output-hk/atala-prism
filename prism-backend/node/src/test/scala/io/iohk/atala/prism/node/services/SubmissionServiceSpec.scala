@@ -4,6 +4,7 @@ import cats.effect.IO
 import doobie.implicits._
 import io.iohk.atala.prism.AtalaWithPostgresSpec
 import io.iohk.atala.prism.crypto.Sha256
+import io.iohk.atala.prism.logging.TraceId.IOWithTraceIdContext
 import io.iohk.atala.prism.models.{Ledger, TransactionDetails, TransactionId, TransactionStatus}
 import io.iohk.atala.prism.node.cardano.models.AtalaObjectMetadata.estimateTxMetadataSize
 import io.iohk.atala.prism.node.cardano.models.{CardanoWalletError, CardanoWalletErrorCode}
@@ -19,10 +20,12 @@ import io.iohk.atala.prism.node.repositories.{
 import io.iohk.atala.prism.node.repositories.daos.AtalaObjectsDAO
 import io.iohk.atala.prism.protos.node_internal
 import io.iohk.atala.prism.protos.node_models.SignedAtalaOperation
+import io.iohk.atala.prism.utils.IOUtils._
 import monix.execution.Scheduler.Implicits.{global => scheduler}
 import org.mockito.scalatest.{MockitoSugar, ResetMocksAfterEachTest}
 import org.scalatest.BeforeAndAfterEach
 import org.scalatest.OptionValues._
+import tofu.logging.Logs
 
 import scala.concurrent.duration._
 import java.time.Duration
@@ -36,11 +39,14 @@ class SubmissionServiceSpec
     with ResetMocksAfterEachTest
     with BeforeAndAfterEach {
 
+  private val logs = Logs.withContext[IO, IOWithTraceIdContext]
   private val ledger: UnderlyingLedger = mock[UnderlyingLedger]
-  private val atalaOperationsRepository: AtalaOperationsRepository[IO] = AtalaOperationsRepository(database)
-  private val atalaObjectsTransactionsRepository: AtalaObjectsTransactionsRepository[IO] =
-    AtalaObjectsTransactionsRepository(database)
-  private val keyValuesRepository: KeyValuesRepository[IO] = KeyValuesRepository(database)
+  private val atalaOperationsRepository: AtalaOperationsRepository[IOWithTraceIdContext] =
+    AtalaOperationsRepository.unsafe(dbLiftedToTraceIdIO, logs)
+  private val atalaObjectsTransactionsRepository: AtalaObjectsTransactionsRepository[IOWithTraceIdContext] =
+    AtalaObjectsTransactionsRepository.unsafe(dbLiftedToTraceIdIO, logs)
+  private val keyValuesRepository: KeyValuesRepository[IOWithTraceIdContext] =
+    KeyValuesRepository.unsafe(dbLiftedToTraceIdIO, logs)
   private val blockProcessing: BlockProcessingService = mock[BlockProcessingService]
 
   private implicit lazy val submissionService: SubmissionService =

@@ -1,6 +1,8 @@
 package io.iohk.atala.prism.node.cardano
 
-import cats.effect.{IO, Resource}
+import cats.effect.{ContextShift, IO, Resource}
+import io.iohk.atala.prism.logging.TraceId
+import io.iohk.atala.prism.logging.TraceId.IOWithTraceIdContext
 import io.iohk.atala.prism.models.{TransactionDetails, TransactionId}
 import io.iohk.atala.prism.utils.FutureEither
 import io.iohk.atala.prism.node.cardano.CardanoClient.Result
@@ -8,21 +10,27 @@ import io.iohk.atala.prism.node.cardano.dbsync.CardanoDbSyncClient
 import io.iohk.atala.prism.node.cardano.models._
 import io.iohk.atala.prism.node.cardano.wallet.CardanoWalletApiClient
 import io.iohk.atala.prism.node.models.WalletDetails
+import io.iohk.atala.prism.utils.FutureEither.FutureEitherOps
+import io.iohk.atala.prism.utils.IOUtils._
 import org.slf4j.{Logger, LoggerFactory}
+import tofu.logging.Logs
 
 import scala.concurrent.ExecutionContext
 
-class CardanoClient(cardanoDbSyncClient: CardanoDbSyncClient, cardanoWalletApiClient: CardanoWalletApiClient)(implicit
+class CardanoClient(
+    cardanoDbSyncClient: CardanoDbSyncClient[IOWithTraceIdContext],
+    cardanoWalletApiClient: CardanoWalletApiClient
+)(implicit
     ec: ExecutionContext
 ) {
   private val logger: Logger = LoggerFactory.getLogger(this.getClass)
 
-  def getFullBlock(blockNo: Int): Result[BlockError.NotFound, Block.Full] = {
-    cardanoDbSyncClient.getFullBlock(blockNo)
+  def getFullBlock(blockNo: Int, traceId: TraceId): Result[BlockError.NotFound, Block.Full] = {
+    cardanoDbSyncClient.getFullBlock(blockNo).run(traceId).unsafeToFuture().toFutureEither
   }
 
-  def getLatestBlock(): Result[BlockError.NoneAvailable.type, Block.Canonical] =
-    cardanoDbSyncClient.getLatestBlock()
+  def getLatestBlock(traceId: TraceId): Result[BlockError.NoneAvailable.type, Block.Canonical] =
+    cardanoDbSyncClient.getLatestBlock.run(traceId).unsafeToFuture().toFutureEither
 
   def postTransaction(
       walletId: WalletId,
@@ -77,8 +85,12 @@ object CardanoClient {
 
   case class Config(dbSyncConfig: CardanoDbSyncClient.Config, cardanoWalletConfig: CardanoWalletApiClient.Config)
 
-  def apply(config: Config)(implicit ec: ExecutionContext): Resource[IO, CardanoClient] = {
-    CardanoDbSyncClient(config.dbSyncConfig).map(cardanoDbSyncClient =>
+  implicit val cs: ContextShift[IO] = IO.contextShift(ExecutionContext.global)
+
+  def apply(config: Config, logs: Logs[IO, IOWithTraceIdContext])(implicit
+      ec: ExecutionContext
+  ): Resource[IOWithTraceIdContext, CardanoClient] = {
+    CardanoDbSyncClient(config.dbSyncConfig, logs).map(cardanoDbSyncClient =>
       new CardanoClient(cardanoDbSyncClient, CardanoWalletApiClient(config.cardanoWalletConfig))
     )
   }

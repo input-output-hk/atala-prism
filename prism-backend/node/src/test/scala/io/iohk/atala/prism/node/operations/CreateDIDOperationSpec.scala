@@ -1,6 +1,5 @@
 package io.iohk.atala.prism.node.operations
 
-import cats.effect.IO
 import com.google.protobuf.ByteString
 import doobie.implicits._
 import io.iohk.atala.prism.AtalaWithPostgresSpec
@@ -13,7 +12,6 @@ import io.iohk.atala.prism.node.models.nodeState.DIDPublicKeyState
 import io.iohk.atala.prism.node.models.{DIDData, DIDPublicKey}
 import io.iohk.atala.prism.node.operations.StateError.UnsupportedOperation
 import io.iohk.atala.prism.node.operations.protocolVersion.SupportedOperations
-import io.iohk.atala.prism.node.repositories.DIDDataRepository
 import io.iohk.atala.prism.node.{DataPreparation, models}
 import io.iohk.atala.prism.protos.node_models
 import io.iohk.atala.prism.protos.node_models.{CompressedECKeyData, ECKeyData}
@@ -170,7 +168,6 @@ class CreateDIDOperationSpec extends AtalaWithPostgresSpec {
 
   import CreateDIDOperationSpec._
 
-  lazy val didDataRepository: DIDDataRepository[IO] = DIDDataRepository(database)
   "CreateDIDOperation.parse" should {
     "parse valid CreateDid AtalaOperation" in {
       CreateDIDOperation.parse(exampleOperation, dummyLedgerData) mustBe a[Right[_, _]]

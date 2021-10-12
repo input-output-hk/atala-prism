@@ -1,6 +1,8 @@
 package io.iohk.atala.prism.node.metrics
 
 import com.typesafe.config.Config
+import io.iohk.atala.prism.logging.TraceId
+import io.iohk.atala.prism.logging.TraceId.IOWithTraceIdContext
 import io.iohk.atala.prism.node.cardano.{CardanoClient, LAST_SYNCED_BLOCK_NO}
 import io.iohk.atala.prism.node.cardano.models.WalletId
 import io.iohk.atala.prism.node.services.{CardanoLedgerService, KeyValueService}
@@ -15,7 +17,7 @@ import scala.util.Try
 class NodeReporter(
     walletId: WalletId,
     cardanoClient: CardanoClient,
-    keyValueService: KeyValueService,
+    keyValueService: KeyValueService[IOWithTraceIdContext],
     blockNumberSyncStart: Int
 )(implicit
     ec: ExecutionContext
@@ -46,6 +48,8 @@ class NodeReporter(
   private def postNextBlockToSync(): Unit =
     keyValueService
       .getInt(LAST_SYNCED_BLOCK_NO)
+      .run(TraceId.generateYOLO)
+      .unsafeToFuture()
       .foreach { maybeNumber =>
         val nextBlockToSync = CardanoLedgerService.calculateLastSyncedBlockNo(maybeNumber, blockNumberSyncStart) + 1
         updateGauge(nextBlockToSyncGauge, nextBlockToSync)
@@ -53,7 +57,7 @@ class NodeReporter(
 
   private def postWalletLastBlock(): Unit = {
     cardanoClient
-      .getLatestBlock()
+      .getLatestBlock(TraceId.generateYOLO)
       .value
       .foreach(_.foreach(block => updateGauge(lastSyncedBlockByWallet, block.header.blockNo)))
   }
@@ -65,8 +69,12 @@ class NodeReporter(
 }
 
 object NodeReporter {
-  def apply(config: CardanoLedgerService.Config, cardanoClient: CardanoClient, keyValueService: KeyValueService)(
-      implicit ec: ExecutionContext
+  def apply(
+      config: CardanoLedgerService.Config,
+      cardanoClient: CardanoClient,
+      keyValueService: KeyValueService[IOWithTraceIdContext]
+  )(implicit
+      ec: ExecutionContext
   ): NodeReporter = {
     val walletId = WalletId
       .from(config.walletId)

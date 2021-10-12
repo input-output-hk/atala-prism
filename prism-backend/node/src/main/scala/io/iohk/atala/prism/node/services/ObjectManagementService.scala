@@ -1,5 +1,6 @@
 package io.iohk.atala.prism.node.services
 
+import cats.data.ReaderT
 import cats.effect.IO
 import cats.implicits._
 import doobie.free.connection.ConnectionIO
@@ -8,6 +9,8 @@ import doobie.util.transactor.Transactor
 import enumeratum.EnumEntry.Snakecase
 import enumeratum.{Enum, EnumEntry}
 import io.iohk.atala.prism.connector.AtalaOperationId
+import io.iohk.atala.prism.logging.TraceId
+import io.iohk.atala.prism.logging.TraceId.IOWithTraceIdContext
 import io.iohk.atala.prism.models.TransactionInfo
 import io.iohk.atala.prism.node.cardano.LAST_SYNCED_BLOCK_TIMESTAMP
 import io.iohk.atala.prism.node.errors.NodeError
@@ -36,9 +39,9 @@ private class DuplicateAtalaBlock extends Exception
 private class DuplicateAtalaOperation extends Exception
 
 class ObjectManagementService private (
-    atalaOperationsRepository: AtalaOperationsRepository[IO],
-    atalaObjectsTransactionsRepository: AtalaObjectsTransactionsRepository[IO],
-    keyValuesRepository: KeyValuesRepository[IO],
+    atalaOperationsRepository: AtalaOperationsRepository[IOWithTraceIdContext],
+    atalaObjectsTransactionsRepository: AtalaObjectsTransactionsRepository[IOWithTraceIdContext],
+    keyValuesRepository: KeyValuesRepository[IOWithTraceIdContext],
     blockProcessing: BlockProcessingService
 )(implicit xa: Transactor[IO], scheduler: Scheduler) {
 
@@ -57,8 +60,8 @@ class ObjectManagementService private (
               obj.transaction.get.transactionId,
               InLedger
             )
-            transaction <- processObject(obj)
-            result <-
+            transaction <- ReaderT.liftF(processObject(obj))
+            result <- ReaderT.liftF(
               transaction
                 .logSQLErrors("saving object", logger)
                 .attemptSql
@@ -69,12 +72,14 @@ class ObjectManagementService private (
                   }
                   ()
                 }
+            )
           } yield result
 
         case None =>
           logger.warn(s"Could not save object from notification $notification")
-          IO.unit
+          ReaderT.liftF(IO.unit)
       }
+      .run(TraceId.generateYOLO)
       .unsafeToFuture()
   }
 
@@ -116,7 +121,7 @@ class ObjectManagementService private (
           AtalaOperationId.of(atalaOperation).asRight[NodeError]
       }
     }
-    resultIO.unsafeToFuture()
+    resultIO.run(TraceId.generateYOLO).unsafeToFuture()
   }
 
   def getLastSyncedTimestamp: Future[Instant] = {
@@ -124,6 +129,7 @@ class ObjectManagementService private (
       maybeLastSyncedBlockTimestamp <-
         keyValuesRepository
           .get(LAST_SYNCED_BLOCK_TIMESTAMP)
+          .run(TraceId.generateYOLO)
           .unsafeToFuture()
       lastSyncedBlockTimestamp = getLastSyncedTimestampFromMaybe(maybeLastSyncedBlockTimestamp.value)
     } yield lastSyncedBlockTimestamp
@@ -132,6 +138,7 @@ class ObjectManagementService private (
   def getOperationInfo(atalaOperationId: AtalaOperationId): Future[Option[AtalaOperationInfo]] =
     atalaOperationsRepository
       .getOperationInfo(atalaOperationId)
+      .run(TraceId.generateYOLO)
       .unsafeToFuture()
 
   private def processObject(obj: AtalaObjectInfo): IO[ConnectionIO[Boolean]] = {
@@ -181,9 +188,9 @@ object ObjectManagementService {
   }
 
   def apply(
-      atalaOperationsRepository: AtalaOperationsRepository[IO],
-      atalaObjectsTransactionsRepository: AtalaObjectsTransactionsRepository[IO],
-      keyValuesRepository: KeyValuesRepository[IO],
+      atalaOperationsRepository: AtalaOperationsRepository[IOWithTraceIdContext],
+      atalaObjectsTransactionsRepository: AtalaObjectsTransactionsRepository[IOWithTraceIdContext],
+      keyValuesRepository: KeyValuesRepository[IOWithTraceIdContext],
       blockProcessing: BlockProcessingService
   )(implicit xa: Transactor[IO], scheduler: Scheduler): ObjectManagementService = {
     new ObjectManagementService(
