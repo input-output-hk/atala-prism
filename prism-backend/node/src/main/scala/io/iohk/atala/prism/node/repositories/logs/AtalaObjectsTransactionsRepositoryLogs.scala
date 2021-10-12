@@ -46,7 +46,7 @@ private[repositories] final class AtalaObjectsTransactionsRepositoryLogs[F[_]: M
         .flatTap(
           _.fold(
             err => error"Encountered an error while getting not published objects $err",
-            list => error"getting not published objects - successfully done, got ${list.size} entities"
+            list => info"getting not published objects - successfully done, got ${list.size} entities"
           )
         )
         .onError(errorCause"Encountered an error while getting not published objects" (_))
@@ -75,8 +75,8 @@ private[repositories] final class AtalaObjectsTransactionsRepositoryLogs[F[_]: M
       info"updating submission status new status - ${newSubmissionStatus.entryName}, ${ledger.entryName}" *> in
         .flatTap(
           _.fold(
-            _ => info"updating submission status - successfully done",
-            err => error"Encountered an error while updating submission status $err"
+            err => error"Encountered an error while updating submission status $err",
+            _ => info"updating submission status - successfully done"
           )
         )
         .onError(errorCause"Encountered an error while updating submission status" (_))
