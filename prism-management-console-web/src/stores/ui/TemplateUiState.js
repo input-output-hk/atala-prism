@@ -35,7 +35,6 @@ export default class TemplateUiState {
       hasNameFilterApplied: computed,
       hasAditionalFiltersApplied: computed,
       filteredTemplates: computed({ requiresReaction: true }),
-      // filteredTemplatesByCategory: computedFn,
       toggleSortDirection: action,
       setNameFilter: action,
       resetState: action,
@@ -44,7 +43,6 @@ export default class TemplateUiState {
       sortingIsCaseSensitive: false,
       rootStore: false
     });
-    this.filteredTemplatesByCategory = this.filteredTemplatesByCategory.bind(this);
   }
 
   get hasAditionalFiltersApplied() {
@@ -67,7 +65,7 @@ export default class TemplateUiState {
 
   filteredTemplatesByCategory = computedFn(category =>
     this.filteredTemplates.filter(ct => category.id === ct.category)
-  ).bind(this);
+  );
 
   applyFilters = templates =>
     templates.filter(item => {
