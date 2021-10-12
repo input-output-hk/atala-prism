@@ -1,6 +1,14 @@
 \documentclass[10pt,a4paper]{article}
 \usepackage[margin=1in]{geometry}
+\usepackage{hyperref}
+\usepackage{xcolor}
+\usepackage{graphicx}
 
+\newcommand{\figref}[1]{Fig. \ref{#1}}
+\newcommand{\tabref}[1]{Table \ref{#1}}
+\newcommand{\lstref}[1]{Listing \ref{#1}}
+\newcommand{\secref}[1]{Section \ref{#1}}
+\newcommand{\appref}[1]{Appendix \ref{#1}}
 \newcommand{\todo}[1]{{\colorbox{red}{\bf TODO:}\textcolor{red}{#1}}}
 
 
@@ -212,12 +220,88 @@ Ensuring end-to-end encryption and authentication is important at this point, as
 all the information exchanged between issuer and holder is routed through the
 connector: an entity or set of entities who ensure that asynchronous
 communication can take place between issuer and holder. Thus, ECIES is crucial
-to ensure the secrecy and authenticity of the information, end-to-end.
+to ensure the secrecy of the information, end-to-end. Since the holder needs to
+have certainty that the data it receives comes from the issuer (and ECIES does
+not authenticate the sender), we have the issuer digitally sign the data it
+sends through the ECIES-secured channel. Note that we could involve the random
+value shared via the QR code for this. But that would force us to re-execute the
+first phase of the protocol even when the QR code is compromised after having
+completed the first phase of the protocol. Digital signatures using the issuer's
+DID prevent this.
 
-We have modelled this protocol using Tamarin%
+While the protocol is simple, and is based on common cryptographic constructions,
+it is easy to get such protocols wrong, as pointed out in numerous occasions
+\cite{davi01, kraw01}. Hence, we have used Tamarin%
 \footnote{https://tamarin-prover.github.io/ (Last access, October 5th, 2021.)}
+to model our protocol\footnote{Source code for the model available here
+  \url{https://github.com/input-output-hk/atala-prism/blob/research-tamarin-connector/prism-backend/research/formalizations/connector.spthy}
+  \todo{Update to final URL.}}, which is schematized in \figref{fig:e2econnector}
 
+\begin{figure}[ht!]
+  \centering
+  \includegraphics[scale=0.4]{figures/connector.png}
+  \caption{Sequence diagram for the E2EE protocol through the connector.}
+  \label{fig:e2econnector}%
+\end{figure}
 
+The security properties that we prove are as follows (we refer to the actual
+model for the formal definition):
+
+\begin{description}
+\item[Code secrecy.] Codes exchanged via a QR code are always confidential.
+  Note that this is trivial, as it is exchanged via a secure channel, and
+  the holder never sends it back in the clear.
+\item[Code injectivity.] Every QR code that is received by a holder, allegedly
+  sent by an issuer, was sent before by that issuer. Again, this is trivial due
+  to the secure channel used to exchange the QR code.
+\item[Holder's public key authenticity.] Every message received by an issuer
+  in step 3, containing a public key for key-exchange usage, that was
+  allegedly sent by a holder, was indeed previously sent by that holder.
+  This is ensured through the message authentication code (MAC) that
+  leverages the random QR code exchanged via the secure channel, which is
+  only known to the issuer and the holder.
+\item[Holder's public key injectivity.] For every session in which an
+  issuer receives in step 3 a message, allegedly sent by a holder in
+  step 2, containing the holder's public key, it was that holder, in
+  the same session, who sent the public key in step 2.  
+\item[Credential secrecy.] This property has two variants: it ensures
+  secrecy for credentials sent by an honest issuer to a holder that was honest
+  at the moment of sending the credential, and is not compromised afterwards;
+  and it also ensures secrecy for credentials received by an honest holder,
+  allegedly from an honest issuer, if both holder and issuer were honest when
+  the credential is received, and they are not corrupted afterwards. Altogether
+  with the credential authenticity property shown next, it ensures that only
+  (honest) holder and issuer learn the contents of a credential.
+\item[Credential authenticity.] All messages containing a credential, received
+  by a holder at step 5, where indeed sent by an issuer and addressed to that
+  same holder, as long as both issuer and holder keys are not compromised.
+\item[Credential non-injectivity.] All messages containing a credential, received
+  by a holder at step 5, were sent by an issuer and addressed to that holder
+  at step 4. Note, however, that both messages in steps 4 and 5 dont necessarily
+  pertain to the  same ``session'' (in instantiations where parallel sessions
+  may occur). However, this does not pose a risk, as in any case, the messaged
+  is sent by the issuer, and received by the intended holder.
+\end{description}
+
+Concerning the technical details of the protocol, note that we are combining
+signature and encryption (plus, the MAC-based authentication natively provided
+by ECIES). This places us in the context put forward in \cite{davi01}, that
+discusses some good practices when combining such primitives. In a nutshell,
+we follow the sign-then-encrypt approach\footnote{What we call here ``sign-then-
+  encrypt'' is called ``Sign \& Encrypt'' in \cite{davi01}. However, we find
+  more explicit the naming convention of \cite{kraw01}, which is more consistent
+  when referring to the order in which the primitives are used -- order that, in
+  these cases, is crucial.}, combined with including the public
+keys of both holder and issuer into the signed (and then encrypted) data.
+This intertwines the inner layer (the signature) with the outer layer (the
+encryption), ensuring that any alteration on any of them will be detected.
+We note that there are other options that, a priori, are equally secure -- e.g.,
+encrypt-then-sign, including also the sender's public key in the encrypted data
+(but that would require separately signing a (hash of) the data, to ensure
+non-repudiation). It is worth noting that ECIES follows the
+encrypt-then-authenticate approach, which is proven to realize secure channels
+in \cite{kraw01}, as long as the underlying encryption scheme is IND-CPA secure,
+and the underlying MAC function is secure.
 
 %----------------------------------------------------------------------------------------
 %	PROPERTIES
