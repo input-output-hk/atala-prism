@@ -7,20 +7,24 @@ import io.iohk.atala.prism.AtalaWithPostgresSpec
 import io.iohk.atala.prism.crypto.EC.{INSTANCE => EC}
 import io.iohk.atala.prism.crypto.Sha256
 import io.iohk.atala.prism.crypto.keys.ECKeyPair
+import io.iohk.atala.prism.logging.TraceId
 import io.iohk.atala.prism.logging.TraceId.IOWithTraceIdContext
 import io.iohk.atala.prism.models._
+import io.iohk.atala.prism.node.DataPreparation._
+import io.iohk.atala.prism.node.errors.NodeError.UnsupportedProtocolVersion
 import io.iohk.atala.prism.node.models.AtalaObjectTransactionSubmissionStatus.InLedger
 import io.iohk.atala.prism.node.models._
 import io.iohk.atala.prism.node.operations.CreateDIDOperationSpec
+import io.iohk.atala.prism.node.operations.ProtocolVersionUpdateOperationSpec._
 import io.iohk.atala.prism.node.repositories.daos.{AtalaObjectTransactionSubmissionsDAO, AtalaObjectsDAO}
 import io.iohk.atala.prism.node.repositories.{
   AtalaObjectsTransactionsRepository,
   AtalaOperationsRepository,
-  KeyValuesRepository
+  KeyValuesRepository,
+  ProtocolVersionRepository
 }
 import io.iohk.atala.prism.node.services.models.AtalaObjectNotification
-import io.iohk.atala.prism.node.{PublicationInfo, UnderlyingLedger}
-import io.iohk.atala.prism.node.DataPreparation._
+import io.iohk.atala.prism.node.{DataPreparation, PublicationInfo, UnderlyingLedger}
 import io.iohk.atala.prism.protos.{node_internal, node_models}
 import io.iohk.atala.prism.utils.IOUtils._
 import monix.execution.Scheduler.Implicits.{global => scheduler}
@@ -30,6 +34,7 @@ import org.mockito.scalatest.{MockitoSugar, ResetMocksAfterEachTest}
 import org.scalatest.BeforeAndAfterEach
 import org.scalatest.OptionValues._
 import tofu.logging.Logs
+import org.scalatest.concurrent.ScalaFutures
 
 import java.time.{Duration, Instant}
 import scala.concurrent.Future
@@ -69,6 +74,9 @@ class ObjectManagementServiceSpec
   private val keyValuesRepository: KeyValuesRepository[IOWithTraceIdContext] =
     KeyValuesRepository.unsafe(dbLiftedToTraceIdIO, logs)
   private val blockProcessing: BlockProcessingService = mock[BlockProcessingService]
+  private val protocolVersionRepository: ProtocolVersionRepository[IOWithTraceIdContext] = ProtocolVersionRepository(
+    dbLiftedToTraceIdIO
+  )
 
   private implicit lazy val submissionService: SubmissionService =
     SubmissionService(
@@ -82,6 +90,7 @@ class ObjectManagementServiceSpec
       atalaOperationsRepository,
       atalaObjectsTransactionsRepository,
       keyValuesRepository,
+      protocolVersionRepository,
       blockProcessing
     )
 
@@ -187,6 +196,18 @@ class ObjectManagementServiceSpec
       operationInfo.operationStatus must be(AtalaOperationStatus.RECEIVED)
       operationInfo.transactionId.value must be(inLedgerPublication.transaction.transactionId)
     }
+
+    "ignore publishing as node doesn't support current protocol version" in {
+      increaseCurrentProtocolVersion()
+
+      val atalaOperation = BlockProcessingServiceSpec.signedCreateDidOperation
+      val currentVersion = ProtocolVersion(2, 0)
+      val expectedException = UnsupportedProtocolVersion(currentVersion).toStatus.asRuntimeException
+
+      ScalaFutures.whenReady(publishSingleOperationAndFlush(atalaOperation).failed) { err =>
+        err.toString mustBe expectedException.toString
+      }
+    }
   }
 
   // needed because mockito doesn't interact too nicely with value classes
@@ -276,6 +297,21 @@ class ObjectManagementServiceSpec
       atalaObject.status mustBe AtalaObjectStatus.Processed
     }
 
+    "ignore block when current protocol version isn't supported by node" in {
+      doReturn(connection.pure(true))
+        .when(blockProcessing)
+        .processBlock(*, anyTransactionIdMatcher, *, *, *)
+
+      increaseCurrentProtocolVersion()
+
+      val block = createBlock()
+      val obj = createAtalaObject(block)
+      objectManagementService.saveObject(AtalaObjectNotification(obj, dummyTransactionInfo)).futureValue
+
+      val atalaObject = AtalaObjectsDAO.get(AtalaObjectId.of(obj)).transact(database).unsafeRunSync()
+      atalaObject mustBe None
+    }
+
     def queryAtalaObject(obj: node_internal.AtalaObject): AtalaObjectInfo = {
       AtalaObjectsDAO.get(AtalaObjectId.of(obj)).transact(database).unsafeRunSync().value
     }
@@ -289,5 +325,30 @@ class ObjectManagementServiceSpec
       .getBy(Instant.now.plus(Duration.ofSeconds(1)), status, ledger.getType)
       .transact(database)
       .unsafeRunSync()
+  }
+
+  def increaseCurrentProtocolVersion() = {
+    DataPreparation
+      .createDID(
+        DIDData(
+          proposerDIDSuffix,
+          proposerDidKeys,
+          proposerCreateDIDOperation.digest
+        ),
+        dummyLedgerData
+      )
+
+    parsedProtocolUpdateOperation1
+      .applyState()
+      .transact(database)
+      .value
+      .unsafeToFuture()
+      .futureValue
+
+    protocolVersionRepository
+      .markEffective(10)
+      .run(TraceId.generateYOLO)
+      .unsafeToFuture()
+      .futureValue
   }
 }
