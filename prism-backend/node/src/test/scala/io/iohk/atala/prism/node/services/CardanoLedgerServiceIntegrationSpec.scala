@@ -26,7 +26,7 @@ import scala.concurrent.duration._
 // Todo make CardanoLedgerServiceIntegrationSpec great again
 //  when https://input-output.atlassian.net/browse/ATA-5337 done or 1-2 released
 @Ignore
-class CardanoLedgerServiceIntegrationSpec extends AtalaWithPostgresSpec {
+class CardanoLedgerServiceIntegrationSpec extends AtalaWithPostgresSpec with CatsEffectBase {
   private val logs = Logs.withContext[IO, IOWithTraceIdContext]
   private val LAST_SYNCED_BLOCK_NO = "last_synced_block_no"
   private val LONG_TIMEOUT = Timeout(1.minute)
