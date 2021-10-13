@@ -1,4 +1,5 @@
 import React, { useEffect } from 'react';
+import PropTypes from 'prop-types';
 import { Link, graphql } from 'gatsby';
 import firebase from 'gatsby-plugin-firebase';
 import HeaderBlog from '../components/headerBlog/headerBlog';
@@ -14,7 +15,7 @@ import './blog.scss';
 
 const BlogIndex = ({ data }) => {
   const {
-    posts: { nodes: posts },
+    posts: { nodes: allPosts },
     postsPerYear: { group: postsPerYear },
     recentPosts: { nodes: recentPosts }
   } = data;
@@ -30,16 +31,16 @@ const BlogIndex = ({ data }) => {
       <div className="container-middle-section">
         <div className="SectionContainer">
           <div className="containerEntry">
-            {posts.map(post => {
+            {allPosts.map(post => {
               const title = post.frontmatter.title || post.fields.slug;
 
               return (
-                <div className="mainSectionContainer">
+                <div className="mainSectionContainer" key={post.fields.slug}>
                   <div className="articlesContainer">
                     <article
                       className="post-list-item"
                       itemScope
-                      itemType="http://schema.org/Article"
+                      itemType="https://schema.org/Article"
                       key={post.fields.slug}
                     >
                       <header className="entryHeader">
@@ -57,7 +58,7 @@ const BlogIndex = ({ data }) => {
                           <div className="postInfoContainer">
                             <div className="postInfo">
                               <div className="postInfoImgContainer">
-                                <img src={calendarIcon} />
+                                <img src={calendarIcon} alt="" />
                               </div>
                               <div>
                                 <p>{post.frontmatter.date}</p>
@@ -65,7 +66,7 @@ const BlogIndex = ({ data }) => {
                             </div>
                             <div className="postInfo">
                               <div className="postInfoImgContainer">
-                                <img src={authorIcon} />
+                                <img src={authorIcon} alt="" />
                               </div>
                               <div>
                                 <p>{post.frontmatter.author}</p>
@@ -73,7 +74,7 @@ const BlogIndex = ({ data }) => {
                             </div>
                             <div className="postInfo">
                               <div className="postInfoImgContainer">
-                                <img src={clockIcon} />
+                                <img src={clockIcon} alt="" />
                               </div>
                               <div>
                                 <p>{post.frontmatter.readingTime} mins read</p>
@@ -82,11 +83,16 @@ const BlogIndex = ({ data }) => {
                           </div>
                           <Link to={post.fields.slug} itemProp="url">
                             {post.frontmatter.image && (
-                              <img className="imgBlogPost" src={post.frontmatter.image.publicURL} />
+                              <img
+                                className="imgBlogPost"
+                                src={post.frontmatter.image.publicURL}
+                                alt=""
+                              />
                             )}
                           </Link>
                           <section
                             className="post-article"
+                            // eslint-disable-next-line react/no-danger
                             dangerouslySetInnerHTML={{ __html: post.html }}
                             itemProp="articleBody"
                           />
@@ -110,10 +116,67 @@ const BlogIndex = ({ data }) => {
   );
 };
 
+BlogIndex.propTypes = {
+  data: PropTypes.shape({
+    posts: PropTypes.shape({
+      nodes: PropTypes.arrayOf(
+        PropTypes.shape({
+          excerpt: PropTypes.string,
+          html: PropTypes.string,
+          fields: PropTypes.shape({
+            slug: PropTypes.string
+          }),
+          frontmatter: PropTypes.shape({
+            date: PropTypes.string,
+            title: PropTypes.string,
+            description: PropTypes.string,
+            author: PropTypes.string,
+            readingTime: PropTypes.number,
+            image: PropTypes.shape({
+              publicURL: PropTypes.string
+            })
+          })
+        })
+      )
+    }),
+    recentPosts: PropTypes.shape({
+      nodes: PropTypes.arrayOf(
+        PropTypes.shape({
+          fields: PropTypes.shape({
+            slug: PropTypes.string
+          }),
+          frontmatter: PropTypes.shape({
+            date: PropTypes.string,
+            title: PropTypes.string,
+            author: PropTypes.string
+          })
+        })
+      )
+    }),
+    postsPerYear: PropTypes.shape({
+      group: PropTypes.arrayOf(
+        PropTypes.shape({
+          totalCount: PropTypes.number,
+          fieldValue: PropTypes.string
+        })
+      )
+    })
+  }).isRequired
+};
+
 export default BlogIndex;
 
 export const pageQuery = graphql`
   query {
+    locales: allLocale(filter: { language: { eq: "en" } }) {
+      edges {
+        node {
+          ns
+          data
+          language
+        }
+      }
+    }
     site {
       siteMetadata {
         title

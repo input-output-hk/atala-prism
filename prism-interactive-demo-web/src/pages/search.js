@@ -83,7 +83,7 @@ const BlogIndex = ({ data, location }) => {
                     <article
                       className="post-list-item"
                       itemScope
-                      itemType="http://schema.org/Article"
+                      itemType="https://schema.org/Article"
                       key={post.fields.slug}
                     >
                       <header className="entryHeader">

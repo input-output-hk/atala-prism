@@ -30,7 +30,7 @@ const BlogPostTemplate = ({ data, location, pageContext }) => {
       <HeaderBlog backTo={backTo} />
       <div className="middleSectionContainer">
         <div className="mainSectionContainer">
-          <article className="postSection" itemScope itemType="http://schema.org/Article">
+          <article className="postSection" itemScope itemType="https://schema.org/Article">
             <header>
               <h1 className="postHeader" itemProp="headline">
                 {post.frontmatter.title}

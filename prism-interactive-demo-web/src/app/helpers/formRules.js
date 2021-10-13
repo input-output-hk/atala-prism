@@ -47,11 +47,11 @@ export const passwordValidation = (value, cb, otherPass) => {
 };
 
 const validations = [
-  { name: 'number', regex: /'(?=.*\d)'/ }, // At least 1 number
-  { name: 'lowercase', regex: /'(?=.*[a-z])'/ }, // At least 1 lower case
-  { name: 'uppercase', regex: /'(?=.*[A-Z])'/ }, // At least 1 upper case
-  { name: 'minlength', regex: /'.{8,}'/ }, // At leas 8 characters
-  { name: 'nospaces', regex: /'^((?! ).)*$'/ } // No blank spaces
+  { name: 'number', regex: /\d/ }, // At least 1 number
+  { name: 'lowercase', regex: /[a-z]/ }, // At least 1 lower case
+  { name: 'uppercase', regex: /[A-Z]/ }, // At least 1 upper case
+  { name: 'minlength', regex: /.{8,}/ }, // At leas 8 characters
+  { name: 'nospaces', regex: /^((?! ).)*$/ } // No blank spaces
 ];
 
 const validatePassword = (value = '') =>
