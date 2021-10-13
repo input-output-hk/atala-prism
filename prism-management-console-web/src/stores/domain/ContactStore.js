@@ -1,6 +1,6 @@
 import { makeAutoObservable, observable, flow, computed, action, runInAction } from 'mobx';
 import { contactMapper } from '../../APIs/helpers/contactHelpers';
-import { CONTACT_PAGE_SIZE, MAX_GROUP_PAGE_SIZE } from '../../helpers/constants';
+import { CONTACT_PAGE_SIZE, MAX_CONTACT_PAGE_SIZE } from '../../helpers/constants';
 
 const defaultValues = {
   isFetching: false,
@@ -50,17 +50,18 @@ export default class ContactStore {
       fetchAllContacts: flow.bound,
       fetchAllFilteredContacts: flow.bound,
       fetchContacts: action,
+      fetchRecursively: false,
       rootStore: false
     });
   }
 
   get isLoadingFirstPage() {
-    return this.isFetching && this.scrollId === undefined;
+    return this.isFetching && this.contactsScrollId === undefined;
   }
 
   get scrollId() {
-    const { hasFiltersApplied } = this.rootStore.uiState.contactUiState;
-    return hasFiltersApplied ? this.resultsScrollId : this.contactsScrollId;
+    const { hasFiltersApplied, hasCustomSorting } = this.rootStore.uiState.contactUiState;
+    return hasFiltersApplied || hasCustomSorting ? this.resultsScrollId : this.contactsScrollId;
   }
 
   get hasMore() {
@@ -95,9 +96,8 @@ export default class ContactStore {
 
   *fetchContactsNextPage() {
     if (!this.hasMoreContacts && this.isLoadingFirstPage) return;
-    const response = yield this.fetchContacts({ offset: this.contacts.length });
-    const contactsWithKey = response.contactsList.map(contactMapper);
-    this.contacts = this.contacts.concat(contactsWithKey);
+    const response = yield this.fetchContacts({ scrollId: this.contactsScrollId });
+    this.contacts = this.contacts.concat(response.contactsList);
     this.contactsScrollId = response.newScrollId;
   }
 
@@ -107,93 +107,82 @@ export default class ContactStore {
 
     this.searchResults = [];
     this.numberOfResults = 0;
-    const response = yield this.fetchContacts({ offset: 0 });
+    const response = yield this.fetchContacts({ scrollId: '' });
     this.searchResults = response.contactsList;
-    this.resultsScrollId = response.resultsScrollId;
+    this.resultsScrollId = response.newScrollId;
     return this.searchResults;
   }
 
   *fetchSearchResultsNextPage() {
     if (!this.hasMoreResults) return;
-    const response = yield this.fetchContacts({ offset: this.searchResults.length });
+    const response = yield this.fetchContacts({ scrollId: this.resultsScrollId });
     const { updateFetchedResults } = this.rootStore.uiState.contactUiState;
     this.searchResults = this.searchResults.concat(response.contactsList);
-    this.resultsScrollId = response.resultsScrollId;
+    this.resultsScrollId = response.newScrollId;
     updateFetchedResults();
   }
 
   *fetchAllContacts() {
     if (!this.hasMoreContacts) return this.contacts;
-    let contactsAcc = this.contacts;
-    const fetchRecursively = async () => {
-      const response = await this.fetchContacts({
-        offset: contactsAcc.length,
-        pageSize: MAX_GROUP_PAGE_SIZE
-      });
-      contactsAcc = contactsAcc.concat(response.contactsList);
-      if (contactsAcc.length >= response.totalNumberOfContacts)
-        return { contactsList: contactsAcc, totalNumberOfContacts: response.totalNumberOfContacts };
-      return fetchRecursively();
-    };
-
-    const response = yield fetchRecursively();
+    const response = yield this.fetchRecursively();
     runInAction(() => {
       this.contacts = response.contactsList;
-      this.numberOfContacts = response.totalNumberOfContacts;
+      this.contactsScrollId = '';
     });
     return this.contacts;
   }
 
   *fetchAllFilteredContacts() {
     if (!this.hasMoreResults) return this.searchResults;
-    let contactsAcc = this.searchResults;
-    const fetchRecursively = async () => {
-      const response = await this.fetchContacts({
-        offset: contactsAcc.length,
-        pageSize: MAX_GROUP_PAGE_SIZE
-      });
-      contactsAcc = contactsAcc.concat(response.contactsList);
-      if (contactsAcc.length >= response.totalNumberOfContacts)
-        return { contactsList: contactsAcc, totalNumberOfContacts: response.totalNumberOfContacts };
-      return fetchRecursively();
-    };
-
-    const response = yield fetchRecursively();
+    const response = yield this.fetchRecursively({ scrollId: '' });
     runInAction(() => {
       this.searchResults = response.contactsList;
-      this.numberOfResults = response.totalNumberOfContacts;
+      this.resultsScrollId = '';
       const { updateFetchedResults } = this.rootStore.uiState.contactUiState;
       updateFetchedResults();
     });
     return this.searchResults;
   }
 
-  fetchContacts = async ({ pageSize = CONTACT_PAGE_SIZE }) => {
+  fetchRecursively = async (acc, scrollId) => {
+    const response = await this.fetchContacts({
+      scrollId,
+      pageSize: MAX_CONTACT_PAGE_SIZE
+    });
+    const updatedAcc = acc.concat(response.contactsList);
+    return response.newScrollId
+      ? this.fetchRecursively(updatedAcc, response.newScrollId)
+      : { contactsList: updatedAcc };
+  };
+
+  fetchContacts = async ({ scrollId, pageSize = CONTACT_PAGE_SIZE } = {}) => {
     this.isFetching = true;
     try {
       const {
-        nameFilter,
-        dateFilter = [],
+        textFilter,
+        dateFilter,
+        statusFilter,
         sortDirection,
         sortingBy
       } = this.rootStore.uiState.contactUiState;
-      const [createdAfter, createdBefore] = dateFilter;
 
       const response = await this.api.contactsManager.getContacts({
-        scrollId: this.scrollId,
+        scrollId,
         pageSize,
         sort: { field: sortingBy, direction: sortDirection },
         filter: {
-          name: nameFilter,
-          createdBefore,
-          createdAfter
+          searchText: textFilter,
+          createdAt: dateFilter,
+          connectionStatus: statusFilter
         }
       });
       runInAction(() => {
         this.rootStore.handleTransportLayerSuccess();
         this.isFetching = false;
       });
-      return response || fallback;
+      const contactsWithKey = response.contactsList.map(contactMapper);
+      const mappedResponse = { ...response, contactsList: contactsWithKey };
+      return mappedResponse || fallback;
     } catch (error) {
       const metadata = {
         store: this.storeName,
