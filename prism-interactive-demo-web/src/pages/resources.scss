@@ -339,12 +339,19 @@
     flex-direction: column;
   }
   .ResourcesContainer .container-middle-section .videos-section .videos-container .video-container .video-info-container .video-info .watch-now img, .ResourcesContainer .container-middle-section .videos-section .videos-container .video-container .video-info-container .video-info .watch-time img {
-    margin: 0.5em 0.5em 0 0;
+    margin-right: 0.5em;
+    margin-left: 0!important;
   }
 
-  .ResourcesContainer .container-middle-section .videos-section .videos-container .video-container .video-info-container .video-info .watch-now .data, .ResourcesContainer .container-middle-section .videos-section .videos-container .video-container .video-info-container .video-info .watch-time .data {
-    margin: 0.6em 0 0 0;
+  .ResourcesContainer .container-middle-section .videos-section .videos-container .video-container .video-info-container .video-info .watch-now img, .ResourcesContainer .container-middle-section .videos-section .videos-container .video-container .video-info-container .video-info .watch-time {
+    align-items: center;
+    margin:0.5em 0;
   }
+
+  .ResourcesContainer .container-middle-section .videos-section .videos-container .video-container .video-info-container .video-info .watch-now img, .ResourcesContainer .container-middle-section .videos-section .videos-container .video-container .video-info-container .video-info .watch-now p {
+    margin-left: 0.5em;
+  }
+  
 }
 
 @media only screen and (max-width: 768px) {
