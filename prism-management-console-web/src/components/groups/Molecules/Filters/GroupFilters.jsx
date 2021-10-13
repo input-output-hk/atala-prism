@@ -8,6 +8,7 @@ import CustomInputGroup from '../../../common/Atoms/CustomInputGroup/CustomInput
 import CustomDateRangePicker from '../../../common/Atoms/CustomDatePicker/CustomDateRangePicker';
 import { GROUP_SORTING_KEYS, SORTING_DIRECTIONS } from '../../../../helpers/constants';
 import { useGroupUiState } from '../../../../hooks/useGroupStore';
+import './_style.scss';
 
 const GroupFilters = observer(({ fullFilters }) => {
   const { t } = useTranslation();

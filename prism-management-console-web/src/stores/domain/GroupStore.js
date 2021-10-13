@@ -133,7 +133,7 @@ export default class GroupStore {
     }
   };
 
-  fetchRecursively = async acc => {
+  fetchRecursively = async (acc = []) => {
     const response = await this.fetchGroups({
       offset: acc.length,
       pageSize: MAX_GROUP_PAGE_SIZE

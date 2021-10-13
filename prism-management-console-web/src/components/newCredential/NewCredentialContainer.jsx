@@ -21,9 +21,9 @@ import { contactMapper } from '../../APIs/helpers/contactHelpers';
 import ImportCredentialsData from '../importCredentialsData/ImportCredentialsData';
 import { useSession } from '../../hooks/useSession';
 import { fillHTMLCredential } from '../../helpers/credentialView';
-import { useContacts } from '../../hooks/useContacts';
 import { useTemplateStore } from '../../hooks/useTemplateStore';
 import { useGroupStore, useGroupUiState } from '../../hooks/useGroupStore';
+import { useContactStore, useContactUiState } from '../../hooks/useContactStore';
 
 const NewCredentialContainer = observer(({ api, redirector: { redirectToCredentials } }) => {
   const { t } = useTranslation();
@@ -41,13 +41,10 @@ const NewCredentialContainer = observer(({ api, redirector: { redirectToCredenti
   const { groups } = useGroupStore({ fetch: true, reset: true });
   useGroupUiState({ reset: true });
 
+  const { contacts } = useContactStore({ fetch: true, reset: true });
+  useContactUiState({ reset: true });
+
   const [selectedContacts, setSelectedContacts] = useState([]);
-  const {
-    contacts,
-    filterProps: subjectFilterProps,
-    getMoreContacts,
-    hasMore: hasMoreContacts
-  } = useContacts(api.contactsManager);
 
   const {
     getCredentialTemplateDetails: getCredentialTypeDetails,
@@ -216,13 +213,8 @@ const NewCredentialContainer = observer(({ api, redirector: { redirectToCredenti
   };
 
   const contactsProps = {
-    contacts,
     setSelectedContacts,
-    selectedContacts,
-    setContactsFilter: subjectFilterProps.setSearchText,
-    getMoreContacts,
-    hasMore: hasMoreContacts,
-    fetchAllContacts: () => api.contactsManager.getAllContacts()
+    selectedContacts
   };
 
   const handleToggleShouldSelectRecipients = ev => {

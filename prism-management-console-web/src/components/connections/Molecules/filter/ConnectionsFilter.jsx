@@ -3,6 +3,7 @@ import PropTypes from 'prop-types';
 import { useTranslation } from 'react-i18next';
 import { DownOutlined, SearchOutlined } from '@ant-design/icons';
 import { Input, Select } from 'antd';
+import { observer } from 'mobx-react-lite';
 import {
   PENDING_CONNECTION,
   CONNECTED,
@@ -12,8 +13,9 @@ import {
 import CustomInputGroup from '../../../common/Atoms/CustomInputGroup/CustomInputGroup';
 import CustomDatePicker from '../../../common/Atoms/CustomDatePicker/CustomDatePicker';
 import { useContactUiState } from '../../../../hooks/useContactStore';
+import './_style.scss';
 
-const ConnectionsFilter = ({ fullFilters }) => {
+const ConnectionsFilter = observer(({ fullFilters }) => {
   const { t } = useTranslation();
   const {
     sortingDirection,
@@ -74,7 +76,7 @@ const ConnectionsFilter = ({ fullFilters }) => {
       </div>
     </div>
   );
-};
+});
 
 ConnectionsFilter.defaultProps = {
   searchText: undefined,

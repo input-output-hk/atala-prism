@@ -46,9 +46,8 @@ export default class ContactStore {
       fetchContactsNextPage: flow.bound,
       fetchSearchResults: flow.bound,
       fetchSearchResultsNextPage: flow.bound,
-      updateFetchedResults: action,
-      fetchAllContacts: flow.bound,
-      fetchAllFilteredContacts: flow.bound,
+      updateStoredContacts: action,
+      getContactsToSelect: flow.bound,
       fetchContacts: action,
       fetchRecursively: false,
       rootStore: false
@@ -145,7 +144,7 @@ export default class ContactStore {
     }
   };
 
-  fetchRecursively = async (acc, scrollId) => {
+  fetchRecursively = async (acc = [], scrollId) => {
     const response = await this.fetchContacts({
       scrollId,
       pageSize: MAX_CONTACT_PAGE_SIZE
