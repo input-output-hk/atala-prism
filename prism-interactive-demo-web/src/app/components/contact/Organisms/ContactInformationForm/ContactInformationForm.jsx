@@ -34,7 +34,7 @@ const TemplateForm = React.forwardRef((_props, ref) => {
     fieldDecoratorData: {
       rules: [noEmptyInput(t('errors.form.emptyField'))]
     },
-    label: t(`credential.contactInformation.form.inquiryType`),
+    label: t('credential.contactInformation.form.inquiryType'),
     key: 'inquiryType',
     className: 'itemFormInfo',
     input: (
