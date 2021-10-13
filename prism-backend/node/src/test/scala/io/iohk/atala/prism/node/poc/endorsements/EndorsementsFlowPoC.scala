@@ -81,7 +81,7 @@ class EndorsementsFlowPoC extends AtalaWithPostgresSpec with BeforeAndAfterEach 
 
     didDataRepository = DIDDataRepository.unsafe(dbLiftedToTraceIdIO, endorsementsFlowPoCLogs)
     credentialBatchesRepository = CredentialBatchesRepository.unsafe(dbLiftedToTraceIdIO, endorsementsFlowPoCLogs)
-    protocolVersionsRepository = ProtocolVersionRepository(dbLiftedToTraceIdIO)
+    protocolVersionsRepository = ProtocolVersionRepository.unsafe(dbLiftedToTraceIdIO, endorsementsFlowPoCLogs)
 
     objectManagementServicePromise = Promise()
 
