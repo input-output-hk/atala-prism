@@ -144,7 +144,7 @@ export default class GroupStore {
     return this.fetchRecursively(updatedAcc);
   };
 
-  fetchGroups = async ({ offset = 0, pageSize = GROUP_PAGE_SIZE }) => {
+  fetchGroups = async ({ offset = 0, pageSize = GROUP_PAGE_SIZE } = {}) => {
     this.isFetching = true;
     try {
       const {

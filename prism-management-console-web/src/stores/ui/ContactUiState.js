@@ -1,6 +1,10 @@
 import { makeAutoObservable, observable, computed, action } from 'mobx';
 import _ from 'lodash';
-import { filterByDateRange, filterByInclusion } from '../../helpers/filterHelpers';
+import {
+  filterByDateRange,
+  filterByExactMatch,
+  filterByMultipleKeys
+} from '../../helpers/filterHelpers';
 import {
   CONTACT_SORTING_KEYS,
   CONTACT_SORTING_KEYS_TRANSLATION,
@@ -13,8 +17,9 @@ const { ascending, descending } = SORTING_DIRECTIONS;
 const defaultValues = {
   isSearching: false,
   isSorting: false,
-  nameFilter: '',
-  dateFilter: [],
+  textFilter: '',
+  statusFilter: '',
+  dateFilter: '',
   sortDirection: ascending,
   sortingBy: CONTACT_SORTING_KEYS.name,
   fetchedResults: null
@@ -24,7 +29,9 @@ export default class ContactUiState {
 
   isSorting = defaultValues.isSorting;
 
-  nameFilter = defaultValues.nameFilter;
+  textFilter = defaultValues.textFilter;
+
+  statusFilter = defaultValues.statusFilter;
 
   dateFilter = defaultValues.dateFilter;
 
@@ -39,14 +46,15 @@ export default class ContactUiState {
     makeAutoObservable(this, {
       isSearching: observable,
       isSorting: observable,
-      nameFilter: observable,
+      textFilter: observable,
+      statusFilter: observable,
       dateFilter: observable,
       sortDirection: observable,
       sortingBy: observable,
       fetchedResults: observable,
       sortingKey: computed,
       hasFiltersApplied: computed,
-      hasNameFilterApplied: computed,
+      hasTextFilterApplied: computed,
       hasDateFilterApplied: computed,
       hasCustomSorting: computed,
       displayedContacts: computed,
@@ -69,15 +77,19 @@ export default class ContactUiState {
   }
 
   get hasFiltersApplied() {
-    return this.hasNameFilterApplied || this.hasDateFilterApplied;
+    return this.hasTextFilterApplied || this.hasDateFilterApplied || this.hasStatusFilterApplied;
   }
 
-  get hasNameFilterApplied() {
-    return Boolean(this.nameFilter);
+  get hasTextFilterApplied() {
+    return Boolean(this.textFilter);
   }
 
   get hasDateFilterApplied() {
-    return Boolean(this.dateFilter?.every(Boolean));
+    return Boolean(this.dateFilter);
+  }
+
+  get hasStatusFilterApplied() {
+    return Boolean(this.statusFilter);
   }
 
   get hasCustomSorting() {
@@ -124,11 +136,16 @@ export default class ContactUiState {
 
   applyFilters = contacts =>
     contacts.filter(item => {
-      const matchName = !this.hasNameFilterApplied || filterByInclusion(this.nameFilter, item.name);
+      const matchText =
+        !this.hasTextFilterApplied ||
+        filterByMultipleKeys(this.textFilter, item, ['name', 'externalId']);
       const matchDate =
         !this.hasDateFilterApplied || filterByDateRange(this.dateFilter, item.createdAt);
+      const matchStatus =
+        !this.hasStatusFilterApplied ||
+        filterByExactMatch(this.statusFilter, item.connectionStatus);
 
-      return matchName && matchDate;
+      return matchText && matchDate && matchStatus;
     });
 
   applySorting = contacts =>
@@ -144,7 +161,7 @@ export default class ContactUiState {
 
   resetState = () => {
     this.isSearching = defaultValues.isSearching;
-    this.nameFilter = defaultValues.nameFilter;
+    this.textFilter = defaultValues.textFilter;
     this.dateFilter = defaultValues.lastEditedFilter;
     this.sortDirection = defaultValues.sortDirection;
     this.sortingBy = defaultValues.sortingBy;

@@ -26,13 +26,15 @@ export const useContactUiState = ({ reset } = { reset: false }) => {
   }, [reset, resetState]);
 
   useEffect(() => {
-    reaction(() => contactUiState.nameFilter, () => triggerSearch());
+    reaction(() => contactUiState.textFilter, () => triggerSearch());
     reaction(() => contactUiState.dateFilter, () => triggerSearch());
+    reaction(() => contactUiState.statusFilter, () => triggerSearch());
     reaction(() => contactUiState.sortingKey, () => triggerSearch());
     reaction(() => contactUiState.sortDirection, () => triggerSearch());
   }, [
     contactUiState.nameFilter,
     contactUiState.dateFilter,
+    contactUiState.statusFilter,
     contactUiState.sortingKey,
     contactUiState.sortDirection,
     triggerSearch
