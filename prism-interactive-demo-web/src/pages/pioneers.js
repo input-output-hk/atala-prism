@@ -54,8 +54,8 @@ const Pioneers = ({ location }) => {
             <div id="registerInterest" className="WhiteBox">
               <div className="Container">
                 <h2>Register your interest</h2>
-                <p>The pioneers for the first cohort have been selected and course will commence on: <br /><strong>Saturday October 23rd for 6 weeks.</strong></p>
-                <p>You can still register your interest <br/> for future cohorts.</p>
+                <p><strong>The pioneers for the first cohort have been selected.</strong></p>
+                <p>You can still register your interest for future cohorts</p>
                 <a
                   href="https://input-output.typeform.com/to/dhnOj4gT"
                   target="_blank"
