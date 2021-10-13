@@ -7,11 +7,11 @@ import derevo.derive
 import derevo.tagless.applyK
 import doobie.implicits._
 import doobie.util.transactor.Transactor
-import io.iohk.atala.prism.metrics.TimeMeasureUtil.MeasureOps
-import io.iohk.atala.prism.metrics.{TimeMeasureMetric, TimeMeasureUtil}
+import io.iohk.atala.prism.metrics.TimeMeasureMetric
 import io.iohk.atala.prism.node.models.{ProtocolVersion, ProtocolVersionInfo}
 import io.iohk.atala.prism.node.operations.protocolVersion.ifNodeSupportsProtocolVersion
 import io.iohk.atala.prism.node.repositories.daos.ProtocolVersionsDAO
+import io.iohk.atala.prism.node.repositories.metrics.ProtocolVersionRepositoryMetrics
 import io.iohk.atala.prism.utils.syntax.DBConnectionOps
 import org.slf4j.{Logger, LoggerFactory}
 import tofu.higherKind.Mid
@@ -50,18 +50,4 @@ private class ProtocolVersionRepositoryImpl[F[_]: BracketThrow](xa: Transactor[F
       .markEffective(blockLevel)
       .logSQLErrors("markEffective", logger)
       .transact(xa)
-}
-
-private final class ProtocolVersionRepositoryMetrics[F[_]: TimeMeasureMetric: BracketThrow]
-    extends ProtocolVersionRepository[Mid[F, *]] {
-
-  private val repoName = "ProtocolVersionRepository"
-  private lazy val markEffectiveTimer = TimeMeasureUtil.createDBQueryTimer(repoName, "markEffective")
-  private lazy val isNodeSupportsOutdatedTimer = TimeMeasureUtil.createDBQueryTimer(repoName, "isNodeSupportsOutdated")
-
-  override def markEffective(blockLevel: Int): Mid[F, Option[ProtocolVersionInfo]] =
-    _.measureOperationTime(markEffectiveTimer)
-
-  override def ifNodeSupportsCurrentProtocol(): Mid[F, Either[ProtocolVersion, Unit]] =
-    _.measureOperationTime(isNodeSupportsOutdatedTimer)
 }
