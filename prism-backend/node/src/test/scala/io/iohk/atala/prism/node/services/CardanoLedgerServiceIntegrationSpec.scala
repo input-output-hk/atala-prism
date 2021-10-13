@@ -16,12 +16,16 @@ import io.iohk.atala.prism.logging.TraceId
 import io.iohk.atala.prism.logging.TraceId.IOWithTraceIdContext
 import io.iohk.atala.prism.utils.IOUtils._
 import monix.execution.schedulers.TestScheduler
+import org.scalatest.Ignore
 import org.scalatest.OptionValues._
 import org.scalatest.concurrent.PatienceConfiguration.Timeout
 import tofu.logging.Logs
 
 import scala.concurrent.duration._
 
+// Todo make CardanoLedgerServiceIntegrationSpec great again
+//  when https://input-output.atlassian.net/browse/ATA-5337 done or 1-2 released
+@Ignore
 class CardanoLedgerServiceIntegrationSpec extends AtalaWithPostgresSpec {
   private val logs = Logs.withContext[IO, IOWithTraceIdContext]
   private val LAST_SYNCED_BLOCK_NO = "last_synced_block_no"
