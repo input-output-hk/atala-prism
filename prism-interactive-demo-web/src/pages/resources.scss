@@ -185,6 +185,9 @@
 
         .thumbnail {
           width: 45%;
+          img {
+            width: 100%;
+          }
         }
 
         .brochure-info-container {
@@ -355,6 +358,9 @@
 }
 
 @media only screen and (max-width: 768px) {
+  .ResourcesContainer .container-middle-section .brochures-section .featured-brochure-container .thumbnail {
+    width: 100%;
+  }
   .container-middle-section {
     padding: 8em 2em !important;
     .videos-section {
@@ -434,6 +440,9 @@
 }
 
 @media only screen and (max-width: 660px) {
+  .ResourcesContainer .container-middle-section .brochures-section .featured-brochure-container .thumbnail {
+    width: 100%;
+  }
   .ResourcesContainer {
     .container-middle-section {
       .videos-section .videos-container {
