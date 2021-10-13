@@ -14,6 +14,7 @@ import io.iohk.atala.prism.crypto.{MerkleRoot, Sha256, Sha256Digest}
 import io.iohk.atala.prism.protos.models.TimestampInfo
 import io.iohk.atala.prism.models.{DidSuffix, Ledger, TransactionId}
 import io.iohk.atala.prism.identity.{PrismDid => DID}
+import io.iohk.atala.prism.logging.TraceId
 import io.iohk.atala.prism.logging.TraceId.IOWithTraceIdContext
 import io.iohk.atala.prism.node.errors.NodeError
 import io.iohk.atala.prism.node.grpc.ProtoCodecs
@@ -42,8 +43,6 @@ import java.util.concurrent.TimeUnit
 import io.iohk.atala.prism.protos.node_models.OperationOutput
 import tofu.logging.Logs
 
-import scala.concurrent.Future
-
 class NodeServiceSpec
     extends AtalaWithPostgresSpec
     with MockitoSugar
@@ -58,6 +57,8 @@ class NodeServiceSpec
   private val objectManagementService = mock[ObjectManagementService[IOWithTraceIdContext]]
   private val credentialBatchesRepository = mock[CredentialBatchesRepository[IOWithTraceIdContext]]
   private val submissionSchedulingService = mock[SubmissionSchedulingService]
+
+  def fake[T](a: T): ReaderT[IO, TraceId, T] = ReaderT.apply[IO, TraceId, T](_ => IO.pure(a))
 
   override def beforeEach(): Unit = {
     super.beforeEach()
@@ -114,7 +115,7 @@ class NodeServiceSpec
       val key = DIDPublicKey(didSuffix, "master", KeyUsage.MasterKey, CreateDIDOperationSpec.masterKeys.getPublicKey)
       PublicKeysDAO.insert(key, dummyLedgerData).transact(database).unsafeRunSync()
 
-      doReturn(Future.successful(dummySyncTimestamp)).when(objectManagementService).getLastSyncedTimestamp
+      doReturn(fake[Instant](dummySyncTimestamp)).when(objectManagementService).getLastSyncedTimestamp
 
       val response = service.getDidDocument(node_api.GetDidDocumentRequest(s"did:prism:${didSuffix.getValue}"))
       val document = response.document.value
@@ -135,7 +136,7 @@ class NodeServiceSpec
     "return DID document for an unpublished DID" in {
       val masterKey = CreateDIDOperationSpec.masterKeys.getPublicKey
       val longFormDID = DID.buildLongFormFromMasterPublicKey(masterKey)
-      doReturn(Future.successful(dummySyncTimestamp)).when(objectManagementService).getLastSyncedTimestamp
+      doReturn(fake[Instant](dummySyncTimestamp)).when(objectManagementService).getLastSyncedTimestamp
 
       val response = service.getDidDocument(node_api.GetDidDocumentRequest(longFormDID.getValue))
       val document = response.document.value
@@ -169,7 +170,7 @@ class NodeServiceSpec
         PublicKeysDAO.insert(key1, dummyLedgerData).transact(database) >>
         PublicKeysDAO.insert(key2, dummyLedgerData).transact(database)).unsafeRunSync()
 
-      doReturn(Future.successful(dummySyncTimestamp)).when(objectManagementService).getLastSyncedTimestamp
+      doReturn(fake[Instant](dummySyncTimestamp)).when(objectManagementService).getLastSyncedTimestamp
 
       // we now resolve the long form DID
       val response = service.getDidDocument(node_api.GetDidDocumentRequest(longFormDID.getValue))
@@ -205,7 +206,7 @@ class NodeServiceSpec
         PublicKeysDAO.insert(key, dummyLedgerData).transact(database) >>
         PublicKeysDAO.revoke(didSuffix, key.keyId, dummyLedgerData).transact(database)).unsafeRunSync()
 
-      doReturn(Future.successful(dummySyncTimestamp)).when(objectManagementService).getLastSyncedTimestamp
+      doReturn(fake[Instant](dummySyncTimestamp)).when(objectManagementService).getLastSyncedTimestamp
 
       // we now resolve the long form DID
       val response = service.getDidDocument(node_api.GetDidDocumentRequest(longFormDID.getValue))
@@ -232,7 +233,9 @@ class NodeServiceSpec
       )
       val operationId = AtalaOperationId.of(operation)
 
-      doReturn(Future.successful(Right(operationId))).when(objectManagementService).scheduleSingleAtalaOperation(*)
+      doReturn(fake[Either[NodeError, AtalaOperationId]](Right(operationId)))
+        .when(objectManagementService)
+        .scheduleSingleAtalaOperation(*)
 
       val response = service.createDID(node_api.CreateDIDRequest().withSignedOperation(operation))
 
@@ -253,7 +256,9 @@ class NodeServiceSpec
       )
       val operationId = AtalaOperationId.of(operation)
 
-      doReturn(Future.successful(Right(operationId))).when(objectManagementService).scheduleSingleAtalaOperation(*)
+      doReturn(fake[Either[NodeError, AtalaOperationId]](Right(operationId)))
+        .when(objectManagementService)
+        .scheduleSingleAtalaOperation(*)
 
       val response = service.createDID(node_api.CreateDIDRequest().withSignedOperation(operation))
 
@@ -289,7 +294,9 @@ class NodeServiceSpec
       )
       val operationId = AtalaOperationId.of(operation)
 
-      doReturn(Future.successful(Right(operationId))).when(objectManagementService).scheduleSingleAtalaOperation(*)
+      doReturn(fake[Either[NodeError, AtalaOperationId]](Right(operationId)))
+        .when(objectManagementService)
+        .scheduleSingleAtalaOperation(*)
 
       val response = service.updateDID(node_api.UpdateDIDRequest().withSignedOperation(operation))
 
@@ -306,7 +313,9 @@ class NodeServiceSpec
       )
       val operationId = AtalaOperationId.of(operation)
 
-      doReturn(Future.successful(Right(operationId))).when(objectManagementService).scheduleSingleAtalaOperation(*)
+      doReturn(fake[Either[NodeError, AtalaOperationId]](Right(operationId)))
+        .when(objectManagementService)
+        .scheduleSingleAtalaOperation(*)
 
       val response = service.updateDID(node_api.UpdateDIDRequest().withSignedOperation(operation))
 
@@ -338,7 +347,9 @@ class NodeServiceSpec
       )
       val operationId = AtalaOperationId.of(operation)
 
-      doReturn(Future.successful(Right(operationId))).when(objectManagementService).scheduleSingleAtalaOperation(*)
+      doReturn(fake[Either[NodeError, AtalaOperationId]](Right(operationId)))
+        .when(objectManagementService)
+        .scheduleSingleAtalaOperation(*)
 
       val response = service.issueCredentialBatch(node_api.IssueCredentialBatchRequest().withSignedOperation(operation))
 
@@ -378,7 +389,9 @@ class NodeServiceSpec
       )
       val operationId = AtalaOperationId.of(operation)
 
-      doReturn(Future.successful(Right(operationId))).when(objectManagementService).scheduleSingleAtalaOperation(*)
+      doReturn(fake[Either[NodeError, AtalaOperationId]](Right(operationId)))
+        .when(objectManagementService)
+        .scheduleSingleAtalaOperation(*)
 
       val response = service.revokeCredentials(node_api.RevokeCredentialsRequest().withSignedOperation(operation))
 
@@ -414,7 +427,7 @@ class NodeServiceSpec
 
   "NodeService.getLastSyncedBlockTimestamp" should {
     "return the timestamp of the last synced block" in {
-      doReturn(Future.successful(dummySyncTimestamp))
+      doReturn(fake[Instant](dummySyncTimestamp))
         .when(objectManagementService)
         .getLastSyncedTimestamp
 
@@ -436,10 +449,10 @@ class NodeServiceSpec
       val operationId = AtalaOperationId.of(validOperation)
       val operationIdProto = operationId.toProtoByteString
 
-      doReturn(Future.successful(dummySyncTimestamp))
+      doReturn(fake[Instant](dummySyncTimestamp))
         .when(objectManagementService)
         .getLastSyncedTimestamp
-      doReturn(Future.successful(None))
+      doReturn(fake[Option[AtalaOperationInfo]](None))
         .when(objectManagementService)
         .getOperationInfo(operationId)
 
@@ -472,10 +485,10 @@ class NodeServiceSpec
         transactionId = Some(dummyLedgerData.transactionId)
       )
 
-      doReturn(Future.successful(dummySyncTimestamp))
+      doReturn(fake[Instant](dummySyncTimestamp))
         .when(objectManagementService)
         .getLastSyncedTimestamp
-      doReturn(Future.successful(Some(operationInfo)))
+      doReturn(fake[Option[AtalaOperationInfo]](Some(operationInfo)))
         .when(objectManagementService)
         .getOperationInfo(operationId)
 
@@ -500,7 +513,7 @@ class NodeServiceSpec
       val requestWithInvalidId = GetBatchStateRequest(batchId = invalidBatchId)
       val expectedMessage = s"INTERNAL: Invalid batch id: $invalidBatchId"
 
-      doReturn(Future.successful(dummySyncTimestamp)).when(objectManagementService).getLastSyncedTimestamp
+      doReturn(fake[Instant](dummySyncTimestamp)).when(objectManagementService).getLastSyncedTimestamp
 
       val error = intercept[RuntimeException] {
         service.getBatchState(requestWithInvalidId)
@@ -517,7 +530,7 @@ class NodeServiceSpec
         ReaderT.liftF(IO.raiseError[Either[NodeError, Option[CredentialBatchState]]](new RuntimeException(errorMsg)))
 
       doReturn(repositoryError).when(credentialBatchesRepository).getBatchState(validBatchId)
-      doReturn(Future.successful(dummySyncTimestamp)).when(objectManagementService).getLastSyncedTimestamp
+      doReturn(fake[Instant](dummySyncTimestamp)).when(objectManagementService).getLastSyncedTimestamp
 
       val err = intercept[RuntimeException](
         service.getBatchState(requestWithValidId)
@@ -532,7 +545,7 @@ class NodeServiceSpec
       val repositoryError = ReaderT.liftF(IO.pure[Either[NodeError, Option[CredentialBatchState]]](Right(None)))
 
       doReturn(repositoryError).when(credentialBatchesRepository).getBatchState(validBatchId)
-      doReturn(Future.successful(dummySyncTimestamp)).when(objectManagementService).getLastSyncedTimestamp
+      doReturn(fake[Instant](dummySyncTimestamp)).when(objectManagementService).getLastSyncedTimestamp
 
       val response = service.getBatchState(requestWithValidId)
       response.issuerDid must be("")
@@ -576,7 +589,7 @@ class NodeServiceSpec
         )
 
       doReturn(
-        Future.successful(dummySyncTimestamp)
+        fake[Instant](dummySyncTimestamp)
       ).when(objectManagementService).getLastSyncedTimestamp
       doReturn(repositoryResponse).when(credentialBatchesRepository).getBatchState(validBatchId)
 
@@ -600,7 +613,7 @@ class NodeServiceSpec
         )
       val expectedMessage = s"INTERNAL: Invalid batch id: $invalidBatchId"
 
-      doReturn(Future.successful(dummySyncTimestamp)).when(objectManagementService).getLastSyncedTimestamp
+      doReturn(fake[Instant](dummySyncTimestamp)).when(objectManagementService).getLastSyncedTimestamp
       val error = intercept[RuntimeException] {
         service.getCredentialRevocationTime(requestWithInvalidId)
       }
@@ -619,7 +632,7 @@ class NodeServiceSpec
         "INTERNAL: The given byte array does not correspond to a SHA256 hash. It must have exactly 32 bytes"
 
       doReturn(
-        Future.successful(dummySyncTimestamp)
+        fake[Instant](dummySyncTimestamp)
       ).when(objectManagementService).getLastSyncedTimestamp
 
       val error = intercept[RuntimeException] {
@@ -640,7 +653,7 @@ class NodeServiceSpec
       val repositoryResponse = ReaderT.liftF(IO.pure[Either[NodeError, Option[LedgerData]]](Right(None)))
 
       doReturn(
-        Future.successful(dummySyncTimestamp)
+        fake[Instant](dummySyncTimestamp)
       ).when(objectManagementService).getLastSyncedTimestamp
 
       doReturn(repositoryResponse)
@@ -682,7 +695,7 @@ class NodeServiceSpec
         .withTimestampInfo(timestampInfoProto)
 
       doReturn(
-        Future.successful(dummySyncTimestamp)
+        fake[Instant](dummySyncTimestamp)
       ).when(objectManagementService).getLastSyncedTimestamp
 
       doReturn(repositoryResponse)
@@ -749,8 +762,9 @@ class NodeServiceSpec
       )
       val issuanceOperationId = AtalaOperationId.of(issuanceOperation)
 
-      doReturn(Future.successful(List(Right(createDIDOperationId), Right(issuanceOperationId))))
-        .when(objectManagementService)
+      doReturn(
+        fake[List[Either[NodeError, AtalaOperationId]]](List(Right(createDIDOperationId), Right(issuanceOperationId)))
+      ).when(objectManagementService)
         .scheduleAtalaOperations(*)
 
       val response = service.scheduleOperations(
@@ -800,8 +814,9 @@ class NodeServiceSpec
       )
       val updateOperationId = AtalaOperationId.of(updateOperation)
 
-      doReturn(Future.successful(List(Right(createDIDOperationId), Right(updateOperationId))))
-        .when(objectManagementService)
+      doReturn(
+        fake[List[Either[NodeError, AtalaOperationId]]](List(Right(createDIDOperationId), Right(updateOperationId)))
+      ).when(objectManagementService)
         .scheduleAtalaOperations(*)
 
       val response = service.scheduleOperations(
@@ -836,7 +851,7 @@ class NodeServiceSpec
       )
       val revokeOperationId = AtalaOperationId.of(revokeOperation)
 
-      doReturn(Future.successful(List(Right(revokeOperationId))))
+      doReturn(fake[List[Either[NodeError, AtalaOperationId]]](List(Right(revokeOperationId))))
         .when(objectManagementService)
         .scheduleAtalaOperations(*)
 
