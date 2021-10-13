@@ -11,11 +11,12 @@ import io.iohk.atala.prism.models.{
   TransactionInfo,
   TransactionStatus
 }
+import io.iohk.atala.prism.node.cardano.models.Block.Canonical
 import io.iohk.atala.prism.node.cardano.{CardanoClient, LAST_SYNCED_BLOCK_NO, LAST_SYNCED_BLOCK_TIMESTAMP}
 import io.iohk.atala.prism.node.cardano.models._
 import io.iohk.atala.prism.node.logging.NodeLogging.logOperationIds
 import io.iohk.atala.prism.node.repositories.daos.KeyValuesDAO.KeyValue
-import io.iohk.atala.prism.node.services.CardanoLedgerService.CardanoNetwork
+import io.iohk.atala.prism.node.services.CardanoLedgerService.{CardanoBlockHandler, CardanoNetwork}
 import io.iohk.atala.prism.node.services.models.{AtalaObjectNotification, AtalaObjectNotificationHandler}
 import io.iohk.atala.prism.node.{PublicationInfo, UnderlyingLedger}
 import io.iohk.atala.prism.protos.node_internal
@@ -34,6 +35,7 @@ class CardanoLedgerService private[services] (
     blockConfirmationsToWait: Int,
     cardanoClient: CardanoClient,
     keyValueService: KeyValueService[IOWithTraceIdContext],
+    onCardanoBlock: CardanoBlockHandler,
     onAtalaObject: AtalaObjectNotificationHandler,
     scheduler: Scheduler
 )(implicit
@@ -154,6 +156,7 @@ class CardanoLedgerService private[services] (
         cardanoClient
           .getFullBlock(blockNo, TraceId.generateYOLO)
           .toFuture(_ => new RuntimeException(s"Block $blockNo was not found"))
+      _ <- onCardanoBlock(block.toCanonical)
       _ <- processAtalaObjects(block)
     } yield ()
   }
@@ -201,6 +204,8 @@ class CardanoLedgerService private[services] (
 
 object CardanoLedgerService {
 
+  type CardanoBlockHandler = Canonical => Future[Unit]
+
   type Result[E, A] = Future[Either[E, A]]
 
   sealed trait CardanoNetwork extends EnumEntry
@@ -225,6 +230,7 @@ object CardanoLedgerService {
       config: Config,
       cardanoClient: CardanoClient,
       keyValueService: KeyValueService[IOWithTraceIdContext],
+      onCardanoBlock: CardanoBlockHandler,
       onAtalaObject: AtalaObjectNotificationHandler
   )(implicit
       scheduler: Scheduler
@@ -244,6 +250,7 @@ object CardanoLedgerService {
       config.blockConfirmationsToWait,
       cardanoClient,
       keyValueService,
+      onCardanoBlock,
       onAtalaObject,
       scheduler
     )

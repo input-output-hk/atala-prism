@@ -16,7 +16,8 @@ import io.iohk.atala.prism.node.DataPreparation._
 import io.iohk.atala.prism.node.repositories.{
   AtalaObjectsTransactionsRepository,
   AtalaOperationsRepository,
-  KeyValuesRepository
+  KeyValuesRepository,
+  ProtocolVersionRepository
 }
 import io.iohk.atala.prism.node.repositories.daos.AtalaObjectsDAO
 import io.iohk.atala.prism.protos.node_internal
@@ -48,6 +49,9 @@ class SubmissionServiceSpec
     AtalaObjectsTransactionsRepository.unsafe(dbLiftedToTraceIdIO, logs)
   private val keyValuesRepository: KeyValuesRepository[IOWithTraceIdContext] =
     KeyValuesRepository.unsafe(dbLiftedToTraceIdIO, logs)
+  private val protocolVersionRepository: ProtocolVersionRepository[IOWithTraceIdContext] = ProtocolVersionRepository(
+    dbLiftedToTraceIdIO
+  )
   private val blockProcessing: BlockProcessingService = mock[BlockProcessingService]
 
   private implicit lazy val submissionService: SubmissionService =
@@ -69,6 +73,7 @@ class SubmissionServiceSpec
       atalaOperationsRepository,
       atalaObjectsTransactionsRepository,
       keyValuesRepository,
+      protocolVersionRepository,
       blockProcessing
     )
 

@@ -1,31 +1,35 @@
 package io.iohk.atala.prism.node.services
 
-import cats.{Comonad, Functor}
+import cats.data.EitherT
 import cats.effect.Sync
-import tofu.syntax.monadic._
-import cats.syntax.traverse._
-import cats.syntax.either._
 import cats.syntax.comonad._
+import cats.syntax.either._
+import cats.syntax.traverse._
+import tofu.syntax.monadic._
+import cats.{Comonad, Functor}
+import derevo.derive
+import derevo.tagless.applyK
 import doobie.free.connection.ConnectionIO
 import doobie.implicits._
 import doobie.util.transactor.Transactor
 import enumeratum.EnumEntry.Snakecase
 import enumeratum.{Enum, EnumEntry}
-import derevo.derive
-import derevo.tagless.applyK
 import io.iohk.atala.prism.connector.AtalaOperationId
 import io.iohk.atala.prism.models.TransactionInfo
 import io.iohk.atala.prism.node.cardano.LAST_SYNCED_BLOCK_TIMESTAMP
 import io.iohk.atala.prism.node.errors.NodeError
+import io.iohk.atala.prism.node.errors.NodeError.UnsupportedProtocolVersion
 import io.iohk.atala.prism.node.metrics.OperationsCounters
 import io.iohk.atala.prism.node.models.AtalaObjectTransactionSubmissionStatus.InLedger
 import io.iohk.atala.prism.node.models._
 import io.iohk.atala.prism.node.models.nodeState.getLastSyncedTimestampFromMaybe
+import io.iohk.atala.prism.node.operations.protocolVersion.SUPPORTED_VERSION
 import io.iohk.atala.prism.node.repositories.daos.AtalaObjectsDAO
 import io.iohk.atala.prism.node.repositories.{
   AtalaObjectsTransactionsRepository,
   AtalaOperationsRepository,
-  KeyValuesRepository
+  KeyValuesRepository,
+  ProtocolVersionRepository
 }
 import io.iohk.atala.prism.node.services.logs.ObjectManagementServiceLogs
 import io.iohk.atala.prism.node.services.models.AtalaObjectNotification
@@ -59,6 +63,7 @@ private final class ObjectManagementServiceImpl[F[_]: Sync](
     atalaOperationsRepository: AtalaOperationsRepository[F],
     atalaObjectsTransactionsRepository: AtalaObjectsTransactionsRepository[F],
     keyValuesRepository: KeyValuesRepository[F],
+    protocolVersionsRepository: ProtocolVersionRepository[F],
     blockProcessing: BlockProcessingService
 )(implicit xa: Transactor[F])
     extends ObjectManagementService[F] {
@@ -67,7 +72,7 @@ private final class ObjectManagementServiceImpl[F[_]: Sync](
 
   def saveObject(notification: AtalaObjectNotification): F[Unit] = {
     // TODO: just add the object to processing queue, instead of processing here
-    atalaObjectsTransactionsRepository
+    val updateAction = atalaObjectsTransactionsRepository
       .setObjectTransactionDetails(notification)
       .flatMap {
         case Some(obj) =>
@@ -88,6 +93,20 @@ private final class ObjectManagementServiceImpl[F[_]: Sync](
         case None =>
           Sync[F].delay(logger.warn(s"Could not save object from notification $notification"))
 
+      }
+
+    protocolVersionsRepository
+      .ifNodeSupportsCurrentProtocol()
+      .flatMap {
+        case Right(_) => updateAction
+        case Left(currentVersion) => {
+          Sync[F].delay(
+            logger.warn(
+              s"Node supports $SUPPORTED_VERSION but current protocol version is $currentVersion." +
+                s" Therefore saving Atala object received from the blockchain can't be performed."
+            )
+          )
+        }
       }
   }
 
@@ -113,8 +132,13 @@ private final class ObjectManagementServiceImpl[F[_]: Sync](
           )
     }
 
-    for {
-      operationInsertions <- queryIO
+    val resultEitherT: EitherT[F, NodeError, List[Either[NodeError, AtalaOperationId]]] = for {
+      _ <- EitherT(
+        protocolVersionsRepository
+          .ifNodeSupportsCurrentProtocol()
+          .map(_.left.map(UnsupportedProtocolVersion))
+      )
+      operationInsertions <- EitherT.liftF(queryIO)
     } yield {
       opsWithObjects.zip(operationInsertions).map {
         case ((atalaOperation, _), Left(err)) =>
@@ -129,11 +153,18 @@ private final class ObjectManagementServiceImpl[F[_]: Sync](
           AtalaOperationId.of(atalaOperation).asRight[NodeError]
       }
     }
+
+    resultEitherT.value.flatMap {
+      case Left(e) => Sync[F].raiseError(e.toStatus.asRuntimeException)
+      case Right(r) => Sync[F].pure(r)
+    }
   }
 
   def getLastSyncedTimestamp: F[Instant] =
     for {
-      maybeLastSyncedBlockTimestamp <- keyValuesRepository.get(LAST_SYNCED_BLOCK_TIMESTAMP)
+      maybeLastSyncedBlockTimestamp <-
+        keyValuesRepository
+          .get(LAST_SYNCED_BLOCK_TIMESTAMP)
       lastSyncedBlockTimestamp = getLastSyncedTimestampFromMaybe(maybeLastSyncedBlockTimestamp.value)
     } yield lastSyncedBlockTimestamp
 
@@ -193,6 +224,7 @@ object ObjectManagementService {
       atalaOperationsRepository: AtalaOperationsRepository[F],
       atalaObjectsTransactionsRepository: AtalaObjectsTransactionsRepository[F],
       keyValuesRepository: KeyValuesRepository[F],
+      protocolVersionsRepository: ProtocolVersionRepository[F],
       blockProcessing: BlockProcessingService
   )(implicit xa: Transactor[F], logs: Logs[I, F]): I[ObjectManagementService[F]] = {
     for {
@@ -205,6 +237,7 @@ object ObjectManagementService {
         atalaOperationsRepository,
         atalaObjectsTransactionsRepository,
         keyValuesRepository,
+        protocolVersionsRepository,
         blockProcessing
       )
     }
@@ -214,10 +247,17 @@ object ObjectManagementService {
       atalaOperationsRepository: AtalaOperationsRepository[F],
       atalaObjectsTransactionsRepository: AtalaObjectsTransactionsRepository[F],
       keyValuesRepository: KeyValuesRepository[F],
+      protocolVersionsRepository: ProtocolVersionRepository[F],
       blockProcessing: BlockProcessingService
   )(implicit xa: Transactor[F], logs: Logs[I, F]): ObjectManagementService[F] =
     ObjectManagementService
-      .make(atalaOperationsRepository, atalaObjectsTransactionsRepository, keyValuesRepository, blockProcessing)(
+      .make(
+        atalaOperationsRepository,
+        atalaObjectsTransactionsRepository,
+        keyValuesRepository,
+        protocolVersionsRepository,
+        blockProcessing
+      )(
         Functor[I],
         Sync[F],
         xa,

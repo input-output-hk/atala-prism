@@ -22,8 +22,8 @@ import io.iohk.atala.prism.node.cardano.models._
 import io.iohk.atala.prism.node.cardano.wallet.CardanoWalletApiClient
 import io.iohk.atala.prism.node.cardano.wallet.testing.FakeCardanoWalletApiClient
 import io.iohk.atala.prism.node.repositories.KeyValuesRepository
-import io.iohk.atala.prism.node.services.CardanoLedgerService.CardanoNetwork
-import io.iohk.atala.prism.node.services.models.testing.TestAtalaObjectNotificationHandler
+import io.iohk.atala.prism.node.services.CardanoLedgerService.{CardanoBlockHandler, CardanoNetwork}
+import io.iohk.atala.prism.node.services.models.testing.TestAtalaHandlers
 import io.iohk.atala.prism.node.services.models.{AtalaObjectNotification, AtalaObjectNotificationHandler}
 import io.iohk.atala.prism.protos.node_internal
 import io.iohk.atala.prism.utils.BytesOps
@@ -44,6 +44,7 @@ class CardanoLedgerServiceSpec extends AtalaWithPostgresSpec {
   private val blockConfirmationsToWait = 31
 
   private val noOpObjectHandler: AtalaObjectNotificationHandler = _ => Future.unit
+  private val noOpBlockHandler: CardanoBlockHandler = _ => Future.unit
   private val scheduler: TestScheduler = TestScheduler()
   private lazy val keyValueService = KeyValueService.unsafe(KeyValuesRepository.unsafe(dbLiftedToTraceIdIO, logs), logs)
   private lazy val cardanoBlockRepository = CardanoBlockRepository.unsafe(dbLiftedToTraceIdIO, logs)
@@ -207,9 +208,12 @@ class CardanoLedgerServiceSpec extends AtalaWithPostgresSpec {
       // Append a transaction with PRISM metadata to the last confirmed block
       val allNotifications = createNotificationsInDb(totalBlockCount, totalBlockCount - blockConfirmationsToWait)
       // Configure the service to capture received notifications
-      val notificationHandler = new TestAtalaObjectNotificationHandler()
+      val notificationHandler = new TestAtalaHandlers()
       val cardanoLedgerService =
-        createCardanoLedgerService(FakeCardanoWalletApiClient.NotFound(), onAtalaObject = notificationHandler.asHandler)
+        createCardanoLedgerService(
+          FakeCardanoWalletApiClient.NotFound(),
+          onAtalaObject = notificationHandler.asAtalaObjectHandler
+        )
 
       val pendingBlocks = cardanoLedgerService.syncAtalaObjects().futureValue
 
@@ -221,9 +225,12 @@ class CardanoLedgerServiceSpec extends AtalaWithPostgresSpec {
       val totalBlockCount = 200
       val allNotifications = createNotificationsInDb(totalBlockCount, 100, 101)
       // Configure the service to capture received notifications
-      val notificationHandler = new TestAtalaObjectNotificationHandler()
+      val notificationHandler = new TestAtalaHandlers()
       val cardanoLedgerService =
-        createCardanoLedgerService(FakeCardanoWalletApiClient.NotFound(), onAtalaObject = notificationHandler.asHandler)
+        createCardanoLedgerService(
+          FakeCardanoWalletApiClient.NotFound(),
+          onAtalaObject = notificationHandler.asAtalaObjectHandler
+        )
 
       val pendingBlocks = cardanoLedgerService.syncAtalaObjects().futureValue
 
@@ -238,12 +245,12 @@ class CardanoLedgerServiceSpec extends AtalaWithPostgresSpec {
       // Append an Atala transaction to the start sync block and the previous one
       val allNotifications = createNotificationsInDb(totalBlockCount, blockNumberSyncStart - 1, blockNumberSyncStart)
       // Configure the service to capture received notifications
-      val notificationHandler = new TestAtalaObjectNotificationHandler()
+      val notificationHandler = new TestAtalaHandlers()
       val cardanoLedgerService =
         createCardanoLedgerService(
           FakeCardanoWalletApiClient.NotFound(),
           blockNumberSyncStart = blockNumberSyncStart,
-          onAtalaObject = notificationHandler.asHandler
+          onAtalaObject = notificationHandler.asAtalaObjectHandler
         )
 
       val pendingBlocks = cardanoLedgerService.syncAtalaObjects().futureValue
@@ -258,9 +265,12 @@ class CardanoLedgerServiceSpec extends AtalaWithPostgresSpec {
       // Append a transaction with PRISM metadata to the first unconfirmed block
       createNotificationsInDb(totalBlockCount, totalBlockCount - blockConfirmationsToWait + 1)
       // Configure the service to capture received notifications
-      val notificationHandler = new TestAtalaObjectNotificationHandler()
+      val notificationHandler = new TestAtalaHandlers()
       val cardanoLedgerService =
-        createCardanoLedgerService(FakeCardanoWalletApiClient.NotFound(), onAtalaObject = notificationHandler.asHandler)
+        createCardanoLedgerService(
+          FakeCardanoWalletApiClient.NotFound(),
+          onAtalaObject = notificationHandler.asAtalaObjectHandler
+        )
 
       val pendingBlocks = cardanoLedgerService.syncAtalaObjects().futureValue
 
@@ -277,9 +287,12 @@ class CardanoLedgerServiceSpec extends AtalaWithPostgresSpec {
         totalBlockCount - blockConfirmationsToWait + 1
       )
       // Configure the service to capture received notifications
-      val notificationHandler = new TestAtalaObjectNotificationHandler()
+      val notificationHandler = new TestAtalaHandlers()
       val cardanoLedgerService =
-        createCardanoLedgerService(FakeCardanoWalletApiClient.NotFound(), onAtalaObject = notificationHandler.asHandler)
+        createCardanoLedgerService(
+          FakeCardanoWalletApiClient.NotFound(),
+          onAtalaObject = notificationHandler.asAtalaObjectHandler
+        )
 
       // Test #1: only the first object is synced
       cardanoLedgerService.syncAtalaObjects().futureValue
@@ -311,6 +324,7 @@ class CardanoLedgerServiceSpec extends AtalaWithPostgresSpec {
       blockConfirmationsToWait,
       cardanoClient,
       keyValueService,
+      noOpBlockHandler,
       onAtalaObject,
       scheduler
     )
