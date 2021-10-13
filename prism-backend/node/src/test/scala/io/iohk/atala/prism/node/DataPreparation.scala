@@ -8,6 +8,8 @@ import doobie.implicits._
 import io.iohk.atala.prism.connector.AtalaOperationId
 import io.iohk.atala.prism.credentials.CredentialBatchId
 import io.iohk.atala.prism.crypto.{MerkleRoot, Sha256, Sha256Digest}
+import io.iohk.atala.prism.logging.TraceId
+import io.iohk.atala.prism.logging.TraceId.IOWithTraceIdContext
 import io.iohk.atala.prism.protos.models.TimestampInfo
 import io.iohk.atala.prism.models.{BlockInfo, DidSuffix, Ledger, TransactionId, TransactionInfo, TransactionStatus}
 import io.iohk.atala.prism.node.cardano.{LAST_SYNCED_BLOCK_NO, LAST_SYNCED_BLOCK_TIMESTAMP}
@@ -87,23 +89,27 @@ object DataPreparation {
   )
 
   def publishSingleOperationAndFlush(signedAtalaOperation: SignedAtalaOperation)(implicit
-      objectManagementService: ObjectManagementService,
+      objectManagementService: ObjectManagementService[IOWithTraceIdContext],
       submissionService: SubmissionService,
       executionContext: ExecutionContext
   ): Future[Either[NodeError, AtalaOperationId]] = {
     for {
-      atalaOperationIdE <- objectManagementService.scheduleSingleAtalaOperation(signedAtalaOperation)
+      atalaOperationIdE <-
+        objectManagementService
+          .scheduleSingleAtalaOperation(signedAtalaOperation)
+          .run(TraceId.generateYOLO)
+          .unsafeToFuture()
       _ <- submissionService.submitReceivedObjects()
     } yield atalaOperationIdE
   }
 
   def publishOperationsAndFlush(ops: SignedAtalaOperation*)(implicit
-      objectManagementService: ObjectManagementService,
+      objectManagementService: ObjectManagementService[IOWithTraceIdContext],
       submissionService: SubmissionService,
       executionContext: ExecutionContext
   ): Future[List[Either[NodeError, AtalaOperationId]]] = {
     for {
-      ids <- objectManagementService.scheduleAtalaOperations(ops: _*)
+      ids <- objectManagementService.scheduleAtalaOperations(ops: _*).run(TraceId.generateYOLO).unsafeToFuture()
       _ <- submissionService.submitReceivedObjects()
     } yield ids
   }

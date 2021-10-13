@@ -7,6 +7,7 @@ import io.iohk.atala.prism.AtalaWithPostgresSpec
 import io.iohk.atala.prism.crypto.EC.{INSTANCE => EC}
 import io.iohk.atala.prism.crypto.Sha256
 import io.iohk.atala.prism.crypto.keys.ECKeyPair
+import io.iohk.atala.prism.logging.TraceId
 import io.iohk.atala.prism.logging.TraceId.IOWithTraceIdContext
 import io.iohk.atala.prism.models._
 import io.iohk.atala.prism.node.models.AtalaObjectTransactionSubmissionStatus.InLedger
@@ -60,7 +61,7 @@ class ObjectManagementServiceSpec
     with MockitoSugar
     with ResetMocksAfterEachTest
     with BeforeAndAfterEach {
-  private val logs = Logs.withContext[IO, IOWithTraceIdContext]
+  private implicit val logs = Logs.withContext[IO, IOWithTraceIdContext]
   private val ledger: UnderlyingLedger = mock[UnderlyingLedger]
   private val atalaOperationsRepository: AtalaOperationsRepository[IOWithTraceIdContext] =
     AtalaOperationsRepository.unsafe(dbLiftedToTraceIdIO, logs)
@@ -77,8 +78,8 @@ class ObjectManagementServiceSpec
       atalaObjectsTransactionsRepository
     )
 
-  private implicit lazy val objectManagementService: ObjectManagementService =
-    ObjectManagementService(
+  private implicit lazy val objectManagementService: ObjectManagementService[IOWithTraceIdContext] =
+    ObjectManagementService.unsafe(
       atalaOperationsRepository,
       atalaObjectsTransactionsRepository,
       keyValuesRepository,
@@ -101,7 +102,12 @@ class ObjectManagementServiceSpec
       val returnedOperationId = publishSingleOperationAndFlush(atalaOperation).futureValue.toOption.get
       returnedOperationId mustBe atalaOperationId
 
-      val atalaOperationInfo = objectManagementService.getOperationInfo(atalaOperationId).futureValue.value
+      val atalaOperationInfo = objectManagementService
+        .getOperationInfo(atalaOperationId)
+        .run(TraceId.generateYOLO)
+        .unsafeToFuture()
+        .futureValue
+        .value
 
       atalaOperationInfo.operationStatus must be(AtalaOperationStatus.RECEIVED)
       atalaOperationInfo.transactionSubmissionStatus must be(Some(AtalaObjectTransactionSubmissionStatus.Pending))
@@ -119,7 +125,12 @@ class ObjectManagementServiceSpec
       val operationId = publishSingleOperationAndFlush(atalaOperation).futureValue
       operationId must be(Right(atalaOperationId))
 
-      val atalaOperationInfo = objectManagementService.getOperationInfo(atalaOperationId).futureValue.value
+      val atalaOperationInfo = objectManagementService
+        .getOperationInfo(atalaOperationId)
+        .run(TraceId.generateYOLO)
+        .unsafeToFuture()
+        .futureValue
+        .value
 
       atalaOperationInfo.operationStatus must be(AtalaOperationStatus.RECEIVED)
       atalaOperationInfo.transactionSubmissionStatus must be(Some(AtalaObjectTransactionSubmissionStatus.Pending))
@@ -138,7 +149,12 @@ class ObjectManagementServiceSpec
       opIds.head mustBe Right(atalaOperationId)
       opIds.last mustBe Right(atalaOperationId)
 
-      val atalaOperationInfo = objectManagementService.getOperationInfo(atalaOperationId).futureValue.value
+      val atalaOperationInfo = objectManagementService
+        .getOperationInfo(atalaOperationId)
+        .run(TraceId.generateYOLO)
+        .unsafeToFuture()
+        .futureValue
+        .value
 
       atalaOperationInfo.operationStatus must be(AtalaOperationStatus.RECEIVED)
       atalaOperationInfo.transactionSubmissionStatus must be(Some(AtalaObjectTransactionSubmissionStatus.Pending))
@@ -161,7 +177,12 @@ class ObjectManagementServiceSpec
       val transactionSubmissions = queryTransactionSubmissions(AtalaObjectTransactionSubmissionStatus.Pending)
       transactionSubmissions.size mustBe 1
 
-      val operationInfo = objectManagementService.getOperationInfo(returnedOperationId).futureValue.value
+      val operationInfo = objectManagementService
+        .getOperationInfo(returnedOperationId)
+        .run(TraceId.generateYOLO)
+        .unsafeToFuture()
+        .futureValue
+        .value
       operationInfo.operationId must be(returnedOperationId)
       operationInfo.transactionSubmissionStatus.value must be(AtalaObjectTransactionSubmissionStatus.Pending)
       operationInfo.operationStatus must be(AtalaOperationStatus.RECEIVED)
@@ -181,7 +202,12 @@ class ObjectManagementServiceSpec
       val transactionSubmissions = queryTransactionSubmissions(AtalaObjectTransactionSubmissionStatus.InLedger)
       transactionSubmissions.size mustBe 1
 
-      val operationInfo = objectManagementService.getOperationInfo(returnedOperationId).futureValue.value
+      val operationInfo = objectManagementService
+        .getOperationInfo(returnedOperationId)
+        .run(TraceId.generateYOLO)
+        .unsafeToFuture()
+        .futureValue
+        .value
       operationInfo.operationId must be(returnedOperationId)
       operationInfo.transactionSubmissionStatus.value must be(AtalaObjectTransactionSubmissionStatus.InLedger)
       operationInfo.operationStatus must be(AtalaOperationStatus.RECEIVED)
@@ -199,7 +225,11 @@ class ObjectManagementServiceSpec
         .processBlock(*, anyTransactionIdMatcher, *, *, *)
       val obj = createAtalaObject()
 
-      objectManagementService.saveObject(AtalaObjectNotification(obj, dummyTransactionInfo)).futureValue
+      objectManagementService
+        .saveObject(AtalaObjectNotification(obj, dummyTransactionInfo))
+        .run(TraceId.generateYOLO)
+        .unsafeToFuture()
+        .futureValue
 
       val atalaObject = queryAtalaObject(obj)
       atalaObject.transaction.value mustBe dummyTransactionInfo
@@ -219,10 +249,15 @@ class ObjectManagementServiceSpec
       val obj = createAtalaObject(createBlock(signedOperation))
       val operationId = publishSingleOperationAndFlush(signedOperation).futureValue.toOption.get
 
-      objectManagementService.saveObject(AtalaObjectNotification(obj, dummyTransactionInfo)).futureValue
+      objectManagementService
+        .saveObject(AtalaObjectNotification(obj, dummyTransactionInfo))
+        .run(TraceId.generateYOLO)
+        .unsafeToFuture()
+        .futureValue
 
       val atalaObject = queryAtalaObject(obj)
-      val operationInfo = objectManagementService.getOperationInfo(operationId).futureValue
+      val operationInfo =
+        objectManagementService.getOperationInfo(operationId).run(TraceId.generateYOLO).unsafeToFuture().futureValue
 
       atalaObject.transaction.value mustBe dummyTransactionInfo
       // We don't check the whole returned AtalaOperationInfo because `operationStatus`
@@ -237,13 +272,21 @@ class ObjectManagementServiceSpec
         .processBlock(*, anyTransactionIdMatcher, *, *, *)
       val obj = createAtalaObject()
 
-      objectManagementService.saveObject(AtalaObjectNotification(obj, dummyTransactionInfo)).futureValue
+      objectManagementService
+        .saveObject(AtalaObjectNotification(obj, dummyTransactionInfo))
+        .run(TraceId.generateYOLO)
+        .unsafeToFuture()
+        .futureValue
       val dummyTransactionInfo2 = TransactionInfo(
         transactionId = TransactionId.from(Sha256.compute("id".getBytes).getValue).value,
         ledger = Ledger.InMemory,
         block = Some(BlockInfo(number = 100, timestamp = Instant.now, index = 100))
       )
-      objectManagementService.saveObject(AtalaObjectNotification(obj, dummyTransactionInfo2)).futureValue
+      objectManagementService
+        .saveObject(AtalaObjectNotification(obj, dummyTransactionInfo2))
+        .run(TraceId.generateYOLO)
+        .unsafeToFuture()
+        .futureValue
 
       val atalaObject = queryAtalaObject(obj)
       atalaObject.transaction.value mustBe dummyTransactionInfo
@@ -257,7 +300,11 @@ class ObjectManagementServiceSpec
 
       val block = createBlock()
       val obj = createAtalaObject(block)
-      objectManagementService.saveObject(AtalaObjectNotification(obj, dummyTransactionInfo)).futureValue
+      objectManagementService
+        .saveObject(AtalaObjectNotification(obj, dummyTransactionInfo))
+        .run(TraceId.generateYOLO)
+        .unsafeToFuture()
+        .futureValue
 
       val blockCaptor = ArgCaptor[node_internal.AtalaBlock]
       verify(blockProcessing).processBlock(

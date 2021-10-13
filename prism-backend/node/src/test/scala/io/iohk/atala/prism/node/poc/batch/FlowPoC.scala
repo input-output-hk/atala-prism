@@ -38,6 +38,7 @@ import scala.concurrent.{Future, Promise}
 import scala.jdk.CollectionConverters._
 import io.iohk.atala.prism.credentials.json.JsonBasedCredential
 import io.iohk.atala.prism.api.CredentialBatches
+import io.iohk.atala.prism.logging.TraceId
 import io.iohk.atala.prism.logging.TraceId.IOWithTraceIdContext
 import io.iohk.atala.prism.node.poc.CredVerification.VerificationError._
 import io.iohk.atala.prism.utils.IOUtils._
@@ -45,7 +46,7 @@ import tofu.logging.Logs
 
 class FlowPoC extends AtalaWithPostgresSpec with BeforeAndAfterEach {
 
-  private val flowPocTestLogs = Logs.withContext[IO, IOWithTraceIdContext]
+  private implicit val flowPocTestLogs = Logs.withContext[IO, IOWithTraceIdContext]
   protected var serverName: String = _
   protected var serverHandle: Server = _
   protected var channelHandle: ManagedChannel = _
@@ -55,11 +56,11 @@ class FlowPoC extends AtalaWithPostgresSpec with BeforeAndAfterEach {
   protected var credentialBatchesRepository: CredentialBatchesRepository[IOWithTraceIdContext] = _
   protected var atalaReferenceLedger: InMemoryLedgerService = _
   protected var blockProcessingService: BlockProcessingServiceImpl = _
-  protected var objectManagementService: ObjectManagementService = _
+  protected var objectManagementService: ObjectManagementService[IOWithTraceIdContext] = _
   protected var submissionService: SubmissionService = _
   protected var atalaObjectsTransactionsRepository: AtalaObjectsTransactionsRepository[IOWithTraceIdContext] = _
   protected var keyValuesRepository: KeyValuesRepository[IOWithTraceIdContext] = _
-  protected var objectManagementServicePromise: Promise[ObjectManagementService] = _
+  protected var objectManagementServicePromise: Promise[ObjectManagementService[IOWithTraceIdContext]] = _
   protected var submissionSchedulingService: SubmissionSchedulingService = _
 
   override def beforeEach(): Unit = {
@@ -73,6 +74,8 @@ class FlowPoC extends AtalaWithPostgresSpec with BeforeAndAfterEach {
     def onAtalaReference(notification: AtalaObjectNotification): Future[Unit] = {
       objectManagementServicePromise.future.futureValue
         .saveObject(notification)
+        .run(TraceId.generateYOLO)
+        .unsafeToFuture()
     }
 
     atalaReferenceLedger = new InMemoryLedgerService(onAtalaReference)
@@ -89,7 +92,7 @@ class FlowPoC extends AtalaWithPostgresSpec with BeforeAndAfterEach {
       submissionService
     )
     keyValuesRepository = KeyValuesRepository.unsafe(dbLiftedToTraceIdIO, flowPocTestLogs)
-    objectManagementService = ObjectManagementService(
+    objectManagementService = ObjectManagementService.unsafe(
       atalaOperationsRepository,
       atalaObjectsTransactionsRepository,
       keyValuesRepository,

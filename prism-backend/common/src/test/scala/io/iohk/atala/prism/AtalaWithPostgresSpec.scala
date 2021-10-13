@@ -15,7 +15,7 @@ class AtalaWithPostgresSpec extends PostgresRepositorySpec[IO] with ScalaFutures
   implicit val executionContext: ExecutionContext = ExecutionContext.global
   implicit val db: Transactor[IO] = database
   implicit val pc: PatienceConfig = PatienceConfig(20.seconds, 5.millis)
-  val dbLiftedToTraceIdIO: Transactor[IOWithTraceIdContext] = db.mapK(TraceId.liftToIOWithTraceId)
+  implicit val dbLiftedToTraceIdIO: Transactor[IOWithTraceIdContext] = db.mapK(TraceId.liftToIOWithTraceId)
 }
 
 object AtalaSpecBase {

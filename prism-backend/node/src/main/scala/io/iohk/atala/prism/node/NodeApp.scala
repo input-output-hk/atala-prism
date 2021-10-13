@@ -2,6 +2,7 @@ package io.iohk.atala.prism.node
 
 import cats.effect.{ContextShift, IO}
 import com.typesafe.config.{Config, ConfigFactory}
+import doobie.Transactor
 import io.grpc.{Server, ServerBuilder}
 import io.iohk.atala.prism.logging.TraceId
 import io.iohk.atala.prism.logging.TraceId.IOWithTraceIdContext
@@ -43,7 +44,7 @@ class NodeApp(executionContext: ExecutionContext) { self =>
 
   private val logger = LoggerFactory.getLogger(this.getClass)
 
-  private val logs = Logs.withContext[IO, IOWithTraceIdContext]
+  private implicit val logs: Logs[IO, IOWithTraceIdContext] = Logs.withContext[IO, IOWithTraceIdContext]
 
   private[this] var server: Server = _
 
@@ -63,9 +64,9 @@ class NodeApp(executionContext: ExecutionContext) { self =>
     implicit val (transactor, releaseTransactor) =
       TransactorFactory.transactor[IO](databaseConfig).allocated.unsafeRunSync()
 
-    val liftedTransactor = transactor.mapK(TraceId.liftToIOWithTraceId)
+    implicit val liftedTransactor: Transactor[IOWithTraceIdContext] = transactor.mapK(TraceId.liftToIOWithTraceId)
 
-    val objectManagementServicePromise: Promise[ObjectManagementService] = Promise()
+    val objectManagementServicePromise: Promise[ObjectManagementService[IOWithTraceIdContext]] = Promise()
 
     def onAtalaObject(notification: AtalaObjectNotification): Future[Unit] = {
       objectManagementServicePromise.future.map { objectManagementService =>
@@ -112,12 +113,13 @@ class NodeApp(executionContext: ExecutionContext) { self =>
       submissionService
     )
 
-    val objectManagementService = ObjectManagementService(
+    val objectManagementService = ObjectManagementService.unsafe[IO, IOWithTraceIdContext](
       atalaOperationsRepository,
       atalaObjectsTransactionsRepository,
       keyValuesRepository,
       blockProcessingService
     )
+
     objectManagementServicePromise.success(objectManagementService)
 
     val credentialBatchesRepository = CredentialBatchesRepository.unsafe(liftedTransactor, logs)

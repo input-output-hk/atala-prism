@@ -4,6 +4,7 @@ import cats.effect.IO
 import doobie.implicits._
 import io.iohk.atala.prism.AtalaWithPostgresSpec
 import io.iohk.atala.prism.crypto.Sha256
+import io.iohk.atala.prism.logging.TraceId
 import io.iohk.atala.prism.logging.TraceId.IOWithTraceIdContext
 import io.iohk.atala.prism.models.{Ledger, TransactionDetails, TransactionId, TransactionStatus}
 import io.iohk.atala.prism.node.cardano.models.AtalaObjectMetadata.estimateTxMetadataSize
@@ -39,7 +40,7 @@ class SubmissionServiceSpec
     with ResetMocksAfterEachTest
     with BeforeAndAfterEach {
 
-  private val logs = Logs.withContext[IO, IOWithTraceIdContext]
+  private implicit val logs = Logs.withContext[IO, IOWithTraceIdContext]
   private val ledger: UnderlyingLedger = mock[UnderlyingLedger]
   private val atalaOperationsRepository: AtalaOperationsRepository[IOWithTraceIdContext] =
     AtalaOperationsRepository.unsafe(dbLiftedToTraceIdIO, logs)
@@ -63,8 +64,8 @@ class SubmissionServiceSpec
       operationSubmissionPeriod = 1.hour
     )
 
-  private implicit lazy val objectManagementService: ObjectManagementService =
-    ObjectManagementService(
+  private implicit lazy val objectManagementService: ObjectManagementService[IOWithTraceIdContext] =
+    ObjectManagementService.unsafe(
       atalaOperationsRepository,
       atalaObjectsTransactionsRepository,
       keyValuesRepository,
@@ -314,7 +315,11 @@ class SubmissionServiceSpec
     ops.zipWithIndex.foreach {
       case (atalaOperation, index) =>
         withClue(s"scheduling operation #$index") {
-          objectManagementService.scheduleSingleAtalaOperation(atalaOperation).futureValue
+          objectManagementService
+            .scheduleSingleAtalaOperation(atalaOperation)
+            .run(TraceId.generateYOLO)
+            .unsafeToFuture()
+            .futureValue
         }
     }
 

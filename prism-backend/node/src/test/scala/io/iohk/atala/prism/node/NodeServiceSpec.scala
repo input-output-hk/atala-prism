@@ -55,7 +55,7 @@ class NodeServiceSpec
   protected var service: node_api.NodeServiceGrpc.NodeServiceBlockingStub = _
 
   private val logs = Logs.withContext[IO, IOWithTraceIdContext]
-  private val objectManagementService = mock[ObjectManagementService]
+  private val objectManagementService = mock[ObjectManagementService[IOWithTraceIdContext]]
   private val credentialBatchesRepository = mock[CredentialBatchesRepository[IOWithTraceIdContext]]
   private val submissionSchedulingService = mock[SubmissionSchedulingService]
 
