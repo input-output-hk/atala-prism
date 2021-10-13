@@ -54,8 +54,8 @@ const Pioneers = ({ location }) => {
             <div id="registerInterest" className="WhiteBox">
               <div className="Container">
                 <h2>Register your interest</h2>
-                <p><strong>The pioneers for the first cohort have been selected.</strong></p>
-                <p>You can still register your interest for future cohorts</p>
+                <p>The pioneers for the first cohort have been selected.</p>
+                <p>You can still register your interest for future cohorts.</p>
                 <a
                   href="https://input-output.typeform.com/to/dhnOj4gT"
                   target="_blank"
