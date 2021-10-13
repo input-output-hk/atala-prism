@@ -46,6 +46,7 @@ export default class GroupStore {
       fetchAllGroups: flow.bound,
       fetchAllFilteredGroups: flow.bound,
       fetchGroups: action,
+      fetchRecursively: false,
       rootStore: false
     });
   }
@@ -112,19 +113,7 @@ export default class GroupStore {
 
   *fetchAllGroups() {
     if (!this.hasMoreGroups) return this.groups;
-    let groupsAcc = this.groups;
-    const fetchRecursively = async () => {
-      const response = await this.fetchGroups({
-        offset: groupsAcc.length,
-        pageSize: MAX_GROUP_PAGE_SIZE
-      });
-      groupsAcc = groupsAcc.concat(response.groupsList);
-      if (groupsAcc.length >= response.totalNumberOfGroups)
-        return { groupsList: groupsAcc, totalNumberOfGroups: response.totalNumberOfGroups };
-      return fetchRecursively();
-    };
-
-    const response = yield fetchRecursively();
+    const response = yield this.fetchRecursively(this.groups);
     runInAction(() => {
       this.groups = response.groupsList;
       this.numberOfGroups = response.totalNumberOfGroups;
@@ -134,19 +123,7 @@ export default class GroupStore {
 
   *fetchAllFilteredGroups() {
     if (!this.hasMoreResults) return this.searchResults;
-    let groupsAcc = this.searchResults;
-    const fetchRecursively = async () => {
-      const response = await this.fetchGroups({
-        offset: groupsAcc.length,
-        pageSize: MAX_GROUP_PAGE_SIZE
-      });
-      groupsAcc = groupsAcc.concat(response.groupsList);
-      if (groupsAcc.length >= response.totalNumberOfGroups)
-        return { groupsList: groupsAcc, totalNumberOfGroups: response.totalNumberOfGroups };
-      return fetchRecursively();
-    };
-
-    const response = yield fetchRecursively();
+    const response = yield this.fetchRecursively(this.searchResults);
     runInAction(() => {
       this.searchResults = response.groupsList;
       this.numberOfResults = response.totalNumberOfGroups;
@@ -155,6 +132,17 @@ export default class GroupStore {
     });
     return this.searchResults;
   }
+
+  fetchRecursively = async acc => {
+    const response = await this.fetchGroups({
+      offset: acc.length,
+      pageSize: MAX_GROUP_PAGE_SIZE
+    });
+    const updatedAcc = acc.concat(response.groupsList);
+    if (updatedAcc.length >= response.totalNumberOfGroups)
+      return { groupsList: updatedAcc, totalNumberOfGroups: response.totalNumberOfGroups };
+    return this.fetchRecursively(updatedAcc);
+  };
 
   fetchGroups = async ({ offset = 0, pageSize = GROUP_PAGE_SIZE }) => {
     this.isFetching = true;
