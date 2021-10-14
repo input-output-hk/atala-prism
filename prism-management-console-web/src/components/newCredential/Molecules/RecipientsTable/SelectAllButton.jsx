@@ -3,6 +3,7 @@ import PropTypes from 'prop-types';
 import { useTranslation } from 'react-i18next';
 import { Checkbox } from 'antd';
 import { PulseLoader } from 'react-spinners';
+import _ from 'lodash';
 import { getCheckedAndIndeterminateProps } from '../../../../helpers/selectionHelpers';
 import { contactShape, groupShape } from '../../../../helpers/propShapes';
 
@@ -21,7 +22,8 @@ const SelectAllButton = ({
     setLoadingSelection(true);
     const { checked } = ev.target;
     const entitiesToSelect = await entitiesFetcher();
-    handleSetSelection(checked, entitiesToSelect);
+    const filteredEntitiesToSelect = _.uniqBy(entitiesToSelect, e => e[entityKey]);
+    handleSetSelection(checked, filteredEntitiesToSelect);
     setLoadingSelection(false);
   };
 
