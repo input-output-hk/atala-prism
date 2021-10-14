@@ -32,7 +32,7 @@ export const useContactUiState = ({ reset } = { reset: false }) => {
     reaction(() => contactUiState.sortingKey, () => triggerSearch());
     reaction(() => contactUiState.sortDirection, () => triggerSearch());
   }, [
-    contactUiState.nameFilter,
+    contactUiState.textFilter,
     contactUiState.dateFilter,
     contactUiState.statusFilter,
     contactUiState.sortingKey,
