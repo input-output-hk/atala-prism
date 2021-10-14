@@ -28,9 +28,7 @@ class AtalaObjectInfoSpec extends AtalaWithPostgresSpec {
       .AtalaObject(
         blockOperationCount = ops.size
       )
-      .withBlockContent(
-        node_internal.AtalaBlock(version = "1.0", operations = ops)
-      )
+      .withBlockContent(node_internal.AtalaBlock(operations = ops))
     AtalaObjectInfo(
       objectId = AtalaObjectId.of(blockContent),
       blockContent.toByteArray,
