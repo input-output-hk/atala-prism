@@ -41,6 +41,7 @@ const RecipientsSelection = observer(
     const { t } = useTranslation();
     const [loadingSelection, setLoadingSelection] = useState(false);
 
+    // FIXME: fix select all contacts behavior
     const handleSelectAllContacts = ev =>
       handleSelectAll({
         ev,
