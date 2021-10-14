@@ -31,30 +31,32 @@ function SEO({ description, lang, meta, title }) {
       }}
       title={pageTitle}
       meta={[
-        { name: `description`, content: metaDescription },
-        { property: `og:title`, content: pageTitle },
-        { property: `og:description`, content: metaDescription },
-        { property: `og:image`, content: image },
+        { name: 'description', content: metaDescription },
+        { property: 'og:title', content: pageTitle },
+        { property: 'og:description', content: metaDescription },
+        { property: 'og:image', content: image },
         { property: 'og:image:alt', content: 'Atala PRISM' },
-        { property: `og:type`, content: `website` },
-        { property: `og:site_name`, content: `Atala PRISM` },
-        { name: `twitter:card`, content: `summary` },
+        { property: 'og:type', content: 'website' },
+        { property: 'og:site_name', content: 'Atala PRISM' },
+        { name: 'twitter:card', content: 'summary' },
         { name: 'twitter:site', content: '@InputOutputHK' },
         { name: 'twitter:creator', content: '@InputOutputHK' },
-        { name: `twitter:title`, content: pageTitle },
-        { name: `twitter:description`, content: metaDescription },
+        { name: 'twitter:title', content: pageTitle },
+        { name: 'twitter:description', content: metaDescription },
         { name: 'twitter:image', content: image },
         { name: 'twitter:image:alt', content: 'Atala PRISM' },
         { name: 'twitter:url', content: siteUrl }
       ].concat(meta)}
-    />
+    >
+      <script charset="utf-8" type="text/javascript" src="//js.hsforms.net/forms/v2.js" />
+    </Helmet>
   );
 }
 
 SEO.defaultProps = {
-  lang: `en`,
+  lang: 'en',
   meta: [],
-  description: ``
+  description: ''
 };
 
 SEO.propTypes = {

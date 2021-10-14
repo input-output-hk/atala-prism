@@ -5,6 +5,8 @@ import io.grpc.Status
 import io.iohk.atala.prism.connector.AtalaOperationId
 import io.iohk.atala.prism.node.cardano.models.CardanoWalletError
 import tofu.logging.derivation.loggable
+import io.iohk.atala.prism.node.models.ProtocolVersion
+import io.iohk.atala.prism.node.operations.protocolVersion.SUPPORTED_VERSION
 
 package object errors {
   @derive(loggable)
@@ -62,6 +64,17 @@ package object errors {
       }
 
       override def name: String = "duplicate-atala-operation"
+    }
+
+    case class UnsupportedProtocolVersion(currentVersion: ProtocolVersion) extends NodeError {
+      override def toStatus: Status = {
+        Status.FAILED_PRECONDITION.withDescription(
+          s"Node supports $SUPPORTED_VERSION but current protocol version is $currentVersion. Update your node " +
+            s"in order to be able to schedule operations to the blockchain"
+        )
+      }
+
+      override def name: String = "unsupported-protocol-version"
     }
   }
 

@@ -9,6 +9,7 @@ import io.iohk.atala.prism.node.DataPreparation.dummyLedgerData
 import io.iohk.atala.prism.node.cardano.LAST_SYNCED_BLOCK_NO
 import io.iohk.atala.prism.node.models.ProtocolVersion.InitialProtocolVersion
 import io.iohk.atala.prism.node.models._
+import io.iohk.atala.prism.node.operations.ProtocolVersionUpdateOperationSpec._
 import io.iohk.atala.prism.node.operations.StateError._
 import io.iohk.atala.prism.node.repositories.KeyValuesRepository
 import io.iohk.atala.prism.node.repositories.daos.{ProtocolVersionsDAO, PublicKeysDAO}
@@ -19,31 +20,7 @@ import org.scalatest.Inside.inside
 import org.scalatest.OptionValues._
 import tofu.logging.Logs
 
-class ProtocolVersionUpdateOperationSpec extends AtalaWithPostgresSpec {
-
-  val masterKeys = CreateDIDOperationSpec.masterKeys
-  val logs = Logs.universal[IOWithTraceIdContext]
-
-  lazy val proposerDidKeys = List(
-    DIDPublicKey(proposerDIDSuffix, "master", KeyUsage.MasterKey, masterKeys.getPublicKey)
-  )
-
-  lazy val proposerCreateDIDOperation =
-    CreateDIDOperation.parse(CreateDIDOperationSpec.exampleOperation, dummyLedgerData).toOption.value
-  lazy val proposerDIDSuffix = proposerCreateDIDOperation.id
-
-  val parsedOperation1: ProtocolVersionUpdateOperation =
-    ProtocolVersionUpdateOperation
-      .parse(protocolUpdateOperation(ProtocolVersion(2, 0), Some("Second version"), 10), dummyLedgerData)
-      .toOption
-      .value
-
-  val parsedOperation2: ProtocolVersionUpdateOperation =
-    ProtocolVersionUpdateOperation
-      .parse(protocolUpdateOperation(ProtocolVersion(2, 1), Some("Second point one version"), 20), dummyLedgerData)
-      .toOption
-      .value
-
+object ProtocolVersionUpdateOperationSpec {
   def protocolUpdateOperation(
       pv: ProtocolVersion,
       versionName: Option[String],
@@ -64,6 +41,33 @@ class ProtocolVersionUpdateOperationSpec extends AtalaWithPostgresSpec {
         )
       )
     )
+
+  val masterKeys = CreateDIDOperationSpec.masterKeys
+  val logs = Logs.universal[IOWithTraceIdContext]
+
+  lazy val proposerDidKeys = List(
+    DIDPublicKey(proposerDIDSuffix, "master", KeyUsage.MasterKey, masterKeys.getPublicKey)
+  )
+
+  lazy val proposerCreateDIDOperation =
+    CreateDIDOperation.parse(CreateDIDOperationSpec.exampleOperation, dummyLedgerData).toOption.value
+
+  lazy val proposerDIDSuffix = proposerCreateDIDOperation.id
+
+  val parsedProtocolUpdateOperation1: ProtocolVersionUpdateOperation =
+    ProtocolVersionUpdateOperation
+      .parse(protocolUpdateOperation(ProtocolVersion(2, 0), Some("Second version"), 10), dummyLedgerData)
+      .toOption
+      .value
+
+  val parsedProtocolUpdateOperation2: ProtocolVersionUpdateOperation =
+    ProtocolVersionUpdateOperation
+      .parse(protocolUpdateOperation(ProtocolVersion(2, 1), Some("Second point one version"), 20), dummyLedgerData)
+      .toOption
+      .value
+}
+
+class ProtocolVersionUpdateOperationSpec extends AtalaWithPostgresSpec {
 
   "ProtocolVersionUpdateOperation.parse" should {
     "parse valid ProtocolVersionUpdateOperation AtalaOperation" in {
@@ -117,7 +121,7 @@ class ProtocolVersionUpdateOperationSpec extends AtalaWithPostgresSpec {
       DataPreparation
         .createDID(DIDData(proposerDIDSuffix, proposerDidKeys, proposerCreateDIDOperation.digest), dummyLedgerData)
 
-      val CorrectnessData(key, previousOperation) = parsedOperation1
+      val CorrectnessData(key, previousOperation) = parsedProtocolUpdateOperation1
         .getCorrectnessData("master")
         .transact(database)
         .value
@@ -133,7 +137,7 @@ class ProtocolVersionUpdateOperationSpec extends AtalaWithPostgresSpec {
       DataPreparation
         .createDID(DIDData(proposerDIDSuffix, proposerDidKeys, proposerCreateDIDOperation.digest), dummyLedgerData)
 
-      val result = parsedOperation1
+      val result = parsedProtocolUpdateOperation1
         .getCorrectnessData("issuing")
         .transact(database)
         .value
@@ -151,7 +155,7 @@ class ProtocolVersionUpdateOperationSpec extends AtalaWithPostgresSpec {
         .transact(database)
         .unsafeRunSync()
 
-      val result = parsedOperation1
+      val result = parsedProtocolUpdateOperation1
         .getCorrectnessData("master")
         .transact(database)
         .value
@@ -174,7 +178,7 @@ class ProtocolVersionUpdateOperationSpec extends AtalaWithPostgresSpec {
 
       ProtocolVersionsDAO.getLastKnownProtocolUpdate
         .transact(database)
-        .unsafeRunSync() mustBe parsedOperation2.toProtocolVersionInfo
+        .unsafeRunSync() mustBe parsedProtocolUpdateOperation2.toProtocolVersionInfo
     }
 
     "create two new protocol updates on the database. Then make the first of them effective" in {
@@ -188,9 +192,9 @@ class ProtocolVersionUpdateOperationSpec extends AtalaWithPostgresSpec {
         .transact(database)
         .unsafeRunSync() mustBe Some(
         ProtocolVersionInfo(
-          parsedOperation1.protocolVersion,
-          parsedOperation1.versionName,
-          parsedOperation1.effectiveSinceBlockIndex
+          parsedProtocolUpdateOperation1.protocolVersion,
+          parsedProtocolUpdateOperation1.versionName,
+          parsedProtocolUpdateOperation1.effectiveSinceBlockIndex
         )
       )
 
@@ -200,14 +204,14 @@ class ProtocolVersionUpdateOperationSpec extends AtalaWithPostgresSpec {
 
       ProtocolVersionsDAO.getLastKnownProtocolUpdate
         .transact(database)
-        .unsafeRunSync() mustBe parsedOperation2.toProtocolVersionInfo
+        .unsafeRunSync() mustBe parsedProtocolUpdateOperation2.toProtocolVersionInfo
     }
 
     "return error when a protocol version is not sequential" in {
       DataPreparation
         .createDID(DIDData(proposerDIDSuffix, proposerDidKeys, proposerCreateDIDOperation.digest), dummyLedgerData)
 
-      val result2 = parsedOperation2
+      val result2 = parsedProtocolUpdateOperation2
         .applyState()
         .transact(database)
         .value
@@ -222,7 +226,7 @@ class ProtocolVersionUpdateOperationSpec extends AtalaWithPostgresSpec {
       DataPreparation
         .createDID(DIDData(proposerDIDSuffix, proposerDidKeys, proposerCreateDIDOperation.digest), dummyLedgerData)
 
-      val result = parsedOperation1
+      val result = parsedProtocolUpdateOperation1
         .copy(effectiveSinceBlockIndex = 20)
         .applyState()
         .transact(database)
@@ -231,7 +235,7 @@ class ProtocolVersionUpdateOperationSpec extends AtalaWithPostgresSpec {
         .futureValue
       result mustBe a[Right[_, _]]
 
-      val result2 = parsedOperation2
+      val result2 = parsedProtocolUpdateOperation2
         .copy(effectiveSinceBlockIndex = 10)
         .applyState()
         .transact(database)
@@ -250,7 +254,7 @@ class ProtocolVersionUpdateOperationSpec extends AtalaWithPostgresSpec {
       DataPreparation
         .createDID(DIDData(proposerDIDSuffix, proposerDidKeys, proposerCreateDIDOperation.digest), dummyLedgerData)
 
-      val result1 = parsedOperation1
+      val result1 = parsedProtocolUpdateOperation1
         .applyState()
         .transact(database)
         .value
@@ -264,7 +268,7 @@ class ProtocolVersionUpdateOperationSpec extends AtalaWithPostgresSpec {
   }
 
   def insertProtocolVersions() = {
-    val result = parsedOperation1
+    val result = parsedProtocolUpdateOperation1
       .applyState()
       .transact(database)
       .value
@@ -272,7 +276,7 @@ class ProtocolVersionUpdateOperationSpec extends AtalaWithPostgresSpec {
       .futureValue
     result mustBe a[Right[_, _]]
 
-    val result2 = parsedOperation2
+    val result2 = parsedProtocolUpdateOperation2
       .applyState()
       .transact(database)
       .value

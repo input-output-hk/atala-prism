@@ -9,19 +9,23 @@ import io.iohk.atala.prism.node.cardano.CardanoClient
 import io.iohk.atala.prism.node.cardano.models.{Address, WalletId}
 import io.iohk.atala.prism.node.repositories.KeyValuesRepository
 import io.iohk.atala.prism.node.services.CardanoLedgerService.CardanoNetwork
-import io.iohk.atala.prism.node.services.models.testing.TestAtalaObjectNotificationHandler
+import io.iohk.atala.prism.node.services.models.testing.TestAtalaHandlers
 import io.iohk.atala.prism.protos.node_internal
 import io.iohk.atala.prism.AtalaWithPostgresSpec
 import io.iohk.atala.prism.logging.TraceId
 import io.iohk.atala.prism.logging.TraceId.IOWithTraceIdContext
 import io.iohk.atala.prism.utils.IOUtils._
 import monix.execution.schedulers.TestScheduler
+import org.scalatest.Ignore
 import org.scalatest.OptionValues._
 import org.scalatest.concurrent.PatienceConfiguration.Timeout
 import tofu.logging.Logs
 
 import scala.concurrent.duration._
 
+// Todo make CardanoLedgerServiceIntegrationSpec great again
+//  when https://input-output.atlassian.net/browse/ATA-5337 done or 1-2 released
+@Ignore
 class CardanoLedgerServiceIntegrationSpec extends AtalaWithPostgresSpec {
   private val logs = Logs.withContext[IO, IOWithTraceIdContext]
   private val LAST_SYNCED_BLOCK_NO = "last_synced_block_no"
@@ -42,7 +46,8 @@ class CardanoLedgerServiceIntegrationSpec extends AtalaWithPostgresSpec {
       val (cardanoClient, releaseCardanoClient) =
         CardanoClient(clientConfig.cardanoClientConfig, logs).allocated.run(TraceId.generateYOLO).unsafeRunSync()
       val keyValueService = KeyValueService.unsafe(KeyValuesRepository.unsafe(dbLiftedToTraceIdIO, logs), logs)
-      val notificationHandler = new TestAtalaObjectNotificationHandler()
+      val notificationHandler = new TestAtalaHandlers()
+
       val cardanoLedgerService = new CardanoLedgerService(
         CardanoNetwork.Testnet,
         walletId,
@@ -53,7 +58,8 @@ class CardanoLedgerServiceIntegrationSpec extends AtalaWithPostgresSpec {
         blockConfirmationsToWait = 0,
         cardanoClient,
         keyValueService,
-        notificationHandler.asHandler,
+        notificationHandler.asCardanoBlockHandler,
+        notificationHandler.asAtalaObjectHandler,
         scheduler
       )
 

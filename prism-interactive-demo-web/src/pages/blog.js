@@ -1,5 +1,6 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { Link, graphql } from 'gatsby';
+import firebase from 'gatsby-plugin-firebase';
 import HeaderBlog from '../components/headerBlog/headerBlog';
 import FooterBlog from '../components/footer/footer';
 import calendarIcon from '../images/calendar.svg';
@@ -7,6 +8,7 @@ import authorIcon from '../images/author.svg';
 import clockIcon from '../images/clock.svg';
 import SEO from '../components/seo/seo';
 import Sidebar from '../components/sidebar/sidebar';
+import { BLOG_EVENT } from '../helpers/constants';
 
 import './blog.scss';
 
@@ -16,6 +18,10 @@ const BlogIndex = ({ data }) => {
     postsPerYear: { group: postsPerYear },
     recentPosts: { nodes: recentPosts }
   } = data;
+
+  useEffect(() => {
+    firebase.analytics().logEvent(BLOG_EVENT);
+  }, []);
 
   return (
     <div className="BlogContainer fade">

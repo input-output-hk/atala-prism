@@ -8,7 +8,6 @@ import io.iohk.atala.prism.node.models.ProtocolVersion.InitialProtocolVersion
 import io.iohk.atala.prism.node.models.ProtocolVersionInfo.InitialProtocolVersionInfo
 import io.iohk.atala.prism.node.models.nodeState.LedgerData
 import io.iohk.atala.prism.node.models.{ProtocolVersion, ProtocolVersionInfo}
-import io.iohk.atala.prism.node.repositories.daos._
 
 object ProtocolVersionsDAO {
 
