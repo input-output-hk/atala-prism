@@ -69,7 +69,7 @@ object CardanoClient {
     for {
       cardanoDbSyncClient <- CardanoDbSyncClient[F, I](config.dbSyncConfig, logs)
       cardanoWalletApiClient <- CardanoWalletApiClient.makeResource[F, I](config.cardanoWalletConfig, logs)
-    } yield CardanoClient.make(cardanoDbSyncClient, cardanoWalletApiClient, logs).extract
+    } yield CardanoClient.make[I, F](cardanoDbSyncClient, cardanoWalletApiClient, logs).extract
 
   def makeUnsafe[F[_]: Functor](
       dbSyncClient: CardanoDbSyncClient[F],
