@@ -13,6 +13,7 @@ import tofu.syntax.monadic._
 import cats.syntax.either._
 import derevo.derive
 import derevo.tagless.applyK
+import io.iohk.atala.prism.metrics.TimeMeasureMetric
 import io.iohk.atala.prism.node.cardano.logs.CardanoClientLogs
 import tofu.higherKind.Mid
 
@@ -61,7 +62,7 @@ object CardanoClient {
       mid attach new CardanoClientImpl(cardanoDbSyncClient, cardanoWalletApiClient)
     }
 
-  def makeUnsafe[I[_]: Comonad, F[_]: Concurrent: ContextShift](
+  def makeUnsafe[I[_]: Comonad, F[_]: TimeMeasureMetric: Concurrent: ContextShift](
       config: Config,
       logs: Logs[I, F]
   ): Resource[F, CardanoClient[F]] =
