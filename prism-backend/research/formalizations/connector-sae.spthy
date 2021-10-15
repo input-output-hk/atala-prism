@@ -1,5 +1,6 @@
 /**
- * Description: Model for e2e based on QR code sharing and ECIES
+ * Description: Model for e2e based on QR code sharing and ECIES.
+ *   Sign & Encrypt approach.
  * Date: 20210922
  * Authors: Jesus Diaz Vico, IOHK Atala and Research teams.
  */
@@ -20,16 +21,16 @@ begin
             k = (pk_hol)^r
             k_1 || k_2 = kdf(k)
             c = senc(cred, k_1)
-	    s = sig(h(c), sk_iss)
+	    s = sig(h(cred, pkH), sk_iss)
             m = mac(c, k_2)
  5. I -> C: <c, m, g^r>
  6. C -> H: <c, m, g^r>
  7. H:      k = (g^r)^u
             k_1 || k_2 = kdf(k)
             m' = mac(c, k_2)
-            Assert m = m'
-	    verify(sig, h(c), pk_iss)?
+            Assert m' = m
             cred = sdec(c, k_1)
+	    verify(sig, h(cred, pkH), pk_iss)?
 
  Steps 1-3 are the QRdid protocol, whereby the Issuer gets assured that 
  the holder's public key is pkH. It needs a secure channel.
@@ -158,7 +159,7 @@ rule Issuer_3:
          AuthenticPK($H, <'H', 'I', ~tid, pkHe, mc_pkh>),
 	 Commit_I_1($I, $H, <'H', 'I', <~tid, pkHe, mc_pkh>>),
 	 Running_I_2($I, $H, <'H', 'I', <ccred, mc_cred, sig, 'g'^~r>>) ]->
-     [ Out(<ccred, mc_cred, 'g'^~r>) ]       
+     [ Out(<ccred, mc_cred, sig, 'g'^~r>) ]       
 
 /* The holder receives the ECIES-encrypted message by the issuer, and 
    decrypts it. */

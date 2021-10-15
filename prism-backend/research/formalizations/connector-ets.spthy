@@ -1,5 +1,6 @@
 /**
  * Description: Model for e2e based on QR code sharing and ECIES
+ *   Encrypt-then-Sign approach.
  * Date: 20210922
  * Authors: Jesus Diaz Vico, IOHK Atala and Research teams.
  */
@@ -19,8 +20,8 @@ begin
  4. I:      r = Fresh(Z)
             k = (pk_hol)^r
             k_1 || k_2 = kdf(k)
-            c = senc(cred, k_1)
-	    s = sig(h(c), sk_iss)
+            c = senc((pk_iss, cred), k_1)
+	    s = sig((c, cred), sk_iss)
             m = mac(c, k_2)
  5. I -> C: <c, m, g^r>
  6. C -> H: <c, m, g^r>
@@ -28,8 +29,8 @@ begin
             k_1 || k_2 = kdf(k)
             m' = mac(c, k_2)
             Assert m = m'
-	    verify(sig, h(c), pk_iss)?
-            cred = sdec(c, k_1)
+            (pk_iss, cred) = sdec(c, k_1)
+	    verify(sig, (c, cred), pk_iss)?
 
  Steps 1-3 are the QRdid protocol, whereby the Issuer gets assured that 
  the holder's public key is pkH. It needs a secure channel.

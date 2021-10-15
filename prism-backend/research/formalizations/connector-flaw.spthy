@@ -1,5 +1,6 @@
 /**
  * Description: Model for e2e based on QR code sharing and ECIES
+ *   Illustrative flawed version based on naive Sign-then-Encrypt.
  * Date: 20210922
  * Authors: Jesus Diaz Vico, IOHK Atala and Research teams.
  */
