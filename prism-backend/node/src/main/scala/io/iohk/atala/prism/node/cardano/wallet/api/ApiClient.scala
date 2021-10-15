@@ -32,7 +32,7 @@ import sttp.model.Uri
 /**
   * Implementation of the `CardanoWalletApiClient` that accesses the REST API provided by `cardano-wallet`.
   */
-private[wallet] class ApiClient[F[_]: Functor](config: ApiClient.Config)(backend: SttpBackend[F, Any])
+private[wallet] class ApiClient[F[_]: Functor](config: ApiClient.Config, backend: SttpBackend[F, Any])
     extends CardanoWalletApiClient[F] {
   override def estimateTransactionFee(
       walletId: WalletId,

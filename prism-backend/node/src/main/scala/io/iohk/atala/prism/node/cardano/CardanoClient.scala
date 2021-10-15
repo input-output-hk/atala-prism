@@ -67,7 +67,7 @@ object CardanoClient {
   ): Resource[F, CardanoClient[F]] =
     for {
       cardanoDbSyncClient <- CardanoDbSyncClient[F, I](config.dbSyncConfig, logs)
-      cardanoWalletApiClient <- CardanoWalletApiClient.makeResource[F](config.cardanoWalletConfig)
+      cardanoWalletApiClient <- CardanoWalletApiClient.makeResource[F, I](config.cardanoWalletConfig, logs)
     } yield CardanoClient[F, I](cardanoDbSyncClient, cardanoWalletApiClient, logs).extract
 
   def make[F[_]: Functor](

@@ -50,8 +50,7 @@ object FakeCardanoWalletApiClient {
     def apply[F[_]: Concurrent](): CardanoWalletApiClient[F] = {
       val config = ApiClient.Config("localhost", 8090)
       val backend = AsyncHttpClientCatsBackend.stub
-
-      new ApiClient(config)(backend)
+      new ApiClient(config, backend)
     }
   }
 
@@ -69,7 +68,7 @@ object FakeCardanoWalletApiClient {
       )
       .thenRespondWithCode(StatusCode.apply(responseCode), responseBody)
 
-    new ApiClient(config)(backend)
+    new ApiClient(config, backend)
   }
 
   private def sameJson(a: String, b: String): Boolean = {
