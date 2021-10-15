@@ -280,9 +280,10 @@ private final class ConnectionsRepositoryPostgresImpl[F[_]: BracketThrow](xa: Tr
     val query = for {
       rawConnection <- OptionT(safeQuery)
 
-      otherParticipantId = Option(rawConnection.initiator)
-        .filter(_ != participant)
-        .getOrElse(rawConnection.acceptor)
+      otherParticipantId = {
+        if (rawConnection.initiator == participant) rawConnection.acceptor
+        else rawConnection.initiator
+      }
 
       otherParticipant <-
         ParticipantsDAO
