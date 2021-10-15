@@ -32,6 +32,8 @@ import tofu.logging.{Logs, ServiceLogging}
 trait ConnectionsService[F[_]] {
   def getConnectionByToken(token: TokenString): F[Option[Connection]]
 
+  def getConnectionById(participantId: ParticipantId, id: ConnectionId): F[Option[ConnectionInfo]]
+
   def generateTokens(userId: ParticipantId, tokensCount: Int): F[List[TokenString]]
 
   def getTokenInfo(token: TokenString): F[Either[GetTokenInfoError, ParticipantInfo]]
@@ -96,6 +98,9 @@ private class ConnectionsServiceImpl[F[_]: MonadThrow](
 
   def getConnectionByToken(token: TokenString): F[Option[Connection]] =
     connectionsRepository.getConnectionByToken(token)
+
+  override def getConnectionById(participantId: ParticipantId, id: ConnectionId): F[Option[ConnectionInfo]] =
+    connectionsRepository.getConnection(participantId, id)
 
   def generateTokens(userId: ParticipantId, tokensCount: Int): F[List[TokenString]] =
     connectionsRepository
