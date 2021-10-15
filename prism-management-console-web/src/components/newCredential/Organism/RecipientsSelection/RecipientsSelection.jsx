@@ -25,8 +25,8 @@ const SUBJECTS_KEY = 'subjects';
 
 const RecipientsSelection = observer(
   ({ groupsProps, contactsProps, toggleShouldSelectRecipients, shouldSelectRecipients }) => {
-    const { fetchAllGroups, fetchAllFilteredGroups } = useGroupStore();
-    const { sortedFilteredGroups, hasFiltersApplied } = useGroupUiState();
+    const { getAllGroupsToSelect } = useGroupStore();
+    const { sortedFilteredGroups } = useGroupUiState();
 
     const { selectedGroups, setSelectedGroups } = groupsProps;
     const {
@@ -55,14 +55,9 @@ const RecipientsSelection = observer(
     const handleSelectAllGroups = async ev => {
       setLoadingSelection(true);
       const { checked } = ev.target;
-      const groupsToSelect = await getGroupsToSelect();
+      const groupsToSelect = await getAllGroupsToSelect();
       handleSetGroupSelection(checked, groupsToSelect);
       setLoadingSelection(false);
-    };
-
-    const getGroupsToSelect = () => {
-      if (hasFiltersApplied) return fetchAllFilteredGroups();
-      return fetchAllGroups();
     };
 
     const handleSetGroupSelection = (checked, groupsList) => {

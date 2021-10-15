@@ -43,8 +43,7 @@ export default class GroupStore {
       fetchSearchResults: flow.bound,
       fetchSearchResultsNextPage: flow.bound,
       updateFetchedResults: action,
-      fetchAllGroups: flow.bound,
-      fetchAllFilteredGroups: flow.bound,
+      getAllGroupsToSelect: flow.bound,
       fetchGroups: action,
       fetchRecursively: false,
       rootStore: false
@@ -108,30 +107,33 @@ export default class GroupStore {
     const { updateFetchedResults } = this.rootStore.uiState.groupUiState;
     this.numberOfResults = response?.totalNumberOfGroups;
     this.searchResults = this.searchResults.concat(response.groupsList);
+    debugger;
     updateFetchedResults();
   }
 
-  *fetchAllGroups() {
-    if (!this.hasMoreGroups) return this.groups;
-    const response = yield this.fetchRecursively(this.groups);
-    runInAction(() => {
-      this.groups = response.groupsList;
-      this.numberOfGroups = response.totalNumberOfGroups;
-    });
-    return this.groups;
+  *getAllGroupsToSelect() {
+    const { hasFiltersApplied } = this.rootStore.uiState.groupUiState;
+    const alreadyFetched = hasFiltersApplied ? this.searchResults : this.groups;
+
+    if (!this.hasMore) return alreadyFetched;
+
+    const response = yield this.fetchRecursively(alreadyFetched);
+    this.updateStoredGroups(response);
+    return response.groupsList;
   }
 
-  *fetchAllFilteredGroups() {
-    if (!this.hasMoreResults) return this.searchResults;
-    const response = yield this.fetchRecursively(this.searchResults);
-    runInAction(() => {
-      this.searchResults = response.groupsList;
+  updateStoredGroups = response => {
+    const { hasFiltersApplied, updateFetchedResults } = this.rootStore.uiState.groupUiState;
+    if (hasFiltersApplied) {
       this.numberOfResults = response.totalNumberOfGroups;
-      const { updateFetchedResults } = this.rootStore.uiState.groupUiState;
+      this.searchResults = this.searchResults.concat(response.groupsList);
+      debugger
       updateFetchedResults();
-    });
-    return this.searchResults;
-  }
+    } else {
+      this.groups = response.groupsList;
+      this.numberOfGroups = response.totalNumberOfGroups;
+    }
+  };
 
   fetchRecursively = async acc => {
     const response = await this.fetchGroups({
