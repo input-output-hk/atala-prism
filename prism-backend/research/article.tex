@@ -204,10 +204,11 @@ with each other or, alternatively, that they have a secure channel at their
 avail (although possibly cumbersome to use, hence we only require to use it
 once).
 
-In a nutshell, the proposed protocol is composed essentially of two phases. In
-the first phase, the issuer shares a QR code with the holder. This QR code
-contains the issuer's public key (or, maybe, its DID), a random value, and a
-session identifier. This exchange takes place through a secure (i.e.,
+In a nutshell, the proposed protocol (see \figref{fig:e2econnector}) is composed
+of two phases. In the first phase, the issuer shares a QR code with the holder.
+This QR code contains the issuer's public key (or, maybe, its DID), a random
+value ($code$, in \figref{fig:e2econnector}), and a session identifier ($token$,
+in \figref{fig:e2econnector}). This exchange takes place through a secure (i.e.,
 confidential and authenticated) channel, such as physical exchange. Probably
 immediately, although also possibly at a later point in time, the prospective
 holder sends back her own public key (or, alternatively, her DID) and the
@@ -228,6 +229,27 @@ value shared via the QR code for this. But that would force us to re-execute the
 first phase of the protocol even when the QR code is compromised after having
 completed the first phase of the protocol. Digital signatures using the issuer's
 DID prevent this.
+
+Note that we are combining signature and encryption (plus, the MAC-based
+authentication natively provided by ECIES). This places us in the context put
+forward in \cite{davi01}, that discusses some good practices when combining such
+primitives. In a nutshell, we follow the sign-then-encrypt approach%
+\footnote{What we call here ``sign-then-encrypt'' is called ``Sign \& Encrypt''
+  in \cite{davi01}. However, we find
+  more explicit the naming convention of \cite{kraw01}, which is more consistent
+  when referring to the order in which the primitives are used -- order that, in
+  these cases, is crucial.}, combined with including the public
+keys of both holder and issuer into the signed (and then encrypted) data.
+This intertwines the inner layer (the signature) with the outer layer (the
+encryption), ensuring that any alteration on any of them will be detected.
+We note that there are other options that, a priori, are equally secure -- e.g.,
+encrypt-then-sign, including also the sender's public key in the encrypted data
+(but that would require separately signing a (hash of) the data, to ensure
+non-repudiation). Finally, it is worth noting that ECIES follows the
+encrypt-then-authenticate approach, which is proven to realize secure channels
+in \cite{kraw01}, as long as the underlying encryption scheme is IND-CPA secure,
+and the underlying MAC function is secure -- but this is independent of the
+sign-then-encrypt approach.
 
 While the protocol is simple, and is based on common cryptographic constructions,
 it is easy to get such protocols wrong, as pointed out in numerous occasions
@@ -279,29 +301,11 @@ model for the formal definition):
   by a holder at step 5, were sent by an issuer and addressed to that holder
   at step 4. Note, however, that both messages in steps 4 and 5 don't necessarily
   pertain to the  same ``session'' (in instantiations where parallel sessions
-  may occur). However, this does not pose a risk, as in any case, the messaged
-  is sent by the issuer, and received by the intended holder.
+  may occur). However, our current understanding is that this does not pose a
+  risk, as in any case, the messaged is sent by the issuer, and received by the
+  intended holder. For the sake of future reference, we give an illustrative
+  flow of this ``non-injective'' execution, in \appref{app:non-inj-e2ee}.
 \end{description}
-
-Concerning the technical details of the protocol, note that we are combining
-signature and encryption (plus, the MAC-based authentication natively provided
-by ECIES). This places us in the context put forward in \cite{davi01}, that
-discusses some good practices when combining such primitives. In a nutshell,
-we follow the sign-then-encrypt approach\footnote{What we call here ``sign-then-
-  encrypt'' is called ``Sign \& Encrypt'' in \cite{davi01}. However, we find
-  more explicit the naming convention of \cite{kraw01}, which is more consistent
-  when referring to the order in which the primitives are used -- order that, in
-  these cases, is crucial.}, combined with including the public
-keys of both holder and issuer into the signed (and then encrypted) data.
-This intertwines the inner layer (the signature) with the outer layer (the
-encryption), ensuring that any alteration on any of them will be detected.
-We note that there are other options that, a priori, are equally secure -- e.g.,
-encrypt-then-sign, including also the sender's public key in the encrypted data
-(but that would require separately signing a (hash of) the data, to ensure
-non-repudiation). It is worth noting that ECIES follows the
-encrypt-then-authenticate approach, which is proven to realize secure channels
-in \cite{kraw01}, as long as the underlying encryption scheme is IND-CPA secure,
-and the underlying MAC function is secure.
 
 %----------------------------------------------------------------------------------------
 %	PROPERTIES
@@ -396,6 +400,55 @@ Notes:
 \item a user is free to batch his own DIDs' related events. This could be useful for a case like a car manufacturer that would like to batch all DIDs
       associated to their cars, allowing car owners to de-register from a batcher at will.
 \item a priori, we do not see a need to batch credential issuance/revocation events
+\end{itemize}
+
+\appendix
+
+\section{Example of Non-Injective Execution of Connector E2EE Protocol}
+\label{app:non-inj-e2ee}
+
+The diagram in \figref{fig:e2econnector-noninj} depicts an scenario in which a
+non-injective execution between the issuer and the holder takes place.
+
+First, we have to take into account that such execution requires a somehow
+extended setting than what we considered in \secref{sssec:e2eeconnector}. Namely,
+here we assume a (certainly realistic) scenario in which any prospective holder
+has several computing devices -- e.g., a laptop and a smartphone. Similarly,
+the issuer instantiates several concurrent services -- depicted as
+\emph{Instance 1} and \emph{Instance 2} in \figref{fig:e2econnector-noninj}.
+Still, the same user operates both computing devices, which share the same
+private values; and all issuer instances have access to the same database with
+holders' information, and the issuer's private keys.
+
+\begin{figure}[ht!]
+  \centering
+  \includegraphics[scale=0.32]{figures/connector-noninjective.png}
+  \caption{Sequence diagram of a sample non-injective execution of the E2EE
+    connector protocol}
+  \label{fig:e2econnector-noninj}%
+\end{figure}
+
+In the diagram, the holder requests a QR code once with each device -- for this,
+we envision an extended setting in which the holder can request QR codes
+securely (e.g., through signed email). The smartphone communicates with Instance
+2 of the issuer, while the laptop communicates with Instance 1. Eventually, the
+holder decides to complete the process from her laptop. The connector forwards
+the request to Instance 1, which stores it in the database. Then, it might
+happen that it is Instance 2 the one that takes care of finalizing the request:
+it fetches the necessary data from the shared database, and sends the result to
+the holder's phone (which is the computing device that communicated with
+Instance 2). This lack of correspondence between who initiated a request, and
+who responds it, is what is formally referred to as non-injectivity.
+Theoretically, that might perfectly happen in our proposed protocol, as there is
+nothing preventing such behaviour in a cryptographic manner, as our model shows.
+However, two observations are relevant:
+
+\begin{itemize}
+\item The authenticity and secrecy properties still ensure that only the holder
+  and issuer have access to the data that is sent by the issuer, and that it
+  indeed originates from the issuer.
+\item Such behaviour, if deemed unwanted, could be easily prevented through a
+  proper session handling, at the implementation level.
 \end{itemize}
 
 \bibliographystyle{plain}
