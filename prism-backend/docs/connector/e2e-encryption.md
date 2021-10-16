@@ -130,20 +130,19 @@ For the purpose of discussion, we will define the following:
 ### Steps:
 
 1. Issuer generates a random value `r`, and then calculates `R` where `R = G•r`
-2. Issuer generates `S` where `S = HPK•r`
-3. `S` can be used by the issuer as a symmetric encryption key to encrypt the message
-4. Issuer generates a message `M1` by concatenating a message `M`, `IPK` and `HPK` like this `<Base64Url(M)>.<Base64Url(IPK)>.<Base64Url(HPK)>`
-5. Issuer signs `M1` with `ISK`, producing a signature `SIG`
-6. Issuer encrypts `M1` with `S` using symmetric encryption provided by ECIES, producing `EM1`
-7. Issuer sends the encrypted message `EM1` to the Holder alongside with `R` and the signature `SIG`
-8. Holder is able to generate `S` by `S = HSK•R`, since 
+2. Issuer generates `S` where `S = HPK•r`. `S` can be used by the issuer as a symmetric encryption key to encrypt the message
+3. Issuer generates a message `M1` by concatenating a message `M`, `IPK` and `HPK` like this `<Base64Url(M)>.<Base64Url(IPK)>.<Base64Url(HPK)>`
+4. Issuer signs `M1` with `ISK`, producing a signature `SIG`
+5. Issuer encrypts `M1` with `S` using symmetric encryption provided by ECIES, producing `EM1`
+6. Issuer sends the encrypted message `EM1` to the Holder alongside with `R` and the signature `SIG`
+7. Holder is able to generate `S` by `S = HSK•R`, since 
    1. `S = HSK•R`
    2. `S = HSK•r•G`
    3. `S = HSK•G•r`
    4. `S = HPK•r` (that is how the Issuer has generated it)
-9. Holder decrypts the message `EM1` using `S`, yielding `M1`
-10. Holder will verify the signature `SIG` using `IPK`. `verify(M1, SIG, IPK)`
-11. Holder will retrieve `IPK` and `HPK` from `M1` and verify that `IPK` is the public key of the issuer he is expecting a message from, and that `HPK` is his public key, thus message is intended to him.
-12. Holder will retrieve a message `M` from `M1`
+8. Holder decrypts the message `EM1` using `S`, yielding `M1`
+9. Holder will verify the signature `SIG` using `IPK`. `verify(M1, SIG, IPK)`
+10. Holder will retrieve `IPK` and `HPK` from `M1` and verify that `IPK` is the public key of the issuer he is expecting a message from, and that `HPK` is his public key, thus message is intended to him.
+11. Holder will retrieve a message `M` from `M1`
 
 It is worth noting that at every step of the protocol, whenever a verification takes place, if verification fails all the rest of the steps will not be performed and the whole protocol will be aborted.
