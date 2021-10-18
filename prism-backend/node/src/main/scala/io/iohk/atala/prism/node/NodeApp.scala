@@ -69,7 +69,7 @@ class NodeApp(executionContext: ExecutionContext) { self =>
 
     val objectManagementServicePromise: Promise[ObjectManagementService] = Promise()
 
-    val protocolVersionRepository = ProtocolVersionRepository(liftedTransactor)
+    val protocolVersionRepository = ProtocolVersionRepository.unsafe(liftedTransactor, logs)
     val onCardanoBlock: CardanoBlockHandler = block =>
       {
         protocolVersionRepository.markEffective(block.header.blockNo).void

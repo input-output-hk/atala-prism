@@ -69,7 +69,7 @@ class FlowPoC extends AtalaWithPostgresSpec with BeforeAndAfterEach {
 
     didDataRepository = DIDDataRepository.unsafe(dbLiftedToTraceIdIO, flowPocTestLogs)
     credentialBatchesRepository = CredentialBatchesRepository.unsafe(dbLiftedToTraceIdIO, flowPocTestLogs)
-    protocolVersionsRepository = ProtocolVersionRepository(dbLiftedToTraceIdIO)
+    protocolVersionsRepository = ProtocolVersionRepository.unsafe(dbLiftedToTraceIdIO, flowPocTestLogs)
 
     objectManagementServicePromise = Promise()
 
