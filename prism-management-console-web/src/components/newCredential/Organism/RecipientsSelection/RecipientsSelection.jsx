@@ -25,7 +25,7 @@ const SUBJECTS_KEY = 'subjects';
 
 const RecipientsSelection = observer(
   ({ groupsProps, contactsProps, toggleShouldSelectRecipients, shouldSelectRecipients }) => {
-    const { getAllGroupsToSelect } = useGroupStore();
+    const { getGroupsToSelect } = useGroupStore();
     const { displayedGroups } = useGroupUiState();
 
     const { selectedGroups, setSelectedGroups } = groupsProps;
@@ -55,7 +55,7 @@ const RecipientsSelection = observer(
     const handleSelectAllGroups = async ev => {
       setLoadingSelection(true);
       const { checked } = ev.target;
-      const groupsToSelect = await getAllGroupsToSelect();
+      const groupsToSelect = await getGroupsToSelect();
       handleSetGroupSelection(checked, groupsToSelect);
       setLoadingSelection(false);
     };

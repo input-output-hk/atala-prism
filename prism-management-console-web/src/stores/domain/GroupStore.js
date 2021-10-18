@@ -43,7 +43,7 @@ export default class GroupStore {
       fetchSearchResults: flow.bound,
       fetchSearchResultsNextPage: flow.bound,
       updateFetchedResults: action,
-      getAllGroupsToSelect: flow.bound,
+      getGroupsToSelect: flow.bound,
       fetchGroups: action,
       fetchRecursively: false,
       rootStore: false
@@ -110,7 +110,7 @@ export default class GroupStore {
     updateFetchedResults();
   }
 
-  *getAllGroupsToSelect() {
+  *getGroupsToSelect() {
     const { hasFiltersApplied } = this.rootStore.uiState.groupUiState;
     const alreadyFetched = hasFiltersApplied ? this.searchResults : this.groups;
 
