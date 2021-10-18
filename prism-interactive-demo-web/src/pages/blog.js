@@ -58,7 +58,7 @@ const BlogIndex = ({ data }) => {
                           <div className="postInfoContainer">
                             <div className="postInfo">
                               <div className="postInfoImgContainer">
-                                <img src={calendarIcon} alt="" />
+                                <img src={calendarIcon} alt="date" />
                               </div>
                               <div>
                                 <p>{post.frontmatter.date}</p>
@@ -66,7 +66,7 @@ const BlogIndex = ({ data }) => {
                             </div>
                             <div className="postInfo">
                               <div className="postInfoImgContainer">
-                                <img src={authorIcon} alt="" />
+                                <img src={authorIcon} alt="author" />
                               </div>
                               <div>
                                 <p>{post.frontmatter.author}</p>
@@ -74,7 +74,7 @@ const BlogIndex = ({ data }) => {
                             </div>
                             <div className="postInfo">
                               <div className="postInfoImgContainer">
-                                <img src={clockIcon} alt="" />
+                                <img src={clockIcon} alt="readingTime" />
                               </div>
                               <div>
                                 <p>{post.frontmatter.readingTime} mins read</p>
@@ -86,7 +86,7 @@ const BlogIndex = ({ data }) => {
                               <img
                                 className="imgBlogPost"
                                 src={post.frontmatter.image.publicURL}
-                                alt=""
+                                alt="thumbnail"
                               />
                             )}
                           </Link>

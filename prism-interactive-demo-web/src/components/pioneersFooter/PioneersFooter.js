@@ -1,4 +1,5 @@
 import React from 'react';
+import { Link } from 'gatsby';
 
 import './_style.scss';
 
@@ -21,7 +22,7 @@ const PioneersFooter = () => (
           Terms
         </a>
       </div>
-      <a href="/">AtalaPrism.io</a>
+      <Link to="/">AtalaPrism.io</Link>
     </div>
   </footer>
 );
