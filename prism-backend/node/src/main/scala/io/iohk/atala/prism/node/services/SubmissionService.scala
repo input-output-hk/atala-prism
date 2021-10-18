@@ -123,9 +123,10 @@ class SubmissionService private (
             acc <- accF
             transactionInfoE <- publishAndRecordTransaction(obj, objContent)
           } yield {
-            transactionInfoE.fold(logAndKeep(acc), acc :+ _)
+            transactionInfoE.fold(logAndKeep(acc), _ :: acc)
           }
       }
+      .map(_.reverse)
   }
 
   private def deleteTransactions(
