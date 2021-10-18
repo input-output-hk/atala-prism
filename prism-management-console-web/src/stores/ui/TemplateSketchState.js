@@ -8,7 +8,7 @@ import {
   updateImages
 } from '../../helpers/templateLayouts/templates';
 
-export default class TemplateUiState {
+export default class TemplateSketchState {
   templateSketch = defaultTemplateSketch;
 
   form;
@@ -37,8 +37,7 @@ export default class TemplateUiState {
       ...contrastColorSettings
     };
 
-    const configuredHtmlTemplate = configureHtmlTemplate(currentConfig.layout, currentConfig);
-    return configuredHtmlTemplate;
+    return configureHtmlTemplate(currentConfig.layout, currentConfig);
   }
 
   setSketchState = async stateChange => {
