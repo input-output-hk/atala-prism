@@ -144,6 +144,29 @@ export default class ContactStore {
     return this.searchResults;
   }
 
+  *getContactsToSelect() {
+    const { hasFiltersApplied } = this.rootStore.uiState.contactUiState;
+    const alreadyFetched = hasFiltersApplied ? this.searchResults : this.contacts;
+
+    if (!this.hasMore) return alreadyFetched;
+
+    const response = yield this.fetchRecursively(alreadyFetched);
+    this.updateStoredContacts(response);
+    return response.contactsList;
+  }
+
+  updateStoredContacts = response => {
+    const { hasFiltersApplied, updateFetchedResults } = this.rootStore.uiState.contactUiState;
+    if (hasFiltersApplied) {
+      this.searchResults = response.contactsList;
+      this.resultsScrollId = '';
+      updateFetchedResults();
+    } else {
+      this.contacts = response.contactsList;
+      this.contactsScrollId = '';
+    }
+  };
+
   fetchRecursively = async (acc, scrollId) => {
     const response = await this.fetchContacts({
       scrollId,
