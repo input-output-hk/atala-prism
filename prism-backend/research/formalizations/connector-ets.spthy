@@ -15,9 +15,11 @@ begin
  ( => is secure channel; -> is normal channel )
 
  1. I => H: tid, pk_iss, code // Shared via QR, i.e., secure channel
- 2. H -> C: <tid, pk_hol>, mac(<tid, pk_hol>, code)
- 3. C -> I: <tid, pk_hol> mac(<tid, pk_hol>, code)
- 4. I:      r = Fresh(Z)
+ 2. H -> C: <tid, pk_hol>, mac(pk_hol, code)
+ 3. C -> I: <tid, pk_hol> mac(pk_hol, code)
+ 4. I:      Fetch code used for session tid
+            Verify mac(pk_hol, code) 
+            r = Fresh(Z)
             k = (pk_hol)^r
             k_1 || k_2 = kdf(k)
             c = senc((pk_iss, cred), k_1)
@@ -131,7 +133,7 @@ rule Issuer_1:
 
 /* The holder receives the QR code through the secure channel, and responds. */
 rule Holder_2:
-     let mc = mac(<~tid, pkHe>, ~code) in
+     let mc = mac(pkHe, ~code) in
      [ In_S($I, $H, <~tid, ~code, pkIs>),
        St_Holder_0($H, ~id, ~lkHe, pkHe) ]
        --[ SecretCode(~code), Honest($H), Honest($I),
@@ -143,7 +145,7 @@ rule Holder_2:
 /* The issuer receives back the MAC'ed QR code, via an insecure channel, 
    plus the Holder's public key. */
 rule Issuer_3:
-     let mc_pkh = mac(<~tid, pkHe>, ~code)
+     let mc_pkh = mac(pkHe, ~code)
      	 k = kdf(pkHe^~r)
          k1 = splitL(k)
 	 k2 = splitR(k)
