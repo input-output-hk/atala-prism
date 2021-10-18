@@ -58,6 +58,7 @@
       .SubtitleGray {
         @include primary-text($body, $grey);
         font-variant: normal;
+        margin-bottom: 1em;
       }
       .ant-form-item-label {
         display: none;
