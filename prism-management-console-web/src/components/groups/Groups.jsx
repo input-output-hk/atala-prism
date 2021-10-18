@@ -4,7 +4,7 @@ import { PlusOutlined } from '@ant-design/icons';
 import PropTypes from 'prop-types';
 import { useTranslation } from 'react-i18next';
 import GroupsTable from './Organisms/Tables/GroupsTable';
-import GroupFilters from './Molecules/Filters/GroupFilter';
+import GroupFilters from './Molecules/Filters/GroupFilters';
 import EmptyComponent from '../common/Atoms/EmptyComponent/EmptyComponent';
 import DeleteGroupModal from './Organisms/Modals/DeleteGroupModal/DeleteGroupModal';
 import { groupShape } from '../../helpers/propShapes';

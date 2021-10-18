@@ -12,9 +12,9 @@ import {
   handleSelectAll
 } from '../../../../helpers/selectionHelpers';
 import { CONTACT_ID_KEY } from '../../../../helpers/constants';
+import GroupFilters from '../../../groups/Molecules/Filters/GroupFilters';
 
 import './_style.scss';
-import GroupFilters from '../../../groups/Molecules/Filters/GroupFilter';
 
 const { TabPane } = Tabs;
 
@@ -80,6 +80,8 @@ const RecipientsSelection = ({
     onChange: handleSelectAllContacts
   };
 
+  const selectedLabel = selectedContacts.length ? `  (${selectedContacts.length})  ` : null;
+
   return (
     <div className="RecipientsSelection">
       <Tabs defaultActiveKey="groups" onChange={setActiveKey}>
@@ -144,7 +146,7 @@ const RecipientsSelection = ({
                 ) : (
                   <span>
                     {t('newCredential.targetsSelection.selectAll')}
-                    {selectedContacts.length ? `  (${selectedContacts.length})  ` : null}
+                    {selectedLabel}
                   </span>
                 )}
               </Checkbox>
