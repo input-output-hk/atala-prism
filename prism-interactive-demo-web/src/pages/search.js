@@ -4,7 +4,7 @@ import queryString from 'query-string';
 import * as JsSearch from 'js-search';
 import Highlighter from 'react-highlight-words';
 import HeaderBlog from '../components/headerBlog/headerBlog';
-import FooterBlog from '../components/footer/footer';
+import FooterBlog from '../components/footer/BlogFooter';
 import calendarIcon from '../images/calendar.svg';
 import authorIcon from '../images/author.svg';
 import clockIcon from '../images/clock.svg';
@@ -83,7 +83,7 @@ const BlogIndex = ({ data, location }) => {
                     <article
                       className="post-list-item"
                       itemScope
-                      itemType="http://schema.org/Article"
+                      itemType="https://schema.org/Article"
                       key={post.fields.slug}
                     >
                       <header className="entryHeader">

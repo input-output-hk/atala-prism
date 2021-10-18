@@ -1,10 +1,11 @@
 import React from 'react';
 import 'antd/dist/antd.css';
 import PropTypes from 'prop-types';
-import Router from '../Router';
+import AppRouter from '../AppRouter';
 import { APIContext } from '../providers/ApiContext';
 import { UserProvider } from '../providers/userContext';
 import { PageProvider } from '../providers/pageContext';
+
 import '../../css/app.scss';
 import './_main.scss';
 
@@ -13,7 +14,7 @@ const Main = ({ apiProvider }) => (
     <UserProvider>
       <APIContext.Provider value={apiProvider}>
         <div className="AppContainer">
-          <Router />
+          <AppRouter />
         </div>
       </APIContext.Provider>
     </UserProvider>

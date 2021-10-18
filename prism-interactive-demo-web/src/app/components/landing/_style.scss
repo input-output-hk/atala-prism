@@ -33,7 +33,7 @@ html {
         h3 {
           @include primary-text($body, $white);
           max-width: 500px;
-          margin:0 auto;
+          margin: 0 auto;
           margin-bottom: 1em;
         }
 
@@ -45,7 +45,7 @@ html {
         p {
           @include primary-text($label, $white);
           max-width: 500px;
-          margin:0 auto;
+          margin: 0 auto;
         }
         img {
           width: 40px;
@@ -72,8 +72,4 @@ html {
     font-size: $large-title;
     line-height: $large-title;
   }
-}
-
-@media only screen and (max-width: 450px) {
-   
 }

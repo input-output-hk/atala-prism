@@ -7,7 +7,7 @@ import triangle from '../../static/images/triangle.svg';
 import triangleWhite from '../../static/images/triangleWhite.svg';
 import Collapsable from '../components/collapsable/collapsable';
 import CustomButton from '../components/customButton/CustomButton';
-import PionnersFooter from '../components/pioneersFooter/footer';
+import PionnersFooter from '../components/pioneersFooter/PioneersFooter';
 import SEO from '../components/seo/seo';
 import { PIONEERS_EVENT } from '../helpers/constants';
 

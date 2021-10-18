@@ -39,13 +39,11 @@ export const toProtoDate = date => {
     [day, month, year] = dateAsNumberArray;
   }
 
-  const protoDate = {
+  return {
     year,
     month,
     day
   };
-
-  return protoDate;
 };
 
 export const backendDateFormatter = format => date => completeDateFormatter(date, format);

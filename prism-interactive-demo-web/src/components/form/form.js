@@ -1,19 +1,16 @@
 import React from 'react';
 import jsonp from 'jsonp';
 import queryString from 'query-string';
-import { useTranslation } from 'react-i18next';
 import { Form, Input, Button, Checkbox, message } from 'antd';
 import { config } from '../../app/APIs/configs';
 import { emailFormatValidation } from '../../app/helpers/formRules';
+import Logger from '../../app/helpers/Logger';
 
 import './_style.scss';
-import Logger from '../../app/helpers/Logger';
 
 const { mailchimpURL, mailchimpU, mailchimpID } = config;
 
 const PioneersForm = ({ form }) => {
-  const { t } = useTranslation();
-
   const submitForm = e => {
     e.preventDefault();
 
@@ -40,9 +37,8 @@ const PioneersForm = ({ form }) => {
           return message.error('There has been an error');
         }
         if (data) {
-          data.result === 'success'
-            ? message.success('Thanks for registering!')
-            : message.error('Your email is already registered');
+          if (data.result === 'success') message.success('Thanks for registering!');
+          else message.error('Your email is already registered');
         }
       }
     );

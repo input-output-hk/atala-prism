@@ -3,7 +3,7 @@ import { graphql, Link } from 'gatsby';
 import firebase from 'gatsby-plugin-firebase';
 import _ from 'lodash';
 import Header from '../components/Header/Header';
-import FooterBlog from '../components/footer/footer';
+import FooterBlog from '../components/footer/BlogFooter';
 import SEO from '../components/seo/seo';
 import FaqPanel from '../app/components/landing/Molecules/FaqPanel/FaqPanel';
 import ContactPanel from '../app/components/landing/Organisms/ContactPanel/ContactPanel';
