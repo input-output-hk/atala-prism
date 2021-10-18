@@ -127,7 +127,9 @@ class NodeApp(executionContext: ExecutionContext) { self =>
       atalaObjectsTransactionsRepository,
       keyValuesRepository,
       protocolVersionRepository,
-      blockProcessingService
+      blockProcessingService,
+      liftedTransactor,
+      logs
     )
 
     objectManagementServicePromise.success(objectManagementService)

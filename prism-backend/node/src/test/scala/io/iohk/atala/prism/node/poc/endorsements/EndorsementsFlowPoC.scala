@@ -90,6 +90,7 @@ class EndorsementsFlowPoC extends AtalaWithPostgresSpec with BeforeAndAfterEach 
       objectManagementServicePromise.future.futureValue
         .saveObject(notification)
         .run(TraceId.generateYOLO)
+        .void
         .unsafeToFuture()
     }
 
@@ -104,7 +105,9 @@ class EndorsementsFlowPoC extends AtalaWithPostgresSpec with BeforeAndAfterEach 
       atalaObjectsTransactionsRepository,
       keyValuesRepository,
       protocolVersionsRepository,
-      blockProcessingService
+      blockProcessingService,
+      dbLiftedToTraceIdIO,
+      endorsementsFlowPoCLogs
     )
     submissionService = SubmissionService(
       atalaReferenceLedger,

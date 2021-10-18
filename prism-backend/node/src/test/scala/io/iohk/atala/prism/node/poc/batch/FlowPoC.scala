@@ -78,6 +78,7 @@ class FlowPoC extends AtalaWithPostgresSpec with BeforeAndAfterEach {
       objectManagementServicePromise.future.futureValue
         .saveObject(notification)
         .run(TraceId.generateYOLO)
+        .void
         .unsafeToFuture()
     }
 
@@ -100,7 +101,9 @@ class FlowPoC extends AtalaWithPostgresSpec with BeforeAndAfterEach {
       atalaObjectsTransactionsRepository,
       keyValuesRepository,
       protocolVersionsRepository,
-      blockProcessingService
+      blockProcessingService,
+      dbLiftedToTraceIdIO,
+      flowPocTestLogs
     )
     objectManagementServicePromise.success(objectManagementService)
 

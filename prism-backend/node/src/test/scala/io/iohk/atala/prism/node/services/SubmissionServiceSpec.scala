@@ -74,7 +74,9 @@ class SubmissionServiceSpec
       atalaObjectsTransactionsRepository,
       keyValuesRepository,
       protocolVersionRepository,
-      blockProcessing
+      blockProcessing,
+      dbLiftedToTraceIdIO,
+      logs
     )
 
   override def beforeEach(): Unit = {

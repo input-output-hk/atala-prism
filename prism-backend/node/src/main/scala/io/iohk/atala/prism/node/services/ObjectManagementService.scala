@@ -1,12 +1,11 @@
 package io.iohk.atala.prism.node.services
 
 import cats.data.EitherT
-import cats.effect.Sync
+import cats.effect.BracketThrow
 import cats.syntax.comonad._
 import cats.syntax.either._
 import cats.syntax.traverse._
-import tofu.syntax.monadic._
-import cats.{Comonad, Functor}
+import cats.{Applicative, ApplicativeError, Comonad, Functor, Monad}
 import derevo.derive
 import derevo.tagless.applyK
 import doobie.free.connection.ConnectionIO
@@ -31,15 +30,18 @@ import io.iohk.atala.prism.node.repositories.{
   KeyValuesRepository,
   ProtocolVersionRepository
 }
+import io.iohk.atala.prism.node.services.ObjectManagementService.SaveObjectError
 import io.iohk.atala.prism.node.services.logs.ObjectManagementServiceLogs
 import io.iohk.atala.prism.node.services.models.AtalaObjectNotification
-import io.iohk.atala.prism.protos.node_internal.AtalaBlock
 import io.iohk.atala.prism.protos.node_models.SignedAtalaOperation
 import io.iohk.atala.prism.protos.{node_internal, node_models}
 import io.iohk.atala.prism.utils.syntax.DBConnectionOps
 import org.slf4j.LoggerFactory
 import tofu.higherKind.Mid
+import tofu.logging.derivation.loggable
 import tofu.logging.{Logs, ServiceLogging}
+import tofu.syntax.feither._
+import tofu.syntax.monadic._
 
 import java.time.Instant
 
@@ -48,7 +50,7 @@ private class DuplicateAtalaOperation extends Exception
 
 @derive(applyK)
 trait ObjectManagementService[F[_]] {
-  def saveObject(notification: AtalaObjectNotification): F[Unit]
+  def saveObject(notification: AtalaObjectNotification): F[Either[SaveObjectError, Boolean]]
 
   def scheduleSingleAtalaOperation(op: node_models.SignedAtalaOperation): F[Either[NodeError, AtalaOperationId]]
 
@@ -59,18 +61,18 @@ trait ObjectManagementService[F[_]] {
   def getOperationInfo(atalaOperationId: AtalaOperationId): F[Option[AtalaOperationInfo]]
 }
 
-private final class ObjectManagementServiceImpl[F[_]: Sync](
+private final class ObjectManagementServiceImpl[F[_]: BracketThrow](
     atalaOperationsRepository: AtalaOperationsRepository[F],
     atalaObjectsTransactionsRepository: AtalaObjectsTransactionsRepository[F],
     keyValuesRepository: KeyValuesRepository[F],
     protocolVersionsRepository: ProtocolVersionRepository[F],
-    blockProcessing: BlockProcessingService
-)(implicit xa: Transactor[F])
-    extends ObjectManagementService[F] {
+    blockProcessing: BlockProcessingService,
+    xa: Transactor[F]
+) extends ObjectManagementService[F] {
 
   private val logger = LoggerFactory.getLogger(this.getClass)
 
-  def saveObject(notification: AtalaObjectNotification): F[Unit] = {
+  def saveObject(notification: AtalaObjectNotification): F[Either[SaveObjectError, Boolean]] = {
     // TODO: just add the object to processing queue, instead of processing here
     val updateAction = atalaObjectsTransactionsRepository
       .setObjectTransactionDetails(notification)
@@ -82,16 +84,20 @@ private final class ObjectManagementServiceImpl[F[_]: Sync](
               obj.transaction.get.transactionId,
               InLedger
             )
-            transaction <- processObject(obj)
-            _ <-
-              transaction
-                .logSQLErrors("saving object", logger)
-                .attemptSql
+            transaction <- Monad[F].pure(processObject(obj))
+            result <- transaction flatTraverse {
+              _.logSQLErrors("saving object", logger).attemptSql
                 .transact(xa)
-          } yield ()
+                .leftMapIn(err => SaveObjectError(err.getMessage))
+            }
+          } yield result
 
         case None =>
-          Sync[F].delay(logger.warn(s"Could not save object from notification $notification"))
+          Monad[F].pure(
+            SaveObjectError(
+              s"Could not save object from notification: txId: ${notification.transaction.transactionId}, ledger: ${notification.transaction.ledger}"
+            ).asLeft[Boolean]
+          )
 
       }
 
@@ -100,11 +106,11 @@ private final class ObjectManagementServiceImpl[F[_]: Sync](
       .flatMap {
         case Right(_) => updateAction
         case Left(currentVersion) => {
-          Sync[F].delay(
-            logger.warn(
+          Monad[F].pure(
+            SaveObjectError(
               s"Node supports $SUPPORTED_VERSION but current protocol version is $currentVersion." +
                 s" Therefore saving Atala object received from the blockchain can't be performed."
-            )
+            ).asLeft
           )
         }
       }
@@ -155,8 +161,8 @@ private final class ObjectManagementServiceImpl[F[_]: Sync](
     }
 
     resultEitherT.value.flatMap {
-      case Left(e) => Sync[F].raiseError(e.toStatus.asRuntimeException)
-      case Right(r) => Sync[F].pure(r)
+      case Left(e) => ApplicativeError[F, Throwable].raiseError(e.toStatus.asRuntimeException)
+      case Right(r) => Applicative[F].pure(r)
     }
   }
 
@@ -172,14 +178,16 @@ private final class ObjectManagementServiceImpl[F[_]: Sync](
     atalaOperationsRepository
       .getOperationInfo(atalaOperationId)
 
-  private def processObject(obj: AtalaObjectInfo): F[ConnectionIO[Boolean]] = {
+  private def processObject(obj: AtalaObjectInfo): Either[SaveObjectError, ConnectionIO[Boolean]] = {
     for {
-      protobufObject <- Sync[F].fromTry(node_internal.AtalaObject.validate(obj.byteContent))
+      protobufObject <-
+        Either
+          .fromTry(node_internal.AtalaObject.validate(obj.byteContent))
+          .leftMap(err => SaveObjectError(err.getMessage))
       block = protobufObject.blockContent.get
-      transactionInfo = obj.transaction.getOrElse(throw new RuntimeException("AtalaObject has no transaction info"))
-      transactionBlock =
-        transactionInfo.block.getOrElse(throw new RuntimeException("AtalaObject has no transaction block"))
-      _ <- logBlockRequest("processObject", block, obj)
+      transactionInfo <- Either.fromOption(obj.transaction, SaveObjectError("AtalaObject has no transaction info"))
+      transactionBlock <-
+        Either.fromOption(transactionInfo.block, SaveObjectError("AtalaObject has no transaction block"))
       blockProcessed = blockProcessing.processBlock(
         block,
         transactionInfo.transactionId,
@@ -191,15 +199,6 @@ private final class ObjectManagementServiceImpl[F[_]: Sync](
       wasProcessed <- blockProcessed
       _ <- AtalaObjectsDAO.updateObjectStatus(obj.objectId, AtalaObjectStatus.Processed)
     } yield wasProcessed
-  }
-
-  private def logBlockRequest(methodName: String, block: AtalaBlock, atalaObject: AtalaObjectInfo): F[Unit] = {
-    Sync[F].delay {
-      val operationIds = block.operations.map(AtalaOperationId.of).mkString("\n")
-      logger.info(
-        s"MethodName:$methodName \n Block OperationIds = [$operationIds \n] atalaObject = $atalaObject"
-      )
-    }
   }
 }
 
@@ -215,18 +214,23 @@ object ObjectManagementService {
 
   case class AtalaObjectTransactionInfo(transaction: TransactionInfo, status: AtalaObjectTransactionStatus)
 
+  @derive(loggable)
+  final case class SaveObjectError(msg: String)
+
   def createAtalaObject(ops: List[SignedAtalaOperation]): node_internal.AtalaObject = {
     val block = node_internal.AtalaBlock(ATALA_OBJECT_VERSION, ops)
     node_internal.AtalaObject(blockOperationCount = block.operations.size).withBlockContent(block)
   }
 
-  def make[I[_]: Functor, F[_]: Sync](
+  def make[I[_]: Functor, F[_]: BracketThrow](
       atalaOperationsRepository: AtalaOperationsRepository[F],
       atalaObjectsTransactionsRepository: AtalaObjectsTransactionsRepository[F],
       keyValuesRepository: KeyValuesRepository[F],
       protocolVersionsRepository: ProtocolVersionRepository[F],
-      blockProcessing: BlockProcessingService
-  )(implicit xa: Transactor[F], logs: Logs[I, F]): I[ObjectManagementService[F]] = {
+      blockProcessing: BlockProcessingService,
+      xa: Transactor[F],
+      logs: Logs[I, F]
+  ): I[ObjectManagementService[F]] = {
     for {
       serviceLogs <- logs.service[ObjectManagementService[F]]
     } yield {
@@ -238,28 +242,28 @@ object ObjectManagementService {
         atalaObjectsTransactionsRepository,
         keyValuesRepository,
         protocolVersionsRepository,
-        blockProcessing
+        blockProcessing,
+        xa
       )
     }
   }
 
-  def unsafe[I[_]: Comonad, F[_]: Sync](
+  def unsafe[I[_]: Comonad, F[_]: BracketThrow](
       atalaOperationsRepository: AtalaOperationsRepository[F],
       atalaObjectsTransactionsRepository: AtalaObjectsTransactionsRepository[F],
       keyValuesRepository: KeyValuesRepository[F],
       protocolVersionsRepository: ProtocolVersionRepository[F],
-      blockProcessing: BlockProcessingService
-  )(implicit xa: Transactor[F], logs: Logs[I, F]): ObjectManagementService[F] =
+      blockProcessing: BlockProcessingService,
+      xa: Transactor[F],
+      logs: Logs[I, F]
+  ): ObjectManagementService[F] =
     ObjectManagementService
       .make(
         atalaOperationsRepository,
         atalaObjectsTransactionsRepository,
         keyValuesRepository,
         protocolVersionsRepository,
-        blockProcessing
-      )(
-        Functor[I],
-        Sync[F],
+        blockProcessing,
         xa,
         logs
       )
