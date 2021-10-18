@@ -26,7 +26,7 @@ const SUBJECTS_KEY = 'subjects';
 const RecipientsSelection = observer(
   ({ groupsProps, contactsProps, toggleShouldSelectRecipients, shouldSelectRecipients }) => {
     const { getAllGroupsToSelect } = useGroupStore();
-    const { sortedFilteredGroups } = useGroupUiState();
+    const { displayedGroups } = useGroupUiState();
 
     const { selectedGroups, setSelectedGroups } = groupsProps;
     const {
@@ -71,8 +71,8 @@ const RecipientsSelection = observer(
     const selectedLabel = selectedContacts.length ? `  (${selectedContacts.length})  ` : null;
 
     const selectAllGroupsProps = {
-      ...getCheckedAndIndeterminateProps(sortedFilteredGroups, selectedGroups),
-      disabled: !shouldSelectRecipients || !sortedFilteredGroups.length,
+      ...getCheckedAndIndeterminateProps(displayedGroups, selectedGroups),
+      disabled: !shouldSelectRecipients || !displayedGroups,
       onChange: handleSelectAllGroups
     };
 

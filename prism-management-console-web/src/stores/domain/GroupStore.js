@@ -107,7 +107,6 @@ export default class GroupStore {
     const { updateFetchedResults } = this.rootStore.uiState.groupUiState;
     this.numberOfResults = response?.totalNumberOfGroups;
     this.searchResults = this.searchResults.concat(response.groupsList);
-    debugger;
     updateFetchedResults();
   }
 
@@ -126,8 +125,7 @@ export default class GroupStore {
     const { hasFiltersApplied, updateFetchedResults } = this.rootStore.uiState.groupUiState;
     if (hasFiltersApplied) {
       this.numberOfResults = response.totalNumberOfGroups;
-      this.searchResults = this.searchResults.concat(response.groupsList);
-      debugger
+      this.searchResults = response.groupsList;
       updateFetchedResults();
     } else {
       this.groups = response.groupsList;
@@ -183,6 +181,7 @@ export default class GroupStore {
         this.rootStore.handleTransportLayerError(error, metadata);
         this.isFetching = false;
       });
+      return fallback;
     }
   };
 }
