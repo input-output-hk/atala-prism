@@ -1,10 +1,11 @@
 package io.iohk.atala.prism.connector.repositories
 
 import doobie.implicits._
-import io.iohk.atala.prism.connector.errors.UnknownValueError
+import io.iohk.atala.prism.connector.errors.{UnknownValueError, co}
 import io.iohk.atala.prism.connector.model._
 import io.iohk.atala.prism.connector.repositories.daos._
 import io.iohk.atala.prism.connector.DataPreparation
+import io.iohk.atala.prism.connector.repositories.ParticipantsRepository.FindByError
 import io.iohk.atala.prism.crypto.Sha256Digest
 import io.iohk.atala.prism.identity.{PrismDid => DID}
 import io.iohk.atala.prism.utils.Base64Utils.decodeURL
@@ -85,7 +86,7 @@ class ParticipantsRepositorySpec extends ConnectorRepositorySpecBase {
         .futureValue
 
       val result = participantsRepository.findBy(did).run(TraceId.generateYOLO).unsafeRunSync()
-      result.left.value must be(UnknownValueError("did", did.getValue))
+      result.left.value must be(co[FindByError](UnknownValueError("did", did.getValue)))
     }
 
     "update participant name and logo by ParticipantId" in {

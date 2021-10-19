@@ -57,6 +57,7 @@ class ConnectorAuthenticator(
       .run(TraceId.generateYOLO)
       .unsafeToFuture()
       .toFutureEither
+      .mapLeft(_.unify)
       .map(_.id)
       .mapLeft(e => UnexpectedError(e.toStatus))
 
@@ -66,6 +67,7 @@ class ConnectorAuthenticator(
       .run(TraceId.generateYOLO)
       .unsafeToFuture()
       .toFutureEither
+      .mapLeft(_.unify)
       .map(_.id)
       .mapLeft(e => UnexpectedError(e.toStatus))
 }

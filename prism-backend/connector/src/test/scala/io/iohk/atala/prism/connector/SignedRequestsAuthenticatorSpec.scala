@@ -8,7 +8,7 @@ import io.grpc.Context
 import io.iohk.atala.prism.crypto.EC.{INSTANCE => EC}
 import io.iohk.atala.prism.crypto.keys.ECPublicKey
 import io.iohk.atala.prism.crypto.signature.ECSignature
-import io.iohk.atala.prism.connector.errors.UnknownValueError
+import io.iohk.atala.prism.connector.errors.{UnknownValueError, co}
 import io.iohk.atala.prism.connector.model._
 import io.iohk.atala.prism.connector.repositories.{ParticipantsRepository, RequestNoncesRepository}
 import io.iohk.atala.prism.{DIDUtil, auth}
@@ -264,7 +264,7 @@ class SignedRequestsAuthenticatorSpec extends AnyWordSpec {
 
       val participantsRepository = mock[ParticipantsRepository[IOWithTraceIdContext]]
       participantsRepository.findBy(any[DID](defaultValueDID)).returns {
-        ReaderT.liftF(IO.pure(Left(UnknownValueError("did", "not found"))))
+        ReaderT.liftF(IO.pure(Left(co(UnknownValueError("did", "not found")))))
       }
 
       val customParser = new GrpcAuthenticationHeaderParser {

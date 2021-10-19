@@ -4,9 +4,10 @@ import cats.effect.MonadThrow
 import cats.syntax.apply._
 import cats.syntax.applicativeError._
 import cats.syntax.flatMap._
-import io.iohk.atala.prism.connector.errors
+import io.iohk.atala.prism.connector.errors.ConnectorError
 import io.iohk.atala.prism.connector.model.{ParticipantLogo, ParticipantType}
 import io.iohk.atala.prism.connector.services.RegistrationService
+import io.iohk.atala.prism.connector.services.RegistrationService.RegisterParticipantError
 import io.iohk.atala.prism.identity.PrismDid
 import io.iohk.atala.prism.protos.node_models.SignedAtalaOperation
 import tofu.higherKind.Mid
@@ -20,12 +21,12 @@ private[services] class RegistrationServiceLogs[F[_]: ServiceLogging[*[_], Regis
       name: String,
       logo: ParticipantLogo,
       didOrOperation: Either[PrismDid, SignedAtalaOperation]
-  ): Mid[F, Either[errors.ConnectorError, RegistrationService.RegistrationResult]] =
+  ): Mid[F, Either[RegisterParticipantError, RegistrationService.RegistrationResult]] =
     in =>
       info"registering participant $name " *> in
         .flatTap(
           _.fold(
-            er => error"Encountered an error while registering participant $er",
+            er => error"Encountered an error while registering participant ${er.unify: ConnectorError}",
             res => info"registering participant - successfully done ${res.did.getSuffix}"
           )
         )

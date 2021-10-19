@@ -1,10 +1,9 @@
 package io.iohk.atala.prism.connector.repositories.metrics
 
 import cats.effect.Bracket
-import io.iohk.atala.prism.connector.errors.ConnectorError
 import io.iohk.atala.prism.connector.model.{ParticipantInfo, UpdateParticipantProfile}
 import io.iohk.atala.prism.connector.repositories.ParticipantsRepository
-import io.iohk.atala.prism.connector.repositories.ParticipantsRepository.CreateParticipantRequest
+import io.iohk.atala.prism.connector.repositories.ParticipantsRepository._
 import io.iohk.atala.prism.crypto.keys.ECPublicKey
 import io.iohk.atala.prism.identity.{PrismDid => DID}
 import io.iohk.atala.prism.metrics.TimeMeasureUtil.MeasureOps
@@ -24,16 +23,16 @@ private[repositories] final class ParticipantsRepositoryMetrics[F[_]: TimeMeasur
   private lazy val updateParticipantProfileByTimer =
     TimeMeasureUtil.createDBQueryTimer(repoName, "updateParticipantProfileBy")
 
-  override def create(request: CreateParticipantRequest): Mid[F, Either[ConnectorError, Unit]] =
+  override def create(request: CreateParticipantRequest): Mid[F, Either[CreateParticipantError, Unit]] =
     _.measureOperationTime(createTimer)
 
-  override def findBy(id: ParticipantId): Mid[F, Either[ConnectorError, ParticipantInfo]] =
+  override def findBy(id: ParticipantId): Mid[F, Either[FindByError, ParticipantInfo]] =
     _.measureOperationTime(findByIdTimer)
 
-  override def findBy(publicKey: ECPublicKey): Mid[F, Either[ConnectorError, ParticipantInfo]] =
+  override def findBy(publicKey: ECPublicKey): Mid[F, Either[FindByError, ParticipantInfo]] =
     _.measureOperationTime(findByPublicKeyTimer)
 
-  override def findBy(did: DID): Mid[F, Either[ConnectorError, ParticipantInfo]] =
+  override def findBy(did: DID): Mid[F, Either[FindByError, ParticipantInfo]] =
     _.measureOperationTime(findByDidTimer)
 
   override def updateParticipantProfileBy(

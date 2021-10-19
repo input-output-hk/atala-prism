@@ -4,9 +4,9 @@ import cats.data.NonEmptyList
 import com.softwaremill.diffx.scalatest.DiffMatcher._
 import doobie.Fragments
 import doobie.implicits._
-import io.iohk.atala.prism.connector.errors.{
+import io.iohk.atala.prism.connector.errors.ConnectorError
+import io.iohk.atala.prism.connector.errors.MessagesError.{
   ConnectionNotFoundByConnectionIdAndSender,
-  ConnectorError,
   MessageIdsNotUnique,
   MessagesAlreadyExist
 }
