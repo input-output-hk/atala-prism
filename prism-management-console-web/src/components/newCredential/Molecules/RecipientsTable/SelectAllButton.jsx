@@ -1,45 +1,16 @@
-import React, { useState } from 'react';
+import React from 'react';
 import PropTypes from 'prop-types';
 import { useTranslation } from 'react-i18next';
 import { Checkbox } from 'antd';
 import { PulseLoader } from 'react-spinners';
-import _ from 'lodash';
-import { getCheckedAndIndeterminateProps } from '../../../../helpers/selectionHelpers';
-import { contactShape, groupShape } from '../../../../helpers/propShapes';
+import { checkboxPropShape } from '../../../../helpers/propShapes';
 
-const SelectAllButton = ({
-  displayedEntities,
-  entitiesFetcher,
-  entityKey,
-  selectedEntities,
-  setSelectedEntities,
-  shouldSelectRecipients
-}) => {
+const SelectAllButton = ({ loadingSelection, selectedEntities, checkboxProps }) => {
   const { t } = useTranslation();
-  const [loadingSelection, setLoadingSelection] = useState(false);
-
-  const handleSelectAll = async ev => {
-    setLoadingSelection(true);
-    const { checked } = ev.target;
-    const entitiesToSelect = await entitiesFetcher();
-    const filteredEntitiesToSelect = _.uniqBy(entitiesToSelect, e => e[entityKey]);
-    handleSetSelection(checked, filteredEntitiesToSelect);
-    setLoadingSelection(false);
-  };
-
-  const handleSetSelection = (checked, entitiesList) => {
-    setSelectedEntities(checked ? entitiesList.map(e => e[entityKey]) : []);
-  };
-
-  const selectAllContactsProps = {
-    ...getCheckedAndIndeterminateProps(displayedEntities, selectedEntities),
-    disabled: !shouldSelectRecipients || !displayedEntities.length,
-    onChange: handleSelectAll
-  };
 
   return (
     <div className="SelectAllCheckboxContainer">
-      <Checkbox className="SelectAllCheckbox" {...selectAllContactsProps}>
+      <Checkbox className="SelectAllCheckbox" {...checkboxProps}>
         {loadingSelection ? (
           <div className="LoadingSelection">
             <PulseLoader size={3} color="#FFAEB3" />
@@ -56,12 +27,9 @@ const SelectAllButton = ({
 };
 
 SelectAllButton.propTypes = {
-  displayedEntities: PropTypes.arrayOf(PropTypes.oneOfType([contactShape, groupShape])).isRequired,
-  entitiesFetcher: PropTypes.func.isRequired,
-  entityKey: PropTypes.string.isRequired,
+  loadingSelection: PropTypes.bool.isRequired,
   selectedEntities: PropTypes.arrayOf(PropTypes.string).isRequired,
-  setSelectedEntities: PropTypes.func.isRequired,
-  shouldSelectRecipients: PropTypes.bool.isRequired
+  checkboxProps: checkboxPropShape.isRequired
 };
 
 export default SelectAllButton;

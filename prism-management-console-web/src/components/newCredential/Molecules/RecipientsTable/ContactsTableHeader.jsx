@@ -9,6 +9,7 @@ import { CONTACT_ID_KEY } from '../../../../helpers/constants';
 import { useContactStore, useContactUiState } from '../../../../hooks/useContactStore';
 import ConnectionsFilter from '../../../connections/Molecules/filter/ConnectionsFilter';
 import './_style.scss';
+import { useSelectAll } from '../../../../hooks/useSelectAll';
 
 const ContactsTableHeader = observer(
   ({
@@ -19,19 +20,27 @@ const ContactsTableHeader = observer(
   }) => {
     const { t } = useTranslation();
 
-    const { getContactsToSelect } = useContactStore();
+    const { getContactsToSelect, isFetching } = useContactStore();
     const { displayedContacts } = useContactUiState();
+    debugger;
+
+    const { loadingSelection, checkboxProps } = useSelectAll({
+      displayedEntities: displayedContacts,
+      entitiesFetcher: getContactsToSelect,
+      entityKey: CONTACT_ID_KEY,
+      selectedEntities: selectedContacts,
+      setSelectedEntities: setSelectedContacts,
+      shouldSelectRecipients,
+      isFetching
+    });
 
     return (
       <div className="RecipientsSelectionTableHeader">
         <ConnectionsFilter fullFilters={false} />
         <SelectAllButton
-          displayedEntities={displayedContacts}
-          entitiesFetcher={getContactsToSelect}
-          entityKey={CONTACT_ID_KEY}
+          loadingSelection={loadingSelection}
           selectedEntities={selectedContacts}
-          setSelectedEntities={setSelectedContacts}
-          shouldSelectRecipients={shouldSelectRecipients}
+          checkboxProps={checkboxProps}
         />
         <div className="RecipientSelectionCheckbox NoRecipientsCheckbox">
           <Checkbox

@@ -124,10 +124,11 @@ export default class ContactStore {
   *getContactsToSelect() {
     const { hasFiltersApplied } = this.rootStore.uiState.contactUiState;
     const alreadyFetched = hasFiltersApplied ? this.searchResults : this.contacts;
+    const currentScrollId = hasFiltersApplied ? this.resultsScrollId : this.contactsScrollId;
 
     if (!this.hasMore) return alreadyFetched;
 
-    const response = yield this.fetchRecursively(alreadyFetched);
+    const response = yield this.fetchRecursively(alreadyFetched, currentScrollId);
     this.updateStoredContacts(response);
     return response.contactsList;
   }

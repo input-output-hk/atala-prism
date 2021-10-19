@@ -9,24 +9,32 @@ import SelectAllButton from './SelectAllButton';
 import { useGroupStore, useGroupUiState } from '../../../../hooks/useGroupStore';
 import { GROUP_NAME_KEY } from '../../../../helpers/constants';
 import './_style.scss';
+import { useSelectAll } from '../../../../hooks/useSelectAll';
 
 const GroupsTableHeader = observer(
   ({ selectedGroups, setSelectedGroups, shouldSelectRecipients, toggleShouldSelectRecipients }) => {
     const { t } = useTranslation();
 
-    const { getGroupsToSelect } = useGroupStore();
+    const { getGroupsToSelect, isFetching } = useGroupStore();
     const { displayedGroups } = useGroupUiState();
+
+    const { loadingSelection, checkboxProps } = useSelectAll({
+      displayedEntities: displayedGroups,
+      entitiesFetcher: getGroupsToSelect,
+      entityKey: GROUP_NAME_KEY,
+      selectedEntities: selectedGroups,
+      setSelectedEntities: setSelectedGroups,
+      shouldSelectRecipients,
+      isFetching
+    });
 
     return (
       <div className="RecipientsSelectionTableHeader">
         <GroupFilters fullFilters={false} />
         <SelectAllButton
-          displayedEntities={displayedGroups}
-          entitiesFetcher={getGroupsToSelect}
-          entityKey={GROUP_NAME_KEY}
+          loadingSelection={loadingSelection}
           selectedEntities={selectedGroups}
-          setSelectedEntities={setSelectedGroups}
-          shouldSelectRecipients={shouldSelectRecipients}
+          checkboxProps={checkboxProps}
         />
         <div className="RecipientSelectionCheckbox NoRecipientsCheckbox">
           <Checkbox

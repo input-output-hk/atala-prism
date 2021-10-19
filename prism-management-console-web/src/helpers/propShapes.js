@@ -215,3 +215,10 @@ export const templateSortingShape = {
   sortingBy: string,
   setSortingBy: func
 };
+
+export const checkboxPropShape = shape({
+  checked: bool.isRequired,
+  indeterminate: bool,
+  disabled: bool,
+  onChange: func.isRequired
+});
