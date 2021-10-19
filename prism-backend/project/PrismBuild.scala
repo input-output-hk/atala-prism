@@ -56,7 +56,7 @@ object PrismBuild {
           val cp = (assembly / fullClasspath).value
 
           val excludeLibs =
-            Set("protobuf-javalite", "kotlinx-coroutines-core", "pbandk-protos")
+            Set("protobuf-javalite", "kotlinx-coroutines-core", "pbandk-protos", "jakarta")
 
           cp.filter { path =>
             excludeLibs.exists(lib => path.data.getName.startsWith(lib))
