@@ -78,6 +78,14 @@ private[services] class ConnectionsServiceLogs[F[_]: ServiceLogging[*[_], Connec
         )
         .onError(errorCause"encountered an error while revoking connection" (_))
 
+  override def getConnectionById(participantId: ParticipantId, id: ConnectionId): Mid[F, Option[ConnectionInfo]] =
+    in =>
+      info"getting connection by id $id, participant $participantId" *> in
+        .flatTap(res =>
+          info"getting connection by id - successfully done, connection ${res.fold("not found")(_ => "found")}"
+        )
+        .onError(errorCause"encountered an error while getting connection by id" (_))
+
   override def getConnectionsPaginated(
       userId: ParticipantId,
       limit: Int,

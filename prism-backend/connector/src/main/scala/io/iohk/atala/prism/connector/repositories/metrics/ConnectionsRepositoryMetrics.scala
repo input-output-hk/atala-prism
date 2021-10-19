@@ -19,6 +19,7 @@ private[repositories] final class ConnectionsRepositoryMetrics[F[_]: TimeMeasure
   private lazy val getTokenInfoTimer = TimeMeasureUtil.createDBQueryTimer(repoName, "getTokenInfo")
   private lazy val addConnectionFromTokenTimer = TimeMeasureUtil.createDBQueryTimer(repoName, "addConnectionFromToken")
   private lazy val revokeConnectionsTimer = TimeMeasureUtil.createDBQueryTimer(repoName, "revokeConnection")
+  private lazy val getConnectionTimer = TimeMeasureUtil.createDBQueryTimer(repoName, "getConnection")
   private lazy val getConnectionsPaginatedTimer =
     TimeMeasureUtil.createDBQueryTimer(repoName, "getConnectionsPaginated")
   private lazy val getOtherSideInfoTimer = TimeMeasureUtil.createDBQueryTimer(repoName, "getOtherSideInfo")
@@ -42,6 +43,9 @@ private[repositories] final class ConnectionsRepositoryMetrics[F[_]: TimeMeasure
       participantId: ParticipantId,
       connectionId: ConnectionId
   ): Mid[F, Either[RevokeConnectionError, Unit]] = _.measureOperationTime(revokeConnectionsTimer)
+
+  override def getConnection(participant: ParticipantId, id: ConnectionId): Mid[F, Option[ConnectionInfo]] =
+    _.measureOperationTime(getConnectionTimer)
 
   override def getConnectionsPaginated(
       participant: ParticipantId,

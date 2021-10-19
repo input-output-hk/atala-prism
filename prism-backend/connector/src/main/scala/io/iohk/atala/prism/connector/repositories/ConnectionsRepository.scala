@@ -50,6 +50,8 @@ trait ConnectionsRepository[F[_]] {
 
   def revokeConnection(participantId: ParticipantId, connectionId: ConnectionId): F[Either[RevokeConnectionError, Unit]]
 
+  def getConnection(participant: ParticipantId, id: ConnectionId): F[Option[ConnectionInfo]]
+
   def getConnectionsPaginated(
       participant: ParticipantId,
       limit: Int,
@@ -260,6 +262,42 @@ private final class ConnectionsRepositoryPostgresImpl[F[_]: BracketThrow](xa: Tr
 
     query.value
       .logSQLErrors(s"revoke connection, connection id - $connectionId", logger)
+      .transact(xa)
+  }
+
+  override def getConnection(
+      participant: ParticipantId,
+      id: ConnectionId
+  ): F[Option[ConnectionInfo]] = {
+    // finds the connection making sure it is accessible by the participant
+    def safeQuery =
+      ConnectionsDAO
+        .getRawConnection(id)
+        .map { maybe =>
+          maybe.filter(_.contains(participant))
+        }
+
+    val query = for {
+      rawConnection <- OptionT(safeQuery)
+
+      otherParticipantId = {
+        if (rawConnection.initiator == participant) rawConnection.acceptor
+        else rawConnection.initiator
+      }
+
+      otherParticipant <-
+        ParticipantsDAO
+          .findBy(otherParticipantId)
+    } yield ConnectionInfo(
+      rawConnection.id,
+      rawConnection.instantiatedAt,
+      otherParticipant,
+      rawConnection.token,
+      rawConnection.status
+    )
+
+    query.value
+      .logSQLErrors(s"getConnection, id - $id, participant - $participant", logger)
       .transact(xa)
   }
 

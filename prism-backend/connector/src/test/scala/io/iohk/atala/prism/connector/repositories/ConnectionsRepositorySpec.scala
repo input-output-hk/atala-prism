@@ -204,6 +204,57 @@ class ConnectionsRepositorySpec extends ConnectorRepositorySpecBase {
     }
   }
 
+  "getConnection" should {
+    "returns the connection when the initiator asks for it" in {
+      val h1 = createHolder("h1", None)
+      val h2 = createHolder("h2", None)
+      val token = createToken(h1)
+      val connectionId: ConnectionId = createConnection(h1, h2, token, ConnectionStatus.ConnectionAccepted)
+
+      val connection: ConnectionInfo = connectionsRepository
+        .getConnection(h1, connectionId)
+        .run(TraceId.generateYOLO)
+        .unsafeRunSync()
+        .value
+
+      connection.token mustBe token
+      connection.participantInfo.id mustBe h2
+      connection.participantInfo.name mustBe "h2"
+    }
+
+    "returns the connection when the acceptor asks for it" in {
+      val h1 = createHolder("h1", None)
+      val h2 = createHolder("h2", None)
+      val token = createToken(h1)
+      val connectionId: ConnectionId = createConnection(h1, h2, token, ConnectionStatus.ConnectionAccepted)
+
+      val connection: ConnectionInfo = connectionsRepository
+        .getConnection(h2, connectionId)
+        .run(TraceId.generateYOLO)
+        .unsafeRunSync()
+        .value
+
+      connection.token mustBe token
+      connection.participantInfo.id mustBe h1
+      connection.participantInfo.name mustBe "h1"
+    }
+
+    "returns no connection when it exists but the participant does not belong to the connection" in {
+      val h1 = createHolder("h1", None)
+      val h2 = createHolder("h2", None)
+      val h3 = createHolder("h3", None)
+      val token = createToken(h1)
+      val connectionId: ConnectionId = createConnection(h1, h2, token, ConnectionStatus.ConnectionAccepted)
+
+      val connection: Option[ConnectionInfo] = connectionsRepository
+        .getConnection(h3, connectionId)
+        .run(TraceId.generateYOLO)
+        .unsafeRunSync()
+
+      connection mustBe empty
+    }
+  }
+
   "getConnectionsPaginated" should {
     "return both initiated and accepted connections" in {
       val issuerId = createIssuer()

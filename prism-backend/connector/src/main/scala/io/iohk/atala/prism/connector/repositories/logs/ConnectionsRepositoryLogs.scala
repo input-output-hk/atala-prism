@@ -35,7 +35,7 @@ private[repositories] final class ConnectionsRepositoryLogs[F[_]: ServiceLogging
             info => info"getting token info - successfully done ${info.id}"
           )
         )
-        .onError(errorCause"encountered an error while inserting tokens" (_))
+        .onError(errorCause"encountered an error while getting token info" (_))
 
   override def addConnectionFromToken(
       token: TokenString,
@@ -64,6 +64,14 @@ private[repositories] final class ConnectionsRepositoryLogs[F[_]: ServiceLogging
           )
         )
         .onError(errorCause"encountered an error while revoking connection" (_))
+
+  override def getConnection(participant: ParticipantId, id: ConnectionId): Mid[F, Option[ConnectionInfo]] =
+    in =>
+      info"getting connection by id" *> in
+        .flatTap(result =>
+          info"getting connection by id - successfully done, ${result.fold("not found")(_ => "found")}"
+        )
+        .onError(errorCause"encountered an error while getting connection by id" (_))
 
   override def getConnectionsPaginated(
       participant: ParticipantId,

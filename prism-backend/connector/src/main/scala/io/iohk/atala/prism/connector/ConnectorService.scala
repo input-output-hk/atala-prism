@@ -27,10 +27,8 @@ import io.iohk.atala.prism.logging.TraceId
 import io.iohk.atala.prism.logging.TraceId.IOWithTraceIdContext
 import io.iohk.atala.prism.metrics.RequestMeasureUtil.measureRequestFuture
 import io.iohk.atala.prism.models.ParticipantId
-import io.iohk.atala.prism.protos.common_models.{HealthCheckRequest, HealthCheckResponse}
-import io.iohk.atala.prism.protos.connector_api.{GetMessageStreamResponse, UpdateProfileRequest, UpdateProfileResponse}
 import io.iohk.atala.prism.protos.node_api.NodeServiceGrpc
-import io.iohk.atala.prism.protos.{connector_api, connector_models, node_api}
+import io.iohk.atala.prism.protos.{connector_api, common_models, connector_models, node_api}
 import io.iohk.atala.prism.utils.FutureEither
 import io.iohk.atala.prism.utils.FutureEither._
 import org.slf4j.{Logger, LoggerFactory}
@@ -59,8 +57,8 @@ class ConnectorService(
 
   private implicit val contextSwitch: ContextShift[IO] = IO.contextShift(executionContext)
 
-  override def healthCheck(request: HealthCheckRequest): Future[HealthCheckResponse] =
-    measureRequestFuture(serviceName, "healthCheck")(Future.successful(HealthCheckResponse()))
+  override def healthCheck(request: common_models.HealthCheckRequest): Future[common_models.HealthCheckResponse] =
+    measureRequestFuture(serviceName, "healthCheck")(Future.successful(common_models.HealthCheckResponse()))
 
   /** Retrieve a connection for a given connection token.
     *
@@ -73,6 +71,18 @@ class ConnectorService(
       connections
         .getConnectionByToken(new TokenString(request.token))
         .map(maybeConnection => connector_api.GetConnectionByTokenResponse(maybeConnection.map(_.toProto)))
+        .run(traceId)
+        .unsafeToFuture()
+        .lift[ConnectorError]
+    }
+
+  override def getConnectionById(
+      request: connector_api.GetConnectionByIdRequest
+  ): Future[connector_api.GetConnectionByIdResponse] =
+    auth[GetConnectionByIdRequest]("getConnectionById", request) { (participantId, traceId, typedRequest) =>
+      connections
+        .getConnectionById(participantId, typedRequest.id)
+        .map(maybeConnection => connector_api.GetConnectionByIdResponse(maybeConnection.map(_.toProto)))
         .run(traceId)
         .unsafeToFuture()
         .lift[ConnectorError]
@@ -297,7 +307,7 @@ class ConnectorService(
 
   override def getMessageStream(
       request: connector_api.GetMessageStreamRequest,
-      responseObserver: StreamObserver[GetMessageStreamResponse]
+      responseObserver: StreamObserver[connector_api.GetMessageStreamResponse]
   ): Unit = {
     def streamMessages(recipientId: ParticipantId, lastSeenMessageId: Option[MessageId]): Unit = {
       val existingMessageStream =
@@ -434,8 +444,8 @@ class ConnectorService(
     }
 
   override def updateParticipantProfile(
-      request: UpdateProfileRequest
-  ): Future[UpdateProfileResponse] =
+      request: connector_api.UpdateProfileRequest
+  ): Future[connector_api.UpdateProfileResponse] =
     auth[UpdateParticipantProfile]("updateParticipantProfile", request) { (participantId, traceId, updateProfile) =>
       participantsRepository
         .updateParticipantProfileBy(participantId, updateProfile)
