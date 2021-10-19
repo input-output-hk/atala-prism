@@ -8,8 +8,8 @@ import SelectAllButton from './SelectAllButton';
 import { CONTACT_ID_KEY } from '../../../../helpers/constants';
 import { useContactStore, useContactUiState } from '../../../../hooks/useContactStore';
 import ConnectionsFilter from '../../../connections/Molecules/filter/ConnectionsFilter';
-import './_style.scss';
 import { useSelectAll } from '../../../../hooks/useSelectAll';
+import './_style.scss';
 
 const ContactsTableHeader = observer(
   ({
@@ -22,7 +22,6 @@ const ContactsTableHeader = observer(
 
     const { getContactsToSelect, isFetching } = useContactStore();
     const { displayedContacts } = useContactUiState();
-    debugger;
 
     const { loadingSelection, checkboxProps } = useSelectAll({
       displayedEntities: displayedContacts,
