@@ -8,6 +8,8 @@ import doobie.implicits._
 import io.iohk.atala.prism.connector.AtalaOperationId
 import io.iohk.atala.prism.credentials.CredentialBatchId
 import io.iohk.atala.prism.crypto.{MerkleRoot, Sha256, Sha256Digest}
+import io.iohk.atala.prism.logging.TraceId
+import io.iohk.atala.prism.logging.TraceId.IOWithTraceIdContext
 import io.iohk.atala.prism.protos.models.TimestampInfo
 import io.iohk.atala.prism.models.{BlockInfo, DidSuffix, Ledger, TransactionId, TransactionInfo, TransactionStatus}
 import io.iohk.atala.prism.node.cardano.{LAST_SYNCED_BLOCK_NO, LAST_SYNCED_BLOCK_TIMESTAMP}
@@ -88,23 +90,23 @@ object DataPreparation {
 
   def publishSingleOperationAndFlush(signedAtalaOperation: SignedAtalaOperation)(implicit
       objectManagementService: ObjectManagementService,
-      submissionService: SubmissionService,
+      submissionService: SubmissionService[IOWithTraceIdContext],
       executionContext: ExecutionContext
   ): Future[Either[NodeError, AtalaOperationId]] = {
     for {
       atalaOperationIdE <- objectManagementService.scheduleSingleAtalaOperation(signedAtalaOperation)
-      _ <- submissionService.submitReceivedObjects()
+      _ <- submissionService.submitReceivedObjects().run(TraceId.generateYOLO).unsafeToFuture()
     } yield atalaOperationIdE
   }
 
   def publishOperationsAndFlush(ops: SignedAtalaOperation*)(implicit
       objectManagementService: ObjectManagementService,
-      submissionService: SubmissionService,
+      submissionService: SubmissionService[IOWithTraceIdContext],
       executionContext: ExecutionContext
   ): Future[List[Either[NodeError, AtalaOperationId]]] = {
     for {
       ids <- objectManagementService.scheduleAtalaOperations(ops: _*)
-      _ <- submissionService.submitReceivedObjects()
+      _ <- submissionService.submitReceivedObjects().run(TraceId.generateYOLO).unsafeToFuture()
     } yield ids
   }
 
@@ -137,8 +139,6 @@ object DataPreparation {
       .transact(xa)
       .unsafeRunSync()
   }
-
-  def gimiAll()(implicit xa: Transactor[IO]) = DIDDataDAO.all().transact(xa).unsafeRunSync()
 
   def findByDidSuffix(didSuffix: DidSuffix)(implicit xa: Transactor[IO]): DIDDataState = {
     val query = for {

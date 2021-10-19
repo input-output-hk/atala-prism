@@ -1,5 +1,7 @@
 package io.iohk.atala.prism.node.services
 
+import io.iohk.atala.prism.logging.TraceId
+import io.iohk.atala.prism.logging.TraceId.IOWithTraceIdContext
 import io.iohk.atala.prism.node.services.SubmissionSchedulingService.Config
 import monix.execution.Scheduler
 import org.slf4j.LoggerFactory
@@ -9,7 +11,7 @@ import scala.concurrent.duration.{DurationInt, FiniteDuration}
 
 class SubmissionSchedulingService private (
     config: Config,
-    submissionService: SubmissionService
+    submissionService: SubmissionService[IOWithTraceIdContext]
 )(implicit scheduler: Scheduler) {
   private val logger = LoggerFactory.getLogger(this.getClass)
 
@@ -35,6 +37,8 @@ class SubmissionSchedulingService private (
       // Ensure run is scheduled after completion, even if current run fails
       submissionService
         .retryOldPendingTransactions(config.ledgerPendingTransactionTimeout)
+        .run(TraceId.generateYOLO)
+        .unsafeToFuture()
         .recover { err =>
           logger.error("Could not retry old pending transactions", err)
         }
@@ -51,6 +55,8 @@ class SubmissionSchedulingService private (
       // Ensure run is scheduled after completion, even if current run fails
       submissionService
         .submitReceivedObjects()
+        .run(TraceId.generateYOLO)
+        .unsafeToFuture()
         .map { submissionResult =>
           submissionResult.left.foreach { err =>
             logger.error("Could not submit received objects", err)
@@ -80,7 +86,7 @@ object SubmissionSchedulingService {
       operationSubmissionPeriod: FiniteDuration = 20.seconds
   )
 
-  def apply(config: Config, submissionService: SubmissionService)(implicit
+  def apply(config: Config, submissionService: SubmissionService[IOWithTraceIdContext])(implicit
       scheduler: Scheduler
   ): SubmissionSchedulingService = {
     new SubmissionSchedulingService(config, submissionService)

@@ -2,7 +2,7 @@ package io.iohk.atala.prism.node.poc.endorsements
 
 import java.time.Duration
 import java.util.concurrent.TimeUnit
-import cats.effect.IO
+import cats.effect.{ContextShift, IO}
 import com.google.protobuf.ByteString
 import io.grpc.inprocess.{InProcessChannelBuilder, InProcessServerBuilder}
 import io.grpc.{ManagedChannel, Server}
@@ -52,12 +52,13 @@ import org.scalatest.BeforeAndAfterEach
 import org.scalatest.OptionValues.convertOptionToValuable
 import tofu.logging.Logs
 
-import scala.concurrent.{Future, Promise}
+import scala.concurrent.{ExecutionContext, Future, Promise}
 import scala.jdk.CollectionConverters._
 
 class EndorsementsFlowPoC extends AtalaWithPostgresSpec with BeforeAndAfterEach {
   import Utils._
 
+  private implicit val ce: ContextShift[IO] = IO.contextShift(ExecutionContext.global)
   private val endorsementsFlowPoCLogs = Logs.withContext[IO, IOWithTraceIdContext]
   protected var serverName: String = _
   protected var serverHandle: Server = _
@@ -71,7 +72,7 @@ class EndorsementsFlowPoC extends AtalaWithPostgresSpec with BeforeAndAfterEach 
   protected var atalaReferenceLedger: InMemoryLedgerService = _
   protected var blockProcessingService: BlockProcessingServiceImpl = _
   protected var objectManagementService: ObjectManagementService = _
-  protected var submissionService: SubmissionService = _
+  protected var submissionService: SubmissionService[IOWithTraceIdContext] = _
   protected var objectManagementServicePromise: Promise[ObjectManagementService] = _
   protected var submissionSchedulingService: SubmissionSchedulingService = _
   protected var protocolVersionsRepository: ProtocolVersionRepository[IOWithTraceIdContext] = _
@@ -103,10 +104,11 @@ class EndorsementsFlowPoC extends AtalaWithPostgresSpec with BeforeAndAfterEach 
       protocolVersionsRepository,
       blockProcessingService
     )
-    submissionService = SubmissionService(
+    submissionService = SubmissionService.unsafe(
       atalaReferenceLedger,
       atalaOperationsRepository,
-      atalaObjectsTransactionsRepository
+      atalaObjectsTransactionsRepository,
+      logs = endorsementsFlowPoCLogs
     )
     submissionSchedulingService = SubmissionSchedulingService(
       SubmissionSchedulingService.Config(ledgerPendingTransactionTimeout = Duration.ZERO),

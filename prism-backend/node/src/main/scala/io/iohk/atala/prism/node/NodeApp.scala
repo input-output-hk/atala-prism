@@ -108,14 +108,15 @@ class NodeApp(executionContext: ExecutionContext) { self =>
       TimeUnit.NANOSECONDS
     )
     val transactionsPerSecond = globalConfig.getInt("transactionsPerSecond")
-    val submissionService = SubmissionService(
+    val submissionService = SubmissionService.unsafe(
       atalaReferenceLedger,
       atalaOperationsRepository,
       atalaObjectsTransactionsRepository,
       SubmissionService.Config(
         maxNumberTransactionsToSubmit = operationSubmissionPeriod.toSeconds.toInt * transactionsPerSecond,
         maxNumberTransactionsToRetry = transactionRetryPeriod.toSeconds.toInt * transactionsPerSecond
-      )
+      ),
+      logs
     )
     val submissionSchedulingService = SubmissionSchedulingService(
       SubmissionSchedulingService.Config(
