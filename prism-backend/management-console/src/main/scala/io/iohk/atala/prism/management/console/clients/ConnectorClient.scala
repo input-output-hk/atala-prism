@@ -14,6 +14,8 @@ import io.iohk.atala.prism.connector.RequestAuthenticator
 import io.iohk.atala.prism.crypto.EC.{INSTANCE => EC}
 import io.iohk.atala.prism.crypto.keys.ECPrivateKey
 import io.iohk.atala.prism.identity.{PrismDid => DID}
+import io.iohk.atala.prism.metrics.TimeMeasureUtil.{DomainTimer, MeasureOps}
+import io.iohk.atala.prism.metrics.{TimeMeasureMetric, TimeMeasureUtil}
 import io.iohk.atala.prism.models.ConnectionToken
 import io.iohk.atala.prism.protos.connector_api._
 import io.iohk.atala.prism.protos.connector_models.ContactConnection
@@ -22,10 +24,11 @@ import io.iohk.atala.prism.utils.GrpcUtils
 
 import scala.concurrent.ExecutionContext
 import scala.util.{Failure, Success, Try}
-import tofu.Execute
+import tofu.{BracketThrow, Execute}
 import tofu.higherKind.Mid
 import tofu.logging.{Logs, ServiceLogging}
 import tofu.syntax.logging._
+import tofu.syntax.monoid.TofuSemigroupOps
 
 @derive(applyK)
 trait ConnectorClient[F[_]] {
@@ -83,7 +86,7 @@ object ConnectorClient {
     }
   }
 
-  def apply[F[_]: Execute: MonadThrow, R[_]: Functor](
+  def apply[F[_]: Execute: BracketThrow: TimeMeasureMetric, R[_]: Functor](
       config: Config,
       logs: Logs[R, F]
   )(implicit ec: ExecutionContext): R[ConnectorClient[F]] =
@@ -102,12 +105,14 @@ object ConnectorClient {
 
       val requestAuthenticator = new RequestAuthenticator
       val requestSigner = ClientHelper.requestSigner(requestAuthenticator, config.whitelistedDID, config.didPrivateKey)
+      val logs: ConnectorClient[Mid[F, *]] = new ConnectorClientLogs[F]
+      val metrics: ConnectorClient[Mid[F, *]] = new ConnectorClientMetrics[F]
 
-      val mid: ConnectorClient[Mid[F, *]] = new ConnectorClientLogs[F]
+      val mid: ConnectorClient[Mid[F, *]] = metrics |+| logs
       mid attach new ConnectorClient.GrpcImpl[F](connectorService, connectorContactsService)(requestSigner)
     }
 
-  def makeResource[F[_]: Execute: MonadThrow, R[_]: Applicative: Functor](
+  def makeResource[F[_]: Execute: BracketThrow: TimeMeasureMetric, R[_]: Applicative: Functor](
       config: Config,
       logs: Logs[R, F]
   )(implicit ec: ExecutionContext): Resource[R, ConnectorClient[F]] =
@@ -188,4 +193,28 @@ private[clients] final class ConnectorClientLogs[F[_]: ServiceLogging[*[_], Conn
           info"getting connection status - successfully done got ${response.size} contact connection(s)"
         )
         .onError(errorCause"encountered an error while getting connection status" (_))
+}
+
+private[clients] final class ConnectorClientMetrics[F[_]: TimeMeasureMetric: BracketThrow]
+    extends ConnectorClient[Mid[F, *]] {
+
+  val clientName = "ConnectorClient"
+
+  val generateConnectionTokensTimer: DomainTimer =
+    TimeMeasureUtil.createClientRequestTimer(clientName, "estimateTransactionFee")
+  val sendMessagesTimer: DomainTimer = TimeMeasureUtil.createClientRequestTimer(clientName, "postTransaction")
+  val getConnectionStatusTimer: DomainTimer = TimeMeasureUtil.createClientRequestTimer(clientName, "getTransaction")
+
+  override def generateConnectionTokens(
+      header: GrpcAuthenticationHeader.DIDBased,
+      count: Int
+  ): Mid[F, Seq[ConnectionToken]] = _.measureOperationTime(generateConnectionTokensTimer)
+
+  override def sendMessages(
+      request: SendMessagesRequest,
+      header: GrpcAuthenticationHeader.DIDBased
+  ): Mid[F, SendMessagesResponse] = _.measureOperationTime(sendMessagesTimer)
+
+  override def getConnectionStatus(tokens: Seq[ConnectionToken]): Mid[F, Seq[ContactConnection]] =
+    _.measureOperationTime(getConnectionStatusTimer)
 }
