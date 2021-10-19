@@ -10,7 +10,6 @@ import { useContactStore, useContactUiState } from '../../../../hooks/useContact
 import ConnectionsFilter from '../../../connections/Molecules/filter/ConnectionsFilter';
 import { useSelectAll } from '../../../../hooks/useSelectAll';
 import './_style.scss';
-import { useSelectAll } from '../../../../hooks/useSelectAll';
 
 const ContactsTableHeader = observer(
   ({
@@ -23,17 +22,6 @@ const ContactsTableHeader = observer(
 
     const { getContactsToSelect, isFetching } = useContactStore();
     const { displayedContacts } = useContactUiState();
-    debugger;
-
-    const { loadingSelection, checkboxProps } = useSelectAll({
-      displayedEntities: displayedContacts,
-      entitiesFetcher: getContactsToSelect,
-      entityKey: CONTACT_ID_KEY,
-      selectedEntities: selectedContacts,
-      setSelectedEntities: setSelectedContacts,
-      shouldSelectRecipients,
-      isFetching
-    });
 
     const { loadingSelection, checkboxProps } = useSelectAll({
       displayedEntities: displayedContacts,
