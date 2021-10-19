@@ -21,7 +21,7 @@ Such shared secret can be then used to perform a handshake between the Issuer an
 
 ## Phase one: Key exchange
 
-This phase describes the protocol of exchanging a common secret and other information between issuer and Holder that are necessary for the next stage - encryption.
+This phase describes the protocol of exchanging a common secret and other information between the Issuer and Holder that are necessary for the next stage - encryption.
 
 ### Prerequisites
 
@@ -117,7 +117,7 @@ In the following description of steps we are assuming that the Issuer is sending
 For the purpose of discussion, we will define the following:
 
 * `•` = [Elliptic curve point multiplication](https://en.wikipedia.org/wiki/Elliptic_curve_point_multiplication)
-* `r` = Random value between 1 and `n`
+* `r` = Random integer between 1 and `n`
 * `n` = Order of `G` in [Secp256k1](https://en.bitcoin.it/wiki/Secp256k1) Curve
 * `G` = Generator point of [Secp256k1](https://en.bitcoin.it/wiki/Secp256k1) Curve
 * `S` = Secret key
@@ -145,4 +145,25 @@ For the purpose of discussion, we will define the following:
 10. Holder will retrieve `IPK` and `HPK` from `M1` and verify that `IPK` is the public key of the issuer he is expecting a message from, and that `HPK` is his public key, thus message is intended to him.
 11. Holder will retrieve a message `M` from `M1`
 
-It is worth noting that at every step of the protocol, whenever a verification takes place, if verification fails all the rest of the steps will not be performed and the whole protocol will be aborted.
+It is worth noting that at every step of the protocol, whenever a verification or decryption takes place, if one of them fails all the rest of the steps will not be performed and the whole protocol will be aborted.
+
+## GRPC messages
+
+Protocol introduces following GRPC messages to the system:
+
+`AuthenticatedPublicKey` will be added to `oneOf` of `AtalaMessage` for step 6 of Phase 1 - key exchange.
+```protobuf
+message AuthenticatedPublicKey {
+  bytes pk = 1;
+  bytes mac = 2;
+}
+```
+
+`EncryptedMessage` will be added to `oneOf` of `AtalaMessage` for step 6 of phase 2 - encryption.
+```protobuf
+message EncryptedMessage {
+  bytes content = 1;
+  uint64 rValue = 2;
+  bytes signature = 3;
+}
+```
