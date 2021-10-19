@@ -83,7 +83,7 @@ const RecipientsSelection = observer(
               <span>{t('newCredential.targetsSelection.selectGroup')}</span>
             </div>
             <div className="selectionContainer">
-              <GroupFilters showDateFilter={false} />
+              <GroupFilters fullFilters={false} />
               <div className="selectGroupsCheckbox">
                 <Checkbox className="groupsCheckbox" {...selectAllGroupsProps}>
                   <span>
