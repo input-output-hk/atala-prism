@@ -201,9 +201,10 @@ private[clients] final class ConnectorClientMetrics[F[_]: TimeMeasureMetric: Bra
   val clientName = "ConnectorClient"
 
   val generateConnectionTokensTimer: DomainTimer =
-    TimeMeasureUtil.createClientRequestTimer(clientName, "estimateTransactionFee")
-  val sendMessagesTimer: DomainTimer = TimeMeasureUtil.createClientRequestTimer(clientName, "postTransaction")
-  val getConnectionStatusTimer: DomainTimer = TimeMeasureUtil.createClientRequestTimer(clientName, "getTransaction")
+    TimeMeasureUtil.createClientRequestTimer(clientName, "generateConnectionTokens")
+  val sendMessagesTimer: DomainTimer = TimeMeasureUtil.createClientRequestTimer(clientName, "sendMessages")
+  val getConnectionStatusTimer: DomainTimer =
+    TimeMeasureUtil.createClientRequestTimer(clientName, "getConnectionStatus")
 
   override def generateConnectionTokens(
       header: GrpcAuthenticationHeader.DIDBased,
