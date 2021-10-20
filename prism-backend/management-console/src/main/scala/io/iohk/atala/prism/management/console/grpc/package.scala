@@ -743,7 +743,7 @@ package object grpc {
   implicit val storeCredentialConverter: ProtoConverter[StoreCredentialRequest, StoreCredential] =
     (request: StoreCredentialRequest) => {
       for {
-        contactId <- Contact.Id.from(request.connectionId)
+        contactId <- Contact.Id.from(request.connectionToken) // TODO: Rename to ConnectionToken
         credentialExternalId <- CredentialExternalId.from(request.credentialExternalId)
       } yield StoreCredential(
         contactId,
