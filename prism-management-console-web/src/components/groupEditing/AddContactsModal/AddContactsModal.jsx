@@ -23,6 +23,7 @@ const AddContactsModal = ({ api, groupName, visible, onCancel, onConfirm }) => {
   const [selectedContacts, setSelectedContacts] = useState([]);
   const [loadingSelection, setLoadingSelection] = useState(false);
 
+  // FIXME: remove
   const {
     contacts,
     filterProps,

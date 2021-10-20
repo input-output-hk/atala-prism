@@ -47,6 +47,7 @@ export default class ContactStore {
       fetchSearchResults: flow.bound,
       fetchSearchResultsNextPage: flow.bound,
       updateStoredContacts: action,
+      fetchAllContacts: flow.bound,
       getContactsToSelect: flow.bound,
       fetchContacts: action,
       fetchRecursively: false,
@@ -119,6 +120,11 @@ export default class ContactStore {
     this.searchResults = this.searchResults.concat(response.contactsList);
     this.resultsScrollId = response.newScrollId;
     updateFetchedResults();
+  }
+
+  *fetchAllContacts() {
+    const response = yield this.fetchRecursively(this.contacts, this.contactsScrollId);
+    return response.contactsList;
   }
 
   *getContactsToSelect() {

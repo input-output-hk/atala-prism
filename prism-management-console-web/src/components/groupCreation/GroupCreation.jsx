@@ -31,6 +31,7 @@ const GroupCreation = ({
 
   const [loadingSelection, setLoadingSelection] = useState(false);
 
+  // FIXME: remove
   const {
     contacts,
     filterProps,

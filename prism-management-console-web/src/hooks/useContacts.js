@@ -303,19 +303,3 @@ export const useContactsWithFilteredListAndNotInGroup = contactsManager => {
     fetchAll
   };
 };
-
-export const useAllContacts = (contactsManager, groupName) => {
-  const [allContacts, setAllContacts] = useState([]);
-
-  useEffect(() => {
-    contactsManager
-      .getAllContacts(groupName)
-      .then(setAllContacts)
-      .catch(error => {
-        Logger.error('[Contacts.useAllContacts] There has been an error getting contacts', error);
-        message.error(i18n.t('errors.errorGetting', { model: 'Contacts' }));
-      });
-  }, [contactsManager, groupName]);
-
-  return { allContacts };
-};
