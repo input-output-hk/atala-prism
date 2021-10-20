@@ -120,7 +120,7 @@ const GroupEditing = ({
           className="GroupNameForm"
         />
       );
-    return groupName;
+    return <p>{groupName}</p>;
   };
 
   return (

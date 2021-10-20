@@ -7,7 +7,7 @@ import {
   TEMPLATE_CREATION_RESULT
 } from '../../../helpers/constants';
 import DesignTemplateStep from './DesignTemplateStep/DesignTemplateStep';
-import TemplateCategorySelectionStep from './CategoryStep/TemplateCategorySelector';
+import TemplateCategorySelectionStep from './CategoryStep/TemplateCategorySelectionStep';
 import SuccessBanner from '../../common/Molecules/SuccessPage/SuccessBanner';
 import { withRedirector } from '../../providers/withRedirector';
 import { templateCreationStepShape } from '../../../helpers/propShapes';
@@ -16,9 +16,6 @@ const TemplateCreationStep = ({ currentStep, redirector: { redirectToCredentialT
   const { t } = useTranslation();
 
   switch (currentStep) {
-    default:
-    case SELECT_TEMPLATE_CATEGORY:
-      return <TemplateCategorySelectionStep />;
     case DESIGN_TEMPLATE:
       return <DesignTemplateStep />;
     case TEMPLATE_CREATION_RESULT: {
@@ -31,11 +28,14 @@ const TemplateCreationStep = ({ currentStep, redirector: { redirectToCredentialT
         />
       );
     }
+    case SELECT_TEMPLATE_CATEGORY:
+    default:
+      return <TemplateCategorySelectionStep />;
   }
 };
 
 TemplateCreationStep.propTypes = {
-  currentStep: templateCreationStepShape,
+  currentStep: templateCreationStepShape.isRequired,
   redirector: PropTypes.shape({
     redirectToCredentialTemplates: PropTypes.func.isRequired
   }).isRequired
