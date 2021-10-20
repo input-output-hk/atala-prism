@@ -164,7 +164,7 @@ object PrismBuild {
         name := "connector",
         Compile / run / mainClass := Some("io.iohk.atala.prism.connector.ConnectorApp"),
         scalacOptions ~= (_ :+ "-Wconf:src=.*twirl/.*:silent"),
-        libraryDependencies ++= Seq(braintree, twirlApi)
+        libraryDependencies += twirlApi
       )
       .dependsOn(common % "compile->compile;test->test")
       .enablePlugins(SbtTwirl)
