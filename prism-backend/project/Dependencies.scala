@@ -4,7 +4,6 @@ object versions {
   val awsSdk = "2.11.8"
   val bitcoinLib = "0.18"
   val bouncycastle = "1.62"
-  val braintree = "3.12.0"
   val catsScalatest = "3.0.8"
   val chimney = "0.6.0"
   val circe = "0.13.0"
@@ -22,8 +21,6 @@ object versions {
   val jaxb = "2.3.1"
   val mockito = "1.16.0"
   val monix = "3.2.2"
-  val monocle = "2.1.0"
-  val odyssey = "0.1.5"
   val osLib = "0.7.8"
   val playJson = "2.9.1"
   val postgresql = "42.2.18"
@@ -45,7 +42,6 @@ object Dependencies {
   val bitcoinLib = "fr.acinq" %% "bitcoin-lib" % versions.bitcoinLib
   val bouncyBcpkix = "org.bouncycastle" % "bcpkix-jdk15on" % versions.bouncycastle
   val bouncyBcprov = "org.bouncycastle" % "bcprov-jdk15on" % versions.bouncycastle
-  val braintree = "com.braintreepayments.gateway" % "braintree-java" % versions.braintree
   val chimney = "io.scalaland" %% "chimney" % versions.chimney
   val circeCore = "io.circe" %% "circe-core" % versions.circe
   val circeGeneric = "io.circe" %% "circe-generic" % versions.circe
