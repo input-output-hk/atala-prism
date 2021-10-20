@@ -1,11 +1,10 @@
 package db.migration
 
 import io.iohk.atala.prism.crypto.EC.{INSTANCE => EC}
-import io.iohk.atala.prism.utils.Using.using
 import org.flywaydb.core.api.migration.{BaseJavaMigration, Context}
 
 import java.sql.ResultSet
-import scala.util.{Failure, Success, Try}
+import scala.util.{Failure, Success, Try, Using}
 
 class V19__public_keys extends BaseJavaMigration {
 
@@ -33,7 +32,7 @@ class V19__public_keys extends BaseJavaMigration {
 
     val compressedX: Array[Byte] = EC.toPublicKeyFromByteCoordinates(x, y).getEncodedCompressed
 
-    using(
+    Using(
       context.getConnection
         .prepareStatement("UPDATE public_keys SET xCompressed = ? WHERE did_suffix = ? AND key_id = ?")
     ) { update =>
