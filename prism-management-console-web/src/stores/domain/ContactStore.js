@@ -122,28 +122,6 @@ export default class ContactStore {
     updateFetchedResults();
   }
 
-  *fetchAllContacts() {
-    if (!this.hasMoreContacts) return this.contacts;
-    const response = yield this.fetchRecursively();
-    runInAction(() => {
-      this.contacts = response.contactsList;
-      this.contactsScrollId = '';
-    });
-    return this.contacts;
-  }
-
-  *fetchAllFilteredContacts() {
-    if (!this.hasMoreResults) return this.searchResults;
-    const response = yield this.fetchRecursively({ scrollId: '' });
-    runInAction(() => {
-      this.searchResults = response.contactsList;
-      this.resultsScrollId = '';
-      const { updateFetchedResults } = this.rootStore.uiState.contactUiState;
-      updateFetchedResults();
-    });
-    return this.searchResults;
-  }
-
   *getContactsToSelect() {
     const { hasFiltersApplied } = this.rootStore.uiState.contactUiState;
     const alreadyFetched = hasFiltersApplied ? this.searchResults : this.contacts;
