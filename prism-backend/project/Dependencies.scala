@@ -5,7 +5,7 @@ object versions {
   val bitcoinLib = "0.18"
   val bouncycastle = "1.62"
   val braintree = "3.2.0"
-  val catsScalatest = "3.0.5"
+  val catsScalatest = "3.0.8"
   val chimney = "0.6.0"
   val circe = "0.13.0"
   val circeOptics = "0.13.0"
