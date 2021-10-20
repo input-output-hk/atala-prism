@@ -56,11 +56,10 @@ class CredentialIssuanceServiceImplSpec extends ManagementConsoleRpcSpecBase wit
             .unsafeRunSync()
             .sortBy(_.contactId.toString)
         credentials.size mustBe contacts.size
-        contacts.zip(credentials).foreach {
-          case (contact, credential) =>
-            credential.contactId.toString mustBe contact.contactId
-            credential.credentialData mustBe asJson(contact.credentialData)
-            credential.createdOn must (be >= creationTime and be <= Instant.now)
+        contacts.zip(credentials).foreach { case (contact, credential) =>
+          credential.contactId.toString mustBe contact.contactId
+          credential.credentialData mustBe asJson(contact.credentialData)
+          credential.createdOn must (be >= creationTime and be <= Instant.now)
         }
 
         // Get the credential issuance just created and verify it matches
@@ -79,11 +78,10 @@ class CredentialIssuanceServiceImplSpec extends ManagementConsoleRpcSpecBase wit
           val issuanceContacts =
             credentialIssuance.credentialIssuanceContacts.sortBy(_.contactId)
           issuanceContacts.size mustBe contacts.size
-          contacts.zip(issuanceContacts).foreach {
-            case (contact, issuanceContact) =>
-              issuanceContact.contactId mustBe contact.contactId
-              issuanceContact.groupIds must contain theSameElementsAs contact.groupIds
-              asJson(issuanceContact.credentialData) mustBe asJson(contact.credentialData)
+          contacts.zip(issuanceContacts).foreach { case (contact, issuanceContact) =>
+            issuanceContact.contactId mustBe contact.contactId
+            issuanceContact.groupIds must contain theSameElementsAs contact.groupIds
+            asJson(issuanceContact.credentialData) mustBe asJson(contact.credentialData)
           }
         }
       }
@@ -171,11 +169,10 @@ class CredentialIssuanceServiceImplSpec extends ManagementConsoleRpcSpecBase wit
             .unsafeRunSync()
             .sortBy(_.contactId.toString)
         credentials.size mustBe contacts.size
-        contacts.zip(credentials).foreach {
-          case (contact, credential) =>
-            credential.contactId.toString mustBe contact.contactId
-            credential.credentialData mustBe asJson(contact.credentialData)
-            credential.createdOn must (be >= creationTime and be <= Instant.now)
+        contacts.zip(credentials).foreach { case (contact, credential) =>
+          credential.contactId.toString mustBe contact.contactId
+          credential.credentialData mustBe asJson(contact.credentialData)
+          credential.createdOn must (be >= creationTime and be <= Instant.now)
         }
 
         // Get the credential issuance just created and verify it matches
@@ -194,11 +191,10 @@ class CredentialIssuanceServiceImplSpec extends ManagementConsoleRpcSpecBase wit
           val issuanceContacts =
             credentialIssuance.credentialIssuanceContacts.sortBy(_.contactId)
           issuanceContacts.size mustBe contacts.size
-          contacts.zip(issuanceContacts).foreach {
-            case (contact, issuanceContact) =>
-              issuanceContact.contactId mustBe contact.contactId
-              issuanceContact.groupIds must contain theSameElementsAs contact.groupIds
-              asJson(issuanceContact.credentialData) mustBe asJson(contact.credentialData)
+          contacts.zip(issuanceContacts).foreach { case (contact, issuanceContact) =>
+            issuanceContact.contactId mustBe contact.contactId
+            issuanceContact.groupIds must contain theSameElementsAs contact.groupIds
+            asJson(issuanceContact.credentialData) mustBe asJson(contact.credentialData)
           }
         }
       }

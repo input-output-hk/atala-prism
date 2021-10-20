@@ -268,9 +268,8 @@ object CredentialsDAO {
          |      issuer_id = $institutionId AND""".stripMargin ++
       Fragments.in(fr"pc.credential_id", credentialsIds)).update.run.flatTap { n =>
       FC.raiseError(
-          new RuntimeException(s"Cannot mark credentials as shared. Updated rows: $n expected ${credentialsIds.size}")
-        )
-        .whenA(n != credentialsIds.size)
+        new RuntimeException(s"Cannot mark credentials as shared. Updated rows: $n expected ${credentialsIds.size}")
+      ).whenA(n != credentialsIds.size)
     }.void
   }
 
@@ -328,9 +327,8 @@ object CredentialsDAO {
          |""".stripMargin ++
       Fragments.in(fr"credential_id", credentialsIds)).update.run.flatTap { n =>
       FC.raiseError(
-          new RuntimeException(s"Cannot delete credentials. Updated rows: $n expected ${credentialsIds.size}")
-        )
-        .whenA(n != credentialsIds.size)
+        new RuntimeException(s"Cannot delete credentials. Updated rows: $n expected ${credentialsIds.size}")
+      ).whenA(n != credentialsIds.size)
     }.void
   }
 

@@ -219,8 +219,8 @@ private final class AtalaObjectsTransactionsRepositoryImpl[F[_]: BracketThrow](x
     query
       .logSQLErrors("setting object transaction details", logger)
       .transact(xa)
-      .recover {
-        case _: AtalaObjectCannotBeModified => None
+      .recover { case _: AtalaObjectCannotBeModified =>
+        None
       }
   }
 

@@ -7,8 +7,7 @@ import io.iohk.atala.prism.crypto.keys.ECPublicKey
 import tofu.logging._
 import tofu.syntax.monoid.TofuSemigroupOps
 
-/**
-  * Used for libraries classes from the outer world (Kotlin prism-sdk classes for example etc.)
+/** Used for libraries classes from the outer world (Kotlin prism-sdk classes for example etc.)
   */
 object GeneralLoggableInstances {
 

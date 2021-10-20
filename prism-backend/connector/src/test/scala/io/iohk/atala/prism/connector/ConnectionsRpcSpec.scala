@@ -564,31 +564,30 @@ class ConnectionsRpcSpec extends ConnectorRpcSpecBase with MockitoSugar {
       Some(
         node_models.DIDData(
           id = issuerDID.getSuffix,
-          publicKeys = issuerCommKeys.map {
-            case (keyId, key, revokedTimestamp, usage) =>
-              val ecPoint = key.getPublicKey.getCurvePoint
-              node_models.PublicKey(
-                id = keyId,
-                usage = usage,
-                addedOn = Some(
-                  LedgerData(timestampInfo =
-                    Some(
-                      node_models
-                        .TimestampInfo(1, 1, earlierTimestamp.toProtoTimestamp.some)
-                    )
-                  )
-                ),
-                revokedOn = revokedTimestamp.map(instant =>
-                  LedgerData(timestampInfo = Some(node_models.TimestampInfo(1, 1, instant.toProtoTimestamp.some)))
-                ),
-                keyData = node_models.PublicKey.KeyData.EcKeyData(
-                  node_models.ECKeyData(
-                    ECConfig.getCURVE_NAME,
-                    x = ByteString.copyFrom(ecPoint.getX.bytes().dropWhile(_ == 0)),
-                    y = ByteString.copyFrom(ecPoint.getY.bytes().dropWhile(_ == 0))
+          publicKeys = issuerCommKeys.map { case (keyId, key, revokedTimestamp, usage) =>
+            val ecPoint = key.getPublicKey.getCurvePoint
+            node_models.PublicKey(
+              id = keyId,
+              usage = usage,
+              addedOn = Some(
+                LedgerData(timestampInfo =
+                  Some(
+                    node_models
+                      .TimestampInfo(1, 1, earlierTimestamp.toProtoTimestamp.some)
                   )
                 )
+              ),
+              revokedOn = revokedTimestamp.map(instant =>
+                LedgerData(timestampInfo = Some(node_models.TimestampInfo(1, 1, instant.toProtoTimestamp.some)))
+              ),
+              keyData = node_models.PublicKey.KeyData.EcKeyData(
+                node_models.ECKeyData(
+                  ECConfig.getCURVE_NAME,
+                  x = ByteString.copyFrom(ecPoint.getX.bytes().dropWhile(_ == 0)),
+                  y = ByteString.copyFrom(ecPoint.getY.bytes().dropWhile(_ == 0))
+                )
               )
+            )
           }
         )
       )
@@ -603,9 +602,8 @@ class ConnectionsRpcSpec extends ConnectorRpcSpecBase with MockitoSugar {
 
       // TODO remove "master" key when we stop filtering out non-communication keys
       val expectedKeyNames = Set("foo", "bar", "master")
-      val expectedKeys = issuerCommKeys.filter(k => expectedKeyNames.contains(k._1)).map {
-        case (keyId, key, _, _) =>
-          (keyId, key.getPublicKey.getEncoded.toVector)
+      val expectedKeys = issuerCommKeys.filter(k => expectedKeyNames.contains(k._1)).map { case (keyId, key, _, _) =>
+        (keyId, key.getPublicKey.getEncoded.toVector)
       }
 
       response.keys.map(key =>

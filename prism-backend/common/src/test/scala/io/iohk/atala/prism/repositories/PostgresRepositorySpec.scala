@@ -9,8 +9,7 @@ import doobie.implicits._
 
 case class PostgresConfig(host: String, database: String, user: String, password: String)
 
-/**
-  * Allow us to write integration tests depending in a postgres database.
+/** Allow us to write integration tests depending in a postgres database.
   *
   * The database is launched in a docker instance using docker-it-scala library.
   *

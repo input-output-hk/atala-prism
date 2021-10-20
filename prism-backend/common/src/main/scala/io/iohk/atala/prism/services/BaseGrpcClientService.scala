@@ -29,8 +29,7 @@ import io.iohk.atala.prism.daos.DbConfigDao
 import io.iohk.atala.prism.protos.{connector_api, node_models}
 import doobie.implicits._
 
-/**
-  * Abstract service which provides support for DID based authentication for gRPC
+/** Abstract service which provides support for DID based authentication for gRPC
   * and wraps response into [[monix.eval.Task]].
   */
 abstract class BaseGrpcClientService[S <: AbstractStub[S]](
@@ -41,8 +40,7 @@ abstract class BaseGrpcClientService[S <: AbstractStub[S]](
 
   private val logger = LoggerFactory.getLogger(BaseGrpcClientService.getClass)
 
-  /**
-    * Perform gRPC call with DID based authentication.
+  /** Perform gRPC call with DID based authentication.
     *
     * @param request gRPC request needed to create a signature
     * @param call a gRPC method that is performed on stub with proper authorization headers
@@ -61,10 +59,9 @@ abstract class BaseGrpcClientService[S <: AbstractStub[S]](
       }
   }
 
-  /**
-    * Perform gRPC call with DID based authentication for stream processing.
+  /** Perform gRPC call with DID based authentication for stream processing.
     *
-   * @param request gRPC request needed to create a signature
+    * @param request gRPC request needed to create a signature
     * @param call a gRPC method that is performed on stub with proper authorization headers
     */
   def authenticatedCallStream[Request <: GeneratedMessage, StreamElement](
@@ -99,8 +96,7 @@ abstract class BaseGrpcClientService[S <: AbstractStub[S]](
     }
   }
 
-  /**
-    * Helper method to create authorization headers.
+  /** Helper method to create authorization headers.
     *
     * @param headers pairs with header name -> value
     * @return [[Metadata]]
@@ -108,8 +104,8 @@ abstract class BaseGrpcClientService[S <: AbstractStub[S]](
   private[services] def createMetadataHeaders(headers: (Metadata.Key[String], String)*): Metadata = {
     val metadata = new Metadata
 
-    headers.foreach {
-      case (key, value) => metadata.put(key, value)
+    headers.foreach { case (key, value) =>
+      metadata.put(key, value)
     }
 
     metadata
@@ -129,8 +125,7 @@ object BaseGrpcClientService {
   ) extends BaseGrpcAuthConfig(didMasterKeyPair)
   object DidBasedAuthConfig {
 
-    /**
-      * Names of the keys in the database.
+    /** Names of the keys in the database.
       */
     object ConfigKeyNames {
       val DID = "did"

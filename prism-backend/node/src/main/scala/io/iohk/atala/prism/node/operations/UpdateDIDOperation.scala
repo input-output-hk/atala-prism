@@ -48,9 +48,8 @@ case class UpdateDIDOperation(
     action match {
       case AddKeyAction(key) =>
         EitherT {
-          PublicKeysDAO.insert(key, ledgerData).attemptSomeSqlState {
-            case sqlstate.class23.UNIQUE_VIOLATION =>
-              EntityExists("DID suffix", didSuffix.getValue): StateError
+          PublicKeysDAO.insert(key, ledgerData).attemptSomeSqlState { case sqlstate.class23.UNIQUE_VIOLATION =>
+            EntityExists("DID suffix", didSuffix.getValue): StateError
           }
         }
       case RevokeKeyAction(keyId) =>
@@ -136,12 +135,11 @@ object UpdateDIDOperation extends OperationCompanion[UpdateDIDOperation] {
       reversedActions <-
         updateOperation
           .children(_.actions, "actions")
-          .foldLeft[Either[ValidationError, List[UpdateDIDAction]]](Right(Nil)) {
-            case (eitherAcc, action) =>
-              for {
-                acc <- eitherAcc
-                parsedAction <- parseAction(action, didSuffix)
-              } yield parsedAction :: acc
+          .foldLeft[Either[ValidationError, List[UpdateDIDAction]]](Right(Nil)) { case (eitherAcc, action) =>
+            for {
+              acc <- eitherAcc
+              parsedAction <- parseAction(action, didSuffix)
+            } yield parsedAction :: acc
           }
     } yield UpdateDIDOperation(didSuffix, reversedActions.reverse, previousOperation, operationDigest, ledgerData)
   }

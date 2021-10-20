@@ -299,9 +299,8 @@ class CreateDIDOperationSpec extends AtalaWithPostgresSpec {
         .unsafeToFuture()
         .futureValue
 
-      inside(result.left.value) {
-        case StateError.EntityExists(tpe, _) =>
-          tpe mustBe "DID"
+      inside(result.left.value) { case StateError.EntityExists(tpe, _) =>
+        tpe mustBe "DID"
       }
     }
 

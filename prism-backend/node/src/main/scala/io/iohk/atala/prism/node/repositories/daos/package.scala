@@ -217,24 +217,22 @@ package object daos extends BaseDAO {
       .other[(Array[Byte], String, Instant, Int, Int)](
         NonEmptyList.of("TRANSACTION_ID", "VARCHAR(32)", "TIMESTAMPTZ", "INTEGER", "INTEGER")
       )
-      .tmap {
-        case (tId, ledger, abt, absn, osn) =>
-          LedgerData(
-            TransactionId.from(tId).get,
-            Ledger.withNameInsensitive(ledger),
-            new TimestampInfo(abt.toEpochMilli, absn, osn)
-          )
+      .tmap { case (tId, ledger, abt, absn, osn) =>
+        LedgerData(
+          TransactionId.from(tId).get,
+          Ledger.withNameInsensitive(ledger),
+          new TimestampInfo(abt.toEpochMilli, absn, osn)
+        )
       }
 
   implicit val ledgerDataRead: Read[LedgerData] =
     Read[(Array[Byte], String, Instant, Int, Int)]
-      .map {
-        case (tId, ledger, abt, absn, osn) =>
-          LedgerData(
-            TransactionId.from(tId).get,
-            Ledger.withNameInsensitive(ledger),
-            new TimestampInfo(abt.toEpochMilli, absn, osn)
-          )
+      .map { case (tId, ledger, abt, absn, osn) =>
+        LedgerData(
+          TransactionId.from(tId).get,
+          Ledger.withNameInsensitive(ledger),
+          new TimestampInfo(abt.toEpochMilli, absn, osn)
+        )
       }
 
   implicit val CredentialBatchStateRead: Read[CredentialBatchState] = {
@@ -303,14 +301,13 @@ package object daos extends BaseDAO {
 
   implicit val protocolVersionRead: Read[ProtocolVersion] =
     Read[(Int, Int)]
-      .map {
-        case (major, minor) => ProtocolVersion(major, minor)
+      .map { case (major, minor) =>
+        ProtocolVersion(major, minor)
       }
 
   implicit val protocolVersionInfoRead: Read[ProtocolVersionInfo] =
     Read[(Int, Int, Option[String], Int)]
-      .map {
-        case (major, minor, versionName, effectiveSince) =>
-          ProtocolVersionInfo(ProtocolVersion(major, minor), versionName, effectiveSince)
+      .map { case (major, minor, versionName, effectiveSince) =>
+        ProtocolVersionInfo(ProtocolVersion(major, minor), versionName, effectiveSince)
       }
 }

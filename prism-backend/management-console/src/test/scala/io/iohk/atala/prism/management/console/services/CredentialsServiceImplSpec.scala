@@ -771,61 +771,56 @@ class CredentialsServiceImplSpec extends ManagementConsoleRpcSpecBase with DIDUt
     }
 
     "return error when credential ids are not valid UUIDs" in {
-      assertShareCredentialsError {
-        case (credential1, _) =>
-          console_api.ShareCredentialsRequest(
-            List(credential1.credentialId.uuid.toString, "invalidUuid"),
-            sendMessagesRequest =
-              Some(connector_api.SendMessagesRequest(1.to(2).map(_ => MessageToSendByConnectionToken()))),
-            sendMessagesRequestMetadata = Some(DataPreparation.connectorRequestMetadataProto)
-          )
+      assertShareCredentialsError { case (credential1, _) =>
+        console_api.ShareCredentialsRequest(
+          List(credential1.credentialId.uuid.toString, "invalidUuid"),
+          sendMessagesRequest =
+            Some(connector_api.SendMessagesRequest(1.to(2).map(_ => MessageToSendByConnectionToken()))),
+          sendMessagesRequestMetadata = Some(DataPreparation.connectorRequestMetadataProto)
+        )
       }
     }
 
     "return error when credential ids don't exist" in {
-      assertShareCredentialsError {
-        case (credential1, _) =>
-          console_api.ShareCredentialsRequest(
-            List(credential1.credentialId.uuid.toString, UUID.randomUUID().toString),
-            sendMessagesRequest =
-              Some(connector_api.SendMessagesRequest(1.to(2).map(_ => MessageToSendByConnectionToken()))),
-            sendMessagesRequestMetadata = Some(DataPreparation.connectorRequestMetadataProto)
-          )
+      assertShareCredentialsError { case (credential1, _) =>
+        console_api.ShareCredentialsRequest(
+          List(credential1.credentialId.uuid.toString, UUID.randomUUID().toString),
+          sendMessagesRequest =
+            Some(connector_api.SendMessagesRequest(1.to(2).map(_ => MessageToSendByConnectionToken()))),
+          sendMessagesRequestMetadata = Some(DataPreparation.connectorRequestMetadataProto)
+        )
       }
     }
 
     "return error when connector request metadata is empty" in {
-      assertShareCredentialsError {
-        case (credential1, credential2) =>
-          console_api.ShareCredentialsRequest(
-            List(credential1.credentialId.uuid.toString, credential2.credentialId.uuid.toString),
-            sendMessagesRequest =
-              Some(connector_api.SendMessagesRequest(1.to(2).map(_ => MessageToSendByConnectionToken()))),
-            sendMessagesRequestMetadata = None
-          )
+      assertShareCredentialsError { case (credential1, credential2) =>
+        console_api.ShareCredentialsRequest(
+          List(credential1.credentialId.uuid.toString, credential2.credentialId.uuid.toString),
+          sendMessagesRequest =
+            Some(connector_api.SendMessagesRequest(1.to(2).map(_ => MessageToSendByConnectionToken()))),
+          sendMessagesRequestMetadata = None
+        )
       }
     }
 
     "return error when send message request is empty" in {
-      assertShareCredentialsError {
-        case (credential1, credential2) =>
-          console_api.ShareCredentialsRequest(
-            List(credential1.credentialId.uuid.toString, credential2.credentialId.uuid.toString),
-            sendMessagesRequest = None,
-            sendMessagesRequestMetadata = Some(DataPreparation.connectorRequestMetadataProto)
-          )
+      assertShareCredentialsError { case (credential1, credential2) =>
+        console_api.ShareCredentialsRequest(
+          List(credential1.credentialId.uuid.toString, credential2.credentialId.uuid.toString),
+          sendMessagesRequest = None,
+          sendMessagesRequestMetadata = Some(DataPreparation.connectorRequestMetadataProto)
+        )
       }
     }
 
     "return error when number of credential ids doesn't match number of messages to send" in {
-      assertShareCredentialsError {
-        case (credential1, credential2) =>
-          console_api.ShareCredentialsRequest(
-            List(credential1.credentialId.uuid.toString, credential2.credentialId.uuid.toString),
-            sendMessagesRequest =
-              Some(connector_api.SendMessagesRequest(1.to(3).map(_ => MessageToSendByConnectionToken()))),
-            sendMessagesRequestMetadata = Some(DataPreparation.connectorRequestMetadataProto)
-          )
+      assertShareCredentialsError { case (credential1, credential2) =>
+        console_api.ShareCredentialsRequest(
+          List(credential1.credentialId.uuid.toString, credential2.credentialId.uuid.toString),
+          sendMessagesRequest =
+            Some(connector_api.SendMessagesRequest(1.to(3).map(_ => MessageToSendByConnectionToken()))),
+          sendMessagesRequestMetadata = Some(DataPreparation.connectorRequestMetadataProto)
+        )
       }
     }
 

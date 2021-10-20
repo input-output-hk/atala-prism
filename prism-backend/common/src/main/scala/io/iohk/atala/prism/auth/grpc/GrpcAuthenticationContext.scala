@@ -22,8 +22,7 @@ private[grpc] object GrpcAuthenticationContext {
     // For some reason the compiler complains if the method is named withValue
     def addValue[T](keys: GrpcMetadataContextKeys[T], value: T): Context = context.withValue(keys.context, value)
 
-    /**
-      * While the predefined way to get a value from the [[Context]] is to call the getters from
+    /** While the predefined way to get a value from the [[Context]] is to call the getters from
       * the [[Context.Key]], that's usually unsafe because the actual [[Context]] is not required and
       * it is retrieved from the [[java.lang.ThreadLocal]], which isn't safe to deal with on concurrent
       * environments (think about dealing with [[scala.concurrent.Future]]).

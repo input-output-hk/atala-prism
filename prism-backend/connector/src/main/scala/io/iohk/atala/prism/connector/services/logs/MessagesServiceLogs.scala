@@ -25,12 +25,11 @@ class MessagesServiceLogs[S[_], F[_]: ServiceLogging[*[_], MessagesService[S, F]
     in =>
       info"Inserting message $sender $connection" *>
         in.flatTap(
-            _.fold(
-              connectorError => error"Encountered an error while inserting message $connectorError",
-              messageId => info"Inserting message - successfully done $messageId"
-            )
+          _.fold(
+            connectorError => error"Encountered an error while inserting message $connectorError",
+            messageId => info"Inserting message - successfully done $messageId"
           )
-          .onError(errorCause"Encountered an error while inserting message" (_))
+        ).onError(errorCause"Encountered an error while inserting message" (_))
 
   override def insertMessages(
       sender: ParticipantId,
@@ -39,12 +38,11 @@ class MessagesServiceLogs[S[_], F[_]: ServiceLogging[*[_], MessagesService[S, F]
     in =>
       info"Inserting messages $sender ${messages.size}" *>
         in.flatTap(
-            _.fold(
-              connectorError => error"Encountered an error while inserting messages $connectorError",
-              result => info"Inserting messages - successfully done, inserted ${result.size} messages"
-            )
+          _.fold(
+            connectorError => error"Encountered an error while inserting messages $connectorError",
+            result => info"Inserting messages - successfully done, inserted ${result.size} messages"
           )
-          .onError(errorCause"Encountered an error while inserting message" (_))
+        ).onError(errorCause"Encountered an error while inserting message" (_))
 
   override def getMessagesPaginated(
       recipientId: ParticipantId,
@@ -54,12 +52,11 @@ class MessagesServiceLogs[S[_], F[_]: ServiceLogging[*[_], MessagesService[S, F]
     in =>
       info"Getting messages paginated $recipientId" *>
         in.flatTap(
-            _.fold(
-              connectorError => error"Encountered an error while getting messages paginated $connectorError",
-              result => info"Getting messages paginated - successfully done, got ${result.size} messages"
-            )
+          _.fold(
+            connectorError => error"Encountered an error while getting messages paginated $connectorError",
+            result => info"Getting messages paginated - successfully done, got ${result.size} messages"
           )
-          .onError(errorCause"Encountered an error while getting messages paginated" (_))
+        ).onError(errorCause"Encountered an error while getting messages paginated" (_))
 
   // Wont be called since we use Mid for F only
   override def getMessageStream(

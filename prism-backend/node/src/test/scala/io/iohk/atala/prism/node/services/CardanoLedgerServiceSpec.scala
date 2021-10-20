@@ -149,8 +149,7 @@ class CardanoLedgerServiceSpec extends AtalaWithPostgresSpec {
 
   "syncAtalaObjects" should {
 
-    /**
-      * Creates `totalBlockCount` blocks and appends one transaction with PRISM metadata to every given
+    /** Creates `totalBlockCount` blocks and appends one transaction with PRISM metadata to every given
       * `blocksWithNotifications`, returning all expected notifications.
       */
     def createNotificationsInDb(totalBlockCount: Int, blocksWithNotifications: Int*): Seq[AtalaObjectNotification] = {

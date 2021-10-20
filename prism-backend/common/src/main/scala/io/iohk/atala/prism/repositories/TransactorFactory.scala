@@ -51,8 +51,7 @@ object TransactorFactory {
     )
   }
 
-  /**
-    * Run db migrations with Flyway.
+  /** Run db migrations with Flyway.
     *
     * @return number of applied migrations
     */

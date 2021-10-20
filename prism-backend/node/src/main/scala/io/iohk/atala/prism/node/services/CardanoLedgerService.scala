@@ -100,10 +100,9 @@ class CardanoLedgerService private[services] (
     scheduler.scheduleOnce(delay) {
       // Ensure run is scheduled after completion, even if current run fails
       syncAtalaObjects()
-        .recover {
-          case e =>
-            logger.error(s"Could not sync Atala objects", e)
-            false
+        .recover { case e =>
+          logger.error(s"Could not sync Atala objects", e)
+          false
         }
         .onComplete { pendingBlocksToSync =>
           if (pendingBlocksToSync.toOption.getOrElse(false)) {
@@ -117,8 +116,7 @@ class CardanoLedgerService private[services] (
     ()
   }
 
-  /**
-    * Syncs Atala objects from blocks and returns whether there are remaining blocks to sync.
+  /** Syncs Atala objects from blocks and returns whether there are remaining blocks to sync.
     */
   private[services] def syncAtalaObjects(): Future[Boolean] = {
     val tId = TraceId.generateYOLO
@@ -138,12 +136,11 @@ class CardanoLedgerService private[services] (
     if (blockNos.isEmpty) {
       Future.unit
     } else {
-      blockNos.foldLeft(Future.unit) {
-        case (previous, blockNo) =>
-          for {
-            _ <- previous
-            _ <- syncBlock(blockNo)
-          } yield ()
+      blockNos.foldLeft(Future.unit) { case (previous, blockNo) =>
+        for {
+          _ <- previous
+          _ <- syncBlock(blockNo)
+        } yield ()
       }
     }
   }

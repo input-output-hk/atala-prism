@@ -160,11 +160,10 @@ class MessagesRepositorySpec extends ConnectorRepositorySpecBase {
         .unsafeToFuture()
         .futureValue
 
-    insertedMessages.foreach {
-      case (messageSender, messageRecipient, messageContent) =>
-        messageSender mustBe issuer
-        List(holder1, holder2) must contain(messageRecipient)
-        messageContent mustBe message.toByteArray
+    insertedMessages.foreach { case (messageSender, messageRecipient, messageContent) =>
+      messageSender mustBe issuer
+      List(holder1, holder2) must contain(messageRecipient)
+      messageContent mustBe message.toByteArray
     }
   }
 
@@ -201,11 +200,10 @@ class MessagesRepositorySpec extends ConnectorRepositorySpecBase {
         .unsafeToFuture()
         .futureValue
 
-    insertedMessages.foreach {
-      case (messageSender, messageRecipient, messageContent) =>
-        messageSender mustBe holder
-        messageRecipient mustBe issuer
-        List(message1.toByteArray, message2.toByteArray) must contain(messageContent)
+    insertedMessages.foreach { case (messageSender, messageRecipient, messageContent) =>
+      messageSender mustBe holder
+      messageRecipient mustBe issuer
+      List(message1.toByteArray, message2.toByteArray) must contain(messageContent)
     }
   }
 

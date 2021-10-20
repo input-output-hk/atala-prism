@@ -10,8 +10,7 @@ case class PaginatedQueryConstraints[ScrollId, SortBy, FilterBy](
 
 object PaginatedQueryConstraints {
 
-  /**
-    * Defines how to sort the result while retrieving data
+  /** Defines how to sort the result while retrieving data
     *
     * @param field the possible field to sort the result by
     * @param direction whether the result should be sorted in ascending or descending order
