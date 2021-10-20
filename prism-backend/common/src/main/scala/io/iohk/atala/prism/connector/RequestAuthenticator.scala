@@ -7,8 +7,7 @@ import io.iohk.atala.prism.crypto.EC.{INSTANCE => EC}
 
 class RequestAuthenticator {
 
-  /**
-    * Signs the connector request, returning the encoded signature and nonce.
+  /** Signs the connector request, returning the encoded signature and nonce.
     */
   def signConnectorRequest(
       request: Array[Byte],

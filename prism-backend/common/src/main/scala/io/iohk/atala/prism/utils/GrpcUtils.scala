@@ -34,8 +34,7 @@ object GrpcUtils {
       )
   }
 
-  /**
-    * Create a plainttext stub with a given host and port.
+  /** Create a plainttext stub with a given host and port.
     */
   def createPlaintextStub[S <: AbstractStub[S]](host: String, port: Int, stub: Channel => S): S = {
     val channel = ManagedChannelBuilder
@@ -46,8 +45,7 @@ object GrpcUtils {
     stub(channel)
   }
 
-  /**
-    * Wrap a [[Server]] into a bracketed resource. The server stops when the
+  /** Wrap a [[Server]] into a bracketed resource. The server stops when the
     * resource is released. With the following scenarios:
     *   - Server is shut down when there aren't any requests left.
     *   - We wait for 30 seconds to allow finish pending requests and

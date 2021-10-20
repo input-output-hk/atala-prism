@@ -66,34 +66,34 @@ class CredentialIssuancesRepositorySpec extends AtalaWithPostgresSpec {
 
     "fail to create a new credential issuance when referenced credential type can't be rendered with any of " +
       "the specified credential data" in {
-      val institutionId = createParticipant("The Institution")
-      val contactsWithGroup: List[(Contact, Option[InstitutionGroup])] = List(
-        DataPreparation.createContact(institutionId) -> None,
-        DataPreparation.createContact(institutionId) -> None
-      )
-
-      val credentialTypeWithRequiredFields = DataPreparation.createCredentialType(institutionId, "name")
-
-      val result = credentialIssuancesRepository
-        .create(
-          institutionId,
-          CreateCredentialIssuance(
-            name = "Credentials for everyone",
-            credentialTypeId = credentialTypeWithRequiredFields.credentialType.id,
-            contacts = contactsWithGroup.map { contactWithGroup =>
-              val (contact: Contact, group: Option[InstitutionGroup]) = contactWithGroup
-              CreateCredentialIssuanceContact(
-                contactId = contact.contactId,
-                credentialData = Json.obj(),
-                groupIds = group.map(_.id).toList
-              )
-            }
-          )
+        val institutionId = createParticipant("The Institution")
+        val contactsWithGroup: List[(Contact, Option[InstitutionGroup])] = List(
+          DataPreparation.createContact(institutionId) -> None,
+          DataPreparation.createContact(institutionId) -> None
         )
-        .unsafeRunSync()
 
-      result mustBe a[Left[CredentialDataValidationFailedForContacts, _]]
-    }
+        val credentialTypeWithRequiredFields = DataPreparation.createCredentialType(institutionId, "name")
+
+        val result = credentialIssuancesRepository
+          .create(
+            institutionId,
+            CreateCredentialIssuance(
+              name = "Credentials for everyone",
+              credentialTypeId = credentialTypeWithRequiredFields.credentialType.id,
+              contacts = contactsWithGroup.map { contactWithGroup =>
+                val (contact: Contact, group: Option[InstitutionGroup]) = contactWithGroup
+                CreateCredentialIssuanceContact(
+                  contactId = contact.contactId,
+                  credentialData = Json.obj(),
+                  groupIds = group.map(_.id).toList
+                )
+              }
+            )
+          )
+          .unsafeRunSync()
+
+        result mustBe a[Left[CredentialDataValidationFailedForContacts, _]]
+      }
 
   }
 

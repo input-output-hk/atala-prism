@@ -8,8 +8,7 @@ import io.iohk.atala.prism.utils.FutureEither
 
 import scala.concurrent.ExecutionContext
 
-/**
-  * Client for the Cardano Wallet API.
+/** Client for the Cardano Wallet API.
   *
   * <p>The client has been trimmed down to only the methods needed. See
   * <a href="https://input-output-hk.github.io/cardano-wallet/api/edge">Cardano Wallet API</a>
@@ -20,8 +19,7 @@ import scala.concurrent.ExecutionContext
 trait CardanoWalletApiClient {
   import CardanoWalletApiClient._
 
-  /**
-    * Estimate the fee for the given transaction details.
+  /** Estimate the fee for the given transaction details.
     *
     * @see https://input-output-hk.github.io/cardano-wallet/api/edge/#operation/postTransactionFee
     */
@@ -31,8 +29,7 @@ trait CardanoWalletApiClient {
       metadata: Option[TransactionMetadata]
   ): Result[EstimatedFee]
 
-  /**
-    * Post a new transaction and return its ID.
+  /** Post a new transaction and return its ID.
     *
     * @see https://input-output-hk.github.io/cardano-wallet/api/edge/#operation/postTransaction
     */
@@ -43,15 +40,13 @@ trait CardanoWalletApiClient {
       passphrase: String
   ): Result[TransactionId]
 
-  /**
-    * Get the details of the given transaction.
+  /** Get the details of the given transaction.
     *
     * @see https://input-output-hk.github.io/cardano-wallet/api/edge/#operation/getTransaction
     */
   def getTransaction(walletId: WalletId, transactionId: TransactionId): Result[TransactionDetails]
 
-  /**
-    * Forget pending transaction. Importantly, a transaction, when sent, cannot be cancelled.
+  /** Forget pending transaction. Importantly, a transaction, when sent, cannot be cancelled.
     * One can only request forgetting about it in order to try spending (concurrently) the same UTxO in another transaction.
     *
     * <p>Note the transaction may still show up later in a block.
@@ -60,8 +55,7 @@ trait CardanoWalletApiClient {
     */
   def deleteTransaction(walletId: WalletId, transactionId: TransactionId): Result[Unit]
 
-  /**
-    * Get detailed information about the given wallet.
+  /** Get detailed information about the given wallet.
     *
     * @see https://input-output-hk.github.io/cardano-wallet/api/edge/#operation/getWallet
     */

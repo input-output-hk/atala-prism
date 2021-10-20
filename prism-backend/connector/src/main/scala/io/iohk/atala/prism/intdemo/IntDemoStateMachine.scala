@@ -80,9 +80,8 @@ class IntDemoStateMachine[D](
     catch (withLoggingHandler)
   }
 
-  private val withLoggingHandler: PartialFunction[Throwable, Unit] = {
-    case t: Throwable =>
-      log.info(s"Failed client callback invocation for connection token ${connectionToken.token}. Got exception $t.")
+  private val withLoggingHandler: PartialFunction[Throwable, Unit] = { case t: Throwable =>
+    log.info(s"Failed client callback invocation for connection token ${connectionToken.token}. Got exception $t.")
   }
 
   private def getOldStatus(): Future[intdemo_models.SubjectStatus] = {

@@ -117,14 +117,13 @@ class SubmissionService private (
 
     atalaObjectsWithParsedContent
       .take(config.maxNumberTransactionsToSubmit)
-      .foldLeft(Future.successful(List.empty[TransactionInfo])) {
-        case (accF, (obj, objContent)) =>
-          for {
-            acc <- accF
-            transactionInfoE <- publishAndRecordTransaction(obj, objContent)
-          } yield {
-            transactionInfoE.fold(logAndKeep(acc), _ :: acc)
-          }
+      .foldLeft(Future.successful(List.empty[TransactionInfo])) { case (accF, (obj, objContent)) =>
+        for {
+          acc <- accF
+          transactionInfoE <- publishAndRecordTransaction(obj, objContent)
+        } yield {
+          transactionInfoE.fold(logAndKeep(acc), _ :: acc)
+        }
       }
       .map(_.reverse)
   }
@@ -187,32 +186,31 @@ class SubmissionService private (
               }
         }
 
-    val objects = atalaObjectsMerged.traverse {
-      case (atalaObject, oldObjects) =>
-        if (oldObjects.size != 1) {
-          val changedBlockE = atalaObject.getAndValidateAtalaObject
-            .flatMap(_.blockContent)
-            .toRight {
-              NodeError.InternalError(s"Block in object ${atalaObject.objectId} was invalidated after merge.")
-            }
-
-          val atalaObjectIOEither = for {
-            changedBlock <- EitherT.fromEither[IOWithTraceIdContext](changedBlockE)
-            _ <- EitherT(
-              atalaOperationsRepository.updateMergedObjects(atalaObject, changedBlock.operations.toList, oldObjects)
-            )
-          } yield atalaObject
-
-          atalaObjectIOEither.value.map {
-            case Left(err) =>
-              logger.error(err.toString)
-              None
-            case Right(atalaObjectInfo) =>
-              Some(atalaObjectInfo)
+    val objects = atalaObjectsMerged.traverse { case (atalaObject, oldObjects) =>
+      if (oldObjects.size != 1) {
+        val changedBlockE = atalaObject.getAndValidateAtalaObject
+          .flatMap(_.blockContent)
+          .toRight {
+            NodeError.InternalError(s"Block in object ${atalaObject.objectId} was invalidated after merge.")
           }
-        } else {
-          ReaderT.liftF[IO, TraceId, Option[AtalaObjectInfo]](IO.pure(Some(atalaObject)))
+
+        val atalaObjectIOEither = for {
+          changedBlock <- EitherT.fromEither[IOWithTraceIdContext](changedBlockE)
+          _ <- EitherT(
+            atalaOperationsRepository.updateMergedObjects(atalaObject, changedBlock.operations.toList, oldObjects)
+          )
+        } yield atalaObject
+
+        atalaObjectIOEither.value.map {
+          case Left(err) =>
+            logger.error(err.toString)
+            None
+          case Right(atalaObjectInfo) =>
+            Some(atalaObjectInfo)
         }
+      } else {
+        ReaderT.liftF[IO, TraceId, Option[AtalaObjectInfo]](IO.pure(Some(atalaObject)))
+      }
     }
     objects.map(_.flatten).run(TraceId.generateYOLO).unsafeToFuture()
   }

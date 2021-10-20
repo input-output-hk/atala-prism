@@ -3,8 +3,7 @@ package io.iohk.atala.prism.node.operations
 import io.iohk.atala.prism.node.models.ProtocolVersion
 import io.iohk.atala.prism.node.models.ProtocolVersion.ProtocolVersion1_0
 
-/**
-  * This package object contains all hardcoded information about protocol versions.
+/** This package object contains all hardcoded information about protocol versions.
   */
 package object protocolVersion {
 

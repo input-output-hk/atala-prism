@@ -74,11 +74,10 @@ object ParticipantsDAO {
          |WHERE id = $id
        """.stripMargin.update.run.flatMap { count =>
       FC.raiseError(
-          new Exception(
-            s"ParticipantsDAO: cannot update ParticipantProfile, update result count was not equal to 1: $count"
-          )
+        new Exception(
+          s"ParticipantsDAO: cannot update ParticipantProfile, update result count was not equal to 1: $count"
         )
-        .whenA(count != 1)
+      ).whenA(count != 1)
     }.void
   }
 
