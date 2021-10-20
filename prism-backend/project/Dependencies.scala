@@ -13,6 +13,7 @@ object versions {
   val dockerTestkit = "0.9.9"
   val doobie = "0.9.2"
   val enumeratum = "1.6.1"
+  val enumeratumDoobie = "1.7.0"
   val flyway = "7.10.0"
   val grpc = "1.36.0"
   val kamon = "2.1.11"
@@ -53,7 +54,7 @@ object Dependencies {
   val doobieHikari = "org.tpolecat" %% "doobie-hikari" % versions.doobie
   val enumeratum = "com.beachape" %% "enumeratum" % versions.enumeratum
   val enumeratumCirce = "com.beachape" %% "enumeratum-circe" % versions.enumeratum
-  val enumeratumDoobie = "com.beachape" %% "enumeratum-doobie" % versions.enumeratum
+  val enumeratumDoobie = "com.beachape" %% "enumeratum-doobie" % versions.enumeratumDoobie
   val flyway = "org.flywaydb" % "flyway-core" % versions.flyway
   val grpcNetty = "io.grpc" % "grpc-netty" % versions.grpc
   val grpcServices = "io.grpc" % "grpc-services" % versions.grpc
