@@ -170,7 +170,14 @@ private final class ContactsRepositoryImpl[F[_]: BracketThrow](xa: Transactor[F]
       .logSQLErrors(s"finding contact, institution id - $institutionId", logger)
       .transact(xa)
 
-  override def findByToken(institutionId: ParticipantId, connectionToken: ConnectionToken): F[Option[Contact]] = ???
+  override def findByToken(institutionId: ParticipantId, connectionToken: ConnectionToken): F[Option[Contact]] =
+    ContactsDAO
+      .findByToken(institutionId, connectionToken)
+      .logSQLErrors(
+        s"finding contact by token, institution id - $institutionId, token = $connectionToken",
+        logger
+      )
+      .transact(xa)
 
   def findContacts(institutionId: ParticipantId, contactIds: List[Contact.Id]): F[List[Contact]] =
     ContactsDAO
