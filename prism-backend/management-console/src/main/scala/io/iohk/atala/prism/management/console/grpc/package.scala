@@ -575,28 +575,26 @@ package object grpc {
       connectorRequestMetadata.map(_.did),
       connectorRequestMetadata.map(_.didKeyId),
       connectorRequestMetadata.map(_.didSignature)
-    ).mapN {
-        case (nonce, didStr, keyId, signature) =>
-          Try(
-            PrismDid
-              .fromString(didStr)
-          ).toOption
-            .map { did =>
-              val didBased = did match {
-                case _: CanonicalPrismDid => GrpcAuthenticationHeader.PublishedDIDBased
-                case _: LongFormPrismDid => GrpcAuthenticationHeader.UnpublishedDIDBased
-                case _ => throw new RuntimeException("Unknown Did")
-              }
+    ).mapN { case (nonce, didStr, keyId, signature) =>
+      Try(
+        PrismDid
+          .fromString(didStr)
+      ).toOption
+        .map { did =>
+          val didBased = did match {
+            case _: CanonicalPrismDid => GrpcAuthenticationHeader.PublishedDIDBased
+            case _: LongFormPrismDid => GrpcAuthenticationHeader.UnpublishedDIDBased
+            case _ => throw new RuntimeException("Unknown Did")
+          }
 
-              didBased(
-                RequestNonce(Base64Utils.decodeURL(nonce).toVector),
-                did,
-                keyId,
-                new ECSignature(Base64Utils.decodeURL(signature))
-              )
-            }
-      }
-      .flatten
+          didBased(
+            RequestNonce(Base64Utils.decodeURL(nonce).toVector),
+            did,
+            keyId,
+            new ECSignature(Base64Utils.decodeURL(signature))
+          )
+        }
+    }.flatten
       .fold[Try[GrpcAuthenticationHeader.DIDBased]](
         Failure(new IllegalArgumentException("connector request metadata is missing"))
       )(Success.apply)

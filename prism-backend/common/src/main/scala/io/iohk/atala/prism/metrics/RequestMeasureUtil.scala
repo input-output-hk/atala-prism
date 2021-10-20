@@ -48,9 +48,8 @@ object RequestMeasureUtil {
 
   private def handleFailedFutureMeasurement[V](
       maybeMeasureItems: Try[MeasureItems]
-  )(implicit ec: ExecutionContext): PartialFunction[Throwable, Future[V]] = {
-    case NonFatal(e) =>
-      finishMeasurement((), maybeMeasureItems) *> Future.failed(e)
+  )(implicit ec: ExecutionContext): PartialFunction[Throwable, Future[V]] = { case NonFatal(e) =>
+    finishMeasurement((), maybeMeasureItems) *> Future.failed(e)
   }
 
   private def tryToStartMeasurement(serviceName: String, methodName: String): Try[MeasureItems] =
@@ -59,10 +58,9 @@ object RequestMeasureUtil {
       val taggedStartedTimer = requestTimer.withTags(tags).start()
       val incrementedActiveRequestsGauge = activeRequestsGauge.withTags(tags).increment()
       MeasureItems(taggedStartedTimer, incrementedActiveRequestsGauge)
-    }.recoverWith {
-      case error =>
-        logger.error("Metrics start just blew up", error)
-        Failure(error)
+    }.recoverWith { case error =>
+      logger.error("Metrics start just blew up", error)
+      Failure(error)
     }
 
   private def tryToStopMeasurement(measureItems: MeasureItems): Try[Unit] =
@@ -70,10 +68,9 @@ object RequestMeasureUtil {
       measureItems.timer.stop()
       measureItems.activeRequestsGauge.decrement()
       ()
-    }.recoverWith {
-      case error =>
-        logger.error("Metrics stop just blew up", error)
-        Failure(error)
+    }.recoverWith { case error =>
+      logger.error("Metrics stop just blew up", error)
+      Failure(error)
     }
 
   private def finishMeasurement[A](in: A, maybeMeasureItems: Try[MeasureItems]): Future[A] = {
@@ -87,10 +84,9 @@ object RequestMeasureUtil {
     def countErrorOnFail(serviceName: String, methodName: String, errorCode: Int)(implicit
         ec: ExecutionContext
     ): Future[T] =
-      value.recoverWith {
-        case NonFatal(_) =>
-          increaseErrorCounter(serviceName, methodName, errorCode)
-          value
+      value.recoverWith { case NonFatal(_) =>
+        increaseErrorCounter(serviceName, methodName, errorCode)
+        value
       }
   }
 

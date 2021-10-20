@@ -147,11 +147,10 @@ package object errors {
       Status.INVALID_ARGUMENT.withDescription(
         s"Credential type: $credentialTypeName can not be rendered " +
           s"with contacts credential data \n" + contacts
-          .map {
-            case (contactId, credentialData, errors) =>
+            .map { case (contactId, credentialData, errors) =>
               s"Contact: $contactId credential data: $credentialData errors:\n ${errors.map(_.message).mkString(",\n")} \n"
-          }
-          .mkString("\n")
+            }
+            .mkString("\n")
       )
   }
 

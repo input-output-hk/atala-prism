@@ -14,14 +14,12 @@ import cats.implicits._
 
 trait ProcessingTaskService[S <: ProcessingTaskState] {
 
-  /**
-    * Registers a callback which will be called when a new processing task is created and it should be run
+  /** Registers a callback which will be called when a new processing task is created and it should be run
     * immediately (scheduledTime <= Instant.now()).
     */
   def registerNotifyIdleWorkerCallback(callback: () => Unit): Unit
 
-  /**
-    * Creates a completely new processing task that will be processed after scheduled time.
+  /** Creates a completely new processing task that will be processed after scheduled time.
     */
   def create(
       processingTaskData: ProcessingTaskData,
@@ -29,13 +27,11 @@ trait ProcessingTaskService[S <: ProcessingTaskState] {
       scheduledTime: Instant
   ): Task[ProcessingTaskId]
 
-  /**
-    * Acquires a processing task for a specified period of time. Returns None when there is no task to process.
+  /** Acquires a processing task for a specified period of time. Returns None when there is no task to process.
     */
   def fetchTaskToProcess(leaseTimeSeconds: Int, workerNumber: Int): Task[Option[ProcessingTask[S]]]
 
-  /**
-    * Acquires tha task specified by id immediately, even though it's being processed by another instance which has
+  /** Acquires tha task specified by id immediately, even though it's being processed by another instance which has
     * a valid lease. Returns None when task doesn't exist.
     */
   def ejectTask(
@@ -44,14 +40,12 @@ trait ProcessingTaskService[S <: ProcessingTaskState] {
       leaseTimeSeconds: Int
   ): Task[Option[ProcessingTask[S]]]
 
-  /**
-    * Extends a lese of the processing task by specified number of seconds.
+  /** Extends a lese of the processing task by specified number of seconds.
     * Fails when the processing task has been ejected by another instance.
     */
   def extendLease(processingTaskId: ProcessingTaskId, workerNumber: Int, leaseTimeSeconds: Int): Task[Unit]
 
-  /**
-    * Updates the processing task data.
+  /** Updates the processing task data.
     * Fails when the processing task has been ejected by another instance.
     */
   def updateData(
@@ -60,8 +54,7 @@ trait ProcessingTaskService[S <: ProcessingTaskState] {
       data: ProcessingTaskData
   ): Task[Unit]
 
-  /**
-    * Schedules the processing task to be run after scheduled time at a new state and with new data.
+  /** Schedules the processing task to be run after scheduled time at a new state and with new data.
     * Clears the owner of the task.
     * Fails when the processing task has been ejected by another instance.
     */
@@ -73,8 +66,7 @@ trait ProcessingTaskService[S <: ProcessingTaskState] {
       scheduledTime: Instant
   ): Task[Unit]
 
-  /**
-    * Extends a lease of the processing and updates the processing task with a new state and data.
+  /** Extends a lease of the processing and updates the processing task with a new state and data.
     * Fails when the processing task has been ejected by another instance.
     */
   def updateTaskAndExtendLease(
@@ -85,8 +77,7 @@ trait ProcessingTaskService[S <: ProcessingTaskState] {
       leaseTimeSeconds: Int
   ): Task[ProcessingTask[S]]
 
-  /**
-    * Deletes the processing task completely from database. Processing task can only be deleted when
+  /** Deletes the processing task completely from database. Processing task can only be deleted when
     *  current instance own it or it's not owned by any instance.
     * Fails when the processing task has been ejected by another instance.
     */

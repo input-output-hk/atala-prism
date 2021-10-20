@@ -29,13 +29,13 @@ object CredVerification {
   /** This method receives data retrieved from the node and the credential to verify and
     * returns true if and only if the credential is valid.
     *
-   * We have some assumptions to call this method:
+    * We have some assumptions to call this method:
     * 1. The keyData is obtained from the PRISM node and corresponds to the key used to sign the credential
     * 2. The batchData is obtained from the PRISM node and corresponds to the signedCredential parameter
     * 3. The issuer DID is a trusted one
     * 4. The credentialRevocationTime is obtained from the PRISM node and corresponds to the signedCredential parameter
     *
-   * @param keyData the public key used to sign the credential and its addition and (optional)
+    * @param keyData the public key used to sign the credential and its addition and (optional)
     *                revocation timestamps
     * @param batchData the credential information extracted from the node
     * @param credentialRevocationTime the credential information extracted from the node

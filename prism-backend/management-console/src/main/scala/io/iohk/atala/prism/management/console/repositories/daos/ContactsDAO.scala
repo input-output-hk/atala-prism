@@ -43,9 +43,8 @@ object ContactsDAO {
     val data = contacts
       .zip(contactIds)
       .zip(connectionTokens)
-      .map {
-        case ((item, id), connectionToken) =>
-          (id, connectionToken, item.data, createdAt, institutionId, item.externalId, item.name)
+      .map { case ((item, id), connectionToken) =>
+        (id, connectionToken, item.data, createdAt, institutionId, item.externalId, item.name)
       }
 
     val statement =

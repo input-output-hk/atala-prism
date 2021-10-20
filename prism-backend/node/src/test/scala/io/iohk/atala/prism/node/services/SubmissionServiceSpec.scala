@@ -92,10 +92,9 @@ class SubmissionServiceSpec
     "merge several operations in one transaction while submitting" in {
       val (atalaObjects, atalaObjectsMerged, publications, ops) = setUpMultipleOperationsPublishing(numOps = 40)
 
-      atalaObjectsMerged.zip(publications.drop(atalaObjects.size)).foreach {
-        case (atalaObject, publicationInfo) =>
-          doReturn(Future.successful(Right(publicationInfo))).when(ledger).publish(atalaObject)
-          mockTransactionStatus(publicationInfo.transaction.transactionId, TransactionStatus.Pending)
+      atalaObjectsMerged.zip(publications.drop(atalaObjects.size)).foreach { case (atalaObject, publicationInfo) =>
+        doReturn(Future.successful(Right(publicationInfo))).when(ledger).publish(atalaObject)
+        mockTransactionStatus(publicationInfo.transaction.transactionId, TransactionStatus.Pending)
       }
 
       scheduleOpsForBatching(ops)
@@ -288,10 +287,9 @@ class SubmissionServiceSpec
     "merge several operations in one transaction while retrying" in {
       val (atalaObjects, atalaObjectsMerged, publications, ops) = setUpMultipleOperationsPublishing(numOps = 40)
 
-      (atalaObjects ++ atalaObjectsMerged).zip(publications).foreach {
-        case (atalaObject, publicationInfo) =>
-          doReturn(Future.successful(Right(publicationInfo))).when(ledger).publish(atalaObject)
-          mockTransactionStatus(publicationInfo.transaction.transactionId, TransactionStatus.Pending)
+      (atalaObjects ++ atalaObjectsMerged).zip(publications).foreach { case (atalaObject, publicationInfo) =>
+        doReturn(Future.successful(Right(publicationInfo))).when(ledger).publish(atalaObject)
+        mockTransactionStatus(publicationInfo.transaction.transactionId, TransactionStatus.Pending)
       }
       publications.dropRight(atalaObjectsMerged.size).foreach { publicationInfo =>
         doReturn(Future.successful(Right(()))).when(ledger).deleteTransaction(publicationInfo.transaction.transactionId)
@@ -351,19 +349,17 @@ class SubmissionServiceSpec
   }
 
   private def scheduleOpsForBatching(ops: List[SignedAtalaOperation]): Unit =
-    ops.zipWithIndex.foreach {
-      case (atalaOperation, index) =>
-        withClue(s"scheduling operation #$index") {
-          objectManagementService.scheduleSingleAtalaOperation(atalaOperation).futureValue
-        }
+    ops.zipWithIndex.foreach { case (atalaOperation, index) =>
+      withClue(s"scheduling operation #$index") {
+        objectManagementService.scheduleSingleAtalaOperation(atalaOperation).futureValue
+      }
     }
 
   private def publishOpsSequentially(ops: List[SignedAtalaOperation]): Unit =
-    ops.zipWithIndex.foreach {
-      case (atalaOperation, index) =>
-        withClue(s"publishing operation #$index and flushing") {
-          publishSingleOperationAndFlush(atalaOperation).futureValue
-        }
+    ops.zipWithIndex.foreach { case (atalaOperation, index) =>
+      withClue(s"publishing operation #$index and flushing") {
+        publishSingleOperationAndFlush(atalaOperation).futureValue
+      }
     }
 
   private def setUpMultipleOperationsPublishing(

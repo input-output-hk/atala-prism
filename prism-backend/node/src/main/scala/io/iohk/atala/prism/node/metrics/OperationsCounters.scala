@@ -78,8 +78,8 @@ object OperationsCounters {
   ): Unit =
     Try {
       val operationAndOccurrences = in.map(_.getOperation).groupBy(_.operation).view.mapValues(_.size)
-      operationAndOccurrences.foreach {
-        case (operation, occurrences) => countAtalaDidOperations(operation, occurrences, counter, tagSetBuilder)
+      operationAndOccurrences.foreach { case (operation, occurrences) =>
+        countAtalaDidOperations(operation, occurrences, counter, tagSetBuilder)
       }
     }.toEither.left.foreach(error => logger.error(s"${counter.name} counter just blew up", error))
 
@@ -107,11 +107,10 @@ object OperationsCounters {
       .map(updateDidAction => atalaUpdateDidActionToTag(updateDidAction.action))
       .groupBy(identity)
       .view
-      .foreach {
-        case (subOperationName, subOperationsLists) =>
-          counter
-            .withTags(updateOperationTag.add(UPDATE_SUB_OPERATION_TAG, subOperationName).build())
-            .increment(subOperationsLists.size.toLong)
+      .foreach { case (subOperationName, subOperationsLists) =>
+        counter
+          .withTags(updateOperationTag.add(UPDATE_SUB_OPERATION_TAG, subOperationName).build())
+          .increment(subOperationsLists.size.toLong)
       }
   }
 

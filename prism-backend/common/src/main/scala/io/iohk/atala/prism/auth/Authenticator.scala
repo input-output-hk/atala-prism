@@ -53,23 +53,19 @@ abstract class SignedRequestsAuthenticatorBase[Id](
 
   override val logger: Logger = LoggerFactory.getLogger(this.getClass)
 
-  /**
-    * Burns given nonce for user id, so that the request can not be cloned by a malicious agent
+  /** Burns given nonce for user id, so that the request can not be cloned by a malicious agent
     */
   def burnNonce(id: Id, requestNonce: RequestNonce)(implicit ec: ExecutionContext): FutureEither[AuthError, Unit]
 
-  /**
-    * Burns given nonce for DID, so that the request can not be cloned by a malicious agent
+  /** Burns given nonce for DID, so that the request can not be cloned by a malicious agent
     */
   def burnNonce(did: DID, requestNonce: RequestNonce)(implicit ec: ExecutionContext): FutureEither[AuthError, Unit]
 
-  /**
-    * Finds a user associated with the given public key
+  /** Finds a user associated with the given public key
     */
   def findByPublicKey(publicKey: ECPublicKey)(implicit ec: ExecutionContext): FutureEither[AuthError, Id]
 
-  /**
-    * Finds a user associated with the given DID
+  /** Finds a user associated with the given DID
     */
   def findByDid(did: DID)(implicit ec: ExecutionContext): FutureEither[AuthError, Id]
 
@@ -135,8 +131,7 @@ abstract class SignedRequestsAuthenticatorBase[Id](
     }.toFutureEither
   }
 
-  /**
-    * A request must be signed by prepending the nonce, let's say requestNonce|request
+  /** A request must be signed by prepending the nonce, let's say requestNonce|request
     *
     * The signature is valid if the signature matches and the nonce hasn't been seen before.
     *
