@@ -9,8 +9,11 @@ export const useContactStore = ({ fetch, reset } = { fetch: false, reset: false 
 
   useEffect(() => {
     if (reset) resetContacts();
+  }, [reset, resetContacts]);
+
+  useEffect(() => {
     if (fetch) fetchContactsNextPage();
-  }, [reset, fetch, resetContacts, fetchContactsNextPage]);
+  }, [fetch, fetchContactsNextPage]);
 
   return contactStore;
 };
@@ -20,25 +23,28 @@ export const useContactUiState = ({ reset } = { reset: false }) => {
   const { triggerSearch, resetState } = contactUiState;
 
   useEffect(() => {
-    if (reset) {
-      resetState();
-    }
+    if (reset) resetState();
   }, [reset, resetState]);
 
   useEffect(() => {
     reaction(() => contactUiState.textFilter, () => triggerSearch());
+  }, [contactUiState.textFilter, triggerSearch]);
+
+  useEffect(() => {
     reaction(() => contactUiState.dateFilter, () => triggerSearch());
+  }, [contactUiState.dateFilter, triggerSearch]);
+
+  useEffect(() => {
     reaction(() => contactUiState.statusFilter, () => triggerSearch());
+  }, [contactUiState.statusFilter, triggerSearch]);
+
+  useEffect(() => {
     reaction(() => contactUiState.sortingKey, () => triggerSearch());
+  }, [contactUiState.sortingKey, triggerSearch]);
+
+  useEffect(() => {
     reaction(() => contactUiState.sortDirection, () => triggerSearch());
-  }, [
-    contactUiState.textFilter,
-    contactUiState.dateFilter,
-    contactUiState.statusFilter,
-    contactUiState.sortingKey,
-    contactUiState.sortDirection,
-    triggerSearch
-  ]);
+  }, [contactUiState.sortDirection, triggerSearch]);
 
   return contactUiState;
 };
