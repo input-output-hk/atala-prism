@@ -18,7 +18,7 @@ export const makeCancelable = promise => {
         const error = new PromiseCancellationError();
         error.message = err.message;
         error.stack = err.stack;
-        return hasCanceled_ ? reject(error) : reject(error);
+        return reject(error);
       });
   });
 
