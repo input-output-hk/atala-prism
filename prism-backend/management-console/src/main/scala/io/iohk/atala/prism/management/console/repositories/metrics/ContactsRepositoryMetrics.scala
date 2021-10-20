@@ -20,6 +20,7 @@ final class ContactsRepositoryMetrics[F[_]: TimeMeasureMetric: BracketThrow] ext
   private lazy val updateContactTimer = TimeMeasureUtil.createDBQueryTimer(repoName, "updateContact")
   private lazy val findByContactIdTimer = TimeMeasureUtil.createDBQueryTimer(repoName, "findByContactId")
   private lazy val findByExternalIdTimer = TimeMeasureUtil.createDBQueryTimer(repoName, "findByExternalId")
+  private lazy val findByTokenTimer = TimeMeasureUtil.createDBQueryTimer(repoName, "findByTOken")
   private lazy val findContactsTimer = TimeMeasureUtil.createDBQueryTimer(repoName, "findContacts")
   private lazy val getByTimer = TimeMeasureUtil.createDBQueryTimer(repoName, "getBy")
   private lazy val deleteTimer = TimeMeasureUtil.createDBQueryTimer(repoName, "delete")
@@ -52,6 +53,9 @@ final class ContactsRepositoryMetrics[F[_]: TimeMeasureMetric: BracketThrow] ext
       externalId: Contact.ExternalId
   ): Mid[F, Option[Contact]] =
     _.measureOperationTime(findByExternalIdTimer)
+
+  override def findByToken(institutionId: ParticipantId, connectionToken: ConnectionToken): Mid[F, Option[Contact]] =
+    _.measureOperationTime(findByTokenTimer)
 
   override def findContacts(
       institutionId: ParticipantId,

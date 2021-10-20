@@ -133,7 +133,8 @@ object ManagementConsoleApp extends IOApp {
 
       groupsService <- GroupsService.makeResource(institutionGroupsRepository, managementConsoleLogs)
 
-      credentialsStoreGrpcService = new CredentialsStoreGrpcService(credentialsStoreService, authenticator)
+      credentialsStoreGrpcService =
+        new CredentialsStoreGrpcService(credentialsStoreService, contactsRepository, authenticator)
       credentialsGrpcService = new CredentialsGrpcService(credentialsService, authenticator)
       groupsGrpcService = new GroupsGrpcService(groupsService, authenticator)
       consoleGrpcService = new ConsoleGrpcService(consoleService, authenticator)

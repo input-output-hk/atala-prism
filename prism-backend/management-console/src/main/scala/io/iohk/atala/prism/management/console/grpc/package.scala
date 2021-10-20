@@ -31,6 +31,7 @@ import io.iohk.atala.prism.credentials.CredentialBatchId
 import io.iohk.atala.prism.crypto.MerkleInclusionProof
 import io.iohk.atala.prism.crypto.Sha256Digest
 import io.iohk.atala.prism.crypto.signature.ECSignature
+import io.iohk.atala.prism.models.ConnectionToken
 import io.iohk.atala.prism.protos.connector_api.SendMessagesRequest
 import io.iohk.atala.prism.protos.console_models.ContactConnectionStatus
 import io.iohk.atala.prism.utils.Base64Utils
@@ -741,10 +742,10 @@ package object grpc {
   implicit val storeCredentialConverter: ProtoConverter[StoreCredentialRequest, StoreCredential] =
     (request: StoreCredentialRequest) => {
       for {
-        contactId <- Contact.Id.from(request.connectionToken) // TODO: Rename to ConnectionToken
         credentialExternalId <- CredentialExternalId.from(request.credentialExternalId)
+        connectionToken = ConnectionToken(request.connectionToken)
       } yield StoreCredential(
-        contactId,
+        connectionToken,
         request.encodedSignedCredential,
         credentialExternalId
       )

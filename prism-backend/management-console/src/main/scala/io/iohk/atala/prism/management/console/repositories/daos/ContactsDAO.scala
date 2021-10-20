@@ -96,6 +96,18 @@ object ContactsDAO {
          |""".stripMargin.query[Contact].option
   }
 
+  def findByToken(
+      participantId: ParticipantId,
+      connectionToken: ConnectionToken
+  ): doobie.ConnectionIO[Option[Contact]] = {
+    sql"""
+         |SELECT contact_id, connection_token, external_id, contact_data, created_at, name
+         |FROM contacts
+         |WHERE connection_token = $connectionToken AND
+         |      created_by = $participantId
+         |""".stripMargin.query[Contact].option
+  }
+
   def findContacts(institutionId: ParticipantId, contactIds: List[Contact.Id]): doobie.ConnectionIO[List[Contact]] = {
     NonEmptyList.fromList(contactIds) match {
       case Some(contactIdsNonEmpty) =>
