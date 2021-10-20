@@ -30,7 +30,7 @@ object versions {
   val scalapb = "0.11.6"
   val slf4j = "1.7.32"
   val sttp = "1.7.2"
-  val tofu = "0.10.2"
+  val tofu = "0.10.6"
   val tofuDerevo = "0.12.6"
   val twirl = "1.5.1"
   val typesafeConfig = "1.4.1"
@@ -83,9 +83,7 @@ object Dependencies {
     "com.softwaremill.sttp" %% "async-http-client-backend-future" % versions.sttp
   // TODO update monix in the project
   val tofu =
-    "tf.tofu" %% "tofu" % versions.tofu excludeAll ExclusionRule(organization =
-      "io.monix"
-    )
+    "tf.tofu" %% "tofu" % versions.tofu excludeAll ExclusionRule(organization = "io.monix")
   val tofuLogging = "tf.tofu" %% "tofu-logging" % versions.tofu
   val tofuDerevoTagless =
     "tf.tofu" %% "derevo-cats-tagless" % versions.tofuDerevo
@@ -103,11 +101,15 @@ object Dependencies {
   // We have to exclude bouncycastle since for some reason bitcoinj depends on bouncycastle jdk15to18
   // (i.e. JDK 1.5 to 1.8), but we are using JDK 11
   val prismCredentials =
-    "io.iohk.atala" % "prism-credentials-jvm" % versions.prismSdk excludeAll ExclusionRule(organization = "org.bouncycastle")
+    "io.iohk.atala" % "prism-credentials-jvm" % versions.prismSdk excludeAll ExclusionRule(organization =
+      "org.bouncycastle"
+    )
   val prismProtos =
     "io.iohk.atala" % "prism-protos-jvm" % versions.prismSdk % "protobuf-src" intransitive ()
   //Can be used only in tests!
-  val prismApi = "io.iohk.atala" % "prism-api-jvm" % versions.prismSdk % Test excludeAll ExclusionRule(organization = "org.bouncycastle")
+  val prismApi = "io.iohk.atala" % "prism-api-jvm" % versions.prismSdk % Test excludeAll ExclusionRule(organization =
+    "org.bouncycastle"
+  )
 
   // Test dependencies
   val catsScalatest =
