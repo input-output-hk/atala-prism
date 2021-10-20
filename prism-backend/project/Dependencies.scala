@@ -24,7 +24,7 @@ object versions {
   val monix = "3.2.2"
   val monocle = "2.1.0"
   val odyssey = "0.1.5"
-  val osLib = "0.7.1"
+  val osLib = "0.7.8"
   val playJson = "2.9.1"
   val postgresql = "42.2.18"
   val scalatest = "3.2.2"
