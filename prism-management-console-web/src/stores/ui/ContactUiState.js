@@ -108,7 +108,7 @@ export default class ContactUiState {
     if (this.fetchedResults) return this.fetchedResults;
     const { contacts, searchResults } = this.rootStore.prismStore.contactStore;
     const allFetchedContacts = contacts.concat(searchResults);
-    const contactsToFilter = _.uniqBy(allFetchedContacts, g => g.name);
+    const contactsToFilter = _.uniqBy(allFetchedContacts, c => c.contactId);
     const unsortedFilteredContacts = this.applyFilters(contactsToFilter);
     const sortedFilteredContacts = this.applySorting(unsortedFilteredContacts);
     return sortedFilteredContacts;
@@ -152,7 +152,10 @@ export default class ContactUiState {
     _.orderBy(
       contacts,
       [
-        o => (this.sortingIsCaseSensitive() ? o[this.sortingKey].toLowerCase() : o[this.sortingKey])
+        contact =>
+          this.sortingIsCaseSensitive()
+            ? contact[this.sortingKey].toLowerCase()
+            : contact[this.sortingKey]
       ],
       this.sortDirection === ascending ? 'asc' : 'desc'
     );
