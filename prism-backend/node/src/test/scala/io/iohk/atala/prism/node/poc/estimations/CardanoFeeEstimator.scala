@@ -21,8 +21,7 @@ import scala.collection.mutable.ListBuffer
 import scala.concurrent.ExecutionContext
 import scala.concurrent.duration._
 
-/**
-  * Estimates the Cardano fees to pay for a given deployment simulation.
+/** Estimates the Cardano fees to pay for a given deployment simulation.
   *
   * <p>You can run the estimator with `sbt node/test:run` and choosing `CardanoFeeEstimator` from the list.
   * In order to do so, make sure you have set the proper environment variables, as suggested
@@ -71,11 +70,10 @@ class CardanoFeeEstimator(walletId: WalletId, paymentAddress: Address, cardanoWa
 
   private def estimateFees(atalaObjects: Iterable[AtalaObject]): Lovelace = {
     val atalaObjectsBySize = atalaObjects.groupBy(_.toByteArray.length)
-    val fees = atalaObjectsBySize.foldLeft(BigInt(0)) {
-      case (sum, (_, atalaObjectsWithSameSize)) =>
-        // For performance, use an arbitrary object to estimate all of the objects with the same size, even though they
-        // may get different fees
-        sum + atalaObjectsWithSameSize.size * estimateFee(atalaObjectsWithSameSize.head)
+    val fees = atalaObjectsBySize.foldLeft(BigInt(0)) { case (sum, (_, atalaObjectsWithSameSize)) =>
+      // For performance, use an arbitrary object to estimate all of the objects with the same size, even though they
+      // may get different fees
+      sum + atalaObjectsWithSameSize.size * estimateFee(atalaObjectsWithSameSize.head)
     }
     Lovelace(fees)
   }

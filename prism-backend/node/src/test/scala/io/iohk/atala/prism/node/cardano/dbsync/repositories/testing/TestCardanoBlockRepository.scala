@@ -15,8 +15,7 @@ import scala.util.Random
 
 object TestCardanoBlockRepository {
 
-  /**
-    * Creates a trimmed-down version of the {@code cexplorer} database structure.
+  /** Creates a trimmed-down version of the {@code cexplorer} database structure.
     */
   def createTables()(implicit database: Transactor[IO]): Unit = {
     sql"""
@@ -83,9 +82,8 @@ object TestCardanoBlockRepository {
     for {
       metadata <- transaction.metadata
       json <- metadata.json.asObject
-      _ = json.toMap.foreach {
-        case (key, value) =>
-          sql"""
+      _ = json.toMap.foreach { case (key, value) =>
+        sql"""
                |INSERT INTO tx_metadata (key, json, tx_id)
                |  VALUES (
                |    ${key.toInt},
@@ -98,8 +96,7 @@ object TestCardanoBlockRepository {
     ()
   }
 
-  /**
-    * Creates a genesis block and {@code n} other random blocks, for a total of {@code n+1} blocks.
+  /** Creates a genesis block and {@code n} other random blocks, for a total of {@code n+1} blocks.
     */
   def createRandomBlocks(n: Int): Seq[Block.Full] = {
     var previousBlock: Option[Block.Full] = None

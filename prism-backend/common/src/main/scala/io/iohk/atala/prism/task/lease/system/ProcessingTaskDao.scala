@@ -88,9 +88,8 @@ class ProcessingTaskDao[S <: ProcessingTaskState](stringToProcessingTaskState: S
 
   private def ensureOneRowUpdated(processingTask: ProcessingTask[S])(affectedRows: Int): ConnectionIO[Unit] = {
     FC.raiseError(
-        new RuntimeException(s"Unknown error while updating processing task with id: ${processingTask.id} ")
-      )
-      .whenA(1 != affectedRows)
+      new RuntimeException(s"Unknown error while updating processing task with id: ${processingTask.id} ")
+    ).whenA(1 != affectedRows)
   }
 
   def delete(processingTaskId: ProcessingTaskId): ConnectionIO[Int] =

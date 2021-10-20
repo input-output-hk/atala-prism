@@ -47,17 +47,15 @@ case class CreateDIDOperation(
 
     for {
       _ <- EitherT {
-        DIDDataDAO.insert(id, digest, ledgerData).attemptSomeSqlState {
-          case sqlstate.class23.UNIQUE_VIOLATION =>
-            EntityExists("DID", id.getValue): StateError
+        DIDDataDAO.insert(id, digest, ledgerData).attemptSomeSqlState { case sqlstate.class23.UNIQUE_VIOLATION =>
+          EntityExists("DID", id.getValue): StateError
         }
       }
 
       _ <- keys.traverse[ConnectionIOEitherTError, Unit] { key: DIDPublicKey =>
         EitherT {
-          PublicKeysDAO.insert(key, ledgerData).attemptSomeSqlState {
-            case sqlstate.class23.UNIQUE_VIOLATION =>
-              EntityExists("public key", key.keyId): StateError
+          PublicKeysDAO.insert(key, ledgerData).attemptSomeSqlState { case sqlstate.class23.UNIQUE_VIOLATION =>
+            EntityExists("public key", key.keyId): StateError
           }
         }
       }

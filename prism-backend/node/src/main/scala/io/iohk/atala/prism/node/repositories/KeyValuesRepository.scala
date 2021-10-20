@@ -21,18 +21,15 @@ import tofu.syntax.monoid.TofuSemigroupOps
 @derive(applyK)
 trait KeyValuesRepository[F[_]] {
 
-  /**
-    * Updates the value for the given key, inserting it if non-existent.
+  /** Updates the value for the given key, inserting it if non-existent.
     */
   def upsert(keyValue: KeyValue): F[Unit]
 
-  /**
-    * Updates many values for the given keys atomically, inserting non-existent keys.
+  /** Updates many values for the given keys atomically, inserting non-existent keys.
     */
   def upsertMany(keyValues: List[KeyValue]): F[Unit]
 
-  /**
-    * Gets the value for the given key, set to `None` when non-existent or `NULL` in the database.
+  /** Gets the value for the given key, set to `None` when non-existent or `NULL` in the database.
     */
   def get(key: String): F[KeyValue]
 
@@ -63,8 +60,7 @@ private final class KeyValuesRepositoryImpl[F[_]: BracketThrow](xa: Transactor[F
 
   val logger: Logger = LoggerFactory.getLogger(getClass)
 
-  /**
-    * Updates the value for the given key, inserting it if non-existent.
+  /** Updates the value for the given key, inserting it if non-existent.
     */
   def upsert(keyValue: KeyValue): F[Unit] = {
     KeyValuesDAO
@@ -73,8 +69,7 @@ private final class KeyValuesRepositoryImpl[F[_]: BracketThrow](xa: Transactor[F
       .transact(xa)
   }
 
-  /**
-    * Updates many values for the given keys atomically, inserting non-existent keys.
+  /** Updates many values for the given keys atomically, inserting non-existent keys.
     */
   def upsertMany(keyValues: List[KeyValue]): F[Unit] = {
     keyValues
@@ -85,8 +80,7 @@ private final class KeyValuesRepositoryImpl[F[_]: BracketThrow](xa: Transactor[F
       .void
   }
 
-  /**
-    * Gets the value for the given key, set to `None` when non-existent or `NULL` in the database.
+  /** Gets the value for the given key, set to `None` when non-existent or `NULL` in the database.
     */
   def get(key: String): F[KeyValue] = {
     KeyValuesDAO

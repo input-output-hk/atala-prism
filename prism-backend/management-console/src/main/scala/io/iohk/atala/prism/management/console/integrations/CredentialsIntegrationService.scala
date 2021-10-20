@@ -136,11 +136,10 @@ private final class CredentialsIntegrationServiceImpl[F[_]: Monad](
       request: RevokePublishedCredential
   ): F[Either[ManagementConsoleError, NodeRevocationResponse]] = {
     ex.deferFuture(
-        nodeService.revokeCredentials(
-          node_api.RevokeCredentialsRequest().withSignedOperation(request.revokeCredentialsOperation)
-        )
+      nodeService.revokeCredentials(
+        node_api.RevokeCredentialsRequest().withSignedOperation(request.revokeCredentialsOperation)
       )
-      .map(ProtoConverter[node_api.RevokeCredentialsResponse, NodeRevocationResponse].fromProto)
+    ).map(ProtoConverter[node_api.RevokeCredentialsResponse, NodeRevocationResponse].fromProto)
       .map(_.toEither.left.map(wrapAsServerError))
   }
 
