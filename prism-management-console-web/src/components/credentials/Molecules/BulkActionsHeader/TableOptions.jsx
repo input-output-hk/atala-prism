@@ -42,6 +42,8 @@ const TableOptions = ({ bulkActionsProps, loadingSelection, selectedLength, sort
   const toggleSorting = () =>
     setSortDirection(sortAscending ? SORTING_DIRECTIONS.descending : SORTING_DIRECTIONS.ascending);
 
+  const selectedLabel = selectedLength ? `  (${selectedLength})  ` : null;
+
   return (
     <div className="TableOptions">
       <div className="LeftOptions">
@@ -62,7 +64,7 @@ const TableOptions = ({ bulkActionsProps, loadingSelection, selectedLength, sort
           ) : (
             <span>
               {t('credentials.actions.selectAll')}
-              {selectedLength ? `  (${selectedLength})  ` : null}
+              {selectedLabel}
             </span>
           )}
         </Checkbox>
