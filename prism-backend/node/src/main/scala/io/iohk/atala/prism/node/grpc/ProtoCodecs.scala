@@ -6,7 +6,8 @@ import io.iohk.atala.prism.protos.models.TimestampInfo
 import io.iohk.atala.prism.crypto.EC.{INSTANCE => EC}
 import io.iohk.atala.prism.crypto.keys.ECPublicKey
 import io.iohk.atala.prism.crypto.ECConfig.{INSTANCE => ECConfig}
-import io.iohk.atala.prism.models.{DidSuffix, ProtoCodecs => CommonProtoCodecs}
+import io.iohk.atala.prism.models.{DidSuffix, Ledger}
+import io.iohk.atala.prism.protos.common_models
 import io.iohk.atala.prism.node.models
 import io.iohk.atala.prism.node.models.KeyUsage.{
   AuthenticationKey,
@@ -120,9 +121,18 @@ object ProtoCodecs {
 
   def toLedgerData(ledgerData: LedgerData): node_models.LedgerData = {
     node_models.LedgerData(
-      ledger = CommonProtoCodecs.toLedger(ledgerData.ledger),
+      ledger = toLedger(ledgerData.ledger),
       transactionId = ledgerData.transactionId.toString,
       timestampInfo = Some(toTimeStampInfoProto(ledgerData.timestampInfo))
     )
+  }
+
+  def toLedger(ledger: Ledger): common_models.Ledger = {
+    ledger match {
+      case Ledger.InMemory => common_models.Ledger.IN_MEMORY
+      case Ledger.CardanoTestnet => common_models.Ledger.CARDANO_TESTNET
+      case Ledger.CardanoMainnet => common_models.Ledger.CARDANO_MAINNET
+      case _ => throw new IllegalArgumentException(s"Unexpected ledger: $ledger")
+    }
   }
 }
