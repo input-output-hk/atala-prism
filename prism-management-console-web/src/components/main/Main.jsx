@@ -3,7 +3,7 @@ import { observer } from 'mobx-react-lite';
 import { message } from 'antd';
 import 'antd/dist/antd.css';
 import Router from '../Router';
-import i18nInitialise from '../../i18nInitialisator';
+import i18nInitialise from '../../i18nInitialise';
 import I18nError from '../I18nError';
 import Logger from '../../helpers/Logger';
 import UnconfirmedAccountErrorModal from '../common/Organisms/Modals/UnconfirmedAccountErrorModal/UnconfirmedAccountErrorModal';
