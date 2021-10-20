@@ -5,6 +5,9 @@ on:
 
 name: Launch Scala Steward
 
+env:
+  GITHUB_TOKEN: ${{ secrets.ATALA_GITHUB_TOKEN }}
+
 jobs:
   scala-steward:
     runs-on: ubuntu-latest
