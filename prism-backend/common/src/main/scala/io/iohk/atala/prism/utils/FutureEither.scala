@@ -73,15 +73,13 @@ class FutureEither[+E, +A](val value: Future[Either[E, A]]) extends AnyVal {
   }
 }
 
-/**
-  * NOTE: Avoid defining generic future extensions, like {{{FutureOps[A](val value: Future[A])}}}
+/** NOTE: Avoid defining generic future extensions, like {{{FutureOps[A](val value: Future[A])}}}
   *
   * These could cause ambiguity to the compiler while resolving implicits.
   */
 object FutureEither {
 
-  /**
-    * Constructs a `FutureEither` from the given `body` by wrapping it in a `Try`.
+  /** Constructs a `FutureEither` from the given `body` by wrapping it in a `Try`.
     *
     * <p>This method ensures any non-fatal exception is caught.
     */
@@ -89,8 +87,7 @@ object FutureEither {
     apply(Try(body))
   }
 
-  /**
-    * Constructs a `FutureEither` from the given `Try`.
+  /** Constructs a `FutureEither` from the given `Try`.
     */
   def apply[E, A](tryBody: Try[A]): FutureEither[Throwable, A] = {
     Future.successful {

@@ -219,17 +219,15 @@ class FlowPoC extends AtalaWithPostgresSpec with BeforeAndAfterEach {
 
       // 7. she encodes the credentials and sends them through the connector along with
       //    the corresponding proofs of inclusion
-      val credentialsToSend = signedCredentials.zip(proofs1 ++ proofs2).map {
-        case (c, p) =>
-          (c.getCanonicalForm, p)
+      val credentialsToSend = signedCredentials.zip(proofs1 ++ proofs2).map { case (c, p) =>
+        (c.getCanonicalForm, p)
       }
       connector.sendCredentialAndProof(credentialsToSend)
 
       // ... later ...
       // 8. a verifier receives the credentials through the connector
-      val List((c1, p1), (c2, p2), (c3, p3), (c4, p4)) = connector.receivedCredentialAndProof().map {
-        case (c, p) =>
-          (JsonBasedCredential.fromString(c), p)
+      val List((c1, p1), (c2, p2), (c3, p3), (c4, p4)) = connector.receivedCredentialAndProof().map { case (c, p) =>
+        (JsonBasedCredential.fromString(c), p)
       }
 
       // 9. gives the signed credentials to the wallet to verify them and it succeeds

@@ -355,16 +355,15 @@ class ConnectorService(
 
     def toResponse(keys: Seq[(String, ECPublicKey)]) =
       connector_api.GetConnectionCommunicationKeysResponse(
-        keys = keys.map {
-          case (keyId, key) =>
-            connector_models.ConnectionKey(
-              keyId = keyId,
-              key = Some(
-                connector_models.EncodedPublicKey(
-                  publicKey = ByteString.copyFrom(key.getEncoded)
-                )
+        keys = keys.map { case (keyId, key) =>
+          connector_models.ConnectionKey(
+            keyId = keyId,
+            key = Some(
+              connector_models.EncodedPublicKey(
+                publicKey = ByteString.copyFrom(key.getEncoded)
               )
             )
+          )
         }
       )
 

@@ -108,8 +108,7 @@ object Contact {
     val name: SortBy = Name
   }
 
-  /**
-    * Used to filter the results by the given criteria
+  /** Used to filter the results by the given criteria
     *
     * @param groupName when provided, all results belong to this group
     * @param externalId when provided, the externalId on results is similar to this one

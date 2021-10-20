@@ -137,8 +137,7 @@ class ConnectorClientServiceImpl(
     authenticatedCall(request, _.getConnectionsPaginated)
   }
 
-  /**
-    * Create a continuous stream with subsequent calls to connector's GetConnectionsPaginated method.
+  /** Create a continuous stream with subsequent calls to connector's GetConnectionsPaginated method.
     *
     * @param lastSeenConnectionId initial connection id
     * @param limit limit of connections per one request to the gRPC
@@ -153,25 +152,24 @@ class ConnectorClientServiceImpl(
     Stream
       .unfoldEval[Task, (Option[ConnectionId], Boolean), Seq[ConnectionInfo]](
         (lastSeenConnectionId, initialAwakeDelay)
-      ) {
-        case (lastSeenConnectionId, shouldApplyAwakeDelay) =>
-          val task = for {
-            _ <- if (shouldApplyAwakeDelay) Task.sleep(awakeDelay) else Task.unit
-            _ <- Task.pure(logger.info(s"Call GetConnectionsPaginated - lastSeenConnectionId: ${lastSeenConnectionId}"))
-            response <- getConnectionsPaginated(lastSeenConnectionId, limit)
-            result = response.connections match {
-              case Nil =>
-                val applyAwakeDelay = true
-                Some(Nil -> (lastSeenConnectionId -> applyAwakeDelay))
-              case connections =>
-                val applyAwakeDelay = connections.size != limit
-                Some(
-                  connections -> (ConnectionId.from(connections.last.connectionId).toOption -> applyAwakeDelay)
-                )
-            }
-          } yield result
+      ) { case (lastSeenConnectionId, shouldApplyAwakeDelay) =>
+        val task = for {
+          _ <- if (shouldApplyAwakeDelay) Task.sleep(awakeDelay) else Task.unit
+          _ <- Task.pure(logger.info(s"Call GetConnectionsPaginated - lastSeenConnectionId: ${lastSeenConnectionId}"))
+          response <- getConnectionsPaginated(lastSeenConnectionId, limit)
+          result = response.connections match {
+            case Nil =>
+              val applyAwakeDelay = true
+              Some(Nil -> (lastSeenConnectionId -> applyAwakeDelay))
+            case connections =>
+              val applyAwakeDelay = connections.size != limit
+              Some(
+                connections -> (ConnectionId.from(connections.last.connectionId).toOption -> applyAwakeDelay)
+              )
+          }
+        } yield result
 
-          TaskUtils.retry(task, CONNECTION_MAX_RETIRES, CONNECTION_RETRY_WAIT_TIME)
+        TaskUtils.retry(task, CONNECTION_MAX_RETIRES, CONNECTION_RETRY_WAIT_TIME)
       }
       .flatMap(Stream.emits) // convert Seq[ConnectionInfo] to ConnectionInfo
   }

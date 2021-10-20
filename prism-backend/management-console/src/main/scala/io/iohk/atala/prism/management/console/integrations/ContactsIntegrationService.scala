@@ -149,9 +149,8 @@ private final class ContactsIntegrationServiceImpl[F[_]: MonadThrow](
         .flatMap(fb => fb.connectionStatus)
         .map(contactConnectionStatusToFilterBy => {
           data
-            .filter {
-              case (contactWithConnection, _) =>
-                contactConnectionStatusToFilterBy == contactWithConnection.connection.connectionStatus
+            .filter { case (contactWithConnection, _) =>
+              contactConnectionStatusToFilterBy == contactWithConnection.connection.connectionStatus
             }
             .take(paginatedQuery.limit)
         })

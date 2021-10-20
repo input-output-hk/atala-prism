@@ -182,36 +182,34 @@ private final class CredentialsServiceImpl[F[_]: Monad](
         batchId: CredentialBatchId,
         signedIssueCredentialBatchOp: SignedAtalaOperation
     ): F[Either[ManagementConsoleError, Int]] = {
-      extractValues(signedIssueCredentialBatchOp).traverse {
-        case (merkleRoot, did, operationHash) =>
-          val computedBatchId = CredentialBatchId.fromBatchData(did.getSuffix, merkleRoot)
-          // validation for sanity check
-          // The `batchId` parameter is the id returned by the node.
-          // We make this check to be sure that the node and the console are
-          // using the same id (if this fails, they are using different versions
-          // of the protocol)
-          if (batchId != computedBatchId)
-            logger.warn("The batch id provided by the node does not match the one computed")
+      extractValues(signedIssueCredentialBatchOp).traverse { case (merkleRoot, did, operationHash) =>
+        val computedBatchId = CredentialBatchId.fromBatchData(did.getSuffix, merkleRoot)
+        // validation for sanity check
+        // The `batchId` parameter is the id returned by the node.
+        // We make this check to be sure that the node and the console are
+        // using the same id (if this fails, they are using different versions
+        // of the protocol)
+        if (batchId != computedBatchId)
+          logger.warn("The batch id provided by the node does not match the one computed")
 
-          credentialsRepository.storeBatchData(
-            batchId = batchId,
-            issuanceOperationHash = operationHash,
-            AtalaOperationId.of(signedIssueCredentialBatchOp)
-          )
+        credentialsRepository.storeBatchData(
+          batchId = batchId,
+          issuanceOperationHash = operationHash,
+          AtalaOperationId.of(signedIssueCredentialBatchOp)
+        )
       }
     }
 
     for {
       response <-
         ex.deferFuture(
-            nodeService
-              .issueCredentialBatch(
-                node_api
-                  .IssueCredentialBatchRequest()
-                  .withSignedOperation(publishBatch.signedOperation)
-              )
-          )
-          .map(ProtoConverter[IssueCredentialBatchResponse, IssueCredentialBatchNodeResponse].fromProto)
+          nodeService
+            .issueCredentialBatch(
+              node_api
+                .IssueCredentialBatchRequest()
+                .withSignedOperation(publishBatch.signedOperation)
+            )
+        ).map(ProtoConverter[IssueCredentialBatchResponse, IssueCredentialBatchNodeResponse].fromProto)
           .map[Either[ManagementConsoleError, IssueCredentialBatchNodeResponse]](_.toEither.left.map(wrapAsServerError))
       result <- response.flatTraverse(response =>
         storeBatch(response.batchId, publishBatch.signedOperation).map(_.as(response))
@@ -362,12 +360,11 @@ private final class CredentialsServiceLogs[F[_]: ServiceLogging[*[_], Credential
     in =>
       info"deleting credentials $participantId" *>
         in.flatTap(
-            _.fold(
-              e => error"encountered an error while deleting credentials $e",
-              _ => info"deleting credentials - successfully done"
-            )
+          _.fold(
+            e => error"encountered an error while deleting credentials $e",
+            _ => info"deleting credentials - successfully done"
           )
-          .onError(errorCause"encountered an error while deleting credentials" (_))
+        ).onError(errorCause"encountered an error while deleting credentials" (_))
 
   override def storePublishedCredential(
       participantId: ParticipantId,
@@ -391,10 +388,9 @@ private final class CredentialsServiceLogs[F[_]: ServiceLogging[*[_], Credential
     in =>
       info"sharing credentials $participantId" *>
         in.flatTap(
-            _.fold(
-              e => error"encountered an error while sharing credentials $e",
-              _ => info"sharing credentials - successfully done"
-            )
+          _.fold(
+            e => error"encountered an error while sharing credentials $e",
+            _ => info"sharing credentials - successfully done"
           )
-          .onError(errorCause"encountered an error while sharing credentials" (_))
+        ).onError(errorCause"encountered an error while sharing credentials" (_))
 }

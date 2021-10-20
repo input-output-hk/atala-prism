@@ -19,8 +19,7 @@ import org.flywaydb.core.internal.resolver.CompositeMigrationResolver
 
 import scala.jdk.CollectionConverters._
 
-/**
-  * This a helper to allow testing a specific sql migration by using flyway.
+/** This a helper to allow testing a specific sql migration by using flyway.
   *
   * The expected way to be used is:
   * - You create a new migration script, like "v22_alter_tables.sql"

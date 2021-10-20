@@ -56,9 +56,8 @@ object implicits {
       .other[(Instant, Int, Int)](
         NonEmptyList.of("TIMESTAMPTZ", "INTEGER", "INTEGER")
       )
-      .tmap {
-        case (abt, absn, osn) =>
-          new TimestampInfo(abt.toEpochMilli, absn, osn)
+      .tmap { case (abt, absn, osn) =>
+        new TimestampInfo(abt.toEpochMilli, absn, osn)
       }
 
 }

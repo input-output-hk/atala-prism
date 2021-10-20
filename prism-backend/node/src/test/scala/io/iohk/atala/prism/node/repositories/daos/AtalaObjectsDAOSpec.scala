@@ -119,11 +119,10 @@ class AtalaObjectsDAOSpec extends AtalaWithPostgresSpec {
       }
       val retrieved = AtalaObjectsDAO.getNotPublishedObjectInfos.transact(database).unsafeRunSync()
       retrieved.size mustBe N
-      retrieved.zipWithIndex.foreach {
-        case (objInfo, ind) =>
-          withClue(s"Index $ind:") {
-            objInfo.objectId mustBe AtalaObjectId.of(node_internal.AtalaObject(blockOperationCount = ind))
-          }
+      retrieved.zipWithIndex.foreach { case (objInfo, ind) =>
+        withClue(s"Index $ind:") {
+          objInfo.objectId mustBe AtalaObjectId.of(node_internal.AtalaObject(blockOperationCount = ind))
+        }
       }
     }
   }

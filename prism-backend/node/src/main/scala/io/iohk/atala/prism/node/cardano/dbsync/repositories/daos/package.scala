@@ -23,21 +23,20 @@ package object daos extends BaseDAO {
 
   private[daos] implicit val transactionRead: Read[Transaction] = {
     Read[(TransactionId, BlockHash, Int, Option[Int], Option[String])]
-      .map {
-        case (transactionId, blockHash, blockIndex, metadataKey, metadataJson) =>
-          Transaction(
-            transactionId,
-            blockHash,
-            blockIndex,
-            // Merge `metadataKey` and `metadataJson` columns into `TransactionMetadata`
-            metadataKey.map(key => {
-              val parsedMetadataJson = io.circe.parser
-                .parse(metadataJson.getOrElse("{}"))
-                .getOrElse(throw new RuntimeException(s"Metadata of transaction $transactionId could not be parsed"))
+      .map { case (transactionId, blockHash, blockIndex, metadataKey, metadataJson) =>
+        Transaction(
+          transactionId,
+          blockHash,
+          blockIndex,
+          // Merge `metadataKey` and `metadataJson` columns into `TransactionMetadata`
+          metadataKey.map(key => {
+            val parsedMetadataJson = io.circe.parser
+              .parse(metadataJson.getOrElse("{}"))
+              .getOrElse(throw new RuntimeException(s"Metadata of transaction $transactionId could not be parsed"))
 
-              TransactionMetadata(Json.obj(key.toString -> parsedMetadataJson))
-            })
-          )
+            TransactionMetadata(Json.obj(key.toString -> parsedMetadataJson))
+          })
+        )
       }
   }
 }

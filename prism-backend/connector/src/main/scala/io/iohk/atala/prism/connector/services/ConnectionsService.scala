@@ -149,8 +149,8 @@ private class ConnectionsServiceImpl[F[_]: MonadThrow](
         (key.id, EC.toPublicKeyFromByteCoordinates(keyData.x.toByteArray, keyData.y.toByteArray))
       }
 
-      result.map[Either[GetConnectionCommunicationKeysError, Seq[(String, ECPublicKey)]]](Right(_)).recover {
-        case ex => Left(co(InternalServerError(ex)))
+      result.map[Either[GetConnectionCommunicationKeysError, Seq[(String, ECPublicKey)]]](Right(_)).recover { case ex =>
+        Left(co(InternalServerError(ex)))
       }
     }
 

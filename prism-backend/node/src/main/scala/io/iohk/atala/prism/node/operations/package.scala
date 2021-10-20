@@ -150,7 +150,7 @@ package object operations {
 
     /** Applies operation to the state checking that the operation is supported
       *
-     * It's the responsibility of the caller to manage transaction, in order to ensure atomicity of the operation.
+      * It's the responsibility of the caller to manage transaction, in order to ensure atomicity of the operation.
       */
     final def applyState()(implicit updateOracle: SupportedOperations): EitherT[ConnectionIO, StateError, Unit] =
       for {

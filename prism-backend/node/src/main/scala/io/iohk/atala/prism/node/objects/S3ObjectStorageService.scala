@@ -36,8 +36,7 @@ class S3ObjectStorageService(bucket: String, keyPrefix: String, region: Option[R
     builderWithRegion.build()
   }
 
-  /**
-    * Store the object identified by id, overwriting it if exists.
+  /** Store the object identified by id, overwriting it if exists.
     *
     * @param id   the object identifier
     * @param data the data to store
@@ -64,8 +63,7 @@ class S3ObjectStorageService(bucket: String, keyPrefix: String, region: Option[R
     promise.future
   }
 
-  /**
-    * Find an object by its id.
+  /** Find an object by its id.
     *
     * @param id the object identifier
     * @return the object data if it was found
