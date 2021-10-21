@@ -83,7 +83,7 @@ docker run \
 
 This command will bind volume to `.docker-volumes/postgres/data`, so all your database date will be stored there.
 
-You will also need to create another database with the name "node_db", you can connect to the database through your favorite RDBMS, like DataGrip for example, and create it, or use command line tool `psql` if you prefer this way 
+You will also need to create another database with the name "node_db" (and optionally additional one named "management_console_db"). You can connect to the database through your favorite RDBMS, like DataGrip for example, and create it, or use command line tool `psql` if you prefer this way 
 
 
 ```bash
@@ -97,6 +97,12 @@ and then
 
 ```
 connector_db=# CREATE DATABASE node_db;
+```
+
+If you are setting up backend for prism-management-console-web app, then create the "management_console_db" too
+
+```
+connector_db=# CREATE DATABASE management_console_db;
 ```
 
 ### Back-end
