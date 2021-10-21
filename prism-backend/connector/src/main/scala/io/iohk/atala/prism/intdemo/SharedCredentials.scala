@@ -31,14 +31,13 @@ object SharedCredentials {
   }
 
   def credentialsOfType(typeIds: Set[String])(messages: Seq[Message]): Seq[credential_models.PlainTextCredential] = {
-    messages.collect {
-      case message =>
-        val credential = credential_models.AtalaMessage.parseFrom(message.content).getPlainCredential
-        if (typeIds.contains { getTypeId(credential) }) {
-          Some(credential)
-        } else {
-          None
-        }
+    messages.collect { case message =>
+      val credential = credential_models.AtalaMessage.parseFrom(message.content).getPlainCredential
+      if (typeIds.contains { getTypeId(credential) }) {
+        Some(credential)
+      } else {
+        None
+      }
     }.flatten
   }
 

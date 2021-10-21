@@ -1,12 +1,13 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { graphql, Link } from 'gatsby';
+import firebase from 'gatsby-plugin-firebase';
 import _ from 'lodash';
 import Header from '../components/Header/Header';
-import FooterBlog from '../components/footer/footer';
+import FooterBlog from '../components/footer/BlogFooter';
 import SEO from '../components/seo/seo';
 import FaqPanel from '../app/components/landing/Molecules/FaqPanel/FaqPanel';
 import ContactPanel from '../app/components/landing/Organisms/ContactPanel/ContactPanel';
-import { RESOURCES_NAME } from '../helpers/constants';
+import { RESOURCES_EVENT, RESOURCES_NAME } from '../helpers/constants';
 import Play from '../images/play.svg';
 
 import './resources.scss';
@@ -19,6 +20,10 @@ const Resources = ({ data }) => {
       nodes: [latestPost]
     }
   } = data;
+
+  useEffect(() => {
+    firebase.analytics().logEvent(RESOURCES_EVENT);
+  }, []);
 
   const featuredVideo = _.head(videos);
   const otherVideos = _.tail(videos);

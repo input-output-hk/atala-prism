@@ -2,7 +2,7 @@ package io.iohk.atala.prism.node.poc.endorsements
 
 import java.time.Duration
 import java.util.concurrent.TimeUnit
-import cats.effect.IO
+import cats.effect.{ContextShift, IO}
 import com.google.protobuf.ByteString
 import io.grpc.inprocess.{InProcessChannelBuilder, InProcessServerBuilder}
 import io.grpc.{ManagedChannel, Server}
@@ -46,20 +46,21 @@ import io.iohk.atala.prism.protos.endorsements_api.{
   RevokeEndorsementRequest
 }
 import io.iohk.atala.prism.protos.node_api.{CreateDIDRequest, GetDidDocumentRequest, ScheduleOperationsRequest}
-import io.iohk.atala.prism.services.NodeClientService.{issueBatchOperation, revokeCredentialsOperation}
+import io.iohk.atala.prism.utils.NodeClientUtils.{issueBatchOperation, revokeCredentialsOperation}
 import io.iohk.atala.prism.utils.IOUtils._
 import monix.execution.Scheduler.Implicits.{global => scheduler}
 import org.scalatest.BeforeAndAfterEach
 import org.scalatest.OptionValues.convertOptionToValuable
 import tofu.logging.Logs
 
-import scala.concurrent.{Future, Promise}
+import scala.concurrent.{ExecutionContext, Future, Promise}
 import scala.jdk.CollectionConverters._
 
 class EndorsementsFlowPoC extends AtalaWithPostgresSpec with BeforeAndAfterEach {
   import Utils._
 
-  private implicit val endorsementsFlowPoCLogs = Logs.withContext[IO, IOWithTraceIdContext]
+  private implicit val ce: ContextShift[IO] = IO.contextShift(ExecutionContext.global)
+  private val endorsementsFlowPoCLogs = Logs.withContext[IO, IOWithTraceIdContext]
   protected var serverName: String = _
   protected var serverHandle: Server = _
   protected var channelHandle: ManagedChannel = _
@@ -72,7 +73,7 @@ class EndorsementsFlowPoC extends AtalaWithPostgresSpec with BeforeAndAfterEach 
   protected var atalaReferenceLedger: InMemoryLedgerService = _
   protected var blockProcessingService: BlockProcessingServiceImpl = _
   protected var objectManagementService: ObjectManagementService[IOWithTraceIdContext] = _
-  protected var submissionService: SubmissionService = _
+  protected var submissionService: SubmissionService[IOWithTraceIdContext] = _
   protected var objectManagementServicePromise: Promise[ObjectManagementService[IOWithTraceIdContext]] = _
   protected var submissionSchedulingService: SubmissionSchedulingService = _
   protected var protocolVersionsRepository: ProtocolVersionRepository[IOWithTraceIdContext] = _
@@ -82,7 +83,7 @@ class EndorsementsFlowPoC extends AtalaWithPostgresSpec with BeforeAndAfterEach 
 
     didDataRepository = DIDDataRepository.unsafe(dbLiftedToTraceIdIO, endorsementsFlowPoCLogs)
     credentialBatchesRepository = CredentialBatchesRepository.unsafe(dbLiftedToTraceIdIO, endorsementsFlowPoCLogs)
-    protocolVersionsRepository = ProtocolVersionRepository(dbLiftedToTraceIdIO)
+    protocolVersionsRepository = ProtocolVersionRepository.unsafe(dbLiftedToTraceIdIO, endorsementsFlowPoCLogs)
 
     objectManagementServicePromise = Promise()
 
@@ -109,10 +110,11 @@ class EndorsementsFlowPoC extends AtalaWithPostgresSpec with BeforeAndAfterEach 
       dbLiftedToTraceIdIO,
       endorsementsFlowPoCLogs
     )
-    submissionService = SubmissionService(
+    submissionService = SubmissionService.unsafe(
       atalaReferenceLedger,
       atalaOperationsRepository,
-      atalaObjectsTransactionsRepository
+      atalaObjectsTransactionsRepository,
+      logs = endorsementsFlowPoCLogs
     )
     submissionSchedulingService = SubmissionSchedulingService(
       SubmissionSchedulingService.Config(ledgerPendingTransactionTimeout = Duration.ZERO),

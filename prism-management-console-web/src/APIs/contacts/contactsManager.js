@@ -102,7 +102,8 @@ async function getContacts({
   searchText,
   status
 }) {
-  Logger.info(`Getting up to ${limit} contacts${groupName ? ` from ${groupName}` : ''}`);
+  const groupMessage = groupName ? ` from ${groupName}` : '';
+  Logger.info(`Getting up to ${limit} contacts${groupMessage}`);
   const req = new GetContactsRequest();
   req.setLimit(limit);
   if (scrollId) req.setScrollId(scrollId);

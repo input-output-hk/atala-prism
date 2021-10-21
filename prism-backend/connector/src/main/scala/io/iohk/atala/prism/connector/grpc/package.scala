@@ -58,6 +58,23 @@ package object grpc {
 
   }
 
+  implicit val getConnectionByIdRequestConverter
+      : ProtoConverter[connector_api.GetConnectionByIdRequest, GetConnectionByIdRequest] =
+    (in: connector_api.GetConnectionByIdRequest) => {
+      model.ConnectionId
+        .from(in.id)
+        .fold(
+          _ =>
+            Failure(
+              new IllegalArgumentException(
+                s"Invalid value for id, expected valid id, got ${in.id}"
+              )
+            ),
+          id => Success(GetConnectionByIdRequest(id))
+        )
+
+    }
+
   implicit val connectionsPaginatedRequestConverter
       : ProtoConverter[connector_api.GetConnectionsPaginatedRequest, ConnectionsPaginatedRequest] =
     (in: connector_api.GetConnectionsPaginatedRequest) => {

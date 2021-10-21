@@ -44,7 +44,7 @@ const GroupEditingContainer = ({ api }) => {
   const updateGroupContacts = useCallback(
     (refreshAllContacts = false) => {
       if (refreshAllContacts) refreshContacts();
-      else getMoreContacts({ groupNameParam: group.name });
+      else getMoreContacts({ groupNameParam: group?.name });
     },
     [group, getMoreContacts, refreshContacts]
   );

@@ -1,6 +1,6 @@
 package io.iohk.atala.prism.node.services
 
-import cats.effect.IO
+import cats.effect.{ContextShift, IO}
 import doobie.free.connection
 import doobie.implicits._
 import io.iohk.atala.prism.AtalaWithPostgresSpec
@@ -33,11 +33,11 @@ import org.mockito.captor.ArgCaptor
 import org.mockito.scalatest.{MockitoSugar, ResetMocksAfterEachTest}
 import org.scalatest.BeforeAndAfterEach
 import org.scalatest.OptionValues._
-import tofu.logging.Logs
 import org.scalatest.concurrent.ScalaFutures
+import tofu.logging.Logs
 
 import java.time.{Duration, Instant}
-import scala.concurrent.Future
+import scala.concurrent.{ExecutionContext, Future}
 
 object ObjectManagementServiceSpec {
   private val newKeysPairs = List.fill(10) { EC.generateKeyPair() }
@@ -65,7 +65,8 @@ class ObjectManagementServiceSpec
     with MockitoSugar
     with ResetMocksAfterEachTest
     with BeforeAndAfterEach {
-  private implicit val logs = Logs.withContext[IO, IOWithTraceIdContext]
+  private implicit val ce: ContextShift[IO] = IO.contextShift(ExecutionContext.global)
+  private val logs = Logs.withContext[IO, IOWithTraceIdContext]
   private val ledger: UnderlyingLedger = mock[UnderlyingLedger]
   private val atalaOperationsRepository: AtalaOperationsRepository[IOWithTraceIdContext] =
     AtalaOperationsRepository.unsafe(dbLiftedToTraceIdIO, logs)
@@ -74,15 +75,18 @@ class ObjectManagementServiceSpec
   private val keyValuesRepository: KeyValuesRepository[IOWithTraceIdContext] =
     KeyValuesRepository.unsafe(dbLiftedToTraceIdIO, logs)
   private val blockProcessing: BlockProcessingService = mock[BlockProcessingService]
-  private val protocolVersionRepository: ProtocolVersionRepository[IOWithTraceIdContext] = ProtocolVersionRepository(
-    dbLiftedToTraceIdIO
-  )
+  private val protocolVersionRepository: ProtocolVersionRepository[IOWithTraceIdContext] =
+    ProtocolVersionRepository.unsafe(
+      dbLiftedToTraceIdIO,
+      logs
+    )
 
-  private implicit lazy val submissionService: SubmissionService =
-    SubmissionService(
+  private implicit lazy val submissionService: SubmissionService[IOWithTraceIdContext] =
+    SubmissionService.unsafe(
       ledger,
       atalaOperationsRepository,
-      atalaObjectsTransactionsRepository
+      atalaObjectsTransactionsRepository,
+      logs = logs
     )
 
   private implicit lazy val objectManagementService: ObjectManagementService[IOWithTraceIdContext] =

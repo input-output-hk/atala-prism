@@ -5,7 +5,7 @@ import SuccessPage from '../../common/Molecules/SuccessPage/SuccessPage';
 import { BULK_IMPORT } from '../../../helpers/constants';
 import { importUseCasePropType } from '../../../helpers/propShapes';
 
-const BulkImportResult = ({
+const BulkImportResults = ({
   fileData,
   validationErrors,
   contactCreations,
@@ -33,7 +33,7 @@ const BulkImportResult = ({
   );
 };
 
-BulkImportResult.defaultProps = {
+BulkImportResults.defaultProps = {
   selectedGroups: PropTypes.arrayOf(PropTypes.string),
   validationErrors: null,
   contactCreations: 0,
@@ -41,7 +41,7 @@ BulkImportResult.defaultProps = {
   continueCallback: null
 };
 
-BulkImportResult.propTypes = {
+BulkImportResults.propTypes = {
   fileData: PropTypes.shape({ data: PropTypes.string }).isRequired,
   selectedGroups: PropTypes.arrayOf(PropTypes.string),
   validationErrors: PropTypes.arrayOf(
@@ -53,4 +53,4 @@ BulkImportResult.propTypes = {
   useCase: importUseCasePropType.isRequired
 };
 
-export default BulkImportResult;
+export default BulkImportResults;

@@ -7,11 +7,15 @@ import cats.tagless.ApplyK
 import cats.syntax.comonad._
 import cats.syntax.functor._
 import fs2.Stream
-import io.iohk.atala.prism.connector.errors.ConnectorError
 import io.iohk.atala.prism.connector.model._
 import io.iohk.atala.prism.connector.model.actions.SendMessagesRequest
 import io.iohk.atala.prism.connector.repositories.MessagesRepository
 import io.iohk.atala.prism.connector.services.logs.MessagesServiceLogs
+import io.iohk.atala.prism.connector.repositories.MessagesRepository.{
+  GetMessagesPaginatedError,
+  InsertMessageError,
+  InsertMessagesError
+}
 import io.iohk.atala.prism.models.ParticipantId
 import tofu.higherKind.Mid
 import tofu.logging.{Logs, ServiceLogging}
@@ -22,18 +26,18 @@ trait MessagesService[S[_], F[_]] {
       connection: ConnectionId,
       content: Array[Byte],
       messageId: Option[MessageId] = None
-  ): F[Either[ConnectorError, MessageId]]
+  ): F[Either[InsertMessageError, MessageId]]
 
   def insertMessages(
       sender: ParticipantId,
       messages: NonEmptyList[SendMessagesRequest.MessageToSend]
-  ): F[Either[ConnectorError, List[MessageId]]]
+  ): F[Either[InsertMessagesError, List[MessageId]]]
 
   def getMessagesPaginated(
       recipientId: ParticipantId,
       limit: Int,
       lastSeenMessageId: Option[MessageId]
-  ): F[Either[ConnectorError, List[Message]]]
+  ): F[Either[GetMessagesPaginatedError, List[Message]]]
 
   def getMessageStream(
       recipientId: ParticipantId,
@@ -76,20 +80,20 @@ private class MessagesServiceImpl[S[_], F[_]](messagesRepository: MessagesReposi
       connection: ConnectionId,
       content: Array[Byte],
       messageId: Option[MessageId] = None
-  ): F[Either[ConnectorError, MessageId]] =
+  ): F[Either[InsertMessageError, MessageId]] =
     messagesRepository.insertMessage(sender, connection, content, messageId)
 
   def insertMessages(
       sender: ParticipantId,
       messages: NonEmptyList[SendMessagesRequest.MessageToSend]
-  ): F[Either[ConnectorError, List[MessageId]]] =
+  ): F[Either[InsertMessagesError, List[MessageId]]] =
     messagesRepository.insertMessages(sender, messages)
 
   def getMessagesPaginated(
       recipientId: ParticipantId,
       limit: Int,
       lastSeenMessageId: Option[MessageId]
-  ): F[Either[ConnectorError, List[Message]]] =
+  ): F[Either[GetMessagesPaginatedError, List[Message]]] =
     messagesRepository.getMessagesPaginated(recipientId, limit, lastSeenMessageId)
 
   def getMessageStream(

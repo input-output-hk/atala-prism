@@ -13,7 +13,7 @@ import CredentialTypesManager from './credentials/credentialTypesManager';
 export { mockApi };
 
 // TODO when the bulk imports really exist replace this mocked promise
-const mockApiCall = file => new Promise(resolve => resolve(file));
+const mockApiCall = file => Promise.resolve(file);
 const importContactBulk = mockApiCall;
 const importBulk = (_, fileWithBulk) => importContactBulk(fileWithBulk);
 

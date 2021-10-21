@@ -34,11 +34,10 @@ object MessagesDAO {
       .updateMany(messages)
       .flatTap { affectedRows =>
         FC.raiseError(
-            new RuntimeException(
-              s"Unknown error while inserting ${messages.size} messages, affected rows: $affectedRows"
-            )
+          new RuntimeException(
+            s"Unknown error while inserting ${messages.size} messages, affected rows: $affectedRows"
           )
-          .whenA(messages.size != affectedRows)
+        ).whenA(messages.size != affectedRows)
       }
       .void
   }

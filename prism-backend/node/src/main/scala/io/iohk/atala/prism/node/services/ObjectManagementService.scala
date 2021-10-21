@@ -126,16 +126,15 @@ private final class ObjectManagementServiceImpl[F[_]: BracketThrow](
       (op, ObjectManagementService.createAtalaObject(List(op)))
     }
 
-    val queryIO: F[List[Either[NodeError, (Int, Int)]]] = opsWithObjects traverse {
-      case (op, obj) =>
-        val objBytes = obj.toByteArray
-        atalaOperationsRepository
-          .insertOperation(
-            AtalaObjectId.of(objBytes),
-            objBytes,
-            AtalaOperationId.of(op),
-            AtalaOperationStatus.RECEIVED
-          )
+    val queryIO: F[List[Either[NodeError, (Int, Int)]]] = opsWithObjects traverse { case (op, obj) =>
+      val objBytes = obj.toByteArray
+      atalaOperationsRepository
+        .insertOperation(
+          AtalaObjectId.of(objBytes),
+          objBytes,
+          AtalaOperationId.of(op),
+          AtalaOperationStatus.RECEIVED
+        )
     }
 
     val resultEitherT: EitherT[F, NodeError, List[Either[NodeError, AtalaOperationId]]] = for {

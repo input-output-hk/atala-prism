@@ -56,11 +56,11 @@ export const passwordValidation = (value, cb, otherPass) => {
 };
 
 const validations = [
-  { name: 'number', regex: new RegExp('(?=.*[0-9])') }, // At least 1 number
-  { name: 'lowercase', regex: new RegExp('(?=.*[a-z])') }, // At least 1 lower case
-  { name: 'uppercase', regex: new RegExp('(?=.*[A-Z])') }, // At least 1 upper case
-  { name: 'minlength', regex: new RegExp('.{8,}') }, // At leas 8 characters
-  { name: 'nospaces', regex: new RegExp('^((?! ).)*$') } // No blank spaces
+  { name: 'number', regex: /\d/ }, // At least 1 number
+  { name: 'lowercase', regex: /[a-z]/ }, // At least 1 lower case
+  { name: 'uppercase', regex: /[A-Z]/ }, // At least 1 upper case
+  { name: 'minlength', regex: /.{8,}/ }, // At leas 8 characters
+  { name: 'nospaces', regex: /^((?! ).)*$/ } // No blank spaces
 ];
 
 const validatePassword = (value = '') =>
@@ -70,24 +70,27 @@ const validatePassword = (value = '') =>
   );
 
 const formatPasswordErrors = errors => {
-  const prefix = 'registration.password.invalidPassword.';
+  const prefix = 'registration.password.invalidPassword';
+  const initialValue = i18n.t(`${prefix}.initial`);
+  const and = i18n.t(`${prefix}.and`);
 
   return errors.reduce((accum, current, currentIndex) => {
     let link = '';
 
-    if (currentIndex < errors.length - 2) link = ', ';
-    else if (currentIndex < errors.length - 1) link = ` ${i18n.t(`${prefix}and`)} `;
+    if (currentIndex < errors.length - 2) link = ',';
+    else if (currentIndex < errors.length - 1) link = ` ${and}`;
     else if (currentIndex === errors.length - 1) link = '.';
 
-    return accum + i18n.t(`${prefix}${current}`) + link;
-  }, `${i18n.t(`${prefix}initial`)} `);
+    const currentError = i18n.t(`${prefix}.${current}`);
+
+    return `${accum} ${currentError}${link}`;
+  }, initialValue);
 };
 
-export const passwordFormatValidation = (value, cb, t) => {
-  // if (!value) cb();
+export const passwordFormatValidation = (value, cb) => {
   const errors = validatePassword(value);
   if (!errors.length) cb();
-  else cb(formatPasswordErrors(errors, t));
+  else cb(formatPasswordErrors(errors));
 };
 
 export const generateRequiredRule = (isDate, dataIndex) =>

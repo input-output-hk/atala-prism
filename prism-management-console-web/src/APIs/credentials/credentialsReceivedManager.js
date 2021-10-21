@@ -5,7 +5,8 @@ import Logger from '../../helpers/Logger';
 import { BROWSER_WALLET_INIT_DEFAULT_TIMEOUT_MS } from '../../helpers/constants';
 
 async function getReceivedCredentials(contactId) {
-  Logger.info(`Getting received credentials ${contactId ? `for contact ${contactId}` : ''}`);
+  const contactMessage = contactId ? ` for contact ${contactId}` : '';
+  Logger.info(`Getting received credentials${contactMessage}`);
   const req = new GetStoredCredentialsForRequest();
   if (contactId) req.setIndividualid(contactId);
   const { metadata, sessionError } = await this.auth.getMetadata(

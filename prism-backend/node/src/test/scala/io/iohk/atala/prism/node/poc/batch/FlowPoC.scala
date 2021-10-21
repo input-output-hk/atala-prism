@@ -1,6 +1,6 @@
 package io.iohk.atala.prism.node.poc.batch
 
-import cats.effect.IO
+import cats.effect.{ContextShift, IO}
 import cats.scalatest.ValidatedValues.convertValidatedToValidatable
 import com.google.protobuf.ByteString
 import io.grpc.inprocess.{InProcessChannelBuilder, InProcessServerBuilder}
@@ -29,13 +29,13 @@ import io.iohk.atala.prism.node.services.{
 }
 import io.iohk.atala.prism.node.{DataPreparation, NodeServiceImpl}
 import io.iohk.atala.prism.protos.node_api
-import io.iohk.atala.prism.services.NodeClientService.{issueBatchOperation, revokeCredentialsOperation}
+import io.iohk.atala.prism.utils.NodeClientUtils._
 import monix.execution.Scheduler.Implicits.{global => scheduler}
 import org.scalatest.BeforeAndAfterEach
 
 import java.time.Duration
 import java.util.concurrent.TimeUnit
-import scala.concurrent.{Future, Promise}
+import scala.concurrent.{ExecutionContext, Future, Promise}
 import scala.jdk.CollectionConverters._
 import io.iohk.atala.prism.credentials.json.JsonBasedCredential
 import io.iohk.atala.prism.api.CredentialBatches
@@ -47,7 +47,8 @@ import tofu.logging.Logs
 
 class FlowPoC extends AtalaWithPostgresSpec with BeforeAndAfterEach {
 
-  private implicit val flowPocTestLogs = Logs.withContext[IO, IOWithTraceIdContext]
+  private implicit val ce: ContextShift[IO] = IO.contextShift(ExecutionContext.global)
+  private val flowPocTestLogs = Logs.withContext[IO, IOWithTraceIdContext]
   protected var serverName: String = _
   protected var serverHandle: Server = _
   protected var channelHandle: ManagedChannel = _
@@ -58,7 +59,7 @@ class FlowPoC extends AtalaWithPostgresSpec with BeforeAndAfterEach {
   protected var atalaReferenceLedger: InMemoryLedgerService = _
   protected var blockProcessingService: BlockProcessingServiceImpl = _
   protected var objectManagementService: ObjectManagementService[IOWithTraceIdContext] = _
-  protected var submissionService: SubmissionService = _
+  protected var submissionService: SubmissionService[IOWithTraceIdContext] = _
   protected var atalaObjectsTransactionsRepository: AtalaObjectsTransactionsRepository[IOWithTraceIdContext] = _
   protected var keyValuesRepository: KeyValuesRepository[IOWithTraceIdContext] = _
   protected var objectManagementServicePromise: Promise[ObjectManagementService[IOWithTraceIdContext]] = _
@@ -70,7 +71,7 @@ class FlowPoC extends AtalaWithPostgresSpec with BeforeAndAfterEach {
 
     didDataRepository = DIDDataRepository.unsafe(dbLiftedToTraceIdIO, flowPocTestLogs)
     credentialBatchesRepository = CredentialBatchesRepository.unsafe(dbLiftedToTraceIdIO, flowPocTestLogs)
-    protocolVersionsRepository = ProtocolVersionRepository(dbLiftedToTraceIdIO)
+    protocolVersionsRepository = ProtocolVersionRepository.unsafe(dbLiftedToTraceIdIO, flowPocTestLogs)
 
     objectManagementServicePromise = Promise()
 
@@ -86,10 +87,11 @@ class FlowPoC extends AtalaWithPostgresSpec with BeforeAndAfterEach {
     blockProcessingService = new BlockProcessingServiceImpl
     atalaOperationsRepository = AtalaOperationsRepository.unsafe(dbLiftedToTraceIdIO, flowPocTestLogs)
     atalaObjectsTransactionsRepository = AtalaObjectsTransactionsRepository.unsafe(dbLiftedToTraceIdIO, flowPocTestLogs)
-    submissionService = SubmissionService(
+    submissionService = SubmissionService.unsafe(
       atalaReferenceLedger,
       atalaOperationsRepository,
-      atalaObjectsTransactionsRepository
+      atalaObjectsTransactionsRepository,
+      logs = flowPocTestLogs
     )
     submissionSchedulingService = SubmissionSchedulingService(
       SubmissionSchedulingService.Config(ledgerPendingTransactionTimeout = Duration.ZERO),
@@ -223,17 +225,15 @@ class FlowPoC extends AtalaWithPostgresSpec with BeforeAndAfterEach {
 
       // 7. she encodes the credentials and sends them through the connector along with
       //    the corresponding proofs of inclusion
-      val credentialsToSend = signedCredentials.zip(proofs1 ++ proofs2).map {
-        case (c, p) =>
-          (c.getCanonicalForm, p)
+      val credentialsToSend = signedCredentials.zip(proofs1 ++ proofs2).map { case (c, p) =>
+        (c.getCanonicalForm, p)
       }
       connector.sendCredentialAndProof(credentialsToSend)
 
       // ... later ...
       // 8. a verifier receives the credentials through the connector
-      val List((c1, p1), (c2, p2), (c3, p3), (c4, p4)) = connector.receivedCredentialAndProof().map {
-        case (c, p) =>
-          (JsonBasedCredential.fromString(c), p)
+      val List((c1, p1), (c2, p2), (c3, p3), (c4, p4)) = connector.receivedCredentialAndProof().map { case (c, p) =>
+        (JsonBasedCredential.fromString(c), p)
       }
 
       // 9. gives the signed credentials to the wallet to verify them and it succeeds

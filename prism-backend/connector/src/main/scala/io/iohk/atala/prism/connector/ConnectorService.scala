@@ -13,6 +13,7 @@ import io.iohk.atala.prism.connector.errors._
 import io.iohk.atala.prism.connector.grpc._
 import io.iohk.atala.prism.connector.model._
 import io.iohk.atala.prism.connector.model.actions._
+import io.iohk.atala.prism.connector.repositories.ConnectionsRepository.AddConnectionFromTokenError
 import io.iohk.atala.prism.connector.repositories.ParticipantsRepository
 import io.iohk.atala.prism.connector.services.{
   ConnectionsService,
@@ -26,13 +27,12 @@ import io.iohk.atala.prism.logging.TraceId
 import io.iohk.atala.prism.logging.TraceId.IOWithTraceIdContext
 import io.iohk.atala.prism.metrics.RequestMeasureUtil.measureRequestFuture
 import io.iohk.atala.prism.models.ParticipantId
-import io.iohk.atala.prism.protos.common_models.{HealthCheckRequest, HealthCheckResponse}
-import io.iohk.atala.prism.protos.connector_api.{GetMessageStreamResponse, UpdateProfileRequest, UpdateProfileResponse}
 import io.iohk.atala.prism.protos.node_api.NodeServiceGrpc
-import io.iohk.atala.prism.protos.{connector_api, connector_models, node_api}
+import io.iohk.atala.prism.protos.{connector_api, common_models, connector_models, node_api}
 import io.iohk.atala.prism.utils.FutureEither
 import io.iohk.atala.prism.utils.FutureEither._
 import org.slf4j.{Logger, LoggerFactory}
+import shapeless.:+:
 
 import scala.concurrent.{ExecutionContext, Future}
 import scala.util.{Failure, Success}
@@ -57,8 +57,8 @@ class ConnectorService(
 
   private implicit val contextSwitch: ContextShift[IO] = IO.contextShift(executionContext)
 
-  override def healthCheck(request: HealthCheckRequest): Future[HealthCheckResponse] =
-    measureRequestFuture(serviceName, "healthCheck")(Future.successful(HealthCheckResponse()))
+  override def healthCheck(request: common_models.HealthCheckRequest): Future[common_models.HealthCheckResponse] =
+    measureRequestFuture(serviceName, "healthCheck")(Future.successful(common_models.HealthCheckResponse()))
 
   /** Retrieve a connection for a given connection token.
     *
@@ -71,6 +71,18 @@ class ConnectorService(
       connections
         .getConnectionByToken(new TokenString(request.token))
         .map(maybeConnection => connector_api.GetConnectionByTokenResponse(maybeConnection.map(_.toProto)))
+        .run(traceId)
+        .unsafeToFuture()
+        .lift[ConnectorError]
+    }
+
+  override def getConnectionById(
+      request: connector_api.GetConnectionByIdRequest
+  ): Future[connector_api.GetConnectionByIdResponse] =
+    auth[GetConnectionByIdRequest]("getConnectionById", request) { (participantId, traceId, typedRequest) =>
+      connections
+        .getConnectionById(participantId, typedRequest.id)
+        .map(maybeConnection => connector_api.GetConnectionByIdResponse(maybeConnection.map(_.toProto)))
         .run(traceId)
         .unsafeToFuture()
         .lift[ConnectorError]
@@ -94,6 +106,7 @@ class ConnectorService(
           .run(traceId)
           .unsafeToFuture()
           .toFutureEither
+          .mapLeft(_.unify)
           .map(conns => connector_api.GetConnectionsPaginatedResponse(conns.map(_.toProto)))
     }
 
@@ -113,6 +126,7 @@ class ConnectorService(
         .run(traceId)
         .unsafeToFuture()
         .toFutureEither
+        .mapLeft(_.unify)
         .map { participantInfo =>
           connector_api.GetConnectionTokenInfoResponse(
             creatorName = participantInfo.name,
@@ -134,20 +148,26 @@ class ConnectorService(
       request: connector_api.AddConnectionFromTokenRequest
   ): Future[connector_api.AddConnectionFromTokenResponse] = {
 
-    def verifyRequestSignature(in: AddConnectionRequest): FutureEither[ConnectorError, Unit] =
+    // TODO Maybe separate different InvalidArgumentError to different subtypes?
+    // Here we just extend AddConnectionFromTokenError with errors from verifyRequestSignature
+    // instead having VerifyRequestSignatureError to simplify types due to reduction of coproduct conversions
+    type AddConnectionFromTokenFullError =
+      InvalidArgumentError :+: SignatureVerificationError :+: AddConnectionFromTokenError
+
+    def verifyRequestSignature(in: AddConnectionRequest): FutureEither[AddConnectionFromTokenFullError, Unit] =
       in.basedOn match {
         case Right(PublicKeyBasedAddConnectionRequest(_, publicKey, authHeader)) =>
           val payload = SignedRequestsHelper.merge(authHeader.requestNonce, request.toByteArray).toArray
-          val resultEither = for {
+          val resultEither: Either[AddConnectionFromTokenFullError, Unit] = for {
             _ <- Either.cond(
               authHeader.publicKey == publicKey,
               (),
-              InvalidArgumentError("publicKey", "key matching one in GRPC header", "different key")
+              co(InvalidArgumentError("publicKey", "key matching one in GRPC header", "different key"))
             )
             _ <- Either.cond(
               EC.verifyBytes(payload, publicKey, authHeader.signature),
               (),
-              SignatureVerificationError()
+              co[AddConnectionFromTokenFullError](SignatureVerificationError())
             )
           } yield ()
           Future.successful(resultEither).toFutureEither
@@ -157,23 +177,23 @@ class ConnectorService(
             didData <-
               DIDUtils
                 .validateDid(authHeader.did)
-                .mapLeft(_ => InvalidArgumentError("did", "valid unpublished did", "invalid"))
+                .mapLeft(_ => co(InvalidArgumentError("did", "valid unpublished did", "invalid")))
             publicKey <-
               DIDUtils
                 .findPublicKey(didData, authHeader.keyId)
-                .mapLeft(_ => InvalidArgumentError("did", "unpublished did with public key", "invalid"))
+                .mapLeft(_ => co(InvalidArgumentError("did", "unpublished did with public key", "invalid")))
             _ <-
               Either
                 .cond(
                   EC.verifyBytes(payload, publicKey, authHeader.signature),
                   (),
-                  SignatureVerificationError()
+                  co[AddConnectionFromTokenFullError](SignatureVerificationError())
                 )
                 .toFutureEither
           } yield ()
       }
 
-    public[AddConnectionRequest]("addConnectionFromToken", request) { (traceId, addConnectionRequest) =>
+    publicCo[AddConnectionRequest]("addConnectionFromToken", request) { (traceId, addConnectionRequest) =>
       val result = for {
         _ <- verifyRequestSignature(addConnectionRequest)
         connectionCreationResult <-
@@ -182,6 +202,7 @@ class ConnectorService(
             .run(traceId)
             .unsafeToFuture()
             .toFutureEither
+            .mapLeft(_.embed[AddConnectionFromTokenFullError])
       } yield connectionCreationResult
 
       result.map { connectionInfo =>
@@ -201,7 +222,7 @@ class ConnectorService(
   override def revokeConnection(
       request: connector_api.RevokeConnectionRequest
   ): Future[connector_api.RevokeConnectionResponse] =
-    auth[RevokeConnectionRequest]("revokeConnection", request) { (participantId, traceId, revokeConnectionRequest) =>
+    authCo[RevokeConnectionRequest]("revokeConnection", request) { (participantId, traceId, revokeConnectionRequest) =>
       connections
         .revokeConnection(participantId, revokeConnectionRequest.connectionId)
         .run(traceId)
@@ -231,6 +252,7 @@ class ConnectorService(
         .run(traceId)
         .unsafeToFuture()
         .toFutureEither
+        .mapLeft(_.unify)
         .map { registerResult =>
           val response = connector_api
             .RegisterDIDResponse(
@@ -278,13 +300,14 @@ class ConnectorService(
         .run(TraceId.generateYOLO)
         .unsafeToFuture()
         .toFutureEither
+        .mapLeft(_.unify)
         .map(msgs => connector_api.GetMessagesPaginatedResponse(msgs.map(_.toProto)))
     }
   }
 
   override def getMessageStream(
       request: connector_api.GetMessageStreamRequest,
-      responseObserver: StreamObserver[GetMessageStreamResponse]
+      responseObserver: StreamObserver[connector_api.GetMessageStreamResponse]
   ): Unit = {
     def streamMessages(recipientId: ParticipantId, lastSeenMessageId: Option[MessageId]): Unit = {
       val existingMessageStream =
@@ -332,16 +355,15 @@ class ConnectorService(
 
     def toResponse(keys: Seq[(String, ECPublicKey)]) =
       connector_api.GetConnectionCommunicationKeysResponse(
-        keys = keys.map {
-          case (keyId, key) =>
-            connector_models.ConnectionKey(
-              keyId = keyId,
-              key = Some(
-                connector_models.EncodedPublicKey(
-                  publicKey = ByteString.copyFrom(key.getEncoded)
-                )
+        keys = keys.map { case (keyId, key) =>
+          connector_models.ConnectionKey(
+            keyId = keyId,
+            key = Some(
+              connector_models.EncodedPublicKey(
+                publicKey = ByteString.copyFrom(key.getEncoded)
               )
             )
+          )
         }
       )
 
@@ -352,6 +374,7 @@ class ConnectorService(
           .run(traceId)
           .unsafeToFuture()
           .toFutureEither
+          .mapLeft(_.unify)
           .map(toResponse)
     }
   }
@@ -365,7 +388,7 @@ class ConnectorService(
     * Connection closed (FAILED_PRECONDITION)
     */
   override def sendMessage(request: connector_api.SendMessageRequest): Future[connector_api.SendMessageResponse] =
-    auth[SendMessageRequest]("sendMessage", request) { (participantId, _, sendMessageRequest) =>
+    authCo[SendMessageRequest]("sendMessage", request) { (participantId, _, sendMessageRequest) =>
       messages
         .insertMessage(
           sender = participantId,
@@ -401,6 +424,7 @@ class ConnectorService(
         .run(traceId)
         .unsafeToFuture()
         .toFutureEither
+        .mapLeft(_.unify)
         .map { info =>
           val role = info.tpe match {
             case ParticipantType.Holder =>
@@ -419,8 +443,8 @@ class ConnectorService(
     }
 
   override def updateParticipantProfile(
-      request: UpdateProfileRequest
-  ): Future[UpdateProfileResponse] =
+      request: connector_api.UpdateProfileRequest
+  ): Future[connector_api.UpdateProfileResponse] =
     auth[UpdateParticipantProfile]("updateParticipantProfile", request) { (participantId, traceId, updateProfile) =>
       participantsRepository
         .updateParticipantProfileBy(participantId, updateProfile)
@@ -449,6 +473,7 @@ class ConnectorService(
           .run(TraceId.generateYOLO)
           .unsafeToFuture()
           .toFutureEither
+          .mapLeft(_.unify)
           .map(messageIds => connector_api.SendMessagesResponse(ids = messageIds.map(_.uuid.toString)))
       }
     }

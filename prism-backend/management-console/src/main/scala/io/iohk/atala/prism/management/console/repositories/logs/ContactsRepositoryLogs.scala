@@ -80,6 +80,16 @@ private[repositories] final class ContactsRepositoryLogs[F[_]: BracketThrow](imp
         }
         .onError(errorCause"encountered an error while finding contact by external-id" (_))
 
+  override def findByToken(institutionId: ParticipantId, connectionToken: ConnectionToken): Mid[F, Option[Contact]] =
+    in =>
+      info"finding by token ${connectionToken.token}, institution $institutionId" *> in
+        .flatTap { r =>
+          r.fold(info"finding by token got nothing $institutionId, token = ${connectionToken.token}")(contact =>
+            info"finding by token - found ${contact.contactId} $institutionId, token = ${connectionToken.token}"
+          )
+        }
+        .onError(errorCause"encountered an error while finding contact by token" (_))
+
   override def findContacts(
       institutionId: ParticipantId,
       contactIds: List[Contact.Id]
@@ -107,10 +117,9 @@ private[repositories] final class ContactsRepositoryLogs[F[_]: BracketThrow](imp
     in =>
       info"deleting contact $institutionId $contactId delete creds = $deleteCredentials" *>
         in.flatTap(r =>
-            r.fold(
-              e => error"contact not deleted, encountered an error $e",
-              _ => info"contact successfully deleted"
-            )
+          r.fold(
+            e => error"contact not deleted, encountered an error $e",
+            _ => info"contact successfully deleted"
           )
-          .onError(errorCause"encountered an error while deleting contact" (_))
+        ).onError(errorCause"encountered an error while deleting contact" (_))
 }

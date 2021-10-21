@@ -4,27 +4,25 @@ object versions {
   val awsSdk = "2.11.8"
   val bitcoinLib = "0.18"
   val bouncycastle = "1.62"
-  val braintree = "3.2.0"
-  val catsScalatest = "3.0.5"
+  val catsScalatest = "3.0.8"
   val chimney = "0.6.0"
   val circe = "0.13.0"
   val circeOptics = "0.13.0"
-  val diffx = "0.3.29"
+  val diffx = "0.3.30"
   val dockerClient = "8.16.0"
   val dockerTestkit = "0.9.9"
-  val doobie = "0.9.2"
-  val enumeratum = "1.6.0"
+  val doobie = "0.12.1"
+  val enumeratum = "1.6.1"
+  val enumeratumDoobie = "1.7.0"
   val flyway = "7.10.0"
   val grpc = "1.36.0"
   val kamon = "2.1.11"
-  val logback = "1.2.3"
+  val logback = "1.2.6"
   val logbackLogstash = "6.6"
   val jaxb = "2.3.1"
   val mockito = "1.16.0"
   val monix = "3.2.2"
-  val monocle = "2.1.0"
-  val odyssey = "0.1.5"
-  val osLib = "0.7.1"
+  val osLib = "0.7.8"
   val playJson = "2.9.1"
   val postgresql = "42.2.18"
   val scalatest = "3.2.2"
@@ -37,7 +35,7 @@ object versions {
   val twirl = "1.5.1"
   val typesafeConfig = "1.4.1"
   val http4s = "0.21.7"
-  val prismSdk = "0.1.0-76c8cc92"
+  val prismSdk = "1.3.0-build-3-2653397d"
 }
 
 object Dependencies {
@@ -45,7 +43,6 @@ object Dependencies {
   val bitcoinLib = "fr.acinq" %% "bitcoin-lib" % versions.bitcoinLib
   val bouncyBcpkix = "org.bouncycastle" % "bcpkix-jdk15on" % versions.bouncycastle
   val bouncyBcprov = "org.bouncycastle" % "bcprov-jdk15on" % versions.bouncycastle
-  val braintree = "com.braintreepayments.gateway" % "braintree-java" % versions.braintree
   val chimney = "io.scalaland" %% "chimney" % versions.chimney
   val circeCore = "io.circe" %% "circe-core" % versions.circe
   val circeGeneric = "io.circe" %% "circe-generic" % versions.circe
@@ -57,7 +54,7 @@ object Dependencies {
   val doobieHikari = "org.tpolecat" %% "doobie-hikari" % versions.doobie
   val enumeratum = "com.beachape" %% "enumeratum" % versions.enumeratum
   val enumeratumCirce = "com.beachape" %% "enumeratum-circe" % versions.enumeratum
-  val enumeratumDoobie = "com.beachape" %% "enumeratum-doobie" % versions.enumeratum
+  val enumeratumDoobie = "com.beachape" %% "enumeratum-doobie" % versions.enumeratumDoobie
   val flyway = "org.flywaydb" % "flyway-core" % versions.flyway
   val grpcNetty = "io.grpc" % "grpc-netty" % versions.grpc
   val grpcServices = "io.grpc" % "grpc-services" % versions.grpc

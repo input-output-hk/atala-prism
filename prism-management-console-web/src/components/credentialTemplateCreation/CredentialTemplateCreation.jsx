@@ -51,7 +51,7 @@ const CredentialTemplateCreation = observer(
     const validateAndAdvance = async () => (await validate()) && advanceStep();
 
     const validate = async () => {
-      const { errors } = await validateByStep(currentStep);
+      const { errors } = await validateByStep();
       const hasPartialErrors = Boolean(errors.length);
       if (hasPartialErrors) errors.forEach(msg => message.error(t(msg)));
       return !hasPartialErrors;

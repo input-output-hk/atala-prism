@@ -70,7 +70,7 @@ class NodeApp(executionContext: ExecutionContext) { self =>
 
     val objectManagementServicePromise: Promise[ObjectManagementService[IOWithTraceIdContext]] = Promise()
 
-    val protocolVersionRepository = ProtocolVersionRepository(liftedTransactor)
+    val protocolVersionRepository = ProtocolVersionRepository.unsafe(liftedTransactor, logs)
     val onCardanoBlock: CardanoBlockHandler = block =>
       {
         protocolVersionRepository.markEffective(block.header.blockNo).void
@@ -108,10 +108,16 @@ class NodeApp(executionContext: ExecutionContext) { self =>
       globalConfig.getDuration("operationSubmissionPeriod").toNanos,
       TimeUnit.NANOSECONDS
     )
-    val submissionService = SubmissionService(
+    val transactionsPerSecond = globalConfig.getInt("transactionsPerSecond")
+    val submissionService = SubmissionService.unsafe(
       atalaReferenceLedger,
       atalaOperationsRepository,
-      atalaObjectsTransactionsRepository
+      atalaObjectsTransactionsRepository,
+      SubmissionService.Config(
+        maxNumberTransactionsToSubmit = operationSubmissionPeriod.toSeconds.toInt * transactionsPerSecond,
+        maxNumberTransactionsToRetry = transactionRetryPeriod.toSeconds.toInt * transactionsPerSecond
+      ),
+      logs
     )
     val submissionSchedulingService = SubmissionSchedulingService(
       SubmissionSchedulingService.Config(

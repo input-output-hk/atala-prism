@@ -31,6 +31,7 @@ import io.iohk.atala.prism.credentials.CredentialBatchId
 import io.iohk.atala.prism.crypto.MerkleInclusionProof
 import io.iohk.atala.prism.crypto.Sha256Digest
 import io.iohk.atala.prism.crypto.signature.ECSignature
+import io.iohk.atala.prism.models.ConnectionToken
 import io.iohk.atala.prism.protos.connector_api.SendMessagesRequest
 import io.iohk.atala.prism.protos.console_models.ContactConnectionStatus
 import io.iohk.atala.prism.utils.Base64Utils
@@ -575,28 +576,26 @@ package object grpc {
       connectorRequestMetadata.map(_.did),
       connectorRequestMetadata.map(_.didKeyId),
       connectorRequestMetadata.map(_.didSignature)
-    ).mapN {
-        case (nonce, didStr, keyId, signature) =>
-          Try(
-            PrismDid
-              .fromString(didStr)
-          ).toOption
-            .map { did =>
-              val didBased = did match {
-                case _: CanonicalPrismDid => GrpcAuthenticationHeader.PublishedDIDBased
-                case _: LongFormPrismDid => GrpcAuthenticationHeader.UnpublishedDIDBased
-                case _ => throw new RuntimeException("Unknown Did")
-              }
+    ).mapN { case (nonce, didStr, keyId, signature) =>
+      Try(
+        PrismDid
+          .fromString(didStr)
+      ).toOption
+        .map { did =>
+          val didBased = did match {
+            case _: CanonicalPrismDid => GrpcAuthenticationHeader.PublishedDIDBased
+            case _: LongFormPrismDid => GrpcAuthenticationHeader.UnpublishedDIDBased
+            case _ => throw new RuntimeException("Unknown Did")
+          }
 
-              didBased(
-                RequestNonce(Base64Utils.decodeURL(nonce).toVector),
-                did,
-                keyId,
-                new ECSignature(Base64Utils.decodeURL(signature))
-              )
-            }
-      }
-      .flatten
+          didBased(
+            RequestNonce(Base64Utils.decodeURL(nonce).toVector),
+            did,
+            keyId,
+            new ECSignature(Base64Utils.decodeURL(signature))
+          )
+        }
+    }.flatten
       .fold[Try[GrpcAuthenticationHeader.DIDBased]](
         Failure(new IllegalArgumentException("connector request metadata is missing"))
       )(Success.apply)
@@ -743,10 +742,10 @@ package object grpc {
   implicit val storeCredentialConverter: ProtoConverter[StoreCredentialRequest, StoreCredential] =
     (request: StoreCredentialRequest) => {
       for {
-        contactId <- Contact.Id.from(request.connectionId)
         credentialExternalId <- CredentialExternalId.from(request.credentialExternalId)
+        connectionToken = ConnectionToken(request.connectionToken)
       } yield StoreCredential(
-        contactId,
+        connectionToken,
         request.encodedSignedCredential,
         credentialExternalId
       )

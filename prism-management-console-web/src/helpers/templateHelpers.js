@@ -62,6 +62,5 @@ export const insertFormChangeIntoArray = (change, oldArray) => {
   const newPartialArray = _.merge([], oldArray, changeArray);
 
   const oldArrayTail = oldArray.slice(newPartialArray.length);
-  const newArray = newPartialArray.concat(oldArrayTail);
-  return newArray;
+  return newPartialArray.concat(oldArrayTail);
 };

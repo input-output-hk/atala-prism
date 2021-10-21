@@ -29,8 +29,7 @@ object CardanoDbSyncClient {
       logs: Logs[R, F]
   ): Resource[F, CardanoDbSyncClient[F]] = {
 
-    /**
-      * Custom transactor since CardanoDbSyncClient can use different DB
+    /** Custom transactor since CardanoDbSyncClient can use different DB
       */
     TransactorFactory
       .transactor[F](config.dbConfig)

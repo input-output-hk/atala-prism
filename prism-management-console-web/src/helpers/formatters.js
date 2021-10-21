@@ -47,26 +47,22 @@ export const fromUnixToProtoDateFormatter = date => {
     [day, month, year] = dateAsNumberArray;
   }
 
-  const protoDate = {
+  return {
     year,
     month,
     day
   };
-
-  return protoDate;
 };
 
 export const fromMomentToProtoDateFormatter = date => {
   const year = date.year();
   const month = date.month() + 1; // moment js month starts in 0 while the proto date starts in 1
   const day = date.date();
-  const protoDate = {
+  return {
     year,
     month,
     day
   };
-
-  return protoDate;
 };
 
 export const dateFormat = date => moment(date, DEFAULT_DATE_FORMAT);

@@ -5,9 +5,14 @@ import cats.effect.MonadThrow
 import cats.syntax.apply._
 import cats.syntax.applicativeError._
 import cats.syntax.flatMap._
-import io.iohk.atala.prism.connector.errors
+import io.iohk.atala.prism.connector.errors.ConnectorError
 import io.iohk.atala.prism.connector.model.actions.SendMessagesRequest
 import io.iohk.atala.prism.connector.model.{ConnectionId, Message, MessageId}
+import io.iohk.atala.prism.connector.repositories.MessagesRepository.{
+  GetMessagesPaginatedError,
+  InsertMessageError,
+  InsertMessagesError
+}
 import io.iohk.atala.prism.connector.services.MessagesService
 import io.iohk.atala.prism.models.ParticipantId
 import tofu.higherKind.Mid
@@ -21,45 +26,42 @@ class MessagesServiceLogs[S[_], F[_]: ServiceLogging[*[_], MessagesService[S, F]
       connection: ConnectionId,
       content: Array[Byte],
       messageId: Option[MessageId]
-  ): Mid[F, Either[errors.ConnectorError, MessageId]] =
+  ): Mid[F, Either[InsertMessageError, MessageId]] =
     in =>
       info"Inserting message $sender $connection" *>
         in.flatTap(
-            _.fold(
-              connectorError => error"Encountered an error while inserting message $connectorError",
-              messageId => info"Inserting message - successfully done $messageId"
-            )
+          _.fold(
+            e => error"Encountered an error while inserting message ${e.unify: ConnectorError}",
+            messageId => info"Inserting message - successfully done $messageId"
           )
-          .onError(errorCause"Encountered an error while inserting message" (_))
+        ).onError(errorCause"Encountered an error while inserting message" (_))
 
   override def insertMessages(
       sender: ParticipantId,
       messages: NonEmptyList[SendMessagesRequest.MessageToSend]
-  ): Mid[F, Either[errors.ConnectorError, List[MessageId]]] =
+  ): Mid[F, Either[InsertMessagesError, List[MessageId]]] =
     in =>
       info"Inserting messages $sender ${messages.size}" *>
         in.flatTap(
-            _.fold(
-              connectorError => error"Encountered an error while inserting messages $connectorError",
-              result => info"Inserting messages - successfully done, inserted ${result.size} messages"
-            )
+          _.fold(
+            e => error"Encountered an error while inserting messages ${e.unify: ConnectorError}",
+            result => info"Inserting messages - successfully done, inserted ${result.size} messages"
           )
-          .onError(errorCause"Encountered an error while inserting message" (_))
+        ).onError(errorCause"Encountered an error while inserting message" (_))
 
   override def getMessagesPaginated(
       recipientId: ParticipantId,
       limit: Int,
       lastSeenMessageId: Option[MessageId]
-  ): Mid[F, Either[errors.ConnectorError, List[Message]]] =
+  ): Mid[F, Either[GetMessagesPaginatedError, List[Message]]] =
     in =>
       info"Getting messages paginated $recipientId" *>
         in.flatTap(
-            _.fold(
-              connectorError => error"Encountered an error while getting messages paginated $connectorError",
-              result => info"Getting messages paginated - successfully done, got ${result.size} messages"
-            )
+          _.fold(
+            e => error"Encountered an error while getting messages paginated ${e.unify: ConnectorError}",
+            result => info"Getting messages paginated - successfully done, got ${result.size} messages"
           )
-          .onError(errorCause"Encountered an error while getting messages paginated" (_))
+        ).onError(errorCause"Encountered an error while getting messages paginated" (_))
 
   // Wont be called since we use Mid for F only
   override def getMessageStream(

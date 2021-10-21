@@ -83,12 +83,11 @@ private[repositories] final class CredentialsRepositoryLogs[F[_]: MonadThrow: Se
     in =>
       info"verifying published credentials exists $issuerId ${credentialsIds.size} entities" *>
         in.flatTap(
-            _.fold(
-              e => error"encountered an error while verifying published credentials exists $e",
-              _ => info"verifying published credentials exists - successfully done"
-            )
+          _.fold(
+            e => error"encountered an error while verifying published credentials exists $e",
+            _ => info"verifying published credentials exists - successfully done"
           )
-          .onError(errorCause"encountered an error while verifying published credentials exists" (_))
+        ).onError(errorCause"encountered an error while verifying published credentials exists" (_))
 
   override def storeBatchData(
       batchId: CredentialBatchId,
@@ -107,12 +106,11 @@ private[repositories] final class CredentialsRepositoryLogs[F[_]: MonadThrow: Se
     in =>
       info"deleting credentials $institutionId ${credentialsIds.size} entities" *>
         in.flatTap(
-            _.fold(
-              e => error"encountered an error while deleting credentials $e",
-              _ => info"deleting credentials - successfully done"
-            )
+          _.fold(
+            e => error"encountered an error while deleting credentials $e",
+            _ => info"deleting credentials - successfully done"
           )
-          .onError(errorCause"encountered an error while deleting credentials" (_))
+        ).onError(errorCause"encountered an error while deleting credentials" (_))
 
   override def storeRevocationData(
       institutionId: ParticipantId,

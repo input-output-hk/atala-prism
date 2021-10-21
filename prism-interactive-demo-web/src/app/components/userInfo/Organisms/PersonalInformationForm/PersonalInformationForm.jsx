@@ -20,7 +20,7 @@ const getInput = (key, t) => ({
   input: <Input />
 });
 
-const TemplateForm = React.forwardRef((_props, ref) => {
+const PersonalInformationForm = React.forwardRef((_props, ref) => {
   const { t } = useTranslation();
 
   const locale = getBrowserLanguage() === 'en' ? localeEn : localeKa;
@@ -32,7 +32,7 @@ const TemplateForm = React.forwardRef((_props, ref) => {
       label: t('credential.personalInformation.form.lastName'),
       key: 'lastName',
       className: 'itemFormInfo',
-      input: <Input size="large" disabled={true} />
+      input: <Input size="large" disabled />
     },
     {
       fieldDecoratorData: {
@@ -53,4 +53,4 @@ const TemplateForm = React.forwardRef((_props, ref) => {
   return <CustomForm items={items} ref={ref} />;
 });
 
-export default TemplateForm;
+export default PersonalInformationForm;

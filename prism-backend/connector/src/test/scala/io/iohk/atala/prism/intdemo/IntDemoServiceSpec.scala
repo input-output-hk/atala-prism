@@ -54,40 +54,41 @@ class IntDemoServiceSpec extends AnyFlatSpec {
         s"current status is $currentStatus, " +
         s"wallet is connected is ${connection.isDefined} and " +
         s"user info is uploaded is ${userInfo.isDefined}" in intDemoService(
-        currentStatus,
-        connection,
-        userInfo
-      ) { (connectorIntegration, _, intDemoService) =>
-        val streamObserver = mock[StreamObserver[intdemo_api.GetSubjectStatusResponse]]
-        intDemoService.getSubjectStatusStream(intdemo_api.GetSubjectStatusRequest(token.token), streamObserver)
-        scheduler.tick(1 second)
-        verify(streamObserver, eventually.atLeastOnce()).onNext(intdemo_api.GetSubjectStatusResponse(expectedResponse))
-        verify(connectorIntegration, neverEver).sendCredential(
-          any[ParticipantId],
-          any[ConnectionId],
-          any[credential_models.PlainTextCredential]
-        )
-        verify(streamObserver, neverEver).onError(any)
-      }
+          currentStatus,
+          connection,
+          userInfo
+        ) { (connectorIntegration, _, intDemoService) =>
+          val streamObserver = mock[StreamObserver[intdemo_api.GetSubjectStatusResponse]]
+          intDemoService.getSubjectStatusStream(intdemo_api.GetSubjectStatusRequest(token.token), streamObserver)
+          scheduler.tick(1 second)
+          verify(streamObserver, eventually.atLeastOnce())
+            .onNext(intdemo_api.GetSubjectStatusResponse(expectedResponse))
+          verify(connectorIntegration, neverEver).sendCredential(
+            any[ParticipantId],
+            any[ConnectionId],
+            any[credential_models.PlainTextCredential]
+          )
+          verify(streamObserver, neverEver).onError(any)
+        }
     }
 
     "getSubjectStatus" should s"return $expectedResponse given " +
       s"current status is $currentStatus, " +
       s"wallet is connected is ${connection.isDefined} and " +
       s"user info is uploaded is ${userInfo.isDefined}" in intDemoService(
-      currentStatus,
-      connection,
-      userInfo
-    ) { (connectorIntegration, _, intDemoService) =>
-      val status = intDemoService.getSubjectStatus(intdemo_api.GetSubjectStatusRequest(token.token))
+        currentStatus,
+        connection,
+        userInfo
+      ) { (connectorIntegration, _, intDemoService) =>
+        val status = intDemoService.getSubjectStatus(intdemo_api.GetSubjectStatusRequest(token.token))
 
-      status.futureValue shouldBe intdemo_api.GetSubjectStatusResponse(expectedResponse)
-      verify(connectorIntegration, neverEver).sendCredential(
-        any[ParticipantId],
-        any[ConnectionId],
-        any[credential_models.PlainTextCredential]
-      )
-    }
+        status.futureValue shouldBe intdemo_api.GetSubjectStatusResponse(expectedResponse)
+        verify(connectorIntegration, neverEver).sendCredential(
+          any[ParticipantId],
+          any[ConnectionId],
+          any[credential_models.PlainTextCredential]
+        )
+      }
   }
 
   val emittingStates = Table(
@@ -112,34 +113,34 @@ class IntDemoServiceSpec extends AnyFlatSpec {
         s"current status is $currentStatus, " +
         s"wallet is connected is ${connection.isDefined} and " +
         s"user info is uploaded is ${userInfo.isDefined}" in intDemoService(
-        currentStatus,
-        connection,
-        userInfo
-      ) { (connectorIntegration, _, intDemoService) =>
-        val streamObserver = mock[StreamObserver[intdemo_api.GetSubjectStatusResponse]]
-        intDemoService.getSubjectStatusStream(intdemo_api.GetSubjectStatusRequest(token.token), streamObserver)
-        scheduler.tick(1 second)
+          currentStatus,
+          connection,
+          userInfo
+        ) { (connectorIntegration, _, intDemoService) =>
+          val streamObserver = mock[StreamObserver[intdemo_api.GetSubjectStatusResponse]]
+          intDemoService.getSubjectStatusStream(intdemo_api.GetSubjectStatusRequest(token.token), streamObserver)
+          scheduler.tick(1 second)
 
-        verify(connectorIntegration, eventually.atLeastOnce())
-          .sendCredential(eqTo(issuerId), eqTo(connectionId), credentialMatcher)
-        verify(streamObserver, eventually.atLeastOnce()).onCompleted()
-        verify(streamObserver, neverEver).onError(any)
-      }
+          verify(connectorIntegration, eventually.atLeastOnce())
+            .sendCredential(eqTo(issuerId), eqTo(connectionId), credentialMatcher)
+          verify(streamObserver, eventually.atLeastOnce()).onCompleted()
+          verify(streamObserver, neverEver).onError(any)
+        }
 
       "getSubjectStatus" should s"emit credential and return $expectedResponse given " +
         s"current status is $currentStatus, " +
         s"wallet is connected is ${connection.isDefined} and " +
         s"user info is uploaded is ${userInfo.isDefined}" in intDemoService(
-        currentStatus,
-        connection,
-        userInfo
-      ) { (connectorIntegration, _, intDemoService) =>
-        val status = intDemoService.getSubjectStatus(intdemo_api.GetSubjectStatusRequest(token.token))
+          currentStatus,
+          connection,
+          userInfo
+        ) { (connectorIntegration, _, intDemoService) =>
+          val status = intDemoService.getSubjectStatus(intdemo_api.GetSubjectStatusRequest(token.token))
 
-        status.futureValue shouldBe intdemo_api.GetSubjectStatusResponse(expectedResponse)
-        verify(connectorIntegration, eventually.times(1))
-          .sendCredential(eqTo(issuerId), eqTo(connectionId), credentialMatcher)
-      }
+          status.futureValue shouldBe intdemo_api.GetSubjectStatusResponse(expectedResponse)
+          verify(connectorIntegration, eventually.times(1))
+            .sendCredential(eqTo(issuerId), eqTo(connectionId), credentialMatcher)
+        }
     }
   }
 
@@ -158,40 +159,40 @@ class IntDemoServiceSpec extends AnyFlatSpec {
         s"current status is $currentStatus, " +
         s"wallet is connected is ${connection.isDefined} and " +
         s"user info is uploaded is ${userInfo.isDefined}" in intDemoService(
-        currentStatus,
-        connection,
-        userInfo
-      ) { (connectorIntegration, _, intDemoService) =>
-        val streamObserver = mock[StreamObserver[intdemo_api.GetSubjectStatusResponse]]
-        intDemoService.getSubjectStatusStream(intdemo_api.GetSubjectStatusRequest(token.token), streamObserver)
-        scheduler.tick(1 second)
+          currentStatus,
+          connection,
+          userInfo
+        ) { (connectorIntegration, _, intDemoService) =>
+          val streamObserver = mock[StreamObserver[intdemo_api.GetSubjectStatusResponse]]
+          intDemoService.getSubjectStatusStream(intdemo_api.GetSubjectStatusRequest(token.token), streamObserver)
+          scheduler.tick(1 second)
 
-        verify(connectorIntegration, neverEver).sendCredential(
-          any[ParticipantId],
-          any[ConnectionId],
-          any[credential_models.PlainTextCredential]
-        )
-        verify(streamObserver, eventually.times(1)).onError(any[IllegalStateException])
-      }
+          verify(connectorIntegration, neverEver).sendCredential(
+            any[ParticipantId],
+            any[ConnectionId],
+            any[credential_models.PlainTextCredential]
+          )
+          verify(streamObserver, eventually.times(1)).onError(any[IllegalStateException])
+        }
 
       "getSubjectStatus" should s"report an error given " +
         s"current status is $currentStatus, " +
         s"wallet is connected is ${connection.isDefined} and " +
         s"user info is uploaded is ${userInfo.isDefined}" in intDemoService(
-        currentStatus,
-        connection,
-        userInfo
-      ) { (connectorIntegration, _, intDemoService) =>
-        val status = intDemoService.getSubjectStatus(intdemo_api.GetSubjectStatusRequest(token.token))
+          currentStatus,
+          connection,
+          userInfo
+        ) { (connectorIntegration, _, intDemoService) =>
+          val status = intDemoService.getSubjectStatus(intdemo_api.GetSubjectStatusRequest(token.token))
 
-        status.failed.futureValue.isInstanceOf[IllegalStateException] shouldBe true
-        verify(connectorIntegration, neverEver)
-          .sendCredential(
-            any[ParticipantId],
-            any[ConnectionId],
-            any[credential_models.PlainTextCredential]
-          )
-      }
+          status.failed.futureValue.isInstanceOf[IllegalStateException] shouldBe true
+          verify(connectorIntegration, neverEver)
+            .sendCredential(
+              any[ParticipantId],
+              any[ConnectionId],
+              any[credential_models.PlainTextCredential]
+            )
+        }
     }
   }
 

@@ -63,13 +63,12 @@ class BlockProcessingServiceImpl extends BlockProcessingService {
     val methodName = "processBlock"
     val operations = block.operations.toList
     val operationsWithSeqNumbers = operations.zipWithIndex
-    val parsedOperationsEither = eitherTraverse(operationsWithSeqNumbers) {
-      case (signedOperation, osn) =>
-        parseOperation(
-          signedOperation,
-          LedgerData(transactionId, ledger, new TimestampInfo(blockTimestamp.toEpochMilli, blockIndex, osn))
-        ).left
-          .map(err => (signedOperation, err))
+    val parsedOperationsEither = eitherTraverse(operationsWithSeqNumbers) { case (signedOperation, osn) =>
+      parseOperation(
+        signedOperation,
+        LedgerData(transactionId, ledger, new TimestampInfo(blockTimestamp.toEpochMilli, blockIndex, osn))
+      ).left
+        .map(err => (signedOperation, err))
     }
 
     parsedOperationsEither match {
@@ -85,49 +84,48 @@ class BlockProcessingServiceImpl extends BlockProcessingService {
           .as(false)
       case Right(parsedOperations) =>
         (parsedOperations zip operations)
-          .traverse {
-            case (parsedOperation, protoOperation) =>
-              val atalaOperationId = AtalaOperationId.of(protoOperation)
-              val result: ConnectionIO[Unit] = for {
-                // we want operations to be atomic - either it is applied correctly or the state is not modified
-                // we are using SQL savepoints for that, which can be used to do subtransactions
-                savepoint <- connection.setSavepoint
-                atalaOperationInfo <- AtalaOperationsDAO.getAtalaOperationInfo(atalaOperationId)
-                _ <- processOperation(parsedOperation, protoOperation, atalaOperationId)
-                  .flatMap {
-                    case Right(_) =>
-                      logRequestWithContext(
-                        methodName,
-                        s"Operation applied:\n${parsedOperation.digest}",
-                        atalaOperationId.toString,
-                        protoOperation
-                      )
-                      OperationsCounters.countOperationApplied(protoOperation)
-                      connection.releaseSavepoint(savepoint)
-                    case Left(err) =>
-                      logger.warn(
-                        s"Operation was not applied:\n${err.toString}\nOperation:\n${protoOperation.toProtoString}"
-                      )
-                      OperationsCounters.countOperationRejected(protoOperation, err)
-                      logRequestWithContext(
-                        methodName,
-                        s"Operation was not applied:\n${err.toString}",
-                        atalaOperationId.toString,
-                        protoOperation
-                      )
-                      connection
-                        .rollback(savepoint)
-                        .flatMap { _ =>
-                          if (atalaOperationInfo.exists(_.operationStatus != AtalaOperationStatus.APPLIED)) {
-                            AtalaOperationsDAO
-                              .updateAtalaOperationStatus(atalaOperationId, AtalaOperationStatus.REJECTED)
-                          } else {
-                            connection.unit
-                          }
+          .traverse { case (parsedOperation, protoOperation) =>
+            val atalaOperationId = AtalaOperationId.of(protoOperation)
+            val result: ConnectionIO[Unit] = for {
+              // we want operations to be atomic - either it is applied correctly or the state is not modified
+              // we are using SQL savepoints for that, which can be used to do subtransactions
+              savepoint <- connection.setSavepoint
+              atalaOperationInfo <- AtalaOperationsDAO.getAtalaOperationInfo(atalaOperationId)
+              _ <- processOperation(parsedOperation, protoOperation, atalaOperationId)
+                .flatMap {
+                  case Right(_) =>
+                    logRequestWithContext(
+                      methodName,
+                      s"Operation applied:\n${parsedOperation.digest}",
+                      atalaOperationId.toString,
+                      protoOperation
+                    )
+                    OperationsCounters.countOperationApplied(protoOperation)
+                    connection.releaseSavepoint(savepoint)
+                  case Left(err) =>
+                    logger.warn(
+                      s"Operation was not applied:\n${err.toString}\nOperation:\n${protoOperation.toProtoString}"
+                    )
+                    OperationsCounters.countOperationRejected(protoOperation, err)
+                    logRequestWithContext(
+                      methodName,
+                      s"Operation was not applied:\n${err.toString}",
+                      atalaOperationId.toString,
+                      protoOperation
+                    )
+                    connection
+                      .rollback(savepoint)
+                      .flatMap { _ =>
+                        if (atalaOperationInfo.exists(_.operationStatus != AtalaOperationStatus.APPLIED)) {
+                          AtalaOperationsDAO
+                            .updateAtalaOperationStatus(atalaOperationId, AtalaOperationStatus.REJECTED)
+                        } else {
+                          connection.unit
                         }
-                  }
-              } yield ()
-              result
+                      }
+                }
+            } yield ()
+            result
           }
           .as(true)
     }
@@ -207,7 +205,7 @@ class BlockProcessingServiceImpl extends BlockProcessingService {
 
   /** Applies function to all sequence elements, up to the point error occurs
     *
-   * @param in input sequence
+    * @param in input sequence
     * @param f function to be applied to elements of the sequence
     * @tparam A type of input sequence element
     * @tparam L left alternative of Either returned by f

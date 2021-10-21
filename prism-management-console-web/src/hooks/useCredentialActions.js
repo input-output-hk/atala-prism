@@ -117,10 +117,9 @@ export const useCredentialActions = (api, credentialsIssued, refreshCredentialsI
         : wrapSingleCredential(targetId);
       if (!targetCredentials.length) {
         const statusName = CREDENTIAL_STATUSES_TRANSLATOR[requiredStatus.credentials];
+        const statusLabel = i18n.t(`credentials.status.${statusName}`);
         throw new Error(
-          `Invalid credential status. Select at least one credential in '${i18n.t(
-            `credentials.status.${statusName}`
-          )}' status`
+          `Invalid credential status. Select at least one credential in '${statusLabel}' status`
         );
       }
       if (apiCall) await apiCall(targetCredentials);

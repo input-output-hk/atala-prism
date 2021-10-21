@@ -162,18 +162,17 @@ private final class CredentialIssuancesRepositoryImpl[F[_]: BracketThrow](xa: Tr
       contactsWithIds: List[(CreateCredentialIssuanceContact, CredentialIssuance.ContactId)],
       issuanceGroupIdByGroupId: Map[InstitutionGroup.Id, CredentialIssuance.ContactGroupId]
   ): ConnectionIO[List[Unit]] = {
-    contactsWithIds.flatten {
-      case (contact, issuanceContactId) =>
-        if (contact.groupIds.isEmpty) {
-          // Add contact directly to the credential issuance as it does not belong to any group
-          List(CredentialIssuancesDAO.addContactToCredentialIssuance(issuanceContactId, credentialIssuanceId))
-        } else {
-          // Associate the contact to the groups it belongs to, implicitly associating it with the credential
-          // issuance
-          contact.groupIds.map(groupId =>
-            CredentialIssuancesDAO.addContactToGroup(issuanceContactId, issuanceGroupIdByGroupId(groupId))
-          )
-        }
+    contactsWithIds.flatten { case (contact, issuanceContactId) =>
+      if (contact.groupIds.isEmpty) {
+        // Add contact directly to the credential issuance as it does not belong to any group
+        List(CredentialIssuancesDAO.addContactToCredentialIssuance(issuanceContactId, credentialIssuanceId))
+      } else {
+        // Associate the contact to the groups it belongs to, implicitly associating it with the credential
+        // issuance
+        contact.groupIds.map(groupId =>
+          CredentialIssuancesDAO.addContactToGroup(issuanceContactId, issuanceGroupIdByGroupId(groupId))
+        )
+      }
     }.sequence
   }
 
@@ -182,20 +181,19 @@ private final class CredentialIssuancesRepositoryImpl[F[_]: BracketThrow](xa: Tr
       createCredentialIssuance: CreateCredentialIssuance,
       contactsWithIds: List[(CreateCredentialIssuanceContact, CredentialIssuance.ContactId)]
   ): ConnectionIO[List[GenericCredential]] = {
-    contactsWithIds.map {
-      case (contact, issuanceContactId) =>
-        CredentialsDAO
-          .create(
-            participantId,
-            contact.contactId,
-            CreateGenericCredential(
-              credentialData = contact.credentialData,
-              credentialIssuanceContactId = Some(issuanceContactId),
-              credentialTypeId = createCredentialIssuance.credentialTypeId,
-              contactId = None,
-              externalId = None
-            )
+    contactsWithIds.map { case (contact, issuanceContactId) =>
+      CredentialsDAO
+        .create(
+          participantId,
+          contact.contactId,
+          CreateGenericCredential(
+            credentialData = contact.credentialData,
+            credentialIssuanceContactId = Some(issuanceContactId),
+            credentialTypeId = createCredentialIssuance.credentialTypeId,
+            contactId = None,
+            externalId = None
           )
+        )
     }.sequence
   }
 

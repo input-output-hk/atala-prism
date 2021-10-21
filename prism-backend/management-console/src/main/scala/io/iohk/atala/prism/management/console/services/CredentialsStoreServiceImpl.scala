@@ -20,7 +20,7 @@ import tofu.syntax.logging._
 @derive(applyK)
 trait CredentialsStoreService[F[_]] {
 
-  def storeCredential(storeCredential: StoreCredential): F[Unit]
+  def storeCredential(data: ReceivedSignedCredentialData): F[Unit]
 
   def getLatestCredentialExternalId(participantId: ParticipantId): F[Option[CredentialExternalId]]
 
@@ -60,14 +60,8 @@ object CredentialsStoreService {
 private final class CredentialsStoreServiceImpl[F[_]](
     receivedCredentials: ReceivedCredentialsRepository[F]
 ) extends CredentialsStoreService[F] {
-  override def storeCredential(storeCredential: StoreCredential): F[Unit] =
-    receivedCredentials.createReceivedCredential(
-      ReceivedSignedCredentialData(
-        contactId = storeCredential.connectionId, // TODO: Change proto model field name to contactId
-        storeCredential.encodedSignedCredential,
-        storeCredential.credentialExternalId
-      )
-    )
+  override def storeCredential(data: ReceivedSignedCredentialData): F[Unit] =
+    receivedCredentials.createReceivedCredential(data)
 
   override def getLatestCredentialExternalId(participantId: ParticipantId): F[Option[CredentialExternalId]] =
     receivedCredentials.getLatestCredentialExternalId(participantId)
@@ -81,11 +75,11 @@ private final class CredentialsStoreServiceImpl[F[_]](
 
 private final class CredentialStoreServiceLogs[F[_]: ServiceLogging[*[_], CredentialsStoreService[F]]: MonadThrow]
     extends CredentialsStoreService[Mid[F, *]] {
-  override def storeCredential(storeCredential: StoreCredential): Mid[F, Unit] =
+  override def storeCredential(data: ReceivedSignedCredentialData): Mid[F, Unit] =
     in =>
-      info"storing credentials" *> in
-        .flatTap(_ => info"storing credentials - successfully done")
-        .onError(errorCause"encountered an error while storing credentials" (_))
+      info"storing credential" *> in
+        .flatTap(_ => info"storing credential - successfully done")
+        .onError(errorCause"encountered an error while storing credential" (_))
 
   override def getLatestCredentialExternalId(participantId: ParticipantId): Mid[F, Option[CredentialExternalId]] =
     in =>

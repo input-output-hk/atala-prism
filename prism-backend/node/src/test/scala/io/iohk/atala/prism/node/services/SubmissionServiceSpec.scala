@@ -1,6 +1,6 @@
 package io.iohk.atala.prism.node.services
 
-import cats.effect.IO
+import cats.effect.{ContextShift, IO}
 import doobie.implicits._
 import io.iohk.atala.prism.AtalaWithPostgresSpec
 import io.iohk.atala.prism.crypto.Sha256
@@ -31,7 +31,7 @@ import tofu.logging.Logs
 
 import scala.concurrent.duration._
 import java.time.Duration
-import scala.concurrent.Future
+import scala.concurrent.{ExecutionContext, Future}
 
 object SubmissionServiceSpec {}
 
@@ -41,7 +41,8 @@ class SubmissionServiceSpec
     with ResetMocksAfterEachTest
     with BeforeAndAfterEach {
 
-  private implicit val logs = Logs.withContext[IO, IOWithTraceIdContext]
+  private implicit val ce: ContextShift[IO] = IO.contextShift(ExecutionContext.global)
+  private val logs = Logs.withContext[IO, IOWithTraceIdContext]
   private val ledger: UnderlyingLedger = mock[UnderlyingLedger]
   private val atalaOperationsRepository: AtalaOperationsRepository[IOWithTraceIdContext] =
     AtalaOperationsRepository.unsafe(dbLiftedToTraceIdIO, logs)
@@ -49,16 +50,19 @@ class SubmissionServiceSpec
     AtalaObjectsTransactionsRepository.unsafe(dbLiftedToTraceIdIO, logs)
   private val keyValuesRepository: KeyValuesRepository[IOWithTraceIdContext] =
     KeyValuesRepository.unsafe(dbLiftedToTraceIdIO, logs)
-  private val protocolVersionRepository: ProtocolVersionRepository[IOWithTraceIdContext] = ProtocolVersionRepository(
-    dbLiftedToTraceIdIO
-  )
+  private val protocolVersionRepository: ProtocolVersionRepository[IOWithTraceIdContext] =
+    ProtocolVersionRepository.unsafe(
+      dbLiftedToTraceIdIO,
+      logs
+    )
   private val blockProcessing: BlockProcessingService = mock[BlockProcessingService]
 
-  private implicit lazy val submissionService: SubmissionService =
-    SubmissionService(
+  private implicit lazy val submissionService: SubmissionService[IOWithTraceIdContext] =
+    SubmissionService.unsafe(
       ledger,
       atalaOperationsRepository,
-      atalaObjectsTransactionsRepository
+      atalaObjectsTransactionsRepository,
+      logs = logs
     )
 
   private val config: SubmissionSchedulingService.Config =
@@ -90,14 +94,15 @@ class SubmissionServiceSpec
     "merge several operations in one transaction while submitting" in {
       val (atalaObjects, atalaObjectsMerged, publications, ops) = setUpMultipleOperationsPublishing(numOps = 40)
 
-      atalaObjectsMerged.zip(publications.drop(atalaObjects.size)).foreach {
-        case (atalaObject, publicationInfo) =>
-          doReturn(Future.successful(Right(publicationInfo))).when(ledger).publish(atalaObject)
-          mockTransactionStatus(publicationInfo.transaction.transactionId, TransactionStatus.Pending)
+      atalaObjectsMerged.zip(publications.drop(atalaObjects.size)).foreach { case (atalaObject, publicationInfo) =>
+        doReturn(Future.successful(Right(publicationInfo))).when(ledger).publish(atalaObject)
+        mockTransactionStatus(publicationInfo.transaction.transactionId, TransactionStatus.Pending)
       }
 
       scheduleOpsForBatching(ops)
-      submissionService.submitReceivedObjects().futureValue.toOption.nonEmpty must be(true)
+      submissionService.submitReceivedObjects().run(TraceId.generateYOLO).unsafeRunSync().toOption.nonEmpty must be(
+        true
+      )
 
       verify(ledger, times(2))
         .publish(*) // publish only merged objects
@@ -129,7 +134,9 @@ class SubmissionServiceSpec
       mockTransactionStatus(publications.last.transaction.transactionId, TransactionStatus.Pending)
 
       scheduleOpsForBatching(ops)
-      submissionService.submitReceivedObjects().futureValue.toOption.nonEmpty must be(true)
+      submissionService.submitReceivedObjects().run(TraceId.generateYOLO).unsafeRunSync().toOption.nonEmpty must be(
+        true
+      )
 
       verify(ledger, times(2))
         .publish(*) // publish only merged objects
@@ -150,11 +157,16 @@ class SubmissionServiceSpec
 
       // updates statuses for inLedger submissions
       // note that we're not resubmitting the first object here since it wasn't published at all
-      submissionService.retryOldPendingTransactions(config.ledgerPendingTransactionTimeout).futureValue
+      submissionService
+        .retryOldPendingTransactions(config.ledgerPendingTransactionTimeout)
+        .run(TraceId.generateYOLO)
+        .unsafeRunSync()
       DataPreparation.getSubmissionsByStatus(AtalaObjectTransactionSubmissionStatus.Pending).size must be(0)
 
       // resubmits object1
-      submissionService.submitReceivedObjects().futureValue.toOption.nonEmpty must be(true)
+      submissionService.submitReceivedObjects().run(TraceId.generateYOLO).unsafeRunSync().toOption.nonEmpty must be(
+        true
+      )
       val notPublishedObjects2 =
         AtalaObjectsDAO.getNotPublishedObjectInfos.transact(database).unsafeToFuture().futureValue
       notPublishedObjects2.size must be(0) // no pending objects
@@ -192,7 +204,10 @@ class SubmissionServiceSpec
       publishOpsSequentially(ops :+ opInLedger)
 
       DataPreparation.getSubmissionsByStatus(AtalaObjectTransactionSubmissionStatus.InLedger).size must be(0)
-      submissionService.retryOldPendingTransactions(config.ledgerPendingTransactionTimeout).futureValue must be(1)
+      submissionService
+        .retryOldPendingTransactions(config.ledgerPendingTransactionTimeout)
+        .run(TraceId.generateYOLO)
+        .unsafeRunSync() must be(1)
 
       val inLedgerTxs = DataPreparation.getSubmissionsByStatus(AtalaObjectTransactionSubmissionStatus.InLedger)
       inLedgerTxs.size must be(1)
@@ -208,7 +223,10 @@ class SubmissionServiceSpec
         AtalaObjectTransactionSubmissionStatus.InLedger
       )
 
-      submissionService.retryOldPendingTransactions(config.ledgerPendingTransactionTimeout).futureValue
+      submissionService
+        .retryOldPendingTransactions(config.ledgerPendingTransactionTimeout)
+        .run(TraceId.generateYOLO)
+        .unsafeRunSync()
 
       // It should have published only once
       verify(ledger).publish(atalaObject)
@@ -222,7 +240,10 @@ class SubmissionServiceSpec
         AtalaObjectTransactionSubmissionStatus.Deleted
       )
 
-      submissionService.retryOldPendingTransactions(config.ledgerPendingTransactionTimeout).futureValue
+      submissionService
+        .retryOldPendingTransactions(config.ledgerPendingTransactionTimeout)
+        .run(TraceId.generateYOLO)
+        .unsafeRunSync()
 
       // It should have published only once
       verify(ledger).publish(atalaObject)
@@ -234,7 +255,10 @@ class SubmissionServiceSpec
       // Simulate the service is restarted with a new ledger type
       doReturn(Ledger.CardanoTestnet).when(ledger).getType
 
-      submissionService.retryOldPendingTransactions(config.ledgerPendingTransactionTimeout).futureValue
+      submissionService
+        .retryOldPendingTransactions(config.ledgerPendingTransactionTimeout)
+        .run(TraceId.generateYOLO)
+        .unsafeRunSync()
 
       // It should have published only once
       verify(ledger).publish(atalaObject)
@@ -252,7 +276,10 @@ class SubmissionServiceSpec
       publishSingleOperationAndFlush(atalaOperation).futureValue
       mockTransactionStatus(dummyTransactionInfo.transactionId, TransactionStatus.Pending)
 
-      submissionService.retryOldPendingTransactions(config.ledgerPendingTransactionTimeout).futureValue
+      submissionService
+        .retryOldPendingTransactions(config.ledgerPendingTransactionTimeout)
+        .run(TraceId.generateYOLO)
+        .unsafeRunSync()
 
       // It should have published twice and deleted the first one
       verify(ledger, times(2)).publish(atalaObject)
@@ -262,10 +289,9 @@ class SubmissionServiceSpec
     "merge several operations in one transaction while retrying" in {
       val (atalaObjects, atalaObjectsMerged, publications, ops) = setUpMultipleOperationsPublishing(numOps = 40)
 
-      (atalaObjects ++ atalaObjectsMerged).zip(publications).foreach {
-        case (atalaObject, publicationInfo) =>
-          doReturn(Future.successful(Right(publicationInfo))).when(ledger).publish(atalaObject)
-          mockTransactionStatus(publicationInfo.transaction.transactionId, TransactionStatus.Pending)
+      (atalaObjects ++ atalaObjectsMerged).zip(publications).foreach { case (atalaObject, publicationInfo) =>
+        doReturn(Future.successful(Right(publicationInfo))).when(ledger).publish(atalaObject)
+        mockTransactionStatus(publicationInfo.transaction.transactionId, TransactionStatus.Pending)
       }
       publications.dropRight(atalaObjectsMerged.size).foreach { publicationInfo =>
         doReturn(Future.successful(Right(()))).when(ledger).deleteTransaction(publicationInfo.transaction.transactionId)
@@ -274,7 +300,10 @@ class SubmissionServiceSpec
       // publish operations sequentially because we want to preserve the order by timestamps
       publishOpsSequentially(ops)
 
-      submissionService.retryOldPendingTransactions(config.ledgerPendingTransactionTimeout).futureValue
+      submissionService
+        .retryOldPendingTransactions(config.ledgerPendingTransactionTimeout)
+        .run(TraceId.generateYOLO)
+        .unsafeRunSync()
 
       verify(ledger, times(atalaObjects.size + 2))
         .publish(*) // publish transactions for initial objects and for two new objects
@@ -298,7 +327,7 @@ class SubmissionServiceSpec
       publishSingleOperationAndFlush(atalaOperation).futureValue
       mockTransactionStatus(dummyTransactionInfo.transactionId, TransactionStatus.Pending)
 
-      submissionService.retryOldPendingTransactions(Duration.ofMinutes(10)).futureValue
+      submissionService.retryOldPendingTransactions(Duration.ofMinutes(10)).run(TraceId.generateYOLO).unsafeRunSync()
 
       // It should have published only once
       verify(ledger).publish(atalaObject)
@@ -310,7 +339,10 @@ class SubmissionServiceSpec
       publishSingleOperationAndFlush(atalaOperation).futureValue
       mockTransactionStatus(dummyTransactionInfo.transactionId, TransactionStatus.InLedger)
 
-      submissionService.retryOldPendingTransactions(config.ledgerPendingTransactionTimeout).futureValue
+      submissionService
+        .retryOldPendingTransactions(config.ledgerPendingTransactionTimeout)
+        .run(TraceId.generateYOLO)
+        .unsafeRunSync()
 
       // It should have published only once
       verify(ledger).publish(atalaObject)
@@ -319,23 +351,21 @@ class SubmissionServiceSpec
   }
 
   private def scheduleOpsForBatching(ops: List[SignedAtalaOperation]): Unit =
-    ops.zipWithIndex.foreach {
-      case (atalaOperation, index) =>
-        withClue(s"scheduling operation #$index") {
-          objectManagementService
-            .scheduleSingleAtalaOperation(atalaOperation)
-            .run(TraceId.generateYOLO)
-            .unsafeToFuture()
-            .futureValue
-        }
+    ops.zipWithIndex.foreach { case (atalaOperation, index) =>
+      withClue(s"scheduling operation #$index") {
+        objectManagementService
+          .scheduleSingleAtalaOperation(atalaOperation)
+          .run(TraceId.generateYOLO)
+          .unsafeToFuture()
+          .futureValue
+      }
     }
 
   private def publishOpsSequentially(ops: List[SignedAtalaOperation]): Unit =
-    ops.zipWithIndex.foreach {
-      case (atalaOperation, index) =>
-        withClue(s"publishing operation #$index and flushing") {
-          publishSingleOperationAndFlush(atalaOperation).futureValue
-        }
+    ops.zipWithIndex.foreach { case (atalaOperation, index) =>
+      withClue(s"publishing operation #$index and flushing") {
+        publishSingleOperationAndFlush(atalaOperation).futureValue
+      }
     }
 
   private def setUpMultipleOperationsPublishing(

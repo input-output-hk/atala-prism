@@ -90,27 +90,26 @@ object DataPreparation {
 
   def publishSingleOperationAndFlush(signedAtalaOperation: SignedAtalaOperation)(implicit
       objectManagementService: ObjectManagementService[IOWithTraceIdContext],
-      submissionService: SubmissionService,
+      submissionService: SubmissionService[IOWithTraceIdContext],
       executionContext: ExecutionContext
   ): Future[Either[NodeError, AtalaOperationId]] = {
     for {
-      atalaOperationIdE <-
-        objectManagementService
-          .scheduleSingleAtalaOperation(signedAtalaOperation)
-          .run(TraceId.generateYOLO)
-          .unsafeToFuture()
-      _ <- submissionService.submitReceivedObjects()
+      atalaOperationIdE <- objectManagementService
+        .scheduleSingleAtalaOperation(signedAtalaOperation)
+        .run(TraceId.generateYOLO)
+        .unsafeToFuture()
+      _ <- submissionService.submitReceivedObjects().run(TraceId.generateYOLO).unsafeToFuture()
     } yield atalaOperationIdE
   }
 
   def publishOperationsAndFlush(ops: SignedAtalaOperation*)(implicit
       objectManagementService: ObjectManagementService[IOWithTraceIdContext],
-      submissionService: SubmissionService,
+      submissionService: SubmissionService[IOWithTraceIdContext],
       executionContext: ExecutionContext
   ): Future[List[Either[NodeError, AtalaOperationId]]] = {
     for {
       ids <- objectManagementService.scheduleAtalaOperations(ops: _*).run(TraceId.generateYOLO).unsafeToFuture()
-      _ <- submissionService.submitReceivedObjects()
+      _ <- submissionService.submitReceivedObjects().run(TraceId.generateYOLO).unsafeToFuture()
     } yield ids
   }
 
@@ -143,8 +142,6 @@ object DataPreparation {
       .transact(xa)
       .unsafeRunSync()
   }
-
-  def gimiAll()(implicit xa: Transactor[IO]) = DIDDataDAO.all().transact(xa).unsafeRunSync()
 
   def findByDidSuffix(didSuffix: DidSuffix)(implicit xa: Transactor[IO]): DIDDataState = {
     val query = for {
