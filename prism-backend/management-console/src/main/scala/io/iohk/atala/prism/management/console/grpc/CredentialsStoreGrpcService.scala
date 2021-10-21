@@ -53,7 +53,7 @@ class CredentialsStoreGrpcService(
             .findByToken(participantId, typedRequest.connectionToken)
             .map { contactMaybe =>
               contactMaybe
-                .toRight(UnknownValueError("token", request.connectionId))
+                .toRight(UnknownValueError("token", request.connectionToken))
                 .map { contact =>
                   ReceivedSignedCredentialData(
                     contact.contactId,
