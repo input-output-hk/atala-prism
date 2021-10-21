@@ -1,6 +1,5 @@
 package io.iohk.atala.prism.daos
 
-import reflect.runtime.universe.TypeTag
 import doobie.util.invariant.InvalidEnum
 import doobie.{Get, Meta, Put}
 import io.circe.Json
@@ -45,7 +44,7 @@ trait BaseDAO {
     Option(did.asCanonical()).getOrElse(throw new RuntimeException(s"Invalid canonical DID: $did")).getValue
   }
 
-  protected def uuidValueMeta[T <: UUIDValue: TypeTag](builder: UUIDValue.Builder[T]): Meta[T] = {
+  protected def uuidValueMeta[T <: UUIDValue](builder: UUIDValue.Builder[T]): Meta[T] = {
     Meta[UUID].timap(builder.apply)(_.uuid)
   }
 

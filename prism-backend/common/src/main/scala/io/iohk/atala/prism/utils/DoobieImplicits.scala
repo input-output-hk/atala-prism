@@ -5,7 +5,6 @@ import io.circe.{Decoder, Encoder, Json}
 import io.circe.parser.parse
 import org.postgresql.util.PGobject
 import cats.implicits._
-import scala.reflect.runtime.universe.TypeTag
 import io.circe.syntax._
 
 import scala.collection.compat.immutable.ArraySeq
@@ -25,7 +24,7 @@ object DoobieImplicits {
         o
       })
 
-  def circeMeta[A: Encoder: Decoder: TypeTag]: Meta[A] =
+  def circeMeta[A: Encoder: Decoder]: Meta[A] =
     Meta[Json].timap[A](
       _.as[A].fold[A](
         e => sys.error(s"Cannot parse json: ${e.message}"),
