@@ -15,7 +15,7 @@ The only missing link is the Connector itself - if the attacker controls it, the
 Another potential problem, similar to MITM attack, is the possibility of the attacker impersonating the Holder using information known to Connector. In such scenario, the attacker uses a connection token stolen from the Connector to instantiate a connection to the issuer and download credentials, including Personally Identifiable Information.
 It is slightly different from MITM attack, as the latter involves transparently intercepting communication between parties, while described impersonation attack can be started without any action from the Holder side.
 
-Solution proposed to these issues is treating the connection QR code as safe one-way communication channel from the Issuer to the Holder. It can be used to share secret bits between both ends, without disclosing them to the Connector.
+Our solution proposal to these issues is treating a connection QR code as safe one-way communication channel from the Issuer to the Holder. It can be used to share secret bits between both ends, without disclosing them to the Connector.
 Such shared secret can be then used to perform a handshake between the Issuer and the Holder at the beginning of connection.
 
 ## Phase one: Key exchange
