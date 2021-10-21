@@ -184,7 +184,7 @@ class NodeApp(executionContext: ExecutionContext) { self =>
   ): (CardanoClient[IOWithTraceIdContext], IO[Unit]) = {
     logger.info("Creating cardano client")
     CardanoClient
-      .makeUnsafe[IO, IOWithTraceIdContext](cardanoClientConfig, logs)
+      .makeResource[IO, IOWithTraceIdContext](cardanoClientConfig, logs)
       .mapK(TraceId.unLiftIOWithTraceId())
       .allocated
       .unsafeRunSync()

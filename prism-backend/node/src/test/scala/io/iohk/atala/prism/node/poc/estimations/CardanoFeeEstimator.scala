@@ -17,6 +17,7 @@ import io.iohk.atala.prism.protos.node_models.{AtalaOperation, SignedAtalaOperat
 import io.iohk.atala.prism.protos.{node_internal, node_models}
 import org.scalatest.OptionValues._
 import org.scalatest.concurrent.ScalaFutures._
+import tofu.logging.Logs
 
 import scala.collection.mutable.ListBuffer
 import scala.concurrent.ExecutionContext
@@ -275,7 +276,9 @@ object CardanoFeeEstimator {
     val clientConfig = NodeConfig.cardanoConfig(ConfigFactory.load().getConfig("cardano"))
     val walletId = WalletId.from(clientConfig.walletId).value
     val paymentAddress = Address(clientConfig.paymentAddress)
-    val cardanoWalletApiClient = CardanoWalletApiClient.unsafe[IO](clientConfig.cardanoClientConfig.cardanoWalletConfig)
+    val logs = Logs.sync[IO, IO]
+    val cardanoWalletApiClient =
+      CardanoWalletApiClient.unsafe[IO, IO](clientConfig.cardanoClientConfig.cardanoWalletConfig, logs)
 
     new CardanoFeeEstimator(walletId, paymentAddress, cardanoWalletApiClient)
   }

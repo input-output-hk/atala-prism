@@ -45,7 +45,7 @@ class CardanoLedgerServiceIntegrationSpec extends AtalaWithPostgresSpec with Cat
       val paymentAddress = Address(clientConfig.paymentAddress)
       val (cardanoClient, releaseCardanoClient) =
         CardanoClient
-          .makeUnsafe(clientConfig.cardanoClientConfig, logs)
+          .makeResource(clientConfig.cardanoClientConfig, logs)
           .allocated
           .run(TraceId.generateYOLO)
           .unsafeRunSync()
