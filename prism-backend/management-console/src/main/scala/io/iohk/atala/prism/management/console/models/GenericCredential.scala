@@ -49,7 +49,7 @@ final case class DeleteCredentials(
 )
 
 final case class StoreCredential(
-    connectionId: Contact.Id,
+    connectionToken: ConnectionToken,
     encodedSignedCredential: String,
     credentialExternalId: CredentialExternalId
 )
