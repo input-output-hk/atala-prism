@@ -15,6 +15,7 @@ import derevo.derive
 import derevo.tagless.applyK
 import io.iohk.atala.prism.node.cardano.logs.CardanoClientLogs
 import tofu.higherKind.Mid
+import io.iohk.atala.prism.metrics.TimeMeasureMetric
 
 import scala.concurrent.ExecutionContext
 
@@ -47,11 +48,11 @@ object CardanoClient {
 
   implicit val cs: ContextShift[IO] = IO.contextShift(ExecutionContext.global)
 
-  def apply[F[_]: MonadThrow, R[_]: Functor](
+  def make[I[_]: Functor, F[_]: MonadThrow](
       cardanoDbSyncClient: CardanoDbSyncClient[F],
       cardanoWalletApiClient: CardanoWalletApiClient[F],
-      logs: Logs[R, F]
-  ): R[CardanoClient[F]] =
+      logs: Logs[I, F]
+  ): I[CardanoClient[F]] =
     for {
       serviceLogs <- logs.service[CardanoClient[F]]
     } yield {
@@ -61,16 +62,16 @@ object CardanoClient {
       mid attach new CardanoClientImpl(cardanoDbSyncClient, cardanoWalletApiClient)
     }
 
-  def makeUnsafe[I[_]: Comonad, F[_]: Concurrent: ContextShift](
+  def makeResource[I[_]: Comonad, F[_]: TimeMeasureMetric: Concurrent: ContextShift](
       config: Config,
       logs: Logs[I, F]
   ): Resource[F, CardanoClient[F]] =
     for {
       cardanoDbSyncClient <- CardanoDbSyncClient[F, I](config.dbSyncConfig, logs)
-      cardanoWalletApiClient <- CardanoWalletApiClient.makeResource[F](config.cardanoWalletConfig)
-    } yield CardanoClient[F, I](cardanoDbSyncClient, cardanoWalletApiClient, logs).extract
+      cardanoWalletApiClient <- CardanoWalletApiClient.makeResource[F, I](config.cardanoWalletConfig, logs)
+    } yield CardanoClient.make(cardanoDbSyncClient, cardanoWalletApiClient, logs).extract
 
-  def make[F[_]: Functor](
+  def makeUnsafe[F[_]: Functor](
       dbSyncClient: CardanoDbSyncClient[F],
       walletClient: CardanoWalletApiClient[F]
   ): CardanoClient[F] = {

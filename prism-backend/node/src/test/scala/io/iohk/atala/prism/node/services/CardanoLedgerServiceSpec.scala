@@ -334,7 +334,7 @@ class CardanoLedgerServiceSpec extends AtalaWithPostgresSpec with CatsEffectBase
   private def createCardanoClient(
       cardanoWalletApiClient: CardanoWalletApiClient[IOWithTraceIdContext]
   ): CardanoClient[IOWithTraceIdContext] = {
-    CardanoClient.make(new CardanoDbSyncClientImpl(cardanoBlockRepository), cardanoWalletApiClient)
+    CardanoClient.makeUnsafe(new CardanoDbSyncClientImpl(cardanoBlockRepository), cardanoWalletApiClient)
   }
 
   private def readResource(resource: String): String = {
