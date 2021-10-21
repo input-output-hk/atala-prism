@@ -73,7 +73,7 @@ The `did` here is a part of `addConnectionFromToken` response, right now when Ho
 he sends `addConnectionFromToken` request and the response from this request contains this information. The response is coming
 from a connector, so in the context of e2e encryption, this `did` can not be trusted because connector can replace the did.
 
-`keyDerivationPath` is used to generate the authentication key. request will be signed with private key,
+`keyDerivationPath` is used to generate the authentication key. Requests to the connector will be signed with private key,
 unpublished did will be generated which includes the public key, and sent alongside the request in request metadata.
 The connector can verify the request using this key, Connector has access to this public key.
 
@@ -112,7 +112,7 @@ In step one "Issuer creates a record in connector/connection_tokens table". This
 
 Right now Holder already has a counter for every new connection, which he will use to generate a unique key derivation path, issuer will need to implement such counter for every contact as well.
 
-Issuers database in the current implementation is management_console_db/contacts postgress db
+Issuers database (mentioned in step 2) in the current implementation is management_console_db/contacts postgress db
 
 ## Phase two: encryption
 
