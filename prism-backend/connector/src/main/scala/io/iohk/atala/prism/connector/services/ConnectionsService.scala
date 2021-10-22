@@ -1,12 +1,12 @@
 package io.iohk.atala.prism.connector.services
 
-import cats.{Comonad, Functor}
 import cats.effect.{BracketThrow, MonadThrow}
 import cats.syntax.applicative._
 import cats.syntax.applicativeError._
 import cats.syntax.comonad._
 import cats.syntax.flatMap._
 import cats.syntax.functor._
+import cats.{Comonad, Functor}
 import derevo.derive
 import derevo.tagless.applyK
 import io.iohk.atala.prism.connector.errors._
@@ -16,9 +16,9 @@ import io.iohk.atala.prism.connector.repositories.ConnectionsRepository._
 import io.iohk.atala.prism.connector.services.ConnectionsService.GetConnectionCommunicationKeysError
 import io.iohk.atala.prism.connector.services.logs.ConnectionsServiceLogs
 import io.iohk.atala.prism.crypto.EC.{INSTANCE => EC}
-import io.iohk.atala.prism.identity.{PrismDid => DID}
-import io.iohk.atala.prism.crypto.keys.ECPublicKey
 import io.iohk.atala.prism.crypto.ECConfig.{INSTANCE => ECConfig}
+import io.iohk.atala.prism.crypto.keys.ECPublicKey
+import io.iohk.atala.prism.identity.{PrismDid => DID}
 import io.iohk.atala.prism.models.ParticipantId
 import io.iohk.atala.prism.protos.node_api
 import io.iohk.atala.prism.protos.node_api.NodeServiceGrpc
@@ -65,7 +65,7 @@ trait ConnectionsService[F[_]] {
 }
 
 object ConnectionsService {
-  type GetConnectionCommunicationKeysError = InternalServerError :+: CNil
+  type GetConnectionCommunicationKeysError = InternalConnectorError :+: CNil
 
   def apply[F[_]: BracketThrow: Execute, R[_]: Functor](
       connectionsRepository: ConnectionsRepository[F],
@@ -150,7 +150,7 @@ private class ConnectionsServiceImpl[F[_]: MonadThrow](
       }
 
       result.map[Either[GetConnectionCommunicationKeysError, Seq[(String, ECPublicKey)]]](Right(_)).recover { case ex =>
-        Left(co(InternalServerError(ex)))
+        Left(co(InternalConnectorError(ex)))
       }
     }
 
