@@ -82,7 +82,7 @@ object ConnectionsRepository {
 
   type GetConnectionsPaginatedError = InvalidArgumentError :+: CNil
 
-  type RevokeConnectionError = UnknownValueError :+: InternalServerError :+: CNil
+  type RevokeConnectionError = UnknownValueError :+: InternalConnectorError :+: CNil
 
   def apply[F[_]: TimeMeasureMetric: BracketThrow, R[_]: Functor](
       transactor: Transactor[F],
@@ -249,7 +249,7 @@ private final class ConnectionsRepositoryPostgresImpl[F[_]: BracketThrow](xa: Tr
         affectedRows == 1,
         (),
         co[RevokeConnectionError](
-          InternalServerError(
+          InternalConnectorError(
             new RuntimeException("Unable to revoke the connection, please try again later")
           )
         )

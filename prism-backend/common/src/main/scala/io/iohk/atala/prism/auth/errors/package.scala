@@ -52,7 +52,9 @@ package object errors {
 
   final case class InternalServerError(cause: Throwable) extends AuthError with PrismServerError {
     override def toStatus: Status = {
-      Status.INTERNAL.withDescription("Internal server error. Please contact administrator.")
+      Status.INTERNAL.withDescription(
+        s"Internal server error, cause: ${cause.getMessage}. Please contact administrator."
+      )
     }
   }
 }

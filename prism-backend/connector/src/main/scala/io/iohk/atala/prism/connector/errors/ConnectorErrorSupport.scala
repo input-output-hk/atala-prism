@@ -3,8 +3,8 @@ package io.iohk.atala.prism.connector.errors
 import io.iohk.atala.prism.errors.{ErrorSupport, LoggingContext, PrismError}
 
 trait ConnectorErrorSupport extends ErrorSupport[ConnectorError] {
-  override def wrapAsServerError(cause: Throwable): InternalServerError =
-    InternalServerError(cause)
+  override def wrapAsServerError(cause: Throwable): InternalConnectorError =
+    InternalConnectorError(cause)
 
   override def invalidRequest(message: String): ConnectorError =
     InvalidRequest(message)
@@ -13,7 +13,7 @@ trait ConnectorErrorSupport extends ErrorSupport[ConnectorError] {
 trait ConnectorErrorSupportNew extends ErrorSupport[ConnectorError] {
 
   // unused
-  override def wrapAsServerError(cause: Throwable): ConnectorError = InternalServerError(cause)
+  override def wrapAsServerError(cause: Throwable): ConnectorError = InternalConnectorError(cause)
 
   // unused
   override def invalidRequest(message: String): ConnectorError = InvalidRequest(message)

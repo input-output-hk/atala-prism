@@ -4,7 +4,7 @@ import derevo.derive
 import io.grpc.Status
 import io.iohk.atala.prism.connector.model.{ConnectionId, MessageId, TokenString}
 import io.iohk.atala.prism.crypto.keys.ECPublicKey
-import io.iohk.atala.prism.errors.{PrismError, PrismServerError}
+import io.iohk.atala.prism.errors.PrismError
 import io.iohk.atala.prism.identity.{PrismDid => DID}
 import io.iohk.atala.prism.models.ParticipantId
 import shapeless.Coproduct
@@ -89,13 +89,9 @@ package object errors {
 
   case class InternalConnectorError(cause: Throwable) extends ConnectorError {
     override def toStatus: Status = {
-      Status.INTERNAL.withDescription("Internal error in the connector service. Please contact administrator.")
-    }
-  }
-
-  case class InternalServerError(cause: Throwable) extends ConnectorError with PrismServerError {
-    override def toStatus: Status = {
-      Status.INTERNAL.withDescription("Internal server error. Please contact administrator.")
+      Status.INTERNAL.withDescription(
+        s"Internal error in the connector service, cause: ${cause.getMessage}. Please contact administrator."
+      )
     }
   }
 
