@@ -1,6 +1,11 @@
 import { REVOKE_CREDENTIALS, SEND_CREDENTIALS, SIGN_CREDENTIALS } from '../helpers/constants';
 import { credentialRequiredStatus, getTargetCredentials } from '../helpers/credentialActions';
-import { mockCredentials } from './__mocks__/mockIssuedCredentials';
+import {
+  DRAFT_CONNECTED_COUNT,
+  mockCredentials,
+  SENT_CONNECTED_COUNT,
+  SIGNED_CONNECTED_COUNT
+} from './__mocks__/mockIssuedCredentials';
 
 const selectedCredentials = mockCredentials.map(c => c.credentialId);
 
@@ -12,17 +17,17 @@ describe('credential actions are applied to the valid credentials', () => {
       credentialRequiredStatus[REVOKE_CREDENTIALS]
     );
     // eslint-disable-next-line no-magic-numbers
-    expect(targetCredentials).toHaveLength(4);
+    expect(targetCredentials).toHaveLength(SIGNED_CONNECTED_COUNT + SENT_CONNECTED_COUNT);
   });
 
-  test('it only signs credentials on draft status', () => {
+  test('it only signs credentials on draft status and with contacts connected', () => {
     const { targetCredentials } = getTargetCredentials(
       mockCredentials,
       selectedCredentials,
       credentialRequiredStatus[SIGN_CREDENTIALS]
     );
     // eslint-disable-next-line no-magic-numbers
-    expect(targetCredentials).toHaveLength(3);
+    expect(targetCredentials).toHaveLength(DRAFT_CONNECTED_COUNT);
   });
 
   test('it only sends signed credentials and with contacts connected', () => {
@@ -32,6 +37,6 @@ describe('credential actions are applied to the valid credentials', () => {
       credentialRequiredStatus[SEND_CREDENTIALS]
     );
     // eslint-disable-next-line no-magic-numbers
-    expect(targetCredentials).toHaveLength(1);
+    expect(targetCredentials).toHaveLength(SIGNED_CONNECTED_COUNT);
   });
 });

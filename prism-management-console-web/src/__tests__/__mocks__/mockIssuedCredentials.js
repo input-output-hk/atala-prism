@@ -1,4 +1,12 @@
+export const DRAFT_NOT_CONNECTED_COUNT = 2;
+export const DRAFT_CONNECTED_COUNT = 3;
+export const SIGNED_CONNECTED_COUNT = 2;
+export const SENT_CONNECTED_COUNT = 1;
+export const REVOKED_CONNECTED_COUNT = 1;
+
 export const mockCredentials = [
+  // Credential: DRAFT
+  // Contact: STATUS_INVITATION_MISSING
   {
     gender: 'male',
     issuer: '!!J5',
@@ -28,6 +36,8 @@ export const mockCredentials = [
       contactId: '53d6c434-3e07-4391-82fa-2e3c9f0dbb09'
     }
   },
+  // Credential: DRAFT
+  // Contact: STATUS_CONNECTION_ACCEPTED
   {
     gender: 'male',
     issuer: '!!J5',
@@ -53,10 +63,12 @@ export const mockCredentials = [
       midNames: '',
       lastName: 'Munoz',
       key: '6ba33ecf-7833-4899-a6df-6a681c742067',
-      connectionStatus: 1,
+      connectionStatus: 3,
       contactId: '6ba33ecf-7833-4899-a6df-6a681c742067'
     }
   },
+  // Credential: SIGNED
+  // Contact: STATUS_CONNECTION_ACCEPTED
   {
     gender: 'male',
     issuer: '!!J5',
@@ -87,10 +99,12 @@ export const mockCredentials = [
       midNames: '',
       lastName: 'Wells',
       key: '49fcb20a-5b7e-48ee-b4f3-e39952c36c4b',
-      connectionStatus: 1,
+      connectionStatus: 3,
       contactId: '49fcb20a-5b7e-48ee-b4f3-e39952c36c4b'
     }
   },
+  // Credential: SIGNED
+  // Contact: STATUS_CONNECTION_ACCEPTED
   {
     gender: 'male',
     issuer: '!!J5',
@@ -120,6 +134,8 @@ export const mockCredentials = [
       contactId: '920dfbb4-3f6b-4e6a-bfc9-732570e3e280'
     }
   },
+  // Credential: DRAFT
+  // Contact: STATUS_CONNECTION_ACCEPTED
   {
     gender: 'male',
     issuer: '!!J5',
@@ -137,7 +153,7 @@ export const mockCredentials = [
     issuanceoperationhash: '',
     batchinclusionproof: '',
     sharedat: 0,
-    status: 3,
+    status: 1,
     contactData: {
       externalId: '63880e9e5cbd44319afb7c43b047cf88',
       contactName: 'Malika Ferguson',
@@ -145,10 +161,12 @@ export const mockCredentials = [
       midNames: '',
       lastName: 'Ferguson',
       key: '49e55b84-d542-440a-8c92-eac9f6df7e90',
-      connectionStatus: 1,
+      connectionStatus: 3,
       contactId: '49e55b84-d542-440a-8c92-eac9f6df7e90'
     }
   },
+  // Credential: SENT
+  // Contact: STATUS_CONNECTION_ACCEPTED
   {
     gender: 'male',
     issuer: '!!J5',
@@ -179,10 +197,12 @@ export const mockCredentials = [
       midNames: '',
       lastName: 'Magana',
       key: '2c4cb6eb-26d1-48f5-80fd-1957160af38e',
-      connectionStatus: 1,
+      connectionStatus: 3,
       contactId: '2c4cb6eb-26d1-48f5-80fd-1957160af38e'
     }
   },
+  // Credential: REVOKED
+  // Contact: STATUS_CONNECTION_ACCEPTED
   {
     gender: 'male',
     issuer: '!!J5',
@@ -208,10 +228,12 @@ export const mockCredentials = [
       midNames: '',
       lastName: 'Avery',
       key: '810eddfb-5395-42ea-a528-c6042ca1c6d0',
-      connectionStatus: 1,
+      connectionStatus: 3,
       contactId: '810eddfb-5395-42ea-a528-c6042ca1c6d0'
     }
   },
+  // Credential: REVOKED
+  // Contact: STATUS_CONNECTION_ACCEPTED
   {
     gender: 'male',
     issuer: '!!J5',
@@ -237,10 +259,12 @@ export const mockCredentials = [
       midNames: '',
       lastName: 'Bray',
       key: '2e9524ce-1764-457b-96c8-3a0a011b3e52',
-      connectionStatus: 1,
+      connectionStatus: 3,
       contactId: '2e9524ce-1764-457b-96c8-3a0a011b3e52'
     }
   },
+  // Credential: DRAFT
+  // Contact: STATUS_INVITATION_MISSING
   {
     gender: 'male',
     issuer: '!!J5',
@@ -270,6 +294,8 @@ export const mockCredentials = [
       contactId: 'c13ad41f-2a20-41b7-bbc0-a07693f64b85'
     }
   },
+  // Credential: DRAFT
+  // Contact: STATUS_CONNECTION_ACCEPTED
   {
     gender: 'male',
     issuer: '!!J5',
@@ -287,7 +313,7 @@ export const mockCredentials = [
     issuanceoperationhash: '',
     batchinclusionproof: '',
     sharedat: 0,
-    status: 4,
+    status: 1,
     contactData: {
       externalId: '7a7a9160cd3b40b182399b65c0f086fe',
       contactName: 'Pixie Mann',
@@ -295,7 +321,7 @@ export const mockCredentials = [
       midNames: '',
       lastName: 'Mann',
       key: 'c4215efe-e8c8-4002-8ca8-49379f0fae4c',
-      connectionStatus: 1,
+      connectionStatus: 3,
       contactId: 'c4215efe-e8c8-4002-8ca8-49379f0fae4c'
     }
   }
