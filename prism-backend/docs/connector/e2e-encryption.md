@@ -130,25 +130,25 @@ For the purpose of discussion, we will define the following:
 * `HSK` = Private/Secret key of the Holder
 * `IPK` = Public key of the Issuer
 * `ISK` = Private/Secret key of the Issuer
-* `M` = Actual message to be sent 
+* `M` = Actual message to be sent
 
 ### Steps:
 
 1. Issuer generates a random value `r`, and then calculates `R` where `R = G•r`
 2. Issuer generates `S` where `S = HPK•r`. `S` can be used by the issuer as a symmetric encryption key to encrypt the message
-3. Issuer generates a message `M1` by concatenating a message `M`, `IPK` and `HPK` like this `<Base64Url(M)>.<Base64Url(IPK)>.<Base64Url(HPK)>`
-4. Issuer signs `M1` with `ISK`, producing a signature `SIG`
-5. Issuer encrypts `M1` with `S` using symmetric encryption provided by ECIES, producing `EM1`
-6. Issuer sends the encrypted message `EM1` to the Holder alongside with `R` and the signature `SIG`
+3. Issuer generates a new message by wrapping `M`, `IPK` and `HPK` into `UnsignedAtalaMessage` like this `UnsignedAtalaMessage(M, IPK, HPK)`
+4. Issuer signs `UnsignedAtalaMessage` with `ISK`, producing a signature `SIG`, and wraps both of them into `SignedAtalaMessage` like this `SignedAtalaMessage(UnsignedAtalaMessage, SIG)`
+5. Issuer encrypts `SignedAtalaMessage` with `S` using symmetric encryption provided by ECIES, producing `EM`, and wraps it and `R` into `EncryptedAtalaMessage` like this `EncryptedAtalaMessage(EM, R)`
+6. Issuer sends the encrypted message `EncryptedAtalaMessage` to the Holder
 7. Holder is able to generate `S` by `S = HSK•R`, since 
    1. `S = HSK•R`
    2. `S = HSK•r•G`
    3. `S = HSK•G•r`
    4. `S = HPK•r` (that is how the Issuer has generated it)
-8. Holder decrypts the message `EM1` using `S`, yielding `M1`
-9. Holder will verify the signature `SIG` using `IPK`. `verify(M1, SIG, IPK)`
-10. Holder will retrieve `IPK` and `HPK` from `M1` and verify that `IPK` is the public key of the issuer he is expecting a message from, and that `HPK` is his public key, thus message is intended to him.
-11. Holder will retrieve a message `M` from `M1`
+8. Holder decrypts the message `EM` using `S`, yielding `SignedAtalaMessage`, then extracts `UnsignedECIESMessage` and `SIG` from it
+9. Holder will verify the signature `SIG` using `IPK`. `verify(UnsignedECIESMessage, SIG, IPK)`
+10. Holder will retrieve `IPK` and `HPK` from `UnsignedECIESMessage` and verify that `IPK` is the public key of the issuer he is expecting a message from, and that `HPK` is his public key, thus message is intended to him.
+11. Holder will retrieve a message `M` from `UnsignedECIESMessage`
 
 It is worth noting that at every step of the protocol, whenever a verification or decryption takes place, if one of them fails all the rest of the steps will not be performed and the whole protocol will be aborted.
 
@@ -166,9 +166,19 @@ message AuthenticatedPublicKey {
 
 `EncryptedMessage` will be added to `oneOf` of `AtalaMessage` for step 6 of phase 2 - encryption.
 ```protobuf
-message EncryptedMessage {
+message UnsignedAtalaMessage {
+   AtalaMessage message = 1; 
+   PublicKey sender_key = 2;
+   PublicKey recipient_key = 3;
+}
+
+message SignedAtalaMessage {
+   UnsignedECIESMessage unsigned_atala_message 1;
+   bytes signature = 2;
+}
+
+message EncryptedAtalaMessage {
   bytes content = 1;
   uint64 rValue = 2;
-  bytes signature = 3;
 }
 ```
