@@ -308,12 +308,13 @@ export const useCredentialsReceivedListWithFilters = api => {
       if (isLoading) return;
       setIsLoading(true);
       const newlyFetchedCredentials = await api.credentialsReceivedManager.getReceivedCredentials();
-      const credentialWithIssuanceProofPromises = newlyFetchedCredentials.map(credential =>
-        api.credentialsManager
-          .getBlockchainData(credential.encodedSignedCredential)
-          .then(issuanceProof => Object.assign({ issuanceProof }, credential))
-      );
-      const credentialsWithIssuanceProof = await Promise.all(credentialWithIssuanceProofPromises);
+      // FIXME: can't get contacts data by individual id
+      // const credentialsWithContactsData = newlyFetchedCredentials.map(credential =>
+      //   api.contactsManager
+      //     .getContact(credential.individualId)
+      //     .then(contactsData => Object.assign({ contactsData }, credential))
+      // );
+      const credentialsWithIssuanceProof = await Promise.all(newlyFetchedCredentials);
 
       const mappedCredentials = credentialsWithIssuanceProof.map(cred =>
         credentialReceivedMapper(cred, credentialTypes)

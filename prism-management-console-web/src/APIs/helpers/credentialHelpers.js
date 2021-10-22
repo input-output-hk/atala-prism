@@ -22,14 +22,20 @@ function getCredentialProof(credential) {
   return credential.batchInclusionProof ? JSON.parse(credential.batchInclusionProof) : undefined;
 }
 
-export function credentialReceivedMapper(credentialReceived, credentialTypes) {
-  const { externalId, contactName, credentialType, ...rest } = credentialReceived;
+export function credentialReceivedMapper(credentialReceived) {
+  const { externalId, individualId, credentialSubject, ...rest } = credentialReceived;
   return {
     contactData: {
       externalId,
-      contactName
+      contactId: individualId
     },
-    credentialType: credentialTypes[credentialType],
+    credentialData: {
+      credentialTypeDetails: {
+        name: credentialSubject.credentialTypeName,
+        logo: credentialSubject.credentialTypeIcon,
+        iconFormat: credentialSubject.credentialTypeIconFormat
+      }
+    },
     ...rest
   };
 }
