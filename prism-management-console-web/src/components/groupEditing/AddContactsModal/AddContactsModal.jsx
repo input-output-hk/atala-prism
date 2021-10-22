@@ -1,70 +1,52 @@
 import React, { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import PropTypes from 'prop-types';
-import { Modal, Row, Col, Checkbox } from 'antd';
-import { PulseLoader } from 'react-spinners';
+import { observer } from 'mobx-react-lite';
+import { Modal, Row, Col } from 'antd';
 import { withApi } from '../../providers/withApi';
-import { useContactsWithFilteredListAndNotInGroup } from '../../../hooks/useContacts';
 import ConnectionsTable from '../../connections/Organisms/table/ConnectionsTable';
 import ConnectionsFilter from '../../connections/Molecules/filter/ConnectionsFilter';
-import SimpleLoading from '../../common/Atoms/SimpleLoading/SimpleLoading';
 import CustomButton from '../../common/Atoms/CustomButton/CustomButton';
-import {
-  getCheckedAndIndeterminateProps,
-  handleSelectAll
-} from '../../../helpers/selectionHelpers';
-import { CONTACT_ID_KEY } from '../../../helpers/constants';
-
+import { useCurrentGroupState } from '../../../hooks/useCurrentGroupState';
 import './_style.scss';
 
-const AddContactsModal = ({ api, groupName, visible, onCancel, onConfirm }) => {
+const AddContactsModal = observer(({ visible, onCancel, onConfirm }) => {
   const { t } = useTranslation();
+  const [contactsNotInGroup, setContactsNotInGroup] = useState();
   const [isNewModal, setIsNewModal] = useState(true);
   const [selectedContacts, setSelectedContacts] = useState([]);
-  const [loadingSelection, setLoadingSelection] = useState(false);
-
-  // FIXME: remove
-  const {
-    contacts,
-    filterProps,
-    handleContactsRequest,
-    hasMore,
-    isLoading,
-    isSearching
-  } = useContactsWithFilteredListAndNotInGroup(api.contactsManager);
+  const { getContactsNotInGroup } = useCurrentGroupState();
 
   useEffect(() => {
-    if (!visible) setIsNewModal(true);
-    if (visible && isNewModal) {
+    const handleGetContacts = async () => {
+      const fetchedContacts = await getContactsNotInGroup();
+      setContactsNotInGroup(fetchedContacts);
+    };
+
+    if (isNewModal && visible) {
       setIsNewModal(false);
-      handleContactsRequest({ groupNameParam: groupName, isRefresh: true });
+      handleGetContacts();
     }
-  }, [visible, isNewModal, groupName, handleContactsRequest]);
-
-  const handleSelectAllContacts = ev =>
-    handleSelectAll({
-      ev,
-      setSelected: setSelectedContacts,
-      entities: contacts,
-      hasMore,
-      idKey: CONTACT_ID_KEY,
-      fetchAll: () => api.contactsManager.getAllContacts(),
-      setLoading: setLoadingSelection
-    });
-
-  const selectAllProps = {
-    ...getCheckedAndIndeterminateProps(contacts, selectedContacts),
-    disabled: loadingSelection,
-    onChange: handleSelectAllContacts
-  };
+  }, [visible, isNewModal, getContactsNotInGroup]);
 
   const handleConfirm = () => {
-    onConfirm(selectedContacts);
-    handleContactsRequest({ groupNameParam: groupName, isRefresh: true });
-    setSelectedContacts([]);
+    setIsNewModal(true);
+    return onConfirm(selectedContacts).finally(() => setIsNewModal(true));
   };
 
-  const selectedLabel = selectedContacts.length ? `  (${selectedContacts.length})  ` : null;
+  const confirmButton = (
+    <Row>
+      <Col span={24} className="FooterContainer">
+        <CustomButton
+          buttonProps={{
+            className: 'theme-secondary',
+            onClick: handleConfirm
+          }}
+          buttonText={t('groupEditing.buttons.addContacts')}
+        />
+      </Col>
+    </Row>
+  );
 
   return (
     <Modal
@@ -73,24 +55,16 @@ const AddContactsModal = ({ api, groupName, visible, onCancel, onConfirm }) => {
       onCancel={onCancel}
       width={800}
       className="AddContactsModal"
-      footer={
-        // eslint-disable-next-line react/jsx-wrap-multilines
-        <Row>
-          <Col span={24} className="FooterContainer">
-            <CustomButton
-              buttonProps={{
-                className: 'theme-secondary',
-                onClick: handleConfirm
-              }}
-              buttonText={t('groupEditing.buttons.addContacts')}
-            />
-          </Col>
-        </Row>
-      }
+      footer={confirmButton}
     >
       <Row type="flex" align="middle" className="mb-2">
         <Col span={5}>
-          <div>
+          {/* <SelectAllButton
+            loadingSelection={loadingSelection}
+            selectedEntities={selectedGroupContacts}
+            checkboxProps={checkboxProps}
+          /> */}
+          {/* <div>
             <Checkbox className="groupsCheckbox" {...selectAllProps}>
               {loadingSelection ? (
                 <PulseLoader size={3} color="#FFAEB3" />
@@ -101,47 +75,35 @@ const AddContactsModal = ({ api, groupName, visible, onCancel, onConfirm }) => {
                 </span>
               )}
             </Checkbox>
-          </div>
+          </div> */}
         </Col>
         <Col span={17}>
-          <ConnectionsFilter {...filterProps} showFullFilter={false} />
+          <ConnectionsFilter showFullFilter={false} />
         </Col>
       </Row>
       <Row className="ModalContactsContainer">
         <Col span={24}>
-          {isLoading ? (
-            <SimpleLoading />
-          ) : (
-            <ConnectionsTable
-              contacts={contacts}
-              selectedContacts={selectedContacts}
-              setSelectedContacts={setSelectedContacts}
-              searching={isSearching}
-              hasMore={hasMore}
-              size="md"
-            />
-          )}
+          <ConnectionsTable
+            overrideContacts
+            contacts={contactsNotInGroup}
+            selectedContacts={selectedContacts}
+            setSelectedContacts={setSelectedContacts}
+            size="md"
+          />
         </Col>
       </Row>
     </Modal>
   );
-};
+});
 
 AddContactsModal.defaultProps = {
   groupName: ''
 };
 
 AddContactsModal.propTypes = {
-  api: PropTypes.shape({
-    contactsManager: PropTypes.shape({
-      getContacts: PropTypes.func,
-      getAllContacts: PropTypes.func
-    })
-  }).isRequired,
   onCancel: PropTypes.func.isRequired,
   onConfirm: PropTypes.func.isRequired,
-  visible: PropTypes.bool.isRequired,
-  groupName: PropTypes.string
+  visible: PropTypes.bool.isRequired
 };
 
 export default withApi(AddContactsModal);

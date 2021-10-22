@@ -1,83 +1,62 @@
 import React, { useEffect, useState } from 'react';
 import PropTypes from 'prop-types';
+import { observer } from 'mobx-react-lite';
 import { useTranslation } from 'react-i18next';
 import { PlusOutlined } from '@ant-design/icons';
-import { Checkbox, Col, Row, Button } from 'antd';
-import { PulseLoader } from 'react-spinners';
+import { Col, Row, Button } from 'antd';
 import ConnectionsFilter from '../connections/Molecules/filter/ConnectionsFilter';
 import SimpleLoading from '../common/Atoms/SimpleLoading/SimpleLoading';
 import CustomButton from '../common/Atoms/CustomButton/CustomButton';
 import GroupName from '../common/Molecules/GroupForm/GroupFormContainer';
 import { CONTACT_ID_KEY, GROUP_NAME_STATES } from '../../helpers/constants';
-import GroupContacts from './GroupContacts';
 import AddContactsModal from './AddContactsModal/AddContactsModal';
 import ConfirmDeletionModal from './ConfirmDeletionModal/ConfirmDeletionModal';
 import { contactShape, groupShape } from '../../helpers/propShapes';
-import { getCheckedAndIndeterminateProps, handleSelectAll } from '../../helpers/selectionHelpers';
-
+import SelectAllButton from '../newCredential/Molecules/RecipientsTable/SelectAllButton';
+import { useSelectAll } from '../../hooks/useSelectAll';
+import ConnectionsTable from '../connections/Organisms/table/ConnectionsTable';
+import { getGroupContactColumns } from '../../helpers/tableDefinitions/contacts';
+import { useCurrentGroupState } from '../../hooks/useCurrentGroupState';
 import './_style.scss';
 
-const GroupEditing = ({
-  group,
-  filterProps,
-  handleContactsRequest,
-  contacts,
-  onGroupRename,
-  onRemoveContacts,
-  onAddContacts,
-  hasMore,
-  isSaving,
-  loading,
-  loadingContacts,
-  fetchAllContacts
-}) => {
+const GroupEditing = observer(({ onGroupRename, onRemoveContacts, onAddContacts }) => {
+  const { isLoadingGroup, isLoadingMembers, isSaving, name, members } = useCurrentGroupState();
   const { t } = useTranslation();
   const formRef = React.createRef();
-  const [groupName, setGroupName] = useState('');
+  const [groupName, setGroupName] = useState(name);
   const [contactsToRemove, setContactsToRemove] = useState([]);
   const [modalVisible, setModalVisible] = useState(false);
   const [modalDeletionVisible, setModalDeletionVisible] = useState(false);
   const [selectedGroupContacts, setSelectedGroupContacts] = useState([]);
   const [editing, setEditing] = useState(false);
   const [nameState, setNameState] = useState(GROUP_NAME_STATES.initial);
-  const [loadingSelection, setLoadingSelection] = useState(false);
   const formValues = { groupName };
 
+  const { loadingSelection, checkboxProps } = useSelectAll({
+    displayedEntities: members,
+    entitiesFetcher: null, // FIXME
+    entityKey: CONTACT_ID_KEY,
+    selectedEntities: selectedGroupContacts,
+    setSelectedEntities: setSelectedGroupContacts,
+    isFetching: false
+  });
+
   useEffect(() => {
-    if (group.name) {
-      setGroupName(group.name);
-    }
-  }, [group.name]);
-
-  const handleSelectAllContacts = ev =>
-    handleSelectAll({
-      ev,
-      setSelected: setSelectedGroupContacts,
-      entities: contacts,
-      hasMore,
-      idKey: CONTACT_ID_KEY,
-      fetchAll: fetchAllContacts,
-      setLoading: setLoadingSelection
-    });
-
-  const selectAllProps = {
-    ...getCheckedAndIndeterminateProps(contacts, selectedGroupContacts),
-    disabled: loadingSelection,
-    onChange: handleSelectAllContacts
-  };
+    setGroupName(name);
+  }, [name]);
 
   const handleCancelClick = () => {
-    setGroupName(group.name);
+    setGroupName(name);
     setEditing(false);
   };
 
-  const handleRemoveClick = async () =>
+  const handleRemoveClick = () =>
     onRemoveContacts(contactsToRemove).finally(() => {
       setModalDeletionVisible(false);
       setSelectedGroupContacts([]);
     });
 
-  const handleAddContactConfirm = async aContactsList =>
+  const handleAddContactConfirm = aContactsList =>
     onAddContacts(aContactsList).finally(() => setModalVisible(false));
 
   const handleRemoveContactRequest = aContactsList => {
@@ -94,6 +73,8 @@ const GroupEditing = ({
     onClick: () => setEditing(!editing)
   };
 
+  const handleDelete = contact => handleRemoveContactRequest([contact]);
+
   const firstColProps = {
     lg: 20,
     md: 19,
@@ -107,7 +88,7 @@ const GroupEditing = ({
   };
 
   const renderNameSection = () => {
-    if (loading) return <SimpleLoading size="sm" />;
+    if (isLoadingGroup) return <SimpleLoading size="sm" />;
     if (editing)
       return (
         <GroupName
@@ -141,14 +122,11 @@ const GroupEditing = ({
           />
         </Col>
       </Row>
-
       <AddContactsModal
         visible={modalVisible}
-        groupName={groupName}
         onCancel={() => setModalVisible(false)}
         onConfirm={handleAddContactConfirm}
       />
-
       <ConfirmDeletionModal
         visible={modalDeletionVisible}
         length={contactsToRemove.length}
@@ -156,7 +134,7 @@ const GroupEditing = ({
         onConfirm={handleRemoveClick}
       />
 
-      <div className="GroupEditingContent">
+      <div className="GroupEditingContent InfiniteScrollTableContainer">
         <Row className="GroupNameContainer">
           <Col {...firstColProps} className="GroupName">
             {renderNameSection()}
@@ -188,62 +166,45 @@ const GroupEditing = ({
         <h3>{t('groupEditing.contacts')}</h3>
         <div className="filterContainer">
           <div className="connectionFilter">
-            <ConnectionsFilter {...filterProps} showFullFilter={false} />
+            <ConnectionsFilter showFullFilter={false} />
           </div>
-          <div>
-            <Checkbox className="groupsCheckbox" {...selectAllProps}>
-              {loadingSelection ? (
-                <PulseLoader size={3} color="#FFAEB3" />
-              ) : (
-                <span>
-                  {t('groupEditing.selectAll')}
-                  {!!selectedGroupContacts.length && `  (${selectedGroupContacts.length})  `}{' '}
-                </span>
-              )}
-            </Checkbox>
-          </div>
+          <SelectAllButton
+            loadingSelection={loadingSelection}
+            selectedEntities={selectedGroupContacts}
+            checkboxProps={checkboxProps}
+          />
         </div>
-        <Row gutter={10} align="bottom" type="flex" className="ContactsContainer">
-          <GroupContacts
-            contacts={contacts}
-            groupName={groupName}
+        <div className="ConnectionsTable">
+          <ConnectionsTable
+            overrideContacts
+            contacts={members}
+            overrideLoading
+            loading={isLoadingMembers}
+            columns={getGroupContactColumns(handleDelete)}
             selectedContacts={selectedGroupContacts}
             setSelectedContacts={setSelectedGroupContacts}
-            onDeleteContact={handleRemoveContactRequest}
-            handleContactsRequest={handleContactsRequest}
-            loading={loadingContacts || isSaving}
-            hasMore={hasMore}
+            size="md"
+            searchDueGeneralScroll
           />
-        </Row>
+        </div>
       </div>
     </div>
   );
-};
+});
 
 GroupEditing.defaultProps = {
   group: {
     name: ''
   },
-  filterProps: {},
-  loading: true,
-  loadingContacts: false,
-  isSaving: false,
-  contacts: []
+  members: []
 };
 
 GroupEditing.propTypes = {
-  handleContactsRequest: PropTypes.func.isRequired,
+  group: PropTypes.arrayOf(groupShape),
+  members: PropTypes.arrayOf(contactShape),
   onGroupRename: PropTypes.func.isRequired,
   onRemoveContacts: PropTypes.func.isRequired,
-  onAddContacts: PropTypes.func.isRequired,
-  hasMore: PropTypes.bool.isRequired,
-  group: PropTypes.shape(groupShape),
-  filterProps: PropTypes.shape(),
-  loading: PropTypes.bool,
-  loadingContacts: PropTypes.bool,
-  isSaving: PropTypes.bool,
-  contacts: PropTypes.arrayOf(PropTypes.shape(contactShape)),
-  fetchAllContacts: PropTypes.func.isRequired
+  onAddContacts: PropTypes.func.isRequired
 };
 
 export default GroupEditing;

@@ -1,38 +1,29 @@
 import React, { useState } from 'react';
-import { message } from 'antd';
-import { useTranslation } from 'react-i18next';
 import PropTypes from 'prop-types';
 import { withApi } from '../providers/withApi';
 import GroupCreation from './GroupCreation';
-import Logger from '../../helpers/Logger';
 import { withRedirector } from '../providers/withRedirector';
+import { useContactStore, useContactUiState } from '../../hooks/useContactStore';
+import { useGroupStore } from '../../hooks/useGroupStore';
 
-const GroupCreationContainer = ({ api, redirector: { redirectToGroups } }) => {
+const GroupCreationContainer = ({ redirector: { redirectToGroups } }) => {
+  useContactUiState({ reset: true });
+  useContactStore({ reset: true, fetch: true });
+  const { createGroup, isSaving } = useGroupStore();
+
   const [groupName, setGroupName] = useState('');
-  const [isSaving, setIsSaving] = useState(false);
   const [members, setMembers] = useState([]);
   const formRef = React.createRef();
-  const { t } = useTranslation();
   const formValues = { groupName };
 
-  const saveGroup = async () => {
-    setIsSaving(true);
-    try {
-      const newGroup = await api.groupsManager.createGroup(groupName);
-      await api.groupsManager.updateGroup(newGroup.id, { contactIdsToAdd: members });
-      message.success(t('groupCreation.success'));
-      setIsSaving(false);
-      redirectToGroups();
-    } catch (e) {
-      message.error(t('groupCreation.errors.grpc'));
-      Logger.error('groupCreation.errors.grpc', e);
-      setIsSaving(false);
-    }
+  const handleCreateGroup = async () => {
+    await createGroup({ name: groupName, members });
+    redirectToGroups();
   };
 
   return (
     <GroupCreation
-      createGroup={saveGroup}
+      createGroup={handleCreateGroup}
       formRef={formRef}
       updateForm={setGroupName}
       updateMembers={setMembers}

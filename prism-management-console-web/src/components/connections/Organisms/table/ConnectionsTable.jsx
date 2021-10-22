@@ -16,6 +16,10 @@ import './_style.scss';
 
 const ConnectionsTable = observer(
   ({
+    overrideContacts,
+    contacts,
+    overrideLoading,
+    loading,
     columns,
     setSelectedContacts,
     selectedContacts,
@@ -26,12 +30,12 @@ const ConnectionsTable = observer(
   }) => {
     const { t } = useTranslation();
     const { accountStatus } = useSession();
-    const { isLoadingFirstPage, fetchMoreData, isFetching, hasMore } = useContactStore();
     const { displayedContacts, hasFiltersApplied, isSearching, isSorting } = useContactUiState();
+    const { isLoadingFirstPage, fetchMoreData, isFetching, hasMore } = useContactStore();
 
     const emptyProps = {
       photoSrc: noContacts,
-      model: t('groups.title'),
+      model: t('contacts.title'),
       isFilter: hasFiltersApplied,
       button: newContactButton
     };
@@ -42,7 +46,7 @@ const ConnectionsTable = observer(
 
     const tableProps = {
       columns: columns || getContactColumns({ inviteContact, viewContactDetail }),
-      data: displayedContacts,
+      data: overrideContacts ? contacts : displayedContacts,
       selectionType: setSelectedContacts && {
         selectedRowKeys: selectedContacts,
         type: 'checkbox',
@@ -53,41 +57,38 @@ const ConnectionsTable = observer(
       },
       rowKey: 'contactId',
       getMoreData: fetchMoreData,
-      loading: isLoadingFirstPage || isSorting,
+      loading: overrideLoading ? loading : isLoadingFirstPage || isSorting,
       fetchingMore: isFetching || isSearching,
       hasMore,
       renderEmpty
     };
 
-    return isLoadingFirstPage ? <SimpleLoading /> : <InfiniteScrollTable {...tableProps} />;
+    return isLoadingFirstPage && !overrideLoading ? (
+      <SimpleLoading />
+    ) : (
+      <InfiniteScrollTable {...tableProps} />
+    );
   }
 );
 
 ConnectionsTable.defaultProps = {
-  contacts: [],
-  viewContactDetail: null,
-  setSelectedContacts: null,
-  selectedContacts: [],
-  inviteContact: null,
-  searching: false,
-  columns: undefined,
-  handleContactsRequest: null,
-  shouldSelectRecipients: true,
-  searchDueGeneralScroll: false
+  overrideContacts: false,
+  overrideLoading: false,
+  shouldSelectRecipients: true
 };
 
 ConnectionsTable.propTypes = {
-  contacts: PropTypes.arrayOf(PropTypes.shape(contactShape)),
+  overrideContacts: PropTypes.bool,
+  contacts: PropTypes.arrayOf(contactShape),
+  overrideLoading: PropTypes.bool,
+  loading: PropTypes.bool,
+  columns: PropTypes.arrayOf(PropTypes.any),
   setSelectedContacts: PropTypes.func,
   selectedContacts: PropTypes.arrayOf(PropTypes.string),
   inviteContact: PropTypes.func,
   viewContactDetail: PropTypes.func,
-  handleContactsRequest: PropTypes.func,
-  hasMore: PropTypes.bool.isRequired,
-  searching: PropTypes.bool,
-  columns: PropTypes.arrayOf(PropTypes.any),
   shouldSelectRecipients: PropTypes.bool,
-  searchDueGeneralScroll: PropTypes.bool
+  newContactButton: PropTypes.bool
 };
 
 export default ConnectionsTable;

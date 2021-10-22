@@ -122,8 +122,8 @@ export default class ContactStore {
     updateFetchedResults();
   }
 
-  *fetchAllContacts() {
-    const response = yield this.fetchRecursively(this.contacts, this.contactsScrollId);
+  *fetchAllContacts(groupName) {
+    const response = yield this.fetchRecursively(this.contacts, this.contactsScrollId, groupName);
     return response.contactsList;
   }
 
@@ -151,18 +151,19 @@ export default class ContactStore {
     }
   };
 
-  fetchRecursively = async (acc = [], scrollId) => {
+  fetchRecursively = async (acc = [], scrollId, groupName) => {
     const response = await this.fetchContacts({
       scrollId,
-      pageSize: MAX_CONTACT_PAGE_SIZE
+      pageSize: MAX_CONTACT_PAGE_SIZE,
+      groupName
     });
     const updatedAcc = acc.concat(response.contactsList);
     return response.newScrollId
-      ? this.fetchRecursively(updatedAcc, response.newScrollId)
+      ? this.fetchRecursively(updatedAcc, response.newScrollId, groupName)
       : { contactsList: updatedAcc };
   };
 
-  fetchContacts = async ({ scrollId, pageSize = CONTACT_PAGE_SIZE } = {}) => {
+  fetchContacts = async ({ scrollId, groupName, pageSize = CONTACT_PAGE_SIZE } = {}) => {
     this.isFetching = true;
     try {
       const {
@@ -180,7 +181,8 @@ export default class ContactStore {
         filter: {
           searchText: textFilter,
           createdAt: dateFilter,
-          connectionStatus: statusFilter
+          connectionStatus: statusFilter,
+          groupName
         }
       });
       runInAction(() => {
