@@ -123,6 +123,10 @@ package object operations {
         extends StateError {
       override def name: String = "effective-since-not-greater-than-current-cardano-block-no"
     }
+
+    final case class UntrustedProposer(proposer: DidSuffix) extends StateError {
+      override def name: String = "untrusted-proposer"
+    }
   }
 
   /** Data required to verify the correctness of the operation */

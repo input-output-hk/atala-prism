@@ -13,9 +13,9 @@ import io.iohk.atala.prism.node.models.nodeState._
 import io.iohk.atala.prism.node.operations.StateError.{
   EffectiveSinceNotGreaterThanCurrentCardanoBlockNo,
   EntityExists,
-  EntityMissing,
   NonAscendingEffectiveSince,
-  NonSequentialProtocolVersion
+  NonSequentialProtocolVersion,
+  UntrustedProposer
 }
 import io.iohk.atala.prism.node.operations.path.{Path, ValueAtPath}
 import io.iohk.atala.prism.node.repositories.daos.{KeyValuesDAO, ProtocolVersionsDAO, PublicKeysDAO}
@@ -30,9 +30,14 @@ case class ProtocolVersionUpdateOperation(
     override val ledgerData: LedgerData
 ) extends Operation {
 
-  // TODO ATA-5519 Check here that a trusted party signed it
   override def getCorrectnessData(keyId: String): EitherT[ConnectionIO, StateError, CorrectnessData] = {
     for {
+      _ <- EitherT {
+        ProtocolVersionsDAO.isProposerTrusted(proposerDID).map {
+          Either.cond(_, (), UntrustedProposer(proposerDID): StateError)
+        }
+      }
+
       keyState <- EitherT {
         PublicKeysDAO
           .find(proposerDID, keyId)
@@ -94,7 +99,7 @@ case class ProtocolVersionUpdateOperation(
             case sqlstate.class23.UNIQUE_VIOLATION =>
               EntityExists("Protocol version", protocolVersion.toString): StateError
             case sqlstate.class23.FOREIGN_KEY_VIOLATION =>
-              EntityMissing("proposerDID not exist in did_data", proposerDID.getValue)
+              UntrustedProposer(proposerDID)
           }
       }
     } yield ()
