@@ -15,14 +15,16 @@ import CustomDatePicker from '../../../common/Atoms/CustomDatePicker/CustomDateP
 import { useContactUiState } from '../../../../hooks/useContactStore';
 import './_style.scss';
 
-const ConnectionsFilter = observer(({ showFullFilter }) => {
+const ConnectionsFilter = observer(({ showFullFilter, localStateFilter }) => {
   const { t } = useTranslation();
   const {
     sortingDirection,
     setSortingBy,
-    setFilterValue,
+    setFilterValue: setGlobalFilterValue,
     toggleSortDirection
   } = useContactUiState();
+
+  const setFilterValue = localStateFilter ? localStateFilter.setValue : setGlobalFilterValue;
 
   const statuses = [PENDING_CONNECTION, CONNECTED];
   const isAscending = sortingDirection === SORTING_DIRECTIONS.ascending;

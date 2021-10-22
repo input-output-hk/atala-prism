@@ -3,6 +3,7 @@ import { makeAutoObservable, observable, action } from 'mobx';
 const defaultValues = {
   isLoadingGroup: false,
   isLoadingMembers: false,
+  isLoadingContactsNotInGroup: false,
   isSaving: false,
   id: undefined,
   name: undefined,
@@ -14,6 +15,8 @@ export default class CurrentGroupState {
   isLoadingGroup = defaultValues.isLoadingGroup;
 
   isLoadingMembers = defaultValues.isLoadingMembers;
+
+  isLoadingContactsNotInGroup = defaultValues.isLoadingContactsNotInGroup;
 
   isSaving = defaultValues.isSaving;
 
@@ -30,6 +33,7 @@ export default class CurrentGroupState {
     makeAutoObservable(this, {
       isLoadingGroup: observable,
       isLoadingMembers: observable,
+      isLoadingContactsNotInGroup: observable,
       isSaving: observable,
       id: observable,
       name: observable,
@@ -56,11 +60,25 @@ export default class CurrentGroupState {
   };
 
   refreshGroupMembers = async () => {
+    this.members = await this.getAllGroupMembers();
+  };
+
+  getAllGroupMembers = async () => {
     this.isLoadingMembers = true;
     const { fetchAllContacts } = this.rootStore.prismStore.contactStore;
     const members = await fetchAllContacts(this.name);
-    this.members = members;
     this.isLoadingMembers = false;
+    return members;
+  };
+
+  getContactsNotInGroup = async () => {
+    this.isLoadingContactsNotInGroup = true;
+    const { fetchAllContacts } = this.rootStore.prismStore.contactStore;
+    const allContacts = await fetchAllContacts();
+    const contactIdsInGroup = new Set(this.members.map(item => item.contactId));
+    const contactsNotInGroup = allContacts.filter(item => !contactIdsInGroup.has(item.contactId));
+    this.isLoadingContactsNotInGroup = false;
+    return contactsNotInGroup;
   };
 
   updateGroupName = async newName => {
@@ -77,13 +95,5 @@ export default class CurrentGroupState {
     await updateGroup(this.id, membersUpdate);
     this.refreshGroupMembers();
     this.isSaving = false;
-  };
-
-  getContactsNotInGroup = async () => {
-    const { fetchAllContacts } = this.rootStore.prismStore.contactStore;
-    const allContacts = await fetchAllContacts();
-    const contactIdsInGroup = new Set(this.members.map(item => item.contactId));
-    const contactsNotInGroup = allContacts.filter(item => !contactIdsInGroup.has(item.contactId));
-    return contactsNotInGroup;
   };
 }

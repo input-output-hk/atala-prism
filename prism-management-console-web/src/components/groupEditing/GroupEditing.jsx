@@ -18,9 +18,18 @@ import ConnectionsTable from '../connections/Organisms/table/ConnectionsTable';
 import { getGroupContactColumns } from '../../helpers/tableDefinitions/contacts';
 import { useCurrentGroupState } from '../../hooks/useCurrentGroupState';
 import './_style.scss';
+import { useContactUiState } from '../../hooks/useContactStore';
 
 const GroupEditing = observer(({ onGroupRename, onRemoveContacts, onAddContacts }) => {
-  const { isLoadingGroup, isLoadingMembers, isSaving, name, members } = useCurrentGroupState();
+  const { applyFilters } = useContactUiState({ reset: true });
+  const {
+    isLoadingGroup,
+    isLoadingMembers,
+    isSaving,
+    name,
+    members,
+    getAllGroupMembers
+  } = useCurrentGroupState();
   const { t } = useTranslation();
   const formRef = React.createRef();
   const [groupName, setGroupName] = useState(name);
@@ -32,13 +41,15 @@ const GroupEditing = observer(({ onGroupRename, onRemoveContacts, onAddContacts 
   const [nameState, setNameState] = useState(GROUP_NAME_STATES.initial);
   const formValues = { groupName };
 
+  const filteredContacts = applyFilters(members);
+
   const { loadingSelection, checkboxProps } = useSelectAll({
-    displayedEntities: members,
-    entitiesFetcher: null, // FIXME
+    displayedEntities: filteredContacts,
+    entitiesFetcher: getAllGroupMembers,
     entityKey: CONTACT_ID_KEY,
     selectedEntities: selectedGroupContacts,
     setSelectedEntities: setSelectedGroupContacts,
-    isFetching: false
+    isFetching: isLoadingMembers
   });
 
   useEffect(() => {
@@ -177,7 +188,7 @@ const GroupEditing = observer(({ onGroupRename, onRemoveContacts, onAddContacts 
         <div className="ConnectionsTable">
           <ConnectionsTable
             overrideContacts
-            contacts={members}
+            contacts={filteredContacts}
             overrideLoading
             loading={isLoadingMembers}
             columns={getGroupContactColumns(handleDelete)}

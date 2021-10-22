@@ -4,6 +4,7 @@ import {
   CONNECTED,
   CONTACT_PAGE_SIZE,
   CONTACT_SORTING_KEYS,
+  MAX_CONTACT_PAGE_SIZE,
   PENDING_CONNECTION,
   REQUEST_AUTH_TIMEOUT_MS,
   SORTING_DIRECTIONS
@@ -157,6 +158,23 @@ async function getContact(contactId) {
   return contact;
 }
 
+async function fetchMoreContactsRecursively(scrollId, groupName, acc, onFinish) {
+  const { contactsList, newScrollId } = await this.getContacts({
+    groupName,
+    scrollId,
+    limit: MAX_CONTACT_PAGE_SIZE
+  });
+  const partialContactsArray = acc.concat(contactsList);
+  if (contactsList.length < MAX_CONTACT_PAGE_SIZE) return onFinish(partialContactsArray);
+  return this.fetchMoreContactsRecursively(newScrollId, groupName, partialContactsArray, onFinish);
+}
+
+function getAllContacts(groupName) {
+  return new Promise(resolve => {
+    this.fetchMoreContactsRecursively(null, groupName, [], resolve);
+  });
+}
+
 async function updateContact(contactId, { externalId, name, jsonData }) {
   const req = new UpdateContactRequest();
   req.setContactId(contactId);
@@ -179,6 +197,8 @@ function ContactsManager(config, auth) {
 ContactsManager.prototype.createContact = createContact;
 ContactsManager.prototype.createContacts = createContacts;
 ContactsManager.prototype.getContacts = getContacts;
+ContactsManager.prototype.getAllContacts = getAllContacts;
+ContactsManager.prototype.fetchMoreContactsRecursively = fetchMoreContactsRecursively;
 ContactsManager.prototype.getContact = getContact;
 ContactsManager.prototype.updateContact = updateContact;
 

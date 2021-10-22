@@ -8,14 +8,20 @@ import ConnectionsTable from '../../connections/Organisms/table/ConnectionsTable
 import ConnectionsFilter from '../../connections/Molecules/filter/ConnectionsFilter';
 import CustomButton from '../../common/Atoms/CustomButton/CustomButton';
 import { useCurrentGroupState } from '../../../hooks/useCurrentGroupState';
+import SelectAllButton from '../../newCredential/Molecules/RecipientsTable/SelectAllButton';
+import { useSelectAll } from '../../../hooks/useSelectAll';
+import { CONTACT_ID_KEY } from '../../../helpers/constants';
+import { filterByMultipleKeys } from '../../../helpers/filterHelpers';
 import './_style.scss';
 
 const AddContactsModal = observer(({ visible, onCancel, onConfirm }) => {
   const { t } = useTranslation();
-  const [contactsNotInGroup, setContactsNotInGroup] = useState();
+  const [contactsNotInGroup, setContactsNotInGroup] = useState([]);
+  const [textFilter, setTextFilter] = useState('');
+  const [filteredContacts, setFilteredContacts] = useState([]);
   const [isNewModal, setIsNewModal] = useState(true);
   const [selectedContacts, setSelectedContacts] = useState([]);
-  const { getContactsNotInGroup } = useCurrentGroupState();
+  const { isLoadingContactsNotInGroup, getContactsNotInGroup } = useCurrentGroupState();
 
   useEffect(() => {
     const handleGetContacts = async () => {
@@ -28,6 +34,22 @@ const AddContactsModal = observer(({ visible, onCancel, onConfirm }) => {
       handleGetContacts();
     }
   }, [visible, isNewModal, getContactsNotInGroup]);
+
+  useEffect(() => {
+    const applyFilters = contacts =>
+      contacts.filter(item => filterByMultipleKeys(textFilter, item, ['name', 'externalId']));
+
+    setFilteredContacts(textFilter ? applyFilters(contactsNotInGroup) : contactsNotInGroup);
+  }, [contactsNotInGroup, textFilter]);
+
+  const { loadingSelection, checkboxProps } = useSelectAll({
+    displayedEntities: filteredContacts,
+    entitiesFetcher: () => filteredContacts,
+    entityKey: CONTACT_ID_KEY,
+    selectedEntities: selectedContacts,
+    setSelectedEntities: setSelectedContacts,
+    isFetching: isLoadingContactsNotInGroup
+  });
 
   const handleConfirm = () => {
     setIsNewModal(true);
@@ -59,33 +81,29 @@ const AddContactsModal = observer(({ visible, onCancel, onConfirm }) => {
     >
       <Row type="flex" align="middle" className="mb-2">
         <Col span={5}>
-          {/* <SelectAllButton
+          <SelectAllButton
             loadingSelection={loadingSelection}
-            selectedEntities={selectedGroupContacts}
+            selectedEntities={selectedContacts}
             checkboxProps={checkboxProps}
-          /> */}
-          {/* <div>
-            <Checkbox className="groupsCheckbox" {...selectAllProps}>
-              {loadingSelection ? (
-                <PulseLoader size={3} color="#FFAEB3" />
-              ) : (
-                <span>
-                  {t('groupEditing.selectAll')}
-                  {selectedLabel}
-                </span>
-              )}
-            </Checkbox>
-          </div> */}
+          />
         </Col>
         <Col span={17}>
-          <ConnectionsFilter showFullFilter={false} />
+          <ConnectionsFilter
+            showFullFilter={false}
+            localStateFilter={{
+              value: textFilter,
+              setValue: (_key, value) => setTextFilter(value)
+            }}
+          />
         </Col>
       </Row>
       <Row className="ModalContactsContainer">
         <Col span={24}>
           <ConnectionsTable
             overrideContacts
-            contacts={contactsNotInGroup}
+            contacts={filteredContacts}
+            overrideLoading
+            loading={isLoadingContactsNotInGroup}
             selectedContacts={selectedContacts}
             setSelectedContacts={setSelectedContacts}
             size="md"
