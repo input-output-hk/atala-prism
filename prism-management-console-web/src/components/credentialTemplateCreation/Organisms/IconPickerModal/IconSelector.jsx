@@ -14,10 +14,9 @@ const i18nPrefix = 'credentialTemplateCreation.iconPicker';
 const IconSelector = ({ selectedIcon, setSelectedIcon }) => {
   const { t } = useTranslation();
 
-  const onChange = ({ file, fileList }) => {
+  const onChange = ({ file }) => {
     if (file.status === 'uploading') return;
-    const newFile = fileList.find(f => f.uid === file.uid);
-    setSelectedIcon({ file: newFile, isCustomIcon: true });
+    setSelectedIcon({ file, isCustomIcon: true });
   };
 
   const previewFile = async file => {
