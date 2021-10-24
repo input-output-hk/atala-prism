@@ -21,7 +21,7 @@ object versions {
   val logbackLogstash = "6.6"
   val jaxb = "2.3.1"
   val mockito = "1.16.0"
-  val monix = "3.2.2"
+  val monix = "3.4.0"
   val osLib = "0.7.8"
   val playJson = "2.9.1"
   val postgresql = "42.2.18"
