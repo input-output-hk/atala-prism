@@ -9,7 +9,7 @@ object versions {
   val chimney = "0.6.0"
   val circe = "0.13.0"
   val circeOptics = "0.13.0"
-  val diffx = "0.3.29"
+  val diffx = "0.3.30"
   val dockerClient = "8.16.0"
   val dockerTestkit = "0.9.9"
   val doobie = "0.9.2"
