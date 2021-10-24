@@ -21,7 +21,10 @@ import io.iohk.atala.prism.management.console.repositories.ParticipantsRepositor
   CreateParticipantRequest,
   UpdateParticipantProfileRequest
 }
-import io.iohk.atala.prism.management.console.repositories.daos.{CredentialTypeDao, ParticipantsDAO}
+import io.iohk.atala.prism.management.console.repositories.daos.{
+  CredentialTypeDao,
+  ParticipantsDAO
+}
 import io.iohk.atala.prism.management.console.repositories.logs.ParticipantsRepositoryLogs
 import io.iohk.atala.prism.management.console.repositories.metrics.ParticipantsRepositoryMetrics
 import io.iohk.atala.prism.metrics.TimeMeasureMetric
@@ -35,9 +38,13 @@ import tofu.syntax.monoid.TofuSemigroupOps
 @derive(applyK)
 trait ParticipantsRepository[F[_]] {
 
-  def create(request: CreateParticipantRequest): F[Either[ManagementConsoleError, Unit]]
+  def create(
+      request: CreateParticipantRequest
+  ): F[Either[ManagementConsoleError, Unit]]
 
-  def findBy(id: ParticipantId): F[Either[ManagementConsoleError, ParticipantInfo]]
+  def findBy(
+      id: ParticipantId
+  ): F[Either[ManagementConsoleError, ParticipantInfo]]
 
   def findBy(did: DID): F[Either[ManagementConsoleError, ParticipantInfo]]
 
@@ -67,25 +74,39 @@ object ParticipantsRepository {
     for {
       serviceLogs <- logs.service[ParticipantsRepository[F]]
     } yield {
-      implicit val implicitLogs: ServiceLogging[F, ParticipantsRepository[F]] = serviceLogs
-      val metrics: ParticipantsRepository[Mid[F, *]] = new ParticipantsRepositoryMetrics[F]
-      val logs: ParticipantsRepository[Mid[F, *]] = new ParticipantsRepositoryLogs[F]
+      implicit val implicitLogs: ServiceLogging[F, ParticipantsRepository[F]] =
+        serviceLogs
+      val metrics: ParticipantsRepository[Mid[F, *]] =
+        new ParticipantsRepositoryMetrics[F]
+      val logs: ParticipantsRepository[Mid[F, *]] =
+        new ParticipantsRepositoryLogs[F]
       val mid = metrics |+| logs
-      mid attach new ParticipantsRepositoryImpl[F](transactor, defaultCredentialTypeConfig)
+      mid attach new ParticipantsRepositoryImpl[F](
+        transactor,
+        defaultCredentialTypeConfig
+      )
     }
 
   def unsafe[F[_]: TimeMeasureMetric: BracketThrow, R[_]: Comonad](
       transactor: Transactor[F],
       logs: Logs[R, F],
-      defaultCredentialTypeConfig: DefaultCredentialTypeConfig = DefaultCredentialTypeConfig(ConfigFactory.load())
-  ): ParticipantsRepository[F] = ParticipantsRepository(transactor, logs, defaultCredentialTypeConfig).extract
+      defaultCredentialTypeConfig: DefaultCredentialTypeConfig =
+        DefaultCredentialTypeConfig(ConfigFactory.load())
+  ): ParticipantsRepository[F] = ParticipantsRepository(
+    transactor,
+    logs,
+    defaultCredentialTypeConfig
+  ).extract
 
   def makeResource[F[_]: TimeMeasureMetric: BracketThrow, R[_]: Monad](
       transactor: Transactor[F],
       logs: Logs[R, F],
-      defaultCredentialTypeConfig: DefaultCredentialTypeConfig = DefaultCredentialTypeConfig(ConfigFactory.load())
+      defaultCredentialTypeConfig: DefaultCredentialTypeConfig =
+        DefaultCredentialTypeConfig(ConfigFactory.load())
   ): Resource[R, ParticipantsRepository[F]] =
-    Resource.eval(ParticipantsRepository(transactor, logs, defaultCredentialTypeConfig))
+    Resource.eval(
+      ParticipantsRepository(transactor, logs, defaultCredentialTypeConfig)
+    )
 
 }
 
@@ -97,7 +118,9 @@ private final class ParticipantsRepositoryImpl[F[_]: BracketThrow](
 
   val logger: Logger = LoggerFactory.getLogger(getClass)
 
-  def create(request: CreateParticipantRequest): F[Either[ManagementConsoleError, Unit]] = {
+  def create(
+      request: CreateParticipantRequest
+  ): F[Either[ManagementConsoleError, Unit]] = {
     val info = ParticipantInfo(
       id = request.id,
       name = request.name,
@@ -107,20 +130,30 @@ private final class ParticipantsRepositoryImpl[F[_]: BracketThrow](
 
     (for {
       _ <- ParticipantsDAO.insert(info)
-      _ <- CredentialTypeDao.insertDefaultCredentialTypes(request.id, defaultCredentialTypeConfig)
+      _ <- CredentialTypeDao.insertDefaultCredentialTypes(
+        request.id,
+        defaultCredentialTypeConfig
+      )
     } yield ())
       .logSQLErrors("creating", logger)
       .transact(xa)
       .map(_.asRight[ManagementConsoleError])
       .handleErrorWith {
-        case e: PSQLException if e.getServerErrorMessage.getConstraint == "participants_did_unique" =>
-          Either.left[ManagementConsoleError, Unit](InvalidRequest("DID already exists")).pure[F]
+        case e: PSQLException
+            if e.getServerErrorMessage.getConstraint == "participants_did_unique" =>
+          Either
+            .left[ManagementConsoleError, Unit](
+              InvalidRequest("DID already exists")
+            )
+            .pure[F]
         case t =>
           throw t
       }
   }
 
-  def findBy(id: ParticipantId): F[Either[ManagementConsoleError, ParticipantInfo]] = {
+  def findBy(
+      id: ParticipantId
+  ): F[Either[ManagementConsoleError, ParticipantInfo]] = {
     implicit val loggingContext = LoggingContext("id" -> id)
 
     ParticipantsDAO

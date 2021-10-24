@@ -8,7 +8,11 @@ import doobie.implicits._
 import doobie.implicits.legacy.instant._
 import doobie.util.fragments.in
 import io.iohk.atala.prism.models.TransactionInfo
-import io.iohk.atala.prism.node.models.{AtalaObjectId, AtalaObjectInfo, AtalaObjectStatus}
+import io.iohk.atala.prism.node.models.{
+  AtalaObjectId,
+  AtalaObjectInfo,
+  AtalaObjectStatus
+}
 
 import java.time.Instant
 
@@ -27,12 +31,15 @@ object AtalaObjectsDAO {
   def insert(data: AtalaObjectCreateData): ConnectionIO[Int] = {
     sql"""
          |INSERT INTO atala_objects (atala_object_id, object_content, atala_object_status, received_at)
-         |VALUES (${data.objectId}, ${data.byteContent}, ${data.status}, ${Instant.now()})
+         |VALUES (${data.objectId}, ${data.byteContent}, ${data.status}, ${Instant
+      .now()})
          |ON CONFLICT (atala_object_id) DO NOTHING
        """.stripMargin.update.run
   }
 
-  def setTransactionInfo(data: AtalaObjectSetTransactionInfo): ConnectionIO[Unit] = {
+  def setTransactionInfo(
+      data: AtalaObjectSetTransactionInfo
+  ): ConnectionIO[Unit] = {
     val transaction = data.transactionInfo
     transaction.block match {
       case Some(block) =>
@@ -40,7 +47,10 @@ object AtalaObjectsDAO {
              |INSERT INTO atala_object_txs (atala_object_id, ledger, block_number, block_index, block_timestamp, transaction_id)
              |VALUES (${data.objectId}, ${transaction.ledger}, ${block.number}, ${block.index}, ${block.timestamp}, ${transaction.transactionId})
            """.stripMargin.update.run.void
-      case _ => connection.raiseError(new IllegalArgumentException("Transaction has bo block"))
+      case _ =>
+        connection.raiseError(
+          new IllegalArgumentException("Transaction has bo block")
+        )
     }
   }
 
@@ -78,7 +88,10 @@ object AtalaObjectsDAO {
       .to[List]
   }
 
-  def updateObjectStatus(objectId: AtalaObjectId, newStatus: AtalaObjectStatus): ConnectionIO[Unit] = {
+  def updateObjectStatus(
+      objectId: AtalaObjectId,
+      newStatus: AtalaObjectStatus
+  ): ConnectionIO[Unit] = {
     sql"""
          |UPDATE atala_objects
          |SET atala_object_status = $newStatus
@@ -86,7 +99,10 @@ object AtalaObjectsDAO {
       """.stripMargin.update.run.void
   }
 
-  def updateObjectStatusBatch(objectIds: List[AtalaObjectId], newStatus: AtalaObjectStatus): ConnectionIO[Unit] = {
+  def updateObjectStatusBatch(
+      objectIds: List[AtalaObjectId],
+      newStatus: AtalaObjectStatus
+  ): ConnectionIO[Unit] = {
     NonEmptyList.fromList(objectIds).fold(unit) { objectIdsNonEmpty =>
       val fragment = fr"UPDATE atala_objects" ++
         fr"SET atala_object_status = $newStatus" ++

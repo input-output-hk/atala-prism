@@ -6,13 +6,20 @@ import cats.syntax.applicativeError._
 import cats.syntax.flatMap._
 import io.iohk.atala.prism.management.console.errors.ManagementConsoleError
 import io.iohk.atala.prism.management.console.models.InstitutionGroup.PaginatedQuery
-import io.iohk.atala.prism.management.console.models.{Contact, GetGroupsResult, InstitutionGroup, ParticipantId}
+import io.iohk.atala.prism.management.console.models.{
+  Contact,
+  GetGroupsResult,
+  InstitutionGroup,
+  ParticipantId
+}
 import io.iohk.atala.prism.management.console.repositories.InstitutionGroupsRepository
 import tofu.higherKind.Mid
 import tofu.logging.ServiceLogging
 import tofu.syntax.logging._
 
-private[repositories] final class InstitutionGroupsRepositoryLogs[F[_]: ServiceLogging[*[
+private[repositories] final class InstitutionGroupsRepositoryLogs[F[
+    _
+]: ServiceLogging[*[
   _
 ], InstitutionGroupsRepository[F]]: BracketThrow]
     extends InstitutionGroupsRepository[Mid[F, *]] {
@@ -26,11 +33,14 @@ private[repositories] final class InstitutionGroupsRepositoryLogs[F[_]: ServiceL
       info"creating institution group $institutionId $name" *> in
         .flatTap(
           _.fold(
-            e => error"encountered an error while creating institution group $e",
+            e =>
+              error"encountered an error while creating institution group $e",
             r => info"creating institution group - successfully done ${r.id}"
           )
         )
-        .onError(errorCause"encountered an error while creating institution group" (_))
+        .onError(
+          errorCause"encountered an error while creating institution group" (_)
+        )
 
   override def getBy(
       institutionId: ParticipantId,
@@ -38,10 +48,19 @@ private[repositories] final class InstitutionGroupsRepositoryLogs[F[_]: ServiceL
   ): Mid[F, GetGroupsResult] =
     in =>
       info"getting institution group by query $institutionId" *> in
-        .flatTap(res => info"getting institution group by query - found ${res.groups.size} entities")
-        .onError(errorCause"encountered an error while getting institution group by query" (_))
+        .flatTap(res =>
+          info"getting institution group by query - found ${res.groups.size} entities"
+        )
+        .onError(
+          errorCause"encountered an error while getting institution group by query" (
+            _
+          )
+        )
 
-  override def listContacts(institutionId: ParticipantId, groupName: InstitutionGroup.Name): Mid[F, List[Contact]] =
+  override def listContacts(
+      institutionId: ParticipantId,
+      groupName: InstitutionGroup.Name
+  ): Mid[F, List[Contact]] =
     in =>
       info"listing contacts $institutionId $groupName" *> in
         .flatTap(res => info"listing contacts - found ${res.size} entities")

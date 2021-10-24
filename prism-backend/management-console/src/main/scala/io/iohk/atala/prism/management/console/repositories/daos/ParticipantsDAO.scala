@@ -4,7 +4,11 @@ import cats.implicits._
 import doobie.implicits.{toSqlInterpolator, _}
 import doobie.{ConnectionIO, FC}
 import io.iohk.atala.prism.identity.{PrismDid => DID}
-import io.iohk.atala.prism.management.console.models.{ParticipantId, ParticipantInfo, UpdateParticipantProfile}
+import io.iohk.atala.prism.management.console.models.{
+  ParticipantId,
+  ParticipantInfo,
+  UpdateParticipantProfile
+}
 import doobie.implicits.legacy.instant._
 
 import java.time.Instant
@@ -35,7 +39,10 @@ object ParticipantsDAO {
       """.stripMargin.query[ParticipantInfo].option
   }
 
-  def updateParticipantByID(id: ParticipantId, profile: UpdateParticipantProfile): doobie.ConnectionIO[Unit] = {
+  def updateParticipantByID(
+      id: ParticipantId,
+      profile: UpdateParticipantProfile
+  ): doobie.ConnectionIO[Unit] = {
     sql"""
          |UPDATE participants
          |SET logo = ${profile.logo},

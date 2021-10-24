@@ -70,7 +70,8 @@ class DegreeServiceImpl(
 object DegreeServiceImpl {
 
   // id of University of Innovation and Technology in connector_db/public/participants table
-  val issuerId = ParticipantId.unsafeFrom("6c170e91-92b0-4265-909d-951c11f30caa")
+  val issuerId =
+    ParticipantId.unsafeFrom("6c170e91-92b0-4265-909d-951c11f30caa")
   val credentialTypeId = "VerifiableCredential/AirsideDegreeCredential"
 
   case class DegreeCredentialHtmlTemplateData(
@@ -89,16 +90,21 @@ object DegreeServiceImpl {
       .sendProofRequest(
         issuerId,
         connection.connectionId,
-        credential_models.ProofRequest(Seq(IdServiceImpl.credentialTypeId), connection.connectionToken.token)
+        credential_models.ProofRequest(
+          Seq(IdServiceImpl.credentialTypeId),
+          connection.connectionToken.token
+        )
       )
       .as(())
   }
 
-  private def getSharedIdCredential(connectorIntegration: ConnectorIntegration)(implicit
-      ec: ExecutionContext
+  private def getSharedIdCredential(connectorIntegration: ConnectorIntegration)(
+      implicit ec: ExecutionContext
   ): TokenString => Future[Option[credential_models.PlainTextCredential]] =
     connectionToken =>
-      getSharedCredentials(connectorIntegration, connectionToken, issuerId)(Set(IdServiceImpl.credentialTypeId))
+      getSharedCredentials(connectorIntegration, connectionToken, issuerId)(
+        Set(IdServiceImpl.credentialTypeId)
+      )
         .map(_.headOption)
 
   def getDegreeCredential(
@@ -138,7 +144,9 @@ object DegreeServiceImpl {
     )
 
     val credentialDocument = degreeCredentialJson.printWith(jsonPrinter)
-    val credential = Try(JsonBasedCredential.fromString(credentialDocument)).toEither
+    val credential = Try(
+      JsonBasedCredential.fromString(credentialDocument)
+    ).toEither
 
     credential match {
       case Left(_) =>
@@ -148,7 +156,8 @@ object DegreeServiceImpl {
       case Right(credential) =>
         println("sending degree credential")
         credential_models.PlainTextCredential(
-          encodedCredential = Base64Utils.encodeURL(credential.getCanonicalForm.getBytes)
+          encodedCredential =
+            Base64Utils.encodeURL(credential.getCanonicalForm.getBytes)
         )
     }
   }
@@ -184,7 +193,9 @@ object DegreeServiceImpl {
       )
     )
 
-  private def degreeCredentialHtmlTemplate(credentialData: DegreeCredentialHtmlTemplateData): String = {
+  private def degreeCredentialHtmlTemplate(
+      credentialData: DegreeCredentialHtmlTemplateData
+  ): String = {
     UniversityDegree(credentialData).body
   }
 }

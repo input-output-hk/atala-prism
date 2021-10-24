@@ -9,7 +9,10 @@ import io.iohk.atala.prism.credentials.CredentialBatchId
 import io.iohk.atala.prism.crypto.MerkleRoot
 import io.iohk.atala.prism.crypto.Sha256Digest
 import io.iohk.atala.prism.models.{DidSuffix, Ledger, TransactionId}
-import io.iohk.atala.prism.node.models.nodeState.{CredentialBatchState, LedgerData}
+import io.iohk.atala.prism.node.models.nodeState.{
+  CredentialBatchState,
+  LedgerData
+}
 import io.iohk.atala.prism.node.repositories.daos._
 import doobie.implicits.legacy.instant._
 import io.iohk.atala.prism.interop.implicits._
@@ -36,7 +39,9 @@ object CredentialBatchesDAO {
        """.stripMargin.update.run.void
   }
 
-  def findBatch(credentialBatchId: CredentialBatchId): ConnectionIO[Option[CredentialBatchState]] = {
+  def findBatch(
+      credentialBatchId: CredentialBatchId
+  ): ConnectionIO[Option[CredentialBatchState]] = {
     sql"""
          |SELECT batch_id, issuer_did_suffix, merkle_root, issued_on_transaction_id, ledger,
          |       issued_on, issued_on_absn, issued_on_osn, revoked_on_transaction_id, ledger,
@@ -73,7 +78,17 @@ object CredentialBatchesDAO {
         |VALUES (?, ?, ?, ?, ?, ?, ?)
         |ON CONFLICT (batch_id, credential_id) DO NOTHING
         |""".stripMargin
-    Update[(CredentialBatchId, Sha256Digest, Instant, Int, Int, Ledger, TransactionId)](sql)
+    Update[
+      (
+          CredentialBatchId,
+          Sha256Digest,
+          Instant,
+          Int,
+          Int,
+          Ledger,
+          TransactionId
+      )
+    ](sql)
       .updateMany(
         credentials.map(credentialHash =>
           (
@@ -102,7 +117,9 @@ object CredentialBatchesDAO {
   }
 
   // only for testing
-  def findRevokedCredentials(batchId: CredentialBatchId): ConnectionIO[List[(Sha256Digest, LedgerData)]] = {
+  def findRevokedCredentials(
+      batchId: CredentialBatchId
+  ): ConnectionIO[List[(Sha256Digest, LedgerData)]] = {
     sql"""SELECT credential_id, transaction_id, ledger, revoked_on, revoked_on_absn, revoked_on_osn
          |FROM revoked_credentials
          |WHERE batch_id = $batchId

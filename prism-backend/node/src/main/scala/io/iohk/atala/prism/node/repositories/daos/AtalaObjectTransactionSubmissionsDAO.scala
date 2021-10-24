@@ -8,7 +8,10 @@ import doobie.util.fragment.Fragment
 import cats.syntax.functor._
 import doobie.implicits.legacy.instant._
 import io.iohk.atala.prism.models.{Ledger, TransactionId}
-import io.iohk.atala.prism.node.models.{AtalaObjectTransactionSubmission, AtalaObjectTransactionSubmissionStatus}
+import io.iohk.atala.prism.node.models.{
+  AtalaObjectTransactionSubmission,
+  AtalaObjectTransactionSubmissionStatus
+}
 
 object AtalaObjectTransactionSubmissionsDAO {
   private def updateStatusSql(
@@ -23,7 +26,9 @@ object AtalaObjectTransactionSubmissionsDAO {
          |    AND transaction_id = $transactionId
        """.stripMargin
 
-  def insert(submission: AtalaObjectTransactionSubmission): ConnectionIO[AtalaObjectTransactionSubmission] = {
+  def insert(
+      submission: AtalaObjectTransactionSubmission
+  ): ConnectionIO[AtalaObjectTransactionSubmission] = {
     sql"""
          |INSERT INTO atala_object_tx_submissions
          |    (atala_object_id, ledger, transaction_id, submission_timestamp, status)
@@ -79,5 +84,6 @@ object AtalaObjectTransactionSubmissionsDAO {
       ledger: Ledger,
       transactionId: TransactionId,
       status: AtalaObjectTransactionSubmissionStatus
-  ): ConnectionIO[Unit] = updateStatusSql(ledger, transactionId, status).update.run.void
+  ): ConnectionIO[Unit] =
+    updateStatusSql(ledger, transactionId, status).update.run.void
 }

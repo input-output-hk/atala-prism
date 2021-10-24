@@ -21,10 +21,13 @@ package object errors {
 
     /** Error indicating lack of some value required for the operation
       *
-      * @param tpe type of the value, e.g. "didSuffix" or "contract"
-      * @param identifier identifier used to look for the value
+      * @param tpe
+      *   type of the value, e.g. "didSuffix" or "contract"
+      * @param identifier
+      *   identifier used to look for the value
       */
-    case class UnknownValueError(tpe: String, identifier: String) extends NodeError {
+    case class UnknownValueError(tpe: String, identifier: String)
+        extends NodeError {
       override def toStatus: Status = {
         Status.UNKNOWN.withDescription(s"Unknown $tpe: $identifier")
       }
@@ -40,9 +43,13 @@ package object errors {
       override def name: String = "internal"
     }
 
-    case class InternalCardanoWalletError(cardanoWalletError: CardanoWalletError) extends NodeError {
+    case class InternalCardanoWalletError(
+        cardanoWalletError: CardanoWalletError
+    ) extends NodeError {
       override def toStatus: Status = {
-        Status.INTERNAL.withDescription(s"CardanoWalletError: ${cardanoWalletError.getMessage}")
+        Status.INTERNAL.withDescription(
+          s"CardanoWalletError: ${cardanoWalletError.getMessage}"
+        )
       }
 
       override def name: String = "internal-cardano-wallet"
@@ -56,7 +63,8 @@ package object errors {
       override def name: String = "internal-cardano-wallet"
     }
 
-    case class DuplicateAtalaOperation(atalaOperationId: AtalaOperationId) extends NodeError {
+    case class DuplicateAtalaOperation(atalaOperationId: AtalaOperationId)
+        extends NodeError {
       override def toStatus: Status = {
         Status.ALREADY_EXISTS.withDescription(
           s"Atala operation $atalaOperationId was already received by PRISM node."
@@ -66,7 +74,8 @@ package object errors {
       override def name: String = "duplicate-atala-operation"
     }
 
-    case class UnsupportedProtocolVersion(currentVersion: ProtocolVersion) extends NodeError {
+    case class UnsupportedProtocolVersion(currentVersion: ProtocolVersion)
+        extends NodeError {
       override def toStatus: Status = {
         Status.FAILED_PRECONDITION.withDescription(
           s"Node supports $SUPPORTED_VERSION but current protocol version is $currentVersion. Update your node " +

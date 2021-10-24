@@ -5,7 +5,10 @@ import io.iohk.atala.prism.auth.model.RequestNonce
 import io.iohk.atala.prism.management.console.models.ParticipantId
 
 object RequestNoncesDAO {
-  def burn(participantId: ParticipantId, requestNonce: RequestNonce): doobie.ConnectionIO[Unit] = {
+  def burn(
+      participantId: ParticipantId,
+      requestNonce: RequestNonce
+  ): doobie.ConnectionIO[Unit] = {
     sql"""
          |INSERT INTO request_nonces (request_nonce, participant_id)
          |VALUES ($requestNonce, $participantId)
@@ -13,11 +16,14 @@ object RequestNoncesDAO {
          |RETURNING request_nonce
          |""".stripMargin.query[RequestNonce].option.map {
       case Some(_) => ()
-      case None => throw new RuntimeException("The nonce was already used")
+      case None    => throw new RuntimeException("The nonce was already used")
     }
   }
 
-  def available(participantId: ParticipantId, requestNonce: RequestNonce): doobie.ConnectionIO[Boolean] = {
+  def available(
+      participantId: ParticipantId,
+      requestNonce: RequestNonce
+  ): doobie.ConnectionIO[Boolean] = {
     sql"""
          |SELECT request_nonce
          |FROM request_nonces

@@ -11,7 +11,8 @@ import scala.concurrent.ExecutionContext
 
 object FakeCardanoWalletApiClient {
 
-  /** Sets up a CardanoWalletApiClient instance that will return a successful response for the given path and request.
+  /** Sets up a CardanoWalletApiClient instance that will return a successful
+    * response for the given path and request.
     */
   object Success {
     def apply(
@@ -21,11 +22,17 @@ object FakeCardanoWalletApiClient {
     )(implicit
         ec: ExecutionContext
     ): CardanoWalletApiClient = {
-      FakeCardanoWalletApiClient(expectedPath, expectedJsonRequest, 200, responseBody)
+      FakeCardanoWalletApiClient(
+        expectedPath,
+        expectedJsonRequest,
+        200,
+        responseBody
+      )
     }
   }
 
-  /** Sets up a CardanoWalletApiClient instance that will return a fail response for the given path and request.
+  /** Sets up a CardanoWalletApiClient instance that will return a fail response
+    * for the given path and request.
     */
   object Fail {
     def apply(
@@ -45,7 +52,8 @@ object FakeCardanoWalletApiClient {
     }
   }
 
-  /** Sets up a CardanoWalletApiClient instance that will return {@code 404 Not Found} errors for all requests.
+  /** Sets up a CardanoWalletApiClient instance that will return {@code 404 Not
+    * Found} errors for all requests.
     */
   object NotFound {
     def apply()(implicit
@@ -70,7 +78,10 @@ object FakeCardanoWalletApiClient {
     val backend = SttpBackendStub.asynchronousFuture
       .whenRequestMatches(request =>
         request.uri.host == config.host && request.uri.port.value == config.port && request.uri.path
-          .mkString("/") == expectedPath && sameJson(request.body.asInstanceOf[StringBody].s, expectedJsonRequest)
+          .mkString("/") == expectedPath && sameJson(
+          request.body.asInstanceOf[StringBody].s,
+          expectedJsonRequest
+        )
       )
       .thenRespondWithCode(responseCode, responseBody)
 
@@ -81,7 +92,10 @@ object FakeCardanoWalletApiClient {
     a == b || parse(a).toOption.get == parse(b).toOption.get
   }
 
-  private def createJsonErrorResponse(errorCode: String, message: String): String = {
+  private def createJsonErrorResponse(
+      errorCode: String,
+      message: String
+  ): String = {
     s"""
        |{
        |  "code": "$errorCode",

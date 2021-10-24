@@ -10,7 +10,11 @@ import io.iohk.atala.prism.models.DidSuffix
 import io.iohk.atala.prism.node.models.KeyUsage.MasterKey
 import io.iohk.atala.prism.node.models.DIDPublicKey
 import io.iohk.atala.prism.node.models.nodeState.LedgerData
-import io.iohk.atala.prism.node.operations.StateError.{EntityExists, InvalidKeyUsed, UnknownKey}
+import io.iohk.atala.prism.node.operations.StateError.{
+  EntityExists,
+  InvalidKeyUsed,
+  UnknownKey
+}
 import io.iohk.atala.prism.node.operations.path._
 import io.iohk.atala.prism.node.repositories.daos.{DIDDataDAO, PublicKeysDAO}
 import io.iohk.atala.prism.protos.{node_models => proto}
@@ -22,7 +26,9 @@ case class CreateDIDOperation(
     ledgerData: LedgerData
 ) extends Operation {
 
-  override def getCorrectnessData(keyId: String): EitherT[ConnectionIO, StateError, CorrectnessData] = {
+  override def getCorrectnessData(
+      keyId: String
+  ): EitherT[ConnectionIO, StateError, CorrectnessData] = {
     val keyOpt = keys.find(_.keyId == keyId)
     for {
       _ <- EitherT.fromEither[ConnectionIO] {
@@ -47,15 +53,17 @@ case class CreateDIDOperation(
 
     for {
       _ <- EitherT {
-        DIDDataDAO.insert(id, digest, ledgerData).attemptSomeSqlState { case sqlstate.class23.UNIQUE_VIOLATION =>
-          EntityExists("DID", id.getValue): StateError
+        DIDDataDAO.insert(id, digest, ledgerData).attemptSomeSqlState {
+          case sqlstate.class23.UNIQUE_VIOLATION =>
+            EntityExists("DID", id.getValue): StateError
         }
       }
 
       _ <- keys.traverse[ConnectionIOEitherTError, Unit] { key: DIDPublicKey =>
         EitherT {
-          PublicKeysDAO.insert(key, ledgerData).attemptSomeSqlState { case sqlstate.class23.UNIQUE_VIOLATION =>
-            EntityExists("public key", key.keyId): StateError
+          PublicKeysDAO.insert(key, ledgerData).attemptSomeSqlState {
+            case sqlstate.class23.UNIQUE_VIOLATION =>
+              EntityExists("public key", key.keyId): StateError
           }
         }
       }
@@ -72,10 +80,17 @@ object CreateDIDOperation extends SimpleOperationCompanion[CreateDIDOperation] {
     val keysValue = data.child(_.publicKeys, "publicKeys")
     for {
       reversedKeys <- keysValue { keys =>
-        keys.zipWithIndex.foldLeft(Either.right[ValidationError, List[DIDPublicKey]](List.empty)) { (acc, keyi) =>
+        keys.zipWithIndex.foldLeft(
+          Either.right[ValidationError, List[DIDPublicKey]](List.empty)
+        ) { (acc, keyi) =>
           val (key, i) = keyi
           acc.flatMap(list =>
-            ParsingUtils.parseKey(ValueAtPath(key, keysValue.path / i.toString), didSuffix).map(_ :: list)
+            ParsingUtils
+              .parseKey(
+                ValueAtPath(key, keysValue.path / i.toString),
+                didSuffix
+              )
+              .map(_ :: list)
           )
         }
       }
@@ -88,7 +103,8 @@ object CreateDIDOperation extends SimpleOperationCompanion[CreateDIDOperation] {
   ): Either[ValidationError, CreateDIDOperation] = {
     val operationDigest = Sha256.compute(operation.toByteArray)
     val didSuffix = DidSuffix(operationDigest.getHexValue)
-    val createOperation = ValueAtPath(operation, Path.root).child(_.getCreateDid, "createDid")
+    val createOperation =
+      ValueAtPath(operation, Path.root).child(_.getCreateDid, "createDid")
     for {
       data <- createOperation.childGet(_.didData, "didData")
       keys <- parseData(data, didSuffix)

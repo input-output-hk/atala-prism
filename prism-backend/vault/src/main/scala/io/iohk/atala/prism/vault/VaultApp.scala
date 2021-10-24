@@ -11,7 +11,10 @@ import io.iohk.atala.prism.protos.node_api.NodeServiceGrpc
 import io.iohk.atala.prism.repositories.{SchemaMigrations, TransactorFactory}
 import io.iohk.atala.prism.protos.vault_api
 import io.iohk.atala.prism.vault.grpc.EncryptedDataVaultGrpcService
-import io.iohk.atala.prism.vault.repositories.{PayloadsRepository, RequestNoncesRepository}
+import io.iohk.atala.prism.vault.repositories.{
+  PayloadsRepository,
+  RequestNoncesRepository
+}
 import io.iohk.atala.prism.vault.services.EncryptedDataVaultService
 import kamon.Kamon
 import org.slf4j.LoggerFactory
@@ -36,7 +39,8 @@ class VaultApp(executionContext: ExecutionContext) {
   implicit val cs: ContextShift[IO] = IO.contextShift(ExecutionContext.global)
   private val logger = LoggerFactory.getLogger(this.getClass)
 
-  private val vaultLogs: Logs[IO, IOWithTraceIdContext] = Logs.withContext[IO, IOWithTraceIdContext]
+  private val vaultLogs: Logs[IO, IOWithTraceIdContext] =
+    Logs.withContext[IO, IOWithTraceIdContext]
 
   private[this] var server: Server = null
   private[this] var releaseTransactor: Option[IO[Unit]] = None
@@ -54,7 +58,8 @@ class VaultApp(executionContext: ExecutionContext) {
     applyDatabaseMigrations(databaseConfig)
 
     logger.info("Connecting to the database")
-    val (transactor, releaseTransactor) = TransactorFactory.transactor[IO](databaseConfig).allocated.unsafeRunSync()
+    val (transactor, releaseTransactor) =
+      TransactorFactory.transactor[IO](databaseConfig).allocated.unsafeRunSync()
     self.releaseTransactor = Some(releaseTransactor)
 
     val transactorWithIOContext = transactor.mapK(TraceId.liftToIOWithTraceId)
@@ -72,11 +77,15 @@ class VaultApp(executionContext: ExecutionContext) {
     // Vault repositories
     val payloadsRepository = vaultLogs
       .service[PayloadsRepository[IOWithTraceIdContext]]
-      .map(implicit l => PayloadsRepository.create[IOWithTraceIdContext](transactorWithIOContext))
+      .map(implicit l =>
+        PayloadsRepository.create[IOWithTraceIdContext](transactorWithIOContext)
+      )
       .unsafeRunSync()
     val requestNoncesRepository = vaultLogs
       .service[RequestNoncesRepository[IOWithTraceIdContext]]
-      .map(implicit l => RequestNoncesRepository.PostgresImpl.create(transactorWithIOContext))
+      .map(implicit l =>
+        RequestNoncesRepository.PostgresImpl.create(transactorWithIOContext)
+      )
       .unsafeRunSync()
 
     val authenticator = new VaultAuthenticator(
@@ -90,14 +99,20 @@ class VaultApp(executionContext: ExecutionContext) {
       .map(implicit l => EncryptedDataVaultService.create(payloadsRepository))
       .unsafeRunSync()
 
-    val encryptedDataVaultGrpcService = new EncryptedDataVaultGrpcService(encryptedDataVaultService, authenticator)(
+    val encryptedDataVaultGrpcService = new EncryptedDataVaultGrpcService(
+      encryptedDataVaultService,
+      authenticator
+    )(
       executionContext
     )
 
     logger.info("Starting server")
     server = ServerBuilder
       .forPort(VaultApp.port)
-      .addService(vault_api.EncryptedDataVaultServiceGrpc.bindService(encryptedDataVaultGrpcService, executionContext))
+      .addService(
+        vault_api.EncryptedDataVaultServiceGrpc
+          .bindService(encryptedDataVaultGrpcService, executionContext)
+      )
       .build()
       .start()
   }
@@ -109,9 +124,12 @@ class VaultApp(executionContext: ExecutionContext) {
     }
   }
 
-  private def releaseResources(): Unit = releaseTransactor.foreach(_.unsafeRunSync())
+  private def releaseResources(): Unit =
+    releaseTransactor.foreach(_.unsafeRunSync())
 
-  private def applyDatabaseMigrations(databaseConfig: TransactorFactory.Config): Unit = {
+  private def applyDatabaseMigrations(
+      databaseConfig: TransactorFactory.Config
+  ): Unit = {
     val appliedMigrations = SchemaMigrations.migrate(databaseConfig)
     if (appliedMigrations == 0) {
       logger.info("Database up to date")

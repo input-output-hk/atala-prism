@@ -6,7 +6,10 @@ import io.iohk.atala.prism.auth
 import io.iohk.atala.prism.auth.SignedRequestsAuthenticatorBase
 import io.iohk.atala.prism.auth.grpc.GrpcAuthenticationHeaderParser
 import io.iohk.atala.prism.auth.model.RequestNonce
-import io.iohk.atala.prism.connector.repositories.{ParticipantsRepository, RequestNoncesRepository}
+import io.iohk.atala.prism.connector.repositories.{
+  ParticipantsRepository,
+  RequestNoncesRepository
+}
 import io.iohk.atala.prism.crypto.keys.ECPublicKey
 import io.iohk.atala.prism.identity.{PrismDid => DID}
 import io.iohk.atala.prism.logging.TraceId
@@ -23,7 +26,10 @@ class ConnectorAuthenticator(
     requestNoncesRepository: RequestNoncesRepository[IOWithTraceIdContext],
     nodeClient: node_api.NodeServiceGrpc.NodeService,
     grpcAuthenticationHeaderParser: GrpcAuthenticationHeaderParser
-) extends SignedRequestsAuthenticatorBase[ParticipantId](nodeClient, grpcAuthenticationHeaderParser) {
+) extends SignedRequestsAuthenticatorBase[ParticipantId](
+      nodeClient,
+      grpcAuthenticationHeaderParser
+    ) {
 
   override def burnNonce(
       id: ParticipantId,
@@ -61,7 +67,9 @@ class ConnectorAuthenticator(
       .map(_.id)
       .mapLeft(e => UnexpectedError(e.toStatus))
 
-  override def findByDid(did: DID)(implicit ec: ExecutionContext): FutureEither[AuthError, ParticipantId] =
+  override def findByDid(
+      did: DID
+  )(implicit ec: ExecutionContext): FutureEither[AuthError, ParticipantId] =
     participantsRepository
       .findBy(did)
       .run(TraceId.generateYOLO)

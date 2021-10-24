@@ -18,7 +18,8 @@ import tofu.logging.Logs.Universal
 
 class DIDDataRepositorySpec extends AtalaWithPostgresSpec {
   val logs: Universal[IO] = Logs.universal[IO]
-  lazy val didDataRepository: DIDDataRepository[IO] = DIDDataRepository.unsafe(database, logs)
+  lazy val didDataRepository: DIDDataRepository[IO] =
+    DIDDataRepository.unsafe(database, logs)
 
   val operationDigest = digestGen(0, 1)
   val didSuffix = didSuffixFromDigest(operationDigest)
@@ -51,9 +52,12 @@ class DIDDataRepositorySpec extends AtalaWithPostgresSpec {
   )
 
   val didData = DIDData(didSuffix, keys, operationDigest)
-  val dummyTimestamp = new TimestampInfo(Instant.ofEpochMilli(0).toEpochMilli, 1, 0)
+  val dummyTimestamp =
+    new TimestampInfo(Instant.ofEpochMilli(0).toEpochMilli, 1, 0)
   val dummyLedgerData = LedgerData(
-    TransactionId.from(Array.fill[Byte](TransactionId.config.size.toBytes.toInt)(0)).value,
+    TransactionId
+      .from(Array.fill[Byte](TransactionId.config.size.toBytes.toInt)(0))
+      .value,
     Ledger.InMemory,
     dummyTimestamp
   )
@@ -74,7 +78,11 @@ class DIDDataRepositorySpec extends AtalaWithPostgresSpec {
       DataPreparation.createDID(didData, dummyLedgerData)
 
       val result = didDataRepository
-        .findByDid(DID.buildCanonical(Sha256Digest.fromHex(didSuffixFromDigest(digestGen(0, 2)).value)))
+        .findByDid(
+          DID.buildCanonical(
+            Sha256Digest.fromHex(didSuffixFromDigest(digestGen(0, 2)).value)
+          )
+        )
         .unsafeRunSync()
         .toOption
         .value

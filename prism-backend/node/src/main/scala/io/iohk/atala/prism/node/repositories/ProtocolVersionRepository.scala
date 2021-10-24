@@ -34,9 +34,12 @@ object ProtocolVersionRepository {
     for {
       serviceLogs <- logs.service[ProtocolVersionRepository[F]]
     } yield {
-      implicit val implicitLogs: ServiceLogging[F, ProtocolVersionRepository[F]] = serviceLogs
-      val metrics: ProtocolVersionRepository[Mid[F, *]] = new ProtocolVersionRepositoryMetrics[F]()
-      val logs: ProtocolVersionRepository[Mid[F, *]] = new ProtocolVersionRepositoryLogs[F]()
+      implicit val implicitLogs
+          : ServiceLogging[F, ProtocolVersionRepository[F]] = serviceLogs
+      val metrics: ProtocolVersionRepository[Mid[F, *]] =
+        new ProtocolVersionRepositoryMetrics[F]()
+      val logs: ProtocolVersionRepository[Mid[F, *]] =
+        new ProtocolVersionRepositoryLogs[F]()
       val mid = metrics |+| logs
       mid attach new ProtocolVersionRepositoryImpl[F](transactor)
     }
@@ -44,17 +47,20 @@ object ProtocolVersionRepository {
   def unsafe[F[_]: BracketThrow: TimeMeasureMetric, R[_]: Comonad](
       transactor: Transactor[F],
       logs: Logs[R, F]
-  ): ProtocolVersionRepository[F] = ProtocolVersionRepository(transactor, logs).extract
+  ): ProtocolVersionRepository[F] =
+    ProtocolVersionRepository(transactor, logs).extract
 }
 
-private class ProtocolVersionRepositoryImpl[F[_]: BracketThrow](xa: Transactor[F])
-    extends ProtocolVersionRepository[F] {
+private class ProtocolVersionRepositoryImpl[F[_]: BracketThrow](
+    xa: Transactor[F]
+) extends ProtocolVersionRepository[F] {
 
   val logger: Logger = LoggerFactory.getLogger(getClass)
 
   // Return a unit if node supports the current protocol version
   // Return current protocol version otherwise
-  override def ifNodeSupportsCurrentProtocol(): F[Either[ProtocolVersion, Unit]] =
+  override def ifNodeSupportsCurrentProtocol()
+      : F[Either[ProtocolVersion, Unit]] =
     ProtocolVersionsDAO.getCurrentProtocolVersion
       .logSQLErrors("ifNodeSupportsCurrentProtocol", logger)
       .transact(xa)

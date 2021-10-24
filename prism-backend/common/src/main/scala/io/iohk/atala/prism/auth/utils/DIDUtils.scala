@@ -14,7 +14,11 @@ import io.iohk.atala.prism.utils.FutureEither.FutureEitherOps
 
 import scala.concurrent.{ExecutionContext, Future}
 import io.iohk.atala.prism.interop.toScalaProtos._
-import io.iohk.atala.prism.protos.node_models.PublicKey.KeyData.{CompressedEcKeyData, EcKeyData, Empty}
+import io.iohk.atala.prism.protos.node_models.PublicKey.KeyData.{
+  CompressedEcKeyData,
+  EcKeyData,
+  Empty
+}
 
 object DIDUtils {
 
@@ -24,7 +28,13 @@ object DIDUtils {
         longFormDid.getInitialState.getOperation match {
           case crd: CreateDid => {
             val creationData = crd.getValue.getDidData.asScala
-            Future.successful(Right(DIDData(longFormDid.getDid.toString, creationData.publicKeys))).toFutureEither
+            Future
+              .successful(
+                Right(
+                  DIDData(longFormDid.getDid.toString, creationData.publicKeys)
+                )
+              )
+              .toFutureEither
           }
           case _ =>
             Future.successful(Left(NoCreateDidOperationError)).toFutureEither
@@ -33,8 +43,13 @@ object DIDUtils {
     }
   }
 
-  private def verifyPublicKey(curve: String, publicKey: ECPublicKey): Option[ECPublicKey] =
-    Option.when(ECConfig.getCURVE_NAME == curve && EC.isSecp256k1(publicKey.getCurvePoint))(publicKey)
+  private def verifyPublicKey(
+      curve: String,
+      publicKey: ECPublicKey
+  ): Option[ECPublicKey] =
+    Option.when(
+      ECConfig.getCURVE_NAME == curve && EC.isSecp256k1(publicKey.getCurvePoint)
+    )(publicKey)
 
   def findPublicKey(didData: node_models.DIDData, keyId: String)(implicit
       ec: ExecutionContext
@@ -48,14 +63,24 @@ object DIDUtils {
         .flatMap {
           case EcKeyData(data) =>
             // FIXME: remove that if statement after fixing whitelist DID's (they should use really uncompressed keys or really compressed ones)
-            if (data.x.size() > 32) verifyPublicKey(data.curve, EC.toPublicKeyFromCompressed(data.x.toByteArray))
+            if (data.x.size() > 32)
+              verifyPublicKey(
+                data.curve,
+                EC.toPublicKeyFromCompressed(data.x.toByteArray)
+              )
             else
               verifyPublicKey(
                 data.curve,
-                EC.toPublicKeyFromByteCoordinates(data.x.toByteArray, data.y.toByteArray)
+                EC.toPublicKeyFromByteCoordinates(
+                  data.x.toByteArray,
+                  data.y.toByteArray
+                )
               )
           case CompressedEcKeyData(data) =>
-            verifyPublicKey(data.curve, EC.toPublicKeyFromCompressed(data.data.toByteArray))
+            verifyPublicKey(
+              data.curve,
+              EC.toPublicKeyFromCompressed(data.data.toByteArray)
+            )
           case Empty => None
         }
 

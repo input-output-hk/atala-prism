@@ -16,7 +16,11 @@ import io.iohk.atala.prism.management.console.repositories.daos.CredentialTypeDa
 import io.iohk.atala.prism.utils.syntax.DBConnectionOps
 import io.iohk.atala.prism.metrics.TimeMeasureMetric
 import doobie.free.connection
-import io.iohk.atala.prism.credentials.utils.{Mustache, MustacheError, MustacheParsingError}
+import io.iohk.atala.prism.credentials.utils.{
+  Mustache,
+  MustacheError,
+  MustacheParsingError
+}
 import io.iohk.atala.prism.management.console.repositories.logs.CredentialTypeRepositoryLogs
 import io.iohk.atala.prism.management.console.repositories.metrics.CredentialTypeRepositoryMetrics
 
@@ -49,7 +53,9 @@ trait CredentialTypeRepository[F[_]] {
       institutionId: ParticipantId
   ): F[Either[ManagementConsoleError, Unit]]
 
-  def find(credentialTypeId: CredentialTypeId): F[Option[CredentialTypeWithRequiredFields]]
+  def find(
+      credentialTypeId: CredentialTypeId
+  ): F[Option[CredentialTypeWithRequiredFields]]
 
   def find(
       institution: ParticipantId,
@@ -74,9 +80,12 @@ object CredentialTypeRepository {
     for {
       serviceLogs <- logs.service[CredentialTypeRepository[F]]
     } yield {
-      implicit val implicitLogs: ServiceLogging[F, CredentialTypeRepository[F]] = serviceLogs
-      val metrics: CredentialTypeRepository[Mid[F, *]] = new CredentialTypeRepositoryMetrics[F]
-      val logs: CredentialTypeRepository[Mid[F, *]] = new CredentialTypeRepositoryLogs[F]
+      implicit val implicitLogs
+          : ServiceLogging[F, CredentialTypeRepository[F]] = serviceLogs
+      val metrics: CredentialTypeRepository[Mid[F, *]] =
+        new CredentialTypeRepositoryMetrics[F]
+      val logs: CredentialTypeRepository[Mid[F, *]] =
+        new CredentialTypeRepositoryLogs[F]
       val mid = metrics |+| logs
       mid attach new CredentialTypeRepositoryImpl[F](transactor)
     }
@@ -84,17 +93,20 @@ object CredentialTypeRepository {
   def unsafe[F[_]: TimeMeasureMetric: BracketThrow, R[_]: Comonad](
       transactor: Transactor[F],
       logs: Logs[R, F]
-  ): CredentialTypeRepository[F] = CredentialTypeRepository(transactor, logs).extract
+  ): CredentialTypeRepository[F] =
+    CredentialTypeRepository(transactor, logs).extract
 
   def makeResource[F[_]: TimeMeasureMetric: BracketThrow, R[_]: Monad](
       transactor: Transactor[F],
       logs: Logs[R, F]
-  ): Resource[R, CredentialTypeRepository[F]] = Resource.eval(CredentialTypeRepository(transactor, logs))
+  ): Resource[R, CredentialTypeRepository[F]] =
+    Resource.eval(CredentialTypeRepository(transactor, logs))
 
 }
 
-private final class CredentialTypeRepositoryImpl[F[_]: BracketThrow](xa: Transactor[F])
-    extends CredentialTypeRepository[F] {
+private final class CredentialTypeRepositoryImpl[F[_]: BracketThrow](
+    xa: Transactor[F]
+) extends CredentialTypeRepository[F] {
 
   val logger: Logger = LoggerFactory.getLogger(getClass)
 
@@ -102,15 +114,33 @@ private final class CredentialTypeRepositoryImpl[F[_]: BracketThrow](xa: Transac
       participantId: ParticipantId,
       createCredentialType: CreateCredentialType
   ): F[Either[ManagementConsoleError, CredentialTypeWithRequiredFields]] = {
-    validateMustacheTemplate(createCredentialType.template, createCredentialType.fields)
-      .fold[ConnectionIO[Either[ManagementConsoleError, CredentialTypeWithRequiredFields]]](
+    validateMustacheTemplate(
+      createCredentialType.template,
+      createCredentialType.fields
+    )
+      .fold[ConnectionIO[
+        Either[ManagementConsoleError, CredentialTypeWithRequiredFields]
+      ]](
         mustacheError =>
-          connection.pure[Either[ManagementConsoleError, CredentialTypeWithRequiredFields]](
-            Left(CredentialTypeIncorrectMustacheTemplate(createCredentialType.name, mustacheError.getMessage))
+          connection.pure[
+            Either[ManagementConsoleError, CredentialTypeWithRequiredFields]
+          ](
+            Left(
+              CredentialTypeIncorrectMustacheTemplate(
+                createCredentialType.name,
+                mustacheError.getMessage
+              )
+            )
           ),
-        _ => CredentialTypeDao.create(participantId, createCredentialType).map(Right(_))
+        _ =>
+          CredentialTypeDao
+            .create(participantId, createCredentialType)
+            .map(Right(_))
       )
-      .logSQLErrors(s"creating credential type, participant id - $participantId", logger)
+      .logSQLErrors(
+        s"creating credential type, participant id - $participantId",
+        logger
+      )
       .transact(xa)
   }
 
@@ -118,23 +148,40 @@ private final class CredentialTypeRepositoryImpl[F[_]: BracketThrow](xa: Transac
       updateCredentialType: UpdateCredentialType,
       institutionId: ParticipantId
   ): F[Either[ManagementConsoleError, Unit]] =
-    withCredentialType(updateCredentialType.id, institutionId) { credentialType =>
-      if (credentialType.state != CredentialTypeState.Draft) {
-        connection.pure[Either[ManagementConsoleError, Unit]](
-          Left(CredentialTypeUpdateIncorrectState(credentialType.id, credentialType.name, credentialType.state))
-        )
-      } else {
-        validateMustacheTemplate(updateCredentialType.template, updateCredentialType.fields).fold(
-          mustacheError =>
-            connection.pure[Either[ManagementConsoleError, Unit]](
-              Left(CredentialTypeIncorrectMustacheTemplate(credentialType.name, mustacheError.getMessage))
-            ),
-          _ =>
-            CredentialTypeDao
-              .update(updateCredentialType)
-              .map(Right(_)): ConnectionIO[Either[ManagementConsoleError, Unit]]
-        )
-      }
+    withCredentialType(updateCredentialType.id, institutionId) {
+      credentialType =>
+        if (credentialType.state != CredentialTypeState.Draft) {
+          connection.pure[Either[ManagementConsoleError, Unit]](
+            Left(
+              CredentialTypeUpdateIncorrectState(
+                credentialType.id,
+                credentialType.name,
+                credentialType.state
+              )
+            )
+          )
+        } else {
+          validateMustacheTemplate(
+            updateCredentialType.template,
+            updateCredentialType.fields
+          ).fold(
+            mustacheError =>
+              connection.pure[Either[ManagementConsoleError, Unit]](
+                Left(
+                  CredentialTypeIncorrectMustacheTemplate(
+                    credentialType.name,
+                    mustacheError.getMessage
+                  )
+                )
+              ),
+            _ =>
+              CredentialTypeDao
+                .update(updateCredentialType)
+                .map(Right(_)): ConnectionIO[
+                Either[ManagementConsoleError, Unit]
+              ]
+          )
+        }
     }
 
   def markAsArchived(
@@ -163,24 +210,41 @@ private final class CredentialTypeRepositoryImpl[F[_]: BracketThrow](xa: Transac
       }
     }
 
-  private def withCredentialType[A](credentialTypeId: CredentialTypeId, institutionId: ParticipantId)(
-      callback: CredentialType => ConnectionIO[Either[ManagementConsoleError, A]]
+  private def withCredentialType[A](
+      credentialTypeId: CredentialTypeId,
+      institutionId: ParticipantId
+  )(
+      callback: CredentialType => ConnectionIO[
+        Either[ManagementConsoleError, A]
+      ]
   ): F[Either[ManagementConsoleError, A]] =
     (for {
-      credentialTypeOption <- CredentialTypeDao.findCredentialType(credentialTypeId)
+      credentialTypeOption <- CredentialTypeDao.findCredentialType(
+        credentialTypeId
+      )
       result <- credentialTypeOption match {
         case None =>
-          connection.pure[Either[ManagementConsoleError, A]](Left(CredentialTypeDoesNotExist(credentialTypeId)))
+          connection.pure[Either[ManagementConsoleError, A]](
+            Left(CredentialTypeDoesNotExist(credentialTypeId))
+          )
         case Some(credentialType) =>
           if (credentialType.institution != institutionId)
             connection.pure[Either[ManagementConsoleError, A]](
-              Left(CredentialTypeDoesNotBelongToInstitution(credentialTypeId, institutionId))
+              Left(
+                CredentialTypeDoesNotBelongToInstitution(
+                  credentialTypeId,
+                  institutionId
+                )
+              )
             )
           else
             callback(credentialType)
       }
     } yield result)
-      .logSQLErrors(s"getting something with credential type id - $credentialTypeId", logger)
+      .logSQLErrors(
+        s"getting something with credential type id - $credentialTypeId",
+        logger
+      )
       .transact(xa)
 
   private def validateMustacheTemplate(
@@ -190,13 +254,17 @@ private final class CredentialTypeRepositoryImpl[F[_]: BracketThrow](xa: Transac
     Try(
       Mustache.INSTANCE.render(
         template,
-        ((name: String) => fields.find(_.name == name).map(_.name).get).asKotlin,
+        (
+            (name: String) => fields.find(_.name == name).map(_.name).get
+        ).asKotlin,
         true
       )
     ).toEither.left.map(thr => new MustacheParsingError(thr.getMessage))
   }
 
-  def find(credentialTypeId: CredentialTypeId): F[Option[CredentialTypeWithRequiredFields]] =
+  def find(
+      credentialTypeId: CredentialTypeId
+  ): F[Option[CredentialTypeWithRequiredFields]] =
     withRequiredFields(CredentialTypeDao.findCredentialType(credentialTypeId))
 
   def find(

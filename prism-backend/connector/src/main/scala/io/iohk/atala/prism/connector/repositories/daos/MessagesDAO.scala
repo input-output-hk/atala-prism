@@ -7,7 +7,12 @@ import doobie.{FC, Fragments}
 import doobie.implicits.legacy.instant._
 import doobie.util.update.Update
 import fs2.Stream
-import io.iohk.atala.prism.connector.model.{ConnectionId, CreateMessage, Message, MessageId}
+import io.iohk.atala.prism.connector.model.{
+  ConnectionId,
+  CreateMessage,
+  Message,
+  MessageId
+}
 import io.iohk.atala.prism.models.ParticipantId
 
 import java.time.Instant
@@ -22,7 +27,8 @@ object MessagesDAO {
   ): doobie.ConnectionIO[Unit] = {
     sql"""
          |INSERT INTO messages (id, connection, sender, recipient, received_at, content)
-         |VALUES ($id, $connection, $sender, $recipient, ${Instant.now()}, $content)""".stripMargin.update.run.void
+         |VALUES ($id, $connection, $sender, $recipient, ${Instant
+      .now()}, $content)""".stripMargin.update.run.void
   }
 
   def insert(
@@ -50,7 +56,9 @@ object MessagesDAO {
        """.stripMargin.query[Message].option
   }
 
-  def getIdsOfAlreadyExistingMessages(ids: NonEmptyList[MessageId]): doobie.ConnectionIO[List[MessageId]] = {
+  def getIdsOfAlreadyExistingMessages(
+      ids: NonEmptyList[MessageId]
+  ): doobie.ConnectionIO[List[MessageId]] = {
     (fr"""
          |SELECT id
          |FROM messages
@@ -106,7 +114,9 @@ object MessagesDAO {
        """.stripMargin.query[Message].to[List]
   }
 
-  def deleteConnectionMessages(connectionId: ConnectionId): doobie.ConnectionIO[Unit] = {
+  def deleteConnectionMessages(
+      connectionId: ConnectionId
+  ): doobie.ConnectionIO[Unit] = {
     sql"""
          |DELETE FROM messages
          |WHERE connection = $connectionId

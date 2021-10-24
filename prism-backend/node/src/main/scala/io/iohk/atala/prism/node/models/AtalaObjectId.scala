@@ -13,12 +13,16 @@ case class AtalaObjectId(value: Vector[Byte]) {
 
 object AtalaObjectId {
 
-  implicit val atalaObjectIdLoggable: DictLoggable[AtalaObjectId] = new DictLoggable[AtalaObjectId] {
-    override def fields[I, V, R, S](a: AtalaObjectId, i: I)(implicit r: LogRenderer[I, V, R, S]): R =
-      r.addString("AtalaObjectId", a.hexValue, i)
+  implicit val atalaObjectIdLoggable: DictLoggable[AtalaObjectId] =
+    new DictLoggable[AtalaObjectId] {
+      override def fields[I, V, R, S](a: AtalaObjectId, i: I)(implicit
+          r: LogRenderer[I, V, R, S]
+      ): R =
+        r.addString("AtalaObjectId", a.hexValue, i)
 
-    override def logShow(a: AtalaObjectId): String = s"AtalaObjectId{${a.hexValue}"
-  }
+      override def logShow(a: AtalaObjectId): String =
+        s"AtalaObjectId{${a.hexValue}"
+    }
 
   def apply(value: Vector[Byte]): AtalaObjectId = {
     // temporary replace for require(value.length == SHA256Digest.getBYTE_LENGTH)

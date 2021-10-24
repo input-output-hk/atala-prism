@@ -21,7 +21,9 @@ object EncodedSizes {
       masterPublicKey1 = EC.generateKeyPair().getPublicKey
       masterPublicKey2 = EC.generateKeyPair().getPublicKey
       masterPublicKey3 = EC.generateKeyPair().getPublicKey
-      did = createDID(List(masterPublicKey1, masterPublicKey2, masterPublicKey3))
+      did = createDID(
+        List(masterPublicKey1, masterPublicKey2, masterPublicKey3)
+      )
     } yield (did, did.length)
 
     val sortedData = data.sortBy(_._2)
@@ -51,12 +53,16 @@ object EncodedSizes {
     val createDidOp = node_models.CreateDIDOperation(
       didData = Some(
         node_models.CreateDIDOperation.DIDCreationData(
-          publicKeys = masterPublicKeys.zipWithIndex map { case (k, i) => keyElement(k, i) }
+          publicKeys = masterPublicKeys.zipWithIndex map { case (k, i) =>
+            keyElement(k, i)
+          }
         )
       )
     )
 
-    val atalaOp = node_models.AtalaOperation(operation = node_models.AtalaOperation.Operation.CreateDid(createDidOp))
+    val atalaOp = node_models.AtalaOperation(operation =
+      node_models.AtalaOperation.Operation.CreateDid(createDidOp)
+    )
     val operationBytes = atalaOp.toByteArray
     val operationHash = Sha256.compute(operationBytes)
     val didSuffix: DidSuffix = DidSuffix.fromDigest(operationHash)

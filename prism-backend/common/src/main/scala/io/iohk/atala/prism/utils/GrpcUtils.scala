@@ -4,7 +4,13 @@ import java.util.concurrent.TimeUnit
 import cats.effect.{Resource, Sync}
 import com.typesafe.config.Config
 import io.grpc.netty.{GrpcSslContexts, NettyServerBuilder}
-import io.grpc.{Channel, ManagedChannelBuilder, Server, ServerInterceptor, ServerServiceDefinition}
+import io.grpc.{
+  Channel,
+  ManagedChannelBuilder,
+  Server,
+  ServerInterceptor,
+  ServerServiceDefinition
+}
 import io.grpc.protobuf.services.ProtoReflectionService
 
 import java.io.File
@@ -16,7 +22,9 @@ object GrpcUtils {
   case class GrpcConfig(port: Int)
 
   object GrpcConfig {
-    def apply(config: Config): GrpcConfig = GrpcConfig(config.getInt("grpc.port"))
+    def apply(config: Config): GrpcConfig = GrpcConfig(
+      config.getInt("grpc.port")
+    )
   }
 
   case class SslConfig(
@@ -28,15 +36,22 @@ object GrpcUtils {
   object SslConfig {
     def apply(config: Config): SslConfig =
       SslConfig(
-        serverCertificateLocation = config.getString("ssl.serverCertificateLocation"),
-        serverCertificatePrivateKeyLocation = config.getString("ssl.serverCertificatePrivateKeyLocation"),
-        serverTrustChainLocation = config.getString("ssl.serverTrustChainLocation")
+        serverCertificateLocation =
+          config.getString("ssl.serverCertificateLocation"),
+        serverCertificatePrivateKeyLocation =
+          config.getString("ssl.serverCertificatePrivateKeyLocation"),
+        serverTrustChainLocation =
+          config.getString("ssl.serverTrustChainLocation")
       )
   }
 
   /** Create a plainttext stub with a given host and port.
     */
-  def createPlaintextStub[S <: AbstractStub[S]](host: String, port: Int, stub: Channel => S): S = {
+  def createPlaintextStub[S <: AbstractStub[S]](
+      host: String,
+      port: Int,
+      stub: Channel => S
+  ): S = {
     val channel = ManagedChannelBuilder
       .forAddress(host, port)
       .usePlaintext()
@@ -48,8 +63,8 @@ object GrpcUtils {
   /** Wrap a [[Server]] into a bracketed resource. The server stops when the
     * resource is released. With the following scenarios:
     *   - Server is shut down when there aren't any requests left.
-    *   - We wait for 30 seconds to allow finish pending requests and
-    *     then force quit the server.
+    *   - We wait for 30 seconds to allow finish pending requests and then force
+    *     quit the server.
     */
   def createGrpcServer[F[_]: Sync](
       grpcConfig: GrpcConfig,

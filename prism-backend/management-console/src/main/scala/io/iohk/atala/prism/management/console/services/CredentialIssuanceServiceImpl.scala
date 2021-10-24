@@ -10,9 +10,15 @@ import cats.syntax.flatMap._
 import derevo.derive
 import derevo.tagless.applyK
 import io.iohk.atala.prism.management.console.errors.ManagementConsoleError
-import io.iohk.atala.prism.management.console.models.{CredentialIssuance, ParticipantId}
+import io.iohk.atala.prism.management.console.models.{
+  CredentialIssuance,
+  ParticipantId
+}
 import io.iohk.atala.prism.management.console.repositories.CredentialIssuancesRepository
-import io.iohk.atala.prism.management.console.repositories.CredentialIssuancesRepository.{CreateCredentialIssuance, _}
+import io.iohk.atala.prism.management.console.repositories.CredentialIssuancesRepository.{
+  CreateCredentialIssuance,
+  _
+}
 import tofu.higherKind.Mid
 import tofu.logging.{Logs, ServiceLogging}
 import tofu.syntax.logging._
@@ -43,31 +49,42 @@ object CredentialIssuanceService {
     for {
       serviceLogs <- logs.service[CredentialIssuanceService[F]]
     } yield {
-      implicit val implicitLogs: ServiceLogging[F, CredentialIssuanceService[F]] = serviceLogs
-      val logs: CredentialIssuanceService[Mid[F, *]] = new CredentialIssuanceServiceLogs[F]
+      implicit val implicitLogs
+          : ServiceLogging[F, CredentialIssuanceService[F]] = serviceLogs
+      val logs: CredentialIssuanceService[Mid[F, *]] =
+        new CredentialIssuanceServiceLogs[F]
       val mid = logs
-      mid attach new CredentialIssuanceServiceImpl[F](credentialIssuancesRepository)
+      mid attach new CredentialIssuanceServiceImpl[F](
+        credentialIssuancesRepository
+      )
     }
 
   def unsafe[F[_]: BracketThrow, R[_]: Comonad](
       credentialIssuancesRepository: CredentialIssuancesRepository[F],
       logs: Logs[R, F]
-  ): CredentialIssuanceService[F] = CredentialIssuanceService(credentialIssuancesRepository, logs).extract
+  ): CredentialIssuanceService[F] =
+    CredentialIssuanceService(credentialIssuancesRepository, logs).extract
 
   def makeResource[F[_]: BracketThrow, R[_]: Monad](
       credentialIssuancesRepository: CredentialIssuancesRepository[F],
       logs: Logs[R, F]
   ): Resource[R, CredentialIssuanceService[F]] =
-    Resource.eval(CredentialIssuanceService(credentialIssuancesRepository, logs))
+    Resource.eval(
+      CredentialIssuanceService(credentialIssuancesRepository, logs)
+    )
 }
 
-private final class CredentialIssuanceServiceImpl[F[_]](credentialIssuancesRepository: CredentialIssuancesRepository[F])
-    extends CredentialIssuanceService[F] {
+private final class CredentialIssuanceServiceImpl[F[_]](
+    credentialIssuancesRepository: CredentialIssuancesRepository[F]
+) extends CredentialIssuanceService[F] {
   override def createCredentialIssuance(
       participantId: ParticipantId,
       createCredentialIssuance: CreateCredentialIssuance
   ): F[Either[ManagementConsoleError, CredentialIssuance.Id]] =
-    credentialIssuancesRepository.create(participantId, createCredentialIssuance)
+    credentialIssuancesRepository.create(
+      participantId,
+      createCredentialIssuance
+    )
 
   override def getCredentialIssuance(
       participantId: ParticipantId,
@@ -88,8 +105,9 @@ private final class CredentialIssuanceServiceImpl[F[_]](credentialIssuancesRepos
     )
 }
 
-private final class CredentialIssuanceServiceLogs[F[_]: ServiceLogging[*[_], CredentialIssuanceService[F]]: MonadThrow]
-    extends CredentialIssuanceService[Mid[F, *]] {
+private final class CredentialIssuanceServiceLogs[
+    F[_]: ServiceLogging[*[_], CredentialIssuanceService[F]]: MonadThrow
+] extends CredentialIssuanceService[Mid[F, *]] {
   override def createCredentialIssuance(
       participantId: ParticipantId,
       createCredentialIssuance: CreateCredentialIssuance
@@ -98,11 +116,16 @@ private final class CredentialIssuanceServiceLogs[F[_]: ServiceLogging[*[_], Cre
       info"creating credential issuance $participantId" *> in
         .flatTap(
           _.fold(
-            e => error"encountered an error while creating credential issuance $e",
+            e =>
+              error"encountered an error while creating credential issuance $e",
             _ => info"creating credential issuance - successfully done"
           )
         )
-        .onError(errorCause"encountered an error while creating credential issuance" (_))
+        .onError(
+          errorCause"encountered an error while creating credential issuance" (
+            _
+          )
+        )
 
   override def getCredentialIssuance(
       participantId: ParticipantId,
@@ -121,9 +144,14 @@ private final class CredentialIssuanceServiceLogs[F[_]: ServiceLogging[*[_], Cre
       info"creating bulk credential issuance $participantId" *> in
         .flatTap(
           _.fold(
-            e => error"encountered an error while creating bulk credential issuance  $e",
+            e =>
+              error"encountered an error while creating bulk credential issuance  $e",
             _ => info"creating bulk credential issuance - successfully done"
           )
         )
-        .onError(errorCause"encountered an error while creating bulk credential issuance" (_))
+        .onError(
+          errorCause"encountered an error while creating bulk credential issuance" (
+            _
+          )
+        )
 }

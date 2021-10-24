@@ -4,10 +4,16 @@ import io.grpc.ServerServiceDefinition
 import io.iohk.atala.prism.auth.SignedRpcRequest
 import io.iohk.atala.prism.auth.grpc.GrpcAuthenticationHeaderParser
 import io.iohk.atala.prism.connector.ConnectorAuthenticator
-import io.iohk.atala.prism.connector.repositories.{ParticipantsRepository, RequestNoncesRepository}
+import io.iohk.atala.prism.connector.repositories.{
+  ParticipantsRepository,
+  RequestNoncesRepository
+}
 import io.iohk.atala.prism.connector.DataPreparation
 import io.iohk.atala.prism.protos.connector_api.GetCurrentUserRequest
-import io.iohk.atala.prism.protos.cviews_api.{CredentialViewsServiceGrpc, GetCredentialViewTemplatesRequest}
+import io.iohk.atala.prism.protos.cviews_api.{
+  CredentialViewsServiceGrpc,
+  GetCredentialViewTemplatesRequest
+}
 import io.iohk.atala.prism.view.HtmlViewImage.imageBase64
 import io.iohk.atala.prism.{DIDUtil, RpcSpecBase}
 import io.iohk.atala.prism.utils.IOUtils._
@@ -20,9 +26,12 @@ class CredentialViewsServiceSpec extends RpcSpecBase with DIDUtil {
     new CredentialViewsServiceGrpc.CredentialViewsServiceBlockingStub(_, _)
   )
 
-  private lazy val participantsRepository = ParticipantsRepository.unsafe(dbLiftedToTraceIdIO, testLogs)
-  private lazy val requestNoncesRepository = RequestNoncesRepository.unsafe(dbLiftedToTraceIdIO, testLogs)
-  protected lazy val nodeMock = mock[io.iohk.atala.prism.protos.node_api.NodeServiceGrpc.NodeService]
+  private lazy val participantsRepository =
+    ParticipantsRepository.unsafe(dbLiftedToTraceIdIO, testLogs)
+  private lazy val requestNoncesRepository =
+    RequestNoncesRepository.unsafe(dbLiftedToTraceIdIO, testLogs)
+  protected lazy val nodeMock =
+    mock[io.iohk.atala.prism.protos.node_api.NodeServiceGrpc.NodeService]
   private lazy val authenticator = new ConnectorAuthenticator(
     participantsRepository,
     requestNoncesRepository,
@@ -35,7 +44,12 @@ class CredentialViewsServiceSpec extends RpcSpecBase with DIDUtil {
     .asInstanceOf[ch.qos.logback.classic.Logger]
 
   override def services: Seq[ServerServiceDefinition] =
-    Seq(CredentialViewsServiceGrpc.bindService(new CredentialViewsService(authenticator), executionContext))
+    Seq(
+      CredentialViewsServiceGrpc.bindService(
+        new CredentialViewsService(authenticator),
+        executionContext
+      )
+    )
 
   override def beforeEach(): Unit = {
     super.beforeEach()
@@ -54,11 +68,18 @@ class CredentialViewsServiceSpec extends RpcSpecBase with DIDUtil {
 
     "return the predefined templates" in {
       val (keyPair, did) = createDid
-      val _ = DataPreparation.createIssuer("Great Issuer", publicKey = Some(keyPair.getPublicKey), did = Some(did))
-      val rpcRequest = SignedRpcRequest.generate(keyPair, did, GetCurrentUserRequest())
+      val _ = DataPreparation.createIssuer(
+        "Great Issuer",
+        publicKey = Some(keyPair.getPublicKey),
+        did = Some(did)
+      )
+      val rpcRequest =
+        SignedRpcRequest.generate(keyPair, did, GetCurrentUserRequest())
 
       usingApiAs(rpcRequest) { serviceStub =>
-        val response = serviceStub.getCredentialViewTemplates(GetCredentialViewTemplatesRequest())
+        val response = serviceStub.getCredentialViewTemplates(
+          GetCredentialViewTemplatesRequest()
+        )
 
         val templates = response.templates
         templates.length mustBe 10
@@ -118,9 +139,11 @@ class CredentialViewsServiceSpec extends RpcSpecBase with DIDUtil {
           template.logoImageMimeType mustBe expectedTemplateLogoMimeTypes(i)
 
           val expectedHtmlTemplateName = expectedTemplateViews(i)
-          val expectedHtmlTemplate = readResource(s"templates/${expectedTemplateViews(i)}")
+          val expectedHtmlTemplate =
+            readResource(s"templates/${expectedTemplateViews(i)}")
           if (template.htmlTemplate != expectedHtmlTemplate) {
-            val actualTemplateFile = saveTemplate(expectedHtmlTemplateName, template.htmlTemplate)
+            val actualTemplateFile =
+              saveTemplate(expectedHtmlTemplateName, template.htmlTemplate)
             fail(
               s"HTML of template ${template.name} is different from the expected one at $expectedHtmlTemplateName. A temporary file with the actual contents was stored at ${actualTemplateFile.getAbsolutePath}."
             )
@@ -130,7 +153,10 @@ class CredentialViewsServiceSpec extends RpcSpecBase with DIDUtil {
     }
   }
 
-  private def saveTemplate(templateName: String, templateContent: String): File = {
+  private def saveTemplate(
+      templateName: String,
+      templateContent: String
+  ): File = {
     val tempFile = File.createTempFile("test-output-", s"-$templateName")
     new PrintWriter(tempFile) {
       try {
@@ -146,7 +172,8 @@ class CredentialViewsServiceSpec extends RpcSpecBase with DIDUtil {
     try {
       scala.io.Source.fromResource(s"cviews/$resource").mkString
     } catch {
-      case _: Throwable => throw new RuntimeException(s"Resource $resource not found")
+      case _: Throwable =>
+        throw new RuntimeException(s"Resource $resource not found")
     }
   }
 }

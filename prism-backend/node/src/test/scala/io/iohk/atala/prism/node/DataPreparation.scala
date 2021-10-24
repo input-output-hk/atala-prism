@@ -11,8 +11,18 @@ import io.iohk.atala.prism.crypto.{MerkleRoot, Sha256, Sha256Digest}
 import io.iohk.atala.prism.logging.TraceId
 import io.iohk.atala.prism.logging.TraceId.IOWithTraceIdContext
 import io.iohk.atala.prism.protos.models.TimestampInfo
-import io.iohk.atala.prism.models.{BlockInfo, DidSuffix, Ledger, TransactionId, TransactionInfo, TransactionStatus}
-import io.iohk.atala.prism.node.cardano.{LAST_SYNCED_BLOCK_NO, LAST_SYNCED_BLOCK_TIMESTAMP}
+import io.iohk.atala.prism.models.{
+  BlockInfo,
+  DidSuffix,
+  Ledger,
+  TransactionId,
+  TransactionInfo,
+  TransactionStatus
+}
+import io.iohk.atala.prism.node.cardano.{
+  LAST_SYNCED_BLOCK_NO,
+  LAST_SYNCED_BLOCK_TIMESTAMP
+}
 import io.iohk.atala.prism.node.errors.NodeError
 import io.iohk.atala.prism.node.grpc.ProtoCodecs
 import io.iohk.atala.prism.node.models.{
@@ -24,8 +34,15 @@ import io.iohk.atala.prism.node.models.{
   DIDData,
   DIDPublicKey
 }
-import io.iohk.atala.prism.node.models.nodeState.{DIDDataState, DIDPublicKeyState, LedgerData}
-import io.iohk.atala.prism.node.operations.CreateDIDOperationSpec.{issuingEcKeyData, masterEcKeyData}
+import io.iohk.atala.prism.node.models.nodeState.{
+  DIDDataState,
+  DIDPublicKeyState,
+  LedgerData
+}
+import io.iohk.atala.prism.node.operations.CreateDIDOperationSpec.{
+  issuingEcKeyData,
+  masterEcKeyData
+}
 import io.iohk.atala.prism.node.repositories.daos.AtalaObjectsDAO.AtalaObjectCreateData
 import io.iohk.atala.prism.node.repositories.daos.CredentialBatchesDAO.CreateCredentialBatchData
 import io.iohk.atala.prism.node.repositories.daos.{
@@ -38,7 +55,11 @@ import io.iohk.atala.prism.node.repositories.daos.{
   ProtocolVersionsDAO,
   PublicKeysDAO
 }
-import io.iohk.atala.prism.node.services.{BlockProcessingServiceSpec, ObjectManagementService, SubmissionService}
+import io.iohk.atala.prism.node.services.{
+  BlockProcessingServiceSpec,
+  ObjectManagementService,
+  SubmissionService
+}
 import org.scalatest.OptionValues._
 import io.iohk.atala.prism.protos.{node_api, node_internal, node_models}
 import io.iohk.atala.prism.protos.node_models.SignedAtalaOperation
@@ -53,7 +74,9 @@ import scala.concurrent.{ExecutionContext, Future}
 object DataPreparation {
   val dummyTimestampInfo: TimestampInfo = new TimestampInfo(0, 1, 0)
   lazy val dummyLedgerData: LedgerData = LedgerData(
-    TransactionId.from(Array.fill[Byte](TransactionId.config.size.toBytes.toInt)(0)).value,
+    TransactionId
+      .from(Array.fill[Byte](TransactionId.config.size.toBytes.toInt)(0))
+      .value,
     Ledger.InMemory,
     dummyTimestampInfo
   )
@@ -67,7 +90,9 @@ object DataPreparation {
                 "master",
                 node_models.KeyUsage.MASTER_KEY,
                 Some(
-                  node_models.LedgerData(timestampInfo = Some(ProtoCodecs.toTimeStampInfoProto(dummyTimestampInfo)))
+                  node_models.LedgerData(timestampInfo =
+                    Some(ProtoCodecs.toTimeStampInfoProto(dummyTimestampInfo))
+                  )
                 ),
                 None,
                 node_models.PublicKey.KeyData.EcKeyData(masterEcKeyData)
@@ -77,7 +102,9 @@ object DataPreparation {
                   "issuing",
                   node_models.KeyUsage.ISSUING_KEY,
                   Some(
-                    node_models.LedgerData(timestampInfo = Some(ProtoCodecs.toTimeStampInfoProto(dummyTimestampInfo)))
+                    node_models.LedgerData(timestampInfo =
+                      Some(ProtoCodecs.toTimeStampInfoProto(dummyTimestampInfo))
+                    )
                   ),
                   None,
                   node_models.PublicKey.KeyData.EcKeyData(issuingEcKeyData)
@@ -89,14 +116,21 @@ object DataPreparation {
     )
   )
 
-  def publishSingleOperationAndFlush(signedAtalaOperation: SignedAtalaOperation)(implicit
+  def publishSingleOperationAndFlush(
+      signedAtalaOperation: SignedAtalaOperation
+  )(implicit
       objectManagementService: ObjectManagementService,
       submissionService: SubmissionService[IOWithTraceIdContext],
       executionContext: ExecutionContext
   ): Future[Either[NodeError, AtalaOperationId]] = {
     for {
-      atalaOperationIdE <- objectManagementService.scheduleSingleAtalaOperation(signedAtalaOperation)
-      _ <- submissionService.submitReceivedObjects().run(TraceId.generateYOLO).unsafeToFuture()
+      atalaOperationIdE <- objectManagementService.scheduleSingleAtalaOperation(
+        signedAtalaOperation
+      )
+      _ <- submissionService
+        .submitReceivedObjects()
+        .run(TraceId.generateYOLO)
+        .unsafeToFuture()
     } yield atalaOperationIdE
   }
 
@@ -107,21 +141,33 @@ object DataPreparation {
   ): Future[List[Either[NodeError, AtalaOperationId]]] = {
     for {
       ids <- objectManagementService.scheduleAtalaOperations(ops: _*)
-      _ <- submissionService.submitReceivedObjects().run(TraceId.generateYOLO).unsafeToFuture()
+      _ <- submissionService
+        .submitReceivedObjects()
+        .run(TraceId.generateYOLO)
+        .unsafeToFuture()
     } yield ids
   }
 
   val dummyTime: TimestampInfo = new TimestampInfo(0, 1, 0)
 
-  val dummyTimestamp: Instant = Instant.ofEpochMilli(dummyTime.getAtalaBlockTimestamp)
+  val dummyTimestamp: Instant =
+    Instant.ofEpochMilli(dummyTime.getAtalaBlockTimestamp)
   val dummyABSequenceNumber: Int = dummyTime.getAtalaBlockSequenceNumber
   val dummyTransactionInfo: TransactionInfo =
     TransactionInfo(
-      transactionId = TransactionId.from(Sha256.compute("id".getBytes).getValue).value,
+      transactionId =
+        TransactionId.from(Sha256.compute("id".getBytes).getValue).value,
       ledger = Ledger.InMemory,
-      block = Some(BlockInfo(number = 1, timestamp = dummyTimestamp, index = dummyABSequenceNumber))
+      block = Some(
+        BlockInfo(
+          number = 1,
+          timestamp = dummyTimestamp,
+          index = dummyABSequenceNumber
+        )
+      )
     )
-  val dummyPublicationInfo: PublicationInfo = PublicationInfo(dummyTransactionInfo, TransactionStatus.Pending)
+  val dummyPublicationInfo: PublicationInfo =
+    PublicationInfo(dummyTransactionInfo, TransactionStatus.Pending)
 
   // ***************************************
   // DIDs and keys
@@ -132,8 +178,14 @@ object DataPreparation {
       ledgerData: LedgerData
   )(implicit xa: Transactor[IO]): Unit = {
     val query = for {
-      _ <- DIDDataDAO.insert(didData.didSuffix, didData.lastOperation, ledgerData)
-      _ <- didData.keys.traverse((key: DIDPublicKey) => PublicKeysDAO.insert(key, ledgerData))
+      _ <- DIDDataDAO.insert(
+        didData.didSuffix,
+        didData.lastOperation,
+        ledgerData
+      )
+      _ <- didData.keys.traverse((key: DIDPublicKey) =>
+        PublicKeysDAO.insert(key, ledgerData)
+      )
     } yield ()
 
     query
@@ -141,7 +193,9 @@ object DataPreparation {
       .unsafeRunSync()
   }
 
-  def findByDidSuffix(didSuffix: DidSuffix)(implicit xa: Transactor[IO]): DIDDataState = {
+  def findByDidSuffix(
+      didSuffix: DidSuffix
+  )(implicit xa: Transactor[IO]): DIDDataState = {
     val query = for {
       maybeLastOperation <- DIDDataDAO.getLastOperation(didSuffix)
       keys <- PublicKeysDAO.findAll(didSuffix)
@@ -152,7 +206,9 @@ object DataPreparation {
       .unsafeRunSync()
   }
 
-  def findKey(didSuffix: DidSuffix, keyId: String)(implicit xa: Transactor[IO]): Option[DIDPublicKeyState] = {
+  def findKey(didSuffix: DidSuffix, keyId: String)(implicit
+      xa: Transactor[IO]
+  ): Option[DIDPublicKeyState] = {
     PublicKeysDAO
       .find(didSuffix, keyId)
       .transact(xa)
@@ -215,7 +271,8 @@ object DataPreparation {
   // ***************************************
 
   def createBlock(
-      signedOperation: node_models.SignedAtalaOperation = BlockProcessingServiceSpec.signedCreateDidOperation
+      signedOperation: node_models.SignedAtalaOperation =
+        BlockProcessingServiceSpec.signedCreateDidOperation
   ): node_internal.AtalaBlock = {
     node_internal.AtalaBlock(version = "1.0", operations = Seq(signedOperation))
   }
@@ -241,11 +298,20 @@ object DataPreparation {
     ()
   }
 
-  def updateLastSyncedBlock(blockNo: Int, timestamp: Instant)(implicit xa: Transactor[IO]): Unit = {
+  def updateLastSyncedBlock(blockNo: Int, timestamp: Instant)(implicit
+      xa: Transactor[IO]
+  ): Unit = {
     val query = for {
-      _ <- KeyValuesDAO.upsert(KeyValuesDAO.KeyValue(LAST_SYNCED_BLOCK_NO, Some(blockNo.toString)))
+      _ <- KeyValuesDAO.upsert(
+        KeyValuesDAO.KeyValue(LAST_SYNCED_BLOCK_NO, Some(blockNo.toString))
+      )
       _ <-
-        KeyValuesDAO.upsert(KeyValuesDAO.KeyValue(LAST_SYNCED_BLOCK_TIMESTAMP, Some(timestamp.toEpochMilli.toString)))
+        KeyValuesDAO.upsert(
+          KeyValuesDAO.KeyValue(
+            LAST_SYNCED_BLOCK_TIMESTAMP,
+            Some(timestamp.toEpochMilli.toString)
+          )
+        )
     } yield ()
 
     query
@@ -269,7 +335,9 @@ object DataPreparation {
     val atalaOperationData = atalaOperationIds.map((_, objId, status))
 
     val query = for {
-      insertObject <- AtalaObjectsDAO.insert(AtalaObjectCreateData(objId, objBytes))
+      insertObject <- AtalaObjectsDAO.insert(
+        AtalaObjectCreateData(objId, objBytes)
+      )
       insertOperations <- AtalaOperationsDAO.insertMany(atalaOperationData)
     } yield (insertObject, insertOperations)
 
@@ -279,7 +347,9 @@ object DataPreparation {
     (objId, atalaOperationIds)
   }
 
-  def getOperationInfo(atalaOperationId: AtalaOperationId)(implicit xa: Transactor[IO]): Option[AtalaOperationInfo] = {
+  def getOperationInfo(
+      atalaOperationId: AtalaOperationId
+  )(implicit xa: Transactor[IO]): Option[AtalaOperationInfo] = {
     AtalaOperationsDAO
       .getAtalaOperationInfo(atalaOperationId)
       .transact(xa)
@@ -313,7 +383,8 @@ object DataPreparation {
       .flushOperationsBuffer(node_api.FlushOperationsBufferRequest())
 
     waitOperations.foreach { operationId =>
-      val operationIdHex = AtalaOperationId.fromVectorUnsafe(operationId.toByteArray.toVector)
+      val operationIdHex =
+        AtalaOperationId.fromVectorUnsafe(operationId.toByteArray.toVector)
       while (!isOperationConfirmed(nodeServiceStub, operationId)) {
         println(s"Waiting until operation [$operationIdHex] is applied...")
       }
@@ -333,12 +404,15 @@ object DataPreparation {
         .operationStatus
       status.isConfirmedAndApplied || status.isConfirmedAndRejected
     } catch {
-      case err: io.grpc.StatusRuntimeException if err.getMessage.contains("Unknown state of the operation") =>
+      case err: io.grpc.StatusRuntimeException
+          if err.getMessage.contains("Unknown state of the operation") =>
         false
     }
   }
 
-  def insertTrustedProposer(proposerDIDSuffix: DidSuffix)(implicit xa: Transactor[IO]) = {
+  def insertTrustedProposer(
+      proposerDIDSuffix: DidSuffix
+  )(implicit xa: Transactor[IO]) = {
     ProtocolVersionsDAO
       .insertTrustedProposer(proposerDIDSuffix)
       .transact(xa)

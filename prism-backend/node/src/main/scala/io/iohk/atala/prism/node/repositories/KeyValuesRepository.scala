@@ -25,11 +25,13 @@ trait KeyValuesRepository[F[_]] {
     */
   def upsert(keyValue: KeyValue): F[Unit]
 
-  /** Updates many values for the given keys atomically, inserting non-existent keys.
+  /** Updates many values for the given keys atomically, inserting non-existent
+    * keys.
     */
   def upsertMany(keyValues: List[KeyValue]): F[Unit]
 
-  /** Gets the value for the given key, set to `None` when non-existent or `NULL` in the database.
+  /** Gets the value for the given key, set to `None` when non-existent or
+    * `NULL` in the database.
     */
   def get(key: String): F[KeyValue]
 
@@ -43,8 +45,10 @@ object KeyValuesRepository {
     for {
       serviceLogs <- logs.service[KeyValuesRepository[F]]
     } yield {
-      implicit val implicitLogs: ServiceLogging[F, KeyValuesRepository[F]] = serviceLogs
-      val metrics: KeyValuesRepository[Mid[F, *]] = new KeyValuesRepositoryMetrics[F]()
+      implicit val implicitLogs: ServiceLogging[F, KeyValuesRepository[F]] =
+        serviceLogs
+      val metrics: KeyValuesRepository[Mid[F, *]] =
+        new KeyValuesRepositoryMetrics[F]()
       val logs: KeyValuesRepository[Mid[F, *]] = new KeyValuesRepositoryLogs[F]
       val mid = metrics |+| logs
       mid attach new KeyValuesRepositoryImpl[F](transactor)
@@ -56,7 +60,9 @@ object KeyValuesRepository {
   ): KeyValuesRepository[F] = KeyValuesRepository(transactor, logs).extract
 }
 
-private final class KeyValuesRepositoryImpl[F[_]: BracketThrow](xa: Transactor[F]) extends KeyValuesRepository[F] {
+private final class KeyValuesRepositoryImpl[F[_]: BracketThrow](
+    xa: Transactor[F]
+) extends KeyValuesRepository[F] {
 
   val logger: Logger = LoggerFactory.getLogger(getClass)
 
@@ -69,7 +75,8 @@ private final class KeyValuesRepositoryImpl[F[_]: BracketThrow](xa: Transactor[F
       .transact(xa)
   }
 
-  /** Updates many values for the given keys atomically, inserting non-existent keys.
+  /** Updates many values for the given keys atomically, inserting non-existent
+    * keys.
     */
   def upsertMany(keyValues: List[KeyValue]): F[Unit] = {
     keyValues
@@ -80,7 +87,8 @@ private final class KeyValuesRepositoryImpl[F[_]: BracketThrow](xa: Transactor[F
       .void
   }
 
-  /** Gets the value for the given key, set to `None` when non-existent or `NULL` in the database.
+  /** Gets the value for the given key, set to `None` when non-existent or
+    * `NULL` in the database.
     */
   def get(key: String): F[KeyValue] = {
     KeyValuesDAO

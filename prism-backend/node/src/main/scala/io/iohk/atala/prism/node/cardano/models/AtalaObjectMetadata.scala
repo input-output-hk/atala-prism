@@ -27,7 +27,9 @@ object AtalaObjectMetadata {
   private val STRING_TYPE = "string"
   private val BYTES_TYPE = "bytes"
 
-  def fromTransactionMetadata(metadata: TransactionMetadata): Option[node_internal.AtalaObject] = {
+  def fromTransactionMetadata(
+      metadata: TransactionMetadata
+  ): Option[node_internal.AtalaObject] = {
     val prismMetadata = metadata.json.hcursor
       .downField(METADATA_PRISM_INDEX.toString)
 
@@ -40,7 +42,9 @@ object AtalaObjectMetadata {
       .flatMap(_ => fromTransactionMetadataV1(prismMetadata))
   }
 
-  private def fromTransactionMetadataV1(prismMetadata: ACursor): Option[node_internal.AtalaObject] = {
+  private def fromTransactionMetadataV1(
+      prismMetadata: ACursor
+  ): Option[node_internal.AtalaObject] = {
     val bytes = prismMetadata
       .downField(CONTENT_KEY)
       .focus
@@ -63,7 +67,9 @@ object AtalaObjectMetadata {
       .getOrElse(Array())
   }
 
-  def toTransactionMetadata(atalaObject: node_internal.AtalaObject): TransactionMetadata = {
+  def toTransactionMetadata(
+      atalaObject: node_internal.AtalaObject
+  ): TransactionMetadata = {
     TransactionMetadata(
       Json.obj(
         METADATA_PRISM_INDEX.toString -> Json.obj(
@@ -78,7 +84,13 @@ object AtalaObjectMetadata {
                 LIST_TYPE -> Json.arr(
                   atalaObject.toByteArray
                     .grouped(BYTE_STRING_LIMIT)
-                    .map(bytes => Json.obj(BYTES_TYPE -> Json.fromString(BytesOps.bytesToHex(bytes))))
+                    .map(bytes =>
+                      Json.obj(
+                        BYTES_TYPE -> Json.fromString(
+                          BytesOps.bytesToHex(bytes)
+                        )
+                      )
+                    )
                     .toSeq: _*
                 )
               )

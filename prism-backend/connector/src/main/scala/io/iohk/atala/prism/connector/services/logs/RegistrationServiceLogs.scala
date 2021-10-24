@@ -14,21 +14,29 @@ import tofu.higherKind.Mid
 import tofu.logging.ServiceLogging
 import tofu.syntax.logging._
 
-private[services] class RegistrationServiceLogs[F[_]: ServiceLogging[*[_], RegistrationService[F]]: MonadThrow]
-    extends RegistrationService[Mid[F, *]] {
+private[services] class RegistrationServiceLogs[
+    F[_]: ServiceLogging[*[_], RegistrationService[F]]: MonadThrow
+] extends RegistrationService[Mid[F, *]] {
   override def register(
       tpe: ParticipantType,
       name: String,
       logo: ParticipantLogo,
       didOrOperation: Either[PrismDid, SignedAtalaOperation]
-  ): Mid[F, Either[RegisterParticipantError, RegistrationService.RegistrationResult]] =
+  ): Mid[F, Either[
+    RegisterParticipantError,
+    RegistrationService.RegistrationResult
+  ]] =
     in =>
       info"registering participant $name " *> in
         .flatTap(
           _.fold(
-            er => error"Encountered an error while registering participant ${er.unify: ConnectorError}",
-            res => info"registering participant - successfully done ${res.did.getSuffix}"
+            er =>
+              error"Encountered an error while registering participant ${er.unify: ConnectorError}",
+            res =>
+              info"registering participant - successfully done ${res.did.getSuffix}"
           )
         )
-        .onError(errorCause"Encountered an error while registering participant" (_))
+        .onError(
+          errorCause"Encountered an error while registering participant" (_)
+        )
 }

@@ -12,7 +12,10 @@ import io.iohk.atala.prism.node.models._
 import io.iohk.atala.prism.node.operations.ProtocolVersionUpdateOperationSpec._
 import io.iohk.atala.prism.node.operations.StateError._
 import io.iohk.atala.prism.node.repositories.KeyValuesRepository
-import io.iohk.atala.prism.node.repositories.daos.{ProtocolVersionsDAO, PublicKeysDAO}
+import io.iohk.atala.prism.node.repositories.daos.{
+  ProtocolVersionsDAO,
+  PublicKeysDAO
+}
 import io.iohk.atala.prism.node.services.KeyValueService
 import io.iohk.atala.prism.protos.node_models
 import org.scalatest.EitherValues._
@@ -44,15 +47,24 @@ object ProtocolVersionUpdateOperationSpec {
   val logs = Logs.universal[IOWithTraceIdContext]
 
   lazy val proposerDidKeys = List(
-    DIDPublicKey(proposerDIDSuffix, "master", KeyUsage.MasterKey, masterKeys.getPublicKey)
+    DIDPublicKey(
+      proposerDIDSuffix,
+      "master",
+      KeyUsage.MasterKey,
+      masterKeys.getPublicKey
+    )
   )
 
   lazy val proposerCreateDIDOperation =
-    CreateDIDOperation.parse(CreateDIDOperationSpec.exampleOperation, dummyLedgerData).toOption.value
+    CreateDIDOperation
+      .parse(CreateDIDOperationSpec.exampleOperation, dummyLedgerData)
+      .toOption
+      .value
 
   lazy val proposerDIDSuffix = proposerCreateDIDOperation.id
 
-  val protocolVersionInfo1: ProtocolVersionInfo = ProtocolVersionInfo(ProtocolVersion(2, 0), Some("Second version"), 10)
+  val protocolVersionInfo1: ProtocolVersionInfo =
+    ProtocolVersionInfo(ProtocolVersion(2, 0), Some("Second version"), 10)
 
   val parsedProtocolUpdateOperation1: ProtocolVersionUpdateOperation =
     ProtocolVersionUpdateOperation
@@ -61,7 +73,11 @@ object ProtocolVersionUpdateOperationSpec {
       .value
 
   val protocolVersionInfo2: ProtocolVersionInfo =
-    ProtocolVersionInfo(ProtocolVersion(2, 1), Some("Second point one version"), 20)
+    ProtocolVersionInfo(
+      ProtocolVersion(2, 1),
+      Some("Second point one version"),
+      20
+    )
 
   val parsedProtocolUpdateOperation2: ProtocolVersionUpdateOperation =
     ProtocolVersionUpdateOperation
@@ -78,46 +94,72 @@ class ProtocolVersionUpdateOperationSpec extends AtalaWithPostgresSpec {
   "ProtocolVersionUpdateOperation.parse" should {
     "parse valid ProtocolVersionUpdateOperation AtalaOperation" in {
       ProtocolVersionUpdateOperation.parse(
-        protocolUpdateOperation(ProtocolVersionInfo(ProtocolVersion(4, 0), Some("version name"), 20)),
+        protocolUpdateOperation(
+          ProtocolVersionInfo(ProtocolVersion(4, 0), Some("version name"), 20)
+        ),
         dummyLedgerData
       ) mustBe a[Right[_, _]]
     }
 
     "return error when proposerDID doesn't have valid form" in {
-      val invalidOperation = protocolUpdateOperation(ProtocolVersionInfo(ProtocolVersion(3, 0), None, 13))
+      val invalidOperation = protocolUpdateOperation(
+        ProtocolVersionInfo(ProtocolVersion(3, 0), None, 13)
+      )
         .update(_.protocolVersionUpdate.proposerDid := "invalid DID")
 
-      inside(ProtocolVersionUpdateOperation.parse(invalidOperation, dummyLedgerData)) {
-        case Left(ValidationError.InvalidValue(path, value, _)) =>
-          path.path mustBe Vector("protocolVersionUpdate", "proposerDid")
-          value mustBe "invalid DID"
+      inside(
+        ProtocolVersionUpdateOperation.parse(invalidOperation, dummyLedgerData)
+      ) { case Left(ValidationError.InvalidValue(path, value, _)) =>
+        path.path mustBe Vector("protocolVersionUpdate", "proposerDid")
+        value mustBe "invalid DID"
       }
     }
 
     "return error when major version is negative" in {
-      val invalidOperation = protocolUpdateOperation(ProtocolVersionInfo(ProtocolVersion(-3, 0), None, 13))
-      inside(ProtocolVersionUpdateOperation.parse(invalidOperation, dummyLedgerData)) {
-        case Left(ValidationError.InvalidValue(path, _, message)) =>
-          path.path mustBe Vector("protocolVersionUpdate", "version", "majorVersion")
-          message mustBe "Negative major version"
+      val invalidOperation = protocolUpdateOperation(
+        ProtocolVersionInfo(ProtocolVersion(-3, 0), None, 13)
+      )
+      inside(
+        ProtocolVersionUpdateOperation.parse(invalidOperation, dummyLedgerData)
+      ) { case Left(ValidationError.InvalidValue(path, _, message)) =>
+        path.path mustBe Vector(
+          "protocolVersionUpdate",
+          "version",
+          "majorVersion"
+        )
+        message mustBe "Negative major version"
       }
     }
 
     "return error when minor version is negative" in {
-      val invalidOperation = protocolUpdateOperation(ProtocolVersionInfo(ProtocolVersion(3, -3), None, 13))
-      inside(ProtocolVersionUpdateOperation.parse(invalidOperation, dummyLedgerData)) {
-        case Left(ValidationError.InvalidValue(path, _, message)) =>
-          path.path mustBe Vector("protocolVersionUpdate", "version", "minorVersion")
-          message mustBe "Negative minor version"
+      val invalidOperation = protocolUpdateOperation(
+        ProtocolVersionInfo(ProtocolVersion(3, -3), None, 13)
+      )
+      inside(
+        ProtocolVersionUpdateOperation.parse(invalidOperation, dummyLedgerData)
+      ) { case Left(ValidationError.InvalidValue(path, _, message)) =>
+        path.path mustBe Vector(
+          "protocolVersionUpdate",
+          "version",
+          "minorVersion"
+        )
+        message mustBe "Negative minor version"
       }
     }
 
     "return error when effectiveSince is negative" in {
-      val invalidOperation = protocolUpdateOperation(ProtocolVersionInfo(ProtocolVersion(3, 3), None, -13))
-      inside(ProtocolVersionUpdateOperation.parse(invalidOperation, dummyLedgerData)) {
-        case Left(ValidationError.InvalidValue(path, _, message)) =>
-          path.path mustBe Vector("protocolVersionUpdate", "version", "effectiveSince")
-          message mustBe "Negative effectiveSince"
+      val invalidOperation = protocolUpdateOperation(
+        ProtocolVersionInfo(ProtocolVersion(3, 3), None, -13)
+      )
+      inside(
+        ProtocolVersionUpdateOperation.parse(invalidOperation, dummyLedgerData)
+      ) { case Left(ValidationError.InvalidValue(path, _, message)) =>
+        path.path mustBe Vector(
+          "protocolVersionUpdate",
+          "version",
+          "effectiveSince"
+        )
+        message mustBe "Negative effectiveSince"
       }
     }
   }
@@ -125,16 +167,24 @@ class ProtocolVersionUpdateOperationSpec extends AtalaWithPostgresSpec {
   "ProtocolVersionUpdateOperation.getCorrectnessData" should {
     "provide the key reference be used for signing" in {
       DataPreparation
-        .createDID(DIDData(proposerDIDSuffix, proposerDidKeys, proposerCreateDIDOperation.digest), dummyLedgerData)
+        .createDID(
+          DIDData(
+            proposerDIDSuffix,
+            proposerDidKeys,
+            proposerCreateDIDOperation.digest
+          ),
+          dummyLedgerData
+        )
       DataPreparation.insertTrustedProposer(proposerDIDSuffix)
 
-      val CorrectnessData(key, previousOperation) = parsedProtocolUpdateOperation1
-        .getCorrectnessData("master")
-        .transact(database)
-        .value
-        .unsafeRunSync()
-        .toOption
-        .value
+      val CorrectnessData(key, previousOperation) =
+        parsedProtocolUpdateOperation1
+          .getCorrectnessData("master")
+          .transact(database)
+          .value
+          .unsafeRunSync()
+          .toOption
+          .value
 
       key mustBe masterKeys.getPublicKey
       previousOperation mustBe None
@@ -142,7 +192,14 @@ class ProtocolVersionUpdateOperationSpec extends AtalaWithPostgresSpec {
 
     "return state error when an unknown key is used" in {
       DataPreparation
-        .createDID(DIDData(proposerDIDSuffix, proposerDidKeys, proposerCreateDIDOperation.digest), dummyLedgerData)
+        .createDID(
+          DIDData(
+            proposerDIDSuffix,
+            proposerDidKeys,
+            proposerCreateDIDOperation.digest
+          ),
+          dummyLedgerData
+        )
       DataPreparation.insertTrustedProposer(proposerDIDSuffix)
 
       val result = parsedProtocolUpdateOperation1
@@ -156,7 +213,14 @@ class ProtocolVersionUpdateOperationSpec extends AtalaWithPostgresSpec {
 
     "return state error when a revoked key is used" in {
       DataPreparation
-        .createDID(DIDData(proposerDIDSuffix, proposerDidKeys, proposerCreateDIDOperation.digest), dummyLedgerData)
+        .createDID(
+          DIDData(
+            proposerDIDSuffix,
+            proposerDidKeys,
+            proposerCreateDIDOperation.digest
+          ),
+          dummyLedgerData
+        )
       DataPreparation.insertTrustedProposer(proposerDIDSuffix)
 
       PublicKeysDAO
@@ -175,7 +239,14 @@ class ProtocolVersionUpdateOperationSpec extends AtalaWithPostgresSpec {
 
     "return state error when a proposer is untrusted" in {
       DataPreparation
-        .createDID(DIDData(proposerDIDSuffix, proposerDidKeys, proposerCreateDIDOperation.digest), dummyLedgerData)
+        .createDID(
+          DIDData(
+            proposerDIDSuffix,
+            proposerDidKeys,
+            proposerCreateDIDOperation.digest
+          ),
+          dummyLedgerData
+        )
 
       val result = parsedProtocolUpdateOperation1
         .getCorrectnessData("master")
@@ -190,7 +261,14 @@ class ProtocolVersionUpdateOperationSpec extends AtalaWithPostgresSpec {
   "ProtocolVersionUpdateOperation.applyState" should {
     "create two new protocol updates on the database" in {
       DataPreparation
-        .createDID(DIDData(proposerDIDSuffix, proposerDidKeys, proposerCreateDIDOperation.digest), dummyLedgerData)
+        .createDID(
+          DIDData(
+            proposerDIDSuffix,
+            proposerDidKeys,
+            proposerCreateDIDOperation.digest
+          ),
+          dummyLedgerData
+        )
 
       DataPreparation.insertTrustedProposer(proposerDIDSuffix)
       insertProtocolVersions()
@@ -206,7 +284,14 @@ class ProtocolVersionUpdateOperationSpec extends AtalaWithPostgresSpec {
 
     "create two new protocol updates on the database. Then make the first of them effective" in {
       DataPreparation
-        .createDID(DIDData(proposerDIDSuffix, proposerDidKeys, proposerCreateDIDOperation.digest), dummyLedgerData)
+        .createDID(
+          DIDData(
+            proposerDIDSuffix,
+            proposerDidKeys,
+            proposerCreateDIDOperation.digest
+          ),
+          dummyLedgerData
+        )
 
       DataPreparation.insertTrustedProposer(proposerDIDSuffix)
       insertProtocolVersions()
@@ -233,7 +318,14 @@ class ProtocolVersionUpdateOperationSpec extends AtalaWithPostgresSpec {
 
     "return error when a proposer is not trusted" in {
       DataPreparation
-        .createDID(DIDData(proposerDIDSuffix, proposerDidKeys, proposerCreateDIDOperation.digest), dummyLedgerData)
+        .createDID(
+          DIDData(
+            proposerDIDSuffix,
+            proposerDidKeys,
+            proposerCreateDIDOperation.digest
+          ),
+          dummyLedgerData
+        )
 
       val result2 = parsedProtocolUpdateOperation1
         .applyState()
@@ -248,7 +340,14 @@ class ProtocolVersionUpdateOperationSpec extends AtalaWithPostgresSpec {
 
     "return error when a protocol version is not sequential" in {
       DataPreparation
-        .createDID(DIDData(proposerDIDSuffix, proposerDidKeys, proposerCreateDIDOperation.digest), dummyLedgerData)
+        .createDID(
+          DIDData(
+            proposerDIDSuffix,
+            proposerDidKeys,
+            proposerCreateDIDOperation.digest
+          ),
+          dummyLedgerData
+        )
 
       val result2 = parsedProtocolUpdateOperation2
         .applyState()
@@ -263,7 +362,14 @@ class ProtocolVersionUpdateOperationSpec extends AtalaWithPostgresSpec {
 
     "return error when an effectiveSince is descending" in {
       DataPreparation
-        .createDID(DIDData(proposerDIDSuffix, proposerDidKeys, proposerCreateDIDOperation.digest), dummyLedgerData)
+        .createDID(
+          DIDData(
+            proposerDIDSuffix,
+            proposerDidKeys,
+            proposerCreateDIDOperation.digest
+          ),
+          dummyLedgerData
+        )
       DataPreparation.insertTrustedProposer(proposerDIDSuffix)
 
       val result = parsedProtocolUpdateOperation1
@@ -288,11 +394,24 @@ class ProtocolVersionUpdateOperationSpec extends AtalaWithPostgresSpec {
     }
 
     "return error when an effectiveSince is less than last Cardano block level" in {
-      val keyValueService = KeyValueService.unsafe(KeyValuesRepository.unsafe(dbLiftedToTraceIdIO, logs), logs)
-      keyValueService.set(LAST_SYNCED_BLOCK_NO, Some(11)).run(TraceId.generateYOLO).unsafeRunSync()
+      val keyValueService = KeyValueService.unsafe(
+        KeyValuesRepository.unsafe(dbLiftedToTraceIdIO, logs),
+        logs
+      )
+      keyValueService
+        .set(LAST_SYNCED_BLOCK_NO, Some(11))
+        .run(TraceId.generateYOLO)
+        .unsafeRunSync()
 
       DataPreparation
-        .createDID(DIDData(proposerDIDSuffix, proposerDidKeys, proposerCreateDIDOperation.digest), dummyLedgerData)
+        .createDID(
+          DIDData(
+            proposerDIDSuffix,
+            proposerDidKeys,
+            proposerCreateDIDOperation.digest
+          ),
+          dummyLedgerData
+        )
 
       val result1 = parsedProtocolUpdateOperation1
         .applyState()

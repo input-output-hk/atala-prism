@@ -5,7 +5,10 @@ import io.iohk.atala.prism.connector.ConnectorAuthenticator
 import io.iohk.atala.prism.intdemo.html._
 import io.iohk.atala.prism.metrics.RequestMeasureUtil.measureRequestFuture
 import io.iohk.atala.prism.models.ParticipantId
-import io.iohk.atala.prism.protos.cviews_api.{GetCredentialViewTemplatesRequest, GetCredentialViewTemplatesResponse}
+import io.iohk.atala.prism.protos.cviews_api.{
+  GetCredentialViewTemplatesRequest,
+  GetCredentialViewTemplatesResponse
+}
 import io.iohk.atala.prism.protos.{cviews_api, cviews_models}
 import io.iohk.atala.prism.utils.syntax._
 import io.iohk.atala.prism.view.HtmlViewImage
@@ -16,8 +19,9 @@ import io.iohk.atala.prism.intdemo.InsuranceServiceImpl.InsuranceCredentialHtmlT
 
 import scala.concurrent.{ExecutionContext, Future}
 
-class CredentialViewsService(authenticator: ConnectorAuthenticator)(implicit ec: ExecutionContext)
-    extends cviews_api.CredentialViewsServiceGrpc.CredentialViewsService {
+class CredentialViewsService(authenticator: ConnectorAuthenticator)(implicit
+    ec: ExecutionContext
+) extends cviews_api.CredentialViewsServiceGrpc.CredentialViewsService {
 
   private val getCredsViewTemplatesMethodName = "getCredentialViewTemplates"
 
@@ -25,19 +29,27 @@ class CredentialViewsService(authenticator: ConnectorAuthenticator)(implicit ec:
       request: GetCredentialViewTemplatesRequest
   ): Future[GetCredentialViewTemplatesResponse] = {
     authenticatedHandler(getCredsViewTemplatesMethodName, request) { _ =>
-      val response = GetCredentialViewTemplatesResponse(templates = PredefinedHtmlTemplates.all)
+      val response = GetCredentialViewTemplatesResponse(templates =
+        PredefinedHtmlTemplates.all
+      )
       response.tryF
     }
   }
 
-  private def authenticatedHandler[Request <: scalapb.GeneratedMessage, Response <: scalapb.GeneratedMessage](
+  private def authenticatedHandler[
+      Request <: scalapb.GeneratedMessage,
+      Response <: scalapb.GeneratedMessage
+  ](
       methodName: String,
       request: Request
   )(
       block: ParticipantId => Future[Response]
   ): Future[Response] = {
     authenticator.authenticated(methodName, request) { (participantId, _) =>
-      measureRequestFuture("credential-views-service-service", getCredsViewTemplatesMethodName)(
+      measureRequestFuture(
+        "credential-views-service-service",
+        getCredsViewTemplatesMethodName
+      )(
         block(participantId)
       )
     }
@@ -183,7 +195,8 @@ private object PredefinedHtmlTemplates {
     )
   }
 
-  private def georgiaEducationDegreeTranscript(): cviews_models.CredentialViewTemplate = {
+  private def georgiaEducationDegreeTranscript()
+      : cviews_models.CredentialViewTemplate = {
     val logoImage = "georgiaEducationalDegreeTranscriptIcon.svg"
     cviews_models.CredentialViewTemplate(
       id = 7,
@@ -231,7 +244,8 @@ private object PredefinedHtmlTemplates {
     )
   }
 
-  private def ethiopiaEducationDegree(): cviews_models.CredentialViewTemplate = {
+  private def ethiopiaEducationDegree()
+      : cviews_models.CredentialViewTemplate = {
     val logoImage = "ethiopiaEdu.png"
     cviews_models.CredentialViewTemplate(
       id = 9,
@@ -253,7 +267,8 @@ private object PredefinedHtmlTemplates {
     )
   }
 
-  private def ethiopiaEducationDegreeTranscript(): cviews_models.CredentialViewTemplate = {
+  private def ethiopiaEducationDegreeTranscript()
+      : cviews_models.CredentialViewTemplate = {
     val logoImage = "ethiopiaEduTrans.png"
     cviews_models.CredentialViewTemplate(
       id = 10,

@@ -35,9 +35,12 @@ object RequestNoncesRepository {
     for {
       serviceLogs <- logs.service[RequestNoncesRepository[F]]
     } yield {
-      implicit val implicitLogs: ServiceLogging[F, RequestNoncesRepository[F]] = serviceLogs
-      val metrics: RequestNoncesRepository[Mid[F, *]] = new RequestNoncesRepositoryMetrics[F]
-      val logs: RequestNoncesRepository[Mid[F, *]] = new RequestNoncesRepositoryLogs[F]
+      implicit val implicitLogs: ServiceLogging[F, RequestNoncesRepository[F]] =
+        serviceLogs
+      val metrics: RequestNoncesRepository[Mid[F, *]] =
+        new RequestNoncesRepositoryMetrics[F]
+      val logs: RequestNoncesRepository[Mid[F, *]] =
+        new RequestNoncesRepositoryLogs[F]
       val mid = metrics |+| logs
       mid attach new RequestNoncesRepositoryPostgresImpl[F](transactor)
     }
@@ -45,15 +48,20 @@ object RequestNoncesRepository {
   def unsafe[F[_]: TimeMeasureMetric: BracketThrow, R[_]: Comonad](
       transactor: Transactor[F],
       logs: Logs[R, F]
-  ): RequestNoncesRepository[F] = RequestNoncesRepository(transactor, logs).extract
+  ): RequestNoncesRepository[F] =
+    RequestNoncesRepository(transactor, logs).extract
 }
 
-private final class RequestNoncesRepositoryPostgresImpl[F[_]: BracketThrow](xa: Transactor[F])
-    extends RequestNoncesRepository[F] {
+private final class RequestNoncesRepositoryPostgresImpl[F[_]: BracketThrow](
+    xa: Transactor[F]
+) extends RequestNoncesRepository[F] {
 
   val logger: Logger = LoggerFactory.getLogger(getClass)
 
-  override def burn(participantId: ParticipantId, requestNonce: RequestNonce): F[Unit] = {
+  override def burn(
+      participantId: ParticipantId,
+      requestNonce: RequestNonce
+  ): F[Unit] = {
     RequestNoncesDAO
       .burn(participantId, requestNonce)
       .logSQLErrors(s"burning, participant id - $participantId", logger)

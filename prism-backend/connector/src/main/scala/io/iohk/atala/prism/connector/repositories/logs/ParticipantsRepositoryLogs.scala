@@ -5,7 +5,10 @@ import cats.syntax.apply._
 import cats.syntax.applicativeError._
 import cats.syntax.flatMap._
 import io.iohk.atala.prism.connector.errors.ConnectorError
-import io.iohk.atala.prism.connector.model.{ParticipantInfo, UpdateParticipantProfile}
+import io.iohk.atala.prism.connector.model.{
+  ParticipantInfo,
+  UpdateParticipantProfile
+}
 import io.iohk.atala.prism.connector.repositories.ParticipantsRepository
 import io.iohk.atala.prism.connector.repositories.ParticipantsRepository._
 import io.iohk.atala.prism.crypto.keys.ECPublicKey
@@ -16,7 +19,9 @@ import tofu.higherKind.Mid
 import tofu.logging.ServiceLogging
 import tofu.syntax.logging._
 
-private[repositories] final class ParticipantsRepositoryLogs[F[_]: ServiceLogging[
+private[repositories] final class ParticipantsRepositoryLogs[F[
+    _
+]: ServiceLogging[
   *[_],
   ParticipantsRepository[F]
 ]: MonadThrow]
@@ -28,44 +33,60 @@ private[repositories] final class ParticipantsRepositoryLogs[F[_]: ServiceLoggin
       info"creating participant ${request.id}" *> in
         .flatTap(
           _.fold(
-            er => error"encountered an error while creating participant ${er.unify: ConnectorError}",
+            er =>
+              error"encountered an error while creating participant ${er.unify: ConnectorError}",
             _ => info"creating participant - successfully done"
           )
         )
-        .onError(errorCause"encountered an error while creating participant" (_))
+        .onError(
+          errorCause"encountered an error while creating participant" (_)
+        )
 
-  override def findBy(id: ParticipantId): Mid[F, Either[FindByError, ParticipantInfo]] =
+  override def findBy(
+      id: ParticipantId
+  ): Mid[F, Either[FindByError, ParticipantInfo]] =
     in =>
       info"finding participant $id" *> in
         .flatTap(
           _.fold(
-            er => error"encountered an error while finding participant ${er.unify: ConnectorError}",
+            er =>
+              error"encountered an error while finding participant ${er.unify: ConnectorError}",
             _ => info"finding participant  - successfully done"
           )
         )
         .onError(errorCause"encountered an error while finding participant" (_))
 
-  override def findBy(publicKey: ECPublicKey): Mid[F, Either[FindByError, ParticipantInfo]] =
+  override def findBy(
+      publicKey: ECPublicKey
+  ): Mid[F, Either[FindByError, ParticipantInfo]] =
     in =>
       info"finding participant by public-key $publicKey" *> in
         .flatTap(
           _.fold(
-            er => error"encountered an error while finding participant ${er.unify: ConnectorError}",
+            er =>
+              error"encountered an error while finding participant ${er.unify: ConnectorError}",
             result => info"finding participant - successfully done ${result.id}"
           )
         )
-        .onError(errorCause"encountered an error while finding participant by public-key" (_))
+        .onError(
+          errorCause"encountered an error while finding participant by public-key" (
+            _
+          )
+        )
 
   override def findBy(did: DID): Mid[F, Either[FindByError, ParticipantInfo]] =
     in =>
       info"finding participant by did ${did.getSuffix}" *> in
         .flatTap(
           _.fold(
-            er => error"encountered an error while finding participant ${er.unify: ConnectorError}",
+            er =>
+              error"encountered an error while finding participant ${er.unify: ConnectorError}",
             result => info"finding participant - successfully done ${result.id}"
           )
         )
-        .onError(errorCause"encountered an error while finding participant by did" (_))
+        .onError(
+          errorCause"encountered an error while finding participant by did" (_)
+        )
 
   override def updateParticipantProfileBy(
       id: ParticipantId,
@@ -74,5 +95,9 @@ private[repositories] final class ParticipantsRepositoryLogs[F[_]: ServiceLoggin
     in =>
       info"updating participant profile $id" *> in
         .flatTap(_ => info"updating participant profile - successfully done")
-        .onError(errorCause"encountered an error while updating participant profile" (_))
+        .onError(
+          errorCause"encountered an error while updating participant profile" (
+            _
+          )
+        )
 }

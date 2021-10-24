@@ -14,7 +14,9 @@ import tofu.higherKind.Mid
 import tofu.logging.ServiceLogging
 import tofu.syntax.logging._
 
-private[repositories] final class CredentialBatchesRepositoryLogs[F[_]: MonadThrow: ServiceLogging[*[
+private[repositories] final class CredentialBatchesRepositoryLogs[F[
+    _
+]: MonadThrow: ServiceLogging[*[
   _
 ], CredentialBatchesRepository[F]]]
     extends CredentialBatchesRepository[Mid[F, *]] {
@@ -26,7 +28,8 @@ private[repositories] final class CredentialBatchesRepositoryLogs[F[_]: MonadThr
         .flatTap(
           _.fold(
             err => error"Encountered an error while getting batch state $err",
-            res => info"getting batch state - successfully done, state found - ${res.isDefined}"
+            res =>
+              info"getting batch state - successfully done, state found - ${res.isDefined}"
           )
         )
         .onError(errorCause"Encountered an error while getting batch state" (_))
@@ -39,9 +42,16 @@ private[repositories] final class CredentialBatchesRepositoryLogs[F[_]: MonadThr
       info"getting credential revocation time $batchId" *> in
         .flatTap(
           _.fold(
-            err => error"Encountered an error while getting credential revocation time $err",
-            res => info"getting credential revocation time - successfully done ${res.map(_.transactionId)}"
+            err =>
+              error"Encountered an error while getting credential revocation time $err",
+            res =>
+              info"getting credential revocation time - successfully done ${res
+                .map(_.transactionId)}"
           )
         )
-        .onError(errorCause"Encountered an error while getting credential revocation time" (_))
+        .onError(
+          errorCause"Encountered an error while getting credential revocation time" (
+            _
+          )
+        )
 }

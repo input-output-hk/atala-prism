@@ -17,7 +17,10 @@ case class CredentialIssuance(
     contacts: List[CredentialIssuanceContact]
 )
 
-case class CredentialIssuanceContactGroup(id: CredentialIssuance.ContactGroupId, groupId: InstitutionGroup.Id)
+case class CredentialIssuanceContactGroup(
+    id: CredentialIssuance.ContactGroupId,
+    groupId: InstitutionGroup.Id
+)
 
 case class CredentialIssuanceContact(
     id: CredentialIssuance.ContactId,

@@ -7,7 +7,12 @@ import org.scalatest.{BeforeAndAfterAll, BeforeAndAfterEach}
 
 import doobie.implicits._
 
-case class PostgresConfig(host: String, database: String, user: String, password: String)
+case class PostgresConfig(
+    host: String,
+    database: String,
+    user: String,
+    password: String
+)
 
 /** Allow us to write integration tests depending in a postgres database.
   *
@@ -57,14 +62,18 @@ abstract class PostgresRepositorySpec[F[_]: ConcurrentEffect: ContextShift]
   }
 
   lazy val (database, releaseDatabase) =
-    ConcurrentEffect[F].toIO(TransactorFactory.transactor[F](transactorConfig).allocated).unsafeRunSync()
+    ConcurrentEffect[F]
+      .toIO(TransactorFactory.transactor[F](transactorConfig).allocated)
+      .unsafeRunSync()
 
-  private lazy val postgresConfig = getProvidedPostgres().getOrElse(DockerPostgresService.getPostgres())
+  private lazy val postgresConfig =
+    getProvidedPostgres().getOrElse(DockerPostgresService.getPostgres())
 
   protected lazy val transactorConfig = TransactorFactory.Config(
     username = postgresConfig.user,
     password = postgresConfig.password,
-    jdbcUrl = s"jdbc:postgresql://${postgresConfig.host}/${postgresConfig.database}"
+    jdbcUrl =
+      s"jdbc:postgresql://${postgresConfig.host}/${postgresConfig.database}"
   )
 
   protected def migrationScriptsLocation = "db/migration"

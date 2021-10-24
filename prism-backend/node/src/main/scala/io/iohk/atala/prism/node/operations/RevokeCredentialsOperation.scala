@@ -12,7 +12,10 @@ import io.iohk.atala.prism.models.DidSuffix
 import io.iohk.atala.prism.node.models.nodeState
 import io.iohk.atala.prism.node.models.nodeState.{DIDPublicKeyState, LedgerData}
 import io.iohk.atala.prism.node.operations.path.{Path, ValueAtPath}
-import io.iohk.atala.prism.node.repositories.daos.{CredentialBatchesDAO, PublicKeysDAO}
+import io.iohk.atala.prism.node.repositories.daos.{
+  CredentialBatchesDAO,
+  PublicKeysDAO
+}
 import io.iohk.atala.prism.protos.node_models
 
 case class RevokeCredentialsOperation(
@@ -22,21 +25,34 @@ case class RevokeCredentialsOperation(
     digest: Sha256Digest,
     ledgerData: nodeState.LedgerData
 ) extends Operation {
-  override def linkedPreviousOperation: Option[Sha256Digest] = Some(previousOperation)
+  override def linkedPreviousOperation: Option[Sha256Digest] = Some(
+    previousOperation
+  )
 
-  override def getCorrectnessData(keyId: String): EitherT[ConnectionIO, StateError, CorrectnessData] = {
+  override def getCorrectnessData(
+      keyId: String
+  ): EitherT[ConnectionIO, StateError, CorrectnessData] = {
     for {
-      issuerPrevOp <- EitherT[ConnectionIO, StateError, (DidSuffix, Sha256Digest)] {
+      issuerPrevOp <- EitherT[
+        ConnectionIO,
+        StateError,
+        (DidSuffix, Sha256Digest)
+      ] {
         CredentialBatchesDAO
           .findBatch(credentialBatchId)
           .map(
             _.map(cred => (cred.issuerDIDSuffix, cred.lastOperation))
-              .toRight(StateError.EntityMissing("credential batch", credentialBatchId.getId))
+              .toRight(
+                StateError
+                  .EntityMissing("credential batch", credentialBatchId.getId)
+              )
           )
       }
       (issuer, prevOp) = issuerPrevOp
       keyState <- EitherT[ConnectionIO, StateError, DIDPublicKeyState] {
-        PublicKeysDAO.find(issuer, keyId).map(_.toRight(StateError.UnknownKey(issuer, keyId)))
+        PublicKeysDAO
+          .find(issuer, keyId)
+          .map(_.toRight(StateError.UnknownKey(issuer, keyId)))
       }.subflatMap { didKey =>
         Either.cond(
           didKey.keyUsage.canRevoke,
@@ -60,20 +76,30 @@ case class RevokeCredentialsOperation(
     def weShouldRevokeTheFullBatch: Boolean = credentialsToRevoke.isEmpty
 
     def revokeFullBatch() = {
-      CredentialBatchesDAO.revokeEntireBatch(credentialBatchId, ledgerData).map { wasUpdated =>
-        if (wasUpdated) ().asRight[StateError]
-        else StateError.BatchAlreadyRevoked(credentialBatchId.getId).asLeft
-      }
+      CredentialBatchesDAO
+        .revokeEntireBatch(credentialBatchId, ledgerData)
+        .map { wasUpdated =>
+          if (wasUpdated) ().asRight[StateError]
+          else StateError.BatchAlreadyRevoked(credentialBatchId.getId).asLeft
+        }
     }
 
     def revokeSpecificCredentials() = {
       CredentialBatchesDAO.findBatch(credentialBatchId).flatMap { state =>
         val isBatchAlreadyRevoked = state.fold(false)(_.revokedOn.nonEmpty)
         if (isBatchAlreadyRevoked) {
-          Free.pure((StateError.BatchAlreadyRevoked(credentialBatchId.getId): StateError).asLeft[Unit])
+          Free.pure(
+            (StateError.BatchAlreadyRevoked(
+              credentialBatchId.getId
+            ): StateError).asLeft[Unit]
+          )
         } else {
           CredentialBatchesDAO
-            .revokeCredentials(credentialBatchId, credentialsToRevoke, ledgerData)
+            .revokeCredentials(
+              credentialBatchId,
+              credentialsToRevoke,
+              ledgerData
+            )
             .as(().asRight[StateError])
         }
       }
@@ -86,7 +112,8 @@ case class RevokeCredentialsOperation(
   }
 }
 
-object RevokeCredentialsOperation extends SimpleOperationCompanion[RevokeCredentialsOperation] {
+object RevokeCredentialsOperation
+    extends SimpleOperationCompanion[RevokeCredentialsOperation] {
 
   override def parse(
       operation: node_models.AtalaOperation,
@@ -94,17 +121,25 @@ object RevokeCredentialsOperation extends SimpleOperationCompanion[RevokeCredent
   ): Either[ValidationError, RevokeCredentialsOperation] = {
 
     val operationDigest = Sha256.compute(operation.toByteArray)
-    val revokeOperation = ValueAtPath(operation, Path.root).child(_.getRevokeCredentials, "revokeCredentials")
+    val revokeOperation = ValueAtPath(operation, Path.root)
+      .child(_.getRevokeCredentials, "revokeCredentials")
 
     for {
-      credentialBatchId <- revokeOperation.child(_.credentialBatchId, "credentialBatchId").parse { credentialBatchId =>
-        Option(
-          CredentialBatchId
-            .fromString(credentialBatchId)
-        ).fold(s"credential batch id has invalid format $credentialBatchId".asLeft[CredentialBatchId])(_.asRight)
-      }
+      credentialBatchId <- revokeOperation
+        .child(_.credentialBatchId, "credentialBatchId")
+        .parse { credentialBatchId =>
+          Option(
+            CredentialBatchId
+              .fromString(credentialBatchId)
+          ).fold(
+            s"credential batch id has invalid format $credentialBatchId"
+              .asLeft[CredentialBatchId]
+          )(_.asRight)
+        }
       credentialsToRevoke <-
-        ParsingUtils.parseHashList(revokeOperation.child(_.credentialsToRevoke, "credentialsToRevoke"))
+        ParsingUtils.parseHashList(
+          revokeOperation.child(_.credentialsToRevoke, "credentialsToRevoke")
+        )
       previousOperation <- ParsingUtils.parseHash(
         revokeOperation.child(_.previousOperationHash, "previousOperationHash")
       )

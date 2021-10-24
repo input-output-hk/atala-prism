@@ -6,7 +6,9 @@ import io.iohk.atala.prism.protos.node_api.{CreateDIDRequest, CreateDIDResponse}
 import io.iohk.atala.prism.protos.node_models.SignedAtalaOperation
 
 case class Connector(node: node_api.NodeServiceGrpc.NodeServiceBlockingStub) {
-  def registerDID(signedAtalaOperation: SignedAtalaOperation): CreateDIDResponse = {
+  def registerDID(
+      signedAtalaOperation: SignedAtalaOperation
+  ): CreateDIDResponse = {
     node
       .createDID(
         CreateDIDRequest(Some(signedAtalaOperation))
@@ -16,7 +18,9 @@ case class Connector(node: node_api.NodeServiceGrpc.NodeServiceBlockingStub) {
   // a tiny simulation of sending the credential
   private var credentialBatchChannel: List[(String, MerkleInclusionProof)] = Nil
 
-  def sendCredentialAndProof(message: List[(String, MerkleInclusionProof)]): Unit = {
+  def sendCredentialAndProof(
+      message: List[(String, MerkleInclusionProof)]
+  ): Unit = {
     credentialBatchChannel = message
   }
 

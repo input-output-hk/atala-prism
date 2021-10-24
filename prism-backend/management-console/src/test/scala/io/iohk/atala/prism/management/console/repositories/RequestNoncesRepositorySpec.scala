@@ -33,8 +33,14 @@ class RequestNoncesRepositorySpec extends AtalaWithPostgresSpec {
   lazy val requestNoncesRepository =
     RequestNoncesRepository.unsafe(database, logs)
 
-  private def available(participantId: ParticipantId, requestNonce: RequestNonce): Boolean = {
-    RequestNoncesDAO.available(participantId, requestNonce).transact(database).unsafeRunSync()
+  private def available(
+      participantId: ParticipantId,
+      requestNonce: RequestNonce
+  ): Boolean = {
+    RequestNoncesDAO
+      .available(participantId, requestNonce)
+      .transact(database)
+      .unsafeRunSync()
   }
 
   "burn" should {
@@ -43,7 +49,8 @@ class RequestNoncesRepositorySpec extends AtalaWithPostgresSpec {
       val nonce = RequestNonce("test".getBytes.toVector)
 
       available(participantId, nonce) must be(true)
-      val result = Try(requestNoncesRepository.burn(participantId, nonce).unsafeRunSync())
+      val result =
+        Try(requestNoncesRepository.burn(participantId, nonce).unsafeRunSync())
       result.toOption.value must be(())
 
       available(participantId, nonce) must be(false)
@@ -64,7 +71,8 @@ class RequestNoncesRepositorySpec extends AtalaWithPostgresSpec {
       val nonce = RequestNonce("test".getBytes.toVector)
       requestNoncesRepository.burn(participantId, nonce).unsafeRunSync()
 
-      val result = Try(requestNoncesRepository.burn(participantId2, nonce).unsafeRunSync())
+      val result =
+        Try(requestNoncesRepository.burn(participantId2, nonce).unsafeRunSync())
       result.toOption.value must be(())
 
       available(participantId, nonce) must be(false)

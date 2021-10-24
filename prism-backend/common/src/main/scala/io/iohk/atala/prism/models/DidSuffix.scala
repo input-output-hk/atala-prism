@@ -20,7 +20,10 @@ object DidSuffix {
   def fromString(string: String): Try[DidSuffix] = {
     if (string.nonEmpty && suffixRegex.pattern.matcher(string).matches())
       Success(DidSuffix(string))
-    else Failure(new IllegalArgumentException(s"invalid DID Suffix format: $string"))
+    else
+      Failure(
+        new IllegalArgumentException(s"invalid DID Suffix format: $string")
+      )
   }
 
 }

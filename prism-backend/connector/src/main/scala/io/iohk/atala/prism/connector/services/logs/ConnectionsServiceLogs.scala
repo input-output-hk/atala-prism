@@ -23,28 +23,42 @@ import tofu.higherKind.Mid
 import tofu.logging.ServiceLogging
 import tofu.syntax.logging._
 
-private[services] class ConnectionsServiceLogs[F[_]: ServiceLogging[*[_], ConnectionsService[F]]: MonadThrow]
-    extends ConnectionsService[Mid[F, *]] {
-  override def getConnectionByToken(token: TokenString): Mid[F, Option[Connection]] =
+private[services] class ConnectionsServiceLogs[
+    F[_]: ServiceLogging[*[_], ConnectionsService[F]]: MonadThrow
+] extends ConnectionsService[Mid[F, *]] {
+  override def getConnectionByToken(
+      token: TokenString
+  ): Mid[F, Option[Connection]] =
     in =>
       info"getting connection by token $token" *> in
         .flatTap(res =>
-          info"getting connection by token - successfully done, connection ${res.fold("not found")(_ => "found")}"
+          info"getting connection by token - successfully done, connection ${res
+            .fold("not found")(_ => "found")}"
         )
-        .onError(errorCause"encountered an error while getting connection by token" (_))
+        .onError(
+          errorCause"encountered an error while getting connection by token" (_)
+        )
 
-  override def generateTokens(userId: ParticipantId, tokensCount: Int): Mid[F, List[TokenString]] =
+  override def generateTokens(
+      userId: ParticipantId,
+      tokensCount: Int
+  ): Mid[F, List[TokenString]] =
     in =>
       info"generating tokens $userId, tokens count - $tokensCount" *> in
-        .flatTap(res => info"generating tokens - successfully done, generated ${res.size} tokens")
+        .flatTap(res =>
+          info"generating tokens - successfully done, generated ${res.size} tokens"
+        )
         .onError(errorCause"encountered an error while generating tokens" (_))
 
-  override def getTokenInfo(token: TokenString): Mid[F, Either[GetTokenInfoError, ParticipantInfo]] =
+  override def getTokenInfo(
+      token: TokenString
+  ): Mid[F, Either[GetTokenInfoError, ParticipantInfo]] =
     in =>
       info"getting token info $token" *> in
         .flatTap(res =>
           res.fold(
-            er => error"encountered an error while getting token info ${er.unify: ConnectorError}",
+            er =>
+              error"encountered an error while getting token info ${er.unify: ConnectorError}",
             pi => info"getting token info - successfully done ${pi.id}"
           )
         )
@@ -58,11 +72,17 @@ private[services] class ConnectionsServiceLogs[F[_]: ServiceLogging[*[_], Connec
       info"adding connection from token $tokenString" *> in
         .flatTap(res =>
           res.fold(
-            er => error"encountered an error while adding connection from token ${er.unify: ConnectorError}",
-            pi => info"adding connection from token - successfully done ${pi.id}"
+            er =>
+              error"encountered an error while adding connection from token ${er.unify: ConnectorError}",
+            pi =>
+              info"adding connection from token - successfully done ${pi.id}"
           )
         )
-        .onError(errorCause"encountered an error while adding connection from token" (_))
+        .onError(
+          errorCause"encountered an error while adding connection from token" (
+            _
+          )
+        )
 
   override def revokeConnection(
       participantId: ParticipantId,
@@ -72,19 +92,26 @@ private[services] class ConnectionsServiceLogs[F[_]: ServiceLogging[*[_], Connec
       info"revoking connection $connectionId" *> in
         .flatTap(res =>
           res.fold(
-            er => error"encountered an error while revoking connection ${er.unify: ConnectorError}",
+            er =>
+              error"encountered an error while revoking connection ${er.unify: ConnectorError}",
             _ => info"revoking connection - successfully done"
           )
         )
         .onError(errorCause"encountered an error while revoking connection" (_))
 
-  override def getConnectionById(participantId: ParticipantId, id: ConnectionId): Mid[F, Option[ConnectionInfo]] =
+  override def getConnectionById(
+      participantId: ParticipantId,
+      id: ConnectionId
+  ): Mid[F, Option[ConnectionInfo]] =
     in =>
       info"getting connection by id $id, participant $participantId" *> in
         .flatTap(res =>
-          info"getting connection by id - successfully done, connection ${res.fold("not found")(_ => "found")}"
+          info"getting connection by id - successfully done, connection ${res
+            .fold("not found")(_ => "found")}"
         )
-        .onError(errorCause"encountered an error while getting connection by id" (_))
+        .onError(
+          errorCause"encountered an error while getting connection by id" (_)
+        )
 
   override def getConnectionsPaginated(
       userId: ParticipantId,
@@ -95,31 +122,48 @@ private[services] class ConnectionsServiceLogs[F[_]: ServiceLogging[*[_], Connec
       info"getting connections paginated $userId" *> in
         .flatTap(res =>
           res.fold(
-            er => error"encountered an error while getting connections paginated ${er.unify: ConnectorError}",
-            res => info"getting connections paginated - successfully done, got ${res.size} connections"
+            er =>
+              error"encountered an error while getting connections paginated ${er.unify: ConnectorError}",
+            res =>
+              info"getting connections paginated - successfully done, got ${res.size} connections"
           )
         )
-        .onError(errorCause"encountered an error while getting connections paginated" (_))
+        .onError(
+          errorCause"encountered an error while getting connections paginated" (
+            _
+          )
+        )
 
   override def getConnectionCommunicationKeys(
       connectionId: ConnectionId,
       userId: ParticipantId
-  ): Mid[F, Either[GetConnectionCommunicationKeysError, Seq[(String, ECPublicKey)]]] =
+  ): Mid[F, Either[GetConnectionCommunicationKeysError, Seq[
+    (String, ECPublicKey)
+  ]]] =
     in =>
       info"getting communications keys $connectionId $userId" *> in
         .flatTap(res =>
           res.fold(
-            er => error"encountered an error while getting communications keys  ${er.unify: ConnectorError}",
+            er =>
+              error"encountered an error while getting communications keys  ${er.unify: ConnectorError}",
             _ => info"getting communications keys - successfully done"
           )
         )
-        .onError(errorCause"encountered an error while getting communications keys" (_))
+        .onError(
+          errorCause"encountered an error while getting communications keys" (_)
+        )
 
-  override def getConnectionsByConnectionTokens(connectionTokens: List[TokenString]): Mid[F, List[ContactConnection]] =
+  override def getConnectionsByConnectionTokens(
+      connectionTokens: List[TokenString]
+  ): Mid[F, List[ContactConnection]] =
     in =>
       info"getting connections by connection tokens, number of tokens - ${connectionTokens.size}" *> in
         .flatTap(res =>
           info"getting connections by connection tokens - successfully done, generated ${res.size} tokens"
         )
-        .onError(errorCause"encountered an error while getting connections by connection tokens" (_))
+        .onError(
+          errorCause"encountered an error while getting connections by connection tokens" (
+            _
+          )
+        )
 }

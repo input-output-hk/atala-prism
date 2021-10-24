@@ -35,7 +35,9 @@ object UUIDValue {
     }
 
     def unsafeFrom(string: String): A = {
-      from(string).getOrElse(throw new IllegalArgumentException(s"`$string` is not a valid UUID"))
+      from(string).getOrElse(
+        throw new IllegalArgumentException(s"`$string` is not a valid UUID")
+      )
     }
   }
 }

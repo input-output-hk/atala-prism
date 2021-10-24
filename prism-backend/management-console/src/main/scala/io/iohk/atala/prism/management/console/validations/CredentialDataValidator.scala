@@ -12,19 +12,26 @@ import io.iohk.atala.prism.management.console.models.{
 import CredentialDataValidationError._
 import tofu.logging.{DictLoggable, LogRenderer}
 
-sealed abstract class CredentialDataValidationError(val message: String) extends Exception(message)
+sealed abstract class CredentialDataValidationError(val message: String)
+    extends Exception(message)
 object CredentialDataValidationError {
 
-  implicit val loggableCredentialDataValidationError: DictLoggable[CredentialDataValidationError] =
+  implicit val loggableCredentialDataValidationError
+      : DictLoggable[CredentialDataValidationError] =
     new DictLoggable[CredentialDataValidationError] {
-      override def fields[I, V, R, S](a: CredentialDataValidationError, i: I)(implicit r: LogRenderer[I, V, R, S]): R =
+      override def fields[I, V, R, S](a: CredentialDataValidationError, i: I)(
+          implicit r: LogRenderer[I, V, R, S]
+      ): R =
         r.addString("CredentialDataValidationError", a.message, i)
 
       override def logShow(a: CredentialDataValidationError): String =
         s"CredentialDataValidationError{message=${a.message}"
     }
 
-  case object NotJsonObject extends CredentialDataValidationError(message = s"Credential data is not a JSON object")
+  case object NotJsonObject
+      extends CredentialDataValidationError(
+        message = s"Credential data is not a JSON object"
+      )
 
   case class FieldMissing(fieldName: String)
       extends CredentialDataValidationError(
@@ -36,7 +43,8 @@ object CredentialDataValidationError {
       expectedFieldType: CredentialTypeFieldType,
       actualValue: String
   ) extends CredentialDataValidationError(
-        message = s"Field $fieldName expected type is: $expectedFieldType but actual value was: $actualValue"
+        message =
+          s"Field $fieldName expected type is: $expectedFieldType but actual value was: $actualValue"
       )
 
   case class InvalidDateFormat(
@@ -61,13 +69,15 @@ object CredentialDataValidator {
         jsonValue: Json
     ): ValidatedNel[CredentialDataValidationError, Unit] = {
       val typeMatch = credentialTypeField.`type` match {
-        case CredentialTypeFieldType.String => jsonValue.asString.isDefined
+        case CredentialTypeFieldType.String  => jsonValue.asString.isDefined
         case CredentialTypeFieldType.Boolean => jsonValue.asBoolean.isDefined
-        case CredentialTypeFieldType.Int => jsonValue.asNumber.isDefined
-        case CredentialTypeFieldType.Date => jsonValue.asString.isDefined
+        case CredentialTypeFieldType.Int     => jsonValue.asNumber.isDefined
+        case CredentialTypeFieldType.Date    => jsonValue.asString.isDefined
       }
 
-      if (typeMatch && CredentialTypeFieldType.Date == credentialTypeField.`type`) {
+      if (
+        typeMatch && CredentialTypeFieldType.Date == credentialTypeField.`type`
+      ) {
         Validated.condNel(
           jsonValue.asString.exists(date => DATE_REGEX.matches(date)),
           (),
@@ -89,7 +99,9 @@ object CredentialDataValidator {
       }
     }
 
-    def validateJsonObject(jsonObject: JsonObject): ValidatedNel[CredentialDataValidationError, Unit] = {
+    def validateJsonObject(
+        jsonObject: JsonObject
+    ): ValidatedNel[CredentialDataValidationError, Unit] = {
 
       credentialTypeWithRequiredFields.requiredFields
         .map { credentialTypeField =>
@@ -106,6 +118,8 @@ object CredentialDataValidator {
     }
 
     credentialData.asObject
-      .fold(Validated.invalidNel[CredentialDataValidationError, Unit](NotJsonObject))(validateJsonObject)
+      .fold(
+        Validated.invalidNel[CredentialDataValidationError, Unit](NotJsonObject)
+      )(validateJsonObject)
   }
 }

@@ -20,15 +20,21 @@ import tofu.syntax.logging._
 
 import java.time.Duration
 
-private[repositories] final class AtalaObjectsTransactionsRepositoryLogs[F[_]: MonadThrow: ServiceLogging[*[
+private[repositories] final class AtalaObjectsTransactionsRepositoryLogs[F[
+    _
+]: MonadThrow: ServiceLogging[*[
   _
 ], AtalaObjectsTransactionsRepository[F]]]
     extends AtalaObjectsTransactionsRepository[Mid[F, *]] {
 
-  def retrieveObjects(transactions: List[AtalaObjectTransactionSubmission]): Mid[F, List[Option[AtalaObjectInfo]]] =
+  def retrieveObjects(
+      transactions: List[AtalaObjectTransactionSubmission]
+  ): Mid[F, List[Option[AtalaObjectInfo]]] =
     in =>
       info"retrieving objects, transactions size - ${transactions.size}" *> in
-        .flatTap(result => info"retrieving objects - successfully done, got ${result.count(_.isDefined)} entities")
+        .flatTap(result =>
+          info"retrieving objects - successfully done, got ${result.count(_.isDefined)} entities"
+        )
         .onError(errorCause"Encountered an error while retrieving objects" (_))
 
   def getOldPendingTransactions(
@@ -37,19 +43,31 @@ private[repositories] final class AtalaObjectsTransactionsRepositoryLogs[F[_]: M
   ): Mid[F, List[AtalaObjectTransactionSubmission]] =
     in =>
       info"getting old pending transactions ${ledgerPendingTransactionTimeout.toString} ${ledger.entryName}" *> in
-        .flatTap(result => info"getting old pending transactions - successfully done, got ${result.size} entities")
-        .onError(errorCause"Encountered an error while getting old pending transactions" (_))
+        .flatTap(result =>
+          info"getting old pending transactions - successfully done, got ${result.size} entities"
+        )
+        .onError(
+          errorCause"Encountered an error while getting old pending transactions" (
+            _
+          )
+        )
 
   def getNotPublishedObjects: Mid[F, Either[NodeError, List[AtalaObjectInfo]]] =
     in =>
       info"getting not published objects" *> in
         .flatTap(
           _.fold(
-            err => error"Encountered an error while getting not published objects $err",
-            list => info"getting not published objects - successfully done, got ${list.size} entities"
+            err =>
+              error"Encountered an error while getting not published objects $err",
+            list =>
+              info"getting not published objects - successfully done, got ${list.size} entities"
           )
         )
-        .onError(errorCause"Encountered an error while getting not published objects" (_))
+        .onError(
+          errorCause"Encountered an error while getting not published objects" (
+            _
+          )
+        )
 
   def updateSubmissionStatus(
       submission: AtalaObjectTransactionSubmission,
@@ -60,11 +78,14 @@ private[repositories] final class AtalaObjectsTransactionsRepositoryLogs[F[_]: M
             new status - ${newSubmissionStatus.entryName} ${submission.ledger.entryName}""" *> in
         .flatTap(
           _.fold(
-            err => error"Encountered an error while updating submission status $err",
+            err =>
+              error"Encountered an error while updating submission status $err",
             _ => info"updating submission status - successfully done"
           )
         )
-        .onError(errorCause"Encountered an error while updating submission status" (_))
+        .onError(
+          errorCause"Encountered an error while updating submission status" (_)
+        )
 
   override def updateSubmissionStatusIfExists(
       ledger: Ledger,
@@ -75,11 +96,14 @@ private[repositories] final class AtalaObjectsTransactionsRepositoryLogs[F[_]: M
       info"updating submission status new status - ${newSubmissionStatus.entryName}, ${ledger.entryName}" *> in
         .flatTap(
           _.fold(
-            err => error"Encountered an error while updating submission status $err",
+            err =>
+              error"Encountered an error while updating submission status $err",
             _ => info"updating submission status - successfully done"
           )
         )
-        .onError(errorCause"Encountered an error while updating submission status" (_))
+        .onError(
+          errorCause"Encountered an error while updating submission status" (_)
+        )
 
   def storeTransactionSubmission(
       atalaObjectInfo: AtalaObjectInfo,
@@ -89,14 +113,21 @@ private[repositories] final class AtalaObjectsTransactionsRepositoryLogs[F[_]: M
       info"storing transaction submission - ${atalaObjectInfo.objectId.toString}" *> in
         .flatTap(
           _.fold(
-            err => error"Encountered an error while storing transaction submission $err",
+            err =>
+              error"Encountered an error while storing transaction submission $err",
             result =>
               info"storing transaction submission - successfully done ${result.ledger.entryName} ${result.transactionId}"
           )
         )
-        .onError(errorCause"Encountered an error while storing transaction submission" (_))
+        .onError(
+          errorCause"Encountered an error while storing transaction submission" (
+            _
+          )
+        )
 
-  def setObjectTransactionDetails(notification: AtalaObjectNotification): Mid[F, Option[AtalaObjectInfo]] =
+  def setObjectTransactionDetails(
+      notification: AtalaObjectNotification
+  ): Mid[F, Option[AtalaObjectInfo]] =
     in =>
       info"setting object transaction details - ${notification.transaction.transactionId} ${notification.transaction.ledger.entryName}" *> in
         .flatTap(
@@ -104,5 +135,9 @@ private[repositories] final class AtalaObjectsTransactionsRepositoryLogs[F[_]: M
             info"setting object transaction details - successfully done ${obj.objectId}"
           )
         )
-        .onError(errorCause"Encountered an error while setting object transaction details" (_))
+        .onError(
+          errorCause"Encountered an error while setting object transaction details" (
+            _
+          )
+        )
 }

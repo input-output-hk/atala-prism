@@ -8,7 +8,11 @@ import derevo.tagless.applyK
 import derevo.derive
 import doobie.implicits._
 import doobie.util.transactor.Transactor
-import io.iohk.atala.prism.management.console.models.{ParticipantId, Statistics, TimeInterval}
+import io.iohk.atala.prism.management.console.models.{
+  ParticipantId,
+  Statistics,
+  TimeInterval
+}
 import io.iohk.atala.prism.management.console.repositories.daos.StatisticsDAO
 import io.iohk.atala.prism.management.console.repositories.logs.StatisticsRepositoryLogs
 import io.iohk.atala.prism.management.console.repositories.metrics.StatisticsRepositoryMetrics
@@ -21,7 +25,10 @@ import tofu.syntax.monoid.TofuSemigroupOps
 
 @derive(applyK)
 trait StatisticsRepository[F[_]] {
-  def query(participantId: ParticipantId, timeIntervalMaybe: Option[TimeInterval]): F[Statistics]
+  def query(
+      participantId: ParticipantId,
+      timeIntervalMaybe: Option[TimeInterval]
+  ): F[Statistics]
 }
 
 object StatisticsRepository {
@@ -32,9 +39,12 @@ object StatisticsRepository {
     for {
       serviceLogs <- logs.service[StatisticsRepository[F]]
     } yield {
-      implicit val implicitLogs: ServiceLogging[F, StatisticsRepository[F]] = serviceLogs
-      val metrics: StatisticsRepository[Mid[F, *]] = new StatisticsRepositoryMetrics[F]
-      val logs: StatisticsRepository[Mid[F, *]] = new StatisticsRepositoryLogs[F]
+      implicit val implicitLogs: ServiceLogging[F, StatisticsRepository[F]] =
+        serviceLogs
+      val metrics: StatisticsRepository[Mid[F, *]] =
+        new StatisticsRepositoryMetrics[F]
+      val logs: StatisticsRepository[Mid[F, *]] =
+        new StatisticsRepositoryLogs[F]
       val mid = metrics |+| logs
       mid attach new StatisticsRepositoryImpl[F](transactor)
     }
@@ -47,10 +57,13 @@ object StatisticsRepository {
   def makeResource[F[_]: TimeMeasureMetric: BracketThrow, R[_]: Monad](
       transactor: Transactor[F],
       logs: Logs[R, F]
-  ): Resource[R, StatisticsRepository[F]] = Resource.eval(StatisticsRepository(transactor, logs))
+  ): Resource[R, StatisticsRepository[F]] =
+    Resource.eval(StatisticsRepository(transactor, logs))
 }
 
-private final class StatisticsRepositoryImpl[F[_]: BracketThrow](xa: Transactor[F]) extends StatisticsRepository[F] {
+private final class StatisticsRepositoryImpl[F[_]: BracketThrow](
+    xa: Transactor[F]
+) extends StatisticsRepository[F] {
 
   val logger: Logger = LoggerFactory.getLogger(getClass)
 
@@ -60,6 +73,9 @@ private final class StatisticsRepositoryImpl[F[_]: BracketThrow](xa: Transactor[
   ): F[Statistics] =
     StatisticsDAO
       .query(participantId, timeIntervalMaybe)
-      .logSQLErrors(s"getting statistics, participant id - $participantId", logger)
+      .logSQLErrors(
+        s"getting statistics, participant id - $participantId",
+        logger
+      )
       .transact(xa)
 }

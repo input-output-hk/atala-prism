@@ -16,9 +16,12 @@ case class AtalaObjectTransactionSubmission(
     status: AtalaObjectTransactionSubmissionStatus
 )
 
-sealed trait AtalaObjectTransactionSubmissionStatus extends EnumEntry with UpperSnakecase
+sealed trait AtalaObjectTransactionSubmissionStatus
+    extends EnumEntry
+    with UpperSnakecase
 
-object AtalaObjectTransactionSubmissionStatus extends Enum[AtalaObjectTransactionSubmissionStatus] {
+object AtalaObjectTransactionSubmissionStatus
+    extends Enum[AtalaObjectTransactionSubmissionStatus] {
   val values: IndexedSeq[AtalaObjectTransactionSubmissionStatus] = findValues
 
   case object Pending extends AtalaObjectTransactionSubmissionStatus

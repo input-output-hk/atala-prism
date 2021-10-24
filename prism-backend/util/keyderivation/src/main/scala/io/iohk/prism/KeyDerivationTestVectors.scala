@@ -15,7 +15,8 @@ import io.iohk.atala.prism.protos.node_models
 import org.spongycastle.math.ec.ECFieldElement
 import scodec.bits._
 
-sealed abstract class KeyType(val value: Int, val name: String) extends IntEnumEntry
+sealed abstract class KeyType(val value: Int, val name: String)
+    extends IntEnumEntry
 
 object KeyType extends IntEnum[KeyType] {
   case object Master extends KeyType(0, "master")
@@ -25,22 +26,32 @@ object KeyType extends IntEnum[KeyType] {
 
   def keyUsage(tpe: KeyType): node_models.KeyUsage = {
     tpe match {
-      case Master => node_models.KeyUsage.MASTER_KEY
-      case Issuing => node_models.KeyUsage.ISSUING_KEY
-      case Communication => node_models.KeyUsage.COMMUNICATION_KEY
+      case Master         => node_models.KeyUsage.MASTER_KEY
+      case Issuing        => node_models.KeyUsage.ISSUING_KEY
+      case Communication  => node_models.KeyUsage.COMMUNICATION_KEY
       case Authentication => node_models.KeyUsage.AUTHENTICATION_KEY
-      case _ => node_models.KeyUsage.UNKNOWN_KEY
+      case _              => node_models.KeyUsage.UNKNOWN_KEY
     }
   }
 
   val values = findValues
 }
 
-case class DerivedKey(tpe: KeyType, number: Int, keyId: String, encoded: String, extendedKey: ExtendedPrivateKey)
+case class DerivedKey(
+    tpe: KeyType,
+    number: Int,
+    keyId: String,
+    encoded: String,
+    extendedKey: ExtendedPrivateKey
+)
 
 case class DerivedDid(number: Int, did: String, keys: List[DerivedKey])
 
-case class Derivation(seed: ByteVector, seedPhrase: List[String], dids: List[DerivedDid])
+case class Derivation(
+    seed: ByteVector,
+    seedPhrase: List[String],
+    dids: List[DerivedDid]
+)
 
 object KeyDerivationTestVectors {
 
@@ -49,11 +60,22 @@ object KeyDerivationTestVectors {
     def hardened: Long = i.toLong | (1L << 31)
   }
 
-  def deriveKey(rootKey: ExtendedPrivateKey, didPath: KeyPath, tpe: KeyType, number: Int): DerivedKey = {
+  def deriveKey(
+      rootKey: ExtendedPrivateKey,
+      didPath: KeyPath,
+      tpe: KeyType,
+      number: Int
+  ): DerivedKey = {
     val keyPath = didPath.derive(tpe.value.hardened).derive(number.hardened)
     val privateKey = derivePrivateKey(rootKey, keyPath)
     privateKey.privateKey
-    DerivedKey(tpe, number, s"${tpe.name}-$number", encode(privateKey, xprv), privateKey)
+    DerivedKey(
+      tpe,
+      number,
+      s"${tpe.name}-$number",
+      encode(privateKey, xprv),
+      privateKey
+    )
   }
 
   def bigUnsignedToByteVector(bigUnsigned: BigInteger): ByteVector = {
@@ -63,7 +85,11 @@ object KeyDerivationTestVectors {
     bigUnsignedToByteVector(coord.toBigInteger)
   }
 
-  def deriveDid(rootKey: ExtendedPrivateKey, number: Int, keys: Seq[(KeyType, Seq[Int])]): DerivedDid = {
+  def deriveDid(
+      rootKey: ExtendedPrivateKey,
+      number: Int,
+      keys: Seq[(KeyType, Seq[Int])]
+  ): DerivedDid = {
     val didPath = KeyPath.Root.derive(number.hardened)
     val masterKey = deriveKey(rootKey, didPath, KeyType.Master, 0)
     val masterKeyPublic = masterKey.extendedKey.publicKey
@@ -105,7 +131,10 @@ object KeyDerivationTestVectors {
     DerivedDid(number, did, derivedKeys.toList)
   }
 
-  def makeDerivation(seedPhrase: List[String], dids: Seq[(Int, Seq[(KeyType, Seq[Int])])]): Derivation = {
+  def makeDerivation(
+      seedPhrase: List[String],
+      dids: Seq[(Int, Seq[(KeyType, Seq[Int])])]
+  ): Derivation = {
     val seed = toSeed(seedPhrase, "")
     val derivedDids = for {
       (didNumber, keysSpec) <- dids
@@ -126,12 +155,18 @@ object KeyDerivationTestVectors {
       "keyId" -> key.keyId.asJson,
       "bip32path" -> key.extendedKey.path.toString().asJson,
       "secretKey" -> Json.obj(
-        "hex" -> bigUnsignedToByteVector(key.extendedKey.privateKey.bigInt).toHex.asJson
+        "hex" -> bigUnsignedToByteVector(
+          key.extendedKey.privateKey.bigInt
+        ).toHex.asJson
       ),
       "publicKey" -> Json.obj(
         "hex" -> key.extendedKey.publicKey.value.toHex.asJson,
-        "xHex" -> coordToByteVector(key.extendedKey.publicKey.ecpoint.getAffineXCoord).toHex.asJson,
-        "yHex" -> coordToByteVector(key.extendedKey.publicKey.ecpoint.getAffineYCoord).toHex.asJson
+        "xHex" -> coordToByteVector(
+          key.extendedKey.publicKey.ecpoint.getAffineXCoord
+        ).toHex.asJson,
+        "yHex" -> coordToByteVector(
+          key.extendedKey.publicKey.ecpoint.getAffineYCoord
+        ).toHex.asJson
       )
     )
   }
@@ -158,11 +193,17 @@ object KeyDerivationTestVectors {
          |  * Key ID: ${key.keyId}
          |  * BIP32 Path: ${key.extendedKey.path.toString()}
          |  * Secret key
-         |    * (hex): ${bigUnsignedToByteVector(key.extendedKey.privateKey.bigInt).toHex}
+         |    * (hex): ${bigUnsignedToByteVector(
+        key.extendedKey.privateKey.bigInt
+      ).toHex}
          |  * Public key
          |    * (hex): ${key.extendedKey.publicKey.value.toHex}
-         |    * (x-hex): ${coordToByteVector(key.extendedKey.publicKey.ecpoint.getAffineXCoord).toHex}
-         |    * (y-hex): ${coordToByteVector(key.extendedKey.publicKey.ecpoint.getAffineYCoord).toHex}""".stripMargin
+         |    * (x-hex): ${coordToByteVector(
+        key.extendedKey.publicKey.ecpoint.getAffineXCoord
+      ).toHex}
+         |    * (y-hex): ${coordToByteVector(
+        key.extendedKey.publicKey.ecpoint.getAffineYCoord
+      ).toHex}""".stripMargin
     println(indentLines(s, indent))
   }
 
@@ -207,7 +248,9 @@ object KeyDerivationTestVectors {
 
     val file = new File(JSON_PATH)
     val writer = new FileWriter(file)
-    writer.write(Json.arr(derivationToJson(derivation)).printWith(Printer.spaces2SortKeys))
+    writer.write(
+      Json.arr(derivationToJson(derivation)).printWith(Printer.spaces2SortKeys)
+    )
     writer.close()
   }
 }

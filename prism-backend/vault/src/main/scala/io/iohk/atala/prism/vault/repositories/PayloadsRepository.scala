@@ -24,22 +24,31 @@ import tofu.syntax.logging._
 trait PayloadsRepository[F[_]] {
   def create(payloadData: CreatePayload): F[Payload]
 
-  def getByPaginated(did: DID, lastSeenIdOpt: Option[Payload.Id], limit: Int): F[List[Payload]]
+  def getByPaginated(
+      did: DID,
+      lastSeenIdOpt: Option[Payload.Id],
+      limit: Int
+  ): F[List[Payload]]
 }
 
 object PayloadsRepository {
-  def create[F[_]: BracketThrow: TimeMeasureMetric: ServiceLogging[*[_], PayloadsRepository[F]]](
+  def create[F[_]: BracketThrow: TimeMeasureMetric: ServiceLogging[*[
+    _
+  ], PayloadsRepository[F]]](
       xa: Transactor[F]
   ): PayloadsRepository[F] = {
-    val mid = (new PayloadsRepoMetrics: PayloadsRepository[Mid[F, *]]) |+| (new PayloadsRepoLogging: PayloadsRepository[
+    val mid = (new PayloadsRepoMetrics: PayloadsRepository[
+      Mid[F, *]
+    ]) |+| (new PayloadsRepoLogging: PayloadsRepository[
       Mid[F, *]
     ])
     mid attach new PayloadsRepositoryImpl(xa)
   }
 }
 
-private class PayloadsRepositoryImpl[F[_]](xa: Transactor[F])(implicit br: Bracket[F, Throwable])
-    extends PayloadsRepository[F] {
+private class PayloadsRepositoryImpl[F[_]](xa: Transactor[F])(implicit
+    br: Bracket[F, Throwable]
+) extends PayloadsRepository[F] {
 
   val logger: Logger = LoggerFactory.getLogger(getClass)
 
@@ -60,13 +69,17 @@ private class PayloadsRepositoryImpl[F[_]](xa: Transactor[F])(implicit br: Brack
       .transact(xa)
 }
 
-private final class PayloadsRepoMetrics[F[_]: TimeMeasureMetric: BracketThrow] extends PayloadsRepository[Mid[F, *]] {
+private final class PayloadsRepoMetrics[F[_]: TimeMeasureMetric: BracketThrow]
+    extends PayloadsRepository[Mid[F, *]] {
   val repoName: String = "payloads-repository"
 
-  private lazy val createTimer = TimeMeasureUtil.createDBQueryTimer(repoName, "create")
-  private lazy val getByPaginatedTimer = TimeMeasureUtil.createDBQueryTimer(repoName, "getByPaginated")
+  private lazy val createTimer =
+    TimeMeasureUtil.createDBQueryTimer(repoName, "create")
+  private lazy val getByPaginatedTimer =
+    TimeMeasureUtil.createDBQueryTimer(repoName, "getByPaginated")
 
-  override def create(payloadData: CreatePayload): Mid[F, Payload] = _.measureOperationTime(createTimer)
+  override def create(payloadData: CreatePayload): Mid[F, Payload] =
+    _.measureOperationTime(createTimer)
 
   override def getByPaginated(
       did: DID,
@@ -76,8 +89,9 @@ private final class PayloadsRepoMetrics[F[_]: TimeMeasureMetric: BracketThrow] e
     _.measureOperationTime(getByPaginatedTimer)
 }
 
-private final class PayloadsRepoLogging[F[_]: MonadThrow: ServiceLogging[*[_], PayloadsRepository[F]]]
-    extends PayloadsRepository[Mid[F, *]] {
+private final class PayloadsRepoLogging[
+    F[_]: MonadThrow: ServiceLogging[*[_], PayloadsRepository[F]]
+] extends PayloadsRepository[Mid[F, *]] {
   override def create(payloadData: CreatePayload): Mid[F, Payload] =
     in =>
       info"creating payload ${payloadData.externalId}" *> in
@@ -91,7 +105,9 @@ private final class PayloadsRepoLogging[F[_]: MonadThrow: ServiceLogging[*[_], P
   ): Mid[F, List[Payload]] =
     in =>
       info"getting paginated data ${did.asCanonical().toString} {limit=$limit}" *> in
-        .flatTap(r => info"getting paginated data - successfully done got ${r.size} entities")
+        .flatTap(r =>
+          info"getting paginated data - successfully done got ${r.size} entities"
+        )
         .onError(e => errorCause"an error occurred while creating payload" (e))
 
 }

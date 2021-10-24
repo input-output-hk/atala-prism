@@ -15,7 +15,8 @@ import scala.util.Random
 
 object TestCardanoBlockRepository {
 
-  /** Creates a trimmed-down version of the {@code cexplorer} database structure.
+  /** Creates a trimmed-down version of the {@code cexplorer} database
+    * structure.
     */
   def createTables()(implicit database: Transactor[IO]): Unit = {
     sql"""
@@ -53,22 +54,28 @@ object TestCardanoBlockRepository {
     ()
   }
 
-  def insertBlock(block: Block.Full)(implicit database: Transactor[IO]): Unit = {
+  def insertBlock(
+      block: Block.Full
+  )(implicit database: Transactor[IO]): Unit = {
     // Queries are meant to ignore null block numbers, so we nullify them when they are zero
-    val blockNoOption = if (block.header.blockNo == 0) None else Some(block.header.blockNo)
+    val blockNoOption =
+      if (block.header.blockNo == 0) None else Some(block.header.blockNo)
     sql"""
          |INSERT INTO block (hash, block_no, previous_id, time)
          |  VALUES (
          |    ${block.header.hash.value},
          |    $blockNoOption,
-         |    (SELECT id FROM block WHERE hash = ${block.header.previousBlockHash.map(_.value)}),
+         |    (SELECT id FROM block WHERE hash = ${block.header.previousBlockHash
+      .map(_.value)}),
          |    ${block.header.time})
     """.stripMargin.update.run.transact(database).unsafeRunSync()
 
     block.transactions.zipWithIndex.foreach(insertTransaction _ tupled _)
   }
 
-  def insertTransaction(transaction: Transaction, blockIndex: Int)(implicit database: Transactor[IO]): Unit = {
+  def insertTransaction(transaction: Transaction, blockIndex: Int)(implicit
+      database: Transactor[IO]
+  ): Unit = {
     // Insert the transaction
     sql"""
          |INSERT INTO tx (hash, block_id, block_index)
@@ -96,7 +103,8 @@ object TestCardanoBlockRepository {
     ()
   }
 
-  /** Creates a genesis block and {@code n} other random blocks, for a total of {@code n+1} blocks.
+  /** Creates a genesis block and {@code n} other random blocks, for a total of
+    * {@code n+1} blocks.
     */
   def createRandomBlocks(n: Int): Seq[Block.Full] = {
     var previousBlock: Option[Block.Full] = None
@@ -110,7 +118,8 @@ object TestCardanoBlockRepository {
 
   def createNextRandomBlock(previousBlock: Option[Block.Full]): Block.Full = {
     val blockNo = previousBlock.map(_.header.blockNo + 1).getOrElse(0)
-    val time = previousBlock.map(_.header.time).getOrElse(Instant.now()).plusSeconds(20)
+    val time =
+      previousBlock.map(_.header.time).getOrElse(Instant.now()).plusSeconds(20)
     val blockHash = TestCardanoBlockRepository.randomBlockHash()
     val block = Block.Full(
       BlockHeader(blockHash, blockNo, time, previousBlock.map(_.header.hash)),
@@ -119,9 +128,17 @@ object TestCardanoBlockRepository {
     block
   }
 
-  def createRandomTransactions(blockHash: BlockHash, n: Int): Seq[Transaction] = {
+  def createRandomTransactions(
+      blockHash: BlockHash,
+      n: Int
+  ): Seq[Transaction] = {
     0 to n map { blockIndex =>
-      Transaction(TestCardanoBlockRepository.randomTransactionId(), blockHash, blockIndex, None)
+      Transaction(
+        TestCardanoBlockRepository.randomTransactionId(),
+        blockHash,
+        blockIndex,
+        None
+      )
     }
   }
 

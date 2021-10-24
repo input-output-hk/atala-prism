@@ -14,7 +14,9 @@ import scala.collection.compat.immutable.ArraySeq
 
 object implicits {
   implicit val merkleRootMeta: Meta[MerkleRoot] =
-    Meta[Array[Byte]].timap(arr => new MerkleRoot(Sha256Digest.fromBytes(arr)))(_.getHash.getValue)
+    Meta[Array[Byte]].timap(arr => new MerkleRoot(Sha256Digest.fromBytes(arr)))(
+      _.getHash.getValue
+    )
   implicit val merkleRootRead: Read[MerkleRoot] =
     Read[Array[Byte]].map(arr => new MerkleRoot(Sha256Digest.fromBytes(arr)))
 
@@ -50,7 +52,9 @@ object implicits {
     Get[Array[Byte]].map(Sha256Digest.fromBytes)
 
   implicit val timestampInfoRead: Read[TimestampInfo] =
-    Read[(Instant, Int, Int)].map { case (abt, absn, osn) => new TimestampInfo(abt.toEpochMilli, absn, osn) }
+    Read[(Instant, Int, Int)].map { case (abt, absn, osn) =>
+      new TimestampInfo(abt.toEpochMilli, absn, osn)
+    }
   implicit val timestampInfoGet: Get[TimestampInfo] =
     Get.Advanced
       .other[(Instant, Int, Int)](

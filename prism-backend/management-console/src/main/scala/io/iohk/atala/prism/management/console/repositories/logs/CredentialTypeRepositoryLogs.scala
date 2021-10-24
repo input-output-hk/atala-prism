@@ -11,7 +11,9 @@ import tofu.higherKind.Mid
 import tofu.logging.ServiceLogging
 import tofu.syntax.logging._
 
-private[repositories] final class CredentialTypeRepositoryLogs[F[_]: ServiceLogging[
+private[repositories] final class CredentialTypeRepositoryLogs[F[
+    _
+]: ServiceLogging[
   *[_],
   CredentialTypeRepository[F]
 ]: BracketThrow]
@@ -26,10 +28,13 @@ private[repositories] final class CredentialTypeRepositoryLogs[F[_]: ServiceLogg
         .flatTap(
           _.fold(
             e => error"encountered an error while creating credential type $e",
-            r => info"creating credential type - successfully done ${r.credentialType.id}"
+            r =>
+              info"creating credential type - successfully done ${r.credentialType.id}"
           )
         )
-        .onError(errorCause"encountered an error while creating credential type" (_))
+        .onError(
+          errorCause"encountered an error while creating credential type" (_)
+        )
 
   override def update(
       updateCredentialType: UpdateCredentialType,
@@ -43,7 +48,9 @@ private[repositories] final class CredentialTypeRepositoryLogs[F[_]: ServiceLogg
             _ => info"updating credential type - successfully done"
           )
         )
-        .onError(errorCause"encountered an error while updating credential type" (_))
+        .onError(
+          errorCause"encountered an error while updating credential type" (_)
+        )
 
   override def markAsArchived(
       credentialTypeId: CredentialTypeId,
@@ -53,7 +60,8 @@ private[repositories] final class CredentialTypeRepositoryLogs[F[_]: ServiceLogg
       info"marking as archived $institutionId $credentialTypeId" *> in
         .flatTap(
           _.fold(
-            e => error"encountered an error while marking as archived credential type $e",
+            e =>
+              error"encountered an error while marking as archived credential type $e",
             _ => info"marking as archived - successfully done"
           )
         )
@@ -67,23 +75,42 @@ private[repositories] final class CredentialTypeRepositoryLogs[F[_]: ServiceLogg
       info"marking as ready $institutionId $credentialTypeId" *> in
         .flatTap(
           _.fold(
-            e => error"encountered an error while marking as ready credential type $e",
+            e =>
+              error"encountered an error while marking as ready credential type $e",
             _ => info"marking as ready - successfully done"
           )
         )
         .onError(errorCause"encountered an error while marking as ready" (_))
 
-  override def find(credentialTypeId: CredentialTypeId): Mid[F, Option[CredentialTypeWithRequiredFields]] =
+  override def find(
+      credentialTypeId: CredentialTypeId
+  ): Mid[F, Option[CredentialTypeWithRequiredFields]] =
     in =>
       info"finding by credential type id $credentialTypeId" *> in
-        .flatTap(result => info"finding by credential type id - ${result.fold("found nothing")(_ => "found")}")
-        .onError(errorCause"encountered an error while finding by credential type id" (_))
+        .flatTap(result =>
+          info"finding by credential type id - ${result.fold("found nothing")(_ => "found")}"
+        )
+        .onError(
+          errorCause"encountered an error while finding by credential type id" (
+            _
+          )
+        )
 
-  override def find(institution: ParticipantId, name: String): Mid[F, Option[CredentialTypeWithRequiredFields]] =
+  override def find(
+      institution: ParticipantId,
+      name: String
+  ): Mid[F, Option[CredentialTypeWithRequiredFields]] =
     in =>
       info"finding by institution id and name $institution $name" *> in
-        .flatTap(result => info"finding by institution id and name - ${result.fold("found nothing")(_ => "found")}")
-        .onError(errorCause"encountered an error while finding by institution id and name" (_))
+        .flatTap(result =>
+          info"finding by institution id and name - ${result
+            .fold("found nothing")(_ => "found")}"
+        )
+        .onError(
+          errorCause"encountered an error while finding by institution id and name" (
+            _
+          )
+        )
 
   override def find(
       institution: ParticipantId,
@@ -92,13 +119,24 @@ private[repositories] final class CredentialTypeRepositoryLogs[F[_]: ServiceLogg
     in =>
       info"finding by institution id and credential type id $institution $credentialTypeId" *> in
         .flatTap(result =>
-          info"finding by institution id and credential type id - ${result.fold("found nothing")(_ => "found")}"
+          info"finding by institution id and credential type id - ${result
+            .fold("found nothing")(_ => "found")}"
         )
-        .onError(errorCause"encountered an error while finding by institution id and credential type id" (_))
+        .onError(
+          errorCause"encountered an error while finding by institution id and credential type id" (
+            _
+          )
+        )
 
-  override def findByInstitution(institution: ParticipantId): Mid[F, List[CredentialType]] =
+  override def findByInstitution(
+      institution: ParticipantId
+  ): Mid[F, List[CredentialType]] =
     in =>
       info"finding by institution id $institution" *> in
-        .flatTap(result => info"finding by institution id - found ${result.size} entities")
-        .onError(errorCause"encountered an error while finding by institution id" (_))
+        .flatTap(result =>
+          info"finding by institution id - found ${result.size} entities"
+        )
+        .onError(
+          errorCause"encountered an error while finding by institution id" (_)
+        )
 }

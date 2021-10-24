@@ -15,7 +15,12 @@ import doobie.ConnectionIO
 import doobie.implicits._
 import doobie.util.transactor.Transactor
 import io.iohk.atala.prism.management.console.errors._
-import io.iohk.atala.prism.management.console.models.{Contact, GetGroupsResult, InstitutionGroup, ParticipantId}
+import io.iohk.atala.prism.management.console.models.{
+  Contact,
+  GetGroupsResult,
+  InstitutionGroup,
+  ParticipantId
+}
 import io.iohk.atala.prism.management.console.repositories.daos.InstitutionGroupsDAO
 import io.iohk.atala.prism.management.console.repositories.logs.InstitutionGroupsRepositoryLogs
 import io.iohk.atala.prism.management.console.repositories.metrics.InstitutionGroupsRepositoryMetrics
@@ -74,9 +79,12 @@ object InstitutionGroupsRepository {
     for {
       serviceLogs <- logs.service[InstitutionGroupsRepository[F]]
     } yield {
-      implicit val implicitLogs: ServiceLogging[F, InstitutionGroupsRepository[F]] = serviceLogs
-      val metrics: InstitutionGroupsRepository[Mid[F, *]] = new InstitutionGroupsRepositoryMetrics[F]
-      val logs: InstitutionGroupsRepository[Mid[F, *]] = new InstitutionGroupsRepositoryLogs[F]
+      implicit val implicitLogs
+          : ServiceLogging[F, InstitutionGroupsRepository[F]] = serviceLogs
+      val metrics: InstitutionGroupsRepository[Mid[F, *]] =
+        new InstitutionGroupsRepositoryMetrics[F]
+      val logs: InstitutionGroupsRepository[Mid[F, *]] =
+        new InstitutionGroupsRepositoryLogs[F]
       val mid = metrics |+| logs
       mid attach new InstitutionGroupsRepositoryImpl[F](transactor)
     }
@@ -84,7 +92,8 @@ object InstitutionGroupsRepository {
   def unsafe[F[_]: TimeMeasureMetric: BracketThrow, R[_]: Comonad](
       transactor: Transactor[F],
       logs: Logs[R, F]
-  ): InstitutionGroupsRepository[F] = InstitutionGroupsRepository(transactor, logs).extract
+  ): InstitutionGroupsRepository[F] =
+    InstitutionGroupsRepository(transactor, logs).extract
 
   def makeResource[F[_]: TimeMeasureMetric: BracketThrow, R[_]: Monad](
       transactor: Transactor[F],
@@ -96,8 +105,9 @@ object InstitutionGroupsRepository {
 
 }
 
-private final class InstitutionGroupsRepositoryImpl[F[_]: BracketThrow](xa: Transactor[F])
-    extends InstitutionGroupsRepository[F] {
+private final class InstitutionGroupsRepositoryImpl[F[_]: BracketThrow](
+    xa: Transactor[F]
+) extends InstitutionGroupsRepository[F] {
 
   val logger: Logger = LoggerFactory.getLogger(getClass)
 
@@ -109,7 +119,9 @@ private final class InstitutionGroupsRepositoryImpl[F[_]: BracketThrow](xa: Tran
     import institutionHelper._
 
     val transaction = for {
-      _ <- EitherT.fromOptionF(checkContacts(institutionId, contactIds), ()).swap
+      _ <- EitherT
+        .fromOptionF(checkContacts(institutionId, contactIds), ())
+        .swap
       institutionGroup <- EitherT.right[ManagementConsoleError](
         InstitutionGroupsDAO.create(institutionId, name)
       )
@@ -129,7 +141,10 @@ private final class InstitutionGroupsRepositoryImpl[F[_]: BracketThrow](xa: Tran
   ): F[GetGroupsResult] =
     (for {
       groups <- InstitutionGroupsDAO.getBy(institutionId, query)
-      totalNumberOfRecords <- InstitutionGroupsDAO.getTotalNumberOfRecords(institutionId, query)
+      totalNumberOfRecords <- InstitutionGroupsDAO.getTotalNumberOfRecords(
+        institutionId,
+        query
+      )
     } yield groups -> totalNumberOfRecords)
       .logSQLErrors(s"getting, institution id - $institutionId", logger)
       .map(GetGroupsResult.tupled)
@@ -141,7 +156,9 @@ private final class InstitutionGroupsRepositoryImpl[F[_]: BracketThrow](xa: Tran
   ): F[List[Contact]] = {
     val connectionIo = for {
       groupOpt <- InstitutionGroupsDAO.find(institutionId, groupName)
-      group = groupOpt.getOrElse(throw new RuntimeException(s"Group $groupName does not exist"))
+      group = groupOpt.getOrElse(
+        throw new RuntimeException(s"Group $groupName does not exist")
+      )
       contacts <- InstitutionGroupsDAO.listContacts(group.id)
     } yield contacts
 
@@ -164,13 +181,21 @@ private final class InstitutionGroupsRepositoryImpl[F[_]: BracketThrow](xa: Tran
         InstitutionGroupsDAO.find(groupId),
         GroupDoesNotExist(groupId): ManagementConsoleError
       )
-      _ <- EitherT.fromOptionF(checkGroupInstitution(institutionId, group), ()).swap
-      _ <- EitherT.fromOptionF(checkContacts(institutionId, contactIdsToAdd), ()).swap
-      _ <- EitherT.fromOptionF(checkContacts(institutionId, contactIdsToRemove), ()).swap
+      _ <- EitherT
+        .fromOptionF(checkGroupInstitution(institutionId, group), ())
+        .swap
+      _ <- EitherT
+        .fromOptionF(checkContacts(institutionId, contactIdsToAdd), ())
+        .swap
+      _ <- EitherT
+        .fromOptionF(checkContacts(institutionId, contactIdsToRemove), ())
+        .swap
       _ <- newNameMaybe match {
         case Some(newName) =>
           // Check that the new name is free and update the group accordingly
-          EitherT.fromOptionF(checkGroupNameIsFree(institutionId, newName), ()).swap *>
+          EitherT
+            .fromOptionF(checkGroupNameIsFree(institutionId, newName), ())
+            .swap *>
             EitherT.right(InstitutionGroupsDAO.update(groupId, newName))
         case None =>
           EitherT.rightT[ConnectionIO, ManagementConsoleError](())
@@ -196,10 +221,18 @@ private final class InstitutionGroupsRepositoryImpl[F[_]: BracketThrow](xa: Tran
     import institutionHelper._
 
     val connectionIo = for {
-      _ <- EitherT.fromOptionF(checkGroups(institutionId, Set(originalGroupId)), ()).swap
-      _ <- EitherT.fromOptionF(checkGroupNameIsFree(institutionId, newGroupName), ()).swap
-      createdGroup <- EitherT.right[ManagementConsoleError](InstitutionGroupsDAO.create(institutionId, newGroupName))
-      _ <- EitherT.right[ManagementConsoleError](InstitutionGroupsDAO.copyContacts(originalGroupId, createdGroup.id))
+      _ <- EitherT
+        .fromOptionF(checkGroups(institutionId, Set(originalGroupId)), ())
+        .swap
+      _ <- EitherT
+        .fromOptionF(checkGroupNameIsFree(institutionId, newGroupName), ())
+        .swap
+      createdGroup <- EitherT.right[ManagementConsoleError](
+        InstitutionGroupsDAO.create(institutionId, newGroupName)
+      )
+      _ <- EitherT.right[ManagementConsoleError](
+        InstitutionGroupsDAO.copyContacts(originalGroupId, createdGroup.id)
+      )
     } yield createdGroup
 
     connectionIo.value
@@ -214,15 +247,21 @@ private final class InstitutionGroupsRepositoryImpl[F[_]: BracketThrow](xa: Tran
     import institutionHelper._
 
     val connectionIo = for {
-      _ <- EitherT.fromOptionF(checkGroups(institutionId, Set(groupId)), ()).swap
-      _ <- EitherT.right[ManagementConsoleError](InstitutionGroupsDAO.removeAllGroupContacts(groupId))
+      _ <- EitherT
+        .fromOptionF(checkGroups(institutionId, Set(groupId)), ())
+        .swap
+      _ <- EitherT.right[ManagementConsoleError](
+        InstitutionGroupsDAO.removeAllGroupContacts(groupId)
+      )
       _ <- EitherT(
         InstitutionGroupsDAO
           .deleteGroup(institutionId, groupId)
           .ifM(
             ().asRight[ManagementConsoleError].pure[ConnectionIO],
             (InternalServerError(
-              new Throwable(s"Can't delete group with id $groupId for institution $institutionId")
+              new Throwable(
+                s"Can't delete group with id $groupId for institution $institutionId"
+              )
             ): ManagementConsoleError)
               .asLeft[Unit]
               .pure[ConnectionIO]

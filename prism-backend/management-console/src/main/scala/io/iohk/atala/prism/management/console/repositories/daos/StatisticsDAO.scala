@@ -3,7 +3,11 @@ package io.iohk.atala.prism.management.console.repositories.daos
 import doobie.free.connection.ConnectionIO
 import doobie.implicits.toSqlInterpolator
 import doobie.implicits.legacy.instant._
-import io.iohk.atala.prism.management.console.models.{ParticipantId, Statistics, TimeInterval}
+import io.iohk.atala.prism.management.console.models.{
+  ParticipantId,
+  Statistics,
+  TimeInterval
+}
 
 object StatisticsDAO {
   def query(

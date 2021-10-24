@@ -9,7 +9,12 @@ import io.iohk.atala.prism.auth.grpc.GrpcAuthenticationHeader
 import io.iohk.atala.prism.auth.model.RequestNonce
 import io.iohk.atala.prism.connector.AtalaOperationId
 import io.iohk.atala.prism.credentials.CredentialBatchId
-import io.iohk.atala.prism.crypto.{EC, MerkleInclusionProof, Sha256, Sha256Digest}
+import io.iohk.atala.prism.crypto.{
+  EC,
+  MerkleInclusionProof,
+  Sha256,
+  Sha256Digest
+}
 import io.iohk.atala.prism.crypto.signature.ECSignature
 import io.iohk.atala.prism.identity.{PrismDid => DID}
 import io.iohk.atala.prism.management.console.models._
@@ -17,14 +22,19 @@ import io.iohk.atala.prism.management.console.repositories.daos.ReceivedCredenti
 import io.iohk.atala.prism.management.console.repositories.daos._
 import io.iohk.atala.prism.models.ConnectionToken
 import io.iohk.atala.prism.protos.connector_models.ContactConnection
-import io.iohk.atala.prism.protos.console_models.{ConnectorRequestMetadata, ContactConnectionStatus}
+import io.iohk.atala.prism.protos.console_models.{
+  ConnectorRequestMetadata,
+  ContactConnectionStatus
+}
 
 import java.time.{Instant, LocalDate}
 import scala.util.Random
 import scala.jdk.CollectionConverters._
 
 object DataPreparation {
-  def createParticipant(name: String)(implicit database: Transactor[IO]): ParticipantId = {
+  def createParticipant(
+      name: String
+  )(implicit database: Transactor[IO]): ParticipantId = {
     createParticipant(name, newDID())
   }
 
@@ -52,14 +62,22 @@ object DataPreparation {
     ConnectorRequestMetadata(
       did = grpcAuthenticationHeaderDIDBased.did.toString,
       didKeyId = grpcAuthenticationHeaderDIDBased.keyId,
-      didSignature = new String(grpcAuthenticationHeaderDIDBased.signature.getData),
-      requestNonce = new String(grpcAuthenticationHeaderDIDBased.requestNonce.bytes.toArray)
+      didSignature =
+        new String(grpcAuthenticationHeaderDIDBased.signature.getData),
+      requestNonce =
+        new String(grpcAuthenticationHeaderDIDBased.requestNonce.bytes.toArray)
     )
 
-  def createInstitutionGroup(institutionId: ParticipantId, name: InstitutionGroup.Name)(implicit
+  def createInstitutionGroup(
+      institutionId: ParticipantId,
+      name: InstitutionGroup.Name
+  )(implicit
       database: Transactor[IO]
   ): InstitutionGroup = {
-    InstitutionGroupsDAO.create(institutionId, name).transact(database).unsafeRunSync()
+    InstitutionGroupsDAO
+      .create(institutionId, name)
+      .transact(database)
+      .unsafeRunSync()
   }
 
   def createContact(
@@ -85,7 +103,12 @@ object DataPreparation {
     groupName match {
       case None =>
         ContactsDAO
-          .createContact(institutionId, request, createdAt.getOrElse(Instant.now()), ConnectionToken(connectionToken))
+          .createContact(
+            institutionId,
+            request,
+            createdAt.getOrElse(Instant.now()),
+            ConnectionToken(connectionToken)
+          )
           .transact(database)
           .unsafeRunSync()
       case Some(name) =>
@@ -119,7 +142,12 @@ object DataPreparation {
       database: Transactor[IO]
   ): (Contact, ContactConnection) = {
     (
-      createContact(institutionId, name, Some(groupName), connectionToken = connectionToken),
+      createContact(
+        institutionId,
+        name,
+        Some(groupName),
+        connectionToken = connectionToken
+      ),
       ContactConnection(
         connectionToken = connectionToken,
         connectionStatus = connectionStatus
@@ -151,9 +179,16 @@ object DataPreparation {
 
     val credential = (for {
       credentialTypeWithRequiredFields <-
-        CredentialTypeDao.create(issuedBy, sampleCreateCredentialType(s"Credential type $tag"))
+        CredentialTypeDao.create(
+          issuedBy,
+          sampleCreateCredentialType(s"Credential type $tag")
+        )
       credential <-
-        CredentialsDAO.create(issuedBy, contactId, createRequest(credentialTypeWithRequiredFields.credentialType.id))
+        CredentialsDAO.create(
+          issuedBy,
+          contactId,
+          createRequest(credentialTypeWithRequiredFields.credentialType.id)
+        )
     } yield credential).transact(database).unsafeRunSync()
     // Sleep 1 ms to ensure DB queries sorting by creation time are deterministic (this only happens during testing as
     // creating more than one credential by/to the same participant at the exact time is rather hard)
@@ -164,7 +199,10 @@ object DataPreparation {
   def createCredentialType(participantId: ParticipantId, name: String)(implicit
       database: Transactor[IO]
   ): CredentialTypeWithRequiredFields = {
-    CredentialTypeDao.create(participantId, sampleCreateCredentialType(name)).transact(database).unsafeRunSync()
+    CredentialTypeDao
+      .create(participantId, sampleCreateCredentialType(name))
+      .transact(database)
+      .unsafeRunSync()
   }
 
   def sampleCreateCredentialType(name: String): CreateCredentialType = {
@@ -192,18 +230,28 @@ object DataPreparation {
     )
   }
 
-  def createReceivedCredential(contactId: Contact.Id)(implicit database: Transactor[IO]): Unit = {
+  def createReceivedCredential(
+      contactId: Contact.Id
+  )(implicit database: Transactor[IO]): Unit = {
     val request = ReceivedSignedCredentialData(
       contactId = contactId,
-      credentialExternalId = CredentialExternalId(Random.alphanumeric.take(10).mkString("")),
+      credentialExternalId =
+        CredentialExternalId(Random.alphanumeric.take(10).mkString("")),
       encodedSignedCredential = "signed-data-mock"
     )
 
-    ReceivedCredentialsDAO.insertSignedCredential(request).transact(database).unsafeRunSync()
+    ReceivedCredentialsDAO
+      .insertSignedCredential(request)
+      .transact(database)
+      .unsafeRunSync()
   }
 
   def newDID(): DID = {
-    DID.buildLongFormFromMasterPublicKey(EC.INSTANCE.generateKeyPair().getPublicKey).asCanonical()
+    DID
+      .buildLongFormFromMasterPublicKey(
+        EC.INSTANCE.generateKeyPair().getPublicKey
+      )
+      .asCanonical()
   }
 
   def publishCredential(
@@ -233,7 +281,9 @@ object DataPreparation {
   }
   def getBatchData(
       batchId: CredentialBatchId
-  )(implicit database: Transactor[IO]): Option[(AtalaOperationId, Sha256Digest)] = {
+  )(implicit
+      database: Transactor[IO]
+  ): Option[(AtalaOperationId, Sha256Digest)] = {
     sql"""
          |SELECT issuance_operation_id, issuance_operation_hash
          |FROM published_batches

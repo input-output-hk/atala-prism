@@ -4,14 +4,19 @@ import cats.data.OptionT
 import cats.implicits._
 import doobie.FC
 import doobie.implicits._
-import io.iohk.atala.prism.connector.model.{ParticipantInfo, UpdateParticipantProfile, TokenString}
+import io.iohk.atala.prism.connector.model.{
+  ParticipantInfo,
+  UpdateParticipantProfile,
+  TokenString
+}
 import io.iohk.atala.prism.crypto.keys.ECPublicKey
 import io.iohk.atala.prism.identity.{PrismDid => DID}
 import io.iohk.atala.prism.models.ParticipantId
 
 object ParticipantsDAO {
   def insert(participant: ParticipantInfo): doobie.ConnectionIO[Unit] = {
-    val ParticipantInfo(id, tpe, publicKey, name, did, logo, operationId) = participant
+    val ParticipantInfo(id, tpe, publicKey, name, did, logo, operationId) =
+      participant
     sql"""
          |INSERT INTO participants (id, tpe, public_key, name, did, logo, operation_id)
          |VALUES ($id, $tpe, $publicKey, $name, $did, $logo, $operationId)
@@ -27,7 +32,9 @@ object ParticipantsDAO {
       """.stripMargin.query[ParticipantInfo].option
     }
 
-  def findBy(token: TokenString): OptionT[doobie.ConnectionIO, ParticipantInfo] =
+  def findBy(
+      token: TokenString
+  ): OptionT[doobie.ConnectionIO, ParticipantInfo] =
     OptionT {
       sql"""
          |SELECT p.id, p.tpe, p.public_key, p.name, p.did, p.logo, p.operation_id
@@ -37,7 +44,9 @@ object ParticipantsDAO {
       """.stripMargin.query[ParticipantInfo].option
     }
 
-  def findByAvailableToken(token: TokenString): OptionT[doobie.ConnectionIO, ParticipantInfo] =
+  def findByAvailableToken(
+      token: TokenString
+  ): OptionT[doobie.ConnectionIO, ParticipantInfo] =
     OptionT {
       sql"""
          |SELECT p.id, p.tpe, p.public_key, p.name, p.did, p.logo, p.operation_id
@@ -48,7 +57,9 @@ object ParticipantsDAO {
       """.stripMargin.query[ParticipantInfo].option
     }
 
-  def findByPublicKey(publicKey: ECPublicKey): OptionT[doobie.ConnectionIO, ParticipantInfo] =
+  def findByPublicKey(
+      publicKey: ECPublicKey
+  ): OptionT[doobie.ConnectionIO, ParticipantInfo] =
     OptionT {
       sql"""
            |SELECT id, tpe, public_key, name, did, logo, operation_id
@@ -66,7 +77,10 @@ object ParticipantsDAO {
       """.stripMargin.query[ParticipantInfo].option
     }
 
-  def updateParticipantByID(id: ParticipantId, profile: UpdateParticipantProfile): doobie.ConnectionIO[Unit] = {
+  def updateParticipantByID(
+      id: ParticipantId,
+      profile: UpdateParticipantProfile
+  ): doobie.ConnectionIO[Unit] = {
     sql"""
          |UPDATE participants
          |SET logo = ${profile.logo},

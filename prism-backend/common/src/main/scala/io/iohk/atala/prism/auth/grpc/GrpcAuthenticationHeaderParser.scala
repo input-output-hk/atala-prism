@@ -13,7 +13,8 @@ trait GrpcAuthenticationHeaderParser {
       .orElse(GrpcAuthenticationContext.parsePublicKeyAuthenticationHeader(ctx))
   }
 
-  def getTraceId(ctx: Context): TraceId = GrpcAuthenticationContext.getTraceIdFromContext(ctx)
+  def getTraceId(ctx: Context): TraceId =
+    GrpcAuthenticationContext.getTraceIdFromContext(ctx)
 
 }
 

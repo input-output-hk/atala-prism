@@ -11,7 +11,10 @@ import doobie.util.transactor.Transactor
 import io.iohk.atala.prism.connector.AtalaOperationId
 import io.iohk.atala.prism.node.errors.NodeError
 import io.iohk.atala.prism.node.models._
-import io.iohk.atala.prism.node.repositories.daos.{AtalaObjectsDAO, AtalaOperationsDAO}
+import io.iohk.atala.prism.node.repositories.daos.{
+  AtalaObjectsDAO,
+  AtalaOperationsDAO
+}
 import io.iohk.atala.prism.node.repositories.daos.AtalaObjectsDAO.AtalaObjectCreateData
 import io.iohk.atala.prism.utils.syntax.DBConnectionOps
 import io.iohk.atala.prism.metrics.TimeMeasureMetric
@@ -39,7 +42,9 @@ trait AtalaOperationsRepository[F[_]] {
       oldObjects: List[AtalaObjectInfo]
   ): F[Either[NodeError, Unit]]
 
-  def getOperationInfo(atalaOperationId: AtalaOperationId): F[Option[AtalaOperationInfo]]
+  def getOperationInfo(
+      atalaOperationId: AtalaOperationId
+  ): F[Option[AtalaOperationInfo]]
 }
 
 object AtalaOperationsRepository {
@@ -50,9 +55,12 @@ object AtalaOperationsRepository {
     for {
       serviceLogs <- logs.service[AtalaOperationsRepository[F]]
     } yield {
-      implicit val implicitLogs: ServiceLogging[F, AtalaOperationsRepository[F]] = serviceLogs
-      val metrics: AtalaOperationsRepository[Mid[F, *]] = new AtalaOperationsRepositoryMetrics[F]()
-      val logs: AtalaOperationsRepository[Mid[F, *]] = new AtalaOperationsRepositoryLogs[F]
+      implicit val implicitLogs
+          : ServiceLogging[F, AtalaOperationsRepository[F]] = serviceLogs
+      val metrics: AtalaOperationsRepository[Mid[F, *]] =
+        new AtalaOperationsRepositoryMetrics[F]()
+      val logs: AtalaOperationsRepository[Mid[F, *]] =
+        new AtalaOperationsRepositoryLogs[F]
       val mid = metrics |+| logs
       mid attach new AtalaOperationsRepositoryImpl[F](transactor)
     }
@@ -60,11 +68,13 @@ object AtalaOperationsRepository {
   def unsafe[F[_]: BracketThrow: TimeMeasureMetric, R[_]: Comonad](
       transactor: Transactor[F],
       logs: Logs[R, F]
-  ): AtalaOperationsRepository[F] = AtalaOperationsRepository(transactor, logs).extract
+  ): AtalaOperationsRepository[F] =
+    AtalaOperationsRepository(transactor, logs).extract
 }
 
-private final class AtalaOperationsRepositoryImpl[F[_]: BracketThrow](xa: Transactor[F])
-    extends AtalaOperationsRepository[F] {
+private final class AtalaOperationsRepositoryImpl[F[_]: BracketThrow](
+    xa: Transactor[F]
+) extends AtalaOperationsRepository[F] {
 
   val logger: Logger = LoggerFactory.getLogger(getClass)
 
@@ -75,8 +85,12 @@ private final class AtalaOperationsRepositoryImpl[F[_]: BracketThrow](xa: Transa
       atalaOperationStatus: AtalaOperationStatus
   ): F[Either[NodeError, (Int, Int)]] = {
     val query = for {
-      numInsertObject <- AtalaObjectsDAO.insert(AtalaObjectCreateData(objectId, objectBytes))
-      numInsertOperations <- AtalaOperationsDAO.insert((atalaOperationId, objectId, atalaOperationStatus))
+      numInsertObject <- AtalaObjectsDAO.insert(
+        AtalaObjectCreateData(objectId, objectBytes)
+      )
+      numInsertOperations <- AtalaOperationsDAO.insert(
+        (atalaOperationId, objectId, atalaOperationStatus)
+      )
     } yield (numInsertObject, numInsertOperations)
 
     val opDescription = s"inserting operation: [$atalaOperationId]"
@@ -89,27 +103,37 @@ private final class AtalaOperationsRepositoryImpl[F[_]: BracketThrow](xa: Transa
       oldObjects: List[AtalaObjectInfo]
   ): F[Either[NodeError, Unit]] = {
     val query = for {
-      _ <- AtalaObjectsDAO.insert(AtalaObjectCreateData(atalaObject.objectId, atalaObject.byteContent))
+      _ <- AtalaObjectsDAO.insert(
+        AtalaObjectCreateData(atalaObject.objectId, atalaObject.byteContent)
+      )
       _ <- AtalaOperationsDAO.updateAtalaOperationObjectBatch(
         operations.map(AtalaOperationId.of),
         atalaObject.objectId
       )
-      _ <- AtalaObjectsDAO.updateObjectStatusBatch(oldObjects.map(_.objectId), AtalaObjectStatus.Merged)
+      _ <- AtalaObjectsDAO.updateObjectStatusBatch(
+        oldObjects.map(_.objectId),
+        AtalaObjectStatus.Merged
+      )
     } yield ()
 
     val opDescription = s"record new Atala Object ${atalaObject.objectId}"
     connectionIOSafe(query.logSQLErrors(opDescription, logger)).transact(xa)
   }
 
-  def getOperationInfo(atalaOperationId: AtalaOperationId): F[Option[AtalaOperationInfo]] = {
+  def getOperationInfo(
+      atalaOperationId: AtalaOperationId
+  ): F[Option[AtalaOperationInfo]] = {
     val opDescription = s"getting operation info for [$atalaOperationId]"
-    val query = AtalaOperationsDAO.getAtalaOperationInfo(atalaOperationId).logSQLErrors(opDescription, logger)
+    val query = AtalaOperationsDAO
+      .getAtalaOperationInfo(atalaOperationId)
+      .logSQLErrors(opDescription, logger)
 
     connectionIOSafe(query)
       .map(
         _.left
           .map { err =>
-            logger.error(s"Could not retrieve operation [$atalaOperationId]", err)
+            logger
+              .error(s"Could not retrieve operation [$atalaOperationId]", err)
           }
           .getOrElse(None)
       )

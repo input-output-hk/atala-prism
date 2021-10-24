@@ -2,7 +2,9 @@ package io.iohk.atala.prism.node.cardano.models
 
 import com.google.protobuf.ByteString
 import io.circe.{Json, parser}
-import io.iohk.atala.prism.identity.PrismDid.{getDEFAULT_MASTER_KEY_ID => masterKeyId}
+import io.iohk.atala.prism.identity.PrismDid.{
+  getDEFAULT_MASTER_KEY_ID => masterKeyId
+}
 import io.iohk.atala.prism.node.cardano.models.AtalaObjectMetadata.METADATA_PRISM_INDEX
 import io.iohk.atala.prism.protos.{node_internal, node_models}
 import org.scalatest.OptionValues._
@@ -27,8 +29,14 @@ class AtalaObjectMetadataSpec extends AnyWordSpec {
                       Some(
                         node_models.CreateDIDOperation.DIDCreationData(
                           publicKeys = List(
-                            node_models.PublicKey(id = masterKeyId, usage = node_models.KeyUsage.MASTER_KEY),
-                            node_models.PublicKey(id = "issuing0", usage = node_models.KeyUsage.ISSUING_KEY)
+                            node_models.PublicKey(
+                              id = masterKeyId,
+                              usage = node_models.KeyUsage.MASTER_KEY
+                            ),
+                            node_models.PublicKey(
+                              id = "issuing0",
+                              usage = node_models.KeyUsage.ISSUING_KEY
+                            )
                           )
                         )
                       )
@@ -72,7 +80,8 @@ class AtalaObjectMetadataSpec extends AnyWordSpec {
     }
 
     "fail when index is invalid" in {
-      val metadata = TransactionMetadata(parseJson("""{ "1": 2 }""".stripMargin))
+      val metadata =
+        TransactionMetadata(parseJson("""{ "1": 2 }""".stripMargin))
 
       val result = AtalaObjectMetadata.fromTransactionMetadata(metadata)
 

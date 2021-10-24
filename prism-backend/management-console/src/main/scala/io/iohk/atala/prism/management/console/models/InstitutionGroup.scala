@@ -41,7 +41,10 @@ object InstitutionGroup {
   object Id extends UUIDValue.Builder[Id]
   @derive(loggable)
   final case class Name(value: String) extends AnyVal
-  final case class WithContactCount(value: InstitutionGroup, numberOfContacts: Int)
+  final case class WithContactCount(
+      value: InstitutionGroup,
+      numberOfContacts: Int
+  )
 
   object Name {
     def optional(string: String): Option[Name] = {
@@ -69,6 +72,10 @@ object InstitutionGroup {
   )
 
   type PaginatedQuery =
-    PaginatedQueryConstraints[InstitutionGroup.Id, InstitutionGroup.SortBy, InstitutionGroup.FilterBy]
+    PaginatedQueryConstraints[
+      InstitutionGroup.Id,
+      InstitutionGroup.SortBy,
+      InstitutionGroup.FilterBy
+    ]
 
 }

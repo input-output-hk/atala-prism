@@ -10,7 +10,10 @@ import derevo.tagless.applyK
 import doobie.implicits._
 import doobie.util.transactor.Transactor
 import io.iohk.atala.prism.utils.syntax.DBConnectionOps
-import io.iohk.atala.prism.node.cardano.dbsync.repositories.daos.{BlockDAO, TransactionDAO}
+import io.iohk.atala.prism.node.cardano.dbsync.repositories.daos.{
+  BlockDAO,
+  TransactionDAO
+}
 import io.iohk.atala.prism.node.cardano.dbsync.repositories.logs.CardanoBlockRepositoryLogs
 import io.iohk.atala.prism.node.cardano.models.{Block, BlockError}
 import org.slf4j.{Logger, LoggerFactory}
@@ -31,8 +34,10 @@ object CardanoBlockRepository {
     for {
       serviceLogs <- logs.service[CardanoBlockRepository[F]]
     } yield {
-      implicit val implicitLogs: ServiceLogging[F, CardanoBlockRepository[F]] = serviceLogs
-      val logs: CardanoBlockRepository[Mid[F, *]] = new CardanoBlockRepositoryLogs[F]
+      implicit val implicitLogs: ServiceLogging[F, CardanoBlockRepository[F]] =
+        serviceLogs
+      val logs: CardanoBlockRepository[Mid[F, *]] =
+        new CardanoBlockRepositoryLogs[F]
       val mid = logs
       mid attach new CardanoBlockRepositoryImpl[F](transactor)
     }
@@ -40,11 +45,13 @@ object CardanoBlockRepository {
   def unsafe[F[_]: BracketThrow, R[_]: Comonad](
       transactor: Transactor[F],
       logs: Logs[R, F]
-  ): CardanoBlockRepository[F] = CardanoBlockRepository(transactor, logs).extract
+  ): CardanoBlockRepository[F] =
+    CardanoBlockRepository(transactor, logs).extract
 }
 
-private final class CardanoBlockRepositoryImpl[F[_]: BracketThrow](xa: Transactor[F])
-    extends CardanoBlockRepository[F] {
+private final class CardanoBlockRepositoryImpl[F[_]: BracketThrow](
+    xa: Transactor[F]
+) extends CardanoBlockRepository[F] {
 
   val logger: Logger = LoggerFactory.getLogger(getClass)
 
@@ -60,15 +67,16 @@ private final class CardanoBlockRepositoryImpl[F[_]: BracketThrow](xa: Transacto
       .map(_.toRight(BlockError.NotFound(blockNo)))
   }
 
-  def getLatestBlock: F[Either[BlockError.NoneAvailable.type, Block.Canonical]] = {
+  def getLatestBlock
+      : F[Either[BlockError.NoneAvailable.type, Block.Canonical]] = {
     BlockDAO
       .latest()
       .logSQLErrors("getting latest block", logger)
       .transact(xa)
       .map(
-        _.fold[Either[BlockError.NoneAvailable.type, Block.Canonical]](BlockError.NoneAvailable.asLeft)(header =>
-          Block.Canonical(header).asRight
-        )
+        _.fold[Either[BlockError.NoneAvailable.type, Block.Canonical]](
+          BlockError.NoneAvailable.asLeft
+        )(header => Block.Canonical(header).asRight)
       )
   }
 }

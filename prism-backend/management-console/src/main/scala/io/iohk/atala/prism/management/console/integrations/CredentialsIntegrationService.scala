@@ -15,7 +15,10 @@ import io.iohk.atala.prism.connector.AtalaOperationId
 import io.iohk.atala.prism.grpc.ProtoConverter
 import io.iohk.atala.prism.management.console.clients.ConnectorClient
 import io.iohk.atala.prism.management.console.errors
-import io.iohk.atala.prism.management.console.errors.{ManagementConsoleError, ManagementConsoleErrorSupport}
+import io.iohk.atala.prism.management.console.errors.{
+  ManagementConsoleError,
+  ManagementConsoleErrorSupport
+}
 import io.iohk.atala.prism.management.console.grpc._
 import io.iohk.atala.prism.management.console.integrations.CredentialsIntegrationService.{
   GenericCredentialWithConnection,
@@ -78,7 +81,11 @@ private final class CredentialsIntegrationServiceImpl[F[_]: Monad](
       maybeNodeResponse <- revokeCredsInNode(request)
       maybeOperationId <- maybeNodeResponse.traverse(nodeResponse =>
         credentialsRepository
-          .storeRevocationData(institutionId, request.credentialId, nodeResponse.operationId)
+          .storeRevocationData(
+            institutionId,
+            request.credentialId,
+            nodeResponse.operationId
+          )
           .as(nodeResponse.operationId)
       )
     } yield maybeOperationId
@@ -114,8 +121,12 @@ private final class CredentialsIntegrationServiceImpl[F[_]: Monad](
   ): F[GetGenericCredentialsResult] =
     for {
       genericCredentials <- genericCredentialSupplier
-      connectionStatuses <- connector.getConnectionStatus(genericCredentials.map(_.connectionToken))
-      tokenToConnection = connectionStatuses.map(c => ConnectionToken(c.connectionToken) -> c).toMap
+      connectionStatuses <- connector.getConnectionStatus(
+        genericCredentials.map(_.connectionToken)
+      )
+      tokenToConnection = connectionStatuses
+        .map(c => ConnectionToken(c.connectionToken) -> c)
+        .toMap
     } yield GetGenericCredentialsResult(
       genericCredentials
         .map { genericCredential =>
@@ -125,7 +136,8 @@ private final class CredentialsIntegrationServiceImpl[F[_]: Monad](
               genericCredential.connectionToken,
               ContactConnection(
                 connectionToken = genericCredential.connectionToken.token,
-                connectionStatus = ContactConnectionStatus.STATUS_CONNECTION_MISSING
+                connectionStatus =
+                  ContactConnectionStatus.STATUS_CONNECTION_MISSING
               )
             )
           )
@@ -137,13 +149,21 @@ private final class CredentialsIntegrationServiceImpl[F[_]: Monad](
   ): F[Either[ManagementConsoleError, NodeRevocationResponse]] = {
     ex.deferFuture(
       nodeService.revokeCredentials(
-        node_api.RevokeCredentialsRequest().withSignedOperation(request.revokeCredentialsOperation)
+        node_api
+          .RevokeCredentialsRequest()
+          .withSignedOperation(request.revokeCredentialsOperation)
       )
-    ).map(ProtoConverter[node_api.RevokeCredentialsResponse, NodeRevocationResponse].fromProto)
-      .map(_.toEither.left.map(wrapAsServerError))
+    ).map(
+      ProtoConverter[
+        node_api.RevokeCredentialsResponse,
+        NodeRevocationResponse
+      ].fromProto
+    ).map(_.toEither.left.map(wrapAsServerError))
   }
 
-  private def getGenericCredentialWithConnection(in: GenericCredential): F[GenericCredentialWithConnection] =
+  private def getGenericCredentialWithConnection(
+      in: GenericCredential
+  ): F[GenericCredentialWithConnection] =
     getAndAppendConnectionStatus(List(in).pure[F]).map(_.data.head)
 
 }
@@ -159,10 +179,16 @@ object CredentialsIntegrationService {
     for {
       serviceLogs <- logs.service[CredentialsIntegrationService[F]]
     } yield {
-      implicit val implicitLogs: ServiceLogging[F, CredentialsIntegrationService[F]] = serviceLogs
-      val logs: CredentialsIntegrationService[Mid[F, *]] = new CredentialsIntegrationServiceLogs[F]
+      implicit val implicitLogs
+          : ServiceLogging[F, CredentialsIntegrationService[F]] = serviceLogs
+      val logs: CredentialsIntegrationService[Mid[F, *]] =
+        new CredentialsIntegrationServiceLogs[F]
       val mid = logs
-      mid attach new CredentialsIntegrationServiceImpl[F](credentialsRepository, nodeService, connector)
+      mid attach new CredentialsIntegrationServiceImpl[F](
+        credentialsRepository,
+        nodeService,
+        connector
+      )
     }
 
   def unsafe[F[_]: Execute: BracketThrow, R[_]: Comonad](
@@ -171,7 +197,12 @@ object CredentialsIntegrationService {
       connector: ConnectorClient[F],
       logs: Logs[R, F]
   ): CredentialsIntegrationService[F] =
-    CredentialsIntegrationService(credentialsRepository, nodeService, connector, logs).extract
+    CredentialsIntegrationService(
+      credentialsRepository,
+      nodeService,
+      connector,
+      logs
+    ).extract
 
   def makeResource[F[_]: Execute: BracketThrow, R[_]: Monad](
       credentialsRepository: CredentialsRepository[F],
@@ -179,13 +210,22 @@ object CredentialsIntegrationService {
       connector: ConnectorClient[F],
       logs: Logs[R, F]
   ): Resource[R, CredentialsIntegrationService[F]] =
-    Resource.eval(CredentialsIntegrationService(credentialsRepository, nodeService, connector, logs))
+    Resource.eval(
+      CredentialsIntegrationService(
+        credentialsRepository,
+        nodeService,
+        connector,
+        logs
+      )
+    )
 
   case class GenericCredentialWithConnection(
       genericCredential: GenericCredential,
       connection: connector_models.ContactConnection
   )
-  case class GetGenericCredentialsResult(data: List[GenericCredentialWithConnection])
+  case class GetGenericCredentialsResult(
+      data: List[GenericCredentialWithConnection]
+  )
 }
 
 private final class CredentialsIntegrationServiceLogs[F[_]: ServiceLogging[
@@ -201,11 +241,16 @@ private final class CredentialsIntegrationServiceLogs[F[_]: ServiceLogging[
       info"revoking published credential $institutionId ${request.credentialId}" *> in
         .flatTap(
           _.fold(
-            er => error"encountered an error while revoking published credential $er",
+            er =>
+              error"encountered an error while revoking published credential $er",
             _ => info"revoking published credential - successfully done"
           )
         )
-        .onError(errorCause"encountered an error while revoking published credential" (_))
+        .onError(
+          errorCause"encountered an error while revoking published credential" (
+            _
+          )
+        )
 
   override def createGenericCredential(
       participantId: ParticipantId,
@@ -215,11 +260,14 @@ private final class CredentialsIntegrationServiceLogs[F[_]: ServiceLogging[
       info"creating generic credential $participantId ${createGenericCredential.contactId}" *> in
         .flatTap(
           _.fold(
-            er => error"encountered an error while creating generic credential $er",
+            er =>
+              error"encountered an error while creating generic credential $er",
             _ => info"creating generic credential - successfully done"
           )
         )
-        .onError(errorCause"encountered an error while creating generic credential" (_))
+        .onError(
+          errorCause"encountered an error while creating generic credential" (_)
+        )
 
   override def getGenericCredentials(
       issuedBy: ParticipantId,

@@ -14,14 +14,20 @@ import derevo.derive
 import derevo.tagless.applyK
 import io.iohk.atala.prism.models.{TransactionInfo, TransactionStatus}
 import io.iohk.atala.prism.node.UnderlyingLedger
-import io.iohk.atala.prism.node.cardano.models.{CardanoWalletError, CardanoWalletErrorCode}
+import io.iohk.atala.prism.node.cardano.models.{
+  CardanoWalletError,
+  CardanoWalletErrorCode
+}
 import io.iohk.atala.prism.node.errors.NodeError
 import io.iohk.atala.prism.node.models.{
   AtalaObjectInfo,
   AtalaObjectTransactionSubmission,
   AtalaObjectTransactionSubmissionStatus
 }
-import io.iohk.atala.prism.node.repositories.{AtalaObjectsTransactionsRepository, AtalaOperationsRepository}
+import io.iohk.atala.prism.node.repositories.{
+  AtalaObjectsTransactionsRepository,
+  AtalaOperationsRepository
+}
 import io.iohk.atala.prism.node.services.SubmissionService.Config
 import io.iohk.atala.prism.node.services.logs.SubmissionServiceLogs
 import io.iohk.atala.prism.protos.node_internal
@@ -37,13 +43,18 @@ trait SubmissionService[F[_]] {
 
   def submitReceivedObjects(): F[Either[NodeError, Unit]]
 
-  def retryOldPendingTransactions(ledgerPendingTransactionTimeout: Duration): F[Int]
+  def retryOldPendingTransactions(
+      ledgerPendingTransactionTimeout: Duration
+  ): F[Int]
 
 }
 
 object SubmissionService {
 
-  case class Config(maxNumberTransactionsToSubmit: Int, maxNumberTransactionsToRetry: Int)
+  case class Config(
+      maxNumberTransactionsToSubmit: Int,
+      maxNumberTransactionsToRetry: Int
+  )
 
   def apply[F[_]: MonadThrow: Execute, R[_]: Functor](
       atalaReferenceLedger: UnderlyingLedger,
@@ -55,7 +66,8 @@ object SubmissionService {
     for {
       serviceLogs <- logs.service[SubmissionService[F]]
     } yield {
-      implicit val implicitLogs: ServiceLogging[F, SubmissionService[F]] = serviceLogs
+      implicit val implicitLogs: ServiceLogging[F, SubmissionService[F]] =
+        serviceLogs
       val logs: SubmissionService[Mid[F, *]] = new SubmissionServiceLogs[F]
       val mid = logs
       mid attach new SubmissionServiceImpl[F](
@@ -96,23 +108,36 @@ private class SubmissionServiceImpl[F[_]: Monad](
       atalaObjects <- EitherT(
         atalaObjectsTransactionsRepository.getNotPublishedObjects
       )
-      _ = logger.info(s"Submit buffered objects. Number of objects: ${atalaObjects.size}")
+      _ = logger.info(
+        s"Submit buffered objects. Number of objects: ${atalaObjects.size}"
+      )
       atalaObjectsMerged <- EitherT.right(mergeAtalaObjects(atalaObjects))
-      atalaObjectsWithParsedContent = atalaObjectsMerged.map { obj => (obj, parseObjectContent(obj)) }
+      atalaObjectsWithParsedContent = atalaObjectsMerged.map { obj =>
+        (obj, parseObjectContent(obj))
+      }
       publishedTransactions <-
-        EitherT.right[NodeError](publishObjectsAndRecordTransaction(atalaObjectsWithParsedContent))
+        EitherT.right[NodeError](
+          publishObjectsAndRecordTransaction(atalaObjectsWithParsedContent)
+        )
     } yield {
-      logger.info(s"successfully published transactions: ${publishedTransactions.size}")
+      logger.info(
+        s"successfully published transactions: ${publishedTransactions.size}"
+      )
     }
 
     submissionET.value
   }
 
-  def retryOldPendingTransactions(ledgerPendingTransactionTimeout: Duration): F[Int] = {
+  def retryOldPendingTransactions(
+      ledgerPendingTransactionTimeout: Duration
+  ): F[Int] = {
     logger.info("Retry old pending transactions submission")
     val getOldPendingTransactions =
       atalaObjectsTransactionsRepository
-        .getOldPendingTransactions(ledgerPendingTransactionTimeout, atalaReferenceLedger.getType)
+        .getOldPendingTransactions(
+          ledgerPendingTransactionTimeout,
+          atalaReferenceLedger.getType
+        )
 
     for {
       // Query old pending transactions
@@ -123,12 +148,13 @@ private class SubmissionServiceImpl[F[_]: Monad](
           .traverse(getTransactionDetails)
           .map(_.flatten)
 
-      (inLedgerTransactions, notInLedgerTransactions) = transactionsWithDetails.partitionMap {
-        case (transaction, TransactionStatus.InLedger) =>
-          Left(transaction)
-        case txWithStatus =>
-          Right(txWithStatus)
-      }
+      (inLedgerTransactions, notInLedgerTransactions) = transactionsWithDetails
+        .partitionMap {
+          case (transaction, TransactionStatus.InLedger) =>
+            Left(transaction)
+          case txWithStatus =>
+            Right(txWithStatus)
+        }
       numInLedgerSynced <- syncInLedgerTransactions(inLedgerTransactions)
 
       transactionsToRetry = notInLedgerTransactions.collect {
@@ -157,13 +183,19 @@ private class SubmissionServiceImpl[F[_]: Monad](
           .retrieveObjects(deletedTransactions)
           .map(_.flatten)
       atalaObjectsMerged <- mergeAtalaObjects(atalaObjects)
-      atalaObjectsWithParsedContent = atalaObjectsMerged.map { obj => (obj, parseObjectContent(obj)) }
-      publishedTransactions <- publishObjectsAndRecordTransaction(atalaObjectsWithParsedContent)
+      atalaObjectsWithParsedContent = atalaObjectsMerged.map { obj =>
+        (obj, parseObjectContent(obj))
+      }
+      publishedTransactions <- publishObjectsAndRecordTransaction(
+        atalaObjectsWithParsedContent
+      )
     } yield publishedTransactions.size
   }
 
   private def publishObjectsAndRecordTransaction(
-      atalaObjectsWithParsedContent: List[(AtalaObjectInfo, node_internal.AtalaObject)]
+      atalaObjectsWithParsedContent: List[
+        (AtalaObjectInfo, node_internal.AtalaObject)
+      ]
   ): F[List[TransactionInfo]] =
     atalaObjectsWithParsedContent
       .take(config.maxNumberTransactionsToSubmit)
@@ -179,7 +211,9 @@ private class SubmissionServiceImpl[F[_]: Monad](
   private def deleteTransactions(
       transactions: List[AtalaObjectTransactionSubmission]
   ): F[List[AtalaObjectTransactionSubmission]] =
-    transactions.traverse(deleteTransactionMaybe(_).map(_.toOption)).map(_.flatten)
+    transactions
+      .traverse(deleteTransactionMaybe(_).map(_.toOption))
+      .map(_.flatten)
 
   private def deleteTransactionMaybe(
       submission: AtalaObjectTransactionSubmission
@@ -187,11 +221,15 @@ private class SubmissionServiceImpl[F[_]: Monad](
     logger.info(s"Trying to delete transaction [${submission.transactionId}]")
     for {
       deletionResult <-
-        ex.deferFuture(atalaReferenceLedger.deleteTransaction(submission.transactionId))
-          .map(handleTransactionDeletion(submission, _))
+        ex.deferFuture(
+          atalaReferenceLedger.deleteTransaction(submission.transactionId)
+        ).map(handleTransactionDeletion(submission, _))
       dbUpdateE <-
         atalaObjectsTransactionsRepository
-          .updateSubmissionStatus(submission, deletionResult.newSubmissionStatus)
+          .updateSubmissionStatus(
+            submission,
+            deletionResult.newSubmissionStatus
+          )
       _ = logger.info(
         s"Status for transaction [${submission.transactionId}] updated to ${deletionResult.newSubmissionStatus}"
       )
@@ -206,7 +244,12 @@ private class SubmissionServiceImpl[F[_]: Monad](
       in: Either[CardanoWalletError, Unit]
   ): TransactionDeletionResult =
     in match {
-      case Left(err @ CardanoWalletError(_, CardanoWalletErrorCode.TransactionAlreadyInLedger)) =>
+      case Left(
+            err @ CardanoWalletError(
+              _,
+              CardanoWalletErrorCode.TransactionAlreadyInLedger
+            )
+          ) =>
         TransactionDeletionResult(
           AtalaObjectTransactionSubmissionStatus.InLedger,
           NodeError
@@ -214,10 +257,19 @@ private class SubmissionServiceImpl[F[_]: Monad](
             .asLeft[AtalaObjectTransactionSubmission]
         )
       case Left(err) =>
-        logger.error(s"Could not delete transaction ${submission.transactionId}", err)
-        TransactionDeletionResult(submission.status, NodeError.InternalCardanoWalletError(err).asLeft)
+        logger.error(
+          s"Could not delete transaction ${submission.transactionId}",
+          err
+        )
+        TransactionDeletionResult(
+          submission.status,
+          NodeError.InternalCardanoWalletError(err).asLeft
+        )
       case Right(_) =>
-        TransactionDeletionResult(AtalaObjectTransactionSubmissionStatus.Deleted, submission.asRight)
+        TransactionDeletionResult(
+          AtalaObjectTransactionSubmissionStatus.Deleted,
+          submission.asRight
+        )
     }
 
   case class TransactionDeletionResult(
@@ -243,38 +295,49 @@ private class SubmissionServiceImpl[F[_]: Monad](
               }
         }
 
-    val objects = atalaObjectsMerged.traverse { case (atalaObject, oldObjects) =>
-      if (oldObjects.size != 1) {
-        val changedBlockE = atalaObject.getAndValidateAtalaObject
-          .flatMap(_.blockContent)
-          .toRight {
-            NodeError.InternalError(s"Block in object ${atalaObject.objectId} was invalidated after merge.")
+    val objects = atalaObjectsMerged.traverse {
+      case (atalaObject, oldObjects) =>
+        if (oldObjects.size != 1) {
+          val changedBlockE = atalaObject.getAndValidateAtalaObject
+            .flatMap(_.blockContent)
+            .toRight {
+              NodeError.InternalError(
+                s"Block in object ${atalaObject.objectId} was invalidated after merge."
+              )
+            }
+
+          val atalaObjectIOEither = for {
+            changedBlock <- EitherT.fromEither(changedBlockE)
+            _ <- EitherT(
+              atalaOperationsRepository.updateMergedObjects(
+                atalaObject,
+                changedBlock.operations.toList,
+                oldObjects
+              )
+            )
+          } yield atalaObject
+
+          atalaObjectIOEither.value.map {
+            case Left(err) =>
+              logger.error(err.toString)
+              None
+            case Right(atalaObjectInfo) =>
+              Some(atalaObjectInfo)
           }
-
-        val atalaObjectIOEither = for {
-          changedBlock <- EitherT.fromEither(changedBlockE)
-          _ <- EitherT(
-            atalaOperationsRepository.updateMergedObjects(atalaObject, changedBlock.operations.toList, oldObjects)
-          )
-        } yield atalaObject
-
-        atalaObjectIOEither.value.map {
-          case Left(err) =>
-            logger.error(err.toString)
-            None
-          case Right(atalaObjectInfo) =>
-            Some(atalaObjectInfo)
+        } else {
+          atalaObject.some.pure[F]
         }
-      } else {
-        atalaObject.some.pure[F]
-      }
     }
     objects.map(_.flatten)
   }
 
-  private def parseObjectContent(atalaObjectInfo: AtalaObjectInfo): node_internal.AtalaObject =
+  private def parseObjectContent(
+      atalaObjectInfo: AtalaObjectInfo
+  ): node_internal.AtalaObject =
     atalaObjectInfo.getAndValidateAtalaObject.getOrElse {
-      throw new RuntimeException(s"Can't extract AtalaObject content for objectId=${atalaObjectInfo.objectId}")
+      throw new RuntimeException(
+        s"Can't extract AtalaObject content for objectId=${atalaObjectInfo.objectId}"
+      )
     }
 
   private def publishAndRecordTransaction(
@@ -300,9 +363,13 @@ private class SubmissionServiceImpl[F[_]: Monad](
   private def getTransactionDetails(
       transaction: AtalaObjectTransactionSubmission
   ): F[Option[(AtalaObjectTransactionSubmission, TransactionStatus)]] = {
-    logger.info(s"Getting transaction details for transaction ${transaction.transactionId}")
+    logger.info(
+      s"Getting transaction details for transaction ${transaction.transactionId}"
+    )
     for {
-      transactionDetails <- ex.deferFuture(atalaReferenceLedger.getTransactionDetails(transaction.transactionId))
+      transactionDetails <- ex.deferFuture(
+        atalaReferenceLedger.getTransactionDetails(transaction.transactionId)
+      )
     } yield {
       transactionDetails.left
         .map { err =>
@@ -321,10 +388,16 @@ private class SubmissionServiceImpl[F[_]: Monad](
     transactions
       .traverse { transaction =>
         atalaObjectsTransactionsRepository
-          .updateSubmissionStatus(transaction, AtalaObjectTransactionSubmissionStatus.InLedger)
+          .updateSubmissionStatus(
+            transaction,
+            AtalaObjectTransactionSubmissionStatus.InLedger
+          )
           .map { dbResultEither =>
             dbResultEither.left.map { err =>
-              logger.error(s"Could not update status to InLedger for transaction ${transaction.transactionId}", err)
+              logger.error(
+                s"Could not update status to InLedger for transaction ${transaction.transactionId}",
+                err
+              )
             }.toOption
           }
       }

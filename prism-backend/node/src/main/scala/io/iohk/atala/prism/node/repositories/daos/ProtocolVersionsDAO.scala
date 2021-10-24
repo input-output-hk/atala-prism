@@ -33,7 +33,10 @@ object ProtocolVersionsDAO {
          |WHERE is_effective
          |ORDER BY effective_since DESC
          |LIMIT 1
-       """.stripMargin.query[ProtocolVersion].option.map(_.getOrElse(InitialProtocolVersion))
+       """.stripMargin
+      .query[ProtocolVersion]
+      .option
+      .map(_.getOrElse(InitialProtocolVersion))
   }
 
   def getLastKnownProtocolUpdate: ConnectionIO[ProtocolVersionInfo] = {
@@ -42,10 +45,15 @@ object ProtocolVersionsDAO {
          |FROM protocol_versions
          |ORDER BY effective_since DESC
          |LIMIT 1
-       """.stripMargin.query[ProtocolVersionInfo].option.map(_.getOrElse(InitialProtocolVersionInfo))
+       """.stripMargin
+      .query[ProtocolVersionInfo]
+      .option
+      .map(_.getOrElse(InitialProtocolVersionInfo))
   }
 
-  def markEffective(blockIndex: Int): ConnectionIO[Option[ProtocolVersionInfo]] = {
+  def markEffective(
+      blockIndex: Int
+  ): ConnectionIO[Option[ProtocolVersionInfo]] = {
     sql"""
          |UPDATE protocol_versions
          |SET is_effective = true

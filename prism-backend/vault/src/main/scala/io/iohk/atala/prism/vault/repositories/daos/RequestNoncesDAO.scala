@@ -13,11 +13,14 @@ object RequestNoncesDAO {
          |RETURNING request_nonce
          |""".stripMargin.query[RequestNonce].option.map {
       case Some(_) => ()
-      case None => throw new RuntimeException("The nonce was already used")
+      case None    => throw new RuntimeException("The nonce was already used")
     }
   }
 
-  def available(did: DID, requestNonce: RequestNonce): doobie.ConnectionIO[Boolean] = {
+  def available(
+      did: DID,
+      requestNonce: RequestNonce
+  ): doobie.ConnectionIO[Boolean] = {
     sql"""
          |SELECT request_nonce
          |FROM request_nonces

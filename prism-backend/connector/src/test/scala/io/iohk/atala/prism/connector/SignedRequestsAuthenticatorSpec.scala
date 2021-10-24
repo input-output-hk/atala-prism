@@ -10,9 +10,15 @@ import io.iohk.atala.prism.crypto.keys.ECPublicKey
 import io.iohk.atala.prism.crypto.signature.ECSignature
 import io.iohk.atala.prism.connector.errors.{UnknownValueError, co}
 import io.iohk.atala.prism.connector.model._
-import io.iohk.atala.prism.connector.repositories.{ParticipantsRepository, RequestNoncesRepository}
+import io.iohk.atala.prism.connector.repositories.{
+  ParticipantsRepository,
+  RequestNoncesRepository
+}
 import io.iohk.atala.prism.{DIDUtil, auth}
-import io.iohk.atala.prism.auth.grpc.{GrpcAuthenticationHeader, GrpcAuthenticationHeaderParser}
+import io.iohk.atala.prism.auth.grpc.{
+  GrpcAuthenticationHeader,
+  GrpcAuthenticationHeaderParser
+}
 import io.iohk.atala.prism.crypto.Sha256
 import io.iohk.atala.prism.identity.{PrismDid => DID}
 import io.iohk.atala.prism.logging.TraceId
@@ -35,10 +41,12 @@ import scala.concurrent.duration._
 
 class SignedRequestsAuthenticatorSpec extends AnyWordSpec {
   val defaultValueDID = new DefaultValueProvider[DID] {
-    override def default: DID = DID.buildCanonical(Sha256.compute("default".getBytes("UTF-8")))
+    override def default: DID =
+      DID.buildCanonical(Sha256.compute("default".getBytes("UTF-8")))
   }
 
-  private implicit def patienceConfig: PatienceConfig = PatienceConfig(20.seconds, 50.millis)
+  private implicit def patienceConfig: PatienceConfig =
+    PatienceConfig(20.seconds, 50.millis)
 
   private val request = connector_api.GetConnectionTokenInfoRequest()
   private val response = connector_api.GetConnectionTokenInfoResponse()
@@ -55,7 +63,10 @@ class SignedRequestsAuthenticatorSpec extends AnyWordSpec {
 
     "parse trace id from header" in {
       val externalTraceId = TraceId("exactlyThisTraceId123")
-      val authenticator = buildAuthenticator(getHeader = () => None, getTraceIdFromHeader = () => externalTraceId)
+      val authenticator = buildAuthenticator(
+        getHeader = () => None,
+        getTraceIdFromHeader = () => externalTraceId
+      )
       val result = authenticator.public("test", request) { traceId =>
         Future.successful(traceId)
       }
@@ -68,11 +79,15 @@ class SignedRequestsAuthenticatorSpec extends AnyWordSpec {
 
     "accept the public key authentication" in {
       val keys = EC.generateKeyPair()
-      val signedRequest = requestAuthenticator.signConnectorRequest(request.toByteArray, keys.getPrivateKey)
+      val signedRequest = requestAuthenticator.signConnectorRequest(
+        request.toByteArray,
+        keys.getPrivateKey
+      )
 
       val header = GrpcAuthenticationHeader
         .PublicKeyBased(
-          requestNonce = auth.model.RequestNonce(signedRequest.requestNonce.toVector),
+          requestNonce =
+            auth.model.RequestNonce(signedRequest.requestNonce.toVector),
           publicKey = keys.getPublicKey,
           signature = new ECSignature(signedRequest.signature)
         )
@@ -82,11 +97,15 @@ class SignedRequestsAuthenticatorSpec extends AnyWordSpec {
 
     "accept the unpublished did authentication" in {
       val (keys, unpublishedDid) = DIDUtil.createUnpublishedDid
-      val signedRequest = requestAuthenticator.signConnectorRequest(request.toByteArray, keys.getPrivateKey)
+      val signedRequest = requestAuthenticator.signConnectorRequest(
+        request.toByteArray,
+        keys.getPrivateKey
+      )
 
       val header = GrpcAuthenticationHeader
         .UnpublishedDIDBased(
-          requestNonce = auth.model.RequestNonce(signedRequest.requestNonce.toVector),
+          requestNonce =
+            auth.model.RequestNonce(signedRequest.requestNonce.toVector),
           did = unpublishedDid,
           DID.getDEFAULT_MASTER_KEY_ID,
           signature = new ECSignature(signedRequest.signature)
@@ -99,10 +118,14 @@ class SignedRequestsAuthenticatorSpec extends AnyWordSpec {
       val keys = EC.generateKeyPair()
       // signed with the wrong key
       val signedRequest =
-        requestAuthenticator.signConnectorRequest(request.toByteArray, EC.generateKeyPair().getPrivateKey)
+        requestAuthenticator.signConnectorRequest(
+          request.toByteArray,
+          EC.generateKeyPair().getPrivateKey
+        )
       val header = GrpcAuthenticationHeader
         .PublicKeyBased(
-          requestNonce = auth.model.RequestNonce(signedRequest.requestNonce.toVector),
+          requestNonce =
+            auth.model.RequestNonce(signedRequest.requestNonce.toVector),
           publicKey = keys.getPublicKey,
           signature = new ECSignature(signedRequest.signature)
         )
@@ -119,11 +142,15 @@ class SignedRequestsAuthenticatorSpec extends AnyWordSpec {
 
     "reject wrong nonce with public key authentication" in {
       val keys = EC.generateKeyPair()
-      val signedRequest = requestAuthenticator.signConnectorRequest(request.toByteArray, keys.getPrivateKey)
+      val signedRequest = requestAuthenticator.signConnectorRequest(
+        request.toByteArray,
+        keys.getPrivateKey
+      )
       val header = GrpcAuthenticationHeader
         .PublicKeyBased(
           // Different nonce
-          requestNonce = auth.model.RequestNonce(UUID.randomUUID.toString.getBytes.toVector),
+          requestNonce =
+            auth.model.RequestNonce(UUID.randomUUID.toString.getBytes.toVector),
           publicKey = keys.getPublicKey,
           signature = new ECSignature(signedRequest.signature)
         )
@@ -140,15 +167,22 @@ class SignedRequestsAuthenticatorSpec extends AnyWordSpec {
 
     "reject public key authentication when reusing a nonce" in {
       val keys = EC.generateKeyPair()
-      val signedRequest = requestAuthenticator.signConnectorRequest(request.toByteArray, keys.getPrivateKey)
+      val signedRequest = requestAuthenticator.signConnectorRequest(
+        request.toByteArray,
+        keys.getPrivateKey
+      )
       val header = GrpcAuthenticationHeader
         .PublicKeyBased(
-          requestNonce = auth.model.RequestNonce(signedRequest.requestNonce.toVector),
+          requestNonce =
+            auth.model.RequestNonce(signedRequest.requestNonce.toVector),
           publicKey = keys.getPublicKey,
           signature = new ECSignature(signedRequest.signature)
         )
       val authenticator =
-        buildAuthenticator(getHeader = () => Some(header), burnNonce = () => throw new RuntimeException("Nonce reused"))
+        buildAuthenticator(
+          getHeader = () => Some(header),
+          burnNonce = () => throw new RuntimeException("Nonce reused")
+        )
 
       val result = authenticator.authenticated("test", request) { (_, _) =>
         Future.successful(response)
@@ -162,7 +196,10 @@ class SignedRequestsAuthenticatorSpec extends AnyWordSpec {
       val did = DID.buildCanonical(Sha256.compute("test".getBytes("UTF-8")))
       val keyId = "key-1"
       val keys = EC.generateKeyPair()
-      val signedRequest = requestAuthenticator.signConnectorRequest(request.toByteArray, keys.getPrivateKey)
+      val signedRequest = requestAuthenticator.signConnectorRequest(
+        request.toByteArray,
+        keys.getPrivateKey
+      )
 
       val nodeResponse = node_api
         .GetDidDocumentResponse()
@@ -175,13 +212,17 @@ class SignedRequestsAuthenticatorSpec extends AnyWordSpec {
 
       val header = GrpcAuthenticationHeader
         .PublishedDIDBased(
-          requestNonce = auth.model.RequestNonce(signedRequest.requestNonce.toVector),
+          requestNonce =
+            auth.model.RequestNonce(signedRequest.requestNonce.toVector),
           did = did,
           keyId = keyId,
           signature = new ECSignature(signedRequest.signature)
         )
 
-      val authenticator = buildAuthenticator(getHeader = () => Some(header), getDidResponse = () => Some(nodeResponse))
+      val authenticator = buildAuthenticator(
+        getHeader = () => Some(header),
+        getDidResponse = () => Some(nodeResponse)
+      )
 
       val result = authenticator.authenticated("test", request) { (_, _) =>
         Future.successful(response)
@@ -195,7 +236,10 @@ class SignedRequestsAuthenticatorSpec extends AnyWordSpec {
       val keys = EC.generateKeyPair()
       // The request is signed with a different key
       val signedRequest =
-        requestAuthenticator.signConnectorRequest(request.toByteArray, EC.generateKeyPair().getPrivateKey)
+        requestAuthenticator.signConnectorRequest(
+          request.toByteArray,
+          EC.generateKeyPair().getPrivateKey
+        )
 
       val nodeResponse = node_api
         .GetDidDocumentResponse()
@@ -208,13 +252,17 @@ class SignedRequestsAuthenticatorSpec extends AnyWordSpec {
 
       val header = GrpcAuthenticationHeader
         .PublishedDIDBased(
-          requestNonce = auth.model.RequestNonce(signedRequest.requestNonce.toVector),
+          requestNonce =
+            auth.model.RequestNonce(signedRequest.requestNonce.toVector),
           did = did,
           keyId = keyId,
           signature = new ECSignature(signedRequest.signature)
         )
 
-      val authenticator = buildAuthenticator(getHeader = () => Some(header), getDidResponse = () => Some(nodeResponse))
+      val authenticator = buildAuthenticator(
+        getHeader = () => Some(header),
+        getDidResponse = () => Some(nodeResponse)
+      )
       val result = authenticator.authenticated("test", request) { (_, _) =>
         Future.successful(response)
       }
@@ -227,7 +275,10 @@ class SignedRequestsAuthenticatorSpec extends AnyWordSpec {
       val did = DID.buildCanonical(Sha256.compute("test".getBytes("UTF-8")))
       val keyId = "key-1"
       val keys = EC.generateKeyPair()
-      val signedRequest = requestAuthenticator.signConnectorRequest(request.toByteArray, keys.getPrivateKey)
+      val signedRequest = requestAuthenticator.signConnectorRequest(
+        request.toByteArray,
+        keys.getPrivateKey
+      )
 
       val nodeResponse = node_api
         .GetDidDocumentResponse()
@@ -241,13 +292,17 @@ class SignedRequestsAuthenticatorSpec extends AnyWordSpec {
       val header = GrpcAuthenticationHeader
         .PublishedDIDBased(
           // Different nonce
-          requestNonce = auth.model.RequestNonce(UUID.randomUUID.toString.getBytes.toVector),
+          requestNonce =
+            auth.model.RequestNonce(UUID.randomUUID.toString.getBytes.toVector),
           did = did,
           keyId = keyId,
           signature = new ECSignature(signedRequest.signature)
         )
 
-      val authenticator = buildAuthenticator(getHeader = () => Some(header), getDidResponse = () => Some(nodeResponse))
+      val authenticator = buildAuthenticator(
+        getHeader = () => Some(header),
+        getDidResponse = () => Some(nodeResponse)
+      )
       val result = authenticator.authenticated("test", request) { (_, _) =>
         Future.successful(response)
       }
@@ -260,9 +315,13 @@ class SignedRequestsAuthenticatorSpec extends AnyWordSpec {
       val did = DID.buildCanonical(Sha256.compute("test".getBytes("UTF-8")))
       val keyId = "key-1"
       val keys = EC.generateKeyPair()
-      val signedRequest = requestAuthenticator.signConnectorRequest(request.toByteArray, keys.getPrivateKey)
+      val signedRequest = requestAuthenticator.signConnectorRequest(
+        request.toByteArray,
+        keys.getPrivateKey
+      )
 
-      val participantsRepository = mock[ParticipantsRepository[IOWithTraceIdContext]]
+      val participantsRepository =
+        mock[ParticipantsRepository[IOWithTraceIdContext]]
       participantsRepository.findBy(any[DID](defaultValueDID)).returns {
         ReaderT.liftF(IO.pure(Left(co(UnknownValueError("did", "not found")))))
       }
@@ -272,7 +331,8 @@ class SignedRequestsAuthenticatorSpec extends AnyWordSpec {
           Some(
             GrpcAuthenticationHeader
               .PublishedDIDBased(
-                requestNonce = auth.model.RequestNonce(signedRequest.requestNonce.toVector),
+                requestNonce =
+                  auth.model.RequestNonce(signedRequest.requestNonce.toVector),
                 did = did,
                 keyId = keyId,
                 signature = new ECSignature(signedRequest.signature)
@@ -299,16 +359,23 @@ class SignedRequestsAuthenticatorSpec extends AnyWordSpec {
       val did = DID.buildCanonical(Sha256.compute("test".getBytes("UTF-8")))
       val keyId = "key-1"
       val keys = EC.generateKeyPair()
-      val signedRequest = requestAuthenticator.signConnectorRequest(request.toByteArray, keys.getPrivateKey)
+      val signedRequest = requestAuthenticator.signConnectorRequest(
+        request.toByteArray,
+        keys.getPrivateKey
+      )
 
       val header = GrpcAuthenticationHeader
         .PublishedDIDBased(
-          requestNonce = auth.model.RequestNonce(signedRequest.requestNonce.toVector),
+          requestNonce =
+            auth.model.RequestNonce(signedRequest.requestNonce.toVector),
           did = did,
           keyId = keyId,
           signature = new ECSignature(signedRequest.signature)
         )
-      val authenticator = buildAuthenticator(getHeader = () => Some(header), getDidResponse = () => None)
+      val authenticator = buildAuthenticator(
+        getHeader = () => Some(header),
+        getDidResponse = () => None
+      )
 
       val result = authenticator.authenticated("test", request) { (_, _) =>
         Future.successful(response)
@@ -322,7 +389,10 @@ class SignedRequestsAuthenticatorSpec extends AnyWordSpec {
       val did = DID.buildCanonical(Sha256.compute("test".getBytes("UTF-8")))
       val keyId = "key-1"
       val keys = EC.generateKeyPair()
-      val signedRequest = requestAuthenticator.signConnectorRequest(request.toByteArray, keys.getPrivateKey)
+      val signedRequest = requestAuthenticator.signConnectorRequest(
+        request.toByteArray,
+        keys.getPrivateKey
+      )
 
       val nodeResponse = node_api
         .GetDidDocumentResponse()
@@ -335,13 +405,17 @@ class SignedRequestsAuthenticatorSpec extends AnyWordSpec {
 
       val header = GrpcAuthenticationHeader
         .PublishedDIDBased(
-          requestNonce = auth.model.RequestNonce(signedRequest.requestNonce.toVector),
+          requestNonce =
+            auth.model.RequestNonce(signedRequest.requestNonce.toVector),
           did = did,
           keyId = keyId + "1", // set a different key id
           signature = new ECSignature(signedRequest.signature)
         )
 
-      val authenticator = buildAuthenticator(getHeader = () => Some(header), getDidResponse = () => Some(nodeResponse))
+      val authenticator = buildAuthenticator(
+        getHeader = () => Some(header),
+        getDidResponse = () => Some(nodeResponse)
+      )
       val result = authenticator.authenticated("test", request) { (_, _) =>
         Future.successful(response)
       }
@@ -354,7 +428,10 @@ class SignedRequestsAuthenticatorSpec extends AnyWordSpec {
       val did = DID.buildCanonical(Sha256.compute("test".getBytes("UTF-8")))
       val keyId = "key-1"
       val keys = EC.generateKeyPair()
-      val signedRequest = requestAuthenticator.signConnectorRequest(request.toByteArray, keys.getPrivateKey)
+      val signedRequest = requestAuthenticator.signConnectorRequest(
+        request.toByteArray,
+        keys.getPrivateKey
+      )
 
       val nodeResponse = node_api
         .GetDidDocumentResponse()
@@ -367,7 +444,8 @@ class SignedRequestsAuthenticatorSpec extends AnyWordSpec {
 
       val header = GrpcAuthenticationHeader
         .PublishedDIDBased(
-          requestNonce = auth.model.RequestNonce(signedRequest.requestNonce.toVector),
+          requestNonce =
+            auth.model.RequestNonce(signedRequest.requestNonce.toVector),
           did = did,
           keyId = keyId + "1", // set a different key id
           signature = new ECSignature(signedRequest.signature)
@@ -390,10 +468,14 @@ class SignedRequestsAuthenticatorSpec extends AnyWordSpec {
       val keys = EC.generateKeyPair()
       // signed with the wrong key
       val signedRequest =
-        requestAuthenticator.signConnectorRequest(request.toByteArray, keys.getPrivateKey)
+        requestAuthenticator.signConnectorRequest(
+          request.toByteArray,
+          keys.getPrivateKey
+        )
       val header = GrpcAuthenticationHeader
         .PublicKeyBased(
-          requestNonce = auth.model.RequestNonce(signedRequest.requestNonce.toVector),
+          requestNonce =
+            auth.model.RequestNonce(signedRequest.requestNonce.toVector),
           publicKey = keys.getPublicKey,
           signature = new ECSignature(signedRequest.signature)
         )
@@ -401,10 +483,14 @@ class SignedRequestsAuthenticatorSpec extends AnyWordSpec {
       val externalTraceId = TraceId("exactlyThisTraceId123")
 
       val authenticator =
-        buildAuthenticator(getHeader = () => Some(header), getTraceIdFromHeader = () => externalTraceId)
+        buildAuthenticator(
+          getHeader = () => Some(header),
+          getTraceIdFromHeader = () => externalTraceId
+        )
 
-      val currentTraceId = authenticator.authenticated("test", request) { (_, traceId) =>
-        Future.successful(traceId)
+      val currentTraceId = authenticator.authenticated("test", request) {
+        (_, traceId) =>
+          Future.successful(traceId)
       }
 
       currentTraceId.futureValue must be(externalTraceId)
@@ -415,28 +501,38 @@ class SignedRequestsAuthenticatorSpec extends AnyWordSpec {
   // NOTE: To meet the repository interface we need to return the whole participant details while the authenticator
   // just uses the id, hence, hardcoding the values should be enough.
   private def dummyParticipantInfo(id: ParticipantId): ParticipantInfo = {
-    ParticipantInfo(id = id, tpe = ParticipantType.Issuer, None, "no-name", None, None, None)
+    ParticipantInfo(
+      id = id,
+      tpe = ParticipantType.Issuer,
+      None,
+      "no-name",
+      None,
+      None,
+      None
+    )
   }
 
   private def buildAuthenticator(
-      getuserId: () => Option[ParticipantId] = () => Some(ParticipantId.random()),
+      getuserId: () => Option[ParticipantId] = () =>
+        Some(ParticipantId.random()),
       getHeader: () => Option[GrpcAuthenticationHeader],
       getTraceIdFromHeader: () => TraceId = () => testTraceId,
       burnNonce: () => Unit = () => (),
       getDidResponse: () => Option[node_api.GetDidDocumentResponse] = () => None
   ): ConnectorAuthenticator = {
-    val participantsRepository = mock[ParticipantsRepository[IOWithTraceIdContext]]
+    val participantsRepository =
+      mock[ParticipantsRepository[IOWithTraceIdContext]]
     participantsRepository.findBy(any[DID](defaultValueDID)).returns {
       ReaderT.liftF(getuserId() match {
         case Some(userId) => IO.pure(Right(dummyParticipantInfo(userId)))
-        case None => IO.raiseError(new RuntimeException("Missing user"))
+        case None         => IO.raiseError(new RuntimeException("Missing user"))
       })
     }
 
     participantsRepository.findBy(any[ECPublicKey]).returns {
       ReaderT.liftF(getuserId() match {
         case Some(userId) => IO.pure(Right(dummyParticipantInfo(userId)))
-        case None => IO.raiseError(new RuntimeException("Missing user"))
+        case None         => IO.raiseError(new RuntimeException("Missing user"))
       })
     }
 
@@ -448,7 +544,8 @@ class SignedRequestsAuthenticatorSpec extends AnyWordSpec {
       override def getTraceId(ctx: Context): TraceId = getTraceIdFromHeader()
     }
 
-    val requestNoncesRepository = mock[RequestNoncesRepository[IOWithTraceIdContext]]
+    val requestNoncesRepository =
+      mock[RequestNoncesRepository[IOWithTraceIdContext]]
     requestNoncesRepository
       .burn(any[ParticipantId], any[auth.model.RequestNonce])
       .returns(ReaderT.liftF(IO(burnNonce())))
@@ -457,14 +554,22 @@ class SignedRequestsAuthenticatorSpec extends AnyWordSpec {
     customNode.getDidDocument(*).returns {
       getDidResponse() match {
         case Some(response) => Future.successful(response)
-        case None => Future.failed(new RuntimeException("DID Document not found"))
+        case None =>
+          Future.failed(new RuntimeException("DID Document not found"))
       }
     }
 
-    new ConnectorAuthenticator(participantsRepository, requestNoncesRepository, customNode, customParser)
+    new ConnectorAuthenticator(
+      participantsRepository,
+      requestNoncesRepository,
+      customNode,
+      customParser
+    )
   }
 
-  private def testAuthentication(header: GrpcAuthenticationHeader): Assertion = {
+  private def testAuthentication(
+      header: GrpcAuthenticationHeader
+  ): Assertion = {
     val authenticator = buildAuthenticator(getHeader = () => Some(header))
 
     val result = authenticator.authenticated("test", request) { (_, _) =>

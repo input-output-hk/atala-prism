@@ -4,7 +4,10 @@ import org.flywaydb.core.Flyway
 
 object SchemaMigrations {
   // Returns the number of applied migration scripts
-  def migrate(config: TransactorFactory.Config, migrationScriptsLocation: String = "db/migration"): Int = {
+  def migrate(
+      config: TransactorFactory.Config,
+      migrationScriptsLocation: String = "db/migration"
+  ): Int = {
     Flyway
       .configure()
       .dataSource(

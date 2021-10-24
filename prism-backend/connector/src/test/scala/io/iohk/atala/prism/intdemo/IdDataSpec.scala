@@ -10,7 +10,8 @@ class IdDataSpec extends AnyFlatSpec {
   "IdData" should "extract the data from an IDCredential" in {
     val expectedFirstName = "first-name"
     val expectedDoB = LocalDate.of(1973, 6, 6)
-    val credential = IdServiceImpl.getIdCredential((expectedFirstName, expectedDoB))
+    val credential =
+      IdServiceImpl.getIdCredential((expectedFirstName, expectedDoB))
     val idData = IdCredentialData(credential)
 
     idData.name shouldBe expectedFirstName

@@ -12,13 +12,15 @@ object ClientHelper {
       authenticator: RequestAuthenticator,
       whitelistedDID: DID,
       didPrivateKey: ECPrivateKey
-  ): scalapb.GeneratedMessage => GrpcAuthenticationHeader.DIDBased = { request =>
-    val signedRequest = authenticator.signConnectorRequest(request.toByteArray, didPrivateKey)
-    GrpcAuthenticationHeader.UnpublishedDIDBased(
-      did = whitelistedDID,
-      keyId = DID.getDEFAULT_MASTER_KEY_ID,
-      requestNonce = RequestNonce(signedRequest.requestNonce.toVector),
-      signature = new ECSignature(signedRequest.signature)
-    )
+  ): scalapb.GeneratedMessage => GrpcAuthenticationHeader.DIDBased = {
+    request =>
+      val signedRequest =
+        authenticator.signConnectorRequest(request.toByteArray, didPrivateKey)
+      GrpcAuthenticationHeader.UnpublishedDIDBased(
+        did = whitelistedDID,
+        keyId = DID.getDEFAULT_MASTER_KEY_ID,
+        requestNonce = RequestNonce(signedRequest.requestNonce.toVector),
+        signature = new ECSignature(signedRequest.signature)
+      )
   }
 }

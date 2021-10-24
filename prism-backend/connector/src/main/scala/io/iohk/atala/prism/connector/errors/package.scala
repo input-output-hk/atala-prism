@@ -2,7 +2,11 @@ package io.iohk.atala.prism.connector
 
 import derevo.derive
 import io.grpc.Status
-import io.iohk.atala.prism.connector.model.{ConnectionId, MessageId, TokenString}
+import io.iohk.atala.prism.connector.model.{
+  ConnectionId,
+  MessageId,
+  TokenString
+}
 import io.iohk.atala.prism.crypto.keys.ECPublicKey
 import io.iohk.atala.prism.errors.PrismError
 import io.iohk.atala.prism.identity.{PrismDid => DID}
@@ -18,19 +22,27 @@ package object errors {
   @derive(loggable)
   sealed trait ConnectorError extends PrismError
 
-  case class UnknownValueError(tpe: String, value: String) extends ConnectorError {
+  case class UnknownValueError(tpe: String, value: String)
+      extends ConnectorError {
     override def toStatus: Status = {
       Status.UNKNOWN.withDescription(s"Unknown $tpe: $value")
     }
   }
 
-  case class InvalidArgumentError(tpe: String, requirement: String, value: String) extends ConnectorError {
+  case class InvalidArgumentError(
+      tpe: String,
+      requirement: String,
+      value: String
+  ) extends ConnectorError {
     override def toStatus: Status = {
-      Status.INVALID_ARGUMENT.withDescription(s"Invalid value for $tpe, expected $requirement, got $value")
+      Status.INVALID_ARGUMENT.withDescription(
+        s"Invalid value for $tpe, expected $requirement, got $value"
+      )
     }
   }
 
-  case class InvalidLimitError(err: InvalidArgumentError) extends ConnectorError {
+  case class InvalidLimitError(err: InvalidArgumentError)
+      extends ConnectorError {
     override def toStatus: Status = err.toStatus
   }
 
@@ -61,25 +73,37 @@ package object errors {
     }
   }
 
-  case class NotFoundByFieldError(entityType: String, fieldName: String, fieldValue: String) extends ConnectorError {
+  case class NotFoundByFieldError(
+      entityType: String,
+      fieldName: String,
+      fieldValue: String
+  ) extends ConnectorError {
     override def toStatus: Status = {
-      Status.NOT_FOUND.withDescription(s"""$entityType with $fieldName - "$fieldValue" not found""")
+      Status.NOT_FOUND.withDescription(
+        s"""$entityType with $fieldName - "$fieldValue" not found"""
+      )
     }
   }
 
   case class PublicKeyMissingError() extends ConnectorError {
     override def toStatus: Status = {
-      Status.UNAUTHENTICATED.withDescription("Authentication required, missing public key")
+      Status.UNAUTHENTICATED.withDescription(
+        "Authentication required, missing public key"
+      )
     }
   }
   case class SignatureMissingError() extends ConnectorError {
     override def toStatus: Status = {
-      Status.UNAUTHENTICATED.withDescription("Authentication required, missing signature")
+      Status.UNAUTHENTICATED.withDescription(
+        "Authentication required, missing signature"
+      )
     }
   }
   case class SignatureVerificationError() extends ConnectorError {
     override def toStatus: Status = {
-      Status.UNAUTHENTICATED.withDescription("Authentication required, signature invalid")
+      Status.UNAUTHENTICATED.withDescription(
+        "Authentication required, signature invalid"
+      )
     }
   }
 
@@ -97,7 +121,9 @@ package object errors {
 
   case class ServiceUnavailableError() extends ConnectorError {
     override def toStatus: Status = {
-      Status.UNAVAILABLE.withDescription("Service unavailable. Please try later.")
+      Status.UNAVAILABLE.withDescription(
+        "Service unavailable. Please try later."
+      )
     }
   }
 
@@ -106,7 +132,8 @@ package object errors {
 
   object MessagesError {
 
-    case class ConnectionNotFound(connection: Either[TokenString, ConnectionId]) extends MessagesError {
+    case class ConnectionNotFound(connection: Either[TokenString, ConnectionId])
+        extends MessagesError {
       override def toStatus: Status = {
         Status.NOT_FOUND.withDescription(
           s"Connection with ${connection.fold("token " + _, "id " + _)} doesn't exist. " +
@@ -117,33 +144,54 @@ package object errors {
 
     object ConnectionNotFound {
 
-      implicit val connectionNotFoundLoggable: Loggable[ConnectionNotFound] = new DictLoggable[ConnectionNotFound] {
-        override def fields[I, V, R, S](a: ConnectionNotFound, i: I)(implicit r: LogRenderer[I, V, R, S]): R =
-          r.addString("ConnectionNotFound", a.connection.fold(_.logShow, _.logShow), i)
+      implicit val connectionNotFoundLoggable: Loggable[ConnectionNotFound] =
+        new DictLoggable[ConnectionNotFound] {
+          override def fields[I, V, R, S](a: ConnectionNotFound, i: I)(implicit
+              r: LogRenderer[I, V, R, S]
+          ): R =
+            r.addString(
+              "ConnectionNotFound",
+              a.connection.fold(_.logShow, _.logShow),
+              i
+            )
 
-        override def logShow(a: ConnectionNotFound): String =
-          s"{ConnectionNotFound=${a.connection.fold(_.logShow, _.logShow)})}"
-      }
+          override def logShow(a: ConnectionNotFound): String =
+            s"{ConnectionNotFound=${a.connection.fold(_.logShow, _.logShow)})}"
+        }
 
-      def apply(s: TokenString): ConnectionNotFound = ConnectionNotFound(Left(s))
-      def apply(c: ConnectionId): ConnectionNotFound = ConnectionNotFound(Right(c))
+      def apply(s: TokenString): ConnectionNotFound = ConnectionNotFound(
+        Left(s)
+      )
+      def apply(c: ConnectionId): ConnectionNotFound = ConnectionNotFound(
+        Right(c)
+      )
     }
 
     object ConnectionRevoked {
 
-      implicit val connectionRevokedLoggable: Loggable[ConnectionRevoked] = new DictLoggable[ConnectionRevoked] {
-        override def fields[I, V, R, S](a: ConnectionRevoked, i: I)(implicit r: LogRenderer[I, V, R, S]): R =
-          r.addString("ConnectionRevoked", a.connection.fold(_.logShow, _.logShow), i)
+      implicit val connectionRevokedLoggable: Loggable[ConnectionRevoked] =
+        new DictLoggable[ConnectionRevoked] {
+          override def fields[I, V, R, S](a: ConnectionRevoked, i: I)(implicit
+              r: LogRenderer[I, V, R, S]
+          ): R =
+            r.addString(
+              "ConnectionRevoked",
+              a.connection.fold(_.logShow, _.logShow),
+              i
+            )
 
-        override def logShow(a: ConnectionRevoked): String =
-          s"{ConnectionRevoked=${a.connection.fold(_.logShow, _.logShow)})}"
-      }
+          override def logShow(a: ConnectionRevoked): String =
+            s"{ConnectionRevoked=${a.connection.fold(_.logShow, _.logShow)})}"
+        }
 
       def apply(s: TokenString): ConnectionRevoked = ConnectionRevoked(Left(s))
-      def apply(c: ConnectionId): ConnectionRevoked = ConnectionRevoked(Right(c))
+      def apply(c: ConnectionId): ConnectionRevoked = ConnectionRevoked(
+        Right(c)
+      )
     }
 
-    case class ConnectionRevoked(connection: Either[TokenString, ConnectionId]) extends MessagesError {
+    case class ConnectionRevoked(connection: Either[TokenString, ConnectionId])
+        extends MessagesError {
       override def toStatus: Status = {
         Status.FAILED_PRECONDITION.withDescription(
           s"Connection with ${connection.fold("token " + _, "id " + _)} has been revoked."
@@ -151,8 +199,10 @@ package object errors {
       }
     }
 
-    case class ConnectionNotFoundByConnectionIdAndSender(sender: ParticipantId, connection: ConnectionId)
-        extends MessagesError {
+    case class ConnectionNotFoundByConnectionIdAndSender(
+        sender: ParticipantId,
+        connection: ConnectionId
+    ) extends MessagesError {
       override def toStatus: Status = {
         Status.NOT_FOUND.withDescription(
           s"Failed to send message, the connection $connection with sender $sender doesn't exist"
@@ -160,7 +210,8 @@ package object errors {
       }
     }
 
-    case class MessagesAlreadyExist(ids: List[MessageId]) extends MessagesError {
+    case class MessagesAlreadyExist(ids: List[MessageId])
+        extends MessagesError {
       override def toStatus: Status = {
         Status.ALREADY_EXISTS.withDescription(
           s"Messages with provided ids already exist: ${ids.map(_.uuid.toString).mkString(", ")}"

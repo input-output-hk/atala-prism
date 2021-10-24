@@ -20,8 +20,14 @@ import io.iohk.atala.prism.node.models.{
   AtalaObjectTransactionSubmission,
   AtalaObjectTransactionSubmissionStatus
 }
-import io.iohk.atala.prism.node.repositories.daos.AtalaObjectsDAO.{AtalaObjectCreateData, AtalaObjectSetTransactionInfo}
-import io.iohk.atala.prism.node.repositories.daos.{AtalaObjectTransactionSubmissionsDAO, AtalaObjectsDAO}
+import io.iohk.atala.prism.node.repositories.daos.AtalaObjectsDAO.{
+  AtalaObjectCreateData,
+  AtalaObjectSetTransactionInfo
+}
+import io.iohk.atala.prism.node.repositories.daos.{
+  AtalaObjectTransactionSubmissionsDAO,
+  AtalaObjectsDAO
+}
 import io.iohk.atala.prism.node.repositories.logs.AtalaObjectsTransactionsRepositoryLogs
 import io.iohk.atala.prism.node.repositories.metrics.AtalaObjectsTransactionsRepositoryMetrics
 import io.iohk.atala.prism.node.repositories.utils.connectionIOSafe
@@ -42,7 +48,9 @@ trait AtalaObjectsTransactionsRepository[F[_]] {
       ledger: Ledger
   ): F[List[AtalaObjectTransactionSubmission]]
 
-  def retrieveObjects(transactions: List[AtalaObjectTransactionSubmission]): F[List[Option[AtalaObjectInfo]]]
+  def retrieveObjects(
+      transactions: List[AtalaObjectTransactionSubmission]
+  ): F[List[Option[AtalaObjectInfo]]]
 
   def getNotPublishedObjects: F[Either[NodeError, List[AtalaObjectInfo]]]
 
@@ -62,7 +70,9 @@ trait AtalaObjectsTransactionsRepository[F[_]] {
       publication: PublicationInfo
   ): F[Either[NodeError, AtalaObjectTransactionSubmission]]
 
-  def setObjectTransactionDetails(notification: AtalaObjectNotification): F[Option[AtalaObjectInfo]]
+  def setObjectTransactionDetails(
+      notification: AtalaObjectNotification
+  ): F[Option[AtalaObjectInfo]]
 }
 
 object AtalaObjectsTransactionsRepository {
@@ -73,9 +83,13 @@ object AtalaObjectsTransactionsRepository {
     for {
       serviceLogs <- logs.service[AtalaObjectsTransactionsRepository[F]]
     } yield {
-      implicit val implicitLogs: ServiceLogging[F, AtalaObjectsTransactionsRepository[F]] = serviceLogs
-      val metrics: AtalaObjectsTransactionsRepository[Mid[F, *]] = new AtalaObjectsTransactionsRepositoryMetrics[F]()
-      val logs: AtalaObjectsTransactionsRepository[Mid[F, *]] = new AtalaObjectsTransactionsRepositoryLogs[F]
+      implicit val implicitLogs
+          : ServiceLogging[F, AtalaObjectsTransactionsRepository[F]] =
+        serviceLogs
+      val metrics: AtalaObjectsTransactionsRepository[Mid[F, *]] =
+        new AtalaObjectsTransactionsRepositoryMetrics[F]()
+      val logs: AtalaObjectsTransactionsRepository[Mid[F, *]] =
+        new AtalaObjectsTransactionsRepositoryLogs[F]
       val mid = metrics |+| logs
       mid attach new AtalaObjectsTransactionsRepositoryImpl[F](transactor)
     }
@@ -83,23 +97,31 @@ object AtalaObjectsTransactionsRepository {
   def unsafe[F[_]: BracketThrow: TimeMeasureMetric, R[_]: Comonad](
       transactor: Transactor[F],
       logs: Logs[R, F]
-  ): AtalaObjectsTransactionsRepository[F] = AtalaObjectsTransactionsRepository(transactor, logs).extract
+  ): AtalaObjectsTransactionsRepository[F] =
+    AtalaObjectsTransactionsRepository(transactor, logs).extract
 }
 
-private final class AtalaObjectsTransactionsRepositoryImpl[F[_]: BracketThrow](xa: Transactor[F])
-    extends AtalaObjectsTransactionsRepository[F] {
+private final class AtalaObjectsTransactionsRepositoryImpl[F[_]: BracketThrow](
+    xa: Transactor[F]
+) extends AtalaObjectsTransactionsRepository[F] {
 
   val logger: Logger = LoggerFactory.getLogger(getClass)
 
-  def retrieveObjects(transactions: List[AtalaObjectTransactionSubmission]): F[List[Option[AtalaObjectInfo]]] =
+  def retrieveObjects(
+      transactions: List[AtalaObjectTransactionSubmission]
+  ): F[List[Option[AtalaObjectInfo]]] =
     transactions.traverse { transaction =>
       val query = AtalaObjectsDAO.get(transaction.atalaObjectId)
 
-      val opDescription = s"Getting atala object by atalaObjectId = ${transaction.atalaObjectId}"
+      val opDescription =
+        s"Getting atala object by atalaObjectId = ${transaction.atalaObjectId}"
       connectionIOSafe(query.logSQLErrors(opDescription, logger))
         .map {
           case Left(err) =>
-            logger.error(s"Could not retrieve atala object ${transaction.atalaObjectId}", err)
+            logger.error(
+              s"Could not retrieve atala object ${transaction.atalaObjectId}",
+              err
+            )
             None
           case Right(None) =>
             logger.error(s"Atala object ${transaction.atalaObjectId} not found")
@@ -127,7 +149,10 @@ private final class AtalaObjectsTransactionsRepositoryImpl[F[_]: BracketThrow](x
       .map(
         _.left
           .map { err =>
-            logger.error(s"Could not get pending transactions older than $olderThan.", err)
+            logger.error(
+              s"Could not get pending transactions older than $olderThan.",
+              err
+            )
           }
           .getOrElse(List())
       )
@@ -136,7 +161,12 @@ private final class AtalaObjectsTransactionsRepositoryImpl[F[_]: BracketThrow](x
 
   def getNotPublishedObjects: F[Either[NodeError, List[AtalaObjectInfo]]] = {
     val opDescription = "Extract not submitted objects."
-    connectionIOSafe(AtalaObjectsDAO.getNotPublishedObjectInfos.logSQLErrors(opDescription, logger)).transact(xa)
+    connectionIOSafe(
+      AtalaObjectsDAO.getNotPublishedObjectInfos.logSQLErrors(
+        opDescription,
+        logger
+      )
+    ).transact(xa)
   }
 
   def updateSubmissionStatus(
@@ -145,9 +175,15 @@ private final class AtalaObjectsTransactionsRepositoryImpl[F[_]: BracketThrow](x
   ): F[Either[NodeError, Unit]] =
     if (newSubmissionStatus != submission.status) {
       val query = AtalaObjectTransactionSubmissionsDAO
-        .updateStatus(submission.ledger, submission.transactionId, newSubmissionStatus)
-      val opDescription = s"Setting status $newSubmissionStatus for transaction ${submission.transactionId}"
-      connectionIOSafe(query.logSQLErrors(opDescription, logger).void).transact(xa)
+        .updateStatus(
+          submission.ledger,
+          submission.transactionId,
+          newSubmissionStatus
+        )
+      val opDescription =
+        s"Setting status $newSubmissionStatus for transaction ${submission.transactionId}"
+      connectionIOSafe(query.logSQLErrors(opDescription, logger).void)
+        .transact(xa)
     } else {
       logger.warn(
         s"Current status of transaction submission [${submission.transactionId}] is already $newSubmissionStatus. Skipping"
@@ -162,15 +198,18 @@ private final class AtalaObjectsTransactionsRepositoryImpl[F[_]: BracketThrow](x
   ): F[Either[NodeError, Unit]] = {
     val query = AtalaObjectTransactionSubmissionsDAO
       .updateStatusIfTxExists(ledger, transactionId, newSubmissionStatus)
-    val opDescription = s"Setting status $newSubmissionStatus for transaction ${transactionId}"
-    connectionIOSafe(query.logSQLErrors(opDescription, logger).void).transact(xa)
+    val opDescription =
+      s"Setting status $newSubmissionStatus for transaction ${transactionId}"
+    connectionIOSafe(query.logSQLErrors(opDescription, logger).void)
+      .transact(xa)
   }
 
   def storeTransactionSubmission(
       atalaObjectInfo: AtalaObjectInfo,
       publication: PublicationInfo
   ): F[Either[NodeError, AtalaObjectTransactionSubmission]] = {
-    val opDescription = s"publishing and record transaction for [${atalaObjectInfo.objectId}]"
+    val opDescription =
+      s"publishing and record transaction for [${atalaObjectInfo.objectId}]"
     val query = AtalaObjectTransactionSubmissionsDAO
       .insert(
         AtalaObjectTransactionSubmission(
@@ -186,7 +225,9 @@ private final class AtalaObjectsTransactionsRepositoryImpl[F[_]: BracketThrow](x
     connectionIOSafe(query).transact(xa)
   }
 
-  def setObjectTransactionDetails(notification: AtalaObjectNotification): F[Option[AtalaObjectInfo]] = {
+  def setObjectTransactionDetails(
+      notification: AtalaObjectNotification
+  ): F[Option[AtalaObjectInfo]] = {
     val objectBytes = notification.atalaObject.toByteArray
     val objId = AtalaObjectId.of(objectBytes)
 
@@ -200,7 +241,14 @@ private final class AtalaObjectsTransactionsRepositoryImpl[F[_]: BracketThrow](x
           // Object previously saved in DB, but not in the blockchain
           case Some(_) => connection.unit
           // Object was not in DB, save it to populate transaction data below
-          case None => AtalaObjectsDAO.insert(AtalaObjectCreateData(objId, objectBytes, AtalaObjectStatus.Processed))
+          case None =>
+            AtalaObjectsDAO.insert(
+              AtalaObjectCreateData(
+                objId,
+                objectBytes,
+                AtalaObjectStatus.Processed
+              )
+            )
         }
       }
 
@@ -228,10 +276,14 @@ private final class AtalaObjectsTransactionsRepositoryImpl[F[_]: BracketThrow](x
       status: TransactionStatus
   ): AtalaObjectTransactionSubmissionStatus = {
     status match {
-      case TransactionStatus.InLedger => AtalaObjectTransactionSubmissionStatus.InLedger
-      case TransactionStatus.Submitted => AtalaObjectTransactionSubmissionStatus.Pending
-      case TransactionStatus.Expired => AtalaObjectTransactionSubmissionStatus.Pending
-      case TransactionStatus.Pending => AtalaObjectTransactionSubmissionStatus.Pending
+      case TransactionStatus.InLedger =>
+        AtalaObjectTransactionSubmissionStatus.InLedger
+      case TransactionStatus.Submitted =>
+        AtalaObjectTransactionSubmissionStatus.Pending
+      case TransactionStatus.Expired =>
+        AtalaObjectTransactionSubmissionStatus.Pending
+      case TransactionStatus.Pending =>
+        AtalaObjectTransactionSubmissionStatus.Pending
     }
   }
 }
