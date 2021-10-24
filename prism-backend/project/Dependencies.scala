@@ -2,7 +2,7 @@ import sbt._
 
 object versions {
   val awsSdk = "2.11.8"
-  val bitcoinLib = "0.18"
+  val bitcoinLib = "0.19"
   val bouncycastle = "1.62"
   val braintree = "3.2.0"
   val catsScalatest = "3.0.5"
