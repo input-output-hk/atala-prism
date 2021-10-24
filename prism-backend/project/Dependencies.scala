@@ -14,7 +14,7 @@ object versions {
   val doobie = "0.13.4"
   val enumeratum = "1.6.1"
   val enumeratumDoobie = "1.7.0"
-  val flyway = "7.10.0"
+  val flyway = "7.15.0"
   val grpc = "1.36.0"
   val kamon = "2.1.11"
   val logback = "1.2.6"
