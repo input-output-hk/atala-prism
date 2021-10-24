@@ -4,7 +4,7 @@ object versions {
   val awsSdk = "2.11.8"
   val bitcoinLib = "0.18"
   val bouncycastle = "1.62"
-  val catsScalatest = "3.0.8"
+  val catsScalatest = "3.1.1"
   val chimney = "0.6.0"
   val circe = "0.13.0"
   val circeOptics = "0.13.0"
