@@ -25,7 +25,7 @@ object versions {
   val osLib = "0.7.8"
   val playJson = "2.9.1"
   val postgresql = "42.2.24"
-  val scalatest = "3.2.2"
+  val scalatest = "3.2.10"
   val scalatestplus = s"$scalatest.0"
   val scalapb = "0.10.8"
   val slf4j = "1.7.32"
