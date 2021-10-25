@@ -29,7 +29,9 @@ private final class InMemoryLedgerService[F[_]: MonadThrow](onAtalaObject: Atala
 
   override def getType: Ledger = Ledger.InMemory
 
-  override def publish(obj: node_internal.AtalaObject): F[Either[CardanoWalletError, PublicationInfo]] = {
+  override def publish(
+      obj: node_internal.AtalaObject
+  ): F[Either[CardanoWalletError, PublicationInfo]] = {
     val publcationInfoF = for {
       objectBytes <- obj.toByteArray.pure[F]
       // Use a hash of the bytes as their in-memory transaction ID

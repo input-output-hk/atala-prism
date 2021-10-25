@@ -197,11 +197,21 @@ class NodeApp(executionContext: ExecutionContext) { self =>
       logs: Logs[IO, IOWithTraceIdContext]
   ): (UnderlyingLedger[IOWithTraceIdContext], Option[IO[Unit]]) = {
     val config = NodeConfig.cardanoConfig(globalConfig.getConfig("cardano"))
-    val (cardanoClient, releaseClient) = createCardanoClient(config.cardanoClientConfig, logs)
-    Kamon.registerModule("node-reporter", NodeReporter(config, cardanoClient, keyValueService))
-    val cardano =
-      CardanoLedgerService
-        .unsafe[IOWithTraceIdContext, IO](config, cardanoClient, keyValueService, onCardanoBlock, onAtalaObject, logs)
+    val (cardanoClient, releaseClient) =
+      createCardanoClient(config.cardanoClientConfig, logs)
+    Kamon.registerModule(
+      "node-reporter",
+      NodeReporter(config, cardanoClient, keyValueService)
+    )
+    val cardano = CardanoLedgerService
+      .unsafe[IOWithTraceIdContext, IO](
+        config,
+        cardanoClient,
+        keyValueService,
+        onCardanoBlock,
+        onAtalaObject,
+        logs
+      )
     (cardano, Some(releaseClient))
   }
 

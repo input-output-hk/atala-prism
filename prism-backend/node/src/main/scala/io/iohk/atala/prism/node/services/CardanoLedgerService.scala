@@ -99,7 +99,7 @@ class CardanoLedgerService[F[_]: MonadThrow] private[services] (
         .lift(
           syncAtalaObjects()
             .recover { case e =>
-              logger.error(s"Could not sync Atala objects", e)
+              logger.error("Could not sync Atala objects", e)
               false
             }
         )

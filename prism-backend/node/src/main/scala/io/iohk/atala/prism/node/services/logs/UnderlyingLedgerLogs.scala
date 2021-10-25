@@ -4,6 +4,7 @@ import cats.effect.MonadThrow
 import cats.syntax.applicativeError._
 import cats.syntax.apply._
 import cats.syntax.flatMap._
+import io.iohk.atala.prism.connector.AtalaOperationId
 import io.iohk.atala.prism.models.{Ledger, TransactionDetails, TransactionId}
 import io.iohk.atala.prism.node.cardano.models.CardanoWalletError
 import io.iohk.atala.prism.node.{PublicationInfo, UnderlyingLedger}
@@ -23,7 +24,7 @@ class UnderlyingLedgerLogs[F[_]: ServiceLogging[*[_], UnderlyingLedger[F]]: Mona
       info"publishing object with - ${obj.blockContent.map(_.operations.size)} operations" *> in
         .flatTap(
           _.fold(
-            er => error"Encountered an error while publishing object $er",
+            er => error"Encountered an error while publishing object $er ${getOperationsIds(obj)}",
             result => info"publishing object - successfully done ${result.transaction.transactionId}"
           )
         )
@@ -52,4 +53,13 @@ class UnderlyingLedgerLogs[F[_]: ServiceLogging[*[_], UnderlyingLedger[F]]: Mona
           )
         )
         .onError(errorCause"Encountered an error while deleting transaction" (_))
+
+  def getOperationsIds(obj: AtalaObject): List[AtalaOperationId] = {
+    obj.blockContent
+      .map { block =>
+        block.operations.toList.map(AtalaOperationId.of)
+      }
+      .toList
+      .flatten
+  }
 }
