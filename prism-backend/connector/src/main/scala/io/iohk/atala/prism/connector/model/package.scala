@@ -72,15 +72,23 @@ case class ConnectionInfo(
       created = instantiatedAt.toProtoTimestamp.some,
       token = token.token,
       participantName = participantInfo.name,
-      participantLogo = ByteString.copyFrom(participantInfo.logo.map(_.bytes).getOrElse(Vector.empty).toArray),
+      participantLogo = ByteString.copyFrom(
+        participantInfo.logo.map(_.bytes).getOrElse(Vector.empty).toArray
+      ),
       participantDid = participantInfo.did.map(_.getValue).getOrElse("")
     )
   }
 }
 
-case class Connection(connectionToken: TokenString, connectionId: ConnectionId) {
+case class Connection(
+    connectionToken: TokenString,
+    connectionId: ConnectionId
+) {
   def toProto: connector_models.Connection = {
-    connector_models.Connection(connectionToken = connectionToken.token, connectionId = connectionId.toString)
+    connector_models.Connection(
+      connectionToken = connectionToken.token,
+      connectionId = connectionId.toString
+    )
   }
 }
 

@@ -10,7 +10,9 @@ object JsonValidator {
     Try {
       io.circe.parser
         .parse(string)
-        .getOrElse(throw new RuntimeException("Invalid json: it must be a JSON string"))
+        .getOrElse(
+          throw new RuntimeException("Invalid json: it must be a JSON string")
+        )
     }
 
   def jsonData(string: String): Try[Json] = {

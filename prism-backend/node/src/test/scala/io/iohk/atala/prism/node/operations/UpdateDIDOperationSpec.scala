@@ -21,7 +21,10 @@ object UpdateDIDOperationSpec {
   val newMasterKeys = EC.generateKeyPair()
 
   lazy val createDidOperation =
-    CreateDIDOperation.parse(CreateDIDOperationSpec.exampleOperation, dummyLedgerData).toOption.value
+    CreateDIDOperation
+      .parse(CreateDIDOperationSpec.exampleOperation, dummyLedgerData)
+      .toOption
+      .value
 
   val exampleAddKeyAction = node_models.UpdateDIDAction(
     node_models.UpdateDIDAction.Action.AddKey(
@@ -44,7 +47,9 @@ object UpdateDIDOperationSpec {
           node_models.PublicKey(
             id = "new_master",
             usage = node_models.KeyUsage.MASTER_KEY,
-            keyData = node_models.PublicKey.KeyData.CompressedEcKeyData(randomCompressedECKeyData)
+            keyData = node_models.PublicKey.KeyData.CompressedEcKeyData(
+              randomCompressedECKeyData
+            )
           )
         )
       )
@@ -94,13 +99,22 @@ class UpdateDIDOperationSpec extends AtalaWithPostgresSpec with ProtoParsingTest
   import UpdateDIDOperationSpec._
 
   override type Repr = UpdateDIDOperation
-  override val exampleOperation = UpdateDIDOperationSpec.exampleAddAndRemoveOperation
-  val signedExampleOperation = BlockProcessingServiceSpec.signOperation(exampleOperation, signingKeyId, signingKey)
-  override def operationCompanion: OperationCompanion[UpdateDIDOperation] = UpdateDIDOperation
+  override val exampleOperation =
+    UpdateDIDOperationSpec.exampleAddAndRemoveOperation
+  val signedExampleOperation = BlockProcessingServiceSpec.signOperation(
+    exampleOperation,
+    signingKeyId,
+    signingKey
+  )
+  override def operationCompanion: OperationCompanion[UpdateDIDOperation] =
+    UpdateDIDOperation
 
   "UpdateDIDOperation.parse" should {
     "parse valid CreateDid AtalaOperation" in {
-      val result = UpdateDIDOperation.parse(signedExampleOperation, dummyLedgerData).toOption.value
+      val result = UpdateDIDOperation
+        .parse(signedExampleOperation, dummyLedgerData)
+        .toOption
+        .value
       result.actions.size mustBe exampleOperation.getUpdateDid.actions.size
     }
 
@@ -127,7 +141,11 @@ class UpdateDIDOperationSpec extends AtalaWithPostgresSpec with ProtoParsingTest
 
     "return error when AddKey usage is not provided" in {
       invalidValueTest(
-        _.updateDid.actions(0).addKey.key.usage := node_models.KeyUsage.UNKNOWN_KEY,
+        _.updateDid
+          .actions(0)
+          .addKey
+          .key
+          .usage := node_models.KeyUsage.UNKNOWN_KEY,
         Vector("updateDid", "actions", "0", "addKey", "key", "usage"),
         "UNKNOWN_KEY"
       )
@@ -135,7 +153,11 @@ class UpdateDIDOperationSpec extends AtalaWithPostgresSpec with ProtoParsingTest
 
     "return error when AddKey keyData is not provided" in {
       missingValueTest(
-        _.updateDid.actions(0).addKey.key.keyData := node_models.PublicKey.KeyData.Empty,
+        _.updateDid
+          .actions(0)
+          .addKey
+          .key
+          .keyData := node_models.PublicKey.KeyData.Empty,
         Vector("updateDid", "actions", "0", "addKey", "key", "keyData")
       )
     }
@@ -143,7 +165,15 @@ class UpdateDIDOperationSpec extends AtalaWithPostgresSpec with ProtoParsingTest
     "return error when AddKey curve is not provided / empty" in {
       invalidValueTest(
         _.updateDid.actions(0).addKey.key.ecKeyData.curve := "",
-        Vector("updateDid", "actions", "0", "addKey", "key", "ecKeyData", "curve"),
+        Vector(
+          "updateDid",
+          "actions",
+          "0",
+          "addKey",
+          "key",
+          "ecKeyData",
+          "curve"
+        ),
         ""
       )
     }
@@ -174,7 +204,9 @@ class UpdateDIDOperationSpec extends AtalaWithPostgresSpec with ProtoParsingTest
 
     "return error when empty action is provided" in {
       missingValueTest(
-        _.updateDid.actions(1).action := node_models.UpdateDIDAction.Action.Empty,
+        _.updateDid
+          .actions(1)
+          .action := node_models.UpdateDIDAction.Action.Empty,
         Vector("updateDid", "actions", "1", "action")
       )
     }
@@ -185,7 +217,10 @@ class UpdateDIDOperationSpec extends AtalaWithPostgresSpec with ProtoParsingTest
     "provide the data required for correctness verification" in {
       createDidOperation.applyState().transact(database).value.unsafeRunSync()
 
-      val parsedOperation = UpdateDIDOperation.parse(signedExampleOperation, dummyLedgerData).toOption.value
+      val parsedOperation = UpdateDIDOperation
+        .parse(signedExampleOperation, dummyLedgerData)
+        .toOption
+        .value
 
       val CorrectnessData(key, previousOperation) = parsedOperation
         .getCorrectnessData("master")
@@ -204,30 +239,54 @@ class UpdateDIDOperationSpec extends AtalaWithPostgresSpec with ProtoParsingTest
     "update DID keys in the database" in {
       createDidOperation.applyState().transact(database).value.unsafeRunSync()
 
-      val parsedOperation = UpdateDIDOperation.parse(signedExampleOperation, dummyLedgerData).toOption.value
+      val parsedOperation = UpdateDIDOperation
+        .parse(signedExampleOperation, dummyLedgerData)
+        .toOption
+        .value
 
-      parsedOperation.applyState().transact(database).value.unsafeRunSync().toOption.value
+      parsedOperation
+        .applyState()
+        .transact(database)
+        .value
+        .unsafeRunSync()
+        .toOption
+        .value
 
       val didInfo = DataPreparation.findByDidSuffix(createDidOperation.id)
 
-      val initialKeys = CreateDIDOperationSpec.exampleOperation.getCreateDid.getDidData.publicKeys.map(_.id).toSet
+      val initialKeys =
+        CreateDIDOperationSpec.exampleOperation.getCreateDid.getDidData.publicKeys
+          .map(_.id)
+          .toSet
       val expectedKeys = initialKeys + "new_master" - "issuing"
-      didInfo.keys.filter(_.revokedOn.isEmpty).map(_.keyId) must contain theSameElementsAs expectedKeys
+      didInfo.keys
+        .filter(_.revokedOn.isEmpty)
+        .map(_.keyId) must contain theSameElementsAs expectedKeys
 
       val newKey = didInfo.keys.find(_.keyId == "new_master").value
 
       newKey.keyUsage mustBe KeyUsage.MasterKey
       newKey.didSuffix mustBe createDidOperation.id
-      DIDPublicKey(newKey.didSuffix, newKey.keyId, newKey.keyUsage, newKey.key) mustBe parsedOperation.actions.head
+      DIDPublicKey(
+        newKey.didSuffix,
+        newKey.keyId,
+        newKey.keyUsage,
+        newKey.key
+      ) mustBe parsedOperation.actions.head
         .asInstanceOf[AddKeyAction]
         .key
       newKey.addedOn.timestampInfo mustBe dummyLedgerData.timestampInfo
       newKey.revokedOn mustBe None
-      didInfo.lastOperation mustBe Sha256.compute(UpdateDIDOperationSpec.exampleAddAndRemoveOperation.toByteArray)
+      didInfo.lastOperation mustBe Sha256.compute(
+        UpdateDIDOperationSpec.exampleAddAndRemoveOperation.toByteArray
+      )
     }
 
     "return error when issuer is missing in the DB" in {
-      val parsedOperation = UpdateDIDOperation.parse(signedExampleOperation, dummyLedgerData).toOption.value
+      val parsedOperation = UpdateDIDOperation
+        .parse(signedExampleOperation, dummyLedgerData)
+        .toOption
+        .value
 
       val result = parsedOperation
         .applyState()
@@ -249,7 +308,10 @@ class UpdateDIDOperationSpec extends AtalaWithPostgresSpec with ProtoParsingTest
         .value
         .unsafeRunSync()
 
-      val parsedOperation = UpdateDIDOperation.parse(signedExampleOperation, dummyLedgerData).toOption.value
+      val parsedOperation = UpdateDIDOperation
+        .parse(signedExampleOperation, dummyLedgerData)
+        .toOption
+        .value
 
       val result = parsedOperation
         .applyState()
@@ -264,7 +326,8 @@ class UpdateDIDOperationSpec extends AtalaWithPostgresSpec with ProtoParsingTest
     }
 
     "return error when added key already exists" in {
-      val additionalKey = createDidOperation.keys.head.copy(keyId = "new_master")
+      val additionalKey =
+        createDidOperation.keys.head.copy(keyId = "new_master")
       createDidOperation
         .copy(keys = createDidOperation.keys :+ additionalKey)
         .applyState()
@@ -272,7 +335,10 @@ class UpdateDIDOperationSpec extends AtalaWithPostgresSpec with ProtoParsingTest
         .value
         .unsafeRunSync()
 
-      val parsedOperation = UpdateDIDOperation.parse(signedExampleOperation, dummyLedgerData).toOption.value
+      val parsedOperation = UpdateDIDOperation
+        .parse(signedExampleOperation, dummyLedgerData)
+        .toOption
+        .value
 
       val result = parsedOperation
         .applyState()

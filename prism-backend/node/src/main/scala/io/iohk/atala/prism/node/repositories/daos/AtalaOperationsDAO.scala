@@ -10,7 +10,8 @@ import io.iohk.atala.prism.connector.AtalaOperationId
 import io.iohk.atala.prism.node.models.{AtalaObjectId, AtalaOperationInfo, AtalaOperationStatus}
 
 object AtalaOperationsDAO {
-  type AtalaOperationData = (AtalaOperationId, AtalaObjectId, AtalaOperationStatus)
+  type AtalaOperationData =
+    (AtalaOperationId, AtalaObjectId, AtalaOperationStatus)
 
   private val insertSQL =
     """
@@ -44,7 +45,10 @@ object AtalaOperationsDAO {
     NonEmptyList.fromList(atalaOperationIds).fold(unit) { atalaOperationIdsNonEmpty =>
       val fragment = fr"UPDATE atala_operations" ++
         fr"SET atala_operation_status = $atalaOperationStatus" ++
-        fr"WHERE" ++ in(fr"signed_atala_operation_id", atalaOperationIdsNonEmpty)
+        fr"WHERE" ++ in(
+          fr"signed_atala_operation_id",
+          atalaOperationIdsNonEmpty
+        )
       fragment.update.run.void
     }
   }
@@ -56,12 +60,17 @@ object AtalaOperationsDAO {
     NonEmptyList.fromList(atalaOperationIds).fold(unit) { atalaOperationIdsNonEmpty =>
       val fragment = fr"UPDATE atala_operations" ++
         fr"SET atala_object_id = $atalaObjectId" ++
-        fr"WHERE" ++ in(fr"signed_atala_operation_id", atalaOperationIdsNonEmpty)
+        fr"WHERE" ++ in(
+          fr"signed_atala_operation_id",
+          atalaOperationIdsNonEmpty
+        )
       fragment.update.run.void
     }
   }
 
-  def getAtalaOperationInfo(atalaOperationId: AtalaOperationId): ConnectionIO[Option[AtalaOperationInfo]] = {
+  def getAtalaOperationInfo(
+      atalaOperationId: AtalaOperationId
+  ): ConnectionIO[Option[AtalaOperationInfo]] = {
     sql"""
          |SELECT ops.signed_atala_operation_id, ops.atala_object_id, ops.atala_operation_status, tx.status, tx.transaction_id
          |FROM atala_operations as ops

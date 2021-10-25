@@ -18,16 +18,28 @@ class ClientHelperSpec extends AnyWordSpec {
 
   "requestSigner" should {
     "produce a verifiable signature" in {
-      val requestSigner = ClientHelper.requestSigner(new RequestAuthenticator, did, keyPair.getPrivateKey)
+      val requestSigner = ClientHelper.requestSigner(
+        new RequestAuthenticator,
+        did,
+        keyPair.getPrivateKey
+      )
       val request = connector_api
         .ConnectionsStatusRequest()
         .withConnectionTokens("a b c".split(" ").toList)
       val header = requestSigner(request)
 
       // verify signed request
-      val payload = SignedRequestsHelper.merge(header.requestNonce, request.toByteArray).toArray
-      val didData = DIDUtils.validateDid(header.did).value.futureValue.toOption.value
-      val publicKey = DIDUtils.findPublicKey(didData, header.keyId).value.futureValue.toOption.value
+      val payload = SignedRequestsHelper
+        .merge(header.requestNonce, request.toByteArray)
+        .toArray
+      val didData =
+        DIDUtils.validateDid(header.did).value.futureValue.toOption.value
+      val publicKey = DIDUtils
+        .findPublicKey(didData, header.keyId)
+        .value
+        .futureValue
+        .toOption
+        .value
 
       val verified = EC.verifyBytes(payload, publicKey, header.signature)
       verified must be(true)

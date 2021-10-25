@@ -20,17 +20,22 @@ import io.iohk.atala.prism.protos.node_internal
 import scala.concurrent.{ExecutionContext, Future}
 import scala.util.{Failure, Success, Try}
 
-class InMemoryLedgerService(onAtalaObject: AtalaObjectNotificationHandler)(implicit ec: ExecutionContext)
-    extends UnderlyingLedger {
+class InMemoryLedgerService(onAtalaObject: AtalaObjectNotificationHandler)(implicit
+    ec: ExecutionContext
+) extends UnderlyingLedger {
 
   override def getType: Ledger = Ledger.InMemory
 
-  override def publish(obj: node_internal.AtalaObject): Future[Either[CardanoWalletError, PublicationInfo]] = {
+  override def publish(
+      obj: node_internal.AtalaObject
+  ): Future[Either[CardanoWalletError, PublicationInfo]] = {
     val publcationInfoF = for {
       objectBytes <- Future.successful(obj.toByteArray)
       // Use a hash of the bytes as their in-memory transaction ID
       hash = Sha256.compute(objectBytes)
-      transactionId = TransactionId.from(hash.getValue).getOrElse(throw new RuntimeException("Unexpected invalid hash"))
+      transactionId = TransactionId
+        .from(hash.getValue)
+        .getOrElse(throw new RuntimeException("Unexpected invalid hash"))
       transactionInfo = TransactionInfo(
         transactionId = transactionId,
         ledger = getType,
@@ -46,7 +51,10 @@ class InMemoryLedgerService(onAtalaObject: AtalaObjectNotificationHandler)(impli
         Try(publication.asRight[CardanoWalletError])
       case Failure(ex) =>
         Try(
-          CardanoWalletError(ex.getMessage, CardanoWalletErrorCode.UndefinedCardanoWalletError).asLeft[PublicationInfo]
+          CardanoWalletError(
+            ex.getMessage,
+            CardanoWalletErrorCode.UndefinedCardanoWalletError
+          ).asLeft[PublicationInfo]
         )
     }
   }
@@ -55,10 +63,14 @@ class InMemoryLedgerService(onAtalaObject: AtalaObjectNotificationHandler)(impli
       transactionId: TransactionId
   ): Future[Either[CardanoWalletError, TransactionDetails]] = {
     // In-memory transactions are immediately in the ledger
-    Future.successful(TransactionDetails(transactionId, TransactionStatus.InLedger).asRight)
+    Future.successful(
+      TransactionDetails(transactionId, TransactionStatus.InLedger).asRight
+    )
   }
 
-  override def deleteTransaction(transactionId: TransactionId): Future[Either[CardanoWalletError, Unit]] =
+  override def deleteTransaction(
+      transactionId: TransactionId
+  ): Future[Either[CardanoWalletError, Unit]] =
     Future.successful(
       CardanoWalletError(
         "In-memory transactions cannot be deleted",

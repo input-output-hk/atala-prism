@@ -37,7 +37,9 @@ object GenericCredentialsSDK {
   @nowarn("cat=unused-params")
   def getIssuerDID(credential: String): String = issuerDIDUsed.getValue
   @nowarn("cat=unused-params")
-  def getIssuerDIDSufix(credential: String): DidSuffix = DidSuffix(issuerDIDUsed.getSuffix)
+  def getIssuerDIDSufix(credential: String): DidSuffix = DidSuffix(
+    issuerDIDUsed.getSuffix
+  )
   @nowarn("cat=unused-params")
   def getKeyId(credential: String): String = keyIdUsed
 }

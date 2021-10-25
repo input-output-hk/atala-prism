@@ -22,10 +22,16 @@ class MessageNotificationService private (
 ) {
   import MessageNotificationService._
 
-  private val streamQueues = new ConcurrentHashMap[ParticipantId, NoneTerminatedQueue[IO, Message]]()
+  private val streamQueues =
+    new ConcurrentHashMap[ParticipantId, NoneTerminatedQueue[IO, Message]]()
 
-  private def enqueue(queue: NoneTerminatedQueue[IO, Message], v: Option[Message]): Unit = {
-    ConcurrentEffect[IO].runAsync(queue.enqueue1(v))(_ => IO.unit).unsafeRunSync()
+  private def enqueue(
+      queue: NoneTerminatedQueue[IO, Message],
+      v: Option[Message]
+  ): Unit = {
+    ConcurrentEffect[IO]
+      .runAsync(queue.enqueue1(v))(_ => IO.unit)
+      .unsafeRunSync()
   }
 
   def stream(recipientId: ParticipantId): Stream[IO, Message] = {
@@ -48,7 +54,10 @@ class MessageNotificationService private (
         MessageId.from(notification.payload) match {
           case Success(notificationId) => Some(notificationId)
           case Failure(e) =>
-            logger.error(s"DB notification payload could not be parsed as message ID", e)
+            logger.error(
+              s"DB notification payload could not be parsed as message ID",
+              e
+            )
             None
         }
       }
@@ -67,14 +76,18 @@ class MessageNotificationService private (
       .unNone
       // Notify any connected stream
       .map { message =>
-        Option(streamQueues.get(message.recipientId)).foreach(enqueue(_, Some(message)))
+        Option(streamQueues.get(message.recipientId)).foreach(
+          enqueue(_, Some(message))
+        )
       }
       .transact(xa)
       .compile
       .drain
       .unsafeRunAsync {
         case Right(_) =>
-          logger.info("Closing all message streams because the DB notification stream has ended")
+          logger.info(
+            "Closing all message streams because the DB notification stream has ended"
+          )
           // The following two operations should ideally be atomic but, because the notification stream cannot be
           // restarted, we can ignore it
           streamQueues.values().forEach(enqueue(_, None))
@@ -97,7 +110,10 @@ object MessageNotificationService {
 
   def apply(
       xa: Transactor[IO]
-  )(implicit contextShift: ContextShift[IO], timer: Timer[IO]): MessageNotificationService = {
+  )(implicit
+      contextShift: ContextShift[IO],
+      timer: Timer[IO]
+  ): MessageNotificationService = {
     val dbNotificationStreamer = DbNotificationStreamer("new_messages")
     new MessageNotificationService(dbNotificationStreamer, xa)
   }

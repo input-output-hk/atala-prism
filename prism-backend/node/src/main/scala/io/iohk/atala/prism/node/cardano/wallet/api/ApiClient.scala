@@ -47,14 +47,22 @@ private[wallet] class ApiClient(config: ApiClient.Config)(implicit
       metadata: Option[TransactionMetadata],
       passphrase: String
   ): Result[TransactionId] = {
-    PostTransaction(walletId, payments, metadata, passphrase).run(transactionIdFromTransactionDecoder)
+    PostTransaction(walletId, payments, metadata, passphrase).run(
+      transactionIdFromTransactionDecoder
+    )
   }
 
-  override def getTransaction(walletId: WalletId, transactionId: TransactionId): Result[TransactionDetails] = {
+  override def getTransaction(
+      walletId: WalletId,
+      transactionId: TransactionId
+  ): Result[TransactionDetails] = {
     GetTransaction(walletId, transactionId).run
   }
 
-  override def deleteTransaction(walletId: WalletId, transactionId: TransactionId): Result[Unit] = {
+  override def deleteTransaction(
+      walletId: WalletId,
+      transactionId: TransactionId
+  ): Result[Unit] = {
     DeleteTransaction(walletId, transactionId).run
   }
 
@@ -66,7 +74,10 @@ private[wallet] class ApiClient(config: ApiClient.Config)(implicit
     sttp
       .contentType(MediaTypes.Json)
       .response(asString)
-      .method(method.httpMethod, Uri.apply(config.host, config.port).path(method.path))
+      .method(
+        method.httpMethod,
+        Uri.apply(config.host, config.port).path(method.path)
+      )
       .body(method.requestBody.map(_.noSpaces).getOrElse(""))
       .send()
       .map { response =>
@@ -85,14 +96,17 @@ private[wallet] object ApiClient {
 
   case class Config(host: String, port: Int)
 
-  private[wallet] val DefaultBackend: SttpBackend[Future, Nothing] = AsyncHttpClientFutureBackend()
+  private[wallet] val DefaultBackend: SttpBackend[Future, Nothing] =
+    AsyncHttpClientFutureBackend()
 
   /** Try to map a response to a result or an error.
     *
     * <p>If the mapping is not possible, throw an exception.
     *
-    * @tparam A the success type.
-    * @return The success or the error response.
+    * @tparam A
+    *   the success type.
+    * @return
+    *   The success or the error response.
     */
   private def getResult[A](response: Response[String])(implicit
       decoder: Decoder[A]
@@ -113,7 +127,8 @@ private[wallet] object ApiClient {
       parse(response).fold(
         parsingFailure =>
           throw new RuntimeException(
-            s"Cardano Wallet API Error: ${parsingFailure.message}, with response: ${response.take(256)}",
+            s"Cardano Wallet API Error: ${parsingFailure.message}, with response: ${response
+              .take(256)}",
             parsingFailure.underlying
           ),
         identity
@@ -129,20 +144,28 @@ private[wallet] object ApiClient {
       .as[CardanoWalletError]
       .fold(
         decodingFailure =>
-          throw new RuntimeException(s"Cardano Wallet API Error: ${decodingFailure.toString}", decodingFailure),
+          throw new RuntimeException(
+            s"Cardano Wallet API Error: ${decodingFailure.toString}",
+            decodingFailure
+          ),
         identity
       )
   }
 
   /** Try to map a string response to its success result.
     */
-  private def unsafeToResult[A](response: String)(implicit decoder: Decoder[A]): A = {
+  private def unsafeToResult[A](
+      response: String
+  )(implicit decoder: Decoder[A]): A = {
     val json = unsafeToJson(response)
     json
       .as[A]
       .fold(
         decodingFailure =>
-          throw new RuntimeException(s"Cardano Wallet API Error: ${decodingFailure.toString}", decodingFailure),
+          throw new RuntimeException(
+            s"Cardano Wallet API Error: ${decodingFailure.toString}",
+            decodingFailure
+          ),
         identity
       )
   }

@@ -40,11 +40,17 @@ class CredentialIssuanceServiceImplSpec extends ManagementConsoleRpcSpecBase wit
       val institutionId = createParticipant("Institution", did)
       val contacts = createRandomCredentialIssuanceContacts(institutionId)
 
-      val credentialTypeWithRequiredFields = DataPreparation.createCredentialType(institutionId, "name")
+      val credentialTypeWithRequiredFields =
+        DataPreparation.createCredentialType(institutionId, "name")
 
       // Create the credential issuance
-      val createRequest = createCredentialIssuanceRequest(contacts, credentialTypeWithRequiredFields.credentialType.id)
-      usingApiAsCredentialIssuance(SignedRpcRequest.generate(keyPair, did, createRequest)) { serviceStub =>
+      val createRequest = createCredentialIssuanceRequest(
+        contacts,
+        credentialTypeWithRequiredFields.credentialType.id
+      )
+      usingApiAsCredentialIssuance(
+        SignedRpcRequest.generate(keyPair, did, createRequest)
+      ) { serviceStub =>
         val creationTime = Instant.now
         val createResponse = serviceStub.createCredentialIssuance(createRequest)
 
@@ -65,7 +71,9 @@ class CredentialIssuanceServiceImplSpec extends ManagementConsoleRpcSpecBase wit
         // Get the credential issuance just created and verify it matches
         val getRequest =
           console_api.GetCredentialIssuanceRequest(credentialIssuanceId = createResponse.credentialIssuanceId)
-        usingApiAsCredentialIssuance(SignedRpcRequest.generate(keyPair, did, getRequest)) { serviceStub =>
+        usingApiAsCredentialIssuance(
+          SignedRpcRequest.generate(keyPair, did, getRequest)
+        ) { serviceStub =>
           val credentialIssuance = serviceStub.getCredentialIssuance(getRequest)
 
           // Verify the obtained credential issuance matches the created one
@@ -81,7 +89,9 @@ class CredentialIssuanceServiceImplSpec extends ManagementConsoleRpcSpecBase wit
           contacts.zip(issuanceContacts).foreach { case (contact, issuanceContact) =>
             issuanceContact.contactId mustBe contact.contactId
             issuanceContact.groupIds must contain theSameElementsAs contact.groupIds
-            asJson(issuanceContact.credentialData) mustBe asJson(contact.credentialData)
+            asJson(issuanceContact.credentialData) mustBe asJson(
+              contact.credentialData
+            )
           }
         }
       }
@@ -91,12 +101,19 @@ class CredentialIssuanceServiceImplSpec extends ManagementConsoleRpcSpecBase wit
       val institutionId = createParticipant("Institution", did)
       val contacts = createRandomCredentialIssuanceContacts(institutionId)
       val otherInstitutionId = createParticipant("Other Institution", otherDid)
-      val otherContacts = List(createRandomCredentialIssuanceContact(otherInstitutionId))
-      val credentialTypeWithRequiredFields = DataPreparation.createCredentialType(institutionId, "name")
+      val otherContacts =
+        List(createRandomCredentialIssuanceContact(otherInstitutionId))
+      val credentialTypeWithRequiredFields =
+        DataPreparation.createCredentialType(institutionId, "name")
 
       val createRequest =
-        createCredentialIssuanceRequest(contacts ++ otherContacts, credentialTypeWithRequiredFields.credentialType.id)
-      usingApiAsCredentialIssuance(SignedRpcRequest.generate(keyPair, did, createRequest)) { serviceStub =>
+        createCredentialIssuanceRequest(
+          contacts ++ otherContacts,
+          credentialTypeWithRequiredFields.credentialType.id
+        )
+      usingApiAsCredentialIssuance(
+        SignedRpcRequest.generate(keyPair, did, createRequest)
+      ) { serviceStub =>
         assertThrows[Exception] {
           serviceStub.createCredentialIssuance(createRequest)
         }
@@ -108,7 +125,9 @@ class CredentialIssuanceServiceImplSpec extends ManagementConsoleRpcSpecBase wit
 
       val getRequest =
         console_api.GetCredentialIssuanceRequest(credentialIssuanceId = UUID.randomUUID().toString)
-      usingApiAsCredentialIssuance(SignedRpcRequest.generate(keyPair, did, getRequest)) { serviceStub =>
+      usingApiAsCredentialIssuance(
+        SignedRpcRequest.generate(keyPair, did, getRequest)
+      ) { serviceStub =>
         assertThrows[Exception] {
           serviceStub.getCredentialIssuance(getRequest)
         }
@@ -127,9 +146,16 @@ class CredentialIssuanceServiceImplSpec extends ManagementConsoleRpcSpecBase wit
     def createBulk(
         issuanceName: String,
         credentialType: CredentialTypeId,
-        contacts: List[(Contact.ExternalId, console_models.CredentialIssuanceContact)]
+        contacts: List[
+          (Contact.ExternalId, console_models.CredentialIssuanceContact)
+        ]
     ): console_api.CreateGenericCredentialBulkRequest = {
-      def toJson(contact: (Contact.ExternalId, console_models.CredentialIssuanceContact)): Json = {
+      def toJson(
+          contact: (
+              Contact.ExternalId,
+              console_models.CredentialIssuanceContact
+          )
+      ): Json = {
         JsonObject(
           "external_id" -> contact._1.value.asJson,
           "credential_data" -> asJson(contact._2.credentialData),
@@ -149,17 +175,26 @@ class CredentialIssuanceServiceImplSpec extends ManagementConsoleRpcSpecBase wit
 
     "create and get a credential issuance" in {
       val institutionId = createParticipant("Institution", did)
-      val contactsWithExternalIds = createRandomCredentialIssuanceContactsWithExternalId(institutionId)
+      val contactsWithExternalIds =
+        createRandomCredentialIssuanceContactsWithExternalId(institutionId)
       val contacts = contactsWithExternalIds.map(_._2)
 
-      val credentialTypeWithRequiredFields = DataPreparation.createCredentialType(institutionId, "name")
+      val credentialTypeWithRequiredFields =
+        DataPreparation.createCredentialType(institutionId, "name")
 
       // Create the credential issuance
       val createRequest =
-        createBulk(issuanceName, credentialTypeWithRequiredFields.credentialType.id, contactsWithExternalIds)
-      usingApiAsCredentialIssuance(SignedRpcRequest.generate(keyPair, did, createRequest)) { serviceStub =>
+        createBulk(
+          issuanceName,
+          credentialTypeWithRequiredFields.credentialType.id,
+          contactsWithExternalIds
+        )
+      usingApiAsCredentialIssuance(
+        SignedRpcRequest.generate(keyPair, did, createRequest)
+      ) { serviceStub =>
         val creationTime = Instant.now
-        val createResponse = serviceStub.createGenericCredentialBulk(createRequest)
+        val createResponse =
+          serviceStub.createGenericCredentialBulk(createRequest)
 
         // Verify the generated credentials
         val credentials =
@@ -178,7 +213,9 @@ class CredentialIssuanceServiceImplSpec extends ManagementConsoleRpcSpecBase wit
         // Get the credential issuance just created and verify it matches
         val getRequest =
           console_api.GetCredentialIssuanceRequest(credentialIssuanceId = createResponse.credentialIssuanceId)
-        usingApiAsCredentialIssuance(SignedRpcRequest.generate(keyPair, did, getRequest)) { serviceStub =>
+        usingApiAsCredentialIssuance(
+          SignedRpcRequest.generate(keyPair, did, getRequest)
+        ) { serviceStub =>
           val credentialIssuance = serviceStub.getCredentialIssuance(getRequest)
 
           // Verify the obtained credential issuance matches the created one
@@ -194,7 +231,9 @@ class CredentialIssuanceServiceImplSpec extends ManagementConsoleRpcSpecBase wit
           contacts.zip(issuanceContacts).foreach { case (contact, issuanceContact) =>
             issuanceContact.contactId mustBe contact.contactId
             issuanceContact.groupIds must contain theSameElementsAs contact.groupIds
-            asJson(issuanceContact.credentialData) mustBe asJson(contact.credentialData)
+            asJson(issuanceContact.credentialData) mustBe asJson(
+              contact.credentialData
+            )
           }
         }
       }
@@ -202,14 +241,24 @@ class CredentialIssuanceServiceImplSpec extends ManagementConsoleRpcSpecBase wit
 
     "fail to create for a contact outside the institution" in {
       val institutionId = createParticipant("Institution", did)
-      val contacts = createRandomCredentialIssuanceContactsWithExternalId(institutionId)
+      val contacts =
+        createRandomCredentialIssuanceContactsWithExternalId(institutionId)
       val otherInstitutionId = createParticipant("Other Institution", otherDid)
-      val otherContacts = List(createRandomCredentialIssuanceContactWithExternalId(otherInstitutionId))
-      val credentialTypeWithRequiredFields = DataPreparation.createCredentialType(institutionId, "name")
+      val otherContacts = List(
+        createRandomCredentialIssuanceContactWithExternalId(otherInstitutionId)
+      )
+      val credentialTypeWithRequiredFields =
+        DataPreparation.createCredentialType(institutionId, "name")
 
       val createRequest =
-        createBulk(issuanceName, credentialTypeWithRequiredFields.credentialType.id, contacts ++ otherContacts)
-      usingApiAsCredentialIssuance(SignedRpcRequest.generate(keyPair, did, createRequest)) { serviceStub =>
+        createBulk(
+          issuanceName,
+          credentialTypeWithRequiredFields.credentialType.id,
+          contacts ++ otherContacts
+        )
+      usingApiAsCredentialIssuance(
+        SignedRpcRequest.generate(keyPair, did, createRequest)
+      ) { serviceStub =>
         assertThrows[Exception] {
           serviceStub.createGenericCredentialBulk(createRequest)
         }
@@ -243,7 +292,10 @@ class CredentialIssuanceServiceImplSpec extends ManagementConsoleRpcSpecBase wit
       institutionId: ParticipantId,
       group: Option[InstitutionGroup] = None
   ): console_models.CredentialIssuanceContact = {
-    val contact = DataPreparation.createContact(institutionId, groupName = group.map(_.name))
+    val contact = DataPreparation.createContact(
+      institutionId,
+      groupName = group.map(_.name)
+    )
     val contactId = contact.contactId.toString
     console_models.CredentialIssuanceContact(
       contactId = contactId,
@@ -272,7 +324,10 @@ class CredentialIssuanceServiceImplSpec extends ManagementConsoleRpcSpecBase wit
     }
     val contactsWithGroup =
       groups.map { group =>
-        createRandomCredentialIssuanceContactWithExternalId(institutionId, Some(group))
+        createRandomCredentialIssuanceContactWithExternalId(
+          institutionId,
+          Some(group)
+        )
       }
     val contactsWithoutGroup = (1 to 2).map { _ =>
       createRandomCredentialIssuanceContactWithExternalId(institutionId)
@@ -285,7 +340,10 @@ class CredentialIssuanceServiceImplSpec extends ManagementConsoleRpcSpecBase wit
       institutionId: ParticipantId,
       group: Option[InstitutionGroup] = None
   ): (Contact.ExternalId, console_models.CredentialIssuanceContact) = {
-    val contact = DataPreparation.createContact(institutionId, groupName = group.map(_.name))
+    val contact = DataPreparation.createContact(
+      institutionId,
+      groupName = group.map(_.name)
+    )
     val contactId = contact.contactId.toString
     (
       contact.externalId,

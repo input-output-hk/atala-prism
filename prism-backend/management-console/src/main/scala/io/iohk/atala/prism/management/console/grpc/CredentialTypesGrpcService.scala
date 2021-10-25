@@ -33,7 +33,11 @@ class CredentialTypesGrpcService(
     auth[GetCredentialTypes]("getCredentialTypes", request) { (participantId, traceId, _) =>
       credentialTypesService
         .getCredentialTypes(participantId)
-        .map(result => console_api.GetCredentialTypesResponse(result.map(ProtoCodecs.toCredentialTypeProto)))
+        .map(result =>
+          console_api.GetCredentialTypesResponse(
+            result.map(ProtoCodecs.toCredentialTypeProto)
+          )
+        )
         .run(traceId)
         .unsafeToFuture()
         .map(_.asRight)
@@ -65,7 +69,11 @@ class CredentialTypesGrpcService(
         .toFutureEither
         .map(result =>
           console_api
-            .CreateCredentialTypeResponse(Some(ProtoCodecs.toCredentialTypeWithRequiredFieldsProto(result)))
+            .CreateCredentialTypeResponse(
+              Some(
+                ProtoCodecs.toCredentialTypeWithRequiredFieldsProto(result)
+              )
+            )
         )
     }
 
@@ -96,9 +104,15 @@ class CredentialTypesGrpcService(
   override def markAsArchivedCredentialType(
       request: console_api.MarkAsArchivedCredentialTypeRequest
   ): Future[console_api.MarkAsArchivedCredentialTypeResponse] =
-    auth[MarkAsArchivedCredentialType]("markAsArchivedCredentialType", request) { (participantId, traceId, _) =>
+    auth[MarkAsArchivedCredentialType](
+      "markAsArchivedCredentialType",
+      request
+    ) { (participantId, traceId, _) =>
       credentialTypesService
-        .markAsArchived(participantId, CredentialTypeId.unsafeFrom(request.credentialTypeId))
+        .markAsArchived(
+          participantId,
+          CredentialTypeId.unsafeFrom(request.credentialTypeId)
+        )
         .run(traceId)
         .unsafeToFuture()
         .toFutureEither

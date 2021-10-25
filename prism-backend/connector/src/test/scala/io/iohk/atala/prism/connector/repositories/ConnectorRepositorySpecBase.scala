@@ -19,7 +19,8 @@ import tofu.logging.Logs
 
 trait ConnectorRepositorySpecBase extends AtalaWithPostgresSpec {
 
-  val connectorRepoSpecLogs: Logs[IO, IOWithTraceIdContext] = Logs.withContext[IO, IOWithTraceIdContext]
+  val connectorRepoSpecLogs: Logs[IO, IOWithTraceIdContext] =
+    Logs.withContext[IO, IOWithTraceIdContext]
 
   protected def createParticipant(
       tpe: ParticipantType,
@@ -62,7 +63,10 @@ trait ConnectorRepositorySpecBase extends AtalaWithPostgresSpec {
     )
   }
 
-  protected def createVerifier(name: String = "Verifier", logo: Option[ParticipantLogo] = None): ParticipantId = {
+  protected def createVerifier(
+      name: String = "Verifier",
+      logo: Option[ParticipantLogo] = None
+  ): ParticipantId = {
     createParticipant(
       ParticipantType.Verifier,
       name,
@@ -72,8 +76,16 @@ trait ConnectorRepositorySpecBase extends AtalaWithPostgresSpec {
     )
   }
 
-  protected def createConnection(initiatorId: ParticipantId, acceptorId: ParticipantId): ConnectionId = {
-    createConnection(initiatorId, acceptorId, createToken(initiatorId), ConnectionStatus.InvitationMissing)
+  protected def createConnection(
+      initiatorId: ParticipantId,
+      acceptorId: ParticipantId
+  ): ConnectionId = {
+    createConnection(
+      initiatorId,
+      acceptorId,
+      createToken(initiatorId),
+      ConnectionStatus.InvitationMissing
+    )
   }
 
   protected def createConnection(
@@ -112,7 +124,8 @@ trait ConnectorRepositorySpecBase extends AtalaWithPostgresSpec {
   ): MessageId = {
     sql"""
          |INSERT INTO messages (id, connection, sender, recipient, received_at, content)
-         |VALUES (${MessageId.random()}, $connection, $sender, $recipient, $receivedAt, $content)
+         |VALUES (${MessageId
+      .random()}, $connection, $sender, $recipient, $receivedAt, $content)
          |RETURNING id""".stripMargin.runUnique[MessageId]()
   }
 

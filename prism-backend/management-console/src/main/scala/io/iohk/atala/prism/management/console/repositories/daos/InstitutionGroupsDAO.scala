@@ -16,16 +16,23 @@ import java.time.Instant
 
 object InstitutionGroupsDAO {
 
-  def create(institutionId: ParticipantId, name: InstitutionGroup.Name): ConnectionIO[InstitutionGroup] = {
+  def create(
+      institutionId: ParticipantId,
+      name: InstitutionGroup.Name
+  ): ConnectionIO[InstitutionGroup] = {
     val groupId = InstitutionGroup.Id.random()
     val now = Instant.now()
     sql"""
          |INSERT INTO institution_groups (group_id, institution_id, name, created_at)
          |VALUES ($groupId, $institutionId, $name, $now)
-       """.stripMargin.update.run.as(InstitutionGroup(groupId, name, institutionId, now))
+       """.stripMargin.update.run
+      .as(InstitutionGroup(groupId, name, institutionId, now))
   }
 
-  def update(groupId: InstitutionGroup.Id, newName: InstitutionGroup.Name): ConnectionIO[Boolean] = {
+  def update(
+      groupId: InstitutionGroup.Id,
+      newName: InstitutionGroup.Name
+  ): ConnectionIO[Boolean] = {
     sql"""
          |UPDATE institution_groups
          |SET name = $newName
@@ -33,7 +40,9 @@ object InstitutionGroupsDAO {
        """.stripMargin.update.run.map(_ == 1)
   }
 
-  def getBy(institutionId: ParticipantId): ConnectionIO[List[InstitutionGroup.WithContactCount]] = {
+  def getBy(
+      institutionId: ParticipantId
+  ): ConnectionIO[List[InstitutionGroup.WithContactCount]] = {
     sql"""
          |SELECT group_id, name, institution_id, created_at, (
          |  SELECT COUNT(*)
@@ -82,7 +91,9 @@ object InstitutionGroupsDAO {
       .unique
   }
 
-  def find(groupId: InstitutionGroup.Id): ConnectionIO[Option[InstitutionGroup]] = {
+  def find(
+      groupId: InstitutionGroup.Id
+  ): ConnectionIO[Option[InstitutionGroup]] = {
     sql"""
          |SELECT group_id, name, institution_id, created_at
          |FROM institution_groups
@@ -90,7 +101,10 @@ object InstitutionGroupsDAO {
          |""".stripMargin.query[InstitutionGroup].option
   }
 
-  def find(institutionId: ParticipantId, name: InstitutionGroup.Name): ConnectionIO[Option[InstitutionGroup]] = {
+  def find(
+      institutionId: ParticipantId,
+      name: InstitutionGroup.Name
+  ): ConnectionIO[Option[InstitutionGroup]] = {
     sql"""
          |SELECT group_id, name, institution_id, created_at
          |FROM institution_groups
@@ -99,7 +113,10 @@ object InstitutionGroupsDAO {
        """.stripMargin.query[InstitutionGroup].option
   }
 
-  def deleteGroup(institutionId: ParticipantId, groupId: InstitutionGroup.Id): ConnectionIO[Boolean] = {
+  def deleteGroup(
+      institutionId: ParticipantId,
+      groupId: InstitutionGroup.Id
+  ): ConnectionIO[Boolean] = {
     sql"""
          |DELETE FROM institution_groups
          |WHERE institution_id = $institutionId AND
@@ -107,7 +124,9 @@ object InstitutionGroupsDAO {
          | """.stripMargin.update.run.map(_ == 1)
   }
 
-  def listContacts(groupId: InstitutionGroup.Id): ConnectionIO[List[Contact]] = {
+  def listContacts(
+      groupId: InstitutionGroup.Id
+  ): ConnectionIO[List[Contact]] = {
     sql"""SELECT contact_id, connection_token, external_id, contact_data, created_at, contacts.name
          |FROM contacts_per_group
          |     JOIN contacts USING (contact_id)
@@ -115,13 +134,19 @@ object InstitutionGroupsDAO {
          |""".stripMargin.query[Contact].to[List]
   }
 
-  def addContact(groupId: InstitutionGroup.Id, contactId: Contact.Id): ConnectionIO[Unit] = {
+  def addContact(
+      groupId: InstitutionGroup.Id,
+      contactId: Contact.Id
+  ): ConnectionIO[Unit] = {
     sql"""INSERT INTO contacts_per_group (group_id, contact_id, added_at)
          |VALUES ($groupId, $contactId, ${Instant.now()})
          |""".stripMargin.update.run.void
   }
 
-  def addContacts(groupIds: Set[InstitutionGroup.Id], contactIds: Set[Contact.Id]): ConnectionIO[Unit] = {
+  def addContacts(
+      groupIds: Set[InstitutionGroup.Id],
+      contactIds: Set[Contact.Id]
+  ): ConnectionIO[Unit] = {
     val addedAt = Instant.now()
     val data = for {
       groupId <- groupIds
@@ -137,7 +162,10 @@ object InstitutionGroupsDAO {
       .void
   }
 
-  def copyContacts(originalGroupId: InstitutionGroup.Id, newGroupId: InstitutionGroup.Id): ConnectionIO[Unit] = {
+  def copyContacts(
+      originalGroupId: InstitutionGroup.Id,
+      newGroupId: InstitutionGroup.Id
+  ): ConnectionIO[Unit] = {
     sql"""INSERT INTO contacts_per_group (group_id, contact_id, added_at)
          |SELECT $newGroupId, contact_id, now()
          |FROM contacts_per_group
@@ -145,18 +173,26 @@ object InstitutionGroupsDAO {
        """.stripMargin.update.run.void
   }
 
-  def removeContacts(groupId: InstitutionGroup.Id, contactIds: List[Contact.Id]): ConnectionIO[Unit] = {
+  def removeContacts(
+      groupId: InstitutionGroup.Id,
+      contactIds: List[Contact.Id]
+  ): ConnectionIO[Unit] = {
     NonEmptyList.fromList(contactIds) match {
       case Some(contactIdsNonEmpty) =>
         val fragment = fr"DELETE FROM contacts_per_group" ++
-          whereAnd(fr"group_id = $groupId", in(fr"contact_id", contactIdsNonEmpty))
+          whereAnd(
+            fr"group_id = $groupId",
+            in(fr"contact_id", contactIdsNonEmpty)
+          )
         fragment.update.run.void
       case None =>
         unit
     }
   }
 
-  def removeAllGroupContacts(groupId: InstitutionGroup.Id): ConnectionIO[Unit] = {
+  def removeAllGroupContacts(
+      groupId: InstitutionGroup.Id
+  ): ConnectionIO[Unit] = {
     sql"""DELETE FROM contacts_per_group
          |WHERE group_id = $groupId
          |""".stripMargin.update.run.void
@@ -175,7 +211,10 @@ object InstitutionGroupsDAO {
                         |SELECT group_id, name, institution_id, created_at
                         |FROM institution_groups
        """.stripMargin ++
-          whereAnd(fr"institution_id = $institutionId", in(fr"group_id", groupIdsNonEmpty))
+          whereAnd(
+            fr"institution_id = $institutionId",
+            in(fr"group_id", groupIdsNonEmpty)
+          )
         fragment.query[InstitutionGroup].to[List]
 
       case None => connection.pure(List.empty)

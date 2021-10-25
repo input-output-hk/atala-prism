@@ -24,11 +24,18 @@ object S3ObjectStorageService {
   )
 }
 
-class S3ObjectStorageService(bucket: String, keyPrefix: String, region: Option[Region] = None)
-    extends ObjectStorageService {
+class S3ObjectStorageService(
+    bucket: String,
+    keyPrefix: String,
+    region: Option[Region] = None
+) extends ObjectStorageService {
   require(keyPrefix.endsWith("/"), "Key prefix needs to end with /")
-  private val missingVariables = AWS_ENV_VARIABLES.filter(System.getenv(_) == null)
-  require(missingVariables.isEmpty, s"You need ${missingVariables.mkString(", ")} in order to use S3 storage")
+  private val missingVariables =
+    AWS_ENV_VARIABLES.filter(System.getenv(_) == null)
+  require(
+    missingVariables.isEmpty,
+    s"You need ${missingVariables.mkString(", ")} in order to use S3 storage"
+  )
 
   val client = {
     val builder = S3AsyncClient.builder
@@ -38,8 +45,10 @@ class S3ObjectStorageService(bucket: String, keyPrefix: String, region: Option[R
 
   /** Store the object identified by id, overwriting it if exists.
     *
-    * @param id   the object identifier
-    * @param data the data to store
+    * @param id
+    *   the object identifier
+    * @param data
+    *   the data to store
     */
   override def put(id: ObjectId, data: Array[Byte]): Future[Unit] = {
     val request = PutObjectRequest
@@ -65,8 +74,10 @@ class S3ObjectStorageService(bucket: String, keyPrefix: String, region: Option[R
 
   /** Find an object by its id.
     *
-    * @param id the object identifier
-    * @return the object data if it was found
+    * @param id
+    *   the object identifier
+    * @return
+    *   the object data if it was found
     */
   override def get(id: ObjectId): Future[Option[Array[Byte]]] = {
     val request = GetObjectRequest
@@ -78,7 +89,10 @@ class S3ObjectStorageService(bucket: String, keyPrefix: String, region: Option[R
     val promise = Promise[Option[Array[Byte]]]()
 
     client
-      .getObject(request, new ByteArrayAsyncResponseTransformer[GetObjectResponse]())
+      .getObject(
+        request,
+        new ByteArrayAsyncResponseTransformer[GetObjectResponse]()
+      )
       .whenComplete { (resp, err) =>
         if (resp != null) {
           promise.success(Some(resp.asByteArray()))

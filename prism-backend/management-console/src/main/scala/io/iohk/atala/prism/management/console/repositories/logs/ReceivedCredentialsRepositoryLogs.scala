@@ -11,7 +11,9 @@ import tofu.higherKind.Mid
 import tofu.logging.ServiceLogging
 import tofu.syntax.logging._
 
-private[repositories] final class ReceivedCredentialsRepositoryLogs[F[_]: ServiceLogging[
+private[repositories] final class ReceivedCredentialsRepositoryLogs[F[
+    _
+]: ServiceLogging[
   *[_],
   ReceivedCredentialsRepository[F]
 ]: BracketThrow]
@@ -24,15 +26,25 @@ private[repositories] final class ReceivedCredentialsRepositoryLogs[F[_]: Servic
     in =>
       info"getting credentials for $verifierId $contactId" *> in
         .flatTap(list => info"getting credentials for - got ${list.size} entities")
-        .onError(errorCause"encountered an error while getting credentials for" (_))
+        .onError(
+          errorCause"encountered an error while getting credentials for" (_)
+        )
 
-  override def createReceivedCredential(data: ReceivedSignedCredentialData): Mid[F, Unit] =
+  override def createReceivedCredential(
+      data: ReceivedSignedCredentialData
+  ): Mid[F, Unit] =
     in =>
       info"creating received credential ${data.contactId} ${data.credentialExternalId}" *> in
         .flatTap(_ => info"creating received credential - successfully done")
-        .onError(errorCause"encountered an error while creating received credential" (_))
+        .onError(
+          errorCause"encountered an error while creating received credential" (
+            _
+          )
+        )
 
-  override def getLatestCredentialExternalId(verifierId: ParticipantId): Mid[F, Option[CredentialExternalId]] =
+  override def getLatestCredentialExternalId(
+      verifierId: ParticipantId
+  ): Mid[F, Option[CredentialExternalId]] =
     in =>
       info"getting credential external id $verifierId" *> in
         .flatTap(
@@ -40,5 +52,9 @@ private[repositories] final class ReceivedCredentialsRepositoryLogs[F[_]: Servic
             info"getting credential external id - $externalId"
           )
         )
-        .onError(errorCause"encountered an error while getting credential external id" (_))
+        .onError(
+          errorCause"encountered an error while getting credential external id" (
+            _
+          )
+        )
 }

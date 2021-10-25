@@ -30,7 +30,10 @@ object DockerPostgresService extends DockerKit {
   val postgresContainer = DockerContainer(PostgresImage)
     .withCommand("-N 1000")
     .withPorts((PostgresAdvertisedPort, Some(PostgresExposedPort)))
-    .withEnv(s"POSTGRES_USER=$PostgresUsername", s"POSTGRES_PASSWORD=$PostgresPassword")
+    .withEnv(
+      s"POSTGRES_USER=$PostgresUsername",
+      s"POSTGRES_PASSWORD=$PostgresPassword"
+    )
     .withReadyChecker(
       new PostgresReadyChecker().looped(15, 1.second)
     )
@@ -63,22 +66,34 @@ object DockerPostgresService extends DockerKit {
       }
 
       val hostname = postgresContainer.hostname.getOrElse("localhost")
-      PostgresConfig(s"$hostname:$PostgresExposedPort", DatabaseName, PostgresUsername, PostgresPassword)
+      PostgresConfig(
+        s"$hostname:$PostgresExposedPort",
+        DatabaseName,
+        PostgresUsername,
+        PostgresPassword
+      )
     }
 
   class PostgresReadyChecker extends DockerReadyChecker {
 
     override def apply(
         container: DockerContainerState
-    )(implicit dockerExecutor: DockerCommandExecutor, ec: ExecutionContext): Future[Boolean] = {
+    )(implicit
+        dockerExecutor: DockerCommandExecutor,
+        ec: ExecutionContext
+    ): Future[Boolean] = {
 
       container
         .getPorts()(dockerExecutor, ec)
         .map { _ =>
           try {
             Class.forName("org.postgresql.Driver")
-            val url = s"jdbc:postgresql://${dockerExecutor.host}:$PostgresExposedPort/"
-            Option(DriverManager.getConnection(url, PostgresUsername, PostgresPassword))
+            val url =
+              s"jdbc:postgresql://${dockerExecutor.host}:$PostgresExposedPort/"
+            Option(
+              DriverManager
+                .getConnection(url, PostgresUsername, PostgresPassword)
+            )
               .foreach { conn =>
                 // NOTE: For some reason the result is always false
                 conn.createStatement().execute(s"CREATE DATABASE $DatabaseName")

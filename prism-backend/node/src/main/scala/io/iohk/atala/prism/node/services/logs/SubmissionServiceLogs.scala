@@ -12,8 +12,9 @@ import tofu.syntax.logging._
 
 import java.time.Duration
 
-private[services] final class SubmissionServiceLogs[F[_]: ServiceLogging[*[_], SubmissionService[F]]: MonadThrow]
-    extends SubmissionService[Mid[F, *]] {
+private[services] final class SubmissionServiceLogs[
+    F[_]: ServiceLogging[*[_], SubmissionService[F]]: MonadThrow
+] extends SubmissionService[Mid[F, *]] {
   override def submitReceivedObjects(): Mid[F, Either[errors.NodeError, Unit]] =
     in =>
       info"submitting received objects" *> in
@@ -23,11 +24,19 @@ private[services] final class SubmissionServiceLogs[F[_]: ServiceLogging[*[_], S
             _ => info"submitting received objects - successfully done"
           )
         )
-        .onError(errorCause"Encountered an error while submitting received objects" (_))
+        .onError(
+          errorCause"Encountered an error while submitting received objects" (_)
+        )
 
-  override def retryOldPendingTransactions(ledgerPendingTransactionTimeout: Duration): Mid[F, Int] =
+  override def retryOldPendingTransactions(
+      ledgerPendingTransactionTimeout: Duration
+  ): Mid[F, Int] =
     in =>
       info"retrying old pending transactions, duration $ledgerPendingTransactionTimeout" *> in
         .flatTap(_ => info"retrying old pending transactions - successfully done")
-        .onError(errorCause"Encountered an error while retrying old pending transactions" (_))
+        .onError(
+          errorCause"Encountered an error while retrying old pending transactions" (
+            _
+          )
+        )
 }

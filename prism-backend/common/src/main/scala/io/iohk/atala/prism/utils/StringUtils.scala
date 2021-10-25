@@ -8,12 +8,12 @@ object StringUtils {
 
   /** Masks a string, usually used to print secrets in logs.
     *
-    * The masking is done by taking the 2 characters from the prefix, and 2 from the suffix, the rest
-    * gets changed to asterisks (*). When there aren't enough characters, everything is masked.
+    * The masking is done by taking the 2 characters from the prefix, and 2 from the suffix, the rest gets changed to
+    * asterisks (*). When there aren't enough characters, everything is masked.
     *
     * For example:
-    * - masked("abcdef") == "ab**ef"
-    * - masked("abcd") == "****"
+    *   - masked("abcdef") == "ab**ef"
+    *   - masked("abcd") == "****"
     */
   def masked(string: String): String = {
     if (string.length <= 4) {

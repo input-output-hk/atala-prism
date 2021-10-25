@@ -14,7 +14,9 @@ import tofu.higherKind.Mid
 import tofu.logging.ServiceLogging
 import tofu.syntax.logging._
 
-private[repositories] final class CredentialBatchesRepositoryLogs[F[_]: MonadThrow: ServiceLogging[*[
+private[repositories] final class CredentialBatchesRepositoryLogs[F[
+    _
+]: MonadThrow: ServiceLogging[*[
   _
 ], CredentialBatchesRepository[F]]]
     extends CredentialBatchesRepository[Mid[F, *]] {
@@ -40,8 +42,14 @@ private[repositories] final class CredentialBatchesRepositoryLogs[F[_]: MonadThr
         .flatTap(
           _.fold(
             err => error"Encountered an error while getting credential revocation time $err",
-            res => info"getting credential revocation time - successfully done ${res.map(_.transactionId)}"
+            res =>
+              info"getting credential revocation time - successfully done ${res
+                .map(_.transactionId)}"
           )
         )
-        .onError(errorCause"Encountered an error while getting credential revocation time" (_))
+        .onError(
+          errorCause"Encountered an error while getting credential revocation time" (
+            _
+          )
+        )
 }

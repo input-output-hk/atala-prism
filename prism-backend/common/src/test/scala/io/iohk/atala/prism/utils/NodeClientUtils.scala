@@ -8,7 +8,10 @@ import io.iohk.atala.prism.identity.{PrismDid => DID}
 
 object NodeClientUtils {
 
-  def issueBatchOperation(issuerDID: DID, merkleRoot: MerkleRoot): node_models.AtalaOperation = {
+  def issueBatchOperation(
+      issuerDID: DID,
+      merkleRoot: MerkleRoot
+  ): node_models.AtalaOperation = {
     node_models
       .AtalaOperation(
         operation = node_models.AtalaOperation.Operation.IssueCredentialBatch(
@@ -43,6 +46,7 @@ object NodeClientUtils {
       )
   }
 
-  def toByteString(hash: Sha256Digest): ByteString = ByteString.copyFrom(hash.getValue)
+  def toByteString(hash: Sha256Digest): ByteString =
+    ByteString.copyFrom(hash.getValue)
 
 }

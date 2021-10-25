@@ -56,7 +56,8 @@ object GroupsService {
     for {
       serviceLogs <- logs.service[GroupsService[F]]
     } yield {
-      implicit val implicitLogs: ServiceLogging[F, GroupsService[F]] = serviceLogs
+      implicit val implicitLogs: ServiceLogging[F, GroupsService[F]] =
+        serviceLogs
       val logs: GroupsService[Mid[F, *]] = new GroupsServiceLogs[F]
       val mid = logs
       mid attach new GroupsServiceImpl[F](institutionGroupsRepository)
@@ -86,7 +87,11 @@ private final class GroupsServiceImpl[F[_]](
       institutionId: ParticipantId,
       createInstitutionGroup: CreateInstitutionGroup
   ): F[Either[ManagementConsoleError, InstitutionGroup]] =
-    institutionGroupsRepository.create(institutionId, createInstitutionGroup.name, createInstitutionGroup.contactIds)
+    institutionGroupsRepository.create(
+      institutionId,
+      createInstitutionGroup.name,
+      createInstitutionGroup.contactIds
+    )
 
   override def getGroups(
       institutionId: ParticipantId,
@@ -113,7 +118,11 @@ private final class GroupsServiceImpl[F[_]](
       copyInstitutionGroup: CopyInstitutionGroup
   ): F[Either[ManagementConsoleError, InstitutionGroup]] =
     institutionGroupsRepository
-      .copyGroup(institutionId, copyInstitutionGroup.groupId, copyInstitutionGroup.newName)
+      .copyGroup(
+        institutionId,
+        copyInstitutionGroup.groupId,
+        copyInstitutionGroup.newName
+      )
 
   override def deleteGroup(
       institutionId: ParticipantId,
@@ -123,8 +132,9 @@ private final class GroupsServiceImpl[F[_]](
       .deleteGroup(institutionId, deleteInstitutionGroup.groupId)
 }
 
-private final class GroupsServiceLogs[F[_]: ServiceLogging[*[_], GroupsService[F]]: MonadThrow]
-    extends GroupsService[Mid[F, *]] {
+private final class GroupsServiceLogs[
+    F[_]: ServiceLogging[*[_], GroupsService[F]]: MonadThrow
+] extends GroupsService[Mid[F, *]] {
   override def createGroup(
       institutionId: ParticipantId,
       createInstitutionGroup: CreateInstitutionGroup
@@ -137,13 +147,22 @@ private final class GroupsServiceLogs[F[_]: ServiceLogging[*[_], GroupsService[F
             _ => info"creating institution group - successfully done"
           )
         )
-        .onError(errorCause"encountered an error while creating institution group" (_))
+        .onError(
+          errorCause"encountered an error while creating institution group" (_)
+        )
 
-  override def getGroups(institutionId: ParticipantId, query: PaginatedQuery): Mid[F, GetGroupsResult] =
+  override def getGroups(
+      institutionId: ParticipantId,
+      query: PaginatedQuery
+  ): Mid[F, GetGroupsResult] =
     in =>
       info"getting institution group by query $institutionId" *> in
         .flatTap(_ => info"getting institution group by query - successfully done")
-        .onError(errorCause"encountered an error while getting institution group by query" (_))
+        .onError(
+          errorCause"encountered an error while getting institution group by query" (
+            _
+          )
+        )
 
   override def updateGroup(
       institutionId: ParticipantId,

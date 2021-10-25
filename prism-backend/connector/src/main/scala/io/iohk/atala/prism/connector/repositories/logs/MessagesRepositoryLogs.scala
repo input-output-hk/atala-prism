@@ -15,8 +15,10 @@ import tofu.higherKind.Mid
 import tofu.logging.ServiceLogging
 import tofu.syntax.logging._
 
-private[repositories] final class MessagesRepositoryLogs[S[_], F[_]: ServiceLogging[*[_], MessagesRepository[S, F]]](
-    implicit monadThrow: MonadThrow[F]
+private[repositories] final class MessagesRepositoryLogs[S[_], F[
+    _
+]: ServiceLogging[*[_], MessagesRepository[S, F]]](implicit
+    monadThrow: MonadThrow[F]
 ) extends MessagesRepository[S, Mid[F, *]] {
   override def insertMessage(
       sender: ParticipantId,
@@ -61,15 +63,25 @@ private[repositories] final class MessagesRepositoryLogs[S[_], F[_]: ServiceLogg
             ids => info"getting messages paginated - successfully done, got ${ids.size} messages"
           )
         )
-        .onError(errorCause"encountered an error while getting messages paginated" (_))
+        .onError(
+          errorCause"encountered an error while getting messages paginated" (_)
+        )
 
   // Won't be called since not mid
-  override def getMessageStream(recipientId: ParticipantId, lastSeenMessageId: Option[MessageId]): S[Message] =
+  override def getMessageStream(
+      recipientId: ParticipantId,
+      lastSeenMessageId: Option[MessageId]
+  ): S[Message] =
     this.getMessageStream(recipientId, lastSeenMessageId)
 
-  override def getConnectionMessages(recipientId: ParticipantId, connectionId: ConnectionId): Mid[F, List[Message]] =
+  override def getConnectionMessages(
+      recipientId: ParticipantId,
+      connectionId: ConnectionId
+  ): Mid[F, List[Message]] =
     in =>
       info"getting connection messages $recipientId $connectionId" *> in
         .flatTap(result => info"getting connection messages - successfully done, got ${result.size} entities")
-        .onError(errorCause"encountered an error while getting connection messages" (_))
+        .onError(
+          errorCause"encountered an error while getting connection messages" (_)
+        )
 }

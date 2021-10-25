@@ -28,7 +28,8 @@ object KeyValueService {
     for {
       serviceLogs <- logs.service[KeyValueService[F]]
     } yield {
-      implicit val implicitLogs: ServiceLogging[F, KeyValueService[F]] = serviceLogs
+      implicit val implicitLogs: ServiceLogging[F, KeyValueService[F]] =
+        serviceLogs
       val logs: KeyValueService[Mid[F, *]] = new KeyValueServiceLogs[F]
       val mid = logs
       mid attach new KeyValueServiceImpl[F](keyValueRepository)
@@ -40,8 +41,9 @@ object KeyValueService {
   ): KeyValueService[F] = KeyValueService(keyValueRepository, logs).extract
 }
 
-private final class KeyValueServiceImpl[F[_]: Functor](keyValueRepository: KeyValuesRepository[F])
-    extends KeyValueService[F] {
+private final class KeyValueServiceImpl[F[_]: Functor](
+    keyValueRepository: KeyValuesRepository[F]
+) extends KeyValueService[F] {
   def get(key: String): F[Option[String]] =
     keyValueRepository.get(key).map(_.value)
 

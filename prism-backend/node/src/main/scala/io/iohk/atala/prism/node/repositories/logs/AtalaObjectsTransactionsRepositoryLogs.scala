@@ -20,12 +20,16 @@ import tofu.syntax.logging._
 
 import java.time.Duration
 
-private[repositories] final class AtalaObjectsTransactionsRepositoryLogs[F[_]: MonadThrow: ServiceLogging[*[
+private[repositories] final class AtalaObjectsTransactionsRepositoryLogs[F[
+    _
+]: MonadThrow: ServiceLogging[*[
   _
 ], AtalaObjectsTransactionsRepository[F]]]
     extends AtalaObjectsTransactionsRepository[Mid[F, *]] {
 
-  def retrieveObjects(transactions: List[AtalaObjectTransactionSubmission]): Mid[F, List[Option[AtalaObjectInfo]]] =
+  def retrieveObjects(
+      transactions: List[AtalaObjectTransactionSubmission]
+  ): Mid[F, List[Option[AtalaObjectInfo]]] =
     in =>
       info"retrieving objects, transactions size - ${transactions.size}" *> in
         .flatTap(result => info"retrieving objects - successfully done, got ${result.count(_.isDefined)} entities")
@@ -38,7 +42,11 @@ private[repositories] final class AtalaObjectsTransactionsRepositoryLogs[F[_]: M
     in =>
       info"getting old pending transactions ${ledgerPendingTransactionTimeout.toString} ${ledger.entryName}" *> in
         .flatTap(result => info"getting old pending transactions - successfully done, got ${result.size} entities")
-        .onError(errorCause"Encountered an error while getting old pending transactions" (_))
+        .onError(
+          errorCause"Encountered an error while getting old pending transactions" (
+            _
+          )
+        )
 
   def getNotPublishedObjects: Mid[F, Either[NodeError, List[AtalaObjectInfo]]] =
     in =>
@@ -49,7 +57,11 @@ private[repositories] final class AtalaObjectsTransactionsRepositoryLogs[F[_]: M
             list => info"getting not published objects - successfully done, got ${list.size} entities"
           )
         )
-        .onError(errorCause"Encountered an error while getting not published objects" (_))
+        .onError(
+          errorCause"Encountered an error while getting not published objects" (
+            _
+          )
+        )
 
   def updateSubmissionStatus(
       submission: AtalaObjectTransactionSubmission,
@@ -64,7 +76,9 @@ private[repositories] final class AtalaObjectsTransactionsRepositoryLogs[F[_]: M
             _ => info"updating submission status - successfully done"
           )
         )
-        .onError(errorCause"Encountered an error while updating submission status" (_))
+        .onError(
+          errorCause"Encountered an error while updating submission status" (_)
+        )
 
   override def updateSubmissionStatusIfExists(
       ledger: Ledger,
@@ -79,7 +93,9 @@ private[repositories] final class AtalaObjectsTransactionsRepositoryLogs[F[_]: M
             _ => info"updating submission status - successfully done"
           )
         )
-        .onError(errorCause"Encountered an error while updating submission status" (_))
+        .onError(
+          errorCause"Encountered an error while updating submission status" (_)
+        )
 
   def storeTransactionSubmission(
       atalaObjectInfo: AtalaObjectInfo,
@@ -94,9 +110,15 @@ private[repositories] final class AtalaObjectsTransactionsRepositoryLogs[F[_]: M
               info"storing transaction submission - successfully done ${result.ledger.entryName} ${result.transactionId}"
           )
         )
-        .onError(errorCause"Encountered an error while storing transaction submission" (_))
+        .onError(
+          errorCause"Encountered an error while storing transaction submission" (
+            _
+          )
+        )
 
-  def setObjectTransactionDetails(notification: AtalaObjectNotification): Mid[F, Option[AtalaObjectInfo]] =
+  def setObjectTransactionDetails(
+      notification: AtalaObjectNotification
+  ): Mid[F, Option[AtalaObjectInfo]] =
     in =>
       info"setting object transaction details - ${notification.transaction.transactionId} ${notification.transaction.ledger.entryName}" *> in
         .flatTap(
@@ -104,5 +126,9 @@ private[repositories] final class AtalaObjectsTransactionsRepositoryLogs[F[_]: M
             info"setting object transaction details - successfully done ${obj.objectId}"
           )
         )
-        .onError(errorCause"Encountered an error while setting object transaction details" (_))
+        .onError(
+          errorCause"Encountered an error while setting object transaction details" (
+            _
+          )
+        )
 }

@@ -23,7 +23,8 @@ package object grpc {
       {
         for {
           name <- Try {
-            if (request.name.trim.isEmpty) throw new RuntimeException("The name is required")
+            if (request.name.trim.isEmpty)
+              throw new RuntimeException("The name is required")
             else request.name.trim
           }
 
@@ -36,30 +37,36 @@ package object grpc {
       }
   }
 
-  implicit val sendMessagesConverter: ProtoConverter[connector_api.SendMessagesRequest, SendMessagesRequest] = {
-    (request: connector_api.SendMessagesRequest) =>
-      def parseMessage(message: MessageToSendByConnectionToken): Try[SendMessagesRequest.MessageToSend] = {
-        Utils
-          .parseMessageId(message.id)
-          .map(messageId =>
-            SendMessagesRequest.MessageToSend(
-              connectionToken = TokenString(message.connectionToken),
-              message = message.message.fold(Array.empty[Byte])(_.toByteArray),
-              id = messageId
-            )
+  implicit val sendMessagesConverter: ProtoConverter[
+    connector_api.SendMessagesRequest,
+    SendMessagesRequest
+  ] = { (request: connector_api.SendMessagesRequest) =>
+    def parseMessage(
+        message: MessageToSendByConnectionToken
+    ): Try[SendMessagesRequest.MessageToSend] = {
+      Utils
+        .parseMessageId(message.id)
+        .map(messageId =>
+          SendMessagesRequest.MessageToSend(
+            connectionToken = TokenString(message.connectionToken),
+            message = message.message.fold(Array.empty[Byte])(_.toByteArray),
+            id = messageId
           )
-      }
+        )
+    }
 
-      request.messagesByConnectionToken
-        .map(parseMessage)
-        .toList
-        .sequence
-        .map(messages => SendMessagesRequest(NonEmptyList.fromList(messages)))
+    request.messagesByConnectionToken
+      .map(parseMessage)
+      .toList
+      .sequence
+      .map(messages => SendMessagesRequest(NonEmptyList.fromList(messages)))
 
   }
 
-  implicit val getConnectionByIdRequestConverter
-      : ProtoConverter[connector_api.GetConnectionByIdRequest, GetConnectionByIdRequest] =
+  implicit val getConnectionByIdRequestConverter: ProtoConverter[
+    connector_api.GetConnectionByIdRequest,
+    GetConnectionByIdRequest
+  ] =
     (in: connector_api.GetConnectionByIdRequest) => {
       model.ConnectionId
         .from(in.id)
@@ -75,8 +82,10 @@ package object grpc {
 
     }
 
-  implicit val connectionsPaginatedRequestConverter
-      : ProtoConverter[connector_api.GetConnectionsPaginatedRequest, ConnectionsPaginatedRequest] =
+  implicit val connectionsPaginatedRequestConverter: ProtoConverter[
+    connector_api.GetConnectionsPaginatedRequest,
+    ConnectionsPaginatedRequest
+  ] =
     (in: connector_api.GetConnectionsPaginatedRequest) => {
       model.ConnectionId
         .optional(in.lastSeenConnectionId)
@@ -92,15 +101,21 @@ package object grpc {
 
     }
 
-  implicit val revokeConnectionRequestConverter
-      : ProtoConverter[connector_api.RevokeConnectionRequest, RevokeConnectionRequest] =
+  implicit val revokeConnectionRequestConverter: ProtoConverter[
+    connector_api.RevokeConnectionRequest,
+    RevokeConnectionRequest
+  ] =
     (in: connector_api.RevokeConnectionRequest) => Utils.parseConnectionId(in.connectionId).map(RevokeConnectionRequest)
 
-  implicit val addConnectionFromTokenRequestConverter
-      : ProtoConverter[connector_api.AddConnectionFromTokenRequest, AddConnectionRequest] =
+  implicit val addConnectionFromTokenRequestConverter: ProtoConverter[
+    connector_api.AddConnectionFromTokenRequest,
+    AddConnectionRequest
+  ] =
     (in: connector_api.AddConnectionFromTokenRequest) => {
       lazy val publicKeyIsMissing = Failure(
-        new RuntimeException("The encoded public key is required to accept a connection")
+        new RuntimeException(
+          "The encoded public key is required to accept a connection"
+        )
       )
       for {
         parsedKey <- Try(
@@ -109,12 +124,34 @@ package object grpc {
         token = TokenString(in.token)
         maybeHeader = GrpcAuthenticationHeaderParser.parse(Context.current())
         basedOn <- maybeHeader match {
-          case Some(header @ GrpcAuthenticationHeader.UnpublishedDIDBased(_, _, _, _)) =>
-            Success(UnpublishedDidBasedAddConnectionRequest(token, header).asLeft)
-          case Some(header @ GrpcAuthenticationHeader.PublicKeyBased(_, _, _)) =>
-            parsedKey.fold[Try[Either[UnpublishedDidBasedAddConnectionRequest, PublicKeyBasedAddConnectionRequest]]](
+          case Some(
+                header @ GrpcAuthenticationHeader.UnpublishedDIDBased(
+                  _,
+                  _,
+                  _,
+                  _
+                )
+              ) =>
+            Success(
+              UnpublishedDidBasedAddConnectionRequest(token, header).asLeft
+            )
+          case Some(
+                header @ GrpcAuthenticationHeader.PublicKeyBased(_, _, _)
+              ) =>
+            parsedKey.fold[Try[Either[
+              UnpublishedDidBasedAddConnectionRequest,
+              PublicKeyBasedAddConnectionRequest
+            ]]](
               publicKeyIsMissing
-            )(publicKey => Success(PublicKeyBasedAddConnectionRequest(token, publicKey, header).asRight))
+            )(publicKey =>
+              Success(
+                PublicKeyBasedAddConnectionRequest(
+                  token,
+                  publicKey,
+                  header
+                ).asRight
+              )
+            )
           case _ => publicKeyIsMissing
         }
       } yield AddConnectionRequest(token, basedOn)
@@ -125,61 +162,90 @@ package object grpc {
       for {
         didOrCreateDidOperation <- parseRegisterWith(in.registerWith)
         tpe <- in.role match {
-          case connector_api.RegisterDIDRequest.Role.issuer => Success(ParticipantType.Issuer)
-          case connector_api.RegisterDIDRequest.Role.verifier => Success(ParticipantType.Verifier)
+          case connector_api.RegisterDIDRequest.Role.issuer =>
+            Success(ParticipantType.Issuer)
+          case connector_api.RegisterDIDRequest.Role.verifier =>
+            Success(ParticipantType.Verifier)
           case _ => Failure(new IllegalArgumentException("Unknown role"))
         }
         logo = ParticipantLogo(in.logo.toByteArray.toVector)
       } yield RegisterDIDRequest(in.name, didOrCreateDidOperation, tpe, logo)
 
-  implicit val messagesPaginatedRequestConverter
-      : ProtoConverter[connector_api.GetMessagesPaginatedRequest, MessagesPaginatedRequest] =
+  implicit val messagesPaginatedRequestConverter: ProtoConverter[
+    connector_api.GetMessagesPaginatedRequest,
+    MessagesPaginatedRequest
+  ] =
     (in: connector_api.GetMessagesPaginatedRequest) =>
       Utils
         .getMessageIdField(in.lastSeenMessageId, "lastSeenMessageId")
         .map(MessagesPaginatedRequest(_, in.limit))
 
-  implicit val messageStreamRequestConverter
-      : ProtoConverter[connector_api.GetMessageStreamRequest, GetMessageStreamRequest] =
+  implicit val messageStreamRequestConverter: ProtoConverter[
+    connector_api.GetMessageStreamRequest,
+    GetMessageStreamRequest
+  ] =
     (in: connector_api.GetMessageStreamRequest) =>
       Utils
         .getMessageIdField(in.lastSeenMessageId, "lastSeenMessageId")
         .map(GetMessageStreamRequest)
 
-  implicit val getMessagesForConnectionRequestConverter
-      : ProtoConverter[connector_api.GetMessagesForConnectionRequest, GetMessagesForConnectionRequest] =
+  implicit val getMessagesForConnectionRequestConverter: ProtoConverter[
+    connector_api.GetMessagesForConnectionRequest,
+    GetMessagesForConnectionRequest
+  ] =
     (in: connector_api.GetMessagesForConnectionRequest) =>
-      Utils.parseConnectionId(in.connectionId).map(GetMessagesForConnectionRequest)
+      Utils
+        .parseConnectionId(in.connectionId)
+        .map(GetMessagesForConnectionRequest)
 
-  implicit val getConnectionCommunicationKeysRequestConverter
-      : ProtoConverter[connector_api.GetConnectionCommunicationKeysRequest, GetConnectionCommunicationKeysRequest] =
+  implicit val getConnectionCommunicationKeysRequestConverter: ProtoConverter[
+    connector_api.GetConnectionCommunicationKeysRequest,
+    GetConnectionCommunicationKeysRequest
+  ] =
     (in: connector_api.GetConnectionCommunicationKeysRequest) =>
-      Utils.parseConnectionId(in.connectionId).map(GetConnectionCommunicationKeysRequest)
+      Utils
+        .parseConnectionId(in.connectionId)
+        .map(GetConnectionCommunicationKeysRequest)
 
   implicit val sendMessageRequestConverter: ProtoConverter[connector_api.SendMessageRequest, SendMessageRequest] =
     (in: connector_api.SendMessageRequest) =>
       for {
         connectionId <- Utils.parseConnectionId(in.connectionId)
         messageId <- Utils.parseMessageId(in.id)
-      } yield SendMessageRequest(connectionId, in.message.toByteArray, messageId)
+      } yield SendMessageRequest(
+        connectionId,
+        in.message.toByteArray,
+        messageId
+      )
 
   private def parseRegisterWith(
       in: connector_api.RegisterDIDRequest.RegisterWith
   ): Try[Either[PrismDid, SignedAtalaOperation]] =
     in match {
-      case RegisterWith.CreateDidOperation(operation) => Success(operation.asRight)
+      case RegisterWith.CreateDidOperation(operation) =>
+        Success(operation.asRight)
       case RegisterWith.ExistingDid(maybeDid) => parseCanonicalDid(maybeDid)
-      case _ => Failure(new IllegalArgumentException("Expected existing DID or atala operation"))
+      case _ =>
+        Failure(
+          new IllegalArgumentException(
+            "Expected existing DID or atala operation"
+          )
+        )
     }
 
-  private def parseCanonicalDid(maybeDid: String): Try[Either[PrismDid, SignedAtalaOperation]] =
+  private def parseCanonicalDid(
+      maybeDid: String
+  ): Try[Either[PrismDid, SignedAtalaOperation]] =
     Try(
       PrismDid
         .fromString(maybeDid)
     ).toOption
-      .fold[Try[Either[PrismDid, SignedAtalaOperation]]](Failure(new IllegalArgumentException("Invalid DID"))) {
+      .fold[Try[Either[PrismDid, SignedAtalaOperation]]](
+        Failure(new IllegalArgumentException("Invalid DID"))
+      ) {
         case did: CanonicalPrismDid => Success(did.asLeft)
-        case _ => Failure(new IllegalArgumentException("Expected published did"))
+        case _ =>
+          Failure(new IllegalArgumentException("Expected published did"))
       }
 
 }

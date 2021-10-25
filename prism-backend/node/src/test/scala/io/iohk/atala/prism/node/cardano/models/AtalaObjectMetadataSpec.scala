@@ -27,8 +27,14 @@ class AtalaObjectMetadataSpec extends AnyWordSpec {
                       Some(
                         node_models.CreateDIDOperation.DIDCreationData(
                           publicKeys = List(
-                            node_models.PublicKey(id = masterKeyId, usage = node_models.KeyUsage.MASTER_KEY),
-                            node_models.PublicKey(id = "issuing0", usage = node_models.KeyUsage.ISSUING_KEY)
+                            node_models.PublicKey(
+                              id = masterKeyId,
+                              usage = node_models.KeyUsage.MASTER_KEY
+                            ),
+                            node_models.PublicKey(
+                              id = "issuing0",
+                              usage = node_models.KeyUsage.ISSUING_KEY
+                            )
                           )
                         )
                       )
@@ -72,7 +78,8 @@ class AtalaObjectMetadataSpec extends AnyWordSpec {
     }
 
     "fail when index is invalid" in {
-      val metadata = TransactionMetadata(parseJson("""{ "1": 2 }""".stripMargin))
+      val metadata =
+        TransactionMetadata(parseJson("""{ "1": 2 }""".stripMargin))
 
       val result = AtalaObjectMetadata.fromTransactionMetadata(metadata)
 

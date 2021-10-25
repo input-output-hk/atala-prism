@@ -18,16 +18,24 @@ import java.time.Instant
 
 class V19MigrationSpec extends PostgresMigrationSpec("db.migration.V19") with BaseDAO {
 
-  private val dummyTimestampInfo = new TimestampInfo(Instant.ofEpochMilli(0).toEpochMilli, 1, 0)
+  private val dummyTimestampInfo =
+    new TimestampInfo(Instant.ofEpochMilli(0).toEpochMilli, 1, 0)
   private val dummyLedgerData = LedgerData(
-    TransactionId.from(Array.fill[Byte](TransactionId.config.size.toBytes.toInt)(0)).get,
+    TransactionId
+      .from(Array.fill[Byte](TransactionId.config.size.toBytes.toInt)(0))
+      .get,
     Ledger.InMemory,
     dummyTimestampInfo
   )
   val didDigest = Sha256.compute("test".getBytes())
   val didSuffix = DidSuffix(didDigest.getHexValue)
   val didPublicKey: DIDPublicKey =
-    DIDPublicKey(didSuffix, "master", KeyUsage.MasterKey, EC.generateKeyPair().getPublicKey)
+    DIDPublicKey(
+      didSuffix,
+      "master",
+      KeyUsage.MasterKey,
+      EC.generateKeyPair().getPublicKey
+    )
 
   private def insertPublicKey(key: DIDPublicKey, ledgerData: LedgerData) = {
     val curveName = ECConfig.getCURVE_NAME

@@ -19,13 +19,23 @@ import tofu.syntax.logging._
 
 @derive(applyK)
 trait ConsoleService[F[_]] {
-  def getStatistics(participantId: ParticipantId, getStatistics: GetStatistics): F[Statistics]
+  def getStatistics(
+      participantId: ParticipantId,
+      getStatistics: GetStatistics
+  ): F[Statistics]
 
-  def registerDID(registerDID: RegisterDID): F[Either[ManagementConsoleError, Unit]]
+  def registerDID(
+      registerDID: RegisterDID
+  ): F[Either[ManagementConsoleError, Unit]]
 
-  def getCurrentUser(participantId: ParticipantId): F[Either[ManagementConsoleError, ParticipantInfo]]
+  def getCurrentUser(
+      participantId: ParticipantId
+  ): F[Either[ManagementConsoleError, ParticipantInfo]]
 
-  def updateParticipantProfile(participantId: ParticipantId, participantProfile: UpdateParticipantProfile): F[Unit]
+  def updateParticipantProfile(
+      participantId: ParticipantId,
+      participantProfile: UpdateParticipantProfile
+  ): F[Unit]
 }
 
 object ConsoleService {
@@ -37,24 +47,34 @@ object ConsoleService {
     for {
       serviceLogs <- logs.service[ConsoleService[F]]
     } yield {
-      implicit val implicitLogs: ServiceLogging[F, ConsoleService[F]] = serviceLogs
+      implicit val implicitLogs: ServiceLogging[F, ConsoleService[F]] =
+        serviceLogs
       val logs: ConsoleService[Mid[F, *]] = new ConsoleServiceLogs[F]
       val mid = logs
-      mid attach new ConsoleServiceImpl[F](participantsIntegrationService, statisticsRepository)
+      mid attach new ConsoleServiceImpl[F](
+        participantsIntegrationService,
+        statisticsRepository
+      )
     }
 
   def unsafe[F[_]: MonadThrow, R[_]: Comonad](
       participantsIntegrationService: ParticipantsIntegrationService[F],
       statisticsRepository: StatisticsRepository[F],
       logs: Logs[R, F]
-  ): ConsoleService[F] = ConsoleService(participantsIntegrationService, statisticsRepository, logs).extract
+  ): ConsoleService[F] = ConsoleService(
+    participantsIntegrationService,
+    statisticsRepository,
+    logs
+  ).extract
 
   def makeResource[F[_]: MonadThrow, R[_]: Monad](
       participantsIntegrationService: ParticipantsIntegrationService[F],
       statisticsRepository: StatisticsRepository[F],
       logs: Logs[R, F]
   ): Resource[R, ConsoleService[F]] =
-    Resource.eval(ConsoleService(participantsIntegrationService, statisticsRepository, logs))
+    Resource.eval(
+      ConsoleService(participantsIntegrationService, statisticsRepository, logs)
+    )
 }
 
 private final class ConsoleServiceImpl[F[_]](
@@ -62,30 +82,44 @@ private final class ConsoleServiceImpl[F[_]](
     statisticsRepository: StatisticsRepository[F]
 ) extends ConsoleService[F] {
 
-  override def getStatistics(participantId: ParticipantId, getStatistics: GetStatistics): F[Statistics] =
+  override def getStatistics(
+      participantId: ParticipantId,
+      getStatistics: GetStatistics
+  ): F[Statistics] =
     statisticsRepository.query(participantId, getStatistics.timeInterval)
 
-  override def registerDID(registerDID: RegisterDID): F[Either[ManagementConsoleError, Unit]] =
+  override def registerDID(
+      registerDID: RegisterDID
+  ): F[Either[ManagementConsoleError, Unit]] =
     participantsIntegrationService.register(registerDID)
 
-  override def getCurrentUser(participantId: ParticipantId): F[Either[ManagementConsoleError, ParticipantInfo]] =
+  override def getCurrentUser(
+      participantId: ParticipantId
+  ): F[Either[ManagementConsoleError, ParticipantInfo]] =
     participantsIntegrationService.getDetails(participantId)
 
   override def updateParticipantProfile(
       participantId: ParticipantId,
       participantProfile: UpdateParticipantProfile
-  ): F[Unit] = participantsIntegrationService.update(participantId, participantProfile)
+  ): F[Unit] =
+    participantsIntegrationService.update(participantId, participantProfile)
 }
 
-private final class ConsoleServiceLogs[F[_]: ServiceLogging[*[_], ConsoleService[F]]: MonadThrow]
-    extends ConsoleService[Mid[F, *]] {
-  override def getStatistics(participantId: ParticipantId, getStatistics: GetStatistics): Mid[F, Statistics] =
+private final class ConsoleServiceLogs[
+    F[_]: ServiceLogging[*[_], ConsoleService[F]]: MonadThrow
+] extends ConsoleService[Mid[F, *]] {
+  override def getStatistics(
+      participantId: ParticipantId,
+      getStatistics: GetStatistics
+  ): Mid[F, Statistics] =
     in =>
       info"getting statistics $participantId" *> in
         .flatTap(_ => info"getting statistics - successfully done")
         .onError(errorCause"encountered an error while getting statistics" (_))
 
-  override def registerDID(registerDID: RegisterDID): Mid[F, Either[ManagementConsoleError, Unit]] =
+  override def registerDID(
+      registerDID: RegisterDID
+  ): Mid[F, Either[ManagementConsoleError, Unit]] =
     in =>
       info"registering DID ${registerDID.did.asCanonical().getSuffix}" *> in
         .flatTap(
@@ -96,7 +130,9 @@ private final class ConsoleServiceLogs[F[_]: ServiceLogging[*[_], ConsoleService
         )
         .onError(errorCause"encountered an error while registering DID" (_))
 
-  override def getCurrentUser(participantId: ParticipantId): Mid[F, Either[ManagementConsoleError, ParticipantInfo]] =
+  override def getCurrentUser(
+      participantId: ParticipantId
+  ): Mid[F, Either[ManagementConsoleError, ParticipantInfo]] =
     in =>
       info"getting current user $participantId" *> in
         .flatTap(
@@ -105,7 +141,9 @@ private final class ConsoleServiceLogs[F[_]: ServiceLogging[*[_], ConsoleService
             _ => info"getting current user - successfully done"
           )
         )
-        .onError(errorCause"encountered an error while getting current user" (_))
+        .onError(
+          errorCause"encountered an error while getting current user" (_)
+        )
 
   override def updateParticipantProfile(
       participantId: ParticipantId,
@@ -114,5 +152,9 @@ private final class ConsoleServiceLogs[F[_]: ServiceLogging[*[_], ConsoleService
     in =>
       info"updating participant profile $participantId" *> in
         .flatTap(_ => info"updating participant profile - successfully done")
-        .onError(errorCause"encountered an error while updating participant profile" (_))
+        .onError(
+          errorCause"encountered an error while updating participant profile" (
+            _
+          )
+        )
 }

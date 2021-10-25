@@ -52,8 +52,12 @@ class SharedCredentialsSpec extends AnyFlatSpec {
   "credentialsOfType" should "ignore invalid messages" in {
 
     withObjectMocked[SharedCredentials.type] {
-      when(SharedCredentials.getTypeId(any[credential_models.PlainTextCredential])) thenReturn "some type id!"
-      when(SharedCredentials.credentialsOfType(any[Set[String]])(any[Seq[Message]])).thenCallRealMethod()
+      when(
+        SharedCredentials.getTypeId(any[credential_models.PlainTextCredential])
+      ) thenReturn "some type id!"
+      when(
+        SharedCredentials.credentialsOfType(any[Set[String]])(any[Seq[Message]])
+      ).thenCallRealMethod()
 
       val message = Message(
         MessageId.random(),
@@ -63,7 +67,9 @@ class SharedCredentialsSpec extends AnyFlatSpec {
         Array[Byte]()
       )
 
-      SharedCredentials.credentialsOfType(Set("foo"))(Seq(message)) shouldBe Seq()
+      SharedCredentials.credentialsOfType(Set("foo"))(
+        Seq(message)
+      ) shouldBe Seq()
     }
 
   }
@@ -92,12 +98,20 @@ class SharedCredentialsSpec extends AnyFlatSpec {
         Instant.now(),
         credentialMessage("B", "B-proof")
       )
-      when(SharedCredentials.getTypeId(credential("A", "A-proof"))) thenReturn "A"
-      when(SharedCredentials.getTypeId(credential("B", "B-proof"))) thenReturn "B"
+      when(
+        SharedCredentials.getTypeId(credential("A", "A-proof"))
+      ) thenReturn "A"
+      when(
+        SharedCredentials.getTypeId(credential("B", "B-proof"))
+      ) thenReturn "B"
 
-      when(SharedCredentials.credentialsOfType(any[Set[String]])(any[Seq[Message]])).thenCallRealMethod()
+      when(
+        SharedCredentials.credentialsOfType(any[Set[String]])(any[Seq[Message]])
+      ).thenCallRealMethod()
 
-      SharedCredentials.credentialsOfType(Set("A"))(Seq(m1, m2, m3)) shouldBe Seq(credential("A", "A-proof"))
+      SharedCredentials.credentialsOfType(Set("A"))(
+        Seq(m1, m2, m3)
+      ) shouldBe Seq(credential("A", "A-proof"))
 
     }
 
@@ -110,7 +124,12 @@ class SharedCredentialsSpec extends AnyFlatSpec {
     credential_models.PlainTextCredential(encodedCredential, encodedMerkleProof)
   }
 
-  private def credentialMessage(encodedCredential: String, encodedMerkleProof: String): Array[Byte] = {
-    AtalaMessage().withPlainCredential(credential(encodedCredential, encodedMerkleProof)).toByteArray
+  private def credentialMessage(
+      encodedCredential: String,
+      encodedMerkleProof: String
+  ): Array[Byte] = {
+    AtalaMessage()
+      .withPlainCredential(credential(encodedCredential, encodedMerkleProof))
+      .toByteArray
   }
 }

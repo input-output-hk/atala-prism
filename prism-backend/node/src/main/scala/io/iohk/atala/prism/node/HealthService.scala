@@ -16,10 +16,14 @@ class HealthService extends HealthGrpc.Health {
     Future.successful(servingResponse)
   }
 
-  def watch(request: HealthCheckRequest, responseObserver: StreamObserver[HealthCheckResponse]): Unit = {
+  def watch(
+      request: HealthCheckRequest,
+      responseObserver: StreamObserver[HealthCheckResponse]
+  ): Unit = {
     logger.info(s"Watch for health changes, service = ${request.service}")
     responseObserver.onNext(servingResponse)
   }
 
-  private val servingResponse = HealthCheckResponse().withStatus(HealthCheckResponse.ServingStatus.SERVING)
+  private val servingResponse =
+    HealthCheckResponse().withStatus(HealthCheckResponse.ServingStatus.SERVING)
 }

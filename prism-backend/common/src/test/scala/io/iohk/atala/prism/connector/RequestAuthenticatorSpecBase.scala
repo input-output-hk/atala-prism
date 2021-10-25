@@ -17,21 +17,36 @@ abstract class RequestAuthenticatorSpecBase extends AnyWordSpec {
     "return the encoded signature and nonce" in {
       val keyPair = EC.generateKeyPair()
 
-      val signedRequest = requestAuthenticator.signConnectorRequest(request, keyPair.getPrivateKey)
+      val signedRequest = requestAuthenticator.signConnectorRequest(
+        request,
+        keyPair.getPrivateKey
+      )
 
-      val signature = Base64.getUrlDecoder.decode(signedRequest.encodedSignature)
+      val signature =
+        Base64.getUrlDecoder.decode(signedRequest.encodedSignature)
       signedRequest.signature must contain theSameElementsInOrderAs signature
-      val requestNonce = Base64.getUrlDecoder.decode(signedRequest.encodedRequestNonce)
+      val requestNonce =
+        Base64.getUrlDecoder.decode(signedRequest.encodedRequestNonce)
       signedRequest.requestNonce must contain theSameElementsInOrderAs requestNonce
       val requestWithNonce = requestNonce ++ request
-      EC.verifyBytes(requestWithNonce, keyPair.getPublicKey, new ECSignature(signature)) mustBe true
+      EC.verifyBytes(
+        requestWithNonce,
+        keyPair.getPublicKey,
+        new ECSignature(signature)
+      ) mustBe true
     }
 
     "return random nonces" in {
       val keyPair = EC.generateKeyPair()
 
-      val signedRequest1 = requestAuthenticator.signConnectorRequest(request, keyPair.getPrivateKey)
-      val signedRequest2 = requestAuthenticator.signConnectorRequest(request, keyPair.getPrivateKey)
+      val signedRequest1 = requestAuthenticator.signConnectorRequest(
+        request,
+        keyPair.getPrivateKey
+      )
+      val signedRequest2 = requestAuthenticator.signConnectorRequest(
+        request,
+        keyPair.getPrivateKey
+      )
 
       signedRequest1.encodedRequestNonce must not be signedRequest2.encodedRequestNonce
     }

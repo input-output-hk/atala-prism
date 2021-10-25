@@ -48,9 +48,15 @@ trait CredentialsRepository[F[_]] {
       lastSeenCredential: Option[GenericCredential.Id]
   ): F[List[GenericCredential]]
 
-  def getBy(issuedBy: ParticipantId, contactId: Contact.Id): F[List[GenericCredential]]
+  def getBy(
+      issuedBy: ParticipantId,
+      contactId: Contact.Id
+  ): F[List[GenericCredential]]
 
-  def storePublicationData(issuerId: ParticipantId, credentialData: PublishCredential): F[Int]
+  def storePublicationData(
+      issuerId: ParticipantId,
+      credentialData: PublishCredential
+  ): F[Int]
 
   def markAsShared(
       issuerId: ParticipantId,
@@ -90,9 +96,12 @@ object CredentialsRepository {
     for {
       serviceLogs <- logs.service[CredentialsRepository[F]]
     } yield {
-      implicit val implicitLogs: ServiceLogging[F, CredentialsRepository[F]] = serviceLogs
-      val metrics: CredentialsRepository[Mid[F, *]] = new CredentialsRepositoryMetrics[F]
-      val logs: CredentialsRepository[Mid[F, *]] = new CredentialsRepositoryLogs[F]
+      implicit val implicitLogs: ServiceLogging[F, CredentialsRepository[F]] =
+        serviceLogs
+      val metrics: CredentialsRepository[Mid[F, *]] =
+        new CredentialsRepositoryMetrics[F]
+      val logs: CredentialsRepository[Mid[F, *]] =
+        new CredentialsRepositoryLogs[F]
       val mid = metrics |+| logs
       mid attach new CredentialsRepositoryImpl[F](transactor)
     }
@@ -105,11 +114,14 @@ object CredentialsRepository {
   def makeResource[F[_]: TimeMeasureMetric: BracketThrow, R[_]: Monad](
       transactor: Transactor[F],
       logs: Logs[R, F]
-  ): Resource[R, CredentialsRepository[F]] = Resource.eval(CredentialsRepository(transactor, logs))
+  ): Resource[R, CredentialsRepository[F]] =
+    Resource.eval(CredentialsRepository(transactor, logs))
 
 }
 
-private final class CredentialsRepositoryImpl[F[_]: BracketThrow](xa: Transactor[F]) extends CredentialsRepository[F] {
+private final class CredentialsRepositoryImpl[F[_]: BracketThrow](
+    xa: Transactor[F]
+) extends CredentialsRepository[F] {
 
   val logger: Logger = LoggerFactory.getLogger(getClass)
 
@@ -121,7 +133,10 @@ private final class CredentialsRepositoryImpl[F[_]: BracketThrow](xa: Transactor
     def validateCredentialData(
         credentialTypeWithRequiredFields: CredentialTypeWithRequiredFields
     ): EitherT[ConnectionIO, ManagementConsoleError, Unit] = {
-      CredentialDataValidator.validate(credentialTypeWithRequiredFields, data.credentialData) match {
+      CredentialDataValidator.validate(
+        credentialTypeWithRequiredFields,
+        data.credentialData
+      ) match {
         case Valid(_) => EitherT.fromEither[ConnectionIO](Right(()))
         case Invalid(errors) =>
           EitherT.fromEither[ConnectionIO](
@@ -162,8 +177,15 @@ private final class CredentialsRepositoryImpl[F[_]: BracketThrow](xa: Transactor
       for {
         //validate credential data
         credentialTypeWithRequiredFields <-
-          EitherT[ConnectionIO, ManagementConsoleError, CredentialTypeWithRequiredFields](
-            CredentialTypeDao.findValidated(data.credentialTypeId, participantId)
+          EitherT[
+            ConnectionIO,
+            ManagementConsoleError,
+            CredentialTypeWithRequiredFields
+          ](
+            CredentialTypeDao.findValidated(
+              data.credentialTypeId,
+              participantId
+            )
           )
         _ <- validateCredentialData(credentialTypeWithRequiredFields)
         contact <- contactF
@@ -173,7 +195,10 @@ private final class CredentialsRepositoryImpl[F[_]: BracketThrow](xa: Transactor
       } yield credential
 
     transaction.value
-      .logSQLErrors(s"creating credential, participant id - $participantId", logger)
+      .logSQLErrors(
+        s"creating credential, participant id - $participantId",
+        logger
+      )
       .transact(xa)
   }
 
@@ -202,13 +227,19 @@ private final class CredentialsRepositoryImpl[F[_]: BracketThrow](xa: Transactor
       .logSQLErrors(s"getting, issued id - $issuedBy", logger)
       .transact(xa)
 
-  def getBy(issuedBy: ParticipantId, contactId: Contact.Id): F[List[GenericCredential]] =
+  def getBy(
+      issuedBy: ParticipantId,
+      contactId: Contact.Id
+  ): F[List[GenericCredential]] =
     CredentialsDAO
       .getBy(issuedBy, contactId)
       .logSQLErrors(s"getting, contact id - $contactId", logger)
       .transact(xa)
 
-  def storePublicationData(issuerId: ParticipantId, credentialData: PublishCredential): F[Int] =
+  def storePublicationData(
+      issuerId: ParticipantId,
+      credentialData: PublishCredential
+  ): F[Int] =
     CredentialsDAO
       .storePublicationData(issuerId, credentialData)
       .logSQLErrors(s"store publication data, issuer id - $issuerId", logger)
@@ -229,11 +260,16 @@ private final class CredentialsRepositoryImpl[F[_]: BracketThrow](xa: Transactor
   ): F[Either[ManagementConsoleError, Unit]] =
     CredentialsDAO
       .verifyPublishedCredentialsExist(issuerId, credentialsIds)
-      .logSQLErrors(s"verifying published credentials exists, issuer id - $issuerId", logger)
+      .logSQLErrors(
+        s"verifying published credentials exists, issuer id - $issuerId",
+        logger
+      )
       .transact(xa)
       .map { existingCredentialIds =>
-        val nonExistingCredentials = credentialsIds.toList.toSet.diff(existingCredentialIds.toSet)
-        if (nonExistingCredentials.nonEmpty) Left(PublishedCredentialsNotExist(nonExistingCredentials.toList))
+        val nonExistingCredentials =
+          credentialsIds.toList.toSet.diff(existingCredentialIds.toSet)
+        if (nonExistingCredentials.nonEmpty)
+          Left(PublishedCredentialsNotExist(nonExistingCredentials.toList))
         else Right(())
       }
 
@@ -252,7 +288,10 @@ private final class CredentialsRepositoryImpl[F[_]: BracketThrow](xa: Transactor
       credentialsIds: NonEmptyList[GenericCredential.Id]
   ): F[Either[ManagementConsoleError, Unit]] = {
     val deleteIO: ConnectionIO[Either[ManagementConsoleError, Unit]] = for {
-      _ <- CredentialsDAO.deletePublishedCredentialsBy(institutionId, credentialsIds)
+      _ <- CredentialsDAO.deletePublishedCredentialsBy(
+        institutionId,
+        credentialsIds
+      )
       _ <- CredentialsDAO.deleteBy(institutionId, credentialsIds)
     } yield Right(())
 
@@ -266,7 +305,10 @@ private final class CredentialsRepositoryImpl[F[_]: BracketThrow](xa: Transactor
         else
           deleteIO
       }
-      .logSQLErrors(s"deleting credentials, institutionId = $institutionId", logger)
+      .logSQLErrors(
+        s"deleting credentials, institutionId = $institutionId",
+        logger
+      )
       .transact(xa)
   }
 
@@ -277,6 +319,9 @@ private final class CredentialsRepositoryImpl[F[_]: BracketThrow](xa: Transactor
   ): F[Unit] =
     CredentialsDAO
       .revokeCredential(institutionId, credentialId, operationId)
-      .logSQLErrors(s"storing revocation data, institution id - $institutionId", logger)
+      .logSQLErrors(
+        s"storing revocation data, institution id - $institutionId",
+        logger
+      )
       .transact(xa)
 }

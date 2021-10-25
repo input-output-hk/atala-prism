@@ -30,16 +30,29 @@ import tofu.logging.Logs
 import java.util.UUID
 
 class GroupsServiceImplSpec extends RpcSpecBase with DIDUtil {
-  private val managementConsoleTestLogs: Logs[IO, IOWithTraceIdContext] = Logs.withContext[IO, IOWithTraceIdContext]
+  private val managementConsoleTestLogs: Logs[IO, IOWithTraceIdContext] =
+    Logs.withContext[IO, IOWithTraceIdContext]
 
-  private val usingApiAs = usingApiAsConstructor(new console_api.GroupsServiceGrpc.GroupsServiceBlockingStub(_, _))
+  private val usingApiAs = usingApiAsConstructor(
+    new console_api.GroupsServiceGrpc.GroupsServiceBlockingStub(_, _)
+  )
   private lazy val institutionGroupsRepository =
-    InstitutionGroupsRepository.unsafe(dbLiftedToTraceIdIO, managementConsoleTestLogs)
+    InstitutionGroupsRepository.unsafe(
+      dbLiftedToTraceIdIO,
+      managementConsoleTestLogs
+    )
   private lazy val participantsRepository =
-    ParticipantsRepository.unsafe(dbLiftedToTraceIdIO, managementConsoleTestLogs)
+    ParticipantsRepository.unsafe(
+      dbLiftedToTraceIdIO,
+      managementConsoleTestLogs
+    )
   private lazy val requestNoncesRepository =
-    RequestNoncesRepository.unsafe(dbLiftedToTraceIdIO, managementConsoleTestLogs)
-  protected lazy val nodeMock = mock[io.iohk.atala.prism.protos.node_api.NodeServiceGrpc.NodeService]
+    RequestNoncesRepository.unsafe(
+      dbLiftedToTraceIdIO,
+      managementConsoleTestLogs
+    )
+  protected lazy val nodeMock =
+    mock[io.iohk.atala.prism.protos.node_api.NodeServiceGrpc.NodeService]
   private lazy val authenticator =
     new ManagementConsoleAuthenticator(
       participantsRepository,
@@ -53,7 +66,8 @@ class GroupsServiceImplSpec extends RpcSpecBase with DIDUtil {
       console_api.GroupsServiceGrpc
         .bindService(
           new GroupsGrpcService(
-            GroupsService.unsafe(institutionGroupsRepository, managementConsoleTestLogs),
+            GroupsService
+              .unsafe(institutionGroupsRepository, managementConsoleTestLogs),
             authenticator
           ),
           executionContext
@@ -139,7 +153,11 @@ class GroupsServiceImplSpec extends RpcSpecBase with DIDUtil {
       val contact2 = DataPreparation.createContact(institutionId)
       val request = console_api.CreateGroupRequest(
         newGroup.value,
-        List(contact1.contactId.uuid.toString, contact1.contactId.uuid.toString, contact2.contactId.uuid.toString)
+        List(
+          contact1.contactId.uuid.toString,
+          contact1.contactId.uuid.toString,
+          contact2.contactId.uuid.toString
+        )
       )
       val rpcRequest = SignedRpcRequest.generate(keyPair, did, request)
 
@@ -178,7 +196,10 @@ class GroupsServiceImplSpec extends RpcSpecBase with DIDUtil {
 
   "getGroups" should {
     "return available groups" in {
-      assertGetGroupsResult(console_api.GetGroupsRequest(), List("Group 1", "Group 2", "Group 3"))
+      assertGetGroupsResult(
+        console_api.GetGroupsRequest(),
+        List("Group 1", "Group 2", "Group 3")
+      )
     }
 
     "return the contact count on each group" in {
@@ -187,7 +208,8 @@ class GroupsServiceImplSpec extends RpcSpecBase with DIDUtil {
       val did = generateDid(publicKey)
       val institutionId = createParticipant(did)
 
-      val groups = List("Blockchain 2020", "Finance 2020").map(InstitutionGroup.Name.apply)
+      val groups =
+        List("Blockchain 2020", "Finance 2020").map(InstitutionGroup.Name.apply)
       groups.foreach { group =>
         institutionGroupsRepository
           .create(institutionId, group, Set())
@@ -216,7 +238,8 @@ class GroupsServiceImplSpec extends RpcSpecBase with DIDUtil {
       val did = generateDid(publicKey)
       val issuerId = createParticipant(did)
 
-      val groups = List("Blockchain 2020", "Finance 2020").map(InstitutionGroup.Name.apply)
+      val groups =
+        List("Blockchain 2020", "Finance 2020").map(InstitutionGroup.Name.apply)
       groups.foreach { group =>
         institutionGroupsRepository
           .create(issuerId, group, Set())
@@ -226,12 +249,16 @@ class GroupsServiceImplSpec extends RpcSpecBase with DIDUtil {
           .value
       }
       DataPreparation.createContact(issuerId, groupName = Some(groups(0)))
-      val contact = DataPreparation.createContact(issuerId, groupName = Some(groups(0)))
+      val contact =
+        DataPreparation.createContact(issuerId, groupName = Some(groups(0)))
       DataPreparation.createContact(issuerId, groupName = Some(groups(1)))
 
       val request = console_api
         .GetGroupsRequest()
-        .withFilterBy(console_api.GetGroupsRequest.FilterBy(contactId = contact.contactId.toString))
+        .withFilterBy(
+          console_api.GetGroupsRequest
+            .FilterBy(contactId = contact.contactId.toString)
+        )
       val rpcRequest = SignedRpcRequest.generate(keyPair, did, request)
 
       usingApiAs(rpcRequest) { serviceStub =>
@@ -249,19 +276,27 @@ class GroupsServiceImplSpec extends RpcSpecBase with DIDUtil {
     "allows filtering by created after" in {
       val request = console_api
         .GetGroupsRequest()
-        .withFilterBy(console_api.GetGroupsRequest.FilterBy(createdAfter = Some(common_models.Date(2021, 3, 15))))
+        .withFilterBy(
+          console_api.GetGroupsRequest
+            .FilterBy(createdAfter = Some(common_models.Date(2021, 3, 15)))
+        )
       assertGetGroupsResult(request, List("Group 1", "Group 2", "Group 3"))
     }
 
     "allows filtering by created before" in {
       val request = console_api
         .GetGroupsRequest()
-        .withFilterBy(console_api.GetGroupsRequest.FilterBy(createdBefore = Some(common_models.Date(2021, 3, 15))))
+        .withFilterBy(
+          console_api.GetGroupsRequest
+            .FilterBy(createdBefore = Some(common_models.Date(2021, 3, 15)))
+        )
       assertGetGroupsResult(request, List.empty)
     }
 
     "allows filtering by name" in {
-      val request = console_api.GetGroupsRequest().withFilterBy(console_api.GetGroupsRequest.FilterBy(name = "Up 3"))
+      val request = console_api
+        .GetGroupsRequest()
+        .withFilterBy(console_api.GetGroupsRequest.FilterBy(name = "Up 3"))
       assertGetGroupsResult(request, List("Group 3"))
     }
 
@@ -286,13 +321,17 @@ class GroupsServiceImplSpec extends RpcSpecBase with DIDUtil {
       assertGetGroupsResult(request, List("Group 2"))
     }
 
-    def assertGetGroupsResult(request: console_api.GetGroupsRequest, expectedResult: List[String]) = {
+    def assertGetGroupsResult(
+        request: console_api.GetGroupsRequest,
+        expectedResult: List[String]
+    ) = {
       val keyPair = EC.generateKeyPair()
       val publicKey = keyPair.getPublicKey
       val did = generateDid(publicKey)
       val institutionId = createParticipant(did)
 
-      val groups = List("Group 1", "Group 2", "Group 3").map(InstitutionGroup.Name.apply)
+      val groups =
+        List("Group 1", "Group 2", "Group 3").map(InstitutionGroup.Name.apply)
       groups.foreach { group =>
         institutionGroupsRepository
           .create(institutionId, group, Set())
@@ -312,14 +351,20 @@ class GroupsServiceImplSpec extends RpcSpecBase with DIDUtil {
 
     "fails to filter by contact when the value is invalid" in {
       val request =
-        console_api.GetGroupsRequest().withFilterBy(console_api.GetGroupsRequest.FilterBy(contactId = "xyz"))
+        console_api
+          .GetGroupsRequest()
+          .withFilterBy(
+            console_api.GetGroupsRequest.FilterBy(contactId = "xyz")
+          )
       assertRequestFails(request)
     }
 
     "fails to filter by created after date when the value is invalid" in {
       val request = console_api
         .GetGroupsRequest()
-        .withFilterBy(console_api.GetGroupsRequest.FilterBy(createdAfter = Some(common_models.Date(2021, 3, day = 40))))
+        .withFilterBy(
+          console_api.GetGroupsRequest.FilterBy(createdAfter = Some(common_models.Date(2021, 3, day = 40)))
+        )
       assertRequestFails(request)
     }
 
@@ -384,7 +429,11 @@ class GroupsServiceImplSpec extends RpcSpecBase with DIDUtil {
       val contact = DataPreparation.createContact(institutionId)
 
       val request1 =
-        console_api.UpdateGroupRequest(group1Id, Seq(contact.contactId.toString), Seq())
+        console_api.UpdateGroupRequest(
+          group1Id,
+          Seq(contact.contactId.toString),
+          Seq()
+        )
       val rpcRequest1 = SignedRpcRequest.generate(keyPair, did, request1)
 
       usingApiAs(rpcRequest1) { serviceStub =>
@@ -395,7 +444,11 @@ class GroupsServiceImplSpec extends RpcSpecBase with DIDUtil {
 
       // Adding the same contact twice should have no effect
       val request2 =
-        console_api.UpdateGroupRequest(group1Id, Seq(contact.contactId.toString), Seq())
+        console_api.UpdateGroupRequest(
+          group1Id,
+          Seq(contact.contactId.toString),
+          Seq()
+        )
       val rpcRequest2 = SignedRpcRequest.generate(keyPair, did, request2)
 
       usingApiAs(rpcRequest2) { serviceStub =>
@@ -422,14 +475,24 @@ class GroupsServiceImplSpec extends RpcSpecBase with DIDUtil {
           .id
           .toString
       }
-      val contact1 = DataPreparation.createContact(institutionId, groupName = Some(group1Name))
-      val contact2 = DataPreparation.createContact(institutionId, groupName = Some(group2Name))
+      val contact1 = DataPreparation.createContact(
+        institutionId,
+        groupName = Some(group1Name)
+      )
+      val contact2 = DataPreparation.createContact(
+        institutionId,
+        groupName = Some(group2Name)
+      )
 
       listContacts(institutionId, group1Name) must be(List(contact1))
       listContacts(institutionId, group2Name) must be(List(contact2))
 
       val request1 =
-        console_api.UpdateGroupRequest(group1Id, Seq(), Seq(contact1.contactId.toString))
+        console_api.UpdateGroupRequest(
+          group1Id,
+          Seq(),
+          Seq(contact1.contactId.toString)
+        )
       val rpcRequest1 = SignedRpcRequest.generate(keyPair, did, request1)
 
       usingApiAs(rpcRequest1) { serviceStub =>
@@ -441,7 +504,11 @@ class GroupsServiceImplSpec extends RpcSpecBase with DIDUtil {
 
       // Removing the same contact twice should have no effect
       val request2 =
-        console_api.UpdateGroupRequest(group1Id, Seq(), Seq(contact1.contactId.toString))
+        console_api.UpdateGroupRequest(
+          group1Id,
+          Seq(),
+          Seq(contact1.contactId.toString)
+        )
       val rpcRequest2 = SignedRpcRequest.generate(keyPair, did, request2)
 
       usingApiAs(rpcRequest2) { serviceStub =>
@@ -469,7 +536,10 @@ class GroupsServiceImplSpec extends RpcSpecBase with DIDUtil {
           .id
           .toString
       }
-      val contact1 = DataPreparation.createContact(institutionId, groupName = Some(group1Name))
+      val contact1 = DataPreparation.createContact(
+        institutionId,
+        groupName = Some(group1Name)
+      )
       val contact2 = DataPreparation.createContact(institutionId)
 
       listContacts(institutionId, group1Name) must be(List(contact1))
@@ -529,7 +599,11 @@ class GroupsServiceImplSpec extends RpcSpecBase with DIDUtil {
       val contact = DataPreparation.createContact(institutionId2)
 
       val request =
-        console_api.UpdateGroupRequest(group1Id, Seq(contact.contactId.toString), Seq())
+        console_api.UpdateGroupRequest(
+          group1Id,
+          Seq(contact.contactId.toString),
+          Seq()
+        )
       val rpcRequest = SignedRpcRequest.generate(keyPair2, did2, request)
 
       usingApiAs(rpcRequest) { serviceStub =>
@@ -561,7 +635,11 @@ class GroupsServiceImplSpec extends RpcSpecBase with DIDUtil {
       val contact = DataPreparation.createContact(institutionId2)
 
       val request =
-        console_api.UpdateGroupRequest(group1Id, Seq(contact.contactId.toString), Seq())
+        console_api.UpdateGroupRequest(
+          group1Id,
+          Seq(contact.contactId.toString),
+          Seq()
+        )
       val rpcRequest = SignedRpcRequest.generate(keyPair1, did1, request)
 
       usingApiAs(rpcRequest) { serviceStub =>
@@ -650,10 +728,22 @@ class GroupsServiceImplSpec extends RpcSpecBase with DIDUtil {
       val institutionId = createParticipant(did)
 
       val originalGroupId = createGroup(institutionId, originalGroupName)
-      val contact1 = DataPreparation.createContact(institutionId, groupName = Some(originalGroupName))
-      val contact2 = DataPreparation.createContact(institutionId, groupName = Some(originalGroupName))
-      val contact3 = DataPreparation.createContact(institutionId, groupName = Some(originalGroupName))
-      val contact4 = DataPreparation.createContact(institutionId, groupName = Some(originalGroupName))
+      val contact1 = DataPreparation.createContact(
+        institutionId,
+        groupName = Some(originalGroupName)
+      )
+      val contact2 = DataPreparation.createContact(
+        institutionId,
+        groupName = Some(originalGroupName)
+      )
+      val contact3 = DataPreparation.createContact(
+        institutionId,
+        groupName = Some(originalGroupName)
+      )
+      val contact4 = DataPreparation.createContact(
+        institutionId,
+        groupName = Some(originalGroupName)
+      )
 
       // To ensure there is only one group at this point
       getInstitutionGroups(institutionId).size mustBe 1
@@ -661,17 +751,26 @@ class GroupsServiceImplSpec extends RpcSpecBase with DIDUtil {
       // To guarantee that these contacts are added
       listContacts(institutionId, originalGroupName).size mustBe 4
 
-      val requestCopy = console_api.CopyGroupRequest(originalGroupId.toString, newGroup)
+      val requestCopy =
+        console_api.CopyGroupRequest(originalGroupId.toString, newGroup)
       val rpcRequestCopy = SignedRpcRequest.generate(keyPair, did, requestCopy)
 
       usingApiAs(rpcRequestCopy) { serviceStub =>
         val newGroupStringId = serviceStub.copyGroup(requestCopy).groupId
         val newGroupId = UUID.fromString(newGroupStringId)
         // To ensure that all contacts are copied
-        listContacts(institutionId, newGroupName) mustBe List(contact1, contact2, contact3, contact4)
+        listContacts(institutionId, newGroupName) mustBe List(
+          contact1,
+          contact2,
+          contact3,
+          contact4
+        )
         // And the group itself
         getInstitutionGroups(institutionId)
-          .map(_.value.id) mustBe List(originalGroupId, InstitutionGroup.Id(newGroupId))
+          .map(_.value.id) mustBe List(
+          originalGroupId,
+          InstitutionGroup.Id(newGroupId)
+        )
       }
     }
 
@@ -686,7 +785,8 @@ class GroupsServiceImplSpec extends RpcSpecBase with DIDUtil {
       // To ensure the group is empty
       listContacts(institutionId, originalGroupName).isEmpty mustBe true
 
-      val requestCopy = console_api.CopyGroupRequest(originalGroupId.toString, newGroup)
+      val requestCopy =
+        console_api.CopyGroupRequest(originalGroupId.toString, newGroup)
       val rpcRequestCopy = SignedRpcRequest.generate(keyPair, did, requestCopy)
 
       usingApiAs(rpcRequestCopy) { serviceStub =>
@@ -696,7 +796,10 @@ class GroupsServiceImplSpec extends RpcSpecBase with DIDUtil {
         listContacts(institutionId, newGroupName).isEmpty mustBe true
         // And the group was copied with the same institutionId
         getInstitutionGroups(institutionId)
-          .map(_.value.id) mustBe List(originalGroupId, InstitutionGroup.Id(newGroupId))
+          .map(_.value.id) mustBe List(
+          originalGroupId,
+          InstitutionGroup.Id(newGroupId)
+        )
       }
     }
 
@@ -712,8 +815,10 @@ class GroupsServiceImplSpec extends RpcSpecBase with DIDUtil {
 
       val originalGroupId = createGroup(institutionId, originalGroupName)
 
-      val requestCopy = console_api.CopyGroupRequest(originalGroupId.toString, newGroup)
-      val rpcRequestCopy = SignedRpcRequest.generate(imposterKeyPair, imposterDid, requestCopy)
+      val requestCopy =
+        console_api.CopyGroupRequest(originalGroupId.toString, newGroup)
+      val rpcRequestCopy =
+        SignedRpcRequest.generate(imposterKeyPair, imposterDid, requestCopy)
 
       usingApiAs(rpcRequestCopy) { serviceStub =>
         intercept[RuntimeException](serviceStub.copyGroup(requestCopy))
@@ -728,7 +833,8 @@ class GroupsServiceImplSpec extends RpcSpecBase with DIDUtil {
 
       val originalGroupId = createGroup(institutionId, originalGroupName)
 
-      val requestCopy = console_api.CopyGroupRequest(originalGroupId.toString, "")
+      val requestCopy =
+        console_api.CopyGroupRequest(originalGroupId.toString, "")
       val rpcRequestCopy = SignedRpcRequest.generate(keyPair, did, requestCopy)
 
       usingApiAs(rpcRequestCopy) { serviceStub =>
@@ -745,7 +851,10 @@ class GroupsServiceImplSpec extends RpcSpecBase with DIDUtil {
       val originalGroupId = createGroup(institutionId, originalGroupName)
       createGroup(institutionId, newGroupName)
 
-      val requestCopy = console_api.CopyGroupRequest(originalGroupId.toString, newGroupName.value)
+      val requestCopy = console_api.CopyGroupRequest(
+        originalGroupId.toString,
+        newGroupName.value
+      )
       val rpcRequestCopy = SignedRpcRequest.generate(keyPair, did, requestCopy)
 
       usingApiAs(rpcRequestCopy) { serviceStub =>
@@ -777,10 +886,13 @@ class GroupsServiceImplSpec extends RpcSpecBase with DIDUtil {
       // To ensure that these groups and contacts are added
       listContacts(institutionId, group1Name).size mustBe 2
       listContacts(institutionId, group2Name).size mustBe 2
-      getInstitutionGroups(institutionId).map(_.value.id) must contain theSameElementsAs List(group1Id, group2Id)
+      getInstitutionGroups(institutionId).map(
+        _.value.id
+      ) must contain theSameElementsAs List(group1Id, group2Id)
 
       val requestDelete = console_api.DeleteGroupRequest(group1Id.toString)
-      val rpcRequestDelete = SignedRpcRequest.generate(keyPair, did, requestDelete)
+      val rpcRequestDelete =
+        SignedRpcRequest.generate(keyPair, did, requestDelete)
 
       usingApiAs(rpcRequestDelete) { serviceStub =>
         serviceStub.deleteGroup(requestDelete)
@@ -788,7 +900,9 @@ class GroupsServiceImplSpec extends RpcSpecBase with DIDUtil {
         intercept[RuntimeException](listContacts(institutionId, group1Name))
         // Also, to ensure that the second group and its contacts still exist
         listContacts(institutionId, group2Name).size mustBe 2
-        getInstitutionGroups(institutionId).map(_.value.id) must not contain group1Id
+        getInstitutionGroups(institutionId).map(
+          _.value.id
+        ) must not contain group1Id
       }
     }
 
@@ -808,7 +922,8 @@ class GroupsServiceImplSpec extends RpcSpecBase with DIDUtil {
       DataPreparation.createContact(institutionId, groupName = Some(group1Name))
 
       val requestDelete = console_api.DeleteGroupRequest(group1Id.toString)
-      val rpcRequestDelete = SignedRpcRequest.generate(imposterKeyPair, imposterDid, requestDelete)
+      val rpcRequestDelete =
+        SignedRpcRequest.generate(imposterKeyPair, imposterDid, requestDelete)
 
       usingApiAs(rpcRequestDelete) { serviceStub =>
         intercept[RuntimeException](serviceStub.deleteGroup(requestDelete))
@@ -821,8 +936,10 @@ class GroupsServiceImplSpec extends RpcSpecBase with DIDUtil {
       val did = generateDid(publicKey)
       createParticipant(did)
 
-      val requestDelete = console_api.DeleteGroupRequest(UUID.randomUUID().toString)
-      val rpcRequestDelete = SignedRpcRequest.generate(keyPair, did, requestDelete)
+      val requestDelete =
+        console_api.DeleteGroupRequest(UUID.randomUUID().toString)
+      val rpcRequestDelete =
+        SignedRpcRequest.generate(keyPair, did, requestDelete)
 
       usingApiAs(rpcRequestDelete) { serviceStub =>
         intercept[RuntimeException](serviceStub.deleteGroup(requestDelete))
@@ -830,8 +947,14 @@ class GroupsServiceImplSpec extends RpcSpecBase with DIDUtil {
     }
   }
 
-  private def listContacts(institutionId: ParticipantId, groupName: InstitutionGroup.Name): List[Contact] =
-    institutionGroupsRepository.listContacts(institutionId, groupName).run(TraceId.generateYOLO).unsafeRunSync()
+  private def listContacts(
+      institutionId: ParticipantId,
+      groupName: InstitutionGroup.Name
+  ): List[Contact] =
+    institutionGroupsRepository
+      .listContacts(institutionId, groupName)
+      .run(TraceId.generateYOLO)
+      .unsafeRunSync()
 
   private def createParticipant(did: DID)(implicit
       database: Transactor[IO]
@@ -850,7 +973,9 @@ class GroupsServiceImplSpec extends RpcSpecBase with DIDUtil {
     id
   }
 
-  private def getInstitutionGroups(institutionId: ParticipantId): List[InstitutionGroup.WithContactCount] = {
+  private def getInstitutionGroups(
+      institutionId: ParticipantId
+  ): List[InstitutionGroup.WithContactCount] = {
     val groups = institutionGroupsRepository
       .getBy(institutionId, getGroupsQuery)
       .run(TraceId.generateYOLO)

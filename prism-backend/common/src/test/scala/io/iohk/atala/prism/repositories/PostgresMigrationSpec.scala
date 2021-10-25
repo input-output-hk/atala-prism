@@ -22,14 +22,15 @@ import scala.jdk.CollectionConverters._
 /** This a helper to allow testing a specific sql migration by using flyway.
   *
   * The expected way to be used is:
-  * - You create a new migration script, like "v22_alter_tables.sql"
-  * - You create a test, where you insert some data before v22 gets applied
-  * - The v22 migration is executed, which you expect to succeed
-  * - You verify that the existing data was migrated properly
-  * - Any migrations after v22 aren't applied
+  *   - You create a new migration script, like "v22_alter_tables.sql"
+  *   - You create a test, where you insert some data before v22 gets applied
+  *   - The v22 migration is executed, which you expect to succeed
+  *   - You verify that the existing data was migrated properly
+  *   - Any migrations after v22 aren't applied
   *
-  * NOTE: If migration script written in Scala (e.g. extending JavaBasedMigration) the prefix should contain the prefix path (db.migration by default)
-  * NOTE: If the given prefix isn't found, the function fails printing the available scripts.
+  * NOTE: If migration script written in Scala (e.g. extending JavaBasedMigration) the prefix should contain the prefix
+  * path (db.migration by default) NOTE: If the given prefix isn't found, the function fails printing the available
+  * scripts.
   *
   * The simplest example test is like:
   * {{{
@@ -45,9 +46,9 @@ import scala.jdk.CollectionConverters._
   *   )
   * }}}
   *
-  * @param targetPrefixScript the prefix on the script to test, in order to test the migration for
-  *                           "v22_alter_tables.sql", you send the prefix as "v22"
-  *                            "v18_alter_tables.scala", you should send prefix as "path.v18" (path = db.migration by default)
+  * @param targetPrefixScript
+  *   the prefix on the script to test, in order to test the migration for "v22_alter_tables.sql", you send the prefix
+  *   as "v22" "v18_alter_tables.scala", you should send prefix as "path.v18" (path = db.migration by default)
   */
 abstract class PostgresMigrationSpec(targetPrefixScript: String) extends AtalaWithPostgresSpec {
 
@@ -57,11 +58,19 @@ abstract class PostgresMigrationSpec(targetPrefixScript: String) extends AtalaWi
     s"Migrating to version $targetPrefixScript" should {
       "work" in {
         // apply the previous migrations
-        PostgresMigrationSpec.migrate(transactorConfig, targetPrefixScript, targetPrefixScriptExcluded = true)
+        PostgresMigrationSpec.migrate(
+          transactorConfig,
+          targetPrefixScript,
+          targetPrefixScriptExcluded = true
+        )
         beforeApply
 
         // apply target migration
-        PostgresMigrationSpec.migrate(transactorConfig, targetPrefixScript, targetPrefixScriptExcluded = false)
+        PostgresMigrationSpec.migrate(
+          transactorConfig,
+          targetPrefixScript,
+          targetPrefixScriptExcluded = false
+        )
         afterApplied
       }
     }
@@ -71,11 +80,19 @@ abstract class PostgresMigrationSpec(targetPrefixScript: String) extends AtalaWi
     s"Migrating to version $targetPrefixScript" should {
       "work" in {
         // apply the previous migrations
-        PostgresMigrationSpec.migrate(transactorConfig, targetPrefixScript, targetPrefixScriptExcluded = true)
+        PostgresMigrationSpec.migrate(
+          transactorConfig,
+          targetPrefixScript,
+          targetPrefixScriptExcluded = true
+        )
         val t = beforeApply
 
         // apply target migration
-        PostgresMigrationSpec.migrate(transactorConfig, targetPrefixScript, targetPrefixScriptExcluded = false)
+        PostgresMigrationSpec.migrate(
+          transactorConfig,
+          targetPrefixScript,
+          targetPrefixScriptExcluded = false
+        )
         afterApplied(t)
       }
     }
@@ -128,8 +145,13 @@ object PostgresMigrationSpec {
       new JdbcConnectionFactory(flywayConfig.getDataSource, flywayConfig, null)
     val databaseType = jdbcConnectionFactory.getDatabaseType
     val sqlScriptExecutorFactory =
-      databaseType.createSqlScriptExecutorFactory(jdbcConnectionFactory, null, null)
-    val sqlScriptFactory = databaseType.createSqlScriptFactory(flywayConfig, new ParsingContext())
+      databaseType.createSqlScriptExecutorFactory(
+        jdbcConnectionFactory,
+        null,
+        null
+      )
+    val sqlScriptFactory =
+      databaseType.createSqlScriptFactory(flywayConfig, new ParsingContext())
 
     val sqlMigration = new SqlMigrationResolver(
       resourceProvider,
@@ -138,7 +160,8 @@ object PostgresMigrationSpec {
       flywayConfig,
       new ParsingContext
     )
-    val javaMigration = new ScanningJavaMigrationResolver(javaProvider, flywayConfig)
+    val javaMigration =
+      new ScanningJavaMigrationResolver(javaProvider, flywayConfig)
 
     val customResolver = new CustomResolver(
       resourceProvider,
@@ -179,12 +202,16 @@ object PostgresMigrationSpec {
 
     private val logger = LoggerFactory.getLogger(this.getClass)
 
-    override def resolveMigrations(context: Context): util.List[ResolvedMigration] = {
+    override def resolveMigrations(
+        context: Context
+    ): util.List[ResolvedMigration] = {
       val resolved = super.resolveMigrations(context).asScala.toList
       val total = resolved.size
 
       // the index where the prefix matches
-      val prefixAt = resolved.indexWhere(_.getScript.toLowerCase startsWith targetPrefixScript.toLowerCase)
+      val prefixAt = resolved.indexWhere(
+        _.getScript.toLowerCase startsWith targetPrefixScript.toLowerCase
+      )
       require(
         prefixAt >= 0,
         s"""|

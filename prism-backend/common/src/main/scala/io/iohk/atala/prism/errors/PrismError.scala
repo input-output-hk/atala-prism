@@ -10,7 +10,10 @@ trait PrismError {
 
   lazy val toAtalaMessage: AtalaMessage = {
     val status = toStatus
-    val statusProto = StatusProto(code = status.getCode.value(), message = status.getDescription)
+    val statusProto = StatusProto(
+      code = status.getCode.value(),
+      message = status.getDescription
+    )
     val atalaErrorMessage = AtalaErrorMessage(status = Some(statusProto))
     AtalaMessage().withAtalaErrorMessage(atalaErrorMessage)
   }

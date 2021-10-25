@@ -28,13 +28,17 @@ trait RequestNoncesRepository[F[_]] {
 
 object RequestNoncesRepository {
   object PostgresImpl {
-    def create[F[_]: BracketThrow: TimeMeasureMetric: ServiceLogging[*[_], RequestNoncesRepository[F]]](
+    def create[F[_]: BracketThrow: TimeMeasureMetric: ServiceLogging[*[
+      _
+    ], RequestNoncesRepository[F]]](
         xa: Transactor[F]
     ): RequestNoncesRepository[F] = {
       val mid =
         (new RequestNoncesRepositoryMetrics: RequestNoncesRepository[
           Mid[F, *]
-        ]) |+| (new RequestNoncesRepositoryLogging: RequestNoncesRepository[Mid[F, *]])
+        ]) |+| (new RequestNoncesRepositoryLogging: RequestNoncesRepository[
+          Mid[F, *]
+        ])
       mid attach new PostgresImpl(xa)
     }
   }
@@ -51,11 +55,15 @@ private class PostgresImpl[F[_]: BracketThrow](xa: Transactor[F]) extends Reques
       .transact(xa)
 }
 
-private final class RequestNoncesRepositoryMetrics[F[_]: TimeMeasureMetric: BracketThrow]
+private final class RequestNoncesRepositoryMetrics[F[
+    _
+]: TimeMeasureMetric: BracketThrow]
     extends RequestNoncesRepository[Mid[F, *]] {
   val repoName = "RequestNoncesRepositoryPostgresImpl"
-  private lazy val burnTimer = TimeMeasureUtil.createDBQueryTimer(repoName, "burn")
-  override def burn(did: DID, requestNonce: RequestNonce): Mid[F, Unit] = _.measureOperationTime(burnTimer)
+  private lazy val burnTimer =
+    TimeMeasureUtil.createDBQueryTimer(repoName, "burn")
+  override def burn(did: DID, requestNonce: RequestNonce): Mid[F, Unit] =
+    _.measureOperationTime(burnTimer)
 }
 
 private final class RequestNoncesRepositoryLogging[

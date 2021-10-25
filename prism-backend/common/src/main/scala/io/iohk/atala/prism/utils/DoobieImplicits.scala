@@ -10,9 +10,10 @@ import io.circe.syntax._
 import scala.collection.compat.immutable.ArraySeq
 
 object DoobieImplicits {
-  implicit val byteArraySeqMeta: Meta[ArraySeq[Byte]] = Meta[Array[Byte]].timap {
-    ArraySeq.unsafeWrapArray
-  } { _.toArray }
+  implicit val byteArraySeqMeta: Meta[ArraySeq[Byte]] =
+    Meta[Array[Byte]].timap {
+      ArraySeq.unsafeWrapArray
+    } { _.toArray }
 
   implicit val jsonMeta: Meta[Json] =
     Meta.Advanced

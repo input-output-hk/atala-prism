@@ -38,7 +38,9 @@ class ConnectorRpcSpecBase extends RpcSpecBase with DIDUtil {
         )
     )
 
-  val usingApiAs: ApiTestHelper[connector_api.ConnectorServiceGrpc.ConnectorServiceBlockingStub] =
+  val usingApiAs: ApiTestHelper[
+    connector_api.ConnectorServiceGrpc.ConnectorServiceBlockingStub
+  ] =
     usingApiAsConstructor(
       new connector_api.ConnectorServiceGrpc.ConnectorServiceBlockingStub(_, _)
     )
@@ -48,13 +50,19 @@ class ConnectorRpcSpecBase extends RpcSpecBase with DIDUtil {
       new connector_api.ConnectorServiceGrpc.ConnectorServiceStub(_, _)
     )
 
-  lazy val connectionsRepository = ConnectionsRepository.unsafe(dbLiftedToTraceIdIO, testLogs)
-  lazy val connectionsService = ConnectionsService.unsafe(connectionsRepository, nodeMock, testLogs)
-  lazy val messagesRepository = MessagesRepository.unsafe(dbLiftedToTraceIdIO, testLogs)
-  lazy val requestNoncesRepository = RequestNoncesRepository.unsafe(dbLiftedToTraceIdIO, testLogs)
-  lazy val participantsRepository = ParticipantsRepository.unsafe(dbLiftedToTraceIdIO, testLogs)
+  lazy val connectionsRepository =
+    ConnectionsRepository.unsafe(dbLiftedToTraceIdIO, testLogs)
+  lazy val connectionsService =
+    ConnectionsService.unsafe(connectionsRepository, nodeMock, testLogs)
+  lazy val messagesRepository =
+    MessagesRepository.unsafe(dbLiftedToTraceIdIO, testLogs)
+  lazy val requestNoncesRepository =
+    RequestNoncesRepository.unsafe(dbLiftedToTraceIdIO, testLogs)
+  lazy val participantsRepository =
+    ParticipantsRepository.unsafe(dbLiftedToTraceIdIO, testLogs)
 
-  lazy val nodeMock = mock[io.iohk.atala.prism.protos.node_api.NodeServiceGrpc.NodeService]
+  lazy val nodeMock =
+    mock[io.iohk.atala.prism.protos.node_api.NodeServiceGrpc.NodeService]
   lazy val authenticator =
     new ConnectorAuthenticator(
       participantsRepository,
@@ -63,8 +71,10 @@ class ConnectorRpcSpecBase extends RpcSpecBase with DIDUtil {
       GrpcAuthenticationHeaderParser
     )
 
-  lazy val messagesService = MessagesService.unsafe(messagesRepository, testLogs)
-  lazy val registrationService = RegistrationService.unsafe(participantsRepository, nodeMock, testLogs)
+  lazy val messagesService =
+    MessagesService.unsafe(messagesRepository, testLogs)
+  lazy val registrationService =
+    RegistrationService.unsafe(participantsRepository, nodeMock, testLogs)
   lazy val messageNotificationService = MessageNotificationService(database)
   lazy val connectorService = new ConnectorService(
     connectionsService,
@@ -111,7 +121,12 @@ class ConnectorRpcSpecBase extends RpcSpecBase with DIDUtil {
       publicKey: Option[ECPublicKey] = None,
       did: Option[DID] = None
   ): ParticipantId = {
-    createParticipant(name, ParticipantType.Holder, publicKey = publicKey, did = did)
+    createParticipant(
+      name,
+      ParticipantType.Holder,
+      publicKey = publicKey,
+      did = did
+    )
   }
 
   protected def createIssuer(
@@ -119,7 +134,13 @@ class ConnectorRpcSpecBase extends RpcSpecBase with DIDUtil {
       publicKey: Option[ECPublicKey] = None,
       did: Option[DID] = None
   ): ParticipantId = {
-    createParticipant(name, ParticipantType.Issuer, Some(ParticipantLogo(Vector(10.toByte, 5.toByte))), publicKey, did)
+    createParticipant(
+      name,
+      ParticipantType.Issuer,
+      Some(ParticipantLogo(Vector(10.toByte, 5.toByte))),
+      publicKey,
+      did
+    )
   }
 
   protected def createVerifier(
@@ -127,7 +148,13 @@ class ConnectorRpcSpecBase extends RpcSpecBase with DIDUtil {
       publicKey: Option[ECPublicKey] = None,
       did: Option[DID] = None
   ): ParticipantId = {
-    createParticipant(name, ParticipantType.Verifier, Some(ParticipantLogo(Vector(1.toByte, 3.toByte))), publicKey, did)
+    createParticipant(
+      name,
+      ParticipantType.Verifier,
+      Some(ParticipantLogo(Vector(1.toByte, 3.toByte))),
+      publicKey,
+      did
+    )
   }
 
   protected def createToken(initiator: ParticipantId): TokenString = {
@@ -147,7 +174,12 @@ class ConnectorRpcSpecBase extends RpcSpecBase with DIDUtil {
   ): ConnectionId = {
     val token = createToken(initiatorId)
     ConnectionsDAO
-      .insert(initiatorId, acceptorId, token, ConnectionStatus.InvitationMissing)
+      .insert(
+        initiatorId,
+        acceptorId,
+        token,
+        ConnectionStatus.InvitationMissing
+      )
       .transact(database)
       .unsafeToFuture()
       .futureValue
@@ -160,7 +192,12 @@ class ConnectorRpcSpecBase extends RpcSpecBase with DIDUtil {
       token: TokenString
   ): ConnectionId = {
     ConnectionsDAO
-      .insert(initiatorId, acceptorId, token, ConnectionStatus.InvitationMissing)
+      .insert(
+        initiatorId,
+        acceptorId,
+        token,
+        ConnectionStatus.InvitationMissing
+      )
       .transact(database)
       .unsafeToFuture()
       .futureValue
@@ -186,21 +223,36 @@ class ConnectorRpcSpecBase extends RpcSpecBase with DIDUtil {
   // Verifier -> Holder1 at zeroTime + 2
   // ...
   // Issuer12 -> Verifier at zeroTime + 25
-  protected def createExampleConnections(verifierId: ParticipantId, zeroTime: Long): Seq[(String, ConnectionId)] = {
+  protected def createExampleConnections(
+      verifierId: ParticipantId,
+      zeroTime: Long
+  ): Seq[(String, ConnectionId)] = {
     (for (i <- (0 to 12)) yield {
       val holderName = s"Holder$i"
       val issuerName = s"Issuer$i"
       val holderId = createHolder(holderName)
       val issuerId = createIssuer(issuerName)
 
-      val holderConnectionId = createConnection(verifierId, holderId, Instant.ofEpochMilli(zeroTime + 2 * i))
-      val issuerConnectionId = createConnection(issuerId, verifierId, Instant.ofEpochMilli(zeroTime + 2 * i + 1))
+      val holderConnectionId = createConnection(
+        verifierId,
+        holderId,
+        Instant.ofEpochMilli(zeroTime + 2 * i)
+      )
+      val issuerConnectionId = createConnection(
+        issuerId,
+        verifierId,
+        Instant.ofEpochMilli(zeroTime + 2 * i + 1)
+      )
 
       List(holderName -> holderConnectionId, issuerName -> issuerConnectionId)
     }).flatten
   }
 
-  private def createMessage(sender: ParticipantId, connectionId: ConnectionId, content: Array[Byte]): MessageId = {
+  private def createMessage(
+      sender: ParticipantId,
+      connectionId: ConnectionId,
+      content: Array[Byte]
+  ): MessageId = {
     val messageId = MessageId.random()
     val query = for {
       recipientOption <- ConnectionsDAO.getOtherSide(connectionId, sender)
@@ -209,13 +261,21 @@ class ConnectorRpcSpecBase extends RpcSpecBase with DIDUtil {
           s"Failed to send message, the connection $connectionId with sender $sender doesn't exist"
         )
       )
-      _ <- MessagesDAO.insert(messageId, connectionId, sender, recipient, content)
+      _ <- MessagesDAO.insert(
+        messageId,
+        connectionId,
+        sender,
+        recipient,
+        content
+      )
     } yield messageId
 
     query.transact(database).unsafeRunSync()
   }
 
-  protected def createExampleMessages(recipientId: ParticipantId): Seq[(MessageId, ConnectionId)] = {
+  protected def createExampleMessages(
+      recipientId: ParticipantId
+  ): Seq[(MessageId, ConnectionId)] = {
     val acceptedConnections = for (_ <- 1 to 6) yield {
       val issuer = createIssuer(s"Issuer-${randomId()}")
       (createConnection(issuer, recipientId), issuer)
@@ -232,7 +292,10 @@ class ConnectorRpcSpecBase extends RpcSpecBase with DIDUtil {
       val (connection, sender) = connections((i - 1) % connections.size)
       // Add time padding to make sure that two messages are not created at the exact same timestamp
       Thread.sleep(10)
-      (createMessage(sender, connection, s"message-${randomId()}".getBytes), connection)
+      (
+        createMessage(sender, connection, s"message-${randomId()}".getBytes),
+        connection
+      )
     }
   }
 

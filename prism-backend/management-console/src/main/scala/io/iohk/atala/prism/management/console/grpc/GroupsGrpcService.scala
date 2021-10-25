@@ -28,7 +28,9 @@ class GroupsGrpcService(
 
   val logger: Logger = LoggerFactory.getLogger(this.getClass)
 
-  override def createGroup(request: console_api.CreateGroupRequest): Future[console_api.CreateGroupResponse] =
+  override def createGroup(
+      request: console_api.CreateGroupRequest
+  ): Future[console_api.CreateGroupResponse] =
     auth[CreateInstitutionGroup]("createGroup", request) { (institutionId, traceId, request) =>
       groupsService
         .createGroup(institutionId, request)
@@ -49,7 +51,9 @@ class GroupsGrpcService(
         }
     }
 
-  override def getGroups(request: console_api.GetGroupsRequest): Future[console_api.GetGroupsResponse] =
+  override def getGroups(
+      request: console_api.GetGroupsRequest
+  ): Future[console_api.GetGroupsResponse] =
     auth[InstitutionGroup.PaginatedQuery]("getGroups", request) { (institutionId, traceId, query) =>
       for {
         result <-
@@ -60,12 +64,18 @@ class GroupsGrpcService(
             .map(_.asRight)
             .toFutureEither
       } yield {
-        val groupsProto = result.groups.map(ProtoCodecs.groupWithContactCountToProto)
-        console_api.GetGroupsResponse(groups = groupsProto, totalNumberOfGroups = result.totalNumberOfRecords)
+        val groupsProto =
+          result.groups.map(ProtoCodecs.groupWithContactCountToProto)
+        console_api.GetGroupsResponse(
+          groups = groupsProto,
+          totalNumberOfGroups = result.totalNumberOfRecords
+        )
       }
     }
 
-  override def updateGroup(request: console_api.UpdateGroupRequest): Future[console_api.UpdateGroupResponse] =
+  override def updateGroup(
+      request: console_api.UpdateGroupRequest
+  ): Future[console_api.UpdateGroupResponse] =
     auth[UpdateInstitutionGroup]("updateGroup", request) { (institutionId, traceId, updateInstitutionGroup) =>
       groupsService
         .updateGroup(
@@ -78,7 +88,9 @@ class GroupsGrpcService(
         .as(console_api.UpdateGroupResponse())
     }
 
-  override def copyGroup(request: console_api.CopyGroupRequest): Future[console_api.CopyGroupResponse] =
+  override def copyGroup(
+      request: console_api.CopyGroupRequest
+  ): Future[console_api.CopyGroupResponse] =
     auth[CopyInstitutionGroup]("copyGroup", request) { (institutionId, traceId, copyInstitutionGroup) =>
       groupsService
         .copyGroup(institutionId, copyInstitutionGroup)
@@ -90,7 +102,9 @@ class GroupsGrpcService(
         }
     }
 
-  override def deleteGroup(request: console_api.DeleteGroupRequest): Future[console_api.DeleteGroupResponse] = {
+  override def deleteGroup(
+      request: console_api.DeleteGroupRequest
+  ): Future[console_api.DeleteGroupResponse] = {
     auth[DeleteInstitutionGroup]("deleteGroup", request) { (institutionId, traceId, deleteInstitutionGroup) =>
       groupsService
         .deleteGroup(institutionId, deleteInstitutionGroup)

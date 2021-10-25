@@ -13,15 +13,20 @@ trait ConnectorErrorSupport extends ErrorSupport[ConnectorError] {
 trait ConnectorErrorSupportNew extends ErrorSupport[ConnectorError] {
 
   // unused
-  override def wrapAsServerError(cause: Throwable): ConnectorError = InternalConnectorError(cause)
+  override def wrapAsServerError(cause: Throwable): ConnectorError =
+    InternalConnectorError(cause)
 
   // unused
-  override def invalidRequest(message: String): ConnectorError = InvalidRequest(message)
+  override def invalidRequest(message: String): ConnectorError = InvalidRequest(
+    message
+  )
 
   implicit class ErrorLoggingOpsNew[E <: PrismError](error: E) {
     def logWarnNew(implicit lc: LoggingContext): E = {
       val status = error.toStatus
-      logger.warn(s"Issuing ${error.getClass.getSimpleName}: ${status.getCode} ${status.getDescription} ($lc)")
+      logger.warn(
+        s"Issuing ${error.getClass.getSimpleName}: ${status.getCode} ${status.getDescription} ($lc)"
+      )
       error
     }
   }

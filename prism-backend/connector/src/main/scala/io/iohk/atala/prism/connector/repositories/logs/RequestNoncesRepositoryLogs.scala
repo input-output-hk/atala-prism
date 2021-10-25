@@ -12,10 +12,15 @@ import tofu.higherKind.Mid
 import tofu.logging.ServiceLogging
 import tofu.syntax.logging._
 
-private[repositories] class RequestNoncesRepositoryLogs[F[_]: ServiceLogging[*[_], RequestNoncesRepository[F]]](implicit
+private[repositories] class RequestNoncesRepositoryLogs[
+    F[_]: ServiceLogging[*[_], RequestNoncesRepository[F]]
+](implicit
     monadThrow: MonadThrow[F]
 ) extends RequestNoncesRepository[Mid[F, *]] {
-  override def burn(participantId: ParticipantId, requestNonce: model.RequestNonce): Mid[F, Unit] =
+  override def burn(
+      participantId: ParticipantId,
+      requestNonce: model.RequestNonce
+  ): Mid[F, Unit] =
     in =>
       info"burning nonce $participantId" *> in
         .flatMap(_ => info"burning nonce - successfully done")

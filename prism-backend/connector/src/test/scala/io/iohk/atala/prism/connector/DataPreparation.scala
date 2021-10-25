@@ -17,7 +17,11 @@ object DataPreparation extends BaseDAO {
   import connectorDaos._
 
   def newDID(): DID = {
-    DID.buildLongFormFromMasterPublicKey(EC.INSTANCE.generateKeyPair().getPublicKey).asCanonical()
+    DID
+      .buildLongFormFromMasterPublicKey(
+        EC.INSTANCE.generateKeyPair().getPublicKey
+      )
+      .asCanonical()
   }
 
   def createIssuer(
@@ -54,7 +58,15 @@ object DataPreparation extends BaseDAO {
       database: Transactor[IO]
   ): ParticipantId = {
     val participant =
-      ParticipantInfo(id, ParticipantType.Verifier, publicKey, name + tag, Option(newDID()), None, None)
+      ParticipantInfo(
+        id,
+        ParticipantType.Verifier,
+        publicKey,
+        name + tag,
+        Option(newDID()),
+        None,
+        None
+      )
     ParticipantsDAO.insert(participant).transact(database).unsafeRunSync()
 
     id

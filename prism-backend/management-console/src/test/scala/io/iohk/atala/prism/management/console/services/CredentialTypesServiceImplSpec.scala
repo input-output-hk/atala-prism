@@ -24,15 +24,23 @@ class CredentialTypesServiceImplSpec extends ManagementConsoleRpcSpecBase with D
       val request = console_api.GetCredentialTypesRequest()
 
       // test empty db
-      usingApiAsCredentialType(SignedRpcRequest.generate(keyPair, did, request)) { stub =>
-        stub.getCredentialTypes(request) mustBe console_api.GetCredentialTypesResponse(credentialTypes = Nil)
+      usingApiAsCredentialType(
+        SignedRpcRequest.generate(keyPair, did, request)
+      ) { stub =>
+        stub.getCredentialTypes(request) mustBe console_api
+          .GetCredentialTypesResponse(credentialTypes = Nil)
       }
 
       // create credential type
-      credentialTypeRepository.create(participantId, createCredentialType).run(TraceId.generateYOLO).unsafeRunSync()
+      credentialTypeRepository
+        .create(participantId, createCredentialType)
+        .run(TraceId.generateYOLO)
+        .unsafeRunSync()
 
       // test with data
-      usingApiAsCredentialType(SignedRpcRequest.generate(keyPair, did, request)) { stub =>
+      usingApiAsCredentialType(
+        SignedRpcRequest.generate(keyPair, did, request)
+      ) { stub =>
         val result = stub.getCredentialTypes(request)
         result.credentialTypes.size mustBe 1
         result.credentialTypes.head.name mustBe "credenital-type"
@@ -52,7 +60,9 @@ class CredentialTypesServiceImplSpec extends ManagementConsoleRpcSpecBase with D
         console_api.GetCredentialTypeRequest(credentialTypeId = credentialType.credentialType.id.uuid.toString)
 
       // test
-      usingApiAsCredentialType(SignedRpcRequest.generate(keyPair, did, request)) { stub =>
+      usingApiAsCredentialType(
+        SignedRpcRequest.generate(keyPair, did, request)
+      ) { stub =>
         val result = stub.getCredentialType(request).credentialType.value
         result.credentialType.map(_.name) mustBe Some("credenital-type")
       }
@@ -62,16 +72,21 @@ class CredentialTypesServiceImplSpec extends ManagementConsoleRpcSpecBase with D
       val request = console_api.GetCredentialTypeRequest(credentialTypeId = UUID.randomUUID.toString)
 
       // test
-      usingApiAsCredentialType(SignedRpcRequest.generate(keyPair, did, request)) { stub =>
+      usingApiAsCredentialType(
+        SignedRpcRequest.generate(keyPair, did, request)
+      ) { stub =>
         stub.getCredentialType(request).credentialType mustBe None
       }
     }
 
     "fail to get for a invalid uuid" in new Fixtures {
-      val request = console_api.GetCredentialTypeRequest(credentialTypeId = "invalid uuid")
+      val request =
+        console_api.GetCredentialTypeRequest(credentialTypeId = "invalid uuid")
 
       // test
-      usingApiAsCredentialType(SignedRpcRequest.generate(keyPair, did, request)) { stub =>
+      usingApiAsCredentialType(
+        SignedRpcRequest.generate(keyPair, did, request)
+      ) { stub =>
         intercept[StatusRuntimeException] {
           stub.getCredentialType(request)
         }
@@ -82,12 +97,17 @@ class CredentialTypesServiceImplSpec extends ManagementConsoleRpcSpecBase with D
       val model = console_models.CreateCredentialType(
         name = "credenital-type"
       )
-      val request = console_api.CreateCredentialTypeRequest(credentialType = Some(model))
+      val request =
+        console_api.CreateCredentialTypeRequest(credentialType = Some(model))
 
       // test
-      usingApiAsCredentialType(SignedRpcRequest.generate(keyPair, did, request)) { stub =>
+      usingApiAsCredentialType(
+        SignedRpcRequest.generate(keyPair, did, request)
+      ) { stub =>
         val result = stub.createCredentialType(request).credentialType.value
-        result.credentialType.map(_.state) mustBe Some(console_models.CredentialTypeState.CREDENTIAL_TYPE_DRAFT)
+        result.credentialType.map(_.state) mustBe Some(
+          console_models.CredentialTypeState.CREDENTIAL_TYPE_DRAFT
+        )
       }
     }
 
@@ -111,10 +131,13 @@ class CredentialTypesServiceImplSpec extends ManagementConsoleRpcSpecBase with D
           )
         )
       )
-      val request = console_api.UpdateCredentialTypeRequest(credentialType = Some(model))
+      val request =
+        console_api.UpdateCredentialTypeRequest(credentialType = Some(model))
 
       // test
-      usingApiAsCredentialType(SignedRpcRequest.generate(keyPair, did, request))(_.updateCredentialType(request))
+      usingApiAsCredentialType(
+        SignedRpcRequest.generate(keyPair, did, request)
+      )(_.updateCredentialType(request))
       val result = credentialTypeRepository
         .find(credentialType.credentialType.id)
         .run(TraceId.generateYOLO)
@@ -131,10 +154,13 @@ class CredentialTypesServiceImplSpec extends ManagementConsoleRpcSpecBase with D
         name = "credenital-type-changed",
         fields = Seq(console_models.CreateCredentialTypeField(name = "new field"))
       )
-      val request = console_api.UpdateCredentialTypeRequest(credentialType = Some(model))
+      val request =
+        console_api.UpdateCredentialTypeRequest(credentialType = Some(model))
 
       // test
-      usingApiAsCredentialType(SignedRpcRequest.generate(keyPair, did, request)) { stub =>
+      usingApiAsCredentialType(
+        SignedRpcRequest.generate(keyPair, did, request)
+      ) { stub =>
         intercept[StatusRuntimeException] {
           stub.updateCredentialType(request)
         }
@@ -156,7 +182,9 @@ class CredentialTypesServiceImplSpec extends ManagementConsoleRpcSpecBase with D
       credentialType.credentialType.state mustBe CredentialTypeState.Draft
 
       // test
-      usingApiAsCredentialType(SignedRpcRequest.generate(keyPair, did, request))(_.markAsReadyCredentialType(request))
+      usingApiAsCredentialType(
+        SignedRpcRequest.generate(keyPair, did, request)
+      )(_.markAsReadyCredentialType(request))
       credentialTypeRepository
         .find(credentialType.credentialType.id)
         .run(TraceId.generateYOLO)
@@ -181,7 +209,9 @@ class CredentialTypesServiceImplSpec extends ManagementConsoleRpcSpecBase with D
       credentialType.credentialType.state mustBe CredentialTypeState.Draft
 
       // test
-      usingApiAsCredentialType(SignedRpcRequest.generate(keyPair, did, request))(
+      usingApiAsCredentialType(
+        SignedRpcRequest.generate(keyPair, did, request)
+      )(
         _.markAsArchivedCredentialType(request)
       )
       credentialTypeRepository

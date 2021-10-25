@@ -20,19 +20,27 @@ class SubmissionSchedulingService private (
   scheduleRetryOldPendingTransactions(config.transactionRetryPeriod)
 
   // NOTE: submitReceivedObjects is not thread-safe, so race-conditions may occur in a concurrent mode.
-  private var submitReceivedObjectsTask: Option[monix.execution.Cancelable] = None
+  private var submitReceivedObjectsTask: Option[monix.execution.Cancelable] =
+    None
   scheduleSubmitReceivedObjects(config.operationSubmissionPeriod)
 
   def flushOperationsBuffer(): Unit = {
     submitReceivedObjectsTask.fold(
-      logger.info("Skip flushing because operations submission is already in progress.")
+      logger.info(
+        "Skip flushing because operations submission is already in progress."
+      )
     ) { task =>
       task.cancel() // cancel a scheduled task
-      scheduleSubmitReceivedObjects(config.operationSubmissionPeriod, immediate = true)
+      scheduleSubmitReceivedObjects(
+        config.operationSubmissionPeriod,
+        immediate = true
+      )
     }
   }
 
-  private def scheduleRetryOldPendingTransactions(delay: FiniteDuration): Unit = {
+  private def scheduleRetryOldPendingTransactions(
+      delay: FiniteDuration
+  ): Unit = {
     scheduler.scheduleOnce(delay) {
       // Ensure run is scheduled after completion, even if current run fails
       submissionService
@@ -49,7 +57,10 @@ class SubmissionSchedulingService private (
     ()
   }
 
-  private def scheduleSubmitReceivedObjects(delay: FiniteDuration, immediate: Boolean = false): Unit = {
+  private def scheduleSubmitReceivedObjects(
+      delay: FiniteDuration,
+      immediate: Boolean = false
+  ): Unit = {
     def run(): Unit = {
       submitReceivedObjectsTask = None
       // Ensure run is scheduled after completion, even if current run fails
@@ -86,7 +97,10 @@ object SubmissionSchedulingService {
       operationSubmissionPeriod: FiniteDuration = 20.seconds
   )
 
-  def apply(config: Config, submissionService: SubmissionService[IOWithTraceIdContext])(implicit
+  def apply(
+      config: Config,
+      submissionService: SubmissionService[IOWithTraceIdContext]
+  )(implicit
       scheduler: Scheduler
   ): SubmissionSchedulingService = {
     new SubmissionSchedulingService(config, submissionService)

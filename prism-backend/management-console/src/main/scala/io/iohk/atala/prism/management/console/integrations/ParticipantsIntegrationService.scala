@@ -20,7 +20,9 @@ import tofu.syntax.logging._
 @derive(applyK)
 trait ParticipantsIntegrationService[F[_]] {
   def register(request: RegisterDID): F[Either[ManagementConsoleError, Unit]]
-  def getDetails(participantId: ParticipantId): F[Either[errors.ManagementConsoleError, ParticipantInfo]]
+  def getDetails(
+      participantId: ParticipantId
+  ): F[Either[errors.ManagementConsoleError, ParticipantInfo]]
   def update(
       participantId: ParticipantId,
       participantProfile: UpdateParticipantProfile
@@ -36,15 +38,19 @@ object ParticipantsIntegrationService {
       serviceLogs <- logs.service[ParticipantsIntegrationService[F]]
     } yield {
       implicit val implicitLogs: ServiceLogging[F, ParticipantsIntegrationService[F]] = serviceLogs
-      val logs: ParticipantsIntegrationService[Mid[F, *]] = new ParticipantsIntegrationServiceLogs[F]
+      val logs: ParticipantsIntegrationService[Mid[F, *]] =
+        new ParticipantsIntegrationServiceLogs[F]
       val mid = logs
-      mid attach new ParticipantsIntegrationServiceImpl[F](participantsRepository)
+      mid attach new ParticipantsIntegrationServiceImpl[F](
+        participantsRepository
+      )
     }
 
   def unsafe[F[_]: BracketThrow, R[_]: Comonad](
       participantsRepository: ParticipantsRepository[F],
       logs: Logs[R, F]
-  ): ParticipantsIntegrationService[F] = ParticipantsIntegrationService(participantsRepository, logs).extract
+  ): ParticipantsIntegrationService[F] =
+    ParticipantsIntegrationService(participantsRepository, logs).extract
 
   def makeResource[F[_]: BracketThrow, R[_]: Monad](
       participantsRepository: ParticipantsRepository[F],
@@ -53,10 +59,13 @@ object ParticipantsIntegrationService {
     Resource.eval(ParticipantsIntegrationService(participantsRepository, logs))
 }
 
-private final class ParticipantsIntegrationServiceImpl[F[_]](participantsRepository: ParticipantsRepository[F])
-    extends ParticipantsIntegrationService[F] {
+private final class ParticipantsIntegrationServiceImpl[F[_]](
+    participantsRepository: ParticipantsRepository[F]
+) extends ParticipantsIntegrationService[F] {
 
-  def register(request: RegisterDID): F[Either[ManagementConsoleError, Unit]] = {
+  def register(
+      request: RegisterDID
+  ): F[Either[ManagementConsoleError, Unit]] = {
     val createRequest = ParticipantsRepository.CreateParticipantRequest(
       id = ParticipantId.random(),
       name = request.name,
@@ -66,7 +75,9 @@ private final class ParticipantsIntegrationServiceImpl[F[_]](participantsReposit
     participantsRepository.create(createRequest)
   }
 
-  def getDetails(participantId: ParticipantId): F[Either[errors.ManagementConsoleError, ParticipantInfo]] =
+  def getDetails(
+      participantId: ParticipantId
+  ): F[Either[errors.ManagementConsoleError, ParticipantInfo]] =
     participantsRepository.findBy(participantId)
 
   def update(
@@ -87,7 +98,9 @@ private final class ParticipantsIntegrationServiceLogs[F[_]: ServiceLogging[
   ParticipantsIntegrationService[F]
 ]: MonadThrow]
     extends ParticipantsIntegrationService[Mid[F, *]] {
-  override def register(request: RegisterDID): Mid[F, Either[ManagementConsoleError, Unit]] =
+  override def register(
+      request: RegisterDID
+  ): Mid[F, Either[ManagementConsoleError, Unit]] =
     in =>
       info"registering participant ${request.name} ${request.did.asCanonical().getSuffix}" *> in
         .flatTap(
@@ -96,9 +109,13 @@ private final class ParticipantsIntegrationServiceLogs[F[_]: ServiceLogging[
             _ => info"registering participant - successfully done"
           )
         )
-        .onError(errorCause"encountered an error while registering participant" (_))
+        .onError(
+          errorCause"encountered an error while registering participant" (_)
+        )
 
-  override def getDetails(participantId: ParticipantId): Mid[F, Either[ManagementConsoleError, ParticipantInfo]] =
+  override def getDetails(
+      participantId: ParticipantId
+  ): Mid[F, Either[ManagementConsoleError, ParticipantInfo]] =
     in =>
       info"getting details $participantId" *> in
         .flatTap(
@@ -109,9 +126,14 @@ private final class ParticipantsIntegrationServiceLogs[F[_]: ServiceLogging[
         )
         .onError(errorCause"encountered an error while getting participant" (_))
 
-  override def update(participantId: ParticipantId, participantProfile: UpdateParticipantProfile): Mid[F, Unit] =
+  override def update(
+      participantId: ParticipantId,
+      participantProfile: UpdateParticipantProfile
+  ): Mid[F, Unit] =
     in =>
       info"updating participant $participantId" *> in
         .flatTap(_ => info"updating participant - successfully done")
-        .onError(errorCause"encountered an error while updating participant" (_))
+        .onError(
+          errorCause"encountered an error while updating participant" (_)
+        )
 }

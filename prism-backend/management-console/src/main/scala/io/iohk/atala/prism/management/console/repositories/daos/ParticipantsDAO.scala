@@ -35,7 +35,10 @@ object ParticipantsDAO {
       """.stripMargin.query[ParticipantInfo].option
   }
 
-  def updateParticipantByID(id: ParticipantId, profile: UpdateParticipantProfile): doobie.ConnectionIO[Unit] = {
+  def updateParticipantByID(
+      id: ParticipantId,
+      profile: UpdateParticipantProfile
+  ): doobie.ConnectionIO[Unit] = {
     sql"""
          |UPDATE participants
          |SET logo = ${profile.logo},

@@ -47,7 +47,10 @@ private[repositories] final class ContactsRepositoryLogs[F[_]: BracketThrow](imp
         }
         .onError(errorCause"encountered an error while creating batch" (_))
 
-  override def updateContact(institutionId: ParticipantId, request: UpdateContact): Mid[F, Unit] =
+  override def updateContact(
+      institutionId: ParticipantId,
+      request: UpdateContact
+  ): Mid[F, Unit] =
     in =>
       info"updating contact $institutionId ${request.id}" *> in
         .flatTap(_ => info"updating contact - successfully done")
@@ -65,7 +68,9 @@ private[repositories] final class ContactsRepositoryLogs[F[_]: BracketThrow](imp
           )
 
         }
-        .onError(errorCause"encountered an error while finding contact by id" (_))
+        .onError(
+          errorCause"encountered an error while finding contact by id" (_)
+        )
 
   override def find(
       institutionId: ParticipantId,
@@ -74,21 +79,32 @@ private[repositories] final class ContactsRepositoryLogs[F[_]: BracketThrow](imp
     in =>
       info"finding by external-id $institutionId $externalId" *> in
         .flatTap { r =>
-          r.fold(info"finding by external-id got nothing $institutionId $externalId")(contact =>
-            info"finding by external-id - found ${contact.contactId} $institutionId $externalId"
-          )
+          r.fold(
+            info"finding by external-id got nothing $institutionId $externalId"
+          )(contact => info"finding by external-id - found ${contact.contactId} $institutionId $externalId")
         }
-        .onError(errorCause"encountered an error while finding contact by external-id" (_))
+        .onError(
+          errorCause"encountered an error while finding contact by external-id" (
+            _
+          )
+        )
 
-  override def findByToken(institutionId: ParticipantId, connectionToken: ConnectionToken): Mid[F, Option[Contact]] =
+  override def findByToken(
+      institutionId: ParticipantId,
+      connectionToken: ConnectionToken
+  ): Mid[F, Option[Contact]] =
     in =>
       info"finding by token ${connectionToken.token}, institution $institutionId" *> in
         .flatTap { r =>
-          r.fold(info"finding by token got nothing $institutionId, token = ${connectionToken.token}")(contact =>
+          r.fold(
+            info"finding by token got nothing $institutionId, token = ${connectionToken.token}"
+          )(contact =>
             info"finding by token - found ${contact.contactId} $institutionId, token = ${connectionToken.token}"
           )
         }
-        .onError(errorCause"encountered an error while finding contact by token" (_))
+        .onError(
+          errorCause"encountered an error while finding contact by token" (_)
+        )
 
   override def findContacts(
       institutionId: ParticipantId,
@@ -97,7 +113,9 @@ private[repositories] final class ContactsRepositoryLogs[F[_]: BracketThrow](imp
     in =>
       info"finding contacts by ids $institutionId $contactIds" *> in
         .flatTap(r => info"finding contacts by ids - successfully done found ${r.size} contacts")
-        .onError(errorCause"encountered an error while finding contacts by ids" (_))
+        .onError(
+          errorCause"encountered an error while finding contacts by ids" (_)
+        )
 
   override def getBy(
       createdBy: ParticipantId,
@@ -107,7 +125,11 @@ private[repositories] final class ContactsRepositoryLogs[F[_]: BracketThrow](imp
     in =>
       info"getting contacts by query constraints $createdBy" *> in
         .flatTap(list => info"getting contacts by query constraints - successfully done result list size ${list.size}")
-        .onError(errorCause"encountered an error while getting contacts by query constraints" (_))
+        .onError(
+          errorCause"encountered an error while getting contacts by query constraints" (
+            _
+          )
+        )
 
   override def delete(
       institutionId: ParticipantId,

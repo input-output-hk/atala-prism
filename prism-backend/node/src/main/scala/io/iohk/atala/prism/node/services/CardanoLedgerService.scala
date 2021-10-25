@@ -60,16 +60,30 @@ class CardanoLedgerService private[services] (
   // Schedule the initial sync
   scheduleSync(30.seconds)
 
-  override def publish(obj: node_internal.AtalaObject): Future[Either[CardanoWalletError, PublicationInfo]] = {
+  override def publish(
+      obj: node_internal.AtalaObject
+  ): Future[Either[CardanoWalletError, PublicationInfo]] = {
     val metadata = AtalaObjectMetadata.toTransactionMetadata(obj)
     cardanoClient
-      .postTransaction(walletId, List(Payment(paymentAddress, minUtxoDeposit)), Some(metadata), walletPassphrase)
+      .postTransaction(
+        walletId,
+        List(Payment(paymentAddress, minUtxoDeposit)),
+        Some(metadata),
+        walletPassphrase
+      )
       .mapLeft { error =>
-        logOperationIds("publish", s"FATAL: Error while publishing reference: ${error.code}", obj)(logger)
+        logOperationIds(
+          "publish",
+          s"FATAL: Error while publishing reference: ${error.code}",
+          obj
+        )(logger)
         error
       }
       .map { transactionId =>
-        PublicationInfo(TransactionInfo(transactionId, getType), TransactionStatus.Pending)
+        PublicationInfo(
+          TransactionInfo(transactionId, getType),
+          TransactionStatus.Pending
+        )
       }
       .value
   }
@@ -80,19 +94,28 @@ class CardanoLedgerService private[services] (
     cardanoClient
       .getTransaction(walletId, transactionId)
       .mapLeft { error =>
-        val errorMessage = s"FATAL: Error while getting transaction details: ${error.code}"
-        logger.error(s"methodName: getTransactionDetails , message: $errorMessage", error)
+        val errorMessage =
+          s"FATAL: Error while getting transaction details: ${error.code}"
+        logger.error(
+          s"methodName: getTransactionDetails , message: $errorMessage",
+          error
+        )
         error
       }
       .value
   }
 
-  override def deleteTransaction(transactionId: TransactionId): Future[Either[CardanoWalletError, Unit]] = {
+  override def deleteTransaction(
+      transactionId: TransactionId
+  ): Future[Either[CardanoWalletError, Unit]] = {
     cardanoClient
       .deleteTransaction(walletId, transactionId)
       .mapLeft { error =>
         val errorMessage = s"Could not delete transaction $transactionId"
-        logger.error(s"methodName: deleteTransaction , message: $errorMessage", error)
+        logger.error(
+          s"methodName: deleteTransaction , message: $errorMessage",
+          error
+        )
         error
       }
       .value
@@ -123,13 +146,25 @@ class CardanoLedgerService private[services] (
   private[services] def syncAtalaObjects(): Future[Boolean] = {
     val tId = TraceId.generateYOLO
     for {
-      maybeLastSyncedBlockNo <- keyValueService.getInt(LAST_SYNCED_BLOCK_NO).run(tId).unsafeToFuture()
-      lastSyncedBlockNo = CardanoLedgerService.calculateLastSyncedBlockNo(maybeLastSyncedBlockNo, blockNumberSyncStart)
+      maybeLastSyncedBlockNo <- keyValueService
+        .getInt(LAST_SYNCED_BLOCK_NO)
+        .run(tId)
+        .unsafeToFuture()
+      lastSyncedBlockNo = CardanoLedgerService.calculateLastSyncedBlockNo(
+        maybeLastSyncedBlockNo,
+        blockNumberSyncStart
+      )
       latestBlock <-
-        cardanoClient.getLatestBlock(tId).toFuture(_ => new RuntimeException("Cardano blockchain is empty"))
-      lastConfirmedBlockNo = latestBlock.header.blockNo - blockConfirmationsToWait
+        cardanoClient
+          .getLatestBlock(tId)
+          .toFuture(_ => new RuntimeException("Cardano blockchain is empty"))
+      lastConfirmedBlockNo =
+        latestBlock.header.blockNo - blockConfirmationsToWait
       syncStart = lastSyncedBlockNo + 1
-      syncEnd = math.min(lastConfirmedBlockNo, lastSyncedBlockNo + MAX_SYNC_BLOCKS)
+      syncEnd = math.min(
+        lastConfirmedBlockNo,
+        lastSyncedBlockNo + MAX_SYNC_BLOCKS
+      )
       _ <- syncBlocks(syncStart to syncEnd)
     } yield lastConfirmedBlockNo > syncEnd
   }
@@ -169,14 +204,20 @@ class CardanoLedgerService private[services] (
           transactionId = transaction.id,
           ledger = getType,
           block = Some(
-            BlockInfo(number = block.header.blockNo, timestamp = block.header.time, index = transaction.blockIndex)
+            BlockInfo(
+              number = block.header.blockNo,
+              timestamp = block.header.time,
+              index = transaction.blockIndex
+            )
           )
         )
       )
     } yield notification
 
     if (notifications.nonEmpty) {
-      logger.info(s"Found ${notifications.size} Atala objects in block ${block.header.blockNo}")
+      logger.info(
+        s"Found ${notifications.size} Atala objects in block ${block.header.blockNo}"
+      )
     }
 
     for {
@@ -191,7 +232,10 @@ class CardanoLedgerService private[services] (
       .setMany(
         List(
           KeyValue(LAST_SYNCED_BLOCK_NO, Some(block.header.blockNo.toString)),
-          KeyValue(LAST_SYNCED_BLOCK_TIMESTAMP, Some(timestampEpochMilli.toString))
+          KeyValue(
+            LAST_SYNCED_BLOCK_TIMESTAMP,
+            Some(timestampEpochMilli.toString)
+          )
         )
       )
       .run(TraceId.generateYOLO)
@@ -234,7 +278,11 @@ object CardanoLedgerService {
   ): CardanoLedgerService = {
     val walletId = WalletId
       .from(config.walletId)
-      .getOrElse(throw new IllegalArgumentException(s"Wallet ID ${config.walletId} is invalid"))
+      .getOrElse(
+        throw new IllegalArgumentException(
+          s"Wallet ID ${config.walletId} is invalid"
+        )
+      )
     val walletPassphrase = config.walletPassphrase
     val paymentAddress = Address(config.paymentAddress)
 
@@ -253,7 +301,10 @@ object CardanoLedgerService {
     )
   }
 
-  def calculateLastSyncedBlockNo(maybeLastSyncedBlockNo: Option[Int], blockNumberSyncStart: Int): Int =
+  def calculateLastSyncedBlockNo(
+      maybeLastSyncedBlockNo: Option[Int],
+      blockNumberSyncStart: Int
+  ): Int =
     math.max(maybeLastSyncedBlockNo.getOrElse(0), blockNumberSyncStart - 1)
 
 }

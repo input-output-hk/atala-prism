@@ -108,5 +108,9 @@ object GenericCredential {
   )
 
   type PaginatedQuery =
-    PaginatedQueryConstraints[GenericCredential.Id, GenericCredential.SortBy, GenericCredential.FilterBy]
+    PaginatedQueryConstraints[
+      GenericCredential.Id,
+      GenericCredential.SortBy,
+      GenericCredential.FilterBy
+    ]
 }

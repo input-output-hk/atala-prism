@@ -8,10 +8,14 @@ import io.iohk.atala.prism.protos.node_internal
 
 case class AtalaObjectInfo(
     objectId: AtalaObjectId,
-    byteContent: Array[Byte], // Serialization of a io.iohk.atala.prism.protos.node_internal.AtalaObject
+    byteContent: Array[
+      Byte
+    ], // Serialization of a io.iohk.atala.prism.protos.node_internal.AtalaObject
     operations: List[Operation], // List of parsed operations
     status: AtalaObjectStatus, // Status of an object may be processed (e.g. DIDs were recognized and stored in DB), merged (e.g. merged with another object) or pending
-    transaction: Option[TransactionInfo] // Blockchain transaction the object was first found in
+    transaction: Option[
+      TransactionInfo
+    ] // Blockchain transaction the object was first found in
 ) {
   def this(
       objectId: AtalaObjectId,
@@ -37,12 +41,17 @@ case class AtalaObjectInfo(
     } yield atalaBlock
   }
 
-  private def appendAtalaObject(that: AtalaObjectInfo): Option[AtalaObjectInfo] = {
+  private def appendAtalaObject(
+      that: AtalaObjectInfo
+  ): Option[AtalaObjectInfo] = {
     for {
       thisBlock <- getAtalaBlock
       thatBlock <- that.getAtalaBlock
     } yield {
-      val mergedBlock = node_internal.AtalaBlock(thisBlock.version, thisBlock.operations ++ thatBlock.operations)
+      val mergedBlock = node_internal.AtalaBlock(
+        thisBlock.version,
+        thisBlock.operations ++ thatBlock.operations
+      )
       val obj = node_internal
         .AtalaObject(
           blockOperationCount = mergedBlock.operations.size
@@ -87,8 +96,15 @@ case class AtalaObjectInfo(
 
   override def equals(obj: Any): Boolean =
     obj match {
-      case AtalaObjectInfo(thatObjectId, thatByteContent, _, thatStatus, thatTransaction) =>
-        val thatTuple = (thatObjectId, thatByteContent.toList, thatStatus, thatTransaction)
+      case AtalaObjectInfo(
+            thatObjectId,
+            thatByteContent,
+            _,
+            thatStatus,
+            thatTransaction
+          ) =>
+        val thatTuple =
+          (thatObjectId, thatByteContent.toList, thatStatus, thatTransaction)
         val thisTuple = (objectId, byteContent.toList, status, transaction)
         thisTuple.equals(thatTuple)
       case _ =>

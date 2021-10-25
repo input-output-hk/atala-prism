@@ -23,15 +23,24 @@ import io.iohk.atala.prism.utils.syntax._
 import java.time.Instant
 
 object ProtoCodecs {
-  def toTimeStampInfoProto(timestampInfo: TimestampInfo): node_models.TimestampInfo = {
+  def toTimeStampInfoProto(
+      timestampInfo: TimestampInfo
+  ): node_models.TimestampInfo = {
     node_models
       .TimestampInfo()
-      .withBlockTimestamp(Instant.ofEpochMilli(timestampInfo.getAtalaBlockTimestamp).toProtoTimestamp)
+      .withBlockTimestamp(
+        Instant
+          .ofEpochMilli(timestampInfo.getAtalaBlockTimestamp)
+          .toProtoTimestamp
+      )
       .withBlockSequenceNumber(timestampInfo.getAtalaBlockSequenceNumber)
       .withOperationSequenceNumber(timestampInfo.getOperationSequenceNumber)
   }
 
-  def atalaOperationToDIDDataProto(didSuffix: DidSuffix, op: node_models.AtalaOperation): node_models.DIDData = {
+  def atalaOperationToDIDDataProto(
+      didSuffix: DidSuffix,
+      op: node_models.AtalaOperation
+  ): node_models.DIDData = {
     node_models
       .DIDData()
       .withId(didSuffix.getValue)
@@ -42,7 +51,10 @@ object ProtoCodecs {
       )
   }
 
-  def toDIDDataProto(did: String, didDataState: models.nodeState.DIDDataState): node_models.DIDData = {
+  def toDIDDataProto(
+      did: String,
+      didDataState: models.nodeState.DIDDataState
+  ): node_models.DIDData = {
     node_models
       .DIDData()
       .withId(did)
@@ -98,7 +110,9 @@ object ProtoCodecs {
   // TODO: Manage proper validations.
   //       This implies making default values for operation sequence number to be 1
   //       (it is currently 0). The block sequence number starts at 1 already.
-  def fromTimestampInfoProto(timestampInfoProto: node_models.TimestampInfo): TimestampInfo = {
+  def fromTimestampInfoProto(
+      timestampInfoProto: node_models.TimestampInfo
+  ): TimestampInfo = {
     new TimestampInfo(
       timestampInfoProto.blockTimestamp
         .getOrElse(throw new RuntimeException("Missing timestamp"))
@@ -113,7 +127,10 @@ object ProtoCodecs {
     for {
       maybeX <- protoKey.keyData.ecKeyData
       maybeY <- protoKey.keyData.ecKeyData
-    } yield EC.toPublicKeyFromByteCoordinates(maybeX.x.toByteArray, maybeY.y.toByteArray)
+    } yield EC.toPublicKeyFromByteCoordinates(
+      maybeX.x.toByteArray,
+      maybeY.y.toByteArray
+    )
   }
 
   def fromProtoKeyLegacy(protoKey: node_models.PublicKey): Option[PublicKey] =
@@ -132,7 +149,8 @@ object ProtoCodecs {
       case Ledger.InMemory => common_models.Ledger.IN_MEMORY
       case Ledger.CardanoTestnet => common_models.Ledger.CARDANO_TESTNET
       case Ledger.CardanoMainnet => common_models.Ledger.CARDANO_MAINNET
-      case _ => throw new IllegalArgumentException(s"Unexpected ledger: $ledger")
+      case _ =>
+        throw new IllegalArgumentException(s"Unexpected ledger: $ledger")
     }
   }
 }
