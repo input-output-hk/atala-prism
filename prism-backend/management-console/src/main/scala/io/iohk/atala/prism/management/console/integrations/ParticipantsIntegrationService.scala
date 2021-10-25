@@ -37,8 +37,7 @@ object ParticipantsIntegrationService {
     for {
       serviceLogs <- logs.service[ParticipantsIntegrationService[F]]
     } yield {
-      implicit val implicitLogs
-          : ServiceLogging[F, ParticipantsIntegrationService[F]] = serviceLogs
+      implicit val implicitLogs: ServiceLogging[F, ParticipantsIntegrationService[F]] = serviceLogs
       val logs: ParticipantsIntegrationService[Mid[F, *]] =
         new ParticipantsIntegrationServiceLogs[F]
       val mid = logs

@@ -3,10 +3,7 @@ package io.iohk.atala.prism.management.console.repositories.metrics
 import cats.effect.BracketThrow
 import io.iohk.atala.prism.identity.{PrismDid => DID}
 import io.iohk.atala.prism.management.console.errors.ManagementConsoleError
-import io.iohk.atala.prism.management.console.models.{
-  ParticipantId,
-  ParticipantInfo
-}
+import io.iohk.atala.prism.management.console.models.{ParticipantId, ParticipantInfo}
 import io.iohk.atala.prism.management.console.repositories.ParticipantsRepository
 import io.iohk.atala.prism.management.console.repositories.ParticipantsRepository.{
   CreateParticipantRequest,

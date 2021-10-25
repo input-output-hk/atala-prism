@@ -18,8 +18,8 @@ case class PostgresConfig(
   *
   * The database is launched in a docker instance using docker-it-scala library.
   *
-  * When the database is started, play evolutions are automatically applied, the
-  * idea is to let you write tests like this, with the Cats IO:
+  * When the database is started, play evolutions are automatically applied, the idea is to let you write tests like
+  * this, with the Cats IO:
   * {{{
   *   import io.iohk.atala.prism.AtalaSpecBase.implicits._
   *   class UserPostgresDALSpec extends PostgresRepositorySpec[IO] {
@@ -72,8 +72,7 @@ abstract class PostgresRepositorySpec[F[_]: ConcurrentEffect: ContextShift]
   protected lazy val transactorConfig = TransactorFactory.Config(
     username = postgresConfig.user,
     password = postgresConfig.password,
-    jdbcUrl =
-      s"jdbc:postgresql://${postgresConfig.host}/${postgresConfig.database}"
+    jdbcUrl = s"jdbc:postgresql://${postgresConfig.host}/${postgresConfig.database}"
   )
 
   protected def migrationScriptsLocation = "db/migration"

@@ -154,7 +154,7 @@ class ObjectManagementService private (
     }
 
     resultEitherT.value.run(TraceId.generateYOLO).unsafeToFuture().flatMap {
-      case Left(e)  => Future.failed(e.toStatus.asRuntimeException)
+      case Left(e) => Future.failed(e.toStatus.asRuntimeException)
       case Right(r) => Future.successful(r)
     }
   }
@@ -224,8 +224,7 @@ class ObjectManagementService private (
 
 object ObjectManagementService {
   sealed trait AtalaObjectTransactionStatus extends EnumEntry with Snakecase
-  object AtalaObjectTransactionStatus
-      extends Enum[AtalaObjectTransactionStatus] {
+  object AtalaObjectTransactionStatus extends Enum[AtalaObjectTransactionStatus] {
     val values: IndexedSeq[AtalaObjectTransactionStatus] = findValues
 
     case object Pending extends AtalaObjectTransactionStatus

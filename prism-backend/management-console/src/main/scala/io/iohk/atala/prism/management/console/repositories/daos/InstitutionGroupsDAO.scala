@@ -9,11 +9,7 @@ import doobie.free.connection
 import doobie.free.connection.{ConnectionIO, unit}
 import doobie.implicits._
 import doobie.implicits.legacy.instant._
-import io.iohk.atala.prism.management.console.models.{
-  Contact,
-  InstitutionGroup,
-  ParticipantId
-}
+import io.iohk.atala.prism.management.console.models.{Contact, InstitutionGroup, ParticipantId}
 import io.iohk.atala.prism.management.console.repositories.daos.queries.FindGroupsQueryBuilder
 
 import java.time.Instant

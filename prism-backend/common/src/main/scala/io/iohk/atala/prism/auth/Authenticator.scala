@@ -2,16 +2,8 @@ package io.iohk.atala.prism.auth
 
 import cats.syntax.functor._
 import io.grpc.Context
-import io.iohk.atala.prism.auth.errors.{
-  AuthError,
-  AuthErrorSupport,
-  SignatureVerificationError
-}
-import io.iohk.atala.prism.auth.grpc.{
-  GrpcAuthenticationHeader,
-  GrpcAuthenticationHeaderParser,
-  SignedRequestsHelper
-}
+import io.iohk.atala.prism.auth.errors.{AuthError, AuthErrorSupport, SignatureVerificationError}
+import io.iohk.atala.prism.auth.grpc.{GrpcAuthenticationHeader, GrpcAuthenticationHeaderParser, SignedRequestsHelper}
 import io.iohk.atala.prism.auth.model.RequestNonce
 import io.iohk.atala.prism.auth.utils.DIDUtils
 import io.iohk.atala.prism.crypto.EC.{INSTANCE => EC}
@@ -65,15 +57,13 @@ abstract class SignedRequestsAuthenticatorBase[Id](
 
   override val logger: Logger = LoggerFactory.getLogger(this.getClass)
 
-  /** Burns given nonce for user id, so that the request can not be cloned by a
-    * malicious agent
+  /** Burns given nonce for user id, so that the request can not be cloned by a malicious agent
     */
   def burnNonce(id: Id, requestNonce: RequestNonce)(implicit
       ec: ExecutionContext
   ): FutureEither[AuthError, Unit]
 
-  /** Burns given nonce for DID, so that the request can not be cloned by a
-    * malicious agent
+  /** Burns given nonce for DID, so that the request can not be cloned by a malicious agent
     */
   def burnNonce(did: DID, requestNonce: RequestNonce)(implicit
       ec: ExecutionContext
@@ -153,14 +143,11 @@ abstract class SignedRequestsAuthenticatorBase[Id](
     }.toFutureEither
   }
 
-  /** A request must be signed by prepending the nonce, let's say
-    * requestNonce|request
+  /** A request must be signed by prepending the nonce, let's say requestNonce|request
     *
-    * The signature is valid if the signature matches and the nonce hasn't been
-    * seen before.
+    * The signature is valid if the signature matches and the nonce hasn't been seen before.
     *
-    * After the request is validated successfully, the request nonce is burn to
-    * prevent replay attacks.
+    * After the request is validated successfully, the request nonce is burn to prevent replay attacks.
     */
   private def verifyRequestSignature(
       id: Id,
@@ -300,9 +287,7 @@ abstract class SignedRequestsAuthenticatorBase[Id](
         .map(authenticate(request.toByteArray, _, traceId))
         .map { value =>
           value
-            .map(v =>
-              withLogging(methodName, request, v._1, v._2) { f(v._1, v._2) }
-            )
+            .map(v => withLogging(methodName, request, v._1, v._2) { f(v._1, v._2) })
             .flatten
         }
         .getOrElse {

@@ -3,11 +3,7 @@ package io.iohk.atala.prism.intdemo
 import cats.syntax.functor._
 import io.grpc.stub.StreamObserver
 import io.iohk.atala.prism.intdemo.IntDemoStateMachine.log
-import io.iohk.atala.prism.connector.model.{
-  Connection,
-  ConnectionId,
-  TokenString
-}
+import io.iohk.atala.prism.connector.model.{Connection, ConnectionId, TokenString}
 import io.iohk.atala.prism.models.ParticipantId
 import io.iohk.atala.prism.intdemo.protos.{intdemo_api, intdemo_models}
 import io.iohk.atala.prism.protos.credential_models
@@ -101,11 +97,10 @@ class IntDemoStateMachine[D](
     catch (withLoggingHandler)
   }
 
-  private val withLoggingHandler: PartialFunction[Throwable, Unit] = {
-    case t: Throwable =>
-      log.info(
-        s"Failed client callback invocation for connection token ${connectionToken.token}. Got exception $t."
-      )
+  private val withLoggingHandler: PartialFunction[Throwable, Unit] = { case t: Throwable =>
+    log.info(
+      s"Failed client callback invocation for connection token ${connectionToken.token}. Got exception $t."
+    )
   }
 
   private def getOldStatus(): Future[intdemo_models.SubjectStatus] = {
@@ -161,16 +156,15 @@ class IntDemoStateMachine[D](
       Future.successful(status)
     }
 
-    def error(status: intdemo_models.SubjectStatus): Action = {
-      (personalInfo, connection) =>
-        Future.failed(
-          new IllegalStateException(
-            s"Credential issuance service encountered an illegal state where " +
-              s"the current status is $status, " +
-              s"personal info is $personalInfo and " +
-              s"connection state is $connection."
-          )
+    def error(status: intdemo_models.SubjectStatus): Action = { (personalInfo, connection) =>
+      Future.failed(
+        new IllegalStateException(
+          s"Credential issuance service encountered an illegal state where " +
+            s"the current status is $status, " +
+            s"personal info is $personalInfo and " +
+            s"connection state is $connection."
         )
+      )
     }
 
     val emitProofRequest: Action = (_, maybeConnection) => {
@@ -182,14 +176,13 @@ class IntDemoStateMachine[D](
       }
     }
 
-    val emitCredentialAndStop: Action = (maybeRequiredData, maybeConnection) =>
-      {
-        val requiredData = maybeRequiredData.get
-        val connection = maybeConnection.get
-        emitCredential(connection.connectionId, requiredData).as(
-          intdemo_models.SubjectStatus.CREDENTIAL_SENT
-        )
-      }
+    val emitCredentialAndStop: Action = (maybeRequiredData, maybeConnection) => {
+      val requiredData = maybeRequiredData.get
+      val connection = maybeConnection.get
+      emitCredential(connection.connectionId, requiredData).as(
+        intdemo_models.SubjectStatus.CREDENTIAL_SENT
+      )
+    }
 
     private def emitCredential(
         connectionId: ConnectionId,
@@ -231,8 +224,7 @@ class IntDemoStateMachine[D](
       )
     }
 
-    case class IllegalState(status: intdemo_models.SubjectStatus)
-        extends State {
+    case class IllegalState(status: intdemo_models.SubjectStatus) extends State {
       val actionTable = Map()
     }
 

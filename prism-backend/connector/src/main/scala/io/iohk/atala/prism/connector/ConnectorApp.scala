@@ -3,10 +3,7 @@ package io.iohk.atala.prism.connector
 import cats.effect.{ContextShift, IO}
 import com.typesafe.config.ConfigFactory
 import io.grpc.{ManagedChannelBuilder, Server, ServerBuilder}
-import io.iohk.atala.prism.auth.grpc.{
-  GrpcAuthenticationHeaderParser,
-  GrpcAuthenticatorInterceptor
-}
+import io.iohk.atala.prism.auth.grpc.{GrpcAuthenticationHeaderParser, GrpcAuthenticatorInterceptor}
 import io.iohk.atala.prism.connector.repositories._
 import io.iohk.atala.prism.connector.services._
 import io.iohk.atala.prism.cviews.CredentialViewsService
@@ -117,8 +114,7 @@ class ConnectorApp(executionContext: ExecutionContext) { self =>
     // Background services
     val contextShift = IO.contextShift(executionContext)
     val timer = IO.timer(executionContext)
-    messageNotificationService =
-      MessageNotificationService(xa)(contextShift, timer)
+    messageNotificationService = MessageNotificationService(xa)(contextShift, timer)
     messageNotificationService.start()
 
     // connector services

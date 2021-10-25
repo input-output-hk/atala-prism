@@ -3,11 +3,7 @@ package io.iohk.atala.prism.connector.repositories
 import cats.{Comonad, Functor}
 import cats.data.{EitherT, OptionT}
 import cats.effect.BracketThrow
-import cats.implicits.{
-  catsSyntaxApplicativeId,
-  catsSyntaxEitherId,
-  catsSyntaxOptionId
-}
+import cats.implicits.{catsSyntaxApplicativeId, catsSyntaxEitherId, catsSyntaxOptionId}
 import cats.syntax.either._
 import cats.syntax.comonad._
 import cats.syntax.functor._
@@ -174,8 +170,7 @@ private final class ConnectionsRepositoryPostgresImpl[F[_]: BracketThrow](
       )
 
     // if exist Left(ConnectorError) else Right(Unit)
-    val checkIfAlreadyExist
-        : EitherT[doobie.ConnectionIO, AddConnectionFromTokenError, Unit] =
+    val checkIfAlreadyExist: EitherT[doobie.ConnectionIO, AddConnectionFromTokenError, Unit] =
       EitherT(
         didOrPublicKey
           .fold(
@@ -265,8 +260,7 @@ private final class ConnectionsRepositoryPostgresImpl[F[_]: BracketThrow](
       connectionId: ConnectionId
   ): F[Either[RevokeConnectionError, Unit]] = {
     // verify the connection belongs to the participant, and its connected
-    def verifyOwnership
-        : EitherT[doobie.ConnectionIO, RevokeConnectionError, Unit] =
+    def verifyOwnership: EitherT[doobie.ConnectionIO, RevokeConnectionError, Unit] =
       for {
         connectionMaybe <- EitherT(
           ConnectionsDAO

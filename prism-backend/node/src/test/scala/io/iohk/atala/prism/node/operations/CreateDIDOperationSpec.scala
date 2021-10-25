@@ -6,10 +6,7 @@ import io.iohk.atala.prism.AtalaWithPostgresSpec
 import io.iohk.atala.prism.crypto.EC.{INSTANCE => EC}
 import io.iohk.atala.prism.crypto.ECConfig.{INSTANCE => ECConfig}
 import io.iohk.atala.prism.crypto.keys.{ECKeyPair, ECPublicKey}
-import io.iohk.atala.prism.node.DataPreparation.{
-  dummyLedgerData,
-  dummyTimestampInfo
-}
+import io.iohk.atala.prism.node.DataPreparation.{dummyLedgerData, dummyTimestampInfo}
 import io.iohk.atala.prism.node.grpc.ProtoCodecs
 import io.iohk.atala.prism.node.models.nodeState.DIDPublicKeyState
 import io.iohk.atala.prism.node.models.{DIDData, DIDPublicKey}
@@ -84,9 +81,7 @@ object CreateDIDOperationSpec {
                 "master",
                 node_models.KeyUsage.MASTER_KEY,
                 Some(
-                  node_models.LedgerData(timestampInfo =
-                    Some(ProtoCodecs.toTimeStampInfoProto(dummyTimestampInfo))
-                  )
+                  node_models.LedgerData(timestampInfo = Some(ProtoCodecs.toTimeStampInfoProto(dummyTimestampInfo)))
                 ),
                 None,
                 node_models.PublicKey.KeyData.EcKeyData(masterEcKeyData)
@@ -96,9 +91,7 @@ object CreateDIDOperationSpec {
                   "issuing",
                   node_models.KeyUsage.ISSUING_KEY,
                   Some(
-                    node_models.LedgerData(timestampInfo =
-                      Some(ProtoCodecs.toTimeStampInfoProto(dummyTimestampInfo))
-                    )
+                    node_models.LedgerData(timestampInfo = Some(ProtoCodecs.toTimeStampInfoProto(dummyTimestampInfo)))
                   ),
                   None,
                   node_models.PublicKey.KeyData.EcKeyData(issuingEcKeyData)
@@ -108,9 +101,7 @@ object CreateDIDOperationSpec {
                   "revoking",
                   node_models.KeyUsage.REVOCATION_KEY,
                   Some(
-                    node_models.LedgerData(timestampInfo =
-                      Some(ProtoCodecs.toTimeStampInfoProto(dummyTimestampInfo))
-                    )
+                    node_models.LedgerData(timestampInfo = Some(ProtoCodecs.toTimeStampInfoProto(dummyTimestampInfo)))
                   ),
                   None,
                   node_models.PublicKey.KeyData.EcKeyData(revokingEcKeyData)
@@ -119,9 +110,7 @@ object CreateDIDOperationSpec {
                 "authentication",
                 node_models.KeyUsage.AUTHENTICATION_KEY,
                 Some(
-                  node_models.LedgerData(timestampInfo =
-                    Some(ProtoCodecs.toTimeStampInfoProto(dummyTimestampInfo))
-                  )
+                  node_models.LedgerData(timestampInfo = Some(ProtoCodecs.toTimeStampInfoProto(dummyTimestampInfo)))
                 ),
                 None,
                 node_models.PublicKey.KeyData.EcKeyData(randomECKeyData)
@@ -144,9 +133,7 @@ object CreateDIDOperationSpec {
                   "master",
                   node_models.KeyUsage.MASTER_KEY,
                   Some(
-                    node_models.LedgerData(timestampInfo =
-                      Some(ProtoCodecs.toTimeStampInfoProto(dummyTimestampInfo))
-                    )
+                    node_models.LedgerData(timestampInfo = Some(ProtoCodecs.toTimeStampInfoProto(dummyTimestampInfo)))
                   ),
                   None,
                   node_models.PublicKey.KeyData.EcKeyData(masterEcKeyData)
@@ -185,9 +172,7 @@ object CreateDIDOperationSpec {
                   "authentication",
                   node_models.KeyUsage.AUTHENTICATION_KEY,
                   Some(
-                    node_models.LedgerData(timestampInfo =
-                      Some(ProtoCodecs.toTimeStampInfoProto(dummyTimestampInfo))
-                    )
+                    node_models.LedgerData(timestampInfo = Some(ProtoCodecs.toTimeStampInfoProto(dummyTimestampInfo)))
                   ),
                   None,
                   node_models.PublicKey.KeyData.CompressedEcKeyData(

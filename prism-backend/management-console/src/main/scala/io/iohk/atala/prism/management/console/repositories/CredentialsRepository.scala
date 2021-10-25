@@ -16,11 +16,7 @@ import io.iohk.atala.prism.credentials.CredentialBatchId
 import io.iohk.atala.prism.crypto.Sha256Digest
 import io.iohk.atala.prism.management.console.errors._
 import io.iohk.atala.prism.management.console.models._
-import io.iohk.atala.prism.management.console.repositories.daos.{
-  ContactsDAO,
-  CredentialTypeDao,
-  CredentialsDAO
-}
+import io.iohk.atala.prism.management.console.repositories.daos.{ContactsDAO, CredentialTypeDao, CredentialsDAO}
 import io.iohk.atala.prism.management.console.repositories.logs.CredentialsRepositoryLogs
 import io.iohk.atala.prism.management.console.repositories.metrics.CredentialsRepositoryMetrics
 import io.iohk.atala.prism.management.console.validations.CredentialDataValidator

@@ -5,11 +5,7 @@ import doobie._
 import doobie.implicits._
 import doobie.implicits.legacy.localdate._
 import doobie.util.fragments._
-import io.iohk.atala.prism.management.console.models.{
-  Contact,
-  PaginatedQueryConstraints,
-  ParticipantId
-}
+import io.iohk.atala.prism.management.console.models.{Contact, PaginatedQueryConstraints, ParticipantId}
 
 object FindContactsQueryBuilder {
 
@@ -21,15 +17,15 @@ object FindContactsQueryBuilder {
     val baseQuery =
       (constraints.scrollId, constraints.filters.flatMap(_.groupName)) match {
         case (Some(scrollId), Some(_)) => selectFromScrollGroupFR(scrollId)
-        case (Some(scrollId), None)    => selectFromScrollFR(scrollId)
-        case (None, Some(_))           => selectFromGroupFR
-        case (None, None)              => selectFR ++ fr"FROM contacts"
+        case (Some(scrollId), None) => selectFromScrollFR(scrollId)
+        case (None, Some(_)) => selectFromGroupFR
+        case (None, None) => selectFR ++ fr"FROM contacts"
       }
 
     val orderBy = orderByFr(constraints.ordering, "contact_id") {
       case Contact.SortBy.ExternalId => "contacts.external_id"
-      case Contact.SortBy.CreatedAt  => "contacts.created_at"
-      case Contact.SortBy.Name       => "LOWER(contacts.name)"
+      case Contact.SortBy.CreatedAt => "contacts.created_at"
+      case Contact.SortBy.Name => "LOWER(contacts.name)"
     }
 
     val query = baseQuery ++
@@ -51,10 +47,9 @@ object FindContactsQueryBuilder {
       fr"""g.name = $group"""
     }
     val whereNameOrExternalId =
-      constraints.filters.flatMap(_.nonEmptyNameOrExternalId).map {
-        nameOrExternalId =>
-          val nameOrExternalIdWithWildCard = s"%$nameOrExternalId%"
-          fr"(contacts.name ILIKE $nameOrExternalIdWithWildCard OR contacts.external_id ILIKE $nameOrExternalIdWithWildCard)"
+      constraints.filters.flatMap(_.nonEmptyNameOrExternalId).map { nameOrExternalId =>
+        val nameOrExternalIdWithWildCard = s"%$nameOrExternalId%"
+        fr"(contacts.name ILIKE $nameOrExternalIdWithWildCard OR contacts.external_id ILIKE $nameOrExternalIdWithWildCard)"
       }
     val whereCreatedAt =
       constraints.filters.flatMap(_.createdAt).map { createdAt =>

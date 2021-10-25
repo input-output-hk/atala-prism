@@ -12,8 +12,7 @@ import tofu.higherKind.Mid
 
 import java.time.Instant
 
-final class ContactsRepositoryMetrics[F[_]: TimeMeasureMetric: BracketThrow]
-    extends ContactsRepository[Mid[F, *]] {
+final class ContactsRepositoryMetrics[F[_]: TimeMeasureMetric: BracketThrow] extends ContactsRepository[Mid[F, *]] {
 
   private val repoName = "ContactsRepository"
   private lazy val createTimer =

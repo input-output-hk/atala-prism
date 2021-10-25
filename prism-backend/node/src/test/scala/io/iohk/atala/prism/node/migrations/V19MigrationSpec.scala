@@ -16,9 +16,7 @@ import io.iohk.atala.prism.protos.models.TimestampInfo
 
 import java.time.Instant
 
-class V19MigrationSpec
-    extends PostgresMigrationSpec("db.migration.V19")
-    with BaseDAO {
+class V19MigrationSpec extends PostgresMigrationSpec("db.migration.V19") with BaseDAO {
 
   private val dummyTimestampInfo =
     new TimestampInfo(Instant.ofEpochMilli(0).toEpochMilli, 1, 0)

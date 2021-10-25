@@ -100,9 +100,7 @@ private final class CredentialStoreServiceLogs[
   ): Mid[F, Option[CredentialExternalId]] =
     in =>
       info"getting latest stored credentials $participantId" *> in
-        .flatTap(_ =>
-          info"getting latest stored credentials - successfully done"
-        )
+        .flatTap(_ => info"getting latest stored credentials - successfully done")
         .onError(
           errorCause"encountered an error while getting latest stored credentials" (
             _

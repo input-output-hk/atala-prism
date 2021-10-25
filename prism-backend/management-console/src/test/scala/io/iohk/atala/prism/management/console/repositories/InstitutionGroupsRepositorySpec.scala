@@ -4,15 +4,9 @@ import cats.effect.IO
 import cats.syntax.option._
 import io.iohk.atala.prism.AtalaWithPostgresSpec
 import io.iohk.atala.prism.management.console.DataPreparation._
-import io.iohk.atala.prism.management.console.errors.{
-  GroupNameIsNotFree,
-  GroupsInstitutionDoNotMatch
-}
+import io.iohk.atala.prism.management.console.errors.{GroupNameIsNotFree, GroupsInstitutionDoNotMatch}
 import io.iohk.atala.prism.management.console.models.PaginatedQueryConstraints.ResultOrdering
-import io.iohk.atala.prism.management.console.models.{
-  InstitutionGroup,
-  PaginatedQueryConstraints
-}
+import io.iohk.atala.prism.management.console.models.{InstitutionGroup, PaginatedQueryConstraints}
 import io.iohk.atala.prism.utils.IOUtils._
 import tofu.logging.Logs
 
@@ -111,9 +105,7 @@ class InstitutionGroupsRepositorySpec extends AtalaWithPostgresSpec {
       createInstitutionGroup(institutionId2, InstitutionGroup.Name("Other"))
 
       val query: InstitutionGroup.PaginatedQuery =
-        PaginatedQueryConstraints(ordering =
-          ResultOrdering(InstitutionGroup.SortBy.Name)
-        )
+        PaginatedQueryConstraints(ordering = ResultOrdering(InstitutionGroup.SortBy.Name))
 
       val result =
         repository.getBy(institutionId1, query).unsafeRunSync()
@@ -131,9 +123,7 @@ class InstitutionGroupsRepositorySpec extends AtalaWithPostgresSpec {
       createContact(institutionId, "test-contact-3", groups.lift(1))
 
       val query: InstitutionGroup.PaginatedQuery =
-        PaginatedQueryConstraints(ordering =
-          ResultOrdering(InstitutionGroup.SortBy.Name)
-        )
+        PaginatedQueryConstraints(ordering = ResultOrdering(InstitutionGroup.SortBy.Name))
 
       val result =
         repository.getBy(institutionId, query).unsafeRunSync().groups
@@ -151,8 +141,7 @@ class InstitutionGroupsRepositorySpec extends AtalaWithPostgresSpec {
       val query: InstitutionGroup.PaginatedQuery =
         PaginatedQueryConstraints(
           ordering = ResultOrdering(InstitutionGroup.SortBy.Name),
-          filters =
-            Some(InstitutionGroup.FilterBy(contactId = Some(contact.contactId)))
+          filters = Some(InstitutionGroup.FilterBy(contactId = Some(contact.contactId)))
         )
 
       val result = repository.getBy(issuerId, query).unsafeRunSync().groups
@@ -175,9 +164,7 @@ class InstitutionGroupsRepositorySpec extends AtalaWithPostgresSpec {
           PaginatedQueryConstraints(
             ordering = ResultOrdering(InstitutionGroup.SortBy.Name),
             filters = Some(
-              InstitutionGroup.FilterBy(name =
-                Some(InstitutionGroup.Name(name))
-              )
+              InstitutionGroup.FilterBy(name = Some(InstitutionGroup.Name(name)))
             )
           )
 
@@ -222,8 +209,7 @@ class InstitutionGroupsRepositorySpec extends AtalaWithPostgresSpec {
         val query: InstitutionGroup.PaginatedQuery =
           PaginatedQueryConstraints(
             ordering = ResultOrdering(InstitutionGroup.SortBy.Name),
-            filters =
-              Some(InstitutionGroup.FilterBy(createdBefore = Some(date)))
+            filters = Some(InstitutionGroup.FilterBy(createdBefore = Some(date)))
           )
 
         val result =
@@ -276,9 +262,7 @@ class InstitutionGroupsRepositorySpec extends AtalaWithPostgresSpec {
       createContact(institutionId, "test-contact-3", groups.lift(1))
 
       val query: InstitutionGroup.PaginatedQuery =
-        PaginatedQueryConstraints(ordering =
-          ResultOrdering(InstitutionGroup.SortBy.NumberOfContacts)
-        )
+        PaginatedQueryConstraints(ordering = ResultOrdering(InstitutionGroup.SortBy.NumberOfContacts))
 
       val result = repository.getBy(institutionId, query).unsafeRunSync().groups
       result.map(_.value.name) must be(groups.reverse)
@@ -511,9 +495,7 @@ class InstitutionGroupsRepositorySpec extends AtalaWithPostgresSpec {
         .isRight mustBe true
 
       val query: InstitutionGroup.PaginatedQuery =
-        PaginatedQueryConstraints(ordering =
-          ResultOrdering(InstitutionGroup.SortBy.Name)
-        )
+        PaginatedQueryConstraints(ordering = ResultOrdering(InstitutionGroup.SortBy.Name))
 
       repository.getBy(institutionId, query).unsafeRunSync().groups mustBe Nil
       //Guarantee that we removed contacts and group

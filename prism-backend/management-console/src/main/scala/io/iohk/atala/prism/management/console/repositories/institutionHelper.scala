@@ -3,16 +3,8 @@ package io.iohk.atala.prism.management.console.repositories
 import cats.Monad
 import doobie._
 import io.iohk.atala.prism.management.console.errors._
-import io.iohk.atala.prism.management.console.models.{
-  Contact,
-  InstitutionGroup,
-  ParticipantId
-}
-import io.iohk.atala.prism.management.console.repositories.daos.{
-  ContactsDAO,
-  CredentialsDAO,
-  InstitutionGroupsDAO
-}
+import io.iohk.atala.prism.management.console.models.{Contact, InstitutionGroup, ParticipantId}
+import io.iohk.atala.prism.management.console.repositories.daos.{ContactsDAO, CredentialsDAO, InstitutionGroupsDAO}
 
 object institutionHelper {
   // Make sure that all contacts belong to the given institution
@@ -35,14 +27,13 @@ object institutionHelper {
       institutionId: ParticipantId,
       groupIds: Set[InstitutionGroup.Id]
   ): ConnectionIO[Option[ManagementConsoleError]] = {
-    InstitutionGroupsDAO.findGroups(institutionId, groupIds.toList).map {
-      groups =>
-        val difference = groupIds.diff(groups.map(_.id).toSet)
-        if (difference.nonEmpty) {
-          Some(GroupsInstitutionDoNotMatch(difference.toList, institutionId))
-        } else {
-          None
-        }
+    InstitutionGroupsDAO.findGroups(institutionId, groupIds.toList).map { groups =>
+      val difference = groupIds.diff(groups.map(_.id).toSet)
+      if (difference.nonEmpty) {
+        Some(GroupsInstitutionDoNotMatch(difference.toList, institutionId))
+      } else {
+        None
+      }
     }
   }
 
@@ -82,7 +73,7 @@ object institutionHelper {
   ): ConnectionIO[Option[ManagementConsoleError]] = {
     InstitutionGroupsDAO.find(institutionId, groupName).map {
       case Some(_) => Some(GroupNameIsNotFree(groupName))
-      case None    => None
+      case None => None
     }
   }
 }

@@ -18,7 +18,7 @@ class AtalaOperationId private (val digest: Sha256Digest) {
   override def equals(obj: Any): Boolean =
     obj match {
       case that: AtalaOperationId => this.digest.equals(that.digest)
-      case _                      => false
+      case _ => false
     }
 
   override def hashCode(): Int = digest.hashCode()

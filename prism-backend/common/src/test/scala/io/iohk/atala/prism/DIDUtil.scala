@@ -7,13 +7,8 @@ import io.iohk.atala.prism.crypto.EC.{INSTANCE => EC}
 import io.iohk.atala.prism.crypto.keys.{ECKeyPair, ECPublicKey}
 import io.iohk.atala.prism.crypto.ECConfig.{INSTANCE => ECConfig}
 import io.iohk.atala.prism.identity.{PrismDid => DID}
-import io.iohk.atala.prism.identity.PrismDid.{
-  getDEFAULT_MASTER_KEY_ID => masterKeyId
-}
-import io.iohk.atala.prism.protos.node_api.{
-  GetDidDocumentRequest,
-  GetDidDocumentResponse
-}
+import io.iohk.atala.prism.identity.PrismDid.{getDEFAULT_MASTER_KEY_ID => masterKeyId}
+import io.iohk.atala.prism.protos.node_api.{GetDidDocumentRequest, GetDidDocumentResponse}
 import io.iohk.atala.prism.protos.node_api.NodeServiceGrpc.NodeService
 import io.iohk.atala.prism.protos.node_models
 import io.iohk.atala.prism.protos.node_models.DIDData
@@ -51,9 +46,7 @@ trait DIDUtil {
       )
     )
 
-    val atalaOp = node_models.AtalaOperation(operation =
-      node_models.AtalaOperation.Operation.CreateDid(createDidOp)
-    )
+    val atalaOp = node_models.AtalaOperation(operation = node_models.AtalaOperation.Operation.CreateDid(createDidOp))
     val operationBytes = atalaOp.toByteArray
     val operationHash = Sha256.compute(operationBytes)
     val didCanonicalSuffix = operationHash.getHexValue
@@ -62,8 +55,7 @@ trait DIDUtil {
     nodeMock.getDidDocument(GetDidDocumentRequest(did.getValue)).returns {
       Future.successful(
         GetDidDocumentResponse(
-          document =
-            Some(DIDData(id = didCanonicalSuffix, publicKeys = Seq(publicKey)))
+          document = Some(DIDData(id = didCanonicalSuffix, publicKeys = Seq(publicKey)))
         )
       )
     }

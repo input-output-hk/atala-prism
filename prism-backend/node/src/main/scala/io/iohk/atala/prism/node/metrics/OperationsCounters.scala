@@ -2,11 +2,7 @@ package io.iohk.atala.prism.node.metrics
 
 import io.iohk.atala.prism.node.errors.NodeError
 import io.iohk.atala.prism.node.operations.StateError
-import io.iohk.atala.prism.protos.node_models.{
-  AtalaOperation,
-  SignedAtalaOperation,
-  UpdateDIDAction
-}
+import io.iohk.atala.prism.protos.node_models.{AtalaOperation, SignedAtalaOperation, UpdateDIDAction}
 import io.iohk.atala.prism.protos.node_models.UpdateDIDAction.Action
 import kamon.Kamon
 import kamon.metric.Metric
@@ -95,9 +91,7 @@ object OperationsCounters {
       counter
         .withTags(tagSetBuilder.add(OPERATION_TAG, operationName).build())
         .increment()
-    }.toEither.left.foreach(error =>
-      logger.error(s"${counter.name} just blew up", error)
-    )
+    }.toEither.left.foreach(error => logger.error(s"${counter.name} just blew up", error))
 
   private def increaseOperationsOccurrencesCounter(
       in: List[SignedAtalaOperation],
@@ -110,9 +104,7 @@ object OperationsCounters {
       operationAndOccurrences.foreach { case (operation, occurrences) =>
         countAtalaDidOperations(operation, occurrences, counter, tagSetBuilder)
       }
-    }.toEither.left.foreach(error =>
-      logger.error(s"${counter.name} counter just blew up", error)
-    )
+    }.toEither.left.foreach(error => logger.error(s"${counter.name} counter just blew up", error))
 
   private def countAtalaDidOperations(
       in: AtalaOperation.Operation,
@@ -168,8 +160,7 @@ object OperationsCounters {
     ()
   }
 
-  private def atalaOperationToTagString
-      : PartialFunction[AtalaOperation.Operation, String] = {
+  private def atalaOperationToTagString: PartialFunction[AtalaOperation.Operation, String] = {
     case AtalaOperation.Operation.Empty => EMPTY_OPERATION_TAG_VALUE
     case AtalaOperation.Operation.RevokeCredentials(_) =>
       REVOKE_CREDENTIALS_TAG_VALUE
@@ -180,10 +171,9 @@ object OperationsCounters {
     case AtalaOperation.Operation.UpdateDid(_) => UPDATE_DID_OPERATION_TAG_VALUE
   }
 
-  private def atalaUpdateDidActionToTag
-      : PartialFunction[UpdateDIDAction.Action, String] = {
-    case Action.Empty        => EMPTY_ACTION_TAG_VALUE
-    case Action.AddKey(_)    => ADD_KEY_ACTION_TAG_VALUE
+  private def atalaUpdateDidActionToTag: PartialFunction[UpdateDIDAction.Action, String] = {
+    case Action.Empty => EMPTY_ACTION_TAG_VALUE
+    case Action.AddKey(_) => ADD_KEY_ACTION_TAG_VALUE
     case Action.RemoveKey(_) => REMOVE_KEY_ACTION_TAG_VALUE
   }
 

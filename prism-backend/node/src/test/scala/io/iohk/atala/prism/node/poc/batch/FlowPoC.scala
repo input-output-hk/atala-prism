@@ -9,9 +9,7 @@ import io.iohk.atala.prism.AtalaWithPostgresSpec
 import io.iohk.atala.prism.credentials.CredentialBatchId
 import io.iohk.atala.prism.crypto.{Sha256, Sha256Digest}
 import io.iohk.atala.prism.identity.{PrismDid => DID}
-import io.iohk.atala.prism.identity.PrismDid.{
-  getDEFAULT_MASTER_KEY_ID => masterKeyId
-}
+import io.iohk.atala.prism.identity.PrismDid.{getDEFAULT_MASTER_KEY_ID => masterKeyId}
 import io.iohk.atala.prism.node.poc.{GenericCredentialsSDK, Wallet}
 import io.iohk.atala.prism.node.repositories.{
   AtalaObjectsTransactionsRepository,
@@ -54,36 +52,27 @@ class FlowPoC extends AtalaWithPostgresSpec with BeforeAndAfterEach {
   protected var serverName: String = _
   protected var serverHandle: Server = _
   protected var channelHandle: ManagedChannel = _
-  protected var nodeServiceStub
-      : node_api.NodeServiceGrpc.NodeServiceBlockingStub = _
+  protected var nodeServiceStub: node_api.NodeServiceGrpc.NodeServiceBlockingStub = _
   protected var didDataRepository: DIDDataRepository[IOWithTraceIdContext] = _
-  protected var atalaOperationsRepository
-      : AtalaOperationsRepository[IOWithTraceIdContext] = _
-  protected var credentialBatchesRepository
-      : CredentialBatchesRepository[IOWithTraceIdContext] = _
+  protected var atalaOperationsRepository: AtalaOperationsRepository[IOWithTraceIdContext] = _
+  protected var credentialBatchesRepository: CredentialBatchesRepository[IOWithTraceIdContext] = _
   protected var atalaReferenceLedger: InMemoryLedgerService = _
   protected var blockProcessingService: BlockProcessingServiceImpl = _
   protected var objectManagementService: ObjectManagementService = _
   protected var submissionService: SubmissionService[IOWithTraceIdContext] = _
-  protected var atalaObjectsTransactionsRepository
-      : AtalaObjectsTransactionsRepository[IOWithTraceIdContext] = _
+  protected var atalaObjectsTransactionsRepository: AtalaObjectsTransactionsRepository[IOWithTraceIdContext] = _
   protected var keyValuesRepository: KeyValuesRepository[IOWithTraceIdContext] =
     _
-  protected var objectManagementServicePromise
-      : Promise[ObjectManagementService] = _
+  protected var objectManagementServicePromise: Promise[ObjectManagementService] = _
   protected var submissionSchedulingService: SubmissionSchedulingService = _
-  protected var protocolVersionsRepository
-      : ProtocolVersionRepository[IOWithTraceIdContext] = _
+  protected var protocolVersionsRepository: ProtocolVersionRepository[IOWithTraceIdContext] = _
 
   override def beforeEach(): Unit = {
     super.beforeEach()
 
-    didDataRepository =
-      DIDDataRepository.unsafe(dbLiftedToTraceIdIO, flowPocTestLogs)
-    credentialBatchesRepository =
-      CredentialBatchesRepository.unsafe(dbLiftedToTraceIdIO, flowPocTestLogs)
-    protocolVersionsRepository =
-      ProtocolVersionRepository.unsafe(dbLiftedToTraceIdIO, flowPocTestLogs)
+    didDataRepository = DIDDataRepository.unsafe(dbLiftedToTraceIdIO, flowPocTestLogs)
+    credentialBatchesRepository = CredentialBatchesRepository.unsafe(dbLiftedToTraceIdIO, flowPocTestLogs)
+    protocolVersionsRepository = ProtocolVersionRepository.unsafe(dbLiftedToTraceIdIO, flowPocTestLogs)
 
     objectManagementServicePromise = Promise()
 
@@ -96,8 +85,7 @@ class FlowPoC extends AtalaWithPostgresSpec with BeforeAndAfterEach {
 
     atalaReferenceLedger = new InMemoryLedgerService(onAtalaReference)
     blockProcessingService = new BlockProcessingServiceImpl
-    atalaOperationsRepository =
-      AtalaOperationsRepository.unsafe(dbLiftedToTraceIdIO, flowPocTestLogs)
+    atalaOperationsRepository = AtalaOperationsRepository.unsafe(dbLiftedToTraceIdIO, flowPocTestLogs)
     atalaObjectsTransactionsRepository = AtalaObjectsTransactionsRepository
       .unsafe(dbLiftedToTraceIdIO, flowPocTestLogs)
     submissionService = SubmissionService.unsafe(
@@ -107,13 +95,10 @@ class FlowPoC extends AtalaWithPostgresSpec with BeforeAndAfterEach {
       logs = flowPocTestLogs
     )
     submissionSchedulingService = SubmissionSchedulingService(
-      SubmissionSchedulingService.Config(ledgerPendingTransactionTimeout =
-        Duration.ZERO
-      ),
+      SubmissionSchedulingService.Config(ledgerPendingTransactionTimeout = Duration.ZERO),
       submissionService
     )
-    keyValuesRepository =
-      KeyValuesRepository.unsafe(dbLiftedToTraceIdIO, flowPocTestLogs)
+    keyValuesRepository = KeyValuesRepository.unsafe(dbLiftedToTraceIdIO, flowPocTestLogs)
     objectManagementService = ObjectManagementService(
       atalaOperationsRepository,
       atalaObjectsTransactionsRepository,
@@ -143,8 +128,7 @@ class FlowPoC extends AtalaWithPostgresSpec with BeforeAndAfterEach {
       .build()
       .start()
 
-    channelHandle =
-      InProcessChannelBuilder.forName(serverName).directExecutor().build()
+    channelHandle = InProcessChannelBuilder.forName(serverName).directExecutor().build()
 
     nodeServiceStub = node_api.NodeServiceGrpc.blockingStub(channelHandle)
   }
@@ -269,8 +253,7 @@ class FlowPoC extends AtalaWithPostgresSpec with BeforeAndAfterEach {
       val revocationKeyId = "revocation0"
       wallet.addRevocationKeyToDid(
         revocationKeyId = revocationKeyId,
-        previousOperationHash =
-          ByteString.copyFrom(Sha256.compute(createDIDOp.toByteArray).getValue),
+        previousOperationHash = ByteString.copyFrom(Sha256.compute(createDIDOp.toByteArray).getValue),
         didSuffix = didSuffix
       )
 

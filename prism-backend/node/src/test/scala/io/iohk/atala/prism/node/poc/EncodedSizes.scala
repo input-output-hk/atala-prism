@@ -60,9 +60,7 @@ object EncodedSizes {
       )
     )
 
-    val atalaOp = node_models.AtalaOperation(operation =
-      node_models.AtalaOperation.Operation.CreateDid(createDidOp)
-    )
+    val atalaOp = node_models.AtalaOperation(operation = node_models.AtalaOperation.Operation.CreateDid(createDidOp))
     val operationBytes = atalaOp.toByteArray
     val operationHash = Sha256.compute(operationBytes)
     val didSuffix: DidSuffix = DidSuffix.fromDigest(operationHash)

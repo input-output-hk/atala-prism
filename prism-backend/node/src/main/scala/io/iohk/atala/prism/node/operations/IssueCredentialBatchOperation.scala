@@ -12,10 +12,7 @@ import io.iohk.atala.prism.node.models.nodeState
 import io.iohk.atala.prism.node.models.nodeState.{DIDPublicKeyState, LedgerData}
 import io.iohk.atala.prism.node.operations.path.{Path, ValueAtPath}
 import io.iohk.atala.prism.node.repositories.daos.CredentialBatchesDAO.CreateCredentialBatchData
-import io.iohk.atala.prism.node.repositories.daos.{
-  CredentialBatchesDAO,
-  PublicKeysDAO
-}
+import io.iohk.atala.prism.node.repositories.daos.{CredentialBatchesDAO, PublicKeysDAO}
 import io.iohk.atala.prism.protos.node_models
 
 import scala.util.Try
@@ -82,8 +79,7 @@ case class IssueCredentialBatchOperation(
     }
 }
 
-object IssueCredentialBatchOperation
-    extends SimpleOperationCompanion[IssueCredentialBatchOperation] {
+object IssueCredentialBatchOperation extends SimpleOperationCompanion[IssueCredentialBatchOperation] {
 
   override def parse(
       operation: node_models.AtalaOperation,

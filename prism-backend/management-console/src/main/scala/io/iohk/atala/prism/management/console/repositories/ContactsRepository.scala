@@ -180,7 +180,7 @@ private final class ContactsRepositoryImpl[F[_]: BracketThrow](
       errorMaybe <- institutionHelper.checkGroups(institutionId, request.groups)
       result <- errorMaybe match {
         case Some(consoleError) => connection.pure(consoleError.asLeft[Int])
-        case None               => unsafe
+        case None => unsafe
       }
     } yield result
 

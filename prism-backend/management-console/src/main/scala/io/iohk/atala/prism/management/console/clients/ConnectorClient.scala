@@ -206,9 +206,7 @@ private[clients] final class ConnectorClientLogs[
   ): Mid[F, Seq[ConnectionToken]] =
     in =>
       info"generating connection tokens for ${header.did.asCanonical().getSuffix}" *> in
-        .flatTap(list =>
-          info"generating connection tokens - successfully done got ${list.size} entities"
-        )
+        .flatTap(list => info"generating connection tokens - successfully done got ${list.size} entities")
         .onError(
           errorCause"encountered an error while generating connection tokens" (
             _
@@ -221,9 +219,7 @@ private[clients] final class ConnectorClientLogs[
   ): Mid[F, SendMessagesResponse] =
     in =>
       info"sending messages ${header.did.asCanonical().getSuffix}" *> in
-        .flatTap(response =>
-          info"sending messages - successfully done got ${response.ids.size} ids"
-        )
+        .flatTap(response => info"sending messages - successfully done got ${response.ids.size} ids")
         .onError(errorCause"encountered an error while sending messages" (_))
 
   override def getConnectionStatus(

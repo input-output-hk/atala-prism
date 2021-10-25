@@ -2,10 +2,7 @@ package io.iohk.atala.prism.node.cardano.dbsync.repositories.daos
 
 import doobie.free.connection.ConnectionIO
 import doobie.implicits._
-import io.iohk.atala.prism.node.cardano.models.{
-  AtalaObjectMetadata,
-  Transaction
-}
+import io.iohk.atala.prism.node.cardano.models.{AtalaObjectMetadata, Transaction}
 
 private[repositories] object TransactionDAO {
   def find(blockNo: Int): ConnectionIO[List[Transaction]] = {

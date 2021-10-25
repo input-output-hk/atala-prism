@@ -10,15 +10,9 @@ import cats.syntax.flatMap._
 import derevo.derive
 import derevo.tagless.applyK
 import io.iohk.atala.prism.management.console.errors.ManagementConsoleError
-import io.iohk.atala.prism.management.console.models.{
-  CredentialIssuance,
-  ParticipantId
-}
+import io.iohk.atala.prism.management.console.models.{CredentialIssuance, ParticipantId}
 import io.iohk.atala.prism.management.console.repositories.CredentialIssuancesRepository
-import io.iohk.atala.prism.management.console.repositories.CredentialIssuancesRepository.{
-  CreateCredentialIssuance,
-  _
-}
+import io.iohk.atala.prism.management.console.repositories.CredentialIssuancesRepository.{CreateCredentialIssuance, _}
 import tofu.higherKind.Mid
 import tofu.logging.{Logs, ServiceLogging}
 import tofu.syntax.logging._
@@ -49,8 +43,7 @@ object CredentialIssuanceService {
     for {
       serviceLogs <- logs.service[CredentialIssuanceService[F]]
     } yield {
-      implicit val implicitLogs
-          : ServiceLogging[F, CredentialIssuanceService[F]] = serviceLogs
+      implicit val implicitLogs: ServiceLogging[F, CredentialIssuanceService[F]] = serviceLogs
       val logs: CredentialIssuanceService[Mid[F, *]] =
         new CredentialIssuanceServiceLogs[F]
       val mid = logs
@@ -116,8 +109,7 @@ private final class CredentialIssuanceServiceLogs[
       info"creating credential issuance $participantId" *> in
         .flatTap(
           _.fold(
-            e =>
-              error"encountered an error while creating credential issuance $e",
+            e => error"encountered an error while creating credential issuance $e",
             _ => info"creating credential issuance - successfully done"
           )
         )
@@ -144,8 +136,7 @@ private final class CredentialIssuanceServiceLogs[
       info"creating bulk credential issuance $participantId" *> in
         .flatTap(
           _.fold(
-            e =>
-              error"encountered an error while creating bulk credential issuance  $e",
+            e => error"encountered an error while creating bulk credential issuance  $e",
             _ => info"creating bulk credential issuance - successfully done"
           )
         )

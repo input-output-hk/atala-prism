@@ -1,13 +1,9 @@
 package io.iohk.atala.prism.node.operations
 
 import io.iohk.atala.prism.node.models.ProtocolVersion
-import io.iohk.atala.prism.node.models.ProtocolVersion.{
-  InitialProtocolVersion,
-  ProtocolVersion1_0
-}
+import io.iohk.atala.prism.node.models.ProtocolVersion.{InitialProtocolVersion, ProtocolVersion1_0}
 
-/** This package object contains all hardcoded information about protocol
-  * versions.
+/** This package object contains all hardcoded information about protocol versions.
   */
 package object protocolVersion {
 
@@ -31,9 +27,8 @@ package object protocolVersion {
       (protocolV, operation) match {
         case (
               ProtocolVersion1_0,
-              _: CreateDIDOperation | _: UpdateDIDOperation |
-              _: IssueCredentialBatchOperation | _: RevokeCredentialsOperation |
-              _: ProtocolVersionUpdateOperation
+              _: CreateDIDOperation | _: UpdateDIDOperation | _: IssueCredentialBatchOperation |
+              _: RevokeCredentialsOperation | _: ProtocolVersionUpdateOperation
             ) =>
           true
         case _ => false

@@ -16,10 +16,7 @@ import io.iohk.atala.prism.node.models.AtalaObjectTransactionSubmissionStatus.In
 import io.iohk.atala.prism.node.models._
 import io.iohk.atala.prism.node.operations.CreateDIDOperationSpec
 import io.iohk.atala.prism.node.operations.ProtocolVersionUpdateOperationSpec._
-import io.iohk.atala.prism.node.repositories.daos.{
-  AtalaObjectTransactionSubmissionsDAO,
-  AtalaObjectsDAO
-}
+import io.iohk.atala.prism.node.repositories.daos.{AtalaObjectTransactionSubmissionsDAO, AtalaObjectsDAO}
 import io.iohk.atala.prism.node.repositories.{
   AtalaObjectsTransactionsRepository,
   AtalaOperationsRepository,
@@ -27,11 +24,7 @@ import io.iohk.atala.prism.node.repositories.{
   ProtocolVersionRepository
 }
 import io.iohk.atala.prism.node.services.models.AtalaObjectNotification
-import io.iohk.atala.prism.node.{
-  DataPreparation,
-  PublicationInfo,
-  UnderlyingLedger
-}
+import io.iohk.atala.prism.node.{DataPreparation, PublicationInfo, UnderlyingLedger}
 import io.iohk.atala.prism.protos.{node_internal, node_models}
 import io.iohk.atala.prism.utils.IOUtils._
 import monix.execution.Scheduler.Implicits.{global => scheduler}
@@ -85,25 +78,21 @@ class ObjectManagementServiceSpec
     IO.contextShift(ExecutionContext.global)
   private val logs = Logs.withContext[IO, IOWithTraceIdContext]
   private val ledger: UnderlyingLedger = mock[UnderlyingLedger]
-  private val atalaOperationsRepository
-      : AtalaOperationsRepository[IOWithTraceIdContext] =
+  private val atalaOperationsRepository: AtalaOperationsRepository[IOWithTraceIdContext] =
     AtalaOperationsRepository.unsafe(dbLiftedToTraceIdIO, logs)
-  private val atalaObjectsTransactionsRepository
-      : AtalaObjectsTransactionsRepository[IOWithTraceIdContext] =
+  private val atalaObjectsTransactionsRepository: AtalaObjectsTransactionsRepository[IOWithTraceIdContext] =
     AtalaObjectsTransactionsRepository.unsafe(dbLiftedToTraceIdIO, logs)
   private val keyValuesRepository: KeyValuesRepository[IOWithTraceIdContext] =
     KeyValuesRepository.unsafe(dbLiftedToTraceIdIO, logs)
   private val blockProcessing: BlockProcessingService =
     mock[BlockProcessingService]
-  private val protocolVersionRepository
-      : ProtocolVersionRepository[IOWithTraceIdContext] =
+  private val protocolVersionRepository: ProtocolVersionRepository[IOWithTraceIdContext] =
     ProtocolVersionRepository.unsafe(
       dbLiftedToTraceIdIO,
       logs
     )
 
-  private implicit lazy val submissionService
-      : SubmissionService[IOWithTraceIdContext] =
+  private implicit lazy val submissionService: SubmissionService[IOWithTraceIdContext] =
     SubmissionService.unsafe(
       ledger,
       atalaOperationsRepository,
@@ -369,11 +358,9 @@ class ObjectManagementServiceSpec
         .saveObject(AtalaObjectNotification(obj, dummyTransactionInfo))
         .futureValue
       val dummyTransactionInfo2 = TransactionInfo(
-        transactionId =
-          TransactionId.from(Sha256.compute("id".getBytes).getValue).value,
+        transactionId = TransactionId.from(Sha256.compute("id".getBytes).getValue).value,
         ledger = Ledger.InMemory,
-        block =
-          Some(BlockInfo(number = 100, timestamp = Instant.now, index = 100))
+        block = Some(BlockInfo(number = 100, timestamp = Instant.now, index = 100))
       )
       objectManagementService
         .saveObject(AtalaObjectNotification(obj, dummyTransactionInfo2))

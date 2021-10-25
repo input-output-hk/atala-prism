@@ -45,8 +45,7 @@ class ConnectorRpcSpecBase extends RpcSpecBase with DIDUtil {
       new connector_api.ConnectorServiceGrpc.ConnectorServiceBlockingStub(_, _)
     )
 
-  val usingAsyncApiAs
-      : ApiTestHelper[connector_api.ConnectorServiceGrpc.ConnectorServiceStub] =
+  val usingAsyncApiAs: ApiTestHelper[connector_api.ConnectorServiceGrpc.ConnectorServiceStub] =
     usingApiAsConstructor(
       new connector_api.ConnectorServiceGrpc.ConnectorServiceStub(_, _)
     )

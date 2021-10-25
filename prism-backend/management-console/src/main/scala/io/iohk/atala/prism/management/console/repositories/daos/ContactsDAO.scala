@@ -8,12 +8,7 @@ import doobie.implicits._
 import doobie.implicits.legacy.instant._
 import doobie.util.fragments._
 import io.circe.Json
-import io.iohk.atala.prism.management.console.models.{
-  Contact,
-  CreateContact,
-  ParticipantId,
-  UpdateContact
-}
+import io.iohk.atala.prism.management.console.models.{Contact, CreateContact, ParticipantId, UpdateContact}
 import io.iohk.atala.prism.management.console.repositories.daos.queries.FindContactsQueryBuilder
 import io.iohk.atala.prism.models.ConnectionToken
 

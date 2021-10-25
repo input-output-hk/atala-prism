@@ -10,10 +10,7 @@ import org.slf4j.{Logger, LoggerFactory}
 import io.iohk.atala.prism.protos.console_api
 import io.iohk.atala.prism.management.console.ManagementConsoleAuthenticator
 import io.iohk.atala.prism.management.console.models._
-import io.iohk.atala.prism.management.console.errors.{
-  ManagementConsoleError,
-  ManagementConsoleErrorSupport
-}
+import io.iohk.atala.prism.management.console.errors.{ManagementConsoleError, ManagementConsoleErrorSupport}
 import io.iohk.atala.prism.management.console.grpc._
 import io.iohk.atala.prism.management.console.services.CredentialTypesService
 import io.iohk.atala.prism.utils.FutureEither.FutureEitherOps
@@ -33,80 +30,75 @@ class CredentialTypesGrpcService(
   override def getCredentialTypes(
       request: console_api.GetCredentialTypesRequest
   ): Future[console_api.GetCredentialTypesResponse] =
-    auth[GetCredentialTypes]("getCredentialTypes", request) {
-      (participantId, traceId, _) =>
-        credentialTypesService
-          .getCredentialTypes(participantId)
-          .map(result =>
-            console_api.GetCredentialTypesResponse(
-              result.map(ProtoCodecs.toCredentialTypeProto)
-            )
+    auth[GetCredentialTypes]("getCredentialTypes", request) { (participantId, traceId, _) =>
+      credentialTypesService
+        .getCredentialTypes(participantId)
+        .map(result =>
+          console_api.GetCredentialTypesResponse(
+            result.map(ProtoCodecs.toCredentialTypeProto)
           )
-          .run(traceId)
-          .unsafeToFuture()
-          .map(_.asRight)
-          .toFutureEither
+        )
+        .run(traceId)
+        .unsafeToFuture()
+        .map(_.asRight)
+        .toFutureEither
     }
 
   override def getCredentialType(
       request: console_api.GetCredentialTypeRequest
   ): Future[console_api.GetCredentialTypeResponse] =
-    auth[GetCredentialType]("getCredentialType", request) {
-      (participantId, traceId, query) =>
-        credentialTypesService
-          .getCredentialType(participantId, query)
-          .map(_.map(ProtoCodecs.toCredentialTypeWithRequiredFieldsProto))
-          .map(console_api.GetCredentialTypeResponse(_))
-          .run(traceId)
-          .unsafeToFuture()
-          .map(_.asRight)
-          .toFutureEither
+    auth[GetCredentialType]("getCredentialType", request) { (participantId, traceId, query) =>
+      credentialTypesService
+        .getCredentialType(participantId, query)
+        .map(_.map(ProtoCodecs.toCredentialTypeWithRequiredFieldsProto))
+        .map(console_api.GetCredentialTypeResponse(_))
+        .run(traceId)
+        .unsafeToFuture()
+        .map(_.asRight)
+        .toFutureEither
     }
 
   override def createCredentialType(
       request: console_api.CreateCredentialTypeRequest
   ): Future[console_api.CreateCredentialTypeResponse] =
-    auth[CreateCredentialType]("createCredentialType", request) {
-      (participantId, traceId, query) =>
-        credentialTypesService
-          .createCredentialType(participantId, query)
-          .run(traceId)
-          .unsafeToFuture()
-          .toFutureEither
-          .map(result =>
-            console_api
-              .CreateCredentialTypeResponse(
-                Some(
-                  ProtoCodecs.toCredentialTypeWithRequiredFieldsProto(result)
-                )
+    auth[CreateCredentialType]("createCredentialType", request) { (participantId, traceId, query) =>
+      credentialTypesService
+        .createCredentialType(participantId, query)
+        .run(traceId)
+        .unsafeToFuture()
+        .toFutureEither
+        .map(result =>
+          console_api
+            .CreateCredentialTypeResponse(
+              Some(
+                ProtoCodecs.toCredentialTypeWithRequiredFieldsProto(result)
               )
-          )
+            )
+        )
     }
 
   override def updateCredentialType(
       request: console_api.UpdateCredentialTypeRequest
   ): Future[console_api.UpdateCredentialTypeResponse] =
-    auth[UpdateCredentialType]("updateCredentialType", request) {
-      (participantId, traceId, query) =>
-        credentialTypesService
-          .updateCredentialType(participantId, query)
-          .run(traceId)
-          .unsafeToFuture()
-          .toFutureEither
-          .as(console_api.UpdateCredentialTypeResponse())
+    auth[UpdateCredentialType]("updateCredentialType", request) { (participantId, traceId, query) =>
+      credentialTypesService
+        .updateCredentialType(participantId, query)
+        .run(traceId)
+        .unsafeToFuture()
+        .toFutureEither
+        .as(console_api.UpdateCredentialTypeResponse())
     }
 
   override def markAsReadyCredentialType(
       request: console_api.MarkAsReadyCredentialTypeRequest
   ): Future[console_api.MarkAsReadyCredentialTypeResponse] =
-    auth[MarkAsReadyCredentialType]("markAsReadyCredentialType", request) {
-      (participantId, traceId, query) =>
-        credentialTypesService
-          .markAsReady(participantId, query)
-          .run(traceId)
-          .unsafeToFuture()
-          .toFutureEither
-          .as(console_api.MarkAsReadyCredentialTypeResponse())
+    auth[MarkAsReadyCredentialType]("markAsReadyCredentialType", request) { (participantId, traceId, query) =>
+      credentialTypesService
+        .markAsReady(participantId, query)
+        .run(traceId)
+        .unsafeToFuture()
+        .toFutureEither
+        .as(console_api.MarkAsReadyCredentialTypeResponse())
     }
 
   override def markAsArchivedCredentialType(

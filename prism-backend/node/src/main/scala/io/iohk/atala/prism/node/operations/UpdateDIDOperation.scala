@@ -64,9 +64,8 @@ case class UpdateDIDOperation(
     action match {
       case AddKeyAction(key) =>
         EitherT {
-          PublicKeysDAO.insert(key, ledgerData).attemptSomeSqlState {
-            case sqlstate.class23.UNIQUE_VIOLATION =>
-              EntityExists("DID suffix", didSuffix.getValue): StateError
+          PublicKeysDAO.insert(key, ledgerData).attemptSomeSqlState { case sqlstate.class23.UNIQUE_VIOLATION =>
+            EntityExists("DID suffix", didSuffix.getValue): StateError
           }
         }
       case RevokeKeyAction(keyId) =>
@@ -99,8 +98,7 @@ case class UpdateDIDOperation(
 
   /** Applies operation to the state
     *
-    * It's the responsibility of the caller to manage transaction, in order to
-    * ensure atomicity of the operation.
+    * It's the responsibility of the caller to manage transaction, in order to ensure atomicity of the operation.
     */
   override def applyStateImpl(): EitherT[ConnectionIO, StateError, Unit] = {
     // type lambda T => EitherT[ConnectionIO, StateError, T]
@@ -150,11 +148,9 @@ object UpdateDIDOperation extends OperationCompanion[UpdateDIDOperation] {
   /** Parses the protobuf representation of operation
     *
     * @param operation
-    *   operation, needs to be of the type compatible with the called companion
-    *   object
+    *   operation, needs to be of the type compatible with the called companion object
     * @param ledgerData
-    *   ledger information provided by the caller, needed to instantiate the
-    *   operation objects
+    *   ledger information provided by the caller, needed to instantiate the operation objects
     * @return
     *   parsed operation or ValidationError signifying the operation is invalid
     */

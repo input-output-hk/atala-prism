@@ -46,8 +46,7 @@ private[repositories] final class AtalaOperationsRepositoryLogs[F[
       info"updating merged objects ${atalaObject.objectId} operations - ${operations.size} old objects - ${oldObjects.size}" *>
         in.flatTap(
           _.fold(
-            err =>
-              error"Encountered an error while updating merged objects $err",
+            err => error"Encountered an error while updating merged objects $err",
             _ => info"updating merged objects - successfully done"
           )
         ).onError(
@@ -62,9 +61,7 @@ private[repositories] final class AtalaOperationsRepositoryLogs[F[
         in.flatTap(
           _.fold(
             info"getting operation info - got nothing"
-          )(res =>
-            info"getting operation info - successfully done, ${res.transactionId}"
-          )
+          )(res => info"getting operation info - successfully done, ${res.transactionId}")
         ).onError(
           errorCause"Encountered an error while updating merged objects" (_)
         )

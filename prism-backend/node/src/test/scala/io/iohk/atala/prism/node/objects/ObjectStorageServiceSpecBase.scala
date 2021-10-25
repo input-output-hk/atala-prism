@@ -14,9 +14,7 @@ import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.duration._
 import scala.reflect.io.Directory
 
-abstract class ObjectStorageServiceSpecBase(val storageClassName: String)
-    extends AnyWordSpec
-    with must.Matchers {
+abstract class ObjectStorageServiceSpecBase(val storageClassName: String) extends AnyWordSpec with must.Matchers {
 
   protected def createStorage: ObjectStorageService
 
@@ -46,8 +44,7 @@ abstract class ObjectStorageServiceSpecBase(val storageClassName: String)
   }
 }
 
-class InMemoryObjectStorageServiceSpec
-    extends ObjectStorageServiceSpecBase("ObjectStorageService.InMemory") {
+class InMemoryObjectStorageServiceSpec extends ObjectStorageServiceSpecBase("ObjectStorageService.InMemory") {
   def createStorage = new ObjectStorageService.InMemory()
 }
 

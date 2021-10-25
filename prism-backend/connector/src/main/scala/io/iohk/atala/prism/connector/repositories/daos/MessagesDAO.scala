@@ -7,12 +7,7 @@ import doobie.{FC, Fragments}
 import doobie.implicits.legacy.instant._
 import doobie.util.update.Update
 import fs2.Stream
-import io.iohk.atala.prism.connector.model.{
-  ConnectionId,
-  CreateMessage,
-  Message,
-  MessageId
-}
+import io.iohk.atala.prism.connector.model.{ConnectionId, CreateMessage, Message, MessageId}
 import io.iohk.atala.prism.models.ParticipantId
 
 import java.time.Instant

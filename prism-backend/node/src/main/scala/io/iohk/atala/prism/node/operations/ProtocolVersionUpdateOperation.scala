@@ -18,11 +18,7 @@ import io.iohk.atala.prism.node.operations.StateError.{
   UntrustedProposer
 }
 import io.iohk.atala.prism.node.operations.path.{Path, ValueAtPath}
-import io.iohk.atala.prism.node.repositories.daos.{
-  KeyValuesDAO,
-  ProtocolVersionsDAO,
-  PublicKeysDAO
-}
+import io.iohk.atala.prism.node.repositories.daos.{KeyValuesDAO, ProtocolVersionsDAO, PublicKeysDAO}
 import io.iohk.atala.prism.protos.{node_models => proto}
 
 case class ProtocolVersionUpdateOperation(
@@ -70,8 +66,7 @@ case class ProtocolVersionUpdateOperation(
     } yield data
   }
 
-  override protected def applyStateImpl()
-      : EitherT[ConnectionIO, StateError, Unit] =
+  override protected def applyStateImpl(): EitherT[ConnectionIO, StateError, Unit] =
     for {
       lastKnown <- EitherT.liftF(ProtocolVersionsDAO.getLastKnownProtocolUpdate)
       _ <-
@@ -133,8 +128,7 @@ case class ProtocolVersionUpdateOperation(
     ProtocolVersionInfo(protocolVersion, versionName, effectiveSinceBlockIndex)
 }
 
-object ProtocolVersionUpdateOperation
-    extends SimpleOperationCompanion[ProtocolVersionUpdateOperation] {
+object ProtocolVersionUpdateOperation extends SimpleOperationCompanion[ProtocolVersionUpdateOperation] {
 
   override def parse(
       operation: proto.AtalaOperation,
@@ -151,10 +145,9 @@ object ProtocolVersionUpdateOperation
           DidSuffix.fromString(proposerDID).toEither.left.map(_.getMessage)
         }
       versionInfo <- updateProtocolOperation.childGet(_.version, "version")
-      versionName <- versionInfo.child(_.versionName, "versionName").parse {
-        name =>
-          if (name.isEmpty) None.asRight
-          else Some(name).asRight
+      versionName <- versionInfo.child(_.versionName, "versionName").parse { name =>
+        if (name.isEmpty) None.asRight
+        else Some(name).asRight
       }
       major <-
         versionInfo

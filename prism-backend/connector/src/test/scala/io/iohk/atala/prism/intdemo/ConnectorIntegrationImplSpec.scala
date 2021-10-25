@@ -1,10 +1,7 @@
 package io.iohk.atala.prism.intdemo
 
 import io.iohk.atala.prism.connector.model.{ConnectionId, MessageId}
-import io.iohk.atala.prism.connector.services.{
-  ConnectionsService,
-  MessagesService
-}
+import io.iohk.atala.prism.connector.services.{ConnectionsService, MessagesService}
 import io.iohk.atala.prism.intdemo.ConnectorIntegration.ConnectorIntegrationImpl
 import ConnectorIntegrationImplSpec._
 import cats.syntax.applicative._

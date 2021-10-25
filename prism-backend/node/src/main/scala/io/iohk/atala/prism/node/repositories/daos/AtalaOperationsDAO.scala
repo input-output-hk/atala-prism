@@ -7,11 +7,7 @@ import doobie.free.connection.{ConnectionIO, unit}
 import doobie.implicits._
 import doobie.util.update.Update
 import io.iohk.atala.prism.connector.AtalaOperationId
-import io.iohk.atala.prism.node.models.{
-  AtalaObjectId,
-  AtalaOperationInfo,
-  AtalaOperationStatus
-}
+import io.iohk.atala.prism.node.models.{AtalaObjectId, AtalaOperationInfo, AtalaOperationStatus}
 
 object AtalaOperationsDAO {
   type AtalaOperationData =
@@ -46,15 +42,14 @@ object AtalaOperationsDAO {
       atalaOperationIds: List[AtalaOperationId],
       atalaOperationStatus: AtalaOperationStatus
   ): ConnectionIO[Unit] = {
-    NonEmptyList.fromList(atalaOperationIds).fold(unit) {
-      atalaOperationIdsNonEmpty =>
-        val fragment = fr"UPDATE atala_operations" ++
-          fr"SET atala_operation_status = $atalaOperationStatus" ++
-          fr"WHERE" ++ in(
-            fr"signed_atala_operation_id",
-            atalaOperationIdsNonEmpty
-          )
-        fragment.update.run.void
+    NonEmptyList.fromList(atalaOperationIds).fold(unit) { atalaOperationIdsNonEmpty =>
+      val fragment = fr"UPDATE atala_operations" ++
+        fr"SET atala_operation_status = $atalaOperationStatus" ++
+        fr"WHERE" ++ in(
+          fr"signed_atala_operation_id",
+          atalaOperationIdsNonEmpty
+        )
+      fragment.update.run.void
     }
   }
 
@@ -62,15 +57,14 @@ object AtalaOperationsDAO {
       atalaOperationIds: List[AtalaOperationId],
       atalaObjectId: AtalaObjectId
   ): ConnectionIO[Unit] = {
-    NonEmptyList.fromList(atalaOperationIds).fold(unit) {
-      atalaOperationIdsNonEmpty =>
-        val fragment = fr"UPDATE atala_operations" ++
-          fr"SET atala_object_id = $atalaObjectId" ++
-          fr"WHERE" ++ in(
-            fr"signed_atala_operation_id",
-            atalaOperationIdsNonEmpty
-          )
-        fragment.update.run.void
+    NonEmptyList.fromList(atalaOperationIds).fold(unit) { atalaOperationIdsNonEmpty =>
+      val fragment = fr"UPDATE atala_operations" ++
+        fr"SET atala_object_id = $atalaObjectId" ++
+        fr"WHERE" ++ in(
+          fr"signed_atala_operation_id",
+          atalaOperationIdsNonEmpty
+        )
+      fragment.update.run.void
     }
   }
 

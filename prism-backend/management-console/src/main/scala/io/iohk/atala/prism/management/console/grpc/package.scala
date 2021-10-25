@@ -9,15 +9,8 @@ import io.iohk.atala.prism.auth.grpc.GrpcAuthenticationHeader
 import io.iohk.atala.prism.auth.model.RequestNonce
 import io.iohk.atala.prism.connector.AtalaOperationId
 import io.iohk.atala.prism.grpc.ProtoConverter
-import io.iohk.atala.prism.identity.{
-  CanonicalPrismDid,
-  LongFormPrismDid,
-  PrismDid
-}
-import io.iohk.atala.prism.management.console.grpc.ProtoCodecs.{
-  checkListUniqueness,
-  toTimestamp
-}
+import io.iohk.atala.prism.identity.{CanonicalPrismDid, LongFormPrismDid, PrismDid}
+import io.iohk.atala.prism.management.console.grpc.ProtoCodecs.{checkListUniqueness, toTimestamp}
 import io.iohk.atala.prism.management.console.models.PaginatedQueryConstraints.ResultOrdering
 import io.iohk.atala.prism.management.console.models._
 import io.iohk.atala.prism.management.console.repositories.CredentialIssuancesRepository
@@ -57,8 +50,7 @@ package object grpc {
       f(value).map(Option.apply)
   }
 
-  implicit val proto2DateTransformer
-      : Transformer[common_models.Date, LocalDate] = proto => {
+  implicit val proto2DateTransformer: Transformer[common_models.Date, LocalDate] = proto => {
     LocalDate.of(proto.year, proto.month, proto.day)
   }
 
@@ -88,29 +80,24 @@ package object grpc {
       )
   }
 
-  implicit val byteStringToOptionVectorByteTransformer
-      : Transformer[ByteString, Option[Vector[Byte]]] =
+  implicit val byteStringToOptionVectorByteTransformer: Transformer[ByteString, Option[Vector[Byte]]] =
     (byteString: ByteString) => {
       val iconByteArray = byteString.toByteArray
       if (iconByteArray.nonEmpty) Some(iconByteArray.toVector)
       else None
     }
 
-  implicit val getStatisticsConverter
-      : ProtoConverter[GetStatisticsRequest, GetStatistics] =
+  implicit val getStatisticsConverter: ProtoConverter[GetStatisticsRequest, GetStatistics] =
     (request: GetStatisticsRequest) => {
       request.interval match {
         case Some(protoInterval) =>
-          toTimestamp(protoInterval).map(timeInterval =>
-            GetStatistics(Some(timeInterval))
-          )
+          toTimestamp(protoInterval).map(timeInterval => GetStatistics(Some(timeInterval)))
         case None =>
           Success(GetStatistics(None))
       }
     }
 
-  implicit val registerDIDConverted
-      : ProtoConverter[RegisterConsoleDIDRequest, RegisterDID] = { request =>
+  implicit val registerDIDConverted: ProtoConverter[RegisterConsoleDIDRequest, RegisterDID] = { request =>
     {
       for {
         did <- Try {
@@ -133,8 +120,7 @@ package object grpc {
     }
   }
 
-  implicit val createGroupConverter
-      : ProtoConverter[CreateGroupRequest, CreateInstitutionGroup] =
+  implicit val createGroupConverter: ProtoConverter[CreateGroupRequest, CreateInstitutionGroup] =
     (request: CreateGroupRequest) => {
       for {
         contactIds <- request.contactIds.toList.map(Contact.Id.from).sequence
@@ -166,8 +152,7 @@ package object grpc {
     } yield ResultOrdering(field, direction)
   }
 
-  implicit val getGroupsConverter
-      : ProtoConverter[GetGroupsRequest, InstitutionGroup.PaginatedQuery] =
+  implicit val getGroupsConverter: ProtoConverter[GetGroupsRequest, InstitutionGroup.PaginatedQuery] =
     (request: GetGroupsRequest) => {
       val createdAfterTry = Try {
         request.filterBy
@@ -237,8 +222,7 @@ package object grpc {
       )
     }
 
-  implicit val updateGroupConverter
-      : ProtoConverter[UpdateGroupRequest, UpdateInstitutionGroup] =
+  implicit val updateGroupConverter: ProtoConverter[UpdateGroupRequest, UpdateInstitutionGroup] =
     (request: UpdateGroupRequest) => {
       for {
         groupId <- InstitutionGroup.Id.from(request.groupId)
@@ -259,8 +243,7 @@ package object grpc {
       )
     }
 
-  implicit val copyGroupConverter
-      : ProtoConverter[CopyGroupRequest, CopyInstitutionGroup] =
+  implicit val copyGroupConverter: ProtoConverter[CopyGroupRequest, CopyInstitutionGroup] =
     (request: CopyGroupRequest) =>
       for {
         groupToCopyId <- InstitutionGroup.Id.from(request.groupId)
@@ -271,14 +254,12 @@ package object grpc {
             Success(InstitutionGroup.Name(request.name))
       } yield CopyInstitutionGroup(groupToCopyId, newName)
 
-  implicit val deleteGroupConverter
-      : ProtoConverter[DeleteGroupRequest, DeleteInstitutionGroup] =
+  implicit val deleteGroupConverter: ProtoConverter[DeleteGroupRequest, DeleteInstitutionGroup] =
     (request: DeleteGroupRequest) => {
       InstitutionGroup.Id.from(request.groupId).map(DeleteInstitutionGroup)
     }
 
-  implicit val createContactConverter
-      : ProtoConverter[CreateContactRequest, CreateContact] =
+  implicit val createContactConverter: ProtoConverter[CreateContactRequest, CreateContact] =
     (request: CreateContactRequest) => {
       for {
         json <- JsonValidator.jsonData(request.jsonData)
@@ -335,8 +316,7 @@ package object grpc {
     } yield ResultOrdering(field, direction)
   }
 
-  implicit val getContactsConverter
-      : ProtoConverter[GetContactsRequest, Contact.PaginatedQuery] =
+  implicit val getContactsConverter: ProtoConverter[GetContactsRequest, Contact.PaginatedQuery] =
     (request: GetContactsRequest) => {
       val scrollIdT = Contact.Id.optional(request.scrollId)
       val createdAtT = Try {
@@ -399,14 +379,12 @@ package object grpc {
       )
     }
 
-  implicit val getContactConverter
-      : ProtoConverter[GetContactRequest, GetContact] =
+  implicit val getContactConverter: ProtoConverter[GetContactRequest, GetContact] =
     (request: GetContactRequest) => {
       Contact.Id.from(request.contactId).map(GetContact)
     }
 
-  implicit val updateContactConverter
-      : ProtoConverter[UpdateContactRequest, UpdateContact] =
+  implicit val updateContactConverter: ProtoConverter[UpdateContactRequest, UpdateContact] =
     (request: UpdateContactRequest) => {
       for {
         contactId <- Contact.Id.from(request.contactId)
@@ -455,8 +433,7 @@ package object grpc {
     }
   }
 
-  implicit val createContactsConverter
-      : ProtoConverter[CreateContactsRequest, CreateContact.Batch] =
+  implicit val createContactsConverter: ProtoConverter[CreateContactsRequest, CreateContact.Batch] =
     (request: CreateContactsRequest) => {
       for {
         validatedGroups <- toGroupIdSet(request.groups)
@@ -473,8 +450,7 @@ package object grpc {
       )
     }
 
-  implicit val deleteContactConverter
-      : ProtoConverter[DeleteContactRequest, DeleteContact] =
+  implicit val deleteContactConverter: ProtoConverter[DeleteContactRequest, DeleteContact] =
     (request: DeleteContactRequest) => {
       Contact.Id.from(request.contactId).map(DeleteContact)
     }
@@ -518,8 +494,7 @@ package object grpc {
       )
     }
 
-  implicit val getCredentialIssuanceConverter
-      : ProtoConverter[GetCredentialIssuanceRequest, GetCredentialIssuance] =
+  implicit val getCredentialIssuanceConverter: ProtoConverter[GetCredentialIssuanceRequest, GetCredentialIssuance] =
     (request: GetCredentialIssuanceRequest) => {
       CredentialIssuance.Id
         .from(request.credentialIssuanceId)
@@ -645,22 +620,19 @@ package object grpc {
       )
     }
 
-  implicit val getContactCredentialConverter
-      : ProtoConverter[GetContactCredentialsRequest, GetContactCredentials] =
+  implicit val getContactCredentialConverter: ProtoConverter[GetContactCredentialsRequest, GetContactCredentials] =
     (request: GetContactCredentialsRequest) => {
       Contact.Id.from(request.contactId).map(GetContactCredentials)
     }
 
-  implicit val shareCredentialConverter
-      : ProtoConverter[ShareCredentialRequest, ShareCredential] =
+  implicit val shareCredentialConverter: ProtoConverter[ShareCredentialRequest, ShareCredential] =
     (request: ShareCredentialRequest) => {
       GenericCredential.Id
         .from(request.cmanagerCredentialId)
         .map(ShareCredential)
     }
 
-  implicit val shareCredentialsConverter
-      : ProtoConverter[ShareCredentialsRequest, ShareCredentials] =
+  implicit val shareCredentialsConverter: ProtoConverter[ShareCredentialsRequest, ShareCredentials] =
     (request: ShareCredentialsRequest) => {
       for {
         idsNonEmptyList <- toCredentialsIds(request.credentialsIds)
@@ -676,9 +648,7 @@ package object grpc {
             )
           )(Success(_))
         _ <-
-          if (
-            idsNonEmptyList.size == sendMessageRequest.messagesByConnectionToken.size
-          ) Success(())
+          if (idsNonEmptyList.size == sendMessageRequest.messagesByConnectionToken.size) Success(())
           else
             Failure(
               new IllegalArgumentException(
@@ -693,8 +663,7 @@ package object grpc {
       )
     }
 
-  implicit val deleteCredentialsConverter
-      : ProtoConverter[DeleteCredentialsRequest, DeleteCredentials] =
+  implicit val deleteCredentialsConverter: ProtoConverter[DeleteCredentialsRequest, DeleteCredentials] =
     (request: DeleteCredentialsRequest) => {
       for {
         idsNonEmptyList <- toCredentialsIds(request.credentialsIds)
@@ -756,8 +725,7 @@ package object grpc {
     } yield idsNonEmptyList
   }
 
-  implicit val getLedgerDataConverter
-      : ProtoConverter[GetLedgerDataRequest, GetLedgerData] =
+  implicit val getLedgerDataConverter: ProtoConverter[GetLedgerDataRequest, GetLedgerData] =
     (request: GetLedgerDataRequest) => {
       for {
         batchId <- Try(CredentialBatchId.fromString(request.batchId))
@@ -767,8 +735,7 @@ package object grpc {
       } yield GetLedgerData(batchId, credentialHash)
     }
 
-  implicit val publishBatchConverter
-      : ProtoConverter[PublishBatchRequest, PublishBatch] =
+  implicit val publishBatchConverter: ProtoConverter[PublishBatchRequest, PublishBatch] =
     (request: PublishBatchRequest) => {
       for {
         signedOperation <- Try(
@@ -941,8 +908,7 @@ package object grpc {
       } yield CreateCredentialBulk(json, drafts, credentialsType, issuanceName)
     }
 
-  implicit val storeCredentialConverter
-      : ProtoConverter[StoreCredentialRequest, StoreCredential] =
+  implicit val storeCredentialConverter: ProtoConverter[StoreCredentialRequest, StoreCredential] =
     (request: StoreCredentialRequest) => {
       for {
         credentialExternalId <- CredentialExternalId.from(
@@ -964,8 +930,7 @@ package object grpc {
       Success(GetLatestCredential())
     }
 
-  implicit val getStoredCredentialsConverter
-      : ProtoConverter[GetStoredCredentialsForRequest, GetStoredCredentials] =
+  implicit val getStoredCredentialsConverter: ProtoConverter[GetStoredCredentialsForRequest, GetStoredCredentials] =
     (request: GetStoredCredentialsForRequest) => {
       Contact.Id
         .optional(request.individualId)
@@ -973,18 +938,15 @@ package object grpc {
         .map(GetStoredCredentials.apply)
     }
 
-  implicit val getCredentialTypesConverter
-      : ProtoConverter[GetCredentialTypesRequest, GetCredentialTypes] =
+  implicit val getCredentialTypesConverter: ProtoConverter[GetCredentialTypesRequest, GetCredentialTypes] =
     (_: GetCredentialTypesRequest) => Success(GetCredentialTypes())
 
-  implicit val getCredentialTypeConverter
-      : ProtoConverter[GetCredentialTypeRequest, GetCredentialType] =
+  implicit val getCredentialTypeConverter: ProtoConverter[GetCredentialTypeRequest, GetCredentialType] =
     (request: GetCredentialTypeRequest) => {
       CredentialTypeId.from(request.credentialTypeId).map(GetCredentialType)
     }
 
-  implicit val createCredentialTypeConverter
-      : ProtoConverter[CreateCredentialTypeRequest, CreateCredentialType] =
+  implicit val createCredentialTypeConverter: ProtoConverter[CreateCredentialTypeRequest, CreateCredentialType] =
     (request: CreateCredentialTypeRequest) => {
       request.credentialType
         .toRight(new IllegalArgumentException("Empty credentialType field"))
@@ -994,8 +956,7 @@ package object grpc {
         }
     }
 
-  implicit val updateCredentialTypeConverter
-      : ProtoConverter[UpdateCredentialTypeRequest, UpdateCredentialType] =
+  implicit val updateCredentialTypeConverter: ProtoConverter[UpdateCredentialTypeRequest, UpdateCredentialType] =
     (request: UpdateCredentialTypeRequest) => {
       for {
         updateCredentialType <-

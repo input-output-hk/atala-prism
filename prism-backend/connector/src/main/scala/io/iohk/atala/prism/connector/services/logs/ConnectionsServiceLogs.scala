@@ -45,9 +45,7 @@ private[services] class ConnectionsServiceLogs[
   ): Mid[F, List[TokenString]] =
     in =>
       info"generating tokens $userId, tokens count - $tokensCount" *> in
-        .flatTap(res =>
-          info"generating tokens - successfully done, generated ${res.size} tokens"
-        )
+        .flatTap(res => info"generating tokens - successfully done, generated ${res.size} tokens")
         .onError(errorCause"encountered an error while generating tokens" (_))
 
   override def getTokenInfo(
@@ -57,8 +55,7 @@ private[services] class ConnectionsServiceLogs[
       info"getting token info $token" *> in
         .flatTap(res =>
           res.fold(
-            er =>
-              error"encountered an error while getting token info ${er.unify: ConnectorError}",
+            er => error"encountered an error while getting token info ${er.unify: ConnectorError}",
             pi => info"getting token info - successfully done ${pi.id}"
           )
         )
@@ -72,10 +69,8 @@ private[services] class ConnectionsServiceLogs[
       info"adding connection from token $tokenString" *> in
         .flatTap(res =>
           res.fold(
-            er =>
-              error"encountered an error while adding connection from token ${er.unify: ConnectorError}",
-            pi =>
-              info"adding connection from token - successfully done ${pi.id}"
+            er => error"encountered an error while adding connection from token ${er.unify: ConnectorError}",
+            pi => info"adding connection from token - successfully done ${pi.id}"
           )
         )
         .onError(
@@ -92,8 +87,7 @@ private[services] class ConnectionsServiceLogs[
       info"revoking connection $connectionId" *> in
         .flatTap(res =>
           res.fold(
-            er =>
-              error"encountered an error while revoking connection ${er.unify: ConnectorError}",
+            er => error"encountered an error while revoking connection ${er.unify: ConnectorError}",
             _ => info"revoking connection - successfully done"
           )
         )
@@ -122,10 +116,8 @@ private[services] class ConnectionsServiceLogs[
       info"getting connections paginated $userId" *> in
         .flatTap(res =>
           res.fold(
-            er =>
-              error"encountered an error while getting connections paginated ${er.unify: ConnectorError}",
-            res =>
-              info"getting connections paginated - successfully done, got ${res.size} connections"
+            er => error"encountered an error while getting connections paginated ${er.unify: ConnectorError}",
+            res => info"getting connections paginated - successfully done, got ${res.size} connections"
           )
         )
         .onError(
@@ -144,8 +136,7 @@ private[services] class ConnectionsServiceLogs[
       info"getting communications keys $connectionId $userId" *> in
         .flatTap(res =>
           res.fold(
-            er =>
-              error"encountered an error while getting communications keys  ${er.unify: ConnectorError}",
+            er => error"encountered an error while getting communications keys  ${er.unify: ConnectorError}",
             _ => info"getting communications keys - successfully done"
           )
         )

@@ -6,10 +6,7 @@ import io.iohk.atala.prism.auth.errors.AuthErrorSupport
 import io.iohk.atala.prism.crypto.Sha256Digest
 import io.iohk.atala.prism.logging.TraceId.IOWithTraceIdContext
 import io.iohk.atala.prism.metrics.RequestMeasureUtil.measureRequestFuture
-import io.iohk.atala.prism.protos.common_models.{
-  HealthCheckRequest,
-  HealthCheckResponse
-}
+import io.iohk.atala.prism.protos.common_models.{HealthCheckRequest, HealthCheckResponse}
 import io.iohk.atala.prism.protos.vault_api
 import io.iohk.atala.prism.protos.vault_models
 import io.iohk.atala.prism.vault.VaultAuthenticator
@@ -52,9 +49,7 @@ class EncryptedDataVaultGrpcService(
             did,
             request.payload.toByteArray.toVector
           )
-          .map(payload =>
-            vault_api.StoreDataResponse(payloadId = payload.id.toString)
-          )
+          .map(payload => vault_api.StoreDataResponse(payloadId = payload.id.toString))
           .run(traceId)
           .unsafeToFuture()
       }

@@ -5,12 +5,7 @@ import java.time.format.DateTimeFormatter
 
 import io.circe.parser.parse
 import io.grpc.{Status, StatusException}
-import io.iohk.atala.prism.connector.model.{
-  Connection,
-  ConnectionId,
-  MessageId,
-  TokenString
-}
+import io.iohk.atala.prism.connector.model.{Connection, ConnectionId, MessageId, TokenString}
 import IdServiceImplSpec._
 import Testing._
 import io.iohk.atala.prism.intdemo.protos.{intdemo_api, intdemo_models}
@@ -19,10 +14,7 @@ import org.mockito.MockitoSugar.{mock, verify, when}
 import org.scalatest.OptionValues._
 import org.scalatest.flatspec.AnyFlatSpec
 import org.scalatest.matchers.should.Matchers._
-import org.scalatest.concurrent.ScalaFutures.{
-  PatienceConfig,
-  convertScalaFuture
-}
+import org.scalatest.concurrent.ScalaFutures.{PatienceConfig, convertScalaFuture}
 import io.iohk.atala.prism.utils.Base64Utils
 import scala.concurrent.duration._
 import scala.concurrent.{ExecutionContext, Future}
@@ -33,17 +25,16 @@ class IdServiceImplSpec extends AnyFlatSpec {
 
   implicit val pc: PatienceConfig = PatienceConfig(1 second, 100 millis)
 
-  "setPersonalData" should "reject empty first name" in idService {
-    (_, _, idService) =>
-      val response = idService
-        .setPersonalData(
-          intdemo_api.SetPersonalDataRequest(token.token, "", Some(today()))
-        )
-        .failed
-        .futureValue
-        .asInstanceOf[StatusException]
+  "setPersonalData" should "reject empty first name" in idService { (_, _, idService) =>
+    val response = idService
+      .setPersonalData(
+        intdemo_api.SetPersonalDataRequest(token.token, "", Some(today()))
+      )
+      .failed
+      .futureValue
+      .asInstanceOf[StatusException]
 
-      response.getStatus shouldBe Status.INVALID_ARGUMENT
+    response.getStatus shouldBe Status.INVALID_ARGUMENT
   }
 
   it should "reject empty date of birth" in idService { (_, _, idService) =>

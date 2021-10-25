@@ -10,10 +10,7 @@ import derevo.tagless.applyK
 import doobie.implicits._
 import doobie.util.transactor.Transactor
 import io.iohk.atala.prism.utils.syntax.DBConnectionOps
-import io.iohk.atala.prism.node.cardano.dbsync.repositories.daos.{
-  BlockDAO,
-  TransactionDAO
-}
+import io.iohk.atala.prism.node.cardano.dbsync.repositories.daos.{BlockDAO, TransactionDAO}
 import io.iohk.atala.prism.node.cardano.dbsync.repositories.logs.CardanoBlockRepositoryLogs
 import io.iohk.atala.prism.node.cardano.models.{Block, BlockError}
 import org.slf4j.{Logger, LoggerFactory}
@@ -67,8 +64,7 @@ private final class CardanoBlockRepositoryImpl[F[_]: BracketThrow](
       .map(_.toRight(BlockError.NotFound(blockNo)))
   }
 
-  def getLatestBlock
-      : F[Either[BlockError.NoneAvailable.type, Block.Canonical]] = {
+  def getLatestBlock: F[Either[BlockError.NoneAvailable.type, Block.Canonical]] = {
     BlockDAO
       .latest()
       .logSQLErrors("getting latest block", logger)

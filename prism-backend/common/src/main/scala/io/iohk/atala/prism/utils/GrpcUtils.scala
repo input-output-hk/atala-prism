@@ -4,13 +4,7 @@ import java.util.concurrent.TimeUnit
 import cats.effect.{Resource, Sync}
 import com.typesafe.config.Config
 import io.grpc.netty.{GrpcSslContexts, NettyServerBuilder}
-import io.grpc.{
-  Channel,
-  ManagedChannelBuilder,
-  Server,
-  ServerInterceptor,
-  ServerServiceDefinition
-}
+import io.grpc.{Channel, ManagedChannelBuilder, Server, ServerInterceptor, ServerServiceDefinition}
 import io.grpc.protobuf.services.ProtoReflectionService
 
 import java.io.File
@@ -36,12 +30,9 @@ object GrpcUtils {
   object SslConfig {
     def apply(config: Config): SslConfig =
       SslConfig(
-        serverCertificateLocation =
-          config.getString("ssl.serverCertificateLocation"),
-        serverCertificatePrivateKeyLocation =
-          config.getString("ssl.serverCertificatePrivateKeyLocation"),
-        serverTrustChainLocation =
-          config.getString("ssl.serverTrustChainLocation")
+        serverCertificateLocation = config.getString("ssl.serverCertificateLocation"),
+        serverCertificatePrivateKeyLocation = config.getString("ssl.serverCertificatePrivateKeyLocation"),
+        serverTrustChainLocation = config.getString("ssl.serverTrustChainLocation")
       )
   }
 
@@ -60,11 +51,10 @@ object GrpcUtils {
     stub(channel)
   }
 
-  /** Wrap a [[Server]] into a bracketed resource. The server stops when the
-    * resource is released. With the following scenarios:
+  /** Wrap a [[Server]] into a bracketed resource. The server stops when the resource is released. With the following
+    * scenarios:
     *   - Server is shut down when there aren't any requests left.
-    *   - We wait for 30 seconds to allow finish pending requests and then force
-    *     quit the server.
+    *   - We wait for 30 seconds to allow finish pending requests and then force quit the server.
     */
   def createGrpcServer[F[_]: Sync](
       grpcConfig: GrpcConfig,

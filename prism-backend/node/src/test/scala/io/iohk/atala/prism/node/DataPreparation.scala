@@ -11,18 +11,8 @@ import io.iohk.atala.prism.crypto.{MerkleRoot, Sha256, Sha256Digest}
 import io.iohk.atala.prism.logging.TraceId
 import io.iohk.atala.prism.logging.TraceId.IOWithTraceIdContext
 import io.iohk.atala.prism.protos.models.TimestampInfo
-import io.iohk.atala.prism.models.{
-  BlockInfo,
-  DidSuffix,
-  Ledger,
-  TransactionId,
-  TransactionInfo,
-  TransactionStatus
-}
-import io.iohk.atala.prism.node.cardano.{
-  LAST_SYNCED_BLOCK_NO,
-  LAST_SYNCED_BLOCK_TIMESTAMP
-}
+import io.iohk.atala.prism.models.{BlockInfo, DidSuffix, Ledger, TransactionId, TransactionInfo, TransactionStatus}
+import io.iohk.atala.prism.node.cardano.{LAST_SYNCED_BLOCK_NO, LAST_SYNCED_BLOCK_TIMESTAMP}
 import io.iohk.atala.prism.node.errors.NodeError
 import io.iohk.atala.prism.node.grpc.ProtoCodecs
 import io.iohk.atala.prism.node.models.{
@@ -34,15 +24,8 @@ import io.iohk.atala.prism.node.models.{
   DIDData,
   DIDPublicKey
 }
-import io.iohk.atala.prism.node.models.nodeState.{
-  DIDDataState,
-  DIDPublicKeyState,
-  LedgerData
-}
-import io.iohk.atala.prism.node.operations.CreateDIDOperationSpec.{
-  issuingEcKeyData,
-  masterEcKeyData
-}
+import io.iohk.atala.prism.node.models.nodeState.{DIDDataState, DIDPublicKeyState, LedgerData}
+import io.iohk.atala.prism.node.operations.CreateDIDOperationSpec.{issuingEcKeyData, masterEcKeyData}
 import io.iohk.atala.prism.node.repositories.daos.AtalaObjectsDAO.AtalaObjectCreateData
 import io.iohk.atala.prism.node.repositories.daos.CredentialBatchesDAO.CreateCredentialBatchData
 import io.iohk.atala.prism.node.repositories.daos.{
@@ -55,11 +38,7 @@ import io.iohk.atala.prism.node.repositories.daos.{
   ProtocolVersionsDAO,
   PublicKeysDAO
 }
-import io.iohk.atala.prism.node.services.{
-  BlockProcessingServiceSpec,
-  ObjectManagementService,
-  SubmissionService
-}
+import io.iohk.atala.prism.node.services.{BlockProcessingServiceSpec, ObjectManagementService, SubmissionService}
 import org.scalatest.OptionValues._
 import io.iohk.atala.prism.protos.{node_api, node_internal, node_models}
 import io.iohk.atala.prism.protos.node_models.SignedAtalaOperation
@@ -90,9 +69,7 @@ object DataPreparation {
                 "master",
                 node_models.KeyUsage.MASTER_KEY,
                 Some(
-                  node_models.LedgerData(timestampInfo =
-                    Some(ProtoCodecs.toTimeStampInfoProto(dummyTimestampInfo))
-                  )
+                  node_models.LedgerData(timestampInfo = Some(ProtoCodecs.toTimeStampInfoProto(dummyTimestampInfo)))
                 ),
                 None,
                 node_models.PublicKey.KeyData.EcKeyData(masterEcKeyData)
@@ -102,9 +79,7 @@ object DataPreparation {
                   "issuing",
                   node_models.KeyUsage.ISSUING_KEY,
                   Some(
-                    node_models.LedgerData(timestampInfo =
-                      Some(ProtoCodecs.toTimeStampInfoProto(dummyTimestampInfo))
-                    )
+                    node_models.LedgerData(timestampInfo = Some(ProtoCodecs.toTimeStampInfoProto(dummyTimestampInfo)))
                   ),
                   None,
                   node_models.PublicKey.KeyData.EcKeyData(issuingEcKeyData)
@@ -155,8 +130,7 @@ object DataPreparation {
   val dummyABSequenceNumber: Int = dummyTime.getAtalaBlockSequenceNumber
   val dummyTransactionInfo: TransactionInfo =
     TransactionInfo(
-      transactionId =
-        TransactionId.from(Sha256.compute("id".getBytes).getValue).value,
+      transactionId = TransactionId.from(Sha256.compute("id".getBytes).getValue).value,
       ledger = Ledger.InMemory,
       block = Some(
         BlockInfo(
@@ -183,9 +157,7 @@ object DataPreparation {
         didData.lastOperation,
         ledgerData
       )
-      _ <- didData.keys.traverse((key: DIDPublicKey) =>
-        PublicKeysDAO.insert(key, ledgerData)
-      )
+      _ <- didData.keys.traverse((key: DIDPublicKey) => PublicKeysDAO.insert(key, ledgerData))
     } yield ()
 
     query
@@ -271,8 +243,7 @@ object DataPreparation {
   // ***************************************
 
   def createBlock(
-      signedOperation: node_models.SignedAtalaOperation =
-        BlockProcessingServiceSpec.signedCreateDidOperation
+      signedOperation: node_models.SignedAtalaOperation = BlockProcessingServiceSpec.signedCreateDidOperation
   ): node_internal.AtalaBlock = {
     node_internal.AtalaBlock(version = "1.0", operations = Seq(signedOperation))
   }
@@ -404,8 +375,7 @@ object DataPreparation {
         .operationStatus
       status.isConfirmedAndApplied || status.isConfirmedAndRejected
     } catch {
-      case err: io.grpc.StatusRuntimeException
-          if err.getMessage.contains("Unknown state of the operation") =>
+      case err: io.grpc.StatusRuntimeException if err.getMessage.contains("Unknown state of the operation") =>
         false
     }
   }

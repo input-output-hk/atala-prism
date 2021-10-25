@@ -34,8 +34,7 @@ object ProtocolVersionRepository {
     for {
       serviceLogs <- logs.service[ProtocolVersionRepository[F]]
     } yield {
-      implicit val implicitLogs
-          : ServiceLogging[F, ProtocolVersionRepository[F]] = serviceLogs
+      implicit val implicitLogs: ServiceLogging[F, ProtocolVersionRepository[F]] = serviceLogs
       val metrics: ProtocolVersionRepository[Mid[F, *]] =
         new ProtocolVersionRepositoryMetrics[F]()
       val logs: ProtocolVersionRepository[Mid[F, *]] =
@@ -59,8 +58,7 @@ private class ProtocolVersionRepositoryImpl[F[_]: BracketThrow](
 
   // Return a unit if node supports the current protocol version
   // Return current protocol version otherwise
-  override def ifNodeSupportsCurrentProtocol()
-      : F[Either[ProtocolVersion, Unit]] =
+  override def ifNodeSupportsCurrentProtocol(): F[Either[ProtocolVersion, Unit]] =
     ProtocolVersionsDAO.getCurrentProtocolVersion
       .logSQLErrors("ifNodeSupportsCurrentProtocol", logger)
       .transact(xa)

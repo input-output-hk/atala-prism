@@ -20,8 +20,7 @@ private[services] final class SubmissionServiceLogs[
       info"submitting received objects" *> in
         .flatTap(
           _.fold(
-            err =>
-              error"Encountered an error while submitting received objects $err",
+            err => error"Encountered an error while submitting received objects $err",
             _ => info"submitting received objects - successfully done"
           )
         )
@@ -34,9 +33,7 @@ private[services] final class SubmissionServiceLogs[
   ): Mid[F, Int] =
     in =>
       info"retrying old pending transactions, duration $ledgerPendingTransactionTimeout" *> in
-        .flatTap(_ =>
-          info"retrying old pending transactions - successfully done"
-        )
+        .flatTap(_ => info"retrying old pending transactions - successfully done")
         .onError(
           errorCause"Encountered an error while retrying old pending transactions" (
             _

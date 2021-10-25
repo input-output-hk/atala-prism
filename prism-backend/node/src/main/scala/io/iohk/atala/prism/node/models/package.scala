@@ -89,10 +89,8 @@ package object models {
 
     case object UNKNOWN extends AtalaOperationStatus
     case object RECEIVED extends AtalaOperationStatus // Received by PRISM
-    case object APPLIED
-        extends AtalaOperationStatus // Confirmed and applied to PRISM state
-    case object REJECTED
-        extends AtalaOperationStatus // Confirmed, but rejected by PRISM
+    case object APPLIED extends AtalaOperationStatus // Confirmed and applied to PRISM state
+    case object REJECTED extends AtalaOperationStatus // Confirmed, but rejected by PRISM
   }
 
   @derive(loggable)

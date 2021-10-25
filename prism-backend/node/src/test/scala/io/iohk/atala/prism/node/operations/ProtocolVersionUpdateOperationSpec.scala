@@ -12,10 +12,7 @@ import io.iohk.atala.prism.node.models._
 import io.iohk.atala.prism.node.operations.ProtocolVersionUpdateOperationSpec._
 import io.iohk.atala.prism.node.operations.StateError._
 import io.iohk.atala.prism.node.repositories.KeyValuesRepository
-import io.iohk.atala.prism.node.repositories.daos.{
-  ProtocolVersionsDAO,
-  PublicKeysDAO
-}
+import io.iohk.atala.prism.node.repositories.daos.{ProtocolVersionsDAO, PublicKeysDAO}
 import io.iohk.atala.prism.node.services.KeyValueService
 import io.iohk.atala.prism.protos.node_models
 import org.scalatest.EitherValues._

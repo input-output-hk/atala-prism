@@ -8,10 +8,7 @@ import doobie.util.fragment.Fragment
 import cats.syntax.functor._
 import doobie.implicits.legacy.instant._
 import io.iohk.atala.prism.models.{Ledger, TransactionId}
-import io.iohk.atala.prism.node.models.{
-  AtalaObjectTransactionSubmission,
-  AtalaObjectTransactionSubmissionStatus
-}
+import io.iohk.atala.prism.node.models.{AtalaObjectTransactionSubmission, AtalaObjectTransactionSubmissionStatus}
 
 object AtalaObjectTransactionSubmissionsDAO {
   private def updateStatusSql(

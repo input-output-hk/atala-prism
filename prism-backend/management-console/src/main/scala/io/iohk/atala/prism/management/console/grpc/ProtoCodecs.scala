@@ -4,25 +4,10 @@ import cats.syntax.option._
 import com.google.protobuf.ByteString
 import com.google.protobuf.timestamp.Timestamp
 import io.iohk.atala.prism.management.console.integrations.ContactsIntegrationService.DetailedContactWithConnection
-import io.iohk.atala.prism.management.console.models.{
-  Contact,
-  GenericCredential,
-  InstitutionGroup,
-  Statistics,
-  _
-}
+import io.iohk.atala.prism.management.console.models.{Contact, GenericCredential, InstitutionGroup, Statistics, _}
 import io.iohk.atala.prism.protos.console_api.GetContactResponse
-import io.iohk.atala.prism.protos.console_models.{
-  ContactConnectionStatus,
-  Group,
-  StoredSignedCredential
-}
-import io.iohk.atala.prism.protos.{
-  common_models,
-  connector_models,
-  console_api,
-  console_models
-}
+import io.iohk.atala.prism.protos.console_models.{ContactConnectionStatus, Group, StoredSignedCredential}
+import io.iohk.atala.prism.protos.{common_models, connector_models, console_api, console_models}
 import io.iohk.atala.prism.utils.syntax._
 import io.scalaland.chimney.Transformer
 import io.scalaland.chimney.dsl._
@@ -34,8 +19,7 @@ import scala.util.{Failure, Success, Try}
 
 object ProtoCodecs {
 
-  implicit val date2ProtoTransformer
-      : Transformer[LocalDate, common_models.Date] = date => {
+  implicit val date2ProtoTransformer: Transformer[LocalDate, common_models.Date] = date => {
     common_models.Date(
       year = date.getYear,
       month = date.getMonthValue,
@@ -73,13 +57,12 @@ object ProtoCodecs {
     val contactWithDetails =
       maybeDetailedContactWithConnection.map(_.contactWithDetails)
     console_api.GetContactResponse(
-      contact =
-        maybeDetailedContactWithConnection.map(detailedContactWithConnection =>
-          toContactProto(
-            detailedContactWithConnection.contactWithDetails.contact,
-            detailedContactWithConnection.connection
-          )
-        ),
+      contact = maybeDetailedContactWithConnection.map(detailedContactWithConnection =>
+        toContactProto(
+          detailedContactWithConnection.contactWithDetails.contact,
+          detailedContactWithConnection.connection
+        )
+      ),
       groups = contactWithDetails
         .map(_.groupsInvolved)
         .getOrElse(List.empty)
@@ -101,8 +84,7 @@ object ProtoCodecs {
                 issuedCredential.connectionToken,
                 ContactConnection(
                   connectionToken = issuedCredential.connectionToken.token,
-                  connectionStatus =
-                    ContactConnectionStatus.STATUS_CONNECTION_MISSING
+                  connectionStatus = ContactConnectionStatus.STATUS_CONNECTION_MISSING
                 )
               )
             )
@@ -129,8 +111,7 @@ object ProtoCodecs {
   ): StoredSignedCredential = {
     console_models.StoredSignedCredential(
       individualId = receivedSignedCredential.individualId.toString,
-      encodedSignedCredential =
-        receivedSignedCredential.encodedSignedCredential,
+      encodedSignedCredential = receivedSignedCredential.encodedSignedCredential,
       storedAt = receivedSignedCredential.receivedAt.toProtoTimestamp.some
     )
   }

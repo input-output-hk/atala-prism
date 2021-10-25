@@ -1,12 +1,6 @@
 package io.iohk.atala.prism.node
 
-import io.iohk.atala.prism.models.{
-  Ledger,
-  TransactionDetails,
-  TransactionId,
-  TransactionInfo,
-  TransactionStatus
-}
+import io.iohk.atala.prism.models.{Ledger, TransactionDetails, TransactionId, TransactionInfo, TransactionStatus}
 import io.iohk.atala.prism.node.cardano.models.CardanoWalletError
 import io.iohk.atala.prism.protos.node_internal
 

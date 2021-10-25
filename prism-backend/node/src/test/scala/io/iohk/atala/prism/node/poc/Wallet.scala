@@ -15,17 +15,13 @@ import io.iohk.atala.prism.interop.CredentialContentConverter._
 import io.iohk.atala.prism.identity.PrismDid
 import io.iohk.atala.prism.models.{DidSuffix, KeyData}
 import io.iohk.atala.prism.node.grpc.ProtoCodecs
-import io.iohk.atala.prism.node.poc.CredVerification.{
-  BatchData,
-  VerificationError
-}
+import io.iohk.atala.prism.node.poc.CredVerification.{BatchData, VerificationError}
 import org.scalatest.OptionValues.convertOptionToValuable
 
 // We define some classes to illustrate what happens in the different components
 case class Wallet(node: node_api.NodeServiceGrpc.NodeServiceBlockingStub) {
 
-  private var dids
-      : Map[DidSuffix, collection.mutable.Map[String, ECPrivateKey]] = Map()
+  private var dids: Map[DidSuffix, collection.mutable.Map[String, ECPrivateKey]] = Map()
 
   def generateDID(): (DidSuffix, node_models.AtalaOperation) = {
     val masterKeyPair = EC.generateKeyPair()
@@ -60,9 +56,7 @@ case class Wallet(node: node_api.NodeServiceGrpc.NodeServiceBlockingStub) {
       )
     )
 
-    val atalaOp = node_models.AtalaOperation(operation =
-      node_models.AtalaOperation.Operation.CreateDid(createDidOp)
-    )
+    val atalaOp = node_models.AtalaOperation(operation = node_models.AtalaOperation.Operation.CreateDid(createDidOp))
     val operationHash = Sha256.compute(atalaOp.toByteArray)
     val didSuffix: DidSuffix = DidSuffix(operationHash.getHexValue)
 
@@ -123,8 +117,7 @@ case class Wallet(node: node_api.NodeServiceGrpc.NodeServiceBlockingStub) {
     node_models.SignedAtalaOperation(
       signedWith = keyId,
       operation = Some(operation),
-      signature =
-        ByteString.copyFrom(EC.signBytes(operation.toByteArray, key).getData)
+      signature = ByteString.copyFrom(EC.signBytes(operation.toByteArray, key).getData)
     )
   }
 

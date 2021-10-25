@@ -44,15 +44,8 @@ import io.iohk.atala.prism.protos.endorsements_api.{
   GetFreshMasterKeyRequest,
   RevokeEndorsementRequest
 }
-import io.iohk.atala.prism.protos.node_api.{
-  CreateDIDRequest,
-  GetDidDocumentRequest,
-  ScheduleOperationsRequest
-}
-import io.iohk.atala.prism.utils.NodeClientUtils.{
-  issueBatchOperation,
-  revokeCredentialsOperation
-}
+import io.iohk.atala.prism.protos.node_api.{CreateDIDRequest, GetDidDocumentRequest, ScheduleOperationsRequest}
+import io.iohk.atala.prism.utils.NodeClientUtils.{issueBatchOperation, revokeCredentialsOperation}
 import io.iohk.atala.prism.utils.IOUtils._
 import monix.execution.Scheduler.Implicits.{global => scheduler}
 import org.scalatest.BeforeAndAfterEach
@@ -62,9 +55,7 @@ import tofu.logging.Logs
 import scala.concurrent.{ExecutionContext, Future, Promise}
 import scala.jdk.CollectionConverters._
 
-class EndorsementsFlowPoC
-    extends AtalaWithPostgresSpec
-    with BeforeAndAfterEach {
+class EndorsementsFlowPoC extends AtalaWithPostgresSpec with BeforeAndAfterEach {
   import Utils._
 
   private implicit val ce: ContextShift[IO] =
@@ -74,32 +65,25 @@ class EndorsementsFlowPoC
   protected var serverName: String = _
   protected var serverHandle: Server = _
   protected var channelHandle: ManagedChannel = _
-  protected var nodeServiceStub
-      : node_api.NodeServiceGrpc.NodeServiceBlockingStub = _
+  protected var nodeServiceStub: node_api.NodeServiceGrpc.NodeServiceBlockingStub = _
   protected var didDataRepository: DIDDataRepository[IOWithTraceIdContext] = _
-  protected var atalaOperationsRepository
-      : AtalaOperationsRepository[IOWithTraceIdContext] = _
-  protected var atalaObjectsTransactionsRepository
-      : AtalaObjectsTransactionsRepository[IOWithTraceIdContext] = _
+  protected var atalaOperationsRepository: AtalaOperationsRepository[IOWithTraceIdContext] = _
+  protected var atalaObjectsTransactionsRepository: AtalaObjectsTransactionsRepository[IOWithTraceIdContext] = _
   protected var keyValuesRepository: KeyValuesRepository[IOWithTraceIdContext] =
     _
-  protected var credentialBatchesRepository
-      : CredentialBatchesRepository[IOWithTraceIdContext] = _
+  protected var credentialBatchesRepository: CredentialBatchesRepository[IOWithTraceIdContext] = _
   protected var atalaReferenceLedger: InMemoryLedgerService = _
   protected var blockProcessingService: BlockProcessingServiceImpl = _
   protected var objectManagementService: ObjectManagementService = _
   protected var submissionService: SubmissionService[IOWithTraceIdContext] = _
-  protected var objectManagementServicePromise
-      : Promise[ObjectManagementService] = _
+  protected var objectManagementServicePromise: Promise[ObjectManagementService] = _
   protected var submissionSchedulingService: SubmissionSchedulingService = _
-  protected var protocolVersionsRepository
-      : ProtocolVersionRepository[IOWithTraceIdContext] = _
+  protected var protocolVersionsRepository: ProtocolVersionRepository[IOWithTraceIdContext] = _
 
   override def beforeEach(): Unit = {
     super.beforeEach()
 
-    didDataRepository =
-      DIDDataRepository.unsafe(dbLiftedToTraceIdIO, endorsementsFlowPoCLogs)
+    didDataRepository = DIDDataRepository.unsafe(dbLiftedToTraceIdIO, endorsementsFlowPoCLogs)
     credentialBatchesRepository = CredentialBatchesRepository.unsafe(
       dbLiftedToTraceIdIO,
       endorsementsFlowPoCLogs
@@ -126,8 +110,7 @@ class EndorsementsFlowPoC
     )
     atalaObjectsTransactionsRepository = AtalaObjectsTransactionsRepository
       .unsafe(dbLiftedToTraceIdIO, endorsementsFlowPoCLogs)
-    keyValuesRepository =
-      KeyValuesRepository.unsafe(dbLiftedToTraceIdIO, endorsementsFlowPoCLogs)
+    keyValuesRepository = KeyValuesRepository.unsafe(dbLiftedToTraceIdIO, endorsementsFlowPoCLogs)
     objectManagementService = ObjectManagementService(
       atalaOperationsRepository,
       atalaObjectsTransactionsRepository,
@@ -142,9 +125,7 @@ class EndorsementsFlowPoC
       logs = endorsementsFlowPoCLogs
     )
     submissionSchedulingService = SubmissionSchedulingService(
-      SubmissionSchedulingService.Config(ledgerPendingTransactionTimeout =
-        Duration.ZERO
-      ),
+      SubmissionSchedulingService.Config(ledgerPendingTransactionTimeout = Duration.ZERO),
       submissionService
     )
     objectManagementServicePromise.success(objectManagementService)
@@ -169,8 +150,7 @@ class EndorsementsFlowPoC
       .build()
       .start()
 
-    channelHandle =
-      InProcessChannelBuilder.forName(serverName).directExecutor().build()
+    channelHandle = InProcessChannelBuilder.forName(serverName).directExecutor().build()
 
     nodeServiceStub = node_api.NodeServiceGrpc.blockingStub(channelHandle)
   }
@@ -346,8 +326,7 @@ class EndorsementsFlowPoC
       val revocationKeyId = "revocation0"
       wallet.addRevocationKeyToDid(
         revocationKeyId = revocationKeyId,
-        previousOperationHash =
-          ByteString.copyFrom(Sha256.compute(createDIDOp.toByteArray).getValue),
+        previousOperationHash = ByteString.copyFrom(Sha256.compute(createDIDOp.toByteArray).getValue),
         didSuffix = moeDIDSuffix
       )
 

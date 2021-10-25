@@ -2,10 +2,7 @@ package io.iohk.atala.prism.connector.services
 
 import cats.syntax.either._
 import io.iohk.atala.prism.auth.AuthenticatorWithGrpcHeaderParser
-import io.iohk.atala.prism.connector.errors.{
-  ConnectorError,
-  ConnectorErrorSupport
-}
+import io.iohk.atala.prism.connector.errors.{ConnectorError, ConnectorErrorSupport}
 import io.iohk.atala.prism.connector.grpc.ProtoCodecs
 import io.iohk.atala.prism.connector.model.TokenString
 import io.iohk.atala.prism.errors.LoggingContext

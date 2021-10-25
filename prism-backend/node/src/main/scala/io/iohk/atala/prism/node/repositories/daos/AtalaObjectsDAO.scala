@@ -8,11 +8,7 @@ import doobie.implicits._
 import doobie.implicits.legacy.instant._
 import doobie.util.fragments.in
 import io.iohk.atala.prism.models.TransactionInfo
-import io.iohk.atala.prism.node.models.{
-  AtalaObjectId,
-  AtalaObjectInfo,
-  AtalaObjectStatus
-}
+import io.iohk.atala.prism.node.models.{AtalaObjectId, AtalaObjectInfo, AtalaObjectStatus}
 
 import java.time.Instant
 

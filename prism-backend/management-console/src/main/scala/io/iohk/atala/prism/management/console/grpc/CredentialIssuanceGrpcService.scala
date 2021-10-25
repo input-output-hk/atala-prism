@@ -37,63 +37,56 @@ class CredentialIssuanceGrpcService(
   override def createCredentialIssuance(
       request: CreateCredentialIssuanceRequest
   ): Future[CreateCredentialIssuanceResponse] =
-    auth[CreateCredentialIssuance]("createCredentialIssuance", request) {
-      (participantId, traceId, query) =>
-        credentialIssuanceService
-          .createCredentialIssuance(participantId, query)
-          .run(traceId)
-          .unsafeToFuture()
-          .toFutureEither
-          .map { credentialIssuanceId =>
-            CreateCredentialIssuanceResponse(credentialIssuanceId =
-              credentialIssuanceId.toString
-            )
-          }
+    auth[CreateCredentialIssuance]("createCredentialIssuance", request) { (participantId, traceId, query) =>
+      credentialIssuanceService
+        .createCredentialIssuance(participantId, query)
+        .run(traceId)
+        .unsafeToFuture()
+        .toFutureEither
+        .map { credentialIssuanceId =>
+          CreateCredentialIssuanceResponse(credentialIssuanceId = credentialIssuanceId.toString)
+        }
     }
 
   override def getCredentialIssuance(
       request: GetCredentialIssuanceRequest
   ): Future[GetCredentialIssuanceResponse] =
-    auth[GetCredentialIssuance]("getCredentialIssuance", request) {
-      (participantId, traceId, query) =>
-        credentialIssuanceService
-          .getCredentialIssuance(participantId, query)
-          .map { credentialIssuance =>
-            GetCredentialIssuanceResponse(
-              name = credentialIssuance.name,
-              credentialTypeId =
-                credentialIssuance.credentialTypeId.uuid.toString,
-              createdAt = credentialIssuance.createdAt.toProtoTimestamp.some,
-              credentialIssuanceContacts =
-                credentialIssuance.contacts.map(contact =>
-                  CredentialIssuanceContact(
-                    contactId = contact.contactId.toString,
-                    credentialData = contact.credentialData.noSpaces,
-                    groupIds = contact.groupIds.map(_.toString)
-                  )
-                )
+    auth[GetCredentialIssuance]("getCredentialIssuance", request) { (participantId, traceId, query) =>
+      credentialIssuanceService
+        .getCredentialIssuance(participantId, query)
+        .map { credentialIssuance =>
+          GetCredentialIssuanceResponse(
+            name = credentialIssuance.name,
+            credentialTypeId = credentialIssuance.credentialTypeId.uuid.toString,
+            createdAt = credentialIssuance.createdAt.toProtoTimestamp.some,
+            credentialIssuanceContacts = credentialIssuance.contacts.map(contact =>
+              CredentialIssuanceContact(
+                contactId = contact.contactId.toString,
+                credentialData = contact.credentialData.noSpaces,
+                groupIds = contact.groupIds.map(_.toString)
+              )
             )
-          }
-          .run(traceId)
-          .unsafeToFuture()
-          .map(_.asRight)
-          .toFutureEither
+          )
+        }
+        .run(traceId)
+        .unsafeToFuture()
+        .map(_.asRight)
+        .toFutureEither
     }
 
   override def createGenericCredentialBulk(
       request: CreateGenericCredentialBulkRequest
   ): Future[CreateGenericCredentialBulkResponse] =
-    auth[CreateCredentialBulk]("createGenericCredentialBulk", request) {
-      (participantId, traceId, query) =>
-        credentialIssuanceService
-          .createGenericCredentialBulk(participantId, query)
-          .run(traceId)
-          .unsafeToFuture()
-          .toFutureEither
-          .map { credentialIssuanceId =>
-            CreateGenericCredentialBulkResponse(
-              credentialIssuanceId.uuid.toString
-            )
-          }
+    auth[CreateCredentialBulk]("createGenericCredentialBulk", request) { (participantId, traceId, query) =>
+      credentialIssuanceService
+        .createGenericCredentialBulk(participantId, query)
+        .run(traceId)
+        .unsafeToFuture()
+        .toFutureEither
+        .map { credentialIssuanceId =>
+          CreateGenericCredentialBulkResponse(
+            credentialIssuanceId.uuid.toString
+          )
+        }
     }
 }

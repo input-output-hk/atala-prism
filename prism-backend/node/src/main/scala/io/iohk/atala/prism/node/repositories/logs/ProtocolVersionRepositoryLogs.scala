@@ -18,8 +18,7 @@ private[repositories] final class ProtocolVersionRepositoryLogs[F[
 ], ProtocolVersionRepository[F]]]
     extends ProtocolVersionRepository[Mid[F, *]] {
 
-  override def ifNodeSupportsCurrentProtocol()
-      : Mid[F, Either[models.ProtocolVersion, Unit]] =
+  override def ifNodeSupportsCurrentProtocol(): Mid[F, Either[models.ProtocolVersion, Unit]] =
     in =>
       info"checking if a node supports currently effective protocol version" *> in
         .flatTap(

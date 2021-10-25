@@ -47,9 +47,7 @@ class DbNotificationStreamer private (channelName: String)(implicit
         }
     } yield maybeNotification
 
-    notificationStream.unNoneTerminate.map(notification =>
-      DbNotification(payload = notification.getParameter)
-    )
+    notificationStream.unNoneTerminate.map(notification => DbNotification(payload = notification.getParameter))
   }
 
   def isStopped: Boolean = stopped.get()
@@ -78,9 +76,7 @@ object DbNotificationStreamer {
 
   /** A resource that listens on a DB channel and unlistens when done. */
   private def channel(name: String): Resource[ConnectionIO, Unit] = {
-    Resource.make(PHC.pgListen(name) *> HC.commit)(_ =>
-      PHC.pgUnlisten(name) *> HC.commit
-    )
+    Resource.make(PHC.pgListen(name) *> HC.commit)(_ => PHC.pgUnlisten(name) *> HC.commit)
   }
 
   case class DbNotification(payload: String)

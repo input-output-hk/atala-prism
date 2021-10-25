@@ -21,9 +21,7 @@ import org.scalatest.OptionValues
 
 import scala.util.Try
 
-class EncryptedDataVaultGrpcServiceSpec
-    extends VaultRpcSpecBase
-    with OptionValues {
+class EncryptedDataVaultGrpcServiceSpec extends VaultRpcSpecBase with OptionValues {
   private def createRequest(
       externalId: UUID,
       payload: String

@@ -5,26 +5,16 @@ import io.iohk.atala.prism.auth.SignedRpcRequest
 import io.iohk.atala.prism.auth.grpc.GrpcAuthenticationHeaderParser
 import io.iohk.atala.prism.connector.model.ConnectionStatus
 import io.iohk.atala.prism.connector.repositories._
-import io.iohk.atala.prism.connector.services.{
-  ConnectionsService,
-  ContactConnectionService
-}
+import io.iohk.atala.prism.connector.services.{ConnectionsService, ContactConnectionService}
 import io.iohk.atala.prism.crypto.keys.ECPublicKey
 import io.iohk.atala.prism.connector.DataPreparation
-import io.iohk.atala.prism.protos.{
-  connector_api,
-  connector_models,
-  console_models
-}
+import io.iohk.atala.prism.protos.{connector_api, connector_models, console_models}
 import io.iohk.atala.prism.{DIDUtil, RpcSpecBase}
 import io.iohk.atala.prism.utils.IOUtils._
 import org.mockito.MockitoSugar.mock
 import scala.concurrent.ExecutionContext
 
-class ContactConnectionServiceSpec
-    extends RpcSpecBase
-    with DIDUtil
-    with ConnectorRepositorySpecBase {
+class ContactConnectionServiceSpec extends RpcSpecBase with DIDUtil with ConnectorRepositorySpecBase {
 
   implicit val ec = ExecutionContext.global
   implicit val cs = IO.contextShift(ec)

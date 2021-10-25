@@ -98,8 +98,8 @@ object DegreeServiceImpl {
       .as(())
   }
 
-  private def getSharedIdCredential(connectorIntegration: ConnectorIntegration)(
-      implicit ec: ExecutionContext
+  private def getSharedIdCredential(connectorIntegration: ConnectorIntegration)(implicit
+      ec: ExecutionContext
   ): TokenString => Future[Option[credential_models.PlainTextCredential]] =
     connectionToken =>
       getSharedCredentials(connectorIntegration, connectionToken, issuerId)(
@@ -156,8 +156,7 @@ object DegreeServiceImpl {
       case Right(credential) =>
         println("sending degree credential")
         credential_models.PlainTextCredential(
-          encodedCredential =
-            Base64Utils.encodeURL(credential.getCanonicalForm.getBytes)
+          encodedCredential = Base64Utils.encodeURL(credential.getCanonicalForm.getBytes)
         )
     }
   }

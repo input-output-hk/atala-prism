@@ -100,9 +100,7 @@ private class EncyptedDataVaultServiceLogging[
   ): Mid[F, List[Payload]] =
     in =>
       info"getting paginated data $did $lastSeenId" *> in
-        .flatTap(p =>
-          info"getting paginated data - successfully done found ${p.size} entities"
-        )
+        .flatTap(p => info"getting paginated data - successfully done found ${p.size} entities")
         .onError { e =>
           errorCause"encountered an error while getting data by paginated!" (e)
         }

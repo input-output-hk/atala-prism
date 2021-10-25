@@ -186,8 +186,7 @@ private final class CredentialTypesServiceLogs[
       info"marking credential type as ready $participantId" *> in
         .flatTap(
           _.fold(
-            e =>
-              error"encountered an error while marking credential type as ready $e",
+            e => error"encountered an error while marking credential type as ready $e",
             _ => info"marking credential type as ready - successfully done"
           )
         )
@@ -205,8 +204,7 @@ private final class CredentialTypesServiceLogs[
       info"marking credential type as archived $participantId" *> in
         .flatTap(
           _.fold(
-            e =>
-              error"encountered an error while marking credential type as archived $e",
+            e => error"encountered an error while marking credential type as archived $e",
             _ => info"marking credential type as archived - successfully done"
           )
         )

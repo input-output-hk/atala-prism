@@ -15,10 +15,7 @@ import io.iohk.atala.prism.connector.AtalaOperationId
 import io.iohk.atala.prism.grpc.ProtoConverter
 import io.iohk.atala.prism.management.console.clients.ConnectorClient
 import io.iohk.atala.prism.management.console.errors
-import io.iohk.atala.prism.management.console.errors.{
-  ManagementConsoleError,
-  ManagementConsoleErrorSupport
-}
+import io.iohk.atala.prism.management.console.errors.{ManagementConsoleError, ManagementConsoleErrorSupport}
 import io.iohk.atala.prism.management.console.grpc._
 import io.iohk.atala.prism.management.console.integrations.CredentialsIntegrationService.{
   GenericCredentialWithConnection,
@@ -136,8 +133,7 @@ private final class CredentialsIntegrationServiceImpl[F[_]: Monad](
               genericCredential.connectionToken,
               ContactConnection(
                 connectionToken = genericCredential.connectionToken.token,
-                connectionStatus =
-                  ContactConnectionStatus.STATUS_CONNECTION_MISSING
+                connectionStatus = ContactConnectionStatus.STATUS_CONNECTION_MISSING
               )
             )
           )
@@ -179,8 +175,7 @@ object CredentialsIntegrationService {
     for {
       serviceLogs <- logs.service[CredentialsIntegrationService[F]]
     } yield {
-      implicit val implicitLogs
-          : ServiceLogging[F, CredentialsIntegrationService[F]] = serviceLogs
+      implicit val implicitLogs: ServiceLogging[F, CredentialsIntegrationService[F]] = serviceLogs
       val logs: CredentialsIntegrationService[Mid[F, *]] =
         new CredentialsIntegrationServiceLogs[F]
       val mid = logs
@@ -241,8 +236,7 @@ private final class CredentialsIntegrationServiceLogs[F[_]: ServiceLogging[
       info"revoking published credential $institutionId ${request.credentialId}" *> in
         .flatTap(
           _.fold(
-            er =>
-              error"encountered an error while revoking published credential $er",
+            er => error"encountered an error while revoking published credential $er",
             _ => info"revoking published credential - successfully done"
           )
         )
@@ -260,8 +254,7 @@ private final class CredentialsIntegrationServiceLogs[F[_]: ServiceLogging[
       info"creating generic credential $participantId ${createGenericCredential.contactId}" *> in
         .flatTap(
           _.fold(
-            er =>
-              error"encountered an error while creating generic credential $er",
+            er => error"encountered an error while creating generic credential $er",
             _ => info"creating generic credential - successfully done"
           )
         )

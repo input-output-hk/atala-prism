@@ -19,14 +19,11 @@ object ProtoCodecs {
       console_models.ContactConnectionStatus.STATUS_CONNECTION_REVOKED
   }
 
-  implicit val contactConnection2Proto
-      : Transformer[ContactConnection, connector_models.ContactConnection] =
+  implicit val contactConnection2Proto: Transformer[ContactConnection, connector_models.ContactConnection] =
     contactConnection => {
       connector_models.ContactConnection(
-        connectionId =
-          contactConnection.connectionId.map(_.toString).getOrElse(""),
-        connectionToken =
-          contactConnection.contactToken.map(_.token).getOrElse(""),
+        connectionId = contactConnection.connectionId.map(_.toString).getOrElse(""),
+        connectionToken = contactConnection.contactToken.map(_.token).getOrElse(""),
         connectionStatus = contactConnectionStatus2Proto.transform(
           contactConnection.connectionStatus
         )

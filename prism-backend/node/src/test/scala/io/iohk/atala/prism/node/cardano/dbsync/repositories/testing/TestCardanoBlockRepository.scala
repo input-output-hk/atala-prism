@@ -15,8 +15,7 @@ import scala.util.Random
 
 object TestCardanoBlockRepository {
 
-  /** Creates a trimmed-down version of the {@code cexplorer} database
-    * structure.
+  /** Creates a trimmed-down version of the {@code cexplorer} database structure.
     */
   def createTables()(implicit database: Transactor[IO]): Unit = {
     sql"""
@@ -103,8 +102,7 @@ object TestCardanoBlockRepository {
     ()
   }
 
-  /** Creates a genesis block and {@code n} other random blocks, for a total of
-    * {@code n+1} blocks.
+  /** Creates a genesis block and {@code n} other random blocks, for a total of {@code n+1} blocks.
     */
   def createRandomBlocks(n: Int): Seq[Block.Full] = {
     var previousBlock: Option[Block.Full] = None

@@ -12,10 +12,7 @@ import doobie.util.transactor.Transactor
 import io.iohk.atala.prism.credentials.CredentialBatchId
 import io.iohk.atala.prism.crypto.Sha256Digest
 import io.iohk.atala.prism.node.errors.NodeError
-import io.iohk.atala.prism.node.models.nodeState.{
-  CredentialBatchState,
-  LedgerData
-}
+import io.iohk.atala.prism.node.models.nodeState.{CredentialBatchState, LedgerData}
 import io.iohk.atala.prism.node.repositories.daos.CredentialBatchesDAO
 import io.iohk.atala.prism.metrics.TimeMeasureMetric
 import io.iohk.atala.prism.node.repositories.logs.CredentialBatchesRepositoryLogs
@@ -45,8 +42,7 @@ object CredentialBatchesRepository {
     for {
       serviceLogs <- logs.service[CredentialBatchesRepository[F]]
     } yield {
-      implicit val implicitLogs
-          : ServiceLogging[F, CredentialBatchesRepository[F]] = serviceLogs
+      implicit val implicitLogs: ServiceLogging[F, CredentialBatchesRepository[F]] = serviceLogs
       val metrics: CredentialBatchesRepository[Mid[F, *]] =
         new CredentialBatchesRepositoryMetrics[F]()
       val logs: CredentialBatchesRepository[Mid[F, *]] =

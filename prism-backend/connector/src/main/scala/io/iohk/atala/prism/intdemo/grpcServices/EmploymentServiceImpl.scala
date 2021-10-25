@@ -106,10 +106,9 @@ object EmploymentServiceImpl {
       connectorIntegration: ConnectorIntegration
   )(implicit
       ec: ExecutionContext
-  ): TokenString => Future[Option[RequiredEmploymentData]] = {
-    connectionToken =>
-      getSharedCredentials(connectorIntegration)(ec)(connectionToken)
-        .map(toRequiredEmploymentData)
+  ): TokenString => Future[Option[RequiredEmploymentData]] = { connectionToken =>
+    getSharedCredentials(connectorIntegration)(ec)(connectionToken)
+      .map(toRequiredEmploymentData)
   }
 
   private def toRequiredEmploymentData(
@@ -134,15 +133,14 @@ object EmploymentServiceImpl {
       connectorIntegration: ConnectorIntegration
   )(implicit
       ec: ExecutionContext
-  ): TokenString => Future[Seq[credential_models.PlainTextCredential]] = {
-    connectionToken =>
-      SharedCredentials
-        .getSharedCredentials(connectorIntegration, connectionToken, issuerId)(
-          Set(
-            IdServiceImpl.credentialTypeId,
-            DegreeServiceImpl.credentialTypeId
-          )
+  ): TokenString => Future[Seq[credential_models.PlainTextCredential]] = { connectionToken =>
+    SharedCredentials
+      .getSharedCredentials(connectorIntegration, connectionToken, issuerId)(
+        Set(
+          IdServiceImpl.credentialTypeId,
+          DegreeServiceImpl.credentialTypeId
         )
+      )
   }
 
   def getEmploymentCredential(
@@ -192,8 +190,7 @@ object EmploymentServiceImpl {
         )
       case Right(credential) =>
         credential_models.PlainTextCredential(
-          encodedCredential =
-            Base64Utils.encodeURL(credential.getCanonicalForm.getBytes)
+          encodedCredential = Base64Utils.encodeURL(credential.getCanonicalForm.getBytes)
         )
     }
   }

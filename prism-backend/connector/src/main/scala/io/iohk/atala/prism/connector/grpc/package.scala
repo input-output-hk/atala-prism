@@ -3,17 +3,9 @@ package io.iohk.atala.prism.connector
 import cats.data.NonEmptyList
 import cats.implicits._
 import io.grpc.Context
-import io.iohk.atala.prism.auth.grpc.{
-  GrpcAuthenticationHeader,
-  GrpcAuthenticationHeaderParser
-}
+import io.iohk.atala.prism.auth.grpc.{GrpcAuthenticationHeader, GrpcAuthenticationHeaderParser}
 import io.iohk.atala.prism.connector.model.actions._
-import io.iohk.atala.prism.connector.model.{
-  ParticipantLogo,
-  ParticipantType,
-  TokenString,
-  UpdateParticipantProfile
-}
+import io.iohk.atala.prism.connector.model.{ParticipantLogo, ParticipantType, TokenString, UpdateParticipantProfile}
 import io.iohk.atala.prism.crypto.EC.{INSTANCE => EC}
 import io.iohk.atala.prism.grpc.ProtoConverter
 import io.iohk.atala.prism.identity.{CanonicalPrismDid, PrismDid}
@@ -26,8 +18,7 @@ import io.iohk.atala.prism.protos.connector_models.MessageToSendByConnectionToke
 import io.iohk.atala.prism.protos.node_models.SignedAtalaOperation
 
 package object grpc {
-  implicit val participantProfileConverter
-      : ProtoConverter[UpdateProfileRequest, UpdateParticipantProfile] = {
+  implicit val participantProfileConverter: ProtoConverter[UpdateProfileRequest, UpdateParticipantProfile] = {
     request =>
       {
         for {
@@ -105,8 +96,7 @@ package object grpc {
                 s"Invalid value for lastSeenConnectionId, expected valid id, got ${in.lastSeenConnectionId}"
               )
             ),
-          maybeConnectionId =>
-            Success(ConnectionsPaginatedRequest(in.limit, maybeConnectionId))
+          maybeConnectionId => Success(ConnectionsPaginatedRequest(in.limit, maybeConnectionId))
         )
 
     }
@@ -115,8 +105,7 @@ package object grpc {
     connector_api.RevokeConnectionRequest,
     RevokeConnectionRequest
   ] =
-    (in: connector_api.RevokeConnectionRequest) =>
-      Utils.parseConnectionId(in.connectionId).map(RevokeConnectionRequest)
+    (in: connector_api.RevokeConnectionRequest) => Utils.parseConnectionId(in.connectionId).map(RevokeConnectionRequest)
 
   implicit val addConnectionFromTokenRequestConverter: ProtoConverter[
     connector_api.AddConnectionFromTokenRequest,
@@ -130,9 +119,7 @@ package object grpc {
       )
       for {
         parsedKey <- Try(
-          in.holderEncodedPublicKey.map(encodedKey =>
-            EC.toPublicKeyFromBytes(encodedKey.publicKey.toByteArray)
-          )
+          in.holderEncodedPublicKey.map(encodedKey => EC.toPublicKeyFromBytes(encodedKey.publicKey.toByteArray))
         )
         token = TokenString(in.token)
         maybeHeader = GrpcAuthenticationHeaderParser.parse(Context.current())
@@ -170,8 +157,7 @@ package object grpc {
       } yield AddConnectionRequest(token, basedOn)
     }
 
-  implicit val registerDIDRequestConverter
-      : ProtoConverter[connector_api.RegisterDIDRequest, RegisterDIDRequest] =
+  implicit val registerDIDRequestConverter: ProtoConverter[connector_api.RegisterDIDRequest, RegisterDIDRequest] =
     (in: connector_api.RegisterDIDRequest) =>
       for {
         didOrCreateDidOperation <- parseRegisterWith(in.registerWith)
@@ -221,8 +207,7 @@ package object grpc {
         .parseConnectionId(in.connectionId)
         .map(GetConnectionCommunicationKeysRequest)
 
-  implicit val sendMessageRequestConverter
-      : ProtoConverter[connector_api.SendMessageRequest, SendMessageRequest] =
+  implicit val sendMessageRequestConverter: ProtoConverter[connector_api.SendMessageRequest, SendMessageRequest] =
     (in: connector_api.SendMessageRequest) =>
       for {
         connectionId <- Utils.parseConnectionId(in.connectionId)

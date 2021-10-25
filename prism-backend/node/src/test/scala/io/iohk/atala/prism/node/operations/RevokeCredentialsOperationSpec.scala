@@ -52,8 +52,7 @@ object RevokeCredentialsOperationSpec {
     node_models.AtalaOperation(
       operation = node_models.AtalaOperation.Operation.RevokeCredentials(
         value = node_models.RevokeCredentialsOperation(
-          previousOperationHash =
-            ByteString.copyFrom(credentialIssueBatchOperation.digest.getValue),
+          previousOperationHash = ByteString.copyFrom(credentialIssueBatchOperation.digest.getValue),
           credentialBatchId = credentialBatchId.getId,
           credentialsToRevoke = Seq()
         )
@@ -66,11 +65,9 @@ object RevokeCredentialsOperationSpec {
     node_models.AtalaOperation(
       operation = node_models.AtalaOperation.Operation.RevokeCredentials(
         value = node_models.RevokeCredentialsOperation(
-          previousOperationHash =
-            ByteString.copyFrom(credentialIssueBatchOperation.digest.getValue),
+          previousOperationHash = ByteString.copyFrom(credentialIssueBatchOperation.digest.getValue),
           credentialBatchId = credentialBatchId.getId,
-          credentialsToRevoke =
-            Seq(ByteString.copyFrom(credentialHashToRevoke.getValue))
+          credentialsToRevoke = Seq(ByteString.copyFrom(credentialHashToRevoke.getValue))
         )
       )
     )

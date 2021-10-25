@@ -46,8 +46,7 @@ object ObjectStorageService {
     }
   }
 
-  class FileBased(baseDirectory: os.Path)(implicit ec: ExecutionContext)
-      extends ObjectStorageService {
+  class FileBased(baseDirectory: os.Path)(implicit ec: ExecutionContext) extends ObjectStorageService {
     override def put(id: ObjectId, data: Array[Byte]): Future[Unit] = {
       val path = baseDirectory / id
       Future {

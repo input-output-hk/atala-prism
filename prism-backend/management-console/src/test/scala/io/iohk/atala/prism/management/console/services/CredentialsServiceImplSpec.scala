@@ -7,21 +7,12 @@ import io.grpc.StatusRuntimeException
 import io.iohk.atala.prism.DIDUtil
 import io.iohk.atala.prism.auth.SignedRpcRequest
 import io.iohk.atala.prism.credentials.CredentialBatchId
-import io.iohk.atala.prism.crypto.{
-  MerkleInclusionProof,
-  MerkleRoot,
-  Sha256,
-  Sha256Digest
-}
+import io.iohk.atala.prism.crypto.{MerkleInclusionProof, MerkleRoot, Sha256, Sha256Digest}
 import io.iohk.atala.prism.crypto.EC.{INSTANCE => EC}
 import io.iohk.atala.prism.crypto.keys.ECKeyPair
 import io.iohk.atala.prism.identity.{PrismDid => DID}
 import io.iohk.atala.prism.management.console.ManagementConsoleRpcSpecBase
-import io.iohk.atala.prism.management.console.models.{
-  GenericCredential,
-  InstitutionGroup,
-  PaginatedQueryConstraints
-}
+import io.iohk.atala.prism.management.console.models.{GenericCredential, InstitutionGroup, PaginatedQueryConstraints}
 import io.iohk.atala.prism.management.console.DataPreparation.{
   createContact,
   createGenericCredential,
@@ -34,14 +25,7 @@ import io.iohk.atala.prism.management.console.DataPreparation.{
 import io.iohk.atala.prism.management.console.DataPreparation
 import io.iohk.atala.prism.protos.connector_api.SendMessagesResponse
 import io.iohk.atala.prism.protos.connector_models.MessageToSendByConnectionToken
-import io.iohk.atala.prism.protos.{
-  common_models,
-  connector_api,
-  connector_models,
-  console_api,
-  node_api,
-  node_models
-}
+import io.iohk.atala.prism.protos.{common_models, connector_api, connector_models, console_api, node_api, node_models}
 import org.mockito.IdiomaticMockito.StubbingOps
 import org.mockito.Mockito.verify
 import org.scalatest.OptionValues.convertOptionToValuable
@@ -58,9 +42,7 @@ import scala.jdk.CollectionConverters._
 import io.iohk.atala.prism.logging.TraceId
 import io.iohk.atala.prism.models.DidSuffix
 
-class CredentialsServiceImplSpec
-    extends ManagementConsoleRpcSpecBase
-    with DIDUtil {
+class CredentialsServiceImplSpec extends ManagementConsoleRpcSpecBase with DIDUtil {
 
   val keyPair = EC.generateKeyPair()
   val did = generateDid(keyPair.getPublicKey)
@@ -134,8 +116,7 @@ class CredentialsServiceImplSpec
         .getGenericCredentials(
           issuerId,
           new GenericCredential.PaginatedQuery(
-            ordering =
-              PaginatedQueryConstraints.ResultOrdering(SortBy.CreatedOn)
+            ordering = PaginatedQueryConstraints.ResultOrdering(SortBy.CreatedOn)
           )
         )
         .run(TraceId.generateYOLO)
@@ -327,18 +308,17 @@ class CredentialsServiceImplSpec
           signature = ByteString.copyFrom("".getBytes()),
           operation = Some(
             node_models.AtalaOperation(
-              operation =
-                node_models.AtalaOperation.Operation.RevokeCredentials(
-                  node_models
-                    .RevokeCredentialsOperation()
-                    .withCredentialBatchId(mockCredentialBatchId.getId)
-                    .withPreviousOperationHash(
-                      ByteString.copyFrom(mockHash.getValue)
-                    )
-                    .withCredentialsToRevoke(
-                      List(ByteString.copyFrom(mockHash.getValue))
-                    )
-                )
+              operation = node_models.AtalaOperation.Operation.RevokeCredentials(
+                node_models
+                  .RevokeCredentialsOperation()
+                  .withCredentialBatchId(mockCredentialBatchId.getId)
+                  .withPreviousOperationHash(
+                    ByteString.copyFrom(mockHash.getValue)
+                  )
+                  .withCredentialsToRevoke(
+                    List(ByteString.copyFrom(mockHash.getValue))
+                  )
+              )
             )
           )
         )
@@ -395,18 +375,17 @@ class CredentialsServiceImplSpec
           signature = ByteString.copyFrom("".getBytes()),
           operation = Some(
             node_models.AtalaOperation(
-              operation =
-                node_models.AtalaOperation.Operation.RevokeCredentials(
-                  node_models
-                    .RevokeCredentialsOperation()
-                    .withCredentialBatchId(mockCredentialBatchId.getId)
-                    .withPreviousOperationHash(
-                      ByteString.copyFrom(mockHash.getValue)
-                    )
-                    .withCredentialsToRevoke(
-                      List(ByteString.copyFrom(mockHash.getValue))
-                    )
-                )
+              operation = node_models.AtalaOperation.Operation.RevokeCredentials(
+                node_models
+                  .RevokeCredentialsOperation()
+                  .withCredentialBatchId(mockCredentialBatchId.getId)
+                  .withPreviousOperationHash(
+                    ByteString.copyFrom(mockHash.getValue)
+                  )
+                  .withCredentialsToRevoke(
+                    List(ByteString.copyFrom(mockHash.getValue))
+                  )
+              )
             )
           )
         )
@@ -477,15 +456,14 @@ class CredentialsServiceImplSpec
           signature = ByteString.copyFrom("".getBytes()),
           operation = Some(
             node_models.AtalaOperation(
-              operation =
-                node_models.AtalaOperation.Operation.RevokeCredentials(
-                  node_models
-                    .RevokeCredentialsOperation()
-                    .withCredentialBatchId(mockCredentialBatchId.getId)
-                    .withPreviousOperationHash(
-                      ByteString.copyFrom(mockHash.getValue)
-                    )
-                )
+              operation = node_models.AtalaOperation.Operation.RevokeCredentials(
+                node_models
+                  .RevokeCredentialsOperation()
+                  .withCredentialBatchId(mockCredentialBatchId.getId)
+                  .withPreviousOperationHash(
+                    ByteString.copyFrom(mockHash.getValue)
+                  )
+              )
             )
           )
         )
@@ -518,21 +496,20 @@ class CredentialsServiceImplSpec
           signature = ByteString.copyFrom("".getBytes()),
           operation = Some(
             node_models.AtalaOperation(
-              operation =
-                node_models.AtalaOperation.Operation.RevokeCredentials(
-                  node_models
-                    .RevokeCredentialsOperation()
-                    .withCredentialBatchId(mockCredentialBatchId.getId)
-                    .withPreviousOperationHash(
+              operation = node_models.AtalaOperation.Operation.RevokeCredentials(
+                node_models
+                  .RevokeCredentialsOperation()
+                  .withCredentialBatchId(mockCredentialBatchId.getId)
+                  .withPreviousOperationHash(
+                    ByteString.copyFrom(mockHash.getValue)
+                  )
+                  .withCredentialsToRevoke(
+                    List(
+                      ByteString.copyFrom(mockHash.getValue),
                       ByteString.copyFrom(mockHash.getValue)
                     )
-                    .withCredentialsToRevoke(
-                      List(
-                        ByteString.copyFrom(mockHash.getValue),
-                        ByteString.copyFrom(mockHash.getValue)
-                      )
-                    )
-                )
+                  )
+              )
             )
           )
         )
@@ -565,18 +542,17 @@ class CredentialsServiceImplSpec
           signature = ByteString.copyFrom("".getBytes()),
           operation = Some(
             node_models.AtalaOperation(
-              operation =
-                node_models.AtalaOperation.Operation.RevokeCredentials(
-                  node_models
-                    .RevokeCredentialsOperation()
-                    .withCredentialBatchId(mockCredentialBatchId.getId)
-                    .withPreviousOperationHash(
-                      ByteString.copyFrom(mockHash.getValue)
-                    )
-                    .withCredentialsToRevoke(
-                      List(ByteString.copyFrom(mockHash.getValue))
-                    )
-                )
+              operation = node_models.AtalaOperation.Operation.RevokeCredentials(
+                node_models
+                  .RevokeCredentialsOperation()
+                  .withCredentialBatchId(mockCredentialBatchId.getId)
+                  .withPreviousOperationHash(
+                    ByteString.copyFrom(mockHash.getValue)
+                  )
+                  .withCredentialsToRevoke(
+                    List(ByteString.copyFrom(mockHash.getValue))
+                  )
+              )
             )
           )
         )
@@ -629,11 +605,10 @@ class CredentialsServiceImplSpec
       createParticipant("Institution", did)
       val request =
         console_api.GetLedgerDataRequest(illegalBatchId, aCredentialHash)
-      usingApiAsCredentials(SignedRpcRequest.generate(keyPair, did, request)) {
-        serviceStub =>
-          intercept[RuntimeException](
-            serviceStub.getLedgerData(request)
-          )
+      usingApiAsCredentials(SignedRpcRequest.generate(keyPair, did, request)) { serviceStub =>
+        intercept[RuntimeException](
+          serviceStub.getLedgerData(request)
+        )
       }
     }
 
@@ -641,11 +616,10 @@ class CredentialsServiceImplSpec
       createParticipant("Institution", did)
       val request =
         console_api.GetLedgerDataRequest(aBatchId, illegalCredentialHash)
-      usingApiAsCredentials(SignedRpcRequest.generate(keyPair, did, request)) {
-        serviceStub =>
-          intercept[RuntimeException](
-            serviceStub.getLedgerData(request)
-          )
+      usingApiAsCredentials(SignedRpcRequest.generate(keyPair, did, request)) { serviceStub =>
+        intercept[RuntimeException](
+          serviceStub.getLedgerData(request)
+        )
       }
     }
 
@@ -653,24 +627,21 @@ class CredentialsServiceImplSpec
       node_models.LedgerData(
         transactionId = "tx id 1",
         ledger = common_models.Ledger.IN_MEMORY,
-        timestampInfo =
-          Some(node_models.TimestampInfo(1, 1, Some(new Timestamp(1, 0))))
+        timestampInfo = Some(node_models.TimestampInfo(1, 1, Some(new Timestamp(1, 0))))
       )
 
     val batchRevocationLedgerData =
       node_models.LedgerData(
         transactionId = "tx id 2",
         ledger = common_models.Ledger.CARDANO_MAINNET,
-        timestampInfo =
-          Some(node_models.TimestampInfo(2, 2, Some(new Timestamp(2, 0))))
+        timestampInfo = Some(node_models.TimestampInfo(2, 2, Some(new Timestamp(2, 0))))
       )
 
     val credentialRevocationLedgerData =
       node_models.LedgerData(
         transactionId = "tx id 3",
         ledger = common_models.Ledger.CARDANO_TESTNET,
-        timestampInfo =
-          Some(node_models.TimestampInfo(3, 3, Some(new Timestamp(3, 0))))
+        timestampInfo = Some(node_models.TimestampInfo(3, 3, Some(new Timestamp(3, 0))))
       )
 
     def nodeReturns(
@@ -714,13 +685,12 @@ class CredentialsServiceImplSpec
 
       nodeReturns(Some(batchIssuanceLedgerData), None, None)
 
-      usingApiAsCredentials(SignedRpcRequest.generate(keyPair, did, request)) {
-        serviceStub =>
-          val response = serviceStub.getLedgerData(request)
+      usingApiAsCredentials(SignedRpcRequest.generate(keyPair, did, request)) { serviceStub =>
+        val response = serviceStub.getLedgerData(request)
 
-          response.batchIssuance mustBe (Some(batchIssuanceLedgerData))
-          response.batchRevocation mustBe (empty)
-          response.credentialRevocation mustBe (empty)
+        response.batchIssuance mustBe (Some(batchIssuanceLedgerData))
+        response.batchRevocation mustBe (empty)
+        response.credentialRevocation mustBe (empty)
       }
     }
 
@@ -731,13 +701,12 @@ class CredentialsServiceImplSpec
 
       nodeReturns(None, Some(batchRevocationLedgerData), None)
 
-      usingApiAsCredentials(SignedRpcRequest.generate(keyPair, did, request)) {
-        serviceStub =>
-          val response = serviceStub.getLedgerData(request)
+      usingApiAsCredentials(SignedRpcRequest.generate(keyPair, did, request)) { serviceStub =>
+        val response = serviceStub.getLedgerData(request)
 
-          response.batchIssuance mustBe (empty)
-          response.batchRevocation mustBe (Some(batchRevocationLedgerData))
-          response.credentialRevocation mustBe (empty)
+        response.batchIssuance mustBe (empty)
+        response.batchRevocation mustBe (Some(batchRevocationLedgerData))
+        response.credentialRevocation mustBe (empty)
       }
     }
 
@@ -748,15 +717,14 @@ class CredentialsServiceImplSpec
 
       nodeReturns(None, None, Some(credentialRevocationLedgerData))
 
-      usingApiAsCredentials(SignedRpcRequest.generate(keyPair, did, request)) {
-        serviceStub =>
-          val response = serviceStub.getLedgerData(request)
+      usingApiAsCredentials(SignedRpcRequest.generate(keyPair, did, request)) { serviceStub =>
+        val response = serviceStub.getLedgerData(request)
 
-          response.batchIssuance mustBe (empty)
-          response.batchRevocation mustBe (empty)
-          response.credentialRevocation mustBe (Some(
-            credentialRevocationLedgerData
-          ))
+        response.batchIssuance mustBe (empty)
+        response.batchRevocation mustBe (empty)
+        response.credentialRevocation mustBe (Some(
+          credentialRevocationLedgerData
+        ))
       }
     }
 
@@ -771,15 +739,14 @@ class CredentialsServiceImplSpec
         Some(credentialRevocationLedgerData)
       )
 
-      usingApiAsCredentials(SignedRpcRequest.generate(keyPair, did, request)) {
-        serviceStub =>
-          val response = serviceStub.getLedgerData(request)
+      usingApiAsCredentials(SignedRpcRequest.generate(keyPair, did, request)) { serviceStub =>
+        val response = serviceStub.getLedgerData(request)
 
-          response.batchIssuance mustBe (Some(batchIssuanceLedgerData))
-          response.batchRevocation mustBe (empty)
-          response.credentialRevocation mustBe (Some(
-            credentialRevocationLedgerData
-          ))
+        response.batchIssuance mustBe (Some(batchIssuanceLedgerData))
+        response.batchRevocation mustBe (empty)
+        response.credentialRevocation mustBe (Some(
+          credentialRevocationLedgerData
+        ))
       }
     }
   }
@@ -794,17 +761,16 @@ class CredentialsServiceImplSpec
         signature = ByteString.copyFrom("".getBytes()),
         operation = Some(
           node_models.AtalaOperation(
-            operation =
-              node_models.AtalaOperation.Operation.IssueCredentialBatch(
-                node_models.IssueCredentialBatchOperation(
-                  credentialBatchData = Some(
-                    node_models.CredentialBatchData(
-                      issuerDid = didSuffix.value,
-                      merkleRoot = ByteString.copyFrom(credentialHash.getValue)
-                    )
+            operation = node_models.AtalaOperation.Operation.IssueCredentialBatch(
+              node_models.IssueCredentialBatchOperation(
+                credentialBatchData = Some(
+                  node_models.CredentialBatchData(
+                    issuerDid = didSuffix.value,
+                    merkleRoot = ByteString.copyFrom(credentialHash.getValue)
                   )
                 )
               )
+            )
           )
         )
       )
@@ -890,29 +856,27 @@ class CredentialsServiceImplSpec
             1.to(2).map(_ => MessageToSendByConnectionToken())
           )
         ),
-        sendMessagesRequestMetadata =
-          Some(DataPreparation.connectorRequestMetadataProto)
+        sendMessagesRequestMetadata = Some(DataPreparation.connectorRequestMetadataProto)
       )
 
-      usingApiAsCredentials(SignedRpcRequest.generate(keyPair, did, request)) {
-        serviceStub =>
-          serviceStub.shareCredentials(request)
+      usingApiAsCredentials(SignedRpcRequest.generate(keyPair, did, request)) { serviceStub =>
+        serviceStub.shareCredentials(request)
 
-          val result1 =
-            credentialsRepository
-              .getBy(credential1.credentialId)
-              .run(TraceId.generateYOLO)
-              .unsafeRunSync()
-              .value
-          result1.sharedAt mustNot be(empty)
+        val result1 =
+          credentialsRepository
+            .getBy(credential1.credentialId)
+            .run(TraceId.generateYOLO)
+            .unsafeRunSync()
+            .value
+        result1.sharedAt mustNot be(empty)
 
-          val result2 =
-            credentialsRepository
-              .getBy(credential2.credentialId)
-              .run(TraceId.generateYOLO)
-              .unsafeRunSync()
-              .value
-          result2.sharedAt mustNot be(empty)
+        val result2 =
+          credentialsRepository
+            .getBy(credential2.credentialId)
+            .run(TraceId.generateYOLO)
+            .unsafeRunSync()
+            .value
+        result2.sharedAt mustNot be(empty)
       }
     }
 
@@ -925,8 +889,7 @@ class CredentialsServiceImplSpec
               1.to(2).map(_ => MessageToSendByConnectionToken())
             )
           ),
-          sendMessagesRequestMetadata =
-            Some(DataPreparation.connectorRequestMetadataProto)
+          sendMessagesRequestMetadata = Some(DataPreparation.connectorRequestMetadataProto)
         )
       }
     }
@@ -943,8 +906,7 @@ class CredentialsServiceImplSpec
               1.to(2).map(_ => MessageToSendByConnectionToken())
             )
           ),
-          sendMessagesRequestMetadata =
-            Some(DataPreparation.connectorRequestMetadataProto)
+          sendMessagesRequestMetadata = Some(DataPreparation.connectorRequestMetadataProto)
         )
       }
     }
@@ -974,8 +936,7 @@ class CredentialsServiceImplSpec
             credential2.credentialId.uuid.toString
           ),
           sendMessagesRequest = None,
-          sendMessagesRequestMetadata =
-            Some(DataPreparation.connectorRequestMetadataProto)
+          sendMessagesRequestMetadata = Some(DataPreparation.connectorRequestMetadataProto)
         )
       }
     }
@@ -992,8 +953,7 @@ class CredentialsServiceImplSpec
               1.to(3).map(_ => MessageToSendByConnectionToken())
             )
           ),
-          sendMessagesRequestMetadata =
-            Some(DataPreparation.connectorRequestMetadataProto)
+          sendMessagesRequestMetadata = Some(DataPreparation.connectorRequestMetadataProto)
         )
       }
     }
@@ -1008,27 +968,26 @@ class CredentialsServiceImplSpec
 
       val request = f(credential1, credential2)
 
-      usingApiAsCredentials(SignedRpcRequest.generate(keyPair, did, request)) {
-        serviceStub =>
-          intercept[StatusRuntimeException] {
-            serviceStub.shareCredentials(request)
-          }
+      usingApiAsCredentials(SignedRpcRequest.generate(keyPair, did, request)) { serviceStub =>
+        intercept[StatusRuntimeException] {
+          serviceStub.shareCredentials(request)
+        }
 
-          val result1 =
-            credentialsRepository
-              .getBy(credential1.credentialId)
-              .run(TraceId.generateYOLO)
-              .unsafeRunSync()
-              .value
-          result1.sharedAt must be(empty)
+        val result1 =
+          credentialsRepository
+            .getBy(credential1.credentialId)
+            .run(TraceId.generateYOLO)
+            .unsafeRunSync()
+            .value
+        result1.sharedAt must be(empty)
 
-          val result2 =
-            credentialsRepository
-              .getBy(credential2.credentialId)
-              .run(TraceId.generateYOLO)
-              .unsafeRunSync()
-              .value
-          result2.sharedAt must be(empty)
+        val result2 =
+          credentialsRepository
+            .getBy(credential2.credentialId)
+            .run(TraceId.generateYOLO)
+            .unsafeRunSync()
+            .value
+        result2.sharedAt must be(empty)
       }
     }
   }
@@ -1394,8 +1353,7 @@ class CredentialsServiceImplSpec
       val credential2 = createGenericCredential(issuerId, contactId, "B")
 
       val request = console_api.DeleteCredentialsRequest(
-        credentialsIds =
-          List(credential1.credentialId.uuid.toString, "invalidUUIdzzzz")
+        credentialsIds = List(credential1.credentialId.uuid.toString, "invalidUUIdzzzz")
       )
       val rpcRequest = SignedRpcRequest.generate(keyPair, did, request)
 

@@ -1,15 +1,11 @@
 package io.iohk.atala.prism.node.operations
 
 import com.google.protobuf.ByteString
-import io.iohk.atala.prism.node.operations.ValidationError.{
-  InvalidValue,
-  MissingValue
-}
+import io.iohk.atala.prism.node.operations.ValidationError.{InvalidValue, MissingValue}
 
 package object path {
 
-  /** Representation of sequence of field names pointing to some place in
-    * protobuf message
+  /** Representation of sequence of field names pointing to some place in protobuf message
     */
   case class Path(path: Vector[String]) extends AnyVal {
     def /(axis: String): Path = Path(path :+ axis)
@@ -68,8 +64,7 @@ package object path {
       * @tparam MM
       *   type of the child
       * @return
-      *   ValueAtPath representing the child or MissingValue error if f returns
-      *   empty Option
+      *   ValueAtPath representing the child or MissingValue error if f returns empty Option
       */
     def childGet[MM](
         f: M => Option[MM],
@@ -107,9 +102,7 @@ package object path {
       *   transformed value or InvalidError for this path with provided message
       */
     def parse[MM](f: M => Either[String, MM]): Either[InvalidValue, MM] = {
-      f(value).left.map(message =>
-        InvalidValue(path, valueToString(value), message)
-      )
+      f(value).left.map(message => InvalidValue(path, valueToString(value), message))
     }
   }
 }

@@ -29,10 +29,7 @@ import io.iohk.atala.prism.management.console.grpc._
 import io.iohk.atala.prism.management.console.integrations.CredentialsIntegrationService
 import io.iohk.atala.prism.management.console.models._
 import io.iohk.atala.prism.management.console.repositories.CredentialsRepository
-import io.iohk.atala.prism.protos.node_api.{
-  IssueCredentialBatchResponse,
-  NodeServiceGrpc
-}
+import io.iohk.atala.prism.protos.node_api.{IssueCredentialBatchResponse, NodeServiceGrpc}
 import io.iohk.atala.prism.protos.node_models.SignedAtalaOperation
 import io.iohk.atala.prism.protos.node_api
 import org.slf4j.{Logger, LoggerFactory}
@@ -224,25 +221,24 @@ private final class CredentialsServiceImpl[F[_]: Monad](
         batchId: CredentialBatchId,
         signedIssueCredentialBatchOp: SignedAtalaOperation
     ): F[Either[ManagementConsoleError, Int]] = {
-      extractValues(signedIssueCredentialBatchOp).traverse {
-        case (merkleRoot, did, operationHash) =>
-          val computedBatchId =
-            CredentialBatchId.fromBatchData(did.getSuffix, merkleRoot)
-          // validation for sanity check
-          // The `batchId` parameter is the id returned by the node.
-          // We make this check to be sure that the node and the console are
-          // using the same id (if this fails, they are using different versions
-          // of the protocol)
-          if (batchId != computedBatchId)
-            logger.warn(
-              "The batch id provided by the node does not match the one computed"
-            )
-
-          credentialsRepository.storeBatchData(
-            batchId = batchId,
-            issuanceOperationHash = operationHash,
-            AtalaOperationId.of(signedIssueCredentialBatchOp)
+      extractValues(signedIssueCredentialBatchOp).traverse { case (merkleRoot, did, operationHash) =>
+        val computedBatchId =
+          CredentialBatchId.fromBatchData(did.getSuffix, merkleRoot)
+        // validation for sanity check
+        // The `batchId` parameter is the id returned by the node.
+        // We make this check to be sure that the node and the console are
+        // using the same id (if this fails, they are using different versions
+        // of the protocol)
+        if (batchId != computedBatchId)
+          logger.warn(
+            "The batch id provided by the node does not match the one computed"
           )
+
+        credentialsRepository.storeBatchData(
+          batchId = batchId,
+          issuanceOperationHash = operationHash,
+          AtalaOperationId.of(signedIssueCredentialBatchOp)
+        )
       }
     }
 
@@ -383,8 +379,7 @@ private final class CredentialsServiceLogs[
       info"creating generic credential $participantId" *> in
         .flatTap(
           _.fold(
-            er =>
-              error"encountered an error while creating generic credential $er",
+            er => error"encountered an error while creating generic credential $er",
             _ => info"creating generic credential - successfully done"
           )
         )
@@ -446,8 +441,7 @@ private final class CredentialsServiceLogs[
       info"revoking published credential $participantId" *> in
         .flatTap(
           _.fold(
-            er =>
-              error"encountered an error while revoking published credential $er",
+            er => error"encountered an error while revoking published credential $er",
             _ => info"revoking published credential - successfully done"
           )
         )

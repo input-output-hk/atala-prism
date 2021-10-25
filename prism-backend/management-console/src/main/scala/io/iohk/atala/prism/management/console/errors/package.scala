@@ -22,8 +22,7 @@ package object errors {
   @derive(loggable)
   sealed trait ManagementConsoleError extends PrismError
 
-  case class GroupDoesNotExist(groupId: InstitutionGroup.Id)
-      extends ManagementConsoleError {
+  case class GroupDoesNotExist(groupId: InstitutionGroup.Id) extends ManagementConsoleError {
     def toStatus: Status =
       Status.INVALID_ARGUMENT.withDescription(s"Group $groupId does not exist")
   }
@@ -89,21 +88,17 @@ package object errors {
       )
   }
 
-  case class UnknownValueError(tpe: String, value: String)
-      extends ManagementConsoleError {
+  case class UnknownValueError(tpe: String, value: String) extends ManagementConsoleError {
     override def toStatus: Status = {
       Status.UNKNOWN.withDescription(s"Unknown $tpe: $value")
     }
   }
 
-  final case class InvalidRequest(reason: String)
-      extends ManagementConsoleError {
+  final case class InvalidRequest(reason: String) extends ManagementConsoleError {
     def toStatus: Status = Status.INVALID_ARGUMENT.withDescription(reason)
   }
 
-  case class InternalServerError(cause: Throwable)
-      extends ManagementConsoleError
-      with PrismServerError {
+  case class InternalServerError(cause: Throwable) extends ManagementConsoleError with PrismServerError {
     override def toStatus: Status = {
       Status.INTERNAL.withDescription(
         "Internal server error. Please contact administrator."
@@ -111,8 +106,7 @@ package object errors {
     }
   }
 
-  case class CredentialTypeDoesNotExist(credentialTypeId: CredentialTypeId)
-      extends ManagementConsoleError {
+  case class CredentialTypeDoesNotExist(credentialTypeId: CredentialTypeId) extends ManagementConsoleError {
     def toStatus: Status =
       Status.INVALID_ARGUMENT.withDescription(
         s"Credential type with id: ${credentialTypeId} does not exist"
@@ -202,9 +196,7 @@ package object errors {
     private def showContacts(
         in: List[(Contact.Id, Json, List[CredentialDataValidationError])]
     ): String =
-      in.map(contact =>
-        s"contactId=${contact._1}, errors=${showValidationErrorsMessages(contact._3)}"
-      ).mkString(",")
+      in.map(contact => s"contactId=${contact._1}, errors=${showValidationErrorsMessages(contact._3)}").mkString(",")
 
     private def showValidationErrorsMessages(
         in: List[CredentialDataValidationError]
@@ -243,70 +235,59 @@ package object errors {
       }
   }
 
-  case class GetContactsInvalidRequest(reason: String)
-      extends ManagementConsoleError {
+  case class GetContactsInvalidRequest(reason: String) extends ManagementConsoleError {
     def toStatus: Status = Status.INVALID_ARGUMENT.withDescription(reason)
   }
 
-  case class CreateContactsInvalidRequest(reason: String)
-      extends ManagementConsoleError {
+  case class CreateContactsInvalidRequest(reason: String) extends ManagementConsoleError {
     def toStatus: Status = Status.INVALID_ARGUMENT.withDescription(reason)
   }
 
-  case class UpdateContactInvalidRequest(reason: String)
-      extends ManagementConsoleError {
+  case class UpdateContactInvalidRequest(reason: String) extends ManagementConsoleError {
     def toStatus: Status = Status.INVALID_ARGUMENT.withDescription(reason)
   }
 
-  case class ContactHasExistingCredentials(contactId: Contact.Id)
-      extends ManagementConsoleError {
+  case class ContactHasExistingCredentials(contactId: Contact.Id) extends ManagementConsoleError {
     def toStatus: Status =
       Status.INVALID_ARGUMENT.withDescription(
         s"Contact with id '${contactId.uuid}' has some existing credentials"
       )
   }
 
-  case class GroupNameIsNotFree(name: InstitutionGroup.Name)
-      extends ManagementConsoleError {
+  case class GroupNameIsNotFree(name: InstitutionGroup.Name) extends ManagementConsoleError {
     def toStatus: Status =
       Status.INVALID_ARGUMENT.withDescription(
         s"Group with name '${name.value}' already exists"
       )
   }
 
-  case class UpdateGroupInvalidRequest(reason: String)
-      extends ManagementConsoleError {
+  case class UpdateGroupInvalidRequest(reason: String) extends ManagementConsoleError {
     def toStatus: Status = Status.INVALID_ARGUMENT.withDescription(reason)
   }
 
-  case class GetStatisticsInvalidRequest(reason: String)
-      extends ManagementConsoleError {
+  case class GetStatisticsInvalidRequest(reason: String) extends ManagementConsoleError {
     def toStatus: Status = Status.INVALID_ARGUMENT.withDescription(reason)
   }
 
-  case class DeleteGroupInvalidRequest(reason: String)
-      extends ManagementConsoleError {
+  case class DeleteGroupInvalidRequest(reason: String) extends ManagementConsoleError {
     def toStatus: Status = Status.INVALID_ARGUMENT.withDescription(reason)
   }
 
-  case class ContactIdsWereNotFound(contactIds: Set[Contact.Id])
-      extends ManagementConsoleError {
+  case class ContactIdsWereNotFound(contactIds: Set[Contact.Id]) extends ManagementConsoleError {
     override def toStatus: Status =
       Status.INVALID_ARGUMENT.withDescription(
         s"Contacts with id [${contactIds.map(_.uuid).mkString(", ")}] do not exist"
       )
   }
 
-  case class ExternalIdsWereNotFound(externalIds: Set[Contact.ExternalId])
-      extends ManagementConsoleError {
+  case class ExternalIdsWereNotFound(externalIds: Set[Contact.ExternalId]) extends ManagementConsoleError {
     override def toStatus: Status =
       Status.INVALID_ARGUMENT.withDescription(
         s"Contacts with external id [${externalIds.map(_.value).mkString(", ")}] do not exist"
       )
   }
 
-  case class InvalidGroups(groupIds: Set[InstitutionGroup.Id])
-      extends ManagementConsoleError {
+  case class InvalidGroups(groupIds: Set[InstitutionGroup.Id]) extends ManagementConsoleError {
     override def toStatus: Status =
       Status.INVALID_ARGUMENT.withDescription(
         s"Groups [${groupIds.map(_.uuid).mkString(", ")}] are invalid"

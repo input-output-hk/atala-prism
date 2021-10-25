@@ -3,12 +3,7 @@ package io.iohk.atala.prism.management.console.repositories.metrics
 import cats.effect.BracketThrow
 import io.iohk.atala.prism.management.console.errors.ManagementConsoleError
 import io.iohk.atala.prism.management.console.models.InstitutionGroup.PaginatedQuery
-import io.iohk.atala.prism.management.console.models.{
-  Contact,
-  GetGroupsResult,
-  InstitutionGroup,
-  ParticipantId
-}
+import io.iohk.atala.prism.management.console.models.{Contact, GetGroupsResult, InstitutionGroup, ParticipantId}
 import io.iohk.atala.prism.management.console.repositories.InstitutionGroupsRepository
 import io.iohk.atala.prism.metrics.TimeMeasureUtil.MeasureOps
 import io.iohk.atala.prism.metrics.{TimeMeasureMetric, TimeMeasureUtil}

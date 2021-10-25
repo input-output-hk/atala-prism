@@ -4,11 +4,7 @@ import com.softwaremill.sttp.Method
 import io.circe.syntax._
 import io.circe.{Encoder, Json}
 import io.iohk.atala.prism.models.TransactionId
-import io.iohk.atala.prism.node.cardano.models.{
-  Payment,
-  TransactionMetadata,
-  WalletId
-}
+import io.iohk.atala.prism.node.cardano.models.{Payment, TransactionMetadata, WalletId}
 import io.iohk.atala.prism.node.cardano.wallet.api.JsonCodecs._
 
 private sealed abstract class ApiRequest(
@@ -76,8 +72,7 @@ private[api] object ApiRequest {
     override def requestBody: Option[Json] = None
   }
 
-  final case class GetWallet(walletId: WalletId)
-      extends ApiRequest(s"v2/wallets/$walletId", Method.GET) {
+  final case class GetWallet(walletId: WalletId) extends ApiRequest(s"v2/wallets/$walletId", Method.GET) {
     override def requestBody: Option[Json] = None
   }
 

@@ -13,12 +13,7 @@ import doobie.implicits._
 import doobie.util.transactor.Transactor
 import io.iohk.atala.prism.connector.AtalaOperationId
 import io.iohk.atala.prism.connector.errors.{UnknownValueError, _}
-import io.iohk.atala.prism.connector.model.{
-  ParticipantInfo,
-  ParticipantLogo,
-  ParticipantType,
-  UpdateParticipantProfile
-}
+import io.iohk.atala.prism.connector.model.{ParticipantInfo, ParticipantLogo, ParticipantType, UpdateParticipantProfile}
 import io.iohk.atala.prism.connector.repositories.daos.ParticipantsDAO
 import io.iohk.atala.prism.connector.repositories.logs.ParticipantsRepositoryLogs
 import io.iohk.atala.prism.connector.repositories.metrics.ParticipantsRepositoryMetrics
@@ -126,8 +121,7 @@ private final class ParticipantsRepositoryImpl[F[_]: BracketThrow](
       .transact(xa)
       .map(_.asRight[CreateParticipantError])
       .handleErrorWith {
-        case e: PSQLException
-            if e.getServerErrorMessage.getConstraint == "participants_did_unique" =>
+        case e: PSQLException if e.getServerErrorMessage.getConstraint == "participants_did_unique" =>
           Either
             .left[CreateParticipantError, Unit](
               co(InvalidRequest("DID already exists"))

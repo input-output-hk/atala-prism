@@ -16,10 +16,7 @@ import io.iohk.atala.prism.management.console.models.{
   CredentialTypeState
 }
 
-class CredentialTypesServiceImplSpec
-    extends ManagementConsoleRpcSpecBase
-    with DIDUtil
-    with OptionValues {
+class CredentialTypesServiceImplSpec extends ManagementConsoleRpcSpecBase with DIDUtil with OptionValues {
 
   "CredentialTypesServiceImpl" should {
 
@@ -60,9 +57,7 @@ class CredentialTypesServiceImplSpec
           .getOrElse(fail())
 
       val request =
-        console_api.GetCredentialTypeRequest(credentialTypeId =
-          credentialType.credentialType.id.uuid.toString
-        )
+        console_api.GetCredentialTypeRequest(credentialTypeId = credentialType.credentialType.id.uuid.toString)
 
       // test
       usingApiAsCredentialType(
@@ -74,9 +69,7 @@ class CredentialTypesServiceImplSpec
     }
 
     "fail to get for a nonexistent id" in new Fixtures {
-      val request = console_api.GetCredentialTypeRequest(credentialTypeId =
-        UUID.randomUUID.toString
-      )
+      val request = console_api.GetCredentialTypeRequest(credentialTypeId = UUID.randomUUID.toString)
 
       // test
       usingApiAsCredentialType(
@@ -134,8 +127,7 @@ class CredentialTypesServiceImplSpec
           console_models.CreateCredentialTypeField(
             name = "new field",
             description = "description",
-            `type` =
-              console_models.CredentialTypeFieldType.CREDENTIAL_TYPE_FIELD_STRING
+            `type` = console_models.CredentialTypeFieldType.CREDENTIAL_TYPE_FIELD_STRING
           )
         )
       )
@@ -160,8 +152,7 @@ class CredentialTypesServiceImplSpec
       val model = console_models.UpdateCredentialType(
         id = "invalid uuid",
         name = "credenital-type-changed",
-        fields =
-          Seq(console_models.CreateCredentialTypeField(name = "new field"))
+        fields = Seq(console_models.CreateCredentialTypeField(name = "new field"))
       )
       val request =
         console_api.UpdateCredentialTypeRequest(credentialType = Some(model))
@@ -186,9 +177,7 @@ class CredentialTypesServiceImplSpec
           .getOrElse(fail())
 
       val request =
-        console_api.MarkAsReadyCredentialTypeRequest(credentialTypeId =
-          credentialType.credentialType.id.uuid.toString
-        )
+        console_api.MarkAsReadyCredentialTypeRequest(credentialTypeId = credentialType.credentialType.id.uuid.toString)
 
       credentialType.credentialType.state mustBe CredentialTypeState.Draft
 

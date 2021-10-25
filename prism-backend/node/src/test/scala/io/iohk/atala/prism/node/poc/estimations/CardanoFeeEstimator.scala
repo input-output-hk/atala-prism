@@ -6,23 +6,13 @@ import io.iohk.atala.prism.crypto.{MerkleRoot, Sha256}
 import io.iohk.atala.prism.crypto.EC.{INSTANCE => EC}
 import io.iohk.atala.prism.crypto.keys.{ECPrivateKey, ECPublicKey}
 import io.iohk.atala.prism.crypto.ECConfig.{INSTANCE => ECConfig}
-import io.iohk.atala.prism.identity.{
-  CanonicalPrismDid => Canonical,
-  PrismDid => DID
-}
+import io.iohk.atala.prism.identity.{CanonicalPrismDid => Canonical, PrismDid => DID}
 import io.iohk.atala.prism.node.NodeConfig
 import io.iohk.atala.prism.node.cardano.models._
 import io.iohk.atala.prism.node.cardano.wallet.CardanoWalletApiClient
-import io.iohk.atala.prism.node.poc.estimations.CardanoFeeEstimator.{
-  Estimation,
-  Issuer,
-  TotalEstimation
-}
+import io.iohk.atala.prism.node.poc.estimations.CardanoFeeEstimator.{Estimation, Issuer, TotalEstimation}
 import io.iohk.atala.prism.protos.node_internal.AtalaObject
-import io.iohk.atala.prism.protos.node_models.{
-  AtalaOperation,
-  SignedAtalaOperation
-}
+import io.iohk.atala.prism.protos.node_models.{AtalaOperation, SignedAtalaOperation}
 import io.iohk.atala.prism.protos.{node_internal, node_models}
 import org.scalatest.OptionValues._
 import org.scalatest.concurrent.ScalaFutures._
@@ -33,9 +23,8 @@ import scala.concurrent.duration._
 
 /** Estimates the Cardano fees to pay for a given deployment simulation.
   *
-  * <p>You can run the estimator with `sbt node/test:run` and choosing
-  * `CardanoFeeEstimator` from the list. In order to do so, make sure you have
-  * set the proper environment variables, as suggested <a
+  * <p>You can run the estimator with `sbt node/test:run` and choosing `CardanoFeeEstimator` from the list. In order to
+  * do so, make sure you have set the proper environment variables, as suggested <a
   * href="https://github.com/input-output-hk/atala/blob/develop/prism-backend/docs/cardano/use-cardano.md">here</a>.
   */
 class CardanoFeeEstimator(
@@ -103,13 +92,12 @@ class CardanoFeeEstimator(
 
   private def estimateFees(atalaObjects: Iterable[AtalaObject]): Lovelace = {
     val atalaObjectsBySize = atalaObjects.groupBy(_.toByteArray.length)
-    val fees = atalaObjectsBySize.foldLeft(BigInt(0)) {
-      case (sum, (_, atalaObjectsWithSameSize)) =>
-        // For performance, use an arbitrary object to estimate all of the objects with the same size, even though they
-        // may get different fees
-        sum + atalaObjectsWithSameSize.size * estimateFee(
-          atalaObjectsWithSameSize.head
-        )
+    val fees = atalaObjectsBySize.foldLeft(BigInt(0)) { case (sum, (_, atalaObjectsWithSameSize)) =>
+      // For performance, use an arbitrary object to estimate all of the objects with the same size, even though they
+      // may get different fees
+      sum + atalaObjectsWithSameSize.size * estimateFee(
+        atalaObjectsWithSameSize.head
+      )
     }
     Lovelace(fees)
   }
@@ -180,8 +168,7 @@ class CardanoFeeEstimator(
       lastOperation: AtalaOperation
   ): AtalaOperation = {
     val createDIDOp = node_models.UpdateDIDOperation(
-      previousOperationHash =
-        ByteString.copyFrom(Sha256.compute(lastOperation.toByteArray).getValue),
+      previousOperationHash = ByteString.copyFrom(Sha256.compute(lastOperation.toByteArray).getValue),
       id = did.getSuffix,
       actions = List(
         node_models.UpdateDIDAction(
@@ -260,8 +247,7 @@ object CardanoFeeEstimator {
     )
   }
 
-  case class Estimation(transactions: Int, fees: Lovelace)
-      extends EstimationFormat
+  case class Estimation(transactions: Int, fees: Lovelace) extends EstimationFormat
 
   def main(args: Array[String]): Unit = {
     estimateEthiopia()
@@ -304,8 +290,7 @@ object CardanoFeeEstimator {
       // Issue `studentsPerSchool` credentials `yearlyCredentialsPerStudent` times in a year
       Issuer(
         id = schoolId,
-        credentialsToIssue =
-          List.fill(yearlyCredentialsPerStudent)(studentsPerSchool)
+        credentialsToIssue = List.fill(yearlyCredentialsPerStudent)(studentsPerSchool)
       )
     )
 

@@ -12,10 +12,7 @@ import io.iohk.atala.prism.models.DidSuffix
 import io.iohk.atala.prism.node.models.nodeState
 import io.iohk.atala.prism.node.models.nodeState.{DIDPublicKeyState, LedgerData}
 import io.iohk.atala.prism.node.operations.path.{Path, ValueAtPath}
-import io.iohk.atala.prism.node.repositories.daos.{
-  CredentialBatchesDAO,
-  PublicKeysDAO
-}
+import io.iohk.atala.prism.node.repositories.daos.{CredentialBatchesDAO, PublicKeysDAO}
 import io.iohk.atala.prism.protos.node_models
 
 case class RevokeCredentialsOperation(
@@ -112,8 +109,7 @@ case class RevokeCredentialsOperation(
   }
 }
 
-object RevokeCredentialsOperation
-    extends SimpleOperationCompanion[RevokeCredentialsOperation] {
+object RevokeCredentialsOperation extends SimpleOperationCompanion[RevokeCredentialsOperation] {
 
   override def parse(
       operation: node_models.AtalaOperation,

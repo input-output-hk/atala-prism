@@ -1,20 +1,9 @@
 package io.iohk.atala.prism
 
 import cats.effect.IO
-import io.grpc.{
-  CallCredentials,
-  CallOptions,
-  ManagedChannel,
-  Metadata,
-  Server,
-  ServerServiceDefinition
-}
+import io.grpc.{CallCredentials, CallOptions, ManagedChannel, Metadata, Server, ServerServiceDefinition}
 import io.grpc.inprocess.{InProcessChannelBuilder, InProcessServerBuilder}
-import io.iohk.atala.prism.auth.grpc.{
-  GrpcAuthenticationHeader,
-  GrpcAuthenticatorInterceptor,
-  SignedRequestsHelper
-}
+import io.iohk.atala.prism.auth.grpc.{GrpcAuthenticationHeader, GrpcAuthenticatorInterceptor, SignedRequestsHelper}
 import io.iohk.atala.prism.crypto.EC.{INSTANCE => EC}
 import io.iohk.atala.prism.crypto.keys.{ECKeyPair, ECPublicKey}
 import io.iohk.atala.prism.crypto.signature.ECSignature
@@ -70,9 +59,7 @@ trait ApiTestHelper[STUB] {
   def unlogged[T](f: STUB => T): T
 }
 
-abstract class RpcSpecBase
-    extends AtalaWithPostgresSpec
-    with BeforeAndAfterEach {
+abstract class RpcSpecBase extends AtalaWithPostgresSpec with BeforeAndAfterEach {
 
   protected var serverName: String = _
   protected var serverHandle: Server = _
@@ -93,15 +80,13 @@ abstract class RpcSpecBase
       .directExecutor()
       .intercept(new GrpcAuthenticatorInterceptor)
 
-    val serverBuilder = services.foldLeft(serverBuilderWithoutServices) {
-      (builder, service) =>
-        builder.addService(service)
+    val serverBuilder = services.foldLeft(serverBuilderWithoutServices) { (builder, service) =>
+      builder.addService(service)
     }
 
     serverHandle = serverBuilder.build().start()
 
-    channelHandle =
-      InProcessChannelBuilder.forName(serverName).directExecutor().build()
+    channelHandle = InProcessChannelBuilder.forName(serverName).directExecutor().build()
   }
 
   override def afterEach(): Unit = {

@@ -18,10 +18,7 @@ import io.iohk.atala.prism.connector.errors.MessagesError._
 import io.iohk.atala.prism.connector.model._
 import io.iohk.atala.prism.connector.model.actions.SendMessagesRequest
 import io.iohk.atala.prism.connector.repositories.MessagesRepository._
-import io.iohk.atala.prism.connector.repositories.daos.{
-  ConnectionsDAO,
-  MessagesDAO
-}
+import io.iohk.atala.prism.connector.repositories.daos.{ConnectionsDAO, MessagesDAO}
 import io.iohk.atala.prism.connector.repositories.logs.MessagesRepositoryLogs
 import io.iohk.atala.prism.connector.repositories.metrics.MessagesRepositoryMetrics
 import io.iohk.atala.prism.errors.LoggingContext
@@ -97,8 +94,7 @@ object MessagesRepository {
     for {
       serviceLogs <- logs.service[MessagesRepository[Stream[F, *], F]]
     } yield {
-      implicit val implicitLogs
-          : ServiceLogging[F, MessagesRepository[Stream[F, *], F]] = serviceLogs
+      implicit val implicitLogs: ServiceLogging[F, MessagesRepository[Stream[F, *], F]] = serviceLogs
       val metrics: MessagesRepository[Stream[F, *], Mid[F, *]] =
         new MessagesRepositoryMetrics[Stream[F, *], F]
       val logs: MessagesRepository[Stream[F, *], Mid[F, *]] =
@@ -203,8 +199,8 @@ private final class MessagesRepositoryImpl[F[_]: BracketThrow](
           sender
         )
       )
-      otherSidesAndIdsMap = otherSidesAndIds.map {
-        case (token, id, participant) => token -> (id -> participant)
+      otherSidesAndIdsMap = otherSidesAndIds.map { case (token, id, participant) =>
+        token -> (id -> participant)
       }.toMap
 
       messagesToInsert <- EitherT.fromEither[ConnectionIO](

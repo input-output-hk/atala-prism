@@ -6,12 +6,7 @@ import cats.syntax.applicativeError._
 import cats.syntax.flatMap._
 import io.iohk.atala.prism.management.console.errors.ManagementConsoleError
 import io.iohk.atala.prism.management.console.models.InstitutionGroup.PaginatedQuery
-import io.iohk.atala.prism.management.console.models.{
-  Contact,
-  GetGroupsResult,
-  InstitutionGroup,
-  ParticipantId
-}
+import io.iohk.atala.prism.management.console.models.{Contact, GetGroupsResult, InstitutionGroup, ParticipantId}
 import io.iohk.atala.prism.management.console.repositories.InstitutionGroupsRepository
 import tofu.higherKind.Mid
 import tofu.logging.ServiceLogging
@@ -33,8 +28,7 @@ private[repositories] final class InstitutionGroupsRepositoryLogs[F[
       info"creating institution group $institutionId $name" *> in
         .flatTap(
           _.fold(
-            e =>
-              error"encountered an error while creating institution group $e",
+            e => error"encountered an error while creating institution group $e",
             r => info"creating institution group - successfully done ${r.id}"
           )
         )
@@ -48,9 +42,7 @@ private[repositories] final class InstitutionGroupsRepositoryLogs[F[
   ): Mid[F, GetGroupsResult] =
     in =>
       info"getting institution group by query $institutionId" *> in
-        .flatTap(res =>
-          info"getting institution group by query - found ${res.groups.size} entities"
-        )
+        .flatTap(res => info"getting institution group by query - found ${res.groups.size} entities")
         .onError(
           errorCause"encountered an error while getting institution group by query" (
             _

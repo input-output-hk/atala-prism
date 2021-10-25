@@ -23,7 +23,6 @@ private[repositories] final class ProtocolVersionRepositoryMetrics[F[
   ): Mid[F, Option[ProtocolVersionInfo]] =
     _.measureOperationTime(markEffectiveTimer)
 
-  override def ifNodeSupportsCurrentProtocol()
-      : Mid[F, Either[ProtocolVersion, Unit]] =
+  override def ifNodeSupportsCurrentProtocol(): Mid[F, Either[ProtocolVersion, Unit]] =
     _.measureOperationTime(isNodeSupportsOutdatedTimer)
 }

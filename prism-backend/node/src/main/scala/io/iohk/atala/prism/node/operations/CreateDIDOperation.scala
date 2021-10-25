@@ -10,11 +10,7 @@ import io.iohk.atala.prism.models.DidSuffix
 import io.iohk.atala.prism.node.models.KeyUsage.MasterKey
 import io.iohk.atala.prism.node.models.DIDPublicKey
 import io.iohk.atala.prism.node.models.nodeState.LedgerData
-import io.iohk.atala.prism.node.operations.StateError.{
-  EntityExists,
-  InvalidKeyUsed,
-  UnknownKey
-}
+import io.iohk.atala.prism.node.operations.StateError.{EntityExists, InvalidKeyUsed, UnknownKey}
 import io.iohk.atala.prism.node.operations.path._
 import io.iohk.atala.prism.node.repositories.daos.{DIDDataDAO, PublicKeysDAO}
 import io.iohk.atala.prism.protos.{node_models => proto}
@@ -53,17 +49,15 @@ case class CreateDIDOperation(
 
     for {
       _ <- EitherT {
-        DIDDataDAO.insert(id, digest, ledgerData).attemptSomeSqlState {
-          case sqlstate.class23.UNIQUE_VIOLATION =>
-            EntityExists("DID", id.getValue): StateError
+        DIDDataDAO.insert(id, digest, ledgerData).attemptSomeSqlState { case sqlstate.class23.UNIQUE_VIOLATION =>
+          EntityExists("DID", id.getValue): StateError
         }
       }
 
       _ <- keys.traverse[ConnectionIOEitherTError, Unit] { key: DIDPublicKey =>
         EitherT {
-          PublicKeysDAO.insert(key, ledgerData).attemptSomeSqlState {
-            case sqlstate.class23.UNIQUE_VIOLATION =>
-              EntityExists("public key", key.keyId): StateError
+          PublicKeysDAO.insert(key, ledgerData).attemptSomeSqlState { case sqlstate.class23.UNIQUE_VIOLATION =>
+            EntityExists("public key", key.keyId): StateError
           }
         }
       }

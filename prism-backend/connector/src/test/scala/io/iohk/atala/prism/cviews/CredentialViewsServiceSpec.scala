@@ -4,16 +4,10 @@ import io.grpc.ServerServiceDefinition
 import io.iohk.atala.prism.auth.SignedRpcRequest
 import io.iohk.atala.prism.auth.grpc.GrpcAuthenticationHeaderParser
 import io.iohk.atala.prism.connector.ConnectorAuthenticator
-import io.iohk.atala.prism.connector.repositories.{
-  ParticipantsRepository,
-  RequestNoncesRepository
-}
+import io.iohk.atala.prism.connector.repositories.{ParticipantsRepository, RequestNoncesRepository}
 import io.iohk.atala.prism.connector.DataPreparation
 import io.iohk.atala.prism.protos.connector_api.GetCurrentUserRequest
-import io.iohk.atala.prism.protos.cviews_api.{
-  CredentialViewsServiceGrpc,
-  GetCredentialViewTemplatesRequest
-}
+import io.iohk.atala.prism.protos.cviews_api.{CredentialViewsServiceGrpc, GetCredentialViewTemplatesRequest}
 import io.iohk.atala.prism.view.HtmlViewImage.imageBase64
 import io.iohk.atala.prism.{DIDUtil, RpcSpecBase}
 import io.iohk.atala.prism.utils.IOUtils._

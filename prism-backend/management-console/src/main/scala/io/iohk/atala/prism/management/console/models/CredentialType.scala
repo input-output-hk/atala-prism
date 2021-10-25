@@ -63,9 +63,7 @@ object CredentialTypeFieldId extends UUIDValue.Builder[CredentialTypeFieldId]
 sealed abstract class CredentialTypeState(value: String) extends EnumEntry {
   override def entryName: String = value
 }
-object CredentialTypeState
-    extends Enum[CredentialTypeState]
-    with DoobieEnum[CredentialTypeState] {
+object CredentialTypeState extends Enum[CredentialTypeState] with DoobieEnum[CredentialTypeState] {
   lazy val values = findValues
 
   final case object Draft extends CredentialTypeState("DRAFT")
@@ -86,9 +84,7 @@ final case class MarkAsArchivedCredentialType(
 sealed abstract class CredentialTypeFieldType(value: String) extends EnumEntry {
   override val entryName: String = value
 }
-object CredentialTypeFieldType
-    extends Enum[CredentialTypeFieldType]
-    with DoobieEnum[CredentialTypeFieldType] {
+object CredentialTypeFieldType extends Enum[CredentialTypeFieldType] with DoobieEnum[CredentialTypeFieldType] {
   lazy val values = findValues
 
   final case object String extends CredentialTypeFieldType("STRING")

@@ -9,23 +9,14 @@ import io.iohk.atala.prism.grpc.ProtoConverter
 import io.iohk.atala.prism.logging.TraceId
 import io.iohk.atala.prism.logging.TraceId.IOWithTraceIdContext
 import io.iohk.atala.prism.management.console.ManagementConsoleAuthenticator
-import io.iohk.atala.prism.management.console.errors.{
-  ManagementConsoleError,
-  ManagementConsoleErrorSupport
-}
+import io.iohk.atala.prism.management.console.errors.{ManagementConsoleError, ManagementConsoleErrorSupport}
 import io.iohk.atala.prism.management.console.models._
 import io.iohk.atala.prism.management.console.services.ConsoleService
 import io.iohk.atala.prism.metrics.RequestMeasureUtil.measureRequestFuture
-import io.iohk.atala.prism.protos.common_models.{
-  HealthCheckRequest,
-  HealthCheckResponse
-}
+import io.iohk.atala.prism.protos.common_models.{HealthCheckRequest, HealthCheckResponse}
 import io.iohk.atala.prism.protos.console_api
 import io.iohk.atala.prism.protos.console_api._
-import io.iohk.atala.prism.utils.FutureEither.{
-  FutureEitherFOps,
-  FutureEitherOps
-}
+import io.iohk.atala.prism.utils.FutureEither.{FutureEitherFOps, FutureEitherOps}
 import org.slf4j.{Logger, LoggerFactory}
 
 import scala.concurrent.{ExecutionContext, Future}
@@ -54,14 +45,13 @@ class ConsoleGrpcService(
   override def getStatistics(
       request: GetStatisticsRequest
   ): Future[GetStatisticsResponse] =
-    auth[GetStatistics]("getStatistics", request) {
-      (participantId, traceId, getStatistics) =>
-        consoleService
-          .getStatistics(participantId, getStatistics)
-          .run(traceId)
-          .unsafeToFuture()
-          .map(stats => ProtoCodecs.toStatisticsProto(stats).asRight)
-          .toFutureEither
+    auth[GetStatistics]("getStatistics", request) { (participantId, traceId, getStatistics) =>
+      consoleService
+        .getStatistics(participantId, getStatistics)
+        .run(traceId)
+        .unsafeToFuture()
+        .map(stats => ProtoCodecs.toStatisticsProto(stats).asRight)
+        .toFutureEither
     }
 
   override def registerDID(
@@ -79,9 +69,7 @@ class ConsoleGrpcService(
         // Assemble LoggingContext out of the case class fields
         implicit val lc: LoggingContext = LoggingContext(
           (0 until query.productArity)
-            .map(i =>
-              query.productElementName(i) -> query.productElement(i).toString
-            )
+            .map(i => query.productElementName(i) -> query.productElement(i).toString)
             .toMap
         )
         measureRequestFuture(serviceName, methodName)(
@@ -118,17 +106,16 @@ class ConsoleGrpcService(
   override def updateParticipantProfile(
       request: ConsoleUpdateProfileRequest
   ): Future[ConsoleUpdateProfileResponse] = {
-    auth[UpdateParticipantProfile]("updateParticipantProfile", request) {
-      (participantId, traceId, _) =>
-        val logo = ParticipantLogo(request.logo.toByteArray.toVector)
-        val participantProfile =
-          UpdateParticipantProfile(request.name, Option(logo))
-        consoleService
-          .updateParticipantProfile(participantId, participantProfile)
-          .run(traceId)
-          .unsafeToFuture()
-          .lift
-          .as(ConsoleUpdateProfileResponse())
+    auth[UpdateParticipantProfile]("updateParticipantProfile", request) { (participantId, traceId, _) =>
+      val logo = ParticipantLogo(request.logo.toByteArray.toVector)
+      val participantProfile =
+        UpdateParticipantProfile(request.name, Option(logo))
+      consoleService
+        .updateParticipantProfile(participantId, participantProfile)
+        .run(traceId)
+        .unsafeToFuture()
+        .lift
+        .as(ConsoleUpdateProfileResponse())
     }
   }
 }

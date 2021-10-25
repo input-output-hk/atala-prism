@@ -62,8 +62,7 @@ object MessagesService {
     for {
       serviceLogs <- logs.service[MessagesService[Stream[F, *], F]]
     } yield {
-      implicit val implicitLogs
-          : ServiceLogging[F, MessagesService[Stream[F, *], F]] = serviceLogs
+      implicit val implicitLogs: ServiceLogging[F, MessagesService[Stream[F, *], F]] = serviceLogs
       val logs: MessagesService[Stream[F, *], Mid[F, *]] =
         new MessagesServiceLogs[Stream[F, *], F]
       val mid = logs

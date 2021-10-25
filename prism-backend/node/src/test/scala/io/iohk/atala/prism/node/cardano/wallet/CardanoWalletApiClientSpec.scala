@@ -2,17 +2,9 @@ package io.iohk.atala.prism.node.cardano.wallet
 
 import cats.scalatest.EitherMatchers._
 import io.circe.Json
-import io.iohk.atala.prism.models.{
-  TransactionDetails,
-  TransactionId,
-  TransactionStatus
-}
+import io.iohk.atala.prism.models.{TransactionDetails, TransactionId, TransactionStatus}
 import io.iohk.atala.prism.node.cardano.models._
-import io.iohk.atala.prism.node.cardano.wallet.CardanoWalletApiClient.{
-  CardanoWalletError,
-  ErrorResponse,
-  EstimatedFee
-}
+import io.iohk.atala.prism.node.cardano.wallet.CardanoWalletApiClient.{CardanoWalletError, ErrorResponse, EstimatedFee}
 import io.iohk.atala.prism.node.cardano.wallet.testing.FakeCardanoWalletApiClient
 import io.iohk.atala.prism.node.models.WalletStatus
 import org.scalatest.EitherValues._

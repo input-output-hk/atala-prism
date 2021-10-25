@@ -12,22 +12,12 @@ import io.iohk.atala.prism.models.{
   TransactionStatus
 }
 import io.iohk.atala.prism.node.cardano.models.Block.Canonical
-import io.iohk.atala.prism.node.cardano.{
-  CardanoClient,
-  LAST_SYNCED_BLOCK_NO,
-  LAST_SYNCED_BLOCK_TIMESTAMP
-}
+import io.iohk.atala.prism.node.cardano.{CardanoClient, LAST_SYNCED_BLOCK_NO, LAST_SYNCED_BLOCK_TIMESTAMP}
 import io.iohk.atala.prism.node.cardano.models._
 import io.iohk.atala.prism.node.logging.NodeLogging.logOperationIds
 import io.iohk.atala.prism.node.repositories.daos.KeyValuesDAO.KeyValue
-import io.iohk.atala.prism.node.services.CardanoLedgerService.{
-  CardanoBlockHandler,
-  CardanoNetwork
-}
-import io.iohk.atala.prism.node.services.models.{
-  AtalaObjectNotification,
-  AtalaObjectNotificationHandler
-}
+import io.iohk.atala.prism.node.services.CardanoLedgerService.{CardanoBlockHandler, CardanoNetwork}
+import io.iohk.atala.prism.node.services.models.{AtalaObjectNotification, AtalaObjectNotificationHandler}
 import io.iohk.atala.prism.node.{PublicationInfo, UnderlyingLedger}
 import io.iohk.atala.prism.protos.node_internal
 import monix.execution.Scheduler
@@ -151,8 +141,7 @@ class CardanoLedgerService private[services] (
     ()
   }
 
-  /** Syncs Atala objects from blocks and returns whether there are remaining
-    * blocks to sync.
+  /** Syncs Atala objects from blocks and returns whether there are remaining blocks to sync.
     */
   private[services] def syncAtalaObjects(): Future[Boolean] = {
     val tId = TraceId.generateYOLO

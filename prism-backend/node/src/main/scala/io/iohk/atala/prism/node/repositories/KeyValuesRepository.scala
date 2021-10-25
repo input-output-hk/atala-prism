@@ -25,13 +25,11 @@ trait KeyValuesRepository[F[_]] {
     */
   def upsert(keyValue: KeyValue): F[Unit]
 
-  /** Updates many values for the given keys atomically, inserting non-existent
-    * keys.
+  /** Updates many values for the given keys atomically, inserting non-existent keys.
     */
   def upsertMany(keyValues: List[KeyValue]): F[Unit]
 
-  /** Gets the value for the given key, set to `None` when non-existent or
-    * `NULL` in the database.
+  /** Gets the value for the given key, set to `None` when non-existent or `NULL` in the database.
     */
   def get(key: String): F[KeyValue]
 
@@ -75,8 +73,7 @@ private final class KeyValuesRepositoryImpl[F[_]: BracketThrow](
       .transact(xa)
   }
 
-  /** Updates many values for the given keys atomically, inserting non-existent
-    * keys.
+  /** Updates many values for the given keys atomically, inserting non-existent keys.
     */
   def upsertMany(keyValues: List[KeyValue]): F[Unit] = {
     keyValues
@@ -87,8 +84,7 @@ private final class KeyValuesRepositoryImpl[F[_]: BracketThrow](
       .void
   }
 
-  /** Gets the value for the given key, set to `None` when non-existent or
-    * `NULL` in the database.
+  /** Gets the value for the given key, set to `None` when non-existent or `NULL` in the database.
     */
   def get(key: String): F[KeyValue] = {
     KeyValuesDAO

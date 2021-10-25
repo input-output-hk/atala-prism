@@ -5,10 +5,7 @@ import cats.syntax.apply._
 import cats.syntax.applicativeError._
 import cats.syntax.flatMap._
 import io.iohk.atala.prism.connector.errors.ConnectorError
-import io.iohk.atala.prism.connector.model.{
-  ParticipantInfo,
-  UpdateParticipantProfile
-}
+import io.iohk.atala.prism.connector.model.{ParticipantInfo, UpdateParticipantProfile}
 import io.iohk.atala.prism.connector.repositories.ParticipantsRepository
 import io.iohk.atala.prism.connector.repositories.ParticipantsRepository._
 import io.iohk.atala.prism.crypto.keys.ECPublicKey
@@ -33,8 +30,7 @@ private[repositories] final class ParticipantsRepositoryLogs[F[
       info"creating participant ${request.id}" *> in
         .flatTap(
           _.fold(
-            er =>
-              error"encountered an error while creating participant ${er.unify: ConnectorError}",
+            er => error"encountered an error while creating participant ${er.unify: ConnectorError}",
             _ => info"creating participant - successfully done"
           )
         )
@@ -49,8 +45,7 @@ private[repositories] final class ParticipantsRepositoryLogs[F[
       info"finding participant $id" *> in
         .flatTap(
           _.fold(
-            er =>
-              error"encountered an error while finding participant ${er.unify: ConnectorError}",
+            er => error"encountered an error while finding participant ${er.unify: ConnectorError}",
             _ => info"finding participant  - successfully done"
           )
         )
@@ -63,8 +58,7 @@ private[repositories] final class ParticipantsRepositoryLogs[F[
       info"finding participant by public-key $publicKey" *> in
         .flatTap(
           _.fold(
-            er =>
-              error"encountered an error while finding participant ${er.unify: ConnectorError}",
+            er => error"encountered an error while finding participant ${er.unify: ConnectorError}",
             result => info"finding participant - successfully done ${result.id}"
           )
         )
@@ -79,8 +73,7 @@ private[repositories] final class ParticipantsRepositoryLogs[F[
       info"finding participant by did ${did.getSuffix}" *> in
         .flatTap(
           _.fold(
-            er =>
-              error"encountered an error while finding participant ${er.unify: ConnectorError}",
+            er => error"encountered an error while finding participant ${er.unify: ConnectorError}",
             result => info"finding participant - successfully done ${result.id}"
           )
         )

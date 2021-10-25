@@ -9,10 +9,7 @@ import io.iohk.atala.prism.credentials.CredentialBatchId
 import io.iohk.atala.prism.crypto.MerkleRoot
 import io.iohk.atala.prism.crypto.Sha256Digest
 import io.iohk.atala.prism.models.{DidSuffix, Ledger, TransactionId}
-import io.iohk.atala.prism.node.models.nodeState.{
-  CredentialBatchState,
-  LedgerData
-}
+import io.iohk.atala.prism.node.models.nodeState.{CredentialBatchState, LedgerData}
 import io.iohk.atala.prism.node.repositories.daos._
 import doobie.implicits.legacy.instant._
 import io.iohk.atala.prism.interop.implicits._

@@ -37,8 +37,8 @@ package object operations {
 
     /** Error signifying that a value is missing at the path
       *
-      * Note: As Protobuf 3 doesn't differentiate between empty and default
-      * values for primitives this error is to be used for message fields only
+      * Note: As Protobuf 3 doesn't differentiate between empty and default values for primitives this error is to be
+      * used for message fields only
       *
       * @param path
       *   Path where the problem occurred - list of field names
@@ -64,27 +64,21 @@ package object operations {
 
   object StateError {
 
-    /** Error signifying that operation cannot be applied as it tries to access
-      * an entity that does not exist
+    /** Error signifying that operation cannot be applied as it tries to access an entity that does not exist
       */
-    final case class EntityMissing(tpe: String, identifier: String)
-        extends StateError {
+    final case class EntityMissing(tpe: String, identifier: String) extends StateError {
       override def name: String = "entity-missing"
     }
 
-    /** Error signifying that operation cannot be applied as it tries to create
-      * an entity that already exists
+    /** Error signifying that operation cannot be applied as it tries to create an entity that already exists
       */
-    final case class EntityExists(tpe: String, identifier: String)
-        extends StateError {
+    final case class EntityExists(tpe: String, identifier: String) extends StateError {
       override def name: String = "entity-exists"
     }
 
-    /** Error signifying that key that was supposed to be used to verify the
-      * signature does not exist
+    /** Error signifying that key that was supposed to be used to verify the signature does not exist
       */
-    final case class UnknownKey(didSuffix: DidSuffix, keyId: String)
-        extends StateError {
+    final case class UnknownKey(didSuffix: DidSuffix, keyId: String) extends StateError {
       override def name: String = "unknown-key"
     }
 
@@ -182,8 +176,7 @@ package object operations {
 
     /** Applies operation to the state checking that the operation is supported
       *
-      * It's the responsibility of the caller to manage transaction, in order to
-      * ensure atomicity of the operation.
+      * It's the responsibility of the caller to manage transaction, in order to ensure atomicity of the operation.
       */
     final def applyState()(implicit
         updateOracle: SupportedOperations
@@ -217,14 +210,11 @@ package object operations {
     /** Parses the protobuf representation of operation
       *
       * @param signedOperation
-      *   signed operation, needs to be of the type compatible with the called
-      *   companion object
+      *   signed operation, needs to be of the type compatible with the called companion object
       * @param ledgerData
-      *   information of the underlying ledger transaction that carried this
-      *   operation
+      *   information of the underlying ledger transaction that carried this operation
       * @return
-      *   parsed operation or ValidationError signifying the operation is
-      *   invalid
+      *   parsed operation or ValidationError signifying the operation is invalid
       */
     def parse(
         signedOperation: node_models.SignedAtalaOperation,
@@ -238,15 +228,12 @@ package object operations {
         ledgerData: LedgerData
     ): Either[ValidationError, Repr]
 
-    /** Parses the protobuf representation of operation and report errors (if
-      * any)
+    /** Parses the protobuf representation of operation and report errors (if any)
       *
       * @param signedOperation
-      *   signed operation, needs to be of the type compatible with the called
-      *   companion object
+      *   signed operation, needs to be of the type compatible with the called companion object
       * @return
-      *   Unit if the operation is valid or ValidationError signifying the
-      *   operation is invalid
+      *   Unit if the operation is valid or ValidationError signifying the operation is invalid
       */
     def validate(
         signedOperation: node_models.SignedAtalaOperation
@@ -254,16 +241,13 @@ package object operations {
       parseWithMockedLedgerData(signedOperation) map (_ => ())
     }
 
-    /** Parses the protobuf representation of operation and report errors (if
-      * any) using a dummy time parameter (defined in (the SDK)
-      * io.iohk.atala.prism.credentials.TimestampInfo.dummyTime)
+    /** Parses the protobuf representation of operation and report errors (if any) using a dummy time parameter (defined
+      * in (the SDK) io.iohk.atala.prism.credentials.TimestampInfo.dummyTime)
       *
       * @param signedOperation
-      *   signed operation, needs to be of the type compatible with the called
-      *   companion object
+      *   signed operation, needs to be of the type compatible with the called companion object
       * @return
-      *   parsed operation filled with TimestampInfo.dummyTime or
-      *   ValidationError signifying the operation is invalid
+      *   parsed operation filled with TimestampInfo.dummyTime or ValidationError signifying the operation is invalid
       */
     def parseWithMockedLedgerData(
         signedOperation: node_models.SignedAtalaOperation
@@ -271,8 +255,7 @@ package object operations {
       parse(signedOperation, mockLedgerData)
   }
 
-  trait SimpleOperationCompanion[Repr <: Operation]
-      extends OperationCompanion[Repr] {
+  trait SimpleOperationCompanion[Repr <: Operation] extends OperationCompanion[Repr] {
     def parse(
         operation: node_models.AtalaOperation,
         ledgerData: LedgerData

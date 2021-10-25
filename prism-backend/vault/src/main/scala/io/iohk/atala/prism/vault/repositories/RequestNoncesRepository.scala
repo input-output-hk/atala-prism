@@ -44,8 +44,7 @@ object RequestNoncesRepository {
   }
 }
 
-private class PostgresImpl[F[_]: BracketThrow](xa: Transactor[F])
-    extends RequestNoncesRepository[F] {
+private class PostgresImpl[F[_]: BracketThrow](xa: Transactor[F]) extends RequestNoncesRepository[F] {
 
   val logger: Logger = LoggerFactory.getLogger(getClass)
 

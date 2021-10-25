@@ -2,10 +2,7 @@ package io.iohk.atala.prism.errors
 
 import io.grpc.Status
 
-import io.iohk.atala.prism.protos.credential_models.{
-  AtalaMessage,
-  AtalaErrorMessage
-}
+import io.iohk.atala.prism.protos.credential_models.{AtalaMessage, AtalaErrorMessage}
 import com.google.rpc.status.{Status => StatusProto}
 
 trait PrismError {

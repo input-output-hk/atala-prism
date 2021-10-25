@@ -5,10 +5,7 @@ import io.circe.Json
 import io.iohk.atala.prism.AtalaWithPostgresSpec
 import io.iohk.atala.prism.management.console.DataPreparation
 import io.iohk.atala.prism.management.console.DataPreparation._
-import io.iohk.atala.prism.management.console.errors.{
-  ContactHasExistingCredentials,
-  ContactsInstitutionsDoNotMatch
-}
+import io.iohk.atala.prism.management.console.errors.{ContactHasExistingCredentials, ContactsInstitutionsDoNotMatch}
 import io.iohk.atala.prism.management.console.models._
 import io.iohk.atala.prism.management.console.repositories.daos.InstitutionGroupsDAO
 import io.iohk.atala.prism.models.ConnectionToken
@@ -748,12 +745,12 @@ class ContactsRepositorySpec extends AtalaWithPostgresSpec {
       ): List[Contact] = {
         val sorted = constraints.ordering.field match {
           case Contact.SortBy.ExternalId => data.sortBy(_.externalId.value)
-          case Contact.SortBy.CreatedAt  => data.sortBy(_.createdAt)
-          case Contact.SortBy.Name       => data.sortBy(_.name)
+          case Contact.SortBy.CreatedAt => data.sortBy(_.createdAt)
+          case Contact.SortBy.Name => data.sortBy(_.name)
         }
 
         val sortedProperly = constraints.ordering.direction match {
-          case ResultOrdering.Direction.Ascending  => sorted
+          case ResultOrdering.Direction.Ascending => sorted
           case ResultOrdering.Direction.Descending => sorted.reverse
         }
 

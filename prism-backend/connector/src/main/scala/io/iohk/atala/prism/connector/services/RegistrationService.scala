@@ -15,16 +15,10 @@ import io.iohk.atala.prism.connector.errors.{InvalidRequest, co}
 import io.iohk.atala.prism.connector.model.{ParticipantLogo, ParticipantType}
 import io.iohk.atala.prism.connector.repositories.ParticipantsRepository
 import io.iohk.atala.prism.identity.{PrismDid => DID}
-import io.iohk.atala.prism.connector.services.RegistrationService.{
-  RegisterParticipantError,
-  RegistrationResult
-}
+import io.iohk.atala.prism.connector.services.RegistrationService.{RegisterParticipantError, RegistrationResult}
 import io.iohk.atala.prism.connector.services.logs.RegistrationServiceLogs
 import io.iohk.atala.prism.models.{DidSuffix, ParticipantId}
-import io.iohk.atala.prism.protos.node_api.{
-  GetDidDocumentRequest,
-  NodeServiceGrpc
-}
+import io.iohk.atala.prism.protos.node_api.{GetDidDocumentRequest, NodeServiceGrpc}
 import io.iohk.atala.prism.protos.node_models.SignedAtalaOperation
 import io.iohk.atala.prism.protos.node_api
 import shapeless.{:+:, CNil}

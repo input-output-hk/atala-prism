@@ -3,10 +3,7 @@ package io.iohk.atala.prism.management.console.repositories
 import cats.effect.IO
 import io.iohk.atala.prism.AtalaWithPostgresSpec
 import io.iohk.atala.prism.management.console.DataPreparation._
-import io.iohk.atala.prism.management.console.models.{
-  InstitutionGroup,
-  TimeInterval
-}
+import io.iohk.atala.prism.management.console.models.{InstitutionGroup, TimeInterval}
 import io.iohk.atala.prism.utils.IOUtils._
 import tofu.logging.Logs
 

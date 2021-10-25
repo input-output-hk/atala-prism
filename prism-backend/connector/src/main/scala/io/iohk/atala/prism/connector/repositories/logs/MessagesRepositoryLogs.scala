@@ -30,8 +30,7 @@ private[repositories] final class MessagesRepositoryLogs[S[_], F[
       info"inserting message $sender $connection" *> in
         .flatTap(
           _.fold(
-            er =>
-              error"encountered an error while inserting message ${er.unify: ConnectorError}",
+            er => error"encountered an error while inserting message ${er.unify: ConnectorError}",
             id => info"inserting message - successfully done $id"
           )
         )
@@ -45,10 +44,8 @@ private[repositories] final class MessagesRepositoryLogs[S[_], F[
       info"inserting messages $sender" *> in
         .flatTap(
           _.fold(
-            er =>
-              error"encountered an error while inserting messages ${er.unify: ConnectorError}",
-            ids =>
-              info"inserting messages - successfully done, inserted ${ids.size} messages"
+            er => error"encountered an error while inserting messages ${er.unify: ConnectorError}",
+            ids => info"inserting messages - successfully done, inserted ${ids.size} messages"
           )
         )
         .onError(errorCause"encountered an error while inserting messages" (_))
@@ -62,10 +59,8 @@ private[repositories] final class MessagesRepositoryLogs[S[_], F[
       info"getting messages paginated $recipientId $lastSeenMessageId" *> in
         .flatTap(
           _.fold(
-            er =>
-              error"encountered an error while getting messages paginated ${er.unify: ConnectorError}",
-            ids =>
-              info"getting messages paginated - successfully done, got ${ids.size} messages"
+            er => error"encountered an error while getting messages paginated ${er.unify: ConnectorError}",
+            ids => info"getting messages paginated - successfully done, got ${ids.size} messages"
           )
         )
         .onError(
@@ -85,9 +80,7 @@ private[repositories] final class MessagesRepositoryLogs[S[_], F[
   ): Mid[F, List[Message]] =
     in =>
       info"getting connection messages $recipientId $connectionId" *> in
-        .flatTap(result =>
-          info"getting connection messages - successfully done, got ${result.size} entities"
-        )
+        .flatTap(result => info"getting connection messages - successfully done, got ${result.size} entities")
         .onError(
           errorCause"encountered an error while getting connection messages" (_)
         )

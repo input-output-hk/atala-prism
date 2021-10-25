@@ -3,12 +3,7 @@ package io.iohk.atala.prism.management.console.repositories
 import cats.effect.IO
 import io.iohk.atala.prism.AtalaWithPostgresSpec
 import io.iohk.atala.prism.management.console.DataPreparation
-import io.iohk.atala.prism.management.console.models.{
-  Contact,
-  CredentialExternalId,
-  ParticipantId,
-  ParticipantLogo
-}
+import io.iohk.atala.prism.management.console.models.{Contact, CredentialExternalId, ParticipantId, ParticipantLogo}
 import io.iohk.atala.prism.management.console.repositories.ParticipantsRepository.CreateParticipantRequest
 import io.iohk.atala.prism.management.console.repositories.daos.ReceivedCredentialsDAO.ReceivedSignedCredentialData
 import io.iohk.atala.prism.utils.IOUtils._

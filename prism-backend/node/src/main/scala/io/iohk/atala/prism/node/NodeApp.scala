@@ -126,10 +126,8 @@ class NodeApp(executionContext: ExecutionContext) { self =>
       atalaOperationsRepository,
       atalaObjectsTransactionsRepository,
       SubmissionService.Config(
-        maxNumberTransactionsToSubmit =
-          operationSubmissionPeriod.toSeconds.toInt * transactionsPerSecond,
-        maxNumberTransactionsToRetry =
-          transactionRetryPeriod.toSeconds.toInt * transactionsPerSecond
+        maxNumberTransactionsToSubmit = operationSubmissionPeriod.toSeconds.toInt * transactionsPerSecond,
+        maxNumberTransactionsToRetry = transactionRetryPeriod.toSeconds.toInt * transactionsPerSecond
       ),
       logs
     )

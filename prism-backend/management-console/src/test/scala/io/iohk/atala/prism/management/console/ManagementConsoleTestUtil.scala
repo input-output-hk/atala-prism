@@ -3,10 +3,7 @@ package io.iohk.atala.prism.management.console
 import io.iohk.atala.prism.auth.SignedRpcRequest
 import io.iohk.atala.prism.crypto.keys.ECKeyPair
 import io.iohk.atala.prism.identity.{PrismDid => DID}
-import io.iohk.atala.prism.management.console.models.{
-  Contact,
-  GenericCredential
-}
+import io.iohk.atala.prism.management.console.models.{Contact, GenericCredential}
 import io.iohk.atala.prism.protos.console_api
 
 trait ManagementConsoleTestUtil {

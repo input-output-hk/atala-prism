@@ -46,73 +46,68 @@ class CredentialsStoreGrpcService(
   override def storeCredential(
       request: console_api.StoreCredentialRequest
   ): Future[console_api.StoreCredentialResponse] =
-    auth[StoreCredential]("storeCredential", request) {
-      (participantId, traceId, typedRequest) =>
-        val flow = for {
-          data <- EitherT {
-            contactsRepository
-              .findByToken(participantId, typedRequest.connectionToken)
-              .map { contactMaybe =>
-                contactMaybe
-                  .toRight(UnknownValueError("token", request.connectionToken))
-                  .map { contact =>
-                    ReceivedSignedCredentialData(
-                      contact.contactId,
-                      typedRequest.encodedSignedCredential,
-                      typedRequest.credentialExternalId
-                    )
-                  }
-              }
-          }
+    auth[StoreCredential]("storeCredential", request) { (participantId, traceId, typedRequest) =>
+      val flow = for {
+        data <- EitherT {
+          contactsRepository
+            .findByToken(participantId, typedRequest.connectionToken)
+            .map { contactMaybe =>
+              contactMaybe
+                .toRight(UnknownValueError("token", request.connectionToken))
+                .map { contact =>
+                  ReceivedSignedCredentialData(
+                    contact.contactId,
+                    typedRequest.encodedSignedCredential,
+                    typedRequest.credentialExternalId
+                  )
+                }
+            }
+        }
 
-          _ <- EitherT {
-            credentialsStoreService
-              .storeCredential(data)
-              .map(_ => ().asRight[ManagementConsoleError])
-          }
-        } yield console_api.StoreCredentialResponse()
+        _ <- EitherT {
+          credentialsStoreService
+            .storeCredential(data)
+            .map(_ => ().asRight[ManagementConsoleError])
+        }
+      } yield console_api.StoreCredentialResponse()
 
-        flow.value
-          .run(traceId)
-          .unsafeToFuture()
-          .toFutureEither
+      flow.value
+        .run(traceId)
+        .unsafeToFuture()
+        .toFutureEither
     }
 
   override def getLatestCredentialExternalId(
       request: GetLatestCredentialExternalIdRequest
   ): Future[GetLatestCredentialExternalIdResponse] =
-    auth[GetLatestCredential]("getLatestCredentialExternalId", request) {
-      (participantId, traceId, _) =>
-        credentialsStoreService
-          .getLatestCredentialExternalId(participantId)
-          .map { maybeCredentialExternalId =>
-            console_api.GetLatestCredentialExternalIdResponse(
-              latestCredentialExternalId =
-                maybeCredentialExternalId.fold("")(_.value.toString)
-            )
-          }
-          .run(traceId)
-          .unsafeToFuture()
-          .map(_.asRight)
-          .toFutureEither
+    auth[GetLatestCredential]("getLatestCredentialExternalId", request) { (participantId, traceId, _) =>
+      credentialsStoreService
+        .getLatestCredentialExternalId(participantId)
+        .map { maybeCredentialExternalId =>
+          console_api.GetLatestCredentialExternalIdResponse(
+            latestCredentialExternalId = maybeCredentialExternalId.fold("")(_.value.toString)
+          )
+        }
+        .run(traceId)
+        .unsafeToFuture()
+        .map(_.asRight)
+        .toFutureEither
     }
 
   override def getStoredCredentialsFor(
       request: console_api.GetStoredCredentialsForRequest
   ): Future[console_api.GetStoredCredentialsForResponse] =
-    auth[GetStoredCredentials]("getStoredCredentialsFor", request) {
-      (participantId, traceId, query) =>
-        credentialsStoreService
-          .getStoredCredentialsFor(participantId, query)
-          .map { credentials =>
-            console_api.GetStoredCredentialsForResponse(
-              credentials =
-                credentials.map(ProtoCodecs.receivedSignedCredentialToProto)
-            )
-          }
-          .run(traceId)
-          .unsafeToFuture()
-          .map(_.asRight)
-          .toFutureEither
+    auth[GetStoredCredentials]("getStoredCredentialsFor", request) { (participantId, traceId, query) =>
+      credentialsStoreService
+        .getStoredCredentialsFor(participantId, query)
+        .map { credentials =>
+          console_api.GetStoredCredentialsForResponse(
+            credentials = credentials.map(ProtoCodecs.receivedSignedCredentialToProto)
+          )
+        }
+        .run(traceId)
+        .unsafeToFuture()
+        .map(_.asRight)
+        .toFutureEither
     }
 }

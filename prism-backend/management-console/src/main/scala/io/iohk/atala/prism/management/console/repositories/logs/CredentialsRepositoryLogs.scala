@@ -33,8 +33,7 @@ private[repositories] final class CredentialsRepositoryLogs[F[
         .flatTap(
           _.fold(
             e => error"encountered an error while creating credentials $e",
-            r =>
-              info"creating credentials - successfully done ${r.credentialId}"
+            r => info"creating credentials - successfully done ${r.credentialId}"
           )
         )
         .onError(
@@ -76,9 +75,7 @@ private[repositories] final class CredentialsRepositoryLogs[F[
   ): Mid[F, List[GenericCredential]] =
     in =>
       info"getting credentials by maybe last seen credential id $lastSeenCredential" *> in
-        .flatTap(r =>
-          info"getting credentials by maybe last seen credential id, found - ${r.size} entities"
-        )
+        .flatTap(r => info"getting credentials by maybe last seen credential id, found - ${r.size} entities")
         .onError(
           errorCause"encountered an error while getting credentials by maybe last seen credential id" (
             _
@@ -91,9 +88,7 @@ private[repositories] final class CredentialsRepositoryLogs[F[
   ): Mid[F, List[GenericCredential]] =
     in =>
       info"getting credentials by contact id $contactId $issuedBy" *> in
-        .flatTap(r =>
-          info"getting credentials by contact id - got ${r.size} entities"
-        )
+        .flatTap(r => info"getting credentials by contact id - got ${r.size} entities")
         .onError(
           errorCause"encountered an error while getting credentials by contact id" (
             _
@@ -128,10 +123,8 @@ private[repositories] final class CredentialsRepositoryLogs[F[
       info"verifying published credentials exists $issuerId ${credentialsIds.size} entities" *>
         in.flatTap(
           _.fold(
-            e =>
-              error"encountered an error while verifying published credentials exists $e",
-            _ =>
-              info"verifying published credentials exists - successfully done"
+            e => error"encountered an error while verifying published credentials exists $e",
+            _ => info"verifying published credentials exists - successfully done"
           )
         ).onError(
           errorCause"encountered an error while verifying published credentials exists" (

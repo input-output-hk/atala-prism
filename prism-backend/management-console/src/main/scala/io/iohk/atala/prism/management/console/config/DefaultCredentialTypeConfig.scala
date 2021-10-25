@@ -1,10 +1,7 @@
 package io.iohk.atala.prism.management.console.config
 
 import com.typesafe.config.Config
-import io.iohk.atala.prism.management.console.models.{
-  CreateCredentialTypeField,
-  CredentialTypeFieldType
-}
+import io.iohk.atala.prism.management.console.models.{CreateCredentialTypeField, CredentialTypeFieldType}
 
 import scala.io.Source
 import scala.jdk.CollectionConverters._

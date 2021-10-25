@@ -82,16 +82,10 @@ class PublicKeysDAOSpec extends AtalaWithPostgresSpec {
             didPublicKeyState.key
           )
         )
-        .sortWith((l, r) => l.keyId < r.keyId) mustBe keys.sortWith((l, r) =>
-        l.keyId < r.keyId
-      )
+        .sortWith((l, r) => l.keyId < r.keyId) mustBe keys.sortWith((l, r) => l.keyId < r.keyId)
 
-      results.foreach(didPublicKeyState =>
-        didPublicKeyState.addedOn mustBe dummyLedgerData
-      )
-      results.foreach(didPublicKeyState =>
-        didPublicKeyState.revokedOn mustBe None
-      )
+      results.foreach(didPublicKeyState => didPublicKeyState.addedOn mustBe dummyLedgerData)
+      results.foreach(didPublicKeyState => didPublicKeyState.revokedOn mustBe None)
     }
 
     "return None when retrieving key for non-existing DID" in {

@@ -2,11 +2,7 @@ package io.iohk.atala.prism.connector
 
 import derevo.derive
 import io.grpc.Status
-import io.iohk.atala.prism.connector.model.{
-  ConnectionId,
-  MessageId,
-  TokenString
-}
+import io.iohk.atala.prism.connector.model.{ConnectionId, MessageId, TokenString}
 import io.iohk.atala.prism.crypto.keys.ECPublicKey
 import io.iohk.atala.prism.errors.PrismError
 import io.iohk.atala.prism.identity.{PrismDid => DID}
@@ -22,8 +18,7 @@ package object errors {
   @derive(loggable)
   sealed trait ConnectorError extends PrismError
 
-  case class UnknownValueError(tpe: String, value: String)
-      extends ConnectorError {
+  case class UnknownValueError(tpe: String, value: String) extends ConnectorError {
     override def toStatus: Status = {
       Status.UNKNOWN.withDescription(s"Unknown $tpe: $value")
     }
@@ -41,8 +36,7 @@ package object errors {
     }
   }
 
-  case class InvalidLimitError(err: InvalidArgumentError)
-      extends ConnectorError {
+  case class InvalidLimitError(err: InvalidArgumentError) extends ConnectorError {
     override def toStatus: Status = err.toStatus
   }
 
@@ -132,8 +126,7 @@ package object errors {
 
   object MessagesError {
 
-    case class ConnectionNotFound(connection: Either[TokenString, ConnectionId])
-        extends MessagesError {
+    case class ConnectionNotFound(connection: Either[TokenString, ConnectionId]) extends MessagesError {
       override def toStatus: Status = {
         Status.NOT_FOUND.withDescription(
           s"Connection with ${connection.fold("token " + _, "id " + _)} doesn't exist. " +
@@ -190,8 +183,7 @@ package object errors {
       )
     }
 
-    case class ConnectionRevoked(connection: Either[TokenString, ConnectionId])
-        extends MessagesError {
+    case class ConnectionRevoked(connection: Either[TokenString, ConnectionId]) extends MessagesError {
       override def toStatus: Status = {
         Status.FAILED_PRECONDITION.withDescription(
           s"Connection with ${connection.fold("token " + _, "id " + _)} has been revoked."
@@ -210,8 +202,7 @@ package object errors {
       }
     }
 
-    case class MessagesAlreadyExist(ids: List[MessageId])
-        extends MessagesError {
+    case class MessagesAlreadyExist(ids: List[MessageId]) extends MessagesError {
       override def toStatus: Status = {
         Status.ALREADY_EXISTS.withDescription(
           s"Messages with provided ids already exist: ${ids.map(_.uuid.toString).mkString(", ")}"

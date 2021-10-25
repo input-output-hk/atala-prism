@@ -15,8 +15,7 @@ import io.iohk.atala.prism.protos.node_models
 import org.spongycastle.math.ec.ECFieldElement
 import scodec.bits._
 
-sealed abstract class KeyType(val value: Int, val name: String)
-    extends IntEnumEntry
+sealed abstract class KeyType(val value: Int, val name: String) extends IntEnumEntry
 
 object KeyType extends IntEnum[KeyType] {
   case object Master extends KeyType(0, "master")
@@ -26,11 +25,11 @@ object KeyType extends IntEnum[KeyType] {
 
   def keyUsage(tpe: KeyType): node_models.KeyUsage = {
     tpe match {
-      case Master         => node_models.KeyUsage.MASTER_KEY
-      case Issuing        => node_models.KeyUsage.ISSUING_KEY
-      case Communication  => node_models.KeyUsage.COMMUNICATION_KEY
+      case Master => node_models.KeyUsage.MASTER_KEY
+      case Issuing => node_models.KeyUsage.ISSUING_KEY
+      case Communication => node_models.KeyUsage.COMMUNICATION_KEY
       case Authentication => node_models.KeyUsage.AUTHENTICATION_KEY
-      case _              => node_models.KeyUsage.UNKNOWN_KEY
+      case _ => node_models.KeyUsage.UNKNOWN_KEY
     }
   }
 

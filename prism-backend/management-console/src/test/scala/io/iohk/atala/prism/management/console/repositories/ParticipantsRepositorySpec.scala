@@ -8,10 +8,7 @@ import io.iohk.atala.prism.crypto.EC.{INSTANCE => EC}
 import io.iohk.atala.prism.identity.{PrismDid => DID}
 import io.iohk.atala.prism.management.console.DataPreparation
 import io.iohk.atala.prism.management.console.config.DefaultCredentialTypeConfig
-import io.iohk.atala.prism.management.console.errors.{
-  InvalidRequest,
-  UnknownValueError
-}
+import io.iohk.atala.prism.management.console.errors.{InvalidRequest, UnknownValueError}
 import io.iohk.atala.prism.management.console.models.{
   ParticipantId,
   ParticipantInfo,

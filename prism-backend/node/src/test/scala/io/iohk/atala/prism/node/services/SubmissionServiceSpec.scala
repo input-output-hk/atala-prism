@@ -6,25 +6,12 @@ import io.iohk.atala.prism.AtalaWithPostgresSpec
 import io.iohk.atala.prism.crypto.Sha256
 import io.iohk.atala.prism.logging.TraceId
 import io.iohk.atala.prism.logging.TraceId.IOWithTraceIdContext
-import io.iohk.atala.prism.models.{
-  Ledger,
-  TransactionDetails,
-  TransactionId,
-  TransactionStatus
-}
+import io.iohk.atala.prism.models.{Ledger, TransactionDetails, TransactionId, TransactionStatus}
 import io.iohk.atala.prism.node.cardano.models.AtalaObjectMetadata.estimateTxMetadataSize
-import io.iohk.atala.prism.node.cardano.models.{
-  CardanoWalletError,
-  CardanoWalletErrorCode
-}
+import io.iohk.atala.prism.node.cardano.models.{CardanoWalletError, CardanoWalletErrorCode}
 import io.iohk.atala.prism.node.models.AtalaObjectTransactionSubmissionStatus
 import io.iohk.atala.prism.node.operations.CreateDIDOperationSpec
-import io.iohk.atala.prism.node.{
-  DataPreparation,
-  PublicationInfo,
-  UnderlyingLedger,
-  cardano
-}
+import io.iohk.atala.prism.node.{DataPreparation, PublicationInfo, UnderlyingLedger, cardano}
 import io.iohk.atala.prism.node.DataPreparation._
 import io.iohk.atala.prism.node.repositories.{
   AtalaObjectsTransactionsRepository,
@@ -58,16 +45,13 @@ class SubmissionServiceSpec
     IO.contextShift(ExecutionContext.global)
   private val logs = Logs.withContext[IO, IOWithTraceIdContext]
   private val ledger: UnderlyingLedger = mock[UnderlyingLedger]
-  private val atalaOperationsRepository
-      : AtalaOperationsRepository[IOWithTraceIdContext] =
+  private val atalaOperationsRepository: AtalaOperationsRepository[IOWithTraceIdContext] =
     AtalaOperationsRepository.unsafe(dbLiftedToTraceIdIO, logs)
-  private val atalaObjectsTransactionsRepository
-      : AtalaObjectsTransactionsRepository[IOWithTraceIdContext] =
+  private val atalaObjectsTransactionsRepository: AtalaObjectsTransactionsRepository[IOWithTraceIdContext] =
     AtalaObjectsTransactionsRepository.unsafe(dbLiftedToTraceIdIO, logs)
   private val keyValuesRepository: KeyValuesRepository[IOWithTraceIdContext] =
     KeyValuesRepository.unsafe(dbLiftedToTraceIdIO, logs)
-  private val protocolVersionRepository
-      : ProtocolVersionRepository[IOWithTraceIdContext] =
+  private val protocolVersionRepository: ProtocolVersionRepository[IOWithTraceIdContext] =
     ProtocolVersionRepository.unsafe(
       dbLiftedToTraceIdIO,
       logs
@@ -75,8 +59,7 @@ class SubmissionServiceSpec
   private val blockProcessing: BlockProcessingService =
     mock[BlockProcessingService]
 
-  private implicit lazy val submissionService
-      : SubmissionService[IOWithTraceIdContext] =
+  private implicit lazy val submissionService: SubmissionService[IOWithTraceIdContext] =
     SubmissionService.unsafe(
       ledger,
       atalaOperationsRepository,
@@ -112,15 +95,14 @@ class SubmissionServiceSpec
       val (atalaObjects, atalaObjectsMerged, publications, ops) =
         setUpMultipleOperationsPublishing(numOps = 40)
 
-      atalaObjectsMerged.zip(publications.drop(atalaObjects.size)).foreach {
-        case (atalaObject, publicationInfo) =>
-          doReturn(Future.successful(Right(publicationInfo)))
-            .when(ledger)
-            .publish(atalaObject)
-          mockTransactionStatus(
-            publicationInfo.transaction.transactionId,
-            TransactionStatus.Pending
-          )
+      atalaObjectsMerged.zip(publications.drop(atalaObjects.size)).foreach { case (atalaObject, publicationInfo) =>
+        doReturn(Future.successful(Right(publicationInfo)))
+          .when(ledger)
+          .publish(atalaObject)
+        mockTransactionStatus(
+          publicationInfo.transaction.transactionId,
+          TransactionStatus.Pending
+        )
       }
 
       scheduleOpsForBatching(ops)
@@ -413,21 +395,19 @@ class SubmissionServiceSpec
       val (atalaObjects, atalaObjectsMerged, publications, ops) =
         setUpMultipleOperationsPublishing(numOps = 40)
 
-      (atalaObjects ++ atalaObjectsMerged).zip(publications).foreach {
-        case (atalaObject, publicationInfo) =>
-          doReturn(Future.successful(Right(publicationInfo)))
-            .when(ledger)
-            .publish(atalaObject)
-          mockTransactionStatus(
-            publicationInfo.transaction.transactionId,
-            TransactionStatus.Pending
-          )
+      (atalaObjects ++ atalaObjectsMerged).zip(publications).foreach { case (atalaObject, publicationInfo) =>
+        doReturn(Future.successful(Right(publicationInfo)))
+          .when(ledger)
+          .publish(atalaObject)
+        mockTransactionStatus(
+          publicationInfo.transaction.transactionId,
+          TransactionStatus.Pending
+        )
       }
-      publications.dropRight(atalaObjectsMerged.size).foreach {
-        publicationInfo =>
-          doReturn(Future.successful(Right(())))
-            .when(ledger)
-            .deleteTransaction(publicationInfo.transaction.transactionId)
+      publications.dropRight(atalaObjectsMerged.size).foreach { publicationInfo =>
+        doReturn(Future.successful(Right(())))
+          .when(ledger)
+          .deleteTransaction(publicationInfo.transaction.transactionId)
       }
 
       // publish operations sequentially because we want to preserve the order by timestamps
@@ -562,17 +542,14 @@ class SubmissionServiceSpec
     atalaOperations.reverse.foreach { op =>
       val nextAccOps = op +: accOps
       val curObj = createAtalaObject(
-        block =
-          node_internal.AtalaBlock(version = "1.0", operations = nextAccOps),
+        block = node_internal.AtalaBlock(version = "1.0", operations = nextAccOps),
         opsCount = nextAccOps.size
       )
 
       if (estimateTxMetadataSize(curObj) >= cardano.TX_METADATA_MAX_SIZE) {
         assert(oldObj != null)
         atalaObjectsMerged.append(oldObj)
-        oldObj = createAtalaObject(block =
-          node_internal.AtalaBlock(version = "1.0", operations = List(op))
-        )
+        oldObj = createAtalaObject(block = node_internal.AtalaBlock(version = "1.0", operations = List(op)))
         accOps = List(op)
       } else {
         oldObj = curObj

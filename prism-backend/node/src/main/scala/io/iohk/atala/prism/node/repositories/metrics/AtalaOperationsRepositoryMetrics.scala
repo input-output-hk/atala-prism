@@ -5,12 +5,7 @@ import io.iohk.atala.prism.connector.AtalaOperationId
 import io.iohk.atala.prism.metrics.TimeMeasureUtil.MeasureOps
 import io.iohk.atala.prism.metrics.{TimeMeasureMetric, TimeMeasureUtil}
 import io.iohk.atala.prism.node.errors.NodeError
-import io.iohk.atala.prism.node.models.{
-  AtalaObjectId,
-  AtalaObjectInfo,
-  AtalaOperationInfo,
-  AtalaOperationStatus
-}
+import io.iohk.atala.prism.node.models.{AtalaObjectId, AtalaObjectInfo, AtalaOperationInfo, AtalaOperationStatus}
 import io.iohk.atala.prism.node.repositories.AtalaOperationsRepository
 import io.iohk.atala.prism.protos.node_models.SignedAtalaOperation
 import tofu.higherKind.Mid

@@ -5,11 +5,7 @@ import io.grpc.{Context, Metadata}
 import io.iohk.atala.prism.crypto.EC.{INSTANCE => EC}
 import io.iohk.atala.prism.crypto.signature.ECSignature
 import io.iohk.atala.prism.auth.model.RequestNonce
-import io.iohk.atala.prism.identity.{
-  CanonicalPrismDid,
-  LongFormPrismDid,
-  PrismDid
-}
+import io.iohk.atala.prism.identity.{CanonicalPrismDid, LongFormPrismDid, PrismDid}
 import scala.util.{Failure, Success, Try}
 import io.iohk.atala.prism.logging.TraceId
 
@@ -27,14 +23,12 @@ private[grpc] object GrpcAuthenticationContext {
     def addValue[T](keys: GrpcMetadataContextKeys[T], value: T): Context =
       context.withValue(keys.context, value)
 
-    /** While the predefined way to get a value from the [[Context]] is to call
-      * the getters from the [[Context.Key]], that's usually unsafe because the
-      * actual [[Context]] is not required and it is retrieved from the
-      * [[java.lang.ThreadLocal]], which isn't safe to deal with on concurrent
-      * environments (think about dealing with [[scala.concurrent.Future]]).
+    /** While the predefined way to get a value from the [[Context]] is to call the getters from the [[Context.Key]],
+      * that's usually unsafe because the actual [[Context]] is not required and it is retrieved from the
+      * [[java.lang.ThreadLocal]], which isn't safe to deal with on concurrent environments (think about dealing with
+      * [[scala.concurrent.Future]]).
       *
-      * This method allows avoiding the calls to the [[java.lang.ThreadLocal]],
-      * so, it's far safer than the default way.
+      * This method allows avoiding the calls to the [[java.lang.ThreadLocal]], so, it's far safer than the default way.
       *
       * @param keys
       *   the key used to retrieve the value from the context.

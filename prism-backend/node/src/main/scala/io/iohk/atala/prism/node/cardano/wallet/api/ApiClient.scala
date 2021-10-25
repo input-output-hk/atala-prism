@@ -5,11 +5,7 @@ import com.softwaremill.sttp.asynchttpclient.future.AsyncHttpClientFutureBackend
 import io.circe.parser.parse
 import io.circe.{Decoder, Json}
 import io.iohk.atala.prism.models.{TransactionDetails, TransactionId}
-import io.iohk.atala.prism.node.cardano.models.{
-  Payment,
-  TransactionMetadata,
-  WalletId
-}
+import io.iohk.atala.prism.node.cardano.models.{Payment, TransactionMetadata, WalletId}
 import io.iohk.atala.prism.node.cardano.wallet.CardanoWalletApiClient
 import io.iohk.atala.prism.node.cardano.wallet.CardanoWalletApiClient.{
   CardanoWalletError,
@@ -31,8 +27,7 @@ import io.iohk.atala.prism.utils.FutureEither._
 
 import scala.concurrent.{ExecutionContext, Future}
 
-/** Implementation of the `CardanoWalletApiClient` that accesses the REST API
-  * provided by `cardano-wallet`.
+/** Implementation of the `CardanoWalletApiClient` that accesses the REST API provided by `cardano-wallet`.
   */
 private[wallet] class ApiClient(config: ApiClient.Config)(implicit
     backend: SttpBackend[Future, Nothing],

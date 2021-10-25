@@ -28,8 +28,7 @@ private[repositories] final class CredentialTypeRepositoryLogs[F[
         .flatTap(
           _.fold(
             e => error"encountered an error while creating credential type $e",
-            r =>
-              info"creating credential type - successfully done ${r.credentialType.id}"
+            r => info"creating credential type - successfully done ${r.credentialType.id}"
           )
         )
         .onError(
@@ -60,8 +59,7 @@ private[repositories] final class CredentialTypeRepositoryLogs[F[
       info"marking as archived $institutionId $credentialTypeId" *> in
         .flatTap(
           _.fold(
-            e =>
-              error"encountered an error while marking as archived credential type $e",
+            e => error"encountered an error while marking as archived credential type $e",
             _ => info"marking as archived - successfully done"
           )
         )
@@ -75,8 +73,7 @@ private[repositories] final class CredentialTypeRepositoryLogs[F[
       info"marking as ready $institutionId $credentialTypeId" *> in
         .flatTap(
           _.fold(
-            e =>
-              error"encountered an error while marking as ready credential type $e",
+            e => error"encountered an error while marking as ready credential type $e",
             _ => info"marking as ready - successfully done"
           )
         )
@@ -87,9 +84,7 @@ private[repositories] final class CredentialTypeRepositoryLogs[F[
   ): Mid[F, Option[CredentialTypeWithRequiredFields]] =
     in =>
       info"finding by credential type id $credentialTypeId" *> in
-        .flatTap(result =>
-          info"finding by credential type id - ${result.fold("found nothing")(_ => "found")}"
-        )
+        .flatTap(result => info"finding by credential type id - ${result.fold("found nothing")(_ => "found")}")
         .onError(
           errorCause"encountered an error while finding by credential type id" (
             _
@@ -133,9 +128,7 @@ private[repositories] final class CredentialTypeRepositoryLogs[F[
   ): Mid[F, List[CredentialType]] =
     in =>
       info"finding by institution id $institution" *> in
-        .flatTap(result =>
-          info"finding by institution id - found ${result.size} entities"
-        )
+        .flatTap(result => info"finding by institution id - found ${result.size} entities")
         .onError(
           errorCause"encountered an error while finding by institution id" (_)
         )

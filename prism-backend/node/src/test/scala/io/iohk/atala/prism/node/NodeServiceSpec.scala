@@ -17,18 +17,12 @@ import io.iohk.atala.prism.identity.{PrismDid => DID}
 import io.iohk.atala.prism.logging.TraceId.IOWithTraceIdContext
 import io.iohk.atala.prism.node.errors.NodeError
 import io.iohk.atala.prism.node.grpc.ProtoCodecs
-import io.iohk.atala.prism.node.models.nodeState.{
-  CredentialBatchState,
-  LedgerData
-}
+import io.iohk.atala.prism.node.models.nodeState.{CredentialBatchState, LedgerData}
 import io.iohk.atala.prism.node.models._
 import io.iohk.atala.prism.node.operations.path.{Path, ValueAtPath}
 import io.iohk.atala.prism.node.operations._
 import io.iohk.atala.prism.node.repositories.daos.{DIDDataDAO, PublicKeysDAO}
-import io.iohk.atala.prism.node.repositories.{
-  CredentialBatchesRepository,
-  DIDDataRepository
-}
+import io.iohk.atala.prism.node.repositories.{CredentialBatchesRepository, DIDDataRepository}
 import io.iohk.atala.prism.node.services.{
   BlockProcessingServiceSpec,
   ObjectManagementService,
@@ -91,8 +85,7 @@ class NodeServiceSpec
       .build()
       .start()
 
-    channelHandle =
-      InProcessChannelBuilder.forName(serverName).directExecutor().build()
+    channelHandle = InProcessChannelBuilder.forName(serverName).directExecutor().build()
 
     service = node_api.NodeServiceGrpc.blockingStub(channelHandle)
   }
@@ -598,8 +591,7 @@ class NodeServiceSpec
         operationId = operationId,
         objectId = AtalaObjectId.of("random".getBytes),
         operationStatus = AtalaOperationStatus.APPLIED,
-        transactionSubmissionStatus =
-          Some(AtalaObjectTransactionSubmissionStatus.InLedger),
+        transactionSubmissionStatus = Some(AtalaObjectTransactionSubmissionStatus.InLedger),
         transactionId = Some(dummyLedgerData.transactionId)
       )
 

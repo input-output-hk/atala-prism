@@ -28,9 +28,7 @@ private[repositories] final class ConnectionsRepositoryLogs[F[
   ): Mid[F, List[TokenString]] =
     in =>
       info"inserting tokens $initiator ${tokens.size} entities" *> in
-        .flatTap(result =>
-          info"inserting tokens - successfully done, inserted ${result.size} tokens"
-        )
+        .flatTap(result => info"inserting tokens - successfully done, inserted ${result.size} tokens")
         .onError(errorCause"encountered an error while inserting tokens" (_))
 
   override def getTokenInfo(
@@ -40,8 +38,7 @@ private[repositories] final class ConnectionsRepositoryLogs[F[
       info"getting token info $token" *> in
         .flatTap(
           _.fold(
-            er =>
-              error"encountered an error while getting token info ${er.unify: ConnectorError}",
+            er => error"encountered an error while getting token info ${er.unify: ConnectorError}",
             info => info"getting token info - successfully done ${info.id}"
           )
         )
@@ -55,10 +52,8 @@ private[repositories] final class ConnectionsRepositoryLogs[F[
       info"adding connection from token $token" *> in
         .flatTap(
           _.fold(
-            er =>
-              error"encountered an error while adding connection from token ${er.unify: ConnectorError}",
-            info =>
-              info"adding connection from token - successfully done ${info.id}"
+            er => error"encountered an error while adding connection from token ${er.unify: ConnectorError}",
+            info => info"adding connection from token - successfully done ${info.id}"
           )
         )
         .onError(
@@ -75,8 +70,7 @@ private[repositories] final class ConnectionsRepositoryLogs[F[
       info"revoking connection $participantId $connectionId" *> in
         .flatTap(
           _.fold(
-            er =>
-              error"encountered an error while revoking connection ${er.unify: ConnectorError}",
+            er => error"encountered an error while revoking connection ${er.unify: ConnectorError}",
             _ => info"revoking connection - successfully done"
           )
         )
@@ -105,10 +99,8 @@ private[repositories] final class ConnectionsRepositoryLogs[F[
       info"getting connections paginated $participant $lastSeenConnectionId" *> in
         .flatTap(
           _.fold(
-            er =>
-              error"encountered an error while getting connections paginated ${er.unify: ConnectorError}",
-            list =>
-              info"getting connections paginated - successfully done, got ${list.size} entities"
+            er => error"encountered an error while getting connections paginated ${er.unify: ConnectorError}",
+            list => info"getting connections paginated - successfully done, got ${list.size} entities"
           )
         )
         .onError(

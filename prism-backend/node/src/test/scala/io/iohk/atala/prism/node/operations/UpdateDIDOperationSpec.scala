@@ -8,10 +8,7 @@ import io.iohk.atala.prism.crypto.Sha256
 import io.iohk.atala.prism.node.DataPreparation
 import io.iohk.atala.prism.node.DataPreparation.dummyLedgerData
 import io.iohk.atala.prism.node.models.{DIDPublicKey, KeyUsage}
-import io.iohk.atala.prism.node.operations.CreateDIDOperationSpec.{
-  randomCompressedECKeyData,
-  randomECKeyData
-}
+import io.iohk.atala.prism.node.operations.CreateDIDOperationSpec.{randomCompressedECKeyData, randomECKeyData}
 import io.iohk.atala.prism.node.services.BlockProcessingServiceSpec
 import io.iohk.atala.prism.protos.node_models
 import org.scalatest.EitherValues._
@@ -70,8 +67,7 @@ object UpdateDIDOperationSpec {
   val exampleAddAndRemoveOperation = node_models.AtalaOperation(
     operation = node_models.AtalaOperation.Operation.UpdateDid(
       value = node_models.UpdateDIDOperation(
-        previousOperationHash =
-          ByteString.copyFrom(createDidOperation.digest.getValue.toArray),
+        previousOperationHash = ByteString.copyFrom(createDidOperation.digest.getValue.toArray),
         id = createDidOperation.id.getValue,
         actions = Seq(exampleAddKeyAction, exampleRemoveKeyAction)
       )
@@ -81,8 +77,7 @@ object UpdateDIDOperationSpec {
   val exampleRemoveOperation = node_models.AtalaOperation(
     operation = node_models.AtalaOperation.Operation.UpdateDid(
       value = node_models.UpdateDIDOperation(
-        previousOperationHash =
-          ByteString.copyFrom(createDidOperation.digest.getValue.toArray),
+        previousOperationHash = ByteString.copyFrom(createDidOperation.digest.getValue.toArray),
         id = createDidOperation.id.getValue,
         actions = Seq(exampleRemoveKeyAction)
       )
@@ -92,19 +87,15 @@ object UpdateDIDOperationSpec {
   val exampleOperationWithCompressedKeys = node_models.AtalaOperation(
     operation = node_models.AtalaOperation.Operation.UpdateDid(
       value = node_models.UpdateDIDOperation(
-        previousOperationHash =
-          ByteString.copyFrom(createDidOperation.digest.getValue.toArray),
+        previousOperationHash = ByteString.copyFrom(createDidOperation.digest.getValue.toArray),
         id = createDidOperation.id.getValue,
-        actions =
-          Seq(exampleAddKeyActionWithCompressedKeys, exampleRemoveKeyAction)
+        actions = Seq(exampleAddKeyActionWithCompressedKeys, exampleRemoveKeyAction)
       )
     )
   )
 }
 
-class UpdateDIDOperationSpec
-    extends AtalaWithPostgresSpec
-    with ProtoParsingTestHelpers {
+class UpdateDIDOperationSpec extends AtalaWithPostgresSpec with ProtoParsingTestHelpers {
   import UpdateDIDOperationSpec._
 
   override type Repr = UpdateDIDOperation

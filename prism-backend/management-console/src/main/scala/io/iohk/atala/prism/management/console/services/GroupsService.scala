@@ -143,8 +143,7 @@ private final class GroupsServiceLogs[
       info"creating institution group $institutionId" *> in
         .flatTap(
           _.fold(
-            e =>
-              error"encountered an error while creating institution group $e",
+            e => error"encountered an error while creating institution group $e",
             _ => info"creating institution group - successfully done"
           )
         )
@@ -158,9 +157,7 @@ private final class GroupsServiceLogs[
   ): Mid[F, GetGroupsResult] =
     in =>
       info"getting institution group by query $institutionId" *> in
-        .flatTap(_ =>
-          info"getting institution group by query - successfully done"
-        )
+        .flatTap(_ => info"getting institution group by query - successfully done")
         .onError(
           errorCause"encountered an error while getting institution group by query" (
             _

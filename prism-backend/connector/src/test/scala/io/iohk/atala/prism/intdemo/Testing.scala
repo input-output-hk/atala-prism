@@ -11,13 +11,12 @@ private[intdemo] object Testing {
     */
   def eventually: VerificationWithTimeout = Mockito.timeout(1000)
 
-  /** Verifies a method has never been called after an interval of 100 millis.
-    * Usage: {{{verify(mock, neverEver).someMethod()}}}
+  /** Verifies a method has never been called after an interval of 100 millis. Usage:
+    * {{{verify(mock, neverEver).someMethod()}}}
     */
   def neverEver: VerificationMode = Mockito.after(100).never
 
-  /** Returns the contents of the given resource file located in {@code
-    * intdemo}.
+  /** Returns the contents of the given resource file located in {@code intdemo}.
     */
   def readResource(resource: String): String = {
     try {
@@ -28,8 +27,7 @@ private[intdemo] object Testing {
     }
   }
 
-  /** Extract fields from JSON using dot notation names. e.g.
-    * {{{cursor.jsonStr("a.b.c")}}}
+  /** Extract fields from JSON using dot notation names. e.g. {{{cursor.jsonStr("a.b.c")}}}
     * @param cursor
     *   an HCursor
     */
@@ -49,9 +47,8 @@ private[intdemo] object Testing {
               s"Could not find ${CursorOp.opsToPath(failedCursor.history)} inside ${cursor.value}"
             val trace = Thread.currentThread.getStackTrace
 
-            /** the exact index of StackTraceElement, in this case 4 is the
-              * original function that called jsonStr or jsonArr, which is what
-              * we need in this case
+            /** the exact index of StackTraceElement, in this case 4 is the original function that called jsonStr or
+              * jsonArr, which is what we need in this case
               */
             val originalPosition = trace(4)
             throw new TestFailedException(

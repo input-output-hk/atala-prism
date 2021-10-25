@@ -85,9 +85,7 @@ object ProtoCodecs {
       .withUsage(keyUsage)
       .withAddedOn(addedOn)
 
-    revokedOn.fold(withoutRevKey)(revTime =>
-      withoutRevKey.withRevokedOn(revTime)
-    )
+    revokedOn.fold(withoutRevKey)(revTime => withoutRevKey.withRevokedOn(revTime))
   }
 
   def toECKeyData(key: ECPublicKey): node_models.ECKeyData = {
@@ -101,10 +99,10 @@ object ProtoCodecs {
 
   def toProtoKeyUsage(keyUsage: models.KeyUsage): node_models.KeyUsage = {
     keyUsage match {
-      case MasterKey         => node_models.KeyUsage.MASTER_KEY
-      case IssuingKey        => node_models.KeyUsage.ISSUING_KEY
-      case CommunicationKey  => node_models.KeyUsage.COMMUNICATION_KEY
-      case RevocationKey     => node_models.KeyUsage.REVOCATION_KEY
+      case MasterKey => node_models.KeyUsage.MASTER_KEY
+      case IssuingKey => node_models.KeyUsage.ISSUING_KEY
+      case CommunicationKey => node_models.KeyUsage.COMMUNICATION_KEY
+      case RevocationKey => node_models.KeyUsage.REVOCATION_KEY
       case AuthenticationKey => node_models.KeyUsage.AUTHENTICATION_KEY
     }
   }
@@ -148,7 +146,7 @@ object ProtoCodecs {
 
   def toLedger(ledger: Ledger): common_models.Ledger = {
     ledger match {
-      case Ledger.InMemory       => common_models.Ledger.IN_MEMORY
+      case Ledger.InMemory => common_models.Ledger.IN_MEMORY
       case Ledger.CardanoTestnet => common_models.Ledger.CARDANO_TESTNET
       case Ledger.CardanoMainnet => common_models.Ledger.CARDANO_MAINNET
       case _ =>

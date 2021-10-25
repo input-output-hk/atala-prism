@@ -16,11 +16,7 @@ import io.iohk.atala.prism.management.console.repositories.daos.CredentialTypeDa
 import io.iohk.atala.prism.utils.syntax.DBConnectionOps
 import io.iohk.atala.prism.metrics.TimeMeasureMetric
 import doobie.free.connection
-import io.iohk.atala.prism.credentials.utils.{
-  Mustache,
-  MustacheError,
-  MustacheParsingError
-}
+import io.iohk.atala.prism.credentials.utils.{Mustache, MustacheError, MustacheParsingError}
 import io.iohk.atala.prism.management.console.repositories.logs.CredentialTypeRepositoryLogs
 import io.iohk.atala.prism.management.console.repositories.metrics.CredentialTypeRepositoryMetrics
 
@@ -80,8 +76,7 @@ object CredentialTypeRepository {
     for {
       serviceLogs <- logs.service[CredentialTypeRepository[F]]
     } yield {
-      implicit val implicitLogs
-          : ServiceLogging[F, CredentialTypeRepository[F]] = serviceLogs
+      implicit val implicitLogs: ServiceLogging[F, CredentialTypeRepository[F]] = serviceLogs
       val metrics: CredentialTypeRepository[Mid[F, *]] =
         new CredentialTypeRepositoryMetrics[F]
       val logs: CredentialTypeRepository[Mid[F, *]] =
@@ -148,40 +143,39 @@ private final class CredentialTypeRepositoryImpl[F[_]: BracketThrow](
       updateCredentialType: UpdateCredentialType,
       institutionId: ParticipantId
   ): F[Either[ManagementConsoleError, Unit]] =
-    withCredentialType(updateCredentialType.id, institutionId) {
-      credentialType =>
-        if (credentialType.state != CredentialTypeState.Draft) {
-          connection.pure[Either[ManagementConsoleError, Unit]](
-            Left(
-              CredentialTypeUpdateIncorrectState(
-                credentialType.id,
-                credentialType.name,
-                credentialType.state
-              )
+    withCredentialType(updateCredentialType.id, institutionId) { credentialType =>
+      if (credentialType.state != CredentialTypeState.Draft) {
+        connection.pure[Either[ManagementConsoleError, Unit]](
+          Left(
+            CredentialTypeUpdateIncorrectState(
+              credentialType.id,
+              credentialType.name,
+              credentialType.state
             )
           )
-        } else {
-          validateMustacheTemplate(
-            updateCredentialType.template,
-            updateCredentialType.fields
-          ).fold(
-            mustacheError =>
-              connection.pure[Either[ManagementConsoleError, Unit]](
-                Left(
-                  CredentialTypeIncorrectMustacheTemplate(
-                    credentialType.name,
-                    mustacheError.getMessage
-                  )
+        )
+      } else {
+        validateMustacheTemplate(
+          updateCredentialType.template,
+          updateCredentialType.fields
+        ).fold(
+          mustacheError =>
+            connection.pure[Either[ManagementConsoleError, Unit]](
+              Left(
+                CredentialTypeIncorrectMustacheTemplate(
+                  credentialType.name,
+                  mustacheError.getMessage
                 )
-              ),
-            _ =>
-              CredentialTypeDao
-                .update(updateCredentialType)
-                .map(Right(_)): ConnectionIO[
-                Either[ManagementConsoleError, Unit]
-              ]
-          )
-        }
+              )
+            ),
+          _ =>
+            CredentialTypeDao
+              .update(updateCredentialType)
+              .map(Right(_)): ConnectionIO[
+              Either[ManagementConsoleError, Unit]
+            ]
+        )
+      }
     }
 
   def markAsArchived(

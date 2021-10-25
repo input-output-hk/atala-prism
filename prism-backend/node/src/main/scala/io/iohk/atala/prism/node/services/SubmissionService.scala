@@ -14,20 +14,14 @@ import derevo.derive
 import derevo.tagless.applyK
 import io.iohk.atala.prism.models.{TransactionInfo, TransactionStatus}
 import io.iohk.atala.prism.node.UnderlyingLedger
-import io.iohk.atala.prism.node.cardano.models.{
-  CardanoWalletError,
-  CardanoWalletErrorCode
-}
+import io.iohk.atala.prism.node.cardano.models.{CardanoWalletError, CardanoWalletErrorCode}
 import io.iohk.atala.prism.node.errors.NodeError
 import io.iohk.atala.prism.node.models.{
   AtalaObjectInfo,
   AtalaObjectTransactionSubmission,
   AtalaObjectTransactionSubmissionStatus
 }
-import io.iohk.atala.prism.node.repositories.{
-  AtalaObjectsTransactionsRepository,
-  AtalaOperationsRepository
-}
+import io.iohk.atala.prism.node.repositories.{AtalaObjectsTransactionsRepository, AtalaOperationsRepository}
 import io.iohk.atala.prism.node.services.SubmissionService.Config
 import io.iohk.atala.prism.node.services.logs.SubmissionServiceLogs
 import io.iohk.atala.prism.protos.node_internal
@@ -295,38 +289,37 @@ private class SubmissionServiceImpl[F[_]: Monad](
               }
         }
 
-    val objects = atalaObjectsMerged.traverse {
-      case (atalaObject, oldObjects) =>
-        if (oldObjects.size != 1) {
-          val changedBlockE = atalaObject.getAndValidateAtalaObject
-            .flatMap(_.blockContent)
-            .toRight {
-              NodeError.InternalError(
-                s"Block in object ${atalaObject.objectId} was invalidated after merge."
-              )
-            }
-
-          val atalaObjectIOEither = for {
-            changedBlock <- EitherT.fromEither(changedBlockE)
-            _ <- EitherT(
-              atalaOperationsRepository.updateMergedObjects(
-                atalaObject,
-                changedBlock.operations.toList,
-                oldObjects
-              )
+    val objects = atalaObjectsMerged.traverse { case (atalaObject, oldObjects) =>
+      if (oldObjects.size != 1) {
+        val changedBlockE = atalaObject.getAndValidateAtalaObject
+          .flatMap(_.blockContent)
+          .toRight {
+            NodeError.InternalError(
+              s"Block in object ${atalaObject.objectId} was invalidated after merge."
             )
-          } yield atalaObject
-
-          atalaObjectIOEither.value.map {
-            case Left(err) =>
-              logger.error(err.toString)
-              None
-            case Right(atalaObjectInfo) =>
-              Some(atalaObjectInfo)
           }
-        } else {
-          atalaObject.some.pure[F]
+
+        val atalaObjectIOEither = for {
+          changedBlock <- EitherT.fromEither(changedBlockE)
+          _ <- EitherT(
+            atalaOperationsRepository.updateMergedObjects(
+              atalaObject,
+              changedBlock.operations.toList,
+              oldObjects
+            )
+          )
+        } yield atalaObject
+
+        atalaObjectIOEither.value.map {
+          case Left(err) =>
+            logger.error(err.toString)
+            None
+          case Right(atalaObjectInfo) =>
+            Some(atalaObjectInfo)
         }
+      } else {
+        atalaObject.some.pure[F]
+      }
     }
     objects.map(_.flatten)
   }

@@ -5,9 +5,7 @@ import tofu.logging.{DictLoggable, LogRenderer}
 
 import scala.collection.compat.immutable.ArraySeq
 
-class TransactionId private (val value: ArraySeq[Byte])
-    extends AnyVal
-    with HashValue {}
+class TransactionId private (val value: ArraySeq[Byte]) extends AnyVal with HashValue {}
 
 object TransactionId extends HashValueFrom[TransactionId] {
 

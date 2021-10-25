@@ -54,9 +54,8 @@ object RequestMeasureUtil {
 
   private def handleFailedFutureMeasurement[V](
       maybeMeasureItems: Try[MeasureItems]
-  )(implicit ec: ExecutionContext): PartialFunction[Throwable, Future[V]] = {
-    case NonFatal(e) =>
-      finishMeasurement((), maybeMeasureItems) *> Future.failed(e)
+  )(implicit ec: ExecutionContext): PartialFunction[Throwable, Future[V]] = { case NonFatal(e) =>
+    finishMeasurement((), maybeMeasureItems) *> Future.failed(e)
   }
 
   private def tryToStartMeasurement(

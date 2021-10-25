@@ -93,8 +93,7 @@ object CredentialIssuancesRepository {
     for {
       serviceLogs <- logs.service[CredentialIssuancesRepository[F]]
     } yield {
-      implicit val implicitLogs
-          : ServiceLogging[F, CredentialIssuancesRepository[F]] = serviceLogs
+      implicit val implicitLogs: ServiceLogging[F, CredentialIssuancesRepository[F]] = serviceLogs
       val metrics: CredentialIssuancesRepository[Mid[F, *]] =
         new CredentialIssuancesRepositoryMetrics[F]
       val logs: CredentialIssuancesRepository[Mid[F, *]] =

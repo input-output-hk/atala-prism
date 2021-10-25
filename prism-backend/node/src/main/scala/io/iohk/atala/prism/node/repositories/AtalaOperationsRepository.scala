@@ -11,10 +11,7 @@ import doobie.util.transactor.Transactor
 import io.iohk.atala.prism.connector.AtalaOperationId
 import io.iohk.atala.prism.node.errors.NodeError
 import io.iohk.atala.prism.node.models._
-import io.iohk.atala.prism.node.repositories.daos.{
-  AtalaObjectsDAO,
-  AtalaOperationsDAO
-}
+import io.iohk.atala.prism.node.repositories.daos.{AtalaObjectsDAO, AtalaOperationsDAO}
 import io.iohk.atala.prism.node.repositories.daos.AtalaObjectsDAO.AtalaObjectCreateData
 import io.iohk.atala.prism.utils.syntax.DBConnectionOps
 import io.iohk.atala.prism.metrics.TimeMeasureMetric
@@ -55,8 +52,7 @@ object AtalaOperationsRepository {
     for {
       serviceLogs <- logs.service[AtalaOperationsRepository[F]]
     } yield {
-      implicit val implicitLogs
-          : ServiceLogging[F, AtalaOperationsRepository[F]] = serviceLogs
+      implicit val implicitLogs: ServiceLogging[F, AtalaOperationsRepository[F]] = serviceLogs
       val metrics: AtalaOperationsRepository[Mid[F, *]] =
         new AtalaOperationsRepositoryMetrics[F]()
       val logs: AtalaOperationsRepository[Mid[F, *]] =

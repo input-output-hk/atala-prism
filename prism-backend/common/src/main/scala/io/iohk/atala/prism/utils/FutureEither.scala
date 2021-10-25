@@ -23,7 +23,7 @@ class FutureEither[+E, +A](val value: Future[Either[E, A]]) extends AnyVal {
   )(implicit ec: ExecutionContext): FutureEither[E2, B] = {
     val newFuture = value.flatMap {
       case Right(a) => f(a).value
-      case Left(e)  => Future.successful(Left(e))
+      case Left(e) => Future.successful(Left(e))
     }
 
     new FutureEither[E2, B](newFuture)
@@ -34,11 +34,11 @@ class FutureEither[+E, +A](val value: Future[Either[E, A]]) extends AnyVal {
   ): FutureEither[E2, B] =
     transform(e => Left(e), f)
 
-  def transform[E2, A2](fa: E => Either[E2, A2], fb: A => Either[E2, A2])(
-      implicit ec: ExecutionContext
+  def transform[E2, A2](fa: E => Either[E2, A2], fb: A => Either[E2, A2])(implicit
+      ec: ExecutionContext
   ): FutureEither[E2, A2] = {
     val newFuture = value.map {
-      case Left(e)  => fa(e)
+      case Left(e) => fa(e)
       case Right(x) => fb(x)
     }
 
@@ -53,7 +53,7 @@ class FutureEither[+E, +A](val value: Future[Either[E, A]]) extends AnyVal {
   ): FutureEither[E2, A2] = {
 
     val newFuture = value.flatMap {
-      case Left(e)  => fa(e).value
+      case Left(e) => fa(e).value
       case Right(x) => fb(x).value
     }
 
@@ -65,7 +65,7 @@ class FutureEither[+E, +A](val value: Future[Either[E, A]]) extends AnyVal {
   )(implicit ec: ExecutionContext): FutureEither[Nothing, A] = {
     val newFuture = value.flatMap {
       case Right(x) => Future.successful(Right(x))
-      case Left(e)  => Future.failed(f(e))
+      case Left(e) => Future.failed(f(e))
     }
 
     new FutureEither(newFuture)
@@ -78,9 +78,7 @@ class FutureEither[+E, +A](val value: Future[Either[E, A]]) extends AnyVal {
   }
 
   def toFuture(ef: E => Throwable)(implicit ec: ExecutionContext): Future[A] = {
-    value.flatMap(e =>
-      e.fold(e => Future.failed(ef(e)), a => Future.successful(a))
-    )
+    value.flatMap(e => e.fold(e => Future.failed(ef(e)), a => Future.successful(a)))
   }
 
   def toFuture(implicit
@@ -91,15 +89,13 @@ class FutureEither[+E, +A](val value: Future[Either[E, A]]) extends AnyVal {
   }
 }
 
-/** NOTE: Avoid defining generic future extensions, like
-  * {{{FutureOps[A](val value: Future[A])}}}
+/** NOTE: Avoid defining generic future extensions, like {{{FutureOps[A](val value: Future[A])}}}
   *
   * These could cause ambiguity to the compiler while resolving implicits.
   */
 object FutureEither {
 
-  /** Constructs a `FutureEither` from the given `body` by wrapping it in a
-    * `Try`.
+  /** Constructs a `FutureEither` from the given `body` by wrapping it in a `Try`.
     *
     * <p>This method ensures any non-fatal exception is caught.
     */
@@ -112,7 +108,7 @@ object FutureEither {
   def apply[E, A](tryBody: Try[A]): FutureEither[Throwable, A] = {
     Future.successful {
       tryBody match {
-        case Failure(ex)    => Left(ex)
+        case Failure(ex) => Left(ex)
         case Success(value) => Right(value)
       }
     }.toFutureEither
@@ -132,8 +128,7 @@ object FutureEither {
     ): FutureEither[E, A] = value.map(Right(_)).toFutureEither
   }
 
-  implicit class FutureEitherOps[E, A](val value: Future[Either[E, A]])
-      extends AnyVal {
+  implicit class FutureEitherOps[E, A](val value: Future[Either[E, A]]) extends AnyVal {
     def toFutureEither: FutureEither[E, A] = new FutureEither[E, A](value)
     def toFutureEither[E2](
         mapper: E => E2
@@ -147,7 +142,7 @@ object FutureEither {
         ex: Exception
     )(implicit ec: ExecutionContext): FutureEither[Nothing, A] = {
       val newFuture = value.map {
-        case Left(_)  => throw ex
+        case Left(_) => throw ex
         case Right(x) => Right(x)
       }
 
@@ -155,14 +150,13 @@ object FutureEither {
     }
   }
 
-  implicit class FutureOptionOps[A](val value: Future[Option[A]])
-      extends AnyVal {
+  implicit class FutureOptionOps[A](val value: Future[Option[A]]) extends AnyVal {
     def toFutureEither[E](
         error: => E
     )(implicit ec: ExecutionContext): FutureEither[E, A] = {
       val newFuture = value.map {
         case Some(x) => Right(x)
-        case None    => Left(error)
+        case None => Left(error)
       }
       new FutureEither[E, A](newFuture)
     }

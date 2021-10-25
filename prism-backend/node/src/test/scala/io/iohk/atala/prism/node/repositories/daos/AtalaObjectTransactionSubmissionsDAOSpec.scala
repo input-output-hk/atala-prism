@@ -319,9 +319,7 @@ class AtalaObjectTransactionSubmissionsDAOSpec extends AtalaWithPostgresSpec {
         .runSync
 
       getAll() mustBe List(
-        pendingSubmission.copy(status =
-          AtalaObjectTransactionSubmissionStatus.InLedger
-        )
+        pendingSubmission.copy(status = AtalaObjectTransactionSubmissionStatus.InLedger)
       )
     }
   }

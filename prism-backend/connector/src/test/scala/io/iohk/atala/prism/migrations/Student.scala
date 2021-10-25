@@ -16,13 +16,9 @@ object Student {
   object ConnectionStatus extends Enum[ConnectionStatus] {
     lazy val values = findValues
 
-    final case object InvitationMissing
-        extends ConnectionStatus("INVITATION_MISSING")
-    final case object ConnectionMissing
-        extends ConnectionStatus("CONNECTION_MISSING")
-    final case object ConnectionAccepted
-        extends ConnectionStatus("CONNECTION_ACCEPTED")
-    final case object ConnectionRevoked
-        extends ConnectionStatus("CONNECTION_REVOKED")
+    final case object InvitationMissing extends ConnectionStatus("INVITATION_MISSING")
+    final case object ConnectionMissing extends ConnectionStatus("CONNECTION_MISSING")
+    final case object ConnectionAccepted extends ConnectionStatus("CONNECTION_ACCEPTED")
+    final case object ConnectionRevoked extends ConnectionStatus("CONNECTION_REVOKED")
   }
 }

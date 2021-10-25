@@ -5,11 +5,7 @@ import io.iohk.atala.prism.auth.errors.UnknownPublicKeyId
 import io.iohk.atala.prism.crypto.EC.{INSTANCE => EC}
 import io.iohk.atala.prism.crypto.keys.{ECKeyPair, ECPublicKey}
 import io.iohk.atala.prism.protos.node_models
-import io.iohk.atala.prism.protos.node_models.{
-  CompressedECKeyData,
-  DIDData,
-  ECKeyData
-}
+import io.iohk.atala.prism.protos.node_models.{CompressedECKeyData, DIDData, ECKeyData}
 import monix.execution.Scheduler.Implicits.global
 import org.scalatest.matchers.must.Matchers
 import org.scalatest.wordspec.AnyWordSpec

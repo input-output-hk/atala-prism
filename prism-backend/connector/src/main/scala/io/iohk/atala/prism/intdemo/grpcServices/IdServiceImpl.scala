@@ -191,8 +191,7 @@ object IdServiceImpl {
         )
       case Right(credential) =>
         credential_models.PlainTextCredential(
-          encodedCredential =
-            Base64Utils.encodeURL(credential.getCanonicalForm.getBytes)
+          encodedCredential = Base64Utils.encodeURL(credential.getCanonicalForm.getBytes)
         )
     }
 

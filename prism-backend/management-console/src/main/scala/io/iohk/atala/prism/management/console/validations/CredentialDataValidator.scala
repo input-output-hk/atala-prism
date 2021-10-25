@@ -12,15 +12,13 @@ import io.iohk.atala.prism.management.console.models.{
 import CredentialDataValidationError._
 import tofu.logging.{DictLoggable, LogRenderer}
 
-sealed abstract class CredentialDataValidationError(val message: String)
-    extends Exception(message)
+sealed abstract class CredentialDataValidationError(val message: String) extends Exception(message)
 object CredentialDataValidationError {
 
-  implicit val loggableCredentialDataValidationError
-      : DictLoggable[CredentialDataValidationError] =
+  implicit val loggableCredentialDataValidationError: DictLoggable[CredentialDataValidationError] =
     new DictLoggable[CredentialDataValidationError] {
-      override def fields[I, V, R, S](a: CredentialDataValidationError, i: I)(
-          implicit r: LogRenderer[I, V, R, S]
+      override def fields[I, V, R, S](a: CredentialDataValidationError, i: I)(implicit
+          r: LogRenderer[I, V, R, S]
       ): R =
         r.addString("CredentialDataValidationError", a.message, i)
 
@@ -43,8 +41,7 @@ object CredentialDataValidationError {
       expectedFieldType: CredentialTypeFieldType,
       actualValue: String
   ) extends CredentialDataValidationError(
-        message =
-          s"Field $fieldName expected type is: $expectedFieldType but actual value was: $actualValue"
+        message = s"Field $fieldName expected type is: $expectedFieldType but actual value was: $actualValue"
       )
 
   case class InvalidDateFormat(
@@ -69,15 +66,13 @@ object CredentialDataValidator {
         jsonValue: Json
     ): ValidatedNel[CredentialDataValidationError, Unit] = {
       val typeMatch = credentialTypeField.`type` match {
-        case CredentialTypeFieldType.String  => jsonValue.asString.isDefined
+        case CredentialTypeFieldType.String => jsonValue.asString.isDefined
         case CredentialTypeFieldType.Boolean => jsonValue.asBoolean.isDefined
-        case CredentialTypeFieldType.Int     => jsonValue.asNumber.isDefined
-        case CredentialTypeFieldType.Date    => jsonValue.asString.isDefined
+        case CredentialTypeFieldType.Int => jsonValue.asNumber.isDefined
+        case CredentialTypeFieldType.Date => jsonValue.asString.isDefined
       }
 
-      if (
-        typeMatch && CredentialTypeFieldType.Date == credentialTypeField.`type`
-      ) {
+      if (typeMatch && CredentialTypeFieldType.Date == credentialTypeField.`type`) {
         Validated.condNel(
           jsonValue.asString.exists(date => DATE_REGEX.matches(date)),
           (),

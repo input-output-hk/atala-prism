@@ -15,12 +15,7 @@ import doobie.ConnectionIO
 import doobie.implicits._
 import doobie.util.transactor.Transactor
 import io.iohk.atala.prism.management.console.errors._
-import io.iohk.atala.prism.management.console.models.{
-  Contact,
-  GetGroupsResult,
-  InstitutionGroup,
-  ParticipantId
-}
+import io.iohk.atala.prism.management.console.models.{Contact, GetGroupsResult, InstitutionGroup, ParticipantId}
 import io.iohk.atala.prism.management.console.repositories.daos.InstitutionGroupsDAO
 import io.iohk.atala.prism.management.console.repositories.logs.InstitutionGroupsRepositoryLogs
 import io.iohk.atala.prism.management.console.repositories.metrics.InstitutionGroupsRepositoryMetrics
@@ -79,8 +74,7 @@ object InstitutionGroupsRepository {
     for {
       serviceLogs <- logs.service[InstitutionGroupsRepository[F]]
     } yield {
-      implicit val implicitLogs
-          : ServiceLogging[F, InstitutionGroupsRepository[F]] = serviceLogs
+      implicit val implicitLogs: ServiceLogging[F, InstitutionGroupsRepository[F]] = serviceLogs
       val metrics: InstitutionGroupsRepository[Mid[F, *]] =
         new InstitutionGroupsRepositoryMetrics[F]
       val logs: InstitutionGroupsRepository[Mid[F, *]] =

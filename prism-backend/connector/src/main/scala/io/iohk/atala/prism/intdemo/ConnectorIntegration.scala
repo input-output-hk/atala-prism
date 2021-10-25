@@ -1,15 +1,9 @@
 package io.iohk.atala.prism.intdemo
 
 import cats.implicits.catsSyntaxEitherId
-import io.iohk.atala.prism.connector.errors.{
-  ConnectorError,
-  ConnectorErrorSupport
-}
+import io.iohk.atala.prism.connector.errors.{ConnectorError, ConnectorErrorSupport}
 import io.iohk.atala.prism.connector.model._
-import io.iohk.atala.prism.connector.services.{
-  ConnectionsService,
-  MessagesService
-}
+import io.iohk.atala.prism.connector.services.{ConnectionsService, MessagesService}
 import io.iohk.atala.prism.logging.TraceId
 import io.iohk.atala.prism.logging.TraceId.IOWithTraceIdContext
 import io.iohk.atala.prism.models.ParticipantId

@@ -7,10 +7,7 @@ import cats.syntax.functor._
 import cats.syntax.flatMap._
 import cats.syntax.traverse._
 import io.iohk.atala.prism.logging.TraceId.IOWithTraceIdContext
-import io.iohk.atala.prism.metrics.TimeMeasureUtil.{
-  DomainTimer,
-  StartedDomainTimer
-}
+import io.iohk.atala.prism.metrics.TimeMeasureUtil.{DomainTimer, StartedDomainTimer}
 import kamon.Kamon
 import kamon.metric.Timer
 import kamon.tag.TagSet
@@ -30,8 +27,7 @@ object TimeMeasureMetric {
       override def stopTimer(timer: StartedDomainTimer): IO[Try[Unit]] =
         IO.delay(Try(timer.in.stop()))
     }
-  implicit val ioWithTraceIdTimeMeasureMetric
-      : TimeMeasureMetric[IOWithTraceIdContext] =
+  implicit val ioWithTraceIdTimeMeasureMetric: TimeMeasureMetric[IOWithTraceIdContext] =
     new TimeMeasureMetric[IOWithTraceIdContext] {
       override def startTimer(
           timer: DomainTimer
@@ -82,7 +78,6 @@ object TimeMeasureUtil {
   }
 
   final case class DomainTimer(protected[metrics] val in: Timer) extends AnyVal
-  final case class StartedDomainTimer(protected[metrics] val in: Timer.Started)
-      extends AnyVal
+  final case class StartedDomainTimer(protected[metrics] val in: Timer.Started) extends AnyVal
 
 }

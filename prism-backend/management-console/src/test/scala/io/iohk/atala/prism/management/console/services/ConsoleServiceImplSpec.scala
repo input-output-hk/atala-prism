@@ -10,18 +10,9 @@ import io.iohk.atala.prism.identity.{PrismDid => DID}
 import io.iohk.atala.prism.crypto.EC.{INSTANCE => EC}
 import io.iohk.atala.prism.logging.TraceId
 import io.iohk.atala.prism.management.console.DataPreparation._
-import io.iohk.atala.prism.management.console.models.{
-  InstitutionGroup,
-  ParticipantLogo
-}
-import io.iohk.atala.prism.management.console.{
-  DataPreparation,
-  ManagementConsoleRpcSpecBase
-}
-import io.iohk.atala.prism.protos.common_models.{
-  HealthCheckRequest,
-  HealthCheckResponse
-}
+import io.iohk.atala.prism.management.console.models.{InstitutionGroup, ParticipantLogo}
+import io.iohk.atala.prism.management.console.{DataPreparation, ManagementConsoleRpcSpecBase}
+import io.iohk.atala.prism.protos.common_models.{HealthCheckRequest, HealthCheckResponse}
 import io.iohk.atala.prism.protos.{common_models, console_api, node_api}
 import io.iohk.atala.prism.utils.syntax._
 import org.mockito.ArgumentMatchersSugar.*
@@ -165,9 +156,7 @@ class ConsoleServiceImplSpec extends ManagementConsoleRpcSpecBase with DIDUtil {
 
       val request2 = console_api.GetStatisticsRequest(
         Some(
-          common_models.TimeInterval(startTimestamp =
-            Instant.now().toProtoTimestamp.some
-          )
+          common_models.TimeInterval(startTimestamp = Instant.now().toProtoTimestamp.some)
         )
       )
       val rpcRequest2 = SignedRpcRequest.generate(keyPair, did, request2)
@@ -178,9 +167,7 @@ class ConsoleServiceImplSpec extends ManagementConsoleRpcSpecBase with DIDUtil {
 
       val request3 = console_api.GetStatisticsRequest(
         Some(
-          common_models.TimeInterval(startTimestamp =
-            Instant.now().toProtoTimestamp.some
-          )
+          common_models.TimeInterval(startTimestamp = Instant.now().toProtoTimestamp.some)
         )
       )
       val rpcRequest3 = SignedRpcRequest.generate(keyPair, did, request3)

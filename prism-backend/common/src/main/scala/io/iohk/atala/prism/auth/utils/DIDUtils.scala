@@ -14,11 +14,7 @@ import io.iohk.atala.prism.utils.FutureEither.FutureEitherOps
 
 import scala.concurrent.{ExecutionContext, Future}
 import io.iohk.atala.prism.interop.toScalaProtos._
-import io.iohk.atala.prism.protos.node_models.PublicKey.KeyData.{
-  CompressedEcKeyData,
-  EcKeyData,
-  Empty
-}
+import io.iohk.atala.prism.protos.node_models.PublicKey.KeyData.{CompressedEcKeyData, EcKeyData, Empty}
 
 object DIDUtils {
 

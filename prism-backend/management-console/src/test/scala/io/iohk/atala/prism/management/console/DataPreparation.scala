@@ -9,12 +9,7 @@ import io.iohk.atala.prism.auth.grpc.GrpcAuthenticationHeader
 import io.iohk.atala.prism.auth.model.RequestNonce
 import io.iohk.atala.prism.connector.AtalaOperationId
 import io.iohk.atala.prism.credentials.CredentialBatchId
-import io.iohk.atala.prism.crypto.{
-  EC,
-  MerkleInclusionProof,
-  Sha256,
-  Sha256Digest
-}
+import io.iohk.atala.prism.crypto.{EC, MerkleInclusionProof, Sha256, Sha256Digest}
 import io.iohk.atala.prism.crypto.signature.ECSignature
 import io.iohk.atala.prism.identity.{PrismDid => DID}
 import io.iohk.atala.prism.management.console.models._
@@ -22,10 +17,7 @@ import io.iohk.atala.prism.management.console.repositories.daos.ReceivedCredenti
 import io.iohk.atala.prism.management.console.repositories.daos._
 import io.iohk.atala.prism.models.ConnectionToken
 import io.iohk.atala.prism.protos.connector_models.ContactConnection
-import io.iohk.atala.prism.protos.console_models.{
-  ConnectorRequestMetadata,
-  ContactConnectionStatus
-}
+import io.iohk.atala.prism.protos.console_models.{ConnectorRequestMetadata, ContactConnectionStatus}
 
 import java.time.{Instant, LocalDate}
 import scala.util.Random
@@ -62,10 +54,8 @@ object DataPreparation {
     ConnectorRequestMetadata(
       did = grpcAuthenticationHeaderDIDBased.did.toString,
       didKeyId = grpcAuthenticationHeaderDIDBased.keyId,
-      didSignature =
-        new String(grpcAuthenticationHeaderDIDBased.signature.getData),
-      requestNonce =
-        new String(grpcAuthenticationHeaderDIDBased.requestNonce.bytes.toArray)
+      didSignature = new String(grpcAuthenticationHeaderDIDBased.signature.getData),
+      requestNonce = new String(grpcAuthenticationHeaderDIDBased.requestNonce.bytes.toArray)
     )
 
   def createInstitutionGroup(
@@ -235,8 +225,7 @@ object DataPreparation {
   )(implicit database: Transactor[IO]): Unit = {
     val request = ReceivedSignedCredentialData(
       contactId = contactId,
-      credentialExternalId =
-        CredentialExternalId(Random.alphanumeric.take(10).mkString("")),
+      credentialExternalId = CredentialExternalId(Random.alphanumeric.take(10).mkString("")),
       encodedSignedCredential = "signed-data-mock"
     )
 

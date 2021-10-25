@@ -53,8 +53,8 @@ object NodeLogging {
     )
   }
 
-  def logOperationIds(methodName: String, message: String, obj: AtalaObject)(
-      implicit logger: Logger
+  def logOperationIds(methodName: String, message: String, obj: AtalaObject)(implicit
+      logger: Logger
   ): Unit = {
     obj.blockContent.foreach { block =>
       val atalaOperationIds = block.operations.toList.map(AtalaOperationId.of)

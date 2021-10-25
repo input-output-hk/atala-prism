@@ -4,11 +4,7 @@ import cats.data.OptionT
 import cats.implicits._
 import doobie.FC
 import doobie.implicits._
-import io.iohk.atala.prism.connector.model.{
-  ParticipantInfo,
-  UpdateParticipantProfile,
-  TokenString
-}
+import io.iohk.atala.prism.connector.model.{ParticipantInfo, UpdateParticipantProfile, TokenString}
 import io.iohk.atala.prism.crypto.keys.ECPublicKey
 import io.iohk.atala.prism.identity.{PrismDid => DID}
 import io.iohk.atala.prism.models.ParticipantId

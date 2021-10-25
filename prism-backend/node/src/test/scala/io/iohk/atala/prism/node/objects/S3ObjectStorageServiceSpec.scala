@@ -3,11 +3,7 @@ package io.iohk.atala.prism.node.objects
 import org.scalatest.BeforeAndAfterEach
 import software.amazon.awssdk.regions.Region
 import software.amazon.awssdk.services.s3.S3Client
-import software.amazon.awssdk.services.s3.model.{
-  DeleteObjectRequest,
-  ListObjectsV2Request,
-  S3Object
-}
+import software.amazon.awssdk.services.s3.model.{DeleteObjectRequest, ListObjectsV2Request, S3Object}
 
 import scala.jdk.CollectionConverters._
 

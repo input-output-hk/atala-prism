@@ -2,11 +2,7 @@ package io.iohk.atala.prism.management.console.repositories.metrics
 
 import cats.effect.BracketThrow
 import io.iohk.atala.prism.management.console.errors.ManagementConsoleError
-import io.iohk.atala.prism.management.console.models.{
-  CredentialIssuance,
-  CredentialTypeId,
-  ParticipantId
-}
+import io.iohk.atala.prism.management.console.models.{CredentialIssuance, CredentialTypeId, ParticipantId}
 import io.iohk.atala.prism.management.console.repositories.CredentialIssuancesRepository
 import io.iohk.atala.prism.management.console.repositories.CredentialIssuancesRepository.{
   CreateCredentialBulk,

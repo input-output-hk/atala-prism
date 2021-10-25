@@ -21,10 +21,7 @@ import io.iohk.atala.prism.management.console.repositories.ParticipantsRepositor
   CreateParticipantRequest,
   UpdateParticipantProfileRequest
 }
-import io.iohk.atala.prism.management.console.repositories.daos.{
-  CredentialTypeDao,
-  ParticipantsDAO
-}
+import io.iohk.atala.prism.management.console.repositories.daos.{CredentialTypeDao, ParticipantsDAO}
 import io.iohk.atala.prism.management.console.repositories.logs.ParticipantsRepositoryLogs
 import io.iohk.atala.prism.management.console.repositories.metrics.ParticipantsRepositoryMetrics
 import io.iohk.atala.prism.metrics.TimeMeasureMetric
@@ -90,8 +87,7 @@ object ParticipantsRepository {
   def unsafe[F[_]: TimeMeasureMetric: BracketThrow, R[_]: Comonad](
       transactor: Transactor[F],
       logs: Logs[R, F],
-      defaultCredentialTypeConfig: DefaultCredentialTypeConfig =
-        DefaultCredentialTypeConfig(ConfigFactory.load())
+      defaultCredentialTypeConfig: DefaultCredentialTypeConfig = DefaultCredentialTypeConfig(ConfigFactory.load())
   ): ParticipantsRepository[F] = ParticipantsRepository(
     transactor,
     logs,
@@ -101,8 +97,7 @@ object ParticipantsRepository {
   def makeResource[F[_]: TimeMeasureMetric: BracketThrow, R[_]: Monad](
       transactor: Transactor[F],
       logs: Logs[R, F],
-      defaultCredentialTypeConfig: DefaultCredentialTypeConfig =
-        DefaultCredentialTypeConfig(ConfigFactory.load())
+      defaultCredentialTypeConfig: DefaultCredentialTypeConfig = DefaultCredentialTypeConfig(ConfigFactory.load())
   ): Resource[R, ParticipantsRepository[F]] =
     Resource.eval(
       ParticipantsRepository(transactor, logs, defaultCredentialTypeConfig)
@@ -139,8 +134,7 @@ private final class ParticipantsRepositoryImpl[F[_]: BracketThrow](
       .transact(xa)
       .map(_.asRight[ManagementConsoleError])
       .handleErrorWith {
-        case e: PSQLException
-            if e.getServerErrorMessage.getConstraint == "participants_did_unique" =>
+        case e: PSQLException if e.getServerErrorMessage.getConstraint == "participants_did_unique" =>
           Either
             .left[ManagementConsoleError, Unit](
               InvalidRequest("DID already exists")

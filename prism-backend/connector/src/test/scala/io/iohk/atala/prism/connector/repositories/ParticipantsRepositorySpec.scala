@@ -17,8 +17,7 @@ import org.scalatest.EitherValues._
 import org.scalatest.OptionValues._
 
 class ParticipantsRepositorySpec extends ConnectorRepositorySpecBase {
-  lazy val participantsRepository
-      : ParticipantsRepository[IOWithTraceIdContext] =
+  lazy val participantsRepository: ParticipantsRepository[IOWithTraceIdContext] =
     ParticipantsRepository.unsafe(dbLiftedToTraceIdIO, connectorRepoSpecLogs)
   private val canonicalSuffix =
     "0f753f41e0f3488ba56bd581d153ae9b3c9040cbcc7a63245b4644a265eb3b77"

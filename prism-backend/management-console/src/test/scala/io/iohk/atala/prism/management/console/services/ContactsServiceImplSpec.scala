@@ -11,25 +11,12 @@ import io.iohk.atala.prism.logging.TraceId
 import io.iohk.atala.prism.management.console.DataPreparation._
 import io.iohk.atala.prism.management.console.grpc.ProtoCodecs.toContactProto
 import io.iohk.atala.prism.management.console.models.Contact.ExternalId
-import io.iohk.atala.prism.management.console.models.{
-  Contact,
-  Helpers,
-  InstitutionGroup,
-  ParticipantId
-}
-import io.iohk.atala.prism.management.console.{
-  DataPreparation,
-  ManagementConsoleRpcSpecBase,
-  ManagementConsoleTestUtil
-}
+import io.iohk.atala.prism.management.console.models.{Contact, Helpers, InstitutionGroup, ParticipantId}
+import io.iohk.atala.prism.management.console.{DataPreparation, ManagementConsoleRpcSpecBase, ManagementConsoleTestUtil}
 import io.iohk.atala.prism.models.ConnectionToken
 import io.iohk.atala.prism.protos.console_api.DeleteContactResponse
 import io.iohk.atala.prism.protos.console_models.ContactConnectionStatus
-import io.iohk.atala.prism.protos.{
-  connector_models,
-  console_api,
-  console_models
-}
+import io.iohk.atala.prism.protos.{connector_models, console_api, console_models}
 import org.mockito.ArgumentMatchersSugar.*
 import org.mockito.IdiomaticMockito._
 import org.scalatest.OptionValues._
@@ -38,14 +25,10 @@ import java.time.LocalDate
 import java.util.UUID
 import scala.util.Try
 
-class ContactsServiceImplSpec
-    extends ManagementConsoleRpcSpecBase
-    with DIDUtil
-    with ManagementConsoleTestUtil {
+class ContactsServiceImplSpec extends ManagementConsoleRpcSpecBase with DIDUtil with ManagementConsoleTestUtil {
   private def connectionMissing(connectionToken: Option[String] = None) =
     connector_models.ContactConnection(
-      connectionStatus =
-        console_models.ContactConnectionStatus.STATUS_CONNECTION_MISSING,
+      connectionStatus = console_models.ContactConnectionStatus.STATUS_CONNECTION_MISSING,
       connectionToken = connectionToken.getOrElse("")
     )
 
@@ -70,8 +53,7 @@ class ContactsServiceImplSpec
           groupName = group.name.value,
           jsonData = json.noSpaces,
           externalId = externalId.value,
-          generateConnectionTokensRequestMetadata =
-            Some(connectorRequestMetadataProto)
+          generateConnectionTokensRequestMetadata = Some(connectorRequestMetadataProto)
         )
       connectorMock.generateConnectionTokens(*, *).returns {
         ReaderT.liftF(
@@ -109,8 +91,7 @@ class ContactsServiceImplSpec
           groupName = group.name.value,
           jsonData = json.noSpaces,
           externalId = externalId.value,
-          generateConnectionTokensRequestMetadata =
-            Some(connectorRequestMetadataProto)
+          generateConnectionTokensRequestMetadata = Some(connectorRequestMetadataProto)
         )
       val rpcRequest = SignedRpcRequest.generate(keyPair, did, request)
       connectorMock.generateConnectionTokens(*, *).returns {
@@ -163,8 +144,7 @@ class ContactsServiceImplSpec
         .CreateContactRequest(
           jsonData = json.noSpaces,
           externalId = externalId.value,
-          generateConnectionTokensRequestMetadata =
-            Some(connectorRequestMetadataProto)
+          generateConnectionTokensRequestMetadata = Some(connectorRequestMetadataProto)
         )
       val rpcRequest = SignedRpcRequest.generate(keyPair, did, request)
       connectorMock.generateConnectionTokens(*, *).returns {
@@ -204,8 +184,7 @@ class ContactsServiceImplSpec
       val request = console_api
         .CreateContactRequest(
           externalId = externalId.value,
-          generateConnectionTokensRequestMetadata =
-            Some(connectorRequestMetadataProto)
+          generateConnectionTokensRequestMetadata = Some(connectorRequestMetadataProto)
         )
       val rpcRequest = SignedRpcRequest.generate(keyPair, did, request)
       connectorMock.generateConnectionTokens(*, *).returns {
@@ -251,8 +230,7 @@ class ContactsServiceImplSpec
           jsonData = json.noSpaces,
           externalId = externalId.value,
           groupName = "missing group",
-          generateConnectionTokensRequestMetadata =
-            Some(connectorRequestMetadataProto)
+          generateConnectionTokensRequestMetadata = Some(connectorRequestMetadataProto)
         )
       val rpcRequest = SignedRpcRequest.generate(keyPair, did, request)
       connectorMock.generateConnectionTokens(*, *).returns {
@@ -294,8 +272,7 @@ class ContactsServiceImplSpec
         .CreateContactRequest(
           groupName = group.name.value,
           jsonData = json.noSpaces,
-          generateConnectionTokensRequestMetadata =
-            Some(connectorRequestMetadataProto)
+          generateConnectionTokensRequestMetadata = Some(connectorRequestMetadataProto)
         )
       val rpcRequest = SignedRpcRequest.generate(keyPair, did, request)
 
@@ -333,8 +310,7 @@ class ContactsServiceImplSpec
           groupName = group.name.value,
           jsonData = json.noSpaces,
           externalId = externalId.value,
-          generateConnectionTokensRequestMetadata =
-            Some(connectorRequestMetadataProto)
+          generateConnectionTokensRequestMetadata = Some(connectorRequestMetadataProto)
         )
       val rpcRequest = SignedRpcRequest.generate(keyPair, did, request)
       connectorMock.generateConnectionTokens(*, *).returns {
@@ -653,8 +629,7 @@ class ContactsServiceImplSpec
       val createRequest = console_api.CreateContactRequest(
         jsonData = json.noSpaces,
         externalId = externalId.value,
-        generateConnectionTokensRequestMetadata =
-          Some(connectorRequestMetadataProto)
+        generateConnectionTokensRequestMetadata = Some(connectorRequestMetadataProto)
       )
       val createRpcRequest =
         SignedRpcRequest.generate(keyPair, did, createRequest)
@@ -1265,9 +1240,7 @@ class ContactsServiceImplSpec
 
         val response = serviceStub.getContacts(request)
         val (created, received) = response.data
-          .map(r =>
-            r.numberOfCredentialsCreated -> r.numberOfCredentialsReceived
-          )
+          .map(r => r.numberOfCredentialsCreated -> r.numberOfCredentialsReceived)
           .head
 
         created must be(2)
@@ -1331,8 +1304,7 @@ class ContactsServiceImplSpec
       val rpcRequest = SignedRpcRequest.generate(keyPair, did, request)
 
       val contactConnection = connector_models.ContactConnection(
-        connectionStatus =
-          console_models.ContactConnectionStatus.STATUS_CONNECTION_MISSING,
+        connectionStatus = console_models.ContactConnectionStatus.STATUS_CONNECTION_MISSING,
         connectionToken = "connectionToken"
       )
 
@@ -1413,8 +1385,7 @@ class ContactsServiceImplSpec
       val rpcRequest = SignedRpcRequest.generate(keyPair, did, request)
 
       val contactConnection = connector_models.ContactConnection(
-        connectionStatus =
-          console_models.ContactConnectionStatus.STATUS_CONNECTION_ACCEPTED,
+        connectionStatus = console_models.ContactConnectionStatus.STATUS_CONNECTION_ACCEPTED,
         connectionToken = "connectionToken"
       )
 
@@ -1463,8 +1434,7 @@ class ContactsServiceImplSpec
       val rpcRequest = SignedRpcRequest.generate(keyPair, did, request)
 
       val contactConnection = connector_models.ContactConnection(
-        connectionStatus =
-          console_models.ContactConnectionStatus.STATUS_CONNECTION_MISSING,
+        connectionStatus = console_models.ContactConnectionStatus.STATUS_CONNECTION_MISSING,
         connectionToken = "connectionToken"
       )
 

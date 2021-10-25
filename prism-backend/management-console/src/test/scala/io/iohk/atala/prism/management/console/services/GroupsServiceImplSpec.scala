@@ -19,10 +19,7 @@ import io.iohk.atala.prism.management.console.repositories.{
   ParticipantsRepository,
   RequestNoncesRepository
 }
-import io.iohk.atala.prism.management.console.{
-  DataPreparation,
-  ManagementConsoleAuthenticator
-}
+import io.iohk.atala.prism.management.console.{DataPreparation, ManagementConsoleAuthenticator}
 import io.iohk.atala.prism.protos.console_api
 import io.iohk.atala.prism.{DIDUtil, RpcSpecBase}
 import io.iohk.atala.prism.utils.IOUtils._
@@ -78,9 +75,7 @@ class GroupsServiceImplSpec extends RpcSpecBase with DIDUtil {
     )
 
   private val getGroupsQuery: InstitutionGroup.PaginatedQuery =
-    PaginatedQueryConstraints(ordering =
-      ResultOrdering(InstitutionGroup.SortBy.Name)
-    )
+    PaginatedQueryConstraints(ordering = ResultOrdering(InstitutionGroup.SortBy.Name))
 
   "createGroup" should {
     "create a group" in {
@@ -311,8 +306,7 @@ class GroupsServiceImplSpec extends RpcSpecBase with DIDUtil {
         .withSortBy(
           console_api.GetGroupsRequest.SortBy(
             field = console_api.GetGroupsRequest.SortBy.Field.NAME,
-            direction =
-              common_models.SortByDirection.SORT_BY_DIRECTION_DESCENDING
+            direction = common_models.SortByDirection.SORT_BY_DIRECTION_DESCENDING
           )
         )
       assertGetGroupsResult(request, List("Group 3", "Group 2", "Group 1"))
@@ -369,9 +363,7 @@ class GroupsServiceImplSpec extends RpcSpecBase with DIDUtil {
       val request = console_api
         .GetGroupsRequest()
         .withFilterBy(
-          console_api.GetGroupsRequest.FilterBy(createdAfter =
-            Some(common_models.Date(2021, 3, day = 40))
-          )
+          console_api.GetGroupsRequest.FilterBy(createdAfter = Some(common_models.Date(2021, 3, day = 40)))
         )
       assertRequestFails(request)
     }
@@ -380,9 +372,7 @@ class GroupsServiceImplSpec extends RpcSpecBase with DIDUtil {
       val request = console_api
         .GetGroupsRequest()
         .withFilterBy(
-          console_api.GetGroupsRequest.FilterBy(createdBefore =
-            Some(common_models.Date(2021, 3, day = 40))
-          )
+          console_api.GetGroupsRequest.FilterBy(createdBefore = Some(common_models.Date(2021, 3, day = 40)))
         )
       assertRequestFails(request)
     }

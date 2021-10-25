@@ -37,8 +37,7 @@ object syntax {
     def toInstant: Instant = Instant.ofEpochMilli(value)
   }
 
-  implicit class DBConnectionOps[T](val connection: doobie.ConnectionIO[T])
-      extends AnyVal {
+  implicit class DBConnectionOps[T](val connection: doobie.ConnectionIO[T]) extends AnyVal {
 
     /** logs SQL errors from DB, to not expose them to the user */
     def logSQLErrors(
@@ -56,8 +55,7 @@ object syntax {
       )
   }
 
-  implicit class EitherThrowableOps[R](val in: Either[Throwable, R])
-      extends AnyVal {
+  implicit class EitherThrowableOps[R](val in: Either[Throwable, R]) extends AnyVal {
 
     /** converts Either[Throwable, T] into Future */
     def toFuture: Future[R] = in.fold(Future.failed, Future.successful)

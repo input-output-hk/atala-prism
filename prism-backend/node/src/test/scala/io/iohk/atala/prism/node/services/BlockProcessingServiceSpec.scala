@@ -10,19 +10,9 @@ import io.iohk.atala.prism.crypto.keys.ECPrivateKey
 import io.iohk.atala.prism.protos.models.TimestampInfo
 import io.iohk.atala.prism.models.{DidSuffix, Ledger, TransactionId}
 import io.iohk.atala.prism.node.DataPreparation
-import io.iohk.atala.prism.node.models.{
-  AtalaOperationInfo,
-  AtalaOperationStatus
-}
-import io.iohk.atala.prism.node.operations.{
-  CreateDIDOperation,
-  CreateDIDOperationSpec,
-  UpdateDIDOperationSpec
-}
-import io.iohk.atala.prism.node.operations.UpdateDIDOperationSpec.{
-  exampleAddKeyAction,
-  exampleRemoveKeyAction
-}
+import io.iohk.atala.prism.node.models.{AtalaOperationInfo, AtalaOperationStatus}
+import io.iohk.atala.prism.node.operations.{CreateDIDOperation, CreateDIDOperationSpec, UpdateDIDOperationSpec}
+import io.iohk.atala.prism.node.operations.UpdateDIDOperationSpec.{exampleAddKeyAction, exampleRemoveKeyAction}
 import io.iohk.atala.prism.node.repositories.daos.DIDDataDAO
 import io.iohk.atala.prism.protos.{node_internal, node_models}
 import org.scalatest.OptionValues._
@@ -42,8 +32,7 @@ object BlockProcessingServiceSpec {
     node_models.SignedAtalaOperation(
       signedWith = keyId,
       operation = Some(operation),
-      signature =
-        ByteString.copyFrom(EC.signBytes(operation.toByteArray, key).getData)
+      signature = ByteString.copyFrom(EC.signBytes(operation.toByteArray, key).getData)
     )
   }
 
@@ -262,8 +251,7 @@ class BlockProcessingServiceSpec extends AtalaWithPostgresSpec {
         signOperation(operation3, "rootkey", operation3Keys.getPrivateKey)
 
       val block = node_internal.AtalaBlock(
-        operations =
-          Seq(signedOperation1, incorrectlySignedOperation2, signedOperation3)
+        operations = Seq(signedOperation1, incorrectlySignedOperation2, signedOperation3)
       )
 
       val (objId, opIds) = DataPreparation.insertOperationStatuses(

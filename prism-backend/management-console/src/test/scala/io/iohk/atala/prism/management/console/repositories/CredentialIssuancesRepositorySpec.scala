@@ -4,10 +4,7 @@ import cats.effect.IO
 import io.circe.Json
 import io.iohk.atala.prism.AtalaWithPostgresSpec
 import io.iohk.atala.prism.management.console.DataPreparation
-import io.iohk.atala.prism.management.console.DataPreparation.{
-  createInstitutionGroup,
-  createParticipant
-}
+import io.iohk.atala.prism.management.console.DataPreparation.{createInstitutionGroup, createParticipant}
 import io.iohk.atala.prism.management.console.errors.CredentialDataValidationFailedForContacts
 import io.iohk.atala.prism.management.console.models.{Contact, InstitutionGroup}
 import io.iohk.atala.prism.management.console.repositories.CredentialIssuancesRepository.{
@@ -44,8 +41,7 @@ class CredentialIssuancesRepositorySpec extends AtalaWithPostgresSpec {
           institutionId,
           CreateCredentialIssuance(
             name = "Credentials for everyone",
-            credentialTypeId =
-              credentialTypeWithRequiredFields.credentialType.id,
+            credentialTypeId = credentialTypeWithRequiredFields.credentialType.id,
             contacts = contactsWithGroup.map { contactWithGroup =>
               val (contact: Contact, group: Option[InstitutionGroup]) =
                 contactWithGroup
@@ -97,8 +93,7 @@ class CredentialIssuancesRepositorySpec extends AtalaWithPostgresSpec {
             institutionId,
             CreateCredentialIssuance(
               name = "Credentials for everyone",
-              credentialTypeId =
-                credentialTypeWithRequiredFields.credentialType.id,
+              credentialTypeId = credentialTypeWithRequiredFields.credentialType.id,
               contacts = contactsWithGroup.map { contactWithGroup =>
                 val (contact: Contact, group: Option[InstitutionGroup]) =
                   contactWithGroup

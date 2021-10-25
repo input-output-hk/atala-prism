@@ -22,15 +22,9 @@ import io.iohk.atala.prism.node.cardano.models._
 import io.iohk.atala.prism.node.cardano.wallet.CardanoWalletApiClient
 import io.iohk.atala.prism.node.cardano.wallet.testing.FakeCardanoWalletApiClient
 import io.iohk.atala.prism.node.repositories.KeyValuesRepository
-import io.iohk.atala.prism.node.services.CardanoLedgerService.{
-  CardanoBlockHandler,
-  CardanoNetwork
-}
+import io.iohk.atala.prism.node.services.CardanoLedgerService.{CardanoBlockHandler, CardanoNetwork}
 import io.iohk.atala.prism.node.services.models.testing.TestAtalaHandlers
-import io.iohk.atala.prism.node.services.models.{
-  AtalaObjectNotification,
-  AtalaObjectNotificationHandler
-}
+import io.iohk.atala.prism.node.services.models.{AtalaObjectNotification, AtalaObjectNotificationHandler}
 import io.iohk.atala.prism.protos.node_internal
 import io.iohk.atala.prism.utils.BytesOps
 import io.iohk.atala.prism.utils.IOUtils._
@@ -52,8 +46,7 @@ class CardanoLedgerServiceSpec extends AtalaWithPostgresSpec {
   )
   private val blockConfirmationsToWait = 31
 
-  private val noOpObjectHandler: AtalaObjectNotificationHandler = _ =>
-    Future.unit
+  private val noOpObjectHandler: AtalaObjectNotificationHandler = _ => Future.unit
   private val noOpBlockHandler: CardanoBlockHandler = _ => Future.unit
   private val scheduler: TestScheduler = TestScheduler()
   private lazy val keyValueService = KeyValueService.unsafe(
@@ -204,9 +197,8 @@ class CardanoLedgerServiceSpec extends AtalaWithPostgresSpec {
 
   "syncAtalaObjects" should {
 
-    /** Creates `totalBlockCount` blocks and appends one transaction with PRISM
-      * metadata to every given `blocksWithNotifications`, returning all
-      * expected notifications.
+    /** Creates `totalBlockCount` blocks and appends one transaction with PRISM metadata to every given
+      * `blocksWithNotifications`, returning all expected notifications.
       */
     def createNotificationsInDb(
         totalBlockCount: Int,

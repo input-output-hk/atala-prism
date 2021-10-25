@@ -69,8 +69,7 @@ private class PayloadsRepositoryImpl[F[_]](xa: Transactor[F])(implicit
       .transact(xa)
 }
 
-private final class PayloadsRepoMetrics[F[_]: TimeMeasureMetric: BracketThrow]
-    extends PayloadsRepository[Mid[F, *]] {
+private final class PayloadsRepoMetrics[F[_]: TimeMeasureMetric: BracketThrow] extends PayloadsRepository[Mid[F, *]] {
   val repoName: String = "payloads-repository"
 
   private lazy val createTimer =
@@ -105,9 +104,7 @@ private final class PayloadsRepoLogging[
   ): Mid[F, List[Payload]] =
     in =>
       info"getting paginated data ${did.asCanonical().toString} {limit=$limit}" *> in
-        .flatTap(r =>
-          info"getting paginated data - successfully done got ${r.size} entities"
-        )
+        .flatTap(r => info"getting paginated data - successfully done got ${r.size} entities")
         .onError(e => errorCause"an error occurred while creating payload" (e))
 
 }

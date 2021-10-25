@@ -47,9 +47,7 @@ class NodeReporter(
       .getWalletDetails(walletId)
       .value
       .foreach(
-        _.foreach(details =>
-          walletFunds.update(details.balance.available.doubleValue)
-        )
+        _.foreach(details => walletFunds.update(details.balance.available.doubleValue))
       )
 
   private def postNextBlockToSync(): Unit =
@@ -70,9 +68,7 @@ class NodeReporter(
       .getLatestBlock(TraceId.generateYOLO)
       .value
       .foreach(
-        _.foreach(block =>
-          updateGauge(lastSyncedBlockByWallet, block.header.blockNo)
-        )
+        _.foreach(block => updateGauge(lastSyncedBlockByWallet, block.header.blockNo))
       )
   }
 

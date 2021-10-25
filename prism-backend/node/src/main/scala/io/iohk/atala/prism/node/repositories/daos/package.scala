@@ -12,18 +12,8 @@ import io.iohk.atala.prism.crypto.{MerkleRoot, Sha256Digest}
 import io.iohk.atala.prism.crypto.EC.{INSTANCE => EC}
 import io.iohk.atala.prism.crypto.ECConfig.{INSTANCE => ECConfig}
 import io.iohk.atala.prism.daos.BaseDAO
-import io.iohk.atala.prism.models.{
-  BlockInfo,
-  DidSuffix,
-  Ledger,
-  TransactionId,
-  TransactionInfo
-}
-import io.iohk.atala.prism.node.models.nodeState.{
-  CredentialBatchState,
-  DIDPublicKeyState,
-  LedgerData
-}
+import io.iohk.atala.prism.models.{BlockInfo, DidSuffix, Ledger, TransactionId, TransactionInfo}
+import io.iohk.atala.prism.node.models.nodeState.{CredentialBatchState, DIDPublicKeyState, LedgerData}
 import io.iohk.atala.prism.node.models._
 import io.iohk.atala.prism.crypto.keys.ECPublicKey
 import io.iohk.atala.prism.protos.models.TimestampInfo
@@ -37,8 +27,7 @@ package object daos extends BaseDAO {
     _.entryName
   )
 
-  implicit val pgAtalaObjectTransactionStatusMeta
-      : Meta[AtalaObjectTransactionSubmissionStatus] =
+  implicit val pgAtalaObjectTransactionStatusMeta: Meta[AtalaObjectTransactionSubmissionStatus] =
     pgEnumString[AtalaObjectTransactionSubmissionStatus](
       "ATALA_OBJECT_TRANSACTION_STATUS",
       a =>
@@ -172,8 +161,7 @@ package object daos extends BaseDAO {
           LedgerData(
             transactionId = aTransactionId,
             ledger = aLedger,
-            timestampInfo =
-              new TimestampInfo(aTimestamp.toEpochMilli, aABSN, aOSN)
+            timestampInfo = new TimestampInfo(aTimestamp.toEpochMilli, aABSN, aOSN)
           ),
           revokeLedgerData
         )

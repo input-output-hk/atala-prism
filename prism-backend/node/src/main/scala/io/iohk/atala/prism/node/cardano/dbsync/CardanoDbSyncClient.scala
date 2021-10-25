@@ -18,8 +18,7 @@ final class CardanoDbSyncClientImpl[F[_]](
   def getFullBlock(blockNo: Int): F[Either[BlockError.NotFound, Block.Full]] =
     cardanoBlockRepository.getFullBlock(blockNo)
 
-  def getLatestBlock
-      : F[Either[BlockError.NoneAvailable.type, Block.Canonical]] =
+  def getLatestBlock: F[Either[BlockError.NoneAvailable.type, Block.Canonical]] =
     cardanoBlockRepository.getLatestBlock
 }
 

@@ -25,9 +25,7 @@ private[repositories] final class ReceivedCredentialsRepositoryLogs[F[
   ): Mid[F, List[ReceivedSignedCredential]] =
     in =>
       info"getting credentials for $verifierId $contactId" *> in
-        .flatTap(list =>
-          info"getting credentials for - got ${list.size} entities"
-        )
+        .flatTap(list => info"getting credentials for - got ${list.size} entities")
         .onError(
           errorCause"encountered an error while getting credentials for" (_)
         )
@@ -50,8 +48,8 @@ private[repositories] final class ReceivedCredentialsRepositoryLogs[F[
     in =>
       info"getting credential external id $verifierId" *> in
         .flatTap(
-          _.fold(info"getting credential external id - got nothing")(
-            externalId => info"getting credential external id - $externalId"
+          _.fold(info"getting credential external id - got nothing")(externalId =>
+            info"getting credential external id - $externalId"
           )
         )
         .onError(

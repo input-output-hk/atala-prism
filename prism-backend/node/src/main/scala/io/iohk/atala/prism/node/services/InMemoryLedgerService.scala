@@ -12,22 +12,16 @@ import io.iohk.atala.prism.models.{
   TransactionInfo,
   TransactionStatus
 }
-import io.iohk.atala.prism.node.cardano.models.{
-  CardanoWalletError,
-  CardanoWalletErrorCode
-}
-import io.iohk.atala.prism.node.services.models.{
-  AtalaObjectNotification,
-  AtalaObjectNotificationHandler
-}
+import io.iohk.atala.prism.node.cardano.models.{CardanoWalletError, CardanoWalletErrorCode}
+import io.iohk.atala.prism.node.services.models.{AtalaObjectNotification, AtalaObjectNotificationHandler}
 import io.iohk.atala.prism.node.{PublicationInfo, UnderlyingLedger}
 import io.iohk.atala.prism.protos.node_internal
 
 import scala.concurrent.{ExecutionContext, Future}
 import scala.util.{Failure, Success, Try}
 
-class InMemoryLedgerService(onAtalaObject: AtalaObjectNotificationHandler)(
-    implicit ec: ExecutionContext
+class InMemoryLedgerService(onAtalaObject: AtalaObjectNotificationHandler)(implicit
+    ec: ExecutionContext
 ) extends UnderlyingLedger {
 
   override def getType: Ledger = Ledger.InMemory
@@ -46,8 +40,7 @@ class InMemoryLedgerService(onAtalaObject: AtalaObjectNotificationHandler)(
         transactionId = transactionId,
         ledger = getType,
         // Used for informational purposes only, so fine to hard-code for testing
-        block =
-          Some(BlockInfo(number = 1, timestamp = Instant.now(), index = 1))
+        block = Some(BlockInfo(number = 1, timestamp = Instant.now(), index = 1))
       )
       _ <- onAtalaObject(
         AtalaObjectNotification(obj, transactionInfo)

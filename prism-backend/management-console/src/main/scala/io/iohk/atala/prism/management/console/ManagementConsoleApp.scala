@@ -3,10 +3,7 @@ package io.iohk.atala.prism.management.console
 import cats.effect.{ExitCode, IO, IOApp, Resource}
 import com.typesafe.config.ConfigFactory
 import io.grpc.Server
-import io.iohk.atala.prism.auth.grpc.{
-  GrpcAuthenticationHeaderParser,
-  GrpcAuthenticatorInterceptor
-}
+import io.iohk.atala.prism.auth.grpc.{GrpcAuthenticationHeaderParser, GrpcAuthenticatorInterceptor}
 import io.iohk.atala.prism.config.NodeConfig
 import io.iohk.atala.prism.logging.TraceId
 import io.iohk.atala.prism.logging.TraceId.IOWithTraceIdContext

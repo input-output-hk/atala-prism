@@ -55,15 +55,14 @@ object CredentialTypeDao {
         participantId,
         createCredentialType
       )
-      credentialTypeRequiredFields = createCredentialType.fields.map {
-        typeField =>
-          CredentialTypeField(
-            id = CredentialTypeFieldId(UUID.randomUUID()),
-            credentialTypeId = credentialType.id,
-            name = typeField.name,
-            description = typeField.description,
-            `type` = typeField.`type`
-          )
+      credentialTypeRequiredFields = createCredentialType.fields.map { typeField =>
+        CredentialTypeField(
+          id = CredentialTypeFieldId(UUID.randomUUID()),
+          credentialTypeId = credentialType.id,
+          name = typeField.name,
+          description = typeField.description,
+          `type` = typeField.`type`
+        )
       }
       _ <- CredentialTypeDao.insertCredentialTypeFields(
         credentialTypeRequiredFields
@@ -89,15 +88,14 @@ object CredentialTypeDao {
         else
           connection.pure(())
       _ <- deleteCredentialTypeFields(updateCredentialType.id)
-      credentialTypeRequiredFields = updateCredentialType.fields.map {
-        typeField =>
-          CredentialTypeField(
-            id = CredentialTypeFieldId(UUID.randomUUID()),
-            credentialTypeId = updateCredentialType.id,
-            name = typeField.name,
-            description = typeField.description,
-            `type` = typeField.`type`
-          )
+      credentialTypeRequiredFields = updateCredentialType.fields.map { typeField =>
+        CredentialTypeField(
+          id = CredentialTypeFieldId(UUID.randomUUID()),
+          credentialTypeId = updateCredentialType.id,
+          name = typeField.name,
+          description = typeField.description,
+          `type` = typeField.`type`
+        )
       }
       _ <- CredentialTypeDao.insertCredentialTypeFields(
         credentialTypeRequiredFields

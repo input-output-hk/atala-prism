@@ -5,16 +5,8 @@ import io.iohk.atala.prism.DIDUtil
 import io.iohk.atala.prism.auth.SignedRpcRequest
 import io.iohk.atala.prism.crypto.EC.{INSTANCE => EC}
 import io.iohk.atala.prism.management.console.DataPreparation._
-import io.iohk.atala.prism.management.console.models.{
-  Contact,
-  CredentialTypeId,
-  InstitutionGroup,
-  ParticipantId
-}
-import io.iohk.atala.prism.management.console.{
-  DataPreparation,
-  ManagementConsoleRpcSpecBase
-}
+import io.iohk.atala.prism.management.console.models.{Contact, CredentialTypeId, InstitutionGroup, ParticipantId}
+import io.iohk.atala.prism.management.console.{DataPreparation, ManagementConsoleRpcSpecBase}
 import io.iohk.atala.prism.protos.{console_api, console_models}
 import org.mockito.IdiomaticMockito._
 import org.scalatest.OptionValues._
@@ -25,9 +17,7 @@ import io.circe.syntax.EncoderOps
 import io.iohk.atala.prism.logging.TraceId
 
 //sbt "project management-console" "testOnly *CredentialIssuanceServiceImplSpec"
-class CredentialIssuanceServiceImplSpec
-    extends ManagementConsoleRpcSpecBase
-    with DIDUtil {
+class CredentialIssuanceServiceImplSpec extends ManagementConsoleRpcSpecBase with DIDUtil {
 
   "createCredentialIssuance and getCredentialIssuance" should {
     val keyPair = EC.generateKeyPair()
@@ -80,9 +70,7 @@ class CredentialIssuanceServiceImplSpec
 
         // Get the credential issuance just created and verify it matches
         val getRequest =
-          console_api.GetCredentialIssuanceRequest(credentialIssuanceId =
-            createResponse.credentialIssuanceId
-          )
+          console_api.GetCredentialIssuanceRequest(credentialIssuanceId = createResponse.credentialIssuanceId)
         usingApiAsCredentialIssuance(
           SignedRpcRequest.generate(keyPair, did, getRequest)
         ) { serviceStub =>
@@ -98,13 +86,12 @@ class CredentialIssuanceServiceImplSpec
           val issuanceContacts =
             credentialIssuance.credentialIssuanceContacts.sortBy(_.contactId)
           issuanceContacts.size mustBe contacts.size
-          contacts.zip(issuanceContacts).foreach {
-            case (contact, issuanceContact) =>
-              issuanceContact.contactId mustBe contact.contactId
-              issuanceContact.groupIds must contain theSameElementsAs contact.groupIds
-              asJson(issuanceContact.credentialData) mustBe asJson(
-                contact.credentialData
-              )
+          contacts.zip(issuanceContacts).foreach { case (contact, issuanceContact) =>
+            issuanceContact.contactId mustBe contact.contactId
+            issuanceContact.groupIds must contain theSameElementsAs contact.groupIds
+            asJson(issuanceContact.credentialData) mustBe asJson(
+              contact.credentialData
+            )
           }
         }
       }
@@ -137,9 +124,7 @@ class CredentialIssuanceServiceImplSpec
       createParticipant("Institution", did)
 
       val getRequest =
-        console_api.GetCredentialIssuanceRequest(credentialIssuanceId =
-          UUID.randomUUID().toString
-        )
+        console_api.GetCredentialIssuanceRequest(credentialIssuanceId = UUID.randomUUID().toString)
       usingApiAsCredentialIssuance(
         SignedRpcRequest.generate(keyPair, did, getRequest)
       ) { serviceStub =>
@@ -227,9 +212,7 @@ class CredentialIssuanceServiceImplSpec
 
         // Get the credential issuance just created and verify it matches
         val getRequest =
-          console_api.GetCredentialIssuanceRequest(credentialIssuanceId =
-            createResponse.credentialIssuanceId
-          )
+          console_api.GetCredentialIssuanceRequest(credentialIssuanceId = createResponse.credentialIssuanceId)
         usingApiAsCredentialIssuance(
           SignedRpcRequest.generate(keyPair, did, getRequest)
         ) { serviceStub =>
@@ -245,13 +228,12 @@ class CredentialIssuanceServiceImplSpec
           val issuanceContacts =
             credentialIssuance.credentialIssuanceContacts.sortBy(_.contactId)
           issuanceContacts.size mustBe contacts.size
-          contacts.zip(issuanceContacts).foreach {
-            case (contact, issuanceContact) =>
-              issuanceContact.contactId mustBe contact.contactId
-              issuanceContact.groupIds must contain theSameElementsAs contact.groupIds
-              asJson(issuanceContact.credentialData) mustBe asJson(
-                contact.credentialData
-              )
+          contacts.zip(issuanceContacts).foreach { case (contact, issuanceContact) =>
+            issuanceContact.contactId mustBe contact.contactId
+            issuanceContact.groupIds must contain theSameElementsAs contact.groupIds
+            asJson(issuanceContact.credentialData) mustBe asJson(
+              contact.credentialData
+            )
           }
         }
       }

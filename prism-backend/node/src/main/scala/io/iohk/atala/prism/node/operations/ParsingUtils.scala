@@ -11,10 +11,7 @@ import io.iohk.atala.prism.crypto.ECConfig.{INSTANCE => ECConfig}
 import io.iohk.atala.prism.crypto.Sha256Digest
 import io.iohk.atala.prism.models.DidSuffix
 import io.iohk.atala.prism.node.models.{DIDPublicKey, KeyUsage}
-import io.iohk.atala.prism.node.operations.ValidationError.{
-  InvalidValue,
-  MissingValue
-}
+import io.iohk.atala.prism.node.operations.ValidationError.{InvalidValue, MissingValue}
 import io.iohk.atala.prism.node.operations.path.ValueAtPath
 import io.iohk.atala.prism.protos.{common_models, node_models}
 
@@ -120,7 +117,7 @@ object ParsingUtils {
   ): Either[ValidationError, DIDPublicKey] = {
     for {
       keyUsage <- key.child(_.usage, "usage").parse {
-        case node_models.KeyUsage.MASTER_KEY  => Right(KeyUsage.MasterKey)
+        case node_models.KeyUsage.MASTER_KEY => Right(KeyUsage.MasterKey)
         case node_models.KeyUsage.ISSUING_KEY => Right(KeyUsage.IssuingKey)
         case node_models.KeyUsage.COMMUNICATION_KEY =>
           Right(KeyUsage.CommunicationKey)

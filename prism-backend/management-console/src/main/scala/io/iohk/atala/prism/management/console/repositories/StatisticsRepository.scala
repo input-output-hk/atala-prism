@@ -8,11 +8,7 @@ import derevo.tagless.applyK
 import derevo.derive
 import doobie.implicits._
 import doobie.util.transactor.Transactor
-import io.iohk.atala.prism.management.console.models.{
-  ParticipantId,
-  Statistics,
-  TimeInterval
-}
+import io.iohk.atala.prism.management.console.models.{ParticipantId, Statistics, TimeInterval}
 import io.iohk.atala.prism.management.console.repositories.daos.StatisticsDAO
 import io.iohk.atala.prism.management.console.repositories.logs.StatisticsRepositoryLogs
 import io.iohk.atala.prism.management.console.repositories.metrics.StatisticsRepositoryMetrics

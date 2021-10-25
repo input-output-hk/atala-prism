@@ -123,8 +123,7 @@ class CardanoLedgerServiceIntegrationSpec extends AtalaWithPostgresSpec {
     }
   }
 
-  /** Returns whether Cardano Integration tests should run because it's running
-    * in CI, or it's locally configured.
+  /** Returns whether Cardano Integration tests should run because it's running in CI, or it's locally configured.
     */
   private def shouldTestCardanoIntegration(): Boolean = {
     // Return true when CI="true" (environment is expected to be configured), or NODE_CARDANO_WALLET_ID is defined

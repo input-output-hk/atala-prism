@@ -7,10 +7,7 @@ import io.iohk.atala.prism.BuildInfo
 import io.iohk.atala.prism.connector.AtalaOperationId
 import io.iohk.atala.prism.credentials.CredentialBatchId
 import io.iohk.atala.prism.metrics.RequestMeasureUtil
-import io.iohk.atala.prism.metrics.RequestMeasureUtil.{
-  FutureMetricsOps,
-  measureRequestFuture
-}
+import io.iohk.atala.prism.metrics.RequestMeasureUtil.{FutureMetricsOps, measureRequestFuture}
 import io.iohk.atala.prism.node.errors.NodeError
 import io.iohk.atala.prism.node.grpc.ProtoCodecs
 import io.iohk.atala.prism.node.logging.NodeLogging.{logWithTraceId, withLog}
@@ -21,23 +18,11 @@ import io.iohk.atala.prism.node.models.{
   AtalaOperationStatus
 }
 import io.iohk.atala.prism.node.operations._
-import io.iohk.atala.prism.node.repositories.{
-  CredentialBatchesRepository,
-  DIDDataRepository
-}
-import io.iohk.atala.prism.node.services.{
-  ObjectManagementService,
-  SubmissionSchedulingService
-}
-import io.iohk.atala.prism.protos.common_models.{
-  HealthCheckRequest,
-  HealthCheckResponse
-}
+import io.iohk.atala.prism.node.repositories.{CredentialBatchesRepository, DIDDataRepository}
+import io.iohk.atala.prism.node.services.{ObjectManagementService, SubmissionSchedulingService}
+import io.iohk.atala.prism.protos.common_models.{HealthCheckRequest, HealthCheckResponse}
 import io.iohk.atala.prism.protos.node_api._
-import io.iohk.atala.prism.protos.node_models.{
-  OperationOutput,
-  SignedAtalaOperation
-}
+import io.iohk.atala.prism.protos.node_models.{OperationOutput, SignedAtalaOperation}
 import io.iohk.atala.prism.protos.{common_models, node_api, node_models}
 import io.iohk.atala.prism.utils.syntax._
 import org.slf4j.{Logger, LoggerFactory}
@@ -47,11 +32,7 @@ import scala.concurrent.{ExecutionContext, Future}
 import scala.util.{Failure, Success, Try}
 import io.iohk.atala.prism.interop.toScalaProtos._
 import io.iohk.atala.prism.crypto.{Sha256Digest => SHA256Digest}
-import io.iohk.atala.prism.identity.{
-  CanonicalPrismDid,
-  LongFormPrismDid,
-  PrismDid
-}
+import io.iohk.atala.prism.identity.{CanonicalPrismDid, LongFormPrismDid, PrismDid}
 import io.iohk.atala.prism.identity.{PrismDid => DID}
 import io.iohk.atala.prism.logging.TraceId
 import io.iohk.atala.prism.logging.TraceId.IOWithTraceIdContext
@@ -84,8 +65,7 @@ class NodeServiceImpl(
   ): Future[node_api.GetDidDocumentResponse] = {
     val methodName = "getDidDocument"
 
-    implicit val didDataRepositoryImplicit
-        : DIDDataRepository[IOWithTraceIdContext] = didDataRepository
+    implicit val didDataRepositoryImplicit: DIDDataRepository[IOWithTraceIdContext] = didDataRepository
     measureRequestFuture(serviceName, methodName) {
       withLog(methodName, request) { _ =>
         for {
@@ -162,8 +142,7 @@ class NodeServiceImpl(
               logger.warn(s"DID wasn't created, error: $err")
               response
             },
-            operationId =>
-              response.withOperationId(operationId.toProtoByteString)
+            operationId => response.withOperationId(operationId.toProtoByteString)
           )
         }
       }
@@ -203,8 +182,7 @@ class NodeServiceImpl(
               logger.warn(s"DID wasn't updated, error: $err")
               response
             },
-            operationId =>
-              response.withOperationId(operationId.toProtoByteString)
+            operationId => response.withOperationId(operationId.toProtoByteString)
           )
         }
       }
@@ -239,16 +217,13 @@ class NodeServiceImpl(
             operation
           )
         } yield {
-          val response = node_api.IssueCredentialBatchResponse(batchId =
-            parsedOp.credentialBatchId.getId
-          )
+          val response = node_api.IssueCredentialBatchResponse(batchId = parsedOp.credentialBatchId.getId)
           operationIdE.fold(
             { err =>
               logger.warn(s"Credentials weren't issued, error: $err")
               response
             },
-            operationId =>
-              response.withOperationId(operationId.toProtoByteString)
+            operationId => response.withOperationId(operationId.toProtoByteString)
           )
         }
       }
@@ -287,8 +262,7 @@ class NodeServiceImpl(
               logger.warn(s"Credentials weren't revoked, error: $err")
               response
             },
-            operationId =>
-              response.withOperationId(operationId.toProtoByteString)
+            operationId => response.withOperationId(operationId.toProtoByteString)
           )
         }
       }
@@ -652,9 +626,7 @@ object NodeServiceImpl {
     ): Future[node_api.GetDidDocumentResponse] =
       state.flatMap {
         case Right(stMaybe) =>
-          stMaybe.fold(initialState)(st =>
-            succeedWith(Some(ProtoCodecs.toDIDDataProto(did.getSuffix, st)))
-          )
+          stMaybe.fold(initialState)(st => succeedWith(Some(ProtoCodecs.toDIDDataProto(did.getSuffix, st))))
         case Left(err: NodeError) =>
           logger.info(err.toStatus.asRuntimeException().getMessage)
           initialState

@@ -7,8 +7,7 @@ import kamon.module.MetricReporter
 
 import scala.util.Try
 
-class UptimeReporter(globalConfig: com.typesafe.config.Config)
-    extends MetricReporter {
+class UptimeReporter(globalConfig: com.typesafe.config.Config) extends MetricReporter {
   val uptimeMetric: Counter = Kamon.counter("jvm.uptime.seconds").withoutTags()
   // 15 is fallback, it's better to have something than nothing
   val tickTimeInSeconds: Long = Try(

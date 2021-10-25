@@ -30,15 +30,13 @@ private[repositories] final class CardanoBlockRepositoryLogs[F[
         )
         .onError(errorCause"Encountered an error while getting full block" (_))
 
-  override def getLatestBlock
-      : Mid[F, Either[BlockError.NoneAvailable.type, Block.Canonical]] =
+  override def getLatestBlock: Mid[F, Either[BlockError.NoneAvailable.type, Block.Canonical]] =
     in =>
       info"getting latest block" *> in
         .flatTap(
           _.fold(
             er => error"Encountered an error while getting latest block $er",
-            res =>
-              info"getting latest block - successfully done blockNo ${res.header.blockNo}"
+            res => info"getting latest block - successfully done blockNo ${res.header.blockNo}"
           )
         )
         .onError(

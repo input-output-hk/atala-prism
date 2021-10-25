@@ -38,8 +38,7 @@ class BlockProcessingServiceImpl extends BlockProcessingService {
   // there are two implicit implementations for cats.Monad[doobie.free.connection.ConnectionIO],
   // one from doobie, the other for cats, making it ambiguous
   // we need to choose one
-  implicit def _connectionIOMonad
-      : cats.Monad[doobie.free.connection.ConnectionIO] =
+  implicit def _connectionIOMonad: cats.Monad[doobie.free.connection.ConnectionIO] =
     doobie.free.connection.AsyncConnectionIO
 
   private val logger = LoggerFactory.getLogger(getClass)
@@ -56,17 +55,16 @@ class BlockProcessingServiceImpl extends BlockProcessingService {
     val methodName = "processBlock"
     val operations = block.operations.toList
     val operationsWithSeqNumbers = operations.zipWithIndex
-    val parsedOperationsEither = eitherTraverse(operationsWithSeqNumbers) {
-      case (signedOperation, osn) =>
-        parseOperation(
-          signedOperation,
-          LedgerData(
-            transactionId,
-            ledger,
-            new TimestampInfo(blockTimestamp.toEpochMilli, blockIndex, osn)
-          )
-        ).left
-          .map(err => (signedOperation, err))
+    val parsedOperationsEither = eitherTraverse(operationsWithSeqNumbers) { case (signedOperation, osn) =>
+      parseOperation(
+        signedOperation,
+        LedgerData(
+          transactionId,
+          ledger,
+          new TimestampInfo(blockTimestamp.toEpochMilli, blockIndex, osn)
+        )
+      ).left
+        .map(err => (signedOperation, err))
     }
 
     parsedOperationsEither match {
@@ -240,8 +238,8 @@ class BlockProcessingServiceImpl extends BlockProcessingService {
     * @tparam M
     *   the input sequence type
     * @return
-    *   Left with underlying L type containing first error occurred, Right with
-    *   M[R] underlying type if there are no errors
+    *   Left with underlying L type containing first error occurred, Right with M[R] underlying type if there are no
+    *   errors
     */
   private def eitherTraverse[A, L, R, M[X] <: IterableOnce[X]](
       in: M[A]

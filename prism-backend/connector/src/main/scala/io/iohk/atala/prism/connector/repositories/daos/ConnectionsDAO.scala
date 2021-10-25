@@ -182,31 +182,30 @@ object ConnectionsDAO {
           fr"SELECT ct.token, c.id, c.token, c.status FROM connection_tokens ct" ++
             fr"LEFT JOIN connections c ON ct.token = c.token" ++
             whereAnd(in(fr"ct.token", connectionTokensNonEmpty))
-        fragment.query[(TokenString, Option[ContactConnection])].toMap.map {
-          contactConnectionMap =>
-            connectionTokens.map { connectionToken =>
-              val contactConnectionOption = contactConnectionMap
-                .getOrElse(
-                  connectionToken,
-                  // there is no such connection token in connection_tokens table
-                  Some(
-                    ContactConnection(
-                      None,
-                      None,
-                      ConnectionStatus.InvitationMissing
-                    )
+        fragment.query[(TokenString, Option[ContactConnection])].toMap.map { contactConnectionMap =>
+          connectionTokens.map { connectionToken =>
+            val contactConnectionOption = contactConnectionMap
+              .getOrElse(
+                connectionToken,
+                // there is no such connection token in connection_tokens table
+                Some(
+                  ContactConnection(
+                    None,
+                    None,
+                    ConnectionStatus.InvitationMissing
                   )
                 )
-
-              contactConnectionOption.getOrElse(
-                // there is a connection token in connection_tokens table, but connection has not yet been added
-                ContactConnection(
-                  None,
-                  None,
-                  ConnectionStatus.ConnectionMissing
-                )
               )
-            }
+
+            contactConnectionOption.getOrElse(
+              // there is a connection token in connection_tokens table, but connection has not yet been added
+              ContactConnection(
+                None,
+                None,
+                ConnectionStatus.ConnectionMissing
+              )
+            )
+          }
         }
       case None =>
         doobie.free.connection.pure(List.empty)

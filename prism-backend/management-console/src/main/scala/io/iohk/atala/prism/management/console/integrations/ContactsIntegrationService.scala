@@ -122,9 +122,7 @@ private final class ContactsIntegrationServiceImpl[F[_]: MonadThrow](
       )
       verifiedTokens = verifyGeneratedConnectionTokens(tokens, request.contacts)
       numberOfConacts <-
-        verifiedTokens.flatTraverse(tokens =>
-          contactsRepository.createBatch(institutionId, request, tokens)
-        )
+        verifiedTokens.flatTraverse(tokens => contactsRepository.createBatch(institutionId, request, tokens))
     } yield numberOfConacts
 
   def updateContact(
@@ -159,8 +157,7 @@ private final class ContactsIntegrationServiceImpl[F[_]: MonadThrow](
               contact.details.connectionToken,
               ContactConnection(
                 connectionToken = contact.details.connectionToken.token,
-                connectionStatus =
-                  ContactConnectionStatus.STATUS_CONNECTION_MISSING
+                connectionStatus = ContactConnectionStatus.STATUS_CONNECTION_MISSING
               )
             )
           ) -> contact.counts
@@ -252,8 +249,7 @@ object ContactsIntegrationService {
     for {
       serviceLogs <- logs.service[ContactsIntegrationService[F]]
     } yield {
-      implicit val implicitLogs
-          : ServiceLogging[F, ContactsIntegrationService[F]] = serviceLogs
+      implicit val implicitLogs: ServiceLogging[F, ContactsIntegrationService[F]] = serviceLogs
       val logs: ContactsIntegrationService[Mid[F, *]] =
         new ContactsIntegrationServiceLogs[F]
       val mid = logs
@@ -304,8 +300,7 @@ object ContactsIntegrationService {
               genericCredential.connectionToken,
               ContactConnection(
                 connectionToken = genericCredential.connectionToken.token,
-                connectionStatus =
-                  ContactConnectionStatus.STATUS_CONNECTION_MISSING
+                connectionStatus = ContactConnectionStatus.STATUS_CONNECTION_MISSING
               )
             )
           )
@@ -352,8 +347,7 @@ private final class ContactsIntegrationServiceLogs[F[_]: ServiceLogging[
         .flatTap(
           _.fold(
             er => error"encountered an error while creating contact $er",
-            result =>
-              info"creating contact - successfully done, ${result.contact.contactId}"
+            result => info"creating contact - successfully done, ${result.contact.contactId}"
           )
         )
         .onError(errorCause"encountered an error while creating contact" (_))
@@ -387,9 +381,7 @@ private final class ContactsIntegrationServiceLogs[F[_]: ServiceLogging[
   ): Mid[F, GetContactsResult] =
     in =>
       info"getting contacts $institutionId" *> in
-        .flatTap(result =>
-          info"getting contacts - successfully done got ${result.data.size} entities"
-        )
+        .flatTap(result => info"getting contacts - successfully done got ${result.data.size} entities")
         .onError(errorCause"encountered an error while getting contacts" (_))
 
   override def getContact(

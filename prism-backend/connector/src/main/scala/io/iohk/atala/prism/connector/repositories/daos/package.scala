@@ -4,12 +4,7 @@ import doobie.postgres.implicits._
 import doobie.Meta
 import doobie.util.invariant.InvalidEnum
 import io.iohk.atala.prism.daos.BaseDAO
-import io.iohk.atala.prism.connector.model.{
-  ConnectionStatus,
-  MessageId,
-  ParticipantLogo,
-  ParticipantType
-}
+import io.iohk.atala.prism.connector.model.{ConnectionStatus, MessageId, ParticipantLogo, ParticipantType}
 
 package object daos extends BaseDAO {
 

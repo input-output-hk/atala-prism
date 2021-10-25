@@ -9,8 +9,7 @@ trait ProtoConverter[P <: GeneratedMessage, T] {
 }
 
 object ProtoConverter {
-  implicit def anyToUnitConverter[T <: GeneratedMessage]
-      : ProtoConverter[T, Unit] = _ => Try(())
+  implicit def anyToUnitConverter[T <: GeneratedMessage]: ProtoConverter[T, Unit] = _ => Try(())
 
   def apply[P <: GeneratedMessage, T](implicit
       pc: ProtoConverter[P, T]

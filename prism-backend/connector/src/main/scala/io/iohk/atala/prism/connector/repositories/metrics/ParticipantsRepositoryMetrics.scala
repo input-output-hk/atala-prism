@@ -1,10 +1,7 @@
 package io.iohk.atala.prism.connector.repositories.metrics
 
 import cats.effect.Bracket
-import io.iohk.atala.prism.connector.model.{
-  ParticipantInfo,
-  UpdateParticipantProfile
-}
+import io.iohk.atala.prism.connector.model.{ParticipantInfo, UpdateParticipantProfile}
 import io.iohk.atala.prism.connector.repositories.ParticipantsRepository
 import io.iohk.atala.prism.connector.repositories.ParticipantsRepository._
 import io.iohk.atala.prism.crypto.keys.ECPublicKey

@@ -4,10 +4,7 @@ import io.iohk.atala.prism.AtalaWithPostgresSpec
 import io.iohk.atala.prism.credentials.CredentialBatchId
 import io.iohk.atala.prism.crypto.{MerkleRoot, Sha256, Sha256Digest}
 import io.iohk.atala.prism.models.{DidSuffix, Ledger, TransactionId}
-import io.iohk.atala.prism.node.models.nodeState.{
-  CredentialBatchState,
-  LedgerData
-}
+import io.iohk.atala.prism.node.models.nodeState.{CredentialBatchState, LedgerData}
 import org.scalatest.OptionValues._
 
 import java.time.Instant

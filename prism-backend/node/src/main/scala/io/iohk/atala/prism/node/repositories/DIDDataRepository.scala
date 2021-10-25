@@ -51,8 +51,7 @@ object DIDDataRepository {
   ): DIDDataRepository[F] = DIDDataRepository(transactor, logs).extract
 }
 
-private final class DIDDataRepositoryImpl[F[_]: BracketThrow](xa: Transactor[F])
-    extends DIDDataRepository[F] {
+private final class DIDDataRepositoryImpl[F[_]: BracketThrow](xa: Transactor[F]) extends DIDDataRepository[F] {
 
   val logger: Logger = LoggerFactory.getLogger(getClass)
 

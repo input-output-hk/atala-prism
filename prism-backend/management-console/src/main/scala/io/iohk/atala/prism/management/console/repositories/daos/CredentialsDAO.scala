@@ -164,7 +164,7 @@ object CredentialsDAO {
   ): doobie.ConnectionIO[List[GenericCredential]] = {
     val orderBy = orderByFr(query.ordering, "credential_id") {
       case GenericCredential.SortBy.CredentialType => "c.credential_type_id"
-      case GenericCredential.SortBy.CreatedOn      => "c.created_at"
+      case GenericCredential.SortBy.CreatedOn => "c.created_at"
     }
 
     val whereCredentialType =
@@ -295,13 +295,12 @@ object CredentialsDAO {
          |FROM draft_credentials c
          |WHERE c.credential_id = pc.credential_id AND
          |      issuer_id = $institutionId AND""".stripMargin ++
-      Fragments.in(fr"pc.credential_id", credentialsIds)).update.run.flatTap {
-      n =>
-        FC.raiseError(
-          new RuntimeException(
-            s"Cannot mark credentials as shared. Updated rows: $n expected ${credentialsIds.size}"
-          )
-        ).whenA(n != credentialsIds.size)
+      Fragments.in(fr"pc.credential_id", credentialsIds)).update.run.flatTap { n =>
+      FC.raiseError(
+        new RuntimeException(
+          s"Cannot mark credentials as shared. Updated rows: $n expected ${credentialsIds.size}"
+        )
+      ).whenA(n != credentialsIds.size)
     }.void
   }
 

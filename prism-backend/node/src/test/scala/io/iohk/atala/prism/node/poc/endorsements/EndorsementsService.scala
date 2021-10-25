@@ -8,11 +8,7 @@ import io.iohk.atala.prism.identity.{PrismDid => DID}
 import io.iohk.atala.prism.crypto.ECConfig.{INSTANCE => ECConfig}
 import io.iohk.atala.prism.crypto.keys.ECPublicKey
 import io.iohk.atala.prism.crypto.signature.ECSignature
-import io.iohk.atala.prism.crypto.{
-  MerkleInclusionProof,
-  MerkleRoot,
-  Sha256Digest
-}
+import io.iohk.atala.prism.crypto.{MerkleInclusionProof, MerkleRoot, Sha256Digest}
 import io.iohk.atala.prism.api.CredentialBatches
 import io.iohk.atala.prism.node.grpc.ProtoCodecs
 import io.iohk.atala.prism.protos.endorsements_api._
@@ -97,9 +93,7 @@ case class EndorsementsService(
         GetDidDocumentRequest(childDID.toString)
       )
       val childMasterKeyList =
-        response.getDocument.publicKeys.filter(k =>
-          k.usage == KeyUsage.MASTER_KEY && k.revokedOn.isEmpty
-        )
+        response.getDocument.publicKeys.filter(k => k.usage == KeyUsage.MASTER_KEY && k.revokedOn.isEmpty)
       val childMasterKey =
         ProtoCodecs
           .fromProtoKey(childMasterKeyList.head)

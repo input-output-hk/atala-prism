@@ -69,8 +69,7 @@ class MessagesRpcSpec extends ConnectorRpcSpecBase {
       val nonExistingConnectionId = "c4d82cc0-6005-4d80-86fc-0d4b2fa2934a"
       val messageId = MessageId.random().uuid.toString
       val request = connector_api.SendMessageRequest(
-        connectionId =
-          nonExistingConnectionId, // This connection does not exist in database
+        connectionId = nonExistingConnectionId, // This connection does not exist in database
         message = ByteString.copyFrom("test".getBytes),
         id = messageId
       )
@@ -445,9 +444,7 @@ class MessagesRpcSpec extends ConnectorRpcSpecBase {
       val getMessageStreamRequest = SignedRpcRequest.generate(
         testKeyPair,
         testDid,
-        connector_api.GetMessageStreamRequest(lastSeenMessageId =
-          lastSeenMessageId
-        )
+        connector_api.GetMessageStreamRequest(lastSeenMessageId = lastSeenMessageId)
       )
 
       usingAsyncApiAs(getMessageStreamRequest) { service =>
@@ -524,9 +521,7 @@ class MessagesRpcSpec extends ConnectorRpcSpecBase {
       val getMessageStreamRequest2 = SignedRpcRequest.generate(
         testKeyPair,
         testDid,
-        connector_api.GetMessageStreamRequest(lastSeenMessageId =
-          firstMessageIds.last
-        )
+        connector_api.GetMessageStreamRequest(lastSeenMessageId = firstMessageIds.last)
       )
       val streamObserver2 =
         mock[StreamObserver[connector_api.GetMessageStreamResponse]]

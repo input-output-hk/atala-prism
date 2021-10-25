@@ -205,7 +205,7 @@ private class ConnectionsServiceImpl[F[_]: MonadThrow](
           }
           getDidCommunicationKeys(did)
         case (None, Some(key)) => Right(Seq(("", key))).pure[F]
-        case (None, None)      => Right(Seq.empty).pure[F]
+        case (None, None) => Right(Seq.empty).pure[F]
       }
     } yield keys
   }

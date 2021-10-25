@@ -20,14 +20,8 @@ import io.iohk.atala.prism.node.models.{
   AtalaObjectTransactionSubmission,
   AtalaObjectTransactionSubmissionStatus
 }
-import io.iohk.atala.prism.node.repositories.daos.AtalaObjectsDAO.{
-  AtalaObjectCreateData,
-  AtalaObjectSetTransactionInfo
-}
-import io.iohk.atala.prism.node.repositories.daos.{
-  AtalaObjectTransactionSubmissionsDAO,
-  AtalaObjectsDAO
-}
+import io.iohk.atala.prism.node.repositories.daos.AtalaObjectsDAO.{AtalaObjectCreateData, AtalaObjectSetTransactionInfo}
+import io.iohk.atala.prism.node.repositories.daos.{AtalaObjectTransactionSubmissionsDAO, AtalaObjectsDAO}
 import io.iohk.atala.prism.node.repositories.logs.AtalaObjectsTransactionsRepositoryLogs
 import io.iohk.atala.prism.node.repositories.metrics.AtalaObjectsTransactionsRepositoryMetrics
 import io.iohk.atala.prism.node.repositories.utils.connectionIOSafe
@@ -83,8 +77,7 @@ object AtalaObjectsTransactionsRepository {
     for {
       serviceLogs <- logs.service[AtalaObjectsTransactionsRepository[F]]
     } yield {
-      implicit val implicitLogs
-          : ServiceLogging[F, AtalaObjectsTransactionsRepository[F]] =
+      implicit val implicitLogs: ServiceLogging[F, AtalaObjectsTransactionsRepository[F]] =
         serviceLogs
       val metrics: AtalaObjectsTransactionsRepository[Mid[F, *]] =
         new AtalaObjectsTransactionsRepositoryMetrics[F]()

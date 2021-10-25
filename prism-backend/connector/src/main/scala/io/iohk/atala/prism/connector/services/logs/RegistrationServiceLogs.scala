@@ -30,10 +30,8 @@ private[services] class RegistrationServiceLogs[
       info"registering participant $name " *> in
         .flatTap(
           _.fold(
-            er =>
-              error"Encountered an error while registering participant ${er.unify: ConnectorError}",
-            res =>
-              info"registering participant - successfully done ${res.did.getSuffix}"
+            er => error"Encountered an error while registering participant ${er.unify: ConnectorError}",
+            res => info"registering participant - successfully done ${res.did.getSuffix}"
           )
         )
         .onError(

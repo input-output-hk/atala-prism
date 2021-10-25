@@ -1,10 +1,7 @@
 package io.iohk.atala.prism.management.console.repositories.daos
 package queries
 
-import io.iohk.atala.prism.management.console.models.{
-  InstitutionGroup,
-  ParticipantId
-}
+import io.iohk.atala.prism.management.console.models.{InstitutionGroup, ParticipantId}
 import doobie._
 import doobie.implicits._
 import doobie.implicits.legacy.localdate._
@@ -18,8 +15,8 @@ object FindGroupsQueryBuilder {
   ): Fragment = {
 
     val orderBy = orderByFr(query.ordering, "inst_gr.group_id") {
-      case InstitutionGroup.SortBy.Name             => "inst_gr.name"
-      case InstitutionGroup.SortBy.CreatedAt        => "inst_gr.created_at"
+      case InstitutionGroup.SortBy.Name => "inst_gr.name"
+      case InstitutionGroup.SortBy.CreatedAt => "inst_gr.created_at"
       case InstitutionGroup.SortBy.NumberOfContacts => "number_of_contacts"
     }
 

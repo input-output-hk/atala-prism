@@ -11,10 +11,7 @@ import io.iohk.atala.prism.protos.node_api.NodeServiceGrpc
 import io.iohk.atala.prism.repositories.{SchemaMigrations, TransactorFactory}
 import io.iohk.atala.prism.protos.vault_api
 import io.iohk.atala.prism.vault.grpc.EncryptedDataVaultGrpcService
-import io.iohk.atala.prism.vault.repositories.{
-  PayloadsRepository,
-  RequestNoncesRepository
-}
+import io.iohk.atala.prism.vault.repositories.{PayloadsRepository, RequestNoncesRepository}
 import io.iohk.atala.prism.vault.services.EncryptedDataVaultService
 import kamon.Kamon
 import org.slf4j.LoggerFactory
@@ -77,15 +74,11 @@ class VaultApp(executionContext: ExecutionContext) {
     // Vault repositories
     val payloadsRepository = vaultLogs
       .service[PayloadsRepository[IOWithTraceIdContext]]
-      .map(implicit l =>
-        PayloadsRepository.create[IOWithTraceIdContext](transactorWithIOContext)
-      )
+      .map(implicit l => PayloadsRepository.create[IOWithTraceIdContext](transactorWithIOContext))
       .unsafeRunSync()
     val requestNoncesRepository = vaultLogs
       .service[RequestNoncesRepository[IOWithTraceIdContext]]
-      .map(implicit l =>
-        RequestNoncesRepository.PostgresImpl.create(transactorWithIOContext)
-      )
+      .map(implicit l => RequestNoncesRepository.PostgresImpl.create(transactorWithIOContext))
       .unsafeRunSync()
 
     val authenticator = new VaultAuthenticator(
