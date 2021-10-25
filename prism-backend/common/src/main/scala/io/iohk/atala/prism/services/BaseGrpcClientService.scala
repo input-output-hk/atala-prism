@@ -49,7 +49,7 @@ abstract class BaseGrpcClientService[S <: AbstractStub[S]](
       request: Request,
       call: S => Request => Future[Response]
   ): Task[Response] = {
-    val newStub = MetadataUtils.attachHeaders(stub, signRequest(request))
+    val newStub = stub.withInterceptors(MetadataUtils.newAttachHeadersInterceptor(signRequest(request)))
 
     Task
       .deferFuture(call(newStub)(request))
@@ -69,7 +69,7 @@ abstract class BaseGrpcClientService[S <: AbstractStub[S]](
       streamObserver: StreamObserver[StreamElement],
       call: S => (Request, StreamObserver[StreamElement]) => Unit
   ): Unit = {
-    val newStub = MetadataUtils.attachHeaders(stub, signRequest(request))
+    val newStub = stub.withInterceptors(MetadataUtils.newAttachHeadersInterceptor(signRequest(request)))
     call(newStub)(request, streamObserver)
   }
 
