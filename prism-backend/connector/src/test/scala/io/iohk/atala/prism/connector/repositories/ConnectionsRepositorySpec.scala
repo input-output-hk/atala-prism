@@ -1,6 +1,7 @@
 package io.iohk.atala.prism.connector.repositories
 
 import cats.syntax.either._
+import com.softwaremill.diffx.generic.auto._
 import com.softwaremill.diffx.scalatest.DiffMatcher._
 import doobie.implicits._
 import io.iohk.atala.prism.DIDUtil

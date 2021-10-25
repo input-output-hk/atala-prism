@@ -1,6 +1,7 @@
 package io.iohk.atala.prism.connector.repositories
 
 import cats.data.NonEmptyList
+import com.softwaremill.diffx.generic.auto._
 import com.softwaremill.diffx.scalatest.DiffMatcher._
 import doobie.Fragments
 import doobie.implicits._
