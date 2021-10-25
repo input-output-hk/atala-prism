@@ -88,11 +88,13 @@ object Dependencies {
   val http4sBlazeClient = "org.http4s" %% "http4s-blaze-client" % versions.http4s
 
   // SDK dependencies
-  val prismCrypto = "io.iohk.atala" % "prism-crypto-jvm" % versions.prismSdk
-  val prismCredentials = "io.iohk.atala" % "prism-credentials-jvm" % versions.prismSdk
+
+  // We have to exclude bouncycastle since for some reason bitcoinj depends on bouncycastle jdk15to18
+  // (i.e. JDK 1.5 to 1.8), but we are using JDK 11
+  val prismCredentials = "io.iohk.atala" % "prism-credentials-jvm" % versions.prismSdk excludeAll ExclusionRule(organization = "org.bouncycastle")
   val prismProtos = "io.iohk.atala" % "prism-protos-jvm" % versions.prismSdk % "protobuf-src" intransitive ()
   //Can be used only in tests!
-  val prismApi = "io.iohk.atala" % "prism-api-jvm" % versions.prismSdk % Test
+  val prismApi = "io.iohk.atala" % "prism-api-jvm" % versions.prismSdk % Test excludeAll ExclusionRule(organization = "org.bouncycastle")
 
   // Test dependencies
   val catsScalatest = "com.ironcorelabs" %% "cats-scalatest" % versions.catsScalatest % Test
@@ -120,7 +122,7 @@ object Dependencies {
   val sttpDependencies = Seq(sttpCore, sttpFuture)
   val http4sDependencies = Seq(http4sCirce, http4sDsl, http4sBlazeServer, http4sBlazeClient)
   val tofuDependencies = Seq(tofu, tofuLogging, tofuDerevoTagless)
-  val prismDependencies = Seq(prismCrypto, prismCredentials, prismProtos, prismApi)
+  val prismDependencies = Seq(prismCredentials, prismProtos, prismApi)
   val scalapbDependencies = Seq(
     "com.thesamet.scalapb" %% "scalapb-runtime" % scalapb.compiler.Version.scalapbVersion % "protobuf",
     "com.thesamet.scalapb" %% "scalapb-runtime-grpc" % scalapb.compiler.Version.scalapbVersion
