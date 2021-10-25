@@ -13,13 +13,13 @@ import doobie.util.transactor.Transactor
 import io.iohk.atala.prism.protos.models.TimestampInfo
 import io.iohk.atala.prism.node.DataPreparation
 import io.iohk.atala.prism.node.models.DIDData
-import tofu.logging.Logs
+import tofu.logging.Logging
 
 class CredentialBatchesRepositorySpec extends AtalaWithPostgresSpec {
 
   import CredentialBatchesRepositorySpec._
 
-  private val logs = Logs.universal[IO]
+  private val logs = Logging.Make.plain[IO]
 
   private lazy implicit val repository: CredentialBatchesRepository[IO] =
     CredentialBatchesRepository.unsafe(database, logs)
