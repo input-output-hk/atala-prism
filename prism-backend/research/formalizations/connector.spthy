@@ -210,7 +210,7 @@ lemma executable:
 	    )
 	"
 
-/* Secrecy of the code sent by the Issuer and back by the Holder */
+/* Secrecy of the code sent by the Issuer and back by the Holder. */
 lemma code_secrecy:
       "All c #i. SecretCode(c) @ #i ==> not (Ex #j. K(c) @ #j)"
 
