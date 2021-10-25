@@ -4,7 +4,6 @@ import doobie.{FC, Meta}
 import doobie.free.connection.ConnectionIO
 import doobie.implicits._
 import doobie.postgres.implicits._
-import doobie.implicits.legacy.instant._
 import doobie.util.update.Update
 import io.iohk.atala.prism.utils.DoobieImplicits.jsonMeta
 import cats.implicits._
