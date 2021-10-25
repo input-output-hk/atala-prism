@@ -114,6 +114,8 @@ private final class ParticipantsRepositoryImpl[F[_]: BracketThrow](xa: Transacto
       .handleErrorWith {
         case e: PSQLException if e.getServerErrorMessage.getConstraint == "participants_did_unique" =>
           Either.left[CreateParticipantError, Unit](co(InvalidRequest("DID already exists"))).pure[F]
+        case t =>
+          throw t
       }
   }
 

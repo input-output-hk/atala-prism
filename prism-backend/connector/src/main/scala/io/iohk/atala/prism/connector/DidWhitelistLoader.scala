@@ -19,6 +19,8 @@ object DidWhitelistLoader {
             case None =>
               throw new IllegalArgumentException(s"Invalid DID in whitelist: $did")
           }
+        case other =>
+          throw new IllegalArgumentException("Expected whitelisted DID as String, but got " + other.getClass)
       }
     }.toSet
   }
