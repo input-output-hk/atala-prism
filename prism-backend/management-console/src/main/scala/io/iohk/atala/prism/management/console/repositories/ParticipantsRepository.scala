@@ -115,6 +115,8 @@ private final class ParticipantsRepositoryImpl[F[_]: BracketThrow](
       .handleErrorWith {
         case e: PSQLException if e.getServerErrorMessage.getConstraint == "participants_did_unique" =>
           Either.left[ManagementConsoleError, Unit](InvalidRequest("DID already exists")).pure[F]
+        case t =>
+          throw t
       }
   }
 
