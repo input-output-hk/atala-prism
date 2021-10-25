@@ -67,13 +67,6 @@ export const CREDENTIAL_TYPE_STATUSES = {
   MOCKED: 4
 };
 
-export const VALID_CREDENTIAL_TYPE_STATUSES = [
-  // Default types come as Draft. We consider them valid for now.
-  CREDENTIAL_TYPE_STATUSES.DRAFT,
-  CREDENTIAL_TYPE_STATUSES.READY,
-  CREDENTIAL_TYPE_STATUSES.MOCKED
-];
-
 export const CREDENTIAL_TYPE_FIELD_TYPES = {
   UNKNOWN: 0,
   STRING: 1,
@@ -81,6 +74,13 @@ export const CREDENTIAL_TYPE_FIELD_TYPES = {
   BOOLEAN: 3,
   DATE: 4
 };
+
+export const VALID_CREDENTIAL_TYPE_STATUSES = [
+  // Default types come as Draft. We consider them valid for now.
+  CREDENTIAL_TYPE_STATUSES.DRAFT,
+  CREDENTIAL_TYPE_STATUSES.READY,
+  CREDENTIAL_TYPE_STATUSES.MOCKED
+];
 
 // eslint-disable-next-line quotes
 export const EXAMPLE_DEGREE_NAME = "Bachelor's in Engineering";
@@ -279,7 +279,7 @@ export const SORTING_DIRECTIONS = {
 
 // template creation steps
 export const NEW_TEMPLATE_STEP_UNIT = 1;
-export const SELECT_TEMPLATE_CATEGORY = 0;
+export const TEMPLATE_NAME_ICON_CATEGORY = 0;
 export const DESIGN_TEMPLATE = 1;
 export const TEMPLATE_CREATION_RESULT = 2;
 

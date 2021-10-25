@@ -8,7 +8,7 @@ import WizardTitle from '../common/Atoms/WizardTitle/WizardTitle';
 import {
   DESIGN_TEMPLATE,
   NEW_TEMPLATE_STEP_UNIT,
-  SELECT_TEMPLATE_CATEGORY,
+  TEMPLATE_NAME_ICON_CATEGORY,
   TEMPLATE_CREATION_RESULT
 } from '../../helpers/constants';
 import { withRedirector } from '../providers/withRedirector';
@@ -16,7 +16,7 @@ import { useTemplateSketch } from '../../hooks/useTemplateSketch';
 import './_style.scss';
 
 const fieldsByStep = {
-  [SELECT_TEMPLATE_CATEGORY]: ['name', 'category'],
+  [TEMPLATE_NAME_ICON_CATEGORY]: ['name', 'category'],
   [DESIGN_TEMPLATE]: [
     'layout',
     'themeColor',
@@ -81,7 +81,7 @@ const CredentialTemplateCreation = observer(
     };
 
     const getStepText = {
-      [SELECT_TEMPLATE_CATEGORY]: defaultStepText,
+      [TEMPLATE_NAME_ICON_CATEGORY]: defaultStepText,
       [DESIGN_TEMPLATE]: defaultStepText,
       [TEMPLATE_CREATION_RESULT]: {}
     };

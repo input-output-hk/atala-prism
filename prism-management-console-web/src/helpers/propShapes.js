@@ -17,7 +17,7 @@ import {
   IMPORT_CONTACTS,
   IMPORT_CREDENTIALS_DATA,
   DESIGN_TEMPLATE,
-  SELECT_TEMPLATE_CATEGORY,
+  TEMPLATE_NAME_ICON_CATEGORY,
   TEMPLATE_CREATION_RESULT
 } from './constants';
 
@@ -198,7 +198,7 @@ export const templateBodyAttributeShape = shape({
 export const importUseCasePropType = oneOf([IMPORT_CONTACTS, IMPORT_CREDENTIALS_DATA]);
 
 export const templateCreationStepShape = oneOf([
-  SELECT_TEMPLATE_CATEGORY,
+  TEMPLATE_NAME_ICON_CATEGORY,
   DESIGN_TEMPLATE,
   TEMPLATE_CREATION_RESULT
 ]);

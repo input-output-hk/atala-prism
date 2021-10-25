@@ -2,10 +2,9 @@ import React from 'react';
 import { Form, Input, Select } from 'antd';
 import { useTranslation } from 'react-i18next';
 import { templateBodyAttributeShape } from '../../../../helpers/propShapes';
+import { dynamicAttributeTypeOptions } from '../../../../helpers/templateHelpers';
 
 const { Option } = Select;
-
-const dynamicAttributeTypeOptions = ['text', 'date', 'number'];
 
 const DynamicAttributeInput = ({ value }) => {
   const { t } = useTranslation();
@@ -32,8 +31,12 @@ const DynamicAttributeInput = ({ value }) => {
       >
         <Select>
           {dynamicAttributeTypeOptions.map(option => (
-            <Option key={option} value={option}>
-              {t(`credentialTemplateCreation.step2.content.dynamicAttributeTypeOptions.${option}`)}
+            <Option key={option.type} value={option.value}>
+              {t(
+                `credentialTemplateCreation.step2.content.dynamicAttributeTypeOptions.${
+                  option.label
+                }`
+              )}
             </Option>
           ))}
         </Select>

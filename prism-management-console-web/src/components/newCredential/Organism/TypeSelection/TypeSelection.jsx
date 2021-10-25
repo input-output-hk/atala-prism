@@ -12,9 +12,10 @@ import {
 
 import './_style.scss';
 
+// TODO: refactor this page based on new mockups (ATA-5547)
+// eslint-disable-next-line no-unused-vars
 const TypeSelection = ({ credentialTypes, templateCategories, selectedType, onTypeSelection }) => {
   const { t } = useTranslation();
-  const getCategoryIcon = id => templateCategories.find(c => c.id === id)?.logo;
 
   const isValidState = state => VALID_CREDENTIAL_TYPE_STATUSES.includes(state);
   const isMockedState = state => state === CREDENTIAL_TYPE_STATUSES.MOCKED;
@@ -37,7 +38,7 @@ const TypeSelection = ({ credentialTypes, templateCategories, selectedType, onTy
                   key={ct.id}
                   isSelected={selectedType === ct.id}
                   onClick={isMockedState(ct.state) ? showWarning : onTypeSelection}
-                  logo={getCategoryIcon(ct.category)}
+                  logo={ct.icon}
                   sampleImage={ct.sampleImage}
                 />
               ))
