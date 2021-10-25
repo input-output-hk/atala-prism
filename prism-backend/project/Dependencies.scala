@@ -16,7 +16,7 @@ object versions {
   val enumeratum = "1.6.1"
   val enumeratumDoobie = "1.7.0"
   val flyway = "7.10.0"
-  val grpc = "1.36.2"
+  val grpc = "1.41.0"
   val kamon = "2.1.21"
   val logback = "1.2.6"
   val logbackLogstash = "6.6"
@@ -30,7 +30,7 @@ object versions {
   val postgresql = "42.2.18"
   val scalatest = "3.2.2"
   val scalatestplus = s"$scalatest.0"
-  val scalapb = "0.10.8"
+  val scalapb = "0.11.6"
   val slf4j = "1.7.30"
   val sttp = "1.7.2"
   val tofu = "0.10.2"
@@ -89,11 +89,13 @@ object Dependencies {
   val http4sBlazeClient = "org.http4s" %% "http4s-blaze-client" % versions.http4s
 
   // SDK dependencies
-  val prismCrypto = "io.iohk.atala" % "prism-crypto-jvm" % versions.prismSdk
-  val prismCredentials = "io.iohk.atala" % "prism-credentials-jvm" % versions.prismSdk
+
+  // We have to exclude bouncycastle since for some reason bitcoinj depends on bouncycastle jdk15to18
+  // (i.e. JDK 1.5 to 1.8), but we are using JDK 11
+  val prismCredentials = "io.iohk.atala" % "prism-credentials-jvm" % versions.prismSdk excludeAll ExclusionRule(organization = "org.bouncycastle")
   val prismProtos = "io.iohk.atala" % "prism-protos-jvm" % versions.prismSdk % "protobuf-src" intransitive ()
   //Can be used only in tests!
-  val prismApi = "io.iohk.atala" % "prism-api-jvm" % versions.prismSdk % Test
+  val prismApi = "io.iohk.atala" % "prism-api-jvm" % versions.prismSdk % Test excludeAll ExclusionRule(organization = "org.bouncycastle")
 
   // Test dependencies
   val catsScalatest = "com.ironcorelabs" %% "cats-scalatest" % versions.catsScalatest % Test
@@ -121,7 +123,7 @@ object Dependencies {
   val sttpDependencies = Seq(sttpCore, sttpFuture)
   val http4sDependencies = Seq(http4sCirce, http4sDsl, http4sBlazeServer, http4sBlazeClient)
   val tofuDependencies = Seq(tofu, tofuLogging, tofuDerevoTagless)
-  val prismDependencies = Seq(prismCrypto, prismCredentials, prismProtos, prismApi)
+  val prismDependencies = Seq(prismCredentials, prismProtos, prismApi)
   val scalapbDependencies = Seq(
     "com.thesamet.scalapb" %% "scalapb-runtime" % scalapb.compiler.Version.scalapbVersion % "protobuf",
     "com.thesamet.scalapb" %% "scalapb-runtime-grpc" % scalapb.compiler.Version.scalapbVersion
