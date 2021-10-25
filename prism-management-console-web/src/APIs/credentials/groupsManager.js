@@ -30,7 +30,7 @@ const sortByDirection = {
 
 async function getGroups({
   contactId,
-  limit = GROUP_PAGE_SIZE,
+  pageSize = GROUP_PAGE_SIZE,
   offset = 0,
   filter = {},
   sort = { field: GROUP_SORTING_KEYS.name, direction: SORTING_DIRECTIONS.ascending }
@@ -57,7 +57,7 @@ async function getGroups({
   sortBy.setDirection(sortByDirection[direction]);
 
   const groupRequest = new GetGroupsRequest();
-  groupRequest.setLimit(limit);
+  groupRequest.setLimit(pageSize);
   groupRequest.setOffset(offset);
   groupRequest.setFilterBy(filterBy);
   groupRequest.setSortBy(sortBy);
