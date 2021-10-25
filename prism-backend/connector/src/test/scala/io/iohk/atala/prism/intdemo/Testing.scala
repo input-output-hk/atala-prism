@@ -66,6 +66,8 @@ private[intdemo] object Testing {
               case h :: _ =>
                 loop(l.tail, ac.downField(h))
             }
+          case other =>
+            throw new IllegalStateException("Unrecognized JSON cursor type: " + other.getClass)
         }
 
       }

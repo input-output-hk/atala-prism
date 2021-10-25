@@ -543,5 +543,7 @@ object NodeServiceImpl {
             node_models.RevokeCredentialsOutput()
           )
         )
+      case other =>
+        throw new IllegalArgumentException("Unknown operation type: " + other.getClass)
     }
 }

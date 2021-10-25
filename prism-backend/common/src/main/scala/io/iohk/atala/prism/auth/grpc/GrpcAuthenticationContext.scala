@@ -144,6 +144,8 @@ private[grpc] object GrpcAuthenticationContext {
                     signature = new ECSignature(signature)
                   )
                 )
+              case _ =>
+                throw new IllegalStateException("Unknown type of DID")
             }
           case Failure(_) =>
             None
