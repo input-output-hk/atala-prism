@@ -102,7 +102,7 @@ object Dependencies {
   val mockitoScalatest = "org.mockito" %% "mockito-scala-scalatest" % versions.mockito % Test
   val scalatest = "org.scalatest" %% "scalatest" % versions.scalatest % Test
   val scalatestWordspec = "org.scalatest" %% "scalatest-wordspec" % versions.scalatest % Test
-  val scalatestplus = "org.scalatestplus" %% "scalacheck-1-14" % versions.scalatestplus % Test
+  val scalatestplus = "org.scalatestplus" %% "scalacheck-1-15" % versions.scalatestplus % Test
 
   val bouncyDependencies = Seq(bouncyBcpkix, bouncyBcprov)
   val circeDependencies = Seq(circeCore, circeGeneric, circeGenericExtras, circeParser, circeOptics)
