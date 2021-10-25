@@ -13,11 +13,11 @@ import java.time.Instant
 import io.iohk.atala.prism.identity.{PrismDid => DID}
 import io.iohk.atala.prism.protos.models.TimestampInfo
 import io.iohk.atala.prism.node.DataPreparation
-import tofu.logging.Logs
-import tofu.logging.Logs.Universal
+import tofu.logging.Logging.Make
+import tofu.logging.Logging
 
 class DIDDataRepositorySpec extends AtalaWithPostgresSpec {
-  val logs: Universal[IO] = Logs.universal[IO]
+  val logs: Make[IO] = Logging.Make.plain[IO]
   lazy val didDataRepository: DIDDataRepository[IO] = DIDDataRepository.unsafe(database, logs)
 
   val operationDigest = digestGen(0, 1)
