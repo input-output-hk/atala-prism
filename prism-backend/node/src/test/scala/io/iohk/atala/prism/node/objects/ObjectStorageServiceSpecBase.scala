@@ -18,17 +18,23 @@ abstract class ObjectStorageServiceSpecBase(val storageClassName: String) extend
 
   protected def createStorage: ObjectStorageService
 
-  implicit val patienceConfig: PatienceConfig = PatienceConfig(10.seconds, 10.millis)
+  implicit val patienceConfig: PatienceConfig =
+    PatienceConfig(10.seconds, 10.millis)
 
-  val exampleObjectId = "38a5dfa3ec07f08e8e1788d1d567359a7ed95b0e354953cf0222e0fea1872a7e"
-  val otherObjectId = "38a5dfa3ec07f08e8e1788d1d567359a7ed95b0e354953cf0222e00feca1beef"
+  val exampleObjectId =
+    "38a5dfa3ec07f08e8e1788d1d567359a7ed95b0e354953cf0222e0fea1872a7e"
+  val otherObjectId =
+    "38a5dfa3ec07f08e8e1788d1d567359a7ed95b0e354953cf0222e00feca1beef"
   val exampleData = "test data".getBytes
 
   storageClassName should {
     "fetch stored object" in {
       val storage = createStorage
       storage.put(exampleObjectId, exampleData).futureValue
-      storage.get(exampleObjectId).futureValue.value must contain theSameElementsAs exampleData
+      storage
+        .get(exampleObjectId)
+        .futureValue
+        .value must contain theSameElementsAs exampleData
     }
 
     "return empty Option if key not found" in {
@@ -57,7 +63,9 @@ class FileBasedObjectStorageServiceSpec
 
   override def createStorage: ObjectStorageService = {
     clearTempDir()
-    new node.objects.ObjectStorageService.FileBased(Path(tempDir.getAbsolutePath))
+    new node.objects.ObjectStorageService.FileBased(
+      Path(tempDir.getAbsolutePath)
+    )
   }
 
   override def afterAll(): Unit = {

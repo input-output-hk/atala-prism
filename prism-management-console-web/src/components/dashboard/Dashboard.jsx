@@ -5,7 +5,6 @@ import { observer } from 'mobx-react-lite';
 import { message } from 'antd';
 import { withApi } from '../providers/withApi';
 import Welcome from './Atoms/Welcome/Welcome';
-import CurrentBundle from './Atoms/CurrentBundle/CurrentBundle';
 import DashboardCardGroup from './organism/DashboardCardGroup';
 import DashboardCardCredential from './organism/DashboardCardCredential';
 import Logger from '../../helpers/Logger';
@@ -26,7 +25,7 @@ import TutorialPopover from '../tutorial/tutorialTool/tutorialPopover';
 
 import './_style.scss';
 
-const Dashboard = observer(({ api, name, bundle }) => {
+const Dashboard = observer(({ api, name }) => {
   const { t } = useTranslation();
   const tp = useTranslationWithPrefix('dashboard');
 
@@ -106,7 +105,6 @@ const Dashboard = observer(({ api, name, bundle }) => {
           <Welcome name={name} importantInfo={tp('welcome.subtitle')} />
         )}
         {accountStatus === UNCONFIRMED && <WaitBanner />}
-        {false && <CurrentBundle bundle={bundle} />}
       </div>
       <div className="DashboardContentBottom">
         <h1>{tp('titleBottom')}</h1>
@@ -122,7 +120,6 @@ const Dashboard = observer(({ api, name, bundle }) => {
 });
 
 Dashboard.defaultProps = {
-  bundle: undefined,
   name: 'Username'
 };
 
@@ -144,11 +141,7 @@ Dashboard.propTypes = {
       saveTutorialProgress: PropTypes.func.isRequired
     }).isRequired
   }).isRequired,
-  name: PropTypes.string,
-  bundle: PropTypes.shape({
-    remaining: PropTypes.number,
-    totalConnections: PropTypes.number
-  })
+  name: PropTypes.string
 };
 
 export default withApi(Dashboard);

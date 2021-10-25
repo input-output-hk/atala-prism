@@ -20,28 +20,42 @@ import scala.util.{Failure, Success, Try}
 object ProtoCodecs {
 
   implicit val date2ProtoTransformer: Transformer[LocalDate, common_models.Date] = date => {
-    common_models.Date(year = date.getYear, month = date.getMonthValue, day = date.getDayOfMonth)
+    common_models.Date(
+      year = date.getYear,
+      month = date.getMonthValue,
+      day = date.getDayOfMonth
+    )
   }
 
   implicit val credentialTypeStateProtoTransformer
       : Transformer[CredentialTypeState, console_models.CredentialTypeState] = {
-    case CredentialTypeState.Archived => console_models.CredentialTypeState.CREDENTIAL_TYPE_ARCHIVED
-    case CredentialTypeState.Draft => console_models.CredentialTypeState.CREDENTIAL_TYPE_DRAFT
-    case CredentialTypeState.Ready => console_models.CredentialTypeState.CREDENTIAL_TYPE_READY
+    case CredentialTypeState.Archived =>
+      console_models.CredentialTypeState.CREDENTIAL_TYPE_ARCHIVED
+    case CredentialTypeState.Draft =>
+      console_models.CredentialTypeState.CREDENTIAL_TYPE_DRAFT
+    case CredentialTypeState.Ready =>
+      console_models.CredentialTypeState.CREDENTIAL_TYPE_READY
   }
 
-  implicit val credentialTypeFieldTypeProtoTransformer
-      : Transformer[CredentialTypeFieldType, console_models.CredentialTypeFieldType] = {
-    case CredentialTypeFieldType.String => console_models.CredentialTypeFieldType.CREDENTIAL_TYPE_FIELD_STRING
-    case CredentialTypeFieldType.Int => console_models.CredentialTypeFieldType.CREDENTIAL_TYPE_FIELD_INT
-    case CredentialTypeFieldType.Boolean => console_models.CredentialTypeFieldType.CREDENTIAL_TYPE_FIELD_BOOLEAN
-    case CredentialTypeFieldType.Date => console_models.CredentialTypeFieldType.CREDENTIAL_TYPE_FIELD_DATE
+  implicit val credentialTypeFieldTypeProtoTransformer: Transformer[
+    CredentialTypeFieldType,
+    console_models.CredentialTypeFieldType
+  ] = {
+    case CredentialTypeFieldType.String =>
+      console_models.CredentialTypeFieldType.CREDENTIAL_TYPE_FIELD_STRING
+    case CredentialTypeFieldType.Int =>
+      console_models.CredentialTypeFieldType.CREDENTIAL_TYPE_FIELD_INT
+    case CredentialTypeFieldType.Boolean =>
+      console_models.CredentialTypeFieldType.CREDENTIAL_TYPE_FIELD_BOOLEAN
+    case CredentialTypeFieldType.Date =>
+      console_models.CredentialTypeFieldType.CREDENTIAL_TYPE_FIELD_DATE
   }
 
   def toGetContactResponse(
       maybeDetailedContactWithConnection: Option[DetailedContactWithConnection]
   ): GetContactResponse = {
-    val contactWithDetails = maybeDetailedContactWithConnection.map(_.contactWithDetails)
+    val contactWithDetails =
+      maybeDetailedContactWithConnection.map(_.contactWithDetails)
     console_api.GetContactResponse(
       contact = maybeDetailedContactWithConnection.map(detailedContactWithConnection =>
         toContactProto(
@@ -49,13 +63,20 @@ object ProtoCodecs {
           detailedContactWithConnection.connection
         )
       ),
-      groups = contactWithDetails.map(_.groupsInvolved).getOrElse(List.empty).map(groupWithContactCountToProto),
-      receivedCredentials =
-        contactWithDetails.map(_.receivedCredentials).getOrElse(List.empty).map(receivedSignedCredentialToProto),
+      groups = contactWithDetails
+        .map(_.groupsInvolved)
+        .getOrElse(List.empty)
+        .map(groupWithContactCountToProto),
+      receivedCredentials = contactWithDetails
+        .map(_.receivedCredentials)
+        .getOrElse(List.empty)
+        .map(receivedSignedCredentialToProto),
       issuedCredentials = maybeDetailedContactWithConnection
         .map { detailedContactWithConnection =>
-          val issuedCredentials = detailedContactWithConnection.contactWithDetails.issuedCredentials
-          val connections = detailedContactWithConnection.issuedCredentialsConnections
+          val issuedCredentials =
+            detailedContactWithConnection.contactWithDetails.issuedCredentials
+          val connections =
+            detailedContactWithConnection.issuedCredentialsConnections
           issuedCredentials.map(issuedCredential =>
             genericCredentialToProto(
               issuedCredential,
@@ -74,7 +95,9 @@ object ProtoCodecs {
     )
   }
 
-  def groupWithContactCountToProto(group: InstitutionGroup.WithContactCount): Group = {
+  def groupWithContactCountToProto(
+      group: InstitutionGroup.WithContactCount
+  ): Group = {
     console_models
       .Group()
       .withId(group.value.id.toString)
@@ -83,7 +106,9 @@ object ProtoCodecs {
       .withNumberOfContacts(group.numberOfContacts)
   }
 
-  def receivedSignedCredentialToProto(receivedSignedCredential: ReceivedSignedCredential): StoredSignedCredential = {
+  def receivedSignedCredentialToProto(
+      receivedSignedCredential: ReceivedSignedCredential
+  ): StoredSignedCredential = {
     console_models.StoredSignedCredential(
       individualId = receivedSignedCredential.individualId.toString,
       encodedSignedCredential = receivedSignedCredential.encodedSignedCredential,
@@ -105,18 +130,25 @@ object ProtoCodecs {
       .withContactData(credential.contactData.noSpaces)
       .withConnectionStatus(connection.connectionStatus)
       .withExternalId(credential.externalId.value)
-      .withSharedAt(credential.sharedAt.map(_.toProtoTimestamp).getOrElse(Timestamp()))
+      .withSharedAt(
+        credential.sharedAt.map(_.toProtoTimestamp).getOrElse(Timestamp())
+      )
     credential.publicationData.fold(model) { data =>
       model
         .withBatchId(data.credentialBatchId.getId)
-        .withIssuanceOperationHash(ByteString.copyFrom(data.issuanceOperationHash.getValue))
+        .withIssuanceOperationHash(
+          ByteString.copyFrom(data.issuanceOperationHash.getValue)
+        )
         .withEncodedSignedCredential(data.encodedSignedCredential)
         .withBatchInclusionProof(data.inclusionProof.encode)
         .withPublicationStoredAt(data.storedAt.toProtoTimestamp)
     }
   }
 
-  def toContactProto(contact: Contact, connection: connector_models.ContactConnection): console_models.Contact = {
+  def toContactProto(
+      contact: Contact,
+      connection: connector_models.ContactConnection
+  ): console_models.Contact = {
     console_models
       .Contact()
       .withContactId(contact.contactId.toString)
@@ -129,29 +161,46 @@ object ProtoCodecs {
       .withCreatedAt(contact.createdAt.toProtoTimestamp)
   }
 
-  def toStatisticsProto(statistics: Statistics): console_api.GetStatisticsResponse = {
+  def toStatisticsProto(
+      statistics: Statistics
+  ): console_api.GetStatisticsResponse = {
     statistics
       .into[console_api.GetStatisticsResponse]
-      .withFieldConst(_.numberOfCredentialsInDraft, statistics.numberOfCredentialsInDraft)
+      .withFieldConst(
+        _.numberOfCredentialsInDraft,
+        statistics.numberOfCredentialsInDraft
+      )
       .transform
   }
 
-  def toCredentialTypeFieldProto(credentialTypeField: CredentialTypeField): console_models.CredentialTypeField = {
+  def toCredentialTypeFieldProto(
+      credentialTypeField: CredentialTypeField
+  ): console_models.CredentialTypeField = {
     credentialTypeField
       .into[console_models.CredentialTypeField]
-      .withFieldConst(_.credentialTypeId, credentialTypeField.credentialTypeId.uuid.toString)
+      .withFieldConst(
+        _.credentialTypeId,
+        credentialTypeField.credentialTypeId.uuid.toString
+      )
       .withFieldConst(_.id, credentialTypeField.id.uuid.toString)
       .transform
   }
 
-  def toCredentialTypeProto(credentialType: CredentialType): console_models.CredentialType = {
+  def toCredentialTypeProto(
+      credentialType: CredentialType
+  ): console_models.CredentialType = {
     credentialType
       .into[console_models.CredentialType]
-      .withFieldConst(_.createdAt, credentialType.createdAt.toProtoTimestamp.some)
+      .withFieldConst(
+        _.createdAt,
+        credentialType.createdAt.toProtoTimestamp.some
+      )
       .withFieldConst(_.id, credentialType.id.uuid.toString)
       .withFieldConst(
         _.icon,
-        credentialType.icon.map(icon => ByteString.copyFrom(icon.toArray)).getOrElse(ByteString.EMPTY)
+        credentialType.icon
+          .map(icon => ByteString.copyFrom(icon.toArray))
+          .getOrElse(ByteString.EMPTY)
       )
       .transform
   }
@@ -161,8 +210,14 @@ object ProtoCodecs {
   ): console_models.CredentialTypeWithRequiredFields = {
     withFields
       .into[console_models.CredentialTypeWithRequiredFields]
-      .withFieldConst(_.credentialType, Some(toCredentialTypeProto(withFields.credentialType)))
-      .withFieldConst(_.requiredFields, withFields.requiredFields.map(toCredentialTypeFieldProto))
+      .withFieldConst(
+        _.credentialType,
+        Some(toCredentialTypeProto(withFields.credentialType))
+      )
+      .withFieldConst(
+        _.requiredFields,
+        withFields.requiredFields.map(toCredentialTypeFieldProto)
+      )
       .transform
   }
 
@@ -179,14 +234,24 @@ object ProtoCodecs {
     }
   }
 
-  def toTimestamp(timeInterval: common_models.TimeInterval): Try[TimeInterval] = {
+  def toTimestamp(
+      timeInterval: common_models.TimeInterval
+  ): Try[TimeInterval] = {
     for {
-      startTimestamp <- readTimestamp(timeInterval.startTimestamp, "Starting timestamp was not specified")
-      endTimestamp <- readTimestamp(timeInterval.endTimestamp, "Ending timestamp was not specified")
+      startTimestamp <- readTimestamp(
+        timeInterval.startTimestamp,
+        "Starting timestamp was not specified"
+      )
+      endTimestamp <- readTimestamp(
+        timeInterval.endTimestamp,
+        "Ending timestamp was not specified"
+      )
       _ <-
         if (startTimestamp.isAfter(endTimestamp))
           Failure(
-            new IllegalArgumentException("Starting timestamp cannot be after the ending timestamp")
+            new IllegalArgumentException(
+              "Starting timestamp cannot be after the ending timestamp"
+            )
           )
         else
           Success(())
@@ -200,7 +265,8 @@ object ProtoCodecs {
     maybeTimestamp.fold[Try[Instant]] {
       Failure(new IllegalArgumentException(messageOnError))
     } {
-      case Timestamp(0L, _, _) => Failure(new IllegalArgumentException(messageOnError))
+      case Timestamp(0L, _, _) =>
+        Failure(new IllegalArgumentException(messageOnError))
       case timestamp => Success(timestamp.toInstant)
     }
 }

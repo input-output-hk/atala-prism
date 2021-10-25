@@ -10,7 +10,7 @@
     border: 0;
     & * {
       color: $dark-grey;
-      font-family: 'Circular-book';
+      font-family: 'Circular-book', sans-serif;
     }
     .ant-card-body {
       padding-top: 1.7em;
@@ -21,7 +21,6 @@
     }
     .title {
       font-size: 15px;
-      margin-bottom: 1em;
       font-weight: bold;
       margin: 0px 0 10px;
       .ant-divider-inner-text {

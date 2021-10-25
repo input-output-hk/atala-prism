@@ -39,15 +39,24 @@ class CardanoLedgerServiceIntegrationSpec extends AtalaWithPostgresSpec {
 
   "CardanoLedgerService" should {
     "notify on published PRISM transactions" in {
-      assume(shouldTestCardanoIntegration(), "The integration test was cancelled because it hasn't been configured")
+      assume(
+        shouldTestCardanoIntegration(),
+        "The integration test was cancelled because it hasn't been configured"
+      )
 
       // Set up
-      val clientConfig = NodeConfig.cardanoConfig(ConfigFactory.load().getConfig("cardano"))
+      val clientConfig =
+        NodeConfig.cardanoConfig(ConfigFactory.load().getConfig("cardano"))
       val walletId = WalletId.from(clientConfig.walletId).value
       val paymentAddress = Address(clientConfig.paymentAddress)
       val (cardanoClient, releaseCardanoClient) =
-        CardanoClient(clientConfig.cardanoClientConfig, logs).allocated.run(TraceId.generateYOLO).unsafeRunSync()
-      val keyValueService = KeyValueService.unsafe(KeyValuesRepository.unsafe(dbLiftedToTraceIdIO, logs), logs)
+        CardanoClient(clientConfig.cardanoClientConfig, logs).allocated
+          .run(TraceId.generateYOLO)
+          .unsafeRunSync()
+      val keyValueService = KeyValueService.unsafe(
+        KeyValuesRepository.unsafe(dbLiftedToTraceIdIO, logs),
+        logs
+      )
       val notificationHandler = new TestAtalaHandlers()
 
       val cardanoLedgerService = new CardanoLedgerService(
@@ -67,7 +76,12 @@ class CardanoLedgerServiceIntegrationSpec extends AtalaWithPostgresSpec {
 
       // Avoid syncing pre-existing blocks
       val latestBlock =
-        cardanoClient.getLatestBlock(TraceId.generateYOLO).value.futureValue(LONG_TIMEOUT).toOption.value
+        cardanoClient
+          .getLatestBlock(TraceId.generateYOLO)
+          .value
+          .futureValue(LONG_TIMEOUT)
+          .toOption
+          .value
       keyValueService
         .set(LAST_SYNCED_BLOCK_NO, Some(latestBlock.header.blockNo))
         .run(TraceId.generateYOLO)
@@ -86,8 +100,12 @@ class CardanoLedgerServiceIntegrationSpec extends AtalaWithPostgresSpec {
       }
 
       // Wait for the transaction to become available in cardano-node
-      val retryEndTime = Instant.now.plus(RETRY_TIMEOUT.toMillis, ChronoUnit.MILLIS)
-      while (Instant.now.isBefore(retryEndTime) && !notifiedAtalaObjects.contains(atalaObject)) {
+      val retryEndTime =
+        Instant.now.plus(RETRY_TIMEOUT.toMillis, ChronoUnit.MILLIS)
+      while (
+        Instant.now
+          .isBefore(retryEndTime) && !notifiedAtalaObjects.contains(atalaObject)
+      ) {
         Thread.sleep(RETRY_SLEEP.toMillis)
         // Sync objects
         cardanoLedgerService.syncAtalaObjects().run(TraceId.generateYOLO).unsafeRunSync()
@@ -99,12 +117,15 @@ class CardanoLedgerServiceIntegrationSpec extends AtalaWithPostgresSpec {
     }
   }
 
-  /**
-    * Returns whether Cardano Integration tests should run because it's running in CI, or it's locally configured.
+  /** Returns whether Cardano Integration tests should run because it's running in CI, or it's locally configured.
     */
   private def shouldTestCardanoIntegration(): Boolean = {
     // Return true when CI="true" (environment is expected to be configured), or NODE_CARDANO_WALLET_ID is defined
     // (any other Cardano variable could be used, this one is arbitrary)
-    sys.env.get("CI").filter(_ == "true").orElse(sys.env.get("NODE_CARDANO_WALLET_ID")).isDefined
+    sys.env
+      .get("CI")
+      .filter(_ == "true")
+      .orElse(sys.env.get("NODE_CARDANO_WALLET_ID"))
+      .isDefined
   }
 }

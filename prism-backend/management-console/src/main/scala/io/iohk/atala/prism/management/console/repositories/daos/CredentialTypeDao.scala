@@ -51,7 +51,10 @@ object CredentialTypeDao {
       createCredentialType: CreateCredentialType
   ): ConnectionIO[CredentialTypeWithRequiredFields] = {
     (for {
-      credentialType <- CredentialTypeDao.insertCredentialType(participantId, createCredentialType)
+      credentialType <- CredentialTypeDao.insertCredentialType(
+        participantId,
+        createCredentialType
+      )
       credentialTypeRequiredFields = createCredentialType.fields.map { typeField =>
         CredentialTypeField(
           id = CredentialTypeFieldId(UUID.randomUUID()),
@@ -61,7 +64,9 @@ object CredentialTypeDao {
           `type` = typeField.`type`
         )
       }
-      _ <- CredentialTypeDao.insertCredentialTypeFields(credentialTypeRequiredFields)
+      _ <- CredentialTypeDao.insertCredentialTypeFields(
+        credentialTypeRequiredFields
+      )
       requiredFields <- findRequiredFields(credentialType.id)
     } yield (CredentialTypeWithRequiredFields(credentialType, requiredFields)))
   }
@@ -70,7 +75,9 @@ object CredentialTypeDao {
       updateCredentialType: UpdateCredentialType
   ): ConnectionIO[Unit] = {
     for {
-      resultCount <- CredentialTypeDao.updateCredentialType(updateCredentialType)
+      resultCount <- CredentialTypeDao.updateCredentialType(
+        updateCredentialType
+      )
       _ <-
         if (resultCount != 1)
           connection.raiseError(
@@ -90,24 +97,35 @@ object CredentialTypeDao {
           `type` = typeField.`type`
         )
       }
-      _ <- CredentialTypeDao.insertCredentialTypeFields(credentialTypeRequiredFields)
+      _ <- CredentialTypeDao.insertCredentialTypeFields(
+        credentialTypeRequiredFields
+      )
     } yield ()
   }
 
   def findValidated[A](
       credentialTypeId: CredentialTypeId,
       institutionId: ParticipantId
-  ): ConnectionIO[Either[ManagementConsoleError, CredentialTypeWithRequiredFields]] = {
-    withRequiredFields(CredentialTypeDao.findCredentialType(credentialTypeId)).map {
-      case None =>
-        Left(CredentialTypeDoesNotExist(credentialTypeId))
+  ): ConnectionIO[
+    Either[ManagementConsoleError, CredentialTypeWithRequiredFields]
+  ] = {
+    withRequiredFields(CredentialTypeDao.findCredentialType(credentialTypeId))
+      .map {
+        case None =>
+          Left(CredentialTypeDoesNotExist(credentialTypeId))
 
-      case Some(credentialTypeWithRequiredFields)
-          if (credentialTypeWithRequiredFields.credentialType.institution != institutionId) =>
-        Left(CredentialTypeDoesNotBelongToInstitution(credentialTypeId, institutionId))
+        case Some(credentialTypeWithRequiredFields)
+            if (credentialTypeWithRequiredFields.credentialType.institution != institutionId) =>
+          Left(
+            CredentialTypeDoesNotBelongToInstitution(
+              credentialTypeId,
+              institutionId
+            )
+          )
 
-      case Some(credentialTypeWithRequiredFields) => Right(credentialTypeWithRequiredFields)
-    }
+        case Some(credentialTypeWithRequiredFields) =>
+          Right(credentialTypeWithRequiredFields)
+      }
   }
 
   def withRequiredFields(
@@ -115,8 +133,13 @@ object CredentialTypeDao {
   ): ConnectionIO[Option[CredentialTypeWithRequiredFields]] = {
     (for {
       credentialType <- OptionT(credentialTypeQuery)
-      requiredFields <- OptionT.liftF(CredentialTypeDao.findRequiredFields(credentialType.id))
-    } yield CredentialTypeWithRequiredFields(credentialType, requiredFields)).value
+      requiredFields <- OptionT.liftF(
+        CredentialTypeDao.findRequiredFields(credentialType.id)
+      )
+    } yield CredentialTypeWithRequiredFields(
+      credentialType,
+      requiredFields
+    )).value
   }
 
   def insertCredentialType(
@@ -140,7 +163,9 @@ object CredentialTypeDao {
          |""".stripMargin.query[CredentialType].unique
   }
 
-  def updateCredentialType(updateCredentialType: UpdateCredentialType): ConnectionIO[Int] = {
+  def updateCredentialType(
+      updateCredentialType: UpdateCredentialType
+  ): ConnectionIO[Int] = {
     sql"""
          | UPDATE credential_types SET
          | name = ${updateCredentialType.name},
@@ -166,13 +191,19 @@ object CredentialTypeDao {
     """.stripMargin.update.run
   }
 
-  def deleteCredentialTypeFields(credentialTypeId: CredentialTypeId): ConnectionIO[Int] =
+  def deleteCredentialTypeFields(
+      credentialTypeId: CredentialTypeId
+  ): ConnectionIO[Int] =
     sql"DELETE FROM credential_type_fields WHERE credential_type_id = ${credentialTypeId}".update.run
 
-  def insertCredentialTypeField(credentialTypeField: CredentialTypeField): ConnectionIO[Int] =
+  def insertCredentialTypeField(
+      credentialTypeField: CredentialTypeField
+  ): ConnectionIO[Int] =
     insertManyCredentialTypeField.toUpdate0(credentialTypeField).run
 
-  def insertCredentialTypeFields(credentialTypeField: List[CredentialTypeField]): ConnectionIO[Int] =
+  def insertCredentialTypeFields(
+      credentialTypeField: List[CredentialTypeField]
+  ): ConnectionIO[Int] =
     insertManyCredentialTypeField.updateMany(credentialTypeField)
 
   val insertManyCredentialTypeField: Update[CredentialTypeField] =
@@ -182,7 +213,9 @@ object CredentialTypeDao {
         | values (?, ?, ?, ?, ?::CREDENTIAL_TYPE_FIELD_TYPE)""".stripMargin
     )
 
-  def findCredentialType(credentialTypeId: CredentialTypeId): doobie.ConnectionIO[Option[CredentialType]] = {
+  def findCredentialType(
+      credentialTypeId: CredentialTypeId
+  ): doobie.ConnectionIO[Option[CredentialType]] = {
     sql"""
          |SELECT credential_type_id, name, institution_id, state, template, created_at, icon
          |FROM credential_types
@@ -190,7 +223,10 @@ object CredentialTypeDao {
          |""".stripMargin.query[CredentialType].option
   }
 
-  def findCredentialType(institution: ParticipantId, name: String): doobie.ConnectionIO[Option[CredentialType]] = {
+  def findCredentialType(
+      institution: ParticipantId,
+      name: String
+  ): doobie.ConnectionIO[Option[CredentialType]] = {
     sql"""
          |SELECT credential_type_id, name, institution_id, state, template, created_at, icon
          |FROM credential_types
@@ -211,7 +247,9 @@ object CredentialTypeDao {
          |""".stripMargin.query[CredentialType].option
   }
 
-  def findCredentialTypes(institution: ParticipantId): doobie.ConnectionIO[List[CredentialType]] = {
+  def findCredentialTypes(
+      institution: ParticipantId
+  ): doobie.ConnectionIO[List[CredentialType]] = {
     sql"""
          |SELECT credential_type_id, name, institution_id, state, template, created_at, icon
          |FROM credential_types
@@ -220,7 +258,9 @@ object CredentialTypeDao {
          |""".stripMargin.query[CredentialType].to[List]
   }
 
-  def findRequiredFields(credentialTypeId: CredentialTypeId): doobie.ConnectionIO[List[CredentialTypeField]] = {
+  def findRequiredFields(
+      credentialTypeId: CredentialTypeId
+  ): doobie.ConnectionIO[List[CredentialTypeField]] = {
     sql"""
          |SELECT credential_type_field_id, credential_type_id, name, description, type
          |FROM credential_type_fields

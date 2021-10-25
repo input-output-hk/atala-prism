@@ -34,7 +34,8 @@ case class EndorsementsService(
   private var requestedBy: Map[ECPublicKey, DID] = Map.empty
   private var endorsedBy: Map[DID, DID] = Map.empty
   private var keyAssigned: Map[DID, ECPublicKey] = Map.empty
-  private var validIn: Map[DID, List[ValidInterval]] = Map.empty.withDefaultValue(Nil)
+  private var validIn: Map[DID, List[ValidInterval]] =
+    Map.empty.withDefaultValue(Nil)
 
   private var lastRequested: Int = -1
   private def nextKey(): SignedKey = {
@@ -45,7 +46,10 @@ case class EndorsementsService(
   private def isAlreadyEndorsed(did: DID): Boolean = {
     validIn(did).lastOption.exists(_.to.isEmpty)
   }
-  private def updatedValidInterval(did: DID, timestamp: Instant): List[ValidInterval] = {
+  private def updatedValidInterval(
+      did: DID,
+      timestamp: Instant
+  ): List[ValidInterval] = {
     val periods = validIn(did)
     val newValidInterval = periods.last.copy(to = Some(timestamp))
     periods.init :+ newValidInterval
@@ -62,7 +66,9 @@ case class EndorsementsService(
   def getMoEDID(): Future[DID] = Future.successful(moeDID)
 
   // API
-  def getFreshMasterKey(request: GetFreshMasterKeyRequest): Future[GetFreshMasterKeyResponse] = {
+  def getFreshMasterKey(
+      request: GetFreshMasterKeyRequest
+  ): Future[GetFreshMasterKeyResponse] = {
     Future.successful {
       val requester: DID = DID.fromString(request.endorserDID)
       val signedKey = nextKey()
@@ -75,7 +81,9 @@ case class EndorsementsService(
     }
   }
 
-  def endorseInstitution(request: EndorseInstitutionRequest): Future[EndorseInstitutionResponse] =
+  def endorseInstitution(
+      request: EndorseInstitutionRequest
+  ): Future[EndorseInstitutionResponse] =
     Future {
       val parentDID: DID = DID.fromString(request.parentDID)
       val childDID: DID = DID.fromString(request.childDID)
@@ -87,15 +95,22 @@ case class EndorsementsService(
       val childMasterKeyList =
         response.getDocument.publicKeys.filter(k => k.usage == KeyUsage.MASTER_KEY && k.revokedOn.isEmpty)
       val childMasterKey =
-        ProtoCodecs.fromProtoKey(childMasterKeyList.head).getOrElse(throw new RuntimeException("Failed to parse key"))
+        ProtoCodecs
+          .fromProtoKey(childMasterKeyList.head)
+          .getOrElse(throw new RuntimeException("Failed to parse key"))
 
-      val parentAssociatedToKey = requestedBy.getOrElse(childMasterKey, throw new RuntimeException("unknown key"))
+      val parentAssociatedToKey = requestedBy.getOrElse(
+        childMasterKey,
+        throw new RuntimeException("unknown key")
+      )
 
       val credential = JsonBasedCredential.fromString(request.credential)
       val credentialDID = Option(credential.getContent.getIssuerDid).get
       val operationDID =
         DID.buildCanonical(
-          Sha256Digest.fromHex(signedOperation.getOperation.getIssueCredentialBatch.getCredentialBatchData.issuerDid)
+          Sha256Digest.fromHex(
+            signedOperation.getOperation.getIssueCredentialBatch.getCredentialBatchData.issuerDid
+          )
         )
       val operationMerkleRoot = new MerkleRoot(
         Sha256Digest.fromBytes(
@@ -118,7 +133,11 @@ case class EndorsementsService(
         parentDID == operationDID &&
         // the credential is included in the issuing operation
         operationMerkleRoot == proofDerivedRoot &&
-        CredentialBatches.verifyInclusion(credential, operationMerkleRoot, decodedProof) &&
+        CredentialBatches.verifyInclusion(
+          credential,
+          operationMerkleRoot,
+          decodedProof
+        ) &&
         // the DID is not already endorsed
         !isAlreadyEndorsed(childDID)
       ) {
@@ -139,14 +158,19 @@ case class EndorsementsService(
         trustedDIDs = trustedDIDs + childDID
         endorsedBy = endorsedBy.updated(childDID, parentDID)
         keyAssigned = keyAssigned.updated(childDID, childMasterKey)
-        validIn = validIn.updated(childDID, validIn.getOrElse(childDID, Nil) :+ interval)
+        validIn = validIn.updated(
+          childDID,
+          validIn.getOrElse(childDID, Nil) :+ interval
+        )
         EndorseInstitutionResponse()
       } else {
         throw new RuntimeException("Endorsement validation failed")
       }
     }
 
-  def getEndorsements(request: GetEndorsementsRequest): Future[GetEndorsementsResponse] =
+  def getEndorsements(
+      request: GetEndorsementsRequest
+  ): Future[GetEndorsementsResponse] =
     Future {
       val did = DID.fromString(request.did)
       val intervals = validIn(did).map { interval =>
@@ -159,7 +183,9 @@ case class EndorsementsService(
         .withIntervals(intervals)
     }
 
-  def revokeEndorsement(request: RevokeEndorsementRequest): Future[RevokeEndorsementResponse] =
+  def revokeEndorsement(
+      request: RevokeEndorsementRequest
+  ): Future[RevokeEndorsementResponse] =
     Future {
       val parentDID = DID.fromString(request.parentDID)
       val childDID = DID.fromString(request.childDID)
@@ -173,7 +199,10 @@ case class EndorsementsService(
 
         val revocationTime = Instant.now()
         trustedDIDs = trustedDIDs - childDID
-        validIn = validIn.updated(childDID, updatedValidInterval(childDID, revocationTime))
+        validIn = validIn.updated(
+          childDID,
+          updatedValidInterval(childDID, revocationTime)
+        )
         RevokeEndorsementResponse()
       } else {
         throw new RuntimeException("Revocation failed")

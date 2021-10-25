@@ -35,7 +35,10 @@ object ParticipantsDAO {
       """.stripMargin.query[ParticipantInfo].option
   }
 
-  def updateParticipantByID(id: ParticipantId, profile: UpdateParticipantProfile): doobie.ConnectionIO[Unit] = {
+  def updateParticipantByID(
+      id: ParticipantId,
+      profile: UpdateParticipantProfile
+  ): doobie.ConnectionIO[Unit] = {
     sql"""
          |UPDATE participants
          |SET logo = ${profile.logo},
@@ -43,11 +46,10 @@ object ParticipantsDAO {
          |WHERE participant_id = $id
        """.stripMargin.update.run.flatMap { count =>
       FC.raiseError(
-          new Exception(
-            s"ParticipantsDAO: cannot update ParticipantProfile, update result count was not equal to 1: $count"
-          )
+        new Exception(
+          s"ParticipantsDAO: cannot update ParticipantProfile, update result count was not equal to 1: $count"
         )
-        .whenA(count != 1)
+      ).whenA(count != 1)
     }.void
   }
 }

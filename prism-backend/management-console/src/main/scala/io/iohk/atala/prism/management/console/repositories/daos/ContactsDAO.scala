@@ -38,14 +38,29 @@ object ContactsDAO {
       createdAt: Instant,
       connectionTokens: List[ConnectionToken]
   ): ConnectionIO[List[Contact.Id]] = {
-    type CreateContactItem = (Contact.Id, ConnectionToken, Json, Instant, ParticipantId, Contact.ExternalId, String)
+    type CreateContactItem = (
+        Contact.Id,
+        ConnectionToken,
+        Json,
+        Instant,
+        ParticipantId,
+        Contact.ExternalId,
+        String
+    )
     val contactIds = List.tabulate(contacts.size)(_ => Contact.Id.random())
     val data = contacts
       .zip(contactIds)
       .zip(connectionTokens)
-      .map {
-        case ((item, id), connectionToken) =>
-          (id, connectionToken, item.data, createdAt, institutionId, item.externalId, item.name)
+      .map { case ((item, id), connectionToken) =>
+        (
+          id,
+          connectionToken,
+          item.data,
+          createdAt,
+          institutionId,
+          item.externalId,
+          item.name
+        )
       }
 
     val statement =
@@ -56,13 +71,19 @@ object ContactsDAO {
     Update[CreateContactItem](statement)
       .updateMany(data)
       .flatTap { affectedRows =>
-        FC.raiseError(new RuntimeException(s"Unknown error while inserting ${contacts.size} contacts"))
-          .whenA(contacts.size != affectedRows)
+        FC.raiseError(
+          new RuntimeException(
+            s"Unknown error while inserting ${contacts.size} contacts"
+          )
+        ).whenA(contacts.size != affectedRows)
       }
       .as(contactIds)
   }
 
-  def updateContact(institutionId: ParticipantId, data: UpdateContact): ConnectionIO[Unit] = {
+  def updateContact(
+      institutionId: ParticipantId,
+      data: UpdateContact
+  ): ConnectionIO[Unit] = {
     sql"""
          |UPDATE contacts
          |SET external_id = ${data.newExternalId},
@@ -71,12 +92,18 @@ object ContactsDAO {
          |WHERE contact_id = ${data.id} AND
          |      created_by = $institutionId
          |""".stripMargin.update.run.flatTap { affectedRows =>
-      FC.raiseError(new RuntimeException(s"Unable to update contact, it is likely that it doesn't exist"))
-        .whenA(1 != affectedRows)
+      FC.raiseError(
+        new RuntimeException(
+          s"Unable to update contact, it is likely that it doesn't exist"
+        )
+      ).whenA(1 != affectedRows)
     }.void
   }
 
-  def findContact(participantId: ParticipantId, contactId: Contact.Id): doobie.ConnectionIO[Option[Contact]] = {
+  def findContact(
+      participantId: ParticipantId,
+      contactId: Contact.Id
+  ): doobie.ConnectionIO[Option[Contact]] = {
     sql"""
          |SELECT contact_id, connection_token, external_id, contact_data, created_at, name
          |FROM contacts
@@ -97,14 +124,32 @@ object ContactsDAO {
          |""".stripMargin.query[Contact].option
   }
 
-  def findContacts(institutionId: ParticipantId, contactIds: List[Contact.Id]): doobie.ConnectionIO[List[Contact]] = {
+  def findByToken(
+      participantId: ParticipantId,
+      connectionToken: ConnectionToken
+  ): doobie.ConnectionIO[Option[Contact]] = {
+    sql"""
+         |SELECT contact_id, connection_token, external_id, contact_data, created_at, name
+         |FROM contacts
+         |WHERE connection_token = $connectionToken AND
+         |      created_by = $participantId
+         |""".stripMargin.query[Contact].option
+  }
+
+  def findContacts(
+      institutionId: ParticipantId,
+      contactIds: List[Contact.Id]
+  ): doobie.ConnectionIO[List[Contact]] = {
     NonEmptyList.fromList(contactIds) match {
       case Some(contactIdsNonEmpty) =>
         val fragment =
           fr"""
               |SELECT contact_id, connection_token, external_id, contact_data, created_at, name
               |FROM contacts""".stripMargin ++
-            whereAnd(fr"created_by = $institutionId", in(fr"contact_id", contactIdsNonEmpty))
+            whereAnd(
+              fr"created_by = $institutionId",
+              in(fr"contact_id", contactIdsNonEmpty)
+            )
         fragment.query[Contact].to[List]
       case None =>
         connection.pure(List.empty)
@@ -122,7 +167,10 @@ object ContactsDAO {
       .to[List]
   }
 
-  def delete(participantId: ParticipantId, contactId: Contact.Id): doobie.ConnectionIO[Boolean] = {
+  def delete(
+      participantId: ParticipantId,
+      contactId: Contact.Id
+  ): doobie.ConnectionIO[Boolean] = {
     sql"""
          |DELETE FROM contacts
          |WHERE contact_id = $contactId AND

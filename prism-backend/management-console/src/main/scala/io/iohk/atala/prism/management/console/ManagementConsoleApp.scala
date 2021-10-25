@@ -85,35 +85,89 @@ object ManagementConsoleApp extends IOApp {
       )
 
       // connector
-      connectorConfig = ConnectorClient.Config(globalConfig.getConfig("connector"))
+      connectorConfig = ConnectorClient.Config(
+        globalConfig.getConfig("connector")
+      )
       _ = logger.info(s"Connector config loaded: $connectorConfig")
-      connector <- ConnectorClient.makeResource(connectorConfig, managementConsoleLogs)
+      connector <- ConnectorClient.makeResource(
+        connectorConfig,
+        managementConsoleLogs
+      )
 
       // repositories
-      contactsRepository <- ContactsRepository.makeResource(txTraceIdLifted, managementConsoleLogs)
+      contactsRepository <- ContactsRepository.makeResource(
+        txTraceIdLifted,
+        managementConsoleLogs
+      )
       participantsRepository <-
-        ParticipantsRepository.makeResource(txTraceIdLifted, managementConsoleLogs, defaultCredentialTypeConfig)
-      requestNoncesRepository <- RequestNoncesRepository.makeResource(txTraceIdLifted, managementConsoleLogs)
-      statisticsRepository <- StatisticsRepository.makeResource(txTraceIdLifted, managementConsoleLogs)
-      credentialsRepository <- CredentialsRepository.makeResource(txTraceIdLifted, managementConsoleLogs)
+        ParticipantsRepository.makeResource(
+          txTraceIdLifted,
+          managementConsoleLogs,
+          defaultCredentialTypeConfig
+        )
+      requestNoncesRepository <- RequestNoncesRepository.makeResource(
+        txTraceIdLifted,
+        managementConsoleLogs
+      )
+      statisticsRepository <- StatisticsRepository.makeResource(
+        txTraceIdLifted,
+        managementConsoleLogs
+      )
+      credentialsRepository <- CredentialsRepository.makeResource(
+        txTraceIdLifted,
+        managementConsoleLogs
+      )
       receivedCredentialsRepository <-
-        ReceivedCredentialsRepository.makeResource(txTraceIdLifted, managementConsoleLogs)
-      institutionGroupsRepository <- InstitutionGroupsRepository.makeResource(txTraceIdLifted, managementConsoleLogs)
+        ReceivedCredentialsRepository.makeResource(
+          txTraceIdLifted,
+          managementConsoleLogs
+        )
+      institutionGroupsRepository <- InstitutionGroupsRepository.makeResource(
+        txTraceIdLifted,
+        managementConsoleLogs
+      )
       credentialIssuancesRepository <-
-        CredentialIssuancesRepository.makeResource(txTraceIdLifted, managementConsoleLogs)
-      credentialTypeRepository <- CredentialTypeRepository.makeResource(txTraceIdLifted, managementConsoleLogs)
+        CredentialIssuancesRepository.makeResource(
+          txTraceIdLifted,
+          managementConsoleLogs
+        )
+      credentialTypeRepository <- CredentialTypeRepository.makeResource(
+        txTraceIdLifted,
+        managementConsoleLogs
+      )
 
       contactsIntegrationService <-
-        ContactsIntegrationService.makeResource(contactsRepository, connector, managementConsoleLogs)
+        ContactsIntegrationService.makeResource(
+          contactsRepository,
+          connector,
+          managementConsoleLogs
+        )
       credentialIntegrationService <-
-        CredentialsIntegrationService.makeResource(credentialsRepository, node, connector, managementConsoleLogs)
+        CredentialsIntegrationService.makeResource(
+          credentialsRepository,
+          node,
+          connector,
+          managementConsoleLogs
+        )
       participantsIntegrationService <-
-        ParticipantsIntegrationService.makeResource(participantsRepository, managementConsoleLogs)
-      credentialTypesService <- CredentialTypesService.makeResource(credentialTypeRepository, managementConsoleLogs)
+        ParticipantsIntegrationService.makeResource(
+          participantsRepository,
+          managementConsoleLogs
+        )
+      credentialTypesService <- CredentialTypesService.makeResource(
+        credentialTypeRepository,
+        managementConsoleLogs
+      )
       credentialsStoreService <-
-        CredentialsStoreService.makeResource(receivedCredentialsRepository, managementConsoleLogs)
+        CredentialsStoreService.makeResource(
+          receivedCredentialsRepository,
+          managementConsoleLogs
+        )
       credentialIssuanceService <-
-        CredentialIssuanceService.makeResource(credentialIssuancesRepository, managementConsoleLogs)
+        CredentialIssuanceService.makeResource(
+          credentialIssuancesRepository,
+          managementConsoleLogs
+        )
       credentialsService <- CredentialsService.makeResource(
         credentialsRepository,
         credentialIntegrationService,
@@ -122,7 +176,11 @@ object ManagementConsoleApp extends IOApp {
         managementConsoleLogs
       )
       consoleService <-
-        ConsoleService.makeResource(participantsIntegrationService, statisticsRepository, managementConsoleLogs)
+        ConsoleService.makeResource(
+          participantsIntegrationService,
+          statisticsRepository,
+          managementConsoleLogs
+        )
 
       authenticator = new ManagementConsoleAuthenticator(
         participantsRepository,
@@ -131,15 +189,35 @@ object ManagementConsoleApp extends IOApp {
         GrpcAuthenticationHeaderParser
       )
 
-      groupsService <- GroupsService.makeResource(institutionGroupsRepository, managementConsoleLogs)
+      groupsService <- GroupsService.makeResource(
+        institutionGroupsRepository,
+        managementConsoleLogs
+      )
 
-      credentialsStoreGrpcService = new CredentialsStoreGrpcService(credentialsStoreService, authenticator)
-      credentialsGrpcService = new CredentialsGrpcService(credentialsService, authenticator)
+      credentialsStoreGrpcService =
+        new CredentialsStoreGrpcService(
+          credentialsStoreService,
+          contactsRepository,
+          authenticator
+        )
+      credentialsGrpcService = new CredentialsGrpcService(
+        credentialsService,
+        authenticator
+      )
       groupsGrpcService = new GroupsGrpcService(groupsService, authenticator)
       consoleGrpcService = new ConsoleGrpcService(consoleService, authenticator)
-      contactsGrpcService = new ContactsGrpcService(contactsIntegrationService, authenticator)
-      credentialIssuanceGrpcService = new CredentialIssuanceGrpcService(credentialIssuanceService, authenticator)
-      credentialTypesGrpcService = new CredentialTypesGrpcService(credentialTypesService, authenticator)
+      contactsGrpcService = new ContactsGrpcService(
+        contactsIntegrationService,
+        authenticator
+      )
+      credentialIssuanceGrpcService = new CredentialIssuanceGrpcService(
+        credentialIssuanceService,
+        authenticator
+      )
+      credentialTypesGrpcService = new CredentialTypesGrpcService(
+        credentialTypesService,
+        authenticator
+      )
 
       // gRPC server
       grpcServer <- GrpcUtils.createGrpcServer[IO](
@@ -148,11 +226,15 @@ object ManagementConsoleApp extends IOApp {
         interceptor = Some(new GrpcAuthenticatorInterceptor),
         console_api.ConsoleServiceGrpc.bindService(consoleGrpcService, ec),
         console_api.ContactsServiceGrpc.bindService(contactsGrpcService, ec),
-        console_api.CredentialIssuanceServiceGrpc.bindService(credentialIssuanceGrpcService, ec),
-        console_api.CredentialsServiceGrpc.bindService(credentialsGrpcService, ec),
+        console_api.CredentialIssuanceServiceGrpc
+          .bindService(credentialIssuanceGrpcService, ec),
+        console_api.CredentialsServiceGrpc
+          .bindService(credentialsGrpcService, ec),
         console_api.GroupsServiceGrpc.bindService(groupsGrpcService, ec),
-        console_api.CredentialsStoreServiceGrpc.bindService(credentialsStoreGrpcService, ec),
-        console_api.CredentialTypesServiceGrpc.bindService(credentialTypesGrpcService, ec)
+        console_api.CredentialsStoreServiceGrpc
+          .bindService(credentialsStoreGrpcService, ec),
+        console_api.CredentialTypesServiceGrpc
+          .bindService(credentialTypesGrpcService, ec)
       )
     } yield grpcServer
   }

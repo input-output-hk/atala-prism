@@ -25,7 +25,9 @@ import tofu.syntax.monoid.TofuSemigroupOps
 
 @derive(applyK)
 trait CredentialBatchesRepository[F[_]] {
-  def getBatchState(batchId: CredentialBatchId): F[Either[NodeError, Option[CredentialBatchState]]]
+  def getBatchState(
+      batchId: CredentialBatchId
+  ): F[Either[NodeError, Option[CredentialBatchState]]]
   def getCredentialRevocationTime(
       batchId: CredentialBatchId,
       credentialHash: Sha256Digest
@@ -41,8 +43,10 @@ object CredentialBatchesRepository {
       serviceLogs <- logs.service[CredentialBatchesRepository[F]]
     } yield {
       implicit val implicitLogs: ServiceLogging[F, CredentialBatchesRepository[F]] = serviceLogs
-      val metrics: CredentialBatchesRepository[Mid[F, *]] = new CredentialBatchesRepositoryMetrics[F]()
-      val logs: CredentialBatchesRepository[Mid[F, *]] = new CredentialBatchesRepositoryLogs[F]
+      val metrics: CredentialBatchesRepository[Mid[F, *]] =
+        new CredentialBatchesRepositoryMetrics[F]()
+      val logs: CredentialBatchesRepository[Mid[F, *]] =
+        new CredentialBatchesRepositoryLogs[F]
       val mid = metrics |+| logs
       mid attach new CredentialBatchesRepositoryImpl[F](transactor)
     }
@@ -50,15 +54,19 @@ object CredentialBatchesRepository {
   def unsafe[F[_]: BracketThrow: TimeMeasureMetric, R[_]: Comonad](
       transactor: Transactor[F],
       logs: Logs[R, F]
-  ): CredentialBatchesRepository[F] = CredentialBatchesRepository(transactor, logs).extract
+  ): CredentialBatchesRepository[F] =
+    CredentialBatchesRepository(transactor, logs).extract
 }
 
-private final class CredentialBatchesRepositoryImpl[F[_]: BracketThrow](xa: Transactor[F])
-    extends CredentialBatchesRepository[F] {
+private final class CredentialBatchesRepositoryImpl[F[_]: BracketThrow](
+    xa: Transactor[F]
+) extends CredentialBatchesRepository[F] {
 
   val logger: Logger = LoggerFactory.getLogger(getClass)
 
-  def getBatchState(batchId: CredentialBatchId): F[Either[NodeError, Option[CredentialBatchState]]] =
+  def getBatchState(
+      batchId: CredentialBatchId
+  ): F[Either[NodeError, Option[CredentialBatchState]]] =
     EitherT
       .right[NodeError](CredentialBatchesDAO.findBatch(batchId))
       .value
@@ -70,7 +78,10 @@ private final class CredentialBatchesRepositoryImpl[F[_]: BracketThrow](xa: Tran
       credentialHash: Sha256Digest
   ): F[Either[NodeError, Option[LedgerData]]] =
     EitherT
-      .right[NodeError](CredentialBatchesDAO.findRevokedCredentialLedgerData(batchId, credentialHash))
+      .right[NodeError](
+        CredentialBatchesDAO
+          .findRevokedCredentialLedgerData(batchId, credentialHash)
+      )
       .value
       .logSQLErrors("getting credential revocation time", logger)
       .transact(xa)

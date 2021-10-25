@@ -15,7 +15,10 @@ private[repositories] final class StatisticsRepositoryLogs[F[_]: ServiceLogging[
   StatisticsRepository[F]
 ]: BracketThrow]
     extends StatisticsRepository[Mid[F, *]] {
-  override def query(participantId: ParticipantId, timeIntervalMaybe: Option[TimeInterval]): Mid[F, Statistics] =
+  override def query(
+      participantId: ParticipantId,
+      timeIntervalMaybe: Option[TimeInterval]
+  ): Mid[F, Statistics] =
     in =>
       info"getting statistics $participantId" *> in
         .flatTap(_ => info"getting statistics - successfully done")

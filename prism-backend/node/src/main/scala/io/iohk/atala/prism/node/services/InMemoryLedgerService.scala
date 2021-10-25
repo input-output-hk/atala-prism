@@ -34,7 +34,9 @@ private final class InMemoryLedgerService[F[_]: MonadThrow](onAtalaObject: Atala
       objectBytes <- obj.toByteArray.pure[F]
       // Use a hash of the bytes as their in-memory transaction ID
       hash = Sha256.compute(objectBytes)
-      transactionId = TransactionId.from(hash.getValue).getOrElse(throw new RuntimeException("Unexpected invalid hash"))
+      transactionId = TransactionId
+        .from(hash.getValue)
+        .getOrElse(throw new RuntimeException("Unexpected invalid hash"))
       transactionInfo = TransactionInfo(
         transactionId = transactionId,
         ledger = getType,
@@ -49,9 +51,8 @@ private final class InMemoryLedgerService[F[_]: MonadThrow](onAtalaObject: Atala
     } yield PublicationInfo(transactionInfo, TransactionStatus.InLedger)
     publcationInfoF
       .map(publication => publication.asRight[CardanoWalletError])
-      .recover {
-        case e =>
-          CardanoWalletError(e.getMessage, CardanoWalletErrorCode.UndefinedCardanoWalletError).asLeft[PublicationInfo]
+      .recover { case e =>
+        CardanoWalletError(e.getMessage, CardanoWalletErrorCode.UndefinedCardanoWalletError).asLeft[PublicationInfo]
       }
   }
 

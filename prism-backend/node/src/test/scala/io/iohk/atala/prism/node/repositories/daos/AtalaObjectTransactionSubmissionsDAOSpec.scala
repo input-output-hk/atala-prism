@@ -20,11 +20,14 @@ class AtalaObjectTransactionSubmissionsDAOSpec extends AtalaWithPostgresSpec {
   private val ONE_SECOND = Duration.ofSeconds(1)
 
   private val atalaObjectId = AtalaObjectId.of(node_internal.AtalaObject())
-  private val atalaObjectId2 = AtalaObjectId.of(node_internal.AtalaObject(blockOperationCount = 2))
+  private val atalaObjectId2 =
+    AtalaObjectId.of(node_internal.AtalaObject(blockOperationCount = 2))
   private val byteContent = "byteContent".getBytes
   private val ledger = Ledger.InMemory
-  private val transactionId1 = TransactionId.from(Sha256.compute("transactionId1".getBytes).getValue).value
-  private val transactionId2 = TransactionId.from(Sha256.compute("transactionId2".getBytes).getValue).value
+  private val transactionId1 =
+    TransactionId.from(Sha256.compute("transactionId1".getBytes).getValue).value
+  private val transactionId2 =
+    TransactionId.from(Sha256.compute("transactionId2".getBytes).getValue).value
   private val submissionTimestamp = Instant.now
 
   "AtalaObjectTransactionSubmissionsDAO.insert" should {
@@ -32,12 +35,20 @@ class AtalaObjectTransactionSubmissionsDAOSpec extends AtalaWithPostgresSpec {
       insertAtalaObject(atalaObjectId, byteContent)
       val status = AtalaObjectTransactionSubmissionStatus.Pending
       val submission =
-        AtalaObjectTransactionSubmission(atalaObjectId, ledger, transactionId1, submissionTimestamp, status)
+        AtalaObjectTransactionSubmission(
+          atalaObjectId,
+          ledger,
+          transactionId1,
+          submissionTimestamp,
+          status
+        )
 
       AtalaObjectTransactionSubmissionsDAO.insert(submission).runSync
 
       val retrieved =
-        AtalaObjectTransactionSubmissionsDAO.getBy(submissionTimestamp.plus(ONE_SECOND), status, ledger).runSync
+        AtalaObjectTransactionSubmissionsDAO
+          .getBy(submissionTimestamp.plus(ONE_SECOND), status, ledger)
+          .runSync
       retrieved mustBe List(submission)
     }
 
@@ -64,20 +75,38 @@ class AtalaObjectTransactionSubmissionsDAOSpec extends AtalaWithPostgresSpec {
           timestamp: Instant
       ): AtalaObjectTransactionSubmission = {
         AtalaObjectTransactionSubmissionsDAO
-          .insert(AtalaObjectTransactionSubmission(atalaObjectId, ledger, transactionId, timestamp, status))
+          .insert(
+            AtalaObjectTransactionSubmission(
+              atalaObjectId,
+              ledger,
+              transactionId,
+              timestamp,
+              status
+            )
+          )
           .runSync
       }
       insertAtalaObject(atalaObjectId, byteContent)
       val start = Instant.now
-      insertSubmission(AtalaObjectTransactionSubmissionStatus.Deleted, transactionId1, start)
+      insertSubmission(
+        AtalaObjectTransactionSubmissionStatus.Deleted,
+        transactionId1,
+        start
+      )
       val submission2 = insertSubmission(
         AtalaObjectTransactionSubmissionStatus.InLedger,
         transactionId2,
         start.plus(Duration.ofSeconds(2))
       )
 
-      val latest1 = AtalaObjectTransactionSubmissionsDAO.getLatest(ledger, transactionId1).runSync.value
-      val latest2 = AtalaObjectTransactionSubmissionsDAO.getLatest(ledger, transactionId2).runSync.value
+      val latest1 = AtalaObjectTransactionSubmissionsDAO
+        .getLatest(ledger, transactionId1)
+        .runSync
+        .value
+      val latest2 = AtalaObjectTransactionSubmissionsDAO
+        .getLatest(ledger, transactionId2)
+        .runSync
+        .value
 
       // Both transaction IDs should return the same latest submission
       latest1 mustBe submission2
@@ -106,8 +135,14 @@ class AtalaObjectTransactionSubmissionsDAOSpec extends AtalaWithPostgresSpec {
       val submission1 = insertSubmission(atalaObjectId, transactionId1)
       val submission2 = insertSubmission(atalaObjectId2, transactionId2)
 
-      val latest1 = AtalaObjectTransactionSubmissionsDAO.getLatest(ledger, transactionId1).runSync.value
-      val latest2 = AtalaObjectTransactionSubmissionsDAO.getLatest(ledger, transactionId2).runSync.value
+      val latest1 = AtalaObjectTransactionSubmissionsDAO
+        .getLatest(ledger, transactionId1)
+        .runSync
+        .value
+      val latest2 = AtalaObjectTransactionSubmissionsDAO
+        .getLatest(ledger, transactionId2)
+        .runSync
+        .value
 
       latest1 mustBe submission1
       latest2 mustBe submission2
@@ -132,18 +167,27 @@ class AtalaObjectTransactionSubmissionsDAOSpec extends AtalaWithPostgresSpec {
       }
       insertAtalaObject(atalaObjectId, byteContent)
       val inMemorySubmission = insertSubmission(Ledger.InMemory, transactionId1)
-      val cardanoSubmission = insertSubmission(Ledger.CardanoTestnet, transactionId2)
+      val cardanoSubmission =
+        insertSubmission(Ledger.CardanoTestnet, transactionId2)
 
-      val inMemoryLatest = AtalaObjectTransactionSubmissionsDAO.getLatest(Ledger.InMemory, transactionId1).runSync.value
+      val inMemoryLatest = AtalaObjectTransactionSubmissionsDAO
+        .getLatest(Ledger.InMemory, transactionId1)
+        .runSync
+        .value
       val cardanoLatest =
-        AtalaObjectTransactionSubmissionsDAO.getLatest(Ledger.CardanoTestnet, transactionId2).runSync.value
+        AtalaObjectTransactionSubmissionsDAO
+          .getLatest(Ledger.CardanoTestnet, transactionId2)
+          .runSync
+          .value
 
       inMemoryLatest mustBe inMemorySubmission
       cardanoLatest mustBe cardanoSubmission
     }
 
     "return None when not found" in {
-      val latest = AtalaObjectTransactionSubmissionsDAO.getLatest(ledger, transactionId1).runSync
+      val latest = AtalaObjectTransactionSubmissionsDAO
+        .getLatest(ledger, transactionId1)
+        .runSync
 
       latest mustBe None
     }
@@ -152,8 +196,12 @@ class AtalaObjectTransactionSubmissionsDAOSpec extends AtalaWithPostgresSpec {
   "AtalaObjectTransactionSubmissionsDAO.getBy" should {
     "filter by submission timestamp" in {
       val status = AtalaObjectTransactionSubmissionStatus.Pending
-      def getByTime(submissionTimestamp: Instant): List[AtalaObjectTransactionSubmission] = {
-        AtalaObjectTransactionSubmissionsDAO.getBy(submissionTimestamp, status, ledger).runSync
+      def getByTime(
+          submissionTimestamp: Instant
+      ): List[AtalaObjectTransactionSubmission] = {
+        AtalaObjectTransactionSubmissionsDAO
+          .getBy(submissionTimestamp, status, ledger)
+          .runSync
       }
       insertAtalaObject(atalaObjectId, byteContent)
       val submission = AtalaObjectTransactionSubmission(
@@ -174,8 +222,12 @@ class AtalaObjectTransactionSubmissionsDAOSpec extends AtalaWithPostgresSpec {
     }
 
     "filter by status" in {
-      def getByStatus(status: AtalaObjectTransactionSubmissionStatus): List[AtalaObjectTransactionSubmission] = {
-        AtalaObjectTransactionSubmissionsDAO.getBy(submissionTimestamp.plus(ONE_SECOND), status, ledger).runSync
+      def getByStatus(
+          status: AtalaObjectTransactionSubmissionStatus
+      ): List[AtalaObjectTransactionSubmission] = {
+        AtalaObjectTransactionSubmissionsDAO
+          .getBy(submissionTimestamp.plus(ONE_SECOND), status, ledger)
+          .runSync
       }
 
       insertAtalaObject(atalaObjectId, byteContent)
@@ -203,8 +255,12 @@ class AtalaObjectTransactionSubmissionsDAOSpec extends AtalaWithPostgresSpec {
 
     "filter by ledger" in {
       val status = AtalaObjectTransactionSubmissionStatus.Pending
-      def getByLedger(ledger: Ledger): List[AtalaObjectTransactionSubmission] = {
-        AtalaObjectTransactionSubmissionsDAO.getBy(submissionTimestamp.plus(ONE_SECOND), status, ledger).runSync
+      def getByLedger(
+          ledger: Ledger
+      ): List[AtalaObjectTransactionSubmission] = {
+        AtalaObjectTransactionSubmissionsDAO
+          .getBy(submissionTimestamp.plus(ONE_SECOND), status, ledger)
+          .runSync
       }
 
       insertAtalaObject(atalaObjectId, byteContent)
@@ -223,7 +279,9 @@ class AtalaObjectTransactionSubmissionsDAOSpec extends AtalaWithPostgresSpec {
         status
       )
       AtalaObjectTransactionSubmissionsDAO.insert(inMemorySubmission).runSync
-      AtalaObjectTransactionSubmissionsDAO.insert(cardanoTestnetSubmission).runSync
+      AtalaObjectTransactionSubmissionsDAO
+        .insert(cardanoTestnetSubmission)
+        .runSync
 
       getByLedger(Ledger.InMemory) mustBe List(inMemorySubmission)
       getByLedger(Ledger.CardanoTestnet) mustBe List(cardanoTestnetSubmission)
@@ -234,7 +292,9 @@ class AtalaObjectTransactionSubmissionsDAOSpec extends AtalaWithPostgresSpec {
     def getAll(): IndexedSeq[AtalaObjectTransactionSubmission] = {
       AtalaObjectTransactionSubmissionStatus.values
         .flatten { status =>
-          AtalaObjectTransactionSubmissionsDAO.getBy(submissionTimestamp.plus(ONE_SECOND), status, ledger).runSync
+          AtalaObjectTransactionSubmissionsDAO
+            .getBy(submissionTimestamp.plus(ONE_SECOND), status, ledger)
+            .runSync
         }
         .sortBy(_.submissionTimestamp)
     }
@@ -251,14 +311,23 @@ class AtalaObjectTransactionSubmissionsDAOSpec extends AtalaWithPostgresSpec {
       AtalaObjectTransactionSubmissionsDAO.insert(pendingSubmission).runSync
 
       AtalaObjectTransactionSubmissionsDAO
-        .updateStatus(ledger, transactionId1, AtalaObjectTransactionSubmissionStatus.InLedger)
+        .updateStatus(
+          ledger,
+          transactionId1,
+          AtalaObjectTransactionSubmissionStatus.InLedger
+        )
         .runSync
 
-      getAll() mustBe List(pendingSubmission.copy(status = AtalaObjectTransactionSubmissionStatus.InLedger))
+      getAll() mustBe List(
+        pendingSubmission.copy(status = AtalaObjectTransactionSubmissionStatus.InLedger)
+      )
     }
   }
 
-  private def insertAtalaObject(objectId: AtalaObjectId, byteContent: Array[Byte]): Unit = {
+  private def insertAtalaObject(
+      objectId: AtalaObjectId,
+      byteContent: Array[Byte]
+  ): Unit = {
     AtalaObjectsDAO
       .insert(AtalaObjectsDAO.AtalaObjectCreateData(objectId, byteContent))
       .transact(database)

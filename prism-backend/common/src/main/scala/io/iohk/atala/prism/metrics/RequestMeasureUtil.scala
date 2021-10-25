@@ -19,8 +19,10 @@ object RequestMeasureUtil {
   private val ACTIVE_REQUESTS_METRIC_NAME = "active-requests"
   private val ERROR_METRIC_NAME = "error-count"
   // Should be lazy, otherwise scala.UninitializedFieldError will be encountered
-  private lazy val requestTimer: Metric.Timer = Kamon.timer(REQUEST_TIME_METRIC_NAME)
-  private lazy val activeRequestsGauge: Metric.Gauge = Kamon.gauge(ACTIVE_REQUESTS_METRIC_NAME)
+  private lazy val requestTimer: Metric.Timer =
+    Kamon.timer(REQUEST_TIME_METRIC_NAME)
+  private lazy val activeRequestsGauge: Metric.Gauge =
+    Kamon.gauge(ACTIVE_REQUESTS_METRIC_NAME)
   private lazy val errorCounter = Kamon.counter(ERROR_METRIC_NAME)
 
   private val METHOD_TAG_NAME = "method"
@@ -36,7 +38,11 @@ object RequestMeasureUtil {
       .recoverWith(handleFailedFutureMeasurement(maybeStartedMetrics))
   }
 
-  def increaseErrorCounter(serviceName: String, methodName: String, errorCode: Int): Counter = {
+  def increaseErrorCounter(
+      serviceName: String,
+      methodName: String,
+      errorCode: Int
+  ): Counter = {
     val tags = TagSet
       .builder()
       .add(SERVICE_TAG_NAME, serviceName)
@@ -48,21 +54,27 @@ object RequestMeasureUtil {
 
   private def handleFailedFutureMeasurement[V](
       maybeMeasureItems: Try[MeasureItems]
-  )(implicit ec: ExecutionContext): PartialFunction[Throwable, Future[V]] = {
-    case NonFatal(e) =>
-      finishMeasurement((), maybeMeasureItems) *> Future.failed(e)
+  )(implicit ec: ExecutionContext): PartialFunction[Throwable, Future[V]] = { case NonFatal(e) =>
+    finishMeasurement((), maybeMeasureItems) *> Future.failed(e)
   }
 
-  private def tryToStartMeasurement(serviceName: String, methodName: String): Try[MeasureItems] =
+  private def tryToStartMeasurement(
+      serviceName: String,
+      methodName: String
+  ): Try[MeasureItems] =
     Try {
-      val tags = TagSet.builder().add(SERVICE_TAG_NAME, serviceName).add(METHOD_TAG_NAME, methodName).build()
+      val tags = TagSet
+        .builder()
+        .add(SERVICE_TAG_NAME, serviceName)
+        .add(METHOD_TAG_NAME, methodName)
+        .build()
       val taggedStartedTimer = requestTimer.withTags(tags).start()
-      val incrementedActiveRequestsGauge = activeRequestsGauge.withTags(tags).increment()
+      val incrementedActiveRequestsGauge =
+        activeRequestsGauge.withTags(tags).increment()
       MeasureItems(taggedStartedTimer, incrementedActiveRequestsGauge)
-    }.recoverWith {
-      case error =>
-        logger.error("Metrics start just blew up", error)
-        Failure(error)
+    }.recoverWith { case error =>
+      logger.error("Metrics start just blew up", error)
+      Failure(error)
     }
 
   private def tryToStopMeasurement(measureItems: MeasureItems): Try[Unit] =
@@ -70,27 +82,35 @@ object RequestMeasureUtil {
       measureItems.timer.stop()
       measureItems.activeRequestsGauge.decrement()
       ()
-    }.recoverWith {
-      case error =>
-        logger.error("Metrics stop just blew up", error)
-        Failure(error)
+    }.recoverWith { case error =>
+      logger.error("Metrics stop just blew up", error)
+      Failure(error)
     }
 
-  private def finishMeasurement[A](in: A, maybeMeasureItems: Try[MeasureItems]): Future[A] = {
+  private def finishMeasurement[A](
+      in: A,
+      maybeMeasureItems: Try[MeasureItems]
+  ): Future[A] = {
     maybeMeasureItems.flatMap(tryToStopMeasurement)
     Future.successful(in)
   }
 
-  private case class MeasureItems(timer: Timer.Started, activeRequestsGauge: Gauge)
+  private case class MeasureItems(
+      timer: Timer.Started,
+      activeRequestsGauge: Gauge
+  )
 
   implicit class FutureMetricsOps[T](val value: Future[T]) extends AnyVal {
-    def countErrorOnFail(serviceName: String, methodName: String, errorCode: Int)(implicit
+    def countErrorOnFail(
+        serviceName: String,
+        methodName: String,
+        errorCode: Int
+    )(implicit
         ec: ExecutionContext
     ): Future[T] =
-      value.recoverWith {
-        case NonFatal(_) =>
-          increaseErrorCounter(serviceName, methodName, errorCode)
-          value
+      value.recoverWith { case NonFatal(_) =>
+        increaseErrorCounter(serviceName, methodName, errorCode)
+        value
       }
   }
 

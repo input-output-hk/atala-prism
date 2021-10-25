@@ -15,7 +15,9 @@ import tofu.higherKind.Mid
 import tofu.logging.ServiceLogging
 import tofu.syntax.logging._
 
-private[repositories] final class CredentialIssuancesRepositoryLogs[F[_]: BracketThrow: ServiceLogging[*[
+private[repositories] final class CredentialIssuancesRepositoryLogs[F[
+    _
+]: BracketThrow: ServiceLogging[*[
   _
 ], CredentialIssuancesRepository[
   F
@@ -33,7 +35,11 @@ private[repositories] final class CredentialIssuancesRepositoryLogs[F[_]: Bracke
             r => info"creating credential issuance - successfully done $r"
           )
         )
-        .onError(errorCause"encountered an error while creating credential issuance" (_))
+        .onError(
+          errorCause"encountered an error while creating credential issuance" (
+            _
+          )
+        )
 
   override def createBulk(
       participantId: ParticipantId,
@@ -49,7 +55,11 @@ private[repositories] final class CredentialIssuancesRepositoryLogs[F[_]: Bracke
             r => info"creating bulk credential issuance - successfully done $r"
           )
         )
-        .onError(errorCause"encountered an error while creating bulk credential issuance" (_))
+        .onError(
+          errorCause"encountered an error while creating bulk credential issuance" (
+            _
+          )
+        )
 
   override def get(
       credentialIssuanceId: CredentialIssuance.Id,

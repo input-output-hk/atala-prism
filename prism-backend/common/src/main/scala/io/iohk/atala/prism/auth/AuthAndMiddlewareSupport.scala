@@ -29,16 +29,22 @@ trait AuthAndMiddlewareSupport[Err <: PrismError, Id] {
     ): Future[Result] = {
       authenticator
         .authenticated(methodName, request) { (participantId, traceId) =>
-          convertFromRequest[Proto, Result, Query](request, methodName).flatMap { query =>
-            implicit val lc: LoggingContext = LoggingContext(
-              (0 until query.productArity)
-                .map(i => query.productElementName(i) -> query.productElement(i).toString)
-                .toMap + ("participantId" -> participantId.toString)
-            )
-            measureRequestFuture(serviceName, methodName)(
-              f(participantId, traceId, query).wrapAndRegisterExceptions(serviceName, methodName).flatten
-            )
-          }
+          convertFromRequest[Proto, Result, Query](request, methodName)
+            .flatMap { query =>
+              implicit val lc: LoggingContext = LoggingContext(
+                (0 until query.productArity)
+                  .map(i =>
+                    query
+                      .productElementName(i) -> query.productElement(i).toString
+                  )
+                  .toMap + ("participantId" -> participantId.toString)
+              )
+              measureRequestFuture(serviceName, methodName)(
+                f(participantId, traceId, query)
+                  .wrapAndRegisterExceptions(serviceName, methodName)
+                  .flatten
+              )
+            }
         }
     }
   }
@@ -54,19 +60,23 @@ trait AuthAndMiddlewareSupport[Err <: PrismError, Id] {
     ): Future[Result] = {
       authenticator
         .authenticated(methodName, request) { (participantId, traceId) =>
-          convertFromRequest[Proto, Result, Query](request, methodName).flatMap { query =>
-            implicit val lc: LoggingContext = LoggingContext(
-              (0 until query.productArity)
-                .map(i => query.productElementName(i) -> query.productElement(i).toString)
-                .toMap + ("participantId" -> participantId.toString)
-            )
-            measureRequestFuture(serviceName, methodName)(
-              f(participantId, traceId, query)
-                .mapLeft(_.unify)
-                .wrapAndRegisterExceptions(serviceName, methodName)
-                .flatten
-            )
-          }
+          convertFromRequest[Proto, Result, Query](request, methodName)
+            .flatMap { query =>
+              implicit val lc: LoggingContext = LoggingContext(
+                (0 until query.productArity)
+                  .map(i =>
+                    query
+                      .productElementName(i) -> query.productElement(i).toString
+                  )
+                  .toMap + ("participantId" -> participantId.toString)
+              )
+              measureRequestFuture(serviceName, methodName)(
+                f(participantId, traceId, query)
+                  .mapLeft(_.unify)
+                  .wrapAndRegisterExceptions(serviceName, methodName)
+                  .flatten
+              )
+            }
         }
     }
   }
@@ -84,11 +94,16 @@ trait AuthAndMiddlewareSupport[Err <: PrismError, Id] {
           // Assemble LoggingContext out of the case class fields
           implicit val lc: LoggingContext = LoggingContext(
             (0 until query.productArity)
-              .map(i => query.productElementName(i) -> query.productElement(i).toString)
+              .map(i =>
+                query
+                  .productElementName(i) -> query.productElement(i).toString
+              )
               .toMap
           )
           measureRequestFuture(serviceName, methodName)(
-            f(traceId, query).wrapAndRegisterExceptions(serviceName, methodName).flatten
+            f(traceId, query)
+              .wrapAndRegisterExceptions(serviceName, methodName)
+              .flatten
           )
         }
       }
@@ -109,11 +124,17 @@ trait AuthAndMiddlewareSupport[Err <: PrismError, Id] {
           // Assemble LoggingContext out of the case class fields
           implicit val lc: LoggingContext = LoggingContext(
             (0 until query.productArity)
-              .map(i => query.productElementName(i) -> query.productElement(i).toString)
+              .map(i =>
+                query
+                  .productElementName(i) -> query.productElement(i).toString
+              )
               .toMap
           )
           measureRequestFuture(serviceName, methodName)(
-            f(traceId, query).mapLeft(_.unify).wrapAndRegisterExceptions(serviceName, methodName).flatten
+            f(traceId, query)
+              .mapLeft(_.unify)
+              .wrapAndRegisterExceptions(serviceName, methodName)
+              .flatten
           )
         }
       }
@@ -121,7 +142,11 @@ trait AuthAndMiddlewareSupport[Err <: PrismError, Id] {
   }
 
   // Just converts query from proto in our representation, on failure, responds with a thrown error
-  private def convertFromRequest[Proto <: GeneratedMessage, Result, Query <: Product](
+  private def convertFromRequest[
+      Proto <: GeneratedMessage,
+      Result,
+      Query <: Product
+  ](
       request: Proto,
       methodName: String
   )(implicit
@@ -157,7 +182,8 @@ trait AuthAndMiddlewareSupport[Err <: PrismError, Id] {
 
   def unitAuth: AuthPartiallyApplied[EmptyQuery.type] = auth[EmptyQuery.type]
 
-  def unitPublic: WithoutAuthPartiallyApplied[EmptyQuery.type] = public[EmptyQuery.type]
+  def unitPublic: WithoutAuthPartiallyApplied[EmptyQuery.type] =
+    public[EmptyQuery.type]
 }
 
 object AuthAndMiddlewareSupport {

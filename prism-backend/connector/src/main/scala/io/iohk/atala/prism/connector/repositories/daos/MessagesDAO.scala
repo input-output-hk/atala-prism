@@ -22,7 +22,8 @@ object MessagesDAO {
   ): doobie.ConnectionIO[Unit] = {
     sql"""
          |INSERT INTO messages (id, connection, sender, recipient, received_at, content)
-         |VALUES ($id, $connection, $sender, $recipient, ${Instant.now()}, $content)""".stripMargin.update.run.void
+         |VALUES ($id, $connection, $sender, $recipient, ${Instant
+      .now()}, $content)""".stripMargin.update.run.void
   }
 
   def insert(
@@ -34,11 +35,10 @@ object MessagesDAO {
       .updateMany(messages)
       .flatTap { affectedRows =>
         FC.raiseError(
-            new RuntimeException(
-              s"Unknown error while inserting ${messages.size} messages, affected rows: $affectedRows"
-            )
+          new RuntimeException(
+            s"Unknown error while inserting ${messages.size} messages, affected rows: $affectedRows"
           )
-          .whenA(messages.size != affectedRows)
+        ).whenA(messages.size != affectedRows)
       }
       .void
   }
@@ -51,7 +51,9 @@ object MessagesDAO {
        """.stripMargin.query[Message].option
   }
 
-  def getIdsOfAlreadyExistingMessages(ids: NonEmptyList[MessageId]): doobie.ConnectionIO[List[MessageId]] = {
+  def getIdsOfAlreadyExistingMessages(
+      ids: NonEmptyList[MessageId]
+  ): doobie.ConnectionIO[List[MessageId]] = {
     (fr"""
          |SELECT id
          |FROM messages
@@ -107,7 +109,9 @@ object MessagesDAO {
        """.stripMargin.query[Message].to[List]
   }
 
-  def deleteConnectionMessages(connectionId: ConnectionId): doobie.ConnectionIO[Unit] = {
+  def deleteConnectionMessages(
+      connectionId: ConnectionId
+  ): doobie.ConnectionIO[Unit] = {
     sql"""
          |DELETE FROM messages
          |WHERE connection = $connectionId

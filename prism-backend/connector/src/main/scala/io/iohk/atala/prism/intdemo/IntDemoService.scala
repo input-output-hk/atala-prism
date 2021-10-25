@@ -30,14 +30,21 @@ class IntDemoService[D](
   ): Future[intdemo_api.GetConnectionTokenResponse] = {
     for {
       connectionToken <- connectorIntegration.generateConnectionToken(issuerId)
-      _ <- intDemoRepository.mergeSubjectStatus(connectionToken, intdemo_models.SubjectStatus.UNCONNECTED)
+      _ <- intDemoRepository.mergeSubjectStatus(
+        connectionToken,
+        intdemo_models.SubjectStatus.UNCONNECTED
+      )
     } yield {
-      log.debug(s"Generated new connection token in IDService. request = $request, token = ${connectionToken}")
+      log.debug(
+        s"Generated new connection token in IDService. request = $request, token = ${connectionToken}"
+      )
       intdemo_api.GetConnectionTokenResponse(connectionToken.token)
     }
   }
 
-  private def getStateMachine(connectionToken: TokenString): IntDemoStateMachine[D] = {
+  private def getStateMachine(
+      connectionToken: TokenString
+  ): IntDemoStateMachine[D] = {
     new IntDemoStateMachine(
       requiredDataLoader = requiredDataLoader,
       getCredential = getCredential,
@@ -55,7 +62,9 @@ class IntDemoService[D](
     log.debug(s"Serving getSubjectStatus for request $request.")
 
     val stateMachine = getStateMachine(new TokenString(request.connectionToken))
-    stateMachine.getCurrentStatus().map(status => intdemo_api.GetSubjectStatusResponse(status))
+    stateMachine
+      .getCurrentStatus()
+      .map(status => intdemo_api.GetSubjectStatusResponse(status))
   }
 
   def getSubjectStatusStream(
@@ -65,7 +74,11 @@ class IntDemoService[D](
     log.debug(s"Serving getSubjectStatusStream for request $request.")
 
     val stateMachine = getStateMachine(new TokenString(request.connectionToken))
-    stateMachine.streamCurrentStatus(responseObserver, scheduler, schedulerPeriod)
+    stateMachine.streamCurrentStatus(
+      responseObserver,
+      scheduler,
+      schedulerPeriod
+    )
   }
 }
 

@@ -16,8 +16,9 @@ import io.iohk.atala.prism.intdemo.InsuranceServiceImpl.InsuranceCredentialHtmlT
 
 import scala.concurrent.{ExecutionContext, Future}
 
-class CredentialViewsService(authenticator: ConnectorAuthenticator)(implicit ec: ExecutionContext)
-    extends cviews_api.CredentialViewsServiceGrpc.CredentialViewsService {
+class CredentialViewsService(authenticator: ConnectorAuthenticator)(implicit
+    ec: ExecutionContext
+) extends cviews_api.CredentialViewsServiceGrpc.CredentialViewsService {
 
   private val getCredsViewTemplatesMethodName = "getCredentialViewTemplates"
 
@@ -30,14 +31,20 @@ class CredentialViewsService(authenticator: ConnectorAuthenticator)(implicit ec:
     }
   }
 
-  private def authenticatedHandler[Request <: scalapb.GeneratedMessage, Response <: scalapb.GeneratedMessage](
+  private def authenticatedHandler[
+      Request <: scalapb.GeneratedMessage,
+      Response <: scalapb.GeneratedMessage
+  ](
       methodName: String,
       request: Request
   )(
       block: ParticipantId => Future[Response]
   ): Future[Response] = {
     authenticator.authenticated(methodName, request) { (participantId, _) =>
-      measureRequestFuture("credential-views-service-service", getCredsViewTemplatesMethodName)(
+      measureRequestFuture(
+        "credential-views-service-service",
+        getCredsViewTemplatesMethodName
+      )(
         block(participantId)
       )
     }

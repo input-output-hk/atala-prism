@@ -13,9 +13,9 @@ import io.iohk.atala.prism.node.models.nodeState._
 import io.iohk.atala.prism.node.operations.StateError.{
   EffectiveSinceNotGreaterThanCurrentCardanoBlockNo,
   EntityExists,
-  EntityMissing,
   NonAscendingEffectiveSince,
-  NonSequentialProtocolVersion
+  NonSequentialProtocolVersion,
+  UntrustedProposer
 }
 import io.iohk.atala.prism.node.operations.path.{Path, ValueAtPath}
 import io.iohk.atala.prism.node.repositories.daos.{KeyValuesDAO, ProtocolVersionsDAO, PublicKeysDAO}
@@ -30,9 +30,16 @@ case class ProtocolVersionUpdateOperation(
     override val ledgerData: LedgerData
 ) extends Operation {
 
-  // TODO ATA-5519 Check here that a trusted party signed it
-  override def getCorrectnessData(keyId: String): EitherT[ConnectionIO, StateError, CorrectnessData] = {
+  override def getCorrectnessData(
+      keyId: String
+  ): EitherT[ConnectionIO, StateError, CorrectnessData] = {
     for {
+      _ <- EitherT {
+        ProtocolVersionsDAO.isProposerTrusted(proposerDID).map {
+          Either.cond(_, (), UntrustedProposer(proposerDID): StateError)
+        }
+      }
+
       keyState <- EitherT {
         PublicKeysDAO
           .find(proposerDID, keyId)
@@ -67,13 +74,19 @@ case class ProtocolVersionUpdateOperation(
           .cond[ConnectionIO](
             lastKnown.protocolVersion isFollowedBy protocolVersion,
             (),
-            NonSequentialProtocolVersion(lastKnown.protocolVersion, protocolVersion): StateError
+            NonSequentialProtocolVersion(
+              lastKnown.protocolVersion,
+              protocolVersion
+            ): StateError
           )
 
       _ <- EitherT.cond[ConnectionIO](
         effectiveSinceBlockIndex > lastKnown.effectiveSinceBlockIndex,
         (),
-        NonAscendingEffectiveSince(lastKnown.effectiveSinceBlockIndex, effectiveSinceBlockIndex): StateError
+        NonAscendingEffectiveSince(
+          lastKnown.effectiveSinceBlockIndex,
+          effectiveSinceBlockIndex
+        ): StateError
       )
 
       lastBlockNo <- EitherT.liftF(
@@ -84,17 +97,29 @@ case class ProtocolVersionUpdateOperation(
       _ <- EitherT.cond[ConnectionIO](
         effectiveSinceBlockIndex > lastBlockNo,
         (),
-        EffectiveSinceNotGreaterThanCurrentCardanoBlockNo(lastBlockNo, effectiveSinceBlockIndex): StateError
+        EffectiveSinceNotGreaterThanCurrentCardanoBlockNo(
+          lastBlockNo,
+          effectiveSinceBlockIndex
+        ): StateError
       )
 
       _ <- EitherT[ConnectionIO, StateError, Unit] {
         ProtocolVersionsDAO
-          .insertProtocolVersion(protocolVersion, versionName, effectiveSinceBlockIndex, proposerDID, ledgerData)
+          .insertProtocolVersion(
+            protocolVersion,
+            versionName,
+            effectiveSinceBlockIndex,
+            proposerDID,
+            ledgerData
+          )
           .attemptSomeSqlState {
             case sqlstate.class23.UNIQUE_VIOLATION =>
-              EntityExists("Protocol version", protocolVersion.toString): StateError
+              EntityExists(
+                "Protocol version",
+                protocolVersion.toString
+              ): StateError
             case sqlstate.class23.FOREIGN_KEY_VIOLATION =>
-              EntityMissing("proposerDID not exist in did_data", proposerDID.getValue)
+              UntrustedProposer(proposerDID)
           }
       }
     } yield ()
@@ -111,11 +136,14 @@ object ProtocolVersionUpdateOperation extends SimpleOperationCompanion[ProtocolV
   ): Either[ValidationError, ProtocolVersionUpdateOperation] = {
     val operationDigest = Sha256.compute(operation.toByteArray)
     val updateProtocolOperation =
-      ValueAtPath(operation, Path.root).child(_.getProtocolVersionUpdate, "protocolVersionUpdate")
+      ValueAtPath(operation, Path.root)
+        .child(_.getProtocolVersionUpdate, "protocolVersionUpdate")
     for {
-      proposerDIDSuffix <- updateProtocolOperation.child(_.proposerDid, "proposerDid").parse { proposerDID =>
-        DidSuffix.fromString(proposerDID).toEither.left.map(_.getMessage)
-      }
+      proposerDIDSuffix <- updateProtocolOperation
+        .child(_.proposerDid, "proposerDid")
+        .parse { proposerDID =>
+          DidSuffix.fromString(proposerDID).toEither.left.map(_.getMessage)
+        }
       versionInfo <- updateProtocolOperation.childGet(_.version, "version")
       versionName <- versionInfo.child(_.versionName, "versionName").parse { name =>
         if (name.isEmpty) None.asRight

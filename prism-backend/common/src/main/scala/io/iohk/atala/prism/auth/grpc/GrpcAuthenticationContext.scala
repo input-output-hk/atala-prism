@@ -20,20 +20,22 @@ private[grpc] object GrpcAuthenticationContext {
   // Extension methods to deal with gRPC Context in the Scala way
   implicit class RichContext(val context: Context) extends AnyVal {
     // For some reason the compiler complains if the method is named withValue
-    def addValue[T](keys: GrpcMetadataContextKeys[T], value: T): Context = context.withValue(keys.context, value)
+    def addValue[T](keys: GrpcMetadataContextKeys[T], value: T): Context =
+      context.withValue(keys.context, value)
 
-    /**
-      * While the predefined way to get a value from the [[Context]] is to call the getters from
-      * the [[Context.Key]], that's usually unsafe because the actual [[Context]] is not required and
-      * it is retrieved from the [[java.lang.ThreadLocal]], which isn't safe to deal with on concurrent
-      * environments (think about dealing with [[scala.concurrent.Future]]).
+    /** While the predefined way to get a value from the [[Context]] is to call the getters from the [[Context.Key]],
+      * that's usually unsafe because the actual [[Context]] is not required and it is retrieved from the
+      * [[java.lang.ThreadLocal]], which isn't safe to deal with on concurrent environments (think about dealing with
+      * [[scala.concurrent.Future]]).
       *
-      * This method allows avoiding the calls to the [[java.lang.ThreadLocal]], so, it's far safer than
-      * the default way.
+      * This method allows avoiding the calls to the [[java.lang.ThreadLocal]], so, it's far safer than the default way.
       *
-      * @param keys the key used to retrieve the value from the context.
-      * @tparam T the expected value type
-      * @return the actual value
+      * @param keys
+      *   the key used to retrieve the value from the context.
+      * @tparam T
+      *   the expected value type
+      * @return
+      *   the actual value
       */
     def getOpt[T](keys: GrpcMetadataContextKeys[T]): Option[T] = {
       Option(keys.context.get(context))
@@ -41,20 +43,28 @@ private[grpc] object GrpcAuthenticationContext {
   }
 
   // public key authentication
-  val SignatureKeys: GrpcMetadataContextKeys[Array[Byte]] = GrpcMetadataContextKeys("signature")
-  val PublicKeyKeys: GrpcMetadataContextKeys[Array[Byte]] = GrpcMetadataContextKeys("publicKey")
+  val SignatureKeys: GrpcMetadataContextKeys[Array[Byte]] =
+    GrpcMetadataContextKeys("signature")
+  val PublicKeyKeys: GrpcMetadataContextKeys[Array[Byte]] =
+    GrpcMetadataContextKeys("publicKey")
 
   // DID authentication
   val DidKeys: GrpcMetadataContextKeys[String] = GrpcMetadataContextKeys("did")
-  val DidKeyIdKeys: GrpcMetadataContextKeys[String] = GrpcMetadataContextKeys("didKeyId")
-  val DidSignatureKeys: GrpcMetadataContextKeys[Array[Byte]] = GrpcMetadataContextKeys("didSignature")
+  val DidKeyIdKeys: GrpcMetadataContextKeys[String] = GrpcMetadataContextKeys(
+    "didKeyId"
+  )
+  val DidSignatureKeys: GrpcMetadataContextKeys[Array[Byte]] =
+    GrpcMetadataContextKeys("didSignature")
 
   // used to prevent request replay attacks, this is a byte array to not worry about custom encoding
   // on different languages, like a string.
-  val RequestNonceKeys: GrpcMetadataContextKeys[Array[Byte]] = GrpcMetadataContextKeys("requestNonce")
+  val RequestNonceKeys: GrpcMetadataContextKeys[Array[Byte]] =
+    GrpcMetadataContextKeys("requestNonce")
 
   //tracing
-  val TraceIdKeys: GrpcMetadataContextKeys[String] = GrpcMetadataContextKeys("traceId")
+  val TraceIdKeys: GrpcMetadataContextKeys[String] = GrpcMetadataContextKeys(
+    "traceId"
+  )
 
   def getTraceIdFromContext(ctx: Context): TraceId =
     ctx.getOpt(TraceIdKeys).map(TraceId(_)).getOrElse(TraceId.generateYOLO)
@@ -63,7 +73,11 @@ private[grpc] object GrpcAuthenticationContext {
     headers.getOpt(TraceIdKeys).map(TraceId(_)).getOrElse(TraceId.generateYOLO)
 
   def getPublicKeySignatureContext(headers: Metadata): Option[Context] = {
-    (headers.getOpt(RequestNonceKeys), headers.getOpt(SignatureKeys), headers.getOpt(PublicKeyKeys)) match {
+    (
+      headers.getOpt(RequestNonceKeys),
+      headers.getOpt(SignatureKeys),
+      headers.getOpt(PublicKeyKeys)
+    ) match {
       case (Some(requestNonceStr), Some(signatureStr), Some(publicKeyStr)) =>
         val signature = Base64.getUrlDecoder.decode(signatureStr)
         val publicKey = Base64.getUrlDecoder.decode(publicKeyStr)
@@ -81,8 +95,14 @@ private[grpc] object GrpcAuthenticationContext {
     }
   }
 
-  def parsePublicKeyAuthenticationHeader(ctx: Context): Option[GrpcAuthenticationHeader.PublicKeyBased] = {
-    (ctx.getOpt(RequestNonceKeys), ctx.getOpt(SignatureKeys), ctx.getOpt(PublicKeyKeys)) match {
+  def parsePublicKeyAuthenticationHeader(
+      ctx: Context
+  ): Option[GrpcAuthenticationHeader.PublicKeyBased] = {
+    (
+      ctx.getOpt(RequestNonceKeys),
+      ctx.getOpt(SignatureKeys),
+      ctx.getOpt(PublicKeyKeys)
+    ) match {
       case (Some(requestNonce), Some(signature), Some(encodedPublicKey)) =>
         val publicKey = EC.toPublicKeyFromBytes(encodedPublicKey)
         val header = GrpcAuthenticationHeader.PublicKeyBased(
@@ -103,7 +123,12 @@ private[grpc] object GrpcAuthenticationContext {
       headers.getOpt(DidKeyIdKeys),
       headers.getOpt(DidSignatureKeys)
     ) match {
-      case (Some(requestNonceStr), Some(did), Some(keyId), Some(signatureStr)) =>
+      case (
+            Some(requestNonceStr),
+            Some(did),
+            Some(keyId),
+            Some(signatureStr)
+          ) =>
         val signature = Base64.getUrlDecoder.decode(signatureStr)
         val requestNonce = Base64.getUrlDecoder.decode(requestNonceStr)
         val traceId = getTraceIdFromMetadata(headers)
@@ -120,8 +145,15 @@ private[grpc] object GrpcAuthenticationContext {
     }
   }
 
-  def parseDIDAuthenticationHeader(ctx: Context): Option[GrpcAuthenticationHeader.DIDBased] = {
-    (ctx.getOpt(RequestNonceKeys), ctx.getOpt(DidKeys), ctx.getOpt(DidKeyIdKeys), ctx.getOpt(DidSignatureKeys)) match {
+  def parseDIDAuthenticationHeader(
+      ctx: Context
+  ): Option[GrpcAuthenticationHeader.DIDBased] = {
+    (
+      ctx.getOpt(RequestNonceKeys),
+      ctx.getOpt(DidKeys),
+      ctx.getOpt(DidKeyIdKeys),
+      ctx.getOpt(DidSignatureKeys)
+    ) match {
       case (Some(requestNonce), Some(didRaw), Some(keyId), Some(signature)) =>
         val didOpt = Try(PrismDid.fromString(didRaw))
         didOpt match {
@@ -145,6 +177,8 @@ private[grpc] object GrpcAuthenticationContext {
                     signature = new ECSignature(signature)
                   )
                 )
+              case _ =>
+                throw new IllegalStateException("Unknown type of DID")
             }
           case Failure(_) =>
             None

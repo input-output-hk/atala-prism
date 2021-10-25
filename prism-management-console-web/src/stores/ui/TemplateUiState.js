@@ -55,8 +55,7 @@ export default class TemplateUiState {
   get filteredTemplates() {
     const templates = this.rootStore.prismStore.templateStore.credentialTemplates;
     const filteredTemplates = this.applyFilters(templates);
-    const sortedAndFilteredTemplates = this.applySorting(filteredTemplates);
-    return sortedAndFilteredTemplates;
+    return this.applySorting(filteredTemplates);
   }
 
   applyFilters = templates =>

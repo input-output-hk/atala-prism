@@ -8,7 +8,11 @@ import scala.util.Try
 
 object DidWhitelistLoader {
   def load(globalConfig: Config): Set[DID] = {
-    val whitelistDids = globalConfig.getConfig("managementConsole").getList("whitelistDids").iterator().asScala
+    val whitelistDids = globalConfig
+      .getConfig("managementConsole")
+      .getList("whitelistDids")
+      .iterator()
+      .asScala
 
     whitelistDids.map { whitelistDid =>
       whitelistDid.unwrapped() match {
@@ -17,8 +21,12 @@ object DidWhitelistLoader {
             case Some(value) =>
               value
             case None =>
-              throw new IllegalArgumentException(s"Invalid DID in whitelist: $did")
+              throw new IllegalArgumentException(
+                s"Invalid DID in whitelist: $did"
+              )
           }
+        case other =>
+          throw new IllegalArgumentException("Expected whitelisted DID as String, but got " + other.getClass)
       }
     }.toSet
   }

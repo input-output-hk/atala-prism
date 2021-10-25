@@ -21,7 +21,8 @@ class CredentialDataValidatorSpec extends AtalaWithPostgresSpec with Matchers {
   "validate" should {
     "return valid ValidatedNel" in {
       val institutionId = DataPreparation.createParticipant("Participant")
-      val credentialTypeWithRequiredFields = DataPreparation.createCredentialType(institutionId, "name")
+      val credentialTypeWithRequiredFields =
+        DataPreparation.createCredentialType(institutionId, "name")
 
       val validCredentialData = Json.obj(
         "title" -> Json.fromString("Major IN Applied Blockchain"),
@@ -29,22 +30,29 @@ class CredentialDataValidatorSpec extends AtalaWithPostgresSpec with Matchers {
         "graduationDate" -> Json.fromString("01/07/2015")
       )
 
-      CredentialDataValidator.validate(credentialTypeWithRequiredFields, validCredentialData).isValid mustBe true
+      CredentialDataValidator
+        .validate(credentialTypeWithRequiredFields, validCredentialData)
+        .isValid mustBe true
     }
 
     "return invalid ValidatedNel when credential data is not Json object" in {
       val institutionId = DataPreparation.createParticipant("Participant")
-      val credentialTypeWithRequiredFields = DataPreparation.createCredentialType(institutionId, "name")
+      val credentialTypeWithRequiredFields =
+        DataPreparation.createCredentialType(institutionId, "name")
 
       check(
-        CredentialDataValidator.validate(credentialTypeWithRequiredFields, Json.fromString("credential")),
+        CredentialDataValidator.validate(
+          credentialTypeWithRequiredFields,
+          Json.fromString("credential")
+        ),
         NotJsonObject
       )
     }
 
     "return invalid ValidatedNel when field is missing" in {
       val institutionId = DataPreparation.createParticipant("Participant")
-      val credentialTypeWithRequiredFields = DataPreparation.createCredentialType(institutionId, "name")
+      val credentialTypeWithRequiredFields =
+        DataPreparation.createCredentialType(institutionId, "name")
 
       val validCredentialData = Json.obj(
         "enrollmentDate" -> Json.fromString("01/10/2010"),
@@ -52,14 +60,16 @@ class CredentialDataValidatorSpec extends AtalaWithPostgresSpec with Matchers {
       )
 
       check(
-        CredentialDataValidator.validate(credentialTypeWithRequiredFields, validCredentialData),
+        CredentialDataValidator
+          .validate(credentialTypeWithRequiredFields, validCredentialData),
         FieldMissing("title")
       )
     }
 
     "return invalid ValidatedNel when field type doesn't match" in {
       val institutionId = DataPreparation.createParticipant("Participant")
-      val credentialTypeWithRequiredFields = DataPreparation.createCredentialType(institutionId, "name")
+      val credentialTypeWithRequiredFields =
+        DataPreparation.createCredentialType(institutionId, "name")
 
       val validCredentialData = Json.obj(
         "title" -> Json.fromString("Major IN Applied Blockchain"),
@@ -68,14 +78,20 @@ class CredentialDataValidatorSpec extends AtalaWithPostgresSpec with Matchers {
       )
 
       check(
-        CredentialDataValidator.validate(credentialTypeWithRequiredFields, validCredentialData),
-        FieldInvalidType("graduationDate", CredentialTypeFieldType.Date, "false")
+        CredentialDataValidator
+          .validate(credentialTypeWithRequiredFields, validCredentialData),
+        FieldInvalidType(
+          "graduationDate",
+          CredentialTypeFieldType.Date,
+          "false"
+        )
       )
     }
 
     "return invalid ValidatedNel when date is in incorrect format" in {
       val institutionId = DataPreparation.createParticipant("Participant")
-      val credentialTypeWithRequiredFields = DataPreparation.createCredentialType(institutionId, "name")
+      val credentialTypeWithRequiredFields =
+        DataPreparation.createCredentialType(institutionId, "name")
 
       val validCredentialData = Json.obj(
         "title" -> Json.fromString("Major IN Applied Blockchain"),
@@ -84,7 +100,8 @@ class CredentialDataValidatorSpec extends AtalaWithPostgresSpec with Matchers {
       )
 
       check(
-        CredentialDataValidator.validate(credentialTypeWithRequiredFields, validCredentialData),
+        CredentialDataValidator
+          .validate(credentialTypeWithRequiredFields, validCredentialData),
         InvalidDateFormat("graduationDate", "\"01/07-2015\"")
       )
     }

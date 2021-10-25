@@ -21,18 +21,25 @@ class IntDemoRepositorySpec extends ConnectorRepositorySpecBase {
       val token = TokenString.random()
       val status = intdemo_models.SubjectStatus.UNCONNECTED
 
-      val rowCount: Int = repository.mergeSubjectStatus(token, status).futureValue
+      val rowCount: Int =
+        repository.mergeSubjectStatus(token, status).futureValue
 
       rowCount shouldBe 1
       sql"""SELECT status FROM intdemo_credential_status WHERE token=$token"""
-        .runUnique[Int]() shouldBe intdemo_models.SubjectStatus.UNCONNECTED.value
+        .runUnique[
+          Int
+        ]() shouldBe intdemo_models.SubjectStatus.UNCONNECTED.value
     }
 
     "update status when one exists" in {
       val token = TokenString.random()
 
-      repository.mergeSubjectStatus(token, intdemo_models.SubjectStatus.UNCONNECTED).futureValue
-      val rowCount = repository.mergeSubjectStatus(token, intdemo_models.SubjectStatus.CONNECTED).futureValue
+      repository
+        .mergeSubjectStatus(token, intdemo_models.SubjectStatus.UNCONNECTED)
+        .futureValue
+      val rowCount = repository
+        .mergeSubjectStatus(token, intdemo_models.SubjectStatus.CONNECTED)
+        .futureValue
 
       rowCount shouldBe 1
       sql"""SELECT status FROM intdemo_credential_status WHERE token=$token"""
@@ -78,7 +85,8 @@ class IntDemoRepositorySpec extends ConnectorRepositorySpecBase {
       val v2 = (token, Random.nextString(12), aRandomDateOfBirth())
 
       repository.mergePersonalInfo(v1._1, v1._2, v1._3).futureValue
-      val rowCount = repository.mergePersonalInfo(v2._1, v2._2, v2._3).futureValue
+      val rowCount =
+        repository.mergePersonalInfo(v2._1, v2._2, v2._3).futureValue
 
       rowCount shouldBe 1
       sql"""SELECT first_name, date_of_birth FROM intdemo_id_personal_info WHERE token=$token"""
@@ -93,7 +101,8 @@ class IntDemoRepositorySpec extends ConnectorRepositorySpecBase {
       val expectedDoB = LocalDate.now()
       repository.mergePersonalInfo(token, expectedName, expectedDoB).futureValue
 
-      val (actualName, actualDoB) = repository.findPersonalInfo(token).futureValue.get
+      val (actualName, actualDoB) =
+        repository.findPersonalInfo(token).futureValue.get
 
       (actualName, actualDoB) shouldBe ((expectedName, expectedDoB))
     }

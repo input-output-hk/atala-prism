@@ -31,6 +31,7 @@ import io.iohk.atala.prism.credentials.CredentialBatchId
 import io.iohk.atala.prism.crypto.MerkleInclusionProof
 import io.iohk.atala.prism.crypto.Sha256Digest
 import io.iohk.atala.prism.crypto.signature.ECSignature
+import io.iohk.atala.prism.models.ConnectionToken
 import io.iohk.atala.prism.protos.connector_api.SendMessagesRequest
 import io.iohk.atala.prism.protos.console_models.ContactConnectionStatus
 import io.iohk.atala.prism.utils.Base64Utils
@@ -39,7 +40,10 @@ import scala.util.{Failure, Success, Try}
 
 package object grpc {
 
-  private def maybeEmpty[T](value: String, f: String => Try[T]): Try[Option[T]] = {
+  private def maybeEmpty[T](
+      value: String,
+      f: String => Try[T]
+  ): Try[Option[T]] = {
     if (value.isEmpty)
       Success(None)
     else
@@ -50,18 +54,26 @@ package object grpc {
     LocalDate.of(proto.year, proto.month, proto.day)
   }
 
-  implicit val credentialTypeFieldTypeTransformer
-      : Transformer[console_models.CredentialTypeFieldType, CredentialTypeFieldType] = {
-    case console_models.CredentialTypeFieldType.CREDENTIAL_TYPE_FIELD_STRING => CredentialTypeFieldType.String
-    case console_models.CredentialTypeFieldType.CREDENTIAL_TYPE_FIELD_INT => CredentialTypeFieldType.Int
-    case console_models.CredentialTypeFieldType.CREDENTIAL_TYPE_FIELD_BOOLEAN => CredentialTypeFieldType.Boolean
-    case console_models.CredentialTypeFieldType.CREDENTIAL_TYPE_FIELD_DATE => CredentialTypeFieldType.Date
+  implicit val credentialTypeFieldTypeTransformer: Transformer[
+    console_models.CredentialTypeFieldType,
+    CredentialTypeFieldType
+  ] = {
+    case console_models.CredentialTypeFieldType.CREDENTIAL_TYPE_FIELD_STRING =>
+      CredentialTypeFieldType.String
+    case console_models.CredentialTypeFieldType.CREDENTIAL_TYPE_FIELD_INT =>
+      CredentialTypeFieldType.Int
+    case console_models.CredentialTypeFieldType.CREDENTIAL_TYPE_FIELD_BOOLEAN =>
+      CredentialTypeFieldType.Boolean
+    case console_models.CredentialTypeFieldType.CREDENTIAL_TYPE_FIELD_DATE =>
+      CredentialTypeFieldType.Date
     case console_models.CredentialTypeFieldType.CREDENTIAL_TYPE_FIELD_UNKNOWN =>
       throw new IllegalArgumentException(
         s"Unknown credential type, allowed values: " +
           s"${console_models.CredentialTypeFieldType.values.map(_.name).mkString(", ")}"
       )
-    case console_models.CredentialTypeFieldType.Unrecognized(unrecognizedValue) =>
+    case console_models.CredentialTypeFieldType.Unrecognized(
+          unrecognizedValue
+        ) =>
       throw new IllegalArgumentException(
         s"Unrecognized credential type field type: $unrecognizedValue, allowed values: " +
           s"${console_models.CredentialTypeFieldType.values.map(_.name).mkString(", ")}"
@@ -95,7 +107,8 @@ package object grpc {
           ).getOrElse(throw new RuntimeException("Missing or invalid DID"))
         }
         name <- Try {
-          if (request.name.trim.isEmpty) throw new RuntimeException("The name is required")
+          if (request.name.trim.isEmpty)
+            throw new RuntimeException("The name is required")
           else request.name.trim
         }
 
@@ -121,10 +134,13 @@ package object grpc {
   ): Try[ResultOrdering[InstitutionGroup.SortBy]] = {
     def unsafeField = {
       sortBy.field match {
-        case GetGroupsRequest.SortBy.Field.UNKNOWN => InstitutionGroup.SortBy.Name
+        case GetGroupsRequest.SortBy.Field.UNKNOWN =>
+          InstitutionGroup.SortBy.Name
         case GetGroupsRequest.SortBy.Field.NAME => InstitutionGroup.SortBy.Name
-        case GetGroupsRequest.SortBy.Field.CREATED_AT => InstitutionGroup.SortBy.CreatedAt
-        case GetGroupsRequest.SortBy.Field.NUMBER_OF_CONTACTS => InstitutionGroup.SortBy.NumberOfContacts
+        case GetGroupsRequest.SortBy.Field.CREATED_AT =>
+          InstitutionGroup.SortBy.CreatedAt
+        case GetGroupsRequest.SortBy.Field.NUMBER_OF_CONTACTS =>
+          InstitutionGroup.SortBy.NumberOfContacts
         case GetGroupsRequest.SortBy.Field.Unrecognized(x) =>
           throw new RuntimeException(s"Unrecognized SortBy Field: $x")
       }
@@ -150,17 +166,27 @@ package object grpc {
           .map(proto2DateTransformer.transform)
       }
 
-      val contactIdTry = request.filterBy.map(_.contactId).map(Contact.Id.optional).getOrElse(Try(None))
-      val name = request.filterBy.map(_.name).flatMap(InstitutionGroup.Name.optional)
+      val contactIdTry = request.filterBy
+        .map(_.contactId)
+        .map(Contact.Id.optional)
+        .getOrElse(Try(None))
+      val name =
+        request.filterBy.map(_.name).flatMap(InstitutionGroup.Name.optional)
 
-      val defaultSortBy = ResultOrdering[InstitutionGroup.SortBy](InstitutionGroup.SortBy.Name)
+      val defaultSortBy =
+        ResultOrdering[InstitutionGroup.SortBy](InstitutionGroup.SortBy.Name)
       val sortByT: Try[ResultOrdering[InstitutionGroup.SortBy]] =
-        request.sortBy.map(toInstitutionGroupsResultOrdering).getOrElse(Try(defaultSortBy))
+        request.sortBy
+          .map(toInstitutionGroupsResultOrdering)
+          .getOrElse(Try(defaultSortBy))
       val allowedLimit = 0 to 100
       val defaultLimit = 10
       val limitT = Try {
         if (allowedLimit contains request.limit) request.limit
-        else throw new RuntimeException(s"Invalid limit, allowed values are $allowedLimit")
+        else
+          throw new RuntimeException(
+            s"Invalid limit, allowed values are $allowedLimit"
+          )
       }.map {
         case 0 => defaultLimit
         case x => x
@@ -168,7 +194,10 @@ package object grpc {
 
       val offsetT =
         if (request.offset >= 0) Success(request.offset)
-        else Failure(new IllegalArgumentException("offset cannot be negative number"))
+        else
+          Failure(
+            new IllegalArgumentException("offset cannot be negative number")
+          )
 
       for {
         createdAfter <- createdAfterTry
@@ -197,12 +226,21 @@ package object grpc {
     (request: UpdateGroupRequest) => {
       for {
         groupId <- InstitutionGroup.Id.from(request.groupId)
-        contactIdsToAdd <- request.contactIdsToAdd.toList.map(Contact.Id.from).sequence
-        contactIdsToRemove <- request.contactIdsToRemove.toList.map(Contact.Id.from).sequence
+        contactIdsToAdd <- request.contactIdsToAdd.toList
+          .map(Contact.Id.from)
+          .sequence
+        contactIdsToRemove <- request.contactIdsToRemove.toList
+          .map(Contact.Id.from)
+          .sequence
         contactIdsToAddSet <- checkListUniqueness(contactIdsToAdd)
         contactIdsToRemoveSet <- checkListUniqueness(contactIdsToRemove)
         name <- maybeEmpty(request.name, s => Success(InstitutionGroup.Name(s)))
-      } yield UpdateInstitutionGroup(groupId, contactIdsToAddSet, contactIdsToRemoveSet, name)
+      } yield UpdateInstitutionGroup(
+        groupId,
+        contactIdsToAddSet,
+        contactIdsToRemoveSet,
+        name
+      )
     }
 
   implicit val copyGroupConverter: ProtoConverter[CopyGroupRequest, CopyInstitutionGroup] =
@@ -229,29 +267,44 @@ package object grpc {
         generateConnectionTokenRequestMetadata <- toConnectorRequestMetadata(
           request.generateConnectionTokensRequestMetadata
         )
-      } yield CreateContact(externalId, json, request.name, generateConnectionTokenRequestMetadata)
+      } yield CreateContact(
+        externalId,
+        json,
+        request.name,
+        generateConnectionTokenRequestMetadata
+      )
     }
 
-  def toSortByDirection(proto: SortByDirection): Try[ResultOrdering.Direction] = {
+  def toSortByDirection(
+      proto: SortByDirection
+  ): Try[ResultOrdering.Direction] = {
     def unsafe = {
       proto match {
-        case SortByDirection.SORT_BY_DIRECTION_UNKNOWN => ResultOrdering.Direction.Ascending
-        case SortByDirection.SORT_BY_DIRECTION_ASCENDING => ResultOrdering.Direction.Ascending
-        case SortByDirection.SORT_BY_DIRECTION_DESCENDING => ResultOrdering.Direction.Descending
-        case SortByDirection.Unrecognized(x) => throw new RuntimeException(s"Unrecognized SortBy Direction: $x")
+        case SortByDirection.SORT_BY_DIRECTION_UNKNOWN =>
+          ResultOrdering.Direction.Ascending
+        case SortByDirection.SORT_BY_DIRECTION_ASCENDING =>
+          ResultOrdering.Direction.Ascending
+        case SortByDirection.SORT_BY_DIRECTION_DESCENDING =>
+          ResultOrdering.Direction.Descending
+        case SortByDirection.Unrecognized(x) =>
+          throw new RuntimeException(s"Unrecognized SortBy Direction: $x")
       }
     }
 
     Try(unsafe)
   }
 
-  def toContactsResultOrdering(sortBy: GetContactsRequest.SortBy): Try[ResultOrdering[Contact.SortBy]] = {
+  def toContactsResultOrdering(
+      sortBy: GetContactsRequest.SortBy
+  ): Try[ResultOrdering[Contact.SortBy]] = {
     def unsafeField = {
       sortBy.field match {
         case GetContactsRequest.SortBy.Field.UNKNOWN => Contact.SortBy.createdAt
-        case GetContactsRequest.SortBy.Field.CREATED_AT => Contact.SortBy.createdAt
+        case GetContactsRequest.SortBy.Field.CREATED_AT =>
+          Contact.SortBy.createdAt
         case GetContactsRequest.SortBy.Field.NAME => Contact.SortBy.name
-        case GetContactsRequest.SortBy.Field.EXTERNAL_ID => Contact.SortBy.externalId
+        case GetContactsRequest.SortBy.Field.EXTERNAL_ID =>
+          Contact.SortBy.externalId
         case GetContactsRequest.SortBy.Field.Unrecognized(x) =>
           throw new RuntimeException(s"Unrecognized SortBy Field: $x")
       }
@@ -283,12 +336,17 @@ package object grpc {
         .map(InstitutionGroup.Name.apply)
 
       val defaultSortBy = ResultOrdering(Contact.SortBy.createdAt)
-      val sortByT = request.sortBy.map(toContactsResultOrdering).getOrElse(Try(defaultSortBy))
+      val sortByT = request.sortBy
+        .map(toContactsResultOrdering)
+        .getOrElse(Try(defaultSortBy))
       val allowedLimit = 0 to 100
       val defaultLimit = 10
       val limitT = Try {
         if (allowedLimit contains request.limit) request.limit
-        else throw new RuntimeException(s"Invalid limit, allowed values are $allowedLimit")
+        else
+          throw new RuntimeException(
+            s"Invalid limit, allowed values are $allowedLimit"
+          )
       }.map {
         case 0 => defaultLimit
         case x => x
@@ -337,7 +395,8 @@ package object grpc {
     }
 
   def toGroupIdSet(request: Seq[String]): Try[Set[InstitutionGroup.Id]] = {
-    val validatedGroups = request.map(InstitutionGroup.Id.from).flatMap(_.toOption).toSet
+    val validatedGroups =
+      request.map(InstitutionGroup.Id.from).flatMap(_.toOption).toSet
     if (validatedGroups.size != request.size) {
       Failure(
         new RuntimeException(
@@ -349,14 +408,18 @@ package object grpc {
     }
   }
 
-  def toCreateContact(request: CreateContactsRequest.Contact): Try[CreateContact.NoOwner] = {
+  def toCreateContact(
+      request: CreateContactsRequest.Contact
+  ): Try[CreateContact.NoOwner] = {
     for {
       json <- JsonValidator.jsonData(request.jsonData)
       externalId <- Contact.ExternalId.validated(request.externalId)
     } yield CreateContact.NoOwner(externalId, json, request.name)
   }
 
-  def toCreateContacts(request: Seq[CreateContactsRequest.Contact]): Try[List[CreateContact.NoOwner]] = {
+  def toCreateContacts(
+      request: Seq[CreateContactsRequest.Contact]
+  ): Try[List[CreateContact.NoOwner]] = {
     val validatedContacts = request.map(toCreateContact).flatMap(_.toOption)
     val externalIdCount = validatedContacts.map(_.externalId).distinct.size
     if (externalIdCount != request.size) {
@@ -375,11 +438,16 @@ package object grpc {
       for {
         validatedGroups <- toGroupIdSet(request.groups)
         validatedContacts <- toCreateContacts(request.contacts)
-        _ = if (validatedContacts.isEmpty) throw new RuntimeException("There are no contacts to create")
+        _ = if (validatedContacts.isEmpty)
+          throw new RuntimeException("There are no contacts to create")
         generateConnectionTokenRequestMetadata <- toConnectorRequestMetadata(
           request.generateConnectionTokensRequestMetadata
         )
-      } yield CreateContact.Batch(validatedGroups, validatedContacts, generateConnectionTokenRequestMetadata)
+      } yield CreateContact.Batch(
+        validatedGroups,
+        validatedContacts,
+        generateConnectionTokenRequestMetadata
+      )
     }
 
   implicit val deleteContactConverter: ProtoConverter[DeleteContactRequest, DeleteContact] =
@@ -387,8 +455,10 @@ package object grpc {
       Contact.Id.from(request.contactId).map(DeleteContact)
     }
 
-  implicit val createCredentialIssuanceConverter
-      : ProtoConverter[CreateCredentialIssuanceRequest, CreateCredentialIssuance] =
+  implicit val createCredentialIssuanceConverter: ProtoConverter[
+    CreateCredentialIssuanceRequest,
+    CreateCredentialIssuance
+  ] =
     (request: CreateCredentialIssuanceRequest) => {
       for {
         credentialTypeId <- CredentialTypeId.from(request.credentialTypeId)
@@ -408,11 +478,12 @@ package object grpc {
                     }
                     .to(List)
                     .sequence
-              } yield CredentialIssuancesRepository.CreateCredentialIssuanceContact(
-                contactId,
-                credentialData,
-                groupIds
-              )
+              } yield CredentialIssuancesRepository
+                .CreateCredentialIssuanceContact(
+                  contactId,
+                  credentialData,
+                  groupIds
+                )
             }
             .to(List)
             .sequence
@@ -425,18 +496,26 @@ package object grpc {
 
   implicit val getCredentialIssuanceConverter: ProtoConverter[GetCredentialIssuanceRequest, GetCredentialIssuance] =
     (request: GetCredentialIssuanceRequest) => {
-      CredentialIssuance.Id.from(request.credentialIssuanceId).map(GetCredentialIssuance)
+      CredentialIssuance.Id
+        .from(request.credentialIssuanceId)
+        .map(GetCredentialIssuance)
     }
 
-  implicit val createGenericCredentialConverter
-      : ProtoConverter[CreateGenericCredentialRequest, CreateGenericCredential] =
+  implicit val createGenericCredentialConverter: ProtoConverter[
+    CreateGenericCredentialRequest,
+    CreateGenericCredential
+  ] =
     (request: CreateGenericCredentialRequest) => {
       for {
         contactId <- maybeEmpty(request.contactId, Contact.Id.from)
         credentialData <- io.circe.parser.parse(request.credentialData).toTry
-        externalId <- maybeEmpty(request.externalId, Contact.ExternalId.validated)
+        externalId <- maybeEmpty(
+          request.externalId,
+          Contact.ExternalId.validated
+        )
         credentialTypeId <-
-          if (request.credentialTypeId.nonEmpty) CredentialTypeId.from(request.credentialTypeId)
+          if (request.credentialTypeId.nonEmpty)
+            CredentialTypeId.from(request.credentialTypeId)
           else Failure(new IllegalArgumentException("Empty credential type id"))
       } yield CreateGenericCredential(
         contactId,
@@ -452,9 +531,12 @@ package object grpc {
   ): Try[ResultOrdering[GenericCredential.SortBy]] = {
     def unsafeField = {
       sortBy.field match {
-        case GetGenericCredentialsRequest.SortBy.Field.UNKNOWN => GenericCredential.SortBy.CreatedOn
-        case GetGenericCredentialsRequest.SortBy.Field.CREDENTIAL_TYPE => GenericCredential.SortBy.CredentialType
-        case GetGenericCredentialsRequest.SortBy.Field.CREATED_ON => GenericCredential.SortBy.CreatedOn
+        case GetGenericCredentialsRequest.SortBy.Field.UNKNOWN =>
+          GenericCredential.SortBy.CreatedOn
+        case GetGenericCredentialsRequest.SortBy.Field.CREDENTIAL_TYPE =>
+          GenericCredential.SortBy.CredentialType
+        case GetGenericCredentialsRequest.SortBy.Field.CREATED_ON =>
+          GenericCredential.SortBy.CreatedOn
         case GetGenericCredentialsRequest.SortBy.Field.Unrecognized(x) =>
           throw new RuntimeException(s"Unrecognized SortBy Field: $x")
       }
@@ -466,8 +548,10 @@ package object grpc {
     } yield ResultOrdering(field, direction)
   }
 
-  implicit val getGenericCredentialConverter
-      : ProtoConverter[GetGenericCredentialsRequest, GenericCredential.PaginatedQuery] =
+  implicit val getGenericCredentialConverter: ProtoConverter[
+    GetGenericCredentialsRequest,
+    GenericCredential.PaginatedQuery
+  ] =
     (request: GetGenericCredentialsRequest) => {
       val createdAfterT = Try {
         request.filterBy
@@ -482,16 +566,26 @@ package object grpc {
       }
 
       val credentialTypeT =
-        request.filterBy.map(_.credentialType).map(CredentialTypeId.optional).getOrElse(Success(None))
+        request.filterBy
+          .map(_.credentialType)
+          .map(CredentialTypeId.optional)
+          .getOrElse(Success(None))
 
-      val defaultSortBy = ResultOrdering[GenericCredential.SortBy](GenericCredential.SortBy.CreatedOn)
+      val defaultSortBy = ResultOrdering[GenericCredential.SortBy](
+        GenericCredential.SortBy.CreatedOn
+      )
       val sortByT: Try[ResultOrdering[GenericCredential.SortBy]] =
-        request.sortBy.map(toGenericCredentialResultOrdering).getOrElse(Success(defaultSortBy))
+        request.sortBy
+          .map(toGenericCredentialResultOrdering)
+          .getOrElse(Success(defaultSortBy))
       val allowedLimit = 0 to 100
       val defaultLimit = 10
       val limitT = Try {
         if (allowedLimit contains request.limit) request.limit
-        else throw new RuntimeException(s"Invalid limit, allowed values are $allowedLimit")
+        else
+          throw new RuntimeException(
+            s"Invalid limit, allowed values are $allowedLimit"
+          )
       }.map {
         case 0 => defaultLimit
         case x => x
@@ -499,7 +593,10 @@ package object grpc {
 
       val offsetT =
         if (request.offset >= 0) Success(request.offset)
-        else Failure(new IllegalArgumentException("offset cannot be negative number"))
+        else
+          Failure(
+            new IllegalArgumentException("offset cannot be negative number")
+          )
 
       for {
         createdAfter <- createdAfterT
@@ -530,17 +627,26 @@ package object grpc {
 
   implicit val shareCredentialConverter: ProtoConverter[ShareCredentialRequest, ShareCredential] =
     (request: ShareCredentialRequest) => {
-      GenericCredential.Id.from(request.cmanagerCredentialId).map(ShareCredential)
+      GenericCredential.Id
+        .from(request.cmanagerCredentialId)
+        .map(ShareCredential)
     }
 
   implicit val shareCredentialsConverter: ProtoConverter[ShareCredentialsRequest, ShareCredentials] =
     (request: ShareCredentialsRequest) => {
       for {
         idsNonEmptyList <- toCredentialsIds(request.credentialsIds)
-        connectorRequestMetadata <- toConnectorRequestMetadata(request.sendMessagesRequestMetadata)
-        sendMessageRequest <- request.sendMessagesRequest.fold[Try[SendMessagesRequest]](
-          Failure(new IllegalArgumentException("sendMessagesRequest cannot be empty"))
-        )(Success(_))
+        connectorRequestMetadata <- toConnectorRequestMetadata(
+          request.sendMessagesRequestMetadata
+        )
+        sendMessageRequest <- request.sendMessagesRequest
+          .fold[Try[SendMessagesRequest]](
+            Failure(
+              new IllegalArgumentException(
+                "sendMessagesRequest cannot be empty"
+              )
+            )
+          )(Success(_))
         _ <-
           if (idsNonEmptyList.size == sendMessageRequest.messagesByConnectionToken.size) Success(())
           else
@@ -575,41 +681,47 @@ package object grpc {
       connectorRequestMetadata.map(_.did),
       connectorRequestMetadata.map(_.didKeyId),
       connectorRequestMetadata.map(_.didSignature)
-    ).mapN {
-        case (nonce, didStr, keyId, signature) =>
-          Try(
-            PrismDid
-              .fromString(didStr)
-          ).toOption
-            .map { did =>
-              val didBased = did match {
-                case _: CanonicalPrismDid => GrpcAuthenticationHeader.PublishedDIDBased
-                case _: LongFormPrismDid => GrpcAuthenticationHeader.UnpublishedDIDBased
-                case _ => throw new RuntimeException("Unknown Did")
-              }
+    ).mapN { case (nonce, didStr, keyId, signature) =>
+      Try(
+        PrismDid
+          .fromString(didStr)
+      ).toOption
+        .map { did =>
+          val didBased = did match {
+            case _: CanonicalPrismDid =>
+              GrpcAuthenticationHeader.PublishedDIDBased
+            case _: LongFormPrismDid =>
+              GrpcAuthenticationHeader.UnpublishedDIDBased
+            case _ => throw new RuntimeException("Unknown Did")
+          }
 
-              didBased(
-                RequestNonce(Base64Utils.decodeURL(nonce).toVector),
-                did,
-                keyId,
-                new ECSignature(Base64Utils.decodeURL(signature))
-              )
-            }
-      }
-      .flatten
+          didBased(
+            RequestNonce(Base64Utils.decodeURL(nonce).toVector),
+            did,
+            keyId,
+            new ECSignature(Base64Utils.decodeURL(signature))
+          )
+        }
+    }.flatten
       .fold[Try[GrpcAuthenticationHeader.DIDBased]](
-        Failure(new IllegalArgumentException("connector request metadata is missing"))
+        Failure(
+          new IllegalArgumentException("connector request metadata is missing")
+        )
       )(Success.apply)
   }
 
-  private def toCredentialsIds(credentialsIds: Seq[String]): Try[NonEmptyList[GenericCredential.Id]] = {
+  private def toCredentialsIds(
+      credentialsIds: Seq[String]
+  ): Try[NonEmptyList[GenericCredential.Id]] = {
     for {
       idsList <- credentialsIds.map(GenericCredential.Id.from).toList.sequence
       idsNonEmptyList <-
         NonEmptyList
           .fromList(idsList)
           .map(Success(_))
-          .getOrElse(Failure(new IllegalArgumentException("Empty credential ids list")))
+          .getOrElse(
+            Failure(new IllegalArgumentException("Empty credential ids list"))
+          )
     } yield idsNonEmptyList
   }
 
@@ -617,7 +729,9 @@ package object grpc {
     (request: GetLedgerDataRequest) => {
       for {
         batchId <- Try(CredentialBatchId.fromString(request.batchId))
-        credentialHash = Sha256Digest.fromBytes(request.credentialHash.toByteArray)
+        credentialHash = Sha256Digest.fromBytes(
+          request.credentialHash.toByteArray
+        )
       } yield GetLedgerData(batchId, credentialHash)
     }
 
@@ -625,7 +739,9 @@ package object grpc {
     (request: PublishBatchRequest) => {
       for {
         signedOperation <- Try(
-          request.issueCredentialBatchOperation.getOrElse(throw new RuntimeException("Missing signed operation"))
+          request.issueCredentialBatchOperation.getOrElse(
+            throw new RuntimeException("Missing signed operation")
+          )
         )
         isIssueCredentialBatch =
           signedOperation.operation
@@ -634,24 +750,38 @@ package object grpc {
             .isIssueCredentialBatch
         _ =
           if (isIssueCredentialBatch) ()
-          else throw new RuntimeException("IssueCredentialBatch operation expected but not found")
+          else
+            throw new RuntimeException(
+              "IssueCredentialBatch operation expected but not found"
+            )
       } yield PublishBatch(signedOperation)
     }
 
-  implicit val storePublishedCredentialConverter
-      : ProtoConverter[StorePublishedCredentialRequest, StorePublishedCredential] =
+  implicit val storePublishedCredentialConverter: ProtoConverter[
+    StorePublishedCredentialRequest,
+    StorePublishedCredential
+  ] =
     (request: StorePublishedCredentialRequest) => {
       for {
         encodedSignedCredential <- Try {
-          require(request.encodedSignedCredential.nonEmpty, "Empty encoded credential")
+          require(
+            request.encodedSignedCredential.nonEmpty,
+            "Empty encoded credential"
+          )
           request.encodedSignedCredential
         }
-        consoleCredentialId = GenericCredential.Id.unsafeFrom(request.consoleCredentialId)
+        consoleCredentialId = GenericCredential.Id.unsafeFrom(
+          request.consoleCredentialId
+        )
         batchId = CredentialBatchId.fromString(request.batchId)
         proof = Try(
           MerkleInclusionProof
             .decode(request.encodedInclusionProof)
-        ).getOrElse(throw new RuntimeException(s"Invalid inclusion proof: ${request.encodedInclusionProof}"))
+        ).getOrElse(
+          throw new RuntimeException(
+            s"Invalid inclusion proof: ${request.encodedInclusionProof}"
+          )
+        )
       } yield StorePublishedCredential(
         encodedSignedCredential = encodedSignedCredential,
         consoleCredentialId = consoleCredentialId,
@@ -660,16 +790,22 @@ package object grpc {
       )
     }
 
-  implicit val revokePublishedCredentialConverter
-      : ProtoConverter[RevokePublishedCredentialRequest, RevokePublishedCredential] =
+  implicit val revokePublishedCredentialConverter: ProtoConverter[
+    RevokePublishedCredentialRequest,
+    RevokePublishedCredential
+  ] =
     (request: RevokePublishedCredentialRequest) => {
       for {
         credentialId <- GenericCredential.Id.from(request.credentialId)
         operation =
           request.revokeCredentialsOperation
-            .getOrElse(throw new RuntimeException("Missing revokeCredentialsOperation"))
+            .getOrElse(
+              throw new RuntimeException("Missing revokeCredentialsOperation")
+            )
         _ = if (!operation.operation.exists(_.operation.isRevokeCredentials))
-          throw new RuntimeException("Invalid revokeCredentialsOperation, it is a different operation")
+          throw new RuntimeException(
+            "Invalid revokeCredentialsOperation, it is a different operation"
+          )
 
         credentialHashes =
           operation.operation
@@ -687,51 +823,83 @@ package object grpc {
       } yield RevokePublishedCredential(credentialId, operation)
     }
 
-  implicit val nodeRevocationResponse: ProtoConverter[node_api.RevokeCredentialsResponse, NodeRevocationResponse] =
+  implicit val nodeRevocationResponse: ProtoConverter[
+    node_api.RevokeCredentialsResponse,
+    NodeRevocationResponse
+  ] =
     (response: node_api.RevokeCredentialsResponse) =>
       Try {
-        NodeRevocationResponse(AtalaOperationId.fromVectorUnsafe(response.operationId.toByteArray.toVector))
+        NodeRevocationResponse(
+          AtalaOperationId.fromVectorUnsafe(
+            response.operationId.toByteArray.toVector
+          )
+        )
       }
 
-  implicit val issueCredentialBatchResponseConverter
-      : ProtoConverter[node_api.IssueCredentialBatchResponse, IssueCredentialBatchNodeResponse] =
+  implicit val issueCredentialBatchResponseConverter: ProtoConverter[
+    node_api.IssueCredentialBatchResponse,
+    IssueCredentialBatchNodeResponse
+  ] =
     (response: node_api.IssueCredentialBatchResponse) => {
       for {
         batchId <- Try(
           Option(
             CredentialBatchId
               .fromString(response.batchId)
-          ).getOrElse(throw new RuntimeException("Node returned an invalid batch id"))
+          ).getOrElse(
+            throw new RuntimeException("Node returned an invalid batch id")
+          )
         )
       } yield IssueCredentialBatchNodeResponse(
         batchId,
-        AtalaOperationId.fromVectorUnsafe(response.operationId.toByteArray.toVector)
+        AtalaOperationId.fromVectorUnsafe(
+          response.operationId.toByteArray.toVector
+        )
       )
     }
 
-  implicit val createCredentialBulkConverter: ProtoConverter[CreateGenericCredentialBulkRequest, CreateCredentialBulk] =
+  implicit val createCredentialBulkConverter: ProtoConverter[
+    CreateGenericCredentialBulkRequest,
+    CreateCredentialBulk
+  ] =
     (request: CreateGenericCredentialBulkRequest) => {
       for {
         json <- io.circe.parser.parse(request.credentialsJson).toTry
         draftsJson <- JsonValidator.extractField[List[Json]](json)("drafts")
         drafts <- draftsJson.map { draftJson =>
           for {
-            externalId <- JsonValidator.extractFieldWithTry[String, Contact.ExternalId](draftJson)("external_id")(
-              Contact.ExternalId.validated
-            )
-            credentialJson <- JsonValidator.extractField[Json](draftJson)("credential_data")
-            groupIds <-
-              JsonValidator.extractFieldWithTry[List[String], Set[InstitutionGroup.Id]](draftJson)("group_ids")(
-                _.map(InstitutionGroup.Id.from).sequence.map(_.toSet)
+            externalId <- JsonValidator
+              .extractFieldWithTry[String, Contact.ExternalId](draftJson)(
+                "external_id"
+              )(
+                Contact.ExternalId.validated
               )
-          } yield CreateCredentialBulk.Draft(externalId, credentialJson, groupIds)
+            credentialJson <- JsonValidator.extractField[Json](draftJson)(
+              "credential_data"
+            )
+            groupIds <-
+              JsonValidator
+                .extractFieldWithTry[List[String], Set[InstitutionGroup.Id]](
+                  draftJson
+                )("group_ids")(
+                  _.map(InstitutionGroup.Id.from).sequence.map(_.toSet)
+                )
+          } yield CreateCredentialBulk.Draft(
+            externalId,
+            credentialJson,
+            groupIds
+          )
         }.sequence
         credentialsType <-
           JsonValidator
-            .extractFieldWith[String, CredentialTypeId](json)("credential_type_id")(
+            .extractFieldWith[String, CredentialTypeId](json)(
+              "credential_type_id"
+            )(
               CredentialTypeId.unsafeFrom
             )
-        issuanceName <- JsonValidator.extractField[String](json)("issuance_name")
+        issuanceName <- JsonValidator.extractField[String](json)(
+          "issuance_name"
+        )
         _ <-
           if (issuanceName.isEmpty)
             Failure(new IllegalArgumentException("Empty issuance name"))
@@ -743,17 +911,21 @@ package object grpc {
   implicit val storeCredentialConverter: ProtoConverter[StoreCredentialRequest, StoreCredential] =
     (request: StoreCredentialRequest) => {
       for {
-        contactId <- Contact.Id.from(request.connectionId)
-        credentialExternalId <- CredentialExternalId.from(request.credentialExternalId)
+        credentialExternalId <- CredentialExternalId.from(
+          request.credentialExternalId
+        )
+        connectionToken = ConnectionToken(request.connectionToken)
       } yield StoreCredential(
-        contactId,
+        connectionToken,
         request.encodedSignedCredential,
         credentialExternalId
       )
     }
 
-  implicit val getLatestCredentialsConverter
-      : ProtoConverter[GetLatestCredentialExternalIdRequest, GetLatestCredential] =
+  implicit val getLatestCredentialsConverter: ProtoConverter[
+    GetLatestCredentialExternalIdRequest,
+    GetLatestCredential
+  ] =
     (_: GetLatestCredentialExternalIdRequest) => {
       Success(GetLatestCredential())
     }
@@ -776,17 +948,21 @@ package object grpc {
 
   implicit val createCredentialTypeConverter: ProtoConverter[CreateCredentialTypeRequest, CreateCredentialType] =
     (request: CreateCredentialTypeRequest) => {
-      request.credentialType.toRight(new IllegalArgumentException("Empty credentialType field")).toTry.flatMap {
-        credentialType =>
+      request.credentialType
+        .toRight(new IllegalArgumentException("Empty credentialType field"))
+        .toTry
+        .flatMap { credentialType =>
           Try(credentialType.into[CreateCredentialType].transform)
-      }
+        }
     }
 
   implicit val updateCredentialTypeConverter: ProtoConverter[UpdateCredentialTypeRequest, UpdateCredentialType] =
     (request: UpdateCredentialTypeRequest) => {
       for {
         updateCredentialType <-
-          request.credentialType.toRight(new IllegalArgumentException("Empty credentialType field")).toTry
+          request.credentialType
+            .toRight(new IllegalArgumentException("Empty credentialType field"))
+            .toTry
         credentialTypeId <- CredentialTypeId.from(updateCredentialType.id)
         updateCredentialTypeTransformed <- Try {
           updateCredentialType
@@ -797,32 +973,44 @@ package object grpc {
       } yield updateCredentialTypeTransformed
     }
 
-  implicit val markAsReadyConverter: ProtoConverter[MarkAsReadyCredentialTypeRequest, MarkAsReadyCredentialType] =
+  implicit val markAsReadyConverter: ProtoConverter[
+    MarkAsReadyCredentialTypeRequest,
+    MarkAsReadyCredentialType
+  ] =
     (request: MarkAsReadyCredentialTypeRequest) => {
-      CredentialTypeId.from(request.credentialTypeId).map(MarkAsReadyCredentialType)
+      CredentialTypeId
+        .from(request.credentialTypeId)
+        .map(MarkAsReadyCredentialType)
     }
 
-  implicit val markAsArchivedConverter
-      : ProtoConverter[MarkAsArchivedCredentialTypeRequest, MarkAsArchivedCredentialType] =
+  implicit val markAsArchivedConverter: ProtoConverter[
+    MarkAsArchivedCredentialTypeRequest,
+    MarkAsArchivedCredentialType
+  ] =
     (request: MarkAsArchivedCredentialTypeRequest) => {
-      CredentialTypeId.from(request.credentialTypeId).map(MarkAsArchivedCredentialType)
+      CredentialTypeId
+        .from(request.credentialTypeId)
+        .map(MarkAsArchivedCredentialType)
     }
 
-  implicit val participantProfileConverter: ProtoConverter[ConsoleUpdateProfileRequest, UpdateParticipantProfile] = {
-    request =>
-      {
-        for {
-          name <- Try {
-            if (request.name.trim.isEmpty) throw new RuntimeException("The name is required")
-            else request.name.trim
-          }
+  implicit val participantProfileConverter: ProtoConverter[
+    ConsoleUpdateProfileRequest,
+    UpdateParticipantProfile
+  ] = { request =>
+    {
+      for {
+        name <- Try {
+          if (request.name.trim.isEmpty)
+            throw new RuntimeException("The name is required")
+          else request.name.trim
+        }
 
-          logo <- Try {
-            val bytes = request.logo.toByteArray
-            if (bytes.isEmpty) None
-            else Some(ParticipantLogo(bytes.toVector))
-          }
-        } yield UpdateParticipantProfile(name, logo)
-      }
+        logo <- Try {
+          val bytes = request.logo.toByteArray
+          if (bytes.isEmpty) None
+          else Some(ParticipantLogo(bytes.toVector))
+        }
+      } yield UpdateParticipantProfile(name, logo)
+    }
   }
 }

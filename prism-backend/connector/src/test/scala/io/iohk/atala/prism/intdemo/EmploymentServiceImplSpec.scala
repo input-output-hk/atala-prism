@@ -20,7 +20,9 @@ class EmploymentServiceImplSpec extends AnyFlatSpec {
     val degreeCredential = DegreeServiceImpl.getDegreeCredential(idCredential)
 
     val employmentCredential =
-      EmploymentServiceImpl.getEmploymentCredential(RequiredEmploymentData(idCredential, degreeCredential))
+      EmploymentServiceImpl.getEmploymentCredential(
+        RequiredEmploymentData(idCredential, degreeCredential)
+      )
 
     val issuerDID = s"did:prism:${EmploymentServiceImpl.issuerId.uuid}"
     val issuanceDate = LocalDate.now()
@@ -33,15 +35,19 @@ class EmploymentServiceImplSpec extends AnyFlatSpec {
     val employmentStatus = "Full-time"
 
     // Verify JSON document
-    val jsonString = Base64Utils.decodeUrlToString(employmentCredential.encodedCredential)
+    val jsonString =
+      Base64Utils.decodeUrlToString(employmentCredential.encodedCredential)
     val document = parse(jsonString).toOption.value.hcursor
 
     document.jsonStr("issuerDid") shouldBe issuerDID
     document.jsonStr("issuanceKeyId") shouldBe issuanceKeyId
     document.jsonStr("issuerName") shouldBe issuerName
     document.jsonStr("issuerAddress") shouldBe issuerAddress
-    document.jsonStr("issuanceDate") shouldBe DateTimeFormatter.ISO_LOCAL_DATE.format(issuanceDate)
-    document.jsonStr("employmentStartDate") shouldBe DateTimeFormatter.ISO_LOCAL_DATE.format(employmentStartDate)
+    document.jsonStr("issuanceDate") shouldBe DateTimeFormatter.ISO_LOCAL_DATE
+      .format(issuanceDate)
+    document.jsonStr(
+      "employmentStartDate"
+    ) shouldBe DateTimeFormatter.ISO_LOCAL_DATE.format(employmentStartDate)
     document.jsonStr("employmentStatus") shouldBe employmentStatus
     document.jsonStr("credentialSubject.credentialType") shouldBe credentialType
     document.jsonStr("credentialSubject.name") shouldBe holderName
@@ -52,7 +58,10 @@ class EmploymentServiceImplSpec extends AnyFlatSpec {
       .replace("@holderName", holderName)
       .replace("@issuerAddress", issuerAddress)
       .replace("@employmentStatus", employmentStatus)
-      .replace("@employmentStartDate", DateTimeFormatter.ISO_LOCAL_DATE.format(employmentStartDate))
+      .replace(
+        "@employmentStartDate",
+        DateTimeFormatter.ISO_LOCAL_DATE.format(employmentStartDate)
+      )
 
     document.jsonStr("credentialSubject.html") shouldBe expectedHtml
   }

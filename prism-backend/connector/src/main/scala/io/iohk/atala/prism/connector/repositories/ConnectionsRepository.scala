@@ -39,16 +39,29 @@ trait ConnectionsRepository[F[_]] {
 
   import io.iohk.atala.prism.connector.repositories.ConnectionsRepository._
 
-  def insertTokens(initiator: ParticipantId, tokens: List[TokenString]): F[List[TokenString]]
+  def insertTokens(
+      initiator: ParticipantId,
+      tokens: List[TokenString]
+  ): F[List[TokenString]]
 
-  def getTokenInfo(token: TokenString): F[Either[GetTokenInfoError, ParticipantInfo]]
+  def getTokenInfo(
+      token: TokenString
+  ): F[Either[GetTokenInfoError, ParticipantInfo]]
 
   def addConnectionFromToken(
       token: TokenString,
       didOrPublicKey: Either[DID, ECPublicKey]
   ): F[Either[AddConnectionFromTokenError, ConnectionInfo]]
 
-  def revokeConnection(participantId: ParticipantId, connectionId: ConnectionId): F[Either[RevokeConnectionError, Unit]]
+  def revokeConnection(
+      participantId: ParticipantId,
+      connectionId: ConnectionId
+  ): F[Either[RevokeConnectionError, Unit]]
+
+  def getConnection(
+      participant: ParticipantId,
+      id: ConnectionId
+  ): F[Option[ConnectionInfo]]
 
   def getConnectionsPaginated(
       participant: ParticipantId,
@@ -80,7 +93,8 @@ object ConnectionsRepository {
 
   type GetConnectionsPaginatedError = InvalidArgumentError :+: CNil
 
-  type RevokeConnectionError = UnknownValueError :+: InternalServerError :+: CNil
+  type RevokeConnectionError =
+    UnknownValueError :+: InternalConnectorError :+: CNil
 
   def apply[F[_]: TimeMeasureMetric: BracketThrow, R[_]: Functor](
       transactor: Transactor[F],
@@ -89,9 +103,12 @@ object ConnectionsRepository {
     for {
       serviceLogs <- logs.service[ConnectionsRepository[F]]
     } yield {
-      implicit val implicitLogs: ServiceLogging[F, ConnectionsRepository[F]] = serviceLogs
-      val metrics: ConnectionsRepository[Mid[F, *]] = new ConnectionsRepositoryMetrics[F]
-      val logs: ConnectionsRepository[Mid[F, *]] = new ConnectionsRepositoryLogs[F]
+      implicit val implicitLogs: ServiceLogging[F, ConnectionsRepository[F]] =
+        serviceLogs
+      val metrics: ConnectionsRepository[Mid[F, *]] =
+        new ConnectionsRepositoryMetrics[F]
+      val logs: ConnectionsRepository[Mid[F, *]] =
+        new ConnectionsRepositoryLogs[F]
       val mid = metrics |+| logs
       mid attach new ConnectionsRepositoryPostgresImpl[F](transactor)
     }
@@ -102,8 +119,9 @@ object ConnectionsRepository {
   ): ConnectionsRepository[F] = ConnectionsRepository(transactor, logs).extract
 }
 
-private final class ConnectionsRepositoryPostgresImpl[F[_]: BracketThrow](xa: Transactor[F])
-    extends ConnectionsRepository[F]
+private final class ConnectionsRepositoryPostgresImpl[F[_]: BracketThrow](
+    xa: Transactor[F]
+) extends ConnectionsRepository[F]
     with ConnectorErrorSupportNew {
 
   import io.iohk.atala.prism.connector.repositories.ConnectionsRepository._
@@ -121,12 +139,16 @@ private final class ConnectionsRepositoryPostgresImpl[F[_]: BracketThrow](xa: Tr
       .as(tokens)
   }
 
-  override def getTokenInfo(token: TokenString): F[Either[GetTokenInfoError, ParticipantInfo]] = {
+  override def getTokenInfo(
+      token: TokenString
+  ): F[Either[GetTokenInfoError, ParticipantInfo]] = {
     implicit val loggingContext = LoggingContext("token" -> token)
 
     ParticipantsDAO
       .findBy(token)
-      .toRight[GetTokenInfoError](co(UnknownValueError("token", token.token).logWarnNew))
+      .toRight[GetTokenInfoError](
+        co(UnknownValueError("token", token.token).logWarnNew)
+      )
       .value
       .logSQLErrors("getting token info", logger)
       .transact(xa)
@@ -141,40 +163,53 @@ private final class ConnectionsRepositoryPostgresImpl[F[_]: BracketThrow](xa: Tr
     val maybePublicKey = didOrPublicKey.toOption
 
     implicit val loggingContext: LoggingContext =
-      LoggingContext("token" -> token, "did" -> maybeDid, "publicKey" -> maybePublicKey)
+      LoggingContext(
+        "token" -> token,
+        "did" -> maybeDid,
+        "publicKey" -> maybePublicKey
+      )
 
     // if exist Left(ConnectorError) else Right(Unit)
-    val checkIfAlreadyExist: EitherT[doobie.ConnectionIO, AddConnectionFromTokenError, Unit] = EitherT(
-      didOrPublicKey
-        .fold(
-          did =>
-            ParticipantsDAO
-              .findByDID(did)
-              .value
-              .map(
-                _.fold[Option[AddConnectionFromTokenError]](Option.empty)(_ =>
-                  co[AddConnectionFromTokenError](DidConnectionExist(did)).some
+    val checkIfAlreadyExist: EitherT[doobie.ConnectionIO, AddConnectionFromTokenError, Unit] =
+      EitherT(
+        didOrPublicKey
+          .fold(
+            did =>
+              ParticipantsDAO
+                .findByDID(did)
+                .value
+                .map(
+                  _.fold[Option[AddConnectionFromTokenError]](Option.empty)(_ =>
+                    co[AddConnectionFromTokenError](
+                      DidConnectionExist(did)
+                    ).some
+                  )
+                ),
+            pk =>
+              ParticipantsDAO
+                .findByPublicKey(pk)
+                .value
+                .map(
+                  _.fold[Option[AddConnectionFromTokenError]](Option.empty)(_ =>
+                    co[AddConnectionFromTokenError](PkConnectionExist(pk)).some
+                  )
                 )
-              ),
-          pk =>
-            ParticipantsDAO
-              .findByPublicKey(pk)
-              .value
-              .map(
-                _.fold[Option[AddConnectionFromTokenError]](Option.empty)(_ =>
-                  co[AddConnectionFromTokenError](PkConnectionExist(pk)).some
-                )
-              )
-        )
-        .map(_.toLeft(()))
-    )
+          )
+          .map(_.toLeft(()))
+      )
 
-    val query: EitherT[doobie.ConnectionIO, AddConnectionFromTokenError, ConnectionInfo] = for {
+    val query: EitherT[
+      doobie.ConnectionIO,
+      AddConnectionFromTokenError,
+      ConnectionInfo
+    ] = for {
       initiator <-
         ParticipantsDAO
           .findByAvailableToken(token)
           .toRight(
-            co[AddConnectionFromTokenError](UnknownValueError("token", token.token).logWarnNew)
+            co[AddConnectionFromTokenError](
+              UnknownValueError("token", token.token).logWarnNew
+            )
           )
 
       _ <- checkIfAlreadyExist
@@ -204,7 +239,9 @@ private final class ConnectionsRepositoryPostgresImpl[F[_]: BracketThrow](xa: Tr
       )
       (connectionId, instantiatedAt) = ciia
 
-      _ <- EitherT.right[AddConnectionFromTokenError](ConnectionTokensDAO.markAsUsed(token))
+      _ <- EitherT.right[AddConnectionFromTokenError](
+        ConnectionTokensDAO.markAsUsed(token)
+      )
     } yield ConnectionInfo(
       connectionId,
       instantiatedAt,
@@ -225,15 +262,23 @@ private final class ConnectionsRepositoryPostgresImpl[F[_]: BracketThrow](xa: Tr
     // verify the connection belongs to the participant, and its connected
     def verifyOwnership: EitherT[doobie.ConnectionIO, RevokeConnectionError, Unit] =
       for {
-        connectionMaybe <- EitherT(ConnectionsDAO.getRawConnection(connectionId).map(_.asRight[RevokeConnectionError]))
+        connectionMaybe <- EitherT(
+          ConnectionsDAO
+            .getRawConnection(connectionId)
+            .map(_.asRight[RevokeConnectionError])
+        )
         resultE = connectionMaybe match {
           // The connection can't be revoked when the participant is not involved in the connection,
           // or the connection is not established
           case Some(connection)
-              if connection.contains(participantId) && connection.status == ConnectionStatus.ConnectionAccepted =>
+              if connection.contains(
+                participantId
+              ) && connection.status == ConnectionStatus.ConnectionAccepted =>
             ().asRight[RevokeConnectionError]
           case _ =>
-            co[RevokeConnectionError](UnknownValueError("connectionId", connectionId.uuid.toString)).asLeft[Unit]
+            co[RevokeConnectionError](
+              UnknownValueError("connectionId", connectionId.uuid.toString)
+            ).asLeft[Unit]
         }
         _ <- EitherT(doobie.free.connection.pure(resultE))
       } yield ()
@@ -241,25 +286,70 @@ private final class ConnectionsRepositoryPostgresImpl[F[_]: BracketThrow](xa: Tr
     val query: EitherT[doobie.ConnectionIO, RevokeConnectionError, Unit] = for {
       _ <- verifyOwnership
       affectedRows <- EitherT {
-        ConnectionsDAO.revoke(connectionId).map(_.asRight[RevokeConnectionError])
+        ConnectionsDAO
+          .revoke(connectionId)
+          .map(_.asRight[RevokeConnectionError])
       }
       _ <- EitherT.cond[doobie.ConnectionIO](
         affectedRows == 1,
         (),
         co[RevokeConnectionError](
-          InternalServerError(
-            new RuntimeException("Unable to revoke the connection, please try again later")
+          InternalConnectorError(
+            new RuntimeException(
+              "Unable to revoke the connection, please try again later"
+            )
           )
         )
       )
       // TODO: Remove once messages are being removed after they are read
       _ <- EitherT {
-        MessagesDAO.deleteConnectionMessages(connectionId).map(_.asRight[RevokeConnectionError])
+        MessagesDAO
+          .deleteConnectionMessages(connectionId)
+          .map(_.asRight[RevokeConnectionError])
       }
     } yield ()
 
     query.value
       .logSQLErrors(s"revoke connection, connection id - $connectionId", logger)
+      .transact(xa)
+  }
+
+  override def getConnection(
+      participant: ParticipantId,
+      id: ConnectionId
+  ): F[Option[ConnectionInfo]] = {
+    // finds the connection making sure it is accessible by the participant
+    def safeQuery =
+      ConnectionsDAO
+        .getRawConnection(id)
+        .map { maybe =>
+          maybe.filter(_.contains(participant))
+        }
+
+    val query = for {
+      rawConnection <- OptionT(safeQuery)
+
+      otherParticipantId = {
+        if (rawConnection.initiator == participant) rawConnection.acceptor
+        else rawConnection.initiator
+      }
+
+      otherParticipant <-
+        ParticipantsDAO
+          .findBy(otherParticipantId)
+    } yield ConnectionInfo(
+      rawConnection.id,
+      rawConnection.instantiatedAt,
+      otherParticipant,
+      rawConnection.token,
+      rawConnection.status
+    )
+
+    query.value
+      .logSQLErrors(
+        s"getConnection, id - $id, participant - $participant",
+        logger
+      )
       .transact(xa)
   }
 

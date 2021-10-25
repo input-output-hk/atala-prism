@@ -17,7 +17,12 @@ object Utils {
         model.MessageId
           .from(id)
           .fold(
-            _ => Failure(new IllegalArgumentException(s"Invalid value for $fieldName, expected valid id, got $id")),
+            _ =>
+              Failure(
+                new IllegalArgumentException(
+                  s"Invalid value for $fieldName, expected valid id, got $id"
+                )
+              ),
             id => Success(Some(id))
           )
     }
@@ -25,7 +30,9 @@ object Utils {
   def parseConnectionId(probablyConnectionId: String): Try[ConnectionId] =
     model.ConnectionId
       .from(probablyConnectionId)
-      .recoverWith { case _ => Failure(new IllegalArgumentException("Invalid connectionId value")) }
+      .recoverWith { case _ =>
+        Failure(new IllegalArgumentException("Invalid connectionId value"))
+      }
 
   def parseMessageId(messageId: String): Try[Option[MessageId]] = {
     val id = messageId.trim

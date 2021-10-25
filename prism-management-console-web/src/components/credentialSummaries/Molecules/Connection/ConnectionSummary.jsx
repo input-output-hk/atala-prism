@@ -7,7 +7,7 @@ import defaultIcon from '../../../../images/defaultCredentialImage.svg';
 
 import './_style.scss';
 
-const Connection = ({ credential, setConnectionInfo }) => {
+const ConnectionSummary = ({ credential, setConnectionInfo }) => {
   const { t } = useTranslation();
   const { icon, type = 'Credential', graduationDate } = credential;
 
@@ -33,15 +33,15 @@ const Connection = ({ credential, setConnectionInfo }) => {
   );
 };
 
-Connection.defaultProps = {
+ConnectionSummary.defaultProps = {
   icon: ''
 };
 
-Connection.propTypes = {
+ConnectionSummary.propTypes = {
   icon: PropTypes.string,
   type: PropTypes.string.isRequired,
   graduationDate: PropTypes.string.isRequired,
   setConnectionInfo: PropTypes.func.isRequired
 };
 
-export default Connection;
+export default ConnectionSummary;

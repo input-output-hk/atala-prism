@@ -23,20 +23,28 @@ trait EncryptedDataVaultService[F[_]] {
       did: DID,
       content: Vector[Byte]
   ): F[Payload]
-  def getByPaginated(did: DID, lastSeenId: Option[Payload.Id], limit: Int): F[List[Payload]]
+  def getByPaginated(
+      did: DID,
+      lastSeenId: Option[Payload.Id],
+      limit: Int
+  ): F[List[Payload]]
 }
 
 object EncryptedDataVaultService {
-  def create[F[_]: MonadThrow: ServiceLogging[*[_], EncryptedDataVaultService[F]]](
+  def create[
+      F[_]: MonadThrow: ServiceLogging[*[_], EncryptedDataVaultService[F]]
+  ](
       payloadsRepository: PayloadsRepository[F]
   ): EncryptedDataVaultService[F] = {
-    val logging: EncryptedDataVaultService[Mid[F, *]] = new EncyptedDataVaultServiceLogging
+    val logging: EncryptedDataVaultService[Mid[F, *]] =
+      new EncyptedDataVaultServiceLogging
     logging attach new EncyptedDataVaultServiceImpl(payloadsRepository)
   }
 }
 
-private final class EncyptedDataVaultServiceImpl[F[_]](payloadsRepository: PayloadsRepository[F])
-    extends EncryptedDataVaultService[F] {
+private final class EncyptedDataVaultServiceImpl[F[_]](
+    payloadsRepository: PayloadsRepository[F]
+) extends EncryptedDataVaultService[F] {
 
   override def storeData(
       externalId: Payload.ExternalId,
@@ -68,8 +76,9 @@ private final class EncyptedDataVaultServiceImpl[F[_]](payloadsRepository: Paylo
   }
 }
 
-private class EncyptedDataVaultServiceLogging[F[_]: MonadThrow: ServiceLogging[*[_], EncryptedDataVaultService[F]]]
-    extends EncryptedDataVaultService[Mid[F, *]] {
+private class EncyptedDataVaultServiceLogging[
+    F[_]: MonadThrow: ServiceLogging[*[_], EncryptedDataVaultService[F]]
+] extends EncryptedDataVaultService[Mid[F, *]] {
 
   override def storeData(
       externalId: Payload.ExternalId,
@@ -80,7 +89,9 @@ private class EncyptedDataVaultServiceLogging[F[_]: MonadThrow: ServiceLogging[*
     in =>
       info"storing data $externalId $did" *> in
         .flatTap(p => info"storing data - successfully done ${p.id}")
-        .onError { e => errorCause"encountered an error while storing data!" (e) }
+        .onError { e =>
+          errorCause"encountered an error while storing data!" (e)
+        }
 
   override def getByPaginated(
       did: DID,
@@ -90,5 +101,7 @@ private class EncyptedDataVaultServiceLogging[F[_]: MonadThrow: ServiceLogging[*
     in =>
       info"getting paginated data $did $lastSeenId" *> in
         .flatTap(p => info"getting paginated data - successfully done found ${p.size} entities")
-        .onError { e => errorCause"encountered an error while getting data by paginated!" (e) }
+        .onError { e =>
+          errorCause"encountered an error while getting data by paginated!" (e)
+        }
 }

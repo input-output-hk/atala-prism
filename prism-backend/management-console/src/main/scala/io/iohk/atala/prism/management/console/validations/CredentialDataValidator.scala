@@ -17,14 +17,19 @@ object CredentialDataValidationError {
 
   implicit val loggableCredentialDataValidationError: DictLoggable[CredentialDataValidationError] =
     new DictLoggable[CredentialDataValidationError] {
-      override def fields[I, V, R, S](a: CredentialDataValidationError, i: I)(implicit r: LogRenderer[I, V, R, S]): R =
+      override def fields[I, V, R, S](a: CredentialDataValidationError, i: I)(implicit
+          r: LogRenderer[I, V, R, S]
+      ): R =
         r.addString("CredentialDataValidationError", a.message, i)
 
       override def logShow(a: CredentialDataValidationError): String =
         s"CredentialDataValidationError{message=${a.message}"
     }
 
-  case object NotJsonObject extends CredentialDataValidationError(message = s"Credential data is not a JSON object")
+  case object NotJsonObject
+      extends CredentialDataValidationError(
+        message = s"Credential data is not a JSON object"
+      )
 
   case class FieldMissing(fieldName: String)
       extends CredentialDataValidationError(
@@ -89,7 +94,9 @@ object CredentialDataValidator {
       }
     }
 
-    def validateJsonObject(jsonObject: JsonObject): ValidatedNel[CredentialDataValidationError, Unit] = {
+    def validateJsonObject(
+        jsonObject: JsonObject
+    ): ValidatedNel[CredentialDataValidationError, Unit] = {
 
       credentialTypeWithRequiredFields.requiredFields
         .map { credentialTypeField =>
@@ -106,6 +113,8 @@ object CredentialDataValidator {
     }
 
     credentialData.asObject
-      .fold(Validated.invalidNel[CredentialDataValidationError, Unit](NotJsonObject))(validateJsonObject)
+      .fold(
+        Validated.invalidNel[CredentialDataValidationError, Unit](NotJsonObject)
+      )(validateJsonObject)
   }
 }

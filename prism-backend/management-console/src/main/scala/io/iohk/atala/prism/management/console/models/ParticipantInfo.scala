@@ -19,4 +19,7 @@ final case class ParticipantInfo(
     logo: Option[ParticipantLogo]
 )
 
-final case class UpdateParticipantProfile(name: String, logo: Option[ParticipantLogo])
+final case class UpdateParticipantProfile(
+    name: String,
+    logo: Option[ParticipantLogo]
+)

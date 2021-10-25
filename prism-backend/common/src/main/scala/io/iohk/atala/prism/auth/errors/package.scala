@@ -20,7 +20,9 @@ package object errors {
 
   case object CanonicalSuffixMatchStateError extends AuthError {
     override def toStatus: Status = {
-      Status.UNAUTHENTICATED.withDescription("PrismDid canonical suffix does not match the state content")
+      Status.UNAUTHENTICATED.withDescription(
+        "PrismDid canonical suffix does not match the state content"
+      )
     }
   }
 
@@ -32,7 +34,9 @@ package object errors {
 
   case object NoCreateDidOperationError extends AuthError {
     override def toStatus: Status = {
-      Status.UNAUTHENTICATED.withDescription("Encoded operation does not create a fresh PrismDid")
+      Status.UNAUTHENTICATED.withDescription(
+        "Encoded operation does not create a fresh PrismDid"
+      )
     }
   }
 
@@ -52,7 +56,9 @@ package object errors {
 
   final case class InternalServerError(cause: Throwable) extends AuthError with PrismServerError {
     override def toStatus: Status = {
-      Status.INTERNAL.withDescription("Internal server error. Please contact administrator.")
+      Status.INTERNAL.withDescription(
+        s"Internal server error, cause: ${cause.getMessage}. Please contact administrator."
+      )
     }
   }
 }

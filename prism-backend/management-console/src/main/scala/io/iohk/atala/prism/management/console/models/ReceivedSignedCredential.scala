@@ -17,7 +17,10 @@ class CredentialExternalId private (val value: String) extends AnyVal
 
 object CredentialExternalId {
   def apply(value: String): CredentialExternalId = {
-    require(value.trim.nonEmpty, "External credential id must contain at least one non-whitespace character")
+    require(
+      value.trim.nonEmpty,
+      "External credential id must contain at least one non-whitespace character"
+    )
     new CredentialExternalId(value)
   }
 

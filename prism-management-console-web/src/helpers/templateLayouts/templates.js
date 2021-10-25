@@ -61,15 +61,13 @@ export const configureHtmlTemplate = (templateId, currentConfig) => {
   const htmlTemplate = templateLayouts[templateId];
   const configuredHeader = updateHeader(htmlTemplate, currentConfig);
   const configuredBody = updateBody(htmlTemplate, currentConfig);
-  const mergedHtml = replacePlaceholdersFromObject(
+  return replacePlaceholdersFromObject(
     configuredHeader,
     { attributes: '{{#attributes}}' },
     {
       attributes: configuredBody
     }
   );
-
-  return mergedHtml;
 };
 
 // replaces {{placeholders}} with object value (unless the value is undefined).
@@ -112,12 +110,10 @@ export const updateImages = async templateSketch => {
     ? await getBase64(userIcon[0].originFileObj)
     : embeddedUserIcon;
 
-  const images = {
+  return {
     embeddedCompanyLogo: newEmbeddedCompanyLogo,
     embeddedUserIcon: newEmbeddedUserIcon
   };
-
-  return images;
 };
 
 const getBase64 = file =>

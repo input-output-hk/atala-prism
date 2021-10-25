@@ -19,7 +19,10 @@ import tofu.higherKind.Mid
 import tofu.logging.ServiceLogging
 import tofu.syntax.logging._
 
-class MessagesServiceLogs[S[_], F[_]: ServiceLogging[*[_], MessagesService[S, F]]: MonadThrow]
+class MessagesServiceLogs[S[_], F[_]: ServiceLogging[
+  *[_],
+  MessagesService[S, F]
+]: MonadThrow]
     extends MessagesService[S, Mid[F, *]] {
   override def insertMessage(
       sender: ParticipantId,
@@ -30,12 +33,11 @@ class MessagesServiceLogs[S[_], F[_]: ServiceLogging[*[_], MessagesService[S, F]
     in =>
       info"Inserting message $sender $connection" *>
         in.flatTap(
-            _.fold(
-              e => error"Encountered an error while inserting message ${e.unify: ConnectorError}",
-              messageId => info"Inserting message - successfully done $messageId"
-            )
+          _.fold(
+            e => error"Encountered an error while inserting message ${e.unify: ConnectorError}",
+            messageId => info"Inserting message - successfully done $messageId"
           )
-          .onError(errorCause"Encountered an error while inserting message" (_))
+        ).onError(errorCause"Encountered an error while inserting message" (_))
 
   override def insertMessages(
       sender: ParticipantId,
@@ -44,12 +46,11 @@ class MessagesServiceLogs[S[_], F[_]: ServiceLogging[*[_], MessagesService[S, F]
     in =>
       info"Inserting messages $sender ${messages.size}" *>
         in.flatTap(
-            _.fold(
-              e => error"Encountered an error while inserting messages ${e.unify: ConnectorError}",
-              result => info"Inserting messages - successfully done, inserted ${result.size} messages"
-            )
+          _.fold(
+            e => error"Encountered an error while inserting messages ${e.unify: ConnectorError}",
+            result => info"Inserting messages - successfully done, inserted ${result.size} messages"
           )
-          .onError(errorCause"Encountered an error while inserting message" (_))
+        ).onError(errorCause"Encountered an error while inserting message" (_))
 
   override def getMessagesPaginated(
       recipientId: ParticipantId,
@@ -59,12 +60,13 @@ class MessagesServiceLogs[S[_], F[_]: ServiceLogging[*[_], MessagesService[S, F]
     in =>
       info"Getting messages paginated $recipientId" *>
         in.flatTap(
-            _.fold(
-              e => error"Encountered an error while getting messages paginated ${e.unify: ConnectorError}",
-              result => info"Getting messages paginated - successfully done, got ${result.size} messages"
-            )
+          _.fold(
+            e => error"Encountered an error while getting messages paginated ${e.unify: ConnectorError}",
+            result => info"Getting messages paginated - successfully done, got ${result.size} messages"
           )
-          .onError(errorCause"Encountered an error while getting messages paginated" (_))
+        ).onError(
+          errorCause"Encountered an error while getting messages paginated" (_)
+        )
 
   // Wont be called since we use Mid for F only
   override def getMessageStream(
@@ -72,9 +74,14 @@ class MessagesServiceLogs[S[_], F[_]: ServiceLogging[*[_], MessagesService[S, F]
       lastSeenMessageId: Option[MessageId]
   ): S[Message] = ???
 
-  override def getConnectionMessages(recipientId: ParticipantId, connectionId: ConnectionId): Mid[F, List[Message]] =
+  override def getConnectionMessages(
+      recipientId: ParticipantId,
+      connectionId: ConnectionId
+  ): Mid[F, List[Message]] =
     in =>
       info"Getting connection messages $recipientId" *>
         in.flatTap(result => info"Getting connection messages - successfully done, got ${result.size} messages")
-          .onError(errorCause"Encountered an error while getting connection messages" (_))
+          .onError(
+            errorCause"Encountered an error while getting connection messages" (_)
+          )
 }

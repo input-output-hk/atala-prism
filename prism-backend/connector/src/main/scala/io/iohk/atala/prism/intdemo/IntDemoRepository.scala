@@ -14,28 +14,39 @@ import scala.concurrent.Future
 
 class IntDemoRepository(xa: Transactor[IO]) {
 
-  def mergeSubjectStatus(token: TokenString, status: intdemo_models.SubjectStatus): Future[Int] = {
+  def mergeSubjectStatus(
+      token: TokenString,
+      status: intdemo_models.SubjectStatus
+  ): Future[Int] = {
     IntDemoRepository
       .mergeStatus(token.token, valueOf(status))
       .transact(xa)
       .unsafeToFuture()
   }
 
-  def findSubjectStatus(token: TokenString): Future[Option[intdemo_models.SubjectStatus]] = {
+  def findSubjectStatus(
+      token: TokenString
+  ): Future[Option[intdemo_models.SubjectStatus]] = {
     IntDemoRepository
       .findStatus(token.token)
       .transact(xa)
       .unsafeToFuture()
   }
 
-  def mergePersonalInfo(token: TokenString, firstName: String, dateOfBirth: LocalDate): Future[Int] = {
+  def mergePersonalInfo(
+      token: TokenString,
+      firstName: String,
+      dateOfBirth: LocalDate
+  ): Future[Int] = {
     IntDemoRepository
       .mergePersonalInfo(token.token, firstName, dateOfBirth)
       .transact(xa)
       .unsafeToFuture()
   }
 
-  def findPersonalInfo(token: TokenString): Future[Option[(String, LocalDate)]] = {
+  def findPersonalInfo(
+      token: TokenString
+  ): Future[Option[(String, LocalDate)]] = {
     IntDemoRepository
       .findPersonalInfo(token.token)
       .transact(xa)
@@ -51,11 +62,16 @@ object IntDemoRepository {
 
   def valueOf(status: intdemo_models.SubjectStatus): Int =
     status match {
-      case intdemo_models.SubjectStatus.UNCONNECTED => intdemo_models.SubjectStatus.UNCONNECTED.value
-      case intdemo_models.SubjectStatus.CONNECTED => intdemo_models.SubjectStatus.CONNECTED.value
-      case intdemo_models.SubjectStatus.CREDENTIAL_AVAILABLE => intdemo_models.SubjectStatus.CREDENTIAL_AVAILABLE.value
-      case intdemo_models.SubjectStatus.CREDENTIAL_SENT => intdemo_models.SubjectStatus.CREDENTIAL_SENT.value
-      case intdemo_models.SubjectStatus.CREDENTIAL_RECEIVED => intdemo_models.SubjectStatus.CREDENTIAL_RECEIVED.value
+      case intdemo_models.SubjectStatus.UNCONNECTED =>
+        intdemo_models.SubjectStatus.UNCONNECTED.value
+      case intdemo_models.SubjectStatus.CONNECTED =>
+        intdemo_models.SubjectStatus.CONNECTED.value
+      case intdemo_models.SubjectStatus.CREDENTIAL_AVAILABLE =>
+        intdemo_models.SubjectStatus.CREDENTIAL_AVAILABLE.value
+      case intdemo_models.SubjectStatus.CREDENTIAL_SENT =>
+        intdemo_models.SubjectStatus.CREDENTIAL_SENT.value
+      case intdemo_models.SubjectStatus.CREDENTIAL_RECEIVED =>
+        intdemo_models.SubjectStatus.CREDENTIAL_RECEIVED.value
       case intdemo_models.SubjectStatus.Unrecognized(value) => value
     }
 
@@ -85,7 +101,9 @@ object IntDemoRepository {
 
   }
 
-  def findStatus(token: String): doobie.ConnectionIO[Option[intdemo_models.SubjectStatus]] = {
+  def findStatus(
+      token: String
+  ): doobie.ConnectionIO[Option[intdemo_models.SubjectStatus]] = {
     sql"""
          |SELECT status FROM intdemo_credential_status
          |WHERE token = $token
@@ -95,7 +113,9 @@ object IntDemoRepository {
       .option
   }
 
-  def findPersonalInfo(token: String): doobie.ConnectionIO[Option[(String, LocalDate)]] = {
+  def findPersonalInfo(
+      token: String
+  ): doobie.ConnectionIO[Option[(String, LocalDate)]] = {
     sql"""
          |SELECT first_name, date_of_birth
          |FROM intdemo_id_personal_info

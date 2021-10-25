@@ -98,10 +98,9 @@ class CardanoLedgerService[F[_]: MonadThrow] private[services] (
       liftToFuture
         .lift(
           syncAtalaObjects()
-            .recover {
-              case e =>
-                logger.error(s"Could not sync Atala objects", e)
-                false
+            .recover { case e =>
+              logger.error(s"Could not sync Atala objects", e)
+              false
             }
         )
         .onComplete { pendingBlocksToSync =>
@@ -116,8 +115,7 @@ class CardanoLedgerService[F[_]: MonadThrow] private[services] (
     ()
   }
 
-  /**
-    * Syncs Atala objects from blocks and returns whether there are remaining blocks to sync.
+  /** Syncs Atala objects from blocks and returns whether there are remaining blocks to sync.
     */
   private[services] def syncAtalaObjects(): F[Boolean] = {
     val tId = TraceId.generateYOLO
@@ -129,7 +127,10 @@ class CardanoLedgerService[F[_]: MonadThrow] private[services] (
       )
       lastConfirmedBlockNo = latestBlock.header.blockNo - blockConfirmationsToWait
       syncStart = lastSyncedBlockNo + 1
-      syncEnd = math.min(lastConfirmedBlockNo, lastSyncedBlockNo + MAX_SYNC_BLOCKS)
+      syncEnd = math.min(
+        lastConfirmedBlockNo,
+        lastSyncedBlockNo + MAX_SYNC_BLOCKS
+      )
       _ <- syncBlocks(syncStart to syncEnd)
     } yield lastConfirmedBlockNo > syncEnd
   }
@@ -138,12 +139,11 @@ class CardanoLedgerService[F[_]: MonadThrow] private[services] (
     if (blockNos.isEmpty) {
       ().pure[F]
     } else {
-      blockNos.foldLeft(().pure[F]) {
-        case (previous, blockNo) =>
-          for {
-            _ <- previous
-            _ <- syncBlock(blockNo)
-          } yield ()
+      blockNos.foldLeft(().pure[F]) { case (previous, blockNo) =>
+        for {
+          _ <- previous
+          _ <- syncBlock(blockNo)
+        } yield ()
       }
     }
   }
@@ -171,14 +171,20 @@ class CardanoLedgerService[F[_]: MonadThrow] private[services] (
           transactionId = transaction.id,
           ledger = getType,
           block = Some(
-            BlockInfo(number = block.header.blockNo, timestamp = block.header.time, index = transaction.blockIndex)
+            BlockInfo(
+              number = block.header.blockNo,
+              timestamp = block.header.time,
+              index = transaction.blockIndex
+            )
           )
         )
       )
     } yield notification
 
     if (notifications.nonEmpty) {
-      logger.info(s"Found ${notifications.size} Atala objects in block ${block.header.blockNo}")
+      logger.info(
+        s"Found ${notifications.size} Atala objects in block ${block.header.blockNo}"
+      )
     }
 
     for {
@@ -193,7 +199,10 @@ class CardanoLedgerService[F[_]: MonadThrow] private[services] (
       .setMany(
         List(
           KeyValue(LAST_SYNCED_BLOCK_NO, Some(block.header.blockNo.toString)),
-          KeyValue(LAST_SYNCED_BLOCK_TIMESTAMP, Some(timestampEpochMilli.toString))
+          KeyValue(
+            LAST_SYNCED_BLOCK_TIMESTAMP,
+            Some(timestampEpochMilli.toString)
+          )
         )
       )
   }
@@ -269,7 +278,11 @@ object CardanoLedgerService {
   ): UnderlyingLedger[F] = {
     val walletId = WalletId
       .from(config.walletId)
-      .getOrElse(throw new IllegalArgumentException(s"Wallet ID ${config.walletId} is invalid"))
+      .getOrElse(
+        throw new IllegalArgumentException(
+          s"Wallet ID ${config.walletId} is invalid"
+        )
+      )
     val walletPassphrase = config.walletPassphrase
     val paymentAddress = Address(config.paymentAddress)
 
@@ -289,7 +302,10 @@ object CardanoLedgerService {
     ).extract
   }
 
-  def calculateLastSyncedBlockNo(maybeLastSyncedBlockNo: Option[Int], blockNumberSyncStart: Int): Int =
+  def calculateLastSyncedBlockNo(
+      maybeLastSyncedBlockNo: Option[Int],
+      blockNumberSyncStart: Int
+  ): Int =
     math.max(maybeLastSyncedBlockNo.getOrElse(0), blockNumberSyncStart - 1)
 
 }

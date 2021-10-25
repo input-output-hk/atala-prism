@@ -94,8 +94,10 @@ object CredentialIssuancesRepository {
       serviceLogs <- logs.service[CredentialIssuancesRepository[F]]
     } yield {
       implicit val implicitLogs: ServiceLogging[F, CredentialIssuancesRepository[F]] = serviceLogs
-      val metrics: CredentialIssuancesRepository[Mid[F, *]] = new CredentialIssuancesRepositoryMetrics[F]
-      val logs: CredentialIssuancesRepository[Mid[F, *]] = new CredentialIssuancesRepositoryLogs[F]
+      val metrics: CredentialIssuancesRepository[Mid[F, *]] =
+        new CredentialIssuancesRepositoryMetrics[F]
+      val logs: CredentialIssuancesRepository[Mid[F, *]] =
+        new CredentialIssuancesRepositoryLogs[F]
       val mid = metrics |+| logs
       mid attach new CredentialIssuancesRepositoryImpl[F](transactor)
     }
@@ -103,7 +105,8 @@ object CredentialIssuancesRepository {
   def unsafe[F[_]: TimeMeasureMetric: BracketThrow, R[_]: Comonad](
       transactor: Transactor[F],
       logs: Logs[R, F]
-  ): CredentialIssuancesRepository[F] = CredentialIssuancesRepository(transactor, logs).extract
+  ): CredentialIssuancesRepository[F] =
+    CredentialIssuancesRepository(transactor, logs).extract
 
   def makeResource[F[_]: TimeMeasureMetric: BracketThrow, R[_]: Monad](
       transactor: Transactor[F],
@@ -115,8 +118,9 @@ object CredentialIssuancesRepository {
 
 }
 
-private final class CredentialIssuancesRepositoryImpl[F[_]: BracketThrow](xa: Transactor[F])
-    extends CredentialIssuancesRepository[F] {
+private final class CredentialIssuancesRepositoryImpl[F[_]: BracketThrow](
+    xa: Transactor[F]
+) extends CredentialIssuancesRepository[F] {
   import CredentialIssuancesRepository._
 
   val logger: Logger = LoggerFactory.getLogger(getClass)
@@ -124,7 +128,9 @@ private final class CredentialIssuancesRepositoryImpl[F[_]: BracketThrow](xa: Tr
   private def createContacts(
       createCredentialIssuance: CreateCredentialIssuance,
       credentialIssuanceId: CredentialIssuance.Id
-  ): ConnectionIO[List[(CreateCredentialIssuanceContact, CredentialIssuance.ContactId)]] = {
+  ): ConnectionIO[
+    List[(CreateCredentialIssuanceContact, CredentialIssuance.ContactId)]
+  ] = {
     createCredentialIssuance.contacts.map { contact =>
       CredentialIssuancesDAO
         .createContact(
@@ -140,7 +146,9 @@ private final class CredentialIssuancesRepositoryImpl[F[_]: BracketThrow](xa: Tr
   private def createGroups(
       createCredentialIssuance: CreateCredentialIssuance,
       credentialIssuanceId: CredentialIssuance.Id
-  ): ConnectionIO[List[(InstitutionGroup.Id, CredentialIssuance.ContactGroupId)]] = {
+  ): ConnectionIO[
+    List[(InstitutionGroup.Id, CredentialIssuance.ContactGroupId)]
+  ] = {
     createCredentialIssuance.contacts
       .flatten(_.groupIds)
       .distinct
@@ -159,43 +167,56 @@ private final class CredentialIssuancesRepositoryImpl[F[_]: BracketThrow](xa: Tr
 
   private def linkContactsToCredentialIssuance(
       credentialIssuanceId: CredentialIssuance.Id,
-      contactsWithIds: List[(CreateCredentialIssuanceContact, CredentialIssuance.ContactId)],
-      issuanceGroupIdByGroupId: Map[InstitutionGroup.Id, CredentialIssuance.ContactGroupId]
+      contactsWithIds: List[
+        (CreateCredentialIssuanceContact, CredentialIssuance.ContactId)
+      ],
+      issuanceGroupIdByGroupId: Map[
+        InstitutionGroup.Id,
+        CredentialIssuance.ContactGroupId
+      ]
   ): ConnectionIO[List[Unit]] = {
-    contactsWithIds.flatten {
-      case (contact, issuanceContactId) =>
-        if (contact.groupIds.isEmpty) {
-          // Add contact directly to the credential issuance as it does not belong to any group
-          List(CredentialIssuancesDAO.addContactToCredentialIssuance(issuanceContactId, credentialIssuanceId))
-        } else {
-          // Associate the contact to the groups it belongs to, implicitly associating it with the credential
-          // issuance
-          contact.groupIds.map(groupId =>
-            CredentialIssuancesDAO.addContactToGroup(issuanceContactId, issuanceGroupIdByGroupId(groupId))
+    contactsWithIds.flatten { case (contact, issuanceContactId) =>
+      if (contact.groupIds.isEmpty) {
+        // Add contact directly to the credential issuance as it does not belong to any group
+        List(
+          CredentialIssuancesDAO.addContactToCredentialIssuance(
+            issuanceContactId,
+            credentialIssuanceId
           )
-        }
+        )
+      } else {
+        // Associate the contact to the groups it belongs to, implicitly associating it with the credential
+        // issuance
+        contact.groupIds.map(groupId =>
+          CredentialIssuancesDAO.addContactToGroup(
+            issuanceContactId,
+            issuanceGroupIdByGroupId(groupId)
+          )
+        )
+      }
     }.sequence
   }
 
   private def createGenericCredentials(
       participantId: ParticipantId,
       createCredentialIssuance: CreateCredentialIssuance,
-      contactsWithIds: List[(CreateCredentialIssuanceContact, CredentialIssuance.ContactId)]
+      contactsWithIds: List[
+        (CreateCredentialIssuanceContact, CredentialIssuance.ContactId)
+      ]
   ): ConnectionIO[List[GenericCredential]] = {
-    contactsWithIds.map {
-      case (contact, issuanceContactId) =>
-        CredentialsDAO
-          .create(
-            participantId,
-            contact.contactId,
-            CreateGenericCredential(
-              credentialData = contact.credentialData,
-              credentialIssuanceContactId = Some(issuanceContactId),
-              credentialTypeId = createCredentialIssuance.credentialTypeId,
-              contactId = None,
-              externalId = None
-            )
+    contactsWithIds.map { case (contact, issuanceContactId) =>
+      CredentialsDAO
+        .create(
+          participantId,
+          contact.contactId,
+          CreateGenericCredential(
+            credentialData = contact.credentialData,
+            credentialIssuanceContactId = Some(issuanceContactId),
+            credentialTypeId = createCredentialIssuance.credentialTypeId,
+            contactId = None,
+            externalId = None
           )
+        )
     }.sequence
   }
 
@@ -203,12 +224,17 @@ private final class CredentialIssuancesRepositoryImpl[F[_]: BracketThrow](xa: Tr
       credentialTypeWithRequiredFields: CredentialTypeWithRequiredFields,
       createCredentialIssuance: CreateCredentialIssuance
   ): EitherT[ConnectionIO, ManagementConsoleError, Unit] = {
-    val contactsWithInvalidCredentialData = createCredentialIssuance.contacts.flatMap { contact =>
-      CredentialDataValidator.validate(credentialTypeWithRequiredFields, contact.credentialData) match {
-        case Valid(_) => None
-        case Invalid(errors) => Some((contact.contactId, contact.credentialData, errors.toList))
+    val contactsWithInvalidCredentialData =
+      createCredentialIssuance.contacts.flatMap { contact =>
+        CredentialDataValidator.validate(
+          credentialTypeWithRequiredFields,
+          contact.credentialData
+        ) match {
+          case Valid(_) => None
+          case Invalid(errors) =>
+            Some((contact.contactId, contact.credentialData, errors.toList))
+        }
       }
-    }
 
     if (contactsWithInvalidCredentialData.nonEmpty) {
       EitherT.fromEither[ConnectionIO](
@@ -232,23 +258,41 @@ private final class CredentialIssuancesRepositoryImpl[F[_]: BracketThrow](xa: Tr
     for {
       // validate credential data
       credentialTypeWithRequiredFields <- EitherT(
-        CredentialTypeDao.findValidated(createCredentialIssuance.credentialTypeId, participantId)
+        CredentialTypeDao.findValidated(
+          createCredentialIssuance.credentialTypeId,
+          participantId
+        )
       )
-      _ <- validateCredentialData(credentialTypeWithRequiredFields, createCredentialIssuance)
+      _ <- validateCredentialData(
+        credentialTypeWithRequiredFields,
+        createCredentialIssuance
+      )
       // Validate contacts
-      contacts <- EitherT.right[ManagementConsoleError](ContactsDAO.findContacts(participantId, contactIds))
+      contacts <- EitherT.right[ManagementConsoleError](
+        ContactsDAO.findContacts(participantId, contactIds)
+      )
       _ <-
         if (contacts.size != contactIds.size)
-          EitherT.leftT[ConnectionIO, Unit](ContactIdsWereNotFound(contactIds.toSet -- contacts.map(_.contactId)))
+          EitherT.leftT[ConnectionIO, Unit](
+            ContactIdsWereNotFound(
+              contactIds.toSet -- contacts.map(_.contactId)
+            )
+          )
         else
           EitherT.rightT[ConnectionIO, ManagementConsoleError](())
       // Validate groups
-      groups <- EitherT.right[ManagementConsoleError](InstitutionGroupsDAO.getBy(participantId))
+      groups <- EitherT.right[ManagementConsoleError](
+        InstitutionGroupsDAO.getBy(participantId)
+      )
       validGroupIds = groups.map(_.value.id).toSet
-      requestGroupIds = createCredentialIssuance.contacts.flatMap(_.groupIds).to(Set)
+      requestGroupIds = createCredentialIssuance.contacts
+        .flatMap(_.groupIds)
+        .to(Set)
       _ <-
         if (!requestGroupIds.subsetOf(validGroupIds))
-          EitherT.leftT[ConnectionIO, Unit][ManagementConsoleError](InvalidGroups(requestGroupIds -- validGroupIds))
+          EitherT.leftT[ConnectionIO, Unit][ManagementConsoleError](
+            InvalidGroups(requestGroupIds -- validGroupIds)
+          )
         else
           EitherT.rightT[ConnectionIO, ManagementConsoleError](())
     } yield ()
@@ -264,20 +308,37 @@ private final class CredentialIssuancesRepositoryImpl[F[_]: BracketThrow](xa: Tr
       case Right(_) =>
         for {
           // Create the credential issuance
-          credentialIssuanceId <- CredentialIssuancesDAO.createCredentialIssuance(
-            createCredentialIssuance.into[CredentialIssuancesDAO.CreateCredentialIssuance].transform,
-            participantId
-          )
+          credentialIssuanceId <- CredentialIssuancesDAO
+            .createCredentialIssuance(
+              createCredentialIssuance
+                .into[CredentialIssuancesDAO.CreateCredentialIssuance]
+                .transform,
+              participantId
+            )
           // Create the contacts (not associated to the issuance yet)
-          contactsWithIds <- createContacts(createCredentialIssuance, credentialIssuanceId)
+          contactsWithIds <- createContacts(
+            createCredentialIssuance,
+            credentialIssuanceId
+          )
           // Create the groups the credential issuance was created from
-          groupIds <- createGroups(createCredentialIssuance, credentialIssuanceId)
+          groupIds <- createGroups(
+            createCredentialIssuance,
+            credentialIssuanceId
+          )
           // Map the group IDs so we can add contacts to them
           issuanceGroupIdByGroupId = groupIds.toMap
           // Associate each contact with the groups it belongs to, or add it to the credential issuance directly otherwise
-          _ <- linkContactsToCredentialIssuance(credentialIssuanceId, contactsWithIds, issuanceGroupIdByGroupId)
+          _ <- linkContactsToCredentialIssuance(
+            credentialIssuanceId,
+            contactsWithIds,
+            issuanceGroupIdByGroupId
+          )
           // Create the credentials
-          _ <- createGenericCredentials(participantId, createCredentialIssuance, contactsWithIds)
+          _ <- createGenericCredentials(
+            participantId,
+            createCredentialIssuance,
+            contactsWithIds
+          )
         } yield credentialIssuanceId.asRight[ManagementConsoleError]
     }
   }
@@ -287,7 +348,10 @@ private final class CredentialIssuancesRepositoryImpl[F[_]: BracketThrow](xa: Tr
       createCredentialIssuance: CreateCredentialIssuance
   ): F[Either[ManagementConsoleError, CredentialIssuance.Id]] =
     createQuery(participantId, createCredentialIssuance)
-      .logSQLErrors(s"creating credential issuance, participant id - $participantId", logger)
+      .logSQLErrors(
+        s"creating credential issuance, participant id - $participantId",
+        logger
+      )
       .transact(xa)
 
   def createBulk(
@@ -301,10 +365,14 @@ private final class CredentialIssuancesRepositoryImpl[F[_]: BracketThrow](xa: Tr
         for {
           contact <- EitherT.fromOptionF(
             ContactsDAO.findContact(participantId, draft.externalId),
-            ExternalIdsWereNotFound(Set(draft.externalId)): ManagementConsoleError
+            ExternalIdsWereNotFound(
+              Set(draft.externalId)
+            ): ManagementConsoleError
           )
           // Validate groups
-          groups <- EitherT.right[ManagementConsoleError](InstitutionGroupsDAO.getBy(participantId))
+          groups <- EitherT.right[ManagementConsoleError](
+            InstitutionGroupsDAO.getBy(participantId)
+          )
           validGroupIds = groups.map(_.value.id).toSet
           _ <-
             if (draft.groupIds.exists(x => !validGroupIds.contains(x)))
@@ -329,11 +397,16 @@ private final class CredentialIssuancesRepositoryImpl[F[_]: BracketThrow](xa: Tr
         credentialTypeId = credentialsType,
         contacts = contactsEntries
       )
-      credentialId <- EitherT(createQuery(participantId, createCredentialIssuance))
+      credentialId <- EitherT(
+        createQuery(participantId, createCredentialIssuance)
+      )
     } yield credentialId
 
     query.value
-      .logSQLErrors(s"creating bulk credential issuance, participant id - $participantId", logger)
+      .logSQLErrors(
+        s"creating bulk credential issuance, participant id - $participantId",
+        logger
+      )
       .transact(xa)
   }
 
@@ -344,20 +417,38 @@ private final class CredentialIssuancesRepositoryImpl[F[_]: BracketThrow](xa: Tr
     val query = for {
       // Get the issuance first, as contacts are queried later
       issuanceWithoutContacts <-
-        CredentialIssuancesDAO.getCredentialIssuanceWithoutContacts(credentialIssuanceId, institutionId)
+        CredentialIssuancesDAO.getCredentialIssuanceWithoutContacts(
+          credentialIssuanceId,
+          institutionId
+        )
       // Get the contacts without contacts, as they are queried later
-      contactsWithoutGroups <- CredentialIssuancesDAO.listContactsWithoutGroups(credentialIssuanceId)
+      contactsWithoutGroups <- CredentialIssuancesDAO.listContactsWithoutGroups(
+        credentialIssuanceId
+      )
       // Determine which contacts belong to which group
-      groupsPerContactList <- CredentialIssuancesDAO.listGroupsPerContact(credentialIssuanceId)
-      groupsPerContact = groupsPerContactList.groupMap(_._1)(_._2).withDefaultValue(List())
+      groupsPerContactList <- CredentialIssuancesDAO.listGroupsPerContact(
+        credentialIssuanceId
+      )
+      groupsPerContact = groupsPerContactList
+        .groupMap(_._1)(_._2)
+        .withDefaultValue(List())
       contacts = contactsWithoutGroups.map { contact =>
-        contact.into[CredentialIssuanceContact].withFieldConst(_.groupIds, groupsPerContact(contact.id)).transform
+        contact
+          .into[CredentialIssuanceContact]
+          .withFieldConst(_.groupIds, groupsPerContact(contact.id))
+          .transform
       }
-      issuance = issuanceWithoutContacts.into[CredentialIssuance].withFieldConst(_.contacts, contacts).transform
+      issuance = issuanceWithoutContacts
+        .into[CredentialIssuance]
+        .withFieldConst(_.contacts, contacts)
+        .transform
     } yield issuance
 
     query
-      .logSQLErrors(s"getting credential, issuance id - $credentialIssuanceId", logger)
+      .logSQLErrors(
+        s"getting credential, issuance id - $credentialIssuanceId",
+        logger
+      )
       .transact(xa)
   }
 }

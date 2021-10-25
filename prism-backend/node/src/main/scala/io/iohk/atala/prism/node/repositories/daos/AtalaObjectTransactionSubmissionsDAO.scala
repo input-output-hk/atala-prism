@@ -23,7 +23,9 @@ object AtalaObjectTransactionSubmissionsDAO {
          |    AND transaction_id = $transactionId
        """.stripMargin
 
-  def insert(submission: AtalaObjectTransactionSubmission): ConnectionIO[AtalaObjectTransactionSubmission] = {
+  def insert(
+      submission: AtalaObjectTransactionSubmission
+  ): ConnectionIO[AtalaObjectTransactionSubmission] = {
     sql"""
          |INSERT INTO atala_object_tx_submissions
          |    (atala_object_id, ledger, transaction_id, submission_timestamp, status)
@@ -79,5 +81,6 @@ object AtalaObjectTransactionSubmissionsDAO {
       ledger: Ledger,
       transactionId: TransactionId,
       status: AtalaObjectTransactionSubmissionStatus
-  ): ConnectionIO[Unit] = updateStatusSql(ledger, transactionId, status).update.run.void
+  ): ConnectionIO[Unit] =
+    updateStatusSql(ledger, transactionId, status).update.run.void
 }

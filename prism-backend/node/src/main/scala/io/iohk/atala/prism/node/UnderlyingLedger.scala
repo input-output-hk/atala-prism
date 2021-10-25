@@ -17,4 +17,7 @@ trait UnderlyingLedger[F[_]] {
   def deleteTransaction(transactionId: TransactionId): F[Either[CardanoWalletError, Unit]]
 }
 
-case class PublicationInfo(transaction: TransactionInfo, status: TransactionStatus)
+case class PublicationInfo(
+    transaction: TransactionInfo,
+    status: TransactionStatus
+)

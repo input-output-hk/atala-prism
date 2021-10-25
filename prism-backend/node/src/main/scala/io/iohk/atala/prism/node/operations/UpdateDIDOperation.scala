@@ -26,44 +26,72 @@ case class UpdateDIDOperation(
     ledgerData: nodeState.LedgerData
 ) extends Operation {
 
-  override def linkedPreviousOperation: Option[Sha256Digest] = Some(previousOperation)
+  override def linkedPreviousOperation: Option[Sha256Digest] = Some(
+    previousOperation
+  )
 
   /** Fetches key and possible previous operation reference from database */
-  override def getCorrectnessData(keyId: String): EitherT[ConnectionIO, StateError, CorrectnessData] = {
+  override def getCorrectnessData(
+      keyId: String
+  ): EitherT[ConnectionIO, StateError, CorrectnessData] = {
     for {
       lastOperation <- EitherT[ConnectionIO, StateError, Sha256Digest] {
         DIDDataDAO
           .getLastOperation(didSuffix)
-          .map(_.toRight(StateError.EntityMissing("did suffix", didSuffix.getValue)))
+          .map(
+            _.toRight(
+              StateError.EntityMissing("did suffix", didSuffix.getValue)
+            )
+          )
       }
       key <- EitherT[ConnectionIO, StateError, DIDPublicKeyState] {
-        PublicKeysDAO.find(didSuffix, keyId).map(_.toRight(StateError.UnknownKey(didSuffix, keyId)))
+        PublicKeysDAO
+          .find(didSuffix, keyId)
+          .map(_.toRight(StateError.UnknownKey(didSuffix, keyId)))
       }.subflatMap { didKey =>
-        Either.cond(didKey.keyUsage == KeyUsage.MasterKey, didKey.key, StateError.InvalidKeyUsed("master key"))
+        Either.cond(
+          didKey.keyUsage == KeyUsage.MasterKey,
+          didKey.key,
+          StateError.InvalidKeyUsed("master key")
+        )
       }
     } yield CorrectnessData(key, Some(lastOperation))
   }
 
-  protected def applyAction(action: UpdateDIDAction): EitherT[ConnectionIO, StateError, Unit] = {
+  protected def applyAction(
+      action: UpdateDIDAction
+  ): EitherT[ConnectionIO, StateError, Unit] = {
     action match {
       case AddKeyAction(key) =>
         EitherT {
-          PublicKeysDAO.insert(key, ledgerData).attemptSomeSqlState {
-            case sqlstate.class23.UNIQUE_VIOLATION =>
-              EntityExists("DID suffix", didSuffix.getValue): StateError
+          PublicKeysDAO.insert(key, ledgerData).attemptSomeSqlState { case sqlstate.class23.UNIQUE_VIOLATION =>
+            EntityExists("DID suffix", didSuffix.getValue): StateError
           }
         }
       case RevokeKeyAction(keyId) =>
         for {
           _ <- EitherT[ConnectionIO, StateError, DIDPublicKeyState] {
-            PublicKeysDAO.find(didSuffix, keyId).map(_.toRight(StateError.EntityMissing("key", keyId)))
+            PublicKeysDAO
+              .find(didSuffix, keyId)
+              .map(_.toRight(StateError.EntityMissing("key", keyId)))
           }.subflatMap { didKey =>
-            Either.cond(didKey.revokedOn.isEmpty, didKey.key, StateError.KeyAlreadyRevoked())
+            Either.cond(
+              didKey.revokedOn.isEmpty,
+              didKey.key,
+              StateError.KeyAlreadyRevoked()
+            )
           }
-          result <- EitherT.right[StateError](PublicKeysDAO.revoke(didSuffix, keyId, ledgerData)).subflatMap {
-            wasRemoved =>
-              Either.cond(wasRemoved, (), StateError.EntityMissing("key", keyId))
-          }
+          result <- EitherT
+            .right[StateError](
+              PublicKeysDAO.revoke(didSuffix, keyId, ledgerData)
+            )
+            .subflatMap { wasRemoved =>
+              Either.cond(
+                wasRemoved,
+                (),
+                StateError.EntityMissing("key", keyId)
+              )
+            }
         } yield result
     }
   }
@@ -80,7 +108,9 @@ case class UpdateDIDOperation(
     type ConnectionIOEitherTError[T] = EitherT[ConnectionIO, StateError, T]
 
     for {
-      countUpdated <- EitherT.right(DIDDataDAO.updateLastOperation(didSuffix, digest))
+      countUpdated <- EitherT.right(
+        DIDDataDAO.updateLastOperation(didSuffix, digest)
+      )
       _ <- EitherT.cond[ConnectionIO](
         countUpdated == 1,
         unit,
@@ -100,7 +130,9 @@ object UpdateDIDOperation extends OperationCompanion[UpdateDIDOperation] {
     if (action(_.action.isAddKey)) {
       val addKeyAction = action.child(_.getAddKey, "addKey")
       for {
-        key <- addKeyAction.childGet(_.key, "key").flatMap(ParsingUtils.parseKey(_, didSuffix))
+        key <- addKeyAction
+          .childGet(_.key, "key")
+          .flatMap(ParsingUtils.parseKey(_, didSuffix))
       } yield AddKeyAction(key)
     } else if (action(_.action.isRemoveKey)) {
       val removeKeyAction = action.child(_.getRemoveKey, "removeKey")
@@ -115,16 +147,20 @@ object UpdateDIDOperation extends OperationCompanion[UpdateDIDOperation] {
 
   /** Parses the protobuf representation of operation
     *
-    * @param operation operation, needs to be of the type compatible with the called companion object
-    * @param ledgerData ledger information provided by the caller, needed to instantiate the operation objects
-    * @return parsed operation or ValidationError signifying the operation is invalid
+    * @param operation
+    *   operation, needs to be of the type compatible with the called companion object
+    * @param ledgerData
+    *   ledger information provided by the caller, needed to instantiate the operation objects
+    * @return
+    *   parsed operation or ValidationError signifying the operation is invalid
     */
   override def parse(
       operation: node_models.AtalaOperation,
       ledgerData: LedgerData
   ): Either[ValidationError, UpdateDIDOperation] = {
     val operationDigest = Sha256.compute(operation.toByteArray)
-    val updateOperation = ValueAtPath(operation, Path.root).child(_.getUpdateDid, "updateDid")
+    val updateOperation =
+      ValueAtPath(operation, Path.root).child(_.getUpdateDid, "updateDid")
 
     for {
       didSuffix <- updateOperation.child(_.id, "id").parse { didSuffix =>
@@ -136,13 +172,20 @@ object UpdateDIDOperation extends OperationCompanion[UpdateDIDOperation] {
       reversedActions <-
         updateOperation
           .children(_.actions, "actions")
-          .foldLeft[Either[ValidationError, List[UpdateDIDAction]]](Right(Nil)) {
-            case (eitherAcc, action) =>
-              for {
-                acc <- eitherAcc
-                parsedAction <- parseAction(action, didSuffix)
-              } yield parsedAction :: acc
+          .foldLeft[Either[ValidationError, List[UpdateDIDAction]]](
+            Right(Nil)
+          ) { case (eitherAcc, action) =>
+            for {
+              acc <- eitherAcc
+              parsedAction <- parseAction(action, didSuffix)
+            } yield parsedAction :: acc
           }
-    } yield UpdateDIDOperation(didSuffix, reversedActions.reverse, previousOperation, operationDigest, ledgerData)
+    } yield UpdateDIDOperation(
+      didSuffix,
+      reversedActions.reverse,
+      previousOperation,
+      operationDigest,
+      ledgerData
+    )
   }
 }

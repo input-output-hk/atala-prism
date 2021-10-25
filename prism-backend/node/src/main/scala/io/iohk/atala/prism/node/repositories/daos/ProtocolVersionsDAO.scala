@@ -33,7 +33,10 @@ object ProtocolVersionsDAO {
          |WHERE is_effective
          |ORDER BY effective_since DESC
          |LIMIT 1
-       """.stripMargin.query[ProtocolVersion].option.map(_.getOrElse(InitialProtocolVersion))
+       """.stripMargin
+      .query[ProtocolVersion]
+      .option
+      .map(_.getOrElse(InitialProtocolVersion))
   }
 
   def getLastKnownProtocolUpdate: ConnectionIO[ProtocolVersionInfo] = {
@@ -42,10 +45,15 @@ object ProtocolVersionsDAO {
          |FROM protocol_versions
          |ORDER BY effective_since DESC
          |LIMIT 1
-       """.stripMargin.query[ProtocolVersionInfo].option.map(_.getOrElse(InitialProtocolVersionInfo))
+       """.stripMargin
+      .query[ProtocolVersionInfo]
+      .option
+      .map(_.getOrElse(InitialProtocolVersionInfo))
   }
 
-  def markEffective(blockIndex: Int): ConnectionIO[Option[ProtocolVersionInfo]] = {
+  def markEffective(
+      blockIndex: Int
+  ): ConnectionIO[Option[ProtocolVersionInfo]] = {
     sql"""
          |UPDATE protocol_versions
          |SET is_effective = true
@@ -54,5 +62,20 @@ object ProtocolVersionsDAO {
          |""".stripMargin.query[ProtocolVersionInfo].to[List].map {
       _.sortBy(_.effectiveSinceBlockIndex)(Ordering.Int.reverse).headOption
     }
+  }
+
+  def isProposerTrusted(didSuffix: DidSuffix): ConnectionIO[Boolean] = {
+    sql"""
+         |SELECT COUNT(*)
+         |FROM trusted_proposers
+         |WHERE did_suffix = $didSuffix
+       """.stripMargin.query[Int].unique.fmap(_ > 0)
+  }
+
+  def insertTrustedProposer(didSuffix: DidSuffix): ConnectionIO[Unit] = {
+    sql"""
+      |INSERT INTO trusted_proposers (did_suffix)
+      | VALUES ($didSuffix)
+    """.stripMargin.update.run.void
   }
 }

@@ -7,15 +7,19 @@ import org.scalatest.{BeforeAndAfterAll, BeforeAndAfterEach}
 
 import doobie.implicits._
 
-case class PostgresConfig(host: String, database: String, user: String, password: String)
+case class PostgresConfig(
+    host: String,
+    database: String,
+    user: String,
+    password: String
+)
 
-/**
-  * Allow us to write integration tests depending in a postgres database.
+/** Allow us to write integration tests depending in a postgres database.
   *
   * The database is launched in a docker instance using docker-it-scala library.
   *
-  * When the database is started, play evolutions are automatically applied, the
-  * idea is to let you write tests like this, with the Cats IO:
+  * When the database is started, play evolutions are automatically applied, the idea is to let you write tests like
+  * this, with the Cats IO:
   * {{{
   *   import io.iohk.atala.prism.AtalaSpecBase.implicits._
   *   class UserPostgresDALSpec extends PostgresRepositorySpec[IO] {
@@ -58,9 +62,12 @@ abstract class PostgresRepositorySpec[F[_]: ConcurrentEffect: ContextShift]
   }
 
   lazy val (database, releaseDatabase) =
-    ConcurrentEffect[F].toIO(TransactorFactory.transactor[F](transactorConfig).allocated).unsafeRunSync()
+    ConcurrentEffect[F]
+      .toIO(TransactorFactory.transactor[F](transactorConfig).allocated)
+      .unsafeRunSync()
 
-  private lazy val postgresConfig = getProvidedPostgres().getOrElse(DockerPostgresService.getPostgres())
+  private lazy val postgresConfig =
+    getProvidedPostgres().getOrElse(DockerPostgresService.getPostgres())
 
   protected lazy val transactorConfig = TransactorFactory.Config(
     username = postgresConfig.user,

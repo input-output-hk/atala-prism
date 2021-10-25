@@ -28,7 +28,10 @@ object PublicKeysDAO {
        """.stripMargin.update.run.void
   }
 
-  def find(didSuffix: DidSuffix, keyId: String): ConnectionIO[Option[DIDPublicKeyState]] = {
+  def find(
+      didSuffix: DidSuffix,
+      keyId: String
+  ): ConnectionIO[Option[DIDPublicKeyState]] = {
     sql"""
          |SELECT did_suffix, key_id, key_usage, curve, compressed, added_on, added_on_absn, added_on_osn, added_on_transaction_id, ledger,
          |       added_on, added_on_absn, added_on_osn, revoked_on_transaction_id, ledger,
@@ -48,11 +51,17 @@ object PublicKeysDAO {
        """.stripMargin.query[DIDPublicKeyState].to[List]
   }
 
-  def revoke(didSuffix: DidSuffix, keyId: String, ledgerData: LedgerData): ConnectionIO[Boolean] = {
+  def revoke(
+      didSuffix: DidSuffix,
+      keyId: String,
+      ledgerData: LedgerData
+  ): ConnectionIO[Boolean] = {
     val revokedOn = ledgerData.timestampInfo
     sql"""
          |UPDATE public_keys
-         |SET revoked_on = ${Instant.ofEpochMilli(revokedOn.getAtalaBlockTimestamp)},
+         |SET revoked_on = ${Instant.ofEpochMilli(
+      revokedOn.getAtalaBlockTimestamp
+    )},
          |    revoked_on_absn = ${revokedOn.getAtalaBlockSequenceNumber},
          |    revoked_on_osn = ${revokedOn.getOperationSequenceNumber},
          |    revoked_on_transaction_id = ${ledgerData.transactionId}

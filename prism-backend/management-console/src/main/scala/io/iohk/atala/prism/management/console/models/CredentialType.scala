@@ -48,7 +48,10 @@ final case class CredentialTypeField(
     `type`: CredentialTypeFieldType
 )
 
-case class CredentialTypeWithRequiredFields(credentialType: CredentialType, requiredFields: List[CredentialTypeField])
+case class CredentialTypeWithRequiredFields(
+    credentialType: CredentialType,
+    requiredFields: List[CredentialTypeField]
+)
 
 @derive(loggable)
 final case class CredentialTypeId(uuid: UUID) extends AnyVal with UUIDValue
@@ -74,7 +77,9 @@ final case class GetCredentialType(credentialTypeId: CredentialTypeId)
 
 final case class MarkAsReadyCredentialType(credentialTypeId: CredentialTypeId)
 
-final case class MarkAsArchivedCredentialType(credentialTypeId: CredentialTypeId)
+final case class MarkAsArchivedCredentialType(
+    credentialTypeId: CredentialTypeId
+)
 
 sealed abstract class CredentialTypeFieldType(value: String) extends EnumEntry {
   override val entryName: String = value

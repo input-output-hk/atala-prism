@@ -62,9 +62,14 @@ trait CredentialsService[F[_]] {
       getContactCredentials: GetContactCredentials
   ): F[GetGenericCredentialsResult]
 
-  def shareCredential(participantId: ParticipantId, credId: NonEmptyList[GenericCredential.Id]): F[Unit]
+  def shareCredential(
+      participantId: ParticipantId,
+      credId: NonEmptyList[GenericCredential.Id]
+  ): F[Unit]
 
-  def publishBatch(publishBatch: PublishBatch): F[Either[ManagementConsoleError, IssueCredentialBatchNodeResponse]]
+  def publishBatch(
+      publishBatch: PublishBatch
+  ): F[Either[ManagementConsoleError, IssueCredentialBatchNodeResponse]]
 
   def revokePublishedCredential(
       participantId: ParticipantId,
@@ -76,7 +81,10 @@ trait CredentialsService[F[_]] {
       deleteCredentials: DeleteCredentials
   ): F[Either[ManagementConsoleError, Unit]]
 
-  def storePublishedCredential(participantId: ParticipantId, storePublishedCredential: StorePublishedCredential): F[Int]
+  def storePublishedCredential(
+      participantId: ParticipantId,
+      storePublishedCredential: StorePublishedCredential
+  ): F[Int]
 
   def getLedgerData(getLedgerData: GetLedgerData): F[GetLedgerDataResult]
 
@@ -98,7 +106,8 @@ object CredentialsService {
     for {
       serviceLogs <- logs.service[CredentialsService[F]]
     } yield {
-      implicit val implicitLogs: ServiceLogging[F, CredentialsService[F]] = serviceLogs
+      implicit val implicitLogs: ServiceLogging[F, CredentialsService[F]] =
+        serviceLogs
       val logs: CredentialsService[Mid[F, *]] = new CredentialsServiceLogs[F]
       val mid = logs
       mid attach new CredentialsServiceImpl[F](
@@ -116,7 +125,13 @@ object CredentialsService {
       connectorClient: ConnectorClient[F],
       logs: Logs[R, F]
   ): CredentialsService[F] =
-    CredentialsService(credentialsRepository, credentialsIntegrationService, nodeService, connectorClient, logs).extract
+    CredentialsService(
+      credentialsRepository,
+      credentialsIntegrationService,
+      nodeService,
+      connectorClient,
+      logs
+    ).extract
 
   def makeResource[F[_]: Execute: MonadThrow, R[_]: Monad](
       credentialsRepository: CredentialsRepository[F],
@@ -126,7 +141,13 @@ object CredentialsService {
       logs: Logs[R, F]
   ): Resource[R, CredentialsService[F]] =
     Resource.eval(
-      CredentialsService(credentialsRepository, credentialsIntegrationService, nodeService, connectorClient, logs)
+      CredentialsService(
+        credentialsRepository,
+        credentialsIntegrationService,
+        nodeService,
+        connectorClient,
+        logs
+      )
     )
 }
 
@@ -145,20 +166,30 @@ private final class CredentialsServiceImpl[F[_]: Monad](
       participantId: ParticipantId,
       createGenericCredential: CreateGenericCredential
   ): F[Either[errors.ManagementConsoleError, GenericCredentialWithConnection]] =
-    credentialsIntegrationService.createGenericCredential(participantId, createGenericCredential)
+    credentialsIntegrationService.createGenericCredential(
+      participantId,
+      createGenericCredential
+    )
 
   override def getGenericCredentials(
       participantId: ParticipantId,
       query: GenericCredential.PaginatedQuery
-  ): F[GetGenericCredentialsResult] = credentialsIntegrationService.getGenericCredentials(participantId, query)
+  ): F[GetGenericCredentialsResult] =
+    credentialsIntegrationService.getGenericCredentials(participantId, query)
 
   override def getContactCredentials(
       participantId: ParticipantId,
       getContactCredentials: GetContactCredentials
   ): F[GetGenericCredentialsResult] =
-    credentialsIntegrationService.getContactCredentials(participantId, getContactCredentials.contactId)
+    credentialsIntegrationService.getContactCredentials(
+      participantId,
+      getContactCredentials.contactId
+    )
 
-  override def shareCredential(participantId: ParticipantId, credId: NonEmptyList[GenericCredential.Id]): F[Unit] =
+  override def shareCredential(
+      participantId: ParticipantId,
+      credId: NonEmptyList[GenericCredential.Id]
+  ): F[Unit] =
     credentialsRepository.markAsShared(participantId, credId)
 
   override def publishBatch(
@@ -172,49 +203,66 @@ private final class CredentialsServiceImpl[F[_]: Monad](
         opHash = Sha256.compute(atalaOperation.toByteArray)
         issueCredentialBatch <- atalaOperation.operation.issueCredentialBatch
         credentialBatchData <- issueCredentialBatch.credentialBatchData
-        did = DID.fromString(DidSuffix.didFromStringSuffix(credentialBatchData.issuerDid))
-        merkleRoot = new MerkleRoot(Sha256Digest.fromBytes(credentialBatchData.merkleRoot.toByteArray))
+        did = DID.fromString(
+          DidSuffix.didFromStringSuffix(credentialBatchData.issuerDid)
+        )
+        merkleRoot = new MerkleRoot(
+          Sha256Digest.fromBytes(credentialBatchData.merkleRoot.toByteArray)
+        )
       } yield (merkleRoot, did, opHash)
-      maybePair.toRight(InternalServerError(new RuntimeException("Failed to extract content hash and issuer DID")))
+      maybePair.toRight(
+        InternalServerError(
+          new RuntimeException("Failed to extract content hash and issuer DID")
+        )
+      )
     }
 
     def storeBatch(
         batchId: CredentialBatchId,
         signedIssueCredentialBatchOp: SignedAtalaOperation
     ): F[Either[ManagementConsoleError, Int]] = {
-      extractValues(signedIssueCredentialBatchOp).traverse {
-        case (merkleRoot, did, operationHash) =>
-          val computedBatchId = CredentialBatchId.fromBatchData(did.getSuffix, merkleRoot)
-          // validation for sanity check
-          // The `batchId` parameter is the id returned by the node.
-          // We make this check to be sure that the node and the console are
-          // using the same id (if this fails, they are using different versions
-          // of the protocol)
-          if (batchId != computedBatchId)
-            logger.warn("The batch id provided by the node does not match the one computed")
-
-          credentialsRepository.storeBatchData(
-            batchId = batchId,
-            issuanceOperationHash = operationHash,
-            AtalaOperationId.of(signedIssueCredentialBatchOp)
+      extractValues(signedIssueCredentialBatchOp).traverse { case (merkleRoot, did, operationHash) =>
+        val computedBatchId =
+          CredentialBatchId.fromBatchData(did.getSuffix, merkleRoot)
+        // validation for sanity check
+        // The `batchId` parameter is the id returned by the node.
+        // We make this check to be sure that the node and the console are
+        // using the same id (if this fails, they are using different versions
+        // of the protocol)
+        if (batchId != computedBatchId)
+          logger.warn(
+            "The batch id provided by the node does not match the one computed"
           )
+
+        credentialsRepository.storeBatchData(
+          batchId = batchId,
+          issuanceOperationHash = operationHash,
+          AtalaOperationId.of(signedIssueCredentialBatchOp)
+        )
       }
     }
 
     for {
       response <-
         ex.deferFuture(
-            nodeService
-              .issueCredentialBatch(
-                node_api
-                  .IssueCredentialBatchRequest()
-                  .withSignedOperation(publishBatch.signedOperation)
-              )
-          )
-          .map(ProtoConverter[IssueCredentialBatchResponse, IssueCredentialBatchNodeResponse].fromProto)
-          .map[Either[ManagementConsoleError, IssueCredentialBatchNodeResponse]](_.toEither.left.map(wrapAsServerError))
+          nodeService
+            .issueCredentialBatch(
+              node_api
+                .IssueCredentialBatchRequest()
+                .withSignedOperation(publishBatch.signedOperation)
+            )
+        ).map(
+          ProtoConverter[
+            IssueCredentialBatchResponse,
+            IssueCredentialBatchNodeResponse
+          ].fromProto
+        ).map[Either[ManagementConsoleError, IssueCredentialBatchNodeResponse]](
+          _.toEither.left.map(wrapAsServerError)
+        )
       result <- response.flatTraverse(response =>
-        storeBatch(response.batchId, publishBatch.signedOperation).map(_.as(response))
+        storeBatch(response.batchId, publishBatch.signedOperation).map(
+          _.as(response)
+        )
       )
     } yield result
   }
@@ -223,25 +271,38 @@ private final class CredentialsServiceImpl[F[_]: Monad](
       participantId: ParticipantId,
       revokePublishedCredential: RevokePublishedCredential
   ): F[Either[ManagementConsoleError, AtalaOperationId]] =
-    credentialsIntegrationService.revokePublishedCredential(participantId, revokePublishedCredential)
+    credentialsIntegrationService.revokePublishedCredential(
+      participantId,
+      revokePublishedCredential
+    )
 
   override def deleteCredentials(
       participantId: ParticipantId,
       deleteCredentials: DeleteCredentials
   ): F[Either[ManagementConsoleError, Unit]] =
-    credentialsRepository.deleteCredentials(participantId, deleteCredentials.credentialsIds)
+    credentialsRepository.deleteCredentials(
+      participantId,
+      deleteCredentials.credentialsIds
+    )
 
   override def storePublishedCredential(
       participantId: ParticipantId,
       storePublishedCredential: StorePublishedCredential
   ): F[Int] =
     for {
-      maybeCredential <- credentialsRepository.getBy(storePublishedCredential.consoleCredentialId)
+      maybeCredential <- credentialsRepository.getBy(
+        storePublishedCredential.consoleCredentialId
+      )
       credential = maybeCredential.getOrElse(
-        throw new RuntimeException(s"Credential with ID ${storePublishedCredential.consoleCredentialId} does not exist")
+        throw new RuntimeException(
+          s"Credential with ID ${storePublishedCredential.consoleCredentialId} does not exist"
+        )
       )
       // Verify issuer
-      _ = require(credential.issuedBy == participantId, "The credential was not issued by the specified issuer")
+      _ = require(
+        credential.issuedBy == participantId,
+        "The credential was not issued by the specified issuer"
+      )
       storedData <- credentialsRepository.storePublicationData(
         issuerId = participantId,
         credentialData = PublishCredential(
@@ -253,17 +314,25 @@ private final class CredentialsServiceImpl[F[_]: Monad](
       )
     } yield storedData
 
-  override def getLedgerData(getLedgerData: GetLedgerData): F[GetLedgerDataResult] =
+  override def getLedgerData(
+      getLedgerData: GetLedgerData
+  ): F[GetLedgerDataResult] =
     for {
       batchState <- ex.deferFuture(
-        nodeService.getBatchState(node_api.GetBatchStateRequest().withBatchId(getLedgerData.batchId.getId))
+        nodeService.getBatchState(
+          node_api
+            .GetBatchStateRequest()
+            .withBatchId(getLedgerData.batchId.getId)
+        )
       )
       credentialLedgerData <- ex.deferFuture(
         nodeService.getCredentialRevocationTime(
           node_api
             .GetCredentialRevocationTimeRequest()
             .withBatchId(getLedgerData.batchId.getId)
-            .withCredentialHash(ByteString.copyFrom(getLedgerData.credentialHash.getValue))
+            .withCredentialHash(
+              ByteString.copyFrom(getLedgerData.credentialHash.getValue)
+            )
         )
       )
     } yield GetLedgerDataResult(
@@ -277,19 +346,31 @@ private final class CredentialsServiceImpl[F[_]: Monad](
       shareCredentials: ShareCredentials
   ): F[Either[ManagementConsoleError, Unit]] = {
     for {
-      verified <- credentialsRepository.verifyPublishedCredentialsExist(participantId, shareCredentials.credentialsIds)
+      verified <- credentialsRepository.verifyPublishedCredentialsExist(
+        participantId,
+        shareCredentials.credentialsIds
+      )
       sentMessages <- verified.traverse(_ =>
-        connectorClient.sendMessages(shareCredentials.sendMessagesRequest, shareCredentials.sendMessagesRequestMetadata)
+        connectorClient.sendMessages(
+          shareCredentials.sendMessagesRequest,
+          shareCredentials.sendMessagesRequestMetadata
+        )
       )
       result <-
-        sentMessages.traverse(_ => credentialsRepository.markAsShared(participantId, shareCredentials.credentialsIds))
+        sentMessages.traverse(_ =>
+          credentialsRepository.markAsShared(
+            participantId,
+            shareCredentials.credentialsIds
+          )
+        )
     } yield result
   }
 
 }
 
-private final class CredentialsServiceLogs[F[_]: ServiceLogging[*[_], CredentialsService[F]]: MonadThrow]
-    extends CredentialsService[Mid[F, *]] {
+private final class CredentialsServiceLogs[
+    F[_]: ServiceLogging[*[_], CredentialsService[F]]: MonadThrow
+] extends CredentialsService[Mid[F, *]] {
   override def createGenericCredential(
       participantId: ParticipantId,
       createGenericCredential: CreateGenericCredential
@@ -302,7 +383,9 @@ private final class CredentialsServiceLogs[F[_]: ServiceLogging[*[_], Credential
             _ => info"creating generic credential - successfully done"
           )
         )
-        .onError(errorCause"encountered an error while creating generic credential" (_))
+        .onError(
+          errorCause"encountered an error while creating generic credential" (_)
+        )
 
   override def getGenericCredentials(
       participantId: ParticipantId,
@@ -311,7 +394,9 @@ private final class CredentialsServiceLogs[F[_]: ServiceLogging[*[_], Credential
     in =>
       info"getting generic credentials $participantId" *> in
         .flatTap(_ => info"getting generic credentials - successfully done")
-        .onError(errorCause"encountered an error while getting generic credentials" (_))
+        .onError(
+          errorCause"encountered an error while getting generic credentials" (_)
+        )
 
   override def getContactCredentials(
       participantId: ParticipantId,
@@ -320,13 +405,20 @@ private final class CredentialsServiceLogs[F[_]: ServiceLogging[*[_], Credential
     in =>
       info"getting contact credentials $participantId" *> in
         .flatTap(_ => info"getting contact credentials - successfully done")
-        .onError(errorCause"encountered an error while getting contact credentials" (_))
+        .onError(
+          errorCause"encountered an error while getting contact credentials" (_)
+        )
 
-  override def shareCredential(participantId: ParticipantId, credId: NonEmptyList[GenericCredential.Id]): Mid[F, Unit] =
+  override def shareCredential(
+      participantId: ParticipantId,
+      credId: NonEmptyList[GenericCredential.Id]
+  ): Mid[F, Unit] =
     in =>
       info"sharing credential $participantId " *>
         in.flatTap(_ => info"sharing credentials - successfully done")
-          .onError(errorCause"encountered an error while sharing credentials" (_))
+          .onError(
+            errorCause"encountered an error while sharing credentials" (_)
+          )
 
   override def publishBatch(
       publishBatch: PublishBatch
@@ -353,7 +445,11 @@ private final class CredentialsServiceLogs[F[_]: ServiceLogging[*[_], Credential
             _ => info"revoking published credential - successfully done"
           )
         )
-        .onError(errorCause"encountered an error while revoking published credential" (_))
+        .onError(
+          errorCause"encountered an error while revoking published credential" (
+            _
+          )
+        )
 
   override def deleteCredentials(
       participantId: ParticipantId,
@@ -362,12 +458,13 @@ private final class CredentialsServiceLogs[F[_]: ServiceLogging[*[_], Credential
     in =>
       info"deleting credentials $participantId" *>
         in.flatTap(
-            _.fold(
-              e => error"encountered an error while deleting credentials $e",
-              _ => info"deleting credentials - successfully done"
-            )
+          _.fold(
+            e => error"encountered an error while deleting credentials $e",
+            _ => info"deleting credentials - successfully done"
           )
-          .onError(errorCause"encountered an error while deleting credentials" (_))
+        ).onError(
+          errorCause"encountered an error while deleting credentials" (_)
+        )
 
   override def storePublishedCredential(
       participantId: ParticipantId,
@@ -376,13 +473,21 @@ private final class CredentialsServiceLogs[F[_]: ServiceLogging[*[_], Credential
     in =>
       info"storing published credential $participantId" *>
         in.flatTap(_ => info"storing published credential - successfully done")
-          .onError(errorCause"encountered an error while storing published credential" (_))
+          .onError(
+            errorCause"encountered an error while storing published credential" (
+              _
+            )
+          )
 
-  override def getLedgerData(getLedgerData: GetLedgerData): Mid[F, GetLedgerDataResult] =
+  override def getLedgerData(
+      getLedgerData: GetLedgerData
+  ): Mid[F, GetLedgerDataResult] =
     in =>
       info"getting ledger data ${getLedgerData.batchId}" *>
         in.flatTap(_ => info"getting ledger data - successfully done")
-          .onError(errorCause"encountered an error while getting ledger data" (_))
+          .onError(
+            errorCause"encountered an error while getting ledger data" (_)
+          )
 
   override def shareCredentials(
       participantId: ParticipantId,
@@ -391,10 +496,11 @@ private final class CredentialsServiceLogs[F[_]: ServiceLogging[*[_], Credential
     in =>
       info"sharing credentials $participantId" *>
         in.flatTap(
-            _.fold(
-              e => error"encountered an error while sharing credentials $e",
-              _ => info"sharing credentials - successfully done"
-            )
+          _.fold(
+            e => error"encountered an error while sharing credentials $e",
+            _ => info"sharing credentials - successfully done"
           )
-          .onError(errorCause"encountered an error while sharing credentials" (_))
+        ).onError(
+          errorCause"encountered an error while sharing credentials" (_)
+        )
 }

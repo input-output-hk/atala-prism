@@ -21,11 +21,15 @@ class S3ObjectStorageServiceSpec
   val region = Region.US_EAST_2
 
   private val testClient = S3Client.builder().region(region).build()
-  private lazy val missingVariables = AWS_ENV_VARIABLES.filter(System.getenv(_) == null)
+  private lazy val missingVariables =
+    AWS_ENV_VARIABLES.filter(System.getenv(_) == null)
   private def s3Enabled = missingVariables.isEmpty
 
   override protected def createStorage: ObjectStorageService = {
-    assume(missingVariables.isEmpty, s"You need ${missingVariables.mkString(", ")} set for this test")
+    assume(
+      missingVariables.isEmpty,
+      s"You need ${missingVariables.mkString(", ")} set for this test"
+    )
 
     cleanBucket()
     new S3ObjectStorageService(AWS_BUCKET, KEY_PREFIX, Some(region))
@@ -49,11 +53,21 @@ class S3ObjectStorageServiceSpec
       response.contents().asScala.to(LazyList) ++ tail
     }
 
-    val firstListRequest = ListObjectsV2Request.builder().bucket(AWS_BUCKET).prefix(KEY_PREFIX).build()
+    val firstListRequest = ListObjectsV2Request
+      .builder()
+      .bucket(AWS_BUCKET)
+      .prefix(KEY_PREFIX)
+      .build()
     for (s3Object <- objectsStream(firstListRequest)) {
       assert(s3Object.key.startsWith(KEY_PREFIX)) // better be safe than sorry
       println(s"Deleting ${s3Object.key()}")
-      testClient.deleteObject(DeleteObjectRequest.builder().bucket(AWS_BUCKET).key(s3Object.key()).build())
+      testClient.deleteObject(
+        DeleteObjectRequest
+          .builder()
+          .bucket(AWS_BUCKET)
+          .key(s3Object.key())
+          .build()
+      )
     }
   }
 

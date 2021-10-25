@@ -18,9 +18,12 @@ trait ProtoParsingTestHelpers {
   protected def exampleOperation: node_models.AtalaOperation
   protected def operationCompanion: OperationCompanion[Repr]
 
-  private val dummyTimestampInfo2 = new TimestampInfo(Instant.ofEpochMilli(0).toEpochMilli, 1, 0)
+  private val dummyTimestampInfo2 =
+    new TimestampInfo(Instant.ofEpochMilli(0).toEpochMilli, 1, 0)
   private val dummyLedgerData2 = LedgerData(
-    TransactionId.from(Array.fill[Byte](TransactionId.config.size.toBytes.toInt)(0)).value,
+    TransactionId
+      .from(Array.fill[Byte](TransactionId.config.size.toBytes.toInt)(0))
+      .value,
     Ledger.InMemory,
     dummyTimestampInfo2
   )
@@ -30,11 +33,18 @@ trait ProtoParsingTestHelpers {
   protected def signingKey = CreateDIDOperationSpec.masterKeys.getPrivateKey
 
   protected def missingValueTest[U](
-      mutation: Lens[node_models.AtalaOperation, node_models.AtalaOperation] => Mutation[node_models.AtalaOperation],
+      mutation: Lens[
+        node_models.AtalaOperation,
+        node_models.AtalaOperation
+      ] => Mutation[node_models.AtalaOperation],
       expectedPath: Vector[String]
   ): Assertion = {
     val invalidOperation = exampleOperation.update(mutation)
-    val signedOperation = BlockProcessingServiceSpec.signOperation(invalidOperation, signingKeyId, signingKey)
+    val signedOperation = BlockProcessingServiceSpec.signOperation(
+      invalidOperation,
+      signingKeyId,
+      signingKey
+    )
 
     inside(operationCompanion.parse(signedOperation, dummyLedgerData2)) {
       case Left(ValidationError.MissingValue(path)) =>
@@ -43,12 +53,19 @@ trait ProtoParsingTestHelpers {
   }
 
   protected def invalidValueTest[U](
-      mutation: Lens[node_models.AtalaOperation, node_models.AtalaOperation] => Mutation[node_models.AtalaOperation],
+      mutation: Lens[
+        node_models.AtalaOperation,
+        node_models.AtalaOperation
+      ] => Mutation[node_models.AtalaOperation],
       expectedPath: Vector[String],
       expectedValue: U
   ): Assertion = {
     val invalidOperation = exampleOperation.update(mutation)
-    val signedOperation = BlockProcessingServiceSpec.signOperation(invalidOperation, signingKeyId, signingKey)
+    val signedOperation = BlockProcessingServiceSpec.signOperation(
+      invalidOperation,
+      signingKeyId,
+      signingKey
+    )
 
     inside(operationCompanion.parse(signedOperation, dummyLedgerData2)) {
       case Left(ValidationError.InvalidValue(path, value, _)) =>

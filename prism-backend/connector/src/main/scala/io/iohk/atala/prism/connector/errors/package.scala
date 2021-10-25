@@ -4,7 +4,7 @@ import derevo.derive
 import io.grpc.Status
 import io.iohk.atala.prism.connector.model.{ConnectionId, MessageId, TokenString}
 import io.iohk.atala.prism.crypto.keys.ECPublicKey
-import io.iohk.atala.prism.errors.{PrismError, PrismServerError}
+import io.iohk.atala.prism.errors.PrismError
 import io.iohk.atala.prism.identity.{PrismDid => DID}
 import io.iohk.atala.prism.models.ParticipantId
 import shapeless.Coproduct
@@ -24,9 +24,15 @@ package object errors {
     }
   }
 
-  case class InvalidArgumentError(tpe: String, requirement: String, value: String) extends ConnectorError {
+  case class InvalidArgumentError(
+      tpe: String,
+      requirement: String,
+      value: String
+  ) extends ConnectorError {
     override def toStatus: Status = {
-      Status.INVALID_ARGUMENT.withDescription(s"Invalid value for $tpe, expected $requirement, got $value")
+      Status.INVALID_ARGUMENT.withDescription(
+        s"Invalid value for $tpe, expected $requirement, got $value"
+      )
     }
   }
 
@@ -61,25 +67,37 @@ package object errors {
     }
   }
 
-  case class NotFoundByFieldError(entityType: String, fieldName: String, fieldValue: String) extends ConnectorError {
+  case class NotFoundByFieldError(
+      entityType: String,
+      fieldName: String,
+      fieldValue: String
+  ) extends ConnectorError {
     override def toStatus: Status = {
-      Status.NOT_FOUND.withDescription(s"""$entityType with $fieldName - "$fieldValue" not found""")
+      Status.NOT_FOUND.withDescription(
+        s"""$entityType with $fieldName - "$fieldValue" not found"""
+      )
     }
   }
 
   case class PublicKeyMissingError() extends ConnectorError {
     override def toStatus: Status = {
-      Status.UNAUTHENTICATED.withDescription("Authentication required, missing public key")
+      Status.UNAUTHENTICATED.withDescription(
+        "Authentication required, missing public key"
+      )
     }
   }
   case class SignatureMissingError() extends ConnectorError {
     override def toStatus: Status = {
-      Status.UNAUTHENTICATED.withDescription("Authentication required, missing signature")
+      Status.UNAUTHENTICATED.withDescription(
+        "Authentication required, missing signature"
+      )
     }
   }
   case class SignatureVerificationError() extends ConnectorError {
     override def toStatus: Status = {
-      Status.UNAUTHENTICATED.withDescription("Authentication required, signature invalid")
+      Status.UNAUTHENTICATED.withDescription(
+        "Authentication required, signature invalid"
+      )
     }
   }
 
@@ -89,19 +107,17 @@ package object errors {
 
   case class InternalConnectorError(cause: Throwable) extends ConnectorError {
     override def toStatus: Status = {
-      Status.INTERNAL.withDescription("Internal error in the connector service. Please contact administrator.")
-    }
-  }
-
-  case class InternalServerError(cause: Throwable) extends ConnectorError with PrismServerError {
-    override def toStatus: Status = {
-      Status.INTERNAL.withDescription("Internal server error. Please contact administrator.")
+      Status.INTERNAL.withDescription(
+        s"Internal error in the connector service, cause: ${cause.getMessage}. Please contact administrator."
+      )
     }
   }
 
   case class ServiceUnavailableError() extends ConnectorError {
     override def toStatus: Status = {
-      Status.UNAVAILABLE.withDescription("Service unavailable. Please try later.")
+      Status.UNAVAILABLE.withDescription(
+        "Service unavailable. Please try later."
+      )
     }
   }
 
@@ -121,30 +137,50 @@ package object errors {
 
     object ConnectionNotFound {
 
-      implicit val connectionNotFoundLoggable: Loggable[ConnectionNotFound] = new DictLoggable[ConnectionNotFound] {
-        override def fields[I, V, R, S](a: ConnectionNotFound, i: I)(implicit r: LogRenderer[I, V, R, S]): R =
-          r.addString("ConnectionNotFound", a.connection.fold(_.logShow, _.logShow), i)
+      implicit val connectionNotFoundLoggable: Loggable[ConnectionNotFound] =
+        new DictLoggable[ConnectionNotFound] {
+          override def fields[I, V, R, S](a: ConnectionNotFound, i: I)(implicit
+              r: LogRenderer[I, V, R, S]
+          ): R =
+            r.addString(
+              "ConnectionNotFound",
+              a.connection.fold(_.logShow, _.logShow),
+              i
+            )
 
-        override def logShow(a: ConnectionNotFound): String =
-          s"{ConnectionNotFound=${a.connection.fold(_.logShow, _.logShow)})}"
-      }
+          override def logShow(a: ConnectionNotFound): String =
+            s"{ConnectionNotFound=${a.connection.fold(_.logShow, _.logShow)})}"
+        }
 
-      def apply(s: TokenString): ConnectionNotFound = ConnectionNotFound(Left(s))
-      def apply(c: ConnectionId): ConnectionNotFound = ConnectionNotFound(Right(c))
+      def apply(s: TokenString): ConnectionNotFound = ConnectionNotFound(
+        Left(s)
+      )
+      def apply(c: ConnectionId): ConnectionNotFound = ConnectionNotFound(
+        Right(c)
+      )
     }
 
     object ConnectionRevoked {
 
-      implicit val connectionRevokedLoggable: Loggable[ConnectionRevoked] = new DictLoggable[ConnectionRevoked] {
-        override def fields[I, V, R, S](a: ConnectionRevoked, i: I)(implicit r: LogRenderer[I, V, R, S]): R =
-          r.addString("ConnectionRevoked", a.connection.fold(_.logShow, _.logShow), i)
+      implicit val connectionRevokedLoggable: Loggable[ConnectionRevoked] =
+        new DictLoggable[ConnectionRevoked] {
+          override def fields[I, V, R, S](a: ConnectionRevoked, i: I)(implicit
+              r: LogRenderer[I, V, R, S]
+          ): R =
+            r.addString(
+              "ConnectionRevoked",
+              a.connection.fold(_.logShow, _.logShow),
+              i
+            )
 
-        override def logShow(a: ConnectionRevoked): String =
-          s"{ConnectionRevoked=${a.connection.fold(_.logShow, _.logShow)})}"
-      }
+          override def logShow(a: ConnectionRevoked): String =
+            s"{ConnectionRevoked=${a.connection.fold(_.logShow, _.logShow)})}"
+        }
 
       def apply(s: TokenString): ConnectionRevoked = ConnectionRevoked(Left(s))
-      def apply(c: ConnectionId): ConnectionRevoked = ConnectionRevoked(Right(c))
+      def apply(c: ConnectionId): ConnectionRevoked = ConnectionRevoked(
+        Right(c)
+      )
     }
 
     case class ConnectionRevoked(connection: Either[TokenString, ConnectionId]) extends MessagesError {
@@ -155,8 +191,10 @@ package object errors {
       }
     }
 
-    case class ConnectionNotFoundByConnectionIdAndSender(sender: ParticipantId, connection: ConnectionId)
-        extends MessagesError {
+    case class ConnectionNotFoundByConnectionIdAndSender(
+        sender: ParticipantId,
+        connection: ConnectionId
+    ) extends MessagesError {
       override def toStatus: Status = {
         Status.NOT_FOUND.withDescription(
           s"Failed to send message, the connection $connection with sender $sender doesn't exist"

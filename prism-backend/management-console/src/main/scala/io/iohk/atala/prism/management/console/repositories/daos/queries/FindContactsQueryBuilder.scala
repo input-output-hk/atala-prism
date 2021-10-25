@@ -14,12 +14,13 @@ object FindContactsQueryBuilder {
       constraints: Contact.PaginatedQuery,
       ignoreFilterLimit: Boolean = false
   ): Fragment = {
-    val baseQuery = (constraints.scrollId, constraints.filters.flatMap(_.groupName)) match {
-      case (Some(scrollId), Some(_)) => selectFromScrollGroupFR(scrollId)
-      case (Some(scrollId), None) => selectFromScrollFR(scrollId)
-      case (None, Some(_)) => selectFromGroupFR
-      case (None, None) => selectFR ++ fr"FROM contacts"
-    }
+    val baseQuery =
+      (constraints.scrollId, constraints.filters.flatMap(_.groupName)) match {
+        case (Some(scrollId), Some(_)) => selectFromScrollGroupFR(scrollId)
+        case (Some(scrollId), None) => selectFromScrollFR(scrollId)
+        case (None, Some(_)) => selectFromGroupFR
+        case (None, None) => selectFR ++ fr"FROM contacts"
+      }
 
     val orderBy = orderByFr(constraints.ordering, "contact_id") {
       case Contact.SortBy.ExternalId => "contacts.external_id"
@@ -37,19 +38,26 @@ object FindContactsQueryBuilder {
       query ++ limitFr(constraints.limit)
   }
 
-  private def whereFr(participantId: ParticipantId, constraints: Contact.PaginatedQuery): Fragment = {
+  private def whereFr(
+      participantId: ParticipantId,
+      constraints: Contact.PaginatedQuery
+  ): Fragment = {
     val whereInstitution = fr"""contacts.created_by = $participantId"""
     val whereGroup = constraints.filters.flatMap(_.groupName).map { group =>
       fr"""g.name = $group"""
     }
-    val whereNameOrExternalId = constraints.filters.flatMap(_.nonEmptyNameOrExternalId).map { nameOrExternalId =>
-      val nameOrExternalIdWithWildCard = s"%$nameOrExternalId%"
-      fr"(contacts.name ILIKE $nameOrExternalIdWithWildCard OR contacts.external_id ILIKE $nameOrExternalIdWithWildCard)"
+    val whereNameOrExternalId =
+      constraints.filters.flatMap(_.nonEmptyNameOrExternalId).map { nameOrExternalId =>
+        val nameOrExternalIdWithWildCard = s"%$nameOrExternalId%"
+        fr"(contacts.name ILIKE $nameOrExternalIdWithWildCard OR contacts.external_id ILIKE $nameOrExternalIdWithWildCard)"
+      }
+    val whereCreatedAt =
+      constraints.filters.flatMap(_.createdAt).map { createdAt =>
+        fr"contacts.created_at::DATE = $createdAt"
+      }
+    val whereScroll = constraints.scrollId.map { scrollId =>
+      whereScrollFr(scrollId, constraints.ordering)
     }
-    val whereCreatedAt = constraints.filters.flatMap(_.createdAt).map { createdAt =>
-      fr"contacts.created_at::DATE = $createdAt"
-    }
-    val whereScroll = constraints.scrollId.map { scrollId => whereScrollFr(scrollId, constraints.ordering) }
     whereAndOpt(
       Some(whereInstitution),
       whereGroup,

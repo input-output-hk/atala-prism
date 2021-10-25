@@ -12,9 +12,12 @@ import tofu.higherKind.Mid
 import tofu.logging.ServiceLogging
 import tofu.syntax.logging._
 
-private[repositories] final class DIDDataRepositoryLogs[F[_]: ServiceLogging[*[_], DIDDataRepository[F]]: MonadThrow]
-    extends DIDDataRepository[Mid[F, *]] {
-  override def findByDid(did: CanonicalPrismDid): Mid[F, Either[NodeError, Option[DIDDataState]]] =
+private[repositories] final class DIDDataRepositoryLogs[
+    F[_]: ServiceLogging[*[_], DIDDataRepository[F]]: MonadThrow
+] extends DIDDataRepository[Mid[F, *]] {
+  override def findByDid(
+      did: CanonicalPrismDid
+  ): Mid[F, Either[NodeError, Option[DIDDataState]]] =
     in =>
       info"finding by did ${did.getSuffix}" *> in
         .flatTap(
