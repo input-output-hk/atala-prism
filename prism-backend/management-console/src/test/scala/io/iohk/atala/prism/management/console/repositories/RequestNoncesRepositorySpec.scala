@@ -45,7 +45,7 @@ class RequestNoncesRepositorySpec extends AtalaWithPostgresSpec {
 
   "burn" should {
     "burn a nonce" in {
-      val participantId = createParticipant("iohk", "did:test:iohk")
+      val participantId = createParticipant("iohk", "did:prism:iohk")
       val nonce = RequestNonce("test".getBytes.toVector)
 
       available(participantId, nonce) must be(true)
@@ -57,7 +57,7 @@ class RequestNoncesRepositorySpec extends AtalaWithPostgresSpec {
     }
 
     "fail if the nonce is already burnt" in {
-      val participantId = createParticipant("iohk", "did:test:iohk")
+      val participantId = createParticipant("iohk", "did:prism:iohk")
       val nonce = RequestNonce("test".getBytes.toVector)
       requestNoncesRepository.burn(participantId, nonce).unsafeRunSync()
       intercept[RuntimeException] {
@@ -66,8 +66,8 @@ class RequestNoncesRepositorySpec extends AtalaWithPostgresSpec {
     }
 
     "burn the same nonce for several participants" in {
-      val participantId = createParticipant("iohk", "did:test:iohk")
-      val participantId2 = createParticipant("iohk-2", "did:test:iohk-2")
+      val participantId = createParticipant("iohk", "did:prism:iohk")
+      val participantId2 = createParticipant("iohk-2", "did:prism:iohk-2")
       val nonce = RequestNonce("test".getBytes.toVector)
       requestNoncesRepository.burn(participantId, nonce).unsafeRunSync()
 
