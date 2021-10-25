@@ -5,7 +5,6 @@ import {
   oneOf,
   oneOfType,
   func,
-  object,
   bool,
   arrayOf,
   element,
@@ -56,7 +55,7 @@ export const credentialSummaryShape = {
 export const refShape = oneOfType([
   func,
   shape({
-    current: object
+    current: instanceOf(Element)
   })
 ]);
 
