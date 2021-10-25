@@ -1,10 +1,15 @@
-@import '../../../src/css/general_styling';
+@import "../../../src/css/general_styling";
 
 .CredentialMainContent {
   display: flex;
   width: 100%;
   padding: 0 1em;
   flex-direction: column;
+  .StepHeader {
+    width: 100%;
+    display: flex;
+    justify-content: space-between;
+  }
   .WizardContentContainer {
     display: flex;
     flex-direction: column;
