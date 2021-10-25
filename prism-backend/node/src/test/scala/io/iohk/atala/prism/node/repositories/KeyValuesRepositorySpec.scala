@@ -3,10 +3,10 @@ package io.iohk.atala.prism.node.repositories
 import cats.effect.IO
 import io.iohk.atala.prism.AtalaWithPostgresSpec
 import io.iohk.atala.prism.node.repositories.daos.KeyValuesDAO.KeyValue
-import tofu.logging.Logs
+import tofu.logging.Logging
 
 class KeyValuesRepositorySpec extends AtalaWithPostgresSpec {
-  private val logs = Logs.universal[IO]
+  private val logs = Logging.Make.plain[IO]
   private lazy val keyValuesRepository = KeyValuesRepository.unsafe(database, logs)
 
   private val KEY = "test-key"

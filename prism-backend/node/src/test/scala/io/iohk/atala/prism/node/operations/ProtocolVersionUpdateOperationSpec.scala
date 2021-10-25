@@ -18,7 +18,7 @@ import io.iohk.atala.prism.protos.node_models
 import org.scalatest.EitherValues._
 import org.scalatest.Inside.inside
 import org.scalatest.OptionValues._
-import tofu.logging.Logs
+import tofu.logging.Logging
 
 object ProtocolVersionUpdateOperationSpec {
   def protocolUpdateOperation(
@@ -41,7 +41,7 @@ object ProtocolVersionUpdateOperationSpec {
     )
 
   val masterKeys = CreateDIDOperationSpec.masterKeys
-  val logs = Logs.universal[IOWithTraceIdContext]
+  val logs = Logging.Make.plain[IOWithTraceIdContext]
 
   lazy val proposerDidKeys = List(
     DIDPublicKey(proposerDIDSuffix, "master", KeyUsage.MasterKey, masterKeys.getPublicKey)

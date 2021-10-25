@@ -4,20 +4,19 @@ import cats.effect.IO
 import io.iohk.atala.prism.AtalaWithPostgresSpec
 import io.iohk.atala.prism.crypto.EC.{INSTANCE => EC}
 import io.iohk.atala.prism.crypto.Sha256Digest
+import io.iohk.atala.prism.identity.{PrismDid => DID}
 import io.iohk.atala.prism.models.{Ledger, TransactionId}
+import io.iohk.atala.prism.node.DataPreparation
 import io.iohk.atala.prism.node.models.nodeState.LedgerData
 import io.iohk.atala.prism.node.models.{DIDData, DIDPublicKey, KeyUsage}
+import io.iohk.atala.prism.protos.models.TimestampInfo
 import org.scalatest.OptionValues._
+import tofu.logging.Logging
 
 import java.time.Instant
-import io.iohk.atala.prism.identity.{PrismDid => DID}
-import io.iohk.atala.prism.protos.models.TimestampInfo
-import io.iohk.atala.prism.node.DataPreparation
-import tofu.logging.Logs
-import tofu.logging.Logs.Universal
 
 class DIDDataRepositorySpec extends AtalaWithPostgresSpec {
-  val logs: Universal[IO] = Logs.universal[IO]
+  val logs = Logging.Make.plain[IO]
   lazy val didDataRepository: DIDDataRepository[IO] = DIDDataRepository.unsafe(database, logs)
 
   val operationDigest = digestGen(0, 1)
