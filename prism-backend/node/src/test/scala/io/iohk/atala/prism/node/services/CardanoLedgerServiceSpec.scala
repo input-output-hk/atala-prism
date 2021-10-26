@@ -79,7 +79,7 @@ class CardanoLedgerServiceSpec extends AtalaWithPostgresSpec {
         createCardanoLedgerService(cardanoWalletApiClient)
 
       // Only test that it doesn't fail, as calling the wrong endpoint with the wrong params fails
-      cardanoLedgerService.publish(atalaObject)
+      cardanoLedgerService.publish(atalaObject).run(TraceId.generateYOLO).unsafeRunSync()
     }
 
     "fail with the CannotCoverFee when no money for publishing the transaction" in {
