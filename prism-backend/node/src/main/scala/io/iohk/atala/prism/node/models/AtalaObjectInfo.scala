@@ -48,10 +48,8 @@ case class AtalaObjectInfo(
       thisBlock <- getAtalaBlock
       thatBlock <- that.getAtalaBlock
     } yield {
-      val mergedBlock = node_internal.AtalaBlock(
-        thisBlock.version,
-        thisBlock.operations ++ thatBlock.operations
-      )
+      val mergedBlock =
+        node_internal.AtalaBlock(thisBlock.operations ++ thatBlock.operations)
       val obj = node_internal
         .AtalaObject(
           blockOperationCount = mergedBlock.operations.size
@@ -81,12 +79,7 @@ case class AtalaObjectInfo(
       thatSize <- that.estimateTxMetadataSize
     } yield (thisSize + thatSize < TX_METADATA_MAX_SIZE) && (this.status == AtalaObjectStatus.Pending) && (that.status == AtalaObjectStatus.Pending)
 
-    val versionsMatch = for {
-      thisBlock <- getAtalaBlock
-      thatBlock <- that.getAtalaBlock
-    } yield thisBlock.version == thatBlock.version
-
-    sizeMaybe.getOrElse(false) & versionsMatch.getOrElse(false)
+    sizeMaybe.getOrElse(false)
   }
 
   lazy val estimateTxMetadataSize: Option[Int] = {

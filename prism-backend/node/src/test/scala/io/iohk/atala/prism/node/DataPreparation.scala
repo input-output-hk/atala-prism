@@ -245,7 +245,7 @@ object DataPreparation {
   def createBlock(
       signedOperation: node_models.SignedAtalaOperation = BlockProcessingServiceSpec.signedCreateDidOperation
   ): node_internal.AtalaBlock = {
-    node_internal.AtalaBlock(version = "1.0", operations = Seq(signedOperation))
+    node_internal.AtalaBlock(operations = Seq(signedOperation))
   }
 
   def createAtalaObject(
@@ -294,7 +294,7 @@ object DataPreparation {
       atalaOperations: List[SignedAtalaOperation],
       status: AtalaOperationStatus
   )(implicit xa: Transactor[IO]): (AtalaObjectId, List[AtalaOperationId]) = {
-    val block = node_internal.AtalaBlock("1.0", atalaOperations)
+    val block = node_internal.AtalaBlock(atalaOperations)
     val obj = node_internal
       .AtalaObject(
         blockOperationCount = atalaOperations.size

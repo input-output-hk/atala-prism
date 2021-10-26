@@ -121,7 +121,7 @@ class CardanoFeeEstimator(
   private def createAtalaObject(
       operations: SignedAtalaOperation*
   ): AtalaObject = {
-    val block = node_internal.AtalaBlock("1.0", operations)
+    val block = node_internal.AtalaBlock(operations)
     AtalaObject(blockOperationCount = operations.size).withBlockContent(block)
   }
 

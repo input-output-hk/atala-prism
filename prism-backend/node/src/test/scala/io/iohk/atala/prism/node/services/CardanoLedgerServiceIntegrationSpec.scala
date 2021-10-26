@@ -88,9 +88,7 @@ class CardanoLedgerServiceIntegrationSpec extends AtalaWithPostgresSpec {
       // Publish random object
       val atalaObject = node_internal
         .AtalaObject()
-        .withBlockContent(
-          node_internal.AtalaBlock(version = "1.0", operations = Seq())
-        )
+        .withBlockContent(node_internal.AtalaBlock(operations = Seq()))
       val transaction = cardanoLedgerService
         .publish(atalaObject)
         .futureValue(LONG_TIMEOUT)
