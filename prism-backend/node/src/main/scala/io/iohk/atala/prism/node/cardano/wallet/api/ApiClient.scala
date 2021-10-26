@@ -67,7 +67,7 @@ private[wallet] class ApiClient[F[_]: Functor](config: ApiClient.Config, backend
     basicRequest
       .contentType(ApplicationJson)
       .response(asString)
-      .method(method.httpMethod, Uri.apply(config.host, config.port).withPath(method.path))
+      .method(method.httpMethod, Uri.apply(config.host, config.port).withWholePath(method.path))
       .body(method.requestBody.map(_.noSpaces).getOrElse(""))
       .send(backend)
       .map { response =>
