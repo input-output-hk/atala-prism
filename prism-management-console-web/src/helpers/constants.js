@@ -15,6 +15,7 @@ export const GROUP_PAGE_SIZE = DEFAULT_PAGE_SIZE;
 export const CREDENTIAL_PAGE_SIZE = DEFAULT_PAGE_SIZE;
 export const PAYMENT_PAGE_SIZE = DEFAULT_PAGE_SIZE;
 export const MAX_CONTACT_PAGE_SIZE = 100;
+export const MAX_GROUP_PAGE_SIZE = 100;
 export const MAX_CREDENTIAL_PAGE_SIZE = 100;
 
 export const xScroll = 1300;
@@ -248,6 +249,8 @@ export const GROUP_SORTING_KEYS = {
   createdAt: 'CREATED_AT',
   numberOfContacts: 'NUMBER_OF_CONTACTS'
 };
+
+export const GROUP_SORTING_KEYS_TRANSLATOR = __.invert(GROUP_SORTING_KEYS);
 
 // Credentials
 export const CREDENTIAL_SORTING_KEYS = {

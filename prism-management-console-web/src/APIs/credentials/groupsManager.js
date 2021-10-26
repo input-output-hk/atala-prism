@@ -30,7 +30,7 @@ const sortByDirection = {
 
 async function getGroups({
   contactId,
-  limit = GROUP_PAGE_SIZE,
+  pageSize = GROUP_PAGE_SIZE,
   offset = 0,
   filter = {},
   sort = { field: GROUP_SORTING_KEYS.name, direction: SORTING_DIRECTIONS.ascending }
@@ -57,7 +57,7 @@ async function getGroups({
   sortBy.setDirection(sortByDirection[direction]);
 
   const groupRequest = new GetGroupsRequest();
-  groupRequest.setLimit(limit);
+  groupRequest.setLimit(pageSize);
   groupRequest.setOffset(offset);
   groupRequest.setFilterBy(filterBy);
   groupRequest.setSortBy(sortBy);
@@ -69,8 +69,13 @@ async function getGroups({
   if (sessionError) return [];
 
   const response = await this.client.getGroups(groupRequest, metadata);
+  const { groupsList, totalNumberOfGroups } = response.toObject();
+  Logger.info(
+    `got groups (from ${offset} to ${groupsList.length + offset} out of ${totalNumberOfGroups}): `,
+    groupsList
+  );
 
-  return response.toObject();
+  return { groupsList, totalNumberOfGroups };
 }
 
 async function getAllGroups() {

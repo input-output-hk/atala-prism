@@ -76,7 +76,11 @@ const NewCredential = ({
           ]}
         </div>
         <div
-          className={currentStep !== IMPORT_CREDENTIAL_DATA_STEP ? 'WizardContentContainer' : ''}
+          className={
+            currentStep !== IMPORT_CREDENTIAL_DATA_STEP
+              ? 'WizardContentContainer InfiniteScrollTableContainer'
+              : ''
+          }
         >
           {renderStep()}
         </div>

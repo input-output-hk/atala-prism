@@ -26,7 +26,7 @@ const TemplatesTable = ({
   };
 
   return (
-    <div className="TemplatesTableContainer">
+    <div className="TemplatesTableContainer InfiniteScrollTableContainer">
       <InfiniteScrollTable {...tableProps} />
     </div>
   );
