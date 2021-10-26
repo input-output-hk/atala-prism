@@ -14,8 +14,8 @@ import cats.syntax.either._
 import derevo.derive
 import derevo.tagless.applyK
 import io.iohk.atala.prism.node.cardano.logs.CardanoClientLogs
-import tofu.higherKind.Mid
 import io.iohk.atala.prism.metrics.TimeMeasureMetric
+import tofu.higherKind.Mid
 
 import scala.concurrent.ExecutionContext
 
@@ -69,7 +69,7 @@ object CardanoClient {
     for {
       cardanoDbSyncClient <- CardanoDbSyncClient[F, I](config.dbSyncConfig, logs)
       cardanoWalletApiClient <- CardanoWalletApiClient.makeResource[F, I](config.cardanoWalletConfig, logs)
-    } yield CardanoClient.make(cardanoDbSyncClient, cardanoWalletApiClient, logs).extract
+    } yield CardanoClient.make[I, F](cardanoDbSyncClient, cardanoWalletApiClient, logs).extract
 
   def makeUnsafe[F[_]: Functor](
       dbSyncClient: CardanoDbSyncClient[F],
