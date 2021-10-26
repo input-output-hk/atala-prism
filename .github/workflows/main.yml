@@ -124,7 +124,7 @@ jobs:
     name: Publish Github Packages
     needs: build-prism-backend
     runs-on: ubuntu-20.04
-    if: github.ref == 'refs/heads/master' || startsWith(github.ref, 'refs/heads/package')
+    if: github.ref == 'refs/heads/master' || startsWith(github.ref, 'refs/heads/package') || startsWith(github.ref, 'refs/heads/1-')
     defaults:
       run:
         working-directory: prism-backend
