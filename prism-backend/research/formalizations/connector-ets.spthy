@@ -1,0 +1,300 @@
+/**
+ * Description: Model for e2e based on QR code sharing and ECIES
+ *   Encrypt-then-Sign approach.
+ * Date: 20210922
+ * Authors: Jesus Diaz Vico, IOHK Atala and Research teams.
+ */
+
+theory Connector
+begin
+
+/*
+ The protocol we want to model is, in Alice and Bob notation, as follows:
+
+ (I stands for Issuer, H for Holder, C for connector)
+ ( => is secure channel; -> is normal channel )
+
+ 1. I => H: tid, pk_iss, code // Shared via QR, i.e., secure channel
+ 2. H -> C: <tid, pk_hol>, mac(pk_hol, code)
+ 3. C -> I: <tid, pk_hol> mac(pk_hol, code)
+ 4. I:      Fetch code used for session tid
+            Verify mac(pk_hol, code) 
+            r = Fresh(Z)
+            k = (pk_hol)^r
+            k_1 || k_2 = kdf(k)
+            c = senc((pk_iss, cred), k_1)
+	    s = sig((c, cred), sk_iss)
+            m = mac(c, k_2)
+ 5. I -> C: <c, m, g^r>
+ 6. C -> H: <c, m, g^r>
+ 7. H:      k = (g^r)^u
+            k_1 || k_2 = kdf(k)
+            m' = mac(c, k_2)
+            Assert m = m'
+            (pk_iss, cred) = sdec(c, k_1)
+	    verify(sig, (c, cred), pk_iss)?
+
+ Steps 1-3 are the QRdid protocol, whereby the Issuer gets assured that 
+ the holder's public key is pkH. It needs a secure channel.
+ 
+ Steps 4-7 correspond to an execution of an ECIES protocol, whereby the
+ Issuer leverages the holder's public key obtained in the previous steps.
+
+ After this, the holder is assured that the credential s/he received comes
+ from the legitimate issuer, whereas the issuer is assured that only the
+ intended holder received it. Of course, unless any of them is compromised.
+
+ Note: The connector is not modelled here because it is treated essentially
+ as an untrusted party -- hence, it *is* the adversary, which is natively
+ modelled by Tamarin as a Dolev-Yao adversary.
+
+*/
+
+builtins: hashing, symmetric-encryption, asymmetric-encryption, signing,
+	  diffie-hellman
+
+/* Note: splitL, splitR and merge functions are aimed to be used for
+   splitting bitstrings to be used as keys. However, they do not model
+   that leaking part of a key *does* leak much information about that
+   key. Hence, for this modelling to be valid, we should check that all
+   the larger bitstring and its splits are kept secret. */
+functions: kdf/1, splitL/1, splitR/1, merge/2, mac/2
+
+equations: merge(splitL(v),splitR(v)) = v
+
+/* Rule for sending a message through a secure (confidential & authenticated) 
+   channel. Used here for QR code sharing. */
+rule ChanOut_S:
+        [ Out_S($A,$B,x) ]
+      --[ ChanOut_S($A,$B,x) ]->
+        [ Sec($A,$B,x) ]
+
+/* Rule for sending a message from a secure (confidential & authenticated) 
+   channel. Used here for QR code sharing. */
+rule ChanIn_S:
+        [ Sec($A,$B,x) ]
+      --[ ChanIn_S($A,$B,x) ]->
+        [ In_S($A,$B,x) ]
+
+rule Register_pke:
+  [ Fr(~x) ] 
+  --[ RegisteredE($A) ]-> 
+  [ !Pke($A, 'g'^~x),
+    !Ltke($A, ~x) ]
+
+rule Register_pks:
+  [ Fr(~x) ]
+  --[ RegisteredS($A) ]->
+  [ !Pks($A, pk(~x)),
+    !Ltks($A, ~x) ]
+
+rule Reveal_ltke:
+  [ !Ltke(A, ltke) ]
+  --[ LtkeReveal(A) ]->
+  [ Out(ltke) ]
+
+rule Reveal_ltks:
+  [ !Ltks(A, ltks) ]
+  --[ LtksReveal(A) ]->
+  [ Out(ltks) ]
+
+/* Rule for fetching an existing DH public key. */
+rule Get_pke:
+  [ !Pke(A, pk) ] 
+  --> 
+  [ Out(pk) ]
+
+/* Rule for fetching an existing public key for signature verification. */
+rule Get_pks:
+  [ !Pks(A, pk) ]
+  -->
+  [ Out(pk) ]
+
+/* Rule for initializing the issuer */
+rule Issuer_Init:
+     [ Fr(~id), !Ltks($I, ~lkIs) ]
+     --[ Create($I, ~id), Role('I') ]->
+     [ St_Issuer_0($I, ~id, ~lkIs, pk(~lkIs)) ]
+
+/* Rule for initializing the holder */
+rule Holder_Init:
+     [ Fr(~id), !Ltke($H, ~lkHe) ]
+     --[ Create($H, ~id), Role('H') ]->
+     [ St_Holder_0($H, ~id, ~lkHe, 'g'^~lkHe) ]
+
+/* The issuer shares the QR code via the secure channel. */
+rule Issuer_1:
+     [ Fr(~code),
+       Fr(~tid),
+       St_Issuer_0($I, ~id, ~lkIs, pkIs) ]
+     --[ Running_I_1($I, $H, <'H', 'I', <~tid, ~code, pk(~lkIs)>>) ]->
+     [ Out_S($I, $H, <~tid, ~code, pkIs>),
+       St_Issuer_1($I, ~id, ~lkIs, $H, ~tid, ~code) ]
+
+/* The holder receives the QR code through the secure channel, and responds. */
+rule Holder_2:
+     let mc = mac(pkHe, ~code) in
+     [ In_S($I, $H, <~tid, ~code, pkIs>),
+       St_Holder_0($H, ~id, ~lkHe, pkHe) ]
+       --[ SecretCode(~code), Honest($H), Honest($I),
+           Commit_H_1($H, $I, <'H', 'I', <~tid, ~code, pkIs>>),
+	   Running_H_1($H, $I, <'H', 'I', <~tid, pkHe, mc>>)]->
+     [ Out(<<~tid, pkHe>, mc>),
+       St_Holder_1($H, ~id, ~lkHe, pkHe, $I, pkIs) ]
+
+/* The issuer receives back the MAC'ed QR code, via an insecure channel, 
+   plus the Holder's public key. */
+rule Issuer_3:
+     let mc_pkh = mac(pkHe, ~code)
+     	 k = kdf(pkHe^~r)
+         k1 = splitL(k)
+	 k2 = splitR(k)
+ 	 ccred = senc(<pk(~lkIs), ~cred>, k1)
+  	 mc_cred = mac(ccred, k2)
+	 sig = sign(h(<~cred, ccred>), ~lkIs)
+     in    
+     [ St_Issuer_1($I, ~id, ~lkIs, $H, ~tid, ~code),
+       In(<<~tid, pkHe>, mc_pkh>),
+       Fr(~r), Fr(~cred) ]
+     --[ SecretCode(~code), SecretCred(~cred), Role('I'),
+     	 Honest($H), Honest($I),     	 
+         AuthenticPK($H, <'H', 'I', ~tid, pkHe, mc_pkh>),
+	 Commit_I_1($I, $H, <'H', 'I', <~tid, pkHe, mc_pkh>>),
+	 Running_I_2($I, $H, <'H', 'I', <ccred, mc_cred, sig, 'g'^~r>>) ]->
+     [ Out(<ccred, mc_cred, sig, 'g'^~r>) ]       
+
+/* The holder receives the ECIES-encrypted message by the issuer, and 
+   decrypts it. */
+rule Holder_4:
+     let k = kdf(R^~lkHe)
+         k1 = splitL(k)
+	 k2 = splitR(k)
+	 cred = snd(sdec(ccred, k1))
+	 mc_cred = mac(ccred, k2)
+     in
+     [ St_Holder_1($H, ~id, ~lkHe, pkHe, $I, pkIs),
+       In(<ccred, mc_cred, sig, R>) ]
+     --[ Eq(pkIs, fst(sdec(ccred, k1))),
+	 Eq(verify(sig, h(<cred, ccred>), pkIs), true),
+         SecretCred(cred),
+	 AuthenticCred($H, <'H', 'I', <ccred, mc_cred, sig, R>>),
+	 Honest($H), Honest($I), Role('H'),
+	 Commit_H_2($H, $I, <'H', 'I', <ccred, mc_cred, sig, R>>)]->
+     []
+
+restriction Equality:
+	    "All x y #i. Eq(x,y) @i ==> x = y"
+
+/* Safety check */
+lemma executable:
+      exists-trace
+	"
+	Ex I H idi idh #i1 #j1.
+	    Create(I, idi) @i1 & Create(H, idh) @j1
+	    & ( Ex m #i2 #j2. Running_I_1(I, H, m) @i2 & i1 < i2
+	        & Commit_H_1(H, I, m) @j2 & j1 < j2
+		  & ( Ex m2 #i3 #j3. Running_H_1(H, I, m2) @i3 & i2 < i3
+		      & Commit_I_1(I, H, m2) @j3 & j2 < j3
+		      	& ( Ex m3 #i4 #j4. Running_I_2(I, H, m3) @i4 & i3 < i4
+			  & Commit_H_2(H, I, m3) @j4 & j3 < j4
+			)
+		  )
+	    )
+	"
+
+/* Secrecy of the code sent by the Issuer and back by the Holder */
+lemma code_secrecy:
+      "All c #i. SecretCode(c) @ #i ==> not (Ex #j. K(c) @ #j)"
+
+/* Authenticity of the public key received by the Issuer from the Holder */
+lemma pkH_authenticity:
+      "All H m #i. AuthenticPK(H, m) @ #i
+      	   ==>
+	   (Ex I #j. Running_H_1(H, I, m) @ #j & #j < #i)"
+
+/* Injective agreement for secret code message exchange */
+lemma code_injective_agreement:
+      "All H I t #i.
+      	   Commit_H_1(H, I, t) @ i
+      	   ==>
+	   (Ex #j. Running_I_1(I, H, t) @j
+		& j < i
+		& not (Ex H2 I2 #i2. Commit_H_1(H2, I2, t) @i2
+		  & not (#i2 = #i)))"
+
+/* Injective agreement for Holder's pk message exchange */
+lemma pkH_injective_agreement:
+      "All H I t #i.
+      	   Commit_I_1(I, H, t) @ i
+      	   ==>
+	   (Ex #j. Running_H_1(H, I, t) @j
+		& j < i
+		& not (Ex H2 I2 #i2. Commit_I_1(I2, H2, t) @i2
+		  & not (#i2 = #i)))"
+
+/* Credential secrecy from the point of view of an honest issuer */
+lemma cred_secrecy_issuer:
+      all-traces
+      "(All c #i. SecretCred(c) @ #i & Role('I') @ #i
+      	   ==>
+	   (not (Ex #j. K(c) @ #j)) |
+	   (Ex I #j. LtksReveal(I) @ #j & Honest(I) @ #i) |
+	   (Ex H #j. LtkeReveal(H) @ #j & Honest(H) @ #i)
+      )"
+
+/* Credential secrecy from the point of view of an honest holder
+   -- Requires also that the signing key of the issuer is not leaked! */
+lemma cred_secrecy_holder:
+      all-traces
+      "(All c #i. SecretCred(c) @ #i & Role('H') @ #i
+      	   ==>
+	   (not (Ex #j. K(c) @ #j)) |
+	   (Ex H #j. LtkeReveal(H) @ #j & Honest(H) @ #i) |
+	   (Ex I #j. LtksReveal(I) @ #j & Honest(I) @ #i)
+      )"
+
+/* Credential authenticity: it comes from the Issuer
+   -- unless issuer and receiving holder are compromised. */
+lemma cred_auth:
+      "All H m #i. AuthenticCred(H, m) @i
+      	   ==>
+	   ((Ex I #j. Running_I_2(I, H, m) @j & j < i) |
+	    (Ex I #j. LtksReveal(I) @j) |
+	    (Ex #j. LtkeReveal(H) @j))"
+
+/* Injective agreement for credential message exchange */
+lemma cred_injective_agreement:
+      "All H I t #i.
+      	   Commit_H_2(H, I, t) @ i
+      	   ==>
+	   (Ex #j. Running_I_2(I, H, t) @j
+		& j < i
+		& not (Ex H2 I2 #i2. Commit_H_2(H2, I2, t) @i2
+		  & not (#i2 = #i)))"
+
+/* Non-Injective agreement for credential message exchange */
+lemma cred_noninjective_agreement:
+      "All H I t #i.
+      	   Commit_H_2(H, I, t) @ i
+      	   ==>
+	   (Ex #j. Running_I_2(I, H, t) @j)
+	   | (Ex I #r. LtksReveal(I) @r & Honest(I) @i)
+	   | (Ex H #r. LtkeReveal(H) @r & Honest(H) @i)"
+
+/* Weak agreement for credential message exchange */
+lemma cred_weak_agreement:
+      "All H I t1 #i.
+      	   Commit_H_2(H, I, t1) @i
+	   ==> (Ex t2 #j. Running_I_2(I, H, t2) @j)
+	       | (Ex I #r. LtksReveal(I) @r & Honest(I) @i)
+	       | (Ex H #r. LtkeReveal(H) @r & Honest(H) @i)"
+
+/* Aliveness for credential message exchange */
+lemma cred_aliveness:
+      "All H I t #i.
+      	   Commit_H_2(H, I, t) @i
+	   ==> (Ex id #j. Create(I, id) @j)
+	       | (Ex I #r. LtksReveal(I) @r & Honest(I) @i)
+	       | (Ex H #r. LtkeReveal(H) @r & Honest(H) @i)"
+
+end
