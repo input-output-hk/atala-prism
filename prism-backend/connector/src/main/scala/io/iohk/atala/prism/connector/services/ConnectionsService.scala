@@ -1,12 +1,12 @@
 package io.iohk.atala.prism.connector.services
 
-import cats.effect.{BracketThrow, MonadThrow}
+import cats.effect.{BracketThrow, MonadThrow, Resource}
 import cats.syntax.applicative._
 import cats.syntax.applicativeError._
 import cats.syntax.comonad._
 import cats.syntax.flatMap._
 import cats.syntax.functor._
-import cats.{Comonad, Functor}
+import cats.{Applicative, Comonad, Functor}
 import derevo.derive
 import derevo.tagless.applyK
 import io.iohk.atala.prism.connector.errors._
@@ -92,6 +92,12 @@ object ConnectionsService {
         nodeService
       )
     }
+
+  def resource[F[_]: BracketThrow: Execute, R[_]: Applicative: Functor](
+      connectionsRepository: ConnectionsRepository[F],
+      nodeService: NodeServiceGrpc.NodeService,
+      logs: Logs[R, F]
+  ): Resource[R, ConnectionsService[F]] = Resource.eval(ConnectionsService(connectionsRepository, nodeService, logs))
 
   def unsafe[F[_]: BracketThrow: Execute, R[_]: Comonad](
       connectionsRepository: ConnectionsRepository[F],
@@ -186,8 +192,9 @@ private class ConnectionsServiceImpl[F[_]: MonadThrow](
         .map[Either[GetConnectionCommunicationKeysError, Seq[
           (String, ECPublicKey)
         ]]](Right(_))
-        .recover { case ex =>
-          Left(co(InternalConnectorError(ex)))
+        .recover {
+          case ex =>
+            Left(co(InternalConnectorError(ex)))
         }
     }
 
