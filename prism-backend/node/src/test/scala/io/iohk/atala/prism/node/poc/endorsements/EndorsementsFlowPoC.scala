@@ -34,7 +34,7 @@ import io.iohk.atala.prism.node.services.{
   SubmissionSchedulingService,
   SubmissionService
 }
-import io.iohk.atala.prism.node.{DataPreparation, NodeServiceImpl}
+import io.iohk.atala.prism.node.{DataPreparation, NodeServiceImpl, UnderlyingLedger}
 import io.iohk.atala.prism.protos.{node_api, node_models}
 import io.iohk.atala.prism.node.poc.Wallet
 import io.iohk.atala.prism.node.poc.endorsements.EndorsementsService.SignedKey
@@ -72,7 +72,7 @@ class EndorsementsFlowPoC extends AtalaWithPostgresSpec with BeforeAndAfterEach 
   protected var keyValuesRepository: KeyValuesRepository[IOWithTraceIdContext] =
     _
   protected var credentialBatchesRepository: CredentialBatchesRepository[IOWithTraceIdContext] = _
-  protected var atalaReferenceLedger: InMemoryLedgerService = _
+  protected var atalaReferenceLedger: UnderlyingLedger[IOWithTraceIdContext] = _
   protected var blockProcessingService: BlockProcessingServiceImpl = _
   protected var objectManagementService: ObjectManagementService = _
   protected var submissionService: SubmissionService[IOWithTraceIdContext] = _
@@ -102,7 +102,7 @@ class EndorsementsFlowPoC extends AtalaWithPostgresSpec with BeforeAndAfterEach 
         .saveObject(notification)
     }
 
-    atalaReferenceLedger = new InMemoryLedgerService(onAtalaReference)
+    atalaReferenceLedger = InMemoryLedgerService.unsafe(onAtalaReference, endorsementsFlowPoCLogs)
     blockProcessingService = new BlockProcessingServiceImpl
     atalaOperationsRepository = AtalaOperationsRepository.unsafe(
       dbLiftedToTraceIdIO,

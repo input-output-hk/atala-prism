@@ -100,7 +100,7 @@ class NodeApp(executionContext: ExecutionContext) { self =>
           )
         case "in-memory" =>
           logger.info("Using in-memory ledger")
-          (new InMemoryLedgerService(onAtalaObject), None)
+          (InMemoryLedgerService.unsafe(onAtalaObject, logs), None)
       }
     logger.info("Creating blocks processor")
     val blockProcessingService = new BlockProcessingServiceImpl
@@ -195,7 +195,7 @@ class NodeApp(executionContext: ExecutionContext) { self =>
       onCardanoBlock: CardanoBlockHandler,
       onAtalaObject: AtalaObjectNotification => Future[Unit],
       logs: Logs[IO, IOWithTraceIdContext]
-  ): (CardanoLedgerService, Option[IO[Unit]]) = {
+  ): (UnderlyingLedger[IOWithTraceIdContext], Option[IO[Unit]]) = {
     val config = NodeConfig.cardanoConfig(globalConfig.getConfig("cardano"))
     val (cardanoClient, releaseClient) =
       createCardanoClient(config.cardanoClientConfig, logs)
@@ -203,13 +203,15 @@ class NodeApp(executionContext: ExecutionContext) { self =>
       "node-reporter",
       NodeReporter(config, cardanoClient, keyValueService)
     )
-    val cardano = CardanoLedgerService(
-      config,
-      cardanoClient,
-      keyValueService,
-      onCardanoBlock,
-      onAtalaObject
-    )
+    val cardano = CardanoLedgerService
+      .unsafe[IOWithTraceIdContext, IO](
+        config,
+        cardanoClient,
+        keyValueService,
+        onCardanoBlock,
+        onAtalaObject,
+        logs
+      )
     (cardano, Some(releaseClient))
   }
 

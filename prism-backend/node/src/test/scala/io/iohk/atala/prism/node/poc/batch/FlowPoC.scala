@@ -27,7 +27,7 @@ import io.iohk.atala.prism.node.services.{
   SubmissionSchedulingService,
   SubmissionService
 }
-import io.iohk.atala.prism.node.{DataPreparation, NodeServiceImpl}
+import io.iohk.atala.prism.node.{DataPreparation, NodeServiceImpl, UnderlyingLedger}
 import io.iohk.atala.prism.protos.node_api
 import io.iohk.atala.prism.utils.NodeClientUtils._
 import monix.execution.Scheduler.Implicits.{global => scheduler}
@@ -56,7 +56,7 @@ class FlowPoC extends AtalaWithPostgresSpec with BeforeAndAfterEach {
   protected var didDataRepository: DIDDataRepository[IOWithTraceIdContext] = _
   protected var atalaOperationsRepository: AtalaOperationsRepository[IOWithTraceIdContext] = _
   protected var credentialBatchesRepository: CredentialBatchesRepository[IOWithTraceIdContext] = _
-  protected var atalaReferenceLedger: InMemoryLedgerService = _
+  protected var atalaReferenceLedger: UnderlyingLedger[IOWithTraceIdContext] = _
   protected var blockProcessingService: BlockProcessingServiceImpl = _
   protected var objectManagementService: ObjectManagementService = _
   protected var submissionService: SubmissionService[IOWithTraceIdContext] = _
@@ -83,7 +83,7 @@ class FlowPoC extends AtalaWithPostgresSpec with BeforeAndAfterEach {
         .saveObject(notification)
     }
 
-    atalaReferenceLedger = new InMemoryLedgerService(onAtalaReference)
+    atalaReferenceLedger = InMemoryLedgerService.unsafe(onAtalaReference, flowPocTestLogs)
     blockProcessingService = new BlockProcessingServiceImpl
     atalaOperationsRepository = AtalaOperationsRepository.unsafe(dbLiftedToTraceIdIO, flowPocTestLogs)
     atalaObjectsTransactionsRepository = AtalaObjectsTransactionsRepository
