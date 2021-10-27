@@ -1,0 +1,63 @@
+\section{Introduction}
+\label{sec:introduction}
+
+Privacy is a human right \needcite. It is also one of the most threatened ones
+as a consequence of digitalization and hyperconnectivity \needcite. Maybe one
+of the reasons behind this is that, on many occasions, it conflicts with another
+human right: security \needcite. The most representative occasion in which this
+happens is when we, as individuals%
+\footnote{This, of course, also happens when authenticating machines -- as they
+  carry to some extent information of some individual(s).}%
+, want to gain access to some (possibly
+digital) good or service. In that context, one has to prove having the legitimate
+rights to access that good or service. However, in the process of doing so, the
+entity verifying that we have the rights, typically learns something about us,
+like our real name. This has been traditionally fine in physical systems, as the
+impact was mostly local. However, with the advent of digitalization and
+hyperconnectivity, this usually means that something related to our identity is
+being logged in some server, who knows where and with what security controls,
+and probably vulnerable to a number of criminal activities \needcite.
+
+Of course, the cryptographic community has not been stranger to the need of
+providing satisfactory solutions that enable both privacy and security. We
+refer to all works trying to address to this need as \emph{privacy-preserving
+  authentication} mechanisms. For decades, a huge amount of research, with many
+variations, has been produced in the field. Sadly, still with limited impact in
+the real world. Within this context, the goal of this review is manyfold: from a
+practical perspective, serve
+as a hub to security and privacy professionals that may find themselves in need
+to balance privacy and security in some real world application; from a more
+academic one, provide a (somehow detailed) overview of the vast amount of
+literature in the field, which is already overwhelming enough to make it hard
+to find the most appropriate variant of some property we may find ourselves
+in need to provide; and finally, attempt to throw some insight into why such a
+vast academic work has so far failed to gain more real world adoption.
+
+In order to achieve this, %
+we go over the main cryptographic primitives used to build privacy-preserving
+authentication mechanisms. For all of them, we first provide a high-level
+intuition of the approach to protect users' privacy. Then, we overview the
+most prominent security models since their inception, and complement this
+with some relevant variations concerning the provided functionality. We also
+summarise the main results from an efficiency standpoint, and the main
+challenges found so far both in theory and practice. To gain some initial
+insight into the academic impact of each primitive, we provide (approximate)
+numbers on publications in the main cryptography, security and privacy venues.
+Finally, with a more practical mindset, we overview the applications that each
+primitive has ``in theory'', and the extent to which they have been deployed
+in the real world.
+
+\note{Argue/mention that focus is on primitives that can be used for signing.
+  This therefore excludes protocols that can only be used for anonymous
+  authentication, but not anonymous singing per se (e.g., PAKE, PASTA, PESTO...
+  and probably also Nymble, PEREA, BLAC...)}
+
+\note{Create a graph of relationships between basic primitives and their
+  applications. E.g., much of
+  the work in SRP group signatures and DAA seems to be derived from randomizable
+  signatures (which, afaik, are also a foundation for anonymous credentials).}
+
+%%% Local Variables:
+%%% mode: latex
+%%% TeX-master: "sok-privsig"
+%%% End:

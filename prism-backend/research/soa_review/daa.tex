@@ -1,0 +1,141 @@
+\section{Direct Anonymous Attestation}
+\label{sec:daa}
+
+% \begin{enumerate}
+% \item Main intuition.
+% \item Evolution of main security models.
+% \item Variations concerning functionality.
+% \item Evolution in efficiency.
+% \item Main issues.
+% \item Approx. number of related works in main crypto+security venues: IACR,
+%   Esorics, CCS, AsiaCCS, SP, EuroSP, Usenix Sec and Privacy, PETs...
+% \end{enumerate}
+
+\paragraph{Main intuition.}
+%
+Direct Anonymous Attestation \cite{bcc04} was initially proposed to address a
+need in the Trusted Computing Group
+\footnote{\url{https://trustedcomputinggroup.org/}. Last access on October 29th,
+  2020.}. Take a computing platform equipped with a trusted hardware element
+(referred to as TPM, from Trusted Platform Module, in the TCG jargon). A TPM
+is trusted to securely store secrets and perform some cryptographic operations,
+but is otherwise not able to communicate directly with the outside world. To
+do that, it has to leverage other components of the larger computing platform,
+which are not fully trusted. Then, the challenge is to come up with a way for
+third parties (verifiers) to check that they are indeed communicating with a
+computing platform that is equipped with a valid TPM. Moreover, in order to
+preserve privacy, a requirement is not to reveal which specific TPM the
+verifier is communicating with. Initially, several proposals were made
+\needcite\footnote{\cite{bcc04} references works by Boneh et al, and Brickel,
+  but no academic reference seems to exist.}, but it was \cite{bcc04} the one
+that was finally adopted.
+
+\subsection{Approaches, Models, and Variations}
+\label{ssec:daaapproach}
+
+\note{For now, just write down notes on the DAA papers. Then, unify.}
+\note{Remember: talk about the properties that security models aim to achieve
+  in DAA.}
+
+DAA has many similarities with group signatures, but also important differences.
+While in group signatures the user joining the group is an ``indivisible''
+entity, in DAA this role is divided among the TPM and the larger platform
+containing the TPM (usually referred to as the Host). This undoubtedly
+complicates the modelling, as different trust assumptions have to be made for
+each of them. Also, security in DAA is modelled in the UC paradigm \todo{why?}
+\todo{(not true. Some works use game-based definitions, as \cite{bfg+13} -- see
+  also the discussion and references therein)},
+whereas group signatures are modelled with game-based definitions. From a
+functionality perspective, DAA does not allow opening and, also, uses pseudonyms
+that can be leveraged to provide linkability%
+\footnote{We note that, recently, group signature schemes have been proposed
+  that do not implement opening either \cite{dl21}, and also leverage pseudonyms
+  to introduce some kind of linkability \cite{gl19,kss19,dl21} -- and, indeed,
+  these schemes draw techniques from DAA.}.
+
+Besides these differences, the typical approach is similar: a new TPM runs an
+interactive $\langle Join,Issue \rangle$ protocol with an issuer whereby the
+TPM receives a membership credential. Then, to produce attestations, the TPM
+creates SPKs of a valid credential, over a message including information about
+the status of the Host. However, since there is no opening, DAA employs the
+\emph{Sign-Randomize-Prove} strategy from group signatures, which produces more
+efficient attestations (in group signatures, at the cost of more inefficient
+opening). In addition, the pseudonyms added in DAA are built from \emph{scopes}
+(also called \emph{basenames}) and cryptographic hash functions \todo{more
+  insight on this}.
+
+In \cite{bl07}, an extension of the DAA approach in \cite{bcc04} is made so
+that it is possible to revoke TPMs not only based on leaked private keys (which
+is a restricted approach), but also based on signatures and on requests by the
+issuer. To do so, the membership proving protocol (roughly, signing) is extended
+so that the prover demonstrates that its membership credential is different to
+the ones who have been included in revocation lists by a revocation authority.
+This, however, incurs in extra costs of the signing and verification protocols,
+which grow linearly with the number of revoked users. During signing, \cite{bl07}
+also remove the basename concept, which in \cite{bcc04} is used to derive
+linkable pseudonyms when needed. Instead, they employ random bases. Finally, in
+their model, \cite{bl07} do not differentiate between TPM and host. While the
+authors give some insight into how to separate them, extending the formalization
+(and proofs) has been shown to be problematic \todo{Bernhard work and later
+  criticism?}
+
+\cite{cms08} points out a flaw in the reduction of \cite{bcc04} and fixes it.
+Interesting definition of DAA (maybe useful for giving a high-level overview).
+It also provides a security proof (simulation/UC-based model) for the
+scheme in \cite{cms08b}. In \cite{cms08b}, the authors present a pairing-based
+DAA system using asymmetric pairings, achieving improved efficiency.
+However, as pointed out in \cite{bfg+13} linking is still not correctly modelled,
+being possible to link different authentications from a same TPM \todo{no detail
+  is given. Try to see how/why.}
+\note{\cite{cms08b} contains some nice (albeit now old) cost comparison.}
+
+\cite{bcl09} proposes an alternative model using games, rather than the
+simulation paradigm. They show that security in the UC model by \cite{bcc04}
+implies security in their game-based model, but the converse is left as an
+open question. However, as pointed out in \cite{bfg+13}, the model in
+\cite{bcc04} has a flaw concerning linkability, which is thus inherited by
+\cite{bcl09}. \todo{Cross-check this with subsequent Camensich-Lehmann works.}
+Construction-wise, they propose an instantiation based on bilinear pairings,
+which greatly improves costs.
+
+In \cite{bfg+13}, flaws are pointed out in previous schemes (notably in the
+one adopted by the TCG, \cite{bcc04}) that affect unforgeability and linkability
+of the produced signatures. They argue that proving security in the UC model is
+hard and error-prone in for DAA. Thus, they to game-based approach. In this
+context, they propose a black box approach for building DAA systems from
+\emph{weakly blind signatures} and \emph{Linkable Indistinguishable Tag} systems.
+Moreover, they first capture security for scenarios in which TPM and host are
+the same entity; then, they provide an approach to generalise to the case
+in which they are different entities (with the different trust assumptions).
+However, in their model, they make some odd requirements in the way they
+capture identity \todo{delve more into this, and reference the other paper
+  that points this out.}
+
+\subsection{Related Primitives}
+
+\begin{itemize}
+\item Anonymous Credentials. \cite{bcc04} builds on Camenisch-Lysyanskaya
+  signatures.
+\item \cite{cms08b} mentions two schemes that are based on two different
+  variants of CL signatures (one uses pairings, one does not).
+\end{itemize}
+
+\subsection{Applications}
+\label{ssec:daaapplication}
+
+\subsubsection{Theory}
+\label{sssec:daatheoryapp}
+
+\subsubsection{Real World Deployments}
+\label{sssec:daarwdeploy}
+
+\subsection{TODO}
+
+\cite{cdl16,cdl16b,ccd+17,cdl17,cu15}.
+
+Pairing-based DAA: see references in page 2 of \cite{bfg+11}.
+
+%%% Local Variables:
+%%% mode: latex
+%%% TeX-master: "sok-privsig"
+%%% End:

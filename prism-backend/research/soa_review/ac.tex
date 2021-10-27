@@ -1,0 +1,86 @@
+\section{Anonymous Credentials}
+\label{sec:ac}
+
+First proposed in \cite{chau85}.
+CL signatures (idemix) \cite{cl01,cl04}.
+UC formalisation in \cite{cdhk15}.
+Brands works (U-prove).
+Coconut paper, referenced in \cite[Section 1]{cdl+20}: anonymous credentials with
+threshold opening.
+
+\begin{enumerate}
+\item Main intuition.
+\item Evolution of main security models.
+\item Variations concerning functionality.
+\item Evolution in efficiency.
+\item Main issues.
+\item Approx. number of related works in main crypto+security venues: IACR,
+  Esorics, CCS, AsiaCCS, SP, EuroSP, Usenix Sec and Privacy, PETs...
+\end{enumerate}
+
+\subsection{Approaches, Models, and Variations}
+
+\paragraph{Main approaches.}
+
+\paragraph{Main security models.}
+
+\paragraph{Variations in functionality.}
+
+\paragraph{Efficiency.}
+
+\paragraph{Main challenges.}
+
+\subsection{Related Primitives}
+
+\subsubsection{Pseudonym Systems}
+\label{sssec:pseudonyms}
+
+\doubt{Not sure if this fits here.}
+
+\subsection{Applications}
+\label{ssec:acapplication}
+
+\subsubsection{Theory}
+\label{sssec:actheoryapp}
+
+Main approaches to build ACs (from ToPS paper I reviewed):
+
+\begin{itemize}
+\item Re-randomizable signatures on commitments (also as in DAA):
+  \cite{cl02,cl04,lmpy16,ps16}.
+\item Equivalence class signatures: \cite{fhs19,hs14}.
+\item Redactable signatures \cite{cdhk15,sand20} and malleable signatures
+  \cite{ckl14}.
+\item Predicate encryption: \cite{dmm+18}.
+\end{itemize}
+
+PS: Tokenization.
+
+\subsubsection{Real World Deployments}
+\label{sssec:acrwdeploy}
+
+PS: Tokenization.
+U-Prove.
+Idemix.
+Signal's AC \cite{}
+
+\subsection{TODO}
+
+\cite{cl04,ckl+15}.
+
+Look also for the non-bilinear-based approach of \cite{cl04}.
+
+[ToPS paper I reviewed] refers to a strategy to do threshold issuing in \cite{bbh06}.
+
+Mental note: some of the early CL papers mentioned something about ACs
+containing some secret key/value of the credential holder (I think, to avoid
+sharing or something like that). Check which paper was it, and what happened
+with this concept in subsequent refinements. If this has been removed, this may
+be one key difference with respect to group signatures: i.e., without some
+holder-specific secret value in the show-verify protocols, it is just not
+possible to ensure traceability and/or non-frameability.
+
+%%% Local Variables:
+%%% mode: latex
+%%% TeX-master: "sok-privsig"
+%%% End:

@@ -1,0 +1,335 @@
+\section{Group Signatures}
+\label{sec:gs}
+
+\paragraph{Main intuition.}
+%
+Group signatures were first proposed by Chaum and van Heyst in 1991 \cite{ch91}
+as a privacy-respectful extension to conventional digital signatures.
+The intuition is simple: in order to avoid revealing the identity of the signer,
+we make her signatures look indistinguishable to the signatures of all other
+members of a group. Then, any entity with access to the group public key can
+verify that a group signature comes from a member of the group, but cannot
+tell which specific one actually created it.
+%
+Beyond this, group signature schemes have one main feature: a (set of) group
+manager(s) control who can become a member of the group. Also, most frequently,
+a (set of) group manager(s) decide when to expell a member from the group, or
+when to re-identify the creator of a specific signature.
+%
+The initial idea put forward in \cite{ch91} had, as is to be expected, a number
+of limitations. In the following years, the seminal work was extended, both
+formally, functionally and efficiency-wise.
+
+\subsection{Approaches, Models, and Variations}
+\label{ssec:gsapproach}
+
+\subsubsection{Main approaches.}
+%
+There are two main ways that are recurrently used to instantiate group signature
+schemes: \emph{Sign-Encrypt-Prove} and \emph{Sign-Randomize-Prove}. In both
+variants, when new members of the group join, they receive a credential (i.e.,
+a signature by the issuer) derived from a secret they choose. Then, when
+creating a group signature, they prove control a valid credential and the
+associated secret. The difference lies on how this credential is kept hidden
+from the verifier.
+%
+In the sign-encrypt-prove variant, proposed in \cite{bmw03}, signers
+encrypt their credential with a \doubt{IND-CCA2? what type?} scheme and then
+create a NIZK \needcite proof of knowledge of such a valid credential
+over their secret (plus the message they want to sign). This typically results
+in schemes with more efficient openings, as the opening authority just has
+to decrypt the encrypted credential. However, group signatures require more
+space.
+%
+In the sign-randomize-prove variant, proposed in \needcite \todo{Get Shorty?},
+credentials are actually randomizable signatures by the issuer. Signers then
+randomize the signature (credential), and create a NIZK proof of knowledge that
+this credential is issued for a secret they know (again, plus the message
+they want to sign). This usually results in schemes with less efficient openings,
+as the opening authority needs to iterate over the registered credentials until
+finding the one from which the randomized credential was derived. However, the
+produced group signatures are also shorter.
+
+When a new user wants to become a group member, a common habit is also to have
+her prove ownership of a conventional digital identity. This identity is then
+added to the de-identifying information leveraged by the opening authority, in
+order to be able to associate (anonymous) group signatures to a real-world
+identity. These conventional digital identities can be any type of PKI-based
+(e.g. X.509 or equivalent) certificate. \todo{This is important for
+  non-frameability! Check \cite[Section 3.2]{cdl+20} and re-state this.}
+\todo{This is indeed necessary for non-repudiation (mentioned in
+  \cite[Section 4]{lpy12}).}
+\todo{Typically used in schemes with verifiable openings. See
+  \cite[Section 1.3.3]{bsi12}.}
+
+\subsubsection{Main security models.}
+%
+Security for group signatures is given in the form of game-based definitions
+\needcite.
+The first formal security model appeared in \cite{bmw03}. It captured security
+for groups with a prefixed set of members, added by the group manager upon the
+creation of the group. This static requirement was too restrictive to be
+realistic, and was quickly extended in \cite{bsz05} and \cite{kty04,ky06}, to
+model that new users can join the group after it has been created. The models
+in \cite{bsz05,kty04,ky06} are usually referred to as dynamic or partially
+dynamic. \cite{bcc+16} generalizes the (partially) dynamic setting into a fully
+dynamic model, which considers extra desirable security properties when users
+can be revoked (i.e., removed from the group).
+
+Up to some subtleties, the main security properties in most works that appeared
+after \cite{bmw03,bsz05,kty04,ky06} are as follows:
+
+\begin{itemize}
+\item {\bf Anonymity}. This is the core property concerning privacy. It
+  ensures that given a signature produced by one out of two honest (challenge)
+  users picked at random from the set of honest group members, it should be
+  unfeasible to determine which one actually created it. 
+  
+\item {\bf Traceability}. This property (covered by the misidentification attack
+  in \cite{kty04,ky06}, and spaning also non-frameability in \cite{bmw03})
+  captures that it must be possible (by the proper authority) to unambiguously
+  recover the identity of the signer of any valid group signature.
+
+\item {\bf Non-frameability}. This property (considered in the framing attacks
+  in \cite{kty04,ky06}) requires that no adversary should be able to create
+  valid signatures that can be used to incriminate honest users by having them
+  open to an honest user who did not create them.
+ 
+\end{itemize}
+
+\cite{bcc+16} also includes a trace soundness property, ensuring that signatures
+can be associated (via opening proofs) to only one user \todo{why does this not
+  appear in the other models? Maybe because they don't support verifiable
+  openings? Check \cite{kss19} and, if so, move this to the variations in
+  functionality.}
+
+\subsubsection{Variations in functionality.}
+%
+Note that, while the security properties just described roughly have the same
+purpose across models, there are still differences making some models stronger
+or more general than others in some respects. This includes subtleties like who
+generates the keys of the authorities (the environment vs the adversary), how
+many queries can be made to the challenge oracles and whether or not the
+signatures are fixed, etc. However, while important, there are usually generic
+techniques that allow to migrate from one variant to another \todo{\needcite,
+  ellaborate more, or rewrite}. Now we are interested in revisiting some of
+the variations that have impact into the functionality that schemes
+following each model can provide, or variations that are specific to group
+signatures schemes and do not appear in other cryptosystems.
+
+\paragraph{Separating issuer and opener.}
+In some schemes \cite{bmw03,kty04} one single authority concentrates the
+power to add new members to the group, and open signatures. This endows such authority with great
+power -- and trust -- and is therefore one of the main concerns for privacy
+advocates: not only this authority can prevent users from joining (in the case
+of dynamic groups), but it can also reidentify group members. In order to reduce
+this trust, and since it is a clear distinction between both functionalities
+(issuing and opening), many schemes separate both roles into an issuer and an
+opener. While both authorities need to be trusted for their respective tasks,
+one can now make independent assumptions and even ensure certain properties
+if only one of the two authorities is compromised or malicious. For instance,
+non-frameability can be achieved even when both authorities are malicious;
+traceability can be achieved with malicious openers; and anonymity can be
+kept as long as the opener is honest. This is the case in \cite{bsz05} and
+\cite{ky06} (which, although starts from a single authority, also considers
+and formalises the case of separate authorities).
+
+\paragraph{Protecting against corrupt authorities.}
+Even when the issuance and opening functionalities are separated, as mentioned,
+each entity can unilaterally break crucial properties in a group signature scheme.
+While placing such kind of trust may be reasonable in some use cases, it may not
+be so for others. Thus, a natural extension is to reduce this trust as much as
+possible. In this direction, there have been works that have applied threshold
+and similar techniques \needcite to require that a set of openers (as opposed
+to a single opener) need to cooperate in order to open any group signature
+\cite{bcly08} \needcite.
+Recently, the role of the issuer was also subject to these techniques
+\cite{cdl+20}, and it is now known how to produce group signatures such that no
+single entity can prevent users from joining nor reidentify them.
+
+\paragraph{Forward security.}
+Forward security aims at restricting the impact of security compromises (e.g.,
+key leakage) to the future: i.e., if an attacker gains control of a user's
+private key, only signatures produced after the compromise should be considered
+invalid. In schemes that do not ensure forward secrecy, such a compromise also
+renders invalid signatures produced before the compromise. Note that, for
+conventional signatures, only the compromised users is (directly) affected by
+such event. However,  in group signatures, all group members are directly
+affected, as the signer's identity is not revealed by the signature. Thus,
+in order to learn whether or not a past signature was issued by a compromised
+user, it is necessary to resort to the opener -- therefore, reidentifying
+\emph{all} users in the system.
+%
+Forward security has been introduced in group signatures in works like
+\cite{song01,ly12} \needcite.
+%
+Interestingly (but logically), the approach to incorporate this property
+holds similarities with the functionality to implement fully dynamic group
+signatures: for forward security, users are usually required to apply an
+update procedure to their private keys \cite{ly12}; in fully dynamic group
+signatures, it is the group manager (or the opener) who has to update some
+key material \cite{bcc+16}. In both cases, time has to be discretized in epochs,
+and conditions are introduced into the security properties that prevent an
+adversary being able to deanonymize (produce) a valid signature generated
+(using) a key in an epoch in which such key was not supposed to be active
+(either because the user updated it -- in a forward secure scheme -- or the
+group manager revoked it -- in a fully dynamic scheme).
+
+\paragraph{Revocation mechanisms.}
+Verifier Local Revocation \cite{bs04}, accumulators approach.
+
+\paragraph{Opening controls.}
+Even when separating the roles of the authorities or distributing them, the
+fact that some entity (or set of entities) can open group signatures is still
+a delicate matter that creates friction. A minimal control is to enable the
+opener to prove that the opening process has been performed honestly. This is
+precisely what is done by schemes that support \emph{verifiable opening}
+\needcite. To further aleviate this issue, some schemes
+introduce mechanisms to even prevent opening as long as some condition is
+met. For instance, in \cite{seh+12,ehk+19}, the condition is determined by
+the message (e.g., only signatures over offending messages can be opened).
+To implement this, the authors introduce an extra authority, the
+\emph{admitter}, such that the opener needs to get some information from the
+admitter in order to be able to open signatures over some specific message.
+In \cite{sbm10}, the authors propose \emph{contractual} anonymity: before a user
+is able to anonymously access some service, both user and service sign a
+contract defining the conditions upon which anonymity can be revoked. This
+contract can only be enforced by a trusted entity, the \emph{accountability
+  service} who runs a trusted execution environment (such as today's Intel
+SGX \needcite) ensuring that the conditions are checked in a trustworthy manner.
+
+\paragraph{Alternatives to opening.}
+%
+Even with separated authorities, with distributed openers, or with more generic
+opening controls such as message-dependent opening, opening may not even be
+the type of reduction of privacy that is necessary. In this vein, alternative
+schemes have been proposed that do not include any kind of
+opening at all.
+%
+In the schemes proposed in \cite{kty04,cpy06,bcly08}, there is an extra
+authority that can produce \emph{tracing} trapdoors on a per-user basis.
+Once the tracing trapdoor for a specific user is given to some entity, this
+entity can link (or trace) all group signatures produced by that user.
+These trapdoors are also an effective mechanism for implementing verifier-local
+revocation.
+%
+In \cite{gl19}, the opener is replaced by a \emph{converter} who, rather than
+opening any given group signature, can link sets of signatures. More
+specifically, when queried with a set of signatures, the converter transforms
+them so that every signature coming from the same user gets assigned a same
+randomized pseudonym. Furthermore, to prevent the converter from gradually
+relinking all the signatures, these conversions are non-transitive: i.e.,
+signatures produced by user $A$ will receive a different randomized pseudonym in
+different queries.
+%
+In \cite{dl21}, there is directly no trusted entity that can open or link group
+signatures. Instead, every user can create proofs of several signatures having
+been issued by herself. In this case, the authors also propose a scheme whereby
+a user can prove sequentiality of a set of signatures: i.e., that all signatures
+were produced by herself, and no signature has been omitted or inserted into the
+sequence, which is also given in the order in which the original signatures were
+produced.
+
+\subsubsection{Efficiency.}
+
+\begin{itemize}
+\item Size of (group) keys.
+\item Size of signatures.
+\item Verification time (batching, including revocation checks...)
+\item Accumulators.
+\end{itemize}
+
+\subsubsection{Main challenges.}
+
+Efficiency is possibly good for many real-world cases. Still: utility
+and unavailability of implementations.
+
+\note{Concurrent joins -- avoid extraction \cite{ky05,klap20}.}
+
+\subsection{Related Primitives}
+
+\subsubsection{Ring Signatures}
+\label{sssec:rs}
+
+\cite{rst06}
+
+\cite{bcc+15} uses ring signatures to build a fully dynamic group signature
+scheme.
+
+\subsection{Applications}
+\label{ssec:gsapplication}
+
+See \cite[Section 1.2.3]{bsi12}: it seems mostly theoretical applications.
+
+\subsubsection{Theory}
+\label{sssec:gstheoryapp}
+
+GS-MDO imply IBE \cite{ehk+19}.
+GS are implied (shouldn't his by imply?) by trapdoor permutations \cite{bmw03}.
+GS imply one-way functions \cite{romp90}.
+GS imply public key encryption \cite{aw04}.
+Commitments from group signatures (group signatures imply commitments?)
+(ref. 25 in \cite{bfg+11}).
+
+\subsubsection{Real World Deployments}
+\label{sssec:gsrwdeploy}
+
+\cite{ehk+19} mentions anonymous auctions, anonymous bulletin boards and
+anomaly detection systems.
+
+Maybe make some comments on how to deploy gs schemes, or what aspects may be
+relevant. For instnace, some schemes/models (e.g. \cite{ly12}) assume a
+trusted party who generates the keys for the authorities. While this has
+a big impact in security/trust model, in the real world it would probably
+be circumventable with audited processes for most use cases. Also, the
+issue with concurrent issuance and the approach we took for implementing
+\cite{gl19} in ICT4Cart, or the limitation to logarithmic numbers of users, etc.
+
+\subsection{Further Notes}
+\note{Integrate this section or delete it.}
+
+\todo{CCA2 type of anonymity is defined in \cite{bbs04}. Schemes with CPA type
+  of anonymity are (according to \cite{ehk+19}): \cite{bw06,bw07}.}
+
+\cite{ehk+19} has a nice related work mentioning the assumptions that are
+typically used.
+
+Signature highjacking attacks (referenced in \cite{ehk+19}).
+
+If we want to have traceability, the issuer needs to be honest. See what
+implications this has in practice (e.g., what architectures are compatible
+with this?) This probably makes schemes with separate issuing and opening
+authorities more attractive in practice.
+
+Other minor variants: group blind signatures, democratic group signatures,
+mediated group signatures. All referenced in \cite[Section 1.3.5]{bsi12}.
+
+Backward linkability property of group signatures with Timed Verifier-Local
+Revocation, proposed in \cite{nf05}. Mentioned in \cite[Section 8.1.2]{bsi12}.
+
+Relation of forward security with proactive security \cite{oy91}?
+
+References 1, 24, 32 and, probably, 35 in \cite{bfg+11} seem to be (traceable)
+group signatures that use the nym approach (or similar) for linking. Check.
+
+\paragraph{Academic indicators.}
+IACR, Esorics, CCS, AsiaCCS, SP, EuroSP, Usenix Sec and Privacy, PETs... Not
+sure where to fit this.
+
+Main cryptographic building blocks:
+
+\begin{itemize}
+\item BB signatures \cite{bb04}.
+  \begin{itemize}
+  \item Used in: \cite{ky05}.
+  \item Paillier encryption of discrete-logarithms? Used in \cite{ky05} and,
+    I think, \cite{gl19}.    
+  \end{itemize}
+\item Model for reduction: list of group signature schemes based on RO and
+  non-RO are given in \cite{bcc+16}.
+\end{itemize}
+
+%%% Local Variables:
+%%% mode: latex
+%%% TeX-master: "sok-privsig"
+%%% End:

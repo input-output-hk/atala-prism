@@ -1,0 +1,45 @@
+\documentclass{llncs}%[10pt]{llncs}
+\pagestyle{plain}
+
+\usepackage[n,advantage,operators,sets,adversary,landau,probability,notions,
+logic,ff,mm,primitives,events,complexity,asymptotics,keys]{cryptocode}
+\usepackage{amssymb}
+\usepackage{xspace}
+\usepackage[normalem]{ulem}
+\usepackage{hyperref}
+
+
+\title{State of the Art Review on Privacy-Preserving Signatures, Credentials, and Authentication}
+\author{}
+
+% Custom shorthands for this paper
+\input{symbols.tex}
+
+\begin{document}
+\maketitle
+
+
+\begin{abstract}
+	\textbf{DISCLAIMER}: Please, keep in mind that, as of now, this document
+	basically contains a research log in the shape of personal notes. Do not take 
+	anything written here as ground truth.
+\end{abstract}
+
+\input{introduction.tex}
+\input{gs.tex}
+\input{abs.tex}
+\input{ac.tex}
+\input{daa.tex}
+\input{other.tex}
+\input{discussion.tex}
+\input{conclusion.tex}
+
+\bibliographystyle{splncs04}
+\bibliography{soa-review}
+
+\end{document}
+
+%%% Local Variables:
+%%% mode: latex
+%%% TeX-master: ucl.tex
+%%% End:
