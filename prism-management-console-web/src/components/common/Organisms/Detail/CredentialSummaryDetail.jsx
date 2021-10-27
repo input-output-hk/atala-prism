@@ -80,12 +80,15 @@ const CredentialSummaryDetail = ({ drawerInfo, credential }) => {
     helpText: disableDownload ? t('credentials.drawer.raw.disabledDownloadHelp') : ''
   };
 
+  const isCredentialReceived = !credential.credentialString;
+
   const content = (
     <div>
       <DownloadRawButton {...downloadProps} />
       <CustomButton
         buttonProps={{
           className: 'theme-link',
+          disabled: !isCredentialReceived,
           onClick: () => setRawVisible(true)
         }}
         buttonText="View"
@@ -191,13 +194,14 @@ const CredentialSummaryDetail = ({ drawerInfo, credential }) => {
           </CardDetail>
         </TabPane>
       </Tabs>
-
-      <CredentialRawDetail
-        visible={rawVisible}
-        credentialString={credential.credentialString}
-        downloadProps={downloadProps}
-        onClose={() => setRawVisible(false)}
-      />
+      {!isCredentialReceived && (
+        <CredentialRawDetail
+          visible={rawVisible}
+          credentialString={credential.credentialString}
+          downloadProps={downloadProps}
+          onClose={() => setRawVisible(false)}
+        />
+      )}
     </Drawer>
   );
 };

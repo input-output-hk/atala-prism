@@ -20,9 +20,9 @@ async function getReceivedCredentials(contactId) {
     const { encodedSignedCredential, ...rest } = storedCredential.toObject();
     const [encodedCredential] = encodedSignedCredential.split('.');
     const decodedCredential = base64url.decode(encodedCredential);
-    const credentialData = JSON.parse(decodedCredential);
-    const credential = Object.assign(credentialData, rest);
-    return credential;
+    const parsedCredentialData = JSON.parse(decodedCredential);
+    const credential = Object.assign(parsedCredentialData, rest);
+    return Object.assign(credential, { encodedSignedCredential });
   });
   Logger.info('Got received credentials:', credentials);
   return credentials;

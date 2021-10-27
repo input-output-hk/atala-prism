@@ -26,10 +26,19 @@ function getCredentialProof(credential) {
 }
 
 export function credentialReceivedMapper(credentialReceived) {
-  const { contactData, credentialSubject } = credentialReceived;
+  const { encodedSignedCredential, contactData, credentialSubject, ...rest } = credentialReceived;
+  const {
+    credentialTypeName,
+    credentialTypeIcon,
+    credentialTypeIconFormat,
+    ...restCredentialSubject
+  } = credentialSubject;
   return {
+    encodedSignedCredential,
     contactData: contactMapper(contactData),
     credentialData: {
+      ...rest,
+      ...restCredentialSubject,
       credentialTypeDetails: {
         name: credentialSubject.credentialTypeName,
         icon: credentialSubject.credentialTypeIcon,
