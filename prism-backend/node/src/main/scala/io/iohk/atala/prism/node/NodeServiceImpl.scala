@@ -132,9 +132,12 @@ class NodeServiceImpl(
             methodName,
             CreateDIDOperation.parseWithMockedLedgerData(operation)
           )
-          operationIdE <- objectManagement.scheduleSingleAtalaOperation(
-            operation
-          ).run(TraceId.generateYOLO).unsafeToFuture()
+          operationIdE <- objectManagement
+            .scheduleSingleAtalaOperation(
+              operation
+            )
+            .run(TraceId.generateYOLO)
+            .unsafeToFuture()
         } yield {
           val response = node_api.CreateDIDResponse(id = parsedOp.id.getValue)
           operationIdE.fold(
@@ -172,9 +175,12 @@ class NodeServiceImpl(
             methodName,
             UpdateDIDOperation.validate(operation)
           )
-          operationIdE <- objectManagement.scheduleSingleAtalaOperation(
-            operation
-          ).run(TraceId.generateYOLO).unsafeToFuture()
+          operationIdE <- objectManagement
+            .scheduleSingleAtalaOperation(
+              operation
+            )
+            .run(TraceId.generateYOLO)
+            .unsafeToFuture()
         } yield {
           val response = node_api.UpdateDIDResponse()
           operationIdE.fold(
@@ -213,9 +219,12 @@ class NodeServiceImpl(
               methodName,
               IssueCredentialBatchOperation.parseWithMockedLedgerData(operation)
             )
-          operationIdE <- objectManagement.scheduleSingleAtalaOperation(
-            operation
-          ).run(TraceId.generateYOLO).unsafeToFuture()
+          operationIdE <- objectManagement
+            .scheduleSingleAtalaOperation(
+              operation
+            )
+            .run(TraceId.generateYOLO)
+            .unsafeToFuture()
         } yield {
           val response = node_api.IssueCredentialBatchResponse(batchId = parsedOp.credentialBatchId.getId)
           operationIdE.fold(
@@ -252,9 +261,12 @@ class NodeServiceImpl(
             methodName,
             RevokeCredentialsOperation.validate(operation)
           )
-          operationIdE <- objectManagement.scheduleSingleAtalaOperation(
-            operation
-          ).run(TraceId.generateYOLO).unsafeToFuture()
+          operationIdE <- objectManagement
+            .scheduleSingleAtalaOperation(
+              operation
+            )
+            .run(TraceId.generateYOLO)
+            .unsafeToFuture()
         } yield {
           val response = node_api.RevokeCredentialsResponse()
           operationIdE.fold(

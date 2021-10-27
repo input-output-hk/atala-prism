@@ -35,7 +35,7 @@ object versions {
   val twirl = "1.5.1"
   val typesafeConfig = "1.4.1"
   val http4s = "0.21.7"
-  val prismSdk = "1.3.0-build-5-86c72a62"
+  val prismSdk = "1.3.0-build-6-50df7aa5"
 }
 
 object Dependencies {

@@ -226,7 +226,7 @@ object ObjectManagementService {
   final case class SaveObjectError(msg: String)
 
   def createAtalaObject(ops: List[SignedAtalaOperation]): node_internal.AtalaObject = {
-    val block = node_internal.AtalaBlock(ATALA_OBJECT_VERSION, ops)
+    val block = node_internal.AtalaBlock(ops)
     node_internal.AtalaObject(blockOperationCount = block.operations.size).withBlockContent(block)
   }
 
