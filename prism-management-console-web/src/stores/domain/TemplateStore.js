@@ -37,22 +37,6 @@ export default class TemplateStore {
     return this.isLoadingTemplates || this.isLoadingCategories;
   }
 
-  *createCredentialTemplate(newTemplate) {
-    try {
-      this.mockedCredentialTemplates.push(newTemplate);
-      yield this.api.credentialTypesManager.createTemplate(newTemplate);
-      this.rootStore.handleTransportLayerSuccess();
-    } catch (error) {
-      const metadata = {
-        store: this.storeName,
-        method: 'createCredentialTemplate',
-        verb: 'saving',
-        model: 'Template'
-      };
-      this.rootStore.handleTransportLayerError(error, metadata);
-    }
-  }
-
   *fetchTemplates() {
     this.isLoadingTemplates = true;
     try {
@@ -87,21 +71,17 @@ export default class TemplateStore {
     }
   }
 
-  *createTemplateCategory(newCategoryData) {
+  *createCredentialTemplate(newTemplate) {
     try {
-      const { categoryName, categoryIcon } = newCategoryData;
-      const logo = categoryIcon.isCustomIcon ? categoryIcon.file.thumbUrl : categoryIcon.src;
-      const newCategory = { id: uuidv4(), name: categoryName, logo, state: 1 };
-      yield this.api.credentialTypesManager.createCategory(newCategory);
+      this.mockedCredentialTemplates.push(newTemplate);
+      yield this.api.credentialTypesManager.createTemplate(newTemplate);
       this.rootStore.handleTransportLayerSuccess();
-      this.mockedTemplateCategories.push(newCategory);
-      this.fetchCategories();
     } catch (error) {
       const metadata = {
         store: this.storeName,
-        method: 'createTemplateCategory',
+        method: 'createCredentialTemplate',
         verb: 'saving',
-        model: 'Template Category'
+        model: 'Template'
       };
       this.rootStore.handleTransportLayerError(error, metadata);
     }
@@ -119,6 +99,28 @@ export default class TemplateStore {
         method: 'fetchCategories',
         verb: 'getting',
         model: 'Template Categories'
+      };
+      this.rootStore.handleTransportLayerError(error, metadata);
+    }
+    this.isLoadingCategories = false;
+  }
+
+  *createTemplateCategory(newCategoryData) {
+    this.isLoadingCategories = true;
+    try {
+      const { categoryName } = newCategoryData;
+      const newCategory = { id: uuidv4(), name: categoryName, state: 1 };
+      const response = yield this.api.credentialTypesManager.createCategory(newCategory);
+      this.rootStore.handleTransportLayerSuccess();
+      this.mockedTemplateCategories.push(newCategory);
+      this.fetchCategories();
+      return response;
+    } catch (error) {
+      const metadata = {
+        store: this.storeName,
+        method: 'createTemplateCategory',
+        verb: 'saving',
+        model: 'Template Category'
       };
       this.rootStore.handleTransportLayerError(error, metadata);
     }

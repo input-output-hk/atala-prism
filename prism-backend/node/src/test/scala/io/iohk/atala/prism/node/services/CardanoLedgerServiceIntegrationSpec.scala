@@ -90,10 +90,17 @@ class CardanoLedgerServiceIntegrationSpec extends AtalaWithPostgresSpec {
       // Publish random object
       val atalaObject = node_internal
         .AtalaObject()
-        .withBlockContent(node_internal.AtalaBlock(version = "1.0", operations = Seq()))
-      val transaction =
-        cardanoLedgerService.publish(atalaObject).run(TraceId.generateYOLO).unsafeRunSync().toOption.value.transaction
-      println(s"AtalaObject published in transaction ${transaction.transactionId} on ${transaction.ledger}")
+        .withBlockContent(node_internal.AtalaBlock(operations = Seq()))
+      val transaction = cardanoLedgerService
+        .publish(atalaObject)
+        .run(TraceId.generateYOLO)
+        .unsafeRunSync()
+        .toOption
+        .value
+        .transaction
+      println(
+        s"AtalaObject published in transaction ${transaction.transactionId} on ${transaction.ledger}"
+      )
 
       def notifiedAtalaObjects: Seq[node_internal.AtalaObject] = {
         notificationHandler.receivedNotifications.map(_.atalaObject).toSeq

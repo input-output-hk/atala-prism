@@ -90,6 +90,9 @@ jobs:
           NODE_CARDANO_CONFIRMATION_BLOCKS: ${{ secrets.NODE_CARDANO_CONFIRMATION_BLOCKS }}
           NODE_CARDANO_PAYMENT_ADDRESS: ${{ secrets.NODE_CARDANO_PAYMENT_ADDRESS }}
 
+      - name: Assemble fat JARs
+        run: sbt assembly
+
       - name: Upload SBT remote cache
         uses: actions/upload-artifact@v2
         with:
@@ -124,7 +127,7 @@ jobs:
     name: Publish Github Packages
     needs: build-prism-backend
     runs-on: ubuntu-20.04
-    if: github.ref == 'refs/heads/master' || startsWith(github.ref, 'refs/heads/package')
+    if: github.ref == 'refs/heads/master' || startsWith(github.ref, 'refs/heads/package') || startsWith(github.ref, 'refs/heads/1-')
     defaults:
       run:
         working-directory: prism-backend

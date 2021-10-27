@@ -1,5 +1,5 @@
 import React, { useEffect } from 'react';
-import { Table } from 'antd';
+import { ConfigProvider, Table } from 'antd';
 import PropTypes from 'prop-types';
 import SimpleLoading from '../../Atoms/SimpleLoading/SimpleLoading';
 import './_style.scss';
@@ -10,10 +10,11 @@ const InfiniteScrollTable = ({
   data,
   handleSort,
   loading,
-  searching,
+  fetchingMore,
   getMoreData,
   hasMore,
-  rowKey
+  rowKey,
+  renderEmpty
 }) => {
   // This use effect handles the call for more data after
   // the scroll reaches the end
@@ -21,7 +22,7 @@ const InfiniteScrollTable = ({
     const tableContent = document.querySelector('.InfiniteScrollTableContainer');
     const scrollListener = ({ target: { scrollHeight, clientHeight, scrollTop } }) => {
       const maxScroll = scrollHeight - clientHeight;
-      if (hasMore && !loading && scrollTop === maxScroll) getMoreData();
+      if (hasMore && !loading && scrollTop >= maxScroll) getMoreData();
     };
 
     tableContent.removeEventListener('scroll', scrollListener);
@@ -30,19 +31,24 @@ const InfiniteScrollTable = ({
     return () => tableContent.removeEventListener('scroll', scrollListener);
   }, [hasMore, loading, getMoreData]);
 
+  const renderLoadingRow = () => <SimpleLoading />;
+
   return (
-    <div className={`InfiniteScrollTableContainer ${handleSort ? '' : 'PaginatedTable'}`}>
-      <Table
-        rowSelection={selectionType}
-        columns={columns}
-        dataSource={data}
-        onChange={(_pagination, _filters, sorter) => {
-          if (handleSort) return handleSort(sorter);
-        }}
-        pagination={false}
-        rowKey={rowKey}
-        footer={searching || loading ? () => <SimpleLoading size="xs" /> : null}
-      />
+    <div className={`InfiniteScrollTable ${handleSort ? '' : 'PaginatedTable'}`}>
+      <ConfigProvider renderEmpty={() => (fetchingMore ? '' : renderEmpty)}>
+        <Table
+          rowSelection={selectionType}
+          columns={columns}
+          dataSource={data}
+          onChange={(_pagination, _filters, sorter) => {
+            if (handleSort) return handleSort(sorter);
+          }}
+          pagination={false}
+          rowKey={rowKey}
+          footer={fetchingMore && !loading && renderLoadingRow}
+          loading={loading && { indicator: <SimpleLoading /> }}
+        />
+      </ConfigProvider>
     </div>
   );
 };
@@ -51,7 +57,7 @@ InfiniteScrollTable.defaultProps = {
   data: [],
   selectionType: null,
   handleSort: null,
-  searching: false
+  fetchingMore: false
 };
 
 InfiniteScrollTable.propTypes = {
@@ -60,10 +66,11 @@ InfiniteScrollTable.propTypes = {
   data: PropTypes.arrayOf(PropTypes.object),
   handleSort: PropTypes.func,
   loading: PropTypes.bool.isRequired,
-  searching: PropTypes.bool,
+  fetchingMore: PropTypes.bool,
   getMoreData: PropTypes.func.isRequired,
   hasMore: PropTypes.bool.isRequired,
-  rowKey: PropTypes.string.isRequired
+  rowKey: PropTypes.string.isRequired,
+  renderEmpty: PropTypes.node.isRequired
 };
 
 export default InfiniteScrollTable;

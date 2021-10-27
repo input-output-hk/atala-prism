@@ -5,13 +5,10 @@ import PropTypes from 'prop-types';
 import { useTranslation } from 'react-i18next';
 import GroupsTable from './Organisms/Tables/GroupsTable';
 import GroupFilters from './Molecules/Filters/GroupFilters';
-import EmptyComponent from '../common/Atoms/EmptyComponent/EmptyComponent';
 import DeleteGroupModal from './Organisms/Modals/DeleteGroupModal/DeleteGroupModal';
 import { groupShape } from '../../helpers/propShapes';
-import noGroups from '../../images/noGroups.svg';
 import CustomButton from '../common/Atoms/CustomButton/CustomButton';
 import { withRedirector } from '../providers/withRedirector';
-import SimpleLoading from '../common/Atoms/SimpleLoading/SimpleLoading';
 import WaitBanner from '../dashboard/Atoms/WaitBanner/WaitBanner';
 import { useSession } from '../../hooks/useSession';
 import CopyGroupModal from './Organisms/Modals/CopyGroupModal/CopyGroupModal';
@@ -34,22 +31,7 @@ const NewGroupButton = ({ onClick }) => {
 };
 
 const Groups = observer(
-  ({
-    groups,
-    handleGroupDeletion,
-    copyGroup,
-    loading,
-    searching,
-    hasMore,
-    isFilter,
-    setName,
-    setDateRange,
-    setSortingKey,
-    setSortingDirection,
-    sortingDirection,
-    getMoreGroups,
-    redirector: { redirectToGroupCreation }
-  }) => {
+  ({ handleGroupDeletion, copyGroup, redirector: { redirectToGroupCreation } }) => {
     const { t } = useTranslation();
 
     const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
@@ -91,35 +73,12 @@ const Groups = observer(
       onSave: copyName => copyGroup(selectedGroup, copyName).then(closeCopyModal)
     };
 
-    const onCopy = group => {
+    const handleCopy = group => {
       setSelectedGroup(group);
       setIsCopyModalOpen(true);
     };
 
-    const tableProps = {
-      onCopy,
-      setGroupToDelete,
-      groups,
-      searching,
-      hasMore,
-      getMoreGroups
-    };
-
     const newGroupButton = <NewGroupButton onClick={redirectToGroupCreation} />;
-
-    const emptyProps = {
-      photoSrc: noGroups,
-      model: t('groups.title')
-    };
-
-    const renderContent = () => {
-      if (loading) return <SimpleLoading size="md" />;
-      if (groups.length) return <GroupsTable {...tableProps} groups={groups} />;
-      if (isFilter) return <EmptyComponent {...emptyProps} isFilter />;
-      return (
-        <EmptyComponent {...emptyProps} button={accountStatus === CONFIRMED && newGroupButton} />
-      );
-    };
 
     return (
       <div className="Wrapper Groups">
@@ -132,18 +91,18 @@ const Groups = observer(
           </div>
           <div className="filterSection">
             <div className="filterContainer">
-              <GroupFilters
-                setName={setName}
-                setDateRange={setDateRange}
-                setSortingKey={setSortingKey}
-                setSortingDirection={setSortingDirection}
-                sortingDirection={sortingDirection}
-              />
+              <GroupFilters fullFilters />
             </div>
             {accountStatus === CONFIRMED && newGroupButton}
           </div>
         </div>
-        <div className="GroupContentContainer">{renderContent()}</div>
+        <div className="GroupContentContainer InfiniteScrollTableContainer">
+          <GroupsTable
+            onCopy={handleCopy}
+            setGroupToDelete={setGroupToDelete}
+            newGroupButton={newGroupButton}
+          />
+        </div>
       </div>
     );
   }
@@ -151,7 +110,6 @@ const Groups = observer(
 
 Groups.defaultProps = {
   groups: [],
-  loading: false,
   searching: false,
   hasMore: true
 };
@@ -160,7 +118,6 @@ Groups.propTypes = {
   groups: PropTypes.arrayOf(PropTypes.shape(groupShape)),
   handleGroupDeletion: PropTypes.func.isRequired,
   copyGroup: PropTypes.func.isRequired,
-  loading: PropTypes.bool,
   searching: PropTypes.bool,
   hasMore: PropTypes.bool,
   isFilter: PropTypes.bool.isRequired,

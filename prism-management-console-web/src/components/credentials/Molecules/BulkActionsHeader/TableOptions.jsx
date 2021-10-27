@@ -69,15 +69,11 @@ const TableOptions = ({ bulkActionsProps, loadingSelection, selectedLength, sort
           )}
         </Checkbox>
         <Dropdown overlay={sortingOptionsMenu} trigger={['click']}>
-          {
-            <CustomButton
-              overrideClassName="theme-link TableOptionButton"
-              buttonProps={{ icon: <DownOutlined /> }}
-              buttonText={t(
-                sortingBy ? `credentials.table.columns.${sortingBy}` : 'actions.sortBy'
-              )}
-            />
-          }
+          <CustomButton
+            overrideClassName="theme-link TableOptionButton"
+            buttonProps={{ icon: <DownOutlined /> }}
+            buttonText={t(sortingBy ? `credentials.table.columns.${sortingBy}` : 'actions.sortBy')}
+          />
         </Dropdown>
       </div>
       <Button

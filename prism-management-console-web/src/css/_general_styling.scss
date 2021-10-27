@@ -80,6 +80,10 @@ $height-sizes: (
   width: 100%;
 }
 
+.InfiniteScrollTableContainer {
+  scroll-behavior: smooth;
+}
+
 @font-face {
   font-family: 'Circular-bold';
   src: url(../fonts/CircularStd-Bold.woff) format('woff');

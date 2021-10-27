@@ -185,20 +185,25 @@ private class SubmissionServiceImpl[F[_]: Monad](
   }
 
   private def publishObjectsAndRecordTransaction(
-      atalaObjectsWithParsedContent: List[
-        (AtalaObjectInfo, node_internal.AtalaObject)
-      ]
-  ): F[List[TransactionInfo]] =
+      atalaObjectsWithParsedContent: List[(AtalaObjectInfo, node_internal.AtalaObject)]
+  ): F[List[TransactionInfo]] = {
+    def logAndKeep(keep: List[TransactionInfo])(err: NodeError): List[TransactionInfo] = {
+      logger.error("Was not able to publish and record transaction", err)
+      keep
+    }
+
     atalaObjectsWithParsedContent
       .take(config.maxNumberTransactionsToSubmit)
-      .traverse { case (obj, objContent) =>
-        publishAndRecordTransaction(obj, objContent).map { transactionInfoE =>
-          transactionInfoE.left.map { err =>
-            logger.error("Was not able to publish and record transaction", err)
-          }.toOption
+      .foldLeft(Monad[F].pure(List.empty[TransactionInfo])) { case (accF, (obj, objContent)) =>
+        for {
+          acc <- accF
+          transactionInfoE <- publishAndRecordTransaction(obj, objContent)
+        } yield {
+          transactionInfoE.fold(logAndKeep(acc), _ :: acc)
         }
       }
-      .map(_.flatten)
+      .map(_.reverse)
+  }
 
   private def deleteTransactions(
       transactions: List[AtalaObjectTransactionSubmission]

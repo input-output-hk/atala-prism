@@ -66,7 +66,7 @@ class CardanoLedgerServiceSpec extends AtalaWithPostgresSpec {
   "publish" should {
     val atalaObject = node_internal
       .AtalaObject()
-      .withBlockContent(node_internal.AtalaBlock().withVersion("1"))
+      .withBlockContent(node_internal.AtalaBlock())
     val expectedWalletApiPath = s"v2/wallets/$walletId/transactions"
 
     "publish an object" in {
@@ -205,7 +205,7 @@ class CardanoLedgerServiceSpec extends AtalaWithPostgresSpec {
         val atalaObject = node_internal
           .AtalaObject()
           .withBlockContent(
-            node_internal.AtalaBlock(version = "1.0", operations = Seq())
+            node_internal.AtalaBlock(operations = Seq())
           )
         val blockIndex = block.transactions.size
         val transaction = Transaction(

@@ -81,6 +81,11 @@ object FakeCardanoWalletApiClient {
         )
       )
       .thenRespondWithCode(responseCode, responseBody)
+      .whenRequestMatches(request =>
+        request.uri.host == config.host && request.uri.port.value == config.port && request.uri.path
+          .mkString("/") == expectedPath
+      )
+      .thenRespondWithCode(400, "Unexpected request body")
 
     new ApiClient(config)(backend, ec)
   }

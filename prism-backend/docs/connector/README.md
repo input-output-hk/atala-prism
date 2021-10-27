@@ -60,7 +60,7 @@ grpcurl -import-path protos/ -proto protos/connector_api.proto \
 {
   "creator": {
     "issuer": {
-      "DID": "did:test:issuer-1",
+      "DID": "did:prism:issuer-1",
       "name": "Issuer 1"
     }
   }
@@ -83,7 +83,7 @@ grpcurl -import-path protos/ -proto protos/connector_api.proto \
     "created": "1570816440092",
     "participantInfo": {
       "issuer": {
-        "DID": "did:test:issuer-1",
+        "DID": "did:prism:issuer-1",
         "name": "Issuer 1"
       }
     }
@@ -109,7 +109,7 @@ grpcurl -import-path protos/ -proto protos/connector_api.proto \
       "created": "1570816440092",
       "participantInfo": {
         "holder": {
-          "DID": "did:test:holder-1",
+          "DID": "did:prism:holder-1",
           "name": "Holder 1"
         }
       }
