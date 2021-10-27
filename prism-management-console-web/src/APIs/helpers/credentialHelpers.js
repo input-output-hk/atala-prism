@@ -40,9 +40,9 @@ export function credentialReceivedMapper(credentialReceived) {
       ...rest,
       ...restCredentialSubject,
       credentialTypeDetails: {
-        name: credentialSubject.credentialTypeName,
-        icon: credentialSubject.credentialTypeIcon,
-        iconFormat: credentialSubject.credentialTypeIconFormat
+        name: credentialTypeName,
+        icon: credentialTypeIcon,
+        iconFormat: credentialTypeIconFormat
       }
     }
   };
