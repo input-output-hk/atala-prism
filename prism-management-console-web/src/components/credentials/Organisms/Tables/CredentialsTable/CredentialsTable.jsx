@@ -54,7 +54,7 @@ const commonColumns = [
   {
     key: 'contactName',
     // eslint-disable-next-line react/prop-types
-    render: ({ credentialData: { contactName } }) => (
+    render: ({ contactData: { contactName } }) => (
       <CellRenderer title={tp('contactName')} value={contactName} />
     )
   },

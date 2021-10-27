@@ -5,7 +5,10 @@ export function credentialMapper(credential) {
   return {
     ...credential,
     status: getCredentialStatus(credential),
-    contactData: contactMapper(credential),
+    contactData: {
+      ...contactMapper(credential),
+      contactName: credential.credentialData.contactName
+    },
     proof: getCredentialProof(credential)
   };
 }
@@ -23,19 +26,15 @@ function getCredentialProof(credential) {
 }
 
 export function credentialReceivedMapper(credentialReceived) {
-  const { externalId, individualId, credentialSubject, ...rest } = credentialReceived;
+  const { contactData, credentialSubject } = credentialReceived;
   return {
-    contactData: {
-      externalId,
-      contactId: individualId
-    },
+    contactData: contactMapper(contactData),
     credentialData: {
       credentialTypeDetails: {
         name: credentialSubject.credentialTypeName,
-        logo: credentialSubject.credentialTypeIcon,
+        icon: credentialSubject.credentialTypeIcon,
         iconFormat: credentialSubject.credentialTypeIconFormat
       }
-    },
-    ...rest
+    }
   };
 }

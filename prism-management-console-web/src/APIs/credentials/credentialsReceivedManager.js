@@ -17,7 +17,7 @@ async function getReceivedCredentials(contactId) {
 
   const res = await this.client.getStoredCredentialsFor(req, metadata);
   const credentials = res.getCredentialsList().map(storedCredential => {
-    const { encodedSignedCredential, individualId, ...rest } = storedCredential.toObject();
+    const { encodedSignedCredential, ...rest } = storedCredential.toObject();
     const [encodedCredential] = encodedSignedCredential.split('.');
     const decodedCredential = base64url.decode(encodedCredential);
     const credentialData = JSON.parse(decodedCredential);
