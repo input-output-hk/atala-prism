@@ -43,13 +43,13 @@ const sortByDirection = {
   DESCENDING: 2
 };
 
-async function getCredentials(
-  limit = CREDENTIAL_PAGE_SIZE,
-  lastSeenCredentialId = null,
+async function getCredentials({
+  pageSize = CREDENTIAL_PAGE_SIZE,
+  offset = null,
   filter = {},
   sort = { field: CREDENTIAL_SORTING_KEYS.createdOn, direction: SORTING_DIRECTIONS.ascending }
-) {
-  Logger.info(`getting credentials from ${lastSeenCredentialId}, limit ${limit}`);
+}) {
+  Logger.info(`getting credentials from ${offset}, pageSize: ${pageSize}`);
   const { credentialType, date } = filter;
   const { field, direction } = sort;
 
@@ -66,12 +66,12 @@ async function getCredentials(
   sortBy.setDirection(sortByDirection[direction]);
 
   const getCredentialsRequest = new GetGenericCredentialsRequest();
-  getCredentialsRequest.setLimit(limit);
-  getCredentialsRequest.setOffset(lastSeenCredentialId);
+  getCredentialsRequest.setLimit(pageSize);
+  getCredentialsRequest.setOffset(offset);
   getCredentialsRequest.setFilterBy(filterBy);
   getCredentialsRequest.setSortBy(sortBy);
 
-  const timeout = REQUEST_AUTH_TIMEOUT_MS + getAditionalTimeout(limit);
+  const timeout = REQUEST_AUTH_TIMEOUT_MS + getAditionalTimeout(pageSize);
 
   const { metadata, sessionError } = await this.auth.getMetadata(getCredentialsRequest, timeout);
   if (sessionError) return [];
@@ -79,9 +79,7 @@ async function getCredentials(
   const result = await this.client.getGenericCredentials(getCredentialsRequest, metadata);
   const credentialsList = result.getCredentialsList();
   const mappedCredentialsList = credentialsList.map(mapCredential);
-  Logger.info('Got credentials:', mappedCredentialsList);
-
-  return mappedCredentialsList;
+  return { credentialsList: mappedCredentialsList };
 }
 
 async function createBatchOfCredentials(credentialsData, credentialType, groups) {

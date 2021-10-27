@@ -258,6 +258,8 @@ export const CREDENTIAL_SORTING_KEYS = {
   createdOn: 'CREATED_ON'
 };
 
+export const CREDENTIAL_SORTING_KEYS_TRANSLATION = __.invert(CREDENTIAL_SORTING_KEYS);
+
 // Contacts
 export const CONTACT_SORTING_KEYS = {
   name: 'NAME',
