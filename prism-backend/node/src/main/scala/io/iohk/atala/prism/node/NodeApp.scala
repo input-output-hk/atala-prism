@@ -68,9 +68,11 @@ class NodeApp(executionContext: ExecutionContext) { self =>
 
     implicit val liftedTransactor: Transactor[IOWithTraceIdContext] = transactor.mapK(TraceId.liftToIOWithTraceId)
 
-    val objectManagementServicePromise: Promise[ObjectManagementService[IOWithTraceIdContext]] = Promise()
+    val objectManagementServicePromise: Promise[ObjectManagementService[IOWithTraceIdContext]] =
+      Promise()
 
-    val protocolVersionRepository = ProtocolVersionRepository.unsafe(liftedTransactor, logs)
+    val protocolVersionRepository =
+      ProtocolVersionRepository.unsafe(liftedTransactor, logs)
     val onCardanoBlock: CardanoBlockHandler = block =>
       {
         protocolVersionRepository.markEffective(block.header.blockNo).void
@@ -87,19 +89,30 @@ class NodeApp(executionContext: ExecutionContext) { self =>
     val keyValuesRepository = KeyValuesRepository.unsafe(liftedTransactor, logs)
     val keyValueService = KeyValueService.unsafe(keyValuesRepository, logs)
 
-    val (atalaReferenceLedger, releaseAtalaReferenceLedger) = globalConfig.getString("ledger") match {
-      case "cardano" => initializeCardano(keyValueService, globalConfig, onCardanoBlock, onAtalaObject, logs)
-      case "in-memory" =>
-        logger.info("Using in-memory ledger")
-        (new InMemoryLedgerService(onAtalaObject), None)
-    }
+    val (atalaReferenceLedger, releaseAtalaReferenceLedger) =
+      globalConfig.getString("ledger") match {
+        case "cardano" =>
+          initializeCardano(
+            keyValueService,
+            globalConfig,
+            onCardanoBlock,
+            onAtalaObject,
+            logs
+          )
+        case "in-memory" =>
+          logger.info("Using in-memory ledger")
+          (new InMemoryLedgerService(onAtalaObject), None)
+      }
     logger.info("Creating blocks processor")
     val blockProcessingService = new BlockProcessingServiceImpl
     val didDataRepository = DIDDataRepository.unsafe(liftedTransactor, logs)
-    val atalaOperationsRepository = AtalaOperationsRepository.unsafe(liftedTransactor, logs)
-    val atalaObjectsTransactionsRepository = AtalaObjectsTransactionsRepository.unsafe(liftedTransactor, logs)
+    val atalaOperationsRepository =
+      AtalaOperationsRepository.unsafe(liftedTransactor, logs)
+    val atalaObjectsTransactionsRepository =
+      AtalaObjectsTransactionsRepository.unsafe(liftedTransactor, logs)
 
-    val ledgerPendingTransactionTimeout = globalConfig.getDuration("ledgerPendingTransactionTimeout")
+    val ledgerPendingTransactionTimeout =
+      globalConfig.getDuration("ledgerPendingTransactionTimeout")
     val transactionRetryPeriod = FiniteDuration(
       globalConfig.getDuration("transactionRetryPeriod").toNanos,
       TimeUnit.NANOSECONDS
@@ -140,7 +153,8 @@ class NodeApp(executionContext: ExecutionContext) { self =>
 
     objectManagementServicePromise.success(objectManagementService)
 
-    val credentialBatchesRepository = CredentialBatchesRepository.unsafe(liftedTransactor, logs)
+    val credentialBatchesRepository =
+      CredentialBatchesRepository.unsafe(liftedTransactor, logs)
 
     val nodeService =
       new NodeServiceImpl(
@@ -155,7 +169,10 @@ class NodeApp(executionContext: ExecutionContext) { self =>
     server = ServerBuilder
       .forPort(NodeApp.port)
       .addService(NodeServiceGrpc.bindService(nodeService, executionContext))
-      .addService(_root_.grpc.health.v1.health.HealthGrpc.bindService(new HealthService, executionContext))
+      .addService(
+        _root_.grpc.health.v1.health.HealthGrpc
+          .bindService(new HealthService, executionContext)
+      )
       .addService(
         ProtoReflectionService.newInstance()
       ) //TODO: Decide before release if we should keep this (or guard it with a config flag)
@@ -164,7 +181,9 @@ class NodeApp(executionContext: ExecutionContext) { self =>
 
     logger.info("Server started, listening on " + NodeApp.port)
     sys.addShutdownHook {
-      System.err.println("*** shutting down gRPC server since JVM is shutting down")
+      System.err.println(
+        "*** shutting down gRPC server since JVM is shutting down"
+      )
       releaseTransactor.unsafeRunSync()
       releaseAtalaReferenceLedger.foreach(_.unsafeRunSync())
       self.stop()
@@ -182,9 +201,19 @@ class NodeApp(executionContext: ExecutionContext) { self =>
       logs: Logs[IO, IOWithTraceIdContext]
   ): (CardanoLedgerService, Option[IO[Unit]]) = {
     val config = NodeConfig.cardanoConfig(globalConfig.getConfig("cardano"))
-    val (cardanoClient, releaseClient) = createCardanoClient(config.cardanoClientConfig, logs)
-    Kamon.registerModule("node-reporter", NodeReporter(config, cardanoClient, keyValueService))
-    val cardano = CardanoLedgerService(config, cardanoClient, keyValueService, onCardanoBlock, onAtalaObject)
+    val (cardanoClient, releaseClient) =
+      createCardanoClient(config.cardanoClientConfig, logs)
+    Kamon.registerModule(
+      "node-reporter",
+      NodeReporter(config, cardanoClient, keyValueService)
+    )
+    val cardano = CardanoLedgerService(
+      config,
+      cardanoClient,
+      keyValueService,
+      onCardanoBlock,
+      onAtalaObject
+    )
     (cardano, Some(releaseClient))
   }
 
@@ -193,7 +222,10 @@ class NodeApp(executionContext: ExecutionContext) { self =>
       logs: Logs[IO, IOWithTraceIdContext]
   ): (CardanoClient, IO[Unit]) = {
     logger.info("Creating cardano client")
-    CardanoClient(cardanoClientConfig, logs).mapK(TraceId.unLiftIOWithTraceId()).allocated.unsafeRunSync()
+    CardanoClient(cardanoClientConfig, logs)
+      .mapK(TraceId.unLiftIOWithTraceId())
+      .allocated
+      .unsafeRunSync()
   }
 
   private def stop(): Unit = {
@@ -209,7 +241,9 @@ class NodeApp(executionContext: ExecutionContext) { self =>
     }
   }
 
-  private def applyDatabaseMigrations(databaseConfig: TransactorFactory.Config): Unit = {
+  private def applyDatabaseMigrations(
+      databaseConfig: TransactorFactory.Config
+  ): Unit = {
     val appliedMigrations = SchemaMigrations.migrate(databaseConfig)
     if (appliedMigrations == 0) {
       logger.info("Database up to date")

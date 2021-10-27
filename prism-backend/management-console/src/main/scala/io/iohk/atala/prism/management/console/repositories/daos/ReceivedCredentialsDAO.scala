@@ -21,7 +21,9 @@ object ReceivedCredentialsDAO {
       credentialExternalId: CredentialExternalId
   )
 
-  def insertSignedCredential(data: ReceivedSignedCredentialData): ConnectionIO[Unit] = {
+  def insertSignedCredential(
+      data: ReceivedSignedCredentialData
+  ): ConnectionIO[Unit] = {
     val receivedId = UUID.randomUUID()
     val receivedAt = Instant.now()
     sql"""INSERT INTO received_credentials (received_id, contact_id, encoded_signed_credential, credential_external_id, received_at)

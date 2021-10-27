@@ -46,7 +46,9 @@ class CredentialsGrpcService(
           )
         }
         .map { created =>
-          console_api.CreateGenericCredentialResponse().withGenericCredential(created)
+          console_api
+            .CreateGenericCredentialResponse()
+            .withGenericCredential(created)
         }
     }
 
@@ -62,13 +64,18 @@ class CredentialsGrpcService(
         .map { result =>
           console_api.GetGenericCredentialsResponse(
             result.data.map(genericCredentialsResult =>
-              genericCredentialToProto(genericCredentialsResult.genericCredential, genericCredentialsResult.connection)
+              genericCredentialToProto(
+                genericCredentialsResult.genericCredential,
+                genericCredentialsResult.connection
+              )
             )
           )
         }
     }
 
-  override def getContactCredentials(request: GetContactCredentialsRequest): Future[GetContactCredentialsResponse] =
+  override def getContactCredentials(
+      request: GetContactCredentialsRequest
+  ): Future[GetContactCredentialsResponse] =
     auth[GetContactCredentials]("getContactCredentials", request) { (participantId, traceId, query) =>
       credentialsService
         .getContactCredentials(participantId, query)
@@ -78,13 +85,18 @@ class CredentialsGrpcService(
         .map { result =>
           console_api.GetContactCredentialsResponse(
             result.data.map(genericCredentialsResult =>
-              genericCredentialToProto(genericCredentialsResult.genericCredential, genericCredentialsResult.connection)
+              genericCredentialToProto(
+                genericCredentialsResult.genericCredential,
+                genericCredentialsResult.connection
+              )
             )
           )
         }
     }
 
-  override def shareCredential(request: ShareCredentialRequest): Future[ShareCredentialResponse] =
+  override def shareCredential(
+      request: ShareCredentialRequest
+  ): Future[ShareCredentialResponse] =
     auth[ShareCredential]("shareCredential", request) { (participantId, traceId, query) =>
       credentialsService
         .shareCredential(participantId, NonEmptyList.of(query.credentialId))
@@ -97,9 +109,13 @@ class CredentialsGrpcService(
         }
     }
 
-  override def getBlockchainData(request: GetBlockchainDataRequest): Future[GetBlockchainDataResponse] = ???
+  override def getBlockchainData(
+      request: GetBlockchainDataRequest
+  ): Future[GetBlockchainDataResponse] = ???
 
-  override def publishBatch(request: PublishBatchRequest): Future[PublishBatchResponse] = {
+  override def publishBatch(
+      request: PublishBatchRequest
+  ): Future[PublishBatchResponse] = {
     auth[PublishBatch]("publishBatch", request) { (_, traceId, query) =>
       credentialsService
         .publishBatch(query)
@@ -124,12 +140,16 @@ class CredentialsGrpcService(
         .unsafeToFuture()
         .toFutureEither
         .map { operationId =>
-          RevokePublishedCredentialResponse().withOperationId(operationId.toProtoByteString)
+          RevokePublishedCredentialResponse().withOperationId(
+            operationId.toProtoByteString
+          )
         }
     }
   }
 
-  override def deleteCredentials(request: DeleteCredentialsRequest): Future[DeleteCredentialsResponse] = {
+  override def deleteCredentials(
+      request: DeleteCredentialsRequest
+  ): Future[DeleteCredentialsResponse] = {
     auth[DeleteCredentials]("deleteCredentials", request) { (participantId, traceId, query) =>
       credentialsService
         .deleteCredentials(participantId, query)
@@ -153,7 +173,9 @@ class CredentialsGrpcService(
     }
   }
 
-  override def getLedgerData(request: GetLedgerDataRequest): Future[GetLedgerDataResponse] =
+  override def getLedgerData(
+      request: GetLedgerDataRequest
+  ): Future[GetLedgerDataResponse] =
     auth[GetLedgerData]("getLedgerData", request) { (_, traceId, query) =>
       credentialsService
         .getLedgerData(query)

@@ -10,5 +10,7 @@ lazy val managementConsole = PrismBuild.managementConsole
 Global / onChangedBuildSource := ReloadOnSourceChanges
 
 ThisBuild / pushRemoteCacheTo := (
-  if (sys.env.contains("CI")) Some(MavenCache("local-cache", file("/tmp/backend-remote-cache"))) else None
+  if (sys.env.contains("CI"))
+    Some(MavenCache("local-cache", file("/tmp/backend-remote-cache")))
+  else None
 )

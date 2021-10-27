@@ -37,15 +37,24 @@ class CardanoLedgerServiceIntegrationSpec extends AtalaWithPostgresSpec {
 
   "CardanoLedgerService" should {
     "notify on published PRISM transactions" in {
-      assume(shouldTestCardanoIntegration(), "The integration test was cancelled because it hasn't been configured")
+      assume(
+        shouldTestCardanoIntegration(),
+        "The integration test was cancelled because it hasn't been configured"
+      )
 
       // Set up
-      val clientConfig = NodeConfig.cardanoConfig(ConfigFactory.load().getConfig("cardano"))
+      val clientConfig =
+        NodeConfig.cardanoConfig(ConfigFactory.load().getConfig("cardano"))
       val walletId = WalletId.from(clientConfig.walletId).value
       val paymentAddress = Address(clientConfig.paymentAddress)
       val (cardanoClient, releaseCardanoClient) =
-        CardanoClient(clientConfig.cardanoClientConfig, logs).allocated.run(TraceId.generateYOLO).unsafeRunSync()
-      val keyValueService = KeyValueService.unsafe(KeyValuesRepository.unsafe(dbLiftedToTraceIdIO, logs), logs)
+        CardanoClient(clientConfig.cardanoClientConfig, logs).allocated
+          .run(TraceId.generateYOLO)
+          .unsafeRunSync()
+      val keyValueService = KeyValueService.unsafe(
+        KeyValuesRepository.unsafe(dbLiftedToTraceIdIO, logs),
+        logs
+      )
       val notificationHandler = new TestAtalaHandlers()
 
       val cardanoLedgerService = new CardanoLedgerService(
@@ -65,7 +74,12 @@ class CardanoLedgerServiceIntegrationSpec extends AtalaWithPostgresSpec {
 
       // Avoid syncing pre-existing blocks
       val latestBlock =
-        cardanoClient.getLatestBlock(TraceId.generateYOLO).value.futureValue(LONG_TIMEOUT).toOption.value
+        cardanoClient
+          .getLatestBlock(TraceId.generateYOLO)
+          .value
+          .futureValue(LONG_TIMEOUT)
+          .toOption
+          .value
       keyValueService
         .set(LAST_SYNCED_BLOCK_NO, Some(latestBlock.header.blockNo))
         .run(TraceId.generateYOLO)
@@ -74,17 +88,28 @@ class CardanoLedgerServiceIntegrationSpec extends AtalaWithPostgresSpec {
       // Publish random object
       val atalaObject = node_internal
         .AtalaObject()
-        .withBlockContent(node_internal.AtalaBlock(version = "1.0", operations = Seq()))
-      val transaction = cardanoLedgerService.publish(atalaObject).futureValue(LONG_TIMEOUT).toOption.value.transaction
-      println(s"AtalaObject published in transaction ${transaction.transactionId} on ${transaction.ledger}")
+        .withBlockContent(node_internal.AtalaBlock(operations = Seq()))
+      val transaction = cardanoLedgerService
+        .publish(atalaObject)
+        .futureValue(LONG_TIMEOUT)
+        .toOption
+        .value
+        .transaction
+      println(
+        s"AtalaObject published in transaction ${transaction.transactionId} on ${transaction.ledger}"
+      )
 
       def notifiedAtalaObjects: Seq[node_internal.AtalaObject] = {
         notificationHandler.receivedNotifications.map(_.atalaObject).toSeq
       }
 
       // Wait for the transaction to become available in cardano-node
-      val retryEndTime = Instant.now.plus(RETRY_TIMEOUT.toMillis, ChronoUnit.MILLIS)
-      while (Instant.now.isBefore(retryEndTime) && !notifiedAtalaObjects.contains(atalaObject)) {
+      val retryEndTime =
+        Instant.now.plus(RETRY_TIMEOUT.toMillis, ChronoUnit.MILLIS)
+      while (
+        Instant.now
+          .isBefore(retryEndTime) && !notifiedAtalaObjects.contains(atalaObject)
+      ) {
         Thread.sleep(RETRY_SLEEP.toMillis)
         // Sync objects
         cardanoLedgerService.syncAtalaObjects().futureValue(LONG_TIMEOUT)
@@ -101,6 +126,10 @@ class CardanoLedgerServiceIntegrationSpec extends AtalaWithPostgresSpec {
   private def shouldTestCardanoIntegration(): Boolean = {
     // Return true when CI="true" (environment is expected to be configured), or NODE_CARDANO_WALLET_ID is defined
     // (any other Cardano variable could be used, this one is arbitrary)
-    sys.env.get("CI").filter(_ == "true").orElse(sys.env.get("NODE_CARDANO_WALLET_ID")).isDefined
+    sys.env
+      .get("CI")
+      .filter(_ == "true")
+      .orElse(sys.env.get("NODE_CARDANO_WALLET_ID"))
+      .isDefined
   }
 }

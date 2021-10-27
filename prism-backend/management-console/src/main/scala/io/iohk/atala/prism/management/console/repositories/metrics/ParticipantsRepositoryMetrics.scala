@@ -17,19 +17,30 @@ final class ParticipantsRepositoryMetrics[F[_]: TimeMeasureMetric: BracketThrow]
     extends ParticipantsRepository[Mid[F, *]] {
 
   private val repoName = "ParticipantsRepository"
-  private lazy val createTimer = TimeMeasureUtil.createDBQueryTimer(repoName, "create")
-  private lazy val findByParticipantIdTimer = TimeMeasureUtil.createDBQueryTimer(repoName, "findByParticipantId")
-  private lazy val findByDidTimer = TimeMeasureUtil.createDBQueryTimer(repoName, "findByDid")
-  private lazy val updateTimer = TimeMeasureUtil.createDBQueryTimer(repoName, "update")
+  private lazy val createTimer =
+    TimeMeasureUtil.createDBQueryTimer(repoName, "create")
+  private lazy val findByParticipantIdTimer =
+    TimeMeasureUtil.createDBQueryTimer(repoName, "findByParticipantId")
+  private lazy val findByDidTimer =
+    TimeMeasureUtil.createDBQueryTimer(repoName, "findByDid")
+  private lazy val updateTimer =
+    TimeMeasureUtil.createDBQueryTimer(repoName, "update")
 
-  override def create(request: CreateParticipantRequest): Mid[F, Either[ManagementConsoleError, Unit]] =
+  override def create(
+      request: CreateParticipantRequest
+  ): Mid[F, Either[ManagementConsoleError, Unit]] =
     _.measureOperationTime(createTimer)
 
-  override def findBy(id: ParticipantId): Mid[F, Either[ManagementConsoleError, ParticipantInfo]] =
+  override def findBy(
+      id: ParticipantId
+  ): Mid[F, Either[ManagementConsoleError, ParticipantInfo]] =
     _.measureOperationTime(findByParticipantIdTimer)
 
-  override def findBy(did: DID): Mid[F, Either[ManagementConsoleError, ParticipantInfo]] =
+  override def findBy(
+      did: DID
+  ): Mid[F, Either[ManagementConsoleError, ParticipantInfo]] =
     _.measureOperationTime(findByDidTimer)
 
-  override def update(request: UpdateParticipantProfileRequest): Mid[F, Unit] = _.measureOperationTime(updateTimer)
+  override def update(request: UpdateParticipantProfileRequest): Mid[F, Unit] =
+    _.measureOperationTime(updateTimer)
 }

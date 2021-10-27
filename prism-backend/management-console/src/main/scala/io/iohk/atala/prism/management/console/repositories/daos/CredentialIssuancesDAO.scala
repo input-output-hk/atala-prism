@@ -42,7 +42,9 @@ object CredentialIssuancesDAO {
          |""".stripMargin.query[CredentialIssuanceWithoutContacts].unique
   }
 
-  def createContact(contact: CreateCredentialIssuanceContact): ConnectionIO[CredentialIssuance.ContactId] = {
+  def createContact(
+      contact: CreateCredentialIssuanceContact
+  ): ConnectionIO[CredentialIssuance.ContactId] = {
     val id = CredentialIssuance.ContactId.random()
     sql"""
          |INSERT INTO credential_issuance_contacts
@@ -103,7 +105,9 @@ object CredentialIssuancesDAO {
          |  JOIN credential_issuance_groups AS ci_groups
          |    ON ci_groups.credential_issuance_group_id = ci_contact_groups.credential_issuance_group_id
          |  WHERE ci_groups.credential_issuance_id = $credentialIssuanceId
-         |""".stripMargin.query[(CredentialIssuance.ContactId, InstitutionGroup.Id)].to[List]
+         |""".stripMargin
+      .query[(CredentialIssuance.ContactId, InstitutionGroup.Id)]
+      .to[List]
   }
 
   case class CreateCredentialIssuance(

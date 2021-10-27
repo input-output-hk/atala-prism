@@ -66,7 +66,11 @@ class BlockProcessingServiceImpl extends BlockProcessingService {
     val parsedOperationsEither = eitherTraverse(operationsWithSeqNumbers) { case (signedOperation, osn) =>
       parseOperation(
         signedOperation,
-        LedgerData(transactionId, ledger, new TimestampInfo(blockTimestamp.toEpochMilli, blockIndex, osn))
+        LedgerData(
+          transactionId,
+          ledger,
+          new TimestampInfo(blockTimestamp.toEpochMilli, blockIndex, osn)
+        )
       ).left
         .map(err => (signedOperation, err))
     }
@@ -90,8 +94,14 @@ class BlockProcessingServiceImpl extends BlockProcessingService {
               // we want operations to be atomic - either it is applied correctly or the state is not modified
               // we are using SQL savepoints for that, which can be used to do subtransactions
               savepoint <- connection.setSavepoint
-              atalaOperationInfo <- AtalaOperationsDAO.getAtalaOperationInfo(atalaOperationId)
-              _ <- processOperation(parsedOperation, protoOperation, atalaOperationId)
+              atalaOperationInfo <- AtalaOperationsDAO.getAtalaOperationInfo(
+                atalaOperationId
+              )
+              _ <- processOperation(
+                parsedOperation,
+                protoOperation,
+                atalaOperationId
+              )
                 .flatMap {
                   case Right(_) =>
                     logRequestWithContext(
@@ -106,7 +116,10 @@ class BlockProcessingServiceImpl extends BlockProcessingService {
                     logger.warn(
                       s"Operation was not applied:\n${err.toString}\nOperation:\n${protoOperation.toProtoString}"
                     )
-                    OperationsCounters.countOperationRejected(protoOperation, err)
+                    OperationsCounters.countOperationRejected(
+                      protoOperation,
+                      err
+                    )
                     logRequestWithContext(
                       methodName,
                       s"Operation was not applied:\n${err.toString}",
@@ -116,9 +129,16 @@ class BlockProcessingServiceImpl extends BlockProcessingService {
                     connection
                       .rollback(savepoint)
                       .flatMap { _ =>
-                        if (atalaOperationInfo.exists(_.operationStatus != AtalaOperationStatus.APPLIED)) {
+                        if (
+                          atalaOperationInfo.exists(
+                            _.operationStatus != AtalaOperationStatus.APPLIED
+                          )
+                        ) {
                           AtalaOperationsDAO
-                            .updateAtalaOperationStatus(atalaOperationId, AtalaOperationStatus.REJECTED)
+                            .updateAtalaOperationStatus(
+                              atalaOperationId,
+                              AtalaOperationStatus.REJECTED
+                            )
                         } else {
                           connection.unit
                         }
@@ -144,16 +164,24 @@ class BlockProcessingServiceImpl extends BlockProcessingService {
         (),
         StateError.InvalidPreviousOperation(): StateError
       )
-      _ <- EitherT.fromEither[ConnectionIO](verifySignature(key, protoOperation))
+      _ <- EitherT.fromEither[ConnectionIO](
+        verifySignature(key, protoOperation)
+      )
       _ <- operation.applyState()
       _ <- EitherT.right[StateError](
-        AtalaOperationsDAO.updateAtalaOperationStatus(atalaOperationId, AtalaOperationStatus.APPLIED)
+        AtalaOperationsDAO.updateAtalaOperationStatus(
+          atalaOperationId,
+          AtalaOperationStatus.APPLIED
+        )
       )
     } yield ()
     result.value
   }
 
-  def verifySignature(key: ECPublicKey, protoOperation: node_models.SignedAtalaOperation): Either[StateError, Unit] = {
+  def verifySignature(
+      key: ECPublicKey,
+      protoOperation: node_models.SignedAtalaOperation
+  ): Either[StateError, Unit] = {
     try {
       Either.cond(
         EC.verifyBytes(
@@ -205,17 +233,27 @@ class BlockProcessingServiceImpl extends BlockProcessingService {
 
   /** Applies function to all sequence elements, up to the point error occurs
     *
-    * @param in input sequence
-    * @param f function to be applied to elements of the sequence
-    * @tparam A type of input sequence element
-    * @tparam L left alternative of Either returned by f
-    * @tparam R right alternative of Either returned by f
-    * @tparam M the input sequence type
-    * @return Left with underlying L type containing first error occurred, Right with M[R] underlying type if there are no errors
+    * @param in
+    *   input sequence
+    * @param f
+    *   function to be applied to elements of the sequence
+    * @tparam A
+    *   type of input sequence element
+    * @tparam L
+    *   left alternative of Either returned by f
+    * @tparam R
+    *   right alternative of Either returned by f
+    * @tparam M
+    *   the input sequence type
+    * @return
+    *   Left with underlying L type containing first error occurred, Right with M[R] underlying type if there are no
+    *   errors
     */
   private def eitherTraverse[A, L, R, M[X] <: IterableOnce[X]](
       in: M[A]
-  )(f: A => Either[L, R])(implicit cbf: BuildFrom[M[A], R, M[R]]): Either[L, M[R]] = {
+  )(
+      f: A => Either[L, R]
+  )(implicit cbf: BuildFrom[M[A], R, M[R]]): Either[L, M[R]] = {
     val builder = cbf.newBuilder(in)
 
     in.iterator

@@ -23,15 +23,20 @@ import scala.concurrent.duration._
 
 /** Estimates the Cardano fees to pay for a given deployment simulation.
   *
-  * <p>You can run the estimator with `sbt node/test:run` and choosing `CardanoFeeEstimator` from the list.
-  * In order to do so, make sure you have set the proper environment variables, as suggested
-  * <a href="https://github.com/input-output-hk/atala/blob/develop/prism-backend/docs/cardano/use-cardano.md">here</a>.
+  * <p>You can run the estimator with `sbt node/test:run` and choosing `CardanoFeeEstimator` from the list. In order to
+  * do so, make sure you have set the proper environment variables, as suggested <a
+  * href="https://github.com/input-output-hk/atala/blob/develop/prism-backend/docs/cardano/use-cardano.md">here</a>.
   */
-class CardanoFeeEstimator(walletId: WalletId, paymentAddress: Address, cardanoWalletApiClient: CardanoWalletApiClient) {
+class CardanoFeeEstimator(
+    walletId: WalletId,
+    paymentAddress: Address,
+    cardanoWalletApiClient: CardanoWalletApiClient
+) {
   // Max number of credentials that can be issued in the same transaction
   private val MAX_CREDENTIAL_BATCH_SIZE = 2048
 
-  private implicit def patienceConfig: PatienceConfig = PatienceConfig(20.seconds, 50.millis)
+  private implicit def patienceConfig: PatienceConfig =
+    PatienceConfig(20.seconds, 50.millis)
 
   def estimate(issuers: List[Issuer]): TotalEstimation = {
     val createDidAtalaObjects = ListBuffer[AtalaObject]()
@@ -44,23 +49,40 @@ class CardanoFeeEstimator(walletId: WalletId, paymentAddress: Address, cardanoWa
       val masterKeyOperation = addMasterKeyOperation(masterKey.getPublicKey)
       createDidAtalaObjects += createAtalaObject(
         signOperation(masterKeyOperation, masterKey.getPrivateKey),
-        signOperation(addIssuingKeyOperation(did, issuingKey.getPublicKey, masterKeyOperation), masterKey.getPrivateKey)
+        signOperation(
+          addIssuingKeyOperation(
+            did,
+            issuingKey.getPublicKey,
+            masterKeyOperation
+          ),
+          masterKey.getPrivateKey
+        )
       )
 
       // Issue credentials
       issuer.credentialsToIssue.foreach { credentialsToIssue =>
-        val batches = math.ceil(credentialsToIssue / MAX_CREDENTIAL_BATCH_SIZE.toDouble).toInt
+        val batches = math
+          .ceil(credentialsToIssue / MAX_CREDENTIAL_BATCH_SIZE.toDouble)
+          .toInt
         for (batchId <- 0 until batches) {
-          val merkleRoot = new MerkleRoot(Sha256.compute(s"Issuer ${issuer.id}, batch $batchId".getBytes))
+          val merkleRoot = new MerkleRoot(
+            Sha256.compute(s"Issuer ${issuer.id}, batch $batchId".getBytes)
+          )
           issueCredentialBatchAtalaObjects += createAtalaObject(
-            signOperation(issueCredentialBatchOperation(merkleRoot, did), issuingKey.getPrivateKey)
+            signOperation(
+              issueCredentialBatchOperation(merkleRoot, did),
+              issuingKey.getPrivateKey
+            )
           )
         }
       }
     }
 
     TotalEstimation(
-      didCreation = Estimation(transactions = createDidAtalaObjects.size, fees = estimateFees(createDidAtalaObjects)),
+      didCreation = Estimation(
+        transactions = createDidAtalaObjects.size,
+        fees = estimateFees(createDidAtalaObjects)
+      ),
       credentialIssuing = Estimation(
         transactions = issueCredentialBatchAtalaObjects.size,
         fees = estimateFees(issueCredentialBatchAtalaObjects)
@@ -73,7 +95,9 @@ class CardanoFeeEstimator(walletId: WalletId, paymentAddress: Address, cardanoWa
     val fees = atalaObjectsBySize.foldLeft(BigInt(0)) { case (sum, (_, atalaObjectsWithSameSize)) =>
       // For performance, use an arbitrary object to estimate all of the objects with the same size, even though they
       // may get different fees
-      sum + atalaObjectsWithSameSize.size * estimateFee(atalaObjectsWithSameSize.head)
+      sum + atalaObjectsWithSameSize.size * estimateFee(
+        atalaObjectsWithSameSize.head
+      )
     }
     Lovelace(fees)
   }
@@ -94,16 +118,23 @@ class CardanoFeeEstimator(walletId: WalletId, paymentAddress: Address, cardanoWa
     estimatedFee.min
   }
 
-  private def createAtalaObject(operations: SignedAtalaOperation*): AtalaObject = {
-    val block = node_internal.AtalaBlock("1.0", operations)
+  private def createAtalaObject(
+      operations: SignedAtalaOperation*
+  ): AtalaObject = {
+    val block = node_internal.AtalaBlock(operations)
     AtalaObject(blockOperationCount = operations.size).withBlockContent(block)
   }
 
-  private def signOperation(atalaOperation: AtalaOperation, privateKey: ECPrivateKey): SignedAtalaOperation = {
+  private def signOperation(
+      atalaOperation: AtalaOperation,
+      privateKey: ECPrivateKey
+  ): SignedAtalaOperation = {
     node_models.SignedAtalaOperation(
       signedWith = DID.getDEFAULT_MASTER_KEY_ID,
       operation = Some(atalaOperation),
-      signature = ByteString.copyFrom(EC.signBytes(atalaOperation.toByteArray, privateKey).getData)
+      signature = ByteString.copyFrom(
+        EC.signBytes(atalaOperation.toByteArray, privateKey).getData
+      )
     )
   }
 
@@ -161,7 +192,10 @@ class CardanoFeeEstimator(walletId: WalletId, paymentAddress: Address, cardanoWa
     node_models.AtalaOperation(AtalaOperation.Operation.UpdateDid(createDIDOp))
   }
 
-  private def issueCredentialBatchOperation(merkleRoot: MerkleRoot, issuerDid: Canonical): AtalaOperation = {
+  private def issueCredentialBatchOperation(
+      merkleRoot: MerkleRoot,
+      issuerDid: Canonical
+  ): AtalaOperation = {
     val issueCredentialOp = node_models.IssueCredentialBatchOperation(
       credentialBatchData = Some(
         node_models.CredentialBatchData(
@@ -171,7 +205,9 @@ class CardanoFeeEstimator(walletId: WalletId, paymentAddress: Address, cardanoWa
       )
     )
 
-    node_models.AtalaOperation(AtalaOperation.Operation.IssueCredentialBatch(issueCredentialOp))
+    node_models.AtalaOperation(
+      AtalaOperation.Operation.IssueCredentialBatch(issueCredentialOp)
+    )
   }
 
   private def publicKeyToProto(key: ECPublicKey): node_models.ECKeyData = {
@@ -200,9 +236,15 @@ object CardanoFeeEstimator {
     }
   }
 
-  case class TotalEstimation(didCreation: Estimation, credentialIssuing: Estimation) extends EstimationFormat {
-    override val transactions: Int = didCreation.transactions + credentialIssuing.transactions
-    override val fees: Lovelace = Lovelace(didCreation.fees + credentialIssuing.fees)
+  case class TotalEstimation(
+      didCreation: Estimation,
+      credentialIssuing: Estimation
+  ) extends EstimationFormat {
+    override val transactions: Int =
+      didCreation.transactions + credentialIssuing.transactions
+    override val fees: Lovelace = Lovelace(
+      didCreation.fees + credentialIssuing.fees
+    )
   }
 
   case class Estimation(transactions: Int, fees: Lovelace) extends EstimationFormat
@@ -238,17 +280,23 @@ object CardanoFeeEstimator {
     val studentsPerSchool = students / schools
     val yearlyReportsPerStudent = 4
     val yearlyCertificatesPerStudent = 1
-    val yearlyCredentialsPerStudent = yearlyReportsPerStudent + yearlyCertificatesPerStudent
+    val yearlyCredentialsPerStudent =
+      yearlyReportsPerStudent + yearlyCertificatesPerStudent
 
     // Issue `yearlyNationalExamCertificates` credentials once per year
-    val nationalExamCertBody = Issuer(id = 0, credentialsToIssue = List(yearlyNationalExamCertificates))
+    val nationalExamCertBody =
+      Issuer(id = 0, credentialsToIssue = List(yearlyNationalExamCertificates))
     val schoolIssuers = List.tabulate(schools)(schoolId =>
       // Issue `studentsPerSchool` credentials `yearlyCredentialsPerStudent` times in a year
-      Issuer(id = schoolId, credentialsToIssue = List.fill(yearlyCredentialsPerStudent)(studentsPerSchool))
+      Issuer(
+        id = schoolId,
+        credentialsToIssue = List.fill(yearlyCredentialsPerStudent)(studentsPerSchool)
+      )
     )
 
     val estimator = createCardanoFeeEstimator()
-    val estimation = estimator.estimate(List(nationalExamCertBody) ++ schoolIssuers)
+    val estimation =
+      estimator.estimate(List(nationalExamCertBody) ++ schoolIssuers)
 
     println(s"""Ethiopia estimation:
          |  Initial setup (DID creation):
@@ -263,10 +311,13 @@ object CardanoFeeEstimator {
   private def createCardanoFeeEstimator(): CardanoFeeEstimator = {
     implicit val ec: ExecutionContext = ExecutionContext.global
 
-    val clientConfig = NodeConfig.cardanoConfig(ConfigFactory.load().getConfig("cardano"))
+    val clientConfig =
+      NodeConfig.cardanoConfig(ConfigFactory.load().getConfig("cardano"))
     val walletId = WalletId.from(clientConfig.walletId).value
     val paymentAddress = Address(clientConfig.paymentAddress)
-    val cardanoWalletApiClient = CardanoWalletApiClient(clientConfig.cardanoClientConfig.cardanoWalletConfig)
+    val cardanoWalletApiClient = CardanoWalletApiClient(
+      clientConfig.cardanoClientConfig.cardanoWalletConfig
+    )
 
     new CardanoFeeEstimator(walletId, paymentAddress, cardanoWalletApiClient)
   }

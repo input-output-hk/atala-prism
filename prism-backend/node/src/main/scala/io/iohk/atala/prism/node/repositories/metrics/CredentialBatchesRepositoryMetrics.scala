@@ -10,18 +10,24 @@ import io.iohk.atala.prism.node.models.nodeState.{CredentialBatchState, LedgerDa
 import io.iohk.atala.prism.node.repositories.CredentialBatchesRepository
 import tofu.higherKind.Mid
 
-private[repositories] final class CredentialBatchesRepositoryMetrics[F[_]: TimeMeasureMetric: BracketThrow]
+private[repositories] final class CredentialBatchesRepositoryMetrics[F[
+    _
+]: TimeMeasureMetric: BracketThrow]
     extends CredentialBatchesRepository[Mid[F, *]] {
 
   private val repoName = "CredentialBatchesRepository"
-  private lazy val getBatchStateTimer = TimeMeasureUtil.createDBQueryTimer(repoName, "getBatchState")
+  private lazy val getBatchStateTimer =
+    TimeMeasureUtil.createDBQueryTimer(repoName, "getBatchState")
   private lazy val getCredentialRevocationTimeTimer =
     TimeMeasureUtil.createDBQueryTimer(repoName, "getCredentialRevocationTime")
 
-  override def getBatchState(batchId: CredentialBatchId): Mid[F, Either[NodeError, Option[CredentialBatchState]]] =
+  override def getBatchState(
+      batchId: CredentialBatchId
+  ): Mid[F, Either[NodeError, Option[CredentialBatchState]]] =
     _.measureOperationTime(getBatchStateTimer)
   override def getCredentialRevocationTime(
       batchId: CredentialBatchId,
       credentialHash: Sha256Digest
-  ): Mid[F, Either[NodeError, Option[LedgerData]]] = _.measureOperationTime(getCredentialRevocationTimeTimer)
+  ): Mid[F, Either[NodeError, Option[LedgerData]]] =
+    _.measureOperationTime(getCredentialRevocationTimeTimer)
 }

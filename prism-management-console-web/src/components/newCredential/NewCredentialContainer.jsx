@@ -22,8 +22,8 @@ import ImportCredentialsData from '../importCredentialsData/ImportCredentialsDat
 import { useSession } from '../../hooks/useSession';
 import { fillHTMLCredential } from '../../helpers/credentialView';
 import { useContacts } from '../../hooks/useContacts';
-import { useGroups } from '../../hooks/useGroups';
 import { useTemplateStore } from '../../hooks/useTemplateStore';
+import { useGroupStore, useGroupUiState } from '../../hooks/useGroupStore';
 
 const NewCredentialContainer = observer(({ api, redirector: { redirectToCredentials } }) => {
   const { t } = useTranslation();
@@ -37,9 +37,9 @@ const NewCredentialContainer = observer(({ api, redirector: { redirectToCredenti
   const resetCredentialTypeDetails = useCallback(() => setCredentialTypeDetails(), []);
 
   const [selectedGroups, setSelectedGroups] = useState([]);
-  const { groups, setName, setSortingDirection, setSortingKey, sortingDirection } = useGroups(
-    api.groupsManager
-  );
+
+  const { groups } = useGroupStore({ fetch: true, reset: true });
+  useGroupUiState({ reset: true });
 
   const [selectedContacts, setSelectedContacts] = useState([]);
   const {
@@ -50,7 +50,6 @@ const NewCredentialContainer = observer(({ api, redirector: { redirectToCredenti
   } = useContacts(api.contactsManager);
 
   const {
-    credentialTemplates: credentialTypes,
     getCredentialTemplateDetails: getCredentialTypeDetails,
     templateCategories
   } = useTemplateStore({ fetch: true });
@@ -131,7 +130,7 @@ const NewCredentialContainer = observer(({ api, redirector: { redirectToCredenti
     });
   };
 
-  const handleImportedData = ({ credentials, ...rest }, setResults) => {
+  const handleImportedData = ({ credentials }, setResults) => {
     const { isMultiRow, multiRowKey, fields } = credentialTypeDetails;
     const credentialsData = isMultiRow
       ? parseMultiRowCredentials(credentials, multiRowKey, fields)
@@ -212,13 +211,8 @@ const NewCredentialContainer = observer(({ api, redirector: { redirectToCredenti
   };
 
   const groupsProps = {
-    groups,
     selectedGroups,
-    setSelectedGroups,
-    setGroupsFilter: setName,
-    setSortingDirection,
-    setSortingKey,
-    sortingDirection
+    setSelectedGroups
   };
 
   const contactsProps = {
@@ -246,7 +240,6 @@ const NewCredentialContainer = observer(({ api, redirector: { redirectToCredenti
       case SELECT_CREDENTIAL_TYPE_STEP:
         return (
           <TypeSelection
-            credentialTypes={credentialTypes}
             templateCategories={templateCategories}
             onTypeSelection={handleTypeSelection}
             selectedType={selectedCredentialTypeId}

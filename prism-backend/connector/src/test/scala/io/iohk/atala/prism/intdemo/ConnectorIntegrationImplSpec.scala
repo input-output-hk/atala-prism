@@ -26,7 +26,9 @@ class ConnectorIntegrationImplSpec extends AnyFlatSpec {
         encodedMerkleProof = "Merkle proof"
       )
 
-      connectorIntegration.sendCredential(senderId, connectionId, credential).futureValue
+      connectorIntegration
+        .sendCredential(senderId, connectionId, credential)
+        .futureValue
 
       verify(messagesService, times(1)).insertMessage(
         eqTo(senderId),
@@ -39,9 +41,14 @@ class ConnectorIntegrationImplSpec extends AnyFlatSpec {
   "sendProofRequest" should "send a decodable proof request" in connectorIntegration {
     (connectorIntegration, messagesService) =>
       val proofRequest =
-        credential_models.ProofRequest(typeIds = Seq("a-type-id"), connectionToken = "a-connection-token")
+        credential_models.ProofRequest(
+          typeIds = Seq("a-type-id"),
+          connectionToken = "a-connection-token"
+        )
 
-      connectorIntegration.sendProofRequest(senderId, connectionId, proofRequest).futureValue
+      connectorIntegration
+        .sendProofRequest(senderId, connectionId, proofRequest)
+        .futureValue
 
       verify(messagesService, times(1)).insertMessage(
         eqTo(senderId),
@@ -61,27 +68,50 @@ object ConnectorIntegrationImplSpec {
   private def connectorIntegration(
       testCode: (
           ConnectorIntegration,
-          MessagesService[fs2.Stream[IOWithTraceIdContext, *], IOWithTraceIdContext]
+          MessagesService[
+            fs2.Stream[IOWithTraceIdContext, *],
+            IOWithTraceIdContext
+          ]
       ) => Any
   ): Unit = {
     val connectionsService = mock[ConnectionsService[IOWithTraceIdContext]]
-    val messagesService = mock[MessagesService[fs2.Stream[IOWithTraceIdContext, *], IOWithTraceIdContext]]
-    val connectorIntegration = new ConnectorIntegrationImpl(connectionsService, messagesService)
-    when(messagesService.insertMessage(eqTo(senderId), eqTo(connectionId), any[Array[Byte]], any[Option[MessageId]]))
-      .thenReturn(messageId.asRight[InsertMessageError].pure[IOWithTraceIdContext])
+    val messagesService = mock[
+      MessagesService[fs2.Stream[IOWithTraceIdContext, *], IOWithTraceIdContext]
+    ]
+    val connectorIntegration =
+      new ConnectorIntegrationImpl(connectionsService, messagesService)
+    when(
+      messagesService.insertMessage(
+        eqTo(senderId),
+        eqTo(connectionId),
+        any[Array[Byte]],
+        any[Option[MessageId]]
+      )
+    )
+      .thenReturn(
+        messageId.asRight[InsertMessageError].pure[IOWithTraceIdContext]
+      )
     testCode(connectorIntegration, messagesService)
     ()
   }
 
-  private def decodesTo(credential: credential_models.PlainTextCredential): Array[Byte] = {
+  private def decodesTo(
+      credential: credential_models.PlainTextCredential
+  ): Array[Byte] = {
     argThat { bytes: Array[Byte] =>
-      credential_models.AtalaMessage.parseFrom(bytes).getPlainCredential == credential
+      credential_models.AtalaMessage
+        .parseFrom(bytes)
+        .getPlainCredential == credential
     }
   }
 
-  private def decodesTo(proofRequest: credential_models.ProofRequest): Array[Byte] = {
+  private def decodesTo(
+      proofRequest: credential_models.ProofRequest
+  ): Array[Byte] = {
     argThat { bytes: Array[Byte] =>
-      credential_models.AtalaMessage.parseFrom(bytes).getProofRequest == proofRequest
+      credential_models.AtalaMessage
+        .parseFrom(bytes)
+        .getProofRequest == proofRequest
     }
   }
 }

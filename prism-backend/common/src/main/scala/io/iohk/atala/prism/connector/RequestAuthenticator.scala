@@ -15,11 +15,17 @@ class RequestAuthenticator {
       requestNonce: RequestNonce = RequestNonce()
   ): SignedConnectorRequest = {
     val signature = EC.signBytes(requestNonce + request, privateKey)
-    SignedConnectorRequest(signature = signature.getData, requestNonce = requestNonce.bytes)
+    SignedConnectorRequest(
+      signature = signature.getData,
+      requestNonce = requestNonce.bytes
+    )
   }
 }
 
-case class SignedConnectorRequest(signature: Array[Byte], requestNonce: Array[Byte]) {
+case class SignedConnectorRequest(
+    signature: Array[Byte],
+    requestNonce: Array[Byte]
+) {
   def encodedSignature: String = {
     encode(signature)
   }

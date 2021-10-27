@@ -13,18 +13,27 @@ class AtalaObjectsTransactionsRepositorySpec extends AtalaWithPostgresSpec {
   private lazy implicit val repository: AtalaObjectsTransactionsRepository[IO] =
     AtalaObjectsTransactionsRepository.unsafe(database, testLogs)
 
-  private val signedOperationDummy = BlockProcessingServiceSpec.signedCreateDidOperation
+  private val signedOperationDummy =
+    BlockProcessingServiceSpec.signedCreateDidOperation
   private val blockDummy = DataPreparation.createBlock(signedOperationDummy)
   private val objectDummy = DataPreparation.createAtalaObject(blockDummy)
 
-  private val atalaObjectNotificationDummy = AtalaObjectNotification(objectDummy, DataPreparation.dummyTransactionInfo)
+  private val atalaObjectNotificationDummy =
+    AtalaObjectNotification(objectDummy, DataPreparation.dummyTransactionInfo)
 
   "AtalaObjectsTransactionsRepository.setObjectTransactionDetails" should {
     "not schedule new operations" in {
-      val objectInfo = repository.setObjectTransactionDetails(atalaObjectNotificationDummy).unsafeToFuture().futureValue
+      val objectInfo = repository
+        .setObjectTransactionDetails(atalaObjectNotificationDummy)
+        .unsafeToFuture()
+        .futureValue
       objectInfo.isDefined must be(true)
 
-      val notPublishedObjects = repository.getNotPublishedObjects.unsafeToFuture().futureValue.toOption.get
+      val notPublishedObjects = repository.getNotPublishedObjects
+        .unsafeToFuture()
+        .futureValue
+        .toOption
+        .get
       notPublishedObjects.isEmpty must be(true)
     }
   }

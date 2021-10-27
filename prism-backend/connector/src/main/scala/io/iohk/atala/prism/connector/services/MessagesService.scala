@@ -52,7 +52,8 @@ trait MessagesService[S[_], F[_]] {
 }
 
 object MessagesService {
-  implicit def applyK[E[_]]: ApplyK[MessagesService[E, *[_]]] = cats.tagless.Derive.applyK[MessagesService[E, *[_]]]
+  implicit def applyK[E[_]]: ApplyK[MessagesService[E, *[_]]] =
+    cats.tagless.Derive.applyK[MessagesService[E, *[_]]]
 
   def apply[F[_]: MonadThrow, R[_]: Functor](
       messagesRepository: MessagesRepository[Stream[F, *], F],
@@ -62,7 +63,8 @@ object MessagesService {
       serviceLogs <- logs.service[MessagesService[Stream[F, *], F]]
     } yield {
       implicit val implicitLogs: ServiceLogging[F, MessagesService[Stream[F, *], F]] = serviceLogs
-      val logs: MessagesService[Stream[F, *], Mid[F, *]] = new MessagesServiceLogs[Stream[F, *], F]
+      val logs: MessagesService[Stream[F, *], Mid[F, *]] =
+        new MessagesServiceLogs[Stream[F, *], F]
       val mid = logs
       mid attach new MessagesServiceImpl[Stream[F, *], F](messagesRepository)
     }
@@ -70,11 +72,13 @@ object MessagesService {
   def unsafe[F[_]: MonadThrow, R[_]: Comonad](
       messagesRepository: MessagesRepository[Stream[F, *], F],
       logs: Logs[R, F]
-  ): MessagesService[Stream[F, *], F] = MessagesService(messagesRepository, logs).extract
+  ): MessagesService[Stream[F, *], F] =
+    MessagesService(messagesRepository, logs).extract
 }
 
-private class MessagesServiceImpl[S[_], F[_]](messagesRepository: MessagesRepository[S, F])
-    extends MessagesService[S, F] {
+private class MessagesServiceImpl[S[_], F[_]](
+    messagesRepository: MessagesRepository[S, F]
+) extends MessagesService[S, F] {
   def insertMessage(
       sender: ParticipantId,
       connection: ConnectionId,
@@ -94,7 +98,11 @@ private class MessagesServiceImpl[S[_], F[_]](messagesRepository: MessagesReposi
       limit: Int,
       lastSeenMessageId: Option[MessageId]
   ): F[Either[GetMessagesPaginatedError, List[Message]]] =
-    messagesRepository.getMessagesPaginated(recipientId, limit, lastSeenMessageId)
+    messagesRepository.getMessagesPaginated(
+      recipientId,
+      limit,
+      lastSeenMessageId
+    )
 
   def getMessageStream(
       recipientId: ParticipantId,

@@ -11,7 +11,9 @@ import tofu.higherKind.Mid
 import tofu.logging.ServiceLogging
 import tofu.syntax.logging._
 
-private[repositories] final class ProtocolVersionRepositoryLogs[F[_]: MonadThrow: ServiceLogging[*[
+private[repositories] final class ProtocolVersionRepositoryLogs[F[
+    _
+]: MonadThrow: ServiceLogging[*[
   _
 ], ProtocolVersionRepository[F]]]
     extends ProtocolVersionRepository[Mid[F, *]] {
@@ -27,10 +29,14 @@ private[repositories] final class ProtocolVersionRepositoryLogs[F[_]: MonadThrow
           )
         )
         .onError(
-          errorCause"Encountered an error while checking if node supports currently effective protocol version" (_)
+          errorCause"Encountered an error while checking if node supports currently effective protocol version" (
+            _
+          )
         )
 
-  override def markEffective(blockLevel: Int): Mid[F, Option[models.ProtocolVersionInfo]] =
+  override def markEffective(
+      blockLevel: Int
+  ): Mid[F, Option[models.ProtocolVersionInfo]] =
     in =>
       debug"marking effective protocol versions that get effective after or at block level $blockLevel" *> in
         .flatTap(
@@ -38,5 +44,9 @@ private[repositories] final class ProtocolVersionRepositoryLogs[F[_]: MonadThrow
             info"Protocol version ${pv.versionName} ${pv.protocolVersion} turned effective"
           )
         )
-        .onError(errorCause"Encountered an error while marking protocol versions effective" (_))
+        .onError(
+          errorCause"Encountered an error while marking protocol versions effective" (
+            _
+          )
+        )
 }

@@ -37,7 +37,9 @@ trait ParticipantsRepository[F[_]] {
 
   import io.iohk.atala.prism.connector.repositories.ParticipantsRepository._
 
-  def create(request: CreateParticipantRequest): F[Either[CreateParticipantError, Unit]]
+  def create(
+      request: CreateParticipantRequest
+  ): F[Either[CreateParticipantError, Unit]]
 
   def findBy(id: ParticipantId): F[Either[FindByError, ParticipantInfo]]
 
@@ -65,9 +67,12 @@ object ParticipantsRepository {
     for {
       serviceLogs <- logs.service[ParticipantsRepository[F]]
     } yield {
-      implicit val implicitLogs: ServiceLogging[F, ParticipantsRepository[F]] = serviceLogs
-      val metrics: ParticipantsRepository[Mid[F, *]] = new ParticipantsRepositoryMetrics[F]
-      val logs: ParticipantsRepository[Mid[F, *]] = new ParticipantsRepositoryLogs[F]
+      implicit val implicitLogs: ServiceLogging[F, ParticipantsRepository[F]] =
+        serviceLogs
+      val metrics: ParticipantsRepository[Mid[F, *]] =
+        new ParticipantsRepositoryMetrics[F]
+      val logs: ParticipantsRepository[Mid[F, *]] =
+        new ParticipantsRepositoryLogs[F]
       val mid = metrics |+| logs
       mid attach new ParticipantsRepositoryImpl[F](transactor)
     }
@@ -75,7 +80,8 @@ object ParticipantsRepository {
   def unsafe[F[_]: TimeMeasureMetric: BracketThrow, R[_]: Comonad](
       transactor: Transactor[F],
       logs: Logs[R, F]
-  ): ParticipantsRepository[F] = ParticipantsRepository(transactor, logs).extract
+  ): ParticipantsRepository[F] =
+    ParticipantsRepository(transactor, logs).extract
 
   case class CreateParticipantRequest(
       id: ParticipantId,
@@ -87,15 +93,18 @@ object ParticipantsRepository {
   )
 }
 
-private final class ParticipantsRepositoryImpl[F[_]: BracketThrow](xa: Transactor[F])
-    extends ParticipantsRepository[F]
+private final class ParticipantsRepositoryImpl[F[_]: BracketThrow](
+    xa: Transactor[F]
+) extends ParticipantsRepository[F]
     with ConnectorErrorSupportNew {
 
   import ParticipantsRepository._
 
   val logger: Logger = LoggerFactory.getLogger(getClass)
 
-  def create(request: CreateParticipantRequest): F[Either[CreateParticipantError, Unit]] = {
+  def create(
+      request: CreateParticipantRequest
+  ): F[Either[CreateParticipantError, Unit]] = {
     val info = ParticipantInfo(
       id = request.id,
       tpe = request.tpe,
@@ -113,7 +122,13 @@ private final class ParticipantsRepositoryImpl[F[_]: BracketThrow](xa: Transacto
       .map(_.asRight[CreateParticipantError])
       .handleErrorWith {
         case e: PSQLException if e.getServerErrorMessage.getConstraint == "participants_did_unique" =>
-          Either.left[CreateParticipantError, Unit](co(InvalidRequest("DID already exists"))).pure[F]
+          Either
+            .left[CreateParticipantError, Unit](
+              co(InvalidRequest("DID already exists"))
+            )
+            .pure[F]
+        case t =>
+          throw t
       }
   }
 
@@ -130,9 +145,14 @@ private final class ParticipantsRepositoryImpl[F[_]: BracketThrow](xa: Transacto
       .transact(xa)
   }
 
-  def findBy(publicKey: ECPublicKey): F[Either[FindByError, ParticipantInfo]] = {
-    val encodedPublicKey = Base64.getEncoder.encodeToString(publicKey.getEncoded)
-    implicit val loggingContext = LoggingContext("encodedPublicKey" -> encodedPublicKey)
+  def findBy(
+      publicKey: ECPublicKey
+  ): F[Either[FindByError, ParticipantInfo]] = {
+    val encodedPublicKey =
+      Base64.getEncoder.encodeToString(publicKey.getEncoded)
+    implicit val loggingContext = LoggingContext(
+      "encodedPublicKey" -> encodedPublicKey
+    )
 
     ParticipantsDAO
       .findByPublicKey(publicKey)

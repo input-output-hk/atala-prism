@@ -16,7 +16,9 @@ import tofu.higherKind.Mid
 import tofu.logging.ServiceLogging
 import tofu.syntax.logging._
 
-private[repositories] final class ParticipantsRepositoryLogs[F[_]: ServiceLogging[
+private[repositories] final class ParticipantsRepositoryLogs[F[
+    _
+]: ServiceLogging[
   *[_],
   ParticipantsRepository[F]
 ]: MonadThrow]
@@ -32,9 +34,13 @@ private[repositories] final class ParticipantsRepositoryLogs[F[_]: ServiceLoggin
             _ => info"creating participant - successfully done"
           )
         )
-        .onError(errorCause"encountered an error while creating participant" (_))
+        .onError(
+          errorCause"encountered an error while creating participant" (_)
+        )
 
-  override def findBy(id: ParticipantId): Mid[F, Either[FindByError, ParticipantInfo]] =
+  override def findBy(
+      id: ParticipantId
+  ): Mid[F, Either[FindByError, ParticipantInfo]] =
     in =>
       info"finding participant $id" *> in
         .flatTap(
@@ -45,7 +51,9 @@ private[repositories] final class ParticipantsRepositoryLogs[F[_]: ServiceLoggin
         )
         .onError(errorCause"encountered an error while finding participant" (_))
 
-  override def findBy(publicKey: ECPublicKey): Mid[F, Either[FindByError, ParticipantInfo]] =
+  override def findBy(
+      publicKey: ECPublicKey
+  ): Mid[F, Either[FindByError, ParticipantInfo]] =
     in =>
       info"finding participant by public-key $publicKey" *> in
         .flatTap(
@@ -54,7 +62,11 @@ private[repositories] final class ParticipantsRepositoryLogs[F[_]: ServiceLoggin
             result => info"finding participant - successfully done ${result.id}"
           )
         )
-        .onError(errorCause"encountered an error while finding participant by public-key" (_))
+        .onError(
+          errorCause"encountered an error while finding participant by public-key" (
+            _
+          )
+        )
 
   override def findBy(did: DID): Mid[F, Either[FindByError, ParticipantInfo]] =
     in =>
@@ -65,7 +77,9 @@ private[repositories] final class ParticipantsRepositoryLogs[F[_]: ServiceLoggin
             result => info"finding participant - successfully done ${result.id}"
           )
         )
-        .onError(errorCause"encountered an error while finding participant by did" (_))
+        .onError(
+          errorCause"encountered an error while finding participant by did" (_)
+        )
 
   override def updateParticipantProfileBy(
       id: ParticipantId,
@@ -74,5 +88,9 @@ private[repositories] final class ParticipantsRepositoryLogs[F[_]: ServiceLoggin
     in =>
       info"updating participant profile $id" *> in
         .flatTap(_ => info"updating participant profile - successfully done")
-        .onError(errorCause"encountered an error while updating participant profile" (_))
+        .onError(
+          errorCause"encountered an error while updating participant profile" (
+            _
+          )
+        )
 }

@@ -7,7 +7,9 @@ import io.iohk.atala.prism.node.errors.NodeError
 import java.sql.SQLException
 
 object utils {
-  def dbErrorWrapper[T](resultE: Either[SQLException, T]): Either[NodeError, T] =
+  def dbErrorWrapper[T](
+      resultE: Either[SQLException, T]
+  ): Either[NodeError, T] =
     resultE.left.map(NodeError.InternalErrorDB)
 
   def connectionIOSafe[T](

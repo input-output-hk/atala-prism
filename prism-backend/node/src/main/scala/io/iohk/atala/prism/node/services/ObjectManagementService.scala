@@ -147,11 +147,14 @@ private final class ObjectManagementServiceImpl[F[_]: BracketThrow](
     } yield {
       opsWithObjects.zip(operationInsertions).map {
         case ((atalaOperation, _), Left(err)) =>
-          OperationsCounters.failedToStoreToDbAtalaOperations(List(atalaOperation), err)
+          OperationsCounters
+            .failedToStoreToDbAtalaOperations(List(atalaOperation), err)
           err.asLeft[AtalaOperationId]
         case ((atalaOperation, _), Right(cntAdded)) if cntAdded == ((0, 0)) =>
-          val err = NodeError.DuplicateAtalaOperation(AtalaOperationId.of(atalaOperation))
-          OperationsCounters.failedToStoreToDbAtalaOperations(List(atalaOperation), err)
+          val err = NodeError
+            .DuplicateAtalaOperation(AtalaOperationId.of(atalaOperation))
+          OperationsCounters
+            .failedToStoreToDbAtalaOperations(List(atalaOperation), err)
           AtalaOperationId.of(atalaOperation).asRight[NodeError]
         case ((atalaOperation, _), Right(_)) =>
           OperationsCounters.countReceivedAtalaOperations(List(atalaOperation))
@@ -196,7 +199,10 @@ private final class ObjectManagementServiceImpl[F[_]: BracketThrow](
       )
     } yield for {
       wasProcessed <- blockProcessed
-      _ <- AtalaObjectsDAO.updateObjectStatus(obj.objectId, AtalaObjectStatus.Processed)
+      _ <- AtalaObjectsDAO.updateObjectStatus(
+        obj.objectId,
+        AtalaObjectStatus.Processed
+      )
     } yield wasProcessed
   }
 }
@@ -211,7 +217,10 @@ object ObjectManagementService {
     case object Confirmed extends AtalaObjectTransactionStatus
   }
 
-  case class AtalaObjectTransactionInfo(transaction: TransactionInfo, status: AtalaObjectTransactionStatus)
+  case class AtalaObjectTransactionInfo(
+      transaction: TransactionInfo,
+      status: AtalaObjectTransactionStatus
+  )
 
   @derive(loggable)
   final case class SaveObjectError(msg: String)

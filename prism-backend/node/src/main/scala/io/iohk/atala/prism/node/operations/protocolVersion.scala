@@ -13,11 +13,17 @@ package object protocolVersion {
     SUPPORTED_VERSION.major >= cv.major
 
   trait SupportedOperations {
-    def isOperationSupportedInVersion(operation: Operation, protocol: ProtocolVersion): Boolean
+    def isOperationSupportedInVersion(
+        operation: Operation,
+        protocol: ProtocolVersion
+    ): Boolean
   }
 
   implicit object SupportedOperationsInst extends SupportedOperations {
-    override def isOperationSupportedInVersion(operation: Operation, protocolV: ProtocolVersion): Boolean =
+    override def isOperationSupportedInVersion(
+        operation: Operation,
+        protocolV: ProtocolVersion
+    ): Boolean =
       (protocolV, operation) match {
         case (
               ProtocolVersion1_0,

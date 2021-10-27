@@ -28,20 +28,35 @@ import tofu.logging.Logs
 
 class CredentialsStoreServiceImplSpec extends RpcSpecBase with DIDUtil {
 
-  private val managementConsoleTestLogs: Logs[IO, IOWithTraceIdContext] = Logs.withContext[IO, IOWithTraceIdContext]
+  private val managementConsoleTestLogs: Logs[IO, IOWithTraceIdContext] =
+    Logs.withContext[IO, IOWithTraceIdContext]
 
   val usingApiAs = usingApiAsConstructor(
-    new console_api.CredentialsStoreServiceGrpc.CredentialsStoreServiceBlockingStub(_, _)
+    new console_api.CredentialsStoreServiceGrpc.CredentialsStoreServiceBlockingStub(
+      _,
+      _
+    )
   )
 
   private lazy val receivedCredentialsRepository =
-    ReceivedCredentialsRepository.unsafe(dbLiftedToTraceIdIO, managementConsoleTestLogs)
-  private lazy val contactsRepository = ContactsRepository.unsafe(dbLiftedToTraceIdIO, managementConsoleTestLogs)
+    ReceivedCredentialsRepository.unsafe(
+      dbLiftedToTraceIdIO,
+      managementConsoleTestLogs
+    )
+  private lazy val contactsRepository =
+    ContactsRepository.unsafe(dbLiftedToTraceIdIO, managementConsoleTestLogs)
   private lazy val participantsRepository =
-    ParticipantsRepository.unsafe(dbLiftedToTraceIdIO, managementConsoleTestLogs)
+    ParticipantsRepository.unsafe(
+      dbLiftedToTraceIdIO,
+      managementConsoleTestLogs
+    )
   private lazy val requestNoncesRepository =
-    RequestNoncesRepository.unsafe(dbLiftedToTraceIdIO, managementConsoleTestLogs)
-  protected lazy val nodeMock = mock[io.iohk.atala.prism.protos.node_api.NodeServiceGrpc.NodeService]
+    RequestNoncesRepository.unsafe(
+      dbLiftedToTraceIdIO,
+      managementConsoleTestLogs
+    )
+  protected lazy val nodeMock =
+    mock[io.iohk.atala.prism.protos.node_api.NodeServiceGrpc.NodeService]
 
   private lazy val authenticator = new ManagementConsoleAuthenticator(
     participantsRepository,
@@ -49,14 +64,16 @@ class CredentialsStoreServiceImplSpec extends RpcSpecBase with DIDUtil {
     nodeMock,
     GrpcAuthenticationHeaderParser
   )
-  lazy val verifierId = ParticipantId.unsafeFrom("af45a4da-65b8-473e-aadc-aa6b346250a3")
+  lazy val verifierId =
+    ParticipantId.unsafeFrom("af45a4da-65b8-473e-aadc-aa6b346250a3")
 
   override def services =
     Seq(
       console_api.CredentialsStoreServiceGrpc
         .bindService(
           new CredentialsStoreGrpcService(
-            CredentialsStoreService.unsafe(receivedCredentialsRepository, managementConsoleTestLogs),
+            CredentialsStoreService
+              .unsafe(receivedCredentialsRepository, managementConsoleTestLogs),
             contactsRepository,
             authenticator
           ),
@@ -81,7 +98,10 @@ class CredentialsStoreServiceImplSpec extends RpcSpecBase with DIDUtil {
     ()
   }
 
-  def updateDid(participantId: ParticipantId, did: DID): doobie.ConnectionIO[Unit] = {
+  def updateDid(
+      participantId: ParticipantId,
+      did: DID
+  ): doobie.ConnectionIO[Unit] = {
     sql"""
          |UPDATE participants
          |SET did = $did
@@ -97,9 +117,12 @@ class CredentialsStoreServiceImplSpec extends RpcSpecBase with DIDUtil {
       updateDid(verifierId, did).transact(database).unsafeRunSync()
 
       val token = "token" + publicKey.getHexEncoded
-      val contactId = DataPreparation.createContact(verifierId, "Individual", None, connectionToken = token).contactId
+      val contactId = DataPreparation
+        .createContact(verifierId, "Individual", None, connectionToken = token)
+        .contactId
 
-      val encodedSignedCredential = "a3cacb2d9e51bdd40264b287db15b4121ddee84eafb8c3da545c88c1d99b94d4"
+      val encodedSignedCredential =
+        "a3cacb2d9e51bdd40264b287db15b4121ddee84eafb8c3da545c88c1d99b94d4"
       val mockCredentialExternalId = CredentialExternalId.random()
       val request = console_api
         .StoreCredentialRequest()
@@ -129,9 +152,12 @@ class CredentialsStoreServiceImplSpec extends RpcSpecBase with DIDUtil {
       updateDid(verifierId, did).transact(database).unsafeRunSync()
 
       val token = "token" + publicKey.getHexEncoded
-      val contactId = DataPreparation.createContact(verifierId, "Individual", None, connectionToken = token).contactId
+      val contactId = DataPreparation
+        .createContact(verifierId, "Individual", None, connectionToken = token)
+        .contactId
 
-      val encodedSignedCredential = "a3cacb2d9e51bdd40264b287db15b4121ddee84eafb8c3da545c88c1d99b94d4"
+      val encodedSignedCredential =
+        "a3cacb2d9e51bdd40264b287db15b4121ddee84eafb8c3da545c88c1d99b94d4"
       val mockCredentialExternalId = CredentialExternalId.random()
       val request = console_api
         .StoreCredentialRequest()
@@ -153,7 +179,8 @@ class CredentialsStoreServiceImplSpec extends RpcSpecBase with DIDUtil {
         credential.encodedSignedCredential mustBe encodedSignedCredential
       }
 
-      val encodedSignedCredential2 = "b3cacb2d9e51bdd40264b287db15b4121ddee84eafb8c3da545c88c1d99b94d4"
+      val encodedSignedCredential2 =
+        "b3cacb2d9e51bdd40264b287db15b4121ddee84eafb8c3da545c88c1d99b94d4"
 
       val request2 = console_api
         .StoreCredentialRequest()
@@ -201,10 +228,13 @@ class CredentialsStoreServiceImplSpec extends RpcSpecBase with DIDUtil {
 
       // the contact belongs to verifier2
       val token = "token" + publicKey.getHexEncoded
-      DataPreparation.createContact(verifier2, "Individual", None, connectionToken = token).contactId
+      DataPreparation
+        .createContact(verifier2, "Individual", None, connectionToken = token)
+        .contactId
 
       // still, another verifier tries to push a credential to verifier2, which fails
-      val encodedSignedCredential = "a3cacb2d9e51bdd40264b287db15b4121ddee84eafb8c3da545c88c1d99b94d4"
+      val encodedSignedCredential =
+        "a3cacb2d9e51bdd40264b287db15b4121ddee84eafb8c3da545c88c1d99b94d4"
       val mockCredentialExternalId = CredentialExternalId.random()
       val request = console_api
         .StoreCredentialRequest()
@@ -231,9 +261,12 @@ class CredentialsStoreServiceImplSpec extends RpcSpecBase with DIDUtil {
       updateDid(verifierId, did).transact(database).unsafeRunSync()
 
       val token = "token" + publicKey.getHexEncoded
-      val contactId = DataPreparation.createContact(verifierId, "Individual", None, connectionToken = token).contactId
+      val contactId = DataPreparation
+        .createContact(verifierId, "Individual", None, connectionToken = token)
+        .contactId
 
-      val encodedSignedCredential = "a3cacb2d9e51bdd40264b287db15b4121ddee84eafb8c3da545c88c1d99b94d4"
+      val encodedSignedCredential =
+        "a3cacb2d9e51bdd40264b287db15b4121ddee84eafb8c3da545c88c1d99b94d4"
       val mockCredentialExternalId = CredentialExternalId.random()
       val storeRequest = console_api
         .StoreCredentialRequest()
@@ -241,13 +274,15 @@ class CredentialsStoreServiceImplSpec extends RpcSpecBase with DIDUtil {
         .withEncodedSignedCredential(encodedSignedCredential)
         .withCredentialExternalId(mockCredentialExternalId.value)
 
-      val rpcStoreRequest = SignedRpcRequest.generate(keyPair, did, storeRequest)
+      val rpcStoreRequest =
+        SignedRpcRequest.generate(keyPair, did, storeRequest)
       usingApiAs(rpcStoreRequest) { serviceStub =>
         serviceStub.storeCredential(storeRequest)
       }
 
       val getStoredRequest = console_api.GetStoredCredentialsForRequest()
-      val rpcGetStoreRequest = SignedRpcRequest.generate(keyPair, did, getStoredRequest)
+      val rpcGetStoreRequest =
+        SignedRpcRequest.generate(keyPair, did, getStoredRequest)
       usingApiAs(rpcGetStoreRequest) { serviceStub =>
         val response = serviceStub.getStoredCredentialsFor(getStoredRequest)
 
@@ -265,22 +300,28 @@ class CredentialsStoreServiceImplSpec extends RpcSpecBase with DIDUtil {
       updateDid(verifierId, did).transact(database).unsafeRunSync()
 
       val token = "token" + publicKey.getHexEncoded
-      val contactId = DataPreparation.createContact(verifierId, "Individual", None, connectionToken = token).contactId
+      val contactId = DataPreparation
+        .createContact(verifierId, "Individual", None, connectionToken = token)
+        .contactId
 
-      val encodedSignedCredential = "a3cacb2d9e51bdd40264b287db15b4121ddee84eafb8c3da545c88c1d99b94d4"
+      val encodedSignedCredential =
+        "a3cacb2d9e51bdd40264b287db15b4121ddee84eafb8c3da545c88c1d99b94d4"
       val mockCredentialExternalId = CredentialExternalId.random()
       val storeRequest = console_api
         .StoreCredentialRequest()
         .withConnectionToken(token)
         .withEncodedSignedCredential(encodedSignedCredential)
         .withCredentialExternalId(mockCredentialExternalId.value)
-      val rpcStoreRequest = SignedRpcRequest.generate(keyPair, did, storeRequest)
+      val rpcStoreRequest =
+        SignedRpcRequest.generate(keyPair, did, storeRequest)
       usingApiAs(rpcStoreRequest) { serviceStub =>
         serviceStub.storeCredential(storeRequest)
       }
 
-      val getStoredRequest = console_api.GetStoredCredentialsForRequest(contactId.toString)
-      val rpcGetStoreRequest = SignedRpcRequest.generate(keyPair, did, getStoredRequest)
+      val getStoredRequest =
+        console_api.GetStoredCredentialsForRequest(contactId.toString)
+      val rpcGetStoreRequest =
+        SignedRpcRequest.generate(keyPair, did, getStoredRequest)
       usingApiAs(rpcGetStoreRequest) { serviceStub =>
         val response = serviceStub.getStoredCredentialsFor(getStoredRequest)
 
@@ -300,11 +341,15 @@ class CredentialsStoreServiceImplSpec extends RpcSpecBase with DIDUtil {
       updateDid(verifierId, did).transact(database).unsafeRunSync()
 
       val token = "token" + publicKey.getHexEncoded
-      DataPreparation.createContact(verifierId, "Individual", None, connectionToken = token).contactId
+      DataPreparation
+        .createContact(verifierId, "Individual", None, connectionToken = token)
+        .contactId
 
       // we generate 10 new ids
-      val credentialExternalIds = for (_ <- 1 to 10) yield CredentialExternalId.random()
-      val encodedSignedCredential = "a3cacb2d9e51bdd40264b287db15b4121ddee84eafb8c3da545c88c1d99b94d4"
+      val credentialExternalIds =
+        for (_ <- 1 to 10) yield CredentialExternalId.random()
+      val encodedSignedCredential =
+        "a3cacb2d9e51bdd40264b287db15b4121ddee84eafb8c3da545c88c1d99b94d4"
       val storeRequests = credentialExternalIds.map { messageId =>
         console_api
           .StoreCredentialRequest()
@@ -314,16 +359,21 @@ class CredentialsStoreServiceImplSpec extends RpcSpecBase with DIDUtil {
       }
 
       storeRequests.map { storeRequest =>
-        val rpcStoreRequest = SignedRpcRequest.generate(keyPair, did, storeRequest)
+        val rpcStoreRequest =
+          SignedRpcRequest.generate(keyPair, did, storeRequest)
         usingApiAs(rpcStoreRequest) { serviceStub =>
           serviceStub.storeCredential(storeRequest)
         }
       }
 
-      val getLastStoredMessageIdRequest = console_api.GetLatestCredentialExternalIdRequest()
-      val rpcGetStoreRequest = SignedRpcRequest.generate(keyPair, did, getLastStoredMessageIdRequest)
+      val getLastStoredMessageIdRequest =
+        console_api.GetLatestCredentialExternalIdRequest()
+      val rpcGetStoreRequest =
+        SignedRpcRequest.generate(keyPair, did, getLastStoredMessageIdRequest)
       usingApiAs(rpcGetStoreRequest) { serviceStub =>
-        val response = serviceStub.getLatestCredentialExternalId(getLastStoredMessageIdRequest)
+        val response = serviceStub.getLatestCredentialExternalId(
+          getLastStoredMessageIdRequest
+        )
 
         response.latestCredentialExternalId mustBe credentialExternalIds.last.value
       }

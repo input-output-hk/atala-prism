@@ -83,6 +83,10 @@ class PayloadsRepositorySpec extends AtalaWithPostgresSpec with OptionValues {
   }
 
   private def newDID(): DID = {
-    DID.buildLongFormFromMasterPublicKey(EC.INSTANCE.generateKeyPair().getPublicKey).asCanonical()
+    DID
+      .buildLongFormFromMasterPublicKey(
+        EC.INSTANCE.generateKeyPair().getPublicKey
+      )
+      .asCanonical()
   }
 }

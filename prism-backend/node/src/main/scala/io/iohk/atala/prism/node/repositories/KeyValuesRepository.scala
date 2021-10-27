@@ -43,8 +43,10 @@ object KeyValuesRepository {
     for {
       serviceLogs <- logs.service[KeyValuesRepository[F]]
     } yield {
-      implicit val implicitLogs: ServiceLogging[F, KeyValuesRepository[F]] = serviceLogs
-      val metrics: KeyValuesRepository[Mid[F, *]] = new KeyValuesRepositoryMetrics[F]()
+      implicit val implicitLogs: ServiceLogging[F, KeyValuesRepository[F]] =
+        serviceLogs
+      val metrics: KeyValuesRepository[Mid[F, *]] =
+        new KeyValuesRepositoryMetrics[F]()
       val logs: KeyValuesRepository[Mid[F, *]] = new KeyValuesRepositoryLogs[F]
       val mid = metrics |+| logs
       mid attach new KeyValuesRepositoryImpl[F](transactor)
@@ -56,7 +58,9 @@ object KeyValuesRepository {
   ): KeyValuesRepository[F] = KeyValuesRepository(transactor, logs).extract
 }
 
-private final class KeyValuesRepositoryImpl[F[_]: BracketThrow](xa: Transactor[F]) extends KeyValuesRepository[F] {
+private final class KeyValuesRepositoryImpl[F[_]: BracketThrow](
+    xa: Transactor[F]
+) extends KeyValuesRepository[F] {
 
   val logger: Logger = LoggerFactory.getLogger(getClass)
 

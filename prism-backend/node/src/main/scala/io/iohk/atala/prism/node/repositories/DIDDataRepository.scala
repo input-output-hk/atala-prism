@@ -36,8 +36,10 @@ object DIDDataRepository {
     for {
       serviceLogs <- logs.service[DIDDataRepository[F]]
     } yield {
-      implicit val implicitLogs: ServiceLogging[F, DIDDataRepository[F]] = serviceLogs
-      val metrics: DIDDataRepository[Mid[F, *]] = new DIDDataRepositoryMetrics[F]()
+      implicit val implicitLogs: ServiceLogging[F, DIDDataRepository[F]] =
+        serviceLogs
+      val metrics: DIDDataRepository[Mid[F, *]] =
+        new DIDDataRepositoryMetrics[F]()
       val logs: DIDDataRepository[Mid[F, *]] = new DIDDataRepositoryLogs[F]
       val mid = metrics |+| logs
       mid attach new DIDDataRepositoryImpl[F](transactor)
@@ -56,7 +58,9 @@ private final class DIDDataRepositoryImpl[F[_]: BracketThrow](xa: Transactor[F])
   def findByDid(did: DID): F[Either[NodeError, Option[DIDDataState]]] =
     getByCanonicalSuffix(DidSuffix(did.getSuffix))
 
-  private def getByCanonicalSuffix(canonicalSuffix: DidSuffix): F[Either[NodeError, Option[DIDDataState]]] = {
+  private def getByCanonicalSuffix(
+      canonicalSuffix: DidSuffix
+  ): F[Either[NodeError, Option[DIDDataState]]] = {
     val query = for {
       lastOperationMaybe <- DIDDataDAO.getLastOperation(canonicalSuffix)
       keys <- PublicKeysDAO.findAll(canonicalSuffix)

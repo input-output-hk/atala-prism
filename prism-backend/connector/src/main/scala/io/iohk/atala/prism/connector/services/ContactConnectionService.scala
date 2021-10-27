@@ -34,14 +34,18 @@ class ContactConnectionService(
 
   val logger: Logger = LoggerFactory.getLogger(this.getClass)
 
-  override def getConnectionStatus(request: ConnectionsStatusRequest): Future[ConnectionsStatusResponse] = {
+  override def getConnectionStatus(
+      request: ConnectionsStatusRequest
+  ): Future[ConnectionsStatusResponse] = {
     val methodName = "getConnectionStatus"
     def f(did: DID): Future[ConnectionsStatusResponse] = {
       implicit val loggingContext: LoggingContext =
         LoggingContext("request" -> request, "did" -> did)
 
       connectionsService
-        .getConnectionsByConnectionTokens(request.connectionTokens.map(TokenString(_)).to(List))
+        .getConnectionsByConnectionTokens(
+          request.connectionTokens.map(TokenString(_)).to(List)
+        )
         .run(TraceId.generateYOLO)
         .unsafeToFuture()
         .map(_.asRight[ConnectorError])
@@ -49,7 +53,8 @@ class ContactConnectionService(
         .wrapAndRegisterExceptions(serviceName, methodName)
         .successMap { contactConnections =>
           ConnectionsStatusResponse(
-            connections = contactConnections.map(ProtoCodecs.contactConnection2Proto.transform)
+            connections = contactConnections
+              .map(ProtoCodecs.contactConnection2Proto.transform)
           )
         }
     }

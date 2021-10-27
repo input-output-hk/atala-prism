@@ -10,12 +10,16 @@ import tofu.higherKind.Mid
 import tofu.logging.ServiceLogging
 import tofu.syntax.logging._
 
-private[repositories] final class CardanoBlockRepositoryLogs[F[_]: ServiceLogging[
+private[repositories] final class CardanoBlockRepositoryLogs[F[
+    _
+]: ServiceLogging[
   *[_],
   CardanoBlockRepository[F]
 ]: MonadThrow]
     extends CardanoBlockRepository[Mid[F, *]] {
-  override def getFullBlock(blockNo: Int): Mid[F, Either[BlockError.NotFound, Block.Full]] =
+  override def getFullBlock(
+      blockNo: Int
+  ): Mid[F, Either[BlockError.NotFound, Block.Full]] =
     in =>
       info"getting full block $blockNo" *> in
         .flatTap(
@@ -35,5 +39,7 @@ private[repositories] final class CardanoBlockRepositoryLogs[F[_]: ServiceLoggin
             res => info"getting latest block - successfully done blockNo ${res.header.blockNo}"
           )
         )
-        .onError(errorCause"Encountered an error while getting latest block" (_))
+        .onError(
+          errorCause"Encountered an error while getting latest block" (_)
+        )
 }

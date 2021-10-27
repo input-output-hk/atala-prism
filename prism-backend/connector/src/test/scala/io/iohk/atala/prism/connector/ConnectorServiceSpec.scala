@@ -19,15 +19,18 @@ class ConnectorServiceSpec extends ConnectorRpcSpecBase {
     "return proper build information" in {
       usingApiAs.unlogged { service =>
         nodeMock.getNodeBuildInfo(*).returns {
-          Future.successful(node_api.GetNodeBuildInfoResponse().withVersion("node-version"))
+          Future.successful(
+            node_api.GetNodeBuildInfoResponse().withVersion("node-version")
+          )
         }
 
-        val buildInfo = service.getBuildInfo(connector_api.GetBuildInfoRequest())
+        val buildInfo =
+          service.getBuildInfo(connector_api.GetBuildInfoRequest())
 
         // This changes greatly, so just test something was set
         buildInfo.version must not be empty
         buildInfo.scalaVersion mustBe "2.13.6"
-        buildInfo.sbtVersion mustBe "1.5.3"
+        buildInfo.sbtVersion mustBe "1.5.5"
       }
     }
   }
@@ -35,7 +38,8 @@ class ConnectorServiceSpec extends ConnectorRpcSpecBase {
   "getCurrentUser" should {
 
     "return the verifier details" in {
-      val (publicKey, rpcRequest) = prepareSignedRequest(connector_api.GetCurrentUserRequest())
+      val (publicKey, rpcRequest) =
+        prepareSignedRequest(connector_api.GetCurrentUserRequest())
       val name = "Verifier"
       val _ = createVerifier(name, Some(publicKey), Some(rpcRequest.did))
 
@@ -43,12 +47,16 @@ class ConnectorServiceSpec extends ConnectorRpcSpecBase {
         val response = blockingStub.getCurrentUser(rpcRequest.request)
         response.logo.toByteArray mustNot be(empty)
         response.name must be(name)
-        response.role must be(connector_api.GetCurrentUserResponse.Role.verifier)
+        response.role must be(
+          connector_api.GetCurrentUserResponse.Role.verifier
+        )
       }
     }
 
     "return the verifier details using unpublished did auth" in {
-      val (publicKey, rpcRequest) = prepareSignedUnpublishedDidRequest(connector_api.GetCurrentUserRequest())
+      val (publicKey, rpcRequest) = prepareSignedUnpublishedDidRequest(
+        connector_api.GetCurrentUserRequest()
+      )
       val name = "Verifier"
       val _ = createVerifier(name, Some(publicKey), Some(rpcRequest.did))
 
@@ -56,12 +64,15 @@ class ConnectorServiceSpec extends ConnectorRpcSpecBase {
         val response = blockingStub.getCurrentUser(rpcRequest.request)
         response.logo.toByteArray mustNot be(empty)
         response.name must be(name)
-        response.role must be(connector_api.GetCurrentUserResponse.Role.verifier)
+        response.role must be(
+          connector_api.GetCurrentUserResponse.Role.verifier
+        )
       }
     }
 
     "return the issuer details" in {
-      val (publicKey, rpcRequest) = prepareSignedRequest(connector_api.GetCurrentUserRequest())
+      val (publicKey, rpcRequest) =
+        prepareSignedRequest(connector_api.GetCurrentUserRequest())
 
       val name = "Issuer"
       val _ = createIssuer(name, Some(publicKey), Some(rpcRequest.did))
@@ -75,7 +86,8 @@ class ConnectorServiceSpec extends ConnectorRpcSpecBase {
     }
 
     "fail on unknown user" in {
-      val (_, rpcRequest) = prepareSignedRequest(connector_api.GetCurrentUserRequest())
+      val (_, rpcRequest) =
+        prepareSignedRequest(connector_api.GetCurrentUserRequest())
 
       usingApiAs(rpcRequest) { blockingStub =>
         val ex = intercept[StatusRuntimeException] {
@@ -90,16 +102,22 @@ class ConnectorServiceSpec extends ConnectorRpcSpecBase {
 
     "update the Participant Profile details" in {
       val (publicKey, rpcRequest) = prepareSignedRequest(
-        connector_api.UpdateProfileRequest(name = "Update Issuer").withLogo(ByteString.copyFrom(logoBytes))
+        connector_api
+          .UpdateProfileRequest(name = "Update Issuer")
+          .withLogo(ByteString.copyFrom(logoBytes))
       )
 
       val name = "Issuer"
       val logo = ParticipantLogo(logoBytes.toVector)
-      val participantId = createIssuer(name, Some(publicKey), Some(rpcRequest.did))
+      val participantId =
+        createIssuer(name, Some(publicKey), Some(rpcRequest.did))
 
       usingApiAs(rpcRequest) { blockingStub =>
         val _ = blockingStub.updateParticipantProfile(rpcRequest.request)
-        val result = participantsRepository.findBy(participantId).run(TraceId.generateYOLO).unsafeRunSync()
+        val result = participantsRepository
+          .findBy(participantId)
+          .run(TraceId.generateYOLO)
+          .unsafeRunSync()
 
         val participantInfo = result.toOption.value
         participantInfo.name must be("Update Issuer")
@@ -109,16 +127,22 @@ class ConnectorServiceSpec extends ConnectorRpcSpecBase {
 
     "update the Participant Profile details using unpublished did" in {
       val (publicKey, rpcRequest) = prepareSignedUnpublishedDidRequest(
-        connector_api.UpdateProfileRequest(name = "Update Issuer").withLogo(ByteString.copyFrom(logoBytes))
+        connector_api
+          .UpdateProfileRequest(name = "Update Issuer")
+          .withLogo(ByteString.copyFrom(logoBytes))
       )
 
       val name = "Issuer"
       val logo = ParticipantLogo(logoBytes.toVector)
-      val participantId = createIssuer(name, Some(publicKey), Some(rpcRequest.did))
+      val participantId =
+        createIssuer(name, Some(publicKey), Some(rpcRequest.did))
 
       usingApiAs(rpcRequest) { blockingStub =>
         val _ = blockingStub.updateParticipantProfile(rpcRequest.request)
-        val result = participantsRepository.findBy(participantId).run(TraceId.generateYOLO).unsafeRunSync()
+        val result = participantsRepository
+          .findBy(participantId)
+          .run(TraceId.generateYOLO)
+          .unsafeRunSync()
 
         val participantInfo = result.toOption.value
         participantInfo.name must be("Update Issuer")

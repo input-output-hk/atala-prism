@@ -11,7 +11,9 @@ class V19__public_keys extends BaseJavaMigration {
   override def migrate(context: Context): Unit = {
     Try {
       val rows = context.getConnection.createStatement
-        .executeQuery("SELECT did_suffix, key_id, x, y FROM public_keys WHERE xCompressed is NULL")
+        .executeQuery(
+          "SELECT did_suffix, key_id, x, y FROM public_keys WHERE xCompressed is NULL"
+        )
       if (rows.next())
         loop(rows, context)
     } match {
@@ -30,11 +32,14 @@ class V19__public_keys extends BaseJavaMigration {
     val x = row.getBytes("x")
     val y = row.getBytes("y")
 
-    val compressedX: Array[Byte] = EC.toPublicKeyFromByteCoordinates(x, y).getEncodedCompressed
+    val compressedX: Array[Byte] =
+      EC.toPublicKeyFromByteCoordinates(x, y).getEncodedCompressed
 
     Using(
       context.getConnection
-        .prepareStatement("UPDATE public_keys SET xCompressed = ? WHERE did_suffix = ? AND key_id = ?")
+        .prepareStatement(
+          "UPDATE public_keys SET xCompressed = ? WHERE did_suffix = ? AND key_id = ?"
+        )
     ) { update =>
       update.setBytes(1, compressedX)
       update.setString(2, did_suffix)

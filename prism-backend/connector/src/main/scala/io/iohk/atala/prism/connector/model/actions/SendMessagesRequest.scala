@@ -8,5 +8,9 @@ case class SendMessagesRequest(
 )
 
 object SendMessagesRequest {
-  case class MessageToSend(connectionToken: TokenString, message: Array[Byte], id: Option[MessageId])
+  case class MessageToSend(
+      connectionToken: TokenString,
+      message: Array[Byte],
+      id: Option[MessageId]
+  )
 }

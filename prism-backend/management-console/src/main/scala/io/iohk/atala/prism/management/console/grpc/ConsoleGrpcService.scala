@@ -35,10 +35,16 @@ class ConsoleGrpcService(
 
   val logger: Logger = LoggerFactory.getLogger(this.getClass)
 
-  override def healthCheck(request: HealthCheckRequest): Future[HealthCheckResponse] =
-    measureRequestFuture(serviceName, "healthCheck")(Future.successful(HealthCheckResponse()))
+  override def healthCheck(
+      request: HealthCheckRequest
+  ): Future[HealthCheckResponse] =
+    measureRequestFuture(serviceName, "healthCheck")(
+      Future.successful(HealthCheckResponse())
+    )
 
-  override def getStatistics(request: GetStatisticsRequest): Future[GetStatisticsResponse] =
+  override def getStatistics(
+      request: GetStatisticsRequest
+  ): Future[GetStatisticsResponse] =
     auth[GetStatistics]("getStatistics", request) { (participantId, traceId, getStatistics) =>
       consoleService
         .getStatistics(participantId, getStatistics)
@@ -48,9 +54,12 @@ class ConsoleGrpcService(
         .toFutureEither
     }
 
-  override def registerDID(request: RegisterConsoleDIDRequest): Future[RegisterConsoleDIDResponse] = {
+  override def registerDID(
+      request: RegisterConsoleDIDRequest
+  ): Future[RegisterConsoleDIDResponse] = {
     val methodName = "registerDID"
-    val codec = implicitly[ProtoConverter[RegisterConsoleDIDRequest, RegisterDID]]
+    val codec =
+      implicitly[ProtoConverter[RegisterConsoleDIDRequest, RegisterDID]]
     codec.fromProto(request) match {
       case Failure(exception) =>
         val response = invalidRequest(exception.getMessage)
@@ -76,7 +85,9 @@ class ConsoleGrpcService(
     }
   }
 
-  override def getCurrentUser(request: GetConsoleCurrentUserRequest): Future[GetConsoleCurrentUserResponse] = {
+  override def getCurrentUser(
+      request: GetConsoleCurrentUserRequest
+  ): Future[GetConsoleCurrentUserResponse] = {
     unitAuth("getCurrentUser", request) { (participantId, traceId, _) =>
       consoleService
         .getCurrentUser(participantId)
@@ -92,10 +103,13 @@ class ConsoleGrpcService(
     }
   }
 
-  override def updateParticipantProfile(request: ConsoleUpdateProfileRequest): Future[ConsoleUpdateProfileResponse] = {
+  override def updateParticipantProfile(
+      request: ConsoleUpdateProfileRequest
+  ): Future[ConsoleUpdateProfileResponse] = {
     auth[UpdateParticipantProfile]("updateParticipantProfile", request) { (participantId, traceId, _) =>
       val logo = ParticipantLogo(request.logo.toByteArray.toVector)
-      val participantProfile = UpdateParticipantProfile(request.name, Option(logo))
+      val participantProfile =
+        UpdateParticipantProfile(request.name, Option(logo))
       consoleService
         .updateParticipantProfile(participantId, participantProfile)
         .run(traceId)

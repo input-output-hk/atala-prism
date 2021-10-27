@@ -39,8 +39,8 @@ const commonColumns = [
     render: ({ credentialData: { credentialTypeDetails } }) => (
       <img
         style={{ width: '40px', height: '40px' }}
-        src={credentialTypeDetails.logo || freeUniLogo}
-        alt={`${credentialTypeDetails.name} icon`}
+        src={credentialTypeDetails?.icon || freeUniLogo}
+        alt={`${credentialTypeDetails?.key} icon`}
       />
     )
   },
@@ -262,7 +262,7 @@ const CredentialsTable = ({
   };
 
   return (
-    <div className={`CredentialsTable ${tableClassName[tab]}`}>
+    <div className={`CredentialsTable InfiniteScrollTableContainer ${tableClassName[tab]}`}>
       <InfiniteScrollTable
         columns={columns[tab]}
         data={credentials}

@@ -62,7 +62,9 @@ object ConnectionsDAO {
       .map(_.isDefined)
   }
 
-  def getRawConnection(connectionId: ConnectionId): doobie.ConnectionIO[Option[RawConnection]] = {
+  def getRawConnection(
+      connectionId: ConnectionId
+  ): doobie.ConnectionIO[Option[RawConnection]] = {
     sql"""
          |SELECT id, initiator, acceptor, token, instantiated_at, status
          |FROM connections
@@ -80,7 +82,10 @@ object ConnectionsDAO {
          """.stripMargin.update.run
   }
 
-  def getOtherSide(connection: ConnectionId, participant: ParticipantId): doobie.ConnectionIO[Option[ParticipantId]] = {
+  def getOtherSide(
+      connection: ConnectionId,
+      participant: ParticipantId
+  ): doobie.ConnectionIO[Option[ParticipantId]] = {
     sql"""
          |SELECT acceptor AS other_side FROM connections WHERE id = $connection AND initiator = $participant
          | UNION
@@ -95,15 +100,23 @@ object ConnectionsDAO {
   ): doobie.ConnectionIO[List[(TokenString, ConnectionId, ParticipantId)]] = {
     (fr"""
          |SELECT token, id, acceptor AS other_side FROM connections WHERE """.stripMargin ++
-      Fragments.in(fr"token", connectionTokens) ++ fr""" AND initiator = $participant
+      Fragments.in(
+        fr"token",
+        connectionTokens
+      ) ++ fr""" AND initiator = $participant
          | UNION
          | SELECT token, id, initiator AS other_side FROM connections WHERE """.stripMargin ++
-      Fragments.in(fr"token", connectionTokens) ++ fr""" AND acceptor = $participant""".stripMargin)
+      Fragments.in(
+        fr"token",
+        connectionTokens
+      ) ++ fr""" AND acceptor = $participant""".stripMargin)
       .query[(TokenString, ConnectionId, ParticipantId)]
       .to[List]
   }
 
-  def getConnectionByToken(token: TokenString): doobie.ConnectionIO[Option[Connection]] = {
+  def getConnectionByToken(
+      token: TokenString
+  ): doobie.ConnectionIO[Option[Connection]] = {
     sql"""
          |SELECT token, id
          |FROM connections
@@ -175,12 +188,22 @@ object ConnectionsDAO {
               .getOrElse(
                 connectionToken,
                 // there is no such connection token in connection_tokens table
-                Some(ContactConnection(None, None, ConnectionStatus.InvitationMissing))
+                Some(
+                  ContactConnection(
+                    None,
+                    None,
+                    ConnectionStatus.InvitationMissing
+                  )
+                )
               )
 
             contactConnectionOption.getOrElse(
               // there is a connection token in connection_tokens table, but connection has not yet been added
-              ContactConnection(None, None, ConnectionStatus.ConnectionMissing)
+              ContactConnection(
+                None,
+                None,
+                ConnectionStatus.ConnectionMissing
+              )
             )
           }
         }

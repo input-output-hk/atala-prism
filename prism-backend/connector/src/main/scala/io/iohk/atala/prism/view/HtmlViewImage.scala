@@ -30,15 +30,21 @@ object HtmlViewImage {
     extension match {
       case "svg" => SVG_MIME_TYPE
       case "png" => PNG_MIME_TYPE
-      case _ => throw new IllegalArgumentException(s"Image extension $extension not supported")
+      case _ =>
+        throw new IllegalArgumentException(
+          s"Image extension $extension not supported"
+        )
     }
   }
 
   private def readImage(image: String): Array[Byte] = {
     try {
-      ByteStreams.toByteArray(getClass.getResourceAsStream(s"/cvp/view/images/$image"))
+      ByteStreams.toByteArray(
+        getClass.getResourceAsStream(s"/cvp/view/images/$image")
+      )
     } catch {
-      case e: Throwable => throw new RuntimeException(s"Image $image not found", e)
+      case e: Throwable =>
+        throw new RuntimeException(s"Image $image not found", e)
     }
   }
 }

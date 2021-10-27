@@ -27,7 +27,9 @@ class IdServiceImplSpec extends AnyFlatSpec {
 
   "setPersonalData" should "reject empty first name" in idService { (_, _, idService) =>
     val response = idService
-      .setPersonalData(intdemo_api.SetPersonalDataRequest(token.token, "", Some(today())))
+      .setPersonalData(
+        intdemo_api.SetPersonalDataRequest(token.token, "", Some(today()))
+      )
       .failed
       .futureValue
       .asInstanceOf[StatusException]
@@ -37,7 +39,9 @@ class IdServiceImplSpec extends AnyFlatSpec {
 
   it should "reject empty date of birth" in idService { (_, _, idService) =>
     val response = idService
-      .setPersonalData(intdemo_api.SetPersonalDataRequest(token.token, "name", None))
+      .setPersonalData(
+        intdemo_api.SetPersonalDataRequest(token.token, "name", None)
+      )
       .failed
       .futureValue
       .asInstanceOf[StatusException]
@@ -55,7 +59,10 @@ class IdServiceImplSpec extends AnyFlatSpec {
         intdemo_api.SetPersonalDataRequest(
           token.token,
           name,
-          Some(intdemo_models.Date(dob.getYear, dob.getMonthValue, dob.getDayOfMonth))
+          Some(
+            intdemo_models
+              .Date(dob.getYear, dob.getMonthValue, dob.getDayOfMonth)
+          )
         )
       )
       .futureValue
@@ -69,7 +76,8 @@ class IdServiceImplSpec extends AnyFlatSpec {
 
     val idCredential = IdServiceImpl.getIdCredential((name, dateOfBirth))
 
-    val jsonString = Base64Utils.decodeUrlToString(idCredential.encodedCredential)
+    val jsonString =
+      Base64Utils.decodeUrlToString(idCredential.encodedCredential)
     val document = parse(jsonString).toOption.value.hcursor
 
     val issuerName = "Metropol City Government"
@@ -79,18 +87,24 @@ class IdServiceImplSpec extends AnyFlatSpec {
     val holderName = name
     val holderDateOfBirth = dateOfBirth
     val identityNumber =
-      IdServiceImpl.generateSubjectIdNumber(holderName + DateTimeFormatter.ISO_LOCAL_DATE.format(holderDateOfBirth))
+      IdServiceImpl.generateSubjectIdNumber(
+        holderName + DateTimeFormatter.ISO_LOCAL_DATE.format(holderDateOfBirth)
+      )
     val issuanceDate = LocalDate.now()
     val expirationDate = issuanceDate.plusYears(10)
 
     document.jsonStr("issuerDid") shouldBe issuerDID
     document.jsonStr("issuanceKeyId") shouldBe issuanceKeyId
     document.jsonStr("issuerName") shouldBe issuerName
-    document.jsonStr("issuanceDate") shouldBe DateTimeFormatter.ISO_LOCAL_DATE.format(issuanceDate)
-    document.jsonStr("expiryDate") shouldBe DateTimeFormatter.ISO_LOCAL_DATE.format(expirationDate)
+    document.jsonStr("issuanceDate") shouldBe DateTimeFormatter.ISO_LOCAL_DATE
+      .format(issuanceDate)
+    document.jsonStr("expiryDate") shouldBe DateTimeFormatter.ISO_LOCAL_DATE
+      .format(expirationDate)
     document.jsonStr("credentialSubject.credentialType") shouldBe credentialType
     document.jsonStr("credentialSubject.name") shouldBe holderName
-    document.jsonStr("credentialSubject.dateOfBirth") shouldBe DateTimeFormatter.ISO_LOCAL_DATE.format(
+    document.jsonStr(
+      "credentialSubject.dateOfBirth"
+    ) shouldBe DateTimeFormatter.ISO_LOCAL_DATE.format(
       holderDateOfBirth
     )
     document.jsonStr("credentialSubject.identityNumber") shouldBe identityNumber
@@ -99,9 +113,15 @@ class IdServiceImplSpec extends AnyFlatSpec {
     val expectedHtmlView = readResource("id_credential.html")
       .replace("@issuerName", issuerName)
       .replace("@identityNumber", identityNumber)
-      .replace("@holderDateOfBirth", DateTimeFormatter.ISO_LOCAL_DATE.format(holderDateOfBirth))
+      .replace(
+        "@holderDateOfBirth",
+        DateTimeFormatter.ISO_LOCAL_DATE.format(holderDateOfBirth)
+      )
       .replace("@holderName", holderName)
-      .replace("@expirationDate", DateTimeFormatter.ISO_LOCAL_DATE.format(expirationDate))
+      .replace(
+        "@expirationDate",
+        DateTimeFormatter.ISO_LOCAL_DATE.format(expirationDate)
+      )
 
     document.jsonStr("credentialSubject.html") shouldBe expectedHtmlView
   }
@@ -116,7 +136,9 @@ object IdServiceImplSpec {
   private val name = "name"
   private val dob: LocalDate = LocalDate.of(1950, 1, 1)
 
-  def idService(testCode: (ConnectorIntegration, IntDemoRepository, IdServiceImpl) => Any): Unit = {
+  def idService(
+      testCode: (ConnectorIntegration, IntDemoRepository, IdServiceImpl) => Any
+  ): Unit = {
     idService(intdemo_models.SubjectStatus.UNCONNECTED, None, None)(testCode)
   }
 
@@ -124,17 +146,32 @@ object IdServiceImplSpec {
       subjectStatus: intdemo_models.SubjectStatus,
       connection: Option[Connection],
       personalInfo: Option[(String, LocalDate)]
-  )(testCode: (ConnectorIntegration, IntDemoRepository, IdServiceImpl) => Any): Unit = {
+  )(
+      testCode: (ConnectorIntegration, IntDemoRepository, IdServiceImpl) => Any
+  ): Unit = {
     val connectorIntegration = mock[ConnectorIntegration]
     val repository = mock[IntDemoRepository]
 
-    val service = new IdServiceImpl(connectorIntegration, repository, schedulerPeriod = 1 milli)
+    val service = new IdServiceImpl(
+      connectorIntegration,
+      repository,
+      schedulerPeriod = 1 milli
+    )
 
-    when(connectorIntegration.sendCredential(eqTo(issuerId), eqTo(connectionId), any)).thenReturn(Future(messageId))
-    when(connectorIntegration.getConnectionByToken(token)).thenReturn(Future(connection))
+    when(
+      connectorIntegration.sendCredential(
+        eqTo(issuerId),
+        eqTo(connectionId),
+        any
+      )
+    ).thenReturn(Future(messageId))
+    when(connectorIntegration.getConnectionByToken(token))
+      .thenReturn(Future(connection))
     when(repository.mergeSubjectStatus(eqTo(token), any)).thenReturn(Future(1))
-    when(repository.mergePersonalInfo(eqTo(token), eqTo(name), eqTo(dob))).thenReturn(Future(1))
-    when(repository.findSubjectStatus(token)).thenReturn(Future(Some(subjectStatus)))
+    when(repository.mergePersonalInfo(eqTo(token), eqTo(name), eqTo(dob)))
+      .thenReturn(Future(1))
+    when(repository.findSubjectStatus(token))
+      .thenReturn(Future(Some(subjectStatus)))
     when(repository.findPersonalInfo(token)).thenReturn(Future(personalInfo))
 
     testCode(connectorIntegration, repository, service)

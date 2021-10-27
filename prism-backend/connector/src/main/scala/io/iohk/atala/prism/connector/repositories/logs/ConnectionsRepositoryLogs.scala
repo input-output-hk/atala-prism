@@ -15,18 +15,25 @@ import tofu.higherKind.Mid
 import tofu.logging.ServiceLogging
 import tofu.syntax.logging._
 
-private[repositories] final class ConnectionsRepositoryLogs[F[_]: ServiceLogging[
+private[repositories] final class ConnectionsRepositoryLogs[F[
+    _
+]: ServiceLogging[
   *[_],
   ConnectionsRepository[F]
 ]: MonadThrow]
     extends ConnectionsRepository[Mid[F, *]] {
-  override def insertTokens(initiator: ParticipantId, tokens: List[TokenString]): Mid[F, List[TokenString]] =
+  override def insertTokens(
+      initiator: ParticipantId,
+      tokens: List[TokenString]
+  ): Mid[F, List[TokenString]] =
     in =>
       info"inserting tokens $initiator ${tokens.size} entities" *> in
         .flatTap(result => info"inserting tokens - successfully done, inserted ${result.size} tokens")
         .onError(errorCause"encountered an error while inserting tokens" (_))
 
-  override def getTokenInfo(token: TokenString): Mid[F, Either[GetTokenInfoError, ParticipantInfo]] =
+  override def getTokenInfo(
+      token: TokenString
+  ): Mid[F, Either[GetTokenInfoError, ParticipantInfo]] =
     in =>
       info"getting token info $token" *> in
         .flatTap(
@@ -49,7 +56,11 @@ private[repositories] final class ConnectionsRepositoryLogs[F[_]: ServiceLogging
             info => info"adding connection from token - successfully done ${info.id}"
           )
         )
-        .onError(errorCause"encountered an error while adding connection from token" (_))
+        .onError(
+          errorCause"encountered an error while adding connection from token" (
+            _
+          )
+        )
 
   override def revokeConnection(
       participantId: ParticipantId,
@@ -65,13 +76,19 @@ private[repositories] final class ConnectionsRepositoryLogs[F[_]: ServiceLogging
         )
         .onError(errorCause"encountered an error while revoking connection" (_))
 
-  override def getConnection(participant: ParticipantId, id: ConnectionId): Mid[F, Option[ConnectionInfo]] =
+  override def getConnection(
+      participant: ParticipantId,
+      id: ConnectionId
+  ): Mid[F, Option[ConnectionInfo]] =
     in =>
       info"getting connection by id" *> in
         .flatTap(result =>
-          info"getting connection by id - successfully done, ${result.fold("not found")(_ => "found")}"
+          info"getting connection by id - successfully done, ${result
+            .fold("not found")(_ => "found")}"
         )
-        .onError(errorCause"encountered an error while getting connection by id" (_))
+        .onError(
+          errorCause"encountered an error while getting connection by id" (_)
+        )
 
   override def getConnectionsPaginated(
       participant: ParticipantId,
@@ -86,27 +103,50 @@ private[repositories] final class ConnectionsRepositoryLogs[F[_]: ServiceLogging
             list => info"getting connections paginated - successfully done, got ${list.size} entities"
           )
         )
-        .onError(errorCause"encountered an error while getting connections paginated" (_))
+        .onError(
+          errorCause"encountered an error while getting connections paginated" (
+            _
+          )
+        )
 
-  override def getOtherSideInfo(id: ConnectionId, participant: ParticipantId): Mid[F, Option[ParticipantInfo]] =
+  override def getOtherSideInfo(
+      id: ConnectionId,
+      participant: ParticipantId
+  ): Mid[F, Option[ParticipantInfo]] =
     in =>
       info"getting other side info" *> in
-        .flatTap(result => info"getting other side info - successfully done, ${result.fold("not found")(_ => "found")}")
-        .onError(errorCause"encountered an error while getting other side info" (_))
+        .flatTap(result =>
+          info"getting other side info - successfully done, ${result
+            .fold("not found")(_ => "found")}"
+        )
+        .onError(
+          errorCause"encountered an error while getting other side info" (_)
+        )
 
-  override def getConnectionByToken(token: TokenString): Mid[F, Option[Connection]] =
+  override def getConnectionByToken(
+      token: TokenString
+  ): Mid[F, Option[Connection]] =
     in =>
       info"getting connection by token" *> in
         .flatTap(result =>
-          info"getting connection by token - successfully done, ${result.fold("not found")(_ => "found")}"
+          info"getting connection by token - successfully done, ${result
+            .fold("not found")(_ => "found")}"
         )
-        .onError(errorCause"encountered an error while getting connection by token" (_))
+        .onError(
+          errorCause"encountered an error while getting connection by token" (_)
+        )
 
-  override def getConnectionsByConnectionTokens(connectionTokens: List[TokenString]): Mid[F, List[ContactConnection]] =
+  override def getConnectionsByConnectionTokens(
+      connectionTokens: List[TokenString]
+  ): Mid[F, List[ContactConnection]] =
     in =>
       info"getting connections by connection token" *> in
         .flatTap(result =>
           info"getting connections by connection token - successfully done, got ${result.size} entities"
         )
-        .onError(errorCause"encountered an error while getting connections by connection token" (_))
+        .onError(
+          errorCause"encountered an error while getting connections by connection token" (
+            _
+          )
+        )
 }

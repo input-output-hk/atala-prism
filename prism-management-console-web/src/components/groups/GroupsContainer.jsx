@@ -2,28 +2,17 @@ import React from 'react';
 import { message } from 'antd';
 import { useTranslation } from 'react-i18next';
 import PropTypes from 'prop-types';
+import { observer } from 'mobx-react-lite';
 import Logger from '../../helpers/Logger';
 import Groups from './Groups';
 import { withApi } from '../providers/withApi';
-import { useGroups } from '../../hooks/useGroups';
+import { useGroupStore, useGroupUiState } from '../../hooks/useGroupStore';
 
-const GroupsContainer = ({ api }) => {
+const GroupsContainer = observer(({ api }) => {
+  useGroupStore({ fetch: true, reset: true });
+  useGroupUiState({ reset: true });
+
   const { t } = useTranslation();
-
-  const {
-    groups,
-    loading,
-    searching,
-    hasMore,
-    name,
-    setName,
-    dateRange,
-    setDateRange,
-    setSortingKey,
-    sortingDirection,
-    setSortingDirection,
-    getMoreGroups
-  } = useGroups(api.groupsManager);
 
   const handleGroupDeletion = group =>
     api.groupsManager
@@ -56,26 +45,8 @@ const GroupsContainer = ({ api }) => {
         message.error(t('errors.errorCopyingGroup'));
       });
 
-  const isFilter = name && dateRange.length;
-
-  return (
-    <Groups
-      groups={groups}
-      copyGroup={copyGroup}
-      handleGroupDeletion={handleGroupDeletion}
-      loading={loading}
-      searching={searching}
-      hasMore={hasMore}
-      isFilter={isFilter}
-      setName={setName}
-      setDateRange={setDateRange}
-      setSortingKey={setSortingKey}
-      setSortingDirection={setSortingDirection}
-      sortingDirection={sortingDirection}
-      getMoreGroups={getMoreGroups}
-    />
-  );
-};
+  return <Groups copyGroup={copyGroup} handleGroupDeletion={handleGroupDeletion} />;
+});
 
 GroupsContainer.propTypes = {
   api: PropTypes.shape().isRequired

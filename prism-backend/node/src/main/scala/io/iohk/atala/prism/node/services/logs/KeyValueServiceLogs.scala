@@ -10,8 +10,9 @@ import tofu.higherKind.Mid
 import tofu.logging.ServiceLogging
 import tofu.syntax.logging._
 
-private[services] class KeyValueServiceLogs[F[_]: ServiceLogging[*[_], KeyValueService[F]]: MonadThrow]
-    extends KeyValueService[Mid[F, *]] {
+private[services] class KeyValueServiceLogs[
+    F[_]: ServiceLogging[*[_], KeyValueService[F]]: MonadThrow
+] extends KeyValueService[Mid[F, *]] {
   override def get(key: String): Mid[F, Option[String]] =
     in =>
       info"getting by key $key" *> in
@@ -28,7 +29,9 @@ private[services] class KeyValueServiceLogs[F[_]: ServiceLogging[*[_], KeyValueS
     in =>
       info"setting value for the key $key with value ${value.map(_.toString)}" *> in
         .flatTap(_ => info"setting value for the key - successfully done")
-        .onError(errorCause"Encountered an error while setting value for the key" (_))
+        .onError(
+          errorCause"Encountered an error while setting value for the key" (_)
+        )
 
   override def setMany(keyValues: List[KeyValuesDAO.KeyValue]): Mid[F, Unit] =
     in =>

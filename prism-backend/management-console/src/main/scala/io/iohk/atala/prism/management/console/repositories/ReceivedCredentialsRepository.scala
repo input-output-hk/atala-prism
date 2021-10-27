@@ -30,7 +30,9 @@ trait ReceivedCredentialsRepository[F[_]] {
 
   def createReceivedCredential(data: ReceivedSignedCredentialData): F[Unit]
 
-  def getLatestCredentialExternalId(verifierId: ParticipantId): F[Option[CredentialExternalId]]
+  def getLatestCredentialExternalId(
+      verifierId: ParticipantId
+  ): F[Option[CredentialExternalId]]
 
 }
 
@@ -44,8 +46,10 @@ object ReceivedCredentialsRepository {
       serviceLogs <- logs.service[ReceivedCredentialsRepository[F]]
     } yield {
       implicit val implicitLogs: ServiceLogging[F, ReceivedCredentialsRepository[F]] = serviceLogs
-      val metrics: ReceivedCredentialsRepository[Mid[F, *]] = new ReceivedCredentialsRepositoryMetrics[F]
-      val logs: ReceivedCredentialsRepository[Mid[F, *]] = new ReceivedCredentialsRepositoryLogs[F]
+      val metrics: ReceivedCredentialsRepository[Mid[F, *]] =
+        new ReceivedCredentialsRepositoryMetrics[F]
+      val logs: ReceivedCredentialsRepository[Mid[F, *]] =
+        new ReceivedCredentialsRepositoryLogs[F]
       val mid = metrics |+| logs
       mid attach new ReceivedCredentialsRepositoryImpl[F](transactor)
     }
@@ -53,17 +57,20 @@ object ReceivedCredentialsRepository {
   def unsafe[F[_]: TimeMeasureMetric: BracketThrow, R[_]: Comonad](
       transactor: Transactor[F],
       logs: Logs[R, F]
-  ): ReceivedCredentialsRepository[F] = ReceivedCredentialsRepository(transactor, logs).extract
+  ): ReceivedCredentialsRepository[F] =
+    ReceivedCredentialsRepository(transactor, logs).extract
 
   def makeResource[F[_]: TimeMeasureMetric: BracketThrow, R[_]: Monad](
       transactor: Transactor[F],
       logs: Logs[R, F]
-  ): Resource[R, ReceivedCredentialsRepository[F]] = Resource.eval(ReceivedCredentialsRepository(transactor, logs))
+  ): Resource[R, ReceivedCredentialsRepository[F]] =
+    Resource.eval(ReceivedCredentialsRepository(transactor, logs))
 
 }
 
-private final class ReceivedCredentialsRepositoryImpl[F[_]: BracketThrow](xa: Transactor[F])
-    extends ReceivedCredentialsRepository[F] {
+private final class ReceivedCredentialsRepositoryImpl[F[_]: BracketThrow](
+    xa: Transactor[F]
+) extends ReceivedCredentialsRepository[F] {
 
   val logger: Logger = LoggerFactory.getLogger(getClass)
 
@@ -82,9 +89,14 @@ private final class ReceivedCredentialsRepositoryImpl[F[_]: BracketThrow](xa: Tr
       .logSQLErrors("creating received credentials", logger)
       .transact(xa)
 
-  def getLatestCredentialExternalId(verifierId: ParticipantId): F[Option[CredentialExternalId]] =
+  def getLatestCredentialExternalId(
+      verifierId: ParticipantId
+  ): F[Option[CredentialExternalId]] =
     ReceivedCredentialsDAO
       .getLatestCredentialExternalId(verifierId)
-      .logSQLErrors(s"getting latest credential external id, verifier id -  $verifierId", logger)
+      .logSQLErrors(
+        s"getting latest credential external id, verifier id -  $verifierId",
+        logger
+      )
       .transact(xa)
 }

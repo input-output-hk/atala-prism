@@ -13,20 +13,23 @@ import doobie.util.transactor.Transactor
 import io.iohk.atala.prism.protos.models.TimestampInfo
 import io.iohk.atala.prism.node.DataPreparation
 import io.iohk.atala.prism.node.models.DIDData
-import tofu.logging.Logs
+import tofu.logging.Logging
 
 class CredentialBatchesRepositorySpec extends AtalaWithPostgresSpec {
 
   import CredentialBatchesRepositorySpec._
 
-  private val logs = Logs.universal[IO]
+  private val logs = Logging.Make.plain[IO]
 
   private lazy implicit val repository: CredentialBatchesRepository[IO] =
     CredentialBatchesRepository.unsafe(database, logs)
 
-  private val dummyTimestampInfo = new TimestampInfo(Instant.ofEpochMilli(0).toEpochMilli, 1, 0)
+  private val dummyTimestampInfo =
+    new TimestampInfo(Instant.ofEpochMilli(0).toEpochMilli, 1, 0)
   private val dummyLedgerData = LedgerData(
-    TransactionId.from(Array.fill[Byte](TransactionId.config.size.toBytes.toInt)(0)).value,
+    TransactionId
+      .from(Array.fill[Byte](TransactionId.config.size.toBytes.toInt)(0))
+      .value,
     Ledger.InMemory,
     dummyTimestampInfo
   )
@@ -43,18 +46,25 @@ class CredentialBatchesRepositorySpec extends AtalaWithPostgresSpec {
       val randomBatchId = CredentialBatchId.random()
       val randomCredentialHash1 = Sha256.compute("random".getBytes())
       val randomCredentialHash2 = Sha256.compute("another random".getBytes())
-      val randomRevocationTime = new TimestampInfo(Instant.now().toEpochMilli, 10, 100)
+      val randomRevocationTime =
+        new TimestampInfo(Instant.now().toEpochMilli, 10, 100)
       val randomRevocationLedgerData = LedgerData(
-        TransactionId.from(Array.fill[Byte](TransactionId.config.size.toBytes.toInt)(0)).value,
+        TransactionId
+          .from(Array.fill[Byte](TransactionId.config.size.toBytes.toInt)(0))
+          .value,
         Ledger.InMemory,
         randomRevocationTime
       )
 
-      val randomIssuerDIDSuffix = DidSuffix(Sha256.compute("did".getBytes()).getHexValue)
+      val randomIssuerDIDSuffix =
+        DidSuffix(Sha256.compute("did".getBytes()).getHexValue)
       val randomLastOperation = Sha256.compute("lastOperation".getBytes())
-      val randomMerkleRoot = new MerkleRoot(Sha256.compute("merkleRoot".getBytes()))
+      val randomMerkleRoot =
+        new MerkleRoot(Sha256.compute("merkleRoot".getBytes()))
       val randomIssuedOnTime = LedgerData(
-        TransactionId.from(Array.fill[Byte](TransactionId.config.size.toBytes.toInt)(0)).value,
+        TransactionId
+          .from(Array.fill[Byte](TransactionId.config.size.toBytes.toInt)(0))
+          .value,
         Ledger.InMemory,
         dummyTimestampInfo
       )
@@ -99,11 +109,15 @@ class CredentialBatchesRepositorySpec extends AtalaWithPostgresSpec {
 
     "return proper data when there is non-revoked batch data" in {
       val randomBatchId = CredentialBatchId.random()
-      val randomIssuerDIDSuffix = DidSuffix(Sha256.compute("did".getBytes()).getHexValue)
+      val randomIssuerDIDSuffix =
+        DidSuffix(Sha256.compute("did".getBytes()).getHexValue)
       val randomLastOperation = Sha256.compute("lastOperation".getBytes())
-      val randomMerkleRoot = new MerkleRoot(Sha256.compute("merkleRoot".getBytes()))
+      val randomMerkleRoot =
+        new MerkleRoot(Sha256.compute("merkleRoot".getBytes()))
       val randomIssuedOnLedgerData = LedgerData(
-        TransactionId.from(Array.fill[Byte](TransactionId.config.size.toBytes.toInt)(0)).value,
+        TransactionId
+          .from(Array.fill[Byte](TransactionId.config.size.toBytes.toInt)(0))
+          .value,
         Ledger.InMemory,
         dummyTimestampInfo
       )
@@ -136,14 +150,19 @@ class CredentialBatchesRepositorySpec extends AtalaWithPostgresSpec {
 
     "return proper data when the batch was revoked" in {
       val randomBatchId = CredentialBatchId.random()
-      val randomIssuerDIDSuffix = DidSuffix(Sha256.compute("did".getBytes()).getHexValue)
+      val randomIssuerDIDSuffix =
+        DidSuffix(Sha256.compute("did".getBytes()).getHexValue)
       val randomLastOperation = Sha256.compute("lastOperation".getBytes())
-      val randomMerkleRoot = new MerkleRoot(Sha256.compute("merkleRoot".getBytes()))
+      val randomMerkleRoot =
+        new MerkleRoot(Sha256.compute("merkleRoot".getBytes()))
       val randomIssuedOnLedgerData = dummyLedgerData
 
-      val randomRevocationTime = new TimestampInfo(Instant.now().toEpochMilli, 10, 100)
+      val randomRevocationTime =
+        new TimestampInfo(Instant.now().toEpochMilli, 10, 100)
       val randomRevocationLedgerData = LedgerData(
-        TransactionId.from(Array.fill[Byte](TransactionId.config.size.toBytes.toInt)(0)).value,
+        TransactionId
+          .from(Array.fill[Byte](TransactionId.config.size.toBytes.toInt)(0))
+          .value,
         Ledger.InMemory,
         randomRevocationTime
       )
@@ -158,7 +177,10 @@ class CredentialBatchesRepositorySpec extends AtalaWithPostgresSpec {
         randomIssuedOnLedgerData
       )
 
-      DataPreparation.revokeCredentialBatch(randomBatchId, randomRevocationLedgerData)
+      DataPreparation.revokeCredentialBatch(
+        randomBatchId,
+        randomRevocationLedgerData
+      )
 
       val expectedState = CredentialBatchState(
         batchId = randomBatchId,
@@ -179,11 +201,17 @@ class CredentialBatchesRepositorySpec extends AtalaWithPostgresSpec {
 }
 
 object CredentialBatchesRepositorySpec {
-  private def registerDID(didSuffix: DidSuffix)(implicit database: Transactor[IO]): Unit = {
-    val lastOperation = Sha256.compute("a random did create operation".getBytes())
-    val dummyTimestampInfo = new TimestampInfo(Instant.ofEpochMilli(0).toEpochMilli, 1, 0)
+  private def registerDID(
+      didSuffix: DidSuffix
+  )(implicit database: Transactor[IO]): Unit = {
+    val lastOperation =
+      Sha256.compute("a random did create operation".getBytes())
+    val dummyTimestampInfo =
+      new TimestampInfo(Instant.ofEpochMilli(0).toEpochMilli, 1, 0)
     val dummyLedgerData = LedgerData(
-      TransactionId.from(Array.fill[Byte](TransactionId.config.size.toBytes.toInt)(0)).value,
+      TransactionId
+        .from(Array.fill[Byte](TransactionId.config.size.toBytes.toInt)(0))
+        .value,
       Ledger.InMemory,
       dummyTimestampInfo
     )
@@ -193,7 +221,10 @@ object CredentialBatchesRepositorySpec {
     )
   }
 
-  private def revocationTime(batchId: CredentialBatchId, credentialHash: Sha256Digest)(implicit
+  private def revocationTime(
+      batchId: CredentialBatchId,
+      credentialHash: Sha256Digest
+  )(implicit
       repository: CredentialBatchesRepository[IO]
   ): Option[LedgerData] = {
     repository

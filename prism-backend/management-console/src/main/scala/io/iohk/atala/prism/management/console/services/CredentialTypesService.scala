@@ -56,8 +56,10 @@ object CredentialTypesService {
     for {
       serviceLogs <- logs.service[CredentialTypesService[F]]
     } yield {
-      implicit val implicitLogs: ServiceLogging[F, CredentialTypesService[F]] = serviceLogs
-      val logs: CredentialTypesService[Mid[F, *]] = new CredentialTypesServiceLogs[F]
+      implicit val implicitLogs: ServiceLogging[F, CredentialTypesService[F]] =
+        serviceLogs
+      val logs: CredentialTypesService[Mid[F, *]] =
+        new CredentialTypesServiceLogs[F]
       val mid = logs
       mid attach new CredentialTypesServiceImpl[F](credentialTypeRepository)
     }
@@ -65,24 +67,32 @@ object CredentialTypesService {
   def unsafe[F[_]: BracketThrow, R[_]: Comonad](
       credentialTypeRepository: CredentialTypeRepository[F],
       logs: Logs[R, F]
-  ): CredentialTypesService[F] = CredentialTypesService(credentialTypeRepository, logs).extract
+  ): CredentialTypesService[F] =
+    CredentialTypesService(credentialTypeRepository, logs).extract
 
   def makeResource[F[_]: BracketThrow, R[_]: Monad](
       credentialTypeRepository: CredentialTypeRepository[F],
       logs: Logs[R, F]
-  ): Resource[R, CredentialTypesService[F]] = Resource.eval(CredentialTypesService(credentialTypeRepository, logs))
+  ): Resource[R, CredentialTypesService[F]] =
+    Resource.eval(CredentialTypesService(credentialTypeRepository, logs))
 }
 
-private final class CredentialTypesServiceImpl[F[_]](credentialTypeRepository: CredentialTypeRepository[F])
-    extends CredentialTypesService[F] {
-  override def getCredentialTypes(institution: ParticipantId): F[List[CredentialType]] =
+private final class CredentialTypesServiceImpl[F[_]](
+    credentialTypeRepository: CredentialTypeRepository[F]
+) extends CredentialTypesService[F] {
+  override def getCredentialTypes(
+      institution: ParticipantId
+  ): F[List[CredentialType]] =
     credentialTypeRepository.findByInstitution(institution)
 
   override def getCredentialType(
       institution: ParticipantId,
       getCredentialType: GetCredentialType
   ): F[Option[CredentialTypeWithRequiredFields]] =
-    credentialTypeRepository.find(institution, getCredentialType.credentialTypeId)
+    credentialTypeRepository.find(
+      institution,
+      getCredentialType.credentialTypeId
+    )
 
   override def createCredentialType(
       participantId: ParticipantId,
@@ -100,7 +110,10 @@ private final class CredentialTypesServiceImpl[F[_]](credentialTypeRepository: C
       participantId: ParticipantId,
       markAsReadyCredentialType: MarkAsReadyCredentialType
   ): F[Either[ManagementConsoleError, Unit]] =
-    credentialTypeRepository.markAsReady(markAsReadyCredentialType.credentialTypeId, participantId)
+    credentialTypeRepository.markAsReady(
+      markAsReadyCredentialType.credentialTypeId,
+      participantId
+    )
 
   override def markAsArchived(
       participantId: ParticipantId,
@@ -109,13 +122,18 @@ private final class CredentialTypesServiceImpl[F[_]](credentialTypeRepository: C
     credentialTypeRepository.markAsArchived(credentialTypeId, participantId)
 }
 
-private final class CredentialTypesServiceLogs[F[_]: ServiceLogging[*[_], CredentialTypesService[F]]: MonadThrow]
-    extends CredentialTypesService[Mid[F, *]] {
-  override def getCredentialTypes(institution: ParticipantId): Mid[F, List[CredentialType]] =
+private final class CredentialTypesServiceLogs[
+    F[_]: ServiceLogging[*[_], CredentialTypesService[F]]: MonadThrow
+] extends CredentialTypesService[Mid[F, *]] {
+  override def getCredentialTypes(
+      institution: ParticipantId
+  ): Mid[F, List[CredentialType]] =
     in =>
       info"getting credential types $institution" *> in
         .flatTap(_ => info"getting credential types successfully done")
-        .onError(errorCause"encountered an error while getting credential types" (_))
+        .onError(
+          errorCause"encountered an error while getting credential types" (_)
+        )
 
   override def getCredentialType(
       institution: ParticipantId,
@@ -124,7 +142,9 @@ private final class CredentialTypesServiceLogs[F[_]: ServiceLogging[*[_], Creden
     in =>
       info"getting credential type $institution" *> in
         .flatTap(_ => info"getting credential type successfully done")
-        .onError(errorCause"encountered an error while getting credential type" (_))
+        .onError(
+          errorCause"encountered an error while getting credential type" (_)
+        )
 
   override def createCredentialType(
       participantId: ParticipantId,
@@ -138,7 +158,9 @@ private final class CredentialTypesServiceLogs[F[_]: ServiceLogging[*[_], Creden
             _ => info"creating credential type - successfully done"
           )
         )
-        .onError(errorCause"encountered an error while creating credential type" (_))
+        .onError(
+          errorCause"encountered an error while creating credential type" (_)
+        )
 
   override def updateCredentialType(
       institutionId: ParticipantId,
@@ -152,7 +174,9 @@ private final class CredentialTypesServiceLogs[F[_]: ServiceLogging[*[_], Creden
             _ => info"updating credential type - successfully done"
           )
         )
-        .onError(errorCause"encountered an error while updating credential type" (_))
+        .onError(
+          errorCause"encountered an error while updating credential type" (_)
+        )
 
   override def markAsReady(
       participantId: ParticipantId,
@@ -166,7 +190,11 @@ private final class CredentialTypesServiceLogs[F[_]: ServiceLogging[*[_], Creden
             _ => info"marking credential type as ready - successfully done"
           )
         )
-        .onError(errorCause"encountered an error while marking credential type as ready" (_))
+        .onError(
+          errorCause"encountered an error while marking credential type as ready" (
+            _
+          )
+        )
 
   override def markAsArchived(
       participantId: ParticipantId,
@@ -180,5 +208,9 @@ private final class CredentialTypesServiceLogs[F[_]: ServiceLogging[*[_], Creden
             _ => info"marking credential type as archived - successfully done"
           )
         )
-        .onError(errorCause"encountered an error while marking credential type as archived" (_))
+        .onError(
+          errorCause"encountered an error while marking credential type as archived" (
+            _
+          )
+        )
 }

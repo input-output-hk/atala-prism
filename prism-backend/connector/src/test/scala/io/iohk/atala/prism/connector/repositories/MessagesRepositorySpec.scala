@@ -1,6 +1,7 @@
 package io.iohk.atala.prism.connector.repositories
 
 import cats.data.NonEmptyList
+import com.softwaremill.diffx.generic.auto._
 import com.softwaremill.diffx.scalatest.DiffMatcher._
 import doobie.Fragments
 import doobie.implicits._
@@ -23,7 +24,8 @@ import org.scalatest.OptionValues._
 import java.time.{Instant, LocalDateTime, ZoneOffset}
 
 class MessagesRepositorySpec extends ConnectorRepositorySpecBase {
-  lazy val messagesRepository = MessagesRepository.unsafe(dbLiftedToTraceIdIO, connectorRepoSpecLogs)
+  lazy val messagesRepository =
+    MessagesRepository.unsafe(dbLiftedToTraceIdIO, connectorRepoSpecLogs)
 
   "insertMessage" should {
     "insert message from the initiator to the acceptor" in {
@@ -33,7 +35,10 @@ class MessagesRepositorySpec extends ConnectorRepositorySpecBase {
       val message = "hello".getBytes
 
       val result =
-        messagesRepository.insertMessage(issuer, connection, message).run(TraceId.generateYOLO).unsafeRunSync()
+        messagesRepository
+          .insertMessage(issuer, connection, message)
+          .run(TraceId.generateYOLO)
+          .unsafeRunSync()
       val messageId = result.toOption.value
 
       val (sender, recipient, content) =
@@ -41,7 +46,8 @@ class MessagesRepositorySpec extends ConnectorRepositorySpecBase {
              |SELECT sender, recipient, content
              |FROM messages
              |WHERE id = $messageId
-           """.stripMargin.runUnique[(ParticipantId, ParticipantId, Array[Byte])]()
+           """.stripMargin
+          .runUnique[(ParticipantId, ParticipantId, Array[Byte])]()
 
       sender mustBe issuer
       recipient mustBe holder
@@ -55,7 +61,10 @@ class MessagesRepositorySpec extends ConnectorRepositorySpecBase {
       val message = "hello".getBytes
 
       val result =
-        messagesRepository.insertMessage(holder, connection, message).run(TraceId.generateYOLO).unsafeRunSync()
+        messagesRepository
+          .insertMessage(holder, connection, message)
+          .run(TraceId.generateYOLO)
+          .unsafeRunSync()
       val messageId = result.toOption.value
 
       val (sender, recipient, content) =
@@ -63,7 +72,8 @@ class MessagesRepositorySpec extends ConnectorRepositorySpecBase {
              |SELECT sender, recipient, content
              |FROM messages
              |WHERE id = $messageId
-           """.stripMargin.runUnique[(ParticipantId, ParticipantId, Array[Byte])]()
+           """.stripMargin
+          .runUnique[(ParticipantId, ParticipantId, Array[Byte])]()
 
       sender mustBe holder
       recipient mustBe issuer
@@ -76,9 +86,14 @@ class MessagesRepositorySpec extends ConnectorRepositorySpecBase {
       val message = "hello".getBytes
 
       val result =
-        messagesRepository.insertMessage(issuer, connection, message).run(TraceId.generateYOLO).unsafeRunSync()
+        messagesRepository
+          .insertMessage(issuer, connection, message)
+          .run(TraceId.generateYOLO)
+          .unsafeRunSync()
 
-      result mustBe an[Left[ConnectionNotFoundByConnectionIdAndSender, MessageId]]
+      result mustBe an[
+        Left[ConnectionNotFoundByConnectionIdAndSender, MessageId]
+      ]
     }
 
     "insert message with specified id" in {
@@ -100,7 +115,8 @@ class MessagesRepositorySpec extends ConnectorRepositorySpecBase {
              |SELECT sender, recipient, content
              |FROM messages
              |WHERE id = $messageId
-           """.stripMargin.runUnique[(ParticipantId, ParticipantId, Array[Byte])]()
+           """.stripMargin
+          .runUnique[(ParticipantId, ParticipantId, Array[Byte])]()
 
       sender mustBe issuer
       recipient mustBe holder
@@ -135,8 +151,18 @@ class MessagesRepositorySpec extends ConnectorRepositorySpecBase {
     val holder2 = createHolder()
     val token1 = createToken(issuer)
     val token2 = createToken(issuer)
-    createConnection(issuer, holder1, token1, ConnectionStatus.InvitationMissing)
-    createConnection(issuer, holder2, token2, ConnectionStatus.InvitationMissing)
+    createConnection(
+      issuer,
+      holder1,
+      token1,
+      ConnectionStatus.InvitationMissing
+    )
+    createConnection(
+      issuer,
+      holder2,
+      token2,
+      ConnectionStatus.InvitationMissing
+    )
 
     val message = credential_models.AtalaMessage()
 
@@ -146,7 +172,10 @@ class MessagesRepositorySpec extends ConnectorRepositorySpecBase {
         SendMessagesRequest.MessageToSend(token2, message.toByteArray, None)
       )
 
-    val result = messagesRepository.insertMessages(issuer, messages).run(TraceId.generateYOLO).unsafeRunSync()
+    val result = messagesRepository
+      .insertMessages(issuer, messages)
+      .run(TraceId.generateYOLO)
+      .unsafeRunSync()
     val messagesIds = NonEmptyList.fromList(result.toOption.value).get
 
     val insertedMessages =
@@ -175,10 +204,18 @@ class MessagesRepositorySpec extends ConnectorRepositorySpecBase {
     createConnection(issuer, holder, token, ConnectionStatus.InvitationMissing)
 
     val message1 =
-      credential_models.AtalaMessage().withProofRequest(credential_models.ProofRequest(connectionToken = "token1"))
+      credential_models
+        .AtalaMessage()
+        .withProofRequest(
+          credential_models.ProofRequest(connectionToken = "token1")
+        )
 
     val message2 =
-      credential_models.AtalaMessage().withProofRequest(credential_models.ProofRequest(connectionToken = "token2"))
+      credential_models
+        .AtalaMessage()
+        .withProofRequest(
+          credential_models.ProofRequest(connectionToken = "token2")
+        )
 
     val messages =
       NonEmptyList.of(
@@ -186,7 +223,10 @@ class MessagesRepositorySpec extends ConnectorRepositorySpecBase {
         SendMessagesRequest.MessageToSend(token, message2.toByteArray, None)
       )
 
-    val result = messagesRepository.insertMessages(holder, messages).run(TraceId.generateYOLO).unsafeRunSync()
+    val result = messagesRepository
+      .insertMessages(holder, messages)
+      .run(TraceId.generateYOLO)
+      .unsafeRunSync()
     val messagesIds = NonEmptyList.fromList(result.toOption.value).get
 
     val insertedMessages =
@@ -203,7 +243,9 @@ class MessagesRepositorySpec extends ConnectorRepositorySpecBase {
     insertedMessages.foreach { case (messageSender, messageRecipient, messageContent) =>
       messageSender mustBe holder
       messageRecipient mustBe issuer
-      List(message1.toByteArray, message2.toByteArray) must contain(messageContent)
+      List(message1.toByteArray, message2.toByteArray) must contain(
+        messageContent
+      )
     }
   }
 
@@ -213,8 +255,18 @@ class MessagesRepositorySpec extends ConnectorRepositorySpecBase {
     val holder2 = createHolder()
     val token1 = createToken(issuer)
     val token2 = createToken(issuer)
-    createConnection(issuer, holder1, token1, ConnectionStatus.InvitationMissing)
-    createConnection(issuer, holder2, token2, ConnectionStatus.InvitationMissing)
+    createConnection(
+      issuer,
+      holder1,
+      token1,
+      ConnectionStatus.InvitationMissing
+    )
+    createConnection(
+      issuer,
+      holder2,
+      token2,
+      ConnectionStatus.InvitationMissing
+    )
 
     val message = credential_models.AtalaMessage()
 
@@ -223,11 +275,19 @@ class MessagesRepositorySpec extends ConnectorRepositorySpecBase {
 
     val messages =
       NonEmptyList.of(
-        SendMessagesRequest.MessageToSend(token1, message.toByteArray, Some(messageId1)),
-        SendMessagesRequest.MessageToSend(token2, message.toByteArray, Some(messageId2))
+        SendMessagesRequest
+          .MessageToSend(token1, message.toByteArray, Some(messageId1)),
+        SendMessagesRequest.MessageToSend(
+          token2,
+          message.toByteArray,
+          Some(messageId2)
+        )
       )
 
-    val result = messagesRepository.insertMessages(issuer, messages).run(TraceId.generateYOLO).unsafeRunSync()
+    val result = messagesRepository
+      .insertMessages(issuer, messages)
+      .run(TraceId.generateYOLO)
+      .unsafeRunSync()
     val messagesIds = NonEmptyList.fromList(result.toOption.value).get
 
     messagesIds.toList.toSet mustBe Set(messageId1, messageId2)
@@ -239,8 +299,18 @@ class MessagesRepositorySpec extends ConnectorRepositorySpecBase {
     val holder2 = createHolder()
     val token1 = createToken(issuer)
     val token2 = createToken(issuer)
-    createConnection(issuer, holder1, token1, ConnectionStatus.InvitationMissing)
-    createConnection(issuer, holder2, token2, ConnectionStatus.InvitationMissing)
+    createConnection(
+      issuer,
+      holder1,
+      token1,
+      ConnectionStatus.InvitationMissing
+    )
+    createConnection(
+      issuer,
+      holder2,
+      token2,
+      ConnectionStatus.InvitationMissing
+    )
 
     val message = credential_models.AtalaMessage()
 
@@ -248,11 +318,19 @@ class MessagesRepositorySpec extends ConnectorRepositorySpecBase {
 
     val messages =
       NonEmptyList.of(
-        SendMessagesRequest.MessageToSend(token1, message.toByteArray, Some(messageId1)),
-        SendMessagesRequest.MessageToSend(token2, message.toByteArray, Some(messageId1))
+        SendMessagesRequest
+          .MessageToSend(token1, message.toByteArray, Some(messageId1)),
+        SendMessagesRequest.MessageToSend(
+          token2,
+          message.toByteArray,
+          Some(messageId1)
+        )
       )
 
-    val result = messagesRepository.insertMessages(issuer, messages).run(TraceId.generateYOLO).unsafeRunSync()
+    val result = messagesRepository
+      .insertMessages(issuer, messages)
+      .run(TraceId.generateYOLO)
+      .unsafeRunSync()
     result mustBe an[Left[MessageIdsNotUnique, List[MessageId]]]
   }
 
@@ -262,8 +340,18 @@ class MessagesRepositorySpec extends ConnectorRepositorySpecBase {
     val holder2 = createHolder()
     val token1 = createToken(issuer)
     val token2 = createToken(issuer)
-    createConnection(issuer, holder1, token1, ConnectionStatus.InvitationMissing)
-    createConnection(issuer, holder2, token2, ConnectionStatus.InvitationMissing)
+    createConnection(
+      issuer,
+      holder1,
+      token1,
+      ConnectionStatus.InvitationMissing
+    )
+    createConnection(
+      issuer,
+      holder2,
+      token2,
+      ConnectionStatus.InvitationMissing
+    )
 
     val message = credential_models.AtalaMessage()
 
@@ -272,8 +360,13 @@ class MessagesRepositorySpec extends ConnectorRepositorySpecBase {
 
     val messages =
       NonEmptyList.of(
-        SendMessagesRequest.MessageToSend(token1, message.toByteArray, Some(messageId1)),
-        SendMessagesRequest.MessageToSend(token2, message.toByteArray, Some(messageId2))
+        SendMessagesRequest
+          .MessageToSend(token1, message.toByteArray, Some(messageId1)),
+        SendMessagesRequest.MessageToSend(
+          token2,
+          message.toByteArray,
+          Some(messageId2)
+        )
       )
 
     messagesRepository
@@ -282,7 +375,10 @@ class MessagesRepositorySpec extends ConnectorRepositorySpecBase {
       .unsafeToFuture()
       .futureValue mustBe an[Right[ConnectorError, List[MessageId]]]
 
-    val result = messagesRepository.insertMessages(issuer, messages).run(TraceId.generateYOLO).unsafeRunSync()
+    val result = messagesRepository
+      .insertMessages(issuer, messages)
+      .run(TraceId.generateYOLO)
+      .unsafeRunSync()
     result mustBe an[Left[MessagesAlreadyExist, List[MessageId]]]
   }
 
@@ -292,18 +388,35 @@ class MessagesRepositorySpec extends ConnectorRepositorySpecBase {
     val holder2 = createHolder()
     val token1 = createToken(issuer)
     val token2 = createToken(issuer)
-    createConnection(issuer, holder1, token1, ConnectionStatus.InvitationMissing)
-    createConnection(issuer, holder2, token2, ConnectionStatus.InvitationMissing)
+    createConnection(
+      issuer,
+      holder1,
+      token1,
+      ConnectionStatus.InvitationMissing
+    )
+    createConnection(
+      issuer,
+      holder2,
+      token2,
+      ConnectionStatus.InvitationMissing
+    )
 
     val message = credential_models.AtalaMessage()
 
     val messages =
       NonEmptyList.of(
         SendMessagesRequest.MessageToSend(token1, message.toByteArray, None),
-        SendMessagesRequest.MessageToSend(TokenString("invalidConnectionToken"), message.toByteArray, None)
+        SendMessagesRequest.MessageToSend(
+          TokenString("invalidConnectionToken"),
+          message.toByteArray,
+          None
+        )
       )
 
-    val result = messagesRepository.insertMessages(issuer, messages).run(TraceId.generateYOLO).unsafeRunSync()
+    val result = messagesRepository
+      .insertMessages(issuer, messages)
+      .run(TraceId.generateYOLO)
+      .unsafeRunSync()
     result mustBe a[Left[_, _]]
   }
 
@@ -313,8 +426,18 @@ class MessagesRepositorySpec extends ConnectorRepositorySpecBase {
     val holder2 = createHolder()
     val token1 = createToken(issuer)
     val token2 = createToken(issuer)
-    createConnection(issuer, holder1, token1, ConnectionStatus.ConnectionAccepted)
-    createConnection(issuer, holder2, token2, ConnectionStatus.ConnectionRevoked)
+    createConnection(
+      issuer,
+      holder1,
+      token1,
+      ConnectionStatus.ConnectionAccepted
+    )
+    createConnection(
+      issuer,
+      holder2,
+      token2,
+      ConnectionStatus.ConnectionRevoked
+    )
 
     val message = credential_models.AtalaMessage()
 
@@ -324,7 +447,10 @@ class MessagesRepositorySpec extends ConnectorRepositorySpecBase {
         SendMessagesRequest.MessageToSend(token2, message.toByteArray, None)
       )
 
-    val result = messagesRepository.insertMessages(issuer, messages).run(TraceId.generateYOLO).unsafeRunSync()
+    val result = messagesRepository
+      .insertMessages(issuer, messages)
+      .run(TraceId.generateYOLO)
+      .unsafeRunSync()
     result mustBe a[Left[_, _]]
   }
 
@@ -332,7 +458,12 @@ class MessagesRepositorySpec extends ConnectorRepositorySpecBase {
     val issuer = createIssuer()
     val holder = createHolder()
     val token = createToken(issuer)
-    val connectionId = createConnection(issuer, holder, token, ConnectionStatus.ConnectionRevoked)
+    val connectionId = createConnection(
+      issuer,
+      holder,
+      token,
+      ConnectionStatus.ConnectionRevoked
+    )
 
     val message = credential_models.AtalaMessage()
 
@@ -348,11 +479,19 @@ class MessagesRepositorySpec extends ConnectorRepositorySpecBase {
       val issuer = createIssuer()
       val holder = createHolder()
       val connection = createConnection(issuer, holder)
-      val zeroTime = LocalDateTime.of(2019, 10, 10, 12, 14, 17, 5000).toEpochSecond(ZoneOffset.UTC)
+      val zeroTime = LocalDateTime
+        .of(2019, 10, 10, 12, 14, 17, 5000)
+        .toEpochSecond(ZoneOffset.UTC)
 
       for (i <- 0 to 20) yield {
         val messageId =
-          createMessage(connection, issuer, holder, Instant.ofEpochMilli(zeroTime + i), s"hello$i".getBytes())
+          createMessage(
+            connection,
+            issuer,
+            holder,
+            Instant.ofEpochMilli(zeroTime + i),
+            s"hello$i".getBytes()
+          )
         i -> messageId
       }
 
@@ -369,7 +508,10 @@ class MessagesRepositorySpec extends ConnectorRepositorySpecBase {
       val nextTenExpected = all.slice(10, 20)
 
       val firstTenResult =
-        messagesRepository.getMessagesPaginated(holder, 10, Option.empty).run(TraceId.generateYOLO).unsafeRunSync()
+        messagesRepository
+          .getMessagesPaginated(holder, 10, Option.empty)
+          .run(TraceId.generateYOLO)
+          .unsafeRunSync()
       firstTenResult.toOption.value.map(_.id) must matchTo(firstTenExpected)
 
       val nextTenResult =

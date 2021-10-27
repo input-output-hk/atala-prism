@@ -10,7 +10,9 @@ import io.iohk.atala.prism.node.repositories.AtalaOperationsRepository
 import io.iohk.atala.prism.protos.node_models.SignedAtalaOperation
 import tofu.higherKind.Mid
 
-private[repositories] final class AtalaOperationsRepositoryMetrics[F[_]: TimeMeasureMetric: BracketThrow]
+private[repositories] final class AtalaOperationsRepositoryMetrics[F[
+    _
+]: TimeMeasureMetric: BracketThrow]
     extends AtalaOperationsRepository[Mid[F, *]] {
   private val repoName = "AtalaOperationsRepository"
 
@@ -20,21 +22,26 @@ private[repositories] final class AtalaOperationsRepositoryMetrics[F[_]: TimeMea
   private lazy val mergeObjectsTimerTimer =
     TimeMeasureUtil.createDBQueryTimer(repoName, "mergeObjects")
 
-  private lazy val getOperationInfoTimer = TimeMeasureUtil.createDBQueryTimer(repoName, "getOperationInfo")
+  private lazy val getOperationInfoTimer =
+    TimeMeasureUtil.createDBQueryTimer(repoName, "getOperationInfo")
 
   def insertOperation(
       objectId: AtalaObjectId,
       objectBytes: Array[Byte],
       atalaOperationIds: AtalaOperationId,
       atalaOperationsStatus: AtalaOperationStatus
-  ): Mid[F, Either[NodeError, (Int, Int)]] = _.measureOperationTime(insertObjectAndOperationsTimer)
+  ): Mid[F, Either[NodeError, (Int, Int)]] =
+    _.measureOperationTime(insertObjectAndOperationsTimer)
 
   def updateMergedObjects(
       atalaObject: AtalaObjectInfo,
       operations: List[SignedAtalaOperation],
       oldObjects: List[AtalaObjectInfo]
-  ): Mid[F, Either[NodeError, Unit]] = _.measureOperationTime(mergeObjectsTimerTimer)
+  ): Mid[F, Either[NodeError, Unit]] =
+    _.measureOperationTime(mergeObjectsTimerTimer)
 
-  def getOperationInfo(atalaOperationId: AtalaOperationId): Mid[F, Option[AtalaOperationInfo]] =
+  def getOperationInfo(
+      atalaOperationId: AtalaOperationId
+  ): Mid[F, Option[AtalaOperationInfo]] =
     _.measureOperationTime(getOperationInfoTimer)
 }

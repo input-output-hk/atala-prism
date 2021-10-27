@@ -13,7 +13,9 @@ import tofu.higherKind.Mid
 import tofu.logging.ServiceLogging
 import tofu.syntax.logging._
 
-private[repositories] final class AtalaOperationsRepositoryLogs[F[_]: ServiceLogging[
+private[repositories] final class AtalaOperationsRepositoryLogs[F[
+    _
+]: ServiceLogging[
   *[_],
   AtalaOperationsRepository[F]
 ]: MonadThrow]
@@ -31,7 +33,9 @@ private[repositories] final class AtalaOperationsRepositoryLogs[F[_]: ServiceLog
             err => error"Encountered an error while inserting operation $err",
             _ => info"inserting operation - successfully done"
           )
-        ).onError(errorCause"Encountered an error while inserting operation" (_))
+        ).onError(
+          errorCause"Encountered an error while inserting operation" (_)
+        )
 
   override def updateMergedObjects(
       atalaObject: AtalaObjectInfo,
@@ -45,14 +49,20 @@ private[repositories] final class AtalaOperationsRepositoryLogs[F[_]: ServiceLog
             err => error"Encountered an error while updating merged objects $err",
             _ => info"updating merged objects - successfully done"
           )
-        ).onError(errorCause"Encountered an error while updating merged objects" (_))
+        ).onError(
+          errorCause"Encountered an error while updating merged objects" (_)
+        )
 
-  override def getOperationInfo(atalaOperationId: AtalaOperationId): Mid[F, Option[models.AtalaOperationInfo]] =
+  override def getOperationInfo(
+      atalaOperationId: AtalaOperationId
+  ): Mid[F, Option[models.AtalaOperationInfo]] =
     in =>
       info"getting operation info" *>
         in.flatTap(
           _.fold(
             info"getting operation info - got nothing"
           )(res => info"getting operation info - successfully done, ${res.transactionId}")
-        ).onError(errorCause"Encountered an error while updating merged objects" (_))
+        ).onError(
+          errorCause"Encountered an error while updating merged objects" (_)
+        )
 }

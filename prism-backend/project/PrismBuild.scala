@@ -21,7 +21,8 @@ object PrismBuild {
         organization := "io.iohk",
         organizationName := "Input Output HK",
         git.baseVersion := "1.2",
-        git.formattedShaVersion := git.gitHeadCommit.value.map(git.baseVersion.value + "-" + _.take(8)),
+        git.formattedShaVersion := git.gitHeadCommit.value
+          .map(git.baseVersion.value + "-" + _.take(8)),
         scalaVersion := "2.13.6",
         scalacOptions ~= (options =>
           options.filterNot(
@@ -35,32 +36,43 @@ object PrismBuild {
         scalacOptions += "-Ymacro-annotations",
         javacOptions ++= Seq("-source", "1.11", "-target", "1.11"),
         githubTokenSource := TokenSource.Environment("GITHUB_TOKEN"),
-        resolvers += Resolver.githubPackages("input-output-hk", "atala-prism-sdk"),
+        resolvers += Resolver
+          .githubPackages("input-output-hk", "atala-prism-sdk"),
         libraryDependencies ++= scalatestDependencies,
-        addCompilerPlugin("org.typelevel" % "kind-projector" % "0.13.0" cross CrossVersion.full),
-        coverageScalacPluginVersion := "1.4.1",
+        addCompilerPlugin(
+          "org.typelevel" % "kind-projector" % "0.13.2" cross CrossVersion.full
+        ),
+        coverageScalacPluginVersion := "1.4.9",
         Test / fork := true,
         Test / parallelExecution := false,
         Test / testForkedParallel := false,
         assembly / test := {},
-        commands += Command.args("testOnlyUntilFailed", "<testOnly params>") { (state, args) =>
-          val argsString = args.mkString(" ")
-          ("testOnly " + argsString) :: ("testOnlyUntilFailed " + argsString) :: state
+        commands += Command.args("testOnlyUntilFailed", "<testOnly params>") {
+          (state, args) =>
+            val argsString = args.mkString(" ")
+            ("testOnly " + argsString) :: ("testOnlyUntilFailed " + argsString) :: state
         },
         assembly / assemblyExcludedJars := {
           val cp = (assembly / fullClasspath).value
 
-          val excludeLibs = Set("protobuf-javalite", "kotlinx-coroutines-core", "pbandk-protos")
+          val excludeLibs =
+            Set("protobuf-javalite", "kotlinx-coroutines-core", "pbandk-protos")
 
-          cp.filter { path => excludeLibs.exists(lib => path.data.getName.startsWith(lib)) }
+          cp.filter { path =>
+            excludeLibs.exists(lib => path.data.getName.startsWith(lib))
+          }
         },
         assembly / assemblyMergeStrategy := {
           // Merge service files, otherwise GRPC client doesn't work: https://github.com/grpc/grpc-java/issues/5493
           case PathList("META-INF", "services", _*) => MergeStrategy.concat
-          case PathList("META-INF", "io.netty.versions.properties") => MergeStrategy.concat
+          case PathList("META-INF", "io.netty.versions.properties") =>
+            MergeStrategy.concat
           // It is safe to discard when building an uber-jar according to https://stackoverflow.com/a/55557287
           case x if x.endsWith("module-info.class") => MergeStrategy.discard
-          case "logback.xml" => MergeStrategy.concat
+          case "logback.xml"                        => MergeStrategy.concat
+          case "scala-collection-compat.properties" => MergeStrategy.last
+          // org.bitcoin classes are coming from both bitcoinj and fr.acinq.secp256k1-jni
+          case PathList("org", "bitcoin", _*)       => MergeStrategy.last
           case x =>
             val oldStrategy = (assembly / assemblyMergeStrategy).value
             oldStrategy(x)
@@ -75,7 +87,9 @@ object PrismBuild {
         // Make ScalaPB compile protos relative to `protobuf_external_src/protos` directory.
         // Otherwise, it will assume that `protobuf_external_src` is the root directory for proto files.
         Compile / PB.protoSources := (Compile / PB.protoSources).value.map {
-          case externalSrc if externalSrc.toPath.endsWith("protobuf_external_src") => externalSrc / "proto"
+          case externalSrc
+              if externalSrc.toPath.endsWith("protobuf_external_src") =>
+            externalSrc / "proto"
           case other => other
         },
         resolvers += Resolver.mavenLocal,
@@ -130,7 +144,12 @@ object PrismBuild {
             add(file(name), file("/usr/app"))
             workDir("/usr/app")
             add(artifact, file(s"$name.jar"))
-            cmd("/usr/local/openjdk-11/bin/java", "-classpath", s"/usr/app/$name.jar", className)
+            cmd(
+              "/usr/local/openjdk-11/bin/java",
+              "-classpath",
+              s"/usr/app/$name.jar",
+              className
+            )
           }
         },
         docker / imageNames := Seq(generateImageName(name, version.value)),
@@ -162,7 +181,9 @@ object PrismBuild {
     commonServerProject("connector")
       .settings(
         name := "connector",
-        Compile / run / mainClass := Some("io.iohk.atala.prism.connector.ConnectorApp"),
+        Compile / run / mainClass := Some(
+          "io.iohk.atala.prism.connector.ConnectorApp"
+        ),
         scalacOptions ~= (_ :+ "-Wconf:src=.*twirl/.*:silent"),
         libraryDependencies += twirlApi
       )
@@ -193,7 +214,9 @@ object PrismBuild {
     commonServerProject("management-console")
       .settings(
         name := "management-console",
-        Compile / run / mainClass := Some("io.iohk.atala.prism.management.console.ManagementConsoleApp")
+        Compile / run / mainClass := Some(
+          "io.iohk.atala.prism.management.console.ManagementConsoleApp"
+        )
       )
       .dependsOn(common % "compile->compile;test->test")
 

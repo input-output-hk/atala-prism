@@ -22,7 +22,11 @@ class V11__IssuerIcons extends BaseJavaMigration {
 
   override def migrate(context: Context): Unit = {
     def setLogo(id: UUID, logo: Array[Byte]) = {
-      Using(context.getConnection.prepareStatement("UPDATE participants SET logo = ? WHERE id = ?")) { statement =>
+      Using(
+        context.getConnection.prepareStatement(
+          "UPDATE participants SET logo = ? WHERE id = ?"
+        )
+      ) { statement =>
         statement.setBytes(1, logo)
         statement.setObject(2, id)
         statement.execute()
