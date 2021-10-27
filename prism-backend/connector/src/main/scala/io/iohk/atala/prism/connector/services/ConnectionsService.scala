@@ -192,9 +192,8 @@ private class ConnectionsServiceImpl[F[_]: MonadThrow](
         .map[Either[GetConnectionCommunicationKeysError, Seq[
           (String, ECPublicKey)
         ]]](Right(_))
-        .recover {
-          case ex =>
-            Left(co(InternalConnectorError(ex)))
+        .recover { case ex =>
+          Left(co(InternalConnectorError(ex)))
         }
     }
 
