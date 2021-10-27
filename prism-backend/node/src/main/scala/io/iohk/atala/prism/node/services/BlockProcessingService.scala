@@ -43,14 +43,6 @@ class BlockProcessingServiceImpl extends BlockProcessingService {
 
   private val logger = LoggerFactory.getLogger(getClass)
 
-  //TODO
-  //  private def logBlockRequest(methodName: String, block: AtalaBlock): Unit = {
-  //    val operationIds = block.operations.map(AtalaOperationId.of).mkString("\n")
-  //    logger.info(
-  //      s"MethodName:$methodName \n Block OperationIds = [$operationIds]"
-  //    )
-  //  }
-
   // ConnectionIO[Boolean] is a temporary type used to be able to unit tests this
   // it eventually will be replaced with ConnectionIO[Unit]
   override def processBlock(
