@@ -145,10 +145,10 @@ For the purpose of discussion, we will define the following:
    2. `S = HSK•r•G`
    3. `S = HSK•G•r`
    4. `S = HPK•r` (that is how the Issuer has generated it)
-8. Holder decrypts the message `EM` using `S`, yielding `SignedAtalaMessage`, then extracts `UnsignedECIESMessage` and `SIG` from it
-9. Holder will verify the signature `SIG` using `IPK`. `verify(UnsignedECIESMessage, SIG, IPK)`
-10. Holder will retrieve `IPK` and `HPK` from `UnsignedECIESMessage` and verify that `IPK` is the public key of the issuer he is expecting a message from, and that `HPK` is his public key, thus message is intended to him.
-11. Holder will retrieve a message `M` from `UnsignedECIESMessage`
+8. Holder decrypts the message `EM` using `S`, yielding `SignedAtalaMessage`, then extracts `UnsignedAtalaMessage` and `SIG` from it
+9. Holder will verify the signature `SIG` using `IPK`. `verify(UnsignedAtalaMessage, SIG, IPK)`
+10. Holder will retrieve `IPK` and `HPK` from `UnsignedAtalaMessage` and verify that `IPK` is the public key of the issuer he is expecting a message from, and that `HPK` is his public key, thus message is intended to him.
+11. Holder will retrieve a message `M` from `UnsignedAtalaMessage`
 
 It is worth noting that at every step of the protocol, whenever a verification or decryption takes place, if one of them fails all the rest of the steps will not be performed and the whole protocol will be aborted.
 
@@ -173,7 +173,7 @@ message UnsignedAtalaMessage {
 }
 
 message SignedAtalaMessage {
-   UnsignedECIESMessage unsigned_atala_message 1;
+   UnsignedAtalaMessage unsigned_atala_message 1;
    bytes signature = 2;
 }
 
@@ -182,3 +182,13 @@ message EncryptedAtalaMessage {
   uint64 rValue = 2;
 }
 ```
+
+## Note on key agreement and signing keys
+
+In the above description of the protocol participants are using the same key pair for signing and generating symmetric key via ECIES, this is a not considered to be a best practice.
+In the current implementation we are deciding to go with it, but here is roughly how the protocol will be changed to mitigate this issue in the future:
+
+* In the Phase one - key exchange, Issuer will generate 2 key derivation paths and subsequently 2 key paris. Issuer will send 2 public keys, one that the holder will use to encrypt messages intended for the issuer, and another that holder will use to verify the signature of the message sent from the Issuer.  
+* The holder would need to send 2 keys for the same purposes as well
+* In the Phase two - encryption, participants will need to include their own and another participants' public keys in `UnsignedAtalaMessage`, Since we will have 2 key paris now, they will include their and another participants signing key.
+  * It is worth nothing that it does not matter which key to include, key-agreement key could have been used as well.
