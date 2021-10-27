@@ -44,7 +44,9 @@ private class DuplicateAtalaOperation extends Exception
 
 class ObjectManagementService private (
     atalaOperationsRepository: AtalaOperationsRepository[IOWithTraceIdContext],
-    atalaObjectsTransactionsRepository: AtalaObjectsTransactionsRepository[IOWithTraceIdContext],
+    atalaObjectsTransactionsRepository: AtalaObjectsTransactionsRepository[
+      IOWithTraceIdContext
+    ],
     keyValuesRepository: KeyValuesRepository[IOWithTraceIdContext],
     protocolVersionsRepository: ProtocolVersionRepository[IOWithTraceIdContext],
     blockProcessing: BlockProcessingService
@@ -59,11 +61,12 @@ class ObjectManagementService private (
       .flatMap {
         case Some(obj) =>
           for {
-            _ <- atalaObjectsTransactionsRepository.updateSubmissionStatusIfExists(
-              obj.transaction.get.ledger,
-              obj.transaction.get.transactionId,
-              InLedger
-            )
+            _ <- atalaObjectsTransactionsRepository
+              .updateSubmissionStatusIfExists(
+                obj.transaction.get.ledger,
+                obj.transaction.get.transactionId,
+                InLedger
+              )
             transaction <- ReaderT.liftF(processObject(obj))
             result <- ReaderT.liftF(
               transaction
@@ -100,7 +103,9 @@ class ObjectManagementService private (
       .unsafeToFuture()
   }
 
-  def scheduleSingleAtalaOperation(op: node_models.SignedAtalaOperation): Future[Either[NodeError, AtalaOperationId]] =
+  def scheduleSingleAtalaOperation(
+      op: node_models.SignedAtalaOperation
+  ): Future[Either[NodeError, AtalaOperationId]] =
     scheduleAtalaOperations(op).map(_.head)
 
   def scheduleAtalaOperations(
@@ -110,19 +115,20 @@ class ObjectManagementService private (
       (op, ObjectManagementService.createAtalaObject(List(op)))
     }
 
-    val queryIO = opsWithObjects traverse {
-      case (op, obj) =>
-        val objBytes = obj.toByteArray
-        atalaOperationsRepository
-          .insertOperation(
-            AtalaObjectId.of(objBytes),
-            objBytes,
-            AtalaOperationId.of(op),
-            AtalaOperationStatus.RECEIVED
-          )
+    val queryIO = opsWithObjects traverse { case (op, obj) =>
+      val objBytes = obj.toByteArray
+      atalaOperationsRepository
+        .insertOperation(
+          AtalaObjectId.of(objBytes),
+          objBytes,
+          AtalaOperationId.of(op),
+          AtalaOperationStatus.RECEIVED
+        )
     }
 
-    val resultEitherT: EitherT[IOWithTraceIdContext, NodeError, List[Either[NodeError, AtalaOperationId]]] = for {
+    val resultEitherT: EitherT[IOWithTraceIdContext, NodeError, List[
+      Either[NodeError, AtalaOperationId]
+    ]] = for {
       _ <- EitherT(
         protocolVersionsRepository
           .ifNodeSupportsCurrentProtocol()
@@ -132,11 +138,14 @@ class ObjectManagementService private (
     } yield {
       opsWithObjects.zip(operationInsertions).map {
         case ((atalaOperation, _), Left(err)) =>
-          OperationsCounters.failedToStoreToDbAtalaOperations(List(atalaOperation), err)
+          OperationsCounters
+            .failedToStoreToDbAtalaOperations(List(atalaOperation), err)
           err.asLeft[AtalaOperationId]
         case ((atalaOperation, _), Right(cntAdded)) if cntAdded == ((0, 0)) =>
-          val err = NodeError.DuplicateAtalaOperation(AtalaOperationId.of(atalaOperation))
-          OperationsCounters.failedToStoreToDbAtalaOperations(List(atalaOperation), err)
+          val err = NodeError
+            .DuplicateAtalaOperation(AtalaOperationId.of(atalaOperation))
+          OperationsCounters
+            .failedToStoreToDbAtalaOperations(List(atalaOperation), err)
           AtalaOperationId.of(atalaOperation).asRight[NodeError]
         case ((atalaOperation, _), Right(_)) =>
           OperationsCounters.countReceivedAtalaOperations(List(atalaOperation))
@@ -157,11 +166,15 @@ class ObjectManagementService private (
           .get(LAST_SYNCED_BLOCK_TIMESTAMP)
           .run(TraceId.generateYOLO)
           .unsafeToFuture()
-      lastSyncedBlockTimestamp = getLastSyncedTimestampFromMaybe(maybeLastSyncedBlockTimestamp.value)
+      lastSyncedBlockTimestamp = getLastSyncedTimestampFromMaybe(
+        maybeLastSyncedBlockTimestamp.value
+      )
     } yield lastSyncedBlockTimestamp
   }
 
-  def getOperationInfo(atalaOperationId: AtalaOperationId): Future[Option[AtalaOperationInfo]] =
+  def getOperationInfo(
+      atalaOperationId: AtalaOperationId
+  ): Future[Option[AtalaOperationInfo]] =
     atalaOperationsRepository
       .getOperationInfo(atalaOperationId)
       .run(TraceId.generateYOLO)
@@ -169,11 +182,17 @@ class ObjectManagementService private (
 
   private def processObject(obj: AtalaObjectInfo): IO[ConnectionIO[Boolean]] = {
     for {
-      protobufObject <- IO.fromTry(node_internal.AtalaObject.validate(obj.byteContent))
+      protobufObject <- IO.fromTry(
+        node_internal.AtalaObject.validate(obj.byteContent)
+      )
       block = protobufObject.blockContent.get
-      transactionInfo = obj.transaction.getOrElse(throw new RuntimeException("AtalaObject has no transaction info"))
+      transactionInfo = obj.transaction.getOrElse(
+        throw new RuntimeException("AtalaObject has no transaction info")
+      )
       transactionBlock =
-        transactionInfo.block.getOrElse(throw new RuntimeException("AtalaObject has no transaction block"))
+        transactionInfo.block.getOrElse(
+          throw new RuntimeException("AtalaObject has no transaction block")
+        )
       _ = logBlockRequest("processObject", block, obj)
       blockProcessed = blockProcessing.processBlock(
         block,
@@ -184,11 +203,18 @@ class ObjectManagementService private (
       )
     } yield for {
       wasProcessed <- blockProcessed
-      _ <- AtalaObjectsDAO.updateObjectStatus(obj.objectId, AtalaObjectStatus.Processed)
+      _ <- AtalaObjectsDAO.updateObjectStatus(
+        obj.objectId,
+        AtalaObjectStatus.Processed
+      )
     } yield wasProcessed
   }
 
-  private def logBlockRequest(methodName: String, block: AtalaBlock, atalaObject: AtalaObjectInfo): Unit = {
+  private def logBlockRequest(
+      methodName: String,
+      block: AtalaBlock,
+      atalaObject: AtalaObjectInfo
+  ): Unit = {
     val operationIds = block.operations.map(AtalaOperationId.of).mkString("\n")
     logger.info(
       s"MethodName:$methodName \n Block OperationIds = [$operationIds \n] atalaObject = $atalaObject"
@@ -206,20 +232,36 @@ object ObjectManagementService {
     case object Confirmed extends AtalaObjectTransactionStatus
   }
 
-  case class AtalaObjectTransactionInfo(transaction: TransactionInfo, status: AtalaObjectTransactionStatus)
+  case class AtalaObjectTransactionInfo(
+      transaction: TransactionInfo,
+      status: AtalaObjectTransactionStatus
+  )
 
-  def createAtalaObject(ops: List[SignedAtalaOperation]): node_internal.AtalaObject = {
-    val block = node_internal.AtalaBlock(ATALA_OBJECT_VERSION, ops)
-    node_internal.AtalaObject(blockOperationCount = block.operations.size).withBlockContent(block)
+  def createAtalaObject(
+      ops: List[SignedAtalaOperation]
+  ): node_internal.AtalaObject = {
+    val block = node_internal.AtalaBlock(ops)
+    node_internal
+      .AtalaObject(blockOperationCount = block.operations.size)
+      .withBlockContent(block)
   }
 
   def apply(
-      atalaOperationsRepository: AtalaOperationsRepository[IOWithTraceIdContext],
-      atalaObjectsTransactionsRepository: AtalaObjectsTransactionsRepository[IOWithTraceIdContext],
+      atalaOperationsRepository: AtalaOperationsRepository[
+        IOWithTraceIdContext
+      ],
+      atalaObjectsTransactionsRepository: AtalaObjectsTransactionsRepository[
+        IOWithTraceIdContext
+      ],
       keyValuesRepository: KeyValuesRepository[IOWithTraceIdContext],
-      protocolVersionsRepository: ProtocolVersionRepository[IOWithTraceIdContext],
+      protocolVersionsRepository: ProtocolVersionRepository[
+        IOWithTraceIdContext
+      ],
       blockProcessing: BlockProcessingService
-  )(implicit xa: Transactor[IO], scheduler: Scheduler): ObjectManagementService = {
+  )(implicit
+      xa: Transactor[IO],
+      scheduler: Scheduler
+  ): ObjectManagementService = {
     new ObjectManagementService(
       atalaOperationsRepository,
       atalaObjectsTransactionsRepository,

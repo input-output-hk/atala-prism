@@ -159,7 +159,9 @@ function revokeCredentials(credentials) {
 function Wallet(config) {
   this.config = config;
   this.session = defaultSessionState;
-  this.handleSessionError = () => {};
+  this.handleSessionError = () => {
+    // This function should be overridden using setSessionErrorHandler
+  };
 }
 
 const defaultSessionState = {

@@ -33,7 +33,7 @@ const mockCredentials = [];
 
 for (let i = 0; i < 3 * CREDENTIAL_PAGE_SIZE; i++) mockCredentials.push(createMockCredential());
 
-const promisify = response => new Promise(resolve => resolve(response));
+const promisify = response => Promise.resolve(response);
 
 export const getCredentials = () =>
   promisify({

@@ -1,6 +1,6 @@
 package io.iohk.atala.prism.node.services
 
-import cats.effect.IO
+import cats.effect.{ContextShift, IO}
 import doobie.free.connection
 import doobie.implicits._
 import io.iohk.atala.prism.AtalaWithPostgresSpec
@@ -37,27 +37,36 @@ import tofu.logging.Logs
 import org.scalatest.concurrent.ScalaFutures
 
 import java.time.{Duration, Instant}
-import scala.concurrent.Future
+import scala.concurrent.{ExecutionContext, Future}
 
 object ObjectManagementServiceSpec {
   private val newKeysPairs = List.fill(10) { EC.generateKeyPair() }
 
-  val exampleOperations: Seq[node_models.AtalaOperation] = newKeysPairs.zipWithIndex.map {
-    case (keyPair: ECKeyPair, i) =>
-      BlockProcessingServiceSpec.createDidOperation.update(_.createDid.didData.publicKeys.modify { keys =>
-        keys :+ node_models.PublicKey(
-          id = s"key$i",
-          usage = node_models.KeyUsage.AUTHENTICATION_KEY,
-          keyData = node_models.PublicKey.KeyData.EcKeyData(
-            CreateDIDOperationSpec.protoECKeyDataFromPublicKey(keyPair.getPublicKey)
+  val exampleOperations: Seq[node_models.AtalaOperation] =
+    newKeysPairs.zipWithIndex.map { case (keyPair: ECKeyPair, i) =>
+      BlockProcessingServiceSpec.createDidOperation.update(
+        _.createDid.didData.publicKeys.modify { keys =>
+          keys :+ node_models.PublicKey(
+            id = s"key$i",
+            usage = node_models.KeyUsage.AUTHENTICATION_KEY,
+            keyData = node_models.PublicKey.KeyData.EcKeyData(
+              CreateDIDOperationSpec.protoECKeyDataFromPublicKey(
+                keyPair.getPublicKey
+              )
+            )
           )
-        )
-      })
-  }
+        }
+      )
+    }
 
-  val exampleSignedOperations: Seq[node_models.SignedAtalaOperation] = exampleOperations.map { operation =>
-    BlockProcessingServiceSpec.signOperation(operation, "master", CreateDIDOperationSpec.masterKeys.getPrivateKey)
-  }
+  val exampleSignedOperations: Seq[node_models.SignedAtalaOperation] =
+    exampleOperations.map { operation =>
+      BlockProcessingServiceSpec.signOperation(
+        operation,
+        "master",
+        CreateDIDOperationSpec.masterKeys.getPrivateKey
+      )
+    }
 }
 
 class ObjectManagementServiceSpec
@@ -65,6 +74,8 @@ class ObjectManagementServiceSpec
     with MockitoSugar
     with ResetMocksAfterEachTest
     with BeforeAndAfterEach {
+  private implicit val ce: ContextShift[IO] =
+    IO.contextShift(ExecutionContext.global)
   private val logs = Logs.withContext[IO, IOWithTraceIdContext]
   private val ledger: UnderlyingLedger = mock[UnderlyingLedger]
   private val atalaOperationsRepository: AtalaOperationsRepository[IOWithTraceIdContext] =
@@ -73,16 +84,20 @@ class ObjectManagementServiceSpec
     AtalaObjectsTransactionsRepository.unsafe(dbLiftedToTraceIdIO, logs)
   private val keyValuesRepository: KeyValuesRepository[IOWithTraceIdContext] =
     KeyValuesRepository.unsafe(dbLiftedToTraceIdIO, logs)
-  private val blockProcessing: BlockProcessingService = mock[BlockProcessingService]
-  private val protocolVersionRepository: ProtocolVersionRepository[IOWithTraceIdContext] = ProtocolVersionRepository(
-    dbLiftedToTraceIdIO
-  )
+  private val blockProcessing: BlockProcessingService =
+    mock[BlockProcessingService]
+  private val protocolVersionRepository: ProtocolVersionRepository[IOWithTraceIdContext] =
+    ProtocolVersionRepository.unsafe(
+      dbLiftedToTraceIdIO,
+      logs
+    )
 
-  private implicit lazy val submissionService: SubmissionService =
-    SubmissionService(
+  private implicit lazy val submissionService: SubmissionService[IOWithTraceIdContext] =
+    SubmissionService.unsafe(
       ledger,
       atalaOperationsRepository,
-      atalaObjectsTransactionsRepository
+      atalaObjectsTransactionsRepository,
+      logs = logs
     )
 
   private implicit lazy val objectManagementService: ObjectManagementService =
@@ -103,61 +118,97 @@ class ObjectManagementServiceSpec
 
   "ObjectManagementService.publishAtalaOperation" should {
     "update status to received when operation was received, but haven't processed yet" in {
-      doReturn(Future.successful(Right(dummyPublicationInfo))).when(ledger).publish(*)
+      doReturn(Future.successful(Right(dummyPublicationInfo)))
+        .when(ledger)
+        .publish(*)
 
       val atalaOperation = BlockProcessingServiceSpec.signedCreateDidOperation
-      val atalaOperationId = BlockProcessingServiceSpec.signedCreateDidOperationId
-      val returnedOperationId = publishSingleOperationAndFlush(atalaOperation).futureValue.toOption.get
+      val atalaOperationId =
+        BlockProcessingServiceSpec.signedCreateDidOperationId
+      val returnedOperationId =
+        publishSingleOperationAndFlush(atalaOperation).futureValue.toOption.get
       returnedOperationId mustBe atalaOperationId
 
-      val atalaOperationInfo = objectManagementService.getOperationInfo(atalaOperationId).futureValue.value
+      val atalaOperationInfo = objectManagementService
+        .getOperationInfo(atalaOperationId)
+        .futureValue
+        .value
 
       atalaOperationInfo.operationStatus must be(AtalaOperationStatus.RECEIVED)
-      atalaOperationInfo.transactionSubmissionStatus must be(Some(AtalaObjectTransactionSubmissionStatus.Pending))
-      atalaOperationInfo.transactionId.value must be(dummyPublicationInfo.transaction.transactionId)
+      atalaOperationInfo.transactionSubmissionStatus must be(
+        Some(AtalaObjectTransactionSubmissionStatus.Pending)
+      )
+      atalaOperationInfo.transactionId.value must be(
+        dummyPublicationInfo.transaction.transactionId
+      )
     }
 
     "ignore publishing duplicate operation" in {
-      doReturn(Future.successful(Right(dummyPublicationInfo))).when(ledger).publish(*)
+      doReturn(Future.successful(Right(dummyPublicationInfo)))
+        .when(ledger)
+        .publish(*)
 
       val atalaOperation = BlockProcessingServiceSpec.signedCreateDidOperation
-      val atalaOperationId = BlockProcessingServiceSpec.signedCreateDidOperationId
-      val returnedAtalaOperation = publishSingleOperationAndFlush(atalaOperation).futureValue
+      val atalaOperationId =
+        BlockProcessingServiceSpec.signedCreateDidOperationId
+      val returnedAtalaOperation =
+        publishSingleOperationAndFlush(atalaOperation).futureValue
       returnedAtalaOperation must be(Right(atalaOperationId))
 
-      val operationId = publishSingleOperationAndFlush(atalaOperation).futureValue
+      val operationId =
+        publishSingleOperationAndFlush(atalaOperation).futureValue
       operationId must be(Right(atalaOperationId))
 
-      val atalaOperationInfo = objectManagementService.getOperationInfo(atalaOperationId).futureValue.value
+      val atalaOperationInfo = objectManagementService
+        .getOperationInfo(atalaOperationId)
+        .futureValue
+        .value
 
       atalaOperationInfo.operationStatus must be(AtalaOperationStatus.RECEIVED)
-      atalaOperationInfo.transactionSubmissionStatus must be(Some(AtalaObjectTransactionSubmissionStatus.Pending))
-      atalaOperationInfo.transactionId.value must be(dummyPublicationInfo.transaction.transactionId)
+      atalaOperationInfo.transactionSubmissionStatus must be(
+        Some(AtalaObjectTransactionSubmissionStatus.Pending)
+      )
+      atalaOperationInfo.transactionId.value must be(
+        dummyPublicationInfo.transaction.transactionId
+      )
     }
 
     "ignore publishing duplicate operation in the same block" in {
-      doReturn(Future.successful(Right(dummyPublicationInfo))).when(ledger).publish(*)
+      doReturn(Future.successful(Right(dummyPublicationInfo)))
+        .when(ledger)
+        .publish(*)
 
       val atalaOperation = BlockProcessingServiceSpec.signedCreateDidOperation
-      val atalaOperationId = BlockProcessingServiceSpec.signedCreateDidOperationId
+      val atalaOperationId =
+        BlockProcessingServiceSpec.signedCreateDidOperationId
 
-      val opIds = publishOperationsAndFlush(atalaOperation, atalaOperation).futureValue
+      val opIds =
+        publishOperationsAndFlush(atalaOperation, atalaOperation).futureValue
 
       opIds.size mustBe 2
       opIds.head mustBe Right(atalaOperationId)
       opIds.last mustBe Right(atalaOperationId)
 
-      val atalaOperationInfo = objectManagementService.getOperationInfo(atalaOperationId).futureValue.value
+      val atalaOperationInfo = objectManagementService
+        .getOperationInfo(atalaOperationId)
+        .futureValue
+        .value
 
       atalaOperationInfo.operationStatus must be(AtalaOperationStatus.RECEIVED)
-      atalaOperationInfo.transactionSubmissionStatus must be(Some(AtalaObjectTransactionSubmissionStatus.Pending))
+      atalaOperationInfo.transactionSubmissionStatus must be(
+        Some(AtalaObjectTransactionSubmissionStatus.Pending)
+      )
     }
 
     "put block content onto the ledger when supported" in {
-      doReturn(Future.successful(Right(dummyPublicationInfo))).when(ledger).publish(*)
+      doReturn(Future.successful(Right(dummyPublicationInfo)))
+        .when(ledger)
+        .publish(*)
 
       val returnedOperationId =
-        publishSingleOperationAndFlush(BlockProcessingServiceSpec.signedCreateDidOperation).futureValue.toOption.get
+        publishSingleOperationAndFlush(
+          BlockProcessingServiceSpec.signedCreateDidOperation
+        ).futureValue.toOption.get
 
       returnedOperationId mustBe BlockProcessingServiceSpec.signedCreateDidOperationId
       // Verify published AtalaObject
@@ -165,36 +216,63 @@ class ObjectManagementServiceSpec
       verify(ledger).publish(atalaObjectCaptor)
       val atalaObject = atalaObjectCaptor.value
       val atalaBlock = atalaObject.blockContent.value
-      atalaBlock.operations must contain theSameElementsAs Seq(BlockProcessingServiceSpec.signedCreateDidOperation)
+      atalaBlock.operations must contain theSameElementsAs Seq(
+        BlockProcessingServiceSpec.signedCreateDidOperation
+      )
       // Verify transaction submission
-      val transactionSubmissions = queryTransactionSubmissions(AtalaObjectTransactionSubmissionStatus.Pending)
+      val transactionSubmissions = queryTransactionSubmissions(
+        AtalaObjectTransactionSubmissionStatus.Pending
+      )
       transactionSubmissions.size mustBe 1
 
-      val operationInfo = objectManagementService.getOperationInfo(returnedOperationId).futureValue.value
+      val operationInfo = objectManagementService
+        .getOperationInfo(returnedOperationId)
+        .futureValue
+        .value
       operationInfo.operationId must be(returnedOperationId)
-      operationInfo.transactionSubmissionStatus.value must be(AtalaObjectTransactionSubmissionStatus.Pending)
+      operationInfo.transactionSubmissionStatus.value must be(
+        AtalaObjectTransactionSubmissionStatus.Pending
+      )
       operationInfo.operationStatus must be(AtalaOperationStatus.RECEIVED)
-      operationInfo.transactionId.value must be(dummyPublicationInfo.transaction.transactionId)
+      operationInfo.transactionId.value must be(
+        dummyPublicationInfo.transaction.transactionId
+      )
     }
 
     "record immediate in-ledger transactions" in {
-      val inLedgerPublication = dummyPublicationInfo.copy(status = TransactionStatus.InLedger)
-      doReturn(Future.successful(Right(inLedgerPublication))).when(ledger).publish(*)
+      val inLedgerPublication =
+        dummyPublicationInfo.copy(status = TransactionStatus.InLedger)
+      doReturn(Future.successful(Right(inLedgerPublication)))
+        .when(ledger)
+        .publish(*)
 
       val returnedOperationId =
-        publishSingleOperationAndFlush(BlockProcessingServiceSpec.signedCreateDidOperation).futureValue.toOption.get
+        publishSingleOperationAndFlush(
+          BlockProcessingServiceSpec.signedCreateDidOperation
+        ).futureValue.toOption.get
 
-      returnedOperationId must be(BlockProcessingServiceSpec.signedCreateDidOperationId)
+      returnedOperationId must be(
+        BlockProcessingServiceSpec.signedCreateDidOperationId
+      )
 
       // Verify transaction submission
-      val transactionSubmissions = queryTransactionSubmissions(AtalaObjectTransactionSubmissionStatus.InLedger)
+      val transactionSubmissions = queryTransactionSubmissions(
+        AtalaObjectTransactionSubmissionStatus.InLedger
+      )
       transactionSubmissions.size mustBe 1
 
-      val operationInfo = objectManagementService.getOperationInfo(returnedOperationId).futureValue.value
+      val operationInfo = objectManagementService
+        .getOperationInfo(returnedOperationId)
+        .futureValue
+        .value
       operationInfo.operationId must be(returnedOperationId)
-      operationInfo.transactionSubmissionStatus.value must be(AtalaObjectTransactionSubmissionStatus.InLedger)
+      operationInfo.transactionSubmissionStatus.value must be(
+        AtalaObjectTransactionSubmissionStatus.InLedger
+      )
       operationInfo.operationStatus must be(AtalaOperationStatus.RECEIVED)
-      operationInfo.transactionId.value must be(inLedgerPublication.transaction.transactionId)
+      operationInfo.transactionId.value must be(
+        inLedgerPublication.transaction.transactionId
+      )
     }
 
     "ignore publishing as node doesn't support current protocol version" in {
@@ -202,16 +280,20 @@ class ObjectManagementServiceSpec
 
       val atalaOperation = BlockProcessingServiceSpec.signedCreateDidOperation
       val currentVersion = ProtocolVersion(2, 0)
-      val expectedException = UnsupportedProtocolVersion(currentVersion).toStatus.asRuntimeException
+      val expectedException =
+        UnsupportedProtocolVersion(currentVersion).toStatus.asRuntimeException
 
-      ScalaFutures.whenReady(publishSingleOperationAndFlush(atalaOperation).failed) { err =>
+      ScalaFutures.whenReady(
+        publishSingleOperationAndFlush(atalaOperation).failed
+      ) { err =>
         err.toString mustBe expectedException.toString
       }
     }
   }
 
   // needed because mockito doesn't interact too nicely with value classes
-  private def anyTransactionIdMatcher = mockito.ArgumentMatchers.any[Array[Byte]].asInstanceOf[TransactionId]
+  private def anyTransactionIdMatcher =
+    mockito.ArgumentMatchers.any[Array[Byte]].asInstanceOf[TransactionId]
 
   "ObjectManagementService.saveObject" should {
     "add object to the database when nonexistent (unpublished)" in {
@@ -220,7 +302,9 @@ class ObjectManagementServiceSpec
         .processBlock(*, anyTransactionIdMatcher, *, *, *)
       val obj = createAtalaObject()
 
-      objectManagementService.saveObject(AtalaObjectNotification(obj, dummyTransactionInfo)).futureValue
+      objectManagementService
+        .saveObject(AtalaObjectNotification(obj, dummyTransactionInfo))
+        .futureValue
 
       val atalaObject = queryAtalaObject(obj)
       atalaObject.transaction.value mustBe dummyTransactionInfo
@@ -232,24 +316,36 @@ class ObjectManagementServiceSpec
         .when(blockProcessing)
         .processBlock(*, anyTransactionIdMatcher, *, *, *)
 
-      doReturn(Future.successful(Right(PublicationInfo(dummyTransactionInfo, TransactionStatus.InLedger))))
+      doReturn(
+        Future.successful(
+          Right(
+            PublicationInfo(dummyTransactionInfo, TransactionStatus.InLedger)
+          )
+        )
+      )
         .when(ledger)
         .publish(*)
 
       val signedOperation = BlockProcessingServiceSpec.signedCreateDidOperation
       val obj = createAtalaObject(createBlock(signedOperation))
-      val operationId = publishSingleOperationAndFlush(signedOperation).futureValue.toOption.get
+      val operationId =
+        publishSingleOperationAndFlush(signedOperation).futureValue.toOption.get
 
-      objectManagementService.saveObject(AtalaObjectNotification(obj, dummyTransactionInfo)).futureValue
+      objectManagementService
+        .saveObject(AtalaObjectNotification(obj, dummyTransactionInfo))
+        .futureValue
 
       val atalaObject = queryAtalaObject(obj)
-      val operationInfo = objectManagementService.getOperationInfo(operationId).futureValue
+      val operationInfo =
+        objectManagementService.getOperationInfo(operationId).futureValue
 
       atalaObject.transaction.value mustBe dummyTransactionInfo
       // We don't check the whole returned AtalaOperationInfo because `operationStatus`
       // has to be APPLIED but it's RECEIVED due to blockService mock doesn't perform any real actions and db updates
       operationInfo.value.transactionSubmissionStatus mustBe Some(InLedger)
-      operationInfo.value.transactionId mustBe Some(dummyTransactionInfo.transactionId)
+      operationInfo.value.transactionId mustBe Some(
+        dummyTransactionInfo.transactionId
+      )
     }
 
     "not update the object when existing with transaction info (confirmed)" in {
@@ -258,13 +354,17 @@ class ObjectManagementServiceSpec
         .processBlock(*, anyTransactionIdMatcher, *, *, *)
       val obj = createAtalaObject()
 
-      objectManagementService.saveObject(AtalaObjectNotification(obj, dummyTransactionInfo)).futureValue
+      objectManagementService
+        .saveObject(AtalaObjectNotification(obj, dummyTransactionInfo))
+        .futureValue
       val dummyTransactionInfo2 = TransactionInfo(
         transactionId = TransactionId.from(Sha256.compute("id".getBytes).getValue).value,
         ledger = Ledger.InMemory,
         block = Some(BlockInfo(number = 100, timestamp = Instant.now, index = 100))
       )
-      objectManagementService.saveObject(AtalaObjectNotification(obj, dummyTransactionInfo2)).futureValue
+      objectManagementService
+        .saveObject(AtalaObjectNotification(obj, dummyTransactionInfo2))
+        .futureValue
 
       val atalaObject = queryAtalaObject(obj)
       atalaObject.transaction.value mustBe dummyTransactionInfo
@@ -278,7 +378,9 @@ class ObjectManagementServiceSpec
 
       val block = createBlock()
       val obj = createAtalaObject(block)
-      objectManagementService.saveObject(AtalaObjectNotification(obj, dummyTransactionInfo)).futureValue
+      objectManagementService
+        .saveObject(AtalaObjectNotification(obj, dummyTransactionInfo))
+        .futureValue
 
       val blockCaptor = ArgCaptor[node_internal.AtalaBlock]
       verify(blockProcessing).processBlock(
@@ -286,7 +388,9 @@ class ObjectManagementServiceSpec
         // mockito hates value classes, so we cannot test equality to this argument
         anyTransactionIdMatcher,
         mockito.ArgumentMatchers.eq(dummyTransactionInfo.ledger),
-        mockito.ArgumentMatchers.eq(Instant.ofEpochMilli(dummyTimestamp.toEpochMilli)),
+        mockito.ArgumentMatchers.eq(
+          Instant.ofEpochMilli(dummyTimestamp.toEpochMilli)
+        ),
         mockito.ArgumentMatchers.eq(dummyABSequenceNumber)
       )
       blockCaptor.value mustEqual block
@@ -306,14 +410,23 @@ class ObjectManagementServiceSpec
 
       val block = createBlock()
       val obj = createAtalaObject(block)
-      objectManagementService.saveObject(AtalaObjectNotification(obj, dummyTransactionInfo)).futureValue
+      objectManagementService
+        .saveObject(AtalaObjectNotification(obj, dummyTransactionInfo))
+        .futureValue
 
-      val atalaObject = AtalaObjectsDAO.get(AtalaObjectId.of(obj)).transact(database).unsafeRunSync()
+      val atalaObject = AtalaObjectsDAO
+        .get(AtalaObjectId.of(obj))
+        .transact(database)
+        .unsafeRunSync()
       atalaObject mustBe None
     }
 
     def queryAtalaObject(obj: node_internal.AtalaObject): AtalaObjectInfo = {
-      AtalaObjectsDAO.get(AtalaObjectId.of(obj)).transact(database).unsafeRunSync().value
+      AtalaObjectsDAO
+        .get(AtalaObjectId.of(obj))
+        .transact(database)
+        .unsafeRunSync()
+        .value
     }
   }
 
@@ -337,18 +450,21 @@ class ObjectManagementServiceSpec
         ),
         dummyLedgerData
       )
+    DataPreparation.insertTrustedProposer(proposerDIDSuffix)
 
-    parsedProtocolUpdateOperation1
+    val protUpd1 = parsedProtocolUpdateOperation1
       .applyState()
       .transact(database)
       .value
       .unsafeToFuture()
       .futureValue
+    protUpd1 mustBe Right(())
 
-    protocolVersionRepository
+    val effectiveVers = protocolVersionRepository
       .markEffective(10)
       .run(TraceId.generateYOLO)
       .unsafeToFuture()
       .futureValue
+    effectiveVers mustBe Some(protocolVersionInfo1)
   }
 }

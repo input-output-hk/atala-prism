@@ -27,10 +27,9 @@ class StringUtilsSpec extends AnyWordSpec {
         "abcdef" -> "ab**ef",
         "abcdefg" -> "ab***fg"
       )
-      cases.foreach {
-        case (input, expected) =>
-          val result = StringUtils.masked(input)
-          result must be(expected)
+      cases.foreach { case (input, expected) =>
+        val result = StringUtils.masked(input)
+        result must be(expected)
       }
     }
   }

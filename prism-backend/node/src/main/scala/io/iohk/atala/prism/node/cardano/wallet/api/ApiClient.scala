@@ -29,8 +29,7 @@ import tofu.syntax.monadic._
 import sttp.model.MediaType.ApplicationJson
 import sttp.model.Uri
 
-/**
-  * Implementation of the `CardanoWalletApiClient` that accesses the REST API provided by `cardano-wallet`.
+/** Implementation of the `CardanoWalletApiClient` that accesses the REST API provided by `cardano-wallet`.
   */
 private[wallet] class ApiClient[F[_]: Functor](config: ApiClient.Config, backend: SttpBackend[F, Any])
     extends CardanoWalletApiClient[F] {
@@ -88,13 +87,14 @@ private[wallet] object ApiClient {
   private[wallet] def defaultBackend[F[_]: Concurrent: ContextShift]: Resource[F, SttpBackend[F, Any]] =
     AsyncHttpClientCatsBackend.resource()
 
-  /**
-    * Try to map a response to a result or an error.
+  /** Try to map a response to a result or an error.
     *
     * <p>If the mapping is not possible, throw an exception.
     *
-    * @tparam A the success type.
-    * @return The success or the error response.
+    * @tparam A
+    *   the success type.
+    * @return
+    *   The success or the error response.
     */
   private def getResult[A](response: Response[Either[String, String]])(implicit
       decoder: Decoder[A]
@@ -105,8 +105,7 @@ private[wallet] object ApiClient {
     )
   }
 
-  /**
-    * Try to map a string response a Json.
+  /** Try to map a string response a Json.
     */
   private def unsafeToJson(response: String): Json = {
     if (response.isEmpty) {
@@ -124,8 +123,7 @@ private[wallet] object ApiClient {
     }
   }
 
-  /**
-    * Try to map a string response to its error result.
+  /** Try to map a string response to its error result.
     */
   private def unsafeToError(response: String): CardanoWalletError = {
     val json = unsafeToJson(response)
@@ -138,8 +136,7 @@ private[wallet] object ApiClient {
       )
   }
 
-  /**
-    * Try to map a string response to its success result.
+  /** Try to map a string response to its success result.
     */
   private def unsafeToResult[A](response: String)(implicit decoder: Decoder[A]): A = {
     val json = unsafeToJson(response)

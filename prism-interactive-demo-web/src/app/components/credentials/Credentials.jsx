@@ -1,7 +1,6 @@
 import React, { useContext } from 'react';
 import PropTypes from 'prop-types';
 import { Icon, Row } from 'antd';
-import { useTranslation } from 'gatsby-plugin-react-i18next';
 import firebase from 'gatsby-plugin-firebase';
 import SplittedPage from './Organisms/SplittedPage/SplittedPage';
 import CredentialsList from './Organisms/CredentialList/CredentialsList';
@@ -19,8 +18,6 @@ const Credentials = ({
   showContactButton,
   showCongrats
 }) => {
-  const { t } = useTranslation();
-
   const { setUser } = useContext(UserContext);
 
   const credentialsRenderer = () => (
@@ -42,7 +39,7 @@ const Credentials = ({
     <div className="CredentialContainer">
       <div className="CredentialStepContent">
         <Row className="ControlButtons">
-          <button onClick={handleReset}>
+          <button type="button" onClick={handleReset}>
             <img src={buttonReset} alt="ButtonReset" className="ButtonReset" />
           </button>
           <hr />

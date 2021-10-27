@@ -40,13 +40,11 @@ const SortControls = observer(() => {
           }
         />
         <Dropdown overlay={sortingOptionsMenu} trigger={['click']}>
-          {
-            <CustomButton
-              overrideClassName="theme-link TableOptionButton"
-              buttonText={t(sortingBy ? `templates.table.columns.${sortingBy}` : 'actions.sortBy')}
-              buttonProps={{ icon: <DownOutlined /> }}
-            />
-          }
+          <CustomButton
+            overrideClassName="theme-link TableOptionButton"
+            buttonText={t(sortingBy ? `templates.table.columns.${sortingBy}` : 'actions.sortBy')}
+            buttonProps={{ icon: <DownOutlined /> }}
+          />
         </Dropdown>
       </div>
     </div>

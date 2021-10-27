@@ -35,11 +35,11 @@ $shadow: 0 1px 6px rgba(147, 141, 158, 0.16), 0 2px 6px rgba(52, 53, 62, 0.16);
 $red-shadow: 0 1px 6px rgba(255, 45, 60, 0.16), 0 2px 6px rgba(255, 45, 60, 0.16);
 
 $height-sizes: (
-  "xs": 20vh,
-  "sm": 30vh,
-  "md": 40vh,
-  "lg": 50vh,
-  "xl": 60vh,
+  'xs': 20vh,
+  'sm': 30vh,
+  'md': 40vh,
+  'lg': 50vh,
+  'xl': 60vh
 );
 
 // Flex
@@ -80,17 +80,21 @@ $height-sizes: (
   width: 100%;
 }
 
+.InfiniteScrollTableContainer {
+  scroll-behavior: smooth;
+}
+
 @font-face {
-  font-family: "Circular-bold";
-  src: url(../fonts/CircularStd-Bold.woff) format("woff");
+  font-family: 'Circular-bold';
+  src: url(../fonts/CircularStd-Bold.woff) format('woff');
   font-weight: bold;
   font-display: swap;
   font-feature-settings: normal !important;
   font-variant: normal;
 }
 @font-face {
-  font-family: "Circular-book";
-  src: url(../fonts/CircularStd-Book.woff) format("woff");
+  font-family: 'Circular-book';
+  src: url(../fonts/CircularStd-Book.woff) format('woff');
   font-display: swap;
   font-feature-settings: normal !important;
   font-variant: normal;
@@ -100,7 +104,7 @@ $height-sizes: (
 
 @mixin primary-text($font-size, $font-color) {
   margin: 0;
-  font-family: "Circular-book";
+  font-family: 'Circular-book', sans-serif;
   font-size: $font-size;
   @if $font-color {
     color: $font-color;
@@ -109,7 +113,7 @@ $height-sizes: (
 
 @mixin secondary-text($font-size, $font-color) {
   margin: 0;
-  font-family: "Circular-bold";
+  font-family: 'Circular-bold', sans-serif;
   font-size: $font-size;
   @if $font-color {
     color: $font-color;
@@ -118,7 +122,7 @@ $height-sizes: (
 
 @mixin body-text($font-size, $font-color, $font-weight) {
   margin: 0;
-  font-family: "Source Sans Pro", sans-serif;
+  font-family: 'Source Sans Pro', sans-serif;
   font-size: $font-size;
   font-weight: $font-weight;
   @if $font-color {
@@ -137,7 +141,7 @@ $height-sizes: (
 }
 
 @mixin highlighted-text($font-color: $primary-color, $font-size: 18px) {
-  font-family: "Circular-bold";
+  font-family: 'Circular-bold', sans-serif;
   color: $primary-color;
   font-size: $font-size;
 }
@@ -204,14 +208,14 @@ $height-sizes: (
 }
 
 /* Remove controls from Safari and Chrome */
-input[type="number"]::-webkit-inner-spin-button,
-input[type="number"]::-webkit-outer-spin-button {
+input[type='number']::-webkit-inner-spin-button,
+input[type='number']::-webkit-outer-spin-button {
   -webkit-appearance: none;
   margin: 0;
 }
 
 /* Remove controls from Firefox */
-input[type="number"] {
+input[type='number'] {
   -moz-appearance: textfield;
 }
 .ant-select-selection__placeholder {

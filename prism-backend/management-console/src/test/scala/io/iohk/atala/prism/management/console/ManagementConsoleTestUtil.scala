@@ -9,7 +9,11 @@ import io.iohk.atala.prism.protos.console_api
 trait ManagementConsoleTestUtil {
   self: ManagementConsoleRpcSpecBase =>
 
-  def checkContactExists(keyPair: ECKeyPair, did: DID, contact: Contact): Boolean = {
+  def checkContactExists(
+      keyPair: ECKeyPair,
+      did: DID,
+      contact: Contact
+  ): Boolean = {
     val getRequest = console_api.GetContactRequest(
       contactId = contact.contactId.toString
     )
@@ -30,10 +34,13 @@ trait ManagementConsoleTestUtil {
     val getCredentialsRequest = console_api.GetContactCredentialsRequest(
       contactId = contact.contactId.toString
     )
-    val getCredentialsRpcRequest = SignedRpcRequest.generate(keyPair, did, getCredentialsRequest)
+    val getCredentialsRpcRequest =
+      SignedRpcRequest.generate(keyPair, did, getCredentialsRequest)
     usingApiAsCredentials(getCredentialsRpcRequest) { serviceStub =>
       val response = serviceStub.getContactCredentials(getCredentialsRequest)
-      response.genericCredentials.map(_.credentialId).contains(credential.credentialId.toString)
+      response.genericCredentials
+        .map(_.credentialId)
+        .contains(credential.credentialId.toString)
     }
   }
 }

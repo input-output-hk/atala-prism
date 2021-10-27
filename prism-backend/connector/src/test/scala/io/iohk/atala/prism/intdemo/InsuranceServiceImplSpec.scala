@@ -21,14 +21,20 @@ class InsuranceServiceImplSpec extends AnyFlatSpec {
     val idCredential = IdServiceImpl.getIdCredential((name, dateOfBirth))
     val degreeCredential = DegreeServiceImpl.getDegreeCredential(idCredential)
     val employmentCredential =
-      EmploymentServiceImpl.getEmploymentCredential(RequiredEmploymentData(idCredential, degreeCredential))
+      EmploymentServiceImpl.getEmploymentCredential(
+        RequiredEmploymentData(idCredential, degreeCredential)
+      )
     val insuranceCredential =
-      InsuranceServiceImpl.getInsuranceCredential(RequiredInsuranceData(idCredential, employmentCredential))
+      InsuranceServiceImpl.getInsuranceCredential(
+        RequiredInsuranceData(idCredential, employmentCredential)
+      )
 
-    val employmentCredentialData = EmploymentCredentialData(employmentCredential)
+    val employmentCredentialData =
+      EmploymentCredentialData(employmentCredential)
 
     // Verify JSON document
-    val jsonString = Base64Utils.decodeUrlToString(insuranceCredential.encodedCredential)
+    val jsonString =
+      Base64Utils.decodeUrlToString(insuranceCredential.encodedCredential)
     val document = parse(jsonString).toOption.value.hcursor
 
     val credentialType = InsuranceServiceImpl.credentialTypeId
@@ -47,19 +53,27 @@ class InsuranceServiceImplSpec extends AnyFlatSpec {
     document.jsonStr("issuerDid") shouldBe issuerDID
     document.jsonStr("issuerName") shouldBe issuerName
     document.jsonStr("issuanceKeyId") shouldBe issuanceKeyId
-    document.jsonStr("issuanceDate") shouldBe DateTimeFormatter.ISO_LOCAL_DATE.format(issuanceDate)
-    document.jsonStr("expiryDate") shouldBe DateTimeFormatter.ISO_LOCAL_DATE.format(expirationDate)
+    document.jsonStr("issuanceDate") shouldBe DateTimeFormatter.ISO_LOCAL_DATE
+      .format(issuanceDate)
+    document.jsonStr("expiryDate") shouldBe DateTimeFormatter.ISO_LOCAL_DATE
+      .format(expirationDate)
     document.jsonStr("policyNumber") shouldBe policyNumber
     document.jsonStr("productClass") shouldBe productClass
 
     document.jsonStr("credentialSubject.credentialType") shouldBe credentialType
     document.jsonStr("credentialSubject.name") shouldBe holderName
-    document.jsonStr("credentialSubject.dateOfBirth") shouldBe DateTimeFormatter.ISO_LOCAL_DATE.format(
+    document.jsonStr(
+      "credentialSubject.dateOfBirth"
+    ) shouldBe DateTimeFormatter.ISO_LOCAL_DATE.format(
       holderDateOfBirth
     )
 
-    document.jsonStr("credentialSubject.currentEmployer.name") shouldBe currentEmployerName
-    document.jsonStr("credentialSubject.currentEmployer.address") shouldBe currentEmployerAddress
+    document.jsonStr(
+      "credentialSubject.currentEmployer.name"
+    ) shouldBe currentEmployerName
+    document.jsonStr(
+      "credentialSubject.currentEmployer.address"
+    ) shouldBe currentEmployerAddress
 
     // Verify HTML view
     val expectedHtml = readResource("health_credential.html")
@@ -67,7 +81,10 @@ class InsuranceServiceImplSpec extends AnyFlatSpec {
       .replace("@productClass", productClass)
       .replace("@policyNumber", policyNumber)
       .replace("@holderName", holderName)
-      .replace("@expirationDate", DateTimeFormatter.ISO_LOCAL_DATE.format(expirationDate))
+      .replace(
+        "@expirationDate",
+        DateTimeFormatter.ISO_LOCAL_DATE.format(expirationDate)
+      )
 
     document.jsonStr("credentialSubject.html") shouldBe expectedHtml
   }

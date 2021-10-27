@@ -11,7 +11,8 @@ import io.iohk.atala.prism.repositories.TransactorFactory
 object NodeConfig {
 
   def cardanoConfig(config: Config): CardanoLedgerService.Config = {
-    val network = CardanoNetwork.withNameInsensitive(config.getString("network"))
+    val network =
+      CardanoNetwork.withNameInsensitive(config.getString("network"))
     val walletId = config.getString("walletId")
     val walletPassphrase = config.getString("walletPassphrase")
     val paymentAddress = config.getString("paymentAddress")

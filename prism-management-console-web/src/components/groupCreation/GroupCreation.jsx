@@ -64,6 +64,8 @@ const GroupCreation = ({
     onChange: handleSelectAllContacts
   };
 
+  const selectedLabel = selectedContacts.length ? `  (${selectedContacts.length})  ` : null;
+
   return (
     <div className="WrapperGroupCreation">
       <div className="Header">
@@ -109,7 +111,7 @@ const GroupCreation = ({
                 ) : (
                   <span>
                     {t('groupCreation.selectAll')}
-                    {selectedContacts.length ? `  (${selectedContacts.length})  ` : null}
+                    {selectedLabel}
                   </span>
                 )}
               </Checkbox>

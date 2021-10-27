@@ -17,7 +17,10 @@ object RequestNoncesDAO {
     }
   }
 
-  def available(did: DID, requestNonce: RequestNonce): doobie.ConnectionIO[Boolean] = {
+  def available(
+      did: DID,
+      requestNonce: RequestNonce
+  ): doobie.ConnectionIO[Boolean] = {
     sql"""
          |SELECT request_nonce
          |FROM request_nonces

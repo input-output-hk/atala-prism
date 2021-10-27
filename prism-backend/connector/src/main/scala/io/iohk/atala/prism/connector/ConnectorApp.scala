@@ -49,7 +49,8 @@ class ConnectorApp(executionContext: ExecutionContext) { self =>
   implicit val cs: ContextShift[IO] = IO.contextShift(ExecutionContext.global)
 
   private[this] var server: Server = null
-  private[this] var messageNotificationService: MessageNotificationService = null
+  private[this] var messageNotificationService: MessageNotificationService =
+    null
 
   private def start(): Unit = {
     Kamon.init()
@@ -66,28 +67,41 @@ class ConnectorApp(executionContext: ExecutionContext) { self =>
     applyDatabaseMigrations(databaseConfig)
 
     logger.info("Connecting to the database")
-    val (xa, releaseXa) = TransactorFactory.transactor[IO](databaseConfig).allocated.unsafeRunSync()
+    val (xa, releaseXa) =
+      TransactorFactory.transactor[IO](databaseConfig).allocated.unsafeRunSync()
     val txTraceIdLifted = xa.mapK(TraceId.liftToIOWithTraceId)
 
     logger.info("Loading DID whitelist")
     val didWhitelist = DidWhitelistLoader.load(globalConfig)
     if (didWhitelist.isEmpty) {
-      logger.warn(s"DID whitelist is empty, which prevents integrating the console backend")
+      logger.warn(
+        s"DID whitelist is empty, which prevents integrating the console backend"
+      )
     } else {
-      logger.info(s"DID whitelist:\n${didWhitelist.map(_.getValue).map("- " + _).mkString("\n")}")
+      logger.info(
+        s"DID whitelist:\n${didWhitelist.map(_.getValue).map("- " + _).mkString("\n")}"
+      )
     }
 
     // node client
     val configLoader = new ConfigLoader
-    val nodeConfig = configLoader.nodeClientConfig(globalConfig.getConfig("node"))
-    val nodeChannel = ManagedChannelBuilder.forAddress(nodeConfig.host, nodeConfig.port).usePlaintext().build()
+    val nodeConfig =
+      configLoader.nodeClientConfig(globalConfig.getConfig("node"))
+    val nodeChannel = ManagedChannelBuilder
+      .forAddress(nodeConfig.host, nodeConfig.port)
+      .usePlaintext()
+      .build()
     val node = NodeServiceGrpc.stub(nodeChannel)
 
     // connector repositories
-    val connectionsRepository = ConnectionsRepository.unsafe(txTraceIdLifted, connectorLogs)
-    val messagesRepository = MessagesRepository.unsafe(txTraceIdLifted, connectorLogs)
-    val requestNoncesRepository = RequestNoncesRepository.unsafe(txTraceIdLifted, connectorLogs)
-    val participantsRepository = ParticipantsRepository.unsafe[IOWithTraceIdContext, IO](txTraceIdLifted, connectorLogs)
+    val connectionsRepository =
+      ConnectionsRepository.unsafe(txTraceIdLifted, connectorLogs)
+    val messagesRepository =
+      MessagesRepository.unsafe(txTraceIdLifted, connectorLogs)
+    val requestNoncesRepository =
+      RequestNoncesRepository.unsafe(txTraceIdLifted, connectorLogs)
+    val participantsRepository = ParticipantsRepository
+      .unsafe[IOWithTraceIdContext, IO](txTraceIdLifted, connectorLogs)
 
     // authenticator
     val authenticator = new ConnectorAuthenticator(
@@ -104,11 +118,23 @@ class ConnectorApp(executionContext: ExecutionContext) { self =>
     messageNotificationService.start()
 
     // connector services
-    val connectionsService = ConnectionsService.unsafe(connectionsRepository, node, connectorLogs)
-    val messagesService = MessagesService.unsafe[IOWithTraceIdContext, IO](messagesRepository, connectorLogs)
+    val connectionsService =
+      ConnectionsService.unsafe(connectionsRepository, node, connectorLogs)
+    val messagesService = MessagesService.unsafe[IOWithTraceIdContext, IO](
+      messagesRepository,
+      connectorLogs
+    )
     val registrationService =
-      RegistrationService.unsafe[IOWithTraceIdContext, IO](participantsRepository, node, connectorLogs)
-    val contactConnectionService = new ContactConnectionService(connectionsService, authenticator, didWhitelist)(
+      RegistrationService.unsafe[IOWithTraceIdContext, IO](
+        participantsRepository,
+        node,
+        connectorLogs
+      )
+    val contactConnectionService = new ContactConnectionService(
+      connectionsService,
+      authenticator,
+      didWhitelist
+    )(
       executionContext
     )
     val connectorService = new ConnectorService(
@@ -123,38 +149,83 @@ class ConnectorApp(executionContext: ExecutionContext) { self =>
       executionContext
     )
 
-    val credentialViewsService = new CredentialViewsService(authenticator)(executionContext)
+    val credentialViewsService = new CredentialViewsService(authenticator)(
+      executionContext
+    )
 
     // interactive demo services
     val intDemoRepository = new IntDemoRepository(xa)
-    val connectorIntegration = new ConnectorIntegrationImpl(connectionsService, messagesService)(executionContext)
+    val connectorIntegration =
+      new ConnectorIntegrationImpl(connectionsService, messagesService)(
+        executionContext
+      )
     val idService =
-      new IdServiceImpl(connectorIntegration, intDemoRepository, schedulerPeriod = 1.second)(executionContext)
+      new IdServiceImpl(
+        connectorIntegration,
+        intDemoRepository,
+        schedulerPeriod = 1.second
+      )(executionContext)
     val degreeService =
-      new DegreeServiceImpl(connectorIntegration, intDemoRepository, schedulerPeriod = 1.second)(executionContext)
+      new DegreeServiceImpl(
+        connectorIntegration,
+        intDemoRepository,
+        schedulerPeriod = 1.second
+      )(executionContext)
     val employmentService =
-      new EmploymentServiceImpl(connectorIntegration, intDemoRepository, schedulerPeriod = 1.second)(executionContext)
+      new EmploymentServiceImpl(
+        connectorIntegration,
+        intDemoRepository,
+        schedulerPeriod = 1.second
+      )(executionContext)
     val insuranceService =
-      new InsuranceServiceImpl(connectorIntegration, intDemoRepository, schedulerPeriod = 1.second)(executionContext)
+      new InsuranceServiceImpl(
+        connectorIntegration,
+        intDemoRepository,
+        schedulerPeriod = 1.second
+      )(executionContext)
 
     logger.info("Starting server")
     server = ServerBuilder
       .forPort(ConnectorApp.port)
       .intercept(new GrpcAuthenticatorInterceptor)
-      .addService(_root_.grpc.health.v1.health.HealthGrpc.bindService(new HealthService, executionContext))
-      .addService(connector_api.ConnectorServiceGrpc.bindService(connectorService, executionContext))
-      .addService(CredentialViewsServiceGrpc.bindService(credentialViewsService, executionContext))
+      .addService(
+        _root_.grpc.health.v1.health.HealthGrpc
+          .bindService(new HealthService, executionContext)
+      )
+      .addService(
+        connector_api.ConnectorServiceGrpc.bindService(
+          connectorService,
+          executionContext
+        )
+      )
+      .addService(
+        CredentialViewsServiceGrpc.bindService(
+          credentialViewsService,
+          executionContext
+        )
+      )
       .addService(IDServiceGrpc.bindService(idService, executionContext))
-      .addService(DegreeServiceGrpc.bindService(degreeService, executionContext))
-      .addService(EmploymentServiceGrpc.bindService(employmentService, executionContext))
-      .addService(InsuranceServiceGrpc.bindService(insuranceService, executionContext))
-      .addService(ContactConnectionServiceGrpc.bindService(contactConnectionService, executionContext))
+      .addService(
+        DegreeServiceGrpc.bindService(degreeService, executionContext)
+      )
+      .addService(
+        EmploymentServiceGrpc.bindService(employmentService, executionContext)
+      )
+      .addService(
+        InsuranceServiceGrpc.bindService(insuranceService, executionContext)
+      )
+      .addService(
+        ContactConnectionServiceGrpc
+          .bindService(contactConnectionService, executionContext)
+      )
       .build()
       .start()
 
     logger.info("Server started, listening on " + ConnectorApp.port)
     sys.addShutdownHook {
-      System.err.println("*** shutting down gRPC server since JVM is shutting down")
+      System.err.println(
+        "*** shutting down gRPC server since JVM is shutting down"
+      )
       releaseXa.unsafeRunSync()
       self.stop()
       Await.result(Kamon.stop(), Duration.Inf)
@@ -179,7 +250,9 @@ class ConnectorApp(executionContext: ExecutionContext) { self =>
     }
   }
 
-  def applyDatabaseMigrations(databaseConfig: TransactorFactory.Config): Unit = {
+  def applyDatabaseMigrations(
+      databaseConfig: TransactorFactory.Config
+  ): Unit = {
     val appliedMigrations = SchemaMigrations.migrate(databaseConfig)
     if (appliedMigrations == 0) {
       logger.info("Database up to date")

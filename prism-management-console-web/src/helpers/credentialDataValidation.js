@@ -89,11 +89,9 @@ const validateHeaders = (inputHeaders, expectedHeaders) => {
   const { allExpectedHeaders } = expectedHeaders;
   const trimmedHeaders = trimLastEmptyElements(inputHeaders);
 
-  const headerErrors = _.eq(trimmedHeaders, allExpectedHeaders)
+  return _.eq(trimmedHeaders, allExpectedHeaders)
     ? [[]]
     : [generateInvalidHeadersError(trimmedHeaders, allExpectedHeaders)];
-
-  return headerErrors;
 };
 
 const trimLastEmptyElements = array => {
@@ -169,17 +167,14 @@ const validateCommonFields = (
         );
       }
 
+      const errorKey = isExternalID ? 'unexpectedExternalID' : 'valueDoesNotMatch';
+
       return recipients.some(
         ({ [key]: expectedValue, [EXTERNAL_ID_KEY]: expectedExternalID }) =>
           importedValue === expectedValue && importedExternalID === expectedExternalID
       )
         ? null
-        : generateCommonFieldError(
-            isExternalID ? 'unexpectedExternalID' : 'valueDoesNotMatch',
-            dataRow,
-            header,
-            allExpectedHeaders
-          );
+        : generateCommonFieldError(errorKey, dataRow, header, allExpectedHeaders);
     })
     .filter(Boolean);
 
@@ -211,7 +206,7 @@ const generateInvalidHeadersError = (input, allExpectedHeaders) =>
     .map((inputHeader, idx) =>
       allExpectedHeaders.includes(inputHeader)
         ? validateHeaderPosition(inputHeader, idx, allExpectedHeaders)
-        : generateExcessHeaderError(inputHeader, idx, allExpectedHeaders)
+        : generateExcessHeaderError(inputHeader, idx)
     )
     .filter(Boolean);
 
@@ -237,9 +232,7 @@ const validateCredentialFields = (
       .filter(Boolean)
   );
   const filteredNoErrors = specificFieldsValidations.filter(array => array.length);
-  const result = filteredNoErrors.flat();
-
-  return result;
+  return filteredNoErrors.flat();
 };
 
 const getValidationByName = validationName => {

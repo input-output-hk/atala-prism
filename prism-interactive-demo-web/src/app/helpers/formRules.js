@@ -47,11 +47,11 @@ export const passwordValidation = (value, cb, otherPass) => {
 };
 
 const validations = [
-  { name: 'number', regex: new RegExp('(?=.*[0-9])') }, // At least 1 number
-  { name: 'lowercase', regex: new RegExp('(?=.*[a-z])') }, // At least 1 lower case
-  { name: 'uppercase', regex: new RegExp('(?=.*[A-Z])') }, // At least 1 upper case
-  { name: 'minlength', regex: new RegExp('.{8,}') }, // At leas 8 characters
-  { name: 'nospaces', regex: new RegExp('^((?! ).)*$') } // No blank spaces
+  { name: 'number', regex: /\d/ }, // At least 1 number
+  { name: 'lowercase', regex: /[a-z]/ }, // At least 1 lower case
+  { name: 'uppercase', regex: /[A-Z]/ }, // At least 1 upper case
+  { name: 'minlength', regex: /.{8,}/ }, // At leas 8 characters
+  { name: 'nospaces', regex: /^((?! ).)*$/ } // No blank spaces
 ];
 
 const validatePassword = (value = '') =>
@@ -61,27 +61,30 @@ const validatePassword = (value = '') =>
   );
 
 const formatPasswordErrors = (errors, t) => {
-  const prefix = 'registration.password.invalidPassword.';
+  const prefix = 'registration.password.invalidPassword';
+  const initialValue = t(`${prefix}.initial`);
+  const and = t(`${prefix}.and`);
 
   return errors.reduce((accum, current, currentIndex) => {
     let link = '';
 
-    if (currentIndex < errors.length - 2) link = ', ';
-    else if (currentIndex < errors.length - 1) link = ` ${t(`${prefix}and`)} `;
+    if (currentIndex < errors.length - 2) link = ',';
+    else if (currentIndex < errors.length - 1) link = ` ${and}`;
     else if (currentIndex === errors.length - 1) link = '.';
 
-    return accum + t(`${prefix}${current}`) + link;
-  }, `${t(`${prefix}initial`)} `);
+    const currentError = t(`${prefix}.${current}`);
+
+    return `${accum} ${currentError}${link}`;
+  }, initialValue);
 };
 
 export const passwordFormatValidation = (value, cb, t) => {
-  // if (!value) cb();
   const errors = validatePassword(value);
   if (!errors.length) cb();
   else cb(formatPasswordErrors(errors, t));
 };
 
-const emailRegex = /^(([^\s"(),.:;<>@[\\\]]+(\.[^\s"(),.:;<>@[\\\]]+)*)|(".+"))@((\[(?:\d{1,3}\.){3}\d{1,3}])|(([\d-A-Za-z]+\.)+[A-Za-z]{2,}))$/;
+const emailRegex = /^\w+([.-]?\w+)*@\w+([.-]?\w+)*(\.\w{2,3})+$/;
 
 export const emailFormatValidation = (value, cb) => (emailRegex.test(value) ? cb() : cb('error'));
 

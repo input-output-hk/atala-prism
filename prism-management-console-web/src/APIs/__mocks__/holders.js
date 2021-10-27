@@ -43,5 +43,5 @@ export const getHolders = ({
 
 export const inviteHolder = ({ id }) => {
   Logger.info('Invited the user with the id: ', id);
-  return new Promise(resolve => resolve(200));
+  return Promise.resolve(200);
 };

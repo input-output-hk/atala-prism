@@ -13,8 +13,9 @@ trait CardanoDbSyncClient[F[_]] {
   def getLatestBlock: F[Either[BlockError.NoneAvailable.type, Block.Canonical]]
 }
 
-final class CardanoDbSyncClientImpl[F[_]](cardanoBlockRepository: CardanoBlockRepository[F])
-    extends CardanoDbSyncClient[F] {
+final class CardanoDbSyncClientImpl[F[_]](
+    cardanoBlockRepository: CardanoBlockRepository[F]
+) extends CardanoDbSyncClient[F] {
   def getFullBlock(blockNo: Int): F[Either[BlockError.NotFound, Block.Full]] =
     cardanoBlockRepository.getFullBlock(blockNo)
 
@@ -30,13 +31,13 @@ object CardanoDbSyncClient {
       logs: Logs[R, F]
   ): Resource[F, CardanoDbSyncClient[F]] = {
 
-    /**
-      * Custom transactor since CardanoDbSyncClient can use different DB
+    /** Custom transactor since CardanoDbSyncClient can use different DB
       */
     TransactorFactory
       .transactor[F](config.dbConfig)
       .map(transactor => {
-        val cardanoBlockRepository = CardanoBlockRepository.unsafe(transactor, logs)
+        val cardanoBlockRepository =
+          CardanoBlockRepository.unsafe(transactor, logs)
 
         new CardanoDbSyncClientImpl(cardanoBlockRepository)
       })

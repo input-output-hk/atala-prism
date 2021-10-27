@@ -11,8 +11,7 @@ import sttp.model.StatusCode
 
 object FakeCardanoWalletApiClient {
 
-  /**
-    * Sets up a CardanoWalletApiClient instance that will return a successful response for the given path and request.
+  /** Sets up a CardanoWalletApiClient instance that will return a successful response for the given path and request.
     */
   object Success {
     def apply[F[_]: Concurrent](
@@ -24,8 +23,7 @@ object FakeCardanoWalletApiClient {
     }
   }
 
-  /**
-    * Sets up a CardanoWalletApiClient instance that will return a fail response for the given path and request.
+  /** Sets up a CardanoWalletApiClient instance that will return a fail response for the given path and request.
     */
   object Fail {
     def apply[F[_]: Concurrent](
@@ -43,8 +41,7 @@ object FakeCardanoWalletApiClient {
     }
   }
 
-  /**
-    * Sets up a CardanoWalletApiClient instance that will return {@code 404 Not Found} errors for all requests.
+  /** Sets up a CardanoWalletApiClient instance that will return {@code 404 Not Found} errors for all requests.
     */
   object NotFound {
     def apply[F[_]: Concurrent](): CardanoWalletApiClient[F] = {

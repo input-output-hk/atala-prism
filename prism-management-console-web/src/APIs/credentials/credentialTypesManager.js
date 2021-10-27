@@ -3,8 +3,7 @@ import Logger from '../../helpers/Logger';
 import { GetCredentialTypesRequest, GetCredentialTypeRequest } from '../../protos/console_api_pb';
 import { adaptCredentialType } from '../helpers/credentialTypeHelpers';
 import hardcodedTemplateCategories from './mocks/hardcodedTemplateCategories';
-import { mockDelay } from '../../helpers/genericHelpers';
-import { VALIDATION_KEYS, MOCK_API_CALL_DELAY } from '../../helpers/constants';
+import { VALIDATION_KEYS } from '../../helpers/constants';
 
 async function getCredentialTypes() {
   Logger.info('getting credential types');
@@ -43,18 +42,16 @@ async function getCredentialTypeDetails(id) {
 // eslint-disable-next-line no-unused-vars
 async function createTemplate(_values) {
   // TODO: add implementation for creating credential types
-  await mockDelay(MOCK_API_CALL_DELAY);
   return Promise.resolve();
 }
 
-function getTemplateCategories() {
+async function getTemplateCategories() {
   return Promise.resolve(hardcodedTemplateCategories);
 }
 
 // eslint-disable-next-line no-unused-vars
-async function createCategory(_values) {
-  await mockDelay(MOCK_API_CALL_DELAY);
-  return Promise.resolve();
+async function createCategory(values) {
+  return Promise.resolve(values);
 }
 
 const mapCredentialTypeField = field => ({

@@ -3,11 +3,11 @@ import PropTypes from 'prop-types';
 import { useTranslation } from 'react-i18next';
 import {
   DESIGN_TEMPLATE,
-  SELECT_TEMPLATE_CATEGORY,
+  TEMPLATE_NAME_ICON_CATEGORY,
   TEMPLATE_CREATION_RESULT
 } from '../../../helpers/constants';
 import DesignTemplateStep from './DesignTemplateStep/DesignTemplateStep';
-import TemplateCategorySelectionStep from './CategoryStep/TemplateCategorySelector';
+import TemplateNameIconCategoryStep from './NameIconCategoryStep/TemplateNameIconCategoryStep';
 import SuccessBanner from '../../common/Molecules/SuccessPage/SuccessBanner';
 import { withRedirector } from '../../providers/withRedirector';
 import { templateCreationStepShape } from '../../../helpers/propShapes';
@@ -16,9 +16,6 @@ const TemplateCreationStep = ({ currentStep, redirector: { redirectToCredentialT
   const { t } = useTranslation();
 
   switch (currentStep) {
-    default:
-    case SELECT_TEMPLATE_CATEGORY:
-      return <TemplateCategorySelectionStep />;
     case DESIGN_TEMPLATE:
       return <DesignTemplateStep />;
     case TEMPLATE_CREATION_RESULT: {
@@ -31,11 +28,14 @@ const TemplateCreationStep = ({ currentStep, redirector: { redirectToCredentialT
         />
       );
     }
+    case TEMPLATE_NAME_ICON_CATEGORY:
+    default:
+      return <TemplateNameIconCategoryStep />;
   }
 };
 
 TemplateCreationStep.propTypes = {
-  currentStep: templateCreationStepShape,
+  currentStep: templateCreationStepShape.isRequired,
   redirector: PropTypes.shape({
     redirectToCredentialTemplates: PropTypes.func.isRequired
   }).isRequired

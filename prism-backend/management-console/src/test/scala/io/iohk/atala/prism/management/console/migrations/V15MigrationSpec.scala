@@ -33,7 +33,8 @@ class V15MigrationSpec extends PostgresMigrationSpec("V15") with BaseDAO {
 
   private def createIssuer(): Unit = {
     sql"""INSERT INTO participants (participant_id, name, did, created_at)
-         |VALUES ($issuerId, 'The Issuer', 'did:prism:theissuer', ${Instant.now})""".stripMargin.runUpdate()
+         |VALUES ($issuerId, 'The Issuer', 'did:prism:theissuer', ${Instant.now})""".stripMargin
+      .runUpdate()
   }
 
   private def createContact(): Unit = {
@@ -68,7 +69,8 @@ class V15MigrationSpec extends PostgresMigrationSpec("V15") with BaseDAO {
     sql"""INSERT INTO draft_credentials (credential_id, issuer_id, contact_id, credential_data,
          |    created_on, credential_issuance_contact_id, credential_type_id)
          |  VALUES ($credentialId, $issuerId, $contactId, $data,
-         |    $createdAt, $credentialIssuanceContactId, $credentialTypeId)""".stripMargin.runUpdate()
+         |    $createdAt, $credentialIssuanceContactId, $credentialTypeId)""".stripMargin
+      .runUpdate()
   }
 
   private def insertDraftCredentialWithCreatedAt(
@@ -79,14 +81,17 @@ class V15MigrationSpec extends PostgresMigrationSpec("V15") with BaseDAO {
     sql"""INSERT INTO draft_credentials (credential_id, issuer_id, contact_id, credential_data,
          |    created_at, credential_issuance_contact_id, credential_type_id)
          |  VALUES ($credentialId, $issuerId, $contactId, $data,
-         |    $createdAt, $credentialIssuanceContactId, $credentialTypeId)""".stripMargin.runUpdate()
+         |    $createdAt, $credentialIssuanceContactId, $credentialTypeId)""".stripMargin
+      .runUpdate()
   }
 
   private def getLastCreatedAt(credentialId: UUID): Instant =
-    sql"SELECT created_at FROM draft_credentials WHERE credential_id = $credentialId".runUnique[Instant]()
+    sql"SELECT created_at FROM draft_credentials WHERE credential_id = $credentialId"
+      .runUnique[Instant]()
 
   private def getLastCreatedOn(credentialId: UUID): Instant =
-    sql"SELECT created_on FROM draft_credentials WHERE credential_id = $credentialId".runUnique[Instant]()
+    sql"SELECT created_on FROM draft_credentials WHERE credential_id = $credentialId"
+      .runUnique[Instant]()
 
   test(
     beforeApply = {

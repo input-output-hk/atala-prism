@@ -9,9 +9,14 @@ import io.iohk.atala.prism.node.models.nodeState.DIDDataState
 import io.iohk.atala.prism.node.repositories.DIDDataRepository
 import tofu.higherKind.Mid
 
-private[repositories] final class DIDDataRepositoryMetrics[F[_]: TimeMeasureMetric: BracketThrow]
+private[repositories] final class DIDDataRepositoryMetrics[F[
+    _
+]: TimeMeasureMetric: BracketThrow]
     extends DIDDataRepository[Mid[F, *]] {
-  private lazy val findByDidTimer = TimeMeasureUtil.createDBQueryTimer("DIDDataRepository", "findByDid")
-  override def findByDid(did: CanonicalPrismDid): Mid[F, Either[NodeError, Option[DIDDataState]]] =
+  private lazy val findByDidTimer =
+    TimeMeasureUtil.createDBQueryTimer("DIDDataRepository", "findByDid")
+  override def findByDid(
+      did: CanonicalPrismDid
+  ): Mid[F, Either[NodeError, Option[DIDDataState]]] =
     _.measureOperationTime(findByDidTimer)
 }

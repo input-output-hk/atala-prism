@@ -43,14 +43,21 @@ jobs:
             return result.repository.packages.nodes[0].versions.nodes[0].version
 
       - name: Upgrade SDK version
-        run: sed -i -E "s/val prismSdk = \"[^\"]+\"/val prismSdk = "$SDK_VERSION"/g" prism-backend/project/Dependencies.scala
+        run: sed -i -E "s/val prismSdk = \"[^\"]+\"/val prismSdk = \"$SDK_VERSION\"/g" prism-backend/project/Dependencies.scala
         env:
           SDK_VERSION: ${{ steps.sdk-version.outputs.result }}
+
+      - uses: crazy-max/ghaction-import-gpg@v3
+        with:
+          gpg-private-key: ${{ secrets.GPG_PRIVATE_KEY }}
+          git-user-signingkey: true
+          git-commit-gpgsign: true
 
       - name: Create prism-backend pull request
         uses: peter-evans/create-pull-request@v3
         with:
-          token: ${{ secrets.GITHUB_TOKEN }}
+          token: ${{ secrets.ATALA_GITHUB_TOKEN }}
+          committer: Atala Dev <atala.dev@iohk.io>
           base: master
           branch: bump-sdk-version-${{ steps.sdk-version.outputs.result }}
           delete-branch: true

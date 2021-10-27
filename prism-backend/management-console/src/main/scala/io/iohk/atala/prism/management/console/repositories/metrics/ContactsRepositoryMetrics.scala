@@ -15,14 +15,24 @@ import java.time.Instant
 final class ContactsRepositoryMetrics[F[_]: TimeMeasureMetric: BracketThrow] extends ContactsRepository[Mid[F, *]] {
 
   private val repoName = "ContactsRepository"
-  private lazy val createTimer = TimeMeasureUtil.createDBQueryTimer(repoName, "create")
-  private lazy val createBatchTimer = TimeMeasureUtil.createDBQueryTimer(repoName, "createBatch")
-  private lazy val updateContactTimer = TimeMeasureUtil.createDBQueryTimer(repoName, "updateContact")
-  private lazy val findByContactIdTimer = TimeMeasureUtil.createDBQueryTimer(repoName, "findByContactId")
-  private lazy val findByExternalIdTimer = TimeMeasureUtil.createDBQueryTimer(repoName, "findByExternalId")
-  private lazy val findContactsTimer = TimeMeasureUtil.createDBQueryTimer(repoName, "findContacts")
-  private lazy val getByTimer = TimeMeasureUtil.createDBQueryTimer(repoName, "getBy")
-  private lazy val deleteTimer = TimeMeasureUtil.createDBQueryTimer(repoName, "delete")
+  private lazy val createTimer =
+    TimeMeasureUtil.createDBQueryTimer(repoName, "create")
+  private lazy val createBatchTimer =
+    TimeMeasureUtil.createDBQueryTimer(repoName, "createBatch")
+  private lazy val updateContactTimer =
+    TimeMeasureUtil.createDBQueryTimer(repoName, "updateContact")
+  private lazy val findByContactIdTimer =
+    TimeMeasureUtil.createDBQueryTimer(repoName, "findByContactId")
+  private lazy val findByExternalIdTimer =
+    TimeMeasureUtil.createDBQueryTimer(repoName, "findByExternalId")
+  private lazy val findByTokenTimer =
+    TimeMeasureUtil.createDBQueryTimer(repoName, "findByToken")
+  private lazy val findContactsTimer =
+    TimeMeasureUtil.createDBQueryTimer(repoName, "findContacts")
+  private lazy val getByTimer =
+    TimeMeasureUtil.createDBQueryTimer(repoName, "getBy")
+  private lazy val deleteTimer =
+    TimeMeasureUtil.createDBQueryTimer(repoName, "delete")
 
   override def create(
       participantId: ParticipantId,
@@ -36,9 +46,13 @@ final class ContactsRepositoryMetrics[F[_]: TimeMeasureMetric: BracketThrow] ext
       institutionId: ParticipantId,
       request: CreateContact.Batch,
       connectionTokens: List[ConnectionToken]
-  ): Mid[F, Either[ManagementConsoleError, Int]] = _.measureOperationTime(createBatchTimer)
+  ): Mid[F, Either[ManagementConsoleError, Int]] =
+    _.measureOperationTime(createBatchTimer)
 
-  override def updateContact(institutionId: ParticipantId, request: UpdateContact): Mid[F, Unit] =
+  override def updateContact(
+      institutionId: ParticipantId,
+      request: UpdateContact
+  ): Mid[F, Unit] =
     _.measureOperationTime(updateContactTimer)
 
   override def find(
@@ -53,6 +67,12 @@ final class ContactsRepositoryMetrics[F[_]: TimeMeasureMetric: BracketThrow] ext
   ): Mid[F, Option[Contact]] =
     _.measureOperationTime(findByExternalIdTimer)
 
+  override def findByToken(
+      institutionId: ParticipantId,
+      connectionToken: ConnectionToken
+  ): Mid[F, Option[Contact]] =
+    _.measureOperationTime(findByTokenTimer)
+
   override def findContacts(
       institutionId: ParticipantId,
       contactIds: List[Contact.Id]
@@ -63,11 +83,13 @@ final class ContactsRepositoryMetrics[F[_]: TimeMeasureMetric: BracketThrow] ext
       createdBy: ParticipantId,
       constraints: PaginatedQuery,
       ignoreFilterLimit: Boolean
-  ): Mid[F, List[Contact.WithCredentialCounts]] = _.measureOperationTime(getByTimer)
+  ): Mid[F, List[Contact.WithCredentialCounts]] =
+    _.measureOperationTime(getByTimer)
 
   override def delete(
       institutionId: ParticipantId,
       contactId: Contact.Id,
       deleteCredentials: Boolean
-  ): Mid[F, Either[ManagementConsoleError, Unit]] = _.measureOperationTime(deleteTimer)
+  ): Mid[F, Either[ManagementConsoleError, Unit]] =
+    _.measureOperationTime(deleteTimer)
 }

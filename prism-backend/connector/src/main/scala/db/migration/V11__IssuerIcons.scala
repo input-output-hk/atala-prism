@@ -1,9 +1,9 @@
 package db.migration
 
 import java.util.{Base64, UUID}
-
-import io.iohk.atala.prism.utils.Using.using
 import org.flywaydb.core.api.migration.{BaseJavaMigration, Context}
+
+import scala.util.Using
 
 class V11__IssuerIcons extends BaseJavaMigration {
 
@@ -22,7 +22,11 @@ class V11__IssuerIcons extends BaseJavaMigration {
 
   override def migrate(context: Context): Unit = {
     def setLogo(id: UUID, logo: Array[Byte]) = {
-      using(context.getConnection.prepareStatement("UPDATE participants SET logo = ? WHERE id = ?")) { statement =>
+      Using(
+        context.getConnection.prepareStatement(
+          "UPDATE participants SET logo = ? WHERE id = ?"
+        )
+      ) { statement =>
         statement.setBytes(1, logo)
         statement.setObject(2, id)
         statement.execute()

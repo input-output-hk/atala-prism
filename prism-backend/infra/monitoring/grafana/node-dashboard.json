@@ -16,7 +16,7 @@
   "gnetId": null,
   "graphTooltip": 0,
   "id": 12,
-  "iteration": 1632291728603,
+  "iteration": 1634633318699,
   "links": [],
   "panels": [
     {
@@ -1297,7 +1297,7 @@
       "dashLength": 10,
       "dashes": false,
       "datasource": null,
-      "description": "Just total number of current requests - total number of requests by offset",
+      "description": "Just rate the number of requests",
       "fieldConfig": {
         "defaults": {},
         "overrides": []
@@ -1340,7 +1340,7 @@
       "targets": [
         {
           "exemplar": true,
-          "expr": "(request_time_seconds_count{job=~\".*$Env-$ComponentName.*\", service=~\"$Service\", method=~\"$ServiceMethod\"} - (request_time_seconds_count{job=~\".*$Env-$ComponentName.*\", service=~\"$Service\", method=~\"$ServiceMethod\"} offset $__interval)) > 0",
+          "expr": "rate(request_time_seconds_count{job=~\".*$Env-$ComponentName.*\", service=~\"$Service\", method=~\"$ServiceMethod\"}[$__rate_interval])",
           "interval": "",
           "legendFormat": "Service:[{{service}}] Method:[{{method}}] Job:[{{job}}]",
           "refId": "A"
@@ -1350,7 +1350,7 @@
       "timeFrom": null,
       "timeRegions": [],
       "timeShift": null,
-      "title": "Number of requests",
+      "title": "Rate of requests",
       "tooltip": {
         "shared": true,
         "sort": 0,
@@ -1388,55 +1388,53 @@
       }
     },
     {
+      "aliasColors": {},
+      "bars": false,
+      "dashLength": 10,
+      "dashes": false,
       "datasource": null,
       "description": "Wallet available funds",
       "fieldConfig": {
         "defaults": {
-          "color": {
-            "mode": "thresholds"
-          },
-          "mappings": [],
-          "thresholds": {
-            "mode": "absolute",
-            "steps": [
-              {
-                "color": "green",
-                "value": null
-              },
-              {
-                "color": "red",
-                "value": 80
-              }
-            ]
-          },
           "unit": "lovelace"
         },
         "overrides": []
       },
+      "fill": 1,
+      "fillGradient": 0,
       "gridPos": {
         "h": 9,
         "w": 12,
         "x": 0,
         "y": 62
       },
+      "hiddenSeries": false,
       "id": 27,
       "interval": null,
-      "options": {
-        "colorMode": "value",
-        "graphMode": "area",
-        "justifyMode": "auto",
-        "orientation": "auto",
-        "reduceOptions": {
-          "calcs": [
-            "lastNotNull"
-          ],
-          "fields": "",
-          "values": false
-        },
-        "text": {},
-        "textMode": "auto"
+      "legend": {
+        "avg": false,
+        "current": false,
+        "max": false,
+        "min": false,
+        "show": true,
+        "total": false,
+        "values": false
       },
+      "lines": true,
+      "linewidth": 1,
+      "nullPointMode": "null",
+      "options": {
+        "alertThreshold": true
+      },
+      "percentage": false,
       "pluginVersion": "7.5.4",
+      "pointradius": 2,
+      "points": false,
+      "renderer": "flot",
+      "seriesOverrides": [],
+      "spaceLength": 10,
+      "stack": false,
+      "steppedLine": false,
       "targets": [
         {
           "exemplar": true,
@@ -1447,10 +1445,46 @@
           "refId": "A"
         }
       ],
+      "thresholds": [],
       "timeFrom": null,
+      "timeRegions": [],
       "timeShift": null,
       "title": "Wallet available funds",
-      "type": "stat"
+      "tooltip": {
+        "shared": true,
+        "sort": 0,
+        "value_type": "individual"
+      },
+      "type": "graph",
+      "xaxis": {
+        "buckets": null,
+        "mode": "time",
+        "name": null,
+        "show": true,
+        "values": []
+      },
+      "yaxes": [
+        {
+          "format": "lovelace",
+          "label": null,
+          "logBase": 1,
+          "max": null,
+          "min": null,
+          "show": true
+        },
+        {
+          "format": "short",
+          "label": null,
+          "logBase": 1,
+          "max": null,
+          "min": null,
+          "show": true
+        }
+      ],
+      "yaxis": {
+        "align": false,
+        "alignLevel": null
+      }
     },
     {
       "aliasColors": {},
@@ -1563,7 +1597,7 @@
       "dashLength": 10,
       "dashes": false,
       "datasource": null,
-      "description": "Counters of received Atala operations by the prism node",
+      "description": "Rate of received Atala operations by the prism node",
       "fieldConfig": {
         "defaults": {},
         "overrides": []
@@ -1578,6 +1612,7 @@
       },
       "hiddenSeries": false,
       "id": 33,
+      "interval": "30s",
       "legend": {
         "avg": false,
         "current": false,
@@ -1605,7 +1640,7 @@
       "targets": [
         {
           "exemplar": true,
-          "expr": "received_atala_operations_total{job=~\".*$Env-$ComponentName.*\"}",
+          "expr": "rate(received_atala_operations_total{job=~\".*$Env-$ComponentName.*\"}[$__rate_interval])",
           "interval": "",
           "legendFormat": "Operation:[{{atala_operation_type}}] Update Suboperation:[{{update_did_sub_operation}}] Job:[{{job}}] Instance:[{{instance}}]",
           "refId": "A"
@@ -1658,7 +1693,7 @@
       "dashLength": 10,
       "dashes": false,
       "datasource": null,
-      "description": "The counter with the number of errors caused by storing Atala objects",
+      "description": "The rate of the number of errors caused by storing Atala objects",
       "fieldConfig": {
         "defaults": {},
         "overrides": []
@@ -1700,7 +1735,7 @@
       "targets": [
         {
           "exemplar": true,
-          "expr": "failed_to_store_atala_objects_total{job=~\".*$Env-$ComponentName.*\"}",
+          "expr": "rate(failed_to_store_atala_objects_total{job=~\".*$Env-$ComponentName.*\"}[$__rate_interval])",
           "interval": "",
           "legendFormat": "Error:[{{node_error_tag}}] Operation:[{{atala_operation_type}}] Update Suboperation:[{{update_did_sub_operation}}] Job:[{{job}}] Instance:[{{instance}}]",
           "refId": "A"
@@ -1753,7 +1788,7 @@
       "dashLength": 10,
       "dashes": false,
       "datasource": null,
-      "description": "The number of processed Atala blocks opeartions",
+      "description": "The rate of processed Atala blocks operations",
       "fieldConfig": {
         "defaults": {},
         "overrides": []
@@ -1768,6 +1803,7 @@
       },
       "hiddenSeries": false,
       "id": 37,
+      "interval": "30s",
       "legend": {
         "avg": false,
         "current": false,
@@ -1795,7 +1831,7 @@
       "targets": [
         {
           "exemplar": true,
-          "expr": "processed_atala_block_operations_total{job=~\".*$Env-$ComponentName.*\"}",
+          "expr": "rate(processed_atala_block_operations_total{job=~\".*$Env-$ComponentName.*\"}[$__rate_interval])",
           "interval": "",
           "legendFormat": "Operation:[{{atala_operation_type}}] Job:[{{job}}] Instance:[{{instance}}]",
           "refId": "A"
@@ -1848,7 +1884,7 @@
       "dashLength": 10,
       "dashes": false,
       "datasource": null,
-      "description": "The number of failed to process Atala block operations",
+      "description": "The rate of failed to process Atala block operations",
       "fieldConfig": {
         "defaults": {},
         "overrides": []
@@ -1890,7 +1926,7 @@
       "targets": [
         {
           "exemplar": true,
-          "expr": "failed_to_process_atala_block_operations_total{job=~\".*$Env-$ComponentName.*\"}",
+          "expr": "rate(failed_to_process_atala_block_operations_total{job=~\".*$Env-$ComponentName.*\"}[$__rate_interval])",
           "interval": "",
           "legendFormat": "Operation:[{{atala_operation_type}}] State error:[{{state_error}}] Job:[{{job}}] Instance:[{{instance}}]",
           "refId": "A"
@@ -2140,5 +2176,5 @@
   "timezone": "",
   "title": "Node",
   "uid": "5CpJH5W7k",
-  "version": 12
+  "version": 16
 }

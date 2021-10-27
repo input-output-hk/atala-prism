@@ -1,4 +1,5 @@
 import React from 'react';
+import { PropTypes } from 'prop-types';
 import { Select } from 'antd';
 import { useTranslation } from 'react-i18next';
 import { DownOutlined } from '@ant-design/icons';
@@ -9,7 +10,7 @@ import { useTemplateStore, useTemplateUiState } from '../../../../hooks/useTempl
 
 const ENABLED_STATE = 1;
 
-const TemplateFilters = observer(() => {
+const TemplateFilters = observer(({ showDateFilter }) => {
   const { t } = useTranslation();
   const { Option } = Select;
 
@@ -35,16 +36,26 @@ const TemplateFilters = observer(() => {
           </Option>
         ))}
       </Select>
-      <CustomInputGroup prefixIcon="calendar">
-        <CustomDatePicker
-          value={lastEditedFilter}
-          placeholder={t('templates.table.columns.lastEdited')}
-          suffixIcon={<DownOutlined />}
-          onChange={value => setFilterValue('lastEditedFilter', value)}
-        />
-      </CustomInputGroup>
+      {showDateFilter && (
+        <CustomInputGroup prefixIcon="calendar">
+          <CustomDatePicker
+            value={lastEditedFilter}
+            placeholder={t('templates.table.columns.lastEdited')}
+            suffixIcon={<DownOutlined />}
+            onChange={value => setFilterValue('lastEditedFilter', value)}
+          />
+        </CustomInputGroup>
+      )}
     </div>
   );
 });
+
+TemplateFilters.defaultProps = {
+  showDateFilter: true
+};
+
+TemplateFilters.propTypes = {
+  showDateFilter: PropTypes.bool
+};
 
 export default TemplateFilters;

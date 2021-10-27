@@ -1,9 +1,9 @@
 package io.iohk.atala.prism.node.cardano.wallet
 
-import cats.{Applicative, Comonad, Functor}
 import cats.effect.{Concurrent, ContextShift, Resource}
 import cats.syntax.comonad._
 import cats.syntax.functor._
+import cats.{Applicative, Comonad, Functor}
 import derevo.derive
 import derevo.tagless.applyK
 import io.iohk.atala.prism.metrics.TimeMeasureMetric
@@ -18,23 +18,21 @@ import tofu.logging.derivation.loggable
 import tofu.logging.{DictLoggable, LogRenderer, Logs, ServiceLogging}
 import tofu.syntax.monoid.TofuSemigroupOps
 
-/**
-  * Client for the Cardano Wallet API.
+/** Client for the Cardano Wallet API.
   *
-  * <p>The client has been trimmed down to only the methods needed. See
-  * <a href="https://input-output-hk.github.io/cardano-wallet/api/edge">Cardano Wallet API</a>
-  * or its
-  * <a href="https://github.com/input-output-hk/cardano-wallet/blob/master/specifications/api/swagger.yaml">spec</a>
-  * for the complete API.
+  * <p>The client has been trimmed down to only the methods needed. See <a
+  * href="https://input-output-hk.github.io/cardano-wallet/api/edge">Cardano Wallet API</a> or its <a
+  * href="https://github.com/input-output-hk/cardano-wallet/blob/master/specifications/api/swagger.yaml">spec</a> for
+  * the complete API.
   */
 @derive(applyK)
 trait CardanoWalletApiClient[F[_]] {
   import CardanoWalletApiClient._
 
-  /**
-    * Estimate the fee for the given transaction details.
+  /** Estimate the fee for the given transaction details.
     *
-    * @see https://input-output-hk.github.io/cardano-wallet/api/edge/#operation/postTransactionFee
+    * @see
+    *   https://input-output-hk.github.io/cardano-wallet/api/edge/#operation/postTransactionFee
     */
   def estimateTransactionFee(
       walletId: WalletId,
@@ -42,10 +40,10 @@ trait CardanoWalletApiClient[F[_]] {
       metadata: Option[TransactionMetadata]
   ): F[Result[EstimatedFee]]
 
-  /**
-    * Post a new transaction and return its ID.
+  /** Post a new transaction and return its ID.
     *
-    * @see https://input-output-hk.github.io/cardano-wallet/api/edge/#operation/postTransaction
+    * @see
+    *   https://input-output-hk.github.io/cardano-wallet/api/edge/#operation/postTransaction
     */
   def postTransaction(
       walletId: WalletId,
@@ -54,27 +52,27 @@ trait CardanoWalletApiClient[F[_]] {
       passphrase: String
   ): F[Result[TransactionId]]
 
-  /**
-    * Get the details of the given transaction.
+  /** Get the details of the given transaction.
     *
-    * @see https://input-output-hk.github.io/cardano-wallet/api/edge/#operation/getTransaction
+    * @see
+    *   https://input-output-hk.github.io/cardano-wallet/api/edge/#operation/getTransaction
     */
   def getTransaction(walletId: WalletId, transactionId: TransactionId): F[Result[TransactionDetails]]
 
-  /**
-    * Forget pending transaction. Importantly, a transaction, when sent, cannot be cancelled.
-    * One can only request forgetting about it in order to try spending (concurrently) the same UTxO in another transaction.
+  /** Forget pending transaction. Importantly, a transaction, when sent, cannot be cancelled. One can only request
+    * forgetting about it in order to try spending (concurrently) the same UTxO in another transaction.
     *
     * <p>Note the transaction may still show up later in a block.
     *
-    * @see https://input-output-hk.github.io/cardano-wallet/api/edge/#operation/deleteTransaction
+    * @see
+    *   https://input-output-hk.github.io/cardano-wallet/api/edge/#operation/deleteTransaction
     */
   def deleteTransaction(walletId: WalletId, transactionId: TransactionId): F[Result[Unit]]
 
-  /**
-    * Get detailed information about the given wallet.
+  /** Get detailed information about the given wallet.
     *
-    * @see https://input-output-hk.github.io/cardano-wallet/api/edge/#operation/getWallet
+    * @see
+    *   https://input-output-hk.github.io/cardano-wallet/api/edge/#operation/getWallet
     */
   def getWallet(walletId: WalletId): F[Result[WalletDetails]]
 }
@@ -86,18 +84,16 @@ object CardanoWalletApiClient {
   def make[F[_]: TimeMeasureMetric: Concurrent: ContextShift, I[_]: Functor](
       config: Config,
       logs: Logs[I, F]
-  ): I[F[CardanoWalletApiClient[F]]] = {
-    for {
-      logs <- logs.service[CardanoWalletApiClient[F]]
-    } yield {
-      implicit val implicitLogs: ServiceLogging[F, CardanoWalletApiClient[F]] = logs
-      ApiClient.defaultBackend.use { backend =>
-        val logging: CardanoWalletApiClient[Mid[F, *]] = new CardanoWalletApiClientLogs[F]
-        val metrics: CardanoWalletApiClient[Mid[F, *]] = new CardanoWalletApiClientMetrics[F]
-        val client: CardanoWalletApiClient[F] = new ApiClient(config, backend)
-        val mid = metrics |+| logging
-        Applicative[F].pure(mid attach client)
-      }
+  ): I[F[CardanoWalletApiClient[F]]] = for {
+    logs <- logs.service[CardanoWalletApiClient[F]]
+  } yield {
+    implicit val implicitLogs: ServiceLogging[F, CardanoWalletApiClient[F]] = logs
+    ApiClient.defaultBackend.use { backend =>
+      val logging: CardanoWalletApiClient[Mid[F, *]] = new CardanoWalletApiClientLogs[F]
+      val metrics: CardanoWalletApiClient[Mid[F, *]] = new CardanoWalletApiClientMetrics[F]
+      val client: CardanoWalletApiClient[F] = new ApiClient(config, backend)
+      val mid = metrics |+| logging
+      Applicative[F].pure(mid attach client)
     }
   }
 

@@ -17,12 +17,15 @@ import tofu.higherKind.Mid
 
 import java.time.Duration
 
-private[repositories] final class AtalaObjectsTransactionsRepositoryMetrics[F[_]: TimeMeasureMetric: BracketThrow]
+private[repositories] final class AtalaObjectsTransactionsRepositoryMetrics[F[
+    _
+]: TimeMeasureMetric: BracketThrow]
     extends AtalaObjectsTransactionsRepository[Mid[F, *]] {
 
   private val repoName = "AtalaObjectsTransactionsRepository"
 
-  private lazy val retrieveObjectsTimer = TimeMeasureUtil.createDBQueryTimer(repoName, "retrieveObjects")
+  private lazy val retrieveObjectsTimer =
+    TimeMeasureUtil.createDBQueryTimer(repoName, "retrieveObjects")
   private lazy val getOldPendingTransactionsTimer =
     TimeMeasureUtil.createDBQueryTimer(repoName, "getOldPendingTransactions")
 
@@ -33,7 +36,10 @@ private[repositories] final class AtalaObjectsTransactionsRepositoryMetrics[F[_]
     TimeMeasureUtil.createDBQueryTimer(repoName, "updateSubmissionStatus")
 
   private lazy val updateSubmissionStatusIfExistsTimer =
-    TimeMeasureUtil.createDBQueryTimer(repoName, "updateSubmissionStatusIfExists")
+    TimeMeasureUtil.createDBQueryTimer(
+      repoName,
+      "updateSubmissionStatusIfExists"
+    )
 
   private lazy val storeTransactionSubmissionTimer =
     TimeMeasureUtil.createDBQueryTimer(repoName, "storeTransactionSubmission")
@@ -41,7 +47,9 @@ private[repositories] final class AtalaObjectsTransactionsRepositoryMetrics[F[_]
   private lazy val setObjectTransactionDetailsTimer =
     TimeMeasureUtil.createDBQueryTimer(repoName, "setObjectTransactionDetails")
 
-  def retrieveObjects(transactions: List[AtalaObjectTransactionSubmission]): Mid[F, List[Option[AtalaObjectInfo]]] =
+  def retrieveObjects(
+      transactions: List[AtalaObjectTransactionSubmission]
+  ): Mid[F, List[Option[AtalaObjectInfo]]] =
     _.measureOperationTime(retrieveObjectsTimer)
 
   def getOldPendingTransactions(
@@ -63,7 +71,8 @@ private[repositories] final class AtalaObjectsTransactionsRepositoryMetrics[F[_]
       ledger: Ledger,
       transactionId: TransactionId,
       newSubmissionStatus: AtalaObjectTransactionSubmissionStatus
-  ): Mid[F, Either[NodeError, Unit]] = _.measureOperationTime(updateSubmissionStatusIfExistsTimer)
+  ): Mid[F, Either[NodeError, Unit]] =
+    _.measureOperationTime(updateSubmissionStatusIfExistsTimer)
 
   def storeTransactionSubmission(
       atalaObjectInfo: AtalaObjectInfo,
@@ -71,6 +80,8 @@ private[repositories] final class AtalaObjectsTransactionsRepositoryMetrics[F[_]
   ): Mid[F, Either[NodeError, AtalaObjectTransactionSubmission]] =
     _.measureOperationTime(storeTransactionSubmissionTimer)
 
-  def setObjectTransactionDetails(notification: AtalaObjectNotification): Mid[F, Option[AtalaObjectInfo]] =
+  def setObjectTransactionDetails(
+      notification: AtalaObjectNotification
+  ): Mid[F, Option[AtalaObjectInfo]] =
     _.measureOperationTime(setObjectTransactionDetailsTimer)
 }

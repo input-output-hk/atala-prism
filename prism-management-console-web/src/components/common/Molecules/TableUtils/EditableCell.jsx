@@ -82,13 +82,12 @@ const EditableCell = ({
   const errorToShow = getError();
 
   const getElement = () => {
-    switch (type) {
-      case 'date':
-        return <DatePicker ref={inputRef} onPressEnter={save} onBlur={save} onChange={save} />;
-      default:
-        return <Input ref={inputRef} onPressEnter={save} onBlur={save} />;
-    }
+    if (type === 'date')
+      return <DatePicker ref={inputRef} onPressEnter={save} onBlur={save} onChange={save} />;
+    return <Input ref={inputRef} onPressEnter={save} onBlur={save} />;
   };
+
+  const validateStatus = errorToShow ? 'error' : null;
 
   return (
     <td {...restProps}>
@@ -97,7 +96,7 @@ const EditableCell = ({
           initialValue={savedData}
           rules={getFieldRules}
           validateFirst
-          validateStatus={errorToShow ? 'error' : null}
+          validateStatus={validateStatus}
           hasFeedback
           help={errorToShow}
           name={dataIndex}

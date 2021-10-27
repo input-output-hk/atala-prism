@@ -131,7 +131,7 @@ object ConnectorClient {
         count: Int
     ): F[Seq[ConnectionToken]] = {
       val metadata = header.toMetadata
-      val newStub = MetadataUtils.attachHeaders(connectorService, metadata)
+      val newStub = connectorService.withInterceptors(MetadataUtils.newAttachHeadersInterceptor(metadata))
 
       ex.deferFuture(
         newStub
@@ -145,7 +145,7 @@ object ConnectorClient {
         header: GrpcAuthenticationHeader.DIDBased
     ): F[SendMessagesResponse] = {
       val metadata = header.toMetadata
-      val newStub = MetadataUtils.attachHeaders(connectorService, metadata)
+      val newStub = connectorService.withInterceptors(MetadataUtils.newAttachHeadersInterceptor(metadata))
 
       ex.deferFuture(newStub.sendMessages(request))
     }
@@ -155,7 +155,7 @@ object ConnectorClient {
         .withConnectionTokens(tokens.map(_.token))
       val header = requestSigner(request)
       val metadata = header.toMetadata
-      val newStub = MetadataUtils.attachHeaders(contactConnectionService, metadata)
+      val newStub = contactConnectionService.withInterceptors(MetadataUtils.newAttachHeadersInterceptor(metadata))
 
       ex.deferFuture(
         newStub

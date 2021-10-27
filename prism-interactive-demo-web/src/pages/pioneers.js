@@ -1,18 +1,24 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { graphql, Link } from 'gatsby';
+import firebase from 'gatsby-plugin-firebase';
 import logo from '../../static/images/logo-pioneer.svg';
 import pioneers from '../images/pioneers.svg';
 import triangle from '../../static/images/triangle.svg';
 import triangleWhite from '../../static/images/triangleWhite.svg';
 import Collapsable from '../components/collapsable/collapsable';
 import CustomButton from '../components/customButton/CustomButton';
-import PionnersFooter from '../components/pioneersFooter/footer';
+import PionnersFooter from '../components/pioneersFooter/PioneersFooter';
 import SEO from '../components/seo/seo';
+import { PIONEERS_EVENT } from '../helpers/constants';
 
 import './pioneers.scss';
 
 const Pioneers = ({ location }) => {
   const backTo = location && location.state && location.state.fromResources ? '/resources' : '/';
+
+  useEffect(() => {
+    firebase.analytics().logEvent(PIONEERS_EVENT);
+  }, []);
 
   return (
     <div className="ContainerPioneers">
@@ -54,8 +60,8 @@ const Pioneers = ({ location }) => {
             <div id="registerInterest" className="WhiteBox">
               <div className="Container">
                 <h2>Register your interest</h2>
-                <p>After clicking Register, you will be asked to answer some questions.</p>
-                <p>We will be in touch in due course.</p>
+                <p>The pioneers for the first cohort have been selected.</p>
+                <p>You can still register your interest for future cohorts.</p>
                 <a
                   href="https://input-output.typeform.com/to/dhnOj4gT"
                   target="_blank"

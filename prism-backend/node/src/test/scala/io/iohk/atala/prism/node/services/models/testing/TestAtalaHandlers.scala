@@ -8,9 +8,12 @@ import scala.concurrent.Future
 
 class TestAtalaHandlers {
 
-  val receivedNotifications: mutable.Buffer[AtalaObjectNotification] = mutable.ArrayBuffer()
+  val receivedNotifications: mutable.Buffer[AtalaObjectNotification] =
+    mutable.ArrayBuffer()
 
-  def asAtalaObjectHandler(notification: AtalaObjectNotification): Future[Unit] = {
+  def asAtalaObjectHandler(
+      notification: AtalaObjectNotification
+  ): Future[Unit] = {
     receivedNotifications += notification
     Future.unit
   }

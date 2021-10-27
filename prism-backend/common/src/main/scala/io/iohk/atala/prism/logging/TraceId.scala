@@ -15,9 +15,12 @@ final case class TraceId(traceId: String) extends AnyVal
 object TraceId {
   type IOWithTraceIdContext[T] = ReaderT[IO, TraceId, T]
 
-  def liftToIOWithTraceId: IO ~> IOWithTraceIdContext = λ[IO ~> IOWithTraceIdContext](i => ReaderT.liftF(i))
+  def liftToIOWithTraceId: IO ~> IOWithTraceIdContext =
+    λ[IO ~> IOWithTraceIdContext](i => ReaderT.liftF(i))
 
-  def unLiftIOWithTraceId(traceId: TraceId = generateYOLO): IOWithTraceIdContext ~> IO =
+  def unLiftIOWithTraceId(
+      traceId: TraceId = generateYOLO
+  ): IOWithTraceIdContext ~> IO =
     λ[IOWithTraceIdContext ~> IO](_.run(traceId))
 
   def generateYOLO: TraceId = TraceId(UUID.randomUUID().toString)

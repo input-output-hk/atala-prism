@@ -14,7 +14,9 @@ import org.scalatest.concurrent.ScalaFutures.convertScalaFuture
 
 class DIDUtilsSpec extends AnyWordSpec with Matchers {
   val masterKeys: ECKeyPair = EC.generateKeyPair()
-  val masterEcKeyData: ECKeyData = protoECKeyDataFromPublicKey(masterKeys.getPublicKey)
+  val masterEcKeyData: ECKeyData = protoECKeyDataFromPublicKey(
+    masterKeys.getPublicKey
+  )
   val masterEcKeyDataPublicKey = node_models
     .PublicKey(
       "master",
@@ -25,7 +27,8 @@ class DIDUtilsSpec extends AnyWordSpec with Matchers {
       None,
       node_models.PublicKey.KeyData.EcKeyData(masterEcKeyData)
     )
-  val masterCompressedEcKeyData: CompressedECKeyData = protoCompressedECKeyDataFromPublicKey(masterKeys.getPublicKey)
+  val masterCompressedEcKeyData: CompressedECKeyData =
+    protoCompressedECKeyDataFromPublicKey(masterKeys.getPublicKey)
   val masterCompressedEcKeyDataPublicKey = node_models
     .PublicKey(
       "master",
@@ -34,7 +37,9 @@ class DIDUtilsSpec extends AnyWordSpec with Matchers {
         node_models.LedgerData()
       ),
       None,
-      node_models.PublicKey.KeyData.CompressedEcKeyData(masterCompressedEcKeyData)
+      node_models.PublicKey.KeyData.CompressedEcKeyData(
+        masterCompressedEcKeyData
+      )
     )
 
   def protoECKeyDataFromPublicKey(key: ECPublicKey): ECKeyData = {
@@ -47,7 +52,9 @@ class DIDUtilsSpec extends AnyWordSpec with Matchers {
     )
   }
 
-  def protoCompressedECKeyDataFromPublicKey(key: ECPublicKey): CompressedECKeyData =
+  def protoCompressedECKeyDataFromPublicKey(
+      key: ECPublicKey
+  ): CompressedECKeyData =
     node_models.CompressedECKeyData(
       curve = ECConfig.getCURVE_NAME,
       data = ByteString.copyFrom(key.getEncodedCompressed)
@@ -55,31 +62,41 @@ class DIDUtilsSpec extends AnyWordSpec with Matchers {
 
   "findPublicKey" should {
     "return key given publicKey contains compressedKeyData" in {
-      val didData = DIDData(publicKeys = Seq(masterCompressedEcKeyDataPublicKey))
-      DIDUtils.findPublicKey(didData, "master").value.futureValue mustBe Right(masterKeys.getPublicKey)
+      val didData =
+        DIDData(publicKeys = Seq(masterCompressedEcKeyDataPublicKey))
+      DIDUtils.findPublicKey(didData, "master").value.futureValue mustBe Right(
+        masterKeys.getPublicKey
+      )
     }
 
     "return key given publicKey contains not compressed dKeyData" in {
       val didData = DIDData(publicKeys = Seq(masterEcKeyDataPublicKey))
-      DIDUtils.findPublicKey(didData, "master").value.futureValue mustBe Right(masterKeys.getPublicKey)
+      DIDUtils.findPublicKey(didData, "master").value.futureValue mustBe Right(
+        masterKeys.getPublicKey
+      )
     }
 
     "return AuthError given key not found" in {
       val didData = DIDData(publicKeys = Seq(masterEcKeyDataPublicKey))
-      DIDUtils.findPublicKey(didData, "unknown").value.futureValue mustBe Left(UnknownPublicKeyId())
+      DIDUtils.findPublicKey(didData, "unknown").value.futureValue mustBe Left(
+        UnknownPublicKeyId()
+      )
     }
 
     "work fine when you pass compressed key as uncompressed" in {
-      val compressedAsUncompressedKey = masterCompressedEcKeyDataPublicKey.copy(keyData =
-        node_models.PublicKey.KeyData.EcKeyData(
-          node_models.ECKeyData(
-            curve = ECConfig.getCURVE_NAME,
-            x = masterCompressedEcKeyData.data
+      val compressedAsUncompressedKey =
+        masterCompressedEcKeyDataPublicKey.copy(keyData =
+          node_models.PublicKey.KeyData.EcKeyData(
+            node_models.ECKeyData(
+              curve = ECConfig.getCURVE_NAME,
+              x = masterCompressedEcKeyData.data
+            )
           )
         )
-      )
       val didData = DIDData(publicKeys = Seq(compressedAsUncompressedKey))
-      DIDUtils.findPublicKey(didData, "master").value.futureValue mustBe Right(masterKeys.getPublicKey)
+      DIDUtils.findPublicKey(didData, "master").value.futureValue mustBe Right(
+        masterKeys.getPublicKey
+      )
     }
   }
 

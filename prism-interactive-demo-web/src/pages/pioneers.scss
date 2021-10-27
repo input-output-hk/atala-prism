@@ -25,7 +25,6 @@
     .FormContainer {
       display: flex;
       justify-content: flex-start;
-      margin-top: 5em;
       max-width: 1200px;
       margin: 2em auto 0 auto;
       .Description {
@@ -290,7 +289,7 @@
           margin-bottom: 2em;
         }
         video {
-          width: 100%!important;
+          width: 100% !important;
         }
       }
     }
@@ -374,11 +373,11 @@
         .WhiteBox {
           .Container {
             h2 {
-              font-size: $subtitle!important;
+              font-size: $subtitle !important;
             }
             button {
               width: 100%;
-              font-size: $body!important;
+              font-size: $body !important;
             }
           }
         }
@@ -451,6 +450,6 @@
     }
   }
   .ant-collapse {
-    margin: 2em 0!important;
+    margin: 2em 0 !important;
   }
 }

@@ -20,14 +20,20 @@ object ConnectionTokensDAO {
       .map(_.isDefined)
   }
 
-  def insert(initiator: ParticipantId, tokens: List[TokenString]): doobie.ConnectionIO[Unit] = {
+  def insert(
+      initiator: ParticipantId,
+      tokens: List[TokenString]
+  ): doobie.ConnectionIO[Unit] = {
     Update[(TokenString, ParticipantId)]("""
          |INSERT INTO connection_tokens (token, initiator)
          |VALUES (?, ?)""".stripMargin)
       .updateMany(tokens.map(token => token -> initiator))
       .flatTap { affectedRows =>
-        FC.raiseError(new RuntimeException(s"Unknown error while inserting ${tokens.size} tokens"))
-          .whenA(tokens.size != affectedRows)
+        FC.raiseError(
+          new RuntimeException(
+            s"Unknown error while inserting ${tokens.size} tokens"
+          )
+        ).whenA(tokens.size != affectedRows)
       }
       .void
   }

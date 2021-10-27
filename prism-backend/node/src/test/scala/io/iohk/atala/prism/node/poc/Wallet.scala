@@ -68,7 +68,11 @@ case class Wallet(node: node_api.NodeServiceGrpc.NodeServiceBlockingStub) {
     (didSuffix, atalaOp)
   }
 
-  def addRevocationKeyToDid(revocationKeyId: String, previousOperationHash: ByteString, didSuffix: DidSuffix): Unit = {
+  def addRevocationKeyToDid(
+      revocationKeyId: String,
+      previousOperationHash: ByteString,
+      didSuffix: DidSuffix
+  ): Unit = {
     val revocationKeyPair = EC.generateKeyPair()
     val publicKeyProto = node_models.PublicKey(
       id = revocationKeyId,
@@ -136,7 +140,11 @@ case class Wallet(node: node_api.NodeServiceGrpc.NodeServiceBlockingStub) {
     EC.signBytes(publicKey.getEncoded, privateKey)
   }
 
-  def verifySignedKey(publicKey: ECPublicKey, signature: ECSignature, signingKey: ECPublicKey): Boolean = {
+  def verifySignedKey(
+      publicKey: ECPublicKey,
+      signature: ECSignature,
+      signingKey: ECPublicKey
+  ): Boolean = {
     EC.verifyBytes(publicKey.getEncoded, signingKey, signature)
   }
 
@@ -145,13 +153,16 @@ case class Wallet(node: node_api.NodeServiceGrpc.NodeServiceBlockingStub) {
       merkleProof: MerkleInclusionProof
   ): ValidatedNel[VerificationError, Unit] = {
     // extract user DIDSuffix and keyId from credential
-    val issuerDID = Option(credential.getContent.getIssuerDid).getOrElse(throw new Exception("getIssuerDid is null"))
+    val issuerDID = Option(credential.getContent.getIssuerDid)
+      .getOrElse(throw new Exception("getIssuerDid is null"))
     val issuanceKeyId =
-      Option(credential.getContent.getIssuanceKeyId).getOrElse(throw new Exception("getIssuanceKeyId is null"))
+      Option(credential.getContent.getIssuanceKeyId)
+        .getOrElse(throw new Exception("getIssuanceKeyId is null"))
 
     // request credential state to the node
     val merkleRoot = merkleProof.derivedRoot
-    val batchId = CredentialBatchId.fromBatchData(issuerDID.getSuffix, merkleRoot)
+    val batchId =
+      CredentialBatchId.fromBatchData(issuerDID.getSuffix, merkleRoot)
 
     val batchStateProto = node.getBatchState(
       node_api.GetBatchStateRequest(
@@ -159,9 +170,13 @@ case class Wallet(node: node_api.NodeServiceGrpc.NodeServiceBlockingStub) {
       )
     )
     val batchIssuanceDate =
-      ProtoCodecs.fromTimestampInfoProto(batchStateProto.getPublicationLedgerData.timestampInfo.value)
+      ProtoCodecs.fromTimestampInfoProto(
+        batchStateProto.getPublicationLedgerData.timestampInfo.value
+      )
     val batchRevocationDate =
-      batchStateProto.getRevocationLedgerData.timestampInfo.map(ProtoCodecs.fromTimestampInfoProto)
+      batchStateProto.getRevocationLedgerData.timestampInfo.map(
+        ProtoCodecs.fromTimestampInfoProto
+      )
     val batchData = BatchData(batchIssuanceDate, batchRevocationDate)
 
     // resolve DID through the node
@@ -175,12 +190,18 @@ case class Wallet(node: node_api.NodeServiceGrpc.NodeServiceBlockingStub) {
     val didDocument = didDocumentOption.value
 
     // get verification key
-    val issuancekeyProtoOption = didDocument.publicKeys.find(_.id == issuanceKeyId)
+    val issuancekeyProtoOption =
+      didDocument.publicKeys.find(_.id == issuanceKeyId)
     val issuancekeyData = issuancekeyProtoOption.value
-    val issuanceKey = issuancekeyProtoOption.flatMap(ProtoCodecs.fromProtoKey).value
-    val issuanceKeyAddedOn = ProtoCodecs.fromTimestampInfoProto(issuancekeyData.addedOn.value.timestampInfo.value)
+    val issuanceKey =
+      issuancekeyProtoOption.flatMap(ProtoCodecs.fromProtoKey).value
+    val issuanceKeyAddedOn = ProtoCodecs.fromTimestampInfoProto(
+      issuancekeyData.addedOn.value.timestampInfo.value
+    )
     val issuanceKeyRevokedOn =
-      issuancekeyData.revokedOn.flatMap(_.timestampInfo.map(ProtoCodecs.fromTimestampInfoProto))
+      issuancekeyData.revokedOn.flatMap(
+        _.timestampInfo.map(ProtoCodecs.fromTimestampInfoProto)
+      )
 
     val keyData = KeyData(issuanceKey, issuanceKeyAddedOn, issuanceKeyRevokedOn)
 

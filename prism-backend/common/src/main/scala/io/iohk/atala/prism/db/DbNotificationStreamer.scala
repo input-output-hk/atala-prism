@@ -14,11 +14,14 @@ import org.slf4j.{Logger, LoggerFactory}
 
 import scala.concurrent.duration._
 
-class DbNotificationStreamer private (channelName: String)(implicit timer: Timer[IO]) {
+class DbNotificationStreamer private (channelName: String)(implicit
+    timer: Timer[IO]
+) {
   import DbNotificationStreamer._
 
   // Derive `ConnectionIO` timer from `IO` timer
-  private implicit val connectionIOTimer: Timer[ConnectionIO] = timer.mapK(LiftIO.liftK[ConnectionIO])
+  private implicit val connectionIOTimer: Timer[ConnectionIO] =
+    timer.mapK(LiftIO.liftK[ConnectionIO])
 
   private val stopped = AtomicBoolean(false)
   private val stoppedLatch = new CountDownLatch(1)
@@ -50,10 +53,14 @@ class DbNotificationStreamer private (channelName: String)(implicit timer: Timer
   def isStopped: Boolean = stopped.get()
 
   def stopStreaming(): Unit = {
-    logger.info(s"Stopping all open DB notification streams for channel $channelName")
+    logger.info(
+      s"Stopping all open DB notification streams for channel $channelName"
+    )
     stopped.set(true)
     if (!stoppedLatch.await(1, TimeUnit.SECONDS)) {
-      logger.warn(s"DB notification streams for channel $channelName could not stop gracefully on time")
+      logger.warn(
+        s"DB notification streams for channel $channelName could not stop gracefully on time"
+      )
     }
   }
 }
@@ -61,7 +68,9 @@ class DbNotificationStreamer private (channelName: String)(implicit timer: Timer
 object DbNotificationStreamer {
   private val logger: Logger = LoggerFactory.getLogger(getClass)
 
-  def apply(channelName: String)(implicit timer: Timer[IO]): DbNotificationStreamer = {
+  def apply(
+      channelName: String
+  )(implicit timer: Timer[IO]): DbNotificationStreamer = {
     new DbNotificationStreamer(channelName)
   }
 

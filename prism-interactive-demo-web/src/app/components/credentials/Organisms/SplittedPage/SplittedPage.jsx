@@ -30,7 +30,7 @@ SplittedPage.propTypes = {
 };
 
 SplittedPage.defaultProps = {
-  onMount: () => {}
+  onMount: null
 };
 
 export default SplittedPage;

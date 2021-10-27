@@ -15,9 +15,17 @@ class AtalaObjectsDAOSpec extends AtalaWithPostgresSpec {
   private val objectId = AtalaObjectId.of(node_internal.AtalaObject())
   private val byteContent = "byteContent".getBytes
   private val transactionInfo = TransactionInfo(
-    transactionId = TransactionId.from(Sha256.compute("transactionId".getBytes).getValue).value,
+    transactionId = TransactionId
+      .from(Sha256.compute("transactionId".getBytes).getValue)
+      .value,
     ledger = Ledger.InMemory,
-    block = Some(BlockInfo(number = 1, timestamp = Instant.ofEpochMilli(133713371337L), index = 0))
+    block = Some(
+      BlockInfo(
+        number = 1,
+        timestamp = Instant.ofEpochMilli(133713371337L),
+        index = 0
+      )
+    )
   )
 
   "AtalaObjectsDAO.insert" should {
@@ -37,7 +45,10 @@ class AtalaObjectsDAOSpec extends AtalaWithPostgresSpec {
       insert(objectId, byteContent)
 
       AtalaObjectsDAO
-        .setTransactionInfo(AtalaObjectsDAO.AtalaObjectSetTransactionInfo(objectId, transactionInfo))
+        .setTransactionInfo(
+          AtalaObjectsDAO
+            .AtalaObjectSetTransactionInfo(objectId, transactionInfo)
+        )
         .transact(database)
         .unsafeRunSync()
 
@@ -51,7 +62,10 @@ class AtalaObjectsDAOSpec extends AtalaWithPostgresSpec {
     "fail to set the transaction info of a nonexistent object" in {
       assertThrows[Exception] {
         AtalaObjectsDAO
-          .setTransactionInfo(AtalaObjectsDAO.AtalaObjectSetTransactionInfo(objectId, transactionInfo))
+          .setTransactionInfo(
+            AtalaObjectsDAO
+              .AtalaObjectSetTransactionInfo(objectId, transactionInfo)
+          )
           .transact(database)
           .unsafeRunSync()
       }
@@ -63,7 +77,10 @@ class AtalaObjectsDAOSpec extends AtalaWithPostgresSpec {
       assertThrows[Exception] {
         AtalaObjectsDAO
           .setTransactionInfo(
-            AtalaObjectsDAO.AtalaObjectSetTransactionInfo(objectId, transactionInfo.copy(block = None))
+            AtalaObjectsDAO.AtalaObjectSetTransactionInfo(
+              objectId,
+              transactionInfo.copy(block = None)
+            )
           )
           .transact(database)
           .unsafeRunSync()
@@ -86,7 +103,10 @@ class AtalaObjectsDAOSpec extends AtalaWithPostgresSpec {
     "get an object with transaction info" in {
       insert(objectId, byteContent)
       AtalaObjectsDAO
-        .setTransactionInfo(AtalaObjectsDAO.AtalaObjectSetTransactionInfo(objectId, transactionInfo))
+        .setTransactionInfo(
+          AtalaObjectsDAO
+            .AtalaObjectSetTransactionInfo(objectId, transactionInfo)
+        )
         .transact(database)
         .unsafeRunSync()
 
@@ -103,7 +123,10 @@ class AtalaObjectsDAOSpec extends AtalaWithPostgresSpec {
     "mark object as processed" in {
       insert(objectId, byteContent)
 
-      AtalaObjectsDAO.updateObjectStatus(objectId, AtalaObjectStatus.Processed).transact(database).unsafeRunSync()
+      AtalaObjectsDAO
+        .updateObjectStatus(objectId, AtalaObjectStatus.Processed)
+        .transact(database)
+        .unsafeRunSync()
 
       val retrieved = get(objectId)
       retrieved.status mustBe AtalaObjectStatus.Processed
@@ -114,21 +137,29 @@ class AtalaObjectsDAOSpec extends AtalaWithPostgresSpec {
     "return object ids in the correct order" in {
       val N = 10
       (0 until N).foreach { count =>
-        val objId = AtalaObjectId.of(node_internal.AtalaObject(blockOperationCount = count))
+        val objId = AtalaObjectId.of(
+          node_internal.AtalaObject(blockOperationCount = count)
+        )
         insert(objId, byteContent)
       }
-      val retrieved = AtalaObjectsDAO.getNotPublishedObjectInfos.transact(database).unsafeRunSync()
+      val retrieved = AtalaObjectsDAO.getNotPublishedObjectInfos
+        .transact(database)
+        .unsafeRunSync()
       retrieved.size mustBe N
-      retrieved.zipWithIndex.foreach {
-        case (objInfo, ind) =>
-          withClue(s"Index $ind:") {
-            objInfo.objectId mustBe AtalaObjectId.of(node_internal.AtalaObject(blockOperationCount = ind))
-          }
+      retrieved.zipWithIndex.foreach { case (objInfo, ind) =>
+        withClue(s"Index $ind:") {
+          objInfo.objectId mustBe AtalaObjectId.of(
+            node_internal.AtalaObject(blockOperationCount = ind)
+          )
+        }
       }
     }
   }
 
-  private def insert(objectId: AtalaObjectId, byteContent: Array[Byte]): Unit = {
+  private def insert(
+      objectId: AtalaObjectId,
+      byteContent: Array[Byte]
+  ): Unit = {
     AtalaObjectsDAO
       .insert(AtalaObjectsDAO.AtalaObjectCreateData(objectId, byteContent))
       .transact(database)

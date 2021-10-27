@@ -11,6 +11,7 @@
     }
     h3 {
       @include secondary-text($h3, $dark-grey);
+      font-variant: normal;
     }
     p {
       @include secondary-text($body, $primary-color);

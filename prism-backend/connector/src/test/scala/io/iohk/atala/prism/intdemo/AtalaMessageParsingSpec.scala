@@ -25,7 +25,8 @@ class AtalaMessageParsingSpec extends AnyFlatSpec {
 
   it should "parse a proof request" in {
     val proofRequest = ProofRequest(Seq("type-id"), "connection-token")
-    val proofRequestProto = AtalaMessage().withProofRequest(proofRequest).toByteArray
+    val proofRequestProto =
+      AtalaMessage().withProofRequest(proofRequest).toByteArray
 
     val parsedProofRequest = AtalaMessage.parseFrom(proofRequestProto)
 

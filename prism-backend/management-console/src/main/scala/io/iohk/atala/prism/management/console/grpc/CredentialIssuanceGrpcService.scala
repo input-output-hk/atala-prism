@@ -84,7 +84,9 @@ class CredentialIssuanceGrpcService(
         .unsafeToFuture()
         .toFutureEither
         .map { credentialIssuanceId =>
-          CreateGenericCredentialBulkResponse(credentialIssuanceId.uuid.toString)
+          CreateGenericCredentialBulkResponse(
+            credentialIssuanceId.uuid.toString
+          )
         }
     }
 }

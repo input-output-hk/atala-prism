@@ -48,7 +48,11 @@ const Landing = () => {
     <div className="LandingContainer">
       <div className="LandingHeader">
         <Header currentSection={currentSection} />
-        <div className="LadingHeaderContent" onMouseOver={() => setCurrentSection(null)}>
+        <div
+          className="LadingHeaderContent"
+          onMouseOver={() => setCurrentSection(null)}
+          onFocus={() => setCurrentSection(null)}
+        >
           <div className="HeaderText">
             <h1>{t('landing.start.info')}</h1>
             <h3>{t('landing.start.subtitle')}</h3>
@@ -64,17 +68,28 @@ const Landing = () => {
           </div>
         </div>
       </div>
-      <div id={VISION_NAME} ref={visionSection} onMouseOver={() => setCurrentSection(VISION_NAME)}>
+      <div
+        id={VISION_NAME}
+        ref={visionSection}
+        onMouseOver={() => setCurrentSection(VISION_NAME)}
+        onFocus={() => setCurrentSection(VISION_NAME)}
+      >
         <IntroSection />
         <QuotesPanel />
       </div>
-      <div id={DEMO_NAME} ref={demoSection} onMouseOver={() => setCurrentSection(DEMO_NAME)}>
+      <div
+        id={DEMO_NAME}
+        ref={demoSection}
+        onMouseOver={() => setCurrentSection(DEMO_NAME)}
+        onFocus={() => setCurrentSection(DEMO_NAME)}
+      >
         <FindCredential />
       </div>
       <div
         id={COMPONENTS_NAME}
         ref={componentsSection}
         onMouseOver={() => setCurrentSection(COMPONENTS_NAME)}
+        onFocus={() => setCurrentSection(COMPONENTS_NAME)}
       >
         <CredentialSection />
       </div>
@@ -82,6 +97,7 @@ const Landing = () => {
         id={BENEFITS_NAME}
         ref={benefitsSection}
         onMouseOver={() => setCurrentSection(BENEFITS_NAME)}
+        onFocus={() => setCurrentSection(BENEFITS_NAME)}
       >
         <TrustSection />
       </div>
@@ -89,6 +105,7 @@ const Landing = () => {
         id={USE_CASES_NAME}
         ref={useCasesSection}
         onMouseOver={() => setCurrentSection(USE_CASES_NAME)}
+        onFocus={() => setCurrentSection(USE_CASES_NAME)}
       >
         <UseCasesPanel />
       </div>
@@ -96,6 +113,7 @@ const Landing = () => {
         id={CASE_STUDY_NAME}
         ref={caseStudySection}
         onMouseOver={() => setCurrentSection(CASE_STUDY_NAME)}
+        onFocus={() => setCurrentSection(CASE_STUDY_NAME)}
       >
         <CaseStudy />
       </div>
@@ -103,16 +121,23 @@ const Landing = () => {
         id={GET_STARTED_NAME}
         ref={getStartedSection}
         onMouseOver={() => setCurrentSection(GET_STARTED_NAME)}
+        onFocus={() => setCurrentSection(GET_STARTED_NAME)}
       >
         <GetStarted />
       </div>
-      <div id={FAQ_NAME} ref={faqSection} onMouseOver={() => setCurrentSection(FAQ_NAME)}>
+      <div
+        id={FAQ_NAME}
+        ref={faqSection}
+        onMouseOver={() => setCurrentSection(FAQ_NAME)}
+        onFocus={() => setCurrentSection(FAQ_NAME)}
+      >
         <FaqPanel />
       </div>
       <div
         id={CONTACT_US_NAME}
         ref={contactUsSection}
         onMouseOver={() => setCurrentSection(CONTACT_US_NAME)}
+        onFocus={() => setCurrentSection(CONTACT_US_NAME)}
       >
         <ContactPanel />
       </div>

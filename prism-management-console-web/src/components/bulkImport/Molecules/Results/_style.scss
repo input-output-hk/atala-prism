@@ -31,6 +31,7 @@
     border: 1px solid #e0e0e0;
     border-radius: 5px;
     .ant-table-body {
+      padding-bottom: 0px;
       overflow-y: visible;
     }
     .ant-table-body a {
@@ -72,9 +73,6 @@
     .ant-table-thead > tr > th:last-child {
       border-radius: 0 5px 0 0;
       width: 50px;
-    }
-    .ant-table-body {
-      padding-bottom: 0px;
     }
     .ant-table-header {
       overflow: hidden !important;

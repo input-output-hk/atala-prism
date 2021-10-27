@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { observer } from 'mobx-react-lite';
 import { useTranslation } from 'react-i18next';
 import { Form } from 'antd';
-import { SELECT_TEMPLATE_CATEGORY } from '../../helpers/constants';
+import { TEMPLATE_NAME_ICON_CATEGORY } from '../../helpers/constants';
 import CredentialTemplateCreation from './CredentialTemplateCreation';
 import TemplateCreationStep from './Organisms/TemplateCreationStep';
 import { useTemplateStore } from '../../hooks/useTemplateStore';
@@ -14,7 +14,7 @@ const CredentialTemplateCreationContainer = observer(() => {
   useTemplateStore({ fetch: true });
   const { setForm, setSketchState: handleValuesUpdate } = useTemplateSketch({ reset: true });
 
-  const [currentStep, setCurrentStep] = useState(SELECT_TEMPLATE_CATEGORY);
+  const [currentStep, setCurrentStep] = useState(TEMPLATE_NAME_ICON_CATEGORY);
   const [form] = Form.useForm();
   setForm(form);
 

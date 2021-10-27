@@ -10,7 +10,8 @@ class EmploymentDataSpec extends AnyFlatSpec {
   "EmploymentData" should "extract the data from an employment credential" in {
     val expectedFirstName = "First name"
     val expectedDoB = LocalDate.of(1973, 6, 6)
-    val idCredential = IdServiceImpl.getIdCredential((expectedFirstName, expectedDoB))
+    val idCredential =
+      IdServiceImpl.getIdCredential((expectedFirstName, expectedDoB))
     val degreeCredential = DegreeServiceImpl.getDegreeCredential(idCredential)
     val employmentCredential = EmploymentServiceImpl.getEmploymentCredential(
       RequiredEmploymentData(idCredential, degreeCredential)

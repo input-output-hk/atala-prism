@@ -19,10 +19,10 @@ private[wallet] final class CardanoWalletApiClientLogs[F[_]: ServiceLogging[
 ]: MonadThrow]
     extends CardanoWalletApiClient[Mid[F, *]] {
 
-  /**
-    * Estimate the fee for the given transaction details.
+  /** Estimate the fee for the given transaction details.
     *
-   * @see https://input-output-hk.github.io/cardano-wallet/api/edge/#operation/postTransactionFee
+    * @see
+    *   https://input-output-hk.github.io/cardano-wallet/api/edge/#operation/postTransactionFee
     */
   override def estimateTransactionFee(
       walletId: WalletId,
@@ -39,10 +39,10 @@ private[wallet] final class CardanoWalletApiClientLogs[F[_]: ServiceLogging[
         )
         .onError(errorCause"Encountered an error while estimating transaction fee" (_))
 
-  /**
-    * Post a new transaction and return its ID.
+  /** Post a new transaction and return its ID.
     *
-   * @see https://input-output-hk.github.io/cardano-wallet/api/edge/#operation/postTransaction
+    * @see
+    *   https://input-output-hk.github.io/cardano-wallet/api/edge/#operation/postTransaction
     */
   override def postTransaction(
       walletId: WalletId,
@@ -60,10 +60,10 @@ private[wallet] final class CardanoWalletApiClientLogs[F[_]: ServiceLogging[
         )
         .onError(errorCause"Encountered an error while estimating transaction fee" (_))
 
-  /**
-    * Get the details of the given transaction.
+  /** Get the details of the given transaction.
     *
-   * @see https://input-output-hk.github.io/cardano-wallet/api/edge/#operation/getTransaction
+    * @see
+    *   https://input-output-hk.github.io/cardano-wallet/api/edge/#operation/getTransaction
     */
   override def getTransaction(walletId: WalletId, transactionId: TransactionId): Mid[F, Result[TransactionDetails]] =
     in =>
@@ -76,13 +76,13 @@ private[wallet] final class CardanoWalletApiClientLogs[F[_]: ServiceLogging[
         )
         .onError(errorCause"Encountered an error while getting transaction" (_))
 
-  /**
-    * Forget pending transaction. Importantly, a transaction, when sent, cannot be cancelled.
-    * One can only request forgetting about it in order to try spending (concurrently) the same UTxO in another transaction.
+  /** Forget pending transaction. Importantly, a transaction, when sent, cannot be cancelled. One can only request
+    * forgetting about it in order to try spending (concurrently) the same UTxO in another transaction.
     *
-   * <p>Note the transaction may still show up later in a block.
+    * <p>Note the transaction may still show up later in a block.
     *
-   * @see https://input-output-hk.github.io/cardano-wallet/api/edge/#operation/deleteTransaction
+    * @see
+    *   https://input-output-hk.github.io/cardano-wallet/api/edge/#operation/deleteTransaction
     */
   override def deleteTransaction(walletId: WalletId, transactionId: TransactionId): Mid[F, Result[Unit]] =
     in =>
@@ -95,10 +95,10 @@ private[wallet] final class CardanoWalletApiClientLogs[F[_]: ServiceLogging[
         )
         .onError(errorCause"Encountered an error while deleting transaction" (_))
 
-  /**
-    * Get detailed information about the given wallet.
+  /** Get detailed information about the given wallet.
     *
-   * @see https://input-output-hk.github.io/cardano-wallet/api/edge/#operation/getWallet
+    * @see
+    *   https://input-output-hk.github.io/cardano-wallet/api/edge/#operation/getWallet
     */
   override def getWallet(walletId: WalletId): Mid[F, Result[WalletDetails]] =
     in =>

@@ -48,7 +48,7 @@ const StepFooter = ({
 };
 
 StepFooter.defaultProps = {
-  renderExtraOptions: () => {},
+  renderExtraOptions: null,
   disablePrevious: false,
   disableNext: false,
   loading: false

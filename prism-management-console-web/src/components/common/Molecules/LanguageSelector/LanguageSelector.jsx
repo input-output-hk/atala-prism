@@ -32,14 +32,21 @@ const LanguageSelector = () => {
   return (
     <div className="LanguageMenu">
       <Select {...selectProps}>
-        {languages.map(lang => (
-          <Select.Option value={lang} disabled={lang === currentLanguage} key={`language-${lang}`}>
-            <div className="LanguageOption">
-              <img src={flags[lang]} alt={`${t(`languages.${lang}`)}-${t('languages.flag')}`} />
-              {customUpperCase(t(`languages.${lang}`))}
-            </div>
-          </Select.Option>
-        ))}
+        {languages.map(lang => {
+          const language = t(`languages.${lang}`);
+          return (
+            <Select.Option
+              value={lang}
+              disabled={lang === currentLanguage}
+              key={`language-${lang}`}
+            >
+              <div className="LanguageOption">
+                <img src={flags[lang]} alt={`${language}-${t('languages.flag')}`} />
+                {customUpperCase(language)}
+              </div>
+            </Select.Option>
+          );
+        })}
       </Select>
     </div>
   );
