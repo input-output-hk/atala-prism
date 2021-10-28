@@ -1,7 +1,7 @@
 package io.iohk.atala.prism.node.services
 
-import cats.{Comonad, Functor}
-import cats.effect.MonadThrow
+import cats.{Applicative, Comonad, Functor}
+import cats.effect.{MonadThrow, Resource}
 import cats.implicits._
 
 import java.time.Instant
@@ -84,6 +84,11 @@ object InMemoryLedgerService {
       val mid = logs
       mid attach new InMemoryLedgerService[F](onAtalaObject)
     }
+
+  def resource[F[_]: MonadThrow: Execute, R[_]: Applicative](
+      onAtalaObject: AtalaObjectNotificationHandler,
+      logs: Logs[R, F]
+  ): Resource[R, UnderlyingLedger[F]] = Resource.eval(InMemoryLedgerService(onAtalaObject, logs))
 
   def unsafe[F[_]: MonadThrow: Execute, R[_]: Comonad](
       onAtalaObject: AtalaObjectNotificationHandler,

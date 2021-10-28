@@ -1,9 +1,9 @@
 package io.iohk.atala.prism.node
 
-import cats.effect.{ContextShift, IO, Timer}
+import cats.effect.{ContextShift, ExitCode, IO, IOApp, Resource, Timer}
 import cats.implicits.toFunctorOps
 import com.typesafe.config.{Config, ConfigFactory}
-import doobie.Transactor
+import doobie.hikari.HikariTransactor
 import io.grpc.{Server, ServerBuilder}
 import io.iohk.atala.prism.logging.TraceId
 import io.iohk.atala.prism.logging.TraceId.IOWithTraceIdContext
@@ -17,24 +17,21 @@ import io.iohk.atala.prism.node.services.models.AtalaObjectNotification
 import io.iohk.atala.prism.protos.node_api._
 import io.iohk.atala.prism.repositories.{SchemaMigrations, TransactorFactory}
 import io.iohk.atala.prism.utils.IOUtils._
+import kamon.module.Module
 import kamon.Kamon
 import org.slf4j.LoggerFactory
 import tofu.logging.Logs
 
 import java.util.concurrent.TimeUnit
-import scala.concurrent.duration.{Duration, FiniteDuration}
-import scala.concurrent.{Await, ExecutionContext, Future, Promise}
+import scala.concurrent.duration.FiniteDuration
+import scala.concurrent.{ExecutionContext, Future, Promise}
 
-object NodeApp {
-
-  def main(args: Array[String]): Unit = {
-    val server = new NodeApp(ExecutionContext.global)
-    server.start()
-    server.blockUntilShutdown()
-  }
+object NodeApp extends IOApp {
 
   private val port = 50053
 
+  override def run(args: List[String]): IO[ExitCode] =
+    new NodeApp(ExecutionContext.global).start().use(_ => IO.never)
 }
 
 class NodeApp(executionContext: ExecutionContext) { self =>
@@ -47,149 +44,85 @@ class NodeApp(executionContext: ExecutionContext) { self =>
 
   private val logger = LoggerFactory.getLogger(this.getClass)
 
-  private implicit val logs: Logs[IO, IOWithTraceIdContext] = Logs.withContext[IO, IOWithTraceIdContext]
+  private def start(): Resource[IO, Server] = {
+    for {
+      globalConfig <- loadConfig()
+      _ <- startMetrics(globalConfig)
+      databaseConfig = TransactorFactory.transactorConfig(globalConfig)
+      _ = applyDatabaseMigrations(databaseConfig)
+      transactor <- connectToTheDb(databaseConfig)
+      liftedTransactor = transactor.mapK(TraceId.liftToIOWithTraceId)
+      logs = Logs.withContext[IO, IOWithTraceIdContext]
+      protocolVersionRepository <- ProtocolVersionRepository.resource(liftedTransactor, logs)
+      objectManagementServicePromise = Promise[ObjectManagementService[IOWithTraceIdContext]]()
+      onCardanoBlock = onCardanoBlockOp(protocolVersionRepository)
+      onAtalaObject = onAtalaObjectOp(objectManagementServicePromise)
+      keyValuesRepository <- KeyValuesRepository.resource(liftedTransactor, logs)
+      keyValueService <- KeyValueService.resource(keyValuesRepository, logs)
+      ledger <- createLedger(globalConfig, keyValueService, onCardanoBlock, onAtalaObject, logs)
+      blockProcessingService = new BlockProcessingServiceImpl
+      didDataRepository <- DIDDataRepository.resource(liftedTransactor, logs)
+      atalaOperationsRepository <- AtalaOperationsRepository.resource(liftedTransactor, logs)
+      atalaObjectsTransactionsRepository <- AtalaObjectsTransactionsRepository.resource(liftedTransactor, logs)
+      ledgerPendingTransactionTimeout = globalConfig.getDuration("ledgerPendingTransactionTimeout")
+      transactionRetryPeriod = FiniteDuration(
+        globalConfig.getDuration("transactionRetryPeriod").toNanos,
+        TimeUnit.NANOSECONDS
+      )
+      operationSubmissionPeriod = FiniteDuration(
+        globalConfig.getDuration("operationSubmissionPeriod").toNanos,
+        TimeUnit.NANOSECONDS
+      )
+      transactionsPerSecond = globalConfig.getInt("transactionsPerSecond")
+      submissionService <- SubmissionService.resource(
+        ledger,
+        atalaOperationsRepository,
+        atalaObjectsTransactionsRepository,
+        SubmissionService.Config(
+          maxNumberTransactionsToSubmit = operationSubmissionPeriod.toSeconds.toInt * transactionsPerSecond,
+          maxNumberTransactionsToRetry = transactionRetryPeriod.toSeconds.toInt * transactionsPerSecond
+        ),
+        logs
+      )
+      submissionSchedulingService = SubmissionSchedulingService(
+        SubmissionSchedulingService.Config(
+          ledgerPendingTransactionTimeout = ledgerPendingTransactionTimeout,
+          transactionRetryPeriod = transactionRetryPeriod,
+          operationSubmissionPeriod = operationSubmissionPeriod
+        ),
+        submissionService
+      )
+      objectManagementService <- ObjectManagementService.resource(
+        atalaOperationsRepository,
+        atalaObjectsTransactionsRepository,
+        keyValuesRepository,
+        protocolVersionRepository,
+        blockProcessingService,
+        liftedTransactor,
+        logs
+      )
+      _ = objectManagementServicePromise.success(objectManagementService)
+      credentialBatchesRepository <-
+        CredentialBatchesRepository.resource(liftedTransactor, logs)
+      nodeService =
+        new NodeServiceImpl(
+          didDataRepository,
+          objectManagementService,
+          submissionSchedulingService,
+          credentialBatchesRepository
+        )
+      server <- startServer(nodeService)
+    } yield server
+  }
 
-  private[this] var server: Server = _
-
-  private def start(): Unit = {
+  private def startMetrics(config: Config): Resource[IO, Module.Registration] = Resource.make(IO {
     Kamon.init()
+    Kamon.registerModule("uptime", new UptimeReporter(config))
+  })(_ => IO.fromFuture(IO(Kamon.stop())))
+
+  private def loadConfig(): Resource[IO, Config] = Resource.pure[IO, Config] {
     logger.info("Loading config")
-    val globalConfig = ConfigFactory.load()
-    val databaseConfig = TransactorFactory.transactorConfig(globalConfig)
-
-    logger.info("Setting-up uptime metrics")
-    Kamon.registerModule("uptime", new UptimeReporter(globalConfig))
-
-    logger.info("Applying database migrations")
-    applyDatabaseMigrations(databaseConfig)
-
-    logger.info("Connecting to the database")
-    implicit val (transactor, releaseTransactor) =
-      TransactorFactory.transactor[IO](databaseConfig).allocated.unsafeRunSync()
-
-    implicit val liftedTransactor: Transactor[IOWithTraceIdContext] = transactor.mapK(TraceId.liftToIOWithTraceId)
-
-    val objectManagementServicePromise: Promise[ObjectManagementService[IOWithTraceIdContext]] =
-      Promise()
-
-    val protocolVersionRepository =
-      ProtocolVersionRepository.unsafe(liftedTransactor, logs)
-    val onCardanoBlock: CardanoBlockHandler = block =>
-      {
-        protocolVersionRepository.markEffective(block.header.blockNo).void
-      }.run(TraceId.generateYOLO)
-        .unsafeToFuture()
-
-    def onAtalaObject(notification: AtalaObjectNotification): Future[Unit] =
-      objectManagementServicePromise.future.map { objectManagementService =>
-        objectManagementService.saveObject(notification).run(TraceId.generateYOLO).unsafeToFuture()
-      }.void
-
-    val keyValuesRepository = KeyValuesRepository.unsafe(liftedTransactor, logs)
-    val keyValueService = KeyValueService.unsafe(keyValuesRepository, logs)
-
-    val (atalaReferenceLedger, releaseAtalaReferenceLedger) =
-      globalConfig.getString("ledger") match {
-        case "cardano" =>
-          initializeCardano(
-            keyValueService,
-            globalConfig,
-            onCardanoBlock,
-            onAtalaObject,
-            logs
-          )
-        case "in-memory" =>
-          logger.info("Using in-memory ledger")
-          (InMemoryLedgerService.unsafe(onAtalaObject, logs), None)
-      }
-    logger.info("Creating blocks processor")
-    val blockProcessingService = new BlockProcessingServiceImpl
-    val didDataRepository = DIDDataRepository.unsafe(liftedTransactor, logs)
-    val atalaOperationsRepository =
-      AtalaOperationsRepository.unsafe(liftedTransactor, logs)
-    val atalaObjectsTransactionsRepository =
-      AtalaObjectsTransactionsRepository.unsafe(liftedTransactor, logs)
-
-    val ledgerPendingTransactionTimeout =
-      globalConfig.getDuration("ledgerPendingTransactionTimeout")
-    val transactionRetryPeriod = FiniteDuration(
-      globalConfig.getDuration("transactionRetryPeriod").toNanos,
-      TimeUnit.NANOSECONDS
-    )
-    val operationSubmissionPeriod = FiniteDuration(
-      globalConfig.getDuration("operationSubmissionPeriod").toNanos,
-      TimeUnit.NANOSECONDS
-    )
-    val transactionsPerSecond = globalConfig.getInt("transactionsPerSecond")
-    val submissionService = SubmissionService.unsafe(
-      atalaReferenceLedger,
-      atalaOperationsRepository,
-      atalaObjectsTransactionsRepository,
-      SubmissionService.Config(
-        maxNumberTransactionsToSubmit = operationSubmissionPeriod.toSeconds.toInt * transactionsPerSecond,
-        maxNumberTransactionsToRetry = transactionRetryPeriod.toSeconds.toInt * transactionsPerSecond
-      ),
-      logs
-    )
-    val submissionSchedulingService = SubmissionSchedulingService(
-      SubmissionSchedulingService.Config(
-        ledgerPendingTransactionTimeout = ledgerPendingTransactionTimeout,
-        transactionRetryPeriod = transactionRetryPeriod,
-        operationSubmissionPeriod = operationSubmissionPeriod
-      ),
-      submissionService
-    )
-
-    val objectManagementService = ObjectManagementService.unsafe[IO, IOWithTraceIdContext](
-      atalaOperationsRepository,
-      atalaObjectsTransactionsRepository,
-      keyValuesRepository,
-      protocolVersionRepository,
-      blockProcessingService,
-      liftedTransactor,
-      logs
-    )
-
-    objectManagementServicePromise.success(objectManagementService)
-
-    val credentialBatchesRepository =
-      CredentialBatchesRepository.unsafe(liftedTransactor, logs)
-
-    val nodeService =
-      new NodeServiceImpl(
-        didDataRepository,
-        objectManagementService,
-        submissionSchedulingService,
-        credentialBatchesRepository
-      )
-
-    logger.info("Starting server")
-    import io.grpc.protobuf.services.ProtoReflectionService
-    server = ServerBuilder
-      .forPort(NodeApp.port)
-      .addService(NodeServiceGrpc.bindService(nodeService, executionContext))
-      .addService(
-        _root_.grpc.health.v1.health.HealthGrpc
-          .bindService(new HealthService, executionContext)
-      )
-      .addService(
-        ProtoReflectionService.newInstance()
-      ) //TODO: Decide before release if we should keep this (or guard it with a config flag)
-      .build()
-      .start()
-
-    logger.info("Server started, listening on " + NodeApp.port)
-    sys.addShutdownHook {
-      System.err.println(
-        "*** shutting down gRPC server since JVM is shutting down"
-      )
-      releaseTransactor.unsafeRunSync()
-      releaseAtalaReferenceLedger.foreach(_.unsafeRunSync())
-      self.stop()
-      Await.result(Kamon.stop(), Duration.Inf)
-      System.err.println("*** server shut down")
-    }
-    ()
+    ConfigFactory.load()
   }
 
   private def initializeCardano(
@@ -198,16 +131,11 @@ class NodeApp(executionContext: ExecutionContext) { self =>
       onCardanoBlock: CardanoBlockHandler,
       onAtalaObject: AtalaObjectNotification => Future[Unit],
       logs: Logs[IO, IOWithTraceIdContext]
-  ): (UnderlyingLedger[IOWithTraceIdContext], Option[IO[Unit]]) = {
+  ): Resource[IO, UnderlyingLedger[IOWithTraceIdContext]] = {
     val config = NodeConfig.cardanoConfig(globalConfig.getConfig("cardano"))
-    val (cardanoClient, releaseClient) =
-      createCardanoClient(config.cardanoClientConfig, logs)
-    Kamon.registerModule(
-      "node-reporter",
-      NodeReporter(config, cardanoClient, keyValueService)
-    )
-    val cardano = CardanoLedgerService
-      .unsafe[IOWithTraceIdContext, IO](
+    createCardanoClient(config.cardanoClientConfig, logs).flatMap { cardanoClient =>
+      Kamon.registerModule("node-reporter", NodeReporter(config, cardanoClient, keyValueService))
+      CardanoLedgerService.resource[IOWithTraceIdContext, IO](
         config,
         cardanoClient,
         keyValueService,
@@ -215,37 +143,83 @@ class NodeApp(executionContext: ExecutionContext) { self =>
         onAtalaObject,
         logs
       )
-    (cardano, Some(releaseClient))
+    }
   }
 
   private def createCardanoClient(
       cardanoClientConfig: CardanoClient.Config,
       logs: Logs[IO, IOWithTraceIdContext]
-  ): (CardanoClient[IOWithTraceIdContext], IO[Unit]) = {
+  ): Resource[IO, CardanoClient[IOWithTraceIdContext]] = {
     logger.info("Creating cardano client")
     CardanoClient
       .makeResource[IO, IOWithTraceIdContext](cardanoClientConfig, logs)
       .mapK(TraceId.unLiftIOWithTraceId())
-      .allocated
-      .unsafeRunSync()
   }
 
-  private def stop(): Unit = {
-    if (server != null) {
+  private def connectToTheDb(dbConfig: TransactorFactory.Config): Resource[IO, HikariTransactor[IO]] = {
+    logger.info("Connecting to the database")
+    TransactorFactory.transactor[IO](dbConfig)
+  }
+
+  private def onCardanoBlockOp(in: ProtocolVersionRepository[IOWithTraceIdContext]): CardanoBlockHandler = block =>
+    in.markEffective(block.header.blockNo).void.run(TraceId.generateYOLO).unsafeToFuture()
+
+  private def onAtalaObjectOp(
+      objectManagementServicePromise: Promise[ObjectManagementService[IOWithTraceIdContext]]
+  ): AtalaObjectNotification => Future[Unit] = notification => {
+    objectManagementServicePromise.future.flatMap { objectManagementService =>
+      objectManagementService.saveObject(notification).run(TraceId.generateYOLO).unsafeToFuture()
+    }.void
+  }
+
+  private def createLedger(
+      config: Config,
+      keyValueService: KeyValueService[IOWithTraceIdContext],
+      onCardanoBlock: CardanoBlockHandler,
+      onAtalaObject: AtalaObjectNotification => Future[Unit],
+      logs: Logs[IO, IOWithTraceIdContext]
+  ): Resource[IO, UnderlyingLedger[IOWithTraceIdContext]] =
+    config.getString("ledger") match {
+      case "cardano" =>
+        initializeCardano(
+          keyValueService,
+          config,
+          onCardanoBlock,
+          onAtalaObject,
+          logs
+        )
+      case "in-memory" =>
+        logger.info("Using in-memory ledger")
+        InMemoryLedgerService.resource(onAtalaObject, logs)
+    }
+
+  private def startServer(nodeService: NodeServiceImpl): Resource[IO, Server] = Resource.make[IO, Server](IO {
+    logger.info("Starting server")
+    import io.grpc.protobuf.services.ProtoReflectionService
+    val server = ServerBuilder
+      .forPort(NodeApp.port)
+      .addService(NodeServiceGrpc.bindService(nodeService, executionContext))
+      .addService(_root_.grpc.health.v1.health.HealthGrpc.bindService(new HealthService, executionContext))
+      .addService(
+        ProtoReflectionService.newInstance()
+      ) //TODO: Decide before release if we should keep this (or guard it with a config flag)
+      .build()
+      .start()
+    logger.info("Server started, listening on " + NodeApp.port)
+    server
+  })(server =>
+    IO {
+      System.err.println("*** shutting down gRPC server since JVM is shutting down")
       server.shutdown()
-    }
-    ()
-  }
-
-  private def blockUntilShutdown(): Unit = {
-    if (server != null) {
       server.awaitTermination()
+      System.err.println("*** server shut down")
     }
-  }
+  )
 
   private def applyDatabaseMigrations(
       databaseConfig: TransactorFactory.Config
   ): Unit = {
+    logger.info("Applying database migrations")
     val appliedMigrations = SchemaMigrations.migrate(databaseConfig)
     if (appliedMigrations == 0) {
       logger.info("Database up to date")
