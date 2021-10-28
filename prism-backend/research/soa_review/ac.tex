@@ -18,13 +18,105 @@ threshold opening.
   Esorics, CCS, AsiaCCS, SP, EuroSP, Usenix Sec and Privacy, PETs...
 \end{enumerate}
 
+Anonymous Credentials (ACs) were first proposed by Chaum \cite{chau85}, and
+later formally treated and optimized in a series of papers by Camenisch and
+Lysyanskaya \cite{cl01,cl02,cl04}. Roughly speaking, users receive credentials
+from an issuing organization, which can then use to authenticate against some
+verifier. The main property is that this authentication process can be done
+in a privacy-preserving way. This typically means that the verifier cannot
+link different authentication processes by that same user. And, usually, in
+credentials composed by multiple attributes, that the verifier only learns
+the attributes that the user is willing to share (or a function of them).
+
 \subsection{Approaches, Models, and Variations}
 
-\paragraph{Main approaches.}
+\paragraph{Main approaches.} %
+
+\begin{enumerate}
+\item[\cite{cl01}:]
+  \begin{itemize}
+  \item Functionality: FormNym, GrantCred, VerifyCred, VerifyCredOnNym.
+  \item Approach: Users create a pseudonym with each organization. For this,
+    users have to register first with the organization (associating a key to
+    a user name). Whenever the user wants to get a credential from a organization
+    in which he registered, he has to authenticate, and then the organization
+    decides whether or not to grant the credential. Users can show their
+    credentials to organizations in two ways: (1) just proving that they own a
+    credential issued by some organization; or (2), proving that they own a
+    credential issued by some organization \emph{and} this credential is over
+    the same pseudonym that the user holds with the verifying organization.
+    Essentially, pseudonyms are the concatenation of two random numbers (one
+    provided by the user, and the other by the organization). They get
+    associated an authenticating tag, which is a statistically hiding commitment
+    to the user secret (computed using randomness provided by both user and
+    organization). Organizations keep a database of the generated pseudonyms.
+    To get a credential from an organization where the user registered
+    previously, the user proves knowledge of the secret involved in the
+    pseudonym. The organization then creates a ``random signature'' (by using a
+    the inverse of random exponent, with the help of the factorization of an RSA
+    modulus chosen by the organization at setup time) over the pseudonym, and
+    gives that to the user. Users can show the credentials (in any of the
+    previously stated two ways) by creating non-interactive zero-knowledge
+    proofs of knowledge of the appropriate secret. Note that, in case (2),
+    this means that the proof is over two pseudonyms, which must share the
+    same secret.    
+  \end{itemize}
+\item[\cite{cl02}:] 
+\item[\cite{cl04}:]
+\item[\cite{cdhk15}:]
+\end{enumerate}
 
 \paragraph{Main security models.}
 
+\begin{enumerate}
+\item[\cite{cl01}:] Security in \cite{cl01} is proven in an ad-hoc way,
+  using the ideal-world/real-world paradigm. The authors describe a
+  simulator for the operations supported by the system (Setup, FormNym,
+  GrantCred, VerifyCred and VerifyCredOnNym), and prove that the output of this
+  simulator is indistinguishable from that of the real protocol, under the
+  strong RSA and Diffie-Hellman assumptions.  
+\item[\cite{cl02}:] 
+\item[\cite{cl04}:]
+\item[\cite{cdhk15}:]
+\end{enumerate}
+
 \paragraph{Variations in functionality.}
+
+\begin{enumerate}
+\item[\cite{cl01}:] Extensions provided to the main functionality are:
+  \begin{itemize}
+  \item PKI-based and all-or-nothing non-transferability: Both options
+    involve sharing a verifiable encryption of the user secrets. In the
+    case of PKI-based non-transferability, the CA receives a verifiable
+    encryption, using as key the user's master secret, of some valuable
+    piece of information belonging to the user (e.g., the user's secret
+    key associated to his public key with that CA). In the all-or-nothing
+    case, the user shares with each organization (with which it has a
+    pseudonym), a verifiable encryption of his pseudonym secret data, encrypted
+    with his master secret. In both cases, if the user shares his master
+    secret with someone else, then he automatically gives access to
+    other relevant pieces of information (as the verifiable encryptions are
+    made public by the corresponding entity).    
+  \item One-show credentials: The validating tags over pseudonyms are extended
+    to include an extra value in their commitment. Then, users have to reveal
+    that value (or, rather, a value deterministically derived from that) in the
+    zero-knowledge proofs they create at show time. Since the value is always
+    the same, verifiers can check whether they have seen it before, or not.
+  \item Revocation: Both local (i.e., within an organization) and global (i.e.,
+    referring to an identity of the user in an external CA) is possible by
+    extending the pseudonyms of the user, and the credential showing protocols,
+    with values that allow subsequent decryption by a trusted party of their
+    pseudonym or external identity, given a transcript of the credential
+    showing.    
+  \item Attributes: The paper also succinctly describes how multiple attributes
+    per credential could be included. This would be done by dividing the inverval
+    within the exponent used to compute the pseudonym in sub-intervals, and then
+    proving that the exponent lies within a sub-interval.
+  \end{itemize}
+\item[\cite{cl02}:] 
+\item[\cite{cl04}:]
+\item[\cite{cdhk15}:]
+\end{enumerate}
 
 \paragraph{Efficiency.}
 
