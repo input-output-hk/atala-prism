@@ -35,7 +35,7 @@ const ConnectionsFilter = ({ fullFilters }) => {
     <div className="FilterControls">
       <div className="ContactFilters">
         <Input
-          placeholder={t('groups.filters.search')}
+          placeholder={t('contacts.filters.search')}
           prefix={<SearchOutlined />}
           onChange={({ target: { value } }) => setFilterValue('textFilter', value)}
         />

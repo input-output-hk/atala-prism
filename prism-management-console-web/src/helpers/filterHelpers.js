@@ -27,8 +27,10 @@ export const filterByNewerDate = (filter, field) => !filter || filter < field;
 
 export const filterByUnixDate = (filter, field) => !filter || filter === dateFormat(field);
 
-export const filterByMultipleKeys = (filterValue, field, keys) =>
-  keys.reduce((matches, key) => matches || filterByInclusion(filterValue, field[key]), false);
+// filters by a series of keys:
+// where only the items that include the `filterValue` on any of it's keys will return true
+export const filterByMultipleKeys = (filterValue, item, keys) =>
+  keys.reduce((matches, key) => matches || filterByInclusion(filterValue, item[key]), false);
 
 export const filterByManyFields = (toFilter, filterValue, keys) =>
   toFilter.filter(item =>
