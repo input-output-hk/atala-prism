@@ -20,15 +20,9 @@ import {
 const selectedCredentials = mockCredentials.map(c => c.credentialId);
 
 describe('credential actions are applied to the valid credentials', () => {
-  test('validation of required status for credential actions works', () => {
+  test('credential signability validator works', () => {
     const unsignableCredential = mockCredentials[UNSIGNABLE_CREDENTIAL_INDEX];
     const signableCredential = mockCredentials[SIGNABLE_CREDENTIAL_INDEX];
-
-    const unsendableCredential = mockCredentials[UNSENDABLE_CREDENTIAL_INDEX];
-    const sendableCredential = mockCredentials[SENDABLE_CREDENTIAL_INDEX];
-
-    const unrevocableCredential = mockCredentials[UNREVOCABLE_CREDENTIAL_INDEX];
-    const revocableCredential = mockCredentials[REVOCABLE_CREDENTIAL_INDEX];
 
     expect(
       hasRequiredStatus(unsignableCredential, credentialRequiredStatus[SIGN_CREDENTIALS])
@@ -36,6 +30,11 @@ describe('credential actions are applied to the valid credentials', () => {
     expect(
       hasRequiredStatus(signableCredential, credentialRequiredStatus[SIGN_CREDENTIALS])
     ).toBeTruthy();
+  });
+
+  test('credential sendability validator works', () => {
+    const unsendableCredential = mockCredentials[UNSENDABLE_CREDENTIAL_INDEX];
+    const sendableCredential = mockCredentials[SENDABLE_CREDENTIAL_INDEX];
 
     expect(
       hasRequiredStatus(unsendableCredential, credentialRequiredStatus[SEND_CREDENTIALS])
@@ -43,6 +42,11 @@ describe('credential actions are applied to the valid credentials', () => {
     expect(
       hasRequiredStatus(sendableCredential, credentialRequiredStatus[SEND_CREDENTIALS])
     ).toBeTruthy();
+  });
+
+  test('credential revocability validator works', () => {
+    const unrevocableCredential = mockCredentials[UNREVOCABLE_CREDENTIAL_INDEX];
+    const revocableCredential = mockCredentials[REVOCABLE_CREDENTIAL_INDEX];
 
     expect(
       hasRequiredStatus(unrevocableCredential, credentialRequiredStatus[REVOKE_CREDENTIALS])
