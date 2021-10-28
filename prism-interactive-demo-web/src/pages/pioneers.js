@@ -1,4 +1,5 @@
 import React, { useEffect } from 'react';
+import PropTypes from 'prop-types';
 import { graphql, Link } from 'gatsby';
 import firebase from 'gatsby-plugin-firebase';
 import logo from '../../static/images/logo-pioneer.svg';
@@ -80,24 +81,25 @@ const Pioneers = ({ location }) => {
         <div className="VideoContainer">
           <h3>About the Atala PRISM Pioneer Program</h3>
           <video controls>
+            <track kind="captions" />
             <source src="/videos/prism-pioneer-program-course-overview.mp4" type="video/mp4" />
           </video>
         </div>
       </div>
       <div className="center">
-        <img src={triangle} />
+        <img src={triangle} alt="triangle" />
       </div>
       <div className="FAQs">
         <h3>FAQs</h3>
         <Collapsable />
       </div>
       <div className="banner">
-        <img className="whiteTriangle" src={triangleWhite} />
+        <img className="whiteTriangle" src={triangleWhite} alt="triangle" />
         <div className="logo">
           <img src={logo} alt="logo" />
         </div>
         <h2>Pioneers Program</h2>
-        <Link to={`/pioneers#registerInterest`}>
+        <Link to="/pioneers#registerInterest">
           <CustomButton
             buttonProps={{
               className: 'theme-primary'
@@ -109,6 +111,14 @@ const Pioneers = ({ location }) => {
       <PionnersFooter />
     </div>
   );
+};
+
+Pioneers.propTypes = {
+  location: PropTypes.shape({
+    state: PropTypes.shape({
+      fromResources: PropTypes.bool
+    })
+  }).isRequired
 };
 
 export default Pioneers;

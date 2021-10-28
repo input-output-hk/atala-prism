@@ -3,6 +3,7 @@ import { Input, AutoComplete } from 'antd';
 import { graphql, navigate, useStaticQuery } from 'gatsby';
 import keywordExtractor from 'keyword-extractor';
 import _ from 'lodash';
+import { removeHtmlTags } from '../../helpers/textFormatter';
 
 import './style.scss';
 
@@ -35,7 +36,7 @@ const Searchbar = () => {
   useEffect(() => {
     const postsContent = posts.reduce(
       (accum, { frontmatter: { title, description }, html }) =>
-        accum.concat(title, ' ', description, ' ', html.replace(/(<([^>]+)>)/gi, ''), ' '),
+        accum.concat(title, ' ', description, ' ', removeHtmlTags(html), ' '),
       ''
     );
 

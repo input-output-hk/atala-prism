@@ -10,6 +10,7 @@ import clockIcon from '../images/clock.svg';
 import SEO from '../components/seo/seo';
 import Sidebar from '../components/sidebar/sidebar';
 import { BLOG_EVENT } from '../helpers/constants';
+import { groupedPostsShape, postsShape, recentPostsShape } from '../helpers/propTypes';
 
 import './blog.scss';
 
@@ -119,47 +120,13 @@ const BlogIndex = ({ data }) => {
 BlogIndex.propTypes = {
   data: PropTypes.shape({
     posts: PropTypes.shape({
-      nodes: PropTypes.arrayOf(
-        PropTypes.shape({
-          excerpt: PropTypes.string,
-          html: PropTypes.string,
-          fields: PropTypes.shape({
-            slug: PropTypes.string
-          }),
-          frontmatter: PropTypes.shape({
-            date: PropTypes.string,
-            title: PropTypes.string,
-            description: PropTypes.string,
-            author: PropTypes.string,
-            readingTime: PropTypes.number,
-            image: PropTypes.shape({
-              publicURL: PropTypes.string
-            })
-          })
-        })
-      )
+      nodes: postsShape
     }),
     recentPosts: PropTypes.shape({
-      nodes: PropTypes.arrayOf(
-        PropTypes.shape({
-          fields: PropTypes.shape({
-            slug: PropTypes.string
-          }),
-          frontmatter: PropTypes.shape({
-            date: PropTypes.string,
-            title: PropTypes.string,
-            author: PropTypes.string
-          })
-        })
-      )
+      nodes: recentPostsShape
     }),
     postsPerYear: PropTypes.shape({
-      group: PropTypes.arrayOf(
-        PropTypes.shape({
-          totalCount: PropTypes.number,
-          fieldValue: PropTypes.string
-        })
-      )
+      group: groupedPostsShape
     })
   }).isRequired
 };
