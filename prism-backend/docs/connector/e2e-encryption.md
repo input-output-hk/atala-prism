@@ -191,4 +191,4 @@ In the current implementation we are deciding to go with it, but here is roughly
 * In the Phase one - key exchange, Issuer will generate 2 key derivation paths and subsequently 2 key paris. Issuer will send 2 public keys, one that the holder will use to encrypt messages intended for the issuer, and another that holder will use to verify the signature of the message sent from the Issuer.  
 * The holder would need to send 2 keys for the same purposes as well
 * In the Phase two - encryption, participants will need to include their own and another participants' public keys in `UnsignedAtalaMessage`, Since we will have 2 key paris now, they will include their and another participants signing key.
-  * It is worth nothing that it does not matter which key to include, key-agreement key could have been used as well.
+  * It is worth noting that it does not matter which key to include, key-agreement key could have been used as well.
