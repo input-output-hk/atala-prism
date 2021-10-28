@@ -75,13 +75,15 @@ class SubmissionServiceSpec
       operationSubmissionPeriod = 1.hour
     )
 
-  private implicit lazy val objectManagementService: ObjectManagementService =
-    ObjectManagementService(
+  private implicit lazy val objectManagementService: ObjectManagementService[IOWithTraceIdContext] =
+    ObjectManagementService.unsafe(
       atalaOperationsRepository,
       atalaObjectsTransactionsRepository,
       keyValuesRepository,
       protocolVersionRepository,
-      blockProcessing
+      blockProcessing,
+      dbLiftedToTraceIdIO,
+      logs
     )
 
   override def beforeEach(): Unit = {
@@ -480,6 +482,8 @@ class SubmissionServiceSpec
       withClue(s"scheduling operation #$index") {
         objectManagementService
           .scheduleSingleAtalaOperation(atalaOperation)
+          .run(TraceId.generateYOLO)
+          .unsafeToFuture()
           .futureValue
       }
     }

@@ -94,14 +94,15 @@ object DataPreparation {
   def publishSingleOperationAndFlush(
       signedAtalaOperation: SignedAtalaOperation
   )(implicit
-      objectManagementService: ObjectManagementService,
+      objectManagementService: ObjectManagementService[IOWithTraceIdContext],
       submissionService: SubmissionService[IOWithTraceIdContext],
       executionContext: ExecutionContext
   ): Future[Either[NodeError, AtalaOperationId]] = {
     for {
-      atalaOperationIdE <- objectManagementService.scheduleSingleAtalaOperation(
-        signedAtalaOperation
-      )
+      atalaOperationIdE <- objectManagementService
+        .scheduleSingleAtalaOperation(signedAtalaOperation)
+        .run(TraceId.generateYOLO)
+        .unsafeToFuture()
       _ <- submissionService
         .submitReceivedObjects()
         .run(TraceId.generateYOLO)
@@ -110,12 +111,12 @@ object DataPreparation {
   }
 
   def publishOperationsAndFlush(ops: SignedAtalaOperation*)(implicit
-      objectManagementService: ObjectManagementService,
+      objectManagementService: ObjectManagementService[IOWithTraceIdContext],
       submissionService: SubmissionService[IOWithTraceIdContext],
       executionContext: ExecutionContext
   ): Future[List[Either[NodeError, AtalaOperationId]]] = {
     for {
-      ids <- objectManagementService.scheduleAtalaOperations(ops: _*)
+      ids <- objectManagementService.scheduleAtalaOperations(ops: _*).run(TraceId.generateYOLO).unsafeToFuture()
       _ <- submissionService
         .submitReceivedObjects()
         .run(TraceId.generateYOLO)

@@ -39,6 +39,7 @@ import scala.concurrent.{ExecutionContext, Future, Promise}
 import scala.jdk.CollectionConverters._
 import io.iohk.atala.prism.credentials.json.JsonBasedCredential
 import io.iohk.atala.prism.api.CredentialBatches
+import io.iohk.atala.prism.logging.TraceId
 import io.iohk.atala.prism.logging.TraceId.IOWithTraceIdContext
 import io.iohk.atala.prism.node.poc.CredVerification.VerificationError._
 import io.iohk.atala.prism.utils.IOUtils._
@@ -58,12 +59,11 @@ class FlowPoC extends AtalaWithPostgresSpec with BeforeAndAfterEach {
   protected var credentialBatchesRepository: CredentialBatchesRepository[IOWithTraceIdContext] = _
   protected var atalaReferenceLedger: UnderlyingLedger[IOWithTraceIdContext] = _
   protected var blockProcessingService: BlockProcessingServiceImpl = _
-  protected var objectManagementService: ObjectManagementService = _
+  protected var objectManagementService: ObjectManagementService[IOWithTraceIdContext] = _
   protected var submissionService: SubmissionService[IOWithTraceIdContext] = _
   protected var atalaObjectsTransactionsRepository: AtalaObjectsTransactionsRepository[IOWithTraceIdContext] = _
-  protected var keyValuesRepository: KeyValuesRepository[IOWithTraceIdContext] =
-    _
-  protected var objectManagementServicePromise: Promise[ObjectManagementService] = _
+  protected var keyValuesRepository: KeyValuesRepository[IOWithTraceIdContext] = _
+  protected var objectManagementServicePromise: Promise[ObjectManagementService[IOWithTraceIdContext]] = _
   protected var submissionSchedulingService: SubmissionSchedulingService = _
   protected var protocolVersionsRepository: ProtocolVersionRepository[IOWithTraceIdContext] = _
 
@@ -81,6 +81,9 @@ class FlowPoC extends AtalaWithPostgresSpec with BeforeAndAfterEach {
     ): Future[Unit] = {
       objectManagementServicePromise.future.futureValue
         .saveObject(notification)
+        .run(TraceId.generateYOLO)
+        .void
+        .unsafeToFuture()
     }
 
     atalaReferenceLedger = InMemoryLedgerService.unsafe(onAtalaReference, flowPocTestLogs)
@@ -99,12 +102,14 @@ class FlowPoC extends AtalaWithPostgresSpec with BeforeAndAfterEach {
       submissionService
     )
     keyValuesRepository = KeyValuesRepository.unsafe(dbLiftedToTraceIdIO, flowPocTestLogs)
-    objectManagementService = ObjectManagementService(
+    objectManagementService = ObjectManagementService.unsafe(
       atalaOperationsRepository,
       atalaObjectsTransactionsRepository,
       keyValuesRepository,
       protocolVersionsRepository,
-      blockProcessingService
+      blockProcessingService,
+      dbLiftedToTraceIdIO,
+      flowPocTestLogs
     )
     objectManagementServicePromise.success(objectManagementService)
 

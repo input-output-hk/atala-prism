@@ -15,6 +15,7 @@ import io.iohk.atala.prism.crypto.keys.ECPublicKey
 import io.iohk.atala.prism.crypto.signature.ECSignature
 import io.iohk.atala.prism.api.CredentialBatches
 import io.iohk.atala.prism.identity.{PrismDid => DID}
+import io.iohk.atala.prism.logging.TraceId
 import io.iohk.atala.prism.logging.TraceId.IOWithTraceIdContext
 import io.iohk.atala.prism.models.DidSuffix
 import io.iohk.atala.prism.node.grpc.ProtoCodecs
@@ -74,9 +75,9 @@ class EndorsementsFlowPoC extends AtalaWithPostgresSpec with BeforeAndAfterEach 
   protected var credentialBatchesRepository: CredentialBatchesRepository[IOWithTraceIdContext] = _
   protected var atalaReferenceLedger: UnderlyingLedger[IOWithTraceIdContext] = _
   protected var blockProcessingService: BlockProcessingServiceImpl = _
-  protected var objectManagementService: ObjectManagementService = _
+  protected var objectManagementService: ObjectManagementService[IOWithTraceIdContext] = _
   protected var submissionService: SubmissionService[IOWithTraceIdContext] = _
-  protected var objectManagementServicePromise: Promise[ObjectManagementService] = _
+  protected var objectManagementServicePromise: Promise[ObjectManagementService[IOWithTraceIdContext]] = _
   protected var submissionSchedulingService: SubmissionSchedulingService = _
   protected var protocolVersionsRepository: ProtocolVersionRepository[IOWithTraceIdContext] = _
 
@@ -100,6 +101,9 @@ class EndorsementsFlowPoC extends AtalaWithPostgresSpec with BeforeAndAfterEach 
     ): Future[Unit] = {
       objectManagementServicePromise.future.futureValue
         .saveObject(notification)
+        .run(TraceId.generateYOLO)
+        .void
+        .unsafeToFuture()
     }
 
     atalaReferenceLedger = InMemoryLedgerService.unsafe(onAtalaReference, endorsementsFlowPoCLogs)
@@ -111,12 +115,14 @@ class EndorsementsFlowPoC extends AtalaWithPostgresSpec with BeforeAndAfterEach 
     atalaObjectsTransactionsRepository = AtalaObjectsTransactionsRepository
       .unsafe(dbLiftedToTraceIdIO, endorsementsFlowPoCLogs)
     keyValuesRepository = KeyValuesRepository.unsafe(dbLiftedToTraceIdIO, endorsementsFlowPoCLogs)
-    objectManagementService = ObjectManagementService(
+    objectManagementService = ObjectManagementService.unsafe(
       atalaOperationsRepository,
       atalaObjectsTransactionsRepository,
       keyValuesRepository,
       protocolVersionsRepository,
-      blockProcessingService
+      blockProcessingService,
+      dbLiftedToTraceIdIO,
+      endorsementsFlowPoCLogs
     )
     submissionService = SubmissionService.unsafe(
       atalaReferenceLedger,

@@ -42,7 +42,7 @@ import io.iohk.atala.prism.node.models.AtalaObjectTransactionSubmissionStatus.In
 
 class NodeServiceImpl(
     didDataRepository: DIDDataRepository[IOWithTraceIdContext],
-    objectManagement: ObjectManagementService,
+    objectManagement: ObjectManagementService[IOWithTraceIdContext],
     submissionSchedulingService: SubmissionSchedulingService,
     credentialBatchesRepository: CredentialBatchesRepository[
       IOWithTraceIdContext
@@ -69,7 +69,7 @@ class NodeServiceImpl(
     measureRequestFuture(serviceName, methodName) {
       withLog(methodName, request) { _ =>
         for {
-          lastSyncedTimestamp <- objectManagement.getLastSyncedTimestamp
+          lastSyncedTimestamp <- objectManagement.getLastSyncedTimestamp.run(TraceId.generateYOLO).unsafeToFuture()
           response <- getDidDocument(request.did, methodName)
         } yield response.withLastSyncedBlockTimestamp(
           lastSyncedTimestamp.toProtoTimestamp
@@ -132,9 +132,12 @@ class NodeServiceImpl(
             methodName,
             CreateDIDOperation.parseWithMockedLedgerData(operation)
           )
-          operationIdE <- objectManagement.scheduleSingleAtalaOperation(
-            operation
-          )
+          operationIdE <- objectManagement
+            .scheduleSingleAtalaOperation(
+              operation
+            )
+            .run(TraceId.generateYOLO)
+            .unsafeToFuture()
         } yield {
           val response = node_api.CreateDIDResponse(id = parsedOp.id.getValue)
           operationIdE.fold(
@@ -172,9 +175,12 @@ class NodeServiceImpl(
             methodName,
             UpdateDIDOperation.validate(operation)
           )
-          operationIdE <- objectManagement.scheduleSingleAtalaOperation(
-            operation
-          )
+          operationIdE <- objectManagement
+            .scheduleSingleAtalaOperation(
+              operation
+            )
+            .run(TraceId.generateYOLO)
+            .unsafeToFuture()
         } yield {
           val response = node_api.UpdateDIDResponse()
           operationIdE.fold(
@@ -213,9 +219,12 @@ class NodeServiceImpl(
               methodName,
               IssueCredentialBatchOperation.parseWithMockedLedgerData(operation)
             )
-          operationIdE <- objectManagement.scheduleSingleAtalaOperation(
-            operation
-          )
+          operationIdE <- objectManagement
+            .scheduleSingleAtalaOperation(
+              operation
+            )
+            .run(TraceId.generateYOLO)
+            .unsafeToFuture()
         } yield {
           val response = node_api.IssueCredentialBatchResponse(batchId = parsedOp.credentialBatchId.getId)
           operationIdE.fold(
@@ -252,9 +261,12 @@ class NodeServiceImpl(
             methodName,
             RevokeCredentialsOperation.validate(operation)
           )
-          operationIdE <- objectManagement.scheduleSingleAtalaOperation(
-            operation
-          )
+          operationIdE <- objectManagement
+            .scheduleSingleAtalaOperation(
+              operation
+            )
+            .run(TraceId.generateYOLO)
+            .unsafeToFuture()
         } yield {
           val response = node_api.RevokeCredentialsResponse()
           operationIdE.fold(
@@ -284,7 +296,7 @@ class NodeServiceImpl(
     measureRequestFuture(serviceName, methodName) {
       withLog(methodName, request) { traceId =>
         for {
-          lastSyncedTimestamp <- lastSyncedTimestampF
+          lastSyncedTimestamp <- lastSyncedTimestampF.run(TraceId.generateYOLO).unsafeToFuture()
           batchId <- batchIdF
           _ = logWithTraceId(
             methodName,
@@ -327,7 +339,7 @@ class NodeServiceImpl(
     measureRequestFuture(serviceName, methodName) {
       withLog(methodName, request) { traceId =>
         for {
-          lastSyncedTimestamp <- lastSyncedTimestampF
+          lastSyncedTimestamp <- lastSyncedTimestampF.run(TraceId.generateYOLO).unsafeToFuture()
           batchId <- batchIdF
           _ = logWithTraceId(
             methodName,
@@ -405,9 +417,8 @@ class NodeServiceImpl(
               errorEitherToFutureAndCount(methodName, getOperationOutput(op))
             }
           )
-          operationIds <- objectManagement.scheduleAtalaOperations(
-            operations: _*
-          )
+          operationIds <-
+            objectManagement.scheduleAtalaOperations(operations: _*).run(TraceId.generateYOLO).unsafeToFuture()
           outputsWithOperationIds = outputs.zip(operationIds).map {
             case (out, Right(opId)) =>
               out.withOperationId(opId.toProtoByteString)
@@ -444,7 +455,7 @@ class NodeServiceImpl(
 
     withLog(methodName, request) { traceId =>
       for {
-        lastSyncedTimestamp <- objectManagement.getLastSyncedTimestamp
+        lastSyncedTimestamp <- objectManagement.getLastSyncedTimestamp.run(TraceId.generateYOLO).unsafeToFuture()
         atalaOperationId = AtalaOperationId.fromVectorUnsafe(
           request.operationId.toByteArray.toVector
         )
@@ -453,7 +464,7 @@ class NodeServiceImpl(
           traceId,
           "atalaOperationId" -> s"${atalaOperationId.toString}"
         )
-        operationInfo <- objectManagement.getOperationInfo(atalaOperationId)
+        operationInfo <- objectManagement.getOperationInfo(atalaOperationId).run(TraceId.generateYOLO).unsafeToFuture()
       } yield {
         val operationStatus = operationInfo
           .fold[common_models.OperationStatus](
@@ -511,6 +522,8 @@ class NodeServiceImpl(
                 lastSyncedBlockTimestamp.toProtoTimestamp
               )
           }
+          .run(TraceId.generateYOLO)
+          .unsafeToFuture()
       }
     )
   }

@@ -36,8 +36,8 @@ import org.mockito.captor.ArgCaptor
 import org.mockito.scalatest.{MockitoSugar, ResetMocksAfterEachTest}
 import org.scalatest.BeforeAndAfterEach
 import org.scalatest.OptionValues._
-import tofu.logging.Logs
 import org.scalatest.concurrent.ScalaFutures
+import tofu.logging.Logs
 
 import java.time.{Duration, Instant}
 import scala.concurrent.ExecutionContext
@@ -103,13 +103,15 @@ class ObjectManagementServiceSpec
       logs = logs
     )
 
-  private implicit lazy val objectManagementService: ObjectManagementService =
-    ObjectManagementService(
+  private implicit lazy val objectManagementService: ObjectManagementService[IOWithTraceIdContext] =
+    ObjectManagementService.unsafe(
       atalaOperationsRepository,
       atalaObjectsTransactionsRepository,
       keyValuesRepository,
       protocolVersionRepository,
-      blockProcessing
+      blockProcessing,
+      dbLiftedToTraceIdIO,
+      logs
     )
 
   override def beforeEach(): Unit = {
@@ -135,6 +137,8 @@ class ObjectManagementServiceSpec
 
       val atalaOperationInfo = objectManagementService
         .getOperationInfo(atalaOperationId)
+        .run(TraceId.generateYOLO)
+        .unsafeToFuture()
         .futureValue
         .value
 
@@ -166,6 +170,8 @@ class ObjectManagementServiceSpec
 
       val atalaOperationInfo = objectManagementService
         .getOperationInfo(atalaOperationId)
+        .run(TraceId.generateYOLO)
+        .unsafeToFuture()
         .futureValue
         .value
 
@@ -197,6 +203,8 @@ class ObjectManagementServiceSpec
 
       val atalaOperationInfo = objectManagementService
         .getOperationInfo(atalaOperationId)
+        .run(TraceId.generateYOLO)
+        .unsafeToFuture()
         .futureValue
         .value
 
@@ -234,6 +242,8 @@ class ObjectManagementServiceSpec
 
       val operationInfo = objectManagementService
         .getOperationInfo(returnedOperationId)
+        .run(TraceId.generateYOLO)
+        .unsafeToFuture()
         .futureValue
         .value
       operationInfo.operationId must be(returnedOperationId)
@@ -270,6 +280,8 @@ class ObjectManagementServiceSpec
 
       val operationInfo = objectManagementService
         .getOperationInfo(returnedOperationId)
+        .run(TraceId.generateYOLO)
+        .unsafeToFuture()
         .futureValue
         .value
       operationInfo.operationId must be(returnedOperationId)
@@ -311,6 +323,8 @@ class ObjectManagementServiceSpec
 
       objectManagementService
         .saveObject(AtalaObjectNotification(obj, dummyTransactionInfo))
+        .run(TraceId.generateYOLO)
+        .unsafeToFuture()
         .futureValue
 
       val atalaObject = queryAtalaObject(obj)
@@ -338,11 +352,13 @@ class ObjectManagementServiceSpec
 
       objectManagementService
         .saveObject(AtalaObjectNotification(obj, dummyTransactionInfo))
+        .run(TraceId.generateYOLO)
+        .unsafeToFuture()
         .futureValue
 
       val atalaObject = queryAtalaObject(obj)
       val operationInfo =
-        objectManagementService.getOperationInfo(operationId).futureValue
+        objectManagementService.getOperationInfo(operationId).run(TraceId.generateYOLO).unsafeToFuture().futureValue
 
       atalaObject.transaction.value mustBe dummyTransactionInfo
       // We don't check the whole returned AtalaOperationInfo because `operationStatus`
@@ -361,6 +377,8 @@ class ObjectManagementServiceSpec
 
       objectManagementService
         .saveObject(AtalaObjectNotification(obj, dummyTransactionInfo))
+        .run(TraceId.generateYOLO)
+        .unsafeToFuture()
         .futureValue
       val dummyTransactionInfo2 = TransactionInfo(
         transactionId = TransactionId.from(Sha256.compute("id".getBytes).getValue).value,
@@ -369,6 +387,8 @@ class ObjectManagementServiceSpec
       )
       objectManagementService
         .saveObject(AtalaObjectNotification(obj, dummyTransactionInfo2))
+        .run(TraceId.generateYOLO)
+        .unsafeToFuture()
         .futureValue
 
       val atalaObject = queryAtalaObject(obj)
@@ -385,6 +405,8 @@ class ObjectManagementServiceSpec
       val obj = createAtalaObject(block)
       objectManagementService
         .saveObject(AtalaObjectNotification(obj, dummyTransactionInfo))
+        .run(TraceId.generateYOLO)
+        .unsafeToFuture()
         .futureValue
 
       val blockCaptor = ArgCaptor[node_internal.AtalaBlock]
@@ -417,6 +439,8 @@ class ObjectManagementServiceSpec
       val obj = createAtalaObject(block)
       objectManagementService
         .saveObject(AtalaObjectNotification(obj, dummyTransactionInfo))
+        .run(TraceId.generateYOLO)
+        .unsafeToFuture()
         .futureValue
 
       val atalaObject = AtalaObjectsDAO
