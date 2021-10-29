@@ -1,7 +1,7 @@
 package io.iohk.atala.prism.connector.services
 
-import cats.{Comonad, Functor}
-import cats.effect.{BracketThrow, MonadThrow}
+import cats.{Applicative, Comonad, Functor}
+import cats.effect.{BracketThrow, MonadThrow, Resource}
 import cats.syntax.comonad._
 import cats.syntax.either._
 import cats.syntax.functor._
@@ -54,11 +54,10 @@ private class RegistrationServiceImpl[F[_]: MonadThrow](
       didOrOperation: Either[DID, SignedAtalaOperation]
   ): F[Either[RegisterParticipantError, RegistrationResult]] = {
     for {
-      maybeCreateRequest <-
-        didOrOperation.fold(
-          checkAndUseExistingDID(_, tpe, name, logo),
-          createDID(tpe, name, logo, _).map(_.asRight)
-        )
+      maybeCreateRequest <- didOrOperation.fold(
+        checkAndUseExistingDID(_, tpe, name, logo),
+        createDID(tpe, name, logo, _).map(_.asRight)
+      )
       createResult <- maybeCreateRequest.flatTraverse[F, Unit](
         participantsRepository.create
       )
@@ -81,12 +80,11 @@ private class RegistrationServiceImpl[F[_]: MonadThrow](
       createDIDOperation: SignedAtalaOperation
   ): F[ParticipantsRepository.CreateParticipantRequest] = {
     for {
-      createDIDResponse <-
-        ex.deferFuture(
-          nodeService.createDID(
-            node_api.CreateDIDRequest().withSignedOperation(createDIDOperation)
-          )
+      createDIDResponse <- ex.deferFuture(
+        nodeService.createDID(
+          node_api.CreateDIDRequest().withSignedOperation(createDIDOperation)
         )
+      )
       did = DID.fromString(DidSuffix.didFromStringSuffix(createDIDResponse.id))
       createRequest =
         ParticipantsRepository
@@ -162,6 +160,12 @@ object RegistrationService {
         nodeService
       )
     }
+
+  def resource[F[_]: BracketThrow: Execute, R[_]: Applicative: Functor](
+      participantsRepository: ParticipantsRepository[F],
+      nodeService: NodeServiceGrpc.NodeService,
+      logs: Logs[R, F]
+  ): Resource[R, RegistrationService[F]] = Resource.eval(RegistrationService(participantsRepository, nodeService, logs))
 
   def unsafe[F[_]: BracketThrow: Execute, R[_]: Comonad](
       participantsRepository: ParticipantsRepository[F],

@@ -1,8 +1,8 @@
 package io.iohk.atala.prism.connector.repositories
 
-import cats.{Comonad, Functor}
+import cats.{Applicative, Comonad, Functor}
 import cats.data.{EitherT, OptionT}
-import cats.effect.BracketThrow
+import cats.effect.{BracketThrow, Resource}
 import cats.implicits.{catsSyntaxApplicativeId, catsSyntaxEitherId, catsSyntaxOptionId}
 import cats.syntax.either._
 import cats.syntax.comonad._
@@ -112,6 +112,11 @@ object ConnectionsRepository {
       val mid = metrics |+| logs
       mid attach new ConnectionsRepositoryPostgresImpl[F](transactor)
     }
+
+  def resource[F[_]: TimeMeasureMetric: BracketThrow, R[_]: Applicative: Functor](
+      transactor: Transactor[F],
+      logs: Logs[R, F]
+  ): Resource[R, ConnectionsRepository[F]] = Resource.eval(ConnectionsRepository(transactor, logs))
 
   def unsafe[F[_]: TimeMeasureMetric: BracketThrow, R[_]: Comonad](
       transactor: Transactor[F],

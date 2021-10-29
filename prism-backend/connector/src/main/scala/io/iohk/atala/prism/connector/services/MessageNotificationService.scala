@@ -117,4 +117,15 @@ object MessageNotificationService {
     val dbNotificationStreamer = DbNotificationStreamer("new_messages")
     new MessageNotificationService(dbNotificationStreamer, xa)
   }
+
+  def resourceAndStart(
+      xa: Transactor[IO],
+      contextShift: ContextShift[IO],
+      timer: Timer[IO]
+  ): Resource[IO, MessageNotificationService] =
+    Resource.make(IO.delay {
+      val service = MessageNotificationService(xa)(contextShift, timer)
+      service.start()
+      service
+    })(service => IO(service.stop()))
 }

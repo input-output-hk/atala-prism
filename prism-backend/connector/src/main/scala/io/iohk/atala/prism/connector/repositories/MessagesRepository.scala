@@ -1,13 +1,13 @@
 package io.iohk.atala.prism.connector.repositories
 
-import cats.{Comonad, Functor}
+import cats.{Applicative, Comonad, Functor}
 import cats.data.{EitherT, NonEmptyList}
 import cats.syntax.applicative._
 import cats.syntax.comonad._
 import cats.syntax.either._
 import cats.syntax.functor._
 import cats.syntax.traverse._
-import cats.effect.BracketThrow
+import cats.effect.{BracketThrow, Resource}
 import cats.tagless.ApplyK
 import doobie.ConnectionIO
 import doobie.implicits._
@@ -102,6 +102,12 @@ object MessagesRepository {
       val mid = metrics |+| logs
       mid attach new MessagesRepositoryImpl[F](transactor)
     }
+
+  def resource[F[_]: TimeMeasureMetric: BracketThrow, R[_]: Applicative](
+      transactor: Transactor[F],
+      logs: Logs[R, F]
+  ): Resource[R, MessagesRepository[Stream[F, *], F]] =
+    Resource.eval(MessagesRepository(transactor, logs))
 
   def unsafe[F[_]: TimeMeasureMetric: BracketThrow, R[_]: Comonad](
       transactor: Transactor[F],

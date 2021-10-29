@@ -1,7 +1,7 @@
 package io.iohk.atala.prism.connector.repositories
 
-import cats.{Comonad, Functor}
-import cats.effect.BracketThrow
+import cats.{Applicative, Comonad, Functor}
+import cats.effect.{BracketThrow, Resource}
 import cats.syntax.applicative._
 import cats.syntax.comonad._
 import cats.syntax.either._
@@ -76,6 +76,11 @@ object ParticipantsRepository {
       val mid = metrics |+| logs
       mid attach new ParticipantsRepositoryImpl[F](transactor)
     }
+
+  def resource[F[_]: TimeMeasureMetric: BracketThrow, R[_]: Applicative: Functor](
+      transactor: Transactor[F],
+      logs: Logs[R, F]
+  ): Resource[R, ParticipantsRepository[F]] = Resource.eval(ParticipantsRepository(transactor, logs))
 
   def unsafe[F[_]: TimeMeasureMetric: BracketThrow, R[_]: Comonad](
       transactor: Transactor[F],
