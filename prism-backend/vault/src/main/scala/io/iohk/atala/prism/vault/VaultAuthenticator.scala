@@ -24,22 +24,16 @@ class VaultAuthenticator(
       grpcAuthenticationHeaderParser
     ) {
 
-  override def burnNonce(did: DID, requestNonce: RequestNonce)(implicit
+  override def burnNonce(did: DID, requestNonce: RequestNonce, traceId: TraceId)(implicit
       ec: ExecutionContext
   ): FutureEither[AuthError, Unit] =
-    requestNoncesRepository
-      .burn(did, requestNonce)
-      .run(TraceId.generateYOLO)
-      .unsafeToFuture()
-      .lift
+    requestNoncesRepository.burn(did, requestNonce).run(traceId).unsafeToFuture().lift
 
-  override def findByPublicKey(publicKey: ECPublicKey)(implicit
+  override def findByPublicKey(publicKey: ECPublicKey, traceId: TraceId)(implicit
       ec: ExecutionContext
   ): FutureEither[AuthError, DID] =
     Future(Left(UnsupportedAuthMethod())).toFutureEither
 
-  override def findByDid(did: DID)(implicit
-      ec: ExecutionContext
-  ): FutureEither[AuthError, DID] =
+  override def findByDid(did: DID, traceId: TraceId)(implicit ec: ExecutionContext): FutureEither[AuthError, DID] =
     Future.successful(Right(did)).toFutureEither
 }
