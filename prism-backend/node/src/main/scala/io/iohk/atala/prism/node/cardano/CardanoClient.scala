@@ -1,121 +1,138 @@
 package io.iohk.atala.prism.node.cardano
 
-import cats.effect.{ContextShift, IO, Resource}
-import io.iohk.atala.prism.logging.TraceId
-import io.iohk.atala.prism.logging.TraceId.IOWithTraceIdContext
+import cats.{Comonad, Functor}
+import cats.effect.{Concurrent, ContextShift, IO, MonadThrow, Resource}
+import cats.syntax.comonad._
 import io.iohk.atala.prism.models.{TransactionDetails, TransactionId}
-import io.iohk.atala.prism.utils.FutureEither
-import io.iohk.atala.prism.node.cardano.CardanoClient.Result
 import io.iohk.atala.prism.node.cardano.dbsync.CardanoDbSyncClient
 import io.iohk.atala.prism.node.cardano.models._
 import io.iohk.atala.prism.node.cardano.wallet.CardanoWalletApiClient
 import io.iohk.atala.prism.node.models.WalletDetails
-import io.iohk.atala.prism.utils.FutureEither.FutureEitherOps
-import io.iohk.atala.prism.utils.IOUtils._
-import org.slf4j.{Logger, LoggerFactory}
-import tofu.logging.Logs
+import tofu.logging.{Logs, ServiceLogging}
+import tofu.syntax.monadic._
+import cats.syntax.either._
+import derevo.derive
+import derevo.tagless.applyK
+import io.iohk.atala.prism.node.cardano.logs.CardanoClientLogs
+import io.iohk.atala.prism.metrics.TimeMeasureMetric
+import tofu.higherKind.Mid
 
 import scala.concurrent.ExecutionContext
 
-class CardanoClient(
-    cardanoDbSyncClient: CardanoDbSyncClient[IOWithTraceIdContext],
-    cardanoWalletApiClient: CardanoWalletApiClient
-)(implicit
-    ec: ExecutionContext
-) {
-  private val logger: Logger = LoggerFactory.getLogger(this.getClass)
+@derive(applyK)
+trait CardanoClient[F[_]] {
+  def getFullBlock(blockNo: Int): F[Either[BlockError.NotFound, Block.Full]]
 
-  def getFullBlock(
-      blockNo: Int,
-      traceId: TraceId
-  ): Result[BlockError.NotFound, Block.Full] = {
-    cardanoDbSyncClient
-      .getFullBlock(blockNo)
-      .run(traceId)
-      .unsafeToFuture()
-      .toFutureEither
-  }
-
-  def getLatestBlock(
-      traceId: TraceId
-  ): Result[BlockError.NoneAvailable.type, Block.Canonical] =
-    cardanoDbSyncClient.getLatestBlock
-      .run(traceId)
-      .unsafeToFuture()
-      .toFutureEither
+  def getLatestBlock: F[Either[BlockError.NoneAvailable.type, Block.Canonical]]
 
   def postTransaction(
       walletId: WalletId,
       payments: List[Payment],
       metadata: Option[TransactionMetadata],
       passphrase: String
-  ): Result[CardanoWalletError, TransactionId] = {
-    cardanoWalletApiClient
-      .postTransaction(walletId, payments, metadata, passphrase)
-      .mapLeft { e =>
-        logger.error(s"Could not post the Cardano transaction: ${e.error}")
-        CardanoWalletError.fromString(e.error.message, e.error.code)
-      }
-  }
+  ): F[Either[CardanoWalletError, TransactionId]]
 
   def getTransaction(
       walletId: WalletId,
       transactionId: TransactionId
-  ): Result[CardanoWalletError, TransactionDetails] = {
-    cardanoWalletApiClient
-      .getTransaction(walletId, transactionId)
-      .mapLeft { e =>
-        logger.error(
-          s"Could not get Cardano transaction $transactionId: ${e.error}"
-        )
-        CardanoWalletError.fromString(e.error.message, e.error.code)
-      }
-  }
+  ): F[Either[CardanoWalletError, TransactionDetails]]
 
-  def deleteTransaction(
-      walletId: WalletId,
-      transactionId: TransactionId
-  ): Result[CardanoWalletError, Unit] = {
-    cardanoWalletApiClient
-      .deleteTransaction(walletId, transactionId)
-      .mapLeft { e =>
-        logger.error(
-          s"Could not delete Cardano transaction $transactionId: ${e.error}"
-        )
-        CardanoWalletError.fromString(e.error.message, e.error.code)
-      }
-  }
+  def deleteTransaction(walletId: WalletId, transactionId: TransactionId): F[Either[CardanoWalletError, Unit]]
 
-  def getWalletDetails(
-      walletId: WalletId
-  ): Result[CardanoWalletError, WalletDetails] = {
-    cardanoWalletApiClient
-      .getWallet(walletId)
-      .mapLeft { e =>
-        logger.error(s"Could not get cardano wallet $walletId: ${e.error}")
-        CardanoWalletError.fromString(e.error.message, e.error.code)
-      }
-  }
+  def getWalletDetails(walletId: WalletId): F[Either[CardanoWalletError, WalletDetails]]
 }
 
 object CardanoClient {
-  type Result[E, A] = FutureEither[E, A]
 
-  case class Config(
-      dbSyncConfig: CardanoDbSyncClient.Config,
-      cardanoWalletConfig: CardanoWalletApiClient.Config
-  )
+  case class Config(dbSyncConfig: CardanoDbSyncClient.Config, cardanoWalletConfig: CardanoWalletApiClient.Config)
 
   implicit val cs: ContextShift[IO] = IO.contextShift(ExecutionContext.global)
 
-  def apply(config: Config, logs: Logs[IO, IOWithTraceIdContext])(implicit
-      ec: ExecutionContext
-  ): Resource[IOWithTraceIdContext, CardanoClient] = {
-    CardanoDbSyncClient(config.dbSyncConfig, logs).map(cardanoDbSyncClient =>
-      new CardanoClient(
-        cardanoDbSyncClient,
-        CardanoWalletApiClient(config.cardanoWalletConfig)
-      )
-    )
+  def make[I[_]: Functor, F[_]: MonadThrow](
+      cardanoDbSyncClient: CardanoDbSyncClient[F],
+      cardanoWalletApiClient: CardanoWalletApiClient[F],
+      logs: Logs[I, F]
+  ): I[CardanoClient[F]] =
+    for {
+      serviceLogs <- logs.service[CardanoClient[F]]
+    } yield {
+      implicit val implicitLogs: ServiceLogging[F, CardanoClient[F]] = serviceLogs
+      val logs: CardanoClient[Mid[F, *]] = new CardanoClientLogs[F]
+      val mid = logs
+      mid attach new CardanoClientImpl(cardanoDbSyncClient, cardanoWalletApiClient)
+    }
+
+  def makeResource[I[_]: Comonad, F[_]: TimeMeasureMetric: Concurrent: ContextShift](
+      config: Config,
+      logs: Logs[I, F]
+  ): Resource[F, CardanoClient[F]] =
+    for {
+      cardanoDbSyncClient <- CardanoDbSyncClient[F, I](config.dbSyncConfig, logs)
+      cardanoWalletApiClient <- CardanoWalletApiClient.makeResource[F, I](config.cardanoWalletConfig, logs)
+    } yield CardanoClient.make[I, F](cardanoDbSyncClient, cardanoWalletApiClient, logs).extract
+
+  def makeUnsafe[F[_]: Functor](
+      dbSyncClient: CardanoDbSyncClient[F],
+      walletClient: CardanoWalletApiClient[F]
+  ): CardanoClient[F] = {
+    new CardanoClientImpl(dbSyncClient, walletClient)
+  }
+
+  private class CardanoClientImpl[F[_]: Functor](
+      cardanoDbSyncClient: CardanoDbSyncClient[F],
+      cardanoWalletApiClient: CardanoWalletApiClient[F]
+  ) extends CardanoClient[F] {
+
+    def getFullBlock(blockNo: Int): F[Either[BlockError.NotFound, Block.Full]] = {
+      cardanoDbSyncClient.getFullBlock(blockNo)
+    }
+
+    def getLatestBlock: F[Either[BlockError.NoneAvailable.type, Block.Canonical]] =
+      cardanoDbSyncClient.getLatestBlock
+
+    def postTransaction(
+        walletId: WalletId,
+        payments: List[Payment],
+        metadata: Option[TransactionMetadata],
+        passphrase: String
+    ): F[Either[CardanoWalletError, TransactionId]] = {
+      cardanoWalletApiClient
+        .postTransaction(walletId, payments, metadata, passphrase)
+        .map(_.leftMap { e =>
+          CardanoWalletError.fromString(e.error.message, e.error.code)
+        })
+    }
+
+    def getTransaction(
+        walletId: WalletId,
+        transactionId: TransactionId
+    ): F[Either[CardanoWalletError, TransactionDetails]] = {
+      cardanoWalletApiClient
+        .getTransaction(walletId, transactionId)
+        .map(
+          _.leftMap { e =>
+            CardanoWalletError.fromString(e.error.message, e.error.code)
+          }
+        )
+    }
+
+    def deleteTransaction(
+        walletId: WalletId,
+        transactionId: TransactionId
+    ): F[Either[CardanoWalletError, Unit]] = {
+      cardanoWalletApiClient
+        .deleteTransaction(walletId, transactionId)
+        .map(_.leftMap { e =>
+          CardanoWalletError.fromString(e.error.message, e.error.code)
+        })
+    }
+
+    def getWalletDetails(walletId: WalletId): F[Either[CardanoWalletError, WalletDetails]] = {
+      cardanoWalletApiClient
+        .getWallet(walletId)
+        .map(_.leftMap { e =>
+          CardanoWalletError.fromString(e.error.message, e.error.code)
+        })
+    }
   }
 }

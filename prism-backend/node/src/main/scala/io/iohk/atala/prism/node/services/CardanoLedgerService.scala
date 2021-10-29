@@ -9,7 +9,6 @@ import cats.syntax.flatMap._
 import cats.syntax.functor._
 import cats.syntax.traverse._
 import enumeratum.{Enum, EnumEntry}
-import io.iohk.atala.prism.logging.TraceId
 import io.iohk.atala.prism.models.{
   BlockInfo,
   Ledger,
@@ -44,7 +43,7 @@ class CardanoLedgerService[F[_]: MonadThrow] private[services] (
     paymentAddress: Address,
     blockNumberSyncStart: Int,
     blockConfirmationsToWait: Int,
-    cardanoClient: CardanoClient,
+    cardanoClient: CardanoClient[F],
     keyValueService: KeyValueService[F],
     onCardanoBlock: CardanoBlockHandler,
     onAtalaObject: AtalaObjectNotificationHandler,
@@ -74,23 +73,21 @@ class CardanoLedgerService[F[_]: MonadThrow] private[services] (
 
   override def publish(obj: node_internal.AtalaObject): F[Either[CardanoWalletError, PublicationInfo]] = {
     val metadata = AtalaObjectMetadata.toTransactionMetadata(obj)
-    ex.deferFuture(
-      cardanoClient
+
+    for {
+      txId <- cardanoClient
         .postTransaction(walletId, List(Payment(paymentAddress, minUtxoDeposit)), Some(metadata), walletPassphrase)
-        .map { transactionId =>
-          PublicationInfo(TransactionInfo(transactionId, getType), TransactionStatus.Pending)
-        }
-        .value
+    } yield txId.map(transactionId =>
+      PublicationInfo(TransactionInfo(transactionId, getType), TransactionStatus.Pending)
     )
   }
 
   override def getTransactionDetails(
       transactionId: TransactionId
-  ): F[Either[CardanoWalletError, TransactionDetails]] =
-    ex.deferFuture(cardanoClient.getTransaction(walletId, transactionId).value)
+  ): F[Either[CardanoWalletError, TransactionDetails]] = cardanoClient.getTransaction(walletId, transactionId)
 
   override def deleteTransaction(transactionId: TransactionId): F[Either[CardanoWalletError, Unit]] =
-    ex.deferFuture(cardanoClient.deleteTransaction(walletId, transactionId).value)
+    cardanoClient.deleteTransaction(walletId, transactionId)
 
   private def scheduleSync(delay: FiniteDuration): Unit = {
     scheduler.scheduleOnce(delay) {
@@ -118,21 +115,15 @@ class CardanoLedgerService[F[_]: MonadThrow] private[services] (
   /** Syncs Atala objects from blocks and returns whether there are remaining blocks to sync.
     */
   private[services] def syncAtalaObjects(): F[Boolean] = {
-    val tId = TraceId.generateYOLO
     for {
       maybeLastSyncedBlockNo <- keyValueService.getInt(LAST_SYNCED_BLOCK_NO)
       lastSyncedBlockNo = CardanoLedgerService.calculateLastSyncedBlockNo(maybeLastSyncedBlockNo, blockNumberSyncStart)
-      latestBlock <- ex.deferFuture(
-        cardanoClient.getLatestBlock(tId).toFuture(_ => new RuntimeException("Cardano blockchain is empty"))
-      )
-      lastConfirmedBlockNo = latestBlock.header.blockNo - blockConfirmationsToWait
+      latestBlock <- cardanoClient.getLatestBlock
+      lastConfirmedBlockNo = latestBlock.map(_.header.blockNo - blockConfirmationsToWait)
       syncStart = lastSyncedBlockNo + 1
-      syncEnd = math.min(
-        lastConfirmedBlockNo,
-        lastSyncedBlockNo + MAX_SYNC_BLOCKS
-      )
-      _ <- syncBlocks(syncStart to syncEnd)
-    } yield lastConfirmedBlockNo > syncEnd
+      syncEnd = lastConfirmedBlockNo.map(math.min(_, lastSyncedBlockNo + MAX_SYNC_BLOCKS))
+      _ <- syncEnd.traverse(end => syncBlocks(syncStart to end))
+    } yield lastConfirmedBlockNo.flatMap(last => syncEnd.map(last > _)).getOrElse(false)
   }
 
   private def syncBlocks(blockNos: Range): F[Unit] = {
@@ -150,13 +141,14 @@ class CardanoLedgerService[F[_]: MonadThrow] private[services] (
 
   private def syncBlock(blockNo: Int): F[Unit] = {
     for {
-      block <- ex.deferFuture(
-        cardanoClient
-          .getFullBlock(blockNo, TraceId.generateYOLO)
-          .toFuture(_ => new RuntimeException(s"Block $blockNo was not found"))
+      blockEit <- cardanoClient
+        .getFullBlock(blockNo)
+      _ <- ex.deferFuture(
+        blockEit
+          .map(block => onCardanoBlock(block.toCanonical))
+          .getOrElse(Future.failed(new Exception("syncBlock failed")))
       )
-      _ <- ex.deferFuture(onCardanoBlock(block.toCanonical))
-      _ <- processAtalaObjects(block)
+      _ <- blockEit.traverse(processAtalaObjects)
     } yield ()
   }
 
@@ -237,7 +229,7 @@ object CardanoLedgerService {
       paymentAddress: Address,
       blockNumberSyncStart: Int,
       blockConfirmationsToWait: Int,
-      cardanoClient: CardanoClient,
+      cardanoClient: CardanoClient[F],
       keyValueService: KeyValueService[F],
       onCardanoBlock: CardanoBlockHandler,
       onAtalaObject: AtalaObjectNotificationHandler,
@@ -267,7 +259,7 @@ object CardanoLedgerService {
 
   def unsafe[F[_]: MonadThrow: Execute, R[_]: Comonad](
       config: Config,
-      cardanoClient: CardanoClient,
+      cardanoClient: CardanoClient[F],
       keyValueService: KeyValueService[F],
       onCardanoBlock: CardanoBlockHandler,
       onAtalaObject: AtalaObjectNotificationHandler,

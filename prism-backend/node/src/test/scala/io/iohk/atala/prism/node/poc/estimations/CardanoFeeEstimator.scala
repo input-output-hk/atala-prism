@@ -1,5 +1,6 @@
 package io.iohk.atala.prism.node.poc.estimations
 
+import cats.effect.{ContextShift, IO}
 import com.google.protobuf.ByteString
 import com.typesafe.config.ConfigFactory
 import io.iohk.atala.prism.crypto.{MerkleRoot, Sha256}
@@ -16,6 +17,7 @@ import io.iohk.atala.prism.protos.node_models.{AtalaOperation, SignedAtalaOperat
 import io.iohk.atala.prism.protos.{node_internal, node_models}
 import org.scalatest.OptionValues._
 import org.scalatest.concurrent.ScalaFutures._
+import tofu.logging.Logs
 
 import scala.collection.mutable.ListBuffer
 import scala.concurrent.ExecutionContext
@@ -30,7 +32,7 @@ import scala.concurrent.duration._
 class CardanoFeeEstimator(
     walletId: WalletId,
     paymentAddress: Address,
-    cardanoWalletApiClient: CardanoWalletApiClient
+    cardanoWalletApiClient: CardanoWalletApiClient[IO]
 ) {
   // Max number of credentials that can be issued in the same transaction
   private val MAX_CREDENTIAL_BATCH_SIZE = 2048
@@ -109,7 +111,7 @@ class CardanoFeeEstimator(
         payments = List(Payment(paymentAddress, Lovelace(1000000))),
         metadata = Some(AtalaObjectMetadata.toTransactionMetadata(atalaObject))
       )
-      .value
+      .unsafeToFuture()
       .futureValue
       .toOption
       .value
@@ -309,15 +311,17 @@ object CardanoFeeEstimator {
   }
 
   private def createCardanoFeeEstimator(): CardanoFeeEstimator = {
+    import io.iohk.atala.prism.utils.IOUtils._
     implicit val ec: ExecutionContext = ExecutionContext.global
+    implicit val cs: ContextShift[IO] = IO.contextShift(ec)
 
     val clientConfig =
       NodeConfig.cardanoConfig(ConfigFactory.load().getConfig("cardano"))
     val walletId = WalletId.from(clientConfig.walletId).value
     val paymentAddress = Address(clientConfig.paymentAddress)
-    val cardanoWalletApiClient = CardanoWalletApiClient(
-      clientConfig.cardanoClientConfig.cardanoWalletConfig
-    )
+    val logs = Logs.sync[IO, IO]
+    val cardanoWalletApiClient =
+      CardanoWalletApiClient.unsafe[IO, IO](clientConfig.cardanoClientConfig.cardanoWalletConfig, logs)
 
     new CardanoFeeEstimator(walletId, paymentAddress, cardanoWalletApiClient)
   }

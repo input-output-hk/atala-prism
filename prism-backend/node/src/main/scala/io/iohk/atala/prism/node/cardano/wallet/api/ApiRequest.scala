@@ -1,11 +1,10 @@
 package io.iohk.atala.prism.node.cardano.wallet.api
-
-import com.softwaremill.sttp.Method
 import io.circe.syntax._
 import io.circe.{Encoder, Json}
 import io.iohk.atala.prism.models.TransactionId
 import io.iohk.atala.prism.node.cardano.models.{Payment, TransactionMetadata, WalletId}
 import io.iohk.atala.prism.node.cardano.wallet.api.JsonCodecs._
+import sttp.model.Method
 
 private sealed abstract class ApiRequest(
     val path: String,

@@ -2,6 +2,7 @@ package io.iohk.atala.prism.node.cardano.dbsync
 
 import cats.Comonad
 import cats.effect.{Async, ContextShift, Resource}
+import io.iohk.atala.prism.metrics.TimeMeasureMetric
 import io.iohk.atala.prism.repositories.TransactorFactory
 import io.iohk.atala.prism.node.cardano.dbsync.repositories.CardanoBlockRepository
 import io.iohk.atala.prism.node.cardano.models.{Block, BlockError}
@@ -25,7 +26,7 @@ final class CardanoDbSyncClientImpl[F[_]](
 object CardanoDbSyncClient {
   case class Config(dbConfig: TransactorFactory.Config)
 
-  def apply[F[_]: Async: ContextShift, R[_]: Comonad](
+  def apply[F[_]: Async: ContextShift: TimeMeasureMetric, R[_]: Comonad](
       config: Config,
       logs: Logs[R, F]
   ): Resource[F, CardanoDbSyncClient[F]] = {

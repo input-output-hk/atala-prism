@@ -16,7 +16,7 @@ import scala.util.Try
 
 class NodeReporter(
     walletId: WalletId,
-    cardanoClient: CardanoClient,
+    cardanoClient: CardanoClient[IOWithTraceIdContext],
     keyValueService: KeyValueService[IOWithTraceIdContext],
     blockNumberSyncStart: Int
 )(implicit
@@ -45,10 +45,9 @@ class NodeReporter(
   private def reportWalletFunds(): Unit =
     cardanoClient
       .getWalletDetails(walletId)
-      .value
-      .foreach(
-        _.foreach(details => walletFunds.update(details.balance.available.doubleValue))
-      )
+      .run(TraceId.generateYOLO)
+      .unsafeToFuture()
+      .foreach(_.foreach(details => walletFunds.update(details.balance.available.doubleValue)))
 
   private def postNextBlockToSync(): Unit =
     keyValueService
@@ -64,12 +63,10 @@ class NodeReporter(
       }
 
   private def postWalletLastBlock(): Unit = {
-    cardanoClient
-      .getLatestBlock(TraceId.generateYOLO)
-      .value
-      .foreach(
-        _.foreach(block => updateGauge(lastSyncedBlockByWallet, block.header.blockNo))
-      )
+    cardanoClient.getLatestBlock
+      .run(TraceId.generateYOLO)
+      .unsafeToFuture()
+      .foreach(_.foreach(block => updateGauge(lastSyncedBlockByWallet, block.header.blockNo)))
   }
 
   private def updateGauge(gauge: Gauge, newValue: Int): Unit =
@@ -81,7 +78,7 @@ class NodeReporter(
 object NodeReporter {
   def apply(
       config: CardanoLedgerService.Config,
-      cardanoClient: CardanoClient,
+      cardanoClient: CardanoClient[IOWithTraceIdContext],
       keyValueService: KeyValueService[IOWithTraceIdContext]
   )(implicit
       ec: ExecutionContext

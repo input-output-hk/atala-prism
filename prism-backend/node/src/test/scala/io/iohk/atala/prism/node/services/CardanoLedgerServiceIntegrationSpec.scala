@@ -50,7 +50,9 @@ class CardanoLedgerServiceIntegrationSpec extends AtalaWithPostgresSpec {
       val walletId = WalletId.from(clientConfig.walletId).value
       val paymentAddress = Address(clientConfig.paymentAddress)
       val (cardanoClient, releaseCardanoClient) =
-        CardanoClient(clientConfig.cardanoClientConfig, logs).allocated
+        CardanoClient
+          .makeResource[IO, IOWithTraceIdContext](clientConfig.cardanoClientConfig, logs)
+          .allocated
           .run(TraceId.generateYOLO)
           .unsafeRunSync()
       val keyValueService = KeyValueService.unsafe(
@@ -76,12 +78,7 @@ class CardanoLedgerServiceIntegrationSpec extends AtalaWithPostgresSpec {
 
       // Avoid syncing pre-existing blocks
       val latestBlock =
-        cardanoClient
-          .getLatestBlock(TraceId.generateYOLO)
-          .value
-          .futureValue(LONG_TIMEOUT)
-          .toOption
-          .value
+        cardanoClient.getLatestBlock(TraceId.generateYOLO).unsafeToFuture().futureValue(LONG_TIMEOUT).toOption.value
       keyValueService
         .set(LAST_SYNCED_BLOCK_NO, Some(latestBlock.header.blockNo))
         .run(TraceId.generateYOLO)

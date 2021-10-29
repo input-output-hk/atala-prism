@@ -70,7 +70,7 @@ class CardanoLedgerServiceSpec extends AtalaWithPostgresSpec {
     val expectedWalletApiPath = s"v2/wallets/$walletId/transactions"
 
     "publish an object" in {
-      val cardanoWalletApiClient = FakeCardanoWalletApiClient.Success(
+      val cardanoWalletApiClient = FakeCardanoWalletApiClient.Success[IOWithTraceIdContext](
         expectedWalletApiPath,
         readResource("publishReference_cardanoWalletApiRequest.json"),
         readResource("publishReference_success_cardanoWalletApiResponse.json")
@@ -89,7 +89,7 @@ class CardanoLedgerServiceSpec extends AtalaWithPostgresSpec {
       val exceptionDescription = f"Status [$errorCode]. $errorMessage"
 
       val cardanoWalletApiClient =
-        FakeCardanoWalletApiClient.Fail(
+        FakeCardanoWalletApiClient.Fail[IOWithTraceIdContext](
           expectedWalletApiPath,
           readResource("publishReference_cardanoWalletApiRequest.json"),
           errorCode,
@@ -110,7 +110,7 @@ class CardanoLedgerServiceSpec extends AtalaWithPostgresSpec {
       s"v2/wallets/$walletId/transactions/$transactionId"
 
     "get the transaction details" in {
-      val cardanoWalletApiClient = FakeCardanoWalletApiClient.Success(
+      val cardanoWalletApiClient = FakeCardanoWalletApiClient.Success[IOWithTraceIdContext](
         expectedWalletApiPath,
         "",
         readResource("getTransaction_success_cardanoWalletApiResponse.json")
@@ -132,7 +132,7 @@ class CardanoLedgerServiceSpec extends AtalaWithPostgresSpec {
 
     "fail to get the transaction details when the wallet fails" in {
       val cardanoWalletApiClient =
-        FakeCardanoWalletApiClient.Fail(expectedWalletApiPath, "", "internal", "Internal error")
+        FakeCardanoWalletApiClient.Fail[IOWithTraceIdContext](expectedWalletApiPath, "", "internal", "Internal error")
       val cardanoLedgerService = createCardanoLedgerService(cardanoWalletApiClient)
 
       val err = cardanoLedgerService
@@ -155,16 +155,15 @@ class CardanoLedgerServiceSpec extends AtalaWithPostgresSpec {
 
     "delete a transaction" in {
       val cardanoWalletApiClient =
-        FakeCardanoWalletApiClient.Success(expectedWalletApiPath, "", "")
-      val cardanoLedgerService =
-        createCardanoLedgerService(cardanoWalletApiClient)
+        FakeCardanoWalletApiClient.Success[IOWithTraceIdContext](expectedWalletApiPath, "", "")
+      val cardanoLedgerService = createCardanoLedgerService(cardanoWalletApiClient)
 
       cardanoLedgerService.deleteTransaction(transactionId).run(TraceId.generateYOLO).unsafeRunSync()
     }
 
     "fail to delete a transaction when the wallet fails" in {
       val cardanoWalletApiClient =
-        FakeCardanoWalletApiClient.Fail(
+        FakeCardanoWalletApiClient.Fail[IOWithTraceIdContext](
           expectedWalletApiPath,
           "",
           "transaction_already_in_ledger",
@@ -354,7 +353,7 @@ class CardanoLedgerServiceSpec extends AtalaWithPostgresSpec {
       val notificationHandler = new TestAtalaHandlers()
       val cardanoLedgerService =
         createCardanoLedgerService(
-          FakeCardanoWalletApiClient.NotFound(),
+          FakeCardanoWalletApiClient.NotFound[IOWithTraceIdContext](),
           onAtalaObject = notificationHandler.asAtalaObjectHandler
         )
 
@@ -381,7 +380,7 @@ class CardanoLedgerServiceSpec extends AtalaWithPostgresSpec {
   }
 
   private def createCardanoLedgerService(
-      cardanoWalletApiClient: CardanoWalletApiClient,
+      cardanoWalletApiClient: CardanoWalletApiClient[IOWithTraceIdContext],
       blockNumberSyncStart: Int = 0,
       onAtalaObject: AtalaObjectNotificationHandler = noOpObjectHandler
   ): CardanoLedgerService[IOWithTraceIdContext] = {
@@ -402,12 +401,9 @@ class CardanoLedgerServiceSpec extends AtalaWithPostgresSpec {
   }
 
   private def createCardanoClient(
-      cardanoWalletApiClient: CardanoWalletApiClient
-  ): CardanoClient = {
-    new CardanoClient(
-      new CardanoDbSyncClientImpl(cardanoBlockRepository),
-      cardanoWalletApiClient
-    )
+      cardanoWalletApiClient: CardanoWalletApiClient[IOWithTraceIdContext]
+  ): CardanoClient[IOWithTraceIdContext] = {
+    CardanoClient.makeUnsafe(new CardanoDbSyncClientImpl(cardanoBlockRepository), cardanoWalletApiClient)
   }
 
   private def readResource(resource: String): String = {

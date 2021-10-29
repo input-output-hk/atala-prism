@@ -9,13 +9,16 @@ import derevo.derive
 import derevo.tagless.applyK
 import doobie.implicits._
 import doobie.util.transactor.Transactor
+import io.iohk.atala.prism.metrics.TimeMeasureMetric
 import io.iohk.atala.prism.utils.syntax.DBConnectionOps
 import io.iohk.atala.prism.node.cardano.dbsync.repositories.daos.{BlockDAO, TransactionDAO}
 import io.iohk.atala.prism.node.cardano.dbsync.repositories.logs.CardanoBlockRepositoryLogs
+import io.iohk.atala.prism.node.cardano.dbsync.repositories.metrics.CardanoBlockRepositoryMetrics
 import io.iohk.atala.prism.node.cardano.models.{Block, BlockError}
 import org.slf4j.{Logger, LoggerFactory}
 import tofu.higherKind.Mid
 import tofu.logging.{Logs, ServiceLogging}
+import tofu.syntax.monoid.TofuSemigroupOps
 
 @derive(applyK)
 trait CardanoBlockRepository[F[_]] {
@@ -24,31 +27,28 @@ trait CardanoBlockRepository[F[_]] {
 }
 
 object CardanoBlockRepository {
-  def apply[F[_]: BracketThrow, R[_]: Functor](
+  def apply[F[_]: BracketThrow: TimeMeasureMetric, R[_]: Functor](
       transactor: Transactor[F],
       logs: Logs[R, F]
   ): R[CardanoBlockRepository[F]] =
     for {
       serviceLogs <- logs.service[CardanoBlockRepository[F]]
     } yield {
-      implicit val implicitLogs: ServiceLogging[F, CardanoBlockRepository[F]] =
-        serviceLogs
-      val logs: CardanoBlockRepository[Mid[F, *]] =
-        new CardanoBlockRepositoryLogs[F]
-      val mid = logs
+      implicit val implicitLogs: ServiceLogging[F, CardanoBlockRepository[F]] = serviceLogs
+      val metrics: CardanoBlockRepository[Mid[F, *]] = new CardanoBlockRepositoryMetrics[F]
+      val logs: CardanoBlockRepository[Mid[F, *]] = new CardanoBlockRepositoryLogs[F]
+      val mid = metrics |+| logs
       mid attach new CardanoBlockRepositoryImpl[F](transactor)
     }
 
-  def unsafe[F[_]: BracketThrow, R[_]: Comonad](
+  def unsafe[F[_]: BracketThrow: TimeMeasureMetric, R[_]: Comonad](
       transactor: Transactor[F],
       logs: Logs[R, F]
-  ): CardanoBlockRepository[F] =
-    CardanoBlockRepository(transactor, logs).extract
+  ): CardanoBlockRepository[F] = CardanoBlockRepository(transactor, logs).extract
 }
 
-private final class CardanoBlockRepositoryImpl[F[_]: BracketThrow](
-    xa: Transactor[F]
-) extends CardanoBlockRepository[F] {
+private final class CardanoBlockRepositoryImpl[F[_]: BracketThrow](xa: Transactor[F])
+    extends CardanoBlockRepository[F] {
 
   val logger: Logger = LoggerFactory.getLogger(getClass)
 
@@ -70,9 +70,9 @@ private final class CardanoBlockRepositoryImpl[F[_]: BracketThrow](
       .logSQLErrors("getting latest block", logger)
       .transact(xa)
       .map(
-        _.fold[Either[BlockError.NoneAvailable.type, Block.Canonical]](
-          BlockError.NoneAvailable.asLeft
-        )(header => Block.Canonical(header).asRight)
+        _.fold[Either[BlockError.NoneAvailable.type, Block.Canonical]](BlockError.NoneAvailable.asLeft)(header =>
+          Block.Canonical(header).asRight
+        )
       )
   }
 }

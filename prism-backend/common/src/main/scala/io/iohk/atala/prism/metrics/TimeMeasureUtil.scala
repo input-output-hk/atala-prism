@@ -43,7 +43,9 @@ object TimeMeasureMetric {
 
 object TimeMeasureUtil {
 
+  private val CLIENT_REQUEST_TIMER = "client-request-time"
   private val DB_QUERY_TIMER = "db-query-time"
+  private val CLIENT_TAG_NAME = "client"
   private val REPO_TAG_NAME = "repository"
   private val METHOD_TAG_NAME = "method"
 
@@ -58,6 +60,16 @@ object TimeMeasureUtil {
       .build()
     DomainTimer(Kamon.timer(DB_QUERY_TIMER).withTags(tags))
   }
+
+  def createClientRequestTimer(clientName: String, methodName: String): DomainTimer = {
+    val tags = TagSet
+      .builder()
+      .add(CLIENT_TAG_NAME, clientName)
+      .add(METHOD_TAG_NAME, methodName)
+      .build()
+    DomainTimer(Kamon.timer(CLIENT_REQUEST_TIMER).withTags(tags))
+  }
+
   def measureTime[F[_], T](in: F[T], timer: DomainTimer)(implicit
       timeMeasureMetric: TimeMeasureMetric[F],
       br: Bracket[F, Throwable]
