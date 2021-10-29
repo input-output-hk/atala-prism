@@ -54,7 +54,7 @@ class ConnectorApp(executionContext: ExecutionContext) { self =>
       globalConfig <- loadConfig
       _ <- startMetrics(globalConfig)
       databaseConfig = TransactorFactory.transactorConfig(globalConfig)
-      _ <- applyMigrations(databaseConfig)
+      _ = applyMigrations(databaseConfig)
       tx <- connectToTheDb(databaseConfig)
       whitelistDid <- loadWhitelistDid(globalConfig)
       txTraceIdLifted = tx.mapK(TraceId.liftToIOWithTraceId)
@@ -73,9 +73,8 @@ class ConnectorApp(executionContext: ExecutionContext) { self =>
         GrpcAuthenticationHeaderParser
       )
       // Background services
-      contextShift = IO.contextShift(executionContext)
       timer = IO.timer(executionContext)
-      messageNotificationService <- MessageNotificationService.resourceAndStart(tx, contextShift, timer)
+      messageNotificationService <- MessageNotificationService.resourceAndStart(tx, cs, timer)
       // connector services
       connectionsService <- ConnectionsService.resource(connectionsRepository, node, connectorLogs)
       messagesService <- MessagesService.resource[IOWithTraceIdContext, IO](
@@ -155,11 +154,10 @@ class ConnectorApp(executionContext: ExecutionContext) { self =>
       ConfigFactory.load()
     }
 
-  private def applyMigrations(databaseConfig: TransactorFactory.Config): Resource[IO, Unit] =
-    Resource.pure[IO, Unit] {
-      logger.info("Applying database migrations")
-      applyDatabaseMigrations(databaseConfig)
-    }
+  private def applyMigrations(databaseConfig: TransactorFactory.Config): Unit = {
+    logger.info("Applying database migrations")
+    applyDatabaseMigrations(databaseConfig)
+  }
 
   private def connectToTheDb(databaseConfig: TransactorFactory.Config): Resource[IO, HikariTransactor[IO]] = {
     logger.info("Connecting to the database")
